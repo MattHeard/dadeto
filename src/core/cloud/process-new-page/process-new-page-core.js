@@ -161,7 +161,9 @@ function ensureDocumentReference(reference, message) {
 function isDocumentReference(reference) {
   return Boolean(
     reference &&
-      typeof (/** @type {any} */ (reference).collection) === 'function'
+      typeof (
+        /** @type {{ collection?: unknown }} */ (reference).collection
+      ) === 'function'
   );
 }
 
@@ -241,8 +243,8 @@ export async function findAvailablePageNumber(db, random, depth) {
  */
 /**
  * Extract parent reference from a document reference.
- * @param {any} ref - Document reference.
- * @returns {any} Parent reference or undefined.
+ * @param {unknown} ref - Document reference.
+ * @returns {unknown} Parent reference or undefined.
  */
 function extractParentRef(ref) {
   return ref?.parent;
@@ -250,8 +252,8 @@ function extractParentRef(ref) {
 
 /**
  * Extract grandparent reference from a document reference.
- * @param {any} ref - Document reference.
- * @returns {any} Grandparent reference or undefined.
+ * @param {unknown} ref - Document reference.
+ * @returns {unknown} Grandparent reference or undefined.
  */
 function extractGrandparentRef(ref) {
   const parent = extractParentRef(ref);
@@ -260,7 +262,7 @@ function extractGrandparentRef(ref) {
 
 /**
  * Extract variant reference from option reference.
- * @param {any} optionRef - Option document reference.
+ * @param {unknown} optionRef - Option document reference.
  * @returns {import('firebase-admin/firestore').DocumentReference | null} Variant reference or null.
  */
 function extractVariantRefFromOption(optionRef) {
@@ -271,7 +273,7 @@ function extractVariantRefFromOption(optionRef) {
 
 /**
  * Extract page reference from variant reference.
- * @param {any} variantRef - Variant document reference.
+ * @param {unknown} variantRef - Variant document reference.
  * @returns {import('firebase-admin/firestore').DocumentReference | null} Page reference or null.
  */
 function extractPageRefFromVariant(variantRef) {
@@ -282,7 +284,7 @@ function extractPageRefFromVariant(variantRef) {
 
 /**
  * Extract story reference from page reference.
- * @param {any} pageRef - Page document reference.
+ * @param {unknown} pageRef - Page document reference.
  * @returns {import('firebase-admin/firestore').DocumentReference | null} Story reference or null.
  */
 function extractStoryRefFromPageRef(pageRef) {
@@ -406,12 +408,15 @@ async function markProcessedIfMissing(optionSnap, snapshot) {
 /**
  * Extract and validate story reference from option.
  * @param {import('firebase-admin/firestore').DocumentSnapshot} optionSnap - Option snapshot.
- * @returns {{variantRef: any, storyRefCandidate: any} | null} References or null if story ref missing.
+ * @returns {{variantRef: unknown, storyRefCandidate: unknown} | null} References or null if story ref missing.
  */
 function extractAndValidateStoryRef(optionSnap) {
-  const { variantRef, storyRef: storyRefCandidate } = /** @type {any} */ (
-    resolveStoryRefFromOption(/** @type {any} */ (optionSnap).ref)
-  );
+  const { variantRef, storyRef: storyRefCandidate } =
+    /** @type {{ variantRef: unknown, storyRef: unknown }} */ (
+      resolveStoryRefFromOption(
+        /** @type {{ ref: unknown }} */ (optionSnap).ref
+      )
+    );
 
   if (!storyRefCandidate) {
     return null;
@@ -424,7 +429,7 @@ function extractAndValidateStoryRef(optionSnap) {
  * Validate and extract references from option snapshot.
  * @param {import('firebase-admin/firestore').DocumentSnapshot} optionSnap - Option document snapshot.
  * @param {import('firebase-admin/firestore').DocumentSnapshot} snapshot - Submission snapshot.
- * @returns {Promise<{variantRef: any, storyRefCandidate: any} | null>} References or null if invalid.
+ * @returns {Promise<{variantRef: unknown, storyRefCandidate: unknown} | null>} References or null if invalid.
  */
 async function validateAndExtractOptionRefs(optionSnap, snapshot) {
   const wasProcessed = await markProcessedIfMissing(optionSnap, snapshot);
@@ -437,8 +442,8 @@ async function validateAndExtractOptionRefs(optionSnap, snapshot) {
 
 /**
  * Return the extracted refs when present.
- * @param {{variantRef: any, storyRefCandidate: any} | null} refs - Extracted option refs.
- * @returns {{variantRef: any, storyRefCandidate: any} | null} Valid refs or null.
+ * @param {{variantRef: unknown, storyRefCandidate: unknown} | null} refs - Extracted option refs.
+ * @returns {{variantRef: unknown, storyRefCandidate: unknown} | null} Valid refs or null.
  */
 function getValidIncomingOptionRefs(refs) {
   return refs;
@@ -489,7 +494,7 @@ async function resolveIncomingOptionContext({
 /**
  * Build the incoming option context from resolved refs and option data.
  * @param {object} params - Context-building dependencies.
- * @param {{variantRef: any, storyRefCandidate: any}} params.validRefs - Validated variant and story refs.
+ * @param {{variantRef: unknown, storyRefCandidate: unknown}} params.validRefs - Validated variant and story refs.
  * @param {import('firebase-admin/firestore').DocumentSnapshot} params.optionSnap - Option document snapshot.
  * @param {import('firebase-admin/firestore').Firestore} params.db - Firestore instance used for lookups.
  * @param {import('firebase-admin/firestore').WriteBatch} params.batch - Write batch collecting updates.
@@ -540,7 +545,7 @@ async function buildIncomingOptionContext({
  * Resolve incoming option refs or return null when processing should stop.
  * @param {import('firebase-admin/firestore').DocumentSnapshot} optionSnap - Option document snapshot.
  * @param {import('firebase-admin/firestore').DocumentSnapshot} snapshot - Submission snapshot.
- * @returns {Promise<{variantRef: any, storyRefCandidate: any} | null>} Valid refs or null.
+ * @returns {Promise<{variantRef: unknown, storyRefCandidate: unknown} | null>} Valid refs or null.
  */
 async function resolveIncomingOptionRefs(optionSnap, snapshot) {
   const refs = await validateAndExtractOptionRefs(optionSnap, snapshot);
@@ -552,7 +557,7 @@ async function resolveIncomingOptionRefs(optionSnap, snapshot) {
 
 /**
  * Check whether incoming option refs are missing.
- * @param {{variantRef: any, storyRefCandidate: any} | null} refs - Extracted option refs.
+ * @param {{variantRef: unknown, storyRefCandidate: unknown} | null} refs - Extracted option refs.
  * @returns {boolean} True when processing should stop.
  */
 function shouldSkipIncomingOptionRefs(refs) {
@@ -583,7 +588,7 @@ function ensureOptionSnapshotRef(optionSnap, optionRef) {
  * @returns {import('firebase-admin/firestore').DocumentReference | null} Target page reference when present.
  */
 function resolveTargetPageFromOption(optionData) {
-  return resolvePageFromTarget(/** @type {any} */ (optionData?.targetPage));
+  return resolvePageFromTarget(/** @type {unknown} */ (optionData?.targetPage));
 }
 
 /**
@@ -649,15 +654,15 @@ async function resolveExistingPageContext(targetPage) {
 /**
  * Get data from snapshot.
  * @param {import('firebase-admin/firestore').DocumentSnapshot} snapshot Snapshot.
- * @returns {any} Data from snapshot.
+ * @returns {unknown} Data from snapshot.
  */
 function getSnapshotDataObj(snapshot) {
-  return /** @type {any} */ (snapshot).data?.();
+  return /** @type {{ data?: () => unknown }} */ (snapshot).data?.();
 }
 
 /**
  * Extract number property from data object.
- * @param {any} data - Data object.
+ * @param {unknown} data - Data object.
  * @returns {number | undefined} Number value or undefined.
  */
 function extractNumberFromData(data) {
@@ -666,7 +671,7 @@ function extractNumberFromData(data) {
 
 /**
  * Extract page number from data object.
- * @param {any} data - Data object.
+ * @param {unknown} data - Data object.
  * @returns {number | null} Page number or null.
  */
 function getPageNumberFromData(data) {
@@ -696,7 +701,7 @@ function buildExistingPageContext(existingPageSnap, targetPage) {
   }
 
   const pageNumber = extractPageNumberFromSnapshot(
-    /** @type {any} */ (existingPageSnap)
+    /** @type {unknown} */ (existingPageSnap)
   );
   return {
     pageDocRef: targetPage,
@@ -789,7 +794,7 @@ m the option.
  */
 /**
  * Resolve story reference or empty object.
- * @param {any} storyRef Story reference candidate.
+ * @param {unknown} storyRef Story reference candidate.
  * @returns {import('firebase-admin/firestore').DocumentReference} Reference or empty.
  */
 function resolveStoryRefOrEmpty(storyRef) {
@@ -801,11 +806,12 @@ function resolveStoryRefOrEmpty(storyRef) {
 
 /**
  * Extract story reference from page document reference.
- * @param {any} pageDocRef - Page document reference.
+ * @param {unknown} pageDocRef - Page document reference.
  * @returns {import('firebase-admin/firestore').DocumentReference} Story reference or empty.
  */
 function extractStoryRefFromPage(pageDocRef) {
-  const storyRef = /** @type {any} */ (pageDocRef).parent?.parent;
+  const storyRef = /** @type {{ parent?: { parent?: unknown } }} */ (pageDocRef)
+    .parent?.parent;
   return resolveStoryRefOrEmpty(storyRef);
 }
 
@@ -826,13 +832,15 @@ async function resolveDirectPageContext({ db, directPageNumber, snapshot }) {
     .get();
 
   if (pageSnap.empty) {
-    await /** @type {any} */ (snapshot).ref.update({
+    await /** @type {{ ref: { update: (data: object) => Promise<unknown> } }} */ (
+      snapshot
+    ).ref.update({
       processed: true,
     });
     return null;
   }
 
-  const pageDocRef = /** @type {any} */ (pageSnap.docs[0]).ref;
+  const pageDocRef = /** @type {{ ref: unknown }} */ (pageSnap.docs[0]).ref;
 
   return {
     pageDocRef,
@@ -1107,7 +1115,9 @@ function shouldSkipSubmission({ incomingOptionFullName, directPageNumber }) {
  * @returns {Promise<void>} Promise that resolves after the update completes.
  */
 async function markSubmissionProcessed(snapshot) {
-  await /** @type {any} */ (snapshot).ref.update({ processed: true });
+  await /** @type {{ ref: { update: (data: object) => Promise<unknown> } }} */ (
+    snapshot
+  ).ref.update({ processed: true });
 }
 
 /**
@@ -1293,7 +1303,7 @@ async function finalizeSubmission({
 }) {
   await createVariantWithOptions({
     pageDocRef,
-    snapshotRef: /** @type {any} */ (snapshot).ref,
+    snapshotRef: /** @type {{ ref: unknown }} */ (snapshot).ref,
     batch,
     submission,
     randomUUID,
@@ -1312,7 +1322,9 @@ async function finalizeSubmission({
     queueVariantDirtyReset(batch, variantRef);
   }
 
-  batch.update(/** @type {any} */ (snapshot).ref, { processed: true });
+  batch.update(/** @type {{ ref: unknown }} */ (snapshot).ref, {
+    processed: true,
+  });
   await ensureAuthorRecordExists({ db, batch, submission, randomUUID });
 
   await batch.commit();
