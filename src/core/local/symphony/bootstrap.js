@@ -6,13 +6,13 @@ import {
 
 /**
  * Create the bootstrap workflow.
- * @param {any} deps Runtime dependencies.
- * @returns {Function} Bootstrap function.
+ * @param {unknown} deps Runtime dependencies.
+ * @returns {(...args: unknown[]) => unknown} Bootstrap function.
  */
 function createBootstrapSymphony(deps) {
   /**
-   * @param {any} options Bootstrap options.
-   * @returns {Promise<any>} Bootstrap result.
+   * @param {unknown} options Bootstrap options.
+   * @returns {Promise<unknown>} Bootstrap result.
    */
   return async function bootstrapSymphony(options = {}) {
     const snapshot = await buildSymphonyStatusSnapshot(options, deps);
@@ -31,13 +31,13 @@ function createBootstrapSymphony(deps) {
 
 /**
  * Create the refresh workflow.
- * @param {any} deps Runtime dependencies.
- * @returns {Function} Refresh function.
+ * @param {unknown} deps Runtime dependencies.
+ * @returns {(...args: unknown[]) => unknown} Refresh function.
  */
 function createRefreshSymphonyStatus(deps) {
   /**
-   * @param {any} options Refresh options.
-   * @returns {Promise<any>} Refreshed snapshot.
+   * @param {unknown} options Refresh options.
+   * @returns {Promise<unknown>} Refreshed snapshot.
    */
   return async function refreshSymphonyStatus(options = {}) {
     if (
@@ -63,8 +63,8 @@ function createRefreshSymphonyStatus(deps) {
 
 /**
  * Read an existing status when the store supports it.
- * @param {any} statusStore Status store.
- * @returns {Promise<any>} Previous status.
+ * @param {unknown} statusStore Status store.
+ * @returns {Promise<unknown>} Previous status.
  */
 async function readPreviousStatus(statusStore) {
   if (statusStore && typeof statusStore.readStatus === 'function') {
@@ -76,10 +76,10 @@ async function readPreviousStatus(statusStore) {
 
 /**
  * Poll ready beads when the workflow exists.
- * @param {any} workflow Workflow descriptor.
- * @param {any} tracker Tracker dependency.
+ * @param {unknown} workflow Workflow descriptor.
+ * @param {unknown} tracker Tracker dependency.
  * @param {string} readyCommand Ready command.
- * @returns {Promise<any>} Poll result.
+ * @returns {Promise<unknown>} Poll result.
  */
 async function getPollResult(workflow, tracker, readyCommand) {
   if (workflow.exists) {
@@ -96,8 +96,8 @@ async function getPollResult(workflow, tracker, readyCommand) {
 
 /**
  * Create a status object from the current poll.
- * @param {any} args Status inputs.
- * @returns {any} Status object.
+ * @param {unknown} args Status inputs.
+ * @returns {unknown} Status object.
  */
 function buildBaseStatus(args) {
   return {
@@ -141,9 +141,9 @@ function buildBaseStatus(args) {
 
 /**
  * Resolve injectable dependencies and option defaults for a snapshot.
- * @param {any} options Snapshot options.
- * @param {any} deps Runtime dependencies.
- * @returns {any} Resolved snapshot inputs.
+ * @param {unknown} options Snapshot options.
+ * @param {unknown} deps Runtime dependencies.
+ * @returns {unknown} Resolved snapshot inputs.
  */
 function resolveSnapshotInputs(options, deps) {
   return {
@@ -158,9 +158,9 @@ function resolveSnapshotInputs(options, deps) {
 
 /**
  * Build a fresh Symphony status snapshot.
- * @param {any} options Snapshot options.
- * @param {any} deps Runtime dependencies.
- * @returns {Promise<any>} Snapshot data.
+ * @param {unknown} options Snapshot options.
+ * @param {unknown} deps Runtime dependencies.
+ * @returns {Promise<unknown>} Snapshot data.
  */
 async function buildSymphonyStatusSnapshot(options, deps) {
   const {
@@ -233,8 +233,8 @@ async function buildSymphonyStatusSnapshot(options, deps) {
 
 /**
  * Preserve a failed launch attempt from the previous status.
- * @param {any} previousStatus Previous status.
- * @returns {any} Failed launch attempt copy.
+ * @param {unknown} previousStatus Previous status.
+ * @returns {unknown} Failed launch attempt copy.
  */
 function getPreservedFailedLaunchAttempt(previousStatus) {
   if (
@@ -257,8 +257,8 @@ function getPreservedFailedLaunchAttempt(previousStatus) {
 
 /**
  * Preserve the event log from the previous status.
- * @param {any} previousStatus Previous status.
- * @returns {any[]} Event log copy.
+ * @param {unknown} previousStatus Previous status.
+ * @returns {unknown[]} Event log copy.
  */
 function getPreservedEventLog(previousStatus) {
   if (!previousStatus || typeof previousStatus !== 'object') {
@@ -274,7 +274,7 @@ function getPreservedEventLog(previousStatus) {
 
 /**
  * Read a current bead id from a status object.
- * @param {any} status Status object.
+ * @param {unknown} status Status object.
  * @returns {string | null} Bead id.
  */
 function getStatusCurrentBeadId(status) {
@@ -292,7 +292,7 @@ function getStatusCurrentBeadId(status) {
 
 /**
  * Test whether a previous status represents an active running bead.
- * @param {any} previousStatus Previous status.
+ * @param {unknown} previousStatus Previous status.
  * @returns {boolean} True when the previous status has a running active run.
  */
 function hasPreviousActiveRun(previousStatus) {
@@ -307,8 +307,8 @@ function hasPreviousActiveRun(previousStatus) {
 
 /**
  * Decide whether a previous running state should survive a refresh.
- * @param {any} previousStatus Previous status.
- * @param {any} status Newly built status.
+ * @param {unknown} previousStatus Previous status.
+ * @param {unknown} status Newly built status.
  * @returns {boolean} True when the running status should be preserved.
  */
 function shouldPreserveRunningStatus(previousStatus, status) {
@@ -324,8 +324,8 @@ function shouldPreserveRunningStatus(previousStatus, status) {
 
 /**
  * Return a string field from one of two statuses.
- * @param {any} preferred Preferred status.
- * @param {any} fallback Fallback status.
+ * @param {unknown} preferred Preferred status.
+ * @param {unknown} fallback Fallback status.
  * @param {string} key Field name.
  * @returns {string | undefined} String value.
  */
@@ -339,10 +339,10 @@ function preserveStringField(preferred, fallback, key) {
 
 /**
  * Return an object field copy from one of two statuses.
- * @param {any} preferred Preferred status.
- * @param {any} fallback Fallback status.
+ * @param {unknown} preferred Preferred status.
+ * @param {unknown} fallback Fallback status.
  * @param {string} key Field name.
- * @returns {any} Object field copy.
+ * @returns {unknown} Object field copy.
  */
 function preserveObjectField(preferred, fallback, key) {
   if (preferred[key] && typeof preferred[key] === 'object') {
@@ -354,9 +354,9 @@ function preserveObjectField(preferred, fallback, key) {
 
 /**
  * Preserve the previous running status for the same selected bead.
- * @param {any} status Newly built status.
- * @param {any} previousStatus Previous status.
- * @returns {any} Status with running fields preserved.
+ * @param {unknown} status Newly built status.
+ * @param {unknown} previousStatus Previous status.
+ * @returns {unknown} Status with running fields preserved.
  */
 function preserveRunningStatus(status, previousStatus) {
   return {
@@ -393,16 +393,16 @@ function preserveRunningStatus(status, previousStatus) {
 /**
  * Build the local Symphony bootstrap adapter handle.
  * @param {{
- *   createSymphonyStatusStore: Function,
- *   getSymphonyRuntimeVersion: Function,
- *   loadSymphonyConfig: Function,
- *   createBdTracker: Function,
- *   loadSymphonyWorkflow: Function,
+ *   createSymphonyStatusStore: (...args: unknown[]) => unknown,
+ *   getSymphonyRuntimeVersion: (...args: unknown[]) => unknown,
+ *   loadSymphonyConfig: (...args: unknown[]) => unknown,
+ *   createBdTracker: (...args: unknown[]) => unknown,
+ *   loadSymphonyWorkflow: (...args: unknown[]) => unknown,
  *   cwd: () => string,
  * }} deps Runtime dependencies.
  * @returns {{
- *   bootstrapSymphony: Function,
- *   refreshSymphonyStatus: Function,
+ *   bootstrapSymphony: (...args: unknown[]) => unknown,
+ *   refreshSymphonyStatus: (...args: unknown[]) => unknown,
  * }} Bootstrap handle.
  */
 export function createSymphonyBootstrapHandle(deps) {
