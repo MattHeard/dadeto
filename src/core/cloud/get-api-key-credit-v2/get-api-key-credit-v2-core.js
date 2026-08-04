@@ -315,7 +315,7 @@ function resolveV2HandlerDependencies(deps = {}) {
 
 /**
  * Coerce a dependency into a callable value.
- * @template {(...args: Array<any>) => any} T
+ * @template {(...args: unknown[]) => unknown} T
  * @param {T | undefined} dependency Dependency to wrap.
  * @returns {T} Callable dependency.
  */
@@ -707,9 +707,10 @@ export function createFetchCreditEvents(db) {
  */
 export function createApplyCreditEvent(db) {
   /**
-   *
-   * @param uuid
-   * @param event
+   * Apply a credit event when it has not already been recorded.
+   * @param {string} uuid API key UUID.
+   * @param {CreditEventInput} event Credit event to apply.
+   * @returns {Promise<CreditApiResponse>} Result of the write operation.
    */
   async function applyCreditEvent(
     /** @type {string} */ uuid,
