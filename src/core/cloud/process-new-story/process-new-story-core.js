@@ -333,7 +333,7 @@ function getSnapshotReference(snapshot) {
   if (!snapshotHasRef(snapshot)) {
     return null;
   }
-  return /** @type {DocumentReference} */ (/** @type {any} */ (snapshot).ref);
+  return /** @type {DocumentReference} */ (snapshot.ref);
 }
 
 /**
@@ -448,7 +448,7 @@ export function createProcessNewStoryHandler(options) {
 /**
  * Build the Firestore trigger handle for new story submissions.
  * @param {object} options Runtime dependencies required to wire the trigger.
- * @param {{ region: (region: string) => { firestore: { document: (path: string) => Record<string, Function> } } }} options.functions Firestore functions namespace.
+ * @param {{ region: (region: string) => { firestore: { document: (path: string) => Record<string, (handler: unknown) => unknown> } } }} options.functions Firestore functions namespace.
  * @param {() => import('firebase-admin/firestore').Firestore} options.getFirestoreInstance Firestore accessor.
  * @param {{ serverTimestamp: () => FieldValue, increment: (value: number) => FieldValue }} options.fieldValue FieldValue helper.
  * @param {() => string} options.randomUUID UUID generator.
