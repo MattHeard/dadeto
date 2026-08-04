@@ -2630,9 +2630,9 @@ export async function getPageSnapFromRef(snap, db) {
 
 /**
  * Get page snap from ref using a tenant-bound Firestore client when available.
- * @param {any} snap Snap.
+ * @param {unknown} snap Snap.
  * @param {FirestoreLike | null | undefined} db Firestore helper used for rebinding refs.
- * @returns {Promise<any | undefined>} Page snap.
+ * @returns {Promise<unknown | undefined>} Page snap.
  */
 async function getPageSnapFromTenantDb(snap, db) {
   const variantRef = resolveTenantDocumentRef(snap, db);
@@ -2729,9 +2729,9 @@ function hasCollectionPathResolver(db) {
 
 /**
  * Safely read a nested property from the provided object.
- * @param {any} source Source object.
+ * @param {unknown} source Source object.
  * @param {string} key Property key to resolve.
- * @returns {any} Property value or null when unavailable.
+ * @returns {unknown} Property value or null when unavailable.
  */
 function readNullableProperty(source, key) {
   const normalizedSource = getNormalizedSource(source);
@@ -2768,9 +2768,9 @@ function isObjectLike(value) {
 
 /**
  * Fetch the parent page snapshot for the renderer's variant.
- * @param {{ ref: { parent?: { parent?: { get: () => Promise<{ exists?: boolean, data: () => Record<string, any> }> } } } }} snap Variant snapshot.
+ * @param {{ ref: { parent?: { parent?: { get: () => Promise<{ exists?: boolean, data: () => Record<string, unknown> }> } } } }} snap Variant snapshot.
  * @param {FirestoreLike} db Tenant Firestore client.
- * @returns {Promise<{ exists?: boolean, data: () => Record<string, any> } | null>} Page snapshot when available.
+ * @returns {Promise<{ exists?: boolean, data: () => Record<string, unknown> } | null>} Page snapshot when available.
  */
 export async function fetchPageData(snap, db) {
   const pageSnap = await getPageSnapFromTenantDb(snap, db);
@@ -2928,16 +2928,16 @@ export function buildReverseLinkRecords({ page, variant, options, filePath }) {
 /**
  * Decide whether the update hid a previously visible variant.
  * @param {FirestoreChange} change Variant change.
- * @param {Record<string, any>} data New variant data.
+ * @param {Record<string, unknown>} data New variant data.
  * @param {number} visibilityThreshold Threshold value.
  * @returns {boolean} True when the variant moved from visible to hidden.
  */
 export function didHideLastVisibleVariant(change, data, visibilityThreshold) {
-  if (!(/** @type {any} */ (change.before).exists)) {
+  if (!(/** @type {DocumentLike} */ (change.before).exists)) {
     return false;
   }
 
-  const beforeVisibility = /** @type {any} */ (change.before).data().visibility;
+  const beforeVisibility = /** @type {Record<string, unknown>} */ (change.before).data().visibility;
   const afterVisibility = data.visibility;
 
   return (
