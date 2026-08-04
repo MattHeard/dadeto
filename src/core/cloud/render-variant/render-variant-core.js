@@ -3431,26 +3431,26 @@ export function createHandleVariantWrite({
 }
 
 /**
- * @param {any} pageRef Page reference.
- * @returns {Promise<{ docs: Array<{ data: () => Record<string, any> }> }>} Variant snapshot collection.
+ * @param {unknown} pageRef Page reference.
+ * @returns {Promise<{ docs: Array<{ data: () => Record<string, unknown> }> }>} Variant snapshot collection.
  */
 async function getVariantsSnapshot(pageRef) {
-  return /** @type {any} */ (pageRef).collection('variants').get();
+  return /** @type {{ collection: (name: string) => { get: () => Promise<{ docs: Array<{ data: () => Record<string, unknown> }> }> } }} */ (pageRef).collection('variants').get();
 }
 
 /**
- * @param {Array<{ data: () => Record<string, any> }>} docs Variant snapshots.
+ * @param {Array<{ data: () => Record<string, unknown> }>} docs Variant snapshots.
  * @param {number} visibilityThreshold Visibility threshold.
  * @returns {boolean} True when a visible variant exists.
  */
 function hasVisibleVariants(docs, visibilityThreshold) {
   return docs.some(
     /**
-     * @param {{ data: () => Record<string, any> }} doc Variant snapshot.
+     * @param {{ data: () => Record<string, unknown> }} doc Variant snapshot.
      * @returns {boolean} True when the snapshot is visible.
      */
     doc => {
-      const data = /** @type {any} */ (doc.data());
+      const data = /** @type {Record<string, unknown>} */ (doc.data());
       return (data.visibility ?? 1) >= visibilityThreshold;
     }
   );
@@ -3458,7 +3458,7 @@ function hasVisibleVariants(docs, visibilityThreshold) {
 
 /**
  * @param {FirestoreLike} db Firestore client.
- * @param {(snap: any, context?: object) => Promise<null>} renderVariantFn Renderer.
+ * @param {(snap: unknown, context?: object) => Promise<null>} renderVariantFn Renderer.
  * @param {number} pageNumber Page number.
  * @returns {Promise<void>} Promise.
  */
@@ -3476,12 +3476,12 @@ async function republishInboundVariants(db, renderVariantFn, pageNumber) {
 }
 
 /**
- * @param {any} pageRef Page reference.
+ * @param {unknown} pageRef Page reference.
  * @returns {Promise<number>} Page number.
  */
 async function getPageNumber(pageRef) {
-  const pageSnap = await /** @type {any} */ (pageRef).get();
-  return /** @type {any} */ (pageSnap.data() || {}).number;
+  const pageSnap = await /** @type {{ get: () => Promise<{ data: () => { number: number } }> }} */ (pageRef).get();
+  return pageSnap.data().number;
 }
 
 /**
@@ -3498,16 +3498,16 @@ async function getInboundSourceFilePaths(db, pageNumber) {
 }
 
 /**
- * @param {{ data: () => Record<string, any> }} doc Reverse-link snapshot.
+ * @param {{ data: () => Record<string, unknown> }} doc Reverse-link snapshot.
  * @returns {string | undefined} Source file path.
  */
 function mapSourceFilePath(doc) {
-  return /** @type {any} */ (doc.data()).sourceFilePath;
+  return /** @type {{ sourceFilePath?: unknown }} */ (doc.data()).sourceFilePath;
 }
 
 /**
- * @param {any} after Variant snapshot.
- * @returns {any} Page reference.
+ * @param {DocumentLike} after Variant snapshot.
+ * @returns {unknown} Page reference.
  */
 function getPageRefFromVariantSnapshot(after) {
   return after?.ref?.parent?.parent ?? null;
