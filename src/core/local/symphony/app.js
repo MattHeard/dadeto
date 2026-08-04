@@ -4,14 +4,14 @@ const REQUESTED_AT_FIELD = 'requested_at';
 
 /**
  * Wrap an async route operation with Express error forwarding.
- * @param {(res: any) => Promise<void>} operation Route operation.
- * @returns {Function} Express route handler.
+ * @param {(res: unknown) => Promise<void>} operation Route operation.
+ * @returns {(...args: unknown[]) => unknown} Express route handler.
  */
 function createAsyncRouteHandler(operation) {
   /**
-   * @param {any} _req Request.
-   * @param {any} res Response.
-   * @param {Function} next Error callback.
+   * @param {unknown} _req Request.
+   * @param {unknown} res Response.
+   * @param {(error?: unknown) => void} next Error callback.
    * @returns {Promise<void>} Completion promise.
    */
   return async (_req, res, next) => {
@@ -26,12 +26,12 @@ function createAsyncRouteHandler(operation) {
 /**
  * Create a Symphony status route factory.
  * @param {{ isProcessAlive: (pid: number) => boolean }} deps Runtime dependencies.
- * @returns {Function} Status route factory.
+ * @returns {(...args: unknown[]) => unknown} Status route factory.
  */
 function createSymphonyStatusHandlerFactory(deps) {
   /**
-   * @param {any} options Route options.
-   * @returns {Function} Express route handler.
+   * @param {unknown} options Route options.
+   * @returns {(...args: unknown[]) => unknown} Express route handler.
    */
   return function createSymphonyStatusHandler(options) {
     return createAsyncRouteHandler(async res => {
@@ -49,8 +49,8 @@ function createSymphonyStatusHandlerFactory(deps) {
 
 /**
  * Create the Symphony launch route.
- * @param {any} options Route options.
- * @returns {Function} Express route handler.
+ * @param {unknown} options Route options.
+ * @returns {(...args: unknown[]) => unknown} Express route handler.
  */
 function createSymphonyLaunchHandler(options) {
   return createAsyncRouteHandler(async res => {
@@ -76,13 +76,13 @@ function createSymphonyLaunchHandler(options) {
 
 /**
  * Create a Symphony refresh route factory.
- * @param {{ refreshSymphonyStatus: Function }} deps Runtime dependencies.
- * @returns {Function} Refresh route factory.
+ * @param {{ refreshSymphonyStatus: (...args: unknown[]) => unknown }} deps Runtime dependencies.
+ * @returns {(...args: unknown[]) => unknown} Refresh route factory.
  */
 function createSymphonyRefreshHandlerFactory(deps) {
   /**
-   * @param {any} options Route options.
-   * @returns {Function} Express route handler.
+   * @param {unknown} options Route options.
+   * @returns {(...args: unknown[]) => unknown} Express route handler.
    */
   return function createSymphonyRefreshHandler(options) {
     return createAsyncRouteHandler(async res => {
@@ -117,7 +117,7 @@ function createSymphonyRefreshHandlerFactory(deps) {
 
 /**
  * Touch Express' fourth error-middleware argument without creating a branch.
- * @param {Function | undefined} next Express next callback.
+ * @param {((error?: unknown) => void) | undefined} next Express next callback.
  * @returns {string} Argument type marker.
  */
 function getErrorMiddlewareNextType(next) {
@@ -126,14 +126,14 @@ function getErrorMiddlewareNextType(next) {
 
 /**
  * Create the local Symphony express app factory.
- * @param {{ express: Function }} deps Runtime dependencies.
- * @param {any} routeFactories Route factories.
- * @returns {Function} App factory.
+ * @param {{ express: (...args: unknown[]) => unknown }} deps Runtime dependencies.
+ * @param {unknown} routeFactories Route factories.
+ * @returns {(...args: unknown[]) => unknown} App factory.
  */
 function createSymphonyAppFactory(deps, routeFactories) {
   /**
-   * @param {any} options App options.
-   * @returns {any} Express app.
+   * @param {unknown} options App options.
+   * @returns {unknown} Express app.
    */
   return function createSymphonyApp(options) {
     const app = deps.express();
@@ -147,7 +147,7 @@ function createSymphonyAppFactory(deps, routeFactories) {
     app.post('/api/symphony/launch', launchSelectedBead);
     app.post('/api/v1/refresh', refreshQueue);
 
-    /** @type {(error: any, _req: any, res: any, next: Function) => void} */
+    /** @type {(error: unknown, _req: unknown, res: unknown, next: (error?: unknown) => void) => void} */
     const handleError = (error, _req, res, next) => {
       getErrorMiddlewareNextType(next);
       let message = 'Unknown server error';
@@ -166,7 +166,7 @@ function createSymphonyAppFactory(deps, routeFactories) {
 
 /**
  * Test whether an active run can be reconciled.
- * @param {any} status Current status.
+ * @param {unknown} status Current status.
  * @returns {boolean} True when the status contains an active run object.
  */
 function hasReconciliableActiveRun(status) {
@@ -180,7 +180,7 @@ function hasReconciliableActiveRun(status) {
 
 /**
  * Test whether a status store can persist updates.
- * @param {any} statusStore Status store.
+ * @param {unknown} statusStore Status store.
  * @returns {boolean} True when writes are supported.
  */
 function hasWritableStatusStore(statusStore) {
@@ -189,7 +189,7 @@ function hasWritableStatusStore(statusStore) {
 
 /**
  * Read the active run process id.
- * @param {any} activeRun Active run state.
+ * @param {unknown} activeRun Active run state.
  * @returns {number | null} Process id, or null when unavailable.
  */
 function getActiveRunPid(activeRun) {
@@ -202,7 +202,7 @@ function getActiveRunPid(activeRun) {
 
 /**
  * Read an optional string field.
- * @param {any} source Source object.
+ * @param {unknown} source Source object.
  * @param {string} key Field name.
  * @returns {string | null} String value, or null.
  */
@@ -216,10 +216,10 @@ function getOptionalString(source, key) {
 
 /**
  * Build the blocked outcome for an orphaned run.
- * @param {any} status Current status.
+ * @param {unknown} status Current status.
  * @param {string} beadId Bead id.
  * @param {number} pid Process id.
- * @returns {any} Runner outcome.
+ * @returns {unknown} Runner outcome.
  */
 function buildOrphanedRunOutcome(status, beadId, pid) {
   return {
@@ -232,10 +232,10 @@ function buildOrphanedRunOutcome(status, beadId, pid) {
 
 /**
  * Reconcile a stored status whose active runner process has disappeared.
- * @param {any} status Current status.
- * @param {any} statusStore Status store.
+ * @param {unknown} status Current status.
+ * @param {unknown} statusStore Status store.
  * @param {{ isProcessAlive: (pid: number) => boolean }} deps Runtime dependencies.
- * @returns {Promise<any>} Reconciled status.
+ * @returns {Promise<unknown>} Reconciled status.
  */
 async function reconcileOrphanedRun(status, statusStore, deps) {
   if (!hasReconciliableActiveRun(status)) {
@@ -272,7 +272,7 @@ async function reconcileOrphanedRun(status, statusStore, deps) {
 
 /**
  * Read the bead id associated with an active run.
- * @param {any} status Current status.
+ * @param {unknown} status Current status.
  * @returns {string | null} Bead id, or null.
  */
 function getActiveRunBeadId(status) {
@@ -291,7 +291,7 @@ function getActiveRunBeadId(status) {
 
 /**
  * Read the display id for an orphaned run.
- * @param {any} activeRun Active run state.
+ * @param {unknown} activeRun Active run state.
  * @returns {string} Run id for operator-facing messages.
  */
 function getOrphanedRunId(activeRun) {
@@ -304,7 +304,7 @@ function getOrphanedRunId(activeRun) {
 
 /**
  * Build the operator summary for an orphaned run.
- * @param {any} activeRun Active run state.
+ * @param {unknown} activeRun Active run state.
  * @param {number} pid Process id.
  * @returns {string} Human-readable summary.
  */
@@ -313,7 +313,7 @@ function buildOrphanedRunSummary(activeRun, pid) {
   const baseMessage = `Runner ${runId} (pid ${pid}) is not running when Symphony status was requested; the exit event may have been missed while the server was offline.`;
   const logPaths = [activeRun.stdoutPath, activeRun.stderrPath].filter(
     /**
-     * @param {any} path Candidate path.
+     * @param {unknown} path Candidate path.
      * @returns {boolean | string} Truthy path when it should be included.
      */
     path => typeof path === 'string' && path.trim()
@@ -328,7 +328,7 @@ function buildOrphanedRunSummary(activeRun, pid) {
 
 /**
  * Build the operator trust reason for an orphaned run.
- * @param {any} activeRun Active run state.
+ * @param {unknown} activeRun Active run state.
  * @param {number} pid Process id.
  * @returns {string} Human-readable trust reason.
  */
@@ -342,18 +342,18 @@ function buildOrphanedRunTrustReason(activeRun, pid) {
  * Build the local Symphony app adapter handle.
  * @param {{
  *   express: () => {
- *     get: Function,
- *     post: Function,
- *     use: Function,
+ *     get: (...args: unknown[]) => unknown,
+ *     post: (...args: unknown[]) => unknown,
+ *     use: (...args: unknown[]) => unknown,
  *   },
- *   refreshSymphonyStatus: Function,
+ *   refreshSymphonyStatus: (...args: unknown[]) => unknown,
  *   isProcessAlive: (pid: number) => boolean,
  * }} deps Runtime dependencies.
  * @returns {{
- *   createSymphonyStatusHandler: Function,
- *   createSymphonyLaunchHandler: Function,
- *   createSymphonyRefreshHandler: Function,
- *   createSymphonyApp: Function,
+ *   createSymphonyStatusHandler: (...args: unknown[]) => unknown,
+ *   createSymphonyLaunchHandler: (...args: unknown[]) => unknown,
+ *   createSymphonyRefreshHandler: (...args: unknown[]) => unknown,
+ *   createSymphonyApp: (...args: unknown[]) => unknown,
  * }} Symphony app handle.
  */
 export function createSymphonyAppHandle(deps) {
