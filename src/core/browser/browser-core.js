@@ -101,9 +101,10 @@ export function isBlankStringValue(value) {
 
 /**
  * Returns `value` unless it is `undefined`, otherwise returns `fallback`.
- * @param {*} value - Value to check.
- * @param {*} fallback - Value to return when `value` is undefined.
- * @returns {*} Either `value` or `fallback`.
+ * @template T
+ * @param {T | undefined} value - Value to check.
+ * @param {T} fallback - Value to return when `value` is undefined.
+ * @returns {T} Either `value` or `fallback`.
  */
 export function valueOr(value, fallback) {
   return whenOrDefault(value === undefined, () => fallback, value);
@@ -144,9 +145,11 @@ export function pick(obj, keys) {
 
 /**
  * Creates a new object with values transformed by the provided function.
- * @param {object} source - Source object.
- * @param {Function} fn - Transformation `(value, key) => any`.
- * @returns {object} Object with transformed values.
+ * @template T
+ * @template U
+ * @param {Record<string, T>} source - Source object.
+ * @param {(value: T, key: string) => U} fn - Transformation function.
+ * @returns {Record<string, U>} Object with transformed values.
  */
 function transformEntries(source, fn) {
   return Object.fromEntries(
@@ -156,9 +159,11 @@ function transformEntries(source, fn) {
 
 /**
  * Maps over each value on an object with the provided mapper.
- * @param {object} obj - Source object.
- * @param {Function} fn - Mapper `(value, key) => any`.
- * @returns {object} Object with mapped values.
+ * @template T
+ * @template U
+ * @param {Record<string, T>} obj - Source object.
+ * @param {(value: T, key: string) => U} fn - Mapper function.
+ * @returns {Record<string, U>} Object with mapped values.
  */
 export function mapValues(obj, fn) {
   if (Object(obj) !== obj) {
@@ -169,8 +174,9 @@ export function mapValues(obj, fn) {
 
 /**
  * Creates a deep clone of the provided value using JSON serialization.
- * @param {*} value - Value to clone.
- * @returns {*} Deep copy of the value.
+ * @template T
+ * @param {T} value - Value to clone.
+ * @returns {T} Deep copy of the value.
  */
 export function deepClone(value) {
   return JSON.parse(JSON.stringify(value));
@@ -496,7 +502,7 @@ export function parseJsonOrDefault(json, fallback = {}) {
  * Parses a JSON string or returns `undefined` when parsing fails.
  * @param {string} json - JSON string to parse.
  * @param {(input: string) => unknown} parseJsonValue - Parser to run on the input.
- * @returns {*} Parsed value or `undefined`.
+ * @returns {unknown} Parsed value or `undefined`.
  */
 export function safeParseJson(json, parseJsonValue) {
   return tryOr(() => parseJsonValue(json));
@@ -605,14 +611,14 @@ export { setInputValue };
 
 /**
  * Ensure that the provided value is callable.
- * @param {*} value - Candidate value.
+ * @param {unknown} value - Candidate value.
  * @param {string} name - Name reported in the error message.
  * @returns {void}
  */
 /**
  * Checks that two values are both not arrays.
- * @param {*} a - First value to inspect.
- * @param {*} b - Second value to inspect.
+ * @param {unknown} a - First value to inspect.
+ * @param {unknown} b - Second value to inspect.
  * @returns {boolean} True when neither value is an array.
  */
 function bothAreNotArrays(a, b) {
@@ -621,8 +627,8 @@ function bothAreNotArrays(a, b) {
 
 /**
  * Checks that two values are both non-null objects.
- * @param {*} a - First value to inspect.
- * @param {*} b - Second value to inspect.
+ * @param {unknown} a - First value to inspect.
+ * @param {unknown} b - Second value to inspect.
  * @returns {boolean} True when both values are non-null objects.
  */
 function bothAreNonNullObjects(a, b) {
@@ -631,8 +637,8 @@ function bothAreNonNullObjects(a, b) {
 
 /**
  * Determines whether two values should be merged recursively.
- * @param {*} targetValue - The destination value.
- * @param {*} sourceValue - The source value.
+ * @param {unknown} targetValue - The destination value.
+ * @param {unknown} sourceValue - The source value.
  * @returns {boolean} True when a deep merge should occur.
  */
 function shouldDeepMerge(targetValue, sourceValue) {
@@ -675,8 +681,9 @@ export function deepMerge(target, source) {
  * @returns {string[]} Array of existing keys or empty array.
  */
 export function parseExistingKeys(parsed) {
-  if (Array.isArray(/** @type {any} */ (parsed).existingKeys)) {
-    return /** @type {any} */ (parsed).existingKeys;
+  const candidate = /** @type {Record<string, unknown>} */ (parsed);
+  if (Array.isArray(candidate.existingKeys)) {
+    return /** @type {string[]} */ (candidate.existingKeys);
   }
   return [];
 }
