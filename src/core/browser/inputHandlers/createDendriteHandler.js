@@ -423,8 +423,8 @@ export function createManagedFormShellState({ dom, container, textInput }) {
  *   container: HTMLElement,
  *   textInput: HTMLInputElement,
  * }} options Form setup dependencies.
- * @param {(shell: { form: HTMLElement, disposers: Disposer[] }) => *} useShell Shell callback.
- * @returns {*} Result returned by the callback.
+ * @param {(shell: { form: HTMLElement, disposers: Disposer[] }) => unknown} useShell Shell callback.
+ * @returns {unknown} Result returned by the callback.
  */
 export function withManagedFormShell({ dom, container, textInput }, useShell) {
   const shellState = createManagedFormShellState({
