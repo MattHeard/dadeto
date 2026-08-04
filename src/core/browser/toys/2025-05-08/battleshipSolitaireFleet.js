@@ -30,7 +30,7 @@ import { whenNotNullish, whenOrNull } from '../../browser-core.js';
 /**
  * Fisher‑Yates shuffle (in‑place) using env RNG.
  * @param {number[]} arr - Array of ship lengths to shuffle.
- * @param {Map<string, Function>} env - Environment with RNG helper.
+ * @param {Map<string, (...args: unknown[]) => unknown>} env - Environment with RNG helper.
  * @returns {void}
  */
 function shuffle(arr, env) {
@@ -484,7 +484,7 @@ function markOccupiedSquares(chosen, occupied, length) {
 /**
  * Randomly select a candidate and mark its cells as occupied.
  * @param {{ candidates: Candidate[], length: number }} payload - Candidate collection and length.
- * @param {Map<string, Function>} env - Environment supplying the RNG.
+ * @param {Map<string, (...args: unknown[]) => unknown>} env - Environment supplying the RNG.
  * @param {Set<string>} occupied - Occupied coordinate keys to update.
  * @returns {Candidate | null} Chosen candidate or null when none available.
  */
@@ -508,7 +508,7 @@ function chooseAndMarkCandidate({ candidates, length }, env, occupied) {
  * Attempt to place a ship segment of the given length.
  * @param {number} length - Ship length.
  * @param {BoardState} boardState - Current board with occupied cells.
- * @param {Map<string, Function>} env - Environment providing RNG.
+ * @param {Map<string, (...args: unknown[]) => unknown>} env - Environment providing RNG.
  * @returns {Candidate | null} Candidate when placement succeeds or null when blocked.
  */
 function placeShip(length, boardState, env) {
@@ -520,7 +520,7 @@ function placeShip(length, boardState, env) {
 /**
  * Create a placement helper that maintains occupancy state.
  * @param {FleetConfig} cfg - Board configuration.
- * @param {Map<string, Function>} env - Environment providing RNG.
+ * @param {Map<string, (...args: unknown[]) => unknown>} env - Environment providing RNG.
  * @returns {(length: number) => Candidate | null} Placement helper.
  */
 function makePlaceShip(cfg, env) {
@@ -581,7 +581,7 @@ function makePlaceShipReducer(placeShipWithArgs) {
 /**
  * Place all ships on the board by shuffling lengths and reducing placements.
  * @param {FleetConfig} cfg - Board configuration.
- * @param {Map<string, Function>} env - Environment providing RNG.
+ * @param {Map<string, (...args: unknown[]) => unknown>} env - Environment providing RNG.
  * @returns {Candidate[] | null} List of placed candidates or null on failure.
  */
 function placeAllShips(cfg, env) {
@@ -596,7 +596,7 @@ function placeAllShips(cfg, env) {
 /**
  * Attempt to place all ships once to produce a fleet.
  * @param {FleetConfig} cfg - Board configuration.
- * @param {Map<string, Function>} env - Environment with RNG.
+ * @param {Map<string, (...args: unknown[]) => unknown>} env - Environment with RNG.
  * @returns {GeneratedFleet | null} Fleet object when successful or null when failed.
  */
 function attemptPlacement(cfg, env) {
@@ -713,7 +713,7 @@ function fleetRetryError() {
  * Invoke an iteration of the fleet generation loop.
  * @param {number} i - Loop index (unused).
  * @param {FleetConfig} cfg - Board configuration.
- * @param {Map<string, Function>} env - Environment with RNG.
+ * @param {Map<string, (...args: unknown[]) => unknown>} env - Environment with RNG.
  * @returns {GeneratedFleet | null} Generated fleet or null when this iteration failed.
  */
 function processFleetLoopIteration(i, cfg, env) {
@@ -737,7 +737,7 @@ function fleetLoopFor(maxTries, cb) {
 /**
  * Run the fleet generation loop.
  * @param {FleetConfig} cfg - Board configuration.
- * @param {Map<string, Function>} env - Environment with RNG.
+ * @param {Map<string, (...args: unknown[]) => unknown>} env - Environment with RNG.
  * @param {number} maxTries - Maximum number of attempts.
  * @returns {GeneratedFleet | null} Generated fleet or null.
  */
@@ -748,7 +748,7 @@ function runFleetLoop(cfg, env, maxTries) {
 /**
  * Find a valid fleet by running the loop.
  * @param {FleetConfig} cfg - Board configuration.
- * @param {Map<string, Function>} env - Environment with RNG.
+ * @param {Map<string, (...args: unknown[]) => unknown>} env - Environment with RNG.
  * @param {number} maxTries - Maximum attempts.
  * @returns {GeneratedFleet | null} Valid fleet or null.
  */
@@ -759,7 +759,7 @@ function findValidFleet(cfg, env, maxTries) {
 /**
  * Attempt to generate a fleet and serialize the result.
  * @param {FleetConfig} cfg - Board configuration.
- * @param {Map<string, Function>} env - Environment with RNG.
+ * @param {Map<string, (...args: unknown[]) => unknown>} env - Environment with RNG.
  * @param {number} maxTries - Maximum attempts.
  * @returns {string | null} JSON string for fleet or null when unsuccessful.
  */
@@ -771,7 +771,7 @@ function tryGenerateFleet(cfg, env, maxTries) {
 /**
  * Entry point for the toy; generates a fleet string or error.
  * @param {string} input - JSON configuration string.
- * @param {Map<string, Function>} env - Environment with RNG helper.
+ * @param {Map<string, (...args: unknown[]) => unknown>} env - Environment with RNG helper.
  * @returns {string} JSON payload representing the fleet or an error.
  */
 function generateFleet(input, env) {
