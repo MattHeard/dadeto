@@ -90,7 +90,7 @@ export function requirePathModule(pathModule) {
     throw new Error('pathModule is required.');
   }
 
-  return /** @type {any} */ (pathModule);
+  return /** @type {{ join: (...segments: string[]) => string, resolve: (...segments: string[]) => string, relative: (from: string, to: string) => string, sep: string }} */ (pathModule);
 }
 
 /**
@@ -478,7 +478,7 @@ export function normalizeNonStringValue(value) {
  * @returns {T | null} Callback result or `null` when the input is nullish.
  */
 export function whenNotNullish(value, fn) {
-  return /** @type {any} */ (whenValueMatches(value, isNullish, fn));
+  return whenValueMatches(value, isNullish, fn);
 }
 
 /**
@@ -488,7 +488,7 @@ export function whenNotNullish(value, fn) {
  * @returns {T | null} Original value or `null` when the value is nullish.
  */
 export function whenNotNullishValue(value) {
-  return /** @type {any} */ (whenNotNullish(value, candidate => candidate));
+  return whenNotNullish(value, candidate => candidate);
 }
 
 /**
@@ -499,7 +499,7 @@ export function whenNotNullishValue(value) {
  * @template T
  */
 export function whenString(value, fn) {
-  return /** @type {any} */ (whenValueMatches(value, isNotStringValue, fn));
+  return whenValueMatches(value, isNotStringValue, fn);
 }
 
 /**
@@ -571,7 +571,7 @@ export function reportAndReturnFalse(reportFn, ...args) {
  * @template T
  */
 export function whenArray(value, fn) {
-  return /** @type {any} */ (whenValueMatches(value, isNotArrayValue, fn));
+  return whenValueMatches(value, isNotArrayValue, fn);
 }
 
 /**
@@ -582,13 +582,7 @@ export function whenArray(value, fn) {
  * @template T
  */
 export function whenTruthy(value, fn) {
-  return /** @type {any} */ (
-    when(
-      Boolean(value),
-      () => fn(value),
-      () => null
-    )
-  );
+  return when(Boolean(value), () => fn(value), () => null);
 }
 
 /**
@@ -670,7 +664,7 @@ export function numberOrZero(value) {
   return /** @type {number} */ (
     returnFallbackValue(
       isFiniteNumericValue(value),
-      /** @type {any} */ (value),
+      /** @type {number} */ (value),
       () => 0
     )
   );
@@ -784,7 +778,7 @@ export function resolveProjectDirectories(moduleDirectory, resolveFn) {
  * @returns {object} Adapter exposing required path helpers.
  */
 export function createPathAdapters(pathModule) {
-  const typedPathModule = /** @type {any} */ (pathModule);
+  const typedPathModule = pathModule;
   return {
     join: typedPathModule.join,
     dirname: typedPathModule.dirname,
@@ -810,18 +804,18 @@ export function createPathHandle(deps) {
     resolveProjectDirectories: moduleDirectory =>
       resolveProjectDirectories(
         moduleDirectory,
-        /** @type {any} */ (deps.pathModule).resolve
+        deps.pathModule.resolve
       ),
     createPathAdapters: () =>
-      createPathAdapters(/** @type {any} */ (deps.pathModule)),
+      createPathAdapters(deps.pathModule),
   };
 }
 
 /**
  * Create the filesystem adapter wrapper handle.
  * @param {{
- *   fsModule: any,
- *   fsPromisesModule: any,
+ *   fsModule: object,
+ *   fsPromisesModule: Parameters<typeof createAsyncFsAdapters>[0],
  * }} deps Filesystem dependencies.
  * @returns {{
  *   createFsAdapters: typeof createFsAdapters,
@@ -881,7 +875,7 @@ export function createFsAdapters(fsModule) {
  * }} Promise-based filesystem adapter helpers.
  */
 export function createAsyncFsAdapters(fsPromisesModule) {
-  const typedFsPromisesModule = /** @type {any} */ (fsPromisesModule);
+  const typedFsPromisesModule = fsPromisesModule;
   return {
     async readDirEntries(dir) {
       try {
