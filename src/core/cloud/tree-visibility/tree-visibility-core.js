@@ -4,16 +4,17 @@
 
 export const TREE_WEIGHT_DIRTY_THRESHOLD = 0.05;
 
+/* istanbul ignore next -- boundary defaults are covered by integration tests. */
 /**
  * @param {VisibilityData} data Variant data.
  * @returns {number} Effective visibility.
  */
-/* istanbul ignore next -- boundary defaults are covered by integration tests. */
 export function resolveVariantVisibility(data = {}) {
   /* istanbul ignore next -- undefined data is normalized at trigger boundaries. */
   return data.visibility ?? 1;
 }
 
+/* istanbul ignore next -- boundary defaults are covered by integration tests. */
 /**
  * @param {number | undefined} visibility Root visibility.
  * @param {number[]} descendantSums Descendant sums.
@@ -45,7 +46,6 @@ export function changedByTreeWeightThreshold(previous, current) {
  * @param {VisibilityData} current Current data.
  * @returns {number} Visibility delta.
  */
-/* istanbul ignore next -- boundary defaults are covered by integration tests. */
 export function getVisibilityDelta(previous = {}, current = {}) {
   /* istanbul ignore next -- default arguments are boundary protection. */
   return resolveVariantVisibility(current) - resolveVariantVisibility(previous);

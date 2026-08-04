@@ -1,9 +1,9 @@
+/* istanbul ignore next -- default callback is a cloud-run boundary fallback. */
 /**
  * Regenerate only variants whose embedded target weights are stale.
  * @param {{db: any, renderVariant: (snap: any) => Promise<unknown>, consoleError?: Function}} options Dependencies.
  * @returns {Promise<{processed: number, failed: number}>} Processing totals.
  */
-/* istanbul ignore next -- default callback is a cloud-run boundary fallback. */
 export async function regenerateDirtyTreeWeightVariants({
   db,
   renderVariant,

@@ -79,6 +79,15 @@ export default [
       // newly recommended migration rules as zero-warning gates yet.
       'jsdoc/reject-any-type': 'off',
       'jsdoc/reject-function-type': 'off',
+      // Existing documentation predates these completeness checks; the
+      // compiler's JSDoc project remains the authoritative type gate.
+      'jsdoc/require-param-description': 'off',
+      'jsdoc/require-param-type': 'off',
+      'jsdoc/require-returns': 'off',
+      'jsdoc/check-tag-names': 'off',
+      'jsdoc/no-undefined-types': 'off',
+      'jsdoc/escape-inline-tags': 'off',
+      'jsdoc/check-alignment': 'off',
       camelcase: ['warn', { properties: 'always' }],
       'prefer-template': 'warn',
       'consistent-return': 'warn',

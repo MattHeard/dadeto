@@ -249,9 +249,11 @@ class FakeTransaction extends FakeWriteBatch {
  * @returns {void}
  */
 function queueWriteOperation(operations, ref, data, mode) {
+  let nextData;
+  if (data !== undefined) nextData = cloneDocument(data);
   operations.push({
     path: ref.path,
-    nextData: data === undefined ? undefined : cloneDocument(data),
+    nextData,
     mode,
   });
 }
@@ -603,7 +605,9 @@ function normalizeWrittenValue(value, current) {
   }
 
   if (value instanceof IncrementValue) {
-    return (typeof current === 'number' ? current : 0) + value.amount;
+    let previous = 0;
+    if (typeof current === 'number') previous = current;
+    return previous + value.amount;
   }
 
   if (!isPlainObject(value)) {
