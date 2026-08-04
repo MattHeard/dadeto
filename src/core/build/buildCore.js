@@ -12,7 +12,7 @@ export {
  * @property {(configPath: string) => Promise<object | null>} resolveConfig Function resolving Prettier configuration.
  * @property {(html: string, options: object) => Promise<string>} formatHtml Function formatting HTML content.
  * @property {(outputPath: string, contents: string, encoding?: string) => void} writeFile Function persisting formatted output.
- * @property {(...args: any[]) => void} logInfo Logger invoked for informational messages.
+ * @property {(message: string) => void} logInfo Logger invoked for informational messages.
  * @property {(message: string, error: unknown) => void} logError Logger invoked for error messages.
  */
 
@@ -27,7 +27,7 @@ export {
  * @param {string} params.outputPath - Where to write output.
  * @param {string} [params.encoding] - File encoding.
  * @param {(outputPath: string, contents: string, encoding?: string) => void} params.writeFile - Write file function.
- * @param {(...args: any[]) => void} params.logInfo - Info logger.
+ * @param {(message: string) => void} params.logInfo - Info logger.
  * @returns {Promise<void>}
  */
 const formatWithPrettier = async ({
@@ -56,7 +56,7 @@ const formatWithPrettier = async ({
  * @param {object} params - Write parameters.
  * @param {(message: string, error: unknown) => void} params.logError - Error logger.
  * @param {(outputPath: string, contents: string, encoding?: string) => void} params.writeFile - Write file function.
- * @param {(...args: any[]) => void} params.logInfo - Info logger.
+ * @param {(message: string) => void} params.logInfo - Info logger.
  * @param {string} params.outputPath - Where to write output.
  * @param {string} params.html - HTML content.
  * @param {string} [params.encoding] - File encoding.
@@ -74,7 +74,7 @@ const writeUnformattedHtml = (
 
 /**
  * Write HTML with fallback handling.
- * @param {any} options - Write options.
+ * @param {object} options - Write options.
  * @returns {Promise<void>}
  */
 const writeWithFallback = async options => {
