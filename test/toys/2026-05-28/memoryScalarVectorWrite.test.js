@@ -8,7 +8,7 @@ import { memoryVectorPairs } from '../../../src/core/browser/toys/2026-05-28/mem
 /**
  * Create a toy environment backed by a mutable temporary state object.
  * @param {Record<string, unknown>} initialTemporary Initial temporary memory.
- * @returns {{ env: Map<string, Function>, state: Record<string, unknown> }} Env and state.
+ * @returns {{ env: Map<string, (...args: never[]) => unknown>, state: Record<string, unknown> }} Env and state.
  */
 function createTemporaryEnv(initialTemporary = {}) {
   const state = { temporary: initialTemporary };
@@ -24,7 +24,7 @@ function createTemporaryEnv(initialTemporary = {}) {
 /**
  * Create a toy environment backed by mutable permanent memory.
  * @param {Record<string, unknown>} initialPermanent Initial permanent memory.
- * @returns {{ env: Map<string, Function>, getPermanent: () => Record<string, unknown> }} Env and getter.
+ * @returns {{ env: Map<string, (...args: never[]) => unknown>, getPermanent: () => Record<string, unknown> }} Env and getter.
  */
 function createPermanentEnv(initialPermanent = {}) {
   let permanent = initialPermanent;

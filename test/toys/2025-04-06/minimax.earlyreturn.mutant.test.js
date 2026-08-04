@@ -6,7 +6,7 @@ import { rewriteRelativeImports } from '../../helpers/resolveRelativeImports.js'
 
 /**
  * Dynamically imports the ticTacToe module and returns its minimax export.
- * @returns {Promise<Function>} Resolves with the minimax function.
+ * @returns {Promise<(...args: never[]) => unknown>} Resolves with the minimax function.
  */
 async function loadMinimax() {
   const filePath = path.join(

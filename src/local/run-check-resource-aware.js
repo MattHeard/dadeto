@@ -6,7 +6,7 @@ const NON_TEST_COMMANDS = CHECK_COMMANDS.filter(command => command.name !== 'tes
 /**
  * Run the memory-heavy test gate before the other quality gates.
  *
- * @param {{ failFast: boolean, runSuite: Function }} options Runner options.
+ * @param {{ failFast: boolean, runSuite: (...args: never[]) => unknown }} options Runner options.
  * @returns {Promise<{ exitCode: number, failures: unknown[] }>} Combined result.
  */
 export async function runResourceAwareCheckSuite({ failFast, runSuite, ...options }) {
