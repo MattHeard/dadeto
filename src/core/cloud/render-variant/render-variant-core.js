@@ -1299,7 +1299,7 @@ async function invalidatePathItem({
  */
 function logInvalidateResponse(response, path, consoleError) {
   if (shouldLogInvalidateResponse(response, consoleError)) {
-    /** @type {Function} */ (consoleError)(
+    /** @type {ConsoleError} */ (consoleError)(
       `invalidate ${path} failed: ${response.status}`
     );
   }
@@ -1370,7 +1370,7 @@ function extractMessageProperty(error) {
  */
 function hasStringMessage(error) {
   return (
-    isObject(error) && typeof (/** @type {any} */ (error).message) === 'string'
+    isObject(error) && typeof (/** @type {{ message?: unknown }} */ (error).message) === 'string'
   );
 }
 
@@ -1486,14 +1486,14 @@ async function fetchTargetPageMetadata(
 
           return processTargetSnap(
             targetSnap,
-            /** @type {any} */ (rehydratedTargetPage),
+            /** @type {DocumentReferenceData} */ (rehydratedTargetPage),
             visibilityThreshold
           );
         }
       )
       .catch(
         /**
-         * @param {any} error - Error object.
+         * @param {unknown} error - Error object.
          * @returns {Omit<OptionMetadata, 'content' | 'position'>} Empty object.
          */
         error => {
@@ -1507,7 +1507,7 @@ async function fetchTargetPageMetadata(
 /**
  * Handle target page error.
  * @param {unknown} error Error.
- * @param {Function} [consoleError] Error logger.
+ * @param {ConsoleError} [consoleError] Error logger.
  */
 function handleTargetPageError(error, consoleError) {
   if (!consoleError) {
@@ -1519,7 +1519,7 @@ function handleTargetPageError(error, consoleError) {
 /**
  * Log target page error.
  * @param {unknown} error Error.
- * @param {Function} consoleError Error logger.
+ * @param {ConsoleError} consoleError Error logger.
  */
 function logTargetPageError(error, consoleError) {
   const message = getErrorMessage(error);
