@@ -10,12 +10,12 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const defaultPublicDir = path.resolve(__dirname, '../../../../public');
 const port = Number.parseInt(process.env.GCP_SIMULATOR_PORT ?? '8080', 10);
-/** @type {Promise<any> | null} */
+/** @type {Promise<LocalGcpSimulator> | null} */
 let simulatorPromise = null;
 
 /**
  * @typedef {{
- *   routes: Record<string, Function>,
+ *   routes: Record<string, (...args: never[]) => unknown>,
  *   getConfig: () => unknown,
  *   getSeedManifest: () => unknown,
  *   storageRoot: string,
@@ -84,11 +84,11 @@ export const handle = startServer;
 
 /**
  * Start the local simulator server.
- * @param {{ express: any }} deps Runtime dependencies.
+ * @param {{ express: Parameters<typeof createJsonExpressAppDeps>[0] }} deps Runtime dependencies.
  * @returns {Promise<import('node:http').Server>} Server instance.
  */
 async function startServer(deps) {
-  const express = /** @type {any} */ (deps.express);
+  const express = deps.express;
   const simulator = /** @type {LocalGcpSimulator} */ (
     await getSimulatorPromise()
   );
@@ -239,7 +239,7 @@ function shouldRedirectSubmitStory(req, result) {
 
 /**
  * Lazily create the simulator so module import stays cheap.
- * @returns {Promise<any>} Simulator instance.
+ * @returns {Promise<LocalGcpSimulator>} Simulator instance.
  */
 function getSimulatorPromise() {
   if (!simulatorPromise) {
@@ -249,7 +249,7 @@ function getSimulatorPromise() {
     });
   }
 
-  return /** @type {Promise<any>} */ (simulatorPromise);
+  return simulatorPromise;
 }
 
 /**
