@@ -35,7 +35,7 @@ function normalizeTracker(tracker) {
     return { ...DEFAULT_SYMPHONY_CONFIG.tracker };
   }
 
-  const typedTracker = /** @type {any} */ (tracker);
+  const typedTracker = /** @type {Record<string, unknown>} */ (tracker);
   return {
     kind: normalizeString(
       typedTracker.kind,
@@ -58,7 +58,7 @@ function normalizeLauncher(launcher) {
     return { ...DEFAULT_SYMPHONY_CONFIG.launcher };
   }
 
-  const typedLauncher = /** @type {any} */ (launcher);
+  const typedLauncher = /** @type {Record<string, unknown>} */ (launcher);
   return {
     kind: normalizeString(
       typedLauncher.kind,
@@ -113,7 +113,7 @@ function resolveDefaultBranch(defaultBranch) {
  */
 /**
  * @param {{
- *   config: object | null | undefined,
+ *   config: Record<string, unknown> | null | undefined,
  *   repoRoot: string,
  *   configPath: string,
  *   pathModule: { resolve: (first: string, ...parts: string[]) => string },
@@ -131,7 +131,7 @@ function resolveDefaultBranch(defaultBranch) {
  * }} Normalized local Symphony config.
  */
 export function normalizeSymphonyConfig(options) {
-  const typedConfig = /** @type {any} */ (options.config);
+  const typedConfig = options.config;
   return normalizeConfigWithResolvedPaths({
     config: typedConfig,
     repoRoot: options.repoRoot,
