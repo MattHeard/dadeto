@@ -158,7 +158,11 @@ function parseCluesOrDefault(inputString) {
    */
   const parseJsonValue = json => JSON.parse(json);
   const parsedValue = safeParseJson(inputString, parseJsonValue);
-  if (INVALID_CLUE_CHECKS.some(fn => fn(parsedValue))) {
+  if (
+    INVALID_CLUE_CHECKS.some(fn =>
+      fn(/** @type {BattleshipClueCandidate} */ (parsedValue))
+    )
+  ) {
     return DEFAULT_CLUES;
   }
   const obj = /** @type {BattleshipClueCandidate} */ (parsedValue);

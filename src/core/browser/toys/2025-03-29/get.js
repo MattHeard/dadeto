@@ -69,7 +69,14 @@ function traverseSegment(currentValue, segment, currentPath) {
   /** @type {[unknown, string, string]} */
   const traversalArgs = [currentValue, segment, nextPath];
   const errorResult = createNonObjectErrorResult(...traversalArgs);
-  return errorResult ?? getSegmentValueOrError(currentValue, segment, nextPath);
+  return (
+    errorResult ??
+    getSegmentValueOrError(
+      /** @type {object | unknown[]} */ (currentValue),
+      segment,
+      nextPath
+    )
+  );
 }
 
 /**
@@ -286,9 +293,9 @@ function handleEmptyInputInGet(
  * @returns {string} JSON stringified value or error message.
  */
 function handleValueOrErrorResult(valueOrError, input) {
-  return (
+  return /** @type {string} */ (
     whenOrNull(isErrorString(valueOrError), () => valueOrError) ??
-    safeStringifyValueAtPath(valueOrError, input)
+      safeStringifyValueAtPath(valueOrError, input)
   );
 }
 
@@ -419,7 +426,13 @@ export function get(input, env) {
   const getData = /** @type {() => object|unknown[]} */ (getDataCandidate);
   const { data, error } = getDataWithCatch(getData, input);
   const retrievalError = handleDataRetrievalErrorInGet(error);
-  return retrievalError ?? getFinalResultAfterRetrieval(input, data);
+  return (
+    retrievalError ??
+    getFinalResultAfterRetrieval(
+      input,
+      /** @type {object | unknown[] | null} */ (data)
+    )
+  );
 }
 
 /**

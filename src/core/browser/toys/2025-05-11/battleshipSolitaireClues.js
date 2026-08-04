@@ -128,7 +128,12 @@ function parseFleet(input) {
   const parseJsonValue = value => JSON.parse(value);
   const fleet = safeParseJson(input, parseJsonValue);
   const error = computeFleetError(fleet);
-  return returnErrorResultOrValue(error, () => fleet);
+  return /** @type {BattleshipFleet | { error: string }} */ (
+    returnErrorResultOrValue(
+      error,
+      () => /** @type {BattleshipFleet} */ (fleet)
+    )
+  );
 }
 
 /**

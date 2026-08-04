@@ -61,7 +61,9 @@ export function getEnvHelpers(env) {
  * @returns {object|null} Parsed object or the fallback.
  */
 export function parseJsonOrFallback(json, fallback = null) {
-  return valueOr(safeParseJson(json, JSON.parse), fallback);
+  return /** @type {object|null} */ (
+    valueOr(safeParseJson(json, JSON.parse), fallback)
+  );
 }
 
 /**
@@ -96,10 +98,12 @@ export function runToyWithParsedJson(input, handler) {
 /**
  * Check whether a value is a plain object.
  * @param {unknown} value - Value to inspect.
- * @returns {boolean} True when the value is a non-array object.
+ * @returns {value is Record<string, unknown>} True when the value is a non-array object.
  */
 export function isPlainObject(value) {
-  return Boolean(value) && value.constructor === Object;
+  const objectValue = /** @type {Record<string, unknown>} */ (value);
+  if (!isNonNullObject(objectValue)) return false;
+  return objectValue.constructor === Object;
 }
 
 /**
@@ -188,11 +192,13 @@ function hasArrayProps(obj, keys) {
 
 /**
  * Determine whether the given data matches the DEND2 shape.
- * @param {Record<string, unknown>} obj Candidate structure.
- * @returns {boolean} True when the shape is valid.
+ * @param {unknown} obj Candidate structure.
+ * @returns {obj is Record<string, unknown>} True when the shape is valid.
  */
 function isValidDend2Structure(obj) {
-  return isNonNullObject(obj) && hasArrayProps(obj, DENDRITE_TEMP_KEYS);
+  const objectValue = /** @type {Record<string, unknown>} */ (obj);
+  if (!isNonNullObject(objectValue)) return false;
+  return hasArrayProps(objectValue, DENDRITE_TEMP_KEYS);
 }
 
 /**
@@ -241,12 +247,12 @@ function tryResolveLegacyStructure(temporary) {
 /**
  * Resolve TRAN1 structure from available sources.
  * @param {ToyStorage} data - Storage object.
- * @returns {unknown} Valid TRAN1 structure.
+ * @returns {Dend2Data} Valid TRAN1 structure.
  */
 function resolveTran1Structure(data) {
   const resolved = tryResolveLegacyStructure(data.temporary);
   if (resolved) {
-    return resolved;
+    return /** @type {Dend2Data} */ (resolved);
   }
   return createEmptyDend2();
 }
@@ -258,7 +264,9 @@ function resolveTran1Structure(data) {
  * @returns {void}
  */
 export function ensureDend2(data) {
-  data.temporary = { TRAN1: resolveTran1Structure(data) };
+  data.temporary = {
+    TRAN1: /** @type {Dend2Data} */ (resolveTran1Structure(data)),
+  };
 }
 
 /**
@@ -347,8 +355,8 @@ function hasValidStoryFields(story) {
 
 /**
  * Determine whether the parsed story payload defines the required fields.
- * @param {{ title?: string, content?: string } | null | undefined} parsed Payload to validate.
- * @returns {boolean} True when both title and content are valid strings.
+ * @param {unknown} parsed Payload to validate.
+ * @returns {parsed is { title: string, content: string }} True when both title and content are valid strings.
  */
 export function isValidStoryInput(parsed) {
   if (!parsed) return false;
@@ -357,8 +365,8 @@ export function isValidStoryInput(parsed) {
 
 /**
  * Determine whether the parsed page payload defines the required fields.
- * @param {{ optionId?: string, content?: string } | null | undefined} parsed Payload to validate.
- * @returns {boolean} True when each required field is a valid string.
+ * @param {unknown} parsed Payload to validate.
+ * @returns {parsed is { optionId: string, content: string }} True when each required field is a valid string.
  */
 export function isValidPageInput(parsed) {
   if (!parsed) return false;

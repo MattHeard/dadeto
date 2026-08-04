@@ -1,10 +1,5 @@
 import { readStoredOrElementValue, setInputValue } from './inputValueStore.js';
-import {
-  isNonNullObject,
-  isNullish,
-  isValidString,
-  whenOrDefault,
-} from '../commonCore.js';
+import { isNonNullObject, isNullish, isValidString } from '../commonCore.js';
 export {
   arrayOrEmpty,
   ensureString,
@@ -107,7 +102,8 @@ export function isBlankStringValue(value) {
  * @returns {T} Either `value` or `fallback`.
  */
 export function valueOr(value, fallback) {
-  return whenOrDefault(value === undefined, () => fallback, value);
+  if (value === undefined) return fallback;
+  return value;
 }
 
 /**
@@ -495,7 +491,9 @@ export function parseJsonOrDefault(json, fallback = {}) {
   function parseJsonValue(value) {
     return JSON.parse(value);
   }
-  return valueOr(safeParseJson(json, parseJsonValue), fallback);
+  return /** @type {object} */ (
+    valueOr(safeParseJson(json, parseJsonValue), fallback)
+  );
 }
 
 /**

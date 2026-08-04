@@ -426,7 +426,7 @@ function readValidatedSourceRoot(env, helperName, selectRoot) {
   }
 
   return {
-    root: selectRoot(source),
+    root: selectRoot(/** @type {object | unknown[]} */ (source)),
   };
 }
 

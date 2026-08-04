@@ -112,7 +112,10 @@ function executeMerge({ section, inputJson, getData, setLocalTemporaryData }) {
   const currentData = getData();
   const newData = deepClone(currentData);
   ensureSectionObject(newData, section);
-  newData[section] = deepMerge(newData[section], inputJson);
+  newData[section] = deepMerge(
+    /** @type {Record<string, unknown>} */ (newData[section]),
+    inputJson
+  );
   setLocalTemporaryData(newData);
   const sectionName = section.charAt(0).toUpperCase() + section.slice(1);
   return `Success: ${sectionName} data deep merged.`;

@@ -4,9 +4,11 @@
 import { arrayOrEmpty } from '../../../commonCore.js';
 import { tryOr } from '../../common.js';
 
+/** @typedef {{ temporary: { TRAN1?: { stories?: object[] }, DEND2?: { stories?: object[] } } }} ToyState */
+
 /**
  * Resolve TRAN1 stories from temporary storage.
- * @param {unknown} data - Application state data.
+ * @param {ToyState} data - Application state data.
  * @returns {object[] | undefined} Stories from TRAN1 or undefined.
  */
 function resolveTran1Stories(data) {
@@ -15,11 +17,11 @@ function resolveTran1Stories(data) {
 
 /**
  * Resolve TRAN1 stories with DEND2 fallback.
- * @param {unknown} data - Application state data.
+ * @param {ToyState} data - Application state data.
  * @returns {object[] | undefined} Resolved stories array or undefined.
  */
 function resolveTran1StoriesWithFallback(data) {
-  return resolveTran1Stories(data) ?? data.temporary.DEND2.stories;
+  return resolveTran1Stories(data) ?? data.temporary.DEND2?.stories;
 }
 
 /**
@@ -28,7 +30,9 @@ function resolveTran1StoriesWithFallback(data) {
  * @returns {object[] | undefined} Possibly undefined stories array.
  */
 function extractDend2Stories(data) {
-  const candidate = tryOr(() => resolveTran1StoriesWithFallback(data));
+  const candidate = tryOr(() =>
+    resolveTran1StoriesWithFallback(/** @type {ToyState} */ (data))
+  );
   return /** @type {object[] | undefined} */ (candidate);
 }
 
