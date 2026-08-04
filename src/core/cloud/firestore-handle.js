@@ -1,9 +1,9 @@
 /**
  * Build a Firestore-triggered Cloud Function from injected runtime dependencies.
  * @param {{
- *   functions: { region: (region: string) => { firestore: { document: (path: string) => Record<string, Function> } } },
+ *   functions: { region: (region: string) => { firestore: { document: (path: string) => Record<string, (handler: unknown) => unknown> } } },
  *   getFirestoreInstance: () => import('firebase-admin/firestore').Firestore,
- *   createHandler: (deps: { db: import('firebase-admin/firestore').Firestore }) => Function,
+ *   createHandler: (deps: { db: import('firebase-admin/firestore').Firestore }) => (handler: unknown) => unknown,
  *   documentPath: string,
  *   eventName?: string,
  *   region?: string,
