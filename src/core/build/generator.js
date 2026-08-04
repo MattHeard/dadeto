@@ -539,15 +539,15 @@ function createContentItemWithIndex(text, index) {
 /**
  * @typedef {object} NormalizedContent
  * @property {string} type - The normalized content type.
- * @property {*} content - The normalized content data.
+ * @property {unknown} content - The normalized content data.
  */
 
 /**
  * @typedef {object} ContentTypeHandler
- * @property {function(*): boolean} predicate - Returns true if this handler matches the content.
- * @property {function(*): NormalizedContent} normalize - Normalizes the content to a standard object.
+ * @property {(content: unknown) => boolean} predicate - Returns true if this handler matches the content.
+ * @property {(content: unknown) => NormalizedContent} normalize - Normalizes the content to a standard object.
  * @property {string} type - The normalized content type name.
- * @property {function(*): string} render - Renders the normalized content as HTML.
+ * @property {(content: unknown) => string} render - Renders the normalized content as HTML.
  */
 
 // Hardcoded normalization rules and content renderers
@@ -567,8 +567,8 @@ const CONTENT_RENDERERS = {
 
 /**
  * Returns the normalizer function for the given raw content.
- * @param {*} content - Raw content to normalize.
- * @returns {function(*): NormalizedContent} - Normalizer function that returns a normalized content object.
+ * @param {unknown} content - Raw content to normalize.
+ * @returns {(content: unknown) => NormalizedContent} - Normalizer function that returns a normalized content object.
  */
 function getContentNormalizer(content) {
   const found = normalizationRules.find(([predicate]) => predicate(content));
@@ -577,7 +577,7 @@ function getContentNormalizer(content) {
 
 /**
  * Normalizes a content item using the registered normalizers.
- * @param {*} content - Raw content to normalize.
+ * @param {unknown} content - Raw content to normalize.
  * @returns {NormalizedContent} Normalized content object with { type, content }.
  */
 function normalizeContentItem(content) {
@@ -587,7 +587,7 @@ function normalizeContentItem(content) {
 /**
  * Returns the renderer function for a given normalized content type.
  * @param {string} type - The normalized content type.
- * @returns {function(*): string} - Renderer function that returns HTML.
+ * @returns {(content: unknown) => string} - Renderer function that returns HTML.
  */
 function getContentRenderer(type) {
   return CONTENT_RENDERERS[type];
@@ -799,7 +799,7 @@ function generateMediaSections(post) {
 
 /**
  * Check if the provided value is a non-empty array.
- * @param {*} value - Value to test.
+ * @param {unknown} value - Value to test.
  * @returns {boolean} True if value is an array with elements.
  */
 function isNonEmptyArray(value) {
