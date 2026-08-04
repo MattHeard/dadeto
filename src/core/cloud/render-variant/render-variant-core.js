@@ -1722,7 +1722,7 @@ async function buildStoryMetadata({ storyData, page, db, consoleError }) {
 
 /**
  * Determine the parent route for a story when the variant was created from an option.
- * @param {{ page: Record<string, any>; storyData: StoryMetadata; db: FirestoreLike; consoleError?: ConsoleError }} options - Inputs describing the page and story context.
+ * @param {{ page: Record<string, unknown>; storyData: StoryMetadata; db: FirestoreLike; consoleError?: ConsoleError }} options - Inputs describing the page and story context.
  * @returns {Promise<string | undefined>} URL for the first published page when resolvable.
  */
 async function resolveFirstPageUrl({ page, storyData, db, consoleError }) {
@@ -1739,7 +1739,7 @@ async function resolveFirstPageUrl({ page, storyData, db, consoleError }) {
 
 /**
  * Determine whether there is an incoming option that points at a story root.
- * @param {Record<string, any>} page Page document data.
+ * @param {Record<string, unknown>} page Page document data.
  * @param {StoryMetadata} storyData Story metadata that may include a rootPage reference.
  * @returns {boolean} True when we should resolve a root page URL.
  */
@@ -1844,7 +1844,7 @@ function extractPageNumber(snap) {
 
 /**
  * Get variant name if it exists.
- * @param {any} variantData - Variant data.
+ * @param {unknown} variantData - Variant data.
  * @returns {string | undefined} Variant name or undefined.
  */
 function getVariantNameOrUndefined(variantData) {
@@ -1853,7 +1853,7 @@ function getVariantNameOrUndefined(variantData) {
 
 /**
  * Extract variant name from variant data.
- * @param {any} variantData - Variant data.
+ * @param {unknown} variantData - Variant data.
  * @returns {string} Variant name or empty string.
  */
 function extractVariantName(variantData) {
@@ -1933,9 +1933,9 @@ function extractStoryRefFromTenantDb(pageSnap, db) {
 
 /**
  * Rebind a document reference through the tenant database when possible.
- * @param {any} ref Firestore document reference.
+ * @param {unknown} ref Firestore document reference.
  * @param {FirestoreLike | null | undefined} db Tenant Firestore client.
- * @returns {any} Tenant-bound document reference or the original ref when rebinding is unavailable.
+ * @returns {unknown} Tenant-bound document reference or the original ref when rebinding is unavailable.
  */
 function rebindTenantDocumentRef(ref, db) {
   if (!ref) {
@@ -1969,7 +1969,7 @@ function resolveStoryFromPageRef(pageRef) {
  * @returns {object | null} Parent reference or null.
  */
 function getPageParent(pageRef) {
-  return /** @type {any} */ (readNullableProperty(pageRef, 'parent'));
+  return /** @type {unknown} */ (readNullableProperty(pageRef, 'parent'));
 }
 
 /**
@@ -1978,12 +1978,12 @@ function getPageParent(pageRef) {
  * @returns {object | null} Grandparent reference or null when missing.
  */
 function getParentParent(parent) {
-  return /** @type {any} */ (readNullableProperty(parent, 'parent'));
+  return /** @type {unknown} */ (readNullableProperty(parent, 'parent'));
 }
 
 /**
  * Derive the author name to display when rendering a variant.
- * @param {Record<string, any>} variant - Variant metadata provided by Firestore.
+ * @param {Record<string, unknown>} variant - Variant metadata provided by Firestore.
  * @returns {string} Author name or fallback identifier.
  */
 function deriveAuthorName(variant) {
@@ -2074,7 +2074,7 @@ async function markAuthorDirty({ variant, db }) {
  * Resolve a Firestore reference for an author document.
  * @param {FirestoreLike} db Firestore-like client.
  * @param {string | undefined} authorId Identifier for the author.
- * @returns {any} Firestore document reference for the author path.
+ * @returns {DocumentReferenceData} Firestore document reference for the author path.
  */
 function resolveAuthorRef(db, authorId) {
   return db.doc(`authors/${authorId}`);
@@ -2082,8 +2082,8 @@ function resolveAuthorRef(db, authorId) {
 
 /**
  * Resolve parent document references for the variant hierarchy.
- * @param {{ parent?: { parent?: any } } | null | undefined} optionRef Reference to the incoming option document.
- * @returns {{ parentVariantRef: { get: Function, parent?: { parent?: any } }, parentPageRef: { get: Function } } | null} Parent
+ * @param {{ parent?: { parent?: AncestorReference } } | null | undefined} optionRef Reference to the incoming option document.
+ * @returns {{ parentVariantRef: { get: (...args: unknown[]) => unknown, parent?: { parent?: AncestorReference } }, parentPageRef: { get: (...args: unknown[]) => unknown } } | null} Parent
  * references when the hierarchy can be resolved, otherwise null.
  */
 /**
@@ -2378,9 +2378,9 @@ function resolveParentLookupPromise({ incomingOption, db, consoleError }) {
 
 /**
  * @typedef {object} RenderVariantDependencies
- * @property {any} db - Firestore-like database used to load related documents.
- * @property {any} storage - Cloud storage helper capable of writing files.
- * @property {(url: string, init?: object) => Promise<any>} fetchFn - Fetch implementation used for cache invalidation calls.
+ * @property {FirestoreLike} db - Firestore-like database used to load related documents.
+ * @property {StorageBucketLike} storage - Cloud storage helper capable of writing files.
+ * @property {(url: string, init?: object) => Promise<unknown>} fetchFn - Fetch implementation used for cache invalidation calls.
  * @property {() => string} randomUUID - UUID generator for request identifiers.
  * @property {string} [projectId] - Google Cloud project identifier used for cache invalidation.
  * @property {string} [urlMapName] - URL map name whose cache should be invalidated.
@@ -2394,7 +2394,7 @@ function resolveParentLookupPromise({ incomingOption, db, consoleError }) {
 /**
  * Create a renderer that materializes variant HTML and supporting metadata.
  * @param {RenderVariantDependencies} dependencies - External services and configuration values.
- * @returns {(snap: any, context?: any) => Promise<null>} Async renderer for variant snapshots.
+ * @returns {(snap: unknown, context?: unknown) => Promise<null>} Async renderer for variant snapshots.
  */
 export function createRenderVariant(dependencies) {
   validateDependencies(dependencies);
@@ -2457,10 +2457,10 @@ function resolveRenderVariantVisibilityThreshold(value) {
 /**
  * Ensure the render pipeline dependencies expose the helpers it relies on.
  * @param {{
- *   db: { doc: Function },
- *   storage: { bucket: Function },
- *   fetchFn: Function,
- *   randomUUID: Function
+ *   db: { doc: (...args: unknown[]) => unknown },
+ *   storage: { bucket: (...args: unknown[]) => unknown },
+ *   fetchFn: (...args: unknown[]) => unknown,
+ *   randomUUID: (...args: unknown[]) => unknown
  * }} dependencies - Required services for rendering.
  * @returns {void}
  */
@@ -2474,8 +2474,8 @@ function validateDependencies(dependencies) {
 
 /**
  * @typedef {object} RenderHandlerDeps
- * @property {any} db Database.
- * @property {any} bucket Bucket.
+ * @property {FirestoreLike} db Database.
+ * @property {StorageBucketLike} bucket Bucket.
  * @property {(message?: unknown, ...optionalParams: unknown[]) => void} [consoleError] Error logger.
  * @property {number} [visibilityThreshold] Visibility threshold.
  * @property {number[]} [rewriteTargetPageNumbers] Targets to rewrite to the writer form.
@@ -2485,7 +2485,7 @@ function validateDependencies(dependencies) {
 /**
  * Create render variant handler.
  * @param {RenderVariantDependencies} options Dependencies.
- * @returns {(snap: any, context?: any) => Promise<null>} Render function.
+ * @returns {(snap: unknown, context?: unknown) => Promise<null>} Render function.
  */
 function createRenderVariantHandler({
   db,
@@ -2578,14 +2578,14 @@ function createPrefixedBucket(bucket, objectPrefix) {
 /**
  * Prepare the information required to render and publish a variant.
  * @param {object} options - Dependencies and inputs for rendering.
- * @param {{exists?: boolean, data: () => Record<string, any>, ref: {parent?: {parent?: any}}}} options.snap - Variant snapshot.
- * @param {{doc: Function}} options.db - Firestore-like database instance.
- * @param {{bucket: Function}} options.bucket - Storage bucket factory.
+ * @param {{exists?: boolean, data: () => Record<string, unknown>, ref: {parent?: {parent?: AncestorReference}}}} options.snap - Variant snapshot.
+ * @param {{doc: (...args: unknown[]) => unknown}} options.db - Firestore-like database instance.
+ * @param {{bucket: (...args: unknown[]) => unknown}} options.bucket - Storage bucket factory.
  * @param {(message?: unknown, ...optionalParams: unknown[]) => void} [options.consoleError] - Optional logger.
  * @param {number} options.visibilityThreshold - Minimum visibility required for variant publication.
  * @returns {Promise<null | {
- *   variant: Record<string, any>,
- *   page: Record<string, any>,
+ *   variant: Record<string, unknown>,
+ *   page: Record<string, unknown>,
  *   parentUrl: string | undefined,
  *   html: string,
  *   filePath: string,
@@ -2594,7 +2594,7 @@ function createPrefixedBucket(bucket, objectPrefix) {
  */
 /**
  * Validate snap exists.
- * @param {any} snap Snap.
+ * @param {unknown} snap Snap.
  * @returns {boolean} True if valid.
  */
 export function isSnapValid(snap) {
@@ -2606,7 +2606,7 @@ export function isSnapValid(snap) {
 
 /**
  * Check snap exists.
- * @param {any} snap Snap.
+ * @param {unknown} snap Snap.
  * @returns {boolean} True if exists.
  */
 function checkSnapExists(snap) {
@@ -2615,14 +2615,14 @@ function checkSnapExists(snap) {
 
 /**
  * Fetch page data.
- * @param {any} snap Snap.
- * @returns {Promise<any>} Page snap.
+ * @param {unknown} snap Snap.
+ * @returns {Promise<unknown>} Page snap.
  */
 /**
  * Get page snap from ref.
- * @param {any} snap Snap.
+ * @param {unknown} snap Snap.
  * @param {FirestoreLike} db Tenant Firestore client.
- * @returns {Promise<any | undefined>} Page snap.
+ * @returns {Promise<unknown | undefined>} Page snap.
  */
 export async function getPageSnapFromRef(snap, db) {
   return getPageSnapFromTenantDb(snap, db);
@@ -2644,8 +2644,8 @@ async function getPageSnapFromTenantDb(snap, db) {
 
 /**
  * Extract the `ref` property from a snapshot when present.
- * @param {any} snap Candidate snapshot.
- * @returns {any} Snapshot ref when available; otherwise null.
+ * @param {unknown} snap Candidate snapshot.
+ * @returns {unknown} Snapshot ref when available; otherwise null.
  */
 function resolveSnapshotRef(snap) {
   return readNullableProperty(snap, 'ref');
