@@ -1,7 +1,9 @@
 /* istanbul ignore next -- default callback is a cloud-run boundary fallback. */
+/** @typedef {{ data?: { visibility?: number }, ref?: { path?: string } }} TreeVariant */
+/** @typedef {(node: TreeVariant) => Promise<TreeVariant[]>} ReadTreeChildren */
 /**
  * Regenerate only variants whose embedded target weights are stale.
- * @param {{db: any, renderVariant: (snap: any) => Promise<unknown>, consoleError?: Function}} options Dependencies.
+ * @param {{db: { collectionGroup: (name: string) => { where: (field: string, operator: string, value: unknown) => { get: () => Promise<{ docs?: TreeVariant[] }> } } }, renderVariant: (snap: TreeVariant) => Promise<unknown>, consoleError?: (message: string, path?: string, error?: unknown) => void}} options Dependencies.
  * @returns {Promise<{processed: number, failed: number}>} Processing totals.
  */
 export async function regenerateDirtyTreeWeightVariants({
@@ -30,7 +32,7 @@ export async function regenerateDirtyTreeWeightVariants({
 
 /**
  * Calculate and persist variant sums from a bottom-up tree walker.
- * @param {{stories: any[], readChildren: Function, writeVariant: Function}} options Migration dependencies.
+ * @param {{stories: TreeVariant[], readChildren: ReadTreeChildren, writeVariant: (variant: TreeVariant, update: Record<string, unknown>) => Promise<void>}} options Migration dependencies.
  * @returns {Promise<number>} Number of variants written.
  */
 export async function migrateTreeVisibilitySums({
