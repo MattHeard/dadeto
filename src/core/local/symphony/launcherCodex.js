@@ -21,9 +21,9 @@ export const DEFAULT_CODEX_RALPH_ARGS = [...DEFAULT_CODEX_ARGS];
  *   cwd?: string,
  *   logDir?: string,
  *   logDirSuffix?: string,
- *   mkdirImpl?: any,
- *   openImpl?: any,
- *   spawnImpl?: any
+ *   mkdirImpl?: unknown,
+ *   openImpl?: unknown,
+ *   spawnImpl?: unknown
  * }} options Launcher options and dependency overrides.
  * @returns {{
  *   launchRunner: (payload: {
@@ -49,26 +49,24 @@ export const DEFAULT_CODEX_RALPH_ARGS = [...DEFAULT_CODEX_ARGS];
  * }} Local Codex-backed Ralph launcher.
  */
 export function createCodexRalphLauncher(options) {
-  const typedOptions = /** @type {any} */ (options);
   /**
    * @param {{ beadId: string }} payload Runner launch payload.
    * @returns {string[]} Command arguments.
    */
   function resolveArgs(payload) {
-    return buildResolveArgs(typedOptions, payload);
+    return buildResolveArgs(options, payload);
   }
 
   return {
     async launchRunner(payload) {
-      const typedPayload = /** @type {any} */ (payload);
       return createDetachedProcessLauncher({
-        ...typedOptions,
+        ...options,
         logDirSuffix: 'symphony',
         closeErrorLabel: 'Failed to close run log handle:',
         exitErrorLabel: buildExitErrorLabel,
         resolveArgs,
         buildExitPayload,
-      }).launch(typedPayload);
+      }).launch(payload);
     },
   };
 }
@@ -108,15 +106,12 @@ function buildExitErrorLabel(payload) {
  * @returns {string[]} Command arguments.
  */
 function buildResolveArgs(options, payload) {
-  return [
-    ...(options.args ?? []),
-    buildRalphPrompt(/** @type {any} */ (payload)),
-  ];
+  return [...(options.args ?? []), buildRalphPrompt(payload)];
 }
 
 /**
  * @param {{ beadId: string, beadTitle?: string | null }} payload Runner payload.
- * @param {any} input Process result payload.
+ * @param {{ runId: string, exitCode: number | null, signal: string | null }} input Process result payload.
  * @returns {{
  *   runId: string,
  *   beadId: string,
@@ -126,11 +121,7 @@ function buildResolveArgs(options, payload) {
  * }} Exit payload.
  */
 function buildExitPayload(payload, input) {
-  const typedInput =
-    /** @type {{ runId: string, exitCode: number | null, signal: string | null }} */ (
-      /** @type {any} */ (input)
-    );
-  const { runId, exitCode, signal } = typedInput;
+  const { runId, exitCode, signal } = input;
   return {
     runId,
     beadId: payload.beadId,
