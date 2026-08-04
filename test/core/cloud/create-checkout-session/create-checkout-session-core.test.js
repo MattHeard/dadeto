@@ -12,7 +12,13 @@ function setup(overrides = {}) {
     resolveApiKeyUuidForUid: jest.fn().mockResolvedValue({ apiKeyUuid: 'key-1' }),
     resolveBillingCustomer: jest.fn().mockResolvedValue({ stripeCustomerId: 'cus-1' }),
     createBillingCustomer: jest.fn(), saveCustomerMappings: jest.fn(),
-    getCreditPackage: jest.fn().mockResolvedValue({ stripePriceId: 'price-100', credits: 100, active: true }),
+    getCreditPackage: jest.fn().mockImplementation(packageId =>
+      Promise.resolve(
+        packageId === 'credits-100'
+          ? { stripePriceId: 'price-100', credits: 100, active: true }
+          : null
+      )
+    ),
     createStripeCheckoutSession: create, publicBillingOrigin: 'https://example.com',
     now: () => new Date('2026-08-04T00:00:00Z'), ...overrides,
   }) };

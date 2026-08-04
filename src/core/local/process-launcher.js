@@ -141,7 +141,7 @@ function resolveLaunchLogDir(options, payload) {
   return options.pathModule.join(
     payload.repoRoot,
     'tracking',
-    typedOptions.logDirSuffix ?? 'launcher'
+    options.logDirSuffix ?? 'launcher'
   );
 }
 
@@ -231,7 +231,7 @@ export async function launchDetachedProcessWithRunLogs(options) {
     options.pathModule.join(
       options.repoRoot,
       'tracking',
-      typedOptions.logDirSuffix ?? 'launcher'
+      options.logDirSuffix ?? 'launcher'
     );
 
   const {
@@ -244,15 +244,15 @@ export async function launchDetachedProcessWithRunLogs(options) {
   } = await openAppendOnlyRunLogFiles({
     logDir,
     pathModule: options.pathModule,
-    runId: typedOptions.runId,
-    mkdirImpl: typedOptions.mkdirImpl,
-    openImpl: typedOptions.openImpl,
+    runId: options.runId,
+    mkdirImpl: options.mkdirImpl,
+    openImpl: options.openImpl,
   });
 
   let child;
   try {
-    child = spawnImpl(typedOptions.command, typedOptions.args, {
-      cwd: typedOptions.cwd ?? typedOptions.repoRoot,
+    child = spawnImpl(options.command, options.args, {
+      cwd: options.cwd ?? options.repoRoot,
       detached: true,
       stdio: ['ignore', stdoutFd, stderrFd],
     });

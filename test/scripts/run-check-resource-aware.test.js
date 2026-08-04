@@ -1,3 +1,4 @@
+import { jest } from '@jest/globals';
 import { runResourceAwareCheckSuite } from '../../src/local/run-check-resource-aware.js';
 
 describe('runResourceAwareCheckSuite', () => {

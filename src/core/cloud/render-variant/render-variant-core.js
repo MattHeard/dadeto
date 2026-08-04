@@ -3433,6 +3433,9 @@ export function createHandleVariantWrite({
     }
 
     const pageNumber = await getPageNumber(pageRef);
+    if (pageNumber === undefined) {
+      return;
+    }
     await republishInboundVariants(db, renderVariantFn, pageNumber);
   }
 }
@@ -3488,14 +3491,14 @@ async function republishInboundVariants(db, renderVariantFn, pageNumber) {
 
 /**
  * @param {unknown} pageRef Page reference.
- * @returns {Promise<number>} Page number.
+ * @returns {Promise<number | undefined>} Page number, when the page has data.
  */
 async function getPageNumber(pageRef) {
   const pageSnap =
     await /** @type {{ get: () => Promise<{ data: () => { number: number } }> }} */ (
       pageRef
     ).get();
-  return pageSnap.data().number;
+  return pageSnap.data()?.number;
 }
 
 /**
