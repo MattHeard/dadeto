@@ -34,20 +34,12 @@ import { createDetachedProcessLauncher } from '../process-launcher.js';
  * }} Local Codex launcher for Notion poll runs.
  */
 export function createNotionCodexLauncherCore(options) {
-  /**
-   * @param {Record<string, unknown>} payload Launcher payload.
-   * @returns {string[]} Command arguments.
-   */
-  function resolveArgs(payload) {
-    return buildResolveArgs(options, payload);
-  }
-
   return createDetachedProcessLauncher({
     ...options,
     logDirSuffix: 'notion-codex',
     closeErrorLabel: 'Failed to close Notion Codex run log handle:',
     exitErrorLabel: buildExitErrorLabel,
-    resolveArgs,
+    resolveArgs: payload => buildResolveArgs(options, payload),
   });
 }
 

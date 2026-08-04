@@ -2,6 +2,8 @@ import {
   normalizeSubmissionContent,
   normalizeAuthor as normalizeSubmittedAuthor,
   createCorsOriginHandler,
+  createCorsOptions,
+  isOriginAllowed,
   buildVariantByNameQuery,
   buildPageByNumberQuery,
 } from '../cloud-core.js';
@@ -719,13 +721,11 @@ export function createSubmitNewPageApp(deps) {
   const app = deps.express();
 
   app.use(
-    deps.cors({
-      origin: createCorsOriginHandler(
-        (origin, allowedOrigins) => !origin || allowedOrigins.includes(origin),
-        deps.allowedOrigins
-      ),
-      methods: ['POST'],
-    })
+    deps.cors(
+      createCorsOptions(
+        createCorsOriginHandler(isOriginAllowed, deps.allowedOrigins)
+      )
+    )
   );
 
   app.use(deps.express.json({ limit: '20kb' }));

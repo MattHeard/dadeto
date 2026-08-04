@@ -11,6 +11,11 @@ import {
   getFirestoreForDatabase,
   resolveFirestoreDatabaseId,
 } from '../firestore-helpers.js';
+import {
+  createCorsOptions,
+  createCorsOriginHandler,
+  isOriginAllowed,
+} from '../cloud-core.js';
 
 export { resolveFirestoreDatabaseId };
 export { getAllowedOrigins };
@@ -131,12 +136,7 @@ export const getFirestoreInstance = (options = {}) => {
 export function runGenerateStats(deps) {
   const typedDeps = deps;
   const {
-    db,
-    auth,
-    storage,
-    fetchFn,
     env,
-    cryptoModule,
     console: consoleLike = globalThis.console,
     functions,
     express,
@@ -144,12 +144,7 @@ export function runGenerateStats(deps) {
   } = typedDeps;
 
   const generateStatsCore = createGenerateStatsCore({
-    db,
-    auth,
-    storage,
-    fetchFn,
-    env,
-    cryptoModule,
+    ...typedDeps,
     console: consoleLike,
   });
   const handleRequest = generateStatsCore.handleRequest;
@@ -167,16 +162,11 @@ export function runGenerateStats(deps) {
     urlencoded: appDeps.urlencoded,
   });
   app.use(
-    cors({
-      origin: (origin, cb) => {
-        if (!origin || allowedOrigins.includes(origin)) {
-          cb(null, true);
-        } else {
-          cb(new Error('CORS'));
-        }
-      },
-      methods: ['POST'],
-    })
+    cors(
+      createCorsOptions(
+        createCorsOriginHandler(isOriginAllowed, allowedOrigins)
+      )
+    )
   );
 
   const generateStats = createRegionOnRequest(functions, app);

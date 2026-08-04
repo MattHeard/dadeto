@@ -19,6 +19,7 @@ describe('tree visibility', () => {
   });
 
   test('calculates visibility deltas with defaults', () => {
+    expect(getVisibilityDelta()).toBe(0);
     expect(getVisibilityDelta({}, { visibility: 0.4 })).toBe(-0.6);
     expect(addTreeVisibilityDelta({ treeVisibilitySum: 2 }, 0.5)).toBe(2.5);
     expect(resolveVariantVisibility({ visibility: null })).toBe(1);

@@ -736,6 +736,16 @@ export function createCorsOriginHandler(isAllowedOriginFn, allowedOrigins) {
 }
 
 /**
+ * Allow requests without an Origin header or from the configured allowlist.
+ * @param {string | null | undefined} origin Request origin.
+ * @param {string[]} allowedOrigins Configured origins.
+ * @returns {boolean} Whether the origin is allowed.
+ */
+export function isOriginAllowed(origin, allowedOrigins) {
+  return !origin || allowedOrigins.includes(origin);
+}
+
+/**
  * Determine whether an origin is permitted based on the provided whitelist.
  * @param {string | null | undefined} origin Request origin header.
  * @param {string[]} allowedOrigins Allowed origins whitelist.
