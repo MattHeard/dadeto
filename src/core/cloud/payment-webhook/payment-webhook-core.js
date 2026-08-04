@@ -26,8 +26,8 @@ export function createPaymentWebhookIndexHandler({
 }) {
   const db = createDb(firestore, env);
   const handleRequest = createPaymentWebhookHandler({
-    fetchCredit: createFetchCredit(/** @type {any} */ (db)),
-    applyCreditEvent: createApplyCreditEvent(/** @type {any} */ (db)),
+    fetchCredit: createFetchCredit(db),
+    applyCreditEvent: createApplyCreditEvent(db),
     resolveApiKeyUuid: createResolveApiKeyUuid({
       findApiKeyUuidByCustomerId: async customerId => {
         const snap = await db
@@ -63,7 +63,7 @@ export function createPaymentWebhookIndexHandler({
 
   return async function handle(req, res) {
     const response = await handlePaymentWebhookRequest(handleRequest, req);
-    return sendPaymentWebhookResponse(/** @type {any} */ (res), response);
+    return sendPaymentWebhookResponse(res, response);
   };
 }
 
@@ -105,7 +105,9 @@ async function sendPaymentWebhookResponse(res, response) {
   if (response.headers) {
     for (const [key, value] of Object.entries(response.headers)) {
       if (typeof value !== 'undefined') {
-        /** @type {any} */ (res).set?.(key, value);
+        /** @type {{ set?: (name: string, value: string) => void }} */ (
+          res
+        ).set?.(key, value);
       }
     }
   }
