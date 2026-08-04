@@ -68,6 +68,19 @@ bd close <id>         # Complete work
 
 **Architecture in one line:** issues live in a local Dolt DB; sync uses `refs/dolt/data` on your git remote; `.beads/issues.jsonl` is a passive export. See https://github.com/gastownhall/beads/blob/main/docs/SYNC_CONCEPTS.md for details and anti-patterns.
 
+### New worktree setup
+
+The embedded Dolt database is local and ignored by Git, so a newly created Git worktree has the Beads configuration and JSONL export but not the local database. Before using `bd` in a new worktree, initialize it from the export:
+
+```bash
+cd /path/to/new/worktree
+bd init --reinit-local --from-jsonl --non-interactive
+bd prime
+bd status
+```
+
+If initialization reports a permissions warning, run `chmod 700 .beads` in that worktree and retry. Do not copy `.beads/embeddeddolt` between worktrees; each worktree needs its own local database. If the tracked JSONL export is unavailable, stop and ask the orchestrator before reinitializing from another source.
+
 ## Session Completion
 
 **When ending a work session**, you MUST complete ALL steps below. Work is NOT complete until `git push` succeeds.
