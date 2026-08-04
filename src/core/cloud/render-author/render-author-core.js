@@ -2,7 +2,7 @@
 /* eslint-disable no-ternary, complexity -- renderer normalization keeps the trigger path compact. */
 import { renderHtmlTemplate } from '../html-template.js';
 
-/** @typedef {{ collectionGroup?: (name: string) => { where: Function }; collection?: (name: string) => { doc: (id: string) => { get: Function } } }} AuthorDatabase */
+/** @typedef {{ collectionGroup?: (name: string) => { where: (field: string, operator: string, value: unknown) => unknown }; collection?: (name: string) => { doc: (id: string) => { get: () => Promise<unknown> } } }} AuthorDatabase */
 
 /**
  * Render an author landing page from an author document.
@@ -76,8 +76,8 @@ function escapeHtml(value) {
 
 /**
  * Create the Firestore author-write handler.
- * @param {{ bucket: { file: (path: string) => { save: Function } }, db?: AuthorDatabase, deleteField: () => unknown }} deps Dependencies.
- * @returns {(change: any) => Promise<null>} Handler.
+ * @param {{ bucket: { file: (path: string) => { save: (content: unknown, options?: object) => Promise<void> } }, db?: AuthorDatabase, deleteField: () => unknown }} deps Dependencies.
+ * @returns {(change: { after: { exists: boolean, data: () => Record<string, unknown>, ref: { id: string } } }) => Promise<null>} Handler.
  */
 export function createRenderAuthorHandler({ bucket, db, deleteField }) {
   return async change => {
