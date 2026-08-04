@@ -32,7 +32,7 @@ import {
  * @returns {{ renderVariant: unknown, render: (...args: unknown[]) => Promise<null> }} Wired cloud export objects for index.js.
  */
 export function runRenderVariant(deps) {
-  const typedDeps = /** @type {any} */ (deps);
+  const typedDeps = deps;
   const {
     initializeApp,
     createFirebaseAppManager,
@@ -47,41 +47,32 @@ export function runRenderVariant(deps) {
   } = typedDeps;
   const resolvedConsole = consoleLike ?? globalThis.console;
 
-  const renderState = /** @type {any} */ (createRenderVariantEntrypointState());
+  const renderState = createRenderVariantEntrypointState();
   const { render: resolveRenderVariant, db } = renderState;
 
-  const handleVariantWrite = /** @type {any} */ (createHandleVariantWrite)({
-    renderVariant: /** @type {(snap: any) => Promise<null>} */ (
-      snap => Promise.resolve(resolveRenderVariant()(snap))
-    ),
+  const handleVariantWrite = createHandleVariantWrite({
+    renderVariant: snap => Promise.resolve(resolveRenderVariant()(snap)),
     getDeleteSentinel: () => FieldValue.delete(),
     db,
   });
 
-  const renderVariant = /** @type {any} */ (
-    createFirestoreDocumentOnWriteTrigger({
-      functions,
-      region: 'europe-west1',
-      documentPath: 'stories/{storyId}/pages/{pageId}/variants/{variantId}',
-      handler: change => handleVariantWrite(change),
-    })
-  );
+  const renderVariant = createFirestoreDocumentOnWriteTrigger({
+    functions,
+    region: 'europe-west1',
+    documentPath: 'stories/{storyId}/pages/{pageId}/variants/{variantId}',
+    handler: change => handleVariantWrite(change),
+  });
 
-  const render = /** @type {(...args: any[]) => any} */ (
-    (...args) =>
-      /** @type {(...args: unknown[]) => unknown} */ (resolveRenderVariant())(
-        ...args
-      )
-  );
+  const render = (...args) => resolveRenderVariant()(...args);
 
-  return /** @type {any} */ ({ renderVariant, render });
+  return { renderVariant, render };
 
   /**
    * Assemble the shared render state for the variant entrypoint.
    * @returns {unknown} Shared render state consumed by the cloud wrapper.
    */
   function createRenderVariantEntrypointState() {
-    const renderStateOptions = /** @type {any} */ ({});
+    const renderStateOptions = {};
     renderStateOptions.initializeApp = initializeApp;
     renderStateOptions.createFirebaseAppManager = createFirebaseAppManager;
     renderStateOptions.getFirestoreInstance = getFirestoreInstance;
@@ -92,18 +83,13 @@ export function runRenderVariant(deps) {
     renderStateOptions.resolveObjectPrefix = resolveStaticObjectPrefix;
     renderStateOptions.entrypointKind = 'variant';
     renderStateOptions.defaultBucketName = DEFAULT_BUCKET_NAME;
-    renderStateOptions.buildRender = /** @type {any} */ (
-      /** @type {any} */ (createCloudRenderInstanceBuilder)({
-        createRenderer: createRenderVariant,
-        crypto,
-        consoleError: /** @type {(...args: any[]) => void} */ (
-          (...args) => resolvedConsole.error(...args)
-        ),
-      })
-    );
-    const renderEntrypointState = /** @type {any} */ (
-      /** @type {any} */ (createCloudRenderEntrypointState)(renderStateOptions)
-    );
+    renderStateOptions.buildRender = createCloudRenderInstanceBuilder({
+      createRenderer: createRenderVariant,
+      crypto,
+      consoleError: (...args) => resolvedConsole.error(...args),
+    });
+    const renderEntrypointState =
+      createCloudRenderEntrypointState(renderStateOptions);
 
     return renderEntrypointState;
   }
