@@ -7,14 +7,15 @@ import {
 import { createErrorBeaconHandler } from './errors-core.js';
 
 /**
+ * @typedef {{ use: (middleware: unknown) => void, post: (path: string, handler: unknown) => void }} ErrorBeaconApp
  * @typedef {{ debug?: (...args: unknown[]) => void, error?: (...args: unknown[]) => void }} ErrorBeaconConsole
  */
 
 /**
  * Build the Cloud Function handler for browser error beacons.
  * @param {{
- *   express: any,
- *   cors: any,
+ *   express: { (): ErrorBeaconApp, json: (options: object) => unknown, text: (options: object) => unknown },
+ *   cors: (options: object) => unknown,
  *   getEnvironmentVariables: () => Record<string, string | undefined>,
  *   console?: ErrorBeaconConsole,
  *   fetchFn: typeof fetch,
@@ -23,12 +24,12 @@ import { createErrorBeaconHandler } from './errors-core.js';
  */
 export function createErrorBeaconRun(deps) {
   const app = deps.express();
-  /** @type {any} */ (app).use(
+  app.use(
     deps.express.json({
       type: ['application/json', 'application/*+json'],
     })
   );
-  /** @type {any} */ (app).use(deps.express.text({ type: 'text/plain' }));
+  app.use(deps.express.text({ type: 'text/plain' }));
   const environmentVariables = getErrorBeaconEnvironmentVariables(
     deps.getEnvironmentVariables()
   );
@@ -41,7 +42,7 @@ export function createErrorBeaconRun(deps) {
       resolveAllowedOrigins(environmentVariables)
     )
   );
-  /** @type {any} */ (app).use(deps.cors(corsOptions));
+  app.use(deps.cors(corsOptions));
 
   const env = environmentVariables;
   const projectId =
@@ -82,8 +83,8 @@ export function createErrorBeaconRun(deps) {
   });
 
   const handleErrorBeacon = async (
-    /** @type {any} */ request,
-    /** @type {any} */ response
+    /** @type {import('express').Request} */ request,
+    /** @type {import('express').Response} */ response
   ) => {
     /* istanbul ignore next -- production middleware normally parses the body. */
     if (typeof request.body === 'string') {
@@ -96,8 +97,8 @@ export function createErrorBeaconRun(deps) {
     await handleParsedErrorBeacon(request, response);
   };
 
-  /** @type {any} */ (app).post('/', handleErrorBeacon);
-  /** @type {any} */ (app).post('/errors', handleErrorBeacon);
+  app.post('/', handleErrorBeacon);
+  app.post('/errors', handleErrorBeacon);
 
   return { handle: app };
 }

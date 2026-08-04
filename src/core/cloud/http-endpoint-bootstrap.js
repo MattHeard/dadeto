@@ -4,14 +4,16 @@
  * Middleware, routing policy, and handler behavior remain the caller's
  * responsibility; this helper only performs the repeated Express/Functions
  * wiring.
+ * @typedef {{ use: (middleware: unknown) => void, [method: string]: (path: string, handler: unknown) => void }} CloudHttpApp
+ * @typedef {{ region: (region: string) => { https: { onRequest: (app: CloudHttpApp) => unknown } } }} CloudFunctions
  * @param {{
- *   express: () => any,
+ *   express: () => CloudHttpApp,
  *   middleware: unknown[],
- *   route: { method: string, path: string, handler: any },
- *   functions: any,
+ *   route: { method: string, path: string, handler: unknown },
+ *   functions: CloudFunctions,
  *   region?: string,
  * }} options Endpoint wiring supplied by the owning endpoint.
- * @returns {{ app: any, handle: any }} The Express app and registered Cloud Function.
+ * @returns {{ app: CloudHttpApp, handle: unknown }} The Express app and registered Cloud Function.
  */
 export function createCloudHttpEndpoint({
   express,
