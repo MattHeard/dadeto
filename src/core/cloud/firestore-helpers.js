@@ -67,9 +67,5 @@ export function getFirestoreForDatabase(
  * @returns {import('firebase-admin/firestore').Firestore} Firestore client.
  */
 export function createFirestoreInstance(getFirestoreFn, databaseId) {
-  return getFirestoreForDatabase(
-    getFirestoreFn,
-    /** @type {any} */ (undefined),
-    databaseId
-  );
+  return getFirestoreForDatabase(getFirestoreFn, undefined, databaseId);
 }
