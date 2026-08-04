@@ -20,7 +20,7 @@
 
 /**
  * Environment map passed to toys.
- * @typedef {Map<'getRandomNumber'|'getCurrentTime'|'getData'|'setLocalTemporaryData', Function>} CozyEnvironment
+ * @typedef {Map<'getRandomNumber'|'getCurrentTime'|'getData'|'setLocalTemporaryData', (...args: unknown[]) => unknown>} CozyEnvironment
  */
 
 /**
@@ -119,7 +119,7 @@ function createContextTransition(context, output, state) {
 
 /**
  * Read a required helper from the environment map.
- * @template {Function} T
+ * @template {(...args: unknown[]) => unknown} T
  * @param {CozyEnvironment} env Environment map from toy runtime.
  * @param {'getRandomNumber'|'getCurrentTime'|'getData'|'setLocalTemporaryData'} key Dependency name.
  * @param {string} label Human-readable dependency label.

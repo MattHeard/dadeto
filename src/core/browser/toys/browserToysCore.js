@@ -2,7 +2,7 @@ import { deepClone, safeParseJson, valueOr } from '../browser-core.js';
 import { isNonNullObject, isValidString } from '../../commonCore.js';
 
 /**
- * @typedef {( ...args: any[]) => any} EnvHelperFunc
+ * @typedef {( ...args: unknown[]) => unknown} EnvHelperFunc
  * @typedef {Map<string, EnvHelperFunc>} ToyEnv
  * @typedef {{ stories: object[], pages: object[], options: object[] }} Dend2Data
  * @typedef {{ TRAN1?: Dend2Data, DEND2?: Dend2Data }} TempStorage
@@ -95,7 +95,7 @@ export function runToyWithParsedJson(input, handler) {
 
 /**
  * Check whether a value is a plain object.
- * @param {*} value - Value to inspect.
+ * @param {unknown} value - Value to inspect.
  * @returns {boolean} True when the value is a non-array object.
  */
 export function isPlainObject(value) {
@@ -197,8 +197,8 @@ function isValidDend2Structure(obj) {
 
 /**
  * Try to get a valid DEND2 structure from a candidate source.
- * @param {any} candidate - Candidate DEND2 structure.
- * @returns {any | null} Valid structure or null.
+ * @param {unknown} candidate - Candidate DEND2 structure.
+ * @returns {unknown | null} Valid structure or null.
  */
 function getValidDend2OrNull(candidate) {
   if (isValidDend2Structure(candidate)) {
@@ -210,7 +210,7 @@ function getValidDend2OrNull(candidate) {
 /**
  * Extract TRAN1 from temporary storage.
  * @param {TempStorage | undefined} temporary Temporary storage.
- * @returns {any | null} Valid TRAN1 or null.
+ * @returns {unknown | null} Valid TRAN1 or null.
  */
 function extractValidTran1(temporary) {
   return getValidDend2OrNull(temporary?.TRAN1);
@@ -219,7 +219,7 @@ function extractValidTran1(temporary) {
 /**
  * Extract DEND2 from temporary storage.
  * @param {TempStorage | undefined} temporary Temporary storage.
- * @returns {any | null} Valid DEND2 or null.
+ * @returns {unknown | null} Valid DEND2 or null.
  */
 function extractValidDend2(temporary) {
   return getValidDend2OrNull(temporary?.DEND2);
@@ -228,7 +228,7 @@ function extractValidDend2(temporary) {
 /**
  * Try primary TRAN1 first, then fall back to legacy DEND2.
  * @param {TempStorage | undefined} temporary - Temporary storage.
- * @returns {any | null} Valid structure or null.
+ * @returns {unknown | null} Valid structure or null.
  */
 function tryResolveLegacyStructure(temporary) {
   const tran1 = extractValidTran1(temporary);
@@ -241,7 +241,7 @@ function tryResolveLegacyStructure(temporary) {
 /**
  * Resolve TRAN1 structure from available sources.
  * @param {ToyStorage} data - Storage object.
- * @returns {any} Valid TRAN1 structure.
+ * @returns {unknown} Valid TRAN1 structure.
  */
 function resolveTran1Structure(data) {
   const resolved = tryResolveLegacyStructure(data.temporary);

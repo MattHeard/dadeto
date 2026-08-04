@@ -53,7 +53,7 @@
 
 /**
  * Environment functions exposed to toys.
- * @typedef {Map<AdventureEnvKey, Function>} AdventureEnvironment
+ * @typedef {Map<AdventureEnvKey, (...args: unknown[]) => unknown>} AdventureEnvironment
  */
 
 /**
@@ -471,7 +471,7 @@ function getUpdatedVisited(result, nextVisited) {
 }
 
 /**
- * @template {Function} T
+ * @template {(...args: unknown[]) => unknown} T
  * @param {AdventureEnvironment} env - Environment map containing the toy helpers.
  * @param {AdventureEnvKey} key - Dependency key to retrieve.
  * @param {string} label - Human-friendly label used in error reporting.
