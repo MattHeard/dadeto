@@ -1237,7 +1237,7 @@ async function pickNextModerationVariantFromCollectionGroup(db, currentPath) {
  * Collect eligible moderation variants from the nested story/page tree.
  * @param {ReturnType<typeof createDb>} db Firestore-like database.
  * @param {string | undefined} currentPath Current moderator assignment path.
- * @returns {Promise<Array<{ doc: { ref: { path: string }, data?: () => any }, createdAt: number, rand: number, path: string }>>} Candidate variants.
+ * @returns {Promise<Array<{ doc: { ref: { path: string }, data?: () => unknown }, createdAt: number, rand: number, path: string }>>} Candidate variants.
  */
 async function collectModerationVariantCandidates(db, currentPath) {
   const storiesSnap = await db.collection('stories').get();
@@ -1263,9 +1263,9 @@ async function collectModerationVariantCandidates(db, currentPath) {
 
 /**
  * Add eligible variants from a page collection into the candidate list.
- * @param {Array<{ ref: { collection: (name: string) => { get: () => Promise<{ docs: Array<any> }> } } }>} pageDocs Page documents.
+ * @param {Array<{ ref: { collection: (name: string) => { get: () => Promise<{ docs: Array<unknown> }> } } }>} pageDocs Page documents.
  * @param {string | undefined} currentPath Current moderator assignment path.
- * @param {Array<{ doc: { ref: { path: string }, data?: () => any }, createdAt: number, rand: number, path: string }>} candidates Candidate list.
+ * @param {Array<{ doc: { ref: { path: string }, data?: () => unknown }, createdAt: number, rand: number, path: string }>} candidates Candidate list.
  * @returns {Promise<void>} Resolves after the page variants are scanned.
  */
 async function collectPageVariantCandidates(pageDocs, currentPath, candidates) {
@@ -1285,9 +1285,9 @@ async function collectPageVariantCandidates(pageDocs, currentPath, candidates) {
 
 /**
  * Build a sortable moderation variant candidate when the variant is eligible.
- * @param {{ ref: { path: string }, data?: () => any }} variantDoc Variant document.
+ * @param {{ ref: { path: string }, data?: () => unknown }} variantDoc Variant document.
  * @param {string | undefined} currentPath Current moderator assignment path.
- * @returns {{ doc: { ref: { path: string }, data?: () => any }, createdAt: number, rand: number, path: string } | null} Candidate or null.
+ * @returns {{ doc: { ref: { path: string }, data?: () => unknown }, createdAt: number, rand: number, path: string } | null} Candidate or null.
  */
 function buildModerationVariantCandidate(variantDoc, currentPath) {
   const data = variantDoc.data?.() ?? {};
@@ -1322,7 +1322,7 @@ function isEligibleModerationVariant(data, path, currentPath) {
  * Create a sortable moderation candidate entry.
  * @param {{ ref: { path: string } }} variantDoc Variant document.
  * @param {Record<string, unknown>} data Variant data.
- * @returns {{ doc: { ref: { path: string }, data?: () => any }, createdAt: number, rand: number, path: string }} Candidate entry.
+ * @returns {{ doc: { ref: { path: string }, data?: () => unknown }, createdAt: number, rand: number, path: string }} Candidate entry.
  */
 function createModerationVariantCandidate(variantDoc, data) {
   return {
@@ -1340,8 +1340,8 @@ function createModerationVariantCandidate(variantDoc, data) {
  * @returns {Promise<{ status: number, body?: unknown }>} Route response.
  */
 async function handleSubmitModerationRating(
-  /** @type {any} */ deps,
-  /** @type {any} */ request
+  /** @type {unknown} */ deps,
+  /** @type {unknown} */ request
 ) {
   const uid = resolveUid(request);
   if (!uid) {
@@ -1382,10 +1382,10 @@ async function handleSubmitModerationRating(
 
 /**
  * Re-run content rendering for all known stories.
- * @param {{ db: ReturnType<typeof createDb>, renderContents: Function }} deps Route dependencies.
+ * @param {{ db: ReturnType<typeof createDb>, renderContents: (...args: unknown[]) => unknown }} deps Route dependencies.
  * @returns {Promise<{ status: number, body?: unknown }>} Route response.
  */
-async function handleTriggerRenderContents(/** @type {any} */ deps) {
+async function handleTriggerRenderContents(/** @type {unknown} */ deps) {
   const storiesSnap = await deps.db.collection('stories').get();
   for (const storyDoc of storiesSnap.docs) {
     await deps.renderContents(storyDoc, { params: { storyId: storyDoc.id } });
@@ -1400,8 +1400,8 @@ async function handleTriggerRenderContents(/** @type {any} */ deps) {
  * @returns {Promise<{ status: number, body?: unknown }>} Route response.
  */
 async function handleMarkVariantDirty(
-  /** @type {any} */ deps,
-  /** @type {any} */ request
+  /** @type {unknown} */ deps,
+  /** @type {unknown} */ request
 ) {
   const body = request?.body || {};
   const pageNumber = Number(body.pageNumber);
@@ -1437,10 +1437,10 @@ async function handleMarkVariantDirty(
 
 /**
  * Run stats generation for the seeded fixture.
- * @param {{ generateStatsCore: { generate: Function } }} deps Route dependencies.
+ * @param {{ generateStatsCore: { generate: (...args: unknown[]) => unknown } }} deps Route dependencies.
  * @returns {Promise<{ status: number, body?: unknown }>} Route response.
  */
-async function handleGenerateStats(/** @type {any} */ deps) {
+async function handleGenerateStats(/** @type {unknown} */ deps) {
   await deps.generateStatsCore.generate();
   return { status: 200, body: { ok: true } };
 }
@@ -1450,7 +1450,7 @@ async function handleGenerateStats(/** @type {any} */ deps) {
  * @param {unknown} request Incoming request object.
  * @returns {string | null} Authenticated user id or null.
  */
-function resolveUid(/** @type {any} */ request) {
+function resolveUid(/** @type {unknown} */ request) {
   const header = getAuthorizationHeader(request);
   if (!header) {
     return null;
@@ -1498,8 +1498,8 @@ function createRandomSource() {
  * @returns {{ uid: string | null, token?: string }} Auth result.
  */
 function createAuthResult(
-  /** @type {any} */ token,
-  /** @type {any} */ includeToken
+  /** @type {unknown} */ token,
+  /** @type {unknown} */ includeToken
 ) {
   if (!token) {
     return { uid: null };
