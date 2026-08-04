@@ -69,7 +69,7 @@ function getCountValue(counts, moderatorId) {
 
 /**
  * Parse the toy input as an array, defaulting to an empty list on failure.
- * @param {*} value - Raw input value from the toy UI.
+ * @param {unknown} value - Raw input value from the toy UI.
  * @returns {Array<unknown>} Array of parsed entries or an empty array.
  */
 function parseRatings(value) {
@@ -94,7 +94,7 @@ function buildResultArray(counts) {
 
 /**
  * Verify that the candidate satisfies the rating schema.
- * @param {*} candidate - Entry parsed from the input array.
+ * @param {unknown} candidate - Entry parsed from the input array.
  * @returns {candidate is ModeratorRatingEntry} True when the entry contains valid fields.
  */
 function isValidRating(candidate) {
@@ -140,7 +140,7 @@ function hasRequiredFields(candidate) {
 
 /**
  * Detect plain objects, excluding arrays and null.
- * @param {*} value - Value to inspect.
+ * @param {unknown} value - Value to inspect.
  * @returns {boolean} True when the value is a plain object.
  */
 function isPlainObject(value) {
@@ -149,7 +149,7 @@ function isPlainObject(value) {
 
 /**
  * Confirm the timestamp parses as ISO 8601.
- * @param {*} value - Value stored on `ratedAt`.
+ * @param {unknown} value - Value stored on `ratedAt`.
  * @returns {boolean} True when the string can be parsed as a date.
  */
 function isIso8601String(value) {

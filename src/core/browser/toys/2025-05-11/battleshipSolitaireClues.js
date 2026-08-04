@@ -4,7 +4,7 @@
  * Toy signature:  generateClues(input: string): string
  *   input : JSON string of a { width, height, ships } object
  * Returns a JSON string of { rowClues: number[], colClues: number[] }  or { error }
- * @returns {*} - description
+ * @returns {unknown} - description
  */
 
 import {

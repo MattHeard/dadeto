@@ -2,7 +2,7 @@
 
 /**
  * Check that the value is an object, excluding `null` and arrays.
- * @param {*} val Candidate to inspect.
+ * @param {unknown} val Candidate to inspect.
  * @returns {boolean} True when `val` is an ordinary object.
  */
 function isNonNullNonArray(val) {
@@ -11,7 +11,7 @@ function isNonNullNonArray(val) {
 
 /**
  * Determine whether the input is a non-null object.
- * @param {*} val Candidate value.
+ * @param {unknown} val Candidate value.
  * @returns {boolean} True when `val` is an object suitable for property access.
  */
 export function isObject(val) {

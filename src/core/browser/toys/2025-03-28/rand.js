@@ -3,7 +3,7 @@
  * ignores the string, and returns the result of calling the function.
  * @param {string} input - A string input that is ignored
  * @param {Map<string, () => unknown>} env - A Map containing a key "getRandomNumber".
- * @returns {*} The result of calling the getRandomNumber function
+ * @returns {unknown} The result of calling the getRandomNumber function
  */
 export function rand(input, env) {
   // Ignore the input string

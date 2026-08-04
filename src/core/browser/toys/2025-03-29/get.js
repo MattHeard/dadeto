@@ -3,7 +3,7 @@ import { whenOrNull } from '../../../commonCore.js';
 /**
  * Tracks the traversal progress as `get` walks through each path segment.
  * @typedef {object} PathTraversalState
- * @property {*} value - Current value found at the segment.
+ * @property {unknown} value - Current value found at the segment.
  * @property {string} path - The fully qualified path used so far.
  * @property {string|null} error - Error message when traversal fails.
  */
@@ -23,7 +23,7 @@ function isErrorString(value) {
  * Retrieve the value located at the provided path within the data.
  * @param {object|unknown[]} data - Object or array to traverse.
  * @param {string} input - Dot separated path string.
- * @returns {*|string} The found value or an error string.
+ * @returns {unknown|string} The found value or an error string.
  */
 function getValueAtPath(data, input) {
   const pathSegments = input.split('.');
@@ -34,7 +34,7 @@ function getValueAtPath(data, input) {
  * Walk through each segment of the path to obtain the final value.
  * @param {object|unknown[]} data - Data structure being traversed.
  * @param {string[]} pathSegments - Individual path tokens.
- * @returns {*|string} Resulting value or an error string.
+ * @returns {unknown|string} Resulting value or an error string.
  */
 function traversePathSegments(data, pathSegments) {
   /** @type {PathTraversalState} */
@@ -59,7 +59,7 @@ function traversePathSegments(data, pathSegments) {
 
 /**
  * Continue traversal into the next segment.
- * @param {*} currentValue - Current value at the path.
+ * @param {unknown} currentValue - Current value at the path.
  * @param {string} segment - Segment being processed.
  * @param {string} currentPath - Path accumulated so far.
  * @returns {PathTraversalState} Result after this step.
@@ -112,7 +112,7 @@ function getSegmentValueOrError(currentValue, segment, nextPath) {
 
 /**
  * Build a traversal state object.
- * @param {*} value Value at the current traversal point.
+ * @param {unknown} value Value at the current traversal point.
  * @param {string} path Fully qualified traversal path.
  * @param {string | null} error Error message when traversal failed.
  * @returns {PathTraversalState} Structured traversal state.
@@ -123,7 +123,7 @@ function createTraversalState(value, path, error) {
 
 /**
  * Build a successful traversal state for a resolved value.
- * @param {*} value Resolved traversal value.
+ * @param {unknown} value Resolved traversal value.
  * @param {string} path Fully qualified traversal path.
  * @returns {PathTraversalState} Structured traversal state with no error.
  */
@@ -166,7 +166,7 @@ function getSegmentObjectValue(currentValue, segment, nextPath) {
 
 /**
  * Create an error message when a segment is accessed on a non-object value.
- * @param {*} currentValue - Value being accessed.
+ * @param {unknown} currentValue - Value being accessed.
  * @param {string} segment - Segment name.
  * @param {string} currentPath - Full path used for the lookup.
  * @returns {string|null} Error string when invalid, otherwise null.
@@ -185,7 +185,7 @@ function getNonObjectSegmentError(currentValue, segment, currentPath) {
 
 /**
  * Create a structured result when a segment access occurs on a non-object.
- * @param {*} currentValue - Value being accessed.
+ * @param {unknown} currentValue - Value being accessed.
  * @param {string} segment - Segment name.
  * @param {string} nextPath - Full path including the current segment.
  * @returns {PathTraversalState|null} State describing the failure or null when valid.
@@ -203,7 +203,7 @@ function createNonObjectErrorResult(currentValue, segment, nextPath) {
 
 /**
  * Determine if the provided value is not an object.
- * @param {*} value - Value to evaluate.
+ * @param {unknown} value - Value to evaluate.
  * @returns {boolean} True when the value is null or not of type 'object'.
  */
 function isNonObjectValue(value) {
@@ -281,7 +281,7 @@ function handleEmptyInputInGet(
 
 /**
  * Convert the traversal result into a final string response.
- * @param {*} valueOrError - Value returned from traversal.
+ * @param {unknown} valueOrError - Value returned from traversal.
  * @param {string} input - Original path string.
  * @returns {string} JSON stringified value or error message.
  */
@@ -294,7 +294,7 @@ function handleValueOrErrorResult(valueOrError, input) {
 
 /**
  * Safely stringify a value for returning to the caller.
- * @param {*} value - Value to stringify.
+ * @param {unknown} value - Value to stringify.
  * @param {string} input - Original path string for error reporting.
  * @returns {string} Stringified value or error description.
  */
@@ -308,7 +308,7 @@ function safeStringifyValueAtPath(value, input) {
 
 /**
  * Format the stringification failure message.
- * @param {*} stringifyError - Error thrown while stringifying.
+ * @param {unknown} stringifyError - Error thrown while stringifying.
  * @param {string} input - Original path string.
  * @returns {string} User-facing error message describing the failure.
  */
@@ -324,7 +324,7 @@ function formatStringifyError(stringifyError, input) {
 
 /**
  * Validate that the data returned by `getData` is usable.
- * @param {*} data - Value returned by the environment.
+ * @param {unknown} data - Value returned by the environment.
  * @returns {string|null} Error message when invalid, otherwise null.
  */
 function checkDataValidityInGet(data) {
@@ -336,7 +336,7 @@ function checkDataValidityInGet(data) {
 
 /**
  * Determine whether the data returned by `getData` is invalid.
- * @param {*} data - Data to test.
+ * @param {unknown} data - Data to test.
  * @returns {boolean} True when the data is null or not an object/array.
  */
 function isInvalidGetDataResult(data) {
@@ -345,7 +345,7 @@ function isInvalidGetDataResult(data) {
 
 /**
  * Check whether the given value is neither an object nor an array.
- * @param {*} data - Value to examine.
+ * @param {unknown} data - Value to examine.
  * @returns {boolean} True if data is not an object and not an array.
  */
 function isNotObjectOrArray(data) {
@@ -374,9 +374,9 @@ function handleDataRetrievalErrorInGet(error) {
 
 /**
  * Execute `getData` and capture any thrown errors.
- * @param {Function} getData - Function providing the data.
+ * @param {() => unknown} getData - Function providing the data.
  * @param {string} input - Path string for contextual error messages.
- * @returns {{data: *|null, error: string|null}} Object containing data or error.
+ * @returns {{data: unknown|null, error: string|null}} Object containing data or error.
  */
 function getDataWithCatch(getData, input) {
   try {
@@ -391,7 +391,7 @@ function getDataWithCatch(getData, input) {
 
 /**
  * Build the error string returned when `getData` throws.
- * @param {*} error - Raw value thrown by the environment call.
+ * @param {unknown} error - Raw value thrown by the environment call.
  * @param {string} input - Path string used when calling `getData`.
  * @returns {string} Formatted error string for diagnostics.
  */

@@ -6,7 +6,7 @@ import { tryOr } from '../../common.js';
 
 /**
  * Resolve TRAN1 stories from temporary storage.
- * @param {*} data - Application state data.
+ * @param {unknown} data - Application state data.
  * @returns {object[] | undefined} Stories from TRAN1 or undefined.
  */
 function resolveTran1Stories(data) {
@@ -15,7 +15,7 @@ function resolveTran1Stories(data) {
 
 /**
  * Resolve TRAN1 stories with DEND2 fallback.
- * @param {*} data - Application state data.
+ * @param {unknown} data - Application state data.
  * @returns {object[] | undefined} Resolved stories array or undefined.
  */
 function resolveTran1StoriesWithFallback(data) {
@@ -24,7 +24,7 @@ function resolveTran1StoriesWithFallback(data) {
 
 /**
  * Safely retrieve nested DEND2 stories.
- * @param {*} data - Application state data.
+ * @param {unknown} data - Application state data.
  * @returns {object[] | undefined} Possibly undefined stories array.
  */
 function extractDend2Stories(data) {
@@ -34,7 +34,7 @@ function extractDend2Stories(data) {
 
 /**
  * Extract valid stories from the provided data object.
- * @param {*} data - Application state data.
+ * @param {unknown} data - Application state data.
  * @returns {object[]} Array of story objects.
  */
 function getStories(data) {
@@ -55,8 +55,8 @@ function collectTitles(stories) {
 
 /**
  * Gather titles from temporary DEND2 storage.
- * @param {*} input - Unused value.
- * @param {Map<string, Function>} env - Environment with a `getData` accessor.
+ * @param {unknown} input - Unused value.
+ * @param {Map<string, () => unknown>} env - Environment with a `getData` accessor.
  * @returns {string} JSON string of story titles.
  */
 export function getDend2Titles(input, env) {
@@ -69,7 +69,7 @@ export function getDend2Titles(input, env) {
 
 /**
  * Retrieve story titles from the environment.
- * @param {Map<string, Function>} env - Environment with a `getData` accessor.
+ * @param {Map<string, () => unknown>} env - Environment with a `getData` accessor.
  * @returns {string[]} List of story titles.
  */
 function gatherTitles(env) {
