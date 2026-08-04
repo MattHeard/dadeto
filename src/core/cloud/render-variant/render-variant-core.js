@@ -1588,7 +1588,7 @@ async function getVisibleVariantsFromPage(targetPage, visibilityThreshold) {
      * @returns {boolean} True if the variant is visible.
      */
     doc =>
-      /** @type {any} */ (doc.data().visibility ?? 1) >= visibilityThreshold
+      /** @type {number} */ (doc.data().visibility ?? 1) >= visibilityThreshold
   );
 }
 
@@ -1634,7 +1634,7 @@ async function loadOptions({ snap, db, visibilityThreshold, consoleError }) {
      * @param {import('firebase-admin/firestore').DocumentData} b - Second option data.
      * @returns {number} Sorting weight.
      */
-    (a, b) => /** @type {any} */ (a).position - /** @type {any} */ (b).position
+    (a, b) => /** @type {{ position: number }} */ (a).position - /** @type {{ position: number }} */ (b).position
   );
 
   const safeConsoleError = consoleError ?? DEFAULT_CONSOLE_ERROR;
@@ -1647,7 +1647,7 @@ async function loadOptions({ snap, db, visibilityThreshold, consoleError }) {
        */
       data =>
         buildOptionMetadata({
-          data: /** @type {any} */ (data),
+          data: /** @type {Record<string, unknown>} */ (data),
           db,
           visibilityThreshold,
           consoleError: safeConsoleError,
@@ -1913,7 +1913,7 @@ function extractStoryRef(pageSnap) {
  * @returns {object | null} Document reference or null.
  */
 function getPageRef(pageSnap) {
-  return /** @type {any} */ (readNullableProperty(pageSnap, 'ref'));
+  return /** @type {unknown} */ (readNullableProperty(pageSnap, 'ref'));
 }
 
 /**
@@ -2185,7 +2185,7 @@ export function resolveParentReferences(optionRef) {
  * Fetch the parent variant and page documents.
  * @param {{ get: () => Promise<{ exists: boolean }> }} parentVariantRef Firestore-like document reference.
  * @param {{ get: () => Promise<{ exists: boolean }> }} parentPageRef Firestore-like document reference.
- * @returns {Promise<{ parentVariantSnap: { exists: boolean, data: () => Record<string, any> }, parentPageSnap: { exists: boolean, data: () => Record<string, any> } } | null>} Snapshot tuple when both documents exist, otherwise null.
+ * @returns {Promise<{ parentVariantSnap: { exists: boolean, data: () => Record<string, unknown> }, parentPageSnap: { exists: boolean, data: () => Record<string, unknown> } } | null>} Snapshot tuple when both documents exist, otherwise null.
  */
 /**
  * Check if snapshots exist.
@@ -2231,8 +2231,8 @@ function isRouteDataValid(parentName, parentNumber) {
 
 /**
  * Create the parent route slug from snapshot data.
- * @param {{ data: () => Record<string, any> }} parentVariantSnap Variant snapshot.
- * @param {{ data: () => Record<string, any> }} parentPageSnap Page snapshot.
+ * @param {{ data: () => Record<string, unknown> }} parentVariantSnap Variant snapshot.
+ * @param {{ data: () => Record<string, unknown> }} parentPageSnap Page snapshot.
  * @returns {string | null} Route path when identifiers can be derived, otherwise null.
  */
 function buildParentRoute(parentVariantSnap, parentPageSnap) {
@@ -2305,7 +2305,7 @@ function handleParentLookupError(error, consoleError) {
 /**
  * Log parent lookup error.
  * @param {Error} error Error.
- * @param {Function} consoleError Error logger.
+ * @param {ConsoleError} consoleError Error logger.
  */
 function logParentLookupError(error, consoleError) {
   const message = getErrorMessage(error);
@@ -2653,9 +2653,9 @@ function resolveSnapshotRef(snap) {
 
 /**
  * Resolve a Firestore document reference against the tenant database when possible.
- * @param {any} snap Candidate snapshot or document-like object.
+ * @param {unknown} snap Candidate snapshot or document-like object.
  * @param {FirestoreLike | null | undefined} db Firestore helper used to rebind the ref.
- * @returns {any} Tenant-bound document reference or the original ref when rebinding is unavailable.
+ * @returns {unknown} Tenant-bound document reference or the original ref when rebinding is unavailable.
  */
 function resolveTenantDocumentRef(snap, db) {
   const ref = resolveSnapshotRef(snap);
@@ -2672,9 +2672,9 @@ function resolveTenantDocumentRef(snap, db) {
 
 /**
  * Resolve the parent page reference from a variant snapshot using the tenant db when available.
- * @param {any} snap Variant snapshot.
+ * @param {unknown} snap Variant snapshot.
  * @param {FirestoreLike | null | undefined} db Firestore helper used to rebind the chain.
- * @returns {any} Tenant-bound page reference.
+ * @returns {unknown} Tenant-bound page reference.
  */
 function resolveTenantPageRef(snap, db) {
   const variantRef = resolveTenantDocumentRef(snap, db);
@@ -2684,8 +2684,8 @@ function resolveTenantPageRef(snap, db) {
 
 /**
  * Resolve the parent page reference from a variant document reference.
- * @param {any} variantRef Variant reference.
- * @returns {any} Tenant-bound page reference.
+ * @param {unknown} variantRef Variant reference.
+ * @returns {unknown} Tenant-bound page reference.
  */
 function resolveTenantPageRefFromVariantRef(variantRef) {
   return variantRef.parent.parent;
@@ -2693,9 +2693,9 @@ function resolveTenantPageRefFromVariantRef(variantRef) {
 
 /**
  * Resolve a Firestore collection reference against the tenant database when possible.
- * @param {any} ref Candidate collection reference.
+ * @param {unknown} ref Candidate collection reference.
  * @param {FirestoreLike | null | undefined} db Firestore helper used to rebind the collection.
- * @returns {any} Tenant-bound collection reference or the original ref when rebinding is unavailable.
+ * @returns {unknown} Tenant-bound collection reference or the original ref when rebinding is unavailable.
  */
 function rebindTenantCollectionRef(ref, db) {
   if (!ref) {
@@ -2882,7 +2882,7 @@ function buildRenderOutput(data) {
   });
   const filePath = `p/${page.number}${variant.name}.html`;
   const openVariant = options.some(
-    (/** @type {any} */ option) => option.targetPageNumber === undefined
+    (/** @type {OptionMetadata} */ option) => option.targetPageNumber === undefined
   );
   const reverseLinks = buildReverseLinkRecords({
     page,
@@ -2948,9 +2948,9 @@ export function didHideLastVisibleVariant(change, data, visibilityThreshold) {
 
 /**
  * Fetch and validate page.
- * @param {any} snap Snap.
+ * @param {unknown} snap Snap.
  * @param {FirestoreLike} db Tenant Firestore client.
- * @returns {Promise<any>} Page data.
+ * @returns {Promise<unknown>} Page data.
  */
 async function fetchAndValidatePage(snap, db) {
   const pageSnap = await fetchPageData(snap, db);
@@ -3241,7 +3241,7 @@ async function saveReverseLinkRecords({ snap, db, reverseLinks }) {
 
   await Promise.all(
     reverseLinks.map(record =>
-      /** @type {any} */ (
+      /** @type {{ set: (data: unknown) => Promise<unknown> }} */ (
         db.doc(
           `${variantRef.path}/reverse-links/${buildReverseLinkDocId(record)}`
         )
@@ -3399,7 +3399,7 @@ export function createHandleVariantWrite({
   /**
    * Decide whether the update hid a previously visible variant.
    * @param {FirestoreChange} change Variant change.
-   * @param {Record<string, any>} data New variant data.
+   * @param {Record<string, unknown>} data New variant data.
    * @param {number} visibilityThreshold Threshold value.
    * @returns {boolean} True when the variant moved from visible to hidden.
    */
