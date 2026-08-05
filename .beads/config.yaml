@@ -15,7 +15,6 @@
 
 # Disable daemon for RPC communication (forces direct database access)
 no-daemon: false
-
 # Disable auto-flush of database to JSONL after mutations
 # no-auto-flush: false
 
@@ -33,7 +32,6 @@ no-daemon: false
 
 # Auto-start daemon if not running (can also use BEADS_AUTO_START_DAEMON)
 auto-start-daemon: true
-
 # Debounce interval for auto-flush (can also use BEADS_FLUSH_DEBOUNCE)
 # flush-debounce: "5s"
 
@@ -43,6 +41,8 @@ auto-start-daemon: true
 # Can also use BEADS_SYNC_BRANCH env var for local override.
 # If not set, bd sync will require you to run 'bd config set sync.branch <branch>'.
 sync-branch: "beads-sync"
+sync:
+    remote: "git+https://github.com/MattHeard/dadeto.git"
 
 # Multi-repo configuration (experimental - bd-307)
 # Allows hydrating from multiple repositories and routing writes to the correct JSONL
