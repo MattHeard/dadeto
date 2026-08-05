@@ -51,6 +51,7 @@ const DEFAULT_ALLOWED_EVENT_TYPES = new Set([
  *   allowedEventTypes?: Set<string>,
  *   getAmountFromEvent?: (event: PaymentEvent) => number,
  *   getPaymentEvent?: (request: unknown) => Promise<PaymentEvent>,
+ *   handlePurchaseEvent?: (event: PaymentEvent) => Promise<PaymentWebhookResponse | null> | PaymentWebhookResponse | null,
  * }} PaymentWebhookDependencies
  */
 
@@ -71,6 +72,9 @@ export function createPaymentWebhookHandler(deps) {
       return { status: 200, body: { duplicate: true, eventId: event.id } };
     }
 
+    const purchaseResponse = await resolvePurchaseEvent(resolved, event);
+    if (purchaseResponse) return purchaseResponse;
+
     const uuid = await resolved.resolveApiKeyUuid(event);
     if (!uuid) {
       return { status: 400, body: 'Missing api key mapping' };
@@ -89,6 +93,20 @@ export function createPaymentWebhookHandler(deps) {
 }
 
 /**
+ * Resolve and record a purchase-specific event when configured.
+ * @param {ReturnType<typeof resolvePaymentWebhookDependencies>} resolved Runtime dependencies.
+ * @param {PaymentEvent} event Stripe event.
+ * @returns {Promise<PaymentWebhookResponse | null>} Purchase response or null.
+ */
+async function resolvePurchaseEvent(resolved, event) {
+  const response = await resolved.handlePurchaseEvent(event);
+  if (!response) return null;
+  const purchaseUuid = await resolved.resolveApiKeyUuid(event);
+  await resolved.markProcessedEvent(event, purchaseUuid ?? 'purchase');
+  return response;
+}
+
+/**
  * Resolve and validate webhook dependencies.
  * @param {PaymentWebhookDependencies | undefined} deps Dependencies.
  * @returns {{
@@ -101,6 +119,7 @@ export function createPaymentWebhookHandler(deps) {
  *   allowedEventTypes: Set<string>,
  *   getAmountFromEvent: (event: PaymentEvent) => number,
  *   getPaymentEvent: (request: unknown) => Promise<PaymentEvent>,
+ *   handlePurchaseEvent: (event: PaymentEvent) => Promise<PaymentWebhookResponse | null>,
  * }} Runtime webhook dependencies.
  */
 function resolvePaymentWebhookDependencies(deps) {
@@ -118,6 +137,9 @@ function resolvePaymentWebhookDependencies(deps) {
     getAmountFromEvent = defaultGetAmountFromEvent,
     getPaymentEvent = async request => extractPaymentEvent(request),
   } = typedDeps;
+  const handlePurchaseEvent = resolvePurchaseHandler(
+    typedDeps.handlePurchaseEvent
+  );
 
   requireWebhookDependency(fetchCredit, 'fetchCredit');
   requireWebhookDependency(applyCreditEvent, 'applyCreditEvent');
@@ -141,7 +163,18 @@ function resolvePaymentWebhookDependencies(deps) {
     allowedEventTypes,
     getAmountFromEvent,
     getPaymentEvent: async request => getPaymentEvent(request),
+    handlePurchaseEvent: async event => handlePurchaseEvent(event),
   };
+}
+
+/**
+ * Normalize the optional purchase-event dependency.
+ * @param {PaymentWebhookDependencies['handlePurchaseEvent']} handler Handler.
+ * @returns {(event: PaymentEvent) => Promise<PaymentWebhookResponse | null>} Normalized handler.
+ */
+function resolvePurchaseHandler(handler) {
+  if (!handler) return async () => null;
+  return async event => handler(event);
 }
 
 /**

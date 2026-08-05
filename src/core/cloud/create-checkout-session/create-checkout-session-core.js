@@ -21,6 +21,8 @@ const UUID =
  * saveCustomerMappings: (uid: string, customerId: string, apiKeyUuid: string) => Promise<unknown>,
  * getCreditPackage: (packageId: string) => Promise<{ active?: boolean, stripePriceId?: string, credits?: number, amountUsdMinor?: number, pricingSnapshot?: import('../billing/pricing-core.js').PricingSnapshot } | null>,
  * createStripeCheckoutSession: (options: object, options2: object) => Promise<{ id: string, url: string, expires_at: number }>,
+ * createPurchase?: (input: object) => Promise<{ purchaseId: string }>,
+ * savePurchaseCheckout?: (purchaseId: string, session: object) => Promise<unknown>,
  * publicBillingOrigin?: string,
  * resolveIdempotency?: (uid: string, key: string, packageId: string) => Promise<{ conflict?: boolean, session?: object } | null>,
  * saveIdempotency?: (uid: string, key: string, value: object) => Promise<unknown>,
@@ -158,13 +160,14 @@ function lineItemsForPackage(packageId, creditPackage) {
 
 /**
  * Build the Stripe Checkout payload.
- * @param {{ customerId: string, packageId: string, apiKeyUuid: string, uid: string, publicBillingOrigin: string, key: string, creditPackage: { credits: number, amountUsdMinor?: number, pricingSnapshot?: import('../billing/pricing-core.js').PricingSnapshot, stripePriceId?: string } }} input Checkout inputs.
+ * @param {{ customerId: string, packageId: string, purchaseId?: string, apiKeyUuid: string, uid: string, publicBillingOrigin: string, key: string, creditPackage: { credits: number, amountUsdMinor?: number, pricingSnapshot?: import('../billing/pricing-core.js').PricingSnapshot, stripePriceId?: string } }} input Checkout inputs.
  * @returns {{ options: object, idempotencyKey: string }} Stripe request.
  */
 function buildCheckoutRequest(input) {
   const { creditPackage } = input;
   const metadata = {
     ['api_key_uuid']: input.apiKeyUuid,
+    ['purchase_id']: input.purchaseId ?? '',
     ['credit_package_id']: input.packageId,
     ['credit_amount']: String(creditPackage.credits),
     ['purchase_amount_usd_minor']: String(creditPackage.amountUsdMinor ?? ''),
@@ -359,6 +362,8 @@ async function createCheckoutResult(
     createBillingCustomer,
     saveCustomerMappings,
     createStripeCheckoutSession,
+    createPurchase,
+    savePurchaseCheckout,
     publicBillingOrigin,
     saveIdempotency,
     logger = { error() {} },
@@ -371,6 +376,17 @@ async function createCheckoutResult(
       uid,
       apiKeyUuid,
     });
+    const purchase = await createPurchaseRecord(createPurchase, {
+      purchaseId: `purchase-${uid}-${key}`,
+      uid,
+      apiKeyUuid,
+      packageId,
+      amountUsdMinor: creditPackage.amountUsdMinor,
+      currency: 'usd',
+      creditsIssued: creditPackage.credits,
+      pricingSnapshotId: creditPackage.pricingSnapshot?.snapshotId ?? '',
+      stripeCustomerId: customer.stripeCustomerId,
+    });
     const checkout = buildCheckoutRequest({
       customerId: customer.stripeCustomerId,
       packageId,
@@ -378,22 +394,62 @@ async function createCheckoutResult(
       uid,
       publicBillingOrigin,
       key,
+      purchaseId: purchase?.purchaseId,
       creditPackage,
     });
     const session = await createStripeCheckoutSession(checkout.options, {
       idempotencyKey: checkout.idempotencyKey,
     });
-    const result = {
-      checkoutSessionId: session.id,
-      url: session.url,
-      expiresAt: new Date(session.expires_at * 1000).toISOString(),
-    };
-    await saveIdempotency?.(uid, key, { packageId, session: result });
-    return { status: 201, body: result };
+    return persistCheckoutResult({
+      savePurchaseCheckout,
+      saveIdempotency,
+      uid,
+      key,
+      packageId,
+      purchase,
+      session,
+    });
   } catch (cause) {
     logger.error?.('checkout session creation failed', { type: cause?.type });
     return stripeError(cause);
   }
+}
+
+/**
+ * Create the purchase record when persistence is configured.
+ * @param {CheckoutDependencies['createPurchase']} createPurchase Purchase creator.
+ * @param {object} input Purchase input.
+ * @returns {Promise<object|null>} Purchase record.
+ */
+async function createPurchaseRecord(createPurchase, input) {
+  if (!createPurchase) return null;
+  return createPurchase(input);
+}
+
+/**
+ * Persist the Checkout result and return the HTTP response.
+ * @param {{ savePurchaseCheckout?: CheckoutDependencies['savePurchaseCheckout'], saveIdempotency?: CheckoutDependencies['saveIdempotency'], uid: string, key: string, packageId: string, purchase: { purchaseId?: string } | null, session: { id: string, url: string, expires_at: number } }} input Checkout persistence input.
+ * @returns {Promise<CheckoutResponse>} Checkout response.
+ */
+async function persistCheckoutResult({
+  savePurchaseCheckout,
+  saveIdempotency,
+  uid,
+  key,
+  packageId,
+  purchase,
+  session,
+}) {
+  const result = {
+    checkoutSessionId: session.id,
+    url: session.url,
+    expiresAt: new Date(session.expires_at * 1000).toISOString(),
+  };
+  if (purchase?.purchaseId && savePurchaseCheckout)
+    await savePurchaseCheckout(purchase.purchaseId, result);
+  if (saveIdempotency)
+    await saveIdempotency(uid, key, { packageId, session: result });
+  return { status: 201, body: result };
 }
 
 /**

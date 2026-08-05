@@ -71,6 +71,7 @@ export async function createCopyCloudHandle(deps) {
     'hide-variant-html',
     'mark-variant-dirty',
     'errors',
+    'create-checkout-session',
     'payment-webhook',
     'process-new-page',
     'process-new-story',

@@ -782,7 +782,7 @@ function resolveCreditValue(data) {
  * @param {string} uuid API key UUID.
  * @returns {import('@google-cloud/firestore').DocumentReference} Balance document reference.
  */
-function getApiKeyCreditDocument(db, uuid) {
+export function getApiKeyCreditDocument(db, uuid) {
   return db.collection('api-key-credit').doc(String(uuid));
 }
 
@@ -793,7 +793,7 @@ function getApiKeyCreditDocument(db, uuid) {
  * @param {string} eventId Idempotency UUID.
  * @returns {import('@google-cloud/firestore').DocumentReference} Ledger event reference.
  */
-function getApiKeyCreditEventDocument(db, uuid, eventId) {
+export function getApiKeyCreditEventDocument(db, uuid, eventId) {
   return db
     .collection('api-key-ledger')
     .doc(String(uuid))

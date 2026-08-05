@@ -9,8 +9,10 @@ import {
   extractHeader,
   extractRawPayload,
   parseJsonEvent,
+  readMetadata,
   verifyPaymentSignature,
 } from '../../payment-webhook-core.js';
+import { createBillingRuntime } from '../billing/billing-runtime-core.js';
 
 /** @typedef {typeof import('@google-cloud/firestore').Firestore} FirestoreCtor */
 /** @typedef {Record<string, string | undefined>} ProcessEnvLike */
@@ -25,6 +27,7 @@ export function createPaymentWebhookIndexHandler({
   env = process.env,
 }) {
   const db = createDb(firestore, env);
+  const billing = createBillingRuntime(db);
   const handleRequest = createPaymentWebhookHandler({
     fetchCredit: createFetchCredit(db),
     applyCreditEvent: createApplyCreditEvent(db),
@@ -42,6 +45,7 @@ export function createPaymentWebhookIndexHandler({
         return null;
       },
     }),
+    handlePurchaseEvent: event => handlePurchaseEvent(billing, event),
     isDuplicateEvent: async eventId =>
       (await db.collection('payment-events').doc(eventId).get()).exists,
     markProcessedEvent: async (event, uuid) => {
@@ -65,6 +69,68 @@ export function createPaymentWebhookIndexHandler({
     const response = await handlePaymentWebhookRequest(handleRequest, req);
     return sendPaymentWebhookResponse(res, response);
   };
+}
+
+/**
+ * Resolve a Stripe event against the purchase ledger.
+ * @param {ReturnType<typeof createBillingRuntime>} billing Billing service.
+ * @param {import('../../payment-webhook-core.js').PaymentEvent} event Stripe event.
+ * @returns {Promise<import('../../payment-webhook-core.js').PaymentWebhookResponse | null>} Response or null.
+ */
+async function handlePurchaseEvent(billing, event) {
+  const metadata = readMetadata(event.data?.object ?? {});
+  if (!metadata.purchase_id) return null;
+  if (event.type === 'checkout.session.completed')
+    return handleCheckoutCompleted(billing, metadata, event);
+  if (event.type === 'payment_intent.succeeded')
+    return handlePaymentIntentSucceeded(billing, metadata, event);
+  if (event.type === 'charge.refunded')
+    return handleChargeRefunded(billing, metadata, event);
+  return null;
+}
+
+/**
+ * @param {ReturnType<typeof createBillingRuntime>} billing Billing service.
+ * @param {Record<string, string>} metadata Stripe metadata.
+ * @param {import('../../payment-webhook-core.js').PaymentEvent} event Stripe event.
+ * @returns {Promise<import('../../payment-webhook-core.js').PaymentWebhookResponse|null>} Response.
+ */
+async function handleCheckoutCompleted(billing, metadata, event) {
+  if (event.data?.object?.payment_status !== 'paid') return null;
+  return billing.markPurchasePaid({
+    purchaseId: metadata.purchase_id,
+    eventId: event.id,
+    stripePaymentIntentId: String(event.data?.object?.payment_intent ?? ''),
+  });
+}
+
+/**
+ * @param {ReturnType<typeof createBillingRuntime>} billing Billing service.
+ * @param {Record<string, string>} metadata Stripe metadata.
+ * @param {import('../../payment-webhook-core.js').PaymentEvent} event Stripe event.
+ * @returns {Promise<import('../../payment-webhook-core.js').PaymentWebhookResponse>} Response.
+ */
+async function handlePaymentIntentSucceeded(billing, metadata, event) {
+  return billing.markPurchasePaid({
+    purchaseId: metadata.purchase_id,
+    eventId: event.id,
+    stripePaymentIntentId: event.id,
+  });
+}
+
+/**
+ * @param {ReturnType<typeof createBillingRuntime>} billing Billing service.
+ * @param {Record<string, string>} metadata Stripe metadata.
+ * @param {import('../../payment-webhook-core.js').PaymentEvent} event Stripe event.
+ * @returns {Promise<import('../../payment-webhook-core.js').PaymentWebhookResponse>} Response.
+ */
+async function handleChargeRefunded(billing, metadata, event) {
+  return billing.applyRefundEvent({
+    purchaseId: metadata.purchase_id,
+    eventId: event.id,
+    refundedUsdMinor: Number(event.data?.object?.amount_refunded ?? 0),
+    pricingSnapshotId: metadata.pricing_snapshot_id ?? '',
+  });
 }
 
 /**

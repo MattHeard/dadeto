@@ -116,6 +116,42 @@ describe('createCheckoutSessionHandler', () => {
       })
     );
   });
+  it('persists a purchase before attaching it to Checkout metadata', async () => {
+    const createPurchase = jest.fn().mockResolvedValue({
+      purchaseId: 'purchase-1',
+    });
+    const savePurchaseCheckout = jest.fn();
+    const dynamic = setup({
+      createPurchase,
+      savePurchaseCheckout,
+      getCreditPackage: jest.fn().mockResolvedValue({
+        active: true,
+        amountUsdMinor: 1_000,
+        pricingSnapshot: createPricingSnapshot({
+          snapshotId: 'daily-1',
+          effectiveAt: '2026-08-05T00:00:00.000Z',
+          eurPerUsdMicros: 900_000,
+          creditEurMicros: 1,
+          markupBps: 0,
+          operations: [{ id: 'function.invoke', costEurMicros: 1 }],
+        }),
+      }),
+    });
+    await dynamic.handler(request());
+    expect(createPurchase).toHaveBeenCalledWith(
+      expect.objectContaining({
+        purchaseId: expect.stringContaining('purchase-uid-1-'),
+        creditsIssued: 9_000_000,
+      })
+    );
+    expect(dynamic.create.mock.calls[0][0].metadata).toEqual(
+      expect.objectContaining({ purchase_id: 'purchase-1' })
+    );
+    expect(savePurchaseCheckout).toHaveBeenCalledWith(
+      'purchase-1',
+      expect.objectContaining({ checkoutSessionId: 'cs_test_1' })
+    );
+  });
   it.each([
     [{}, 401, 'authentication_required'],
     [
