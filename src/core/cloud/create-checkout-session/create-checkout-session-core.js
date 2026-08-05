@@ -1,3 +1,5 @@
+import { calculatePackageCredits } from '../billing/pricing-core.js';
+
 const UUID =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
@@ -17,7 +19,7 @@ const UUID =
  * resolveBillingCustomer: (uid: string) => Promise<{ stripeCustomerId?: string } | null>,
  * createBillingCustomer: (options: object) => Promise<{ stripeCustomerId: string }>,
  * saveCustomerMappings: (uid: string, customerId: string, apiKeyUuid: string) => Promise<unknown>,
- * getCreditPackage: (packageId: string) => Promise<{ active?: boolean, stripePriceId?: string, credits?: number } | null>,
+ * getCreditPackage: (packageId: string) => Promise<{ active?: boolean, stripePriceId?: string, credits?: number, amountUsdMinor?: number, pricingSnapshot?: import('../billing/pricing-core.js').PricingSnapshot } | null>,
  * createStripeCheckoutSession: (options: object, options2: object) => Promise<{ id: string, url: string, expires_at: number }>,
  * publicBillingOrigin?: string,
  * resolveIdempotency?: (uid: string, key: string, packageId: string) => Promise<{ conflict?: boolean, session?: object } | null>,
@@ -86,9 +88,11 @@ function idempotencyConflictError() {
 /**
  * Validate and narrow a credit package.
  * @param {Awaited<ReturnType<CheckoutDependencies['getCreditPackage']>>} creditPackage Package to validate.
- * @returns {{ stripePriceId: string, credits: number } | null} Valid package details.
+ * @returns {{ stripePriceId?: string, amountUsdMinor?: number, credits: number, pricingSnapshot?: import('../billing/pricing-core.js').PricingSnapshot } | null} Valid package details.
  */
 function validCreditPackage(creditPackage) {
+  const dynamic = dynamicCreditPackage(creditPackage);
+  if (dynamic) return dynamic;
   if (
     !creditPackage?.active ||
     typeof creditPackage.stripePriceId !== 'string' ||
@@ -101,6 +105,83 @@ function validCreditPackage(creditPackage) {
   return {
     stripePriceId: creditPackage.stripePriceId,
     credits: creditPackage.credits,
+  };
+}
+
+/**
+ * Resolve a package whose amount is calculated from a pricing snapshot.
+ * @param {Awaited<ReturnType<CheckoutDependencies['getCreditPackage']>>} creditPackage Package candidate.
+ * @returns {{ amountUsdMinor: number, credits: number, pricingSnapshot: import('../billing/pricing-core.js').PricingSnapshot } | null} Dynamic package or null.
+ */
+function dynamicCreditPackage(creditPackage) {
+  if (
+    !creditPackage?.active ||
+    !Number.isSafeInteger(creditPackage.amountUsdMinor) ||
+    !creditPackage.pricingSnapshot
+  ) {
+    return null;
+  }
+  const amountUsdMinor = /** @type {number} */ (creditPackage.amountUsdMinor);
+  const credits = calculatePackageCredits(
+    amountUsdMinor,
+    creditPackage.pricingSnapshot
+  );
+  if (credits <= 0) return null;
+  return {
+    amountUsdMinor,
+    credits,
+    pricingSnapshot: creditPackage.pricingSnapshot,
+  };
+}
+
+/**
+ * Build Stripe line items for a package.
+ * @param {string} packageId Package identifier.
+ * @param {{ stripePriceId?: string, amountUsdMinor?: number }} creditPackage Package details.
+ * @returns {Array<object>} Stripe line items.
+ */
+function lineItemsForPackage(packageId, creditPackage) {
+  if (creditPackage.amountUsdMinor) {
+    return [
+      {
+        ['price_data']: {
+          currency: 'usd',
+          ['unit_amount']: creditPackage.amountUsdMinor,
+          ['product_data']: { name: `${packageId} Dadeto credits` },
+        },
+        quantity: 1,
+      },
+    ];
+  }
+  return [{ price: creditPackage.stripePriceId, quantity: 1 }];
+}
+
+/**
+ * Build the Stripe Checkout payload.
+ * @param {{ customerId: string, packageId: string, apiKeyUuid: string, uid: string, publicBillingOrigin: string, key: string, creditPackage: { credits: number, amountUsdMinor?: number, pricingSnapshot?: import('../billing/pricing-core.js').PricingSnapshot, stripePriceId?: string } }} input Checkout inputs.
+ * @returns {{ options: object, idempotencyKey: string }} Stripe request.
+ */
+function buildCheckoutRequest(input) {
+  const { creditPackage } = input;
+  const metadata = {
+    ['api_key_uuid']: input.apiKeyUuid,
+    ['credit_package_id']: input.packageId,
+    ['credit_amount']: String(creditPackage.credits),
+    ['purchase_amount_usd_minor']: String(creditPackage.amountUsdMinor ?? ''),
+    ['pricing_snapshot_id']: creditPackage.pricingSnapshot?.snapshotId ?? '',
+  };
+  return {
+    options: {
+      mode: 'payment',
+      customer: input.customerId,
+      ['line_items']: lineItemsForPackage(input.packageId, creditPackage),
+      ['client_reference_id']: input.apiKeyUuid,
+      metadata,
+      ['payment_intent_data']: { metadata },
+      ['success_url']: `${input.publicBillingOrigin}/billing/success?session_id={CHECKOUT_SESSION_ID}`,
+      ['cancel_url']: `${input.publicBillingOrigin}/billing`,
+    },
+    idempotencyKey: `checkout-session:${input.uid}:${input.key}`,
   };
 }
 
@@ -263,7 +344,7 @@ async function resolveCheckoutOwnership(
  * Create and persist a Stripe checkout session.
  * @param {CheckoutDependencies} deps Checkout dependencies.
  * @param {{ key: string, packageId: string, uid: string }} input Validated request.
- * @param {{ stripePriceId: string, credits: number }} creditPackage Package details.
+ * @param {{ stripePriceId?: string, amountUsdMinor?: number, credits: number, pricingSnapshot?: import('../billing/pricing-core.js').PricingSnapshot }} creditPackage Package details.
  * @param {string} apiKeyUuid Owned API key identifier.
  * @returns {Promise<CheckoutResponse>} Checkout result.
  */
@@ -290,29 +371,18 @@ async function createCheckoutResult(
       uid,
       apiKeyUuid,
     });
-    const session = await createStripeCheckoutSession(
-      {
-        mode: 'payment',
-        customer: customer.stripeCustomerId,
-        ['line_items']: [{ price: creditPackage.stripePriceId, quantity: 1 }],
-        ['client_reference_id']: apiKeyUuid,
-        metadata: {
-          ['api_key_uuid']: apiKeyUuid,
-          ['credit_package_id']: packageId,
-          ['credit_amount']: String(creditPackage.credits),
-        },
-        ['payment_intent_data']: {
-          metadata: {
-            ['api_key_uuid']: apiKeyUuid,
-            ['credit_package_id']: packageId,
-            ['credit_amount']: String(creditPackage.credits),
-          },
-        },
-        ['success_url']: `${publicBillingOrigin}/billing/success?session_id={CHECKOUT_SESSION_ID}`,
-        ['cancel_url']: `${publicBillingOrigin}/billing`,
-      },
-      { idempotencyKey: `checkout-session:${uid}:${key}` }
-    );
+    const checkout = buildCheckoutRequest({
+      customerId: customer.stripeCustomerId,
+      packageId,
+      apiKeyUuid,
+      uid,
+      publicBillingOrigin,
+      key,
+      creditPackage,
+    });
+    const session = await createStripeCheckoutSession(checkout.options, {
+      idempotencyKey: checkout.idempotencyKey,
+    });
     const result = {
       checkoutSessionId: session.id,
       url: session.url,

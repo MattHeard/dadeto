@@ -3,6 +3,7 @@ import {
   createCheckoutSessionExpressHandle,
   createCheckoutSessionHandler,
 } from '../../../../src/core/cloud/create-checkout-session/create-checkout-session-core.js';
+import { createPricingSnapshot } from '../../../../src/core/cloud/billing/pricing-core.js';
 
 const request = (
   body = { packageId: 'credits-100' },
@@ -79,6 +80,41 @@ describe('createCheckoutSessionHandler', () => {
       }
     );
     expect(create.mock.calls[0][0]).not.toHaveProperty('amount');
+  });
+  it('creates dynamic USD price data from the current pricing snapshot', async () => {
+    const pricingSnapshot = createPricingSnapshot({
+      snapshotId: 'daily-1',
+      effectiveAt: '2026-08-05T00:00:00.000Z',
+      eurPerUsdMicros: 900_000,
+      creditEurMicros: 1,
+      markupBps: 0,
+      operations: [{ id: 'function.invoke', costEurMicros: 1 }],
+    });
+    const dynamic = setup({
+      getCreditPackage: jest.fn().mockResolvedValue({
+        active: true,
+        amountUsdMinor: 1_000,
+        pricingSnapshot,
+      }),
+    });
+    await expect(dynamic.handler(request())).resolves.toMatchObject({
+      status: 201,
+    });
+    expect(dynamic.create.mock.calls[0][0]).toEqual(
+      expect.objectContaining({
+        line_items: [
+          expect.objectContaining({
+            price_data: expect.objectContaining({
+              currency: 'usd',
+              unit_amount: 1_000,
+            }),
+          }),
+        ],
+        metadata: expect.objectContaining({
+          pricing_snapshot_id: 'daily-1',
+        }),
+      })
+    );
   });
   it.each([
     [{}, 401, 'authentication_required'],
