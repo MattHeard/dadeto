@@ -262,7 +262,6 @@ function stripDefaultTokenMessage(error, message) {
  */
 async function verifyAndGetUid(verifyIdToken, token) {
   const decoded = await verifyIdToken(token);
-  /* istanbul ignore next -- token verification always returns a decoded token. */
   const uid = validateDecodedUid(decoded ?? null);
   if (uid) {
     return uid;

@@ -112,4 +112,3 @@ export function runMarkVariantDirty(deps) {
 
   return { markVariantDirty, handleRequest, app };
 }
-/* istanbul ignore file -- cloud wiring is exercised by deployed tests. */

@@ -1,6 +1,5 @@
 import { regenerateDirtyTreeWeightVariants } from './tree-visibility-regeneration-core.js';
 
-/* istanbul ignore next -- default handlers are cloud-run wiring fallbacks. */
 /**
  * Build scheduled and HTTP regeneration entrypoints.
  * @param {{

@@ -1,4 +1,3 @@
-/* istanbul ignore file -- Firestore-trigger integration is exercised in deployed GCP tests. */
 /* eslint-disable no-ternary, complexity -- renderer normalization keeps the trigger path compact. */
 import { renderHtmlTemplate } from '../html-template.js';
 

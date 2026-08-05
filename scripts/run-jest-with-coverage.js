@@ -101,25 +101,7 @@ function walk(directory, files) {
 }
 
 function isIgnoredCoverageFile(file) {
-  const relative = path.relative(ROOT, file).replaceAll(path.sep, '/');
-  return [
-    'src/core/browser/document.js', 'src/core/browser/main.js', 'src/core/browser/moderate.js',
-    'src/core/browser/presenters/realtimeVoicePrototype.js', 'src/core/browser/toys.js',
-    'src/core/browser/jsonUtils.js', 'src/core/build/full-width.js', 'src/core/build/generator.js',
-    'src/core/build/head.js', 'src/core/build/navbar.js', 'src/core/build/styles.js',
-    'src/core/build/title.js', 'src/core/build/copy-cloud.js', 'src/core/fs.js',
-    'src/core/local/symphony/launch.js', 'src/core/local/symphony/tuiRenderer.js',
-    'src/core/browser/jsonValueHelpers.js', 'src/core/cloud/firestore-helpers.js',
-    'src/core/generate-stats-core.js', 'src/core/get-api-key-credit-v2.js',
-    'src/core/process-new-page-core.js', 'src/core/process-new-story-core.js',
-    'src/core/render-contents-core.js', 'src/core/render-variant-core.js',
-    'src/core/submit-new-page-core.js', 'src/core/submit-new-story-core.js',
-    'src/core/submit-shared.js', 'src/core/scripts/check-core-parse.js',
-    'src/core/scripts/check-overexposed-exports.js', 'src/core/scripts/coverage-shards.js',
-    'src/core/local/gcp-simulator/server.js',
-  ].includes(relative) || /\/common-core\.js$|\/admin-config\.js$|\/helpers\.js$/.test(relative)
-    || /src\/core\/cloud\/(assign-moderation-job|generate-stats|payment-webhook)\//.test(relative)
-    || relative === 'src/core/cloud/get-moderation-variant/cors.js';
+  return path.relative(ROOT, file).includes(`${path.sep}node_modules${path.sep}`);
 }
 
 function runShard(testFilesForShard, shardDir) {

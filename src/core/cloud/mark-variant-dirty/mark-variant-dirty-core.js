@@ -482,7 +482,6 @@ function getRequestMethod(req) {
  * @returns {boolean} True when the page number and variant name are valid.
  */
 function isValidMarkRequest({ pageNumber, variantName, authorId }) {
-  /* istanbul ignore next -- exercised through the live admin page. */
   if (typeof authorId === 'string') return Boolean(authorId);
   if (!Number.isInteger(pageNumber)) {
     return false;
@@ -557,7 +556,6 @@ export function parseMarkVariantRequestBody(body) {
     body
   );
   const { page, variant, authorId } = parsed ?? {};
-  /* istanbul ignore next -- exercised through the live admin page. */
   if (typeof authorId === 'string' && authorId.trim())
     return /** @type {MarkVariantRequestParams} */ ({
       authorId: authorId.trim(),
@@ -788,9 +786,7 @@ async function processHandleRequest(requestData, handlerDeps) {
     enforceMethodOrThrow(req, res, allowedMethod);
     await ensureAuthorizedOrThrow(verifyAdmin, req, res);
     const parsed = parseRequestOrThrow(req, res, parseRequestBody);
-    /* istanbul ignore next -- covered by the admin integration path. */
     if (parsed.authorId) {
-      /* istanbul ignore next -- production wiring always supplies this handler. */
       if (!markAuthorDirty)
         throw new Error('markAuthorDirty is not configured');
       await markAuthorAndRespond(res, markAuthorDirty, parsed.authorId);
@@ -886,4 +882,3 @@ function throwRequestHandledIfFalsy(value) {
 
   return value;
 }
-/* istanbul ignore file -- HTTP endpoint integration is exercised by deployed tests. */

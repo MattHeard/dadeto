@@ -35,7 +35,6 @@ export function runReportForModeration(deps) {
    * @param {{ variant: string, reporterIdentity: string, createdAt: unknown }} report Report to persist.
    * @returns {Promise<void>} Completion of the write.
    */
-  /* istanbul ignore next */
   const addModerationReport = report =>
     moderationReportsCollection.add(report).then(() => undefined);
   const reportForModerationHandler = createReportForModerationHandler({

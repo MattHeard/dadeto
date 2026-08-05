@@ -1050,7 +1050,6 @@ export function createRunCheckSuite(defaults) {
            */
           const finishWithFailure = (failure, shouldAbort) => {
             state.settled = true;
-            /* istanbul ignore next */
             if (state.timeoutId !== null) {
               clearTimeout(state.timeoutId);
               state.timeoutId = null;
@@ -1095,7 +1094,6 @@ export function createRunCheckSuite(defaults) {
             command: renderCommand(command),
           });
           state.timeoutId = setTimeout(() => {
-            /* istanbul ignore next */
             if (state.settled) {
               return;
             }
@@ -1108,8 +1106,6 @@ export function createRunCheckSuite(defaults) {
               durationMs: Math.max(0, now() - startedAt),
               error: `Check timed out after ${timeoutMs}ms`,
             };
-
-            /* istanbul ignore next */
             if (child && typeof child.kill === 'function') {
               child.kill('SIGTERM');
             }
@@ -1276,8 +1272,6 @@ function handleChildClose({
     resolve(undefined);
     return;
   }
-
-  /* istanbul ignore next */
   if (state.timeoutId !== null) {
     clearTimeout(state.timeoutId);
   }
@@ -1326,8 +1320,6 @@ function shouldIgnoreClosedChild(aborted, failFast, failures, commandName) {
   if (!aborted || !failFast) {
     return false;
   }
-
-  /* istanbul ignore next */
   if (failures.length === 0) {
     return false;
   }

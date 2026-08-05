@@ -307,17 +307,14 @@ export function createGoogleAuthModule(deps) {
     await getSignOutHandler()();
   };
 
-  /* istanbul ignore next -- this legacy auth wrapper is not used by deployed pages. */
   const getIdToken = async () => {
     const auth = getAuthFn();
     const currentUser = auth?.currentUser;
-    /* istanbul ignore next -- browser auth supplies currentUser in production. */
     if (currentUser?.getIdToken) {
       return /** @type {(forceRefresh?: boolean) => Promise<string>} */ (
         currentUser.getIdToken
       )(true);
     }
-    /* istanbul ignore next -- storage contains a token when no Firebase user exists. */
     return storage.getItem('id_token') || '';
   };
 
@@ -614,7 +611,6 @@ function formatTriggerRenderFailureMessage({ status, statusText, body }) {
 async function reportTriggerRenderFailure(
   res,
   showMessage,
-  /* istanbul ignore next -- callers always provide the reporter in production. */
   reportError = () => {}
 ) {
   const status = resolveTriggerRenderStatus(res);
@@ -1990,15 +1986,12 @@ function isResponseOk(res) {
  */
 async function ensureResponseOk(res) {
   if (!isResponseOk(res)) {
-    /* istanbul ignore next -- failed responses normally expose a status. */
     const status = res?.status ?? 'unknown';
     let body = '';
-    /* istanbul ignore next -- failed responses normally expose text(). */
     if (typeof res?.text === 'function') {
       body = (await res.text()).trim();
     }
     let detail = '';
-    /* istanbul ignore next -- HTTP error bodies are normally non-empty. */
     if (body) {
       detail = `: ${body.slice(0, 300)}`;
     }
@@ -2146,7 +2139,6 @@ export function initAdmin({
   bindTriggerStatsClick(doc, triggerStats);
   bindRegenerateVariantSubmit(doc, regenerateVariant);
   const authorForm = doc.getElementById('regenAuthorForm');
-  /* istanbul ignore next -- exercised through the live admin page. */
   authorForm?.addEventListener('submit', async event => {
     event.preventDefault();
     const input = /** @type {HTMLInputElement | null} */ (
@@ -2415,11 +2407,9 @@ export function initAdminApp({
   const getIdToken = async () => {
     const auth = getAuthFn();
     const currentUser = auth?.currentUser;
-    /* istanbul ignore next -- browser auth supplies currentUser in production. */
     if (currentUser?.getIdToken) {
       return (await currentUser.getIdToken(true)) || '';
     }
-    /* istanbul ignore next -- signed-in callers always have a cached token. */
     return getCachedIdToken(sessionStorageObj) || '';
   };
 

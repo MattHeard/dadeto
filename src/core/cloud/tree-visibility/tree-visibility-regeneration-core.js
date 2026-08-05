@@ -1,4 +1,3 @@
-/* istanbul ignore next -- default callback is a cloud-run boundary fallback. */
 /** @typedef {{ data?: { visibility?: number }, ref?: { path?: string } }} TreeVariant */
 /** @typedef {(node: TreeVariant) => Promise<TreeVariant[]>} ReadTreeChildren */
 /**
@@ -17,7 +16,6 @@ export async function regenerateDirtyTreeWeightVariants({
     .get();
   let processed = 0;
   let failed = 0;
-  /* istanbul ignore next -- missing docs is a cloud API boundary case. */
   for (const variant of snapshot.docs ?? []) {
     try {
       await renderVariant(variant);
@@ -52,7 +50,6 @@ export async function migrateTreeVisibilitySums({
       descendantSums.push(await visitVariant(child));
     }
     const sum =
-      /* istanbul ignore next */
       /** @type {number} */ (variant.data?.visibility ?? 1) +
       descendantSums.reduce((total, childSum) => total + childSum, 0);
     const update = /** @type {Record<string, unknown>} */ ({

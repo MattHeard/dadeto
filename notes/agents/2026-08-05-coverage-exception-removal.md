@@ -1,0 +1,4 @@
+- Unexpected hurdle: the first coverage attempt used the system Node 18 and could not spawn Jest workers.
+- Diagnosis path: switched to the repository's Node 22 runtime, removed the source exclusions and Istanbul pragmas, and ran the expanded sharded unit suite.
+- Chosen fix: collect coverage for all `src/core/**/*.js` files and delete defensive ignore pragmas; the resulting aggregate report reached 100% for lines, statements, functions, and branches.
+- Next-time guidance: run coverage commands through `source ~/.nvm/nvm.sh && nvm use` so the shard runner uses the configured Node version.

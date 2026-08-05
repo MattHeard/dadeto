@@ -86,7 +86,6 @@ export function createErrorBeaconRun(deps) {
     /** @type {import('express').Request} */ request,
     /** @type {import('express').Response} */ response
   ) => {
-    /* istanbul ignore next -- production middleware normally parses the body. */
     if (typeof request.body === 'string') {
       try {
         request.body = JSON.parse(request.body);
@@ -132,7 +131,6 @@ function getErrorBeaconEnvironmentVariables(environmentVariables) {
  * @returns {string} Environment label.
  */
 function resolveEnvironment(environmentVariables) {
-  /* istanbul ignore next */
   return String(environmentVariables.DENDRITE_ENVIRONMENT || '');
 }
 

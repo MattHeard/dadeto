@@ -170,7 +170,6 @@ export function buildFunctionDependencyGraph({ files, parse }) {
     walk(caller.node.body, node => {
       if (node.type !== 'CallExpression') return;
       const callee = node.callee;
-      /* istanbul ignore else -- computed injected members are runtime-only. */
       if (callee.type === 'Identifier') {
         if (params.has(callee.name)) {
           ignoredCalls.push({
@@ -187,7 +186,6 @@ export function buildFunctionDependencyGraph({ files, parse }) {
             target: target.id,
             kind: 'direct-call',
           });
-        /* istanbul ignore next -- computed injected members are runtime-only. */
       } else if (
         callee.type === 'MemberExpression' &&
         callee.object.type === 'Identifier' &&

@@ -773,7 +773,6 @@ async function createPageContext({
   batch.update(optionRef, { targetPage: pageDocRef });
 
   const sourceVariantRef = extractVariantRefFromOption(optionRef);
-  /* istanbul ignore next -- source refs are present for inbound variants. */
   if (sourceVariantRef) {
     batch.update(sourceVariantRef, { dirty: true });
   }

@@ -554,7 +554,6 @@ function createSnapshot(
  * @returns {() => unknown} Delete sentinel getter.
  */
 function createDeleteSentinelGetter(/** @type {unknown} */ fieldValue) {
-  /* istanbul ignore next */
   return () => fieldValue.delete();
 }
 
@@ -1148,10 +1147,7 @@ async function handleGetModerationVariant(
   }
 
   const moderatorSnap = await deps.db.collection('moderators').doc(uid).get();
-  /* istanbul ignore next -- missing moderator documents are cloud-only input. */
   const variantPath = moderatorSnap.data()?.variant;
-  /* istanbul ignore next -- missing moderator assignments are cloud-only input. */
-  /* istanbul ignore next */
   if (typeof variantPath !== 'string' || !variantPath) {
     return { status: 404, body: 'Variant not found' };
   }
@@ -1424,14 +1420,11 @@ async function handleMarkVariantDirty(
     .where('name', '==', variantName)
     .limit(1)
     .get();
-  /* istanbul ignore next -- empty variant queries are cloud-only input. */
   if (variantSnap.empty) {
     return { status: 404, body: 'Variant not found' };
   }
 
-  /* istanbul ignore next */
   await variantSnap.docs[0].ref.update({ dirty: true });
-  /* istanbul ignore next */
   return { status: 200, body: { ok: true } };
 }
 
@@ -1519,7 +1512,6 @@ function createAuthResult(
  */
 async function loadModerationOptions(/** @type {unknown} */ variantRef) {
   const optionsSnap = await variantRef.collection('options').get();
-  /* istanbul ignore next */
   const getOptionPosition = option => option.data().position ?? 0;
   return optionsSnap.docs
     .slice()
