@@ -406,16 +406,3 @@ src/core/local/symphony/app.js(372,3): error TS2322: Type '{ createSymphonyApp: 
     Type '(options: SymphonyOptions) => (...args: unknown[]) => unknown' is not assignable to type '(...args: unknown[]) => unknown'.
       Types of parameters 'options' and 'args' are incompatible.
         Type 'unknown' is not assignable to type 'SymphonyOptions'.
-src/core/local/symphony/launcherCodex.js(59,59): error TS2345: Argument of type 'Record<string, unknown>' is not assignable to parameter of type '{ beadId: string; }'.
-  Property 'beadId' is missing in type 'Record<string, unknown>' but required in type '{ beadId: string; }'.
-src/core/local/symphony/launcherCodex.js(60,9): error TS2322: Type '(payload: { beadId: string; beadTitle?: string | null | undefined; }, input: { runId: string; exitCode: number | null; signal: string | null; }) => { runId: string; beadId: string; beadTitle: string | null; exitCode: number | null; signal: string | null; }' is not assignable to type '(payload: Record<string, unknown>, input: { runId: string; exitCode: number | null; signal: string | null; }) => { runId: string; exitCode: number | null; signal: string | null; }'.
-  Types of parameters 'payload' and 'payload' are incompatible.
-    Property 'beadId' is missing in type 'Record<string, unknown>' but required in type '{ beadId: string; beadTitle?: string | null | undefined; }'.
-src/core/local/symphony/launcherCodex.js(61,17): error TS2345: Argument of type '{ repoRoot: string; beadId: string; beadTitle?: string | null | undefined; runId: string; onExit?: ((options: { runId: string; beadId: string; beadTitle: string | null; exitCode: number | null; signal: string | null; }) => unknown) | undefined; }' is not assignable to parameter of type '{ repoRoot: string; runId: string; prompt?: string | undefined; beadId?: string | undefined; beadTitle?: string | null | undefined; onExit?: ((options: { runId: string; exitCode: number | null; signal: string | null; }) => unknown) | undefined; }'.
-  Types of property 'onExit' are incompatible.
-    Type '((options: { runId: string; beadId: string; beadTitle: string | null; exitCode: number | null; signal: string | null; }) => unknown) | undefined' is not assignable to type '((options: { runId: string; exitCode: number | null; signal: string | null; }) => unknown) | undefined'.
-      Type '(options: { runId: string; beadId: string; beadTitle: string | null; exitCode: number | null; signal: string | null; }) => unknown' is not assignable to type '(options: { runId: string; exitCode: number | null; signal: string | null; }) => unknown'.
-        Types of parameters 'options' and 'options' are incompatible.
-          Type '{ runId: string; exitCode: number | null; signal: string | null; }' is missing the following properties from type '{ runId: string; beadId: string; beadTitle: string | null; exitCode: number | null; signal: string | null; }': beadId, beadTitle
-src/core/local/symphony/launcherCodex.js(101,53): error TS2345: Argument of type '{ beadId: string; }' is not assignable to parameter of type '{ beadId: string; beadTitle?: string | null | undefined; runId: string; }'.
-  Property 'runId' is missing in type '{ beadId: string; }' but required in type '{ beadId: string; beadTitle?: string | null | undefined; runId: string; }'.

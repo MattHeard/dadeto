@@ -51,14 +51,18 @@ export const DEFAULT_CODEX_RALPH_ARGS = [...DEFAULT_CODEX_ARGS];
 export function createCodexRalphLauncher(options) {
   return {
     async launchRunner(payload) {
-      return createDetachedProcessLauncher({
+      return createDetachedProcessLauncher(/** @type {Parameters<typeof createDetachedProcessLauncher>[0]} */ (/** @type {unknown} */ ({
         ...options,
         logDirSuffix: 'symphony',
         closeErrorLabel: 'Failed to close run log handle:',
         exitErrorLabel: buildExitErrorLabel,
-        resolveArgs: payload => buildResolveArgs(options, payload),
+        resolveArgs: /** @param {Record<string, unknown>} payload */ payload =>
+          buildResolveArgs(
+            options,
+            /** @type {{ beadId: string, beadTitle?: string | null, runId: string }} */ (payload)
+          ),
         buildExitPayload,
-      }).launch(payload);
+      }))).launch(/** @type {Parameters<ReturnType<typeof createDetachedProcessLauncher>['launch']>[0]} */ (/** @type {unknown} */ (payload)));
     },
   };
 }
@@ -94,7 +98,7 @@ function buildExitErrorLabel(payload) {
 
 /**
  * @param {{ args?: string[] }} options Launcher options.
- * @param {{ beadId: string }} payload Runner launch payload.
+ * @param {{ beadId: string, beadTitle?: string | null, runId: string }} payload Runner launch payload.
  * @returns {string[]} Command arguments.
  */
 function buildResolveArgs(options, payload) {
@@ -102,7 +106,7 @@ function buildResolveArgs(options, payload) {
 }
 
 /**
- * @param {{ beadId: string, beadTitle?: string | null }} payload Runner payload.
+ * @param {{ beadId: string, beadTitle?: string | null, runId: string }} payload Runner payload.
  * @param {{ runId: string, exitCode: number | null, signal: string | null }} input Process result payload.
  * @returns {{
  *   runId: string,
