@@ -386,6 +386,80 @@ describe('createErrorBeaconRun', () => {
       })
     ).toThrow(/DENDRITE_ENVIRONMENT must be prod or t-\*\. Received dev\./);
   });
+
+  it('parses valid string bodies and discards malformed string bodies', async () => {
+    const post = jest.fn();
+    const use = jest.fn();
+    const express = Object.assign(
+      jest.fn(() => ({ use, post })),
+      {
+        json: jest.fn(() => 'json-middleware'),
+        text: jest.fn(() => 'text-middleware'),
+      }
+    );
+    const cors = jest.fn(() => 'cors-middleware');
+    const fetchFn = jest
+      .fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ access_token: 'token' }),
+      })
+      .mockResolvedValueOnce({ ok: true, status: 204, json: async () => ({}) });
+
+    createErrorBeaconRun({
+      express,
+      cors,
+      getEnvironmentVariables: () => ({
+        DENDRITE_ENVIRONMENT: 't-123',
+        PLAYWRIGHT_ORIGIN: 'https://playwright.example',
+      }),
+      fetchFn,
+    });
+
+    const handler = post.mock.calls[0][1];
+    const validResponse = createResponse();
+    const validRequest = { method: 'POST', body: '{"message":"boom"}' };
+    await handler(validRequest, validResponse.api);
+
+    expect(validRequest.body).toEqual({ message: 'boom' });
+    expect(validResponse.statusCode).toBe(204);
+
+    const invalidResponse = createResponse();
+    const invalidRequest = { method: 'POST', body: '{invalid' };
+    await handler(invalidRequest, invalidResponse.api);
+
+    expect(invalidRequest.body).toBeUndefined();
+    expect(invalidResponse.statusCode).toBe(400);
+  });
+
+  it('uses an empty resolved environment when the validated value disappears', () => {
+    const post = jest.fn();
+    const use = jest.fn();
+    const express = Object.assign(
+      jest.fn(() => ({ use, post })),
+      {
+        json: jest.fn(() => 'json-middleware'),
+        text: jest.fn(() => 'text-middleware'),
+      }
+    );
+    let environmentReads = 0;
+    const environmentVariables = {
+      get DENDRITE_ENVIRONMENT() {
+        environmentReads += 1;
+        return environmentReads <= 2 ? 't-123' : undefined;
+      },
+      PLAYWRIGHT_ORIGIN: 'https://playwright.example',
+    };
+
+    expect(() =>
+      createErrorBeaconRun({
+        express,
+        cors: jest.fn(() => 'cors-middleware'),
+        getEnvironmentVariables: () => environmentVariables,
+        fetchFn: jest.fn(),
+      })
+    ).not.toThrow();
+  });
 });
 
 /**
