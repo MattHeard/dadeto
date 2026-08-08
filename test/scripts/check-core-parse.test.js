@@ -96,6 +96,35 @@ describe('parse gates', () => {
     });
   });
 
+  test('aggregates and reports violations from either parse gate', () => {
+    const result = createCheckCoreParseHandle(
+      createOptions({
+        fsModule: createFs({
+          '/repo/src/core/index.js':
+            'export function createMainHandle() { return parseRequest(); }',
+          '/repo/src/core/payment-webhook-core.js':
+            'export function validatePayload(payload) { if (payload == null) { throw new Error("missing"); } return payload; }',
+        }),
+      })
+    )();
+
+    expect(result.exitCode).toBe(1);
+    expect(result.violations).toEqual([
+      { filePath: 'src/core/payment-webhook-core.js', name: 'validatePayload' },
+    ]);
+
+    const defaultOutputOptions = createOptions({
+      fsModule: createFs({
+        '/repo/src/core/payment-webhook-core.js':
+          'export function validatePayload(payload) { if (payload == null) { throw new Error("missing"); } return payload; }',
+      }),
+    });
+    delete defaultOutputOptions.stdout;
+    expect(createCheckParseNotValidateHandle(defaultOutputOptions)().exitCode).toBe(
+      1
+    );
+  });
+
   test('default path helpers are exposed through test utils', () => {
     const { defaultPathModule, normalizeOptions } = checkCoreParseTestUtils;
     const normalized = normalizeOptions();
