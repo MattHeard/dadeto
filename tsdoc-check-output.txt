@@ -2,10 +2,6 @@
 > blog-generator@1.0.0 tsdoc:check
 > tsc --project tsconfig.jsdoc.json
 
-src/core/build/copy-cloud.js(1253,36): error TS2345: Argument of type '{ readdir: (dir: string, options?: { withFileTypes?: boolean | undefined; } | undefined) => Promise<unknown[]>; mkdir: (target: string, options?: { recursive?: boolean | undefined; } | undefined) => Promise<...>; copyFile: (source: string, destination: string) => Promise<...>; readFile?: ((filePath: string, encoding...' is not assignable to parameter of type '{ readdir: (dir: string, options?: { withFileTypes?: boolean | undefined; } | undefined) => Promise<unknown[]>; mkdir: (target: string, options?: { recursive?: boolean | undefined; } | undefined) => Promise<...>; copyFile: (source: string, destination: string) => Promise<...>; utimes?: ((target: string, atime: Date,...'.
-  Types of property 'readFile' are incompatible.
-    Type '((filePath: string, encoding: "utf8") => Promise<string>) | undefined' is not assignable to type '(filePath: string, encoding: "utf8") => Promise<string>'.
-      Type 'undefined' is not assignable to type '(filePath: string, encoding: "utf8") => Promise<string>'.
 src/core/cloud/assign-moderation-job/assign-moderation-job-core.js(790,3): error TS2322: Type '(uid: string) => Promise<VariantCandidate[]>' is not assignable to type '(...args: unknown[]) => unknown'.
   Types of parameters 'uid' and 'args' are incompatible.
     Type 'unknown' is not assignable to type 'string'.

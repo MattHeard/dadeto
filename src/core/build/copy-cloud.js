@@ -22,8 +22,8 @@ import {
  *     readdir: (dir: string, options?: { withFileTypes?: boolean }) => Promise<unknown[]>,
  *     mkdir: (target: string, options?: { recursive?: boolean }) => Promise<unknown>,
  *     copyFile: (source: string, destination: string) => Promise<void>,
- *     readFile?: (filePath: string, encoding: 'utf8') => Promise<string>,
- *     writeFile?: (filePath: string, content: string) => Promise<void>,
+ *     readFile: (filePath: string, encoding: 'utf8') => Promise<string>,
+ *     writeFile: (filePath: string, content: string) => Promise<void>,
  *   },
  *   logger?: { info: (message: string) => void },
  * }} deps Build dependencies.
