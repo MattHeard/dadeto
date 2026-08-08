@@ -1,5 +1,8 @@
 import { expect, it } from '@jest/globals';
-import { priceAndConsumeOperation } from '../../../../src/core/cloud/billing/floating-credit-core.js';
+import {
+  priceAndConsumeOperation,
+  quoteUnusedCreditRefund,
+} from '../../../../src/core/cloud/billing/floating-credit-core.js';
 import { createPricingSnapshot } from '../../../../src/core/cloud/billing/pricing-core.js';
 
 const snapshot = createPricingSnapshot({
@@ -31,4 +34,14 @@ it('prices an operation at execution time and records its snapshot', () => {
     snapshotId: 'daily-1',
     allocations: [{ purchaseId: 'p1', amount: 5 }],
   });
+});
+
+it('quotes the refundable unused credits at the current rate', () => {
+  expect(
+    quoteUnusedCreditRefund(
+      { purchaseId: 'p1', issuedCredits: 50_000, remainingCredits: 45_000 },
+      100,
+      snapshot
+    )
+  ).toEqual({ amountUsdMinor: 5, remainingCredits: 45_000, snapshotId: 'daily-1' });
 });
