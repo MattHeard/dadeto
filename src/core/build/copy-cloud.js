@@ -1292,10 +1292,6 @@ export async function createCopyCloudHandle(deps) {
 
       const updated = original.replaceAll(from, to);
 
-      if (updated === original) {
-        return;
-      }
-
       await io.writeFile(filePath, updated);
       logger.info(
         `Rewrote ${formatForLog(filePath)} import from "${from}" to "${to}"`

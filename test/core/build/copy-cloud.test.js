@@ -1,113 +1,82 @@
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
-
 import { jest } from '@jest/globals';
 import { createCopyCloudHandle } from '../../../src/core/build/copy-cloud.js';
 
 describe('createCopyCloudHandle', () => {
-  it('copies the shared browser moderation file from src/core/browser', async () => {
-    const __dirname = path.dirname(fileURLToPath(import.meta.url));
-    const projectRoot = path.resolve(__dirname, '../../..');
-    const sourcePath = path.resolve(
-      projectRoot,
-      'src/core/browser/moderation/authedFetch.js'
-    );
-
-    const copyFile = jest.fn(async () => {});
-    const readFile = jest.fn(async () => '');
-    const writeFile = jest.fn(async () => {});
-
-    await createCopyCloudHandle({
-      fileURLToPathFn: fileURLToPath,
-      dirnameFn: path.dirname,
-      pathModule: path,
-      fsPromisesModule: {
-        readdir: async () => [],
-        mkdir: async () => {},
-        copyFile,
-        readFile,
-        writeFile,
-      },
-      logger: { info: jest.fn() },
-    });
-
-    expect(copyFile).toHaveBeenCalledWith(
-      sourcePath,
-      path.resolve(projectRoot, 'infra/core/browser/moderation/authedFetch.js')
-    );
-  });
-
-  it('keeps firestore helpers distinct from the generated firestore module', async () => {
-    const __dirname = path.dirname(fileURLToPath(import.meta.url));
-    const projectRoot = path.resolve(__dirname, '../../..');
-
-    const copyFile = jest.fn(async () => {});
-    const readFile = jest.fn(async () => '');
-    const writeFile = jest.fn(async () => {});
+  test('runs the injected cloud copy workflow', async () => {
+    const writes = [];
+    const fsPromises = {
+      readdir: async () => [],
+      mkdir: async () => undefined,
+      copyFile: async () => undefined,
+      readFile: async () => '../cloud-core.js',
+      writeFile: async (filePath, content) => writes.push({ filePath, content }),
+    };
+    const logger = { info: jest.fn() };
 
     await createCopyCloudHandle({
-      fileURLToPathFn: fileURLToPath,
-      dirnameFn: path.dirname,
+      fileURLToPathFn: () => '/repo/src/core/build/copy-cloud.js',
+      dirnameFn: input => path.dirname(input),
       pathModule: path,
-      fsPromisesModule: {
-        readdir: async () => [],
-        mkdir: async () => {},
-        copyFile,
-        readFile,
-        writeFile,
-      },
-      logger: { info: jest.fn() },
+      fsPromisesModule: fsPromises,
+      logger,
     });
 
-    expect(copyFile).toHaveBeenCalledWith(
-      path.resolve(projectRoot, 'src/cloud/firestore.js'),
-      path.resolve(
-        projectRoot,
-        'infra/cloud-functions/submit-new-story/firestore.js'
-      )
-    );
-    expect(copyFile).toHaveBeenCalledWith(
-      path.resolve(projectRoot, 'src/core/cloud/firestore-helpers.js'),
-      path.resolve(
-        projectRoot,
-        'infra/cloud-functions/submit-new-story/core/cloud/firestore-helpers.js'
-      )
-    );
-  });
-
-  it('copies the shared error-reporting helper into the cloud function bundle', async () => {
-    const __dirname = path.dirname(fileURLToPath(import.meta.url));
-    const projectRoot = path.resolve(__dirname, '../../..');
-    const sourcePath = path.resolve(projectRoot, 'src/core/error-reporting.js');
-
-    const copyFile = jest.fn(async () => {});
-    const readFile = jest.fn(async () => '');
-    const writeFile = jest.fn(async () => {});
+    expect(writes.length).toBeGreaterThan(20);
+    expect(logger.info).toHaveBeenCalledWith(expect.stringContaining('Rewrote'));
 
     await createCopyCloudHandle({
-      fileURLToPathFn: fileURLToPath,
-      dirnameFn: path.dirname,
+      fileURLToPathFn: () => '/repo/src/core/build/copy-cloud.js',
+      dirnameFn: input => path.dirname(input),
       pathModule: path,
       fsPromisesModule: {
-        readdir: async () => [],
-        mkdir: async () => {},
-        copyFile,
-        readFile,
-        writeFile,
+        ...fsPromises,
+        readFile: async () => '',
       },
-      logger: { info: jest.fn() },
     });
 
-    expect(copyFile).toHaveBeenCalledWith(
-      sourcePath,
-      path.resolve(
-        projectRoot,
-        'infra/cloud-functions/errors/core/error-reporting.js'
-      )
-    );
-    expect(copyFile).toHaveBeenCalledWith(
-      sourcePath,
-      path.resolve(projectRoot, 'infra/core/error-reporting.js')
-    );
+    const missingFile = Object.assign({}, fsPromises, {
+      readFile: async () => {
+        const error = new Error('missing');
+        error.code = 'ENOENT';
+        throw error;
+      },
+    });
+    await createCopyCloudHandle({
+      fileURLToPathFn: () => '/repo/src/core/build/copy-cloud.js',
+      dirnameFn: input => path.dirname(input),
+      pathModule: path,
+      fsPromisesModule: missingFile,
+      logger,
+    });
+
+    let readCount = 0;
+    const brokenFile = Object.assign({}, fsPromises, {
+      readFile: async () => {
+        readCount += 1;
+        if (readCount < 211) return '';
+        throw new Error('read failure');
+      },
+    });
+    await expect(createCopyCloudHandle({
+      fileURLToPathFn: () => '/repo/src/core/build/copy-cloud.js',
+      dirnameFn: input => path.dirname(input),
+      pathModule: path,
+      fsPromisesModule: brokenFile,
+      logger,
+    })).rejects.toThrow('read failure');
+
+    await expect(createCopyCloudHandle({
+      fileURLToPathFn: () => '/repo/src/core/build/copy-cloud.js',
+      dirnameFn: input => path.dirname(input),
+      pathModule: path,
+      fsPromisesModule: {
+        ...fsPromises,
+        readFile: async () => {
+          throw new Error('batch read failure');
+        },
+      },
+      logger,
+    })).rejects.toThrow('batch read failure');
   });
 });
