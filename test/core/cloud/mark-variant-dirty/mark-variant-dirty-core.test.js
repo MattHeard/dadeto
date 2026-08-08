@@ -16,6 +16,7 @@ const {
   findVariantRef,
   refFromSnap,
   markVariantDirtyImpl,
+  markAuthorDirtyImpl,
   sendUnauthorized,
   sendForbidden,
   createIsAdminUid,
@@ -403,6 +404,33 @@ describe('mark-variant-dirty core helpers', () => {
     });
   });
 
+  describe('markAuthorDirtyImpl', () => {
+    it('returns false when no author matches', async () => {
+      const get = jest.fn().mockResolvedValue({ docs: [] });
+      const db = {
+        collection: jest.fn(() => ({
+          where: jest.fn(() => ({ limit: jest.fn(() => ({ get })) })),
+        })),
+      };
+
+      await expect(markAuthorDirtyImpl('missing', { db })).resolves.toBe(false);
+    });
+
+    it('toggles the dirty flag when an author matches', async () => {
+      const update = jest.fn().mockResolvedValue(undefined);
+      const get = jest.fn().mockResolvedValue({ docs: [{ ref: { update } }] });
+      const db = {
+        collection: jest.fn(() => ({
+          where: jest.fn(() => ({ limit: jest.fn(() => ({ get })) })),
+        })),
+      };
+
+      await expect(markAuthorDirtyImpl('author-1', { db })).resolves.toBe(true);
+      expect(update).toHaveBeenNthCalledWith(1, { dirty: false });
+      expect(update).toHaveBeenNthCalledWith(2, { dirty: true });
+    });
+  });
+
   describe('auth helpers', () => {
     it('extracts bearer token via matchAuthHeader', () => {
       expect(matchAuthHeader('Bearer token-value')[1]).toBe('token-value');
@@ -454,6 +482,9 @@ describe('mark-variant-dirty core helpers', () => {
       expect(parseMarkVariantRequestBody()).toEqual({
         pageNumber: Number.NaN,
         variantName: '',
+      });
+      expect(parseMarkVariantRequestBody({ authorId: ' author-1 ' })).toEqual({
+        authorId: 'author-1',
       });
     });
   });
@@ -569,6 +600,38 @@ describe('mark-variant-dirty core helpers', () => {
 
       expect(res.status).toHaveBeenLastCalledWith(200);
       expect(res.json).toHaveBeenCalledWith({ ok: true });
+    });
+
+    it('handles author dirty requests with success, not-found, and failure', async () => {
+      const verifyAdmin = jest.fn().mockResolvedValue(true);
+      const markAuthorDirty = jest
+        .fn()
+        .mockResolvedValueOnce(true)
+        .mockResolvedValueOnce(false)
+        .mockRejectedValueOnce(new Error('author boom'));
+      const handle = createHandleRequest({
+        verifyAdmin,
+        markVariantDirty: jest.fn(),
+        markAuthorDirty,
+      });
+
+      for (const expected of [200, 404, 500]) {
+        const res = createResponse();
+        await handle({ method: 'POST', body: { authorId: 'author-1' } }, res);
+        expect(res.status).toHaveBeenLastCalledWith(expected);
+      }
+    });
+
+    it('reports missing author handler configuration', async () => {
+      const handle = createHandleRequest({
+        verifyAdmin: jest.fn().mockResolvedValue(true),
+        markVariantDirty: jest.fn(),
+      });
+      const res = createResponse();
+
+      await expect(
+        handle({ method: 'POST', body: { authorId: 'author-1' } }, res)
+      ).rejects.toThrow('markAuthorDirty is not configured');
     });
 
     it('responds with 500 when markVariantDirty throws', async () => {
