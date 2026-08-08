@@ -114,19 +114,21 @@ export function syncToyPayload(input, payload) {
  * @returns {{ form: HTMLElement, button: HTMLButtonElement, cleanupFns: CleanupFn[] }} Shared nodes and cleanup stack.
  */
 export function buildCaptureForm({ dom, container, textInput, formClass }) {
-  return withManagedFormShell(
-    { dom, container, textInput },
-    ({ form, disposers }) => {
-      dom.setClassName(form, formClass);
+  return /** @type {{ form: HTMLElement, button: HTMLButtonElement, cleanupFns: CleanupFn[] }} */ (
+    withManagedFormShell(
+      { dom, container, textInput },
+      ({ form, disposers }) => {
+        dom.setClassName(form, formClass);
 
-      const button = /** @type {HTMLButtonElement} */ (
-        dom.createElement('button')
-      );
-      dom.setType(button, 'button');
-      dom.appendChild(form, button);
+        const button = /** @type {HTMLButtonElement} */ (
+          dom.createElement('button')
+        );
+        dom.setType(button, 'button');
+        dom.appendChild(form, button);
 
-      return { form, button, cleanupFns: disposers };
-    }
+        return { form, button, cleanupFns: disposers };
+      }
+    )
   );
 }
 

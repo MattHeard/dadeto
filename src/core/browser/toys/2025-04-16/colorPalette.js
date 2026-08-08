@@ -1,7 +1,7 @@
 /**
  * Generate a palette of grayscale colors.
  * @param {string|number} input - Desired number of colors.
- * @param {{get: (key: string) => ((min: number, max: number) => number)}} env - Environment with a `getRandomNumber` function.
+ * @param {{get: (key: string) => (() => number)}} env - Environment with a `getRandomNumber` function.
  * @returns {string} JSON string with a `palette` array.
  */
 export function generatePalette(input, env) {

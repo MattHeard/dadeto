@@ -105,7 +105,11 @@ function hasInputPayload(input) {
 export function normalizeParsedEvent(parsed) {
   const candidate = toRecordOrNull(
     parsed,
-    /** @type {(value: unknown) => boolean} */ (isNonNullObject)
+    /**
+     * @param {unknown} value - Candidate object.
+     * @returns {value is Record<string, unknown>} Whether value is a record.
+     */
+    value => isNonNullObject(value)
   );
   if (!candidate) {
     return null;

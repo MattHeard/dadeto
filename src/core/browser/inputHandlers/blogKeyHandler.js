@@ -163,22 +163,24 @@ function createBlogKeyFields({ dom, data }) {
  */
 function buildForm({ dom, container, textInput }) {
   const data = parseData(dom, textInput);
-  return withManagedFormShell(
-    { dom, container, textInput },
-    ({ form, disposers }) => {
-      const fieldDefinitions = createBlogKeyFields({ dom, data });
-      fieldDefinitions.forEach(field =>
-        buildBlogKeyField({
-          ...field,
-          form,
-          textInput,
-          data,
-          disposers,
-        })
-      );
+  return /** @type {HTMLElement} */ (
+    withManagedFormShell(
+      { dom, container, textInput },
+      ({ form, disposers }) => {
+        const fieldDefinitions = createBlogKeyFields({ dom, data });
+        fieldDefinitions.forEach(field =>
+          buildBlogKeyField({
+            ...field,
+            form,
+            textInput,
+            data,
+            disposers,
+          })
+        );
 
-      return finalizeManagedForm({ dom, textInput, data, form });
-    }
+        return finalizeManagedForm({ dom, textInput, data, form });
+      }
+    )
   );
 }
 

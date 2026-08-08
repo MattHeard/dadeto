@@ -154,24 +154,26 @@ export function finalizeManagedForm({ dom, textInput, data, form }) {
  * @returns {HTMLElement} Finalized form element.
  */
 export function buildManagedForm(options, buildFormContent) {
-  return withManagedFormShell(options, shell => {
-    const result = buildFormContent(shell);
-    if (
-      result &&
-      typeof result === 'object' &&
-      'data' in result &&
-      'form' in result
-    ) {
-      return finalizeManagedForm({
-        dom: options.dom,
-        textInput: options.textInput,
-        data: /** @type {Record<string, unknown>} */ (result.data),
-        form: /** @type {HTMLElement} */ (result.form),
-      });
-    }
+  return /** @type {HTMLElement} */ (
+    withManagedFormShell(options, shell => {
+      const result = buildFormContent(shell);
+      if (
+        result &&
+        typeof result === 'object' &&
+        'data' in result &&
+        'form' in result
+      ) {
+        return finalizeManagedForm({
+          dom: options.dom,
+          textInput: options.textInput,
+          data: /** @type {Record<string, unknown>} */ (result.data),
+          form: /** @type {HTMLElement} */ (result.form),
+        });
+      }
 
-    return /** @type {HTMLElement} */ (result);
-  });
+      return /** @type {HTMLElement} */ (result);
+    })
+  );
 }
 
 /**
