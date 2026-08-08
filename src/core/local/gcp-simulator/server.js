@@ -15,7 +15,7 @@ let simulatorPromise = null;
 
 /**
  * @typedef {{
- *   routes: Record<string, (...args: never[]) => unknown>,
+ *   routes: Record<string, (request: { method: string, body?: unknown, headers: import('node:http').IncomingHttpHeaders, get: (name: string) => string | undefined }) => Promise<{ status: number, body?: unknown }>>,
  *   getConfig: () => unknown,
  *   getSeedManifest: () => unknown,
  *   storageRoot: string,
@@ -152,7 +152,9 @@ async function startServer(deps) {
  */
 function registerSimulatorRoute(app, simulator, route) {
   app[route.method](route.path, async (req, res) => {
-    const handler = simulator.routes[route.routeName];
+    const handler = /** @type {LocalGcpSimulator['routes'][string]} */ (
+      simulator.routes[route.routeName]
+    );
     const result = await handler(buildSimulatorRequest(req, route));
     if (
       route.routeName === 'submitNewStory' &&
@@ -243,13 +245,15 @@ function shouldRedirectSubmitStory(req, result) {
  */
 function getSimulatorPromise() {
   if (!simulatorPromise) {
-    simulatorPromise = createLocalGcpSimulator({
-      baseUrl: `http://127.0.0.1:${port}`,
-      publicDir: defaultPublicDir,
-    });
+    simulatorPromise = /** @type {Promise<LocalGcpSimulator>} */ (
+      createLocalGcpSimulator({
+        baseUrl: `http://127.0.0.1:${port}`,
+        publicDir: defaultPublicDir,
+      })
+    );
   }
 
-  return simulatorPromise;
+  return /** @type {Promise<LocalGcpSimulator>} */ (simulatorPromise);
 }
 
 /**

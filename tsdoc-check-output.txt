@@ -365,37 +365,6 @@ src/core/cloud/tree-visibility/run.js(26,7): error TS2322: Type 'Firestore' is n
                 Value of type '() => DocumentData' has no properties in common with type '{ visibility?: number | undefined; }'. Did you mean to call it?
 src/core/cloud/tree-visibility/tree-visibility-core.js(89,5): error TS2322: Type '{ get: () => Promise<{ exists: boolean; data: () => VisibilityData; }>; } | null' is not assignable to type '{ get: () => Promise<{ exists: boolean; data: () => VisibilityData; }>; }'.
   Type 'null' is not assignable to type '{ get: () => Promise<{ exists: boolean; data: () => VisibilityData; }>; }'.
-src/core/local/gcp-simulator/server.js(156,34): error TS2345: Argument of type '{ method: string; body?: unknown; headers: IncomingHttpHeaders; get: (name: string) => string | undefined; }' is not assignable to parameter of type 'never'.
-src/core/local/gcp-simulator/server.js(159,38): error TS2345: Argument of type 'unknown' is not assignable to parameter of type '{ status: number; body?: unknown; }'.
-src/core/local/gcp-simulator/server.js(164,29): error TS2345: Argument of type 'Promise<unknown>' is not assignable to parameter of type 'Promise<{ status: number; body?: unknown; }>'.
-  Type 'unknown' is not assignable to type '{ status: number; body?: unknown; }'.
-src/core/local/gcp-simulator/server.js(246,5): error TS2322: Type 'Promise<object>' is not assignable to type 'Promise<LocalGcpSimulator>'.
-  Type '{}' is missing the following properties from type 'LocalGcpSimulator': routes, getConfig, getSeedManifest, storageRoot, and 2 more.
-src/core/local/gcp-simulator/server.js(252,3): error TS2322: Type 'Promise<LocalGcpSimulator> | null' is not assignable to type 'Promise<LocalGcpSimulator>'.
-  Type 'null' is not assignable to type 'Promise<LocalGcpSimulator>'.
-src/core/local/notion-codex/launcher.js(37,40): error TS2345: Argument of type '{ logDirSuffix: string; closeErrorLabel: string; exitErrorLabel: (payload: Record<string, unknown>) => string; resolveArgs: (payload: Record<string, unknown>) => string[]; command: string; ... 6 more ...; spawnImpl?: { ...; } | undefined; }' is not assignable to parameter of type '{ command: string; args?: string[] | undefined; cwd?: string | undefined; logDir?: string | undefined; logDirSuffix?: string | undefined; pathModule: { join: (first: string, ...parts: string[]) => string; }; ... 9 more ...; exitErrorLabel: string | ((payload: Record<...>) => string); }'.
-  Types of property 'mkdirImpl' are incompatible.
-    Type '{ (path: PathLike, options: MakeDirectoryOptions & { recursive: true; }): Promise<string | undefined>; (path: PathLike, options?: Mode | ... 2 more ... | undefined): Promise<...>; (path: PathLike, options?: MakeDirectoryOptions | ... 2 more ... | undefined): Promise<...>; } | undefined' is not assignable to type '((dirPath: string, options: { recursive: boolean; }) => Promise<void>) | undefined'.
-      Type '{ (path: PathLike, options: MakeDirectoryOptions & { recursive: true; }): Promise<string | undefined>; (path: PathLike, options?: Mode | ... 2 more ... | undefined): Promise<...>; (path: PathLike, options?: MakeDirectoryOptions | ... 2 more ... | undefined): Promise<...>; }' is not assignable to type '(dirPath: string, options: { recursive: boolean; }) => Promise<void>'.
-        Types of parameters 'options' and 'options' are incompatible.
-          Type '{ recursive: boolean; }' is not assignable to type 'MakeDirectoryOptions & { recursive: true; }'.
-            Type '{ recursive: boolean; }' is not assignable to type '{ recursive: true; }'.
-              Types of property 'recursive' are incompatible.
-                Type 'boolean' is not assignable to type 'true'.
-src/core/local/process-launcher.js(24,9): error TS2722: Cannot invoke an object which is possibly 'undefined'.
-src/core/local/process-launcher.js(36,5): error TS2722: Cannot invoke an object which is possibly 'undefined'.
-src/core/local/process-launcher.js(37,5): error TS2722: Cannot invoke an object which is possibly 'undefined'.
-src/core/local/process-launcher.js(119,3): error TS2322: Type 'unknown' is not assignable to type 'string'.
-src/core/local/process-launcher.js(141,18): error TS2339: Property 'pathModule' does not exist on type '{ logDir?: string | undefined; logDirSuffix?: string | undefined; resolveLogDir?: ((payload: Record<string, unknown>) => string) | undefined; }'.
-src/core/local/process-launcher.js(181,7): error TS2322: Type 'unknown' is not assignable to type 'string'.
-src/core/local/process-launcher.js(267,5): error TS2722: Cannot invoke an object which is possibly 'undefined'.
-src/core/local/process-launcher.js(275,23): error TS2722: Cannot invoke an object which is possibly 'undefined'.
-src/core/local/process-launcher.js(281,3): error TS2722: Cannot invoke an object which is possibly 'undefined'.
-src/core/local/process-launcher.js(345,29): error TS7006: Parameter 'exitPayload' implicitly has an 'any' type.
-src/core/local/process-launcher.js(345,42): error TS7006: Parameter 'input' implicitly has an 'any' type.
-src/core/local/process-launcher.js(346,11): error TS2722: Cannot invoke an object which is possibly 'undefined'.
-src/core/local/process-launcher.js(349,47): error TS2345: Argument of type '{ command: string; args: string[]; cwd: string; logDir: string; pathModule: { join: (first: string, ...parts: string[]) => string; }; runId: string; mkdirImpl: ((dirPath: string, options: { recursive: boolean; }) => Promise<void>) | undefined; ... 6 more ...; launcherKind: string | undefined; }' is not assignable to parameter of type '{ command: string; args: string[]; repoRoot: string; runId: string; pathModule: { join: (first: string, ...parts: string[]) => string; }; cwd?: string | undefined; logDir?: string | undefined; logDirSuffix?: string | undefined; ... 7 more ...; launcherKind?: string | undefined; }'.
-  Property 'repoRoot' is missing in type '{ command: string; args: string[]; cwd: string; logDir: string; pathModule: { join: (first: string, ...parts: string[]) => string; }; runId: string; mkdirImpl: ((dirPath: string, options: { recursive: boolean; }) => Promise<void>) | undefined; ... 6 more ...; launcherKind: string | undefined; }' but required in type '{ command: string; args: string[]; repoRoot: string; runId: string; pathModule: { join: (first: string, ...parts: string[]) => string; }; cwd?: string | undefined; logDir?: string | undefined; logDirSuffix?: string | undefined; ... 7 more ...; launcherKind?: string | undefined; }'.
 src/core/local/symphony/app.js(17,3): error TS2322: Type '(_req: unknown, res: unknown, next: (error?: unknown) => void) => Promise<void>' is not assignable to type '(...args: unknown[]) => unknown'.
   Types of parameters 'next' and 'args' are incompatible.
     Type 'unknown' is not assignable to type '(error?: unknown) => void'.

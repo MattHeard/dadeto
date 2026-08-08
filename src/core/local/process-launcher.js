@@ -5,8 +5,8 @@ import { normalizeMaybeNumber } from '../commonCore.js';
  *   logDir: string,
  *   runId: string,
  *   pathModule: { join: (first: string, ...parts: string[]) => string },
- *   mkdirImpl?: (dirPath: string, options: { recursive: boolean }) => Promise<void>,
- *   openImpl?: (filePath: string, flags: 'a') => Promise<{ fd: number, close?: () => Promise<void> | void }>,
+ *   mkdirImpl: (dirPath: string, options: { recursive: boolean }) => Promise<void>,
+ *   openImpl: (filePath: string, flags: 'a') => Promise<{ fd: number, close?: () => Promise<void> | void }>,
  * }} options Run-log dependencies.
  * @returns {Promise<{
  *   stdoutPath: string,
@@ -57,20 +57,21 @@ export async function openAppendOnlyRunLogFiles(options) {
  * @returns {Promise<void>} Nothing.
  */
 export async function closeRunLogHandles(handles, errorLabel) {
+  /** @type {Promise<void>[]} */
   const closers = [];
 
   if (
     handles.stdoutHandle &&
     typeof handles.stdoutHandle.close === 'function'
   ) {
-    closers.push(handles.stdoutHandle.close());
+    closers.push(Promise.resolve(handles.stdoutHandle.close()));
   }
 
   if (
     handles.stderrHandle &&
     typeof handles.stderrHandle.close === 'function'
   ) {
-    closers.push(handles.stderrHandle.close());
+    closers.push(Promise.resolve(handles.stderrHandle.close()));
   }
 
   if (closers.length === 0) {
@@ -116,7 +117,7 @@ function resolveLaunchCwd(options, payload) {
     return options.resolveCwd(payload);
   }
 
-  return options.cwd ?? payload.repoRoot;
+  return options.cwd ?? String(payload.repoRoot ?? '');
 }
 
 /**
@@ -124,6 +125,7 @@ function resolveLaunchCwd(options, payload) {
  * @param {{
  *   logDir?: string,
  *   logDirSuffix?: string,
+ *   pathModule: { join: (first: string, ...parts: string[]) => string },
  *   resolveLogDir?: (payload: Record<string, unknown>) => string,
  * }} options Launcher options.
  * @param {Record<string, unknown>} payload Launch payload.
@@ -139,7 +141,7 @@ function resolveLaunchLogDir(options, payload) {
   }
 
   return options.pathModule.join(
-    payload.repoRoot,
+    String(payload.repoRoot ?? ''),
     'tracking',
     options.logDirSuffix ?? 'launcher'
   );
@@ -178,7 +180,7 @@ function resolveExitPayload(options, payload, code, signal) {
 
   if (typeof options.buildExitPayload === 'function') {
     return options.buildExitPayload(payload, {
-      runId: payload.runId,
+      runId: String(payload.runId),
       exitCode: normalizedExitCode,
       signal: normalizedSignal,
     });
@@ -202,8 +204,8 @@ function resolveExitPayload(options, payload, code, signal) {
  *   cwd?: string,
  *   logDir?: string,
  *   logDirSuffix?: string,
- *   mkdirImpl?: (dirPath: string, options: { recursive: boolean }) => Promise<void>,
- *   openImpl?: (filePath: string, flags: 'a') => Promise<{ fd: number, close?: () => Promise<void> | void }>,
+ *   mkdirImpl: (dirPath: string, options: { recursive: boolean }) => Promise<void>,
+ *   openImpl: (filePath: string, flags: 'a') => Promise<{ fd: number, close?: () => Promise<void> | void }>,
  *   spawnImpl?: (command: string, args: string[], options: { cwd: string, detached: true, stdio: ['ignore', number, number] }) => { pid?: number, once?: (event: string, handler: (code: number | null, signal: string | null) => unknown) => void, unref?: () => void },
  *   onExit?: (payload: { runId: string, exitCode: number | null, signal: string | null }) => unknown,
  *   buildExitPayload?: (payload: Record<string, unknown>, input: { runId: string, exitCode: number | null, signal: string | null }) => { runId: string, exitCode: number | null, signal: string | null },
@@ -249,13 +251,16 @@ export async function launchDetachedProcessWithRunLogs(options) {
     openImpl: options.openImpl,
   });
 
+  /** @type {{ pid?: number, once: (event: string, listener: (code: number | null, signal: string | null) => void) => void, unref: () => void }} */
   let child;
   try {
-    child = spawnImpl(options.command, options.args, {
-      cwd: options.cwd ?? options.repoRoot,
-      detached: true,
-      stdio: ['ignore', stdoutFd, stderrFd],
-    });
+    child = /** @type {typeof child} */ (
+      spawnImpl(options.command, options.args, {
+        cwd: options.cwd ?? options.repoRoot,
+        detached: true,
+        stdio: ['ignore', stdoutFd, stderrFd],
+      })
+    );
   } finally {
     await closeRunLogHandles(
       { stdoutHandle, stderrHandle },
@@ -264,6 +269,7 @@ export async function launchDetachedProcessWithRunLogs(options) {
   }
 
   if (typeof options.onExit === 'function') {
+    const onExit = options.onExit;
     child.once('exit', (code, signal) => {
       const exitPayload = resolveExitPayload(
         options,
@@ -272,7 +278,7 @@ export async function launchDetachedProcessWithRunLogs(options) {
         signal
       );
 
-      Promise.resolve(options.onExit(exitPayload)).catch(error => {
+      Promise.resolve(onExit(exitPayload)).catch(error => {
         console.error(options.exitErrorLabel, error);
       });
     });
@@ -299,9 +305,9 @@ export async function launchDetachedProcessWithRunLogs(options) {
  *   logDir?: string,
  *   logDirSuffix?: string,
  *   pathModule: { join: (first: string, ...parts: string[]) => string },
- *   mkdirImpl?: (dirPath: string, options: { recursive: boolean }) => Promise<void>,
- *   openImpl?: (filePath: string, flags: 'a') => Promise<{ fd: number, close?: () => Promise<void> | void }>,
- *   spawnImpl?: (command: string, args: string[], options: object) => { pid?: number, once: (event: string, listener: (code: number | null, signal: string | null) => void) => void, unref: () => void },
+ *   mkdirImpl: (dirPath: string, options: { recursive: boolean }) => Promise<void>,
+ *   openImpl: (filePath: string, flags: 'a') => Promise<{ fd: number, close?: () => Promise<void> | void }>,
+ *   spawnImpl: (command: string, args: string[], options: object) => { pid?: number, once: (event: string, listener: (code: number | null, signal: string | null) => void) => void, unref: () => void },
  *   launcherKind?: string,
  *   resolveArgs?: (payload: Record<string, unknown>) => string[],
  *   resolveCwd?: (payload: Record<string, unknown>) => string,
@@ -339,17 +345,20 @@ export function createDetachedProcessLauncher(options) {
       const cwd = resolveLaunchCwd(options, payload);
       const logDir = resolveLaunchLogDir(options, payload);
       const exitErrorLabel = resolveLaunchExitErrorLabel(options, payload);
+      /** @type {typeof options.buildExitPayload | undefined} */
       let buildExitPayload;
 
       if (typeof options.buildExitPayload === 'function') {
-        buildExitPayload = (exitPayload, input) =>
-          options.buildExitPayload(payload, input);
+        const buildExitPayloadFn = options.buildExitPayload;
+        buildExitPayload = (_exitPayload, input) =>
+          buildExitPayloadFn(payload, input);
       }
 
       return launchDetachedProcessWithRunLogs({
         command: options.command,
         args,
         cwd,
+        repoRoot: payload.repoRoot,
         logDir,
         pathModule: options.pathModule,
         runId: payload.runId,
