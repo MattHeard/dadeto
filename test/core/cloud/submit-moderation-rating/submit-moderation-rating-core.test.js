@@ -297,6 +297,30 @@ describe('createSubmitModerationRatingResponder', () => {
     expect(response).toEqual({ status: 401, body: 'Invalid or expired token' });
     expect(fetchModeratorAssignment).not.toHaveBeenCalled();
   });
+
+  it('uses the default auth message for primitive verification failures', async () => {
+    verifyIdToken.mockRejectedValueOnce('expired');
+
+    const response = await responder({
+      method: 'POST',
+      body: { isApproved: false },
+      headers: { Authorization: 'Bearer token' },
+    });
+
+    expect(response).toEqual({ status: 401, body: 'Invalid or expired token' });
+  });
+
+  it('rejects missing decoded token details', async () => {
+    verifyIdToken.mockResolvedValueOnce(null);
+
+    const response = await responder({
+      method: 'POST',
+      body: { isApproved: false },
+      headers: { Authorization: 'Bearer token' },
+    });
+
+    expect(response).toEqual({ status: 401, body: 'Invalid or expired token' });
+  });
 });
 
 describe('createHandleSubmitModerationRating', () => {
