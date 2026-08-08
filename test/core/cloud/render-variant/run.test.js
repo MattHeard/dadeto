@@ -3,19 +3,19 @@ import { describe, expect, jest, test } from '@jest/globals';
 const ensureFirebaseApp = jest.fn();
 const importedFetchFn = jest.fn(() => Promise.resolve({ ok: true }));
 const onWrite = jest.fn(() => 'renderVariant');
-const createRenderVariant = jest.fn(options =>
+const mockCreateRenderVariant = jest.fn(options =>
   jest.fn(async (...args) => {
     await options.fetchFn(...args);
     return null;
   })
 );
-const createHandleVariantWrite = jest.fn(() => jest.fn(() => 'handled'));
-const createCloudRenderEntrypointState = jest.fn(() => ({
+const mockCreateHandleVariantWrite = jest.fn(() => jest.fn(() => 'handled'));
+const mockCreateCloudRenderEntrypointState = jest.fn(() => ({
   db: { doc: jest.fn() },
   render: jest.fn(() => jest.fn(() => 'rendered')),
 }));
-const createCloudRenderInstanceBuilder = jest.fn(() => jest.fn());
-const createFirestoreDocumentOnWriteTrigger = jest.fn(options => {
+const mockCreateCloudRenderInstanceBuilder = jest.fn(() => jest.fn());
+const mockCreateFirestoreDocumentOnWriteTrigger = jest.fn(options => {
   options.handler('change');
   return jest.fn(() => 'renderVariant');
 });
@@ -27,7 +27,7 @@ const region = jest.fn(() => ({
   },
 }));
 
-jest.unstable_mockModule(
+jest.mock(
   '../../../../src/core/cloud/render-variant/render-variant-core.js',
   () => ({
     DEFAULT_BUCKET_NAME: 'bucket',
@@ -37,22 +37,22 @@ jest.unstable_mockModule(
     getVisibleVariants: jest.fn(() => ['visible']),
     resolveStaticBucketName: jest.fn(() => 'resolved-bucket'),
     resolveStaticObjectPrefix: jest.fn(() => 'prefix'),
-    createHandleVariantWrite,
-    createRenderVariant,
+    createHandleVariantWrite: mockCreateHandleVariantWrite,
+    createRenderVariant: mockCreateRenderVariant,
   })
 );
 
-jest.unstable_mockModule(
+jest.mock(
   '../../../../src/core/cloud/render-support.js',
   () => ({
-    createCloudRenderInstanceBuilder,
-    createCloudRenderEntrypointState,
+    createCloudRenderInstanceBuilder: mockCreateCloudRenderInstanceBuilder,
+    createCloudRenderEntrypointState: mockCreateCloudRenderEntrypointState,
     createMemoizedLoader: jest.fn(),
   })
 );
 
-jest.unstable_mockModule('../../../../src/core/cloud/cloud-core.js', () => ({
-  createFirestoreDocumentOnWriteTrigger,
+jest.mock('../../../../src/core/cloud/cloud-core.js', () => ({
+  createFirestoreDocumentOnWriteTrigger: mockCreateFirestoreDocumentOnWriteTrigger,
 }));
 
 let runRenderVariant;
@@ -65,11 +65,11 @@ beforeAll(async () => {
 
 describe('runRenderVariant', () => {
   test('wires the cloud entrypoint and uses the global fetch path', async () => {
-    createRenderVariant.mockClear();
+    mockCreateRenderVariant.mockClear();
     ensureFirebaseApp.mockClear();
     onWrite.mockClear();
     importedFetchFn.mockClear();
-    createCloudRenderInstanceBuilder.mockImplementationOnce(options => {
+    mockCreateCloudRenderInstanceBuilder.mockImplementationOnce(options => {
       options.consoleError('builder check');
       return jest.fn();
     });
@@ -103,13 +103,13 @@ describe('runRenderVariant', () => {
 
     await render('snap', 'context');
 
-    expect(createRenderVariant).not.toHaveBeenCalled();
+    expect(mockCreateRenderVariant).not.toHaveBeenCalled();
     expect(globalFetch).not.toHaveBeenCalled();
     expect(importedFetchFn).not.toHaveBeenCalled();
   });
 
   test('falls back to the imported fetch helper when global fetch is missing', async () => {
-    createRenderVariant.mockClear();
+    mockCreateRenderVariant.mockClear();
     ensureFirebaseApp.mockClear();
     onWrite.mockClear();
     importedFetchFn.mockClear();
@@ -142,14 +142,14 @@ describe('runRenderVariant', () => {
     });
     await render('snap', 'context');
 
-    expect(createRenderVariant).not.toHaveBeenCalled();
+    expect(mockCreateRenderVariant).not.toHaveBeenCalled();
     expect(importedFetchFn).not.toHaveBeenCalled();
 
     globalThis.fetch = previousFetch;
   });
 
   test('forwards the cloud console error logger into the render builder', async () => {
-    createRenderVariant.mockClear();
+    mockCreateRenderVariant.mockClear();
     ensureFirebaseApp.mockClear();
     onWrite.mockClear();
     importedFetchFn.mockClear();
@@ -170,7 +170,7 @@ describe('runRenderVariant', () => {
     const crypto = { randomUUID: jest.fn(() => 'uuid') };
     const functions = { region };
 
-    createRenderVariant.mockImplementationOnce(options =>
+    mockCreateRenderVariant.mockImplementationOnce(options =>
       jest.fn(async () => {
         options.consoleError('builder failure');
         return null;
@@ -199,7 +199,7 @@ describe('runRenderVariant', () => {
   });
 
   test('uses the global console when one is not provided', async () => {
-    createRenderVariant.mockClear();
+    mockCreateRenderVariant.mockClear();
     ensureFirebaseApp.mockClear();
     onWrite.mockClear();
     importedFetchFn.mockClear();
@@ -223,7 +223,7 @@ describe('runRenderVariant', () => {
     const crypto = { randomUUID: jest.fn(() => 'uuid') };
     const functions = { region };
 
-    createRenderVariant.mockImplementationOnce(options =>
+    mockCreateRenderVariant.mockImplementationOnce(options =>
       jest.fn(async () => {
         options.consoleError('builder failure');
         return null;
@@ -249,8 +249,8 @@ describe('runRenderVariant', () => {
   });
 
   test('wires the onWrite trigger through the wrapper handler', async () => {
-    createRenderVariant.mockClear();
-    createFirestoreDocumentOnWriteTrigger.mockClear();
+    mockCreateRenderVariant.mockClear();
+    mockCreateFirestoreDocumentOnWriteTrigger.mockClear();
     const previousFetch = globalThis.fetch;
     delete globalThis.fetch;
 
@@ -266,13 +266,13 @@ describe('runRenderVariant', () => {
     const FieldValue = { delete: jest.fn(() => 'delete-sentinel') };
     const crypto = { randomUUID: jest.fn(() => 'uuid') };
     const functions = { region };
-    createRenderVariant.mockImplementationOnce(options =>
+    mockCreateRenderVariant.mockImplementationOnce(options =>
       jest.fn(async snap => {
         await options.fetchFn(snap);
         return null;
       })
     );
-    createHandleVariantWrite.mockImplementationOnce(options => {
+    mockCreateHandleVariantWrite.mockImplementationOnce(options => {
       options.getDeleteSentinel();
       options.renderVariant('snap');
       return jest.fn(() => 'handled');
