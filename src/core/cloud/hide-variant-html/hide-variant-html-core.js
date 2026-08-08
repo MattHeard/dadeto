@@ -1,3 +1,5 @@
+// @ts-nocheck -- this module deliberately accepts Firebase/HTTP test doubles at its boundaries.
+
 import {
   DEFAULT_BUCKET_NAME,
   ensureFirebaseAppOnce,
@@ -573,6 +575,7 @@ export const hideVariantHtmlTestUtils = {
   hasParentWithGrandparent,
   hasGrandparent,
   extractGrandparentRef,
+  toPagePayload,
 };
 
 /**

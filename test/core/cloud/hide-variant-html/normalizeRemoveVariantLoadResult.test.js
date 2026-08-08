@@ -2,6 +2,7 @@ import { jest } from '@jest/globals';
 import {
   normalizeRemoveVariantLoadResult,
   createRemoveVariantHtmlForSnapshot,
+  hideVariantHtmlTestUtils,
 } from '../../../../src/core/cloud/hide-variant-html/hide-variant-html-core.js';
 
 describe('normalizeRemoveVariantLoadResult', () => {
@@ -64,5 +65,28 @@ describe('resolvePageRef', () => {
         pageRef: null,
       });
     });
+  });
+
+  it('covers reference-chain helpers for valid and invalid shapes', () => {
+    const storyRef = { path: 'stories/story' };
+    const pageRef = { parent: storyRef };
+    const variantRef = { parent: pageRef };
+    const optionRef = { parent: variantRef };
+
+    expect(hideVariantHtmlTestUtils.hasGrandparent(null)).toBe(false);
+    expect(hideVariantHtmlTestUtils.hasGrandparent({})).toBe(false);
+    expect(hideVariantHtmlTestUtils.hasGrandparent({ parent: storyRef })).toBe(true);
+    expect(hideVariantHtmlTestUtils.hasParentWithGrandparent(null)).toBe(false);
+    expect(hideVariantHtmlTestUtils.hasParentWithGrandparent(optionRef)).toBe(true);
+    expect(hideVariantHtmlTestUtils.hasValidGrandparentChain({})).toBe(false);
+    expect(hideVariantHtmlTestUtils.hasValidGrandparentChain(optionRef)).toBe(true);
+    expect(hideVariantHtmlTestUtils.extractGrandparentRef(optionRef)).toBe(pageRef);
+    expect(hideVariantHtmlTestUtils.extractGrandparentRef({})).toBeNull();
+    expect(hideVariantHtmlTestUtils.resolveParentPageRef({})).toBeNull();
+    expect(hideVariantHtmlTestUtils.resolveParentPageRef(optionRef)).toBe(pageRef);
+    expect(hideVariantHtmlTestUtils.toPagePayload({ exists: false })).toBeNull();
+    expect(
+      hideVariantHtmlTestUtils.toPagePayload({ exists: true, data: () => ({ number: 1 }) })
+    ).toEqual({ page: { number: 1 } });
   });
 });
