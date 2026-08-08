@@ -38,6 +38,24 @@ describe('renderAuthorPage', () => {
     const result = renderAuthorPage({ uuid: 'u4', name: 'Author' });
     expect(result.html).not.toContain('Moderator reputation:');
   });
+
+  test('sorts variants with equal page numbers by name', () => {
+    const result = renderAuthorPage({ uuid: 'u5', name: 'Author' }, [
+      { pageNumber: 4, name: 'z', content: 'zulu' },
+      { pageNumber: 4, name: 'a', content: 'alpha' },
+    ]);
+    expect(result.html.indexOf('/p/4a.html')).toBeLessThan(
+      result.html.indexOf('/p/4z.html')
+    );
+  });
+
+  test('handles missing author and variant display values', () => {
+    const result = renderAuthorPage({ uuid: 'u7' }, [
+      { pageNumber: 5 },
+      { pageNumber: 5 },
+    ]);
+    expect(result.html).toContain('/p/5.html');
+  });
 });
 
 describe('createRenderAuthorHandler', () => {
@@ -145,6 +163,30 @@ describe('createRenderAuthorHandler', () => {
     expect(save.mock.calls[0][0]).toContain('Moderator reputation: 75%');
   });
 
+  test('handles a moderator snapshot without data', async () => {
+    const save = jest.fn().mockResolvedValue(undefined);
+    const handler = createRenderAuthorHandler({
+      bucket: { file: jest.fn(() => ({ save })) },
+      db: {
+        collectionGroup: jest.fn(() => ({
+          where: jest.fn(() => ({ get: jest.fn().mockResolvedValue({ docs: [] }) })),
+        })),
+        collection: jest.fn(() => ({
+          doc: jest.fn(() => ({ get: jest.fn().mockResolvedValue({}) })),
+        })),
+      },
+      deleteField: jest.fn(),
+    });
+    await handler({
+      after: {
+        exists: true,
+        ref: { id: 'author', update: jest.fn() },
+        data: () => ({ uuid: 'u8', name: 'Author', dirty: true }),
+      },
+    });
+    expect(save).toHaveBeenCalled();
+  });
+
   test('skips clean, deleted, and incomplete author documents', async () => {
     const save = jest.fn();
     const handler = createRenderAuthorHandler({
@@ -159,5 +201,41 @@ describe('createRenderAuthorHandler', () => {
     });
     expect(save).not.toHaveBeenCalled();
     expect(ref.update).not.toHaveBeenCalled();
+  });
+
+  test('skips malformed or orphaned variants and invalid reputation data', async () => {
+    const save = jest.fn().mockResolvedValue(undefined);
+    const pageRef = {
+      get: jest.fn().mockResolvedValue({ data: () => ({ number: 'not-a-number' }) }),
+    };
+    const query = {
+      get: jest.fn().mockResolvedValue({
+        docs: [
+          { data: () => ({ name: 'orphan' }) },
+          { ref: { parent: { parent: pageRef } }, data: () => ({ name: 4 }) },
+          { ref: { parent: { parent: pageRef } }, data: () => ({ name: 'bad-page' }) },
+          { ref: { parent: { parent: pageRef } }, data: () => ({ visibility: 0.1, name: 'hidden' }) },
+        ],
+      }),
+    };
+    const handler = createRenderAuthorHandler({
+      bucket: { file: jest.fn(() => ({ save })) },
+      db: {
+        collectionGroup: jest.fn(() => ({ where: jest.fn(() => query) })),
+        collection: jest.fn(() => ({
+          doc: jest.fn(() => ({ get: jest.fn().mockResolvedValue({ data: () => ({ moderatorReputation: NaN }) }) })),
+        })),
+      },
+      deleteField: jest.fn(),
+    });
+    await handler({
+      after: {
+        exists: true,
+        ref: { id: 'author', update: jest.fn() },
+        data: () => ({ uuid: 'u6', name: 'Author', dirty: true }),
+      },
+    });
+    expect(save).toHaveBeenCalledWith(expect.any(String), expect.any(Object));
+    expect(save.mock.calls[0][0]).not.toContain('bad-page');
   });
 });
