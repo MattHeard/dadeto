@@ -7,6 +7,7 @@ import {
   getAllowedOrigins,
   isAllowedOrigin,
   productionOrigins,
+  getModerationVariantTestUtils,
 } from '../../../../src/core/cloud/get-moderation-variant/get-moderation-variant-core.js';
 
 describe('getAllowedOrigins', () => {
@@ -59,6 +60,45 @@ describe('createHandleCorsOrigin', () => {
       expect(error).toBeInstanceOf(Error);
       expect(error?.message).toBe('CORS');
     });
+  });
+
+  it('rejects a supplied origin when the whitelist is not an array', () => {
+    expect(isAllowedOrigin('https://blocked.example', null)).toBe(false);
+    expect(isAllowedOrigin(undefined, null)).toBe(true);
+    expect(isAllowedOrigin('https://allowed.example', ['https://allowed.example'])).toBe(true);
+  });
+
+  it('resolves the story through the complete reference parent chain', async () => {
+    const storyRef = { path: 'stories/story-1' };
+    const pagesCollection = { parent: storyRef };
+    const pageRef = { parent: pagesCollection };
+    const variantsCollection = { parent: pageRef };
+    const variantRef = { parent: variantsCollection };
+
+    expect(getModerationVariantTestUtils.extractPageFromVariant(variantRef)).toBe(
+      pageRef
+    );
+    expect(getModerationVariantTestUtils.extractParentFromPage(pageRef)).toBe(
+      pagesCollection
+    );
+    expect(getModerationVariantTestUtils.extractStoryFromParent(pagesCollection)).toBe(
+      storyRef
+    );
+    expect(
+      getModerationVariantTestUtils.resolveStoryRefFromVariant(variantRef)
+    ).toBe(storyRef);
+    expect(
+      getModerationVariantTestUtils.resolveStoryRefFromVariant({})
+    ).toBeNull();
+    expect(
+      getModerationVariantTestUtils.extractStoryDataFromSnapshot({ data: () => null })
+    ).toEqual({});
+    await expect(getModerationVariantTestUtils.fetchStoryTitle({})).resolves.toBe('');
+    expect(
+      getModerationVariantTestUtils.extractVariantData({
+        variantSnap: { data: () => null },
+      })
+    ).toEqual({});
   });
 });
 
@@ -180,6 +220,11 @@ describe('createGetModerationVariantResponder', () => {
     });
     expect(db.collection).not.toHaveBeenCalled();
     expect(auth.verifyIdToken).not.toHaveBeenCalled();
+
+    await expect(responder({})).resolves.toEqual({
+      status: 401,
+      body: 'Missing or invalid Authorization header',
+    });
   });
 
   it('treats non-bearer headers as missing authorization', async () => {

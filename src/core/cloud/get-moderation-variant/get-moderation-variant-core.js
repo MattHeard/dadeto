@@ -887,5 +887,7 @@ export const getModerationVariantTestUtils = {
   extractStoryFromParent,
   resolveStoryRefFromVariant,
   extractStoryDataFromSnapshot,
+  fetchStoryTitle,
+  extractVariantData,
   handleVariantSnapshotResponse,
 };
