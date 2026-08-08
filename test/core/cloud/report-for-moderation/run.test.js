@@ -8,10 +8,13 @@ describe('runReportForModeration', () => {
     const initializeApp = jest.fn();
 
     const moderationReportsCollection = {
-      add: jest.fn(),
+      add: jest.fn().mockResolvedValue({}),
       where: jest.fn(() => moderationReportsCollection),
       limit: jest.fn(() => moderationReportsCollection),
-      get: jest.fn().mockResolvedValue({ empty: false }),
+      get: jest
+        .fn()
+        .mockResolvedValueOnce({ empty: false })
+        .mockResolvedValueOnce({ empty: true }),
     };
     const db = {
       collection: jest.fn(name => {
@@ -91,6 +94,14 @@ describe('runReportForModeration', () => {
     );
     expect(moderationReportsCollection.limit).toHaveBeenCalledWith(1);
     expect(moderationReportsCollection.get).toHaveBeenCalled();
+
+    await respond(req, res);
+
+    expect(moderationReportsCollection.add).toHaveBeenCalledWith({
+      variant: 'slug',
+      reporterIdentity: 'anon-1',
+      createdAt: 'timestamp',
+    });
     expect(result).toEqual({
       handle: { app: expressApp },
       handleReportForModeration: expect.any(Function),
