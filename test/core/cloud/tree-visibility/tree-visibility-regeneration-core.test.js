@@ -26,6 +26,32 @@ test('regenerates only dirty variants and continues after failures', async () =>
   expect(consoleError).toHaveBeenCalled();
 });
 
+test('uses the default error logger and handles an empty dirty snapshot', async () => {
+  await expect(
+    regenerateDirtyTreeWeightVariants({
+      db: {
+        collectionGroup: () => ({
+          where: () => ({ get: async () => ({}) }),
+        }),
+      },
+      renderVariant: jest.fn(),
+    })
+  ).resolves.toEqual({ processed: 0, failed: 0 });
+
+  await expect(
+    regenerateDirtyTreeWeightVariants({
+      db: {
+        collectionGroup: () => ({
+          where: () => ({
+            get: async () => ({ docs: [{ ref: { path: 'broken' } }] }),
+          }),
+        }),
+      },
+      renderVariant: jest.fn().mockRejectedValue(new Error('broken')),
+    })
+  ).resolves.toEqual({ processed: 0, failed: 1 });
+});
+
 test('migration calculates sums bottom-up and is rerunnable', async () => {
   const leaf = { data: { visibility: 0.5 } };
   const root = { data: { visibility: 0.8 } };
