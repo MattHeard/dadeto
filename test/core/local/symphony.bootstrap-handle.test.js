@@ -173,6 +173,20 @@ describe('core Symphony bootstrap handle', () => {
     expect(snapshot.status.eventLog).toEqual([]);
   });
 
+  test('does not preserve a non-failed launch attempt', async () => {
+    const handle = createSymphonyBootstrapHandle(createDeps());
+    const snapshot = await handle.refreshSymphonyStatus({
+      statusStore: {
+        readStatus: async () => ({
+          lastLaunchAttempt: { outcome: 'succeeded', summary: 'done' },
+        }),
+        writeStatus: jest.fn(),
+      },
+    });
+
+    expect(snapshot.status.lastLaunchAttempt).toBeUndefined();
+  });
+
   test('preserves running status with fallback fields', async () => {
     const deps = createDeps({
       createBdTracker: () => ({
