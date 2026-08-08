@@ -503,6 +503,48 @@ export default function (value) {
     ).toBe(true);
   });
 
+  it('handles AST keys without a node type', () => {
+    const handle = createCyclomaticFactorsHandle({
+      parser: {
+        parse() {
+          return {
+            type: 'Program',
+            body: [
+              {
+                type: 'ObjectMethod',
+                key: {},
+                start: 0,
+                end: 1,
+                loc: { start: { line: 1 } },
+                body: { type: 'BlockStatement', body: [] },
+              },
+              {
+                type: 'ObjectMethod',
+                key: { type: 'Identifier' },
+                start: 1,
+                end: 2,
+                loc: { start: { line: 2 } },
+                body: { type: 'BlockStatement', body: [] },
+              },
+              {
+                type: 'FunctionExpression',
+                id: { type: 'Identifier' },
+                start: 2,
+                end: 3,
+                loc: { start: { line: 3 } },
+                body: { type: 'BlockStatement', body: [] },
+              },
+            ],
+          };
+        },
+      },
+      readInput: async () => '',
+      stdout: { write() {} },
+    });
+
+    expect(handle.describeCyclomaticFactors('source')).toEqual([]);
+  });
+
   it('handles a root anonymous function AST', () => {
     const handle = createCyclomaticFactorsHandle({
       parser: {
