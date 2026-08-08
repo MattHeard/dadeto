@@ -438,6 +438,20 @@ describe('createGenerateStatsCore', () => {
       expect(collectionGroup).toHaveBeenCalledWith('pages');
     });
 
+    it('counts pages by traversing story page collections', async () => {
+      const customDb = {
+        collection: jest.fn(() => ({
+          get: jest.fn().mockResolvedValue({
+            docs: [
+              { ref: { collection: jest.fn(() => ({ get: jest.fn().mockResolvedValue({ docs: [{}, {}] }) })) } },
+              { ref: { collection: jest.fn(() => ({ get: jest.fn().mockResolvedValue({ docs: [{}] }) })) } },
+            ],
+          }),
+        })),
+      };
+      await expect(core.getPageCount(customDb)).resolves.toBe(3);
+    });
+
     it('getUnmoderatedPageCount should return the correct count', async () => {
       mockDb.collection = name => {
         if (name !== 'stories') {
@@ -915,6 +929,31 @@ describe('createGenerateStatsCore', () => {
         'invalidate /path1 error',
         'Network error'
       );
+    });
+
+    it('skips invalidation when metadata token retrieval fails', async () => {
+      const logger = { error: jest.fn() };
+      mockFetchFn.mockRejectedValueOnce(new Error('metadata unavailable'));
+      await core.invalidatePaths(['/path1'], logger);
+      expect(logger.error).toHaveBeenCalledWith(
+        'Skipping CDN invalidation: metadata unavailable'
+      );
+    });
+
+    it('logs when mapped CDN invalidation fails before a request is sent', async () => {
+      mockFetchFn.mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve({ [ACCESS_TOKEN_KEY]: 'token' }),
+      });
+      mockCryptoModule.randomUUID = () => {
+        throw new Error('uuid unavailable');
+      };
+      const logger = { error: jest.fn() };
+      await core.invalidatePaths(['/path1'], logger);
+      expect(logger.error).toHaveBeenCalledWith(
+        'Skipping CDN invalidation: uuid unavailable'
+      );
+      mockCryptoModule.randomUUID = () => 'some-uuid';
     });
 
     it('should log the raw error if the thrown value has no message', async () => {
