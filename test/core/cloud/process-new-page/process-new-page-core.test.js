@@ -4,6 +4,7 @@ import {
   findAvailablePageNumber,
   createProcessNewPageHandler,
   resolveVariantDocumentId,
+  processNewPageTestUtils,
 } from '../../../../src/core/cloud/process-new-page/process-new-page-core.js';
 
 describe('incrementVariantName', () => {
@@ -59,6 +60,70 @@ describe('findAvailablePageNumber', () => {
     await expect(findAvailablePageNumber({}, 'not-a-function')).rejects.toThrow(
       'random must be a function'
     );
+  });
+});
+
+describe('process new page defensive helpers', () => {
+  it('handles absent reference chains and option snapshots', async () => {
+    expect(processNewPageTestUtils.extractVariantRefFromOption(null)).toBeNull();
+    expect(processNewPageTestUtils.extractPageRefFromVariant(null)).toBeNull();
+    expect(processNewPageTestUtils.extractStoryRefFromPageRef(null)).toBeNull();
+    expect(processNewPageTestUtils.resolveStoryRefFromOption(null)).toEqual({
+      variantRef: null,
+      pageRef: null,
+      storyRef: null,
+    });
+
+    const ref = { path: 'options/1', parent: null };
+    const snapshot = {};
+    expect(processNewPageTestUtils.ensureOptionSnapshotRef(snapshot, ref)).toBe(
+      snapshot
+    );
+    expect(snapshot.ref).toBe(ref);
+    expect(processNewPageTestUtils.ensureOptionSnapshotRef(snapshot, 'other')).toBe(
+      snapshot
+    );
+    expect(processNewPageTestUtils.resolveStoryRefOrEmpty(null)).toEqual({});
+    expect(
+      processNewPageTestUtils.extractAndValidateStoryRef({ ref: null })
+    ).toBeNull();
+    expect(processNewPageTestUtils.extractSubmissionData({ data: () => null })).toEqual({});
+    await expect(
+      processNewPageTestUtils.routeViaDirect({
+        db: {},
+        directPageNumber: undefined,
+        snapshot: {},
+      })
+    ).resolves.toBeNull();
+  });
+
+  it('creates page contexts without a source variant reference', async () => {
+    const batch = { set: jest.fn(), update: jest.fn() };
+    const pageDocRef = { id: 'page-1' };
+    const storyRef = {
+      collection: jest.fn(() => ({ doc: jest.fn(() => pageDocRef) })),
+    };
+    const db = {
+      collectionGroup: jest.fn(() => ({
+        where: jest.fn(() => ({
+          limit: jest.fn(() => ({ get: jest.fn().mockResolvedValue({ empty: true }) })),
+        })),
+      })),
+    };
+
+    await expect(
+      processNewPageTestUtils.createPageContext({
+        storyRef,
+        db,
+        random: () => 0,
+        randomUUID: () => 'page-1',
+        batch,
+        optionRef: { path: 'options/1', parent: null },
+        incomingOptionFullName: 'options/1',
+        getServerTimestamp: () => 'ts',
+      })
+    ).resolves.toMatchObject({ pageDocRef, pageNumber: 1 });
+    expect(batch.update).toHaveBeenCalledTimes(1);
   });
 });
 

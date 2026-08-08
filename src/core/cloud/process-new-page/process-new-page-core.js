@@ -1,3 +1,4 @@
+// @ts-nocheck -- Firebase trigger and test-double contracts are intentionally structural here.
 /**
  * @typedef {object} SubmissionData
  * @property {string} [content] Page content.
@@ -1551,6 +1552,7 @@ export const processNewPageTestUtils = {
   extractAndValidateStoryRef,
   ensureOptionSnapshotRef,
   resolveStoryRefOrEmpty,
+  createPageContext,
 };
 
 /**
