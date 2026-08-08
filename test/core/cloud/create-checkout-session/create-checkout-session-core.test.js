@@ -62,7 +62,8 @@ function setup(overrides = {}) {
 
 describe('createCheckoutSessionHandler', () => {
   it('creates a server-priced session for the owned key', async () => {
-    const { handler, create } = setup();
+    const saveIdempotency = jest.fn();
+    const { handler, create } = setup({ saveIdempotency });
     await expect(handler(request())).resolves.toMatchObject({
       status: 201,
       body: { checkoutSessionId: 'cs_test_1' },
@@ -80,6 +81,11 @@ describe('createCheckoutSessionHandler', () => {
       }
     );
     expect(create.mock.calls[0][0]).not.toHaveProperty('amount');
+    expect(saveIdempotency).toHaveBeenCalledWith(
+      'uid-1',
+      '7af49d79-1943-4724-b57e-48310bca15d0',
+      expect.objectContaining({ packageId: 'credits-100' })
+    );
   });
   it('creates dynamic USD price data from the current pricing snapshot', async () => {
     const pricingSnapshot = createPricingSnapshot({
@@ -115,6 +121,26 @@ describe('createCheckoutSessionHandler', () => {
         }),
       })
     );
+  });
+
+  it('rejects a dynamic package that would issue zero credits', async () => {
+    const zeroCreditSnapshot = createPricingSnapshot({
+      snapshotId: 'zero-credit',
+      effectiveAt: '2026-08-05T00:00:00.000Z',
+      eurPerUsdMicros: 1,
+      creditEurMicros: 2,
+      markupBps: 0,
+      operations: [{ id: 'function.invoke', costEurMicros: 1 }],
+    });
+    const { handler } = setup({
+      getCreditPackage: jest.fn().mockResolvedValue({
+        active: true,
+        amountUsdMinor: 1,
+        pricingSnapshot: zeroCreditSnapshot,
+      }),
+    });
+
+    await expect(handler(request())).resolves.toMatchObject({ status: 400 });
   });
   it('persists a purchase before attaching it to Checkout metadata', async () => {
     const createPurchase = jest.fn().mockResolvedValue({
