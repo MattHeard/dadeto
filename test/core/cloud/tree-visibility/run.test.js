@@ -3,7 +3,6 @@ import { createTreeVisibilityRegenerationHandles } from '../../../../src/core/cl
 
 test('builds daily and HTTP regeneration entrypoints', async () => {
   const scheduledRun = jest.fn();
-  const httpRun = jest.fn();
   const functions = {
     region: jest.fn(() => ({
       pubsub: { schedule: jest.fn(() => ({ onRun: fn => ({ fn }) })) },
@@ -21,7 +20,6 @@ test('builds daily and HTTP regeneration entrypoints', async () => {
     functions,
     getFirestoreInstance,
     render: scheduledRun,
-    consoleError: httpRun,
   });
 
   expect(handles.scheduled).toHaveProperty('fn');
