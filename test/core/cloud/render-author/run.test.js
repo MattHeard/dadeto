@@ -1,4 +1,16 @@
 import { jest } from '@jest/globals';
+
+jest.mock('../../../../src/core/cloud/cloud-core.js', () => ({
+  createFirestoreDocumentOnWriteTrigger: ({ functions, region, documentPath, handler }) =>
+    functions.region(region).firestore.document(documentPath).onWrite(handler),
+}));
+jest.mock('../../../../src/core/cloud/render-author/render-author-core.js', () => ({
+  createRenderAuthorHandler: ({ bucket, db, deleteField }) => async change => {
+    if (!change.after.exists) return;
+    await bucket.file('author.html').save({ db, deleted: deleteField() });
+    await change.after.ref.update({ rendered: true });
+  },
+}));
 import { runRenderAuthor } from '../../../../src/core/cloud/render-author/run.js';
 
 describe('runRenderAuthor', () => {
