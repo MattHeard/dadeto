@@ -2,25 +2,6 @@
 > blog-generator@1.0.0 tsdoc:check
 > tsc --project tsconfig.jsdoc.json
 
-src/core/build/buildCore.js(82,30): error TS2345: Argument of type 'object' is not assignable to parameter of type '{ resolveConfig: (configPath: string) => Promise<object | null>; formatHtml: (html: string, options: object) => Promise<string>; configPath: string; html: string; ... 4 more ...; logInfo: (message: string) => void; }'.
-  Type '{}' is missing the following properties from type '{ resolveConfig: (configPath: string) => Promise<object | null>; formatHtml: (html: string, options: object) => Promise<string>; configPath: string; html: string; ... 4 more ...; logInfo: (message: string) => void; }': resolveConfig, formatHtml, configPath, html, and 4 more.
-src/core/build/buildCore.js(84,26): error TS2345: Argument of type 'object' is not assignable to parameter of type '{ logError: (message: string, error: unknown) => void; writeFile: (outputPath: string, contents: string, encoding?: string | undefined) => void; logInfo: (message: string) => void; outputPath: string; html: string; encoding?: string | undefined; }'.
-  Type '{}' is missing the following properties from type '{ logError: (message: string, error: unknown) => void; writeFile: (outputPath: string, contents: string, encoding?: string | undefined) => void; logInfo: (message: string) => void; outputPath: string; html: string; encoding?: string | undefined; }': logError, writeFile, logInfo, outputPath, html
-src/core/build/copy-cloud.js(40,11): error TS2339: Property 'join' does not exist on type '{}'.
-src/core/build/copy-cloud.js(40,17): error TS2339: Property 'resolve' does not exist on type '{}'.
-src/core/build/copy-cloud.js(40,26): error TS2339: Property 'relative' does not exist on type '{}'.
-src/core/build/copy-cloud.js(1260,5): error TS2739: Type '{}' is missing the following properties from type '{ join: (...paths: string[]) => string; dirname: (path: string) => string; relative: (from: string, to: string) => string; extname: (path: string) => string; }': join, dirname, relative, extname
-src/core/build/cyclomatic-factors.js(57,66): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
-  Type 'undefined' is not assignable to type 'string'.
-src/core/build/cyclomatic-factors.js(65,23): error TS2322: Type 'string | undefined' is not assignable to type 'string | null'.
-  Type 'undefined' is not assignable to type 'string | null'.
-src/core/build/cyclomatic-factors.js(80,45): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
-  Type 'undefined' is not assignable to type 'string'.
-src/core/build/cyclomatic-factors.js(116,44): error TS2538: Type 'undefined' cannot be used as an index type.
-src/core/build/cyclomatic-factors.js(170,5): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
-  Type 'undefined' is not assignable to type 'string'.
-src/core/build/cyclomatic-factors.js(334,45): error TS2322: Type 'SourceLocation | undefined' is not assignable to type 'SourceLocation'.
-  Type 'undefined' is not assignable to type 'SourceLocation'.
 src/core/cloud/assign-moderation-job/assign-moderation-job-core.js(790,3): error TS2322: Type '(uid: string) => Promise<VariantCandidate[]>' is not assignable to type '(...args: unknown[]) => unknown'.
   Types of parameters 'uid' and 'args' are incompatible.
     Type 'unknown' is not assignable to type 'string'.

@@ -17,17 +17,23 @@ export {
  */
 
 /**
+ * @typedef {object} FormatOptions
+ * @property {(configPath: string) => Promise<object | null>} resolveConfig Resolve Prettier configuration.
+ * @property {(html: string, options: object) => Promise<string>} formatHtml Format HTML content.
+ * @property {string} configPath Prettier configuration path.
+ * @property {string} html HTML content to format.
+ * @property {string} parser Prettier parser name.
+ * @property {string} outputPath Destination file path.
+ * @property {string} [encoding] Output encoding.
+ * @property {(outputPath: string, contents: string, encoding?: string) => void} writeFile File writer.
+ * @property {(message: string) => void} logInfo Informational logger.
+ */
+
+/** @typedef {FormatOptions & { logError: (message: string, error: unknown) => void }} WriteOptions */
+
+/**
  * Format HTML using Prettier and write the result.
- * @param {object} params - Formatting parameters.
- * @param {(configPath: string) => Promise<object | null>} params.resolveConfig - Resolve Prettier config.
- * @param {(html: string, options: object) => Promise<string>} params.formatHtml - Format HTML with Prettier.
- * @param {string} params.configPath - Path to Prettier config.
- * @param {string} params.html - HTML to format.
- * @param {string} params.parser - HTML parser name.
- * @param {string} params.outputPath - Where to write output.
- * @param {string} [params.encoding] - File encoding.
- * @param {(outputPath: string, contents: string, encoding?: string) => void} params.writeFile - Write file function.
- * @param {(message: string) => void} params.logInfo - Info logger.
+ * @param {FormatOptions} params - Formatting parameters.
  * @returns {Promise<void>}
  */
 const formatWithPrettier = async ({
@@ -53,13 +59,7 @@ const formatWithPrettier = async ({
 
 /**
  * Write unformatted HTML as fallback when formatting fails.
- * @param {object} params - Write parameters.
- * @param {(message: string, error: unknown) => void} params.logError - Error logger.
- * @param {(outputPath: string, contents: string, encoding?: string) => void} params.writeFile - Write file function.
- * @param {(message: string) => void} params.logInfo - Info logger.
- * @param {string} params.outputPath - Where to write output.
- * @param {string} params.html - HTML content.
- * @param {string} [params.encoding] - File encoding.
+ * @param {WriteOptions} params - Write parameters.
  * @param {unknown} error - The error that occurred during formatting.
  * @returns {void}
  */
@@ -74,7 +74,7 @@ const writeUnformattedHtml = (
 
 /**
  * Write HTML with fallback handling.
- * @param {object} options - Write options.
+ * @param {WriteOptions} options - Write options.
  * @returns {Promise<void>}
  */
 const writeWithFallback = async options => {

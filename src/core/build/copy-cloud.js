@@ -36,7 +36,11 @@ export async function createCopyCloudHandle(deps) {
     deps.dirnameFn
   );
 
-  const pathAdapters = createPathAdapters(deps.pathModule);
+  const pathAdapters = /** @type {typeof deps.pathModule} */ (
+    createPathAdapters(
+      /** @type {Parameters<typeof createPathAdapters>[0]} */ (deps.pathModule)
+    )
+  );
   const { join, resolve, relative } = pathAdapters;
 
   const projectRoot = resolve(__dirname, '../../..');
@@ -1257,7 +1261,9 @@ export async function createCopyCloudHandle(deps) {
 
   const { runCopyToInfra } = createCopyToInfraCore({
     projectRoot,
-    path: pathAdapters,
+    path: /** @type {Parameters<typeof createCopyToInfraCore>[0]['path']} */ (
+      pathAdapters
+    ),
   });
 
   /**

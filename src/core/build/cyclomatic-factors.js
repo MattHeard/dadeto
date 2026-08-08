@@ -54,7 +54,8 @@ const FACTOR_DEFINITIONS = [
   },
   {
     match: node =>
-      node.type === 'LogicalExpression' && ['&&', '||'].includes(node.operator),
+      node.type === 'LogicalExpression' &&
+      (node.operator === '&&' || node.operator === '||'),
     describe: (node, snippet) =>
       `logical ${node.operator}${formatSnippetForDescription(snippet)}`,
   },
@@ -62,7 +63,7 @@ const FACTOR_DEFINITIONS = [
 
 /** @type {Record<string, (node: AstNode) => string | null>} */
 const IDENTIFIER_NAME_READERS = {
-  Identifier: node => node.name,
+  Identifier: node => node.name ?? null,
   StringLiteral: node => String(node.value),
   Literal: node => String(node.value),
   NumericLiteral: node => String(node.value),
@@ -77,7 +78,7 @@ const IDENTIFIER_NAME_READERS = {
  * @returns {boolean} True when the node is a function node.
  */
 function isFunctionNode(node) {
-  return Boolean(node && FUNCTION_NODES.has(node.type));
+  return Boolean(node?.type && FUNCTION_NODES.has(node.type));
 }
 
 /**
@@ -106,6 +107,10 @@ function getMemberExpressionName(node) {
  */
 function getIdentifierName(node) {
   if (!node) {
+    return null;
+  }
+
+  if (!node.type) {
     return null;
   }
 
@@ -167,7 +172,7 @@ function getFunctionNameFromParent(parent) {
  */
 function getFunctionName(node, parent) {
   if (node.id && node.id.type === 'Identifier') {
-    return node.id.name;
+    return node.id.name ?? '<anonymous>';
   }
 
   if (
@@ -331,7 +336,7 @@ function traverseNode(node, parent, state) {
   if (enteringFunction) {
     const name = getFunctionName(node, parent);
     const label = formatFunctionLabel(name, node.loc);
-    state.functionStack.push({ name, label, loc: node.loc });
+    state.functionStack.push({ name, label, loc: node.loc ?? {} });
   }
 
   const currentFunction = state.functionStack[state.functionStack.length - 1];
