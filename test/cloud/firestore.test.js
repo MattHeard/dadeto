@@ -4,7 +4,10 @@ import {
   getFirestoreInstance,
   resolveFirestoreDatabaseId,
 } from '../../src/cloud/firestore.js';
-import { getFirestoreForDatabase } from '../../src/core/cloud/firestore-helpers.js';
+import {
+  createFirestoreInstance,
+  getFirestoreForDatabase,
+} from '../../src/core/cloud/firestore-helpers.js';
 
 describe('resolveFirestoreDatabaseId', () => {
   test('returns the configured database identifier when present', () => {
@@ -58,6 +61,26 @@ describe('getFirestoreInstance', () => {
 
     expect(getFirestoreFn).toHaveBeenCalledWith(undefined, 'custom-db');
     expect(db).toBe(expectedDb);
+  });
+
+  test('passes the Firebase app when selecting a named database', () => {
+    const app = { name: 'app' };
+    const getFirestoreFn = jest.fn(() => ({ name: 'db' }));
+
+    getFirestoreForDatabase(getFirestoreFn, app, 'custom-db');
+
+    expect(getFirestoreFn).toHaveBeenCalledWith(app, 'custom-db');
+  });
+
+  test('uses the app-only factory call for the default database', () => {
+    const app = { name: 'app' };
+    const getFirestoreFn = jest.fn(() => ({ name: 'db' }));
+
+    createFirestoreInstance(getFirestoreFn, '(default)');
+    getFirestoreForDatabase(getFirestoreFn, app, null);
+
+    expect(getFirestoreFn).toHaveBeenNthCalledWith(1, undefined);
+    expect(getFirestoreFn).toHaveBeenNthCalledWith(2, app);
   });
 
   test('creates a Firestore client for the configured database', () => {
