@@ -1,14 +1,14 @@
 import { describe, expect, it, jest } from '@jest/globals';
 
-let mockSetupAudio = jest.fn();
-let mockHandleTagLinks = jest.fn();
-let mockHideArticlesByClass = jest.fn();
-let mockHideArticlesWithoutClass = jest.fn();
-let mockInitializeVisibleComponents = jest.fn();
-let mockRevealBetaArticles = jest.fn();
-let mockToggleToyFocusMode = jest.fn();
-let mockFetchBlogData = jest.fn();
-let mockDom = {
+var mockSetupAudio = jest.fn();
+var mockHandleTagLinks = jest.fn();
+var mockHideArticlesByClass = jest.fn();
+var mockHideArticlesWithoutClass = jest.fn();
+var mockInitializeVisibleComponents = jest.fn();
+var mockRevealBetaArticles = jest.fn();
+var mockToggleToyFocusMode = jest.fn();
+var mockFetchBlogData = jest.fn();
+var mockDom = {
   logError: jest.fn(),
   setTextContent: jest.fn(),
   getElementsByTagName: () => [],
