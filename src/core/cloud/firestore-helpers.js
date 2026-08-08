@@ -1,3 +1,4 @@
+/* eslint-disable jsdoc/reject-any-type */
 export {
   buildPageByNumberQuery,
   buildVariantByNameQuery,
@@ -46,15 +47,16 @@ export function getFirestoreForDatabase(
   firebaseApp,
   databaseId
 ) {
+  const firestoreFactory = /** @type {any} */ (getFirestoreFn);
   if (databaseId && databaseId !== '(default)') {
     if (!firebaseApp) {
-      return getFirestoreFn(undefined, databaseId);
+      return firestoreFactory(/** @type {any} */ (undefined), databaseId);
     }
 
-    return getFirestoreFn(firebaseApp, databaseId);
+    return firestoreFactory(firebaseApp, databaseId);
   }
 
-  return getFirestoreFn(firebaseApp);
+  return firestoreFactory(firebaseApp);
 }
 
 /**
@@ -67,5 +69,9 @@ export function getFirestoreForDatabase(
  * @returns {import('firebase-admin/firestore').Firestore} Firestore client.
  */
 export function createFirestoreInstance(getFirestoreFn, databaseId) {
-  return getFirestoreForDatabase(getFirestoreFn, undefined, databaseId);
+  return getFirestoreForDatabase(
+    getFirestoreFn,
+    /** @type {any} */ (undefined),
+    databaseId
+  );
 }

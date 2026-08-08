@@ -1,5 +1,6 @@
 # Firestore helpers coverage
 
-- Added tests for named databases with an app and default-database app-only calls.
-- Verified with `npx jest test/cloud/firestore.test.js --no-cache --watchman=false --runInBand --coverage --coverageProvider=babel --collectCoverageFrom=src/core/cloud/firestore-helpers.js --coverageReporters=text`.
-- Focused report: `src/core/cloud/firestore-helpers.js` reached 100% statements, branches, functions, and lines.
+- Unexpected hurdle: the helper module had no direct coverage despite related Firestore-handle tests passing.
+- Diagnosis: focused coverage of `src/core/cloud/firestore-helpers.js` reported 0% because the existing tests did not import it.
+- Fix: added direct tests for explicit and environment-derived database IDs, invalid configuration, named/default database selection, and instance creation.
+- Evidence: bead `dadeto-6kk` records the focused Jest command passing 9 tests at 100% statements, branches, functions, and lines.
