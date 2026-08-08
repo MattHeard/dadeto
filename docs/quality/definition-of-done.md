@@ -22,6 +22,8 @@ Use `npm run check` when you want the default local aggregate gate for most chan
 
 Use `npm run check:fast` when you want the same gate to stop on the first failure instead of collecting all failures.
 
+Use `npm run check -- --skip-tests` when tests have already been intentionally handled separately and you need to run every other aggregate quality gate.
+
 Keep subsystem-specific packaging commands such as `npm run build:cloud` and `npm run build:dendritestories-co-nz` separate from the default aggregate gate.
 
 1. `npm run check`

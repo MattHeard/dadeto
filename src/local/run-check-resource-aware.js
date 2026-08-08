@@ -6,10 +6,19 @@ const NON_TEST_COMMANDS = CHECK_COMMANDS.filter(command => command.name !== 'tes
 /**
  * Run the memory-heavy test gate before the other quality gates.
  *
- * @param {{ failFast: boolean, runSuite: (...args: never[]) => unknown }} options Runner options.
+ * @param {{ failFast: boolean, skipTests: boolean, runSuite: (...args: never[]) => unknown }} options Runner options.
  * @returns {Promise<{ exitCode: number, failures: unknown[] }>} Combined result.
  */
-export async function runResourceAwareCheckSuite({ failFast, runSuite, ...options }) {
+export async function runResourceAwareCheckSuite({
+  failFast,
+  skipTests,
+  runSuite,
+  ...options
+}) {
+  if (skipTests) {
+    return runSuite({ ...options, failFast, commands: NON_TEST_COMMANDS });
+  }
+
   const testResult = await runSuite({ ...options, failFast, commands: TEST_COMMAND });
   if (testResult.exitCode !== 0 && failFast) return testResult;
 

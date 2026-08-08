@@ -953,7 +953,7 @@ export const CHECK_COMMANDS = [
  * Create the command handler for the aggregate check script.
  * @param {{
  *   argv: string[],
- *   runSuite: (options: { failFast: boolean }) => Promise<{ exitCode: number }>,
+ *   runSuite: (options: { failFast: boolean, skipTests: boolean }) => Promise<{ exitCode: number }>,
  *   setExitCode: (exitCode: number) => void,
  * }} deps Command dependencies.
  * @returns {() => Promise<void>} Handler that runs the aggregate check.
@@ -961,7 +961,8 @@ export const CHECK_COMMANDS = [
 export function createRunCheckHandle({ argv, runSuite, setExitCode }) {
   return async () => {
     const failFast = argv.includes('--fail-fast');
-    const result = await runSuite({ failFast });
+    const skipTests = argv.includes('--skip-tests');
+    const result = await runSuite({ failFast, skipTests });
     setExitCode(result.exitCode);
   };
 }

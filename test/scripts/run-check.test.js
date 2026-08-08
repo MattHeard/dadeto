@@ -129,8 +129,24 @@ describe('runCheckSuite', () => {
 
     await handle();
 
-    expect(suiteCalls).toEqual([{ failFast: true }]);
+    expect(suiteCalls).toEqual([{ failFast: true, skipTests: false }]);
     expect(exitCodes).toEqual([7]);
+  });
+
+  it('passes the skip-tests option to the suite', async () => {
+    const suiteCalls = [];
+    const handle = createRunCheckHandle({
+      argv: ['node', 'src/local/run-check.js', '--skip-tests'],
+      runSuite: async options => {
+        suiteCalls.push(options);
+        return { exitCode: 0 };
+      },
+      setExitCode: () => {},
+    });
+
+    await handle();
+
+    expect(suiteCalls).toEqual([{ failFast: false, skipTests: true }]);
   });
 
   it('returns a passed summary when there are no commands', async () => {

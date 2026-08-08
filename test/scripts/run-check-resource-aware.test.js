@@ -28,4 +28,17 @@ describe('runResourceAwareCheckSuite', () => {
     ).resolves.toEqual({ exitCode: 1, failures: ['test'] });
     expect(runSuite).toHaveBeenCalledTimes(1);
   });
+
+  test('runs every non-test check when tests are skipped', async () => {
+    const runSuite = jest.fn().mockResolvedValue({ exitCode: 0, failures: [] });
+
+    await expect(
+      runResourceAwareCheckSuite({ failFast: false, skipTests: true, runSuite })
+    ).resolves.toEqual({ exitCode: 0, failures: [] });
+
+    expect(runSuite).toHaveBeenCalledTimes(1);
+    expect(runSuite.mock.calls[0][0].commands.map(command => command.name)).not.toContain(
+      'test'
+    );
+  });
 });
