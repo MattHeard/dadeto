@@ -132,4 +132,63 @@ const computed = { ['ignored']() {} };`,
       ])
     );
   });
+
+  test('handles incomplete import and call AST nodes conservatively', () => {
+    const graph = buildFunctionDependencyGraph({
+      files: [{ path: 'incomplete.js', source: 'ignored' }],
+      parse: () => ({
+        type: 'Program',
+        body: [
+          { type: null },
+          {
+            type: 'ImportDeclaration',
+            source: null,
+            specifiers: null,
+          },
+          {
+            type: 'ImportDeclaration',
+            specifiers: [
+              { type: 'ImportSpecifier', local: null },
+              { type: 'ImportSpecifier', local: { name: 'missingSource' } },
+            ],
+          },
+          {
+            type: 'FunctionDeclaration',
+            id: { name: 'incomplete' },
+            params: [{ type: 'Identifier', name: 'object' }],
+            body: {
+              type: 'BlockStatement',
+              body: [
+                { type: 'CallExpression' },
+                { type: 'CallExpression', callee: { type: 'Identifier' } },
+                {
+                  type: 'CallExpression',
+                  callee: {
+                    type: 'MemberExpression',
+                    object: { type: 'Identifier', name: 'object' },
+                    property: {},
+                  },
+                },
+                {
+                  type: 'CallExpression',
+                  callee: {
+                    type: 'MemberExpression',
+                    object: { type: 'Identifier', name: 'other' },
+                    property: { name: 'method' },
+                  },
+                },
+              ],
+            },
+          },
+        ],
+      }),
+    });
+
+    expect(graph.ignoredCalls).toEqual([
+      expect.objectContaining({
+        callee: 'object.<computed>',
+        reason: 'injected-object-member',
+      }),
+    ]);
+  });
 });
