@@ -76,8 +76,8 @@ async function updateTreeVisibilityForVariantChange({ change, db }) {
     const parent = resolveIncomingParentRef(data, db);
     const snapshot = await ref.get();
     if (!snapshot?.exists) return;
-    const stored = snapshot.data?.() ?? {};
-    const oldSum = stored.treeVisibilitySum ?? resolveVariantVisibility(stored);
+    const stored = readSnapshotData(snapshot);
+    const oldSum = resolveStoredVisibilitySum(stored);
     if (changedByTreeWeightThreshold(oldSum, nextSum) && parent) {
       await parent.update({ targetTreeWeightsDirty: true });
     }
@@ -85,7 +85,7 @@ async function updateTreeVisibilityForVariantChange({ change, db }) {
     ref = parent;
     if (!ref) return;
     const parentSnap = await ref.get();
-    data = parentSnap?.data?.() ?? {};
+    data = readSnapshotData(parentSnap);
     nextSum = addTreeVisibilityDelta(data, delta);
   }
 }
@@ -100,6 +100,26 @@ function resolveIncomingParentRef(data, db) {
   if (!data.incomingOption || !db?.doc) return null;
   const optionRef = db.doc(data.incomingOption);
   return getAncestorRef(optionRef, 2);
+}
+
+/**
+ * Read a Firestore-like snapshot's data while tolerating incomplete doubles.
+ * @param {unknown} snapshot Snapshot-like value.
+ * @returns {Record<string, unknown>} Snapshot data or an empty record.
+ */
+function readSnapshotData(snapshot) {
+  const read = snapshot?.data;
+  if (typeof read !== 'function') return {};
+  return read() ?? {};
+}
+
+/**
+ * Resolve the aggregate visibility value stored on a document.
+ * @param {Record<string, unknown>} data Snapshot data.
+ * @returns {number} Aggregate visibility.
+ */
+function resolveStoredVisibilitySum(data) {
+  return data.treeVisibilitySum ?? resolveVariantVisibility(data);
 }
 
 /**
@@ -1858,9 +1878,18 @@ function extractVariantName(variantData) {
 
 export const renderVariantCoreTestUtils = {
   extractVariantName,
+  updateTreeVisibilityForVariantChange,
+  persistRenderPlan,
   gatherMetadata,
   loadOptions,
   hasVisibleVariants,
+  resolveIncomingParentRef,
+  readSnapshotData,
+  resolveStoredVisibilitySum,
+  buildOptionsItems,
+  resolveOptionHref,
+  resolveStoryIdFromPath,
+  resolveVariantIdFromPath,
   rebindTenantDocumentRef,
   rebindTenantCollectionRef,
   resolveStoryMetadata,
