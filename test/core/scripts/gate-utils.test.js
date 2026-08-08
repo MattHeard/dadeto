@@ -1,5 +1,13 @@
 import { describe, expect, jest, test } from '@jest/globals';
-import { executeStandardGate } from '../../../src/core/scripts/gate-utils.js';
+import {
+  executeStandardGate,
+  spawnGateCommand,
+  runGateCommand,
+  handleSpawnFailure,
+  normalizeExitCode,
+  useDefaultValue,
+  pluralizeCount,
+} from '../../../src/core/scripts/gate-utils.js';
 
 /**
  * Create a simple writable capture for gate output.
@@ -16,6 +24,41 @@ function createWriter() {
 }
 
 describe('executeStandardGate', () => {
+  test('covers command adapters and normalized spawn outcomes', () => {
+    const stderr = createWriter();
+    const spawnImpl = jest.fn(() => ({ status: 7, signal: null }));
+    expect(
+      spawnGateCommand({
+        spawnImpl,
+        command: 'demo',
+        args: ['--flag'],
+        rootDir: '/repo',
+      })
+    ).toEqual({ status: 7, signal: null });
+    expect(spawnImpl).toHaveBeenCalledWith('demo', ['--flag'], {
+      cwd: '/repo',
+      stdio: 'inherit',
+    });
+    expect(runGateCommand({
+      spawnImpl: () => ({ status: 3, signal: null }),
+      command: 'demo',
+      args: [],
+      rootDir: '/repo',
+      stderr,
+      launchLabel: 'Demo',
+      commandLabel: 'demo',
+    })).toEqual({ launchFailure: { exitCode: 3 } });
+    expect(handleSpawnFailure({ signal: 'SIGTERM' }, stderr, 'Demo', 'demo')).toEqual({ exitCode: 1 });
+    expect(handleSpawnFailure({ status: 0 }, stderr, 'Demo', 'demo')).toBeNull();
+    expect(normalizeExitCode(null)).toBe(1);
+    expect(normalizeExitCode(undefined)).toBe(1);
+    expect(normalizeExitCode(4)).toBe(4);
+    expect(useDefaultValue(undefined, 'fallback')).toBe('fallback');
+    expect(useDefaultValue('value', 'fallback')).toBe('value');
+    expect(pluralizeCount(1)).toBe('');
+    expect(pluralizeCount(0)).toBe('s');
+  });
+
   test('returns a launch failure when the command cannot start', () => {
     const stderr = createWriter();
     const spawnImpl = jest.fn(() => ({
