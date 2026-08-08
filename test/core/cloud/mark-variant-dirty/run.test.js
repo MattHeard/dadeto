@@ -70,7 +70,16 @@ describe('runMarkVariantDirty', () => {
     const limit = jest.fn(() => ({ get }));
     const where = jest.fn(() => ({ limit }));
     const collectionGroup = jest.fn(() => ({ where }));
-    const getFirestoreInstance = jest.fn(() => ({ collectionGroup }));
+    const authorRef = {
+      update: jest.fn().mockResolvedValue(undefined),
+    };
+    const authorGet = jest.fn().mockResolvedValue({
+      docs: [{ ref: authorRef }],
+    });
+    const authorLimit = jest.fn(() => ({ get: authorGet }));
+    const authorWhere = jest.fn(() => ({ limit: authorLimit }));
+    const collection = jest.fn(() => ({ where: authorWhere }));
+    const getFirestoreInstance = jest.fn(() => ({ collectionGroup, collection }));
     const expressApp = { use: jest.fn(), post: jest.fn() };
     const express = jest.fn(() => expressApp);
     express.json = jest.fn(() => 'json-middleware');
@@ -121,5 +130,21 @@ describe('runMarkVariantDirty', () => {
     expect(collectionGroup).toHaveBeenCalledWith('pages');
     expect(res.status).toHaveBeenCalledWith(404);
     expect(res.json).toHaveBeenCalledWith({ error: 'Variant not found' });
+
+    res.status.mockClear();
+    await handleRequest(
+      {
+        method: 'POST',
+        get: jest.fn(() => 'Bearer token'),
+        body: { authorId: 'author-1' },
+      },
+      res
+    );
+
+    expect(collection).toHaveBeenCalledWith('authors');
+    expect(authorWhere).toHaveBeenCalledWith('uuid', '==', 'author-1');
+    expect(authorRef.update).toHaveBeenNthCalledWith(1, { dirty: false });
+    expect(authorRef.update).toHaveBeenNthCalledWith(2, { dirty: true });
+    expect(res.status).toHaveBeenCalledWith(200);
   });
 });
