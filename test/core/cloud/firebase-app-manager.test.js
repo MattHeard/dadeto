@@ -70,4 +70,27 @@ describe('createFirebaseAppContext', () => {
       app: {},
     });
   });
+
+  test('omits the Express app when includeApp is false', () => {
+    const express = jest.fn();
+    const db = {};
+    const result = createFirebaseAppContext(
+      {
+        initializeApp: jest.fn(),
+        createFirebaseAppManager: jest.fn(() => ({
+          ensureFirebaseApp: jest.fn(),
+        })),
+        getEnvironmentVariables: jest.fn(() => ({
+          DENDRITE_ENVIRONMENT: 'prod',
+        })),
+        getFirestoreInstance: jest.fn(() => db),
+        getAuth: jest.fn(() => ({ kind: 'auth' })),
+        express,
+      },
+      { includeApp: false }
+    );
+
+    expect(result).toEqual({ db, auth: { kind: 'auth' } });
+    expect(express).not.toHaveBeenCalled();
+  });
 });
