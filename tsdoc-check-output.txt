@@ -2,6 +2,10 @@
 > blog-generator@1.0.0 tsdoc:check
 > tsc --project tsconfig.jsdoc.json
 
+src/core/build/copy-cloud.js(1253,36): error TS2345: Argument of type '{ readdir: (dir: string, options?: { withFileTypes?: boolean | undefined; } | undefined) => Promise<unknown[]>; mkdir: (target: string, options?: { recursive?: boolean | undefined; } | undefined) => Promise<...>; copyFile: (source: string, destination: string) => Promise<...>; readFile?: ((filePath: string, encoding...' is not assignable to parameter of type '{ readdir: (dir: string, options?: { withFileTypes?: boolean | undefined; } | undefined) => Promise<unknown[]>; mkdir: (target: string, options?: { recursive?: boolean | undefined; } | undefined) => Promise<...>; copyFile: (source: string, destination: string) => Promise<...>; utimes?: ((target: string, atime: Date,...'.
+  Types of property 'readFile' are incompatible.
+    Type '((filePath: string, encoding: "utf8") => Promise<string>) | undefined' is not assignable to type '(filePath: string, encoding: "utf8") => Promise<string>'.
+      Type 'undefined' is not assignable to type '(filePath: string, encoding: "utf8") => Promise<string>'.
 src/core/cloud/assign-moderation-job/assign-moderation-job-core.js(790,3): error TS2322: Type '(uid: string) => Promise<VariantCandidate[]>' is not assignable to type '(...args: unknown[]) => unknown'.
   Types of parameters 'uid' and 'args' are incompatible.
     Type 'unknown' is not assignable to type 'string'.
@@ -365,42 +369,6 @@ src/core/cloud/tree-visibility/run.js(26,7): error TS2322: Type 'Firestore' is n
                 Value of type '() => DocumentData' has no properties in common with type '{ visibility?: number | undefined; }'. Did you mean to call it?
 src/core/cloud/tree-visibility/tree-visibility-core.js(89,5): error TS2322: Type '{ get: () => Promise<{ exists: boolean; data: () => VisibilityData; }>; } | null' is not assignable to type '{ get: () => Promise<{ exists: boolean; data: () => VisibilityData; }>; }'.
   Type 'null' is not assignable to type '{ get: () => Promise<{ exists: boolean; data: () => VisibilityData; }>; }'.
-src/core/commonCore.js(493,3): error TS2322: Type 'unknown' is not assignable to type 'T | null'.
-src/core/commonCore.js(504,52): error TS2345: Argument of type '(value: string) => T' is not assignable to parameter of type '(value: unknown) => T'.
-  Types of parameters 'value' and 'value' are incompatible.
-    Type 'unknown' is not assignable to type 'string'.
-src/core/commonCore.js(576,51): error TS2345: Argument of type '(value: unknown[]) => T' is not assignable to parameter of type '(value: unknown) => T'.
-  Types of parameters 'value' and 'value' are incompatible.
-    Type 'unknown' is not assignable to type 'unknown[]'.
-src/core/commonCore.js(587,3): error TS2322: Type 'unknown' is not assignable to type 'T | null'.
-src/core/commonCore.js(829,46): error TS2345: Argument of type 'object' is not assignable to parameter of type '{ existsSync: (target: string) => boolean; mkdirSync: (target: string, options?: { recursive?: boolean | undefined; } | undefined) => void; rmSync: (target: string, options?: { recursive?: boolean | undefined; force?: boolean | undefined; } | undefined) => void; copyFileSync: (source: string, destination: string) =>...'.
-  Type '{}' is missing the following properties from type '{ existsSync: (target: string) => boolean; mkdirSync: (target: string, options?: { recursive?: boolean | undefined; } | undefined) => void; rmSync: (target: string, options?: { recursive?: boolean | undefined; force?: boolean | undefined; } | undefined) => void; copyFileSync: (source: string, destination: string) =>...': existsSync, mkdirSync, rmSync, copyFileSync, readdirSync
-src/core/commonCore.js(901,40): error TS2339: Property 'utimes' does not exist on type '{ readdir: (dir: string, options?: { withFileTypes?: boolean | undefined; } | undefined) => Promise<unknown[]>; mkdir: (target: string, options?: { recursive?: boolean | undefined; } | undefined) => Promise<...>; copyFile: (source: string, destination: string) => Promise<...>; }'.
-src/core/commonCore.js(906,35): error TS2339: Property 'utimes' does not exist on type '{ readdir: (dir: string, options?: { withFileTypes?: boolean | undefined; } | undefined) => Promise<unknown[]>; mkdir: (target: string, options?: { recursive?: boolean | undefined; } | undefined) => Promise<...>; copyFile: (source: string, destination: string) => Promise<...>; }'.
-src/core/commonCore.js(914,31): error TS2339: Property 'readFile' does not exist on type '{ readdir: (dir: string, options?: { withFileTypes?: boolean | undefined; } | undefined) => Promise<unknown[]>; mkdir: (target: string, options?: { recursive?: boolean | undefined; } | undefined) => Promise<...>; copyFile: (source: string, destination: string) => Promise<...>; }'.
-src/core/commonCore.js(918,35): error TS2339: Property 'writeFile' does not exist on type '{ readdir: (dir: string, options?: { withFileTypes?: boolean | undefined; } | undefined) => Promise<unknown[]>; mkdir: (target: string, options?: { recursive?: boolean | undefined; } | undefined) => Promise<...>; copyFile: (source: string, destination: string) => Promise<...>; }'.
-src/core/commonCore.js(1089,21): error TS18046: 'spawnImpl' is of type 'unknown'.
-src/core/commonCore.js(1286,3): error TS18046: 'activeChildren' is of type 'unknown'.
-src/core/commonCore.js(1286,25): error TS18046: 'command' is of type 'unknown'.
-src/core/commonCore.js(1288,7): error TS18046: 'state' is of type 'unknown'.
-src/core/commonCore.js(1289,5): error TS18046: 'resolve' is of type 'unknown'.
-src/core/commonCore.js(1293,7): error TS18046: 'state' is of type 'unknown'.
-src/core/commonCore.js(1294,18): error TS18046: 'state' is of type 'unknown'.
-src/core/commonCore.js(1297,31): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'boolean'.
-src/core/commonCore.js(1297,60): error TS18046: 'command' is of type 'unknown'.
-src/core/commonCore.js(1298,5): error TS18046: 'resolve' is of type 'unknown'.
-src/core/commonCore.js(1302,34): error TS18046: 'now' is of type 'unknown'.
-src/core/commonCore.js(1302,42): error TS18046: 'startedAt' is of type 'unknown'.
-src/core/commonCore.js(1304,5): error TS18046: 'state' is of type 'unknown'.
-src/core/commonCore.js(1305,5): error TS18046: 'emitEvent' is of type 'unknown'.
-src/core/commonCore.js(1307,13): error TS18046: 'command' is of type 'unknown'.
-src/core/commonCore.js(1308,30): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'CheckCommand'.
-src/core/commonCore.js(1313,5): error TS18046: 'resolve' is of type 'unknown'.
-src/core/commonCore.js(1318,11): error TS18046: 'command' is of type 'unknown'.
-src/core/commonCore.js(1319,28): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'CheckCommand'.
-src/core/commonCore.js(1324,3): error TS18046: 'state' is of type 'unknown'.
-src/core/commonCore.js(1325,3): error TS18046: 'finishWithFailure' is of type 'unknown'.
-src/core/commonCore.js(1326,3): error TS18046: 'resolve' is of type 'unknown'.
 src/core/local/gcp-simulator/server.js(156,34): error TS2345: Argument of type '{ method: string; body?: unknown; headers: IncomingHttpHeaders; get: (name: string) => string | undefined; }' is not assignable to parameter of type 'never'.
 src/core/local/gcp-simulator/server.js(159,38): error TS2345: Argument of type 'unknown' is not assignable to parameter of type '{ status: number; body?: unknown; }'.
 src/core/local/gcp-simulator/server.js(164,29): error TS2345: Argument of type 'Promise<unknown>' is not assignable to parameter of type 'Promise<{ status: number; body?: unknown; }>'.

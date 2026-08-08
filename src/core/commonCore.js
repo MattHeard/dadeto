@@ -490,7 +490,9 @@ export function whenNotNullish(value, fn) {
  * @returns {T | null} Original value or `null` when the value is nullish.
  */
 export function whenNotNullishValue(value) {
-  return whenNotNullish(value, candidate => candidate);
+  return /** @type {T | null} */ (
+    whenNotNullish(value, candidate => candidate)
+  );
 }
 
 /**
@@ -501,7 +503,11 @@ export function whenNotNullishValue(value) {
  * @template T
  */
 export function whenString(value, fn) {
-  return whenValueMatches(value, isNotStringValue, fn);
+  return whenValueMatches(
+    value,
+    isNotStringValue,
+    /** @type {(value: unknown) => T} */ (fn)
+  );
 }
 
 /**
@@ -573,7 +579,11 @@ export function reportAndReturnFalse(reportFn, ...args) {
  * @template T
  */
 export function whenArray(value, fn) {
-  return whenValueMatches(value, isNotArrayValue, fn);
+  return whenValueMatches(
+    value,
+    isNotArrayValue,
+    /** @type {(value: unknown) => T} */ (fn)
+  );
 }
 
 /**
@@ -584,10 +594,12 @@ export function whenArray(value, fn) {
  * @template T
  */
 export function whenTruthy(value, fn) {
-  return when(
-    Boolean(value),
-    () => fn(value),
-    () => null
+  return /** @type {T | null} */ (
+    when(
+      Boolean(value),
+      () => fn(value),
+      () => null
+    )
   );
 }
 
@@ -826,7 +838,10 @@ export function createPathHandle(deps) {
  */
 export function createFsHandle(deps) {
   return {
-    createFsAdapters: () => createFsAdapters(deps.fsModule),
+    createFsAdapters: () =>
+      createFsAdapters(
+        /** @type {Parameters<typeof createFsAdapters>[0]} */ (deps.fsModule)
+      ),
     createAsyncFsAdapters: () => createAsyncFsAdapters(deps.fsPromisesModule),
   };
 }
@@ -866,6 +881,9 @@ export function createFsAdapters(fsModule) {
  *   readdir: (dir: string, options?: { withFileTypes?: boolean }) => Promise<unknown[]>,
  *   mkdir: (target: string, options?: { recursive?: boolean }) => Promise<unknown>,
  *   copyFile: (source: string, destination: string) => Promise<void>,
+ *   utimes?: (target: string, atime: Date, mtime: Date) => Promise<void>,
+ *   readFile: (filePath: string, encoding: 'utf8') => Promise<string>,
+ *   writeFile: (filePath: string, content: string) => Promise<void>,
  * }} fsPromisesModule Promise-based filesystem dependency bundle.
  * @returns {{
  *   readDirEntries: (dir: string) => Promise<import('fs').Dirent[]>,
@@ -975,6 +993,16 @@ export function createRunCheckHandle({ argv, runSuite, setExitCode }) {
  */
 
 /**
+ * @typedef {object} CheckChild
+ * @property {{ on: (event: string, handler: (...args: unknown[]) => void) => unknown, setEncoding?: (encoding: string) => void } | null | undefined} stdout Child stdout stream.
+ * @property {{ on: (event: string, handler: (...args: unknown[]) => void) => unknown, setEncoding?: (encoding: string) => void } | null | undefined} stderr Child stderr stream.
+ * @property {(event: 'error' | 'close', handler: (...args: never[]) => unknown) => unknown} on Child event listener registration.
+ * @property {(signal?: string) => boolean} [kill] Optional child termination function.
+ */
+
+/** @typedef {(command: string, args: string[], options: { stdio: ['ignore', 'pipe', 'pipe'] }) => CheckChild} CheckSpawn */
+
+/**
  * @typedef {object} CheckEvent
  * @property {'check-start' | 'check-success' | 'check-failure' | 'check-summary'} type Event type.
  * @property {string} name Check label.
@@ -1002,12 +1030,7 @@ export function createRunCheckHandle({ argv, runSuite, setExitCode }) {
 /**
  * Create a check-suite runner using injected platform defaults.
  * @param {{
- *   defaultSpawn: (command: string, args: string[], options: { stdio: ['ignore', 'pipe', 'pipe'] }) => {
- *     stdout: { on: (event: string, handler: (...args: unknown[]) => void) => unknown, setEncoding?: (encoding: string) => void } | null | undefined,
- *     stderr: { on: (event: string, handler: (...args: unknown[]) => void) => unknown, setEncoding?: (encoding: string) => void } | null | undefined,
- *     on: (event: 'error' | 'close', handler: (...args: unknown[]) => void) => unknown,
- *     kill?: (signal?: string) => boolean,
- *   },
+ *   defaultSpawn: CheckSpawn,
  *   defaultStdout: { write: (text: string) => void },
  *   defaultStderr: { write: (text: string) => void },
  *   defaultNow: () => number,
@@ -1016,7 +1039,7 @@ export function createRunCheckHandle({ argv, runSuite, setExitCode }) {
  * @returns {(options?: {
  *   commands?: CheckCommand[],
  *   failFast?: boolean,
- *   spawnImpl?: typeof defaults.defaultSpawn,
+ *   spawnImpl?: CheckSpawn,
  *   stdout?: { write: (text: string) => void },
  *   stderr?: { write: (text: string) => void },
  *   now?: () => number,
@@ -1029,6 +1052,7 @@ export function createRunCheckSuite(defaults) {
 
     /** @type {CheckFailure[]} */
     const failures = [];
+    /** @type {Map<string, CheckChild>} */
     const activeChildren = new Map();
     let aborted = false;
 
@@ -1050,6 +1074,7 @@ export function createRunCheckSuite(defaults) {
         return new Promise(resolve => {
           const startedAt = now();
           const timeoutMs = defaults.defaultTimeoutMs ?? 30 * 60 * 1000;
+          /** @type {CheckChild} */
           let child;
           const state = {
             settled: false,
@@ -1205,13 +1230,13 @@ export function createRunCheckSuite(defaults) {
  * @param {{
  *   commands?: CheckCommand[],
  *   failFast?: boolean,
- *   spawnImpl?: unknown,
+ *   spawnImpl?: CheckSpawn,
  *   stdout?: { write: (text: string) => void },
  *   stderr?: { write: (text: string) => void },
  *   now?: () => number,
  * }} [options] Runner configuration.
  * @param {{
- *   defaultSpawn?: unknown,
+ *   defaultSpawn?: CheckSpawn,
  *   defaultStdout?: { write: (text: string) => void },
  *   defaultStderr?: { write: (text: string) => void },
  *   defaultNow?: () => number,
@@ -1219,7 +1244,7 @@ export function createRunCheckSuite(defaults) {
  * @returns {{
  *   commands: CheckCommand[],
  *   failFast: boolean,
- *   spawnImpl: unknown,
+ *   spawnImpl: CheckSpawn,
  *   stdout: { write: (text: string) => void },
  *   stderr: { write: (text: string) => void },
  *   now: () => number,
@@ -1264,7 +1289,22 @@ function resolveFailFast(options) {
 
 /**
  * Handle a child process close event without inflating the listener complexity.
- * @param {Record<string, unknown>} input Close event input.
+ * @param {{
+ *   activeChildren: Map<string, CheckChild>,
+ *   command: CheckCommand,
+ *   now: () => number,
+ *   startedAt: number,
+ *   exitCode: number | null,
+ *   signal: string | null,
+ *   stderr: { write: (text: string) => void },
+ *   state: { settled: boolean, timeoutId: ReturnType<typeof globalThis.setTimeout> | null },
+ *   aborted: boolean,
+ *   failFast: boolean,
+ *   failures: CheckFailure[],
+ *   emitEvent: (stream: { write: (text: string) => void }, event: CheckEvent) => void,
+ *   finishWithFailure: (failure: CheckFailure, shouldAbort: boolean) => void,
+ *   resolve: (value?: unknown) => void,
+ * }} input Close event input.
  * @returns {void} Nothing.
  */
 function handleChildClose({
@@ -1348,12 +1388,12 @@ function shouldIgnoreClosedChild(aborted, failFast, failures, commandName) {
 
 /**
  * Resolve the child-process spawn implementation.
- * @param {{ spawnImpl?: unknown }} options Runner options.
- * @param {{ defaultSpawn?: unknown }} defaults Injected defaults.
- * @returns {unknown} Spawn implementation.
+ * @param {{ spawnImpl?: CheckSpawn }} options Runner options.
+ * @param {{ defaultSpawn?: CheckSpawn }} defaults Injected defaults.
+ * @returns {CheckSpawn} Spawn implementation.
  */
 function resolveSpawnImpl(options, defaults) {
-  return options.spawnImpl ?? defaults.defaultSpawn;
+  return /** @type {CheckSpawn} */ (options.spawnImpl ?? defaults.defaultSpawn);
 }
 
 /**
