@@ -14,6 +14,7 @@ const POST_METHOD = 'POST';
 export { getAllowedOrigins } from '../allowed-origins.js';
 /** @typedef {import('../../../../types/native-http').NativeHttpRequest} NativeHttpRequest */
 /** @typedef {import('../../../../types/native-http').NativeHttpResponse} NativeHttpResponse */
+/** @typedef {any} MarkVariantDirtyValue Runtime-shaped dirty-marking value. */
 
 /**
  * @typedef {object} FirebaseHelpers
@@ -164,7 +165,7 @@ function extractDocReference(doc) {
 
   // doc is guaranteed to be non-null and have a .ref property after hasDocReference check
   // We assert the existence of .ref since TypeScript's type guard doesn't capture this
-  return /** @type {{ ref?: unknown }} */ (doc).ref;
+  return /** @type {{ ref?: MarkVariantDirtyValue }} */ (doc).ref;
 }
 
 /**
@@ -178,7 +179,7 @@ function hasDocReference(doc) {
   }
 
   // We access .ref through a structural type to avoid a broad cast.
-  return Boolean(/** @type {{ ref?: unknown }} */ (doc).ref);
+  return Boolean(/** @type {{ ref?: MarkVariantDirtyValue }} */ (doc).ref);
 }
 
 /**
@@ -319,7 +320,7 @@ export async function markAuthorDirtyImpl(authorId, deps) {
     .get();
   const author = snapshot.docs[0];
   if (!author) return false;
-  const authorRef = /** @type {{ ref: unknown }} */ (author).ref;
+  const authorRef = /** @type {{ ref: MarkVariantDirtyValue }} */ (author).ref;
   await authorRef.update({ dirty: false });
   await authorRef.update({ dirty: true });
   return true;

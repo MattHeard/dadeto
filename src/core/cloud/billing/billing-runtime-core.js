@@ -6,24 +6,26 @@ import {
   getApiKeyCreditEventDocument as eventRef,
 } from '../get-api-key-credit-v2/get-api-key-credit-v2-core.js';
 
+/** @typedef {any} BillingRuntimeValue Runtime-shaped billing value. */
+
 /**
  * @typedef {{ status: number, body: object }} BillingResponse
  */
 
 /**
- * @param {object} db Firestore database.
+ * @param {BillingRuntimeValue} db Firestore database.
  * @param {string} id Document id.
- * @returns {object} Document reference.
+ * @returns {BillingRuntimeValue} Document reference.
  */
 function purchaseRef(db, id) {
   return db.collection('billing-purchases').doc(String(id));
 }
 
 /**
- * @param {object} db Firestore database.
+ * @param {BillingRuntimeValue} db Firestore database.
  * @param {string} uuid API key UUID.
  * @param {string} purchaseId Purchase id.
- * @returns {object} Document reference.
+ * @returns {BillingRuntimeValue} Document reference.
  */
 function lotRef(db, uuid, purchaseId) {
   return creditRef(db, uuid).collection('lots').doc(String(purchaseId));
@@ -42,10 +44,10 @@ function readData(snapshot) {
 
 /**
  * Read a document from a named collection.
- * @param {object} db Firestore database.
+ * @param {BillingRuntimeValue} db Firestore database.
  * @param {string} collectionName Collection name.
  * @param {string} id Document identifier.
- * @returns {Promise<object|null>} Document data.
+ * @returns {Promise<BillingRuntimeValue|null>} Document data.
  */
 async function readDocument(db, collectionName, id) {
   const snapshot = await db.collection(collectionName).doc(id).get();
@@ -55,9 +57,9 @@ async function readDocument(db, collectionName, id) {
 
 /**
  * Create Firestore-backed accessors for the billing domain.
- * @param {import('@google-cloud/firestore').Firestore} db Firestore database.
+ * @param {BillingRuntimeValue} db Firestore database.
  * @param {{ randomUUID?: () => string, now?: () => Date }} [runtime] Runtime helpers.
- * @returns {object} Billing service.
+ * @returns {BillingRuntimeValue} Billing service.
  */
 export function createBillingRuntime(db, runtime = {}) {
   const randomUUID = runtime.randomUUID ?? nodeRandomUUID;
@@ -65,13 +67,13 @@ export function createBillingRuntime(db, runtime = {}) {
 
   /**
    * @param {string} snapshotId Snapshot identifier.
-   * @returns {Promise<object|null>} Pricing snapshot.
+   * @returns {Promise<BillingRuntimeValue|null>} Pricing snapshot.
    */
   async function getPricingSnapshot(snapshotId) {
     return readDocument(db, 'billing-pricing-snapshots', snapshotId);
   }
 
-  /** @returns {Promise<object|null>} Current pricing snapshot. */
+  /** @returns {Promise<BillingRuntimeValue|null>} Current pricing snapshot. */
   async function getCurrentPricingSnapshot() {
     const snap = await db
       .collection('billing-pricing-snapshots')
@@ -84,7 +86,7 @@ export function createBillingRuntime(db, runtime = {}) {
 
   /**
    * @param {string} packageId Package identifier.
-   * @returns {Promise<object|null>} Credit package.
+   * @returns {Promise<BillingRuntimeValue|null>} Credit package.
    */
   async function getPackage(packageId) {
     return readDocument(db, 'billing-packages', packageId);
@@ -92,7 +94,7 @@ export function createBillingRuntime(db, runtime = {}) {
 
   /**
    * @param {string} purchaseId Purchase identifier.
-   * @returns {Promise<object|null>} Purchase record.
+   * @returns {Promise<BillingRuntimeValue|null>} Purchase record.
    */
   async function getPurchase(purchaseId) {
     const snap = await purchaseRef(db, purchaseId).get();
@@ -102,7 +104,7 @@ export function createBillingRuntime(db, runtime = {}) {
 
   /**
    * @param {string} purchaseId Purchase identifier.
-   * @param {object} session Checkout session.
+   * @param {BillingRuntimeValue} session Checkout session.
    * @returns {Promise<void>} Resolves after persistence.
    */
   async function savePurchaseCheckout(purchaseId, session) {
@@ -117,8 +119,8 @@ export function createBillingRuntime(db, runtime = {}) {
   }
 
   /**
-   * @param {object} input Purchase input.
-   * @returns {Promise<object>} Created purchase.
+   * @param {BillingRuntimeValue} input Purchase input.
+   * @returns {Promise<BillingRuntimeValue>} Created purchase.
    */
   async function createPurchase(input) {
     const purchaseId = input.purchaseId ?? randomUUID();
@@ -135,7 +137,7 @@ export function createBillingRuntime(db, runtime = {}) {
   }
 
   /**
-   * @param {object} input Payment input.
+   * @param {BillingRuntimeValue} input Payment input.
    * @returns {Promise<BillingResponse>} Payment response.
    */
   async function markPurchasePaid(input) {
@@ -215,7 +217,7 @@ export function createBillingRuntime(db, runtime = {}) {
   }
 
   /**
-   * @param {object} input Charge input.
+   * @param {BillingRuntimeValue} input Charge input.
    * @returns {Promise<BillingResponse>} Charge response.
    */
   async function applyOperationCharge(input) {
@@ -250,7 +252,7 @@ export function createBillingRuntime(db, runtime = {}) {
 
   /**
    * Apply a Stripe refund to a purchase.
-   * @param {object} input Refund input.
+   * @param {BillingRuntimeValue} input Refund input.
    * @returns {Promise<BillingResponse>} Refund response.
    */
   async function applyRefundEvent(input) {
@@ -325,7 +327,7 @@ async function chargeOperationTransaction({
 
 /**
  * Read candidate lots through a transaction.
- * @param {object} transaction Firestore transaction.
+ * @param {BillingRuntimeValue} transaction Firestore transaction.
  * @param {Array<{ ref: object, data: object }>} candidates Candidate lots.
  * @returns {Promise<Array<{ ref: object, data: object }>>} Current lots.
  */
@@ -342,7 +344,7 @@ async function readTransactionLots(transaction, candidates) {
  * Consume lots, converting the expected shortage into a null result.
  * @param {Array<{ purchaseId: string, remainingCredits: number }>} lots Lots.
  * @param {number} amount Credits to consume.
- * @returns {object|null} Consumption result.
+ * @returns {BillingRuntimeValue|null} Consumption result.
  */
 function consumeLotsOrNull(lots, amount) {
   try {
@@ -361,7 +363,7 @@ function consumeLotsOrNull(lots, amount) {
  * Create a non-refundable lot representing a pre-lot balance.
  * @param {number} credits Credit balance.
  * @param {Date} createdAt Migration timestamp.
- * @returns {object} Legacy lot.
+ * @returns {BillingRuntimeValue} Legacy lot.
  */
 function createLegacyLot(credits, createdAt) {
   return {
@@ -376,9 +378,9 @@ function createLegacyLot(credits, createdAt) {
 
 /**
  * Apply a refund transaction.
- * @param {object} db Firestore database.
+ * @param {BillingRuntimeValue} db Firestore database.
  * @param {() => Date} now Clock callback.
- * @param {object} input Refund input.
+ * @param {BillingRuntimeValue} input Refund input.
  * @returns {Promise<BillingResponse>} Refund response.
  */
 async function applyRefund(db, now, input) {

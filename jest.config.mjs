@@ -26,6 +26,7 @@ const config = {
     '<rootDir>/.worktrees/',
     '<rootDir>/test/e2e/',
     '<rootDir>/e2e/',
+    '<rootDir>/test/synthetic/',
   ],
   modulePathIgnorePatterns: ['<rootDir>/infra/cloud-functions/'],
   coveragePathIgnorePatterns: [

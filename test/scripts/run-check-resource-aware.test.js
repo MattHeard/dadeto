@@ -37,8 +37,8 @@ describe('runResourceAwareCheckSuite', () => {
     ).resolves.toEqual({ exitCode: 0, failures: [] });
 
     expect(runSuite).toHaveBeenCalledTimes(1);
-    expect(runSuite.mock.calls[0][0].commands.map(command => command.name)).not.toContain(
-      'test'
-    );
+    expect(
+      runSuite.mock.calls[0][0].commands.map(command => command.name)
+    ).not.toContain('test');
   });
 });

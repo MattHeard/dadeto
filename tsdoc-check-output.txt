@@ -365,61 +365,47 @@ src/core/cloud/tree-visibility/run.js(26,7): error TS2322: Type 'Firestore' is n
                 Value of type '() => DocumentData' has no properties in common with type '{ visibility?: number | undefined; }'. Did you mean to call it?
 src/core/cloud/tree-visibility/tree-visibility-core.js(89,5): error TS2322: Type '{ get: () => Promise<{ exists: boolean; data: () => VisibilityData; }>; } | null' is not assignable to type '{ get: () => Promise<{ exists: boolean; data: () => VisibilityData; }>; }'.
   Type 'null' is not assignable to type '{ get: () => Promise<{ exists: boolean; data: () => VisibilityData; }>; }'.
-src/core/local/symphony/app.js(17,3): error TS2322: Type '(_req: unknown, res: unknown, next: (error?: unknown) => void) => Promise<void>' is not assignable to type '(...args: unknown[]) => unknown'.
-  Types of parameters 'next' and 'args' are incompatible.
-    Type 'unknown' is not assignable to type '(error?: unknown) => void'.
-src/core/local/symphony/app.js(38,34): error TS18046: 'options' is of type 'unknown'.
-src/core/local/symphony/app.js(39,42): error TS18046: 'options' is of type 'unknown'.
-src/core/local/symphony/app.js(42,9): error TS18046: 'options' is of type 'unknown'.
-src/core/local/symphony/app.js(45,7): error TS18046: 'res' is of type 'unknown'.
-src/core/local/symphony/app.js(57,24): error TS18046: 'options' is of type 'unknown'.
-src/core/local/symphony/app.js(58,31): error TS18046: 'options' is of type 'unknown'.
-src/core/local/symphony/app.js(59,7): error TS18046: 'res' is of type 'unknown'.
-src/core/local/symphony/app.js(65,32): error TS18046: 'options' is of type 'unknown'.
-src/core/local/symphony/app.js(66,36): error TS18046: 'options' is of type 'unknown'.
-src/core/local/symphony/app.js(69,20): error TS18046: 'options' is of type 'unknown'.
-src/core/local/symphony/app.js(70,17): error TS18046: 'options' is of type 'unknown'.
-src/core/local/symphony/app.js(73,5): error TS18046: 'res' is of type 'unknown'.
-src/core/local/symphony/app.js(90,10): error TS18046: 'options' is of type 'unknown'.
-src/core/local/symphony/app.js(91,16): error TS18046: 'options' is of type 'unknown'.
-src/core/local/symphony/app.js(93,9): error TS18046: 'res' is of type 'unknown'.
-src/core/local/symphony/app.js(100,19): error TS18046: 'options' is of type 'unknown'.
-src/core/local/symphony/app.js(101,23): error TS18046: 'options' is of type 'unknown'.
-src/core/local/symphony/app.js(102,25): error TS18046: 'options' is of type 'unknown'.
-src/core/local/symphony/app.js(103,25): error TS18046: 'options' is of type 'unknown'.
-src/core/local/symphony/app.js(104,14): error TS18046: 'options' is of type 'unknown'.
-src/core/local/symphony/app.js(105,22): error TS18046: 'options' is of type 'unknown'.
-src/core/local/symphony/app.js(108,7): error TS18046: 'res' is of type 'unknown'.
-src/core/local/symphony/app.js(111,31): error TS18046: 'snapshot' is of type 'unknown'.
-src/core/local/symphony/app.js(140,24): error TS18046: 'routeFactories' is of type 'unknown'.
-src/core/local/symphony/app.js(142,7): error TS18046: 'routeFactories' is of type 'unknown'.
-src/core/local/symphony/app.js(143,26): error TS18046: 'routeFactories' is of type 'unknown'.
-src/core/local/symphony/app.js(145,5): error TS18046: 'app' is of type 'unknown'.
-src/core/local/symphony/app.js(146,5): error TS18046: 'app' is of type 'unknown'.
-src/core/local/symphony/app.js(147,5): error TS18046: 'app' is of type 'unknown'.
-src/core/local/symphony/app.js(148,5): error TS18046: 'app' is of type 'unknown'.
-src/core/local/symphony/app.js(157,7): error TS18046: 'res' is of type 'unknown'.
-src/core/local/symphony/app.js(161,5): error TS18046: 'app' is of type 'unknown'.
-src/core/local/symphony/app.js(176,14): error TS2339: Property 'activeRun' does not exist on type 'object'.
-src/core/local/symphony/app.js(177,21): error TS2339: Property 'activeRun' does not exist on type 'object'.
-src/core/local/symphony/app.js(187,17): error TS18046: 'statusStore' is of type 'unknown'.
-src/core/local/symphony/app.js(196,14): error TS18046: 'activeRun' is of type 'unknown'.
-src/core/local/symphony/app.js(197,12): error TS18046: 'activeRun' is of type 'unknown'.
-src/core/local/symphony/app.js(210,14): error TS18046: 'source' is of type 'unknown'.
-src/core/local/symphony/app.js(211,12): error TS18046: 'source' is of type 'unknown'.
-src/core/local/symphony/app.js(227,34): error TS18046: 'status' is of type 'unknown'.
-src/core/local/symphony/app.js(229,38): error TS18046: 'status' is of type 'unknown'.
-src/core/local/symphony/app.js(249,31): error TS18046: 'status' is of type 'unknown'.
-src/core/local/symphony/app.js(266,27): error TS2345: Argument of type 'unknown' is not assignable to parameter of type '{ [key: string]: unknown; state?: string | undefined; currentBeadId?: string | null | undefined; currentBeadTitle?: string | null | undefined; currentBeadPriority?: string | null | undefined; queueEvidence?: string[] | undefined; }'.
-src/core/local/symphony/app.js(267,54): error TS18046: 'status' is of type 'unknown'.
-src/core/local/symphony/app.js(269,9): error TS18046: 'statusStore' is of type 'unknown'.
-src/core/local/symphony/app.js(279,45): error TS18046: 'status' is of type 'unknown'.
-src/core/local/symphony/app.js(298,14): error TS18046: 'activeRun' is of type 'unknown'.
-src/core/local/symphony/app.js(298,46): error TS18046: 'activeRun' is of type 'unknown'.
-src/core/local/symphony/app.js(299,12): error TS18046: 'activeRun' is of type 'unknown'.
-src/core/local/symphony/app.js(302,10): error TS18046: 'activeRun' is of type 'unknown'.
-src/core/local/symphony/app.js(314,21): error TS18046: 'activeRun' is of type 'unknown'.
-src/core/local/symphony/app.js(314,43): error TS18046: 'activeRun' is of type 'unknown'.
+src/core/local/symphony/app.js(23,3): error TS2322: Type '(_req: unknown, res: SymphonyResponse, next: (error?: unknown) => void) => Promise<void>' is not assignable to type '(...args: unknown[]) => unknown'.
+  Types of parameters 'res' and 'args' are incompatible.
+    Type 'unknown' is not assignable to type 'SymphonyResponse'.
+src/core/local/symphony/app.js(42,19): error TS2322: Type '(options: SymphonyOptions) => (...args: unknown[]) => unknown' is not assignable to type '(...args: unknown[]) => unknown'.
+  Types of parameters 'options' and 'args' are incompatible.
+    Type 'unknown' is not assignable to type 'SymphonyOptions'.
+src/core/local/symphony/app.js(93,19): error TS2322: Type '(options: SymphonyOptions) => (...args: unknown[]) => unknown' is not assignable to type '(...args: unknown[]) => unknown'.
+  Types of parameters 'options' and 'args' are incompatible.
+    Type 'unknown' is not assignable to type 'SymphonyOptions'.
+src/core/local/symphony/app.js(117,31): error TS18046: 'snapshot' is of type 'unknown'.
+src/core/local/symphony/app.js(144,3): error TS2322: Type '(options: SymphonyOptions) => SymphonyApp' is not assignable to type '(...args: unknown[]) => unknown'.
+  Types of parameters 'options' and 'args' are incompatible.
+    Type 'unknown' is not assignable to type 'SymphonyOptions'.
+src/core/local/symphony/app.js(146,24): error TS18046: 'routeFactories' is of type 'unknown'.
+src/core/local/symphony/app.js(148,7): error TS18046: 'routeFactories' is of type 'unknown'.
+src/core/local/symphony/app.js(149,26): error TS18046: 'routeFactories' is of type 'unknown'.
+src/core/local/symphony/app.js(151,5): error TS18046: 'app' is of type 'unknown'.
+src/core/local/symphony/app.js(152,5): error TS18046: 'app' is of type 'unknown'.
+src/core/local/symphony/app.js(153,5): error TS18046: 'app' is of type 'unknown'.
+src/core/local/symphony/app.js(154,5): error TS18046: 'app' is of type 'unknown'.
+src/core/local/symphony/app.js(163,7): error TS18046: 'res' is of type 'unknown'.
+src/core/local/symphony/app.js(167,5): error TS18046: 'app' is of type 'unknown'.
+src/core/local/symphony/app.js(169,5): error TS2322: Type 'unknown' is not assignable to type 'SymphonyApp'.
+src/core/local/symphony/app.js(233,34): error TS2345: Argument of type 'Record<string, unknown> | undefined' is not assignable to parameter of type 'Record<string, unknown>'.
+  Type 'undefined' is not assignable to type 'Record<string, unknown>'.
+src/core/local/symphony/app.js(235,38): error TS2345: Argument of type 'Record<string, unknown> | undefined' is not assignable to parameter of type 'Record<string, unknown>'.
+  Type 'undefined' is not assignable to type 'Record<string, unknown>'.
+src/core/local/symphony/app.js(255,31): error TS2345: Argument of type 'Record<string, unknown> | undefined' is not assignable to parameter of type 'Record<string, unknown>'.
+  Type 'undefined' is not assignable to type 'Record<string, unknown>'.
+src/core/local/symphony/app.js(272,35): error TS2345: Argument of type 'unknown' is not assignable to parameter of type '{ beadId: string; beadTitle?: string | undefined; outcome: "completed" | "blocked"; summary: string; }'.
+src/core/local/symphony/app.js(273,54): error TS2345: Argument of type 'Record<string, unknown> | undefined' is not assignable to parameter of type 'Record<string, unknown>'.
+  Type 'undefined' is not assignable to type 'Record<string, unknown>'.
+src/core/local/symphony/app.js(275,9): error TS2722: Cannot invoke an object which is possibly 'undefined'.
+src/core/local/symphony/app.js(285,45): error TS2345: Argument of type 'Record<string, unknown> | undefined' is not assignable to parameter of type 'Record<string, unknown>'.
+  Type 'undefined' is not assignable to type 'Record<string, unknown>'.
+src/core/local/symphony/app.js(308,3): error TS2322: Type '{}' is not assignable to type 'string'.
+src/core/local/symphony/app.js(372,3): error TS2322: Type '{ createSymphonyApp: (...args: unknown[]) => unknown; createSymphonyStatusHandler: (...args: unknown[]) => unknown; createSymphonyLaunchHandler: (options: SymphonyOptions) => (...args: unknown[]) => unknown; createSymphonyRefreshHandler: (...args: unknown[]) => unknown; }' is not assignable to type '{ createSymphonyStatusHandler: (...args: unknown[]) => unknown; createSymphonyLaunchHandler: (...args: unknown[]) => unknown; createSymphonyRefreshHandler: (...args: unknown[]) => unknown; createSymphonyApp: (...args: unknown[]) => unknown; }'.
+  Types of property 'createSymphonyLaunchHandler' are incompatible.
+    Type '(options: SymphonyOptions) => (...args: unknown[]) => unknown' is not assignable to type '(...args: unknown[]) => unknown'.
+      Types of parameters 'options' and 'args' are incompatible.
+        Type 'unknown' is not assignable to type 'SymphonyOptions'.
 src/core/local/symphony/launcherCodex.js(59,59): error TS2345: Argument of type 'Record<string, unknown>' is not assignable to parameter of type '{ beadId: string; }'.
   Property 'beadId' is missing in type 'Record<string, unknown>' but required in type '{ beadId: string; }'.
 src/core/local/symphony/launcherCodex.js(60,9): error TS2322: Type '(payload: { beadId: string; beadTitle?: string | null | undefined; }, input: { runId: string; exitCode: number | null; signal: string | null; }) => { runId: string; beadId: string; beadTitle: string | null; exitCode: number | null; signal: string | null; }' is not assignable to type '(payload: Record<string, unknown>, input: { runId: string; exitCode: number | null; signal: string | null; }) => { runId: string; exitCode: number | null; signal: string | null; }'.

@@ -2,15 +2,21 @@ import { applyRunnerOutcome } from '../symphony.js';
 
 const REQUESTED_AT_FIELD = 'requested_at';
 
+/** @typedef {{ readStatus: () => Promise<SymphonyStatus | null>, writeStatus?: (status: SymphonyStatus) => Promise<void> }} SymphonyStatusStore */
+/** @typedef {Record<string, unknown> & { activeRun?: Record<string, unknown> }} SymphonyStatus */
+/** @typedef {{ initialStatus: SymphonyStatus, statusStore: SymphonyStatusStore, repoRoot?: string, launchSelectedRunnerLoop?: (input: Record<string, unknown>) => Promise<unknown>, configLoader?: unknown, workflowLoader?: unknown, trackerFactory?: unknown, now?: () => number }} SymphonyOptions */
+/** @typedef {{ json: (value: unknown) => unknown, status: (code: number) => SymphonyResponse }} SymphonyResponse */
+/** @typedef {{ get: (...args: unknown[]) => unknown, post: (...args: unknown[]) => unknown, use: (...args: unknown[]) => unknown }} SymphonyApp */
+
 /**
  * Wrap an async route operation with Express error forwarding.
- * @param {(res: unknown) => Promise<void>} operation Route operation.
+ * @param {(res: SymphonyResponse) => Promise<void>} operation Route operation.
  * @returns {(...args: unknown[]) => unknown} Express route handler.
  */
 function createAsyncRouteHandler(operation) {
   /**
    * @param {unknown} _req Request.
-   * @param {unknown} res Response.
+   * @param {SymphonyResponse} res Response.
    * @param {(error?: unknown) => void} next Error callback.
    * @returns {Promise<void>} Completion promise.
    */
@@ -30,7 +36,7 @@ function createAsyncRouteHandler(operation) {
  */
 function createSymphonyStatusHandlerFactory(deps) {
   /**
-   * @param {unknown} options Route options.
+ * @param {SymphonyOptions} options Route options.
    * @returns {(...args: unknown[]) => unknown} Express route handler.
    */
   return function createSymphonyStatusHandler(options) {
@@ -49,7 +55,7 @@ function createSymphonyStatusHandlerFactory(deps) {
 
 /**
  * Create the Symphony launch route.
- * @param {unknown} options Route options.
+ * @param {SymphonyOptions} options Route options.
  * @returns {(...args: unknown[]) => unknown} Express route handler.
  */
 function createSymphonyLaunchHandler(options) {
@@ -81,7 +87,7 @@ function createSymphonyLaunchHandler(options) {
  */
 function createSymphonyRefreshHandlerFactory(deps) {
   /**
-   * @param {unknown} options Route options.
+ * @param {SymphonyOptions} options Route options.
    * @returns {(...args: unknown[]) => unknown} Express route handler.
    */
   return function createSymphonyRefreshHandler(options) {
@@ -132,8 +138,8 @@ function getErrorMiddlewareNextType(next) {
  */
 function createSymphonyAppFactory(deps, routeFactories) {
   /**
-   * @param {unknown} options App options.
-   * @returns {unknown} Express app.
+   * @param {SymphonyOptions} options App options.
+   * @returns {SymphonyApp} Express app.
    */
   return function createSymphonyApp(options) {
     const app = deps.express();
@@ -166,7 +172,7 @@ function createSymphonyAppFactory(deps, routeFactories) {
 
 /**
  * Test whether an active run can be reconciled.
- * @param {unknown} status Current status.
+ * @param {SymphonyStatus} status Current status.
  * @returns {boolean} True when the status contains an active run object.
  */
 function hasReconciliableActiveRun(status) {
@@ -180,7 +186,7 @@ function hasReconciliableActiveRun(status) {
 
 /**
  * Test whether a status store can persist updates.
- * @param {unknown} statusStore Status store.
+ * @param {SymphonyStatusStore} statusStore Status store.
  * @returns {boolean} True when writes are supported.
  */
 function hasWritableStatusStore(statusStore) {
@@ -189,7 +195,7 @@ function hasWritableStatusStore(statusStore) {
 
 /**
  * Read the active run process id.
- * @param {unknown} activeRun Active run state.
+ * @param {Record<string, unknown>} activeRun Active run state.
  * @returns {number | null} Process id, or null when unavailable.
  */
 function getActiveRunPid(activeRun) {
@@ -202,7 +208,7 @@ function getActiveRunPid(activeRun) {
 
 /**
  * Read an optional string field.
- * @param {unknown} source Source object.
+ * @param {Record<string, unknown>} source Source object.
  * @param {string} key Field name.
  * @returns {string | null} String value, or null.
  */
@@ -216,7 +222,7 @@ function getOptionalString(source, key) {
 
 /**
  * Build the blocked outcome for an orphaned run.
- * @param {unknown} status Current status.
+ * @param {SymphonyStatus} status Current status.
  * @param {string} beadId Bead id.
  * @param {number} pid Process id.
  * @returns {unknown} Runner outcome.
@@ -232,8 +238,8 @@ function buildOrphanedRunOutcome(status, beadId, pid) {
 
 /**
  * Reconcile a stored status whose active runner process has disappeared.
- * @param {unknown} status Current status.
- * @param {unknown} statusStore Status store.
+ * @param {SymphonyStatus} status Current status.
+ * @param {SymphonyStatusStore} statusStore Status store.
  * @param {{ isProcessAlive: (pid: number) => boolean }} deps Runtime dependencies.
  * @returns {Promise<unknown>} Reconciled status.
  */
@@ -272,7 +278,7 @@ async function reconcileOrphanedRun(status, statusStore, deps) {
 
 /**
  * Read the bead id associated with an active run.
- * @param {unknown} status Current status.
+ * @param {SymphonyStatus} status Current status.
  * @returns {string | null} Bead id, or null.
  */
 function getActiveRunBeadId(status) {
@@ -291,7 +297,7 @@ function getActiveRunBeadId(status) {
 
 /**
  * Read the display id for an orphaned run.
- * @param {unknown} activeRun Active run state.
+ * @param {Record<string, unknown>} activeRun Active run state.
  * @returns {string} Run id for operator-facing messages.
  */
 function getOrphanedRunId(activeRun) {
@@ -304,7 +310,7 @@ function getOrphanedRunId(activeRun) {
 
 /**
  * Build the operator summary for an orphaned run.
- * @param {unknown} activeRun Active run state.
+ * @param {Record<string, unknown>} activeRun Active run state.
  * @param {number} pid Process id.
  * @returns {string} Human-readable summary.
  */
@@ -328,7 +334,7 @@ function buildOrphanedRunSummary(activeRun, pid) {
 
 /**
  * Build the operator trust reason for an orphaned run.
- * @param {unknown} activeRun Active run state.
+ * @param {Record<string, unknown>} activeRun Active run state.
  * @param {number} pid Process id.
  * @returns {string} Human-readable trust reason.
  */

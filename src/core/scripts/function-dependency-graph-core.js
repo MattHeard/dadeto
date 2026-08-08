@@ -3,6 +3,7 @@ import path from 'node:path';
 
 /** @typedef {{ type?: string, id?: AstNode, key?: AstNode, name?: string, loc?: { start: { line: number } }, params?: AstNode[], body?: AstNode, callee?: AstNode, left?: AstNode, source?: { value: string }, specifiers?: AstNode[], imported?: AstNode, local?: AstNode, declaration?: AstNode, node?: AstNode, [key: string]: unknown }} AstNode */
 /** @typedef {(node: AstNode, parent: AstNode | null) => void} AstVisitor */
+/** @typedef {{ source: string, imported: string }} ImportBinding */
 
 /**
  *
@@ -15,7 +16,7 @@ function isFunction(node) {
     'ArrowFunctionExpression',
     'ObjectMethod',
     'ClassMethod',
-  ].includes(node?.type);
+  ].includes(node?.type ?? '');
 }
 
 /**
@@ -34,9 +35,10 @@ function walk(node, visit, parent = null) {
       key === 'trailingComments'
     )
       continue;
-    if (Array.isArray(value)) value.forEach(child => walk(child, visit, node));
-    else if (value && typeof value === 'object' && value.type)
-      walk(value, visit, node);
+    if (Array.isArray(value))
+      value.forEach(child => walk(/** @type {AstNode} */ (child), visit, node));
+    else if (value && typeof value === 'object' && 'type' in value)
+      walk(/** @type {AstNode} */ (value), visit, node);
   }
 }
 
@@ -82,6 +84,7 @@ function importTarget(imports, name) {
 export function buildFunctionDependencyGraph({ files, parse }) {
   const parsed = new Map();
   const functions = new Map();
+  /** @type {Map<string, Map<string, ImportBinding>>} */
   const importsByFile = new Map();
   let anonymousIndex = 0;
 
@@ -91,13 +94,17 @@ export function buildFunctionDependencyGraph({ files, parse }) {
       plugins: ['jsx', 'classProperties', 'topLevelAwait'],
     });
     parsed.set(file.path, ast);
+    /** @type {Map<string, ImportBinding>} */
     const imports = new Map();
     walk(ast, (node, parent) => {
       if (node.type === 'ImportDeclaration') {
-        for (const specifier of node.specifiers) {
-          const local = specifier.local.name;
+        for (const specifier of node.specifiers ?? []) {
+          const local = specifier.local?.name;
+          if (!local) continue;
           const imported = specifier.imported?.name ?? 'default';
-          imports.set(local, { source: node.source.value, imported });
+          const source = node.source?.value;
+          if (!source) continue;
+          imports.set(local, { source, imported });
         }
       }
       if (isFunction(node)) {
@@ -143,12 +150,16 @@ export function buildFunctionDependencyGraph({ files, parse }) {
    * @param {string} name
    */
   const resolveTarget = (caller, name) => {
-    const local = byFileAndName.get(`${caller.file}#${name}`);
+    const file = String(caller.file);
+    const local = byFileAndName.get(`${file}#${name}`);
     if (local) return local;
-    const imported = importTarget(importsByFile.get(caller.file), name);
+    const imported = importTarget(
+      importsByFile.get(file) ?? new Map(),
+      String(name)
+    );
     if (!imported || !imported.source.startsWith('.')) return null;
     const resolved = path.normalize(
-      path.join(path.dirname(caller.file), imported.source)
+      path.join(path.dirname(file), imported.source)
     );
     const candidates = [resolved, `${resolved}.js`, `${resolved}/index.js`];
     return (
@@ -170,7 +181,9 @@ export function buildFunctionDependencyGraph({ files, parse }) {
     walk(caller.node.body, node => {
       if (node.type !== 'CallExpression') return;
       const callee = node.callee;
+      if (!callee) return;
       if (callee.type === 'Identifier') {
+        if (!callee.name) return;
         if (params.has(callee.name)) {
           ignoredCalls.push({
             caller: caller.id,
@@ -188,12 +201,15 @@ export function buildFunctionDependencyGraph({ files, parse }) {
           });
       } else if (
         callee.type === 'MemberExpression' &&
-        callee.object.type === 'Identifier' &&
-        params.has(callee.object.name)
+        callee.object &&
+        /** @type {AstNode} */ (callee.object).type === 'Identifier' &&
+        params.has(/** @type {AstNode} */ (callee.object).name)
       ) {
+        const object = /** @type {AstNode} */ (callee.object);
+        const property = /** @type {AstNode} */ (callee.property);
         ignoredCalls.push({
           caller: caller.id,
-          callee: `${callee.object.name}.${callee.property.name ?? '<computed>'}`,
+          callee: `${object.name}.${property?.name ?? '<computed>'}`,
           reason: 'injected-object-member',
         });
       }

@@ -3,12 +3,12 @@
   "version": "1.0.0",
   "type": "module",
   "engines": {
-    "node": "^20.19.0 || ^22.13.0 || >=24.0.0"
+    "node": ">=22.0.0"
   },
   "scripts": {
-    "check": "node src/local/run-check.js",
+    "check": "node scripts/check-node-version.js && node src/local/run-check.js",
     "check:fast": "node src/local/run-check.js --fail-fast",
-    "test": "npm run test:unit && npm run test:e2e",
+    "test": "node scripts/check-node-version.js && npm run test:unit && npm run test:e2e",
     "test:unit": "node scripts/run-jest-with-coverage.js",
     "tsdoc:check": "tsc --project tsconfig.jsdoc.json",
     "test:e2e": "npm run build && node scripts/run-e2e.js",
@@ -35,7 +35,7 @@
     "build:mattheard-net": "npm run copy && npm run generate",
     "build:dendritestories-co-nz": "npm run copy:dendrite",
     "build:browser": "npm run build:mattheard-net",
-    "build": "npm run build:mattheard-net",
+    "build": "node scripts/check-node-version.js && npm run build:mattheard-net",
     "depcruise": "node src/local/check-depcruise.js",
     "function-graph": "node src/local/function-dependency-graph.js",
     "core-parse": "npm run parse-not-validate && npm run parse-boundary",
@@ -89,7 +89,7 @@
   },
   "overrides": {
     "brace-expansion": "5.0.9",
-    "js-yaml": "4.3.0",
+    "js-yaml": "4.3.1",
     "qs": "6.15.2",
     "eslint": {
       "brace-expansion": "5.0.9",
