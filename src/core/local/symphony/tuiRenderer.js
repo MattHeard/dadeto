@@ -86,9 +86,6 @@ function clampLine(text = '', terminalSize = {}) {
   if (line.length <= maxWidth) {
     return line;
   }
-  if (maxWidth <= 3) {
-    return line.slice(0, maxWidth);
-  }
   return `${line.slice(0, maxWidth - 3)}...`;
 }
 
@@ -114,10 +111,6 @@ function pushLine(lines, text = '', terminalSize = {}) {
  * @returns {string} Highlighted line content.
  */
 function highlightLine(text, terminalSize = {}) {
-  if (!text) {
-    return '';
-  }
-
   return `${ANSI_BOLD}${clampLine(text, terminalSize)}${ANSI_RESET}`;
 }
 
@@ -130,9 +123,7 @@ function highlightLine(text, terminalSize = {}) {
  */
 function formatField(label, value, terminalSize = {}) {
   let trimmedLabel = label;
-  if (label.length > 10) {
-    trimmedLabel = label.slice(0, 10);
-  }
+  trimmedLabel = label.slice(0, 10);
   const available = Math.max(
     getMaxWidth(terminalSize) - trimmedLabel.length - 2,
     0
@@ -141,14 +132,8 @@ function formatField(label, value, terminalSize = {}) {
   if (normalizedValue.length <= available) {
     return `${trimmedLabel}: ${normalizedValue}`;
   }
-  if (available <= 0) {
-    return `${trimmedLabel}:`;
-  }
-
   let truncatedValue = normalizedValue.slice(0, available);
-  if (available > 3) {
-    truncatedValue = `${normalizedValue.slice(0, available - 3)}...`;
-  }
+  truncatedValue = `${normalizedValue.slice(0, available - 3)}...`;
   return `${trimmedLabel}: ${truncatedValue}`;
 }
 
@@ -625,3 +610,18 @@ export function buildStatusLines(status, context = {}) {
 export function createSymphonyTuiRendererHandle() {
   return { buildStatusLines };
 }
+
+export const tuiRendererTestUtils = {
+  getTerminalColumns,
+  getTerminalRows,
+  getMaxWidth,
+  getMaxLines,
+  clampLine,
+  pushLine,
+  highlightLine,
+  formatField,
+  normalizeEvidenceItems,
+  renderEventAndEvidence,
+  renderBacklog,
+  calculateBacklogSlots,
+};
