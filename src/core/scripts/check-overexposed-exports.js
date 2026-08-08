@@ -527,10 +527,6 @@ function handleIdentifierCall(context) {
   const { calleeName, imports, exports, ownCalls, importedCalls } = context;
   if (imports.has(calleeName)) {
     const imported = imports.get(calleeName);
-    if (!imported) {
-      return;
-    }
-
     importedCalls.push(makeImportedCall(imported));
     return;
   }
@@ -664,7 +660,7 @@ function resolveImportSource(deps, fromFile, sourceLiteral, moduleIndex) {
     deps.pathModule.join(base, 'index.js'),
   ];
   if (!moduleIndex) {
-    return candidates[0] ?? null;
+    return candidates[0];
   }
 
   return candidates.find(candidate => moduleIndex.has(candidate)) ?? null;

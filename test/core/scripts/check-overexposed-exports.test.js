@@ -175,6 +175,23 @@ describe('check-overexposed-exports', () => {
     expect(stderr).toEqual([]);
   });
 
+  test('uses the default parser when a source file is discovered', () => {
+    const handle = createCheckOverexposedExportsHandle({
+      readFileSync: () => 'export function ignored() {}',
+      readdirSync: dirPath =>
+        dirPath === '/repo/src'
+          ? [{ name: 'a.js', isDirectory: () => false, isFile: () => true }]
+          : [],
+      stdout: { write: () => {} },
+      stderr: { write: () => {} },
+      rootDir: '/repo',
+      sourceRoot: 'src',
+      pathModule: path,
+    });
+
+    expect(handle()).toEqual({ exitCode: 0, violations: 0 });
+  });
+
   test('uses the default path module when one is not provided', () => {
     const stderr = [];
     const handle = createCheckOverexposedExportsHandle({
@@ -249,6 +266,30 @@ describe('check-overexposed-exports', () => {
     );
   });
 
+  test('reports plural violations and skips non-JavaScript directory entries', () => {
+    const handle = createCheckOverexposedExportsHandle({
+      readFileSync: filePath =>
+        filePath.endsWith('a.js')
+          ? 'export function alpha() { return alpha(); unknown(); }'
+          : 'export function beta() { return beta(); }',
+      readdirSync: dirPath =>
+        dirPath === '/repo/src'
+          ? [
+              { name: 'a.js', isDirectory: () => false, isFile: () => true },
+              { name: 'b.js', isDirectory: () => false, isFile: () => true },
+              { name: 'notes.txt', isDirectory: () => false, isFile: () => true },
+            ]
+          : [],
+      stdout: { write: () => {} },
+      rootDir: '/repo',
+      sourceRoot: 'src',
+      parse: parseSource,
+      pathModule: path,
+    });
+
+    expect(handle()).toEqual({ exitCode: 1, violations: 2 });
+  });
+
   test('flags exported functions that are only called in their own file', () => {
     const deps = createFileSystem({
       '/repo/src/a.js': `
@@ -320,6 +361,16 @@ describe('check-overexposed-exports', () => {
     expect(findOverexposedExportViolations(deps)).toEqual([]);
   });
 
+  test('handles default imports and non-member call targets', () => {
+    const deps = createFileSystem({
+      '/repo/src/a.js': 'export default function alpha() { return 1; }',
+      '/repo/src/b.js':
+        "import alpha from './a.js'; export function use() { alpha(); alpha.foo(); 1(); }",
+    });
+
+    expect(findOverexposedExportViolations(deps)).toEqual([]);
+  });
+
   test('keeps helper exports available for file analysis', () => {
     expect(helpers.makeUsageKey('/repo/src/a.js', 'alpha')).toBe(
       '/repo/src/a.js::alpha'
@@ -329,6 +380,46 @@ describe('check-overexposed-exports', () => {
     );
     expect(helpers.isFunctionLike({ type: 'FunctionExpression' })).toBe(true);
     expect(helpers.isFunctionLike({ type: 'Identifier' })).toBe(false);
+    const collected = [];
+    helpers.collectExportedFunctionsFromDeclaration(
+      { type: 'FunctionDeclaration', id: null },
+      collected
+    );
+    helpers.collectExportedFunctionsFromDeclaration(
+      { type: 'VariableDeclaration', declarations: [] },
+      collected
+    );
+    helpers.collectExportedFunctionsFromDefault(
+      { type: 'ArrowFunctionExpression' },
+      collected
+    );
+    helpers.collectExportedFunctionsFromDefault(
+      { type: 'FunctionDeclaration', id: { name: 'noLoc' }, loc: null },
+      collected
+    );
+    const literalImportDeps = {
+      readFileSync: () => '',
+      parse: () => ({
+        type: 'Program',
+        body: [
+          {
+            type: 'ImportDeclaration',
+            source: { value: './other.js' },
+            specifiers: [
+              {
+                type: 'ImportSpecifier',
+                local: { name: 'alias' },
+                imported: { type: 'Literal', value: 'literal' },
+              },
+            ],
+          },
+        ],
+      }),
+    };
+    expect(helpers.analyzeSourceFile(literalImportDeps, '/repo/src/a.js').exports).toEqual([]);
+    expect(
+      helpers.analyzeSourceFile({ readFileSync: () => 'ignored' }, '/repo/src/a.js')
+    ).toEqual(expect.objectContaining({ exports: [] }));
   });
 
   test('collects exported function declarations from the supported shapes', () => {
@@ -417,5 +508,6 @@ describe('check-overexposed-exports', () => {
     expect(
       helpers.resolveImportSource(deps, '/repo/src/nested/c.js', 'pkg')
     ).toBe(null);
+    expect(helpers.resolveImportSource(deps, '/repo/src/nested/c.js', './missing', new Set())).toBe(null);
   });
 });
