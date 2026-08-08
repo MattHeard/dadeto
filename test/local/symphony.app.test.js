@@ -1,4 +1,9 @@
 import { jest } from '@jest/globals';
+
+jest.mock('../../src/local/symphony/runtimeVersion.js', () => ({
+  getSymphonyRuntimeVersion: jest.fn(() => 'test-runtime'),
+}));
+
 import { createSymphonyAppHandle } from '../../src/core/local/symphony/app.js';
 import {
   createSymphonyApp,
@@ -565,6 +570,36 @@ describe('local symphony app handlers', () => {
           summary:
             'Runner unknown (pid 789) is not running when Symphony status was requested; the exit event may have been missed while the server was offline.',
         }),
+      })
+    );
+  });
+
+  test('uses the active bead id when an orphaned run has no run id or title', async () => {
+    const coreHandle = createSymphonyAppHandle({
+      express: jest.fn(),
+      refreshSymphonyStatus: jest.fn(),
+      isProcessAlive: () => false,
+    });
+    const statusStore = {
+      readStatus: jest.fn().mockResolvedValue({
+        state: 'running',
+        activeRun: { beadId: 'dadeto-fallback', pid: 321 },
+      }),
+      writeStatus: jest.fn(),
+    };
+    const response = createResponseDouble();
+    const handler = coreHandle.createSymphonyStatusHandler({
+      initialStatus: { state: 'ready' },
+      statusStore,
+    });
+
+    await handler({}, response, error => {
+      throw error;
+    });
+
+    expect(statusStore.writeStatus).toHaveBeenCalledWith(
+      expect.objectContaining({
+        lastOutcome: expect.objectContaining({ beadId: 'dadeto-fallback' }),
       })
     );
   });
