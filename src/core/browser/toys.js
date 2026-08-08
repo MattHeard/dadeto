@@ -178,9 +178,8 @@ export const createDispose = config => {
       Object.keys(rowData.rowTypes).forEach(
         key => delete rowData.rowTypes[key]
       );
-    } else if (rows) {
-      rows.length = 0;
     }
+    if (!rowData && rows) rows.length = 0;
   };
 };
 
@@ -796,24 +795,25 @@ function migrateRowIfValid({ prevKey, newKey, rowData, keyEl, dom }) {
  */
 export function createKeyInputHandler(options) {
   const { dom, keyEl, textInput, rowData, syncHiddenField } = options;
+  const effectiveRowData = rowData ?? { rows: {}, rowTypes: {} };
   return e => {
     const prevKey = dom.getDataAttribute(keyEl, 'prevKey');
     const newKey = dom.getTargetValue(e);
 
     // If nothing changed, just keep the hidden JSON fresh.
     if (newKey === prevKey) {
-      syncHiddenField(textInput, rowData ?? { rows: {}, rowTypes: {} }, dom);
+      syncHiddenField(textInput, effectiveRowData, dom);
       return;
     }
 
     migrateRowIfValid({
       prevKey,
       newKey,
-      rowData: rowData ?? { rows: {}, rowTypes: {} },
+      rowData: effectiveRowData,
       keyEl,
       dom,
     });
-    syncHiddenField(textInput, rowData ?? { rows: {}, rowTypes: {} }, dom);
+    syncHiddenField(textInput, effectiveRowData, dom);
   };
 }
 
@@ -829,10 +829,11 @@ export function createKeyInputHandler(options) {
  */
 export function createValueInputHandler(options) {
   const { dom, keyEl, textInput, rowData, syncHiddenField } = options;
+  const effectiveRowData = rowData ?? { rows: {}, rowTypes: {} };
   return e => {
     const rowKey = dom.getDataAttribute(keyEl, 'prevKey'); // may have changed via onKey
-    rowData.rows[rowKey] = dom.getTargetValue(e);
-    syncHiddenField(textInput, rowData ?? { rows: {}, rowTypes: {} }, dom);
+    effectiveRowData.rows[rowKey] = dom.getTargetValue(e);
+    syncHiddenField(textInput, effectiveRowData, dom);
   };
 }
 
@@ -988,6 +989,7 @@ export const createTypeElement = ({
   syncHiddenField,
   disposers,
 }) => {
+  const effectiveRowData = rowData ?? { rows: {}, rowTypes: {} };
   const selectEl = dom.createElement('select');
   dom.addClass(selectEl, 'kv-type');
 
@@ -998,13 +1000,13 @@ export const createTypeElement = ({
     dom.appendChild(selectEl, option);
   });
 
-  const currentType = rowData.rowTypes[key] ?? 'string';
+  const currentType = effectiveRowData.rowTypes[key] ?? 'string';
   dom.setValue(selectEl, currentType);
 
   const onChange = () => {
     const currentKey = dom.getDataAttribute(keyEl, 'prevKey') ?? key;
-    rowData.rowTypes[currentKey] = String(dom.getValue(selectEl));
-    syncHiddenField(textInput, rowData ?? { rows: {}, rowTypes: {} }, dom);
+    effectiveRowData.rowTypes[currentKey] = String(dom.getValue(selectEl));
+    syncHiddenField(textInput, effectiveRowData, dom);
   };
 
   dom.addEventListener(selectEl, 'change', onChange);
@@ -1063,9 +1065,10 @@ export const createOnRemove = (rowData, render, key) => e => {
  * @returns {void}
  */
 export const setupAddButton = ({ dom, button, rowData, render, disposers }) => {
+  const effectiveRowData = rowData ?? { rows: {}, rowTypes: {} };
   dom.setTextContent(button, '+');
   const onAdd = createOnAddHandler(
-    rowData ?? { rows: {}, rowTypes: {} },
+    effectiveRowData,
     render
   );
   dom.addEventListener(button, 'click', onAdd);
@@ -1097,9 +1100,10 @@ export const setupRemoveButton = ({
   key,
   disposers,
 }) => {
+  const effectiveRowData = rowData ?? { rows: {}, rowTypes: {} };
   dom.setTextContent(button, '×');
   const onRemove = createOnRemove(
-    rowData ?? { rows: {}, rowTypes: {} },
+    effectiveRowData,
     render,
     key
   );
@@ -1435,6 +1439,23 @@ function unregisterAutoSubmitPolling(dom, autoSubmitState) {
   autoSubmitState.lastValue = null;
 }
 
+export function createAutoSubmitCheckboxHandler({
+  autoSubmitCheckbox,
+  register,
+  unregister,
+}) {
+  return () => {
+    if (!autoSubmitCheckbox) {
+      return;
+    }
+    if (autoSubmitCheckbox.checked) {
+      register();
+      return;
+    }
+    unregister();
+  };
+}
+
 /**
  * Disable the input field and submit button for an interactive component.
  * @param {HTMLInputElement} inputElement - Input field to disable.
@@ -1549,11 +1570,9 @@ export function initializeInteractiveComponent(
     AUTO_SUBMIT_CHECKBOX_SELECTOR
   );
   const autoSubmitState = { frameId: null, lastValue: null };
-  const handleAutoCheckboxChange = () => {
-    if (!autoSubmitCheckbox) {
-      return;
-    }
-    if (autoSubmitCheckbox.checked) {
+  const handleAutoCheckboxChange = createAutoSubmitCheckboxHandler({
+    autoSubmitCheckbox,
+    register: () => {
       registerAutoSubmitPolling({
         elements: {
           inputElement,
@@ -1568,10 +1587,9 @@ export function initializeInteractiveComponent(
         inputElement,
         autoSubmitState,
       });
-      return;
-    }
-    unregisterAutoSubmitPolling(env.dom, autoSubmitState);
-  };
+    },
+    unregister: () => unregisterAutoSubmitPolling(env.dom, autoSubmitState),
+  });
   if (autoSubmitCheckbox) {
     dom.addEventListener(
       autoSubmitCheckbox,
@@ -1721,6 +1739,9 @@ export const syncHiddenField = (textInput, rowData, dom) => {
  * @param {ToyCallback} options.syncHiddenField - ToyCallback to sync the hidden field
  * @returns {ToyCallback} The render function
  */
+export const syncRowData = (syncHiddenField, textInput, rowData, dom) =>
+  syncHiddenField(textInput, rowData ?? { rows: {}, rowTypes: {} }, dom);
+
 export const createRenderer = options => {
   const {
     dom,
@@ -1730,8 +1751,9 @@ export const createRenderer = options => {
     textInput,
     syncHiddenField,
   } = options;
+  const effectiveRowData = rowData ?? { rows: {}, rowTypes: {} };
   const syncWithRowData = (ti, rd, d) =>
-    syncHiddenField(ti, rd ?? { rows: {}, rowTypes: {} }, d);
+    syncRowData(syncHiddenField, ti, rd, d);
   /**
    * Renders the key-value input UI
    */
@@ -1740,17 +1762,17 @@ export const createRenderer = options => {
     dom.removeAllChildren(container);
 
     // If no keys, add a single empty row
-    if (Object.keys(rowData.rows).length === 0) {
-      rowData.rows[''] = '';
+    if (Object.keys(effectiveRowData.rows).length === 0) {
+      effectiveRowData.rows[''] = '';
     }
 
-    const entries = Object.entries(rowData.rows);
+    const entries = Object.entries(effectiveRowData.rows);
     entries.forEach(
       createKeyValueRow({
         dom,
         entries,
         textInput,
-        rowData,
+        rowData: effectiveRowData,
         syncHiddenField: syncWithRowData,
         disposers: disposersArray,
         render,
@@ -1758,7 +1780,7 @@ export const createRenderer = options => {
       })
     );
 
-    syncWithRowData(textInput, rowData, dom);
+    syncWithRowData(textInput, effectiveRowData, dom);
   };
 
   return render;
@@ -1858,7 +1880,14 @@ export function createToysHandle() {
     coerceValue,
     syncHiddenField,
     createRenderer,
+    syncRowData,
     createDropdownInitializer,
+    readLiveInputValue,
+    requestAutoSubmitFrame,
+    cancelAutoSubmitFrame,
+    registerAutoSubmitPolling,
+    unregisterAutoSubmitPolling,
+    getInteractiveElements,
     getDeepStateCopy,
   };
 }
