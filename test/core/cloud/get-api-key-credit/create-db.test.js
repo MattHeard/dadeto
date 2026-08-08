@@ -1,6 +1,28 @@
-import { createDb as bridgeCreateDb } from '../../../../src/core/cloud/get-api-key-credit/create-db.js';
-import { createDb as versionedCreateDb } from '../../../../src/core/cloud/get-api-key-credit-v2/create-db.js';
+import {
+  API_KEY_CREDIT_CREATE_DB_MARKER,
+  createDb,
+} from '../../../../src/core/cloud/get-api-key-credit/create-db.js';
 
-it('re-exports the v2 createDb implementation', () => {
-  expect(bridgeCreateDb).toBe(versionedCreateDb);
+describe('API key credit createDb facade', () => {
+  it('forwards named database configuration', () => {
+    class Firestore {
+      constructor(options) {
+        this.options = options;
+      }
+    }
+    expect(createDb(Firestore, { DATABASE_ID: 'credit-db' }).options).toEqual({
+      databaseId: 'credit-db',
+    });
+  });
+
+  it('forwards default and fallback environment behavior', () => {
+    class Firestore {
+      constructor(options) {
+        this.options = options;
+      }
+    }
+    expect(createDb(Firestore, { DATABASE_ID: '(default)' }).options).toBeUndefined();
+    expect(createDb(Firestore, { DENDRITE_ENVIRONMENT: '   ' }).options).toBeUndefined();
+    expect(API_KEY_CREDIT_CREATE_DB_MARKER).toBe(true);
+  });
 });
