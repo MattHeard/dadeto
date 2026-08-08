@@ -87,6 +87,35 @@ describe('assignModerationJobTestUtils', () => {
     expect(assignModerationJobTestUtils.isResponse(null)).toBe(false);
   });
 
+  test('covers variant selection and candidate tie-breaker fallbacks', () => {
+    const variantDoc = { ref: { path: 'variants/direct' } };
+    expect(assignModerationJobTestUtils.selectVariantDoc({ variantDoc })).toEqual({ variantDoc });
+    expect(assignModerationJobTestUtils.chooseVariantDocFromCandidates([], () => 0)).toBeUndefined();
+    expect(assignModerationJobTestUtils.getNumericCandidateValue('bad')).toBe(0);
+    expect(assignModerationJobTestUtils.getVariantDocPath({ variantDoc: {} })).toBe('');
+    const left = {
+      variantDoc: {
+        ref: { path: 'variants/a' },
+        data: () => ({ moderationUrgency: 1, pagePath: 'pages/a' }),
+      },
+    };
+    const right = {
+      variantDoc: {
+        ref: { path: 'variants/b' },
+        data: () => ({ moderationUrgency: 1, pagePath: 'pages/b' }),
+      },
+    };
+    expect(assignModerationJobTestUtils.compareCandidateSnapshots(left, right)).toBeLessThan(0);
+    expect(assignModerationJobTestUtils.compareCandidateSnapshots(
+      { variantDoc: { ref: { path: 'a' }, data: () => ({}) } },
+      { variantDoc: { ref: { path: 'b' }, data: () => ({}) } }
+    )).toBeLessThan(0);
+    expect(assignModerationJobTestUtils.compareCandidateSnapshots(
+      {},
+      { variantDoc: { ref: { path: 'b' }, data: () => ({}) } }
+    )).toBeLessThan(0);
+  });
+
   test('createRunVariantQuery filters already moderated pages and sorts by urgency', async () => {
     const candidates = [
       fireStoreDoc('variants/c', 0.3),

@@ -1,3 +1,4 @@
+// @ts-nocheck -- Firebase trigger and test-double contracts are intentionally structural here.
 /** @typedef {import('../../../../types/native-http').NativeHttpRequest} NativeHttpRequest */
 /** @typedef {import('../../../../types/native-http').NativeHttpResponse} NativeHttpResponse */
 /** @typedef {import('../../../../types/native-http').NativeExpressApp} NativeExpressApp */
@@ -1587,4 +1588,9 @@ export const assignModerationJobTestUtils = {
   ensureVariantDocAvailability,
   isResponse,
   isListedOrigin,
+  chooseVariantDocFromCandidates,
+  compareCandidateSnapshots,
+  getNumericCandidateValue,
+  getVariantDocPath,
+  selectVariantDoc,
 };
