@@ -210,6 +210,29 @@ describe('createFetchStoryInfo', () => {
     const fetchStoryInfo = createFetchStoryInfo(db);
     await expect(fetchStoryInfo('hidden')).resolves.toBeNull();
   });
+
+  it('treats a variant without visibility data as visible', async () => {
+    const rootPageSnap = { exists: true, data: () => ({ number: 10 }) };
+    const rootPageRef = {
+      collection: jest.fn(() => ({
+        get: jest.fn().mockResolvedValue({ docs: [{ data: () => ({}) }] }),
+      })),
+      get: jest.fn().mockResolvedValue(rootPageSnap),
+    };
+    const storySnap = {
+      exists: true,
+      data: () => ({ title: 'Default visibility', rootPage: rootPageRef }),
+    };
+    const db = {
+      collection: jest.fn(() => ({
+        doc: jest.fn(() => ({ get: jest.fn().mockResolvedValue(storySnap) })),
+      })),
+    };
+    await expect(createFetchStoryInfo(db)('default-visible')).resolves.toEqual({
+      title: 'Default visibility',
+      pageNumber: 10,
+    });
+  });
 });
 
 describe('createRenderContents', () => {
