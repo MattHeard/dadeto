@@ -502,7 +502,7 @@ export function createRunnerExitHandler(options) {
  * @returns {{ promise: Promise<void>, resolve: () => void }} Deferred promise pair.
  */
 function createDeferredPromise() {
-  let resolver = () => {};
+  let resolver;
   const promise = new Promise(resolve => {
     resolver = resolve;
   });
@@ -584,3 +584,18 @@ export function createSymphonyLaunchHandle() {
     createRunnerExitHandler,
   };
 }
+
+export const symphonyLaunchTestUtils = {
+  buildLaunchLifecycleRecommendation,
+  normalizeError,
+  getRequiredString,
+  createConfiguredLauncher,
+  getLauncherConfig,
+  getLaunchErrorMessage,
+  formatLaunchRequestForBead,
+  persistLaunchFailure,
+  createDeferredPromise,
+  buildRunnerExitOutcome,
+  getRunnerExitOutcomeKind,
+  formatRunnerExitSummary,
+};
