@@ -144,6 +144,30 @@ describe('createPaymentWebhookHandler', () => {
     });
   });
 
+  it('records purchase events and uses a fallback processed-event key', async () => {
+    const markProcessedEvent = jest.fn();
+    const purchaseResponse = { status: 201, body: { purchase: true } };
+    const event = {
+      id: 'evt_purchase',
+      type: 'checkout.session.completed',
+      data: { object: {} },
+    };
+    const handler = createPaymentWebhookHandler({
+      fetchCredit: async () => 0,
+      applyCreditEvent: jest.fn(),
+      resolveApiKeyUuid: async () => null,
+      markProcessedEvent,
+      handlePurchaseEvent: async receivedEvent => {
+        expect(receivedEvent).toBe(event);
+        return purchaseResponse;
+      },
+      getPaymentEvent: async () => event,
+    });
+
+    await expect(handler({ body: event })).resolves.toBe(purchaseResponse);
+    expect(markProcessedEvent).toHaveBeenCalledWith(event, 'purchase');
+  });
+
   it('supports a missing request object and metadata coercion', async () => {
     const database = createFakeFirestore();
     const applyCreditEvent = createApplyCreditEvent(database);
