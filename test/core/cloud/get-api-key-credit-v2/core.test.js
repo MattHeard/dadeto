@@ -188,6 +188,24 @@ describe('createDb', () => {
     expect(FirestoreCtor).toHaveBeenCalledTimes(1);
     expect(FirestoreCtor).toHaveBeenCalledWith();
   });
+
+  it('falls back when the configured database selects the default sentinel', () => {
+    const FirestoreCtor = jest.fn().mockImplementation(options => ({ options }));
+
+    const db = createDb(FirestoreCtor, {
+      DATABASE_ID: '(default)',
+      DENDRITE_ENVIRONMENT: 'prod',
+    });
+
+    expect(db.options).toBeUndefined();
+    expect(FirestoreCtor).toHaveBeenCalledWith();
+  });
+
+  it('uses process environment when no environment override is provided', () => {
+    const FirestoreCtor = jest.fn().mockImplementation(options => ({ options }));
+    expect(createDb(FirestoreCtor).options).toBeUndefined();
+    expect(FirestoreCtor).toHaveBeenCalledWith();
+  });
 });
 
 describe('createApplyCreditEvent', () => {
