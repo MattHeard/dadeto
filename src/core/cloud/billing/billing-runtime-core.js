@@ -275,6 +275,8 @@ export function createBillingRuntime(db, runtime = {}) {
 
 export { creditRef, eventRef, lotRef, purchaseRef };
 
+export const billingRuntimeTestUtils = { readTransactionLots };
+
 /**
  * Apply an operation charge inside a Firestore transaction.
  * @param {{ db: object, now: () => Date, transaction: object, input: object, amount: number, candidates: Array<{ ref: object, data: object }> }} db Charge transaction input.
