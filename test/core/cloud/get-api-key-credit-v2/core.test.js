@@ -7,6 +7,7 @@ import {
   createDb,
   createGetApiKeyCreditV2ExpressHandle,
   createGetApiKeyCreditV2Handler,
+  extractUuid,
 } from '../../../../src/core/cloud/get-api-key-credit-v2/get-api-key-credit-v2-core.js';
 import * as coreShim from '../../../../src/core/get-api-key-credit-v2.js';
 import { getApiKeyCreditSnapshot } from '../../../../src/core/cloud/get-api-key-credit-v2/get-api-key-credit-snapshot.js';
@@ -554,6 +555,96 @@ describe('createApplyCreditEvent', () => {
 });
 
 describe('createGetApiKeyCreditV2Handler', () => {
+  it('validates event writes and handles balance responses', async () => {
+    const applyCreditEvent = jest.fn().mockResolvedValue({
+      status: 201,
+      body: { applied: true },
+    });
+    const handler = createGetApiKeyCreditV2Handler({
+      fetchCredit: async () => 12,
+      applyCreditEvent,
+      getUuid: () => 'user',
+      logError: jest.fn(),
+    });
+
+    await expect(handler({ method: 'GET', path: '/credit' })).resolves.toEqual({
+      status: 200,
+      body: { credit: 12 },
+    });
+    await expect(handler()).resolves.toEqual({
+      status: 405,
+      body: 'Method Not Allowed',
+      headers: { Allow: 'GET, POST' },
+    });
+    for (const body of [null, {}, { type: 'unknown' }, { type: 'credit_added' },
+      { type: 'credit_added', eventId: 'e' },
+      { type: 'credit_added', eventId: 'e', amount: 0 },
+      { type: 'credit_added', eventId: 'e', amount: 'nope' }]) {
+      await expect(handler({ method: 'POST', body })).resolves.toMatchObject({
+        status: 400,
+      });
+    }
+    await expect(handler({
+      method: 'POST',
+      body: { eventType: 'credit_deducted', idempotencyUuid: 'e', amount: 2 },
+    })).resolves.toEqual({ status: 201, body: { applied: true } });
+    expect(applyCreditEvent).toHaveBeenCalledWith('user', {
+      type: 'credit_deducted', eventId: 'e', amount: 2,
+    });
+  });
+
+  it('rejects missing required handler dependencies', () => {
+    expect(() => createGetApiKeyCreditV2Handler()).toThrow('fetchCredit');
+    expect(() => createGetApiKeyCreditV2Handler({})).toThrow('fetchCredit');
+    expect(() => createGetApiKeyCreditV2Handler({
+      fetchCredit: async () => 0,
+    })).toThrow('applyCreditEvent');
+  });
+
+  it('supports default UUID extraction and logs credit-event failures', async () => {
+    expect(extractUuid(null)).toBe('');
+    expect(extractUuid({
+      path: '/api-keys/123e4567-e89b-12d3-a456-426614174000/credit',
+    })).toBe('123e4567-e89b-12d3-a456-426614174000');
+    const logError = jest.fn();
+    const handler = createGetApiKeyCreditV2Handler({
+      fetchCredit: async () => 1,
+      applyCreditEvent: async () => {
+        throw new Error('write failed');
+      },
+      logError,
+    });
+    await expect(handler({ method: 'GET' })).resolves.toEqual({
+      status: 400,
+      body: 'Missing UUID',
+    });
+    const nullCreditHandler = createGetApiKeyCreditV2Handler({
+      fetchCredit: async () => null,
+      applyCreditEvent: async () => ({ status: 200, body: {} }),
+      getUuid: () => 'user',
+    });
+    await expect(nullCreditHandler({ method: 'GET' })).resolves.toEqual({
+      status: 200,
+      body: { credit: 0 },
+    });
+    await expect(handler({
+      method: 'POST',
+      path: '/api-keys/123e4567-e89b-12d3-a456-426614174000/credit',
+      body: { type: 'credit_added', eventId: 'e', amount: 1 },
+    })).resolves.toEqual({ status: 500, body: 'Internal error' });
+    expect(logError).toHaveBeenCalled();
+
+    const defaultLoggerHandler = createGetApiKeyCreditV2Handler({
+      fetchCredit: async () => {
+        throw new Error('read failed');
+      },
+      applyCreditEvent: async () => ({ status: 200, body: {} }),
+    });
+    await expect(defaultLoggerHandler({
+      method: 'GET',
+      path: '/api-keys/123e4567-e89b-12d3-a456-426614174000/credit',
+    })).resolves.toEqual({ status: 500, body: 'Internal error' });
+  });
   it('returns the stored ledger history on the events route', async () => {
     const handler = createGetApiKeyCreditV2Handler({
       fetchCredit: async () => 0,
@@ -735,6 +826,9 @@ describe('createGetApiKeyCreditV2ExpressHandle', () => {
 });
 
 describe('applyResponseHeaders', () => {
+  it('accepts missing headers', () => {
+    expect(() => applyResponseHeaders({ set: jest.fn() })).not.toThrow();
+  });
   it('skips undefined headers', () => {
     const res = { set: jest.fn() };
 
