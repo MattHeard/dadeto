@@ -210,7 +210,10 @@ describe('recalculate-moderator-reputation core', () => {
         }
 
         return {
-          doc: jest.fn(() => ({ set })),
+          doc: jest.fn(() => ({
+            set,
+            get: jest.fn().mockResolvedValue({ exists: true }),
+          })),
         };
       }),
     };
@@ -229,6 +232,12 @@ describe('recalculate-moderator-reputation core', () => {
         moderatorReputationUpdatedAt: '2026-06-26T00:00:00.000Z',
       }),
       { merge: true }
+    );
+
+    await writeModeratorReputations(
+      { collection: () => ({ doc: () => ({ set: jest.fn() }) }) },
+      [{ moderatorId: 'no-author-read', reputation: 0 }],
+      { updatedAt: 'later' }
     );
   });
 });
