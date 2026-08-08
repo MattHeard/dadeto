@@ -90,7 +90,7 @@ export const handle = startServer;
 async function startServer(deps) {
   const express = deps.express;
   const simulator = /** @type {LocalGcpSimulator} */ (
-    await getSimulatorPromise()
+    await (deps.simulator ?? getSimulatorPromise())
   );
   const app = createJsonExpressApp(createJsonExpressAppDeps(express));
   app.use((_req, res, next) => {
