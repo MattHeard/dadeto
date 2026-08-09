@@ -64,7 +64,7 @@ export function createPaymentWebhookIndexHandler({
       });
     },
     getPaymentEvent: async request =>
-      parseStripePaymentWebhookEvent(request, env, constructEvent),
+      parseStripePaymentWebhookEvent(request, env, constructEvent ?? null),
   });
 
   return async function handle(req, res) {
