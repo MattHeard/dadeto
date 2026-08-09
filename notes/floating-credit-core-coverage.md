@@ -1,5 +1,5 @@
-# floating credit core coverage
+# Floating credit core coverage
 
-- The existing floating-credit core tests cover every branch of the billing helper.
-- Evidence: focused Jest passed 2 tests with strict 100% statements, branches, functions, and lines for `src/core/cloud/billing/floating-credit-core.js`.
-- No coverage exclusion or source change was needed.
+- Target: `src/core/cloud/billing/floating-credit-core.js`
+- Evidence: `npx jest test/core/cloud/billing/floating-credit-core.test.js --runInBand --coverage --collectCoverageFrom=src/core/cloud/billing/floating-credit-core.js --coverageThreshold='{"global":{"statements":100,"branches":100,"functions":100,"lines":100}}'`
+- Result: 1 suite and 2 tests passed; statements, branches, functions, and lines each reached 100% without exclusions.
