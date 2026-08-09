@@ -456,6 +456,7 @@ describe('createDocumentStoreCore', () => {
         { id: 'syllogistic-argument', title: 'Syllogistic Argument' },
         { id: 'outline', title: 'Outline' },
         { id: 'draft-1', title: 'Draft 1' },
+        { id: 'draft-2', title: 'Draft 2' },
       ],
     };
     workflow.steps.push({ id: 'draft-2', title: 'Draft 2' });
@@ -548,5 +549,140 @@ describe('createDocumentStoreCore', () => {
       id: 'draft-2',
       title: 'Draft 2',
     });
+  });
+
+  test('saves non-empty content, updates the heading, and reports metadata', async () => {
+    await mkdir(path.dirname(workflowPath), { recursive: true });
+    await writeFile(
+      workflowPath,
+      JSON.stringify({
+        heading: 'Old heading',
+        activeIndex: 0,
+        steps: [{ id: 'thesis', title: 'Thesis' }],
+      }),
+      'utf8'
+    );
+    const store = createDocumentStoreCore(createDeps(), {
+      workflowPath,
+      workflowDir,
+      legacyDocumentPath,
+    });
+
+    await expect(store.saveDocument('thesis', '# New heading\n\nBody')).resolves.toEqual({
+      bytes: Buffer.byteLength('# New heading\n\nBody', 'utf8'),
+      savedAt: '2026-05-17T00:00:00.000Z',
+      documentId: 'thesis',
+      path: path.join(workflowDir, 'documents', 'thesis.md'),
+    });
+    await expect(
+      readFile(path.join(workflowDir, 'documents', 'thesis.md'), 'utf8')
+    ).resolves.toBe('# New heading\n\nBody');
+    await expect(readFile(workflowPath, 'utf8')).resolves.toContain(
+      'New heading'
+    );
+  });
+
+  test('removes a document when saving blank content', async () => {
+    await mkdir(path.dirname(workflowPath), { recursive: true });
+    await writeFile(
+      workflowPath,
+      JSON.stringify({
+        heading: 'Heading',
+        activeIndex: 0,
+        steps: [{ id: 'thesis', title: 'Thesis' }],
+      }),
+      'utf8'
+    );
+    await mkdir(path.join(workflowDir, 'documents'), { recursive: true });
+    const documentPath = path.join(workflowDir, 'documents', 'thesis.md');
+    await writeFile(documentPath, 'old content', 'utf8');
+    const store = createDocumentStoreCore(createDeps(), {
+      workflowPath,
+      workflowDir,
+      legacyDocumentPath,
+    });
+
+    await store.saveDocument('thesis', '   ');
+    await expect(readFile(documentPath, 'utf8')).rejects.toMatchObject({
+      code: 'ENOENT',
+    });
+  });
+
+  test('appends a draft when moving right from the trailing draft', async () => {
+    await mkdir(path.dirname(workflowPath), { recursive: true });
+    await writeFile(
+      workflowPath,
+      JSON.stringify({
+        heading: 'Heading',
+        activeIndex: 3,
+        steps: [
+          { id: 'thesis', title: 'Thesis' },
+          { id: 'syllogistic-argument', title: 'Syllogistic Argument' },
+          { id: 'outline', title: 'Outline' },
+          { id: 'draft-1', title: 'Draft 1' },
+        ],
+      }),
+      'utf8'
+    );
+    const store = createDocumentStoreCore(createDeps(), {
+      workflowPath,
+      workflowDir,
+      legacyDocumentPath,
+    });
+
+    const moved = await store.moveActiveIndex(1);
+    expect(moved.activeIndex).toBe(4);
+    expect(moved.documents.at(-1)).toMatchObject({
+      id: 'draft-2',
+      title: 'Draft 2',
+    });
+  });
+
+  test('bootstraps without legacy content and uses the default clock', async () => {
+    const store = createDocumentStoreCore(
+      createDeps({ now: undefined }),
+      {
+        workflowPath,
+        workflowDir,
+        legacyDocumentPath,
+      }
+    );
+
+    const workflow = await store.loadWorkflow();
+    expect(workflow.documents[0].content).toBe('');
+    await expect(store.saveDocument('thesis', 'content')).resolves.toMatchObject({
+      documentId: 'thesis',
+    });
+  });
+
+  test('prunes empty trailing drafts and removes their files', async () => {
+    const state = {
+      deps: {
+        readFile: async () => '',
+        rm: jest.fn(async () => {}),
+        path,
+      },
+      documentDir: path.join(tempDir, 'documents'),
+      workflowDir: tempDir,
+      workflowPath,
+    };
+    const workflow = {
+      activeIndex: 0,
+      steps: [
+        { id: 'thesis', title: 'Thesis' },
+        { id: 'syllogistic-argument', title: 'Syllogistic Argument' },
+        { id: 'outline', title: 'Outline' },
+        { id: 'draft-1', title: 'Draft 1' },
+        { id: 'draft-2', title: 'Draft 2' },
+      ],
+    };
+
+    await pruneTrailingDrafts(state, workflow);
+    expect(state.deps.rm).toHaveBeenNthCalledWith(
+      1,
+      path.join(state.documentDir, 'draft-2.md'),
+      { force: true }
+    );
+    expect(workflow.steps).toHaveLength(4);
   });
 });
