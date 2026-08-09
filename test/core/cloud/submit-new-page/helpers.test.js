@@ -1,4 +1,4 @@
-import { describe, expect, it } from '@jest/globals';
+import { describe, expect, it, jest } from '@jest/globals';
 import {
   parseIncomingOption,
   findExistingOption,
@@ -42,12 +42,22 @@ describe('parseIncomingOption', () => {
 });
 
 describe('existing page and option lookups', () => {
-  const makeDb = ({ pageEmpty = false, variantEmpty = false, optionEmpty = false, variantsEmpty = false } = {}) => {
+  const makeDb = ({
+    pageEmpty = false,
+    variantEmpty = false,
+    optionEmpty = false,
+    variantsEmpty = false,
+  } = {}) => {
     const optionRef = { path: 'options/1' };
     const variantRef = {
       collection: jest.fn(() => ({
         where: jest.fn(() => ({
-          limit: jest.fn(() => ({ get: jest.fn().mockResolvedValue({ empty: optionEmpty, docs: [{ ref: optionRef }] }) })),
+          limit: jest.fn(() => ({
+            get: jest.fn().mockResolvedValue({
+              empty: optionEmpty,
+              docs: [{ ref: optionRef }],
+            }),
+          })),
         })),
       })),
     };
@@ -98,20 +108,40 @@ describe('existing page and option lookups', () => {
 
     const db = makeDb();
     await expect(
-      findExistingOption(db, { pageNumber: 1, variantName: 'Alpha', optionNumber: 1 })
+      findExistingOption(db, {
+        pageNumber: 1,
+        variantName: 'Alpha',
+        optionNumber: 1,
+      })
     ).resolves.toBe('options/1');
     await expect(findExistingPage(db, 1)).resolves.toBe('pages/1');
 
     await expect(
-      findExistingOption(makeDb({ pageEmpty: true }), { pageNumber: 1, variantName: 'Alpha', optionNumber: 1 })
+      findExistingOption(makeDb({ pageEmpty: true }), {
+        pageNumber: 1,
+        variantName: 'Alpha',
+        optionNumber: 1,
+      })
     ).resolves.toBeNull();
     await expect(
-      findExistingOption(makeDb({ variantEmpty: true }), { pageNumber: 1, variantName: 'Alpha', optionNumber: 1 })
+      findExistingOption(makeDb({ variantEmpty: true }), {
+        pageNumber: 1,
+        variantName: 'Alpha',
+        optionNumber: 1,
+      })
     ).resolves.toBeNull();
     await expect(
-      findExistingOption(makeDb({ optionEmpty: true }), { pageNumber: 1, variantName: 'Alpha', optionNumber: 1 })
+      findExistingOption(makeDb({ optionEmpty: true }), {
+        pageNumber: 1,
+        variantName: 'Alpha',
+        optionNumber: 1,
+      })
     ).resolves.toBeNull();
-    await expect(findExistingPage(makeDb({ pageEmpty: true }), 1)).resolves.toBeNull();
-    await expect(findExistingPage(makeDb({ variantsEmpty: true }), 1)).resolves.toBeNull();
+    await expect(
+      findExistingPage(makeDb({ pageEmpty: true }), 1)
+    ).resolves.toBeNull();
+    await expect(
+      findExistingPage(makeDb({ variantsEmpty: true }), 1)
+    ).resolves.toBeNull();
   });
 });
