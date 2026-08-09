@@ -1,5 +1,5 @@
-# render author core coverage
+# Render-author core coverage
 
-- The render-author tests cover author lookup, template rendering, authorization, and response failures.
-- Evidence: ESM-focused Jest passed 13 tests with strict 100% statements, branches, functions, and lines for `src/core/cloud/render-author/render-author-core.js`.
-- No coverage exclusion or source change was needed.
+- Target: `src/core/cloud/render-author/render-author-core.js`
+- Evidence: `NODE_OPTIONS=--experimental-vm-modules npx jest test/core/cloud/render-author/render-author-core.test.js --runInBand --coverage --collectCoverageFrom=src/core/cloud/render-author/render-author-core.js --coverageThreshold='{"global":{"statements":100,"branches":100,"functions":100,"lines":100}}'`
+- Result: 1 suite and 13 tests passed; statements, branches, functions, and lines each reached 100% without exclusions.
