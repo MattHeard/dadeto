@@ -1,4 +1,4 @@
-# Render-author runtime coverage
+# Render author run coverage
 
 - Target: `src/core/cloud/render-author/run.js`
 - Evidence: `npx jest test/core/cloud/render-author/run.test.js --runInBand --coverage --collectCoverageFrom=src/core/cloud/render-author/run.js --coverageThreshold='{"global":{"statements":100,"branches":100,"functions":100,"lines":100}}'`
