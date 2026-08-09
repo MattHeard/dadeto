@@ -34,11 +34,10 @@ await jest.unstable_mockModule(
       return mockDomainHandler;
     },
     createResolveApiKeyUuid: options => options.findApiKeyUuidByCustomerId,
-    extractHeader: request => request?.headers?.['payment-signature'] ?? '',
-    extractRawPayload: request => request?.body ?? '',
+    extractHeader: (request, name) => request?.headers?.[name] ?? '',
+    extractRawPayload: request => request?.rawBody ?? request?.body ?? '',
     parseJsonEvent: payload => JSON.parse(payload),
     readMetadata: jest.fn(event => event.metadata ?? {}),
-    verifyPaymentSignature: () => true,
   })
 );
 
@@ -82,12 +81,14 @@ describe('payment webhook cloud wrapper', () => {
     };
     const handle = createPaymentWebhookIndexHandler({
       firestore: Firestore,
-      env: {},
+      env: { STRIPE_WEBHOOK_SECRET: 'secret' },
+      constructEvent: payload => payload,
     });
     createPaymentWebhookIndexHandler({ firestore: Firestore });
 
     const request = {
-      body: JSON.stringify({ id: 'evt', type: 'payment_intent.succeeded' }),
+      rawBody: JSON.stringify({ id: 'evt', type: 'payment_intent.succeeded' }),
+      headers: { 'stripe-signature': 'signed' },
     };
     await expect(handle(request, response)).resolves.toBeUndefined();
     expect(mockDomainHandler).toHaveBeenCalledWith(request);
@@ -105,7 +106,7 @@ describe('payment webhook cloud wrapper', () => {
     missingCustomer = false;
     await captured.resolveApiKeyUuid({ data: { object: {} } });
     await expect(captured.isDuplicateEvent('evt-1')).resolves.toBe(true);
-    await captured.getPaymentEvent({ body: '{}' });
+    await captured.getPaymentEvent({ rawBody: '{}', headers: { 'stripe-signature': 'signed' } });
     await captured.markProcessedEvent(
       { id: 'evt-1', type: 'payment_intent.succeeded', created: 10 },
       'uuid-1'
@@ -244,39 +245,9 @@ describe('payment webhook cloud wrapper', () => {
     expect(creditResponse.status).toHaveBeenCalledWith(201);
   });
 
-  it('parses unsigned, signed, and invalid webhook payloads', async () => {
-    const payload = JSON.stringify({
-      id: 'unsigned',
-      type: 'payment_intent.succeeded',
-    });
-    expect(parsePaymentWebhookEvent({ body: payload }, {})).toEqual({
-      id: 'unsigned',
-      type: 'payment_intent.succeeded',
-    });
-    parsePaymentWebhookEvent({ body: payload });
-    const signedPayload = JSON.stringify({
-      id: 'signed',
-      type: 'payment_intent.succeeded',
-    });
-    const timestamp = Math.floor(Date.now() / 1000);
-    const signature = `t=${timestamp},v1=${(await import('node:crypto'))
-      .createHmac('sha256', 'secret')
-      .update(`${timestamp}.${signedPayload}`)
-      .digest('hex')}`;
-    expect(
-      parsePaymentWebhookEvent(
-        { body: signedPayload, headers: { 'payment-signature': signature } },
-        { PAYMENT_WEBHOOK_SECRET: 'secret' }
-      )
-    ).toEqual({ id: 'signed', type: 'payment_intent.succeeded' });
-    expect(() =>
-      parsePaymentWebhookEvent(
-        { body: signedPayload, headers: {} },
-        { PAYMENT_WEBHOOK_SECRET: 'secret' }
-      )
-    ).toThrow('Invalid payment signature');
-    expect(() => parsePaymentWebhookEvent({ body: '' }, {})).toThrow(
-      'Missing payment webhook payload'
-    );
+  it('requires Stripe secret, raw body, header, and injected verification', () => {
+    const payload = JSON.stringify({ id: 'signed', type: 'payment_intent.succeeded' });
+    expect(() => parsePaymentWebhookEvent({ rawBody: payload }, {})).toThrow('Missing Stripe webhook secret');
+    expect(() => parsePaymentWebhookEvent({ rawBody: payload, headers: { 'stripe-signature': 'signed' } }, { STRIPE_WEBHOOK_SECRET: 'secret' })).toThrow('Stripe webhook verifier unavailable');
   });
 });

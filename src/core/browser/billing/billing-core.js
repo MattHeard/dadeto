@@ -10,7 +10,10 @@ export function normalizeBillingOffers(value) {
   return value.packages.map(normalizeBillingOffer);
 }
 
-/** Normalize one display-ready offer. */
+/**
+ * Normalize one display-ready offer.
+ * @param offer
+ */
 function normalizeBillingOffer(offer) {
   if (!offer || typeof offer !== 'object')
     throw new TypeError('Invalid billing package');
