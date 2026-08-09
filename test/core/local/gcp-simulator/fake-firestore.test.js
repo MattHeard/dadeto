@@ -113,6 +113,9 @@ describe('fake firestore', () => {
       .limit(3)
       .get();
     expect(ordered.docs.map(doc => doc.id)).toEqual(['b', 'c', 'a']);
+    expect(
+      (await db.collection('things').orderBy('rank').get()).docs
+    ).toHaveLength(3);
 
     const nullFiltered = await db
       .collection('things')
@@ -201,6 +204,12 @@ describe('fake firestore', () => {
       .get();
     expect(ordered.size).toBe(4);
 
+    const descending = await db
+      .collection('things')
+      .orderBy('nested.score', 'desc')
+      .get();
+    expect(descending.docs).toHaveLength(4);
+
     const nullRanks = await db
       .collection('things')
       .where('rank', '==', null)
@@ -244,6 +253,7 @@ describe('fake firestore', () => {
   it('covers write defaults, undefined update patches, and increment coercion', async () => {
     const db = createFakeFirestore();
     const fieldValue = createFakeFieldValue();
+    expect(fieldValue.serverTimestamp().value).toBeInstanceOf(Date);
 
     await db.__writeDocument('manual/default', {
       flag: true,
