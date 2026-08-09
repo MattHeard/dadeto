@@ -1,5 +1,5 @@
-# response utils coverage
+# Cloud response utilities coverage
 
-- The response utility tests cover success, failure, and finalization behavior.
-- Evidence: focused Jest passed 3 tests with strict 100% statements, branches, functions, and lines for `src/core/cloud/response-utils.js`.
-- No coverage exclusion or source change was needed.
+- Target: `src/core/cloud/response-utils.js`
+- Evidence: `npx jest test/core/cloud/response-utils.test.js --runInBand --coverage --collectCoverageFrom=src/core/cloud/response-utils.js --coverageThreshold='{"global":{"statements":100,"branches":100,"functions":100,"lines":100}}'`
+- Result: 1 suite and 3 tests passed; statements, branches, functions, and lines each reached 100% without exclusions.
