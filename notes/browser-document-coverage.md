@@ -1,5 +1,5 @@
-# browser document coverage
+# Browser document coverage
 
-- The document abstraction tests cover DOM delegation, animation scheduling, console wrappers, and fallback behavior.
-- Evidence: focused Jest passed 2 tests with strict 100% statements, branches, functions, and lines for `src/core/browser/document.js`.
-- No coverage exclusion or source change was needed.
+- Target: `src/core/browser/document.js`
+- Evidence: `npx jest test/core/browser/document.test.js --runInBand --coverage --collectCoverageFrom=src/core/browser/document.js --coverageThreshold='{"global":{"statements":100,"branches":100,"functions":100,"lines":100}}'`
+- Result: 1 suite and 2 tests passed; statements, branches, functions, and lines each reached 100% without exclusions.
