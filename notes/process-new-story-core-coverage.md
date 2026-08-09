@@ -1,5 +1,5 @@
-# process new story core coverage
+# Process-new-story core coverage
 
-- The process-new-story core tests cover story validation, persistence, branching, and error handling.
-- Evidence: focused Jest passed 10 tests with strict 100% statements, branches, functions, and lines for `src/core/cloud/process-new-story/process-new-story-core.js`.
-- No coverage exclusion or source change was needed.
+- Target: `src/core/cloud/process-new-story/process-new-story-core.js`
+- Evidence: `npx jest test/core/cloud/process-new-story/process-new-story-core.test.js --runInBand --coverage --collectCoverageFrom=src/core/cloud/process-new-story/process-new-story-core.js --coverageThreshold='{"global":{"statements":100,"branches":100,"functions":100,"lines":100}}'`
+- Result: 1 suite and 10 tests passed; statements, branches, functions, and lines each reached 100% without exclusions.
