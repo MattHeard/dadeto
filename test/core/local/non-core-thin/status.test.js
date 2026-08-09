@@ -55,6 +55,26 @@ describe('non-core thin status', () => {
     expect(exitCodes).toEqual([1]);
   });
 
+  test('logs success when failure reporting has nothing to emit', () => {
+    const logs = [];
+    const errors = [];
+    const exitCodes = [];
+    const handle = createTestCheckHandle({
+      status: { isClean: false, fileCount: 1, exemptionCount: 0, maxLines: 50 },
+      logs,
+      errors,
+      exitCodes,
+      formatFailure: () => [],
+    });
+
+    expect(handle()).toEqual({ exitCode: 0, failures: [] });
+    expect(logs).toEqual([
+      'Checked 1 non-core JS files; 0 baseline exemptions; max 50 lines.',
+    ]);
+    expect(errors).toEqual([]);
+    expect(exitCodes).toEqual([]);
+  });
+
   test('reports the current repo status', () => {
     const status = getNonCoreThinStatus({
       fsModule: fs,
@@ -301,11 +321,11 @@ describe('non-core thin status', () => {
  * }} options Test handle options.
  * @returns {() => void} Check command handle.
  */
-function createTestCheckHandle({ status, logs, errors, exitCodes }) {
+function createTestCheckHandle({ status, logs, errors, exitCodes, formatFailure }) {
   return nonCoreThinStatusTestOnly.createCheckNonCoreThinHandle({
     getStatus: () => status,
-    formatFailure: currentStatus =>
-      currentStatus.isClean ? [] : ['failure line'],
+    formatFailure: formatFailure ?? (currentStatus =>
+      currentStatus.isClean ? [] : ['failure line']),
     output: {
       error: line => errors.push(line),
       log: line => logs.push(line),
