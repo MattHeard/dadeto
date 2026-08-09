@@ -1,5 +1,5 @@
-# Firestore helpers coverage
+# Cloud Firestore helpers coverage
 
-- The helper tests cover document reads, writes, snapshots, and missing-data branches.
-- Evidence: focused Jest passed 9 tests with strict 100% statements, branches, functions, and lines for `src/core/cloud/firestore-helpers.js`.
-- No coverage exclusion or source change was needed.
+- Target: `src/core/cloud/firestore-helpers.js`
+- Evidence: `npx jest test/core/cloud/firestore-helpers.test.js --runInBand --coverage --collectCoverageFrom=src/core/cloud/firestore-helpers.js --coverageThreshold='{"global":{"statements":100,"branches":100,"functions":100,"lines":100}}'`
+- Result: 1 suite and 9 tests passed; statements, branches, functions, and lines each reached 100% without exclusions.
