@@ -159,7 +159,8 @@ export function parseStripePaymentWebhookEvent(request, env, constructEvent) {
   if (!payload) throw new TypeError('Missing Stripe webhook payload');
   const signature = extractHeader(request, 'stripe-signature');
   if (!signature) throw new TypeError('Missing Stripe signature');
-  if (!constructEvent) throw new TypeError('Stripe webhook verifier unavailable');
+  if (!constructEvent)
+    throw new TypeError('Stripe webhook verifier unavailable');
   try {
     const verifiedEvent = constructEvent(payload, signature, secret);
     return parseJsonEvent(

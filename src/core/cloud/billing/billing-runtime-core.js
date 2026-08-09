@@ -104,9 +104,16 @@ export function createBillingRuntime(db, runtime = {}) {
     return readData(snap);
   }
 
+  /**
+   *
+   * @param checkoutSessionId
+   */
   async function getPurchaseByCheckoutSession(checkoutSessionId) {
-    const snap = await db.collection('billing-purchases')
-      .where('checkoutSessionId', '==', checkoutSessionId).limit(1).get();
+    const snap = await db
+      .collection('billing-purchases')
+      .where('checkoutSessionId', '==', checkoutSessionId)
+      .limit(1)
+      .get();
     if (snap.empty) return null;
     return readData(snap.docs[0]);
   }

@@ -8,19 +8,22 @@ describe('runtime secret Terraform contract', () => {
   let syncWorkflow;
 
   beforeAll(async () => {
-    [main, variables, prodWorkflow, testWorkflow, syncWorkflow] = await Promise.all([
-      readFile('infra/main.tf', 'utf8'),
-      readFile('infra/variables.tf', 'utf8'),
-      readFile('.github/workflows/gcp-prod.yml', 'utf8'),
-      readFile('.github/workflows/gcp-test.yml', 'utf8'),
-      readFile('.github/workflows/sync-runtime-secret.yml', 'utf8'),
-    ]);
+    [main, variables, prodWorkflow, testWorkflow, syncWorkflow] =
+      await Promise.all([
+        readFile('infra/main.tf', 'utf8'),
+        readFile('infra/variables.tf', 'utf8'),
+        readFile('.github/workflows/gcp-prod.yml', 'utf8'),
+        readFile('.github/workflows/gcp-test.yml', 'utf8'),
+        readFile('.github/workflows/sync-runtime-secret.yml', 'utf8'),
+      ]);
   });
 
   test('provisions Secret Manager and explicit-version runtime bindings', () => {
     expect(main).toContain('secretmanager.googleapis.com');
     expect(main).toContain('google_secret_manager_secret.runtime');
-    expect(main).toContain('resource "google_secret_manager_secret_iam_member" "runtime_accessor"');
+    expect(main).toContain(
+      'resource "google_secret_manager_secret_iam_member" "runtime_accessor"'
+    );
     expect(main).toContain('secret_environment_variables');
     expect(variables).toContain('stripe_webhook_secret_version');
     expect(variables).toContain('openai_api_key_version');
