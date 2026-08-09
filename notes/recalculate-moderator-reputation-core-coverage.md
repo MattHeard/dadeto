@@ -1,5 +1,5 @@
-# recalculate moderator reputation core coverage
+# Recalculate moderator reputation core coverage
 
-- The reputation recalculation tests cover aggregation, persistence, validation, and error handling.
-- Evidence: focused Jest passed 11 tests with strict 100% statements, branches, functions, and lines for `src/core/cloud/recalculate-moderator-reputation/recalculate-moderator-reputation-core.js`.
-- No coverage exclusion or source change was needed.
+- Target: `src/core/cloud/recalculate-moderator-reputation/recalculate-moderator-reputation-core.js`
+- Evidence: `npx jest test/core/cloud/recalculate-moderator-reputation/recalculate-moderator-reputation-core.test.js --runInBand --coverage --collectCoverageFrom=src/core/cloud/recalculate-moderator-reputation/recalculate-moderator-reputation-core.js --coverageThreshold='{"global":{"statements":100,"branches":100,"functions":100,"lines":100}}'`
+- Result: 1 suite and 11 tests passed; statements, branches, functions, and lines each reached 100% without exclusions.
