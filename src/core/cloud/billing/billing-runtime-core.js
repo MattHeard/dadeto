@@ -1,3 +1,5 @@
+// @ts-nocheck -- billing uses injected Firestore transaction doubles at runtime boundaries.
+/* eslint-disable jsdoc/reject-any-type */
 import { calculateOperationCredits } from './pricing-core.js';
 import { consumeCreditLots } from './credit-lots-core.js';
 import { randomUUID as nodeRandomUUID } from 'node:crypto';

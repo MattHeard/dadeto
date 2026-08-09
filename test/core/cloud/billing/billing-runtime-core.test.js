@@ -42,9 +42,7 @@ describe('createBillingRuntime', () => {
       [{ ref: firstRef }, { ref: secondRef }]
     );
 
-    expect(lots).toEqual([
-      { ref: firstRef, data: { remainingCredits: 2 } },
-    ]);
+    expect(lots).toEqual([{ ref: firstRef, data: { remainingCredits: 2 } }]);
   });
 
   it('reads pricing, package, and purchase documents and saves checkout details', async () => {
@@ -53,7 +51,10 @@ describe('createBillingRuntime', () => {
       .collection('billing-pricing-snapshots')
       .doc('pricing-1')
       .set({ snapshotId: 'pricing-1' });
-    await db.collection('billing-packages').doc('package-1').set({ credits: 5 });
+    await db
+      .collection('billing-packages')
+      .doc('package-1')
+      .set({ credits: 5 });
     await billing.createPurchase({
       purchaseId: 'purchase-1',
       apiKeyUuid: 'key-1',
@@ -64,7 +65,9 @@ describe('createBillingRuntime', () => {
       snapshotId: 'pricing-1',
     });
     await expect(billing.getPricingSnapshot('missing')).resolves.toBeNull();
-    await expect(billing.getPackage('package-1')).resolves.toEqual({ credits: 5 });
+    await expect(billing.getPackage('package-1')).resolves.toEqual({
+      credits: 5,
+    });
     await expect(billing.getPackage('missing')).resolves.toBeNull();
     await expect(billing.getPurchase('purchase-1')).resolves.toMatchObject({
       purchaseId: 'purchase-1',
@@ -94,12 +97,18 @@ describe('createBillingRuntime', () => {
     await db.collection('billing-packages').doc('scalar').set('not-an-object');
     await expect(billing.getPackage('scalar')).resolves.toBe('not-an-object');
 
-    await db.collection('billing-purchases').doc('scalar-purchase').set('scalar');
+    await db
+      .collection('billing-purchases')
+      .doc('scalar-purchase')
+      .set('scalar');
     await expect(billing.getPurchase('scalar-purchase')).resolves.toEqual({});
 
     const defaultBilling = createBillingRuntime(db);
     await expect(
-      defaultBilling.createPurchase({ apiKeyUuid: 'default-key', creditsIssued: 1 })
+      defaultBilling.createPurchase({
+        apiKeyUuid: 'default-key',
+        creditsIssued: 1,
+      })
     ).resolves.toMatchObject({ apiKeyUuid: 'default-key', status: 'pending' });
   });
 
@@ -126,7 +135,9 @@ describe('createBillingRuntime', () => {
     await expect(
       billing.markPurchasePaid({ purchaseId: 'purchase-1', eventId: 'paid-1' })
     ).resolves.toMatchObject({ status: 201 });
-    await expect(db.doc('api-key-credit/key-1/lots/legacy').get()).resolves.toMatchObject({
+    await expect(
+      db.doc('api-key-credit/key-1/lots/legacy').get()
+    ).resolves.toMatchObject({
       exists: true,
     });
   });
@@ -134,7 +145,11 @@ describe('createBillingRuntime', () => {
   it('reports unavailable pricing and insufficient operation credit', async () => {
     const { db, billing } = setup();
     await expect(
-      billing.chargeOperation({ uuid: 'key-1', operationId: 'function.invoke', eventId: 'e-1' })
+      billing.chargeOperation({
+        uuid: 'key-1',
+        operationId: 'function.invoke',
+        eventId: 'e-1',
+      })
     ).resolves.toEqual({ status: 503, body: { error: 'pricing_unavailable' } });
 
     await db
@@ -142,7 +157,11 @@ describe('createBillingRuntime', () => {
       .doc(snapshot.snapshotId)
       .set(snapshot);
     await expect(
-      billing.chargeOperation({ uuid: 'key-1', operationId: 'function.invoke', eventId: 'e-2' })
+      billing.chargeOperation({
+        uuid: 'key-1',
+        operationId: 'function.invoke',
+        eventId: 'e-2',
+      })
     ).resolves.toEqual({ status: 409, body: { error: 'insufficient_credit' } });
   });
 
@@ -205,10 +224,16 @@ describe('createBillingRuntime', () => {
       apiKeyUuid: 'key-zero',
       creditsIssued: 0,
     });
-    await billing.markPurchasePaid({ purchaseId: 'zero-purchase', eventId: 'paid-zero' });
+    await billing.markPurchasePaid({
+      purchaseId: 'zero-purchase',
+      eventId: 'paid-zero',
+    });
     await db.doc('api-key-credit/key-zero/lots/zero-purchase').set({});
     await expect(
-      billing.applyRefundEvent({ purchaseId: 'zero-purchase', eventId: 'refund-zero' })
+      billing.applyRefundEvent({
+        purchaseId: 'zero-purchase',
+        eventId: 'refund-zero',
+      })
     ).resolves.toEqual({
       status: 200,
       body: { purchaseId: 'zero-purchase', refunded: false },
@@ -219,11 +244,20 @@ describe('createBillingRuntime', () => {
       apiKeyUuid: 'key-conflict',
       creditsIssued: 5,
     });
-    await billing.markPurchasePaid({ purchaseId: 'conflict-purchase', eventId: 'paid-conflict' });
+    await billing.markPurchasePaid({
+      purchaseId: 'conflict-purchase',
+      eventId: 'paid-conflict',
+    });
     await db.doc('api-key-credit/key-conflict').set({ credit: 0 });
     await expect(
-      billing.applyRefundEvent({ purchaseId: 'conflict-purchase', eventId: 'refund-conflict' })
-    ).resolves.toEqual({ status: 409, body: { error: 'refund_balance_conflict' } });
+      billing.applyRefundEvent({
+        purchaseId: 'conflict-purchase',
+        eventId: 'refund-conflict',
+      })
+    ).resolves.toEqual({
+      status: 409,
+      body: { error: 'refund_balance_conflict' },
+    });
   });
 
   it('marks an untouched purchase fully refunded', async () => {
@@ -277,7 +311,13 @@ describe('createBillingRuntime', () => {
         doc: () => lotReference,
         orderBy: () => ({
           get: async () => ({
-            docs: [{ ref: lotReference, exists: true, data: () => ({ remainingCredits: 2 }) }],
+            docs: [
+              {
+                ref: lotReference,
+                exists: true,
+                data: () => ({ remainingCredits: 2 }),
+              },
+            ],
           }),
         }),
       }),
@@ -324,7 +364,8 @@ describe('createBillingRuntime', () => {
     };
     const db = {
       collection(name) {
-        if (name === 'billing-purchases') return { doc: () => purchaseReference };
+        if (name === 'billing-purchases')
+          return { doc: () => purchaseReference };
         if (name === 'api-key-credit') {
           return { doc: () => balanceReference };
         }
@@ -360,7 +401,10 @@ describe('createBillingRuntime', () => {
     const billing = createBillingRuntime(db);
 
     await expect(
-      billing.applyRefundEvent({ purchaseId: 'purchase-1', eventId: 'refund-1' })
+      billing.applyRefundEvent({
+        purchaseId: 'purchase-1',
+        eventId: 'refund-1',
+      })
     ).resolves.toEqual({
       status: 409,
       body: { error: 'refund_balance_conflict' },
