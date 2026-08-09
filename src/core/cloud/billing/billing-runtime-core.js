@@ -77,13 +77,13 @@ export function createBillingRuntime(db, runtime = {}) {
 
   /** @returns {Promise<BillingRuntimeValue|null>} Current pricing snapshot. */
   async function getCurrentPricingSnapshot() {
+    const cutoff = now().toISOString();
     const snap = await db
       .collection('billing-pricing-snapshots')
       .orderBy('effectiveAt', 'desc')
-      .limit(1)
       .get();
-    if (snap.empty) return null;
-    return snap.docs[0].data();
+    const current = snap.docs.find(doc => doc.data()?.effectiveAt <= cutoff);
+    return current ? current.data() : null;
   }
 
   /**

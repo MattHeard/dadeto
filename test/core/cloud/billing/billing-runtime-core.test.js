@@ -86,6 +86,22 @@ describe('createBillingRuntime', () => {
     });
   });
 
+  it('selects the latest snapshot effective at the injected clock', async () => {
+    const { db, billing } = setup();
+    await db.collection('billing-pricing-snapshots').doc('past').set({
+      snapshotId: 'past', effectiveAt: '2026-08-04T00:00:00.000Z',
+    });
+    await db.collection('billing-pricing-snapshots').doc('current').set({
+      snapshotId: 'current', effectiveAt: '2026-08-05T00:00:00.000Z',
+    });
+    await db.collection('billing-pricing-snapshots').doc('future').set({
+      snapshotId: 'future', effectiveAt: '2026-08-06T00:00:00.000Z',
+    });
+    await expect(billing.getCurrentPricingSnapshot()).resolves.toMatchObject({
+      snapshotId: 'current',
+    });
+  });
+
   it('generates purchase identifiers and normalizes non-object snapshots', async () => {
     const { db, billing } = setup();
     const generated = await billing.createPurchase({
