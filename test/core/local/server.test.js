@@ -6,6 +6,11 @@ import {
   isWriterHttpsEnabled,
   isWriterRequestLogEnabled,
   shouldSetResponseLocation,
+  createRequestLogger,
+  getMoveDirection,
+  getNextIndex,
+  getDocumentContent,
+  readWriterTlsOptions,
 } from '../../../src/core/local/server.js';
 
 describe('core local server helpers', () => {
@@ -311,5 +316,35 @@ describe('core local server helpers', () => {
   test('decides whether response locations should be set', () => {
     expect(shouldSetResponseLocation('/foo')).toBe(true);
     expect(shouldSetResponseLocation('')).toBe(false);
+  });
+
+  test('covers request logging and helper fallbacks', () => {
+    const requestLogger = jest.fn();
+    const middleware = createRequestLogger(requestLogger);
+    const finish = jest.fn();
+    const req = { method: 'GET', url: '/fallback', socket: {} };
+    const res = { statusCode: 204, on: jest.fn((event, handler) => finish.mockImplementation(handler)) };
+    const next = jest.fn();
+
+    middleware(req, res, next);
+    finish();
+
+    expect(next).toHaveBeenCalled();
+    expect(requestLogger).toHaveBeenCalledWith(
+      expect.stringContaining('writer request GET /fallback 204')
+    );
+    expect(getMoveDirection({})).toBe(1);
+    expect(getMoveDirection(null)).toBe(1);
+    expect(getMoveDirection({ direction: 'left' })).toBe(-1);
+    expect(getNextIndex({ activeIndex: 2 })).toBe(2);
+    expect(getNextIndex({ activeIndex: '2' })).toBe(1);
+    expect(getDocumentContent({ content: 'text' })).toBe('text');
+    expect(getDocumentContent({ content: 2 })).toBe('');
+  });
+
+  test('rejects missing TLS paths when HTTPS is enabled', () => {
+    expect(() => readWriterTlsOptions({}, jest.fn())).toThrow(
+      'WRITER_TLS_KEY is required when WRITER_HTTPS is enabled.'
+    );
   });
 });
