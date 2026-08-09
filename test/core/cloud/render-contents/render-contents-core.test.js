@@ -17,9 +17,24 @@ import {
   ensureAdminIdentity,
   DEFAULT_BUCKET_NAME,
   productionOrigins,
+  renderContentsTestUtils,
 } from '../../../../src/core/cloud/render-contents/render-contents-core.js';
 
 const ACCESS_TOKEN_KEY = 'access_token';
+
+describe('render contents console fallback', () => {
+  it('returns a no-op when console.error is unavailable', () => {
+    const originalError = console.error;
+    console.error = undefined;
+    try {
+      const fallback = renderContentsTestUtils.getDefaultConsoleError();
+      expect(fallback).toEqual(expect.any(Function));
+      expect(() => fallback('ignored')).not.toThrow();
+    } finally {
+      console.error = originalError;
+    }
+  });
+});
 
 describe('buildHtml', () => {
   it('escapes titles and renders list items', () => {

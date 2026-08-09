@@ -1,5 +1,5 @@
-# render contents core coverage
+# Render-contents core coverage
 
-- The render-contents suites cover page rendering, option links, authorization, templates, and error branches.
-- Evidence: ESM-focused Jest passed 63 tests with strict 100% statements, branches, functions, and lines for `src/core/cloud/render-contents/render-contents-core.js`.
-- No coverage exclusion or source change was needed.
+- Target: `src/core/cloud/render-contents/render-contents-core.js`
+- Evidence: `NODE_OPTIONS=--experimental-vm-modules npx jest test/core/cloud/render-contents/render-contents-core.test.js --runInBand --coverage --collectCoverageFrom=src/core/cloud/render-contents/render-contents-core.js --coverageThreshold='{"global":{"statements":100,"branches":100,"functions":100,"lines":100}}'`
+- Result: 1 suite and 61 tests passed; statements, branches, functions, and lines each reached 100% without exclusions.
