@@ -1,5 +1,5 @@
-# submit moderation rating core coverage
+# Submit moderation rating core coverage
 
-- The rating core suites cover validation, moderation updates, reputation changes, and error paths.
-- Evidence: focused Jest passed 25 tests with strict 100% statements, branches, functions, and lines for `src/core/cloud/submit-moderation-rating/submit-moderation-rating-core.js`.
-- No coverage exclusion or source change was needed.
+- Target: `src/core/cloud/submit-moderation-rating/submit-moderation-rating-core.js`
+- Evidence: `npx jest test/core/cloud/submit-moderation-rating/submit-moderation-rating-core.test.js --runInBand --coverage --collectCoverageFrom=src/core/cloud/submit-moderation-rating/submit-moderation-rating-core.js --coverageThreshold='{"global":{"statements":100,"branches":100,"functions":100,"lines":100}}'`
+- Result: 1 suite and 24 tests passed; statements, branches, functions, and lines each reached 100% without exclusions.
