@@ -2,6 +2,8 @@ import {
   initAdmin,
   createTriggerStats,
   createRegenerateVariant,
+  createTriggerRender,
+  createGoogleAuthModule,
 } from '../../../../src/core/browser/admin-core.js';
 
 describe('admin/core uncovered branches', () => {
@@ -149,6 +151,61 @@ describe('admin/core uncovered branches', () => {
 
     await regenerateVariant({ preventDefault: () => {} });
 
+    expect(showMessageCalls).toContain('Regeneration failed');
+  });
+
+  it('uses the cached token when the Firebase user has no token method', async () => {
+    const storage = {
+      getItem: key => (key === 'id_token' ? 'cached-token' : null),
+      removeItem: () => {},
+    };
+    const auth = createGoogleAuthModule({
+      getAuthFn: () => ({ currentUser: {} }),
+      storage,
+      consoleObj: { error: () => {} },
+      globalScope: {},
+      Provider: { credential: () => ({}) },
+      credentialFactory: () => ({}),
+    });
+    await expect(auth.getIdToken()).resolves.toBe('cached-token');
+  });
+
+  it('reports trigger-render HTTP failures through the optional error reporter', async () => {
+    const reported = [];
+    const trigger = createTriggerRender({
+      googleAuth: { getIdToken: () => 'token' },
+      getAdminEndpointsFn: async () => ({ triggerRenderContentsUrl: '/render' }),
+      fetchFn: async () => ({
+        ok: false,
+        status: 503,
+        statusText: 'Unavailable',
+        text: async () => 'backend down',
+      }),
+      showMessage: mockShowMessage,
+      reportError: error => reported.push(error),
+    });
+    await trigger();
+    expect(reported[0]).toEqual(expect.objectContaining({
+      message: 'Render failed: 503 Unavailable - backend down',
+    }));
+  });
+
+  it('reports regeneration response failures with status and response text', async () => {
+    const regenerateVariant = createRegenerateVariant({
+      googleAuth: { getIdToken: () => 'token' },
+      doc: {
+        getElementById: id =>
+          id === 'regenInput' ? { value: '123abc' } : { innerHTML: '' },
+      },
+      showMessage: mockShowMessage,
+      getAdminEndpointsFn: async () => ({ markVariantDirtyUrl: '/dirty' }),
+      fetchFn: async () => ({
+        ok: false,
+        status: 400,
+        text: async () => 'invalid variant',
+      }),
+    });
+    await regenerateVariant({ preventDefault: () => {} });
     expect(showMessageCalls).toContain('Regeneration failed');
   });
 });
