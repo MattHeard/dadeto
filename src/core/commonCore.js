@@ -1548,3 +1548,14 @@ function getDefaultOutputStream(streamName) {
 
   return { write: () => {} };
 }
+
+/**
+ * Internal check-runner seams used to exercise lifecycle edge cases in tests.
+ * @type {{ handleChildClose: Function, shouldIgnoreClosedChild: Function, abortRemainingChildren: Function, forwardStreamLines: Function }}
+ */
+export const commonCoreTestUtils = {
+  handleChildClose,
+  shouldIgnoreClosedChild,
+  abortRemainingChildren,
+  forwardStreamLines,
+};
