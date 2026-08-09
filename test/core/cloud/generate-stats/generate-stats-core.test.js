@@ -443,13 +443,45 @@ describe('createGenerateStatsCore', () => {
         collection: jest.fn(() => ({
           get: jest.fn().mockResolvedValue({
             docs: [
-              { ref: { collection: jest.fn(() => ({ get: jest.fn().mockResolvedValue({ docs: [{}, {}] }) })) } },
-              { ref: { collection: jest.fn(() => ({ get: jest.fn().mockResolvedValue({ docs: [{}] }) })) } },
+              {
+                ref: {
+                  collection: jest.fn(() => ({
+                    get: jest.fn().mockResolvedValue({ docs: [{}, {}] }),
+                  })),
+                },
+              },
+              {
+                ref: {
+                  collection: jest.fn(() => ({
+                    get: jest.fn().mockResolvedValue({ docs: [{}] }),
+                  })),
+                },
+              },
             ],
           }),
         })),
       };
       await expect(core.getPageCount(customDb)).resolves.toBe(3);
+    });
+
+    it('ignores a nested page snapshot without docs', async () => {
+      const customDb = {
+        collection: () => ({
+          get: jest.fn().mockResolvedValue({
+            docs: [
+              {
+                ref: {
+                  collection: () => ({
+                    get: jest.fn().mockResolvedValue({}),
+                  }),
+                },
+              },
+            ],
+          }),
+        }),
+      };
+
+      await expect(core.getPageCount(customDb)).resolves.toBe(0);
     });
 
     it('getUnmoderatedPageCount should return the correct count', async () => {
@@ -856,6 +888,17 @@ describe('createGenerateStatsCore', () => {
         'metadata token: HTTP 404'
       );
     });
+
+    it('should reject metadata responses without a string access token', async () => {
+      mockFetchFn.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ [ACCESS_TOKEN_KEY]: 123 }),
+      });
+
+      await expect(core.getAccessTokenFromMetadata()).rejects.toThrow(
+        'invalid access_token in metadata response'
+      );
+    });
   });
 
   describe('invalidatePaths', () => {
@@ -940,6 +983,15 @@ describe('createGenerateStatsCore', () => {
       );
     });
 
+    it('uses the fallback message for non-Error metadata failures', async () => {
+      const logger = { error: jest.fn() };
+      mockFetchFn.mockRejectedValueOnce('metadata unavailable');
+      await core.invalidatePaths(['/path1'], logger);
+      expect(logger.error).toHaveBeenCalledWith(
+        'Skipping CDN invalidation: metadata token fetch failed'
+      );
+    });
+
     it('logs when mapped CDN invalidation fails before a request is sent', async () => {
       mockFetchFn.mockResolvedValueOnce({
         ok: true,
@@ -952,6 +1004,22 @@ describe('createGenerateStatsCore', () => {
       await core.invalidatePaths(['/path1'], logger);
       expect(logger.error).toHaveBeenCalledWith(
         'Skipping CDN invalidation: uuid unavailable'
+      );
+      mockCryptoModule.randomUUID = () => 'some-uuid';
+    });
+
+    it('uses the fallback message for non-Error mapping failures', async () => {
+      const logger = { error: jest.fn() };
+      mockFetchFn.mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve({ [ACCESS_TOKEN_KEY]: 'token' }),
+      });
+      mockCryptoModule.randomUUID = () => {
+        throw 'uuid unavailable';
+      };
+      await core.invalidatePaths(['/path1'], logger);
+      expect(logger.error).toHaveBeenCalledWith(
+        'Skipping CDN invalidation: CDN invalidation failed'
       );
       mockCryptoModule.randomUUID = () => 'some-uuid';
     });
@@ -1140,23 +1208,3 @@ describe('generate stats helpers', () => {
     expect(html).not.toContain('Story 1');
   });
 });
-    it('ignores a nested page snapshot without docs', async () => {
-      const customDb = {
-        collection: () => ({
-          get: jest.fn().mockResolvedValue({
-            docs: [
-              {
-                ref: {
-                  collection: () => ({
-                    get: jest.fn().mockResolvedValue({}),
-                  }),
-                },
-              },
-            ],
-          }),
-        }),
-      };
-+
-      await expect(core.getPageCount(customDb)).resolves.toBe(0);
-    });
-+
