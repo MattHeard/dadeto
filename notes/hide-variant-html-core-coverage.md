@@ -1,5 +1,5 @@
-# hide variant HTML core coverage
+# Hide-variant HTML core coverage
 
-- The complete hide-variant-html core suite covers variant loading, normalization, rendering, persistence, and failure paths.
-- Evidence: focused Jest passed 45 tests with strict 100% statements, branches, functions, and lines for `src/core/cloud/hide-variant-html/hide-variant-html-core.js`.
-- No coverage exclusion or source change was needed.
+- Target: `src/core/cloud/hide-variant-html/hide-variant-html-core.js`
+- Evidence: `npx jest test/core/cloud/hide-variant-html-core.branch.test.js test/core/cloud/hide-variant-html/index.test.js test/core/cloud/hide-variant-html/removeVariantHtml.test.js test/core/cloud/hide-variant-html/normalizeRemoveVariantLoadResult.test.js --runInBand --coverage --collectCoverageFrom=src/core/cloud/hide-variant-html/hide-variant-html-core.js --coverageThreshold='{"global":{"statements":100,"branches":100,"functions":100,"lines":100}}'`
+- Result: 4 suites and 45 tests passed; statements, branches, functions, and lines each reached 100% without exclusions.
