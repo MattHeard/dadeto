@@ -2,11 +2,6 @@ import { describe, expect, it, jest, beforeEach } from '@jest/globals';
 
 let mockConfig = { disableGoogleSignIn: true };
 let mockToken = null;
-const mockGetModerationEndpoints = jest.fn(async () => ({
-  getModerationVariantUrl: '/variant',
-  assignModerationJobUrl: '/assign',
-  submitModerationRatingUrl: '/submit',
-}));
 const mockAuthedFetch = jest.fn(async () => ({
   title: 'Title',
   content: 'Content',
@@ -102,9 +97,7 @@ const { createModerateHandle, authedFetch } = await import(
   '../../../src/core/browser/moderate.js'
 );
 
-/**
- *
- */
+/** @returns {Document} Test document. */
 function makeDocument() {
   const elements = new Map();
   const make = id => ({

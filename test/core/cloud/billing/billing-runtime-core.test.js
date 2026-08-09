@@ -261,7 +261,7 @@ describe('createBillingRuntime', () => {
   });
 
   it('marks an untouched purchase fully refunded', async () => {
-    const { db, billing } = setup();
+    const { billing } = setup();
     await billing.createPurchase({
       purchaseId: 'untouched-purchase',
       apiKeyUuid: 'key-untouched',

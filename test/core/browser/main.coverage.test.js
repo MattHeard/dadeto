@@ -1,12 +1,5 @@
 import { describe, expect, it, jest } from '@jest/globals';
 
-let mockSetupAudio = jest.fn();
-let mockHandleTagLinks = jest.fn();
-let mockHideArticlesByClass = jest.fn();
-let mockHideArticlesWithoutClass = jest.fn();
-let mockInitializeVisibleComponents = jest.fn();
-let mockRevealBetaArticles = jest.fn();
-let mockToggleToyFocusMode = jest.fn();
 let mockFetchBlogData = jest.fn();
 let mockDom = {
   logError: jest.fn(),
@@ -15,12 +8,12 @@ let mockDom = {
 };
 
 jest.unstable_mockModule('../../../src/core/browser/audio-controls.js', () => ({
-  setupAudio: (mockSetupAudio = jest.fn()),
+  setupAudio: jest.fn(),
 }));
 jest.unstable_mockModule('../../../src/core/browser/tags.js', () => ({
-  handleTagLinks: (mockHandleTagLinks = jest.fn()),
-  hideArticlesByClass: (mockHideArticlesByClass = jest.fn()),
-  hideArticlesWithoutClass: (mockHideArticlesWithoutClass = jest.fn()),
+  handleTagLinks: jest.fn(),
+  hideArticlesByClass: jest.fn(),
+  hideArticlesWithoutClass: jest.fn(),
 }));
 jest.unstable_mockModule('../../../src/core/browser/data.js', () => ({
   createBlogDataController: dependencies => {
@@ -39,7 +32,7 @@ jest.unstable_mockModule('../../../src/core/browser/toys.js', () => ({
   createOutputDropdownHandler: (_handle, getData) => jest.fn(() => getData()),
   createInputDropdownHandler: () => jest.fn(),
   handleDropdownChange: jest.fn(),
-  toggleToyFocusMode: (mockToggleToyFocusMode = jest.fn()),
+  toggleToyFocusMode: jest.fn(),
   getComponentInitializer: jest.fn(),
   makeCreateIntersectionObserver: (_dom, env) => {
     const values = [...env.createEnv().values()];
@@ -52,8 +45,7 @@ jest.unstable_mockModule('../../../src/core/browser/toys.js', () => ({
     });
     return jest.fn();
   },
-  initializeVisibleComponents: (mockInitializeVisibleComponents = (...args) =>
-    args[1]()),
+  initializeVisibleComponents: (...args) => args[1](),
   createDropdownInitializer: outputHandler => jest.fn(() => outputHandler()),
 }));
 jest.unstable_mockModule('../../../src/core/browser/document.js', () => ({
@@ -87,7 +79,7 @@ jest.unstable_mockModule('../../../src/core/browser/error-beacon.js', () => ({
   createErrorBeaconReporter: jest.fn(),
 }));
 jest.unstable_mockModule('../../../src/core/browser/beta.js', () => ({
-  revealBetaArticles: (mockRevealBetaArticles = jest.fn()),
+  revealBetaArticles: jest.fn(),
 }));
 jest.unstable_mockModule(
   '../../../src/core/browser/memoryStorageLens.js',

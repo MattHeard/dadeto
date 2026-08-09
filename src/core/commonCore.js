@@ -1551,7 +1551,7 @@ function getDefaultOutputStream(streamName) {
 
 /**
  * Internal check-runner seams used to exercise lifecycle edge cases in tests.
- * @type {{ handleChildClose: Function, shouldIgnoreClosedChild: Function, abortRemainingChildren: Function, forwardStreamLines: Function }}
+ * @type {{ handleChildClose: (...args: never[]) => unknown, shouldIgnoreClosedChild: (...args: never[]) => unknown, abortRemainingChildren: (...args: never[]) => unknown, forwardStreamLines: (...args: never[]) => unknown }}
  */
 export const commonCoreTestUtils = {
   handleChildClose,

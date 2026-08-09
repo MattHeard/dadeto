@@ -1,19 +1,12 @@
 import { jest } from '@jest/globals';
 
-const mockCreateDb = jest.fn();
 let mockDb;
-const mockCreateBillingRuntime = jest.fn();
 let mockBilling;
 const mockCreatePaymentWebhookHandler = jest.fn();
-const mockCreateResolveApiKeyUuid = jest.fn();
 const mockDomainHandler = jest.fn(async request => ({
   status: 200,
   body: { request },
 }));
-const mockParseJsonEvent = jest.fn();
-const mockExtractRawPayload = jest.fn();
-const mockExtractHeader = jest.fn();
-const mockVerifyPaymentSignature = jest.fn();
 
 await jest.unstable_mockModule(
   '../../../../src/core/cloud/get-api-key-credit-v2/create-db.js',
@@ -57,11 +50,6 @@ const { createPaymentWebhookIndexHandler, parsePaymentWebhookEvent } =
 describe('payment webhook cloud wrapper', () => {
   it('builds dependencies and forwards the structured response', async () => {
     const set = jest.fn(async () => undefined);
-    const get = jest.fn(async () => ({
-      exists: true,
-      data: () => ({ apiKeyUuid: 'uuid-1' }),
-    }));
-    const doc = jest.fn(() => ({ get, set }));
     let missingCustomer = false;
     const db = {
       collection: jest.fn(name => ({

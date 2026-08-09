@@ -526,7 +526,10 @@ function createNamespaceCallContext(callee, state) {
 function handleIdentifierCall(context) {
   const { calleeName, imports, exports, ownCalls, importedCalls } = context;
   if (imports.has(calleeName)) {
-    const imported = imports.get(calleeName);
+    const imported =
+      /** @type {{ source: string, importedName: string, namespace: boolean }} */ (
+        imports.get(calleeName)
+      );
     importedCalls.push(makeImportedCall(imported));
     return;
   }

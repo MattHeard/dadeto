@@ -12,15 +12,14 @@ const snapshot = {
 };
 
 /**
- *
- * @param root0
- * @param root0.ownership
- * @param root0.customer
+ * Create a test database fixture.
+ * @param {{ ownership?: unknown, customer?: unknown }} options Fixture data.
+ * @returns {{ collection: (...args: unknown[]) => unknown }} Database fixture.
  */
 function makeDb({ ownership, customer } = {}) {
   return {
     collection: jest.fn(name => ({
-      doc: jest.fn(id => ({
+      doc: jest.fn(() => ({
         get: jest.fn(async () =>
           name === 'api-key-ownership'
             ? { data: () => ownership }

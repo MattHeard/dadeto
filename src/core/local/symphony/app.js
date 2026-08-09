@@ -232,7 +232,7 @@ function getOptionalString(source, key) {
  * @returns {{ beadId: string, beadTitle?: string, outcome: 'blocked', summary: string }} Runner outcome.
  */
 function buildOrphanedRunOutcome(status, beadId, pid) {
-  const activeRun = status.activeRun;
+  const activeRun = status.activeRun ?? {};
   return {
     beadId,
     beadTitle: getOptionalString(activeRun, 'beadTitle') ?? undefined,
@@ -257,7 +257,7 @@ async function reconcileOrphanedRun(status, statusStore, deps) {
     return status;
   }
 
-  const activeRun = status.activeRun;
+  const activeRun = status.activeRun ?? {};
   const pid = getActiveRunPid(activeRun);
   if (pid === null) {
     return status;
@@ -278,7 +278,9 @@ async function reconcileOrphanedRun(status, statusStore, deps) {
     ...applyRunnerOutcome(status, outcome),
     operatorTrustReason: buildOrphanedRunTrustReason(activeRun, pid),
   };
-  await statusStore.writeStatus(updatedStatus);
+  await /** @type {(status: SymphonyStatus) => Promise<void>} */ (
+    statusStore.writeStatus
+  )(updatedStatus);
   return updatedStatus;
 }
 
@@ -288,7 +290,7 @@ async function reconcileOrphanedRun(status, statusStore, deps) {
  * @returns {string | null} Bead id, or null.
  */
 function getActiveRunBeadId(status) {
-  const activeRun = status.activeRun;
+  const activeRun = status.activeRun ?? {};
   const activeRunBeadId = getOptionalString(activeRun, 'beadId');
   if (activeRunBeadId) {
     return activeRunBeadId;

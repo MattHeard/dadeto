@@ -9,8 +9,9 @@ import {
 } from '../../../src/core/scripts/run-stryker-worktree-core.js';
 
 /**
- *
- * @param code
+ * Create a child-process mock that exits with the supplied code.
+ * @param {number} code Exit code.
+ * @returns {jest.Mock} Mock spawn function.
  */
 function spawnWithExit(code) {
   return jest.fn(() => {

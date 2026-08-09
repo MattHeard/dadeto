@@ -84,7 +84,7 @@ export const handle = startServer;
 
 /**
  * Start the local simulator server.
- * @param {{ express: Parameters<typeof createJsonExpressAppDeps>[0] }} deps Runtime dependencies.
+ * @param {{ express: Parameters<typeof createJsonExpressAppDeps>[0], simulator?: Promise<LocalGcpSimulator> }} deps Runtime dependencies.
  * @returns {Promise<import('node:http').Server>} Server instance.
  */
 async function startServer(deps) {

@@ -1433,11 +1433,9 @@ function unregisterAutoSubmitPolling(dom, autoSubmitState) {
 }
 
 /**
- *
- * @param root0
- * @param root0.autoSubmitCheckbox
- * @param root0.register
- * @param root0.unregister
+ * Create an auto-submit checkbox handler.
+ * @param {{ autoSubmitCheckbox: HTMLElement|null, register: (...args: unknown[]) => unknown, unregister: (...args: unknown[]) => unknown }} options Handler options.
+ * @returns {() => void} Checkbox handler.
  */
 export function createAutoSubmitCheckboxHandler({
   autoSubmitCheckbox,
@@ -1729,18 +1727,10 @@ export const syncHiddenField = (textInput, rowData, dom) => {
  */
 /**
  * Creates a render function with access to the given disposers array and rows
- * @param {object} options - Configuration options
- * @param syncHiddenField
- * @param textInput
- * @param rowData
- * @param {object} options.dom - The DOM utilities object
- * @param {Array} options.disposersArray - Array to store cleanup functions
- * @param {HTMLElement} options.container - The container element for the key-value pairs
- * @param {object} options.rows - The rows object containing key-value pairs
- * @param {object} options.rowTypes - Per-key type map for value coercion.
- * @param {HTMLInputElement} options.textInput - The hidden input element
- * @param {ToyCallback} options.syncHiddenField - ToyCallback to sync the hidden field
- * @param dom
+ * @param {ToyCallback} syncHiddenField - Callback to sync the hidden field.
+ * @param {HTMLInputElement} textInput - Hidden input element.
+ * @param {object} rowData - Row data to serialize.
+ * @param {object} dom - DOM utilities object.
  * @returns {ToyCallback} The render function
  */
 export const syncRowData = (syncHiddenField, textInput, rowData, dom) =>
