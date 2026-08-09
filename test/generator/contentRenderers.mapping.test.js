@@ -79,4 +79,48 @@ describe('content renderers mapping', () => {
     expect(html).toContain('- item one');
     expect(html).toContain('- item two');
   });
+
+  test('uses manual defaults when id, title, and markdown are absent', () => {
+    const html = generateBlog(
+      {
+        blog: {
+          posts: [
+            {
+              key: 'CR3',
+              title: 'Content',
+              publicationDate: '2024-01-01',
+              content: [{ type: 'manual' }],
+            },
+          ],
+        },
+        header,
+        footer,
+      },
+      wrapHtml
+    );
+    expect(html).toContain('id="manual"');
+    expect(html).toContain('User manual');
+  });
+
+  test('renders an empty YouTube title when the title is omitted', () => {
+    const html = generateBlog(
+      {
+        blog: {
+          posts: [
+            {
+              key: 'CR4',
+              title: 'Video',
+              publicationDate: '2024-01-01',
+              youtube: { id: 'video-id', timestamp: 0 },
+              content: [],
+            },
+          ],
+        },
+        header,
+        footer,
+      },
+      wrapHtml
+    );
+    expect(html).toContain('title=""');
+  });
 });
