@@ -1,31 +1,40 @@
 import { jest } from '@jest/globals';
 
-jest.mock('../../../../src/core/cloud/render-contents/render-contents-core.js', () => ({
-  DEFAULT_BUCKET_NAME: 'bucket',
-  buildHtml: jest.fn(() => 'html'),
-  buildHandleRenderRequest: ({ verifyIdToken, render }) => async (request, response) => {
-    await render();
-    await verifyIdToken(request.headers.authorization.slice(7));
-    response.status(200);
-  },
-  createApplyCorsHeaders: jest.fn(() => jest.fn()),
-  createFetchStoryInfo: db => async storyId => {
-    const snapshot = await db.collection('stories').doc(storyId).get();
-    const data = snapshot.data();
-    const rootPage = await data.rootPage.get();
-    return { title: data.title, pageNumber: rootPage.data().number };
-  },
-  createFetchTopStoryIds: db => async () => {
-    const result = await db.collection('storyStats').orderBy('score').limit(10).get();
-    return result.docs.map(doc => doc.id);
-  },
-  createRenderContents: jest.fn(() => jest.fn().mockResolvedValue(undefined)),
-  createValidateRequest: jest.fn(() => jest.fn(() => true)),
-  getAllowedOrigins: jest.fn(() => []),
-  resolveStaticBucketName: jest.fn(() => 'bucket'),
-  resolveStaticObjectPrefix: jest.fn(() => 'prefix'),
-}));
-jest.mock('../../../../src/core/cloud/render-support.js', () => ({
+await jest.unstable_mockModule(
+  '../../../../src/core/cloud/render-contents/render-contents-core.js',
+  () => ({
+    DEFAULT_BUCKET_NAME: 'bucket',
+    buildHtml: jest.fn(() => 'html'),
+    buildHandleRenderRequest:
+      ({ verifyIdToken, render }) =>
+      async (request, response) => {
+        await render();
+        await verifyIdToken(request.headers.authorization.slice(7));
+        response.status(200);
+      },
+    createApplyCorsHeaders: jest.fn(() => jest.fn()),
+    createFetchStoryInfo: db => async storyId => {
+      const snapshot = await db.collection('stories').doc(storyId).get();
+      const data = snapshot.data();
+      const rootPage = await data.rootPage.get();
+      return { title: data.title, pageNumber: rootPage.data().number };
+    },
+    createFetchTopStoryIds: db => async () => {
+      const result = await db
+        .collection('storyStats')
+        .orderBy('score')
+        .limit(10)
+        .get();
+      return result.docs.map(doc => doc.id);
+    },
+    createRenderContents: jest.fn(() => jest.fn().mockResolvedValue(undefined)),
+    createValidateRequest: jest.fn(() => jest.fn(() => true)),
+    getAllowedOrigins: jest.fn(() => []),
+    resolveStaticBucketName: jest.fn(() => 'bucket'),
+    resolveStaticObjectPrefix: jest.fn(() => 'prefix'),
+  })
+);
+await jest.unstable_mockModule('../../../../src/core/cloud/render-support.js', () => ({
   createCloudRenderInstanceBuilder: ({ createRenderer, consoleError }) => {
     consoleError('builder');
     return jest.fn(() => createRenderer());
@@ -40,7 +49,9 @@ jest.mock('../../../../src/core/cloud/render-support.js', () => ({
     render: () => options.buildRender(),
   }),
 }));
-import { createRenderContentsEntrypoint } from '../../../../src/core/cloud/render-contents/index.js';
+const { createRenderContentsEntrypoint } = await import(
+  '../../../../src/core/cloud/render-contents/index.js'
+);
 
 describe('createRenderContentsEntrypoint', () => {
   test('wires the entrypoint helpers and handlers', async () => {
