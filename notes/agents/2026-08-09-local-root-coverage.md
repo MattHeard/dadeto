@@ -1,0 +1,5 @@
+# Local root coverage
+
+- Covered the root `src/core/local` modules, including the server, dependency-scope checker, config utilities, document store, process launcher, runner, Symphony facade, and workflow helpers.
+- Acceptance command: `NODE_OPTIONS=--experimental-vm-modules npx jest test/core/scripts/check-depcruise.test.js test/local/notionCodex.config.test.js test/core/local/documentStore.test.js test/core/local/process-launcher.coverage.additional.test.js test/core/local/process-launcher.test.js test/core/local/run.test.js test/core/local/workflow.test.js test/core/local/server.test.js test/local/server.realtimeRoute.test.js test/local/serverMessages.test.js test/core/local/symphony.test.js test/core/local/symphony.launch.test.js test/core/local/symphony.launch-invocation.test.js test/local/symphony.test.js --runInBand --coverage --silent --collectCoverageFrom='src/core/local/*.js' --coverageReporters=text-summary`.
+- Evidence: 14 suites and 148 tests passed; statements 514/514, branches 247/247, functions 224/224, lines 508/508.
