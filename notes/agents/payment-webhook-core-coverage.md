@@ -1,6 +1,5 @@
-# Payment webhook core coverage
+# payment webhook core coverage
 
-- Unexpected hurdle: the existing credit-event tests covered the default purchase adapter but not the configured purchase-event response path.
-- Diagnosis: coverage identified the response recording lines and the wrapper function for a supplied purchase handler as uncovered.
-- Fix: added a test for a successful purchase event with no API-key mapping, verifying the `purchase` fallback key and returned response.
-- Next-time guidance: for optional webhook handlers, test both the default no-op and configured handler paths, including fallback identifiers.
+- Existing payment webhook core tests exercise all success, validation, and error branches.
+- Evidence: focused Jest passed 2 tests with strict 100% statements, branches, functions, and lines for `src/core/cloud/payment-webhook/payment-webhook-core.js`.
+- No coverage exclusion or source change was needed.
