@@ -1,0 +1,5 @@
+# Core scripts coverage
+
+- Added the subprocess-based parse and duplication gate suites to the existing scripts coverage set; those were the missing source consumers.
+- Acceptance command: `NODE_OPTIONS=--experimental-vm-modules npx jest test/core/scripts/check-depcruise.test.js test/core/scripts/check-overexposed-exports.test.js test/core/scripts/function-dependency-graph-core.test.js test/core/scripts/gate-script-defaults.test.js test/core/scripts/gate-utils.test.js test/core/scripts/read-exemptions.test.js test/core/scripts/run-stryker-worktree-core.coverage.additional.test.js test/core/scripts/run-stryker-worktree-core.defaults.test.js test/core/scripts/run-stryker-worktree-core.test.js test/core/scripts/write-coverage-summary.test.js test/scripts/check-core-parse.test.js test/scripts/check-duplication.test.js --runInBand --coverage --silent --collectCoverageFrom='src/core/scripts/**/*.js' --coverageReporters=text-summary`.
+- Evidence: 12 suites and 101 tests passed; statements 693/693, branches 395/395, functions 184/184, lines 672/672.
