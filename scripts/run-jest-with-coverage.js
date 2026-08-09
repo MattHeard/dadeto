@@ -106,6 +106,7 @@ function isIgnoredCoverageFile(file) {
 
 function runShard(testFilesForShard, shardDir) {
   const args = [JEST_BIN, '--coverage', '--watchman=false', '--maxWorkers=1',
+    '--forceExit',
     '--coverageReporters=json',
     '--coverageThreshold={"global":{"branches":0,"functions":0,"lines":0,"statements":0}}',
     '--coverageDirectory', shardDir, '--runTestsByPath', ...testFilesForShard];

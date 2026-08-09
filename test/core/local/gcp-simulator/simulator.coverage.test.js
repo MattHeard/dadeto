@@ -46,14 +46,18 @@ describe('gcp simulator coverage paths', () => {
     const pageRef = {
       collection: () => ({
         where: () => ({
-          limit: () => ({ get: async () => ({ empty: false, docs: [{ ref: variantRef }] }) }),
+          limit: () => ({
+            get: async () => ({ empty: false, docs: [{ ref: variantRef }] }),
+          }),
         }),
       }),
     };
     const fakeDb = {
       collectionGroup: () => ({
         where: () => ({
-          limit: () => ({ get: async () => ({ empty: false, docs: [{ ref: pageRef }] }) }),
+          limit: () => ({
+            get: async () => ({ empty: false, docs: [{ ref: pageRef }] }),
+          }),
         }),
       }),
     };

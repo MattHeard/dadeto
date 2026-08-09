@@ -5,6 +5,8 @@ import {
   createTriggerRender,
   createGoogleAuthModule,
   createInitGoogleSignInHandlerFactory,
+  initAdminApp,
+  announceTriggerRenderResult,
 } from '../../../../src/core/browser/admin-core.js';
 
 describe('admin/core uncovered branches', () => {
@@ -171,11 +173,29 @@ describe('admin/core uncovered branches', () => {
     await expect(auth.getIdToken()).resolves.toBe('cached-token');
   });
 
+  it('uses the Firebase user token when available', async () => {
+    const auth = createGoogleAuthModule({
+      getAuthFn: () => ({
+        currentUser: {
+          getIdToken: async force => (force ? 'fresh-token' : ''),
+        },
+      }),
+      storage: { getItem: () => 'cached-token', removeItem: () => {} },
+      consoleObj: { error: () => {} },
+      globalScope: {},
+      Provider: { credential: () => ({}) },
+      credentialFactory: () => ({}),
+    });
+    await expect(auth.getIdToken()).resolves.toBe('fresh-token');
+  });
+
   it('reports trigger-render HTTP failures through the optional error reporter', async () => {
     const reported = [];
     const trigger = createTriggerRender({
       googleAuth: { getIdToken: () => 'token' },
-      getAdminEndpointsFn: async () => ({ triggerRenderContentsUrl: '/render' }),
+      getAdminEndpointsFn: async () => ({
+        triggerRenderContentsUrl: '/render',
+      }),
       fetchFn: async () => ({
         ok: false,
         status: 503,
@@ -186,9 +206,32 @@ describe('admin/core uncovered branches', () => {
       reportError: error => reported.push(error),
     });
     await trigger();
-    expect(reported[0]).toEqual(expect.objectContaining({
-      message: 'Render failed: 503 Unavailable - backend down',
-    }));
+    expect(reported[0]).toEqual(
+      expect.objectContaining({
+        message: 'Render failed: 503 Unavailable - backend down',
+      })
+    );
+  });
+
+  it('supports the default trigger-render error reporter', async () => {
+    const trigger = createTriggerRender({
+      googleAuth: { getIdToken: () => 'token' },
+      getAdminEndpointsFn: async () => ({
+        triggerRenderContentsUrl: '/render',
+      }),
+      fetchFn: async () => ({ ok: false, status: 500, statusText: 'Broken' }),
+      showMessage: mockShowMessage,
+    });
+    await trigger();
+    expect(showMessageCalls).toContain('Render failed: 500 Broken');
+  });
+
+  it('supports the default reporter when announcing a failed render directly', async () => {
+    await announceTriggerRenderResult(
+      { ok: false, status: 500, statusText: 'Broken' },
+      mockShowMessage
+    );
+    expect(showMessageCalls).toContain('Render failed: 500 Broken');
   });
 
   it('reports regeneration response failures with status and response text', async () => {
@@ -230,5 +273,117 @@ describe('admin/core uncovered branches', () => {
       signInWithCredentialFn: () => {},
     });
     expect(() => unavailable()).toThrow('Firebase auth client is not ready');
+  });
+
+  it('handles author regeneration submissions and missing author input', async () => {
+    let submitHandler;
+    const form = {
+      addEventListener: (event, handler) => {
+        submitHandler = handler;
+      },
+    };
+    const input = { value: ' author-42 ' };
+    const status = { innerHTML: '' };
+    const doc = {
+      getElementById: id =>
+        ({
+          regenAuthorForm: form,
+          regenAuthorInput: input,
+          renderStatus: status,
+        })[id] ?? null,
+      querySelectorAll: () => [],
+    };
+    const fetchFn = async () => ({ ok: true });
+    initAdmin({
+      googleAuthModule: {
+        initGoogleSignIn: () => {},
+        getIdToken: async () => 'token',
+        signOut: () => {},
+      },
+      loadStaticConfigFn: async () => ({ markVariantDirtyUrl: '/dirty' }),
+      getAuthFn: () => ({}),
+      onAuthStateChangedFn: () => {},
+      doc,
+      fetchFn,
+    });
+    const event = { preventDefault: () => {} };
+    await submitHandler(event);
+    expect(status.innerHTML).toContain('Author regeneration triggered');
+
+    input.value = '';
+    await submitHandler(event);
+    expect(status.innerHTML).toContain('Author regeneration triggered');
+  });
+
+  it('reports author regeneration request failures', async () => {
+    let submitHandler;
+    const status = { innerHTML: '' };
+    const doc = {
+      getElementById: id =>
+        id === 'regenAuthorForm'
+          ? {
+              addEventListener: (event, handler) => {
+                submitHandler = handler;
+              },
+            }
+          : id === 'regenAuthorInput'
+            ? { value: 'author-42' }
+            : id === 'renderStatus'
+              ? status
+              : null,
+      querySelectorAll: () => [],
+    };
+    const reported = [];
+    initAdmin({
+      googleAuthModule: {
+        initGoogleSignIn: () => {},
+        getIdToken: async () => 'token',
+        signOut: () => {},
+      },
+      loadStaticConfigFn: async () => ({ markVariantDirtyUrl: '/dirty' }),
+      getAuthFn: () => ({}),
+      onAuthStateChangedFn: () => {},
+      doc,
+      fetchFn: async () => ({ ok: false, status: 500, statusText: 'Broken' }),
+      reportError: error => reported.push(error),
+    });
+    await submitHandler({ preventDefault: () => {} });
+    expect(reported).toHaveLength(1);
+    expect(status.innerHTML).toContain('Author regeneration failed');
+  });
+
+  it('uses the cached token for initAdminApp requests', async () => {
+    let clickHandler;
+    const doc = {
+      getElementById: id =>
+        id === 'renderBtn'
+          ? {
+              addEventListener: (event, handler) => {
+                clickHandler = handler;
+              },
+            }
+          : null,
+      querySelectorAll: () => [],
+    };
+    initAdminApp({
+      loadStaticConfigFn: async () => ({ triggerRenderContentsUrl: '/render' }),
+      getAuthFn: () => ({}),
+      GoogleAuthProviderFn: { credential: () => ({}) },
+      onAuthStateChangedFn: () => {},
+      signInWithCredentialFn: async () => {},
+      initializeAppFn: () => {},
+      sessionStorageObj: {
+        getItem: key => (key === 'id_token' ? 'cached-token' : null),
+        setItem: () => {},
+        removeItem: () => {},
+      },
+      consoleObj: {},
+      globalThisObj: {},
+      documentObj: doc,
+      fetchObj: async (_url, options) => ({
+        ok: options.headers.Authorization === 'Bearer cached-token',
+      }),
+    });
+    await clickHandler({ preventDefault: () => {} });
   });
 });

@@ -622,7 +622,7 @@ async function reportTriggerRenderFailure(
     statusText,
     body,
   });
-  reportError(new Error(message));
+  reportError?.(new Error(message));
   showMessage(message);
 }
 
@@ -636,7 +636,7 @@ async function reportTriggerRenderFailure(
 export async function announceTriggerRenderResult(
   res,
   showMessage,
-  reportError = () => {}
+  reportError
 ) {
   if (isResponseOk(res)) {
     showMessage('Render triggered');
