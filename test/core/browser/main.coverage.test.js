@@ -14,15 +14,15 @@ var mockDom = {
   getElementsByTagName: () => [],
 };
 
-jest.mock('../../../src/core/browser/audio-controls.js', () => ({
+jest.unstable_mockModule('../../../src/core/browser/audio-controls.js', () => ({
   setupAudio: (mockSetupAudio = jest.fn()),
 }));
-jest.mock('../../../src/core/browser/tags.js', () => ({
+jest.unstable_mockModule('../../../src/core/browser/tags.js', () => ({
   handleTagLinks: (mockHandleTagLinks = jest.fn()),
   hideArticlesByClass: (mockHideArticlesByClass = jest.fn()),
   hideArticlesWithoutClass: (mockHideArticlesWithoutClass = jest.fn()),
 }));
-jest.mock('../../../src/core/browser/data.js', () => ({
+jest.unstable_mockModule('../../../src/core/browser/data.js', () => ({
   createBlogDataController: dependencies => {
     dependencies();
     return {
@@ -35,7 +35,7 @@ jest.mock('../../../src/core/browser/data.js', () => ({
   },
   getEncodeBase64: () => jest.fn(),
 }));
-jest.mock('../../../src/core/browser/toys.js', () => ({
+jest.unstable_mockModule('../../../src/core/browser/toys.js', () => ({
   createOutputDropdownHandler: (_handle, getData) => jest.fn(() => getData()),
   createInputDropdownHandler: () => jest.fn(),
   handleDropdownChange: jest.fn(),
@@ -56,7 +56,7 @@ jest.mock('../../../src/core/browser/toys.js', () => ({
     args[1]()),
   createDropdownInitializer: outputHandler => jest.fn(() => outputHandler()),
 }));
-jest.mock('../../../src/core/browser/document.js', () => ({
+jest.unstable_mockModule('../../../src/core/browser/document.js', () => ({
   dom: (mockDom = {
     logError: jest.fn(),
     setTextContent: jest.fn(),
@@ -73,7 +73,7 @@ jest.mock('../../../src/core/browser/document.js', () => ({
   getInteractiveComponents: jest.fn(),
   reveal: jest.fn(),
 }));
-jest.mock('../../../src/core/browser/error-beacon.js', () => ({
+jest.unstable_mockModule('../../../src/core/browser/error-beacon.js', () => ({
   createErrorBeaconHandlers: options => {
     options.getUrl();
     options.getUserAgent();
@@ -86,17 +86,19 @@ jest.mock('../../../src/core/browser/error-beacon.js', () => ({
   },
   createErrorBeaconReporter: jest.fn(),
 }));
-jest.mock('../../../src/core/browser/beta.js', () => ({
+jest.unstable_mockModule('../../../src/core/browser/beta.js', () => ({
   revealBetaArticles: (mockRevealBetaArticles = jest.fn()),
 }));
-jest.mock('../../../src/core/browser/memoryStorageLens.js', () => ({
+jest.unstable_mockModule('../../../src/core/browser/memoryStorageLens.js', () => ({
   createMemoryStorageLens: () => new Map(),
 }));
-jest.mock('../../../src/core/browser/localStorageLens.js', () => ({
+jest.unstable_mockModule('../../../src/core/browser/localStorageLens.js', () => ({
   createLocalStorageLens: () => new Map(),
 }));
 
-import { createMainHandle } from '../../../src/core/browser/main.js';
+const { createMainHandle } = await import(
+  '../../../src/core/browser/main.js'
+);
 
 describe('browser main initialization', () => {
   it('covers initialization and interactive branches', () => {
