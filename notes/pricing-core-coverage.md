@@ -1,5 +1,5 @@
-# pricing core coverage
+# Pricing core coverage
 
-- The pricing core tests cover package credit calculations, validation, and rounding branches.
-- Evidence: focused Jest passed 3 tests with strict 100% statements, branches, functions, and lines for `src/core/cloud/billing/pricing-core.js`.
-- No coverage exclusion or source change was needed.
+- Target: `src/core/cloud/billing/pricing-core.js`
+- Evidence: `npx jest test/core/cloud/billing/pricing-core.test.js --runInBand --coverage --collectCoverageFrom=src/core/cloud/billing/pricing-core.js --coverageThreshold='{"global":{"statements":100,"branches":100,"functions":100,"lines":100}}'`
+- Result: 1 suite and 3 tests passed; statements, branches, functions, and lines each reached 100% without exclusions.
