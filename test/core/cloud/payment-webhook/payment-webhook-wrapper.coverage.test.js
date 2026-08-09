@@ -106,7 +106,10 @@ describe('payment webhook cloud wrapper', () => {
     missingCustomer = false;
     await captured.resolveApiKeyUuid({ data: { object: {} } });
     await expect(captured.isDuplicateEvent('evt-1')).resolves.toBe(true);
-    await captured.getPaymentEvent({ rawBody: '{}', headers: { 'stripe-signature': 'signed' } });
+    await captured.getPaymentEvent({
+      rawBody: '{}',
+      headers: { 'stripe-signature': 'signed' },
+    });
     await captured.markProcessedEvent(
       { id: 'evt-1', type: 'payment_intent.succeeded', created: 10 },
       'uuid-1'
@@ -246,8 +249,18 @@ describe('payment webhook cloud wrapper', () => {
   });
 
   it('requires Stripe secret, raw body, header, and injected verification', () => {
-    const payload = JSON.stringify({ id: 'signed', type: 'payment_intent.succeeded' });
-    expect(() => parsePaymentWebhookEvent({ rawBody: payload }, {})).toThrow('Missing Stripe webhook secret');
-    expect(() => parsePaymentWebhookEvent({ rawBody: payload, headers: { 'stripe-signature': 'signed' } }, { STRIPE_WEBHOOK_SECRET: 'secret' })).toThrow('Stripe webhook verifier unavailable');
+    const payload = JSON.stringify({
+      id: 'signed',
+      type: 'payment_intent.succeeded',
+    });
+    expect(() => parsePaymentWebhookEvent({ rawBody: payload }, {})).toThrow(
+      'Missing Stripe webhook secret'
+    );
+    expect(() =>
+      parsePaymentWebhookEvent(
+        { rawBody: payload, headers: { 'stripe-signature': 'signed' } },
+        { STRIPE_WEBHOOK_SECRET: 'secret' }
+      )
+    ).toThrow('Stripe webhook verifier unavailable');
   });
 });

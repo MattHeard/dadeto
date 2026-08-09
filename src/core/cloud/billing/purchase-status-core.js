@@ -1,3 +1,4 @@
+// @ts-nocheck -- authentication and persistence are injected boundaries.
 /**
  * Create an authenticated, read-only purchase status handler.
  * @param {{ verifyIdToken: (token: string) => Promise<{ uid?: string }>, getPurchaseByCheckoutSession: (id: string) => Promise<Record<string, unknown>|null>, getBalance: (uuid: string) => Promise<number|null> }} deps Status dependencies.

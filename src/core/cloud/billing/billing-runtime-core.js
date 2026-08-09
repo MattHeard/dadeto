@@ -169,10 +169,7 @@ export function createBillingRuntime(db, runtime = {}) {
         purchase.status === 'paid' ||
         purchase.status === 'partially_refunded'
       ) {
-        return {
-          status: 200,
-          body: { duplicate: true, purchaseId: input.purchaseId },
-        };
+        return duplicatePurchaseResponse(input.purchaseId);
       }
       const balance = await transaction.get(creditRef(db, purchase.apiKeyUuid));
       const before = Number(readData(balance).credit ?? 0);
@@ -290,10 +287,7 @@ export function createBillingRuntime(db, runtime = {}) {
         return { status: 404, body: { error: 'purchase_not_found' } };
       const purchase = readData(snapshot);
       if (purchase.status === 'expired')
-        return {
-          status: 200,
-          body: { duplicate: true, purchaseId: input.purchaseId },
-        };
+        return duplicatePurchaseResponse(input.purchaseId);
       if (purchase.status !== 'pending')
         return {
           status: 200,
@@ -330,6 +324,15 @@ export function createBillingRuntime(db, runtime = {}) {
     applyRefundEvent,
     markPurchaseExpired,
   };
+}
+
+/**
+ * Build the common duplicate purchase response.
+ * @param {string} purchaseId Purchase identifier.
+ * @returns {BillingResponse} Duplicate response.
+ */
+function duplicatePurchaseResponse(purchaseId) {
+  return { status: 200, body: { duplicate: true, purchaseId } };
 }
 
 export { creditRef, eventRef, lotRef, purchaseRef };

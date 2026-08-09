@@ -19,7 +19,7 @@ import { createBillingRuntime } from '../billing/billing-runtime-core.js';
 
 /**
  * Create the payment webhook request handler used by the cloud wrapper.
- * @param {{ firestore: FirestoreCtor, env?: ProcessEnvLike }} deps Dependencies for the wrapper.
+ * @param {{ firestore: FirestoreCtor, env?: ProcessEnvLike, constructEvent?: (payload: string|Buffer, signature: string, secret: string) => unknown }} deps Dependencies for the wrapper.
  * @returns {(req: unknown, res: unknown) => Promise<unknown>} Request handler.
  */
 export function createPaymentWebhookIndexHandler({

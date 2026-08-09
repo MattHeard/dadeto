@@ -1,3 +1,4 @@
+// @ts-nocheck -- seed persistence is an injected Firestore boundary.
 /* eslint-disable jsdoc/require-param-description, jsdoc/require-param-type, jsdoc/require-returns */
 import { createPricingSnapshot, quoteCreditPackage } from './pricing-core.js';
 

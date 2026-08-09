@@ -2,8 +2,9 @@ import { describe, expect, it, jest } from '@jest/globals';
 import { createPurchaseStatusHandler } from '../../../../src/core/cloud/billing/purchase-status-core.js';
 
 /**
- *
- * @param purchase
+ * Build a purchase status handler fixture.
+ * @param {Record<string, unknown>} purchase Purchase fixture.
+ * @returns {(request: object) => Promise<object>} Status handler.
  */
 function setup(
   purchase = {

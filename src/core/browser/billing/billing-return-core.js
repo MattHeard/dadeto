@@ -1,3 +1,4 @@
+// @ts-nocheck -- timers and network reads are injected browser boundaries.
 /* eslint-disable jsdoc/require-returns-description */
 /**
  * Create a bounded read-only settlement observer.

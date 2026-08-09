@@ -14,6 +14,11 @@ const offer = {
  *
  * @param overrides
  */
+/**
+ * Build a controller fixture.
+ * @param {Record<string, unknown>} overrides Dependency overrides.
+ * @returns {{ deps: Record<string, unknown>, controller: object }} Fixture.
+ */
 function setup(overrides = {}) {
   const deps = {
     loadOffers: jest.fn(async () => ({ packages: [offer] })),
