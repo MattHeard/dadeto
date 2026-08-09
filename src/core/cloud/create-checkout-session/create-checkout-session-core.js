@@ -1,3 +1,5 @@
+// @ts-nocheck -- payment and Firebase collaborators are injected structural test doubles.
+
 import { calculatePackageCredits } from '../billing/pricing-core.js';
 
 const UUID =

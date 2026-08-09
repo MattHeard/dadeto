@@ -11,7 +11,9 @@ describe('build navbar', () => {
     expect(createNavbar()).toContain('data-filter="blog"');
     expect(createNavbar()).toContain('data-filter="toys"');
     expect(createLinksBar()).toContain('https://x.com/mattheard');
-    expect(createLinksBar()).toContain('https://www.linkedin.com/in/matthewjohnheard');
+    expect(createLinksBar()).toContain(
+      'https://www.linkedin.com/in/matthewjohnheard'
+    );
     expect(createNavbarHandle()).toEqual({ createNavbar, createLinksBar });
   });
 });

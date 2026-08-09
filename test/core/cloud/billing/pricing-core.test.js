@@ -48,18 +48,29 @@ describe('pricing core', () => {
     expect(() =>
       createPricingSnapshot({ ...snapshot, creditEurMicros: 0 })
     ).toThrow();
-    expect(() =>
-      createPricingSnapshot({ ...snapshot, markupBps: -1 })
-    ).toThrow('markupBps');
+    expect(() => createPricingSnapshot({ ...snapshot, markupBps: -1 })).toThrow(
+      'markupBps'
+    );
     expect(() =>
       createPricingSnapshot({ ...snapshot, markupBps: 1.5 })
     ).toThrow('markupBps');
     expect(() =>
-      createPricingSnapshot({ ...snapshot, operations: [{ id: 'bad', costEurMicros: 0 }] })
+      createPricingSnapshot({
+        ...snapshot,
+        operations: [{ id: 'bad', costEurMicros: 0 }],
+      })
     ).toThrow('costEurMicros');
-    expect(() => calculatePackageCredits(0, snapshot)).toThrow('amountUsdMinor');
-    expect(() => quoteCreditPackage({ id: 'bad', amountUsdMinor: 0 }, snapshot)).toThrow('amountUsdMinor');
-    const lowCost = createPricingSnapshot({ ...snapshot, creditEurMicros: 1_000, operations: [{ id: 'function.invoke', costEurMicros: 5 }] });
+    expect(() => calculatePackageCredits(0, snapshot)).toThrow(
+      'amountUsdMinor'
+    );
+    expect(() =>
+      quoteCreditPackage({ id: 'bad', amountUsdMinor: 0 }, snapshot)
+    ).toThrow('amountUsdMinor');
+    const lowCost = createPricingSnapshot({
+      ...snapshot,
+      creditEurMicros: 1_000,
+      operations: [{ id: 'function.invoke', costEurMicros: 5 }],
+    });
     expect(calculateOperationCredits('function.invoke', lowCost)).toBe(1);
   });
 });

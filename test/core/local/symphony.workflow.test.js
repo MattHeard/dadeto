@@ -68,14 +68,24 @@ Quality gates:
   test('loads an existing workflow and returns a missing-file scaffold', async () => {
     const workflowPath = path.join(tempDir, 'WORKFLOW.md');
     await writeFile(workflowPath, '---\nmode: prod\n---\nPrompt\n', 'utf8');
-    await expect(loadSymphonyWorkflow({ repoRoot: tempDir, pathModule: path, readFileImpl: readFile })).resolves.toMatchObject({
+    await expect(
+      loadSymphonyWorkflow({
+        repoRoot: tempDir,
+        pathModule: path,
+        readFileImpl: readFile,
+      })
+    ).resolves.toMatchObject({
       path: workflowPath,
       exists: true,
       config: { mode: 'prod' },
     });
 
     await expect(
-      loadSymphonyWorkflow({ repoRoot: path.join(tempDir, 'missing'), pathModule: path, readFileImpl: readFile })
+      loadSymphonyWorkflow({
+        repoRoot: path.join(tempDir, 'missing'),
+        pathModule: path,
+        readFileImpl: readFile,
+      })
     ).resolves.toMatchObject({
       exists: false,
       lineCount: 0,
@@ -85,7 +95,9 @@ Quality gates:
   });
 
   test('propagates non-missing read failures', async () => {
-    await expect(loadSymphonyWorkflow()).rejects.toThrow('pathModule is required');
+    await expect(loadSymphonyWorkflow()).rejects.toThrow(
+      'pathModule is required'
+    );
     await expect(
       loadSymphonyWorkflow({
         workflowPath: path.join(tempDir, 'workflow.md'),

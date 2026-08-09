@@ -191,7 +191,9 @@ describe('createDb', () => {
   });
 
   it('falls back when the configured database selects the default sentinel', () => {
-    const FirestoreCtor = jest.fn().mockImplementation(options => ({ options }));
+    const FirestoreCtor = jest
+      .fn()
+      .mockImplementation(options => ({ options }));
 
     const db = createDb(FirestoreCtor, {
       DATABASE_ID: '(default)',
@@ -203,7 +205,9 @@ describe('createDb', () => {
   });
 
   it('uses process environment when no environment override is provided', () => {
-    const FirestoreCtor = jest.fn().mockImplementation(options => ({ options }));
+    const FirestoreCtor = jest
+      .fn()
+      .mockImplementation(options => ({ options }));
     expect(createDb(FirestoreCtor).options).toBeUndefined();
     expect(FirestoreCtor).toHaveBeenCalledWith();
   });
@@ -576,36 +580,49 @@ describe('createGetApiKeyCreditV2Handler', () => {
       body: 'Method Not Allowed',
       headers: { Allow: 'GET, POST' },
     });
-    for (const body of [null, {}, { type: 'unknown' }, { type: 'credit_added' },
+    for (const body of [
+      null,
+      {},
+      { type: 'unknown' },
+      { type: 'credit_added' },
       { type: 'credit_added', eventId: 'e' },
       { type: 'credit_added', eventId: 'e', amount: 0 },
-      { type: 'credit_added', eventId: 'e', amount: 'nope' }]) {
+      { type: 'credit_added', eventId: 'e', amount: 'nope' },
+    ]) {
       await expect(handler({ method: 'POST', body })).resolves.toMatchObject({
         status: 400,
       });
     }
-    await expect(handler({
-      method: 'POST',
-      body: { eventType: 'credit_deducted', idempotencyUuid: 'e', amount: 2 },
-    })).resolves.toEqual({ status: 201, body: { applied: true } });
+    await expect(
+      handler({
+        method: 'POST',
+        body: { eventType: 'credit_deducted', idempotencyUuid: 'e', amount: 2 },
+      })
+    ).resolves.toEqual({ status: 201, body: { applied: true } });
     expect(applyCreditEvent).toHaveBeenCalledWith('user', {
-      type: 'credit_deducted', eventId: 'e', amount: 2,
+      type: 'credit_deducted',
+      eventId: 'e',
+      amount: 2,
     });
   });
 
   it('rejects missing required handler dependencies', () => {
     expect(() => createGetApiKeyCreditV2Handler()).toThrow('fetchCredit');
     expect(() => createGetApiKeyCreditV2Handler({})).toThrow('fetchCredit');
-    expect(() => createGetApiKeyCreditV2Handler({
-      fetchCredit: async () => 0,
-    })).toThrow('applyCreditEvent');
+    expect(() =>
+      createGetApiKeyCreditV2Handler({
+        fetchCredit: async () => 0,
+      })
+    ).toThrow('applyCreditEvent');
   });
 
   it('supports default UUID extraction and logs credit-event failures', async () => {
     expect(extractUuid(null)).toBe('');
-    expect(extractUuid({
-      path: '/api-keys/123e4567-e89b-12d3-a456-426614174000/credit',
-    })).toBe('123e4567-e89b-12d3-a456-426614174000');
+    expect(
+      extractUuid({
+        path: '/api-keys/123e4567-e89b-12d3-a456-426614174000/credit',
+      })
+    ).toBe('123e4567-e89b-12d3-a456-426614174000');
     const logError = jest.fn();
     const handler = createGetApiKeyCreditV2Handler({
       fetchCredit: async () => 1,
@@ -627,11 +644,13 @@ describe('createGetApiKeyCreditV2Handler', () => {
       status: 200,
       body: { credit: 0 },
     });
-    await expect(handler({
-      method: 'POST',
-      path: '/api-keys/123e4567-e89b-12d3-a456-426614174000/credit',
-      body: { type: 'credit_added', eventId: 'e', amount: 1 },
-    })).resolves.toEqual({ status: 500, body: 'Internal error' });
+    await expect(
+      handler({
+        method: 'POST',
+        path: '/api-keys/123e4567-e89b-12d3-a456-426614174000/credit',
+        body: { type: 'credit_added', eventId: 'e', amount: 1 },
+      })
+    ).resolves.toEqual({ status: 500, body: 'Internal error' });
     expect(logError).toHaveBeenCalled();
 
     const defaultLoggerHandler = createGetApiKeyCreditV2Handler({
@@ -640,10 +659,12 @@ describe('createGetApiKeyCreditV2Handler', () => {
       },
       applyCreditEvent: async () => ({ status: 200, body: {} }),
     });
-    await expect(defaultLoggerHandler({
-      method: 'GET',
-      path: '/api-keys/123e4567-e89b-12d3-a456-426614174000/credit',
-    })).resolves.toEqual({ status: 500, body: 'Internal error' });
+    await expect(
+      defaultLoggerHandler({
+        method: 'GET',
+        path: '/api-keys/123e4567-e89b-12d3-a456-426614174000/credit',
+      })
+    ).resolves.toEqual({ status: 500, body: 'Internal error' });
   });
   it('returns the stored ledger history on the events route', async () => {
     const handler = createGetApiKeyCreditV2Handler({

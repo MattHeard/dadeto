@@ -159,8 +159,10 @@ describe('core local symphony helpers', () => {
       })
     ).toEqual({
       state: 'blocked',
-      latestEvidence: 'WORKFLOW.md is missing; add it before enabling runner scheduling.',
-      operatorRecommendation: 'Add WORKFLOW.md so Symphony can decide what the runner should do next.',
+      latestEvidence:
+        'WORKFLOW.md is missing; add it before enabling runner scheduling.',
+      operatorRecommendation:
+        'Add WORKFLOW.md so Symphony can decide what the runner should do next.',
       queueEvidence: [],
     });
   });

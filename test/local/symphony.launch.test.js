@@ -3,22 +3,26 @@ import os from 'node:os';
 import path from 'node:path';
 import { jest } from '@jest/globals';
 
-await jest.unstable_mockModule('../../src/core/local/symphony/launcherCodex.js', () => ({
-  DEFAULT_CODEX_RALPH_ARGS: ['default'],
-  createCodexRalphLauncher: jest.fn(() => ({
-    launchRunner: jest.fn(async () => ({
-      launcherKind: 'mock',
-      command: 'mock',
-      args: [],
-      pid: 123,
+await jest.unstable_mockModule(
+  '../../src/core/local/symphony/launcherCodex.js',
+  () => ({
+    DEFAULT_CODEX_RALPH_ARGS: ['default'],
+    createCodexRalphLauncher: jest.fn(() => ({
+      launchRunner: jest.fn(async () => ({
+        launcherKind: 'mock',
+        command: 'mock',
+        args: [],
+        pid: 123,
+      })),
     })),
-  })),
-}));
-const { launchSelectedRunnerLoop } = await import('../../src/local/symphony/launch.js');
-const {
-  createRunnerExitHandler,
-  symphonyLaunchTestUtils,
-} = await import('../../src/core/local/symphony/launch.js');
+  })
+);
+const { launchSelectedRunnerLoop } = await import(
+  '../../src/local/symphony/launch.js'
+);
+const { createRunnerExitHandler, symphonyLaunchTestUtils } = await import(
+  '../../src/core/local/symphony/launch.js'
+);
 const { createSymphonyStatusStore } = await import(
   '../../src/local/symphony/statusStore.js'
 );

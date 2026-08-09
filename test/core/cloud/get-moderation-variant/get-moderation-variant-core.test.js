@@ -65,7 +65,9 @@ describe('createHandleCorsOrigin', () => {
   it('rejects a supplied origin when the whitelist is not an array', () => {
     expect(isAllowedOrigin('https://blocked.example', null)).toBe(false);
     expect(isAllowedOrigin(undefined, null)).toBe(true);
-    expect(isAllowedOrigin('https://allowed.example', ['https://allowed.example'])).toBe(true);
+    expect(
+      isAllowedOrigin('https://allowed.example', ['https://allowed.example'])
+    ).toBe(true);
   });
 
   it('resolves the story through the complete reference parent chain', async () => {
@@ -75,15 +77,15 @@ describe('createHandleCorsOrigin', () => {
     const variantsCollection = { parent: pageRef };
     const variantRef = { parent: variantsCollection };
 
-    expect(getModerationVariantTestUtils.extractPageFromVariant(variantRef)).toBe(
-      pageRef
-    );
+    expect(
+      getModerationVariantTestUtils.extractPageFromVariant(variantRef)
+    ).toBe(pageRef);
     expect(getModerationVariantTestUtils.extractParentFromPage(pageRef)).toBe(
       pagesCollection
     );
-    expect(getModerationVariantTestUtils.extractStoryFromParent(pagesCollection)).toBe(
-      storyRef
-    );
+    expect(
+      getModerationVariantTestUtils.extractStoryFromParent(pagesCollection)
+    ).toBe(storyRef);
     expect(
       getModerationVariantTestUtils.resolveStoryRefFromVariant(variantRef)
     ).toBe(storyRef);
@@ -91,9 +93,13 @@ describe('createHandleCorsOrigin', () => {
       getModerationVariantTestUtils.resolveStoryRefFromVariant({})
     ).toBeNull();
     expect(
-      getModerationVariantTestUtils.extractStoryDataFromSnapshot({ data: () => null })
+      getModerationVariantTestUtils.extractStoryDataFromSnapshot({
+        data: () => null,
+      })
     ).toEqual({});
-    await expect(getModerationVariantTestUtils.fetchStoryTitle({})).resolves.toBe('');
+    await expect(
+      getModerationVariantTestUtils.fetchStoryTitle({})
+    ).resolves.toBe('');
     expect(
       getModerationVariantTestUtils.extractVariantData({
         variantSnap: { data: () => null },

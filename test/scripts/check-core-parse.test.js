@@ -120,9 +120,9 @@ describe('parse gates', () => {
       }),
     });
     delete defaultOutputOptions.stdout;
-    expect(createCheckParseNotValidateHandle(defaultOutputOptions)().exitCode).toBe(
-      1
-    );
+    expect(
+      createCheckParseNotValidateHandle(defaultOutputOptions)().exitCode
+    ).toBe(1);
   });
 
   test('default path helpers are exposed through test utils', () => {

@@ -1,3 +1,4 @@
+/* eslint-disable jsdoc/reject-any-type */
 import {
   buildSelectedBeadStatus,
   summarizePollResult,

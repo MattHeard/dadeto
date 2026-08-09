@@ -323,7 +323,10 @@ describe('core local server helpers', () => {
     const middleware = createRequestLogger(requestLogger);
     const finish = jest.fn();
     const req = { method: 'GET', url: '/fallback', socket: {} };
-    const res = { statusCode: 204, on: jest.fn((event, handler) => finish.mockImplementation(handler)) };
+    const res = {
+      statusCode: 204,
+      on: jest.fn((event, handler) => finish.mockImplementation(handler)),
+    };
     const next = jest.fn();
 
     middleware(req, res, next);

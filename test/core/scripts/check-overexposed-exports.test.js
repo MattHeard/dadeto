@@ -277,7 +277,11 @@ describe('check-overexposed-exports', () => {
           ? [
               { name: 'a.js', isDirectory: () => false, isFile: () => true },
               { name: 'b.js', isDirectory: () => false, isFile: () => true },
-              { name: 'notes.txt', isDirectory: () => false, isFile: () => true },
+              {
+                name: 'notes.txt',
+                isDirectory: () => false,
+                isFile: () => true,
+              },
             ]
           : [],
       stdout: { write: () => {} },
@@ -416,9 +420,14 @@ describe('check-overexposed-exports', () => {
         ],
       }),
     };
-    expect(helpers.analyzeSourceFile(literalImportDeps, '/repo/src/a.js').exports).toEqual([]);
     expect(
-      helpers.analyzeSourceFile({ readFileSync: () => 'ignored' }, '/repo/src/a.js')
+      helpers.analyzeSourceFile(literalImportDeps, '/repo/src/a.js').exports
+    ).toEqual([]);
+    expect(
+      helpers.analyzeSourceFile(
+        { readFileSync: () => 'ignored' },
+        '/repo/src/a.js'
+      )
     ).toEqual(expect.objectContaining({ exports: [] }));
   });
 
@@ -508,6 +517,13 @@ describe('check-overexposed-exports', () => {
     expect(
       helpers.resolveImportSource(deps, '/repo/src/nested/c.js', 'pkg')
     ).toBe(null);
-    expect(helpers.resolveImportSource(deps, '/repo/src/nested/c.js', './missing', new Set())).toBe(null);
+    expect(
+      helpers.resolveImportSource(
+        deps,
+        '/repo/src/nested/c.js',
+        './missing',
+        new Set()
+      )
+    ).toBe(null);
   });
 });

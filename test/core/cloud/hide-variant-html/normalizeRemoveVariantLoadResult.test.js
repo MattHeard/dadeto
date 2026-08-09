@@ -75,18 +75,33 @@ describe('resolvePageRef', () => {
 
     expect(hideVariantHtmlTestUtils.hasGrandparent(null)).toBe(false);
     expect(hideVariantHtmlTestUtils.hasGrandparent({})).toBe(false);
-    expect(hideVariantHtmlTestUtils.hasGrandparent({ parent: storyRef })).toBe(true);
+    expect(hideVariantHtmlTestUtils.hasGrandparent({ parent: storyRef })).toBe(
+      true
+    );
     expect(hideVariantHtmlTestUtils.hasParentWithGrandparent(null)).toBe(false);
-    expect(hideVariantHtmlTestUtils.hasParentWithGrandparent(optionRef)).toBe(true);
+    expect(hideVariantHtmlTestUtils.hasParentWithGrandparent(optionRef)).toBe(
+      true
+    );
     expect(hideVariantHtmlTestUtils.hasValidGrandparentChain({})).toBe(false);
-    expect(hideVariantHtmlTestUtils.hasValidGrandparentChain(optionRef)).toBe(true);
-    expect(hideVariantHtmlTestUtils.extractGrandparentRef(optionRef)).toBe(pageRef);
+    expect(hideVariantHtmlTestUtils.hasValidGrandparentChain(optionRef)).toBe(
+      true
+    );
+    expect(hideVariantHtmlTestUtils.extractGrandparentRef(optionRef)).toBe(
+      pageRef
+    );
     expect(hideVariantHtmlTestUtils.extractGrandparentRef({})).toBeNull();
     expect(hideVariantHtmlTestUtils.resolveParentPageRef({})).toBeNull();
-    expect(hideVariantHtmlTestUtils.resolveParentPageRef(optionRef)).toBe(pageRef);
-    expect(hideVariantHtmlTestUtils.toPagePayload({ exists: false })).toBeNull();
+    expect(hideVariantHtmlTestUtils.resolveParentPageRef(optionRef)).toBe(
+      pageRef
+    );
     expect(
-      hideVariantHtmlTestUtils.toPagePayload({ exists: true, data: () => ({ number: 1 }) })
+      hideVariantHtmlTestUtils.toPagePayload({ exists: false })
+    ).toBeNull();
+    expect(
+      hideVariantHtmlTestUtils.toPagePayload({
+        exists: true,
+        data: () => ({ number: 1 }),
+      })
     ).toEqual({ page: { number: 1 } });
   });
 });

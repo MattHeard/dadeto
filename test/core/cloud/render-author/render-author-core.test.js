@@ -169,7 +169,9 @@ describe('createRenderAuthorHandler', () => {
       bucket: { file: jest.fn(() => ({ save })) },
       db: {
         collectionGroup: jest.fn(() => ({
-          where: jest.fn(() => ({ get: jest.fn().mockResolvedValue({ docs: [] }) })),
+          where: jest.fn(() => ({
+            get: jest.fn().mockResolvedValue({ docs: [] }),
+          })),
         })),
         collection: jest.fn(() => ({
           doc: jest.fn(() => ({ get: jest.fn().mockResolvedValue({}) })),
@@ -206,15 +208,23 @@ describe('createRenderAuthorHandler', () => {
   test('skips malformed or orphaned variants and invalid reputation data', async () => {
     const save = jest.fn().mockResolvedValue(undefined);
     const pageRef = {
-      get: jest.fn().mockResolvedValue({ data: () => ({ number: 'not-a-number' }) }),
+      get: jest
+        .fn()
+        .mockResolvedValue({ data: () => ({ number: 'not-a-number' }) }),
     };
     const query = {
       get: jest.fn().mockResolvedValue({
         docs: [
           { data: () => ({ name: 'orphan' }) },
           { ref: { parent: { parent: pageRef } }, data: () => ({ name: 4 }) },
-          { ref: { parent: { parent: pageRef } }, data: () => ({ name: 'bad-page' }) },
-          { ref: { parent: { parent: pageRef } }, data: () => ({ visibility: 0.1, name: 'hidden' }) },
+          {
+            ref: { parent: { parent: pageRef } },
+            data: () => ({ name: 'bad-page' }),
+          },
+          {
+            ref: { parent: { parent: pageRef } },
+            data: () => ({ visibility: 0.1, name: 'hidden' }),
+          },
         ],
       }),
     };
@@ -223,7 +233,11 @@ describe('createRenderAuthorHandler', () => {
       db: {
         collectionGroup: jest.fn(() => ({ where: jest.fn(() => query) })),
         collection: jest.fn(() => ({
-          doc: jest.fn(() => ({ get: jest.fn().mockResolvedValue({ data: () => ({ moderatorReputation: NaN }) }) })),
+          doc: jest.fn(() => ({
+            get: jest.fn().mockResolvedValue({
+              data: () => ({ moderatorReputation: NaN }),
+            }),
+          })),
         })),
       },
       deleteField: jest.fn(),

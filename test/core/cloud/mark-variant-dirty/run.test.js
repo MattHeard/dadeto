@@ -79,7 +79,10 @@ describe('runMarkVariantDirty', () => {
     const authorLimit = jest.fn(() => ({ get: authorGet }));
     const authorWhere = jest.fn(() => ({ limit: authorLimit }));
     const collection = jest.fn(() => ({ where: authorWhere }));
-    const getFirestoreInstance = jest.fn(() => ({ collectionGroup, collection }));
+    const getFirestoreInstance = jest.fn(() => ({
+      collectionGroup,
+      collection,
+    }));
     const expressApp = { use: jest.fn(), post: jest.fn() };
     const express = jest.fn(() => expressApp);
     express.json = jest.fn(() => 'json-middleware');

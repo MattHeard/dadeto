@@ -1,14 +1,14 @@
 import { describe, expect, it, jest } from '@jest/globals';
 
-var mockSetupAudio = jest.fn();
-var mockHandleTagLinks = jest.fn();
-var mockHideArticlesByClass = jest.fn();
-var mockHideArticlesWithoutClass = jest.fn();
-var mockInitializeVisibleComponents = jest.fn();
-var mockRevealBetaArticles = jest.fn();
-var mockToggleToyFocusMode = jest.fn();
-var mockFetchBlogData = jest.fn();
-var mockDom = {
+let mockSetupAudio = jest.fn();
+let mockHandleTagLinks = jest.fn();
+let mockHideArticlesByClass = jest.fn();
+let mockHideArticlesWithoutClass = jest.fn();
+let mockInitializeVisibleComponents = jest.fn();
+let mockRevealBetaArticles = jest.fn();
+let mockToggleToyFocusMode = jest.fn();
+let mockFetchBlogData = jest.fn();
+let mockDom = {
   logError: jest.fn(),
   setTextContent: jest.fn(),
   getElementsByTagName: () => [],
@@ -89,16 +89,20 @@ jest.unstable_mockModule('../../../src/core/browser/error-beacon.js', () => ({
 jest.unstable_mockModule('../../../src/core/browser/beta.js', () => ({
   revealBetaArticles: (mockRevealBetaArticles = jest.fn()),
 }));
-jest.unstable_mockModule('../../../src/core/browser/memoryStorageLens.js', () => ({
-  createMemoryStorageLens: () => new Map(),
-}));
-jest.unstable_mockModule('../../../src/core/browser/localStorageLens.js', () => ({
-  createLocalStorageLens: () => new Map(),
-}));
-
-const { createMainHandle } = await import(
-  '../../../src/core/browser/main.js'
+jest.unstable_mockModule(
+  '../../../src/core/browser/memoryStorageLens.js',
+  () => ({
+    createMemoryStorageLens: () => new Map(),
+  })
 );
+jest.unstable_mockModule(
+  '../../../src/core/browser/localStorageLens.js',
+  () => ({
+    createLocalStorageLens: () => new Map(),
+  })
+);
+
+const { createMainHandle } = await import('../../../src/core/browser/main.js');
 
 describe('browser main initialization', () => {
   it('covers initialization and interactive branches', () => {

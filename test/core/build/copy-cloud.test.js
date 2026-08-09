@@ -10,7 +10,8 @@ describe('createCopyCloudHandle', () => {
       mkdir: async () => undefined,
       copyFile: async () => undefined,
       readFile: async () => '../cloud-core.js',
-      writeFile: async (filePath, content) => writes.push({ filePath, content }),
+      writeFile: async (filePath, content) =>
+        writes.push({ filePath, content }),
     };
     const logger = { info: jest.fn() };
 
@@ -23,7 +24,9 @@ describe('createCopyCloudHandle', () => {
     });
 
     expect(writes.length).toBeGreaterThan(20);
-    expect(logger.info).toHaveBeenCalledWith(expect.stringContaining('Rewrote'));
+    expect(logger.info).toHaveBeenCalledWith(
+      expect.stringContaining('Rewrote')
+    );
 
     await createCopyCloudHandle({
       fileURLToPathFn: () => '/repo/src/core/build/copy-cloud.js',
@@ -58,25 +61,29 @@ describe('createCopyCloudHandle', () => {
         throw new Error('read failure');
       },
     });
-    await expect(createCopyCloudHandle({
-      fileURLToPathFn: () => '/repo/src/core/build/copy-cloud.js',
-      dirnameFn: input => path.dirname(input),
-      pathModule: path,
-      fsPromisesModule: brokenFile,
-      logger,
-    })).rejects.toThrow('read failure');
+    await expect(
+      createCopyCloudHandle({
+        fileURLToPathFn: () => '/repo/src/core/build/copy-cloud.js',
+        dirnameFn: input => path.dirname(input),
+        pathModule: path,
+        fsPromisesModule: brokenFile,
+        logger,
+      })
+    ).rejects.toThrow('read failure');
 
-    await expect(createCopyCloudHandle({
-      fileURLToPathFn: () => '/repo/src/core/build/copy-cloud.js',
-      dirnameFn: input => path.dirname(input),
-      pathModule: path,
-      fsPromisesModule: {
-        ...fsPromises,
-        readFile: async () => {
-          throw new Error('batch read failure');
+    await expect(
+      createCopyCloudHandle({
+        fileURLToPathFn: () => '/repo/src/core/build/copy-cloud.js',
+        dirnameFn: input => path.dirname(input),
+        pathModule: path,
+        fsPromisesModule: {
+          ...fsPromises,
+          readFile: async () => {
+            throw new Error('batch read failure');
+          },
         },
-      },
-      logger,
-    })).rejects.toThrow('batch read failure');
+        logger,
+      })
+    ).rejects.toThrow('batch read failure');
   });
 });

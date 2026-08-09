@@ -89,10 +89,18 @@ describe('assignModerationJobTestUtils', () => {
 
   test('covers variant selection and candidate tie-breaker fallbacks', () => {
     const variantDoc = { ref: { path: 'variants/direct' } };
-    expect(assignModerationJobTestUtils.selectVariantDoc({ variantDoc })).toEqual({ variantDoc });
-    expect(assignModerationJobTestUtils.chooseVariantDocFromCandidates([], () => 0)).toBeUndefined();
-    expect(assignModerationJobTestUtils.getNumericCandidateValue('bad')).toBe(0);
-    expect(assignModerationJobTestUtils.getVariantDocPath({ variantDoc: {} })).toBe('');
+    expect(
+      assignModerationJobTestUtils.selectVariantDoc({ variantDoc })
+    ).toEqual({ variantDoc });
+    expect(
+      assignModerationJobTestUtils.chooseVariantDocFromCandidates([], () => 0)
+    ).toBeUndefined();
+    expect(assignModerationJobTestUtils.getNumericCandidateValue('bad')).toBe(
+      0
+    );
+    expect(
+      assignModerationJobTestUtils.getVariantDocPath({ variantDoc: {} })
+    ).toBe('');
     const left = {
       variantDoc: {
         ref: { path: 'variants/a' },
@@ -105,15 +113,21 @@ describe('assignModerationJobTestUtils', () => {
         data: () => ({ moderationUrgency: 1, pagePath: 'pages/b' }),
       },
     };
-    expect(assignModerationJobTestUtils.compareCandidateSnapshots(left, right)).toBeLessThan(0);
-    expect(assignModerationJobTestUtils.compareCandidateSnapshots(
-      { variantDoc: { ref: { path: 'a' }, data: () => ({}) } },
-      { variantDoc: { ref: { path: 'b' }, data: () => ({}) } }
-    )).toBeLessThan(0);
-    expect(assignModerationJobTestUtils.compareCandidateSnapshots(
-      {},
-      { variantDoc: { ref: { path: 'b' }, data: () => ({}) } }
-    )).toBeLessThan(0);
+    expect(
+      assignModerationJobTestUtils.compareCandidateSnapshots(left, right)
+    ).toBeLessThan(0);
+    expect(
+      assignModerationJobTestUtils.compareCandidateSnapshots(
+        { variantDoc: { ref: { path: 'a' }, data: () => ({}) } },
+        { variantDoc: { ref: { path: 'b' }, data: () => ({}) } }
+      )
+    ).toBeLessThan(0);
+    expect(
+      assignModerationJobTestUtils.compareCandidateSnapshots(
+        {},
+        { variantDoc: { ref: { path: 'b' }, data: () => ({}) } }
+      )
+    ).toBeLessThan(0);
   });
 
   test('createRunVariantQuery filters already moderated pages and sorts by urgency', async () => {

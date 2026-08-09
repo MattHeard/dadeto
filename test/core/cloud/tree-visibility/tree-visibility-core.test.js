@@ -87,7 +87,9 @@ describe('tree visibility', () => {
     });
     expect(updateVariant).toHaveBeenCalledTimes(2);
 
-    const emptyData = { get: jest.fn().mockResolvedValue({ exists: true, data: () => null }) };
+    const emptyData = {
+      get: jest.fn().mockResolvedValue({ exists: true, data: () => null }),
+    };
     await propagateTreeVisibilityDelta({
       variantRef: emptyData,
       delta: 0,

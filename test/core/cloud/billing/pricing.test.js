@@ -20,7 +20,9 @@ describe('pricing facade', () => {
     expect(SCALE).toBe(1_000_000);
     expect(calculatePackageCredits(100, snapshot)).toBe(920_000);
     expect(calculateOperationCredits('invoke', snapshot)).toBe(55);
-    expect(quoteCreditPackage({ id: 'small', amountUsdMinor: 100 }, snapshot)).toEqual({
+    expect(
+      quoteCreditPackage({ id: 'small', amountUsdMinor: 100 }, snapshot)
+    ).toEqual({
       packageId: 'small',
       amountUsdMinor: 100,
       credits: 920_000,

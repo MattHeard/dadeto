@@ -100,8 +100,14 @@ describe('render support helpers', () => {
       consoleError,
     });
     const state = {
-      db: {}, storage: {}, dynamicFetch, projectId: undefined,
-      urlMapName: undefined, cdnHost: undefined, bucketName: 'b', objectPrefix: 'p',
+      db: {},
+      storage: {},
+      dynamicFetch,
+      projectId: undefined,
+      urlMapName: undefined,
+      cdnHost: undefined,
+      bucketName: 'b',
+      objectPrefix: 'p',
     };
     expect(build(state)).toMatchObject({ db: {}, bucketName: 'b' });
     expect(renderer).toHaveBeenCalledTimes(1);
@@ -111,7 +117,9 @@ describe('render support helpers', () => {
     const ensureFirebaseApp = jest.fn();
     const createFirebaseAppManager = jest.fn(() => ({ ensureFirebaseApp }));
     const getEnvironmentVariables = jest.fn(() => ({
-      GCLOUD_PROJECT: 'project', URL_MAP: 'map', CDN_HOST: 'cdn',
+      GCLOUD_PROJECT: 'project',
+      URL_MAP: 'map',
+      CDN_HOST: 'cdn',
     }));
     const buildRender = jest.fn(state => state);
     const state = createCloudRenderEntrypointState({

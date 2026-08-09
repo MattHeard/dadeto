@@ -20,10 +20,7 @@ test('loads ratings, calculates reputations, and writes them with a timestamp', 
 
   await expect(job()).resolves.toBeUndefined();
   expect(fetchModerationRatings).toHaveBeenCalledTimes(1);
-  expect(calculateModeratorReputations).toHaveBeenCalledWith(
-    ratings,
-    'admin'
-  );
+  expect(calculateModeratorReputations).toHaveBeenCalledWith(ratings, 'admin');
   expect(writeModeratorReputations).toHaveBeenCalledWith(db, reputations, {
     updatedAt: '2026-08-09T00:00:00.000Z',
   });

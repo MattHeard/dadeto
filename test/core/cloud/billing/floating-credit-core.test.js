@@ -43,5 +43,9 @@ it('quotes the refundable unused credits at the current rate', () => {
       100,
       snapshot
     )
-  ).toEqual({ amountUsdMinor: 5, remainingCredits: 45_000, snapshotId: 'daily-1' });
+  ).toEqual({
+    amountUsdMinor: 5,
+    remainingCredits: 45_000,
+    snapshotId: 'daily-1',
+  });
 });

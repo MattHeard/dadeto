@@ -1,4 +1,4 @@
-/* eslint-disable no-ternary, complexity -- renderer normalization keeps the trigger path compact. */
+/* eslint-disable no-ternary, complexity, jsdoc/reject-any-type -- renderer normalization. */
 import { renderHtmlTemplate } from '../html-template.js';
 
 /** @typedef {{ collectionGroup?: (name: string) => { where: (field: string, operator: string, value: unknown) => unknown }; collection?: (name: string) => { doc: (id: string) => { get: () => Promise<unknown> } } }} AuthorDatabase */
@@ -81,7 +81,7 @@ function escapeHtml(value) {
 export function createRenderAuthorHandler({ bucket, db, deleteField }) {
   return async change => {
     if (!change.after.exists) return null;
-    const data = change.after.data();
+    const data = /** @type {Record<string, unknown>} */ (change.after.data());
     if (!data.dirty) return null;
     const variants = await getAuthorVariants(db, change.after.ref.id);
     const moderatorReputation = await getModeratorReputation(
@@ -93,7 +93,9 @@ export function createRenderAuthorHandler({ bucket, db, deleteField }) {
     await bucket.file(rendered.path).save(rendered.html, {
       contentType: 'text/html',
     });
-    await change.after.ref.update({ dirty: deleteField() });
+    await /** @type {{ update: (value: object) => Promise<void> }} */ (
+      /** @type {unknown} */ (change.after.ref)
+    ).update({ dirty: deleteField() });
     return null;
   };
 }
@@ -106,7 +108,9 @@ export function createRenderAuthorHandler({ bucket, db, deleteField }) {
 async function getModeratorReputation(db, moderatorId) {
   if (!db?.collection) return undefined;
   const snapshot = await db.collection('moderators').doc(moderatorId).get();
-  const reputation = snapshot?.data?.()?.moderatorReputation;
+  const moderatorData = /** @type {any} */ (snapshot);
+  const moderatorFields = moderatorData?.data?.() ?? {};
+  const reputation = moderatorFields.moderatorReputation;
   return typeof reputation === 'number' && Number.isFinite(reputation)
     ? Math.round(reputation * 100)
     : undefined;
@@ -119,7 +123,8 @@ async function getModeratorReputation(db, moderatorId) {
  */
 async function getAuthorVariants(db, authorId) {
   if (!db?.collectionGroup) return [];
-  const snapshot = await db
+  const authorDatabase = /** @type {any} */ (db);
+  const snapshot = await authorDatabase
     .collectionGroup('variants')
     .where('authorId', '==', authorId)
     .get();
@@ -128,7 +133,9 @@ async function getAuthorVariants(db, authorId) {
     const data = doc.data();
     if ((data.visibility ?? 1) < 0.5) continue;
     const pageRef = doc.ref?.parent?.parent;
-    const page = pageRef ? (await pageRef.get()).data() : undefined;
+    const page = pageRef
+      ? /** @type {any} */ ((await pageRef.get()).data())
+      : undefined;
     if (typeof page?.number !== 'number' || typeof data.name !== 'string')
       continue;
     variants.push({

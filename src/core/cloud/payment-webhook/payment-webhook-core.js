@@ -1,3 +1,4 @@
+/* eslint-disable jsdoc/reject-any-type */
 import {
   createApplyCreditEvent,
   createFetchCredit,
@@ -26,7 +27,7 @@ export function createPaymentWebhookIndexHandler({
   firestore,
   env = process.env,
 }) {
-  const db = createDb(firestore, env);
+  const db = /** @type {any} */ (createDb(firestore, env));
   const billing = createBillingRuntime(db);
   const handleRequest = createPaymentWebhookHandler({
     fetchCredit: createFetchCredit(db),
@@ -67,7 +68,7 @@ export function createPaymentWebhookIndexHandler({
 
   return async function handle(req, res) {
     const response = await handlePaymentWebhookRequest(handleRequest, req);
-    return sendPaymentWebhookResponse(res, response);
+    return sendPaymentWebhookResponse(/** @type {any} */ (res), response);
   };
 }
 

@@ -321,11 +321,18 @@ describe('non-core thin status', () => {
  * }} options Test handle options.
  * @returns {() => void} Check command handle.
  */
-function createTestCheckHandle({ status, logs, errors, exitCodes, formatFailure }) {
+function createTestCheckHandle({
+  status,
+  logs,
+  errors,
+  exitCodes,
+  formatFailure,
+}) {
   return nonCoreThinStatusTestOnly.createCheckNonCoreThinHandle({
     getStatus: () => status,
-    formatFailure: formatFailure ?? (currentStatus =>
-      currentStatus.isClean ? [] : ['failure line']),
+    formatFailure:
+      formatFailure ??
+      (currentStatus => (currentStatus.isClean ? [] : ['failure line'])),
     output: {
       error: line => errors.push(line),
       log: line => logs.push(line),

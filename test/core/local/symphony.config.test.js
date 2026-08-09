@@ -6,7 +6,9 @@ import {
 } from '../../../src/core/local/symphony/config.js';
 
 describe('Symphony config', () => {
-  const pathModule = { resolve: (root, ...parts) => [root, ...parts].join('/') };
+  const pathModule = {
+    resolve: (root, ...parts) => [root, ...parts].join('/'),
+  };
 
   it('normalizes defaults and valid custom values', () => {
     expect(
@@ -50,7 +52,12 @@ describe('Symphony config', () => {
       })
     ).toMatchObject({
       tracker: { kind: 'custom', readyCommand: 'ready' },
-      launcher: { kind: 'other', command: 'runner', args: ['--one'], mcpServers: ['linear'] },
+      launcher: {
+        kind: 'other',
+        command: 'runner',
+        args: ['--one'],
+        mcpServers: ['linear'],
+      },
       workspaceRoot: '/repo/work',
       logDir: '/repo/logs',
       statusPath: '/repo/logs/status.json',
@@ -82,9 +89,11 @@ describe('Symphony config', () => {
   });
 
   it('loads and normalizes a local JSON config through injected IO', async () => {
-    const readFileImpl = jest.fn().mockResolvedValue(
-      JSON.stringify({ logDir: 'custom-logs', defaultBranch: 'release' })
-    );
+    const readFileImpl = jest
+      .fn()
+      .mockResolvedValue(
+        JSON.stringify({ logDir: 'custom-logs', defaultBranch: 'release' })
+      );
     const result = await loadSymphonyConfig({
       repoRoot: '/repo',
       cwd: () => '/repo',

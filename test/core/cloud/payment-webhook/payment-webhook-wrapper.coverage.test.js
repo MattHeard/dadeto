@@ -19,9 +19,12 @@ await jest.unstable_mockModule(
   '../../../../src/core/cloud/get-api-key-credit-v2/create-db.js',
   () => ({ createDb: () => mockDb })
 );
-await jest.unstable_mockModule('../../../../src/core/cloud/billing/billing-runtime-core.js', () => ({
-  createBillingRuntime: () => mockBilling,
-}));
+await jest.unstable_mockModule(
+  '../../../../src/core/cloud/billing/billing-runtime-core.js',
+  () => ({
+    createBillingRuntime: () => mockBilling,
+  })
+);
 await jest.unstable_mockModule(
   '../../../../src/core/cloud/get-api-key-credit-v2/get-api-key-credit-v2-core.js',
   () => ({
@@ -30,25 +33,26 @@ await jest.unstable_mockModule(
     createResolveApiKeyUuid: options => options.findApiKeyUuidByCustomerId,
   })
 );
-await jest.unstable_mockModule('../../../../src/core/payment-webhook-core.js', () => ({
-  createPaymentWebhookHandler: (...args) => {
-    mockCreatePaymentWebhookHandler(...args);
-    return mockDomainHandler;
-  },
-  createResolveApiKeyUuid: options => options.findApiKeyUuidByCustomerId,
-  extractHeader: request => request?.headers?.['payment-signature'] ?? '',
-  extractRawPayload: request => request?.body ?? '',
-  parseJsonEvent: payload => JSON.parse(payload),
-  readMetadata: jest.fn(event => event.metadata ?? {}),
-  verifyPaymentSignature: () => true,
-}));
-
-const {
-  createPaymentWebhookIndexHandler,
-  parsePaymentWebhookEvent,
-} = await import(
-  '../../../../src/core/cloud/payment-webhook/payment-webhook-core.js'
+await jest.unstable_mockModule(
+  '../../../../src/core/payment-webhook-core.js',
+  () => ({
+    createPaymentWebhookHandler: (...args) => {
+      mockCreatePaymentWebhookHandler(...args);
+      return mockDomainHandler;
+    },
+    createResolveApiKeyUuid: options => options.findApiKeyUuidByCustomerId,
+    extractHeader: request => request?.headers?.['payment-signature'] ?? '',
+    extractRawPayload: request => request?.body ?? '',
+    parseJsonEvent: payload => JSON.parse(payload),
+    readMetadata: jest.fn(event => event.metadata ?? {}),
+    verifyPaymentSignature: () => true,
+  })
 );
+
+const { createPaymentWebhookIndexHandler, parsePaymentWebhookEvent } =
+  await import(
+    '../../../../src/core/cloud/payment-webhook/payment-webhook-core.js'
+  );
 
 describe('payment webhook cloud wrapper', () => {
   it('builds dependencies and forwards the structured response', async () => {

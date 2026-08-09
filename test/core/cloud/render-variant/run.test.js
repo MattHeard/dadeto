@@ -42,16 +42,22 @@ await jest.unstable_mockModule(
   })
 );
 
-await jest.unstable_mockModule('../../../../src/core/cloud/render-support.js', () => ({
-  createCloudRenderInstanceBuilder: mockCreateCloudRenderInstanceBuilder,
-  createCloudRenderEntrypointState: mockCreateCloudRenderEntrypointState,
-  createMemoizedLoader: jest.fn(),
-}));
+await jest.unstable_mockModule(
+  '../../../../src/core/cloud/render-support.js',
+  () => ({
+    createCloudRenderInstanceBuilder: mockCreateCloudRenderInstanceBuilder,
+    createCloudRenderEntrypointState: mockCreateCloudRenderEntrypointState,
+    createMemoizedLoader: jest.fn(),
+  })
+);
 
-await jest.unstable_mockModule('../../../../src/core/cloud/cloud-core.js', () => ({
-  createFirestoreDocumentOnWriteTrigger:
-    mockCreateFirestoreDocumentOnWriteTrigger,
-}));
+await jest.unstable_mockModule(
+  '../../../../src/core/cloud/cloud-core.js',
+  () => ({
+    createFirestoreDocumentOnWriteTrigger:
+      mockCreateFirestoreDocumentOnWriteTrigger,
+  })
+);
 
 const { runRenderVariant } = await import(
   '../../../../src/core/cloud/render-variant/run.js'

@@ -48,48 +48,62 @@ describe('toys additional coverage', () => {
 
   test('logs and stops when an interactive article lacks controls', () => {
     const logWarning = jest.fn();
-    initializeInteractiveComponent(
-      { id: 'missing-controls' },
-      jest.fn(),
-      {
-        globalState: {},
-        createEnvFn: jest.fn(),
-        errorFn: jest.fn(),
-        fetchFn: jest.fn(),
-        getUuid: jest.fn(),
-        loggers: { logInfo: jest.fn(), logWarning },
-        dom: {
-          querySelector: jest.fn(() => null),
-          querySelectorAll: jest.fn(() => []),
-        },
-      }
-    );
+    initializeInteractiveComponent({ id: 'missing-controls' }, jest.fn(), {
+      globalState: {},
+      createEnvFn: jest.fn(),
+      errorFn: jest.fn(),
+      fetchFn: jest.fn(),
+      getUuid: jest.fn(),
+      loggers: { logInfo: jest.fn(), logWarning },
+      dom: {
+        querySelector: jest.fn(() => null),
+        querySelectorAll: jest.fn(() => []),
+      },
+    });
     expect(logWarning).toHaveBeenCalled();
   });
 
   test('covers auto-submit scheduling and input fallbacks', () => {
     const input = { value: 'element' };
-    expect(utils.readLiveInputValue({ getValue: () => 'dom' }, input)).toBe('dom');
-    expect(utils.readLiveInputValue({ getValue: () => undefined }, input)).toBe('element');
-    expect(utils.readLiveInputValue({ getValue: () => undefined }, {})).toBe('');
+    expect(utils.readLiveInputValue({ getValue: () => 'dom' }, input)).toBe(
+      'dom'
+    );
+    expect(utils.readLiveInputValue({ getValue: () => undefined }, input)).toBe(
+      'element'
+    );
+    expect(utils.readLiveInputValue({ getValue: () => undefined }, {})).toBe(
+      ''
+    );
     const callback = jest.fn();
     const raf = jest.fn(() => 4);
-    expect(utils.requestAutoSubmitFrame({ requestAnimationFrame: raf }, callback)).toBe(4);
+    expect(
+      utils.requestAutoSubmitFrame({ requestAnimationFrame: raf }, callback)
+    ).toBe(4);
     let timerCallback;
     const timer = jest.fn(callback => {
       timerCallback = callback;
       return 5;
     });
-    expect(utils.requestAutoSubmitFrame({ setTimeout: timer }, callback)).toBe(5);
+    expect(utils.requestAutoSubmitFrame({ setTimeout: timer }, callback)).toBe(
+      5
+    );
     timerCallback();
-    expect(() => utils.requestAutoSubmitFrame({}, callback)).toThrow('setTimeout');
+    expect(() => utils.requestAutoSubmitFrame({}, callback)).toThrow(
+      'setTimeout'
+    );
     const cancelRaf = jest.fn();
     utils.cancelAutoSubmitFrame({ cancelAnimationFrame: cancelRaf }, 4);
     utils.cancelAutoSubmitFrame({ clearTimeout: jest.fn() }, 5);
     utils.cancelAutoSubmitFrame({}, null);
     expect(() => utils.cancelAutoSubmitFrame({}, 1)).toThrow('clearTimeout');
     const state = { frameId: 1, lastValue: 'old' };
-    utils.registerAutoSubmitPolling({ elements: {}, processingFunction: jest.fn(), env: { dom: {} }, inputElement: input, autoSubmitState: state });
+    utils.registerAutoSubmitPolling({
+      elements: {},
+      processingFunction: jest.fn(),
+      env: { dom: {} },
+      inputElement: input,
+      autoSubmitState: state,
+    });
     expect(state.frameId).toBe(1);
     utils.unregisterAutoSubmitPolling({ clearTimeout: jest.fn() }, state);
     expect(state).toEqual({ frameId: null, lastValue: null });
@@ -261,7 +275,8 @@ describe('toys additional coverage', () => {
     utils.handleDropdownChange(
       {
         value: 'text',
-        closest: selector => (selector === 'article.entry' ? { id: 'post' } : null),
+        closest: selector =>
+          selector === 'article.entry' ? { id: 'post' } : null,
       },
       () => ({ output: {} }),
       dom
@@ -291,7 +306,10 @@ describe('toys additional coverage', () => {
       setTextContent: jest.fn(),
     };
     utils.toggleToyFocusMode(focusButton, focusDom);
-    expect(focusDom.removeClass).toHaveBeenCalledWith(host, 'toy-focus-mode-host');
+    expect(focusDom.removeClass).toHaveBeenCalledWith(
+      host,
+      'toy-focus-mode-host'
+    );
     utils.toggleToyFocusMode(
       { closest: () => ({ closest: () => null }) },
       focusDom
@@ -330,8 +348,19 @@ describe('toys additional coverage', () => {
     )?.[2];
     typeChange?.();
     const add = {};
-    utils.setupAddButton({ dom, button: add, render: jest.fn(), disposers: [] });
-    utils.setupRemoveButton({ dom, button: {}, key: 'key', render: jest.fn(), disposers: [] });
+    utils.setupAddButton({
+      dom,
+      button: add,
+      render: jest.fn(),
+      disposers: [],
+    });
+    utils.setupRemoveButton({
+      dom,
+      button: {},
+      key: 'key',
+      render: jest.fn(),
+      disposers: [],
+    });
     const renderer = utils.createRenderer({
       dom,
       disposersArray: [],

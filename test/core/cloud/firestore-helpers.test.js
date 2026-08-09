@@ -17,9 +17,9 @@ describe('firestore helpers', () => {
     });
 
     it('uses a t-* deployment environment when no explicit id exists', () => {
-      expect(resolveFirestoreDatabaseId({ DENDRITE_ENVIRONMENT: 't-preview' })).toBe(
-        't-preview'
-      );
+      expect(
+        resolveFirestoreDatabaseId({ DENDRITE_ENVIRONMENT: 't-preview' })
+      ).toBe('t-preview');
     });
 
     it.each([
@@ -52,10 +52,12 @@ describe('firestore helpers', () => {
     const firestoreFactory = jest.fn((app, id) => ({ app, id }));
     const app = { name: 'app' };
 
-    expect(getFirestoreForDatabase(firestoreFactory, app, '(default)')).toEqual({
-      app,
-      id: undefined,
-    });
+    expect(getFirestoreForDatabase(firestoreFactory, app, '(default)')).toEqual(
+      {
+        app,
+        id: undefined,
+      }
+    );
     expect(getFirestoreForDatabase(firestoreFactory, app, null)).toEqual({
       app,
       id: undefined,

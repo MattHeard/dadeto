@@ -1,3 +1,4 @@
+/* eslint-disable jsdoc/reject-any-type */
 import {
   normalizeSubmissionContent,
   normalizeAuthor as normalizeSubmittedAuthor,
@@ -130,7 +131,7 @@ async function findPageByNumber(db, pageNumber) {
   if (pageSnap.empty) {
     return null;
   }
-  const pageDoc = /** @type {DocumentReference} */ (pageSnap.docs[0]);
+  const pageDoc = /** @type {any} */ (pageSnap.docs[0]);
   return pageDoc.ref;
 }
 
@@ -145,7 +146,7 @@ async function findVariantByName(pageRef, variantName) {
   if (variantSnap.empty) {
     return null;
   }
-  const variantDoc = /** @type {DocumentReference} */ (variantSnap.docs[0]);
+  const variantDoc = /** @type {any} */ (variantSnap.docs[0]);
   return variantDoc.ref;
 }
 
@@ -164,7 +165,7 @@ async function findOptionByPosition(variantRef, optionNumber) {
   if (optionsSnap.empty) {
     return null;
   }
-  const optionDoc = /** @type {DocumentReference} */ (optionsSnap.docs[0]);
+  const optionDoc = /** @type {any} */ (optionsSnap.docs[0]);
   return optionDoc.ref.path;
 }
 

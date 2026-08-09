@@ -1,14 +1,20 @@
 import { jest } from '@jest/globals';
 
-await jest.unstable_mockModule('../../../../src/core/cloud/cloud-core.js', () => ({
-  createFirestoreDocumentOnWriteTrigger: ({
-    functions,
-    region,
-    documentPath,
-    handler,
-  }) =>
-    functions.region(region).firestore.document(documentPath).onWrite(handler),
-}));
+await jest.unstable_mockModule(
+  '../../../../src/core/cloud/cloud-core.js',
+  () => ({
+    createFirestoreDocumentOnWriteTrigger: ({
+      functions,
+      region,
+      documentPath,
+      handler,
+    }) =>
+      functions
+        .region(region)
+        .firestore.document(documentPath)
+        .onWrite(handler),
+  })
+);
 await jest.unstable_mockModule(
   '../../../../src/core/cloud/render-author/render-author-core.js',
   () => ({

@@ -34,21 +34,24 @@ await jest.unstable_mockModule(
     resolveStaticObjectPrefix: jest.fn(() => 'prefix'),
   })
 );
-await jest.unstable_mockModule('../../../../src/core/cloud/render-support.js', () => ({
-  createCloudRenderInstanceBuilder: ({ createRenderer, consoleError }) => {
-    consoleError('builder');
-    return jest.fn(() => createRenderer());
-  },
-  createMemoizedLoader: factory => {
-    let value;
-    return () => (value ??= factory());
-  },
-  createCloudRenderEntrypointState: options => ({
-    db: options.getFirestoreInstance(),
-    environmentVariables: options.getEnvironmentVariables(),
-    render: () => options.buildRender(),
-  }),
-}));
+await jest.unstable_mockModule(
+  '../../../../src/core/cloud/render-support.js',
+  () => ({
+    createCloudRenderInstanceBuilder: ({ createRenderer, consoleError }) => {
+      consoleError('builder');
+      return jest.fn(() => createRenderer());
+    },
+    createMemoizedLoader: factory => {
+      let value;
+      return () => (value ??= factory());
+    },
+    createCloudRenderEntrypointState: options => ({
+      db: options.getFirestoreInstance(),
+      environmentVariables: options.getEnvironmentVariables(),
+      render: () => options.buildRender(),
+    }),
+  })
+);
 const { createRenderContentsEntrypoint } = await import(
   '../../../../src/core/cloud/render-contents/index.js'
 );

@@ -92,11 +92,18 @@ describe('realtime voice lifecycle', () => {
     const track = { enabled: true, stop: jest.fn() };
     const stream = { getAudioTracks: () => [track], getTracks: () => [track] };
     const listeners = {};
-    const dataChannel = { addEventListener: (type, handler) => { listeners[`data-${type}`] = handler; }, close: jest.fn() };
+    const dataChannel = {
+      addEventListener: (type, handler) => {
+        listeners[`data-${type}`] = handler;
+      },
+      close: jest.fn(),
+    };
     class FakePeerConnection {
       connectionState = 'connected';
       iceConnectionState = 'connected';
-      addEventListener(type, handler) { listeners[type] = handler; }
+      addEventListener(type, handler) {
+        listeners[type] = handler;
+      }
       addTrack = jest.fn();
       createDataChannel = jest.fn(() => dataChannel);
       createOffer = jest.fn(async () => ({}));
@@ -105,16 +112,24 @@ describe('realtime voice lifecycle', () => {
       close = jest.fn();
     }
     globalThis.RTCPeerConnection = FakePeerConnection;
-    globalThis.navigator = { mediaDevices: { getUserMedia: jest.fn(async () => stream) } };
-    const fetchFn = jest.fn(async () => ({ ok: true, text: async () => 'answer' }));
+    globalThis.navigator = {
+      mediaDevices: { getUserMedia: jest.fn(async () => stream) },
+    };
+    const fetchFn = jest.fn(async () => ({
+      ok: true,
+      text: async () => 'answer',
+    }));
     const root = createCoreElement(JSON.stringify({}), dom, fetchFn);
-    const buttons = root.children.filter(child => child.tagName === 'DIV')[0].children;
+    const buttons = root.children.filter(child => child.tagName === 'DIV')[0]
+      .children;
     await buttons[0].listeners.click();
     listeners.connectionstatechange();
     listeners.iceconnectionstatechange();
     listeners.track({ streams: [stream] });
     listeners['data-open']();
-    listeners['data-message']({ data: JSON.stringify({ type: 'response.done' }) });
+    listeners['data-message']({
+      data: JSON.stringify({ type: 'response.done' }),
+    });
     listeners['data-message']({ data: JSON.stringify({}) });
     listeners['data-message']({ data: 'not json' });
     listeners['data-close']();
@@ -127,21 +142,76 @@ describe('realtime voice lifecycle', () => {
 
   test('reports endpoint and relay failures without throwing from the click handler', async () => {
     const dom = createDom();
-    const root = createCoreElement(JSON.stringify({ endpointError: 'Endpoint unavailable' }), dom, jest.fn());
-    const buttons = root.children.filter(child => child.tagName === 'DIV')[0].children;
+    const root = createCoreElement(
+      JSON.stringify({ endpointError: 'Endpoint unavailable' }),
+      dom,
+      jest.fn()
+    );
+    const buttons = root.children.filter(child => child.tagName === 'DIV')[0]
+      .children;
     await buttons[0].listeners.click();
-    const failingFetch = jest.fn(async () => ({ ok: false, status: 400, text: async () => '{"error":"bad relay"}' }));
-    const failingRoot = createCoreElement(JSON.stringify({}), dom, failingFetch);
-    const failingButtons = failingRoot.children.filter(child => child.tagName === 'DIV')[0].children;
-    globalThis.RTCPeerConnection = class { addEventListener() {} close() {} addTrack() {} createDataChannel() { return { addEventListener() {}, close() {} }; } async createOffer() { return { sdp: 'offer' }; } async setLocalDescription() {} async setRemoteDescription() {} };
-    globalThis.navigator = { mediaDevices: { getUserMedia: jest.fn(async () => ({ getAudioTracks: () => [], getTracks: () => [] })) } };
+    const failingFetch = jest.fn(async () => ({
+      ok: false,
+      status: 400,
+      text: async () => '{"error":"bad relay"}',
+    }));
+    const failingRoot = createCoreElement(
+      JSON.stringify({}),
+      dom,
+      failingFetch
+    );
+    const failingButtons = failingRoot.children.filter(
+      child => child.tagName === 'DIV'
+    )[0].children;
+    globalThis.RTCPeerConnection = class {
+      addEventListener() {}
+      close() {}
+      addTrack() {}
+      createDataChannel() {
+        return { addEventListener() {}, close() {} };
+      }
+      async createOffer() {
+        return { sdp: 'offer' };
+      }
+      async setLocalDescription() {}
+      async setRemoteDescription() {}
+    };
+    globalThis.navigator = {
+      mediaDevices: {
+        getUserMedia: jest.fn(async () => ({
+          getAudioTracks: () => [],
+          getTracks: () => [],
+        })),
+      },
+    };
     await failingButtons[0].listeners.click();
-    expect(realtimeVoicePrototypePresenterTestOnly.getRealtimeAnswerErrorDetail('not json')).toBe('not json');
-    expect(realtimeVoicePrototypePresenterTestOnly.getRealtimeAnswerErrorDetail('{"message":"no error field"}')).toBe('{"message":"no error field"}');
-    expect(realtimeVoicePrototypePresenterTestOnly.formatRealtimeAnswerError({ status: 400 }, 'plain failure')).toContain('plain failure');
+    expect(
+      realtimeVoicePrototypePresenterTestOnly.getRealtimeAnswerErrorDetail(
+        'not json'
+      )
+    ).toBe('not json');
+    expect(
+      realtimeVoicePrototypePresenterTestOnly.getRealtimeAnswerErrorDetail(
+        '{"message":"no error field"}'
+      )
+    ).toBe('{"message":"no error field"}');
+    expect(
+      realtimeVoicePrototypePresenterTestOnly.formatRealtimeAnswerError(
+        { status: 400 },
+        'plain failure'
+      )
+    ).toContain('plain failure');
     createCoreElement('not json', dom, failingFetch);
-    globalThis.navigator = { mediaDevices: { getUserMedia: jest.fn(async () => { throw 'unknown'; }) } };
+    globalThis.navigator = {
+      mediaDevices: {
+        getUserMedia: jest.fn(async () => {
+          throw 'unknown';
+        }),
+      },
+    };
     const unknownRoot = createCoreElement('{}', dom, failingFetch);
-    await unknownRoot.children.filter(child => child.tagName === 'DIV')[0].children[0].listeners.click();
+    await unknownRoot.children
+      .filter(child => child.tagName === 'DIV')[0]
+      .children[0].listeners.click();
   });
 });

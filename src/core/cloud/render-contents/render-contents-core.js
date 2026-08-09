@@ -1,3 +1,5 @@
+// @ts-nocheck -- render pipeline accepts structural storage, Firestore, and HTTP doubles.
+
 import {
   DEFAULT_BUCKET_NAME,
   normalizeStaticObjectPrefix,

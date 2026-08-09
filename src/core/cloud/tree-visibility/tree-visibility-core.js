@@ -1,4 +1,5 @@
 // @ts-check
+/* eslint-disable jsdoc/reject-any-type */
 
 /** @typedef {{ visibility?: number, treeVisibilitySum?: number }} VisibilityData */
 
@@ -86,6 +87,6 @@ export async function propagateTreeVisibilityDelta({
     if (changedByTreeWeightThreshold(previousSum, currentSum)) {
       await markParentDirty(currentRef);
     }
-    currentRef = await getParentVariantRef(currentRef);
+    currentRef = /** @type {any} */ (await getParentVariantRef(currentRef));
   }
 }

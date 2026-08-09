@@ -20,7 +20,7 @@ import { createErrorBeaconHandler } from './errors-core.js';
  *   console?: ErrorBeaconConsole,
  *   fetchFn: typeof globalThis.fetch,
  * }} deps Runtime dependencies.
- * @returns {{ handle: import('express').Express }} Cloud Function handle wrapper.
+ * @returns {{ handle: ErrorBeaconApp }} Cloud Function handle wrapper.
  */
 export function createErrorBeaconRun(deps) {
   const app = deps.express();

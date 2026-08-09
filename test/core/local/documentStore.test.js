@@ -1,4 +1,5 @@
 import { mkdtemp, mkdir, readFile, writeFile, rm } from 'node:fs/promises';
+import { jest } from '@jest/globals';
 import os from 'node:os';
 import path from 'node:path';
 import {
@@ -568,7 +569,9 @@ describe('createDocumentStoreCore', () => {
       legacyDocumentPath,
     });
 
-    await expect(store.saveDocument('thesis', '# New heading\n\nBody')).resolves.toEqual({
+    await expect(
+      store.saveDocument('thesis', '# New heading\n\nBody')
+    ).resolves.toEqual({
       bytes: Buffer.byteLength('# New heading\n\nBody', 'utf8'),
       savedAt: '2026-05-17T00:00:00.000Z',
       documentId: 'thesis',
@@ -639,18 +642,17 @@ describe('createDocumentStoreCore', () => {
   });
 
   test('bootstraps without legacy content and uses the default clock', async () => {
-    const store = createDocumentStoreCore(
-      createDeps({ now: undefined }),
-      {
-        workflowPath,
-        workflowDir,
-        legacyDocumentPath,
-      }
-    );
+    const store = createDocumentStoreCore(createDeps({ now: undefined }), {
+      workflowPath,
+      workflowDir,
+      legacyDocumentPath,
+    });
 
     const workflow = await store.loadWorkflow();
     expect(workflow.documents[0].content).toBe('');
-    await expect(store.saveDocument('thesis', 'content')).resolves.toMatchObject({
+    await expect(
+      store.saveDocument('thesis', 'content')
+    ).resolves.toMatchObject({
       documentId: 'thesis',
     });
   });

@@ -1067,10 +1067,7 @@ export const createOnRemove = (rowData, render, key) => e => {
 export const setupAddButton = ({ dom, button, rowData, render, disposers }) => {
   const effectiveRowData = rowData ?? { rows: {}, rowTypes: {} };
   dom.setTextContent(button, '+');
-  const onAdd = createOnAddHandler(
-    effectiveRowData,
-    render
-  );
+  const onAdd = createOnAddHandler(effectiveRowData, render);
   dom.addEventListener(button, 'click', onAdd);
   const removeAddListener = createRemoveListener({
     dom,
@@ -1102,11 +1099,7 @@ export const setupRemoveButton = ({
 }) => {
   const effectiveRowData = rowData ?? { rows: {}, rowTypes: {} };
   dom.setTextContent(button, '×');
-  const onRemove = createOnRemove(
-    effectiveRowData,
-    render,
-    key
-  );
+  const onRemove = createOnRemove(effectiveRowData, render, key);
   dom.addEventListener(button, 'click', onRemove);
   const removeRemoveListener = createRemoveListener({
     dom,
@@ -1439,6 +1432,13 @@ function unregisterAutoSubmitPolling(dom, autoSubmitState) {
   autoSubmitState.lastValue = null;
 }
 
+/**
+ *
+ * @param root0
+ * @param root0.autoSubmitCheckbox
+ * @param root0.register
+ * @param root0.unregister
+ */
 export function createAutoSubmitCheckboxHandler({
   autoSubmitCheckbox,
   register,
@@ -1730,6 +1730,9 @@ export const syncHiddenField = (textInput, rowData, dom) => {
 /**
  * Creates a render function with access to the given disposers array and rows
  * @param {object} options - Configuration options
+ * @param syncHiddenField
+ * @param textInput
+ * @param rowData
  * @param {object} options.dom - The DOM utilities object
  * @param {Array} options.disposersArray - Array to store cleanup functions
  * @param {HTMLElement} options.container - The container element for the key-value pairs
@@ -1737,6 +1740,7 @@ export const syncHiddenField = (textInput, rowData, dom) => {
  * @param {object} options.rowTypes - Per-key type map for value coercion.
  * @param {HTMLInputElement} options.textInput - The hidden input element
  * @param {ToyCallback} options.syncHiddenField - ToyCallback to sync the hidden field
+ * @param dom
  * @returns {ToyCallback} The render function
  */
 export const syncRowData = (syncHiddenField, textInput, rowData, dom) =>

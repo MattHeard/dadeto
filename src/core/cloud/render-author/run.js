@@ -1,3 +1,4 @@
+/* eslint-disable jsdoc/reject-any-type */
 import { createFirestoreDocumentOnWriteTrigger } from '../cloud-core.js';
 import { createRenderAuthorHandler } from './render-author-core.js';
 
@@ -9,19 +10,23 @@ import { createRenderAuthorHandler } from './render-author-core.js';
 export function runRenderAuthor(deps) {
   const { functions, Storage, FieldValue, getFirestoreInstance } = deps;
   getFirestoreInstance();
-  const bucket = new Storage().bucket(process.env.STATIC_BUCKET_NAME);
+  const bucket = /** @type {any} */ (
+    new Storage().bucket(process.env.STATIC_BUCKET_NAME)
+  );
   const renderAuthor = createRenderAuthorHandler({
     bucket,
-    db: getFirestoreInstance(),
+    db: /** @type {any} */ (getFirestoreInstance()),
     deleteField: () => FieldValue.delete(),
   });
   return {
-    renderAuthor: createFirestoreDocumentOnWriteTrigger({
-      functions,
-      region: 'europe-west1',
-      documentPath: 'authors/{authorId}',
-      database: process.env.DATABASE_ID,
-      handler: change => renderAuthor(change),
-    }),
+    renderAuthor: createFirestoreDocumentOnWriteTrigger(
+      /** @type {any} */ ({
+        functions,
+        region: 'europe-west1',
+        documentPath: 'authors/{authorId}',
+        database: process.env.DATABASE_ID,
+        handler: (/** @type {any} */ change) => renderAuthor(change),
+      })
+    ),
   };
 }

@@ -39,17 +39,23 @@ describe('executeStandardGate', () => {
       cwd: '/repo',
       stdio: 'inherit',
     });
-    expect(runGateCommand({
-      spawnImpl: () => ({ status: 3, signal: null }),
-      command: 'demo',
-      args: [],
-      rootDir: '/repo',
-      stderr,
-      launchLabel: 'Demo',
-      commandLabel: 'demo',
-    })).toEqual({ launchFailure: { exitCode: 3 } });
-    expect(handleSpawnFailure({ signal: 'SIGTERM' }, stderr, 'Demo', 'demo')).toEqual({ exitCode: 1 });
-    expect(handleSpawnFailure({ status: 0 }, stderr, 'Demo', 'demo')).toBeNull();
+    expect(
+      runGateCommand({
+        spawnImpl: () => ({ status: 3, signal: null }),
+        command: 'demo',
+        args: [],
+        rootDir: '/repo',
+        stderr,
+        launchLabel: 'Demo',
+        commandLabel: 'demo',
+      })
+    ).toEqual({ launchFailure: { exitCode: 3 } });
+    expect(
+      handleSpawnFailure({ signal: 'SIGTERM' }, stderr, 'Demo', 'demo')
+    ).toEqual({ exitCode: 1 });
+    expect(
+      handleSpawnFailure({ status: 0 }, stderr, 'Demo', 'demo')
+    ).toBeNull();
     expect(normalizeExitCode(null)).toBe(1);
     expect(normalizeExitCode(undefined)).toBe(1);
     expect(normalizeExitCode(4)).toBe(4);

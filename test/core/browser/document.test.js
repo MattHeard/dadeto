@@ -70,7 +70,11 @@ describe('document facade', () => {
       navigatorObj,
     });
     const callback = jest.fn();
-    const event = { currentTarget: 'current', target: { value: 'value' }, preventDefault: callback };
+    const event = {
+      currentTarget: 'current',
+      target: { value: 'value' },
+      preventDefault: callback,
+    };
 
     expect(handle.getElementById('id')).toBe(element);
     expect(handle.querySelector(element, '.x')).toBe('selected');
@@ -98,7 +102,12 @@ describe('document facade', () => {
     handle.logError('error');
     handle.removeAllChildren(element);
     const child = { firstChild: null, removeChild: jest.fn() };
-    const parent = { firstChild: child, removeChild: jest.fn(() => { parent.firstChild = null; }) };
+    const parent = {
+      firstChild: child,
+      removeChild: jest.fn(() => {
+        parent.firstChild = null;
+      }),
+    };
     handle.removeAllChildren(parent);
     handle.requestAnimationFrame(callback);
     handle.cancelAnimationFrame(1);
@@ -138,10 +147,20 @@ describe('document facade', () => {
     expect(handle.hasNoInteractiveComponents({})).toBe(true);
     expect(handle.getInteractiveComponentCount({})).toBe(0);
     expect(handle.getInteractiveComponents({})).toEqual([]);
-    expect(handle.hasNoInteractiveComponents({ interactiveComponents: [element] })).toBe(false);
-    expect(handle.getInteractiveComponentCount({ interactiveComponents: [element] })).toBe(1);
-    expect(handle.getInteractiveComponents({ interactiveComponents: [element] })).toEqual([element]);
-    handle.dom.importModule('data:text/javascript,export default 1', jest.fn(), jest.fn());
+    expect(
+      handle.hasNoInteractiveComponents({ interactiveComponents: [element] })
+    ).toBe(false);
+    expect(
+      handle.getInteractiveComponentCount({ interactiveComponents: [element] })
+    ).toBe(1);
+    expect(
+      handle.getInteractiveComponents({ interactiveComponents: [element] })
+    ).toEqual([element]);
+    handle.dom.importModule(
+      'data:text/javascript,export default 1',
+      jest.fn(),
+      jest.fn()
+    );
     expect(handle.dom.globalThis).toBe(globalThisObj);
   });
 

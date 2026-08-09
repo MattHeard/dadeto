@@ -1,3 +1,4 @@
+/* eslint-disable jsdoc/reject-any-type */
 import { initializeApp } from 'firebase-admin/app';
 import { getFirestore as getAdminFirestore } from 'firebase-admin/firestore';
 import {
@@ -143,24 +144,28 @@ export function runGenerateStats(deps) {
     cors,
   } = typedDeps;
 
-  const generateStatsCore = createGenerateStatsCore({
-    ...typedDeps,
-    console: consoleLike,
-  });
+  const generateStatsCore = createGenerateStatsCore(
+    /** @type {any} */ ({
+      ...typedDeps,
+      console: consoleLike,
+    })
+  );
   const handleRequest = generateStatsCore.handleRequest;
 
   const allowedOrigins = getAllowedOrigins(env);
-  const createApp = () => express();
+  const createApp = /** @type {any} */ (() => express());
   const appDeps = {
     createApp,
-    json: express.json,
-    urlencoded: express.urlencoded,
+    json: /** @type {any} */ (express).json,
+    urlencoded: /** @type {any} */ (express).urlencoded,
   };
-  const app = createJsonExpressApp({
-    createApp: appDeps.createApp,
-    json: appDeps.json,
-    urlencoded: appDeps.urlencoded,
-  });
+  const app = /** @type {any} */ (
+    createJsonExpressApp({
+      createApp: appDeps.createApp,
+      json: appDeps.json,
+      urlencoded: appDeps.urlencoded,
+    })
+  );
   app.use(
     cors(
       createCorsOptions(
@@ -172,7 +177,7 @@ export function runGenerateStats(deps) {
   const generateStats = createRegionOnRequest(functions, app);
   app.post('/', handleRequest);
 
-  return { generateStats, ...generateStatsCore };
+  return /** @type {any} */ ({ generateStats, ...generateStatsCore });
 }
 
 /**

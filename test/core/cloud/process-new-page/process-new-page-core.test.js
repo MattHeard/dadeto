@@ -65,7 +65,9 @@ describe('findAvailablePageNumber', () => {
 
 describe('process new page defensive helpers', () => {
   it('handles absent reference chains and option snapshots', async () => {
-    expect(processNewPageTestUtils.extractVariantRefFromOption(null)).toBeNull();
+    expect(
+      processNewPageTestUtils.extractVariantRefFromOption(null)
+    ).toBeNull();
     expect(processNewPageTestUtils.extractPageRefFromVariant(null)).toBeNull();
     expect(processNewPageTestUtils.extractStoryRefFromPageRef(null)).toBeNull();
     expect(processNewPageTestUtils.resolveStoryRefFromOption(null)).toEqual({
@@ -80,14 +82,16 @@ describe('process new page defensive helpers', () => {
       snapshot
     );
     expect(snapshot.ref).toBe(ref);
-    expect(processNewPageTestUtils.ensureOptionSnapshotRef(snapshot, 'other')).toBe(
-      snapshot
-    );
+    expect(
+      processNewPageTestUtils.ensureOptionSnapshotRef(snapshot, 'other')
+    ).toBe(snapshot);
     expect(processNewPageTestUtils.resolveStoryRefOrEmpty(null)).toEqual({});
     expect(
       processNewPageTestUtils.extractAndValidateStoryRef({ ref: null })
     ).toBeNull();
-    expect(processNewPageTestUtils.extractSubmissionData({ data: () => null })).toEqual({});
+    expect(
+      processNewPageTestUtils.extractSubmissionData({ data: () => null })
+    ).toEqual({});
     await expect(
       processNewPageTestUtils.routeViaDirect({
         db: {},
@@ -106,7 +110,9 @@ describe('process new page defensive helpers', () => {
     const db = {
       collectionGroup: jest.fn(() => ({
         where: jest.fn(() => ({
-          limit: jest.fn(() => ({ get: jest.fn().mockResolvedValue({ empty: true }) })),
+          limit: jest.fn(() => ({
+            get: jest.fn().mockResolvedValue({ empty: true }),
+          })),
         })),
       })),
     };

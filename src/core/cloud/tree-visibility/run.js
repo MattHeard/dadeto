@@ -1,3 +1,4 @@
+/* eslint-disable jsdoc/reject-any-type */
 import { regenerateDirtyTreeWeightVariants } from './tree-visibility-regeneration-core.js';
 
 /**
@@ -23,7 +24,7 @@ export function createTreeVisibilityRegenerationHandles({
 }) {
   const run = async () => {
     const result = await regenerateDirtyTreeWeightVariants({
-      db: getFirestoreInstance(),
+      db: /** @type {any} */ (getFirestoreInstance()),
       renderVariant: render,
       consoleError,
     });

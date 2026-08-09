@@ -36,11 +36,15 @@ describe('core Symphony TUI renderer', () => {
     expect(highlightLine('x')).toContain('x');
     expect(formatField('Long label', 'value')).toBe('Long label: value');
     expect(formatField('State', null)).toBe('State: none');
-    expect(formatField('State', 'line\nwith spaces')).toBe('State: line with spaces');
+    expect(formatField('State', 'line\nwith spaces')).toBe(
+      'State: line with spaces'
+    );
     expect(normalizeEvidenceItems()).toEqual([]);
     expect(normalizeEvidenceItems('one')).toEqual(['one']);
     expect(normalizeEvidenceItems(['one'])).toEqual(['one']);
-    expect(renderBacklog({ status: {}, lines: [], slots: 0, queueSummary: [] })).toBe(0);
+    expect(
+      renderBacklog({ status: {}, lines: [], slots: 0, queueSummary: [] })
+    ).toBe(0);
     expect(renderEventAndEvidence({}, [], 0)).toBeUndefined();
     expect(calculateBacklogSlots(5, 0, 20)).toBe(1);
     expect(calculateBacklogSlots(5, 0, 10)).toBe(1);
@@ -84,7 +88,9 @@ describe('core Symphony TUI renderer', () => {
       }
     );
 
-    expect(lines.join('\n')).toContain('Update: restart server or TUI for server-2.');
+    expect(lines.join('\n')).toContain(
+      'Update: restart server or TUI for server-2.'
+    );
     expect(lines.join('\n')).toContain('run-1 (active)');
     expect(lines.join('\n')).toContain('B1> one');
     expect(lines.join('\n')).toContain('E1> started');
@@ -157,13 +163,21 @@ describe('core Symphony TUI renderer', () => {
     expect(lines.length).toBe(10);
 
     const evidenceLines = buildStatusLines(
-      { state: 'ready', runtime: { version: 'server' }, latestEvidence: ['one', 'two'] },
+      {
+        state: 'ready',
+        runtime: { version: 'server' },
+        latestEvidence: ['one', 'two'],
+      },
       { columns: 40, rows: 16, version: 'different' }
     );
     expect(evidenceLines.join('\n')).toContain('Evidence:');
 
     const eventLines = buildStatusLines(
-      { state: 'ready', runtime: { version: 'server' }, eventLog: ['one', 'two'] },
+      {
+        state: 'ready',
+        runtime: { version: 'server' },
+        eventLog: ['one', 'two'],
+      },
       { columns: 40, rows: 16, version: 'different' }
     );
     expect(eventLines.some(line => line.includes('Events:'))).toBe(true);
@@ -175,7 +189,11 @@ describe('core Symphony TUI renderer', () => {
     expect(objectEvidenceLines.join('\n')).toContain('command');
 
     const minimalBacklogLines = buildStatusLines(
-      { state: 'ready', runtime: { version: 'server' }, queueEvidence: ['queued'] },
+      {
+        state: 'ready',
+        runtime: { version: 'server' },
+        queueEvidence: ['queued'],
+      },
       { columns: 40, rows: 15, version: 'different' }
     );
     expect(minimalBacklogLines.join('\n')).toContain('Queue:');

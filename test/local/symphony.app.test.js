@@ -1,8 +1,11 @@
 import { jest } from '@jest/globals';
 
-await jest.unstable_mockModule('../../src/local/symphony/runtimeVersion.js', () => ({
-  getSymphonyRuntimeVersion: jest.fn(() => 'test-runtime'),
-}));
+await jest.unstable_mockModule(
+  '../../src/local/symphony/runtimeVersion.js',
+  () => ({
+    getSymphonyRuntimeVersion: jest.fn(() => 'test-runtime'),
+  })
+);
 
 const { createSymphonyAppHandle } = await import(
   '../../src/core/local/symphony/app.js'

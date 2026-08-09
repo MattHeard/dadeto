@@ -1,7 +1,7 @@
 import { describe, expect, it, jest, beforeEach } from '@jest/globals';
 
-var mockConfig = { disableGoogleSignIn: true };
-var mockToken = null;
+let mockConfig = { disableGoogleSignIn: true };
+let mockToken = null;
 const mockGetModerationEndpoints = jest.fn(async () => ({
   getModerationVariantUrl: '/variant',
   assignModerationJobUrl: '/assign',
@@ -11,36 +11,45 @@ const mockAuthedFetch = jest.fn(async () => ({
   title: 'Title',
   content: 'Content',
 }));
-var mockSignInInit;
+let mockSignInInit;
 const mockSignOut = jest.fn();
-var mockDocument;
+let mockDocument;
 const mockFetch = jest.fn(async () => ({ ok: true, json: async () => ({}) }));
-var mockIntervalCallback;
-var mockLoadDeps;
-var mockAllowNoToken = false;
-var mockIsAdmin = true;
+let mockIntervalCallback;
+let mockLoadDeps;
+let mockAllowNoToken = false;
+let mockIsAdmin = true;
 
-jest.unstable_mockModule('../../../src/core/browser/load-static-config-core.js', () => ({
-  createLoadStaticConfig: deps => {
-    mockLoadDeps = deps;
-    return async () => mockConfig;
-  },
-}));
-jest.unstable_mockModule('../../../src/core/browser/moderation/authedFetch.js', () => ({
-  createAuthedFetch: deps => async (url, init) => {
-    if (!mockToken && !mockAllowNoToken) throw new Error('not signed in');
-    const response = await deps.fetchJson(url, init);
-    return response.json();
-  },
-}));
-jest.unstable_mockModule('../../../src/core/browser/moderation/endpoints.js', () => ({
-  DEFAULT_MODERATION_ENDPOINTS: {},
-  createGetModerationEndpointsFromStaticConfig: () => async () => ({
-    getModerationVariantUrl: '/variant',
-    assignModerationJobUrl: '/assign',
-    submitModerationRatingUrl: '/submit',
-  }),
-}));
+jest.unstable_mockModule(
+  '../../../src/core/browser/load-static-config-core.js',
+  () => ({
+    createLoadStaticConfig: deps => {
+      mockLoadDeps = deps;
+      return async () => mockConfig;
+    },
+  })
+);
+jest.unstable_mockModule(
+  '../../../src/core/browser/moderation/authedFetch.js',
+  () => ({
+    createAuthedFetch: deps => async (url, init) => {
+      if (!mockToken && !mockAllowNoToken) throw new Error('not signed in');
+      const response = await deps.fetchJson(url, init);
+      return response.json();
+    },
+  })
+);
+jest.unstable_mockModule(
+  '../../../src/core/browser/moderation/endpoints.js',
+  () => ({
+    DEFAULT_MODERATION_ENDPOINTS: {},
+    createGetModerationEndpointsFromStaticConfig: () => async () => ({
+      getModerationVariantUrl: '/variant',
+      assignModerationJobUrl: '/assign',
+      submitModerationRatingUrl: '/submit',
+    }),
+  })
+);
 jest.unstable_mockModule('../../../src/core/browser/browser-core.js', () => ({
   getIdToken: () => mockToken,
 }));
@@ -74,14 +83,20 @@ jest.unstable_mockModule('../../../src/core/browser/error-beacon.js', () => ({
     return { logError: jest.fn() };
   }),
 }));
-jest.unstable_mockModule('https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js', () => ({
-  getAuth: jest.fn(),
-  GoogleAuthProvider: jest.fn(),
-  signInWithCredential: jest.fn(),
-}));
-jest.unstable_mockModule('https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js', () => ({
-  initializeApp: jest.fn(),
-}));
+jest.unstable_mockModule(
+  'https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js',
+  () => ({
+    getAuth: jest.fn(),
+    GoogleAuthProvider: jest.fn(),
+    signInWithCredential: jest.fn(),
+  })
+);
+jest.unstable_mockModule(
+  'https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js',
+  () => ({
+    initializeApp: jest.fn(),
+  })
+);
 
 const { createModerateHandle, authedFetch } = await import(
   '../../../src/core/browser/moderate.js'

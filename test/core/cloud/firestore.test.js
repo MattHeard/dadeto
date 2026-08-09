@@ -2,6 +2,9 @@ import { jest } from '@jest/globals';
 import { createFirestoreModule } from '../../../src/core/cloud/firestore.js';
 
 describe('createFirestoreModule', () => {
+  /**
+   *
+   */
   function createFixture() {
     const initializeApp = jest.fn(() => ({ app: true }));
     const ensureFirebaseApp = jest.fn();

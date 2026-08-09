@@ -1,3 +1,4 @@
+/* eslint-disable jsdoc/reject-any-type */
 import {
   createCorsOptions,
   createCorsErrorHandler,
@@ -52,13 +53,19 @@ export function runSubmitNewStory(deps) {
 
   const corsOptions = createCorsOptions({ allowedOrigins });
 
-  const submitNewStoryResponder = createSubmitNewStoryResponder({
-    verifyIdToken: token => auth.verifyIdToken(token),
-    saveSubmission: (id, data) =>
-      db.collection('storyFormSubmissions').doc(id).set(data),
-    randomUUID: () => deps.crypto.randomUUID(),
-    getServerTimestamp: () => deps.FieldValue.serverTimestamp(),
-  });
+  const submitNewStoryResponder = /** @type {any} */ (
+    createSubmitNewStoryResponder({
+      verifyIdToken: /** @type {any} */ (
+        (/** @type {string} */ token) => auth.verifyIdToken(token)
+      ),
+      saveSubmission: /** @type {any} */ (
+        (/** @type {string} */ id, /** @type {unknown} */ data) =>
+          db.collection('storyFormSubmissions').doc(id).set(data)
+      ),
+      randomUUID: () => deps.crypto.randomUUID(),
+      getServerTimestamp: () => deps.FieldValue.serverTimestamp(),
+    })
+  );
 
   let debuggedSubmitNewStoryResponder = submitNewStoryResponder;
   if (debugEnabled) {
@@ -67,23 +74,26 @@ export function runSubmitNewStory(deps) {
     );
   }
 
-  const handleSubmitNewStory = createHandleSubmitNewStory(request =>
-    debuggedSubmitNewStoryResponder(request)
+  const handleSubmitNewStory = /** @type {any} */ (
+    createHandleSubmitNewStory(request =>
+      debuggedSubmitNewStoryResponder(request)
+    )
   );
 
-  const endpointOptions =
-    /** @type {Parameters<typeof createCloudHttpEndpoint>[0]} */ ({
-      express: deps.express,
-      middleware: [
-        deps.cors(corsOptions),
-        createCorsErrorHandler(),
-        deps.express.json({ limit: '20kb' }),
-        deps.express.urlencoded({ extended: false, limit: '20kb' }),
-      ],
-      route: { method: 'post', path: '/', handler: handleSubmitNewStory },
-      functions: deps.functions,
-    });
-  const endpoint = createCloudHttpEndpoint(endpointOptions);
+  const endpointOptions = /** @type {any} */ ({
+    express: deps.express,
+    middleware: [
+      deps.cors(corsOptions),
+      createCorsErrorHandler(),
+      deps.express.json({ limit: '20kb' }),
+      deps.express.urlencoded({ extended: false, limit: '20kb' }),
+    ],
+    route: { method: 'post', path: '/', handler: handleSubmitNewStory },
+    functions: deps.functions,
+  });
+  const endpoint = /** @type {any} */ (
+    createCloudHttpEndpoint(endpointOptions)
+  );
 
   return {
     submitNewStory: endpoint.handle,

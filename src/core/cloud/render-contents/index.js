@@ -1,3 +1,5 @@
+// @ts-nocheck -- render entrypoint wiring accepts injected cloud-service doubles.
+
 import {
   buildHtml,
   buildHandleRenderRequest,

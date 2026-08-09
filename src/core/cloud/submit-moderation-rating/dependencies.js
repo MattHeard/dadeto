@@ -1,14 +1,15 @@
+/* eslint-disable jsdoc/reject-any-type */
 /** @typedef {{ path: string, update: (data: object) => Promise<void> | void, get: () => Promise<{ exists: boolean, data: () => unknown }> }} ModerationReference */
 /** @typedef {{ doc: (path: string) => ModerationReference, collection: (name: string) => { doc: (id: string) => { set: (data: object) => Promise<void> } } }} ModerationDatabase */
 /** @typedef {{ delete: () => unknown, serverTimestamp: () => unknown }} ModerationFieldValue */
 /**
  * @param {{ db: ModerationDatabase, data: Record<string, unknown> }} input Input values.
- * @returns {{ path: string } | null | undefined} Variant reference.
+ * @returns {any} Variant reference.
  */
 const getVariantReference = input => {
   const { db, data } = input;
   if (typeof data.variant === 'string') {
-    return db.doc(data.variant);
+    return /** @type {any} */ (db.doc(data.variant));
   }
 
   return data.variant;
@@ -37,17 +38,17 @@ const buildAssignment = input => {
 
 /**
  * @param {{ get: () => Promise<{ exists: boolean }> }} moderatorRef Moderator ref.
- * @returns {Promise<{ exists: boolean } | null>} Snapshot or null.
+ * @returns {Promise<any>} Snapshot or null.
  */
 const getExistingModeratorSnapshot = async moderatorRef => {
-  const moderatorSnap = await moderatorRef.get();
+  const moderatorSnap = /** @type {any} */ (await moderatorRef.get());
   if (!moderatorSnap.exists) return null;
   return moderatorSnap;
 };
 
 /**
  * @param {{ db: ModerationDatabase, FieldValue: ModerationFieldValue, moderatorRef: ModerationReference, moderatorSnap: { data: () => unknown } }} input Assignment inputs.
- * @returns {{ variantId: string, clearAssignment: () => Promise<void> | void } | null} Assignment or null.
+ * @returns {any} Assignment or null.
  */
 const getVariantAssignment = input => {
   const { db, FieldValue, moderatorRef, moderatorSnap } = input;
@@ -68,14 +69,18 @@ const createFetchModeratorAssignment = input => {
   const { db, FieldValue } = input;
   return async uid => {
     const moderatorRef = db.collection('moderators').doc(uid);
-    const moderatorSnap = await getExistingModeratorSnapshot(moderatorRef);
+    const moderatorSnap = await getExistingModeratorSnapshot(
+      /** @type {any} */ (moderatorRef)
+    );
     if (!moderatorSnap) return null;
-    return getVariantAssignment({
-      db,
-      FieldValue,
-      moderatorRef,
-      moderatorSnap,
-    });
+    return getVariantAssignment(
+      /** @type {any} */ ({
+        db,
+        FieldValue,
+        moderatorRef,
+        moderatorSnap,
+      })
+    );
   };
 };
 

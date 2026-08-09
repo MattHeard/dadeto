@@ -1,3 +1,4 @@
+/* eslint-disable jsdoc/reject-any-type */
 import {
   buildAltsHtml,
   buildHtml,
@@ -32,7 +33,7 @@ import {
  * @returns {{ renderVariant: unknown, render: (...args: unknown[]) => Promise<null> }} Wired cloud export objects for index.js.
  */
 export function runRenderVariant(deps) {
-  const typedDeps = deps;
+  const typedDeps = /** @type {any} */ (deps);
   const {
     initializeApp,
     createFirebaseAppManager,
@@ -47,7 +48,7 @@ export function runRenderVariant(deps) {
   } = typedDeps;
   const resolvedConsole = consoleLike ?? globalThis.console;
 
-  const renderState = createRenderVariantEntrypointState();
+  const renderState = /** @type {any} */ (createRenderVariantEntrypointState());
   const { render: resolveRenderVariant, db } = renderState;
 
   const handleVariantWrite = createHandleVariantWrite({
@@ -56,14 +57,17 @@ export function runRenderVariant(deps) {
     db,
   });
 
-  const renderVariant = createFirestoreDocumentOnWriteTrigger({
-    functions,
-    region: 'europe-west1',
-    documentPath: 'stories/{storyId}/pages/{pageId}/variants/{variantId}',
-    handler: change => handleVariantWrite(change),
-  });
+  const renderVariant = createFirestoreDocumentOnWriteTrigger(
+    /** @type {any} */ ({
+      functions,
+      region: 'europe-west1',
+      documentPath: 'stories/{storyId}/pages/{pageId}/variants/{variantId}',
+      handler: (/** @type {any} */ change) => handleVariantWrite(change),
+    })
+  );
 
-  const render = (...args) => resolveRenderVariant()(...args);
+  const render = (/** @type {any[]} */ ...args) =>
+    resolveRenderVariant()(...args);
 
   return { renderVariant, render };
 
@@ -83,13 +87,19 @@ export function runRenderVariant(deps) {
     renderStateOptions.resolveObjectPrefix = resolveStaticObjectPrefix;
     renderStateOptions.entrypointKind = 'variant';
     renderStateOptions.defaultBucketName = DEFAULT_BUCKET_NAME;
-    renderStateOptions.buildRender = createCloudRenderInstanceBuilder({
-      createRenderer: createRenderVariant,
-      crypto,
-      consoleError: (...args) => resolvedConsole.error(...args),
-    });
-    const renderEntrypointState =
-      createCloudRenderEntrypointState(renderStateOptions);
+    renderStateOptions.buildRender = /** @type {any} */ (
+      createCloudRenderInstanceBuilder(
+        /** @type {any} */ ({
+          createRenderer: createRenderVariant,
+          crypto,
+          consoleError: (/** @type {any[]} */ ...args) =>
+            resolvedConsole.error(...args),
+        })
+      )
+    );
+    const renderEntrypointState = /** @type {any} */ (
+      createCloudRenderEntrypointState(/** @type {any} */ (renderStateOptions))
+    );
 
     return renderEntrypointState;
   }

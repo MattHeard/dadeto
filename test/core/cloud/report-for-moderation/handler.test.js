@@ -85,44 +85,83 @@ describe('createReportForModerationHandler', () => {
       getServerTimestamp: () => 'time',
       hasModerationReport: jest.fn().mockResolvedValue(false),
     });
-    await expect(handler({ method: 'POST', body: {
-      variant: 'v', reporterId: ' reporter ',
-    } })).resolves.toEqual({ status: 201, body: {} });
-    await expect(handler({ method: 'POST', body: {
-      variant: 'v', anonymousReporterId: ' anon ',
-    } })).resolves.toEqual({ status: 201, body: {} });
+    await expect(
+      handler({
+        method: 'POST',
+        body: {
+          variant: 'v',
+          reporterId: ' reporter ',
+        },
+      })
+    ).resolves.toEqual({ status: 201, body: {} });
+    await expect(
+      handler({
+        method: 'POST',
+        body: {
+          variant: 'v',
+          anonymousReporterId: ' anon ',
+        },
+      })
+    ).resolves.toEqual({ status: 201, body: {} });
 
     const duplicate = createReportForModerationHandler({
       addModerationReport,
       getServerTimestamp: () => 'time',
       hasModerationReport: async () => true,
     });
-    await expect(duplicate({ method: 'POST', body: {
-      variant: 'v', reporterIdentity: 'id',
-    } })).resolves.toEqual({ status: 409, body: 'Report already exists' });
-    await expect(handler({ method: 'POST', body: { variant: 'v' } })).resolves.toEqual({
+    await expect(
+      duplicate({
+        method: 'POST',
+        body: {
+          variant: 'v',
+          reporterIdentity: 'id',
+        },
+      })
+    ).resolves.toEqual({ status: 409, body: 'Report already exists' });
+    await expect(
+      handler({ method: 'POST', body: { variant: 'v' } })
+    ).resolves.toEqual({
       status: 400,
       body: 'Missing or invalid reporter identity',
     });
-    await expect(handler()).resolves.toEqual({ status: 405, body: 'POST only' });
-    await expect(handler({ method: 'GET', body: {
-      variant: 'v', reporterIdentity: 'id',
-    } })).resolves.toEqual({ status: 405, body: 'POST only' });
+    await expect(handler()).resolves.toEqual({
+      status: 405,
+      body: 'POST only',
+    });
+    await expect(
+      handler({
+        method: 'GET',
+        body: {
+          variant: 'v',
+          reporterIdentity: 'id',
+        },
+      })
+    ).resolves.toEqual({ status: 405, body: 'POST only' });
   });
 });
 
 describe('report moderation adapters and urgency', () => {
   it('computes bounded urgency and validates CORS origins', () => {
-    expect(computeModerationUrgency({
-      reportCount: 100, reportRecency: 2, pageAge: 1,
-      timeSinceLastReview: 2, visibilityDistanceFromThreshold: 2,
-      moderationCount: -10,
-    })).toBe(1);
-    expect(computeModerationUrgency({
-      reportCount: NaN, reportRecency: NaN, pageAge: NaN,
-      timeSinceLastReview: NaN, visibilityDistanceFromThreshold: NaN,
-      moderationCount: NaN,
-    })).toBe(0);
+    expect(
+      computeModerationUrgency({
+        reportCount: 100,
+        reportRecency: 2,
+        pageAge: 1,
+        timeSinceLastReview: 2,
+        visibilityDistanceFromThreshold: 2,
+        moderationCount: -10,
+      })
+    ).toBe(1);
+    expect(
+      computeModerationUrgency({
+        reportCount: NaN,
+        reportRecency: NaN,
+        pageAge: NaN,
+        timeSinceLastReview: NaN,
+        visibilityDistanceFromThreshold: NaN,
+        moderationCount: NaN,
+      })
+    ).toBe(0);
 
     const validator = createCorsOriginValidator(['https://allowed']);
     const callback = jest.fn();
@@ -131,14 +170,22 @@ describe('report moderation adapters and urgency', () => {
     validator('https://other', callback);
     expect(callback).toHaveBeenCalledTimes(3);
     expect(createCorsOriginValidator(null)).toEqual(expect.any(Function));
-    expect(createCorsOptions({ allowedOrigins: ['a'], methods: ['POST', 'PUT'] })).toMatchObject({ methods: ['POST', 'PUT'] });
-    expect(createCorsOptions({ allowedOrigins: ['a'] })).toMatchObject({ methods: ['POST'] });
+    expect(
+      createCorsOptions({ allowedOrigins: ['a'], methods: ['POST', 'PUT'] })
+    ).toMatchObject({ methods: ['POST', 'PUT'] });
+    expect(createCorsOptions({ allowedOrigins: ['a'] })).toMatchObject({
+      methods: ['POST'],
+    });
   });
 
   it('writes string, JSON, status-only, and method responses', async () => {
     const response = () => ({
-      status: jest.fn(function status() { return this; }),
-      send: jest.fn(), json: jest.fn(), sendStatus: jest.fn(),
+      status: jest.fn(function status() {
+        return this;
+      }),
+      send: jest.fn(),
+      json: jest.fn(),
+      sendStatus: jest.fn(),
     });
     const handler = createHandleReportForModeration(async request => {
       if (request.body === 'status') return { status: 204, body: undefined };

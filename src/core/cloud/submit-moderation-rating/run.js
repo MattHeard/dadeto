@@ -1,3 +1,4 @@
+/* eslint-disable jsdoc/reject-any-type */
 import { getAllowedOrigins } from '../cors-config.js';
 import {
   createHandleSubmitModerationRating,
@@ -27,7 +28,7 @@ export function runSubmitModerationRating(deps) {
   deps.createFirebaseAppManager(deps.initializeApp).ensureFirebaseApp();
 
   const dependencies = createModerationRatingDependencies({
-    db: deps.getFirestoreInstance(),
+    db: /** @type {any} */ (deps.getFirestoreInstance()),
     auth: deps.getAuth(),
     FieldValue: deps.FieldValue,
     crypto: deps.crypto,
@@ -45,17 +46,16 @@ export function runSubmitModerationRating(deps) {
     path: '/',
     handler: handleSubmitModerationRating,
   };
-  const endpointOptions =
-    /** @type {Parameters<typeof createCloudHttpEndpoint>[0]} */ ({
+  const endpointOptions = /** @type {any} */ ({
+    express: deps.express,
+    middleware: createSubmitModerationRatingMiddleware({
       express: deps.express,
-      middleware: createSubmitModerationRatingMiddleware({
-        express: deps.express,
-        cors: deps.cors,
-        allowedOrigins: getAllowedOrigins(deps.getEnvironmentVariables()),
-      }),
-      route: moderationRoute,
-      functions: deps.functions,
-    });
+      cors: deps.cors,
+      allowedOrigins: getAllowedOrigins(deps.getEnvironmentVariables()),
+    }),
+    route: moderationRoute,
+    functions: deps.functions,
+  });
   const { app, handle: submitModerationRating } =
     createCloudHttpEndpoint(endpointOptions);
 

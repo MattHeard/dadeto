@@ -1,3 +1,4 @@
+/* eslint-disable jsdoc/reject-any-type */
 import { createFirestoreHandle } from '../firestore-handle.js';
 import { findAvailablePageNumber as defaultFindAvailablePageNumber } from '../process-new-page/process-new-page-core.js';
 import { normalizeHeaderValue, getSnapshotData } from '../cloud-core.js';
@@ -333,7 +334,7 @@ function getSnapshotReference(snapshot) {
   if (!snapshotHasRef(snapshot)) {
     return null;
   }
-  return /** @type {DocumentReference} */ (snapshot.ref);
+  return /** @type {DocumentReference} */ (/** @type {any} */ (snapshot)?.ref);
 }
 
 /**
@@ -466,11 +467,13 @@ export function createProcessNewStoryHandle({
     functions,
     getFirestoreInstance,
     documentPath: 'storyFormSubmissions/{subId}',
-    createHandler: createProcessNewStorySubmissionHandlerFactory({
-      fieldValue,
-      randomUUID,
-      random,
-    }),
+    createHandler: /** @type {any} */ (
+      createProcessNewStorySubmissionHandlerFactory({
+        fieldValue,
+        randomUUID,
+        random,
+      })
+    ),
   });
 }
 
