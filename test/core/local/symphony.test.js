@@ -149,6 +149,20 @@ describe('core local symphony helpers', () => {
         queueEvidence: [],
       })
     );
+
+    expect(
+      summarizeTrackerSelection({
+        workflowExists: false,
+        selectedBead: null,
+        lastCommand: 'bd ready --sort priority',
+        pollResult: { readyCount: 0 },
+      })
+    ).toEqual({
+      state: 'blocked',
+      latestEvidence: 'WORKFLOW.md is missing; add it before enabling runner scheduling.',
+      operatorRecommendation: 'Add WORKFLOW.md so Symphony can decide what the runner should do next.',
+      queueEvidence: [],
+    });
   });
 
   test('applies completed and blocked runner outcomes to scheduler-visible state', () => {
@@ -332,6 +346,12 @@ describe('core local symphony helpers', () => {
       }
     );
     expect(blockedStatus.eventLog?.[0]).toBe('agent failure: exited 1');
+
+    const signaledStatus = applyRunnerOutcome(
+      { state: 'running', eventLog: [] },
+      { beadId: 'dadeto-signal', outcome: 'blocked', signal: 'SIGTERM' }
+    );
+    expect(signaledStatus.eventLog?.[0]).toBe('agent failure: signal SIGTERM');
 
     const fallbackFailureStatus = applyRunnerOutcome(
       {
