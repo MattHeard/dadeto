@@ -196,4 +196,31 @@ describe('google-auth-cache', () => {
 
     expect(initGoogleSignIn).not.toHaveBeenCalled();
   });
+
+  it('uses sessionStorage when installing the wrapper without explicit storage', async () => {
+    const sessionStorage = createStorage();
+    sessionStorage.setItem('author_uuid', 'author-session');
+    const previousSessionStorage = globalThis.sessionStorage;
+    globalThis.sessionStorage = sessionStorage;
+    const signOut = jest.fn().mockResolvedValue(undefined);
+    try {
+      const handle = installAuthorUuidCaching(
+        {
+          initGoogleSignIn: jest.fn(),
+          signOut,
+        },
+        {
+          fetchFn: jest.fn(),
+          getAuthorUuidUrl: jest.fn(),
+          isInternalOrigin: () => true,
+        }
+      );
+
+      await handle.signOut();
+      expect(signOut).toHaveBeenCalled();
+      expect(getCachedAuthorUuid()).toBeNull();
+    } finally {
+      globalThis.sessionStorage = previousSessionStorage;
+    }
+  });
 });
