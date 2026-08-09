@@ -27,7 +27,7 @@ const region = jest.fn(() => ({
   },
 }));
 
-jest.mock(
+await jest.unstable_mockModule(
   '../../../../src/core/cloud/render-variant/render-variant-core.js',
   () => ({
     DEFAULT_BUCKET_NAME: 'bucket',
@@ -42,26 +42,20 @@ jest.mock(
   })
 );
 
-jest.mock(
-  '../../../../src/core/cloud/render-support.js',
-  () => ({
-    createCloudRenderInstanceBuilder: mockCreateCloudRenderInstanceBuilder,
-    createCloudRenderEntrypointState: mockCreateCloudRenderEntrypointState,
-    createMemoizedLoader: jest.fn(),
-  })
-);
-
-jest.mock('../../../../src/core/cloud/cloud-core.js', () => ({
-  createFirestoreDocumentOnWriteTrigger: mockCreateFirestoreDocumentOnWriteTrigger,
+await jest.unstable_mockModule('../../../../src/core/cloud/render-support.js', () => ({
+  createCloudRenderInstanceBuilder: mockCreateCloudRenderInstanceBuilder,
+  createCloudRenderEntrypointState: mockCreateCloudRenderEntrypointState,
+  createMemoizedLoader: jest.fn(),
 }));
 
-let runRenderVariant;
+await jest.unstable_mockModule('../../../../src/core/cloud/cloud-core.js', () => ({
+  createFirestoreDocumentOnWriteTrigger:
+    mockCreateFirestoreDocumentOnWriteTrigger,
+}));
 
-beforeAll(async () => {
-  ({ runRenderVariant } = await import(
-    '../../../../src/core/cloud/render-variant/run.js'
-  ));
-});
+const { runRenderVariant } = await import(
+  '../../../../src/core/cloud/render-variant/run.js'
+);
 
 describe('runRenderVariant', () => {
   test('wires the cloud entrypoint and uses the global fetch path', async () => {
