@@ -118,6 +118,23 @@ describe('submit-new-story core', () => {
       expect(saveSubmission.mock.calls[0][1].author).toBe('???');
     });
 
+    it('defaults missing title and author fields', async () => {
+      const saveSubmission = jest.fn().mockResolvedValue();
+      const responder = createSubmitNewStoryResponder(
+        createDependencies({ saveSubmission })
+      );
+
+      await responder({
+        method: 'POST',
+        body: { content: 'Body' },
+      });
+
+      expect(saveSubmission).toHaveBeenCalledWith(
+        expect.any(String),
+        expect.objectContaining({ title: 'Untitled', author: '???' })
+      );
+    });
+
     it('ignores invalid auth tokens when resolving the author id', async () => {
       const verifyIdToken = jest.fn().mockRejectedValue(new Error('boom'));
       const saveSubmission = jest.fn().mockResolvedValue();
