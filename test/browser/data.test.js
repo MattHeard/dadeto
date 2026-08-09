@@ -9,6 +9,8 @@ import {
   shouldCopyStateForFetch,
   getEncodeBase64,
   createBlogDataController,
+  setLocalPermanentData,
+  getLocalPermanentData,
 } from '../../src/core/browser/data.js';
 
 describe('shouldCopyStateForFetch', () => {
@@ -322,6 +324,79 @@ describe('createBlogDataController', () => {
 
     expect(() => controller.getData(createState())).toThrow(
       'createBlogDataController requires loggers.logInfo to be a function.'
+    );
+  });
+
+  it('supports permanent data without storage and validates invalid values', () => {
+    const logError = jest.fn();
+    const controller = createBlogDataController(() => ({
+      fetch: jest.fn(),
+      loggers: { logInfo: jest.fn(), logError },
+    }));
+
+    expect(controller.getLocalPermanentData()).toEqual({});
+    expect(controller.setLocalPermanentData({ theme: 'dark' })).toEqual({
+      theme: 'dark',
+    });
+    expect(() => controller.setLocalPermanentData(null)).toThrow(
+      'setLocalPermanentData requires an object.'
+    );
+    expect(logError).toHaveBeenCalledWith(
+      'setLocalPermanentData received invalid data structure:',
+      null
+    );
+  });
+
+  it('uses an injected permanent lens and ignores non-object stored data', () => {
+    const permanentLens = {
+      get: jest.fn(() => null),
+      set: jest.fn(),
+    };
+    const controller = createBlogDataController(() => ({
+      fetch: jest.fn(),
+      loggers: { logInfo: jest.fn(), logError: jest.fn() },
+      permanentLens,
+    }));
+
+    expect(controller.getLocalPermanentData()).toEqual({});
+    expect(controller.setLocalPermanentData({ enabled: true })).toEqual({
+      enabled: true,
+    });
+    expect(permanentLens.set).toHaveBeenCalledWith('permanentData', {
+      enabled: true,
+    });
+  });
+});
+
+describe('backward-compatible permanent-data wrappers', () => {
+  it('reads and merges values through legacy storage', () => {
+    const storage = {
+      getItem: jest.fn(() => JSON.stringify({ existing: true })),
+      setItem: jest.fn(),
+    };
+    const logError = jest.fn();
+    const loggers = { logError };
+
+    expect(getLocalPermanentData(loggers, storage)).toEqual({ existing: true });
+    expect(setLocalPermanentData({ added: 1 }, loggers, storage)).toEqual({
+      existing: true,
+      added: 1,
+    });
+    expect(storage.setItem).toHaveBeenCalledWith(
+      'permanentData',
+      JSON.stringify({ existing: true, added: 1 })
+    );
+  });
+
+  it('returns empty data and reports invalid legacy values', () => {
+    const logError = jest.fn();
+    expect(getLocalPermanentData({ logError })).toEqual({});
+    expect(() => setLocalPermanentData(undefined, { logError })).toThrow(
+      'setLocalPermanentData requires an object.'
+    );
+    expect(logError).toHaveBeenCalledWith(
+      'setLocalPermanentData received invalid data structure:',
+      undefined
     );
   });
 });
