@@ -412,6 +412,8 @@ async function buildSimulatorState(/** @type {unknown} */ config) {
     snapshotHelpers,
     lookupHelpers,
     authVerifiers,
+    fieldValue,
+    db,
   });
 
   await seedStaticFixture(storage, bucketName);
@@ -716,11 +718,12 @@ function createSubmitNewStoryConfig(/** @type {unknown} */ options) {
 
 /**
  * Create test utilities exposed by the simulator.
- * @param {{ snapshotHelpers: ReturnType<typeof createSnapshotHelpers>, lookupHelpers: ReturnType<typeof createLookupHelpers>, authVerifiers: ReturnType<typeof createSimulatorAuthVerifiers> }} options Utility dependencies.
+ * @param {{ snapshotHelpers: ReturnType<typeof createSnapshotHelpers>, lookupHelpers: ReturnType<typeof createLookupHelpers>, authVerifiers: ReturnType<typeof createSimulatorAuthVerifiers>, fieldValue: object, db: object }} options Utility dependencies.
  * @returns {object} Test utility bag.
  */
 function createSimulatorTestUtils(/** @type {unknown} */ options) {
-  const { snapshotHelpers, lookupHelpers, authVerifiers } = options;
+  const { snapshotHelpers, lookupHelpers, authVerifiers, fieldValue, db } =
+    options;
   return {
     resolveTargetPageNumber: getTargetPageNumber,
     extractParams,
@@ -730,6 +733,9 @@ function createSimulatorTestUtils(/** @type {unknown} */ options) {
     findExistingOptionPath: lookupHelpers.findExistingOptionPath,
     createSnapshot: snapshotHelpers.createSnapshot,
     createSnapshots: snapshotHelpers.createSnapshots,
+    createDeleteSentinel: createDeleteSentinelGetter(fieldValue),
+    markVariantDirty: (request, overrideDb = null) =>
+      handleMarkVariantDirty({ db: overrideDb ?? db }, request),
     createLocalFetchStub,
     createRandomSource,
     generateStatsVerifyIdToken: authVerifiers.verifyStatsIdToken,

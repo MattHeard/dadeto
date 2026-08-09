@@ -1,0 +1,6 @@
+# `src/core/local/gcp-simulator/simulator.js` coverage
+
+- Unexpected hurdle: the integration scenarios exposed an unbound fake Firestore snapshot method, and the initial focused set omitted moderation-selection and simulator route branches.
+- Diagnosis: snapshot `data()` methods were detached by renderer code; after binding them in the fake snapshot implementation, the uncovered-line report isolated manifest, sentinel, route, selection, and dirty-route paths.
+- Fix: bind fake snapshot data methods, expose the simulator’s existing dirty-route helper for a dependency-injected test, and add focused behavior tests for the manifest, render/stats routes, delete sentinel, and dirty-route success.
+- Evidence: `NODE_OPTIONS=--experimental-vm-modules npx jest test/core/local/gcp-simulator/simulator.coverage.test.js test/local/gcp-simulator.test.js test/core/local/gcp-simulator/payment-webhook-route.test.js test/core/local/gcp-simulator/simulator.pick-next.test.js --runInBand --coverage --silent --collectCoverageFrom='src/core/local/gcp-simulator/simulator.js' --coverageReporters=text-summary` — 4 suites, 29 tests passed; statements 393/393, branches 177/177, functions 120/120, lines 384/384.

@@ -491,6 +491,7 @@ class FakeDocumentSnapshot {
     this.exists = data !== undefined;
     this.id = ref.id;
     this._data = data;
+    this.data = this.data.bind(this);
   }
 
   data() {
