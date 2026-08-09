@@ -1,5 +1,6 @@
-# Tree-visibility runner coverage
+# tree-visibility run coverage
 
-- Exercised the default `consoleError` parameter path by omitting the optional dependency.
-- Verified with `npx jest test/core/cloud/tree-visibility/run.test.js --no-cache --watchman=false --runInBand --coverage --coverageProvider=babel --collectCoverageFrom=src/core/cloud/tree-visibility/run.js --coverageReporters=text`.
-- Focused report: `src/core/cloud/tree-visibility/run.js` reached 100% statements, branches, functions, and lines.
+- Unexpected hurdle: the entrypoint's optional `consoleError` default was the only uncovered branch after registration and handler execution were tested.
+- Diagnosis: the first integration setup injected a logger, bypassing the default parameter path.
+- Fix: use the production default logger while exercising both scheduled and HTTP regeneration entrypoints against an empty Firestore result.
+- Evidence: strict focused Jest passed at 100% statements, branches, functions, and lines.
