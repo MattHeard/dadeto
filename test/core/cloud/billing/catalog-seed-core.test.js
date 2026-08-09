@@ -16,8 +16,12 @@ const snapshot = {
 
 describe('billing catalog seed core', () => {
   it('requires matching snapshot document ids and normalizes operation maps', () => {
-    expect(normalizeCatalogSnapshot('initial', snapshot).operations).toEqual({});
-    expect(() => normalizeCatalogSnapshot('wrong', snapshot)).toThrow('document ID');
+    expect(normalizeCatalogSnapshot('initial', snapshot).operations).toEqual(
+      {}
+    );
+    expect(() => normalizeCatalogSnapshot('wrong', snapshot)).toThrow(
+      'document ID'
+    );
   });
 
   it('creates, updates packages, and makes identical snapshot reseeds no-ops', async () => {
@@ -29,22 +33,39 @@ describe('billing catalog seed core', () => {
       getSnapshot: async id => snapshots.get(id) ?? null,
       createSnapshot: async (id, value) => snapshots.set(id, value),
     };
-    await expect(seedBillingCatalog(store, {
-      packages: { 'usd-10': { active: true, amountUsdMinor: 1000 } },
-      snapshots: { initial: snapshot },
-    })).resolves.toEqual({ packagesCreated: 1, packagesUpdated: 0, snapshotsCreated: 1, snapshotsUnchanged: 0 });
-    await expect(seedBillingCatalog(store, {
-      packages: { 'usd-10': { active: false, amountUsdMinor: 1000 } },
-      snapshots: { initial: snapshot },
-    })).resolves.toMatchObject({ packagesUpdated: 1, snapshotsUnchanged: 1 });
-    await expect(seedBillingCatalog(store, {
-      packages: {}, snapshots: { initial: { ...snapshot, markupBps: 1 } },
-    })).rejects.toThrow('different data');
+    await expect(
+      seedBillingCatalog(store, {
+        packages: { 'usd-10': { active: true, amountUsdMinor: 1000 } },
+        snapshots: { initial: snapshot },
+      })
+    ).resolves.toEqual({
+      packagesCreated: 1,
+      packagesUpdated: 0,
+      snapshotsCreated: 1,
+      snapshotsUnchanged: 0,
+    });
+    await expect(
+      seedBillingCatalog(store, {
+        packages: { 'usd-10': { active: false, amountUsdMinor: 1000 } },
+        snapshots: { initial: snapshot },
+      })
+    ).resolves.toMatchObject({ packagesUpdated: 1, snapshotsUnchanged: 1 });
+    await expect(
+      seedBillingCatalog(store, {
+        packages: {},
+        snapshots: { initial: { ...snapshot, markupBps: 1 } },
+      })
+    ).rejects.toThrow('different data');
   });
 
   it('quotes the seeded package with positive credits', () => {
-    expect(quoteSeededPackage('usd-10', { amountUsdMinor: 1000 }, snapshot)).toEqual({
-      packageId: 'usd-10', amountUsdMinor: 1000, credits: 9_200_000, snapshotId: 'initial',
+    expect(
+      quoteSeededPackage('usd-10', { amountUsdMinor: 1000 }, snapshot)
+    ).toEqual({
+      packageId: 'usd-10',
+      amountUsdMinor: 1000,
+      credits: 9_200_000,
+      snapshotId: 'initial',
     });
   });
 });

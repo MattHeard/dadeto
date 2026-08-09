@@ -33,15 +33,17 @@ export async function seedBillingCatalog(store, catalog) {
     snapshotsUnchanged: 0,
   };
   for (const [packageId, packageData] of Object.entries(catalog.packages)) {
+    if (packageData.active !== true && packageData.active !== false)
+      throw new TypeError('Package active must be boolean');
     if (
-      packageData.active !== true &&
-      packageData.active !== false
-    ) throw new TypeError('Package active must be boolean');
-    if (!Number.isSafeInteger(packageData.amountUsdMinor) || packageData.amountUsdMinor <= 0)
+      !Number.isSafeInteger(packageData.amountUsdMinor) ||
+      packageData.amountUsdMinor <= 0
+    )
       throw new TypeError('Package amountUsdMinor must be positive');
     const existing = await store.getPackage(packageId);
     if (!existing) result.packagesCreated += 1;
-    else if (JSON.stringify(existing) !== JSON.stringify(packageData)) result.packagesUpdated += 1;
+    else if (JSON.stringify(existing) !== JSON.stringify(packageData))
+      result.packagesUpdated += 1;
     await store.setPackage(packageId, packageData);
   }
   for (const [snapshotId, snapshotData] of Object.entries(catalog.snapshots)) {
@@ -49,7 +51,9 @@ export async function seedBillingCatalog(store, catalog) {
     const existing = await store.getSnapshot(snapshotId);
     if (existing) {
       if (JSON.stringify(existing) !== JSON.stringify(normalized))
-        throw new Error(`Pricing snapshot already exists with different data: ${snapshotId}`);
+        throw new Error(
+          `Pricing snapshot already exists with different data: ${snapshotId}`
+        );
       result.snapshotsUnchanged += 1;
       continue;
     }
@@ -59,6 +63,15 @@ export async function seedBillingCatalog(store, catalog) {
   return result;
 }
 
+/**
+ *
+ * @param packageId
+ * @param packageData
+ * @param snapshot
+ */
 export function quoteSeededPackage(packageId, packageData, snapshot) {
-  return quoteCreditPackage({ id: packageId, amountUsdMinor: packageData.amountUsdMinor }, snapshot);
+  return quoteCreditPackage(
+    { id: packageId, amountUsdMinor: packageData.amountUsdMinor },
+    snapshot
+  );
 }

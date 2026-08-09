@@ -96,6 +96,16 @@ locals {
     "eventarc",
   ]
   static_site_objects = {
+    dendrite_billing_html = {
+      name         = "billing/index.html"
+      source       = "${path.module}/billing.html"
+      content_type = "text/html"
+    }
+    dendrite_billing_js = {
+      name         = "billing.js"
+      source       = "${path.module}/browser/billing.js"
+      content_type = "application/javascript"
+    }
     dendrite_site_manifest = {
       name         = "site.webmanifest"
       source       = "${path.module}/browser/assets/site.webmanifest"
