@@ -7,6 +7,7 @@ import {
   createInitGoogleSignInHandlerFactory,
   initAdminApp,
   announceTriggerRenderResult,
+  createInitAdminAppHandle,
 } from '../../../../src/core/browser/admin-core.js';
 
 describe('admin/core uncovered branches', () => {
@@ -157,6 +158,24 @@ describe('admin/core uncovered branches', () => {
     expect(showMessageCalls).toContain('Regeneration failed');
   });
 
+  it('reports an unknown status when regeneration returns a response without status', async () => {
+    mockDoc.getElementById = id => {
+      if (id === 'regenInput') return { value: '123abc' };
+      if (id === 'renderStatus') return { innerHTML: '' };
+      return null;
+    };
+    mockFetchFn = async () => ({ ok: false, text: async () => '' });
+    const regenerateVariant = createRegenerateVariant({
+      googleAuth: mockGoogleAuthModule,
+      doc: mockDoc,
+      showMessage: mockShowMessage,
+      getAdminEndpointsFn: async () => ({ markVariantDirtyUrl: 'some-url' }),
+      fetchFn: mockFetchFn,
+    });
+    await regenerateVariant({ preventDefault: () => {} });
+    expect(showMessageCalls).toContain('Regeneration failed');
+  });
+
   it('uses the cached token when the Firebase user has no token method', async () => {
     const storage = {
       getItem: key => (key === 'id_token' ? 'cached-token' : null),
@@ -187,6 +206,60 @@ describe('admin/core uncovered branches', () => {
       credentialFactory: () => ({}),
     });
     await expect(auth.getIdToken()).resolves.toBe('fresh-token');
+  });
+
+  it('returns an empty token when Firebase returns a falsy token', async () => {
+    const auth = createGoogleAuthModule({
+      getAuthFn: () => ({ currentUser: { getIdToken: async () => '' } }),
+      storage: { getItem: () => 'cached-token', removeItem: () => {} },
+      consoleObj: { error: () => {} },
+      globalScope: {},
+      Provider: { credential: () => ({}) },
+      credentialFactory: () => ({}),
+    });
+    await expect(auth.getIdToken()).resolves.toBe('');
+  });
+
+  it('falls back to an empty cached token when no Firebase user is available', async () => {
+    const auth = createGoogleAuthModule({
+      getAuthFn: () => ({ currentUser: {} }),
+      storage: { getItem: () => null, removeItem: () => {} },
+      consoleObj: { error: () => {} },
+      globalScope: {},
+      Provider: { credential: () => ({}) },
+      credentialFactory: () => ({}),
+    });
+    await expect(auth.getIdToken()).resolves.toBe('');
+  });
+
+  it('returns an empty token from the initialized admin app when both sources are empty', async () => {
+    let handlers;
+    const auth = { currentUser: { getIdToken: async () => '' } };
+    const sessionStorageObj = {
+      getItem: () => null,
+      setItem: () => {},
+      removeItem: () => {},
+    };
+    const handle = createInitAdminAppHandle({
+      loadStaticConfigFn: async () => ({ disableGoogleSignIn: true }),
+      getAuthFn: () => auth,
+      GoogleAuthProviderFn: { credential: () => ({}) },
+      onAuthStateChangedFn: () => {},
+      signInWithCredentialFn: async () => {},
+      initializeAppFn: () => ({}),
+      sessionStorageObj,
+      consoleObj: { error: () => {} },
+      globalThisObj: { window: { matchMedia: () => ({ matches: false }) } },
+      documentObj: { getElementById: () => null, querySelectorAll: () => [] },
+      fetchObj: async () => ({ ok: true, status: 200, text: async () => '' }),
+      onHandlersReady: value => {
+        handlers = value;
+      },
+    });
+    await handle();
+    await expect(handlers.getIdToken()).resolves.toBe('');
+    auth.currentUser = {};
+    await expect(handlers.getIdToken()).resolves.toBe('');
   });
 
   it('reports trigger-render HTTP failures through the optional error reporter', async () => {

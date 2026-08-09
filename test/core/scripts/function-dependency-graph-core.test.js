@@ -2,6 +2,49 @@ import { parse } from '@babel/parser';
 import { buildFunctionDependencyGraph } from '../../../src/core/scripts/function-dependency-graph-core.js';
 
 describe('buildFunctionDependencyGraph', () => {
+  test('resolves a local call when the file has no import bindings', () => {
+    const graph = buildFunctionDependencyGraph({
+      files: [
+        { path: 'local.js', source: 'export function local() { missing(); }' },
+      ],
+      parse,
+    });
+    expect(graph.nodes).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ id: 'local.js#local' }),
+      ])
+    );
+  });
+
+  test('handles a call from an AST file without an import-binding entry', () => {
+    const graph = buildFunctionDependencyGraph({
+      files: [{ path: 'no-imports.js', source: 'ignored' }],
+      parse: () => ({
+        type: 'Program',
+        body: [
+          {
+            type: 'FunctionDeclaration',
+            id: { name: 'caller' },
+            params: [],
+            body: {
+              type: 'BlockStatement',
+              body: [
+                {
+                  type: 'CallExpression',
+                  callee: { type: 'Identifier', name: 'missing' },
+                },
+              ],
+            },
+          },
+        ],
+      }),
+    });
+    expect(graph.nodes).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ id: 'no-imports.js#caller' }),
+      ])
+    );
+  });
   test('links calls to functions imported from another file', () => {
     const graph = buildFunctionDependencyGraph({
       files: [

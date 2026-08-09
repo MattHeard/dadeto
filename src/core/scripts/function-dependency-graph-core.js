@@ -154,9 +154,7 @@ export function buildFunctionDependencyGraph({ files, parse }) {
     const local = byFileAndName.get(`${file}#${name}`);
     if (local) return local;
     const imported = importTarget(
-      /** @type {Map<string, ImportBinding>} */ (
-        importsByFile.get(file) ?? new Map()
-      ),
+      /** @type {Map<string, ImportBinding>} */ (importsByFile.get(file)),
       String(name)
     );
     if (!imported || !imported.source.startsWith('.')) return null;
