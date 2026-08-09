@@ -4,6 +4,7 @@ import {
   createRegenerateVariant,
   createTriggerRender,
   createGoogleAuthModule,
+  createInitGoogleSignInHandlerFactory,
 } from '../../../../src/core/browser/admin-core.js';
 
 describe('admin/core uncovered branches', () => {
@@ -207,5 +208,27 @@ describe('admin/core uncovered branches', () => {
     });
     await regenerateVariant({ preventDefault: () => {} });
     expect(showMessageCalls).toContain('Regeneration failed');
+  });
+
+  it('memoizes the Google sign-in handler and rejects unavailable auth', () => {
+    const factory = createInitGoogleSignInHandlerFactory({
+      getAuthFn: () => ({}),
+      sessionStorageObj: { getItem: () => null, setItem: () => {} },
+      consoleObj: {},
+      globalThisObj: {},
+      googleAuthProviderFn: {},
+      signInWithCredentialFn: () => {},
+    });
+    expect(factory()).toBe(factory());
+
+    const unavailable = createInitGoogleSignInHandlerFactory({
+      getAuthFn: () => null,
+      sessionStorageObj: {},
+      consoleObj: {},
+      globalThisObj: {},
+      googleAuthProviderFn: {},
+      signInWithCredentialFn: () => {},
+    });
+    expect(() => unavailable()).toThrow('Firebase auth client is not ready');
   });
 });
