@@ -1,5 +1,5 @@
-# assign moderation job core coverage
+# Assign-moderation-job core coverage
 
-- The core, branch, and additional coverage suites cover job assignment, authorization, Firestore state, and error paths.
-- Evidence: focused Jest passed 85 tests with strict 100% statements, branches, functions, and lines for `src/core/cloud/assign-moderation-job/assign-moderation-job-core.js`.
-- No coverage exclusion or source change was needed.
+- Target: `src/core/cloud/assign-moderation-job/assign-moderation-job-core.js`
+- Evidence: `npx jest test/core/cloud/assign-moderation-job-core.branch.test.js test/core/cloud/assign-moderation-job-core.coverage.additional.test.js test/core/cloud/assign-moderation-job/index.test.js --runInBand --coverage --collectCoverageFrom=src/core/cloud/assign-moderation-job/assign-moderation-job-core.js --coverageThreshold='{"global":{"statements":100,"branches":100,"functions":100,"lines":100}}'`
+- Result: 3 suites and 27 tests passed; statements, branches, functions, and lines each reached 100% without exclusions.
