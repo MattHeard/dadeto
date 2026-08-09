@@ -1,5 +1,5 @@
-# credit lots core coverage
+# Credit lots core coverage
 
-- The existing credit-lot tests cover allocation, validation, and failure paths.
-- Evidence: focused Jest passed 3 tests with strict 100% statements, branches, functions, and lines for `src/core/cloud/billing/credit-lots-core.js`.
-- No coverage exclusion or source change was needed.
+- Target: `src/core/cloud/billing/credit-lots-core.js`
+- Evidence: `npx jest test/core/cloud/billing/credit-lots-core.test.js --runInBand --coverage --collectCoverageFrom=src/core/cloud/billing/credit-lots-core.js --coverageThreshold='{"global":{"statements":100,"branches":100,"functions":100,"lines":100}}'`
+- Result: 1 suite and 3 tests passed; statements, branches, functions, and lines each reached 100% without exclusions.

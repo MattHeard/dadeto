@@ -44,7 +44,15 @@ describe('credit lots', () => {
     expect(() => consumeCreditLots(lots, 1.5)).toThrow('positive safe integer');
     expect(isUntouchedLot(lots[0])).toBe(true);
     expect(isUntouchedLot({ ...lots[0], remainingCredits: 99 })).toBe(false);
-    expect(consumeCreditLots([{ ...lots[0], remainingCredits: 1 }, { ...lots[1], remainingCredits: 0 }], 1).allocations).toEqual([{ purchaseId: 'old', amount: 1 }]);
+    expect(
+      consumeCreditLots(
+        [
+          { ...lots[0], remainingCredits: 1 },
+          { ...lots[1], remainingCredits: 0 },
+        ],
+        1
+      ).allocations
+    ).toEqual([{ purchaseId: 'old', amount: 1 }]);
   });
 
   it('caps current-value refunds at the original payment', () => {
@@ -52,9 +60,17 @@ describe('credit lots', () => {
       calculateRefundUsdMinor({ ...lots[0], remainingCredits: 50 }, 1_000, 1)
     ).toBe(50);
     expect(calculateRefundUsdMinor(lots[0], 1_000, 0.01)).toBe(1_000);
-    expect(() => calculateRefundUsdMinor(lots[0], 0, 1)).toThrow('originalAmountUsdMinor');
-    expect(() => calculateRefundUsdMinor(lots[0], 1.5, 1)).toThrow('originalAmountUsdMinor');
-    expect(() => calculateRefundUsdMinor(lots[0], 1_000, 0)).toThrow('currentCreditsPerUsd');
-    expect(() => calculateRefundUsdMinor(lots[0], 1_000, Number.NaN)).toThrow('currentCreditsPerUsd');
+    expect(() => calculateRefundUsdMinor(lots[0], 0, 1)).toThrow(
+      'originalAmountUsdMinor'
+    );
+    expect(() => calculateRefundUsdMinor(lots[0], 1.5, 1)).toThrow(
+      'originalAmountUsdMinor'
+    );
+    expect(() => calculateRefundUsdMinor(lots[0], 1_000, 0)).toThrow(
+      'currentCreditsPerUsd'
+    );
+    expect(() => calculateRefundUsdMinor(lots[0], 1_000, Number.NaN)).toThrow(
+      'currentCreditsPerUsd'
+    );
   });
 });
