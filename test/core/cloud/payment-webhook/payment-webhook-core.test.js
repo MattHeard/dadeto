@@ -10,12 +10,10 @@ import {
   parseJsonEvent,
   readMetadata,
   safeEqual,
-  verifyPaymentSignature,
 } from '../../../../src/core/payment-webhook-core.js';
-import { parsePaymentWebhookEvent as parsePaymentWebhookEventWithWrapper } from '../../../../src/core/cloud/payment-webhook/payment-webhook-core.js';
+import { parseStripePaymentWebhookEvent } from '../../../../src/core/cloud/payment-webhook/payment-webhook-core.js';
 import { createFakeFirestore } from '../../../../src/core/local/gcp-simulator/fake-firestore.js';
 import { createApplyCreditEvent } from '../../../../src/core/cloud/get-api-key-credit-v2/get-api-key-credit-v2-core.js';
-import { createHmac } from 'node:crypto';
 import { jest } from '@jest/globals';
 
 describe('createResolveApiKeyUuid', () => {
@@ -440,31 +438,65 @@ describe('helper exports', () => {
     expect(safeEqual('abc', 'abc')).toBe(true);
     expect(safeEqual('abc', 'abd')).toBe(false);
     expect(safeEqual('ab', 'abc')).toBe(false);
-    const signed = createHmac('sha256', 'secret')
-      .update('123.payload', 'utf8')
-      .digest('hex');
-    expect(
-      verifyPaymentSignature('payload', `t=123,v1=${signed}`, 'secret')
-    ).toBe(true);
-    expect(verifyPaymentSignature('payload', 'v1=missing', 'secret')).toBe(
-      false
-    );
   });
 });
 
 describe('payment webhook cloud wrapper', () => {
-  it('parses requests without a signature secret and handles wrapper wiring', async () => {
+  it('requires Stripe verification before parsing an event', async () => {
+    const event = {
+      id: 'evt_wrapper',
+      type: 'payment_intent.succeeded',
+      data: { object: { metadata: { credit_amount: '3' } } },
+    };
+    const constructEvent = jest.fn(() => event);
     expect(
-      parsePaymentWebhookEventWithWrapper(
+      parseStripePaymentWebhookEvent(
         {
-          body: {
-            id: 'evt_wrapper',
-            type: 'payment_intent.succeeded',
-            data: { object: { metadata: { credit_amount: '3' } } },
+          rawBody: JSON.stringify(event),
+          headers: {
+            'stripe-signature': 'signed',
           },
         },
-        {}
+        { STRIPE_WEBHOOK_SECRET: 'secret' },
+        constructEvent
       )
     ).toMatchObject({ id: 'evt_wrapper' });
+    expect(constructEvent).toHaveBeenCalledWith(
+      JSON.stringify(event),
+      'signed',
+      'secret'
+    );
+  });
+
+  it('fails closed for missing secret, raw body, and signature', () => {
+    expect(() => parseStripePaymentWebhookEvent({}, {}, jest.fn())).toThrow(
+      'Missing Stripe webhook secret'
+    );
+    expect(() =>
+      parseStripePaymentWebhookEvent(
+        {},
+        { STRIPE_WEBHOOK_SECRET: 'secret' },
+        jest.fn()
+      )
+    ).toThrow('Missing Stripe webhook payload');
+    expect(() =>
+      parseStripePaymentWebhookEvent(
+        { rawBody: '{}' },
+        { STRIPE_WEBHOOK_SECRET: 'secret' },
+        jest.fn()
+      )
+    ).toThrow('Missing Stripe signature');
+  });
+
+  it('rejects constructEvent failures without invoking downstream parsing', () => {
+    expect(() =>
+      parseStripePaymentWebhookEvent(
+        { rawBody: '{}', headers: { 'stripe-signature': 'bad' } },
+        { STRIPE_WEBHOOK_SECRET: 'secret' },
+        () => {
+          throw new Error('stale signature');
+        }
+      )
+    ).toThrow('Invalid Stripe webhook signature');
   });
 });

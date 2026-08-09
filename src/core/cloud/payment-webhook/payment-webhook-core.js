@@ -11,7 +11,6 @@ import {
   extractRawPayload,
   parseJsonEvent,
   readMetadata,
-  verifyPaymentSignature,
 } from '../../payment-webhook-core.js';
 import { createBillingRuntime } from '../billing/billing-runtime-core.js';
 
@@ -26,6 +25,7 @@ import { createBillingRuntime } from '../billing/billing-runtime-core.js';
 export function createPaymentWebhookIndexHandler({
   firestore,
   env = process.env,
+  constructEvent,
 }) {
   const db = /** @type {any} */ (createDb(firestore, env));
   const billing = createBillingRuntime(db);
@@ -63,7 +63,8 @@ export function createPaymentWebhookIndexHandler({
         createdAt: new Date(createdAtMs),
       });
     },
-    getPaymentEvent: async request => parsePaymentWebhookEvent(request, env),
+    getPaymentEvent: async request =>
+      parseStripePaymentWebhookEvent(request, env, constructEvent),
   });
 
   return async function handle(req, res) {
@@ -141,14 +142,34 @@ async function handleChargeRefunded(billing, metadata, event) {
  * @returns {import('../../payment-webhook-core.js').PaymentEvent} Parsed event.
  */
 export function parsePaymentWebhookEvent(request, env = process.env) {
-  const secret = env.PAYMENT_WEBHOOK_SECRET;
+  return parseStripePaymentWebhookEvent(request, env, null);
+}
+
+/**
+ * Verify a Stripe webhook before parsing it into the generic payment domain model.
+ * @param {unknown} request Incoming request.
+ * @param {ProcessEnvLike} env Environment values.
+ * @param {((payload: string | Buffer, signature: string, secret: string) => unknown) | null} constructEvent Stripe SDK webhook constructor.
+ * @returns {import('../../payment-webhook-core.js').PaymentEvent} Verified event.
+ */
+export function parseStripePaymentWebhookEvent(request, env, constructEvent) {
+  const secret = env.STRIPE_WEBHOOK_SECRET;
   const payload = extractRawPayload(request);
-  if (!payload) throw new TypeError('Missing payment webhook payload');
-  const signature = extractHeader(request, 'payment-signature');
-  if (!secret) return parseJsonEvent(payload);
-  if (!signature || !verifyPaymentSignature(payload, signature, secret))
-    throw new TypeError('Invalid payment signature');
-  return parseJsonEvent(payload);
+  if (!secret) throw new TypeError('Missing Stripe webhook secret');
+  if (!payload) throw new TypeError('Missing Stripe webhook payload');
+  const signature = extractHeader(request, 'stripe-signature');
+  if (!signature) throw new TypeError('Missing Stripe signature');
+  if (!constructEvent) throw new TypeError('Stripe webhook verifier unavailable');
+  try {
+    const verifiedEvent = constructEvent(payload, signature, secret);
+    return parseJsonEvent(
+      typeof verifiedEvent === 'string'
+        ? verifiedEvent
+        : JSON.stringify(verifiedEvent)
+    );
+  } catch {
+    throw new TypeError('Invalid Stripe webhook signature');
+  }
 }
 
 /**

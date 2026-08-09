@@ -3,7 +3,7 @@ import {
   isNonNullObject,
   resolveCallable,
 } from './commonCore.js';
-import { createHmac, timingSafeEqual } from 'node:crypto';
+import { timingSafeEqual } from 'node:crypto';
 
 const DEFAULT_ALLOWED_EVENT_TYPES = new Set([
   'checkout.session.completed',
@@ -395,34 +395,6 @@ export function parseJsonEvent(payload) {
   }
 
   return parsed;
-}
-
-/**
- * Verify a payment webhook signature.
- * @param {string} payload Raw payload.
- * @param {string} signature Signature header.
- * @param {string} secret Webhook secret.
- * @returns {boolean} True when signature matches.
- */
-export function verifyPaymentSignature(payload, signature, secret) {
-  const parts = Object.fromEntries(
-    signature.split(',').map(part => {
-      const [key, value] = part.split('=');
-      return [key, value];
-    })
-  );
-  const timestamp = parts.t;
-  const expected = parts.v1;
-  if (!timestamp || !expected) {
-    return false;
-  }
-
-  const signedPayload = `${timestamp}.${payload}`;
-  const actual = createHmac('sha256', secret)
-    .update(signedPayload, 'utf8')
-    .digest('hex');
-
-  return safeEqual(actual, expected);
 }
 
 /**
