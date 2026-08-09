@@ -77,6 +77,7 @@ export async function createCopyCloudHandle(deps) {
     'errors',
     'create-checkout-session',
     'billing',
+    'billing-purchase-status',
     'payment-webhook',
     'process-new-page',
     'process-new-story',

@@ -11,5 +11,6 @@
   "getAuthorUuidUrl": ${jsonencode("https://${region}-${project_id}.cloudfunctions.net/${environment}-get-author-uuid-v2")},
   "billingPackagesUrl": ${jsonencode("https://${region}-${project_id}.cloudfunctions.net/${environment}-billing-packages")},
   "billingCheckoutUrl": ${jsonencode("https://${region}-${project_id}.cloudfunctions.net/${environment}-create-checkout-session")},
+  "billingPurchaseStatusUrl": ${jsonencode("https://${region}-${project_id}.cloudfunctions.net/${environment}-billing-purchase-status")},
   "disableGoogleSignIn": ${jsonencode(environment == "gcp-test")}
 }

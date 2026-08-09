@@ -106,6 +106,16 @@ locals {
       source       = "${path.module}/browser/billing.js"
       content_type = "application/javascript"
     }
+    dendrite_billing_success_html = {
+      name         = "billing/success/index.html"
+      source       = "${path.module}/billing-success.html"
+      content_type = "text/html"
+    }
+    dendrite_billing_success_js = {
+      name         = "billing-success.js"
+      source       = "${path.module}/browser/billing-success.js"
+      content_type = "application/javascript"
+    }
     dendrite_site_manifest = {
       name         = "site.webmanifest"
       source       = "${path.module}/browser/assets/site.webmanifest"

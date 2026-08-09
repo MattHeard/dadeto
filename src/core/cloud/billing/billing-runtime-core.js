@@ -104,6 +104,13 @@ export function createBillingRuntime(db, runtime = {}) {
     return readData(snap);
   }
 
+  async function getPurchaseByCheckoutSession(checkoutSessionId) {
+    const snap = await db.collection('billing-purchases')
+      .where('checkoutSessionId', '==', checkoutSessionId).limit(1).get();
+    if (snap.empty) return null;
+    return readData(snap.docs[0]);
+  }
+
   /**
    * @param {string} purchaseId Purchase identifier.
    * @param {BillingRuntimeValue} session Checkout session.
@@ -266,6 +273,7 @@ export function createBillingRuntime(db, runtime = {}) {
     getCurrentPricingSnapshot,
     getPackage,
     getPurchase,
+    getPurchaseByCheckoutSession,
     createPurchase,
     savePurchaseCheckout,
     markPurchasePaid,
