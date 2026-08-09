@@ -1,5 +1,5 @@
-# mark variant dirty runner coverage
+# Mark-variant-dirty runtime coverage
 
-- The runner tests cover request validation, authorization, Firestore mutation, and response failures.
-- Evidence: focused Jest passed 2 tests with strict 100% statements, branches, functions, and lines for `src/core/cloud/mark-variant-dirty/run.js`.
-- No coverage exclusion or source change was needed.
+- Target: `src/core/cloud/mark-variant-dirty/run.js`
+- Evidence: `npx jest test/core/cloud/mark-variant-dirty/run.test.js --runInBand --coverage --collectCoverageFrom=src/core/cloud/mark-variant-dirty/run.js --coverageThreshold='{"global":{"statements":100,"branches":100,"functions":100,"lines":100}}'`
+- Result: 1 suite and 2 tests passed; statements, branches, functions, and lines each reached 100% without exclusions.
