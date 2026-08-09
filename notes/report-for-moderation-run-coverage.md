@@ -1,5 +1,5 @@
-# report-for-moderation run coverage
+# Report for moderation runtime coverage
 
-- The run tests cover successful moderation reports and error/validation paths.
-- Evidence: focused Jest passed 2 tests with strict 100% statements, branches, functions, and lines for `src/core/cloud/report-for-moderation/run.js`.
-- No coverage exclusion or source change was needed.
+- Source: `src/core/cloud/report-for-moderation/run.js`
+- Evidence: `npx jest test/core/cloud/report-for-moderation/run.test.js test/core/cloud/report-for-moderation/run.coverage.additional.test.js --runInBand --coverage --collectCoverageFrom=src/core/cloud/report-for-moderation/run.js --coverageThreshold='{"global":{"statements":100,"branches":100,"functions":100,"lines":100}}'`
+- Result: 2 suites passed, 2 tests passed, and statements, branches, functions, and lines are all 100%.
