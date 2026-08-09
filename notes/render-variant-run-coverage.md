@@ -1,5 +1,5 @@
-# render variant runner coverage
+# Render-variant runtime coverage
 
-- The runner test covers trigger setup, dependency construction, delegated handling, and builder failure logging.
-- Evidence: default Babel Jest passed 5 tests with strict 100% statements, branches, functions, and lines for `src/core/cloud/render-variant/run.js`.
-- No coverage exclusion or source change was needed.
+- Target: `src/core/cloud/render-variant/run.js`
+- Evidence: `npx jest test/core/cloud/render-variant/run.test.js --runInBand --coverage --collectCoverageFrom=src/core/cloud/render-variant/run.js --coverageThreshold='{"global":{"statements":100,"branches":100,"functions":100,"lines":100}}'`
+- Result: 1 suite and 5 tests passed; statements, branches, functions, and lines each reached 100% without exclusions.
