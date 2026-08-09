@@ -76,4 +76,50 @@ describe('openaiRealtimeCalls core', () => {
       expect.any(Object)
     );
   });
+
+  test('returns an empty API key when the environment omits it', () => {
+    expect(resolveOpenAiApiKey({})).toBe('');
+  });
+
+  test('uses an explicit key, endpoint, and session config', async () => {
+    const fetchImpl = jest.fn(async () => ({
+      ok: true,
+      status: 201,
+      text: async () => 'custom-answer',
+      headers: new Headers(),
+    }));
+
+    await expect(
+      exchangeRealtimeCallSdp('offer-sdp', {
+        apiKey: 'explicit-key',
+        url: 'https://example.test/calls',
+        fetchImpl,
+      })
+    ).resolves.toEqual({ sdpAnswer: 'custom-answer', location: '' });
+    expect(fetchImpl).toHaveBeenCalledWith(
+      'https://example.test/calls',
+      expect.objectContaining({
+        headers: { Authorization: 'Bearer explicit-key' },
+      })
+    );
+  });
+
+  test('rejects missing API keys and unsuccessful responses', async () => {
+    await expect(
+      exchangeRealtimeCallSdp('offer-sdp', {
+        apiKey: '',
+        fetchImpl: jest.fn(),
+      })
+    ).rejects.toThrow('OPENAI_API_KEY is required');
+
+    const fetchImpl = jest.fn(async () => ({
+      ok: false,
+      status: 400,
+      text: async () => 'bad-answer',
+      headers: new Headers(),
+    }));
+    await expect(
+      exchangeRealtimeCallSdp('offer-sdp', { apiKey: 'key', fetchImpl })
+    ).rejects.toThrow('status 400');
+  });
 });
