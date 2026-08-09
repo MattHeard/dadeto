@@ -1,5 +1,5 @@
-# get API key credit v2 create-db coverage
+# Get API key credit v2 create-db coverage
 
-- The database adapter tests cover collection wiring, credit operations, and Firestore error behavior.
-- Evidence: focused Jest passed 39 tests with strict 100% statements, branches, functions, and lines for `src/core/cloud/get-api-key-credit-v2/create-db.js`.
-- No coverage exclusion or source change was needed.
+- Target: `src/core/cloud/get-api-key-credit-v2/create-db.js`
+- Evidence: `npx jest test/core/cloud/get-api-key-credit-v2/core.test.js --runInBand --coverage --collectCoverageFrom=src/core/cloud/get-api-key-credit-v2/create-db.js --coverageThreshold='{"global":{"statements":100,"branches":100,"functions":100,"lines":100}}'`
+- Result: 1 suite and 37 tests passed; statements, branches, functions, and lines each reached 100% without exclusions.
