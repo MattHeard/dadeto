@@ -1,16 +1,18 @@
 import { jest } from '@jest/globals';
 
-jest.mock('../../src/local/symphony/runtimeVersion.js', () => ({
+await jest.unstable_mockModule('../../src/local/symphony/runtimeVersion.js', () => ({
   getSymphonyRuntimeVersion: jest.fn(() => 'test-runtime'),
 }));
 
-import { createSymphonyAppHandle } from '../../src/core/local/symphony/app.js';
-import {
+const { createSymphonyAppHandle } = await import(
+  '../../src/core/local/symphony/app.js'
+);
+const {
   createSymphonyApp,
   createSymphonyLaunchHandler,
   createSymphonyRefreshHandler,
   createSymphonyStatusHandler,
-} from '../../src/local/symphony/app.js';
+} = await import('../../src/local/symphony/app.js');
 
 /**
  * @returns {{

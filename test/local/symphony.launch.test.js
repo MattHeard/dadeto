@@ -3,7 +3,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { jest } from '@jest/globals';
 
-jest.mock('../../src/core/local/symphony/launcherCodex.js', () => ({
+await jest.unstable_mockModule('../../src/core/local/symphony/launcherCodex.js', () => ({
   DEFAULT_CODEX_RALPH_ARGS: ['default'],
   createCodexRalphLauncher: jest.fn(() => ({
     launchRunner: jest.fn(async () => ({
@@ -14,12 +14,14 @@ jest.mock('../../src/core/local/symphony/launcherCodex.js', () => ({
     })),
   })),
 }));
-import { launchSelectedRunnerLoop } from '../../src/local/symphony/launch.js';
-import {
+const { launchSelectedRunnerLoop } = await import('../../src/local/symphony/launch.js');
+const {
   createRunnerExitHandler,
   symphonyLaunchTestUtils,
-} from '../../src/core/local/symphony/launch.js';
-import { createSymphonyStatusStore } from '../../src/local/symphony/statusStore.js';
+} = await import('../../src/core/local/symphony/launch.js');
+const { createSymphonyStatusStore } = await import(
+  '../../src/local/symphony/statusStore.js'
+);
 
 jest.setTimeout(15000);
 
@@ -38,10 +40,12 @@ describe('local symphony runner launch', () => {
     expect(symphonyLaunchTestUtils.normalizeError('failure')).toEqual(
       new Error('failure')
     );
-    expect(symphonyLaunchTestUtils.normalizeError(new Error('e')).message).toBe('e');
-    expect(() =>
-      symphonyLaunchTestUtils.getRequiredString('', 'bead')
-    ).toThrow('without bead');
+    expect(symphonyLaunchTestUtils.normalizeError(new Error('e')).message).toBe(
+      'e'
+    );
+    expect(() => symphonyLaunchTestUtils.getRequiredString('', 'bead')).toThrow(
+      'without bead'
+    );
     expect(symphonyLaunchTestUtils.formatLaunchRequestForBead(null)).toBe(
       'pop <missing bead id>'
     );
@@ -52,22 +56,50 @@ describe('local symphony runner launch', () => {
       command: 'codex',
       args: expect.any(Array),
     });
-    expect(symphonyLaunchTestUtils.getLauncherConfig({
-      config: { launcher: { command: ' custom ', args: ['a', 1, 'b'] } },
-    })).toEqual({ command: 'custom', args: ['a', 'b'] });
-    expect(symphonyLaunchTestUtils.buildLaunchLifecycleRecommendation({
-      currentBeadId: 'dadeto-helper',
-    })).toContain('finish before launching');
-    expect(symphonyLaunchTestUtils.buildLaunchLifecycleRecommendation({
-      currentBeadId: 'dadeto-helper',
-      activeRun: { stdoutPath: '/tmp/stdout' },
-      operatorArtifacts: { statusPath: '/tmp/status' },
-    })).toContain('inspect /tmp/status, /tmp/stdout');
-    expect(symphonyLaunchTestUtils.getRunnerExitOutcomeKind(0, null)).toBe('completed');
-    expect(symphonyLaunchTestUtils.getRunnerExitOutcomeKind(1, null)).toBe('blocked');
-    expect(symphonyLaunchTestUtils.formatRunnerExitSummary({ runId: 'r', signal: 'SIGTERM', exitCode: null })).toContain('SIGTERM');
-    expect(symphonyLaunchTestUtils.formatRunnerExitSummary({ runId: 'r', signal: null, exitCode: 2 })).toContain('2');
-    expect(symphonyLaunchTestUtils.formatRunnerExitSummary({ runId: 'r', signal: null, exitCode: null })).toBe('Runner r exited.');
+    expect(
+      symphonyLaunchTestUtils.getLauncherConfig({
+        config: { launcher: { command: ' custom ', args: ['a', 1, 'b'] } },
+      })
+    ).toEqual({ command: 'custom', args: ['a', 'b'] });
+    expect(
+      symphonyLaunchTestUtils.buildLaunchLifecycleRecommendation({
+        currentBeadId: 'dadeto-helper',
+      })
+    ).toContain('finish before launching');
+    expect(
+      symphonyLaunchTestUtils.buildLaunchLifecycleRecommendation({
+        currentBeadId: 'dadeto-helper',
+        activeRun: { stdoutPath: '/tmp/stdout' },
+        operatorArtifacts: { statusPath: '/tmp/status' },
+      })
+    ).toContain('inspect /tmp/status, /tmp/stdout');
+    expect(symphonyLaunchTestUtils.getRunnerExitOutcomeKind(0, null)).toBe(
+      'completed'
+    );
+    expect(symphonyLaunchTestUtils.getRunnerExitOutcomeKind(1, null)).toBe(
+      'blocked'
+    );
+    expect(
+      symphonyLaunchTestUtils.formatRunnerExitSummary({
+        runId: 'r',
+        signal: 'SIGTERM',
+        exitCode: null,
+      })
+    ).toContain('SIGTERM');
+    expect(
+      symphonyLaunchTestUtils.formatRunnerExitSummary({
+        runId: 'r',
+        signal: null,
+        exitCode: 2,
+      })
+    ).toContain('2');
+    expect(
+      symphonyLaunchTestUtils.formatRunnerExitSummary({
+        runId: 'r',
+        signal: null,
+        exitCode: null,
+      })
+    ).toBe('Runner r exited.');
 
     const status = { state: 'ready' };
     const failure = await symphonyLaunchTestUtils.persistLaunchFailure(
@@ -76,13 +108,20 @@ describe('local symphony runner launch', () => {
       { startedAt: 'now', beadId: 'b', launchRequest: 'pop b', error: 'bad' }
     );
     expect(failure.state).toBe('blocked');
-    expect(symphonyLaunchTestUtils.createConfiguredLauncher(
-      { config: { launcher: { command: 'codex', args: [] } } },
-      { repoRoot: tempDir }
-    ).launchRunner).toEqual(expect.any(Function));
-    expect(symphonyLaunchTestUtils.createConfiguredLauncher({}, {
-      cwd: () => tempDir,
-    }).launchRunner).toEqual(expect.any(Function));
+    expect(
+      symphonyLaunchTestUtils.createConfiguredLauncher(
+        { config: { launcher: { command: 'codex', args: [] } } },
+        { repoRoot: tempDir }
+      ).launchRunner
+    ).toEqual(expect.any(Function));
+    expect(
+      symphonyLaunchTestUtils.createConfiguredLauncher(
+        {},
+        {
+          cwd: () => tempDir,
+        }
+      ).launchRunner
+    ).toEqual(expect.any(Function));
     const deferred = symphonyLaunchTestUtils.createDeferredPromise();
     deferred.resolve();
     deferred.resolve();
@@ -130,13 +169,18 @@ describe('local symphony runner launch', () => {
       runId: 'missing',
       beadId: 'b',
       beadTitle: null,
-      statusStore: { readStatus: async () => null, writeStatus: async () => {} },
+      statusStore: {
+        readStatus: async () => null,
+        writeStatus: async () => {},
+      },
     });
     await missingHandler({ exitCode: 0, signal: null });
     expect(warn).toHaveBeenCalled();
 
     const writeStatus = jest.fn().mockResolvedValue(undefined);
-    const waitForLaunchStatusWrite = jest.fn().mockRejectedValue(new Error('wait'));
+    const waitForLaunchStatusWrite = jest
+      .fn()
+      .mockRejectedValue(new Error('wait'));
     const handler = createRunnerExitHandler({
       runId: 'completed',
       beadId: 'b',
