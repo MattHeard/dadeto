@@ -1140,3 +1140,23 @@ describe('generate stats helpers', () => {
     expect(html).not.toContain('Story 1');
   });
 });
+    it('ignores a nested page snapshot without docs', async () => {
+      const customDb = {
+        collection: () => ({
+          get: jest.fn().mockResolvedValue({
+            docs: [
+              {
+                ref: {
+                  collection: () => ({
+                    get: jest.fn().mockResolvedValue({}),
+                  }),
+                },
+              },
+            ],
+          }),
+        }),
+      };
++
+      await expect(core.getPageCount(customDb)).resolves.toBe(0);
+    });
++

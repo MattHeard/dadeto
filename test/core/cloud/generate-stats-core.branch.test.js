@@ -48,4 +48,40 @@ describe('generate stats helpers', () => {
       'invalidate /stats.html failed: 500'
     );
   });
+
+  test('uses fallback text for non-Error metadata failures', async () => {
+    const logger = { error: jest.fn() };
+    const core = createGenerateStatsCore({
+      ...baseDeps,
+      fetchFn: jest.fn().mockRejectedValue('metadata unavailable'),
+    });
+
+    await core.invalidatePaths(['/stats.html'], logger);
+
+    expect(logger.error).toHaveBeenCalledWith(
+      'Skipping CDN invalidation: metadata token fetch failed'
+    );
+  });
+
+  test('logs fallback text when CDN invalidation setup throws a non-Error', async () => {
+    const logger = { error: jest.fn() };
+    const core = createGenerateStatsCore({
+      ...baseDeps,
+      fetchFn: jest.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({ access_token: 'token' }),
+      }),
+      cryptoModule: {
+        randomUUID: () => {
+          throw 'uuid unavailable';
+        },
+      },
+    });
+
+    await core.invalidatePaths(['/stats.html'], logger);
+
+    expect(logger.error).toHaveBeenCalledWith(
+      'Skipping CDN invalidation: CDN invalidation failed'
+    );
+  });
 });
