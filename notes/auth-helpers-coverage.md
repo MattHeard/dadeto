@@ -1,5 +1,5 @@
-# cloud auth helpers coverage
+# Cloud auth helpers coverage
 
-- The auth-helper tests cover token extraction, authorization success, and rejection paths.
-- Evidence: focused Jest passed 5 tests with strict 100% statements, branches, functions, and lines for `src/core/cloud/auth-helpers.js`.
-- No coverage exclusion or source change was needed.
+- Target: `src/core/cloud/auth-helpers.js`
+- Evidence: `npx jest test/core/cloud/auth-helpers.test.js --runInBand --coverage --collectCoverageFrom=src/core/cloud/auth-helpers.js --coverageThreshold='{"global":{"statements":100,"branches":100,"functions":100,"lines":100}}'`
+- Result: 1 suite and 5 tests passed; statements, branches, functions, and lines each reached 100% without exclusions.
