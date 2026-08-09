@@ -187,6 +187,22 @@ describe('createDendriteHandler', () => {
     );
   });
 
+  test('uses empty JSON when the hidden input is blank and skips absent values', () => {
+    const dom = createDom();
+    dom.getValue.mockReturnValue('');
+    const container = { children: [] };
+    const textInput = { value: '' };
+    const handler = createDendriteHandler([['missing', 'Missing']]);
+
+    const result = handler(dom, container, textInput);
+
+    expect(result).toBeDefined();
+    expect(dom.setValue).toHaveBeenCalledWith(
+      expect.objectContaining({}),
+      '{}'
+    );
+  });
+
   test('appends labels and wires explicit field listeners', () => {
     const dom = createDom();
     const form = { children: [] };
