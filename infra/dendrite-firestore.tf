@@ -42,16 +42,18 @@ resource "google_firestore_index" "variants_author_created" {
   depends_on = [google_firestore_database.database]
 }
 
-resource "google_firestore_index" "variants_tree_weights_dirty" {
-  count       = local.manage_firestore_indexes ? 1 : 0
-  project     = var.project_id
-  database    = var.database_id
-  collection  = "variants"
-  query_scope = "COLLECTION_GROUP"
+resource "google_firestore_field" "variants_tree_weights_dirty" {
+  count      = local.manage_firestore_indexes ? 1 : 0
+  project    = var.project_id
+  database   = var.database_id
+  collection = "variants"
+  field      = "targetTreeWeightsDirty"
 
-  fields {
-    field_path = "targetTreeWeightsDirty"
-    order      = "ASCENDING"
+  index_config {
+    indexes {
+      order       = "ASCENDING"
+      query_scope = "COLLECTION_GROUP"
+    }
   }
 
   depends_on = [google_firestore_database.database]
