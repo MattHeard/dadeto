@@ -62,6 +62,13 @@ locals {
     run              = "run.googleapis.com"
     artifactregistry = "artifactregistry.googleapis.com"
     eventarc         = "eventarc.googleapis.com"
+    secretmanager    = "secretmanager.googleapis.com"
+  }
+  runtime_secret_environment = var.environment == "prod" ? "prod" : "test"
+  runtime_secret_names = {
+    stripe_secret_key = "dadeto-stripe-secret-key-${local.runtime_secret_environment}"
+    stripe_webhook    = "dadeto-stripe-webhook-secret-${local.runtime_secret_environment}"
+    openai_api_key    = "dadeto-openai-api-key-prod"
   }
   terraform_networking_roles = {
     terraform_security_admin = "roles/compute.securityAdmin"
@@ -416,6 +423,30 @@ resource "google_project_service" "project_level" {
   disable_on_destroy = false
 }
 
+resource "google_secret_manager_secret" "runtime" {
+  for_each = local.manage_project_level_resources ? local.runtime_secret_names : {}
+
+  project   = var.project_id
+  secret_id = each.value
+
+  replication {
+    auto {}
+  }
+
+  depends_on = [google_project_service.project_level["secretmanager"]]
+}
+
+resource "google_secret_manager_secret_iam_member" "runtime_accessor" {
+  for_each = local.manage_project_level_resources ? local.runtime_secret_names : {}
+
+  project   = var.project_id
+  secret_id = google_secret_manager_secret.runtime[each.key].secret_id
+  role      = "roles/secretmanager.secretAccessor"
+  member    = local.cloud_function_runtime_service_account_member
+
+  depends_on = [google_service_account.cloud_function_runtime]
+}
+
 resource "google_firestore_database" "database" {
   count       = var.database_id == "(default)" ? (local.manage_project_level_resources && var.create_default_firestore_database ? 1 : 0) : 1
   project     = var.project_id
@@ -687,10 +718,13 @@ resource "google_cloudfunctions2_function" "realtime_call" {
     timeout_seconds       = 10
     max_instance_count    = 20
     service_account_email = local.cloud_function_runtime_service_account_email
-    environment_variables = merge(
-      local.cloud_function_environment,
-      { OPENAI_API_KEY = var.openai_api_key },
-    )
+    environment_variables = local.cloud_function_environment
+    secret_environment_variables {
+      key        = "OPENAI_API_KEY"
+      project_id = var.project_id
+      secret     = local.runtime_secret_names.openai_api_key
+      version    = var.openai_api_key_version
+    }
   }
 
   depends_on = [

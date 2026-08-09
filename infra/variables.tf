@@ -155,11 +155,22 @@ variable "create_default_firestore_database" {
 }
 
 
-variable "openai_api_key" {
-  description = "OpenAI API key used by the Realtime voice cloud relay"
-  type        = string
-  default     = ""
-  sensitive   = true
+variable "stripe_secret_key_version" {
+  description = "Explicit Secret Manager version for the environment's Stripe API key"
+  type        = number
+  default     = 1
+}
+
+variable "stripe_webhook_secret_version" {
+  description = "Explicit Secret Manager version for the environment's Stripe webhook secret"
+  type        = number
+  default     = 1
+}
+
+variable "openai_api_key_version" {
+  description = "Explicit Secret Manager version for the environment's OpenAI API key"
+  type        = number
+  default     = 1
 }
 
 variable "production_alert_email" {
