@@ -1,5 +1,5 @@
-# mark variant dirty core coverage
+# Mark variant dirty core coverage
 
-- The core and branch-focused tests cover authorization, Firestore updates, validation, and failure paths.
-- Evidence: focused Jest passed 57 tests with strict 100% statements, branches, functions, and lines for `src/core/cloud/mark-variant-dirty/mark-variant-dirty-core.js`.
-- No coverage exclusion or source change was needed.
+- Target: `src/core/cloud/mark-variant-dirty/mark-variant-dirty-core.js`
+- Evidence: `npx jest test/core/cloud/mark-variant-dirty/mark-variant-dirty-core.test.js test/core/cloud/mark-variant-dirty/run.test.js test/core/cloud/mark-variant-dirty/verifyAdmin.test.js --runInBand --coverage --collectCoverageFrom=src/core/cloud/mark-variant-dirty/mark-variant-dirty-core.js --coverageThreshold='{"global":{"statements":100,"branches":100,"functions":100,"lines":100}}'`
+- Result: 3 suites and 63 tests passed; statements, branches, functions, and lines each reached 100% without exclusions.
