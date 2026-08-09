@@ -1,5 +1,5 @@
-# process new page core coverage
+# Process-new-page core coverage
 
-- The process-new-page core suites cover validation, page persistence, moderation transitions, and failure paths.
-- Evidence: focused Jest passed 36 tests with strict 100% statements, branches, functions, and lines for `src/core/cloud/process-new-page/process-new-page-core.js`.
-- No coverage exclusion or source change was needed.
+- Target: `src/core/cloud/process-new-page/process-new-page-core.js`
+- Evidence: `npx jest test/core/cloud/process-new-page/process-new-page-core.test.js --runInBand --coverage --collectCoverageFrom=src/core/cloud/process-new-page/process-new-page-core.js --coverageThreshold='{"global":{"statements":100,"branches":100,"functions":100,"lines":100}}'`
+- Result: 1 suite and 23 tests passed; statements, branches, functions, and lines each reached 100% without exclusions.
