@@ -1,0 +1,5 @@
+# Symphony coverage
+
+- Combined the core and local Symphony unit suites; the earlier apparent hang came from an incomplete test selection rather than a coverage gap.
+- Acceptance command: `NODE_OPTIONS=--experimental-vm-modules npx jest test/core/local/symphony.workflow.test.js test/core/local/symphony.launch-invocation.test.js test/core/local/symphony.config.test.js test/core/local/symphony.bootstrap-handle.test.js test/core/local/symphony.tuiRenderer.test.js test/core/local/symphony.test.js test/core/local/symphony.launch.test.js test/local/symphony.runner-exit.test.js test/local/symphony.app.test.js test/local/symphony.tuiRenderer.coverage.additional.test.js test/local/symphony.tuiRenderer.test.js test/local/symphony.launcherCodex.test.js test/local/symphony.test.js test/local/symphony.launch.test.js --runInBand --coverage --silent --collectCoverageFrom='src/core/local/symphony/**/*.js' --coverageReporters=text-summary`.
+- Evidence: 14 suites and 86 tests passed; statements 561/561, branches 354/354, functions 130/130, lines 557/557.
