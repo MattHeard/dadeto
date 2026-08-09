@@ -622,6 +622,8 @@ export const tuiRendererTestUtils = {
   formatField,
   normalizeEvidenceItems,
   renderEventAndEvidence,
+  renderBoundedSection,
   renderBacklog,
+  renderActiveRun,
   calculateBacklogSlots,
 };
