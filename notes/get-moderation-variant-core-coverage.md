@@ -1,5 +1,5 @@
-# get moderation variant core coverage
+# Get-moderation-variant core coverage
 
-- The moderation-variant suites cover selection, authorization, Firestore reads, and failure responses.
-- Evidence: focused Jest passed 45 tests with strict 100% statements, branches, functions, and lines for `src/core/cloud/get-moderation-variant/get-moderation-variant-core.js`.
-- No coverage exclusion or source change was needed.
+- Target: `src/core/cloud/get-moderation-variant/get-moderation-variant-core.js`
+- Evidence: `npx jest test/core/cloud/get-moderation-variant/get-moderation-variant-core.test.js --runInBand --coverage --collectCoverageFrom=src/core/cloud/get-moderation-variant/get-moderation-variant-core.js --coverageThreshold='{"global":{"statements":100,"branches":100,"functions":100,"lines":100}}'`
+- Result: 1 suite and 36 tests passed; statements, branches, functions, and lines each reached 100% without exclusions.
