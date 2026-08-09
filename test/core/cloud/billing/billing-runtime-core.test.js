@@ -105,6 +105,41 @@ describe('createBillingRuntime', () => {
     });
   });
 
+  it('expires pending purchases idempotently without changing paid purchases', async () => {
+    const { billing } = setup();
+    await billing.createPurchase({
+      purchaseId: 'pending',
+      uid: 'uid-1',
+      apiKeyUuid: 'key-1',
+      creditsIssued: 10,
+    });
+    await expect(
+      billing.markPurchaseExpired({
+        purchaseId: 'pending',
+        eventId: 'expiry-1',
+      })
+    ).resolves.toMatchObject({ status: 200, body: { status: 'expired' } });
+    await expect(
+      billing.markPurchaseExpired({
+        purchaseId: 'pending',
+        eventId: 'expiry-1',
+      })
+    ).resolves.toMatchObject({ body: { duplicate: true } });
+    await billing.createPurchase({
+      purchaseId: 'paid',
+      uid: 'uid-1',
+      apiKeyUuid: 'key-1',
+      creditsIssued: 10,
+    });
+    await billing.markPurchasePaid({
+      purchaseId: 'paid',
+      eventId: 'payment-1',
+    });
+    await expect(
+      billing.markPurchaseExpired({ purchaseId: 'paid', eventId: 'expiry-2' })
+    ).resolves.toMatchObject({ body: { ignored: true, status: 'paid' } });
+  });
+
   it('generates purchase identifiers and normalizes non-object snapshots', async () => {
     const { db, billing } = setup();
     const generated = await billing.createPurchase({

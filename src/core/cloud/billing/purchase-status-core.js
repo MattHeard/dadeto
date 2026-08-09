@@ -1,16 +1,13 @@
 /**
  * Create an authenticated, read-only purchase status handler.
  * @param {{ verifyIdToken: (token: string) => Promise<{ uid?: string }>, getPurchaseByCheckoutSession: (id: string) => Promise<Record<string, unknown>|null>, getBalance: (uuid: string) => Promise<number|null> }} deps Status dependencies.
- * @returns {(request: { sessionId?: unknown, authorization?: unknown }) => Promise<{ status: number, body: object }>}
+ * @returns {(request: { sessionId?: unknown, authorization?: unknown }) => Promise<{ status: number, body: object }>} Status handler.
  */
 export function createPurchaseStatusHandler(deps) {
-  return async request => {
+  return async function handlePurchaseStatus(request) {
     if (typeof request.sessionId !== 'string' || !request.sessionId)
       return { status: 400, body: { error: 'invalid_session' } };
-    const token =
-      typeof request.authorization === 'string'
-        ? request.authorization.replace(/^Bearer\s+/i, '')
-        : '';
+    const token = resolveBearerToken(request.authorization);
     if (!token)
       return { status: 401, body: { error: 'authentication_required' } };
     let claims;
@@ -32,4 +29,18 @@ export function createPurchaseStatusHandler(deps) {
       body.credit = await deps.getBalance(purchase.apiKeyUuid);
     return { status: 200, body };
   };
+}
+
+/**
+ *
+ * @param authorization
+ */
+/**
+ * Extract a bearer token without accepting arbitrary authorization values.
+ * @param {unknown} authorization Authorization header.
+ * @returns {string} Token or empty string.
+ */
+function resolveBearerToken(authorization) {
+  if (typeof authorization !== 'string') return '';
+  return authorization.replace(/^Bearer\s+/i, '');
 }

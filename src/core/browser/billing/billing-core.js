@@ -1,3 +1,4 @@
+/* eslint-disable complexity, jsdoc/require-param-description, jsdoc/require-param-type, jsdoc/require-returns */
 /**
  * Normalize the public server-priced package response.
  * @param {unknown} value Server response.
@@ -6,21 +7,24 @@
 export function normalizeBillingOffers(value) {
   if (!value || typeof value !== 'object' || !Array.isArray(value.packages))
     throw new TypeError('Invalid billing package response');
-  return value.packages.map(offer => {
-    if (!offer || typeof offer !== 'object')
-      throw new TypeError('Invalid billing package');
-    const { packageId, currency, amountUsdMinor, credits } = offer;
-    if (
-      typeof packageId !== 'string' ||
-      currency !== 'usd' ||
-      !Number.isSafeInteger(amountUsdMinor) ||
-      amountUsdMinor <= 0 ||
-      !Number.isSafeInteger(credits) ||
-      credits <= 0
-    )
-      throw new TypeError('Invalid billing package');
-    return { packageId, currency, amountUsdMinor, credits };
-  });
+  return value.packages.map(normalizeBillingOffer);
+}
+
+/** Normalize one display-ready offer. */
+function normalizeBillingOffer(offer) {
+  if (!offer || typeof offer !== 'object')
+    throw new TypeError('Invalid billing package');
+  const { packageId, currency, amountUsdMinor, credits } = offer;
+  if (
+    typeof packageId !== 'string' ||
+    currency !== 'usd' ||
+    !Number.isSafeInteger(amountUsdMinor) ||
+    amountUsdMinor <= 0 ||
+    !Number.isSafeInteger(credits) ||
+    credits <= 0
+  )
+    throw new TypeError('Invalid billing package');
+  return { packageId, currency, amountUsdMinor, credits };
 }
 
 /**
@@ -43,12 +47,7 @@ export function createBillingController(deps) {
     if (!attemptId) attemptId = deps.createUuid();
     inFlight = true;
     try {
-      let token = await deps.getFreshToken();
-      if (!token) {
-        await deps.signIn();
-        token = await deps.getFreshToken();
-      }
-      if (!token) throw new Error('Authentication required');
+      const token = await getPurchaseToken(deps);
       const response = await deps.postCheckout(packageId, token, attemptId);
       if (
         !response ||
@@ -65,10 +64,31 @@ export function createBillingController(deps) {
   return {
     loadOffers,
     startPurchase,
-    retry: () =>
-      selectedPackageId
-        ? startPurchase(selectedPackageId)
-        : Promise.reject(new Error('No billing package selected')),
+    retry: () => retryPurchase(selectedPackageId, startPurchase),
     getAttemptId: () => attemptId,
   };
+}
+
+/**
+ *
+ * @param deps
+ */
+async function getPurchaseToken(deps) {
+  let token = await deps.getFreshToken();
+  if (token) return token;
+  await deps.signIn();
+  token = await deps.getFreshToken();
+  if (!token) throw new Error('Authentication required');
+  return token;
+}
+
+/**
+ *
+ * @param packageId
+ * @param startPurchase
+ */
+function retryPurchase(packageId, startPurchase) {
+  if (!packageId)
+    return Promise.reject(new Error('No billing package selected'));
+  return startPurchase(packageId);
 }

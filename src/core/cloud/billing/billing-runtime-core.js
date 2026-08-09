@@ -83,7 +83,8 @@ export function createBillingRuntime(db, runtime = {}) {
       .orderBy('effectiveAt', 'desc')
       .get();
     const current = snap.docs.find(doc => doc.data()?.effectiveAt <= cutoff);
-    return current ? current.data() : null;
+    if (!current) return null;
+    return current.data();
   }
 
   /**
@@ -105,8 +106,9 @@ export function createBillingRuntime(db, runtime = {}) {
   }
 
   /**
-   *
-   * @param checkoutSessionId
+   * Find a purchase by its Stripe Checkout Session ID.
+   * @param {string} checkoutSessionId Stripe Checkout Session ID.
+   * @returns {Promise<BillingRuntimeValue|null>} Matching purchase.
    */
   async function getPurchaseByCheckoutSession(checkoutSessionId) {
     const snap = await db
@@ -275,6 +277,45 @@ export function createBillingRuntime(db, runtime = {}) {
     return applyRefund(db, now, input);
   }
 
+  /**
+   * Mark a matching pending purchase expired exactly once.
+   * @param {{ purchaseId: string, eventId: string }} input Expiry event.
+   * @returns {Promise<BillingResponse>} Expiry response.
+   */
+  async function markPurchaseExpired(input) {
+    return db.runTransaction(async transaction => {
+      const ref = purchaseRef(db, input.purchaseId);
+      const snapshot = await transaction.get(ref);
+      if (!snapshot.exists)
+        return { status: 404, body: { error: 'purchase_not_found' } };
+      const purchase = readData(snapshot);
+      if (purchase.status === 'expired')
+        return {
+          status: 200,
+          body: { duplicate: true, purchaseId: input.purchaseId },
+        };
+      if (purchase.status !== 'pending')
+        return {
+          status: 200,
+          body: {
+            ignored: true,
+            purchaseId: input.purchaseId,
+            status: purchase.status,
+          },
+        };
+      transaction.set(ref, {
+        ...purchase,
+        status: 'expired',
+        expiredEventId: input.eventId,
+        expiredAt: now(),
+      });
+      return {
+        status: 200,
+        body: { purchaseId: input.purchaseId, status: 'expired' },
+      };
+    });
+  }
+
   return {
     getPricingSnapshot,
     getCurrentPricingSnapshot,
@@ -287,6 +328,7 @@ export function createBillingRuntime(db, runtime = {}) {
     applyOperationCharge,
     chargeOperation,
     applyRefundEvent,
+    markPurchaseExpired,
   };
 }
 

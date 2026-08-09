@@ -7,6 +7,7 @@ import { timingSafeEqual } from 'node:crypto';
 
 const DEFAULT_ALLOWED_EVENT_TYPES = new Set([
   'checkout.session.completed',
+  'checkout.session.expired',
   'payment_intent.succeeded',
   'charge.refunded',
   'charge.dispute.created',

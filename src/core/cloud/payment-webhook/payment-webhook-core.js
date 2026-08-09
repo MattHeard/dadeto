@@ -84,6 +84,11 @@ async function handlePurchaseEvent(billing, event) {
   if (!metadata.purchase_id) return null;
   if (event.type === 'checkout.session.completed')
     return handleCheckoutCompleted(billing, metadata, event);
+  if (event.type === 'checkout.session.expired')
+    return billing.markPurchaseExpired({
+      purchaseId: metadata.purchase_id,
+      eventId: event.id,
+    });
   if (event.type === 'payment_intent.succeeded')
     return handlePaymentIntentSucceeded(billing, metadata, event);
   if (event.type === 'charge.refunded')
@@ -163,11 +168,9 @@ export function parseStripePaymentWebhookEvent(request, env, constructEvent) {
     throw new TypeError('Stripe webhook verifier unavailable');
   try {
     const verifiedEvent = constructEvent(payload, signature, secret);
-    return parseJsonEvent(
-      typeof verifiedEvent === 'string'
-        ? verifiedEvent
-        : JSON.stringify(verifiedEvent)
-    );
+    let verifiedPayload = JSON.stringify(verifiedEvent);
+    if (typeof verifiedEvent === 'string') verifiedPayload = verifiedEvent;
+    return parseJsonEvent(verifiedPayload);
   } catch {
     throw new TypeError('Invalid Stripe webhook signature');
   }

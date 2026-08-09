@@ -180,6 +180,12 @@ variable "production_alert_email" {
   sensitive   = true
 }
 
+variable "public_billing_origin" {
+  description = "Public origin used in Stripe Checkout success and cancel URLs"
+  type        = string
+  default     = "https://www.dendritestories.co.nz"
+}
+
 variable "google_oauth_client_id" {
   description = "OAuth client ID for Google sign-in"
   type        = string
