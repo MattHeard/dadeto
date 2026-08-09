@@ -8,6 +8,8 @@ import {
   resolveNormalizedRepoPaths,
   normalizePositiveNumber,
   normalizeNonNegativeInteger,
+  normalizeOptionalString,
+  requireString,
 } from '../../src/core/local/config-utils.js';
 import { loadNotionCodexConfig as loadNotionCodexConfigCore } from '../../src/core/local/notion-codex/config.js';
 import {
@@ -17,6 +19,13 @@ import {
 } from '../../src/local/notion-codex/config.js';
 
 describe('local notion codex config', () => {
+  test('normalizes optional strings and requires named strings', () => {
+    expect(normalizeOptionalString('  value ')).toBe('value');
+    expect(normalizeOptionalString('   ')).toBeNull();
+    expect(requireString('  value ', 'name')).toBe('value');
+    expect(() => requireString('', 'name')).toThrow('name is required.');
+  });
+
   test('normalizes defaults for the Dadeto Notion poller', () => {
     const config = normalizeNotionCodexConfig(
       {},
