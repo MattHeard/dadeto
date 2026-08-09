@@ -216,7 +216,7 @@ describe('admin/core uncovered branches', () => {
       sessionStorageObj: { getItem: () => null, setItem: () => {} },
       consoleObj: {},
       globalThisObj: {},
-      googleAuthProviderFn: {},
+      googleAuthProviderFn: { credential: token => token },
       signInWithCredentialFn: () => {},
     });
     expect(factory()).toBe(factory());
