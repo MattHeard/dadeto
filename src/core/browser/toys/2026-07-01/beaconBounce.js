@@ -1,5 +1,4 @@
 // @ts-nocheck
-/* eslint-disable complexity, no-ternary */
 import { runToy } from '../toyPersistence.js';
 import { normalizePositiveInteger } from '../../common.js';
 
@@ -92,7 +91,6 @@ export function updateInputState(previous, input) {
   const gamepad = normalizeGamepad(input);
   const actions = deriveActions(keyboard, gamepad);
   const previousActions = previous?.actions || createActionFlags();
-  /* c8 ignore next */
   const control = {
     paused: Boolean(input?.paused ?? previous?.control?.paused ?? false),
     speedMultiplier: normalizeStepCount(
@@ -304,7 +302,6 @@ export function normalizeGamepad(input) {
   return { buttons, axes };
 }
 
-/* c8 ignore next */
 /**
  * Convert normalized keyboard and gamepad state into gameplay actions.
  * @param {{ [key: string]: boolean }} keyboard - Normalized keyboard state.

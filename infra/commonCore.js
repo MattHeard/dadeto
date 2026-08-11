@@ -22,6 +22,29 @@ export function isNullish(value) {
 }
 
 /**
+ * Determine whether an error represents a missing filesystem entry.
+ * @param {unknown} error Error candidate.
+ * @returns {boolean} True for an ENOENT error.
+ */
+export function isMissingFileError(error) {
+  return Boolean(
+    error &&
+      typeof error === 'object' &&
+      /** @type {{ code?: unknown }} */ (error).code === 'ENOENT'
+  );
+}
+
+/**
+ * Return a dependency with its injected callable type preserved.
+ * @template T
+ * @param {T | undefined} dependency Dependency to return.
+ * @returns {T} Callable dependency.
+ */
+export function resolveCallable(dependency) {
+  return /** @type {T} */ (dependency);
+}
+
+/**
  * Return the array candidate when available; otherwise return an empty array.
  * @param {unknown} value Candidate value.
  * @returns {unknown[]} Array candidate or empty array.
@@ -67,7 +90,9 @@ export function requirePathModule(pathModule) {
     throw new Error('pathModule is required.');
   }
 
-  return /** @type {any} */ (pathModule);
+  return /** @type {{ join: (...segments: string[]) => string, resolve: (...segments: string[]) => string, relative: (from: string, to: string) => string, sep: string }} */ (
+    pathModule
+  );
 }
 
 /**
@@ -263,8 +288,8 @@ export function whenOrDefault(condition, transform, fallback) {
 /**
  * Return the provided function candidate when available, otherwise use the fallback.
  * @param {unknown} candidate Candidate value.
- * @param {() => Function} fallback Factory returning the fallback function.
- * @returns {Function} Callable derived from the candidate or fallback.
+ * @param {() => unknown} fallback Factory returning the fallback function.
+ * @returns {unknown} Callable derived from the candidate or fallback.
  */
 export function functionOrFallback(candidate, fallback) {
   if (typeof candidate === 'function') {
@@ -455,7 +480,7 @@ export function normalizeNonStringValue(value) {
  * @returns {T | null} Callback result or `null` when the input is nullish.
  */
 export function whenNotNullish(value, fn) {
-  return /** @type {any} */ (whenValueMatches(value, isNullish, fn));
+  return whenValueMatches(value, isNullish, fn);
 }
 
 /**
@@ -465,7 +490,9 @@ export function whenNotNullish(value, fn) {
  * @returns {T | null} Original value or `null` when the value is nullish.
  */
 export function whenNotNullishValue(value) {
-  return /** @type {any} */ (whenNotNullish(value, candidate => candidate));
+  return /** @type {T | null} */ (
+    whenNotNullish(value, candidate => candidate)
+  );
 }
 
 /**
@@ -476,7 +503,11 @@ export function whenNotNullishValue(value) {
  * @template T
  */
 export function whenString(value, fn) {
-  return /** @type {any} */ (whenValueMatches(value, isNotStringValue, fn));
+  return whenValueMatches(
+    value,
+    isNotStringValue,
+    /** @type {(value: unknown) => T} */ (fn)
+  );
 }
 
 /**
@@ -548,7 +579,11 @@ export function reportAndReturnFalse(reportFn, ...args) {
  * @template T
  */
 export function whenArray(value, fn) {
-  return /** @type {any} */ (whenValueMatches(value, isNotArrayValue, fn));
+  return whenValueMatches(
+    value,
+    isNotArrayValue,
+    /** @type {(value: unknown) => T} */ (fn)
+  );
 }
 
 /**
@@ -559,7 +594,7 @@ export function whenArray(value, fn) {
  * @template T
  */
 export function whenTruthy(value, fn) {
-  return /** @type {any} */ (
+  return /** @type {T | null} */ (
     when(
       Boolean(value),
       () => fn(value),
@@ -584,7 +619,7 @@ export function whenOrNull(condition, fn) {
  * @template T
  * @param {unknown} value Candidate value.
  * @param {(value: unknown) => boolean} isRejected Predicate that identifies values to skip.
- * @param {(value: any) => T} fn Callback invoked when the value passes the predicate.
+ * @param {(value: unknown) => T} fn Callback invoked when the value passes the predicate.
  * @returns {T | null} Callback result or `null` when the predicate rejects the value.
  */
 function whenValueMatches(value, isRejected, fn) {
@@ -647,7 +682,7 @@ export function numberOrZero(value) {
   return /** @type {number} */ (
     returnFallbackValue(
       isFiniteNumericValue(value),
-      /** @type {any} */ (value),
+      /** @type {number} */ (value),
       () => 0
     )
   );
@@ -758,10 +793,10 @@ export function resolveProjectDirectories(moduleDirectory, resolveFn) {
  *   resolve: (input: string, ...segments: string[]) => string,
  *   extname: (input: string) => string,
  * }} pathModule Path dependency bundle.
- * @returns {any} Adapter exposing required path helpers.
+ * @returns {object} Adapter exposing required path helpers.
  */
 export function createPathAdapters(pathModule) {
-  const typedPathModule = /** @type {any} */ (pathModule);
+  const typedPathModule = pathModule;
   return {
     join: typedPathModule.join,
     dirname: typedPathModule.dirname,
@@ -785,20 +820,16 @@ export function createPathHandle(deps) {
     getCurrentDirectory: moduleUrl =>
       getCurrentDirectory(moduleUrl, deps.fileURLToPathFn, deps.dirnameFn),
     resolveProjectDirectories: moduleDirectory =>
-      resolveProjectDirectories(
-        moduleDirectory,
-        /** @type {any} */ (deps.pathModule).resolve
-      ),
-    createPathAdapters: () =>
-      createPathAdapters(/** @type {any} */ (deps.pathModule)),
+      resolveProjectDirectories(moduleDirectory, deps.pathModule.resolve),
+    createPathAdapters: () => createPathAdapters(deps.pathModule),
   };
 }
 
 /**
  * Create the filesystem adapter wrapper handle.
  * @param {{
- *   fsModule: any,
- *   fsPromisesModule: any,
+ *   fsModule: object,
+ *   fsPromisesModule: Parameters<typeof createAsyncFsAdapters>[0],
  * }} deps Filesystem dependencies.
  * @returns {{
  *   createFsAdapters: typeof createFsAdapters,
@@ -807,7 +838,10 @@ export function createPathHandle(deps) {
  */
 export function createFsHandle(deps) {
   return {
-    createFsAdapters: () => createFsAdapters(deps.fsModule),
+    createFsAdapters: () =>
+      createFsAdapters(
+        /** @type {Parameters<typeof createFsAdapters>[0]} */ (deps.fsModule)
+      ),
     createAsyncFsAdapters: () => createAsyncFsAdapters(deps.fsPromisesModule),
   };
 }
@@ -847,6 +881,9 @@ export function createFsAdapters(fsModule) {
  *   readdir: (dir: string, options?: { withFileTypes?: boolean }) => Promise<unknown[]>,
  *   mkdir: (target: string, options?: { recursive?: boolean }) => Promise<unknown>,
  *   copyFile: (source: string, destination: string) => Promise<void>,
+ *   utimes?: (target: string, atime: Date, mtime: Date) => Promise<void>,
+ *   readFile: (filePath: string, encoding: 'utf8') => Promise<string>,
+ *   writeFile: (filePath: string, content: string) => Promise<void>,
  * }} fsPromisesModule Promise-based filesystem dependency bundle.
  * @returns {{
  *   readDirEntries: (dir: string) => Promise<import('fs').Dirent[]>,
@@ -858,7 +895,7 @@ export function createFsAdapters(fsModule) {
  * }} Promise-based filesystem adapter helpers.
  */
 export function createAsyncFsAdapters(fsPromisesModule) {
-  const typedFsPromisesModule = /** @type {any} */ (fsPromisesModule);
+  const typedFsPromisesModule = fsPromisesModule;
   return {
     async readDirEntries(dir) {
       try {
@@ -934,7 +971,7 @@ export const CHECK_COMMANDS = [
  * Create the command handler for the aggregate check script.
  * @param {{
  *   argv: string[],
- *   runSuite: (options: { failFast: boolean }) => Promise<{ exitCode: number }>,
+ *   runSuite: (options: { failFast: boolean, skipTests: boolean }) => Promise<{ exitCode: number }>,
  *   setExitCode: (exitCode: number) => void,
  * }} deps Command dependencies.
  * @returns {() => Promise<void>} Handler that runs the aggregate check.
@@ -942,7 +979,8 @@ export const CHECK_COMMANDS = [
 export function createRunCheckHandle({ argv, runSuite, setExitCode }) {
   return async () => {
     const failFast = argv.includes('--fail-fast');
-    const result = await runSuite({ failFast });
+    const skipTests = argv.includes('--skip-tests');
+    const result = await runSuite({ failFast, skipTests });
     setExitCode(result.exitCode);
   };
 }
@@ -953,6 +991,16 @@ export function createRunCheckHandle({ argv, runSuite, setExitCode }) {
  * @property {string} command Command to execute.
  * @property {string[]} args Command arguments.
  */
+
+/**
+ * @typedef {object} CheckChild
+ * @property {{ on: (event: string, handler: (...args: unknown[]) => void) => unknown, setEncoding?: (encoding: string) => void } | null | undefined} stdout Child stdout stream.
+ * @property {{ on: (event: string, handler: (...args: unknown[]) => void) => unknown, setEncoding?: (encoding: string) => void } | null | undefined} stderr Child stderr stream.
+ * @property {(event: 'error' | 'close', handler: (...args: never[]) => unknown) => unknown} on Child event listener registration.
+ * @property {(signal?: string) => boolean} [kill] Optional child termination function.
+ */
+
+/** @typedef {(command: string, args: string[], options: { stdio: ['ignore', 'pipe', 'pipe'] }) => CheckChild} CheckSpawn */
 
 /**
  * @typedef {object} CheckEvent
@@ -982,12 +1030,7 @@ export function createRunCheckHandle({ argv, runSuite, setExitCode }) {
 /**
  * Create a check-suite runner using injected platform defaults.
  * @param {{
- *   defaultSpawn: (command: string, args: string[], options: { stdio: ['ignore', 'pipe', 'pipe'] }) => {
- *     stdout: { on: (event: string, handler: (...args: unknown[]) => void) => unknown, setEncoding?: (encoding: string) => void } | null | undefined,
- *     stderr: { on: (event: string, handler: (...args: unknown[]) => void) => unknown, setEncoding?: (encoding: string) => void } | null | undefined,
- *     on: (event: 'error' | 'close', handler: (...args: unknown[]) => void) => unknown,
- *     kill?: (signal?: string) => boolean,
- *   },
+ *   defaultSpawn: CheckSpawn,
  *   defaultStdout: { write: (text: string) => void },
  *   defaultStderr: { write: (text: string) => void },
  *   defaultNow: () => number,
@@ -996,7 +1039,7 @@ export function createRunCheckHandle({ argv, runSuite, setExitCode }) {
  * @returns {(options?: {
  *   commands?: CheckCommand[],
  *   failFast?: boolean,
- *   spawnImpl?: typeof defaults.defaultSpawn,
+ *   spawnImpl?: CheckSpawn,
  *   stdout?: { write: (text: string) => void },
  *   stderr?: { write: (text: string) => void },
  *   now?: () => number,
@@ -1009,6 +1052,7 @@ export function createRunCheckSuite(defaults) {
 
     /** @type {CheckFailure[]} */
     const failures = [];
+    /** @type {Map<string, CheckChild>} */
     const activeChildren = new Map();
     let aborted = false;
 
@@ -1030,10 +1074,11 @@ export function createRunCheckSuite(defaults) {
         return new Promise(resolve => {
           const startedAt = now();
           const timeoutMs = defaults.defaultTimeoutMs ?? 30 * 60 * 1000;
+          /** @type {CheckChild} */
           let child;
           const state = {
             settled: false,
-            /** @type {ReturnType<typeof setTimeout> | null} */
+            /** @type {ReturnType<typeof globalThis.setTimeout> | null} */
             timeoutId: null,
           };
 
@@ -1066,13 +1111,9 @@ export function createRunCheckSuite(defaults) {
           };
 
           try {
-            child = /** @type {any} */ (spawnImpl)(
-              command.command,
-              command.args,
-              {
-                stdio: ['ignore', 'pipe', 'pipe'],
-              }
-            );
+            child = spawnImpl(command.command, command.args, {
+              stdio: ['ignore', 'pipe', 'pipe'],
+            });
           } catch (error) {
             const failure = buildSpawnFailure(command, startedAt, error, now);
             failures.push(failure);
@@ -1106,6 +1147,7 @@ export function createRunCheckSuite(defaults) {
               durationMs: Math.max(0, now() - startedAt),
               error: `Check timed out after ${timeoutMs}ms`,
             };
+
             if (child && typeof child.kill === 'function') {
               child.kill('SIGTERM');
             }
@@ -1121,7 +1163,7 @@ export function createRunCheckSuite(defaults) {
 
           child.on(
             'error',
-            /** @param {any} error Error raised by the child process. */ error => {
+            /** @param {unknown} error Error raised by the child process. */ error => {
               if (state.settled || (aborted && failFast)) {
                 return;
               }
@@ -1134,8 +1176,8 @@ export function createRunCheckSuite(defaults) {
           child.on(
             'close',
             /**
-             * @param {any} exitCode Exit code reported by the child process.
-             * @param {any} signal Process signal reported by the child process.
+             * @param {number | null} exitCode Exit code reported by the child process.
+             * @param {string | null} signal Process signal reported by the child process.
              */ (exitCode, signal) => {
               handleChildClose({
                 activeChildren,
@@ -1188,13 +1230,13 @@ export function createRunCheckSuite(defaults) {
  * @param {{
  *   commands?: CheckCommand[],
  *   failFast?: boolean,
- *   spawnImpl?: unknown,
+ *   spawnImpl?: CheckSpawn,
  *   stdout?: { write: (text: string) => void },
  *   stderr?: { write: (text: string) => void },
  *   now?: () => number,
  * }} [options] Runner configuration.
  * @param {{
- *   defaultSpawn?: unknown,
+ *   defaultSpawn?: CheckSpawn,
  *   defaultStdout?: { write: (text: string) => void },
  *   defaultStderr?: { write: (text: string) => void },
  *   defaultNow?: () => number,
@@ -1202,7 +1244,7 @@ export function createRunCheckSuite(defaults) {
  * @returns {{
  *   commands: CheckCommand[],
  *   failFast: boolean,
- *   spawnImpl: unknown,
+ *   spawnImpl: CheckSpawn,
  *   stdout: { write: (text: string) => void },
  *   stderr: { write: (text: string) => void },
  *   now: () => number,
@@ -1247,7 +1289,22 @@ function resolveFailFast(options) {
 
 /**
  * Handle a child process close event without inflating the listener complexity.
- * @param {any} input Close event input.
+ * @param {{
+ *   activeChildren: Map<string, CheckChild>,
+ *   command: CheckCommand,
+ *   now: () => number,
+ *   startedAt: number,
+ *   exitCode: number | null,
+ *   signal: string | null,
+ *   stderr: { write: (text: string) => void },
+ *   state: { settled: boolean, timeoutId: ReturnType<typeof globalThis.setTimeout> | null },
+ *   aborted: boolean,
+ *   failFast: boolean,
+ *   failures: CheckFailure[],
+ *   emitEvent: (stream: { write: (text: string) => void }, event: CheckEvent) => void,
+ *   finishWithFailure: (failure: CheckFailure, shouldAbort: boolean) => void,
+ *   resolve: (value?: unknown) => void,
+ * }} input Close event input.
  * @returns {void} Nothing.
  */
 function handleChildClose({
@@ -1272,6 +1329,7 @@ function handleChildClose({
     resolve(undefined);
     return;
   }
+
   if (state.timeoutId !== null) {
     clearTimeout(state.timeoutId);
   }
@@ -1320,6 +1378,7 @@ function shouldIgnoreClosedChild(aborted, failFast, failures, commandName) {
   if (!aborted || !failFast) {
     return false;
   }
+
   if (failures.length === 0) {
     return false;
   }
@@ -1329,12 +1388,12 @@ function shouldIgnoreClosedChild(aborted, failFast, failures, commandName) {
 
 /**
  * Resolve the child-process spawn implementation.
- * @param {{ spawnImpl?: unknown }} options Runner options.
- * @param {{ defaultSpawn?: unknown }} defaults Injected defaults.
- * @returns {unknown} Spawn implementation.
+ * @param {{ spawnImpl?: CheckSpawn }} options Runner options.
+ * @param {{ defaultSpawn?: CheckSpawn }} defaults Injected defaults.
+ * @returns {CheckSpawn} Spawn implementation.
  */
 function resolveSpawnImpl(options, defaults) {
-  return options.spawnImpl ?? defaults.defaultSpawn;
+  return /** @type {CheckSpawn} */ (options.spawnImpl ?? defaults.defaultSpawn);
 }
 
 /**
@@ -1489,3 +1548,14 @@ function getDefaultOutputStream(streamName) {
 
   return { write: () => {} };
 }
+
+/**
+ * Internal check-runner seams used to exercise lifecycle edge cases in tests.
+ * @type {{ handleChildClose: (...args: never[]) => unknown, shouldIgnoreClosedChild: (...args: never[]) => unknown, abortRemainingChildren: (...args: never[]) => unknown, forwardStreamLines: (...args: never[]) => unknown }}
+ */
+export const commonCoreTestUtils = {
+  handleChildClose,
+  shouldIgnoreClosedChild,
+  abortRemainingChildren,
+  forwardStreamLines,
+};

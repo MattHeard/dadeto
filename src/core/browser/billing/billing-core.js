@@ -1,5 +1,4 @@
 // @ts-nocheck -- browser dependency shapes are injected at the edge.
-/* eslint-disable complexity */
 /**
  * Normalize the public server-priced package response.
  * @param {unknown} value Server response.

@@ -1,4 +1,3 @@
-/* eslint-disable jsdoc/reject-any-type */
 import {
   normalizeSubmissionContent,
   normalizeAuthor as normalizeSubmittedAuthor,

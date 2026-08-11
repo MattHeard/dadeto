@@ -1,4 +1,3 @@
-/* eslint-disable jsdoc/require-param-description, jsdoc/require-param-type, jsdoc/require-returns */
 import { describe, expect, it, jest } from '@jest/globals';
 import {
   beaconBounce,

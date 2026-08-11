@@ -1,5 +1,4 @@
 // @ts-nocheck
-/* eslint-disable no-ternary, complexity -- tree propagation keeps Firestore trigger handling atomic. */
 
 import {
   DEFAULT_BUCKET_NAME,

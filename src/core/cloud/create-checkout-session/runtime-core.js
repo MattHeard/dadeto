@@ -1,5 +1,4 @@
 // @ts-nocheck -- payment and Firebase collaborators are injected structural test doubles.
-/* eslint-disable jsdoc/reject-any-type */
 import { calculatePackageCredits } from '../billing/pricing-core.js';
 
 /** @typedef {any} CheckoutRuntimeValue Runtime-shaped Checkout value. */

@@ -1,7 +1,8 @@
 // @ts-nocheck -- billing uses injected Firestore transaction doubles at runtime boundaries.
-/* eslint-disable jsdoc/reject-any-type */
 import { calculateOperationCredits } from './pricing-core.js';
 import { consumeCreditLots } from './credit-lots-core.js';
+import { createLedgerEvent } from './billing-protocol-core.js';
+import { reconcileBillingIdentity } from './reconciliation-core.js';
 import { randomUUID as nodeRandomUUID } from 'node:crypto';
 import {
   getApiKeyCreditDocument as creditRef,
@@ -31,6 +32,28 @@ function purchaseRef(db, id) {
  */
 function lotRef(db, uuid, purchaseId) {
   return creditRef(db, uuid).collection('lots').doc(String(purchaseId));
+}
+
+/**
+ *
+ * @param db
+ * @param uuid
+ * @param eventId
+ */
+function ledgerRef(db, uuid, eventId) {
+  return creditRef(db, uuid).collection('ledger').doc(String(eventId));
+}
+
+/**
+ *
+ * @param db
+ * @param uuid
+ * @param operationId
+ */
+function reservationRef(db, uuid, operationId) {
+  return creditRef(db, uuid)
+    .collection('reservations')
+    .doc(String(operationId));
 }
 
 /**
@@ -204,6 +227,21 @@ export function createBillingRuntime(db, runtime = {}) {
         balanceAfter: after,
         createdAt: now(),
       });
+      transaction.set(
+        ledgerRef(db, purchase.apiKeyUuid, input.eventId),
+        createLedgerEvent({
+          eventId: input.eventId,
+          sourceEventId: input.eventId,
+          type: 'credits_issued',
+          amount: purchase.creditsIssued,
+          billingIdentityId: purchase.apiKeyUuid,
+          purchaseId: purchase.purchaseId,
+          balanceBefore: before,
+          balanceAfter: after,
+          pricingSnapshotId: purchase.pricingSnapshotId,
+          createdAt: now(),
+        })
+      );
       transaction.set(ref, {
         ...purchase,
         status: 'paid',
@@ -231,26 +269,23 @@ export function createBillingRuntime(db, runtime = {}) {
       .filter(lot => Number(lot.data.remainingCredits ?? 0) > 0);
   }
 
-  /**
-   * @param {BillingRuntimeValue} input Charge input.
-   * @returns {Promise<BillingResponse>} Charge response.
-   */
-  async function applyOperationCharge(input) {
+  async function runOperationTransaction(input, handler) {
     const amount = calculateOperationCredits(
       input.operationId,
       input.pricingSnapshot
     );
     const candidates = await listLots(input.uuid);
     return db.runTransaction(transaction =>
-      chargeOperationTransaction({
-        db,
-        now,
-        transaction,
-        input,
-        amount,
-        candidates,
-      })
+      handler({ db, now, transaction, input, amount, candidates })
     );
+  }
+
+  /**
+   * @param {BillingRuntimeValue} input Charge input.
+   * @returns {Promise<BillingResponse>} Charge response.
+   */
+  async function applyOperationCharge(input) {
+    return runOperationTransaction(input, chargeOperationTransaction);
   }
 
   /**
@@ -263,6 +298,127 @@ export function createBillingRuntime(db, runtime = {}) {
     if (!pricingSnapshot)
       return { status: 503, body: { error: 'pricing_unavailable' } };
     return applyOperationCharge({ ...input, pricingSnapshot });
+  }
+
+  /**
+   *
+   * @param input
+   */
+  async function reserveOperation(input) {
+    return runOperationTransaction(input, reserveOperationTransaction);
+  }
+
+  /**
+   *
+   * @param input
+   */
+  async function resolveOperation(input) {
+    const reference = reservationRef(db, input.uuid, input.operationId);
+    return db.runTransaction(async transaction => {
+      const snapshot = await transaction.get(reference);
+      if (!snapshot.exists)
+        return { status: 404, body: { error: 'reservation_not_found' } };
+      const reservation = readData(snapshot);
+      if (
+        reservation.status !== 'reserved' &&
+        reservation.status !== 'needs_recovery'
+      )
+        return {
+          status: 200,
+          body: {
+            duplicate: true,
+            status: reservation.status,
+            operationId: input.operationId,
+          },
+        };
+      if (input.outcome === 'success') {
+        transaction.set(reference, {
+          ...reservation,
+          status: 'settled',
+          settledAt: now(),
+        });
+        return {
+          status: 200,
+          body: { operationId: input.operationId, status: 'settled' },
+        };
+      }
+      if (input.outcome === 'ambiguous') {
+        transaction.set(reference, {
+          ...reservation,
+          status: 'needs_recovery',
+          recoveryReason: input.reason ?? 'ambiguous',
+        });
+        return {
+          status: 200,
+          body: { operationId: input.operationId, status: 'needs_recovery' },
+        };
+      }
+      const balanceReference = creditRef(db, input.uuid);
+      const balanceSnapshot = await transaction.get(balanceReference);
+      const before = Number(readData(balanceSnapshot).credit ?? 0);
+      for (const allocation of reservation.allocations ?? []) {
+        const lotReference = lotRef(db, input.uuid, allocation.purchaseId);
+        const lotSnapshot = await transaction.get(lotReference);
+        const lot = readData(lotSnapshot);
+        transaction.set(lotReference, {
+          ...lot,
+          remainingCredits:
+            Number(lot.remainingCredits ?? 0) + allocation.amount,
+        });
+      }
+      const after = before + reservation.amount;
+      transaction.set(balanceReference, {
+        credit: after,
+        lastEventId: input.eventId,
+      });
+      transaction.set(
+        ledgerRef(db, input.uuid, input.eventId),
+        createLedgerEvent({
+          eventId: input.eventId,
+          sourceEventId: input.eventId,
+          type: 'credits_released',
+          amount: reservation.amount,
+          billingIdentityId: input.uuid,
+          operationId: input.operationId,
+          balanceBefore: before,
+          balanceAfter: after,
+          createdAt: now(),
+        })
+      );
+      transaction.set(reference, {
+        ...reservation,
+        status: 'released',
+        releasedAt: now(),
+      });
+      return {
+        status: 200,
+        body: {
+          operationId: input.operationId,
+          status: 'released',
+          credit: after,
+        },
+      };
+    });
+  }
+
+  /**
+   *
+   * @param uuid
+   */
+  async function reconcileIdentity(uuid) {
+    const balanceSnapshot = await creditRef(db, uuid).get();
+    const lotSnapshot = await creditRef(db, uuid).collection('lots').get();
+    const ledgerSnapshot = await creditRef(db, uuid).collection('ledger').get();
+    const purchaseSnapshot = await db
+      .collection('billing-purchases')
+      .where('apiKeyUuid', '==', uuid)
+      .get();
+    return reconcileBillingIdentity({
+      aggregateBalance: Number(readData(balanceSnapshot).credit ?? 0),
+      lots: lotSnapshot.docs.map(doc => readData(doc)),
+      ledgerEvents: ledgerSnapshot.docs.map(doc => readData(doc)),
+      purchases: purchaseSnapshot.docs.map(doc => readData(doc)),
+    });
   }
 
   /**
@@ -321,8 +477,12 @@ export function createBillingRuntime(db, runtime = {}) {
     markPurchasePaid,
     applyOperationCharge,
     chargeOperation,
+    reserveOperation,
+    resolveOperation,
+    reconcileIdentity,
     applyRefundEvent,
     markPurchaseExpired,
+    ledgerRef: (uuid, eventId) => ledgerRef(db, uuid, eventId),
   };
 }
 
@@ -340,6 +500,130 @@ export { creditRef, eventRef, lotRef, purchaseRef };
 export const billingRuntimeTestUtils = { readTransactionLots };
 
 /**
+ *
+ * @param transaction
+ * @param candidates
+ * @param db
+ * @param uuid
+ * @param now
+ */
+async function readLotsAndBalance(transaction, candidates, db, uuid, now) {
+  const lots = await readTransactionLots(transaction, candidates);
+  const balanceSnapshot = await transaction.get(creditRef(db, uuid));
+  const before = Number(readData(balanceSnapshot).credit ?? 0);
+  if (lots.length === 0 && before > 0)
+    lots.push({
+      ref: lotRef(db, uuid, 'legacy'),
+      data: createLegacyLot(before, now()),
+    });
+  return { lots, before };
+}
+
+/**
+ * Allocate credits and update the balance projection in a transaction.
+ * @param {{ transaction: object, candidates: Array<{ ref: object, data: object }>, db: object, uuid: string, now: () => Date, amount: number, eventId: string }} input Allocation input.
+ * @returns {Promise<{ before: number, after: number, allocations: Array<object> } | null>} Allocation or null when insufficient.
+ */
+async function allocateCredits(input) {
+  const { lots, before } = await readLotsAndBalance(
+    input.transaction,
+    input.candidates,
+    input.db,
+    input.uuid,
+    input.now
+  );
+  const consumed = consumeLotsOrNull(lots, input.amount);
+  if (!consumed || before < input.amount) return null;
+  const after = before - input.amount;
+  consumed.lots.forEach((lot, index) =>
+    input.transaction.set(lots[index].ref, lot)
+  );
+  input.transaction.set(creditRef(input.db, input.uuid), {
+    credit: after,
+    lastEventId: input.eventId,
+  });
+  return { before, after, allocations: consumed.allocations };
+}
+
+/**
+ *
+ * @param root0
+ * @param root0.db
+ * @param root0.now
+ * @param root0.transaction
+ * @param root0.input
+ * @param root0.amount
+ * @param root0.candidates
+ */
+async function reserveOperationTransaction({
+  db,
+  now,
+  transaction,
+  input,
+  amount,
+  candidates,
+}) {
+  const reference = reservationRef(db, input.uuid, input.operationId);
+  const existing = await transaction.get(reference);
+  if (existing.exists) {
+    const reservation = readData(existing);
+    return {
+      status: 200,
+      body: {
+        duplicate: true,
+        operationId: input.operationId,
+        status: reservation.status,
+      },
+    };
+  }
+  const allocation = await allocateCredits({
+    transaction,
+    candidates,
+    db,
+    uuid: input.uuid,
+    now,
+    amount,
+    eventId: input.eventId,
+  });
+  if (!allocation)
+    return { status: 409, body: { error: 'insufficient_credit' } };
+  transaction.set(reference, {
+    operationId: input.operationId,
+    billingIdentityId: input.uuid,
+    amount,
+    allocations: allocation.allocations,
+    pricingSnapshotId: input.pricingSnapshot.snapshotId,
+    status: 'reserved',
+    createdAt: now(),
+  });
+  transaction.set(
+    ledgerRef(db, input.uuid, input.eventId),
+    createLedgerEvent({
+      eventId: input.eventId,
+      sourceEventId: input.eventId,
+      type: 'credits_reserved',
+      amount: -amount,
+      billingIdentityId: input.uuid,
+      operationId: input.operationId,
+      balanceBefore: allocation.before,
+      balanceAfter: allocation.after,
+      pricingSnapshotId: input.pricingSnapshot.snapshotId,
+      createdAt: now(),
+    })
+  );
+  return {
+    status: 200,
+    body: {
+      operationId: input.operationId,
+      status: 'reserved',
+      credit: allocation.after,
+      amount,
+      applied: true,
+    },
+  };
+}
+
+/**
  * Apply an operation charge inside a Firestore transaction.
  * @param {{ db: object, now: () => Date, transaction: object, input: object, amount: number, candidates: Array<{ ref: object, data: object }> }} db Charge transaction input.
  * @returns {Promise<BillingResponse>} Charge response.
@@ -355,37 +639,51 @@ async function chargeOperationTransaction({
   const event = await transaction.get(eventRef(db, input.uuid, input.eventId));
   if (event.exists)
     return { status: 200, body: { duplicate: true, eventId: input.eventId } };
-  const lots = await readTransactionLots(transaction, candidates);
-  const balanceSnapshot = await transaction.get(creditRef(db, input.uuid));
-  const before = Number(readData(balanceSnapshot).credit ?? 0);
-  if (lots.length === 0 && before > 0)
-    lots.push({
-      ref: lotRef(db, input.uuid, 'legacy'),
-      data: createLegacyLot(before, now()),
-    });
-  const consumed = consumeLotsOrNull(lots, amount);
-  if (!consumed) return { status: 409, body: { error: 'insufficient_credit' } };
-  const after = before - amount;
-  if (after < 0) return { status: 409, body: { error: 'insufficient_credit' } };
-  consumed.lots.forEach((lot, index) => transaction.set(lots[index].ref, lot));
-  transaction.set(creditRef(db, input.uuid), {
-    credit: after,
-    lastEventId: input.eventId,
+  const allocation = await allocateCredits({
+    transaction,
+    candidates,
+    db,
+    uuid: input.uuid,
+    now,
+    amount,
+    eventId: input.eventId,
   });
+  if (!allocation)
+    return { status: 409, body: { error: 'insufficient_credit' } };
   transaction.set(eventRef(db, input.uuid, input.eventId), {
     type: 'operation_charged',
     eventId: input.eventId,
     operationId: input.operationId,
     amount,
     pricingSnapshotId: input.pricingSnapshot.snapshotId,
-    allocations: consumed.allocations,
-    balanceBefore: before,
-    balanceAfter: after,
+    allocations: allocation.allocations,
+    balanceBefore: allocation.before,
+    balanceAfter: allocation.after,
     executedAt: input.executedAt ?? now(),
   });
+  transaction.set(
+    ledgerRef(db, input.uuid, input.eventId),
+    createLedgerEvent({
+      eventId: input.eventId,
+      sourceEventId: input.eventId,
+      type: 'credits_consumed',
+      amount: -amount,
+      billingIdentityId: input.uuid,
+      operationId: input.operationId,
+      balanceBefore: allocation.before,
+      balanceAfter: allocation.after,
+      pricingSnapshotId: input.pricingSnapshot.snapshotId,
+      createdAt: input.executedAt ?? now(),
+    })
+  );
   return {
     status: 200,
-    body: { credit: after, amount, eventId: input.eventId, applied: true },
+    body: {
+      credit: allocation.after,
+      amount,
+      eventId: input.eventId,
+      applied: true,
+    },
   };
 }
 
@@ -490,6 +788,22 @@ async function applyRefund(db, now, input) {
       pricingSnapshotId: input.pricingSnapshotId,
       createdAt: now(),
     });
+    transaction.set(
+      ledgerRef(db, purchase.apiKeyUuid, input.eventId),
+      createLedgerEvent({
+        eventId: input.eventId,
+        sourceEventId: input.eventId,
+        type: 'credits_refunded',
+        amount: -refundable,
+        billingIdentityId: purchase.apiKeyUuid,
+        purchaseId: purchase.purchaseId,
+        balanceBefore: before,
+        balanceAfter: after,
+        refundedUsdMinor: input.refundedUsdMinor,
+        pricingSnapshotId: input.pricingSnapshotId,
+        createdAt: now(),
+      })
+    );
     transaction.set(ref, {
       ...purchase,
       status: resolveRefundStatus(refundable, purchase.creditsIssued),

@@ -327,7 +327,6 @@ function traverseChild(child, node, state) {
  * @param {TraversalState} state Traversal state.
  * @returns {void}
  */
-// eslint-disable-next-line complexity -- AST traversal has one branch per supported node shape.
 function traverseNode(node, parent, state) {
   if (!node || typeof node.type !== 'string') {
     return;

@@ -7,7 +7,6 @@ const handle = createCheckParseBoundaryHandle({
   pathModule: path,
   stdout: console,
   rootDir: process.cwd(),
-  configPath: 'core-parse-exemptions.json',
 });
 
 const result = handle();

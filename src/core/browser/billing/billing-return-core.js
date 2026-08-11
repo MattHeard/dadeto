@@ -1,5 +1,4 @@
 // @ts-nocheck -- timers and network reads are injected browser boundaries.
-/* eslint-disable jsdoc/require-returns-description */
 /**
  * Create a bounded read-only settlement observer.
  * @param {{ readStatus: () => Promise<{ status: string }>, wait: (ms: number) => Promise<void>, maxAttempts?: number }} deps Polling dependencies.

@@ -1,4 +1,3 @@
-/* eslint-disable jsdoc/reject-any-type */
 /** @typedef {{ path: string, update: (data: object) => Promise<void> | void, get: () => Promise<{ exists: boolean, data: () => unknown }> }} ModerationReference */
 /** @typedef {{ doc: (path: string) => ModerationReference, collection: (name: string) => { doc: (id: string) => { set: (data: object) => Promise<void> } } }} ModerationDatabase */
 /** @typedef {{ delete: () => unknown, serverTimestamp: () => unknown }} ModerationFieldValue */

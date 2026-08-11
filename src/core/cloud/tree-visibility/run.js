@@ -1,4 +1,3 @@
-/* eslint-disable jsdoc/reject-any-type */
 import { regenerateDirtyTreeWeightVariants } from './tree-visibility-regeneration-core.js';
 
 /**

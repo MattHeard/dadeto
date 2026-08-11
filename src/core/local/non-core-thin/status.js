@@ -5,7 +5,6 @@ import { reportFailuresAndMaybeLogSuccess } from '../../commonCore.js';
  *   fsModule: { readFileSync: (filePath: string, encoding: 'utf8') => string, readdirSync: (dir: string, options: { withFileTypes: true }) => Array<{ isDirectory: () => boolean, isFile: () => boolean, name: string }> },
  *   pathModule: { resolve: (...parts: string[]) => string, join: (...parts: string[]) => string, relative: (from: string, to: string) => string, sep: string },
  *   repoRoot: string,
- *   configPath?: string,
  *   srcDir?: string,
  * }} options Status dependencies.
  * @returns {{
@@ -21,9 +20,7 @@ import { reportFailuresAndMaybeLogSuccess } from '../../commonCore.js';
 export function getNonCoreThinStatus(options) {
   const paths = resolveStatusPaths(options);
   const coreDir = options.pathModule.join(paths.srcDir, 'core');
-  const config = JSON.parse(
-    options.fsModule.readFileSync(paths.configPath, 'utf8')
-  );
+  const config = readThinConfig(options, paths.configPath);
   return buildNonCoreThinStatus(
     config,
     listJsFiles(paths.srcDir, options, coreDir),
@@ -156,18 +153,17 @@ export function formatNonCoreThinFailure(status) {
  */
 function buildNonCoreThinStatus(config, files, options) {
   const maxLines = config.maxLines;
-  const exemptions = new Set(Object.keys(config.exemptions));
-  const fileSet = new Set(files);
-  const staleExemptions = [...exemptions].filter(
-    filePath => !fileSet.has(filePath)
+  const exemptions = config.exemptions ?? {};
+  const staleExemptions = Object.keys(exemptions).filter(
+    filePath => !files.includes(filePath)
   );
+  const exemptedFiles = new Set(Object.keys(exemptions));
   const violations = files
     .map(filePath => ({ filePath, lines: countLines(filePath, options) }))
-    .filter(
-      ({ filePath, lines }) => lines > maxLines && !exemptions.has(filePath)
-    );
+    .filter(({ filePath }) => !exemptedFiles.has(filePath))
+    .filter(({ lines }) => lines > maxLines);
   const patternViolations = files.flatMap(filePath =>
-    getWrapperPatternViolations(filePath, exemptions, maxLines, options)
+    getWrapperPatternViolations(filePath, maxLines, options)
   );
 
   return {
@@ -177,7 +173,7 @@ function buildNonCoreThinStatus(config, files, options) {
       patternViolations.length === 0,
     maxLines,
     fileCount: files.length,
-    exemptionCount: exemptions.size,
+    exemptionCount: Object.keys(exemptions).length,
     staleExemptions,
     violations,
     patternViolations,
@@ -286,15 +282,28 @@ function shouldIncludeDirectory(dir, entry, coreDir) {
  */
 function resolveStatusPaths(options) {
   return {
-    configPath: options.pathModule.resolve(
-      options.repoRoot,
-      options.configPath ?? 'non-core-thin-exemptions.json'
-    ),
+    configPath: options.configPath ?? 'non-core-thin-exemptions.json',
     srcDir: options.pathModule.resolve(
       options.repoRoot,
       options.srcDir ?? 'src'
     ),
   };
+}
+
+/**
+ * @param {{ fsModule: { readFileSync: Function }, pathModule: { resolve: Function }, repoRoot: string }} options Dependencies. @param {string} configPath Config path.
+ * @param configPath
+ */
+function readThinConfig(options, configPath) {
+  try {
+    const source = options.fsModule.readFileSync(
+      options.pathModule.resolve(options.repoRoot, configPath),
+      'utf8'
+    );
+    return JSON.parse(source);
+  } catch {
+    return { maxLines: 50, exemptions: {} };
+  }
 }
 
 export const nonCoreThinStatusTestOnly = {
@@ -322,7 +331,6 @@ function pluralize(count, singular) {
 /**
  * Check whether a non-core file follows the dependency-only wrapper shape.
  * @param {string} filePath Repo-relative file path.
- * @param {Set<string>} exemptions Explicitly exempted file paths.
  * @param {number} maxLines Maximum line count for tiny platform adapters.
  * @param {{
  *   fsModule: { readFileSync: (filePath: string, encoding: 'utf8') => string },
@@ -331,8 +339,8 @@ function pluralize(count, singular) {
  * }} options Status dependencies.
  * @returns {Array<{ filePath: string, reason: string }>} Wrapper shape violations.
  */
-function getWrapperPatternViolations(filePath, exemptions, maxLines, options) {
-  if (exemptions.has(filePath) || !shouldEnforceWrapperPattern(filePath)) {
+function getWrapperPatternViolations(filePath, maxLines, options) {
+  if (!shouldEnforceWrapperPattern(filePath)) {
     return [];
   }
 

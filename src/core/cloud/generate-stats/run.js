@@ -1,4 +1,3 @@
-/* eslint-disable jsdoc/reject-any-type */
 import { initializeApp } from 'firebase-admin/app';
 import { getFirestore as getAdminFirestore } from 'firebase-admin/firestore';
 import {

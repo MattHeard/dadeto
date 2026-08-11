@@ -1,4 +1,3 @@
-/* eslint-disable jsdoc/reject-any-type */
 import { createFirestoreHandle } from '../firestore-handle.js';
 import { findAvailablePageNumber as defaultFindAvailablePageNumber } from '../process-new-page/process-new-page-core.js';
 import { normalizeHeaderValue, getSnapshotData } from '../cloud-core.js';

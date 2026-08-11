@@ -1,8 +1,5 @@
-import { readExemptions } from './read-exemptions.js';
-
 const DEFAULT_ROOT_DIR = '.';
 const DEFAULT_SOURCE_ROOT = 'src';
-const DEFAULT_CONFIG_PATH = 'overexposed-exports-exemptions.json';
 const DEFAULT_PARSE =
   /** @type {(source: string, options: { ecmaVersion: string, sourceType: string, loc: boolean, range: boolean }) => import('estree').Program} */ (
     () => ({ type: 'Program', body: [], sourceType: 'module' })
@@ -60,10 +57,7 @@ export function createCheckOverexposedExportsHandle(options = {}) {
   const deps = normalizeOptions(options);
 
   return function handleOverexposedExports() {
-    const exemptions = readExemptions(deps);
-    const violations = findOverexposedExportViolations(deps).filter(
-      violation => !exemptions.has(violation.filePath)
-    );
+    const violations = findOverexposedExportViolations(deps);
 
     if (violations.length === 0) {
       deps.stdout.write(
@@ -153,7 +147,10 @@ function normalizeOptions(options) {
   const stderr = withDefault(options.stderr, DEFAULT_STDERR);
   const rootDir = withDefault(options.rootDir, DEFAULT_ROOT_DIR);
   const sourceRoot = withDefault(options.sourceRoot, DEFAULT_SOURCE_ROOT);
-  const configPath = withDefault(options.configPath, DEFAULT_CONFIG_PATH);
+  const configPath = withDefault(
+    options.configPath,
+    'overexposed-exports-exemptions.json'
+  );
   const parse = withDefault(options.parse, DEFAULT_PARSE);
   const pathModule = withDefault(options.pathModule, createDefaultPathModule());
 
@@ -689,7 +686,6 @@ export const checkOverexposedExportsTestOnly = {
   isFunctionLike,
   listJavaScriptFiles,
   makeUsageKey,
-  readExemptions,
   resolveImportSource,
   traverse,
 };

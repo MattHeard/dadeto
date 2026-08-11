@@ -1,4 +1,3 @@
-/* eslint-disable jsdoc/reject-any-type */
 export {
   buildPageByNumberQuery,
   buildVariantByNameQuery,

@@ -1,4 +1,3 @@
-/* eslint-disable no-ternary, complexity, jsdoc/reject-any-type -- renderer normalization. */
 import { renderHtmlTemplate } from '../html-template.js';
 
 /** @typedef {{ collectionGroup?: (name: string) => { where: (field: string, operator: string, value: unknown) => unknown }; collection?: (name: string) => { doc: (id: string) => { get: () => Promise<unknown> } } }} AuthorDatabase */

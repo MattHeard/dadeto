@@ -1,4 +1,3 @@
-/* eslint-disable complexity, jsdoc/require-param-description, jsdoc/require-returns, no-ternary */
 import path from 'node:path';
 
 /** @typedef {{ type?: string, id?: AstNode, key?: AstNode, name?: string, loc?: { start: { line: number } }, params?: AstNode[], body?: AstNode, callee?: AstNode, left?: AstNode, source?: { value: string }, specifiers?: AstNode[], imported?: AstNode, local?: AstNode, declaration?: AstNode, node?: AstNode, [key: string]: unknown }} AstNode */

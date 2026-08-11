@@ -1,5 +1,4 @@
 // @ts-nocheck -- this module deliberately accepts Firebase/HTTP test doubles at its boundaries.
-/* eslint-disable jsdoc/reject-any-type */
 import {
   buildPageByNumberQuery,
   buildVariantByNameQuery,

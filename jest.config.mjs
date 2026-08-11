@@ -2,6 +2,7 @@ const config = {
   transform: {
     '^.+\\.js$': 'babel-jest',
   },
+  testMatch: ['<rootDir>/test/**/*.test.js'],
   moduleNameMapper: {
     '\\./firestore\\.js$': '<rootDir>/src/cloud/firestore.js',
     '^https://www\\.gstatic\\.com/firebasejs/12\\.0\\.0/(.*)$':
@@ -21,17 +22,6 @@ const config = {
     testEnvironment: '@stryker-mutator/jest-runner/jest-env/node',
     maxWorkers: 1,
   }),
-  testPathIgnorePatterns: [
-    '<rootDir>/.stryker-tmp/',
-    '<rootDir>/.worktrees/',
-    '<rootDir>/test/e2e/',
-    '<rootDir>/e2e/',
-    '<rootDir>/test/synthetic/',
-  ],
-  modulePathIgnorePatterns: ['<rootDir>/infra/cloud-functions/'],
-  coveragePathIgnorePatterns: [
-    '/node_modules/',
-  ],
   collectCoverageFrom: process.env.DADETO_COVERAGE_SHARD ? [] : ['src/core/**/*.js'],
   coverageDirectory: 'reports/coverage',
   coverageThreshold: {

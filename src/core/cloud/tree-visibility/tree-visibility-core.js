@@ -1,5 +1,4 @@
 // @ts-check
-/* eslint-disable jsdoc/reject-any-type */
 
 /** @typedef {{ visibility?: number, treeVisibilitySum?: number }} VisibilityData */
 

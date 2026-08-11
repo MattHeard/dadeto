@@ -1,4 +1,3 @@
-/* eslint-disable jsdoc/reject-any-type */
 import { createFirestoreDocumentOnWriteTrigger } from '../cloud-core.js';
 import { createRenderAuthorHandler } from './render-author-core.js';
 

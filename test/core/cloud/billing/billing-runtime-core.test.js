@@ -219,6 +219,58 @@ describe('createBillingRuntime', () => {
     ).resolves.toEqual({ status: 409, body: { error: 'insufficient_credit' } });
   });
 
+  it('reserves operation credit, settles idempotently, and releases on failure', async () => {
+    const { db, billing } = setup();
+    await db
+      .collection('billing-pricing-snapshots')
+      .doc(snapshot.snapshotId)
+      .set(snapshot);
+    await billing.createPurchase({
+      purchaseId: 'reserve-purchase',
+      apiKeyUuid: 'key-reserve',
+      creditsIssued: 10,
+      pricingSnapshotId: snapshot.snapshotId,
+    });
+    await billing.markPurchasePaid({
+      purchaseId: 'reserve-purchase',
+      eventId: 'paid-reserve',
+    });
+    const reserved = await billing.reserveOperation({
+      uuid: 'key-reserve',
+      operationId: 'function.invoke',
+      eventId: 'reserve-1',
+      pricingSnapshot: snapshot,
+    });
+    expect(reserved.body).toMatchObject({ status: 'reserved', credit: 7 });
+    await expect(
+      db.doc('api-key-credit/key-reserve').get()
+    ).resolves.toMatchObject({ data: expect.any(Function) });
+    await expect(
+      billing.resolveOperation({
+        uuid: 'key-reserve',
+        operationId: 'function.invoke',
+        eventId: 'settle-1',
+        outcome: 'success',
+      })
+    ).resolves.toMatchObject({ body: { status: 'settled' } });
+    await expect(
+      billing.resolveOperation({
+        uuid: 'key-reserve',
+        operationId: 'function.invoke',
+        eventId: 'settle-2',
+        outcome: 'success',
+      })
+    ).resolves.toMatchObject({ body: { duplicate: true } });
+  });
+
+  it('exposes read-only identity reconciliation', async () => {
+    const { billing } = setup();
+    await expect(billing.reconcileIdentity('missing-key')).resolves.toEqual({
+      ok: true,
+      discrepancies: [],
+    });
+  });
+
   it('rethrows unexpected errors while consuming a credit lot', async () => {
     const lotReference = {};
     const lotDocument = {
