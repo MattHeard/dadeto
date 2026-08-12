@@ -163,7 +163,18 @@ describe('createPaymentWebhookHandler', () => {
     });
 
     await expect(handler({ body: event })).resolves.toBe(purchaseResponse);
-    expect(markProcessedEvent).toHaveBeenCalledWith(event, 'purchase');
+    expect(markProcessedEvent).toHaveBeenNthCalledWith(
+      1,
+      event,
+      'purchase',
+      'received'
+    );
+    expect(markProcessedEvent).toHaveBeenNthCalledWith(
+      2,
+      event,
+      'purchase',
+      'applied'
+    );
   });
 
   it('supports a missing request object and metadata coercion', async () => {
@@ -289,7 +300,8 @@ describe('createPaymentWebhookHandler', () => {
     });
     expect(markProcessedEvent).toHaveBeenCalledWith(
       expect.objectContaining({ id: 'evt_refund_1' }),
-      'api-key-uuid'
+      'api-key-uuid',
+      'received'
     );
 
     const duplicateHandler = createPaymentWebhookHandler({
@@ -486,6 +498,13 @@ describe('payment webhook cloud wrapper', () => {
         jest.fn()
       )
     ).toThrow('Missing Stripe signature');
+    expect(() =>
+      parseStripePaymentWebhookEvent(
+        { body: { id: 'evt_parsed' }, headers: { 'stripe-signature': 'signed' } },
+        { STRIPE_WEBHOOK_SECRET: 'secret' },
+        jest.fn()
+      )
+    ).toThrow('Missing Stripe webhook payload');
   });
 
   it('rejects constructEvent failures without invoking downstream parsing', () => {

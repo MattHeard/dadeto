@@ -2,11 +2,15 @@ import { applyStateTransition } from './billing-protocol-core.js';
 
 /**
  * Create a new operation reservation.
- * @param {{ operationId: string, billingIdentityId: string, amount: number, allocations: Array<object>, pricingSnapshotId: string, createdAt: string|Date }} input Reservation input.
+ * @param {{ operationType: string, operationAttemptId: string, billingIdentityId: string, amount: number, allocations: Array<object>, pricingSnapshotId: string, createdAt: string|Date }} input Reservation input.
  * @returns {object} Reservation.
  */
 export function createReservation(input) {
-  if (!input.operationId || !input.billingIdentityId)
+  if (
+    !input.operationType ||
+    !input.operationAttemptId ||
+    !input.billingIdentityId
+  )
     throw new TypeError('operation identity is required');
   if (!Number.isSafeInteger(input.amount) || input.amount <= 0)
     throw new TypeError('amount must be positive');

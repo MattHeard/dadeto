@@ -82,7 +82,7 @@ describe('payment webhook cloud wrapper', () => {
     const handle = createPaymentWebhookIndexHandler({
       firestore: Firestore,
       env: { STRIPE_WEBHOOK_SECRET: 'secret' },
-      constructEvent: payload => payload,
+      constructEvent: payload => JSON.parse(payload.toString()),
     });
     createPaymentWebhookIndexHandler({ firestore: Firestore });
 

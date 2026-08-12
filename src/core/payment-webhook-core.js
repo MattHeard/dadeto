@@ -47,7 +47,7 @@ const DEFAULT_ALLOWED_EVENT_TYPES = new Set([
  *   applyCreditEvent: (uuid: string, event: { type: 'credit_added' | 'credit_deducted', eventId: string, amount: number }) => Promise<PaymentWebhookResponse>,
  *   resolveApiKeyUuid: (event: PaymentEvent) => Promise<string | null> | string | null,
  *   isDuplicateEvent?: (eventId: string) => Promise<boolean> | boolean,
- *   markProcessedEvent?: (event: PaymentEvent, uuid: string) => Promise<void> | void,
+ *   markProcessedEvent?: (event: PaymentEvent, uuid: string, status?: string) => Promise<void> | void,
  *   logger?: { error: (value: unknown) => void, info: (value: unknown) => void, warn: (value: unknown) => void },
  *   allowedEventTypes?: Set<string>,
  *   getAmountFromEvent?: (event: PaymentEvent) => number,
@@ -87,8 +87,13 @@ export function createPaymentWebhookHandler(deps) {
     }
 
     const creditEvent = buildCreditEvent(event, amount);
+    await resolved.markProcessedEvent(event, uuid, 'received');
     const response = await resolved.applyCreditEvent(uuid, creditEvent);
-    await resolved.markProcessedEvent(event, uuid);
+    await resolved.markProcessedEvent(
+      event,
+      uuid,
+      responseEventStatus(response)
+    );
     return response;
   };
 }
@@ -100,11 +105,34 @@ export function createPaymentWebhookHandler(deps) {
  * @returns {Promise<PaymentWebhookResponse | null>} Purchase response or null.
  */
 async function resolvePurchaseEvent(resolved, event) {
-  const response = await resolved.handlePurchaseEvent(event);
-  if (!response) return null;
   const purchaseUuid = await resolved.resolveApiKeyUuid(event);
-  await resolved.markProcessedEvent(event, purchaseUuid ?? 'purchase');
+  const identity = purchaseUuid ?? 'purchase';
+  await resolved.markProcessedEvent(event, identity, 'received');
+  const response = await resolved.handlePurchaseEvent(event);
+  if (!response) {
+    await resolved.markProcessedEvent(event, identity, 'ignored');
+    return null;
+  }
+  await resolved.markProcessedEvent(
+    event,
+    identity,
+    responseEventStatus(response)
+  );
   return response;
+}
+
+/**
+ * @param {PaymentWebhookResponse} response Handler response.
+ * @returns {'applied'|'deferred'|'ignored'|'quarantined'} Inbox status.
+ */
+function responseEventStatus(response) {
+  const body = response.body;
+  if (body && typeof body === 'object') {
+    if (body.deferred === true) return 'deferred';
+    if (body.quarantined === true) return 'quarantined';
+    if (body.ignored === true || body.duplicate === true) return 'ignored';
+  }
+  return response.status >= 400 ? 'quarantined' : 'applied';
 }
 
 /**
@@ -115,7 +143,7 @@ async function resolvePurchaseEvent(resolved, event) {
  *   applyCreditEvent: (uuid: string, event: { type: 'credit_added' | 'credit_deducted', eventId: string, amount: number }) => Promise<PaymentWebhookResponse>,
  *   resolveApiKeyUuid: (event: PaymentEvent) => Promise<string | null>,
  *   isDuplicateEvent: (eventId: string) => Promise<boolean>,
- *   markProcessedEvent: (event: PaymentEvent, uuid: string) => Promise<void>,
+ *   markProcessedEvent: (event: PaymentEvent, uuid: string, status?: string) => Promise<void>,
  *   logger: { error: (value: unknown) => void, info: (value: unknown) => void, warn: (value: unknown) => void },
  *   allowedEventTypes: Set<string>,
  *   getAmountFromEvent: (event: PaymentEvent) => number,
@@ -156,10 +184,10 @@ function resolvePaymentWebhookDependencies(deps) {
           isDuplicateEvent
         )(eventId)
       ),
-    markProcessedEvent: async (event, uuid) =>
-      /** @type {(event: PaymentEvent, uuid: string) => Promise<void> | void} */ (
+    markProcessedEvent: async (event, uuid, status = 'applied') =>
+      /** @type {(event: PaymentEvent, uuid: string, status?: string) => Promise<void> | void} */ (
         markProcessedEvent
-      )(event, uuid),
+      )(event, uuid, status),
     logger,
     allowedEventTypes,
     getAmountFromEvent,

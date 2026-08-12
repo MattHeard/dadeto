@@ -7,8 +7,6 @@ import {
   createPaymentWebhookHandler,
   createResolveApiKeyUuid,
   extractHeader,
-  extractRawPayload,
-  parseJsonEvent,
   readMetadata,
 } from '../../payment-webhook-core.js';
 import { createBillingRuntime } from '../billing/billing-runtime-core.js';
@@ -46,21 +44,29 @@ export function createPaymentWebhookIndexHandler({
       },
     }),
     handlePurchaseEvent: event => handlePurchaseEvent(billing, event),
-    isDuplicateEvent: async eventId =>
-      (await db.collection('payment-events').doc(eventId).get()).exists,
-    markProcessedEvent: async (event, uuid) => {
+    isDuplicateEvent: async eventId => {
+      const snap = await db.collection('payment-events').doc(eventId).get();
+      const status = snap.data()?.status;
+      return snap.exists && status !== 'received' && status !== 'deferred';
+    },
+    markProcessedEvent: async (event, uuid, status = 'applied') => {
       const doc = db.collection('payment-events').doc(event.id);
       let createdAtMs = Date.now();
       if (typeof event.created === 'number') {
         createdAtMs = event.created * 1000;
       }
-      await /** @type {{ set: (value: { apiKeyUuid: string, type: string, createdAt: Date }) => Promise<void> }} */ (
+      await /** @type {{ set: (value: object, options?: object) => Promise<void> }} */ (
         /** @type {unknown} */ (doc)
-      ).set({
-        apiKeyUuid: uuid,
-        type: event.type,
-        createdAt: new Date(createdAtMs),
-      });
+      ).set(
+        {
+          apiKeyUuid: uuid,
+          type: event.type,
+          status,
+          purchaseId: readMetadata(event.data?.object ?? {}).purchase_id,
+          createdAt: new Date(createdAtMs),
+        },
+        { merge: true }
+      );
     },
     getPaymentEvent: async request =>
       parseStripePaymentWebhookEvent(request, env, constructEvent ?? null),
@@ -158,7 +164,11 @@ export function parsePaymentWebhookEvent(request, env = process.env) {
  */
 export function parseStripePaymentWebhookEvent(request, env, constructEvent) {
   const secret = env.STRIPE_WEBHOOK_SECRET;
-  const payload = extractRawPayload(request);
+  const rawBody = /** @type {{ rawBody?: string|Buffer }|null|undefined} */ (
+    request
+  )?.rawBody;
+  const payload =
+    typeof rawBody === 'string' || Buffer.isBuffer(rawBody) ? rawBody : '';
   if (!secret) throw new TypeError('Missing Stripe webhook secret');
   if (!payload) throw new TypeError('Missing Stripe webhook payload');
   const signature = extractHeader(request, 'stripe-signature');
@@ -167,9 +177,14 @@ export function parseStripePaymentWebhookEvent(request, env, constructEvent) {
     throw new TypeError('Stripe webhook verifier unavailable');
   try {
     const verifiedEvent = constructEvent(payload, signature, secret);
-    let verifiedPayload = JSON.stringify(verifiedEvent);
-    if (typeof verifiedEvent === 'string') verifiedPayload = verifiedEvent;
-    return parseJsonEvent(verifiedPayload);
+    if (!verifiedEvent || typeof verifiedEvent !== 'object')
+      throw new TypeError('Invalid verified Stripe event');
+    const event = /** @type {{ id?: unknown }} */ (verifiedEvent);
+    if (typeof event.id !== 'string' || !event.id)
+      throw new TypeError('Invalid verified Stripe event id');
+    return /** @type {import('../../payment-webhook-core.js').PaymentEvent} */ (
+      verifiedEvent
+    );
   } catch {
     throw new TypeError('Invalid Stripe webhook signature');
   }

@@ -6,7 +6,8 @@ import {
 
 describe('operation billing', () => {
   const reservation = createReservation({
-    operationId: 'op-1',
+    operationType: 'function.invoke',
+    operationAttemptId: 'op-1',
     billingIdentityId: 'key-1',
     amount: 3,
     allocations: [{ purchaseId: 'p-1', amount: 3 }],

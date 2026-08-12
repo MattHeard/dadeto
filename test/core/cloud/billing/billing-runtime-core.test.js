@@ -201,7 +201,8 @@ describe('createBillingRuntime', () => {
     await expect(
       billing.chargeOperation({
         uuid: 'key-1',
-        operationId: 'function.invoke',
+        operationType: 'function.invoke',
+        operationAttemptId: 'attempt-e-1',
         eventId: 'e-1',
       })
     ).resolves.toEqual({ status: 503, body: { error: 'pricing_unavailable' } });
@@ -213,7 +214,8 @@ describe('createBillingRuntime', () => {
     await expect(
       billing.chargeOperation({
         uuid: 'key-1',
-        operationId: 'function.invoke',
+        operationType: 'function.invoke',
+        operationAttemptId: 'attempt-e-2',
         eventId: 'e-2',
       })
     ).resolves.toEqual({ status: 409, body: { error: 'insufficient_credit' } });
@@ -237,7 +239,8 @@ describe('createBillingRuntime', () => {
     });
     const reserved = await billing.reserveOperation({
       uuid: 'key-reserve',
-      operationId: 'function.invoke',
+      operationType: 'function.invoke',
+      operationAttemptId: 'attempt-reserve-1',
       eventId: 'reserve-1',
       pricingSnapshot: snapshot,
     });
@@ -248,7 +251,8 @@ describe('createBillingRuntime', () => {
     await expect(
       billing.resolveOperation({
         uuid: 'key-reserve',
-        operationId: 'function.invoke',
+        operationType: 'function.invoke',
+        operationAttemptId: 'attempt-reserve-1',
         eventId: 'settle-1',
         outcome: 'success',
       })
@@ -256,7 +260,8 @@ describe('createBillingRuntime', () => {
     await expect(
       billing.resolveOperation({
         uuid: 'key-reserve',
-        operationId: 'function.invoke',
+        operationType: 'function.invoke',
+        operationAttemptId: 'attempt-reserve-1',
         eventId: 'settle-2',
         outcome: 'success',
       })
@@ -316,7 +321,8 @@ describe('createBillingRuntime', () => {
     await expect(
       billing.applyOperationCharge({
         uuid: 'key-1',
-        operationId: 'function.invoke',
+        operationType: 'function.invoke',
+        operationAttemptId: 'attempt-event-1',
         eventId: 'event-1',
         pricingSnapshot: snapshot,
       })
@@ -403,7 +409,8 @@ describe('createBillingRuntime', () => {
     await expect(
       billing.applyOperationCharge({
         uuid: 'key-mismatch',
-        operationId: 'function.invoke',
+        operationType: 'function.invoke',
+        operationAttemptId: 'attempt-charge-mismatch',
         eventId: 'charge-mismatch',
         pricingSnapshot: snapshot,
       })
@@ -455,7 +462,8 @@ describe('createBillingRuntime', () => {
     await expect(
       billing.applyOperationCharge({
         uuid: 'key-1',
-        operationId: 'function.invoke',
+        operationType: 'function.invoke',
+        operationAttemptId: 'attempt-event-disappeared',
         eventId: 'event-disappeared',
         pricingSnapshot: snapshot,
       })
@@ -575,7 +583,8 @@ describe('createBillingRuntime', () => {
     await expect(
       billing.chargeOperation({
         uuid: 'key-1',
-        operationId: 'function.invoke',
+        operationType: 'function.invoke',
+        operationAttemptId: 'attempt-operation-1',
         eventId: 'operation-1',
       })
     ).resolves.toMatchObject({
@@ -585,7 +594,8 @@ describe('createBillingRuntime', () => {
     await expect(
       billing.chargeOperation({
         uuid: 'key-1',
-        operationId: 'function.invoke',
+        operationType: 'function.invoke',
+        operationAttemptId: 'attempt-operation-1',
         eventId: 'operation-1',
       })
     ).resolves.toMatchObject({ body: { duplicate: true } });
@@ -597,7 +607,8 @@ describe('createBillingRuntime', () => {
     await expect(
       billing.applyOperationCharge({
         uuid: 'key-legacy',
-        operationId: 'function.invoke',
+        operationType: 'function.invoke',
+        operationAttemptId: 'attempt-operation-legacy',
         eventId: 'operation-legacy',
         pricingSnapshot: snapshot,
       })
@@ -625,7 +636,8 @@ describe('createBillingRuntime', () => {
     expect(lotBeforeCharge.data()).toMatchObject({ remainingCredits: 10 });
     await billing.applyOperationCharge({
       uuid: 'key-1',
-      operationId: 'function.invoke',
+      operationType: 'function.invoke',
+      operationAttemptId: 'attempt-operation-1',
       eventId: 'operation-1',
       pricingSnapshot: snapshot,
     });

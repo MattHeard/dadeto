@@ -1,7 +1,10 @@
 // @ts-nocheck -- billing uses injected Firestore transaction doubles at runtime boundaries.
 import { calculateOperationCredits } from './pricing-core.js';
 import { consumeCreditLots } from './credit-lots-core.js';
-import { createLedgerEvent } from './billing-protocol-core.js';
+import {
+  applyStateTransition,
+  createLedgerEvent,
+} from './billing-protocol-core.js';
 import { reconcileBillingIdentity } from './reconciliation-core.js';
 import { randomUUID as nodeRandomUUID } from 'node:crypto';
 import {
@@ -49,11 +52,33 @@ function ledgerRef(db, uuid, eventId) {
  * @param db
  * @param uuid
  * @param operationId
+ * @param operationAttemptId
  */
-function reservationRef(db, uuid, operationId) {
+function reservationRef(db, uuid, operationAttemptId) {
   return creditRef(db, uuid)
     .collection('reservations')
-    .doc(String(operationId));
+    .doc(String(operationAttemptId));
+}
+
+/**
+ * @param {{ operationType?: unknown, operationAttemptId?: unknown }} input Operation input.
+ * @returns {{ operationType: string, operationAttemptId: string }} Operation identity.
+ */
+function readOperationIdentity(input) {
+  if (
+    typeof input.operationType !== 'string' ||
+    !input.operationType ||
+    typeof input.operationAttemptId !== 'string' ||
+    !input.operationAttemptId
+  ) {
+    throw new TypeError(
+      'operationType and operationAttemptId are required; operationId is unsupported'
+    );
+  }
+  return {
+    operationType: input.operationType,
+    operationAttemptId: input.operationAttemptId,
+  };
 }
 
 /**
@@ -194,6 +219,18 @@ export function createBillingRuntime(db, runtime = {}) {
       ) {
         return duplicatePurchaseResponse(input.purchaseId);
       }
+      try {
+        applyStateTransition({
+          kind: 'purchase',
+          state: purchase.status,
+          nextState: 'paid',
+        });
+      } catch {
+        return {
+          status: 200,
+          body: { quarantined: true, purchaseId: input.purchaseId },
+        };
+      }
       const balance = await transaction.get(creditRef(db, purchase.apiKeyUuid));
       const before = Number(readData(balance).credit ?? 0);
       const after = before + purchase.creditsIssued;
@@ -269,14 +306,27 @@ export function createBillingRuntime(db, runtime = {}) {
       .filter(lot => Number(lot.data.remainingCredits ?? 0) > 0);
   }
 
+  /**
+   *
+   * @param input
+   * @param handler
+   */
   async function runOperationTransaction(input, handler) {
+    const identity = readOperationIdentity(input);
     const amount = calculateOperationCredits(
-      input.operationId,
+      identity.operationType,
       input.pricingSnapshot
     );
     const candidates = await listLots(input.uuid);
     return db.runTransaction(transaction =>
-      handler({ db, now, transaction, input, amount, candidates })
+      handler({
+        db,
+        now,
+        transaction,
+        input: { ...input, ...identity },
+        amount,
+        candidates,
+      })
     );
   }
 
@@ -313,12 +363,23 @@ export function createBillingRuntime(db, runtime = {}) {
    * @param input
    */
   async function resolveOperation(input) {
-    const reference = reservationRef(db, input.uuid, input.operationId);
+    const identity = readOperationIdentity(input);
+    const reference = reservationRef(
+      db,
+      input.uuid,
+      identity.operationAttemptId
+    );
     return db.runTransaction(async transaction => {
       const snapshot = await transaction.get(reference);
       if (!snapshot.exists)
         return { status: 404, body: { error: 'reservation_not_found' } };
       const reservation = readData(snapshot);
+      if (
+        reservation.operationType !== identity.operationType ||
+        reservation.operationAttemptId !== identity.operationAttemptId
+      ) {
+        return { status: 409, body: { error: 'operation_identity_conflict' } };
+      }
       if (
         reservation.status !== 'reserved' &&
         reservation.status !== 'needs_recovery'
@@ -328,7 +389,8 @@ export function createBillingRuntime(db, runtime = {}) {
           body: {
             duplicate: true,
             status: reservation.status,
-            operationId: input.operationId,
+            operationType: reservation.operationType,
+            operationAttemptId: reservation.operationAttemptId,
           },
         };
       if (input.outcome === 'success') {
@@ -339,7 +401,11 @@ export function createBillingRuntime(db, runtime = {}) {
         });
         return {
           status: 200,
-          body: { operationId: input.operationId, status: 'settled' },
+          body: {
+            operationType: reservation.operationType,
+            operationAttemptId: reservation.operationAttemptId,
+            status: 'settled',
+          },
         };
       }
       if (input.outcome === 'ambiguous') {
@@ -350,7 +416,11 @@ export function createBillingRuntime(db, runtime = {}) {
         });
         return {
           status: 200,
-          body: { operationId: input.operationId, status: 'needs_recovery' },
+          body: {
+            operationType: reservation.operationType,
+            operationAttemptId: reservation.operationAttemptId,
+            status: 'needs_recovery',
+          },
         };
       }
       const balanceReference = creditRef(db, input.uuid);
@@ -379,7 +449,8 @@ export function createBillingRuntime(db, runtime = {}) {
           type: 'credits_released',
           amount: reservation.amount,
           billingIdentityId: input.uuid,
-          operationId: input.operationId,
+          operationType: reservation.operationType,
+          operationAttemptId: reservation.operationAttemptId,
           balanceBefore: before,
           balanceAfter: after,
           createdAt: now(),
@@ -393,7 +464,8 @@ export function createBillingRuntime(db, runtime = {}) {
       return {
         status: 200,
         body: {
-          operationId: input.operationId,
+          operationType: reservation.operationType,
+          operationAttemptId: reservation.operationAttemptId,
           status: 'released',
           credit: after,
         },
@@ -453,6 +525,11 @@ export function createBillingRuntime(db, runtime = {}) {
             status: purchase.status,
           },
         };
+      applyStateTransition({
+        kind: 'purchase',
+        state: purchase.status,
+        nextState: 'expired',
+      });
       transaction.set(ref, {
         ...purchase,
         status: 'expired',
@@ -563,7 +640,7 @@ async function reserveOperationTransaction({
   amount,
   candidates,
 }) {
-  const reference = reservationRef(db, input.uuid, input.operationId);
+  const reference = reservationRef(db, input.uuid, input.operationAttemptId);
   const existing = await transaction.get(reference);
   if (existing.exists) {
     const reservation = readData(existing);
@@ -571,7 +648,8 @@ async function reserveOperationTransaction({
       status: 200,
       body: {
         duplicate: true,
-        operationId: input.operationId,
+        operationType: reservation.operationType,
+        operationAttemptId: reservation.operationAttemptId,
         status: reservation.status,
       },
     };
@@ -588,7 +666,8 @@ async function reserveOperationTransaction({
   if (!allocation)
     return { status: 409, body: { error: 'insufficient_credit' } };
   transaction.set(reference, {
-    operationId: input.operationId,
+    operationType: input.operationType,
+    operationAttemptId: input.operationAttemptId,
     billingIdentityId: input.uuid,
     amount,
     allocations: allocation.allocations,
@@ -604,7 +683,8 @@ async function reserveOperationTransaction({
       type: 'credits_reserved',
       amount: -amount,
       billingIdentityId: input.uuid,
-      operationId: input.operationId,
+      operationType: input.operationType,
+      operationAttemptId: input.operationAttemptId,
       balanceBefore: allocation.before,
       balanceAfter: allocation.after,
       pricingSnapshotId: input.pricingSnapshot.snapshotId,
@@ -614,7 +694,8 @@ async function reserveOperationTransaction({
   return {
     status: 200,
     body: {
-      operationId: input.operationId,
+      operationType: input.operationType,
+      operationAttemptId: input.operationAttemptId,
       status: 'reserved',
       credit: allocation.after,
       amount,
@@ -653,7 +734,8 @@ async function chargeOperationTransaction({
   transaction.set(eventRef(db, input.uuid, input.eventId), {
     type: 'operation_charged',
     eventId: input.eventId,
-    operationId: input.operationId,
+    operationType: input.operationType,
+    operationAttemptId: input.operationAttemptId,
     amount,
     pricingSnapshotId: input.pricingSnapshot.snapshotId,
     allocations: allocation.allocations,
@@ -669,7 +751,8 @@ async function chargeOperationTransaction({
       type: 'credits_consumed',
       amount: -amount,
       billingIdentityId: input.uuid,
-      operationId: input.operationId,
+      operationType: input.operationType,
+      operationAttemptId: input.operationAttemptId,
       balanceBefore: allocation.before,
       balanceAfter: allocation.after,
       pricingSnapshotId: input.pricingSnapshot.snapshotId,
@@ -767,6 +850,19 @@ async function applyRefund(db, now, input) {
     const after = before - refundable;
     if (after < 0)
       return { status: 409, body: { error: 'refund_balance_conflict' } };
+    const nextStatus = resolveRefundStatus(refundable, purchase.creditsIssued);
+    try {
+      applyStateTransition({
+        kind: 'purchase',
+        state: purchase.status,
+        nextState: nextStatus,
+      });
+    } catch {
+      return {
+        status: 200,
+        body: { quarantined: true, purchaseId: input.purchaseId },
+      };
+    }
     transaction.set(lotReference, {
       ...lot,
       remainingCredits: 0,
@@ -806,7 +902,7 @@ async function applyRefund(db, now, input) {
     );
     transaction.set(ref, {
       ...purchase,
-      status: resolveRefundStatus(refundable, purchase.creditsIssued),
+      status: nextStatus,
       creditsRemaining: 0,
       refundedUsdMinor: input.refundedUsdMinor,
     });
