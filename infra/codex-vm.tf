@@ -57,7 +57,7 @@ resource "google_service_account" "codex_vm" {
 
   account_id   = "codex-vm"
   display_name = "Codex VM"
-  description  = "Identity for the production Codex administration VM; intentionally has no project-level roles"
+  description  = "Identity for the production Codex administration VM; writes VM logs"
 }
 
 resource "google_service_account_iam_member" "terraform_can_use_codex_vm" {
@@ -74,6 +74,14 @@ resource "google_service_account_iam_member" "administrator_can_use_codex_vm" {
   service_account_id = google_service_account.codex_vm[0].name
   role               = "roles/iam.serviceAccountUser"
   member             = var.codex_admin_member
+}
+
+resource "google_project_iam_member" "codex_vm_logging_writer" {
+  count = local.codex_vm_enabled ? 1 : 0
+
+  project = var.project_id
+  role    = "roles/logging.logWriter"
+  member  = "serviceAccount:${google_service_account.codex_vm[0].email}"
 }
 
 locals {
@@ -136,5 +144,6 @@ resource "google_compute_instance" "codex_vm" {
     google_project_service.oslogin,
     google_service_account_iam_member.terraform_can_use_codex_vm,
     google_service_account_iam_member.administrator_can_use_codex_vm,
+    google_project_iam_member.codex_vm_logging_writer,
   ]
 }

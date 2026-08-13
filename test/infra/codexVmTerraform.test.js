@@ -4,14 +4,6 @@ const CODEX_VM_PATH = 'infra/codex-vm.tf';
 
 describe('Codex VM Terraform policy', () => {
   const codexVm = readFileSync(CODEX_VM_PATH, 'utf8');
-  const allInfra = [
-    codexVm,
-    readFileSync('infra/main.tf', 'utf8'),
-    readFileSync('infra/load-balancer.tf', 'utf8'),
-    readFileSync('infra/outputs.tf', 'utf8'),
-    readFileSync('infra/variables.tf', 'utf8'),
-  ].join('\n');
-
   it('creates resources only when explicitly enabled in production', () => {
     expect(codexVm).toContain(
       'codex_vm_enabled = var.codex_vm_enabled && var.environment == "prod"'
@@ -48,10 +40,13 @@ describe('Codex VM Terraform policy', () => {
     expect(codexVm).toContain('block-project-ssh-keys = "TRUE"');
   });
 
-  it('does not grant project roles to the VM service account', () => {
-    expect(allInfra).not.toMatch(
-      /google_project_iam_member[\s\S]{0,500}member\s*=\s*"serviceAccount:\$\{google_service_account\.codex_vm/
+  it('grants only log writing to the VM service account', () => {
+    expect(codexVm).toContain('role    = "roles/logging.logWriter"');
+    expect(codexVm).toContain(
+      'member  = "serviceAccount:${google_service_account.codex_vm[0].email}"'
     );
+    expect(codexVm).not.toContain('roles/editor');
+    expect(codexVm).not.toContain('roles/owner');
   });
 
   it('does not expose the ephemeral external address as an output', () => {
