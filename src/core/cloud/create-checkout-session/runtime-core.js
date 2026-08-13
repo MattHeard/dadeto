@@ -32,7 +32,7 @@ export function createDynamicPackageResolver({
 
 /**
  * Build cloud dependency adapters for Checkout.
- * @param {{ db: CheckoutRuntimeValue, billing: CheckoutRuntimeValue, stripe: CheckoutRuntimeValue, verifyIdToken: (token: string) => Promise<CheckoutRuntimeValue>, publicBillingOrigin?: string }} input Runtime dependencies.
+ * @param {{ db: CheckoutRuntimeValue, billing: CheckoutRuntimeValue, stripe: CheckoutRuntimeValue, verifyIdToken: (token: string) => Promise<CheckoutRuntimeValue>, publicBillingOrigin?: string, stripeConfigured?: boolean }} input Runtime dependencies.
  * @returns {CheckoutRuntimeValue} Checkout dependencies.
  */
 export function createCheckoutSessionDependencies({
@@ -41,6 +41,7 @@ export function createCheckoutSessionDependencies({
   stripe,
   verifyIdToken,
   publicBillingOrigin,
+  stripeConfigured = true,
 }) {
   return {
     verifyIdToken,
@@ -58,6 +59,7 @@ export function createCheckoutSessionDependencies({
     createStripeCheckoutSession: (options, requestOptions) =>
       stripe.checkout.sessions.create(options, requestOptions),
     publicBillingOrigin,
+    stripeConfigured,
   };
 }
 

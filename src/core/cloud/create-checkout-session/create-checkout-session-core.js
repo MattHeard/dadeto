@@ -466,8 +466,15 @@ export function createCheckoutSessionHandler(deps) {
     getCreditPackage,
     publicBillingOrigin,
     resolveIdempotency,
+    stripeConfigured = true,
   } = deps;
   return async function handle(request = {}) {
+    if (!stripeConfigured)
+      return error(
+        503,
+        'payment_provider_unavailable',
+        'Checkout is temporarily unavailable.'
+      );
     const validated = await validateCheckoutRequest(request, verifyIdToken);
     if ('status' in validated) return validated;
     const { key, packageId, uid } = validated;

@@ -8,13 +8,20 @@ import { createCheckoutSessionExpressHandle } from '../../core/cloud/create-chec
 
 const db = createDb(Firestore, process.env);
 const billing = createBillingRuntime(db);
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
+const stripe = stripeSecretKey ? new Stripe(stripeSecretKey) : null;
+if (!stripe) {
+  console.warn(
+    'STRIPE_SECRET_KEY is not configured; checkout requests will be unavailable.'
+  );
+}
 const dependencies = createCheckoutSessionDependencies({
   db,
   billing,
   stripe,
   verifyIdToken: token => getAuth().verifyIdToken(token),
   publicBillingOrigin: process.env.PUBLIC_BILLING_ORIGIN,
+  stripeConfigured: Boolean(stripe),
 });
 const handle = createCheckoutSessionExpressHandle(dependencies);
 

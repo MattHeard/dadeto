@@ -61,6 +61,21 @@ function setup(overrides = {}) {
 }
 
 describe('createCheckoutSessionHandler', () => {
+  it('returns a runtime error when Stripe is not configured', async () => {
+    const { handler, create } = setup({ stripeConfigured: false });
+
+    await expect(handler(request())).resolves.toEqual({
+      status: 503,
+      body: {
+        error: {
+          code: 'payment_provider_unavailable',
+          message: 'Checkout is temporarily unavailable.',
+        },
+      },
+    });
+    expect(create).not.toHaveBeenCalled();
+  });
+
   it('creates a server-priced session for the owned key', async () => {
     const saveIdempotency = jest.fn();
     const { handler, create } = setup({ saveIdempotency });
