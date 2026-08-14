@@ -112,6 +112,7 @@ jobs:
           }
 
           import_if_missing "google_firestore_index.variants_author_created[0]" "projects/${GOOGLE_PROJECT}/databases/${TF_VAR_database_id}/collectionGroups/variants/indexes/CICAgJiUpoMK"
+          import_if_missing "google_firestore_field.variants_tree_weights_dirty[0]" "projects/${GOOGLE_PROJECT}/databases/${TF_VAR_database_id}/collectionGroups/variants/fields/targetTreeWeightsDirty"
           import_if_missing "google_firestore_index.variants_moderation_rand[0]" "projects/${GOOGLE_PROJECT}/databases/${TF_VAR_database_id}/collectionGroups/variants/indexes/CICAgJjF9oIK"
           import_if_missing "google_firestore_index.ratings_by_variant[0]" "projects/${GOOGLE_PROJECT}/databases/${TF_VAR_database_id}/collectionGroups/moderationRatings/indexes/CICAgOjXh4EK"
 
