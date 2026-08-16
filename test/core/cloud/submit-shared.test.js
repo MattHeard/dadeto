@@ -35,14 +35,19 @@ describe('submit-shared', () => {
 
   describe('getAuthorizationFromGetter', () => {
     test('prefers the canonical Authorization header', () => {
-      const getter = name =>
-        name === 'Authorization' ? 'Bearer upper' : 'Bearer lower';
+      const getter = name => {
+        if (name === 'Authorization') return 'Bearer upper';
+        return 'Bearer lower';
+      };
 
       expect(getAuthorizationFromGetter(getter)).toBe('Bearer upper');
     });
 
     test('falls back to lowercase authorization header', () => {
-      const getter = name => (name === 'authorization' ? 'Bearer lower' : null);
+      const getter = name => {
+        if (name === 'authorization') return 'Bearer lower';
+        return null;
+      };
 
       expect(getAuthorizationFromGetter(getter)).toBe('Bearer lower');
     });
@@ -79,7 +84,10 @@ describe('submit-shared', () => {
     test('prefers getter-based headers over the raw headers bag', () => {
       expect(
         getAuthorizationHeader({
-          get: name => (name === 'Authorization' ? 'Bearer getter' : null),
+          get: name => {
+            if (name === 'Authorization') return 'Bearer getter';
+            return null;
+          },
           headers: { Authorization: 'Bearer bag' },
         })
       ).toBe('Bearer getter');
