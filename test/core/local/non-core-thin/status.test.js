@@ -94,7 +94,9 @@ describe('non-core thin status', () => {
     expect(Array.isArray(status.violations)).toBe(true);
     expect(Array.isArray(status.patternViolations)).toBe(true);
   });
+});
 
+describe('non-core thin status data paths', () => {
   test('builds a clean status and reports stale exemptions when data says so', () => {
     expect(
       nonCoreThinStatusTestOnly.buildNonCoreThinStatus(
@@ -205,7 +207,9 @@ describe('non-core thin status', () => {
     expect(status.violations).toEqual([]);
     expect(status.patternViolations).toEqual([]);
   });
+});
 
+describe('non-core thin status reporting paths', () => {
   test('reports wrapper shape violations separately from size violations', () => {
     expect(
       nonCoreThinStatusTestOnly.getWrapperPatternViolationsForSource(
@@ -347,7 +351,10 @@ function createTestCheckHandle({
     getStatus: () => status,
     formatFailure:
       formatFailure ??
-      (currentStatus => (currentStatus.isClean ? [] : ['failure line'])),
+      (currentStatus => {
+        if (currentStatus.isClean) return [];
+        return ['failure line'];
+      }),
     output: {
       error: line => errors.push(line),
       log: line => logs.push(line),
