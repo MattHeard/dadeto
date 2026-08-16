@@ -171,7 +171,9 @@ export default function (value) {
       'code must be a string'
     );
   });
+});
 
+describe('Cyclomatic factor AST edge cases', () => {
   it('handles anonymous and invalid AST branches from an injected parser', () => {
     const handle = createCyclomaticFactorsHandle({
       parser: {
@@ -382,7 +384,9 @@ export default function (value) {
       'Function 42 (line 9): if statement at line 10',
     ]);
   });
+});
 
+describe('Cyclomatic factor complex AST cases', () => {
   it('covers computed members, fallback keys, assignment parents, and long snippets', () => {
     const longSnippet = `if (${'x'.repeat(140)})`;
     const handle = createCyclomaticFactorsHandle({
@@ -544,7 +548,9 @@ export default function (value) {
 
     expect(handle.describeCyclomaticFactors('source')).toEqual([]);
   });
+});
 
+describe('Cyclomatic factor root functions', () => {
   it('handles a root anonymous function AST', () => {
     const handle = createCyclomaticFactorsHandle({
       parser: {
