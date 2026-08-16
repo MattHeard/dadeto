@@ -105,28 +105,28 @@ describe('calculateUpdatedVisibility', () => {
   });
 });
 
+const createSnapshot = data => ({
+  data: () => data,
+});
+
+const createDb = (variantRef, moderatorData = {}) => ({
+  doc: jest.fn(() => variantRef),
+  collection: jest.fn(name => {
+    if (name !== 'moderators') {
+      return null;
+    }
+
+    return {
+      doc: jest.fn(moderatorId => ({
+        get: jest.fn().mockResolvedValue({
+          data: () => moderatorData[moderatorId] ?? {},
+        }),
+      })),
+    };
+  }),
+});
+
 describe('createUpdateVariantVisibilityHandler', () => {
-  const createSnapshot = data => ({
-    data: () => data,
-  });
-
-  const createDb = (variantRef, moderatorData = {}) => ({
-    doc: jest.fn(() => variantRef),
-    collection: jest.fn(name => {
-      if (name !== 'moderators') {
-        return null;
-      }
-
-      return {
-        doc: jest.fn(moderatorId => ({
-          get: jest.fn().mockResolvedValue({
-            data: () => moderatorData[moderatorId] ?? {},
-          }),
-        })),
-      };
-    }),
-  });
-
   it('throws when db is missing', () => {
     expect(() => createUpdateVariantVisibilityHandler({ db: null })).toThrow(
       new TypeError('db must expose a doc helper')
@@ -425,7 +425,9 @@ describe('createUpdateVariantVisibilityHandler', () => {
       visibilityLockedBy: ADMIN_UID,
     });
   });
+});
 
+describe('createUpdateVariantVisibilityHandler republishing', () => {
   it('republishes contents when a root variant changes visibility across the threshold', async () => {
     const variantData = {
       visibility: 0.6,
@@ -690,7 +692,9 @@ describe('createUpdateVariantVisibilityHandler', () => {
       moderatorReputationSum: 3,
     });
   });
+});
 
+describe('createUpdateVariantVisibilityHandler locking', () => {
   it('locks visibility when the admin submits a moderation rating', async () => {
     const variantData = {
       visibility: 0.25,
