@@ -584,7 +584,9 @@ describe('createGenerateStatsCore', () => {
       const count = await core.getUnmoderatedPageCount();
       expect(count).toBe(2);
     });
+  });
 
+  describe('data fetching top stories', () => {
     it('getTopStories normalizes missing metadata', async () => {
       const statsDocs = [
         { id: 'story1', data: () => ({ variantCount: 5 }) },
