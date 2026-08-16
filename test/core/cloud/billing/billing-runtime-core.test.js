@@ -474,14 +474,12 @@ describe('createBillingRuntime', () => {
         outcome: 'failure',
       })
     ).resolves.toMatchObject({ body: { duplicate: true } });
-    await db
-      .doc('api-key-credit/key-reserve-paths/reservations/no-alloc')
-      .set({
-        operationType: 'function.invoke',
-        operationAttemptId: 'no-alloc',
-        amount: 0,
-        status: 'needs_recovery',
-      });
+    await db.doc('api-key-credit/key-reserve-paths/reservations/no-alloc').set({
+      operationType: 'function.invoke',
+      operationAttemptId: 'no-alloc',
+      amount: 0,
+      status: 'needs_recovery',
+    });
     await expect(
       billing.resolveOperation({
         uuid: 'key-reserve-paths',

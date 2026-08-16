@@ -94,7 +94,11 @@ describe('createCopyCloudHandle', () => {
         fsPromisesModule: {
           ...fsPromises,
           readFile: async filePath => {
-            if (String(filePath).endsWith('process-new-story-core.js')) {
+            if (
+              String(filePath).includes(
+                'generate-stats/mark-variant-dirty-verifyAdmin.js'
+              )
+            ) {
               const error = new Error('rewrite failure');
               error.code = 'EIO';
               throw error;
