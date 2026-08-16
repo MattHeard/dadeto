@@ -1,16 +1,21 @@
 import { createFirestoreDocumentOnWriteTrigger } from '../cloud-core.js';
 import { createRenderAuthorHandler } from './render-author-core.js';
 
+/** @typedef {{ region: (name: string) => unknown }} FunctionsLike */
+/** @typedef {Record<string, unknown>} StorageLike */
+/** @typedef {{ delete: () => unknown }} FieldValueLike */
+/** @typedef {{ functions: FunctionsLike, Storage: StorageLike, FieldValue: FieldValueLike, getFirestoreInstance: () => unknown }} RenderAuthorDeps */
+
 /**
  * Wire the author renderer Cloud Function.
- * @param {{ functions: unknown, Storage: { new (): { bucket: (name?: string) => unknown } }, FieldValue: { delete: () => unknown }, getFirestoreInstance: () => unknown }} deps Runtime dependencies.
+ * @param {RenderAuthorDeps} deps Runtime dependencies.
  * @returns {{ renderAuthor: unknown }} Cloud Function exports.
  */
 export function runRenderAuthor(deps) {
   const { functions, Storage, FieldValue, getFirestoreInstance } = deps;
   getFirestoreInstance();
   const bucket = /** @type {any} */ (
-    new Storage().bucket(process.env.STATIC_BUCKET_NAME)
+    new /** @type {any} */ (Storage)().bucket(process.env.STATIC_BUCKET_NAME)
   );
   const renderAuthor = createRenderAuthorHandler({
     bucket,
