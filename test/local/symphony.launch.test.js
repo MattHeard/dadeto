@@ -494,9 +494,11 @@ describe('local symphony runner launch', () => {
             ),
           };
 
-          exitPromise = payload.onExit
-            ? payload.onExit({ exitCode: 0, signal: null })
-            : Promise.resolve();
+          if (payload.onExit) {
+            exitPromise = payload.onExit({ exitCode: 0, signal: null });
+          } else {
+            exitPromise = Promise.resolve();
+          }
 
           return invocation;
         },
