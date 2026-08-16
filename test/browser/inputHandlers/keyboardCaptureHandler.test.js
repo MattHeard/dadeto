@@ -55,9 +55,10 @@ function makeDom(autoSubmitCheckbox) {
       el._listeners[event] = handler;
     }),
     removeEventListener: jest.fn(),
-    querySelector: jest.fn((_el, selector) =>
-      selector === '.auto-submit-checkbox' ? autoSubmitCheckbox : null
-    ),
+    querySelector: jest.fn((_el, selector) => {
+      if (selector === '.auto-submit-checkbox') return autoSubmitCheckbox;
+      return null;
+    }),
     setValue: jest.fn((el, value) => {
       el.value = value;
     }),

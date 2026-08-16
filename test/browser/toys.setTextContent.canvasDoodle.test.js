@@ -8,23 +8,22 @@ describe('setTextContent via handleDropdownChange', () => {
       querySelector: jest.fn(() => created),
       removeAllChildren: jest.fn(),
       appendChild: jest.fn(),
-      createElement: jest.fn(tag =>
-        tag === 'canvas'
-          ? {
-              width: 0,
-              height: 0,
-              getContext: jest.fn(() => ({
-                fillRect: jest.fn(),
-                beginPath: jest.fn(),
-                arc: jest.fn(),
-                fill: jest.fn(),
-                moveTo: jest.fn(),
-                lineTo: jest.fn(),
-                stroke: jest.fn(),
-              })),
-            }
-          : { tagName: tag.toUpperCase() }
-      ),
+      createElement: jest.fn(tag => {
+        if (tag !== 'canvas') return { tagName: tag.toUpperCase() };
+        return {
+          width: 0,
+          height: 0,
+          getContext: jest.fn(() => ({
+            fillRect: jest.fn(),
+            beginPath: jest.fn(),
+            arc: jest.fn(),
+            fill: jest.fn(),
+            moveTo: jest.fn(),
+            lineTo: jest.fn(),
+            stroke: jest.fn(),
+          })),
+        };
+      }),
       setTextContent: jest.fn(),
       setClassName: jest.fn(),
     };

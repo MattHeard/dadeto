@@ -24,16 +24,15 @@ describe('setTextContent via handleDropdownChange graph-2d', () => {
       querySelector: jest.fn(() => created),
       removeAllChildren: jest.fn(),
       appendChild: jest.fn(),
-      createElement: jest.fn(tag =>
-        tag === 'canvas'
-          ? {
-              width: 0,
-              height: 0,
-              style: {},
-              getContext: jest.fn(() => context),
-            }
-          : { tagName: tag.toUpperCase() }
-      ),
+      createElement: jest.fn(tag => {
+        if (tag !== 'canvas') return { tagName: tag.toUpperCase() };
+        return {
+          width: 0,
+          height: 0,
+          style: {},
+          getContext: jest.fn(() => context),
+        };
+      }),
       setClassName: jest.fn(),
     };
     const dropdown = {
