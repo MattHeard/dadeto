@@ -148,7 +148,9 @@ describe('conwayLife', () => {
     expect(storageValue.current.CONW1.cells).toContainEqual([4, 4]);
     expect(storageValue.current.CONW1.cells).toContainEqual([0, 0]);
   });
+});
 
+describe('conwayLife storage fallbacks', () => {
   it('treats blank input as an empty submission when storage is unavailable', () => {
     const payload = JSON.parse(conwayLife('   '));
 
@@ -219,7 +221,9 @@ describe('conwayLife', () => {
 
     expect(getStoredLifeCandidate({ CONW1: stored })).toBe(stored);
   });
+});
 
+describe('conwayLife state normalization', () => {
   it('ignores wrapped storage objects without the expected key shape', () => {
     const storageValue = {
       current: {
