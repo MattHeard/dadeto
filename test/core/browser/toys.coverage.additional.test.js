@@ -7,8 +7,9 @@ import {
   toggleToyFocusMode,
 } from '../../../src/core/browser/toys.js';
 
+const utils = createToysHandle();
+
 describe('toys additional coverage', () => {
-  const utils = createToysHandle();
   test('clears object-backed row data during dispose', () => {
     const rowData = { rows: { first: {} }, rowTypes: { first: 'text' } };
     const dom = { removeAllChildren: jest.fn() };
@@ -139,12 +140,12 @@ describe('toys additional coverage', () => {
     expect(pollingState).toEqual({ frameId: 9, lastValue: 'polled' });
     scheduled[0]();
   });
+});
 
+describe('additional key/value toy coverage', () => {
   test('runs the key/value handler with an empty stored object', () => {
     const dom = {
-      querySelector: jest.fn((container, selector) =>
-        selector === '.kv-container' ? null : null
-      ),
+      querySelector: jest.fn(() => null),
       querySelectorAll: jest.fn(() => []),
       createElement: jest.fn(() => ({})),
       setClassName: jest.fn(),
@@ -250,7 +251,9 @@ describe('toys additional coverage', () => {
     expect(register).not.toHaveBeenCalled();
     expect(unregister).not.toHaveBeenCalled();
   });
+});
 
+describe('additional dropdown and focus coverage', () => {
   test('covers dropdown, focus, row handlers, and fallback row data', () => {
     const sync = jest.fn();
     const dom = {
@@ -275,8 +278,10 @@ describe('toys additional coverage', () => {
     utils.handleDropdownChange(
       {
         value: 'text',
-        closest: selector =>
-          selector === 'article.entry' ? { id: 'post' } : null,
+        closest: selector => {
+          if (selector === 'article.entry') return { id: 'post' };
+          return null;
+        },
       },
       () => ({ output: {} }),
       dom
@@ -284,8 +289,10 @@ describe('toys additional coverage', () => {
     utils.handleDropdownChange(
       {
         value: 'text',
-        closest: selector =>
-          selector === 'article.entry' ? { id: 'post' } : {},
+        closest: selector => {
+          if (selector === 'article.entry') return { id: 'post' };
+          return {};
+        },
       },
       () => ({ output: { post: { text: 'ok' } } }),
       dom
