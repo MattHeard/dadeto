@@ -117,7 +117,11 @@ describe('createDocumentStoreCore', () => {
       createDeps({
         readFile: async filePath => {
           const error = new Error('missing');
-          error.code = filePath === workflowPath ? 'ENOENT' : 'EACCES';
+          if (filePath === workflowPath) {
+            error.code = 'ENOENT';
+          } else {
+            error.code = 'EACCES';
+          }
           throw error;
         },
         mkdir: async () => {},
@@ -138,10 +142,14 @@ describe('createDocumentStoreCore', () => {
     const store = createDocumentStoreCore(
       createDeps({
         readFile: async filePath => {
-          const error = new Error(
-            filePath === workflowPath ? 'denied' : 'missing'
-          );
-          error.code = filePath === workflowPath ? 'EACCES' : 'ENOENT';
+          let error;
+          if (filePath === workflowPath) {
+            error = new Error('denied');
+            error.code = 'EACCES';
+          } else {
+            error = new Error('missing');
+            error.code = 'ENOENT';
+          }
           throw error;
         },
         mkdir: async () => {},
@@ -182,6 +190,26 @@ describe('createDocumentStoreCore', () => {
     await expect(store.saveDocument('unknown', 'content')).rejects.toThrow(
       'Unknown document id: unknown'
     );
+  });
+});
+
+describe('createDocumentStoreCore workflow mutations', () => {
+  let tempDir;
+  let workflowPath;
+  let workflowDir;
+  let legacyDocumentPath;
+
+  beforeEach(async () => {
+    tempDir = await mkdtemp(
+      path.join(os.tmpdir(), 'dadeto-core-document-store-')
+    );
+    workflowPath = path.join(tempDir, 'workflow', 'workflow.json');
+    workflowDir = path.join(tempDir, 'workflow');
+    legacyDocumentPath = path.join(tempDir, 'writer.md');
+  });
+
+  afterEach(async () => {
+    await rm(tempDir, { recursive: true, force: true });
   });
 
   test('skips moving backwards and keeps the active index within range', async () => {
