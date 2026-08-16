@@ -68,6 +68,16 @@ describe('cloud-core', () => {
   test('should export DEFAULT_BUCKET_NAME', () => {
     expect(DEFAULT_BUCKET_NAME).toBe('www.dendritestories.co.nz');
   });
+});
+
+describe('cloud-core helper behavior', () => {
+  beforeEach(() => {
+    jest.spyOn(console, 'debug').mockImplementation(() => {});
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
 
   describe('static storage helpers', () => {
     test('resolveStaticBucketName uses env override or fallback', () => {
@@ -213,6 +223,16 @@ describe('cloud-core', () => {
       expect(normalizeAuthor(null)).toBe('');
       expect(normalizeAuthor(undefined)).toBe('');
     });
+  });
+});
+
+describe('cloud-core request helpers', () => {
+  beforeEach(() => {
+    jest.spyOn(console, 'debug').mockImplementation(() => {});
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
   });
 
   describe('getHeaderFromGetter', () => {
