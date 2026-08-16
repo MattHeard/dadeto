@@ -4,6 +4,8 @@ import {
   createVerifyAdmin,
 } from '../../../src/core/cloud/cloud-core.js';
 
+const idTokenKey = 'id_token';
+
 describe('createVerifyAdmin error responses', () => {
   const buildEnv = verifyToken => {
     const sendUnauthorized = jest.fn();
@@ -68,7 +70,7 @@ describe('createVerifyAdmin error responses', () => {
     await handler(
       {
         get: () => null,
-        body: { id_token: 'body-token' },
+        body: { [idTokenKey]: 'body-token' },
       },
       {}
     );
@@ -85,7 +87,7 @@ describe('createVerifyAdmin error responses', () => {
     await handler(
       {
         get: () => null,
-        body: { id_token: 42 },
+        body: { [idTokenKey]: 42 },
       },
       {}
     );
