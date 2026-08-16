@@ -312,7 +312,7 @@ describe('createTriggerStats', () => {
         Authorization: 'Bearer token',
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ id_token: 'token' }),
+      body: JSON.stringify({ ['id_token']: 'token' }),
     });
     expect(showMessage).toHaveBeenCalledWith('Stats generated');
   });
@@ -1636,7 +1636,10 @@ describe('createCheckAccess', () => {
   it('hides admin content for non-admin users', () => {
     const content = { style: { display: '' } };
     const doc = {
-      getElementById: jest.fn(id => (id === 'adminContent' ? content : null)),
+      getElementById: jest.fn(id => {
+        if (id === 'adminContent') return content;
+        return null;
+      }),
       querySelectorAll: jest.fn(() => [{ style: {} }]),
     };
     const getAuth = jest.fn(() => ({ currentUser: { uid: 'user' } }));
@@ -1650,7 +1653,10 @@ describe('createCheckAccess', () => {
   it('shows admin content for the admin user', () => {
     const content = { style: { display: 'none' } };
     const doc = {
-      getElementById: jest.fn(id => (id === 'adminContent' ? content : null)),
+      getElementById: jest.fn(id => {
+        if (id === 'adminContent') return content;
+        return null;
+      }),
       querySelectorAll: jest.fn(() => [{ style: {} }]),
     };
     const checkAccess = createCheckAccess(

@@ -14,9 +14,10 @@ function createStorage() {
   return {
     store: {},
     getItem(key) {
-      return Object.prototype.hasOwnProperty.call(this.store, key)
-        ? this.store[key]
-        : null;
+      if (Object.prototype.hasOwnProperty.call(this.store, key)) {
+        return this.store[key];
+      }
+      return null;
     },
     setItem(key, value) {
       this.store[key] = value;
