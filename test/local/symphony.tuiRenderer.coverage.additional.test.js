@@ -38,6 +38,9 @@ test('covers renderer fallbacks and bounded helper paths', () => {
   expect(u.calculateBacklogSlots(2, 2, 10)).toBe(2);
   expect(u.calculateBacklogSlots(8, 3, 24)).toBeGreaterThan(2);
   expect(u.calculateBacklogSlots(8, 3, 10)).toBeGreaterThan(0);
+});
+
+test('covers renderer bounded sections and status paths', () => {
   expect(
     u.renderBacklog({ status: {}, lines: [], slots: 1, queueSummary: [] })
   ).toBe(1);
