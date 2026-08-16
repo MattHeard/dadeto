@@ -549,7 +549,9 @@ describe('loadOptions', () => {
     ]);
     expect(db.doc).toHaveBeenCalledWith('stories/1/pages/2/variants/3');
   });
+});
 
+describe('loadOptions fallback logging', () => {
   it('uses the noop logger when consoleError is omitted', async () => {
     const variantRef = {
       collection: jest.fn(() => ({
@@ -1517,7 +1519,9 @@ describe('createRenderVariant rendering', () => {
       'boom'
     );
   });
+});
 
+describe('createRenderVariant page fallbacks', () => {
   it('skips rendering when the page snapshot is missing', async () => {
     const storage = { bucket: jest.fn() };
     const renderVariant = createRenderVariant({
@@ -1929,7 +1933,9 @@ describe('createRenderVariant lookup failures', () => {
 
     expect(consoleError).not.toHaveBeenCalled();
   });
+});
 
+describe('createRenderVariant story metadata', () => {
   it('constructs story metadata and parent route for closed variants', async () => {
     const consoleError = jest.fn();
 
@@ -2098,7 +2104,9 @@ describe('createRenderVariant lookup failures', () => {
     expect(computeCalls).toHaveLength(3);
     expect(JSON.parse(computeCalls[2][1].body).path).toBe('/p/99b.html');
   });
+});
 
+describe('createRenderVariant author fallbacks', () => {
   it('skips author landing page creation when uuid is missing', async () => {
     const variantFile = { save: jest.fn().mockResolvedValue(undefined) };
     const altsFile = { save: jest.fn().mockResolvedValue(undefined) };
@@ -2313,7 +2321,9 @@ describe('createRenderVariant lookup failures', () => {
     );
     expect(computeCalls).toHaveLength(2);
   });
+});
 
+describe('createRenderVariant parent lookup failures', () => {
   it('logs and skips parent url when lookup fails', async () => {
     const consoleError = jest.fn();
 
@@ -2503,7 +2513,9 @@ describe('createRenderVariant lookup failures', () => {
 
     await renderVariant(snap, { params: { storyId: 'story-5' } });
   });
+});
 
+describe('createRenderVariant parent invalidation', () => {
   it('omits parent invalidation when parent snapshots are missing', async () => {
     const variantFile = { save: jest.fn().mockResolvedValue(undefined) };
     const altsFile = { save: jest.fn().mockResolvedValue(undefined) };
@@ -2620,7 +2632,9 @@ describe('createRenderVariant lookup failures', () => {
     );
     expect(computeCalls).toHaveLength(2);
   });
+});
 
+describe('createRenderVariant visibility filtering', () => {
   it('filters variants below the visibility threshold', () => {
     const docs = [
       {
