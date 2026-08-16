@@ -230,7 +230,10 @@ describe('ledgerIngestStorageToy', () => {
     expect(
       ledgerIngestStorageToyTestOnly.persistPermanentStorageRoot(
         {
-          get: key => (key === 'setLocalPermanentData' ? jest.fn() : undefined),
+          get: key => {
+            if (key === 'setLocalPermanentData') return jest.fn();
+            return undefined;
+          },
         },
         {
           ok: true,
