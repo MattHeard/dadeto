@@ -127,6 +127,83 @@ function makeDocument() {
   };
 }
 
+/**
+ *
+ * @param handle
+ */
+/**
+ * @param {() => Promise<void>} handle Initialized moderation handle.
+ * @returns {Promise<void>} Completion promise for fallback coverage.
+ */
+async function exerciseFallbackDocuments(handle) {
+  mockFetch.mockResolvedValue({ ok: true, json: async () => ({}) });
+  mockToken = 'token';
+  const sparseDocument = {
+    body: { classList: { add: jest.fn() } },
+    getElementById: () => null,
+    querySelectorAll: () => [],
+    createElement: () => ({ style: {}, appendChild: jest.fn() }),
+  };
+  await createModerateHandle({
+    documentObj: sparseDocument,
+    fetchFn: mockFetch,
+    sessionStorageObj: {},
+    globalObject: {},
+  })();
+  await new Promise(resolve => setImmediate(resolve));
+  const partialDocument = {
+    body: { classList: { add: jest.fn() } },
+    getElementById: id => {
+      if (id === 'pageContent') return { style: {}, appendChild: jest.fn() };
+      return null;
+    },
+    querySelectorAll: () => [],
+    createElement: () => ({ style: {}, appendChild: jest.fn() }),
+  };
+  mockToken = 'token';
+  mockFetch.mockResolvedValue({
+    ok: true,
+    json: async () => ({ title: 'Title', content: 'Content', options: [] }),
+  });
+  await createModerateHandle({
+    documentObj: partialDocument,
+    fetchFn: mockFetch,
+    sessionStorageObj: {},
+    globalObject: {},
+  })();
+  mockToken = null;
+  mockAllowNoToken = true;
+  mockFetch.mockRejectedValueOnce(new Error('HTTP 404'));
+  await createModerateHandle({
+    documentObj: partialDocument,
+    fetchFn: mockFetch,
+    sessionStorageObj: {},
+    globalObject: {},
+  })();
+  mockSignInInit.onSignIn();
+  await new Promise(resolve => setImmediate(resolve));
+  await new Promise(resolve => setImmediate(resolve));
+  mockIsAdmin = false;
+  mockToken = 'token';
+  mockFetch.mockResolvedValue({ ok: true, json: async () => ({}) });
+  await handle();
+  mockAllowNoToken = false;
+  mockToken = 'token';
+  mockFetch
+    .mockRejectedValueOnce(new Error('HTTP 404'))
+    .mockResolvedValueOnce({ ok: true, json: async () => ({}) })
+    .mockRejectedValueOnce(new Error('HTTP 404'));
+  mockSignInInit.onSignIn();
+  await new Promise(resolve => setImmediate(resolve));
+  await new Promise(resolve => setImmediate(resolve));
+  mockFetch
+    .mockRejectedValueOnce(new Error('HTTP 404'))
+    .mockResolvedValueOnce({ ok: false, status: 500 });
+  mockSignInInit.onSignIn();
+  await new Promise(resolve => setImmediate(resolve));
+  await new Promise(resolve => setImmediate(resolve));
+}
+
 describe('moderate core', () => {
   beforeEach(() => {
     mockConfig = { disableGoogleSignIn: true };
@@ -234,8 +311,9 @@ describe('moderate core', () => {
     mockSignInInit.onSignIn();
     await new Promise(resolve => setImmediate(resolve));
     mockIntervalCallback?.();
-    const approve = mockDocument.elements.get('approveBtn');
-    const reject = mockDocument.elements.get('rejectBtn');
+    const [approve, reject] = ['approveBtn', 'rejectBtn'].map(id =>
+      mockDocument.elements.get(id)
+    );
     mockFetch.mockRejectedValueOnce(new Error('submit failed'));
     const originalGetElementById = mockDocument.getElementById;
     mockDocument.getElementById = () => null;
@@ -258,73 +336,10 @@ describe('moderate core', () => {
     mockSignInInit.onSignIn();
     await new Promise(resolve => setImmediate(resolve));
     links[0].addEventListener.mock.calls[0][1]({ preventDefault: jest.fn() });
-    await new Promise(resolve => setImmediate(resolve));
-    await new Promise(resolve => setImmediate(resolve));
-    mockFetch.mockResolvedValue({ ok: true, json: async () => ({}) });
-    mockToken = 'token';
-    const sparseDocument = {
-      body: { classList: { add: jest.fn() } },
-      getElementById: () => null,
-      querySelectorAll: () => [],
-      createElement: () => ({ style: {}, appendChild: jest.fn() }),
-    };
-    await createModerateHandle({
-      documentObj: sparseDocument,
-      fetchFn: mockFetch,
-      sessionStorageObj: {},
-      globalObject: {},
-    })();
-    await new Promise(resolve => setImmediate(resolve));
-    const partialDocument = {
-      body: { classList: { add: jest.fn() } },
-      getElementById: id => {
-        if (id === 'pageContent') return { style: {}, appendChild: jest.fn() };
-        return null;
-      },
-      querySelectorAll: () => [],
-      createElement: () => ({ style: {}, appendChild: jest.fn() }),
-    };
-    mockToken = 'token';
-    mockFetch.mockResolvedValue({
-      ok: true,
-      json: async () => ({ title: 'Title', content: 'Content', options: [] }),
-    });
-    await createModerateHandle({
-      documentObj: partialDocument,
-      fetchFn: mockFetch,
-      sessionStorageObj: {},
-      globalObject: {},
-    })();
-    mockToken = null;
-    mockAllowNoToken = true;
-    mockFetch.mockRejectedValueOnce(new Error('HTTP 404'));
-    await createModerateHandle({
-      documentObj: partialDocument,
-      fetchFn: mockFetch,
-      sessionStorageObj: {},
-      globalObject: {},
-    })();
-    mockSignInInit.onSignIn();
-    await new Promise(resolve => setImmediate(resolve));
-    await new Promise(resolve => setImmediate(resolve));
-    mockIsAdmin = false;
-    mockToken = 'token';
-    mockFetch.mockResolvedValue({ ok: true, json: async () => ({}) });
-    await handle();
-    mockAllowNoToken = false;
-    mockToken = 'token';
-    mockFetch
-      .mockRejectedValueOnce(new Error('HTTP 404'))
-      .mockResolvedValueOnce({ ok: true, json: async () => ({}) })
-      .mockRejectedValueOnce(new Error('HTTP 404'));
-    mockSignInInit.onSignIn();
-    await new Promise(resolve => setImmediate(resolve));
-    await new Promise(resolve => setImmediate(resolve));
-    mockFetch
-      .mockRejectedValueOnce(new Error('HTTP 404'))
-      .mockResolvedValueOnce({ ok: false, status: 500 });
-    mockSignInInit.onSignIn();
-    await new Promise(resolve => setImmediate(resolve));
-    await new Promise(resolve => setImmediate(resolve));
+    await Promise.all([
+      new Promise(resolve => setImmediate(resolve)),
+      new Promise(resolve => setImmediate(resolve)),
+    ]);
+    await exerciseFallbackDocuments(handle);
   });
 });
