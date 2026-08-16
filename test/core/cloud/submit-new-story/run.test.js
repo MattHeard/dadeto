@@ -272,6 +272,21 @@ describe('runSubmitNewStory', () => {
       })
     );
   });
+});
+
+describe('runSubmitNewStory fallback logging', () => {
+  let consoleInfoSpy;
+  let consoleErrorSpy;
+
+  beforeEach(() => {
+    consoleInfoSpy = jest.spyOn(console, 'info').mockImplementation(() => {});
+    consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+  });
+
+  afterEach(() => {
+    consoleInfoSpy.mockRestore();
+    consoleErrorSpy.mockRestore();
+  });
 
   it('logs debug request fallbacks when the request is missing', async () => {
     const fallbackGetFirestoreInstance = jest.fn(() => ({
@@ -354,7 +369,13 @@ describe('runSubmitNewStory', () => {
           content: 'Getter body',
           author: '  Getter Author  ',
         },
-        get: header => (header === 'x-unrelated-header' ? 'value' : ''),
+        get: header => {
+          if (header === 'x-unrelated-header') {
+            return 'value';
+          }
+
+          return '';
+        },
         headers: {
           origin: 'https://headers.example',
           referer: [123],
@@ -375,7 +396,7 @@ describe('runSubmitNewStory', () => {
         },
         get: null,
         headers: {
-          x_custom_header: 'ignored',
+          ['x_custom_header']: 'ignored',
         },
       },
       response
@@ -447,6 +468,21 @@ describe('runSubmitNewStory', () => {
     expect(consoleInfoSpy).toHaveBeenCalledWith(
       expect.stringContaining('"contentType":null')
     );
+  });
+});
+
+describe('runSubmitNewStory error logging', () => {
+  let consoleInfoSpy;
+  let consoleErrorSpy;
+
+  beforeEach(() => {
+    consoleInfoSpy = jest.spyOn(console, 'info').mockImplementation(() => {});
+    consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+  });
+
+  afterEach(() => {
+    consoleInfoSpy.mockRestore();
+    consoleErrorSpy.mockRestore();
   });
 
   it('logs debug errors when the responder rejects with a non-Error value', async () => {
