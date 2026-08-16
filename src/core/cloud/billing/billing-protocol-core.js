@@ -2,6 +2,7 @@ const PARTIALLY_REFUNDED = 'partially_refunded';
 const NEEDS_RECOVERY = 'needs_recovery';
 
 /** @type {Record<string, string[]>} */
+// @ts-expect-error -- frozen transition tables are intentionally readonly at runtime.
 const PURCHASE_TRANSITIONS = Object.freeze({
   pending: Object.freeze(['paid', 'expired']),
   paid: Object.freeze(['partially_refunded', 'refunded']),
@@ -11,6 +12,7 @@ const PURCHASE_TRANSITIONS = Object.freeze({
 });
 
 /** @type {Record<string, string[]>} */
+// @ts-expect-error -- frozen transition tables are intentionally readonly at runtime.
 const OPERATION_TRANSITIONS = Object.freeze({
   quoted: Object.freeze(['reserved']),
   reserved: Object.freeze(['settled', 'released', 'needs_recovery']),
