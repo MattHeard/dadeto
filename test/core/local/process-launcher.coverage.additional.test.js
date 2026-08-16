@@ -8,10 +8,11 @@ import {
 const deps = {
   pathModule: path,
   mkdirImpl: async () => {},
-  openImpl: async filePath => ({
-    fd: filePath.endsWith('stdout.log') ? 10 : 11,
-    close: async () => {},
-  }),
+  openImpl: async filePath => {
+    let fd = 11;
+    if (filePath.endsWith('stdout.log')) fd = 10;
+    return { fd, close: async () => {} };
+  },
   closeErrorLabel: 'close failed',
   exitErrorLabel: 'exit failed',
 };
