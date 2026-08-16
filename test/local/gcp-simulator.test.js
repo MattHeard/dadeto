@@ -3,6 +3,8 @@ import { describe, expect, it, afterAll, jest } from '@jest/globals';
 import { ADMIN_UID } from '../../src/core/commonCore.js';
 import { createLocalGcpSimulator } from '../../src/local/gcp-simulator/simulator.js';
 
+const incomingOptionKey = 'incoming_option';
+
 let simulator;
 
 jest.setTimeout(180000);
@@ -98,10 +100,12 @@ describe('local gcp simulator', () => {
         option0: 'Continue onward',
       },
       headers: { authorization: 'Bearer local-admin-token' },
-      get: name =>
-        name.toLowerCase() === 'authorization'
-          ? 'Bearer local-admin-token'
-          : null,
+      get: name => {
+        if (name.toLowerCase() === 'authorization') {
+          return 'Bearer local-admin-token';
+        }
+        return null;
+      },
     });
 
     expect(response.status).toBe(201);
@@ -149,7 +153,7 @@ describe('local gcp simulator', () => {
 
       const invalidIncomingOption = await simulator.routes.submitNewPage({
         body: {
-          incoming_option: 'bad-option',
+          [incomingOptionKey]: 'bad-option',
           content: 'Body',
           author: 'Playwright',
         },
