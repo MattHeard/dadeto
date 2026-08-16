@@ -16,19 +16,27 @@ export function normalizeBillingOffers(value) {
  * @returns {{ packageId: string, currency: string, amountUsdMinor: number, credits: number }} Normalized offer.
  */
 function normalizeBillingOffer(offer) {
-  if (!offer || typeof offer !== 'object')
-    throw new TypeError('Invalid billing package');
+  assertBillingOfferObject(offer);
   const { packageId, currency, amountUsdMinor, credits } = offer;
-  if (
-    typeof packageId !== 'string' ||
-    currency !== 'usd' ||
-    !Number.isSafeInteger(amountUsdMinor) ||
-    amountUsdMinor <= 0 ||
-    !Number.isSafeInteger(credits) ||
-    credits <= 0
-  )
+  if (typeof packageId !== 'string')
     throw new TypeError('Invalid billing package');
+  if (currency !== 'usd') throw new TypeError('Invalid billing package');
+  if (!Number.isSafeInteger(amountUsdMinor))
+    throw new TypeError('Invalid billing package');
+  if (amountUsdMinor <= 0) throw new TypeError('Invalid billing package');
+  if (!Number.isSafeInteger(credits))
+    throw new TypeError('Invalid billing package');
+  if (credits <= 0) throw new TypeError('Invalid billing package');
   return { packageId, currency, amountUsdMinor, credits };
+}
+
+/**
+ * Ensure an offer has an object shape before field validation.
+ * @param {unknown} offer Candidate offer.
+ */
+function assertBillingOfferObject(offer) {
+  if (!offer) throw new TypeError('Invalid billing package');
+  if (typeof offer !== 'object') throw new TypeError('Invalid billing package');
 }
 
 /**

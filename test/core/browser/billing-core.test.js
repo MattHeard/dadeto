@@ -37,6 +37,27 @@ function setup(overrides = {}) {
 describe('billing browser core', () => {
   it('normalizes only safe display-ready offers', () => {
     expect(normalizeBillingOffers({ packages: [offer] })).toEqual([offer]);
+    expect(() => normalizeBillingOffers(null)).toThrow();
+    expect(() =>
+      normalizeBillingOffers({ packages: 'not-an-array' })
+    ).toThrow();
+    expect(() => normalizeBillingOffers({ packages: [null] })).toThrow();
+    expect(() => normalizeBillingOffers({ packages: [10] })).toThrow();
+    expect(() =>
+      normalizeBillingOffers({ packages: [{ ...offer, currency: 'eur' }] })
+    ).toThrow();
+    expect(() =>
+      normalizeBillingOffers({ packages: [{ ...offer, packageId: 10 }] })
+    ).toThrow();
+    expect(() =>
+      normalizeBillingOffers({ packages: [{ ...offer, amountUsdMinor: 1.5 }] })
+    ).toThrow();
+    expect(() =>
+      normalizeBillingOffers({ packages: [{ ...offer, amountUsdMinor: 0 }] })
+    ).toThrow();
+    expect(() =>
+      normalizeBillingOffers({ packages: [{ ...offer, credits: 1.5 }] })
+    ).toThrow();
     expect(() =>
       normalizeBillingOffers({ packages: [{ ...offer, markupBps: 1 }] })
     ).not.toThrow();
@@ -88,5 +109,45 @@ describe('billing browser core', () => {
     });
     resolve({ url: 'https://checkout.test/session' });
     await first;
+  });
+  it('rejects invalid checkout responses and missing authentication', async () => {
+    const invalidCheckout = setup({
+      postCheckout: jest.fn(async () => ({ nope: true })),
+    });
+    await expect(
+      invalidCheckout.controller.startPurchase('usd-10')
+    ).rejects.toThrow('Invalid checkout response');
+
+    const missingAuth = setup({
+      getFreshToken: jest.fn(async () => null),
+    });
+    await expect(
+      missingAuth.controller.startPurchase('usd-10')
+    ).rejects.toThrow('Authentication required');
+    await expect(setup().controller.retry()).rejects.toThrow(
+      'No billing package selected'
+    );
+  });
+  it('creates a new attempt when changing packages', async () => {
+    const { deps, controller } = setup();
+    await controller.startPurchase('usd-10');
+    deps.createUuid.mockReturnValueOnce('attempt-2');
+    await controller.startPurchase('usd-20');
+    expect(deps.createUuid).toHaveBeenCalledTimes(2);
+    expect(controller.getAttemptId()).toBe('attempt-2');
+  });
+  it('loads and normalizes offers through the controller', async () => {
+    const { controller } = setup();
+    await expect(controller.loadOffers()).resolves.toEqual([offer]);
+  });
+  it('repairs a missing generated attempt id', async () => {
+    const createUuid = jest
+      .fn()
+      .mockReturnValueOnce(null)
+      .mockReturnValue('attempt-2');
+    const { controller } = setup({ createUuid });
+    await controller.startPurchase('usd-10');
+    expect(createUuid).toHaveBeenCalledTimes(2);
+    expect(controller.getAttemptId()).toBe('attempt-2');
   });
 });
