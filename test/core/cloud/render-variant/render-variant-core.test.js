@@ -723,7 +723,9 @@ describe('resolveStoryMetadata', () => {
       firstPageUrl: '/p/7a.html',
     });
   });
+});
 
+describe('resolveStoryMetadata error handling', () => {
   it('logs when the root page lookup rejects', async () => {
     const consoleError = jest.fn();
     const rootPageRef = {
