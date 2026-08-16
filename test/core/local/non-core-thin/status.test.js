@@ -160,6 +160,17 @@ describe('non-core thin status', () => {
     });
   });
 
+  test('defaults missing exemptions to an empty baseline', () => {
+    expect(
+      nonCoreThinStatusTestOnly.buildNonCoreThinStatus({ maxLines: 50 }, [], {
+        fsModule: { readFileSync: () => '' },
+        pathModule: path,
+        repoRoot: '/repo',
+        srcDir: '/repo/src',
+      }).exemptionCount
+    ).toBe(0);
+  });
+
   test('skips dependency directories while scanning non-core files', () => {
     const status = getNonCoreThinStatus({
       fsModule: {
