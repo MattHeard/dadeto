@@ -177,18 +177,20 @@ function createVariantCollection({ existingName = null, variantDoc }) {
     parent: null,
     orderBy: jest.fn(() => ({
       limit: jest.fn(() => ({
-        get: jest.fn().mockResolvedValue(
-          existingName === null
-            ? { empty: true, docs: [] }
-            : {
-                empty: false,
-                docs: [
-                  {
-                    data: () => ({ name: existingName }),
-                  },
-                ],
-              }
-        ),
+        get: jest.fn().mockImplementation(async () => {
+          if (existingName === null) {
+            return { empty: true, docs: [] };
+          }
+
+          return {
+            empty: false,
+            docs: [
+              {
+                data: () => ({ name: existingName }),
+              },
+            ],
+          };
+        }),
       })),
     })),
     doc: jest.fn(() => variantDoc),
@@ -284,12 +286,12 @@ function createAuthorDoc({ exists }) {
   };
 }
 
-describe('createProcessNewPageHandler', () => {
-  const fieldValue = {
-    serverTimestamp: jest.fn(() => 'ts'),
-    increment: jest.fn(value => `inc:${value}`),
-  };
+const fieldValue = {
+  serverTimestamp: jest.fn(() => 'ts'),
+  increment: jest.fn(value => `inc:${value}`),
+};
 
+describe('createProcessNewPageHandler', () => {
   afterEach(() => {
     jest.clearAllMocks();
   });
@@ -396,6 +398,12 @@ describe('createProcessNewPageHandler', () => {
     });
     expect(batch.commit).toHaveBeenCalled();
     expect(optionDocs).toHaveLength(2);
+  });
+});
+
+describe('createProcessNewPageHandler author submissions', () => {
+  afterEach(() => {
+    jest.clearAllMocks();
   });
 
   it('does nothing when the author document already exists', async () => {
@@ -584,6 +592,12 @@ describe('createProcessNewPageHandler', () => {
     expect(batch.update).toHaveBeenCalledWith(variantRef, { dirty: null });
     expect(batch.commit).toHaveBeenCalled();
   });
+});
+
+describe('createProcessNewPageHandler option submissions', () => {
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
 
   it('reuses an existing target page when the snapshot lacks a page number', async () => {
     const optionDocs = [];
@@ -737,6 +751,12 @@ describe('createProcessNewPageHandler', () => {
     expect(createdPages).toHaveLength(1);
     expect(storyRef.collection).toHaveBeenCalledWith('pages');
   });
+});
+
+describe('createProcessNewPageHandler replacement pages', () => {
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
 
   it('creates a page when option submissions lack a target page', async () => {
     const optionDocs = [];
@@ -824,6 +844,12 @@ describe('createProcessNewPageHandler', () => {
 
     expect(createdPages).toHaveLength(1);
     expect(storyRef.collection).toHaveBeenCalledWith('pages');
+  });
+});
+
+describe('createProcessNewPageHandler recovery paths', () => {
+  afterEach(() => {
+    jest.clearAllMocks();
   });
 
   it('recovers when reading a target page fails by creating a replacement page', async () => {
