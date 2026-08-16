@@ -217,7 +217,9 @@ describe('memoryVector', () => {
   });
 });
 
-describe('memoryVector helpers', () => {
+describe('memoryVector helpers', () => {});
+
+describe('memoryVector edge cases', () => {
   test('normalizes location and path values', () => {
     expect(memoryVectorTestOnly.normalizeMemoryLocation(' permanent ')).toBe(
       'permanent'
@@ -262,7 +264,9 @@ describe('memoryVector helpers', () => {
       error: 'Input must be a JSON object or a string path.',
     });
   });
+});
 
+describe('memoryVector helper overrides', () => {
   test('returns root and path lookup errors for undefined helper results', () => {
     expect(
       memoryVectorTestOnly.buildMemoryVectorResponseFromRoot(
@@ -345,7 +349,9 @@ describe('memoryVector helpers', () => {
       vector: ['projected', { bucket: 'sky' }],
     });
   });
+});
 
+describe('memoryVector default helpers', () => {
   test('uses default helper fallbacks when no overrides are provided', () => {
     const request = { memoryLocation: 'temporary', path: 'profile' };
     const env = new Map([
