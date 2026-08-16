@@ -179,43 +179,14 @@ describe('createUpdateTimeDisplay', () => {
 
 describe('setupAudio', () => {
   let createdElements;
-  let removeControlsAttribute,
-    createElement,
-    stopDefault,
-    playAudio,
-    pauseAudio;
-  let audioElement, audioElements, dom, setTextContent;
+  let removeControlsAttribute, stopDefault, playAudio, pauseAudio;
+  let setTextContent;
   beforeEach(() => {
     createdElements = [];
     removeControlsAttribute = () => {};
-    createElement = jest.fn(tag => {
-      const el = {
-        className: '',
-        id: '',
-        textContent: '',
-        href: '',
-        addEventListener: jest.fn(),
-        appendChild: jest.fn(),
-        tagName: tag,
-      };
-      createdElements.push(el);
-      return el;
-    });
-
     stopDefault = () => {};
     playAudio = () => {};
     pauseAudio = () => {};
-    audioElement = {};
-    audioElements = [audioElement];
-    dom = {
-      getAudioElements: () => audioElements,
-      removeControlsAttribute,
-      createElement,
-      createTextNode: jest.fn(text => ({ nodeType: 3, textContent: text })),
-      insertBefore: jest.fn(),
-      appendChild: jest.fn(),
-      addEventListener: jest.fn(),
-    };
     setTextContent = jest.fn((element, text) => {
       element.textContent = text;
     });
@@ -404,6 +375,53 @@ describe('setupAudio', () => {
     // Then
     expect(createdElements[0].id).toBe(`controls-${audioElements[0].id}`);
   });
+});
+
+describe('setupAudio insertion behavior', () => {
+  let createdElements;
+  let createElement;
+  let audioElements;
+  let audioElement;
+  let removeControlsAttribute;
+  let pauseAudio;
+  let playAudio;
+  let stopDefault;
+  let dom;
+  let setTextContent;
+  beforeEach(() => {
+    createdElements = [];
+    createElement = jest.fn(tag => {
+      const element = {
+        className: '',
+        id: '',
+        textContent: '',
+        href: '',
+        addEventListener: jest.fn(),
+        appendChild: jest.fn(),
+        tagName: tag,
+      };
+      createdElements.push(element);
+      return element;
+    });
+    audioElements = [{}];
+    audioElement = audioElements[0];
+    removeControlsAttribute = jest.fn();
+    pauseAudio = jest.fn();
+    playAudio = jest.fn();
+    stopDefault = jest.fn();
+    dom = {
+      getAudioElements: () => audioElements,
+      removeControlsAttribute: jest.fn(),
+      createElement,
+      createTextNode: jest.fn(text => ({ nodeType: 3, textContent: text })),
+      insertBefore: jest.fn(),
+      appendChild: jest.fn(),
+      addEventListener: jest.fn(),
+    };
+    setTextContent = jest.fn((element, text) => {
+      element.textContent = text;
+    });
+  });
 
   it('inserts controls after the audio element when it has a parent', () => {
     // Given
@@ -525,6 +543,43 @@ describe('setupAudio', () => {
     expect(dom.createTextNode).toHaveBeenCalledTimes(3);
     dom.createTextNode.mock.calls.forEach(call => {
       expect(call[0]).toBe(' ');
+    });
+  });
+});
+
+describe('setupAudio control wiring', () => {
+  let createdElements;
+  let dom;
+  let createElement;
+  let audioElement;
+  let setTextContent;
+  beforeEach(() => {
+    createdElements = [];
+    createElement = jest.fn(tag => {
+      const element = {
+        className: '',
+        id: '',
+        textContent: '',
+        href: '',
+        addEventListener: jest.fn(),
+        appendChild: jest.fn(),
+        tagName: tag,
+      };
+      createdElements.push(element);
+      return element;
+    });
+    audioElement = {};
+    dom = {
+      getAudioElements: () => [audioElement],
+      removeControlsAttribute: jest.fn(),
+      createElement,
+      createTextNode: jest.fn(text => ({ nodeType: 3, textContent: text })),
+      insertBefore: jest.fn(),
+      appendChild: jest.fn(),
+      addEventListener: jest.fn(),
+    };
+    setTextContent = jest.fn((element, text) => {
+      element.textContent = text;
     });
   });
 
