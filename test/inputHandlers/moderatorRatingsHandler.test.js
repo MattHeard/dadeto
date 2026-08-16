@@ -7,6 +7,26 @@ import {
 import { clearInputValue } from '../../src/core/browser/inputValueStore.js';
 import { describe, test, expect, jest } from '@jest/globals';
 
+const getRatingControls = dom => {
+  const findInput = placeholder =>
+    dom.createdElements.find(
+      element => element.tag === 'input' && element.placeholder === placeholder
+    );
+  const findButton = label =>
+    dom.createdElements.find(
+      element => element.tag === 'button' && element.textContent === label
+    );
+  return {
+    authorInput: findInput('Moderator ID'),
+    variantInput: findInput('Variant ID'),
+    ratedAtInput: findInput('ratedAt (ISO 8601)'),
+    approveSelect: dom.createdElements.find(
+      element => element.tag === 'select'
+    ),
+    addButton: findButton('Add rating'),
+  };
+};
+
 describe('normalizeRatingEntry', () => {
   test('returns defaults for invalid or missing entries', () => {
     expect(normalizeRatingEntry(null)).toEqual({
@@ -224,23 +244,13 @@ describe('moderatorRatingsHandler', () => {
 
     moderatorRatingsHandler(dom, container, textInput);
 
-    const findInput = placeholder =>
-      dom.createdElements.find(
-        element =>
-          element.tag === 'input' && element.placeholder === placeholder
-      );
-    const findButton = label =>
-      dom.createdElements.find(
-        element => element.tag === 'button' && element.textContent === label
-      );
-
-    const authorInput = findInput('Moderator ID');
-    const variantInput = findInput('Variant ID');
-    const ratedAtInput = findInput('ratedAt (ISO 8601)');
-    const approveSelect = dom.createdElements.find(
-      element => element.tag === 'select'
-    );
-    const addButton = findButton('Add rating');
+    const {
+      authorInput,
+      variantInput,
+      ratedAtInput,
+      approveSelect,
+      addButton,
+    } = getRatingControls(dom);
 
     expect(authorInput).toBeDefined();
     expect(variantInput).toBeDefined();
