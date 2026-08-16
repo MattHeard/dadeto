@@ -212,6 +212,57 @@ describe('createKeyValueRow', () => {
 
     expect(mockDom.setTextContent).toHaveBeenCalledWith(mockButton, '+');
   });
+});
+
+describe('createKeyValueRow event setup', () => {
+  let mockDom;
+  let mockEntries;
+  let mockTextInput;
+  let mockRows;
+  let mockSyncHiddenField;
+  let mockDisposers;
+  let mockRender;
+  let mockContainer;
+  let rowCreator;
+
+  beforeEach(() => {
+    mockDom = {
+      createElement: jest.fn(),
+      setClassName: jest.fn(),
+      setType: jest.fn(),
+      setTextContent: jest.fn(),
+      setPlaceholder: jest.fn(),
+      setDataAttribute: jest.fn(),
+      getDataAttribute: jest.fn(),
+      addEventListener: jest.fn(),
+      appendChild: jest.fn(),
+      getValue: jest.fn(),
+      setValue: jest.fn(),
+      removeEventListener: jest.fn(),
+      addClass: jest.fn(),
+      hide: jest.fn(),
+    };
+    mockEntries = [
+      ['key1', 'value1'],
+      ['key2', 'value2'],
+    ];
+    mockTextInput = {};
+    mockRows = { key1: 'value1', key2: 'value2' };
+    mockSyncHiddenField = jest.fn();
+    mockDisposers = [];
+    mockRender = jest.fn();
+    mockContainer = {};
+    rowCreator = createKeyValueRow({
+      dom: mockDom,
+      entries: mockEntries,
+      textInput: mockTextInput,
+      rows: mockRows,
+      syncHiddenField: mockSyncHiddenField,
+      disposers: mockDisposers,
+      render: mockRender,
+      container: mockContainer,
+    });
+  });
 
   it('creates the button element with the correct type', () => {
     const mockButton = {};
@@ -304,6 +355,47 @@ describe('createKeyValueRow', () => {
     // Each cleanup function should be a function
     mockDisposers.slice(initialDisposersCount).forEach(disposer => {
       expect(disposer).toBeInstanceOf(Function);
+    });
+  });
+});
+
+describe('createKeyValueRow cleanup', () => {
+  let mockDom;
+  let mockEntries;
+  let mockDisposers;
+  let rowCreator;
+
+  beforeEach(() => {
+    mockDom = {
+      createElement: jest.fn(),
+      setClassName: jest.fn(),
+      setType: jest.fn(),
+      setTextContent: jest.fn(),
+      setPlaceholder: jest.fn(),
+      setDataAttribute: jest.fn(),
+      getDataAttribute: jest.fn(),
+      addEventListener: jest.fn(),
+      appendChild: jest.fn(),
+      getValue: jest.fn(),
+      setValue: jest.fn(),
+      removeEventListener: jest.fn(),
+      addClass: jest.fn(),
+      hide: jest.fn(),
+    };
+    mockEntries = [
+      ['key1', 'value1'],
+      ['key2', 'value2'],
+    ];
+    mockDisposers = [];
+    rowCreator = createKeyValueRow({
+      dom: mockDom,
+      entries: mockEntries,
+      textInput: {},
+      rows: {},
+      syncHiddenField: jest.fn(),
+      disposers: mockDisposers,
+      render: jest.fn(),
+      container: {},
     });
   });
 
