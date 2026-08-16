@@ -17,1059 +17,1053 @@ import { ADMIN_UID } from '../../../../src/core/commonCore.js';
 
 const noopConsole = { error: () => {} };
 
-describe('createGenerateStatsCore', () => {
-  let mockDb;
-  let mockAuth;
-  let mockStorage;
-  let mockFetchFn;
-  let mockEnv;
-  let mockUrlMap;
-  let mockCryptoModule;
-  let core;
+let mockDb;
+let mockAuth;
+let mockStorage;
+let mockFetchFn;
+let mockEnv;
+let mockUrlMap;
+let mockCryptoModule;
+let core;
 
-  let mockConsoleError;
+let mockConsoleError;
 
-  beforeEach(() => {
-    mockDb = {
-      collection: () => mockDb,
-      collectionGroup: () => mockDb,
-      count: () => mockDb,
-      get: () => Promise.resolve({ data: () => ({ count: 0 }) }),
-      doc: () => mockDb,
-      where: () => mockDb,
-      orderBy: () => mockDb,
-      limit: () => mockDb,
-    };
-    mockAuth = {
-      verifyIdToken: () => Promise.resolve({ uid: 'some-uid' }),
-    };
-    mockStorage = {
-      bucket: () => mockStorage,
-      file: () => mockStorage,
-      save: () => Promise.resolve(),
-    };
-    mockFetchFn = jest.fn(); // Make mockFetchFn a Jest mock function
-    mockEnv = {};
-    mockUrlMap = 'some-url-map';
-    mockCryptoModule = { randomUUID: () => 'some-uuid' };
-    mockConsoleError = jest.fn(); // Initialize mockConsoleError
-    const mockConsole = { error: mockConsoleError }; // Create mockConsole object
+beforeEach(() => {
+  mockDb = {
+    collection: () => mockDb,
+    collectionGroup: () => mockDb,
+    count: () => mockDb,
+    get: () => Promise.resolve({ data: () => ({ count: 0 }) }),
+    doc: () => mockDb,
+    where: () => mockDb,
+    orderBy: () => mockDb,
+    limit: () => mockDb,
+  };
+  mockAuth = {
+    verifyIdToken: () => Promise.resolve({ uid: 'some-uid' }),
+  };
+  mockStorage = {
+    bucket: () => mockStorage,
+    file: () => mockStorage,
+    save: () => Promise.resolve(),
+  };
+  mockFetchFn = jest.fn(); // Make mockFetchFn a Jest mock function
+  mockEnv = {};
+  mockUrlMap = 'some-url-map';
+  mockCryptoModule = { randomUUID: () => 'some-uuid' };
+  mockConsoleError = jest.fn(); // Initialize mockConsoleError
+  const mockConsole = { error: mockConsoleError }; // Create mockConsole object
 
-    core = createGenerateStatsCore({
+  core = createGenerateStatsCore({
+    db: mockDb,
+    auth: mockAuth,
+    storage: mockStorage,
+    fetchFn: mockFetchFn,
+    env: mockEnv,
+    urlMap: mockUrlMap,
+    cryptoModule: mockCryptoModule,
+    console: mockConsole, // Inject mockConsole
+    createVerifyAdmin: deps => {
+      return async (req, res) => {
+        const token = extractTokenFromRequest(deps, req);
+        if (!token) {
+          deps.sendUnauthorized(res, 'Missing token');
+          return false;
+        }
+        return authorizeToken(deps, token, res);
+      };
+    },
+  });
+});
+
+it('accepts a non-object env reference by normalizing to an empty map', () => {
+  expect(
+    createGenerateStatsCore({
       db: mockDb,
       auth: mockAuth,
       storage: mockStorage,
       fetchFn: mockFetchFn,
-      env: mockEnv,
+      env: null,
       urlMap: mockUrlMap,
       cryptoModule: mockCryptoModule,
-      console: mockConsole, // Inject mockConsole
-      createVerifyAdmin: deps => {
-        return async (req, res) => {
-          const token = extractTokenFromRequest(deps, req);
-          if (!token) {
-            deps.sendUnauthorized(res, 'Missing token');
-            return false;
-          }
-          return authorizeToken(deps, token, res);
-        };
-      },
-    });
-  });
+      console: { error: () => {} },
+    })
+  ).toBeDefined();
+});
 
-  it('accepts a non-object env reference by normalizing to an empty map', () => {
-    expect(
-      createGenerateStatsCore({
-        db: mockDb,
-        auth: mockAuth,
-        storage: mockStorage,
-        fetchFn: mockFetchFn,
-        env: null,
-        urlMap: mockUrlMap,
-        cryptoModule: mockCryptoModule,
-        console: { error: () => {} },
-      })
-    ).toBeDefined();
-  });
+/**
+ * Extract the bearer token from the request using the injected helpers.
+ * @param {{ getAuthHeader: (req: object) => string }} deps Dependency bundle supplied to helpers.
+ * @param {object} req Request object containing headers.
+ * @returns {string} Bearer token or an empty string.
+ */
+function extractTokenFromRequest(deps, req) {
+  const authHeader = deps.getAuthHeader(req);
+  const match = matchAuthHeader(authHeader);
+  return match?.[1] || '';
+}
 
-  /**
-   * Extract the bearer token from the request using the injected helpers.
-   * @param {{ getAuthHeader: (req: object) => string }} deps Dependency bundle supplied to helpers.
-   * @param {object} req Request object containing headers.
-   * @returns {string} Bearer token or an empty string.
-   */
-  function extractTokenFromRequest(deps, req) {
-    const authHeader = deps.getAuthHeader(req);
-    const match = matchAuthHeader(authHeader);
-    return match?.[1] || '';
-  }
-
-  /**
-   * Validate the decoded token and ensure the caller is an admin.
-   * @param {{
-   *   verifyToken: (token: string) => Promise<{ uid?: string }>,
-   *   isAdminUid: (decoded: { uid?: string }) => boolean,
-   *   sendForbidden: (res: object) => void,
-   *   sendUnauthorized: (res: object, message: string) => void,
-   * }} deps Dependency bundle.
-   * @param {string} token Bearer token to validate.
-   * @param {object} res Response helper used to send errors.
-   * @returns {Promise<boolean>} True when the token is valid and the user is admin.
-   */
-  async function authorizeToken(deps, token, res) {
-    try {
-      const decoded = await deps.verifyToken(token);
-      if (!deps.isAdminUid(decoded)) {
-        deps.sendForbidden(res);
-        return false;
-      }
-      return true;
-    } catch (error) {
-      const candidate = error?.message;
-      let message = 'Invalid token';
-      if (typeof candidate === 'string') {
-        message = candidate;
-      }
-      deps.sendUnauthorized(res, message);
+/**
+ * Validate the decoded token and ensure the caller is an admin.
+ * @param {{
+ *   verifyToken: (token: string) => Promise<{ uid?: string }>,
+ *   isAdminUid: (decoded: { uid?: string }) => boolean,
+ *   sendForbidden: (res: object) => void,
+ *   sendUnauthorized: (res: object, message: string) => void,
+ * }} deps Dependency bundle.
+ * @param {string} token Bearer token to validate.
+ * @param {object} res Response helper used to send errors.
+ * @returns {Promise<boolean>} True when the token is valid and the user is admin.
+ */
+async function authorizeToken(deps, token, res) {
+  try {
+    const decoded = await deps.verifyToken(token);
+    if (!deps.isAdminUid(decoded)) {
+      deps.sendForbidden(res);
       return false;
     }
+    return true;
+  } catch (error) {
+    const candidate = error?.message;
+    let message = 'Invalid token';
+    if (typeof candidate === 'string') {
+      message = candidate;
+    }
+    deps.sendUnauthorized(res, message);
+    return false;
   }
+}
 
-  describe('handleRequest', () => {
-    let mockReq;
-    let mockRes;
+let mockReq;
+let mockRes;
 
-    const createDbMock = () => {
-      let variantIndex = 0;
-      const counts = [2, 1];
+const createDbMock = () => {
+  let variantIndex = 0;
+  const counts = [2, 1];
+  return {
+    _collectionName: null,
+    _collectionGroupName: null,
+    _docId: null,
+    collection(name) {
+      this._collectionName = name;
+      this._collectionGroupName = null;
+      return this;
+    },
+    collectionGroup(name) {
+      this._collectionGroupName = name;
+      this._collectionName = null;
+      if (name === 'variants') {
+        variantIndex = 0;
+      }
+      return this;
+    },
+    count() {
+      if (this._collectionName === 'stories') {
+        return {
+          get: () => Promise.resolve({ data: () => ({ count: 4 }) }),
+        };
+      }
+
+      if (this._collectionGroupName === 'pages') {
+        return {
+          get: () => Promise.resolve({ data: () => ({ count: 7 }) }),
+        };
+      }
+
+      if (this._collectionGroupName === 'variants') {
+        return {
+          get: () =>
+            Promise.resolve({
+              data: () => ({ count: counts[variantIndex++] ?? 0 }),
+            }),
+        };
+      }
+
       return {
-        _collectionName: null,
-        _collectionGroupName: null,
-        _docId: null,
-        collection(name) {
-          this._collectionName = name;
-          this._collectionGroupName = null;
-          return this;
-        },
-        collectionGroup(name) {
-          this._collectionGroupName = name;
-          this._collectionName = null;
-          if (name === 'variants') {
-            variantIndex = 0;
-          }
-          return this;
-        },
-        count() {
-          if (this._collectionName === 'stories') {
-            return {
-              get: () => Promise.resolve({ data: () => ({ count: 4 }) }),
-            };
-          }
+        get: () => Promise.resolve({ data: () => ({ count: 0 }) }),
+      };
+    },
+    where() {
+      return this;
+    },
+    orderBy() {
+      return this;
+    },
+    limit() {
+      return this;
+    },
+    doc(id) {
+      this._docId = id;
+      return this;
+    },
+    get() {
+      if (this._collectionName === 'storyStats') {
+        return Promise.resolve({
+          docs: [
+            { id: 'story1', data: () => ({ variantCount: 5 }) },
+            { id: 'story2', data: () => ({}) },
+          ],
+        });
+      }
 
-          if (this._collectionGroupName === 'pages') {
-            return {
-              get: () => Promise.resolve({ data: () => ({ count: 7 }) }),
-            };
-          }
+      if (this._collectionName === 'stories') {
+        return Promise.resolve({
+          data: () => {
+            if (this._docId === 'story1') {
+              return { title: 'Story One' };
+            }
+            return {};
+          },
+        });
+      }
 
-          if (this._collectionGroupName === 'variants') {
-            return {
-              get: () =>
-                Promise.resolve({
-                  data: () => ({ count: counts[variantIndex++] ?? 0 }),
+      return Promise.resolve({ data: () => ({}) });
+    },
+  };
+};
+
+const createStorageMock = ({ failSave = false, errorValue } = {}) => {
+  let save;
+  if (failSave) {
+    save = jest.fn(() =>
+      Promise.reject(errorValue ?? new Error('Generation failed'))
+    );
+  } else {
+    save = jest.fn(() => Promise.resolve());
+  }
+  const file = jest.fn(() => ({ save }));
+  const bucket = jest.fn(() => ({ file }));
+  return { bucket, __mocks: { save, file, bucket } };
+};
+
+const createFetchMock = ({
+  metadataResponse = {
+    ok: true,
+    json: async () => ({ [ACCESS_TOKEN_KEY]: 'token-123' }),
+  },
+  invalidateResponse = { ok: true },
+} = {}) => {
+  const fetchFn = jest.fn();
+  fetchFn.mockResolvedValueOnce(metadataResponse);
+  fetchFn.mockResolvedValueOnce(invalidateResponse);
+  return fetchFn;
+};
+
+const buildCoreForHandleRequest = ({ auth, storage, fetchFn, db } = {}) => {
+  const authInstance = auth || {
+    verifyIdToken: jest.fn(() => Promise.resolve({ uid: ADMIN_UID })),
+  };
+  const storageInstance = storage || createStorageMock();
+  const fetchInstance = fetchFn || createFetchMock();
+  const dbInstance = db || createDbMock();
+  const consoleError = jest.fn();
+
+  const coreInstance = createGenerateStatsCore({
+    db: dbInstance,
+    auth: authInstance,
+    storage: storageInstance,
+    fetchFn: fetchInstance,
+    env: {},
+    urlMap: 'test-url-map',
+    cryptoModule: { randomUUID: jest.fn(() => 'uuid-123') },
+    console: { error: consoleError },
+  });
+
+  return {
+    coreInstance,
+    storageInstance,
+    fetchInstance,
+    authInstance,
+    consoleError,
+  };
+};
+
+beforeEach(() => {
+  mockReq = {
+    method: 'POST',
+    get: header => {
+      if (header === 'X-Appengine-Cron') {
+        return mockReq.isCron;
+      }
+      if (header === 'Authorization') {
+        return mockReq.authorization;
+      }
+      return undefined;
+    },
+    isCron: undefined,
+    authorization: undefined,
+  };
+  mockRes = {
+    status: code => {
+      mockRes.statusCode = code;
+      return mockRes;
+    },
+    send: message => {
+      mockRes.message = message;
+    },
+    json: data => {
+      mockRes.jsonResponse = data;
+    },
+    statusCode: 200,
+    message: '',
+    jsonResponse: null,
+  };
+});
+
+it('should return 405 for non-POST requests', async () => {
+  const { coreInstance } = buildCoreForHandleRequest();
+  mockReq.method = 'GET';
+  await coreInstance.handleRequest(mockReq, mockRes);
+  expect(mockRes.statusCode).toBe(405);
+  expect(mockRes.message).toBe('POST only');
+});
+
+it('should succeed if X-Appengine-Cron header is true', async () => {
+  const { coreInstance, fetchInstance } = buildCoreForHandleRequest();
+  mockReq.isCron = 'true';
+  await coreInstance.handleRequest(mockReq, mockRes);
+  expect(mockRes.statusCode).toBe(200);
+  expect(mockRes.jsonResponse).toEqual({ ok: true });
+  expect(fetchInstance).toHaveBeenCalledTimes(2);
+});
+
+it('should return 401 if not cron and not authorized (missing token)', async () => {
+  const { coreInstance } = buildCoreForHandleRequest();
+  mockReq.isCron = 'false';
+  mockReq.authorization = undefined; // No authorization header
+  await coreInstance.handleRequest(mockReq, mockRes);
+  expect(mockRes.statusCode).toBe(401);
+  expect(mockRes.message).toBe('Missing token');
+});
+
+it('should return 401 if not cron and not authorized (invalid token)', async () => {
+  const auth = {
+    verifyIdToken: jest.fn(() =>
+      Promise.reject(new Error('Firebase ID token has invalid signature.'))
+    ),
+  };
+  const { coreInstance } = buildCoreForHandleRequest({ auth });
+  mockReq.isCron = 'false';
+  mockReq.authorization = 'Bearer invalid-token';
+  await coreInstance.handleRequest(mockReq, mockRes);
+  expect(mockRes.statusCode).toBe(401);
+  expect(mockRes.message).toBe('Firebase ID token has invalid signature.');
+});
+
+it('should return 403 if not cron and user is not admin', async () => {
+  const auth = {
+    verifyIdToken: jest.fn(() => Promise.resolve({ uid: 'not-admin' })),
+  };
+  const { coreInstance } = buildCoreForHandleRequest({ auth });
+  mockReq.isCron = 'false';
+  mockReq.authorization = 'Bearer valid-token';
+  await coreInstance.handleRequest(mockReq, mockRes);
+  expect(mockRes.statusCode).toBe(403);
+  expect(mockRes.message).toBe('Forbidden');
+});
+
+it('should succeed if not cron and authorized admin', async () => {
+  const auth = {
+    verifyIdToken: jest.fn(() => Promise.resolve({ uid: ADMIN_UID })),
+  };
+  const { coreInstance, fetchInstance } = buildCoreForHandleRequest({
+    auth,
+  });
+  mockReq.isCron = 'false';
+  mockReq.authorization = 'Bearer valid-token';
+  await coreInstance.handleRequest(mockReq, mockRes);
+  expect(mockRes.statusCode).toBe(200);
+  expect(mockRes.jsonResponse).toEqual({ ok: true });
+  expect(fetchInstance).toHaveBeenCalledTimes(2);
+});
+
+it('should return 500 when generate rejects', async () => {
+  const storage = createStorageMock({ failSave: true });
+  const { coreInstance } = buildCoreForHandleRequest({ storage });
+  mockReq.isCron = 'true';
+  await coreInstance.handleRequest(mockReq, mockRes);
+  expect(mockRes.statusCode).toBe(500);
+  expect(mockRes.jsonResponse).toEqual({ error: 'Generation failed' });
+});
+
+it('returns the fallback message when generate throws without a message', async () => {
+  const storage = createStorageMock({
+    failSave: true,
+    errorValue: { reason: 'timeout' },
+  });
+  const { coreInstance } = buildCoreForHandleRequest({ storage });
+  mockReq.isCron = 'true';
+  await coreInstance.handleRequest(mockReq, mockRes);
+  expect(mockRes.statusCode).toBe(500);
+  expect(mockRes.jsonResponse).toEqual({ error: 'generate failed' });
+});
+
+describe('data fetching functions', () => {
+  it('getStoryCount should return the correct count', async () => {
+    mockDb.get = () => Promise.resolve({ data: () => ({ count: 5 }) });
+    const count = await core.getStoryCount();
+    expect(count).toBe(5);
+  });
+
+  it('getPageCount should return the correct count', async () => {
+    mockDb.get = () => Promise.resolve({ data: () => ({ count: 10 }) });
+    const count = await core.getPageCount();
+    expect(count).toBe(10);
+  });
+
+  it('getStoryCount accepts a custom database reference', async () => {
+    const customDb = {
+      collection: () => customDb,
+      count: () => customDb,
+      get: () => Promise.resolve({ data: () => ({ count: 8 }) }),
+    };
+    const count = await core.getStoryCount(customDb);
+    expect(count).toBe(8);
+  });
+
+  it('getPageCount accepts a custom database reference', async () => {
+    const customDb = {
+      collectionGroup: () => customDb,
+      count: () => customDb,
+      get: () => Promise.resolve({ data: () => ({ count: 12 }) }),
+    };
+    const count = await core.getPageCount(customDb);
+    expect(count).toBe(12);
+  });
+
+  it('getPageCount falls back to collectionGroup when nested traversal is unavailable', async () => {
+    const collectionGroup = jest.fn(() => ({
+      count: () => ({
+        get: () => Promise.resolve({ data: () => ({ count: 9 }) }),
+      }),
+    }));
+    const customDb = { collectionGroup };
+
+    const count = await core.getPageCount(customDb);
+    expect(count).toBe(9);
+    expect(collectionGroup).toHaveBeenCalledWith('pages');
+  });
+
+  it('counts pages by traversing story page collections', async () => {
+    const customDb = {
+      collection: jest.fn(() => ({
+        get: jest.fn().mockResolvedValue({
+          docs: [
+            {
+              ref: {
+                collection: jest.fn(() => ({
+                  get: jest.fn().mockResolvedValue({ docs: [{}, {}] }),
+                })),
+              },
+            },
+            {
+              ref: {
+                collection: jest.fn(() => ({
+                  get: jest.fn().mockResolvedValue({ docs: [{}] }),
+                })),
+              },
+            },
+          ],
+        }),
+      })),
+    };
+    await expect(core.getPageCount(customDb)).resolves.toBe(3);
+  });
+
+  it('ignores a nested page snapshot without docs', async () => {
+    const customDb = {
+      collection: () => ({
+        get: jest.fn().mockResolvedValue({
+          docs: [
+            {
+              ref: {
+                collection: () => ({
+                  get: jest.fn().mockResolvedValue({}),
                 }),
-            };
-          }
+              },
+            },
+          ],
+        }),
+      }),
+    };
 
+    await expect(core.getPageCount(customDb)).resolves.toBe(0);
+  });
+
+  it('getUnmoderatedPageCount should return the correct count', async () => {
+    mockDb.collection = name => {
+      if (name !== 'stories') {
+        return mockDb;
+      }
+
+      return {
+        get: () =>
+          Promise.resolve({
+            docs: [
+              {
+                ref: {
+                  collection: collectionName => {
+                    if (collectionName !== 'pages') {
+                      return {
+                        get: () => Promise.resolve({ docs: [] }),
+                      };
+                    }
+
+                    return {
+                      get: () =>
+                        Promise.resolve({
+                          docs: [
+                            {
+                              ref: {
+                                collection: variantName => {
+                                  if (variantName !== 'variants') {
+                                    return {
+                                      get: () => Promise.resolve({ docs: [] }),
+                                    };
+                                  }
+
+                                  return {
+                                    get: () =>
+                                      Promise.resolve({
+                                        docs: [
+                                          {
+                                            data: () => ({
+                                              moderatorReputationSum: 0,
+                                            }),
+                                          },
+                                          {
+                                            data: () => ({
+                                              moderatorReputationSum: null,
+                                            }),
+                                          },
+                                        ],
+                                      }),
+                                  };
+                                },
+                              },
+                            },
+                            {
+                              ref: {
+                                collection: variantName => {
+                                  if (variantName !== 'variants') {
+                                    return {
+                                      get: () => Promise.resolve({ docs: [] }),
+                                    };
+                                  }
+
+                                  return {
+                                    get: () =>
+                                      Promise.resolve({
+                                        docs: [
+                                          {
+                                            data: () => ({
+                                              moderatorReputationSum: 1,
+                                            }),
+                                          },
+                                        ],
+                                      }),
+                                  };
+                                },
+                              },
+                            },
+                          ],
+                        }),
+                    };
+                  },
+                },
+              },
+            ],
+          }),
+      };
+    };
+    const count = await core.getUnmoderatedPageCount();
+    expect(count).toBe(2);
+  });
+});
+
+describe('data fetching top stories', () => {
+  it('getTopStories normalizes missing metadata', async () => {
+    const statsDocs = [
+      { id: 'story1', data: () => ({ variantCount: 5 }) },
+      { id: 'story2', data: () => ({}) },
+      { id: 'story3', data: () => ({ variantCount: 1 }) },
+    ];
+
+    const storiesDocs = {
+      story1: { data: () => ({ title: 'Story One' }) },
+      story2: { data: () => ({}) },
+      story3: { data: () => ({ title: '   ' }) },
+    };
+
+    const collectionMock = name => {
+      mockDb._collectionName = name;
+      return mockDb;
+    };
+
+    const docMock = id => {
+      mockDb._docId = id;
+      return mockDb;
+    };
+
+    const getMock = () => {
+      if (mockDb._collectionName === 'storyStats') {
+        return Promise.resolve({ docs: statsDocs });
+      }
+
+      if (mockDb._collectionName === 'stories') {
+        return Promise.resolve(
+          storiesDocs[mockDb._docId] ?? { data: () => ({}) }
+        );
+      }
+
+      return Promise.resolve({ data: () => ({}) });
+    };
+
+    mockDb.collection = collectionMock;
+    mockDb.doc = docMock;
+    mockDb.get = getMock;
+
+    const recordedLimit = { value: null };
+    const originalLimit = mockDb.limit.bind(mockDb);
+    mockDb.limit = limit => {
+      recordedLimit.value = limit;
+      return originalLimit(limit);
+    };
+
+    const topStories = await core.getTopStories(mockDb, 10);
+    expect(topStories).toEqual([
+      { title: 'Story One', variantCount: 5 },
+      { title: 'story2', variantCount: 0 },
+      { title: 'story3', variantCount: 1 },
+    ]);
+    expect(recordedLimit.value).toBe(10);
+  });
+
+  it('getTopStories uses the default limit when none is provided', async () => {
+    const orderBy = jest.fn(() => ({
+      limit: jest.fn(() => ({
+        get: jest.fn(() =>
+          Promise.resolve({
+            docs: [{ id: 'story1', data: () => ({ variantCount: 2 }) }],
+          })
+        ),
+      })),
+    }));
+    const customDb = {
+      collection: jest.fn(name => {
+        if (name === 'storyStats') {
+          return { orderBy };
+        }
+        if (name === 'stories') {
           return {
-            get: () => Promise.resolve({ data: () => ({ count: 0 }) }),
+            doc: () => ({
+              get: () =>
+                Promise.resolve({ data: () => ({ title: 'Story One' }) }),
+            }),
           };
-        },
-        where() {
-          return this;
-        },
-        orderBy() {
-          return this;
-        },
-        limit() {
-          return this;
-        },
-        doc(id) {
-          this._docId = id;
-          return this;
-        },
-        get() {
-          if (this._collectionName === 'storyStats') {
-            return Promise.resolve({
+        }
+        throw new Error(`Unexpected collection ${name}`);
+      }),
+    };
+
+    const topStories = await core.getTopStories(customDb);
+    expect(topStories).toEqual([{ title: 'Story One', variantCount: 2 }]);
+    expect(orderBy).toHaveBeenCalledWith('variantCount', 'desc');
+  });
+});
+
+describe('generate', () => {
+  it('should generate and save HTML, then invalidate paths', async () => {
+    const mockStorageInstance = {
+      bucket: () => mockStorageInstance,
+      file: () => mockStorageInstance,
+      save: () => {
+        mockStorageInstance.saveCalled = true;
+        return Promise.resolve();
+      },
+      saveCalled: false,
+    };
+    const mockInvalidatePathsFn = paths => {
+      mockInvalidatePathsFn.paths = paths;
+      mockInvalidatePathsFn.called = true;
+      return Promise.resolve();
+    };
+    mockInvalidatePathsFn.called = false;
+    mockInvalidatePathsFn.paths = [];
+
+    const variantCounts = [2, 1];
+    const storiesCollection = {
+      count: jest.fn(() => ({
+        get: jest.fn(() => Promise.resolve({ data: () => ({ count: 4 }) })),
+      })),
+      doc: jest.fn(id => ({
+        get: jest.fn(() =>
+          Promise.resolve({
+            data: () => {
+              if (id === 'story1') {
+                return { title: 'Story One' };
+              }
+              return {};
+            },
+          })
+        ),
+      })),
+    };
+
+    const storyStatsCollection = {
+      orderBy: jest.fn(() => ({
+        limit: jest.fn(() => ({
+          get: jest.fn(() =>
+            Promise.resolve({
               docs: [
                 { id: 'story1', data: () => ({ variantCount: 5 }) },
                 { id: 'story2', data: () => ({}) },
               ],
-            });
-          }
-
-          if (this._collectionName === 'stories') {
-            return Promise.resolve({
-              data: () => {
-                if (this._docId === 'story1') {
-                  return { title: 'Story One' };
-                }
-                return {};
-              },
-            });
-          }
-
-          return Promise.resolve({ data: () => ({}) });
-        },
-      };
-    };
-
-    const createStorageMock = ({ failSave = false, errorValue } = {}) => {
-      let save;
-      if (failSave) {
-        save = jest.fn(() =>
-          Promise.reject(errorValue ?? new Error('Generation failed'))
-        );
-      } else {
-        save = jest.fn(() => Promise.resolve());
-      }
-      const file = jest.fn(() => ({ save }));
-      const bucket = jest.fn(() => ({ file }));
-      return { bucket, __mocks: { save, file, bucket } };
-    };
-
-    const createFetchMock = ({
-      metadataResponse = {
-        ok: true,
-        json: async () => ({ [ACCESS_TOKEN_KEY]: 'token-123' }),
-      },
-      invalidateResponse = { ok: true },
-    } = {}) => {
-      const fetchFn = jest.fn();
-      fetchFn.mockResolvedValueOnce(metadataResponse);
-      fetchFn.mockResolvedValueOnce(invalidateResponse);
-      return fetchFn;
-    };
-
-    const buildCoreForHandleRequest = ({ auth, storage, fetchFn, db } = {}) => {
-      const authInstance = auth || {
-        verifyIdToken: jest.fn(() => Promise.resolve({ uid: ADMIN_UID })),
-      };
-      const storageInstance = storage || createStorageMock();
-      const fetchInstance = fetchFn || createFetchMock();
-      const dbInstance = db || createDbMock();
-      const consoleError = jest.fn();
-
-      const coreInstance = createGenerateStatsCore({
-        db: dbInstance,
-        auth: authInstance,
-        storage: storageInstance,
-        fetchFn: fetchInstance,
-        env: {},
-        urlMap: 'test-url-map',
-        cryptoModule: { randomUUID: jest.fn(() => 'uuid-123') },
-        console: { error: consoleError },
-      });
-
-      return {
-        coreInstance,
-        storageInstance,
-        fetchInstance,
-        authInstance,
-        consoleError,
-      };
-    };
-
-    beforeEach(() => {
-      mockReq = {
-        method: 'POST',
-        get: header => {
-          if (header === 'X-Appengine-Cron') {
-            return mockReq.isCron;
-          }
-          if (header === 'Authorization') {
-            return mockReq.authorization;
-          }
-          return undefined;
-        },
-        isCron: undefined,
-        authorization: undefined,
-      };
-      mockRes = {
-        status: code => {
-          mockRes.statusCode = code;
-          return mockRes;
-        },
-        send: message => {
-          mockRes.message = message;
-        },
-        json: data => {
-          mockRes.jsonResponse = data;
-        },
-        statusCode: 200,
-        message: '',
-        jsonResponse: null,
-      };
-    });
-
-    it('should return 405 for non-POST requests', async () => {
-      const { coreInstance } = buildCoreForHandleRequest();
-      mockReq.method = 'GET';
-      await coreInstance.handleRequest(mockReq, mockRes);
-      expect(mockRes.statusCode).toBe(405);
-      expect(mockRes.message).toBe('POST only');
-    });
-
-    it('should succeed if X-Appengine-Cron header is true', async () => {
-      const { coreInstance, fetchInstance } = buildCoreForHandleRequest();
-      mockReq.isCron = 'true';
-      await coreInstance.handleRequest(mockReq, mockRes);
-      expect(mockRes.statusCode).toBe(200);
-      expect(mockRes.jsonResponse).toEqual({ ok: true });
-      expect(fetchInstance).toHaveBeenCalledTimes(2);
-    });
-
-    it('should return 401 if not cron and not authorized (missing token)', async () => {
-      const { coreInstance } = buildCoreForHandleRequest();
-      mockReq.isCron = 'false';
-      mockReq.authorization = undefined; // No authorization header
-      await coreInstance.handleRequest(mockReq, mockRes);
-      expect(mockRes.statusCode).toBe(401);
-      expect(mockRes.message).toBe('Missing token');
-    });
-
-    it('should return 401 if not cron and not authorized (invalid token)', async () => {
-      const auth = {
-        verifyIdToken: jest.fn(() =>
-          Promise.reject(new Error('Firebase ID token has invalid signature.'))
-        ),
-      };
-      const { coreInstance } = buildCoreForHandleRequest({ auth });
-      mockReq.isCron = 'false';
-      mockReq.authorization = 'Bearer invalid-token';
-      await coreInstance.handleRequest(mockReq, mockRes);
-      expect(mockRes.statusCode).toBe(401);
-      expect(mockRes.message).toBe('Firebase ID token has invalid signature.');
-    });
-
-    it('should return 403 if not cron and user is not admin', async () => {
-      const auth = {
-        verifyIdToken: jest.fn(() => Promise.resolve({ uid: 'not-admin' })),
-      };
-      const { coreInstance } = buildCoreForHandleRequest({ auth });
-      mockReq.isCron = 'false';
-      mockReq.authorization = 'Bearer valid-token';
-      await coreInstance.handleRequest(mockReq, mockRes);
-      expect(mockRes.statusCode).toBe(403);
-      expect(mockRes.message).toBe('Forbidden');
-    });
-
-    it('should succeed if not cron and authorized admin', async () => {
-      const auth = {
-        verifyIdToken: jest.fn(() => Promise.resolve({ uid: ADMIN_UID })),
-      };
-      const { coreInstance, fetchInstance } = buildCoreForHandleRequest({
-        auth,
-      });
-      mockReq.isCron = 'false';
-      mockReq.authorization = 'Bearer valid-token';
-      await coreInstance.handleRequest(mockReq, mockRes);
-      expect(mockRes.statusCode).toBe(200);
-      expect(mockRes.jsonResponse).toEqual({ ok: true });
-      expect(fetchInstance).toHaveBeenCalledTimes(2);
-    });
-
-    it('should return 500 when generate rejects', async () => {
-      const storage = createStorageMock({ failSave: true });
-      const { coreInstance } = buildCoreForHandleRequest({ storage });
-      mockReq.isCron = 'true';
-      await coreInstance.handleRequest(mockReq, mockRes);
-      expect(mockRes.statusCode).toBe(500);
-      expect(mockRes.jsonResponse).toEqual({ error: 'Generation failed' });
-    });
-
-    it('returns the fallback message when generate throws without a message', async () => {
-      const storage = createStorageMock({
-        failSave: true,
-        errorValue: { reason: 'timeout' },
-      });
-      const { coreInstance } = buildCoreForHandleRequest({ storage });
-      mockReq.isCron = 'true';
-      await coreInstance.handleRequest(mockReq, mockRes);
-      expect(mockRes.statusCode).toBe(500);
-      expect(mockRes.jsonResponse).toEqual({ error: 'generate failed' });
-    });
-  });
-
-  describe('data fetching functions', () => {
-    it('getStoryCount should return the correct count', async () => {
-      mockDb.get = () => Promise.resolve({ data: () => ({ count: 5 }) });
-      const count = await core.getStoryCount();
-      expect(count).toBe(5);
-    });
-
-    it('getPageCount should return the correct count', async () => {
-      mockDb.get = () => Promise.resolve({ data: () => ({ count: 10 }) });
-      const count = await core.getPageCount();
-      expect(count).toBe(10);
-    });
-
-    it('getStoryCount accepts a custom database reference', async () => {
-      const customDb = {
-        collection: () => customDb,
-        count: () => customDb,
-        get: () => Promise.resolve({ data: () => ({ count: 8 }) }),
-      };
-      const count = await core.getStoryCount(customDb);
-      expect(count).toBe(8);
-    });
-
-    it('getPageCount accepts a custom database reference', async () => {
-      const customDb = {
-        collectionGroup: () => customDb,
-        count: () => customDb,
-        get: () => Promise.resolve({ data: () => ({ count: 12 }) }),
-      };
-      const count = await core.getPageCount(customDb);
-      expect(count).toBe(12);
-    });
-
-    it('getPageCount falls back to collectionGroup when nested traversal is unavailable', async () => {
-      const collectionGroup = jest.fn(() => ({
-        count: () => ({
-          get: () => Promise.resolve({ data: () => ({ count: 9 }) }),
-        }),
-      }));
-      const customDb = { collectionGroup };
-
-      const count = await core.getPageCount(customDb);
-      expect(count).toBe(9);
-      expect(collectionGroup).toHaveBeenCalledWith('pages');
-    });
-
-    it('counts pages by traversing story page collections', async () => {
-      const customDb = {
-        collection: jest.fn(() => ({
-          get: jest.fn().mockResolvedValue({
-            docs: [
-              {
-                ref: {
-                  collection: jest.fn(() => ({
-                    get: jest.fn().mockResolvedValue({ docs: [{}, {}] }),
-                  })),
-                },
-              },
-              {
-                ref: {
-                  collection: jest.fn(() => ({
-                    get: jest.fn().mockResolvedValue({ docs: [{}] }),
-                  })),
-                },
-              },
-            ],
-          }),
-        })),
-      };
-      await expect(core.getPageCount(customDb)).resolves.toBe(3);
-    });
-
-    it('ignores a nested page snapshot without docs', async () => {
-      const customDb = {
-        collection: () => ({
-          get: jest.fn().mockResolvedValue({
-            docs: [
-              {
-                ref: {
-                  collection: () => ({
-                    get: jest.fn().mockResolvedValue({}),
-                  }),
-                },
-              },
-            ],
-          }),
-        }),
-      };
-
-      await expect(core.getPageCount(customDb)).resolves.toBe(0);
-    });
-
-    it('getUnmoderatedPageCount should return the correct count', async () => {
-      mockDb.collection = name => {
-        if (name !== 'stories') {
-          return mockDb;
-        }
-
-        return {
-          get: () =>
-            Promise.resolve({
-              docs: [
-                {
-                  ref: {
-                    collection: collectionName => {
-                      if (collectionName !== 'pages') {
-                        return {
-                          get: () => Promise.resolve({ docs: [] }),
-                        };
-                      }
-
-                      return {
-                        get: () =>
-                          Promise.resolve({
-                            docs: [
-                              {
-                                ref: {
-                                  collection: variantName => {
-                                    if (variantName !== 'variants') {
-                                      return {
-                                        get: () =>
-                                          Promise.resolve({ docs: [] }),
-                                      };
-                                    }
-
-                                    return {
-                                      get: () =>
-                                        Promise.resolve({
-                                          docs: [
-                                            {
-                                              data: () => ({
-                                                moderatorReputationSum: 0,
-                                              }),
-                                            },
-                                            {
-                                              data: () => ({
-                                                moderatorReputationSum: null,
-                                              }),
-                                            },
-                                          ],
-                                        }),
-                                    };
-                                  },
-                                },
-                              },
-                              {
-                                ref: {
-                                  collection: variantName => {
-                                    if (variantName !== 'variants') {
-                                      return {
-                                        get: () =>
-                                          Promise.resolve({ docs: [] }),
-                                      };
-                                    }
-
-                                    return {
-                                      get: () =>
-                                        Promise.resolve({
-                                          docs: [
-                                            {
-                                              data: () => ({
-                                                moderatorReputationSum: 1,
-                                              }),
-                                            },
-                                          ],
-                                        }),
-                                    };
-                                  },
-                                },
-                              },
-                            ],
-                          }),
-                      };
-                    },
-                  },
-                },
-              ],
-            }),
-        };
-      };
-      const count = await core.getUnmoderatedPageCount();
-      expect(count).toBe(2);
-    });
-  });
-
-  describe('data fetching top stories', () => {
-    it('getTopStories normalizes missing metadata', async () => {
-      const statsDocs = [
-        { id: 'story1', data: () => ({ variantCount: 5 }) },
-        { id: 'story2', data: () => ({}) },
-        { id: 'story3', data: () => ({ variantCount: 1 }) },
-      ];
-
-      const storiesDocs = {
-        story1: { data: () => ({ title: 'Story One' }) },
-        story2: { data: () => ({}) },
-        story3: { data: () => ({ title: '   ' }) },
-      };
-
-      const collectionMock = name => {
-        mockDb._collectionName = name;
-        return mockDb;
-      };
-
-      const docMock = id => {
-        mockDb._docId = id;
-        return mockDb;
-      };
-
-      const getMock = () => {
-        if (mockDb._collectionName === 'storyStats') {
-          return Promise.resolve({ docs: statsDocs });
-        }
-
-        if (mockDb._collectionName === 'stories') {
-          return Promise.resolve(
-            storiesDocs[mockDb._docId] ?? { data: () => ({}) }
-          );
-        }
-
-        return Promise.resolve({ data: () => ({}) });
-      };
-
-      mockDb.collection = collectionMock;
-      mockDb.doc = docMock;
-      mockDb.get = getMock;
-
-      const recordedLimit = { value: null };
-      const originalLimit = mockDb.limit.bind(mockDb);
-      mockDb.limit = limit => {
-        recordedLimit.value = limit;
-        return originalLimit(limit);
-      };
-
-      const topStories = await core.getTopStories(mockDb, 10);
-      expect(topStories).toEqual([
-        { title: 'Story One', variantCount: 5 },
-        { title: 'story2', variantCount: 0 },
-        { title: 'story3', variantCount: 1 },
-      ]);
-      expect(recordedLimit.value).toBe(10);
-    });
-
-    it('getTopStories uses the default limit when none is provided', async () => {
-      const orderBy = jest.fn(() => ({
-        limit: jest.fn(() => ({
-          get: jest.fn(() =>
-            Promise.resolve({
-              docs: [{ id: 'story1', data: () => ({ variantCount: 2 }) }],
             })
           ),
         })),
-      }));
-      const customDb = {
-        collection: jest.fn(name => {
-          if (name === 'storyStats') {
-            return { orderBy };
-          }
-          if (name === 'stories') {
-            return {
-              doc: () => ({
-                get: () =>
-                  Promise.resolve({ data: () => ({ title: 'Story One' }) }),
-              }),
-            };
-          }
-          throw new Error(`Unexpected collection ${name}`);
-        }),
-      };
+      })),
+    };
 
-      const topStories = await core.getTopStories(customDb);
-      expect(topStories).toEqual([{ title: 'Story One', variantCount: 2 }]);
-      expect(orderBy).toHaveBeenCalledWith('variantCount', 'desc');
-    });
-  });
+    const db = {
+      collection: jest.fn(name => {
+        if (name === 'stories') {
+          return storiesCollection;
+        }
+        if (name === 'storyStats') {
+          return storyStatsCollection;
+        }
+        throw new Error(`Unexpected collection ${name}`);
+      }),
+      collectionGroup: jest.fn(name => {
+        if (name === 'pages') {
+          return {
+            count: jest.fn(() => ({
+              get: jest.fn(() =>
+                Promise.resolve({ data: () => ({ count: 7 }) })
+              ),
+            })),
+          };
+        }
 
-  describe('generate', () => {
-    it('should generate and save HTML, then invalidate paths', async () => {
-      const mockStorageInstance = {
-        bucket: () => mockStorageInstance,
-        file: () => mockStorageInstance,
-        save: () => {
-          mockStorageInstance.saveCalled = true;
-          return Promise.resolve();
-        },
-        saveCalled: false,
-      };
-      const mockInvalidatePathsFn = paths => {
-        mockInvalidatePathsFn.paths = paths;
-        mockInvalidatePathsFn.called = true;
-        return Promise.resolve();
-      };
-      mockInvalidatePathsFn.called = false;
-      mockInvalidatePathsFn.paths = [];
-
-      const variantCounts = [2, 1];
-      const storiesCollection = {
-        count: jest.fn(() => ({
-          get: jest.fn(() => Promise.resolve({ data: () => ({ count: 4 }) })),
-        })),
-        doc: jest.fn(id => ({
-          get: jest.fn(() =>
-            Promise.resolve({
-              data: () => {
-                if (id === 'story1') {
-                  return { title: 'Story One' };
-                }
-                return {};
-              },
-            })
-          ),
-        })),
-      };
-
-      const storyStatsCollection = {
-        orderBy: jest.fn(() => ({
-          limit: jest.fn(() => ({
-            get: jest.fn(() =>
-              Promise.resolve({
-                docs: [
-                  { id: 'story1', data: () => ({ variantCount: 5 }) },
-                  { id: 'story2', data: () => ({}) },
-                ],
-              })
-            ),
-          })),
-        })),
-      };
-
-      const db = {
-        collection: jest.fn(name => {
-          if (name === 'stories') {
-            return storiesCollection;
-          }
-          if (name === 'storyStats') {
-            return storyStatsCollection;
-          }
-          throw new Error(`Unexpected collection ${name}`);
-        }),
-        collectionGroup: jest.fn(name => {
-          if (name === 'pages') {
-            return {
+        if (name === 'variants') {
+          let index = 0;
+          return {
+            where: jest.fn(() => ({
               count: jest.fn(() => ({
                 get: jest.fn(() =>
-                  Promise.resolve({ data: () => ({ count: 7 }) })
+                  Promise.resolve({
+                    data: () => ({ count: variantCounts[index++] ?? 0 }),
+                  })
                 ),
               })),
-            };
-          }
-
-          if (name === 'variants') {
-            let index = 0;
-            return {
-              where: jest.fn(() => ({
-                count: jest.fn(() => ({
-                  get: jest.fn(() =>
-                    Promise.resolve({
-                      data: () => ({ count: variantCounts[index++] ?? 0 }),
-                    })
-                  ),
-                })),
-              })),
-            };
-          }
-
-          throw new Error(`Unexpected collectionGroup ${name}`);
-        }),
-      };
-
-      const saveMock = jest.fn(() => Promise.resolve());
-      const fileMock = jest.fn(() => ({ save: saveMock }));
-      const bucketMock = jest.fn(() => ({ file: fileMock }));
-      const storage = { bucket: bucketMock };
-
-      const fetchFn = jest
-        .fn()
-        .mockResolvedValueOnce({
-          ok: true,
-          json: async () => ({ [ACCESS_TOKEN_KEY]: 'token-123' }),
-        })
-        .mockResolvedValueOnce({ ok: true });
-
-      const cryptoModule = { randomUUID: jest.fn(() => 'uuid-123') };
-
-      const testCore = createGenerateStatsCore({
-        db,
-        auth: { verifyIdToken: jest.fn() },
-        storage,
-        fetchFn,
-        env: {},
-        cryptoModule,
-        console: noopConsole,
-      });
-
-      await testCore.generate();
-
-      expect(bucketMock).toHaveBeenCalledWith(DEFAULT_BUCKET_NAME);
-      expect(fileMock).toHaveBeenCalledWith('stats.html');
-      expect(saveMock).toHaveBeenCalledTimes(1);
-
-      const savedHtml = saveMock.mock.calls[0][0];
-      expect(savedHtml).toContain('Number of stories: 4');
-      expect(savedHtml).toContain('Number of pages: 7');
-      expect(savedHtml).toContain('Story One');
-      expect(savedHtml).toContain('story2');
-
-      const saveOptions = saveMock.mock.calls[0][1];
-      expect(saveOptions).toEqual({
-        contentType: 'text/html',
-        metadata: { cacheControl: 'no-cache' },
-      });
-
-      expect(fetchFn).toHaveBeenCalledTimes(2);
-      const invalidateCall = fetchFn.mock.calls[1];
-      const invalidateBody = JSON.parse(invalidateCall[1].body);
-      expect(invalidateBody).toEqual({
-        host: 'www.dendritestories.co.nz',
-        path: '/stats.html',
-        requestId: 'uuid-123',
-      });
-    });
-
-    it('uses configured static bucket and object prefix', async () => {
-      const countSnap = count => Promise.resolve({ data: () => ({ count }) });
-      const db = {
-        collection: jest.fn(name => {
-          if (name === 'stories') {
-            return { count: () => ({ get: () => countSnap(0) }) };
-          }
-          if (name === 'storyStats') {
-            return {
-              orderBy: () => ({
-                limit: () => ({
-                  get: () => Promise.resolve({ docs: [] }),
-                }),
-              }),
-            };
-          }
-          throw new Error(`Unexpected collection ${name}`);
-        }),
-        collectionGroup: jest.fn(() => ({
-          where: () => ({ count: () => ({ get: () => countSnap(0) }) }),
-          count: () => ({ get: () => countSnap(0) }),
-        })),
-      };
-      const saveMock = jest.fn(() => Promise.resolve());
-      const fileMock = jest.fn(() => ({ save: saveMock }));
-      const bucketMock = jest.fn(() => ({ file: fileMock }));
-      const storage = { bucket: bucketMock };
-      const fetchFn = jest
-        .fn()
-        .mockResolvedValueOnce({
-          ok: true,
-          json: async () => ({ [ACCESS_TOKEN_KEY]: 'token-123' }),
-        })
-        .mockResolvedValueOnce({ ok: true });
-
-      const testCore = createGenerateStatsCore({
-        db,
-        auth: { verifyIdToken: jest.fn() },
-        storage,
-        fetchFn,
-        env: {
-          STATIC_BUCKET_NAME: 'shared-test-bucket',
-          STATIC_OBJECT_PREFIX: 't-example/',
-        },
-        cryptoModule: { randomUUID: jest.fn(() => 'uuid-123') },
-        console: noopConsole,
-      });
-
-      await testCore.generate();
-
-      expect(bucketMock).toHaveBeenCalledWith('shared-test-bucket');
-      expect(fileMock).toHaveBeenCalledWith('t-example/stats.html');
-    });
-  });
-
-  describe('getAccessTokenFromMetadata', () => {
-    it('should return an access token', async () => {
-      mockFetchFn.mockImplementationOnce(() =>
-        Promise.resolve({
-          ok: true,
-          json: () =>
-            Promise.resolve({ [ACCESS_TOKEN_KEY]: 'test-access-token' }),
-        })
-      );
-      const token = await core.getAccessTokenFromMetadata();
-      expect(token).toBe('test-access-token');
-    });
-
-    it('should throw an error if fetch is not ok', async () => {
-      mockFetchFn.mockImplementationOnce(() =>
-        Promise.resolve({
-          ok: false,
-          status: 404,
-        })
-      );
-      await expect(core.getAccessTokenFromMetadata()).rejects.toThrow(
-        'metadata token: HTTP 404'
-      );
-    });
-
-    it('should reject metadata responses without a string access token', async () => {
-      mockFetchFn.mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({ [ACCESS_TOKEN_KEY]: 123 }),
-      });
-
-      await expect(core.getAccessTokenFromMetadata()).rejects.toThrow(
-        'invalid access_token in metadata response'
-      );
-    });
-  });
-
-  describe('invalidatePaths', () => {
-    it('should invalidate paths successfully', async () => {
-      mockFetchFn.mockImplementationOnce(() =>
-        Promise.resolve({
-          ok: true,
-          json: () =>
-            Promise.resolve({ [ACCESS_TOKEN_KEY]: 'test-access-token' }),
-        })
-      );
-      mockFetchFn.mockImplementationOnce(() =>
-        Promise.resolve({
-          ok: true,
-        })
-      );
-      const paths = ['/path1', '/path2'];
-      await core.invalidatePaths(paths);
-      expect(mockFetchFn).toHaveBeenCalledWith(
-        'https://compute.googleapis.com/compute/v1/projects/undefined/global/urlMaps/some-url-map/invalidateCache',
-        {
-          method: 'POST',
-          headers: {
-            Authorization: 'Bearer test-access-token',
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            host: 'www.dendritestories.co.nz',
-            path: '/path1',
-            requestId: 'some-uuid',
-          }),
+            })),
+          };
         }
-      );
+
+        throw new Error(`Unexpected collectionGroup ${name}`);
+      }),
+    };
+
+    const saveMock = jest.fn(() => Promise.resolve());
+    const fileMock = jest.fn(() => ({ save: saveMock }));
+    const bucketMock = jest.fn(() => ({ file: fileMock }));
+    const storage = { bucket: bucketMock };
+
+    const fetchFn = jest
+      .fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ [ACCESS_TOKEN_KEY]: 'token-123' }),
+      })
+      .mockResolvedValueOnce({ ok: true });
+
+    const cryptoModule = { randomUUID: jest.fn(() => 'uuid-123') };
+
+    const testCore = createGenerateStatsCore({
+      db,
+      auth: { verifyIdToken: jest.fn() },
+      storage,
+      fetchFn,
+      env: {},
+      cryptoModule,
+      console: noopConsole,
     });
 
-    it('should log an error if invalidate cache fails', async () => {
-      mockFetchFn.mockImplementationOnce(() =>
-        Promise.resolve({
-          ok: true,
-          json: () =>
-            Promise.resolve({ [ACCESS_TOKEN_KEY]: 'test-access-token' }),
-        })
-      );
-      mockFetchFn.mockImplementationOnce(() =>
-        Promise.resolve({
-          ok: false,
-          status: 500,
-        })
-      );
-      const paths = ['/path1'];
-      await core.invalidatePaths(paths);
-      expect(mockConsoleError).toHaveBeenCalledWith(
-        'invalidate /path1 failed: 500'
-      );
+    await testCore.generate();
+
+    expect(bucketMock).toHaveBeenCalledWith(DEFAULT_BUCKET_NAME);
+    expect(fileMock).toHaveBeenCalledWith('stats.html');
+    expect(saveMock).toHaveBeenCalledTimes(1);
+
+    const savedHtml = saveMock.mock.calls[0][0];
+    expect(savedHtml).toContain('Number of stories: 4');
+    expect(savedHtml).toContain('Number of pages: 7');
+    expect(savedHtml).toContain('Story One');
+    expect(savedHtml).toContain('story2');
+
+    const saveOptions = saveMock.mock.calls[0][1];
+    expect(saveOptions).toEqual({
+      contentType: 'text/html',
+      metadata: { cacheControl: 'no-cache' },
     });
 
-    it('should log an error if fetch throws an exception', async () => {
-      mockFetchFn.mockImplementationOnce(() =>
-        Promise.resolve({
-          ok: true,
-          json: () =>
-            Promise.resolve({ [ACCESS_TOKEN_KEY]: 'test-access-token' }),
-        })
-      );
-      mockFetchFn.mockImplementationOnce(() =>
-        Promise.reject(new Error('Network error'))
-      );
-      const paths = ['/path1'];
-      await core.invalidatePaths(paths);
-      expect(mockConsoleError).toHaveBeenCalledWith(
-        'invalidate /path1 error',
-        'Network error'
-      );
+    expect(fetchFn).toHaveBeenCalledTimes(2);
+    const invalidateCall = fetchFn.mock.calls[1];
+    const invalidateBody = JSON.parse(invalidateCall[1].body);
+    expect(invalidateBody).toEqual({
+      host: 'www.dendritestories.co.nz',
+      path: '/stats.html',
+      requestId: 'uuid-123',
+    });
+  });
+
+  it('uses configured static bucket and object prefix', async () => {
+    const countSnap = count => Promise.resolve({ data: () => ({ count }) });
+    const db = {
+      collection: jest.fn(name => {
+        if (name === 'stories') {
+          return { count: () => ({ get: () => countSnap(0) }) };
+        }
+        if (name === 'storyStats') {
+          return {
+            orderBy: () => ({
+              limit: () => ({
+                get: () => Promise.resolve({ docs: [] }),
+              }),
+            }),
+          };
+        }
+        throw new Error(`Unexpected collection ${name}`);
+      }),
+      collectionGroup: jest.fn(() => ({
+        where: () => ({ count: () => ({ get: () => countSnap(0) }) }),
+        count: () => ({ get: () => countSnap(0) }),
+      })),
+    };
+    const saveMock = jest.fn(() => Promise.resolve());
+    const fileMock = jest.fn(() => ({ save: saveMock }));
+    const bucketMock = jest.fn(() => ({ file: fileMock }));
+    const storage = { bucket: bucketMock };
+    const fetchFn = jest
+      .fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ [ACCESS_TOKEN_KEY]: 'token-123' }),
+      })
+      .mockResolvedValueOnce({ ok: true });
+
+    const testCore = createGenerateStatsCore({
+      db,
+      auth: { verifyIdToken: jest.fn() },
+      storage,
+      fetchFn,
+      env: {
+        STATIC_BUCKET_NAME: 'shared-test-bucket',
+        STATIC_OBJECT_PREFIX: 't-example/',
+      },
+      cryptoModule: { randomUUID: jest.fn(() => 'uuid-123') },
+      console: noopConsole,
     });
 
-    it('skips invalidation when metadata token retrieval fails', async () => {
-      const logger = { error: jest.fn() };
-      mockFetchFn.mockRejectedValueOnce(new Error('metadata unavailable'));
-      await core.invalidatePaths(['/path1'], logger);
-      expect(logger.error).toHaveBeenCalledWith(
-        'Skipping CDN invalidation: metadata unavailable'
-      );
+    await testCore.generate();
+
+    expect(bucketMock).toHaveBeenCalledWith('shared-test-bucket');
+    expect(fileMock).toHaveBeenCalledWith('t-example/stats.html');
+  });
+});
+
+describe('getAccessTokenFromMetadata', () => {
+  it('should return an access token', async () => {
+    mockFetchFn.mockImplementationOnce(() =>
+      Promise.resolve({
+        ok: true,
+        json: () =>
+          Promise.resolve({ [ACCESS_TOKEN_KEY]: 'test-access-token' }),
+      })
+    );
+    const token = await core.getAccessTokenFromMetadata();
+    expect(token).toBe('test-access-token');
+  });
+
+  it('should throw an error if fetch is not ok', async () => {
+    mockFetchFn.mockImplementationOnce(() =>
+      Promise.resolve({
+        ok: false,
+        status: 404,
+      })
+    );
+    await expect(core.getAccessTokenFromMetadata()).rejects.toThrow(
+      'metadata token: HTTP 404'
+    );
+  });
+
+  it('should reject metadata responses without a string access token', async () => {
+    mockFetchFn.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ [ACCESS_TOKEN_KEY]: 123 }),
     });
 
-    it('uses the fallback message for non-Error metadata failures', async () => {
-      const logger = { error: jest.fn() };
-      mockFetchFn.mockRejectedValueOnce('metadata unavailable');
-      await core.invalidatePaths(['/path1'], logger);
-      expect(logger.error).toHaveBeenCalledWith(
-        'Skipping CDN invalidation: metadata token fetch failed'
-      );
-    });
+    await expect(core.getAccessTokenFromMetadata()).rejects.toThrow(
+      'invalid access_token in metadata response'
+    );
+  });
+});
 
-    it('logs when mapped CDN invalidation fails before a request is sent', async () => {
-      mockFetchFn.mockResolvedValueOnce({
+describe('invalidatePaths', () => {
+  it('should invalidate paths successfully', async () => {
+    mockFetchFn.mockImplementationOnce(() =>
+      Promise.resolve({
+        ok: true,
+        json: () =>
+          Promise.resolve({ [ACCESS_TOKEN_KEY]: 'test-access-token' }),
+      })
+    );
+    mockFetchFn.mockImplementationOnce(() =>
+      Promise.resolve({
+        ok: true,
+      })
+    );
+    const paths = ['/path1', '/path2'];
+    await core.invalidatePaths(paths);
+    expect(mockFetchFn).toHaveBeenCalledWith(
+      'https://compute.googleapis.com/compute/v1/projects/undefined/global/urlMaps/some-url-map/invalidateCache',
+      {
+        method: 'POST',
+        headers: {
+          Authorization: 'Bearer test-access-token',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          host: 'www.dendritestories.co.nz',
+          path: '/path1',
+          requestId: 'some-uuid',
+        }),
+      }
+    );
+  });
+
+  it('should log an error if invalidate cache fails', async () => {
+    mockFetchFn.mockImplementationOnce(() =>
+      Promise.resolve({
+        ok: true,
+        json: () =>
+          Promise.resolve({ [ACCESS_TOKEN_KEY]: 'test-access-token' }),
+      })
+    );
+    mockFetchFn.mockImplementationOnce(() =>
+      Promise.resolve({
+        ok: false,
+        status: 500,
+      })
+    );
+    const paths = ['/path1'];
+    await core.invalidatePaths(paths);
+    expect(mockConsoleError).toHaveBeenCalledWith(
+      'invalidate /path1 failed: 500'
+    );
+  });
+
+  it('should log an error if fetch throws an exception', async () => {
+    mockFetchFn.mockImplementationOnce(() =>
+      Promise.resolve({
+        ok: true,
+        json: () =>
+          Promise.resolve({ [ACCESS_TOKEN_KEY]: 'test-access-token' }),
+      })
+    );
+    mockFetchFn.mockImplementationOnce(() =>
+      Promise.reject(new Error('Network error'))
+    );
+    const paths = ['/path1'];
+    await core.invalidatePaths(paths);
+    expect(mockConsoleError).toHaveBeenCalledWith(
+      'invalidate /path1 error',
+      'Network error'
+    );
+  });
+
+  it('skips invalidation when metadata token retrieval fails', async () => {
+    const logger = { error: jest.fn() };
+    mockFetchFn.mockRejectedValueOnce(new Error('metadata unavailable'));
+    await core.invalidatePaths(['/path1'], logger);
+    expect(logger.error).toHaveBeenCalledWith(
+      'Skipping CDN invalidation: metadata unavailable'
+    );
+  });
+
+  it('uses the fallback message for non-Error metadata failures', async () => {
+    const logger = { error: jest.fn() };
+    mockFetchFn.mockRejectedValueOnce('metadata unavailable');
+    await core.invalidatePaths(['/path1'], logger);
+    expect(logger.error).toHaveBeenCalledWith(
+      'Skipping CDN invalidation: metadata token fetch failed'
+    );
+  });
+
+  it('logs when mapped CDN invalidation fails before a request is sent', async () => {
+    mockFetchFn.mockResolvedValueOnce({
+      ok: true,
+      json: () => Promise.resolve({ [ACCESS_TOKEN_KEY]: 'token' }),
+    });
+    mockCryptoModule.randomUUID = () => {
+      throw new Error('uuid unavailable');
+    };
+    const logger = { error: jest.fn() };
+    await core.invalidatePaths(['/path1'], logger);
+    expect(logger.error).toHaveBeenCalledWith(
+      'Skipping CDN invalidation: uuid unavailable'
+    );
+    mockCryptoModule.randomUUID = () => 'some-uuid';
+  });
+
+  it('uses the fallback message for non-Error mapping failures', async () => {
+    const logger = { error: jest.fn() };
+    mockFetchFn.mockResolvedValueOnce({
+      ok: true,
+      json: () => Promise.resolve({ [ACCESS_TOKEN_KEY]: 'token' }),
+    });
+    mockCryptoModule.randomUUID = () => {
+      throw 'uuid unavailable';
+    };
+    await core.invalidatePaths(['/path1'], logger);
+    expect(logger.error).toHaveBeenCalledWith(
+      'Skipping CDN invalidation: CDN invalidation failed'
+    );
+    mockCryptoModule.randomUUID = () => 'some-uuid';
+  });
+
+  it('should log the raw error if the thrown value has no message', async () => {
+    const rawError = { reason: 'timeout' };
+    mockFetchFn.mockImplementationOnce(() =>
+      Promise.resolve({
         ok: true,
         json: () => Promise.resolve({ [ACCESS_TOKEN_KEY]: 'token' }),
-      });
-      mockCryptoModule.randomUUID = () => {
-        throw new Error('uuid unavailable');
-      };
-      const logger = { error: jest.fn() };
-      await core.invalidatePaths(['/path1'], logger);
-      expect(logger.error).toHaveBeenCalledWith(
-        'Skipping CDN invalidation: uuid unavailable'
-      );
-      mockCryptoModule.randomUUID = () => 'some-uuid';
-    });
+      })
+    );
+    mockFetchFn.mockImplementationOnce(() => Promise.reject(rawError));
 
-    it('uses the fallback message for non-Error mapping failures', async () => {
-      const logger = { error: jest.fn() };
-      mockFetchFn.mockResolvedValueOnce({
+    await core.invalidatePaths(['/path1']);
+    expect(mockConsoleError).toHaveBeenCalledWith(
+      'invalidate /path1 error',
+      rawError
+    );
+  });
+
+  it('should log primitive rejection values directly', async () => {
+    mockFetchFn.mockImplementationOnce(() =>
+      Promise.resolve({
         ok: true,
         json: () => Promise.resolve({ [ACCESS_TOKEN_KEY]: 'token' }),
-      });
-      mockCryptoModule.randomUUID = () => {
-        throw 'uuid unavailable';
-      };
-      await core.invalidatePaths(['/path1'], logger);
-      expect(logger.error).toHaveBeenCalledWith(
-        'Skipping CDN invalidation: CDN invalidation failed'
-      );
-      mockCryptoModule.randomUUID = () => 'some-uuid';
-    });
+      })
+    );
+    mockFetchFn.mockImplementationOnce(() => Promise.reject('boom'));
 
-    it('should log the raw error if the thrown value has no message', async () => {
-      const rawError = { reason: 'timeout' };
-      mockFetchFn.mockImplementationOnce(() =>
-        Promise.resolve({
-          ok: true,
-          json: () => Promise.resolve({ [ACCESS_TOKEN_KEY]: 'token' }),
-        })
-      );
-      mockFetchFn.mockImplementationOnce(() => Promise.reject(rawError));
-
-      await core.invalidatePaths(['/path1']);
-      expect(mockConsoleError).toHaveBeenCalledWith(
-        'invalidate /path1 error',
-        rawError
-      );
-    });
-
-    it('should log primitive rejection values directly', async () => {
-      mockFetchFn.mockImplementationOnce(() =>
-        Promise.resolve({
-          ok: true,
-          json: () => Promise.resolve({ [ACCESS_TOKEN_KEY]: 'token' }),
-        })
-      );
-      mockFetchFn.mockImplementationOnce(() => Promise.reject('boom'));
-
-      await core.invalidatePaths(['/path1']);
-      expect(mockConsoleError).toHaveBeenCalledWith(
-        'invalidate /path1 error',
-        'boom'
-      );
-    });
+    await core.invalidatePaths(['/path1']);
+    expect(mockConsoleError).toHaveBeenCalledWith(
+      'invalidate /path1 error',
+      'boom'
+    );
   });
 });
 
