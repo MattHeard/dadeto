@@ -56,11 +56,16 @@ test('migration calculates sums bottom-up and is rerunnable', async () => {
   const leaf = { data: { visibility: 0.5 } };
   const root = { data: { visibility: 0.8 } };
   const writes = [];
-  const readChildren = async node => (node === root ? [leaf] : []);
+  const readChildren = async node => {
+    if (node === root) return [leaf];
+    return [];
+  };
   const options = {
     stories: [{ id: 'story' }],
-    readChildren: async node =>
-      node.id === 'story' ? [root] : readChildren(node),
+    readChildren: async node => {
+      if (node.id === 'story') return [root];
+      return readChildren(node);
+    },
     writeVariant: async (variant, data) => writes.push([variant, data]),
   };
   await migrateTreeVisibilitySums(options);
@@ -74,7 +79,10 @@ test('migration defaults visibility when a variant has no data', async () => {
   const writes = [];
   await migrateTreeVisibilitySums({
     stories: [{ id: 'story' }],
-    readChildren: async node => (node.id === 'story' ? [{ data: null }] : []),
+    readChildren: async node => {
+      if (node.id === 'story') return [{ data: null }];
+      return [];
+    },
     writeVariant: async (variant, data) => writes.push([variant, data]),
   });
 
