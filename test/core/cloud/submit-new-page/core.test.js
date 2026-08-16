@@ -25,17 +25,17 @@ function createRequest(body = {}, headers = {}) {
   };
 }
 
-describe('createHandleSubmit', () => {
-  const baseDeps = () => ({
-    verifyIdToken: jest.fn().mockResolvedValue({ uid: 'user-1' }),
-    saveSubmission: jest.fn().mockResolvedValue(),
-    randomUUID: jest.fn().mockReturnValue('uuid-1'),
-    serverTimestamp: jest.fn().mockReturnValue('ts'),
-    parseIncomingOption: jest.fn().mockReturnValue({ optionId: 'opt-1' }),
-    findExistingOption: jest.fn().mockResolvedValue('Option :: 1'),
-    findExistingPage: jest.fn().mockResolvedValue('/pages/1'),
-  });
+const baseDeps = () => ({
+  verifyIdToken: jest.fn().mockResolvedValue({ uid: 'user-1' }),
+  saveSubmission: jest.fn().mockResolvedValue(),
+  randomUUID: jest.fn().mockReturnValue('uuid-1'),
+  serverTimestamp: jest.fn().mockReturnValue('ts'),
+  parseIncomingOption: jest.fn().mockReturnValue({ optionId: 'opt-1' }),
+  findExistingOption: jest.fn().mockResolvedValue('Option :: 1'),
+  findExistingPage: jest.fn().mockResolvedValue('/pages/1'),
+});
 
+describe('createHandleSubmit', () => {
   it('saves a submission for a valid incoming option', async () => {
     const deps = baseDeps();
     const handler = createHandleSubmit(deps);
@@ -173,7 +173,9 @@ describe('createHandleSubmit', () => {
       options: [],
     });
   });
+});
 
+describe('createHandleSubmit page and HTTP behavior', () => {
   it('validates page submissions', async () => {
     const deps = baseDeps();
     const handler = createHandleSubmit(deps);
