@@ -384,6 +384,22 @@ describe('createDocumentStoreCore workflow mutations', () => {
       { id: 'draft-1', title: 'Draft 1', content: 'Body text' },
     ]);
   });
+});
+
+describe('document store pruning and persistence', () => {
+  let tempDir;
+  let workflowPath;
+
+  beforeEach(async () => {
+    tempDir = await mkdtemp(
+      path.join(os.tmpdir(), 'dadeto-core-document-store-')
+    );
+    workflowPath = path.join(tempDir, 'workflow', 'workflow.json');
+  });
+
+  afterEach(async () => {
+    await rm(tempDir, { recursive: true, force: true });
+  });
 
   test('prune helpers keep content when the trailing draft has real text', async () => {
     expect(shouldKeepStepContent(createDeps(), 'Body text')).toBe(true);
@@ -578,6 +594,26 @@ describe('createDocumentStoreCore workflow mutations', () => {
       id: 'draft-2',
       title: 'Draft 2',
     });
+  });
+});
+
+describe('document store save lifecycle', () => {
+  let tempDir;
+  let workflowPath;
+  let workflowDir;
+  let legacyDocumentPath;
+
+  beforeEach(async () => {
+    tempDir = await mkdtemp(
+      path.join(os.tmpdir(), 'dadeto-core-document-store-')
+    );
+    workflowPath = path.join(tempDir, 'workflow', 'workflow.json');
+    workflowDir = path.join(tempDir, 'workflow');
+    legacyDocumentPath = path.join(tempDir, 'writer.md');
+  });
+
+  afterEach(async () => {
+    await rm(tempDir, { recursive: true, force: true });
   });
 
   test('saves non-empty content, updates the heading, and reports metadata', async () => {
