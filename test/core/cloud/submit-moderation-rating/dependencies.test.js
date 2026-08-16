@@ -17,11 +17,10 @@ describe('createModerationRatingDependencies', () => {
     const set = jest.fn();
     const ratingDoc = { set };
     const db = {
-      collection: jest.fn(name =>
-        name === 'moderators'
-          ? { doc: jest.fn(() => moderatorRef) }
-          : { doc: jest.fn(() => ratingDoc) }
-      ),
+      collection: jest.fn(name => {
+        if (name === 'moderators') return { doc: jest.fn(() => moderatorRef) };
+        return { doc: jest.fn(() => ratingDoc) };
+      }),
       doc: jest.fn(),
     };
     const auth = { verifyIdToken: jest.fn().mockResolvedValue({ uid: 'abc' }) };

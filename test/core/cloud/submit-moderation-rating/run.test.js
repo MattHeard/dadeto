@@ -10,11 +10,10 @@ describe('runSubmitModerationRating', () => {
     const get = jest.fn().mockResolvedValue({ exists: false });
     const moderatorDoc = { get };
     const db = {
-      collection: jest.fn(name =>
-        name === 'moderators'
-          ? { doc: jest.fn(() => moderatorDoc) }
-          : { doc: jest.fn(() => ({ set: jest.fn() })) }
-      ),
+      collection: jest.fn(name => {
+        if (name === 'moderators') return { doc: jest.fn(() => moderatorDoc) };
+        return { doc: jest.fn(() => ({ set: jest.fn() })) };
+      }),
       doc: jest.fn(),
     };
 
