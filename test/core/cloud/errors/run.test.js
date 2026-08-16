@@ -219,7 +219,9 @@ describe('createErrorBeaconRun', () => {
 
     expect(response.statusCode).toBe(500);
   });
+});
 
+describe('createErrorBeaconRun environment fallbacks', () => {
   it('uses fallback project environment variables and an empty access token', async () => {
     const post = jest.fn();
     const use = jest.fn();
@@ -448,7 +450,10 @@ describe('createErrorBeaconRun', () => {
     const environmentVariables = {
       get DENDRITE_ENVIRONMENT() {
         environmentReads += 1;
-        return environmentReads <= 2 ? 't-123' : undefined;
+        if (environmentReads <= 2) {
+          return 't-123';
+        }
+        return undefined;
       },
       PLAYWRIGHT_ORIGIN: 'https://playwright.example',
     };
