@@ -119,7 +119,9 @@ describe('local notion codex poll runner', () => {
       global.Date = originalDate;
     }
   });
+});
 
+describe('local notion codex active run handling', () => {
   test('skips launching when an active run is still alive', async () => {
     const writes = [];
     const result = await runNotionCodexPoll({
@@ -322,7 +324,9 @@ describe('local notion codex poll runner', () => {
       },
     ]);
   });
+});
 
+describe('local notion codex idle backoff', () => {
   test('backs off after an idle completed run outcome', async () => {
     const writes = [];
     const result = await runNotionCodexPoll({
@@ -483,7 +487,9 @@ describe('local notion codex poll runner', () => {
       nextPollAfter: '2026-04-30T16:22:00.000Z',
     });
   });
+});
 
+describe('local notion codex backoff recovery', () => {
   test('resets idle backoff after a handled run outcome', async () => {
     const writes = [];
     const launchPayloads = [];
@@ -678,7 +684,9 @@ describe('local notion codex poll runner', () => {
       process.kill = originalKill;
     }
   });
+});
 
+describe('local notion codex process edge cases', () => {
   test('returns null when the active run id is missing', () => {
     expect(getActiveRunId(null)).toBeNull();
     expect(getActiveRunId({})).toBeNull();
