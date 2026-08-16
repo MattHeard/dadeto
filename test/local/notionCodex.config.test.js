@@ -139,7 +139,9 @@ describe('local notion codex config', () => {
       configPath: '/tmp/repo/config.json',
     });
   });
+});
 
+describe('local notion codex config overrides', () => {
   test('applies explicit config overrides', () => {
     const config = normalizeNotionCodexConfig(
       {
@@ -264,7 +266,9 @@ describe('local notion codex config', () => {
       })
     ).rejects.toThrow('boom');
   });
+});
 
+describe('local notion codex config loading fallbacks', () => {
   test('loads defaults when called without options', async () => {
     const config = await loadNotionCodexConfig();
 
