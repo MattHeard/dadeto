@@ -82,9 +82,12 @@ export default [
         {
           definedTypes: [
             'fetch',
+            'globalThis.fetch',
             'Buffer',
             'setTimeout',
+            'globalThis.setTimeout',
             'URL',
+            'globalThis.URL',
             'Response',
             'Document',
             'Window',

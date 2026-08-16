@@ -294,7 +294,7 @@ function resolveStatusPaths(options) {
  * Read the thin-file configuration, using defaults when it is unavailable.
  * @param {{ fsModule: { readFileSync: Function }, pathModule: { resolve: Function }, repoRoot: string }} options Dependencies.
  * @param {string} configPath Config path relative to the repository root.
- * @returns {{ maxLines: number, exemptions: Record<string, unknown> }} Parsed configuration.
+ * @returns {{ maxLines: number, exemptions: Record<string, string> }} Parsed configuration.
  */
 function readThinConfig(options, configPath) {
   try {
