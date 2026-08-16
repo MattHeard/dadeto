@@ -13,7 +13,9 @@ describe('local notion codex launcher', () => {
       expect.objectContaining({ launch: expect.any(Function) })
     );
   });
+});
 
+describe('local notion codex launcher execution', () => {
   test('spawns a detached codex exec session with append-only run logs', async () => {
     const calls = [];
     const openCalls = [];
@@ -89,7 +91,9 @@ describe('local notion codex launcher', () => {
       '/tmp/repo/tracking/notion-codex/runs/2026-04-30T07-40-00.000Z--notion-codex--stderr.log',
     ]);
   });
+});
 
+describe('local notion codex launcher exit handling', () => {
   test('invokes the exit handler and logs failures from it', async () => {
     const consoleError = jest
       .spyOn(console, 'error')
