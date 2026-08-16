@@ -201,21 +201,23 @@ describe('joyConMapper helper branches', () => {
         started: false,
         currentIndex: 0,
         stored: {
-          mappings: {
-            l: {},
-            zl: {},
-            minus: {},
-            capture: {},
-            stick_press: {},
-            dpad_up: {},
-            dpad_down: {},
-            dpad_left: {},
-            dpad_right: {},
-            stick_left: {},
-            stick_right: {},
-            stick_up: {},
-            stick_down: {},
-          },
+          mappings: Object.fromEntries(
+            [
+              'l',
+              'zl',
+              'minus',
+              'capture',
+              'stick_press',
+              'dpad_up',
+              'dpad_down',
+              'dpad_left',
+              'dpad_right',
+              'stick_left',
+              'stick_right',
+              'stick_up',
+              'stick_down',
+            ].map(key => [key, {}])
+          ),
           skippedControls: [],
         },
       })
