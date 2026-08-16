@@ -139,7 +139,9 @@ describe('solarPaddle', () => {
     expect(firstLayout).toEqual(secondLayout);
     expect(resetLayout).not.toEqual(firstLayout);
   });
+});
 
+describe('solarPaddle reset and collision setup', () => {
   it('rebuilds a fresh layout on reset from persisted state', () => {
     const storageValue = {
       current: {
@@ -252,7 +254,9 @@ describe('solarPaddle', () => {
 
     expect(storageValue.current.SOLA1.orb.vx).toBeCloseTo(-0.5584045584045584);
   });
+});
 
+describe('solarPaddle gameplay state', () => {
   it('pauses and resumes on repeated pause presses without duplicating the edge', () => {
     const storageValue = { current: null };
     runToy(JSON.stringify({ type: 'keydown', key: 'Space' }), storageValue);
@@ -380,7 +384,9 @@ describe('solarPaddle', () => {
     expect(nextState.orb.y).not.toBe(35);
     expect(nextState.orb.vy === 0).toBe(false);
   });
+});
 
+describe('solarPaddle storage normalization', () => {
   it('normalizes malformed wrapped storage back to a fresh seed', () => {
     const storageValue = {
       current: {
@@ -547,7 +553,9 @@ describe('solarPaddle', () => {
 
     expect(storageValue.current.SOLA1.input.keyboard).toEqual({});
   });
+});
 
+describe('solarPaddle input and orb normalization', () => {
   it('keeps the orb anchored when it is stuck to the paddle', () => {
     const storageValue = {
       current: {
@@ -699,7 +707,9 @@ describe('solarPaddle', () => {
 
     expect(storageValue.current.SOLA1.panels).toHaveLength(12);
   });
+});
 
+describe('solarPaddle collision branches', () => {
   it('covers reset, wall, paddle, and panel-axis branches', () => {
     const storageValue = {
       current: {
@@ -752,7 +762,9 @@ describe('solarPaddle', () => {
     expect(next.storageValue.current.SOLA1.status).toBe('ready');
     expect(next.storageValue.current.SOLA1.orb.stuckToPaddle).toBe(true);
   });
+});
 
+describe('solarPaddle additional collision branches', () => {
   it('covers the remaining solar collision branches without reset', () => {
     const storageValue = {
       current: {
@@ -950,7 +962,9 @@ describe('solarPaddle', () => {
 
     expect(nextState.orb.y).not.toBe(34);
   });
+});
 
+describe('solarPaddle panel outcomes', () => {
   it('marks the scene won when every panel is charged', () => {
     const storageValue = {
       current: {
@@ -1173,7 +1187,9 @@ describe('solarPaddle', () => {
 
     expect(nextStorage.current.SOLA1.paddle.x).toBe(0);
   });
+});
 
+describe('solarPaddle life and relaunch behavior', () => {
   it('loses a life when the orb exits below the canvas', () => {
     const storageValue = {
       current: {
@@ -1298,7 +1314,9 @@ describe('solarPaddle', () => {
     expect(relaunched.storageValue.current.SOLA1.status).toBe('running');
     expect(relaunched.storageValue.current.SOLA1.orb.stuckToPaddle).toBe(false);
   });
+});
 
+describe('solarPaddle action and wall behavior', () => {
   it('derives actions from capture snapshots and gamepad button edits', () => {
     const storageValue = { current: null };
     runToy(JSON.stringify({ type: 'keydown', key: 'ArrowLeft' }), storageValue);
@@ -1478,7 +1496,9 @@ describe('solarPaddle', () => {
 
     expect(storageValue.current.SOLA1.orb.vx).toBeGreaterThan(0);
   });
+});
 
+describe('solarPaddle panel reflection behavior', () => {
   it('reflects from the side of a panel', () => {
     const storageValue = {
       current: {
@@ -1648,7 +1668,9 @@ describe('solarPaddle', () => {
 
     expect(storageValue.current.SOLA1.orb.vy).toBeLessThan(0);
   });
+});
 
+describe('solarPaddle final outcome branches', () => {
   it('separates the orb on the horizontal paddle edge and charges a fresh panel', () => {
     const storageValue = {
       current: {
