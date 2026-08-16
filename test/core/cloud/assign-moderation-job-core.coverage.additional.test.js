@@ -29,6 +29,8 @@ import {
   assignModerationJobTestUtils,
 } from '../../../src/core/cloud/assign-moderation-job/assign-moderation-job-core.js';
 
+const idTokenKey = 'id_token';
+
 describe('assign moderation job core additional coverage', () => {
   test('resolves dependency overrides and initialization state', () => {
     const defaultEnsure = jest.fn();
@@ -76,11 +78,11 @@ describe('assign moderation job core additional coverage', () => {
   });
 
   test('reads request bodies and generates random values', () => {
-    expect(getBodyFromRequest({ body: { id_token: 'token' } })).toEqual({
-      id_token: 'token',
+    expect(getBodyFromRequest({ body: { [idTokenKey]: 'token' } })).toEqual({
+      [idTokenKey]: 'token',
     });
     expect(getBodyFromRequest(undefined)).toBeUndefined();
-    expect(getIdTokenFromRequest({ body: { id_token: 'token' } })).toBe(
+    expect(getIdTokenFromRequest({ body: { [idTokenKey]: 'token' } })).toBe(
       'token'
     );
     expect(getIdTokenFromRequest({ body: {} })).toBeUndefined();
@@ -144,7 +146,9 @@ describe('assign moderation job core additional coverage', () => {
     expect(express.urlencoded).toHaveBeenCalledWith({ extended: false });
     expect(app.use).toHaveBeenCalledWith('parser');
   });
+});
 
+describe('assign moderation job query and workflow coverage', () => {
   test('selects variants and builds reputation queries', () => {
     expect(selectVariantDoc({ variantDoc: 'direct' })).toEqual({
       variantDoc: 'direct',
@@ -226,10 +230,10 @@ describe('assign moderation job core additional coverage', () => {
       error: { status: 400, body: 'Missing id_token' },
     });
     await expect(
-      guards({ req: { method: 'POST', body: { id_token: 'token' } } })
+      guards({ req: { method: 'POST', body: { [idTokenKey]: 'token' } } })
     ).resolves.toEqual({
       context: {
-        req: { method: 'POST', body: { id_token: 'token' } },
+        req: { method: 'POST', body: { [idTokenKey]: 'token' } },
         idToken: 'token',
         decoded: { uid: 'mod-1' },
         userRecord: { uid: 'mod-1' },
@@ -237,14 +241,14 @@ describe('assign moderation job core additional coverage', () => {
     });
     auth.verifyIdToken.mockRejectedValueOnce({ message: 'expired' });
     await expect(
-      guards({ req: { method: 'POST', body: { id_token: 'bad' } } })
+      guards({ req: { method: 'POST', body: { [idTokenKey]: 'bad' } } })
     ).resolves.toEqual({
       error: { status: 401, body: 'expired' },
     });
     auth.verifyIdToken.mockResolvedValueOnce({ uid: 'mod-2' });
     auth.getUser.mockRejectedValueOnce(new Error('missing user'));
     await expect(
-      guards({ req: { method: 'POST', body: { id_token: 'bad-user' } } })
+      guards({ req: { method: 'POST', body: { [idTokenKey]: 'bad-user' } } })
     ).resolves.toEqual({
       error: { status: 401, body: 'missing user' },
     });
