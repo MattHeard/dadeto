@@ -94,7 +94,9 @@ describe('fake firestore', () => {
       db.doc('missing/doc').update({ title: 'fail' })
     ).rejects.toThrow('Cannot update missing document: missing/doc');
   });
+});
 
+describe('fake firestore queries and ordering', () => {
   it('supports collection queries, collection groups, ordering, limits, and counts', async () => {
     const db = createFakeFirestore();
 
@@ -230,7 +232,9 @@ describe('fake firestore', () => {
     expect(missingSnapshot.exists).toBe(false);
     expect(missingSnapshot.data()).toBeUndefined();
   });
+});
 
+describe('fake firestore low-level branches', () => {
   it('covers the helper branches that are only exercised by low-level unit tests', () => {
     expect(
       fakeFirestoreTestUtils.getFieldValue({ nested: 5 }, 'nested.value')
