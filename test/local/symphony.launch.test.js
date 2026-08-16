@@ -164,6 +164,18 @@ describe('local symphony runner launch', () => {
       })
     ).resolves.toMatchObject({ state: 'running' });
   });
+});
+
+describe('local symphony runner exit handling', () => {
+  let tempDir;
+
+  beforeEach(async () => {
+    tempDir = await mkdtemp(path.join(os.tmpdir(), 'dadeto-symphony-launch-'));
+  });
+
+  afterEach(async () => {
+    await rm(tempDir, { recursive: true, force: true });
+  });
 
   test('handles runner exit persistence, missing status, and failures', async () => {
     expect(createRunnerExitHandler({})).toBeUndefined();
@@ -214,6 +226,18 @@ describe('local symphony runner launch', () => {
     expect(error).toHaveBeenCalled();
     warn.mockRestore();
     error.mockRestore();
+  });
+});
+
+describe('local symphony successful runner launch', () => {
+  let tempDir;
+
+  beforeEach(async () => {
+    tempDir = await mkdtemp(path.join(os.tmpdir(), 'dadeto-symphony-launch-'));
+  });
+
+  afterEach(async () => {
+    await rm(tempDir, { recursive: true, force: true });
   });
 
   test('invokes the configured Ralph launcher and writes launch artifacts on success', async () => {
@@ -426,6 +450,18 @@ describe('local symphony runner launch', () => {
       )
     ).resolves.toContain('--stderr.log');
   });
+});
+
+describe('local symphony launch race handling', () => {
+  let tempDir;
+
+  beforeEach(async () => {
+    tempDir = await mkdtemp(path.join(os.tmpdir(), 'dadeto-symphony-launch-'));
+  });
+
+  afterEach(async () => {
+    await rm(tempDir, { recursive: true, force: true });
+  });
 
   test('keeps the stored status idle when the runner exits before the launch write completes', async () => {
     const statusStore = createSymphonyStatusStore({
@@ -517,6 +553,18 @@ describe('local symphony runner launch', () => {
         outcome: 'completed',
       },
     });
+  });
+});
+
+describe('local symphony launch failures', () => {
+  let tempDir;
+
+  beforeEach(async () => {
+    tempDir = await mkdtemp(path.join(os.tmpdir(), 'dadeto-symphony-launch-'));
+  });
+
+  afterEach(async () => {
+    await rm(tempDir, { recursive: true, force: true });
   });
 
   test('records a failed launch when the Ralph launcher integration errors', async () => {
