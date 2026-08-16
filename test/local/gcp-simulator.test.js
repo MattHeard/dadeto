@@ -5,6 +5,11 @@ import { createLocalGcpSimulator } from '../../src/local/gcp-simulator/simulator
 
 const incomingOptionKey = 'incoming_option';
 
+const getAuthorization = (name, value, fallback) => {
+  if (name.toLowerCase() === 'authorization') return value;
+  return fallback;
+};
+
 let simulator;
 
 jest.setTimeout(180000);
@@ -616,8 +621,7 @@ describe('local gcp simulator', () => {
         author: 'Playwright',
       },
       headers: { authorization: 'Bearer ' },
-      get: name =>
-        name.toLowerCase() === 'authorization' ? 'Bearer ' : undefined,
+      get: name => getAuthorization(name, 'Bearer ', undefined),
     });
     expect(blankAuthStorySubmission.status).toBe(201);
     expect(blankAuthStorySubmission.body).toMatchObject({
@@ -700,8 +704,7 @@ describe('local gcp simulator', () => {
       {
         method: 'POST',
         headers: { authorization: 'Bearer ' },
-        get: name =>
-          name.toLowerCase() === 'authorization' ? 'Bearer ' : undefined,
+        get: name => getAuthorization(name, 'Bearer ', undefined),
       },
       mockRes
     );
@@ -965,10 +968,7 @@ describe('local gcp simulator', () => {
     try {
       const request = {
         headers: { authorization: 'Bearer local-admin-token' },
-        get: name =>
-          name.toLowerCase() === 'authorization'
-            ? 'Bearer local-admin-token'
-            : null,
+        get: name => getAuthorization(name, 'Bearer local-admin-token', null),
       };
 
       const first = await authorSimulator.routes.getAuthorUuid(request);
@@ -1002,8 +1002,7 @@ describe('local gcp simulator', () => {
 
       const malformed = await authorSimulator.routes.getAuthorUuid({
         headers: { authorization: 'token-only' },
-        get: name =>
-          name.toLowerCase() === 'authorization' ? 'token-only' : null,
+        get: name => getAuthorization(name, 'token-only', null),
       });
 
       expect(malformed).toEqual({
