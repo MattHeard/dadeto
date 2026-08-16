@@ -245,7 +245,9 @@ describe('createUpdateVariantVisibilityHandler', () => {
 
     await expect(handler({ data: () => null })).resolves.toBeNull();
   });
+});
 
+describe('createUpdateVariantVisibilityHandler visibility updates', () => {
   it('updates visibility with an omitted moderator id', async () => {
     const variantData = {
       visibility: 0.5,
@@ -574,7 +576,9 @@ describe('createUpdateVariantVisibilityHandler republishing', () => {
 
     expect(renderContents).not.toHaveBeenCalled();
   });
+});
 
+describe('createUpdateVariantVisibilityHandler missing roots', () => {
   it('skips republishing when no root page reference exists', async () => {
     const variantData = {
       visibility: 0.6,
