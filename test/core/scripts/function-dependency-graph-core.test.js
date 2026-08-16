@@ -45,6 +45,9 @@ describe('buildFunctionDependencyGraph', () => {
       ])
     );
   });
+});
+
+describe('buildFunctionDependencyGraph imports and exports', () => {
   test('links calls to functions imported from another file', () => {
     const graph = buildFunctionDependencyGraph({
       files: [
