@@ -5,8 +5,9 @@ import path from 'node:path';
 /** @typedef {{ source: string, imported: string }} ImportBinding */
 
 /**
- *
- * @param {AstNode} node
+ * Check whether an AST node represents a function.
+ * @param {AstNode} node AST node.
+ * @returns {boolean} Whether the node is a function.
  */
 function isFunction(node) {
   return [
@@ -19,10 +20,11 @@ function isFunction(node) {
 }
 
 /**
- *
- * @param {AstNode | null | undefined} node
- * @param {AstVisitor} visit
- * @param {AstNode | null} [parent]
+ * Walk an AST subtree while skipping parser metadata fields.
+ * @param {AstNode | null | undefined} node AST node.
+ * @param {AstVisitor} visit Visitor callback.
+ * @param {AstNode | null} [parent] Parent node.
+ * @returns {void}
  */
 function walk(node, visit, parent = null) {
   if (!node || typeof node !== 'object') return;
@@ -42,10 +44,11 @@ function walk(node, visit, parent = null) {
 }
 
 /**
- *
- * @param {AstNode} node
- * @param {AstNode | null} parent
- * @param {number} index
+ * Resolve a stable display name for a function node.
+ * @param {AstNode} node Function node.
+ * @param {AstNode | null} parent Parent node.
+ * @param {number} index Anonymous-function index.
+ * @returns {string} Function name.
  */
 function functionName(node, parent, index) {
   if (node.id?.name) return node.id.name;
@@ -57,17 +60,20 @@ function functionName(node, parent, index) {
 }
 
 /**
- *
- * @param {AstNode} node
+ * Resolve an identifier binding name.
+ * @param {AstNode} node Candidate node.
+ * @returns {string|null} Binding name or null.
  */
 function bindingName(node) {
-  return node?.type === 'Identifier' ? node.name : null;
+  if (node?.type === 'Identifier') return node.name ?? null;
+  return null;
 }
 
 /**
- *
- * @param {Map<string, { source: string, imported: string }>} imports
- * @param {string} name
+ * Resolve an imported binding by local name.
+ * @param {Map<string, { source: string, imported: string }>} imports Import map.
+ * @param {string} name Local binding name.
+ * @returns {{ source: string, imported: string }|null} Import binding or null.
  */
 function importTarget(imports, name) {
   const binding = imports.get(name);
@@ -77,8 +83,9 @@ function importTarget(imports, name) {
 /**
  * Build a conservative, function-level direct dependency graph from Babel ASTs.
  * @param {object} options Graph inputs.
- * @param {Array<{ path: string, source: string }>} options.files
- * @param {(source: string, options: object) => AstNode} options.parse
+ * @param {Array<{ path: string, source: string }>} options.files Source files.
+ * @param {(source: string, options: object) => AstNode} options.parse AST parser.
+ * @returns {{ nodes: Array<object>, edges: Array<object>, ignoredCalls: Array<object> }} Dependency graph.
  */
 export function buildFunctionDependencyGraph({ files, parse }) {
   const parsed = new Map();
@@ -145,8 +152,10 @@ export function buildFunctionDependencyGraph({ files, parse }) {
   /** @type {Array<{ caller: string, callee: string, reason: string }>} */
   const ignoredCalls = [];
   /**
-   * @param {AstNode} caller
-   * @param {string} name
+   * Resolve a local or relative imported function target.
+   * @param {AstNode} caller Calling function metadata.
+   * @param {string} name Candidate local function name.
+   * @returns {{ id: string }|null} Resolved function or null.
    */
   const resolveTarget = (caller, name) => {
     const file = String(caller.file);
@@ -173,8 +182,10 @@ export function buildFunctionDependencyGraph({ files, parse }) {
   for (const caller of functions.values()) {
     const params = new Set(
       (caller.node.params ?? []).map(
-        /** @param {AstNode} param */ param =>
-          bindingName(param) ?? param.left?.name
+        /**
+         * @param {AstNode} param Parameter node.
+         * @returns {string|null} Parameter binding name.
+         */ param => bindingName(param) ?? param.left?.name ?? null
       )
     );
     walk(caller.node.body, node => {
