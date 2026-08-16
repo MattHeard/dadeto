@@ -1224,7 +1224,9 @@ describe('createRenderVariant', () => {
 
     expect(storage.bucket).toHaveBeenCalledWith(DEFAULT_BUCKET_NAME);
   });
+});
 
+describe('createRenderVariant rendering', () => {
   it('renders variants, writes artefacts, and invalidates caches', async () => {
     const consoleError = jest.fn();
 
@@ -1669,7 +1671,9 @@ describe('createRenderVariant', () => {
       }
     );
   });
+});
 
+describe('createRenderVariant lookup failures', () => {
   it('logs when the root page lookup fails', async () => {
     const consoleError = jest.fn();
 
