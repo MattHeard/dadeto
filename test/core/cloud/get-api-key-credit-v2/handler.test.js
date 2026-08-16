@@ -195,7 +195,9 @@ describe('createGetApiKeyCreditV2Handler', () => {
     expect(fetchCredit).toHaveBeenCalledWith('uuid-123');
     expect(applyCreditEvent).not.toHaveBeenCalled();
   });
+});
 
+describe('createGetApiKeyCreditV2Handler credit events', () => {
   it('returns 201 when credit is added', async () => {
     const fetchCredit = jest.fn();
     const applyCreditEvent = jest.fn().mockResolvedValue({
@@ -336,7 +338,9 @@ describe('createGetApiKeyCreditV2Handler', () => {
     expect(fetchCredit).not.toHaveBeenCalled();
     expect(applyCreditEvent).not.toHaveBeenCalled();
   });
+});
 
+describe('createGetApiKeyCreditV2Handler event failures', () => {
   it('returns 500 and logs when applyCreditEvent throws', async () => {
     const error = new Error('boom');
     const fetchCredit = jest.fn();
