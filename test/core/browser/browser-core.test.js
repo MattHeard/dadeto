@@ -199,7 +199,9 @@ describe('browser-core helpers', () => {
     expect(clearInputValue(null)).toBeUndefined();
     expect(setInputValue(null, 'ignored')).toBeUndefined();
   });
+});
 
+describe('browser-core cleanup branches', () => {
   test('applies base cleanup handlers and default handler', () => {
     const dom = {
       hide: jest.fn(),
