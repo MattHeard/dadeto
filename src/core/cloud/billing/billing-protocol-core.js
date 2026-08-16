@@ -1,7 +1,7 @@
 const PARTIALLY_REFUNDED = 'partially_refunded';
 const NEEDS_RECOVERY = 'needs_recovery';
 
-/** @type {Record<string, readonly string[]>} */
+/** @type {Record<string, string[]>} */
 const PURCHASE_TRANSITIONS = Object.freeze({
   pending: Object.freeze(['paid', 'expired']),
   paid: Object.freeze(['partially_refunded', 'refunded']),
@@ -10,7 +10,7 @@ const PURCHASE_TRANSITIONS = Object.freeze({
   expired: Object.freeze([]),
 });
 
-/** @type {Record<string, readonly string[]>} */
+/** @type {Record<string, string[]>} */
 const OPERATION_TRANSITIONS = Object.freeze({
   quoted: Object.freeze(['reserved']),
   reserved: Object.freeze(['settled', 'released', 'needs_recovery']),
@@ -40,9 +40,10 @@ export function canTransitionOperation(from, to) {
 }
 
 /**
- * @param {Record<string, readonly string[]>} transitions Transition map. @param {string} from Current state. @param {string} to Next state.
- * @param from
- * @param to
+ * @param {Record<string, string[]>} transitions Transition map.
+ * @param {string} from Current state.
+ * @param {string} to Next state.
+ * @returns {boolean} Whether the transition is valid.
  */
 function canTransition(transitions, from, to) {
   return transitions[from]?.includes(to) ?? false;
