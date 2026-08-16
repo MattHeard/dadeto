@@ -198,7 +198,10 @@ const computed = { ['ignored']() {} };`,
           {
             type: 'FunctionDeclaration',
             id: { name: 'incomplete' },
-            params: [{ type: 'Identifier', name: 'object' }],
+            params: [
+              { type: 'Identifier', name: 'object' },
+              { type: 'Identifier' },
+            ],
             body: {
               type: 'BlockStatement',
               body: [
