@@ -49,24 +49,42 @@ const {
   '../../../../src/core/cloud/payment-webhook/payment-webhook-core.js'
 );
 
+/**
+ * Build a Firestore-like wrapper dependency for payment webhook coverage.
+ * @param {{ isMissingCustomer: () => boolean, set: Function }} options Fixture callbacks.
+ * @returns {{ collection: Function }} Firestore-like database stub.
+ */
+function createPaymentWebhookDb({ isMissingCustomer, set }) {
+  return {
+    collection: jest.fn(name => ({
+      doc: jest.fn(() => ({
+        get: jest.fn(async () => {
+          if (name === 'payment-customers') {
+            return {
+              data: () => {
+                if (isMissingCustomer()) {
+                  return {};
+                }
+                return { apiKeyUuid: 'uuid-1' };
+              },
+            };
+          }
+          return { exists: true, data: () => ({}) };
+        }),
+        set,
+      })),
+    })),
+  };
+}
+
 describe('payment webhook cloud wrapper', () => {
   it('builds dependencies and forwards the structured response', async () => {
     const set = jest.fn(async () => undefined);
     let missingCustomer = false;
-    const db = {
-      collection: jest.fn(name => ({
-        doc: jest.fn(() => ({
-          get: jest.fn(async () =>
-            name === 'payment-customers'
-              ? {
-                  data: () => (missingCustomer ? {} : { apiKeyUuid: 'uuid-1' }),
-                }
-              : { exists: true, data: () => ({}) }
-          ),
-          set,
-        })),
-      })),
-    };
+    const db = createPaymentWebhookDb({
+      isMissingCustomer: () => missingCustomer,
+      set,
+    });
     const billing = {
       markPurchasePaid: jest.fn(async input => ({ status: 201, body: input })),
       markPurchaseExpired: jest.fn(async input => ({
@@ -147,7 +165,10 @@ describe('payment webhook cloud wrapper', () => {
         id: 'evt-unpaid',
         type: 'checkout.session.completed',
         data: {
-          object: { metadata: { purchase_id: 'p1' }, payment_status: 'unpaid' },
+          object: {
+            metadata: { ['purchase_id']: 'p1' },
+            ['payment_status']: 'unpaid',
+          },
         },
       })
     ).resolves.toBeNull();
@@ -157,9 +178,9 @@ describe('payment webhook cloud wrapper', () => {
         type: 'checkout.session.completed',
         data: {
           object: {
-            metadata: { purchase_id: 'p1' },
-            payment_status: 'paid',
-            payment_intent: 'pi1',
+            metadata: { ['purchase_id']: 'p1' },
+            ['payment_status']: 'paid',
+            ['payment_intent']: 'pi1',
           },
         },
       })
@@ -175,14 +196,17 @@ describe('payment webhook cloud wrapper', () => {
       id: 'evt-no-intent',
       type: 'checkout.session.completed',
       data: {
-        object: { metadata: { purchase_id: 'p1' }, payment_status: 'paid' },
+        object: {
+          metadata: { ['purchase_id']: 'p1' },
+          ['payment_status']: 'paid',
+        },
       },
     });
     await expect(
       captured.handlePurchaseEvent({
         id: 'evt-2',
         type: 'payment_intent.succeeded',
-        data: { object: { metadata: { purchase_id: 'p1' } } },
+        data: { object: { metadata: { ['purchase_id']: 'p1' } } },
       })
     ).resolves.toEqual({
       status: 201,
@@ -196,7 +220,7 @@ describe('payment webhook cloud wrapper', () => {
       captured.handlePurchaseEvent({
         id: 'evt-expired',
         type: 'checkout.session.expired',
-        data: { object: { metadata: { purchase_id: 'p1' } } },
+        data: { object: { metadata: { ['purchase_id']: 'p1' } } },
       })
     ).resolves.toEqual({
       status: 200,
@@ -207,7 +231,10 @@ describe('payment webhook cloud wrapper', () => {
         id: 'evt-3',
         type: 'charge.refunded',
         data: {
-          object: { metadata: { purchase_id: 'p1' }, amount_refunded: 4 },
+          object: {
+            metadata: { ['purchase_id']: 'p1' },
+            ['amount_refunded']: 4,
+          },
         },
       })
     ).resolves.toEqual({
@@ -224,7 +251,10 @@ describe('payment webhook cloud wrapper', () => {
       type: 'charge.refunded',
       data: {
         object: {
-          metadata: { purchase_id: 'p1', pricing_snapshot_id: 'snap-1' },
+          metadata: {
+            ['purchase_id']: 'p1',
+            ['pricing_snapshot_id']: 'snap-1',
+          },
         },
       },
     });
@@ -239,7 +269,7 @@ describe('payment webhook cloud wrapper', () => {
       captured.handlePurchaseEvent({
         id: 'evt-5',
         type: 'customer.created',
-        data: { object: { metadata: { purchase_id: 'p1' } } },
+        data: { object: { metadata: { ['purchase_id']: 'p1' } } },
       })
     ).resolves.toBeNull();
     mockDomainHandler.mockResolvedValueOnce({
@@ -268,7 +298,9 @@ describe('payment webhook cloud wrapper', () => {
     await handle(request, creditResponse);
     expect(creditResponse.status).toHaveBeenCalledWith(201);
   });
+});
 
+describe('payment webhook cloud wrapper validation', () => {
   it('requires Stripe secret, raw body, header, and injected verification', () => {
     const payload = JSON.stringify({
       id: 'signed',
