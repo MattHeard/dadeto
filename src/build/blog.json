@@ -1,6 +1,24 @@
 {
   "posts": [
     {
+      "key": "ASSET1",
+      "title": "Object-minute Asset Registry",
+      "publicationDate": "2026-08-16",
+      "release": "beta",
+      "content": [
+        "Register physical objects that Dadeto can make available for timed possession.",
+        "The toy normalizes asset metadata, sorts it deterministically, and reports inventory counts.",
+        "This is the first inventory primitive for the object-minute rental proof of concept."
+      ],
+      "toy": {
+        "modulePath": "/core/browser/toys/2026-08-16/assetRegistry.js",
+        "functionName": "assetRegistry",
+        "defaultInputMethod": "textarea",
+        "defaultOutputMethod": "textarea"
+      },
+      "tags": ["toy", "object-minute-rental", "inventory", "assets", "json"]
+    },
+    {
       "key": "LEDG5",
       "title": "Ledger Balance",
       "publicationDate": "2026-07-30",
