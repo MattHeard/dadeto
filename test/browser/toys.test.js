@@ -1026,8 +1026,8 @@ describe('initializeInteractiveComponent', () => {
     selectorMap.set('button[type="submit"]', submitButton);
     selectorMap.set('div.output > p', outputElement);
     selectorMap.set('div.output', outputElement.outputParentElement);
-    const globalState = {};
-    const listeners2 = {};
+    const globalState = {},
+      listeners2 = {};
     const isInputKeypress = (element, event) =>
       element === inputElement && event === 'keypress';
     const isSubmitClick = (element, event) =>
@@ -1067,8 +1067,8 @@ describe('initializeInteractiveComponent', () => {
       contains,
     };
     const createEnvFn = () => ({});
-    const errorFn = jest.fn();
-    const fetchFn = jest.fn();
+    const errorFn = jest.fn(),
+      fetchFn = jest.fn();
     const processingFunction = jest.fn(() => 'processed result');
     const logInfo = jest.fn();
     const logError = jest.fn();
