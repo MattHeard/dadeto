@@ -6,16 +6,14 @@ describe('encodeBase64', () => {
     const encoder = jest.fn(input => {
       if (input === 'test') {
         return 'dGVzdA==';
-      } else {
-        return 'unexpected input';
       }
+      return 'unexpected input';
     });
     const get = jest.fn(key => {
       if (key === 'encodeBase64') {
         return encoder;
-      } else {
-        return undefined;
       }
+      return undefined;
     });
     const env = { get };
     expect(encodeBase64('test', env)).toBe('dGVzdA==');

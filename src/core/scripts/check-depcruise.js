@@ -226,7 +226,10 @@ function normalizeCheckDepcruiseOptions(options = {}) {
       options.configPath,
       DEFAULT_CONFIG_PATH
     ),
-    pathModule: requirePathModule(options.pathModule),
+    pathModule:
+      /** @type {{ join: (...segments: string[]) => string, resolve: (...segments: string[]) => string, relative: (from: string, to: string) => string, sep: string }} */ (
+        requirePathModule(options.pathModule)
+      ),
     scopeAnalysisDeps: options.scopeAnalysisDeps ?? DEFAULT_SCOPE_ANALYSIS_DEPS,
   };
 }

@@ -49,17 +49,12 @@ export function buildNextState(persisted, input) {
   const seed = createSeedState(input, persisted);
   const base = persisted || seed;
   const shouldReset = input?.reset === true || !persisted;
-  const merged = shouldReset ? seed : mergeSeedAndState(base, seed);
+  let merged = seed;
+  if (!shouldReset) merged = mergeSeedAndState(base, seed);
   const inputState = updateInputState(base.input, input);
 
-  if (
-    inputState.actions.resetPressed &&
-    !inputState.previousActions.resetPressed
-  ) {
-    const resetState = createSeedState(
-      { ...input, layoutSeed: (persisted?.layoutSeed ?? 0) + 1 },
-      buildResetFallback(persisted)
-    );
+  const resetState = createResetState(inputState, persisted, input);
+  if (resetState) {
     resetState.input = inputState;
     return resetState;
   }
@@ -67,17 +62,44 @@ export function buildNextState(persisted, input) {
   const next = { ...merged, input: inputState, frame: base.frame + 1 };
   applyGameplayInput(next, inputState);
   next.simulationSpeed = inputState.control.speedMultiplier;
+  advanceSimulation(next, inputState);
+  return next;
+}
 
-  const framesToAdvance = next.paused
-    ? inputState.control.stepCount
-    : next.simulationSpeed * Math.max(1, inputState.control.stepCount || 1);
+/**
+ * Create a reset state when the reset action is newly pressed.
+ * @param {BeaconInputState} inputState Current input state.
+ * @param {BeaconState | null} persisted Previous persisted state.
+ * @param {unknown} input Latest input payload.
+ * @returns {BeaconState | null} Reset state or null when no reset is requested.
+ */
+function createResetState(inputState, persisted, input) {
+  if (
+    !inputState.actions.resetPressed ||
+    inputState.previousActions.resetPressed
+  )
+    return null;
+  return createSeedState(
+    { ...input, layoutSeed: (persisted?.layoutSeed ?? 0) + 1 },
+    buildResetFallback(persisted)
+  );
+}
 
+/**
+ * Advance a running state by the requested number of frames.
+ * @param {BeaconState} next Mutable next state.
+ * @param {BeaconInputState} inputState Current input state.
+ * @returns {void}
+ */
+function advanceSimulation(next, inputState) {
+  let framesToAdvance = inputState.control.stepCount;
+  if (!next.paused)
+    framesToAdvance =
+      next.simulationSpeed * Math.max(1, inputState.control.stepCount || 1);
   if (next.status === 'running') {
     for (let index = 0; index < framesToAdvance; index += 1)
       stepSimulation(next);
   }
-
-  return next;
 }
 
 /**
@@ -91,22 +113,64 @@ export function updateInputState(previous, input) {
   const gamepad = normalizeGamepad(input);
   const actions = deriveActions(keyboard, gamepad);
   const previousActions = previous?.actions || createActionFlags();
+  const control = normalizeControlState(previous?.control, input);
+  return { keyboard, gamepad, actions, previousActions, control };
+}
+
+/**
+ * Normalize simulation controls from the previous state and latest input.
+ * @param {BeaconControlState | undefined} previous Previous controls.
+ * @param {unknown} input Latest input payload.
+ * @returns {BeaconControlState} Normalized controls.
+ */
+function normalizeControlState(previous, input) {
   const control = {
-    paused: Boolean(input?.paused ?? previous?.control?.paused ?? false),
+    paused: Boolean(
+      firstDefined(readInput(input, 'paused'), previous?.paused, false)
+    ),
     speedMultiplier: normalizeStepCount(
-      input?.speedMultiplier ??
-        input?.speed ??
-        previous?.control?.speedMultiplier,
+      firstDefined(
+        readInput(input, 'speedMultiplier'),
+        readInput(input, 'speed'),
+        previous?.speedMultiplier
+      ),
       1
     ),
     stepCount: normalizeStepCount(
-      input?.stepCount ?? input?.steps ?? input?.step,
+      firstDefined(
+        readInput(input, 'stepCount'),
+        readInput(input, 'steps'),
+        readInput(input, 'step')
+      ),
       0
     ),
   };
-  if (input?.pause === true) control.paused = true;
-  if (input?.resume === true) control.paused = false;
-  return { keyboard, gamepad, actions, previousActions, control };
+  if (readInput(input, 'pause') === true) control.paused = true;
+  if (readInput(input, 'resume') === true) control.paused = false;
+  return control;
+}
+
+/**
+ * Read a property from an unknown input object.
+ * @param {unknown} input Candidate input.
+ * @param {string} key Property name.
+ * @returns {unknown} Property value, or undefined.
+ */
+function readInput(input, key) {
+  if (!input || typeof input !== 'object') return undefined;
+  return input[key];
+}
+
+/**
+ * Return the first non-nullish value.
+ * @param {...unknown} values Candidate values.
+ * @returns {unknown} First defined value, or undefined.
+ */
+function firstDefined(...values) {
+  for (const value of values) {
+    if (value !== undefined && value !== null) return value;
+  }
+  return undefined;
 }
 
 /**
@@ -154,20 +218,26 @@ function mergeSeedAndState(base, seed) {
  */
 function createSeedState(input, fallback) {
   const width = normalizePositiveInteger(
-    input?.width,
-    fallback?.width ?? DEFAULT_WIDTH
+    readInput(input, 'width'),
+    fallbackValue(fallback, 'width', DEFAULT_WIDTH)
   );
   const height = normalizePositiveInteger(
-    input?.height,
-    fallback?.height ?? DEFAULT_HEIGHT
+    readInput(input, 'height'),
+    fallbackValue(fallback, 'height', DEFAULT_HEIGHT)
   );
-  const layoutSeed = normalizePositiveInteger(input?.layoutSeed, 1);
+  const layoutSeed = normalizePositiveInteger(
+    readInput(input, 'layoutSeed'),
+    1
+  );
   const lives = normalizePositiveInteger(
-    input?.lives,
-    fallback?.lives ?? DEFAULT_LIVES
+    readInput(input, 'lives'),
+    fallbackValue(fallback, 'lives', DEFAULT_LIVES)
   );
   const simulationSpeed = normalizeStepCount(
-    input?.speedMultiplier ?? input?.speed,
+    firstDefined(
+      readInput(input, 'speedMultiplier'),
+      readInput(input, 'speed')
+    ),
     1
   );
 
@@ -202,6 +272,17 @@ function createSeedState(input, fallback) {
     links: [],
     lastActivatedBeaconId: null,
   };
+}
+
+/**
+ * Read a fallback property with a default.
+ * @param {object | undefined} fallback Fallback object.
+ * @param {string} key Property name.
+ * @param {unknown} defaultValue Default value.
+ * @returns {unknown} Fallback value.
+ */
+function fallbackValue(fallback, key, defaultValue) {
+  return firstDefined(fallback?.[key], defaultValue);
 }
 
 /**
@@ -265,7 +346,7 @@ function normalizeBeacons(width, height, seed) {
     id: `beacon-${seed}-${index + 1}`,
     x: Math.min(width - 20, x + (seed % 3) * 2),
     y: Math.min(height - 40, y + (index % 2) * 3),
-    radius: index === 0 ? 9 : 8,
+    radius: beaconRadius(index),
     active: false,
     required: true,
     hitCount: 0,
@@ -293,13 +374,72 @@ export function normalizeKeyboard(previous, input) {
  * @returns {{ buttons: boolean[], axes: number[] }} Normalized gamepad state.
  */
 export function normalizeGamepad(input) {
-  const buttons = Array.isArray(input?.buttons)
-    ? input.buttons.map(Boolean)
-    : [];
-  const axes = Array.isArray(input?.axes)
-    ? input.axes.map(value => Number(value) || 0)
-    : [];
+  const buttons = normalizeButtons(input);
+  const axes = normalizeAxes(input);
   return { buttons, axes };
+}
+
+/**
+ * Normalize gamepad button values.
+ * @param {unknown} input Latest input payload.
+ * @returns {boolean[]} Normalized button values.
+ */
+function normalizeButtons(input) {
+  if (Array.isArray(input?.buttons)) return input.buttons.map(Boolean);
+  return [];
+}
+
+/**
+ * Normalize gamepad axis values.
+ * @param {unknown} input Latest input payload.
+ * @returns {number[]} Normalized axis values.
+ */
+function normalizeAxes(input) {
+  if (Array.isArray(input?.axes))
+    return input.axes.map(value => Number(value) || 0);
+  return [];
+}
+
+/**
+ * Select the radius for a beacon position.
+ * @param {number} index Beacon position.
+ * @returns {number} Beacon radius.
+ */
+function beaconRadius(index) {
+  if (index === 0) return 9;
+  return 8;
+}
+
+/**
+ * Apply a sign to a magnitude.
+ * @param {number} value Source value.
+ * @param {boolean} positive Whether the result is positive.
+ * @returns {number} Signed magnitude.
+ */
+function signedMagnitude(value, positive) {
+  const magnitude = Math.abs(value);
+  if (positive) return magnitude;
+  return -magnitude;
+}
+
+/**
+ * Choose a beacon fill color.
+ * @param {boolean} active Whether the beacon is active.
+ * @returns {string} Fill color.
+ */
+function beaconColor(active) {
+  if (active) return '#6ee7ff';
+  return '#1e3a5f';
+}
+
+/**
+ * Choose a beacon stroke color.
+ * @param {boolean} required Whether the beacon is required.
+ * @returns {string} Stroke color.
+ */
+function beaconStroke(required) {
+  if (required) return '#bff3ff';
+  return '#335';
 }
 
 /**
@@ -309,21 +449,25 @@ export function normalizeGamepad(input) {
  * @returns {BeaconActions} Gameplay action flags.
  */
 function deriveActions(keyboard, gamepad) {
-  const left = Boolean(
-    keyboard.arrowleft ||
-      keyboard.a ||
-      gamepad.axes[0] < -EDGE_THRESHOLD ||
-      gamepad.buttons[14]
+  const left = movementAction(
+    keyboard.arrowleft,
+    keyboard.a,
+    gamepad.axes[0] < -EDGE_THRESHOLD,
+    gamepad.buttons[14]
   );
-  const right = Boolean(
-    keyboard.arrowright ||
-      keyboard.d ||
-      gamepad.axes[0] > EDGE_THRESHOLD ||
-      gamepad.buttons[15]
+  const right = movementAction(
+    keyboard.arrowright,
+    keyboard.d,
+    gamepad.axes[0] > EDGE_THRESHOLD,
+    gamepad.buttons[15]
   );
-  const launch = Boolean(keyboard.space || keyboard[' '] || gamepad.buttons[0]);
-  const pause = Boolean(keyboard.p || gamepad.buttons[9]);
-  const reset = Boolean(keyboard.r || gamepad.buttons[1]);
+  const launch = movementAction(
+    keyboard.space,
+    keyboard[' '],
+    gamepad.buttons[0]
+  );
+  const pause = movementAction(keyboard.p, gamepad.buttons[9]);
+  const reset = movementAction(keyboard.r, gamepad.buttons[1]);
   return {
     moveLeft: left,
     moveRight: right,
@@ -331,6 +475,15 @@ function deriveActions(keyboard, gamepad) {
     pausePressed: pause,
     resetPressed: reset,
   };
+}
+
+/**
+ * Combine action signals.
+ * @param {...unknown} signals Action signals.
+ * @returns {boolean} Whether any signal is active.
+ */
+function movementAction(...signals) {
+  return signals.some(Boolean);
 }
 
 /**
@@ -342,33 +495,9 @@ function deriveActions(keyboard, gamepad) {
 export function applyGameplayInput(state, inputState) {
   const a = inputState.actions;
   const p = inputState.previousActions;
-
-  if (a.pausePressed && !p.pausePressed) state.paused = !state.paused;
-
-  if (
-    a.launchPressed &&
-    !p.launchPressed &&
-    (state.status === 'ready' || state.status === 'lost')
-  ) {
-    if (state.lives <= 0) state.lives = 1;
-    state.status = 'running';
-    state.orb.stuckToPaddle = false;
-  }
-
-  if (a.resetPressed && !p.resetPressed) {
-    state.status = 'ready';
-    state.score = 0;
-    state.lives = state.initialLives ?? DEFAULT_LIVES;
-    state.paused = false;
-    state.simulationSpeed = 1;
-    state.lastActivatedBeaconId = null;
-    state.beacons.forEach(beacon => {
-      beacon.active = false;
-      beacon.hitCount = 0;
-    });
-    state.links = [];
-    state.orb.stuckToPaddle = true;
-  }
+  togglePause(state, a, p);
+  launchGame(state, a, p);
+  resetGame(state, a, p);
 
   if (state.status === 'won' || state.status === 'lost') return;
   if (a.moveLeft && !a.moveRight) state.paddle.x -= state.paddle.speed;
@@ -377,6 +506,56 @@ export function applyGameplayInput(state, inputState) {
     0,
     Math.min(state.width - state.paddle.width, state.paddle.x)
   );
+}
+
+/**
+ * Toggle pause on a newly pressed pause action.
+ * @param {BeaconState} state Mutable game state.
+ * @param {BeaconActions} actions Current actions.
+ * @param {BeaconActions} previous Previous actions.
+ * @returns {void}
+ */
+function togglePause(state, actions, previous) {
+  if (actions.pausePressed && !previous.pausePressed)
+    state.paused = !state.paused;
+}
+
+/**
+ * Launch the game on a newly pressed launch action.
+ * @param {BeaconState} state Mutable game state.
+ * @param {BeaconActions} actions Current actions.
+ * @param {BeaconActions} previous Previous actions.
+ * @returns {void}
+ */
+function launchGame(state, actions, previous) {
+  if (!actions.launchPressed || previous.launchPressed) return;
+  if (state.status !== 'ready' && state.status !== 'lost') return;
+  if (state.lives <= 0) state.lives = 1;
+  state.status = 'running';
+  state.orb.stuckToPaddle = false;
+}
+
+/**
+ * Reset the game on a newly pressed reset action.
+ * @param {BeaconState} state Mutable game state.
+ * @param {BeaconActions} actions Current actions.
+ * @param {BeaconActions} previous Previous actions.
+ * @returns {void}
+ */
+function resetGame(state, actions, previous) {
+  if (!actions.resetPressed || previous.resetPressed) return;
+  state.status = 'ready';
+  state.score = 0;
+  state.lives = state.initialLives ?? DEFAULT_LIVES;
+  state.paused = false;
+  state.simulationSpeed = 1;
+  state.lastActivatedBeaconId = null;
+  state.beacons.forEach(beacon => {
+    beacon.active = false;
+    beacon.hitCount = 0;
+  });
+  state.links = [];
+  state.orb.stuckToPaddle = true;
 }
 
 /**
@@ -399,7 +578,8 @@ export function stepSimulation(state) {
 
   if (state.orb.y - state.orb.radius > state.height) {
     state.lives -= 1;
-    state.status = state.lives <= 0 ? 'lost' : 'ready';
+    state.status = 'ready';
+    if (state.lives <= 0) state.status = 'lost';
     resetOrbToPaddle(state);
   }
 
@@ -492,8 +672,8 @@ export function resolveBeacons(state) {
     const wasActive = beacon.active;
     beacon.hitCount += 1;
     beacon.active = true;
-    state.orb.vy = dy >= 0 ? Math.abs(state.orb.vy) : -Math.abs(state.orb.vy);
-    state.orb.vx = dx >= 0 ? Math.abs(state.orb.vx) : -Math.abs(state.orb.vx);
+    state.orb.vy = signedMagnitude(state.orb.vy, dy >= 0);
+    state.orb.vx = signedMagnitude(state.orb.vx, dx >= 0);
     if (!wasActive) {
       state.score += 10;
       if (state.lastActivatedBeaconId) {
@@ -530,17 +710,16 @@ export function toCanvasPayload(state) {
         .map(link => {
           const from = state.beacons.find(beacon => beacon.id === link.from);
           const to = state.beacons.find(beacon => beacon.id === link.to);
-          return from && to
-            ? {
-                type: 'line',
-                x1: from.x,
-                y1: from.y,
-                x2: to.x,
-                y2: to.y,
-                stroke: '#49d8ff',
-                lineWidth: 1,
-              }
-            : null;
+          if (!from || !to) return null;
+          return {
+            type: 'line',
+            x1: from.x,
+            y1: from.y,
+            x2: to.x,
+            y2: to.y,
+            stroke: '#49d8ff',
+            lineWidth: 1,
+          };
         })
         .filter(Boolean),
       ...state.beacons.map(beacon => ({
@@ -548,8 +727,8 @@ export function toCanvasPayload(state) {
         x: beacon.x,
         y: beacon.y,
         radius: beacon.radius,
-        fill: beacon.active ? '#6ee7ff' : '#1e3a5f',
-        stroke: beacon.required ? '#bff3ff' : '#335',
+        fill: beaconColor(beacon.active),
+        stroke: beaconStroke(beacon.required),
       })),
       {
         type: 'rect',

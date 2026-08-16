@@ -152,6 +152,26 @@ const computed = { ['ignored']() {} };`,
             },
           },
           {
+            type: 'VariableDeclarator',
+            id: { name: 'variableFn' },
+            init: {
+              type: 'FunctionExpression',
+              id: null,
+              params: [],
+              body: { type: 'BlockStatement', body: [] },
+            },
+          },
+          {
+            type: 'VariableDeclarator',
+            id: {},
+            init: {
+              type: 'FunctionExpression',
+              id: null,
+              params: [],
+              body: { type: 'BlockStatement', body: [] },
+            },
+          },
+          {
             type: 'ObjectProperty',
             key: {},
             value: {

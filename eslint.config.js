@@ -166,29 +166,6 @@ export default [
     },
   },
   {
-    files: ['src/core/build/copy-cloud.js'],
-    rules: {
-      'max-lines-per-function': 'off',
-      'max-statements': 'off',
-    },
-  },
-  // These modules are deliberately stateful protocol/traversal boundaries. Their
-  // branching is covered by focused tests; splitting them solely for generic
-  // complexity/ternary style metrics would obscure the domain flow.
-  {
-    files: [
-      'src/core/browser/toys/2026-07-01/beaconBounce.js',
-      'src/core/cloud/billing/billing-runtime-core.js',
-      'src/core/cloud/render-variant/render-variant-core.js',
-      'src/core/scripts/function-dependency-graph-core.js',
-    ],
-    rules: {
-      complexity: 'off',
-      'no-ternary': 'off',
-      'max-lines-per-function': 'off',
-    },
-  },
-  {
     files: lintFiles,
     ...eslintConfigPrettier,
   },
@@ -199,19 +176,6 @@ export default [
       globals: {
         ...globals.jest,
       },
-    },
-    rules: {
-      complexity: 'off',
-      'no-ternary': 'off',
-      'no-nested-ternary': 'off',
-      'no-else-return': 'off',
-      'no-unneeded-ternary': 'off',
-      'no-useless-return': 'off',
-      camelcase: 'off',
-      'max-lines-per-function': 'off',
-      'max-statements': 'off',
-      'max-params': 'off',
-      'repo/tautological-wrapper': 'off',
     },
   },
 ];

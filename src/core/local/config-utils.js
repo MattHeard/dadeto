@@ -245,7 +245,10 @@ function normalizeNumberWithPredicate(value, fallback, isValid) {
  */
 export function resolveLocalFilePath(options, pathKey, defaultRelativePath) {
   const repoRoot = options.repoRoot ?? options.cwd?.() ?? '';
-  const pathModule = requirePathModule(options.pathModule);
+  const pathModule =
+    /** @type {{ resolve: (first: string, ...parts: string[]) => string }} */ (
+      requirePathModule(options.pathModule)
+    );
 
   return {
     repoRoot,

@@ -36,56 +36,149 @@ export function resolveVisibilityThreshold(visibilityThreshold) {
  * @returns {Promise<void>} Promise.
  */
 async function updateTreeVisibilityForVariantChange({ change, db }) {
+  const update = prepareVisibilityUpdate(change, db);
+  if (!update) return;
+  await propagateVisibilityDelta({
+    ref: update.variantRef,
+    data: update.afterData,
+    nextSum: update.current,
+    delta: update.delta,
+    db,
+  });
+}
+
+/**
+ * Prepare a visibility update from a Firestore change.
+ * @param {{ after: unknown, before?: unknown }} change Firestore change object.
+ * @param {FirestoreLike} db Firestore client.
+ * @returns {{ variantRef: unknown, afterData: Record<string, unknown>, current: number, delta: number }|null} Update data or null when no update is needed.
+ */
+function prepareVisibilityUpdate(change, db) {
   const after = change.after;
   const afterData = after.data?.() ?? {};
-  const beforeData = change.before?.exists
-    ? (change.before.data?.() ?? {})
-    : {};
+  const beforeExists = Boolean(change.before?.exists);
+  const beforeData = readBeforeVisibilityData(change, beforeExists);
   const variantRef = resolveTenantDocumentRef(after, db);
-  if (
-    !variantRef ||
-    typeof variantRef.get !== 'function' ||
-    typeof variantRef.update !== 'function'
-  ) {
-    return;
-  }
-  if (
-    afterData.treeVisibilitySum === undefined &&
-    afterData.visibility === undefined &&
-    change.before?.exists
-  ) {
-    return;
-  }
-  const previous = change.before?.exists
-    ? (beforeData.treeVisibilitySum ?? resolveVariantVisibility(beforeData))
-    : 0;
-  const storedCurrent = afterData.treeVisibilitySum;
-  const visibilityDelta =
-    resolveVariantVisibility(afterData) - resolveVariantVisibility(beforeData);
-  const current =
-    storedCurrent !== undefined && storedCurrent !== previous
-      ? storedCurrent
-      : previous + visibilityDelta;
+  if (shouldSkipVisibilityUpdate(variantRef, beforeExists, afterData))
+    return null;
+  const previous = getPreviousVisibility(beforeExists, beforeData);
+  const current = getCurrentVisibility(afterData, beforeData, previous);
   const delta = current - previous;
-  if (delta === 0) return;
-  let ref = variantRef;
-  let data = afterData;
-  let nextSum = current;
+  if (isZeroVisibilityDelta(delta)) return null;
+  return { variantRef, afterData, current, delta };
+}
+
+/**
+ * Check whether the visibility difference is zero.
+ * @param {number} delta Visibility difference.
+ * @returns {boolean} Whether no visibility changed.
+ */
+function isZeroVisibilityDelta(delta) {
+  return delta === 0;
+}
+
+/**
+ * Read the previous variant data when available.
+ * @param {{ before?: unknown }} change Firestore change object.
+ * @param {boolean} beforeExists Whether a previous document exists.
+ * @returns {Record<string, unknown>} Previous variant data.
+ */
+function readBeforeVisibilityData(change, beforeExists) {
+  if (!beforeExists) return {};
+  return change.before.data?.() ?? {};
+}
+
+/**
+ * Determine whether a visibility change should be ignored.
+ * @param {unknown} variantRef Candidate document reference.
+ * @param {boolean} beforeExists Whether a previous document exists.
+ * @param {Record<string, unknown>} afterData Current data.
+ * @returns {boolean} Whether no update should be performed.
+ */
+function shouldSkipVisibilityUpdate(variantRef, beforeExists, afterData) {
+  if (!isWritableVariantRef(variantRef)) return true;
+  return beforeExists && !hasVisibilityFields(afterData);
+}
+
+/**
+ * Check whether a document reference supports the required reads and writes.
+ * @param {unknown} ref Candidate document reference.
+ * @returns {boolean} Whether the reference can be updated.
+ */
+function isWritableVariantRef(ref) {
+  return Boolean(
+    ref && typeof ref.get === 'function' && typeof ref.update === 'function'
+  );
+}
+
+/**
+ * Check whether a change contains a visibility field.
+ * @param {Record<string, unknown>} data Variant data.
+ * @returns {boolean} Whether visibility fields are present.
+ */
+function hasVisibilityFields(data) {
+  return data.treeVisibilitySum !== undefined || data.visibility !== undefined;
+}
+
+/**
+ * Resolve the previous aggregate visibility.
+ * @param {boolean} beforeExists Whether a before document exists.
+ * @param {Record<string, unknown>} beforeData Previous data.
+ * @returns {number} Previous aggregate visibility.
+ */
+function getPreviousVisibility(beforeExists, beforeData) {
+  if (!beforeExists) return 0;
+  return beforeData.treeVisibilitySum ?? resolveVariantVisibility(beforeData);
+}
+
+/**
+ * Resolve the current aggregate visibility.
+ * @param {Record<string, unknown>} afterData Current data.
+ * @param {Record<string, unknown>} beforeData Previous data.
+ * @param {number} previous Previous aggregate visibility.
+ * @returns {number} Current aggregate visibility.
+ */
+function getCurrentVisibility(afterData, beforeData, previous) {
+  if (
+    afterData.treeVisibilitySum !== undefined &&
+    afterData.treeVisibilitySum !== previous
+  )
+    return afterData.treeVisibilitySum;
+  return (
+    previous +
+    (resolveVariantVisibility(afterData) - resolveVariantVisibility(beforeData))
+  );
+}
+
+/**
+ * Propagate a visibility delta through incoming-option ancestors.
+ * @param {{ ref: unknown, data: Record<string, unknown>, nextSum: number, delta: number, db: FirestoreLike }} input Propagation state.
+ * @returns {Promise<void>} Resolves after all reachable ancestors are updated.
+ */
+async function propagateVisibilityDelta({
+  ref: initialRef,
+  data: initialData,
+  nextSum: initialSum,
+  delta,
+  db,
+}) {
+  let ref = initialRef;
+  let data = initialData;
+  let nextSum = initialSum;
   while (ref) {
     const parent = resolveIncomingParentRef(data, db);
     const snapshot = await ref.get();
     if (!snapshot?.exists) return;
     const stored = readSnapshotData(snapshot);
     const oldSum = resolveStoredVisibilitySum(stored);
-    if (changedByTreeWeightThreshold(oldSum, nextSum) && parent) {
+    if (parent && changedByTreeWeightThreshold(oldSum, nextSum))
       await parent.update({ targetTreeWeightsDirty: true });
-    }
     await ref.update({ treeVisibilitySum: nextSum });
-    ref = parent;
-    if (!ref) return;
-    const parentSnap = await ref.get();
+    if (!parent) return;
+    const parentSnap = await parent.get();
     data = readSnapshotData(parentSnap);
     nextSum = addTreeVisibilityDelta(data, delta);
+    ref = parent;
   }
 }
 

@@ -522,6 +522,24 @@ describe('commonCore additional coverage', () => {
       resolve: closeResolve,
     });
     expect(closeResolve).toHaveBeenCalledWith(undefined);
+    const fallbackResolve = jest.fn();
+    commonCoreTestUtils.handleChildClose({
+      activeChildren: new Map([['fallback', {}]]),
+      command: { name: 'fallback', args: [] },
+      now: () => 1,
+      startedAt: 0,
+      exitCode: 0,
+      signal: null,
+      stderr: { write: jest.fn() },
+      state: { settled: false, timeoutId: null },
+      aborted: false,
+      failFast: false,
+      failures: [],
+      emitEvent: jest.fn(),
+      finishWithFailure: jest.fn(),
+      resolve: fallbackResolve,
+    });
+    expect(fallbackResolve).toHaveBeenCalledWith(undefined);
     const keep = { kill: jest.fn() };
     const noKill = {};
     commonCoreTestUtils.abortRemainingChildren(

@@ -12,9 +12,8 @@ describe('handleTagLinks', () => {
       getClasses: jest.fn(el => {
         if (el === link1) {
           return ['tag-foo'];
-        } else {
-          return ['tag-bar'];
         }
+        return ['tag-bar'];
       }),
       addEventListener: jest.fn(),
     };

@@ -107,6 +107,114 @@ async function readDocument(db, collectionName, id) {
 }
 
 /**
+ * Read available credit lots for an identity.
+ * @param {BillingRuntimeValue} db Firestore database.
+ * @param {string} uuid API key UUID.
+ * @returns {Promise<Array<{ ref: object, data: object }>>} Available lots.
+ */
+async function listBillingLots(db, uuid) {
+  const snap = await creditRef(db, uuid)
+    .collection('lots')
+    .orderBy('createdAt', 'asc')
+    .get();
+  return snap.docs
+    .map(doc => ({ ref: doc.ref, data: readData(doc) }))
+    .filter(lot => Number(lot.data.remainingCredits ?? 0) > 0);
+}
+
+/**
+ * Run a billing operation inside a transaction.
+ * @param {BillingRuntimeValue} db Firestore database.
+ * @param {() => Date} now Clock.
+ * @param {Record<string, unknown>} input Operation input.
+ * @param {(input: object) => Promise<BillingResponse>} handler Transaction handler.
+ * @returns {Promise<BillingResponse>} Transaction response.
+ */
+async function runBillingOperationTransaction(db, now, input, handler) {
+  const identity = readOperationIdentity(input);
+  const amount = calculateOperationCredits(
+    identity.operationType,
+    input.pricingSnapshot
+  );
+  const candidates = await listBillingLots(db, input.uuid);
+  return db.runTransaction(transaction =>
+    handler({
+      db,
+      now,
+      transaction,
+      input: { ...input, ...identity },
+      amount,
+      candidates,
+    })
+  );
+}
+
+/**
+ * Read the current pricing snapshot.
+ * @param {BillingRuntimeValue} db Firestore database.
+ * @param {() => Date} now Clock.
+ * @returns {Promise<BillingRuntimeValue|null>} Current pricing snapshot.
+ */
+async function readCurrentPricingSnapshot(db, now) {
+  const cutoff = now().toISOString();
+  const snap = await db
+    .collection('billing-pricing-snapshots')
+    .orderBy('effectiveAt', 'desc')
+    .get();
+  const current = snap.docs.find(doc => doc.data()?.effectiveAt <= cutoff);
+  if (!current) return null;
+  return current.data();
+}
+
+/**
+ * Read a document from the billing pricing collection.
+ * @param {BillingRuntimeValue} db Firestore database.
+ * @param {string} snapshotId Snapshot identifier.
+ * @returns {Promise<BillingRuntimeValue|null>} Pricing snapshot.
+ */
+function readPricingSnapshot(db, snapshotId) {
+  return readDocument(db, 'billing-pricing-snapshots', snapshotId);
+}
+
+/**
+ * Read a billing package document.
+ * @param {BillingRuntimeValue} db Firestore database.
+ * @param {string} packageId Package identifier.
+ * @returns {Promise<BillingRuntimeValue|null>} Credit package.
+ */
+function readBillingPackage(db, packageId) {
+  return readDocument(db, 'billing-packages', packageId);
+}
+
+/**
+ * Read a purchase document.
+ * @param {BillingRuntimeValue} db Firestore database.
+ * @param {string} purchaseId Purchase identifier.
+ * @returns {Promise<BillingRuntimeValue|null>} Purchase record.
+ */
+async function readBillingPurchase(db, purchaseId) {
+  const snap = await purchaseRef(db, purchaseId).get();
+  if (!snap.exists) return null;
+  return readData(snap);
+}
+
+/**
+ * Find a purchase by checkout session ID.
+ * @param {BillingRuntimeValue} db Firestore database.
+ * @param {string} checkoutSessionId Checkout session identifier.
+ * @returns {Promise<BillingRuntimeValue|null>} Matching purchase.
+ */
+async function findBillingPurchaseByCheckout(db, checkoutSessionId) {
+  const snap = await db
+    .collection('billing-purchases')
+    .where('checkoutSessionId', '==', checkoutSessionId)
+    .limit(1)
+    .get();
+  if (snap.empty) return null;
+  return readData(snap.docs[0]);
+}
+
+/**
  * Create Firestore-backed accessors for the billing domain.
  * @param {BillingRuntimeValue} db Firestore database.
  * @param {{ randomUUID?: () => string, now?: () => Date }} [runtime] Runtime helpers.
@@ -116,60 +224,19 @@ export function createBillingRuntime(db, runtime = {}) {
   const randomUUID = runtime.randomUUID ?? nodeRandomUUID;
   const now = runtime.now ?? (() => new Date());
 
-  /**
-   * @param {string} snapshotId Snapshot identifier.
-   * @returns {Promise<BillingRuntimeValue|null>} Pricing snapshot.
-   */
-  async function getPricingSnapshot(snapshotId) {
-    return readDocument(db, 'billing-pricing-snapshots', snapshotId);
-  }
+  const getPricingSnapshot = snapshotId => readPricingSnapshot(db, snapshotId);
 
-  /** @returns {Promise<BillingRuntimeValue|null>} Current pricing snapshot. */
-  async function getCurrentPricingSnapshot() {
-    const cutoff = now().toISOString();
-    const snap = await db
-      .collection('billing-pricing-snapshots')
-      .orderBy('effectiveAt', 'desc')
-      .get();
-    const current = snap.docs.find(doc => doc.data()?.effectiveAt <= cutoff);
-    if (!current) return null;
-    return current.data();
-  }
+  const getCurrentPricingSnapshot = () => readCurrentPricingSnapshot(db, now);
+
+  const getPackage = packageId => readBillingPackage(db, packageId);
+
+  const getPurchase = purchaseId => readBillingPurchase(db, purchaseId);
+
+  const getPurchaseByCheckoutSession = checkoutSessionId =>
+    findBillingPurchaseByCheckout(db, checkoutSessionId);
 
   /**
-   * @param {string} packageId Package identifier.
-   * @returns {Promise<BillingRuntimeValue|null>} Credit package.
-   */
-  async function getPackage(packageId) {
-    return readDocument(db, 'billing-packages', packageId);
-  }
-
-  /**
-   * @param {string} purchaseId Purchase identifier.
-   * @returns {Promise<BillingRuntimeValue|null>} Purchase record.
-   */
-  async function getPurchase(purchaseId) {
-    const snap = await purchaseRef(db, purchaseId).get();
-    if (!snap.exists) return null;
-    return readData(snap);
-  }
-
-  /**
-   * Find a purchase by its Stripe Checkout Session ID.
-   * @param {string} checkoutSessionId Stripe Checkout Session ID.
-   * @returns {Promise<BillingRuntimeValue|null>} Matching purchase.
-   */
-  async function getPurchaseByCheckoutSession(checkoutSessionId) {
-    const snap = await db
-      .collection('billing-purchases')
-      .where('checkoutSessionId', '==', checkoutSessionId)
-      .limit(1)
-      .get();
-    if (snap.empty) return null;
-    return readData(snap.docs[0]);
-  }
-
-  /**
+   * Save checkout details on a purchase.
    * @param {string} purchaseId Purchase identifier.
    * @param {BillingRuntimeValue} session Checkout session.
    * @returns {Promise<void>} Resolves after persistence.
@@ -186,6 +253,7 @@ export function createBillingRuntime(db, runtime = {}) {
   }
 
   /**
+   * Create a pending purchase.
    * @param {BillingRuntimeValue} input Purchase input.
    * @returns {Promise<BillingRuntimeValue>} Created purchase.
    */
@@ -204,6 +272,7 @@ export function createBillingRuntime(db, runtime = {}) {
   }
 
   /**
+   * Mark a purchase as paid.
    * @param {BillingRuntimeValue} input Payment input.
    * @returns {Promise<BillingResponse>} Payment response.
    */
@@ -296,50 +365,16 @@ export function createBillingRuntime(db, runtime = {}) {
   }
 
   /**
-   * @param {string} uuid API key UUID.
-   * @returns {Promise<Array<{ ref: object, data: object }>>} Available lots.
-   */
-  async function listLots(uuid) {
-    const snap = await creditRef(db, uuid)
-      .collection('lots')
-      .orderBy('createdAt', 'asc')
-      .get();
-    return snap.docs
-      .map(doc => ({ ref: doc.ref, data: readData(doc) }))
-      .filter(lot => Number(lot.data.remainingCredits ?? 0) > 0);
-  }
-
-  /**
-   * Run an operation handler inside a transaction with current pricing.
-   * @param {Record<string, unknown>} input Operation input.
-   * @param {(input: object) => Promise<BillingResponse>} handler Transaction handler.
-   * @returns {Promise<BillingResponse>} Transaction response.
-   */
-  async function runOperationTransaction(input, handler) {
-    const identity = readOperationIdentity(input);
-    const amount = calculateOperationCredits(
-      identity.operationType,
-      input.pricingSnapshot
-    );
-    const candidates = await listLots(input.uuid);
-    return db.runTransaction(transaction =>
-      handler({
-        db,
-        now,
-        transaction,
-        input: { ...input, ...identity },
-        amount,
-        candidates,
-      })
-    );
-  }
-
-  /**
    * @param {BillingRuntimeValue} input Charge input.
    * @returns {Promise<BillingResponse>} Charge response.
    */
   async function applyOperationCharge(input) {
-    return runOperationTransaction(input, chargeOperationTransaction);
+    return runBillingOperationTransaction(
+      db,
+      now,
+      input,
+      chargeOperationTransaction
+    );
   }
 
   /**
@@ -360,7 +395,12 @@ export function createBillingRuntime(db, runtime = {}) {
    * @returns {Promise<BillingResponse>} Reservation response.
    */
   async function reserveOperation(input) {
-    return runOperationTransaction(input, reserveOperationTransaction);
+    return runBillingOperationTransaction(
+      db,
+      now,
+      input,
+      reserveOperationTransaction
+    );
   }
 
   /**
@@ -375,91 +415,16 @@ export function createBillingRuntime(db, runtime = {}) {
       input.uuid,
       identity.operationAttemptId
     );
-    return db.runTransaction(async transaction => {
-      const snapshot = await transaction.get(reference);
-      if (!snapshot.exists)
-        return { status: 404, body: { error: 'reservation_not_found' } };
-      const reservation = readData(snapshot);
-      if (
-        reservation.operationType !== identity.operationType ||
-        reservation.operationAttemptId !== identity.operationAttemptId
-      ) {
-        return { status: 409, body: { error: 'operation_identity_conflict' } };
-      }
-      if (
-        reservation.status !== 'reserved' &&
-        reservation.status !== 'needs_recovery'
-      )
-        return {
-          status: 200,
-          body: {
-            duplicate: true,
-            status: reservation.status,
-            operationType: reservation.operationType,
-            operationAttemptId: reservation.operationAttemptId,
-          },
-        };
-      if (input.outcome === 'success') {
-        transaction.set(reference, {
-          ...reservation,
-          status: 'settled',
-          settledAt: now(),
-        });
-        return operationStatusResponse(reservation, 'settled');
-      }
-      if (input.outcome === 'ambiguous') {
-        transaction.set(reference, {
-          ...reservation,
-          status: 'needs_recovery',
-          recoveryReason: input.reason ?? 'ambiguous',
-        });
-        return operationStatusResponse(reservation, 'needs_recovery');
-      }
-      const balanceReference = creditRef(db, input.uuid);
-      const balanceSnapshot = await transaction.get(balanceReference);
-      const before = Number(readData(balanceSnapshot).credit ?? 0);
-      for (const allocation of reservation.allocations ?? []) {
-        const lotReference = lotRef(db, input.uuid, allocation.purchaseId);
-        const lotSnapshot = await transaction.get(lotReference);
-        const lot = readData(lotSnapshot);
-        transaction.set(lotReference, {
-          ...lot,
-          remainingCredits:
-            Number(lot.remainingCredits ?? 0) + allocation.amount,
-        });
-      }
-      const after = before + reservation.amount;
-      setCreditBalance(transaction, balanceReference, after, input.eventId);
-      transaction.set(
-        ledgerRef(db, input.uuid, input.eventId),
-        createLedgerEvent({
-          eventId: input.eventId,
-          sourceEventId: input.eventId,
-          type: 'credits_released',
-          amount: reservation.amount,
-          billingIdentityId: input.uuid,
-          operationType: reservation.operationType,
-          operationAttemptId: reservation.operationAttemptId,
-          balanceBefore: before,
-          balanceAfter: after,
-          createdAt: now(),
-        })
-      );
-      transaction.set(reference, {
-        ...reservation,
-        status: 'released',
-        releasedAt: now(),
-      });
-      return {
-        status: 200,
-        body: {
-          operationType: reservation.operationType,
-          operationAttemptId: reservation.operationAttemptId,
-          status: 'released',
-          credit: after,
-        },
-      };
-    });
+    return db.runTransaction(transaction =>
+      resolveOperationTransaction({
+        transaction,
+        reference,
+        identity,
+        input,
+        db,
+        now,
+      })
+    );
   }
 
   /**
@@ -567,6 +532,154 @@ export { creditRef, eventRef, lotRef, purchaseRef };
 export const billingRuntimeTestUtils = { readTransactionLots };
 
 /**
+ * Resolve a reservation inside a Firestore transaction.
+ * @param {{ transaction: BillingRuntimeValue, reference: BillingRuntimeValue, identity: { operationType: string, operationAttemptId: string }, input: Record<string, unknown>, db: BillingRuntimeValue, now: () => Date }} options Transaction inputs.
+ * @returns {Promise<BillingResponse>} Resolution response.
+ */
+async function resolveOperationTransaction({
+  transaction,
+  reference,
+  identity,
+  input,
+  db,
+  now,
+}) {
+  const snapshot = await transaction.get(reference);
+  if (!snapshot.exists)
+    return { status: 404, body: { error: 'reservation_not_found' } };
+  const reservation = readData(snapshot);
+  if (
+    reservation.operationType !== identity.operationType ||
+    reservation.operationAttemptId !== identity.operationAttemptId
+  )
+    return { status: 409, body: { error: 'operation_identity_conflict' } };
+  if (
+    reservation.status !== 'reserved' &&
+    reservation.status !== 'needs_recovery'
+  )
+    return {
+      status: 200,
+      body: {
+        duplicate: true,
+        status: reservation.status,
+        operationType: reservation.operationType,
+        operationAttemptId: reservation.operationAttemptId,
+      },
+    };
+  if (input.outcome === 'success')
+    return settleReservation(transaction, reference, reservation, now);
+  if (input.outcome === 'ambiguous')
+    return markReservationNeedsRecovery({
+      transaction,
+      reference,
+      reservation,
+      input,
+    });
+  return releaseReservation({
+    transaction,
+    reference,
+    reservation,
+    input,
+    db,
+    now,
+  });
+}
+
+/**
+ * Mark a reservation as settled.
+ * @param {BillingRuntimeValue} transaction Firestore transaction.
+ * @param {BillingRuntimeValue} reference Reservation reference.
+ * @param {Record<string, unknown>} reservation Reservation data.
+ * @param {() => Date} now Clock.
+ * @returns {BillingResponse} Settlement response.
+ */
+function settleReservation(transaction, reference, reservation, now) {
+  transaction.set(reference, {
+    ...reservation,
+    status: 'settled',
+    settledAt: now(),
+  });
+  return operationStatusResponse(reservation, 'settled');
+}
+
+/**
+ * Mark a reservation as requiring recovery.
+ * @param {{ transaction: BillingRuntimeValue, reference: BillingRuntimeValue, reservation: Record<string, unknown>, input: Record<string, unknown> }} options Recovery inputs.
+ * @returns {BillingResponse} Recovery response.
+ */
+function markReservationNeedsRecovery({
+  transaction,
+  reference,
+  reservation,
+  input,
+}) {
+  transaction.set(reference, {
+    ...reservation,
+    status: 'needs_recovery',
+    recoveryReason: input.reason ?? 'ambiguous',
+  });
+  return operationStatusResponse(reservation, 'needs_recovery');
+}
+
+/**
+ * Release a reservation and restore its allocated lots.
+ * @param {{ transaction: BillingRuntimeValue, reference: BillingRuntimeValue, reservation: Record<string, unknown>, input: Record<string, unknown>, db: BillingRuntimeValue, now: () => Date }} options Release inputs.
+ * @returns {Promise<BillingResponse>} Release response.
+ */
+async function releaseReservation({
+  transaction,
+  reference,
+  reservation,
+  input,
+  db,
+  now,
+}) {
+  const balanceReference = creditRef(db, input.uuid);
+  const balanceSnapshot = await transaction.get(balanceReference);
+  const before = Number(readData(balanceSnapshot).credit ?? 0);
+  for (const allocation of reservation.allocations ?? []) {
+    const lotReference = lotRef(db, input.uuid, allocation.purchaseId);
+    const lotSnapshot = await transaction.get(lotReference);
+    const lot = readData(lotSnapshot);
+    transaction.set(lotReference, {
+      ...lot,
+      remainingCredits: Number(lot.remainingCredits ?? 0) + allocation.amount,
+    });
+  }
+  const after = before + reservation.amount;
+  setCreditBalance(transaction, balanceReference, after, input.eventId);
+  transaction.set(
+    ledgerRef(db, input.uuid, input.eventId),
+    createLedgerEvent({
+      eventId: input.eventId,
+      sourceEventId: input.eventId,
+      type: 'credits_released',
+      amount: reservation.amount,
+      billingIdentityId: input.uuid,
+      operationType: reservation.operationType,
+      operationAttemptId: reservation.operationAttemptId,
+      balanceBefore: before,
+      balanceAfter: after,
+      createdAt: now(),
+    })
+  );
+  transaction.set(reference, {
+    ...reservation,
+    status: 'released',
+    releasedAt: now(),
+  });
+  return {
+    status: 200,
+    body: {
+      operationType: reservation.operationType,
+      operationAttemptId: reservation.operationAttemptId,
+      status: 'released',
+      credit: after,
+    },
+  };
+}
+
+/**
  * Read transaction lots and the projected balance.
  * @param {{ transaction: BillingRuntimeValue, candidates: Array<{ ref: object, data: object }>, db: BillingRuntimeValue, uuid: string, now: () => Date }} input Transaction and lot inputs.
  * @returns {Promise<{ lots: Array<{ ref: object, data: object }>, before: number }>} Lots and balance.
@@ -643,7 +756,6 @@ async function allocateCredits(input) {
  * @returns {Promise<BillingResponse>} Reservation response.
  */
 // Intentional protocol-boundary duplication: transaction ordering is operation-specific.
-// jscpd:ignore-start
 async function reserveOperationTransaction({
   db,
   now,
@@ -781,7 +893,6 @@ async function chargeOperationTransaction({
     },
   };
 }
-// jscpd:ignore-end
 
 /**
  * Read candidate lots through a transaction.

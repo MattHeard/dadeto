@@ -50,6 +50,38 @@ describe('beaconBounce', () => {
     expect(second.storageValue.current.BEAC1.orb.stuckToPaddle).toBe(false);
   });
 
+  it('does not relaunch a game that is already running', () => {
+    const storageValue = { current: null };
+    runToy(JSON.stringify({ type: 'keydown', key: ' ' }), storageValue);
+    const before = storageValue.current.BEAC1;
+    runToy(JSON.stringify({ type: 'keydown', key: ' ' }), storageValue);
+    expect(storageValue.current.BEAC1.status).toBe('running');
+    expect(storageValue.current.BEAC1.frame).toBe(before.frame + 1);
+  });
+
+  it('ignores a launch edge while the game is running', () => {
+    const storageValue = { current: null };
+    runToy(JSON.stringify({ type: 'keydown', key: ' ' }), storageValue);
+    const running = storageValue.current.BEAC1;
+    applyGameplayInput(running, {
+      actions: {
+        moveLeft: false,
+        moveRight: false,
+        launchPressed: true,
+        pausePressed: false,
+        resetPressed: false,
+      },
+      previousActions: {
+        moveLeft: false,
+        moveRight: false,
+        launchPressed: false,
+        pausePressed: false,
+        resetPressed: false,
+      },
+    });
+    expect(running.status).toBe('running');
+  });
+
   it('moves the paddle with held input', () => {
     const storageValue = { current: null };
     runToy(
