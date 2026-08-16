@@ -19,6 +19,9 @@ import {
 } from '../../src/local/symphony/workflow.js';
 import { createSymphonyStatusStore } from '../../src/local/symphony/statusStore.js';
 
+const maxTurnsKey = 'max_turns';
+const allowDirtyWorktreeKey = 'allow_dirty_worktree';
+
 describe('local symphony scaffold', () => {
   let tempDir;
 
@@ -153,6 +156,18 @@ describe('local symphony scaffold', () => {
       process.chdir(originalCwd);
     }
   });
+});
+
+describe('local symphony workflow parsing', () => {
+  let tempDir;
+
+  beforeEach(async () => {
+    tempDir = await mkdtemp(path.join(os.tmpdir(), 'dadeto-symphony-'));
+  });
+
+  afterEach(async () => {
+    await rm(tempDir, { recursive: true, force: true });
+  });
 
   test('parses workflow front matter and prompt template when WORKFLOW.md exists', async () => {
     await writeFile(
@@ -184,8 +199,8 @@ describe('local symphony scaffold', () => {
     expect(workflow.exists).toBe(true);
     expect(workflow.config).toEqual({
       model: 'gpt-5',
-      max_turns: 6,
-      allow_dirty_worktree: true,
+      [maxTurnsKey]: 6,
+      [allowDirtyWorktreeKey]: true,
     });
     expect(workflow.prompt_template).toBe(
       [
@@ -362,6 +377,18 @@ describe('local symphony scaffold', () => {
         },
       })
     ).rejects.toThrow('boom');
+  });
+});
+
+describe('local symphony bootstrap status', () => {
+  let tempDir;
+
+  beforeEach(async () => {
+    tempDir = await mkdtemp(path.join(os.tmpdir(), 'dadeto-symphony-'));
+  });
+
+  afterEach(async () => {
+    await rm(tempDir, { recursive: true, force: true });
   });
 
   test('bootstraps blocked status when WORKFLOW.md is missing and writes status artifacts', async () => {
@@ -588,6 +615,18 @@ describe('local symphony scaffold', () => {
       'dadeto-639o (● P2) Implement Symphony tracker polling and bead selection loop'
     );
   });
+});
+
+describe('local symphony idle and refresh status', () => {
+  let tempDir;
+
+  beforeEach(async () => {
+    tempDir = await mkdtemp(path.join(os.tmpdir(), 'dadeto-symphony-'));
+  });
+
+  afterEach(async () => {
+    await rm(tempDir, { recursive: true, force: true });
+  });
 
   test('bootstraps idle status with an operator recommendation when no beads are ready', async () => {
     await mkdir(path.join(tempDir, 'tracking'), { recursive: true });
@@ -635,6 +674,18 @@ describe('local symphony scaffold', () => {
     ).resolves.toContain(
       '"operatorRecommendation": "Create or refresh the next bead before starting another runner loop."'
     );
+  });
+});
+
+describe('local symphony refreshed idle status', () => {
+  let tempDir;
+
+  beforeEach(async () => {
+    tempDir = await mkdtemp(path.join(os.tmpdir(), 'dadeto-symphony-'));
+  });
+
+  afterEach(async () => {
+    await rm(tempDir, { recursive: true, force: true });
   });
 
   test('refreshSymphonyStatus re-runs the tracker poll and persists the refreshed status', async () => {
@@ -806,6 +857,18 @@ describe('local symphony scaffold', () => {
       'Wait for the runner loop on dadeto-jwwk to finish before launching another bead.'
     );
     expect(snapshot.status.queueEvidence).toEqual([queueLine]);
+  });
+});
+
+describe('local symphony status reconciliation', () => {
+  let tempDir;
+
+  beforeEach(async () => {
+    tempDir = await mkdtemp(path.join(os.tmpdir(), 'dadeto-symphony-'));
+  });
+
+  afterEach(async () => {
+    await rm(tempDir, { recursive: true, force: true });
   });
 
   test('refreshSymphonyStatus reconciles a running status when queue polling selects a different bead', async () => {
