@@ -12,11 +12,8 @@ export function readExemptions(deps) {
       )
     );
     const exemptions = parsed?.exemptions;
-    return new Set(
-      exemptions && typeof exemptions === 'object'
-        ? Object.keys(exemptions)
-        : []
-    );
+    if (!exemptions || typeof exemptions !== 'object') return new Set();
+    return new Set(Object.keys(exemptions));
   } catch {
     return new Set();
   }
