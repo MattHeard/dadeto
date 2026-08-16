@@ -3,7 +3,7 @@
 ## Machine-Checkable Criteria
 - [x] `node --experimental-vm-modules ./node_modules/.bin/jest --watchman=false --runTestsByPath test/toys/2026-08-16/assetRegistry.test.js` passes.
 - [ ] `npm run check` exits with status 0.
-- [ ] `npm run build` generates the beta public artifact containing `ASSET1`.
+- [ ] `npm run build` generates the beta public artifact containing `OBJE1`.
 
 ## Evidence Collection
 - Command log path: `artifacts/toys/object-minute-asset-registry/commands.log`

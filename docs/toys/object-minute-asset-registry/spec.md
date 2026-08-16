@@ -1,7 +1,7 @@
 # Toy Spec: Object-minute Asset Registry
 
 ## Summary
-- Toy name: Object-minute Asset Registry (`ASSET1`)
+- Toy name: Object-minute Asset Registry (`OBJE1`)
 - Owner: Dadeto object-minute rental PoC
 - Last updated: 2026-08-16
 
