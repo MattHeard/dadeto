@@ -20,9 +20,10 @@ jest.unstable_mockModule('../../src/core/browser/browser-core.js', () => ({
   getInputValue: jest.fn(() => ''),
   parseJsonOrDefault: jest.fn(() => ({})),
   setInputValue: jest.fn(),
-  whenOrDefault: jest.fn((condition, transform, fallback) =>
-    condition ? transform() : fallback
-  ),
+  whenOrDefault: jest.fn((condition, transform, fallback) => {
+    if (condition) return transform();
+    return fallback;
+  }),
 }));
 
 jest.unstable_mockModule(
