@@ -250,10 +250,12 @@ export function createBillingRuntime(db, runtime = {}) {
         lotRef(db, purchase.apiKeyUuid, purchase.purchaseId),
         lot
       );
-      transaction.set(creditRef(db, purchase.apiKeyUuid), {
-        credit: after,
-        lastEventId: input.eventId,
-      });
+      setCreditBalance(
+        transaction,
+        creditRef(db, purchase.apiKeyUuid),
+        after,
+        input.eventId
+      );
       transaction.set(eventRef(db, purchase.apiKeyUuid, input.eventId), {
         type: 'credit_added',
         eventId: input.eventId,
@@ -399,14 +401,7 @@ export function createBillingRuntime(db, runtime = {}) {
           status: 'settled',
           settledAt: now(),
         });
-        return {
-          status: 200,
-          body: {
-            operationType: reservation.operationType,
-            operationAttemptId: reservation.operationAttemptId,
-            status: 'settled',
-          },
-        };
+        return operationStatusResponse(reservation, 'settled');
       }
       if (input.outcome === 'ambiguous') {
         transaction.set(reference, {
@@ -414,14 +409,7 @@ export function createBillingRuntime(db, runtime = {}) {
           status: 'needs_recovery',
           recoveryReason: input.reason ?? 'ambiguous',
         });
-        return {
-          status: 200,
-          body: {
-            operationType: reservation.operationType,
-            operationAttemptId: reservation.operationAttemptId,
-            status: 'needs_recovery',
-          },
-        };
+        return operationStatusResponse(reservation, 'needs_recovery');
       }
       const balanceReference = creditRef(db, input.uuid);
       const balanceSnapshot = await transaction.get(balanceReference);
@@ -437,10 +425,7 @@ export function createBillingRuntime(db, runtime = {}) {
         });
       }
       const after = before + reservation.amount;
-      transaction.set(balanceReference, {
-        credit: after,
-        lastEventId: input.eventId,
-      });
+      setCreditBalance(transaction, balanceReference, after, input.eventId);
       transaction.set(
         ledgerRef(db, input.uuid, input.eventId),
         createLedgerEvent({
@@ -597,6 +582,34 @@ async function readLotsAndBalance(transaction, candidates, db, uuid, now) {
 }
 
 /**
+ * Persist the current credit balance and its idempotency marker.
+ * @param {BillingRuntimeValue} transaction Firestore transaction.
+ * @param {BillingRuntimeValue} reference Credit balance reference.
+ * @param {number} credit Current credit balance.
+ * @param {string} eventId Event idempotency key.
+ */
+function setCreditBalance(transaction, reference, credit, eventId) {
+  transaction.set(reference, { credit, lastEventId: eventId });
+}
+
+/**
+ * Build the common operation status response.
+ * @param {{ operationType: string, operationAttemptId: string }} reservation Operation identity.
+ * @param {string} status Operation status.
+ * @returns {{ status: number, body: object }} Operation response.
+ */
+function operationStatusResponse(reservation, status) {
+  return {
+    status: 200,
+    body: {
+      operationType: reservation.operationType,
+      operationAttemptId: reservation.operationAttemptId,
+      status,
+    },
+  };
+}
+
+/**
  * Allocate credits and update the balance projection in a transaction.
  * @param {{ transaction: object, candidates: Array<{ ref: object, data: object }>, db: object, uuid: string, now: () => Date, amount: number, eventId: string }} input Allocation input.
  * @returns {Promise<{ before: number, after: number, allocations: Array<object> } | null>} Allocation or null when insufficient.
@@ -632,6 +645,8 @@ async function allocateCredits(input) {
  * @param root0.amount
  * @param root0.candidates
  */
+// Intentional protocol-boundary duplication: transaction ordering is operation-specific.
+// jscpd:ignore-start
 async function reserveOperationTransaction({
   db,
   now,
@@ -769,6 +784,7 @@ async function chargeOperationTransaction({
     },
   };
 }
+// jscpd:ignore-end
 
 /**
  * Read candidate lots through a transaction.
