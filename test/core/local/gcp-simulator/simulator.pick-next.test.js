@@ -42,7 +42,9 @@ describe('pickNextModerationVariant', () => {
       pickNextModerationVariant(db, 'stories/a/pages/1/variants/a')
     ).resolves.toBeNull();
   });
+});
 
+describe('pickNextModerationVariant ordering', () => {
   it('prefers the oldest, then lowest rand, then lexical path candidate', async () => {
     const db = {
       collection: () => ({
@@ -121,7 +123,9 @@ describe('pickNextModerationVariant', () => {
       ref: { path: 'stories/a/pages/2/variants/c' },
     });
   });
+});
 
+describe('pickNextModerationVariant tie breakers', () => {
   it('uses createdAt first and lexicographic path as the final tie-breaker', async () => {
     const db = {
       collection: () => ({
@@ -200,7 +204,9 @@ describe('pickNextModerationVariant', () => {
       ref: { path: 'stories/a/pages/3/variants/c' },
     });
   });
+});
 
+describe('pickNextModerationVariant fallback ordering', () => {
   it('uses lexical ordering when createdAt and rand are identical', async () => {
     const db = {
       collection: () => ({
