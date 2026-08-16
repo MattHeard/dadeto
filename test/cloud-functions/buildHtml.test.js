@@ -177,7 +177,9 @@ describe('buildHtml', () => {
     );
     expect(html).toContain('data-variants="10a:1,10b:2"');
   });
+});
 
+describe('buildHtml author and navigation output', () => {
   test('includes author below options when provided', () => {
     const html = buildHtml(
       makeInput({
