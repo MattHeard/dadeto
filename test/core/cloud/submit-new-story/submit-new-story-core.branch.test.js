@@ -210,6 +210,32 @@ describe('createSubmitNewStoryResponder branch coverage', () => {
       })
     );
   });
+});
+
+describe('createSubmitNewStoryResponder branch coverage fallback paths', () => {
+  let verifyIdToken;
+  let saveSubmission;
+  let randomUUID;
+  let getServerTimestamp;
+  let responder;
+
+  beforeEach(() => {
+    verifyIdToken = jest.fn(async token => {
+      if (token === 'valid-token') {
+        return { uid: 'test-uid' };
+      }
+      throw new Error('Invalid token');
+    });
+    saveSubmission = jest.fn(async () => {});
+    randomUUID = jest.fn(() => 'test-uuid');
+    getServerTimestamp = jest.fn(() => 'test-timestamp');
+    responder = createSubmitNewStoryResponder({
+      verifyIdToken,
+      saveSubmission,
+      randomUUID,
+      getServerTimestamp,
+    });
+  });
 
   it('should cover normalizeAuthorizationCandidate with a non-string, non-array candidate', async () => {
     const request = {
