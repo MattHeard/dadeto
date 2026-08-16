@@ -424,7 +424,9 @@ describe('createCheckDepcruiseHandle', () => {
       'src/core/random.js uses the injected random source directly 1 time.'
     );
   });
+});
 
+describe('createCheckDepcruiseHandle browser-main policy', () => {
   test('detects browser globals in the core browser main entry when present', () => {
     const readFileSync = jest.fn(() =>
       [
@@ -573,7 +575,9 @@ describe('createCheckDepcruiseHandle', () => {
       false
     );
   });
+});
 
+describe('createCheckDepcruiseHandle browser-global gate', () => {
   test('reports browser-global violations through the dependency-cruiser gate', () => {
     const spawnImpl = jest.fn(() => ({ status: 0, signal: null }));
     const readFileSync = jest.fn(filePath => {
