@@ -179,7 +179,7 @@ describe('local gcp simulator', () => {
 
       const exactTargetError = await simulator.routes.submitNewPage({
         body: {
-          incoming_option: '1-a-0',
+          [incomingOptionKey]: '1-a-0',
           page: '1',
           content: 'Body',
           author: 'Playwright',
@@ -219,7 +219,7 @@ describe('local gcp simulator', () => {
       await expect(
         localSimulator.routes.submitNewPage({
           body: {
-            incoming_option: '1-a-99',
+            [incomingOptionKey]: '1-a-99',
             content: 'Body',
             author: 'Playwright',
           },
@@ -232,7 +232,7 @@ describe('local gcp simulator', () => {
       await expect(
         localSimulator.routes.submitNewPage({
           body: {
-            incoming_option: '1-z-0',
+            [incomingOptionKey]: '1-z-0',
             content: 'Body',
             author: 'Playwright',
           },
@@ -493,7 +493,7 @@ describe('local gcp simulator', () => {
 
       const missingOptionSubmission = await simulator.routes.submitNewPage({
         body: {
-          incoming_option: '1-a-99',
+          [incomingOptionKey]: '1-a-99',
           content: 'Body',
           author: 'Playwright',
         },
@@ -506,7 +506,7 @@ describe('local gcp simulator', () => {
 
       const missingVariantSubmission = await simulator.routes.submitNewPage({
         body: {
-          incoming_option: '1-z-0',
+          [incomingOptionKey]: '1-z-0',
           content: 'Body',
           author: 'Playwright',
         },
@@ -729,7 +729,7 @@ describe('local gcp simulator', () => {
 
       const validIncomingOption = await localSimulator.routes.submitNewPage({
         body: {
-          incoming_option: '1-a-0',
+          [incomingOptionKey]: '1-a-0',
           content: 'Follow-on body',
           author: 'Playwright',
         },
