@@ -178,7 +178,10 @@ describe('admin/core uncovered branches', () => {
 
   it('uses the cached token when the Firebase user has no token method', async () => {
     const storage = {
-      getItem: key => (key === 'id_token' ? 'cached-token' : null),
+      getItem: key => {
+        if (key === 'id_token') return 'cached-token';
+        return null;
+      },
       removeItem: () => {},
     };
     const auth = createGoogleAuthModule({
@@ -196,7 +199,10 @@ describe('admin/core uncovered branches', () => {
     const auth = createGoogleAuthModule({
       getAuthFn: () => ({
         currentUser: {
-          getIdToken: async force => (force ? 'fresh-token' : ''),
+          getIdToken: async force => {
+            if (force) return 'fresh-token';
+            return '';
+          },
         },
       }),
       storage: { getItem: () => 'cached-token', removeItem: () => {} },
@@ -218,6 +224,15 @@ describe('admin/core uncovered branches', () => {
       credentialFactory: () => ({}),
     });
     await expect(auth.getIdToken()).resolves.toBe('');
+  });
+});
+
+describe('admin/core token and render branches', () => {
+  let showMessageCalls;
+  let mockShowMessage;
+  beforeEach(() => {
+    showMessageCalls = [];
+    mockShowMessage = text => showMessageCalls.push(text);
   });
 
   it('falls back to an empty cached token when no Firebase user is available', async () => {
@@ -311,8 +326,10 @@ describe('admin/core uncovered branches', () => {
     const regenerateVariant = createRegenerateVariant({
       googleAuth: { getIdToken: () => 'token' },
       doc: {
-        getElementById: id =>
-          id === 'regenInput' ? { value: '123abc' } : { innerHTML: '' },
+        getElementById: id => {
+          if (id === 'regenInput') return { value: '123abc' };
+          return { innerHTML: '' };
+        },
       },
       showMessage: mockShowMessage,
       getAdminEndpointsFn: async () => ({ markVariantDirtyUrl: '/dirty' }),
@@ -347,7 +364,9 @@ describe('admin/core uncovered branches', () => {
     });
     expect(() => unavailable()).toThrow('Firebase auth client is not ready');
   });
+});
 
+describe('admin/core regeneration branches', () => {
   it('handles author regeneration submissions and missing author input', async () => {
     let submitHandler;
     const form = {
@@ -392,18 +411,18 @@ describe('admin/core uncovered branches', () => {
     let submitHandler;
     const status = { innerHTML: '' };
     const doc = {
-      getElementById: id =>
-        id === 'regenAuthorForm'
-          ? {
-              addEventListener: (event, handler) => {
-                submitHandler = handler;
-              },
-            }
-          : id === 'regenAuthorInput'
-            ? { value: 'author-42' }
-            : id === 'renderStatus'
-              ? status
-              : null,
+      getElementById: id => {
+        if (id === 'regenAuthorForm') {
+          return {
+            addEventListener: (event, handler) => {
+              submitHandler = handler;
+            },
+          };
+        }
+        if (id === 'regenAuthorInput') return { value: 'author-42' };
+        if (id === 'renderStatus') return status;
+        return null;
+      },
       querySelectorAll: () => [],
     };
     const reported = [];
@@ -428,14 +447,14 @@ describe('admin/core uncovered branches', () => {
   it('uses the cached token for initAdminApp requests', async () => {
     let clickHandler;
     const doc = {
-      getElementById: id =>
-        id === 'renderBtn'
-          ? {
-              addEventListener: (event, handler) => {
-                clickHandler = handler;
-              },
-            }
-          : null,
+      getElementById: id => {
+        if (id !== 'renderBtn') return null;
+        return {
+          addEventListener: (event, handler) => {
+            clickHandler = handler;
+          },
+        };
+      },
       querySelectorAll: () => [],
     };
     initAdminApp({
@@ -446,7 +465,10 @@ describe('admin/core uncovered branches', () => {
       signInWithCredentialFn: async () => {},
       initializeAppFn: () => {},
       sessionStorageObj: {
-        getItem: key => (key === 'id_token' ? 'cached-token' : null),
+        getItem: key => {
+          if (key === 'id_token') return 'cached-token';
+          return null;
+        },
         setItem: () => {},
         removeItem: () => {},
       },
