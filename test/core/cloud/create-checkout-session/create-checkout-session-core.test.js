@@ -39,15 +39,16 @@ function setup(overrides = {}) {
       .mockResolvedValue({ stripeCustomerId: 'cus-1' }),
     createBillingCustomer: jest.fn(),
     saveCustomerMappings: jest.fn(),
-    getCreditPackage: jest
-      .fn()
-      .mockImplementation(packageId =>
-        Promise.resolve(
-          packageId === 'credits-100'
-            ? { stripePriceId: 'price-100', credits: 100, active: true }
-            : null
-        )
-      ),
+    getCreditPackage: jest.fn().mockImplementation(packageId => {
+      if (packageId === 'credits-100') {
+        return Promise.resolve({
+          stripePriceId: 'price-100',
+          credits: 100,
+          active: true,
+        });
+      }
+      return Promise.resolve(null);
+    }),
     createStripeCheckoutSession: create,
     publicBillingOrigin: 'https://example.com',
     now: () => new Date('2026-08-04T00:00:00Z'),
