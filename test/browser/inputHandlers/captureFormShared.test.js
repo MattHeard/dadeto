@@ -125,6 +125,12 @@ describe('captureFormShared helpers', () => {
       expect(result.form.children).toContain(result.button);
     });
   });
+});
+
+describe('captureFormShared context helpers', () => {
+  beforeEach(() => {
+    jest.restoreAllMocks();
+  });
 
   describe('capture form context helpers', () => {
     it('normalizes the capture form context and runs the ready callback', () => {
