@@ -21,7 +21,9 @@ describe('createCheckDuplicationHandle', () => {
 
     expect(handle()).toEqual({ exitCode: 0, clones: 0 });
   });
+});
 
+describe('createCheckDuplicationHandle with injected dependencies', () => {
   test('passes when the report has no clones', () => {
     const spawnImpl = jest.fn(() => ({ status: 0, signal: null }));
     const readFileSync = jest.fn(() =>
@@ -114,7 +116,9 @@ describe('createCheckDuplicationHandle', () => {
     expect(stderr.chunks.join('')).toContain('Duplication gate found 1 clone.');
     expect(stderr.chunks.join('')).toContain('Report summary: 0 clones');
   });
+});
 
+describe('createCheckDuplicationHandle process failures', () => {
   test('fails when jscpd fails to launch', () => {
     const spawnImpl = jest.fn(() => ({
       error: new Error('boom'),
