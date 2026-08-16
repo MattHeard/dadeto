@@ -20,11 +20,10 @@ function makeDb({ ownership, customer } = {}) {
   return {
     collection: jest.fn(name => ({
       doc: jest.fn(() => ({
-        get: jest.fn(async () =>
-          name === 'api-key-ownership'
-            ? { data: () => ownership }
-            : { exists: Boolean(customer), data: () => customer }
-        ),
+        get: jest.fn(async () => {
+          if (name === 'api-key-ownership') return { data: () => ownership };
+          return { exists: Boolean(customer), data: () => customer };
+        }),
         set: jest.fn(async value => value),
       })),
     })),
