@@ -117,11 +117,12 @@ function makeDocument() {
     body: make('body'),
     createElement: tag => make(tag),
     getElementById: id => elements.get(id) ?? null,
-    querySelectorAll: jest.fn(selector =>
-      ['#signoutWrap', '#signinButton', '.admin-link'].includes(selector)
-        ? [make('query')]
-        : []
-    ),
+    querySelectorAll: jest.fn(selector => {
+      if (['#signoutWrap', '#signinButton', '.admin-link'].includes(selector)) {
+        return [make('query')];
+      }
+      return [];
+    }),
     elements,
   };
 }
@@ -197,13 +198,13 @@ describe('moderate core', () => {
   it('initializes sign-in, renders, submits, retries, and signs out', async () => {
     mockConfig = { disableGoogleSignIn: false };
     const links = [{ addEventListener: jest.fn() }];
-    mockDocument.querySelectorAll = jest.fn(selector =>
-      selector === '#signoutLink'
-        ? links
-        : ['#signoutWrap', '#signinButton', '.admin-link'].includes(selector)
-          ? [{ style: {} }]
-          : []
-    );
+    mockDocument.querySelectorAll = jest.fn(selector => {
+      if (selector === '#signoutLink') return links;
+      if (['#signoutWrap', '#signinButton', '.admin-link'].includes(selector)) {
+        return [{ style: {} }];
+      }
+      return [];
+    });
     mockToken = 'token';
     mockFetch.mockRejectedValueOnce(new Error('HTTP 404'));
     const handle = createModerateHandle({
@@ -276,8 +277,10 @@ describe('moderate core', () => {
     await new Promise(resolve => setImmediate(resolve));
     const partialDocument = {
       body: { classList: { add: jest.fn() } },
-      getElementById: id =>
-        id === 'pageContent' ? { style: {}, appendChild: jest.fn() } : null,
+      getElementById: id => {
+        if (id === 'pageContent') return { style: {}, appendChild: jest.fn() };
+        return null;
+      },
       querySelectorAll: () => [],
       createElement: () => ({ style: {}, appendChild: jest.fn() }),
     };
