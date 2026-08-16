@@ -41,10 +41,13 @@ await jest.unstable_mockModule(
   })
 );
 
-const { createPaymentWebhookIndexHandler, parsePaymentWebhookEvent } =
-  await import(
-    '../../../../src/core/cloud/payment-webhook/payment-webhook-core.js'
-  );
+const {
+  createPaymentWebhookIndexHandler,
+  parsePaymentWebhookEvent,
+  parseStripePaymentWebhookEvent,
+} = await import(
+  '../../../../src/core/cloud/payment-webhook/payment-webhook-core.js'
+);
 
 describe('payment webhook cloud wrapper', () => {
   it('builds dependencies and forwards the structured response', async () => {
@@ -66,6 +69,10 @@ describe('payment webhook cloud wrapper', () => {
     };
     const billing = {
       markPurchasePaid: jest.fn(async input => ({ status: 201, body: input })),
+      markPurchaseExpired: jest.fn(async input => ({
+        status: 200,
+        body: input,
+      })),
       applyRefundEvent: jest.fn(async input => ({ status: 200, body: input })),
     };
     mockDb = db;
@@ -85,6 +92,10 @@ describe('payment webhook cloud wrapper', () => {
       constructEvent: payload => JSON.parse(payload.toString()),
     });
     createPaymentWebhookIndexHandler({ firestore: Firestore });
+    const defaultCaptured = mockCreatePaymentWebhookHandler.mock.calls[1][0];
+    await expect(
+      defaultCaptured.getPaymentEvent({ rawBody: '{}' })
+    ).rejects.toThrow('Missing Stripe webhook secret');
 
     const request = {
       rawBody: JSON.stringify({ id: 'evt', type: 'payment_intent.succeeded' }),
@@ -183,6 +194,16 @@ describe('payment webhook cloud wrapper', () => {
     });
     await expect(
       captured.handlePurchaseEvent({
+        id: 'evt-expired',
+        type: 'checkout.session.expired',
+        data: { object: { metadata: { purchase_id: 'p1' } } },
+      })
+    ).resolves.toEqual({
+      status: 200,
+      body: { purchaseId: 'p1', eventId: 'evt-expired' },
+    });
+    await expect(
+      captured.handlePurchaseEvent({
         id: 'evt-3',
         type: 'charge.refunded',
         data: {
@@ -253,6 +274,9 @@ describe('payment webhook cloud wrapper', () => {
       id: 'signed',
       type: 'payment_intent.succeeded',
     });
+    expect(() => parsePaymentWebhookEvent({ rawBody: payload })).toThrow(
+      'Missing Stripe webhook secret'
+    );
     expect(() => parsePaymentWebhookEvent({ rawBody: payload }, {})).toThrow(
       'Missing Stripe webhook secret'
     );
@@ -262,5 +286,44 @@ describe('payment webhook cloud wrapper', () => {
         { STRIPE_WEBHOOK_SECRET: 'secret' }
       )
     ).toThrow('Stripe webhook verifier unavailable');
+  });
+
+  it('normalizes buffer payloads and rejects malformed verified events', () => {
+    const payload = Buffer.from(JSON.stringify({ id: 'buffer-event' }));
+    expect(
+      parseStripePaymentWebhookEvent(
+        { rawBody: payload, headers: { 'stripe-signature': 'signed' } },
+        { STRIPE_WEBHOOK_SECRET: 'secret' },
+        received => JSON.parse(received.toString())
+      ).id
+    ).toBe('buffer-event');
+    expect(() =>
+      parseStripePaymentWebhookEvent(
+        { rawBody: '{}', headers: { 'stripe-signature': 'signed' } },
+        { STRIPE_WEBHOOK_SECRET: 'secret' },
+        () => null
+      )
+    ).toThrow('Invalid Stripe webhook signature');
+    expect(() =>
+      parseStripePaymentWebhookEvent(
+        { rawBody: '{}' },
+        { STRIPE_WEBHOOK_SECRET: 'secret' },
+        () => ({ id: 'unused' })
+      )
+    ).toThrow('Missing Stripe signature');
+    expect(() =>
+      parseStripePaymentWebhookEvent(
+        { rawBody: '{}', headers: { 'stripe-signature': 'signed' } },
+        { STRIPE_WEBHOOK_SECRET: 'secret' },
+        () => ({ id: '' })
+      )
+    ).toThrow('Invalid Stripe webhook signature');
+    expect(() =>
+      parseStripePaymentWebhookEvent(
+        { rawBody: 42, headers: { 'stripe-signature': 'signed' } },
+        { STRIPE_WEBHOOK_SECRET: 'secret' },
+        () => ({ id: 'unused' })
+      )
+    ).toThrow('Missing Stripe webhook payload');
   });
 });
