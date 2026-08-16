@@ -29,7 +29,12 @@ import {
  * }} deps Build dependencies.
  * @returns {Promise<void>} Copy workflow completion promise.
  */
-export async function createCopyCloudHandle(deps) {
+/**
+ * Build the filesystem copy plan for the cloud infrastructure.
+ * @param {Parameters<typeof createCopyCloudHandle>[0]} deps Build dependencies.
+ * @returns {object} Copy plan consumed by the execution handle.
+ */
+function createCopyCloudPlan(deps) {
   const __dirname = getCurrentDirectory(
     import.meta.url,
     deps.fileURLToPathFn,
@@ -1251,6 +1256,45 @@ export async function createCopyCloudHandle(deps) {
     ...preservedSharedUtilityCopies,
     ...packageFileCopies,
   ];
+
+  return {
+    projectRoot,
+    pathAdapters,
+    relative,
+    join,
+    infraFunctionsDir,
+    functionDirectories,
+    directoryCopies,
+    preservedCloudTreeCopies,
+    coreRealtimeCopies,
+    coreBrowserCopies,
+    individualFileCopies,
+    processNewStoryCoreFile,
+    generateStatsVerifyAdminFile,
+  };
+}
+
+/**
+ * Execute the cloud infrastructure copy workflow.
+ * @param {Parameters<typeof createCopyCloudPlan>[0]} deps Build dependencies.
+ * @returns {Promise<void>} Copy workflow completion promise.
+ */
+export async function createCopyCloudHandle(deps) {
+  const {
+    projectRoot,
+    pathAdapters,
+    relative,
+    join,
+    infraFunctionsDir,
+    functionDirectories,
+    directoryCopies,
+    preservedCloudTreeCopies,
+    coreRealtimeCopies,
+    coreBrowserCopies,
+    individualFileCopies,
+    processNewStoryCoreFile,
+    generateStatsVerifyAdminFile,
+  } = createCopyCloudPlan(deps);
 
   const io = createAsyncFsAdapters(deps.fsPromisesModule);
 
