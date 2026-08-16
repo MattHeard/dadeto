@@ -13,6 +13,10 @@ import {
 } from '../../../../src/core/payment-webhook-core.js';
 import { parseStripePaymentWebhookEvent } from '../../../../src/core/cloud/payment-webhook/payment-webhook-core.js';
 import { createFakeFirestore } from '../../../../src/core/local/gcp-simulator/fake-firestore.js';
+
+const apiKeyUuidKey = 'api_key_uuid';
+const clientReferenceIdKey = 'client_reference_id';
+const creditAmountKey = 'credit_amount';
 import { createApplyCreditEvent } from '../../../../src/core/cloud/get-api-key-credit-v2/get-api-key-credit-v2-core.js';
 import { jest } from '@jest/globals';
 
@@ -28,8 +32,8 @@ describe('createResolveApiKeyUuid', () => {
         type: 'checkout.session.completed',
         data: {
           object: {
-            metadata: { api_key_uuid: 'uuid-direct' },
-            client_reference_id: 'uuid-client',
+            metadata: { [apiKeyUuidKey]: 'uuid-direct' },
+            [clientReferenceIdKey]: 'uuid-client',
           },
         },
       })
@@ -127,7 +131,7 @@ describe('createPaymentWebhookHandler', () => {
       getPaymentEvent: async () => ({
         id: 'evt_defaults',
         type: 'payment_intent.succeeded',
-        data: { object: { metadata: { credit_amount: '5' } } },
+        data: { object: { metadata: { [creditAmountKey]: '5' } } },
       }),
     });
 
@@ -159,7 +163,7 @@ describe('createPaymentWebhookHandler', () => {
       getPaymentEvent: async () => ({
         id: `evt_${expectedStatus}`,
         type: 'payment_intent.succeeded',
-        data: { object: { metadata: { credit_amount: '1' } } },
+        data: { object: { metadata: { [creditAmountKey]: '1' } } },
       }),
     });
 
@@ -186,7 +190,7 @@ describe('createPaymentWebhookHandler', () => {
         getPaymentEvent: async () => ({
           id: `evt_${expectedStatus}_fallback`,
           type: 'payment_intent.succeeded',
-          data: { object: { metadata: { credit_amount: '1' } } },
+          data: { object: { metadata: { [creditAmountKey]: '1' } } },
         }),
       });
 
@@ -198,7 +202,9 @@ describe('createPaymentWebhookHandler', () => {
       );
     }
   );
+});
 
+describe('createPaymentWebhookHandler processing', () => {
   it('records purchase events and uses a fallback processed-event key', async () => {
     const markProcessedEvent = jest.fn();
     const purchaseResponse = { status: 201, body: { purchase: true } };
@@ -246,7 +252,7 @@ describe('createPaymentWebhookHandler', () => {
         type: 'payment_intent.succeeded',
         data: {
           object: {
-            metadata: { credit_amount: 7, ignored: true },
+            metadata: { [creditAmountKey]: 7, ignored: true },
           },
         },
       }),
@@ -272,7 +278,7 @@ describe('createPaymentWebhookHandler', () => {
         body: {
           id: 'evt_default_extractor',
           type: 'payment_intent.succeeded',
-          data: { object: { metadata: { credit_amount: '9' } } },
+          data: { object: { metadata: { [creditAmountKey]: '9' } } },
         },
       })
     ).resolves.toEqual({
@@ -295,8 +301,8 @@ describe('createPaymentWebhookHandler', () => {
       created: 1710000000,
       data: {
         object: {
-          client_reference_id: 'api-key-uuid',
-          metadata: { credit_amount: '250' },
+          [clientReferenceIdKey]: 'api-key-uuid',
+          metadata: { [creditAmountKey]: '250' },
         },
       },
     };
@@ -304,7 +310,7 @@ describe('createPaymentWebhookHandler', () => {
       fetchCredit: async () => 0,
       applyCreditEvent,
       resolveApiKeyUuid: async paymentEvent =>
-        paymentEvent.data.object.client_reference_id,
+        paymentEvent.data.object[clientReferenceIdKey],
       isDuplicateEvent: async () => false,
       markProcessedEvent: jest.fn(),
       getPaymentEvent: async () => event,
@@ -340,7 +346,7 @@ describe('createPaymentWebhookHandler', () => {
         data: {
           object: {
             customer: 'cus_123',
-            metadata: { credit_amount: '25' },
+            metadata: { [creditAmountKey]: '25' },
           },
         },
       }),
@@ -370,7 +376,7 @@ describe('createPaymentWebhookHandler', () => {
       getPaymentEvent: async () => ({
         id: 'evt_duplicate',
         type: 'payment_intent.succeeded',
-        data: { object: { metadata: { credit_amount: '10' } } },
+        data: { object: { metadata: { [creditAmountKey]: '10' } } },
       }),
     });
 
@@ -406,7 +412,9 @@ describe('createPaymentWebhookHandler', () => {
       getPaymentEvent: async () => ({
         id: 'evt_invalid_amount',
         type: 'payment_intent.succeeded',
-        data: { object: { client_reference_id: 'api-key-uuid', metadata: {} } },
+        data: {
+          object: { [clientReferenceIdKey]: 'api-key-uuid', metadata: {} },
+        },
       }),
     });
 
@@ -455,7 +463,7 @@ describe('helper exports', () => {
       defaultGetAmountFromEvent({
         id: 'evt_helper',
         type: 'payment_intent.succeeded',
-        data: { object: { metadata: { credit_amount: '18' } } },
+        data: { object: { metadata: { [creditAmountKey]: '18' } } },
       })
     ).toBe(18);
     expect(
@@ -515,7 +523,7 @@ describe('payment webhook cloud wrapper', () => {
     const event = {
       id: 'evt_wrapper',
       type: 'payment_intent.succeeded',
-      data: { object: { metadata: { credit_amount: '3' } } },
+      data: { object: { metadata: { [creditAmountKey]: '3' } } },
     };
     const constructEvent = jest.fn(() => event);
     expect(
