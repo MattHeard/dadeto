@@ -142,6 +142,63 @@ describe('createPaymentWebhookHandler', () => {
     });
   });
 
+  it.each([
+    [{ deferred: true }, 'deferred'],
+    [{ quarantined: true }, 'quarantined'],
+    [{ ignored: true }, 'ignored'],
+    [{ duplicate: true }, 'ignored'],
+    [{}, 'applied'],
+  ])('records response body status %j as %s', async (body, expectedStatus) => {
+    const markProcessedEvent = jest.fn();
+    const response = { status: 200, body };
+    const handler = createPaymentWebhookHandler({
+      fetchCredit: async () => 0,
+      applyCreditEvent: async () => response,
+      resolveApiKeyUuid: async () => 'api-key-status',
+      markProcessedEvent,
+      getPaymentEvent: async () => ({
+        id: `evt_${expectedStatus}`,
+        type: 'payment_intent.succeeded',
+        data: { object: { metadata: { credit_amount: '1' } } },
+      }),
+    });
+
+    await expect(handler()).resolves.toBe(response);
+    expect(markProcessedEvent).toHaveBeenLastCalledWith(
+      expect.anything(),
+      'api-key-status',
+      expectedStatus
+    );
+  });
+
+  it.each([
+    [{ body: 'plain', status: 200 }, 'applied'],
+    [{ body: {}, status: 500 }, 'quarantined'],
+  ])(
+    'records fallback response status %j as %s',
+    async (response, expectedStatus) => {
+      const markProcessedEvent = jest.fn();
+      const handler = createPaymentWebhookHandler({
+        fetchCredit: async () => 0,
+        applyCreditEvent: async () => response,
+        resolveApiKeyUuid: async () => 'api-key-fallback',
+        markProcessedEvent,
+        getPaymentEvent: async () => ({
+          id: `evt_${expectedStatus}_fallback`,
+          type: 'payment_intent.succeeded',
+          data: { object: { metadata: { credit_amount: '1' } } },
+        }),
+      });
+
+      await expect(handler()).resolves.toBe(response);
+      expect(markProcessedEvent).toHaveBeenLastCalledWith(
+        expect.anything(),
+        'api-key-fallback',
+        expectedStatus
+      );
+    }
+  );
+
   it('records purchase events and uses a fallback processed-event key', async () => {
     const markProcessedEvent = jest.fn();
     const purchaseResponse = { status: 201, body: { purchase: true } };

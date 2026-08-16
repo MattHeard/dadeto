@@ -132,7 +132,8 @@ function responseEventStatus(response) {
     if (body.quarantined === true) return 'quarantined';
     if (body.ignored === true || body.duplicate === true) return 'ignored';
   }
-  return response.status >= 400 ? 'quarantined' : 'applied';
+  if (response.status >= 400) return 'quarantined';
+  return 'applied';
 }
 
 /**
@@ -184,7 +185,7 @@ function resolvePaymentWebhookDependencies(deps) {
           isDuplicateEvent
         )(eventId)
       ),
-    markProcessedEvent: async (event, uuid, status = 'applied') =>
+    markProcessedEvent: async (event, uuid, status) =>
       /** @type {(event: PaymentEvent, uuid: string, status?: string) => Promise<void> | void} */ (
         markProcessedEvent
       )(event, uuid, status),
