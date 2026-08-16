@@ -136,7 +136,9 @@ function second(value) {
       totalExcess: 'unchanged',
     });
   });
+});
 
+describe('complexity profile CLI behavior', () => {
   test('runs the CLI handle with injected file readers', () => {
     const writes = [];
     const handle = createComplexityProfileHandle({
