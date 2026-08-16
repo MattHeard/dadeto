@@ -52,9 +52,10 @@ function makeDom(autoSubmitCheckbox) {
       el._listeners[event] = handler;
     }),
     removeEventListener: jest.fn(),
-    querySelector: jest.fn((_el, selector) =>
-      selector === '.auto-submit-checkbox' ? autoSubmitCheckbox : null
-    ),
+    querySelector: jest.fn((_el, selector) => {
+      if (selector === '.auto-submit-checkbox') return autoSubmitCheckbox;
+      return null;
+    }),
     setValue: jest.fn((el, value) => {
       el.value = value;
     }),
@@ -103,17 +104,31 @@ function findByText(root, text) {
  */
 function createGamepad(overrides = {}) {
   return /** @type {Gamepad} */ ({
-    axes: overrides.axes ?? [0, 0],
-    buttons: overrides.buttons ?? [
+    axes: valueOrDefault(overrides.axes, [0, 0]),
+    buttons: valueOrDefault(overrides.buttons, [
       { pressed: false, value: 0 },
       { pressed: false, value: 0 },
-    ],
-    connected: overrides.connected ?? true,
-    id: overrides.id ?? 'Nintendo Joy-Con (L)',
-    index: overrides.index ?? 0,
-    mapping: overrides.mapping ?? 'standard',
-    timestamp: overrides.timestamp ?? 1,
+    ]),
+    connected: valueOrDefault(overrides.connected, true),
+    id: valueOrDefault(overrides.id, 'Nintendo Joy-Con (L)'),
+    index: valueOrDefault(overrides.index, 0),
+    mapping: valueOrDefault(overrides.mapping, 'standard'),
+    timestamp: valueOrDefault(overrides.timestamp, 1),
   });
+}
+
+/**
+ *
+ * @param value
+ * @param fallback
+ */
+/**
+ * @param {unknown} value Candidate override.
+ * @param {unknown} fallback Default value.
+ * @returns {unknown} Override or default.
+ */
+function valueOrDefault(value, fallback) {
+  return value ?? fallback;
 }
 
 describe('joyConMapperHandler', () => {
@@ -271,7 +286,9 @@ describe('joyConMapperHandler', () => {
       globalThis.clearInterval = previousClearInterval;
     }
   });
+});
 
+describe('joyConMapperHandler cleanup behavior', () => {
   it('handles missing article wrappers by skipping the auto-submit checkbox lookup', async () => {
     const autoSubmitCheckbox = { checked: false, dispatchEvent: jest.fn() };
     const joyCon = {
@@ -378,7 +395,9 @@ describe('joyConMapperHandler', () => {
       globalThis.clearInterval = previousClearInterval;
     }
   });
+});
 
+describe('joyConMapperHandler connected gamepads', () => {
   it('renders connected gamepad details when a gamepad is already present', () => {
     const autoSubmitCheckbox = { checked: false, dispatchEvent: jest.fn() };
     const dom = makeDom(autoSubmitCheckbox);
