@@ -129,7 +129,9 @@ describe('assignModerationJobTestUtils', () => {
       )
     ).toBeLessThan(0);
   });
+});
 
+describe('assign moderation workflow query branches', () => {
   test('createRunVariantQuery filters already moderated pages and sorts by urgency', async () => {
     const candidates = [
       fireStoreDoc('variants/c', 0.3),
