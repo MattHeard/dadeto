@@ -99,10 +99,10 @@ function findByText(root, text) {
 /**
  * Build a gamepad snapshot stub for tests.
  * @param {{ axes?: number[], buttons?: Array<{ pressed: boolean, value: number }>, connected?: boolean, id?: string, index?: number, mapping?: string, timestamp?: number }} [overrides] Snapshot overrides.
- * @returns {globalThis.Gamepad} Gamepad stub.
+ * @returns {Gamepad} Gamepad stub.
  */
 function createGamepad(overrides = {}) {
-  return /** @type {globalThis.Gamepad} */ ({
+  return /** @type {Gamepad} */ ({
     axes: overrides.axes ?? [0, 0],
     buttons: overrides.buttons ?? [
       { pressed: false, value: 0 },

@@ -89,10 +89,10 @@ function makeDom(autoSubmitCheckbox) {
  *   mapping?: string,
  *   timestamp?: number,
  * }} [overrides] Partial gamepad properties to override for the test fixture.
- * @returns {globalThis.Gamepad} Test-friendly gamepad fixture.
+ * @returns {Gamepad} Test-friendly gamepad fixture.
  */
 function createGamepad(overrides = {}) {
-  return /** @type {globalThis.Gamepad} */ ({
+  return /** @type {Gamepad} */ ({
     axes: overrides.axes ?? [0, 0],
     buttons: overrides.buttons ?? [
       { pressed: false, value: 0 },
