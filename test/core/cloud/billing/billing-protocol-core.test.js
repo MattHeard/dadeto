@@ -1,12 +1,21 @@
 import { describe, expect, it } from '@jest/globals';
 import {
   applyStateTransition,
+  canTransitionOperation,
+  canTransitionPurchase,
   createLedgerEvent,
   verifyLedgerBalance,
 } from '../../../../src/core/cloud/billing/billing-protocol-core.js';
 import { reconcileBillingIdentity } from '../../../../src/core/cloud/billing/reconciliation-core.js';
 
 describe('billing protocol', () => {
+  it('rejects unknown and terminal transitions', () => {
+    expect(canTransitionPurchase('unknown', 'paid')).toBe(false);
+    expect(canTransitionPurchase('refunded', 'paid')).toBe(false);
+    expect(canTransitionOperation('unknown', 'reserved')).toBe(false);
+    expect(canTransitionOperation('settled', 'released')).toBe(false);
+  });
+
   it('allows payment and refund progression but forbids paid expiry', () => {
     expect(
       applyStateTransition({
@@ -51,6 +60,27 @@ describe('billing protocol', () => {
     expect(Object.isFrozen(event)).toBe(true);
     expect(verifyLedgerBalance([event, { amount: -2 }], 3).valid).toBe(true);
     expect(verifyLedgerBalance([event], -1).valid).toBe(false);
+    expect(verifyLedgerBalance([{}], 0).valid).toBe(true);
+  });
+
+  it.each([
+    [
+      { type: 'credits_issued', amount: 5, billingIdentityId: 'key-1' },
+      'eventId',
+    ],
+    [{ eventId: 'e1', amount: 5, billingIdentityId: 'key-1' }, 'type'],
+    [
+      {
+        eventId: 'e1',
+        type: 'credits_issued',
+        amount: 1.5,
+        billingIdentityId: 'key-1',
+      },
+      'amount',
+    ],
+    [{ eventId: 'e1', type: 'credits_issued', amount: 5 }, 'billingIdentityId'],
+  ])('rejects ledger events missing or invalid %s', (input, field) => {
+    expect(() => createLedgerEvent(input)).toThrow(field);
   });
 });
 
