@@ -51,10 +51,9 @@ describe('textareaHandler', () => {
 
     expect(dom.hide).toHaveBeenCalledWith(textInput);
     expect(dom.disable).toHaveBeenCalledWith(textInput);
-    expect(numberInput._dispose).toHaveBeenCalled();
-    expect(kvContainer._dispose).toHaveBeenCalled();
-    expect(dendriteForm._dispose).toHaveBeenCalled();
-    expect(fileInput._dispose).toHaveBeenCalled();
+    for (const input of [numberInput, kvContainer, dendriteForm, fileInput]) {
+      expect(input._dispose).toHaveBeenCalled();
+    }
     expect(removeChild).toHaveBeenCalledWith(container, numberInput);
     expect(removeChild).toHaveBeenCalledWith(container, kvContainer);
     expect(removeChild).toHaveBeenCalledWith(container, dendriteForm);
