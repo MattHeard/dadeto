@@ -1,5 +1,6 @@
 import { describe, expect, test } from '@jest/globals';
 import { assetRegistry } from '../../../src/core/browser/toys/2026-08-16/assetRegistry.js';
+import { parseObjectRecord } from '../../../src/core/browser/validation.js';
 
 describe('assetRegistry', () => {
   test('normalizes, sorts, and summarizes physical assets', () => {
@@ -11,6 +12,7 @@ describe('assetRegistry', () => {
               assetId: 'blanket-002',
               sku: 'picnic-blanket',
               availability: 'Reserved',
+              notes: 'Store indoors',
             },
             {
               assetId: 'blanket-001',
@@ -41,6 +43,10 @@ describe('assetRegistry', () => {
       availableCount: 1,
       skuCount: 1,
     });
+  });
+
+  test('accepts already-parsed object records', () => {
+    expect(parseObjectRecord({ assets: [] })).toEqual({ assets: [] });
   });
 
   test('returns an empty registry for invalid input and ignores malformed assets', () => {

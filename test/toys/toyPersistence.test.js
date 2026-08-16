@@ -12,6 +12,7 @@ import {
 describe('toyPersistence', () => {
   it('parses and preserves object records', () => {
     expect(parseObjectRecord({ foo: 'bar' })).toEqual({ foo: 'bar' });
+    expect(parseObjectRecord(42)).toBeNull();
     expect(parseObjectRecord([1, 2, 3])).toBeNull();
     expect(parseObjectRecord('{"foo":"bar"}')).toEqual({ foo: 'bar' });
   });

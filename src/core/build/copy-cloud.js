@@ -5,6 +5,9 @@ import {
   getCurrentDirectory,
 } from '../commonCore.js';
 
+/** @typedef {{[key: string]: any}} CopyCloudPlanValues */
+/** @typedef {CopyCloudPlanValues & {functionDirectories: string[]}} CopyCloudDirectoryPlanValues */
+
 /**
  * Run the copy-cloud workflow with injected platform helpers.
  * @param {{
@@ -32,16 +35,16 @@ import {
 /**
  * Build the filesystem copy plan for the cloud infrastructure.
  * @param {Parameters<typeof createCopyCloudHandle>[0]} deps Build dependencies.
- * @returns {object} Copy plan consumed by the execution handle.
+ * @returns {CopyCloudPlanValues} Copy plan consumed by the execution handle.
  */
 /**
  * Build the individual file copy entries for the cloud infrastructure.
- * @param {object} planValues Path and source values used by copy entries.
+ * @param {CopyCloudPlanValues} planValues Path and source values used by copy entries.
  * @returns {Array<{source: string, target: string}>} Copy entries.
  */
 /**
  * Build copy-entry chunk 1.
- * @param {object} planValues Copy plan values.
+ * @param {CopyCloudPlanValues} planValues Copy plan values.
  * @returns {Array<{source: string, target: string}>} Copy entries.
  */
 function createIndividualFileCopiesPart1(planValues) {
@@ -261,7 +264,7 @@ function createIndividualFileCopiesPart1(planValues) {
 
 /**
  * Build copy-entry chunk 2.
- * @param {object} planValues Copy plan values.
+ * @param {CopyCloudPlanValues} planValues Copy plan values.
  * @returns {Array<{source: string, target: string}>} Copy entries.
  */
 function createIndividualFileCopiesPart2(planValues) {
@@ -481,7 +484,7 @@ function createIndividualFileCopiesPart2(planValues) {
 
 /**
  * Build copy-entry chunk 3.
- * @param {object} planValues Copy plan values.
+ * @param {CopyCloudPlanValues} planValues Copy plan values.
  * @returns {Array<{source: string, target: string}>} Copy entries.
  */
 function createIndividualFileCopiesPart3(planValues) {
@@ -695,12 +698,12 @@ function createIndividualFileCopiesPart3(planValues) {
 
 /**
  * Build copy-entry chunk 4.
- * @param {object} planValues Copy plan values.
+ * @param {CopyCloudPlanValues} planValues Copy plan values.
  * @returns {Array<{source: string, target: string}>} Copy entries.
  */
 /**
  * Build individual file copy chunk 41.
- * @param {object} planValues Copy plan values.
+ * @param {CopyCloudPlanValues} planValues Copy plan values.
  * @returns {Array<{source: string, target: string}>} Copy entries.
  */
 function createIndividualFileCopiesPart41(planValues) {
@@ -831,7 +834,7 @@ function createIndividualFileCopiesPart41(planValues) {
 
 /**
  * Build individual file copy chunk 42.
- * @param {object} planValues Copy plan values.
+ * @param {CopyCloudPlanValues} planValues Copy plan values.
  * @returns {Array<{source: string, target: string}>} Copy entries.
  */
 function createIndividualFileCopiesPart42(planValues) {
@@ -964,7 +967,7 @@ function createIndividualFileCopiesPart42(planValues) {
 
 /**
  * Build all individual file copy entries.
- * @param {object} planValues Copy plan values.
+ * @param {CopyCloudPlanValues} planValues Copy plan values.
  * @returns {Array<{source: string, target: string}>} Copy entries.
  */
 function createIndividualFileCopies(planValues) {
@@ -980,12 +983,12 @@ function createIndividualFileCopies(planValues) {
 /**
  * Build the cloud copy plan from injected filesystem and path dependencies.
  * @param {object} deps Build dependencies.
- * @returns {object} Copy plan consumed by the execution handle.
+ * @returns {CopyCloudPlanValues} Copy plan consumed by the execution handle.
  */
 /**
  * Build the directory and browser copy topology.
- * @param {object} planValues Path adapters and source directories.
- * @returns {object} Directory copy entries.
+ * @param {CopyCloudPlanValues} planValues Path adapters and source directories.
+ * @returns {CopyCloudPlanValues} Directory copy entries.
  */
 function createCopyCloudDirectoryPlan(planValues) {
   const {
@@ -1023,18 +1026,21 @@ function createCopyCloudDirectoryPlan(planValues) {
     'submit-new-page',
     'submit-new-story',
   ];
+  const typedFunctionDirectories = /** @type {string[]} */ (
+    functionDirectories
+  );
 
-  const directoryCopies = functionDirectories.map(name => ({
+  const directoryCopies = typedFunctionDirectories.map(name => ({
     source: join(srcCloudDir, name),
     target: join(infraFunctionsDir, name),
   }));
 
-  const functionSpecificCoreCloudDirectories = functionDirectories.filter(
+  const functionSpecificCoreCloudDirectories = typedFunctionDirectories.filter(
     name => name !== 'realtime-call'
   );
 
   const preservedCloudTreeCopies = [
-    ...functionDirectories.flatMap(name => [
+    ...typedFunctionDirectories.flatMap(name => [
       {
         source: join(srcCloudDir, name),
         target: join(infraFunctionsDir, name, 'cloud', name),
@@ -1109,67 +1115,29 @@ function createCopyCloudDirectoryPlan(planValues) {
 
 /**
  * Build the cloud copy plan from injected filesystem and path dependencies.
- * @param {object} deps Build dependencies.
+ * @param {any} deps Build dependencies.
  * @returns {object} Copy plan consumed by the execution handle.
  */
-function createCopyCloudPlan(deps) {
-  const __dirname = getCurrentDirectory(
-    import.meta.url,
-    deps.fileURLToPathFn,
-    deps.dirnameFn
-  );
-
-  const pathAdapters = /** @type {typeof deps.pathModule} */ (
-    createPathAdapters(
-      /** @type {Parameters<typeof createPathAdapters>[0]} */ (deps.pathModule)
-    )
-  );
-  const { join, resolve, relative } = pathAdapters;
-
-  const projectRoot = resolve(__dirname, '../../..');
-  const srcDir = join(projectRoot, 'src');
-  const infraDir = resolve(projectRoot, 'infra');
-  const srcCloudDir = resolve(srcDir, 'cloud');
-  const infraFunctionsDir = resolve(infraDir, 'cloud-functions');
-  const srcCoreDir = resolve(srcDir, 'core');
-  const srcCoreCloudDir = resolve(srcCoreDir, 'cloud');
-  const srcCoreRealtimeDir = resolve(srcCoreDir, 'realtime');
-  const srcCoreBrowserDir = resolve(srcCoreDir, 'browser');
-  const srcCoreBrowserModerationDir = resolve(srcCoreBrowserDir, 'moderation');
-  const browserDir = resolve(srcDir, 'browser');
-  const generateStatsGcfSource = join(
-    srcCloudDir,
-    'generate-stats',
-    'generate-stats-gcf.js'
-  );
-  const commonGcfSource = join(srcCloudDir, 'common-gcf.js');
-  const assignModerationJobGcfSource = join(
-    srcCloudDir,
-    'assign-moderation-job',
-    'assign-moderation-job-gcf.js'
-  );
-
+/**
+ * Build common cloud source copy values.
+ * @param {CopyCloudDirectoryPlanValues} planValues Path and source values.
+ * @returns {CopyCloudPlanValues} Derived copy values.
+ */
+function createCopyCloudSourceCopies(planValues) {
   const {
-    functionDirectories,
-    directoryCopies,
-    preservedCloudTreeCopies,
-    coreRealtimeCopies,
-    coreBrowserCopies,
-    browserFileCopies,
-  } = createCopyCloudDirectoryPlan({
     join,
-    infraDir,
     srcCloudDir,
     infraFunctionsDir,
     srcCoreCloudDir,
-    srcCoreRealtimeDir,
-    srcCoreBrowserDir,
-    browserDir,
-  });
-
+    srcCoreDir,
+    functionDirectories,
+  } = planValues;
+  const typedFunctionDirectories = /** @type {string[]} */ (
+    functionDirectories
+  );
   const corsConfigSource = join(srcCloudDir, 'cors-config.js');
 
-  const corsConfigCopies = functionDirectories.map(name => ({
+  const corsConfigCopies = typedFunctionDirectories.map(name => ({
     source: corsConfigSource,
     target: join(infraFunctionsDir, name, 'cors-config.js'),
   }));
@@ -1292,7 +1260,51 @@ function createCopyCloudPlan(deps) {
     'get-api-key-credit-v2',
     'get-api-key-credit-v2-gcf.js'
   );
+  return {
+    corsConfigSource,
+    corsConfigCopies,
+    firestoreCopies,
+    runtimeDepsDir,
+    sharedPackageFiles,
+    packageFileCopies,
+    assignModerationCoreSource,
+    cloudCoreSource,
+    commonCoreSource,
+    errorReportingSource,
+    paymentWebhookCoreSource,
+    expressAppSource,
+    commonCoreCopies,
+    preservedCommonCoreCopies,
+    paymentWebhookCoreCopy,
+    generateStatsCoreSource,
+    generateStatsVerifyAdminSource,
+    submitNewPageCoreSource,
+    submitNewPageHelpersSource,
+    submitModerationRatingCoreSource,
+    submitNewStoryCoreSource,
+    getApiKeyCreditCoreSource,
+    getApiKeyCreditCreateDbSource,
+    getApiKeyCreditGcfSource,
+    getApiKeyCreditV2CoreSource,
+    getApiKeyCreditV2CreateDbSource,
+    getApiKeyCreditV2SnapshotSource,
+    getApiKeyCreditV2GcfSource,
+  };
+}
 
+/**
+ * Build the remaining cloud source and utility copy values.
+ * @param {CopyCloudDirectoryPlanValues} planValues Path and source values.
+ * @returns {CopyCloudPlanValues} Derived copy values.
+ */
+function createCopyCloudSourcePaths(planValues) {
+  const {
+    join,
+    srcCloudDir,
+    srcCoreCloudDir,
+    infraFunctionsDir,
+    functionDirectories,
+  } = planValues;
   const hideVariantHtmlCoreSource = join(
     srcCoreCloudDir,
     'hide-variant-html',
@@ -1475,6 +1487,167 @@ function createCopyCloudPlan(deps) {
   function toCopiedUtilityFileName(file) {
     return file;
   }
+  return {
+    hideVariantHtmlCoreSource,
+    hideVariantHtmlGcfSource,
+    markVariantDirtyCoreSource,
+    markVariantDirtyVerifyAdminSource,
+    processNewPageCoreSource,
+    processNewPageGcfSource,
+    processNewStoryCoreSource,
+    processNewStoryGcfSource,
+    updateVariantVisibilityCoreSource,
+    updateVariantVisibilityGcfSource,
+    getModerationVariantCorsSource,
+    getModerationVariantCoreSource,
+    getModerationVariantGcfSource,
+    renderContentsCoreSource,
+    renderContentsGcfSource,
+    renderVariantCoreSource,
+    renderVariantGcfSource,
+    reportForModerationCoreSource,
+    reportForModerationGcfSource,
+    processNewStoryFunctionDir,
+    processNewStoryCoreFile,
+    generateStatsFunctionDir,
+    generateStatsVerifyAdminFile,
+    firebaseFunctionsCopies,
+    functionSpecificCommonCoreFiles,
+    functionSpecificCommonCoreCopies,
+    sharedUtilityFiles,
+    sharedUtilityCopies,
+    preservedSharedUtilityCopies,
+  };
+}
+
+/**
+ * Build the cloud copy plan from injected filesystem and path dependencies.
+ * @param {any} deps Build dependencies.
+ * @returns {CopyCloudPlanValues} Copy plan consumed by the execution handle.
+ */
+function createCopyCloudPlan(deps) {
+  const __dirname = getCurrentDirectory(
+    import.meta.url,
+    deps.fileURLToPathFn,
+    deps.dirnameFn
+  );
+
+  const pathAdapters = /** @type {typeof deps.pathModule} */ (
+    createPathAdapters(
+      /** @type {Parameters<typeof createPathAdapters>[0]} */ (deps.pathModule)
+    )
+  );
+  const { join, resolve, relative } = pathAdapters;
+
+  const projectRoot = resolve(__dirname, '../../..');
+  const srcDir = join(projectRoot, 'src');
+  const infraDir = resolve(projectRoot, 'infra');
+  const srcCloudDir = resolve(srcDir, 'cloud');
+  const infraFunctionsDir = resolve(infraDir, 'cloud-functions');
+  const srcCoreDir = resolve(srcDir, 'core');
+  const srcCoreCloudDir = resolve(srcCoreDir, 'cloud');
+  const srcCoreRealtimeDir = resolve(srcCoreDir, 'realtime');
+  const srcCoreBrowserDir = resolve(srcCoreDir, 'browser');
+  const srcCoreBrowserModerationDir = resolve(srcCoreBrowserDir, 'moderation');
+  const browserDir = resolve(srcDir, 'browser');
+  const generateStatsGcfSource = join(
+    srcCloudDir,
+    'generate-stats',
+    'generate-stats-gcf.js'
+  );
+  const commonGcfSource = join(srcCloudDir, 'common-gcf.js');
+  const assignModerationJobGcfSource = join(
+    srcCloudDir,
+    'assign-moderation-job',
+    'assign-moderation-job-gcf.js'
+  );
+
+  const {
+    functionDirectories,
+    directoryCopies,
+    preservedCloudTreeCopies,
+    coreRealtimeCopies,
+    coreBrowserCopies,
+    browserFileCopies,
+  } = createCopyCloudDirectoryPlan({
+    join,
+    infraDir,
+    srcCloudDir,
+    infraFunctionsDir,
+    srcCoreCloudDir,
+    srcCoreRealtimeDir,
+    srcCoreBrowserDir,
+    browserDir,
+  });
+
+  const {
+    corsConfigCopies,
+    firestoreCopies,
+    packageFileCopies,
+    assignModerationCoreSource,
+    cloudCoreSource,
+    commonCoreSource,
+    errorReportingSource,
+    expressAppSource,
+    commonCoreCopies,
+    preservedCommonCoreCopies,
+    paymentWebhookCoreCopy,
+    generateStatsCoreSource,
+    generateStatsVerifyAdminSource,
+    submitNewPageCoreSource,
+    submitNewPageHelpersSource,
+    submitModerationRatingCoreSource,
+    submitNewStoryCoreSource,
+    getApiKeyCreditCoreSource,
+    getApiKeyCreditCreateDbSource,
+    getApiKeyCreditGcfSource,
+    getApiKeyCreditV2CoreSource,
+    getApiKeyCreditV2CreateDbSource,
+    getApiKeyCreditV2SnapshotSource,
+    getApiKeyCreditV2GcfSource,
+  } = createCopyCloudSourceCopies({
+    join,
+    srcCloudDir,
+    infraFunctionsDir,
+    srcCoreCloudDir,
+    srcCoreDir,
+    functionDirectories,
+  });
+
+  const {
+    hideVariantHtmlCoreSource,
+    hideVariantHtmlGcfSource,
+    markVariantDirtyCoreSource,
+    markVariantDirtyVerifyAdminSource,
+    processNewPageCoreSource,
+    processNewPageGcfSource,
+    processNewStoryCoreSource,
+    processNewStoryGcfSource,
+    updateVariantVisibilityCoreSource,
+    updateVariantVisibilityGcfSource,
+    getModerationVariantCorsSource,
+    getModerationVariantCoreSource,
+    getModerationVariantGcfSource,
+    renderContentsCoreSource,
+    renderContentsGcfSource,
+    renderVariantCoreSource,
+    renderVariantGcfSource,
+    reportForModerationCoreSource,
+    reportForModerationGcfSource,
+    processNewStoryCoreFile,
+    generateStatsVerifyAdminFile,
+    firebaseFunctionsCopies,
+    functionSpecificCommonCoreCopies,
+    sharedUtilityCopies,
+    preservedSharedUtilityCopies,
+  } = createCopyCloudSourcePaths({
+    join,
+    srcCloudDir,
+    srcCoreCloudDir,
+    infraFunctionsDir,
+    infraDir,
+    functionDirectories,
+  });
 
   const individualFileCopies = createIndividualFileCopies({
     join,
@@ -1575,6 +1748,9 @@ export async function createCopyCloudHandle(deps) {
     processNewStoryCoreFile,
     generateStatsVerifyAdminFile,
   } = createCopyCloudPlan(deps);
+  const typedFunctionDirectories = /** @type {string[]} */ (
+    functionDirectories
+  );
 
   const io = createAsyncFsAdapters(deps.fsPromisesModule);
 
@@ -1671,7 +1847,7 @@ export async function createCopyCloudHandle(deps) {
   });
 
   await Promise.all(
-    functionDirectories.map(async functionDir => {
+    typedFunctionDirectories.map(async functionDir => {
       const entryPoint = join(infraFunctionsDir, functionDir, 'index.js');
       const nestedEntryPoint = `./cloud/${functionDir}/index.js`;
       const wrapper = `export * from '${nestedEntryPoint}';\n`;
@@ -1750,7 +1926,7 @@ export async function createCopyCloudHandle(deps) {
   ];
 
   await Promise.all(
-    functionDirectories.flatMap(functionDir => {
+    typedFunctionDirectories.flatMap(functionDir => {
       const functionDirPath = join(infraFunctionsDir, functionDir);
       return cloudFunctionRewriteFilePatterns.map(pattern =>
         rewriteImports(
