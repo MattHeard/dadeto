@@ -1,10 +1,12 @@
 import { execFileSync } from 'node:child_process';
 import { reportFailuresAndMaybeLogSuccess } from '../commonCore.js';
 import { useDefaultValue } from './gate-utils.js';
+import { readExemptions } from './read-exemptions.js';
 import { pathToFileURL } from 'node:url';
 
 const DEFAULT_ROOT_DIR = '.';
 const DEFAULT_SOURCE_ROOT = 'src/core';
+const DEFAULT_CONFIG_PATH = 'core-parse-exemptions.json';
 const DEFAULT_STDOUT = { log() {}, error() {} };
 /**
  * @type {{
@@ -28,6 +30,9 @@ const DEFAULT_FS_MODULE = {
   },
 };
 
+const BOUNDARY_FILE_PATTERN =
+  /(?:^|\/)(?:index|main)\.js$|(?:^|\/)(?:browser|cloud|local|scripts|build)\//;
+
 /**
  * @param {...string} segments Path segments.
  * @returns {string} Joined path.
@@ -48,6 +53,7 @@ function joinPath(...segments) {
  *   stdout?: { log: (line: string) => void, error: (line: string) => void },
  *   rootDir?: string,
  *   sourceRoot?: string,
+ *   configPath?: string,
  * }} [options] Gate dependencies.
  * @returns {{
  *   fsModule: { readFileSync: (filePath: string, encoding: 'utf8') => string, readdirSync: (dirPath: string, options: { withFileTypes: true }) => Array<{ isDirectory: () => boolean, isFile: () => boolean, name: string }> },
@@ -55,6 +61,7 @@ function joinPath(...segments) {
  *   stdout: { log: (line: string) => void, error: (line: string) => void },
  *   rootDir: string,
  *   sourceRoot: string,
+ *   configPath: string,
  * }} Normalized options.
  */
 function normalizeOptions(options = {}) {
@@ -64,10 +71,23 @@ function normalizeOptions(options = {}) {
     stdout: useDefaultValue(options.stdout, DEFAULT_STDOUT),
     rootDir: useDefaultValue(options.rootDir, DEFAULT_ROOT_DIR),
     sourceRoot: useDefaultValue(options.sourceRoot, DEFAULT_SOURCE_ROOT),
+    configPath: useDefaultValue(options.configPath, DEFAULT_CONFIG_PATH),
   };
 }
 
 /**
+ * @param {{ fsModule: { readFileSync: (filePath: string, encoding: 'utf8') => string }, pathModule: { resolve: (...segments: string[]) => string }, rootDir: string, configPath: string }} deps Parse-gate filesystem dependencies.
+ * @returns {Set<string>} Exempted file paths.
+ */
+function readExemptionsFromFsModule(deps) {
+  return readExemptions({
+    readFileSync: deps.fsModule.readFileSync,
+    rootDir: deps.rootDir,
+    configPath: deps.configPath,
+    pathModule: deps.pathModule,
+  });
+}
+
 /**
  * @param {string} rootDir Repository root path.
  * @param {string} sourceRoot Source tree path relative to the root.
@@ -109,13 +129,6 @@ function walk(dirPath, deps) {
 }
 
 /**
- *
- */
-function readExemptionsFromFsModule() {
-  return new Set();
-}
-
-/**
  * @param {{ filePath: string, name: string }[]} violations Violations to render.
  * @returns {string[]} Human-readable failure lines.
  */
@@ -154,7 +167,11 @@ function formatRawInputFailures(violations) {
  * @returns {Array<{ filePath: string } & T>} Violations.
  */
 function findViolationsInCore(deps, extractViolationsFromSource) {
+  const exemptions = readExemptionsFromFsModule(deps);
   return listJsFiles(deps.rootDir, deps.sourceRoot, deps).flatMap(filePath => {
+    if (BOUNDARY_FILE_PATTERN.test(filePath) || exemptions.has(filePath)) {
+      return [];
+    }
     const source = deps.fsModule.readFileSync(
       deps.pathModule.resolve(deps.rootDir, filePath),
       'utf8'
