@@ -266,7 +266,9 @@ describe('commonCore helpers', () => {
     );
     expect(seen).toEqual([10, 20]);
   });
+});
 
+describe('commonCore filesystem helpers', () => {
   test('path and filesystem adapter handles expose the shared helpers', () => {
     const pathHandle = createPathHandle({
       pathModule: path,
@@ -399,7 +401,9 @@ describe('commonCore helpers', () => {
       fs.rmSync(root, { recursive: true, force: true });
     }
   });
+});
 
+describe('commonCore run-check options', () => {
   test('resolveRunCheckOptions falls back to default writers and clock helpers', () => {
     const stdoutSpy = jest
       .spyOn(process, 'stdout', 'get')
