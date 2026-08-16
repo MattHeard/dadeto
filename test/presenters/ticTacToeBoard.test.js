@@ -176,7 +176,9 @@ describe('createTicTacToeBoardElement', () => {
         '   |   |   '
     );
   });
+});
 
+describe('createTicTacToeBoardElement edge cases', () => {
   it('ignores moves where the move is not an object (null, number, string, array)', () => {
     const input = JSON.stringify({
       moves: [
