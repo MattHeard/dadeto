@@ -85,5 +85,25 @@ describe('createCopyCloudHandle', () => {
         logger,
       })
     ).rejects.toThrow('batch read failure');
+
+    await expect(
+      createCopyCloudHandle({
+        fileURLToPathFn: () => '/repo/src/core/build/copy-cloud.js',
+        dirnameFn: input => path.dirname(input),
+        pathModule: path,
+        fsPromisesModule: {
+          ...fsPromises,
+          readFile: async filePath => {
+            if (String(filePath).endsWith('process-new-story-core.js')) {
+              const error = new Error('rewrite failure');
+              error.code = 'EIO';
+              throw error;
+            }
+            return '../cloud-core.js';
+          },
+        },
+        logger,
+      })
+    ).rejects.toThrow('rewrite failure');
   });
 });

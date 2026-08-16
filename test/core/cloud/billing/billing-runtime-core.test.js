@@ -72,6 +72,17 @@ describe('createBillingRuntime', () => {
     await expect(billing.getPurchase('purchase-1')).resolves.toMatchObject({
       purchaseId: 'purchase-1',
     });
+    await expect(
+      billing.getPurchaseByCheckoutSession('missing-session')
+    ).resolves.toBeNull();
+    await billing.savePurchaseCheckout('purchase-1', {
+      checkoutSessionId: 'cs-lookup',
+      url: 'https://checkout.test/cs-lookup',
+      expiresAt: 456,
+    });
+    await expect(
+      billing.getPurchaseByCheckoutSession('cs-lookup')
+    ).resolves.toMatchObject({ checkoutSessionId: 'cs-lookup' });
     await expect(billing.getPurchase('missing')).resolves.toBeNull();
 
     await billing.savePurchaseCheckout('purchase-1', {
@@ -176,6 +187,102 @@ describe('createBillingRuntime', () => {
     ).resolves.toEqual({ status: 404, body: { error: 'purchase_not_found' } });
   });
 
+  it('covers missing expiry, quarantined transitions, and public ledger references', async () => {
+    const { db, billing } = setup();
+    await expect(
+      billing.markPurchaseExpired({
+        purchaseId: 'missing',
+        eventId: 'expiry-missing',
+      })
+    ).resolves.toEqual({ status: 404, body: { error: 'purchase_not_found' } });
+    await billing.createPurchase({
+      purchaseId: 'invalid-state',
+      apiKeyUuid: 'key-invalid-state',
+      creditsIssued: 2,
+    });
+    await db.doc('billing-purchases/invalid-state').set({
+      status: 'not-a-valid-state',
+      apiKeyUuid: 'key-invalid-state',
+      creditsIssued: 2,
+    });
+    await expect(
+      billing.markPurchasePaid({
+        purchaseId: 'invalid-state',
+        eventId: 'paid-invalid',
+      })
+    ).resolves.toMatchObject({ body: { quarantined: true } });
+    expect(billing.ledgerRef('key-invalid-state', 'event-1')).toBeTruthy();
+
+    await db
+      .collection('billing-pricing-snapshots')
+      .doc(snapshot.snapshotId)
+      .set(snapshot);
+    await billing.createPurchase({
+      purchaseId: 'reserve-insufficient',
+      apiKeyUuid: 'key-reserve-insufficient',
+      creditsIssued: 1,
+      pricingSnapshotId: snapshot.snapshotId,
+    });
+    await billing.markPurchasePaid({
+      purchaseId: 'reserve-insufficient',
+      eventId: 'paid-reserve-insufficient',
+    });
+    await expect(
+      billing.reserveOperation({
+        uuid: 'key-reserve-insufficient',
+        operationType: 'function.invoke',
+        operationAttemptId: 'attempt-insufficient',
+        eventId: 'reserve-insufficient',
+        pricingSnapshot: snapshot,
+      })
+    ).resolves.toEqual({ status: 409, body: { error: 'insufficient_credit' } });
+
+    await db.doc('api-key-credit/key-reconcile').set({ credit: 2 });
+    await db.doc('api-key-credit/key-reconcile/lots/lot-1').set({
+      remainingCredits: 2,
+    });
+    await db.doc('api-key-credit/key-reconcile/ledger/event-1').set({
+      type: 'credit_added',
+      amount: 2,
+    });
+    await db.doc('billing-purchases/reconcile-purchase').set({
+      apiKeyUuid: 'key-reconcile',
+      creditsIssued: 2,
+      status: 'paid',
+    });
+    await expect(billing.reconcileIdentity('key-reconcile')).resolves.toEqual(
+      expect.objectContaining({
+        ok: expect.any(Boolean),
+        discrepancies: expect.any(Array),
+      })
+    );
+
+    await billing.createPurchase({
+      purchaseId: 'refund-invalid-state',
+      apiKeyUuid: 'key-refund-invalid',
+      creditsIssued: 2,
+    });
+    await db.doc('billing-purchases/refund-invalid-state').set({
+      purchaseId: 'refund-invalid-state',
+      apiKeyUuid: 'key-refund-invalid',
+      creditsIssued: 2,
+      status: 'not-a-valid-state',
+    });
+    await db.doc('api-key-credit/key-refund-invalid').set({ credit: 2 });
+    await db
+      .doc('api-key-credit/key-refund-invalid/lots/refund-invalid-state')
+      .set({
+        remainingCredits: 2,
+        refundable: true,
+      });
+    await expect(
+      billing.applyRefundEvent({
+        purchaseId: 'refund-invalid-state',
+        eventId: 'refund-invalid',
+      })
+    ).resolves.toMatchObject({ body: { quarantined: true } });
+  });
+
   it('creates a legacy lot when paying with an existing aggregate balance', async () => {
     const { db, billing } = setup();
     await db.doc('api-key-credit/key-1').set({ credit: 4 });
@@ -266,6 +373,133 @@ describe('createBillingRuntime', () => {
         outcome: 'success',
       })
     ).resolves.toMatchObject({ body: { duplicate: true } });
+  });
+
+  it('covers reservation validation, ambiguity, duplicate, and release paths', async () => {
+    const { db, billing } = setup();
+    await db
+      .collection('billing-pricing-snapshots')
+      .doc(snapshot.snapshotId)
+      .set(snapshot);
+    await billing.createPurchase({
+      purchaseId: 'reserve-path-purchase',
+      apiKeyUuid: 'key-reserve-paths',
+      creditsIssued: 10,
+      pricingSnapshotId: snapshot.snapshotId,
+    });
+    await billing.markPurchasePaid({
+      purchaseId: 'reserve-path-purchase',
+      eventId: 'paid-reserve-paths',
+    });
+
+    await expect(
+      billing.resolveOperation({
+        uuid: 'key-reserve-paths',
+        operationType: 'function.invoke',
+        operationAttemptId: 'missing-attempt',
+        eventId: 'missing-event',
+        outcome: 'success',
+      })
+    ).resolves.toEqual({
+      status: 404,
+      body: { error: 'reservation_not_found' },
+    });
+    await expect(
+      billing.reserveOperation({
+        uuid: 'key-reserve-paths',
+        operationType: 'function.invoke',
+        operationAttemptId: 'attempt-paths',
+        eventId: 'reserve-paths',
+        pricingSnapshot: snapshot,
+      })
+    ).resolves.toMatchObject({ body: { status: 'reserved' } });
+    await expect(
+      billing.reserveOperation({
+        uuid: 'key-reserve-paths',
+        operationType: 'function.invoke',
+        operationAttemptId: 'attempt-paths',
+        eventId: 'reserve-paths-duplicate',
+        pricingSnapshot: snapshot,
+      })
+    ).resolves.toMatchObject({ body: { duplicate: true } });
+    await expect(
+      billing.resolveOperation({
+        uuid: 'key-reserve-paths',
+        operationType: 'other.operation',
+        operationAttemptId: 'attempt-paths',
+        eventId: 'conflict-event',
+        outcome: 'success',
+      })
+    ).resolves.toEqual({
+      status: 409,
+      body: { error: 'operation_identity_conflict' },
+    });
+    await expect(
+      billing.resolveOperation({
+        uuid: 'key-reserve-paths',
+        operationType: 'function.invoke',
+        operationAttemptId: 'attempt-paths',
+        eventId: 'ambiguous-event',
+        outcome: 'ambiguous',
+      })
+    ).resolves.toMatchObject({ body: { status: 'needs_recovery' } });
+    await db
+      .doc('api-key-credit/key-reserve-paths/reservations/attempt-paths')
+      .set({
+        operationType: 'function.invoke',
+        operationAttemptId: 'attempt-paths',
+        amount: 3,
+        allocations: [{ purchaseId: 'reserve-path-purchase', amount: 3 }],
+        status: 'needs_recovery',
+      });
+    await db.doc('api-key-credit/key-reserve-paths').set({});
+    await db
+      .doc('api-key-credit/key-reserve-paths/lots/reserve-path-purchase')
+      .set({});
+    await expect(
+      billing.resolveOperation({
+        uuid: 'key-reserve-paths',
+        operationType: 'function.invoke',
+        operationAttemptId: 'attempt-paths',
+        eventId: 'release-event',
+        outcome: 'failure',
+      })
+    ).resolves.toMatchObject({ body: { status: 'released', credit: 3 } });
+    await expect(
+      billing.resolveOperation({
+        uuid: 'key-reserve-paths',
+        operationType: 'function.invoke',
+        operationAttemptId: 'attempt-paths',
+        eventId: 'duplicate-release-event',
+        outcome: 'failure',
+      })
+    ).resolves.toMatchObject({ body: { duplicate: true } });
+    await db
+      .doc('api-key-credit/key-reserve-paths/reservations/no-alloc')
+      .set({
+        operationType: 'function.invoke',
+        operationAttemptId: 'no-alloc',
+        amount: 0,
+        status: 'needs_recovery',
+      });
+    await expect(
+      billing.resolveOperation({
+        uuid: 'key-reserve-paths',
+        operationType: 'function.invoke',
+        operationAttemptId: 'no-alloc',
+        eventId: 'no-alloc-release',
+        outcome: 'failure',
+      })
+    ).resolves.toMatchObject({ body: { status: 'released' } });
+    await expect(
+      billing.reserveOperation({
+        uuid: 'key-reserve-paths',
+        operationType: '',
+        operationAttemptId: 'invalid-attempt',
+        eventId: 'invalid-event',
+        pricingSnapshot: snapshot,
+      })
+    ).rejects.toThrow('operationType and operationAttemptId are required');
   });
 
   it('exposes read-only identity reconciliation', async () => {
