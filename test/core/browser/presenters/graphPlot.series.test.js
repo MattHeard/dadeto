@@ -27,7 +27,10 @@ describe('createGraphPlotElement series rendering', () => {
     };
     const root = { children: [] };
     const dom = {
-      createElement: jest.fn(tag => (tag === 'canvas' ? canvas : root)),
+      createElement: jest.fn(tag => {
+        if (tag === 'canvas') return canvas;
+        return root;
+      }),
       appendChild: jest.fn((parent, child) => {
         parent.children.push(child);
         return child;
@@ -93,7 +96,10 @@ describe('createGraphPlotElement series rendering', () => {
     };
     const root = { children: [] };
     const dom = {
-      createElement: jest.fn(tag => (tag === 'canvas' ? canvas : root)),
+      createElement: jest.fn(tag => {
+        if (tag === 'canvas') return canvas;
+        return root;
+      }),
       appendChild: jest.fn((parent, child) => {
         parent.children.push(child);
         return child;
