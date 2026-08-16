@@ -9,7 +9,8 @@ import { joyConMapperToy } from '../../../src/core/browser/toys/2026-03-01/joyCo
  * @returns {Map<string, unknown>} Toy environment map.
  */
 function createEnv({ stored, setLocalPermanentData } = {}) {
-  const getLocalPermanentData = stored ? jest.fn(() => stored) : undefined;
+  let getLocalPermanentData;
+  if (stored) getLocalPermanentData = jest.fn(() => stored);
   return new Map([
     ['getLocalPermanentData', getLocalPermanentData],
     ['setLocalPermanentData', setLocalPermanentData],
