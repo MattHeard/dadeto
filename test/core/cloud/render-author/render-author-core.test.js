@@ -212,11 +212,17 @@ describe('createRenderAuthorHandler', () => {
         .fn()
         .mockResolvedValue({ data: () => ({ number: 'not-a-number' }) }),
     };
+    const validPageRef = {
+      get: jest.fn().mockResolvedValue({ data: () => ({ number: 8 }) }),
+    };
     const query = {
       get: jest.fn().mockResolvedValue({
         docs: [
           { data: () => ({ name: 'orphan' }) },
-          { ref: { parent: { parent: pageRef } }, data: () => ({ name: 4 }) },
+          {
+            ref: { parent: { parent: validPageRef } },
+            data: () => ({ name: 4 }),
+          },
           {
             ref: { parent: { parent: pageRef } },
             data: () => ({ name: 'bad-page' }),
