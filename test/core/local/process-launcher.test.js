@@ -7,6 +7,13 @@ import {
   launchDetachedProcessWithRunLogs,
 } from '../../../src/core/local/process-launcher.js';
 
+const getFixtureFd = filePath => {
+  if (filePath.endsWith('--stdout.log')) {
+    return 40;
+  }
+  return 41;
+};
+
 describe('process launcher helpers', () => {
   let tempDir;
 
@@ -69,6 +76,18 @@ describe('process launcher helpers', () => {
       })
     ).rejects.toThrow('spawnImpl is required');
   });
+});
+
+describe('process launcher configuration', () => {
+  let tempDir;
+
+  beforeEach(async () => {
+    tempDir = await mkdtemp(path.join(os.tmpdir(), 'dadeto-process-launcher-'));
+  });
+
+  afterEach(async () => {
+    await rm(tempDir, { recursive: true, force: true });
+  });
 
   test('createDetachedProcessLauncher falls back to repo-root launch settings', async () => {
     const calls = [];
@@ -80,7 +99,7 @@ describe('process launcher helpers', () => {
       closeErrorLabel: 'Failed to close run log handle:',
       exitErrorLabel: 'Failed to handle process exit:',
       openImpl: async filePath => ({
-        fd: filePath.endsWith('--stdout.log') ? 40 : 41,
+        fd: getFixtureFd(filePath),
         close: () => Promise.resolve(),
       }),
       spawnImpl(command, args, options) {
@@ -141,7 +160,7 @@ describe('process launcher helpers', () => {
       closeErrorLabel: 'Failed to close run log handle:',
       exitErrorLabel: 'Failed to handle process exit:',
       openImpl: async filePath => ({
-        fd: filePath.endsWith('--stdout.log') ? 40 : 41,
+        fd: getFixtureFd(filePath),
         close: () => Promise.resolve(),
       }),
       spawnImpl(command, args, options) {
@@ -171,6 +190,18 @@ describe('process launcher helpers', () => {
       },
     ]);
   });
+});
+
+describe('process launcher custom paths and exit handling', () => {
+  let tempDir;
+
+  beforeEach(async () => {
+    tempDir = await mkdtemp(path.join(os.tmpdir(), 'dadeto-process-launcher-'));
+  });
+
+  afterEach(async () => {
+    await rm(tempDir, { recursive: true, force: true });
+  });
 
   test('createDetachedProcessLauncher honors custom cwd and log-dir resolvers', async () => {
     const calls = [];
@@ -184,7 +215,7 @@ describe('process launcher helpers', () => {
       resolveCwd: payload => path.join(payload.repoRoot, 'custom-cwd'),
       resolveLogDir: payload => path.join(payload.repoRoot, 'custom-logs'),
       openImpl: async filePath => ({
-        fd: filePath.endsWith('--stdout.log') ? 40 : 41,
+        fd: getFixtureFd(filePath),
         close: () => Promise.resolve(),
       }),
       spawnImpl(command, args, options) {
@@ -242,7 +273,7 @@ describe('process launcher helpers', () => {
       closeErrorLabel: 'Failed to close run log handle:',
       exitErrorLabel: 'Failed to handle process exit:',
       openImpl: async filePath => ({
-        fd: filePath.endsWith('--stdout.log') ? 40 : 41,
+        fd: getFixtureFd(filePath),
         close: () => Promise.resolve(),
       }),
       spawnImpl(command, args, options) {
