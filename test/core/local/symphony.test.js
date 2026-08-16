@@ -238,7 +238,9 @@ describe('core local symphony helpers', () => {
       },
     });
   });
+});
 
+describe('core local symphony event log transitions', () => {
   test('records event log entries for Symphony transitions', () => {
     const launchedStatus = applyRunnerLaunch(
       {
@@ -306,7 +308,9 @@ describe('core local symphony helpers', () => {
     expect(rejectedFallbackStatus.eventLog?.[0]).toBe(
       'launch rejected: unknown bead: unknown error'
     );
+  });
 
+  test('records runner outcome event log entries', () => {
     const completedStatus = applyRunnerOutcome(
       {
         state: 'running',
