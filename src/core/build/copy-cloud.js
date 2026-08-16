@@ -34,6 +34,954 @@ import {
  * @param {Parameters<typeof createCopyCloudHandle>[0]} deps Build dependencies.
  * @returns {object} Copy plan consumed by the execution handle.
  */
+/**
+ * Build the individual file copy entries for the cloud infrastructure.
+ * @param {object} planValues Path and source values used by copy entries.
+ * @returns {Array<{source: string, target: string}>} Copy entries.
+ */
+/**
+ * Build copy-entry chunk 1.
+ * @param {object} planValues Copy plan values.
+ * @returns {Array<{source: string, target: string}>} Copy entries.
+ */
+function createIndividualFileCopiesPart1(planValues) {
+  const {
+    join,
+    infraDir,
+    srcCloudDir,
+    infraFunctionsDir,
+    srcCoreBrowserDir,
+    srcCoreBrowserModerationDir,
+    browserDir,
+    generateStatsGcfSource,
+    commonGcfSource,
+    assignModerationJobGcfSource,
+    assignModerationCoreSource,
+    cloudCoreSource,
+    commonCoreSource,
+    errorReportingSource,
+    expressAppSource,
+    generateStatsCoreSource,
+    generateStatsVerifyAdminSource,
+    submitNewPageCoreSource,
+    submitNewPageHelpersSource,
+    firebaseFunctionsCopies,
+  } = planValues;
+  return [
+    {
+      source: join(browserDir, 'admin.js'),
+      target: join(infraDir, 'admin.js'),
+    },
+    {
+      source: join(browserDir, 'admin-core.js'),
+      target: join(infraDir, 'admin-core.js'),
+    },
+    {
+      source: commonCoreSource,
+      target: join(infraDir, 'commonCore.js'),
+    },
+    {
+      source: commonCoreSource,
+      target: join(infraDir, 'core', 'commonCore.js'),
+    },
+    {
+      source: errorReportingSource,
+      target: join(infraDir, 'core', 'error-reporting.js'),
+    },
+    {
+      source: expressAppSource,
+      target: join(infraDir, 'core', 'express-app.js'),
+    },
+    {
+      source: join(srcCoreBrowserDir, 'browser-core.js'),
+      target: join(infraDir, 'core', 'browser', 'browser-core.js'),
+    },
+    {
+      source: join(browserDir, 'load-static-config-core.js'),
+      target: join(infraDir, 'load-static-config-core.js'),
+    },
+    {
+      source: join(srcCoreBrowserModerationDir, 'authedFetch.js'),
+      target: join(infraDir, 'core', 'browser', 'moderation', 'authedFetch.js'),
+    },
+    {
+      source: join(srcCloudDir, 'firebase-functions.js'),
+      target: join(infraFunctionsDir, 'firebase-functions.js'),
+    },
+    {
+      source: errorReportingSource,
+      target: join(infraFunctionsDir, 'errors', 'core', 'error-reporting.js'),
+    },
+    ...firebaseFunctionsCopies,
+    {
+      source: cloudCoreSource,
+      target: join(infraFunctionsDir, 'cloud-core.js'),
+    },
+    {
+      source: assignModerationCoreSource,
+      target: join(
+        infraDir,
+        'core',
+        'cloud',
+        'assign-moderation-job',
+        'assign-moderation-job-core.js'
+      ),
+    },
+    {
+      source: cloudCoreSource,
+      target: join(
+        infraDir,
+        'core',
+        'cloud',
+        'assign-moderation-job',
+        'cloud-core.js'
+      ),
+    },
+    {
+      source: assignModerationCoreSource,
+      target: join(
+        infraFunctionsDir,
+        'assign-moderation-job',
+        'assign-moderation-job-core.js'
+      ),
+    },
+    {
+      source: cloudCoreSource,
+      target: join(infraFunctionsDir, 'assign-moderation-job', 'cloud-core.js'),
+    },
+    {
+      source: commonCoreSource,
+      target: join(infraFunctionsDir, 'assign-moderation-job', 'commonCore.js'),
+    },
+    {
+      source: commonGcfSource,
+      target: join(infraFunctionsDir, 'assign-moderation-job', 'common-gcf.js'),
+    },
+    {
+      source: assignModerationJobGcfSource,
+      target: join(
+        infraFunctionsDir,
+        'assign-moderation-job',
+        'assign-moderation-job-gcf.js'
+      ),
+    },
+    {
+      source: generateStatsGcfSource,
+      target: join(
+        infraFunctionsDir,
+        'generate-stats',
+        'generate-stats-gcf.js'
+      ),
+    },
+    {
+      source: generateStatsCoreSource,
+      target: join(
+        infraDir,
+        'core',
+        'cloud',
+        'generate-stats',
+        'generate-stats-core.js'
+      ),
+    },
+    {
+      source: generateStatsVerifyAdminSource,
+      target: join(
+        infraDir,
+        'core',
+        'cloud',
+        'generate-stats',
+        'verifyAdmin.js'
+      ),
+    },
+    {
+      source: generateStatsCoreSource,
+      target: join(
+        infraFunctionsDir,
+        'generate-stats',
+        'generate-stats-core.js'
+      ),
+    },
+    {
+      source: generateStatsVerifyAdminSource,
+      target: join(infraFunctionsDir, 'generate-stats', 'verifyAdmin.js'),
+    },
+    {
+      source: cloudCoreSource,
+      target: join(infraFunctionsDir, 'generate-stats', 'cloud-core.js'),
+    },
+    {
+      source: commonCoreSource,
+      target: join(infraFunctionsDir, 'generate-stats', 'commonCore.js'),
+    },
+    {
+      source: expressAppSource,
+      target: join(
+        infraFunctionsDir,
+        'generate-stats',
+        'core',
+        'express-app.js'
+      ),
+    },
+    {
+      source: commonGcfSource,
+      target: join(infraFunctionsDir, 'generate-stats', 'common-gcf.js'),
+    },
+    {
+      source: submitNewPageCoreSource,
+      target: join(
+        infraDir,
+        'core',
+        'cloud',
+        'submit-new-page',
+        'submit-new-page-core.js'
+      ),
+    },
+    {
+      source: submitNewPageCoreSource,
+      target: join(
+        infraFunctionsDir,
+        'submit-new-page',
+        'submit-new-page-core.js'
+      ),
+    },
+    {
+      source: submitNewPageHelpersSource,
+      target: join(infraDir, 'core', 'cloud', 'submit-new-page', 'helpers.js'),
+    },
+    {
+      source: submitNewPageHelpersSource,
+      target: join(infraFunctionsDir, 'submit-new-page', 'helpers.js'),
+    },
+    {
+      source: cloudCoreSource,
+      target: join(infraFunctionsDir, 'submit-new-page', 'cloud-core.js'),
+    },
+  ];
+}
+
+/**
+ * Build copy-entry chunk 2.
+ * @param {object} planValues Copy plan values.
+ * @returns {Array<{source: string, target: string}>} Copy entries.
+ */
+function createIndividualFileCopiesPart2(planValues) {
+  const {
+    join,
+    infraDir,
+    srcCloudDir,
+    infraFunctionsDir,
+    commonGcfSource,
+    cloudCoreSource,
+    commonCoreSource,
+    getApiKeyCreditCoreSource,
+    getApiKeyCreditCreateDbSource,
+    getApiKeyCreditGcfSource,
+    getApiKeyCreditV2CoreSource,
+    getApiKeyCreditV2CreateDbSource,
+    getApiKeyCreditV2SnapshotSource,
+    getApiKeyCreditV2GcfSource,
+    hideVariantHtmlCoreSource,
+    hideVariantHtmlGcfSource,
+    markVariantDirtyCoreSource,
+    processNewPageCoreSource,
+  } = planValues;
+  return [
+    {
+      source: commonCoreSource,
+      target: join(infraFunctionsDir, 'submit-new-page', 'commonCore.js'),
+    },
+    {
+      source: commonGcfSource,
+      target: join(infraFunctionsDir, 'submit-new-page', 'common-gcf.js'),
+    },
+    {
+      source: getApiKeyCreditCoreSource,
+      target: join(
+        infraDir,
+        'core',
+        'cloud',
+        'get-api-key-credit',
+        'get-api-key-credit-core.js'
+      ),
+    },
+    {
+      source: getApiKeyCreditCreateDbSource,
+      target: join(
+        infraDir,
+        'core',
+        'cloud',
+        'get-api-key-credit',
+        'create-db.js'
+      ),
+    },
+    {
+      source: getApiKeyCreditCoreSource,
+      target: join(
+        infraFunctionsDir,
+        'get-api-key-credit',
+        'get-api-key-credit-core.js'
+      ),
+    },
+    {
+      source: getApiKeyCreditCreateDbSource,
+      target: join(infraFunctionsDir, 'get-api-key-credit', 'create-db.js'),
+    },
+    {
+      source: cloudCoreSource,
+      target: join(infraFunctionsDir, 'get-api-key-credit', 'cloud-core.js'),
+    },
+    {
+      source: commonCoreSource,
+      target: join(infraFunctionsDir, 'get-api-key-credit', 'commonCore.js'),
+    },
+    {
+      source: commonGcfSource,
+      target: join(infraFunctionsDir, 'get-api-key-credit', 'common-gcf.js'),
+    },
+    {
+      source: getApiKeyCreditGcfSource,
+      target: join(
+        infraFunctionsDir,
+        'get-api-key-credit',
+        'get-api-key-credit-gcf.js'
+      ),
+    },
+    {
+      source: getApiKeyCreditV2CoreSource,
+      target: join(
+        infraFunctionsDir,
+        'get-api-key-credit-v2',
+        'get-api-key-credit-v2-core.js'
+      ),
+    },
+    {
+      source: cloudCoreSource,
+      target: join(infraFunctionsDir, 'get-api-key-credit-v2', 'cloud-core.js'),
+    },
+    {
+      source: commonCoreSource,
+      target: join(infraFunctionsDir, 'get-api-key-credit-v2', 'commonCore.js'),
+    },
+    {
+      source: commonGcfSource,
+      target: join(infraFunctionsDir, 'get-api-key-credit-v2', 'common-gcf.js'),
+    },
+    {
+      source: getApiKeyCreditV2GcfSource,
+      target: join(
+        infraFunctionsDir,
+        'get-api-key-credit-v2',
+        'get-api-key-credit-v2-gcf.js'
+      ),
+    },
+    {
+      source: getApiKeyCreditV2CreateDbSource,
+      target: join(infraFunctionsDir, 'get-api-key-credit-v2', 'create-db.js'),
+    },
+    {
+      source: getApiKeyCreditV2SnapshotSource,
+      target: join(
+        infraFunctionsDir,
+        'get-api-key-credit-v2',
+        'get-api-key-credit-snapshot.js'
+      ),
+    },
+    {
+      source: hideVariantHtmlCoreSource,
+      target: join(
+        infraDir,
+        'core',
+        'cloud',
+        'hide-variant-html',
+        'hide-variant-html-core.js'
+      ),
+    },
+    {
+      source: hideVariantHtmlCoreSource,
+      target: join(
+        infraFunctionsDir,
+        'hide-variant-html',
+        'hide-variant-html-core.js'
+      ),
+    },
+    {
+      source: cloudCoreSource,
+      target: join(infraFunctionsDir, 'hide-variant-html', 'cloud-core.js'),
+    },
+    {
+      source: commonCoreSource,
+      target: join(infraFunctionsDir, 'hide-variant-html', 'commonCore.js'),
+    },
+    {
+      source: commonGcfSource,
+      target: join(infraFunctionsDir, 'hide-variant-html', 'common-gcf.js'),
+    },
+    {
+      source: hideVariantHtmlGcfSource,
+      target: join(
+        infraFunctionsDir,
+        'hide-variant-html',
+        'hide-variant-html-gcf.js'
+      ),
+    },
+    {
+      source: markVariantDirtyCoreSource,
+      target: join(
+        infraDir,
+        'core',
+        'cloud',
+        'mark-variant-dirty',
+        'mark-variant-dirty-core.js'
+      ),
+    },
+    {
+      source: markVariantDirtyCoreSource,
+      target: join(
+        infraFunctionsDir,
+        'mark-variant-dirty',
+        'mark-variant-dirty-core.js'
+      ),
+    },
+    {
+      source: cloudCoreSource,
+      target: join(infraFunctionsDir, 'mark-variant-dirty', 'cloud-core.js'),
+    },
+    {
+      source: commonCoreSource,
+      target: join(infraFunctionsDir, 'mark-variant-dirty', 'commonCore.js'),
+    },
+    {
+      source: commonGcfSource,
+      target: join(infraFunctionsDir, 'mark-variant-dirty', 'common-gcf.js'),
+    },
+    {
+      source: join(
+        srcCloudDir,
+        'mark-variant-dirty',
+        'mark-variant-dirty-gcf.js'
+      ),
+      target: join(
+        infraFunctionsDir,
+        'mark-variant-dirty',
+        'mark-variant-dirty-gcf.js'
+      ),
+    },
+    {
+      source: processNewPageCoreSource,
+      target: join(
+        infraDir,
+        'core',
+        'cloud',
+        'process-new-page',
+        'process-new-page-core.js'
+      ),
+    },
+  ];
+}
+
+/**
+ * Build copy-entry chunk 3.
+ * @param {object} planValues Copy plan values.
+ * @returns {Array<{source: string, target: string}>} Copy entries.
+ */
+function createIndividualFileCopiesPart3(planValues) {
+  const {
+    join,
+    infraDir,
+    infraFunctionsDir,
+    commonGcfSource,
+    cloudCoreSource,
+    commonCoreSource,
+    markVariantDirtyVerifyAdminSource,
+    processNewPageCoreSource,
+    processNewPageGcfSource,
+    processNewStoryCoreSource,
+    processNewStoryGcfSource,
+    updateVariantVisibilityCoreSource,
+    updateVariantVisibilityGcfSource,
+    getModerationVariantCoreSource,
+  } = planValues;
+  return [
+    {
+      source: processNewPageCoreSource,
+      target: join(
+        infraFunctionsDir,
+        'process-new-page',
+        'process-new-page-core.js'
+      ),
+    },
+    {
+      source: cloudCoreSource,
+      target: join(infraFunctionsDir, 'process-new-page', 'cloud-core.js'),
+    },
+    {
+      source: commonCoreSource,
+      target: join(infraFunctionsDir, 'process-new-page', 'commonCore.js'),
+    },
+    {
+      source: commonGcfSource,
+      target: join(infraFunctionsDir, 'process-new-page', 'common-gcf.js'),
+    },
+    {
+      source: processNewPageGcfSource,
+      target: join(
+        infraFunctionsDir,
+        'process-new-page',
+        'process-new-page-gcf.js'
+      ),
+    },
+    {
+      source: processNewStoryCoreSource,
+      target: join(
+        infraDir,
+        'core',
+        'cloud',
+        'process-new-story',
+        'process-new-story-core.js'
+      ),
+    },
+    {
+      source: processNewStoryCoreSource,
+      target: join(
+        infraFunctionsDir,
+        'process-new-story',
+        'process-new-story-core.js'
+      ),
+    },
+    {
+      source: processNewPageCoreSource,
+      target: join(
+        infraFunctionsDir,
+        'process-new-story',
+        'process-new-page-core.js'
+      ),
+    },
+    {
+      source: cloudCoreSource,
+      target: join(infraFunctionsDir, 'process-new-story', 'cloud-core.js'),
+    },
+    {
+      source: commonCoreSource,
+      target: join(infraFunctionsDir, 'process-new-story', 'commonCore.js'),
+    },
+    {
+      source: commonGcfSource,
+      target: join(infraFunctionsDir, 'process-new-story', 'common-gcf.js'),
+    },
+    {
+      source: processNewStoryGcfSource,
+      target: join(
+        infraFunctionsDir,
+        'process-new-story',
+        'process-new-story-gcf.js'
+      ),
+    },
+    {
+      source: updateVariantVisibilityCoreSource,
+      target: join(
+        infraDir,
+        'core',
+        'cloud',
+        'update-variant-visibility',
+        'update-variant-visibility-core.js'
+      ),
+    },
+    {
+      source: updateVariantVisibilityCoreSource,
+      target: join(
+        infraFunctionsDir,
+        'update-variant-visibility',
+        'update-variant-visibility-core.js'
+      ),
+    },
+    {
+      source: cloudCoreSource,
+      target: join(
+        infraFunctionsDir,
+        'update-variant-visibility',
+        'cloud-core.js'
+      ),
+    },
+    {
+      source: commonCoreSource,
+      target: join(
+        infraFunctionsDir,
+        'update-variant-visibility',
+        'commonCore.js'
+      ),
+    },
+    {
+      source: commonGcfSource,
+      target: join(
+        infraFunctionsDir,
+        'update-variant-visibility',
+        'common-gcf.js'
+      ),
+    },
+    {
+      source: updateVariantVisibilityGcfSource,
+      target: join(
+        infraFunctionsDir,
+        'update-variant-visibility',
+        'update-variant-visibility-gcf.js'
+      ),
+    },
+    {
+      source: markVariantDirtyVerifyAdminSource,
+      target: join(
+        infraDir,
+        'core',
+        'cloud',
+        'mark-variant-dirty',
+        'verifyAdmin.js'
+      ),
+    },
+    {
+      source: markVariantDirtyVerifyAdminSource,
+      target: join(infraFunctionsDir, 'mark-variant-dirty', 'verifyAdmin.js'),
+    },
+    {
+      source: markVariantDirtyVerifyAdminSource,
+      target: join(
+        infraFunctionsDir,
+        'generate-stats',
+        'mark-variant-dirty-verifyAdmin.js'
+      ),
+    },
+    {
+      source: getModerationVariantCoreSource,
+      target: join(
+        infraDir,
+        'core',
+        'cloud',
+        'get-moderation-variant',
+        'get-moderation-variant-core.js'
+      ),
+    },
+    {
+      source: getModerationVariantCoreSource,
+      target: join(
+        infraFunctionsDir,
+        'get-moderation-variant',
+        'get-moderation-variant-core.js'
+      ),
+    },
+    {
+      source: cloudCoreSource,
+      target: join(
+        infraFunctionsDir,
+        'get-moderation-variant',
+        'cloud-core.js'
+      ),
+    },
+    {
+      source: commonCoreSource,
+      target: join(
+        infraFunctionsDir,
+        'get-moderation-variant',
+        'commonCore.js'
+      ),
+    },
+    {
+      source: commonGcfSource,
+      target: join(
+        infraFunctionsDir,
+        'get-moderation-variant',
+        'common-gcf.js'
+      ),
+    },
+  ];
+}
+
+/**
+ * Build copy-entry chunk 4.
+ * @param {object} planValues Copy plan values.
+ * @returns {Array<{source: string, target: string}>} Copy entries.
+ */
+/**
+ * Build individual file copy chunk 41.
+ * @param {object} planValues Copy plan values.
+ * @returns {Array<{source: string, target: string}>} Copy entries.
+ */
+function createIndividualFileCopiesPart41(planValues) {
+  const {
+    join,
+    infraDir,
+    infraFunctionsDir,
+    commonGcfSource,
+    cloudCoreSource,
+    commonCoreSource,
+    getModerationVariantCorsSource,
+    getModerationVariantGcfSource,
+    renderContentsCoreSource,
+    renderContentsGcfSource,
+    renderVariantCoreSource,
+    renderVariantGcfSource,
+    reportForModerationCoreSource,
+  } = planValues;
+  return [
+    {
+      source: getModerationVariantGcfSource,
+      target: join(
+        infraFunctionsDir,
+        'get-moderation-variant',
+        'get-moderation-variant-gcf.js'
+      ),
+    },
+    {
+      source: getModerationVariantCorsSource,
+      target: join(infraFunctionsDir, 'get-moderation-variant', 'cors.js'),
+    },
+    {
+      source: renderContentsCoreSource,
+      target: join(
+        infraDir,
+        'core',
+        'cloud',
+        'render-contents',
+        'render-contents-core.js'
+      ),
+    },
+    {
+      source: renderContentsCoreSource,
+      target: join(
+        infraFunctionsDir,
+        'render-contents',
+        'render-contents-core.js'
+      ),
+    },
+    {
+      source: cloudCoreSource,
+      target: join(infraFunctionsDir, 'render-contents', 'cloud-core.js'),
+    },
+    {
+      source: commonCoreSource,
+      target: join(infraFunctionsDir, 'render-contents', 'commonCore.js'),
+    },
+    {
+      source: commonGcfSource,
+      target: join(infraFunctionsDir, 'render-contents', 'common-gcf.js'),
+    },
+    {
+      source: renderContentsGcfSource,
+      target: join(
+        infraFunctionsDir,
+        'render-contents',
+        'render-contents-gcf.js'
+      ),
+    },
+    {
+      source: renderVariantCoreSource,
+      target: join(
+        infraDir,
+        'core',
+        'cloud',
+        'render-variant',
+        'render-variant-core.js'
+      ),
+    },
+    {
+      source: renderVariantCoreSource,
+      target: join(
+        infraFunctionsDir,
+        'render-variant',
+        'render-variant-core.js'
+      ),
+    },
+    {
+      source: cloudCoreSource,
+      target: join(infraFunctionsDir, 'render-variant', 'cloud-core.js'),
+    },
+    {
+      source: commonCoreSource,
+      target: join(infraFunctionsDir, 'render-variant', 'commonCore.js'),
+    },
+    {
+      source: commonGcfSource,
+      target: join(infraFunctionsDir, 'render-variant', 'common-gcf.js'),
+    },
+    {
+      source: renderVariantGcfSource,
+      target: join(
+        infraFunctionsDir,
+        'render-variant',
+        'render-variant-gcf.js'
+      ),
+    },
+    {
+      source: reportForModerationCoreSource,
+      target: join(
+        infraDir,
+        'core',
+        'cloud',
+        'report-for-moderation',
+        'report-for-moderation-core.js'
+      ),
+    },
+    {
+      source: reportForModerationCoreSource,
+      target: join(
+        infraFunctionsDir,
+        'report-for-moderation',
+        'report-for-moderation-core.js'
+      ),
+    },
+  ];
+}
+
+/**
+ * Build individual file copy chunk 42.
+ * @param {object} planValues Copy plan values.
+ * @returns {Array<{source: string, target: string}>} Copy entries.
+ */
+function createIndividualFileCopiesPart42(planValues) {
+  const {
+    join,
+    infraDir,
+    infraFunctionsDir,
+    commonGcfSource,
+    browserFileCopies,
+    corsConfigCopies,
+    firestoreCopies,
+    packageFileCopies,
+    cloudCoreSource,
+    commonCoreSource,
+    commonCoreCopies,
+    preservedCommonCoreCopies,
+    paymentWebhookCoreCopy,
+    submitModerationRatingCoreSource,
+    submitNewStoryCoreSource,
+    reportForModerationGcfSource,
+    functionSpecificCommonCoreCopies,
+    sharedUtilityCopies,
+    preservedSharedUtilityCopies,
+  } = planValues;
+  return [
+    {
+      source: cloudCoreSource,
+      target: join(infraFunctionsDir, 'report-for-moderation', 'cloud-core.js'),
+    },
+    {
+      source: commonCoreSource,
+      target: join(infraFunctionsDir, 'report-for-moderation', 'commonCore.js'),
+    },
+    {
+      source: commonGcfSource,
+      target: join(infraFunctionsDir, 'report-for-moderation', 'common-gcf.js'),
+    },
+    {
+      source: reportForModerationGcfSource,
+      target: join(
+        infraFunctionsDir,
+        'report-for-moderation',
+        'report-for-moderation-gcf.js'
+      ),
+    },
+    {
+      source: submitModerationRatingCoreSource,
+      target: join(
+        infraDir,
+        'core',
+        'cloud',
+        'submit-moderation-rating',
+        'submit-moderation-rating-core.js'
+      ),
+    },
+    {
+      source: submitModerationRatingCoreSource,
+      target: join(
+        infraFunctionsDir,
+        'submit-moderation-rating',
+        'submit-moderation-rating-core.js'
+      ),
+    },
+    {
+      source: cloudCoreSource,
+      target: join(
+        infraFunctionsDir,
+        'submit-moderation-rating',
+        'cloud-core.js'
+      ),
+    },
+    {
+      source: commonCoreSource,
+      target: join(
+        infraFunctionsDir,
+        'submit-moderation-rating',
+        'commonCore.js'
+      ),
+    },
+    {
+      source: commonGcfSource,
+      target: join(
+        infraFunctionsDir,
+        'submit-moderation-rating',
+        'common-gcf.js'
+      ),
+    },
+    {
+      source: submitNewStoryCoreSource,
+      target: join(
+        infraDir,
+        'core',
+        'cloud',
+        'submit-new-story',
+        'submit-new-story-core.js'
+      ),
+    },
+    {
+      source: submitNewStoryCoreSource,
+      target: join(
+        infraFunctionsDir,
+        'submit-new-story',
+        'submit-new-story-core.js'
+      ),
+    },
+    {
+      source: cloudCoreSource,
+      target: join(infraFunctionsDir, 'submit-new-story', 'cloud-core.js'),
+    },
+    {
+      source: commonCoreSource,
+      target: join(infraFunctionsDir, 'submit-new-story', 'commonCore.js'),
+    },
+    {
+      source: commonGcfSource,
+      target: join(infraFunctionsDir, 'submit-new-story', 'common-gcf.js'),
+    },
+    ...browserFileCopies,
+    ...firestoreCopies,
+    ...corsConfigCopies,
+    ...commonCoreCopies,
+    ...preservedCommonCoreCopies,
+    paymentWebhookCoreCopy,
+    ...functionSpecificCommonCoreCopies,
+    ...sharedUtilityCopies,
+    ...preservedSharedUtilityCopies,
+    ...packageFileCopies,
+  ];
+}
+
+/**
+ * Build all individual file copy entries.
+ * @param {object} planValues Copy plan values.
+ * @returns {Array<{source: string, target: string}>} Copy entries.
+ */
+function createIndividualFileCopies(planValues) {
+  return [
+    ...createIndividualFileCopiesPart1(planValues),
+    ...createIndividualFileCopiesPart2(planValues),
+    ...createIndividualFileCopiesPart3(planValues),
+    ...createIndividualFileCopiesPart41(planValues),
+    ...createIndividualFileCopiesPart42(planValues),
+  ];
+}
+
+/**
+ * Build the cloud copy plan from injected filesystem and path dependencies.
+ * @param {object} deps Build dependencies.
+ * @returns {object} Copy plan consumed by the execution handle.
+ */
 function createCopyCloudPlan(deps) {
   const __dirname = getCurrentDirectory(
     import.meta.url,
@@ -480,782 +1428,66 @@ function createCopyCloudPlan(deps) {
     return file;
   }
 
-  const individualFileCopies = [
-    {
-      source: join(browserDir, 'admin.js'),
-      target: join(infraDir, 'admin.js'),
-    },
-    {
-      source: join(browserDir, 'admin-core.js'),
-      target: join(infraDir, 'admin-core.js'),
-    },
-    {
-      source: commonCoreSource,
-      target: join(infraDir, 'commonCore.js'),
-    },
-    {
-      source: commonCoreSource,
-      target: join(infraDir, 'core', 'commonCore.js'),
-    },
-    {
-      source: errorReportingSource,
-      target: join(infraDir, 'core', 'error-reporting.js'),
-    },
-    {
-      source: expressAppSource,
-      target: join(infraDir, 'core', 'express-app.js'),
-    },
-    {
-      source: join(srcCoreBrowserDir, 'browser-core.js'),
-      target: join(infraDir, 'core', 'browser', 'browser-core.js'),
-    },
-    {
-      source: join(browserDir, 'load-static-config-core.js'),
-      target: join(infraDir, 'load-static-config-core.js'),
-    },
-    {
-      source: join(srcCoreBrowserModerationDir, 'authedFetch.js'),
-      target: join(infraDir, 'core', 'browser', 'moderation', 'authedFetch.js'),
-    },
-    {
-      source: join(srcCloudDir, 'firebase-functions.js'),
-      target: join(infraFunctionsDir, 'firebase-functions.js'),
-    },
-    {
-      source: errorReportingSource,
-      target: join(infraFunctionsDir, 'errors', 'core', 'error-reporting.js'),
-    },
-    ...firebaseFunctionsCopies,
-    {
-      source: cloudCoreSource,
-      target: join(infraFunctionsDir, 'cloud-core.js'),
-    },
-    {
-      source: assignModerationCoreSource,
-      target: join(
-        infraDir,
-        'core',
-        'cloud',
-        'assign-moderation-job',
-        'assign-moderation-job-core.js'
-      ),
-    },
-    {
-      source: cloudCoreSource,
-      target: join(
-        infraDir,
-        'core',
-        'cloud',
-        'assign-moderation-job',
-        'cloud-core.js'
-      ),
-    },
-    {
-      source: assignModerationCoreSource,
-      target: join(
-        infraFunctionsDir,
-        'assign-moderation-job',
-        'assign-moderation-job-core.js'
-      ),
-    },
-    {
-      source: cloudCoreSource,
-      target: join(infraFunctionsDir, 'assign-moderation-job', 'cloud-core.js'),
-    },
-    {
-      source: commonCoreSource,
-      target: join(infraFunctionsDir, 'assign-moderation-job', 'commonCore.js'),
-    },
-    {
-      source: commonGcfSource,
-      target: join(infraFunctionsDir, 'assign-moderation-job', 'common-gcf.js'),
-    },
-    {
-      source: assignModerationJobGcfSource,
-      target: join(
-        infraFunctionsDir,
-        'assign-moderation-job',
-        'assign-moderation-job-gcf.js'
-      ),
-    },
-    {
-      source: generateStatsGcfSource,
-      target: join(
-        infraFunctionsDir,
-        'generate-stats',
-        'generate-stats-gcf.js'
-      ),
-    },
-    {
-      source: generateStatsCoreSource,
-      target: join(
-        infraDir,
-        'core',
-        'cloud',
-        'generate-stats',
-        'generate-stats-core.js'
-      ),
-    },
-    {
-      source: generateStatsVerifyAdminSource,
-      target: join(
-        infraDir,
-        'core',
-        'cloud',
-        'generate-stats',
-        'verifyAdmin.js'
-      ),
-    },
-    {
-      source: generateStatsCoreSource,
-      target: join(
-        infraFunctionsDir,
-        'generate-stats',
-        'generate-stats-core.js'
-      ),
-    },
-    {
-      source: generateStatsVerifyAdminSource,
-      target: join(infraFunctionsDir, 'generate-stats', 'verifyAdmin.js'),
-    },
-    {
-      source: cloudCoreSource,
-      target: join(infraFunctionsDir, 'generate-stats', 'cloud-core.js'),
-    },
-    {
-      source: commonCoreSource,
-      target: join(infraFunctionsDir, 'generate-stats', 'commonCore.js'),
-    },
-    {
-      source: expressAppSource,
-      target: join(
-        infraFunctionsDir,
-        'generate-stats',
-        'core',
-        'express-app.js'
-      ),
-    },
-    {
-      source: commonGcfSource,
-      target: join(infraFunctionsDir, 'generate-stats', 'common-gcf.js'),
-    },
-    {
-      source: submitNewPageCoreSource,
-      target: join(
-        infraDir,
-        'core',
-        'cloud',
-        'submit-new-page',
-        'submit-new-page-core.js'
-      ),
-    },
-    {
-      source: submitNewPageCoreSource,
-      target: join(
-        infraFunctionsDir,
-        'submit-new-page',
-        'submit-new-page-core.js'
-      ),
-    },
-    {
-      source: submitNewPageHelpersSource,
-      target: join(infraDir, 'core', 'cloud', 'submit-new-page', 'helpers.js'),
-    },
-    {
-      source: submitNewPageHelpersSource,
-      target: join(infraFunctionsDir, 'submit-new-page', 'helpers.js'),
-    },
-    {
-      source: cloudCoreSource,
-      target: join(infraFunctionsDir, 'submit-new-page', 'cloud-core.js'),
-    },
-    {
-      source: commonCoreSource,
-      target: join(infraFunctionsDir, 'submit-new-page', 'commonCore.js'),
-    },
-    {
-      source: commonGcfSource,
-      target: join(infraFunctionsDir, 'submit-new-page', 'common-gcf.js'),
-    },
-    {
-      source: getApiKeyCreditCoreSource,
-      target: join(
-        infraDir,
-        'core',
-        'cloud',
-        'get-api-key-credit',
-        'get-api-key-credit-core.js'
-      ),
-    },
-    {
-      source: getApiKeyCreditCreateDbSource,
-      target: join(
-        infraDir,
-        'core',
-        'cloud',
-        'get-api-key-credit',
-        'create-db.js'
-      ),
-    },
-    {
-      source: getApiKeyCreditCoreSource,
-      target: join(
-        infraFunctionsDir,
-        'get-api-key-credit',
-        'get-api-key-credit-core.js'
-      ),
-    },
-    {
-      source: getApiKeyCreditCreateDbSource,
-      target: join(infraFunctionsDir, 'get-api-key-credit', 'create-db.js'),
-    },
-    {
-      source: cloudCoreSource,
-      target: join(infraFunctionsDir, 'get-api-key-credit', 'cloud-core.js'),
-    },
-    {
-      source: commonCoreSource,
-      target: join(infraFunctionsDir, 'get-api-key-credit', 'commonCore.js'),
-    },
-    {
-      source: commonGcfSource,
-      target: join(infraFunctionsDir, 'get-api-key-credit', 'common-gcf.js'),
-    },
-    {
-      source: getApiKeyCreditGcfSource,
-      target: join(
-        infraFunctionsDir,
-        'get-api-key-credit',
-        'get-api-key-credit-gcf.js'
-      ),
-    },
-    {
-      source: getApiKeyCreditV2CoreSource,
-      target: join(
-        infraFunctionsDir,
-        'get-api-key-credit-v2',
-        'get-api-key-credit-v2-core.js'
-      ),
-    },
-    {
-      source: cloudCoreSource,
-      target: join(infraFunctionsDir, 'get-api-key-credit-v2', 'cloud-core.js'),
-    },
-    {
-      source: commonCoreSource,
-      target: join(infraFunctionsDir, 'get-api-key-credit-v2', 'commonCore.js'),
-    },
-    {
-      source: commonGcfSource,
-      target: join(infraFunctionsDir, 'get-api-key-credit-v2', 'common-gcf.js'),
-    },
-    {
-      source: getApiKeyCreditV2GcfSource,
-      target: join(
-        infraFunctionsDir,
-        'get-api-key-credit-v2',
-        'get-api-key-credit-v2-gcf.js'
-      ),
-    },
-    {
-      source: getApiKeyCreditV2CreateDbSource,
-      target: join(infraFunctionsDir, 'get-api-key-credit-v2', 'create-db.js'),
-    },
-    {
-      source: getApiKeyCreditV2SnapshotSource,
-      target: join(
-        infraFunctionsDir,
-        'get-api-key-credit-v2',
-        'get-api-key-credit-snapshot.js'
-      ),
-    },
-    {
-      source: hideVariantHtmlCoreSource,
-      target: join(
-        infraDir,
-        'core',
-        'cloud',
-        'hide-variant-html',
-        'hide-variant-html-core.js'
-      ),
-    },
-    {
-      source: hideVariantHtmlCoreSource,
-      target: join(
-        infraFunctionsDir,
-        'hide-variant-html',
-        'hide-variant-html-core.js'
-      ),
-    },
-    {
-      source: cloudCoreSource,
-      target: join(infraFunctionsDir, 'hide-variant-html', 'cloud-core.js'),
-    },
-    {
-      source: commonCoreSource,
-      target: join(infraFunctionsDir, 'hide-variant-html', 'commonCore.js'),
-    },
-    {
-      source: commonGcfSource,
-      target: join(infraFunctionsDir, 'hide-variant-html', 'common-gcf.js'),
-    },
-    {
-      source: hideVariantHtmlGcfSource,
-      target: join(
-        infraFunctionsDir,
-        'hide-variant-html',
-        'hide-variant-html-gcf.js'
-      ),
-    },
-    {
-      source: markVariantDirtyCoreSource,
-      target: join(
-        infraDir,
-        'core',
-        'cloud',
-        'mark-variant-dirty',
-        'mark-variant-dirty-core.js'
-      ),
-    },
-    {
-      source: markVariantDirtyCoreSource,
-      target: join(
-        infraFunctionsDir,
-        'mark-variant-dirty',
-        'mark-variant-dirty-core.js'
-      ),
-    },
-    {
-      source: cloudCoreSource,
-      target: join(infraFunctionsDir, 'mark-variant-dirty', 'cloud-core.js'),
-    },
-    {
-      source: commonCoreSource,
-      target: join(infraFunctionsDir, 'mark-variant-dirty', 'commonCore.js'),
-    },
-    {
-      source: commonGcfSource,
-      target: join(infraFunctionsDir, 'mark-variant-dirty', 'common-gcf.js'),
-    },
-    {
-      source: join(
-        srcCloudDir,
-        'mark-variant-dirty',
-        'mark-variant-dirty-gcf.js'
-      ),
-      target: join(
-        infraFunctionsDir,
-        'mark-variant-dirty',
-        'mark-variant-dirty-gcf.js'
-      ),
-    },
-    {
-      source: processNewPageCoreSource,
-      target: join(
-        infraDir,
-        'core',
-        'cloud',
-        'process-new-page',
-        'process-new-page-core.js'
-      ),
-    },
-    {
-      source: processNewPageCoreSource,
-      target: join(
-        infraFunctionsDir,
-        'process-new-page',
-        'process-new-page-core.js'
-      ),
-    },
-    {
-      source: cloudCoreSource,
-      target: join(infraFunctionsDir, 'process-new-page', 'cloud-core.js'),
-    },
-    {
-      source: commonCoreSource,
-      target: join(infraFunctionsDir, 'process-new-page', 'commonCore.js'),
-    },
-    {
-      source: commonGcfSource,
-      target: join(infraFunctionsDir, 'process-new-page', 'common-gcf.js'),
-    },
-    {
-      source: processNewPageGcfSource,
-      target: join(
-        infraFunctionsDir,
-        'process-new-page',
-        'process-new-page-gcf.js'
-      ),
-    },
-    {
-      source: processNewStoryCoreSource,
-      target: join(
-        infraDir,
-        'core',
-        'cloud',
-        'process-new-story',
-        'process-new-story-core.js'
-      ),
-    },
-    {
-      source: processNewStoryCoreSource,
-      target: join(
-        infraFunctionsDir,
-        'process-new-story',
-        'process-new-story-core.js'
-      ),
-    },
-    {
-      source: processNewPageCoreSource,
-      target: join(
-        infraFunctionsDir,
-        'process-new-story',
-        'process-new-page-core.js'
-      ),
-    },
-    {
-      source: cloudCoreSource,
-      target: join(infraFunctionsDir, 'process-new-story', 'cloud-core.js'),
-    },
-    {
-      source: commonCoreSource,
-      target: join(infraFunctionsDir, 'process-new-story', 'commonCore.js'),
-    },
-    {
-      source: commonGcfSource,
-      target: join(infraFunctionsDir, 'process-new-story', 'common-gcf.js'),
-    },
-    {
-      source: processNewStoryGcfSource,
-      target: join(
-        infraFunctionsDir,
-        'process-new-story',
-        'process-new-story-gcf.js'
-      ),
-    },
-    {
-      source: updateVariantVisibilityCoreSource,
-      target: join(
-        infraDir,
-        'core',
-        'cloud',
-        'update-variant-visibility',
-        'update-variant-visibility-core.js'
-      ),
-    },
-    {
-      source: updateVariantVisibilityCoreSource,
-      target: join(
-        infraFunctionsDir,
-        'update-variant-visibility',
-        'update-variant-visibility-core.js'
-      ),
-    },
-    {
-      source: cloudCoreSource,
-      target: join(
-        infraFunctionsDir,
-        'update-variant-visibility',
-        'cloud-core.js'
-      ),
-    },
-    {
-      source: commonCoreSource,
-      target: join(
-        infraFunctionsDir,
-        'update-variant-visibility',
-        'commonCore.js'
-      ),
-    },
-    {
-      source: commonGcfSource,
-      target: join(
-        infraFunctionsDir,
-        'update-variant-visibility',
-        'common-gcf.js'
-      ),
-    },
-    {
-      source: updateVariantVisibilityGcfSource,
-      target: join(
-        infraFunctionsDir,
-        'update-variant-visibility',
-        'update-variant-visibility-gcf.js'
-      ),
-    },
-    {
-      source: markVariantDirtyVerifyAdminSource,
-      target: join(
-        infraDir,
-        'core',
-        'cloud',
-        'mark-variant-dirty',
-        'verifyAdmin.js'
-      ),
-    },
-    {
-      source: markVariantDirtyVerifyAdminSource,
-      target: join(infraFunctionsDir, 'mark-variant-dirty', 'verifyAdmin.js'),
-    },
-    {
-      source: markVariantDirtyVerifyAdminSource,
-      target: join(
-        infraFunctionsDir,
-        'generate-stats',
-        'mark-variant-dirty-verifyAdmin.js'
-      ),
-    },
-    {
-      source: getModerationVariantCoreSource,
-      target: join(
-        infraDir,
-        'core',
-        'cloud',
-        'get-moderation-variant',
-        'get-moderation-variant-core.js'
-      ),
-    },
-    {
-      source: getModerationVariantCoreSource,
-      target: join(
-        infraFunctionsDir,
-        'get-moderation-variant',
-        'get-moderation-variant-core.js'
-      ),
-    },
-    {
-      source: cloudCoreSource,
-      target: join(
-        infraFunctionsDir,
-        'get-moderation-variant',
-        'cloud-core.js'
-      ),
-    },
-    {
-      source: commonCoreSource,
-      target: join(
-        infraFunctionsDir,
-        'get-moderation-variant',
-        'commonCore.js'
-      ),
-    },
-    {
-      source: commonGcfSource,
-      target: join(
-        infraFunctionsDir,
-        'get-moderation-variant',
-        'common-gcf.js'
-      ),
-    },
-    {
-      source: getModerationVariantGcfSource,
-      target: join(
-        infraFunctionsDir,
-        'get-moderation-variant',
-        'get-moderation-variant-gcf.js'
-      ),
-    },
-    {
-      source: getModerationVariantCorsSource,
-      target: join(infraFunctionsDir, 'get-moderation-variant', 'cors.js'),
-    },
-    {
-      source: renderContentsCoreSource,
-      target: join(
-        infraDir,
-        'core',
-        'cloud',
-        'render-contents',
-        'render-contents-core.js'
-      ),
-    },
-    {
-      source: renderContentsCoreSource,
-      target: join(
-        infraFunctionsDir,
-        'render-contents',
-        'render-contents-core.js'
-      ),
-    },
-    {
-      source: cloudCoreSource,
-      target: join(infraFunctionsDir, 'render-contents', 'cloud-core.js'),
-    },
-    {
-      source: commonCoreSource,
-      target: join(infraFunctionsDir, 'render-contents', 'commonCore.js'),
-    },
-    {
-      source: commonGcfSource,
-      target: join(infraFunctionsDir, 'render-contents', 'common-gcf.js'),
-    },
-    {
-      source: renderContentsGcfSource,
-      target: join(
-        infraFunctionsDir,
-        'render-contents',
-        'render-contents-gcf.js'
-      ),
-    },
-    {
-      source: renderVariantCoreSource,
-      target: join(
-        infraDir,
-        'core',
-        'cloud',
-        'render-variant',
-        'render-variant-core.js'
-      ),
-    },
-    {
-      source: renderVariantCoreSource,
-      target: join(
-        infraFunctionsDir,
-        'render-variant',
-        'render-variant-core.js'
-      ),
-    },
-    {
-      source: cloudCoreSource,
-      target: join(infraFunctionsDir, 'render-variant', 'cloud-core.js'),
-    },
-    {
-      source: commonCoreSource,
-      target: join(infraFunctionsDir, 'render-variant', 'commonCore.js'),
-    },
-    {
-      source: commonGcfSource,
-      target: join(infraFunctionsDir, 'render-variant', 'common-gcf.js'),
-    },
-    {
-      source: renderVariantGcfSource,
-      target: join(
-        infraFunctionsDir,
-        'render-variant',
-        'render-variant-gcf.js'
-      ),
-    },
-    {
-      source: reportForModerationCoreSource,
-      target: join(
-        infraDir,
-        'core',
-        'cloud',
-        'report-for-moderation',
-        'report-for-moderation-core.js'
-      ),
-    },
-    {
-      source: reportForModerationCoreSource,
-      target: join(
-        infraFunctionsDir,
-        'report-for-moderation',
-        'report-for-moderation-core.js'
-      ),
-    },
-    {
-      source: cloudCoreSource,
-      target: join(infraFunctionsDir, 'report-for-moderation', 'cloud-core.js'),
-    },
-    {
-      source: commonCoreSource,
-      target: join(infraFunctionsDir, 'report-for-moderation', 'commonCore.js'),
-    },
-    {
-      source: commonGcfSource,
-      target: join(infraFunctionsDir, 'report-for-moderation', 'common-gcf.js'),
-    },
-    {
-      source: reportForModerationGcfSource,
-      target: join(
-        infraFunctionsDir,
-        'report-for-moderation',
-        'report-for-moderation-gcf.js'
-      ),
-    },
-    {
-      source: submitModerationRatingCoreSource,
-      target: join(
-        infraDir,
-        'core',
-        'cloud',
-        'submit-moderation-rating',
-        'submit-moderation-rating-core.js'
-      ),
-    },
-    {
-      source: submitModerationRatingCoreSource,
-      target: join(
-        infraFunctionsDir,
-        'submit-moderation-rating',
-        'submit-moderation-rating-core.js'
-      ),
-    },
-    {
-      source: cloudCoreSource,
-      target: join(
-        infraFunctionsDir,
-        'submit-moderation-rating',
-        'cloud-core.js'
-      ),
-    },
-    {
-      source: commonCoreSource,
-      target: join(
-        infraFunctionsDir,
-        'submit-moderation-rating',
-        'commonCore.js'
-      ),
-    },
-    {
-      source: commonGcfSource,
-      target: join(
-        infraFunctionsDir,
-        'submit-moderation-rating',
-        'common-gcf.js'
-      ),
-    },
-    {
-      source: submitNewStoryCoreSource,
-      target: join(
-        infraDir,
-        'core',
-        'cloud',
-        'submit-new-story',
-        'submit-new-story-core.js'
-      ),
-    },
-    {
-      source: submitNewStoryCoreSource,
-      target: join(
-        infraFunctionsDir,
-        'submit-new-story',
-        'submit-new-story-core.js'
-      ),
-    },
-    {
-      source: cloudCoreSource,
-      target: join(infraFunctionsDir, 'submit-new-story', 'cloud-core.js'),
-    },
-    {
-      source: commonCoreSource,
-      target: join(infraFunctionsDir, 'submit-new-story', 'commonCore.js'),
-    },
-    {
-      source: commonGcfSource,
-      target: join(infraFunctionsDir, 'submit-new-story', 'common-gcf.js'),
-    },
-    ...browserFileCopies,
-    ...firestoreCopies,
-    ...corsConfigCopies,
-    ...commonCoreCopies,
-    ...preservedCommonCoreCopies,
+  const individualFileCopies = createIndividualFileCopies({
+    join,
+    infraDir,
+    srcCloudDir,
+    infraFunctionsDir,
+    srcCoreBrowserDir,
+    srcCoreBrowserModerationDir,
+    browserDir,
+    generateStatsGcfSource,
+    commonGcfSource,
+    assignModerationJobGcfSource,
+    browserFileCopies,
+    corsConfigCopies,
+    firestoreCopies,
+    packageFileCopies,
+    assignModerationCoreSource,
+    cloudCoreSource,
+    commonCoreSource,
+    errorReportingSource,
+    expressAppSource,
+    commonCoreCopies,
+    preservedCommonCoreCopies,
     paymentWebhookCoreCopy,
-    ...functionSpecificCommonCoreCopies,
-    ...sharedUtilityCopies,
-    ...preservedSharedUtilityCopies,
-    ...packageFileCopies,
-  ];
+    generateStatsCoreSource,
+    generateStatsVerifyAdminSource,
+    submitNewPageCoreSource,
+    submitNewPageHelpersSource,
+    submitModerationRatingCoreSource,
+    submitNewStoryCoreSource,
+    getApiKeyCreditCoreSource,
+    getApiKeyCreditCreateDbSource,
+    getApiKeyCreditGcfSource,
+    getApiKeyCreditV2CoreSource,
+    getApiKeyCreditV2CreateDbSource,
+    getApiKeyCreditV2SnapshotSource,
+    getApiKeyCreditV2GcfSource,
+    hideVariantHtmlCoreSource,
+    hideVariantHtmlGcfSource,
+    markVariantDirtyCoreSource,
+    markVariantDirtyVerifyAdminSource,
+    processNewPageCoreSource,
+    processNewPageGcfSource,
+    processNewStoryCoreSource,
+    processNewStoryGcfSource,
+    updateVariantVisibilityCoreSource,
+    updateVariantVisibilityGcfSource,
+    getModerationVariantCorsSource,
+    getModerationVariantCoreSource,
+    getModerationVariantGcfSource,
+    renderContentsCoreSource,
+    renderContentsGcfSource,
+    renderVariantCoreSource,
+    renderVariantGcfSource,
+    reportForModerationCoreSource,
+    reportForModerationGcfSource,
+    firebaseFunctionsCopies,
+    functionSpecificCommonCoreCopies,
+    sharedUtilityCopies,
+    preservedSharedUtilityCopies,
+  });
 
   return {
     projectRoot,
