@@ -1,6 +1,8 @@
 import { jest } from '@jest/globals';
 import { createErrorBeaconRun } from '../../../../src/core/cloud/errors/run.js';
 
+const accessTokenKey = 'access_token';
+
 describe('createErrorBeaconRun', () => {
   it('wires the express app and POST handler', async () => {
     const post = jest.fn();
@@ -18,7 +20,7 @@ describe('createErrorBeaconRun', () => {
       .fn()
       .mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ access_token: 'token' }),
+        json: async () => ({ [accessTokenKey]: 'token' }),
       })
       .mockResolvedValueOnce({ ok: true, status: 204, json: async () => ({}) });
 
@@ -62,7 +64,7 @@ describe('createErrorBeaconRun', () => {
       .fn()
       .mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ access_token: 'token' }),
+        json: async () => ({ [accessTokenKey]: 'token' }),
       })
       .mockResolvedValueOnce({ ok: true, status: 200, json: async () => ({}) });
 
@@ -107,7 +109,7 @@ describe('createErrorBeaconRun', () => {
       .fn()
       .mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ access_token: 'token' }),
+        json: async () => ({ [accessTokenKey]: 'token' }),
       })
       .mockResolvedValueOnce({
         ok: false,
@@ -150,7 +152,7 @@ describe('createErrorBeaconRun', () => {
       .fn()
       .mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ access_token: 'token' }),
+        json: async () => ({ [accessTokenKey]: 'token' }),
       })
       .mockResolvedValueOnce({
         ok: false,
@@ -233,7 +235,7 @@ describe('createErrorBeaconRun', () => {
       .fn()
       .mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ access_token: '' }),
+        json: async () => ({ [accessTokenKey]: '' }),
       })
       .mockResolvedValueOnce({ ok: true, status: 204, json: async () => ({}) });
 
@@ -273,7 +275,7 @@ describe('createErrorBeaconRun', () => {
       .fn()
       .mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ access_token: 'token' }),
+        json: async () => ({ [accessTokenKey]: 'token' }),
       })
       .mockResolvedValueOnce({ ok: true, status: 204, json: async () => ({}) });
 
@@ -312,7 +314,7 @@ describe('createErrorBeaconRun', () => {
       .fn()
       .mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ access_token: 'token' }),
+        json: async () => ({ [accessTokenKey]: 'token' }),
       })
       .mockResolvedValueOnce({ ok: true, status: 204, json: async () => ({}) });
 
@@ -402,7 +404,7 @@ describe('createErrorBeaconRun', () => {
       .fn()
       .mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ access_token: 'token' }),
+        json: async () => ({ [accessTokenKey]: 'token' }),
       })
       .mockResolvedValueOnce({ ok: true, status: 204, json: async () => ({}) });
 
