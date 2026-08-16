@@ -3,6 +3,31 @@ import * as renderVariantCore from '../../../src/core/cloud/render-variant/rende
 
 const { renderVariantCoreTestUtils } = renderVariantCore;
 
+const runMissingVisibilityChanges = async (utils, validRef) => {
+  const changes = [
+    { after: { data: () => ({}) }, before: { exists: true } },
+    {
+      after: { data: () => ({ visibility: 1 }) },
+      before: { exists: false },
+    },
+    { after: {}, before: { exists: false } },
+    {
+      after: { ref: { path: 'variants/skip' }, data: () => ({}) },
+      before: { exists: true, data: () => ({}) },
+    },
+  ];
+  for (const [index, change] of changes.entries()) {
+    const db = {};
+    if (index === 3) {
+      db.doc = jest.fn(() => validRef);
+    }
+    await utils.updateTreeVisibilityForVariantChange({
+      change,
+      db,
+    });
+  }
+};
+
 test('extractVariantName falls back to empty string', () => {
   expect(renderVariantCoreTestUtils.extractVariantName({})).toBe('');
 });
@@ -82,30 +107,8 @@ test('covers option href and pending-path fallbacks', () => {
 
 test('covers tree visibility propagation fallbacks and parent updates', async () => {
   const utils = renderVariantCoreTestUtils;
-  const skipped = { after: { data: () => ({}) }, before: { exists: true } };
-  await utils.updateTreeVisibilityForVariantChange({
-    change: skipped,
-    db: {},
-  });
-  await utils.updateTreeVisibilityForVariantChange({
-    change: {
-      after: { data: () => ({ visibility: 1 }) },
-      before: { exists: false },
-    },
-    db: {},
-  });
-  await utils.updateTreeVisibilityForVariantChange({
-    change: { after: {}, before: { exists: false } },
-    db: {},
-  });
   const validRef = { get: jest.fn(), update: jest.fn() };
-  await utils.updateTreeVisibilityForVariantChange({
-    change: {
-      after: { ref: { path: 'variants/skip' }, data: () => ({}) },
-      before: { exists: true, data: () => ({}) },
-    },
-    db: { doc: jest.fn(() => validRef) },
-  });
+  await runMissingVisibilityChanges(utils, validRef);
 
   const parentUpdate = jest.fn().mockResolvedValue(undefined);
   const parent = {
