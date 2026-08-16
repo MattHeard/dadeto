@@ -22,6 +22,20 @@ describe('billing catalog seed core', () => {
     expect(() => normalizeCatalogSnapshot('wrong', snapshot)).toThrow(
       'document ID'
     );
+    expect(
+      normalizeCatalogSnapshot('initial', { ...snapshot, operations: [] })
+        .operations
+    ).toEqual({});
+    expect(
+      normalizeCatalogSnapshot('initial', {
+        ...snapshot,
+        operations: { invoke: { costEurMicros: 1 } },
+      }).operations
+    ).toEqual({ invoke: { id: 'invoke', costEurMicros: 1 } });
+    expect(
+      normalizeCatalogSnapshot('initial', { ...snapshot, operations: null })
+        .operations
+    ).toEqual({});
   });
 
   it('creates, updates packages, and makes identical snapshot reseeds no-ops', async () => {
@@ -52,6 +66,12 @@ describe('billing catalog seed core', () => {
     ).resolves.toMatchObject({ packagesUpdated: 1, snapshotsUnchanged: 1 });
     await expect(
       seedBillingCatalog(store, {
+        packages: { 'usd-10': { active: false, amountUsdMinor: 1000 } },
+        snapshots: {},
+      })
+    ).resolves.toMatchObject({ packagesUpdated: 0 });
+    await expect(
+      seedBillingCatalog(store, {
         packages: {},
         snapshots: { initial: { ...snapshot, markupBps: 1 } },
       })
@@ -67,5 +87,32 @@ describe('billing catalog seed core', () => {
       credits: 9_200_000,
       snapshotId: 'initial',
     });
+  });
+
+  it('rejects malformed package definitions', async () => {
+    const store = {
+      getPackage: async () => null,
+      setPackage: async () => {},
+      getSnapshot: async () => null,
+      createSnapshot: async () => {},
+    };
+    await expect(
+      seedBillingCatalog(store, {
+        packages: { bad: { active: 'yes', amountUsdMinor: 1 } },
+        snapshots: {},
+      })
+    ).rejects.toThrow('active must be boolean');
+    await expect(
+      seedBillingCatalog(store, {
+        packages: { bad: { active: true, amountUsdMinor: 0 } },
+        snapshots: {},
+      })
+    ).rejects.toThrow('amountUsdMinor must be positive');
+    await expect(
+      seedBillingCatalog(store, {
+        packages: { bad: { active: true, amountUsdMinor: 1.5 } },
+        snapshots: {},
+      })
+    ).rejects.toThrow('amountUsdMinor must be positive');
   });
 });
