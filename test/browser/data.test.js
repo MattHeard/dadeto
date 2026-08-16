@@ -522,6 +522,22 @@ describe('getData, setData, and getDeepStateCopy', () => {
     expect(state.blogStatus).toBe('loaded');
     expect(state.blog).toEqual(blogData);
   });
+});
+
+describe('setData behavior', () => {
+  let state;
+  let logFn;
+  let errorFn;
+  beforeEach(() => {
+    state = {
+      blog: null,
+      blogStatus: 'idle',
+      blogError: null,
+      blogFetchPromise: null,
+    };
+    logFn = jest.fn();
+    errorFn = jest.fn();
+  });
 
   it('setData preserves existing blog if incoming state omits it', () => {
     state.blog = { title: 'preserved' };
@@ -709,6 +725,30 @@ describe('getData, setData, and getDeepStateCopy', () => {
       'setLocalTemporaryData received invalid data structure:',
       invalidState
     );
+  });
+});
+
+describe('remaining getData helpers', () => {
+  let state;
+  let logFn;
+  let errorFn;
+  let warnFn;
+  let fetchFn;
+  const createDependencies = () => ({
+    fetch: fetchFn,
+    loggers: { logInfo: logFn, logError: errorFn, logWarning: warnFn },
+  });
+  beforeEach(() => {
+    state = {
+      blog: null,
+      blogStatus: 'idle',
+      blogError: null,
+      blogFetchPromise: null,
+    };
+    logFn = jest.fn();
+    errorFn = jest.fn();
+    warnFn = jest.fn();
+    fetchFn = jest.fn();
   });
 
   it('shouldUseExistingFetch returns true and logs when loading and promise exists', () => {
