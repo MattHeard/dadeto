@@ -2829,7 +2829,9 @@ describe('createHandleVariantWrite', () => {
     ).resolves.toBeNull();
     expect(renderVariant).not.toHaveBeenCalled();
   });
+});
 
+describe('createHandleVariantWrite republishing', () => {
   it('republishes inbound pages with rewrite targets when a page loses its last visible variant', async () => {
     const renderVariant = jest.fn().mockResolvedValue(null);
     const getDeleteSentinel = jest.fn(() => 'sentinel');
@@ -2997,7 +2999,9 @@ describe('createHandleVariantWrite', () => {
 
     expect(renderVariant).not.toHaveBeenCalled();
   });
+});
 
+describe('createHandleVariantWrite fallback paths', () => {
   it('skips republishing when an inbound source variant no longer exists', async () => {
     const renderVariant = jest.fn().mockResolvedValue(null);
     const pageRef = {
