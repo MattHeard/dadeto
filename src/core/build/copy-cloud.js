@@ -982,43 +982,22 @@ function createIndividualFileCopies(planValues) {
  * @param {object} deps Build dependencies.
  * @returns {object} Copy plan consumed by the execution handle.
  */
-function createCopyCloudPlan(deps) {
-  const __dirname = getCurrentDirectory(
-    import.meta.url,
-    deps.fileURLToPathFn,
-    deps.dirnameFn
-  );
-
-  const pathAdapters = /** @type {typeof deps.pathModule} */ (
-    createPathAdapters(
-      /** @type {Parameters<typeof createPathAdapters>[0]} */ (deps.pathModule)
-    )
-  );
-  const { join, resolve, relative } = pathAdapters;
-
-  const projectRoot = resolve(__dirname, '../../..');
-  const srcDir = join(projectRoot, 'src');
-  const infraDir = resolve(projectRoot, 'infra');
-  const srcCloudDir = resolve(srcDir, 'cloud');
-  const infraFunctionsDir = resolve(infraDir, 'cloud-functions');
-  const srcCoreDir = resolve(srcDir, 'core');
-  const srcCoreCloudDir = resolve(srcCoreDir, 'cloud');
-  const srcCoreRealtimeDir = resolve(srcCoreDir, 'realtime');
-  const srcCoreBrowserDir = resolve(srcCoreDir, 'browser');
-  const srcCoreBrowserModerationDir = resolve(srcCoreBrowserDir, 'moderation');
-  const browserDir = resolve(srcDir, 'browser');
-  const generateStatsGcfSource = join(
+/**
+ * Build the directory and browser copy topology.
+ * @param {object} planValues Path adapters and source directories.
+ * @returns {object} Directory copy entries.
+ */
+function createCopyCloudDirectoryPlan(planValues) {
+  const {
+    join,
+    infraDir,
     srcCloudDir,
-    'generate-stats',
-    'generate-stats-gcf.js'
-  );
-  const commonGcfSource = join(srcCloudDir, 'common-gcf.js');
-  const assignModerationJobGcfSource = join(
-    srcCloudDir,
-    'assign-moderation-job',
-    'assign-moderation-job-gcf.js'
-  );
-
+    infraFunctionsDir,
+    srcCoreCloudDir,
+    srcCoreRealtimeDir,
+    srcCoreBrowserDir,
+    browserDir,
+  } = planValues;
   const functionDirectories = [
     'assign-moderation-job',
     'generate-stats',
@@ -1118,6 +1097,75 @@ function createCopyCloudPlan(deps) {
     source: join(browserDir, name),
     target: join(infraDir, name),
   }));
+  return {
+    functionDirectories,
+    directoryCopies,
+    preservedCloudTreeCopies,
+    coreRealtimeCopies,
+    coreBrowserCopies,
+    browserFileCopies,
+  };
+}
+
+/**
+ * Build the cloud copy plan from injected filesystem and path dependencies.
+ * @param {object} deps Build dependencies.
+ * @returns {object} Copy plan consumed by the execution handle.
+ */
+function createCopyCloudPlan(deps) {
+  const __dirname = getCurrentDirectory(
+    import.meta.url,
+    deps.fileURLToPathFn,
+    deps.dirnameFn
+  );
+
+  const pathAdapters = /** @type {typeof deps.pathModule} */ (
+    createPathAdapters(
+      /** @type {Parameters<typeof createPathAdapters>[0]} */ (deps.pathModule)
+    )
+  );
+  const { join, resolve, relative } = pathAdapters;
+
+  const projectRoot = resolve(__dirname, '../../..');
+  const srcDir = join(projectRoot, 'src');
+  const infraDir = resolve(projectRoot, 'infra');
+  const srcCloudDir = resolve(srcDir, 'cloud');
+  const infraFunctionsDir = resolve(infraDir, 'cloud-functions');
+  const srcCoreDir = resolve(srcDir, 'core');
+  const srcCoreCloudDir = resolve(srcCoreDir, 'cloud');
+  const srcCoreRealtimeDir = resolve(srcCoreDir, 'realtime');
+  const srcCoreBrowserDir = resolve(srcCoreDir, 'browser');
+  const srcCoreBrowserModerationDir = resolve(srcCoreBrowserDir, 'moderation');
+  const browserDir = resolve(srcDir, 'browser');
+  const generateStatsGcfSource = join(
+    srcCloudDir,
+    'generate-stats',
+    'generate-stats-gcf.js'
+  );
+  const commonGcfSource = join(srcCloudDir, 'common-gcf.js');
+  const assignModerationJobGcfSource = join(
+    srcCloudDir,
+    'assign-moderation-job',
+    'assign-moderation-job-gcf.js'
+  );
+
+  const {
+    functionDirectories,
+    directoryCopies,
+    preservedCloudTreeCopies,
+    coreRealtimeCopies,
+    coreBrowserCopies,
+    browserFileCopies,
+  } = createCopyCloudDirectoryPlan({
+    join,
+    infraDir,
+    srcCloudDir,
+    infraFunctionsDir,
+    srcCoreCloudDir,
+    srcCoreRealtimeDir,
+    srcCoreBrowserDir,
+    browserDir,
+  });
 
   const corsConfigSource = join(srcCloudDir, 'cors-config.js');
 
