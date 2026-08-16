@@ -197,7 +197,9 @@ describe('runCheckSuite', () => {
       stderrWrite.mockRestore();
     }
   });
+});
 
+describe('runCheckSuite runner options and child lifecycle', () => {
   it('resolves default runner options when none are supplied', () => {
     const nowSpy = jest.spyOn(Date, 'now').mockReturnValue(4321);
 
@@ -373,7 +375,9 @@ describe('runCheckSuite', () => {
       jest.useRealTimers();
     }
   });
+});
 
+describe('runCheckSuite failure reporting', () => {
   it('streams each failure and reports all failures by default', async () => {
     const children = [createChild(), createChild()];
     const { spawnImpl, calls } = createSpawnStub(children);
@@ -534,7 +538,9 @@ describe('runCheckSuite', () => {
       ])
     );
   });
+});
 
+describe('runCheckSuite output and fail-fast behavior', () => {
   it('forwards child output, records signal exits, and ignores later close duplicates', async () => {
     const children = [createChild(), createChild()];
     const { spawnImpl } = createSpawnStub(children);
@@ -726,7 +732,9 @@ describe('runCheckSuite', () => {
       parseEvents(stderr.chunks).filter(event => event.type === 'check-failure')
     ).toHaveLength(1);
   });
+});
 
+describe('runCheckSuite stream formatting', () => {
   it('writes plain text lines only when they contain content', async () => {
     const child = createChild();
     const { spawnImpl } = createSpawnStub([child]);
