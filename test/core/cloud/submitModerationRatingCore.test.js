@@ -15,7 +15,12 @@ function createRequest(overrides = {}) {
   return {
     method: 'POST',
     body: { isApproved: true },
-    get: name => (name === 'Authorization' ? 'Bearer token' : null),
+    get: name => {
+      if (name === 'Authorization') {
+        return 'Bearer token';
+      }
+      return null;
+    },
     ...overrides,
   };
 }
