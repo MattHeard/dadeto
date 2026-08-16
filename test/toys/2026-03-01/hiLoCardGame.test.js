@@ -187,7 +187,8 @@ describe('applyHiLoEvent', () => {
       type: 'keydown',
       get key() {
         readCount += 1;
-        return readCount === 1 ? 'ArrowUp' : 123;
+        if (readCount === 1) return 'ArrowUp';
+        return 123;
       },
     };
 
