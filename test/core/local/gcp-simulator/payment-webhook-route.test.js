@@ -5,6 +5,9 @@ import {
 } from '../../../../src/core/local/gcp-simulator/simulator.js';
 import { describe, expect, it } from '@jest/globals';
 
+const clientReferenceIdKey = 'client_reference_id';
+const creditAmountKey = 'credit_amount';
+
 describe('gcp simulator payment webhook route', () => {
   it('applies checkout credits and deduplicates event ids', async () => {
     const simulator = await createLocalGcpSimulator();
@@ -13,8 +16,8 @@ describe('gcp simulator payment webhook route', () => {
       type: 'checkout.session.completed',
       data: {
         object: {
-          client_reference_id: 'sim-api-key',
-          metadata: { credit_amount: '80' },
+          [clientReferenceIdKey]: 'sim-api-key',
+          metadata: { [creditAmountKey]: '80' },
         },
       },
     };
@@ -65,7 +68,7 @@ describe('gcp simulator payment webhook route', () => {
       data: {
         object: {
           customer: 'cus_map',
-          metadata: { credit_amount: '12' },
+          metadata: { [creditAmountKey]: '12' },
         },
       },
     };
