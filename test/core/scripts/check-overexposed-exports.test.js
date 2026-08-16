@@ -26,9 +26,10 @@ function createFileSystem(files) {
     },
     readdirSync(dirPath, _options) {
       void _options;
-      const prefix = dirPath.endsWith(path.sep)
-        ? dirPath
-        : `${dirPath}${path.sep}`;
+      let prefix = `${dirPath}${path.sep}`;
+      if (dirPath.endsWith(path.sep)) {
+        prefix = dirPath;
+      }
       const seen = new Map();
 
       for (const filePath of Object.keys(files)) {
@@ -115,6 +116,7 @@ describe('check-overexposed-exports', () => {
           `,
         })[filePath] ?? '',
       readdirSync: dirPath => {
+        void dirPath;
         if (dirPath === '/repo/src') {
           return [
             {
@@ -178,10 +180,15 @@ describe('check-overexposed-exports', () => {
   test('uses the default parser when a source file is discovered', () => {
     const handle = createCheckOverexposedExportsHandle({
       readFileSync: () => 'export function ignored() {}',
-      readdirSync: dirPath =>
-        dirPath === '/repo/src'
-          ? [{ name: 'a.js', isDirectory: () => false, isFile: () => true }]
-          : [],
+      readdirSync: dirPath => {
+        void dirPath;
+        if (dirPath === '/repo/src') {
+          return [
+            { name: 'a.js', isDirectory: () => false, isFile: () => true },
+          ];
+        }
+        return [];
+      },
       stdout: { write: () => {} },
       stderr: { write: () => {} },
       rootDir: '/repo',
@@ -226,7 +233,9 @@ describe('check-overexposed-exports', () => {
     expect(handle()).toEqual({ exitCode: 1, violations: 1 });
     expect(stderr.join('')).toContain('/repo/src/a.js');
   });
+});
 
+describe('check-overexposed-exports violation analysis', () => {
   test('runs the handler and reports violations when present', () => {
     const stdout = [];
     const stderr = [];
@@ -265,25 +274,27 @@ describe('check-overexposed-exports', () => {
       'alpha is exported but only used in its own file'
     );
   });
+});
 
+describe('check-overexposed-exports plural violations', () => {
   test('reports plural violations and skips non-JavaScript directory entries', () => {
     const handle = createCheckOverexposedExportsHandle({
-      readFileSync: filePath =>
-        filePath.endsWith('a.js')
-          ? 'export function alpha() { return alpha(); unknown(); }'
-          : 'export function beta() { return beta(); }',
-      readdirSync: dirPath =>
-        dirPath === '/repo/src'
-          ? [
-              { name: 'a.js', isDirectory: () => false, isFile: () => true },
-              { name: 'b.js', isDirectory: () => false, isFile: () => true },
-              {
-                name: 'notes.txt',
-                isDirectory: () => false,
-                isFile: () => true,
-              },
-            ]
-          : [],
+      readFileSync: filePath => {
+        if (filePath.endsWith('a.js')) {
+          return 'export function alpha() { return alpha(); unknown(); }';
+        }
+        return 'export function beta() { return beta(); }';
+      },
+      readdirSync: dirPath => {
+        if (dirPath === '/repo/src') {
+          return [
+            { name: 'a.js', isDirectory: () => false, isFile: () => true },
+            { name: 'b.js', isDirectory: () => false, isFile: () => true },
+            { name: 'notes.txt', isDirectory: () => false, isFile: () => true },
+          ];
+        }
+        return [];
+      },
       stdout: { write: () => {} },
       rootDir: '/repo',
       sourceRoot: 'src',
@@ -293,7 +304,9 @@ describe('check-overexposed-exports', () => {
 
     expect(handle()).toEqual({ exitCode: 1, violations: 2 });
   });
+});
 
+describe('check-overexposed-exports import resolution', () => {
   test('flags exported functions that are only called in their own file', () => {
     const deps = createFileSystem({
       '/repo/src/a.js': `
