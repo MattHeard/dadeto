@@ -10,10 +10,10 @@ const createDirent = (name, { file = true } = {}) => ({
   isDirectory: () => !file,
 });
 
-describe('createCopyToInfraCore', () => {
-  const projectRoot = '/project';
-  const core = createCopyToInfraCore({ projectRoot, path: posix });
+const projectRoot = '/project';
+const core = createCopyToInfraCore({ projectRoot, path: posix });
 
+describe('createCopyToInfraCore', () => {
   describe('formatPathForLog', () => {
     it("returns '.' for the project root", () => {
       expect(core.formatPathForLog(projectRoot)).toBe('.');
@@ -41,7 +41,9 @@ describe('createCopyToInfraCore', () => {
       );
     });
   });
+});
 
+describe('createCopyToInfraCore copy helpers', () => {
   describe('copy helpers', () => {
     it('copies a single file and logs the action', async () => {
       const io = { copyFile: jest.fn().mockResolvedValue(undefined) };
@@ -83,7 +85,9 @@ describe('createCopyToInfraCore', () => {
         posix.join(projectRoot, 'infra/index.js')
       );
     });
+  });
 
+  describe('directory copy helpers', () => {
     it('copies allowed files from a directory', async () => {
       const entries = [
         createDirent('index.js'),
@@ -93,13 +97,15 @@ describe('createCopyToInfraCore', () => {
       ];
       const io = {
         ensureDirectory: jest.fn().mockResolvedValue(undefined),
-        readDirEntries: jest.fn(dir =>
-          Promise.resolve(
-            dir.endsWith('/nested')
-              ? [createDirent('child.js'), createDirent('skip.txt')]
-              : entries
-          )
-        ),
+        readDirEntries: jest.fn(dir => {
+          if (dir.endsWith('/nested')) {
+            return Promise.resolve([
+              createDirent('child.js'),
+              createDirent('skip.txt'),
+            ]);
+          }
+          return Promise.resolve(entries);
+        }),
         copyFile: jest.fn().mockResolvedValue(undefined),
       };
       const logger = { info: jest.fn() };
@@ -130,7 +136,9 @@ describe('createCopyToInfraCore', () => {
         'Copied: functions/nested/child.js -> infra/functions/nested/child.js'
       );
     });
+  });
 
+  describe('declared copy helpers', () => {
     it('copies a declared set of files into the target directory', async () => {
       const io = {
         ensureDirectory: jest.fn().mockResolvedValue(undefined),
@@ -205,7 +213,9 @@ describe('createCopyToInfraCore', () => {
       );
     });
   });
+});
 
+describe('copy orchestration', () => {
   describe('runCopyToInfra', () => {
     it('executes all configured copy operations', async () => {
       const io = {
