@@ -126,8 +126,10 @@ describe('createGenerateStatsCore', () => {
       return true;
     } catch (error) {
       const candidate = error?.message;
-      const message =
-        typeof candidate === 'string' ? candidate : 'Invalid token';
+      let message = 'Invalid token';
+      if (typeof candidate === 'string') {
+        message = candidate;
+      }
       deps.sendUnauthorized(res, message);
       return false;
     }
@@ -208,8 +210,12 @@ describe('createGenerateStatsCore', () => {
 
           if (this._collectionName === 'stories') {
             return Promise.resolve({
-              data: () =>
-                this._docId === 'story1' ? { title: 'Story One' } : {},
+              data: () => {
+                if (this._docId === 'story1') {
+                  return { title: 'Story One' };
+                }
+                return {};
+              },
             });
           }
 
@@ -219,11 +225,14 @@ describe('createGenerateStatsCore', () => {
     };
 
     const createStorageMock = ({ failSave = false, errorValue } = {}) => {
-      const save = failSave
-        ? jest.fn(() =>
-            Promise.reject(errorValue ?? new Error('Generation failed'))
-          )
-        : jest.fn(() => Promise.resolve());
+      let save;
+      if (failSave) {
+        save = jest.fn(() =>
+          Promise.reject(errorValue ?? new Error('Generation failed'))
+        );
+      } else {
+        save = jest.fn(() => Promise.resolve());
+      }
       const file = jest.fn(() => ({ save }));
       const bucket = jest.fn(() => ({ file }));
       return { bucket, __mocks: { save, file, bucket } };
@@ -692,11 +701,14 @@ describe('createGenerateStatsCore', () => {
         })),
         doc: jest.fn(id => ({
           get: jest.fn(() =>
-            Promise.resolve(
-              id === 'story1'
-                ? { data: () => ({ title: 'Story One' }) }
-                : { data: () => ({}) }
-            )
+            Promise.resolve({
+              data: () => {
+                if (id === 'story1') {
+                  return { title: 'Story One' };
+                }
+                return {};
+              },
+            })
           ),
         })),
       };
@@ -1066,7 +1078,7 @@ describe('invalidateSinglePath logger behavior', () => {
       .fn()
       .mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ access_token: 'token' }),
+        json: async () => ({ ['access_token']: 'token' }),
       })
       .mockResolvedValueOnce({ ok: false, status: 500 });
 
@@ -1089,7 +1101,7 @@ describe('invalidateSinglePath logger behavior', () => {
       .fn()
       .mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ access_token: 'token' }),
+        json: async () => ({ ['access_token']: 'token' }),
       })
       .mockResolvedValueOnce({ ok: false, status: 500 });
 
