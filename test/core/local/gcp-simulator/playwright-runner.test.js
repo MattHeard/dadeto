@@ -175,7 +175,9 @@ describe('local playwright runner', () => {
     expect(stdoutWrites.join('')).toContain('writer server listening on');
     expect(stderrWrites.join('')).toContain('simulator warning');
   });
+});
 
+describe('local playwright runner startup failures', () => {
   it('fails fast if the simulator exits before announcing a port', async () => {
     const simulator = new FakeChildProcess();
     const spawnImpl = jest.fn(() => simulator);
@@ -257,7 +259,9 @@ describe('local playwright runner', () => {
       PLAYWRIGHT_BASE_URL: 'http://127.0.0.1:4322',
     });
   });
+});
 
+describe('local playwright runner configuration', () => {
   it('uses the default runner commands when options are omitted', async () => {
     const simulator = new FakeChildProcess();
     const writer = new FakeChildProcess();
@@ -334,7 +338,9 @@ describe('local playwright runner', () => {
       PLAYWRIGHT_BASE_URL: 'http://127.0.0.1:4322',
     });
   });
+});
 
+describe('local playwright runner process outcomes', () => {
   it('treats a null exit code and null signal as a clean exit', async () => {
     const simulator = new FakeChildProcess();
     const writer = new FakeChildProcess();
