@@ -38,21 +38,22 @@ function lotRef(db, uuid, purchaseId) {
 }
 
 /**
- *
- * @param db
- * @param uuid
- * @param eventId
+ * Return the ledger event document reference.
+ * @param {BillingRuntimeValue} db Firestore database.
+ * @param {string} uuid API key UUID.
+ * @param {string} eventId Event id.
+ * @returns {BillingRuntimeValue} Document reference.
  */
 function ledgerRef(db, uuid, eventId) {
   return creditRef(db, uuid).collection('ledger').doc(String(eventId));
 }
 
 /**
- *
- * @param db
- * @param uuid
- * @param operationId
- * @param operationAttemptId
+ * Return the operation reservation document reference.
+ * @param {BillingRuntimeValue} db Firestore database.
+ * @param {string} uuid API key UUID.
+ * @param {string} operationAttemptId Operation attempt id.
+ * @returns {BillingRuntimeValue} Document reference.
  */
 function reservationRef(db, uuid, operationAttemptId) {
   return creditRef(db, uuid)
@@ -309,9 +310,10 @@ export function createBillingRuntime(db, runtime = {}) {
   }
 
   /**
-   *
-   * @param input
-   * @param handler
+   * Run an operation handler inside a transaction with current pricing.
+   * @param {Record<string, unknown>} input Operation input.
+   * @param {(input: object) => Promise<BillingResponse>} handler Transaction handler.
+   * @returns {Promise<BillingResponse>} Transaction response.
    */
   async function runOperationTransaction(input, handler) {
     const identity = readOperationIdentity(input);
@@ -353,16 +355,18 @@ export function createBillingRuntime(db, runtime = {}) {
   }
 
   /**
-   *
-   * @param input
+   * Reserve credits for an operation.
+   * @param {Record<string, unknown>} input Operation input.
+   * @returns {Promise<BillingResponse>} Reservation response.
    */
   async function reserveOperation(input) {
     return runOperationTransaction(input, reserveOperationTransaction);
   }
 
   /**
-   *
-   * @param input
+   * Resolve a previously reserved operation.
+   * @param {Record<string, unknown>} input Operation input.
+   * @returns {Promise<BillingResponse>} Resolution response.
    */
   async function resolveOperation(input) {
     const identity = readOperationIdentity(input);
@@ -459,8 +463,9 @@ export function createBillingRuntime(db, runtime = {}) {
   }
 
   /**
-   *
-   * @param uuid
+   * Reconcile all billing projections for an identity.
+   * @param {string} uuid API key UUID.
+   * @returns {Promise<{ discrepancies: Array<object>, ok: boolean }>} Reconciliation report.
    */
   async function reconcileIdentity(uuid) {
     const balanceSnapshot = await creditRef(db, uuid).get();
@@ -562,14 +567,11 @@ export { creditRef, eventRef, lotRef, purchaseRef };
 export const billingRuntimeTestUtils = { readTransactionLots };
 
 /**
- *
- * @param transaction
- * @param candidates
- * @param db
- * @param uuid
- * @param now
+ * Read transaction lots and the projected balance.
+ * @param {{ transaction: BillingRuntimeValue, candidates: Array<{ ref: object, data: object }>, db: BillingRuntimeValue, uuid: string, now: () => Date }} input Transaction and lot inputs.
+ * @returns {Promise<{ lots: Array<{ ref: object, data: object }>, before: number }>} Lots and balance.
  */
-async function readLotsAndBalance(transaction, candidates, db, uuid, now) {
+async function readLotsAndBalance({ transaction, candidates, db, uuid, now }) {
   const lots = await readTransactionLots(transaction, candidates);
   const balanceSnapshot = await transaction.get(creditRef(db, uuid));
   const before = Number(readData(balanceSnapshot).credit ?? 0);
@@ -615,13 +617,13 @@ function operationStatusResponse(reservation, status) {
  * @returns {Promise<{ before: number, after: number, allocations: Array<object> } | null>} Allocation or null when insufficient.
  */
 async function allocateCredits(input) {
-  const { lots, before } = await readLotsAndBalance(
-    input.transaction,
-    input.candidates,
-    input.db,
-    input.uuid,
-    input.now
-  );
+  const { lots, before } = await readLotsAndBalance({
+    transaction: input.transaction,
+    candidates: input.candidates,
+    db: input.db,
+    uuid: input.uuid,
+    now: input.now,
+  });
   const consumed = consumeLotsOrNull(lots, input.amount);
   if (!consumed || before < input.amount) return null;
   const after = before - input.amount;
@@ -636,14 +638,9 @@ async function allocateCredits(input) {
 }
 
 /**
- *
- * @param root0
- * @param root0.db
- * @param root0.now
- * @param root0.transaction
- * @param root0.input
- * @param root0.amount
- * @param root0.candidates
+ * Reserve an operation inside a Firestore transaction.
+ * @param {{ db: BillingRuntimeValue, now: () => Date, transaction: BillingRuntimeValue, input: Record<string, unknown>, amount: number, candidates: Array<{ ref: object, data: object }> }} input Transaction inputs.
+ * @returns {Promise<BillingResponse>} Reservation response.
  */
 // Intentional protocol-boundary duplication: transaction ordering is operation-specific.
 // jscpd:ignore-start
