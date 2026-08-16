@@ -1091,6 +1091,34 @@ describe('initializeInteractiveComponent', () => {
     // Expectations at end
     expect(processingFunction).not.toHaveBeenCalled();
   });
+});
+
+describe('initializeInteractiveComponent output setup', () => {
+  let querySelector;
+  let selectorMap;
+  let inputElement;
+  let submitButton;
+  let outputElement;
+
+  beforeEach(() => {
+    inputElement = { value: 'test', disabled: false };
+    submitButton = { disabled: false };
+    outputElement = {
+      textContent: '',
+      outputParentElement: {
+        classList: { remove: jest.fn() },
+        removeChild: jest.fn(),
+        appendChild: jest.fn(),
+      },
+    };
+    selectorMap = new Map([
+      ['input[type="text"]', inputElement],
+      ['button[type="submit"]', submitButton],
+      ['div.output > p', outputElement],
+      ['div.output', outputElement.outputParentElement],
+    ]);
+    querySelector = jest.fn((el, selector) => selectorMap.get(selector) || {});
+  });
 
   it('queries the DOM for output elements using expected selectors', () => {
     const createEnvFn = () => ({});
