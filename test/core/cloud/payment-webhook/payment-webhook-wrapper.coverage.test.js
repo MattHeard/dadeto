@@ -77,6 +77,43 @@ function createPaymentWebhookDb({ isMissingCustomer, set }) {
   };
 }
 
+/**
+ * Execute a wrapper response and assert its serialized result.
+ * @param {object} options Response execution options.
+ * @param {Function} options.mockDomainHandler Mocked domain handler.
+ * @param {Function} options.handle Wrapper handle.
+ * @param {object} options.request Request stub.
+ * @param {object} options.body Domain response body.
+ * @param {object} options.response Response stub.
+ * @param {Function} options.assertion Response assertion.
+ * @returns {Promise<void>} Completion promise.
+ */
+async function runWebhookResponse({
+  mockDomainHandler,
+  handle,
+  request,
+  body,
+  response,
+  assertion,
+}) {
+  mockDomainHandler.mockResolvedValueOnce(body);
+  await handle(request, response);
+  assertion(response);
+}
+
+/**
+ * Build a response stub with chainable status handling.
+ * @returns {object} Response stub.
+ */
+function createWebhookResponse() {
+  return {
+    status: jest.fn().mockReturnThis(),
+    json: jest.fn(),
+    send: jest.fn(),
+    set: jest.fn(),
+  };
+}
+
 describe('payment webhook cloud wrapper', () => {
   it('builds dependencies and forwards the structured response', async () => {
     const set = jest.fn(async () => undefined);
@@ -135,43 +172,47 @@ describe('payment webhook cloud wrapper', () => {
     missingCustomer = false;
     await captured.resolveApiKeyUuid({ data: { object: {} } });
     await expect(captured.isDuplicateEvent('evt-1')).resolves.toBe(true);
-    await captured.getPaymentEvent({
-      rawBody: '{"id":"evt-verified"}',
-      headers: { 'stripe-signature': 'signed' },
-    });
-    await captured.markProcessedEvent(
-      { id: 'evt-1', type: 'payment_intent.succeeded', created: 10 },
-      'uuid-1'
-    );
-    await captured.markProcessedEvent(
-      { id: 'evt-2', type: 'payment_intent.succeeded' },
-      'uuid-1'
-    );
-    await expect(
-      captured.handlePurchaseEvent({
-        id: 'evt-empty',
-        type: 'customer.created',
-        data: { object: {} },
-      })
-    ).resolves.toBeNull();
-    await expect(
-      captured.handlePurchaseEvent({
-        id: 'evt-no-data',
-        type: 'customer.created',
-      })
-    ).resolves.toBeNull();
-    await expect(
-      captured.handlePurchaseEvent({
-        id: 'evt-unpaid',
-        type: 'checkout.session.completed',
-        data: {
-          object: {
-            metadata: { ['purchase_id']: 'p1' },
-            ['payment_status']: 'unpaid',
+    await Promise.all([
+      captured.getPaymentEvent({
+        rawBody: '{"id":"evt-verified"}',
+        headers: { 'stripe-signature': 'signed' },
+      }),
+      captured.markProcessedEvent(
+        { id: 'evt-1', type: 'payment_intent.succeeded', created: 10 },
+        'uuid-1'
+      ),
+      captured.markProcessedEvent(
+        { id: 'evt-2', type: 'payment_intent.succeeded' },
+        'uuid-1'
+      ),
+    ]);
+    await Promise.all([
+      expect(
+        captured.handlePurchaseEvent({
+          id: 'evt-empty',
+          type: 'customer.created',
+          data: { object: {} },
+        })
+      ).resolves.toBeNull(),
+      expect(
+        captured.handlePurchaseEvent({
+          id: 'evt-no-data',
+          type: 'customer.created',
+        })
+      ).resolves.toBeNull(),
+      expect(
+        captured.handlePurchaseEvent({
+          id: 'evt-unpaid',
+          type: 'checkout.session.completed',
+          data: {
+            object: {
+              metadata: { ['purchase_id']: 'p1' },
+              ['payment_status']: 'unpaid',
+            },
           },
-        },
-      })
-    ).resolves.toBeNull();
+        })
+      ).resolves.toBeNull(),
+    ]);
     await expect(
       captured.handlePurchaseEvent({
         id: 'evt-1',
@@ -202,50 +243,52 @@ describe('payment webhook cloud wrapper', () => {
         },
       },
     });
-    await expect(
-      captured.handlePurchaseEvent({
-        id: 'evt-2',
-        type: 'payment_intent.succeeded',
-        data: { object: { metadata: { ['purchase_id']: 'p1' } } },
-      })
-    ).resolves.toEqual({
-      status: 201,
-      body: {
-        purchaseId: 'p1',
-        eventId: 'evt-2',
-        stripePaymentIntentId: 'evt-2',
-      },
-    });
-    await expect(
-      captured.handlePurchaseEvent({
-        id: 'evt-expired',
-        type: 'checkout.session.expired',
-        data: { object: { metadata: { ['purchase_id']: 'p1' } } },
-      })
-    ).resolves.toEqual({
-      status: 200,
-      body: { purchaseId: 'p1', eventId: 'evt-expired' },
-    });
-    await expect(
-      captured.handlePurchaseEvent({
-        id: 'evt-3',
-        type: 'charge.refunded',
-        data: {
-          object: {
-            metadata: { ['purchase_id']: 'p1' },
-            ['amount_refunded']: 4,
-          },
+    await Promise.all([
+      expect(
+        captured.handlePurchaseEvent({
+          id: 'evt-2',
+          type: 'payment_intent.succeeded',
+          data: { object: { metadata: { ['purchase_id']: 'p1' } } },
+        })
+      ).resolves.toEqual({
+        status: 201,
+        body: {
+          purchaseId: 'p1',
+          eventId: 'evt-2',
+          stripePaymentIntentId: 'evt-2',
         },
-      })
-    ).resolves.toEqual({
-      status: 200,
-      body: {
-        purchaseId: 'p1',
-        eventId: 'evt-3',
-        refundedUsdMinor: 4,
-        pricingSnapshotId: '',
-      },
-    });
+      }),
+      expect(
+        captured.handlePurchaseEvent({
+          id: 'evt-expired',
+          type: 'checkout.session.expired',
+          data: { object: { metadata: { ['purchase_id']: 'p1' } } },
+        })
+      ).resolves.toEqual({
+        status: 200,
+        body: { purchaseId: 'p1', eventId: 'evt-expired' },
+      }),
+      expect(
+        captured.handlePurchaseEvent({
+          id: 'evt-3',
+          type: 'charge.refunded',
+          data: {
+            object: {
+              metadata: { ['purchase_id']: 'p1' },
+              ['amount_refunded']: 4,
+            },
+          },
+        })
+      ).resolves.toEqual({
+        status: 200,
+        body: {
+          purchaseId: 'p1',
+          eventId: 'evt-3',
+          refundedUsdMinor: 4,
+          pricingSnapshotId: '',
+        },
+      }),
+    ]);
     await captured.handlePurchaseEvent({
       id: 'evt-3b',
       type: 'charge.refunded',
@@ -258,45 +301,44 @@ describe('payment webhook cloud wrapper', () => {
         },
       },
     });
-    await expect(
-      captured.handlePurchaseEvent({
-        id: 'evt-4',
-        type: 'customer.created',
-        data: { object: {} },
-      })
-    ).resolves.toBeNull();
-    await expect(
-      captured.handlePurchaseEvent({
-        id: 'evt-5',
-        type: 'customer.created',
-        data: { object: { metadata: { ['purchase_id']: 'p1' } } },
-      })
-    ).resolves.toBeNull();
-    mockDomainHandler.mockResolvedValueOnce({
-      status: 200,
-      body: 'ok',
-      headers: { 'x-test': 'yes', omitted: undefined },
+    await Promise.all([
+      expect(
+        captured.handlePurchaseEvent({
+          id: 'evt-4',
+          type: 'customer.created',
+          data: { object: {} },
+        })
+      ).resolves.toBeNull(),
+      expect(
+        captured.handlePurchaseEvent({
+          id: 'evt-5',
+          type: 'customer.created',
+          data: { object: { metadata: { ['purchase_id']: 'p1' } } },
+        })
+      ).resolves.toBeNull(),
+    ]);
+    const stringResponse = createWebhookResponse();
+    await runWebhookResponse({
+      mockDomainHandler,
+      handle,
+      request,
+      body: {
+        status: 200,
+        body: 'ok',
+        headers: { 'x-test': 'yes', omitted: undefined },
+      },
+      response: stringResponse,
+      assertion: response => expect(response.send).toHaveBeenCalledWith('ok'),
     });
-    const stringResponse = {
-      status: jest.fn(() => stringResponse),
-      json: jest.fn(),
-      send: jest.fn(),
-      set: jest.fn(),
-    };
-    await handle(request, stringResponse);
-    expect(stringResponse.send).toHaveBeenCalledWith('ok');
-    mockDomainHandler.mockResolvedValueOnce({
-      status: 200,
-      body: { type: 'credit_added', applied: true },
+    const creditResponse = createWebhookResponse();
+    await runWebhookResponse({
+      mockDomainHandler,
+      handle,
+      request,
+      body: { status: 200, body: { type: 'credit_added', applied: true } },
+      response: creditResponse,
+      assertion: response => expect(response.status).toHaveBeenCalledWith(201),
     });
-    const creditResponse = {
-      status: jest.fn(() => creditResponse),
-      json: jest.fn(),
-      send: jest.fn(),
-      set: jest.fn(),
-    };
-    await handle(request, creditResponse);
-    expect(creditResponse.status).toHaveBeenCalledWith(201);
   });
 });
 
