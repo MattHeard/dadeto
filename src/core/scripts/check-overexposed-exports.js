@@ -1,3 +1,5 @@
+import { readExemptions } from './read-exemptions.js';
+
 const DEFAULT_ROOT_DIR = '.';
 const DEFAULT_SOURCE_ROOT = 'src';
 const DEFAULT_PARSE =
@@ -102,30 +104,6 @@ export function findOverexposedExportViolations(deps) {
   return collectViolations(deps, analyses, externalUsageCounts).filter(
     violation => !exemptions.has(violation.filePath)
   );
-}
-
-/**
- * Read the file-level exemption baseline, treating a missing or malformed file as empty.
- * @param {OverexposedExportsDeps} deps Gate dependencies.
- * @returns {Set<string>} Exempted repo-relative file paths.
- */
-function readExemptions(deps) {
-  try {
-    const config = JSON.parse(
-      deps.readFileSync(
-        deps.pathModule.resolve(deps.rootDir, deps.configPath),
-        'utf8'
-      )
-    );
-    const exemptions = config?.exemptions;
-    return new Set(
-      exemptions && typeof exemptions === 'object'
-        ? Object.keys(exemptions)
-        : []
-    );
-  } catch {
-    return new Set();
-  }
 }
 
 /**

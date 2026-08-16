@@ -162,6 +162,7 @@ function formatRawInputFailures(violations) {
  *   },
  *   rootDir: string,
  *   sourceRoot: string,
+ *   configPath: string,
  * }} deps Parse gate dependencies.
  * @param {(source: string) => T[]} extractViolationsFromSource Source extractor.
  * @returns {Array<{ filePath: string } & T>} Violations.
@@ -194,6 +195,7 @@ function findViolationsInCore(deps, extractViolationsFromSource) {
  *   },
  *   rootDir: string,
  *   sourceRoot: string,
+ *   configPath: string,
  * }} deps Parse-validate gate dependencies.
  * @returns {Array<{ filePath: string, name: string }>} Validation helper violations.
  */
@@ -212,6 +214,7 @@ function findValidationViolations(deps) {
  *   },
  *   rootDir: string,
  *   sourceRoot: string,
+ *   configPath: string,
  * }} deps Parse-boundary gate dependencies.
  * @returns {Array<{ filePath: string, name: string }>} Raw-input violations.
  */
@@ -230,6 +233,7 @@ function findRawInputViolations(deps) {
  *   },
  *   rootDir: string,
  *   sourceRoot: string,
+ *   configPath: string,
  * }} deps Parse gate dependencies.
  * @param {(fn: { name: string, labels: string[] }) => boolean} predicate Function classifier predicate.
  * @returns {Array<{ filePath: string, name: string }>} Violations.
