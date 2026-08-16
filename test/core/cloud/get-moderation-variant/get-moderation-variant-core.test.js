@@ -115,70 +115,70 @@ describe('createCorsOptions', () => {
   });
 });
 
+const token = 'encoded-token';
+
+/**
+ * Create a request stub that exposes an Express-style get accessor.
+ * @param {string | undefined | null} header Authorization header returned by the accessor.
+ * @returns {{ get: (name: string) => string | undefined }} Request stub that returns the supplied header.
+ */
+function createRequestWithGet(header) {
+  return {
+    get(name) {
+      if (name === 'Authorization' || name === 'authorization') {
+        return header;
+      }
+      return undefined;
+    },
+  };
+}
+
+/**
+ * Create a request stub that exposes a headers map.
+ * @param {Record<string, unknown>} headers Header map returned by the request object.
+ * @returns {{ headers: Record<string, unknown> }} Request stub exposing the provided headers.
+ */
+function createRequestWithHeaders(headers) {
+  return {
+    headers,
+    get(name) {
+      const value = headers[name] ?? headers[name.toLowerCase()];
+      if (Array.isArray(value)) {
+        return value[0];
+      }
+      return value;
+    },
+  };
+}
+
+/**
+ * Build a Firestore-like stub that resolves with the supplied snapshot.
+ * @param {unknown} returnedSnap Snapshot returned when the nested get call resolves.
+ * @returns {{
+ *   collection: (name: string) => {
+ *     doc: (id: string) => { get: () => Promise<unknown> };
+ *   };
+ * }} Firestore dependency stub.
+ */
+function createDb(returnedSnap) {
+  return {
+    collection(name) {
+      expect(name).toBe('moderators');
+      return {
+        doc(id) {
+          expect(id).toBe('moderator-uid');
+          return {
+            async get() {
+              return returnedSnap;
+            },
+          };
+        },
+      };
+    },
+  };
+}
+
 describe('createGetModerationVariantResponder', () => {
-  const token = 'encoded-token';
-
-  /**
-   * Create a request stub that exposes an Express-style get accessor.
-   * @param {string | undefined | null} header Authorization header returned by the accessor.
-   * @returns {{ get: (name: string) => string | undefined }} Request stub that returns the supplied header.
-   */
-  function createRequestWithGet(header) {
-    return {
-      get(name) {
-        if (name === 'Authorization' || name === 'authorization') {
-          return header;
-        }
-        return undefined;
-      },
-    };
-  }
-
-  /**
-   * Create a request stub that exposes a headers map.
-   * @param {Record<string, unknown>} headers Header map returned by the request object.
-   * @returns {{ headers: Record<string, unknown> }} Request stub exposing the provided headers.
-   */
-  function createRequestWithHeaders(headers) {
-    return {
-      headers,
-      get(name) {
-        const value = headers[name] ?? headers[name.toLowerCase()];
-        if (Array.isArray(value)) {
-          return value[0];
-        }
-        return value;
-      },
-    };
-  }
-
-  /**
-   * Build a Firestore-like stub that resolves with the supplied snapshot.
-   * @param {unknown} returnedSnap Snapshot returned when the nested get call resolves.
-   * @returns {{
-   *   collection: (name: string) => {
-   *     doc: (id: string) => { get: () => Promise<unknown> };
-   *   };
-   * }} Firestore dependency stub.
-   */
-  function createDb(returnedSnap) {
-    return {
-      collection(name) {
-        expect(name).toBe('moderators');
-        return {
-          doc(id) {
-            expect(id).toBe('moderator-uid');
-            return {
-              async get() {
-                return returnedSnap;
-              },
-            };
-          },
-        };
-      },
-    };
-  }
-
   it('requires a Firestore-like dependency', () => {
     expect(() =>
       createGetModerationVariantResponder({
@@ -369,7 +369,9 @@ describe('createGetModerationVariantResponder', () => {
     });
     expect(db.collection).not.toHaveBeenCalled();
   });
+});
 
+describe('createGetModerationVariantResponder moderator lookup', () => {
   it('returns no job when the moderator document is missing', async () => {
     const moderatorSnap = { exists: false };
     const db = createDb(moderatorSnap);
@@ -482,7 +484,9 @@ describe('createGetModerationVariantResponder', () => {
     });
     expect(db.collection).not.toHaveBeenCalled();
   });
+});
 
+describe('createGetModerationVariantResponder normalized stories', () => {
   it('returns the normalized story when all Firestore documents exist', async () => {
     const storySnap = {
       exists: true,
@@ -550,7 +554,9 @@ describe('createGetModerationVariantResponder', () => {
       },
     });
   });
+});
 
+describe('createGetModerationVariantResponder string paths', () => {
   it('resolves string variant paths from seeded moderator assignments', async () => {
     const storySnap = {
       exists: true,
