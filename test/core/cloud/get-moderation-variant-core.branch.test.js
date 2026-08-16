@@ -55,11 +55,12 @@ describe('getModerationVariantTestUtils', () => {
     variantData = null,
     storyTitle = null,
   } = {}) {
-    const storyRef = storyTitle
-      ? {
-          get: async () => ({ data: () => ({ title: storyTitle }) }),
-        }
-      : null;
+    let storyRef = null;
+    if (storyTitle) {
+      storyRef = {
+        get: async () => ({ data: () => ({ title: storyTitle }) }),
+      };
+    }
     const storyParent = { parent: storyRef };
     const pageRef = { parent: storyParent };
     const collectionRef = { parent: pageRef };
