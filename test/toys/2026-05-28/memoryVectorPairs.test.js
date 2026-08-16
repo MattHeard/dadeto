@@ -216,7 +216,9 @@ describe('memoryVectorPairs', () => {
       vector: [],
     });
   });
+});
 
+describe('memoryVectorPairs edge cases', () => {
   test('returns a structured error for non-missing path traversal errors', () => {
     const env = new Map([
       [
