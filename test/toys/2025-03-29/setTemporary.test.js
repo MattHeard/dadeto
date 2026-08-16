@@ -119,6 +119,23 @@ describe('setTemporary function (getData -> merge -> setData)', () => {
     expect(mockGetData).toHaveBeenCalledTimes(3);
     expect(mockSetData).toHaveBeenCalledTimes(3);
   });
+});
+
+describe('setTemporary validation and deep merge', () => {
+  let mockGetData;
+  let mockSetData;
+  let initialData;
+  let env;
+
+  beforeEach(() => {
+    initialData = Object.freeze({ existing: 'value' });
+    mockGetData = jest.fn().mockReturnValue(initialData);
+    mockSetData = jest.fn();
+    env = new Map([
+      ['getData', mockGetData],
+      ['setLocalTemporaryData', mockSetData],
+    ]);
+  });
 
   test('should return error for invalid JSON input and not call setLocalTemporaryData', () => {
     const input = 'not json';
