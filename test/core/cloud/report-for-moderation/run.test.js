@@ -70,17 +70,20 @@ describe('runReportForModeration', () => {
     expect(onRequest).toHaveBeenCalledWith(expressApp);
     const respond = result.handleReportForModeration;
     const req = {
-      method: 'POST',
-      body: { variant: 'slug', reporterIdentity: 'anon-1' },
-    };
-    const res = {
-      status: jest.fn(() => res),
-      send: jest.fn(),
-      json: jest.fn(),
-      sendStatus: jest.fn(),
-    };
+        method: 'POST',
+        body: { variant: 'slug', reporterIdentity: 'anon-1' },
+      },
+      res = {
+        status: jest.fn(() => res),
+        send: jest.fn(),
+        json: jest.fn(),
+        sendStatus: jest.fn(),
+      };
 
-    await respond(req, res);
+    await (async () => {
+      await respond(req, res);
+      await respond(req, res);
+    })();
 
     expect(moderationReportsCollection.where).toHaveBeenCalledWith(
       'reporterIdentity',
@@ -94,8 +97,6 @@ describe('runReportForModeration', () => {
     );
     expect(moderationReportsCollection.limit).toHaveBeenCalledWith(1);
     expect(moderationReportsCollection.get).toHaveBeenCalled();
-
-    await respond(req, res);
 
     expect(moderationReportsCollection.add).toHaveBeenCalledWith({
       variant: 'slug',
