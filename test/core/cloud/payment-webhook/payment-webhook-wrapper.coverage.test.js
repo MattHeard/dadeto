@@ -107,7 +107,7 @@ describe('payment webhook cloud wrapper', () => {
     await captured.resolveApiKeyUuid({ data: { object: {} } });
     await expect(captured.isDuplicateEvent('evt-1')).resolves.toBe(true);
     await captured.getPaymentEvent({
-      rawBody: '{}',
+      rawBody: '{"id":"evt-verified"}',
       headers: { 'stripe-signature': 'signed' },
     });
     await captured.markProcessedEvent(

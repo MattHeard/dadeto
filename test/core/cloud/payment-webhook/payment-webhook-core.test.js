@@ -500,7 +500,10 @@ describe('payment webhook cloud wrapper', () => {
     ).toThrow('Missing Stripe signature');
     expect(() =>
       parseStripePaymentWebhookEvent(
-        { body: { id: 'evt_parsed' }, headers: { 'stripe-signature': 'signed' } },
+        {
+          body: { id: 'evt_parsed' },
+          headers: { 'stripe-signature': 'signed' },
+        },
         { STRIPE_WEBHOOK_SECRET: 'secret' },
         jest.fn()
       )
