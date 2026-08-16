@@ -10,9 +10,9 @@ const createAutoSubmitContext = ({ includeAutoSubmit = true } = {}) => {
     appendChild: jest.fn(),
   };
   const outputSelect = { value: 'text' };
-  const autoSubmitCheckbox = includeAutoSubmit
-    ? { checked: false, disabled: true }
-    : undefined;
+  let autoSubmitCheckbox;
+  if (includeAutoSubmit)
+    autoSubmitCheckbox = { checked: false, disabled: true };
 
   const selectors = new Map([
     ['input[type="text"]', inputElement],

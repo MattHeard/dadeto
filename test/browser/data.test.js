@@ -110,7 +110,8 @@ describe('fetchAndCacheBlogData', () => {
     Object.defineProperty(stateWithFlakyPromise, 'blogFetchPromise', {
       get() {
         readCount += 1;
-        return readCount === 1 ? Promise.resolve() : null;
+        if (readCount === 1) return Promise.resolve();
+        return null;
       },
     });
 

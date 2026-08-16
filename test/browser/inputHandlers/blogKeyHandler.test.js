@@ -221,9 +221,10 @@ describe('blogKeyHandler', () => {
   test('skips dispose call when existing form has no _dispose method', () => {
     const existingForm = { _children: [] }; // no _dispose
     const dom = makeDom({
-      querySelector: jest.fn((_el, selector) =>
-        selector === '.dendrite-form' ? existingForm : null
-      ),
+      querySelector: jest.fn((_el, selector) => {
+        if (selector === '.dendrite-form') return existingForm;
+        return null;
+      }),
     });
     const container = { _children: [existingForm] };
     const textInput = makeTextInput('');
@@ -236,9 +237,10 @@ describe('blogKeyHandler', () => {
   test('removes existing dendrite form before inserting new one', () => {
     const existingForm = { _dispose: jest.fn(), _children: [] };
     const dom = makeDom({
-      querySelector: jest.fn((_el, selector) =>
-        selector === '.dendrite-form' ? existingForm : null
-      ),
+      querySelector: jest.fn((_el, selector) => {
+        if (selector === '.dendrite-form') return existingForm;
+        return null;
+      }),
     });
     const container = { _children: [existingForm] };
     const textInput = makeTextInput('');
@@ -257,9 +259,10 @@ describe('blogKeyHandler', () => {
     blogKeyHandler(dom, container, textInput);
 
     const generatedForm = container._children[0];
-    dom.querySelector.mockImplementation((_el, selector) =>
-      selector === '.dendrite-form' ? generatedForm : null
-    );
+    dom.querySelector.mockImplementation((_el, selector) => {
+      if (selector === '.dendrite-form') return generatedForm;
+      return null;
+    });
 
     blogKeyHandler(dom, container, textInput);
 
