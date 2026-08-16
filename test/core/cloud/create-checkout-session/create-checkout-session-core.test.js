@@ -5,6 +5,17 @@ import {
 } from '../../../../src/core/cloud/create-checkout-session/create-checkout-session-core.js';
 import { createPricingSnapshot } from '../../../../src/core/cloud/billing/pricing-core.js';
 
+const stripeField = {
+  expiresAt: 'expires_at',
+  clientReferenceId: 'client_reference_id',
+  lineItems: 'line_items',
+  successUrl: 'success_url',
+  priceData: 'price_data',
+  unitAmount: 'unit_amount',
+  pricingSnapshotId: 'pricing_snapshot_id',
+  purchaseId: 'purchase_id',
+};
+
 const request = (
   body = { packageId: 'credits-100' },
   key = '7af49d79-1943-4724-b57e-48310bca15d0'
@@ -27,7 +38,7 @@ function setup(overrides = {}) {
   const create = jest.fn().mockResolvedValue({
     id: 'cs_test_1',
     url: 'https://checkout.stripe.com/x',
-    expires_at: 1785869100,
+    [stripeField.expiresAt]: 1785869100,
   });
   const dependencies = {
     verifyIdToken: jest.fn().mockResolvedValue({ uid: 'uid-1' }),
@@ -86,9 +97,9 @@ describe('createCheckoutSessionHandler', () => {
     });
     expect(create).toHaveBeenCalledWith(
       expect.objectContaining({
-        client_reference_id: 'key-1',
-        line_items: [{ price: 'price-100', quantity: 1 }],
-        success_url:
+        [stripeField.clientReferenceId]: 'key-1',
+        [stripeField.lineItems]: [{ price: 'price-100', quantity: 1 }],
+        [stripeField.successUrl]:
           'https://example.com/billing/success?session_id={CHECKOUT_SESSION_ID}',
       }),
       {
@@ -103,6 +114,9 @@ describe('createCheckoutSessionHandler', () => {
       expect.objectContaining({ packageId: 'credits-100' })
     );
   });
+});
+
+describe('createCheckoutSessionHandler pricing paths', () => {
   it('creates dynamic USD price data from the current pricing snapshot', async () => {
     const pricingSnapshot = createPricingSnapshot({
       snapshotId: 'daily-1',
@@ -124,16 +138,16 @@ describe('createCheckoutSessionHandler', () => {
     });
     expect(dynamic.create.mock.calls[0][0]).toEqual(
       expect.objectContaining({
-        line_items: [
+        [stripeField.lineItems]: [
           expect.objectContaining({
-            price_data: expect.objectContaining({
+            [stripeField.priceData]: expect.objectContaining({
               currency: 'usd',
-              unit_amount: 1_000,
+              [stripeField.unitAmount]: 1_000,
             }),
           }),
         ],
         metadata: expect.objectContaining({
-          pricing_snapshot_id: 'daily-1',
+          [stripeField.pricingSnapshotId]: 'daily-1',
         }),
       })
     );
@@ -187,7 +201,7 @@ describe('createCheckoutSessionHandler', () => {
       })
     );
     expect(dynamic.create.mock.calls[0][0].metadata).toEqual(
-      expect.objectContaining({ purchase_id: 'purchase-1' })
+      expect.objectContaining({ [stripeField.purchaseId]: 'purchase-1' })
     );
     expect(savePurchaseCheckout).toHaveBeenCalledWith(
       'purchase-1',
@@ -209,6 +223,9 @@ describe('createCheckoutSessionHandler', () => {
       body: { error: { code } },
     });
   });
+});
+
+describe('createCheckoutSessionHandler validation paths', () => {
   it('does not create a session without an eligible key', async () => {
     const { handler, create } = setup({
       resolveApiKeyUuidForUid: jest.fn().mockResolvedValue(null),
