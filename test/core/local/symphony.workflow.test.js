@@ -6,6 +6,8 @@ import {
   summarizeWorkflow,
 } from '../../../src/core/local/symphony/workflow.js';
 
+const promptTemplateKey = 'prompt_template';
+
 describe('Symphony workflow core', () => {
   let tempDir;
 
@@ -46,7 +48,7 @@ Quality gates:
       exists: true,
       lineCount: 23,
       config: { enabled: true, retries: -2, ratio: 1.5, name: 'value' },
-      prompt_template: expect.stringContaining('# Workflow'),
+      [promptTemplateKey]: expect.stringContaining('# Workflow'),
       allowedCommandFamilies: ['npm test', 'git status'],
       requiredQualityGates: ['check'],
       handoffRequirements: ['push'],
@@ -55,7 +57,7 @@ Quality gates:
 
   test('handles documents without or with incomplete front matter', () => {
     expect(summarizeWorkflow('plain text').config).toEqual({});
-    expect(summarizeWorkflow('---\nname: value').prompt_template).toBe(
+    expect(summarizeWorkflow('---\nname: value')[promptTemplateKey]).toBe(
       '---\nname: value'
     );
     expect(summarizeWorkflow('## Other\n- item')).toMatchObject({
@@ -90,7 +92,7 @@ Quality gates:
       exists: false,
       lineCount: 0,
       config: {},
-      prompt_template: '',
+      [promptTemplateKey]: '',
     });
   });
 
