@@ -4,6 +4,9 @@ import {
   resolveNotionApiToken,
 } from '../../src/local/notion-codex/notionApi.js';
 
+const pageIdKey = 'page_id';
+const richTextKey = 'rich_text';
+
 describe('local notion codex api helper', () => {
   test('builds comment rich text with a handled marker', () => {
     expect(
@@ -110,8 +113,8 @@ describe('local notion codex api helper', () => {
       'Notion-Version': '2025-09-03',
     });
     expect(JSON.parse(calls[0].init.body)).toEqual({
-      parent: { page_id: 'page 123' },
-      rich_text: [
+      parent: { [pageIdKey]: 'page 123' },
+      [richTextKey]: [
         {
           type: 'text',
           text: { content: 'Codex reply run-123\n\nhello' },
