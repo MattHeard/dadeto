@@ -285,7 +285,9 @@ describe('admin-core additional coverage', () => {
       expect(factory).toHaveBeenCalledWith('abc');
     });
   });
+});
 
+describe('admin-core lazy initialization coverage', () => {
   it('initializes the admin app with lazy handlers', async () => {
     const consoleErrorSpy = jest
       .spyOn(console, 'error')
@@ -400,7 +402,9 @@ describe('admin-core additional coverage', () => {
     await googleAuthModule.signOut();
     consoleErrorSpy.mockRestore();
   });
+});
 
+describe('admin-core bootstrap coverage', () => {
   it('creates an init admin app handle that invokes the bootstrap wiring', async () => {
     const initializeApp = jest.fn();
     const loadStaticConfig = jest.fn().mockResolvedValue({});
