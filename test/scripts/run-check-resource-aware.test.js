@@ -6,9 +6,8 @@ describe('runResourceAwareCheckSuite', () => {
     const calls = [];
     const runSuite = async ({ commands }) => {
       calls.push(commands.map(command => command.name));
-      return calls.length === 1
-        ? { exitCode: 0, failures: [] }
-        : { exitCode: 1, failures: ['lint'] };
+      if (calls.length === 1) return { exitCode: 0, failures: [] };
+      return { exitCode: 1, failures: ['lint'] };
     };
 
     await expect(
