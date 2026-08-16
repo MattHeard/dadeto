@@ -328,9 +328,7 @@ function traverseChild(child, node, state) {
  * @returns {void}
  */
 function traverseNode(node, parent, state) {
-  if (!node || typeof node.type !== 'string') {
-    return;
-  }
+  if (!isAstNode(node)) return;
 
   const enteringFunction = isFunctionNode(node);
   if (enteringFunction) {
@@ -356,6 +354,17 @@ function traverseNode(node, parent, state) {
   if (enteringFunction) {
     state.functionStack.pop();
   }
+}
+
+/**
+ * Check whether a value has the minimum AST node shape.
+ * @param {unknown} value Candidate node.
+ * @returns {value is AstNode} Whether the value is an AST node.
+ */
+function isAstNode(value) {
+  return Boolean(
+    value && typeof value === 'object' && typeof value.type === 'string'
+  );
 }
 
 /**
