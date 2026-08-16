@@ -55,7 +55,8 @@ function renderVariants(variants) {
       return `<li><a href="/p/${variant.pageNumber}${escapeHtml(variant.name)}.html">${escapeHtml(snippet)}</a></li>`;
     })
     .join('');
-  return items ? `<h2>Page variants</h2><ol>${items}</ol>` : '';
+  if (!items) return '';
+  return `<h2>Page variants</h2><ol>${items}</ol>`;
 }
 
 /**
@@ -110,9 +111,9 @@ async function getModeratorReputation(db, moderatorId) {
   const moderatorData = /** @type {any} */ (snapshot);
   const moderatorFields = moderatorData?.data?.() ?? {};
   const reputation = moderatorFields.moderatorReputation;
-  return typeof reputation === 'number' && Number.isFinite(reputation)
-    ? Math.round(reputation * 100)
-    : undefined;
+  if (typeof reputation !== 'number' || !Number.isFinite(reputation))
+    return undefined;
+  return Math.round(reputation * 100);
 }
 
 /**
@@ -129,19 +130,37 @@ async function getAuthorVariants(db, authorId) {
     .get();
   const variants = [];
   for (const doc of snapshot.docs) {
-    const data = doc.data();
-    if ((data.visibility ?? 1) < 0.5) continue;
-    const pageRef = doc.ref?.parent?.parent;
-    const page = pageRef
-      ? /** @type {any} */ ((await pageRef.get()).data())
-      : undefined;
-    if (typeof page?.number !== 'number' || typeof data.name !== 'string')
-      continue;
-    variants.push({
-      pageNumber: page.number,
-      name: data.name,
-      content: data.content,
-    });
+    const variant = await readAuthorVariant(doc);
+    if (variant) variants.push(variant);
   }
   return variants;
+}
+
+/**
+ * Read one visible author variant and its page number.
+ * @param {{ data: () => Record<string, unknown>, ref?: object }} doc Variant document.
+ * @returns {Promise<{ pageNumber: number, name: string, content: unknown } | null>} Variant or null.
+ */
+async function readAuthorVariant(doc) {
+  const data = doc.data();
+  if (!isVisibleAuthorVariant(data)) return null;
+  const pageRef = /** @type {any} */ (doc.ref)?.parent?.parent;
+  if (!pageRef) return null;
+  const page = /** @type {any} */ ((await pageRef.get()).data());
+  if (typeof page?.number !== 'number') return null;
+  if (typeof data.name !== 'string') return null;
+  return {
+    pageNumber: page.number,
+    name: data.name,
+    content: data.content,
+  };
+}
+
+/**
+ * Determine whether a variant is visible to author-page readers.
+ * @param {Record<string, unknown>} data Variant data.
+ * @returns {boolean} Whether the variant is visible.
+ */
+function isVisibleAuthorVariant(data) {
+  return Number(data.visibility ?? 1) >= 0.5;
 }
