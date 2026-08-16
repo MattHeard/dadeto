@@ -93,7 +93,9 @@ describe('batteryBreakout', () => {
     expect(next.width).toBe(120);
     expect(next.height).toBe(100);
   });
+});
 
+describe('batteryBreakout reset state', () => {
   it('creates a reset state when no persisted state exists', () => {
     const next = buildNextState(null, { type: 'keydown', key: 'r' });
 
@@ -140,7 +142,9 @@ describe('batteryBreakout', () => {
 
     expect(next.width).toBe(120);
   });
+});
 
+describe('batteryBreakout input and lifecycle', () => {
   it('uses keyboard fallback state when previous input is missing', () => {
     const next = updateInputState(undefined, { type: 'keydown', key: 'a' });
 
@@ -224,7 +228,9 @@ describe('batteryBreakout', () => {
 
     expect(state.status).toBe('won');
   });
+});
 
+describe('batteryBreakout collision helpers', () => {
   it('uses the fallback paddle width when the paddle is zero-width', () => {
     const state = {
       paddle: { x: 10, y: 20, width: 0, height: 6, speed: 4 },
@@ -325,7 +331,9 @@ describe('batteryBreakout', () => {
 
     expect(state.cells[0].state).toBe('charging');
   });
+});
 
+describe('batteryBreakout input normalization', () => {
   it('falls back when no storage accessor is available', () => {
     const payload = JSON.parse(
       batteryBreakout(JSON.stringify({ width: 240, height: 160 }), {})
@@ -448,7 +456,9 @@ describe('batteryBreakout', () => {
       true,
     ]);
   });
+});
 
+describe('batteryBreakout simulation', () => {
   it('resets from persisted state on the first reset press', () => {
     const storageValue = {
       current: {
@@ -671,7 +681,9 @@ describe('batteryBreakout', () => {
 
     expect(storageValue.current.BATT4.orb.vy).toBeLessThan(0);
   });
+});
 
+describe('batteryBreakout malformed state', () => {
   it('falls back through the normalization branches for malformed state', () => {
     const storageValue = {
       current: {
@@ -812,7 +824,9 @@ describe('batteryBreakout', () => {
 
     expect(storageValue.current.BATT4.cells).toHaveLength(9);
   });
+});
 
+describe('batteryBreakout pause and wall behavior', () => {
   it('toggles pause on successive pause presses', () => {
     const storageValue = {
       current: {
@@ -986,7 +1000,9 @@ describe('batteryBreakout', () => {
     expect(paddleNext.storageValue.current.BATT4.orb.vy).toBeLessThan(0);
     expect(paddleNext.storageValue.current.BATT4.orb.vx).not.toBe(0);
   });
+});
 
+describe('batteryBreakout remaining collision branches', () => {
   it('covers the remaining battery collision and reset branches', () => {
     const chargingStorage = {
       current: {
@@ -1196,7 +1212,9 @@ describe('batteryBreakout', () => {
     expect(resetStorage.current.BATT4.status).toBe('ready');
     expect(resetStorage.current.BATT4.orb.stuckToPaddle).toBe(true);
   });
+});
 
+describe('batteryBreakout seeded layouts', () => {
   it('uses a staggered default cell layout', () => {
     const { storageValue } = runToy(
       JSON.stringify({ width: 240, height: 160 })
@@ -1400,7 +1418,9 @@ describe('batteryBreakout', () => {
     expect(next.storageValue.current.BATT4.cells[0].state).toBe('stable');
     expect(next.storageValue.current.BATT4.orb.x).not.toBe(44);
   });
+});
 
+describe('batteryBreakout persisted input normalization', () => {
   it('normalizes missing gamepad buttons and zeroed orb coordinates', () => {
     const storageValue = {
       current: {
@@ -1561,7 +1581,9 @@ describe('batteryBreakout', () => {
       false
     );
   });
+});
 
+describe('batteryBreakout seeded reset behavior', () => {
   it('resets to a new seeded layout on r', () => {
     const storageValue = {
       current: {
@@ -1793,7 +1815,9 @@ describe('batteryBreakout', () => {
     expect(next.storageValue.current.BATT4.cells[0].state).toBe('charging');
     expect(next.storageValue.current.BATT4.cells[0].charge).toBe(2);
   });
+});
 
+describe('batteryBreakout fault outcomes', () => {
   it('overcharges and can lose after too many faults', () => {
     const storageValue = {
       current: {
@@ -1900,7 +1924,9 @@ describe('batteryBreakout', () => {
     expect(next.storageValue.current.BATT4.orb.vx).toBeGreaterThan(0);
     expect(next.storageValue.current.BATT4.orb.vy).toBeGreaterThan(0);
   });
+});
 
+describe('batteryBreakout final normalization', () => {
   it('normalizes malformed stored values back to defaults', () => {
     const storageValue = {
       current: {
