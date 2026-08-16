@@ -1,5 +1,7 @@
 import { jest } from '@jest/globals';
 
+const accessTokenKey = 'access_token';
+
 await jest.unstable_mockModule(
   '../../../../src/core/cloud/render-contents/render-contents-core.js',
   () => ({
@@ -107,7 +109,7 @@ describe('createRenderContentsEntrypoint', () => {
       .fn()
       .mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ access_token: 'token' }),
+        json: async () => ({ [accessTokenKey]: 'token' }),
       })
       .mockResolvedValue({ ok: true, status: 200, json: async () => ({}) });
     global.fetch = fetchFn;
