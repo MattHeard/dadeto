@@ -187,7 +187,9 @@ describe('handleDropdownChange', () => {
     expect(dom.createElement).toHaveBeenCalled();
     expect(dom.appendChild).toHaveBeenCalledWith(mockParent, mockElement);
   });
+});
 
+describe('handleDropdownChange output handling', () => {
   it('sets the output text when output exists for the post', () => {
     const parent = { child: null, querySelector: jest.fn() };
     parent.querySelector.mockReturnValue(parent);
@@ -273,7 +275,9 @@ describe('handleDropdownChange', () => {
     expect(() => handleDropdownChange(dropdown, getData, dom)).not.toThrow();
     expect(parent.child.textContent).toBe('');
   });
+});
 
+describe('handleDropdownChange presenter handling', () => {
   it('uses the closest article id to look up and display output', () => {
     const parent = { child: null, querySelector: jest.fn() };
     parent.querySelector.mockReturnValue(parent);
