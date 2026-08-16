@@ -19,7 +19,10 @@ describe('toyPersistence', () => {
   it('resolves storage accessors and persists state conditionally', () => {
     const setter = jest.fn();
     const env = {
-      get: name => (name === 'setLocalPermanentData' ? setter : null),
+      get: name => {
+        if (name === 'setLocalPermanentData') return setter;
+        return null;
+      },
     };
     expect(getStorageAccessor(env)).toBe(setter);
     expect(getStorageAccessor(null)).toBeNull();
@@ -78,9 +81,12 @@ describe('toyPersistence', () => {
   });
 
   it('returns null when persistence is unavailable or malformed', () => {
-    const normalizeState = jest.fn(value =>
-      value && typeof value === 'object' && !Array.isArray(value) ? value : null
-    );
+    const normalizeState = jest.fn(value => {
+      if (value && typeof value === 'object' && !Array.isArray(value)) {
+        return value;
+      }
+      return null;
+    });
 
     expect(readPersistedState(null, 'KEY', normalizeState)).toBeNull();
     expect(normalizeState).not.toHaveBeenCalled();
