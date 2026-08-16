@@ -118,7 +118,9 @@ describe('core local server helpers', () => {
     expect(deps.getNonCoreThinStatus).toHaveBeenCalled();
     expect(response.redirect).toHaveBeenCalledWith('/writer/');
   });
+});
 
+describe('core local server routes', () => {
   test('serves the static pages and config routes', async () => {
     const handlers = {};
     const app = {
@@ -236,7 +238,9 @@ describe('core local server helpers', () => {
     expect(app.use).not.toHaveBeenCalledWith(expect.any(Function));
     expect(response.set).not.toHaveBeenCalled();
   });
+});
 
+describe('core local server writer helpers', () => {
   test('creates an http writer server by default', () => {
     const app = {};
     const server = {};
