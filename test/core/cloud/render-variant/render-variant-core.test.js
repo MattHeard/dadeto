@@ -1231,86 +1231,36 @@ describe('createRenderVariant', () => {
 });
 
 it('renders variants, writes artefacts, and invalidates caches', async () => {
-  const consoleError = jest.fn();
+  const {
+    consoleError,
+    variantFile,
+    altsFile,
+    pendingFile,
+    bucketFile,
+    storage,
+  } = createRenderVariantStorageFixture();
 
-  // Author document handling
-  const authorFile = {
-    exists: jest.fn().mockResolvedValue([false]),
-    save: jest.fn().mockResolvedValue(undefined),
-  };
-
-  const variantFile = {
-    save: jest.fn().mockResolvedValue(undefined),
-  };
-  const altsFile = {
-    save: jest.fn().mockResolvedValue(undefined),
-  };
-  const pendingFile = {
-    save: jest.fn().mockResolvedValue(undefined),
-  };
-
-  const bucketFile = jest.fn(path => {
-    switch (path) {
-      case 't-example/p/5a.html':
-        return variantFile;
-      case 't-example/p/5-alts.html':
-        return altsFile;
-      case 't-example/pending/variant-xyz.json':
-        return pendingFile;
-      case 't-example/a/auth-uuid.html':
-        return authorFile;
-      default:
-        return {
-          save: jest.fn().mockResolvedValue(undefined),
-          exists: jest.fn().mockResolvedValue([true]),
-        };
-    }
-  });
-
-  const bucket = { file: bucketFile };
-  const storage = {
-    bucket: jest.fn(name => {
-      expect(name).toBe(DEFAULT_BUCKET_NAME);
-      return bucket;
-    }),
-  };
-
-  const fetchFn = jest
-    .fn()
-    .mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({ [ACCESS_TOKEN_KEY]: 'token' }),
-    })
-    .mockResolvedValue({
-      ok: true,
-      status: 200,
-      json: async () => ({}),
-    });
-
-  const randomUUID = jest
-    .fn()
-    .mockReturnValueOnce('uuid-metadata')
-    .mockReturnValue('uuid-request');
+  const { fetchFn, randomUUID } = createRenderVariantRequestFixture();
 
   // Mock Firestore hierarchy
   const parentVariantSnap = {
-    exists: true,
-    data: () => ({ name: 'b' }),
-  };
-  const parentPageSnap = {
-    exists: true,
-    data: () => ({ number: 88 }),
-  };
-  const parentPageRef = {
-    get: jest.fn().mockResolvedValue(parentPageSnap),
-  };
-  const variantsCollectionRef = {
-    parent: parentPageRef,
-  };
-  const parentVariantRef = {
-    get: jest.fn().mockResolvedValue(parentVariantSnap),
-    parent: variantsCollectionRef,
-  };
+      exists: true,
+      data: () => ({ name: 'b' }),
+    },
+    parentPageSnap = {
+      exists: true,
+      data: () => ({ number: 88 }),
+    },
+    parentPageRef = {
+      get: jest.fn().mockResolvedValue(parentPageSnap),
+    },
+    variantsCollectionRef = {
+      parent: parentPageRef,
+    },
+    parentVariantRef = {
+      get: jest.fn().mockResolvedValue(parentVariantSnap),
+      parent: variantsCollectionRef,
+    };
   variantsCollectionRef.parent = parentPageRef;
   parentPageRef.parent = { parent: null };
   const authorRef = {
@@ -1322,14 +1272,14 @@ it('renders variants, writes artefacts, and invalidates caches', async () => {
   };
 
   const targetVariantDocs = [
-    { data: () => ({ name: 'q', visibility: VISIBILITY_THRESHOLD }) },
-    { data: () => ({ name: 'z', visibility: 0 }) },
-  ];
-  const targetVariantsQuery = {
-    orderBy: jest.fn(() => ({
-      get: jest.fn().mockResolvedValue({ docs: targetVariantDocs }),
-    })),
-  };
+      { data: () => ({ name: 'q', visibility: VISIBILITY_THRESHOLD }) },
+      { data: () => ({ name: 'z', visibility: 0 }) },
+    ],
+    targetVariantsQuery = {
+      orderBy: jest.fn(() => ({
+        get: jest.fn().mockResolvedValue({ docs: targetVariantDocs }),
+      })),
+    };
 
   const targetPageRef = {
     get: jest.fn().mockResolvedValue({
@@ -1344,11 +1294,11 @@ it('renders variants, writes artefacts, and invalidates caches', async () => {
   };
 
   const optionsCollectionRef = {
-    parent: parentVariantRef,
-  };
-  const optionDocRef = {
-    parent: optionsCollectionRef,
-  };
+      parent: parentVariantRef,
+    },
+    optionDocRef = {
+      parent: optionsCollectionRef,
+    };
 
   const variantsSnapForPersist = {
     docs: [{ data: () => ({ name: 'a', content: 'alpha', visibility: 1 }) }],
@@ -1517,6 +1467,68 @@ it('renders variants, writes artefacts, and invalidates caches', async () => {
     'target page lookup failed',
     'boom'
   );
+});
+
+const createRenderVariantStorageFixture = () => {
+  const consoleError = jest.fn();
+  const authorFile = {
+    exists: jest.fn().mockResolvedValue([false]),
+    save: jest.fn().mockResolvedValue(undefined),
+  };
+  const variantFile = { save: jest.fn().mockResolvedValue(undefined) };
+  const altsFile = { save: jest.fn().mockResolvedValue(undefined) };
+  const pendingFile = { save: jest.fn().mockResolvedValue(undefined) };
+  const bucketFile = jest.fn(path => {
+    switch (path) {
+      case 't-example/p/5a.html':
+        return variantFile;
+      case 't-example/p/5-alts.html':
+        return altsFile;
+      case 't-example/pending/variant-xyz.json':
+        return pendingFile;
+      case 't-example/a/auth-uuid.html':
+        return authorFile;
+      default:
+        return {
+          save: jest.fn().mockResolvedValue(undefined),
+          exists: jest.fn().mockResolvedValue([true]),
+        };
+    }
+  });
+  const bucket = { file: bucketFile };
+  const storage = {
+    bucket: jest.fn(name => {
+      expect(name).toBe(DEFAULT_BUCKET_NAME);
+      return bucket;
+    }),
+  };
+  return {
+    consoleError,
+    authorFile,
+    variantFile,
+    altsFile,
+    pendingFile,
+    bucketFile,
+    storage,
+  };
+};
+
+const createRenderVariantRequestFixture = () => ({
+  fetchFn: jest
+    .fn()
+    .mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ [ACCESS_TOKEN_KEY]: 'token' }),
+    })
+    .mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: async () => ({}),
+    }),
+  randomUUID: jest
+    .fn()
+    .mockReturnValueOnce('uuid-metadata')
+    .mockReturnValue('uuid-request'),
 });
 
 describe('createRenderVariant page fallbacks', () => {
