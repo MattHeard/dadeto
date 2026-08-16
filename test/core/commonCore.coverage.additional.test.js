@@ -257,7 +257,9 @@ describe('commonCore additional coverage', () => {
       failures: [{ exitCode: 2, signal: 'SIGTERM' }],
     });
   });
+});
 
+describe('commonCore additional process lifecycle coverage', () => {
   test('handles fail-fast aborts, timeouts, settled closes, and stderr flushing', async () => {
     const stderr = { write: jest.fn() };
     const stdout = { write: jest.fn() };
@@ -323,15 +325,14 @@ describe('commonCore additional coverage', () => {
       failures: [{ signal: 'SIGTERM' }],
     });
     expect(timeoutChild.kill).toHaveBeenCalledWith('SIGTERM');
-    const noKillTimeout = createRunCheckSuite({
-      defaultSpawn: () => ({ stdout: null, stderr: null, on: jest.fn() }),
-      defaultStdout: stdout,
-      defaultStderr: stderr,
-      defaultNow: () => 55,
-      defaultTimeoutMs: 1,
-    });
     await expect(
-      noKillTimeout({
+      createRunCheckSuite({
+        defaultSpawn: () => ({ stdout: null, stderr: null, on: jest.fn() }),
+        defaultStdout: stdout,
+        defaultStderr: stderr,
+        defaultNow: () => 55,
+        defaultTimeoutMs: 1,
+      })({
         commands: [{ name: 'timeout-no-kill', command: 'timeout', args: [] }],
       })
     ).resolves.toMatchObject({ exitCode: 1 });
@@ -393,8 +394,12 @@ describe('commonCore additional coverage', () => {
     await streamSuite({
       commands: [{ name: 'stream', command: 'stream', args: [] }],
     });
-    expect(stderr.write).toHaveBeenCalledWith('[stream][stderr] partial\n');
-    expect(stderr.write).toHaveBeenCalledWith('[stream][stderr] trailing\n');
+    expect(
+      stderr.write.mock.calls.filter(([value]) => value.startsWith('[stream]'))
+    ).toEqual([
+      ['[stream][stderr] partial\n'],
+      ['[stream][stderr] trailing\n'],
+    ]);
 
     const errorListeners = {};
     const errorChild = {
@@ -465,7 +470,9 @@ describe('commonCore additional coverage', () => {
       })
     ).resolves.toMatchObject({ exitCode: 1 });
   });
+});
 
+describe('commonCore additional aggregate coverage', () => {
   test('creates the aggregate check command handler', async () => {
     const runSuite = jest.fn().mockResolvedValue({ exitCode: 1 });
     const setExitCode = jest.fn();
