@@ -33,10 +33,6 @@ export function createPurchaseStatusHandler(deps) {
 }
 
 /**
- *
- * @param authorization
- */
-/**
  * Extract a bearer token without accepting arbitrary authorization values.
  * @param {unknown} authorization Authorization header.
  * @returns {string} Token or empty string.

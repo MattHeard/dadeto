@@ -2,7 +2,7 @@
 /**
  * Create a bounded read-only settlement observer.
  * @param {{ readStatus: () => Promise<{ status: string }>, wait: (ms: number) => Promise<void>, maxAttempts?: number }} deps Polling dependencies.
- * @returns {Promise<{ state: string, status?: object }>}
+ * @returns {Promise<{ state: string, status?: object }>} Settlement state.
  */
 export async function observeBillingSettlement(deps) {
   const maxAttempts = deps.maxAttempts ?? 5;
