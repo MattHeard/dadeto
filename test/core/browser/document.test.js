@@ -4,71 +4,74 @@ import {
   getElementById,
 } from '../../../src/core/browser/document.js';
 
+const createDocumentFixture = () => {
+  const classList = {
+    add: jest.fn(),
+    remove: jest.fn(),
+    contains: jest.fn(() => true),
+  };
+  const element = {
+    classList,
+    style: {},
+    firstChild: null,
+    nextElementSibling: { classList, remove: jest.fn() },
+    nextSibling: 'next',
+    parentElement: 'parent',
+    dataset: {},
+    querySelector: jest.fn(() => 'selected'),
+    addEventListener: jest.fn(),
+    removeEventListener: jest.fn(),
+    appendChild: jest.fn(child => child),
+    insertBefore: jest.fn(),
+    removeChild: jest.fn(),
+    removeAttribute: jest.fn(),
+    contains: jest.fn(() => true),
+    play: jest.fn(),
+    pause: jest.fn(),
+  };
+  const documentObj = {
+    getElementById: jest.fn(() => element),
+    querySelector: jest.fn(() => element),
+    querySelectorAll: jest.fn(() => [element]),
+    createElement: jest.fn(() => element),
+    createTextNode: jest.fn(value => value),
+    getElementsByTagName: jest.fn(() => [element]),
+  };
+  const windowObj = {
+    location: { search: '?beta=1' },
+    IntersectionObserver: jest.fn(() => ({ disconnect: jest.fn() })),
+  };
+  const globalThisObj = {
+    requestAnimationFrame: jest.fn(() => 1),
+    cancelAnimationFrame: jest.fn(),
+    setInterval: jest.fn(() => 2),
+    clearInterval: jest.fn(),
+    setTimeout: jest.fn(() => 3),
+    clearTimeout: jest.fn(),
+    crypto: {
+      getRandomValues: jest.fn(values => {
+        values[0] = 42;
+        return values;
+      }),
+      randomUUID: jest.fn(() => 'uuid'),
+    },
+  };
+  const navigatorObj = { getGamepads: jest.fn(() => ['gamepad']) };
+  const handle = createDocumentHandle({
+    documentObj,
+    windowObj,
+    globalThisObj,
+    navigatorObj,
+  });
+  return { element, globalThisObj, handle };
+};
+
 describe('document facade', () => {
   it('delegates DOM, event, storage, timer, and browser helpers', () => {
     expect(() => getElementById('before-init')).toThrow(
       'createDocumentHandle must be called before using DOM helpers.'
     );
-    const classList = {
-      add: jest.fn(),
-      remove: jest.fn(),
-      contains: jest.fn(() => true),
-    };
-    const element = {
-      classList,
-      style: {},
-      firstChild: null,
-      nextElementSibling: { classList, remove: jest.fn() },
-      nextSibling: 'next',
-      parentElement: 'parent',
-      dataset: {},
-      querySelector: jest.fn(() => 'selected'),
-      addEventListener: jest.fn(),
-      removeEventListener: jest.fn(),
-      appendChild: jest.fn(child => child),
-      insertBefore: jest.fn(),
-      removeChild: jest.fn(),
-      removeAttribute: jest.fn(),
-      contains: jest.fn(() => true),
-      play: jest.fn(),
-      pause: jest.fn(),
-    };
-    const documentObj = {
-      getElementById: jest.fn(() => element),
-      querySelector: jest.fn(() => element),
-      querySelectorAll: jest.fn(() => [element]),
-      createElement: jest.fn(() => element),
-      createTextNode: jest.fn(value => value),
-      getElementsByTagName: jest.fn(() => [element]),
-    };
-    const windowObj = {
-      location: { search: '?beta=1' },
-      IntersectionObserver: jest.fn(() => ({ disconnect: jest.fn() })),
-    };
-    const globalThisObj = {
-      requestAnimationFrame: jest.fn(() => 1),
-      cancelAnimationFrame: jest.fn(),
-      setInterval: jest.fn(() => 2),
-      clearInterval: jest.fn(),
-      setTimeout: jest.fn(() => 3),
-      clearTimeout: jest.fn(),
-      crypto: {
-        getRandomValues: jest.fn(values => {
-          values[0] = 42;
-          return values;
-        }),
-        randomUUID: jest.fn(() => 'uuid'),
-      },
-    };
-    const navigatorObj = {
-      getGamepads: jest.fn(() => ['gamepad']),
-    };
-    const handle = createDocumentHandle({
-      documentObj,
-      windowObj,
-      globalThisObj,
-      navigatorObj,
-    });
+    const { element, handle } = createDocumentFixture();
     const callback = jest.fn();
     const event = {
       currentTarget: 'current',
@@ -100,6 +103,11 @@ describe('document facade', () => {
     handle.log('info');
     handle.warn('warning');
     handle.logError('error');
+  });
+
+  it('delegates child, timer, and browser operations', () => {
+    const { element, handle } = createDocumentFixture();
+    const callback = jest.fn();
     handle.removeAllChildren(element);
     const child = { firstChild: null, removeChild: jest.fn() };
     const parent = {
@@ -120,6 +128,16 @@ describe('document facade', () => {
     expect(handle.getRandomNumber()).toBe(42 / 2 ** 32);
     expect(handle.getCurrentTime()).toEqual(expect.any(String));
     expect(handle.getUuid()).toBe('uuid');
+  });
+
+  it('delegates state, metadata, and module helpers', () => {
+    const { element, globalThisObj, handle } = createDocumentFixture();
+    const callback = jest.fn();
+    const event = {
+      currentTarget: 'current',
+      target: { value: 'value' },
+      preventDefault: callback,
+    };
     expect(handle.hasNextSiblingClass(element, 'x')).toBe(true);
     handle.addWarning(element);
     handle.removeWarning(element);
