@@ -7,6 +7,11 @@ import {
   resolveContextSubId,
 } from '../../../../src/core/cloud/process-new-story/process-new-story-core.js';
 
+const baseFieldValue = {
+  serverTimestamp: jest.fn(() => 'ts'),
+  increment: jest.fn(() => 'inc'),
+};
+
 describe('resolveContextSubId', () => {
   it('returns undefined when context is missing', () => {
     expect(resolveContextSubId(undefined)).toBeUndefined();
@@ -118,11 +123,6 @@ function createFakeDb({ authorExists = true } = {}) {
 }
 
 describe('createProcessNewStoryHandler', () => {
-  const baseFieldValue = {
-    serverTimestamp: jest.fn(() => 'ts'),
-    increment: jest.fn(() => 'inc'),
-  };
-
   afterEach(() => {
     resetFindAvailablePageNumberResolver();
     jest.clearAllMocks();
@@ -239,7 +239,9 @@ describe('createProcessNewStoryHandler', () => {
     expect(batch.update).toHaveBeenCalledWith(snapshotRef, { processed: true });
     expect(batch.commit).toHaveBeenCalled();
   });
+});
 
+describe('createProcessNewStoryHandler edge cases', () => {
   it('handles missing snapshots and defaults context quietly', async () => {
     const { db } = createFakeDb();
     const findAvailablePageNumberFn = jest.fn().mockResolvedValue(5);
