@@ -122,10 +122,17 @@ describe('createLedgerIngestReportElement', () => {
     expect(overview.children[3].children[1].textContent).toBe('1');
     expect(overview.children[4].children[1].textContent).toBe('1');
     expect(overview.children[5].children[1].textContent).toBe('0');
-    expect(canonical.children[0].textContent).toBe('Canonical transactions');
-    expect(tableHost.className).toBe('ledger-ingest-transactions-table-host');
-    expect(getTable().tag).toBe('table');
-    expect(getTable().className).toBe('ledger-ingest-transactions-table');
+    expect({
+      title: canonical.children[0].textContent,
+      hostClass: tableHost.className,
+      tableTag: getTable().tag,
+      tableClass: getTable().className,
+    }).toEqual({
+      title: 'Canonical transactions',
+      hostClass: 'ledger-ingest-transactions-table-host',
+      tableTag: 'table',
+      tableClass: 'ledger-ingest-transactions-table',
+    });
     expect(
       getHeaderRow().children.map(cell => cell.children[0].textContent)
     ).toEqual([
@@ -140,65 +147,98 @@ describe('createLedgerIngestReportElement', () => {
       'Source record id',
       'Raw record',
     ]);
-    expect(getHeaderRow().children[0].children[1].tag).toBe('a');
-    expect(getHeaderRow().children[0].children[1].href).toBe('#');
-    expect(getHeaderRow().children[0].children[1].textContent).toBe('(-)');
+    expect({
+      tag: getHeaderRow().children[0].children[1].tag,
+      href: getHeaderRow().children[0].children[1].href,
+      text: getHeaderRow().children[0].children[1].textContent,
+    }).toEqual({ tag: 'a', href: '#', text: '(-)' });
     const row = getBodyRow();
-    expect(row.children[0].textContent).toBe(
-      'ember-bank-us:2026-03-01|12|coffee shop:0'
-    );
-    expect(row.children[1].textContent).toBe('2026-03-01');
-    expect(row.children[2].textContent).toBe('12');
-    expect(row.children[3].textContent).toBe('USD');
-    expect(row.children[4].textContent).toBe('coffee shop');
-    expect(row.children[5].textContent).toBe('2026-03-01|12|coffee shop');
-    expect(row.children[6].textContent).toBe('ember-bank-us');
-    expect(row.children[7].textContent).toBe('0');
-    expect(row.children[8].textContent).toBe('—');
-    expect(row.children[9].textContent).toContain('"id": "row-1"');
+    expect(row.children.map(child => child.textContent)).toEqual([
+      'ember-bank-us:2026-03-01|12|coffee shop:0',
+      '2026-03-01',
+      '12',
+      'USD',
+      'coffee shop',
+      '2026-03-01|12|coffee shop',
+      'ember-bank-us',
+      '0',
+      '—',
+      expect.stringContaining('"id": "row-1"'),
+    ]);
 
     click(getHeaderRow().children[0].children[1]);
 
-    expect(getHeaderRow().children[0].colSpan).toBe(1);
-    expect(getHeaderRow().children[0].children.length).toBe(1);
-    expect(getHeaderRow().children[0].children[0].textContent).toBe('(+)');
-    expect(getBodyRow().children[0].textContent).toBe('');
-    expect(getBodyRow().children[1].textContent).toBe('2026-03-01');
+    expect({
+      colSpan: getHeaderRow().children[0].colSpan,
+      headerChildren: getHeaderRow().children[0].children.length,
+      marker: getHeaderRow().children[0].children[0].textContent,
+      transactionId: getBodyRow().children[0].textContent,
+      postedDate: getBodyRow().children[1].textContent,
+    }).toEqual({
+      colSpan: 1,
+      headerChildren: 1,
+      marker: '(+)',
+      transactionId: '',
+      postedDate: '2026-03-01',
+    });
 
     click(getHeaderRow().children[1].children[1]);
 
-    expect(getHeaderRow().children[0].colSpan).toBe(2);
-    expect(getHeaderRow().children[0].children.length).toBe(1);
-    expect(getHeaderRow().children[0].children[0].textContent).toBe('(+)');
-    expect(getBodyRow().children[0].textContent).toBe('');
-    expect(getBodyRow().children[1].textContent).toBe('');
+    expect({
+      colSpan: getHeaderRow().children[0].colSpan,
+      headerChildren: getHeaderRow().children[0].children.length,
+      marker: getHeaderRow().children[0].children[0].textContent,
+      transactionId: getBodyRow().children[0].textContent,
+      postedDate: getBodyRow().children[1].textContent,
+    }).toEqual({
+      colSpan: 2,
+      headerChildren: 1,
+      marker: '(+)',
+      transactionId: '',
+      postedDate: '',
+    });
 
     click(getHeaderRow().children[0].children[0]);
 
-    expect(getHeaderRow().children[0].colSpan).toBe(1);
-    expect(getHeaderRow().children[0].children[0].textContent).toBe(
-      'Transaction ID'
-    );
-    expect(getHeaderRow().children[0].children[1].textContent).toBe('(-)');
-    expect(getHeaderRow().children[1].children[0].textContent).toBe(
-      'Posted date'
-    );
-    expect(getHeaderRow().children[1].children[1].textContent).toBe('(-)');
-    expect(getBodyRow().children[0].textContent).toBe(
-      'ember-bank-us:2026-03-01|12|coffee shop:0'
-    );
-    expect(getBodyRow().children[1].textContent).toBe('2026-03-01');
+    expect({
+      firstGroupSpan: getHeaderRow().children[0].colSpan,
+      firstGroupLabel: getHeaderRow().children[0].children[0].textContent,
+      firstGroupToggle: getHeaderRow().children[0].children[1].textContent,
+      secondGroupLabel: getHeaderRow().children[1].children[0].textContent,
+      secondGroupToggle: getHeaderRow().children[1].children[1].textContent,
+      transactionId: getBodyRow().children[0].textContent,
+      postedDate: getBodyRow().children[1].textContent,
+    }).toEqual({
+      firstGroupSpan: 1,
+      firstGroupLabel: 'Transaction ID',
+      firstGroupToggle: '(-)',
+      secondGroupLabel: 'Posted date',
+      secondGroupToggle: '(-)',
+      transactionId: 'ember-bank-us:2026-03-01|12|coffee shop:0',
+      postedDate: '2026-03-01',
+    });
 
-    expect(duplicates.children[0].textContent).toBe('Duplicate reports');
-    expect(errors.children[0].textContent).toBe('Error reports');
-    expect(summary.children[0].textContent).toBe('Summary');
-    expect(summary.children[1].textContent).toContain('"rawRecords": 3');
-    expect(policy.children[0].textContent).toBe('Policy');
-    expect(policy.children[1].textContent).toContain(
-      '"name": "posted-date-amount-description"'
-    );
+    expect({
+      duplicateTitle: duplicates.children[0].textContent,
+      errorTitle: errors.children[0].textContent,
+      summaryTitle: summary.children[0].textContent,
+      summaryBody: summary.children[1].textContent,
+      policyTitle: policy.children[0].textContent,
+      policyBody: policy.children[1].textContent,
+    }).toEqual({
+      duplicateTitle: 'Duplicate reports',
+      errorTitle: 'Error reports',
+      summaryTitle: 'Summary',
+      summaryBody: expect.stringContaining('"rawRecords": 3'),
+      policyTitle: 'Policy',
+      policyBody: expect.stringContaining(
+        '"name": "posted-date-amount-description"'
+      ),
+    });
   });
+});
 
+describe('createLedgerIngestReportElement storage and fallback states', () => {
   test('renders storage details when the report includes storage data', () => {
     const dom = createMockDom();
     const payload = {
