@@ -11,6 +11,62 @@ const getAuthorization = (name, value, fallback) => {
   return fallback;
 };
 
+const assertPathHelpers = testUtils => {
+  expect(
+    testUtils.extractParams('stories/{storyId}/pages/{pageId}', 'stories/1')
+  ).toBeNull();
+  expect(
+    testUtils.extractParams(
+      'stories/{storyId}/pages/{pageId}',
+      'stories/1/chapters/2'
+    )
+  ).toBeNull();
+  expect(
+    testUtils.extractParams(
+      'stories/{storyId}/pages/{pageId}',
+      'stories/1/pages/2'
+    )
+  ).toEqual({ storyId: '1', pageId: '2' });
+  expect(
+    testUtils.matchesTrigger('stories/{storyId}/pages/{pageId}', 'stories/1')
+  ).toBe(false);
+  expect(testUtils.resolveTargetPageNumber({})).toBeUndefined();
+};
+
+const assertSnapshotHelpers = (testUtils, db) => {
+  expect(
+    testUtils.resolveTargetPageNumber({ path: '/stories/1/chapters/2' })
+  ).toBeUndefined();
+  expect(testUtils.createSnapshot('stories/missing', undefined)).toMatchObject({
+    exists: false,
+    id: 'missing',
+  });
+  expect(
+    testUtils.createSnapshot('stories/missing', undefined).data()
+  ).toBeUndefined();
+  db.__setPathData('manual/story', { title: 'Story' });
+  expect(
+    testUtils.createSnapshot('manual/story', { title: 'Ignored' }).data()
+  ).toMatchObject({ title: 'Story' });
+};
+
+const prepareMissingVariant = async simulator => {
+  await simulator.dispatchCommittedWrites([
+    {
+      path: 'stories/gcp-test-fixture-story/pages/1/variants/a',
+      before: undefined,
+      after: undefined,
+    },
+  ]);
+  await simulator.db.collection('moderators').doc(ADMIN_UID).set({
+    createdAt: new Date(),
+  });
+  const response = await simulator.routes.getModerationVariant({
+    headers: { authorization: 'Bearer local-admin-token' },
+  });
+  expect(response).toEqual({ status: 404, body: 'Variant not found' });
+};
+
 let simulator;
 
 jest.setTimeout(180000);
@@ -219,7 +275,9 @@ describe('local gcp simulator', () => {
       expect(blankAuthPageSubmission.body.authorId).toBeNull();
     });
   });
+});
 
+describe('local gcp simulator validation routes', () => {
   it('rejects missing incoming options and variants', async () => {
     return withScenarioSimulator(4322, async localSimulator => {
       await expect(
@@ -528,71 +586,16 @@ describe('local gcp simulator', () => {
         .delete();
     });
   }); */
+});
 
+describe('local gcp simulator edge-case helpers', () => {
   it('covers simulator helper branches that are only used in edge cases', async () => {
     const { testUtils } = simulator;
 
-    expect(
-      testUtils.extractParams('stories/{storyId}/pages/{pageId}', 'stories/1')
-    ).toBeNull();
-    expect(
-      testUtils.extractParams(
-        'stories/{storyId}/pages/{pageId}',
-        'stories/1/chapters/2'
-      )
-    ).toBeNull();
-    expect(
-      testUtils.extractParams(
-        'stories/{storyId}/pages/{pageId}',
-        'stories/1/pages/2'
-      )
-    ).toEqual({ storyId: '1', pageId: '2' });
-    expect(
-      testUtils.matchesTrigger('stories/{storyId}/pages/{pageId}', 'stories/1')
-    ).toBe(false);
-    expect(testUtils.resolveTargetPageNumber({})).toBeUndefined();
-    expect(
-      testUtils.resolveTargetPageNumber({ path: '/stories/1/chapters/2' })
-    ).toBeUndefined();
-    expect(
-      testUtils.createSnapshot('stories/missing', undefined)
-    ).toMatchObject({
-      exists: false,
-      id: 'missing',
-    });
-    expect(
-      testUtils.createSnapshot('stories/missing', undefined).data()
-    ).toBeUndefined();
-    simulator.db.__setPathData('manual/story', {
-      title: 'Story',
-    });
-    expect(
-      testUtils
-        .createSnapshot('manual/story', {
-          title: 'Ignored',
-        })
-        .data()
-    ).toMatchObject({ title: 'Story' });
+    assertPathHelpers(testUtils);
+    assertSnapshotHelpers(testUtils, simulator.db);
 
-    await simulator.dispatchCommittedWrites([
-      {
-        path: 'stories/gcp-test-fixture-story/pages/1/variants/a',
-        before: undefined,
-        after: undefined,
-      },
-    ]);
-
-    await simulator.db.collection('moderators').doc(ADMIN_UID).set({
-      createdAt: new Date(),
-    });
-
-    const missingVariantResponse = await simulator.routes.getModerationVariant({
-      headers: { authorization: 'Bearer local-admin-token' },
-    });
-    expect(missingVariantResponse).toEqual({
-      status: 404,
-      body: 'Variant not found',
-    });
+    await prepareMissingVariant(simulator);
 
     const noAuthAssignment = await simulator.routes.assignModerationJob({
       body: {},
@@ -681,8 +684,12 @@ describe('local gcp simulator', () => {
     expect(await testUtils.submitNewStoryVerifyIdToken('')).toEqual({
       uid: null,
     });
-    expect(testUtils.createRandomSource()()).toBeGreaterThanOrEqual(0);
-    expect(testUtils.createRandomSource()()).toBeLessThanOrEqual(1);
+    expect(
+      [
+        testUtils.createRandomSource()(),
+        testUtils.createRandomSource()(),
+      ].every(value => value >= 0 && value <= 1)
+    ).toBe(true);
     expect(await simulator.verifyIdToken('local-admin-token')).toEqual({
       uid: ADMIN_UID,
       token: 'local-admin-token',
@@ -711,7 +718,9 @@ describe('local gcp simulator', () => {
     );
     expect(mockRes.status).toHaveBeenCalledWith(401);
   });
+});
 
+describe('local gcp simulator moderation and credit routes', () => {
   it('accepts moderation jobs and valid incoming options', async () => {
     return withScenarioSimulator(4323, async localSimulator => {
       const assigned = await localSimulator.routes.assignModerationJob({
