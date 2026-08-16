@@ -69,7 +69,9 @@ describe('crystalBreaker', () => {
     expect(hudTexts).toHaveLength(4);
     expect(Math.max(...hudTexts.map(shape => shape.x))).toBeLessThan(360);
   });
+});
 
+describe('crystalBreaker crystal collisions', () => {
   it('reduces crystal hp and changes state on collision', () => {
     const storageValue = {
       current: {
@@ -178,7 +180,9 @@ describe('crystalBreaker', () => {
     expect(storageValue.current.CRYS1.crystals[0].state).toBe('whole');
     expect(storageValue.current.CRYS1.score).toBe(1);
   });
+});
 
+describe('crystalBreaker reset and wall behavior', () => {
   it('resets on a fresh reset keydown', () => {
     const storageValue = { current: null };
 
@@ -361,7 +365,9 @@ describe('crystalBreaker', () => {
 
     expect(payload.shapes.some(shape => shape.fill === '#8dd3ff')).toBe(true);
   });
+});
 
+describe('crystalBreaker lifecycle states', () => {
   it('toggles pause from a running state', () => {
     const storageValue = {
       current: {
@@ -533,7 +539,9 @@ describe('crystalBreaker', () => {
     expect(storageValue.current.CRYS1.orb.vy).toBeGreaterThan(0);
     expect(storageValue.current.CRYS1.combo).toBe(0);
   });
+});
 
+describe('crystalBreaker persisted state normalization', () => {
   it('handles malformed persisted state by falling back to a valid scene', () => {
     const storageValue = { current: { CRYS1: { version: 999 } } };
     const next = runToy('{}', storageValue);
@@ -745,7 +753,9 @@ describe('crystalBreaker', () => {
 
     expect(storageValue.current.CRYS1.crystals).toHaveLength(15);
   });
+});
 
+describe('crystalBreaker branch coverage', () => {
   it('covers reset, keyup, top-edge, paddle, and whole-crystal branches', () => {
     const storageValue = {
       current: {
@@ -940,7 +950,9 @@ describe('crystalBreaker', () => {
     ).toBe(true);
     expect(storageValue.current.CRYS1.input.actions.resetPressed).toBe(true);
   });
+});
 
+describe('crystalBreaker replay behavior', () => {
   it('toggles pause and resumes from ready and running states', () => {
     const readyStorage = {
       current: {
@@ -1113,7 +1125,9 @@ describe('crystalBreaker', () => {
     runToy(JSON.stringify({ type: 'keydown', key: 'p' }), lostStorage);
     expect(lostStorage.current.CRYS1.status).toBe('lost');
   });
+});
 
+describe('crystalBreaker life loss', () => {
   it('loses the last life and keeps a lost state after the orb falls below the board', () => {
     const storageValue = {
       current: {
@@ -1176,7 +1190,9 @@ describe('crystalBreaker', () => {
     expect(storageValue.current.CRYS1.lives).toBe(0);
     expect(storageValue.current.CRYS1.orb.stuckToPaddle).toBe(true);
   });
+});
 
+describe('crystalBreaker final outcomes', () => {
   it('wins after the last crystal shatters', () => {
     const storageValue = {
       current: {
@@ -1231,7 +1247,9 @@ describe('crystalBreaker', () => {
     expect(storageValue.current.CRYS1.status).toBe('won');
     expect(storageValue.current.CRYS1.score).toBe(10);
   });
+});
 
+describe('crystalBreaker remaining branches', () => {
   it('covers the remaining crystal input and collision branches', () => {
     const resetStorage = {
       current: {
