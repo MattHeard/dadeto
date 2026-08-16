@@ -98,7 +98,9 @@ describe('createBillingRuntime', () => {
       checkoutExpiresAt: 123,
     });
   });
+});
 
+describe('billing runtime snapshot paths', () => {
   it('selects the latest snapshot effective at the injected clock', async () => {
     const { db, billing } = setup();
     await db.collection('billing-pricing-snapshots').doc('past').set({
@@ -188,7 +190,9 @@ describe('createBillingRuntime', () => {
       billing.applyRefundEvent({ purchaseId: 'missing', eventId: 'event-2' })
     ).resolves.toEqual({ status: 404, body: { error: 'purchase_not_found' } });
   });
+});
 
+describe('billing runtime expiry paths', () => {
   it('covers missing expiry, quarantined transitions, and public ledger references', async () => {
     const { db, billing } = setup();
     await expect(
@@ -284,7 +288,9 @@ describe('createBillingRuntime', () => {
       })
     ).resolves.toMatchObject({ body: { quarantined: true } });
   });
+});
 
+describe('billing runtime balance paths', () => {
   it('creates a legacy lot when paying with an existing aggregate balance', async () => {
     const { db, billing } = setup();
     await db.doc('api-key-credit/key-1').set({ credit: 4 });
@@ -376,7 +382,9 @@ describe('createBillingRuntime', () => {
       })
     ).resolves.toMatchObject({ body: { duplicate: true } });
   });
+});
 
+describe('billing runtime reservation paths', () => {
   it('covers reservation validation, ambiguity, duplicate, and release paths', async () => {
     const { db, billing } = setup();
     await db
@@ -501,7 +509,9 @@ describe('createBillingRuntime', () => {
       })
     ).rejects.toThrow('operationType and operationAttemptId are required');
   });
+});
 
+describe('billing runtime reconciliation paths', () => {
   it('exposes read-only identity reconciliation', async () => {
     const { billing } = setup();
     await expect(billing.reconcileIdentity('missing-key')).resolves.toEqual({
@@ -703,7 +713,9 @@ describe('createBillingRuntime', () => {
       })
     ).resolves.toEqual({ status: 409, body: { error: 'insufficient_credit' } });
   });
+});
 
+describe('billing runtime refund paths', () => {
   it('reads refund lot and balance snapshots through the transaction', async () => {
     const purchaseReference = {};
     const lotReference = {};
@@ -796,7 +808,9 @@ describe('createBillingRuntime', () => {
       exists: true,
     });
   });
+});
 
+describe('billing runtime charging paths', () => {
   it('charges operations from FIFO lots using the current snapshot', async () => {
     const { db, billing } = setup();
     await db
