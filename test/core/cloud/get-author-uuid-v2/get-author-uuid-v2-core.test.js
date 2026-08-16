@@ -4,6 +4,11 @@ import {
   createGetAuthorUuidV2Handler,
 } from '../../../../src/core/cloud/get-author-uuid-v2/get-author-uuid-v2-core.js';
 
+const authorizationHeader = name => {
+  if (name === 'authorization') return 'Bearer token';
+  return null;
+};
+
 /**
  * @returns {object} Firestore double with mocked collection access.
  */
@@ -38,7 +43,7 @@ describe('createGetAuthorUuidV2Handler', () => {
 
     await expect(
       handler({
-        get: name => (name === 'authorization' ? 'Bearer token' : null),
+        get: authorizationHeader,
       })
     ).resolves.toEqual({ status: 200, body: { uuid: 'author-uuid' } });
   });
@@ -58,7 +63,7 @@ describe('createGetAuthorUuidV2Handler', () => {
 
     await expect(
       handler({
-        get: name => (name === 'authorization' ? 'Bearer token' : null),
+        get: authorizationHeader,
       })
     ).resolves.toEqual({ status: 200, body: { uuid: 'uuid-1' } });
     expect(set).toHaveBeenCalledWith({ uuid: 'uuid-1' }, { merge: true });
@@ -114,7 +119,7 @@ describe('createGetAuthorUuidV2Handler', () => {
 
     await handle(
       {
-        get: name => (name === 'authorization' ? 'Bearer token' : null),
+        get: authorizationHeader,
       },
       {
         status,
