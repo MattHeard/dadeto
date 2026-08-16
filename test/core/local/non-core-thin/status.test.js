@@ -130,14 +130,16 @@ describe('non-core thin status', () => {
         ['src/browser/document.js'],
         {
           fsModule: {
-            readFileSync: filePath =>
-              filePath.endsWith('document.js')
-                ? [
-                    "import { createDocumentHandle } from './document-core.js';",
-                    'const handle = createDocumentHandle();',
-                    'export { handle };',
-                  ].join('\n')
-                : '',
+            readFileSync: filePath => {
+              if (filePath.endsWith('document.js')) {
+                return [
+                  "import { createDocumentHandle } from './document-core.js';",
+                  'const handle = createDocumentHandle();',
+                  'export { handle };',
+                ].join('\n');
+              }
+              return '';
+            },
           },
           pathModule: path,
           repoRoot: '/repo',
@@ -174,14 +176,16 @@ describe('non-core thin status', () => {
   test('skips dependency directories while scanning non-core files', () => {
     const status = getNonCoreThinStatus({
       fsModule: {
-        readFileSync: filePath =>
-          filePath.endsWith('non-core-thin-exemptions.json')
-            ? JSON.stringify({ maxLines: 50, exemptions: {} })
-            : [
-                "import { createHandle } from './app-core.js';",
-                'const handle = createHandle();',
-                'export { handle };',
-              ].join('\n'),
+        readFileSync: filePath => {
+          if (filePath.endsWith('non-core-thin-exemptions.json')) {
+            return JSON.stringify({ maxLines: 50, exemptions: {} });
+          }
+          return [
+            "import { createHandle } from './app-core.js';",
+            'const handle = createHandle();',
+            'export { handle };',
+          ].join('\n');
+        },
         readdirSync: () => [
           {
             name: 'node_modules',
