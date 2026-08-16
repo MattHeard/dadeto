@@ -67,9 +67,10 @@ function makeDom(autoSubmitCheckbox) {
       el._listeners[event] = handler;
     }),
     removeEventListener: jest.fn(),
-    querySelector: jest.fn((_el, selector) =>
-      selector === '.auto-submit-checkbox' ? autoSubmitCheckbox : null
-    ),
+    querySelector: jest.fn((_el, selector) => {
+      if (selector === '.auto-submit-checkbox') return autoSubmitCheckbox;
+      return null;
+    }),
     setValue: jest.fn((el, value) => {
       el.value = value;
     }),
@@ -92,18 +93,23 @@ function makeDom(autoSubmitCheckbox) {
  * @returns {Gamepad} Test-friendly gamepad fixture.
  */
 function createGamepad(overrides = {}) {
-  return /** @type {Gamepad} */ ({
-    axes: overrides.axes ?? [0, 0],
-    buttons: overrides.buttons ?? [
-      { pressed: false, value: 0 },
-      { pressed: false, value: 0 },
-    ],
-    connected: overrides.connected ?? true,
-    id: overrides.id ?? 'Nintendo Joy-Con (R)',
-    index: overrides.index ?? 0,
-    mapping: overrides.mapping ?? 'standard',
-    timestamp: overrides.timestamp ?? 1,
-  });
+  return /** @type {Gamepad} */ (
+    Object.assign(
+      {
+        axes: [0, 0],
+        buttons: [
+          { pressed: false, value: 0 },
+          { pressed: false, value: 0 },
+        ],
+        connected: true,
+        id: 'Nintendo Joy-Con (R)',
+        index: 0,
+        mapping: 'standard',
+        timestamp: 1,
+      },
+      overrides
+    )
+  );
 }
 
 describe('gamepadCaptureHandler', () => {
@@ -150,7 +156,9 @@ describe('gamepadCaptureHandler', () => {
       globalThis.navigator = previousNavigator;
     }
   });
+});
 
+describe('gamepad capture events', () => {
   it('forwards connect, button, axis, and disconnect events while captured', () => {
     const autoSubmitCheckbox = { checked: false, dispatchEvent: jest.fn() };
     const dom = makeDom(autoSubmitCheckbox);
@@ -167,16 +175,16 @@ describe('gamepadCaptureHandler', () => {
     const previousRequestAnimationFrame = globalThis.requestAnimationFrame;
     const previousCancelAnimationFrame = globalThis.cancelAnimationFrame;
     const previousNavigator = globalThis.navigator;
-    globalThis.addEventListener = globals.addEventListener;
-    globalThis.removeEventListener = globals.removeEventListener;
-    globalThis.requestAnimationFrame = jest.fn(callback => {
-      frames.push(callback);
-      return frames.length;
+    Object.assign(globalThis, {
+      addEventListener: globals.addEventListener,
+      removeEventListener: globals.removeEventListener,
+      requestAnimationFrame: jest.fn(callback => {
+        frames.push(callback);
+        return frames.length;
+      }),
+      cancelAnimationFrame: jest.fn(),
+      navigator: { getGamepads: jest.fn(() => gamepads) },
     });
-    globalThis.cancelAnimationFrame = jest.fn();
-    globalThis.navigator = {
-      getGamepads: jest.fn(() => gamepads),
-    };
 
     try {
       gamepadCaptureHandler(dom, container, textInput);
@@ -267,14 +275,18 @@ describe('gamepadCaptureHandler', () => {
         gamepadCaptureTestOnly.logGamepadEvent('connected', null)
       ).toBeUndefined();
     } finally {
-      globalThis.addEventListener = previousAdd;
-      globalThis.removeEventListener = previousRemove;
-      globalThis.requestAnimationFrame = previousRequestAnimationFrame;
-      globalThis.cancelAnimationFrame = previousCancelAnimationFrame;
-      globalThis.navigator = previousNavigator;
+      Object.assign(globalThis, {
+        addEventListener: previousAdd,
+        removeEventListener: previousRemove,
+        requestAnimationFrame: previousRequestAnimationFrame,
+        cancelAnimationFrame: previousCancelAnimationFrame,
+        navigator: previousNavigator,
+      });
     }
   });
+});
 
+describe('gamepad capture state', () => {
   it('includes all connected gamepads when more than one controller is active', () => {
     const autoSubmitCheckbox = { checked: false, dispatchEvent: jest.fn() };
     const dom = makeDom(autoSubmitCheckbox);
@@ -331,7 +343,9 @@ describe('gamepadCaptureHandler', () => {
       globalThis.navigator = previousNavigator;
     }
   });
+});
 
+describe('gamepad polling', () => {
   it('skips syncing when a poll sees no new payload', () => {
     const autoSubmitCheckbox = { checked: false, dispatchEvent: jest.fn() };
     const dom = makeDom(autoSubmitCheckbox);
@@ -382,7 +396,9 @@ describe('gamepadCaptureHandler', () => {
       globalThis.navigator = previousNavigator;
     }
   });
+});
 
+describe('inactive capture handling', () => {
   it('ignores connection events when capture is inactive', () => {
     const autoSubmitCheckbox = { checked: false, dispatchEvent: jest.fn() };
     const dom = makeDom(autoSubmitCheckbox);
@@ -419,7 +435,9 @@ describe('gamepadCaptureHandler', () => {
       globalThis.navigator = previousNavigator;
     }
   });
+});
 
+describe('inactive disconnection handling', () => {
   it('ignores disconnection events when capture is inactive', () => {
     const autoSubmitCheckbox = { checked: false, dispatchEvent: jest.fn() };
     const dom = makeDom(autoSubmitCheckbox);
@@ -460,7 +478,9 @@ describe('gamepadCaptureHandler', () => {
       globalThis.navigator = previousNavigator;
     }
   });
+});
 
+describe('unidentifiable gamepads', () => {
   it('ignores connection events without identifiable gamepads while capturing', () => {
     const autoSubmitCheckbox = { checked: false, dispatchEvent: jest.fn() };
     const dom = makeDom(autoSubmitCheckbox);
@@ -502,7 +522,9 @@ describe('gamepadCaptureHandler', () => {
       globalThis.navigator = previousNavigator;
     }
   });
+});
 
+describe('capture keyboard handling', () => {
   it('ignores non-keydown escape events while capturing', () => {
     const autoSubmitCheckbox = { checked: false, dispatchEvent: jest.fn() };
     const dom = makeDom(autoSubmitCheckbox);
@@ -549,7 +571,9 @@ describe('gamepadCaptureHandler', () => {
       globalThis.navigator = previousNavigator;
     }
   });
+});
 
+describe('initial gamepad polling', () => {
   it('emits the first polled button payload when a gamepad is already present', () => {
     const autoSubmitCheckbox = { checked: false, dispatchEvent: jest.fn() };
     const dom = makeDom(autoSubmitCheckbox);
@@ -603,7 +627,9 @@ describe('gamepadCaptureHandler', () => {
       globalThis.navigator = previousNavigator;
     }
   });
+});
 
+describe('initial axis polling', () => {
   it('emits the first polled axis payload when a gamepad is already present', () => {
     const autoSubmitCheckbox = { checked: false, dispatchEvent: jest.fn() };
     const dom = makeDom(autoSubmitCheckbox);
@@ -661,7 +687,9 @@ describe('gamepadCaptureHandler', () => {
       globalThis.navigator = previousNavigator;
     }
   });
+});
 
+describe('escape handling', () => {
   it('ignores escape events when capture is inactive', () => {
     const autoSubmitCheckbox = { checked: false, dispatchEvent: jest.fn() };
     const dom = makeDom(autoSubmitCheckbox);
