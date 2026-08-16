@@ -16,8 +16,9 @@ export function normalizeCatalogSnapshot(documentId, input) {
 }
 
 /**
- *
- * @param operations
+ * Normalize operation definitions from either supported catalog shape.
+ * @param {unknown} operations Operation definitions.
+ * @returns {Array<object>} Normalized operation rows.
  */
 function normalizeOperations(operations) {
   if (Array.isArray(operations)) return operations;
@@ -48,11 +49,12 @@ export async function seedBillingCatalog(store, catalog) {
 }
 
 /**
- *
- * @param store
- * @param id
- * @param data
- * @param result
+ * Seed one package and update the result counters.
+ * @param {object} store Catalog persistence boundary.
+ * @param {string} id Package identifier.
+ * @param {Record<string, unknown>} data Package data.
+ * @param {Record<string, number>} result Mutable seed counters.
+ * @returns {Promise<void>} Completion promise.
  */
 async function seedPackage(store, id, data, result) {
   if (typeof data.active !== 'boolean')
@@ -67,11 +69,12 @@ async function seedPackage(store, id, data, result) {
 }
 
 /**
- *
- * @param store
- * @param id
- * @param data
- * @param result
+ * Seed one pricing snapshot and update the result counters.
+ * @param {object} store Catalog persistence boundary.
+ * @param {string} id Snapshot identifier.
+ * @param {Record<string, unknown>} data Snapshot data.
+ * @param {Record<string, number>} result Mutable seed counters.
+ * @returns {Promise<void>} Completion promise.
  */
 async function seedSnapshot(store, id, data, result) {
   const normalized = normalizeCatalogSnapshot(id, data);
