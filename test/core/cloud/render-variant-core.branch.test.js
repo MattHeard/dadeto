@@ -249,23 +249,25 @@ test('covers tree visibility propagation fallbacks and parent updates', async ()
       before: { exists: false },
     },
     db: {
-      doc: jest.fn(path =>
-        path === 'options/o2'
-          ? {
+      doc: jest.fn(path => {
+        if (path === 'options/o2') {
+          return {
+            parent: {
               parent: {
-                parent: {
-                  get: jest.fn().mockResolvedValue({ data: () => undefined }),
-                  update: jest.fn(),
-                },
+                get: jest.fn().mockResolvedValue({ data: () => undefined }),
+                update: jest.fn(),
               },
-            }
-          : {
-              get: jest
-                .fn()
-                .mockResolvedValue({ exists: true, data: () => undefined }),
-              update: jest.fn(),
-            }
-      ),
+            },
+          };
+        }
+        return {
+          get: jest.fn().mockResolvedValue({
+            exists: true,
+            data: () => undefined,
+          }),
+          update: jest.fn(),
+        };
+      }),
     },
   });
   const missingParentData = {
@@ -281,16 +283,18 @@ test('covers tree visibility propagation fallbacks and parent updates', async ()
       before: { exists: false },
     },
     db: {
-      doc: jest.fn(path =>
-        path === 'options/o3'
-          ? { parent: { parent: missingParentData } }
-          : {
-              get: jest
-                .fn()
-                .mockResolvedValue({ exists: true, data: () => ({}) }),
-              update: jest.fn(),
-            }
-      ),
+      doc: jest.fn(path => {
+        if (path === 'options/o3') {
+          return { parent: { parent: missingParentData } };
+        }
+        return {
+          get: jest.fn().mockResolvedValue({
+            exists: true,
+            data: () => ({}),
+          }),
+          update: jest.fn(),
+        };
+      }),
     },
   });
   const nullParentData = {
@@ -306,16 +310,18 @@ test('covers tree visibility propagation fallbacks and parent updates', async ()
       before: { exists: false },
     },
     db: {
-      doc: jest.fn(path =>
-        path === 'options/o4'
-          ? { parent: { parent: nullParentData } }
-          : {
-              get: jest
-                .fn()
-                .mockResolvedValue({ exists: true, data: () => ({}) }),
-              update: jest.fn(),
-            }
-      ),
+      doc: jest.fn(path => {
+        if (path === 'options/o4') {
+          return { parent: { parent: nullParentData } };
+        }
+        return {
+          get: jest.fn().mockResolvedValue({
+            exists: true,
+            data: () => ({}),
+          }),
+          update: jest.fn(),
+        };
+      }),
     },
   });
   expect(
