@@ -35,7 +35,8 @@ export function parseJsonOrNull(value) {
  * @returns {Record<string, unknown> | null} Object record or null.
  */
 export function parseObjectRecord(value) {
-  const parsed = typeof value === 'string' ? parseJsonOrNull(value) : value;
+  let parsed = value;
+  if (typeof value === 'string') parsed = parseJsonOrNull(value);
   if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
     return /** @type {Record<string, unknown>} */ (parsed);
   }
