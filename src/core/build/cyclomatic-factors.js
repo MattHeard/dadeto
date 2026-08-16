@@ -362,9 +362,8 @@ function traverseNode(node, parent, state) {
  * @returns {value is AstNode} Whether the value is an AST node.
  */
 function isAstNode(value) {
-  return Boolean(
-    value && typeof value === 'object' && typeof value.type === 'string'
-  );
+  if (!value || typeof value !== 'object') return false;
+  return typeof (/** @type {{ type?: unknown }} */ (value).type) === 'string';
 }
 
 /**

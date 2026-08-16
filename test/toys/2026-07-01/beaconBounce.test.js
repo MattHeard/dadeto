@@ -16,9 +16,10 @@ import {
 } from '../../../src/core/browser/toys/2026-07-01/beaconBounce.js';
 
 /**
- *
- * @param input
- * @param storageValue
+ * Run the toy with an in-memory persistence adapter.
+ * @param {string} input Serialized toy input.
+ * @param {{ current: Record<string, unknown> | null }} storageValue Stored state.
+ * @returns {{ payload: Record<string, unknown>, storageValue: { current: Record<string, unknown> | null }, setLocalPermanentData: jest.Mock }} Toy output and persistence state.
  */
 function runToy(input, storageValue = { current: null }) {
   const setLocalPermanentData = jest.fn(next => {
