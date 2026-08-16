@@ -34,10 +34,12 @@ describe('createBillingRuntime', () => {
     const secondRef = {};
     const lots = await billingRuntimeTestUtils.readTransactionLots(
       {
-        get: async reference =>
-          reference === firstRef
-            ? { exists: true, data: () => ({ remainingCredits: 2 }) }
-            : { exists: false },
+        get: async reference => {
+          if (reference === firstRef) {
+            return { exists: true, data: () => ({ remainingCredits: 2 }) };
+          }
+          return { exists: false };
+        },
       },
       [{ ref: firstRef }, { ref: secondRef }]
     );

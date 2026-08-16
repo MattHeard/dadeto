@@ -222,10 +222,10 @@ describe('cloud-core', () => {
 
     test('normalizes the returned header when the getter is callable', () => {
       expect(
-        getHeaderFromGetter(
-          name => (name === 'Authorization' ? 'Bearer token' : null),
-          'Authorization'
-        )
+        getHeaderFromGetter(name => {
+          if (name === 'Authorization') return 'Bearer token';
+          return null;
+        }, 'Authorization')
       ).toBe('Bearer token');
     });
   });
