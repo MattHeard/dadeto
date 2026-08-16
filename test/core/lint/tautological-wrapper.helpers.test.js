@@ -171,7 +171,9 @@ describe('tautological-wrapper helper coverage', () => {
       )
     ).toBe(false);
   });
+});
 
+describe('tautological-wrapper helper names', () => {
   test('reads function and callee names from every supported shape', () => {
     expect(
       helpers.getDeclaredFunctionName({
@@ -285,7 +287,9 @@ describe('tautological-wrapper helper coverage', () => {
       })
     ).toBe(false);
   });
+});
 
+describe('tautological-wrapper helper boundaries', () => {
   test('respects documented exemptions and exported boundaries', () => {
     const comment = {
       loc: {
