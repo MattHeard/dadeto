@@ -926,29 +926,18 @@ describe('initAdminApp', () => {
       adminLink: { style: {} },
       statusParagraph: { innerHTML: '' },
     };
+    const elementsById = {
+      renderBtn: elements.renderBtn,
+      statsBtn: elements.statsBtn,
+      regenForm: elements.regenForm,
+      signoutLink: elements.signOutLink,
+      signinButton: elements.signInButton,
+      signoutWrap: elements.signOutWrap,
+      adminLink: elements.adminLink,
+      statusParagraph: elements.statusParagraph,
+    };
     const documentObj = {
-      getElementById: id => {
-        switch (id) {
-          case 'renderBtn':
-            return elements.renderBtn;
-          case 'statsBtn':
-            return elements.statsBtn;
-          case 'regenForm':
-            return elements.regenForm;
-          case 'signoutLink':
-            return elements.signOutLink;
-          case 'signinButton':
-            return elements.signInButton;
-          case 'signoutWrap':
-            return elements.signOutWrap;
-          case 'adminLink':
-            return elements.adminLink;
-          case 'statusParagraph':
-            return elements.statusParagraph;
-          default:
-            return null;
-        }
-      },
+      getElementById: id => elementsById[id] ?? null,
       querySelectorAll: jest.fn(() => []),
       body: {},
     };
@@ -1534,7 +1523,9 @@ describe('createInitGoogleSignIn', () => {
 
     expect(reportError).toHaveBeenCalledWith(error);
   });
+});
 
+describe('createInitGoogleSignIn edge cases', () => {
   it('logs an error when renderButton is missing', () => {
     const error = jest.fn();
     const init = createInitGoogleSignIn({
