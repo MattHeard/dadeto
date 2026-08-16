@@ -4,6 +4,7 @@ import { ADMIN_UID } from '../../src/core/commonCore.js';
 import { createLocalGcpSimulator } from '../../src/local/gcp-simulator/simulator.js';
 
 const incomingOptionKey = 'incoming_option';
+const accessTokenKey = 'access_token';
 
 const getAuthorization = (name, value, fallback) => {
   if (name.toLowerCase() === 'authorization') return value;
@@ -659,7 +660,7 @@ describe('local gcp simulator', () => {
     const localFetch = testUtils.createLocalFetchStub();
     const localResponse = await localFetch();
     expect(await localResponse.json()).toEqual({
-      access_token: 'local-access-token',
+      [accessTokenKey]: 'local-access-token',
     });
     expect(await localResponse.text()).toBe('');
     expect(
