@@ -139,8 +139,10 @@ describe('createSubmitModerationRatingResponder', () => {
     const response = await responder({
       method: 'POST',
       body: { isApproved: false },
-      get: name =>
-        name === 'Authorization' ? 'Bearer getterToken' : undefined,
+      get: name => {
+        if (name === 'Authorization') return 'Bearer getterToken';
+        return undefined;
+      },
     });
 
     expect(recordModerationRating).toHaveBeenCalledWith(
@@ -182,12 +184,10 @@ describe('createSubmitModerationRatingResponder', () => {
       responder({
         method: 'POST',
         body: { isApproved: true },
-        get: name =>
-          name === 'Authorization'
-            ? undefined
-            : name === 'authorization'
-              ? 123
-              : undefined,
+        get: name => {
+          if (name === 'authorization') return 123;
+          return undefined;
+        },
       })
     ).resolves.toEqual({
       status: 401,
@@ -254,7 +254,10 @@ describe('createSubmitModerationRatingResponder', () => {
     const response = await responder({
       method: 'POST',
       body: { isApproved: true },
-      get: name => (name === 'authorization' ? 'Bearer token' : undefined),
+      get: name => {
+        if (name === 'authorization') return 'Bearer token';
+        return undefined;
+      },
     });
 
     expect(response).toEqual({ status: 404, body: 'No moderation job' });
@@ -345,7 +348,10 @@ describe('createHandleSubmitModerationRating', () => {
       {
         method: 'POST',
         body: { isApproved: true },
-        get: name => (name === 'Authorization' ? 'Bearer token' : undefined),
+        get: name => {
+          if (name === 'Authorization') return 'Bearer token';
+          return undefined;
+        },
         headers: {},
       },
       res
@@ -410,9 +416,10 @@ describe('createHandleSubmitModerationRating', () => {
     const req = {
       method: 'POST',
       body: { isApproved: true },
-      get: jest.fn(name =>
-        name === 'Authorization' ? 'Bearer him' : undefined
-      ),
+      get: jest.fn(name => {
+        if (name === 'Authorization') return 'Bearer him';
+        return undefined;
+      }),
     };
 
     await handle(req, res);
