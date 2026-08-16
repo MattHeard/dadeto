@@ -167,8 +167,7 @@ export function parseStripePaymentWebhookEvent(request, env, constructEvent) {
   const rawBody = /** @type {{ rawBody?: string|Buffer }|null|undefined} */ (
     request
   )?.rawBody;
-  const payload =
-    typeof rawBody === 'string' || Buffer.isBuffer(rawBody) ? rawBody : '';
+  const payload = resolveStripePayload(rawBody);
   if (!secret) throw new TypeError('Missing Stripe webhook secret');
   if (!payload) throw new TypeError('Missing Stripe webhook payload');
   const signature = extractHeader(request, 'stripe-signature');
@@ -176,18 +175,39 @@ export function parseStripePaymentWebhookEvent(request, env, constructEvent) {
   if (!constructEvent)
     throw new TypeError('Stripe webhook verifier unavailable');
   try {
-    const verifiedEvent = constructEvent(payload, signature, secret);
-    if (!verifiedEvent || typeof verifiedEvent !== 'object')
-      throw new TypeError('Invalid verified Stripe event');
-    const event = /** @type {{ id?: unknown }} */ (verifiedEvent);
-    if (typeof event.id !== 'string' || !event.id)
-      throw new TypeError('Invalid verified Stripe event id');
-    return /** @type {import('../../payment-webhook-core.js').PaymentEvent} */ (
-      verifiedEvent
+    return validateVerifiedStripeEvent(
+      constructEvent(payload, signature, secret)
     );
   } catch {
     throw new TypeError('Invalid Stripe webhook signature');
   }
+}
+
+/**
+ * Normalize the supported Stripe request body representations.
+ * @param {unknown} rawBody Raw request body.
+ * @returns {string|Buffer} Payload or an empty string when absent.
+ */
+function resolveStripePayload(rawBody) {
+  if (typeof rawBody === 'string') return rawBody;
+  if (Buffer.isBuffer(rawBody)) return rawBody;
+  return '';
+}
+
+/**
+ * Validate the minimal shape required from a verified Stripe event.
+ * @param {unknown} verifiedEvent Event returned by Stripe verification.
+ * @returns {import('../../payment-webhook-core.js').PaymentEvent} Validated event.
+ */
+function validateVerifiedStripeEvent(verifiedEvent) {
+  if (!verifiedEvent || typeof verifiedEvent !== 'object')
+    throw new TypeError('Invalid verified Stripe event');
+  const event = /** @type {{ id?: unknown }} */ (verifiedEvent);
+  if (typeof event.id !== 'string' || !event.id)
+    throw new TypeError('Invalid verified Stripe event id');
+  return /** @type {import('../../payment-webhook-core.js').PaymentEvent} */ (
+    verifiedEvent
+  );
 }
 
 /**
