@@ -378,7 +378,9 @@ describe('createApplyCreditEvent', () => {
       amount: 8,
     });
   });
+});
 
+describe('createApplyCreditEvent malformed ledger entries', () => {
   it('returns 500 when the stored ledger event has no data accessor', async () => {
     const database = createFakeFirestore();
     database.runTransaction = jest.fn(async callback =>
@@ -479,7 +481,9 @@ describe('createApplyCreditEvent', () => {
       body: 'Internal error',
     });
   });
+});
 
+describe('createApplyCreditEvent invalid payloads', () => {
   it('returns 500 when the stored event payload is structurally invalid', async () => {
     const database = createFakeFirestore();
     database.runTransaction = jest.fn(async callback =>
