@@ -180,6 +180,26 @@ describe('Cyberpunk Text Game', () => {
     expect(tempData.visited).not.toContain('alley');
     expect(tempData.state).toBe('hub');
   });
+});
+
+describe('Cyberpunk Text Game edge cases', () => {
+  let tempData;
+  let env;
+
+  beforeEach(() => {
+    tempData = {};
+    env = new Map([
+      ['getRandomNumber', () => 0.5],
+      ['getCurrentTime', () => '23:59'],
+      ['getData', () => ({ temporary: { CYBE1: tempData } })],
+      [
+        'setLocalTemporaryData',
+        data => {
+          tempData = { ...tempData, ...data.temporary?.CYBE1 };
+        },
+      ],
+    ]);
+  });
 
   test('unknown input in hub', () => {
     cyberpunkAdventure('Blaze', env);
