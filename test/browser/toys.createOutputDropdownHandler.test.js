@@ -131,7 +131,9 @@ describe('createOutputDropdownHandler', () => {
     const handler2 = createOutputDropdownHandler(jest.fn(), jest.fn(), {});
     expect(handler1).not.toBe(handler2);
   });
+});
 
+describe('createOutputDropdownHandler delegation details', () => {
   test('expects three arguments and returns a unary function', () => {
     const handler = createOutputDropdownHandler(jest.fn(), jest.fn(), {});
     expect(createOutputDropdownHandler.length).toBe(3);
