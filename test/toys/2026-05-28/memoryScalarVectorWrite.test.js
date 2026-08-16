@@ -220,7 +220,9 @@ describe('memoryScalarVectorWrite', () => {
       error: 'string failure',
     });
   });
+});
 
+describe('memoryScalarVectorWrite envelope paths', () => {
   test('writes into the full envelope when requested', () => {
     const { env, state } = createTemporaryEnv({ existing: true });
 
@@ -297,7 +299,9 @@ describe('memoryScalarVectorWrite', () => {
       error: 'Value must be a scalar or vector array.',
     });
   });
+});
 
+describe('memoryScalarVectorWrite validation paths', () => {
   test('returns structured errors for unsupported locations and missing helpers', () => {
     expect(
       JSON.parse(
