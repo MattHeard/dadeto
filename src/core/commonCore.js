@@ -1,1 +1,1 @@
-export * from './local/commonCore.js';
+export * from './index.js';

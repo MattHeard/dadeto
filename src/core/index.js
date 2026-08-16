@@ -1080,7 +1080,7 @@ import {
   whenTruthy,
   whenType,
   objectOrEmpty,
-} from '../browser/validation.js';
+} from './browser/validation.js';
 import {
   abortRemainingChildren,
   buildSpawnFailure,
@@ -1090,7 +1090,7 @@ import {
   runEntriesInParallel,
   shouldIgnoreClosedChild,
   writeStableFileTimestamp,
-} from '../build/process-utils.js';
+} from './build/process-utils.js';
 
 export {
   arrayOrEmpty,
@@ -1128,4 +1128,4 @@ export {
   handleChildClose,
   runEntriesInParallel,
   shouldIgnoreClosedChild,
-} from '../build/process-utils.js';
+} from './build/process-utils.js';

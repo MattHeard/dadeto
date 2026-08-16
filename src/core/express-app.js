@@ -14,4 +14,4 @@ export function createJsonExpressApp({ createApp, json, urlencoded }) {
   return app;
 }
 
-export { createJsonExpressAppDeps } from '../local/express-app-deps.js';
+export { createJsonExpressAppDeps } from './local/express-app-deps.js';

@@ -4,7 +4,7 @@ import {
   useDefaultValue,
 } from './gate-utils.js';
 import { createDefaultGateScriptOptions } from './gate-script-defaults.js';
-import { parseJsonOrNull } from '../commonCore.js';
+import { parseObjectRecord } from '../browser/validation.js';
 
 /**
  * @returns {string} Duplication gate label.
@@ -199,13 +199,13 @@ function handleCloneFailure(report, reportInfo, stderr) {
  * @returns {Record<string, unknown> | null} Parsed report or null.
  */
 function readDuplicationReport(readFileSync, reportPath) {
+  let contents;
   try {
-    return /** @type {Record<string, unknown> | null} */ (
-      parseJsonOrNull(readFileSync(reportPath, 'utf8'))
-    );
+    contents = readFileSync(reportPath, 'utf8');
   } catch {
     return null;
   }
+  return parseObjectRecord(contents);
 }
 
 /**

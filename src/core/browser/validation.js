@@ -30,6 +30,19 @@ export function parseJsonOrNull(value) {
 }
 
 /**
+ * Parse a JSON string or accept an object record.
+ * @param {unknown} value Raw JSON or object value.
+ * @returns {Record<string, unknown> | null} Object record or null.
+ */
+export function parseObjectRecord(value) {
+  const parsed = typeof value === 'string' ? parseJsonOrNull(value) : value;
+  if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+    return /** @type {Record<string, unknown>} */ (parsed);
+  }
+  return null;
+}
+
+/**
  * Ensure a dependency is callable.
  * @param {unknown} candidate Candidate value.
  * @param {string} name Dependency name.
