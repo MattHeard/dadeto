@@ -3,6 +3,8 @@ import { once } from 'node:events';
 import { afterAll, beforeAll, describe, expect, it, jest } from '@jest/globals';
 import express from 'express';
 
+const incomingOptionKey = 'incoming_option';
+
 jest.setTimeout(40000);
 
 describe('gcp simulator server', () => {
@@ -131,7 +133,7 @@ describe('gcp simulator server', () => {
         authorization: 'Bearer local-admin-token',
       },
       body: JSON.stringify({
-        incoming_option: '1-a-0',
+        [incomingOptionKey]: '1-a-0',
         content: 'Page body',
         author: 'Playwright',
       }),
