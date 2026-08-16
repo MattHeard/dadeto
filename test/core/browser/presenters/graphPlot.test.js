@@ -30,7 +30,10 @@ describe('createGraphPlotElement', () => {
     };
     const root = { children: [] };
     const dom = {
-      createElement: jest.fn(tag => (tag === 'canvas' ? canvas : root)),
+      createElement: jest.fn(tag => {
+        if (tag === 'canvas') return canvas;
+        return root;
+      }),
       appendChild: jest.fn((parent, child) => {
         parent.children.push(child);
         return child;
@@ -70,7 +73,9 @@ describe('createGraphPlotElement', () => {
     expect(root.children[0]).toBe(canvas);
     expect(element).toBe(root);
   });
+});
 
+describe('graph plot presenter handle', () => {
   test('returns the presenter handle and skips drawing without context', () => {
     const canvas = {
       width: 0,
@@ -80,7 +85,10 @@ describe('createGraphPlotElement', () => {
     };
     const root = { children: [] };
     const dom = {
-      createElement: jest.fn(tag => (tag === 'canvas' ? canvas : root)),
+      createElement: jest.fn(tag => {
+        if (tag === 'canvas') return canvas;
+        return root;
+      }),
       appendChild: jest.fn((parent, child) => {
         parent.children.push(child);
         return child;
@@ -136,7 +144,10 @@ describe('createGraphPlotElement', () => {
     };
     const root = { children: [] };
     const dom = {
-      createElement: jest.fn(tag => (tag === 'canvas' ? canvas : root)),
+      createElement: jest.fn(tag => {
+        if (tag === 'canvas') return canvas;
+        return root;
+      }),
       appendChild: jest.fn((parent, child) => {
         parent.children.push(child);
         return child;
@@ -225,7 +236,10 @@ describe('createGraphPlotElement', () => {
     };
     const root = { children: [] };
     const dom = {
-      createElement: jest.fn(tag => (tag === 'canvas' ? canvas : root)),
+      createElement: jest.fn(tag => {
+        if (tag === 'canvas') return canvas;
+        return root;
+      }),
       appendChild: jest.fn((parent, child) => {
         parent.children.push(child);
         return child;
