@@ -159,7 +159,7 @@ function extractErrorDetail(error) {
 function getEnvFunction(env, key, fallback) {
   const candidate = env.get(key);
   if (typeof candidate === 'function') {
-    return /** @type {T} */ (/** @type {unknown} */ (candidate));
+    return /** @type {typeof fallback} */ (candidate);
   }
   return fallback;
 }

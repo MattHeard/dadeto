@@ -53,10 +53,10 @@ const globalState = {
 /**
  * Create the browser main entry handle.
  * @param {{
- *   documentObj: globalThis.Document,
- *   windowObj: globalThis.Window,
- *   fetchFn: typeof globalThis.fetch,
- *   storageObj: globalThis.Storage | null,
+ *   documentObj: object,
+ *   windowObj: object,
+ *   fetchFn: (...args: Array<unknown>) => Promise<unknown>,
+ *   storageObj: object | null,
  * }} deps Browser dependencies.
  * @returns {() => void} Entry handle that performs browser initialization when invoked.
  */
