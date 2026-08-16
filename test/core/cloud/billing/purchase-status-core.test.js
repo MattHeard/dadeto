@@ -23,6 +23,16 @@ function setup(
   });
 }
 describe('purchase status', () => {
+  it('rejects invalid sessions before authentication', async () => {
+    const handle = setup();
+    await expect(handle({})).resolves.toEqual({
+      status: 400,
+      body: { error: 'invalid_session' },
+    });
+    await expect(handle({ sessionId: 42 })).resolves.toMatchObject({
+      status: 400,
+    });
+  });
   it('requires auth and ownership and returns safe pending/paid data', async () => {
     const handle = setup();
     await expect(handle({ sessionId: 'cs-1' })).resolves.toMatchObject({
@@ -57,5 +67,33 @@ describe('purchase status', () => {
         apiKeyUuid: 'key-1',
       })({ sessionId: 'cs-1', authorization: 'Bearer token' })
     ).resolves.toMatchObject({ body: { status: 'paid', credit: 42 } });
+  });
+  it('handles token verification failures and missing purchases', async () => {
+    const verifyIdToken = jest.fn(async () => {
+      throw new Error('expired');
+    });
+    const handle = createPurchaseStatusHandler({
+      verifyIdToken,
+      getPurchaseByCheckoutSession: jest.fn(),
+      getBalance: jest.fn(),
+    });
+    await expect(
+      handle({ sessionId: 'cs-1', authorization: 'Bearer expired' })
+    ).resolves.toEqual({
+      status: 401,
+      body: { error: 'authentication_required' },
+    });
+
+    const missing = createPurchaseStatusHandler({
+      verifyIdToken: jest.fn(async () => ({ uid: 'uid-1' })),
+      getPurchaseByCheckoutSession: jest.fn(async () => null),
+      getBalance: jest.fn(),
+    });
+    await expect(
+      missing({ sessionId: 'cs-1', authorization: 'Bearer token' })
+    ).resolves.toEqual({
+      status: 404,
+      body: { error: 'purchase_not_found' },
+    });
   });
 });
