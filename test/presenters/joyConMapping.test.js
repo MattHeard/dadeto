@@ -1,6 +1,12 @@
 import { describe, expect, test } from '@jest/globals';
 import { createJoyConMappingElement } from '../../src/core/browser/presenters/joyConMapping.js';
 
+const controlKey = {
+  stickUp: 'stick_up',
+  stickDown: 'stick_down',
+  stickRight: 'stick_right',
+};
+
 /**
  * Build a minimal DOM facade for presenter tests.
  * @returns {{ createElement: (tag: string) => { tag: string, className: string, textContent: string, children: unknown[] }, setClassName: (node: { className: string }, className: string) => void, setTextContent: (node: { textContent: string }, text: string) => void, appendChild: (parent: { children: unknown[] }, child: unknown) => void }} DOM mock.
@@ -41,8 +47,16 @@ describe('createJoyConMappingElement', () => {
     const payload = {
       mappings: {
         l: { type: 'button', index: 1 },
-        stick_up: { type: 'axis', axis: '2', direction: 'negative' },
-        stick_down: { type: 'axis', axis: '5', direction: 'positive' },
+        [controlKey.stickUp]: {
+          type: 'axis',
+          axis: '2',
+          direction: 'negative',
+        },
+        [controlKey.stickDown]: {
+          type: 'axis',
+          axis: '5',
+          direction: 'positive',
+        },
       },
       skippedControls: ['dpad_left'],
     };
@@ -76,7 +90,7 @@ describe('createJoyConMappingElement', () => {
     const dom = createMockDom();
     const payload = {
       mappings: {
-        stick_right: { type: 'mystery' },
+        [controlKey.stickRight]: { type: 'mystery' },
       },
       skippedControls: [],
     };
