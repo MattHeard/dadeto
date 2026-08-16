@@ -10,6 +10,8 @@ await jest.unstable_mockModule(
 const { createSymphonyAppHandle } = await import(
   '../../src/core/local/symphony/app.js'
 );
+
+const requestedAtKey = 'requested_at';
 const {
   createSymphonyApp,
   createSymphonyLaunchHandler,
@@ -193,7 +195,9 @@ describe('local symphony app handlers', () => {
       })
     );
   });
+});
 
+describe('local symphony app launch handlers', () => {
   test('starts one Symphony Ralph launch from the operator trigger handler', async () => {
     const launchCalls = [];
     const handler = createSymphonyLaunchHandler({
@@ -300,7 +304,9 @@ describe('local symphony app handlers', () => {
 
     expect(next).toHaveBeenCalledWith(error);
   });
+});
 
+describe('local symphony app refresh handlers', () => {
   test('refresh handler persists a queued refresh response', async () => {
     const refreshSymphonyStatus = jest.fn().mockResolvedValue({
       status: {
@@ -332,7 +338,7 @@ describe('local symphony app handlers', () => {
     expect(response.jsonValue).toEqual({
       queued: true,
       coalesced: false,
-      requested_at: '2026-03-11T04:00:00.000Z',
+      [requestedAtKey]: '2026-03-11T04:00:00.000Z',
       operations: ['poll', 'reconcile'],
     });
     expect(refreshSymphonyStatus).toHaveBeenCalledWith(
@@ -381,7 +387,9 @@ describe('local symphony app handlers', () => {
 
     expect(next).toHaveBeenCalledWith(error);
   });
+});
 
+describe('local symphony app factory', () => {
   test('app factory wires routes and error middleware', async () => {
     const routes = [];
     const middleware = [];
@@ -437,7 +445,9 @@ describe('local symphony app handlers', () => {
       error: 'Unknown server error',
     });
   });
+});
 
+describe('local symphony app status edge cases', () => {
   test('status handler forwards reader errors to next', async () => {
     const error = new Error('read failed');
     const handler = createSymphonyStatusHandler({
