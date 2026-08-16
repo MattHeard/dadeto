@@ -139,17 +139,18 @@ describe('createRenderAuthorHandler', () => {
             get: jest.fn().mockResolvedValue({ docs: [] }),
           })),
         })),
-        collection: jest.fn(name =>
-          name === 'moderators'
-            ? {
-                doc: jest.fn(() => ({
-                  get: jest.fn().mockResolvedValue({
-                    data: () => ({ moderatorReputation: 0.746 }),
-                  }),
-                })),
-              }
-            : { doc: jest.fn() }
-        ),
+        collection: jest.fn(name => {
+          if (name === 'moderators') {
+            return {
+              doc: jest.fn(() => ({
+                get: jest.fn().mockResolvedValue({
+                  data: () => ({ moderatorReputation: 0.746 }),
+                }),
+              })),
+            };
+          }
+          return { doc: jest.fn() };
+        }),
       },
       deleteField: jest.fn(),
     });

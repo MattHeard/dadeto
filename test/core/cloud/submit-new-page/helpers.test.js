@@ -63,27 +63,28 @@ describe('existing page and option lookups', () => {
     };
     const pageRef = {
       path: 'pages/1',
-      collection: jest.fn(name =>
-        name === 'variants'
-          ? {
-              where: jest.fn(() => ({
-                limit: jest.fn(() => ({
-                  get: jest.fn().mockResolvedValue({
-                    empty: variantEmpty,
-                    docs: [{ ref: variantRef }],
-                  }),
-                })),
-              })),
+      collection: jest.fn(name => {
+        if (name === 'variants') {
+          return {
+            where: jest.fn(() => ({
               limit: jest.fn(() => ({
-                get: jest.fn().mockResolvedValue({ empty: variantsEmpty }),
+                get: jest.fn().mockResolvedValue({
+                  empty: variantEmpty,
+                  docs: [{ ref: variantRef }],
+                }),
               })),
-            }
-          : {
-              limit: jest.fn(() => ({
-                get: jest.fn().mockResolvedValue({ empty: variantsEmpty }),
-              })),
-            }
-      ),
+            })),
+            limit: jest.fn(() => ({
+              get: jest.fn().mockResolvedValue({ empty: variantsEmpty }),
+            })),
+          };
+        }
+        return {
+          limit: jest.fn(() => ({
+            get: jest.fn().mockResolvedValue({ empty: variantsEmpty }),
+          })),
+        };
+      }),
     };
     return {
       collectionGroup: jest.fn(() => ({
