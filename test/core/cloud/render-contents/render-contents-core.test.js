@@ -445,7 +445,9 @@ describe('createRenderContents', () => {
     await expect(render).resolves.toBeNull();
     expect(bucketFile).toHaveBeenCalledWith('index.html');
   });
+});
 
+describe('createRenderContents invalidation behavior', () => {
   it('logs invalidation failures without throwing', async () => {
     const bucket = { file: jest.fn(() => ({ save: jest.fn() })) };
     const storage = { bucket: jest.fn(() => bucket) };
@@ -709,9 +711,13 @@ describe('createAuthorizeRequest', () => {
 describe('resolveAuthorizationHeader', () => {
   it('prefers the getter Authorization header when available', () => {
     const req = {
-      get: jest.fn(name =>
-        name === 'Authorization' ? 'Bearer getter' : undefined
-      ),
+      get: jest.fn(name => {
+        if (name === 'Authorization') {
+          return 'Bearer getter';
+        }
+
+        return undefined;
+      }),
       headers: { authorization: 'Bearer fallback' },
     };
 
@@ -1026,7 +1032,13 @@ describe('buildHandleRenderRequest', () => {
 
   const makeRequest = authHeader => ({
     get: jest.fn().mockReturnValue(authHeader),
-    headers: authHeader ? { Authorization: authHeader } : undefined,
+    headers: (() => {
+      if (authHeader) {
+        return { Authorization: authHeader };
+      }
+
+      return undefined;
+    })(),
   });
 
   beforeEach(() => {
