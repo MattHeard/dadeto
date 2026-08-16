@@ -91,7 +91,9 @@ describe('beaconBounce', () => {
     const next = runToy('{}', storageValue);
     expect(next.storageValue.current.BEAC1.paddle.x).toBeGreaterThan(100);
   });
+});
 
+describe('beaconBounce gameplay transitions', () => {
   it('activates beacons and creates links on collision', () => {
     const state = buildNextState(
       {
@@ -151,7 +153,9 @@ describe('beaconBounce', () => {
     expect(state.beacons[0].active).toBe(true);
     expect(state.links).toHaveLength(0);
   });
+});
 
+describe('beaconBounce pause and reset transitions', () => {
   it('pauses, resumes, and resets from edge-triggered input', () => {
     const paused = buildNextState(
       {
@@ -208,7 +212,9 @@ describe('beaconBounce', () => {
     expect(reset.status).toBe('ready');
     expect(reset.score).toBe(0);
   });
+});
 
+describe('beaconBounce collision outcomes', () => {
   it('handles walls, paddle bounces, bottom loss, and win state', () => {
     const wallState = buildNextState(
       {
@@ -434,7 +440,9 @@ describe('beaconBounce', () => {
     );
     expect(wonState.status).toBe('won');
   });
+});
 
+describe('beaconBounce loss and input handling', () => {
   it('marks the game lost when the final life drops below zero', () => {
     const state = {
       status: 'running',
@@ -463,7 +471,9 @@ describe('beaconBounce', () => {
     expect(state.status).toBe('lost');
     expect(state.orb.stuckToPaddle).toBe(true);
   });
+});
 
+describe('beaconBounce input and state fallbacks', () => {
   it('parses gamepad input and supports malformed storage defensively', () => {
     const gamepadStorage = { current: null };
     runToy(JSON.stringify({ buttons: [true], axes: [1] }), gamepadStorage);
@@ -702,7 +712,9 @@ describe('beaconBounce', () => {
     stepSimulation(stillRunningState);
     expect(stillRunningState.status).toBe('running');
   });
+});
 
+describe('beaconBounce wall and reset behavior', () => {
   it('bounces from both horizontal walls and the top edge', () => {
     const leftWall = buildNextState(
       {
@@ -845,7 +857,9 @@ describe('beaconBounce', () => {
     );
     expect(topWall.orb.vy).toBeGreaterThan(0);
   });
+});
 
+describe('beaconBounce reset rendering', () => {
   it('covers reset handling, beacon link rendering, and reset state cleanup', () => {
     const state = {
       status: 'running',
@@ -954,7 +968,9 @@ describe('beaconBounce', () => {
     expect(wallState.orb.vx).toBeGreaterThanOrEqual(0);
     expect(wallState.orb.vy).toBeGreaterThanOrEqual(0);
   });
+});
 
+describe('beaconBounce stuck orb and helpers', () => {
   it('keeps the orb pinned to the paddle while stuck', () => {
     const state = {
       paddle: { x: 10, y: 30, width: 40, height: 6, speed: 4 },
@@ -1143,7 +1159,9 @@ describe('beaconBounce', () => {
     expect(relaunchFromLost.lives).toBe(1);
     expect(relaunchFromLost.status).toBe('running');
   });
+});
 
+describe('beaconBounce physics and rendering', () => {
   it('covers paddle bounce and beacon render branches', () => {
     const paddleState = {
       paddle: { x: 10, y: 30, width: 40, height: 6, speed: 4 },
