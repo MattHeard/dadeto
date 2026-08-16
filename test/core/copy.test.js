@@ -346,6 +346,23 @@ describe('createCopyCore', () => {
       );
     });
   });
+});
+
+describe('createCopyCore directory traversal', () => {
+  let directories;
+  let core;
+  let createPathAdapters;
+
+  beforeEach(() => {
+    directories = createDirectories();
+    createPathAdapters = jest.fn(() => posix);
+    core = createCopyCore({
+      createPathAdapters,
+      projectRoot: directories.projectRoot,
+      publicDir: directories.publicDir,
+      srcDir: directories.srcDir,
+    });
+  });
 
   describe('directory traversal', () => {
     it('returns new files for directories and files', () => {
@@ -579,6 +596,23 @@ describe('createCopyCore', () => {
       expect(io.readDirEntries).toHaveBeenCalledWith(directories.srcCoreDir);
     });
   });
+});
+
+describe('createCopyCore file operations', () => {
+  let directories;
+  let core;
+  let createPathAdapters;
+
+  beforeEach(() => {
+    directories = createDirectories();
+    createPathAdapters = jest.fn(() => posix);
+    core = createCopyCore({
+      createPathAdapters,
+      projectRoot: directories.projectRoot,
+      publicDir: directories.publicDir,
+      srcDir: directories.srcDir,
+    });
+  });
 
   describe('directory handling', () => {
     it('handles directory and file entries', () => {
@@ -670,6 +704,23 @@ describe('createCopyCore', () => {
         posix.join(directories.srcBrowserDir, 'widget.js'),
         posix.join(directories.publicBrowserDir, 'widget.js')
       );
+    });
+  });
+});
+
+describe('createCopyCore copy workflows', () => {
+  let directories;
+  let core;
+  let createPathAdapters;
+
+  beforeEach(() => {
+    directories = createDirectories();
+    createPathAdapters = jest.fn(() => posix);
+    core = createCopyCore({
+      createPathAdapters,
+      projectRoot: directories.projectRoot,
+      publicDir: directories.publicDir,
+      srcDir: directories.srcDir,
     });
   });
 
