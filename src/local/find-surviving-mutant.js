@@ -70,9 +70,21 @@ async function acquireLock() {
     await handle.writeFile(`${process.pid}\n`);
     return { release: async () => { await handle.close(); await unlink(LOCK).catch(() => {}); } };
   } catch (error) {
-    if (error.code === 'EEXIST') throw new Error(`Mutation scan lock exists at ${LOCK}; remove it only after verifying no scan is running.`);
+    if (error.code === 'EEXIST') {
+      const owner = await readFile(LOCK, 'utf8').catch(() => '');
+      const ownerPid = Number.parseInt(owner, 10);
+      if (!ownerPid || !isProcessAlive(ownerPid)) {
+        await unlink(LOCK).catch(() => {});
+        return acquireLock();
+      }
+      throw new Error(`Mutation scan lock exists at ${LOCK}; owner PID ${ownerPid} is still running.`);
+    }
     throw error;
   }
+}
+
+function isProcessAlive(pid) {
+  try { process.kill(pid, 0); return true; } catch (error) { return error.code === 'EPERM'; }
 }
 
 async function loadCheckpoint(order) {
