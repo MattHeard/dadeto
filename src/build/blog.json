@@ -4,7 +4,7 @@
       "key": "POSS1",
       "title": "Possession Request",
       "publicationDate": "2026-08-17",
-      "release": "beta",
+      "release": "public",
       "content": [
         "Normalize the exact object, locations, and UTC-minute times a customer wants to possess.",
         "Coordinates are validated as WGS84 and rounded to six decimal places.",
@@ -22,7 +22,7 @@
       "key": "OBJE1",
       "title": "Object-minute Asset Registry",
       "publicationDate": "2026-08-16",
-      "release": "beta",
+      "release": "public",
       "content": [
         "Register physical objects that Dadeto can make available for timed possession.",
         "The toy normalizes asset metadata, sorts it deterministically, and reports inventory counts.",
