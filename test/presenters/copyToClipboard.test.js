@@ -152,9 +152,11 @@ describe('createCopyToClipboardButtonElement', () => {
 
     await handler({ preventDefault: jest.fn() });
     dom.timeouts[0].callback();
+    dom.clearTimeout.mockClear();
     await handler({ preventDefault: jest.fn() });
 
     expect(dom.clearTimeout).not.toHaveBeenCalled();
+    expect(dom.clearTimeout).not.toHaveBeenCalledWith(null);
     expect(dom.setTextContent).toHaveBeenLastCalledWith(element, 'Copied!');
   });
 });
