@@ -72,9 +72,6 @@ export function createInitialKeyboardState() {
  * @returns {HiLoInputEvent | null} Parsed event or null.
  */
 export function parseHiLoInput(input) {
-  if (!hasInputPayload(input)) {
-    return null;
-  }
   return parseInputPayload(input);
 }
 
@@ -86,15 +83,6 @@ export function parseHiLoInput(input) {
 function parseInputPayload(input) {
   const parsed = parseJsonObject(input);
   return normalizeParsedEvent(parsed);
-}
-
-/**
- * Determine whether the toy input contains a parsable payload candidate.
- * @param {unknown} input - Raw toy input.
- * @returns {input is string} True when parsing should be attempted.
- */
-function hasInputPayload(input) {
-  return typeof input === 'string' && input.length > 0;
 }
 
 /**
@@ -281,10 +269,10 @@ function isCardInRange(card) {
  */
 export function formatCard(card) {
   const labels = /** @type {Record<number, string>} */ ({
-    1: 'Ace',
+    1: String.raw`Ace`,
     11: 'Jack',
     12: 'Queen',
-    13: 'King',
+    13: String.raw`King`,
   });
   if (labels[card]) {
     return labels[card];

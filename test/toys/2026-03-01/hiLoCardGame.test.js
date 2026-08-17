@@ -4,7 +4,9 @@ import {
   applyHiLoEvent,
   createInitialGameState,
   createInitialKeyboardState,
+  formatCard,
   hiLoCardGameToy,
+  isCorrectGuess,
   normalizeGameState,
   normalizeKeyboardState,
   normalizeParsedEvent,
@@ -48,6 +50,12 @@ describe('parseHiLoInput', () => {
 
   it('returns null for non-string inputs', () => {
     expect(parseHiLoInput(null)).toBeNull();
+    expect(parseHiLoInput(0)).toBeNull();
+    expect(parseHiLoInput({})).toBeNull();
+  });
+
+  it('returns null for an empty string payload', () => {
+    expect(parseHiLoInput('')).toBeNull();
   });
 
   it('returns null when the payload omits a type', () => {
@@ -203,7 +211,64 @@ describe('applyHiLoEvent', () => {
   });
 });
 
+describe('isCorrectGuess', () => {
+  it('requires a strictly higher next card for an upward guess', () => {
+    expect(isCorrectGuess('ArrowUp', 6, 7)).toBe(true);
+    expect(isCorrectGuess('ArrowUp', 6, 6)).toBe(false);
+  });
+
+  it('requires a strictly lower next card for a downward guess', () => {
+    expect(isCorrectGuess('ArrowDown', 6, 5)).toBe(true);
+    expect(isCorrectGuess('ArrowDown', 6, 6)).toBe(false);
+  });
+});
+
+describe('formatCard', () => {
+  it('formats every named face-card rank', () => {
+    expect(formatCard(1)).toBe('Ace');
+    expect(formatCard(11)).toBe('Jack');
+    expect(formatCard(12)).toBe('Queen');
+    expect(formatCard(13)).toBe('King');
+  });
+});
+
 describe('normalizeGameState', () => {
+  it('accepts the highest playable card rank', () => {
+    expect(
+      normalizeGameState(
+        { currentCard: 13, score: { correct: 1, incorrect: 0, total: 1 } },
+        () => 0
+      )
+    ).toEqual({
+      currentCard: 13,
+      score: { correct: 1, incorrect: 0, total: 1 },
+    });
+  });
+
+  it('resets a card rank just above the deck maximum', () => {
+    expect(
+      normalizeGameState(
+        { currentCard: 14, score: { correct: 1, incorrect: 0, total: 1 } },
+        () => 0
+      )
+    ).toEqual({
+      currentCard: 1,
+      score: { correct: 0, incorrect: 0, total: 0 },
+    });
+  });
+
+  it('resets a card rank below the deck minimum', () => {
+    expect(
+      normalizeGameState(
+        { currentCard: 0, score: { correct: 1, incorrect: 0, total: 1 } },
+        () => 0
+      )
+    ).toEqual({
+      currentCard: 1,
+      score: { correct: 0, incorrect: 0, total: 0 },
+    });
+  });
+
   it('resets invalid stored scores without mutating current card', () => {
     const stored = { currentCard: 5, score: 'not an object' };
     const normalized = normalizeGameState(stored, () => 0.5);
