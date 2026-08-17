@@ -62,6 +62,19 @@ test('returns optimal move for malformed schema', () => {
   });
 });
 
+test('preserves a valid move payload before adding the next move', () => {
+  const env = new Map();
+  const input = {
+    moves: [{ player: 'X', position: { row: 0, column: 0 } }],
+  };
+
+  const output = JSON.parse(ticTacToeMove(JSON.stringify(input), env));
+
+  expect(output.moves).toHaveLength(2);
+  expect(output.moves[0]).toEqual(input.moves[0]);
+  expect(output.moves[1].player).toBe('O');
+});
+
 test('returns optimal move when moves array contains non-object item', () => {
   const env = new Map();
   const input = {

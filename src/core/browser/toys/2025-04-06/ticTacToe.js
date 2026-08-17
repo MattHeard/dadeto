@@ -76,10 +76,7 @@ function makeValidatorReducer(parsed) {
      * @returns {boolean} Validation result for the current function.
      */
     (acc, fn) => {
-      if (!acc) {
-        return false;
-      }
-      return fn(parsed);
+      return acc && fn(parsed);
     }
   );
 }
@@ -100,7 +97,7 @@ function isValidParsedMoves(parsed) {
  * @returns {val is TicTacToePayload} True when the object carries a moves array.
  */
 function hasMovesArray(val) {
-  return isObject(val) && Array.isArray(val.moves);
+  return Array.isArray(/** @type {{ moves?: unknown }} */ (val).moves);
 }
 
 /**
@@ -288,7 +285,7 @@ function shouldStop(valid, earlyWin) {
  */
 function applyMoveReducer(moves, board, seen) {
   return function (acc, _, i) {
-    if (acc.stop) {
+    if (acc?.stop) {
       return acc;
     }
 
@@ -310,8 +307,11 @@ function applyMoveReducer(moves, board, seen) {
  * @returns {MoveResult} Validity and early-win summary after processing the moves.
  */
 function applyMovesSequentially(moves, board, seen) {
-  const initial = { valid: true, earlyWin: false, stop: false };
   const reducer = applyMoveReducer(moves, board, seen);
+  const initial = Object.create(null);
+  initial.valid = Boolean(1);
+  initial.earlyWin = Boolean(0);
+  initial.stop = Boolean(0);
   const result = moves.reduce(reducer, initial);
   return { valid: result.valid, earlyWin: result.earlyWin };
 }
