@@ -24,6 +24,7 @@ export default {
     '--max-old-space-size=2048',
   ],
   coverageAnalysis: 'perTest',
+  timeoutMS: 10_000,
   reporters: ['json', 'progress', 'survivor'],
   jest: {
     configFile: 'jest.config.mjs',
