@@ -21,8 +21,8 @@ export async function runSurvivingMutantScan(options = {}) {
 
 /**
  * Normalize scan options.
- * @param {object} options Raw scan options.
- * @returns {object} Normalized scan options.
+ * @param {Record<string, any>} options Raw scan options.
+ * @returns {Record<string, any>} Normalized scan options.
  */
 function normalizeOptions(options) {
   return {
@@ -39,7 +39,7 @@ function normalizeOptions(options) {
 
 /**
  * Execute a configured scan.
- * @param {object} options Normalized scan options.
+ * @param {Record<string, any>} options Normalized scan options.
  * @returns {Promise<void>} Resolves when scanning finishes.
  */
 async function executeScan(options) {
@@ -51,8 +51,8 @@ async function executeScan(options) {
   const lockPath = path.join(root, 'reports/mutation/core-mutant-scan.lock');
   const lock = await acquireLock(lockPath, processApi);
   const files = shuffle(await walk(core, root));
-  const result = await loadCheckpoint(outputPath, files);
-  const context = {
+  const result = /** @type {any} */ (await loadCheckpoint(outputPath, files));
+  const context = /** @type {any} */ ({
     root,
     report,
     outputPath,
@@ -63,7 +63,7 @@ async function executeScan(options) {
     fileTimeoutMs,
     processApi,
     output,
-  };
+  });
   const stop = createStopHandler(processApi, () => context.activeChild);
   processApi.once('SIGINT', () => stop('SIGINT'));
   processApi.once('SIGTERM', () => stop('SIGTERM'));
@@ -93,7 +93,7 @@ async function executeScan(options) {
  */
 /**
  * Create a signal handler for the active child process.
- * @param {typeof process} processApi Process API.
+ * @param {any} processApi Process API.
  * @param {() => import('node:child_process').ChildProcess | null} getActiveChild Active child getter.
  * @returns {(signal: string) => void} Signal handler.
  */
@@ -111,10 +111,10 @@ function createStopHandler(processApi, getActiveChild) {
  */
 /**
  * Scan each unprocessed source file.
- * @param {object} context Scan context.
+ * @param {Record<string, any>} context Scan context.
  * @returns {Promise<void>} Resolves after scanning.
  */
-async function scanFiles(context) {
+async function scanFiles(/** @type {any} */ context) {
   const { files, result, outputPath, output } = context;
   for (const [index, filePath] of files.entries()) {
     if (result.scannedFiles.includes(filePath)) continue;
@@ -127,6 +127,10 @@ async function scanFiles(context) {
     if (surviving.length) {
       result.fileWithSurvivingMutant = filePath;
       result.survivingMutants = surviving.map(
+        /**
+         * @param {any} mutant Mutant record.
+         * @returns {object} Survivor record.
+         */
         ({ id, mutatorName, replacement, location }) => ({
           filePath,
           id,
@@ -153,14 +157,14 @@ async function scanFiles(context) {
  */
 /**
  * Scan one source file.
- * @param {object} context Scan context.
+ * @param {Record<string, any>} context Scan context.
  * @returns {Promise<Array<object> | null>} Surviving mutants, or null for no tests.
  */
-async function scanFile(context) {
+async function scanFile(/** @type {any} */ context) {
   const { filePath, outputPath, result, report } = context;
   const run = await runStryker({
     ...context,
-    onChild: child => {
+    onChild: /** @param {any} child Child process. */ child => {
       context.activeChild = child;
     },
   });
@@ -172,16 +176,22 @@ async function scanFile(context) {
   }
   if (run.status !== 'ok') throw new Error(`Stryker failed for ${filePath}`);
   const mutationReport = JSON.parse(await readFile(report, 'utf8'));
-  const fileReport = mutationReport.files[filePath];
+  const fileReport = /** @type {any} */ (mutationReport.files[filePath]);
   if (!fileReport)
     throw new Error(`Mutation report did not include ${filePath}`);
-  return fileReport.mutants.filter(({ status }) => status === 'Survived');
+  return fileReport.mutants.filter(
+    /**
+     * @param {{ status: string }} mutant Mutant record.
+     * @returns {boolean} Whether it survived.
+     */
+    ({ status }) => status === 'Survived'
+  );
 }
 
 /**
  * Acquire the scan lock.
  * @param {string} lockPath Lock file path.
- * @param {typeof process} processApi Process API.
+ * @param {any} processApi Process API.
  * @returns {Promise<{ release: () => Promise<void> }>} Lock handle.
  */
 async function acquireLock(lockPath, processApi) {
@@ -213,7 +223,7 @@ async function acquireLock(lockPath, processApi) {
 /**
  * Check whether a process is alive.
  * @param {number} pid Process id.
- * @param {typeof process} processApi Process API.
+ * @param {any} processApi Process API.
  * @returns {Promise<boolean>} Whether the process is alive.
  */
 async function isProcessAlive(pid, processApi) {
@@ -261,7 +271,7 @@ async function loadCheckpoint(outputPath, order) {
 /**
  * Save a scan checkpoint.
  * @param {string} outputPath Checkpoint path.
- * @param {object} value Checkpoint state.
+ * @param {Record<string, any>} value Checkpoint state.
  * @returns {Promise<void>} Resolves after writing the checkpoint.
  */
 async function saveCheckpoint(outputPath, value) {
@@ -305,7 +315,7 @@ function shuffle(items) {
 /**
  * Terminate a child process group.
  * @param {number} pid Process-group id.
- * @param {typeof process} processApi Process API.
+ * @param {any} processApi Process API.
  * @returns {void} Nothing.
  */
 function terminateProcessGroup(pid, processApi) {
@@ -321,7 +331,7 @@ function terminateProcessGroup(pid, processApi) {
 
 /**
  * Run Stryker for one source file.
- * @param {object} options Run settings.
+ * @param {Record<string, any>} options Run settings.
  * @returns {Promise<{ status: string, exitCode: number }>} Run result.
  */
 function runStryker(options) {
@@ -347,11 +357,16 @@ function runStryker(options) {
     });
     onChild(child);
     const timer = setTimeout(() => {
-      terminateProcessGroup(child.pid, processApi);
+      terminateProcessGroup(/** @type {number} */ (child.pid), processApi);
       finish(
         new Error(`Stryker timed out after ${fileTimeoutMs}ms for ${filePath}`)
       );
-    }, fileTimeoutMs);
+    }, /** @type {number} */ (fileTimeoutMs));
+    /**
+     * @param {string} buffer Buffered output.
+     * @param {string} prefix Output prefix.
+     * @returns {string} Unflushed text.
+     */
     const flush = (buffer, prefix) => {
       let next = buffer,
         newlineIndex = next.indexOf('\n');
@@ -368,6 +383,11 @@ function runStryker(options) {
       if (stderrBuffer)
         output.log(`[stryker ${filePath}][stderr] ${stderrBuffer}`);
     };
+    /**
+     * @param {unknown} error Failure value.
+     * @param {any} [value] Result value.
+     * @returns {void} Completes the promise.
+     */
     const finish = (error, value) => {
       if (settled) return;
       settled = true;

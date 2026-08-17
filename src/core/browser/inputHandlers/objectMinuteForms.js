@@ -45,7 +45,7 @@ function fieldValue(element) {
 }
 
 /**
- * @param {Record<string, unknown>} target Target object.
+ * @param {any} target Target object.
  * @param {string} path Property path.
  * @param {unknown} value Value.
  * @returns {void} Nothing.
@@ -60,7 +60,7 @@ function assignPath(target, path, value) {
 }
 
 /**
- * @param {Record<string, unknown>} source Source object.
+ * @param {any} source Source object.
  * @param {string} path Property path.
  * @returns {unknown} Nested value.
  */
@@ -69,22 +69,29 @@ function readPath(source, path) {
 }
 
 /**
- * @param {Array<[string, string, string]>} fields Form fields.
- * @param {HTMLElement} form Form element.
+ * @param {any} fields Form fields.
+ * @param {any} form Form element.
  * @returns {string} Serialized form.
  */
 function serializeForm(fields, form) {
   const result = {};
-  form.querySelectorAll('input').forEach((element, index) => {
-    assignPath(result, fields[index][0], fieldValue(element));
-  });
+  form.querySelectorAll('input').forEach(
+    /**
+     * @param {any} element Input element.
+     * @param {number} index Field index.
+     * @returns {void} Writes the field value.
+     */
+    (element, index) => {
+      assignPath(result, fields[index][0], fieldValue(element));
+    }
+  );
   return JSON.stringify(result, null, 2);
 }
 
 /**
- * @param {HTMLInputElement} textInput Hidden input.
- * @param {DomHelpers} dom DOM helpers.
- * @returns {Record<string, unknown>} Initial values.
+ * @param {any} textInput Hidden input.
+ * @param {any} dom DOM helpers.
+ * @returns {any} Initial values.
  */
 function parseInitialValue(textInput, dom) {
   const value = parseJsonOrDefault(dom.getValue(textInput) || '{}', {});
@@ -92,29 +99,34 @@ function parseInitialValue(textInput, dom) {
 }
 
 /**
- * @param {Array<[string, string, string]>} fields Form fields.
- * @param {HTMLElement} container Parent.
- * @param {HTMLInputElement} textInput Hidden input.
- * @param {DomHelpers} dom DOM helpers.
- * @returns {HTMLElement} Created form.
+ * @param {any} fields Form fields.
+ * @param {any} container Parent.
+ * @param {any} textInput Hidden input.
+ * @param {any} dom DOM helpers.
+ * @returns {any} Created form.
  */
 function createForm(fields, container, textInput, dom) {
   const form = dom.createElement('div');
   dom.setClassName(form, FORM_SELECTOR.slice(1));
   const initial = parseInitialValue(textInput, dom);
-  fields.forEach(([path, label, type]) => {
-    const row = dom.createElement('label');
-    const caption = dom.createElement('span');
-    dom.setTextContent(caption, label);
-    const input = /** @type {HTMLInputElement} */ (dom.createElement('input'));
-    input.type = type;
-    input.value =
-      type === 'checkbox' ? '' : String(readPath(initial, path) ?? '');
-    if (type === 'checkbox') input.checked = readPath(initial, path) === true;
-    dom.appendChild(row, caption);
-    dom.appendChild(row, input);
-    dom.appendChild(form, row);
-  });
+  fields.forEach(
+    /** @param {string[]} field Field definition. */
+    ([path, label, type]) => {
+      const row = dom.createElement('label');
+      const caption = dom.createElement('span');
+      dom.setTextContent(caption, label);
+      const input = /** @type {HTMLInputElement} */ (
+        dom.createElement('input')
+      );
+      input.type = type;
+      input.value =
+        type === 'checkbox' ? '' : String(readPath(initial, path) ?? '');
+      if (type === 'checkbox') input.checked = readPath(initial, path) === true;
+      dom.appendChild(row, caption);
+      dom.appendChild(row, input);
+      dom.appendChild(form, row);
+    }
+  );
   const update = () => {
     const value = serializeForm(fields, form);
     dom.setValue(textInput, value);
@@ -128,21 +140,28 @@ function createForm(fields, container, textInput, dom) {
 }
 
 /**
- * @param {DomHelpers} dom DOM helpers.
- * @param {HTMLElement} container Parent.
+ * @param {any} dom DOM helpers.
+ * @param {any} container Parent.
  * @returns {void} Nothing.
  */
 function removeExisting(dom, container) {
-  removeExistingSpecialInput(container, dom, FORM_SELECTOR, existing =>
-    existing._dispose?.()
+  removeExistingSpecialInput(
+    container,
+    dom,
+    FORM_SELECTOR,
+    /**
+     * @param {any} existing Existing form.
+     * @returns {void} Disposes the form.
+     */
+    existing => existing._dispose?.()
   );
 }
 
 /**
- * @param {Array<[string, string, string]>} fields Form fields.
- * @param {DomHelpers} dom DOM helpers.
- * @param {HTMLElement} container Parent.
- * @param {HTMLInputElement} textInput Hidden input.
+ * @param {any} fields Form fields.
+ * @param {any} dom DOM helpers.
+ * @param {any} container Parent.
+ * @param {any} textInput Hidden input.
  * @returns {void} Nothing.
  */
 function structuredHandler(fields, dom, container, textInput) {
@@ -152,9 +171,9 @@ function structuredHandler(fields, dom, container, textInput) {
 }
 
 /**
- * @param {DomHelpers} dom DOM helpers.
- * @param {HTMLElement} container Parent.
- * @param {HTMLInputElement} textInput Hidden input.
+ * @param {any} dom DOM helpers.
+ * @param {any} container Parent.
+ * @param {any} textInput Hidden input.
  * @returns {void} Nothing.
  */
 export function objectMinuteAssetHandler(dom, container, textInput) {
@@ -162,9 +181,9 @@ export function objectMinuteAssetHandler(dom, container, textInput) {
 }
 
 /**
- * @param {DomHelpers} dom DOM helpers.
- * @param {HTMLElement} container Parent.
- * @param {HTMLInputElement} textInput Hidden input.
+ * @param {any} dom DOM helpers.
+ * @param {any} container Parent.
+ * @param {any} textInput Hidden input.
  * @returns {void} Nothing.
  */
 export function possessionRequestHandler(dom, container, textInput) {

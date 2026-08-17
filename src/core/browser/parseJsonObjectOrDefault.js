@@ -7,7 +7,9 @@ import { parseJsonOrDefault } from './browser-core.js';
  */
 export function parseJsonObjectOrDefault(input) {
   const parsed = parseJsonOrDefault(input, {});
-  return parsed && typeof parsed === 'object' && !Array.isArray(parsed)
-    ? parsed
-    : {};
+  return /** @type {Record<string, unknown>} */ (
+    parsed && typeof parsed === 'object' && !Array.isArray(parsed)
+      ? parsed
+      : {}
+  );
 }

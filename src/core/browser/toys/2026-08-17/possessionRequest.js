@@ -10,6 +10,7 @@ import { parseJsonObjectOrDefault } from '../../parseJsonObjectOrDefault.js';
  */
 export function possessionRequest(input) {
   const parsed = parseJsonObjectOrDefault(input);
+  /** @type {string[]} */
   const errors = [];
   const request = normalizeRequest(parsed, errors);
 
@@ -60,8 +61,9 @@ function normalizeLocation(value, name, errors) {
     return { lat: null, lon: null };
   }
 
-  const lat = number(value.lat);
-  const lon = number(value.lon);
+  const location = /** @type {{ lat?: unknown, lon?: unknown }} */ (value);
+  const lat = number(location.lat);
+  const lon = number(location.lon);
   if (!isWithinRange(lat, -90, 90)) {
     errors.push(`${name}.lat must be between -90 and 90`);
   }
