@@ -45,7 +45,7 @@ class FakeFile {
    */
   constructor(bucketDir, filePath) {
     this.bucketDir = bucketDir;
-    this.filePath = normalizeFilePath(filePath);
+    this.filePath = filePath;
     this.absolutePath = path.join(bucketDir, this.filePath);
   }
 
@@ -72,27 +72,10 @@ class FakeFile {
 }
 
 /**
- * Normalize a bucket-relative file path.
- * @param {string} filePath File path.
- * @returns {string} Normalized file path.
- */
-function normalizeFilePath(filePath) {
-  return String(filePath).replace(/^\/+/, '');
-}
-
-/**
  * Convert supported content values to a Buffer.
  * @param {string | import('node:buffer').Buffer | Uint8Array} content Content value.
  * @returns {import('node:buffer').Buffer} Buffer payload.
  */
 function toBuffer(content) {
-  if (Buffer.isBuffer(content)) {
-    return content;
-  }
-
-  if (content instanceof Uint8Array) {
-    return Buffer.from(content);
-  }
-
-  return Buffer.from(String(content));
+  return Buffer.from(content);
 }

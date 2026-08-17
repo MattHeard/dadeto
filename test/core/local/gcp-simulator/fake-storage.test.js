@@ -20,7 +20,7 @@ describe('fake storage', () => {
     const storage = new FakeStorage({ rootDir });
     const bucket = storage.bucket('bucket-a');
 
-    const textFile = bucket.file('/nested/story.txt');
+    const textFile = bucket.file('///nested/story.txt');
     await textFile.save('hello');
     expect(await textFile.exists()).toEqual([true]);
     expect((await textFile.download())[0].toString('utf8')).toBe('hello');
