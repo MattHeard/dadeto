@@ -1,16 +1,13 @@
 // Toy: Possession Request
 // (input, env) -> string
 
-import { parseJsonObjectOrDefault } from '../../parseJsonObjectOrDefault.js';
-
 /**
  * Normalize and validate the customer context for an object-minute rental.
  * @param {string} input JSON payload containing a possession request.
  * @returns {string} Deterministic validation result.
  */
 export function possessionRequest(input) {
-  const parsed = parseJsonObjectOrDefault(input);
-  /** @type {string[]} */
+  const parsed = parseInput(input);
   const errors = [];
   const request = normalizeRequest(parsed, errors);
 
@@ -22,10 +19,24 @@ export function possessionRequest(input) {
 }
 
 /**
- * Normalize the request fields and collect validation errors.
- * @param {Record<string, unknown>} value Parsed request.
- * @param {string[]} errors Mutable validation error list.
- * @returns {{ sku: string, deliveryLocation: { lat: number | null, lon: number | null }, deliveryTime: string | null, pickupLocation: { lat: number | null, lon: number | null }, pickupTime: string | null }} Normalized request.
+ *
+ * @param input
+ */
+function parseInput(input) {
+  try {
+    const parsed = JSON.parse(input);
+    return parsed && typeof parsed === 'object' && !Array.isArray(parsed)
+      ? parsed
+      : {};
+  } catch {
+    return {};
+  }
+}
+
+/**
+ *
+ * @param value
+ * @param errors
  */
 function normalizeRequest(value, errors) {
   const sku = text(value.sku);
@@ -49,11 +60,10 @@ function normalizeRequest(value, errors) {
 }
 
 /**
- * Normalize a latitude/longitude pair and record invalid values.
- * @param {unknown} value Candidate location.
- * @param {string} name Location field name.
- * @param {string[]} errors Mutable validation error list.
- * @returns {{ lat: number | null, lon: number | null }} Normalized coordinates.
+ *
+ * @param value
+ * @param name
+ * @param errors
  */
 function normalizeLocation(value, name, errors) {
   if (!value || typeof value !== 'object' || Array.isArray(value)) {
@@ -61,13 +71,12 @@ function normalizeLocation(value, name, errors) {
     return { lat: null, lon: null };
   }
 
-  const location = /** @type {{ lat?: unknown, lon?: unknown }} */ (value);
-  const lat = number(location.lat);
-  const lon = number(location.lon);
-  if (!isWithinRange(lat, -90, 90)) {
+  const lat = number(value.lat);
+  const lon = number(value.lon);
+  if (lat === null || lat < -90 || lat > 90) {
     errors.push(`${name}.lat must be between -90 and 90`);
   }
-  if (!isWithinRange(lon, -180, 180)) {
+  if (lon === null || lon < -180 || lon > 180) {
     errors.push(`${name}.lon must be between -180 and 180`);
   }
   return {
@@ -77,22 +86,10 @@ function normalizeLocation(value, name, errors) {
 }
 
 /**
- * Check whether a numeric coordinate is within its inclusive bounds.
- * @param {number | null} value Coordinate value.
- * @param {number} minimum Inclusive lower bound.
- * @param {number} maximum Inclusive upper bound.
- * @returns {boolean} Whether the coordinate is valid.
- */
-function isWithinRange(value, minimum, maximum) {
-  return value !== null && value >= minimum && value <= maximum;
-}
-
-/**
- * Normalize a UTC minute value.
- * @param {unknown} value Candidate time.
- * @param {string} name Time field name.
- * @param {string[]} errors Mutable validation error list.
- * @returns {string | null} Normalized UTC minute or null.
+ *
+ * @param value
+ * @param name
+ * @param errors
  */
 function normalizeTime(value, name, errors) {
   const source = text(value);
@@ -105,9 +102,8 @@ function normalizeTime(value, name, errors) {
 }
 
 /**
- * Accept a finite number.
- * @param {unknown} value Candidate number.
- * @returns {number | null} Finite number or null.
+ *
+ * @param value
  */
 function number(value) {
   if (typeof value !== 'number' || !Number.isFinite(value)) return null;
@@ -115,18 +111,16 @@ function number(value) {
 }
 
 /**
- * Round a coordinate to six decimal places.
- * @param {number} value Coordinate value.
- * @returns {number} Rounded coordinate.
+ *
+ * @param value
  */
 function roundCoordinate(value) {
   return Number(value.toFixed(6));
 }
 
 /**
- * Trim a string value.
- * @param {unknown} value Candidate text.
- * @returns {string} Trimmed text or an empty string.
+ *
+ * @param value
  */
 function text(value) {
   return typeof value === 'string' ? value.trim() : '';

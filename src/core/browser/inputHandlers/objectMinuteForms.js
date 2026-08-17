@@ -1,8 +1,7 @@
-import { hideAndDisable, parseJsonOrDefault } from '../browser-core.js';
+import { hideAndDisable } from '../browser-core.js';
 import { setInputValue } from '../inputValueStore.js';
 import {
   createInputDisposer,
-  removeExistingSpecialInput,
   setupInputEvents,
 } from './browserInputHandlersCore.js';
 
@@ -33,9 +32,8 @@ const REQUEST_FIELDS = [
 ];
 
 /**
- * Read a form element value.
- * @param {HTMLInputElement} element Input element.
- * @returns {unknown} Extracted value.
+ *
+ * @param element
  */
 function fieldValue(element) {
   if (element.type === 'checkbox') return element.checked;
@@ -45,10 +43,10 @@ function fieldValue(element) {
 }
 
 /**
- * @param {any} target Target object.
- * @param {string} path Property path.
- * @param {unknown} value Value.
- * @returns {void} Nothing.
+ *
+ * @param target
+ * @param path
+ * @param value
  */
 function assignPath(target, path, value) {
   const parts = path.split('.');
@@ -60,73 +58,65 @@ function assignPath(target, path, value) {
 }
 
 /**
- * @param {any} source Source object.
- * @param {string} path Property path.
- * @returns {unknown} Nested value.
+ *
+ * @param source
+ * @param path
  */
 function readPath(source, path) {
   return path.split('.').reduce((value, part) => value?.[part], source);
 }
 
 /**
- * @param {any} fields Form fields.
- * @param {any} form Form element.
- * @returns {string} Serialized form.
+ *
+ * @param fields
+ * @param form
  */
 function serializeForm(fields, form) {
   const result = {};
-  form.querySelectorAll('input').forEach(
-    /**
-     * @param {any} element Input element.
-     * @param {number} index Field index.
-     * @returns {void} Writes the field value.
-     */
-    (element, index) => {
-      assignPath(result, fields[index][0], fieldValue(element));
-    }
-  );
+  form.querySelectorAll('input').forEach((element, index) => {
+    assignPath(result, fields[index][0], fieldValue(element));
+  });
   return JSON.stringify(result, null, 2);
 }
 
 /**
- * @param {any} textInput Hidden input.
- * @param {any} dom DOM helpers.
- * @returns {any} Initial values.
+ *
+ * @param textInput
+ * @param dom
  */
 function parseInitialValue(textInput, dom) {
-  const value = parseJsonOrDefault(dom.getValue(textInput) || '{}', {});
-  return value && typeof value === 'object' ? value : {};
+  try {
+    const value = JSON.parse(dom.getValue(textInput) || '{}');
+    return value && typeof value === 'object' ? value : {};
+  } catch {
+    return {};
+  }
 }
 
 /**
- * @param {any} fields Form fields.
- * @param {any} container Parent.
- * @param {any} textInput Hidden input.
- * @param {any} dom DOM helpers.
- * @returns {any} Created form.
+ *
+ * @param fields
+ * @param container
+ * @param textInput
+ * @param dom
  */
 function createForm(fields, container, textInput, dom) {
   const form = dom.createElement('div');
   dom.setClassName(form, FORM_SELECTOR.slice(1));
   const initial = parseInitialValue(textInput, dom);
-  fields.forEach(
-    /** @param {string[]} field Field definition. */
-    ([path, label, type]) => {
-      const row = dom.createElement('label');
-      const caption = dom.createElement('span');
-      dom.setTextContent(caption, label);
-      const input = /** @type {HTMLInputElement} */ (
-        dom.createElement('input')
-      );
-      input.type = type;
-      input.value =
-        type === 'checkbox' ? '' : String(readPath(initial, path) ?? '');
-      if (type === 'checkbox') input.checked = readPath(initial, path) === true;
-      dom.appendChild(row, caption);
-      dom.appendChild(row, input);
-      dom.appendChild(form, row);
-    }
-  );
+  fields.forEach(([path, label, type]) => {
+    const row = dom.createElement('label');
+    const caption = dom.createElement('span');
+    dom.setTextContent(caption, label);
+    const input = /** @type {HTMLInputElement} */ (dom.createElement('input'));
+    input.type = type;
+    input.value =
+      type === 'checkbox' ? '' : String(readPath(initial, path) ?? '');
+    if (type === 'checkbox') input.checked = readPath(initial, path) === true;
+    dom.appendChild(row, caption);
+    dom.appendChild(row, input);
+    dom.appendChild(form, row);
+  });
   const update = () => {
     const value = serializeForm(fields, form);
     dom.setValue(textInput, value);
@@ -140,29 +130,24 @@ function createForm(fields, container, textInput, dom) {
 }
 
 /**
- * @param {any} dom DOM helpers.
- * @param {any} container Parent.
- * @returns {void} Nothing.
+ *
+ * @param dom
+ * @param container
  */
 function removeExisting(dom, container) {
-  removeExistingSpecialInput(
-    container,
-    dom,
-    FORM_SELECTOR,
-    /**
-     * @param {any} existing Existing form.
-     * @returns {void} Disposes the form.
-     */
-    existing => existing._dispose?.()
-  );
+  const existing = dom.querySelector(container, FORM_SELECTOR);
+  if (existing) {
+    existing._dispose?.();
+    dom.removeChild(container, existing);
+  }
 }
 
 /**
- * @param {any} fields Form fields.
- * @param {any} dom DOM helpers.
- * @param {any} container Parent.
- * @param {any} textInput Hidden input.
- * @returns {void} Nothing.
+ *
+ * @param fields
+ * @param dom
+ * @param container
+ * @param textInput
  */
 function structuredHandler(fields, dom, container, textInput) {
   hideAndDisable(textInput, dom);
@@ -171,20 +156,18 @@ function structuredHandler(fields, dom, container, textInput) {
 }
 
 /**
- * @param {any} dom DOM helpers.
- * @param {any} container Parent.
- * @param {any} textInput Hidden input.
- * @returns {void} Nothing.
+ * @param {DomHelpers} dom @param {HTMLElement} container @param {HTMLInputElement} textInput
+ * @param container
+ * @param textInput
  */
 export function objectMinuteAssetHandler(dom, container, textInput) {
   structuredHandler(ASSET_FIELDS, dom, container, textInput);
 }
 
 /**
- * @param {any} dom DOM helpers.
- * @param {any} container Parent.
- * @param {any} textInput Hidden input.
- * @returns {void} Nothing.
+ * @param {DomHelpers} dom @param {HTMLElement} container @param {HTMLInputElement} textInput
+ * @param container
+ * @param textInput
  */
 export function possessionRequestHandler(dom, container, textInput) {
   structuredHandler(REQUEST_FIELDS, dom, container, textInput);
