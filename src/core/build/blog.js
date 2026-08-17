@@ -598,6 +598,17 @@ export function createCopyCore({
       copyFile(source, destination);
     });
 
+    const browserSharedBuildModule = join(
+      dirs.srcCoreDir,
+      'build/process-utils.js'
+    );
+    if (io.directoryExists(dirname(browserSharedBuildModule))) {
+      copyFile(
+        browserSharedBuildModule,
+        join(dirs.publicCoreDir, 'build/process-utils.js')
+      );
+    }
+
     messageLogger.info('Core root scripts copied successfully!');
   }
 
