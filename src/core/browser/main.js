@@ -212,9 +212,11 @@ export function createMainHandle({
     );
 
     windowObj.addEventListener('DOMContentLoaded', () => {
-      initializeDropdowns();
-
       revealBetaArticles(dom);
+
+      // Beta visibility must not depend on optional interactive toy modules
+      // completing their initialization.
+      initializeDropdowns();
 
       documentObj.addEventListener('click', event => {
         const target = event.target;
