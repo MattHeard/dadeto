@@ -18,6 +18,8 @@ const {
   createSymphonyRefreshHandler,
   createSymphonyStatusHandler,
 } = await import('../../src/local/symphony/app.js');
+const { getActiveRunBeadId, getOrphanedRunId, hasReconciliableActiveRun } =
+  await import('../../src/core/local/symphony/app.js');
 
 /**
  * @returns {{
@@ -96,6 +98,27 @@ describe('local symphony app handlers', () => {
     });
   });
 
+  test('prefers a stored status over the initial status', async () => {
+    const handler = createSymphonyStatusHandler({
+      initialStatus: { state: 'initial', marker: 'initial-only' },
+      statusStore: {
+        async readStatus() {
+          return { state: 'stored', marker: 'stored-only' };
+        },
+      },
+    });
+    const response = createResponseDouble();
+
+    await handler({}, response, error => {
+      throw error;
+    });
+
+    expect(response.jsonValue).toEqual({
+      state: 'stored',
+      marker: 'stored-only',
+    });
+  });
+
   test('reconciles active run when the pid no longer exists', async () => {
     const response = createResponseDouble();
     const statusStore = {
@@ -136,11 +159,15 @@ describe('local symphony app handlers', () => {
     expect(statusStore.writeStatus).toHaveBeenCalledWith(
       expect.objectContaining({
         state: 'blocked',
+        lastOutcome: expect.objectContaining({
+          beadTitle: 'Reconcile finished Ralph runs back into Symphony status',
+        }),
         activeRun: null,
         operatorTrustReason:
           'Symphony marked run 2026-03-08T22:38:07.435Z--dadeto-n3nd as blocked because pid 777777 was no longer alive when status was requested.',
         lastOutcome: expect.objectContaining({
           beadId: 'dadeto-n3nd',
+          beadTitle: 'Reconcile finished Ralph runs back into Symphony status',
           outcome: 'blocked',
           summary: expect.stringContaining(
             'Runner 2026-03-08T22:38:07.435Z--dadeto-n3nd (pid 777777) is not running'
@@ -221,6 +248,7 @@ describe('local symphony app launch handlers', () => {
           return {
             state: 'ready',
             currentBeadId: 'dadeto-cc6z',
+            marker: 'stored',
           };
         },
         async writeStatus() {},
@@ -246,6 +274,7 @@ describe('local symphony app launch handlers', () => {
         status: {
           state: 'ready',
           currentBeadId: 'dadeto-cc6z',
+          marker: 'stored',
         },
         statusStore: expect.objectContaining({
           readStatus: expect.any(Function),
@@ -267,6 +296,28 @@ describe('local symphony app launch handlers', () => {
             state: 'ready',
             currentBeadId: 'dadeto-cc6z',
           };
+        },
+      },
+    });
+    const response = createResponseDouble();
+
+    await handler({}, response, error => {
+      throw error;
+    });
+
+    expect(response.statusCode).toBe(501);
+    expect(response.jsonValue).toEqual({
+      error: 'Symphony launch trigger is not configured.',
+    });
+  });
+
+  test('reports a missing writable store even when a launcher is provided', async () => {
+    const handler = createSymphonyLaunchHandler({
+      initialStatus: { state: 'ready' },
+      launchSelectedRunnerLoop: jest.fn(),
+      statusStore: {
+        async readStatus() {
+          return null;
         },
       },
     });
@@ -448,6 +499,26 @@ describe('local symphony app factory', () => {
 });
 
 describe('local symphony app status edge cases', () => {
+  test('recognizes only object statuses with object active runs', () => {
+    expect(hasReconciliableActiveRun(null)).toBe(false);
+    expect(hasReconciliableActiveRun(undefined)).toBe(false);
+    expect(hasReconciliableActiveRun({ activeRun: 'invalid' })).toBe(false);
+    expect(hasReconciliableActiveRun({ activeRun: {} })).toBe(true);
+  });
+
+  test('rejects empty current bead ids and falls back to null', () => {
+    expect(getActiveRunBeadId({ activeRun: {}, currentBeadId: '' })).toBeNull();
+  });
+
+  test('falls back from an empty run id directly', () => {
+    expect(getOrphanedRunId({ runId: '', beadId: 'dadeto-bead' })).toBe(
+      'dadeto-bead'
+    );
+    expect(getOrphanedRunId({ runId: 123, beadId: 'dadeto-bead' })).toBe(
+      'dadeto-bead'
+    );
+  });
+
   test('status handler forwards reader errors to next', async () => {
     const error = new Error('read failed');
     const handler = createSymphonyStatusHandler({
@@ -486,6 +557,26 @@ describe('local symphony app status edge cases', () => {
               },
             };
           },
+        },
+      },
+      {
+        statusStore: {
+          async readStatus() {
+            return null;
+          },
+          writeStatus: jest.fn(),
+        },
+        initialStatus: null,
+      },
+      {
+        statusStore: {
+          async readStatus() {
+            return {
+              state: 'running',
+              activeRun: null,
+            };
+          },
+          writeStatus: jest.fn(),
         },
       },
       {
@@ -530,10 +621,10 @@ describe('local symphony app status edge cases', () => {
 
     for (const testCase of cases) {
       const response = createResponseDouble();
+      const initialStatus =
+        testCase.initialStatus === null ? null : { state: 'ready' };
       const handler = coreHandle.createSymphonyStatusHandler({
-        initialStatus: {
-          state: 'ready',
-        },
+        initialStatus,
         statusStore: testCase.statusStore,
       });
 
@@ -541,12 +632,18 @@ describe('local symphony app status edge cases', () => {
         throw error;
       });
 
-      expect(response.jsonValue).toMatchObject({
-        state: 'running',
-      });
+      if (testCase.initialStatus === null) {
+        expect(response.jsonValue).toBeNull();
+      } else {
+        expect(response.jsonValue).toMatchObject({
+          state: 'running',
+        });
+      }
     }
   });
+});
 
+describe('local symphony app orphan details', () => {
   test('status handler reconciles with current bead id and no log paths', async () => {
     const coreHandle = createSymphonyAppHandle({
       express: jest.fn(),
@@ -589,6 +686,44 @@ describe('local symphony app status edge cases', () => {
     );
   });
 
+  test('includes both non-empty log paths in an orphan summary', async () => {
+    const coreHandle = createSymphonyAppHandle({
+      express: jest.fn(),
+      refreshSymphonyStatus: jest.fn(),
+      isProcessAlive: () => false,
+    });
+    const statusStore = {
+      readStatus: jest.fn().mockResolvedValue({
+        state: 'running',
+        currentBeadId: 'dadeto-logs',
+        activeRun: {
+          pid: 654,
+          stdoutPath: ' /tmp/stdout.log ',
+          stderrPath: '/tmp/stderr.log',
+        },
+      }),
+      writeStatus: jest.fn(),
+    };
+    const response = createResponseDouble();
+    const handler = coreHandle.createSymphonyStatusHandler({
+      initialStatus: { state: 'ready' },
+      statusStore,
+    });
+
+    await handler({}, response, error => {
+      throw error;
+    });
+
+    expect(response.jsonValue).toEqual(
+      expect.objectContaining({
+        lastOutcome: expect.objectContaining({
+          summary:
+            'Runner unknown (pid 654) is not running when Symphony status was requested; the exit event may have been missed while the server was offline. Logs:  /tmp/stdout.log , /tmp/stderr.log.',
+        }),
+      })
+    );
+  });
+
   test('uses the active bead id when an orphaned run has no run id or title', async () => {
     const coreHandle = createSymphonyAppHandle({
       express: jest.fn(),
@@ -598,7 +733,11 @@ describe('local symphony app status edge cases', () => {
     const statusStore = {
       readStatus: jest.fn().mockResolvedValue({
         state: 'running',
-        activeRun: { beadId: 'dadeto-fallback', pid: 321 },
+        activeRun: {
+          beadId: 'dadeto-fallback',
+          beadTitle: 789,
+          pid: 321,
+        },
       }),
       writeStatus: jest.fn(),
     };
@@ -614,8 +753,100 @@ describe('local symphony app status edge cases', () => {
 
     expect(statusStore.writeStatus).toHaveBeenCalledWith(
       expect.objectContaining({
-        lastOutcome: expect.objectContaining({ beadId: 'dadeto-fallback' }),
+        lastOutcome: expect.objectContaining({
+          beadId: 'dadeto-fallback',
+          beadTitle: null,
+        }),
       })
     );
+  });
+
+  test('rejects non-string bead titles and current bead ids', async () => {
+    const coreHandle = createSymphonyAppHandle({
+      express: jest.fn(),
+      refreshSymphonyStatus: jest.fn(),
+      isProcessAlive: () => false,
+    });
+    const statusStore = {
+      readStatus: jest.fn().mockResolvedValue({
+        state: 'running',
+        currentBeadId: 123,
+        activeRun: { pid: 456, beadTitle: 789 },
+      }),
+      writeStatus: jest.fn(),
+    };
+    const response = createResponseDouble();
+    const handler = coreHandle.createSymphonyStatusHandler({
+      initialStatus: { state: 'ready' },
+      statusStore,
+    });
+
+    await handler({}, response, error => {
+      throw error;
+    });
+
+    expect(statusStore.writeStatus).not.toHaveBeenCalled();
+    expect(response.jsonValue).toEqual({
+      state: 'running',
+      currentBeadId: 123,
+      activeRun: { pid: 456, beadTitle: 789 },
+    });
+  });
+
+  test('falls back from an empty run id to the bead id', async () => {
+    const coreHandle = createSymphonyAppHandle({
+      express: jest.fn(),
+      refreshSymphonyStatus: jest.fn(),
+      isProcessAlive: () => false,
+    });
+    const statusStore = {
+      readStatus: jest.fn().mockResolvedValue({
+        state: 'running',
+        activeRun: { runId: '', beadId: 'dadeto-bead', pid: 123 },
+      }),
+      writeStatus: jest.fn(),
+    };
+    const response = createResponseDouble();
+    const handler = coreHandle.createSymphonyStatusHandler({
+      initialStatus: { state: 'ready' },
+      statusStore,
+    });
+
+    await handler({}, response, error => {
+      throw error;
+    });
+
+    expect(response.jsonValue).toEqual(
+      expect.objectContaining({
+        operatorTrustReason: expect.stringContaining('dadeto-bead'),
+      })
+    );
+  });
+
+  test('ignores blank and non-string log paths', async () => {
+    const coreHandle = createSymphonyAppHandle({
+      express: jest.fn(),
+      refreshSymphonyStatus: jest.fn(),
+      isProcessAlive: () => false,
+    });
+    const statusStore = {
+      readStatus: jest.fn().mockResolvedValue({
+        state: 'running',
+        currentBeadId: 'dadeto-paths',
+        activeRun: { pid: 321, stdoutPath: '   ', stderrPath: 456 },
+      }),
+      writeStatus: jest.fn(),
+    };
+    const response = createResponseDouble();
+    const handler = coreHandle.createSymphonyStatusHandler({
+      initialStatus: { state: 'ready' },
+      statusStore,
+    });
+
+    await handler({}, response, error => {
+      throw error;
+    });
+
+    expect(response.jsonValue.lastOutcome.summary).not.toContain('Logs:');
   });
 });

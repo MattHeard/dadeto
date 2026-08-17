@@ -126,15 +126,6 @@ function createSymphonyRefreshHandlerFactory(deps) {
 }
 
 /**
- * Touch Express' fourth error-middleware argument without creating a branch.
- * @param {((error?: unknown) => void) | undefined} next Express next callback.
- * @returns {string} Argument type marker.
- */
-function getErrorMiddlewareNextType(next) {
-  return typeof next;
-}
-
-/**
  * Create the local Symphony express app factory.
  * @param {{ express: () => SymphonyApp }} deps Runtime dependencies.
  * @param {RouteFactories} routeFactories Route factories.
@@ -159,7 +150,7 @@ function createSymphonyAppFactory(deps, routeFactories) {
 
     /** @type {(error: unknown, _req: unknown, res: SymphonyResponse, next: (error?: unknown) => void) => void} */
     const handleError = (error, _req, res, next) => {
-      getErrorMiddlewareNextType(next);
+      void next;
       let message = 'Unknown server error';
       if (error instanceof Error) {
         message = error.message;
@@ -179,13 +170,15 @@ function createSymphonyAppFactory(deps, routeFactories) {
  * @param {SymphonyStatus} status Current status.
  * @returns {boolean} True when the status contains an active run object.
  */
-function hasReconciliableActiveRun(status) {
-  return Boolean(
-    status &&
-      typeof status === 'object' &&
-      status.activeRun &&
-      typeof status.activeRun === 'object'
-  );
+export function hasReconciliableActiveRun(status) {
+  if (typeof status !== 'object') {
+    return false;
+  }
+  if (status === null) {
+    return false;
+  }
+
+  return Boolean(status.activeRun && typeof status.activeRun === 'object');
 }
 
 /**
@@ -235,7 +228,7 @@ function buildOrphanedRunOutcome(status, beadId, pid) {
   const activeRun = /** @type {Record<string, unknown>} */ (status.activeRun);
   return {
     beadId,
-    beadTitle: getOptionalString(activeRun, 'beadTitle') ?? undefined,
+    beadTitle: getOptionalString(activeRun, 'beadTitle'),
     outcome: 'blocked',
     summary: buildOrphanedRunSummary(activeRun, pid),
   };
@@ -289,7 +282,7 @@ async function reconcileOrphanedRun(status, statusStore, deps) {
  * @param {SymphonyStatus} status Current status.
  * @returns {string | null} Bead id, or null.
  */
-function getActiveRunBeadId(status) {
+export function getActiveRunBeadId(status) {
   const activeRun = /** @type {Record<string, unknown>} */ (status.activeRun);
   const activeRunBeadId = getOptionalString(activeRun, 'beadId');
   if (activeRunBeadId) {
@@ -309,7 +302,7 @@ function getActiveRunBeadId(status) {
  * @param {Record<string, unknown>} activeRun Active run state.
  * @returns {string} Run id for operator-facing messages.
  */
-function getOrphanedRunId(activeRun) {
+export function getOrphanedRunId(activeRun) {
   if (typeof activeRun.runId === 'string' && activeRun.runId) {
     return activeRun.runId;
   }
