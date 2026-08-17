@@ -13,7 +13,7 @@
       "toy": {
         "modulePath": "/core/browser/toys/2026-08-17/possessionRequest.js",
         "functionName": "possessionRequest",
-        "defaultInputMethod": "textarea",
+        "defaultInputMethod": "possession-request",
         "defaultOutputMethod": "textarea"
       },
       "tags": ["toy", "object-minute-rental", "request", "coordinates", "json"]
@@ -31,7 +31,7 @@
       "toy": {
         "modulePath": "/core/browser/toys/2026-08-16/assetRegistry.js",
         "functionName": "assetRegistry",
-        "defaultInputMethod": "textarea",
+        "defaultInputMethod": "object-minute-asset",
         "defaultOutputMethod": "textarea"
       },
       "tags": ["toy", "object-minute-rental", "inventory", "assets", "json"]

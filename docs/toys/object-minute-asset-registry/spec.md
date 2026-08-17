@@ -28,3 +28,8 @@ This toy establishes the boundary between physical asset metadata and later feas
 ## Dependencies
 - Internal: `src/core/browser/toys/2026-08-16/assetRegistry.js`.
 - External: None.
+# Custom input
+
+The beta input method `object-minute-asset` presents labeled asset fields and
+serializes them to the existing registry JSON payload, including nested values
+only where the toy contract requires them.

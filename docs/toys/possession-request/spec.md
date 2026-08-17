@@ -29,3 +29,8 @@ This toy establishes the structured request boundary between the customer experi
 ## Dependencies
 - Internal: `src/core/browser/toys/2026-08-17/possessionRequest.js`.
 - External: None.
+# Custom input
+
+The beta input method `possession-request` presents labeled request fields for
+SKU, delivery and pickup coordinates, and timestamps, then serializes them to
+the existing possession-request JSON payload.

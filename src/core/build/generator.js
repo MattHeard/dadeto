@@ -1075,6 +1075,8 @@ const INPUT_METHODS = [
   'mobile-controls',
   'gamepad-capture',
   'gamepad-button-mapper',
+  'object-minute-asset',
+  'possession-request',
 ];
 
 /**
