@@ -84,7 +84,7 @@ async function acquireLock() {
 }
 
 async function isProcessAlive(pid) {
-  try { await access(`/proc/${pid}`); } catch { return false; }
+  try { await access(`/proc/${pid}/cmdline`); } catch { return false; }
   try { process.kill(pid, 0); return true; } catch { return false; }
 }
 
