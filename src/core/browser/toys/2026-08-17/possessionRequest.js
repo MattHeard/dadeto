@@ -19,8 +19,9 @@ export function possessionRequest(input) {
 }
 
 /**
- *
- * @param input
+ * Parse a JSON request payload.
+ * @param {string} input JSON payload.
+ * @returns {Record<string, any>} Parsed object or an empty object.
  */
 function parseInput(input) {
   try {
@@ -34,9 +35,10 @@ function parseInput(input) {
 }
 
 /**
- *
- * @param value
- * @param errors
+ * Normalize the request fields and collect validation errors.
+ * @param {Record<string, any>} value Parsed request.
+ * @param {string[]} errors Validation error collection.
+ * @returns {Record<string, any>} Normalized request.
  */
 function normalizeRequest(value, errors) {
   const sku = text(value.sku);
@@ -60,10 +62,11 @@ function normalizeRequest(value, errors) {
 }
 
 /**
- *
- * @param value
- * @param name
- * @param errors
+ * Normalize and validate a geographic location.
+ * @param {any} value Candidate location.
+ * @param {string} name Location field name.
+ * @param {string[]} errors Validation error collection.
+ * @returns {{lat: number|null, lon: number|null}} Normalized coordinates.
  */
 function normalizeLocation(value, name, errors) {
   if (!value || typeof value !== 'object' || Array.isArray(value)) {
@@ -71,25 +74,43 @@ function normalizeLocation(value, name, errors) {
     return { lat: null, lon: null };
   }
 
-  const lat = number(value.lat);
-  const lon = number(value.lon);
-  if (lat === null || lat < -90 || lat > 90) {
-    errors.push(`${name}.lat must be between -90 and 90`);
-  }
-  if (lon === null || lon < -180 || lon > 180) {
-    errors.push(`${name}.lon must be between -180 and 180`);
-  }
+  const lat = normalizeCoordinate(value.lat, `${name}.lat`, [-90, 90], errors);
+  const lon = normalizeCoordinate(
+    value.lon,
+    `${name}.lon`,
+    [-180, 180],
+    errors
+  );
   return {
-    lat: lat === null ? null : roundCoordinate(lat),
-    lon: lon === null ? null : roundCoordinate(lon),
+    lat,
+    lon,
   };
 }
 
 /**
- *
- * @param value
- * @param name
- * @param errors
+ * Normalize and validate one coordinate.
+ * @param {any} value Candidate coordinate.
+ * @param {string} name Coordinate field name.
+ * @param {[number, number]} bounds Inclusive lower and upper bounds.
+ * @param {string[]} errors Validation error collection.
+ * @returns {number|null} Rounded coordinate or null when invalid.
+ */
+function normalizeCoordinate(value, name, bounds, errors) {
+  const coordinate = number(value);
+  const [minimum, maximum] = bounds;
+  if (coordinate === null || coordinate < minimum || coordinate > maximum) {
+    errors.push(`${name} must be between ${minimum} and ${maximum}`);
+    return null;
+  }
+  return roundCoordinate(coordinate);
+}
+
+/**
+ * Normalize a UTC minute timestamp.
+ * @param {any} value Candidate timestamp.
+ * @param {string} name Timestamp field name.
+ * @param {string[]} errors Validation error collection.
+ * @returns {string|null} Normalized timestamp or null when invalid.
  */
 function normalizeTime(value, name, errors) {
   const source = text(value);
@@ -102,8 +123,9 @@ function normalizeTime(value, name, errors) {
 }
 
 /**
- *
- * @param value
+ * Return a finite numeric value.
+ * @param {any} value Candidate value.
+ * @returns {number|null} Finite number or null.
  */
 function number(value) {
   if (typeof value !== 'number' || !Number.isFinite(value)) return null;
@@ -111,16 +133,18 @@ function number(value) {
 }
 
 /**
- *
- * @param value
+ * Round a coordinate to six decimal places.
+ * @param {number} value Coordinate value.
+ * @returns {number} Rounded coordinate.
  */
 function roundCoordinate(value) {
   return Number(value.toFixed(6));
 }
 
 /**
- *
- * @param value
+ * Trim a string value.
+ * @param {any} value Candidate value.
+ * @returns {string} Trimmed string or an empty string.
  */
 function text(value) {
   return typeof value === 'string' ? value.trim() : '';

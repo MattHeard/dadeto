@@ -32,8 +32,9 @@ const REQUEST_FIELDS = [
 ];
 
 /**
- *
- * @param element
+ * Read a form control value.
+ * @param {any} element Form control.
+ * @returns {any} Normalized control value.
  */
 function fieldValue(element) {
   if (element.type === 'checkbox') return element.checked;
@@ -43,10 +44,11 @@ function fieldValue(element) {
 }
 
 /**
- *
- * @param target
- * @param path
- * @param value
+ * Assign a value at a dotted object path.
+ * @param {any} target Target object.
+ * @param {string} path Dotted property path.
+ * @param {any} value Value to assign.
+ * @returns {void}
  */
 function assignPath(target, path, value) {
   const parts = path.split('.');
@@ -58,18 +60,20 @@ function assignPath(target, path, value) {
 }
 
 /**
- *
- * @param source
- * @param path
+ * Read a value at a dotted object path.
+ * @param {any} source Source object.
+ * @param {string} path Dotted property path.
+ * @returns {any} Value at the path.
  */
 function readPath(source, path) {
   return path.split('.').reduce((value, part) => value?.[part], source);
 }
 
 /**
- *
- * @param fields
- * @param form
+ * Serialize the inputs in a structured form.
+ * @param {any[]} fields Field definitions.
+ * @param {any} form Form container.
+ * @returns {string} Serialized JSON value.
  */
 function serializeForm(fields, form) {
   const result = {};
@@ -80,9 +84,10 @@ function serializeForm(fields, form) {
 }
 
 /**
- *
- * @param textInput
- * @param dom
+ * Parse the initial structured value.
+ * @param {any} textInput Source input.
+ * @param {DomHelpers} dom DOM helper facade.
+ * @returns {Record<string, any>} Parsed object value.
  */
 function parseInitialValue(textInput, dom) {
   try {
@@ -94,11 +99,12 @@ function parseInitialValue(textInput, dom) {
 }
 
 /**
- *
- * @param fields
- * @param container
- * @param textInput
- * @param dom
+ * Create a structured input form.
+ * @param {any[]} fields Field definitions.
+ * @param {any} container Form container.
+ * @param {any} textInput Backing text input.
+ * @param {DomHelpers} dom DOM helper facade.
+ * @returns {any} Created form element.
  */
 function createForm(fields, container, textInput, dom) {
   const form = dom.createElement('div');
@@ -130,9 +136,10 @@ function createForm(fields, container, textInput, dom) {
 }
 
 /**
- *
- * @param dom
- * @param container
+ * Remove an existing structured form.
+ * @param {DomHelpers} dom DOM helper facade.
+ * @param {any} container Form container.
+ * @returns {void}
  */
 function removeExisting(dom, container) {
   const existing = dom.querySelector(container, FORM_SELECTOR);
@@ -143,11 +150,12 @@ function removeExisting(dom, container) {
 }
 
 /**
- *
- * @param fields
- * @param dom
- * @param container
- * @param textInput
+ * Handle a structured input field.
+ * @param {any[]} fields Field definitions.
+ * @param {DomHelpers} dom DOM helper facade.
+ * @param {any} container Form container.
+ * @param {any} textInput Backing text input.
+ * @returns {void}
  */
 function structuredHandler(fields, dom, container, textInput) {
   hideAndDisable(textInput, dom);
@@ -156,18 +164,22 @@ function structuredHandler(fields, dom, container, textInput) {
 }
 
 /**
- * @param {DomHelpers} dom @param {HTMLElement} container @param {HTMLInputElement} textInput
- * @param container
- * @param textInput
+ * Render the object-minute asset form.
+ * @param {DomHelpers} dom DOM helper facade.
+ * @param {HTMLElement} container Form container.
+ * @param {HTMLInputElement} textInput Backing text input.
+ * @returns {void}
  */
 export function objectMinuteAssetHandler(dom, container, textInput) {
   structuredHandler(ASSET_FIELDS, dom, container, textInput);
 }
 
 /**
- * @param {DomHelpers} dom @param {HTMLElement} container @param {HTMLInputElement} textInput
- * @param container
- * @param textInput
+ * Render the possession-request form.
+ * @param {DomHelpers} dom DOM helper facade.
+ * @param {HTMLElement} container Form container.
+ * @param {HTMLInputElement} textInput Backing text input.
+ * @returns {void}
  */
 export function possessionRequestHandler(dom, container, textInput) {
   structuredHandler(REQUEST_FIELDS, dom, container, textInput);
