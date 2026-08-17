@@ -1,4 +1,4 @@
-import { readFile, readdir, unlink, writeFile, open } from 'node:fs/promises';
+import { readFile, readdir, unlink, writeFile, open, access } from 'node:fs/promises';
 import { spawn } from 'node:child_process';
 import crypto from 'node:crypto';
 import path from 'node:path';
@@ -73,7 +73,7 @@ async function acquireLock() {
     if (error.code === 'EEXIST') {
       const owner = await readFile(LOCK, 'utf8').catch(() => '');
       const ownerPid = Number.parseInt(owner, 10);
-      if (!ownerPid || !isProcessAlive(ownerPid)) {
+      if (!ownerPid || !(await isProcessAlive(ownerPid))) {
         await unlink(LOCK).catch(() => {});
         return acquireLock();
       }
@@ -83,8 +83,9 @@ async function acquireLock() {
   }
 }
 
-function isProcessAlive(pid) {
-  try { process.kill(pid, 0); return true; } catch (error) { return error.code === 'EPERM'; }
+async function isProcessAlive(pid) {
+  try { await access(`/proc/${pid}`); } catch { return false; }
+  try { process.kill(pid, 0); return true; } catch { return false; }
 }
 
 async function loadCheckpoint(order) {
