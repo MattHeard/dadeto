@@ -118,12 +118,15 @@ async function scanFiles(/** @type {any} */ context) {
   const { files, result, outputPath, output } = context;
   for (const [index, filePath] of files.entries()) {
     if (result.scannedFiles.includes(filePath)) continue;
-    result.scannedFiles.push(filePath);
     output.log(
       `[${index + 1}/${files.length}] Running Stryker for ${filePath}`
     );
     const surviving = await scanFile({ ...context, filePath });
-    if (surviving === null) continue;
+    result.scannedFiles.push(filePath);
+    if (surviving === null) {
+      await saveCheckpoint(outputPath, result);
+      continue;
+    }
     if (surviving.length) {
       result.fileWithSurvivingMutant = filePath;
       result.survivingMutants = surviving.map(
@@ -177,6 +180,8 @@ async function scanFile(/** @type {any} */ context) {
   if (run.status !== 'ok') throw new Error(`Stryker failed for ${filePath}`);
   const mutationReport = JSON.parse(await readFile(report, 'utf8'));
   const fileReport = /** @type {any} */ (mutationReport.files[filePath]);
+  if (!fileReport && mutationReport.config?.mutate?.includes(filePath))
+    return [];
   if (!fileReport)
     throw new Error(`Mutation report did not include ${filePath}`);
   return fileReport.mutants.filter(
