@@ -151,24 +151,12 @@ function isPermissionError(error) {
  * @param {unknown} error Candidate server listen error.
  * @returns {string | null} Error code or null.
  */
-function getErrorCode(error) {
-  if (!isObjectLike(error)) {
-    return null;
+export function getErrorCode(error) {
+  let code = null;
+  if (isObjectLike(error) && 'code' in error) {
+    code = asNullableString(error.code);
   }
-
-  return getObjectErrorCode(error);
-}
-
-/**
- * @param {Record<string, unknown>} error Candidate server listen error object.
- * @returns {string | null} Error code or null.
- */
-function getObjectErrorCode(error) {
-  if (!('code' in error)) {
-    return null;
-  }
-
-  return asNullableString(error.code);
+  return code;
 }
 
 /**
