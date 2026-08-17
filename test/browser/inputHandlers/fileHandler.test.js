@@ -69,6 +69,12 @@ describe('fileHandler', () => {
     expect(fileInput.type).toBe('file');
     expect(fileInput.className).toBe('toy-file-input');
     expect(fileInput.accept).toBe('.csv,text/csv,text/plain');
+    expect(container._children).toContain(fileInput);
+    expect(dom.addEventListener).toHaveBeenCalledWith(
+      fileInput,
+      'change',
+      expect.any(Function)
+    );
     expect(dom.reveal).toHaveBeenCalledWith(fileInput);
     expect(dom.enable).toHaveBeenCalledWith(fileInput);
 
@@ -86,8 +92,16 @@ describe('fileHandler', () => {
       textInput,
       'bookingDate,amount\n2026-03-30,12.50'
     );
+    expect(dom.getCurrentTarget).toHaveBeenCalled();
     expect(readStoredOrElementValue(textInput)).toBe(
       'bookingDate,amount\n2026-03-30,12.50'
+    );
+
+    fileInput._dispose();
+    expect(dom.removeEventListener).toHaveBeenCalledWith(
+      fileInput,
+      'input',
+      expect.any(Function)
     );
   });
 
@@ -124,5 +138,40 @@ describe('fileHandler', () => {
       textInput,
       expect.any(String)
     );
+  });
+
+  it('ignores a change event when the file list is null', async () => {
+    const dom = makeDom();
+    const container = { _children: [] };
+    const textInput = { value: '' };
+
+    fileHandler(dom, container, textInput);
+    const fileInput = dom.createElement.mock.results[0].value;
+    fileInput.files = null;
+
+    await fileInput._listeners.change({ currentTarget: fileInput });
+
+    expect(dom.setValue).not.toHaveBeenCalled();
+  });
+
+  it('reuses an existing file input without creating another one', () => {
+    const existingInput = {
+      _children: [],
+      _listeners: {},
+      accept: 'old',
+    };
+    const dom = makeDom({
+      querySelector: jest.fn(() => existingInput),
+    });
+    const container = { _children: [] };
+    const textInput = { value: '' };
+
+    fileHandler(dom, container, textInput);
+
+    expect(dom.createElement).not.toHaveBeenCalled();
+    expect(existingInput.className).toBe('toy-file-input');
+    expect(existingInput.accept).toBe('.csv,text/csv,text/plain');
+    expect(dom.reveal).toHaveBeenCalledWith(existingInput);
+    expect(dom.enable).toHaveBeenCalledWith(existingInput);
   });
 });
