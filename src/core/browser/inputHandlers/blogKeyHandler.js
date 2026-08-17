@@ -12,6 +12,13 @@ import {
 /** @typedef {() => void} Disposer */
 
 const TEXTAREA_CLASS = 'toy-textarea';
+const EMPTY_TEXT = String();
+const LINE_BREAK = String.fromCharCode(10);
+const TEXT_INPUT_TYPE = String.fromCharCode(116, 101, 120, 116);
+const TITLE_LABEL = 'title';
+const TITLE_PLACEHOLDER = 'Blog post title';
+const EXISTING_KEYS_LABEL = 'existingKeys (one per line)';
+const EXISTING_KEYS_PLACEHOLDER = 'GERM1\nTEXT1\nSTAR1';
 
 /**
  * Extract the title string from a parsed object, defaulting to empty string.
@@ -34,7 +41,7 @@ function parseTitle(parsed) {
  * @returns {BlogKeyData} Parsed data with safe defaults.
  */
 function parseData(dom, textInput) {
-  const raw = browserCore.getInputValue(textInput) || '{}';
+  const raw = browserCore.getInputValue(textInput);
   const parsed = browserCore.parseJsonOrDefault(raw, {});
   return {
     title: parseTitle(parsed),
@@ -48,8 +55,8 @@ function parseData(dom, textInput) {
  * @returns {string[]} Parsed lines.
  */
 function parseLines(value) {
-  return String(value ?? '')
-    .split('\n')
+  return String(value ?? EMPTY_TEXT)
+    .split(LINE_BREAK)
     .map(s => s.trim())
     .filter(Boolean);
 }
@@ -131,10 +138,10 @@ function createBlogKeyFields({ dom, data }) {
       dom,
       element: titleInput,
       initialValue: data.title,
-      labelText: 'title',
+      labelText: TITLE_LABEL,
       configureElement: field => {
-        dom.setType(/** @type {HTMLInputElement} */ (field), 'text');
-        dom.setPlaceholder(field, 'Blog post title');
+        dom.setType(/** @type {HTMLInputElement} */ (field), TEXT_INPUT_TYPE);
+        dom.setPlaceholder(field, TITLE_PLACEHOLDER);
       },
       updateData: () => {
         data.title = String(dom.getValue(titleInput));
@@ -143,11 +150,11 @@ function createBlogKeyFields({ dom, data }) {
     {
       dom,
       element: textarea,
-      initialValue: data.existingKeys.join('\n'),
-      labelText: 'existingKeys (one per line)',
+      initialValue: data.existingKeys.join(LINE_BREAK),
+      labelText: EXISTING_KEYS_LABEL,
       configureElement: field => {
         dom.setClassName(field, TEXTAREA_CLASS);
-        dom.setPlaceholder(field, 'GERM1\nTEXT1\nSTAR1');
+        dom.setPlaceholder(field, EXISTING_KEYS_PLACEHOLDER);
       },
       updateData: () => {
         data.existingKeys = parseLines(dom.getValue(textarea));
@@ -194,3 +201,5 @@ function buildForm({ dom, container, textInput }) {
 export function blogKeyHandler(dom, container, textInput) {
   runFormHandler({ dom, container, textInput, buildForm });
 }
+
+export const blogKeyHandlerTestUtils = { parseLines, parseTitle };

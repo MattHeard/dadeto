@@ -1,5 +1,8 @@
 import { describe, test, expect, jest } from '@jest/globals';
-import { blogKeyHandler } from '../../../src/core/browser/inputHandlers/blogKeyHandler.js';
+import {
+  blogKeyHandler,
+  blogKeyHandlerTestUtils,
+} from '../../../src/core/browser/inputHandlers/blogKeyHandler.js';
 import { setInputValue } from '../../../src/core/browser/browser-core.js';
 
 /**
@@ -66,6 +69,14 @@ function makeTextInput(value = '') {
 }
 
 describe('blogKeyHandler', () => {
+  test('parses only string titles and defaults other values', () => {
+    expect(blogKeyHandlerTestUtils.parseTitle({ title: 'A title' })).toBe(
+      'A title'
+    );
+    expect(blogKeyHandlerTestUtils.parseTitle({ title: 42 })).toBe('');
+    expect(blogKeyHandlerTestUtils.parseTitle({})).toBe('');
+  });
+
   test('hides and disables the text input', () => {
     const dom = makeDom();
     const container = { _children: [], insertBefore: jest.fn() };
@@ -106,6 +117,10 @@ describe('blogKeyHandler', () => {
 
     expect(inputs.length).toBeGreaterThanOrEqual(1);
     expect(textareas.length).toBeGreaterThanOrEqual(1);
+    expect(textareas[0]).toMatchObject({
+      className: 'toy-textarea',
+      placeholder: 'GERM1\nTEXT1\nSTAR1',
+    });
   });
 
   test('serializes initial empty data to hidden input', () => {
@@ -136,6 +151,36 @@ describe('blogKeyHandler', () => {
       .map(r => r.value)
       .find(el => el.type === 'text');
     expect(dom.setValue).toHaveBeenCalledWith(titleInput, 'My Post');
+  });
+
+  test('reads a string title directly from the live input value', () => {
+    const dom = makeDom();
+    const container = { _children: [] };
+    const textInput = makeTextInput(
+      JSON.stringify({ title: 'Live title', existingKeys: [] })
+    );
+
+    blogKeyHandler(dom, container, textInput);
+
+    const titleInput = dom.createElement.mock.results
+      .map(r => r.value)
+      .find(el => el.type === 'text');
+    expect(dom.setValue).toHaveBeenCalledWith(titleInput, 'Live title');
+  });
+
+  test('uses an empty title when the stored title is not a string', () => {
+    const dom = makeDom();
+    const container = { _children: [] };
+    const textInput = makeTextInput(
+      JSON.stringify({ title: 42, existingKeys: [] })
+    );
+
+    blogKeyHandler(dom, container, textInput);
+
+    const titleInput = dom.createElement.mock.results
+      .map(r => r.value)
+      .find(el => el.type === 'text');
+    expect(dom.setValue).toHaveBeenCalledWith(titleInput, '');
   });
 
   test('textarea input updates existingKeys in serialized JSON', () => {
