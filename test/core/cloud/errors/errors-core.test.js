@@ -101,6 +101,24 @@ describe('buildReportedErrorEvent', () => {
 });
 
 describe('createErrorBeaconHandler', () => {
+  it('requires both reporting dependencies to be functions', () => {
+    expect(() =>
+      createErrorBeaconHandler({
+        environment: 'prod',
+        reportEvent: null,
+        getServerTimestamp: () => 'timestamp',
+      })
+    ).toThrow(new TypeError('reportEvent must be a function'));
+
+    expect(() =>
+      createErrorBeaconHandler({
+        environment: 'prod',
+        reportEvent: jest.fn(),
+        getServerTimestamp: null,
+      })
+    ).toThrow(new TypeError('getServerTimestamp must be a function'));
+  });
+
   it('returns 204 after forwarding a valid payload', async () => {
     const reportEvent = jest.fn().mockResolvedValue(undefined);
     const handler = createErrorBeaconHandler({
@@ -153,6 +171,40 @@ describe('createErrorBeaconHandler', () => {
     expect(response.jsonBody).toEqual({ error: 'fail' });
   });
 
+  it('does not require an error logger when forwarding fails', async () => {
+    const handler = createErrorBeaconHandler({
+      environment: 'prod',
+      reportEvent: jest.fn().mockRejectedValue(new Error('fail')),
+      getServerTimestamp: () => '2026-07-04T00:00:00.000Z',
+      console: {},
+    });
+    const response = createResponse();
+
+    await handler({ method: 'POST', body: { message: 'boom' } }, response.api);
+
+    expect(response.statusCode).toBe(500);
+    expect(response.jsonBody).toEqual({ error: 'fail' });
+  });
+
+  it('logs forwarding failures when an error logger is available', async () => {
+    const error = new Error('fail');
+    const errorLogger = jest.fn();
+    const handler = createErrorBeaconHandler({
+      environment: 'prod',
+      reportEvent: jest.fn().mockRejectedValue(error),
+      getServerTimestamp: () => '2026-07-04T00:00:00.000Z',
+      console: { error: errorLogger },
+    });
+    const response = createResponse();
+
+    await handler({ method: 'POST', body: { message: 'boom' } }, response.api);
+
+    expect(errorLogger).toHaveBeenCalledWith(
+      'Error Reporting API forwarding failed',
+      error
+    );
+  });
+
   it('reports a generic 500 when the rejection is not an Error', async () => {
     const handler = createErrorBeaconHandler({
       environment: 'prod',
@@ -174,6 +226,20 @@ describe('createErrorBeaconHandler', () => {
       environment: 'prod',
       buildVersion: 'build-123',
       reportEvent: jest.fn().mockRejectedValue(error),
+      getServerTimestamp: () => '2026-07-04T00:00:00.000Z',
+    });
+    const response = createResponse();
+
+    await handler({ method: 'POST', body: { message: 'boom' } }, response.api);
+
+    expect(response.statusCode).toBe(500);
+    expect(response.jsonBody).toEqual({ error: 'Unknown server error' });
+  });
+
+  it('does not trust message properties on non-Error values', async () => {
+    const handler = createErrorBeaconHandler({
+      environment: 'prod',
+      reportEvent: jest.fn().mockRejectedValue({ message: 'spoofed' }),
       getServerTimestamp: () => '2026-07-04T00:00:00.000Z',
     });
     const response = createResponse();

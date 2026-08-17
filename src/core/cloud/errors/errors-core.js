@@ -237,11 +237,8 @@ function reportForwardingFailure(consoleLike, error) {
  * @returns {string} Human-readable message.
  */
 function resolveErrorMessage(error) {
-  if (error instanceof Error) {
-    const resolvedMessage = error.message;
-    if (typeof resolvedMessage === 'string' && resolvedMessage.length > 0) {
-      return resolvedMessage;
-    }
+  if (error instanceof Error && error.message) {
+    return error.message;
   }
 
   return 'Unknown server error';
