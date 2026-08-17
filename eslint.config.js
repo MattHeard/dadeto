@@ -44,9 +44,7 @@ export default [
     },
     rules: {
       complexity: ['warn', { max: 8 }],
-      'no-nested-ternary': 'warn',
       'no-else-return': 'warn',
-      'no-unneeded-ternary': 'warn',
       'no-useless-return': 'warn',
       'no-unused-vars': [
         'warn',
