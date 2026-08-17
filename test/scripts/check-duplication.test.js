@@ -54,6 +54,15 @@ describe('createCheckDuplicationHandle with injected dependencies', () => {
       'Checked duplication report: 0 clones.'
     );
     expect(stderr.chunks).toEqual([]);
+    expect(spawnImpl).toHaveBeenCalledWith(
+      'jscpd',
+      ['--config', '.jscpd.json'],
+      expect.objectContaining({ cwd: expect.any(String) })
+    );
+    expect(readFileSync).toHaveBeenCalledWith(
+      'reports/duplication/jscpd-report.json',
+      'utf8'
+    );
   });
 
   test('fails when the report contains clones', () => {
@@ -115,6 +124,10 @@ describe('createCheckDuplicationHandle with injected dependencies', () => {
     expect(stdout.chunks).toEqual([]);
     expect(stderr.chunks.join('')).toContain('Duplication gate found 1 clone.');
     expect(stderr.chunks.join('')).toContain('Report summary: 0 clones');
+    expect(stderr.chunks.join('')).toContain(
+      'Report summary: 0 clones, 1.6% duplicated lines, 1.43% duplicated tokens.'
+    );
+    expect(stderr.chunks.join('')).not.toContain('undefined');
   });
 });
 
@@ -307,6 +320,10 @@ describe('createCheckDuplicationHandle process failures', () => {
       'See reports/duplication/jscpd-report.json for the detailed clone report.'
     );
     expect(stderr.chunks.join('')).not.toContain('Report summary:');
+    expect(stderr.chunks).toEqual([
+      'Duplication gate found 2 clones.\n',
+      'See reports/duplication/jscpd-report.json for the detailed clone report.\n',
+    ]);
   });
 
   test('treats missing clone data as zero clones', () => {
@@ -331,6 +348,25 @@ describe('createCheckDuplicationHandle process failures', () => {
     expect(stdout.chunks.join('')).toContain(
       'Checked duplication report: 0 clones.'
     );
+    expect(stderr.chunks).toEqual([]);
+  });
+
+  test('treats non-numeric clone statistics as zero clones', () => {
+    const spawnImpl = jest.fn(() => ({ status: 0, signal: null }));
+    const readFileSync = jest.fn(() =>
+      JSON.stringify({ statistics: { total: { clones: '2' } } })
+    );
+    const stdout = createWriter();
+    const stderr = createWriter();
+    const handle = createCheckDuplicationHandle({
+      spawnImpl,
+      readFileSync,
+      stdout,
+      stderr,
+    });
+
+    expect(handle()).toEqual({ exitCode: 0, clones: 0 });
+    expect(stdout.chunks).toEqual(['Checked duplication report: 0 clones.\n']);
     expect(stderr.chunks).toEqual([]);
   });
 });

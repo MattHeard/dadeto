@@ -135,7 +135,7 @@ function executeDuplicationGate({
   }
 
   const report = readDuplicationReport(readFileSync, reportPath);
-  if (!report) {
+  if (report === null) {
     stderr.write(
       `Duplication gate could not read report at ${relativePath(rootDir, reportPath)}\n`
     );
@@ -199,13 +199,11 @@ function handleCloneFailure(report, reportInfo, stderr) {
  * @returns {Record<string, unknown> | null} Parsed report or null.
  */
 function readDuplicationReport(readFileSync, reportPath) {
-  let contents;
   try {
-    contents = readFileSync(reportPath, 'utf8');
+    return parseObjectRecord(readFileSync(reportPath, 'utf8'));
   } catch {
-    return null;
+    return /** @type {null} */ (null);
   }
-  return parseObjectRecord(contents);
 }
 
 /**
