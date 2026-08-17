@@ -2,9 +2,29 @@ import { reportAndReturnFalse } from '../../commonCore.js';
 
 /** @typedef {import('../domHelpers.js').DOMHelpers} DOMHelpers */
 
-const COPY_BUTTON_LABEL = 'Copy to clipboard';
-const COPIED_BUTTON_LABEL = 'Copied!';
-const COPY_FEEDBACK_DELAY_MS = 1000;
+/**
+ * Get the default copy button label.
+ * @returns {string} Copy button label.
+ */
+function getCopyButtonLabel() {
+  return 'Copy to clipboard';
+}
+
+/**
+ * Get the successful-copy button label.
+ * @returns {string} Successful-copy label.
+ */
+function getCopiedButtonLabel() {
+  return 'Copied!';
+}
+
+/**
+ * Get the successful-copy feedback delay.
+ * @returns {number} Feedback delay in milliseconds.
+ */
+function getCopyFeedbackDelayMs() {
+  return 1000;
+}
 
 /**
  * Read the browser clipboard object from DOM helpers.
@@ -12,12 +32,7 @@ const COPY_FEEDBACK_DELAY_MS = 1000;
  * @returns {Clipboard | undefined} Clipboard object when available.
  */
 function getClipboard(dom) {
-  const navigator = dom.globalThis.navigator;
-  if (!navigator) {
-    return undefined;
-  }
-
-  return navigator.clipboard;
+  return dom.globalThis.navigator?.clipboard;
 }
 
 /**
@@ -91,7 +106,7 @@ function clearCopyFeedbackTimeout(options) {
  */
 function resetCopyButtonLabel(options) {
   const { button, dom, state } = options;
-  setCopyButtonLabel(button, dom, COPY_BUTTON_LABEL);
+  setCopyButtonLabel(button, dom, getCopyButtonLabel());
   resetCopyFeedbackState(state);
 }
 
@@ -107,10 +122,10 @@ function resetCopyButtonLabel(options) {
 function showCopySuccessFeedback(options) {
   const { button, dom, state } = options;
   clearCopyFeedbackTimeout(options);
-  setCopyButtonLabel(button, dom, COPIED_BUTTON_LABEL);
+  setCopyButtonLabel(button, dom, getCopiedButtonLabel());
   state.timeoutHandle = dom.setTimeout(() => {
     resetCopyButtonLabel({ button, dom, state });
-  }, COPY_FEEDBACK_DELAY_MS);
+  }, getCopyFeedbackDelayMs());
 }
 
 /**
@@ -164,7 +179,7 @@ export function createCopyToClipboardButtonElement(inputString, dom) {
     timeoutHandle: null,
   });
   dom.setType(button, 'button');
-  dom.setTextContent(button, COPY_BUTTON_LABEL);
+  dom.setTextContent(button, getCopyButtonLabel());
   dom.addEventListener(button, 'click', event => {
     event.preventDefault();
     return handleCopyButtonClick({

@@ -65,9 +65,11 @@ describe('createCopyToClipboardButtonElement', () => {
     const dom = createMockDom();
     const element = createCopyToClipboardButtonElement('{"foo":"bar"}', dom);
     const handler = dom.addEventListener.mock.calls[0][2];
+    const event = { preventDefault: jest.fn() };
 
-    await handler({ preventDefault: jest.fn() });
+    await handler(event);
 
+    expect(event.preventDefault).toHaveBeenCalledTimes(1);
     expect(dom.globalThis.navigator.clipboard.writeText).toHaveBeenCalledWith(
       '{"foo":"bar"}'
     );
@@ -78,6 +80,7 @@ describe('createCopyToClipboardButtonElement', () => {
     await handler({ preventDefault: jest.fn() });
     expect(dom.clearTimeout).toHaveBeenCalledWith(1);
     expect(dom.setTimeout).toHaveBeenCalledTimes(2);
+    expect(dom.setTextContent).toHaveBeenLastCalledWith(element, 'Copied!');
 
     dom.timeouts[1].callback();
     expect(dom.setTextContent).toHaveBeenLastCalledWith(
@@ -120,5 +123,38 @@ describe('createCopyToClipboardButtonElement', () => {
       expect.anything(),
       'Copied!'
     );
+  });
+
+  test('logs an error when navigator is missing', async () => {
+    const dom = createMockDom();
+    dom.globalThis.navigator = undefined;
+    const element = createCopyToClipboardButtonElement('output', dom);
+    const event = { preventDefault: jest.fn() };
+    const handler = dom.addEventListener.mock.calls[0][2];
+
+    await handler(event);
+
+    expect(event.preventDefault).toHaveBeenCalledTimes(1);
+    expect(dom.logError).toHaveBeenCalledWith(
+      'Failed to copy output to clipboard:',
+      expect.any(Error)
+    );
+    expect(dom.setTextContent).toHaveBeenCalledWith(
+      element,
+      'Copy to clipboard'
+    );
+  });
+
+  test('clears a completed feedback timer without resetting the label', async () => {
+    const dom = createMockDom();
+    const element = createCopyToClipboardButtonElement('output', dom);
+    const handler = dom.addEventListener.mock.calls[0][2];
+
+    await handler({ preventDefault: jest.fn() });
+    dom.timeouts[0].callback();
+    await handler({ preventDefault: jest.fn() });
+
+    expect(dom.clearTimeout).not.toHaveBeenCalled();
+    expect(dom.setTextContent).toHaveBeenLastCalledWith(element, 'Copied!');
   });
 });
