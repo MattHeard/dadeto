@@ -56,11 +56,39 @@ describe('assign moderation job core additional coverage', () => {
     ).toBe(false);
     expect(
       shouldUseCustomFirestoreDependencies({
+        options: { ensureAppFn: undefined },
+        defaultEnsureFn: defaultEnsure,
+        defaultGetFirestoreFn: defaultGet,
+      })
+    ).toBe(false);
+    expect(
+      shouldUseCustomFirestoreDependencies({
+        options: { ensureAppFn: defaultEnsure },
+        defaultEnsureFn: defaultEnsure,
+        defaultGetFirestoreFn: defaultGet,
+      })
+    ).toBe(false);
+    expect(
+      shouldUseCustomFirestoreDependencies({
         options: { ensureAppFn: jest.fn() },
         defaultEnsureFn: defaultEnsure,
         defaultGetFirestoreFn: defaultGet,
       })
     ).toBe(true);
+    expect(
+      shouldUseCustomFirestoreDependencies({
+        options: { getFirestoreFn: jest.fn() },
+        defaultEnsureFn: defaultEnsure,
+        defaultGetFirestoreFn: defaultGet,
+      })
+    ).toBe(true);
+    expect(
+      shouldUseCustomFirestoreDependencies({
+        options: { getFirestoreFn: defaultGet },
+        defaultEnsureFn: defaultEnsure,
+        defaultGetFirestoreFn: defaultGet,
+      })
+    ).toBe(false);
     expect(
       shouldUseCustomFirestoreDependencies({
         options: {},
@@ -86,6 +114,7 @@ describe('assign moderation job core additional coverage', () => {
       'token'
     );
     expect(getIdTokenFromRequest({ body: {} })).toBeUndefined();
+    expect(getIdTokenFromRequest(undefined)).toBeUndefined();
     expect(random(() => 0.5)).toBe(0.5);
   });
 
