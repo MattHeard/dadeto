@@ -386,11 +386,8 @@ function getLauncherArgs(launcherConfig) {
  * @returns {string} User-visible launch failure message.
  */
 function getLaunchErrorMessage(error) {
-  if (error instanceof Error && error.message) {
-    return error.message;
-  }
-
-  return 'Unknown launcher failure.';
+  const message = error instanceof Error ? error.message : '';
+  return message || 'Unknown launcher failure.';
 }
 
 /**

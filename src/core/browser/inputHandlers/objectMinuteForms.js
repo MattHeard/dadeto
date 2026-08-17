@@ -1,6 +1,10 @@
-import { hideAndDisable } from '../browser-core.js';
+import { hideAndDisable, parseJsonOrDefault } from '../browser-core.js';
 import { setInputValue } from '../inputValueStore.js';
-import { createInputDisposer, setupInputEvents } from './browserInputHandlersCore.js';
+import {
+  createInputDisposer,
+  removeExistingSpecialInput,
+  setupInputEvents,
+} from './browserInputHandlersCore.js';
 
 /** @typedef {import('../domHelpers.js').DOMHelpers} DomHelpers */
 
@@ -28,12 +32,24 @@ const REQUEST_FIELDS = [
   ['pickupTime', 'Pickup time (UTC)', 'text'],
 ];
 
+/**
+ * Read a form element value.
+ * @param {HTMLInputElement} element Input element.
+ * @returns {unknown} Extracted value.
+ */
 function fieldValue(element) {
   if (element.type === 'checkbox') return element.checked;
-  if (element.type === 'number') return element.value === '' ? null : Number(element.value);
+  if (element.type === 'number')
+    return element.value === '' ? null : Number(element.value);
   return element.value;
 }
 
+/**
+ * @param {Record<string, unknown>} target Target object.
+ * @param {string} path Property path.
+ * @param {unknown} value Value.
+ * @returns {void} Nothing.
+ */
 function assignPath(target, path, value) {
   const parts = path.split('.');
   let cursor = target;
@@ -43,10 +59,20 @@ function assignPath(target, path, value) {
   });
 }
 
+/**
+ * @param {Record<string, unknown>} source Source object.
+ * @param {string} path Property path.
+ * @returns {unknown} Nested value.
+ */
 function readPath(source, path) {
   return path.split('.').reduce((value, part) => value?.[part], source);
 }
 
+/**
+ * @param {Array<[string, string, string]>} fields Form fields.
+ * @param {HTMLElement} form Form element.
+ * @returns {string} Serialized form.
+ */
 function serializeForm(fields, form) {
   const result = {};
   form.querySelectorAll('input').forEach((element, index) => {
@@ -55,15 +81,23 @@ function serializeForm(fields, form) {
   return JSON.stringify(result, null, 2);
 }
 
+/**
+ * @param {HTMLInputElement} textInput Hidden input.
+ * @param {DomHelpers} dom DOM helpers.
+ * @returns {Record<string, unknown>} Initial values.
+ */
 function parseInitialValue(textInput, dom) {
-  try {
-    const value = JSON.parse(dom.getValue(textInput) || '{}');
-    return value && typeof value === 'object' ? value : {};
-  } catch {
-    return {};
-  }
+  const value = parseJsonOrDefault(dom.getValue(textInput) || '{}', {});
+  return value && typeof value === 'object' ? value : {};
 }
 
+/**
+ * @param {Array<[string, string, string]>} fields Form fields.
+ * @param {HTMLElement} container Parent.
+ * @param {HTMLInputElement} textInput Hidden input.
+ * @param {DomHelpers} dom DOM helpers.
+ * @returns {HTMLElement} Created form.
+ */
 function createForm(fields, container, textInput, dom) {
   const form = dom.createElement('div');
   dom.setClassName(form, FORM_SELECTOR.slice(1));
@@ -74,7 +108,8 @@ function createForm(fields, container, textInput, dom) {
     dom.setTextContent(caption, label);
     const input = /** @type {HTMLInputElement} */ (dom.createElement('input'));
     input.type = type;
-    input.value = type === 'checkbox' ? '' : String(readPath(initial, path) ?? '');
+    input.value =
+      type === 'checkbox' ? '' : String(readPath(initial, path) ?? '');
     if (type === 'checkbox') input.checked = readPath(initial, path) === true;
     dom.appendChild(row, caption);
     dom.appendChild(row, input);
@@ -92,26 +127,46 @@ function createForm(fields, container, textInput, dom) {
   return form;
 }
 
+/**
+ * @param {DomHelpers} dom DOM helpers.
+ * @param {HTMLElement} container Parent.
+ * @returns {void} Nothing.
+ */
 function removeExisting(dom, container) {
-  const existing = dom.querySelector(container, FORM_SELECTOR);
-  if (existing) {
-    existing._dispose?.();
-    dom.removeChild(container, existing);
-  }
+  removeExistingSpecialInput(container, dom, FORM_SELECTOR, existing =>
+    existing._dispose?.()
+  );
 }
 
+/**
+ * @param {Array<[string, string, string]>} fields Form fields.
+ * @param {DomHelpers} dom DOM helpers.
+ * @param {HTMLElement} container Parent.
+ * @param {HTMLInputElement} textInput Hidden input.
+ * @returns {void} Nothing.
+ */
 function structuredHandler(fields, dom, container, textInput) {
   hideAndDisable(textInput, dom);
   removeExisting(dom, container);
   createForm(fields, container, textInput, dom);
 }
 
-/** @param {DomHelpers} dom @param {HTMLElement} container @param {HTMLInputElement} textInput */
+/**
+ * @param {DomHelpers} dom DOM helpers.
+ * @param {HTMLElement} container Parent.
+ * @param {HTMLInputElement} textInput Hidden input.
+ * @returns {void} Nothing.
+ */
 export function objectMinuteAssetHandler(dom, container, textInput) {
   structuredHandler(ASSET_FIELDS, dom, container, textInput);
 }
 
-/** @param {DomHelpers} dom @param {HTMLElement} container @param {HTMLInputElement} textInput */
+/**
+ * @param {DomHelpers} dom DOM helpers.
+ * @param {HTMLElement} container Parent.
+ * @param {HTMLInputElement} textInput Hidden input.
+ * @returns {void} Nothing.
+ */
 export function possessionRequestHandler(dom, container, textInput) {
   structuredHandler(REQUEST_FIELDS, dom, container, textInput);
 }

@@ -82,6 +82,21 @@ export const setupInputEvents = (dom, input, handler) => {
 };
 
 /**
+ * Remove an existing special input from a container.
+ * @param {HTMLElement} container Parent container.
+ * @param {BrowserDom} dom DOM helpers.
+ * @param {string} selector Element selector.
+ * @param {(element: HTMLElement) => void} dispose Dispose callback.
+ * @returns {void}
+ */
+export function removeExistingSpecialInput(container, dom, selector, dispose) {
+  const existing = dom.querySelector(container, selector);
+  if (!existing) return;
+  dispose(existing);
+  dom.removeChild(container, existing);
+}
+
+/**
  * Insert an element right before the text input's next sibling.
  * @param {object} options - Insertion parameters.
  * @param {HTMLElement} options.container - Parent container holding the inputs.

@@ -1,4 +1,5 @@
 import * as browserCore from '../browser-core.js';
+import { removeExistingSpecialInput } from './browserInputHandlersCore.js';
 
 /** @typedef {import('../browser-core.js').DOMEventListener} DOMEventListener */
 /** @typedef {import('../domHelpers.js').DOMHelpers} DOMHelpers */
@@ -25,14 +26,12 @@ export function disposeIfPossible(node) {
  * @returns {void}
  */
 export function removeExistingForm(container, dom) {
-  const existing = dom.querySelector(
+  removeExistingSpecialInput(
     container,
-    browserCore.DENDRITE_FORM_SELECTOR
+    dom,
+    browserCore.DENDRITE_FORM_SELECTOR,
+    disposeIfPossible
   );
-  if (existing) {
-    disposeIfPossible(existing);
-    dom.removeChild(container, existing);
-  }
 }
 
 /**

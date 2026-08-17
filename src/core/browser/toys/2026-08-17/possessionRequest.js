@@ -1,7 +1,7 @@
 // Toy: Possession Request
 // (input, env) -> string
 
-import { parseJsonOrDefault } from '../../browser-core.js';
+import { parseJsonObjectOrDefault } from '../../parseJsonObjectOrDefault.js';
 
 /**
  * Normalize and validate the customer context for an object-minute rental.
@@ -9,7 +9,7 @@ import { parseJsonOrDefault } from '../../browser-core.js';
  * @returns {string} Deterministic validation result.
  */
 export function possessionRequest(input) {
-  const parsed = parseInput(input);
+  const parsed = parseJsonObjectOrDefault(input);
   const errors = [];
   const request = normalizeRequest(parsed, errors);
 
@@ -18,18 +18,6 @@ export function possessionRequest(input) {
   }
 
   return JSON.stringify({ valid: true, request }, null, 2);
-}
-
-/**
- * Parse a JSON request object, returning an empty object for invalid input.
- * @param {string} input JSON payload.
- * @returns {Record<string, unknown>} Parsed request object.
- */
-function parseInput(input) {
-  const parsed = parseJsonOrDefault(input, {});
-  return parsed && typeof parsed === 'object' && !Array.isArray(parsed)
-    ? parsed
-    : {};
 }
 
 /**

@@ -1,4 +1,5 @@
 import { stringOr } from '../../../commonCore.js';
+import { parseJsonObjectOrDefault } from '../../parseJsonObjectOrDefault.js';
 const DEFAULT_ENDPOINT = '/api/realtime/call';
 const DEFAULT_TITLE = 'Realtime Voice Prototype';
 const DEFAULT_DESCRIPTION =
@@ -15,7 +16,7 @@ const SERVER_LABELS = {
  * @returns {string} JSON payload consumed by the realtime-voice presenter.
  */
 export function realtimeVoicePrototype(input = '') {
-  const config = parseInputConfig(input);
+  const config = parseJsonObjectOrDefault(input);
   const server = getServer(config.server);
   const endpoint = getEndpoint(server, config);
   return JSON.stringify({
@@ -26,50 +27,6 @@ export function realtimeVoicePrototype(input = '') {
     endpoint,
     endpointError: getEndpointError(server, endpoint),
   });
-}
-
-/**
- * Parse optional toy JSON config.
- * @param {string} input Raw toy input.
- * @returns {Record<string, unknown>} Parsed config or an empty config.
- */
-function parseInputConfig(input) {
-  try {
-    return parseConfigObject(JSON.parse(input));
-  } catch {
-    return {};
-  }
-}
-
-/**
- * Keep only object-shaped parsed config values.
- * @param {unknown} parsed Parsed JSON value.
- * @returns {Record<string, unknown>} Parsed config object or empty config.
- */
-function parseConfigObject(parsed) {
-  if (!isConfigRecord(parsed)) {
-    return {};
-  }
-
-  return /** @type {Record<string, unknown>} */ (parsed);
-}
-
-/**
- * Check whether a parsed value can be used as a config record.
- * @param {unknown} parsed Parsed JSON value.
- * @returns {boolean} True when parsed is an object record.
- */
-function isConfigRecord(parsed) {
-  return Boolean(parsed) && isObjectRecord(parsed);
-}
-
-/**
- * Check whether a parsed value is a non-array object.
- * @param {unknown} parsed Parsed JSON value.
- * @returns {boolean} True when parsed is a non-array object.
- */
-function isObjectRecord(parsed) {
-  return typeof parsed === 'object' && !Array.isArray(parsed);
 }
 
 /**
