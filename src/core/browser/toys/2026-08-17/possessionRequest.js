@@ -1,6 +1,8 @@
 // Toy: Possession Request
 // (input, env) -> string
 
+import { parseJsonOrDefault } from '../../browser-core.js';
+
 /**
  * Normalize and validate the customer context for an object-minute rental.
  * @param {string} input JSON payload containing a possession request.
@@ -24,14 +26,10 @@ export function possessionRequest(input) {
  * @returns {Record<string, unknown>} Parsed request object.
  */
 function parseInput(input) {
-  try {
-    const parsed = JSON.parse(input);
-    return parsed && typeof parsed === 'object' && !Array.isArray(parsed)
-      ? parsed
-      : {};
-  } catch {
-    return {};
-  }
+  const parsed = parseJsonOrDefault(input, {});
+  return parsed && typeof parsed === 'object' && !Array.isArray(parsed)
+    ? parsed
+    : {};
 }
 
 /**
