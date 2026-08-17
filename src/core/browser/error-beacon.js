@@ -129,7 +129,7 @@ export function normalizeErrorPayload(input) {
  */
 export function createErrorBeaconReporter(fetchFn, endpointUrl) {
   return payload => {
-    if (typeof fetchFn !== 'function') {
+    if (typeof fetchFn !== 'function' || !endpointUrl) {
       return;
     }
 

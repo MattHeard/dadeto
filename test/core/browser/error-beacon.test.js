@@ -280,6 +280,15 @@ describe('createErrorBeaconHandlers', () => {
 });
 
 describe('createErrorBeaconReporter', () => {
+  test('does not fetch when the endpoint is not configured', () => {
+    const fetchFn = jest.fn();
+    const reporter = createErrorBeaconReporter(fetchFn, '');
+
+    reporter({ message: 'ignored' });
+
+    expect(fetchFn).not.toHaveBeenCalled();
+  });
+
   it('no-ops when fetch is unavailable', () => {
     const reporter = createErrorBeaconReporter(undefined, '/prod-errors');
     expect(() => reporter({ message: 'boom' })).not.toThrow();

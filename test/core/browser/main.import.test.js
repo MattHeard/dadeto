@@ -9,10 +9,12 @@ describe('core browser main import', () => {
     ).resolves.toHaveProperty('createMainHandle');
   });
 
-  it('targets the prod error beacon endpoint', async () => {
+  it('targets the production GCP error beacon endpoint', async () => {
     const source = await readFile('src/core/browser/main.js', 'utf8');
 
-    expect(source).toContain("const beaconEndpoint = '/prod-errors';");
+    expect(source).toContain(
+      "https://europe-west1-irien-465710.cloudfunctions.net/prod-errors"
+    );
     expect(source).toContain(
       'windowObj.console.error = errorHandlers.logError;'
     );

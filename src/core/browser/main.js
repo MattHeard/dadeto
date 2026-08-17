@@ -67,7 +67,8 @@ export function createMainHandle({
   storageObj,
 }) {
   return function handleMain() {
-    const beaconEndpoint = '/prod-errors';
+    const beaconEndpoint =
+      'https://europe-west1-irien-465710.cloudfunctions.net/prod-errors';
     const beaconReporter = createErrorBeaconReporter(
       windowObj.fetch?.bind(windowObj),
       beaconEndpoint
