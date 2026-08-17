@@ -79,6 +79,9 @@ describe('jsonParseErrorExplainer', () => {
           originalInputLength: 9,
         },
       });
+      expect(output.error.message).toBe(
+        'Unexpected token } in JSON at line 2 column 7'
+      );
     } finally {
       JSON.parse = originalParse;
     }
@@ -94,6 +97,37 @@ describe('jsonParseErrorExplainer', () => {
       index: 0,
       line: 1,
       column: 1,
+    });
+    expect(toLineColumn('abc', -2)).toEqual({
+      index: 0,
+      line: 1,
+      column: 1,
+    });
+  });
+
+  test('extracts multi-digit position values with flexible whitespace', () => {
+    expect(
+      extractLocation(
+        new SyntaxError('Unexpected token at POSITION   12'),
+        'abcdefghijklmnop'
+      )
+    ).toEqual({
+      index: 12,
+      line: 1,
+      column: 13,
+    });
+  });
+
+  test('extracts multi-digit line and column values with flexible whitespace', () => {
+    expect(
+      extractLocation(
+        new SyntaxError('Unexpected token at LINE   12   COLUMN   34'),
+        'input'
+      )
+    ).toEqual({
+      index: null,
+      line: 12,
+      column: 34,
     });
   });
 
@@ -118,6 +152,21 @@ describe('jsonParseErrorExplainer', () => {
           originalInputLength: 7,
         },
       });
+    } finally {
+      JSON.parse = originalParse;
+    }
+  });
+
+  test('uses the default message when an Error has no message', () => {
+    const originalParse = JSON.parse;
+    JSON.parse = () => {
+      throw new SyntaxError('');
+    };
+
+    try {
+      const output = originalParse(jsonParseErrorExplainer('invalid'));
+
+      expect(output.error.message).toBe('Invalid JSON input');
     } finally {
       JSON.parse = originalParse;
     }

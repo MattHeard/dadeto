@@ -43,10 +43,8 @@ function buildErrorPayload(input, error) {
  * @returns {{ index: number | null, line: number | null, column: number | null }} Approximate failure location.
  */
 export function extractLocation(error, input) {
-  let message = '';
-  if (error instanceof Error) {
-    message = error.message;
-  }
+  let message = String();
+  if (error instanceof Error) message = error.message;
   const positionMatch = message.match(/position\s+(\d+)/i);
   if (positionMatch) {
     const index = Number(positionMatch[1]);
