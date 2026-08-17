@@ -43,7 +43,6 @@ export default [
       repo: repoLintPlugin,
     },
     rules: {
-      complexity: ['warn', { max: 8 }],
       'no-else-return': 'warn',
       'no-useless-return': 'warn',
       'no-unused-vars': [
