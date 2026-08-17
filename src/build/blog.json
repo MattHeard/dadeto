@@ -1,6 +1,24 @@
 {
   "posts": [
     {
+      "key": "POSS1",
+      "title": "Possession Request",
+      "publicationDate": "2026-08-17",
+      "release": "beta",
+      "content": [
+        "Normalize the exact object, locations, and UTC-minute times a customer wants to possess.",
+        "Coordinates are validated as WGS84 and rounded to six decimal places.",
+        "This is the request primitive for the object-minute rental proof of concept."
+      ],
+      "toy": {
+        "modulePath": "/core/browser/toys/2026-08-17/possessionRequest.js",
+        "functionName": "possessionRequest",
+        "defaultInputMethod": "textarea",
+        "defaultOutputMethod": "textarea"
+      },
+      "tags": ["toy", "object-minute-rental", "request", "coordinates", "json"]
+    },
+    {
       "key": "OBJE1",
       "title": "Object-minute Asset Registry",
       "publicationDate": "2026-08-16",
