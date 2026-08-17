@@ -211,11 +211,11 @@ export function createMainHandle({
       dom
     );
 
-    windowObj.addEventListener('DOMContentLoaded', () => {
-      revealBetaArticles(dom);
+    // Beta visibility must not depend on optional interactive toy modules or
+    // DOMContentLoaded timing completing before this module evaluates.
+    revealBetaArticles(dom);
 
-      // Beta visibility must not depend on optional interactive toy modules
-      // completing their initialization.
+    windowObj.addEventListener('DOMContentLoaded', () => {
       initializeDropdowns();
 
       documentObj.addEventListener('click', event => {
