@@ -8,8 +8,6 @@ import { parseJsonOrDefault } from './browser-core.js';
 export function parseJsonObjectOrDefault(input) {
   const parsed = parseJsonOrDefault(input, {});
   return /** @type {Record<string, unknown>} */ (
-    parsed && typeof parsed === 'object' && !Array.isArray(parsed)
-      ? parsed
-      : {}
+    parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : {}
   );
 }
