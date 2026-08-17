@@ -23,7 +23,7 @@ function toStringOrEmpty(value) {
  * @returns {Record<string, unknown> | null} Parsed object or null when parsing fails.
  */
 function parseToyInput(input) {
-  const parsed = parseJsonOrNull(whenString(input, s => s) ?? '');
+  const parsed = parseJsonOrNull(whenString(input, s => s) ?? String());
   if (isPlainObject(parsed)) {
     return /** @type {Record<string, unknown>} */ (parsed);
   }

@@ -62,6 +62,12 @@ describe('plusOneAnnotatorToy', () => {
     expect(actual).toContain('error');
   });
 
+  it('returns error when valid JSON is not an object payload', () => {
+    const actual = plusOneAnnotatorToy('[]', env);
+
+    expect(JSON.parse(actual)).toEqual({ error: 'Invalid input' });
+  });
+
   it('handles empty sentence', () => {
     const result = runToy({ sentence: '', knownWords: 'ich\ngehe' });
 
