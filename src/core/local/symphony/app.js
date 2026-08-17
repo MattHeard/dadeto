@@ -228,7 +228,7 @@ function buildOrphanedRunOutcome(status, beadId, pid) {
   const activeRun = /** @type {Record<string, unknown>} */ (status.activeRun);
   return {
     beadId,
-    beadTitle: getOptionalString(activeRun, 'beadTitle'),
+    beadTitle: getOptionalString(activeRun, 'beadTitle') ?? undefined,
     outcome: 'blocked',
     summary: buildOrphanedRunSummary(activeRun, pid),
   };

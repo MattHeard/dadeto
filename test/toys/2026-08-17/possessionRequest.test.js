@@ -3,13 +3,17 @@ import { possessionRequest } from '../../../src/core/browser/toys/2026-08-17/pos
 
 describe('possessionRequest', () => {
   test('normalizes a valid request to six-decimal coordinates and UTC minutes', () => {
-    const result = JSON.parse(possessionRequest(JSON.stringify({
-      sku: ' picnic-blanket ',
-      deliveryLocation: { lat: 52.477389123, lon: 13.415139987 },
-      deliveryTime: '2026-08-21T18:00Z',
-      pickupLocation: { lat: 52.4773899, lon: 13.4151391 },
-      pickupTime: '2026-08-21T20:00Z',
-    })));
+    const result = JSON.parse(
+      possessionRequest(
+        JSON.stringify({
+          sku: ' picnic-blanket ',
+          deliveryLocation: { lat: 52.477389123, lon: 13.415139987 },
+          deliveryTime: '2026-08-21T18:00Z',
+          pickupLocation: { lat: 52.4773899, lon: 13.4151391 },
+          pickupTime: '2026-08-21T20:00Z',
+        })
+      )
+    );
 
     expect(result).toEqual({
       valid: true,
@@ -24,13 +28,17 @@ describe('possessionRequest', () => {
   });
 
   test('returns deterministic errors for malformed fields', () => {
-    const result = JSON.parse(possessionRequest(JSON.stringify({
-      sku: '',
-      deliveryLocation: { lat: 91, lon: 181 },
-      deliveryTime: 'tomorrow',
-      pickupLocation: null,
-      pickupTime: '2026-08-21T20:30:00+01:00',
-    })));
+    const result = JSON.parse(
+      possessionRequest(
+        JSON.stringify({
+          sku: '',
+          deliveryLocation: { lat: 91, lon: 181 },
+          deliveryTime: 'tomorrow',
+          pickupLocation: null,
+          pickupTime: '2026-08-21T20:30:00+01:00',
+        })
+      )
+    );
 
     expect(result.valid).toBe(false);
     expect(result.errors).toEqual([

@@ -13,7 +13,7 @@ describe('core browser main import', () => {
     const source = await readFile('src/core/browser/main.js', 'utf8');
 
     expect(source).toContain(
-      "https://europe-west1-irien-465710.cloudfunctions.net/prod-errors"
+      'https://europe-west1-irien-465710.cloudfunctions.net/prod-errors'
     );
     expect(source).toContain(
       'windowObj.console.error = errorHandlers.logError;'
