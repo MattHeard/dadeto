@@ -2,6 +2,7 @@ import { describe, expect, it } from '@jest/globals';
 import { joyConMapperTestOnly } from '../../../../src/core/browser/inputHandlers/joyConMapper.js';
 
 const {
+  getClosestArticle,
   describeCapture,
   normalizeStoredMapperState,
   detectButtonCapture,
@@ -29,6 +30,19 @@ const {
 } = joyConMapperTestOnly;
 
 describe('joyConMapper helper branches', () => {
+  it('finds the containing article entry', () => {
+    const article = {};
+    const container = {
+      closest: selector => {
+        expect(selector).toBe('article.entry');
+        return article;
+      },
+    };
+
+    expect(getClosestArticle(container)).toBe(article);
+    expect(getClosestArticle({ closest: () => null })).toBeNull();
+  });
+
   it('describes optional, button, and axis captures', () => {
     expect(describeCapture(null)).toBe('optional');
     expect(describeCapture({ type: 'button', index: 2, value: 0.9 })).toBe(
