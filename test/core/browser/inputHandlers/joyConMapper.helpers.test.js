@@ -85,6 +85,7 @@ const {
   maybeCapture,
   registerClick,
   appendChildren,
+  disposeAll,
   shouldSkipCapture,
   updateCaptureState,
   normalizeButtonSnapshot,
@@ -1644,5 +1645,16 @@ describe('joyConMapper child appending', () => {
       [parent, children[0]],
       [parent, children[1]],
     ]);
+  });
+});
+
+describe('joyConMapper disposer cleanup', () => {
+  it('invokes every disposer in registration order', () => {
+    const calls = [];
+    const disposers = [() => calls.push('first'), () => calls.push('second')];
+
+    disposeAll(disposers);
+
+    expect(calls).toEqual(['first', 'second']);
   });
 });
