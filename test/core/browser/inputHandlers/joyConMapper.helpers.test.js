@@ -1066,6 +1066,14 @@ describe('joyConMapper active prompt copy', () => {
         'The next newly pressed gamepad button will be saved for this control, or click Skip Current.',
     });
   });
+
+  it('describes axis capture for a stick control', () => {
+    expect(getActivePromptCopy({ label: 'Stick Left', type: 'axis' })).toEqual({
+      prompt: 'Press Stick Left',
+      subprompt:
+        'Move the stick in the highlighted direction until the mapper captures it, or click Skip Current.',
+    });
+  });
 });
 
 describe('joyConMapper prompt completion', () => {
