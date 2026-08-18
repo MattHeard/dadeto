@@ -23,6 +23,7 @@ const {
   snapshotHidInputReport,
   readJoyConButtonBytes,
   readJoyConHatByte,
+  resolveHatXAxis,
   describeCapture,
   normalizeStoredMapperState,
   detectButtonCapture,
@@ -681,5 +682,8 @@ describe('joyConMapper HID report snapshots', () => {
     expect(readJoyConHatByte([9, 8, 7, 6], true)).toBe(6);
     expect(readJoyConHatByte([9, 8], false)).toBeNull();
     expect(readJoyConHatByte([9, 8, 7], false)).toBe(7);
+    expect([5, 6, 7].map(resolveHatXAxis)).toEqual([-1, -1, -1]);
+    expect([1, 2, 3].map(resolveHatXAxis)).toEqual([1, 1, 1]);
+    expect([0, 4].map(resolveHatXAxis)).toEqual([0, 0]);
   });
 });
