@@ -56,6 +56,8 @@ const {
   getAxisCaptureCandidate,
   mergeAxisCaptureCandidate,
   buildPayload,
+  getStoredControlCapture,
+  getPendingRowStateForStarted,
   selectStrongerButtonCapture,
   selectStrongerAxisCapture,
   attachCurrentControlKey,
@@ -959,6 +961,29 @@ describe('joyConMapper payload helpers', () => {
       value: 3,
       currentControlKey: 'l',
     });
+  });
+});
+
+describe('joyConMapper stored-row helpers', () => {
+  it('returns stored captures and started row states', () => {
+    const control = { key: 'l' };
+    const capture = { type: 'button', index: 2, value: 0.9 };
+    expect(
+      getStoredControlCapture(control, { stored: { mappings: { l: capture } } })
+    ).toBe(capture);
+    expect(
+      getStoredControlCapture(control, { stored: { mappings: {} } })
+    ).toBeNull();
+    expect(getPendingRowStateForStarted({ currentIndex: 2 }, 2)).toBe('active');
+    expect(getPendingRowStateForStarted({ currentIndex: 1 }, 2)).toBe(
+      'optional'
+    );
+    expect(
+      getPendingRowState({ started: true, currentIndex: 2 }, 2)
+    ).toStrictEqual('active');
+    expect(
+      getPendingRowState({ started: true, currentIndex: 1 }, 2)
+    ).toStrictEqual('optional');
   });
 });
 

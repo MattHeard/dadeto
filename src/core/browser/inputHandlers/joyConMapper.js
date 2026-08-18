@@ -2115,6 +2115,8 @@ export const joyConMapperTestOnly = {
   getAxisCaptureCandidate,
   mergeAxisCaptureCandidate,
   buildPayload,
+  getStoredControlCapture,
+  getPendingRowStateForStarted,
   selectStrongerButtonCapture,
   selectStrongerAxisCapture,
   attachCurrentControlKey,
