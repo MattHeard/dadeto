@@ -2150,6 +2150,7 @@ export const joyConMapperTestOnly = {
   getConnectedPromptCopy,
   renderPrompt,
   renderMeta,
+  renderMapperList,
   getActivePromptText,
   ensureStarted,
   advanceToNextControl,

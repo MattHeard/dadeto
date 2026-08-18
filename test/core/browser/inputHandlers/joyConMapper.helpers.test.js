@@ -74,6 +74,7 @@ const {
   getConnectedPromptCopy,
   renderPrompt,
   renderMeta,
+  renderMapperList,
   syncCurrentControlFromIndex,
   refreshStoredState,
   ensureStarted,
@@ -1082,6 +1083,33 @@ describe('joyConMapper skipped-row state', () => {
         0
       )
     ).toBe('skipped');
+  });
+});
+
+describe('joyConMapper list rendering', () => {
+  it('adds a state class only to non-optional rows', () => {
+    const addedClasses = [];
+    const dom = {
+      removeAllChildren: jest.fn(),
+      createElement: jest.fn(() => ({
+        classList: { add: className => addedClasses.push(className) },
+      })),
+      setClassName: jest.fn(),
+      setTextContent: jest.fn(),
+      appendChild: jest.fn(),
+    };
+    const state = {
+      dom,
+      list: {},
+      started: true,
+      currentIndex: 0,
+      stored: { mappings: {}, skippedControls: [] },
+    };
+
+    renderMapperList(state);
+
+    expect(addedClasses).toContain('active');
+    expect(addedClasses).not.toContain('optional');
   });
 });
 
