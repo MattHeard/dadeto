@@ -1,6 +1,24 @@
 {
   "posts": [
     {
+      "key": "RUNN1",
+      "title": "Runner Availability Registry",
+      "publicationDate": "2026-08-18",
+      "release": "public",
+      "content": [
+        "Register runners and the time windows in which they are available for runs.",
+        "This registry intentionally models availability only; jobs, routing, and matching come later.",
+        "It is the next scheduling primitive for the object-minute rental proof of concept."
+      ],
+      "toy": {
+        "modulePath": "/core/browser/toys/2026-08-18/runnerAvailabilityRegistry.js",
+        "functionName": "runnerAvailabilityRegistry",
+        "defaultInputMethod": "textarea",
+        "defaultOutputMethod": "textarea"
+      },
+      "tags": ["toy", "object-minute-rental", "runner", "availability", "registry", "json"]
+    },
+    {
       "key": "POSS1",
       "title": "Possession Request",
       "publicationDate": "2026-08-17",
