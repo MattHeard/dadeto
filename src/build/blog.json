@@ -1,6 +1,24 @@
 {
   "posts": [
     {
+      "key": "ASSE1",
+      "title": "Asset Allocation Registry",
+      "publicationDate": "2026-08-18",
+      "release": "public",
+      "content": [
+        "Allocate physical assets to possession contexts for the complete operational period.",
+        "The allocation window includes transport to the customer, possession, transport back, and return/reset.",
+        "Allocations reference possession contexts rather than possession requests directly."
+      ],
+      "toy": {
+        "modulePath": "/core/browser/toys/2026-08-18/assetAllocationRegistry.js",
+        "functionName": "assetAllocationRegistry",
+        "defaultInputMethod": "textarea",
+        "defaultOutputMethod": "textarea"
+      },
+      "tags": ["toy", "object-minute-rental", "allocation", "asset", "possession-context", "json"]
+    },
+    {
       "key": "RUNN1",
       "title": "Runner Availability Registry",
       "publicationDate": "2026-08-18",
