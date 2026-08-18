@@ -88,6 +88,7 @@ const {
   disposeAll,
   startJoyConCaptureLoop,
   queueJoyConInitialSync,
+  injectStyles,
   shouldSkipCapture,
   updateCaptureState,
   normalizeButtonSnapshot,
@@ -1720,5 +1721,24 @@ describe('joyConMapper initial synchronization', () => {
       action: 'initialize',
       currentControlKey: 'l',
     });
+  });
+});
+
+describe('joyConMapper style injection', () => {
+  it('creates a style element with mapper CSS and attaches it to the form', () => {
+    const style = {};
+    const form = {};
+    const dom = {
+      createElement: jest.fn(() => style),
+      setClassName: jest.fn(),
+      setTextContent: jest.fn(),
+      appendChild: jest.fn(),
+    };
+
+    injectStyles(dom, form);
+
+    expect(dom.createElement).toHaveBeenCalledWith('style');
+    expect(dom.setTextContent.mock.calls[0][1]).toContain('.joycon-mapper-row');
+    expect(dom.appendChild).toHaveBeenCalledWith(form, style);
   });
 });

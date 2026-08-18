@@ -2141,6 +2141,7 @@ export const joyConMapperTestOnly = {
   disposeAll,
   startJoyConCaptureLoop,
   queueJoyConInitialSync,
+  injectStyles,
   getSkippedControlKey,
   crossedButtonThreshold,
   hasButtonCaptureTransition,
