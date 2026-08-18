@@ -37,6 +37,10 @@ const {
   isObjectLike,
   isControlPending,
   firstPendingIndex,
+  becamePressed,
+  crossedButtonThreshold,
+  hasButtonCaptureTransition,
+  getButtonCaptureCandidate,
   readStoredMapperState,
   readStoredMapperRoot,
   parseStoredMapperRoot,
@@ -837,6 +841,37 @@ describe('joyConMapper snapshot guard helpers', () => {
     expect(isMissingButtonSnapshots({ buttons: [] }, { buttons: [] })).toBe(
       false
     );
+  });
+});
+
+describe('joyConMapper button transition helpers', () => {
+  it('detects press edges and threshold crossings independently', () => {
+    const released = { pressed: false, value: 0.1 };
+    const pressed = { pressed: true, value: 0.1 };
+    const belowThreshold = { pressed: false, value: 0.54 };
+    const atThreshold = { pressed: false, value: 0.65 };
+    const aboveThreshold = { pressed: false, value: 0.8 };
+
+    expect(becamePressed(pressed, released)).toBe(true);
+    expect(becamePressed(released, pressed)).toBe(false);
+    expect(crossedButtonThreshold(atThreshold, belowThreshold)).toBe(true);
+    expect(crossedButtonThreshold(aboveThreshold, atThreshold)).toBe(false);
+    expect(crossedButtonThreshold(belowThreshold, atThreshold)).toBe(false);
+    expect(hasButtonCaptureTransition(pressed, released)).toBe(true);
+    expect(hasButtonCaptureTransition(atThreshold, belowThreshold)).toBe(true);
+    expect(hasButtonCaptureTransition(released, released)).toBe(false);
+  });
+
+  it('returns candidates only for qualifying transitions', () => {
+    const released = { pressed: false, value: 0 };
+    const pressed = { pressed: true, value: 0.8 };
+
+    expect(getButtonCaptureCandidate(pressed, released, 4)).toEqual({
+      type: 'button',
+      index: 4,
+      value: 0.8,
+    });
+    expect(getButtonCaptureCandidate(released, released, 4)).toBeNull();
   });
 });
 
