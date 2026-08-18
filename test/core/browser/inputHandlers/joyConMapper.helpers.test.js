@@ -11,6 +11,7 @@ const {
   currentHidSnapshot,
   currentControllerSnapshot,
   hasConnectedController,
+  initializeWebHidCapture,
   describeCapture,
   normalizeStoredMapperState,
   detectButtonCapture,
@@ -351,5 +352,21 @@ describe('joyConMapper controller state helpers', () => {
     expect(hasConnectedController({ dom: { getGamepads: () => [] } })).toBe(
       false
     );
+  });
+});
+
+describe('joyConMapper WebHID availability', () => {
+  it('ignores missing global browser APIs safely', () => {
+    const state = { dom: {}, hidDevices: [] };
+    const disposers = [];
+
+    expect(() => initializeWebHidCapture(state, disposers)).not.toThrow();
+    expect(disposers).toEqual([]);
+  });
+
+  it('ignores browsers without WebHID', () => {
+    const state = { dom: { globalThis: { navigator: {} } }, hidDevices: [] };
+
+    expect(() => initializeWebHidCapture(state, [])).not.toThrow();
   });
 });

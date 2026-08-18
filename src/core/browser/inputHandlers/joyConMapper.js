@@ -2087,6 +2087,7 @@ export const joyConMapperTestOnly = {
   currentHidSnapshot,
   currentControllerSnapshot,
   hasConnectedController,
+  initializeWebHidCapture,
   createElement,
   applyCreatedElementOptions,
   applyElementClassName,
