@@ -54,6 +54,7 @@ const {
   directionalDelta,
   hasAxisCaptureDelta,
   getAxisCaptureCandidate,
+  mergeAxisCaptureCandidate,
   selectStrongerButtonCapture,
   selectStrongerAxisCapture,
   attachCurrentControlKey,
@@ -936,6 +937,8 @@ describe('joyConMapper axis selection helpers', () => {
     };
 
     expect(selectStrongerAxisCapture(best, candidate)).toBe(best);
+    expect(mergeAxisCaptureCandidate(best, null)).toBe(best);
+    expect(mergeAxisCaptureCandidate(null, candidate)).toBe(candidate);
   });
 });
 

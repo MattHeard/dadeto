@@ -2113,6 +2113,7 @@ export const joyConMapperTestOnly = {
   directionalDelta,
   hasAxisCaptureDelta,
   getAxisCaptureCandidate,
+  mergeAxisCaptureCandidate,
   selectStrongerButtonCapture,
   selectStrongerAxisCapture,
   attachCurrentControlKey,
