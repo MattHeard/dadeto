@@ -7,6 +7,10 @@ const {
   dispatchChangeEvent,
   enableAutoSubmit,
   syncToyInput,
+  currentPad,
+  currentHidSnapshot,
+  currentControllerSnapshot,
+  hasConnectedController,
   describeCapture,
   normalizeStoredMapperState,
   detectButtonCapture,
@@ -314,5 +318,38 @@ describe('joyConMapper input synchronization', () => {
     expect(values).toEqual(['{"answer":42}', 'change']);
     expect(textInput.value).toBe('{"answer":42}');
     expect(checkbox.checked).toBe(true);
+  });
+});
+
+describe('joyConMapper controller state helpers', () => {
+  it('selects connected gamepads and controller snapshots', () => {
+    const gamepad = { buttons: [{ pressed: true, value: 1 }], axes: [0.5] };
+    const dom = { getGamepads: () => [null, gamepad] };
+    const state = { dom, hidSnapshot: null, hidDevices: [] };
+
+    expect(currentPad(dom)).toBe(gamepad);
+    expect(currentHidSnapshot(state)).toBeNull();
+    expect(currentControllerSnapshot(state)).toEqual({
+      buttons: [{ pressed: true, value: 1 }],
+      axes: [0.5],
+    });
+    expect(hasConnectedController(state)).toBe(true);
+  });
+
+  it('prefers HID snapshots and detects HID-only connections', () => {
+    const hidSnapshot = { buttons: [], axes: [] };
+    const state = {
+      dom: { getGamepads: () => [] },
+      hidSnapshot,
+      hidDevices: [{}],
+    };
+
+    expect(currentHidSnapshot(state)).toBe(hidSnapshot);
+    expect(currentControllerSnapshot(state)).toBe(hidSnapshot);
+    expect(hasConnectedController(state)).toBe(true);
+    expect(hasConnectedController({ ...state, hidDevices: [] })).toBe(false);
+    expect(hasConnectedController({ dom: { getGamepads: () => [] } })).toBe(
+      false
+    );
   });
 });
