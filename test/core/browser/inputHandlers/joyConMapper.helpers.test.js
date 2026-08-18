@@ -73,6 +73,7 @@ const {
   getStartedPromptCopy,
   getConnectedPromptCopy,
   renderPrompt,
+  renderMeta,
   getGamepadStatusText,
   getGamepadIndexText,
   getGamepadIdText,
@@ -1175,6 +1176,35 @@ describe('joyConMapper prompt rendering', () => {
       state.subprompt,
       'Press Start Mapping. Every control is optional and can be skipped.'
     );
+  });
+});
+
+describe('joyConMapper metadata rendering', () => {
+  it('renders disconnected status and empty gamepad metadata', () => {
+    const setTextContent = jest.fn();
+    const state = {
+      dom: { getGamepads: () => [], setTextContent },
+      dot: { classList: { toggle: jest.fn() } },
+      statusText: {},
+      metaIndex: {},
+      metaId: {},
+      hidDevices: [],
+    };
+
+    renderMeta(state);
+
+    expect(state.dot.classList.toggle).toHaveBeenCalledWith('connected', false);
+    expect(setTextContent).toHaveBeenNthCalledWith(
+      1,
+      state.statusText,
+      'Waiting for gamepad'
+    );
+    expect(setTextContent).toHaveBeenNthCalledWith(
+      2,
+      state.metaIndex,
+      'Index: -'
+    );
+    expect(setTextContent).toHaveBeenNthCalledWith(3, state.metaId, 'ID: -');
   });
 });
 
