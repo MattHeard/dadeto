@@ -913,6 +913,13 @@ describe('joyConMapper axis snapshot helpers', () => {
   });
 });
 
+describe('joyConMapper axis delta threshold helpers', () => {
+  it('rejects exact positive and negative delta thresholds', () => {
+    expect(hasAxisCaptureDelta(0, 0.18, 'positive')).toBe(false);
+    expect(hasAxisCaptureDelta(0, -0.18, 'negative')).toBe(false);
+  });
+});
+
 describe('joyConMapper element helpers', () => {
   it('creates and applies optional element settings', () => {
     const created = {};
