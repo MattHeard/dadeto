@@ -32,12 +32,11 @@ const config = {
       statements: 100,
     },
   },
-  // Ensure coverage is collected for all files, including those not tested
-  collectCoverage: Boolean(process.env.STRYKER_TEST_ENV),
+  // Stryker collects per-test coverage itself; Jest-wide coverage adds
+  // unrelated files and delays mutation worker teardown.
+  collectCoverage: false,
   forceExit: Boolean(process.env.STRYKER_TEST_ENV),
-  // Ensure all files are included in coverage, even if not required
-  forceCoverageMatch:
-    (process.env.STRYKER_TEST_ENV && ['src/core/**/*.js']) || [],
+  forceCoverageMatch: [],
 };
 
 export default config;
