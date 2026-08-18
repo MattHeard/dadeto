@@ -66,6 +66,7 @@ const {
   getRowState,
   getRowValueText,
   getDisconnectedPromptCopy,
+  getReadyPromptCopy,
   getGamepadStatusText,
   getGamepadIndexText,
   getGamepadIdText,
@@ -1027,6 +1028,16 @@ describe('joyConMapper disconnected prompt copy', () => {
     expect(getDisconnectedPromptCopy()).toEqual({
       prompt: 'Connect a gamepad to begin',
       subprompt: 'The mapper will resume as soon as the left Joy-Con appears.',
+    });
+  });
+});
+
+describe('joyConMapper ready prompt copy', () => {
+  it('explains the optional mapping flow before it starts', () => {
+    expect(getReadyPromptCopy()).toEqual({
+      prompt: 'Ready to map the left Joy-Con',
+      subprompt:
+        'Press Start Mapping. Every control is optional and can be skipped.',
     });
   });
 });
