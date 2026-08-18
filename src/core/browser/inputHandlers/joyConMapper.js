@@ -2082,6 +2082,7 @@ export const joyConMapperTestOnly = {
   getAutoSubmitCheckbox,
   dispatchChangeEvent,
   enableAutoSubmit,
+  syncToyInput,
   createElement,
   applyCreatedElementOptions,
   applyElementClassName,

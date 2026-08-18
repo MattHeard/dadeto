@@ -6,6 +6,7 @@ const {
   getAutoSubmitCheckbox,
   dispatchChangeEvent,
   enableAutoSubmit,
+  syncToyInput,
   describeCapture,
   normalizeStoredMapperState,
   detectButtonCapture,
@@ -284,5 +285,34 @@ describe('joyConMapper helper branches', () => {
         null
       )
     ).toBeNull();
+  });
+});
+
+describe('joyConMapper input synchronization', () => {
+  it('serializes and synchronizes toy input before auto-submit', () => {
+    const textInput = { value: '' };
+    const values = [];
+    const checkbox = {
+      checked: false,
+      dispatchEvent: event => values.push(event.type),
+    };
+    const dom = {
+      setValue: (element, value) => {
+        expect(element).toBe(textInput);
+        element.value = value;
+        values.push(value);
+      },
+    };
+
+    syncToyInput({
+      dom,
+      textInput,
+      autoSubmitCheckbox: checkbox,
+      payload: { answer: 42 },
+    });
+
+    expect(values).toEqual(['{"answer":42}', 'change']);
+    expect(textInput.value).toBe('{"answer":42}');
+    expect(checkbox.checked).toBe(true);
   });
 });
