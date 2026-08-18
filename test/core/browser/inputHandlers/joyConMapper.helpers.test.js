@@ -21,6 +21,7 @@ const {
   sameButtonSnapshot,
   sameNumberArray,
   snapshotHidInputReport,
+  readJoyConButtonBytes,
   describeCapture,
   normalizeStoredMapperState,
   detectButtonCapture,
@@ -674,5 +675,7 @@ describe('joyConMapper HID report snapshots', () => {
     expect(standard.axes).toHaveLength(2);
     expect(fallback.buttons).toHaveLength(16);
     expect(fallback.axes).toHaveLength(2);
+    expect(readJoyConButtonBytes([9, 8, 7, 6], true)).toEqual([8, 7]);
+    expect(readJoyConButtonBytes([9, 8, 7, 6], false)).toEqual([9, 8]);
   });
 });
