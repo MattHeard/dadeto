@@ -32,6 +32,9 @@ const {
   applyElementClassName,
   describeCapture,
   normalizeStoredMapperState,
+  normalizeStoredMappings,
+  normalizeSkippedControls,
+  isObjectLike,
   readStoredMapperState,
   readStoredMapperRoot,
   parseStoredMapperRoot,
@@ -142,6 +145,14 @@ describe('joyConMapper helper branches', () => {
 
     expect(stored.mappings.l).toEqual({ type: 'button', index: 0, value: 1 });
     expect(stored.skippedControls).toEqual(['zr']);
+
+    expect(isObjectLike(null)).toBe(false);
+    expect(isObjectLike('text')).toBe(false);
+    expect(isObjectLike({})).toBe(true);
+    expect(normalizeStoredMappings('text')).toEqual({});
+    expect(normalizeStoredMappings([])).toEqual([]);
+    expect(normalizeSkippedControls({})).toEqual([]);
+    expect(normalizeSkippedControls(['zr'])).toEqual(['zr']);
   });
 
   it('detects button capture transitions and picks the strongest candidate', () => {

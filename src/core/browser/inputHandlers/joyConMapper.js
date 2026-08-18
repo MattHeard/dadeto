@@ -2095,6 +2095,7 @@ export const joyConMapperTestOnly = {
   readMapperStorageEntry,
   normalizeStoredMappings,
   normalizeSkippedControls,
+  isObjectLike,
   describeCapture,
   normalizeStoredMapperState,
   detectButtonCapture,
