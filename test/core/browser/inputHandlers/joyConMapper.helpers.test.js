@@ -77,6 +77,7 @@ const {
   syncCurrentControlFromIndex,
   refreshStoredState,
   ensureStarted,
+  isPendingControlAfterIndex,
   getGamepadStatusText,
   getGamepadIndexText,
   getGamepadIdText,
@@ -1224,6 +1225,27 @@ describe('joyConMapper current-control synchronization', () => {
     state.currentIndex = 99;
     syncCurrentControlFromIndex(state);
     expect(state.currentControl).toBeNull();
+  });
+});
+
+describe('joyConMapper pending-control selection', () => {
+  it('requires a pending control to appear after the active index', () => {
+    const state = {
+      currentIndex: 1,
+      stored: { mappings: {}, skippedControls: [] },
+    };
+    const control = { key: 'minus', type: 'button' };
+
+    expect(isPendingControlAfterIndex(state, control, 2)).toBe(true);
+    expect(isPendingControlAfterIndex(state, control, 1)).toBe(false);
+    expect(isPendingControlAfterIndex(state, control, 0)).toBe(false);
+    expect(
+      isPendingControlAfterIndex(
+        { ...state, stored: { mappings: { minus: {} }, skippedControls: [] } },
+        control,
+        2
+      )
+    ).toBe(false);
   });
 });
 
