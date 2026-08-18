@@ -86,6 +86,7 @@ const {
   registerClick,
   appendChildren,
   disposeAll,
+  startJoyConCaptureLoop,
   shouldSkipCapture,
   updateCaptureState,
   normalizeButtonSnapshot,
@@ -1656,5 +1657,39 @@ describe('joyConMapper disposer cleanup', () => {
     disposeAll(disposers);
 
     expect(calls).toEqual(['first', 'second']);
+  });
+});
+
+describe('joyConMapper capture-loop lifecycle', () => {
+  it('schedules a 50ms interval and disposes that exact interval', () => {
+    let intervalCallback;
+    const dom = {
+      setInterval: jest.fn(callback => {
+        intervalCallback = callback;
+        return 17;
+      }),
+      clearInterval: jest.fn(),
+      getGamepads: () => [{ buttons: [], axes: [0] }],
+    };
+    const disposers = [];
+    const state = {
+      dom,
+      started: true,
+      currentControl: {
+        key: 'left-stick-up',
+        type: 'axis',
+        direction: 'positive',
+      },
+      previousSnapshot: null,
+    };
+
+    startJoyConCaptureLoop(state, disposers);
+
+    expect(dom.setInterval).toHaveBeenCalledWith(expect.any(Function), 50);
+    intervalCallback();
+    expect(state.previousSnapshot).toEqual({ buttons: [], axes: [0] });
+    expect(disposers).toHaveLength(1);
+    disposers[0]();
+    expect(dom.clearInterval).toHaveBeenCalledWith(17);
   });
 });
