@@ -26,6 +26,7 @@ const {
   resolveHatXAxis,
   snapshotHidButtons,
   logHidDeviceEvent,
+  logHidReportEvent,
   describeCapture,
   normalizeStoredMapperState,
   detectButtonCapture,
@@ -711,6 +712,23 @@ describe('joyConMapper HID report snapshots', () => {
       productId: 0x2006,
       collections: 0,
       opened: undefined,
+    });
+    log.mockRestore();
+  });
+
+  it('logs HID report bytes with the report label', () => {
+    const log = jest.spyOn(console, 'log').mockImplementation(() => {});
+
+    logHidReportEvent(
+      { productName: 'Joy-Con', vendorId: 0x057e, productId: 0x2006 },
+      { data: { buffer: new Uint8Array([1, 2]).buffer } }
+    );
+
+    expect(log).toHaveBeenCalledWith('[joyConMapper:webhid]', 'report', {
+      productName: 'Joy-Con',
+      vendorId: 0x057e,
+      productId: 0x2006,
+      bytes: [1, 2],
     });
     log.mockRestore();
   });
