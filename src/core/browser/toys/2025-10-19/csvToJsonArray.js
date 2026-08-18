@@ -25,22 +25,23 @@ function extractCsvRows(input) {
   const trimmedLines = removeTrailingEmptyLines(
     input.replace(/\r\n?/g, '\n').split('\n')
   );
-  if (trimmedLines.length < 2) {
+  if (trimmedLines === null) {
     return null;
   }
+  const [headerLine, ...dataLines] = trimmedLines;
 
-  const headers = parseHeaderRow(trimmedLines[0]);
+  const headers = parseHeaderRow(headerLine);
   if (!headers) {
     return null;
   }
 
   const rows = [];
-  for (const rawLine of trimmedLines.slice(1)) {
+  for (const rawLine of dataLines) {
     const record = parseRecordLine(rawLine, headers);
     if (record === null) {
       return null;
     }
-    if (Object.keys(record).length > 0) {
+    if (record !== undefined && Object.keys(record).length > 0) {
       rows.push(record);
     }
   }
@@ -55,12 +56,12 @@ function extractCsvRows(input) {
 /**
  * Remove any trailing blank lines.
  * @param {string[]} lines Lines.
- * @returns {string[]} Trimmed lines.
+ * @returns {string[] | null} Trimmed lines, or null when all lines are blank.
  */
 function removeTrailingEmptyLines(lines) {
   const lastIndex = findLastNonEmptyLineIndex(lines);
   if (lastIndex === -1) {
-    return [];
+    return null;
   }
 
   return lines.slice(0, lastIndex + 1);
@@ -83,7 +84,7 @@ function findLastNonEmptyLineIndex(lines) {
  * @returns {string[] | null} Parsed header names or null on invalid input.
  */
 function parseHeaderRow(line) {
-  const headerTokens = parseCsvLine(line.trim());
+  const headerTokens = parseCsvLine(line);
   if (!headerTokens) {
     return null;
   }
@@ -103,12 +104,12 @@ function parseHeaderRow(line) {
  * Parse one data row against the header names.
  * @param {string} rawLine - CSV data line.
  * @param {string[]} headers - Header names.
- * @returns {Record<string, string> | null} Parsed row object or null on invalid input.
+ * @returns {Record<string, string> | null | undefined} Parsed row object, null on invalid input, or undefined for a blank row.
  */
 function parseRecordLine(rawLine, headers) {
   const normalizedLine = rawLine.trim();
   if (normalizedLine.length === 0) {
-    return {};
+    return undefined;
   }
 
   const values = parseCsvLine(normalizedLine);
@@ -126,3 +127,11 @@ function parseRecordLine(rawLine, headers) {
   });
   return record;
 }
+
+export const csvToJsonArrayTestUtils = {
+  extractCsvRows,
+  removeTrailingEmptyLines,
+  findLastNonEmptyLineIndex,
+  parseHeaderRow,
+  parseRecordLine,
+};
