@@ -24,6 +24,7 @@ const {
   readJoyConButtonBytes,
   readJoyConHatByte,
   resolveHatXAxis,
+  snapshotHidButtons,
   logHidDeviceEvent,
   describeCapture,
   normalizeStoredMapperState,
@@ -686,6 +687,10 @@ describe('joyConMapper HID report snapshots', () => {
     expect([5, 6, 7].map(resolveHatXAxis)).toEqual([-1, -1, -1]);
     expect([1, 2, 3].map(resolveHatXAxis)).toEqual([1, 1, 1]);
     expect([0, 4].map(resolveHatXAxis)).toEqual([0, 0]);
+    expect(snapshotHidButtons([0])).toEqual(
+      Array.from({ length: 8 }, () => ({ pressed: false, value: 0 }))
+    );
+    expect(snapshotHidButtons([1])[0]).toEqual({ pressed: true, value: 1 });
   });
 
   it('logs HID lifecycle events only when a device exists', () => {
