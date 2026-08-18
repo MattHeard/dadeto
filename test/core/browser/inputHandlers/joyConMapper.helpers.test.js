@@ -27,6 +27,9 @@ const {
   snapshotHidButtons,
   logHidDeviceEvent,
   logHidReportEvent,
+  createElement,
+  applyCreatedElementOptions,
+  applyElementClassName,
   describeCapture,
   normalizeStoredMapperState,
   detectButtonCapture,
@@ -731,5 +734,30 @@ describe('joyConMapper HID report snapshots', () => {
       bytes: [1, 2],
     });
     log.mockRestore();
+  });
+});
+
+describe('joyConMapper element helpers', () => {
+  it('creates and applies optional element settings', () => {
+    const created = {};
+    const dom = {
+      createElement: jest.fn(() => created),
+      setClassName: jest.fn(),
+      setTextContent: jest.fn(),
+    };
+
+    expect(createElement(dom, 'div')).toBe(created);
+    expect(dom.createElement).toHaveBeenCalledWith('div');
+    applyCreatedElementOptions(dom, created, undefined);
+    applyCreatedElementOptions(dom, created, { className: '', text: 'hello' });
+    applyCreatedElementOptions(dom, created, { className: 'active', text: 42 });
+    applyElementClassName(dom, created, 'direct');
+    applyElementClassName(dom, created, '');
+
+    expect(dom.setClassName).toHaveBeenCalledWith(created, 'active');
+    expect(dom.setClassName).toHaveBeenCalledWith(created, 'direct');
+    expect(dom.setClassName).toHaveBeenCalledTimes(2);
+    expect(dom.setTextContent).toHaveBeenCalledWith(created, 'hello');
+    expect(dom.setTextContent).toHaveBeenCalledTimes(1);
   });
 });
