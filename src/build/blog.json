@@ -1,6 +1,24 @@
 {
   "posts": [
     {
+      "key": "MEMO4",
+      "title": "Memory Object List Append",
+      "publicationDate": "2026-08-18",
+      "release": "public",
+      "content": [
+        "Append one structured object to a list in temporary, permanent, or envelope memory.",
+        "The toy preserves existing list entries and reports the resulting length.",
+        "This is a generic memory-management primitive for registries such as runner and asset records."
+      ],
+      "toy": {
+        "modulePath": "/core/browser/toys/2026-08-18/memoryObjectListAppend.js",
+        "functionName": "memoryObjectListAppend",
+        "defaultInputMethod": "textarea",
+        "defaultOutputMethod": "textarea"
+      },
+      "tags": ["toy", "memory", "storage", "append", "object", "json"]
+    },
+    {
       "key": "ASSE1",
       "title": "Asset Allocation Registry",
       "publicationDate": "2026-08-18",
