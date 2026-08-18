@@ -206,10 +206,6 @@ export default {
   ...baseConfig,
 ${mutateLine}  // Keep mutation runs resource-bounded in the worktree.
   concurrency: 1,
-  testRunnerNodeArgs: [
-    '--experimental-vm-modules',
-    '--max-old-space-size=2048',
-  ],
 };
 `;
 }

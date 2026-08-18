@@ -1,5 +1,13 @@
 import jestConfig from './jest.config.mjs';
 
+const configuredHeapMb = Number(
+  process.env.DADETO_STRYKER_HEAP_MB ?? 1024
+);
+const strykerHeapMb =
+  Number.isInteger(configuredHeapMb) && configuredHeapMb >= 256
+    ? configuredHeapMb
+    : 1024;
+
 const jestExcludes = (jestConfig.collectCoverageFrom || [])
   .filter(p => p.startsWith('!'))
   .map(p => p.slice(1));
@@ -10,6 +18,7 @@ export default {
     './src/local/stryker-survivor-reporter.js',
   ],
   concurrency: 1,
+  maxTestRunnerReuse: 1,
   mutate: [
     'src/core/**/*.js',
     '!**/*.html',
@@ -21,7 +30,7 @@ export default {
   testRunner: 'jest',
   testRunnerNodeArgs: [
     '--experimental-vm-modules',
-    '--max-old-space-size=2048',
+    `--max-old-space-size=${strykerHeapMb}`,
   ],
   coverageAnalysis: 'perTest',
   timeoutMS: 10_000,

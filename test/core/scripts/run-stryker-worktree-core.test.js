@@ -161,6 +161,8 @@ describe('createRunStrykerWorktreeHandle', () => {
 
     expect(configWrites).toHaveLength(1);
     expect(configWrites[0][1]).toContain(`mutate: ["src/core/cloud"]`);
+    expect(configWrites[0][1]).toContain('concurrency: 1');
+    expect(configWrites[0][1]).not.toContain('max-old-space-size');
 
     await fs.rm(rootDir, { recursive: true, force: true });
   }, 60000);
