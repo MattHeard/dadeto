@@ -67,6 +67,7 @@ const {
   getRowValueText,
   getDisconnectedPromptCopy,
   getReadyPromptCopy,
+  getCompletePromptCopy,
   getGamepadStatusText,
   getGamepadIndexText,
   getGamepadIdText,
@@ -1038,6 +1039,16 @@ describe('joyConMapper ready prompt copy', () => {
       prompt: 'Ready to map the left Joy-Con',
       subprompt:
         'Press Start Mapping. Every control is optional and can be skipped.',
+    });
+  });
+});
+
+describe('joyConMapper complete prompt copy', () => {
+  it('describes the persisted mapping result', () => {
+    expect(getCompletePromptCopy()).toEqual({
+      prompt: 'Mapping complete',
+      subprompt:
+        'The saved mapping is persisted locally and shown in the output panel.',
     });
   });
 });
