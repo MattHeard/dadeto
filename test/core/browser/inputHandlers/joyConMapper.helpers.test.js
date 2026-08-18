@@ -17,6 +17,8 @@ const {
   attachHidDeviceListener,
   updateHidSnapshot,
   sameHidSnapshot,
+  sameButtonSnapshots,
+  sameButtonSnapshot,
   describeCapture,
   normalizeStoredMapperState,
   detectButtonCapture,
@@ -596,6 +598,31 @@ describe('joyConMapper HID snapshot stabilization', () => {
 
     expect(sameHidSnapshot(first, first)).toBe(true);
     expect(sameHidSnapshot(first, changed)).toBe(false);
+    expect(
+      sameButtonSnapshot(
+        { pressed: true, value: 1 },
+        { pressed: true, value: 1 }
+      )
+    ).toBe(true);
+    expect(
+      sameButtonSnapshots(
+        [{ pressed: true, value: 1 }],
+        [{ pressed: false, value: 1 }]
+      )
+    ).toBe(false);
+    expect(
+      sameButtonSnapshots(
+        [
+          { pressed: true, value: 1 },
+          { pressed: true, value: 0 },
+        ],
+        [
+          { pressed: true, value: 1 },
+          { pressed: false, value: 0 },
+        ]
+      )
+    ).toBe(false);
+    expect(sameButtonSnapshots([], [{ pressed: false, value: 0 }])).toBe(false);
     updateHidSnapshot(state, first);
     expect(state.hidPendingSnapshot).toBe(first);
     expect(state.hidPendingSnapshotCount).toBe(1);

@@ -2142,6 +2142,8 @@ export const joyConMapperTestOnly = {
   attachHidDeviceListener,
   updateHidSnapshot,
   sameHidSnapshot,
+  sameButtonSnapshots,
+  sameButtonSnapshot,
   openGrantedJoyConDevice,
   handleJoyConMapperReset,
   snapshotHidInputReport,
