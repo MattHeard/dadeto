@@ -898,6 +898,14 @@ describe('joyConMapper button selection helpers', () => {
   });
 });
 
+describe('joyConMapper axis threshold helpers', () => {
+  it('accepts exact positive and negative axis thresholds', () => {
+    expect(axisMatchesDirection(0.55, 'positive')).toBe(true);
+    expect(axisMatchesDirection(-0.55, 'negative')).toBe(true);
+    expect(axisMatchesDirection(0.55, 'negative')).toBe(false);
+  });
+});
+
 describe('joyConMapper element helpers', () => {
   it('creates and applies optional element settings', () => {
     const created = {};
