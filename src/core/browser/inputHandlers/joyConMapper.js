@@ -2145,6 +2145,7 @@ export const joyConMapperTestOnly = {
   handleJoyConMapperReset,
   snapshotHidInputReport,
   readJoyConButtonBytes,
+  readJoyConHatByte,
   snapshotHidButtons,
   snapshotHidAxes,
   snapshotGamepad,
