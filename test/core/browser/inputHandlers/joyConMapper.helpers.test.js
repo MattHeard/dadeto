@@ -72,6 +72,7 @@ const {
   isPromptComplete,
   getStartedPromptCopy,
   getConnectedPromptCopy,
+  renderPrompt,
   getGamepadStatusText,
   getGamepadIndexText,
   getGamepadIdText,
@@ -1127,6 +1128,45 @@ describe('joyConMapper connected prompt copy', () => {
       subprompt:
         'The next newly pressed gamepad button will be saved for this control, or click Skip Current.',
     });
+  });
+});
+
+describe('joyConMapper prompt rendering', () => {
+  it('renders disconnected and connected prompt copies', () => {
+    const setTextContent = jest.fn();
+    const dom = { getGamepads: () => [], setTextContent };
+    const state = {
+      dom,
+      prompt: {},
+      subprompt: {},
+      hidDevices: [],
+      started: false,
+    };
+
+    renderPrompt(state);
+    expect(setTextContent).toHaveBeenNthCalledWith(
+      1,
+      state.prompt,
+      'Connect a gamepad to begin'
+    );
+    expect(setTextContent).toHaveBeenNthCalledWith(
+      2,
+      state.subprompt,
+      'The mapper will resume as soon as the left Joy-Con appears.'
+    );
+
+    setTextContent.mockClear();
+    renderPrompt({ ...state, hidDevices: [{}] });
+    expect(setTextContent).toHaveBeenNthCalledWith(
+      1,
+      state.prompt,
+      'Ready to map the left Joy-Con'
+    );
+    expect(setTextContent).toHaveBeenNthCalledWith(
+      2,
+      state.subprompt,
+      'Press Start Mapping. Every control is optional and can be skipped.'
+    );
   });
 });
 
