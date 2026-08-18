@@ -987,6 +987,23 @@ describe('joyConMapper stored-row helpers', () => {
   });
 });
 
+describe('joyConMapper skipped-row state', () => {
+  it('marks a skipped unmapped control as skipped', () => {
+    expect(
+      getRowState(
+        { key: 'l' },
+        {
+          started: true,
+          currentIndex: 0,
+          currentControl: null,
+          stored: { mappings: {}, skippedControls: ['l'] },
+        },
+        0
+      )
+    ).toBe('skipped');
+  });
+});
+
 describe('joyConMapper element helpers', () => {
   it('creates and applies optional element settings', () => {
     const created = {};
