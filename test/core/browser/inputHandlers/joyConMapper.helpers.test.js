@@ -80,6 +80,7 @@ const {
   isPendingControlAfterIndex,
   advanceToNextControl,
   captureCurrentControl,
+  shouldSkipCapture,
   getGamepadStatusText,
   getGamepadIndexText,
   getGamepadIdText,
@@ -1328,6 +1329,23 @@ describe('joyConMapper capture transition', () => {
       label: 'ZL',
       type: 'button',
     });
+  });
+});
+
+describe('joyConMapper capture gating', () => {
+  it('skips when idle or without a current control', () => {
+    expect(shouldSkipCapture({ started: false, currentControl: {} })).toBe(
+      true
+    );
+    expect(shouldSkipCapture({ started: true, currentControl: null })).toBe(
+      true
+    );
+    expect(shouldSkipCapture({ started: false, currentControl: null })).toBe(
+      true
+    );
+    expect(shouldSkipCapture({ started: true, currentControl: {} })).toBe(
+      false
+    );
   });
 });
 
