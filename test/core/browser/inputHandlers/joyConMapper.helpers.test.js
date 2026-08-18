@@ -81,6 +81,7 @@ const {
   advanceToNextControl,
   captureCurrentControl,
   shouldSkipCapture,
+  updateCaptureState,
   getGamepadStatusText,
   getGamepadIndexText,
   getGamepadIdText,
@@ -1329,6 +1330,25 @@ describe('joyConMapper capture transition', () => {
       label: 'ZL',
       type: 'button',
     });
+
+    state.currentIndex = 0;
+    state.currentControl = { key: 'l', type: 'button' };
+    state.previousSnapshot = {
+      buttons: [{ pressed: false, value: 0 }],
+      axes: [],
+    };
+    const nextSnapshot = {
+      buttons: [{ pressed: true, value: 1 }],
+      axes: [],
+    };
+    updateCaptureState(state, nextSnapshot);
+    expect(state.currentIndex).toBe(1);
+    expect(state.previousSnapshot).toBe(nextSnapshot);
+
+    state.currentIndex = 0;
+    state.currentControl = { key: 'l', type: 'button' };
+    updateCaptureState(state, nextSnapshot);
+    expect(state.currentIndex).toBe(0);
   });
 });
 
