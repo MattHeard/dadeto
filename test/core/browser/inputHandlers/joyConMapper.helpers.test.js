@@ -1,4 +1,4 @@
-import { describe, expect, it } from '@jest/globals';
+import { describe, expect, it, jest } from '@jest/globals';
 import { joyConMapperTestOnly } from '../../../../src/core/browser/inputHandlers/joyConMapper.js';
 
 const {
@@ -368,5 +368,29 @@ describe('joyConMapper WebHID availability', () => {
     const state = { dom: { globalThis: { navigator: {} } }, hidDevices: [] };
 
     expect(() => initializeWebHidCapture(state, [])).not.toThrow();
+  });
+
+  it('ignores incomplete WebHID objects', () => {
+    const state = {
+      dom: { globalThis: { navigator: { hid: {} } } },
+      hidDevices: [],
+    };
+
+    expect(() => initializeWebHidCapture(state, [])).not.toThrow();
+  });
+
+  it('loads available devices when WebHID is supported', async () => {
+    const device = {};
+    const getDevices = jest.fn(() => Promise.resolve([device]));
+    const state = {
+      dom: { globalThis: { navigator: { hid: { getDevices } } } },
+      hidDevices: [],
+    };
+
+    initializeWebHidCapture(state, []);
+    await Promise.resolve();
+
+    expect(getDevices).toHaveBeenCalledTimes(1);
+    expect(state.hidDevices).toEqual([device]);
   });
 });
