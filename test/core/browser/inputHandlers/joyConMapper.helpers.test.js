@@ -76,6 +76,7 @@ const {
   renderMeta,
   syncCurrentControlFromIndex,
   refreshStoredState,
+  ensureStarted,
   getGamepadStatusText,
   getGamepadIndexText,
   getGamepadIdText,
@@ -1246,6 +1247,20 @@ describe('joyConMapper stored-state refresh', () => {
       label: 'L',
       type: 'button',
     });
+  });
+});
+
+describe('joyConMapper mapping start guard', () => {
+  it('starts an idle state and preserves an already-started state', () => {
+    const idle = { started: false };
+    ensureStarted(idle);
+    expect(idle.started).toBe(true);
+
+    const started = { started: true };
+    ensureStarted(started);
+    expect(started.started).toBe(true);
+
+    expect(() => ensureStarted(Object.freeze({ started: true }))).not.toThrow();
   });
 });
 
