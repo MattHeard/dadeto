@@ -68,6 +68,7 @@ const {
   getDisconnectedPromptCopy,
   getReadyPromptCopy,
   getCompletePromptCopy,
+  getActivePromptCopy,
   getGamepadStatusText,
   getGamepadIndexText,
   getGamepadIdText,
@@ -1049,6 +1050,16 @@ describe('joyConMapper complete prompt copy', () => {
       prompt: 'Mapping complete',
       subprompt:
         'The saved mapping is persisted locally and shown in the output panel.',
+    });
+  });
+});
+
+describe('joyConMapper active prompt copy', () => {
+  it('names the active control and its button capture behavior', () => {
+    expect(getActivePromptCopy({ label: 'L', type: 'button' })).toEqual({
+      prompt: 'Press L',
+      subprompt:
+        'The next newly pressed gamepad button will be saved for this control, or click Skip Current.',
     });
   });
 });

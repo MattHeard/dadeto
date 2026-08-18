@@ -2127,6 +2127,7 @@ export const joyConMapperTestOnly = {
   getDisconnectedPromptCopy,
   getReadyPromptCopy,
   getCompletePromptCopy,
+  getActivePromptCopy,
   getGamepadStatusText,
   getGamepadIndexText,
   getGamepadIdText,
