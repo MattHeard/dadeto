@@ -906,6 +906,13 @@ describe('joyConMapper axis threshold helpers', () => {
   });
 });
 
+describe('joyConMapper axis snapshot helpers', () => {
+  it('rejects either missing axis snapshot', () => {
+    expect(hasAxisSnapshots(null, { buttons: [], axes: [] })).toBe(false);
+    expect(hasAxisSnapshots({ buttons: [], axes: [] }, null)).toBe(false);
+  });
+});
+
 describe('joyConMapper element helpers', () => {
   it('creates and applies optional element settings', () => {
     const created = {};
