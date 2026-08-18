@@ -2140,6 +2140,8 @@ export const joyConMapperTestOnly = {
   initializeWebHidCapture,
   requestAndOpenJoyConDevices,
   attachHidDeviceListener,
+  updateHidSnapshot,
+  sameHidSnapshot,
   openGrantedJoyConDevice,
   handleJoyConMapperReset,
   snapshotHidInputReport,

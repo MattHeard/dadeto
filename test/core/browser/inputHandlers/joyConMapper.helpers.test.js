@@ -15,6 +15,8 @@ const {
   requestAndOpenJoyConDevices,
   openGrantedJoyConDevice,
   attachHidDeviceListener,
+  updateHidSnapshot,
+  sameHidSnapshot,
   describeCapture,
   normalizeStoredMapperState,
   detectButtonCapture,
@@ -579,5 +581,42 @@ describe('joyConMapper granted-device opening', () => {
       'inputreport',
       expect.any(Function)
     );
+  });
+});
+
+describe('joyConMapper HID snapshot stabilization', () => {
+  it('promotes repeated snapshots and resets on changes', () => {
+    const first = { buttons: [{ pressed: true, value: 1 }], axes: [0.2] };
+    const changed = { buttons: [{ pressed: false, value: 0 }], axes: [0.2] };
+    const state = {
+      hidPendingSnapshot: null,
+      hidPendingSnapshotCount: 0,
+      hidSnapshot: null,
+    };
+
+    expect(sameHidSnapshot(first, first)).toBe(true);
+    expect(sameHidSnapshot(first, changed)).toBe(false);
+    updateHidSnapshot(state, first);
+    expect(state.hidPendingSnapshot).toBe(first);
+    expect(state.hidPendingSnapshotCount).toBe(1);
+    expect(state.hidSnapshot).toBeNull();
+
+    updateHidSnapshot(state, first);
+    expect(state.hidPendingSnapshotCount).toBe(2);
+    expect(state.hidSnapshot).toBe(first);
+
+    updateHidSnapshot(state, changed);
+    expect(state.hidPendingSnapshot).toBe(changed);
+    expect(state.hidPendingSnapshotCount).toBe(1);
+    expect(state.hidSnapshot).toBe(first);
+
+    const thresholdState = {
+      hidPendingSnapshot: first,
+      hidPendingSnapshotCount: 0,
+      hidSnapshot: null,
+    };
+    updateHidSnapshot(thresholdState, first);
+    expect(thresholdState.hidPendingSnapshotCount).toBe(1);
+    expect(thresholdState.hidSnapshot).toBeNull();
   });
 });
