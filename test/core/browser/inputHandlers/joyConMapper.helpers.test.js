@@ -82,6 +82,8 @@ const {
   captureCurrentControl,
   shouldSkipCapture,
   updateCaptureState,
+  normalizeButtonSnapshot,
+  normalizeAxisValue,
   getGamepadStatusText,
   getGamepadIndexText,
   getGamepadIdText,
@@ -380,6 +382,24 @@ describe('joyConMapper current-control capture detection', () => {
         { buttons: [], axes: [0.9] }
       )
     ).toEqual({ type: 'axis', axis: 0, direction: 'positive', magnitude: 0.9 });
+  });
+});
+
+describe('joyConMapper snapshot normalization', () => {
+  it('normalizes button booleans and numeric values', () => {
+    expect(normalizeButtonSnapshot({ pressed: true, value: '0.75' })).toEqual({
+      pressed: true,
+      value: 0.75,
+    });
+    expect(normalizeButtonSnapshot({ pressed: 1, value: 'invalid' })).toEqual({
+      pressed: false,
+      value: 0,
+    });
+  });
+
+  it('rounds axes to four decimal places', () => {
+    expect(normalizeAxisValue(0.123456)).toBe(0.1235);
+    expect(normalizeAxisValue(-0.987654)).toBe(-0.9877);
   });
 });
 
