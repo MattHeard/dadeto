@@ -82,6 +82,7 @@ const {
   isPendingControlAfterIndex,
   advanceToNextControl,
   captureCurrentControl,
+  maybeCapture,
   shouldSkipCapture,
   updateCaptureState,
   normalizeButtonSnapshot,
@@ -1485,6 +1486,35 @@ describe('joyConMapper capture gating', () => {
     expect(shouldSkipCapture({ started: true, currentControl: {} })).toBe(
       false
     );
+  });
+});
+
+describe('joyConMapper maybe-capture gating', () => {
+  it('skips idle states and records a normalized active snapshot', () => {
+    const idleSnapshot = { buttons: [], axes: [] };
+    const idle = {
+      started: false,
+      currentControl: null,
+      previousSnapshot: idleSnapshot,
+      dom: { getGamepads: () => [] },
+    };
+
+    maybeCapture(idle);
+    expect(idle.previousSnapshot).toBe(idleSnapshot);
+
+    const active = {
+      started: true,
+      currentControl: {
+        key: 'left-stick-up',
+        type: 'axis',
+        direction: 'positive',
+      },
+      previousSnapshot: null,
+      dom: { getGamepads: () => [{ buttons: [], axes: [0] }] },
+    };
+
+    maybeCapture(active);
+    expect(active.previousSnapshot).toEqual({ buttons: [], axes: [0] });
   });
 });
 
