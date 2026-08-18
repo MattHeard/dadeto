@@ -831,6 +831,15 @@ describe('joyConMapper pending-control helpers', () => {
   });
 });
 
+describe('joyConMapper snapshot guard helpers', () => {
+  it('checks every missing-snapshot combination', () => {
+    expect(isMissingButtonSnapshots(null, { buttons: [] })).toBe(true);
+    expect(isMissingButtonSnapshots({ buttons: [] }, { buttons: [] })).toBe(
+      false
+    );
+  });
+});
+
 describe('joyConMapper element helpers', () => {
   it('creates and applies optional element settings', () => {
     const created = {};
