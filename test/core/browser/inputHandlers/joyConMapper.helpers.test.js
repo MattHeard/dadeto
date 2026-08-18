@@ -20,6 +20,7 @@ const {
   sameButtonSnapshots,
   sameButtonSnapshot,
   sameNumberArray,
+  snapshotHidInputReport,
   describeCapture,
   normalizeStoredMapperState,
   detectButtonCapture,
@@ -650,5 +651,28 @@ describe('joyConMapper HID snapshot stabilization', () => {
     updateHidSnapshot(thresholdState, first);
     expect(thresholdState.hidPendingSnapshotCount).toBe(1);
     expect(thresholdState.hidSnapshot).toBeNull();
+  });
+});
+
+describe('joyConMapper HID report snapshots', () => {
+  it('returns an empty snapshot for an empty report', () => {
+    expect(
+      snapshotHidInputReport({ data: { buffer: new Uint8Array().buffer } })
+    ).toEqual({ buttons: [], axes: [] });
+  });
+
+  it('decodes standard and fallback report layouts', () => {
+    const standard = snapshotHidInputReport({
+      reportId: 0x3f,
+      data: { buffer: new Uint8Array([0x00, 0x01, 0x02, 0x00]).buffer },
+    });
+    const fallback = snapshotHidInputReport({
+      data: { buffer: new Uint8Array([0x01, 0x02, 0x00]).buffer },
+    });
+
+    expect(standard.buttons).toHaveLength(16);
+    expect(standard.axes).toHaveLength(2);
+    expect(fallback.buttons).toHaveLength(16);
+    expect(fallback.axes).toHaveLength(2);
   });
 });

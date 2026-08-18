@@ -438,10 +438,6 @@ function sameNumberArray(left, right) {
  */
 function snapshotHidInputReport(event) {
   const bytes = Array.from(new Uint8Array(event.data.buffer));
-  if (bytes.length === 0) {
-    return { buttons: [], axes: [] };
-  }
-
   const isStandardJoyConReport = isStandardJoyConReportBytes(event, bytes);
   const buttonBytes = readJoyConButtonBytes(bytes, isStandardJoyConReport);
   const hatByte = readJoyConHatByte(bytes, isStandardJoyConReport);
