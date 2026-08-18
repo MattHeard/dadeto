@@ -12,6 +12,7 @@ const {
   currentControllerSnapshot,
   hasConnectedController,
   initializeWebHidCapture,
+  requestAndOpenJoyConDevices,
   describeCapture,
   normalizeStoredMapperState,
   detectButtonCapture,
@@ -451,5 +452,54 @@ describe('joyConMapper WebHID availability', () => {
     initializeWebHidCapture(state, disposers);
     expect(disposers).toHaveLength(2);
     expect(() => disposers.forEach(dispose => dispose())).not.toThrow();
+  });
+});
+
+describe('joyConMapper Joy-Con device requests', () => {
+  it('ignores missing request APIs safely', async () => {
+    await expect(
+      requestAndOpenJoyConDevices({ dom: {}, hidDevices: [] }, [])
+    ).resolves.toBeUndefined();
+    await expect(
+      requestAndOpenJoyConDevices(
+        { dom: { globalThis: { navigator: {} } }, hidDevices: [] },
+        []
+      )
+    ).resolves.toBeUndefined();
+    await expect(
+      requestAndOpenJoyConDevices(
+        { dom: { globalThis: { navigator: { hid: {} } } }, hidDevices: [] },
+        []
+      )
+    ).resolves.toBeUndefined();
+  });
+
+  it('requests Joy-Con devices with the supported API', async () => {
+    const requestDevice = jest.fn(() => Promise.resolve([]));
+    const state = {
+      dom: {
+        globalThis: { navigator: { hid: { requestDevice } } },
+        setTextContent: jest.fn(),
+        getGamepads: () => [],
+      },
+      hidDevices: [],
+      prompt: {},
+      subprompt: {},
+      dot: { classList: { toggle: jest.fn() } },
+      statusText: {},
+      metaIndex: {},
+      metaId: {},
+    };
+
+    await requestAndOpenJoyConDevices(state, []);
+
+    expect(requestDevice).toHaveBeenCalledWith({
+      filters: [
+        { vendorId: 0x057e, productId: 0x2006 },
+        { vendorId: 0x057e, productId: 0x2007 },
+        { vendorId: 0x057e, productId: 0x2008 },
+        { vendorId: 0x057e, productId: 0x2009 },
+      ],
+    });
   });
 });
