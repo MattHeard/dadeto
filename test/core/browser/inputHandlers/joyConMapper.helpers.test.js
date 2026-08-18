@@ -32,6 +32,10 @@ const {
   applyElementClassName,
   describeCapture,
   normalizeStoredMapperState,
+  readStoredMapperState,
+  readStoredMapperRoot,
+  parseStoredMapperRoot,
+  readMapperStorageEntry,
   detectButtonCapture,
   detectAxisCapture,
   axisMatchesDirection,
@@ -734,6 +738,43 @@ describe('joyConMapper HID report snapshots', () => {
       bytes: [1, 2],
     });
     log.mockRestore();
+  });
+});
+
+describe('joyConMapper storage helpers', () => {
+  it('reads mapper state from local storage and handles storage failures', () => {
+    const stored = { mappings: { l: 'button' }, skippedControls: ['zr'] };
+    const dom = {
+      globalThis: {
+        localStorage: {
+          getItem: jest.fn(() => JSON.stringify({ JOYMAP1: stored })),
+        },
+      },
+    };
+
+    expect(readStoredMapperRoot(dom)).toEqual({ JOYMAP1: stored });
+    expect(readStoredMapperRoot({ globalThis: {} })).toEqual({});
+    expect(readMapperStorageEntry({ JOYMAP1: stored })).toBe(stored);
+    expect(readMapperStorageEntry(null)).toBeUndefined();
+    expect(readStoredMapperState(dom)).toEqual({
+      mappings: { l: 'button' },
+      skippedControls: ['zr'],
+    });
+
+    expect(parseStoredMapperRoot(undefined)).toEqual({});
+    expect(parseStoredMapperRoot(null)).toEqual({});
+    expect(() => parseStoredMapperRoot('')).toThrow(SyntaxError);
+    expect(
+      readStoredMapperState({
+        globalThis: {
+          localStorage: {
+            getItem: () => {
+              throw new Error('blocked');
+            },
+          },
+        },
+      })
+    ).toEqual({ mappings: {}, skippedControls: [] });
   });
 });
 
