@@ -71,6 +71,7 @@ const {
   getActivePromptCopy,
   isPromptComplete,
   getStartedPromptCopy,
+  getConnectedPromptCopy,
   getGamepadStatusText,
   getGamepadIndexText,
   getGamepadIdText,
@@ -1094,6 +1095,30 @@ describe('joyConMapper started prompt copy', () => {
   it('uses the active copy while a control remains', () => {
     expect(
       getStartedPromptCopy({
+        currentIndex: 0,
+        currentControl: { label: 'L', type: 'button' },
+      })
+    ).toEqual({
+      prompt: 'Press L',
+      subprompt:
+        'The next newly pressed gamepad button will be saved for this control, or click Skip Current.',
+    });
+  });
+});
+
+describe('joyConMapper connected prompt copy', () => {
+  it('uses the ready copy before mapping starts', () => {
+    expect(getConnectedPromptCopy({ started: false })).toEqual({
+      prompt: 'Ready to map the left Joy-Con',
+      subprompt:
+        'Press Start Mapping. Every control is optional and can be skipped.',
+    });
+  });
+
+  it('uses the started copy after mapping begins', () => {
+    expect(
+      getConnectedPromptCopy({
+        started: true,
         currentIndex: 0,
         currentControl: { label: 'L', type: 'button' },
       })
