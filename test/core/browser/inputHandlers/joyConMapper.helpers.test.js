@@ -24,6 +24,7 @@ const {
   readJoyConButtonBytes,
   readJoyConHatByte,
   resolveHatXAxis,
+  logHidDeviceEvent,
   describeCapture,
   normalizeStoredMapperState,
   detectButtonCapture,
@@ -685,5 +686,27 @@ describe('joyConMapper HID report snapshots', () => {
     expect([5, 6, 7].map(resolveHatXAxis)).toEqual([-1, -1, -1]);
     expect([1, 2, 3].map(resolveHatXAxis)).toEqual([1, 1, 1]);
     expect([0, 4].map(resolveHatXAxis)).toEqual([0, 0]);
+  });
+
+  it('logs HID lifecycle events only when a device exists', () => {
+    const log = jest.spyOn(console, 'log').mockImplementation(() => {});
+
+    logHidDeviceEvent('connected', null);
+    expect(log).not.toHaveBeenCalled();
+
+    const device = {
+      productName: 'Joy-Con',
+      vendorId: 0x057e,
+      productId: 0x2006,
+    };
+    logHidDeviceEvent('connected', device);
+    expect(log).toHaveBeenCalledWith('[joyConMapper:webhid]', 'connected', {
+      productName: 'Joy-Con',
+      vendorId: 0x057e,
+      productId: 0x2006,
+      collections: 0,
+      opened: undefined,
+    });
+    log.mockRestore();
   });
 });
