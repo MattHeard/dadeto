@@ -69,6 +69,7 @@ const {
   getReadyPromptCopy,
   getCompletePromptCopy,
   getActivePromptCopy,
+  isPromptComplete,
   getGamepadStatusText,
   getGamepadIndexText,
   getGamepadIdText,
@@ -1061,6 +1062,20 @@ describe('joyConMapper active prompt copy', () => {
       subprompt:
         'The next newly pressed gamepad button will be saved for this control, or click Skip Current.',
     });
+  });
+});
+
+describe('joyConMapper prompt completion', () => {
+  it('completes at the end of the controls or without a current control', () => {
+    expect(isPromptComplete({ currentIndex: 14, currentControl: {} })).toBe(
+      true
+    );
+    expect(isPromptComplete({ currentIndex: 0, currentControl: null })).toBe(
+      true
+    );
+    expect(isPromptComplete({ currentIndex: 0, currentControl: {} })).toBe(
+      false
+    );
   });
 });
 
