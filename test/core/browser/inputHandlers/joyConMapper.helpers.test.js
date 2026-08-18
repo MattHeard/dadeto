@@ -65,6 +65,7 @@ const {
   getPendingRowState,
   getRowState,
   getRowValueText,
+  getDisconnectedPromptCopy,
   getGamepadStatusText,
   getGamepadIndexText,
   getGamepadIdText,
@@ -1018,6 +1019,15 @@ describe('joyConMapper row-value fallback', () => {
         0
       )
     ).toBe('listening...');
+  });
+});
+
+describe('joyConMapper disconnected prompt copy', () => {
+  it('describes how mapping resumes after the Joy-Con connects', () => {
+    expect(getDisconnectedPromptCopy()).toEqual({
+      prompt: 'Connect a gamepad to begin',
+      subprompt: 'The mapper will resume as soon as the left Joy-Con appears.',
+    });
   });
 });
 
