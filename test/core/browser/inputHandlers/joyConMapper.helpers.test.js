@@ -35,6 +35,8 @@ const {
   normalizeStoredMappings,
   normalizeSkippedControls,
   isObjectLike,
+  isControlPending,
+  firstPendingIndex,
   readStoredMapperState,
   readStoredMapperRoot,
   parseStoredMapperRoot,
@@ -786,6 +788,46 @@ describe('joyConMapper storage helpers', () => {
         },
       })
     ).toEqual({ mappings: {}, skippedControls: [] });
+  });
+});
+
+describe('joyConMapper pending-control helpers', () => {
+  const control = { key: 'l' };
+
+  it('distinguishes mapped, skipped, and pending controls', () => {
+    expect(
+      isControlPending(
+        { stored: { mappings: {}, skippedControls: [] } },
+        control
+      )
+    ).toBe(true);
+    expect(
+      isControlPending(
+        {
+          stored: { mappings: { l: { type: 'button' } }, skippedControls: [] },
+        },
+        control
+      )
+    ).toBe(false);
+    expect(
+      isControlPending(
+        { stored: { mappings: {}, skippedControls: ['l'] } },
+        control
+      )
+    ).toBe(false);
+  });
+
+  it('finds the first control that still needs mapping', () => {
+    expect(
+      firstPendingIndex({
+        stored: { mappings: { l: {} }, skippedControls: [] },
+      })
+    ).toBe(1);
+    expect(
+      firstPendingIndex({
+        stored: { mappings: {}, skippedControls: ['l', 'zl', 'minus'] },
+      })
+    ).toBe(3);
   });
 });
 
