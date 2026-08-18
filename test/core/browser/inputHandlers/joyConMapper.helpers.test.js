@@ -78,6 +78,7 @@ const {
   refreshStoredState,
   ensureStarted,
   isPendingControlAfterIndex,
+  advanceToNextControl,
   getGamepadStatusText,
   getGamepadIndexText,
   getGamepadIdText,
@@ -1246,6 +1247,31 @@ describe('joyConMapper pending-control selection', () => {
         2
       )
     ).toBe(false);
+  });
+});
+
+describe('joyConMapper control advancement', () => {
+  it('advances to the next pending control or marks completion', () => {
+    const state = {
+      currentIndex: 0,
+      stored: { mappings: {}, skippedControls: [] },
+    };
+    advanceToNextControl(state);
+    expect(state.currentIndex).toBe(1);
+    expect(state.currentControl).toEqual({
+      key: 'zl',
+      label: 'ZL',
+      type: 'button',
+    });
+
+    const complete = {
+      currentIndex: 13,
+      stored: { mappings: {}, skippedControls: [] },
+      currentControl: {},
+    };
+    advanceToNextControl(complete);
+    expect(complete.currentIndex).toBe(13);
+    expect(complete.currentControl).toBeNull();
   });
 });
 
