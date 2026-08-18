@@ -2079,6 +2079,7 @@ function queueJoyConInitialSync(dom, textInput, state) {
 
 export const joyConMapperTestOnly = {
   getClosestArticle,
+  getAutoSubmitCheckbox,
   createElement,
   applyCreatedElementOptions,
   applyElementClassName,

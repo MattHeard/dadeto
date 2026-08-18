@@ -3,6 +3,7 @@ import { joyConMapperTestOnly } from '../../../../src/core/browser/inputHandlers
 
 const {
   getClosestArticle,
+  getAutoSubmitCheckbox,
   describeCapture,
   normalizeStoredMapperState,
   detectButtonCapture,
@@ -41,6 +42,22 @@ describe('joyConMapper helper branches', () => {
 
     expect(getClosestArticle(container)).toBe(article);
     expect(getClosestArticle({ closest: () => null })).toBeNull();
+  });
+
+  it('finds the article auto-submit checkbox when available', () => {
+    const checkbox = {};
+    const article = {};
+    const container = { closest: () => article };
+    const dom = {
+      querySelector: (parent, selector) => {
+        expect(parent).toBe(article);
+        expect(selector).toBe('.auto-submit-checkbox');
+        return checkbox;
+      },
+    };
+
+    expect(getAutoSubmitCheckbox(container, dom)).toBe(checkbox);
+    expect(getAutoSubmitCheckbox({ closest: () => null }, dom)).toBeNull();
   });
 
   it('describes optional, button, and axis captures', () => {
