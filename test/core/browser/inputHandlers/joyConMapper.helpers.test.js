@@ -1067,7 +1067,7 @@ describe('joyConMapper active prompt copy', () => {
 
 describe('joyConMapper prompt completion', () => {
   it('completes at the end of the controls or without a current control', () => {
-    expect(isPromptComplete({ currentIndex: 14, currentControl: {} })).toBe(
+    expect(isPromptComplete({ currentIndex: 13, currentControl: {} })).toBe(
       true
     );
     expect(isPromptComplete({ currentIndex: 0, currentControl: null })).toBe(
