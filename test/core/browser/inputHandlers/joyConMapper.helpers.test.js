@@ -87,6 +87,7 @@ const {
   appendChildren,
   disposeAll,
   startJoyConCaptureLoop,
+  queueJoyConInitialSync,
   shouldSkipCapture,
   updateCaptureState,
   normalizeButtonSnapshot,
@@ -1691,5 +1692,33 @@ describe('joyConMapper capture-loop lifecycle', () => {
     expect(disposers).toHaveLength(1);
     disposers[0]();
     expect(dom.clearInterval).toHaveBeenCalledWith(17);
+  });
+});
+
+describe('joyConMapper initial synchronization', () => {
+  it('queues an initialize payload with the active control key', () => {
+    let frameCallback;
+    const setValue = jest.fn();
+    const dom = {
+      requestAnimationFrame: jest.fn(callback => {
+        frameCallback = callback;
+      }),
+      setValue,
+    };
+    const state = {
+      autoSubmitCheckbox: null,
+      currentControl: { key: 'l' },
+    };
+
+    queueJoyConInitialSync(dom, {}, state);
+
+    expect(dom.requestAnimationFrame).toHaveBeenCalledWith(
+      expect.any(Function)
+    );
+    frameCallback();
+    expect(JSON.parse(setValue.mock.calls[0][1])).toEqual({
+      action: 'initialize',
+      currentControlKey: 'l',
+    });
   });
 });

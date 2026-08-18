@@ -2140,6 +2140,7 @@ export const joyConMapperTestOnly = {
   appendChildren,
   disposeAll,
   startJoyConCaptureLoop,
+  queueJoyConInitialSync,
   getSkippedControlKey,
   crossedButtonThreshold,
   hasButtonCaptureTransition,
