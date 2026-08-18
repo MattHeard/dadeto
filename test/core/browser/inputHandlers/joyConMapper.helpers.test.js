@@ -1004,6 +1004,23 @@ describe('joyConMapper skipped-row state', () => {
   });
 });
 
+describe('joyConMapper row-value fallback', () => {
+  it('shows the active listening label when no capture is stored', () => {
+    expect(
+      getRowValueText(
+        { key: 'l', label: 'L', type: 'button' },
+        {
+          started: true,
+          currentIndex: 0,
+          currentControl: { key: 'l', type: 'button' },
+          stored: { mappings: {}, skippedControls: [] },
+        },
+        0
+      )
+    ).toBe('listening...');
+  });
+});
+
 describe('joyConMapper element helpers', () => {
   it('creates and applies optional element settings', () => {
     const created = {};
