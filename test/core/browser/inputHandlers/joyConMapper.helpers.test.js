@@ -920,6 +920,25 @@ describe('joyConMapper axis delta threshold helpers', () => {
   });
 });
 
+describe('joyConMapper axis selection helpers', () => {
+  it('retains the existing capture when magnitudes tie', () => {
+    const best = {
+      type: 'axis',
+      axis: 0,
+      direction: 'positive',
+      magnitude: 0.8,
+    };
+    const candidate = {
+      type: 'axis',
+      axis: 1,
+      direction: 'positive',
+      magnitude: 0.8,
+    };
+
+    expect(selectStrongerAxisCapture(best, candidate)).toBe(best);
+  });
+});
+
 describe('joyConMapper element helpers', () => {
   it('creates and applies optional element settings', () => {
     const created = {};
