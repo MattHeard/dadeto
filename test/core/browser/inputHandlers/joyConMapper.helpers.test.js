@@ -75,6 +75,7 @@ const {
   renderPrompt,
   renderMeta,
   syncCurrentControlFromIndex,
+  refreshStoredState,
   getGamepadStatusText,
   getGamepadIndexText,
   getGamepadIdText,
@@ -1222,6 +1223,29 @@ describe('joyConMapper current-control synchronization', () => {
     state.currentIndex = 99;
     syncCurrentControlFromIndex(state);
     expect(state.currentControl).toBeNull();
+  });
+});
+
+describe('joyConMapper stored-state refresh', () => {
+  it('refreshes persisted state and the current control together', () => {
+    const state = {
+      dom: {
+        globalThis: { localStorage: { getItem: () => '{}' } },
+      },
+      started: true,
+      currentIndex: 0,
+      currentControl: null,
+    };
+
+    refreshStoredState(state);
+
+    expect(state.stored).toEqual({ mappings: {}, skippedControls: [] });
+    expect(state.currentIndex).toBe(0);
+    expect(state.currentControl).toEqual({
+      key: 'l',
+      label: 'L',
+      type: 'button',
+    });
   });
 });
 
