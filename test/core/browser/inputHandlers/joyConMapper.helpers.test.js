@@ -13,6 +13,7 @@ const {
   hasConnectedController,
   initializeWebHidCapture,
   requestAndOpenJoyConDevices,
+  openGrantedJoyConDevice,
   describeCapture,
   normalizeStoredMapperState,
   detectButtonCapture,
@@ -501,5 +502,57 @@ describe('joyConMapper Joy-Con device requests', () => {
         { vendorId: 0x057e, productId: 0x2009 },
       ],
     });
+  });
+});
+
+describe('joyConMapper granted-device opening', () => {
+  it('ignores null devices and opens new devices once', async () => {
+    const open = jest.fn(() => Promise.resolve());
+    const device = { open, opened: false };
+    const state = { hidDevices: [] };
+
+    await openGrantedJoyConDevice(state, [], null);
+    await openGrantedJoyConDevice(state, [], device);
+
+    expect(open).toHaveBeenCalledTimes(1);
+    expect(state.hidDevices).toEqual([device]);
+  });
+
+  it('does not reopen or duplicate an already tracked device', async () => {
+    const open = jest.fn(() => Promise.resolve());
+    const device = { open, opened: true };
+    const state = { hidDevices: [device] };
+
+    await openGrantedJoyConDevice(state, [], device);
+
+    expect(open).not.toHaveBeenCalled();
+    expect(state.hidDevices).toEqual([device]);
+  });
+
+  it('does not reopen an already-open device with an open method', async () => {
+    const open = jest.fn(() => Promise.resolve());
+    const device = { open, opened: true };
+
+    await openGrantedJoyConDevice({ hidDevices: [] }, [], device);
+
+    expect(open).not.toHaveBeenCalled();
+  });
+
+  it('tracks devices that do not expose an open method', async () => {
+    const device = { opened: false };
+    const state = { hidDevices: [] };
+
+    await openGrantedJoyConDevice(state, [], device);
+
+    expect(state.hidDevices).toEqual([device]);
+  });
+
+  it('does not add an unopened device twice', async () => {
+    const device = { opened: false };
+    const state = { hidDevices: [device] };
+
+    await openGrantedJoyConDevice(state, [], device);
+
+    expect(state.hidDevices).toHaveLength(1);
   });
 });
