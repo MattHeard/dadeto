@@ -78,6 +78,7 @@ const {
   syncCurrentControlFromIndex,
   refreshStoredState,
   ensureStarted,
+  startMapping,
   isPendingControlAfterIndex,
   advanceToNextControl,
   captureCurrentControl,
@@ -1521,6 +1522,29 @@ describe('joyConMapper mapping start guard', () => {
     expect(started.started).toBe(true);
 
     expect(() => ensureStarted(Object.freeze({ started: true }))).not.toThrow();
+  });
+});
+
+describe('joyConMapper mapping start transition', () => {
+  it('initializes the first pending control and baseline snapshot', () => {
+    const state = {
+      dom: { getGamepads: () => [] },
+      started: false,
+      currentIndex: 99,
+      currentControl: null,
+      stored: { mappings: {}, skippedControls: [] },
+    };
+
+    startMapping(state);
+
+    expect(state.started).toBe(true);
+    expect(state.currentIndex).toBe(0);
+    expect(state.currentControl).toEqual({
+      key: 'l',
+      label: 'L',
+      type: 'button',
+    });
+    expect(state.previousSnapshot).toBeNull();
   });
 });
 

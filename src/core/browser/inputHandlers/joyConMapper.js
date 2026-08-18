@@ -2153,6 +2153,7 @@ export const joyConMapperTestOnly = {
   renderMapperList,
   getActivePromptText,
   ensureStarted,
+  startMapping,
   advanceToNextControl,
   isPendingControlAfterIndex,
   currentControllerSnapshot,
