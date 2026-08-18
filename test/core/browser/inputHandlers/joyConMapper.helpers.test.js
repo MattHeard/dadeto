@@ -83,6 +83,7 @@ const {
   advanceToNextControl,
   captureCurrentControl,
   maybeCapture,
+  registerClick,
   shouldSkipCapture,
   updateCaptureState,
   normalizeButtonSnapshot,
@@ -1600,5 +1601,32 @@ describe('joyConMapper element helpers', () => {
     expect(dom.setClassName).toHaveBeenCalledTimes(2);
     expect(dom.setTextContent).toHaveBeenCalledWith(created, 'hello');
     expect(dom.setTextContent).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('joyConMapper click registration', () => {
+  it('registers a click handler and disposes it with the same event type', () => {
+    const element = {};
+    const handler = jest.fn();
+    const dom = {
+      addEventListener: jest.fn(),
+      removeEventListener: jest.fn(),
+    };
+    const disposers = [];
+
+    registerClick({ dom, element, handler, disposers });
+
+    expect(dom.addEventListener).toHaveBeenCalledWith(
+      element,
+      'click',
+      handler
+    );
+    expect(disposers).toHaveLength(1);
+    disposers[0]();
+    expect(dom.removeEventListener).toHaveBeenCalledWith(
+      element,
+      'click',
+      handler
+    );
   });
 });
