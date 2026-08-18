@@ -41,6 +41,9 @@ const {
   crossedButtonThreshold,
   hasButtonCaptureTransition,
   getButtonCaptureCandidate,
+  selectCapturedButton,
+  isStrongerButtonCapture,
+  pickStrongerButtonCapture,
   readStoredMapperState,
   readStoredMapperRoot,
   parseStoredMapperRoot,
@@ -872,6 +875,26 @@ describe('joyConMapper button transition helpers', () => {
       value: 0.8,
     });
     expect(getButtonCaptureCandidate(released, released, 4)).toBeNull();
+  });
+});
+
+describe('joyConMapper button selection helpers', () => {
+  const weaker = { type: 'button', index: 1, value: 0.7 };
+  const equal = { type: 'button', index: 2, value: 0.7 };
+  const stronger = { type: 'button', index: 3, value: 0.9 };
+
+  it('selects candidates across null, stronger, weaker, and tie cases', () => {
+    expect(selectStrongerButtonCapture(null, null)).toBeNull();
+    expect(selectStrongerButtonCapture(null, weaker)).toBe(weaker);
+    expect(selectStrongerButtonCapture(stronger, null)).toBe(stronger);
+    expect(selectCapturedButton(null, weaker)).toBe(weaker);
+    expect(selectCapturedButton(weaker, stronger)).toBe(stronger);
+    expect(selectCapturedButton(stronger, weaker)).toBe(stronger);
+    expect(selectCapturedButton(weaker, equal)).toBe(weaker);
+    expect(isStrongerButtonCapture(stronger, weaker)).toBe(true);
+    expect(isStrongerButtonCapture(equal, weaker)).toBe(false);
+    expect(pickStrongerButtonCapture(stronger, weaker)).toBe(stronger);
+    expect(pickStrongerButtonCapture(weaker, stronger)).toBe(stronger);
   });
 });
 
