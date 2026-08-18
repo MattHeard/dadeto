@@ -382,15 +382,44 @@ describe('joyConMapper WebHID availability', () => {
   it('loads available devices when WebHID is supported', async () => {
     const device = {};
     const getDevices = jest.fn(() => Promise.resolve([device]));
+    const addEventListener = jest.fn();
+    const state = {
+      dom: {
+        globalThis: {
+          navigator: { hid: { getDevices, addEventListener } },
+        },
+      },
+      hidDevices: [],
+    };
+    const disposers = [];
+
+    initializeWebHidCapture(state, disposers);
+    await Promise.resolve();
+
+    expect(getDevices).toHaveBeenCalledTimes(1);
+    expect(addEventListener).toHaveBeenNthCalledWith(
+      1,
+      'connect',
+      expect.any(Function)
+    );
+    expect(addEventListener).toHaveBeenNthCalledWith(
+      2,
+      'disconnect',
+      expect.any(Function)
+    );
+    expect(disposers).toHaveLength(2);
+    expect(state.hidDevices).toEqual([device]);
+  });
+
+  it('loads devices without requiring event-listener support', async () => {
+    const getDevices = jest.fn(() => Promise.resolve([]));
     const state = {
       dom: { globalThis: { navigator: { hid: { getDevices } } } },
       hidDevices: [],
     };
 
-    initializeWebHidCapture(state, []);
+    expect(() => initializeWebHidCapture(state, [])).not.toThrow();
     await Promise.resolve();
-
     expect(getDevices).toHaveBeenCalledTimes(1);
-    expect(state.hidDevices).toEqual([device]);
   });
 });
