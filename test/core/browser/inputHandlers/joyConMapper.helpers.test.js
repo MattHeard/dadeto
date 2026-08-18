@@ -84,6 +84,7 @@ const {
   captureCurrentControl,
   maybeCapture,
   registerClick,
+  appendChildren,
   shouldSkipCapture,
   updateCaptureState,
   normalizeButtonSnapshot,
@@ -1628,5 +1629,20 @@ describe('joyConMapper click registration', () => {
       'click',
       handler
     );
+  });
+});
+
+describe('joyConMapper child appending', () => {
+  it('appends every child to the same parent in order', () => {
+    const parent = {};
+    const children = [{ id: 1 }, { id: 2 }];
+    const dom = { appendChild: jest.fn() };
+
+    appendChildren(dom, parent, children);
+
+    expect(dom.appendChild.mock.calls).toEqual([
+      [parent, children[0]],
+      [parent, children[1]],
+    ]);
   });
 });

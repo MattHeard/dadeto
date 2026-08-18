@@ -2137,6 +2137,7 @@ export const joyConMapperTestOnly = {
   syncCurrentControlFromIndex,
   maybeCapture,
   registerClick,
+  appendChildren,
   getSkippedControlKey,
   crossedButtonThreshold,
   hasButtonCaptureTransition,
