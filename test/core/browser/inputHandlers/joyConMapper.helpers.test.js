@@ -14,6 +14,7 @@ const {
   initializeWebHidCapture,
   requestAndOpenJoyConDevices,
   openGrantedJoyConDevice,
+  attachHidDeviceListener,
   describeCapture,
   normalizeStoredMapperState,
   detectButtonCapture,
@@ -554,5 +555,29 @@ describe('joyConMapper granted-device opening', () => {
     await openGrantedJoyConDevice(state, [], device);
 
     expect(state.hidDevices).toHaveLength(1);
+  });
+
+  it('skips listener attachment when a device lacks the API', () => {
+    expect(() => attachHidDeviceListener({}, [], {})).not.toThrow();
+  });
+
+  it('attaches and cleans up input-report listeners', () => {
+    const addEventListener = jest.fn();
+    const removeEventListener = jest.fn();
+    const device = { addEventListener, removeEventListener };
+    const disposers = [];
+
+    attachHidDeviceListener({}, disposers, device);
+
+    expect(addEventListener).toHaveBeenCalledWith(
+      'inputreport',
+      expect.any(Function)
+    );
+    expect(disposers).toHaveLength(1);
+    disposers[0]();
+    expect(removeEventListener).toHaveBeenCalledWith(
+      'inputreport',
+      expect.any(Function)
+    );
   });
 });
