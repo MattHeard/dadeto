@@ -79,6 +79,7 @@ const {
   ensureStarted,
   isPendingControlAfterIndex,
   advanceToNextControl,
+  captureCurrentControl,
   getGamepadStatusText,
   getGamepadIndexText,
   getGamepadIdText,
@@ -1272,6 +1273,61 @@ describe('joyConMapper control advancement', () => {
     advanceToNextControl(complete);
     expect(complete.currentIndex).toBe(13);
     expect(complete.currentControl).toBeNull();
+  });
+});
+
+describe('joyConMapper capture transition', () => {
+  it('serializes a capture and advances the mapper state', () => {
+    const setValue = jest.fn();
+    const dom = {
+      createElement: () => ({ classList: { add: jest.fn() } }),
+      getGamepads: () => [],
+      globalThis: { localStorage: { getItem: () => '{}' } },
+      removeAllChildren: jest.fn(),
+      setClassName: jest.fn(),
+      setTextContent: jest.fn(),
+      setValue,
+      appendChild: jest.fn(),
+    };
+    const state = {
+      dom,
+      textInput: {},
+      autoSubmitCheckbox: null,
+      list: {},
+      prompt: {},
+      subprompt: {},
+      dot: { classList: { toggle: jest.fn() } },
+      statusText: {},
+      metaIndex: {},
+      metaId: {},
+      hidDevices: [],
+      started: true,
+      currentIndex: 0,
+      currentControl: { key: 'l', type: 'button' },
+      stored: { mappings: {}, skippedControls: [] },
+    };
+
+    captureCurrentControl(state, {
+      type: 'button',
+      index: 4,
+      value: 1,
+    });
+
+    expect(setValue).toHaveBeenCalledWith(
+      state.textInput,
+      expect.stringContaining('"action":"capture"')
+    );
+    expect(JSON.parse(setValue.mock.calls[0][1]).capture).toEqual({
+      type: 'button',
+      index: 4,
+      value: 1,
+    });
+    expect(state.currentIndex).toBe(1);
+    expect(state.currentControl).toEqual({
+      key: 'zl',
+      label: 'ZL',
+      type: 'button',
+    });
   });
 });
 
