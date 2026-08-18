@@ -55,6 +55,7 @@ const {
   hasAxisCaptureDelta,
   getAxisCaptureCandidate,
   mergeAxisCaptureCandidate,
+  buildPayload,
   selectStrongerButtonCapture,
   selectStrongerAxisCapture,
   attachCurrentControlKey,
@@ -939,6 +940,25 @@ describe('joyConMapper axis selection helpers', () => {
     expect(selectStrongerAxisCapture(best, candidate)).toBe(best);
     expect(mergeAxisCaptureCandidate(best, null)).toBe(best);
     expect(mergeAxisCaptureCandidate(null, candidate)).toBe(candidate);
+  });
+});
+
+describe('joyConMapper payload helpers', () => {
+  it('handles empty control keys and extra payload fields', () => {
+    const state = {
+      currentControl: { key: 'l' },
+    };
+    expect(
+      attachCurrentControlKey(
+        { action: 'noop' },
+        { currentControl: { key: '' } }
+      )
+    ).toEqual({ action: 'noop' });
+    expect(buildPayload('save', state, { value: 3 })).toEqual({
+      action: 'save',
+      value: 3,
+      currentControlKey: 'l',
+    });
   });
 });
 
