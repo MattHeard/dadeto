@@ -1089,13 +1089,22 @@ describe('joyConMapper skipped-row state', () => {
 describe('joyConMapper list rendering', () => {
   it('adds a state class only to non-optional rows', () => {
     const addedClasses = [];
+    const createdElements = [];
     const dom = {
       removeAllChildren: jest.fn(),
-      createElement: jest.fn(() => ({
-        classList: { add: className => addedClasses.push(className) },
-      })),
-      setClassName: jest.fn(),
-      setTextContent: jest.fn(),
+      createElement: jest.fn(() => {
+        const element = {
+          classList: { add: className => addedClasses.push(className) },
+        };
+        createdElements.push(element);
+        return element;
+      }),
+      setClassName: jest.fn((element, className) => {
+        element.className = className;
+      }),
+      setTextContent: jest.fn((element, text) => {
+        element.textContent = text;
+      }),
       appendChild: jest.fn(),
     };
     const state = {
@@ -1110,6 +1119,23 @@ describe('joyConMapper list rendering', () => {
 
     expect(addedClasses).toContain('active');
     expect(addedClasses).not.toContain('optional');
+    expect(dom.createElement).toHaveBeenCalledWith('div');
+    expect(dom.createElement.mock.calls[1][0]).toBe('div');
+    expect(dom.createElement.mock.calls[2][0]).toBe('div');
+    expect(dom.setClassName).toHaveBeenCalledWith(
+      createdElements[1],
+      'joycon-mapper-name'
+    );
+    expect(dom.setTextContent).toHaveBeenCalledWith(createdElements[1], 'L');
+    expect(dom.setClassName).toHaveBeenCalledWith(
+      createdElements[2],
+      'joycon-mapper-value'
+    );
+    expect(dom.setTextContent).toHaveBeenCalledWith(
+      createdElements[2],
+      'listening...'
+    );
+    expect(dom.appendChild).toHaveBeenCalledWith(state.list, expect.anything());
   });
 });
 
