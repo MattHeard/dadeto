@@ -383,10 +383,13 @@ describe('joyConMapper WebHID availability', () => {
     const device = {};
     const getDevices = jest.fn(() => Promise.resolve([device]));
     const addEventListener = jest.fn();
+    const removeEventListener = jest.fn();
     const state = {
       dom: {
         globalThis: {
-          navigator: { hid: { getDevices, addEventListener } },
+          navigator: {
+            hid: { getDevices, addEventListener, removeEventListener },
+          },
         },
       },
       hidDevices: [],
@@ -408,6 +411,17 @@ describe('joyConMapper WebHID availability', () => {
       expect.any(Function)
     );
     expect(disposers).toHaveLength(2);
+    disposers.forEach(dispose => dispose());
+    expect(removeEventListener).toHaveBeenNthCalledWith(
+      1,
+      'connect',
+      expect.any(Function)
+    );
+    expect(removeEventListener).toHaveBeenNthCalledWith(
+      2,
+      'disconnect',
+      expect.any(Function)
+    );
     expect(state.hidDevices).toEqual([device]);
   });
 
@@ -421,5 +435,21 @@ describe('joyConMapper WebHID availability', () => {
     expect(() => initializeWebHidCapture(state, [])).not.toThrow();
     await Promise.resolve();
     expect(getDevices).toHaveBeenCalledTimes(1);
+  });
+
+  it('allows listener cleanup APIs to be absent', () => {
+    const hid = {
+      getDevices: () => Promise.resolve([]),
+      addEventListener: () => {},
+    };
+    const state = {
+      dom: { globalThis: { navigator: { hid } } },
+      hidDevices: [],
+    };
+    const disposers = [];
+
+    initializeWebHidCapture(state, disposers);
+    expect(disposers).toHaveLength(2);
+    expect(() => disposers.forEach(dispose => dispose())).not.toThrow();
   });
 });
