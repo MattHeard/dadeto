@@ -74,6 +74,7 @@ const {
   getConnectedPromptCopy,
   renderPrompt,
   renderMeta,
+  syncCurrentControlFromIndex,
   getGamepadStatusText,
   getGamepadIndexText,
   getGamepadIdText,
@@ -1205,6 +1206,22 @@ describe('joyConMapper metadata rendering', () => {
       'Index: -'
     );
     expect(setTextContent).toHaveBeenNthCalledWith(3, state.metaId, 'ID: -');
+  });
+});
+
+describe('joyConMapper current-control synchronization', () => {
+  it('selects the indexed control or clears an out-of-range selection', () => {
+    const state = { currentIndex: 0, currentControl: null };
+    syncCurrentControlFromIndex(state);
+    expect(state.currentControl).toEqual({
+      key: 'l',
+      label: 'L',
+      type: 'button',
+    });
+
+    state.currentIndex = 99;
+    syncCurrentControlFromIndex(state);
+    expect(state.currentControl).toBeNull();
   });
 });
 
