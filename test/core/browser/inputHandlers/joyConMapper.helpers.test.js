@@ -356,6 +356,33 @@ describe('joyConMapper helper branches', () => {
   });
 });
 
+describe('joyConMapper current-control capture detection', () => {
+  it('delegates button and axis controls to their capture detectors', () => {
+    expect(
+      detectCurrentControlCapture(
+        {
+          currentControl: { type: 'button' },
+          previousSnapshot: {
+            buttons: [{ pressed: false, value: 0 }],
+            axes: [],
+          },
+        },
+        { buttons: [{ pressed: true, value: 1 }], axes: [] }
+      )
+    ).toEqual({ type: 'button', index: 0, value: 1 });
+
+    expect(
+      detectCurrentControlCapture(
+        {
+          currentControl: { type: 'axis', direction: 'positive' },
+          previousSnapshot: { buttons: [], axes: [0] },
+        },
+        { buttons: [], axes: [0.9] }
+      )
+    ).toEqual({ type: 'axis', axis: 0, direction: 'positive', magnitude: 0.9 });
+  });
+});
+
 describe('joyConMapper input synchronization', () => {
   it('serializes and synchronizes toy input before auto-submit', () => {
     const textInput = { value: '' };
