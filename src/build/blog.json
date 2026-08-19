@@ -1,6 +1,24 @@
 {
   "posts": [
     {
+      "key": "SPAC3",
+      "title": "Spacetime Segment Temporal Relation",
+      "publicationDate": "2026-08-19",
+      "release": "public",
+      "content": [
+        "Classify two spacetime segments as disjoint, touching, or overlapping in time.",
+        "Closed intervals are used: shared boundary instants touch, while shared duration overlaps.",
+        "This remains a pure geometric primitive with no business-domain or persistence behavior."
+      ],
+      "toy": {
+        "modulePath": "/core/browser/toys/2026-08-19/spacetimeSegmentTemporalRelation.js",
+        "functionName": "spacetimeSegmentTemporalRelation",
+        "defaultInputMethod": "textarea",
+        "defaultOutputMethod": "textarea"
+      },
+      "tags": ["toy", "spacetime", "segment", "temporal", "geometry", "json"]
+    },
+    {
       "key": "SPAC2",
       "title": "Spacetime Segment Registry",
       "publicationDate": "2026-08-19",
