@@ -945,6 +945,17 @@ describe('joyConMapper HID snapshot stabilization', () => {
     expect(thresholdState.hidPendingSnapshotCount).toBe(3);
     expect(thresholdState.hidSnapshot).toBe(first);
   });
+
+  it('requires both buttons and axes to match in a HID snapshot', () => {
+    const snapshot = { buttons: [{ pressed: true, value: 1 }], axes: [0.2] };
+
+    expect(
+      sameHidSnapshot(snapshot, {
+        buttons: snapshot.buttons,
+        axes: [0.3],
+      })
+    ).toBe(false);
+  });
 });
 
 describe('joyConMapper HID report snapshots', () => {
