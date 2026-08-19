@@ -516,7 +516,11 @@ describe('joyConMapper WebHID availability', () => {
   });
 
   it('loads available devices when WebHID is supported', async () => {
-    const device = {};
+    const device = {
+      addEventListener: jest.fn(),
+      removeEventListener: jest.fn(),
+    };
+    const logSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
     const getDevices = jest.fn(() => Promise.resolve([device]));
     const addEventListener = jest.fn();
     const removeEventListener = jest.fn();
@@ -546,7 +550,16 @@ describe('joyConMapper WebHID availability', () => {
       'disconnect',
       expect.any(Function)
     );
-    expect(disposers).toHaveLength(2);
+    expect(device.addEventListener).toHaveBeenCalledWith(
+      'inputreport',
+      expect.any(Function)
+    );
+    expect(logSpy).toHaveBeenCalledWith(
+      '[joyConMapper:webhid]',
+      'available',
+      expect.any(Object)
+    );
+    expect(disposers).toHaveLength(3);
     disposers.forEach(dispose => dispose());
     expect(removeEventListener).toHaveBeenNthCalledWith(
       1,
@@ -558,7 +571,12 @@ describe('joyConMapper WebHID availability', () => {
       'disconnect',
       expect.any(Function)
     );
+    expect(device.removeEventListener).toHaveBeenCalledWith(
+      'inputreport',
+      expect.any(Function)
+    );
     expect(state.hidDevices).toEqual([device]);
+    logSpy.mockRestore();
   });
 
   it('removes the disconnected device and refreshes the WebHID UI', () => {
