@@ -37,6 +37,20 @@ describe('google-auth-cache', () => {
     expect(getCachedAuthorUuid(storage)).toBeNull();
   });
 
+  it('uses the author_uuid storage key and clears empty values', () => {
+    const storage = {
+      getItem: jest.fn().mockReturnValue('author-1'),
+      setItem: jest.fn(),
+      removeItem: jest.fn(),
+    };
+
+    expect(getCachedAuthorUuid(storage)).toBe('author-1');
+    setCachedAuthorUuid(storage, 'author-2');
+    expect(storage.setItem).toHaveBeenCalledWith('author_uuid', 'author-2');
+    setCachedAuthorUuid(storage, '');
+    expect(storage.removeItem).toHaveBeenCalledWith('author_uuid');
+  });
+
   it('falls back to sessionStorage when no storage is provided', () => {
     const sessionStorage = createStorage();
     const previousSessionStorage = globalThis.sessionStorage;
@@ -58,10 +72,12 @@ describe('google-auth-cache', () => {
       fetchAuthorUuidFromApi(fetchFn, '', 'token')
     ).resolves.toBeNull();
 
-    fetchFn.mockResolvedValueOnce({ ok: false, json: jest.fn() });
+    const badResponseJson = jest.fn().mockResolvedValue({ uuid: 'ignored' });
+    fetchFn.mockResolvedValueOnce({ ok: false, json: badResponseJson });
     await expect(
       fetchAuthorUuidFromApi(fetchFn, '/author', 'token')
     ).resolves.toBeNull();
+    expect(badResponseJson).not.toHaveBeenCalled();
 
     fetchFn.mockResolvedValueOnce({
       ok: true,
@@ -70,6 +86,19 @@ describe('google-auth-cache', () => {
     await expect(
       fetchAuthorUuidFromApi(fetchFn, '/author', 'token')
     ).resolves.toBe('author-2');
+    expect(fetchFn).toHaveBeenLastCalledWith('/author', {
+      headers: { Authorization: 'Bearer token' },
+    });
+
+    for (const payload of [null, {}, { uuid: 42 }, { uuid: '' }]) {
+      fetchFn.mockResolvedValueOnce({
+        ok: true,
+        json: jest.fn().mockResolvedValue(payload),
+      });
+      await expect(
+        fetchAuthorUuidFromApi(fetchFn, '/author', 'token')
+      ).resolves.toBeNull();
+    }
 
     fetchFn.mockRejectedValueOnce(new Error('network'));
     await expect(
@@ -176,6 +205,9 @@ describe('google-auth-cache', () => {
 
     await bareHandle.initGoogleSignIn({});
     await onSignInHandler('token-2');
+
+    await bareHandle.initGoogleSignIn(null);
+    await onSignInHandler('token-3');
   });
 
   it('does not install the google sign-in wrapper on internal origins', () => {
