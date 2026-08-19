@@ -2031,6 +2031,28 @@ describe('joyConMapper handler shell', () => {
               'The mapper will resume as soon as the left Joy-Con appears.')
       )
     ).toHaveLength(4);
+    expect(dom.createElement.mock.calls.slice(8, 12)).toEqual([
+      ['div'],
+      ['button'],
+      ['button'],
+      ['button'],
+    ]);
+    expect(dom.setClassName.mock.calls).toEqual(
+      expect.arrayContaining([
+        [created[8], 'joycon-mapper-actions'],
+        [created[9], 'primary'],
+      ])
+    );
+    expect(dom.setTextContent.mock.calls).toEqual(
+      expect.arrayContaining([
+        [created[9], 'Start Mapping'],
+        [created[10], 'Skip Current'],
+        [created[11], 'Reset Mapping'],
+      ])
+    );
+    expect(dom.appendChild).toHaveBeenCalledWith(created[8], created[9]);
+    expect(dom.appendChild).toHaveBeenCalledWith(created[8], created[10]);
+    expect(dom.appendChild).toHaveBeenCalledWith(created[8], created[11]);
     expect(inserted[0]._dispose).toEqual(expect.any(Function));
     inserted[0]._dispose();
   });
