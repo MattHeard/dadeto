@@ -878,6 +878,10 @@ describe('joyConMapper HID snapshot stabilization', () => {
     const matchingButton = { pressed: true, value: 1 };
     const differentButton = { pressed: false, value: 0 };
 
+    expect(sameButtonSnapshot(matchingButton, matchingButton)).toBe(true);
+    expect(
+      sameButtonSnapshot(matchingButton, { pressed: true, value: 0 })
+    ).toBe(false);
     expect(sameButtonSnapshots([matchingButton], [matchingButton])).toBe(true);
     expect(
       sameButtonSnapshots(
@@ -904,12 +908,6 @@ describe('joyConMapper HID snapshot stabilization', () => {
 
     expect(sameHidSnapshot(first, first)).toBe(true);
     expect(sameHidSnapshot(first, changed)).toBe(false);
-    expect(
-      sameButtonSnapshot(
-        { pressed: true, value: 1 },
-        { pressed: true, value: 1 }
-      )
-    ).toBe(true);
     expect(
       sameButtonSnapshots(
         [{ pressed: true, value: 1 }],
