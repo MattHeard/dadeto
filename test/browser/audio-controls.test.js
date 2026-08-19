@@ -454,6 +454,12 @@ describe('setupAudio insertion behavior', () => {
     );
   });
 
+  it('does not insert controls when the audio element has no parent', () => {
+    setupAudio(dom, setTextContent);
+
+    expect(dom.insertBefore).not.toHaveBeenCalled();
+  });
+
   it('sets correct text on control buttons', () => {
     // Given
     const element = {};
