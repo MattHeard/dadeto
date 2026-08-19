@@ -76,10 +76,6 @@ function serializeObjectValue(value) {
  * @returns {string} Stack string or empty string.
  */
 function toStack(value) {
-  if (value instanceof Error && typeof value.stack === 'string') {
-    return value.stack;
-  }
-
   if (value && typeof value === 'object') {
     const candidate = /** @type {{ stack?: unknown }} */ (value);
     if (typeof candidate.stack === 'string') {
@@ -114,7 +110,7 @@ export function normalizeErrorPayload(input) {
   return {
     message,
     stack,
-    url: sanitizeUrl(url ?? ''),
+    url: url ? sanitizeUrl(url) : '',
     clientTimestamp: new Date(getNow()).toISOString(),
     source,
     dedupeKey,

@@ -70,6 +70,20 @@ describe('normalizeErrorPayload', () => {
     expect(payload.message).toBe('[object Object]');
   });
 
+  it('uses the built-in object fallback instead of a custom stringifier', () => {
+    const circular = { toString: () => 'custom string' };
+    circular.self = circular;
+
+    const payload = normalizeErrorPayload({
+      error: circular,
+      source: 'console.error',
+      getUrl: () => '',
+      getNow: () => 1234,
+    });
+
+    expect(payload.message).toBe('[object Object]');
+  });
+
   it('includes message, stack, URL, and dedupe key', () => {
     const payload = normalizeErrorPayload({
       error: new Error('boom'),
@@ -127,6 +141,85 @@ describe('normalizeErrorPayload', () => {
     });
 
     expect(payload.stack).toBe('stack trace');
+  });
+
+  it('does not treat a non-string Error stack as a usable stack', () => {
+    const error = new Error('boom');
+    error.stack = 42;
+
+    const payload = normalizeErrorPayload({
+      error,
+      source: 'window.error',
+      getUrl: () => '',
+      getNow: () => 0,
+    });
+
+    expect(payload.stack).toBe('');
+  });
+
+  it('returns the first string stack without reading it through the fallback path', () => {
+    const error = new Error('boom');
+    let reads = 0;
+    Object.defineProperty(error, 'stack', {
+      configurable: true,
+      get: () => {
+        reads += 1;
+        return reads <= 2 ? 'first stack' : 42;
+      },
+    });
+
+    const payload = normalizeErrorPayload({
+      error,
+      source: 'window.error',
+      getUrl: () => '',
+      getNow: () => 0,
+    });
+
+    expect(payload.stack).toBe('first stack');
+    expect(reads).toBe(2);
+  });
+
+  it('does not read stack values from callable non-object values', () => {
+    const callable = () => {};
+    callable.stack = 'callable stack';
+
+    const payload = normalizeErrorPayload({
+      error: callable,
+      source: 'window.error',
+      getUrl: () => '',
+      getNow: () => 0,
+    });
+
+    expect(payload.stack).toBe('');
+  });
+
+  it('keeps the original URL in the dedupe key while sanitizing the payload URL', () => {
+    const error = new Error('boom');
+    const originalUrl = 'https://example.test/page?token=secret#frag';
+    const payload = normalizeErrorPayload({
+      error,
+      source: 'window.error',
+      getUrl: () => originalUrl,
+      getNow: () => 0,
+    });
+
+    expect(payload.url).toBe('https://example.test/page');
+    expect(payload.dedupeKey).toBe(
+      `boom\u0000${error.stack}\u0000${originalUrl}`
+    );
+  });
+
+  it('uses an empty URL component consistently when the URL is unavailable', () => {
+    const error = new Error('boom');
+    const payload = normalizeErrorPayload({
+      error,
+      source: 'window.error',
+      getUrl: () => undefined,
+      getNow: () => 0,
+    });
+
+    expect(payload.url).toBe('');
+    expect(payload.dedupeKey).toBe(`boom\u0000${error.stack}\u0000`);
   });
 
   it('sanitizes URLs before reporting', () => {
