@@ -1936,6 +1936,7 @@ describe('joyConMapper runtime initialization', () => {
 describe('joyConMapper handler shell', () => {
   it('hides the source input and inserts a managed mapper form', () => {
     const inserted = [];
+    const created = [];
     const textInput = { value: '' };
     const dom = {
       globalThis: { localStorage: { getItem: () => '{}' } },
@@ -1950,9 +1951,14 @@ describe('joyConMapper handler shell', () => {
       setTextContent: jest.fn(),
       setClassName: jest.fn(),
       removeAllChildren: jest.fn(),
-      createElement: jest.fn(() => ({
-        classList: { add: jest.fn(), toggle: jest.fn() },
-      })),
+      createElement: jest.fn(tag => {
+        const element = {
+          tag,
+          classList: { add: jest.fn(), toggle: jest.fn() },
+        };
+        created.push(element);
+        return element;
+      }),
       appendChild: jest.fn(),
       addEventListener: jest.fn(),
       removeEventListener: jest.fn(),
@@ -1971,6 +1977,32 @@ describe('joyConMapper handler shell', () => {
     expect(inserted[0].classList.add).toHaveBeenCalledWith(
       'joycon-mapper-form'
     );
+    expect(dom.createElement).toHaveBeenNthCalledWith(3, 'div');
+    expect(dom.createElement).toHaveBeenNthCalledWith(4, 'div');
+    expect(dom.createElement).toHaveBeenNthCalledWith(5, 'span');
+    expect(dom.createElement).toHaveBeenNthCalledWith(6, 'span');
+    expect(dom.setClassName).toHaveBeenCalledWith(
+      created[2],
+      'joycon-mapper-hero'
+    );
+    expect(dom.setClassName).toHaveBeenCalledWith(
+      created[3],
+      'joycon-mapper-status'
+    );
+    expect(dom.setClassName).toHaveBeenCalledWith(
+      created[4],
+      'joycon-mapper-dot'
+    );
+    expect(dom.setTextContent).toHaveBeenCalledWith(
+      created[5],
+      'Waiting for gamepad'
+    );
+    expect(
+      dom.setTextContent.mock.calls.filter(
+        ([element, text]) =>
+          element === created[5] && text === 'Waiting for gamepad'
+      )
+    ).toHaveLength(2);
     expect(inserted[0]._dispose).toEqual(expect.any(Function));
     inserted[0]._dispose();
   });
