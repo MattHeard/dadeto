@@ -1,6 +1,24 @@
 {
   "posts": [
     {
+      "key": "SPAC4",
+      "title": "Spacetime Segment Geodesic Length",
+      "publicationDate": "2026-08-19",
+      "release": "public",
+      "content": [
+        "Calculate the direct WGS84 ellipsoidal surface length of a segment between two SPAC1 points.",
+        "The result ignores altitude and time and returns a scalar value with a unit label, both as strings.",
+        "This is a pure geometric calculator with no routing or business-domain behavior."
+      ],
+      "toy": {
+        "modulePath": "/core/browser/toys/2026-08-19/spacetimeSegmentGeodesicLength.js",
+        "functionName": "spacetimeSegmentGeodesicLength",
+        "defaultInputMethod": "textarea",
+        "defaultOutputMethod": "textarea"
+      },
+      "tags": ["toy", "spacetime", "segment", "geodesic", "wgs84", "geometry", "json"]
+    },
+    {
       "key": "SPAC3",
       "title": "Spacetime Segment Temporal Relation",
       "publicationDate": "2026-08-19",
