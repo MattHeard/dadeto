@@ -771,6 +771,7 @@ describe('joyConMapper granted-device opening', () => {
   it('ignores null devices and opens new devices once', async () => {
     const open = jest.fn(() => Promise.resolve());
     const device = { open, opened: false };
+    const logSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
     const state = { hidDevices: [] };
 
     await openGrantedJoyConDevice(state, [], null);
@@ -778,6 +779,12 @@ describe('joyConMapper granted-device opening', () => {
 
     expect(open).toHaveBeenCalledTimes(1);
     expect(state.hidDevices).toEqual([device]);
+    expect(logSpy).toHaveBeenCalledWith(
+      '[joyConMapper:webhid]',
+      'connected',
+      expect.any(Object)
+    );
+    logSpy.mockRestore();
   });
 
   it('does not reopen or duplicate an already tracked device', async () => {
@@ -789,6 +796,24 @@ describe('joyConMapper granted-device opening', () => {
 
     expect(open).not.toHaveBeenCalled();
     expect(state.hidDevices).toEqual([device]);
+  });
+
+  it('keeps an already tracked device unique and logs the connection', async () => {
+    const open = jest.fn(() => Promise.resolve());
+    const device = { open, opened: false };
+    const logSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
+    const state = { hidDevices: [device] };
+
+    await openGrantedJoyConDevice(state, [], device);
+
+    expect(open).toHaveBeenCalledTimes(1);
+    expect(state.hidDevices).toEqual([device]);
+    expect(logSpy).toHaveBeenCalledWith(
+      '[joyConMapper:webhid]',
+      'connected',
+      expect.any(Object)
+    );
+    logSpy.mockRestore();
   });
 
   it('does not reopen an already-open device with an open method', async () => {
