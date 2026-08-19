@@ -988,6 +988,45 @@ describe('joyConMapper HID report snapshots', () => {
     ).toEqual({ buttons: [], axes: [] });
   });
 
+  it('requires the standard report id and minimum report length', () => {
+    const shortStandardCandidate = snapshotHidInputReport({
+      reportId: 0x3f,
+      data: { buffer: new Uint8Array([0x00, 0x01, 0x02]).buffer },
+    });
+    const overriddenStandardCandidate = snapshotHidInputReport({
+      reportId: 0x00,
+      data: { buffer: new Uint8Array([0x3f, 0x01, 0x02, 0x00]).buffer },
+    });
+    const inferredStandardCandidate = snapshotHidInputReport({
+      data: { buffer: new Uint8Array([0x3f, 0x01, 0x02, 0x00]).buffer },
+    });
+
+    expect(shortStandardCandidate.buttons[0]).toEqual({
+      pressed: false,
+      value: 0,
+    });
+    expect(shortStandardCandidate.buttons[8]).toEqual({
+      pressed: true,
+      value: 1,
+    });
+    expect(overriddenStandardCandidate.buttons[0]).toEqual({
+      pressed: true,
+      value: 1,
+    });
+    expect(overriddenStandardCandidate.buttons[8]).toEqual({
+      pressed: true,
+      value: 1,
+    });
+    expect(inferredStandardCandidate.buttons[0]).toEqual({
+      pressed: true,
+      value: 1,
+    });
+    expect(inferredStandardCandidate.buttons[8]).toEqual({
+      pressed: false,
+      value: 0,
+    });
+  });
+
   it('decodes standard and fallback report layouts', () => {
     const standard = snapshotHidInputReport({
       reportId: 0x3f,
@@ -999,6 +1038,8 @@ describe('joyConMapper HID report snapshots', () => {
 
     expect(standard.buttons).toHaveLength(16);
     expect(standard.axes).toHaveLength(2);
+    expect(standard.buttons[0]).toEqual({ pressed: true, value: 1 });
+    expect(standard.buttons[8]).toEqual({ pressed: false, value: 0 });
     expect(fallback.buttons).toHaveLength(16);
     expect(fallback.axes).toHaveLength(2);
     expect(readJoyConButtonBytes([9, 8, 7, 6], true)).toEqual([8, 7]);
