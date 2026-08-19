@@ -844,7 +844,11 @@ describe('joyConMapper granted-device opening', () => {
   });
 
   it('skips listener attachment when a device lacks the API', () => {
-    expect(() => attachHidDeviceListener({}, [], {})).not.toThrow();
+    const disposers = [];
+    const device = { addEventListener: 'not-a-function' };
+
+    expect(() => attachHidDeviceListener({}, disposers, device)).not.toThrow();
+    expect(disposers).toEqual([]);
   });
 
   it('attaches and cleans up input-report listeners', () => {
@@ -859,6 +863,7 @@ describe('joyConMapper granted-device opening', () => {
       'inputreport',
       expect.any(Function)
     );
+    expect(addEventListener.mock.calls[0][0]).toBe('inputreport');
     expect(disposers).toHaveLength(1);
     disposers[0]();
     expect(removeEventListener).toHaveBeenCalledWith(
