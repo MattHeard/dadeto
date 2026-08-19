@@ -1,12 +1,19 @@
 import jestConfig from './jest.config.mjs';
 
-const configuredHeapMb = Number(
-  process.env.DADETO_STRYKER_HEAP_MB ?? 1024
-);
+const configuredHeapMb = Number(process.env.DADETO_STRYKER_HEAP_MB ?? 1024);
 const strykerHeapMb =
   Number.isInteger(configuredHeapMb) && configuredHeapMb >= 256
     ? configuredHeapMb
     : 1024;
+const configuredRunnerReuse = Number(
+  process.env.DADETO_STRYKER_MAX_TEST_RUNNER_REUSE ?? 1
+);
+const maxTestRunnerReuse =
+  Number.isInteger(configuredRunnerReuse) &&
+  configuredRunnerReuse >= 1 &&
+  configuredRunnerReuse <= 10
+    ? configuredRunnerReuse
+    : 1;
 
 const jestExcludes = (jestConfig.collectCoverageFrom || [])
   .filter(p => p.startsWith('!'))
@@ -18,7 +25,7 @@ export default {
     './src/local/stryker-survivor-reporter.js',
   ],
   concurrency: 1,
-  maxTestRunnerReuse: 1,
+  maxTestRunnerReuse,
   mutate: [
     'src/core/**/*.js',
     '!**/*.html',
@@ -36,7 +43,7 @@ export default {
   timeoutMS: 10_000,
   reporters: ['json', 'progress', 'survivor'],
   jest: {
-    configFile: 'jest.config.mjs',
+    configFile: 'jest.mutation.config.mjs',
   },
   tempDirName: '.stryker-tmp',
   disableTypeChecks: false,

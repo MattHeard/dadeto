@@ -5,6 +5,7 @@ import {
   writeFile,
   open,
   access,
+  rm,
 } from 'node:fs/promises';
 import { spawn } from 'node:child_process';
 import crypto from 'node:crypto';
@@ -50,6 +51,12 @@ async function executeScan(options) {
   const outputPath = path.join(root, 'reports/mutation/core-mutant-scan.json');
   const lockPath = path.join(root, 'reports/mutation/core-mutant-scan.lock');
   const lock = await acquireLock(lockPath, processApi);
+  try {
+    await cleanupStaleMutationSandboxes(root);
+  } catch (error) {
+    await lock.release();
+    throw error;
+  }
   const files = shuffle(await walk(core, root));
   const result = /** @type {any} */ (await loadCheckpoint(outputPath, files));
   const context = /** @type {any} */ ({
@@ -114,16 +121,48 @@ function createStopHandler(processApi, getActiveChild) {
  * @param {Record<string, any>} context Scan context.
  * @returns {Promise<void>} Resolves after scanning.
  */
-async function scanFiles(/** @type {any} */ context) {
+export async function scanFiles(/** @type {any} */ context) {
   const { files, result, outputPath, output } = context;
   for (const [index, filePath] of files.entries()) {
     if (result.scannedFiles.includes(filePath)) continue;
     output.log(
       `[${index + 1}/${files.length}] Running Stryker for ${filePath}`
     );
-    const surviving = await scanFile({ ...context, filePath });
+    let surviving;
+    try {
+      surviving = await (context.scanFile ?? scanFile)({
+        ...context,
+        filePath,
+      });
+    } catch (error) {
+      result.fileRecords[filePath] = {
+        status: 'failed',
+        error: error instanceof Error ? error.message : String(error),
+      };
+      result.failedFiles.push({
+        filePath,
+        error: result.fileRecords[filePath].error,
+      });
+      await saveCheckpoint(outputPath, result);
+      output.log(`Stryker failed for ${filePath}; continuing`);
+      continue;
+    }
+    if (surviving?.status === 'timeout') {
+      result.fileRecords[filePath] = {
+        status: 'timed_out',
+        error: surviving.error,
+      };
+      result.timedOutFiles.push({ filePath, error: surviving.error });
+      await saveCheckpoint(outputPath, result);
+      output.log(`Stryker timed out for ${filePath}; continuing`);
+      continue;
+    }
     result.scannedFiles.push(filePath);
     if (surviving === null) {
+      result.fileRecords[filePath] = {
+        status: 'no-tests',
+        reason: 'No tests were executed',
+      };
       await saveCheckpoint(outputPath, result);
       continue;
     }
@@ -142,6 +181,10 @@ async function scanFiles(/** @type {any} */ context) {
           location,
         })
       );
+      result.fileRecords[filePath] = {
+        status: 'survivors',
+        survivingMutants: result.survivingMutants,
+      };
       await saveCheckpoint(outputPath, result);
       output.log(
         `Found ${surviving.length} surviving mutant(s) in ${filePath}; stopping scan.`
@@ -149,6 +192,7 @@ async function scanFiles(/** @type {any} */ context) {
       break;
     }
     result.filesWithoutSurvivingMutant.push(filePath);
+    result.fileRecords[filePath] = { status: 'clean' };
     await saveCheckpoint(outputPath, result);
     output.log(`No surviving mutant in ${filePath}`);
   }
@@ -176,6 +220,9 @@ async function scanFile(/** @type {any} */ context) {
     result.skippedFiles.push({ filePath, reason: 'No tests were executed' });
     await saveCheckpoint(outputPath, result);
     return null;
+  }
+  if (run.status === 'timeout') {
+    return { status: 'timeout', error: run.error };
   }
   if (run.status !== 'ok') throw new Error(`Stryker failed for ${filePath}`);
   const mutationReport = JSON.parse(await readFile(report, 'utf8'));
@@ -251,7 +298,7 @@ async function isProcessAlive(pid, processApi) {
  * @param {string[]} order Current scan order.
  * @returns {Promise<object>} Checkpoint state.
  */
-async function loadCheckpoint(outputPath, order) {
+export async function loadCheckpoint(outputPath, order) {
   try {
     const saved = JSON.parse(await readFile(outputPath, 'utf8'));
     const scanned = new Set(saved.scannedFiles ?? []);
@@ -261,6 +308,9 @@ async function loadCheckpoint(outputPath, order) {
       filesWithoutSurvivingMutant: saved.filesWithoutSurvivingMutant ?? [],
       fileWithSurvivingMutant: saved.fileWithSurvivingMutant ?? null,
       survivingMutants: saved.survivingMutants ?? [],
+      timedOutFiles: saved.timedOutFiles ?? [],
+      failedFiles: saved.failedFiles ?? [],
+      fileRecords: saved.fileRecords ?? {},
     };
   } catch {
     return {
@@ -269,8 +319,35 @@ async function loadCheckpoint(outputPath, order) {
       filesWithoutSurvivingMutant: [],
       fileWithSurvivingMutant: null,
       survivingMutants: [],
+      timedOutFiles: [],
+      failedFiles: [],
+      fileRecords: {},
     };
   }
+}
+
+/**
+ * Remove only abandoned Stryker sandboxes owned by this scanner.
+ * @param {string} root Repository root.
+ * @returns {Promise<void>} Resolves after cleanup.
+ */
+export async function cleanupStaleMutationSandboxes(root) {
+  const tempRoot = path.join(root, '.stryker-tmp');
+  const entries = await readdir(tempRoot, { withFileTypes: true }).catch(
+    () => []
+  );
+  await Promise.all(
+    entries
+      .filter(
+        entry =>
+          entry.isDirectory() &&
+          (entry.name.startsWith('sandbox-') ||
+            entry.name.startsWith('backup-'))
+      )
+      .map(entry =>
+        rm(path.join(tempRoot, entry.name), { recursive: true, force: true })
+      )
+  );
 }
 
 /**
@@ -337,7 +414,7 @@ function terminateProcessGroup(pid, processApi) {
 /**
  * Run Stryker for one source file.
  * @param {Record<string, any>} options Run settings.
- * @returns {Promise<{ status: string, exitCode: number }>} Run result.
+ * @returns {Promise<{ status: string, exitCode?: number, error?: string }>} Run result.
  */
 function runStryker(options) {
   const {
@@ -363,9 +440,10 @@ function runStryker(options) {
     onChild(child);
     const timer = setTimeout(() => {
       terminateProcessGroup(/** @type {number} */ (child.pid), processApi);
-      finish(
-        new Error(`Stryker timed out after ${fileTimeoutMs}ms for ${filePath}`)
-      );
+      finish(null, {
+        status: 'timeout',
+        error: `Stryker timed out after ${fileTimeoutMs}ms for ${filePath}`,
+      });
     }, /** @type {number} */ (fileTimeoutMs));
     /**
      * @param {string} buffer Buffered output.
