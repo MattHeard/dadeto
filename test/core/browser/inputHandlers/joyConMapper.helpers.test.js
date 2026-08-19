@@ -108,6 +108,7 @@ const {
   handleJoyConMapperSkip,
   handleJoyConMapperReset,
   handleJoyConMapperStart,
+  initializeJoyConMapperRuntime,
 } = joyConMapperTestOnly;
 
 describe('joyConMapper helper branches', () => {
@@ -1838,6 +1839,87 @@ describe('joyConMapper start handler', () => {
       label: 'L',
       type: 'button',
     });
+    expect(setTextContent).toHaveBeenCalled();
+  });
+});
+
+describe('joyConMapper runtime initialization', () => {
+  it('registers all controls, starts polling, renders, and disposes cleanly', () => {
+    const handlers = [];
+    const disposers = [];
+    const intervalId = Symbol('interval');
+    const textInput = { value: '' };
+    const setTextContent = jest.fn();
+    const dom = {
+      globalThis: { localStorage: { getItem: () => '{}' } },
+      getGamepads: () => [],
+      setValue: jest.fn((element, value) => {
+        element.value = value;
+      }),
+      setTextContent,
+      setClassName: jest.fn(),
+      removeAllChildren: jest.fn(),
+      createElement: jest.fn(() => ({ classList: { add: jest.fn() } })),
+      appendChild: jest.fn(),
+      addEventListener: jest.fn((element, type, handler) => {
+        handlers.push({ element, type, handler });
+      }),
+      removeEventListener: jest.fn(),
+      setInterval: jest.fn(() => intervalId),
+      clearInterval: jest.fn(),
+      requestAnimationFrame: jest.fn(callback => callback()),
+    };
+    const buttons = [{}, {}, {}];
+    const state = {
+      dom,
+      textInput,
+      autoSubmitCheckbox: null,
+      started: false,
+      currentIndex: 0,
+      currentControl: { key: 'l', label: 'L', type: 'button' },
+      previousSnapshot: null,
+      hidDevices: [],
+      hidPendingSnapshot: null,
+      hidPendingSnapshotCount: 0,
+      disposers,
+      stored: { mappings: {}, skippedControls: [] },
+      list: {},
+      prompt: {},
+      subprompt: {},
+      dot: { classList: { toggle: jest.fn() } },
+      statusText: {},
+      metaIndex: {},
+      metaId: {},
+    };
+    const form = {};
+
+    initializeJoyConMapperRuntime({
+      dom,
+      textInput,
+      form,
+      disposers,
+      state,
+      startButton: buttons[0],
+      skipButton: buttons[1],
+      resetButton: buttons[2],
+    });
+
+    expect(handlers).toHaveLength(3);
+    expect(dom.setInterval).toHaveBeenCalledWith(expect.any(Function), 50);
+    expect(dom.requestAnimationFrame).toHaveBeenCalledWith(
+      expect.any(Function)
+    );
+    handlers[0].handler();
+    expect(state.started).toBe(true);
+    handlers[1].handler();
+    expect(state.currentIndex).toBe(1);
+    handlers[2].handler();
+    expect(state.started).toBe(false);
+    expect(state.currentIndex).toBe(0);
+    expect(form._dispose).toEqual(expect.any(Function));
+    form._dispose();
+    expect(dom.clearInterval).toHaveBeenCalledWith(intervalId);
+    expect(dom.removeEventListener).toHaveBeenCalledTimes(3);
     expect(setTextContent).toHaveBeenCalled();
   });
 });

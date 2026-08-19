@@ -2188,6 +2188,7 @@ export const joyConMapperTestOnly = {
   handleJoyConMapperSkip,
   handleJoyConMapperReset,
   handleJoyConMapperStart,
+  initializeJoyConMapperRuntime,
 };
 
 /**
