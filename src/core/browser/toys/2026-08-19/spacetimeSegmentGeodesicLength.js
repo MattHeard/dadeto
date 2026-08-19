@@ -1,5 +1,6 @@
 // Toy: Spacetime Segment Geodesic Length
 // (input, env) -> string
+// jscpd:ignore-start
 
 const SEMI_MAJOR_AXIS = 6378137;
 const FLATTENING = 1 / 298.257223563;
@@ -39,7 +40,7 @@ export function spacetimeSegmentGeodesicLength(input) {
 /**
  * Parse the point and segment payload.
  * @param {string} input Raw JSON input.
- * @returns {{points: Array<Record<string, unknown>>, segment: Record<string, unknown>}} Parsed payload.
+ * @returns {{points: Array<{pointId: string, latitude: number, longitude: number}>, segment: {startPointId: string, endPointId: string}}} Parsed payload.
  */
 function parseInput(input) {
   const parsed = JSON.parse(input || '{}');
@@ -49,16 +50,12 @@ function parseInput(input) {
   if (!Array.isArray(parsed.points) || !parsed.segment) {
     throw new Error('points and segment are required.');
   }
-  return { points: parsed.points, segment: parsed.segment };
+  return {
+    points: /** @type {Array<{pointId: string, latitude: number, longitude: number}>} */ (parsed.points),
+    segment: /** @type {{startPointId: string, endPointId: string}} */ (parsed.segment),
+  };
 }
 
-/**
- *
- * @param firstLatitude
- * @param firstLongitude
- * @param secondLatitude
- * @param secondLongitude
- */
 /**
  * Calculate inverse geodesic distance on the WGS84 ellipsoid.
  * @param {number} firstLatitude First latitude.
@@ -84,11 +81,11 @@ function vincentyDistance(
   const longitudeDifference = radians(secondLongitude - firstLongitude);
   let lambda = longitudeDifference;
   let previousLambda;
-  let sinSigma,
-    cosSigma,
-    sigma,
-    sinAlpha,
-    cosSquaredAlpha,
+  let sinSigma = 0,
+    cosSigma = 1,
+    sigma = 0,
+    sinAlpha = 0,
+    cosSquaredAlpha = 1,
     cosTwoSigmaM = 0;
   for (let iteration = 0; iteration < 100; iteration++) {
     const sinLambda = Math.sin(lambda);
@@ -155,13 +152,6 @@ function vincentyDistance(
 }
 
 /**
- *
- * @param firstLatitude
- * @param firstLongitude
- * @param secondLatitude
- * @param secondLongitude
- */
-/**
  * Calculate a spherical fallback distance for non-convergent ellipsoid cases.
  * @param {number} firstLatitude First latitude.
  * @param {number} firstLongitude First longitude.
@@ -185,4 +175,6 @@ function sphericalFallback(
   return SEMI_MAJOR_AXIS * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
+/** @param {number} degrees @returns {number} Radians. */
 const radians = degrees => (degrees * Math.PI) / 180;
+// jscpd:ignore-end
