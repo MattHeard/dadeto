@@ -107,6 +107,7 @@ const {
   detectCurrentControlCapture,
   handleJoyConMapperSkip,
   handleJoyConMapperReset,
+  handleJoyConMapperStart,
 } = joyConMapperTestOnly;
 
 describe('joyConMapper helper branches', () => {
@@ -514,6 +515,7 @@ describe('joyConMapper WebHID availability', () => {
     const state = {
       dom: { globalThis: { navigator: { hid: {} } } },
       hidDevices: [],
+      disposers: [],
     };
 
     expect(() => initializeWebHidCapture(state, [])).not.toThrow();
@@ -1698,6 +1700,7 @@ describe('joyConMapper skip handler', () => {
       currentIndex: 0,
       currentControl: { key: 'l', label: 'L', type: 'button' },
       hidDevices: [],
+      disposers: [],
       stored: { mappings: {}, skippedControls: [] },
       list: {},
       prompt: {},
@@ -1784,6 +1787,58 @@ describe('joyConMapper reset handler', () => {
     state.hidDevices = null;
     handleJoyConMapperReset(state);
     expect(state.hidDevices).toEqual([]);
+  });
+});
+
+describe('joyConMapper start handler', () => {
+  it('starts mapping, syncs initialization, and renders without WebHID', () => {
+    const textInput = { value: '' };
+    const checkbox = { checked: false, dispatchEvent: jest.fn() };
+    const setTextContent = jest.fn();
+    const dom = {
+      globalThis: { localStorage: { getItem: () => '{}' } },
+      getGamepads: () => [],
+      setValue: jest.fn((element, value) => {
+        element.value = value;
+      }),
+      setTextContent,
+      setClassName: jest.fn(),
+      removeAllChildren: jest.fn(),
+      createElement: jest.fn(() => ({ classList: { add: jest.fn() } })),
+      appendChild: jest.fn(),
+    };
+    const state = {
+      dom,
+      textInput,
+      autoSubmitCheckbox: checkbox,
+      started: false,
+      currentIndex: 0,
+      currentControl: { key: 'l', label: 'L', type: 'button' },
+      hidDevices: [],
+      stored: { mappings: {}, skippedControls: [] },
+      list: {},
+      prompt: {},
+      subprompt: {},
+      dot: { classList: { toggle: jest.fn() } },
+      statusText: {},
+      metaIndex: {},
+      metaId: {},
+    };
+
+    handleJoyConMapperStart(state);
+
+    expect(JSON.parse(textInput.value)).toMatchObject({
+      action: 'initialize',
+    });
+    expect(checkbox.checked).toBe(true);
+    expect(state.started).toBe(true);
+    expect(state.currentIndex).toBe(0);
+    expect(state.currentControl).toEqual({
+      key: 'l',
+      label: 'L',
+      type: 'button',
+    });
+    expect(setTextContent).toHaveBeenCalled();
   });
 });
 

@@ -2187,6 +2187,7 @@ export const joyConMapperTestOnly = {
   detectCurrentControlCapture,
   handleJoyConMapperSkip,
   handleJoyConMapperReset,
+  handleJoyConMapperStart,
 };
 
 /**
@@ -2197,7 +2198,7 @@ function handleJoyConMapperStart(state) {
   const { dom, textInput, autoSubmitCheckbox } = state;
 
   startMapping(state);
-  void requestAndOpenJoyConDevices(state, []);
+  void requestAndOpenJoyConDevices(state, state.disposers);
   syncToyInput({
     dom,
     textInput,
@@ -2324,6 +2325,7 @@ export function joyConMapperHandler(dom, container, textInput) {
     hidPendingSnapshot: null,
     hidPendingSnapshotCount: 0,
     hidDevices: [],
+    disposers,
     stored: readStoredMapperState(dom),
     list,
     prompt,
