@@ -15,7 +15,7 @@ import { safeJsonParse, deepMerge, deepClone } from './browser-core.js';
  * @returns {result is ParseSuccess} True when parsing succeeded with data.
  */
 function hasParsedData(result) {
-  return result.ok && Boolean(result.data);
+  return result.ok;
 }
 
 /**
