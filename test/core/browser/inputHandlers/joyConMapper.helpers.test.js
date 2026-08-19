@@ -24,6 +24,7 @@ const {
   readJoyConButtonBytes,
   readJoyConHatByte,
   resolveHatXAxis,
+  resolveHatYAxis,
   snapshotHidButtons,
   logHidDeviceEvent,
   logHidReportEvent,
@@ -1050,6 +1051,9 @@ describe('joyConMapper HID report snapshots', () => {
     expect([5, 6, 7].map(resolveHatXAxis)).toEqual([-1, -1, -1]);
     expect([1, 2, 3].map(resolveHatXAxis)).toEqual([1, 1, 1]);
     expect([0, 4].map(resolveHatXAxis)).toEqual([0, 0]);
+    expect([0, 1, 7].map(resolveHatYAxis)).toEqual([-1, -1, -1]);
+    expect([3, 4, 5].map(resolveHatYAxis)).toEqual([1, 1, 1]);
+    expect([2, 6].map(resolveHatYAxis)).toEqual([0, 0]);
     expect(snapshotHidButtons([0])).toEqual(
       Array.from({ length: 8 }, () => ({ pressed: false, value: 0 }))
     );
