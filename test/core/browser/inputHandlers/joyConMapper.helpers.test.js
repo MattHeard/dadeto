@@ -709,6 +709,38 @@ describe('joyConMapper Joy-Con device requests', () => {
       ],
     });
   });
+
+  it('passes every supported product filter to the HID request API', async () => {
+    const requestDevice = jest.fn(options => {
+      expect(options).toEqual({
+        filters: [
+          { vendorId: 0x057e, productId: 0x2006 },
+          { vendorId: 0x057e, productId: 0x2007 },
+          { vendorId: 0x057e, productId: 0x2008 },
+          { vendorId: 0x057e, productId: 0x2009 },
+        ],
+      });
+      return Promise.resolve([]);
+    });
+    const state = {
+      dom: {
+        globalThis: { navigator: { hid: { requestDevice } } },
+        getGamepads: () => [],
+        setTextContent: jest.fn(),
+      },
+      hidDevices: [],
+      prompt: {},
+      subprompt: {},
+      dot: { classList: { toggle: jest.fn() } },
+      statusText: {},
+      metaIndex: {},
+      metaId: {},
+    };
+
+    await requestAndOpenJoyConDevices(state, []);
+
+    expect(requestDevice).toHaveBeenCalledTimes(1);
+  });
 });
 
 describe('joyConMapper granted-device opening', () => {
