@@ -1,5 +1,8 @@
 import { describe, expect, it, jest } from '@jest/globals';
-import { joyConMapperTestOnly } from '../../../../src/core/browser/inputHandlers/joyConMapper.js';
+import {
+  joyConMapperHandler,
+  joyConMapperTestOnly,
+} from '../../../../src/core/browser/inputHandlers/joyConMapper.js';
 
 const {
   getClosestArticle,
@@ -1617,7 +1620,9 @@ describe('joyConMapper render orchestration', () => {
       setTextContent,
       setClassName: jest.fn(),
       removeAllChildren: jest.fn(),
-      createElement: jest.fn(() => ({ classList: { add: jest.fn() } })),
+      createElement: jest.fn(() => ({
+        classList: { add: jest.fn(), toggle: jest.fn() },
+      })),
       appendChild: jest.fn(),
     };
     const state = {
@@ -1690,7 +1695,9 @@ describe('joyConMapper skip handler', () => {
       setTextContent,
       setClassName: jest.fn(),
       removeAllChildren: jest.fn(),
-      createElement: jest.fn(() => ({ classList: { add: jest.fn() } })),
+      createElement: jest.fn(() => ({
+        classList: { add: jest.fn(), toggle: jest.fn() },
+      })),
       appendChild: jest.fn(),
     };
     const state = {
@@ -1744,7 +1751,9 @@ describe('joyConMapper reset handler', () => {
       setTextContent,
       setClassName: jest.fn(),
       removeAllChildren: jest.fn(),
-      createElement: jest.fn(() => ({ classList: { add: jest.fn() } })),
+      createElement: jest.fn(() => ({
+        classList: { add: jest.fn(), toggle: jest.fn() },
+      })),
       appendChild: jest.fn(),
     };
     const device = { productId: 0x2006 };
@@ -1921,6 +1930,49 @@ describe('joyConMapper runtime initialization', () => {
     expect(dom.clearInterval).toHaveBeenCalledWith(intervalId);
     expect(dom.removeEventListener).toHaveBeenCalledTimes(3);
     expect(setTextContent).toHaveBeenCalled();
+  });
+});
+
+describe('joyConMapper handler shell', () => {
+  it('hides the source input and inserts a managed mapper form', () => {
+    const inserted = [];
+    const textInput = { value: '' };
+    const dom = {
+      globalThis: { localStorage: { getItem: () => '{}' } },
+      hide: jest.fn(),
+      disable: jest.fn(),
+      getNextSibling: jest.fn(() => null),
+      insertBefore: jest.fn((container, element) => inserted.push(element)),
+      getGamepads: () => [],
+      setValue: jest.fn((element, value) => {
+        element.value = value;
+      }),
+      setTextContent: jest.fn(),
+      setClassName: jest.fn(),
+      removeAllChildren: jest.fn(),
+      createElement: jest.fn(() => ({
+        classList: { add: jest.fn(), toggle: jest.fn() },
+      })),
+      appendChild: jest.fn(),
+      addEventListener: jest.fn(),
+      removeEventListener: jest.fn(),
+      setInterval: jest.fn(() => Symbol('interval')),
+      clearInterval: jest.fn(),
+      requestAnimationFrame: jest.fn(callback => callback()),
+    };
+    const container = { closest: jest.fn(() => null) };
+
+    joyConMapperHandler(dom, container, textInput);
+
+    expect(dom.hide).toHaveBeenCalledWith(textInput);
+    expect(dom.disable).toHaveBeenCalledWith(textInput);
+    expect(dom.insertBefore).toHaveBeenCalled();
+    expect(inserted).toHaveLength(1);
+    expect(inserted[0].classList.add).toHaveBeenCalledWith(
+      'joycon-mapper-form'
+    );
+    expect(inserted[0]._dispose).toEqual(expect.any(Function));
+    inserted[0]._dispose();
   });
 });
 
