@@ -741,6 +741,30 @@ describe('joyConMapper Joy-Con device requests', () => {
 
     expect(requestDevice).toHaveBeenCalledTimes(1);
   });
+
+  it('opens and tracks every device returned by the request API', async () => {
+    const device = { open: jest.fn(() => Promise.resolve()), opened: false };
+    const requestDevice = jest.fn(() => Promise.resolve([device]));
+    const state = {
+      dom: {
+        globalThis: { navigator: { hid: { requestDevice } } },
+        getGamepads: () => [],
+        setTextContent: jest.fn(),
+      },
+      hidDevices: [],
+      prompt: {},
+      subprompt: {},
+      dot: { classList: { toggle: jest.fn() } },
+      statusText: {},
+      metaIndex: {},
+      metaId: {},
+    };
+
+    await requestAndOpenJoyConDevices(state, []);
+
+    expect(device.open).toHaveBeenCalledTimes(1);
+    expect(state.hidDevices).toEqual([device]);
+  });
 });
 
 describe('joyConMapper granted-device opening', () => {
