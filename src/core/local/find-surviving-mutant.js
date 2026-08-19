@@ -205,7 +205,7 @@ export async function scanFiles(/** @type {any} */ context) {
 /**
  * Scan one source file.
  * @param {Record<string, any>} context Scan context.
- * @returns {Promise<Array<object> | null>} Surviving mutants, or null for no tests.
+ * @returns {Promise<Array<object> | null | {status: string, error?: string}>} Surviving mutants, no-tests marker, or timeout result.
  */
 async function scanFile(/** @type {any} */ context) {
   const { filePath, outputPath, result, report } = context;
