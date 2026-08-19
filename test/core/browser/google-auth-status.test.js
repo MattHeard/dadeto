@@ -17,12 +17,16 @@ function createElement() {
 }
 
 describe('createGoogleAuthStatusHandle', () => {
-  it('shows signed-in controls immediately when an id token exists', () => {
+  it('shows signed-in controls immediately when an id token exists', async () => {
     const signInButton = createElement();
     const signOutWrap = createElement();
     const profileLink = createElement();
     const adminLink = createElement();
     const initGoogleSignInFn = jest.fn();
+    let authorUuid = null;
+    const refreshAuthorUuidFn = jest.fn(() => {
+      authorUuid = 'author-1';
+    });
     const handle = createGoogleAuthStatusHandle({
       documentObj: {
         querySelectorAll: jest.fn(selector => {
@@ -42,7 +46,8 @@ describe('createGoogleAuthStatusHandle', () => {
         }),
       },
       initGoogleSignInFn,
-      getAuthorUuidFn: jest.fn().mockReturnValue('author-1'),
+      getAuthorUuidFn: () => authorUuid,
+      refreshAuthorUuidFn,
       signOutFn: jest.fn(),
       getIdTokenFn: jest.fn().mockReturnValue('token'),
       isAdminFn: jest.fn().mockReturnValue(true),
@@ -55,9 +60,12 @@ describe('createGoogleAuthStatusHandle', () => {
     });
     expect(signInButton.style.display).toBe('none');
     expect(signOutWrap.style.display).toBe('');
+    expect(profileLink.style.display).toBe('none');
+    expect(adminLink.style.display).toBe('');
+    expect(refreshAuthorUuidFn).toHaveBeenCalled();
+    await Promise.resolve();
     expect(profileLink.style.display).toBe('');
     expect(profileLink.href).toContain('/a/author-1.html');
-    expect(adminLink.style.display).toBe('');
   });
 
   it('wires sign-in callback and sign-out link display updates', async () => {
@@ -68,6 +76,7 @@ describe('createGoogleAuthStatusHandle', () => {
     const adminLink = createElement();
     let onSignIn;
     const signOutFn = jest.fn().mockResolvedValue(undefined);
+    const getIdTokenFn = jest.fn().mockReturnValue(null);
     const handle = createGoogleAuthStatusHandle({
       documentObj: {
         querySelectorAll: jest.fn(selector => {
@@ -94,11 +103,16 @@ describe('createGoogleAuthStatusHandle', () => {
       },
       getAuthorUuidFn: jest.fn().mockReturnValue('author-2'),
       signOutFn,
-      getIdTokenFn: jest.fn().mockReturnValue(null),
+      getIdTokenFn,
       isAdminFn: jest.fn().mockReturnValue(false),
     });
 
     handle();
+    expect(signInButton.style.display).toBeUndefined();
+    expect(signOutWrap.style.display).toBeUndefined();
+    expect(profileLink.style.display).toBeUndefined();
+    getIdTokenFn.mockReturnValue('token');
+    expect(() => handle()).not.toThrow();
     onSignIn();
 
     expect(signInButton.style.display).toBe('none');
@@ -115,6 +129,7 @@ describe('createGoogleAuthStatusHandle', () => {
     expect(signInButton.style.display).toBe('');
     expect(signOutWrap.style.display).toBe('none');
     expect(profileLink.style.display).toBe('none');
+    expect(profileLink.href).toBe('#');
     expect(adminLink.style.display).toBe('none');
   });
 });
