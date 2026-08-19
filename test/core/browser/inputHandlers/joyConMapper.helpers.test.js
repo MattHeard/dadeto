@@ -874,6 +874,25 @@ describe('joyConMapper granted-device opening', () => {
 });
 
 describe('joyConMapper HID snapshot stabilization', () => {
+  it('compares every button and rejects length or value differences', () => {
+    const matchingButton = { pressed: true, value: 1 };
+    const differentButton = { pressed: false, value: 0 };
+
+    expect(sameButtonSnapshots([matchingButton], [matchingButton])).toBe(true);
+    expect(
+      sameButtonSnapshots(
+        [matchingButton],
+        [matchingButton, { pressed: false, value: 0 }]
+      )
+    ).toBe(false);
+    expect(
+      sameButtonSnapshots(
+        [matchingButton, differentButton],
+        [matchingButton, matchingButton]
+      )
+    ).toBe(false);
+  });
+
   it('promotes repeated snapshots and resets on changes', () => {
     const first = { buttons: [{ pressed: true, value: 1 }], axes: [0.2] };
     const changed = { buttons: [{ pressed: false, value: 0 }], axes: [0.2] };
@@ -897,6 +916,12 @@ describe('joyConMapper HID snapshot stabilization', () => {
         [{ pressed: false, value: 1 }]
       )
     ).toBe(false);
+    expect(
+      sameButtonSnapshots(
+        [{ pressed: true, value: 1 }],
+        [{ pressed: true, value: 1 }]
+      )
+    ).toBe(true);
     expect(
       sameButtonSnapshots(
         [
