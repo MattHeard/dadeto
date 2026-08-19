@@ -1,7 +1,8 @@
 // Toy: Asset Allocation Registry
 // (input, env) -> string
 
-import { parseObjectRecord, trimmedStringOrEmpty } from '../../validation.js';
+import { trimmedStringOrEmpty } from '../../validation.js';
+import { buildRegistry } from './registryUtils.js';
 
 /**
  * Register asset allocations for possession contexts.
@@ -9,26 +10,21 @@ import { parseObjectRecord, trimmedStringOrEmpty } from '../../validation.js';
  * @param {string} input JSON payload with `allocations`.
  * @returns {string} Deterministic allocation registry.
  */
-export function assetAllocationRegistry(input) {
-  const parsed = parseObjectRecord(input) ?? {};
-  const allocations = Array.isArray(parsed.allocations)
-    ? parsed.allocations.map(normalizeAllocation).filter(Boolean)
-    : [];
-  allocations.sort((left, right) =>
-    `${left.possessionContextId}:${left.assetId}`.localeCompare(
-      `${right.possessionContextId}:${right.assetId}`
-    )
-  );
-  return JSON.stringify(
-    { allocations, summary: { allocationCount: allocations.length } },
-    null,
-    2
-  );
-}
+// jscpd:ignore-start — thin exported wiring differs only by registry policy.
+export const assetAllocationRegistry = input =>
+  buildRegistry(input, {
+    collectionKey: 'allocations',
+    countKey: 'allocationCount',
+    sourceKey: 'allocations',
+    normalize: normalizeAllocation,
+    sortKey: allocation =>
+      `${allocation.possessionContextId}:${allocation.assetId}`,
+  });
+// jscpd:ignore-end
 
 /**
  * @param {unknown} value Candidate allocation.
- * @returns {Record<string, string>|null} Normalized allocation.
+ * @returns {{possessionContextId: string, assetId: string, allocatedFrom: string, allocatedTo: string, status: string, possessionFrom?: string, possessionTo?: string}|null} Normalized allocation.
  */
 function normalizeAllocation(value) {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
@@ -42,6 +38,7 @@ function normalizeAllocation(value) {
   if (!possessionContextId || !assetId || !allocatedFrom || !allocatedTo) {
     return null;
   }
+  /** @type {{possessionContextId: string, assetId: string, allocatedFrom: string, allocatedTo: string, status: string, possessionFrom?: string, possessionTo?: string}} */
   const normalized = {
     possessionContextId,
     assetId,

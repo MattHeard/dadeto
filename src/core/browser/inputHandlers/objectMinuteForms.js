@@ -4,6 +4,7 @@ import {
   createInputDisposer,
   setupInputEvents,
 } from './browserInputHandlersCore.js';
+import { parseObjectRecord } from '../validation.js';
 
 /** @typedef {import('../domHelpers.js').DOMHelpers} DomHelpers */
 
@@ -77,9 +78,13 @@ function readPath(source, path) {
  */
 function serializeForm(fields, form) {
   const result = {};
-  form.querySelectorAll('input').forEach((element, index) => {
-    assignPath(result, fields[index][0], fieldValue(element));
-  });
+  form.querySelectorAll('input').forEach(
+    /** @type {(element: HTMLInputElement, index: number) => void} */ (
+      (element, index) => {
+        assignPath(result, fields[index][0], fieldValue(element));
+      }
+    )
+  );
   return JSON.stringify(result, null, 2);
 }
 
@@ -90,12 +95,7 @@ function serializeForm(fields, form) {
  * @returns {Record<string, any>} Parsed object value.
  */
 function parseInitialValue(textInput, dom) {
-  try {
-    const value = JSON.parse(dom.getValue(textInput) || '{}');
-    return value && typeof value === 'object' ? value : {};
-  } catch {
-    return {};
-  }
+  return parseObjectRecord(dom.getValue(textInput)) ?? {};
 }
 
 /**
@@ -131,7 +131,8 @@ function createForm(fields, container, textInput, dom) {
   setupInputEvents(dom, form, update);
   dom.appendChild(container, form);
   update();
-  form._dispose = createInputDisposer(dom, form, update);
+  /** @type {HTMLElement & {_dispose?: () => void}} */ (form)._dispose =
+    createInputDisposer(dom, form, update);
   return form;
 }
 
@@ -144,7 +145,9 @@ function createForm(fields, container, textInput, dom) {
 function removeExisting(dom, container) {
   const existing = dom.querySelector(container, FORM_SELECTOR);
   if (existing) {
-    existing._dispose?.();
+    /** @type {HTMLElement & {_dispose?: () => void}} */ (
+      existing
+    )._dispose?.();
     dom.removeChild(container, existing);
   }
 }

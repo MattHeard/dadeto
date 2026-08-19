@@ -34,6 +34,11 @@ export function memoryObjectListAppend(input, env) {
   }
 }
 
+/**
+ * Parse the request payload.
+ * @param {string} input JSON request.
+ * @returns {{memoryLocation: string, path: string, object: Record<string, unknown>}} Parsed request.
+ */
 function parseRequest(input) {
   const request = JSON.parse(input || '{}');
   if (!request || typeof request !== 'object' || Array.isArray(request)) {
@@ -41,33 +46,57 @@ function parseRequest(input) {
   }
   const memoryLocation = String(request.memoryLocation || 'temporary');
   const path = String(request.path || '').trim();
-  if (!LOCATIONS.includes(memoryLocation)) throw new Error('Unsupported memory location.');
+  if (!LOCATIONS.includes(memoryLocation))
+    throw new Error('Unsupported memory location.');
   if (!path) throw new Error('A path is required.');
-  if (!request.object || typeof request.object !== 'object' || Array.isArray(request.object)) {
+  if (
+    !request.object ||
+    typeof request.object !== 'object' ||
+    Array.isArray(request.object)
+  ) {
     throw new Error('An object property containing a JSON object is required.');
   }
   return { memoryLocation, path, object: request.object };
 }
 
+/**
+ * Read the selected memory root.
+ * @param {string} memoryLocation Memory location.
+ * @param {import('../browserToysCore.js').ToyEnv} env Storage helpers.
+ * @returns {Record<string, any>} Cloned memory root.
+ */
 function readRoot(memoryLocation, env) {
   if (memoryLocation === 'permanent') {
     return deepClone(requireEnvHelper(env, 'getLocalPermanentData')() || {});
   }
-  const envelope = deepClone(requireEnvHelper(env, 'getData')() || {});
+  const envelope = getEnvelope(env);
   return memoryLocation === 'envelope' ? envelope : (envelope.temporary ||= {});
 }
 
+/**
+ * Find or create the target list.
+ * @param {Record<string, any>} root Memory root.
+ * @param {string} path Dot-separated list path.
+ * @returns {any[]} Target list.
+ */
 function readList(root, path) {
   const parts = path.split('.');
   let cursor = root;
   parts.forEach(part => {
     if (cursor[part] === undefined) cursor[part] = [];
-    if (!Array.isArray(cursor[part])) throw new Error(`Path is not a list: ${path}`);
+    if (!Array.isArray(cursor[part]))
+      throw new Error(`Path is not a list: ${path}`);
     cursor = cursor[part];
   });
-  return cursor;
+  return /** @type {any[]} */ (cursor);
 }
 
+/**
+ * Persist the selected memory root.
+ * @param {string} memoryLocation Memory location.
+ * @param {Record<string, any>} root Memory root.
+ * @param {import('../browserToysCore.js').ToyEnv} env Storage helpers.
+ */
 function writeRoot(memoryLocation, root, env) {
   if (memoryLocation === 'permanent') {
     requireEnvHelper(env, 'setLocalPermanentData')(root);
@@ -77,7 +106,18 @@ function writeRoot(memoryLocation, root, env) {
     requireEnvHelper(env, 'setLocalTemporaryData')(root);
     return;
   }
-  const envelope = deepClone(requireEnvHelper(env, 'getData')() || {});
+  const envelope = getEnvelope(env);
   envelope.temporary = root;
   requireEnvHelper(env, 'setLocalTemporaryData')(envelope);
+}
+
+/**
+ * Read a cloned envelope from the environment.
+ * @param {import('../browserToysCore.js').ToyEnv} env Storage helpers.
+ * @returns {Record<string, any>} Cloned envelope.
+ */
+function getEnvelope(env) {
+  return /** @type {Record<string, any>} */ (
+    deepClone(requireEnvHelper(env, 'getData')() || {})
+  );
 }

@@ -7,19 +7,40 @@ describe('runnerAvailabilityRegistry', () => {
       runnerAvailabilityRegistry(
         JSON.stringify({
           runners: [
-            { runnerId: 'RUN002', name: 'Jo', availability: [{ from: '14:00', to: '17:00' }] },
-            { runnerId: 'RUN001', name: 'Alex', availability: [{ from: '09:00', to: '12:00' }] },
+            {
+              runnerId: 'RUN002',
+              name: 'Jo',
+              availability: [{ from: '14:00', to: '17:00' }],
+            },
+            {
+              runnerId: 'RUN001',
+              name: 'Alex',
+              availability: [{ from: '09:00', to: '12:00' }],
+            },
           ],
         })
       )
     );
-    expect(result.runners.map(runner => runner.runnerId)).toEqual(['RUN001', 'RUN002']);
-    expect(result.runners[0].availability).toEqual([{ from: '09:00', to: '12:00' }]);
+    expect(result.runners.map(runner => runner.runnerId)).toEqual([
+      'RUN001',
+      'RUN002',
+    ]);
+    expect(result.runners[0].availability).toEqual([
+      { from: '09:00', to: '12:00' },
+    ]);
     expect(result.summary).toEqual({ runnerCount: 2 });
   });
 
   test('applies safe defaults and ignores malformed windows', () => {
-    expect(JSON.parse(runnerAvailabilityRegistry(JSON.stringify({ runners: [{ availability: [{ from: '09:00' }, 'bad'] }] })))).toEqual({
+    expect(
+      JSON.parse(
+        runnerAvailabilityRegistry(
+          JSON.stringify({
+            runners: [{ availability: [{ from: '09:00' }, 'bad'] }],
+          })
+        )
+      )
+    ).toEqual({
       runners: [{ runnerId: 'runner-1', name: 'runner-1', availability: [] }],
       summary: { runnerCount: 1 },
     });

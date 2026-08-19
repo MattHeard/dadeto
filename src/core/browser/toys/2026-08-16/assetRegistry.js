@@ -11,20 +11,11 @@ import { parseObjectRecord, trimmedStringOrEmpty } from '../../validation.js';
  * @returns {string} Normalized asset registry report.
  */
 export function assetRegistry(input) {
-  const parsed = parseInput(input);
+  const parsed = parseObjectRecord(input) ?? {};
   const assets = getAssets(parsed);
 
   assets.sort((left, right) => left.assetId.localeCompare(right.assetId));
   return JSON.stringify({ assets, summary: summarize(assets) }, null, 2);
-}
-
-/**
- * Parse the input JSON object.
- * @param {string} input Raw JSON payload.
- * @returns {Record<string, unknown>} Parsed object or an empty object.
- */
-function parseInput(input) {
-  return parseObjectRecord(input) ?? {};
 }
 
 /**

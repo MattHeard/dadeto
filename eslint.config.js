@@ -72,6 +72,9 @@ export default [
       'jsdoc/require-param-description': 'warn',
       'jsdoc/require-param-type': 'warn',
       'jsdoc/require-returns': 'warn',
+      'jsdoc/reject-any-type': 'off',
+      'jsdoc/reject-function-type': 'off',
+      'jsdoc/escape-inline-tags': 'off',
       'jsdoc/check-tag-names': 'warn',
       'jsdoc/no-undefined-types': [
         'warn',

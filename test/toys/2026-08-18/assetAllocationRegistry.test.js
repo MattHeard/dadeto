@@ -39,8 +39,19 @@ describe('assetAllocationRegistry', () => {
       assetAllocationRegistry(
         JSON.stringify({
           allocations: [
-            { possessionContextId: 'CTX002', assetId: 'b', allocatedFrom: '1', allocatedTo: '2' },
-            { possessionContextId: 'CTX001', assetId: 'a', allocatedFrom: '1', allocatedTo: '2', status: 'held' },
+            {
+              possessionContextId: 'CTX002',
+              assetId: 'b',
+              allocatedFrom: '1',
+              allocatedTo: '2',
+            },
+            {
+              possessionContextId: 'CTX001',
+              assetId: 'a',
+              allocatedFrom: '1',
+              allocatedTo: '2',
+              status: 'held',
+            },
             { possessionContextId: 'CTX003', assetId: 'c' },
           ],
         })

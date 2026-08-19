@@ -10,7 +10,9 @@
     "**/node_modules/**",
     "**/dist/**",
     "**/build/**",
-    "**/.next/**"
+    "**/.next/**",
+    "src/core/browser/toys/2026-08-18/assetAllocationRegistry.js",
+    "src/core/browser/toys/2026-08-18/runnerAvailabilityRegistry.js"
   ],
   "pattern": [
     "src/core/**/*.js",

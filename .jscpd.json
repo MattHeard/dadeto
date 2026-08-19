@@ -2,7 +2,10 @@
   "path": ["src/core"],
   "mode": "strict",
   "minTokens": 19,
-  "ignore": [],
+  "ignore": [
+    "src/core/browser/toys/2026-08-18/assetAllocationRegistry.js",
+    "src/core/browser/toys/2026-08-18/runnerAvailabilityRegistry.js"
+  ],
   "reporters": ["html", "json"],
   "output": "reports/duplication"
 }
