@@ -1,6 +1,24 @@
 {
   "posts": [
     {
+      "key": "SPAC1",
+      "title": "Spacetime Point Registry",
+      "publicationDate": "2026-08-19",
+      "release": "public",
+      "content": [
+        "Normalize opaque spacetime-point IDs into canonical WGS84 coordinates and UTC-minute timestamps.",
+        "SPAC1 is a pure primitive with no persistence and no knowledge of rental-domain entities.",
+        "Later segment and participation toys can reference these canonical points."
+      ],
+      "toy": {
+        "modulePath": "/core/browser/toys/2026-08-19/spacetimePointRegistry.js",
+        "functionName": "spacetimePointRegistry",
+        "defaultInputMethod": "textarea",
+        "defaultOutputMethod": "textarea"
+      },
+      "tags": ["toy", "spacetime", "coordinates", "utc", "registry", "json"]
+    },
+    {
       "key": "MEMO4",
       "title": "Memory Object List Append",
       "publicationDate": "2026-08-18",
