@@ -936,6 +936,14 @@ describe('joyConMapper HID snapshot stabilization', () => {
     updateHidSnapshot(thresholdState, first);
     expect(thresholdState.hidPendingSnapshotCount).toBe(1);
     expect(thresholdState.hidSnapshot).toBeNull();
+
+    updateHidSnapshot(thresholdState, first);
+    expect(thresholdState.hidPendingSnapshotCount).toBe(2);
+    expect(thresholdState.hidSnapshot).toBe(first);
+
+    updateHidSnapshot(thresholdState, first);
+    expect(thresholdState.hidPendingSnapshotCount).toBe(3);
+    expect(thresholdState.hidSnapshot).toBe(first);
   });
 });
 
