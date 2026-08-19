@@ -1937,6 +1937,7 @@ describe('joyConMapper handler shell', () => {
   it('hides the source input and inserts a managed mapper form', () => {
     const inserted = [];
     const created = [];
+    let connectedGamepad = { id: 'left Joy-Con', buttons: [], axes: [] };
     const textInput = { value: '' };
     const dom = {
       globalThis: { localStorage: { getItem: () => '{}' } },
@@ -1944,7 +1945,7 @@ describe('joyConMapper handler shell', () => {
       disable: jest.fn(),
       getNextSibling: jest.fn(() => null),
       insertBefore: jest.fn((container, element) => inserted.push(element)),
-      getGamepads: () => [],
+      getGamepads: () => (connectedGamepad ? [connectedGamepad] : []),
       setValue: jest.fn((element, value) => {
         element.value = value;
       }),
@@ -1977,10 +1978,12 @@ describe('joyConMapper handler shell', () => {
     expect(inserted[0].classList.add).toHaveBeenCalledWith(
       'joycon-mapper-form'
     );
-    expect(dom.createElement).toHaveBeenNthCalledWith(3, 'div');
-    expect(dom.createElement).toHaveBeenNthCalledWith(4, 'div');
-    expect(dom.createElement).toHaveBeenNthCalledWith(5, 'span');
-    expect(dom.createElement).toHaveBeenNthCalledWith(6, 'span');
+    expect(dom.createElement.mock.calls.slice(2, 6)).toEqual([
+      ['div'],
+      ['div'],
+      ['span'],
+      ['span'],
+    ]);
     expect(dom.setClassName).toHaveBeenCalledWith(
       created[2],
       'joycon-mapper-hero'
@@ -2002,7 +2005,7 @@ describe('joyConMapper handler shell', () => {
         ([element, text]) =>
           element === created[5] && text === 'Waiting for gamepad'
       )
-    ).toHaveLength(2);
+    ).toHaveLength(1);
     expect(dom.createElement.mock.calls.slice(6, 16)).toEqual([
       ['div'],
       ['div'],
@@ -2038,7 +2041,7 @@ describe('joyConMapper handler shell', () => {
             text ===
               'The mapper will resume as soon as the left Joy-Con appears.')
       )
-    ).toHaveLength(4);
+    ).toHaveLength(2);
     expect(dom.setClassName.mock.calls).toEqual(
       expect.arrayContaining([
         [created[8], 'joycon-mapper-actions'],
@@ -2052,9 +2055,13 @@ describe('joyConMapper handler shell', () => {
         [created[11], 'Reset Mapping'],
       ])
     );
-    expect(dom.appendChild).toHaveBeenCalledWith(created[8], created[9]);
-    expect(dom.appendChild).toHaveBeenCalledWith(created[8], created[10]);
-    expect(dom.appendChild).toHaveBeenCalledWith(created[8], created[11]);
+    expect(dom.appendChild.mock.calls).toEqual(
+      expect.arrayContaining([
+        [created[8], created[9]],
+        [created[8], created[10]],
+        [created[8], created[11]],
+      ])
+    );
     expect(dom.setClassName.mock.calls).toEqual(
       expect.arrayContaining([
         [created[12], 'joycon-mapper-meta'],
@@ -2073,7 +2080,7 @@ describe('joyConMapper handler shell', () => {
           (element === created[13] && text === 'Index: -') ||
           (element === created[14] && text === 'ID: -')
       )
-    ).toHaveLength(4);
+    ).toHaveLength(2);
     expect(dom.appendChild.mock.calls).toEqual(
       expect.arrayContaining([
         [created[12], created[13]],
@@ -2082,6 +2089,18 @@ describe('joyConMapper handler shell', () => {
         [created[2], created[15]],
       ])
     );
+    expect(dom.setTextContent).toHaveBeenCalledWith(
+      created[6],
+      'Ready to map the left Joy-Con'
+    );
+    connectedGamepad = null;
+    dom.addEventListener.mock.calls[2][2]();
+    expect(
+      dom.setTextContent.mock.calls.filter(
+        ([element, text]) =>
+          element === created[6] && text === 'Connect a gamepad to begin'
+      )
+    ).toHaveLength(2);
     expect(inserted[0]._dispose).toEqual(expect.any(Function));
     inserted[0]._dispose();
   });
