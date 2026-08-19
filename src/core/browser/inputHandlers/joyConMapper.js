@@ -31,7 +31,7 @@ import { createManagedFormShell } from './createDendriteHandler.js';
 /** @typedef {{ key: string, label: string, type: 'button' | 'axis', direction?: 'negative' | 'positive' }} MapperControl */
 /** @typedef {{ mappings: Record<string, unknown>, skippedControls: string[] }} StoredMapperState */
 /** @typedef {ButtonCapture | AxisCapture} CaptureResult */
-/** @typedef {{ dom: DOMHelpers, textInput: HTMLInputElement, autoSubmitCheckbox: HTMLInputElement | null, started: boolean, currentIndex: number, currentControl: MapperControl | null, previousSnapshot: GamepadSnapshot | null, hidSnapshot: HidSnapshot | null, hidPendingSnapshot: HidSnapshot | null, hidPendingSnapshotCount: number, hidDevices: HidDeviceLike[], stored: StoredMapperState, list: HTMLElement, prompt: HTMLElement, subprompt: HTMLElement, dot: HTMLElement, statusText: HTMLElement, metaIndex: HTMLElement, metaId: HTMLElement }} MapperState */
+/** @typedef {{ dom: DOMHelpers, textInput: HTMLInputElement, autoSubmitCheckbox: HTMLInputElement | null, started: boolean, currentIndex: number, currentControl: MapperControl | null, previousSnapshot: GamepadSnapshot | null, hidSnapshot: HidSnapshot | null, hidPendingSnapshot: HidSnapshot | null, hidPendingSnapshotCount: number, hidDevices: HidDeviceLike[], stored: StoredMapperState, list: HTMLElement, prompt: HTMLElement, subprompt: HTMLElement, dot: HTMLElement, statusText: HTMLElement, metaIndex: HTMLElement, metaId: HTMLElement, disposers: Array<() => void> }} MapperState */
 /** @typedef {{ className?: string, text?: string }} ElementOptions */
 
 const EMPTY_ELEMENT_OPTIONS = /** @type {ElementOptions} */ (
@@ -2101,7 +2101,6 @@ export const joyConMapperTestOnly = {
   becamePressed,
   getButtonCaptureCandidate,
   selectCapturedButton,
-  selectStrongerButtonCapture,
   isStrongerButtonCapture,
   pickStrongerButtonCapture,
   describeCapture,
@@ -2112,7 +2111,6 @@ export const joyConMapperTestOnly = {
   directionalDelta,
   hasAxisCaptureDelta,
   getAxisCaptureCandidate,
-  mergeAxisCaptureCandidate,
   buildPayload,
   getStoredControlCapture,
   getPendingRowStateForStarted,
@@ -2167,7 +2165,6 @@ export const joyConMapperTestOnly = {
   attachHidDeviceListener,
   updateHidSnapshot,
   sameHidSnapshot,
-  handleJoyConMapperReset,
   snapshotHidInputReport,
   readJoyConButtonBytes,
   readJoyConHatByte,
