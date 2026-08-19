@@ -561,6 +561,60 @@ describe('joyConMapper WebHID availability', () => {
     expect(state.hidDevices).toEqual([device]);
   });
 
+  it('removes the disconnected device and refreshes the WebHID UI', () => {
+    const device = { productName: 'left' };
+    const remainingDevice = { productName: 'right' };
+    const addEventListener = jest.fn();
+    const logSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
+    const state = {
+      dom: {
+        globalThis: {
+          navigator: {
+            hid: {
+              getDevices: () => Promise.resolve([]),
+              addEventListener,
+            },
+          },
+        },
+        getGamepads: () => [],
+        setTextContent: jest.fn(),
+      },
+      hidDevices: [device, remainingDevice, null],
+      started: false,
+      prompt: {},
+      subprompt: {},
+      dot: { classList: { toggle: jest.fn() } },
+      statusText: {},
+      metaIndex: {},
+      metaId: {},
+    };
+
+    initializeWebHidCapture(state, []);
+    const disconnectHandler = addEventListener.mock.calls.find(
+      ([type]) => type === 'disconnect'
+    )[1];
+
+    disconnectHandler({ device });
+
+    expect(state.hidDevices).toEqual([remainingDevice, null]);
+    expect(state.dom.setTextContent).toHaveBeenCalledWith(
+      state.statusText,
+      'Gamepad detected'
+    );
+    expect(state.dot.classList.toggle).toHaveBeenCalledWith('connected', true);
+
+    disconnectHandler({ device: null });
+
+    expect(state.hidDevices).toEqual([remainingDevice, null]);
+    expect(logSpy).toHaveBeenCalledWith(
+      '[joyConMapper:webhid]',
+      'disconnected',
+      expect.objectContaining({ productName: 'left' })
+    );
+    expect(logSpy).toHaveBeenCalledTimes(1);
+    logSpy.mockRestore();
+  });
+
   it('loads devices without requiring event-listener support', async () => {
     const getDevices = jest.fn(() => Promise.resolve([]));
     const state = {
