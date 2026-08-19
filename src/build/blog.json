@@ -1,6 +1,24 @@
 {
   "posts": [
     {
+      "key": "SPAC6",
+      "title": "Spacetime World Line",
+      "publicationDate": "2026-08-19",
+      "release": "public",
+      "content": [
+        "Assemble non-overlapping spacetime segments into an ordered contiguous world line.",
+        "The toy requires the line to begin and end at requested point IDs and to include every supplied segment exactly once.",
+        "This remains a pure geometric composition primitive with no domain or persistence behavior."
+      ],
+      "toy": {
+        "modulePath": "/core/browser/toys/2026-08-19/spacetimeWorldLine.js",
+        "functionName": "spacetimeWorldLine",
+        "defaultInputMethod": "textarea",
+        "defaultOutputMethod": "textarea"
+      },
+      "tags": ["toy", "spacetime", "world-line", "segments", "geometry", "json"]
+    },
+    {
       "key": "SPAC5",
       "title": "Spacetime Segment Duration",
       "publicationDate": "2026-08-19",
