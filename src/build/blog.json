@@ -1,6 +1,24 @@
 {
   "posts": [
     {
+      "key": "SPAC2",
+      "title": "Spacetime Segment Registry",
+      "publicationDate": "2026-08-19",
+      "release": "public",
+      "content": [
+        "Define ordered spacetime segments using references to canonical SPAC1 points.",
+        "SPAC2 is a pure, domain-neutral primitive with no routing, feasibility, duration, or persistence behavior.",
+        "Later asset, runner, and possession-domain toys can participate in these segments."
+      ],
+      "toy": {
+        "modulePath": "/core/browser/toys/2026-08-19/spacetimeSegmentRegistry.js",
+        "functionName": "spacetimeSegmentRegistry",
+        "defaultInputMethod": "textarea",
+        "defaultOutputMethod": "textarea"
+      },
+      "tags": ["toy", "spacetime", "segment", "registry", "references", "json"]
+    },
+    {
       "key": "SPAC1",
       "title": "Spacetime Point Registry",
       "publicationDate": "2026-08-19",
