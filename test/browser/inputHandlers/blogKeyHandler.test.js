@@ -117,6 +117,10 @@ describe('blogKeyHandler', () => {
 
     expect(inputs.length).toBeGreaterThanOrEqual(1);
     expect(textareas.length).toBeGreaterThanOrEqual(1);
+    expect(inputs[0]).toMatchObject({
+      type: 'text',
+      placeholder: 'Blog post title',
+    });
     expect(textareas[0]).toMatchObject({
       className: 'toy-textarea',
       placeholder: 'GERM1\nTEXT1\nSTAR1',
