@@ -2151,6 +2151,7 @@ export const joyConMapperTestOnly = {
   isPromptComplete,
   getStartedPromptCopy,
   getConnectedPromptCopy,
+  render,
   renderPrompt,
   renderMeta,
   renderMapperList,

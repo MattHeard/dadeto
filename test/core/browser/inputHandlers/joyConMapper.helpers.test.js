@@ -73,6 +73,7 @@ const {
   isPromptComplete,
   getStartedPromptCopy,
   getConnectedPromptCopy,
+  render,
   renderPrompt,
   renderMeta,
   renderMapperList,
@@ -1599,6 +1600,55 @@ describe('joyConMapper metadata rendering', () => {
       'Index: -'
     );
     expect(setTextContent).toHaveBeenNthCalledWith(3, state.metaId, 'ID: -');
+  });
+});
+
+describe('joyConMapper render orchestration', () => {
+  it('refreshes state and renders metadata, prompt, and rows', () => {
+    const setTextContent = jest.fn();
+    const dom = {
+      globalThis: { localStorage: { getItem: () => '{}' } },
+      getGamepads: () => [],
+      setTextContent,
+      setClassName: jest.fn(),
+      removeAllChildren: jest.fn(),
+      createElement: jest.fn(() => ({ classList: { add: jest.fn() } })),
+      appendChild: jest.fn(),
+    };
+    const state = {
+      dom,
+      started: false,
+      currentIndex: 99,
+      currentControl: null,
+      hidDevices: [],
+      stored: { mappings: {}, skippedControls: [] },
+      list: {},
+      prompt: {},
+      subprompt: {},
+      dot: { classList: { toggle: jest.fn() } },
+      statusText: {},
+      metaIndex: {},
+      metaId: {},
+    };
+
+    render(state);
+
+    expect(state.currentIndex).toBe(0);
+    expect(state.currentControl).toEqual({
+      key: 'l',
+      label: 'L',
+      type: 'button',
+    });
+    expect(dom.removeAllChildren).toHaveBeenCalledWith(state.list);
+    expect(setTextContent).toHaveBeenCalledWith(
+      state.prompt,
+      'Connect a gamepad to begin'
+    );
+    expect(setTextContent).toHaveBeenCalledWith(
+      state.subprompt,
+      'The mapper will resume as soon as the left Joy-Con appears.'
+    );
+    expect(dom.appendChild).toHaveBeenCalled();
   });
 });
 
