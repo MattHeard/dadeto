@@ -17,4 +17,4 @@ SPAC3 resolves SPAC2 segment references through SPAC1 timestamps. It does not kn
 
 ## Contract
 - Input: `points`, `segments`, `firstSegmentId`, and `secondSegmentId`.
-- Closed intervals are used. Shared boundary instants are `touching`; shared non-zero duration is `overlapping`.
+- Closed intervals are used. Shared boundary instants are `touching` only when the boundary point IDs are identical; shared non-zero duration is `overlapping` regardless of point identity.

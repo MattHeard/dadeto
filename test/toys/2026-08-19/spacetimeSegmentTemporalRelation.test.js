@@ -25,6 +25,28 @@ describe('spacetimeSegmentTemporalRelation', () => {
     ).toBe('touching');
   });
 
+  test('does not call equal-time different points touching', () => {
+    const result = JSON.parse(
+      spacetimeSegmentTemporalRelation(
+        JSON.stringify({
+          firstSegmentId: 'AB',
+          secondSegmentId: 'CD',
+          points: [
+            { pointId: 'A', timestamp: '2026-08-19T09:00Z' },
+            { pointId: 'B', timestamp: '2026-08-19T10:00Z' },
+            { pointId: 'C', timestamp: '2026-08-19T10:00Z' },
+            { pointId: 'D', timestamp: '2026-08-19T11:00Z' },
+          ],
+          segments: [
+            { segmentId: 'AB', startPointId: 'A', endPointId: 'B' },
+            { segmentId: 'CD', startPointId: 'C', endPointId: 'D' },
+          ],
+        })
+      )
+    );
+    expect(result.relation).toBe('disjoint');
+  });
+
   test('classifies shared duration as overlapping', () => {
     expect(
       JSON.parse(spacetimeSegmentTemporalRelation(payload('AB', 'CD'))).relation

@@ -40,10 +40,6 @@ export function spacetimeSegmentTemporalRelation(input) {
 }
 
 /**
- *
- * @param input
- */
-/**
  * Parse and validate a relation request.
  * @param {string} input Raw JSON input.
  * @returns {{points: Array<Record<string, unknown>>, segments: Array<Record<string, unknown>>, firstSegmentId: string, secondSegmentId: string}} Parsed request.
@@ -100,23 +96,42 @@ function resolveInterval(segments, points, segmentId) {
       `Segment ${segmentId} must have an ordered valid time interval.`
     );
   }
-  return { start: start.timestamp, end: end.timestamp, startTime, endTime };
+  return {
+    start: start.timestamp,
+    end: end.timestamp,
+    startTime,
+    endTime,
+    startPointId: segment.startPointId,
+    endPointId: segment.endPointId,
+  };
 }
 
 /**
- *
- * @param first
- * @param second
- */
-/**
  * Classify two closed temporal intervals.
- * @param {{startTime: number, endTime: number}} first First interval.
- * @param {{startTime: number, endTime: number}} second Second interval.
+ * @param {{startTime: number, endTime: number, startPointId: string, endPointId: string}} first First interval.
+ * @param {{startTime: number, endTime: number, startPointId: string, endPointId: string}} second Second interval.
  * @returns {'disjoint'|'touching'|'overlapping'} Temporal relation.
  */
 function classify(first, second) {
   const overlapStart = Math.max(first.startTime, second.startTime);
   const overlapEnd = Math.min(first.endTime, second.endTime);
-  if (overlapStart === overlapEnd) return 'touching';
+  if (overlapStart === overlapEnd && sharesBoundaryPoint(first, second)) {
+    return 'touching';
+  }
   return overlapStart < overlapEnd ? 'overlapping' : 'disjoint';
+}
+
+/**
+ * Check whether a zero-duration temporal intersection is the same point.
+ * @param {{startTime: number, endTime: number, startPointId: string, endPointId: string}} first First interval.
+ * @param {{startTime: number, endTime: number, startPointId: string, endPointId: string}} second Second interval.
+ * @returns {boolean} Whether the shared boundary point is identical.
+ */
+function sharesBoundaryPoint(first, second) {
+  return (
+    (first.endTime === second.startTime &&
+      first.endPointId === second.startPointId) ||
+    (second.endTime === first.startTime &&
+      second.endPointId === first.startPointId)
+  );
 }
