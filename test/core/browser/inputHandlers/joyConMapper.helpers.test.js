@@ -2003,6 +2003,34 @@ describe('joyConMapper handler shell', () => {
           element === created[5] && text === 'Waiting for gamepad'
       )
     ).toHaveLength(2);
+    expect(dom.createElement.mock.calls.slice(6, 8)).toEqual([
+      ['div'],
+      ['div'],
+    ]);
+    expect(dom.setClassName.mock.calls).toEqual(
+      expect.arrayContaining([
+        [created[6], 'joycon-mapper-prompt'],
+        [created[7], 'joycon-mapper-subprompt'],
+      ])
+    );
+    expect(dom.setTextContent.mock.calls).toEqual(
+      expect.arrayContaining([
+        [created[6], 'Connect a gamepad to begin'],
+        [
+          created[7],
+          'The mapper will resume as soon as the left Joy-Con appears.',
+        ],
+      ])
+    );
+    expect(
+      dom.setTextContent.mock.calls.filter(
+        ([element, text]) =>
+          (element === created[6] && text === 'Connect a gamepad to begin') ||
+          (element === created[7] &&
+            text ===
+              'The mapper will resume as soon as the left Joy-Con appears.')
+      )
+    ).toHaveLength(4);
     expect(inserted[0]._dispose).toEqual(expect.any(Function));
     inserted[0]._dispose();
   });
