@@ -2003,7 +2003,15 @@ describe('joyConMapper handler shell', () => {
           element === created[5] && text === 'Waiting for gamepad'
       )
     ).toHaveLength(2);
-    expect(dom.createElement.mock.calls.slice(6, 8)).toEqual([
+    expect(dom.createElement.mock.calls.slice(6, 16)).toEqual([
+      ['div'],
+      ['div'],
+      ['div'],
+      ['button'],
+      ['button'],
+      ['button'],
+      ['div'],
+      ['div'],
       ['div'],
       ['div'],
     ]);
@@ -2031,12 +2039,6 @@ describe('joyConMapper handler shell', () => {
               'The mapper will resume as soon as the left Joy-Con appears.')
       )
     ).toHaveLength(4);
-    expect(dom.createElement.mock.calls.slice(8, 12)).toEqual([
-      ['div'],
-      ['button'],
-      ['button'],
-      ['button'],
-    ]);
     expect(dom.setClassName.mock.calls).toEqual(
       expect.arrayContaining([
         [created[8], 'joycon-mapper-actions'],
@@ -2053,6 +2055,33 @@ describe('joyConMapper handler shell', () => {
     expect(dom.appendChild).toHaveBeenCalledWith(created[8], created[9]);
     expect(dom.appendChild).toHaveBeenCalledWith(created[8], created[10]);
     expect(dom.appendChild).toHaveBeenCalledWith(created[8], created[11]);
+    expect(dom.setClassName.mock.calls).toEqual(
+      expect.arrayContaining([
+        [created[12], 'joycon-mapper-meta'],
+        [created[15], 'joycon-mapper-list'],
+      ])
+    );
+    expect(dom.setTextContent.mock.calls).toEqual(
+      expect.arrayContaining([
+        [created[13], 'Index: -'],
+        [created[14], 'ID: -'],
+      ])
+    );
+    expect(
+      dom.setTextContent.mock.calls.filter(
+        ([element, text]) =>
+          (element === created[13] && text === 'Index: -') ||
+          (element === created[14] && text === 'ID: -')
+      )
+    ).toHaveLength(4);
+    expect(dom.appendChild.mock.calls).toEqual(
+      expect.arrayContaining([
+        [created[12], created[13]],
+        [created[12], created[14]],
+        [created[2], created[12]],
+        [created[2], created[15]],
+      ])
+    );
     expect(inserted[0]._dispose).toEqual(expect.any(Function));
     inserted[0]._dispose();
   });
