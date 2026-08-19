@@ -1,6 +1,24 @@
 {
   "posts": [
     {
+      "key": "SPAC5",
+      "title": "Spacetime Segment Duration",
+      "publicationDate": "2026-08-19",
+      "release": "public",
+      "content": [
+        "Calculate the UTC duration between a segment's start and end points.",
+        "The result ignores distance, routing, and business-domain concepts and returns seconds as a string scalar with a unit label.",
+        "This is a pure temporal primitive for the spacetime layer."
+      ],
+      "toy": {
+        "modulePath": "/core/browser/toys/2026-08-19/spacetimeSegmentDuration.js",
+        "functionName": "spacetimeSegmentDuration",
+        "defaultInputMethod": "textarea",
+        "defaultOutputMethod": "textarea"
+      },
+      "tags": ["toy", "spacetime", "segment", "duration", "utc", "json"]
+    },
+    {
       "key": "SPAC4",
       "title": "Spacetime Segment Geodesic Length",
       "publicationDate": "2026-08-19",
