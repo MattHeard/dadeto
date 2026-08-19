@@ -5,7 +5,7 @@
  * @returns {Array<{ packageId: string, currency: string, amountUsdMinor: number, credits: number }>} Offers.
  */
 export function normalizeBillingOffers(value) {
-  if (!value || typeof value !== 'object' || !Array.isArray(value.packages))
+  if (!Array.isArray(value?.packages))
     throw new TypeError('Invalid billing package response');
   return value.packages.map(normalizeBillingOffer);
 }
@@ -35,7 +35,7 @@ function normalizeBillingOffer(offer) {
  * @param {unknown} offer Candidate offer.
  */
 function assertBillingOfferObject(offer) {
-  if (!offer) throw new TypeError('Invalid billing package');
+  if (offer === null) throw new TypeError('Invalid billing package');
   if (typeof offer !== 'object') throw new TypeError('Invalid billing package');
 }
 
@@ -61,11 +61,7 @@ export function createBillingController(deps) {
     try {
       const token = await getPurchaseToken(deps);
       const response = await deps.postCheckout(packageId, token, attemptId);
-      if (
-        !response ||
-        typeof response !== 'object' ||
-        typeof response.url !== 'string'
-      )
+      if (typeof response?.url !== 'string')
         throw new Error('Invalid checkout response');
       deps.navigate(response.url);
       return response;

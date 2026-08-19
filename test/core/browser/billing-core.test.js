@@ -37,33 +37,45 @@ function setup(overrides = {}) {
 describe('billing browser core', () => {
   it('normalizes only safe display-ready offers', () => {
     expect(normalizeBillingOffers({ packages: [offer] })).toEqual([offer]);
-    expect(() => normalizeBillingOffers(null)).toThrow();
-    expect(() =>
-      normalizeBillingOffers({ packages: 'not-an-array' })
-    ).toThrow();
-    expect(() => normalizeBillingOffers({ packages: [null] })).toThrow();
-    expect(() => normalizeBillingOffers({ packages: [10] })).toThrow();
+    expect(() => normalizeBillingOffers(null)).toThrow(
+      new TypeError('Invalid billing package response')
+    );
+    expect(() => normalizeBillingOffers({ packages: 'not-an-array' })).toThrow(
+      'Invalid billing package response'
+    );
+    expect(() => normalizeBillingOffers({ packages: [] })).not.toThrow();
+    expect(() => normalizeBillingOffers({ packages: [null] })).toThrow(
+      'Invalid billing package'
+    );
+    expect(() => normalizeBillingOffers({ packages: [10] })).toThrow(
+      'Invalid billing package'
+    );
+    const callableOffer = () => {};
+    Object.assign(callableOffer, offer);
+    expect(() => normalizeBillingOffers({ packages: [callableOffer] })).toThrow(
+      'Invalid billing package'
+    );
     expect(() =>
       normalizeBillingOffers({ packages: [{ ...offer, currency: 'eur' }] })
-    ).toThrow();
+    ).toThrow('Invalid billing package');
     expect(() =>
       normalizeBillingOffers({ packages: [{ ...offer, packageId: 10 }] })
-    ).toThrow();
+    ).toThrow('Invalid billing package');
     expect(() =>
       normalizeBillingOffers({ packages: [{ ...offer, amountUsdMinor: 1.5 }] })
-    ).toThrow();
+    ).toThrow('Invalid billing package');
     expect(() =>
       normalizeBillingOffers({ packages: [{ ...offer, amountUsdMinor: 0 }] })
-    ).toThrow();
+    ).toThrow('Invalid billing package');
     expect(() =>
       normalizeBillingOffers({ packages: [{ ...offer, credits: 1.5 }] })
-    ).toThrow();
+    ).toThrow('Invalid billing package');
     expect(() =>
       normalizeBillingOffers({ packages: [{ ...offer, markupBps: 1 }] })
     ).not.toThrow();
     expect(() =>
       normalizeBillingOffers({ packages: [{ ...offer, credits: 0 }] })
-    ).toThrow();
+    ).toThrow('Invalid billing package');
   });
   it('uses one UUID, fresh token, minimal body, and navigates on success', async () => {
     const { deps, controller } = setup();
@@ -111,12 +123,25 @@ describe('billing browser core', () => {
     await first;
   });
   it('rejects invalid checkout responses and missing authentication', async () => {
+    const navigate = jest.fn();
     const invalidCheckout = setup({
       postCheckout: jest.fn(async () => ({ nope: true })),
+      navigate,
     });
     await expect(
       invalidCheckout.controller.startPurchase('usd-10')
-    ).rejects.toThrow('Invalid checkout response');
+    ).rejects.toEqual(new Error('Invalid checkout response'));
+    expect(navigate).not.toHaveBeenCalled();
+
+    for (const response of [null, { url: 42 }]) {
+      const invalid = setup({
+        postCheckout: jest.fn(async () => response),
+      });
+      await expect(invalid.controller.startPurchase('usd-10')).rejects.toEqual(
+        new Error('Invalid checkout response')
+      );
+      expect(invalid.deps.navigate).not.toHaveBeenCalled();
+    }
 
     const missingAuth = setup({
       getFreshToken: jest.fn(async () => null),
