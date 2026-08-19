@@ -4,6 +4,7 @@ import {
   ledgerIngestStorageToy,
   ledgerIngestStorageToyTestOnly,
 } from '../../../../src/core/browser/toys/2026-03-13/ledger-ingest/ledgerIngestStorageToy.js';
+import { ledgerIngestStorageCoreTestOnly } from '../../../../src/core/browser/toys/2026-03-13/ledger-ingest/ledgerIngestStorageCore.js';
 
 /**
  * Build a storage toy environment.
@@ -139,6 +140,44 @@ describe('ledgerIngestStorageToy', () => {
   });
 
   it('normalizes helper fallbacks and missing storage access', () => {
+    expect(ledgerIngestStorageCoreTestOnly.cloneRecord(null)).toEqual({});
+    expect(
+      ledgerIngestStorageCoreTestOnly.cloneRecord({ retained: true })
+    ).toEqual({ retained: true });
+    expect(
+      ledgerIngestStorageCoreTestOnly.getStoredTransactions({
+        transactionOrder: ['missing', 'present'],
+        transactionsByMergeKey: {
+          present: { transactionId: 'present', dedupeKey: 'present' },
+        },
+      })
+    ).toEqual([{ transactionId: 'present', dedupeKey: 'present' }]);
+    expect(
+      ledgerIngestStorageCoreTestOnly.buildLedgerIngestStorageViewReport({
+        storageKey: 'LEDG3',
+        storageState: {
+          transactionOrder: ['present'],
+          transactionsByMergeKey: {
+            present: { transactionId: 'present', dedupeKey: 'present' },
+          },
+        },
+      })
+    ).toEqual({
+      fixture: 'LEDG3',
+      inputMode: 'storage',
+      canonicalTransactions: [
+        { transactionId: 'present', dedupeKey: 'present' },
+      ],
+      duplicateReports: [],
+      errorReports: [],
+      summary: {
+        rawRecords: 1,
+        canonicalTransactions: 1,
+        duplicatesDetected: 0,
+        errorsDetected: 0,
+      },
+      policy: { storageKey: 'LEDG3', mode: 'read-only' },
+    });
     expect(ledgerIngestStorageToyTestOnly.resolveStorageKey({})).toBe('LEDG3');
     expect(
       ledgerIngestStorageToyTestOnly.resolveStorageKey({

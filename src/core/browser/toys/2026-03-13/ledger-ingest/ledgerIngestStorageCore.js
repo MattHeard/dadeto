@@ -6,12 +6,6 @@ import {
 } from '../../../../commonCore.js';
 
 export const DEFAULT_STORAGE_KEY = 'LEDG3';
-const EMPTY_STORAGE_ENV = /** @type {{ get: (name: string) => unknown }} */ ({
-  get() {
-    return undefined;
-  },
-});
-
 /**
  * @typedef {object} LedgerStorageState
  * @property {string[]} transactionOrder Ordered merge keys for stored transactions.
@@ -43,7 +37,7 @@ export function resolveStorageKey(parsed) {
  */
 export function normalizeStorageEnv(env) {
   return /** @type {{ get: (name: string) => unknown }} */ (
-    env ?? EMPTY_STORAGE_ENV
+    env ?? { get: () => undefined }
   );
 }
 
@@ -63,10 +57,6 @@ export function getPermanentStorageAccessor(env, name) {
  * @returns {Record<string, unknown>} Plain record copy or empty object.
  */
 export function cloneRecord(value) {
-  if (!isNonNullObject(value)) {
-    return {};
-  }
-
   return objectOrEmpty(value);
 }
 
