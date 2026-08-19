@@ -1337,6 +1337,21 @@ describe('joyConMapper skipped-row state', () => {
       )
     ).toBe('skipped');
   });
+
+  it('uses pending state for an unmapped control that is not skipped', () => {
+    const control = { key: 'l' };
+    const stored = { mappings: {}, skippedControls: [] };
+
+    expect(
+      getRowState(control, { started: true, currentIndex: 0, stored }, 0)
+    ).toBe('active');
+    expect(
+      getRowState(control, { started: true, currentIndex: 1, stored }, 0)
+    ).toBe('optional');
+    expect(
+      getRowState(control, { started: false, currentIndex: 0, stored }, 0)
+    ).toBe('optional');
+  });
 });
 
 describe('joyConMapper list rendering', () => {
