@@ -106,6 +106,7 @@ const {
   hasAxisSnapshots,
   detectCurrentControlCapture,
   handleJoyConMapperSkip,
+  handleJoyConMapperReset,
 } = joyConMapperTestOnly;
 
 describe('joyConMapper helper branches', () => {
@@ -1722,6 +1723,67 @@ describe('joyConMapper skip handler', () => {
       type: 'button',
     });
     expect(setTextContent).toHaveBeenCalled();
+  });
+});
+
+describe('joyConMapper reset handler', () => {
+  it('restores the baseline, filters stale devices, and syncs reset state', () => {
+    const textInput = { value: '' };
+    const checkbox = { checked: false, dispatchEvent: jest.fn() };
+    const setTextContent = jest.fn();
+    const dom = {
+      globalThis: { localStorage: { getItem: () => '{}' } },
+      getGamepads: () => [],
+      setValue: jest.fn((element, value) => {
+        element.value = value;
+      }),
+      setTextContent,
+      setClassName: jest.fn(),
+      removeAllChildren: jest.fn(),
+      createElement: jest.fn(() => ({ classList: { add: jest.fn() } })),
+      appendChild: jest.fn(),
+    };
+    const device = { productId: 0x2006 };
+    const state = {
+      dom,
+      textInput,
+      autoSubmitCheckbox: checkbox,
+      started: true,
+      currentIndex: 4,
+      currentControl: { key: 'minus', label: 'Minus', type: 'button' },
+      previousSnapshot: { buttons: [], axes: [1] },
+      hidPendingSnapshot: { buttons: [], axes: [1] },
+      hidPendingSnapshotCount: 3,
+      hidDevices: [null, device],
+      stored: { mappings: {}, skippedControls: [] },
+      list: {},
+      prompt: {},
+      subprompt: {},
+      dot: { classList: { toggle: jest.fn() } },
+      statusText: {},
+      metaIndex: {},
+      metaId: {},
+    };
+
+    handleJoyConMapperReset(state);
+
+    expect(JSON.parse(textInput.value)).toMatchObject({ action: 'reset' });
+    expect(state.started).toBe(false);
+    expect(state.currentIndex).toBe(0);
+    expect(state.currentControl).toEqual({
+      key: 'l',
+      label: 'L',
+      type: 'button',
+    });
+    expect(state.previousSnapshot).toBeNull();
+    expect(state.hidPendingSnapshot).toBeNull();
+    expect(state.hidPendingSnapshotCount).toBe(0);
+    expect(state.hidDevices).toEqual([device]);
+    expect(setTextContent).toHaveBeenCalled();
+
+    state.hidDevices = null;
+    handleJoyConMapperReset(state);
+    expect(state.hidDevices).toEqual([]);
   });
 });
 

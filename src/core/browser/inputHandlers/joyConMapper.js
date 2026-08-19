@@ -2186,6 +2186,7 @@ export const joyConMapperTestOnly = {
   updateCaptureState,
   detectCurrentControlCapture,
   handleJoyConMapperSkip,
+  handleJoyConMapperReset,
 };
 
 /**
