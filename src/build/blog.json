@@ -1,6 +1,24 @@
 {
   "posts": [
     {
+      "key": "ASSE3",
+      "title": "Asset Segment Assignment Predicate",
+      "publicationDate": "2026-08-20",
+      "release": "public",
+      "content": [
+        "Determine whether a proposed asset-to-segment assignment can be appended.",
+        "The predicate checks temporal overlap only against existing segments assigned to the same asset.",
+        "Touching intervals are allowed, and the predicate does not mutate any list."
+      ],
+      "toy": {
+        "modulePath": "/core/browser/toys/2026-08-20/assetSegmentAssignmentPredicate.js",
+        "functionName": "assetSegmentAssignmentPredicate",
+        "defaultInputMethod": "textarea",
+        "defaultOutputMethod": "textarea"
+      },
+      "tags": ["toy", "object-minute-rental", "asset", "segment", "assignment", "predicate", "json"]
+    },
+    {
       "key": "ASSE2",
       "title": "Asset Segment Assignment List",
       "publicationDate": "2026-08-20",
