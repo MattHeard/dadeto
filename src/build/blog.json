@@ -1,6 +1,32 @@
 {
   "posts": [
     {
+      "key": "ASSE5",
+      "title": "Asset Custodian Segment Assignment Predicate",
+      "publicationDate": "2026-08-20",
+      "release": "public",
+      "content": [
+        "Determine whether an asset and its custodian person can be assigned to a segment.",
+        "The predicate rejects temporal overlap for either the asset or the custodian person.",
+        "Touching intervals are allowed, and all assignment lists remain unchanged."
+      ],
+      "toy": {"modulePath": "/core/browser/toys/2026-08-20/assetCustodianSegmentAssignmentPredicate.js", "functionName": "assetCustodianSegmentAssignmentPredicate", "defaultInputMethod": "textarea", "defaultOutputMethod": "textarea"},
+      "tags": ["toy", "object-minute-rental", "asset", "custodian", "person", "segment", "predicate", "json"]
+    },
+    {
+      "key": "ASSE4",
+      "title": "Asset Custodian Segment Assignment List",
+      "publicationDate": "2026-08-20",
+      "release": "public",
+      "content": [
+        "Append asset-to-segment references with the person responsible for the asset during that segment.",
+        "Each record contains only assetId, segmentId, and custodianPersonId.",
+        "This new list does not modify the earlier asset assignment toys."
+      ],
+      "toy": {"modulePath": "/core/browser/toys/2026-08-20/assetCustodianSegmentAssignmentList.js", "functionName": "assetCustodianSegmentAssignmentList", "defaultInputMethod": "textarea", "defaultOutputMethod": "textarea"},
+      "tags": ["toy", "object-minute-rental", "asset", "custodian", "person", "segment", "assignment", "append", "json"]
+    },
+    {
       "key": "PERS2",
       "title": "Person Segment Assignment Predicate",
       "publicationDate": "2026-08-20",
