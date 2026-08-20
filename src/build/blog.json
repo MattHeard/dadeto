@@ -1,6 +1,24 @@
 {
   "posts": [
     {
+      "key": "ASSE2",
+      "title": "Asset Segment Assignment List",
+      "publicationDate": "2026-08-20",
+      "release": "public",
+      "content": [
+        "Append immutable references connecting assets to spacetime segments.",
+        "Each assignment contains only an assetId and segmentId; the list preserves order and allows duplicate references.",
+        "The toy delegates append-only persistence to MEMO4 and does not resolve assets, segments, or business state."
+      ],
+      "toy": {
+        "modulePath": "/core/browser/toys/2026-08-20/assetSegmentAssignmentList.js",
+        "functionName": "assetSegmentAssignmentList",
+        "defaultInputMethod": "textarea",
+        "defaultOutputMethod": "textarea"
+      },
+      "tags": ["toy", "object-minute-rental", "asset", "segment", "assignment", "append", "json"]
+    },
+    {
       "key": "SPAC6",
       "title": "Spacetime World Line",
       "publicationDate": "2026-08-19",
