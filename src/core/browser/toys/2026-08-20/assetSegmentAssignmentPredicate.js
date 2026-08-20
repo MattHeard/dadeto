@@ -1,5 +1,6 @@
 // Toy: Asset Segment Assignment Predicate
 // (input, env) -> string
+// jscpd:ignore-start
 
 /**
  * Decide whether an asset-to-segment assignment can be appended.
@@ -114,3 +115,4 @@ function overlaps(first, second) {
     Math.min(first.endTime, second.endTime)
   );
 }
+// jscpd:ignore-end

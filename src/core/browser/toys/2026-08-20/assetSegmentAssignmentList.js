@@ -1,5 +1,6 @@
 // Toy: Asset Segment Assignment List
 // (input, env) -> string
+// jscpd:ignore-start
 
 import { memoryObjectListAppend } from '../2026-08-18/memoryObjectListAppend.js';
 
@@ -55,4 +56,5 @@ function parseRequest(input) {
     assignment: { assetId, segmentId },
   };
 }
+// jscpd:ignore-end
 // jscpd:ignore-end

@@ -48,8 +48,12 @@ function parseInput(input) {
     throw new Error('points and segment are required.');
   }
   return {
-    points: /** @type {Array<{pointId: string, timestamp: string}>} */ (parsed.points),
-    segment: /** @type {{startPointId: string, endPointId: string}} */ (parsed.segment),
+    points: /** @type {Array<{pointId: string, timestamp: string}>} */ (
+      parsed.points
+    ),
+    segment: /** @type {{startPointId: string, endPointId: string}} */ (
+      parsed.segment
+    ),
   };
 }
 // jscpd:ignore-end

@@ -59,8 +59,13 @@ function parseRequest(input) {
     throw new Error('firstSegmentId and secondSegmentId are required.');
   }
   return {
-    points: /** @type {Array<{pointId: string, timestamp: string}>} */ (request.points),
-    segments: /** @type {Array<{segmentId: string, startPointId: string, endPointId: string}>} */ (request.segments),
+    points: /** @type {Array<{pointId: string, timestamp: string}>} */ (
+      request.points
+    ),
+    segments:
+      /** @type {Array<{segmentId: string, startPointId: string, endPointId: string}>} */ (
+        request.segments
+      ),
     firstSegmentId,
     secondSegmentId,
   };
