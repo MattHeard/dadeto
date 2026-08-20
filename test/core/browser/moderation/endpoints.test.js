@@ -9,6 +9,17 @@ import {
 } from '../../../../src/core/browser/moderation/endpoints.js';
 
 describe('mapConfigToModerationEndpoints', () => {
+  it('keeps the production endpoint constants exact', () => {
+    expect(DEFAULT_MODERATION_ENDPOINTS).toEqual({
+      getModerationVariantUrl:
+        'https://europe-west1-irien-465710.cloudfunctions.net/prod-get-moderation-variant',
+      assignModerationJobUrl:
+        'https://europe-west1-irien-465710.cloudfunctions.net/prod-assign-moderation-job',
+      submitModerationRatingUrl:
+        'https://europe-west1-irien-465710.cloudfunctions.net/prod-submit-moderation-rating',
+    });
+  });
+
   it('uses defaults when config is undefined', () => {
     const result = mapConfigToModerationEndpoints(
       undefined,
@@ -41,7 +52,14 @@ describe('createModerationEndpointsPromise', () => {
       logger,
     });
 
-    expect(result).toEqual(DEFAULT_MODERATION_ENDPOINTS);
+    expect(result).toEqual({
+      getModerationVariantUrl:
+        'https://europe-west1-irien-465710.cloudfunctions.net/prod-get-moderation-variant',
+      assignModerationJobUrl:
+        'https://europe-west1-irien-465710.cloudfunctions.net/prod-assign-moderation-job',
+      submitModerationRatingUrl:
+        'https://europe-west1-irien-465710.cloudfunctions.net/prod-submit-moderation-rating',
+    });
     expect(result).not.toBe(DEFAULT_MODERATION_ENDPOINTS);
   });
 
@@ -134,6 +152,42 @@ describe('createGetModerationEndpoints', () => {
 });
 
 describe('createGetModerationEndpointsFromStaticConfig', () => {
+  it('uses defaults and the default logger when optional arguments are omitted', async () => {
+    const loadStaticConfig = jest.fn().mockResolvedValue({});
+    const getModerationEndpoints = createGetModerationEndpointsFromStaticConfig(
+      loadStaticConfig,
+      undefined,
+      undefined
+    );
+
+    await expect(getModerationEndpoints()).resolves.toEqual(
+      DEFAULT_MODERATION_ENDPOINTS
+    );
+    expect(loadStaticConfig).toHaveBeenCalledTimes(1);
+  });
+
+  it('preserves custom defaults and logger through the static-config factory', async () => {
+    const error = new Error('custom failure');
+    const loadStaticConfig = jest.fn().mockRejectedValue(error);
+    const logger = { error: jest.fn() };
+    const defaults = {
+      getModerationVariantUrl: 'variant',
+      assignModerationJobUrl: 'assign',
+      submitModerationRatingUrl: 'rating',
+    };
+    const getModerationEndpoints = createGetModerationEndpointsFromStaticConfig(
+      loadStaticConfig,
+      defaults,
+      logger
+    );
+
+    await expect(getModerationEndpoints()).resolves.toEqual(defaults);
+    expect(logger.error).toHaveBeenCalledWith(
+      'Failed to load moderation endpoints, falling back to defaults.',
+      error
+    );
+  });
+
   it('memoizes loader-backed endpoints', async () => {
     const loadStaticConfig = jest
       .fn()
