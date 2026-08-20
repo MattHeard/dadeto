@@ -51,8 +51,13 @@ function parseInput(input) {
     throw new Error('points and segment are required.');
   }
   return {
-    points: /** @type {Array<{pointId: string, latitude: number, longitude: number}>} */ (parsed.points),
-    segment: /** @type {{startPointId: string, endPointId: string}} */ (parsed.segment),
+    points:
+      /** @type {Array<{pointId: string, latitude: number, longitude: number}>} */ (
+        parsed.points
+      ),
+    segment: /** @type {{startPointId: string, endPointId: string}} */ (
+      parsed.segment
+    ),
   };
 }
 
@@ -175,6 +180,10 @@ function sphericalFallback(
   return SEMI_MAJOR_AXIS * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
-/** @param {number} degrees @returns {number} Radians. */
+/**
+ * Convert degrees to radians.
+ * @param {number} degrees Degrees.
+ * @returns {number} Radians.
+ */
 const radians = degrees => (degrees * Math.PI) / 180;
 // jscpd:ignore-end

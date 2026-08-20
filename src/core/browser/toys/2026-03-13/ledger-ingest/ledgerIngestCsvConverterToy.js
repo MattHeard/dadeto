@@ -4,6 +4,7 @@ import {
   whenOrNull,
 } from '../../../browser-core.js';
 import { createDefaultLedgerIngestDedupePolicy } from './ledgerIngestShared.js';
+import { formatToyConversionError } from '../../formatToyError.js';
 
 /**
  * Ledger Ingest CSV Converter Toy
@@ -611,11 +612,7 @@ export function ledgerIngestCsvConverterToy(input) {
   try {
     return JSON.stringify(parseLedgerCsv(input), null, 2);
   } catch {
-    return JSON.stringify(
-      { error: 'Invalid ledger-ingest CSV input' },
-      null,
-      2
-    );
+    return formatToyConversionError('Invalid ledger-ingest CSV input');
   }
 }
 

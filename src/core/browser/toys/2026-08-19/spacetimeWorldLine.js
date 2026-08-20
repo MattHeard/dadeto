@@ -2,6 +2,8 @@
 // (input, env) -> string
 // jscpd:ignore-start
 
+import { formatToyError } from '../formatToyError.js';
+
 /**
  * Assemble every supplied segment into one contiguous ordered world line.
  * @param {string} input JSON payload containing segments and endpoint IDs.
@@ -45,13 +47,8 @@ export function spacetimeWorldLine(input) {
       2
     );
   } catch (error) {
-    return JSON.stringify(
-      {
-        valid: false,
-        error: error instanceof Error ? error.message : String(error),
-      },
-      null,
-      2
+    return formatToyError(
+      error instanceof Error ? error.message : String(error)
     );
   }
 }
