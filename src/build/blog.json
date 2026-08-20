@@ -1,6 +1,42 @@
 {
   "posts": [
     {
+      "key": "PERS2",
+      "title": "Person Segment Assignment Predicate",
+      "publicationDate": "2026-08-20",
+      "release": "public",
+      "content": [
+        "Determine whether a proposed person-to-segment assignment can be appended.",
+        "The predicate checks temporal overlap only against existing segments assigned to the same person.",
+        "Touching intervals are allowed, and the predicate does not mutate any list."
+      ],
+      "toy": {
+        "modulePath": "/core/browser/toys/2026-08-20/personSegmentAssignmentPredicate.js",
+        "functionName": "personSegmentAssignmentPredicate",
+        "defaultInputMethod": "textarea",
+        "defaultOutputMethod": "textarea"
+      },
+      "tags": ["toy", "object-minute-rental", "person", "segment", "assignment", "predicate", "json"]
+    },
+    {
+      "key": "PERS1",
+      "title": "Person Segment Assignment List",
+      "publicationDate": "2026-08-20",
+      "release": "public",
+      "content": [
+        "Append immutable references connecting people to spacetime segments.",
+        "Each assignment contains only a personId and segmentId, preserving list order and allowing duplicate references.",
+        "The toy is an append-only persistence primitive with no scheduling or feasibility behavior."
+      ],
+      "toy": {
+        "modulePath": "/core/browser/toys/2026-08-20/personSegmentAssignmentList.js",
+        "functionName": "personSegmentAssignmentList",
+        "defaultInputMethod": "textarea",
+        "defaultOutputMethod": "textarea"
+      },
+      "tags": ["toy", "object-minute-rental", "person", "segment", "assignment", "append", "json"]
+    },
+    {
       "key": "ASSE3",
       "title": "Asset Segment Assignment Predicate",
       "publicationDate": "2026-08-20",
