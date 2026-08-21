@@ -452,9 +452,6 @@ export const setLocalTemporaryData = (state, loggers) => {
  * @returns {BlogStateRecord} Stored data object.
  */
 function loadPermanentData(permanentLens) {
-  if (!permanentLens) {
-    return {};
-  }
   return loadDataFromLens(permanentLens);
 }
 
@@ -486,9 +483,6 @@ function loadDataFromLens(lens) {
  * @param {BlogStateRecord} data - Data to save.
  */
 function savePermanentData(permanentLens, data) {
-  if (!permanentLens) {
-    return;
-  }
   permanentLens.set('permanentData', data);
 }
 
