@@ -36,15 +36,6 @@ const ABBREVIATIONS = [
 const PLACEHOLDER = '\u00B7';
 
 /**
- * Escape special regex characters in a literal string.
- * @param {string} s - String to escape.
- * @returns {string} Regex-safe string.
- */
-function escapeRegex(s) {
-  return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-}
-
-/**
  * Replace the trailing period of each known abbreviation with a placeholder.
  * @param {string} text - Input text.
  * @returns {string} Text with abbreviation periods protected.
@@ -52,7 +43,7 @@ function escapeRegex(s) {
 function protectAbbreviations(text) {
   return ABBREVIATIONS.reduce((acc, abbr) => {
     return acc.replace(
-      new RegExp(`${escapeRegex(abbr)}\\.`, 'g'),
+      new RegExp(`${abbr.replaceAll('.', '\\.') }\\.`, 'g'),
       abbr + PLACEHOLDER
     );
   }, text);
@@ -74,7 +65,7 @@ function restoreAbbreviations(text) {
  * @returns {string[]} Raw sentence fragments, still containing placeholders.
  */
 function splitOnBoundaries(text) {
-  return text.split(/(?<=[.!?])\s+(?=[A-ZÄÖÜ"„«])/);
+  return text.split(/(?<=[.!?]) (?=[A-ZÄÖÜ"„«])/);
 }
 
 /**
@@ -83,11 +74,7 @@ function splitOnBoundaries(text) {
  * @returns {string[]} Array of trimmed, non-empty sentence strings.
  */
 function splitSentences(text) {
-  const normalized = text.trim().replace(/\s+/g, ' ');
-  if (!normalized) {
-    return [];
-  }
-
+  const normalized = text.replace(/\s+/g, ' ');
   const protected_ = protectAbbreviations(normalized);
   const parts = splitOnBoundaries(protected_);
   return parts.map(part => restoreAbbreviations(part.trim())).filter(Boolean);

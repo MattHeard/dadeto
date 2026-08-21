@@ -36,6 +36,43 @@ describe('germanSentenceSplitterToy', () => {
     expect(result[0]).toContain('Str.');
   });
 
+  test('protects and restores multiple abbreviation forms', () => {
+    const input = 'Dr. Müller kommt. Er arbeitet u.a. hier.';
+    const result = JSON.parse(germanSentenceSplitterToy(input, new Map()));
+    expect(result).toEqual(['Dr. Müller kommt.', 'Er arbeitet u.a. hier.']);
+  });
+
+  test('protects repeated abbreviations globally', () => {
+    const input = 'Er kommt z.B. heute. Das gilt u.a. morgen. Er sagt z.B. ja.';
+    const result = JSON.parse(germanSentenceSplitterToy(input, new Map()));
+    expect(result).toEqual([
+      'Er kommt z.B. heute.',
+      'Das gilt u.a. morgen.',
+      'Er sagt z.B. ja.',
+    ]);
+  });
+
+  test('protects abbreviations before uppercase words', () => {
+    const input = 'Er nutzt z.B. Heute. Danach u.a. Morgen.';
+    const result = JSON.parse(germanSentenceSplitterToy(input, new Map()));
+    expect(result).toEqual(['Er nutzt z.B. Heute.', 'Danach u.a. Morgen.']);
+  });
+
+  test('protects every repeated abbreviation and restores every placeholder', () => {
+    const input = 'Er nutzt z.B. Heute und z.B. Morgen. Danach u.a. heute u.a. morgen.';
+    const result = JSON.parse(germanSentenceSplitterToy(input, new Map()));
+    expect(result).toEqual([
+      'Er nutzt z.B. Heute und z.B. Morgen.',
+      'Danach u.a. heute u.a. morgen.',
+    ]);
+  });
+
+  test('trims surrounding whitespace and collapses internal whitespace', () => {
+    const input = '  Das   ist ein Satz.   Noch einer.  ';
+    const result = JSON.parse(germanSentenceSplitterToy(input, new Map()));
+    expect(result).toEqual(['Das ist ein Satz.', 'Noch einer.']);
+  });
+
   test('returns single sentence when no boundary found', () => {
     const input = 'Ein einzelner Satz ohne Ende';
     const result = JSON.parse(germanSentenceSplitterToy(input, new Map()));
