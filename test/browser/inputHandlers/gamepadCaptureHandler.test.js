@@ -335,6 +335,12 @@ describe('gamepad capture events', () => {
         ],
       });
       expect(frames).toHaveLength(framesBeforeDisconnect);
+      expect(logSpy).toHaveBeenLastCalledWith('[gamepadCapture]', 'disconnected', {
+        index: 0,
+        id: 'Nintendo Joy-Con (R)',
+        mapping: 'standard',
+        connected: false,
+      });
       const state = { snapshots: { 0: { connected: true } } };
       gamepadCaptureTestOnly.removeSnapshot(state, null);
       expect(state.snapshots).toEqual({ 0: { connected: true } });
@@ -834,6 +840,11 @@ describe('escape handling', () => {
 
       expect(button.textContent).toBe('Capture gamepad');
       expect(globalThis.cancelAnimationFrame).toHaveBeenCalledWith(3);
+      expect(JSON.parse(readStoredOrElementValue(textInput))).toEqual({
+        type: 'capture',
+        capturing: false,
+      });
+      globals.listeners.gamepadconnected({ gamepad: createGamepad() });
       expect(JSON.parse(readStoredOrElementValue(textInput))).toEqual({
         type: 'capture',
         capturing: false,
