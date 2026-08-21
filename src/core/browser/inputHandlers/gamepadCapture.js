@@ -960,6 +960,18 @@ export function gamepadCaptureHandler(dom, container, textInput) {
 }
 
 export const gamepadCaptureTestOnly = {
+  buildGamepadMetadata,
+  didAxisChange,
+  resetSnapshots,
+  shouldQueuePoll,
+  toConnectedGamepads,
+  isPresentGamepad,
+  didButtonChange,
+  hasButtonValueChanged,
+  getPreviousButtons,
+  didTrackedAxisChange,
+  preventDefault,
+  storeSnapshot,
   removeSnapshot,
   logGamepadEvent,
 };

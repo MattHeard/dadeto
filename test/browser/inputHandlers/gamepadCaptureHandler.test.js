@@ -158,6 +158,42 @@ describe('gamepadCaptureHandler', () => {
   });
 });
 
+describe('gamepad capture pure helpers', () => {
+  it('preserves helper boundary behavior', () => {
+    const gamepad = createGamepad({ buttons: [{ pressed: false, value: 0 }], axes: [0] });
+    expect(gamepadCaptureTestOnly.buildGamepadMetadata(gamepad, {
+      connected: true,
+      dom: { getGamepads: () => [gamepad] },
+    })).toMatchObject({
+      gamepadIndex: 0,
+      connected: true,
+    });
+    expect(gamepadCaptureTestOnly.didAxisChange(0, 0.01)).toBe(true);
+    expect(gamepadCaptureTestOnly.didAxisChange(0, 0.009)).toBe(false);
+    expect(gamepadCaptureTestOnly.didAxisChange(0.2, 0.2)).toBe(false);
+    expect(gamepadCaptureTestOnly.didButtonChange({ pressed: false, value: 0 }, { pressed: true, value: 0 })).toBe(true);
+    expect(gamepadCaptureTestOnly.hasButtonValueChanged({ pressed: true, value: 0 }, { pressed: true, value: 1 })).toBe(true);
+    expect(gamepadCaptureTestOnly.getPreviousButtons(undefined)).toEqual([]);
+    expect(gamepadCaptureTestOnly.didTrackedAxisChange(undefined, 0.02)).toBe(true);
+    expect(gamepadCaptureTestOnly.didTrackedAxisChange(0.5, 0.5)).toBe(false);
+    expect(gamepadCaptureTestOnly.isPresentGamepad(gamepad)).toBe(true);
+    expect(gamepadCaptureTestOnly.isPresentGamepad(null)).toBe(false);
+    expect(gamepadCaptureTestOnly.toConnectedGamepads([gamepad, null])).toEqual([gamepad]);
+    const state = { snapshots: { 0: { old: true } }, animationFrameId: 3 };
+    gamepadCaptureTestOnly.resetSnapshots(state);
+    expect(state.snapshots).toEqual({});
+    expect(gamepadCaptureTestOnly.shouldQueuePoll({ capturing: true, animationFrameId: null })).toBe(true);
+    expect(gamepadCaptureTestOnly.shouldQueuePoll({ capturing: true, animationFrameId: 3 })).toBe(false);
+    expect(gamepadCaptureTestOnly.shouldQueuePoll({ capturing: false, animationFrameId: null })).toBe(false);
+    gamepadCaptureTestOnly.storeSnapshot(state, gamepad);
+    expect(state.snapshots[0]).toEqual({ axes: [0], buttons: [{ pressed: false, value: 0 }] });
+    const event = { preventDefault: jest.fn() };
+    gamepadCaptureTestOnly.preventDefault(event);
+    expect(event.preventDefault).toHaveBeenCalledTimes(1);
+    gamepadCaptureTestOnly.preventDefault({});
+  });
+});
+
 describe('gamepad capture events', () => {
   it('forwards connect, button, axis, and disconnect events while captured', () => {
     const autoSubmitCheckbox = { checked: false, dispatchEvent: jest.fn() };
