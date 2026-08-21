@@ -9,8 +9,11 @@ describe('plotShared', () => {
   test('normalizes numbers and strings with fallbacks', () => {
     expect(numberOr(123, 0)).toBe(123);
     expect(numberOr(Number.NaN, 0)).toBe(0);
+    expect(numberOr(Infinity, 0)).toBe(0);
+    expect(numberOr('123', 0)).toBe(0);
     expect(stringOr('hello', 'fallback')).toBe('hello');
     expect(stringOr('', 'fallback')).toBe('fallback');
+    expect(stringOr(123, 'fallback')).toBe('fallback');
   });
 
   test('parses object payloads and rejects non-objects', () => {
@@ -21,5 +24,11 @@ describe('plotShared', () => {
     expect(parseObjectPayload('[]', payload => payload)).toEqual([]);
     expect(parseObjectPayload('123', payload => payload)).toBeNull();
     expect(parseObjectPayload('not json', payload => payload)).toBeNull();
+  });
+
+  test('rejects invalid normalization candidates independently', () => {
+    expect(numberOr(Number.POSITIVE_INFINITY, 11)).toBe(11);
+    expect(stringOr({ value: 'not a string' }, 'fallback')).toBe('fallback');
+    expect(stringOr({ length: 4 }, 'fallback')).toBe('fallback');
   });
 });

@@ -10,7 +10,7 @@ export function numberOr(value, fallback) {
   return valueOrFallback(
     value,
     fallback,
-    candidate => typeof candidate === 'number' && Number.isFinite(candidate)
+    candidate => Number.isFinite(candidate)
   );
 }
 
@@ -24,7 +24,10 @@ export function stringOr(value, fallback) {
   return valueOrFallback(
     value,
     fallback,
-    candidate => typeof candidate === 'string' && candidate.length > 0
+    candidate => {
+      if (typeof candidate === 'string') return candidate.length > 0;
+      return false;
+    }
   );
 }
 
