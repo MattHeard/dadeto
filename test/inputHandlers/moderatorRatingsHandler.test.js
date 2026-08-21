@@ -110,6 +110,63 @@ describe('moderatorRatingsTestOnly', () => {
     expect(fieldInputs).toHaveLength(3);
     expect(fieldInputs.map(field => field.value)).toEqual(['', '', '']);
   });
+
+  test('normalizes primitive helpers and creates independent defaults', () => {
+    expect(moderatorRatingsTestOnly.toNormalizedString('  value ')).toBe('value');
+    expect(moderatorRatingsTestOnly.toNormalizedString(null)).toBe('');
+    expect(moderatorRatingsTestOnly.toBoolean(true)).toBe(true);
+    expect(moderatorRatingsTestOnly.toBoolean('true')).toBe(true);
+    expect(moderatorRatingsTestOnly.toBoolean('false')).toBe(false);
+    const first = moderatorRatingsTestOnly.createDefaultRatingEntry();
+    const second = moderatorRatingsTestOnly.createDefaultRatingEntry();
+    expect(first).toEqual({ moderatorId: '', variantId: '', ratedAt: '', isApproved: false });
+    expect(first).not.toBe(second);
+  });
+
+  test('builds field, approval, removal, and select-wrapper controls', () => {
+    const dom = createFakeDom();
+    const cleanupFns = [];
+    const changes = [];
+    const input = moderatorRatingsTestOnly.buildFieldInput({
+      dom,
+      placeholder: 'ID',
+      value: 'initial',
+      onChange: value => changes.push(value),
+      cleanupFns,
+    });
+    expect(input.placeholder).toBe('ID');
+    input.value = 'changed';
+    input.listeners.input[0]();
+    expect(changes).toEqual(['changed']);
+
+    const selectWrapper = moderatorRatingsTestOnly.buildApproveToggle({
+      dom,
+      initialValue: true,
+      onChange: value => changes.push(value),
+      cleanupFns,
+    });
+    const select = selectWrapper.children[0];
+    expect(select.children.map(option => option.textContent)).toEqual([
+      'Approved', 'Rejected',
+    ]);
+    expect(select.value).toBe('true');
+    select.value = 'false';
+    select.listeners.change[0]();
+    expect(changes.at(-1)).toBe(false);
+
+    const clicked = jest.fn();
+    const button = moderatorRatingsTestOnly.buildRemoveButton({
+      dom,
+      onClick: clicked,
+      cleanupFns,
+    });
+    expect(button.textContent).toBe('Remove rating');
+    button.listeners.click[0]();
+    expect(clicked).toHaveBeenCalledTimes(1);
+    expect(selectWrapper.className).toBe('select-wrapper');
+    expect(selectWrapper.children).toEqual([select]);
+    cleanupFns.forEach(cleanup => cleanup());
+  });
 });
 
 /**

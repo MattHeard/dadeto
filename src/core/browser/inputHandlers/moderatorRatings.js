@@ -389,4 +389,11 @@ export function moderatorRatingsHandler(dom, container, textInput) {
 
 export const moderatorRatingsTestOnly = {
   buildRowFieldInputs,
+  toNormalizedString,
+  toBoolean,
+  createDefaultRatingEntry,
+  buildFieldInput,
+  buildApproveToggle,
+  buildRemoveButton,
+  wrapSelectControl,
 };
