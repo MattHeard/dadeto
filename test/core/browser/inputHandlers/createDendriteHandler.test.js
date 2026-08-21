@@ -4,6 +4,7 @@ import {
   createDendriteHandler,
   createManagedFormShell,
   createManagedFormShellState,
+  cleanContainer,
   finalizeManagedForm,
   appendLabelledField,
   wireLabelledField,
@@ -104,6 +105,19 @@ describe('createDendriteHandler', () => {
     expect(dom.setValue).toHaveBeenCalledWith(textInput, '{"hello":"world"}');
   });
 
+  test('sets values for fields present in the parsed data', () => {
+    const dom = createDom();
+    const container = { children: [] };
+    const textInput = { value: '{"alpha":"beta"}' };
+
+    createDendriteHandler([['alpha', 'Alpha']])(dom, container, textInput);
+
+    expect(dom.setValue).toHaveBeenCalledWith(
+      expect.objectContaining({}),
+      'beta'
+    );
+  });
+
   test('creates and tracks a managed form shell', () => {
     const dom = createDom();
     const container = { children: [] };
@@ -155,6 +169,16 @@ describe('createDendriteHandler', () => {
     expect(runFormHandler({ dom, container, textInput, buildForm })).toEqual({
       tagName: 'FORM',
     });
+    expect(buildForm).toHaveBeenCalledWith({ dom, container, textInput });
+  });
+
+  test('runs every standard cleanup remover', () => {
+    const dom = createDom();
+    const container = { children: [] };
+
+    cleanContainer(dom, container);
+
+    expect(dom.querySelector).toHaveBeenCalledTimes(5);
   });
 
   test('creates a dendrite handler and renders fields', () => {
@@ -170,6 +194,21 @@ describe('createDendriteHandler', () => {
       expect.objectContaining({}),
       'Alpha'
     );
+    expect(dom.createElement).toHaveBeenCalledWith('input');
+    expect(dom.createElement).toHaveBeenCalledWith('div');
+    expect(dom.createElement).toHaveBeenCalledWith('label');
+    expect(
+      dom.createElement.mock.calls.filter(([tag]) => tag === 'div')
+    ).toHaveLength(2);
+    expect(container.children).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ tagName: 'DIV' }),
+      ])
+    );
+    expect(dom.setType).toHaveBeenCalledWith(
+      expect.objectContaining({}),
+      'text'
+    );
     expect(dom.addEventListener).toHaveBeenCalledWith(
       expect.objectContaining({}),
       'input',
@@ -180,6 +219,11 @@ describe('createDendriteHandler', () => {
     const inputHandler = dom.addEventListener.mock.calls[0][2];
     dom.getValue.mockReturnValueOnce('gamma');
     inputHandler();
+
+    expect(dom.setValue).toHaveBeenCalledWith(
+      textInput,
+      '{"alpha":"gamma"}'
+    );
 
     expect(result._dispose).toEqual(expect.any(Function));
     result._dispose();
@@ -204,6 +248,7 @@ describe('createDendriteHandler', () => {
       expect.objectContaining({}),
       '{}'
     );
+    expect(dom.setValue).toHaveBeenCalledTimes(1);
   });
 
   test('appends labels and wires explicit field listeners', () => {
@@ -232,6 +277,11 @@ describe('createDendriteHandler', () => {
     });
 
     expect(dom.setTextContent).toHaveBeenCalled();
+    expect(dom.createElement).toHaveBeenCalledWith('label');
+    expect(dom.appendChild).toHaveBeenCalledWith(form, expect.anything());
+    expect(dom.appendChild.mock.calls.some(([, child]) => child === input)).toBe(
+      true
+    );
     expect(dom.addEventListener).toHaveBeenCalledWith(input, 'input', handler);
     expect(disposers).toHaveLength(1);
   });
@@ -256,6 +306,11 @@ describe('createDendriteHandler', () => {
     const result = buildManagedForm({ dom, container, textInput }, () => form);
 
     expect(result).toBe(form);
+    for (const partial of [null, 42, { data: {} }, { form }]) {
+      expect(
+        buildManagedForm({ dom, container, textInput }, () => partial)
+      ).toBe(partial);
+    }
   });
 
   test('finalizes the form when buildFormContent returns form data and a form', () => {

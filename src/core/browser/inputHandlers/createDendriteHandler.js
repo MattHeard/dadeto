@@ -46,7 +46,7 @@ export function removeExistingForm(container, dom) {
  * @returns {DendriteData} Parsed dendrite data.
  */
 function parseDendriteData(dom, textInput) {
-  const value = browserCore.getInputValue(textInput) || '{}';
+  const value = browserCore.getInputValue(textInput);
   return /** @type {DendriteData} */ (
     browserCore.parseJsonOrDefault(value, {})
   );
@@ -72,8 +72,8 @@ function createElementFactory(dom) {
  */
 function createFieldWrapper(dom) {
   const createElement = createElementFactory(dom);
-  const tagNames = ['div', 'label'];
-  const [fieldWrapper, label] = tagNames.map(createElement);
+  const fieldWrapper = createElement('div');
+  const label = createElement('label');
   return { fieldWrapper, label };
 }
 
@@ -301,8 +301,6 @@ function createFieldElements(options) {
 
   const input = createFieldInput(options);
   appendWrappedField({ dom, form, fieldWrapper, label, input });
-
-  return { fieldWrapper, input };
 }
 
 /**
