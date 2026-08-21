@@ -471,7 +471,10 @@ function collapseColumn(collapsedColumns, columnIndex) {
  * @returns {void}
  */
 function expandColumnGroup(collapsedColumns, startIndex, length) {
-  for (let index = startIndex; index < startIndex + length; index += 1) {
+  for (const index of Array.from(
+    { length },
+    (_, offset) => startIndex + offset
+  )) {
     collapsedColumns[index] = false;
   }
 }
@@ -483,18 +486,24 @@ function expandColumnGroup(collapsedColumns, startIndex, length) {
  */
 function getColumnGroups(collapsedColumns) {
   const groups = [];
-  let index = 0;
+  let nextStart = 0;
 
-  while (index < collapsedColumns.length) {
-    const collapsed = collapsedColumns[index];
-    const length = getColumnGroupLength(collapsedColumns, index);
+  for (const candidate of Array.from(
+    { length: collapsedColumns.length },
+    (_, index) => index
+  )) {
+    if (candidate !== nextStart) {
+      continue;
+    }
+    const collapsed = collapsedColumns[candidate];
+    const length = getColumnGroupLength(collapsedColumns, candidate);
 
     groups.push({
-      start: index,
+      start: candidate,
       length,
       collapsed,
     });
-    index += length;
+    nextStart += length;
   }
 
   return groups;
@@ -510,7 +519,11 @@ function getColumnGroupLength(collapsedColumns, startIndex) {
   if (!collapsedColumns[startIndex]) {
     return 1;
   }
-  return 1 + getCollapsedRunLength(collapsedColumns, startIndex + 1);
+  const remaining = collapsedColumns.slice(startIndex + 1);
+  const firstExpandedIndex = remaining.findIndex(value => !value);
+  return firstExpandedIndex === -1
+    ? collapsedColumns.length - startIndex
+    : firstExpandedIndex + 1;
 }
 
 /**
@@ -520,9 +533,6 @@ function getColumnGroupLength(collapsedColumns, startIndex) {
  * @returns {number} Remaining collapsed items.
  */
 function getCollapsedRunLength(collapsedColumns, index) {
-  if (index >= collapsedColumns.length) {
-    return 0;
-  }
   return getCollapsedRunLengthFromIndex(collapsedColumns, index);
 }
 
@@ -533,10 +543,9 @@ function getCollapsedRunLength(collapsedColumns, index) {
  * @returns {number} Remaining collapsed items.
  */
 function getCollapsedRunLengthFromIndex(collapsedColumns, index) {
-  if (!collapsedColumns[index]) {
-    return 0;
-  }
-  return 1 + getCollapsedRunLength(collapsedColumns, index + 1);
+  const remaining = collapsedColumns.slice(index);
+  const firstExpandedIndex = remaining.findIndex(value => value === false);
+  return firstExpandedIndex < 0 ? remaining.length : firstExpandedIndex;
 }
 
 /**
@@ -765,5 +774,23 @@ export const ledgerIngestReportTestOnly = {
   getSummaryValue,
   getSummaryNumber,
   getCollapsedRunLength,
+  getColumnGroups,
+  getColumnGroupLength,
+  getCollapsedRunLengthFromIndex,
+  createTextElement,
+  createHeader,
+  createOverviewRow,
+  createTableHeaderCell,
+  createTransactionCell,
+  createColumnToggleLink,
+  createEmptyStateParagraph,
+  getSummaryCandidate,
+  getSummaryNumberValue,
+  getTableHeaderCellClassName,
+  getTableCellClassName,
+  getDisplayText,
+  createCanonicalTransactionColumnState,
+  collapseColumn,
+  expandColumnGroup,
   setTableSectionVerticalAlign,
 };
