@@ -1,9 +1,40 @@
 import { describe, test, expect, beforeEach, jest } from '@jest/globals';
-import { get } from '../../../src/core/browser/toys/2025-03-29/get.js';
+import {
+  get,
+  getArraySegmentValue,
+  getArrayIndex,
+  isValidArrayIndex,
+  hasOwnSegment,
+} from '../../../src/core/browser/toys/2025-03-29/get.js';
 
 describe('get function with path traversal', () => {
   let mockGetData;
   let env;
+
+  test('validates array segments and direct object properties', () => {
+    const values = ['first', 'second'];
+    expect(getArrayIndex('1')).toBe(1);
+    expect(getArrayIndex('-1')).toBe(null);
+    expect(getArrayIndex('1.5')).toBe(null);
+    expect(isValidArrayIndex(values, '1')).toBe(true);
+    expect(isValidArrayIndex(values, '2')).toBe(false);
+    expect(isValidArrayIndex(values, 'nope')).toBe(false);
+    expect(getArraySegmentValue(values, '1', 'items.1')).toEqual({
+      value: 'second',
+      path: 'items.1',
+      error: null,
+    });
+    expect(getArraySegmentValue(values, '2', 'items.2')).toBe(null);
+    expect(getArraySegmentValue({ key: 'value' }, 'key', 'key')).toBe(null);
+    expect(getArraySegmentValue({ 0: 'zero' }, '0', 'items.0')).toBe(null);
+    expect(hasOwnSegment({ key: 'value' }, 'key')).toBe(true);
+    expect(hasOwnSegment({ key: 'value' }, 'missing')).toBe(false);
+    expect(hasOwnSegment(values, '1')).toBe(true);
+    expect(hasOwnSegment(values, 'nope')).toBe(false);
+    const sparseValues = new Array(2);
+    expect(isValidArrayIndex(sparseValues, '1')).toBe(true);
+    expect(hasOwnSegment(sparseValues, '1')).toBe(true);
+  });
   const testData = {
     user: {
       name: 'Alice',

@@ -435,6 +435,13 @@ export function get(input, env) {
   );
 }
 
+export {
+  getArraySegmentValue,
+  getArrayIndex,
+  isValidArrayIndex,
+  hasOwnSegment,
+};
+
 /**
  * Resolve the final result once the data has been fetched.
  * @param {string} input - Original path string.
