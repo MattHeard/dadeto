@@ -78,6 +78,7 @@ describe('browser-core helpers', () => {
     expect(effect).toHaveBeenCalledTimes(1);
 
     expect(pick({ a: 1, b: 2 }, ['a', 'c'])).toEqual({ a: 1 });
+    expect(pick({ a: 1, b: 2 }, ['a', 'c'])).not.toHaveProperty('c');
     expect(pick(null, ['a'])).toEqual({});
     expect(pick({ a: undefined }, ['a'])).toEqual({ a: undefined });
   });

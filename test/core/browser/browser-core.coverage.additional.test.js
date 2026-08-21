@@ -10,4 +10,5 @@ test('applyBaseCleanupHandlers defaults optional extra handlers', () => {
   };
 
   expect(() => applyBaseCleanupHandlers({ container: {}, dom })).not.toThrow();
+  expect(dom.querySelector).toHaveBeenCalled();
 });
