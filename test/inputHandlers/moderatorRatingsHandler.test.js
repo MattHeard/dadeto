@@ -166,6 +166,11 @@ describe('moderatorRatingsTestOnly', () => {
     expect(selectWrapper.className).toBe('select-wrapper');
     expect(selectWrapper.children).toEqual([select]);
     cleanupFns.forEach(cleanup => cleanup());
+    expect(dom.removeEventListener).toHaveBeenCalledWith(
+      select,
+      'change',
+      expect.any(Function)
+    );
   });
 });
 
@@ -260,6 +265,14 @@ describe('moderatorRatingsHandler', () => {
     });
 
     moderatorRatingsHandler(dom, container, textInput);
+
+    const form = dom.insertBefore.mock.calls[0][1];
+    const rowsContainer = form.children[0];
+    const addButton = form.children[1];
+    expect(form.className).toBe('moderator-ratings-form');
+    expect(rowsContainer.className).toBe('moderator-rating-rows');
+    expect(addButton.className).toBe('moderator-rating-add');
+    expect(addButton.textContent).toBe('Add rating');
 
     const setValueCalls = dom.setValue.mock.calls.filter(
       ([element]) => element === textInput
@@ -357,7 +370,8 @@ describe('moderatorRatingsHandler', () => {
       ratedAt: '2025-12-01T00:00:00Z',
       isApproved: true,
     };
-    const textInput = { value: JSON.stringify([storedRow]) };
+    const secondRow = { ...storedRow, moderatorId: 'stored-mod-2' };
+    const textInput = { value: JSON.stringify([storedRow, secondRow]) };
     const dom = createFakeDom();
     const container = {};
 
@@ -377,6 +391,7 @@ describe('moderatorRatingsHandler', () => {
     const removeHandler = removeButtons[0].listeners.click[0];
 
     removeHandler();
+    expect(JSON.parse(textInput.value)).toEqual([secondRow]);
     removeHandler();
 
     expect(dom.removeChild).toHaveBeenCalledTimes(2);
