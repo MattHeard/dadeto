@@ -59,6 +59,12 @@ describe('createMobileMenuToggleHandle', () => {
     handle();
     toggle.listeners.click();
 
+    expect(documentObj.querySelector).toHaveBeenCalledWith('.menu-toggle');
+    expect(documentObj.getElementById).toHaveBeenCalledWith('mobile-menu');
+    expect(overlay.querySelector).toHaveBeenCalledWith('.menu-sheet');
+    expect(overlay.querySelector).toHaveBeenCalledWith('.menu-close');
+    expect(sheet.querySelector).toHaveBeenCalledWith('a,button,[tabindex="0"]');
+
     expect(overlay.hidden).toBe(false);
     expect(overlay.setAttribute).toHaveBeenCalledWith('aria-hidden', 'false');
     expect(toggle.setAttribute).toHaveBeenCalledWith('aria-expanded', 'true');
@@ -128,6 +134,33 @@ describe('createMobileMenuToggleHandle', () => {
     });
 
     handle();
+
+    expect(addKeydownListener).not.toHaveBeenCalled();
+  });
+
+  it('does nothing when either required menu element is missing', () => {
+    const toggleOnlyDocument = {
+      querySelector: jest.fn().mockReturnValue(createElement()),
+      getElementById: jest.fn().mockReturnValue(null),
+    };
+    const overlayOnlyDocument = {
+      querySelector: jest.fn().mockReturnValue(null),
+      getElementById: jest.fn().mockReturnValue(createElement()),
+    };
+    const addKeydownListener = jest.fn();
+    const dependencies = {
+      addKeydownListener,
+      setTimeoutFn: jest.fn(),
+    };
+
+    createMobileMenuToggleHandle({
+      ...dependencies,
+      documentObj: toggleOnlyDocument,
+    })();
+    createMobileMenuToggleHandle({
+      ...dependencies,
+      documentObj: overlayOnlyDocument,
+    })();
 
     expect(addKeydownListener).not.toHaveBeenCalled();
   });
