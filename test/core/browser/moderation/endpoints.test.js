@@ -46,6 +46,23 @@ describe('mapConfigToModerationEndpoints', () => {
 });
 
 describe('createModerationEndpointsPromise', () => {
+  it('resolves defaults when loader is not callable', async () => {
+    const logger = { error: jest.fn() };
+
+    await expect(
+      createModerationEndpointsPromise('not-a-loader', { logger })
+    ).resolves.toEqual({
+      getModerationVariantUrl:
+        'https://europe-west1-irien-465710.cloudfunctions.net/prod-get-moderation-variant',
+      assignModerationJobUrl:
+        'https://europe-west1-irien-465710.cloudfunctions.net/prod-assign-moderation-job',
+      submitModerationRatingUrl:
+        'https://europe-west1-irien-465710.cloudfunctions.net/prod-submit-moderation-rating',
+    });
+
+    expect(logger.error).not.toHaveBeenCalled();
+  });
+
   it('resolves defaults when loader is missing', async () => {
     const logger = { error: jest.fn() };
     const result = await createModerationEndpointsPromise(undefined, {
