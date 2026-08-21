@@ -212,14 +212,30 @@ describe('makeHandleHideSpan', () => {
     expect(dom.createElement).toHaveBeenCalledWith('span');
     expect(dom.addClass).toHaveBeenCalledWith(spanEl, 'hide-span');
     expect(dom.createElement).toHaveBeenCalledWith('a');
+    expect(dom.createElement).toHaveBeenNthCalledWith(2, 'a');
+    expect(dom.createElement).toHaveBeenNthCalledWith(3, 'a');
     expect(dom.setTextContent).toHaveBeenCalledWith(hideLinkEl, 'hide');
     expect(dom.setTextContent).toHaveBeenCalledWith(onlyLinkEl, 'only');
+    expect(dom.setTextContent).toHaveBeenNthCalledWith(1, hideLinkEl, 'hide');
+    expect(dom.setTextContent).toHaveBeenNthCalledWith(2, onlyLinkEl, 'only');
     expect(dom.addEventListener).toHaveBeenCalledWith(
       hideLinkEl,
       'click',
       expect.any(Function)
     );
     expect(dom.addEventListener).toHaveBeenCalledWith(
+      onlyLinkEl,
+      'click',
+      expect.any(Function)
+    );
+    expect(dom.addEventListener).toHaveBeenNthCalledWith(
+      1,
+      hideLinkEl,
+      'click',
+      expect.any(Function)
+    );
+    expect(dom.addEventListener).toHaveBeenNthCalledWith(
+      2,
       onlyLinkEl,
       'click',
       expect.any(Function)
