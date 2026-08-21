@@ -243,4 +243,18 @@ describe('realHourlyWage', () => {
       realHourlyWageToyTestOnly.getInputSectionValidationErrors('not an object')
     ).toEqual([null, null]);
   });
+
+  it.each(['160', Infinity, NaN])(
+    'rejects non-finite or non-number required values: %p',
+    paidWorkHours => {
+      const result = realHourlyWageToyTestOnly.normalizeRealHourlyWageInput({
+        period: { paidWorkHours, grossIncome: 1, netIncome: 1 },
+        overhead: {},
+      });
+
+      expect(result.error).toBe(
+        'Invalid real hourly wage input: period.paidWorkHours must be a non-negative finite number'
+      );
+    }
+  );
 });
