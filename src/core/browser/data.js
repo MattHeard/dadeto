@@ -2,7 +2,6 @@ import { deepClone } from './browser-core.js';
 import { isNonNullObject } from '../commonCore.js';
 import { guardThen } from './common.js';
 import { createLocalStorageLens } from './localStorageLens.js';
-import { createMemoryStorageLens } from './memoryStorageLens.js';
 
 /**
  * Returns a Base64 encoding function using the provided helpers.
@@ -53,7 +52,6 @@ export function getEncodeBase64(btoa, encodeURIComponentFn) {
  * @property {typeof fetch} fetch - Fetch implementation used to retrieve blog data.
  * @property {BlogDataLoggers} loggers - Logger bundle injected by the entry layer.
  * @property {Storage | null | undefined} [storage] - Optional storage implementation for permanent state.
- * @property {import('./storageLens.js').StorageLens<unknown> | null} [memoryLens] - Optional lens for memory storage.
  * @property {import('./storageLens.js').StorageLens<BlogStateRecord> | null} [permanentLens] - Optional lens for permanent storage.
  */
 
@@ -66,7 +64,6 @@ export function getEncodeBase64(btoa, encodeURIComponentFn) {
  *   logWarning: BlogLogFn,
  * }} loggers - Logger bundle with guaranteed callable members.
  * @property {Storage | null} storage - Storage implementation or null when unavailable.
- * @property {import('./storageLens.js').StorageLens<unknown>} memoryLens - Lens for memory storage (in-memory fallback guarantees a value).
  * @property {import('./storageLens.js').StorageLens<BlogStateRecord> | null} permanentLens - Lens for permanent storage or null.
  */
 
@@ -535,7 +532,6 @@ function normalizeDependencies(bundle) {
     fetch: fetchImpl,
     loggers,
     storage,
-    memoryLens,
     permanentLens,
   } = bundle;
 
@@ -544,7 +540,6 @@ function normalizeDependencies(bundle) {
 
   const normalizedLoggers = createNormalizedLoggers(loggers);
   const normalizedStorage = getNormalizedStorage(storage);
-  const finalMemoryLens = getMemoryLens(memoryLens);
   const finalPermanentLens = getPermanentLens(
     permanentLens,
     normalizedStorage,
@@ -555,7 +550,6 @@ function normalizeDependencies(bundle) {
     fetch: fetchImpl,
     loggers: normalizedLoggers,
     storage: normalizedStorage,
-    memoryLens: finalMemoryLens,
     permanentLens: finalPermanentLens,
   };
 }
@@ -567,15 +561,6 @@ function normalizeDependencies(bundle) {
  */
 function getNormalizedStorage(storage) {
   return storage ?? null;
-}
-
-/**
- * Resolve the memory lens, falling back to an in-memory implementation.
- * @param {import('./storageLens.js').StorageLens<unknown> | null | undefined} memoryLens - Memory lens candidate.
- * @returns {import('./storageLens.js').StorageLens<unknown>} Memory lens instance.
- */
-function getMemoryLens(memoryLens) {
-  return memoryLens ?? createMemoryStorageLens(new Map());
 }
 
 /**
