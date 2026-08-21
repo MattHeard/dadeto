@@ -197,8 +197,10 @@ function hasArrayProps(obj, keys) {
  */
 function isValidDend2Structure(obj) {
   const objectValue = /** @type {Record<string, unknown>} */ (obj);
-  if (!isNonNullObject(objectValue)) return false;
-  return hasArrayProps(objectValue, DENDRITE_TEMP_KEYS);
+  return (
+    isNonNullObject(objectValue) &&
+    hasArrayProps(objectValue, DENDRITE_TEMP_KEYS)
+  );
 }
 
 /**
