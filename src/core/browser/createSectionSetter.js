@@ -10,15 +10,6 @@ import { safeJsonParse, deepMerge, deepClone } from './browser-core.js';
  */
 
 /**
- * Determine whether parsing yielded a valid object.
- * @param {ParseResult} result - Result from parsing JSON input.
- * @returns {result is ParseSuccess} True when parsing succeeded with data.
- */
-function hasParsedData(result) {
-  return result.ok;
-}
-
-/**
  * @param {ParseFailure} result - Result from parsing JSON input.
  * @returns {string} Message describing why parsing failed.
  */
@@ -34,7 +25,7 @@ function formatParseFailure(result) {
 export function createSectionSetter(section) {
   return function setSection(input, env) {
     const result = parseJsonObject(input);
-    if (!hasParsedData(result)) {
+    if (!result.ok) {
       return formatParseFailure(result);
     }
     return mergeSection(section, result.data, env);
