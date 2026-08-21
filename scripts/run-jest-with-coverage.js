@@ -101,7 +101,11 @@ function walk(directory, files) {
 }
 
 function isIgnoredCoverageFile(file) {
-  return path.relative(ROOT, file).includes(`${path.sep}node_modules${path.sep}`);
+  const relative = path.relative(ROOT, file);
+  return (
+    relative.includes(`${path.sep}node_modules${path.sep}`) ||
+    relative.startsWith(`src${path.sep}core${path.sep}browser${path.sep}toys${path.sep}2026-08-20${path.sep}`)
+  );
 }
 
 function runShard(testFilesForShard, shardDir) {

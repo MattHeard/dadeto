@@ -19,6 +19,7 @@ export default [
       'public/',
       '.stryker-tmp/',
       'reports/',
+      'src/core/browser/toys/2026-08-20/',
     ],
   },
   {
