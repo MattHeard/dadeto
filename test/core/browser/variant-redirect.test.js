@@ -186,7 +186,18 @@ describe('variant redirect helpers', () => {
       { slug: 'alpha', w: 1 },
       { slug: 'beta', w: 2 },
     ]);
+    expect(parseVariants(' alpha ')).toEqual([{ slug: 'alpha', w: 1 }]);
+    expect(parseVariants('\t alpha \n')).toEqual([{ slug: 'alpha', w: 1 }]);
+    expect(parseVariants('alpha:12')).toEqual([{ slug: 'alpha', w: 12 }]);
+    expect(parseVariants('alpha,')).toEqual([{ slug: 'alpha', w: 1 }]);
+    expect(parseVariants('alpha,[beta:2')).toEqual([
+      { slug: 'alpha', w: 1 },
+      { slug: '[beta', w: 2 },
+    ]);
     expect(parseVariants('[{"slug":"alpha","w":2}]')).toEqual([
+      { slug: 'alpha', w: 2 },
+    ]);
+    expect(parseVariants('  [{"slug":"alpha","w":2}]')).toEqual([
       { slug: 'alpha', w: 2 },
     ]);
     expect(parseVariants('{"slug":"alpha"}')).toEqual([]);
@@ -195,6 +206,7 @@ describe('variant redirect helpers', () => {
     ]);
     expect(parseJsonVariants('{"slug":"alpha"}')).toEqual([]);
     expect(parseJsonVariants('{bad')).toEqual([]);
+    expect(parseJsonVariants('null')).toEqual([]);
   });
 
   it('sums positive finite weights and selects weighted thresholds', () => {

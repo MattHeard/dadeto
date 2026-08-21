@@ -50,10 +50,7 @@ export function createVariantRedirectHandle({
  */
 function rewriteVariantLink({ link, locationObj, cryptoObj, URLCtor }) {
   const pairs = parseVariants(link.getAttribute('data-variants'));
-  let chosen = null;
-  if (pairs.length) {
-    chosen = pickWeighted(pairs, cryptoObj);
-  }
+  const chosen = pickWeighted(pairs, cryptoObj);
   if (!chosen) {
     return;
   }
@@ -87,7 +84,7 @@ function pickWeighted(pairs, cryptoObj) {
 
   const random = new Uint32Array(1);
   cryptoObj.getRandomValues(random);
-  const threshold = ((random[0] + 1) / 4294967297) * total;
+  const threshold = (random[0] / 4294967296) * total;
   return pickThresholdSlug(pairs, threshold);
 }
 
@@ -100,9 +97,10 @@ function sumPositiveWeights(pairs) {
   let total = 0;
   for (const pair of pairs) {
     const weight = Number(pair.w);
-    if (Number.isFinite(weight) && weight > 0) {
-      total += weight;
-    }
+    const positiveFiniteWeight = Number.isFinite(weight)
+      ? Math.max(weight, 0)
+      : 0;
+    total += positiveFiniteWeight;
   }
   return total;
 }
@@ -134,23 +132,13 @@ function pickThresholdSlug(pairs, threshold) {
  * @returns {Array<{slug: string, w: number}>} Weighted pairs.
  */
 function parseVariants(attr) {
-  if (!attr) {
-    return [];
+  const source = String(attr ?? '');
+  if (/^\s*[\[{]/.test(source)) {
+    return parseJsonVariants(source);
   }
-  const trimmed = attr.trim();
-  if (!trimmed) {
-    return [];
-  }
-  if (trimmed[0] === '[' || trimmed[0] === '{') {
-    return parseJsonVariants(trimmed);
-  }
-  return trimmed
-    .split(',')
-    .map(pair => {
-      const [slug, weight] = pair.split(':');
-      return { slug: slug.trim(), w: Number(weight ?? 1) };
-    })
-    .filter(pair => pair.slug);
+  return [...source.matchAll(/(?:^|,)\s*(\S[^,:]*?)\s*(?::\s*([^,]+?))?\s*(?=,|$)/g)].map(
+    match => ({ slug: match[1], w: Number(match[2] ?? 1) })
+  );
 }
 
 /**
@@ -161,10 +149,8 @@ function parseVariants(attr) {
 function parseJsonVariants(trimmed) {
   try {
     const parsed = JSON.parse(trimmed);
-    if (Array.isArray(parsed)) {
-      return parsed.map(item => ({ slug: item.slug, w: item.w }));
-    }
-    return [];
+    const items = Array.isArray(parsed) ? parsed : [];
+    return items.map(item => ({ slug: item.slug, w: item.w }));
   } catch {
     return [];
   }
