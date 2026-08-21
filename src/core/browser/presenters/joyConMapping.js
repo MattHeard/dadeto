@@ -104,10 +104,10 @@ function applyText(node, text) {
  * @param {TextNodeOptions} options Class name and text content.
  * @returns {HTMLElement} Created DOM node with optional text.
  */
-function createTextNode(dom, tag, options) {
+function createTextNode(dom, tag, { className = '', text }) {
   const node = dom.createElement(tag);
-  node.className = String(options.className);
-  applyText(node, String(options.text));
+  node.className = String(className);
+  applyText(node, String(text));
   return node;
 }
 
@@ -237,9 +237,8 @@ function renderJoyConMappingState(parsed, dom) {
   CONTROL_LABELS.forEach(({ key, label }) => {
     const row = dom.createElement('div');
     dom.setClassName(row, 'joycon-mapping-row');
-    const name = createTextNode(dom, 'strong', { className: '', text: label });
+    const name = createTextNode(dom, 'strong', { text: label });
     const value = createTextNode(dom, 'span', {
-      className: '',
       text: getValueText(key, parsed),
     });
     dom.appendChild(row, name);
@@ -260,3 +259,10 @@ function renderJoyConMappingState(parsed, dom) {
 export const createJoyConMappingElement = createParsedJsonPresenter(
   renderJoyConMappingState
 );
+
+export const joyConMappingTestOnly = {
+  getSkippedControls,
+  createFallbackMapping,
+  getAxisDirectionLabel,
+  createTextNode,
+};

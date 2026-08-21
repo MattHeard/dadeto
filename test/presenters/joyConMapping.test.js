@@ -1,5 +1,8 @@
 import { describe, expect, test } from '@jest/globals';
-import { createJoyConMappingElement } from '../../src/core/browser/presenters/joyConMapping.js';
+import {
+  createJoyConMappingElement,
+  joyConMappingTestOnly,
+} from '../../src/core/browser/presenters/joyConMapping.js';
 
 const controlKey = {
   stickUp: 'stick_up',
@@ -69,10 +72,23 @@ describe('createJoyConMappingElement', () => {
     expect(title.textContent).toBe('Joy-Con Mapping');
     expect(title.className).toBe('joycon-mapping-title');
     expect(summary.className).toBe('joycon-mapping-summary');
+    expect(summary.tag).toBe('p');
     expect(summary.textContent).toBe('3 mapped, 1 skipped');
     expect(list.tag).toBe('div');
     expect(list.className).toBe('joycon-mapping-list');
     expect(list.children.length).toBeGreaterThan(0);
+    expect(list.children.every(row => row.tag === 'div')).toBe(true);
+    expect(list.children.every(row => row.className === 'joycon-mapping-row')).toBe(true);
+    expect(
+      list.children.every(row =>
+        row.children.every(child => child.className === '')
+      )
+    ).toBe(true);
+    expect(
+      list.children.every(row =>
+        row.children.map(child => child.tag).join(',') === 'strong,span'
+      )
+    ).toBe(true);
 
     const findRow = label =>
       list.children.find(row => row.children[0].textContent === label);
@@ -84,6 +100,11 @@ describe('createJoyConMappingElement', () => {
     expect(findRow('Stick Right').children[1].textContent).toBe('optional');
     expect(findRow('L').children[0].className).toBe('');
     expect(findRow('L').children[1].className).toBe('');
+    expect(list.children.map(row => row.children[0].textContent)).toEqual([
+      'L', 'ZL', 'Minus', 'Capture', 'Stick Press', 'D-Pad Up',
+      'D-Pad Down', 'D-Pad Left', 'D-Pad Right', 'Stick Left',
+      'Stick Right', 'Stick Up', 'Stick Down',
+    ]);
   });
 
   test('falls back to optional text for unknown mapping types without value', () => {
@@ -115,5 +136,29 @@ describe('createJoyConMappingElement', () => {
 
     expect(summary.textContent).toBe('0 mapped, 0 skipped');
     expect(list.children[0].children[1].textContent).toBe('optional');
+  });
+
+  test('ignores non-array skipped controls', () => {
+    const dom = createMockDom();
+    const element = createJoyConMappingElement(
+      JSON.stringify({ skippedControls: { 0: 'dpad_left' } }),
+      dom
+    );
+    expect(element.children[1].textContent).toBe('0 mapped, 0 skipped');
+    const leftRow = element.children[2].children.find(
+      row => row.children[0].textContent === 'D-Pad Left'
+    );
+    expect(leftRow.children[1].textContent).toBe('optional');
+  });
+
+  test('normalizes skipped controls and fallback labels directly', () => {
+    expect(joyConMappingTestOnly.getSkippedControls({
+      skippedControls: ['a', 2, null, 'b'],
+    })).toEqual(['a', 'b']);
+    expect(joyConMappingTestOnly.getSkippedControls({ skippedControls: {} })).toEqual([]);
+    expect(joyConMappingTestOnly.createFallbackMapping(false).value).toBe('optional');
+    expect(joyConMappingTestOnly.createFallbackMapping(true).value).toBe('skipped');
+    expect(joyConMappingTestOnly.getAxisDirectionLabel('negative')).toBe('-');
+    expect(joyConMappingTestOnly.getAxisDirectionLabel('positive')).toBe('+');
   });
 });
