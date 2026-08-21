@@ -1,22 +1,6 @@
 import { whenString } from '../../../commonCore.js';
-import { withFallback } from '../../common.js';
 
-const STRIP_CHARS = new Set([
-  '(',
-  ')',
-  '[',
-  ']',
-  '{',
-  '}',
-  '"',
-  "'",
-  ',',
-  '.',
-  '!',
-  '?',
-  ':',
-  ';',
-]);
+const SURROUNDING_STRIP_CHARS = /^[()[\]{}"'.,!?:;]+|[()[\]{}"'.,!?:;]+$/g;
 
 /**
  * Normalize the provided string by lowercasing, trimming, and collapsing whitespace.
@@ -29,7 +13,7 @@ export function normalizeText(s) {
     return '';
   }
 
-  return s.trim().replace(/\s+/g, ' ').toLowerCase();
+  return s.trim().split(/\s+/).join(' ').toLowerCase();
 }
 
 /**
@@ -37,56 +21,13 @@ export function normalizeText(s) {
  * @param {string} token - Non-empty token string.
  * @returns {boolean} True when the leading character should be stripped.
  */
-function hasLeadingStripChar(token) {
-  return Boolean(token) && STRIP_CHARS.has(token[0]);
-}
-
-/**
- * Strip a single leading strip character from the token if present.
- * @param {string} token - Current token string.
- * @returns {string} Token with leading strip character removed.
- */
-function stripLeading(token) {
-  return withFallback(hasLeadingStripChar(token), () => token.slice(1), token);
-}
-
-/**
- * Check whether the last character of a token is a strip character.
- * @param {string} token - Non-empty token string.
- * @returns {boolean} True when the trailing character should be stripped.
- */
-function hasTrailingStripChar(token) {
-  return Boolean(token) && STRIP_CHARS.has(token[token.length - 1]);
-}
-
-/**
- * Strip a single trailing strip character from the token if present.
- * @param {string} token - Current token string.
- * @returns {string} Token with trailing strip character removed.
- */
-function stripTrailing(token) {
-  return withFallback(
-    hasTrailingStripChar(token),
-    () => token.slice(0, -1),
-    token
-  );
-}
-
 /**
  * Repeatedly strip leading and trailing punctuation until the token stabilises.
  * @param {string} token - Lowercased, trimmed token.
  * @returns {string} Token with all surrounding punctuation removed.
  */
 function stripSurroundingPunctuation(token) {
-  let current = token;
-  let next = stripTrailing(stripLeading(current));
-
-  while (next !== current) {
-    current = next;
-    next = stripTrailing(stripLeading(current));
-  }
-
-  return current;
+  return token.replace(SURROUNDING_STRIP_CHARS, '');
 }
 
 /**
@@ -111,7 +52,8 @@ export function normalizeToken(t) {
  * @returns {string} JSON string of normalized surface tokens.
  */
 export function germanTokenizerToy(input) {
-  const tokens = (whenString(input, s => s) ?? '').split(/\s+/);
-  const normalizedTokens = tokens.map(normalizeToken).filter(Boolean);
+  const normalizedInput = (whenString(input, s => s) ?? '').trim();
+  const tokens = normalizedInput ? normalizedInput.split(/\s+/) : [];
+  const normalizedTokens = tokens.map(normalizeToken);
   return JSON.stringify(normalizedTokens);
 }

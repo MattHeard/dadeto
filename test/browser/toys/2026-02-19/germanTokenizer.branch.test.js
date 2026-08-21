@@ -9,11 +9,16 @@ describe('germanTokenizer helper fallbacks', () => {
     expect(normalizeText(42)).toBe('');
   });
 
+  test('normalizeText collapses a run of whitespace to one space', () => {
+    expect(normalizeText('a     b')).toBe('a b');
+  });
+
   test('normalizeToken returns empty string when token is missing', () => {
     expect(normalizeToken({})).toBe('');
   });
 
   test('germanTokenizerToy turns non-string input into an empty array', () => {
     expect(germanTokenizerToy(undefined, new Map())).toBe('[]');
+    expect(germanTokenizerToy(42, new Map())).toBe('[]');
   });
 });

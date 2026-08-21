@@ -45,4 +45,16 @@ describe('germanTokenizerToy', () => {
   it('returns an empty array for empty input', () => {
     expect(germanTokenizerToy('', new Map())).toBe('[]');
   });
+
+  it('splits tabs and repeated whitespace between tokens', () => {
+    expect(germanTokenizerToy('Hallo\t   Welt', new Map())).toBe(
+      '["hallo","welt"]'
+    );
+  });
+
+  it('trims whitespace surrounding the complete input', () => {
+    expect(germanTokenizerToy('  Hallo Welt  ', new Map())).toBe(
+      '["hallo","welt"]'
+    );
+  });
 });
