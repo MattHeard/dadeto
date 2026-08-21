@@ -585,9 +585,6 @@ function getPermanentLens(permanentLens, storage, logError) {
  * @returns {import('./storageLens.js').StorageLens<BlogStateRecord> | null} Storage lens or null.
  */
 function createLensFromStorage(storage, logError) {
-  if (!storage) {
-    return null;
-  }
   return /** @type {import('./storageLens.js').StorageLens<BlogStateRecord>} */ (
     createLocalStorageLens({ storage, logError })
   );
