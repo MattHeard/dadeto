@@ -259,7 +259,7 @@ const ensureModeratorRatingsForm = (dom, container, textInput) => {
   const rows = (() => {
     const parsed = browserCore.parseJsonOrDefault(
       browserCore.getInputValue(textInput),
-      []
+      null
     );
     if (!Array.isArray(parsed)) {
       return [];
@@ -277,11 +277,10 @@ const ensureModeratorRatingsForm = (dom, container, textInput) => {
   /**
    * Register a cleanup handler for a row.
    * @param {CleanupFn} cleanup - Cleanup handler to track.
-   * @returns {CleanupFn} Function that unregisters the handler.
+   * @returns {void} Registers the handler.
    */
   const registerRowCleanup = cleanup => {
     rowCleanups.add(cleanup);
-    return () => rowCleanups.delete(cleanup);
   };
 
   /**
@@ -320,11 +319,11 @@ const ensureModeratorRatingsForm = (dom, container, textInput) => {
     });
 
     const cleanupRow = () => cleanupFns.forEach(fn => fn());
-    const unregisterCleanup = registerRowCleanup(cleanupRow);
+    registerRowCleanup(cleanupRow);
 
     const removeRow = () => {
       cleanupRow();
-      unregisterCleanup();
+      rowCleanups.delete(cleanupRow);
       const index = rows.indexOf(rowModel);
       if (index >= 0) {
         rows.splice(index, 1);

@@ -134,6 +134,7 @@ describe('moderatorRatingsTestOnly', () => {
       onChange: value => changes.push(value),
       cleanupFns,
     });
+    expect(input.type).toBe('text');
     expect(input.placeholder).toBe('ID');
     input.value = 'changed';
     input.listeners.input[0]();
@@ -149,6 +150,8 @@ describe('moderatorRatingsTestOnly', () => {
     expect(select.children.map(option => option.textContent)).toEqual([
       'Approved', 'Rejected',
     ]);
+    expect(select.children.map(option => option.value)).toEqual(['true', 'false']);
+    expect(select.children.map(option => option.tag)).toEqual(['option', 'option']);
     expect(select.value).toBe('true');
     select.value = 'false';
     select.listeners.change[0]();
@@ -161,11 +164,18 @@ describe('moderatorRatingsTestOnly', () => {
       cleanupFns,
     });
     expect(button.textContent).toBe('Remove rating');
+    expect(button.type).toBe('button');
     button.listeners.click[0]();
     expect(clicked).toHaveBeenCalledTimes(1);
     expect(selectWrapper.className).toBe('select-wrapper');
+    expect(selectWrapper.tag).toBe('span');
     expect(selectWrapper.children).toEqual([select]);
     cleanupFns.forEach(cleanup => cleanup());
+    expect(dom.removeEventListener).toHaveBeenCalledWith(
+      input,
+      'input',
+      expect.any(Function)
+    );
     expect(dom.removeEventListener).toHaveBeenCalledWith(
       select,
       'change',
@@ -270,9 +280,16 @@ describe('moderatorRatingsHandler', () => {
     const rowsContainer = form.children[0];
     const addButton = form.children[1];
     expect(form.className).toBe('moderator-ratings-form');
+    expect(form.tag).toBe('div');
     expect(rowsContainer.className).toBe('moderator-rating-rows');
+    expect(rowsContainer.tag).toBe('div');
     expect(addButton.className).toBe('moderator-rating-add');
     expect(addButton.textContent).toBe('Add rating');
+    expect(addButton.tag).toBe('button');
+    expect(addButton.type).toBe('button');
+    expect(rowsContainer.children).toHaveLength(1);
+    expect(rowsContainer.children[0].tag).toBe('div');
+    expect(rowsContainer.children[0].children).toHaveLength(5);
 
     const setValueCalls = dom.setValue.mock.calls.filter(
       ([element]) => element === textInput
@@ -359,6 +376,12 @@ describe('moderatorRatingsHandler', () => {
     const form = dom.insertBefore.mock.calls[0]?.[1];
     expect(form).toBeDefined();
     form._dispose();
+    expect(dom.removeEventListener).toHaveBeenCalledWith(
+      addButton,
+      'click',
+      expect.any(Function)
+    );
+    expect(dom.removeEventListener.mock.calls.length).toBeGreaterThan(5);
 
     clearInputValue(textInput);
   });
@@ -371,7 +394,8 @@ describe('moderatorRatingsHandler', () => {
       isApproved: true,
     };
     const secondRow = { ...storedRow, moderatorId: 'stored-mod-2' };
-    const textInput = { value: JSON.stringify([storedRow, secondRow]) };
+    const thirdRow = { ...storedRow, moderatorId: 'stored-mod-3' };
+    const textInput = { value: JSON.stringify([storedRow, secondRow, thirdRow]) };
     const dom = createFakeDom();
     const container = {};
 
@@ -391,8 +415,9 @@ describe('moderatorRatingsHandler', () => {
     const removeHandler = removeButtons[0].listeners.click[0];
 
     removeHandler();
-    expect(JSON.parse(textInput.value)).toEqual([secondRow]);
+    expect(JSON.parse(textInput.value)).toEqual([secondRow, thirdRow]);
     removeHandler();
+    expect(JSON.parse(textInput.value)).toEqual([secondRow, thirdRow]);
 
     expect(dom.removeChild).toHaveBeenCalledTimes(2);
 
@@ -423,6 +448,18 @@ describe('moderatorRatingsHandler', () => {
       clickHandler
     );
 
+    clearInputValue(textInput);
+  });
+
+  test('disposes every listener from an untouched single row', () => {
+    const textInput = { value: '' };
+    const dom = createFakeDom();
+    moderatorRatingsHandler(dom, {}, textInput);
+    const form = dom.insertBefore.mock.calls[0][1];
+
+    form._dispose();
+
+    expect(dom.removeEventListener).toHaveBeenCalledTimes(6);
     clearInputValue(textInput);
   });
 });
