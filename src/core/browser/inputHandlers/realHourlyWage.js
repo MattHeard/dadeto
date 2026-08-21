@@ -244,7 +244,7 @@ function normalizeFormData(candidate) {
  * @returns {RealHourlyWageFormData} Normalized data model.
  */
 function parseFormData(textInput) {
-  const raw = browserCore.getInputValue(textInput) || '{}';
+  const raw = browserCore.getInputValue(textInput);
   const parsed = browserCore.parseJsonOrDefault(raw, {});
   return normalizeFormData(parsed);
 }
@@ -362,7 +362,7 @@ function buildForm({ dom, container, textInput }) {
   return buildManagedForm(
     { dom, container, textInput },
     ({ form, disposers }) => {
-      dom.setClassName(form, `${form.className} ${FORM_CLASS}`.trim());
+      dom.setClassName(form, `${form.className} ${FORM_CLASS}`);
       FIELD_GROUPS.forEach(group =>
         buildGroupSection({
           dom,

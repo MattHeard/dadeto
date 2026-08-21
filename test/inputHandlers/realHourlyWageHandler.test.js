@@ -227,6 +227,48 @@ describe('realHourlyWageHandler', () => {
 
     expect(paidWorkHoursInput.value).toBe('80');
     expect(otherWorkExpensesInput.value).toBe('11');
+    expect(
+      dom.createElement.mock.results
+        .map(result => result.value)
+        .filter(element => element.tag === 'input')
+        .every(element => element.type === 'number')
+    ).toBe(true);
+  });
+
+  test('normalizes every stored numeric field', () => {
+    const result = realHourlyWageHandlerTestOnly.normalizeFormData({
+      period: { paidWorkHours: 1, grossIncome: 2, netIncome: 3 },
+      overhead: {
+        commuteHours: 4,
+        prepHours: 5,
+        recoveryHours: 6,
+        adminHours: 7,
+        overtimeHours: 8,
+        otherWorkHours: 9,
+        directWorkExpenses: 10,
+        commuteExpenses: 11,
+        foodExpenses: 12,
+        clothingExpenses: 13,
+        otherWorkExpenses: 14,
+      },
+    });
+
+    expect(result).toEqual({
+      period: { paidWorkHours: 1, grossIncome: 2, netIncome: 3 },
+      overhead: {
+        commuteHours: 4,
+        prepHours: 5,
+        recoveryHours: 6,
+        adminHours: 7,
+        overtimeHours: 8,
+        otherWorkHours: 9,
+        directWorkExpenses: 10,
+        commuteExpenses: 11,
+        foodExpenses: 12,
+        clothingExpenses: 13,
+        otherWorkExpenses: 14,
+      },
+    });
   });
 
   test('syncs the hidden JSON when a field changes', () => {
