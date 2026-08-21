@@ -232,10 +232,14 @@ describe('createBlogDataController', () => {
     }));
 
     const controller = createBlogDataController(factory);
+    const directFetchState = createState();
+    const directFetch = controller.fetchAndCacheBlogData(directFetchState);
+    expect(directFetch).toEqual(expect.any(Promise));
+    await directFetch;
     const state = createState();
     const result = controller.getData(state);
     expect(factory).toHaveBeenCalledTimes(1);
-    expect(fetchFn).toHaveBeenCalledTimes(1);
+    expect(fetchFn).toHaveBeenCalledTimes(2);
     expect(result).toMatchObject({ temporary: {} });
 
     await state.blogFetchPromise;
@@ -420,6 +424,7 @@ describe('backward-compatible permanent-data wrappers', () => {
   it('returns empty data and reports invalid legacy values', () => {
     const logError = jest.fn();
     expect(getLocalPermanentData({ logError })).toEqual({});
+    expect(getLocalPermanentData({ logError }, null)).toEqual({});
     expect(() => setLocalPermanentData(undefined, { logError })).toThrow(
       'setLocalPermanentData requires an object.'
     );
