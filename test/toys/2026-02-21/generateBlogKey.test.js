@@ -18,6 +18,22 @@ describe('generateBlogKey', () => {
     expect(generateBlogKey(input, new Map())).toBe(JSON.stringify('GERM2'));
   });
 
+  test('uses the lowest available suffix when conflicts are non-contiguous', () => {
+    const input = JSON.stringify({
+      title: 'German Sentence Splitter',
+      existingKeys: ['GERM2'],
+    });
+    expect(generateBlogKey(input, new Map())).toBe(JSON.stringify('GERM1'));
+  });
+
+  test('finds the suffix after a longer consecutive conflict run', () => {
+    const input = JSON.stringify({
+      title: 'German Sentence Splitter',
+      existingKeys: ['GERM1', 'GERM2', 'GERM3', 'GERM4', 'GERM5'],
+    });
+    expect(generateBlogKey(input, new Map())).toBe(JSON.stringify('GERM6'));
+  });
+
   test('skips multiple conflicts to find next available suffix', () => {
     const input = JSON.stringify({
       title: 'German Sentence Splitter',

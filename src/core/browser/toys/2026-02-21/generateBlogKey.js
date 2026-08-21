@@ -27,25 +27,9 @@ function extractLetterPrefix(title, count) {
  * @returns {string} New unique key.
  */
 function findUniqueKey(prefix, keySet) {
-  let n = 1;
-  while (keySet.has(prefix + n)) {
-    n++;
-  }
-  return prefix + n;
-}
-
-/**
- * Return true when the parsed value has a string title field.
- * @param {unknown} parsed - Value to check.
- * @returns {boolean} Whether parsed is a valid input object.
- */
-function isValidParsed(parsed) {
-  return Boolean(
-    parsed &&
-      typeof parsed === 'object' &&
-      'title' in parsed &&
-      typeof parsed.title === 'string'
-  );
+  const suffix = Array.from({ length: keySet.size + 1 }, (_, index) => index + 1)
+    .find(candidate => !keySet.has(prefix + candidate));
+  return prefix + (suffix ?? keySet.size + 1);
 }
 
 /**
@@ -69,9 +53,6 @@ function buildKeyFromPrefix(prefix, existingKeys) {
  * @returns {string} JSON string of the new key, or empty string on invalid input.
  */
 function buildKeyFromParsed(parsed) {
-  if (!isValidParsed(parsed)) {
-    return EMPTY_RESULT;
-  }
   const obj = /** @type {{ title: string, existingKeys?: unknown[] }} */ (
     parsed
   );
