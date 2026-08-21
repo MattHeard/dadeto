@@ -41,18 +41,11 @@ function createDefaultData() {
  * @returns {number[][]} Parsed coordinates.
  */
 function parseCells(value, fallback) {
-  const lines = String(value ?? '')
-    .split('\n')
-    .map(line => line.trim())
-    .filter(Boolean);
-  const parsed = lines
-    .map(line =>
-      line
-        .split(/[,\s]+/)
-        .slice(0, 2)
-        .map(Number)
-    )
-    .filter(parts => parts.length === 2 && parts.every(Number.isInteger));
+  const parsed = [
+    ...String(value ?? '').matchAll(
+      /^\s*(-?\d+)[, \t]+(-?\d+)(?:[, \t]+.*)?$/gm
+    ),
+  ].map(match => [Number(match[1]), Number(match[2])]);
   if (parsed.length > 0) {
     return parsed;
   }

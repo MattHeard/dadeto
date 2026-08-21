@@ -79,6 +79,10 @@ describe('lifeSeedHandler', () => {
       [3, 4],
     ]);
     expect(parseCells('1,2,3\nnot numbers', [[9, 9]])).toEqual([[1, 2]]);
+    expect(parseCells('-12 -34\n100,200', [[9, 9]])).toEqual([
+      [-12, -34],
+      [100, 200],
+    ]);
     expect(parseCells('not numbers', [[9, 9]])).toEqual([[9, 9]]);
     expect(parseCells(null, [[9, 9]])).toEqual([[9, 9]]);
   });
