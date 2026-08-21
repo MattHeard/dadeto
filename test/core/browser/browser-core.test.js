@@ -79,6 +79,7 @@ describe('browser-core helpers', () => {
 
     expect(pick({ a: 1, b: 2 }, ['a', 'c'])).toEqual({ a: 1 });
     expect(pick(null, ['a'])).toEqual({});
+    expect(pick({ a: undefined }, ['a'])).toEqual({ a: undefined });
   });
 
   test('maps values and clones deep structures', () => {
@@ -111,6 +112,8 @@ describe('browser-core helpers', () => {
     ).toEqual({ hello: 'world', mapped: true });
     expect(getFirstErrorMessage([[() => false, 'never']], 'anything')).toBe('');
     expect(isNullishOrEmptyString('')).toBe(true);
+    expect(isNullishOrEmptyString('value')).toBe(false);
+    expect(isNullishOrEmptyString(null)).toBe(true);
   });
 
   test('parses JSON helpers and existing keys', () => {
@@ -126,8 +129,16 @@ describe('browser-core helpers', () => {
       'Error: Invalid JSON input. Unknown error'
     );
     parseSpy.mockRestore();
+    const errorParseSpy = jest.spyOn(JSON, 'parse').mockImplementation(() => {
+      throw new Error('specific failure');
+    });
+    expect(safeJsonParse('bad').message).toBe(
+      'Error: Invalid JSON input. specific failure'
+    );
+    errorParseSpy.mockRestore();
     expect(parseJsonObject('{"ok":true}')).toEqual({ ok: true });
     expect(parseJsonObject('null')).toBeNull();
+    expect(parseJsonObject('"text"')).toBeNull();
     expect(parseJsonObject('not json')).toBeNull();
     expect(parseJsonOrDefault('{"ok":true}')).toEqual({ ok: true });
     expect(parseJsonOrDefault('not json', { fallback: true })).toEqual({
@@ -168,6 +179,7 @@ describe('browser-core helpers', () => {
       removeItem: jest.fn(),
     };
     expect(getIdToken(storage)).toBe('token');
+    expect(storage.getItem).toHaveBeenCalledWith('id_token');
     const originalSessionStorage = globalThis.sessionStorage;
     globalThis.sessionStorage = {
       getItem: jest.fn(() => 'session-token'),
@@ -227,6 +239,15 @@ describe('browser-core cleanup branches', () => {
       a: { one: 1, two: 2 },
     });
     expect(deepMerge({ a: [1] }, { a: [2] })).toEqual({ a: [2] });
+    expect(deepMerge({ a: [1] }, { a: { nested: true } })).toEqual({
+      a: { nested: true },
+    });
+    expect(deepMerge({ a: { nested: true } }, { a: [2] })).toEqual({
+      a: [2],
+    });
+    expect(deepMerge({ a: { nested: true } }, { a: null })).toEqual({
+      a: null,
+    });
     expect(
       createRemoveListener({
         dom: { removeEventListener: jest.fn() },

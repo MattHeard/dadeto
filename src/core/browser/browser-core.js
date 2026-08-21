@@ -470,10 +470,6 @@ function toRecord(value) {
  */
 export function parseJsonObject(input) {
   const parsed = safeJsonParse(input);
-  if (!parsed.ok) {
-    return null;
-  }
-
   return toRecord(parsed.data);
 }
 
