@@ -22,6 +22,20 @@ describe('getDend2Titles', () => {
     expect(result).toEqual(['First', 'Second']);
   });
 
+  test('filters stories whose titles are not strings', () => {
+    const env = new Map([
+      [
+        'getData',
+        () => ({
+          temporary: {
+            TRAN1: { stories: [{ title: 'Valid' }, { title: 42 }, {}] },
+          },
+        }),
+      ],
+    ]);
+    expect(JSON.parse(getDend2Titles('ignored', env))).toEqual(['Valid']);
+  });
+
   test('returns titles from DEND2 stories (legacy fallback)', () => {
     const env = new Map([
       [

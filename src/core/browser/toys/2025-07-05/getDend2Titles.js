@@ -21,7 +21,7 @@ function resolveTran1Stories(data) {
  * @returns {object[] | undefined} Resolved stories array or undefined.
  */
 function resolveTran1StoriesWithFallback(data) {
-  return resolveTran1Stories(data) ?? data.temporary.DEND2?.stories;
+  return resolveTran1Stories(data) ?? data.temporary.DEND2.stories;
 }
 
 /**
@@ -78,9 +78,6 @@ export function getDend2Titles(input, env) {
  */
 function gatherTitles(env) {
   const getData = env.get('getData');
-  if (typeof getData !== 'function') {
-    return [];
-  }
   const stories = getStories(getData());
   return collectTitles(stories);
 }
