@@ -12,10 +12,6 @@ import { runToyWithParsedJson } from '../browserToysCore.js';
 export function setPermanentData(input, env) {
   return runToyWithParsedJson(input, parsed => {
     const setLocalPermanentData = env.get('setLocalPermanentData');
-    if (typeof setLocalPermanentData !== 'function') {
-      throw new Error('setLocalPermanentData is not available');
-    }
-
     const result = setLocalPermanentData(parsed);
     return JSON.stringify(result);
   });
