@@ -199,6 +199,15 @@ describe('gamepad capture pure helpers', () => {
     })();
     expect(cancelAnimationFrame).toHaveBeenCalledWith(9);
     expect(cleanupState).toEqual({ animationFrameId: null, snapshots: {} });
+    const getGamepads = jest.fn(() => []);
+    gamepadCaptureTestOnly.pollGamepads({
+      state: { capturing: false, snapshots: {} },
+      dom: { getGamepads },
+    });
+    expect(getGamepads).not.toHaveBeenCalled();
+    const storedState = { snapshots: { 0: { axes: [1] } } };
+    gamepadCaptureTestOnly.removeSnapshot(storedState, gamepad);
+    expect(storedState.snapshots).toEqual({});
   });
 });
 
