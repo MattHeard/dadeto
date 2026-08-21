@@ -182,6 +182,39 @@ describe('createAuthedFetch', () => {
     expect(result).toBe(response);
   });
 
+  it('returns null responses untouched', async () => {
+    const getIdToken = jest.fn().mockResolvedValue('raw');
+    const fetchJson = jest.fn().mockResolvedValue(null);
+    const authedFetch = createAuthedFetch({ getIdToken, fetchJson });
+
+    await expect(authedFetch('https://example.com/raw')).resolves.toBeNull();
+  });
+
+  it('returns primitive responses untouched', async () => {
+    const getIdToken = jest.fn().mockResolvedValue('raw');
+    const fetchJson = jest.fn().mockResolvedValue('plain response');
+    const authedFetch = createAuthedFetch({ getIdToken, fetchJson });
+
+    await expect(authedFetch('https://example.com/raw')).resolves.toBe(
+      'plain response'
+    );
+  });
+
+  it('does not normalize callable responses even when they expose response fields', async () => {
+    const getIdToken = jest.fn().mockResolvedValue('raw');
+    const response = Object.assign(jest.fn(), {
+      ok: true,
+      json: jest.fn().mockReturnValue({ shouldNotParse: true }),
+    });
+    const fetchJson = jest.fn().mockResolvedValue(response);
+    const authedFetch = createAuthedFetch({ getIdToken, fetchJson });
+
+    await expect(authedFetch('https://example.com/raw')).resolves.toBe(
+      response
+    );
+    expect(response.json).not.toHaveBeenCalled();
+  });
+
   it('converts non-ok responses into errors with status', async () => {
     const getIdToken = jest.fn().mockResolvedValue('token');
     const fetchJson = jest.fn().mockResolvedValue({
