@@ -48,8 +48,5 @@ export const hasInputValue = element => inputValueStore.has(element);
  * @param {ElementWithValue | null | undefined} element - Input element whose stored value should be cleared.
  */
 export const clearInputValue = element => {
-  if (!element) {
-    return;
-  }
   inputValueStore.delete(element);
 };

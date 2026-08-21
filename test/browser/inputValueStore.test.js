@@ -10,8 +10,11 @@ import { getInputValue } from '../../src/core/browser/browser-core.js';
 describe('inputValueStore', () => {
   it('ignores falsy elements when storing or clearing', () => {
     expect(() => setInputValue(null, 'value')).not.toThrow();
+    expect(() => setInputValue(undefined, 'value')).not.toThrow();
+    expect(() => setInputValue(false, 'value')).not.toThrow();
     expect(getInputValue(null)).toBe('');
     expect(() => clearInputValue(null)).not.toThrow();
+    expect(() => clearInputValue(false)).not.toThrow();
   });
 
   it('normalizes stored values to strings', () => {
