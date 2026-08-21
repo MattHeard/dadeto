@@ -157,14 +157,24 @@ describe('keyboardCaptureHandler', () => {
       const button = container._children[0]._children[0];
       button._listeners.click();
 
+      const preventDefault = jest.fn();
       globals.listeners.keydown({
         type: 'keydown',
         key: 'ArrowUp',
-        preventDefault: jest.fn(),
+        preventDefault,
       });
+      expect(preventDefault).toHaveBeenCalledTimes(1);
       expect(JSON.parse(readStoredOrElementValue(textInput))).toEqual({
         type: 'keydown',
         key: 'ArrowUp',
+      });
+
+      expect(() =>
+        globals.listeners.keydown({ type: 'keydown', key: 'ArrowLeft' })
+      ).not.toThrow();
+      expect(JSON.parse(readStoredOrElementValue(textInput))).toEqual({
+        type: 'keydown',
+        key: 'ArrowLeft',
       });
 
       globals.listeners.keydown({
@@ -173,6 +183,11 @@ describe('keyboardCaptureHandler', () => {
         preventDefault: jest.fn(),
       });
       expect(button.textContent).toBe('Capture keyboard');
+      expect(JSON.parse(readStoredOrElementValue(textInput))).toEqual({
+        type: 'capture',
+        capturing: false,
+      });
+      globals.listeners.keydown({ type: 'keydown', key: 'ArrowDown' });
       expect(JSON.parse(readStoredOrElementValue(textInput))).toEqual({
         type: 'capture',
         capturing: false,
@@ -200,6 +215,7 @@ describe('keyboardCaptureHandler', () => {
 
     try {
       keyboardCaptureHandler(dom, container, textInput);
+      expect(typeof globals.listeners.keyup).toBe('function');
 
       const form = container._children[0];
       const button = form._children[0];
