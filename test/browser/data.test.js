@@ -286,6 +286,22 @@ describe('createBlogDataController', () => {
     expect(() => controller.getData(state)).not.toThrow();
   });
 
+  it('uses a supplied warning logger for previously failed data', () => {
+    const logWarning = jest.fn();
+    const controller = createBlogDataController(() => ({
+      fetch: jest.fn(),
+      loggers: { logInfo: jest.fn(), logError: jest.fn(), logWarning },
+    }));
+    const state = createState();
+    state.blogStatus = 'error';
+    state.blogError = new Error('boom');
+    controller.getData(state);
+    expect(logWarning).toHaveBeenCalledWith(
+      'Blog data previously failed to load:',
+      state.blogError
+    );
+  });
+
   it('throws when dependency factory returns a non-object', () => {
     const factory = () => null;
 
