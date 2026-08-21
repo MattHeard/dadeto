@@ -75,7 +75,7 @@ function createTable(dom, rows) {
   dom.setClassName(table, TABLE_CLASS);
 
   if (!rows.length) {
-    const emptyRow = createRow(dom, 'None', '—');
+    const emptyRow = createRow(dom, 'None', null);
     dom.appendChild(table, emptyRow);
     return table;
   }
@@ -186,9 +186,8 @@ function formatWholeNumber(value) {
  * @returns {string} Human readable label.
  */
 function humanizeKey(key) {
-  return key
-    .replace(/([a-z])([A-Z])/g, '$1 $2')
-    .replace(/^./, first => first.toUpperCase());
+  const spaced = key.replace(/([a-z])([A-Z])/g, '$1 $2');
+  return spaced.charAt(0).toUpperCase() + spaced.slice(1);
 }
 
 /**

@@ -99,7 +99,10 @@ describe('createRealHourlyWageReportElement', () => {
 
     expect(element.className).toBe('real-hourly-wage-output');
     const [header, summary, hours, expenses] = element.children;
+    expect(header.tag).toBe('header');
     expect(header.className).toBe('real-hourly-wage-header');
+    expect(header.children[0].tag).toBe('h3');
+    expect(header.children[1].tag).toBe('p');
     expect(header.children[0].textContent).toBe('Real Hourly Wage');
     expect(summary.children[0].textContent).toBe('Summary');
     expect(summary.children[1].children[0].children[1].textContent).toBe(
@@ -136,6 +139,14 @@ describe('realHourlyWagePresenterTestOnly', () => {
     expect(realHourlyWagePresenterTestOnly.humanizeKey('grossIncome')).toBe(
       'Gross Income'
     );
+    expect(realHourlyWagePresenterTestOnly.formatDisplayValue(7)).toBe('7');
+    expect(realHourlyWagePresenterTestOnly.formatDisplayValue('plain')).toBe(
+      'plain'
+    );
+    expect(realHourlyWagePresenterTestOnly.formatDisplayValue(NaN)).toBe('—');
+    expect(realHourlyWagePresenterTestOnly.humanizeKey('aBCValue')).toBe(
+      'A BCValue'
+    );
   });
 
   test('renders an empty table row when there are no values', () => {
@@ -143,8 +154,27 @@ describe('realHourlyWagePresenterTestOnly', () => {
 
     const table = realHourlyWagePresenterTestOnly.createTable(dom, []);
 
+    expect(table.children[0].tag).toBe('tr');
     expect(table.children[0].children[0].textContent).toBe('None');
     expect(table.children[0].children[1].textContent).toBe('—');
+  });
+
+  test('renders non-empty rows with semantic cells and formatted values', () => {
+    const dom = createMockDom();
+    const table = realHourlyWagePresenterTestOnly.createTable(dom, [
+      ['Gross income', 12.5],
+    ]);
+
+    expect(table.className).toBe('real-hourly-wage-table');
+    expect(table.tag).toBe('table');
+    expect(table.children).toHaveLength(1);
+    expect(table.children[0].className).toBe('real-hourly-wage-row');
+    expect(table.children[0].children.map(child => child.tag)).toEqual([
+      'th',
+      'td',
+    ]);
+    expect(table.children[0].children[0].textContent).toBe('Gross income');
+    expect(table.children[0].children[1].textContent).toBe('12.50');
   });
 
   test('falls back cleanly when breakdown data is missing', () => {
@@ -154,5 +184,35 @@ describe('realHourlyWagePresenterTestOnly', () => {
       ['Total hours', undefined],
     ]);
     expect(realHourlyWagePresenterTestOnly.getExpenseRows({})).toEqual([]);
+    expect(
+      realHourlyWagePresenterTestOnly.getHourRows({
+        breakdown: {
+          directHoursByType: { commuteHours: 2 },
+        },
+      })
+    ).toEqual([
+      ['Paid work hours', undefined],
+      ['Overhead hours', undefined],
+      ['Total hours', undefined],
+      ['Commute Hours', 2],
+    ]);
+    expect(
+      realHourlyWagePresenterTestOnly.getExpenseRows({
+        breakdown: { expensesByType: { foodExpenses: 3 } },
+      })
+    ).toEqual([['Food Expenses', 3]]);
+    expect(realHourlyWagePresenterTestOnly.getSummaryRows({
+      nominalHourlyWage: 1,
+      realHourlyWage: 2,
+      adjustedNetIncome: 3,
+      totalWorkRelatedHours: 4,
+      totalWorkRelatedExpenses: 5,
+    })).toEqual([
+      ['Nominal hourly wage', 1],
+      ['Real hourly wage', 2],
+      ['Adjusted net income', 3],
+      ['Total work-related hours', 4],
+      ['Total work-related expenses', 5],
+    ]);
   });
 });
