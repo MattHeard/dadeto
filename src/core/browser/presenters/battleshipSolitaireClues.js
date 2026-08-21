@@ -95,11 +95,9 @@ const VALIDATION_CHECKS = [
  * @returns {boolean} Whether validation fails.
  */
 function findValidationError(obj) {
-  if (!isObject(obj)) {
-    return true;
-  }
-  const candidate = /** @type {BattleshipClueCandidate} */ (obj);
-  return VALIDATION_CHECKS.some(check => check(candidate));
+  return VALIDATION_CHECKS.some(check =>
+    check(/** @type {BattleshipClueCandidate} */ (obj))
+  );
 }
 
 /**
@@ -117,12 +115,6 @@ const DEFAULT_CLUES = {
   rowClues: Array(10).fill(0),
   colClues: Array(10).fill(0),
 };
-
-/** @type {Array<(obj: BattleshipClueCandidate | null | undefined) => boolean>} */
-const INVALID_CLUE_CHECKS = [
-  obj => obj === null || obj === undefined,
-  obj => Boolean(findValidationError(obj)),
-];
 
 /**
  * Build a matrix of digit strings for the column clues.
@@ -158,11 +150,7 @@ function parseCluesOrDefault(inputString) {
    */
   const parseJsonValue = json => JSON.parse(json);
   const parsedValue = safeParseJson(inputString, parseJsonValue);
-  if (
-    INVALID_CLUE_CHECKS.some(fn =>
-      fn(/** @type {BattleshipClueCandidate} */ (parsedValue))
-    )
-  ) {
+  if (findValidationError(parsedValue)) {
     return DEFAULT_CLUES;
   }
   const obj = /** @type {BattleshipClueCandidate} */ (parsedValue);
