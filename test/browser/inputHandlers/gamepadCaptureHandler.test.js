@@ -208,6 +208,43 @@ describe('gamepad capture pure helpers', () => {
     const storedState = { snapshots: { 0: { axes: [1] } } };
     gamepadCaptureTestOnly.removeSnapshot(storedState, gamepad);
     expect(storedState.snapshots).toEqual({});
+    const lifecycleGamepad = createGamepad({ connected: false });
+    const lifecycleState = {
+      capturing: true,
+      animationFrameId: null,
+      snapshots: { 0: { axes: [0], buttons: [] } },
+    };
+    const lifecycleCheckbox = { checked: false, dispatchEvent: jest.fn() };
+    const lifecycleDom = makeDom(lifecycleCheckbox);
+    lifecycleDom.getGamepads = () => [lifecycleGamepad];
+    lifecycleDom.requestAnimationFrame = jest.fn();
+    gamepadCaptureTestOnly.handleDisconnectEvent(
+      {
+        state: lifecycleState,
+        dom: lifecycleDom,
+        button: {},
+        textInput: { value: '' },
+        autoSubmitCheckbox: lifecycleCheckbox,
+      },
+      { gamepad: lifecycleGamepad }
+    );
+    expect(lifecycleState.snapshots).toEqual({});
+    expect(lifecycleDom.requestAnimationFrame).not.toHaveBeenCalled();
+    const connectedLifecycleGamepad = createGamepad();
+    const connectedLifecycleDom = makeDom(lifecycleCheckbox);
+    connectedLifecycleDom.getGamepads = () => [connectedLifecycleGamepad];
+    connectedLifecycleDom.requestAnimationFrame = jest.fn(() => 4);
+    gamepadCaptureTestOnly.handleConnectionEvent(
+      {
+        state: { capturing: true, animationFrameId: null, snapshots: {} },
+        dom: connectedLifecycleDom,
+        button: {},
+        textInput: { value: '' },
+        autoSubmitCheckbox: lifecycleCheckbox,
+      },
+      { gamepad: connectedLifecycleGamepad }
+    );
+    expect(connectedLifecycleDom.requestAnimationFrame).toHaveBeenCalledTimes(1);
   });
 });
 

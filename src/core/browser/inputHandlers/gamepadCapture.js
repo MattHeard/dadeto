@@ -974,6 +974,8 @@ export const gamepadCaptureTestOnly = {
   storeSnapshot,
   createGamepadCleanupHandler,
   pollGamepads,
+  handleDisconnectEvent,
+  handleConnectionEvent,
   removeSnapshot,
   logGamepadEvent,
 };
