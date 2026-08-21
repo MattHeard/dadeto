@@ -12,6 +12,9 @@ describe('browser common helpers', () => {
     expect(isObject({})).toBe(true);
     expect(isObject([])).toBe(false);
     expect(isObject(null)).toBe(false);
+    expect(isObject('text')).toBe(false);
+    expect(isObject(42)).toBe(false);
+    expect(isObject(undefined)).toBe(false);
   });
 
   test('evaluates fallback and builder helpers', () => {
