@@ -4,22 +4,10 @@ import { withFallback } from '../../common.js';
 const ASTERISK_MARKER = '*';
 const UNDERSCORE_MARKER = '_';
 
-// Pattern to match special regex characters that need escaping
-const REGEX_SPECIAL_CHARS = /[.*+?^${}()|[\]\\]/;
-
 /**
  * Represents the bold segment alongside its surrounding text.
  * @typedef {{ beforeText: string; boldText: string; afterText: string }} BoldSegment
  */
-
-/**
- * Determine whether a string is empty or whitespace only.
- * @param {string} text - Text to evaluate.
- * @returns {boolean} True if text has no visible characters.
- */
-function isEmptyText(text) {
-  return !text?.trim();
-}
 
 /**
  * Check that the provided text contains no bold Markdown segments.
@@ -116,10 +104,7 @@ function createItalicsPattern(marker) {
  * @private
  */
 function escapeMarker(marker) {
-  if (REGEX_SPECIAL_CHARS.test(marker)) {
-    return `\\${marker}`;
-  }
-  return marker;
+  return marker.replace(ASTERISK_MARKER, '\\*');
 }
 
 /**
@@ -144,9 +129,7 @@ function assembleProcessedText(beforeText, boldText, afterText) {
     processItalicBefore(beforeText),
     boldText,
     processBoldAfter(afterText),
-  ]
-    .filter(Boolean)
-    .join('');
+  ].join('');
 }
 
 /**
@@ -156,7 +139,7 @@ function assembleProcessedText(beforeText, boldText, afterText) {
  * @private
  */
 function shouldBypassBold(text) {
-  return isEmptyText(text) || hasNoBoldSegments(text);
+  return hasNoBoldSegments(text);
 }
 
 /**

@@ -15,6 +15,7 @@ describe('italics function', () => {
       'Regular text without markdown'
     );
     expect(italics('')).toBe('');
+    expect(italics('   ')).toBe('   ');
   });
 
   test('adds <em> tags around asterisk-style italics while preserving asterisks', () => {
