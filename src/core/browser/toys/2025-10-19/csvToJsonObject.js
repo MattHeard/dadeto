@@ -9,17 +9,6 @@ import { parseCsvLine } from './toys-core.js';
 import { runToyWithFallback } from '../browserToysCore.js';
 
 /**
- * Throw a descriptive error when a CSV precondition fails.
- * @param {boolean} condition Assertion to validate.
- * @returns {void}
- */
-function assertCsv(condition) {
-  if (!condition) {
-    throw new Error('Invalid CSV input');
-  }
-}
-
-/**
  * Create filtered key/value tuples from header and value arrays.
  * @param {string[]} headers Parsed CSV header values.
  * @param {string[]} values Parsed CSV row values.
@@ -40,28 +29,16 @@ function zipHeadersWithValues(headers, values) {
  * @returns {Record<string, string>} Object representation of the CSV data.
  */
 function buildObjectFromCsv(input) {
-  assertCsv(typeof input === 'string');
+  const normalizedInput = input.replace(/\r\n?/g, '\n');
 
-  const normalizedInput = input.replace(/\r\n?/g, '\n').trimEnd();
-  assertCsv(normalizedInput.length > 0);
-
-  const newlineIndex = normalizedInput.indexOf('\n');
-  assertCsv(newlineIndex !== -1);
-
-  const headerLine = normalizedInput.slice(0, newlineIndex).trim();
-  const remaining = normalizedInput.slice(newlineIndex + 1);
-  assertCsv(headerLine.length > 0);
-  assertCsv(remaining.length > 0);
-
-  const [dataLine, ...rest] = remaining.split('\n');
-  assertCsv(Boolean(dataLine));
-  assertCsv(!rest.some(line => line.trim().length > 0));
+  const [headerLineRaw, dataLine, ...rest] = normalizedInput.split('\n');
+  const headerLine = headerLineRaw;
+  if (rest.some(line => line.trim().length > 0)) {
+    return {};
+  }
 
   const headersCandidate = parseCsvLine(headerLine);
-  const valuesCandidate = parseCsvLine(dataLine.trimEnd());
-  assertCsv(Array.isArray(headersCandidate));
-  assertCsv(Array.isArray(valuesCandidate));
-
+  const valuesCandidate = parseCsvLine(dataLine);
   const headers = /** @type {string[]} */ (headersCandidate);
   const values = /** @type {string[]} */ (valuesCandidate);
 

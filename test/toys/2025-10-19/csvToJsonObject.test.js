@@ -54,4 +54,22 @@ describe('csvToJsonObjectToy', () => {
       JSON.stringify({ name: 'Alice', age: '30' })
     );
   });
+
+  it('normalizes CRLF input and trims headers and values', () => {
+    expect(csvToJsonObjectToy(' name , age\r\n Alice , 30 ')).toBe(
+      JSON.stringify({ name: 'Alice', age: '30' })
+    );
+  });
+
+  it('normalizes lone carriage returns as line breaks', () => {
+    expect(csvToJsonObjectToy('name,age\rAlice,30')).toBe(
+      JSON.stringify({ name: 'Alice', age: '30' })
+    );
+  });
+
+  it('ignores whitespace-only trailing lines', () => {
+    expect(csvToJsonObjectToy('name,age\nAlice,30\n   ')).toBe(
+      JSON.stringify({ name: 'Alice', age: '30' })
+    );
+  });
 });
