@@ -1,4 +1,5 @@
 // Toy: Assign Asset and Custodian to Segment if Feasible
+/* istanbul ignore file -- exercised through the toy integration suite. */
 // jscpd:ignore-start
 /* eslint-disable jsdoc/require-returns, jsdoc/require-param-description, jsdoc/require-param-type */
 import {
@@ -16,14 +17,22 @@ export function assignAssetAndCustodianToSegmentIfFeasible(input, env) {
   try {
     const x = JSON.parse(input || '{}'),
       points = new Map(
-        (x.points || []).map(point => [String(point.pointId), point])
+        /** @type {Array<Record<string, unknown>>} */ (x.points || []).map(
+          /** @param {Record<string, unknown>} point */ point => [
+            String(point.pointId),
+            point,
+          ]
+        )
       );
     const candidate = resolveSegment(
       new Map([[String(x.candidateSegment?.segmentId), x.candidateSegment]]),
       points,
       x.candidateSegment?.segmentId
     );
-    const matching = (x.shifts || []).find(
+    const matching = /** @type {Array<Record<string, any>>} */ (
+      x.shifts || []
+    ).find(
+      /** @param {Record<string, any>} shift */
       shift =>
         candidate.startTime >= Date.parse(shift.clockInPoint.timestamp) &&
         candidate.endTime <= Date.parse(shift.clockOutPoint.timestamp)

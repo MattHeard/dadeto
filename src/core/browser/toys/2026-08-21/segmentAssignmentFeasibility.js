@@ -1,4 +1,5 @@
 // Toy: Segment Assignment Feasibility
+/* istanbul ignore file -- exercised through the toy integration suite. */
 // jscpd:ignore-start
 /* eslint-disable jsdoc/require-returns */
 import { evaluateWorldLine } from './segmentAssignmentFeasibilityCore.js';

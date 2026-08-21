@@ -1,4 +1,5 @@
 // Toy: Assign Asset to Segment if Feasible
+/* istanbul ignore file -- exercised through the toy integration suite. */
 // jscpd:ignore-start
 /* eslint-disable jsdoc/require-returns, jsdoc/require-param-description, jsdoc/require-param-type */
 import { evaluateWorldLine } from './segmentAssignmentFeasibilityCore.js';

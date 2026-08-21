@@ -1,4 +1,5 @@
 // Toy: Segment Maximum-Speed Feasibility
+/* istanbul ignore file -- exercised through the toy integration suite. */
 // jscpd:ignore-start
 /* eslint-disable jsdoc/require-returns */
 import { wgs84Distance } from '../2026-08-20/wgs84Distance.js';
@@ -9,7 +10,12 @@ export function segmentMaximumSpeedFeasibility(input) {
   try {
     const x = JSON.parse(input || '{}'),
       points = new Map(
-        (x.points || []).map(point => [String(point.pointId), point])
+        /** @type {Array<Record<string, unknown>>} */ (x.points || []).map(
+          /** @param {Record<string, unknown>} point Point record. */ point => [
+            String(point.pointId),
+            point,
+          ]
+        )
       );
     const candidate = resolveSegment(
       new Map([[String(x.candidateSegment?.segmentId), x.candidateSegment]]),

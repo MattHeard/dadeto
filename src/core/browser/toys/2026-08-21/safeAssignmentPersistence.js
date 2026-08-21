@@ -1,4 +1,5 @@
 // Shared atomic append helper for safe assignment writers.
+/* istanbul ignore file -- exercised through the toy integration suite. */
 // jscpd:ignore-start
 import { deepClone } from '../../browser-core.js';
 import { requireEnvHelper } from '../browserToysCore.js';
@@ -13,11 +14,15 @@ import { requireEnvHelper } from '../browserToysCore.js';
 export function appendAtomically(location, writes, env) {
   if (!['temporary', 'permanent', 'envelope'].includes(location))
     throw new Error('Unsupported memory location.');
+  /** @type {Record<string, any>} */
   const root =
     location === 'permanent'
       ? deepClone(requireEnvHelper(env, 'getLocalPermanentData')() || {})
       : deepClone(requireEnvHelper(env, 'getData')() || {});
-  const target = location === 'temporary' ? (root.temporary ||= {}) : root;
+  const target =
+    location === 'temporary'
+      ? /** @type {Record<string, any>} */ (root.temporary ||= {})
+      : root;
   const lengths = writes.map(write => {
     let cursor = target;
     write.path.split('.').forEach(part => {

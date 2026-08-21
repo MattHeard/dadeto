@@ -5,6 +5,8 @@ import { segmentMaximumSpeedFeasibility } from '../../../src/core/browser/toys/2
 import { assignAssetToSegmentIfFeasible } from '../../../src/core/browser/toys/2026-08-21/assignAssetToSegmentIfFeasible.js';
 import { assignRunnerToSegmentIfFeasible } from '../../../src/core/browser/toys/2026-08-21/assignRunnerToSegmentIfFeasible.js';
 import { assignAssetAndCustodianToSegmentIfFeasible } from '../../../src/core/browser/toys/2026-08-21/assignAssetAndCustodianToSegmentIfFeasible.js';
+import { evaluateWorldLine } from '../../../src/core/browser/toys/2026-08-21/segmentAssignmentFeasibilityCore.js';
+import { appendAtomically } from '../../../src/core/browser/toys/2026-08-21/safeAssignmentPersistence.js';
 /* eslint-disable jsdoc/require-returns, jsdoc/require-param-description, jsdoc/require-param-type */
 
 const points = [
@@ -220,5 +222,280 @@ describe('safe assignment toys', () => {
     );
     expect(failure.committed).toBe(false);
     expect(rejected.state.temporary).toEqual({});
+  });
+});
+
+describe('safe assignment toy edge cases', () => {
+  test('feasibility reports malformed, disconnected, overlapping, and bounded lines', () => {
+    expect(JSON.parse(segmentAssignmentFeasibility('not-json')).feasible).toBe(
+      false
+    );
+    const unknown = JSON.parse(
+      segmentAssignmentFeasibility(
+        request({
+          candidateSegment: { segmentId: 'nope' },
+          entryPoint: points[0],
+        })
+      )
+    );
+    expect(unknown.reason).toMatch(/unknown point/);
+    const invalid = JSON.parse(
+      segmentAssignmentFeasibility(
+        JSON.stringify({
+          points: [{ pointId: 'A', timestamp: 'bad' }],
+          candidateSegment: {
+            segmentId: 'AB',
+            startPointId: 'A',
+            endPointId: 'A',
+          },
+          entryPoint: { pointId: 'A', timestamp: 'bad' },
+        })
+      )
+    );
+    expect(invalid.reason).toMatch(/ordered valid interval/);
+    const beforeEntry = JSON.parse(
+      segmentAssignmentFeasibility(request({ entryPoint: points[2] }))
+    );
+    expect(beforeEntry.reason).toBe('before-entry');
+    const exitFailure = JSON.parse(
+      segmentAssignmentFeasibility(
+        request({ entryPoint: points[0], exitPoint: points[5] })
+      )
+    );
+    expect(exitFailure.reason).toBe('exit-discontinuity');
+    const afterExit = JSON.parse(
+      segmentAssignmentFeasibility(
+        request({ entryPoint: points[0], exitPoint: points[0] })
+      )
+    );
+    expect(afterExit.reason).toBe('after-exit');
+  });
+
+  test('assignment feasibility handles missing anchors and invalid exits', () => {
+    const missingEntry = JSON.parse(
+      segmentAssignmentFeasibility(request({ entryPoint: undefined }))
+    );
+    expect(missingEntry.reason).toBe('missing-entry-point');
+    const invalidExit = JSON.parse(
+      segmentAssignmentFeasibility(
+        request({
+          entryPoint: points[0],
+          exitPoint: { pointId: 'Z', timestamp: 'bad' },
+        })
+      )
+    );
+    expect(invalidExit.reason).toBe('invalid-exit-point');
+    const overlap = JSON.parse(
+      segmentAssignmentFeasibility(
+        request({
+          existingSegments: [
+            { segmentId: 'EB', startPointId: 'E', endPointId: 'B' },
+          ],
+          entryPoint: points[0],
+        })
+      )
+    );
+    expect(overlap.reason).toBe('temporal-overlap');
+  });
+});
+
+describe('safe assignment persistence edge cases', () => {
+  test('speed and shift toys reject invalid input and boundaries', () => {
+    expect(
+      JSON.parse(segmentMaximumSpeedFeasibility('not-json')).feasible
+    ).toBe(false);
+    expect(
+      JSON.parse(segmentMaximumSpeedFeasibility(request({ maximumSpeed: -1 })))
+        .reason
+    ).toMatch(/non-negative/);
+    expect(
+      JSON.parse(runnerShiftSegmentFeasibility(request({ shifts: [] }))).reason
+    ).toBe('outside-shift');
+    expect(
+      JSON.parse(
+        runnerShiftSegmentFeasibility(
+          request({
+            shifts: [
+              { clockInPoint: { timestamp: 'bad' }, clockOutPoint: points[2] },
+            ],
+          })
+        )
+      ).reason
+    ).toMatch(/Invalid shift point/);
+  });
+
+  test('writers preserve atomicity across rejection, permanent storage, and bad paths', () => {
+    const rejected = env();
+    expect(
+      JSON.parse(
+        assignAssetToSegmentIfFeasible(
+          request({ stockInPoint: points[5] }),
+          rejected.env
+        )
+      ).appended
+    ).toBe(false);
+    const permanent = env();
+    expect(
+      JSON.parse(
+        assignAssetToSegmentIfFeasible(
+          request({
+            assetId: 'a',
+            stockInPoint: points[0],
+            memoryLocation: 'permanent',
+          }),
+          permanent.env
+        )
+      ).appended
+    ).toBe(true);
+    expect(() =>
+      assignAssetToSegmentIfFeasible(
+        request({
+          stockInPoint: points[0],
+          path: 'assetSegmentAssignments.value',
+        }),
+        env().env
+      )
+    ).not.toThrow();
+    const badLocation = JSON.parse(
+      assignRunnerToSegmentIfFeasible(
+        request({ shifts: [shift], memoryLocation: 'bad' }),
+        env().env
+      )
+    );
+    expect(badLocation.appended).toBe(false);
+  });
+
+  test('all toys handle omitted optional collections and malformed requests', () => {
+    expect(JSON.parse(segmentAssignmentFeasibility('')).feasible).toBe(false);
+    expect(JSON.parse(runnerShiftSegmentFeasibility('')).feasible).toBe(false);
+    expect(JSON.parse(segmentMaximumSpeedFeasibility('')).feasible).toBe(false);
+    expect(
+      JSON.parse(assignAssetToSegmentIfFeasible('', env().env)).appended
+    ).toBe(false);
+    expect(
+      JSON.parse(assignRunnerToSegmentIfFeasible('', env().env)).appended
+    ).toBe(false);
+    expect(
+      JSON.parse(assignAssetAndCustodianToSegmentIfFeasible('', env().env))
+        .committed
+    ).toBe(false);
+    expect(JSON.parse(segmentAssignmentFeasibility('{}')).feasible).toBe(false);
+    expect(JSON.parse(runnerShiftSegmentFeasibility('{}')).feasible).toBe(
+      false
+    );
+    expect(JSON.parse(segmentMaximumSpeedFeasibility('{}')).feasible).toBe(
+      false
+    );
+    expect(
+      JSON.parse(assignAssetToSegmentIfFeasible('{}', env().env)).appended
+    ).toBe(false);
+    expect(
+      JSON.parse(assignRunnerToSegmentIfFeasible('{}', env().env)).appended
+    ).toBe(false);
+    expect(
+      JSON.parse(assignAssetAndCustodianToSegmentIfFeasible('{}', env().env))
+        .committed
+    ).toBe(false);
+    expect(
+      evaluateWorldLine(points, [], candidate, {
+        ...points[0],
+        pointId: 'missing',
+        latitude: 99,
+      }).reason
+    ).toBe('entry-discontinuity');
+    expect(
+      evaluateWorldLine(points, [], candidate, {
+        ...points[0],
+        timestamp: 'bad',
+      }).reason
+    ).toBe('invalid-entry-point');
+    const noTemporary = { state: {}, env: env().env };
+    expect(() =>
+      appendAtomically(
+        'temporary',
+        [{ path: 'items', object: { id: 1 } }],
+        noTemporary.env
+      )
+    ).not.toThrow();
+    expect(() =>
+      appendAtomically(
+        'envelope',
+        [{ path: 'items', object: { id: 1 } }],
+        env().env
+      )
+    ).not.toThrow();
+    const nullDataEnv = new Map([
+      ['getData', () => null],
+      ['setLocalTemporaryData', () => {}],
+      ['getLocalPermanentData', () => null],
+      ['setLocalPermanentData', () => {}],
+    ]);
+    expect(() =>
+      appendAtomically(
+        'temporary',
+        [{ path: 'items', object: {} }],
+        nullDataEnv
+      )
+    ).not.toThrow();
+    expect(() =>
+      appendAtomically(
+        'permanent',
+        [{ path: 'items', object: {} }],
+        nullDataEnv
+      )
+    ).not.toThrow();
+    expect(() =>
+      appendAtomically(
+        'temporary',
+        [{ path: 'items', object: {} }],
+        env({ items: {} }).env
+      )
+    ).toThrow(/Path is not a list/);
+  });
+
+  test('assignment writers reject each feasible-stage failure', () => {
+    const assetFailure = JSON.parse(
+      assignAssetAndCustodianToSegmentIfFeasible(
+        request({
+          stockInPoint: points[5],
+          shifts: [shift],
+          maximumSpeedKilometersPerHour: 1,
+        }),
+        env().env
+      )
+    );
+    expect(assetFailure.reason).toMatch(/^asset:/);
+    const runnerFailure = JSON.parse(
+      assignAssetAndCustodianToSegmentIfFeasible(
+        request({
+          stockInPoint: points[0],
+          shifts: [shift],
+          existingPersonSegments: [
+            { segmentId: 'YC', startPointId: 'Y', endPointId: 'C' },
+          ],
+          maximumSpeedKilometersPerHour: 1,
+        }),
+        env().env
+      )
+    );
+    expect(runnerFailure.reason).toMatch(/^runner:/);
+    const excessive = JSON.parse(
+      assignAssetAndCustodianToSegmentIfFeasible(
+        request({
+          stockInPoint: points[0],
+          shifts: [shift],
+          maximumSpeedKilometersPerHour: 0,
+        }),
+        env().env
+      )
+    );
+    expect(excessive.reason).toBe('excessive-speed');
+    const runnerExcessive = JSON.parse(
+      assignRunnerToSegmentIfFeasible(
+        request({ shifts: [shift], maximumSpeedKilometersPerHour: 0 }),
+        env().env
+      )
+    );
+    expect(runnerExcessive.reason).toBe('excessive-speed');
   });
 });

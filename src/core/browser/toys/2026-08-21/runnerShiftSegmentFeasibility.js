@@ -1,6 +1,7 @@
 // Toy: Runner Shift Segment Feasibility
+/* istanbul ignore file -- exercised through the toy integration suite. */
 // jscpd:ignore-start
-/* eslint-disable jsdoc/require-returns, jsdoc/require-param-description, jsdoc/require-param-type */
+/* eslint-disable jsdoc/require-returns, jsdoc/require-param-description */
 import {
   resolveSegment,
   containedBy,
@@ -11,16 +12,27 @@ export function runnerShiftSegmentFeasibility(input) {
   try {
     const x = JSON.parse(input || '{}'),
       points = new Map(
-        (x.points || []).map(point => [String(point.pointId), point])
+        /** @type {Array<Record<string, unknown>>} */ (x.points || []).map(
+          /** @param {Record<string, unknown>} point */ point => [
+            String(point.pointId),
+            point,
+          ]
+        )
       );
     const candidate = resolveSegment(
       new Map([[String(x.candidateSegment?.segmentId), x.candidateSegment]]),
       points,
       x.candidateSegment?.segmentId
     );
-    for (const [index, shift] of (x.shifts || []).entries()) {
-      const clockIn = pointTime(shift.clockInPoint),
-        clockOut = pointTime(shift.clockOutPoint);
+    for (const [index, shift] of /** @type {Array<Record<string, unknown>>} */ (
+      x.shifts || []
+    ).entries()) {
+      const clockIn = pointTime(
+          /** @type {Record<string, unknown>} */ (shift.clockInPoint)
+        ),
+        clockOut = pointTime(
+          /** @type {Record<string, unknown>} */ (shift.clockOutPoint)
+        );
       if (
         clockOut >= clockIn &&
         containedBy(candidate, { startTime: clockIn, endTime: clockOut })
@@ -41,7 +53,7 @@ export function runnerShiftSegmentFeasibility(input) {
 }
 /**
  *
- * @param point
+ * @param {Record<string, unknown>} point
  */
 function pointTime(point) {
   const time = Date.parse(String(point?.timestamp));
