@@ -2,6 +2,10 @@ import { describe, expect, it, jest } from '@jest/globals';
 import {
   createVariantRedirectHandle,
   pickThresholdSlug,
+  sumPositiveWeights,
+  parseVariants,
+  parseJsonVariants,
+  pickWeighted,
 } from '../../../src/core/browser/variant-redirect.js';
 
 /**
@@ -171,5 +175,65 @@ describe('createVariantRedirectHandle', () => {
 
   it('returns null when a threshold runs past the available positive weights', () => {
     expect(pickThresholdSlug([{ slug: 'alpha', w: 1 }], 2)).toBeNull();
+  });
+});
+
+describe('variant redirect helpers', () => {
+  it('parses empty, comma, JSON array, and invalid JSON variants', () => {
+    expect(parseVariants(null)).toEqual([]);
+    expect(parseVariants('   ')).toEqual([]);
+    expect(parseVariants(' alpha , beta:2 ')).toEqual([
+      { slug: 'alpha', w: 1 },
+      { slug: 'beta', w: 2 },
+    ]);
+    expect(parseVariants('[{"slug":"alpha","w":2}]')).toEqual([
+      { slug: 'alpha', w: 2 },
+    ]);
+    expect(parseVariants('{"slug":"alpha"}')).toEqual([]);
+    expect(parseJsonVariants('[{"slug":"alpha","w":2}]')).toEqual([
+      { slug: 'alpha', w: 2 },
+    ]);
+    expect(parseJsonVariants('{"slug":"alpha"}')).toEqual([]);
+    expect(parseJsonVariants('{bad')).toEqual([]);
+  });
+
+  it('sums positive finite weights and selects weighted thresholds', () => {
+    const pairs = [
+      { slug: 'zero', w: 0 },
+      { slug: 'bad', w: 'nope' },
+      { slug: 'alpha', w: 2 },
+      { slug: 'beta', w: 3 },
+    ];
+    expect(sumPositiveWeights(pairs)).toBe(5);
+    expect(pickThresholdSlug(pairs, 1)).toBe('alpha');
+    expect(pickThresholdSlug(pairs, 2)).toBe('alpha');
+    expect(pickThresholdSlug(pairs, 2.1)).toBe('beta');
+    expect(pickThresholdSlug([{ slug: 'negative', w: -1 }, ...pairs], 5.5)).toBeNull();
+    expect(pickWeighted(pairs, { getRandomValues: values => values.fill(0) })).toBe('alpha');
+    const noRandomForZeroWeights = { getRandomValues: jest.fn() };
+    expect(pickWeighted([{ slug: 'none', w: 0 }], noRandomForZeroWeights)).toBeNull();
+    expect(noRandomForZeroWeights.getRandomValues).not.toHaveBeenCalled();
+    expect(sumPositiveWeights([{ slug: 'negative', w: -1 }])).toBe(0);
+    expect(sumPositiveWeights([{ slug: 'infinite', w: Infinity }])).toBe(0);
+  });
+
+  it('does not select or rewrite links without usable variants', () => {
+    const link = createLink({
+      'data-variants': '   ',
+      href: '/stories/original.html',
+    });
+    const documentObj = createDocument([link]);
+    const cryptoObj = { getRandomValues: jest.fn() };
+    const handle = createVariantRedirectHandle({
+      documentObj,
+      locationObj: { href: 'https://example.test/stories/index.html' },
+      cryptoObj,
+      URLCtor: URL,
+    });
+
+    handle();
+
+    expect(cryptoObj.getRandomValues).not.toHaveBeenCalled();
+    expect(link.setAttribute).not.toHaveBeenCalled();
   });
 });

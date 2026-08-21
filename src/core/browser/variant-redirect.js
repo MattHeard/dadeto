@@ -170,4 +170,10 @@ function parseJsonVariants(trimmed) {
   }
 }
 
-export { pickThresholdSlug };
+export {
+  pickThresholdSlug,
+  sumPositiveWeights,
+  parseVariants,
+  parseJsonVariants,
+  pickWeighted,
+};
