@@ -98,11 +98,19 @@ export function normalizeGraphPlotPayload(parsed) {
  * @returns {{type:'graph-plot', width:number, height:number, background:string, axesColor:string, gridColor:string, lineColor:string, xMin:number, xMax:number, yMin:number, yMax:number, points:Array<{x:number,y:number}>, series?: { lineColor?: string, points?: { x:number, y:number }[] }[]}} Canvas payload.
  */
 export function buildGraphPlotPayload(payload) {
-  const evaluator = createExpressionEvaluator(payload.expression);
+  let evaluator;
+  try {
+    evaluator = createExpressionEvaluator(payload.expression);
+  } catch {
+    return createGraphPlotPayloadResult(payload, []);
+  }
   const stepCount = Math.max(24, Math.round(payload.width / 4));
   const points = [];
 
-  for (let index = 0; index <= stepCount; index += 1) {
+  for (const index of Array.from(
+    { length: stepCount + 1 },
+    (_, currentIndex) => currentIndex
+  )) {
     const ratio = index / stepCount;
     const x = payload.xMin + (payload.xMax - payload.xMin) * ratio;
     const y = evaluator(x);
@@ -111,6 +119,16 @@ export function buildGraphPlotPayload(payload) {
     }
   }
 
+  return createGraphPlotPayloadResult(payload, points);
+}
+
+/**
+ * Create the final graph plot payload with generated points.
+ * @param {{ expression: string, width: number, height: number, background: string, axesColor: string, gridColor: string, lineColor: string, xMin: number, xMax: number, yMin: number, yMax: number, series?: { lineColor?: string, points?: { x: number, y: number }[] }[] }} payload Normalized graph payload.
+ * @param {{ x: number, y: number }[]} points Finite generated points.
+ * @returns {{ type: 'graph-plot', width: number, height: number, background: string, axesColor: string, gridColor: string, lineColor: string, xMin: number, xMax: number, yMin: number, yMax: number, points: { x: number, y: number }[], series?: { lineColor?: string, points?: { x: number, y: number }[] }[] }} Final graph plot payload.
+ */
+function createGraphPlotPayloadResult(payload, points) {
   return {
     type: 'graph-plot',
     width: payload.width,
@@ -147,13 +165,9 @@ export function buildGraphPlotFromJson(inputString, getRandomNumber) {
  * @returns {(x:number) => number} Safe-ish evaluator.
  */
 function createExpressionEvaluator(expression) {
-  try {
-    // Only expose Math and x; the toy stays synchronous and bounded by the UI.
-    const fn = new Function('x', 'Math', `return (${expression});`);
-    return x => Number(fn(x, Math));
-  } catch {
-    return () => Number.NaN;
-  }
+  // Only expose x; Math remains available as a standard global.
+  const fn = new Function('x', `return (${expression});`);
+  return x => Number(fn(x));
 }
 
 /**
