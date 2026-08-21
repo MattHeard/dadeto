@@ -78,4 +78,33 @@ describe('captureLifecycleShared remaining paths', () => {
       { type: 'capture', capturing: true }
     );
   });
+
+  it('emits the inactive capture state without changing its boolean value', () => {
+    const updateButtonLabel = jest.fn();
+    const emitPayload = jest.fn();
+    const options = {
+      dom: {},
+      button: {},
+      textInput: {},
+      autoSubmitCheckbox: null,
+      updateButtonLabel,
+      emitPayload,
+    };
+
+    emitCaptureState(options, false);
+
+    expect(updateButtonLabel).toHaveBeenCalledWith(
+      options.dom,
+      options.button,
+      false
+    );
+    expect(emitPayload).toHaveBeenCalledWith(
+      {
+        dom: options.dom,
+        textInput: options.textInput,
+        autoSubmitCheckbox: null,
+      },
+      { type: 'capture', capturing: false }
+    );
+  });
 });
