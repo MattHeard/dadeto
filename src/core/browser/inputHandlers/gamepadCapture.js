@@ -972,6 +972,7 @@ export const gamepadCaptureTestOnly = {
   didTrackedAxisChange,
   preventDefault,
   storeSnapshot,
+  createGamepadCleanupHandler,
   removeSnapshot,
   logGamepadEvent,
 };

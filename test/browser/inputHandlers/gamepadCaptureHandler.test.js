@@ -191,6 +191,14 @@ describe('gamepad capture pure helpers', () => {
     gamepadCaptureTestOnly.preventDefault(event);
     expect(event.preventDefault).toHaveBeenCalledTimes(1);
     gamepadCaptureTestOnly.preventDefault({});
+    const cancelAnimationFrame = jest.fn();
+    const cleanupState = { animationFrameId: 9, snapshots: { 0: { axes: [1] } } };
+    gamepadCaptureTestOnly.createGamepadCleanupHandler({
+      state: cleanupState,
+      dom: { cancelAnimationFrame },
+    })();
+    expect(cancelAnimationFrame).toHaveBeenCalledWith(9);
+    expect(cleanupState).toEqual({ animationFrameId: null, snapshots: {} });
   });
 });
 
@@ -211,6 +219,7 @@ describe('gamepad capture events', () => {
     const previousRequestAnimationFrame = globalThis.requestAnimationFrame;
     const previousCancelAnimationFrame = globalThis.cancelAnimationFrame;
     const previousNavigator = globalThis.navigator;
+    const logSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
     Object.assign(globalThis, {
       addEventListener: globals.addEventListener,
       removeEventListener: globals.removeEventListener,
@@ -228,6 +237,7 @@ describe('gamepad capture events', () => {
       button._listeners.click();
 
       const connectedGamepad = createGamepad();
+      gamepads = [connectedGamepad];
       globals.listeners.gamepadconnected({ gamepad: connectedGamepad });
 
       expect(JSON.parse(readStoredOrElementValue(textInput))).toMatchObject({
@@ -242,6 +252,16 @@ describe('gamepad capture events', () => {
           { pressed: false, value: 0 },
           { pressed: false, value: 0 },
         ],
+      });
+      expect(JSON.parse(readStoredOrElementValue(textInput))).not.toHaveProperty(
+        'connectedGamepads'
+      );
+      expect(frames).toHaveLength(1);
+      expect(logSpy).toHaveBeenCalledWith('[gamepadCapture]', 'connected', {
+        index: 0,
+        id: 'Nintendo Joy-Con (R)',
+        mapping: 'standard',
+        connected: true,
       });
 
       gamepads = [
@@ -288,6 +308,7 @@ describe('gamepad capture events', () => {
         value: 0.5,
       });
 
+      const framesBeforeDisconnect = frames.length;
       globals.listeners.gamepaddisconnected({
         gamepad: createGamepad({ connected: false, timestamp: 4 }),
       });
@@ -304,6 +325,7 @@ describe('gamepad capture events', () => {
           { pressed: false, value: 0 },
         ],
       });
+      expect(frames).toHaveLength(framesBeforeDisconnect);
       const state = { snapshots: { 0: { connected: true } } };
       gamepadCaptureTestOnly.removeSnapshot(state, null);
       expect(state.snapshots).toEqual({ 0: { connected: true } });
@@ -318,6 +340,7 @@ describe('gamepad capture events', () => {
         cancelAnimationFrame: previousCancelAnimationFrame,
         navigator: previousNavigator,
       });
+      logSpy.mockRestore();
     }
   });
 });
@@ -911,6 +934,11 @@ describe('escape handling', () => {
       expect(globalThis.removeEventListener).toHaveBeenNthCalledWith(
         3,
         'gamepaddisconnected',
+        expect.any(Function)
+      );
+      expect(dom.removeEventListener).toHaveBeenCalledWith(
+        button,
+        'click',
         expect.any(Function)
       );
     } finally {
