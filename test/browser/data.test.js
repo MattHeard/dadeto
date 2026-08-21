@@ -275,6 +275,17 @@ describe('createBlogDataController', () => {
     expect(state.blogError).toBeInstanceOf(Error);
   });
 
+  it('normalizes a non-callable warning logger to a no-op', () => {
+    const controller = createBlogDataController(() => ({
+      fetch: jest.fn(),
+      loggers: { logInfo: jest.fn(), logError: jest.fn(), logWarning: 'invalid' },
+    }));
+    const state = createState();
+    state.blogStatus = 'error';
+    state.blogError = new Error('boom');
+    expect(() => controller.getData(state)).not.toThrow();
+  });
+
   it('throws when dependency factory returns a non-object', () => {
     const factory = () => null;
 
@@ -360,6 +371,7 @@ describe('createBlogDataController', () => {
     }));
 
     expect(controller.getLocalPermanentData()).toEqual({});
+    expect(permanentLens.get).toHaveBeenCalledWith('permanentData');
     expect(controller.setLocalPermanentData({ enabled: true })).toEqual({
       enabled: true,
     });
