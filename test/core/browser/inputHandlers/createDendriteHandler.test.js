@@ -117,7 +117,10 @@ describe('createDendriteHandler', () => {
     });
 
     expect(dom.createElement).toHaveBeenCalledWith('div');
-    expect(dom.setClassName).toHaveBeenCalled();
+    expect(dom.setClassName).toHaveBeenCalledWith(
+      expect.objectContaining({ className: 'dendrite-form' }),
+      'dendrite-form'
+    );
     expect(shell._dispose).toEqual(expect.any(Function));
     shell._dispose();
     expect(disposer).toHaveBeenCalled();
