@@ -69,7 +69,7 @@ async function copyUsingClipboard(inputString, clipboard, dom) {
  */
 async function copyToClipboard(inputString, dom) {
   const clipboard = getClipboard(dom);
-  if (!clipboard) {
+  if (clipboard === undefined) {
     logCopyFailure(dom, new Error('navigator.clipboard is not available'));
     return false;
   }
@@ -175,9 +175,7 @@ async function handleCopyButtonClick(options) {
  */
 export function createCopyToClipboardButtonElement(inputString, dom) {
   const button = /** @type {HTMLButtonElement} */ (dom.createElement('button'));
-  const state = /** @type {{ timeoutHandle: number | null }} */ ({
-    timeoutHandle: null,
-  });
+  const state = /** @type {{ timeoutHandle: number | null }} */ ({});
   dom.setType(button, 'button');
   dom.setTextContent(button, getCopyButtonLabel());
   dom.addEventListener(button, 'click', event => {

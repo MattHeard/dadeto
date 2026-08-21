@@ -117,7 +117,9 @@ describe('createCopyToClipboardButtonElement', () => {
 
     expect(dom.logError).toHaveBeenCalledWith(
       'Failed to copy output to clipboard:',
-      expect.any(Error)
+      expect.objectContaining({
+        message: 'navigator.clipboard is not available',
+      })
     );
     expect(dom.setTextContent).not.toHaveBeenCalledWith(
       expect.anything(),
@@ -137,7 +139,9 @@ describe('createCopyToClipboardButtonElement', () => {
     expect(event.preventDefault).toHaveBeenCalledTimes(1);
     expect(dom.logError).toHaveBeenCalledWith(
       'Failed to copy output to clipboard:',
-      expect.any(Error)
+      expect.objectContaining({
+        message: 'navigator.clipboard is not available',
+      })
     );
     expect(dom.setTextContent).toHaveBeenCalledWith(
       element,
