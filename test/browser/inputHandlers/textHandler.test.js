@@ -18,6 +18,10 @@ describe('textHandler', () => {
 
     expect(dom.reveal).toHaveBeenCalledWith(textInput);
     expect(dom.enable).toHaveBeenCalledWith(textInput);
+    expect(dom.querySelector).toHaveBeenCalledWith(
+      container,
+      'input[type="number"]'
+    );
     expect(dom.hide).not.toHaveBeenCalled();
   });
 });
