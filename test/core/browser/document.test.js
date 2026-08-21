@@ -63,7 +63,7 @@ const createDocumentFixture = () => {
     globalThisObj,
     navigatorObj,
   });
-  return { element, globalThisObj, handle };
+  return { documentObj, element, globalThisObj, navigatorObj, handle };
 };
 
 describe('document facade', () => {
@@ -71,7 +71,7 @@ describe('document facade', () => {
     expect(() => getElementById('before-init')).toThrow(
       'createDocumentHandle must be called before using DOM helpers.'
     );
-    const { element, handle } = createDocumentFixture();
+    const { documentObj, element, handle } = createDocumentFixture();
     const callback = jest.fn();
     const event = {
       currentTarget: 'current',
@@ -80,33 +80,46 @@ describe('document facade', () => {
     };
 
     expect(handle.getElementById('id')).toBe(element);
+    expect(documentObj.getElementById).toHaveBeenCalledWith('id');
     expect(handle.querySelector(element, '.x')).toBe('selected');
+    expect(element.querySelector).toHaveBeenCalledWith('.x');
     expect(handle.querySelectorAll('.x')).toEqual([element]);
+    expect(documentObj.querySelectorAll).toHaveBeenCalledWith('.x');
     handle.addClass(element, 'x');
     handle.removeClass(element, 'x');
+    expect(element.classList.remove).toHaveBeenCalledWith('x');
     handle.setClassName(element, 'name');
+    expect(element.className).toBe('name');
     expect(handle.getAudioElements()).toEqual([element]);
     handle.removeControlsAttribute(element);
+    expect(element.removeAttribute).toHaveBeenCalledWith('controls');
     expect(handle.createElement('div')).toBe(element);
     expect(handle.createTextNode('text')).toBe('text');
     expect(handle.getElementsByTagName('div')).toEqual([element]);
     expect(handle.hasClass(element, 'x')).toBe(true);
     handle.hide(element);
     handle.addEventListener(element, 'click', callback);
+    expect(element.addEventListener).toHaveBeenCalledWith('click', callback);
     handle.appendChild(element, 'child');
+    expect(element.appendChild).toHaveBeenCalledWith('child');
     handle.insertBefore(element, 'child', 'ref');
+    expect(element.insertBefore).toHaveBeenCalledWith('child', 'ref');
     handle.removeChild(element, 'child');
+    expect(element.removeChild).toHaveBeenCalledWith('child');
     handle.contains(element, 'child');
+    expect(element.contains).toHaveBeenCalledWith('child');
     handle.stopDefault(event);
     handle.playAudio(element);
+    expect(element.play).toHaveBeenCalled();
     handle.pauseAudio(element);
+    expect(element.pause).toHaveBeenCalled();
     handle.log('info');
     handle.warn('warning');
     handle.logError('error');
   });
 
   it('delegates child, timer, and browser operations', () => {
-    const { element, handle } = createDocumentFixture();
+    const { element, globalThisObj, handle } = createDocumentFixture();
     const callback = jest.fn();
     handle.removeAllChildren(element);
     const child = { firstChild: null, removeChild: jest.fn() };
@@ -118,11 +131,17 @@ describe('document facade', () => {
     };
     handle.removeAllChildren(parent);
     handle.requestAnimationFrame(callback);
+    expect(globalThisObj.requestAnimationFrame).toHaveBeenCalledWith(callback);
     handle.cancelAnimationFrame(1);
+    expect(globalThisObj.cancelAnimationFrame).toHaveBeenCalledWith(1);
     handle.setInterval(callback, 1);
+    expect(globalThisObj.setInterval).toHaveBeenCalledWith(callback, 1);
     handle.clearInterval(2);
+    expect(globalThisObj.clearInterval).toHaveBeenCalledWith(2);
     handle.setTimeout(callback, 1);
+    expect(globalThisObj.setTimeout).toHaveBeenCalledWith(callback, 1);
     handle.clearTimeout(3);
+    expect(globalThisObj.clearTimeout).toHaveBeenCalledWith(3);
     expect(handle.getGamepads()).toEqual(['gamepad']);
     expect(handle.getClasses(element)).toEqual([]);
     expect(handle.getRandomNumber()).toBe(42 / 2 ** 32);
