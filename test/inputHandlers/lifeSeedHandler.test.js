@@ -49,7 +49,7 @@ jest.unstable_mockModule(
   })
 );
 
-const { lifeSeedHandler } = await import(
+const { lifeSeedHandler, createDefaultData, parseCells, normalizeData } = await import(
   '../../src/core/browser/inputHandlers/lifeSeedHandler.js'
 );
 const browserCore = await import('../../src/core/browser/browser-core.js');
@@ -65,6 +65,55 @@ describe('lifeSeedHandler', () => {
     browserCore.getInputValue.mockReturnValue('');
     browserCore.parseJsonOrDefault.mockReturnValue({});
     browserCore.setInputValue.mockClear();
+  });
+
+  it('parses coordinate lines and falls back when no valid coordinates exist', () => {
+    expect(parseCells('1,2\n 3 4 ', [[9, 9]])).toEqual([
+      [1, 2],
+      [3, 4],
+    ]);
+    expect(parseCells('1,2,3\nnot numbers', [[9, 9]])).toEqual([[1, 2]]);
+    expect(parseCells('not numbers', [[9, 9]])).toEqual([[9, 9]]);
+    expect(parseCells(null, [[9, 9]])).toEqual([[9, 9]]);
+  });
+
+  it('creates the documented default seed exactly', () => {
+    expect(createDefaultData()).toEqual({
+      width: 360,
+      height: 240,
+      cols: 24,
+      rows: 16,
+      tickSpeedMs: 128,
+      reset: false,
+      cells: [[11, 7], [12, 7], [13, 7], [13, 6], [12, 5]],
+    });
+  });
+
+  it('normalizes payload values and rejects invalid payload shapes', () => {
+    const defaults = createDefaultData();
+    expect(normalizeData(null)).toEqual(defaults);
+    expect(normalizeData([])).toEqual(defaults);
+    expect(normalizeData({
+      width: 640,
+      height: '480',
+      cols: 32,
+      rows: 20,
+      tickSpeedMs: 50,
+      cells: '2,3\n4,5',
+      reset: true,
+    })).toEqual({
+      width: 640,
+      height: 480,
+      cols: 32,
+      rows: 20,
+      tickSpeedMs: 50,
+      cells: [[2, 3], [4, 5]],
+      reset: true,
+    });
+    expect(normalizeData({ width: -1, cells: 'bad', reset: false })).toEqual({
+      ...defaults,
+      reset: false,
+    });
   });
 
   it('builds the Conway form and wires the field handlers', () => {
@@ -129,6 +178,25 @@ describe('lifeSeedHandler', () => {
 
     expect(checkbox).toBeDefined();
     expect(dom.setType).toHaveBeenCalledWith(checkbox, 'checkbox');
+    expect(numberInputs.map(element => element.value)).toEqual([
+      360, 240, 24, 16, 128,
+    ]);
+    expect(fieldOptions.slice(0, 5).map(option => option.labelText)).toEqual([
+      'Canvas width',
+      'Canvas height',
+      'Columns',
+      'Rows',
+      'Tick speed (ms)',
+    ]);
+    expect(fieldOptions[5].labelText).toBe('Live cells, one x,y per line');
+    expect(fieldOptions[6].labelText).toBe('Reset from seed');
+    expect(dom.setPlaceholder.mock.calls.map(([, value]) => value)).toEqual([
+      '360', '240', '24', '16', '128', '11,7\n12,7\n13,7',
+    ]);
+    expect(dom.setClassName).toHaveBeenCalledWith(
+      expect.objectContaining({ tag: 'textarea' }),
+      'toy-textarea'
+    );
 
     expect(fieldOptions).toHaveLength(7);
     fieldOptions[0].handler();
