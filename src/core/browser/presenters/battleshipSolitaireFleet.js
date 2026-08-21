@@ -49,6 +49,9 @@ function validateFleetObject(fleet) {
  * @param {FleetShip[]} ships - Array of ship objects.
  */
 function placeShipsOnBoard(boardInfo, ships) {
+  if (!Array.isArray(ships)) {
+    return;
+  }
   ships.forEach(ship => placeSingleShipOnBoard(boardInfo, ship));
 }
 
@@ -199,7 +202,7 @@ function isOutOfBounds(coord, dimensions) {
  */
 function isNegativeCoordinate(coord) {
   const { x, y } = coord;
-  return x < 0 || y < 0;
+  return [x, y].some(value => value < 0);
 }
 
 /**
@@ -227,7 +230,7 @@ export function createBattleshipFleetBoardElement(inputString, dom) {
     fleet = JSON.parse(inputString);
   } catch {
     // On error, render a default empty fleet
-    return handleParsedFleet({ width: 10, height: 10, ships: [] }, dom);
+    return renderFleetBoard({ width: 10, height: 10 }, dom);
   }
   return handleParsedFleet(fleet, dom);
 }
