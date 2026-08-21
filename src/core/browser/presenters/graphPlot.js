@@ -2,6 +2,7 @@ import { buildGraphPlotFromJson } from '../graphPlotCore.js';
 import { createPresenterRoot } from './browserPresentersCore.js';
 
 const ROOT_CLASS = 'graph-plot-output';
+const getStableRandomNumber = Number.prototype.valueOf.bind(0.5);
 
 /**
  * Create a graph plot element from JSON input.
@@ -10,7 +11,7 @@ const ROOT_CLASS = 'graph-plot-output';
  * @returns {HTMLElement} Rendered graph container.
  */
 export function createGraphPlotElement(inputString, dom) {
-  const payload = buildGraphPlotFromJson(inputString, () => 0.5);
+  const payload = buildGraphPlotFromJson(inputString, getStableRandomNumber);
   const root = createPresenterRoot(dom, ROOT_CLASS);
   const canvas = /** @type {HTMLCanvasElement} */ (dom.createElement('canvas'));
   canvas.width = payload.width;
@@ -62,22 +63,20 @@ function drawGrid(context, canvas, payload) {
   context.lineWidth = 1;
   const xStep = niceStep(payload.xMax - payload.xMin);
   const yStep = niceStep(payload.yMax - payload.yMin);
-  for (
-    let x = Math.ceil(payload.xMin / xStep) * xStep;
-    x <= payload.xMax;
-    x += xStep
-  ) {
+  const xStart = Math.ceil(payload.xMin / xStep) * xStep;
+  const xCount = Math.floor((payload.xMax - xStart) / xStep) + 1;
+  for (const index of Array.from({ length: xCount }, (_, currentIndex) => currentIndex)) {
+    const x = xStart + index * xStep;
     const px = toCanvasX(canvas, payload, x);
     context.beginPath();
     context.moveTo(px, 0);
     context.lineTo(px, canvas.height);
     context.stroke();
   }
-  for (
-    let y = Math.ceil(payload.yMin / yStep) * yStep;
-    y <= payload.yMax;
-    y += yStep
-  ) {
+  const yStart = Math.ceil(payload.yMin / yStep) * yStep;
+  const yCount = Math.floor((payload.yMax - yStart) / yStep) + 1;
+  for (const index of Array.from({ length: yCount }, (_, currentIndex) => currentIndex)) {
+    const y = yStart + index * yStep;
     const py = toCanvasY(canvas, payload, y);
     context.beginPath();
     context.moveTo(0, py);
@@ -215,3 +214,16 @@ function niceStep(span) {
   }
   return power * 5;
 }
+
+export {
+  drawGraphPlot,
+  drawGrid,
+  drawAxes,
+  drawFunction,
+  drawSeries,
+  drawSeriesLine,
+  drawSeriesPath,
+  toCanvasX,
+  toCanvasY,
+  niceStep,
+};
