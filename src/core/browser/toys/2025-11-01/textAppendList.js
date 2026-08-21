@@ -20,10 +20,6 @@ const LEGACY_TOY_KEY = 'LIST1';
 export function textAppendList(input, env) {
   const normalizedInput = normalizeInput(input);
   const storageFn = getStorageFunction(env);
-  if (!storageFn) {
-    return `${normalizedInput}\n`;
-  }
-
   const previous = readExistingList(storageFn);
   const updated = `${previous}${normalizedInput}\n`;
   persistUpdatedList(storageFn, updated);
@@ -104,7 +100,7 @@ function readExistingList(storageFn) {
  * @returns {unknown} Value or undefined.
  */
 function getValueByKey(data, key) {
-  return data?.[key];
+  return data[key];
 }
 
 /**

@@ -52,6 +52,11 @@ describe('textAppendList', () => {
     expect(result).toBe('Elf\n');
   });
 
+  it('returns a newline for null or malformed environments', () => {
+    expect(textAppendList('Elf', null)).toBe('Elf\n');
+    expect(textAppendList('Elf', { get: null })).toBe('Elf\n');
+  });
+
   it('normalizes non-string inputs using the fallback helper', () => {
     const env = new Map();
     const result = textAppendList(123, env);
