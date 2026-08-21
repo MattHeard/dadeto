@@ -42,15 +42,11 @@ function createDefaultData() {
  */
 function parseCells(value, fallback) {
   const parsed = [
-    ...String(value ?? '').matchAll(
-      /^\s*(-?\d+)[, \t]+(-?\d+)(?:[, \t]+.*)?$/gm
+    ...String(value).matchAll(
+      /^\s*(-?\d+)[, \t]+(-?\d+)(?=$|[, \t])/gm
     ),
   ].map(match => [Number(match[1]), Number(match[2])]);
-  if (parsed.length > 0) {
-    return parsed;
-  }
-
-  return fallback;
+  return parsed.length === 0 ? fallback : parsed;
 }
 
 /**
@@ -59,11 +55,7 @@ function parseCells(value, fallback) {
  * @returns {LifeSeedData} Normalized form data.
  */
 function normalizeData(candidate) {
-  if (!candidate || typeof candidate !== 'object' || Array.isArray(candidate)) {
-    return createDefaultData();
-  }
-
-  const data = /** @type {Record<string, unknown>} */ (candidate);
+  const data = /** @type {Record<string, unknown>} */ (Object(candidate));
   const normalized = createDefaultData();
   normalized.width = normalizePositiveInteger(data.width, normalized.width);
   normalized.height = normalizePositiveInteger(data.height, normalized.height);

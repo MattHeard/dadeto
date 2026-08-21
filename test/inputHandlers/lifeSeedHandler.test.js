@@ -83,6 +83,9 @@ describe('lifeSeedHandler', () => {
       [-12, -34],
       [100, 200],
     ]);
+    expect(parseCells('junk 1,2', [[9, 9]])).toEqual([[9, 9]]);
+    expect(parseCells('1,2x', [[9, 9]])).toEqual([[9, 9]]);
+    expect(parseCells('1  2', [[9, 9]])).toEqual([[1, 2]]);
     expect(parseCells('not numbers', [[9, 9]])).toEqual([[9, 9]]);
     expect(parseCells(null, [[9, 9]])).toEqual([[9, 9]]);
   });
@@ -103,6 +106,8 @@ describe('lifeSeedHandler', () => {
     const defaults = createDefaultData();
     expect(normalizeData(null)).toEqual(defaults);
     expect(normalizeData([])).toEqual(defaults);
+    expect(normalizeData('invalid')).toEqual(defaults);
+    expect(normalizeData(false)).toEqual(defaults);
     expect(normalizeData({
       width: 640,
       height: '480',
@@ -134,6 +139,7 @@ describe('lifeSeedHandler', () => {
       ...createDefaultData(),
       cols: 9,
     });
+    expect(browserCore.parseJsonOrDefault).toHaveBeenCalledWith('{}', {});
     browserCore.getInputValue.mockReturnValueOnce(null);
     browserCore.parseJsonOrDefault.mockReturnValueOnce({});
     expect(parseData(textInput)).toEqual(createDefaultData());
@@ -204,12 +210,24 @@ describe('lifeSeedHandler', () => {
     expect(numberInputs.map(element => element.value)).toEqual([
       360, 240, 24, 16, 128,
     ]);
+    expect(fieldOptions.slice(0, 5).map(option => option.input.tag)).toEqual([
+      'input', 'input', 'input', 'input', 'input',
+    ]);
+    expect(elements.map(element => element.tag)).toEqual([
+      'input', 'input', 'input', 'input', 'input', 'textarea', 'input',
+    ]);
     expect(fieldOptions.slice(0, 5).map(option => option.labelText)).toEqual([
       'Canvas width',
       'Canvas height',
       'Columns',
       'Rows',
       'Tick speed (ms)',
+    ]);
+    expect(fieldOptions.slice(0, 5).map(option => option.input.value)).toEqual([
+      360, 240, 24, 16, 128,
+    ]);
+    expect(fieldOptions.slice(0, 5).map(option => option.input.placeholder)).toEqual([
+      '360', '240', '24', '16', '128',
     ]);
     expect(fieldOptions[5].labelText).toBe('Live cells, one x,y per line');
     expect(fieldOptions[6].labelText).toBe('Reset from seed');
@@ -228,10 +246,17 @@ describe('lifeSeedHandler', () => {
 
     expect(fieldOptions).toHaveLength(7);
     fieldOptions[0].handler();
+    fieldOptions[1].handler();
+    fieldOptions[2].handler();
+    fieldOptions[3].handler();
+    fieldOptions[4].handler();
     fieldOptions[5].handler();
     fieldOptions[6].handler();
 
     expect(browserCore.setInputValue).toHaveBeenCalled();
+    expect(browserCore.setInputValue.mock.calls.at(-1)[1]).toBe(
+      '{"width":482,"height":640,"cols":31,"rows":17,"tickSpeedMs":250,"cells":[[9,8],[10,8],[11,8]]}'
+    );
   });
 
   it('normalizes invalid payloads and preserves a reset seed flag', () => {
@@ -337,5 +362,8 @@ describe('lifeSeedHandler', () => {
     resetField.handler();
 
     expect(browserCore.setInputValue).toHaveBeenCalled();
+    expect(browserCore.setInputValue.mock.calls.at(-1)[1]).toContain(
+      '"reset":true'
+    );
   });
 });
