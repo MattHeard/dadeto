@@ -46,9 +46,14 @@ describe('browserPresentersCore', () => {
     });
 
     expect(pre.textContent).toBe('hello');
+    expect(pre.tag).toBe('pre');
     expect(paragraph.textContent).toBe('world');
+    expect(paragraph.tag).toBe('p');
     expect(root.className).toBe('root');
+    expect(root.tag).toBe('div');
     expect(section.className).toBe('section');
+    expect(section.tag).toBe('section');
+    expect(section.children[0].tag).toBe('h4');
     expect(rows.children).toContain(content);
   });
 
