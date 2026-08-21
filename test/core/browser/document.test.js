@@ -63,7 +63,7 @@ const createDocumentFixture = () => {
     globalThisObj,
     navigatorObj,
   });
-  return { documentObj, element, globalThisObj, navigatorObj, handle };
+  return { documentObj, element, globalThisObj, navigatorObj, windowObj, handle };
 };
 
 describe('document facade', () => {
@@ -91,6 +91,7 @@ describe('document facade', () => {
     handle.setClassName(element, 'name');
     expect(element.className).toBe('name');
     expect(handle.getAudioElements()).toEqual([element]);
+    expect(documentObj.querySelectorAll).toHaveBeenCalledWith('audio');
     handle.removeControlsAttribute(element);
     expect(element.removeAttribute).toHaveBeenCalledWith('controls');
     expect(handle.createElement('div')).toBe(element);
@@ -98,6 +99,7 @@ describe('document facade', () => {
     expect(handle.getElementsByTagName('div')).toEqual([element]);
     expect(handle.hasClass(element, 'x')).toBe(true);
     handle.hide(element);
+    expect(element.style.display).toBe('none');
     handle.addEventListener(element, 'click', callback);
     expect(element.addEventListener).toHaveBeenCalledWith('click', callback);
     handle.appendChild(element, 'child');
@@ -119,7 +121,7 @@ describe('document facade', () => {
   });
 
   it('delegates child, timer, and browser operations', () => {
-    const { element, globalThisObj, handle } = createDocumentFixture();
+    const { element, globalThisObj, windowObj, handle } = createDocumentFixture();
     const callback = jest.fn();
     handle.removeAllChildren(element);
     const child = { firstChild: null, removeChild: jest.fn() };
@@ -130,6 +132,7 @@ describe('document facade', () => {
       }),
     };
     handle.removeAllChildren(parent);
+    expect(parent.removeChild).toHaveBeenCalledWith(child);
     handle.requestAnimationFrame(callback);
     expect(globalThisObj.requestAnimationFrame).toHaveBeenCalledWith(callback);
     handle.cancelAnimationFrame(1);
@@ -149,8 +152,8 @@ describe('document facade', () => {
     expect(handle.getUuid()).toBe('uuid');
   });
 
-  it('delegates state, metadata, and module helpers', () => {
-    const { element, globalThisObj, handle } = createDocumentFixture();
+  it('delegates state, metadata, and module helpers', async () => {
+    const { element, globalThisObj, windowObj, handle } = createDocumentFixture();
     const callback = jest.fn();
     const event = {
       currentTarget: 'current',
@@ -158,28 +161,48 @@ describe('document facade', () => {
       preventDefault: callback,
     };
     expect(handle.hasNextSiblingClass(element, 'x')).toBe(true);
+    expect(handle.hasNextSiblingClass({ nextElementSibling: null }, 'x')).toBe(
+      undefined
+    );
     handle.addWarning(element);
+    expect(element.classList.add).toHaveBeenCalledWith('warning');
     handle.removeWarning(element);
+    expect(element.classList.remove).toHaveBeenCalledWith('warning');
     handle.reveal(element);
+    expect(element.style.display).toBe('');
     expect(handle.getCurrentTarget(event)).toBe('current');
     expect(handle.getParentElement(element)).toBe('parent');
     expect(handle.getTargetValue(event)).toBe('value');
     handle.setTargetValue(event, 'new');
+    expect(event.target.value).toBe('new');
     expect(handle.getValue(element)).toBeUndefined();
     handle.setValue(element, 'set');
+    expect(element.value).toBe('set');
     handle.enable(element);
+    expect(element.disabled).toBe(false);
     handle.disable(element);
+    expect(element.disabled).toBe(true);
     expect(handle.getNextSibling(element)).toBe('next');
     handle.removeNextSibling(element);
     handle.removeEventListener(element, 'click', callback);
+    expect(element.removeEventListener).toHaveBeenCalledWith('click', callback);
     expect(handle.hasBetaParam()).toBe(true);
     handle.setType(element, 'text');
+    expect(element.type).toBe('text');
     handle.setPlaceholder(element, 'placeholder');
+    expect(element.placeholder).toBe('placeholder');
     handle.setDataAttribute(element, 'key', 'value');
     expect(handle.getDataAttribute(element, 'key')).toBe('value');
     handle.setTextContent(element, 'content');
+    expect(element.textContent).toBe('content');
     const observer = handle.makeIntersectionObserver(callback);
+    expect(windowObj.IntersectionObserver).toHaveBeenCalledWith(callback, {
+      root: null,
+      threshold: 0.1,
+    });
+    expect(handle.dom).toBeDefined();
     handle.disconnectObserver(observer);
+    expect(observer.disconnect).toHaveBeenCalled();
     expect(handle.isIntersecting({ isIntersecting: true })).toBe(true);
     expect(handle.hasNoInteractiveComponents({})).toBe(true);
     expect(handle.getInteractiveComponentCount({})).toBe(0);
@@ -193,12 +216,26 @@ describe('document facade', () => {
     expect(
       handle.getInteractiveComponents({ interactiveComponents: [element] })
     ).toEqual([element]);
-    handle.dom.importModule(
-      'data:text/javascript,export default 1',
-      jest.fn(),
-      jest.fn()
+    expect(handle.hasNoInteractiveComponents({ interactiveComponents: [] })).toBe(
+      true
     );
+    expect(handle.getInteractiveComponentCount({ interactiveComponents: [] })).toBe(
+      0
+    );
+    await expect(
+      new Promise((resolve, reject) => {
+        handle.dom.importModule(
+          'data:text/javascript,export default 1',
+          resolve,
+          reject
+        );
+      })
+    ).resolves.toBeDefined();
     expect(handle.dom.globalThis).toBe(globalThisObj);
+    expect(element.nextElementSibling.classList.contains).toHaveBeenCalledWith(
+      'x'
+    );
+    handle.removeNextSibling({ nextElementSibling: null });
   });
 
   it('rejects unavailable browser APIs', () => {
@@ -208,13 +245,30 @@ describe('document facade', () => {
       globalThisObj: { crypto: {} },
       navigatorObj: {},
     });
-    expect(() => empty.requestAnimationFrame(jest.fn())).toThrow();
-    expect(() => empty.cancelAnimationFrame(1)).toThrow();
-    expect(() => empty.setInterval(jest.fn(), 1)).toThrow();
-    expect(() => empty.clearInterval(1)).toThrow();
-    expect(() => empty.setTimeout(jest.fn(), 1)).toThrow();
-    expect(() => empty.clearTimeout(1)).toThrow();
-    expect(() => empty.getGamepads()).toThrow();
+    expect(() => empty.requestAnimationFrame(jest.fn())).toThrow(
+      'globalThis.requestAnimationFrame is not a function'
+    );
+    expect(() => empty.cancelAnimationFrame(1)).toThrow(
+      'globalThis.cancelAnimationFrame is not a function'
+    );
+    expect(() => empty.setInterval(jest.fn(), 1)).toThrow(
+      'globalThis.setInterval is not a function'
+    );
+    expect(() => empty.clearInterval(1)).toThrow(
+      'globalThis.clearInterval is not a function'
+    );
+    expect(() => empty.setTimeout(jest.fn(), 1)).toThrow(
+      'globalThis.setTimeout is not a function'
+    );
+    expect(() => empty.clearTimeout(1)).toThrow(
+      'globalThis.clearTimeout is not a function'
+    );
+    expect(() => empty.getGamepads()).toThrow(
+      'navigator.getGamepads is not a function'
+    );
     expect(empty.hasBetaParam()).toBe(false);
+    expect(empty.hasNoInteractiveComponents({ interactiveComponents: [] })).toBe(
+      true
+    );
   });
 });

@@ -119,9 +119,7 @@ export const removeChild = (parentNode, child) => parentNode.removeChild(child);
 const removeChildNode = element => element.removeChild(element.firstChild);
 
 export const removeAllChildren = element => {
-  while (element.firstChild) {
-    removeChildNode(element);
-  }
+  while (element.firstChild) removeChildNode(element);
 };
 
 export const contains = (parent, child) => parent.contains(child);
