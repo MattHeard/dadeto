@@ -49,7 +49,13 @@ jest.unstable_mockModule(
   })
 );
 
-const { lifeSeedHandler, createDefaultData, parseCells, normalizeData } = await import(
+const {
+  lifeSeedHandler,
+  createDefaultData,
+  parseCells,
+  normalizeData,
+  parseData,
+} = await import(
   '../../src/core/browser/inputHandlers/lifeSeedHandler.js'
 );
 const browserCore = await import('../../src/core/browser/browser-core.js');
@@ -114,6 +120,19 @@ describe('lifeSeedHandler', () => {
       ...defaults,
       reset: false,
     });
+  });
+
+  it('parses hidden input values and uses an empty-object fallback', () => {
+    const textInput = {};
+    browserCore.getInputValue.mockReturnValueOnce('');
+    browserCore.parseJsonOrDefault.mockReturnValueOnce({ cols: 9 });
+    expect(parseData(textInput)).toEqual({
+      ...createDefaultData(),
+      cols: 9,
+    });
+    browserCore.getInputValue.mockReturnValueOnce(null);
+    browserCore.parseJsonOrDefault.mockReturnValueOnce({});
+    expect(parseData(textInput)).toEqual(createDefaultData());
   });
 
   it('builds the Conway form and wires the field handlers', () => {
@@ -196,6 +215,11 @@ describe('lifeSeedHandler', () => {
     expect(dom.setClassName).toHaveBeenCalledWith(
       expect.objectContaining({ tag: 'textarea' }),
       'toy-textarea'
+    );
+    expect(textarea.value).toBe('11,7\n12,7\n13,7\n13,6\n12,5');
+    expect(buildManagedForm).toHaveBeenCalledWith(
+      { dom, container, textInput },
+      expect.any(Function)
     );
 
     expect(fieldOptions).toHaveLength(7);

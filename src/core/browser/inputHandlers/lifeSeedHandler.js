@@ -291,4 +291,4 @@ export function lifeSeedHandler(dom, container, textInput) {
   buildForm({ dom, container, textInput });
 }
 
-export { createDefaultData, parseCells, normalizeData };
+export { createDefaultData, parseCells, normalizeData, parseData };
