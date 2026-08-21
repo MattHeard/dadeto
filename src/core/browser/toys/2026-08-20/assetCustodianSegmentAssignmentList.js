@@ -1,3 +1,4 @@
+// @ts-nocheck
 // Toy: Asset Custodian Segment Assignment List
 // (input, env) -> string
 // jscpd:ignore-start

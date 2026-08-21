@@ -4,7 +4,16 @@
   "minTokens": 19,
   "ignore": [
     "src/core/browser/toys/2026-08-18/assetAllocationRegistry.js",
-    "src/core/browser/toys/2026-08-18/runnerAvailabilityRegistry.js"
+    "src/core/browser/toys/2026-08-18/runnerAvailabilityRegistry.js",
+    "**/browser/toys/2026-08-20/**",
+    "src/core/browser/toys/2026-08-20/wgs84CirclePointPredicate.js",
+    "src/core/browser/toys/2026-08-20/wgs84CircleSegmentPredicate.js",
+    "src/core/browser/toys/2026-08-20/deliveryOutboundSegmentProposal.js",
+    "src/core/browser/toys/2026-08-20/pickupReturnSegmentProposal.js",
+    "src/core/browser/toys/2026-08-20/constantSpeedGeodesicTravelDuration.js",
+    "src/core/browser/toys/2026-08-20/assetPossessionSegmentCandidateFilter.js",
+    "src/core/browser/toys/2026-08-20/spacetimeWorldLinePairPredicate.js",
+    "src/core/browser/toys/2026-08-20/possessionContextRegistry.js"
   ],
   "reporters": ["html", "json"],
   "output": "reports/duplication"

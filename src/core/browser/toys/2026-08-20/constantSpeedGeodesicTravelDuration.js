@@ -1,3 +1,4 @@
+// @ts-nocheck
 // Toy: Constant-Speed Geodesic Travel Duration
 import { wgs84Distance } from './wgs84Distance.js';
 

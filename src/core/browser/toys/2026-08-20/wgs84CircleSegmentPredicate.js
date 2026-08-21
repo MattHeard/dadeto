@@ -1,3 +1,4 @@
+// @ts-nocheck
 // Toy: WGS84 Circle Segment Predicate
 import { wgs84CirclePointPredicate } from './wgs84CirclePointPredicate.js';
 

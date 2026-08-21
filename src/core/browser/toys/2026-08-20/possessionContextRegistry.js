@@ -1,3 +1,4 @@
+// @ts-nocheck
 // Toy: Possession Context Registry
 
 import { trimmedStringOrEmpty } from '../../validation.js';

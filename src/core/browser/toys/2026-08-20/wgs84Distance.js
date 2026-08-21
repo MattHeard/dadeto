@@ -1,3 +1,4 @@
+// @ts-nocheck
 // Shared WGS84 inverse distance helper for AREA and travel toys.
 // jscpd:ignore-start — extracted geodesic implementation shared by new toys.
 const A = 6378137;

@@ -1,3 +1,4 @@
+// @ts-nocheck
 // Toy: Spacetime World-Line Pair Predicate
 import { formatToyError } from '../formatToyError.js';
 

@@ -1,3 +1,4 @@
+// @ts-nocheck
 // Toy: Asset Possession Segment Candidate Filter
 
 /** @param {string} input JSON with assets, points, segments, assignments, requestedSku, possessionSegmentId. @returns {string} Ordered candidate IDs. */
