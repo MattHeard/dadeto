@@ -1,5 +1,12 @@
 // fishingGame.test.js
-import { fishingGame } from '../../../src/core/browser/toys/2025-03-29/fishingGame';
+import {
+  fishingGame,
+  isHourInPeriod,
+  isMonthInPeriod,
+  resolvePeriodLabel,
+  findTimeOfDayLabel,
+  findSeasonLabel,
+} from '../../../src/core/browser/toys/2025-03-29/fishingGame';
 
 // Helper function to create a fixed environment.
 const createEnv = (randomValue, currentTime) =>
@@ -9,6 +16,20 @@ const createEnv = (randomValue, currentTime) =>
   ]);
 
 describe('fishingGame', () => {
+  test('uses inclusive period starts and exclusive period ends', () => {
+    expect(isHourInPeriod(5, { start: 5, end: 12 })).toBe(true);
+    expect(isHourInPeriod(4, { start: 5, end: 12 })).toBe(false);
+    expect(isHourInPeriod(12, { start: 5, end: 12 })).toBe(false);
+    expect(isMonthInPeriod(2, { start: 2, end: 5 })).toBe(true);
+    expect(isMonthInPeriod(1, { start: 2, end: 5 })).toBe(false);
+    expect(isMonthInPeriod(5, { start: 2, end: 5 })).toBe(false);
+    expect(resolvePeriodLabel({ label: 'morning' }, 'night')).toBe('morning');
+    expect(resolvePeriodLabel(undefined, 'night')).toBe('night');
+    expect(findTimeOfDayLabel(24)).toBe('night');
+    expect(findTimeOfDayLabel(Number.NaN)).toBe('night');
+    expect(findSeasonLabel(-1)).toBe('winter');
+    expect(findSeasonLabel(Number.NaN)).toBe('winter');
+  });
   // Test various outcomes based on bait and random values.
 
   test('throws when a required env dependency is missing', () => {

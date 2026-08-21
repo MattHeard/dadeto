@@ -294,6 +294,13 @@ function isTroutCatch(chance) {
   return chance < 0.85;
 }
 
+const legendaryOutcome = {
+  describe: /** @type {(bait: string, mood: string) => string} */ (
+    (bait, mood) =>
+      `in a burst of brilliance, a legendary golden fish leaps forth—its radiance matching the splendor of ${mood}. Your ${bait} has yielded a prize.`
+  ),
+};
+
 const fishingOutcomes = /** @type {FishingOutcome[]} */ ([
   {
     check: isSilentCatch,
@@ -316,13 +323,6 @@ const fishingOutcomes = /** @type {FishingOutcome[]} */ ([
         `a glimmering trout appears briefly, its shimmer echoing the beauty of ${mood}. Your choice of ${bait} worked well.`
     ),
   },
-  {
-    check: () => true,
-    describe: /** @type {(bait: string, mood: string) => string} */ (
-      (bait, mood) =>
-        `in a burst of brilliance, a legendary golden fish leaps forth—its radiance matching the splendor of ${mood}. Your ${bait} has yielded a prize.`
-    ),
-  },
 ]);
 
 /**
@@ -334,10 +334,8 @@ const fishingOutcomes = /** @type {FishingOutcome[]} */ ([
  * @returns {string} Narrative describing the catch.
  */
 function getFishingOutcome(effectiveChance, baitDescription, moodDescription) {
-  const fallbackOutcome = fishingOutcomes[fishingOutcomes.length - 1];
   const outcome =
-    fishingOutcomes.find(({ check }) => check(effectiveChance)) ??
-    fallbackOutcome;
+    fishingOutcomes.find(({ check }) => check(effectiveChance)) ?? legendaryOutcome;
   return outcome.describe(baitDescription, moodDescription);
 }
 
@@ -426,4 +424,11 @@ function fishingGame(input, env) {
   return `Casting your line with ${baitData.description}, you await a catch. ${outcome}`;
 }
 
-export { fishingGame };
+export {
+  fishingGame,
+  isHourInPeriod,
+  isMonthInPeriod,
+  resolvePeriodLabel,
+  findTimeOfDayLabel,
+  findSeasonLabel,
+};
