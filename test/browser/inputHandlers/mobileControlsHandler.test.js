@@ -1,5 +1,9 @@
 import { describe, expect, it, jest } from '@jest/globals';
-import { mobileControlsHandler } from '../../../src/core/browser/inputHandlers/mobileControls.js';
+import {
+  mobileControlsHandler,
+  createKeyPayload,
+  wireButton,
+} from '../../../src/core/browser/inputHandlers/mobileControls.js';
 import { readStoredOrElementValue } from '../../../src/core/browser/inputValueStore.js';
 
 /**
@@ -56,6 +60,49 @@ function makeDom(autoSubmitCheckbox) {
 }
 
 describe('mobileControlsHandler', () => {
+  it('creates keyboard payloads and wires repeated press/release safely', () => {
+    const button = { setAttribute: jest.fn() };
+    const dom = makeDom(null);
+    const textInput = { value: '' };
+    expect(createKeyPayload('keydown', 'x')).toEqual({
+      type: 'keydown',
+      key: 'x',
+    });
+    const cleanup = wireButton({
+      dom,
+      button,
+      textInput,
+      autoSubmitCheckbox: null,
+      key: 'x',
+    });
+    const event = { preventDefault: jest.fn() };
+    const writesBeforePress = dom.setValue.mock.calls.length;
+    button._listeners.pointerdown(event);
+    button._listeners.pointerdown(event);
+    expect(dom.setValue.mock.calls.length - writesBeforePress).toBe(1);
+    expect(button.setAttribute).toHaveBeenLastCalledWith('aria-pressed', 'true');
+    button._listeners.pointerup(event);
+    button._listeners.pointerup(event);
+    expect(button.setAttribute).toHaveBeenLastCalledWith('aria-pressed', 'false');
+    expect(event.preventDefault).toHaveBeenCalledTimes(4);
+    expect(cleanup).toHaveLength(5);
+    cleanup.forEach(dispose => dispose());
+    expect(dom.removeEventListener).toHaveBeenCalledTimes(5);
+    for (const eventName of [
+      'pointerdown',
+      'pointerup',
+      'pointercancel',
+      'pointerleave',
+      'lostpointercapture',
+    ]) {
+      expect(dom.removeEventListener).toHaveBeenCalledWith(
+        button,
+        eventName,
+        expect.any(Function)
+      );
+    }
+  });
+
   it('creates button controls that emit keydown and keyup payloads', () => {
     const autoSubmitCheckbox = { checked: false, dispatchEvent: jest.fn() };
     const dom = makeDom(autoSubmitCheckbox);
@@ -70,6 +117,27 @@ describe('mobileControlsHandler', () => {
     const form = container._children[0];
     const controlWrap = form._children[1];
     const leftButton = controlWrap._children[0];
+    expect(controlWrap._children.map(button => button.textContent)).toEqual([
+      'Left', 'Right', 'Launch', 'Pause', 'Reset',
+    ]);
+    expect(controlWrap._children.map(button => button.type)).toEqual([
+      'button', 'button', 'button', 'button', 'button',
+    ]);
+    expect(form.className).toBe('mobile-controls-form');
+    expect(controlWrap.className).toBe('mobile-controls-grid');
+    expect(controlWrap.tag).toBe('div');
+    expect(controlWrap._children.map(button => button.tag)).toEqual([
+      'button', 'button', 'button', 'button', 'button',
+    ]);
+    expect(controlWrap._children.map(button =>
+      button.setAttribute.mock.calls.at(-1)
+    )).toEqual([
+      ['aria-pressed', 'false'],
+      ['aria-pressed', 'false'],
+      ['aria-pressed', 'false'],
+      ['aria-pressed', 'false'],
+      ['aria-pressed', 'false'],
+    ]);
 
     leftButton._listeners.pointerdown({ preventDefault: jest.fn() });
     expect(JSON.parse(readStoredOrElementValue(textInput))).toEqual({
@@ -87,6 +155,16 @@ describe('mobileControlsHandler', () => {
     expect(JSON.parse(readStoredOrElementValue(textInput))).toEqual({
       type: 'keyup',
       key: 'ArrowLeft',
+    });
+
+    const expectedKeys = ['ArrowLeft', 'ArrowRight', ' ', 'p', 'r'];
+    controlWrap._children.forEach((button, index) => {
+      button._listeners.pointerdown({});
+      expect(JSON.parse(readStoredOrElementValue(textInput))).toEqual({
+        type: 'keydown',
+        key: expectedKeys[index],
+      });
+      button._listeners.pointerup({});
     });
   });
 
@@ -162,6 +240,18 @@ describe('mobileControlsHandler', () => {
       'lostpointercapture',
       expect.any(Function)
     );
+    expect(dom.querySelector).toHaveBeenCalledWith(
+      container,
+      '.auto-submit-checkbox'
+    );
+    expect(dom.setTextContent).toHaveBeenCalledWith(
+      form._children[0],
+      'Controls'
+    );
+    expect(form._children[0].setAttribute).toHaveBeenCalledWith(
+      'hidden',
+      'hidden'
+    );
 
     expect(typeof form._dispose).toBe('function');
     form._dispose();
@@ -176,5 +266,7 @@ describe('mobileControlsHandler', () => {
       'lostpointercapture',
       expect.any(Function)
     );
+    expect(dom.removeEventListener).toHaveBeenCalledTimes(25);
+    expect(dom.removeChild).toHaveBeenCalledWith(form, controlWrap);
   });
 });

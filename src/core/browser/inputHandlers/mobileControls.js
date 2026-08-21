@@ -175,3 +175,5 @@ function buildMobileControlsForm(options) {
 export function mobileControlsHandler(dom, container, textInput) {
   buildMobileControlsForm({ dom, container, textInput });
 }
+
+export { createKeyPayload, wireButton };
