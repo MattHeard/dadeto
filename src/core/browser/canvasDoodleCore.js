@@ -126,7 +126,8 @@ export function drawCanvasDoodle(context, canvas, payload) {
   context.strokeStyle = FOREGROUND;
   context.lineWidth = 2;
 
-  for (const shape of payload.shapes || []) {
+  if (!payload.shapes) return;
+  for (const shape of payload.shapes) {
     drawShape(context, shape);
   }
 }
