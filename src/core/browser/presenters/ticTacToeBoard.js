@@ -24,14 +24,6 @@ import { createPreFromContent } from './browserPresentersCore.js';
  */
 
 /**
- * @param {TicTacToeMoveCandidate | null | undefined} move - Candidate that might be absent.
- * @returns {move is TicTacToeMoveCandidate} Whether the move carries data.
- */
-function isDefinedMove(move) {
-  return Boolean(move);
-}
-
-/**
  * Extract the player from a move object.
  * @param {{player?: string}} move - Move object that may contain a `player`.
  * @returns {string | undefined} The player symbol or `undefined`.
@@ -62,7 +54,7 @@ function getPosition(move) {
  * @returns {value is number} True when the value is a number between 0 and 2.
  */
 function isValidCoordinate(value) {
-  return typeof value === 'number' && [0, 1, 2].includes(value);
+  return [0, 1, 2].includes(value);
 }
 
 /**
@@ -71,10 +63,7 @@ function isValidCoordinate(value) {
  * @returns {position is TicTacToePosition} True when both row and column are provided.
  */
 function isValidPosition(position) {
-  if (!position) {
-    return false;
-  }
-  return arePositionCoordinatesValid(position);
+  return arePositionCoordinatesValid(position ?? {});
 }
 
 /**
@@ -186,7 +175,7 @@ export function createTicTacToeBoardElement(inputString, dom) {
     data = JSON.parse(inputString);
   } catch {
     // On error, render an empty board (no moves)
-    return renderTicTacToeBoardFromData({ moves: [] }, dom);
+    return renderTicTacToeBoardFromData({}, dom);
   }
 
   return renderTicTacToeBoardFromData(data, dom);
@@ -203,14 +192,8 @@ function renderTicTacToeBoardFromData(data, dom) {
   const board = Array.from({ length: 3 }, () => Array(3).fill(' '));
 
   // 3. Apply each legal move (first–come, first-served)
-  /** @type {TicTacToeMoveCandidate[]} */
-  let moves = [];
-  if (Array.isArray(data.moves)) {
-    moves = /** @type {TicTacToeMoveCandidate[]} */ (
-      data.moves.filter(isDefinedMove)
-    );
-  }
-  moves.forEach(move => applyMove(move, board));
+  const moves = Array.isArray(data.moves) ? data.moves : undefined;
+  moves?.forEach(move => applyMove(move, board));
 
   // 4. Render board into a monospace grid
   const rowStrings = board.map(r => ` ${r[0]} | ${r[1]} | ${r[2]} `);
@@ -220,4 +203,16 @@ function renderTicTacToeBoardFromData(data, dom) {
   return createPreFromContent(content, dom);
 }
 
-export { getPlayer, getPosition };
+export {
+  getPlayer,
+  getPosition,
+  isValidPosition,
+  hasValidPositionWithEmptyCell,
+  isCellEmpty,
+  isValidCoordinate,
+  arePositionCoordinatesValid,
+  hasValidRow,
+  hasValidColumn,
+  isValidPlayer,
+  isLegalMove,
+};
