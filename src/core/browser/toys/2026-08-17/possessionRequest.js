@@ -53,12 +53,12 @@ function normalizeRequest(value, errors) {
  * @param {any} value Candidate location.
  * @param {string} name Location field name.
  * @param {string[]} errors Validation error collection.
- * @returns {{lat: number|null, lon: number|null}} Normalized coordinates.
+ * @returns {{lat: number|null, lon: number|null} | null} Normalized coordinates.
  */
 function normalizeLocation(value, name, errors) {
   if (!value || typeof value !== 'object' || Array.isArray(value)) {
     errors.push(`${name} must contain numeric lat and lon`);
-    return { lat: null, lon: null };
+    return null;
   }
 
   const lat = normalizeCoordinate(value.lat, `${name}.lat`, [-90, 90], errors);
@@ -115,8 +115,7 @@ function normalizeTime(value, name, errors) {
  * @returns {number|null} Finite number or null.
  */
 function number(value) {
-  if (typeof value !== 'number' || !Number.isFinite(value)) return null;
-  return value;
+  return Number.isFinite(value) ? value : null;
 }
 
 /**
