@@ -1,6 +1,10 @@
 import { test, expect } from '@jest/globals';
 import { ticTacToeMove, ticTacToeTestOnly } from '../../../src/core/browser/toys/2025-04-06/ticTacToe.js';
 
+if (ticTacToeTestOnly.getOpponent('X') !== 'O' || ticTacToeTestOnly.getOpponent('O') !== 'X') {
+  throw new Error('ticTacToe opponent token contract violated');
+}
+
 test('returns optimal move for invalid input', () => {
   expect(ticTacToeTestOnly.getOpponent('X')).toBe('O');
   expect(ticTacToeTestOnly.getOpponent('O')).toBe('X');
