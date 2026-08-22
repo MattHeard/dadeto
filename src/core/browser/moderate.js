@@ -257,7 +257,7 @@ export async function assignJob() {
  * @param {boolean} [retried] Whether a retry has already been attempted.
  * @returns {Promise<void>} Promise resolving when rendering is complete.
  */
-async function loadVariant(retried = false) {
+export async function loadVariant(retried = false) {
   const stopFetching = startAnimation('fetching', 'Fetching');
   try {
     const { getModerationVariantUrl } = await getModerationEndpoints();
@@ -278,7 +278,7 @@ async function loadVariant(retried = false) {
  * Submit a moderation rating.
  * @param {boolean} isApproved Whether the page was approved.
  */
-async function submitRating(isApproved) {
+export async function submitRating(isApproved) {
   const approve = moderateDocument.getElementById('approveBtn');
   const reject = moderateDocument.getElementById('rejectBtn');
   if (approve) approve.disabled = true;

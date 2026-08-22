@@ -93,7 +93,7 @@ jest.unstable_mockModule(
   })
 );
 
-const { createModerateHandle, authedFetch, startAnimation, assignJob, resetModerationUi } = await import(
+const { createModerateHandle, authedFetch, startAnimation, assignJob, resetModerationUi, submitRating, loadVariant } = await import(
   '../../../src/core/browser/moderate.js'
 );
 
@@ -318,6 +318,41 @@ describe('moderate core', () => {
     expect(link.style.display).toBe('none');
     expect(content.innerHTML).toBe('');
     expect(content.style.display).toBe('none');
+  });
+
+  it('submits approval, assigns the next job, and reloads the variant', async () => {
+    mockToken = 'token';
+    mockAuthedFetch.mockResolvedValue({ title: 'Next', content: 'Body', options: [] });
+    createModerateHandle({
+      documentObj: mockDocument,
+      fetchFn: mockFetch,
+      sessionStorageObj: {},
+      globalObject: {},
+    });
+    await submitRating(true);
+    expect(mockAuthedFetch).toHaveBeenCalledWith('/submit', expect.objectContaining({
+      method: 'POST',
+      body: JSON.stringify({ isApproved: true }),
+    }));
+    expect(mockFetch).toHaveBeenCalledWith('/assign', expect.any(Object));
+    expect(mockAuthedFetch).toHaveBeenCalledWith('/variant');
+  });
+
+  it('restores rating buttons after a submission failure', async () => {
+    mockToken = 'token';
+    mockAuthedFetch.mockRejectedValueOnce(new Error('submit failed'));
+    const approve = mockDocument.elements.get('approveBtn');
+    const reject = mockDocument.elements.get('rejectBtn');
+    createModerateHandle({
+      documentObj: mockDocument,
+      fetchFn: mockFetch,
+      sessionStorageObj: {},
+      globalObject: {},
+    });
+    await submitRating(false);
+    expect(approve.disabled).toBe(false);
+    expect(reject.disabled).toBe(false);
+    expect(globalThis.alert).toHaveBeenCalledWith("Sorry, that didn't work. See console for details.");
   });
 
   it('initializes sign-in, renders, submits, retries, and signs out', async () => {
