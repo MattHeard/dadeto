@@ -2,7 +2,11 @@ import { jest } from '@jest/globals';
 import {
   announceTriggerRenderResult,
   buildSignInCredential,
+  createAdminEndpointsPromise,
+  createGetAdminEndpoints,
   handleCredentialSignIn,
+  mapConfigToAdminEndpoints,
+  isAdminWithDeps,
   resolveAdminEndpoint,
 } from '../../../src/core/browser/admin-core.js';
 
@@ -25,6 +29,51 @@ describe('buildSignInCredential', () => {
 describe('resolveAdminEndpoint', () => {
   it('returns an empty string when the key is not present anywhere', () => {
     expect(resolveAdminEndpoint({}, 'missing')).toBe('');
+  });
+
+  it('prefers configured endpoints and stringifies configured values', () => {
+    expect(resolveAdminEndpoint({ triggerRenderContentsUrl: 42 }, 'triggerRenderContentsUrl')).toBe('42');
+    expect(resolveAdminEndpoint({}, 'triggerRenderContentsUrl')).toMatch(/^https:\/\//);
+  });
+});
+
+describe('admin endpoint configuration', () => {
+  it('maps all configured endpoint overrides', () => {
+    expect(mapConfigToAdminEndpoints({
+      triggerRenderContentsUrl: 'render',
+      markVariantDirtyUrl: 'dirty',
+      generateStatsUrl: 'stats',
+    })).toEqual({
+      triggerRenderContentsUrl: 'render',
+      markVariantDirtyUrl: 'dirty',
+      generateStatsUrl: 'stats',
+    });
+  });
+
+  it('uses defaults for a missing loader and rejected loader', async () => {
+    const withoutLoader = await createAdminEndpointsPromise(null);
+    const rejected = await createAdminEndpointsPromise(() => Promise.reject(new Error('load failed')));
+    expect(withoutLoader).toEqual(rejected);
+    expect(withoutLoader.triggerRenderContentsUrl).toMatch(/^https:\/\//);
+  });
+
+  it('memoizes the endpoint promise', async () => {
+    const factory = jest.fn(() => Promise.resolve({ value: 'endpoints' }));
+    const getEndpoints = createGetAdminEndpoints(factory);
+    expect(await getEndpoints()).toEqual({ value: 'endpoints' });
+    expect(getEndpoints()).toBe(getEndpoints());
+    expect(factory).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('isAdminWithDeps', () => {
+  it('normalizes URL-safe base64 characters before decoding', () => {
+    const storage = { getItem: jest.fn().mockReturnValue('header.a-b_c.sig') };
+    const decodeBase64 = jest.fn(value => {
+      expect(value).toBe('a+b/c');
+      return JSON.stringify({ sub: 'not-admin' });
+    });
+    expect(isAdminWithDeps(storage, JSON, decodeBase64)).toBe(false);
   });
 });
 
