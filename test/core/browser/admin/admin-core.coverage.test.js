@@ -14,6 +14,7 @@ import {
   createSignOutHandlerFactory,
   initAdminApp,
   getCurrentUser,
+  getStatusParagraph,
   isAdminWithDeps,
   setupFirebase,
   updateAuthControlsDisplay,
@@ -349,6 +350,13 @@ describe('admin-core additional coverage', () => {
       authDomain: 'irien-465710.firebaseapp.com',
       projectId: 'irien-465710',
     });
+  });
+
+  it('resolves the render status paragraph by its stable id', () => {
+    const paragraph = { id: 'renderStatus' };
+    const doc = { getElementById: jest.fn().mockReturnValue(paragraph) };
+    expect(getStatusParagraph(doc)).toBe(paragraph);
+    expect(doc.getElementById).toHaveBeenCalledWith('renderStatus');
   });
 });
 
