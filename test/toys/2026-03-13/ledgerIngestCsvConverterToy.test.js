@@ -15,10 +15,13 @@ describe('ledgerIngestCsvConverterToy', () => {
     expect(ledgerIngestCsvConverterToyTestOnly.normalizeCsvDate('1.12.2025')).toBe('');
     expect(ledgerIngestCsvConverterToyTestOnly.normalizeCsvDate('31.12.2025x')).toBe('');
     expect(ledgerIngestCsvConverterToyTestOnly.normalizeCsvDate('x31.12.2025')).toBe('');
+    expect(ledgerIngestCsvConverterToyTestOnly.parseCsvDateMatch(null)).toBeNull();
+    expect(ledgerIngestCsvConverterToyTestOnly.parseCsvDateMatch(' 31.12.2025 ')).not.toBeNull();
     expect(ledgerIngestCsvConverterToyTestOnly.normalizeCsvAmount('1.234,50 EUR')).toBe('1234.5');
     expect(ledgerIngestCsvConverterToyTestOnly.normalizeCsvAmount('1.234')).toBe('1234');
     expect(ledgerIngestCsvConverterToyTestOnly.normalizeCsvAmount('not-a-number')).toBe('');
     expect(ledgerIngestCsvConverterToyTestOnly.normalizeCsvAmount(null)).toBe('');
+    expect(ledgerIngestCsvConverterToyTestOnly.parseCsvAmount('1.234')).toBe(1234);
     expect(ledgerIngestCsvConverterToyTestOnly.normalizeCsvTextCandidate('  hello  ')).toBe('hello');
     expect(ledgerIngestCsvConverterToyTestOnly.normalizeCsvTextCandidate(null)).toBe('');
   });
