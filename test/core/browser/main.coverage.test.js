@@ -9,6 +9,11 @@ const mockRevealBetaArticles = jest.fn();
 const mockToggleToyFocusMode = jest.fn();
 const mockInitializeDropdowns = jest.fn();
 const mockReveal = jest.fn();
+const mockCreateErrorBeaconReporter = jest.fn();
+let observedEnv;
+let observedBeaconHandlers;
+let observedBlogDeps;
+let observedInitOptions;
 let mockDom = {
   logError: jest.fn(),
   setTextContent: jest.fn(),
@@ -25,7 +30,7 @@ jest.unstable_mockModule('../../../src/core/browser/tags.js', () => ({
 }));
 jest.unstable_mockModule('../../../src/core/browser/data.js', () => ({
   createBlogDataController: dependencies => {
-    dependencies();
+    observedBlogDeps = dependencies();
     return {
       fetchAndCacheBlogData: (mockFetchBlogData = jest.fn()),
       getData: jest.fn(),
@@ -43,6 +48,7 @@ jest.unstable_mockModule('../../../src/core/browser/toys.js', () => ({
   toggleToyFocusMode: mockToggleToyFocusMode,
   getComponentInitializer: jest.fn(),
   makeCreateIntersectionObserver: (_dom, env) => {
+    observedEnv = env;
     const values = [...env.createEnv().values()];
     values.forEach(value => {
       if (typeof value === 'function') {
@@ -53,7 +59,10 @@ jest.unstable_mockModule('../../../src/core/browser/toys.js', () => ({
     });
     return jest.fn();
   },
-  initializeVisibleComponents: (...args) => args[1](),
+  initializeVisibleComponents: (...args) => {
+    observedInitOptions = args[0];
+    return args[1]();
+  },
   createDropdownInitializer: outputHandler => {
     mockInitializeDropdowns.mockImplementation(() => outputHandler());
     return mockInitializeDropdowns;
@@ -78,6 +87,7 @@ jest.unstable_mockModule('../../../src/core/browser/document.js', () => ({
 }));
 jest.unstable_mockModule('../../../src/core/browser/error-beacon.js', () => ({
   createErrorBeaconHandlers: options => {
+    observedBeaconHandlers = options;
     options.getUrl();
     options.getUserAgent();
     options.getNow();
@@ -87,7 +97,7 @@ jest.unstable_mockModule('../../../src/core/browser/error-beacon.js', () => ({
       handleUnhandledRejection: jest.fn(),
     };
   },
-  createErrorBeaconReporter: jest.fn(),
+  createErrorBeaconReporter: mockCreateErrorBeaconReporter,
 }));
 jest.unstable_mockModule('../../../src/core/browser/beta.js', () => ({
   revealBetaArticles: mockRevealBetaArticles,
@@ -121,8 +131,8 @@ describe('browser main initialization', () => {
     const windowObj = {
       console: { error: jest.fn() },
       fetch: jest.fn(),
-      location: { href: '' },
-      navigator: { userAgent: '' },
+      location: { href: 'https://example.test/' },
+      navigator: { userAgent: 'test-agent' },
       addEventListener: (type, handler) => handlers.set(type, handler),
     };
     globalThis.Element = class Element {};
@@ -142,6 +152,48 @@ describe('browser main initialization', () => {
       fetchFn: jest.fn(),
       storageObj: null,
     })();
+    expect(mockCreateErrorBeaconReporter).toHaveBeenCalledWith(
+      expect.any(Function),
+      'https://europe-west1-irien-465710.cloudfunctions.net/prod-errors'
+    );
+    expect(observedEnv).toEqual(expect.objectContaining({
+      globalState: expect.any(Object),
+      createEnv: expect.any(Function),
+      error: expect.any(Function),
+      fetch: expect.any(Function),
+    }));
+    expect([...observedEnv.createEnv().keys()]).toEqual([
+      'getRandomNumber',
+      'getCurrentTime',
+      'getUuid',
+      'getData',
+      'setLocalTemporaryData',
+      'setLocalPermanentData',
+      'getLocalPermanentData',
+      'encodeBase64',
+      'memoryLens',
+      'permanentLens',
+    ]);
+    expect(observedBeaconHandlers.getUrl()).toBe('https://example.test/');
+    expect(observedBeaconHandlers.getUserAgent()).toBe('test-agent');
+    expect(observedBeaconHandlers.getNow()).toEqual(expect.any(Number));
+    expect(observedBlogDeps).toEqual(expect.objectContaining({
+      fetch: expect.any(Function),
+      loggers: expect.any(Object),
+      storage: null,
+      memoryLens: expect.any(Map),
+      permanentLens: expect.any(Map),
+    }));
+    expect(observedInitOptions).toEqual(expect.objectContaining({
+      win: windowObj,
+      logInfo: expect.any(Function),
+      logWarning: expect.any(Function),
+      getElement: expect.any(Function),
+      hasNoInteractiveComponents: expect.any(Function),
+      getInteractiveComponents: expect.any(Function),
+      getInteractiveComponentCount: expect.any(Function),
+      getComponentInitializer: expect.any(Function),
+    }));
     buttons.forEach(button =>
       handlers.get(button.dataset.filter)({ preventDefault: jest.fn() })
     );
