@@ -1,5 +1,9 @@
 import { describe, expect, test } from '@jest/globals';
-import { spacetimeSegmentDuration } from '../../../src/core/browser/toys/2026-08-19/spacetimeSegmentDuration.js';
+import {
+  parseInput,
+  isJsonObject,
+  spacetimeSegmentDuration,
+} from '../../../src/core/browser/toys/2026-08-19/spacetimeSegmentDuration.js';
 
 describe('spacetimeSegmentDuration', () => {
   test('returns UTC duration in seconds as a string', () => {
@@ -42,6 +46,55 @@ describe('spacetimeSegmentDuration', () => {
           })
         )
       )
-    ).toMatchObject({ valid: false });
+    ).toEqual({ valid: false, error: 'Segment references an unknown point.' });
+    expect(
+      JSON.parse(
+        spacetimeSegmentDuration(
+          JSON.stringify({
+            points: [
+              { pointId: 'A', timestamp: '2026-08-19T10:00Z' },
+              { pointId: 'B', timestamp: '2026-08-19T09:00Z' },
+            ],
+            segment: { startPointId: 'A', endPointId: 'B' },
+          })
+        )
+      )
+    ).toEqual({
+      valid: false,
+      error: 'Segment must have an ordered valid UTC interval.',
+    });
+    expect(
+      JSON.parse(
+        spacetimeSegmentDuration(
+          JSON.stringify({
+            points: [
+              { pointId: 'A', timestamp: 'not-a-date' },
+              { pointId: 'B', timestamp: '2026-08-19T09:00Z' },
+            ],
+            segment: { startPointId: 'A', endPointId: 'B' },
+          })
+        )
+      )
+    ).toEqual({
+      valid: false,
+      error: 'Segment must have an ordered valid UTC interval.',
+    });
+  });
+
+  test('validates parsed object, points, and segment shape', () => {
+    expect(isJsonObject({})).toBe(true);
+    expect(isJsonObject(null)).toBe(false);
+    expect(isJsonObject([])).toBe(false);
+    expect(() => parseInput('null')).toThrow('Input must be a JSON object.');
+    expect(() => parseInput('[]')).toThrow('Input must be a JSON object.');
+    expect(() => parseInput(JSON.stringify({}))).toThrow(
+      'points and segment are required.'
+    );
+    expect(() => parseInput(JSON.stringify({ points: [], segment: null }))).toThrow(
+      'points and segment are required.'
+    );
+    expect(() => parseInput(JSON.stringify({ points: {}, segment: {} }))).toThrow(
+      'points and segment are required.'
+    );
   });
 });

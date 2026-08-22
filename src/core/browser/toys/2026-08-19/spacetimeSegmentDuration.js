@@ -41,7 +41,7 @@ export function spacetimeSegmentDuration(input) {
  */
 function parseInput(input) {
   const parsed = JSON.parse(input || '{}');
-  if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+  if (!isJsonObject(parsed)) {
     throw new Error('Input must be a JSON object.');
   }
   if (!Array.isArray(parsed.points) || !parsed.segment) {
@@ -56,4 +56,10 @@ function parseInput(input) {
     ),
   };
 }
+
+function isJsonObject(value) {
+  return value !== null && typeof value === 'object' && !Array.isArray(value);
+}
+
+export { isJsonObject, parseInput };
 // jscpd:ignore-end
