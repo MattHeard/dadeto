@@ -13,7 +13,7 @@ import {
 
 const ROOT = process.cwd();
 const JEST_BIN = path.resolve(ROOT, 'node_modules/.bin/jest');
-const shardSize = Number.parseInt(process.env.DADETO_COVERAGE_SHARD_SIZE ?? '24', 10);
+const shardSize = Number.parseInt(process.env.DADETO_COVERAGE_SHARD_SIZE ?? '40', 10);
 const coverageRoot = process.env.DADETO_COVERAGE_DIR ?? path.join(os.tmpdir(), `dadeto-coverage-${process.pid}`);
 const shardRoot = path.join(coverageRoot, 'shards');
 const storeRoot = path.join(coverageRoot, 'files');
