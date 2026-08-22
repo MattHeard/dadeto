@@ -627,4 +627,10 @@ export const ledgerIngestCsvConverterToyTestOnly = {
   processCsvCharacterWithHandlers,
   processCsvCharacter,
   whenCsvBranch,
+  isCsvLineBreakCharacter,
+  isCsvCarriageReturn,
+  isCsvEscapedQuote,
+  hasPendingCsvParseData,
+  isBlankLedgerCsvRow,
+  buildHeaderLookup,
 };

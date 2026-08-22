@@ -9,6 +9,17 @@ describe('ledgerIngestCsvConverterToy', () => {
     'Booking date;Value date;Transaction type;Booking text;Amount;Currency;Account IBAN;Category';
 
   it('normalizes date, amount, and text helper boundaries directly', () => {
+    expect(ledgerIngestCsvConverterToyTestOnly.isCsvLineBreakCharacter('\n')).toBe(true);
+    expect(ledgerIngestCsvConverterToyTestOnly.isCsvLineBreakCharacter('x')).toBe(false);
+    expect(ledgerIngestCsvConverterToyTestOnly.isCsvCarriageReturn('\r')).toBe(true);
+    expect(ledgerIngestCsvConverterToyTestOnly.isCsvCarriageReturn('\n')).toBe(false);
+    expect(ledgerIngestCsvConverterToyTestOnly.isCsvEscapedQuote('"')).toBe(true);
+    expect(ledgerIngestCsvConverterToyTestOnly.isCsvEscapedQuote('x')).toBe(false);
+    expect(ledgerIngestCsvConverterToyTestOnly.hasPendingCsvParseData({ cell: '', row: [] })).toBe(false);
+    expect(ledgerIngestCsvConverterToyTestOnly.hasPendingCsvParseData({ cell: 'x', row: [] })).toBe(true);
+    expect(ledgerIngestCsvConverterToyTestOnly.isBlankLedgerCsvRow([''])).toBe(true);
+    expect(ledgerIngestCsvConverterToyTestOnly.isBlankLedgerCsvRow(['x'])).toBe(false);
+    expect(ledgerIngestCsvConverterToyTestOnly.buildHeaderLookup([' Amount ']).get('Amount')).toBe(0);
     expect(ledgerIngestCsvConverterToyTestOnly.normalizeCsvDate('31.12.2025')).toBe('2025-12-31');
     expect(ledgerIngestCsvConverterToyTestOnly.normalizeCsvDate('2025-12-31')).toBe('');
     expect(ledgerIngestCsvConverterToyTestOnly.normalizeCsvDate(null)).toBe('');
