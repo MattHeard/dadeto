@@ -15,6 +15,10 @@ test('returns optimal move for invalid input', () => {
 test('covers direct scoring defaults and required move fields', () => {
   expect(ticTacToeTestOnly.getOpponent('X')).toBe('O');
   expect(ticTacToeTestOnly.getOpponent('O')).toBe('X');
+  expect(ticTacToeTestOnly.isValidPlayerToken('X')).toBe(true);
+  expect(ticTacToeTestOnly.isValidPlayerToken('O')).toBe(true);
+  expect(ticTacToeTestOnly.isValidPlayerToken('Q')).toBe(false);
+  expect(ticTacToeTestOnly.isValidPlayerToken(null)).toBe(false);
   expect(ticTacToeTestOnly.minimax(0, true, {
     board: [[null, null, null], [null, null, null], [null, null, null]],
     player: 'Q',

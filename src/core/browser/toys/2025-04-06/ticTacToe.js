@@ -33,6 +33,15 @@ function getOpponent(player) {
 }
 
 /**
+ * Check whether a minimax player token is supported.
+ * @param {unknown} player Candidate player token.
+ * @returns {boolean} True for the two legal players.
+ */
+function isValidPlayerToken(player) {
+  return player === 'X' || player === 'O';
+}
+
+/**
  * Ensure the move alternates players according to turn order.
  * @param {{ move: TicTacToeMove, index: number, moves: TicTacToeMove[] }} params - Move context.
  * @returns {boolean} True when the move respects turn order.
@@ -177,6 +186,7 @@ export const ticTacToeTestOnly = {
   hasMoveFields,
   applyMoveReducer,
   getOpponent,
+  isValidPlayerToken,
   handleValidMoves,
   isMoveApplicationValid,
   determineNextPlayer,
@@ -630,13 +640,10 @@ function simulateMoves(board, accumulateScores) {
  * @returns {number} Score for the optimal (or pessimal) path at the current depth so callers can choose the best or worst branch.
  */
 function minimax(depth, isMax, params) {
-  if (params.player !== 'X' && params.player !== 'O') {
+  if (!isValidPlayerToken(params.player)) {
     return 0;
   }
   const opponent = getOpponent(params.player);
-  if (opponent !== 'X' && opponent !== 'O') {
-    return 0;
-  }
   const isWinPlayer = () => isWin(params.board, params.player);
   const isWinOpponent = () => isWin(params.board, opponent);
   const terminalScore = evaluateTerminalState(
