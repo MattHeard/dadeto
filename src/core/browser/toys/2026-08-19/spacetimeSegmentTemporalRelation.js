@@ -47,14 +47,14 @@ export function spacetimeSegmentTemporalRelation(input) {
  */
 function parseRequest(input) {
   const request = JSON.parse(input || '{}');
-  if (!request || typeof request !== 'object' || Array.isArray(request)) {
+  if (!isJsonObject(request)) {
     throw new Error('Input must be a JSON object.');
   }
   if (!Array.isArray(request.points) || !Array.isArray(request.segments)) {
     throw new Error('points and segments arrays are required.');
   }
-  const firstSegmentId = String(request.firstSegmentId || '').trim();
-  const secondSegmentId = String(request.secondSegmentId || '').trim();
+  const firstSegmentId = normalizeSegmentId(request.firstSegmentId);
+  const secondSegmentId = normalizeSegmentId(request.secondSegmentId);
   if (!firstSegmentId || !secondSegmentId) {
     throw new Error('firstSegmentId and secondSegmentId are required.');
   }
@@ -69,6 +69,16 @@ function parseRequest(input) {
     firstSegmentId,
     secondSegmentId,
   };
+}
+
+function isJsonObject(value) {
+  if (value === null) return false;
+  if (typeof value !== 'object') return false;
+  return !Array.isArray(value);
+}
+
+function normalizeSegmentId(value) {
+  return String(value ?? '').trim();
 }
 
 /**
@@ -119,7 +129,7 @@ function resolveInterval(segments, points, segmentId) {
 function classify(first, second) {
   const overlapStart = Math.max(first.startTime, second.startTime);
   const overlapEnd = Math.min(first.endTime, second.endTime);
-  if (overlapStart === overlapEnd && sharesBoundaryPoint(first, second)) {
+  if (sharesBoundaryPoint(first, second)) {
     return 'touching';
   }
   return overlapStart < overlapEnd ? 'overlapping' : 'disjoint';
@@ -139,4 +149,13 @@ function sharesBoundaryPoint(first, second) {
       second.endPointId === first.startPointId)
   );
 }
+
+export {
+  classify,
+  isJsonObject,
+  normalizeSegmentId,
+  parseRequest,
+  resolveInterval,
+  sharesBoundaryPoint,
+};
 // jscpd:ignore-end
