@@ -368,12 +368,16 @@ describe('realtime voice lifecycle', () => {
     expect(getUserMedia).toHaveBeenCalledWith({ audio: true });
     expect(root.children[5].srcObject).toBe(stream);
     expect(JSON.stringify(root)).toContain('Realtime voice connection is live.');
+    expect(JSON.stringify(root)).toContain('Requesting microphone permission.');
+    expect(JSON.stringify(root)).toContain('Sending SDP offer to local server.');
+    expect(JSON.stringify(root)).toContain('Applied SDP answer from local server.');
     buttons[2].listeners.click();
     expect(JSON.stringify(root)).toContain('Microphone muted.');
     buttons[2].listeners.click();
     expect(JSON.stringify(root)).toContain('Microphone live.');
     await buttons[1].listeners.click();
     expect(JSON.stringify(root)).toContain('Disconnected.');
+    expect(JSON.stringify(root)).toContain('Reset previous connection.');
     expect(JSON.stringify(root)).toContain('disconnected');
     buttons[2].listeners.click();
     expect(track.stop).toHaveBeenCalled();
@@ -423,7 +427,9 @@ describe('realtime voice lifecycle', () => {
         })),
       },
     };
-    await failingButtons[0].listeners.click();
+    failingButtons[0].listeners.click();
+    await new Promise(resolve => setTimeout(resolve, 0));
+    expect(JSON.stringify(failingRoot)).toContain('Connection cleanup complete.');
     expect(
       realtimeVoicePrototypePresenterTestOnly.getRealtimeAnswerErrorDetail(
         'not json'
