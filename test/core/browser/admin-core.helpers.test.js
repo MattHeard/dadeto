@@ -8,6 +8,12 @@ import {
   createAdminEndpointsPromise,
   createGetAdminEndpoints,
   createTriggerRender,
+  createShowMessage,
+  getAdminContent,
+  getCurrentUser,
+  getSignInButtons,
+  getSignOutSections,
+  initAdmin,
   handleCredentialSignIn,
   mapConfigToAdminEndpoints,
   isAdminWithDeps,
@@ -27,6 +33,8 @@ import {
   executeTriggerRender,
   postTriggerRenderContents,
   resolveAdminEndpoint,
+  setupFirebase,
+  updateAuthControlsDisplay,
 } from '../../../src/core/browser/admin-core.js';
 
 describe('buildSignInCredential', () => {
@@ -271,6 +279,71 @@ describe('admin-core interface predicates', () => {
     expect(await resolveGetIdToken({ getIdToken })()).toBe('token');
     expect(() => resolveGetIdToken(null)).toThrow('getIdToken must be a function');
     expect(() => validateGetIdToken(null)).toThrow('getIdToken must be a function');
+  });
+});
+
+describe('admin document and auth helpers', () => {
+  it('queries the expected admin controls and resolves current users safely', () => {
+    const content = {};
+    const signins = [];
+    const signouts = [];
+    const doc = {
+      getElementById: jest.fn().mockReturnValue(content),
+      querySelectorAll: jest.fn(selector => selector === '#signinButton' ? signins : signouts),
+    };
+    expect(getAdminContent(doc)).toBe(content);
+    expect(getSignInButtons(doc)).toBe(signins);
+    expect(getSignOutSections(doc)).toBe(signouts);
+    const user = { uid: 'user' };
+    expect(getCurrentUser(() => ({ currentUser: user }))).toBe(user);
+    expect(getCurrentUser(() => null)).toBeNull();
+    expect(getCurrentUser(null)).toBeNull();
+  });
+
+  it('updates sign-in and sign-out visibility in both auth states', () => {
+    const signIns = [{ style: {} }];
+    const signOuts = [{ style: {} }];
+    updateAuthControlsDisplay({ uid: 'user' }, signIns, signOuts);
+    expect(signIns[0].style.display).toBe('none');
+    expect(signOuts[0].style.display).toBe('');
+    updateAuthControlsDisplay(null, signIns, signOuts);
+    expect(signIns[0].style.display).toBe('');
+    expect(signOuts[0].style.display).toBe('none');
+  });
+
+  it('renders status text, handles absent status elements, and configures Firebase', () => {
+    const paragraph = { innerHTML: '' };
+    const doc = { getElementById: jest.fn().mockReturnValue(paragraph) };
+    const show = createShowMessage(getAdminContent, doc);
+    show(123);
+    expect(paragraph.innerHTML).toBe('<strong>123</strong>');
+    const absent = createShowMessage(() => null, doc);
+    expect(() => absent('ignored')).not.toThrow();
+    expect(() => createShowMessage(null, doc)).toThrow('getStatusParagraphFn must be a function');
+    expect(() => createShowMessage(getAdminContent, {})).toThrow('Document-like');
+    const initApp = jest.fn();
+    setupFirebase(initApp);
+    expect(initApp).toHaveBeenCalledWith({
+      apiKey: expect.any(String),
+      authDomain: 'irien-465710.firebaseapp.com',
+      projectId: 'irien-465710',
+    });
+  });
+
+  it('validates initAdmin dependencies before wiring the UI', () => {
+    const valid = {
+      googleAuthModule: { getIdToken: jest.fn(), signOut: jest.fn(), initGoogleSignIn: jest.fn() },
+      getAuthFn: jest.fn(),
+      onAuthStateChangedFn: jest.fn(),
+      doc: { getElementById: jest.fn(), querySelectorAll: jest.fn().mockReturnValue([]) },
+      fetchFn: jest.fn(),
+      loadStaticConfigFn: jest.fn().mockResolvedValue({ disableGoogleSignIn: true }),
+    };
+    expect(() => initAdmin({ ...valid, googleAuthModule: null })).toThrow('googleAuthModule must be provided');
+    expect(() => initAdmin({ ...valid, getAuthFn: null })).toThrow('getAuthFn must be a function');
+    expect(() => initAdmin({ ...valid, onAuthStateChangedFn: null })).toThrow('onAuthStateChangedFn must be a function');
+    expect(() => initAdmin({ ...valid, doc: {} })).toThrow('Document-like');
+    expect(() => initAdmin({ ...valid, fetchFn: null })).toThrow('fetchFn must be a function');
   });
 });
 
