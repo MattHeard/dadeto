@@ -1,7 +1,23 @@
 import { describe, expect, test } from '@jest/globals';
-import { spacetimeSegmentGeodesicLength } from '../../../src/core/browser/toys/2026-08-19/spacetimeSegmentGeodesicLength.js';
+import {
+  spacetimeSegmentGeodesicLength,
+  vincentyDistance,
+} from '../../../src/core/browser/toys/2026-08-19/spacetimeSegmentGeodesicLength.js';
 
 describe('spacetimeSegmentGeodesicLength', () => {
+  test('retains high-precision Vincenty intermediate results', () => {
+    expect(vincentyDistance(10, 20, 11, 21)).toBeCloseTo(155602.9891846868, 8);
+    expect(vincentyDistance(51.5, 4.1, -33.9, 151.2)).toBeCloseTo(
+      16734289.568392403,
+      8
+    );
+    expect(vincentyDistance(0, 0, 0, 179)).toBeCloseTo(19926188.85199594, 8);
+    expect(vincentyDistance(89, 0, 80, 179)).toBeCloseTo(1224475.4186494146, 8);
+    expect(vincentyDistance(45, 0, -45, 180)).toBeCloseTo(20037508.342789244, 8);
+    expect(vincentyDistance(10, 20, 10, 20)).toBe(0);
+    expect(vincentyDistance(0, 0, 0, 180)).toBeCloseTo(20037508.342789244, 6);
+  });
+
   test('returns WGS84 surface length with string value and unit', () => {
     const result = JSON.parse(
       spacetimeSegmentGeodesicLength(

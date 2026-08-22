@@ -187,4 +187,5 @@ function sphericalFallback(
  * @returns {number} Radians.
  */
 const radians = degrees => (degrees * Math.PI) / 180;
+export { vincentyDistance };
 // jscpd:ignore-end
