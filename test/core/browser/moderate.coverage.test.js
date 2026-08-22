@@ -93,7 +93,7 @@ jest.unstable_mockModule(
   })
 );
 
-const { createModerateHandle, authedFetch, startAnimation } = await import(
+const { createModerateHandle, authedFetch, startAnimation, assignJob, resetModerationUi } = await import(
   '../../../src/core/browser/moderate.js'
 );
 
@@ -283,6 +283,41 @@ describe('moderate core', () => {
       },
     });
     await expect(authedFetch('/bad')).rejects.toThrow('HTTP 502');
+  });
+
+  it('assigns a moderation job with the token form payload', async () => {
+    mockToken = 'token';
+    createModerateHandle({
+      documentObj: mockDocument,
+      fetchFn: mockFetch,
+      sessionStorageObj: {},
+      globalObject: {},
+    });
+    await assignJob();
+    expect(mockFetch).toHaveBeenCalledWith('/assign', expect.objectContaining({
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: expect.any(URLSearchParams),
+    }));
+    expect(mockFetch.mock.calls.at(-1)[1].body.get('id_token')).toBe('token');
+  });
+
+  it('resets moderation controls to the signed-out state', () => {
+    const signout = { style: {} };
+    const signin = { style: {} };
+    const link = { style: {} };
+    const content = { innerHTML: 'content', style: { display: 'block' } };
+    const documentObj = {
+      querySelectorAll: selector => selector === '#signoutWrap' ? [signout] : selector === '#signinButton' ? [signin] : [link],
+      getElementById: id => id === 'pageContent' ? content : null,
+    };
+    createModerateHandle({ documentObj, fetchFn: mockFetch, sessionStorageObj: {}, globalObject: {} });
+    resetModerationUi();
+    expect(signout.style.display).toBe('none');
+    expect(signin.style.display).toBe('');
+    expect(link.style.display).toBe('none');
+    expect(content.innerHTML).toBe('');
+    expect(content.style.display).toBe('none');
   });
 
   it('initializes sign-in, renders, submits, retries, and signs out', async () => {

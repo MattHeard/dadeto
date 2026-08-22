@@ -236,7 +236,7 @@ function wireSignOut() {
  * Ask the back-end for a new moderation job.
  * Resolves when the function returns 201 Created.
  */
-async function assignJob() {
+export async function assignJob() {
   const token = getIdToken();
   if (!token) throw new Error('not signed in');
 
@@ -305,7 +305,7 @@ async function submitRating(isApproved) {
 /**
  * Reset the moderation page to its signed-out state.
  */
-function resetModerationUi() {
+export function resetModerationUi() {
   moderateDocument
     .querySelectorAll('#signoutWrap')
     .forEach(el => (el.style.display = 'none'));
