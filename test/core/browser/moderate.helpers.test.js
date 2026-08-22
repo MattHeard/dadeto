@@ -1,4 +1,5 @@
 import { describe, expect, it, jest } from '@jest/globals';
+import { createDocumentHandle } from '../../../src/core/browser/document.js';
 import {
   createTextElement,
   shouldRetryLoad,
@@ -131,6 +132,17 @@ describe('moderate pure helper contracts', () => {
 
   it('starts and stops animation for an existing element', () => {
     const element = { textContent: '', style: {} };
+    const intervalId = Symbol('interval');
+    const clearInterval = jest.fn();
+    createDocumentHandle({
+      documentObj: {},
+      windowObj: {},
+      globalThisObj: {
+        setInterval: jest.fn(() => intervalId),
+        clearInterval,
+      },
+      navigatorObj: {},
+    });
     createModerateHandle({
       documentObj: { getElementById: () => element },
       fetchFn: jest.fn(),
@@ -142,6 +154,7 @@ describe('moderate pure helper contracts', () => {
     expect(element.style.display).toBe('block');
     stop();
     expect(element.style.display).toBe('none');
+    expect(clearInterval).toHaveBeenCalledWith(intervalId);
   });
 
   it('renders option lists with and without target page numbers', () => {
@@ -178,6 +191,8 @@ describe('moderate pure helper contracts', () => {
     expect(created[2].appendChild).toHaveBeenCalledTimes(2);
     expect(created[2].appendChild.mock.calls[0][0].textContent).toBe('A (3)');
     expect(created[2].appendChild.mock.calls[1][0].textContent).toBe('B');
+    expect(documentObj.createElement).toHaveBeenCalledWith('ol');
+    expect(documentObj.createElement).toHaveBeenCalledWith('li');
   });
 
   it('renders a variant title, author, content, and options', () => {
@@ -208,6 +223,9 @@ describe('moderate pure helper contracts', () => {
     expect(
       pageContent.appendChild.mock.calls.map(([element]) => element.textContent)
     ).toEqual(['Title', 'By Author', 'Body']);
+    expect(documentObj.createElement).toHaveBeenNthCalledWith(1, 'h3');
+    expect(documentObj.createElement).toHaveBeenNthCalledWith(2, 'p');
+    expect(documentObj.createElement).toHaveBeenNthCalledWith(3, 'p');
     expect(elements.get('approveBtn').disabled).toBe(false);
     expect(elements.get('rejectBtn').disabled).toBe(false);
   });
