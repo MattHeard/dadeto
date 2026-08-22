@@ -14,7 +14,6 @@ export function pickupReturnSegmentProposal(input) {
       !destination ||
       !Number.isFinite(seconds) ||
       seconds < 0 ||
-      !Number.isFinite(minutes) ||
       !x.endPointId ||
       !x.segmentId
     )

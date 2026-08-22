@@ -434,6 +434,34 @@ describe('fulfillment primitives', () => {
       ).segment.segmentId
     ).toBe('ZERO-RETURN');
   });
+  test('FULF pickup rejects each missing required proposal field', () => {
+    const valid = {
+      possessionEndPoint: { pointId: 'B', timestamp: '2026-01-01T01:00:00Z' },
+      destination: { latitude: 0, longitude: 0 },
+      travelDurationSeconds: 60,
+      endPointId: 'D',
+      segmentId: 'RET',
+    };
+    for (const key of [
+      'possessionEndPoint', 'destination', 'travelDurationSeconds',
+      'endPointId', 'segmentId',
+    ]) {
+      const value = { ...valid };
+      delete value[key];
+      expect(JSON.parse(pickupReturnSegmentProposal(JSON.stringify(value)))).toEqual({
+        valid: false,
+        error: 'Valid possession point, destination, duration, and IDs are required.',
+      });
+    }
+    expect(JSON.parse(pickupReturnSegmentProposal(JSON.stringify({
+      ...valid,
+      travelDurationSeconds: -1,
+    }))).error).toBe('Valid possession point, destination, duration, and IDs are required.');
+    expect(JSON.parse(pickupReturnSegmentProposal(JSON.stringify({
+      ...valid,
+      destination: { latitude: 'not-a-coordinate', longitude: 0 },
+    }))).error).toBe('Valid destination coordinates and timestamp are required.');
+  });
   test('POSS2 normalizes and sorts contexts', () =>
     expect(
       JSON.parse(
