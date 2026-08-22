@@ -95,13 +95,6 @@ function getExistingMergeTransactionOperation(existing, incoming) {
  * @returns {LedgerStorageAction} Merge action payload.
  */
 function createMergeAction(action, transaction, existing) {
-  if (action === 'update') {
-    return CREATE_MERGE_ACTION_REPORTS.update(
-      transaction,
-      /** @type {LedgerIngestTransaction} */ (existing)
-    );
-  }
-
   return CREATE_MERGE_ACTION_REPORTS[action](transaction, existing);
 }
 
@@ -330,6 +323,7 @@ export const ledgerIngestStorageToyTestOnly = {
   normalizeTransactionMap: ledgerIngestStorageCore.normalizeTransactionMap,
   getTransactionMergeKey,
   isUnchangedTransaction,
+  createMergeAction,
   mergeLedgerStorageState,
   buildStorageReport,
 };

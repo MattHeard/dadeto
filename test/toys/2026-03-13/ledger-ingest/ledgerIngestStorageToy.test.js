@@ -140,6 +140,16 @@ describe('ledgerIngestStorageToy', () => {
   });
 
   it('normalizes helper fallbacks and missing storage access', () => {
+    const transaction = { transactionId: 'new', dedupeKey: 'key' };
+    expect(ledgerIngestStorageToyTestOnly.createMergeAction('insert', transaction)).toEqual({
+      action: 'insert', mergeKey: 'key', transactionId: 'new',
+    });
+    expect(ledgerIngestStorageToyTestOnly.createMergeAction('skip', transaction, transaction)).toEqual({
+      action: 'skip', mergeKey: 'key', transactionId: 'new',
+    });
+    expect(ledgerIngestStorageToyTestOnly.createMergeAction('update', transaction, { ...transaction, transactionId: 'old' })).toEqual({
+      action: 'update', mergeKey: 'key', transactionId: 'new', previousTransactionId: 'old',
+    });
     expect(ledgerIngestStorageCoreTestOnly.cloneRecord(null)).toEqual({});
     expect(
       ledgerIngestStorageCoreTestOnly.cloneRecord({ retained: true })
