@@ -1266,7 +1266,7 @@ export function resolveLogger(logger) {
  * @param {unknown} accountsId - Candidate Google Identity client.
  * @returns {boolean} True when the client provides initialize and renderButton.
  */
-function hasRequiredGoogleIdentityMethods(accountsId) {
+export function hasRequiredGoogleIdentityMethods(accountsId) {
   const client = /** @type {GoogleAccountsClient} */ (accountsId);
   return hasInitializeMethod(client) && hasRenderButtonMethod(client);
 }
@@ -1276,7 +1276,7 @@ function hasRequiredGoogleIdentityMethods(accountsId) {
  * @param {{ error?: (message: string) => void }} logger - Logger used for reporting.
  * @returns {void}
  */
-function reportMissingGoogleIdentity(logger) {
+export function reportMissingGoogleIdentity(logger) {
   const safe = resolveLogger(logger);
   safe.error('Google Identity script missing');
 }
