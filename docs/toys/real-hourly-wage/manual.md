@@ -1,36 +1,52 @@
-# Real Hourly Wage
+# Toy Spec
 
 ## What this toy does
 
-Real Hourly Wage is a focused toy for exercising one small domain behavior. Use it to explore this focused behavior directly in the toy interface.
+Show how much of an hourly wage remains after accounting for the unpaid time and expenses that support the paid job.
+
+This manual explains the behavior a user can observe by submitting input to the toy. The toy is synchronous and deterministic unless the behavior below says that it persists state or advances between submissions.
+
+## Input
+
+A JSON object with `period` totals and `overhead` hour/expense buckets. Submit a JSON value in the toy's input area. A minimal example is:
+
+```json
+{
+  "period": null,
+  "overhead": null
+}
+```
+
+If a field is omitted, the toy applies its default behavior. Invalid values are rejected or normalized according to the limits below.
+
+## Output
+
+A JSON wage report with nominal wage, real wage, totals, and a breakdown. The result is returned as JSON or rendered by the toy's configured presenter. A representative result is:
+
+```json
+{}
+```
+
+The result contains the normalized values and any status, summary, proposal, predicate result, or rendered payload produced by this toy.
+
+## Behavior
+
+In scope: - A single pure calculation interface that accepts normalized wage inputs. - A readable breakdown of paid hours, overhead hours, and overhead expenses. - Deterministic output that downstream toys can reuse without recomputing the totals. Out of scope: - Currency conversion. - Time-series tracking. - Storage or persistence. - UI formatting beyond returning JSON.
+
+### Limits and assumptions
+
+Assumptions: - The calculation period is already chosen before the toy runs. - The input numbers are normalized and non-negative. Constraints: - The calculation must remain deterministic. - The toy must not read or write local storage. - The pure core must not depend on dates or external services.
 
 ## How to use it
 
-1. Start with the input examples and behavior described in this manual.
-2. Start with the smallest valid example shown there (or the default input, if one is provided).
-3. Run the toy through the application’s toy interface or the toy interface.
-4. Change one input at a time and compare the result with the behavior described in this manual.
-5. If the result is surprising, use the troubleshooting advice below before changing the implementation.
-
-## Input and output
-
-Use the input shape and limits described in this manual. The toy returns the output described here; omitted, malformed, or out-of-range values use the fallback behavior explained below.
-
-## Useful experiments
-
-- Run the documented happy-path example unchanged.
-- Omit one optional field at a time to observe defaults.
-- Try the smallest and largest supported values.
-- Supply an invalid value and confirm the documented failure or fallback behavior.
-- Compare the observed result with the executable acceptance evidence.
+1. Submit the minimal example to see the default result.
+2. Change one input field at a time.
+3. Submit the same input again to confirm deterministic behavior.
+4. Try an omitted or invalid value to observe the fallback or rejection behavior.
 
 ## Troubleshooting
 
-- If the toy does not start, open the toy interface and submit a valid example.
-- If an assertion fails, repeat the example input from this manual and inspect the first failing condition.
-- If input is rejected, verify its shape and constraints in this manual.
-- For known edge cases, use the troubleshooting advice below.
-
-## Scope note
-
-This is an exploratory toy, not a general-purpose production API. Keep experiments within the stated boundary and record any newly discovered behavior in the toy’s durable documentation.
+- If the input is rejected, check that it is valid JSON and uses the field names shown above.
+- If a value is ignored, it may be omitted, outside the supported range, or normalized by the toy.
+- If the output is empty, verify that the input contains the records, points, or configuration needed for this operation.
+- Stateful toys may require the reset input described above to return to their initial state.
