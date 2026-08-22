@@ -135,6 +135,8 @@ describe('personSegmentAssignmentList', () => {
   });
 
   test.each([
+    ['null', 'Input must be a JSON object.'],
+    ['[]', 'Input must be a JSON object.'],
     ['0', 'Input must be a JSON object.'],
     [JSON.stringify({ path: 'items' }), 'An assignment object is required.'],
     [JSON.stringify({ path: 'items', assignment: null }), 'An assignment object is required.'],
