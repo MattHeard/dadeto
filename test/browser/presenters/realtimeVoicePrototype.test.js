@@ -127,8 +127,13 @@ describe('realtimeVoicePrototypePresenterTestOnly', () => {
     });
     expect(helpers.getJsonErrorDetail('{"error":"  bad  "}')).toBe('bad');
     expect(helpers.getJsonErrorDetail('{"error":12}')).toBe('');
+    expect(helpers.getJsonErrorDetail('{"error":{}}')).toBe('');
+    expect(helpers.getJsonErrorDetail('{"error":"  "}')).toBe('');
     expect(helpers.getJsonErrorDetail('not json')).toBe('');
     expect(helpers.getRealtimeAnswerErrorDetail('  plain  ')).toBe('plain');
+    expect(helpers.getRealtimeAnswerErrorDetail('{"error":"relay"}')).toBe(
+      'relay'
+    );
     expect(helpers.summarizeRealtimeEvent('{"type":"response.done"}')).toBe(
       'response.done'
     );
@@ -187,6 +192,15 @@ describe('realtimeVoicePrototypePresenterTestOnly', () => {
     expect(controls.audioElement.playsInline).toBe(true);
     expect(controls.debugLog.tagName).toBe('OL');
     expect(controls.debugLog.className).toBe('realtime-voice-log');
+    expect(
+      helpers.createControls(dom, {
+        title: 'a',
+        description: 'b',
+        endpoint: 'c',
+        serverLabel: 'd',
+        endpointError: 'e',
+      }).statusText.textContent
+    ).toBe(helpers.STATUS.DISCONNECTED);
     const extraParent = dom.createElement('div');
     const extraText = helpers.appendTextElement(extraParent, 'span', 'extra', dom);
     const extraButton = helpers.appendButton(extraParent, 'Extra', dom);
