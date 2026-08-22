@@ -70,9 +70,26 @@ import {
   parsePageVariantValue,
   readDisableAutoSelect,
   isAdminToken,
+  getDefaultAdminEndpointsCopy,
 } from '../../../src/core/browser/admin-core.js';
 
 describe('small admin-core predicates', () => {
+  it('returns an independent copy of every default admin endpoint', () => {
+    const endpoints = getDefaultAdminEndpointsCopy();
+    expect(endpoints).toEqual({
+      triggerRenderContentsUrl:
+        'https://europe-west1-irien-465710.cloudfunctions.net/prod-trigger-render-contents',
+      markVariantDirtyUrl:
+        'https://europe-west1-irien-465710.cloudfunctions.net/prod-mark-variant-dirty',
+      generateStatsUrl:
+        'https://europe-west1-irien-465710.cloudfunctions.net/prod-generate-stats',
+    });
+    endpoints.triggerRenderContentsUrl = 'changed';
+    expect(getDefaultAdminEndpointsCopy().triggerRenderContentsUrl).toContain(
+      'prod-trigger-render-contents'
+    );
+  });
+
   it('recognizes only callable auth token providers', () => {
     expect(hasGetIdToken({ getIdToken: () => 'token' })).toBe(true);
     expect(hasGetIdToken({ getIdToken: 'token' })).toBe(false);
