@@ -3,6 +3,7 @@ import {
   announceTriggerRenderResult,
   assertFunction,
   buildSignInCredential,
+  createGoogleAuthModule,
   bindRegenerateVariantSubmit,
   bindTriggerRenderClick,
   bindTriggerStatsClick,
@@ -180,6 +181,49 @@ describe('buildSignInCredential', () => {
 
     expect(credentialFactory).toHaveBeenCalledWith(auth, 'token-123');
     expect(result).toEqual({ auth, credential: 'token-123' });
+  });
+});
+
+describe('createGoogleAuthModule', () => {
+  it('prefers a current-user token and falls back to session storage', async () => {
+    const storage = {
+      getItem: jest.fn(() => 'stored-token'),
+      removeItem: jest.fn(),
+    };
+    const getIdToken = jest.fn().mockResolvedValue('fresh-token');
+    const auth = { currentUser: { getIdToken } };
+    const module = createGoogleAuthModule({
+      getAuthFn: () => auth,
+      storage,
+      consoleObj: { error: jest.fn() },
+      globalScope: { sessionStorage: storage },
+      Provider: { credential: jest.fn() },
+      credentialFactory: jest.fn(),
+    });
+
+    await expect(module.getIdToken()).resolves.toBe('fresh-token');
+    expect(getIdToken).toHaveBeenCalledWith(true);
+
+    auth.currentUser = null;
+    await expect(module.getIdToken()).resolves.toBe('stored-token');
+    expect(storage.getItem).toHaveBeenCalledWith('id_token');
+  });
+
+  it('signs out through auth and clears the session token', async () => {
+    const signOut = jest.fn().mockResolvedValue(undefined);
+    const storage = { getItem: jest.fn(), removeItem: jest.fn() };
+    const module = createGoogleAuthModule({
+      getAuthFn: () => ({ signOut }),
+      storage,
+      consoleObj: { error: jest.fn() },
+      globalScope: { sessionStorage: storage },
+      Provider: { credential: jest.fn() },
+      credentialFactory: jest.fn(),
+    });
+
+    await module.signOut();
+    expect(signOut).toHaveBeenCalledTimes(1);
+    expect(storage.removeItem).toHaveBeenCalledWith('id_token');
   });
 });
 
