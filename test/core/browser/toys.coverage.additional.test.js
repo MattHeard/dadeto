@@ -340,6 +340,61 @@ describe('additional key/value toy coverage', () => {
 });
 
 describe('additional dropdown and focus coverage', () => {
+  test('renders the selected post output and handles missing output', () => {
+    const parent = {};
+    const child = {};
+    const dom = {
+      querySelector: jest.fn(() => parent),
+      removeAllChildren: jest.fn(),
+      appendChild: jest.fn(),
+      createElement: jest.fn(() => child),
+      setTextContent: jest.fn(),
+      setClassName: jest.fn(),
+    };
+    const dropdown = {
+      value: 'text',
+      closest: selector => {
+        if (selector === 'article.entry') return { id: 'post-id' };
+        if (selector === '.value') return {};
+        return null;
+      },
+    };
+    utils.handleDropdownChange(
+      dropdown,
+      () => ({ output: { 'post-id': { presenterKey: 'text', content: 'ok' } } }),
+      dom
+    );
+    expect(dom.removeAllChildren).toHaveBeenCalledWith(parent);
+    expect(dom.appendChild).toHaveBeenCalledWith(parent, child);
+    expect(dom.querySelector).toHaveBeenCalledWith({}, 'div.output');
+    expect(dom.setTextContent).toHaveBeenCalledWith(child, {
+      presenterKey: 'text',
+      content: 'ok',
+    });
+
+    dom.removeAllChildren.mockClear();
+    utils.handleDropdownChange(
+      dropdown,
+      () => ({ output: null }),
+      dom
+    );
+    expect(dom.removeAllChildren).toHaveBeenCalledWith(parent);
+    expect(dom.setTextContent).toHaveBeenCalledWith(child, '');
+    const noParentDropdown = {
+      value: 'text',
+      closest: selector =>
+        selector === 'article.entry' ? { id: 'post-id' } : null,
+    };
+    dom.querySelector.mockClear();
+    utils.handleDropdownChange(
+      noParentDropdown,
+      () => ({ output: { 'post-id': { presenterKey: 'text', content: 'ignored' } } }),
+      dom
+    );
+    expect(dom.querySelector).not.toHaveBeenCalled();
+    expect(dom.removeAllChildren).toHaveBeenCalledTimes(1);
+  });
+
   test('covers dropdown, focus, row handlers, and fallback row data', () => {
     const sync = jest.fn();
     const dom = {
@@ -372,6 +427,7 @@ describe('additional dropdown and focus coverage', () => {
       () => ({ output: {} }),
       dom
     );
+    expect(dom.querySelector).not.toHaveBeenCalled();
     utils.handleDropdownChange(
       {
         value: 'text',
@@ -383,26 +439,89 @@ describe('additional dropdown and focus coverage', () => {
       () => ({ output: { post: { text: 'ok' } } }),
       dom
     );
-    const article = { closest: () => null };
-    const button = { closest: () => article };
-    utils.toggleToyFocusMode(button, {
+    const article = { closest: jest.fn(() => null) };
+    const button = { closest: jest.fn(() => article) };
+    const enterFocusDom = {
+      hasClass: jest.fn(() => false),
+      addClass: jest.fn(),
+      setTextContent: jest.fn(),
+    };
+    utils.toggleToyFocusMode(button, enterFocusDom);
+    expect(button.closest).toHaveBeenCalledWith('article.entry');
+    expect(enterFocusDom.addClass).toHaveBeenCalledWith(
+      article,
+      'toy-focus-mode'
+    );
+    expect(enterFocusDom.hasClass).toHaveBeenCalledWith(
+      article,
+      'toy-focus-mode'
+    );
+    expect(enterFocusDom.setTextContent).toHaveBeenCalledWith(
+      button,
+      'Exit focus mode'
+    );
+    const enterWithHostDom = {
       hasClass: () => false,
       addClass: jest.fn(),
       setTextContent: jest.fn(),
-    });
+    };
+    const articleWithHost = { closest: () => ({}) };
+    utils.toggleToyFocusMode(
+      { closest: () => articleWithHost },
+      enterWithHostDom
+    );
+    expect(enterWithHostDom.addClass).toHaveBeenCalledTimes(2);
+    expect(enterWithHostDom.addClass).toHaveBeenCalledWith(
+      expect.any(Object),
+      'toy-focus-mode-host'
+    );
     const host = {};
-    const focusArticle = { closest: () => host };
-    const focusButton = { closest: () => focusArticle };
+    const focusArticle = { closest: jest.fn(() => host) };
+    const focusButton = { closest: jest.fn(() => focusArticle) };
     const focusDom = {
-      hasClass: () => true,
+      hasClass: jest.fn(() => true),
       removeClass: jest.fn(),
       setTextContent: jest.fn(),
     };
     utils.toggleToyFocusMode(focusButton, focusDom);
+    expect(focusButton.closest).toHaveBeenCalledWith('article.entry');
+    expect(focusArticle.closest).toHaveBeenCalledWith('#container');
     expect(focusDom.removeClass).toHaveBeenCalledWith(
       host,
       'toy-focus-mode-host'
     );
+    expect(focusDom.setTextContent).toHaveBeenCalledWith(
+      focusButton,
+      'Focus mode'
+    );
+    expect(focusDom.hasClass).toHaveBeenCalledWith(
+      focusArticle,
+      'toy-focus-mode'
+    );
+    expect(focusDom.removeClass).toHaveBeenCalledWith(
+      focusArticle,
+      'toy-focus-mode'
+    );
+    const noHostArticle = { closest: jest.fn(() => null) };
+    const noHostButton = { closest: jest.fn(() => noHostArticle) };
+    const noHostDom = {
+      hasClass: jest.fn(() => true),
+      removeClass: jest.fn(),
+      setTextContent: jest.fn(),
+    };
+    utils.toggleToyFocusMode(noHostButton, noHostDom);
+    expect(noHostDom.removeClass).toHaveBeenCalledTimes(1);
+    const activeNoHostArticle = { closest: jest.fn(() => null) };
+    const activeNoHostButton = {
+      closest: jest.fn(() => activeNoHostArticle),
+    };
+    const activeNoHostDom = {
+      hasClass: jest.fn(() => false),
+      addClass: jest.fn(),
+      setTextContent: jest.fn(),
+    };
+    utils.toggleToyFocusMode(activeNoHostButton, activeNoHostDom);
+    expect(activeNoHostDom.addClass).toHaveBeenCalledTimes(1);
     utils.toggleToyFocusMode(
       { closest: () => ({ closest: () => null }) },
       focusDom
@@ -435,6 +554,13 @@ describe('additional dropdown and focus coverage', () => {
       disposers: [],
     });
     expect(type).toBeDefined();
+    expect(dom.createElement).toHaveBeenCalledWith('select');
+    expect(dom.setClassName).toHaveBeenCalledWith(
+      expect.any(Object),
+      'select-wrapper'
+    );
+    expect(dom.createElement).toHaveBeenCalledWith('span');
+    expect(dom.appendChild).toHaveBeenCalled();
     dom.getDataAttribute.mockReturnValue(null);
     const typeChange = dom.addEventListener.mock.calls.find(
       call => call[1] === 'change'

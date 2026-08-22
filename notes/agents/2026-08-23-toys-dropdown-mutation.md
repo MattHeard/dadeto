@@ -1,3 +1,5 @@
 # Toys dropdown mutation slice
 
 The bounded `src/core/browser/toys.js` lines 186-296 scan initially left two non-static survivors in the `ensureKeyValueInput` renderer configuration. The missing behavioral contract was disposer cleanup: tests exercised rendering but did not dispose the returned key/value input. Adding cleanup assertions and the missing DOM `removeEventListener` test-double method killed both survivors. The final bounded scan instrumented 21 mutants: 20 killed, 1 static-ignored, 0 non-static survivors, and 0 timeouts; focused Jest verification passed 53 tests. The full-file `toys.js` scan remains pending.
+
+The follow-up lines 302-448 scan initially exposed weak coverage around select wrapping, output fallback, and both focus-mode branches. Exact selector, presenter content, missing-parent, missing-output, and container/no-container assertions killed the remaining mutants. The final bounded scan instrumented 60 mutants: 47 killed, 0 non-static survivors, and 0 timeouts; focused Jest verification passed 29 tests. The full-file `toys.js` scan remains pending.
