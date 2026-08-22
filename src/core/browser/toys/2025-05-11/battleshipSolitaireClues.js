@@ -67,7 +67,7 @@ function getShipCells(ship) {
  */
 function getCellsAlongAxis(ship, stepX, stepY) {
   const cells = [];
-  for (let i = 0; i < ship.length; i++) {
+  for (const i of Array.from({ length: ship.length }, (_, index) => index)) {
     cells.push({
       x: ship.start.x + i * stepX,
       y: ship.start.y + i * stepY,
@@ -176,3 +176,5 @@ function isValidFleet(fleet) {
 }
 
 export { generateClues };
+
+export const battleshipSolitaireCluesTestOnly = { getCellsAlongAxis };
