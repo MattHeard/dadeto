@@ -1,5 +1,7 @@
 # Procurement-Backed Fulfillment Sequence Proposal
 
+This historical PROC1 experiment is superseded for new composition work by CANO1 + PROC2 + FULF1. Its public behavior remains unchanged.
+
 ## Summary
 
 - Toy name: PROC1
