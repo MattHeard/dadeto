@@ -13,7 +13,10 @@ import {
   createInitGoogleSignInHandlerFactory,
   createSignOutHandlerFactory,
   initAdminApp,
+  getCurrentUser,
   isAdminWithDeps,
+  setupFirebase,
+  updateAuthControlsDisplay,
 } from '../../../../src/core/browser/admin-core.js';
 
 describe('admin-core additional coverage', () => {
@@ -319,6 +322,32 @@ describe('admin-core additional coverage', () => {
       const buildCredential = createCredentialFactory({ credential: factory });
       expect(buildCredential('abc')).toBe('cred:abc');
       expect(factory).toHaveBeenCalledWith('abc');
+    });
+  });
+
+  it('covers auth getter, control display, and Firebase setup contracts', () => {
+    const user = { uid: 'user-1' };
+    expect(getCurrentUser(() => ({ currentUser: user }))).toBe(user);
+    expect(getCurrentUser(() => ({ currentUser: null }))).toBeNull();
+    expect(getCurrentUser(() => ({ currentUser: undefined }))).toBeNull();
+    expect(getCurrentUser(null)).toBeNull();
+    expect(getCurrentUser(() => null)).toBeNull();
+
+    const signIns = [{ style: {} }];
+    const signOuts = [{ style: {} }];
+    updateAuthControlsDisplay(user, signIns, signOuts);
+    expect(signIns[0].style.display).toBe('none');
+    expect(signOuts[0].style.display).toBe('');
+    updateAuthControlsDisplay(null, signIns, signOuts);
+    expect(signIns[0].style.display).toBe('');
+    expect(signOuts[0].style.display).toBe('none');
+
+    const initApp = jest.fn();
+    setupFirebase(initApp);
+    expect(initApp).toHaveBeenCalledWith({
+      apiKey: 'AIzaSyDRc1CakoDi6airj7t7DgY4KDSlxNwKIIQ',
+      authDomain: 'irien-465710.firebaseapp.com',
+      projectId: 'irien-465710',
     });
   });
 });
