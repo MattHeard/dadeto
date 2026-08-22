@@ -358,7 +358,7 @@ function normalizeCsvDate(value) {
  * @returns {string[] | null} Matching date parts or null.
  */
 function parseCsvDateMatch(value) {
-  return String(value ?? '')
+  return (value ?? '')
     .trim()
     .match(/^(\d{2})\.(\d{2})\.(\d{4})$/);
 }
@@ -619,6 +619,9 @@ export function ledgerIngestCsvConverterToy(input) {
 export { parseLedgerCsv };
 
 export const ledgerIngestCsvConverterToyTestOnly = {
+  normalizeCsvDate,
+  normalizeCsvAmount,
+  normalizeCsvTextCandidate,
   getLedgerCsvCell,
   processCsvCharacterWithHandlers,
   processCsvCharacter,

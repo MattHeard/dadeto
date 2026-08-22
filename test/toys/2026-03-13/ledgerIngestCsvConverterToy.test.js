@@ -8,6 +8,21 @@ describe('ledgerIngestCsvConverterToy', () => {
   const baseHeader =
     'Booking date;Value date;Transaction type;Booking text;Amount;Currency;Account IBAN;Category';
 
+  it('normalizes date, amount, and text helper boundaries directly', () => {
+    expect(ledgerIngestCsvConverterToyTestOnly.normalizeCsvDate('31.12.2025')).toBe('2025-12-31');
+    expect(ledgerIngestCsvConverterToyTestOnly.normalizeCsvDate('2025-12-31')).toBe('');
+    expect(ledgerIngestCsvConverterToyTestOnly.normalizeCsvDate(null)).toBe('');
+    expect(ledgerIngestCsvConverterToyTestOnly.normalizeCsvDate('1.12.2025')).toBe('');
+    expect(ledgerIngestCsvConverterToyTestOnly.normalizeCsvDate('31.12.2025x')).toBe('');
+    expect(ledgerIngestCsvConverterToyTestOnly.normalizeCsvDate('x31.12.2025')).toBe('');
+    expect(ledgerIngestCsvConverterToyTestOnly.normalizeCsvAmount('1.234,50 EUR')).toBe('1234.5');
+    expect(ledgerIngestCsvConverterToyTestOnly.normalizeCsvAmount('1.234')).toBe('1234');
+    expect(ledgerIngestCsvConverterToyTestOnly.normalizeCsvAmount('not-a-number')).toBe('');
+    expect(ledgerIngestCsvConverterToyTestOnly.normalizeCsvAmount(null)).toBe('');
+    expect(ledgerIngestCsvConverterToyTestOnly.normalizeCsvTextCandidate('  hello  ')).toBe('hello');
+    expect(ledgerIngestCsvConverterToyTestOnly.normalizeCsvTextCandidate(null)).toBe('');
+  });
+
   it('returns error payload for invalid inputs', () => {
     const result = ledgerIngestCsvConverterToy('only one line', new Map());
     expect(JSON.parse(result)).toEqual({
