@@ -15,6 +15,7 @@ let mockLoadDeps;
 let mockAllowNoToken = false;
 let mockIsAdmin = true;
 let mockBeaconOptions;
+let mockErrorLog;
 
 jest.unstable_mockModule(
   '../../../src/core/browser/load-static-config-core.js',
@@ -79,7 +80,8 @@ jest.unstable_mockModule('../../../src/core/browser/error-beacon.js', () => ({
     options.getUrl();
     options.getUserAgent();
     options.getNow();
-    return { logError: jest.fn() };
+    mockErrorLog = jest.fn();
+    return { logError: mockErrorLog };
   }),
 }));
 jest.unstable_mockModule(
@@ -104,6 +106,7 @@ const {
   assignJob,
   resetModerationUi,
   submitRating,
+  loadVariant,
   getInitGoogleSignInHandler,
   getSignOutHandler,
   isAdmin,
@@ -398,6 +401,44 @@ describe('moderate core', () => {
     expect(mockAuthedFetch.mock.calls).toContainEqual(['/variant', undefined]);
   });
 
+  it('retries a 404 load by assigning a job before loading again', async () => {
+    mockToken = 'token';
+    mockFetch
+      .mockRejectedValueOnce(new Error('HTTP 404: missing'))
+      .mockResolvedValueOnce({ ok: true, json: async () => ({}) })
+      .mockRejectedValueOnce(new Error('HTTP 404: still missing'));
+    createModerateHandle({
+      documentObj: mockDocument,
+      fetchFn: mockFetch,
+      sessionStorageObj: {},
+      globalObject: {},
+    });
+    await loadVariant();
+    expect(mockFetch).toHaveBeenCalledTimes(3);
+    expect(mockFetch).toHaveBeenCalledWith('/assign', expect.any(Object));
+    expect(mockFetch).toHaveBeenCalledWith('/assign', expect.any(Object));
+  });
+
+  it('stops the retry flow when assigning the replacement job fails', async () => {
+    mockToken = 'token';
+    mockFetch
+      .mockRejectedValueOnce(new Error('HTTP 404: missing'))
+      .mockRejectedValueOnce(new Error('assign failed'));
+    createModerateHandle({
+      documentObj: mockDocument,
+      fetchFn: mockFetch,
+      sessionStorageObj: {},
+      globalObject: {},
+    });
+    await loadVariant();
+    expect(mockFetch).toHaveBeenCalledTimes(2);
+    expect(mockFetch).toHaveBeenCalledWith('/variant', undefined);
+    expect(mockFetch).toHaveBeenCalledWith('/assign', expect.any(Object));
+    expect(mockErrorLog).toHaveBeenCalledWith(
+      expect.objectContaining({ message: 'assign failed' })
+    );
+  });
+
   it('caches sign-in and sign-out handlers and delegates admin checks', () => {
     const sessionStorageObj = { getItem: jest.fn(() => 'token') };
     const globalObject = { navigator: {}, location: { href: '/moderate' } };
@@ -466,6 +507,11 @@ describe('moderate core', () => {
       }),
     });
     await handle();
+    expect(mockDocument.querySelectorAll).toHaveBeenCalledWith('#signoutLink');
+    expect(links[0].addEventListener).toHaveBeenCalledWith(
+      'click',
+      expect.any(Function)
+    );
     mockSignInInit.onSignIn();
     await new Promise(resolve => setImmediate(resolve));
     mockIntervalCallback?.();
@@ -498,6 +544,10 @@ describe('moderate core', () => {
     await new Promise(resolve => setImmediate(resolve));
     links[0].addEventListener.mock.calls[0][1]({ preventDefault: jest.fn() });
     await new Promise(resolve => setImmediate(resolve));
+    expect(mockSignOut).toHaveBeenCalled();
+    expect(mockDocument.body.classList.remove).toHaveBeenCalledWith('authed');
+    expect(mockDocument.elements.get('approveBtn').disabled).toBe(true);
+    expect(mockDocument.elements.get('rejectBtn').disabled).toBe(true);
     mockDocument.getElementById = () => null;
     links[0].addEventListener.mock.calls[0][1]({ preventDefault: jest.fn() });
     await new Promise(resolve => setImmediate(resolve));
