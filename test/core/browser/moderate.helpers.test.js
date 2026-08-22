@@ -75,6 +75,29 @@ describe('moderate pure helper contracts', () => {
     expect(approve.disabled).toBe(false);
   });
 
+  it('does not wire incomplete moderation button pairs', () => {
+    const approve = { disabled: true };
+    const reject = { disabled: true };
+    const cases = [
+      { approve, reject: null },
+      { approve: null, reject },
+      { approve: null, reject: null },
+    ];
+    for (const buttons of cases) {
+      createModerateHandle({
+        documentObj: {
+          getElementById: id => ({ approveBtn: buttons.approve, rejectBtn: buttons.reject }[id] ?? null),
+        },
+        fetchFn: jest.fn(),
+        sessionStorageObj: {},
+        globalObject: {},
+      });
+      enableModerationButtons();
+      expect(buttons.approve?.onclick).toBeUndefined();
+      expect(buttons.reject?.onclick).toBeUndefined();
+    }
+  });
+
   it('safely handles a missing animation element', () => {
     const documentObj = { getElementById: () => null };
     createModerateHandle({ documentObj, fetchFn: jest.fn(), sessionStorageObj: {}, globalObject: {} });
@@ -99,15 +122,19 @@ describe('moderate pure helper contracts', () => {
       globalObject: {},
     });
     appendOptionsList(container, []);
+    appendOptionsList(container, null);
+    appendOptionsList(container, [{ content: 'Zero', targetPageNumber: 0 }]);
     appendOptionsList(container, [
       { content: 'A', targetPageNumber: 3 },
       { content: 'B' },
     ]);
-    expect(created).toHaveLength(1);
+    expect(created).toHaveLength(2);
     expect(created[0].tag).toBe('ol');
-    expect(created[0].appendChild).toHaveBeenCalledTimes(2);
-    expect(created[0].appendChild.mock.calls[0][0].textContent).toBe('A (3)');
-    expect(created[0].appendChild.mock.calls[1][0].textContent).toBe('B');
+    expect(created[0].appendChild).toHaveBeenCalledTimes(1);
+    expect(created[0].appendChild.mock.calls[0][0].textContent).toBe('Zero (0)');
+    expect(created[1].appendChild).toHaveBeenCalledTimes(2);
+    expect(created[1].appendChild.mock.calls[0][0].textContent).toBe('A (3)');
+    expect(created[1].appendChild.mock.calls[1][0].textContent).toBe('B');
   });
 
   it('renders a variant title, author, content, and options', () => {
