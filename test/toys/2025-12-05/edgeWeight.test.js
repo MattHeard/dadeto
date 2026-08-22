@@ -9,6 +9,17 @@ describe('calculateEdgeWeight', () => {
       ratings: {},
     });
     expect(result).toBe(1);
+
+    expect(
+      calculateEdgeWeight({
+        moderatorA: '',
+        moderatorB: 'bob',
+        ratings: {
+          '': { 'page-A': true },
+          bob: { 'page-A': true },
+        },
+      })
+    ).toBe(1);
   });
 
   it('returns the fallback when a moderator entry is missing', () => {
@@ -20,6 +31,39 @@ describe('calculateEdgeWeight', () => {
       moderatorA: 'alice',
       moderatorB: 'bob',
       ratings,
+    });
+
+    expect(result).toBe(1);
+  });
+
+  it('returns the fallback when the first moderator entry is missing', () => {
+    const result = calculateEdgeWeight({
+      moderatorA: 'alice',
+      moderatorB: 'bob',
+      ratings: { bob: { 'page-P': true } },
+    });
+
+    expect(result).toBe(1);
+  });
+
+  it('returns the fallback for null ratings', () => {
+    const result = calculateEdgeWeight({
+      moderatorA: 'alice',
+      moderatorB: 'bob',
+      ratings: null,
+    });
+
+    expect(result).toBe(1);
+  });
+
+  it('returns the fallback when the second moderator id is invalid', () => {
+    const result = calculateEdgeWeight({
+      moderatorA: 'alice',
+      moderatorB: '',
+      ratings: {
+        alice: { 'page-A': true },
+        '': { 'page-A': true },
+      },
     });
 
     expect(result).toBe(1);
@@ -83,5 +127,41 @@ describe('calculateEdgeWeight', () => {
     });
 
     expect(result).toBe(1);
+  });
+
+  it('does not ignore a page when the ignored id is empty or different', () => {
+    const ratings = {
+      alice: { 'page-A': true },
+      bob: { 'page-A': false },
+    };
+
+    expect(
+      calculateEdgeWeight({
+        moderatorA: 'alice',
+        moderatorB: 'bob',
+        ratings,
+        ignoredPageId: '',
+      })
+    ).toBe(1);
+    expect(
+      calculateEdgeWeight({
+        moderatorA: 'alice',
+        moderatorB: 'bob',
+        ratings,
+        ignoredPageId: 'page-B',
+      })
+    ).toBe(1);
+
+    expect(
+      calculateEdgeWeight({
+        moderatorA: 'alice',
+        moderatorB: 'bob',
+        ratings: {
+          alice: { 'page-A': true },
+          bob: { 'page-A': true },
+        },
+        ignoredPageId: 'page-B',
+      })
+    ).toBe(0);
   });
 });

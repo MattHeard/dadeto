@@ -1,4 +1,4 @@
-import { isValidString, whenNotNullish } from '../../../commonCore.js';
+import { isValidString } from '../../../commonCore.js';
 
 const NO_CONNECTION_WEIGHT = 1;
 
@@ -68,9 +68,7 @@ function buildSecondRatingsPair(firstRatings, ratings, moderatorB) {
     return null;
   }
 
-  return whenNotNullish(secondRatings, () =>
-    createRatingsPair(firstRatings, secondRatings)
-  );
+  return createRatingsPair(firstRatings, secondRatings);
 }
 
 /**
