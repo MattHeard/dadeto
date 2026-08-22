@@ -176,6 +176,11 @@ export const ticTacToeTestOnly = {
   getBestScoredMove,
   hasMoveFields,
   applyMoveReducer,
+  getOpponent,
+  handleValidMoves,
+  isMoveApplicationValid,
+  determineNextPlayer,
+  makeAccumulateScores,
 };
 
 /**

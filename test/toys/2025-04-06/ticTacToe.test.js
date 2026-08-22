@@ -13,6 +13,20 @@ test('returns optimal move for invalid input', () => {
 });
 
 test('covers direct scoring defaults and required move fields', () => {
+  expect(ticTacToeTestOnly.getOpponent('X')).toBe('O');
+  expect(ticTacToeTestOnly.getOpponent('O')).toBe('X');
+  expect(ticTacToeTestOnly.determineNextPlayer([])).toBe('X');
+  expect(ticTacToeTestOnly.determineNextPlayer([{ player: 'X', position: { row: 0, column: 0 } }])).toBe('O');
+  expect(JSON.parse(ticTacToeTestOnly.handleValidMoves([{ player: 'X', position: { row: 3, column: 0 } }])).moves).toHaveLength(1);
+  expect(ticTacToeTestOnly.isMoveApplicationValid(0, [], () => true)).toBe(false);
+  const scoreParams = {
+    board: [['X', 'O', 'X'], ['O', 'X', 'O'], ['X', 'O', 'X']],
+    player: 'X',
+    getScore: () => 0,
+    getAvailableMoves: () => [],
+  };
+  expect(ticTacToeTestOnly.makeAccumulateScores(scoreParams, 0, true)([], [0, 0])).toHaveLength(1);
+  expect(ticTacToeTestOnly.makeAccumulateScores(scoreParams, 0, false)([], [0, 1])).toHaveLength(1);
   const empty = ticTacToeTestOnly.getBestScoredMove([]);
   expect(empty).toEqual({ moveScore: -Infinity, move: { row: 0, column: 0 } });
   expect(ticTacToeTestOnly.hasMoveFields({ player: 'X', position: {} })).toBe(true);
