@@ -1,4 +1,4 @@
-import { describe, expect, test } from '@jest/globals';
+import { describe, expect, jest, test } from '@jest/globals';
 import { readExemptions } from '../../../src/core/scripts/read-exemptions.js';
 
 const deps = readFileSync => ({
@@ -10,11 +10,11 @@ const deps = readFileSync => ({
 
 describe('readExemptions', () => {
   test('reads object-shaped exemption payloads', () => {
+    const read = jest.fn(() => JSON.stringify({ exemptions: { 'src/a.js': 'baseline' } }));
     expect([
-      ...readExemptions(
-        deps(() => JSON.stringify({ exemptions: { 'src/a.js': 'baseline' } }))
-      ),
+      ...readExemptions(deps(read)),
     ]).toEqual(['src/a.js']);
+    expect(read).toHaveBeenCalledWith('/repo/exemptions.json', 'utf8');
   });
 
   test('treats non-object payloads as empty', () => {
@@ -23,6 +23,11 @@ describe('readExemptions', () => {
 
   test('treats objects without an exemptions map as empty', () => {
     expect([...readExemptions(deps(() => JSON.stringify({})))]).toEqual([]);
+  });
+
+  test('treats null and primitive exemption maps as empty', () => {
+    expect([...readExemptions(deps(() => JSON.stringify({ exemptions: null })))]).toEqual([]);
+    expect([...readExemptions(deps(() => JSON.stringify({ exemptions: 'nope' })))]).toEqual([]);
   });
 
   test('treats invalid json as empty', () => {
