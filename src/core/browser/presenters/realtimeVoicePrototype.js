@@ -528,8 +528,32 @@ function formatErrorMessage(error) {
 }
 
 export const realtimeVoicePrototypePresenterTestOnly = {
+  STATUS,
+  parseConfig,
+  createInitialState,
+  createControls,
+  appendTextElement,
+  appendButton,
+  connectRealtimeVoice,
+  startPeerConnection,
+  disconnectRealtimeVoice,
+  hasUsableEndpoint,
+  addMicrophoneTrack,
+  attachRemoteAudio,
+  createDebugDataChannel,
+  wirePeerConnectionEvents,
+  requestRealtimeAnswer,
   formatRealtimeAnswerError,
   getRealtimeAnswerErrorDetail,
+  getJsonErrorDetail,
+  stopMediaStream,
+  closeDataChannel,
+  closePeerConnection,
+  toggleMute,
+  setStatus,
+  appendDebugLog,
+  summarizeRealtimeEvent,
+  formatErrorMessage,
 };
 
 /**
