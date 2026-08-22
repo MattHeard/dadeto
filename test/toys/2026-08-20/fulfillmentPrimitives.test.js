@@ -310,6 +310,46 @@ describe('fulfillment primitives', () => {
       ).segment.segmentId
     ).toBe('ZERO');
   });
+  test('FULF pickup preserves exact quantized point and segment output', () => {
+    expect(
+      JSON.parse(
+        pickupReturnSegmentProposal(
+          JSON.stringify({
+            possessionEndPoint: points[1],
+            destination: { latitude: 12.3456789, longitude: -45.6789123 },
+            travelDurationSeconds: 61,
+            endPointId: 'DESTINATION',
+            segmentId: 'RETURN',
+          })
+        )
+      )
+    ).toEqual({
+      point: {
+        pointId: 'DESTINATION',
+        latitude: '12.345679',
+        longitude: '-45.678912',
+        timestamp: '2026-01-01T01:02:00.000Z',
+      },
+      segment: {
+        segmentId: 'RETURN',
+        startPointId: 'B',
+        endPointId: 'DESTINATION',
+      },
+    });
+    expect(
+      JSON.parse(
+        pickupReturnSegmentProposal(
+          JSON.stringify({
+            possessionEndPoint: points[1],
+            destination: { latitude: 0, longitude: 0 },
+            travelDurationSeconds: 0,
+            endPointId: 'DESTINATION',
+            segmentId: 'ZERO-RETURN',
+          })
+        )
+      ).segment.segmentId
+    ).toBe('ZERO-RETURN');
+  });
   test('POSS2 normalizes and sorts contexts', () =>
     expect(
       JSON.parse(
