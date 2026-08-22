@@ -23,6 +23,7 @@ describe('assetRegistry', () => {
               owner: 'matt',
               resetRequired: true,
             },
+            { assetId: 'blanket-003' },
           ],
         })
       )
@@ -31,6 +32,7 @@ describe('assetRegistry', () => {
     expect(result.assets.map(asset => asset.assetId)).toEqual([
       'blanket-001',
       'blanket-002',
+      'blanket-003',
     ]);
     expect(result.assets[0]).toMatchObject({
       sku: 'picnic-blanket',
@@ -38,15 +40,45 @@ describe('assetRegistry', () => {
       availability: 'Available',
       resetRequired: true,
     });
+    expect(result.assets[0].notes).toBeUndefined();
+    expect(result.assets[1]).toEqual({
+      assetId: 'blanket-002',
+      sku: 'picnic-blanket',
+      name: 'blanket-002',
+      storageLocation: 'unknown-location',
+      condition: 'Unknown',
+      availability: 'Reserved',
+      owner: 'unknown-owner',
+      resetRequired: false,
+      notes: 'Store indoors',
+    });
+    expect(result.assets[2]).toEqual({
+      assetId: 'blanket-003',
+      sku: 'unknown-sku',
+      name: 'blanket-003',
+      storageLocation: 'unknown-location',
+      condition: 'Unknown',
+      availability: 'Available',
+      owner: 'unknown-owner',
+      resetRequired: false,
+    });
     expect(result.summary).toEqual({
-      assetCount: 2,
-      availableCount: 1,
-      skuCount: 1,
+      assetCount: 3,
+      availableCount: 2,
+      skuCount: 2,
     });
   });
 
   test('accepts already-parsed object records', () => {
     expect(parseObjectRecord({ assets: [] })).toEqual({ assets: [] });
+  });
+
+  test('uses the one-based source index when assetId is absent', () => {
+    const result = JSON.parse(
+      assetRegistry(JSON.stringify({ assets: [{ sku: 'sku-1' }] }))
+    );
+    expect(result.assets[0].assetId).toBe('asset-1');
+    expect(result.assets[0].name).toBe('asset-1');
   });
 
   test('returns an empty registry for invalid input and ignores malformed assets', () => {
