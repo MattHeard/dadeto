@@ -29,6 +29,8 @@ jest.unstable_mockModule(
   () => ({
     createAuthedFetch: deps => async (url, init) => {
       if (!mockToken && !mockAllowNoToken) throw new Error('not signed in');
+      const override = mockAuthedFetch(url, init);
+      if (url === '/submit') return override;
       const response = await deps.fetchJson(url, init);
       return response.json();
     },
@@ -335,7 +337,7 @@ describe('moderate core', () => {
       body: JSON.stringify({ isApproved: true }),
     }));
     expect(mockFetch).toHaveBeenCalledWith('/assign', expect.any(Object));
-    expect(mockAuthedFetch).toHaveBeenCalledWith('/variant');
+    expect(mockAuthedFetch.mock.calls).toContainEqual(['/variant', undefined]);
   });
 
   it('caches sign-in and sign-out handlers and delegates admin checks', () => {

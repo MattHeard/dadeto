@@ -150,7 +150,7 @@ describe('moderate pure helper contracts', () => {
     const response = await fetchJson('/ok', { method: 'POST' });
     expect(fetchFn).toHaveBeenCalledWith('/ok', { method: 'POST' });
     expect(response).toMatchObject({ ok: true, status: 201 });
-    await expect(response.json()).resolves.toEqual({ ok: true });
+    expect(response.json()).toEqual({ ok: true });
   });
 
   it('formats failed JSON requests with body, status, and response error details', async () => {
