@@ -41,15 +41,23 @@ export function normalizeMaximumSpeed(value) {
  * @returns {{candidate: ReturnType<typeof resolveSegment>, requiredSpeed: number, maximumSpeed: number}} Speed result.
  */
 export function resolveSpeed(input) {
+  /** @type {Array<Record<string, unknown>>} */
+  const pointValues = /** @type {Array<Record<string, unknown>>} */ (
+    input.points || []
+  );
   const points = new Map(
-    (input.points || []).map(point => [String(point.pointId), point])
+    pointValues.map(point => [String(point.pointId), point])
+  );
+  const candidateSegment = /** @type {Record<string, unknown>} */ (
+    input.candidateSegment
+  );
+  const segments = /** @type {Map<string, Record<string, unknown>>} */ (
+    new Map([[String(candidateSegment.segmentId), candidateSegment]])
   );
   const candidate = resolveSegment(
-    new Map([
-      [String(input.candidateSegment?.segmentId), input.candidateSegment],
-    ]),
+    segments,
     points,
-    input.candidateSegment?.segmentId
+    String(candidateSegment.segmentId)
   );
   const distance = wgs84Distance(
     Number(candidate.start.latitude),
@@ -76,10 +84,21 @@ export function resolveSpeed(input) {
  * @returns {{feasible: boolean, reason?: string}} Runner feasibility.
  */
 export function evaluateRunnerWorldLine(input, shift) {
+  /** @type {Array<Record<string, unknown>>} */
+  const pointValues = /** @type {Array<Record<string, unknown>>} */ (
+    input.points || []
+  );
+  /** @type {Array<Record<string, unknown>>} */
+  const segmentValues = /** @type {Array<Record<string, unknown>>} */ (
+    input.existingSegments || []
+  );
+  const candidateSegment = /** @type {Record<string, unknown>} */ (
+    input.candidateSegment
+  );
   return evaluateWorldLine(
-    input.points || [],
-    input.existingSegments || [],
-    input.candidateSegment,
+    pointValues,
+    segmentValues,
+    candidateSegment,
     shift.clockInPoint,
     shift.clockOutPoint
   );
@@ -91,7 +110,9 @@ export function evaluateRunnerWorldLine(input, shift) {
  * @returns {Map<string, Record<string, unknown>>} Point map.
  */
 export function buildPoints(input) {
-  return new Map(
-    (input.points || []).map(point => [String(point.pointId), point])
+  /** @type {Array<Record<string, unknown>>} */
+  const pointValues = /** @type {Array<Record<string, unknown>>} */ (
+    input.points || []
   );
+  return new Map(pointValues.map(point => [String(point.pointId), point]));
 }

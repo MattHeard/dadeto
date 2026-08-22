@@ -43,14 +43,13 @@ function normalizePoint(value) {
  * @returns {number|null} Rounded coordinate or null when invalid.
  */
 function normalizeCoordinate(value, minimum, maximum) {
-  const numericValue = Number(value);
-  if (!Number.isFinite(numericValue)) {
+  if (typeof value !== 'number' || !Number.isFinite(value)) {
     return null;
   }
-  if (numericValue < minimum || numericValue > maximum) {
+  if (value < minimum || value > maximum) {
     return null;
   }
-  return Number(numericValue.toFixed(6));
+  return Number(value.toFixed(6));
 }
 
 /**

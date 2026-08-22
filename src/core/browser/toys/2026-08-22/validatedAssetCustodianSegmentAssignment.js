@@ -47,7 +47,9 @@ export function validatedAssetCustodianSegmentAssignment(input, env) {
         reason: `asset:${asset.reason}`,
       });
     const candidate = speed.candidate;
-    const matching = (x.shifts || []).find(
+    /** @type {Array<Record<string, any>>} */
+    const shifts = x.shifts || [];
+    const matching = shifts.find(
       shift =>
         candidate.startTime >= Date.parse(shift.clockInPoint?.timestamp) &&
         candidate.endTime <= Date.parse(shift.clockOutPoint?.timestamp)
