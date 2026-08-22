@@ -694,7 +694,9 @@ describe('admin document and auth helpers', () => {
     expect(() => initAdmin({ ...valid, onAuthStateChangedFn: null })).toThrow(
       'onAuthStateChangedFn must be a function'
     );
-    expect(() => initAdmin({ ...valid, doc: {} })).toThrow('Document-like');
+    expect(() => initAdmin({ ...valid, doc: {} })).toThrow(
+      'doc must be a Document-like object'
+    );
     expect(() => initAdmin({ ...valid, fetchFn: null })).toThrow(
       'fetchFn must be a function'
     );
@@ -721,17 +723,17 @@ describe('admin dependency validators', () => {
       querySelectorAll: fn,
     };
     expect(validateGoogleSignInDeps(valid)).toBeUndefined();
-    for (const [key, value] of [
-      ['credentialFactory', null],
-      ['signInWithCredential', null],
-      ['auth', null],
-      ['storage', {}],
-      ['matchMedia', null],
-      ['querySelectorAll', null],
+    for (const [key, value, message] of [
+      ['credentialFactory', null, 'credentialFactory must be a function'],
+      ['signInWithCredential', null, 'signInWithCredential must be a function'],
+      ['auth', null, 'auth must be provided'],
+      ['storage', {}, 'storage must provide a setItem function'],
+      ['matchMedia', null, 'matchMedia must be a function'],
+      ['querySelectorAll', null, 'querySelectorAll must be a function'],
     ]) {
       expect(() =>
         validateGoogleSignInDeps({ ...valid, [key]: value })
-      ).toThrow();
+      ).toThrow(message);
     }
   });
 });
