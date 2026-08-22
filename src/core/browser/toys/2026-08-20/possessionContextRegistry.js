@@ -19,8 +19,7 @@ export const possessionContextRegistry = input =>
  * @param value
  */
 function normalize(value) {
-  if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
-  const x = /** @type {Record<string, unknown>} */ (value);
+  const x = /** @type {Record<string, unknown>} */ (value || {});
   const possessionContextId = trimmedStringOrEmpty(x.possessionContextId),
     sku = trimmedStringOrEmpty(x.sku),
     segmentId = trimmedStringOrEmpty(x.segmentId);

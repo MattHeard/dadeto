@@ -270,8 +270,22 @@ describe('fulfillment primitives', () => {
             ],
           })
         )
-      ).possessionContexts.map(x => x.possessionContextId)
+    ).possessionContexts.map(x => x.possessionContextId)
     ).toEqual(['A', 'B']));
+  test('POSS2 requires all context identity fields', () => {
+    for (const context of [
+      { sku: 'S', segmentId: 'X' },
+      { possessionContextId: 'A', segmentId: 'X' },
+      { possessionContextId: 'A', sku: 'S' },
+      null,
+      [],
+    ]) {
+      expect(
+        JSON.parse(possessionContextRegistry(JSON.stringify({ possessionContexts: [context] })))
+          .possessionContexts
+      ).toEqual([]);
+    }
+  });
   test('ASSE6 filters SKU and temporal conflicts', () => {
     const result = JSON.parse(
       assetPossessionSegmentCandidateFilter(
