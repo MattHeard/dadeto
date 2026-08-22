@@ -1,0 +1,6 @@
+# Joy-Con mapper mutation-induced crashes
+
+- Unexpected hurdle: broad Stryker runs against `src/core/browser/inputHandlers/joyConMapper.js` can make individual mutated sandboxes crash or time out instead of producing a normal killed/survived result. The failures are mutation-induced execution failures, not evidence that the unmutated mapper crashes.
+- Diagnosis path: large-range scans produced worker error/timeout output while smaller serialized ranges completed and gave stable survivor counts. The mapper's WebHID, DOM, asynchronous listener, and state-machine paths make invalid mutant states especially likely to dereference missing values or leave lifecycle callbacks in an inconsistent state.
+- Operating rule: scan one narrow line range at a time with one worker and a bounded timeout; use the existing test-only exports and direct helper assertions. Treat a crash/timeout as an incomplete slice, preserve the report, and rerun the smallest failing range before changing production behavior.
+- Next-time guidance: do not interpret a crash as a surviving mutant. First reproduce it in a focused Jest test, then either add the missing contract assertion or mark the mutant as a verified static/instrumentation limitation only when the report supports that classification.
