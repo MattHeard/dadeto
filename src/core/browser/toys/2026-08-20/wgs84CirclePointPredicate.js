@@ -14,7 +14,9 @@ export function wgs84CirclePointPredicate(input) {
   if (!circle || !circle.center || !point) return 'false';
   let resolvedPoint;
   try {
-    resolvedPoint = resolvePoint(point, new Map((parsed.spacePoints || []).map(spacePoint => [String(spacePoint.spacePointId), spacePoint])));
+    resolvedPoint = resolvePoint(point, new Map((parsed.spacePoints || []).map(
+      /** @param {Record<string, unknown>} spacePoint */ spacePoint => [String(spacePoint.spacePointId), spacePoint]
+    )));
   } catch {
     return 'false';
   }

@@ -49,9 +49,6 @@ function validateFleetObject(fleet) {
  * @param {FleetShip[]} ships - Array of ship objects.
  */
 function placeShipsOnBoard(boardInfo, ships) {
-  if (!Array.isArray(ships)) {
-    return;
-  }
   ships.forEach(ship => placeSingleShipOnBoard(boardInfo, ship));
 }
 

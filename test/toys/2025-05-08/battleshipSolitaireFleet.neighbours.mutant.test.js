@@ -1,5 +1,8 @@
 import { describe, test, expect } from '@jest/globals';
-import { neighbours, battleshipSolitaireFleetTestOnly } from '../../../src/core/browser/toys/2025-05-08/battleshipSolitaireFleet.js';
+import {
+  neighbours,
+  battleshipSolitaireFleetTestOnly,
+} from '../../../src/core/browser/toys/2025-05-08/battleshipSolitaireFleet.js';
 
 const {
   isCoordNonNegative,
@@ -71,7 +74,9 @@ describe('neighbours mutants', () => {
       segs: [{ x: 0, y: 0 }],
       valid: true,
     });
-    expect([undefined, undefined].reduce(reduce, { segs: [], valid: true })).toEqual({
+    expect(
+      [undefined, undefined].reduce(reduce, { segs: [], valid: true })
+    ).toEqual({
       segs: [{ x: 0, y: 0 }],
       valid: false,
     });
@@ -88,32 +93,78 @@ describe('neighbours mutants', () => {
       occupied: new Set(['1,1']),
       segs: [{ x: 1, y: 0 }],
     };
-    expect(allSegsHaveNoOccupiedNeighbour(context.cfg, new Set(['2,2']), [{ x: 0, y: 0 }])).toBe(true);
-    expect(allSegsHaveNoOccupiedNeighbour(context.cfg, new Set(['2,2']), [{ x: 0, y: 0 }, { x: 1, y: 1 }])).toBe(false);
+    expect(
+      allSegsHaveNoOccupiedNeighbour(context.cfg, new Set(['2,2']), [
+        { x: 0, y: 0 },
+      ])
+    ).toBe(true);
+    expect(
+      allSegsHaveNoOccupiedNeighbour(context.cfg, new Set(['2,2']), [
+        { x: 0, y: 0 },
+        { x: 1, y: 1 },
+      ])
+    ).toBe(false);
     expect(isForbiddenTouch(context)).toBe(true);
-    expect(isForbiddenTouch({ ...context, cfg: { ...context.cfg, noTouching: false } })).toBe(false);
+    expect(
+      isForbiddenTouch({
+        ...context,
+        cfg: { ...context.cfg, noTouching: false },
+      })
+    ).toBe(false);
   });
 
   test('accepts and rejects candidate endpoints at board boundaries', () => {
     const cfg = { width: 4, height: 3, noTouching: false };
     const base = { start: { x: 0, y: 1 }, length: 3, cfg, occupied: new Set() };
-    expect(getCandidateIfInBounds('H', base)).toEqual({ start: base.start, length: 3, direction: 'H' });
+    expect(getCandidateIfInBounds('H', base)).toEqual({
+      start: base.start,
+      length: 3,
+      direction: 'H',
+    });
     expect(getCandidateIfInBounds('V', base)).toBeNull();
-    expect(getValidCandidate('H', base)).toEqual({ start: base.start, length: 3, direction: 'H' });
-    expect(getValidCandidate('H', { ...base, start: { x: 1, y: 1 }, length: 2, occupied: new Set(['2,1']) })).toBeNull();
-    expect(getValidCandidate('H', { ...base, length: 0 })).toEqual({ start: base.start, length: 0, direction: 'H' });
-    expect(getValidCandidate('H', { ...base, length: 0, cfg: { ...base.cfg, noTouching: true } })).toEqual({ start: base.start, length: 0, direction: 'H' });
-    expect(getValidCandidate('H', {
-      ...base,
-      length: 1,
-      cfg: { ...base.cfg, noTouching: true },
-      occupied: new Set(['undefined,undefined']),
-    })).toEqual({ start: base.start, length: 1, direction: 'H' });
+    expect(getValidCandidate('H', base)).toEqual({
+      start: base.start,
+      length: 3,
+      direction: 'H',
+    });
+    expect(
+      getValidCandidate('H', {
+        ...base,
+        start: { x: 1, y: 1 },
+        length: 2,
+        occupied: new Set(['2,1']),
+      })
+    ).toBeNull();
+    expect(getValidCandidate('H', { ...base, length: 0 })).toEqual({
+      start: base.start,
+      length: 0,
+      direction: 'H',
+    });
+    expect(
+      getValidCandidate('H', {
+        ...base,
+        length: 0,
+        cfg: { ...base.cfg, noTouching: true },
+      })
+    ).toEqual({ start: base.start, length: 0, direction: 'H' });
+    expect(
+      getValidCandidate('H', {
+        ...base,
+        length: 1,
+        cfg: { ...base.cfg, noTouching: true },
+        occupied: new Set(['undefined,undefined']),
+      })
+    ).toEqual({ start: base.start, length: 1, direction: 'H' });
   });
 
   test('enumerates every row start and marks every chosen segment', () => {
     const cfg = { width: 3, height: 1, noTouching: false };
-    const candidates = collectCandidatesForRow({ y: 0, length: 1, cfg, occupied: new Set() });
+    const candidates = collectCandidatesForRow({
+      y: 0,
+      length: 1,
+      cfg,
+      occupied: new Set(),
+    });
     expect(candidates).toHaveLength(6);
     const occupied = new Set();
     markOccupiedSquares({ direction: 'H', start: { x: 0, y: 0 } }, occupied, 3);

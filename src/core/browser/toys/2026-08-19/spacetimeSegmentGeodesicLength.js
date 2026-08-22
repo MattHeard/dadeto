@@ -52,7 +52,10 @@ function parseInput(input) {
     throw new Error('points and segment are required.');
   }
   return {
-    points: resolvePointRecords(parsed.points, parsed.spacePoints || []),
+    points:
+      /** @type {Array<{pointId: string, latitude: number, longitude: number}>} */ (
+        resolvePointRecords(parsed.points, parsed.spacePoints || [])
+      ),
     segment: /** @type {{startPointId: string, endPointId: string}} */ (
       parsed.segment
     ),

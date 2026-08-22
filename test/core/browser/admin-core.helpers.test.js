@@ -176,9 +176,9 @@ describe('admin token and global helper resolution', () => {
       expect(value).toBe('a+b/c');
       return '{}';
     });
-    expect(isAdminToken('header.a-b_c.signature', jsonParser, decodeBase64)).toBe(
-      false
-    );
+    expect(
+      isAdminToken('header.a-b_c.signature', jsonParser, decodeBase64)
+    ).toBe(false);
   });
 
   it('rejects tokens whose payload cannot be decoded', () => {
@@ -186,9 +186,9 @@ describe('admin token and global helper resolution', () => {
     const decodeBase64 = jest.fn(() => {
       throw new Error('invalid payload');
     });
-    expect(isAdminToken('header.payload.signature', jsonParser, decodeBase64)).toBe(
-      false
-    );
+    expect(
+      isAdminToken('header.payload.signature', jsonParser, decodeBase64)
+    ).toBe(false);
     expect(jsonParser.parse).not.toHaveBeenCalled();
   });
 });
@@ -257,7 +257,11 @@ describe('createGoogleAuthModule', () => {
 
   it('initializes Google sign-in through the injected browser helpers', async () => {
     const initialize = jest.fn();
-    const storage = { getItem: jest.fn(), removeItem: jest.fn(), setItem: jest.fn() };
+    const storage = {
+      getItem: jest.fn(),
+      removeItem: jest.fn(),
+      setItem: jest.fn(),
+    };
     const scope = {
       window: {
         google: { accounts: { id: { initialize, renderButton: jest.fn() } } },
@@ -275,10 +279,12 @@ describe('createGoogleAuthModule', () => {
     });
 
     await module.initGoogleSignIn();
-    expect(initialize).toHaveBeenCalledWith(expect.objectContaining({
-      ux_mode: 'popup',
-      callback: expect.any(Function),
-    }));
+    expect(initialize).toHaveBeenCalledWith(
+      expect.objectContaining({
+        ux_mode: 'popup',
+        callback: expect.any(Function),
+      })
+    );
   });
 });
 

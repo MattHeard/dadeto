@@ -174,6 +174,13 @@ describe('object-minute structured input handlers', () => {
     });
   });
 
+  test('uses empty values when the initial structured value is invalid', () => {
+    const dom = createDom();
+    const container = { children: [] };
+    possessionRequestHandler(dom, container, { value: 'not-json' });
+    expect(container.children[0].children[0].children[1].value).toBe('');
+  });
+
   test('removes and disposes an existing form before replacement', () => {
     const dom = createDom();
     const oldForm = { _dispose: jest.fn() };

@@ -31,7 +31,7 @@ function findUniqueKey(prefix, keySet) {
     { length: keySet.size + 1 },
     (_, index) => index + 1
   ).find(candidate => !keySet.has(prefix + candidate));
-  return prefix + (suffix ?? keySet.size + 1);
+  return prefix + suffix;
 }
 
 /**

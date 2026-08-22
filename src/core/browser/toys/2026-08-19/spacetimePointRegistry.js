@@ -1,7 +1,11 @@
 // Toy: Spacetime Point Registry
 // (input, env) -> string
 
-import { buildRegistry } from '../2026-08-18/registryUtils.js';
+import {
+  buildRegistry,
+  normalizeCoordinate,
+  normalizeCoordinateRecord,
+} from '../2026-08-18/registryUtils.js';
 import { trimmedStringOrEmpty } from '../../validation.js';
 
 /**
@@ -23,12 +27,12 @@ export const spacetimePointRegistry = input =>
  * @returns {{pointId: string, latitude: number, longitude: number, timestamp: string}|null} Normalized point.
  */
 function normalizePoint(value) {
-  if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
   const point = /** @type {Record<string, unknown>} */ (value);
-  const pointId = trimmedStringOrEmpty(point.pointId);
+  const coordinates = normalizeCoordinateRecord(value, 'pointId', true);
+  const pointId = coordinates?.id ?? '';
   const spacePointId = trimmedStringOrEmpty(point.spacePointId);
-  const latitude = normalizeCoordinate(point.latitude, -90, 90);
-  const longitude = normalizeCoordinate(point.longitude, -180, 180);
+  const latitude = coordinates?.latitude ?? null;
+  const longitude = coordinates?.longitude ?? null;
   const timestamp = normalizeUtcMinute(point.timestamp);
   if (
     !pointId ||
@@ -44,7 +48,9 @@ function normalizePoint(value) {
     ...(latitude === null ? {} : { latitude, longitude }),
     timestamp,
   };
-  return normalized;
+  return /** @type {{pointId: string, latitude: number, longitude: number, timestamp: string}} */ (
+    normalized
+  );
 }
 
 /**
@@ -54,16 +60,6 @@ function normalizePoint(value) {
  * @param {number} maximum Inclusive upper bound.
  * @returns {number|null} Rounded coordinate or null when invalid.
  */
-function normalizeCoordinate(value, minimum, maximum) {
-  if (typeof value !== 'number' || !Number.isFinite(value)) {
-    return null;
-  }
-  if (value < minimum || value > maximum) {
-    return null;
-  }
-  return Number(value.toFixed(6));
-}
-
 /**
  * Normalize a UTC timestamp to minute precision.
  * @param {unknown} value Candidate timestamp.

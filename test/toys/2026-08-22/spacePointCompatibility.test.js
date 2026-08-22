@@ -4,6 +4,10 @@ import { spacetimePointRegistry } from '../../../src/core/browser/toys/2026-08-1
 import { spacetimeSegmentGeodesicLength } from '../../../src/core/browser/toys/2026-08-19/spacetimeSegmentGeodesicLength.js';
 import { constantSpeedGeodesicTravelDuration } from '../../../src/core/browser/toys/2026-08-20/constantSpeedGeodesicTravelDuration.js';
 import { wgs84CirclePointPredicate } from '../../../src/core/browser/toys/2026-08-20/wgs84CirclePointPredicate.js';
+import {
+  resolvePoint,
+  resolvePointRecords,
+} from '../../../src/core/browser/toys/2026-08-22/spacePointResolution.js';
 
 const spacePoints = [
   { spacePointId: 'LOC1', latitude: 51.5, longitude: -0.12 },
@@ -15,6 +19,48 @@ const point = {
 };
 
 describe('atemporal space-point compatibility', () => {
+  test('rejects malformed registry points and resolves all reference boundaries', () => {
+    expect(
+      JSON.parse(
+        spacePointRegistry(
+          JSON.stringify({
+            spacePoints: [
+              null,
+              {},
+              { spacePointId: 'X', latitude: 91, longitude: 0 },
+            ],
+          })
+        )
+      ).spacePoints
+    ).toEqual([]);
+    const map = new Map(spacePoints.map(value => [value.spacePointId, value]));
+    expect(
+      resolvePoint({ pointId: 'P', spacePointId: 'LOC1' }, map)
+    ).toMatchObject(spacePoints[0]);
+    expect(
+      resolvePointRecords(
+        [{ pointId: 'P', spacePointId: 'LOC1' }],
+        spacePoints,
+        true
+      )[0]
+    ).toMatchObject(spacePoints[0]);
+    expect(() =>
+      resolvePoint({ pointId: 'P', spacePointId: 'MISSING' }, map)
+    ).toThrow('Unknown space point');
+    expect(() => resolvePoint({ pointId: 'P' }, map, true)).toThrow(
+      'has no coordinates'
+    );
+    expect(() =>
+      resolvePoint({ pointId: 'P', spacePointId: 'LOC1', latitude: 1 }, map)
+    ).toThrow('incomplete coordinates');
+    expect(() =>
+      resolvePoint(
+        { pointId: 'P', spacePointId: 'LOC1', latitude: 1, longitude: 2 },
+        map
+      )
+    ).toThrow('conflicts');
+  });
+
   test('SPAC8 normalizes atemporal WGS84 points', () => {
     const result = JSON.parse(
       spacePointRegistry(JSON.stringify({ spacePoints }))

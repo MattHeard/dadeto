@@ -94,6 +94,19 @@ describe('spacetimePointRegistry', () => {
     });
     expect(normalizePoint(null)).toBeNull();
     expect(normalizePoint([])).toBeNull();
+    expect(
+      normalizePoint({
+        pointId: 'P',
+        latitude: 0,
+        longitude: 0,
+        timestamp: '2026-08-21T09:05Z',
+      })
+    ).toEqual({
+      pointId: 'P',
+      latitude: 0,
+      longitude: 0,
+      timestamp: '2026-08-21T09:05Z',
+    });
     const functionWithPointFields = Object.assign(() => {}, {
       pointId: 'P',
       latitude: 0,

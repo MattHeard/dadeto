@@ -92,6 +92,19 @@ function memoryEnv() {
 }
 
 describe('dated toy boundary matrix', () => {
+  test('covers WGS84 parser and resolver failures explicitly', () => {
+    expect(wgs84CirclePointPredicate('not-json')).toBe('false');
+    expect(
+      wgs84CirclePointPredicate(
+        JSON.stringify({
+          circle: { center: { latitude: 0, longitude: 0 }, radiusMeters: 1 },
+          point: { spacePointId: 'missing' },
+          spacePoints: [],
+        })
+      )
+    ).toBe('false');
+  });
+
   test('covers valid registry and interval boundaries', () => {
     const points = [
       {

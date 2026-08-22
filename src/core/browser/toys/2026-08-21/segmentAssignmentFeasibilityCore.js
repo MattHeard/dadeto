@@ -45,7 +45,7 @@ export function resolveSegment(segments, points, segmentId) {
  * @param {Record<string, unknown>} candidateSegment Candidate segment.
  * @param {Record<string, unknown>} entryPoint Entry anchor.
  * @param {Record<string, unknown>|undefined} exitPoint Optional exit anchor.
- * @param spacePointsInput
+ * @param {Array<Record<string, unknown>>} spacePointsInput
  * @returns {{feasible: boolean, reason?: string}} Feasibility result.
  */
 // eslint-disable-next-line max-params

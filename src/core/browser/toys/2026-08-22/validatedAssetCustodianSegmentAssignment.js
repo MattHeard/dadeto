@@ -35,7 +35,7 @@ export function validatedAssetCustodianSegmentAssignment(input, env) {
         reason: 'runner:excessive-speed',
       });
     const asset = evaluateWorldLine(
-      x.points || [],
+      x.points,
       x.existingAssetSegments || [],
       x.candidateSegment,
       x.stockInPoint,

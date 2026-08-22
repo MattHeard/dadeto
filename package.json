@@ -10,7 +10,7 @@
     "check:fast": "node src/local/run-check.js --fail-fast",
     "test": "node scripts/check-node-version.js && npm run test:unit && npm run test:e2e",
     "test:unit": "node scripts/run-jest-with-coverage.js",
-    "tsdoc:check": "tsc --project tsconfig.jsdoc.json",
+    "tsdoc:check": "node --max-old-space-size=384 node_modules/typescript/bin/tsc --project tsconfig.jsdoc.json",
     "test:e2e": "npm run build && node scripts/run-e2e.js",
     "test:e2e:cloud": "node scripts/run-e2e.js --suite cloud",
     "test:e2e:local": "npm run build && node scripts/run-e2e.js --suite local",

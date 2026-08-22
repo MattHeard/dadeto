@@ -430,6 +430,9 @@ function getValidCandidate(direction, context) {
   );
 }
 
+/**
+ *
+ */
 function createEmptySegments() {
   // Stryker disable next-line all -- an empty accumulator is a structural seed.
   return new Array();

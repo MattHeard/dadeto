@@ -21,6 +21,48 @@ export function sortByStableKey(values, key) {
   return values.sort((left, right) => key(left).localeCompare(key(right)));
 }
 import { parseObjectRecord } from '../../validation.js';
+import { trimmedStringOrEmpty } from '../../validation.js';
+
+/**
+ * Normalize a record containing an identifier and bounded WGS84 coordinates.
+ * @param {unknown} value Candidate record.
+ * @param {string} idKey Identifier field.
+ * @param {boolean} [allowMissingCoordinates] Whether an identifier-only record is valid.
+ * @returns {{id: string, latitude: number|null, longitude: number|null}|null} Normalized coordinates.
+ */
+export function normalizeCoordinateRecord(
+  value,
+  idKey,
+  allowMissingCoordinates = false
+) {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
+  const point = /** @type {Record<string, unknown>} */ (value);
+  const id = trimmedStringOrEmpty(point[idKey]);
+  const latitude = normalizeCoordinate(point.latitude, -90, 90);
+  const longitude = normalizeCoordinate(point.longitude, -180, 180);
+  return id &&
+    ((latitude !== null && longitude !== null) || allowMissingCoordinates)
+    ? { id, latitude, longitude }
+    : null;
+}
+
+/**
+ * Normalize and round one bounded coordinate.
+ * @param {unknown} value Candidate coordinate.
+ * @param {number} minimum Inclusive lower bound.
+ * @param {number} maximum Inclusive upper bound.
+ * @returns {number|null} Rounded coordinate or null when invalid.
+ */
+export function normalizeCoordinate(value, minimum, maximum) {
+  if (
+    typeof value !== 'number' ||
+    !Number.isFinite(value) ||
+    value < minimum ||
+    value > maximum
+  )
+    return null;
+  return Number(value.toFixed(6));
+}
 
 /**
  * Parse a registry payload, defaulting malformed input to an empty record.

@@ -106,7 +106,7 @@ export function evaluateRunnerWorldLine(input, shift) {
     candidateSegment,
     shift.clockInPoint,
     shift.clockOutPoint,
-    input.spacePoints || []
+    readAssignmentRecords(input, 'spacePoints')
   );
 }
 
@@ -117,5 +117,10 @@ export function evaluateRunnerWorldLine(input, shift) {
  */
 export function buildPoints(input) {
   const pointValues = readAssignmentRecords(input, 'points');
-  return new Map(pointValues.map(point => [String(point.pointId), point]));
+  return new Map(
+    readAssignmentRecords(input, 'points').map(point => [
+      String(point.pointId),
+      point,
+    ])
+  );
 }

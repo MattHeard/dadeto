@@ -208,7 +208,9 @@ describe('admin/core uncovered branches', () => {
     };
     const doc = {
       getElementById: id =>
-        ({ regenAuthorForm: form, regenAuthorInput: { value: 'author-42' } })[id] ?? null,
+        ({ regenAuthorForm: form, regenAuthorInput: { value: 'author-42' } })[
+          id
+        ] ?? null,
       querySelectorAll: () => [],
     };
     const fetchFn = jest.fn();

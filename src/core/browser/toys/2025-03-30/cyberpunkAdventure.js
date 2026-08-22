@@ -269,12 +269,16 @@ function respondWithInventory(output, nextState, { inventory, visited }) {
 
 /**
  * Respond using the context's inventory/visit tracking.
- * @param {AdventureContext} context Response context.
+ * @param {AdventureContext} _context Response context.
  * @param {string} output Text to show.
  * @param {AdventureState} nextState Next adventure state.
  * @returns {AdventureResult} Transition response.
  */
-function respondWithContext(_context, output, nextState) {
+function respondWithContext(
+  /** @type {AdventureContext} */ _context,
+  output,
+  nextState
+) {
   return buildSimpleAdventureResponse(output, nextState);
 }
 
