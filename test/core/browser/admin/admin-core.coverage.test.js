@@ -191,6 +191,11 @@ describe('admin-core additional coverage', () => {
     });
 
     it('validates querySelectorAll availability', () => {
+      const missingScope = createQuerySelectorAll(undefined);
+      expect(() => missingScope('div')).toThrow(
+        new Error('document is not available')
+      );
+
       const missingDocument = createQuerySelectorAll({});
       expect(() => missingDocument('div')).toThrow(
         new Error('document is not available')
