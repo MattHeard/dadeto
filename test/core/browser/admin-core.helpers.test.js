@@ -1061,6 +1061,43 @@ describe('stats and regeneration handlers', () => {
     );
     expect(failedMessage).toHaveBeenCalledWith('Regeneration failed');
 
+    const runFailedResponse = async response => {
+      const report = jest.fn();
+      await createRegenerateVariant({
+        googleAuth: { getIdToken: jest.fn().mockResolvedValue('token') },
+        doc,
+        showMessage: jest.fn(),
+        getAdminEndpointsFn: () =>
+          Promise.resolve({ markVariantDirtyUrl: '/dirty' }),
+        fetchFn: jest.fn().mockResolvedValue(response),
+        reportError: report,
+      })({ preventDefault: jest.fn() });
+      return report.mock.calls[0][0];
+    };
+    await expect(runFailedResponse({ ok: false })).resolves.toEqual(
+      new Error('HTTP unknown')
+    );
+    await expect(runFailedResponse(null)).resolves.toEqual(
+      new Error('HTTP unknown')
+    );
+    await expect(
+      runFailedResponse({ ok: false, status: 400, text: 'not callable' })
+    ).resolves.toEqual(new Error('HTTP 400'));
+    await expect(
+      runFailedResponse({
+        ok: false,
+        status: 400,
+        text: () => Promise.resolve('   '),
+      })
+    ).resolves.toEqual(new Error('HTTP 400'));
+    const longBody = 'x'.repeat(301);
+    const longError = await runFailedResponse({
+      ok: false,
+      status: 400,
+      text: () => Promise.resolve(longBody),
+    });
+    expect(longError.message).toBe(`HTTP 400: ${'x'.repeat(300)}`);
+
     expect(() =>
       createRegenerateVariant({
         googleAuth: null,
