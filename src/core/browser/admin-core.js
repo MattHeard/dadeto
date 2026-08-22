@@ -877,7 +877,7 @@ const bindSubmitEvent = createElementEventBinder('submit');
  * @param {string} eventType - Named event type handled by the binder.
  * @returns {(doc: Document, elementId: string, listener: (event: Event) => void | Promise<void>) => HTMLElement | null} Binder that attaches the listener to the resolved element.
  */
-function createElementEventBinder(eventType) {
+export function createElementEventBinder(eventType) {
   /**
    * Bind the listener to the element resolved from the provided document.
    * @param {Document} doc - Document used to locate the element.
@@ -962,7 +962,7 @@ export function createWireSignOut(doc, googleAuth) {
  * @param {{ signOut: () => Promise<void> | void }} googleAuth - Auth helper used to sign the admin out.
  * @returns {void}
  */
-function ensureSignOutAuth(googleAuth) {
+export function ensureSignOutAuth(googleAuth) {
   if (!hasSignOutMethod(googleAuth)) {
     throw new TypeError('googleAuth must provide a signOut function');
   }
@@ -973,7 +973,7 @@ function ensureSignOutAuth(googleAuth) {
  * @param {{ querySelectorAll?: (selector: string) => NodeList }} doc - Document-like object used during binding.
  * @returns {void}
  */
-function ensureSignOutDoc(doc) {
+export function ensureSignOutDoc(doc) {
   if (!hasQuerySelectorAll(doc)) {
     throw new TypeError('doc must be a Document-like object');
   }
@@ -985,7 +985,7 @@ function ensureSignOutDoc(doc) {
  * @param {{ signOut: () => Promise<void> | void }} googleAuth - Auth helper used by the handler.
  * @returns {void}
  */
-function attachSignOutLink(link, googleAuth) {
+export function attachSignOutLink(link, googleAuth) {
   if (!canListenToEvent(link)) {
     return;
   }
@@ -1000,7 +1000,7 @@ function attachSignOutLink(link, googleAuth) {
  * @param {{ signOut: () => Promise<void> | void }} googleAuth - Auth helper passed to each listener.
  * @returns {void}
  */
-function attachSignOutLinks(doc, googleAuth) {
+export function attachSignOutLinks(doc, googleAuth) {
   doc
     .querySelectorAll('#signoutLink')
     .forEach(link =>
@@ -1013,7 +1013,7 @@ function attachSignOutLinks(doc, googleAuth) {
  * @param {{ signOut: () => Promise<void> | void }} googleAuth - Auth helper whose signOut is invoked.
  * @returns {(event: Event) => Promise<void>} Click handler that triggers sign-out.
  */
-function createSignOutClickHandler(googleAuth) {
+export function createSignOutClickHandler(googleAuth) {
   return async event => {
     preventDefaultEvent(event);
     await googleAuth.signOut();

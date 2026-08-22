@@ -10,6 +10,12 @@ import {
   createGetAdminEndpoints,
   createTriggerRender,
   createShowMessage,
+  createElementEventBinder,
+  ensureSignOutAuth,
+  ensureSignOutDoc,
+  attachSignOutLink,
+  attachSignOutLinks,
+  createSignOutClickHandler,
   getAdminContent,
   getCurrentUser,
   getSignInButtons,
@@ -409,6 +415,36 @@ describe('admin nested traversal and logger helpers', () => {
     expect(typeof logger.error).toBe('function');
     expect(logger.error()).toBeUndefined();
     expect(noopLoggerError()).toBeUndefined();
+  });
+});
+
+describe('admin event and sign-out helpers', () => {
+  it('creates event binders that attach only to listenable elements', () => {
+    const element = { addEventListener: jest.fn() };
+    const doc = { getElementById: jest.fn().mockReturnValue(element) };
+    const listener = jest.fn();
+    expect(createElementEventBinder('click')(doc, 'button', listener)).toBe(element);
+    expect(element.addEventListener).toHaveBeenCalledWith('click', listener);
+    expect(createElementEventBinder('submit')({ getElementById: () => null }, 'form', listener)).toBeNull();
+  });
+
+  it('validates sign-out dependencies and wires links safely', async () => {
+    const signOut = jest.fn().mockResolvedValue();
+    const auth = { signOut };
+    expect(ensureSignOutAuth(auth)).toBeUndefined();
+    expect(() => ensureSignOutAuth(null)).toThrow('googleAuth must provide a signOut function');
+    const link = { addEventListener: jest.fn() };
+    const doc = { querySelectorAll: jest.fn().mockReturnValue([link]) };
+    expect(ensureSignOutDoc(doc)).toBeUndefined();
+    expect(() => ensureSignOutDoc({})).toThrow('Document-like');
+    attachSignOutLink(link, auth);
+    expect(link.addEventListener).toHaveBeenCalledWith('click', expect.any(Function));
+    attachSignOutLink({}, auth);
+    attachSignOutLinks(doc, auth);
+    const event = { preventDefault: jest.fn() };
+    await createSignOutClickHandler(auth)(event);
+    expect(event.preventDefault).toHaveBeenCalled();
+    expect(signOut).toHaveBeenCalled();
   });
 });
 
