@@ -68,6 +68,39 @@ describe('fulfillment primitives', () => {
         })
       )
     ).toBe('false'));
+  test('AREA2 returns true only when both endpoints are inside the circle', () => {
+    const circle = { center: { latitude: 0, longitude: 0 }, radiusMeters: 2000 };
+    expect(wgs84CircleSegmentPredicate(JSON.stringify({
+      points,
+      segment: segments[0],
+      circle,
+    }))).toBe('true');
+    expect(wgs84CircleSegmentPredicate(JSON.stringify({
+      points,
+      segment: segments[1],
+      circle: { ...circle, radiusMeters: 100 },
+    }))).toBe('false');
+    expect(wgs84CircleSegmentPredicate(JSON.stringify({
+      points,
+      segment: segments[0],
+      circle: { ...circle, radiusMeters: 100 },
+    }))).toBe('false');
+    expect(wgs84CircleSegmentPredicate(JSON.stringify({
+      points,
+      segment: { startPointId: 'B', endPointId: 'A' },
+      circle: { ...circle, radiusMeters: 100 },
+    }))).toBe('false');
+  });
+  test('AREA2 rejects malformed, missing, and incomplete segment input', () => {
+    expect(wgs84CircleSegmentPredicate('not json')).toBe('false');
+    expect(wgs84CircleSegmentPredicate('{}')).toBe('false');
+    expect(wgs84CircleSegmentPredicate(JSON.stringify({ points }))).toBe('false');
+    expect(wgs84CircleSegmentPredicate(JSON.stringify({
+      points,
+      segment: { startPointId: 'A' },
+      circle: { center: { latitude: 0, longitude: 0 }, radiusMeters: 2000 },
+    }))).toBe('false');
+  });
   test('TRAV1 returns seconds', () =>
     expect(
       JSON.parse(
