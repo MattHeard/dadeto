@@ -100,7 +100,6 @@ function vincentyDistance(
       (cosReduced2 * sinLambda) ** 2 +
         (cosReduced1 * sinReduced2 - sinReduced1 * cosReduced2 * cosLambda) ** 2
     );
-    if (sinSigma === 0) return 0;
     cosSigma =
       sinReduced1 * sinReduced2 + cosReduced1 * cosReduced2 * cosLambda;
     sigma = Math.atan2(sinSigma, cosSigma);
