@@ -71,9 +71,12 @@ describe('assetSegmentAssignmentList', () => {
   test.each([
     ['null', 'Input must be a JSON object.'],
     ['[]', 'Input must be a JSON object.'],
+    ['0', 'Input must be a JSON object.'],
     [JSON.stringify({ path: 'items' }), 'An assignment object is required.'],
+    [JSON.stringify({ path: 'items', assignment: null }), 'An assignment object is required.'],
     [JSON.stringify({ path: 'items', assignment: [] }), 'An assignment object is required.'],
-    [JSON.stringify({ path: 'items', assignment: { assetId: 'A', segmentId: 'S' } }), ''],
+    [JSON.stringify({ path: 'items', assignment: { assetId: '', segmentId: 'S' } }), 'An assignment requires assetId and segmentId.'],
+    [JSON.stringify({ path: 'items', assignment: { assetId: 'A', segmentId: '' } }), 'An assignment requires assetId and segmentId.'],
   ])('returns precise validation for %s', (value, error) => {
     const result = JSON.parse(assetSegmentAssignmentList(value, makeEnv().env));
     if (error) expect(result).toEqual({ appended: false, error });
@@ -85,5 +88,15 @@ describe('assetSegmentAssignmentList', () => {
       appended: false,
       error: 'A path is required.',
     });
+  });
+
+  test('coerces a numeric path before persisting', () => {
+    const fixture = makeEnv();
+    const result = JSON.parse(assetSegmentAssignmentList(JSON.stringify({
+      path: 42,
+      assignment: { assetId: 'A', segmentId: 'S' },
+    }), fixture.env));
+    expect(result).toMatchObject({ appended: true, length: 1 });
+    expect(fixture.state.temporary['42']).toEqual([{ assetId: 'A', segmentId: 'S' }]);
   });
 });
