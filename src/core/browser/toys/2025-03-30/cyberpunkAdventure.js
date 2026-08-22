@@ -274,11 +274,8 @@ function respondWithInventory(output, nextState, { inventory, visited }) {
  * @param {AdventureState} nextState Next adventure state.
  * @returns {AdventureResult} Transition response.
  */
-function respondWithContext(context, output, nextState) {
-  return respondWithInventory(output, nextState, {
-    inventory: context.nextInventory,
-    visited: context.nextVisited,
-  });
+function respondWithContext(_context, output, nextState) {
+  return buildSimpleAdventureResponse(output, nextState);
 }
 
 /**
@@ -474,15 +471,10 @@ function getUpdatedVisited(result, nextVisited) {
  * @template {(...args: unknown[]) => unknown} T
  * @param {AdventureEnvironment} env - Environment map containing the toy helpers.
  * @param {AdventureEnvKey} key - Dependency key to retrieve.
- * @param {string} label - Human-friendly label used in error reporting.
  * @returns {T} Requested dependency implementation.
  */
-function requireEnvFunction(env, key, label) {
-  const candidate = /** @type {T | undefined} */ (env.get(key));
-  if (!candidate) {
-    throw new Error(`Missing ${label} dependency for the adventure.`);
-  }
-  return candidate;
+function requireEnvFunction(env, key) {
+  return /** @type {T} */ (env.get(key));
 }
 
 /**
@@ -493,16 +485,16 @@ function requireEnvFunction(env, key, label) {
  */
 function runAdventure(input, env) {
   const getRandomNumber = /** @type {() => number} */ (
-    requireEnvFunction(env, 'getRandomNumber', 'random number generator')
+    requireEnvFunction(env, 'getRandomNumber')
   );
   const getCurrentTime = /** @type {() => string} */ (
-    requireEnvFunction(env, 'getCurrentTime', 'time provider')
+    requireEnvFunction(env, 'getCurrentTime')
   );
   const getData = /** @type {() => AdventureDataEnvelope} */ (
-    requireEnvFunction(env, 'getData', 'state accessor')
+    requireEnvFunction(env, 'getData')
   );
   const setTemporaryData = /** @type {AdventureStateSetter} */ (
-    requireEnvFunction(env, 'setLocalTemporaryData', 'temporary state setter')
+    requireEnvFunction(env, 'setLocalTemporaryData')
   );
   const scoped = getScopedState(getData());
 
@@ -511,7 +503,7 @@ function runAdventure(input, env) {
   const inventory = getPlayerInventory(scoped);
   const visited = getPlayerVisited(scoped);
 
-  const lowerInput = input.trim().toLowerCase();
+  const lowerInput = normalizeCyberpunkInput(input);
   const time = getCurrentTime();
 
   const nextInventory = [...inventory];
@@ -533,6 +525,15 @@ function runAdventure(input, env) {
   });
 
   return processAdventureStep(adventureContext, setTemporaryData);
+}
+
+/**
+ * Normalize a player command before keyword matching.
+ * @param {string} input Raw player command.
+ * @returns {string} Trimmed lowercase command.
+ */
+export function normalizeCyberpunkInput(input) {
+  return input.trim().toLowerCase();
 }
 
 /**

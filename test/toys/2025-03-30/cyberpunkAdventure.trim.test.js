@@ -1,7 +1,14 @@
 import { describe, test, expect } from '@jest/globals';
-import { cyberpunkAdventure } from '../../../src/core/browser/toys/2025-03-30/cyberpunkAdventure.js';
+import {
+  cyberpunkAdventure,
+  normalizeCyberpunkInput,
+} from '../../../src/core/browser/toys/2025-03-30/cyberpunkAdventure.js';
 
 describe('cyberpunkAdventure input trimming', () => {
+  test('normalizes command whitespace and case directly', () => {
+    expect(normalizeCyberpunkInput('  StArT\n')).toBe('start');
+  });
+
   test('trims whitespace around commands', () => {
     let tempData = {};
     const env = new Map([
@@ -19,5 +26,9 @@ describe('cyberpunkAdventure input trimming', () => {
     cyberpunkAdventure('Blaze', env);
     const result = cyberpunkAdventure('   start  ', env);
     expect(result).toMatch(/Neon Market/);
+    tempData = {};
+    cyberpunkAdventure('Blaze', env);
+    const tabbedResult = cyberpunkAdventure('\tstart\n', env);
+    expect(tabbedResult).toMatch(/Neon Market/);
   });
 });
