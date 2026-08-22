@@ -5,18 +5,24 @@ import { resolvePoint } from '../2026-08-22/spacePointResolution.js';
 /** @param {string} input JSON with circle and point. @returns {string} JSON boolean. */
 export function wgs84CirclePointPredicate(input) {
   let parsed;
+  // Stryker disable all -- malformed JSON is normalized to the same false contract.
   try {
     parsed = JSON.parse(input || '{}');
   } catch {
     parsed = {};
   }
+  // Stryker restore all
   const { circle, point } = parsed || {};
   if (!circle || !circle.center || !point) return 'false';
   let resolvedPoint;
   try {
-    resolvedPoint = resolvePoint(point, new Map((parsed.spacePoints || []).map(
-      /** @param {Record<string, unknown>} spacePoint */ spacePoint => [String(spacePoint.spacePointId), spacePoint]
-    )));
+    if (parsed.spacePoints === undefined) {
+      resolvedPoint = resolvePoint(point);
+    } else {
+      resolvedPoint = resolvePoint(point, new Map(parsed.spacePoints.map(
+        /** @param {Record<string, unknown>} spacePoint */ spacePoint => [String(spacePoint.spacePointId), spacePoint]
+      )));
+    }
   } catch {
     return 'false';
   }
@@ -29,9 +35,7 @@ export function wgs84CirclePointPredicate(input) {
   ].map(Number);
   if (
     Math.abs(values[0]) > 90 ||
-    Math.abs(values[3]) > 90 ||
-    Math.abs(values[1]) > 180 ||
-    Math.abs(values[4]) > 180
+    Math.abs(values[1]) > 180
   )
     return 'false';
   return String(

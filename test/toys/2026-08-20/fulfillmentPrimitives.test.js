@@ -77,6 +77,18 @@ describe('fulfillment primitives', () => {
       )
     ).toBe('true');
   });
+  test('AREA1 resolves referenced space-point coordinates', () => {
+    expect(wgs84CirclePointPredicate(JSON.stringify({
+      circle: { center: { latitude: 0, longitude: 0 }, radiusMeters: 100 },
+      point: { pointId: 'P', spacePointId: 'SP' },
+      spacePoints: [{ spacePointId: 'SP', latitude: 0, longitude: 0 }],
+    }))).toBe('true');
+    expect(wgs84CirclePointPredicate(JSON.stringify({
+      circle: { center: { latitude: 0, longitude: 0 }, radiusMeters: 100 },
+      point: { pointId: 'P', latitude: 0, longitude: 0 },
+      spacePoints: null,
+    }))).toBe('false');
+  });
   test('AREA1 rejects missing, non-finite, negative, and out-of-range values', () => {
     const validPoint = { latitude: 0, longitude: 0 };
     const validCircle = {
