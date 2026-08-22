@@ -814,6 +814,10 @@ export {
 };
 
 export const battleshipSolitaireFleetTestOnly = {
+  isCoordNonNegative,
+  isCoordWithinBoard,
+  inBounds,
+  dxReducerForNeighbour,
   chooseAndMarkCandidate,
   placeShip,
   shouldAbortPlacement,
