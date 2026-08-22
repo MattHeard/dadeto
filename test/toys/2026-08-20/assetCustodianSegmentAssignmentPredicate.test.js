@@ -69,6 +69,16 @@ describe('assetCustodianSegmentAssignmentPredicate', () => {
         )
       )
     ).toBe('true'));
+  test('rejects when both the asset and custodian are occupied', () =>
+    expect(
+      assetCustodianSegmentAssignmentPredicate(
+        payload(
+          [{ assetId: 'A1', segmentId: 'S1' }],
+          [{ personId: 'C1', segmentId: 'S1' }],
+          { assetId: 'A1', segmentId: 'S3', custodianPersonId: 'C1' }
+        )
+      )
+    ).toBe('false'));
 
   test('returns false for malformed requests and incomplete assignments', () => {
     expect(assetCustodianSegmentAssignmentPredicate('{')).toBe('false');
@@ -177,9 +187,24 @@ describe('assetCustodianSegmentAssignmentPredicate', () => {
       assetId: 'A1', segmentId: 'S1', custodianPersonId: 'C1',
     }));
     expect(parseRequest(JSON.stringify(baseRequest)).assetAssignments).toEqual([]);
+    expect(
+      parseRequest(
+        JSON.stringify({
+          ...baseRequest,
+          assetAssignments: [null, { assetId: ' A1 ', segmentId: ' S1 ' }],
+          personAssignments: [null, { personId: ' C1 ', segmentId: ' S1 ' }],
+        })
+      )
+    ).toMatchObject({
+      assetAssignments: [{ assetId: 'A1', segmentId: 'S1' }],
+      personAssignments: [{ personId: 'C1', segmentId: 'S1' }],
+    });
     expect(normalizeAsset({ assetId: ' A1 ', segmentId: ' S1 ' })).toEqual({ assetId: 'A1', segmentId: 'S1' });
+    expect(normalizeAsset({ assetId: 1, segmentId: 2 })).toEqual({ assetId: '1', segmentId: '2' });
     expect(normalizePerson({ personId: ' C1 ', segmentId: ' S1 ' })).toEqual({ personId: 'C1', segmentId: 'S1' });
+    expect(normalizePerson({ personId: 1, segmentId: 2 })).toEqual({ personId: '1', segmentId: '2' });
     expect(normalizeProposed(baseRequest.proposedAssignment)).toEqual(baseRequest.proposedAssignment);
+    expect(normalizeProposed({ assetId: 1, segmentId: 2, custodianPersonId: 3 })).toEqual({ assetId: '1', segmentId: '2', custodianPersonId: '3' });
     expect(normalizeAsset(null)).toBeNull();
     expect(normalizePerson([])).toBeNull();
     expect(normalizeProposed({ assetId: 'A1', segmentId: 'S1' })).toBeNull();
@@ -187,6 +212,8 @@ describe('assetCustodianSegmentAssignmentPredicate', () => {
     const segments = new Map(baseRequest.segments.map(segment => [segment.segmentId, segment]));
     expect(resolveInterval(segments, points, 'S1').startTime).toBe(Date.parse(baseRequest.points[0].timestamp));
     expect(() => resolveInterval(segments, points, 'missing')).toThrow('Unknown segment: missing');
+    expect(() => resolveInterval(segments, points, 'S1')).not.toThrow();
+    expect(() => resolveInterval(new Map([['S', { startPointId: 'P1', endPointId: 'missing' }]]), points, 'S')).toThrow('unknown point');
     expect(overlaps({ startTime: 0, endTime: 1 }, { startTime: 1, endTime: 2 })).toBe(false);
   });
 });
