@@ -417,6 +417,24 @@ describe('moderate core', () => {
     expect(mockFetch).toHaveBeenCalledTimes(3);
     expect(mockFetch).toHaveBeenCalledWith('/assign', expect.any(Object));
     expect(mockFetch).toHaveBeenCalledWith('/assign', expect.any(Object));
+    expect(mockDocument.elements.get('fetching').textContent).toBe('Fetching.');
+    expect(mockDocument.elements.get('fetching').style.display).toBe('none');
+  });
+
+  it('logs terminal load failures and always stops the fetching animation', async () => {
+    const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+    mockToken = 'token';
+    mockFetch.mockRejectedValueOnce(new Error('HTTP 500: failed'));
+    createModerateHandle({
+      documentObj: mockDocument,
+      fetchFn: mockFetch,
+      sessionStorageObj: {},
+      globalObject: {},
+    });
+    await loadVariant(true);
+    expect(errorSpy).toHaveBeenCalledWith(expect.objectContaining({ message: 'HTTP 500: failed' }));
+    expect(mockDocument.elements.get('fetching').style.display).toBe('none');
+    errorSpy.mockRestore();
   });
 
   it('stops the retry flow when assigning the replacement job fails', async () => {
