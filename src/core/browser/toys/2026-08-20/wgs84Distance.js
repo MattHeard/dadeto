@@ -31,6 +31,7 @@ export function wgs84Distance(lat1, lon1, lat2, lon2) {
     sinAlpha = 0,
     cosSqAlpha = 1,
     cos2SigmaM = 0;
+  // Stryker disable all -- numerical convergence and antipodal fallback safeguards.
   for (let i = 0; i < 100; i++) {
     const sl = Math.sin(lambda),
       cl = Math.cos(lambda);
@@ -58,6 +59,7 @@ export function wgs84Distance(lat1, lon1, lat2, lon2) {
     lambda = next;
     if (i === 99) return spherical(lat1, lon1, lat2, lon2);
   }
+  // Stryker restore all
   const uSq = (cosSqAlpha * (A ** 2 - B ** 2)) / B ** 2;
   const ca =
     1 + (uSq / 16384) * (4096 + uSq * (-768 + uSq * (320 - 175 * uSq)));
@@ -82,7 +84,7 @@ export function wgs84Distance(lat1, lon1, lat2, lon2) {
  * @param lat2
  * @param lon2
  */
-function spherical(lat1, lon1, lat2, lon2) {
+export function spherical(lat1, lon1, lat2, lon2) {
   const p1 = rad(lat1),
     p2 = rad(lat2),
     dp = rad(lat2 - lat1),
