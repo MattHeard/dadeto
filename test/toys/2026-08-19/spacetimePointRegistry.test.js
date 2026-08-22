@@ -118,6 +118,17 @@ describe('spacetimePointRegistry', () => {
     expect(normalizePoint({ ...point, latitude: null })).toBeNull();
     expect(normalizePoint({ ...point, longitude: null })).toBeNull();
     expect(normalizePoint({ ...point, timestamp: null })).toBeNull();
+    expect(
+      normalizePoint({
+        pointId: 'P-REF',
+        spacePointId: 'SP-1',
+        timestamp: '2026-08-21T09:05Z',
+      })
+    ).toEqual({
+      pointId: 'P-REF',
+      spacePointId: 'SP-1',
+      timestamp: '2026-08-21T09:05Z',
+    });
   });
 
   test('enforces inclusive coordinate bounds and finite numeric values', () => {
