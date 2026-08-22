@@ -637,6 +637,46 @@ describe('admin-core interface predicates', () => {
       consoleError.mockRestore();
     }
   });
+
+  it('renders sign-in buttons with the media-query theme', () => {
+    const renderButton = jest.fn();
+    const element = { id: 'signinButton', innerHTML: 'stale markup' };
+    const mediaQueryList = {
+      matches: true,
+      addEventListener: jest.fn(),
+    };
+    const dependencies = {
+      googleAccountsId: {
+        initialize: jest.fn(),
+        renderButton,
+      },
+      credentialFactory: jest.fn(),
+      signInWithCredential: jest.fn(),
+      auth: {},
+      storage: { setItem: jest.fn() },
+      matchMedia: jest.fn(() => mediaQueryList),
+      querySelectorAll: jest.fn(() => [null, element]),
+    };
+
+    createInitGoogleSignIn(dependencies)();
+    expect(renderButton).toHaveBeenCalledWith(element, {
+      text: 'signin_with',
+      size: 'large',
+      theme: 'filled_black',
+    });
+    expect(mediaQueryList.addEventListener).toHaveBeenCalledWith(
+      'change',
+      expect.any(Function)
+    );
+    expect(element.innerHTML).toBe('');
+    mediaQueryList.matches = false;
+    createInitGoogleSignIn(dependencies)();
+    expect(renderButton).toHaveBeenLastCalledWith(element, {
+      text: 'signin_with',
+      size: 'large',
+      theme: 'filled_blue',
+    });
+  });
 });
 
 describe('admin document and auth helpers', () => {
