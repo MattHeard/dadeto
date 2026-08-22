@@ -2,6 +2,8 @@ import { describe, expect, it } from '@jest/globals';
 import {
   calculateVisibility,
   clampDistance,
+  assignPageRating,
+  collectPageRatings,
   hasAdminRating,
 } from '../../../src/core/browser/toys/2025-12-05/calculateVisibility.js';
 
@@ -328,6 +330,19 @@ describe('calculateVisibility', () => {
     };
     const result = calculateVisibility(JSON.stringify(payload));
     expect(result).toBe('1');
+
+    expect(
+      calculateVisibility(
+        JSON.stringify({
+          pageId: '',
+          adminId: 'matt',
+          ratings: {
+            matt: { '': false },
+            alice: { '': true },
+          },
+        })
+      )
+    ).toBe('1');
   });
 
   it('adds an admin entry when ratings are missing', () => {
@@ -362,6 +377,9 @@ describe('calculateVisibility', () => {
       ratings: 'not-an-object',
     };
     expect(calculateVisibility(JSON.stringify(payload))).toBe('1');
+    expect(
+      calculateVisibility(JSON.stringify({ ...payload, ratings: null }))
+    ).toBe('1');
   });
 
   it('ignores non-boolean page scores', () => {
@@ -388,5 +406,24 @@ describe('clampDistance', () => {
 describe('hasAdminRating', () => {
   it('returns false when the normalized list lacks an admin entry', () => {
     expect(hasAdminRating({}, 'matt', 'page-P')).toBe(false);
+  });
+});
+
+describe('rating normalization helpers', () => {
+  it('only assigns boolean page ratings', () => {
+    const result = {};
+    expect(assignPageRating(result, 'page-P', true)).toBe(result);
+    expect(assignPageRating(result, 'page-Q', 'maybe')).toBe(result);
+    expect(result).toEqual({ 'page-P': true });
+  });
+
+  it('excludes the admin from collected moderator ratings', () => {
+    expect(
+      collectPageRatings(
+        { matt: { 'page-P': false }, alice: { 'page-P': true } },
+        'page-P',
+        'matt'
+      )
+    ).toEqual([{ moderatorId: 'alice', approved: true }]);
   });
 });

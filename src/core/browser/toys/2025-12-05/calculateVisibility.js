@@ -1,4 +1,4 @@
-import { areValidStrings, whenOrNull, whenString } from '../../browser-core.js';
+import { areValidStrings, whenString } from '../../browser-core.js';
 import { when } from '../../common.js';
 import { parseJsonOrFallback, isPlainObject } from '../browserToysCore.js';
 import { shortestDistanceToAdmin } from './dijkstra.js';
@@ -71,21 +71,7 @@ function resolveWithNormalized({ pageId, adminId, ratings }) {
  */
 function resolveFromModerators({ pageId, adminId, ratings }) {
   const pageRatings = collectPageRatings(ratings, pageId, adminId);
-  const emptyResult = resolveEmptyRatings(pageRatings);
-  if (emptyResult) {
-    return emptyResult;
-  }
-
   return resolveNonEmptyRatings({ pageRatings, adminId, ratings, pageId });
-}
-
-/**
- * Return the default score when no moderator ratings exist.
- * @param {Array<{ moderatorId: string, approved: boolean }>} pageRatings - Ratings for the page.
- * @returns {string|null} Default score when applicable.
- */
-function resolveEmptyRatings(pageRatings) {
-  return whenOrNull(pageRatings.length === 0, () => DEFAULT_VISIBILITY);
 }
 
 /**
@@ -152,7 +138,6 @@ function normalizeRatings(ratings, adminId) {
       mapModeratorRatings(/** @type {Record<string, unknown>} */ (ratings))
     );
   }
-  ensureAdminEntry(normalized, adminId);
   return normalized;
 }
 
@@ -179,17 +164,6 @@ function mapModeratorRatings(ratings) {
 function assignModeratorRatings(acc, moderatorId, moderatorRatings) {
   acc[moderatorId] = sanitizeRatings(moderatorRatings);
   return acc;
-}
-
-/**
- * Ensure an admin entry exists in the ratings map.
- * @param {Record<string, Record<string, boolean>>} normalized - Normalized ratings.
- * @param {string} adminId - Admin identifier.
- */
-function ensureAdminEntry(normalized, adminId) {
-  if (!Object.prototype.hasOwnProperty.call(normalized, adminId)) {
-    normalized[adminId] = {};
-  }
 }
 
 /**
@@ -277,7 +251,7 @@ function collectPageRatings(ratings, pageId, adminId) {
     .filter(([moderatorId]) => moderatorId !== adminId)
     .map(([moderatorId, moderatorRatings]) => ({
       moderatorId,
-      approved: moderatorRatings?.[pageId],
+      approved: moderatorRatings[pageId],
     }))
     .filter(entry => typeof entry.approved === 'boolean');
 }
@@ -368,4 +342,4 @@ export function clampDistance(distance) {
  * @param {unknown} value - Value to check.
  * @returns {boolean} True when the value is a non-array object.
  */
-export { hasAdminRating };
+export { assignPageRating, collectPageRatings, hasAdminRating };
