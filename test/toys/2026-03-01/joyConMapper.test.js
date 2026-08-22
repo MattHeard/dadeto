@@ -18,13 +18,32 @@ function createEnv({ stored, setLocalPermanentData } = {}) {
 }
 
 describe('joyConMapperToy', () => {
-  test('returns default state for invalid input and missing storage helpers', () => {
+test('returns default state for invalid input and missing storage helpers', () => {
     const output = JSON.parse(joyConMapperToy('', new Map()));
 
     expect(output).toEqual({
       storageKey: 'JOYMAP1',
       mappings: {},
       skippedControls: [],
+    });
+  });
+
+  test('rejects non-string input and malformed capture payloads', () => {
+    expect(JSON.parse(joyConMapperToy(null, new Map()))).toEqual({
+      storageKey: 'JOYMAP1',
+      mappings: {},
+      skippedControls: [],
+    });
+    expect(JSON.parse(joyConMapperToy(JSON.stringify({ action: 'capture' }), new Map()))).toEqual({
+      storageKey: 'JOYMAP1',
+      mappings: {},
+      skippedControls: [],
+    });
+    expect(JSON.parse(joyConMapperToy(JSON.stringify({ action: 'capture', capture: { key: 'Z' } }), new Map()))).toEqual({
+      storageKey: 'JOYMAP1', mappings: {}, skippedControls: [],
+    });
+    expect(JSON.parse(joyConMapperToy(JSON.stringify({ action: 'capture', currentControlKey: 'BTN_A' }), new Map()))).toEqual({
+      storageKey: 'JOYMAP1', mappings: {}, skippedControls: [],
     });
   });
 
@@ -52,6 +71,7 @@ describe('joyConMapperToy', () => {
     );
 
     expect(output.mappings.BTN_A).toEqual({ key: 'KeyZ' });
+    expect(output.mappings.existing).toEqual({ key: 'old' });
     expect(output.skippedControls).toEqual(['BTN_B']);
     expect(setLocalPermanentData).toHaveBeenCalledWith({
       JOYMAP1: {
@@ -111,6 +131,16 @@ describe('joyConMapperToy', () => {
     });
   });
 
+  test('action names take precedence over capture fields', () => {
+    const output = JSON.parse(
+      joyConMapperToy(
+        JSON.stringify({ action: 'reset', currentControlKey: 'BTN_A', capture: { key: 'A' } }),
+        createEnv({ stored: { JOYMAP1: { mappings: { old: true }, skippedControls: ['old'] } } })
+      )
+    );
+    expect(output).toEqual({ storageKey: 'JOYMAP1', mappings: {}, skippedControls: [] });
+  });
+
   test('unknown actions and malformed stored state fall back safely', () => {
     const env = createEnv({
       stored: {
@@ -123,7 +153,7 @@ describe('joyConMapperToy', () => {
     });
 
     const output = JSON.parse(
-      joyConMapperToy(JSON.stringify({ action: 'noop', something: true }), env)
+      joyConMapperToy(JSON.stringify({ action: 'noop', skippedControlKey: 'SHOULD_NOT_APPEAR', something: true }), env)
     );
 
     expect(output).toEqual({
@@ -131,6 +161,16 @@ describe('joyConMapperToy', () => {
       mappings: {},
       skippedControls: [],
     });
+  });
+
+  test('normalizes array mappings to the empty mapping object', () => {
+    const output = JSON.parse(
+      joyConMapperToy(
+        JSON.stringify({ action: 'noop' }),
+        createEnv({ stored: { JOYMAP1: { mappings: [], skippedControls: [] } } })
+      )
+    );
+    expect(output.mappings).toEqual({});
   });
 
   test('normalizes null permanent data root to empty state', () => {

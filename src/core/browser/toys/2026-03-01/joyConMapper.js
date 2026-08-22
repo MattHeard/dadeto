@@ -12,11 +12,7 @@ const DEFAULT_STATE = {
  * @returns {Record<string, unknown> | null} Parsed action object or null for invalid input.
  */
 function parseInput(input) {
-  if (!isValidString(input)) {
-    return null;
-  }
-
-  return parseJsonObject(input);
+  return isValidString(input) ? parseJsonObject(input) : null;
 }
 
 /**
@@ -24,7 +20,7 @@ function parseInput(input) {
  * @returns {Record<string, unknown>} Normalized mappings object.
  */
 function normalizeMappings(mappings) {
-  if (!isNonNullObject(mappings)) {
+  if (!isNonNullObject(mappings) || Array.isArray(mappings)) {
     return {};
   }
 
@@ -44,21 +40,6 @@ function normalizeSkippedControls(skippedControls) {
 }
 
 /**
- * @param {{ get: (name: string) => unknown }} env Toy runtime environment.
- * @returns {(() => Record<string, unknown> | null | undefined) | null} Local data getter when available.
- */
-function getLocalPermanentDataGetter(env) {
-  const getLocalPermanentData = env.get('getLocalPermanentData');
-  if (typeof getLocalPermanentData !== 'function') {
-    return null;
-  }
-
-  return /** @type {() => Record<string, unknown> | null | undefined} */ (
-    getLocalPermanentData
-  );
-}
-
-/**
  * @param {Record<string, unknown> | null | undefined} value Candidate local permanent data root.
  * @returns {Record<string, unknown>} Normalized local permanent data root.
  */
@@ -67,24 +48,16 @@ function normalizeLocalPermanentDataRoot(value) {
 }
 
 /**
- * @param {(() => Record<string, unknown> | null | undefined) | null} getLocalPermanentData Local data getter when available.
- * @returns {Record<string, unknown>} Local permanent data root.
- */
-function getLocalPermanentDataRoot(getLocalPermanentData) {
-  if (!getLocalPermanentData) {
-    return {};
-  }
-
-  return normalizeLocalPermanentDataRoot(getLocalPermanentData());
-}
-
-/**
  * @param {{ get: (name: string) => unknown }} env Toy runtime environment.
  * @returns {unknown} Stored Joy-Con mapper state candidate.
  */
 function getStoredValue(env) {
-  const getLocalPermanentData = getLocalPermanentDataGetter(env);
-  return getLocalPermanentDataRoot(getLocalPermanentData)[TOY_STORAGE_KEY];
+  const getLocalPermanentData = env.get('getLocalPermanentData');
+  const root =
+    typeof getLocalPermanentData === 'function'
+      ? normalizeLocalPermanentDataRoot(getLocalPermanentData())
+      : {};
+  return root[TOY_STORAGE_KEY];
 }
 
 /**
@@ -187,7 +160,7 @@ function isCaptureAction(parsed) {
     return false;
   }
 
-  return ['currentControlKey', 'capture'].every(key => Boolean(parsed[key]));
+  return Boolean(parsed.currentControlKey) && Boolean(parsed.capture);
 }
 
 /**
