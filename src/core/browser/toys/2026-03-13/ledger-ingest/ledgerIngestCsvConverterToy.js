@@ -45,9 +45,9 @@ const CSV_CHARACTER_HANDLERS = [
 function splitCsvRows(input) {
   const state = createCsvParseState();
 
-  for (let index = 0; index < input.length; index += 1) {
-    index = processCsvCharacter(state, input, index);
-  }
+  Array.from({ length: input.length }, (_, index) => index).forEach(index => {
+    processCsvCharacter(state, input, index);
+  });
 
   finalizeCsvParseState(state);
 
@@ -63,6 +63,7 @@ function createCsvParseState() {
     row: [],
     cell: '',
     inQuotes: false,
+    skipLineBreakTail: false,
   };
 }
 
@@ -73,6 +74,10 @@ function createCsvParseState() {
  * @returns {number} Index that should be assigned back to the loop.
  */
 function processCsvCharacter(state, input, index) {
+  if (state.skipLineBreakTail) {
+    state.skipLineBreakTail = false;
+    return index;
+  }
   return processCsvCharacterWithHandlers(
     state,
     input,
@@ -187,11 +192,10 @@ function processCsvDelimiterCharacter(state, chars, index) {
  */
 function processCsvLineBreakContinuation(state, chars, index) {
   flushCsvRow(state);
-  return whenOrDefault(
-    shouldSkipCsvLineBreakTail(chars),
-    () => index + 1,
-    index
-  );
+  if (shouldSkipCsvLineBreakTail(chars)) {
+    state.skipLineBreakTail = true;
+  }
+  return index;
 }
 
 /**
@@ -648,4 +652,6 @@ export const ledgerIngestCsvConverterToyTestOnly = {
   ensureLedgerCsvRows,
   buildLedgerCsvRecord,
   normalizeCsvMappedField,
+  splitCsvRows,
+  processCsvQuotedCharacterInside,
 };

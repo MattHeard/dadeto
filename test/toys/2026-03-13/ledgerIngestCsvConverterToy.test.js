@@ -65,6 +65,10 @@ describe('ledgerIngestCsvConverterToy', () => {
     expect(ledgerIngestCsvConverterToyTestOnly.normalizeCsvTextCandidate(null)).toBe('');
     expect(ledgerIngestCsvConverterToyTestOnly.normalizeCsvMappedField(undefined)).toBe('undefined');
     expect(ledgerIngestCsvConverterToyTestOnly.normalizeCsvMappedField('  x  ')).toBe('x');
+    expect(ledgerIngestCsvConverterToyTestOnly.splitCsvRows('a;b\nc;d')).toEqual([['a', 'b'], ['c', 'd']]);
+    const quotedState = { rows: [], row: [], cell: 'a', inQuotes: true };
+    expect(ledgerIngestCsvConverterToyTestOnly.processCsvQuotedCharacterInside(quotedState, '"', 3)).toBe(4);
+    expect(quotedState.cell).toBe('a"');
   });
 
   it('returns error payload for invalid inputs', () => {
