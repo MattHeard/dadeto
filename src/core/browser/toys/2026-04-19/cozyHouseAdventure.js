@@ -546,4 +546,8 @@ export const cozyHouseAdventureTestOnly = {
   getTemporaryState,
   introMessage,
   yardMessage,
+  appendIfMissing,
+  addCompletedStage,
+  isHouseComplete,
+  getCompletionLine,
 };

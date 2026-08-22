@@ -12,6 +12,13 @@ describe('cozyHouseAdventure', () => {
     expect(cozyHouseAdventureTestOnly.getTemporaryState({ COZY1: { name: 'B' } })).toEqual({ name: 'B' });
     expect(cozyHouseAdventureTestOnly.introMessage('A')).toContain('Welcome home, A');
     expect(cozyHouseAdventureTestOnly.yardMessage('12:00')).toContain('12:00');
+    expect(cozyHouseAdventureTestOnly.appendIfMissing(['foundation'], 'foundation')).toEqual(['foundation']);
+    expect(cozyHouseAdventureTestOnly.appendIfMissing(['foundation'], 'roof')).toEqual(['foundation', 'roof']);
+    expect(cozyHouseAdventureTestOnly.addCompletedStage({ inventory: [], progress: [] }, 'garden')).toEqual({ inventory: ['garden'], progress: ['garden'] });
+    expect(cozyHouseAdventureTestOnly.isHouseComplete(['foundation', 'materials', 'roof', 'garden'])).toBe(true);
+    expect(cozyHouseAdventureTestOnly.isHouseComplete(['foundation', 'materials'])).toBe(false);
+    expect(cozyHouseAdventureTestOnly.getCompletionLine(['foundation'])).toContain('next cozy task');
+    expect(cozyHouseAdventureTestOnly.getCompletionLine(['foundation', 'materials', 'roof', 'garden'])).toContain('peaceful home');
   });
   let tempData;
   let env;
