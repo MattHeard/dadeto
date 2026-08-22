@@ -177,8 +177,6 @@ export function createMainHandle({
 
           resetFilters();
           switch (filterType) {
-            case 'all':
-              break;
             case 'blog':
               hideArticlesByClass('tag-toy', dom);
               break;

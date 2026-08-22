@@ -14,6 +14,12 @@ let observedEnv;
 let observedBeaconHandlers;
 let observedBlogDeps;
 let observedInitOptions;
+let observedPermanentOptions;
+let observedOutputDataCallback;
+const mockGetData = jest.fn(() => 'data');
+const mockSetTemporary = jest.fn(() => 'temporary');
+const mockSetPermanent = jest.fn(() => 'permanent');
+const mockGetPermanent = jest.fn(() => 'stored');
 let mockDom = {
   logError: jest.fn(),
   setTextContent: jest.fn(),
@@ -33,16 +39,19 @@ jest.unstable_mockModule('../../../src/core/browser/data.js', () => ({
     observedBlogDeps = dependencies();
     return {
       fetchAndCacheBlogData: (mockFetchBlogData = jest.fn()),
-      getData: jest.fn(),
-      setLocalTemporaryData: jest.fn(),
-      setLocalPermanentData: jest.fn(),
-      getLocalPermanentData: jest.fn(),
+      getData: mockGetData,
+      setLocalTemporaryData: mockSetTemporary,
+      setLocalPermanentData: mockSetPermanent,
+      getLocalPermanentData: mockGetPermanent,
     };
   },
   getEncodeBase64: () => jest.fn(),
 }));
 jest.unstable_mockModule('../../../src/core/browser/toys.js', () => ({
-  createOutputDropdownHandler: (_handle, getData) => jest.fn(() => getData()),
+  createOutputDropdownHandler: (_handle, getData) => {
+    observedOutputDataCallback = getData;
+    return jest.fn(() => getData());
+  },
   createInputDropdownHandler: () => jest.fn(),
   handleDropdownChange: jest.fn(),
   toggleToyFocusMode: mockToggleToyFocusMode,
@@ -111,7 +120,10 @@ jest.unstable_mockModule(
 jest.unstable_mockModule(
   '../../../src/core/browser/localStorageLens.js',
   () => ({
-    createLocalStorageLens: () => new Map(),
+  createLocalStorageLens: options => {
+    observedPermanentOptions = options;
+    return new Map();
+  },
   })
 );
 
@@ -121,12 +133,18 @@ describe('browser main initialization', () => {
   it('covers initialization and interactive branches', () => {
     const handlers = new Map();
     const article = {};
-    mockDom.getElementsByTagName = () => [article];
+    mockDom.getElementsByTagName = selector => {
+      expect(selector).toBe('article');
+      return [article];
+    };
     let documentClick;
     const buttons = ['all', 'blog', 'toys', 'unknown'].map(filter => ({
       dataset: { filter },
       classList: { remove: jest.fn(), add: jest.fn() },
-      addEventListener: (_, handler) => handlers.set(filter, handler),
+      addEventListener: (event, handler) => {
+        expect(event).toBe('click');
+        handlers.set(filter, handler);
+      },
     }));
     const windowObj = {
       console: { error: jest.fn() },
@@ -137,9 +155,15 @@ describe('browser main initialization', () => {
     };
     globalThis.Element = class Element {};
     const target = new Element();
-    target.closest = () => ({});
+    target.closest = selector => {
+      expect(selector).toBe('.toy-focus-toggle');
+      return {};
+    };
     const documentObj = {
-      querySelectorAll: () => buttons,
+      querySelectorAll: selector => {
+        expect(selector).toBe('.filter-button');
+        return buttons;
+      },
       addEventListener: (type, handler) => {
         if (type === 'click') documentClick = handler;
         else handlers.set(`document-${type}`, handler);
@@ -184,6 +208,18 @@ describe('browser main initialization', () => {
       memoryLens: expect.any(Map),
       permanentLens: expect.any(Map),
     }));
+    expect(Object.keys(observedBlogDeps.loggers)).toEqual([
+      'logInfo',
+      'logError',
+      'logWarning',
+    ]);
+    expect(observedEnv.globalState).toEqual(expect.objectContaining({
+      blog: null,
+      blogStatus: 'idle',
+      blogError: null,
+      blogFetchPromise: null,
+      temporary: {},
+    }));
     expect(observedInitOptions).toEqual(expect.objectContaining({
       win: windowObj,
       logInfo: expect.any(Function),
@@ -194,6 +230,25 @@ describe('browser main initialization', () => {
       getInteractiveComponentCount: expect.any(Function),
       getComponentInitializer: expect.any(Function),
     }));
+    expect(Object.keys(observedInitOptions)).toEqual([
+      'win',
+      'logInfo',
+      'logWarning',
+      'getElement',
+      'hasNoInteractiveComponents',
+      'getInteractiveComponents',
+      'getInteractiveComponentCount',
+      'getComponentInitializer',
+    ]);
+    expect(observedPermanentOptions.storage).toBeNull();
+    expect(observedPermanentOptions.logError).toEqual(expect.any(Function));
+    const env = observedEnv.createEnv();
+    expect(env.get('getData')()).toBe('data');
+    expect(env.get('setLocalTemporaryData')('next')).toBe('temporary');
+    expect(env.get('setLocalPermanentData')('saved')).toBe('permanent');
+    expect(env.get('getLocalPermanentData')()).toBe('stored');
+    expect(mockSetTemporary).toHaveBeenCalledWith({ desired: 'next', current: expect.any(Object) });
+    expect(mockSetPermanent).toHaveBeenCalledWith('saved');
     buttons.forEach(button =>
       handlers.get(button.dataset.filter)({ preventDefault: jest.fn() })
     );
@@ -205,14 +260,25 @@ describe('browser main initialization', () => {
     expect(mockReveal).toHaveBeenCalledTimes(4);
     expect(buttons[0].classList.add).toHaveBeenCalledWith('active');
     expect(buttons[3].classList.add).toHaveBeenCalledWith('active');
+    buttons.forEach(button => {
+      expect(button.classList.remove).toHaveBeenCalledWith('active');
+    });
+    expect(mockHideArticlesByClass).toHaveBeenCalledTimes(1);
+    expect(mockHideArticlesWithoutClass).toHaveBeenCalledTimes(1);
     handlers.get('DOMContentLoaded')();
     expect(mockInitializeDropdowns).toHaveBeenCalled();
+    expect(mockGetData).toHaveBeenCalled();
+    expect(observedOutputDataCallback()).toBe('data');
     documentClick({ target, preventDefault: jest.fn() });
     expect(mockToggleToyFocusMode).toHaveBeenCalledWith({}, expect.any(Object));
     const noButtonTarget = new Element();
-    noButtonTarget.closest = () => null;
+    noButtonTarget.closest = selector => {
+      expect(selector).toBe('.toy-focus-toggle');
+      return null;
+    };
     documentClick({ target: noButtonTarget, preventDefault: jest.fn() });
     documentClick({ target: {}, preventDefault: jest.fn() });
+    expect(mockToggleToyFocusMode).toHaveBeenCalledTimes(1);
 
     createMainHandle({
       documentObj: { querySelectorAll: () => [], addEventListener: jest.fn() },
@@ -220,6 +286,8 @@ describe('browser main initialization', () => {
       fetchFn: jest.fn(),
       storageObj: null,
     })();
+    expect(observedBeaconHandlers.getUrl()).toBe('');
+    expect(observedBeaconHandlers.getUserAgent()).toBe('');
     handlers.get('error')({});
     handlers.get('unhandledrejection')({});
 
