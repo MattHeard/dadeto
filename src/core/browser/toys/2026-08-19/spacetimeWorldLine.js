@@ -62,8 +62,7 @@ export function spacetimeWorldLine(input) {
  */
 function parseInput(input) {
   const parsed = JSON.parse(input || '{}');
-  if (!isJsonObject(parsed))
-    throw new Error('Input must be a JSON object.');
+  if (!isJsonObject(parsed)) throw new Error('Input must be a JSON object.');
   const startPointId = String(parsed.startPointId ?? '').trim();
   const endPointId = String(parsed.endPointId ?? '').trim();
   if (!Array.isArray(parsed.segments) || !startPointId || !endPointId)
@@ -71,6 +70,11 @@ function parseInput(input) {
   return { segments: parsed.segments, startPointId, endPointId };
 }
 
+/**
+ * Determine whether a value is a non-array object.
+ * @param {unknown} value - Candidate value.
+ * @returns {boolean} Whether the value is a JSON object.
+ */
 function isJsonObject(value) {
   if (value === null) return false;
   if (typeof value !== 'object') return false;

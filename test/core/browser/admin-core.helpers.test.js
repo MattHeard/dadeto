@@ -153,18 +153,27 @@ describe('resolveAdminEndpoint', () => {
   });
 
   it('prefers configured endpoints and stringifies configured values', () => {
-    expect(resolveAdminEndpoint({ triggerRenderContentsUrl: 42 }, 'triggerRenderContentsUrl')).toBe('42');
-    expect(resolveAdminEndpoint({}, 'triggerRenderContentsUrl')).toMatch(/^https:\/\//);
+    expect(
+      resolveAdminEndpoint(
+        { triggerRenderContentsUrl: 42 },
+        'triggerRenderContentsUrl'
+      )
+    ).toBe('42');
+    expect(resolveAdminEndpoint({}, 'triggerRenderContentsUrl')).toMatch(
+      /^https:\/\//
+    );
   });
 });
 
 describe('admin endpoint configuration', () => {
   it('maps all configured endpoint overrides', () => {
-    expect(mapConfigToAdminEndpoints({
-      triggerRenderContentsUrl: 'render',
-      markVariantDirtyUrl: 'dirty',
-      generateStatsUrl: 'stats',
-    })).toEqual({
+    expect(
+      mapConfigToAdminEndpoints({
+        triggerRenderContentsUrl: 'render',
+        markVariantDirtyUrl: 'dirty',
+        generateStatsUrl: 'stats',
+      })
+    ).toEqual({
       triggerRenderContentsUrl: 'render',
       markVariantDirtyUrl: 'dirty',
       generateStatsUrl: 'stats',
@@ -173,7 +182,9 @@ describe('admin endpoint configuration', () => {
 
   it('uses defaults for a missing loader and rejected loader', async () => {
     const withoutLoader = await createAdminEndpointsPromise(null);
-    const rejected = await createAdminEndpointsPromise(() => Promise.reject(new Error('load failed')));
+    const rejected = await createAdminEndpointsPromise(() =>
+      Promise.reject(new Error('load failed'))
+    );
     expect(withoutLoader).toEqual(rejected);
     expect(withoutLoader.triggerRenderContentsUrl).toMatch(/^https:\/\//);
   });
@@ -245,7 +256,8 @@ describe('trigger render execution', () => {
       headers: { Authorization: 'Bearer token-1' },
     });
     await executeTriggerRender({
-      getAdminEndpoints: () => Promise.resolve({ triggerRenderContentsUrl: '/render' }),
+      getAdminEndpoints: () =>
+        Promise.resolve({ triggerRenderContentsUrl: '/render' }),
       fetchFn,
       token: 'token-1',
       showMessage,
@@ -258,7 +270,8 @@ describe('trigger render execution', () => {
     const reportError = jest.fn();
     const failure = jest.fn().mockRejectedValue('network failed');
     await executeTriggerRender({
-      getAdminEndpoints: () => Promise.resolve({ triggerRenderContentsUrl: '/render' }),
+      getAdminEndpoints: () =>
+        Promise.resolve({ triggerRenderContentsUrl: '/render' }),
       fetchFn: failure,
       token: 'token-1',
       showMessage,
@@ -273,7 +286,8 @@ describe('trigger render execution', () => {
     const fetchFn = jest.fn().mockResolvedValue({ ok: true });
     const handler = createTriggerRender({
       googleAuth: { getIdToken: jest.fn().mockResolvedValue(null) },
-      getAdminEndpointsFn: () => Promise.resolve({ triggerRenderContentsUrl: '/render' }),
+      getAdminEndpointsFn: () =>
+        Promise.resolve({ triggerRenderContentsUrl: '/render' }),
       fetchFn,
       showMessage,
     });
@@ -284,7 +298,8 @@ describe('trigger render execution', () => {
     const successMessage = jest.fn();
     const successHandler = createTriggerRender({
       googleAuth: { getIdToken: jest.fn().mockResolvedValue('token-2') },
-      getAdminEndpointsFn: () => Promise.resolve({ triggerRenderContentsUrl: '/render' }),
+      getAdminEndpointsFn: () =>
+        Promise.resolve({ triggerRenderContentsUrl: '/render' }),
       fetchFn,
       showMessage: successMessage,
     });
@@ -294,6 +309,12 @@ describe('trigger render execution', () => {
 });
 
 describe('admin DOM binding helpers', () => {
+  /**
+   * Return a document facade containing one element by ID.
+   * @param {string} elementId - ID to resolve.
+   * @param {object} element - Element returned for the matching ID.
+   * @returns {{getElementById: (id: string) => object | null, querySelectorAll: jest.Mock}} Document facade.
+   */
   function documentWith(elementId, element) {
     return {
       getElementById: id => (id === elementId ? element : null),
@@ -306,25 +327,35 @@ describe('admin DOM binding helpers', () => {
     const form = { addEventListener: jest.fn() };
     const click = jest.fn();
     const submit = jest.fn();
-    expect(bindTriggerRenderClick(documentWith('renderBtn', button), click)).toBe(button);
-    expect(bindTriggerStatsClick(documentWith('statsBtn', button), click)).toBe(button);
-    expect(bindRegenerateVariantSubmit(documentWith('regenForm', form), submit)).toBe(form);
-    expect(bindTriggerRenderClick(documentWith('other', null), click)).toBeNull();
+    expect(
+      bindTriggerRenderClick(documentWith('renderBtn', button), click)
+    ).toBe(button);
+    expect(bindTriggerStatsClick(documentWith('statsBtn', button), click)).toBe(
+      button
+    );
+    expect(
+      bindRegenerateVariantSubmit(documentWith('regenForm', form), submit)
+    ).toBe(form);
+    expect(
+      bindTriggerRenderClick(documentWith('other', null), click)
+    ).toBeNull();
     expect(button.addEventListener).toHaveBeenCalledWith('click', click);
     expect(form.addEventListener).toHaveBeenCalledWith('submit', submit);
   });
 
   it('rejects invalid binding dependencies', () => {
-    expect(() => bindTriggerRenderClick({}, jest.fn())).toThrow('Document-like');
-    expect(() => bindTriggerRenderClick(documentWith('renderBtn', null), null)).toThrow(
-      'triggerRenderFn must be a function'
+    expect(() => bindTriggerRenderClick({}, jest.fn())).toThrow(
+      'Document-like'
     );
-    expect(() => bindTriggerStatsClick(documentWith('statsBtn', null), null)).toThrow(
-      'triggerStatsFn must be a function'
-    );
-    expect(() => bindRegenerateVariantSubmit(documentWith('regenForm', null), null)).toThrow(
-      'regenerateVariantFn must be a function'
-    );
+    expect(() =>
+      bindTriggerRenderClick(documentWith('renderBtn', null), null)
+    ).toThrow('triggerRenderFn must be a function');
+    expect(() =>
+      bindTriggerStatsClick(documentWith('statsBtn', null), null)
+    ).toThrow('triggerStatsFn must be a function');
+    expect(() =>
+      bindRegenerateVariantSubmit(documentWith('regenForm', null), null)
+    ).toThrow('regenerateVariantFn must be a function');
   });
 });
 
@@ -371,8 +402,12 @@ describe('admin-core interface predicates', () => {
     expect(resolveGoogleAccounts(getter)()).toBe(client);
     const getIdToken = jest.fn().mockResolvedValue('token');
     expect(await resolveGetIdToken({ getIdToken })()).toBe('token');
-    expect(() => resolveGetIdToken(null)).toThrow('getIdToken must be a function');
-    expect(() => validateGetIdToken(null)).toThrow('getIdToken must be a function');
+    expect(() => resolveGetIdToken(null)).toThrow(
+      'getIdToken must be a function'
+    );
+    expect(() => validateGetIdToken(null)).toThrow(
+      'getIdToken must be a function'
+    );
   });
 });
 
@@ -383,7 +418,9 @@ describe('admin document and auth helpers', () => {
     const signouts = [];
     const doc = {
       getElementById: jest.fn().mockReturnValue(content),
-      querySelectorAll: jest.fn(selector => selector === '#signinButton' ? signins : signouts),
+      querySelectorAll: jest.fn(selector =>
+        selector === '#signinButton' ? signins : signouts
+      ),
     };
     expect(getAdminContent(doc)).toBe(content);
     expect(getSignInButtons(doc)).toBe(signins);
@@ -413,8 +450,12 @@ describe('admin document and auth helpers', () => {
     expect(paragraph.innerHTML).toBe('<strong>123</strong>');
     const absent = createShowMessage(() => null, doc);
     expect(() => absent('ignored')).not.toThrow();
-    expect(() => createShowMessage(null, doc)).toThrow('getStatusParagraphFn must be a function');
-    expect(() => createShowMessage(getAdminContent, {})).toThrow('Document-like');
+    expect(() => createShowMessage(null, doc)).toThrow(
+      'getStatusParagraphFn must be a function'
+    );
+    expect(() => createShowMessage(getAdminContent, {})).toThrow(
+      'Document-like'
+    );
     const initApp = jest.fn();
     setupFirebase(initApp);
     expect(initApp).toHaveBeenCalledWith({
@@ -426,18 +467,35 @@ describe('admin document and auth helpers', () => {
 
   it('validates initAdmin dependencies before wiring the UI', () => {
     const valid = {
-      googleAuthModule: { getIdToken: jest.fn(), signOut: jest.fn(), initGoogleSignIn: jest.fn() },
+      googleAuthModule: {
+        getIdToken: jest.fn(),
+        signOut: jest.fn(),
+        initGoogleSignIn: jest.fn(),
+      },
       getAuthFn: jest.fn(),
       onAuthStateChangedFn: jest.fn(),
-      doc: { getElementById: jest.fn(), querySelectorAll: jest.fn().mockReturnValue([]) },
+      doc: {
+        getElementById: jest.fn(),
+        querySelectorAll: jest.fn().mockReturnValue([]),
+      },
       fetchFn: jest.fn(),
-      loadStaticConfigFn: jest.fn().mockResolvedValue({ disableGoogleSignIn: true }),
+      loadStaticConfigFn: jest
+        .fn()
+        .mockResolvedValue({ disableGoogleSignIn: true }),
     };
-    expect(() => initAdmin({ ...valid, googleAuthModule: null })).toThrow('googleAuthModule must be provided');
-    expect(() => initAdmin({ ...valid, getAuthFn: null })).toThrow('getAuthFn must be a function');
-    expect(() => initAdmin({ ...valid, onAuthStateChangedFn: null })).toThrow('onAuthStateChangedFn must be a function');
+    expect(() => initAdmin({ ...valid, googleAuthModule: null })).toThrow(
+      'googleAuthModule must be provided'
+    );
+    expect(() => initAdmin({ ...valid, getAuthFn: null })).toThrow(
+      'getAuthFn must be a function'
+    );
+    expect(() => initAdmin({ ...valid, onAuthStateChangedFn: null })).toThrow(
+      'onAuthStateChangedFn must be a function'
+    );
     expect(() => initAdmin({ ...valid, doc: {} })).toThrow('Document-like');
-    expect(() => initAdmin({ ...valid, fetchFn: null })).toThrow('fetchFn must be a function');
+    expect(() => initAdmin({ ...valid, fetchFn: null })).toThrow(
+      'fetchFn must be a function'
+    );
   });
 });
 
@@ -447,7 +505,9 @@ describe('admin dependency validators', () => {
     expect(assertFunction(fn, 'fn')).toBeUndefined();
     expect(() => assertFunction(null, 'fn')).toThrow('fn');
     expect(ensureObject({})).toBeUndefined();
-    expect(() => ensureObject(null, 'object required')).toThrow('object required');
+    expect(() => ensureObject(null, 'object required')).toThrow(
+      'object required'
+    );
     expect(ensureStorage({ setItem: fn })).toBeUndefined();
     expect(() => ensureStorage({})).toThrow('setItem function');
     const valid = {
@@ -467,7 +527,9 @@ describe('admin dependency validators', () => {
       ['matchMedia', null],
       ['querySelectorAll', null],
     ]) {
-      expect(() => validateGoogleSignInDeps({ ...valid, [key]: value })).toThrow();
+      expect(() =>
+        validateGoogleSignInDeps({ ...valid, [key]: value })
+      ).toThrow();
     }
   });
 });
@@ -475,10 +537,14 @@ describe('admin dependency validators', () => {
 describe('admin nested traversal and logger helpers', () => {
   it('traverses only object paths and preserves callable detection', () => {
     const source = { google: { accounts: { id: { ready: true } } } };
-    expect(getNestedProperty(source, 'google', 'accounts', 'id', 'ready')).toBe(true);
+    expect(getNestedProperty(source, 'google', 'accounts', 'id', 'ready')).toBe(
+      true
+    );
     expect(getNestedProperty(source, 'google', 'missing')).toBeUndefined();
     expect(getNestedProperty(null, 'google')).toBeUndefined();
-    expect(resolveNestedProperty(source.google, 'accounts')).toBe(source.google.accounts);
+    expect(resolveNestedProperty(source.google, 'accounts')).toBe(
+      source.google.accounts
+    );
     expect(resolveNestedProperty('not-object', 'key')).toBeUndefined();
     expect(isTraversable({})).toBe(true);
     expect(isTraversable([])).toBe(true);
@@ -501,22 +567,35 @@ describe('admin event and sign-out helpers', () => {
     const element = { addEventListener: jest.fn() };
     const doc = { getElementById: jest.fn().mockReturnValue(element) };
     const listener = jest.fn();
-    expect(createElementEventBinder('click')(doc, 'button', listener)).toBe(element);
+    expect(createElementEventBinder('click')(doc, 'button', listener)).toBe(
+      element
+    );
     expect(element.addEventListener).toHaveBeenCalledWith('click', listener);
-    expect(createElementEventBinder('submit')({ getElementById: () => null }, 'form', listener)).toBeNull();
+    expect(
+      createElementEventBinder('submit')(
+        { getElementById: () => null },
+        'form',
+        listener
+      )
+    ).toBeNull();
   });
 
   it('validates sign-out dependencies and wires links safely', async () => {
     const signOut = jest.fn().mockResolvedValue();
     const auth = { signOut };
     expect(ensureSignOutAuth(auth)).toBeUndefined();
-    expect(() => ensureSignOutAuth(null)).toThrow('googleAuth must provide a signOut function');
+    expect(() => ensureSignOutAuth(null)).toThrow(
+      'googleAuth must provide a signOut function'
+    );
     const link = { addEventListener: jest.fn() };
     const doc = { querySelectorAll: jest.fn().mockReturnValue([link]) };
     expect(ensureSignOutDoc(doc)).toBeUndefined();
     expect(() => ensureSignOutDoc({})).toThrow('Document-like');
     attachSignOutLink(link, auth);
-    expect(link.addEventListener).toHaveBeenCalledWith('click', expect.any(Function));
+    expect(link.addEventListener).toHaveBeenCalledWith(
+      'click',
+      expect.any(Function)
+    );
     attachSignOutLink({}, auth);
     attachSignOutLinks(doc, auth);
     const event = { preventDefault: jest.fn() };
@@ -532,23 +611,39 @@ describe('trigger render response helpers', () => {
     expect(resolveTriggerRenderStatus({ status: 503 })).toBe(503);
     expect(resolveTriggerRenderStatusText(null)).toBe('unknown');
     expect(resolveTriggerRenderStatusText({ statusText: '' })).toBe('unknown');
-    expect(resolveTriggerRenderStatusText({ statusText: 'Unavailable' })).toBe('Unavailable');
+    expect(resolveTriggerRenderStatusText({ statusText: 'Unavailable' })).toBe(
+      'Unavailable'
+    );
     expect(getResponseTextReader(null)).toBeNull();
     expect(getResponseTextReader({ text: 'not callable' })).toBeNull();
-    const response = { text: jest.fn(function text() { return Promise.resolve(' body '); }) };
+    const response = {
+      text: jest.fn(function text() {
+        return Promise.resolve(' body ');
+      }),
+    };
     expect(extractTextReader(response)).toBe(response.text);
     expect(await readTriggerRenderBody(response)).toBe(' body ');
     expect(await readTriggerRenderBody({})).toBe('');
-    expect(await readResponseText(() => Promise.resolve(''), response)).toBe('');
+    expect(await readResponseText(() => Promise.resolve(''), response)).toBe(
+      ''
+    );
   });
 
   it('formats body and error variants distinctly', () => {
-    expect(formatTriggerRenderFailureMessage({ status: 500, statusText: 'Error', body: '' })).toBe(
-      'Render failed: 500 Error'
-    );
-    expect(formatTriggerRenderFailureMessage({ status: 500, statusText: 'Error', body: 'detail' })).toBe(
-      'Render failed: 500 Error - detail'
-    );
+    expect(
+      formatTriggerRenderFailureMessage({
+        status: 500,
+        statusText: 'Error',
+        body: '',
+      })
+    ).toBe('Render failed: 500 Error');
+    expect(
+      formatTriggerRenderFailureMessage({
+        status: 500,
+        statusText: 'Error',
+        body: 'detail',
+      })
+    ).toBe('Render failed: 500 Error - detail');
     expect(renderErrorMessage(new Error('boom'))).toBe('boom');
     expect(renderErrorMessage(42)).toBe('42');
   });
@@ -560,22 +655,30 @@ describe('stats and regeneration handlers', () => {
     const showMessage = jest.fn();
     const handler = createTriggerStats({
       googleAuth: { getIdToken: jest.fn().mockResolvedValue('token') },
-      getAdminEndpointsFn: () => Promise.resolve({ generateStatsUrl: '/stats' }),
+      getAdminEndpointsFn: () =>
+        Promise.resolve({ generateStatsUrl: '/stats' }),
       fetchFn,
       showMessage,
     });
     await handler();
-    expect(fetchFn).toHaveBeenCalledWith('/stats', expect.objectContaining({
-      method: 'POST',
-      headers: { Authorization: 'Bearer token', 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id_token: 'token' }),
-    }));
+    expect(fetchFn).toHaveBeenCalledWith(
+      '/stats',
+      expect.objectContaining({
+        method: 'POST',
+        headers: {
+          Authorization: 'Bearer token',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ ['id_token']: 'token' }),
+      })
+    );
     expect(showMessage).toHaveBeenCalledWith('Stats generated');
 
     const missingMessage = jest.fn();
     await createTriggerStats({
       googleAuth: { getIdToken: jest.fn().mockResolvedValue(null) },
-      getAdminEndpointsFn: () => Promise.resolve({ generateStatsUrl: '/stats' }),
+      getAdminEndpointsFn: () =>
+        Promise.resolve({ generateStatsUrl: '/stats' }),
       fetchFn,
       showMessage: missingMessage,
     })();
@@ -585,7 +688,8 @@ describe('stats and regeneration handlers', () => {
     const failedMessage = jest.fn();
     await createTriggerStats({
       googleAuth: { getIdToken: jest.fn().mockResolvedValue('token') },
-      getAdminEndpointsFn: () => Promise.resolve({ generateStatsUrl: '/stats' }),
+      getAdminEndpointsFn: () =>
+        Promise.resolve({ generateStatsUrl: '/stats' }),
       fetchFn: jest.fn().mockResolvedValue({ ok: false, status: 503 }),
       showMessage: failedMessage,
       reportError,
@@ -603,16 +707,20 @@ describe('stats and regeneration handlers', () => {
       googleAuth: { getIdToken: jest.fn().mockResolvedValue('token') },
       doc,
       showMessage,
-      getAdminEndpointsFn: () => Promise.resolve({ markVariantDirtyUrl: '/dirty' }),
+      getAdminEndpointsFn: () =>
+        Promise.resolve({ markVariantDirtyUrl: '/dirty' }),
       fetchFn,
     });
     const event = { preventDefault: jest.fn() };
     await handler(event);
     expect(event.preventDefault).toHaveBeenCalled();
-    expect(fetchFn).toHaveBeenCalledWith('/dirty', expect.objectContaining({
-      method: 'POST',
-      body: JSON.stringify({ page: 123, variant: 'abc' }),
-    }));
+    expect(fetchFn).toHaveBeenCalledWith(
+      '/dirty',
+      expect.objectContaining({
+        method: 'POST',
+        body: JSON.stringify({ page: 123, variant: 'abc' }),
+      })
+    );
     expect(showMessage).toHaveBeenCalledWith('Regeneration triggered');
 
     input.value = 'invalid';

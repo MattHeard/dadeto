@@ -593,7 +593,11 @@ export async function readResponseText(readText, res) {
  * @param {{ status: number | string, statusText: string, body: string }} params Response details.
  * @returns {string} Human-readable failure message.
  */
-export function formatTriggerRenderFailureMessage({ status, statusText, body }) {
+export function formatTriggerRenderFailureMessage({
+  status,
+  statusText,
+  body,
+}) {
   if (!body) {
     return `Render failed: ${status} ${statusText}`;
   }

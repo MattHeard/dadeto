@@ -112,7 +112,9 @@ describe('spacetimeWorldLine', () => {
       'segments, startPointId, and endPointId are required.'
     );
     expect(() =>
-      parseInput(JSON.stringify({ segments: {}, startPointId: 'A', endPointId: 'B' }))
+      parseInput(
+        JSON.stringify({ segments: {}, startPointId: 'A', endPointId: 'B' })
+      )
     ).toThrow('segments, startPointId, and endPointId are required.');
     expect(
       parseInput(
@@ -133,12 +135,17 @@ describe('spacetimeWorldLine', () => {
       expect(
         JSON.parse(
           spacetimeWorldLine(
-            JSON.stringify({ startPointId: 'A', endPointId: 'B', segments: [segment] })
+            JSON.stringify({
+              startPointId: 'A',
+              endPointId: 'B',
+              segments: [segment],
+            })
           )
         )
       ).toMatchObject({
         valid: false,
-        error: 'Every segment requires segmentId, startPointId, and endPointId.',
+        error:
+          'Every segment requires segmentId, startPointId, and endPointId.',
       });
     }
   });
