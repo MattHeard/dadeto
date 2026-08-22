@@ -10,6 +10,7 @@ import {
   guardStopDistance,
   guardVisited,
   hasShorterPath,
+  processNextNode,
   dequeue,
 } from '../../../src/core/browser/toys/2025-12-05/dijkstra.js';
 
@@ -106,6 +107,12 @@ describe('guardStopDistance', () => {
     expect(result).toBe(true);
     expect(state.queue).toHaveLength(0);
   });
+
+  it('leaves the queue alone when the distance can improve', () => {
+    const state = { bestDistance: 0.4, queue: [{ id: 'next' }] };
+    expect(guardStopDistance(state, 0.3)).toBe(false);
+    expect(state.queue).toEqual([{ id: 'next' }]);
+  });
 });
 
 describe('dijkstra helper contracts', () => {
@@ -182,6 +189,50 @@ describe('dijkstra helper contracts', () => {
         bestDistance: 1,
       })
     ).toBeNull();
+
+    const splitRatings = {
+      matt: { 'page-A': true, 'page-B': false },
+      alice: { 'page-A': true, 'page-B': true },
+    };
+    expect(
+      createNeighborEntry({
+        current: { id: 'matt', distance: 0.6 },
+        neighbor: 'alice',
+        ratings: splitRatings,
+        bestDistance: 1,
+      })
+    ).toBeNull();
+    expect(
+      createNeighborEntry({
+        current: { id: 'matt', distance: 0 },
+        neighbor: 'alice',
+        ratings: splitRatings,
+        bestDistance: 0.4,
+      })
+    ).toBeNull();
+  });
+
+  it('explores only non-current nodes and skips a visited queue entry', () => {
+    const state = {
+      visited: new Set(['matt']),
+      queue: [{ id: 'matt', distance: 0 }],
+      distances: new Map([['matt', 0]]),
+      bestDistance: 1,
+    };
+    processNextNode({
+      nodes: ['matt'],
+      state,
+      context: { moderatorId: 'matt', adminId: 'admin', ratings: {} },
+    });
+    expect(state.queue).toEqual([]);
+  });
+
+  it('dequeues entries in ascending distance order', () => {
+    const queue = [
+      { id: 'slow', distance: 0.8 },
+      { id: 'fast', distance: 0.2 },
+    ];
+    expect(dequeue(queue)).toEqual({ id: 'fast', distance: 0.2 });
   });
 });
 

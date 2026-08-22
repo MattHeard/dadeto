@@ -34,10 +34,6 @@ export function shortestDistanceToAdmin({
  * @returns {number} Shortest discovered distance.
  */
 function resolveDistance(context) {
-  if (context.moderatorId === context.adminId) {
-    return 0;
-  }
-
   return runSearch(context);
 }
 
@@ -307,10 +303,12 @@ export {
   buildNodeList,
   createInitialState,
   createNeighborEntry,
+  enqueueNeighbors,
   enqueueIfImproved,
   guardAdmin,
   guardBeyondLimit,
   guardStopDistance,
   guardVisited,
   hasShorterPath,
+  processNextNode,
 };
