@@ -550,6 +550,29 @@ describe('moderate core', () => {
     );
     mockSignInInit.onSignIn();
     await new Promise(resolve => setImmediate(resolve));
+    expect(mockDocument.body.classList.add).toHaveBeenCalledWith('authed');
+    for (const selector of ['#signinButton', '#signoutWrap', '.admin-link']) {
+      expect(mockDocument.querySelectorAll).toHaveBeenCalledWith(selector);
+    }
+    const latestQueryResult = selector => {
+      const calls = mockDocument.querySelectorAll.mock.calls;
+      const index = calls.findLastIndex(([value]) => value === selector);
+      return mockDocument.querySelectorAll.mock.results[index].value[0];
+    };
+    expect(latestQueryResult('#signinButton').style.display).toBe('none');
+    expect(latestQueryResult('#signoutWrap').style.display).toBe('');
+    expect(latestQueryResult('.admin-link').style.display).toBe('');
+    const adminQueryCount = mockDocument.querySelectorAll.mock.calls.filter(
+      ([selector]) => selector === '.admin-link'
+    ).length;
+    mockIsAdmin = false;
+    mockSignInInit.onSignIn();
+    await new Promise(resolve => setImmediate(resolve));
+    expect(
+      mockDocument.querySelectorAll.mock.calls.filter(
+        ([selector]) => selector === '.admin-link'
+      )
+    ).toHaveLength(adminQueryCount);
     mockIntervalCallback?.();
     const [approve, reject] = ['approveBtn', 'rejectBtn'].map(id =>
       mockDocument.elements.get(id)
