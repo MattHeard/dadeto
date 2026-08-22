@@ -108,6 +108,9 @@ describe('spacetimeWorldLine', () => {
     expect(isJsonObject([])).toBe(false);
     expect(() => parseInput('null')).toThrow('Input must be a JSON object.');
     expect(() => parseInput('[]')).toThrow('Input must be a JSON object.');
+    expect(() => parseInput('')).toThrow(
+      'segments, startPointId, and endPointId are required.'
+    );
     expect(() => parseInput(JSON.stringify({}))).toThrow(
       'segments, startPointId, and endPointId are required.'
     );
