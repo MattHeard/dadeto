@@ -33,6 +33,9 @@ describe('moderate pure helper contracts', () => {
     expect(shouldRetryLoad(new Error('HTTP 404: missing'), false)).toBe(true);
     expect(shouldRetryLoad(new Error('HTTP 404: missing'), true)).toBe(false);
     expect(shouldRetryLoad(new Error('HTTP 500'), false)).toBe(false);
+    expect(shouldRetryLoad({ message: 'HTTP 404: missing' }, false)).toBe(true);
+    expect(shouldRetryLoad({ message: 404 }, false)).toBe(false);
+    expect(shouldRetryLoad({ message: '' }, false)).toBe(false);
     expect(shouldRetryLoad(null, false)).toBe(false);
   });
 
