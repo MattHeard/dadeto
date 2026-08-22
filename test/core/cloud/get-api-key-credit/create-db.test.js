@@ -27,6 +27,7 @@ describe('API key credit createDb facade', () => {
     expect(
       createDb(Firestore, { DENDRITE_ENVIRONMENT: '   ' }).options
     ).toBeUndefined();
+    expect(createDb(Firestore, { DATABASE_ID: 123 }).options).toBeUndefined();
     expect(API_KEY_CREDIT_CREATE_DB_MARKER).toBe(true);
   });
 });
