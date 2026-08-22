@@ -337,8 +337,12 @@ function attachHidDeviceListener(state, disposers, device) {
       updateHidSnapshot(state, snapshotHidInputReport(event));
     }
   );
-  device.addEventListener?.('inputreport', handler);
-  disposers.push(() => device.removeEventListener?.('inputreport', handler));
+  device.addEventListener('inputreport', handler);
+  disposers.push(() => {
+    if (typeof device.removeEventListener === 'function') {
+      device.removeEventListener('inputreport', handler);
+    }
+  });
 }
 
 /**

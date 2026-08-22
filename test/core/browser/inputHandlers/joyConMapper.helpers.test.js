@@ -881,6 +881,18 @@ describe('joyConMapper granted-device opening', () => {
       expect.any(Function)
     );
   });
+
+  it('cleans up safely when a device lacks removeEventListener', () => {
+    const addEventListener = jest.fn();
+    const device = { addEventListener };
+    const disposers = [];
+    attachHidDeviceListener(
+      { hidSnapshot: null, hidPendingSnapshot: null, dom: {} },
+      disposers,
+      device
+    );
+    expect(() => disposers[0]()).not.toThrow();
+  });
 });
 
 describe('joyConMapper HID snapshot stabilization', () => {
