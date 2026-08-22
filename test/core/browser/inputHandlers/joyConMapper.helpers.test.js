@@ -1439,8 +1439,13 @@ describe('joyConMapper list rendering', () => {
     expect(addedClasses).toContain('active');
     expect(addedClasses).not.toContain('optional');
     expect(dom.createElement).toHaveBeenCalledWith('div');
+    expect(dom.createElement.mock.calls[0][0]).toBe('div');
     expect(dom.createElement.mock.calls[1][0]).toBe('div');
     expect(dom.createElement.mock.calls[2][0]).toBe('div');
+    expect(dom.setClassName).toHaveBeenCalledWith(
+      createdElements[0],
+      'joycon-mapper-row'
+    );
     expect(dom.setClassName).toHaveBeenCalledWith(
       createdElements[1],
       'joycon-mapper-name'
