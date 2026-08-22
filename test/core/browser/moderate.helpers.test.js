@@ -64,8 +64,9 @@ describe('moderate pure helper contracts', () => {
   it('toggles moderation buttons and wires approval callbacks', () => {
     const approve = { disabled: false };
     const reject = { disabled: false };
+    const getElementById = jest.fn(id => (id === 'approveBtn' ? approve : reject));
     const documentObj = {
-      getElementById: id => (id === 'approveBtn' ? approve : reject),
+      getElementById,
     };
     createModerateHandle({
       documentObj,
@@ -79,7 +80,22 @@ describe('moderate pure helper contracts', () => {
     toggleApproveReject(false);
     expect(approve.disabled).toBe(false);
     expect(reject.disabled).toBe(false);
-    expect(approve.disabled).toBe(false);
+    expect(getElementById).toHaveBeenCalledWith('approveBtn');
+    expect(getElementById).toHaveBeenCalledWith('rejectBtn');
+  });
+
+  it('ignores missing moderation buttons when toggling', () => {
+    const approve = { disabled: false };
+    createModerateHandle({
+      documentObj: {
+        getElementById: id => (id === 'approveBtn' ? approve : null),
+      },
+      fetchFn: jest.fn(),
+      sessionStorageObj: {},
+      globalObject: {},
+    });
+    toggleApproveReject(true);
+    expect(approve.disabled).toBe(true);
   });
 
   it('does not wire incomplete moderation button pairs', () => {
@@ -108,7 +124,24 @@ describe('moderate pure helper contracts', () => {
   it('safely handles a missing animation element', () => {
     const documentObj = { getElementById: () => null };
     createModerateHandle({ documentObj, fetchFn: jest.fn(), sessionStorageObj: {}, globalObject: {} });
-    expect(startAnimation('missing', 'Loading')).toEqual(expect.any(Function));
+    const stop = startAnimation('missing', 'Loading');
+    expect(stop).toEqual(expect.any(Function));
+    expect(() => stop()).not.toThrow();
+  });
+
+  it('starts and stops animation for an existing element', () => {
+    const element = { textContent: '', style: {} };
+    createModerateHandle({
+      documentObj: { getElementById: () => element },
+      fetchFn: jest.fn(),
+      sessionStorageObj: {},
+      globalObject: {},
+    });
+    const stop = startAnimation('saving', 'Saving');
+    expect(element.textContent).toBe('Saving.');
+    expect(element.style.display).toBe('block');
+    stop();
+    expect(element.style.display).toBe('none');
   });
 
   it('renders option lists with and without target page numbers', () => {
@@ -193,6 +226,16 @@ describe('moderate pure helper contracts', () => {
     enableModerationButtons();
     expect(typeof approve.onclick).toBe('function');
     expect(typeof reject.onclick).toBe('function');
+  });
+
+  it('does not render when the page container is missing', () => {
+    const documentObj = {
+      getElementById: () => null,
+      createElement: jest.fn(),
+    };
+    createModerateHandle({ documentObj, fetchFn: jest.fn(), sessionStorageObj: {}, globalObject: {} });
+    renderVariant({ title: 'ignored' });
+    expect(documentObj.createElement).not.toHaveBeenCalled();
   });
 
   it('fetches JSON and preserves successful response metadata', async () => {
