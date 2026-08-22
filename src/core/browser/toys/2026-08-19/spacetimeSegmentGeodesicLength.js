@@ -54,7 +54,7 @@ function parseInput(input) {
   return {
     points:
       /** @type {Array<{pointId: string, latitude: string, longitude: string}>} */ (
-        resolvePointRecords(parsed.points, parsed.spacePoints || [])
+        resolvePointRecords(parsed.points, parsed.spacePoints)
       ),
     segment: /** @type {{startPointId: string, endPointId: string}} */ (
       parsed.segment
