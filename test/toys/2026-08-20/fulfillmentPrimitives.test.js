@@ -365,5 +365,25 @@ describe('fulfillment primitives', () => {
       )
     ).toBe('["A1"]');
   });
+  test('keeps touching possession intervals available and deduplicates IDs', () => {
+    expect(
+      JSON.parse(
+        assetPossessionSegmentCandidateFilter(
+          JSON.stringify({
+            points,
+            segments,
+            possessionSegmentId: 'AB',
+            requestedSku: 7,
+            assets: [
+              { assetId: 'A2', sku: 7 },
+              { assetId: 'A2', sku: 7 },
+              { assetId: 'A1', sku: 7 },
+            ],
+            existingAssetAssignments: [{ assetId: 'A1', segmentId: 'BC' }],
+          })
+        )
+      )
+    ).toEqual(['A1', 'A2']);
+  });
 });
 /* eslint max-lines-per-function: off */
