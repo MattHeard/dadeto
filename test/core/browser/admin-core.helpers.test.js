@@ -9,6 +9,8 @@ import {
   createAdminEndpointsPromise,
   createGetAdminEndpoints,
   createTriggerRender,
+  createTriggerStats,
+  createRegenerateVariant,
   createShowMessage,
   createElementEventBinder,
   ensureSignOutAuth,
@@ -481,6 +483,73 @@ describe('trigger render response helpers', () => {
     );
     expect(renderErrorMessage(new Error('boom'))).toBe('boom');
     expect(renderErrorMessage(42)).toBe('42');
+  });
+});
+
+describe('stats and regeneration handlers', () => {
+  it('generates stats on success and reports missing or failed tokens', async () => {
+    const fetchFn = jest.fn().mockResolvedValue({ ok: true, status: 200 });
+    const showMessage = jest.fn();
+    const handler = createTriggerStats({
+      googleAuth: { getIdToken: jest.fn().mockResolvedValue('token') },
+      getAdminEndpointsFn: () => Promise.resolve({ generateStatsUrl: '/stats' }),
+      fetchFn,
+      showMessage,
+    });
+    await handler();
+    expect(fetchFn).toHaveBeenCalledWith('/stats', expect.objectContaining({
+      method: 'POST',
+      headers: { Authorization: 'Bearer token', 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id_token: 'token' }),
+    }));
+    expect(showMessage).toHaveBeenCalledWith('Stats generated');
+
+    const missingMessage = jest.fn();
+    await createTriggerStats({
+      googleAuth: { getIdToken: jest.fn().mockResolvedValue(null) },
+      getAdminEndpointsFn: () => Promise.resolve({ generateStatsUrl: '/stats' }),
+      fetchFn,
+      showMessage: missingMessage,
+    })();
+    expect(missingMessage).toHaveBeenCalledWith('Stats generation failed');
+
+    const reportError = jest.fn();
+    const failedMessage = jest.fn();
+    await createTriggerStats({
+      googleAuth: { getIdToken: jest.fn().mockResolvedValue('token') },
+      getAdminEndpointsFn: () => Promise.resolve({ generateStatsUrl: '/stats' }),
+      fetchFn: jest.fn().mockResolvedValue({ ok: false, status: 503 }),
+      showMessage: failedMessage,
+      reportError,
+    })();
+    expect(reportError).toHaveBeenCalledWith(expect.any(Error));
+    expect(failedMessage).toHaveBeenCalledWith('Stats generation failed');
+  });
+
+  it('regenerates a valid page variant and rejects invalid inputs', async () => {
+    const input = { value: '123abc' };
+    const doc = { getElementById: jest.fn().mockReturnValue(input) };
+    const fetchFn = jest.fn().mockResolvedValue({ ok: true, status: 200 });
+    const showMessage = jest.fn();
+    const handler = createRegenerateVariant({
+      googleAuth: { getIdToken: jest.fn().mockResolvedValue('token') },
+      doc,
+      showMessage,
+      getAdminEndpointsFn: () => Promise.resolve({ markVariantDirtyUrl: '/dirty' }),
+      fetchFn,
+    });
+    const event = { preventDefault: jest.fn() };
+    await handler(event);
+    expect(event.preventDefault).toHaveBeenCalled();
+    expect(fetchFn).toHaveBeenCalledWith('/dirty', expect.objectContaining({
+      method: 'POST',
+      body: JSON.stringify({ page: 123, variant: 'abc' }),
+    }));
+    expect(showMessage).toHaveBeenCalledWith('Regeneration triggered');
+
+    input.value = 'invalid';
+    await handler({});
+    expect(showMessage).toHaveBeenCalledWith('Invalid format');
   });
 });
 
