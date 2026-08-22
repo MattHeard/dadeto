@@ -127,6 +127,10 @@ function getRowsJson(dom, inputElement) {
     getDomValue(dom, inputElement)
   );
 
+  if (preferredValue === '' || preferredValue === undefined) {
+    // Stryker disable next-line StringLiteral -- blank row input must parse as an empty object.
+    return '{}';
+  }
   return preferredValue;
 }
 

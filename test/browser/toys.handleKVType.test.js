@@ -68,7 +68,7 @@ describe('handleKVType', () => {
       addEventListener: jest.fn(),
       setTextContent: jest.fn(),
       appendChild: jest.fn(),
-      getValue: jest.fn(() => '{}'),
+      getValue: jest.fn(() => '{"first":"value"}'),
       querySelectorAll: jest.fn(),
       createTextNode: jest.fn(),
       addClass: jest.fn(),
@@ -87,6 +87,13 @@ describe('handleKVType', () => {
     expect(removeChild).toHaveBeenCalledWith(container, fileInput);
     expect(querySelector).toHaveBeenCalledWith(container, '.kv-container');
     expect(createElement).toHaveBeenCalledWith('div');
+    expect(createElement.mock.calls[0]).toEqual(['div']);
+    expect(dom.setClassName).toHaveBeenCalledWith(
+      expect.any(Object),
+      'kv-container'
+    );
+    expect(dom.setValue).toHaveBeenCalledWith(expect.any(Object), 'value');
+    expect(dom.setValue).toHaveBeenCalledWith(expect.any(Object), 'string');
     expect(insertBefore).toHaveBeenCalled();
   });
 });
