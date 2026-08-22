@@ -16,6 +16,8 @@ import {
   attachSignOutLink,
   attachSignOutLinks,
   createSignOutClickHandler,
+  extractTextReader,
+  formatTriggerRenderFailureMessage,
   getAdminContent,
   getCurrentUser,
   getSignInButtons,
@@ -47,6 +49,12 @@ import {
   validateGetIdToken,
   executeTriggerRender,
   postTriggerRenderContents,
+  readResponseText,
+  readTriggerRenderBody,
+  renderErrorMessage,
+  resolveTriggerRenderStatus,
+  resolveTriggerRenderStatusText,
+  getResponseTextReader,
   resolveAdminEndpoint,
   setupFirebase,
   updateAuthControlsDisplay,
@@ -445,6 +453,34 @@ describe('admin event and sign-out helpers', () => {
     await createSignOutClickHandler(auth)(event);
     expect(event.preventDefault).toHaveBeenCalled();
     expect(signOut).toHaveBeenCalled();
+  });
+});
+
+describe('trigger render response helpers', () => {
+  it('normalizes status, status text, and response bodies', async () => {
+    expect(resolveTriggerRenderStatus(null)).toBe('unknown');
+    expect(resolveTriggerRenderStatus({ status: 503 })).toBe(503);
+    expect(resolveTriggerRenderStatusText(null)).toBe('unknown');
+    expect(resolveTriggerRenderStatusText({ statusText: '' })).toBe('unknown');
+    expect(resolveTriggerRenderStatusText({ statusText: 'Unavailable' })).toBe('Unavailable');
+    expect(getResponseTextReader(null)).toBeNull();
+    expect(getResponseTextReader({ text: 'not callable' })).toBeNull();
+    const response = { text: jest.fn(function text() { return Promise.resolve(' body '); }) };
+    expect(extractTextReader(response)).toBe(response.text);
+    expect(await readTriggerRenderBody(response)).toBe(' body ');
+    expect(await readTriggerRenderBody({})).toBe('');
+    expect(await readResponseText(() => Promise.resolve(''), response)).toBe('');
+  });
+
+  it('formats body and error variants distinctly', () => {
+    expect(formatTriggerRenderFailureMessage({ status: 500, statusText: 'Error', body: '' })).toBe(
+      'Render failed: 500 Error'
+    );
+    expect(formatTriggerRenderFailureMessage({ status: 500, statusText: 'Error', body: 'detail' })).toBe(
+      'Render failed: 500 Error - detail'
+    );
+    expect(renderErrorMessage(new Error('boom'))).toBe('boom');
+    expect(renderErrorMessage(42)).toBe('42');
   });
 });
 

@@ -480,7 +480,7 @@ export async function postTriggerRenderContents(
  * @param {Response|null|undefined} res Response returned by the trigger render request.
  * @returns {number | string} Known status code or the string "unknown" when unavailable.
  */
-function resolveTriggerRenderStatus(res) {
+export function resolveTriggerRenderStatus(res) {
   return extractStatus(res);
 }
 
@@ -511,7 +511,7 @@ function readStatusProperty(res) {
  * @param {Response|null|undefined} res Response returned by the trigger render request.
  * @returns {string} Known status text or the string "unknown" when unavailable.
  */
-function resolveTriggerRenderStatusText(res) {
+export function resolveTriggerRenderStatusText(res) {
   return extractStatusText(res);
 }
 
@@ -542,7 +542,7 @@ function readStatusTextProperty(res) {
  * @param {Response|null|undefined} res Response returned by the trigger render request.
  * @returns {Promise<string>} Body content when readable, otherwise an empty string.
  */
-async function readTriggerRenderBody(res) {
+export async function readTriggerRenderBody(res) {
   const readText = getResponseTextReader(res);
   if (!readText) {
     return '';
@@ -556,7 +556,7 @@ async function readTriggerRenderBody(res) {
  * @param {Response|null|undefined} res - Response that should expose a `text` method.
  * @returns {(() => Promise<string>) | null} Callable reader or null when absent.
  */
-function getResponseTextReader(res) {
+export function getResponseTextReader(res) {
   if (!res) {
     return null;
   }
@@ -568,7 +568,7 @@ function getResponseTextReader(res) {
  * @param {Response} res Response.
  * @returns {(() => Promise<string>) | null} Reader.
  */
-function extractTextReader(res) {
+export function extractTextReader(res) {
   const reader = res.text;
   if (typeof reader !== 'function') {
     return null;
@@ -583,7 +583,7 @@ function extractTextReader(res) {
  * @param {Response|null|undefined} res - Response used to call the reader with the correct context.
  * @returns {Promise<string>} Promise resolving to response text or an empty string.
  */
-async function readResponseText(readText, res) {
+export async function readResponseText(readText, res) {
   const body = await readText.call(/** @type {Response} */ (res));
   return body || '';
 }
@@ -593,7 +593,7 @@ async function readResponseText(readText, res) {
  * @param {{ status: number | string, statusText: string, body: string }} params Response details.
  * @returns {string} Human-readable failure message.
  */
-function formatTriggerRenderFailureMessage({ status, statusText, body }) {
+export function formatTriggerRenderFailureMessage({ status, statusText, body }) {
   if (!body) {
     return `Render failed: ${status} ${statusText}`;
   }
@@ -702,7 +702,7 @@ async function executeTriggerRenderCore({
  * @param {unknown} error - Throwable provided by the failed HTTP call.
  * @returns {string} Normalized message suitable for displaying to users.
  */
-function renderErrorMessage(error) {
+export function renderErrorMessage(error) {
   if (error instanceof Error) {
     return error.message;
   }
