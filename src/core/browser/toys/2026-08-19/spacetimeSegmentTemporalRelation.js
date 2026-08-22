@@ -1,6 +1,7 @@
 // Toy: Spacetime Segment Temporal Relation
 // (input, env) -> string
 // jscpd:ignore-start
+import { resolvePointRecords } from '../2026-08-22/spacePointResolution.js';
 
 /**
  * Classify the temporal relation between two SPAC2 segments.
@@ -59,9 +60,7 @@ function parseRequest(input) {
     throw new Error('firstSegmentId and secondSegmentId are required.');
   }
   return {
-    points: /** @type {Array<{pointId: string, timestamp: string}>} */ (
-      request.points
-    ),
+    points: resolvePointRecords(request.points, request.spacePoints || []),
     segments:
       /** @type {Array<{segmentId: string, startPointId: string, endPointId: string}>} */ (
         request.segments

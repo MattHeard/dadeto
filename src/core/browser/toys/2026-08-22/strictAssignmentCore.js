@@ -5,6 +5,7 @@ import {
   resolveSegment,
 } from '../2026-08-21/segmentAssignmentFeasibilityCore.js';
 import { wgs84Distance } from '../2026-08-20/wgs84Distance.js';
+import { resolvePointRecords } from './spacePointResolution.js';
 
 /**
  * Normalize an identifier and reject absent/sentinel values.
@@ -36,17 +37,27 @@ export function normalizeMaximumSpeed(value) {
 }
 
 /**
+ * Read a list-valued assignment field with a stable object shape.
+ * @param {Record<string, unknown>} input Assignment input.
+ * @param {string} key Field name.
+ * @returns {Array<Record<string, unknown>>} Object entries.
+ */
+function readAssignmentRecords(input, key) {
+  return /** @type {Array<Record<string, unknown>>} */ (input[key] || []);
+}
+
+/**
  * Resolve the candidate and calculate required speed.
  * @param {Record<string, unknown>} input Assignment input.
  * @returns {{candidate: ReturnType<typeof resolveSegment>, requiredSpeed: number, maximumSpeed: number}} Speed result.
  */
 export function resolveSpeed(input) {
-  /** @type {Array<Record<string, unknown>>} */
-  const pointValues = /** @type {Array<Record<string, unknown>>} */ (
-    input.points || []
-  );
+  const pointValues = readAssignmentRecords(input, 'points');
   const points = new Map(
-    pointValues.map(point => [String(point.pointId), point])
+    resolvePointRecords(
+      pointValues,
+      readAssignmentRecords(input, 'spacePoints')
+    ).map(point => [String(point.pointId), point])
   );
   const candidateSegment = /** @type {Record<string, unknown>} */ (
     input.candidateSegment
@@ -84,14 +95,8 @@ export function resolveSpeed(input) {
  * @returns {{feasible: boolean, reason?: string}} Runner feasibility.
  */
 export function evaluateRunnerWorldLine(input, shift) {
-  /** @type {Array<Record<string, unknown>>} */
-  const pointValues = /** @type {Array<Record<string, unknown>>} */ (
-    input.points || []
-  );
-  /** @type {Array<Record<string, unknown>>} */
-  const segmentValues = /** @type {Array<Record<string, unknown>>} */ (
-    input.existingSegments || []
-  );
+  const pointValues = readAssignmentRecords(input, 'points');
+  const segmentValues = readAssignmentRecords(input, 'existingSegments');
   const candidateSegment = /** @type {Record<string, unknown>} */ (
     input.candidateSegment
   );
@@ -100,7 +105,8 @@ export function evaluateRunnerWorldLine(input, shift) {
     segmentValues,
     candidateSegment,
     shift.clockInPoint,
-    shift.clockOutPoint
+    shift.clockOutPoint,
+    input.spacePoints || []
   );
 }
 
@@ -110,9 +116,6 @@ export function evaluateRunnerWorldLine(input, shift) {
  * @returns {Map<string, Record<string, unknown>>} Point map.
  */
 export function buildPoints(input) {
-  /** @type {Array<Record<string, unknown>>} */
-  const pointValues = /** @type {Array<Record<string, unknown>>} */ (
-    input.points || []
-  );
+  const pointValues = readAssignmentRecords(input, 'points');
   return new Map(pointValues.map(point => [String(point.pointId), point]));
 }

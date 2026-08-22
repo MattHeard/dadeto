@@ -1,6 +1,7 @@
 // Toy: Spacetime Segment Geodesic Length
 // (input, env) -> string
 // jscpd:ignore-start
+import { resolvePointRecords } from '../2026-08-22/spacePointResolution.js';
 
 const SEMI_MAJOR_AXIS = 6378137;
 const FLATTENING = 1 / 298.257223563;
@@ -51,10 +52,7 @@ function parseInput(input) {
     throw new Error('points and segment are required.');
   }
   return {
-    points:
-      /** @type {Array<{pointId: string, latitude: number, longitude: number}>} */ (
-        parsed.points
-      ),
+    points: resolvePointRecords(parsed.points, parsed.spacePoints || []),
     segment: /** @type {{startPointId: string, endPointId: string}} */ (
       parsed.segment
     ),

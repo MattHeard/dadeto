@@ -1,6 +1,7 @@
 // Toy: Spacetime Segment Duration
 // (input, env) -> string
 // jscpd:ignore-start
+import { resolvePointRecords } from '../2026-08-22/spacePointResolution.js';
 
 /**
  * Calculate UTC duration for a SPAC2 segment.
@@ -48,9 +49,7 @@ function parseInput(input) {
     throw new Error('points and segment are required.');
   }
   return {
-    points: /** @type {Array<{pointId: string, timestamp: string}>} */ (
-      parsed.points
-    ),
+    points: resolvePointRecords(parsed.points, parsed.spacePoints || []),
     segment: /** @type {{startPointId: string, endPointId: string}} */ (
       parsed.segment
     ),

@@ -16,7 +16,8 @@ export function assignAssetToSegmentIfFeasible(input, env) {
         x.existingSegments || [],
         x.candidateSegment,
         x.stockInPoint,
-        x.stockOutPoint
+        x.stockOutPoint,
+        x.spacePoints || []
       );
     if (!result.feasible)
       return JSON.stringify({

@@ -3,13 +3,14 @@
 /* eslint-disable jsdoc/require-returns */
 import { wgs84Distance } from '../2026-08-20/wgs84Distance.js';
 import { resolveSegment } from './segmentAssignmentFeasibilityCore.js';
+import { resolvePointRecords } from '../2026-08-22/spacePointResolution.js';
 
 /** @param {string} input JSON with points, candidateSegment, maximumSpeed, and speedUnit. @returns {string} Structured feasibility result. */
 export function segmentMaximumSpeedFeasibility(input) {
   try {
     const x = JSON.parse(input || '{}'),
       points = new Map(
-        /** @type {Array<Record<string, unknown>>} */ (x.points || []).map(
+        resolvePointRecords(x.points || [], x.spacePoints || []).map(
           /** @param {Record<string, unknown>} point Point record. */ point => [
             String(point.pointId),
             point,

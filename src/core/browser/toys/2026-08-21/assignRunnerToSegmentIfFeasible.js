@@ -65,7 +65,8 @@ export function assignRunnerToSegmentIfFeasible(input, env) {
       x.existingSegments || [],
       x.candidateSegment,
       matching.clockInPoint,
-      matching.clockOutPoint
+      matching.clockOutPoint,
+      x.spacePoints || []
     );
     if (!result.feasible)
       return JSON.stringify({

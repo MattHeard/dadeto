@@ -1,5 +1,6 @@
 // Toy: WGS84 Circle Point Predicate
 import { wgs84Distance } from './wgs84Distance.js';
+import { resolvePoint } from '../2026-08-22/spacePointResolution.js';
 
 /** @param {string} input JSON with circle and point. @returns {string} JSON boolean. */
 export function wgs84CirclePointPredicate(input) {
@@ -9,14 +10,20 @@ export function wgs84CirclePointPredicate(input) {
   } catch {
     parsed = {};
   }
-  const { circle, point } = parsed;
+  const { circle, point } = parsed || {};
   if (!circle || !circle.center || !point) return 'false';
+  let resolvedPoint;
+  try {
+    resolvedPoint = resolvePoint(point, new Map((parsed.spacePoints || []).map(spacePoint => [String(spacePoint.spacePointId), spacePoint])));
+  } catch {
+    return 'false';
+  }
   const values = [
     circle.center.latitude,
     circle.center.longitude,
     circle.radiusMeters,
-    point.latitude,
-    point.longitude,
+    resolvedPoint.latitude,
+    resolvedPoint.longitude,
   ].map(Number);
   if (
     Math.abs(values[0]) > 90 ||

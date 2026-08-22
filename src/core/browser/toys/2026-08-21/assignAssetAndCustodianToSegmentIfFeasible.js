@@ -43,7 +43,8 @@ export function assignAssetAndCustodianToSegmentIfFeasible(input, env) {
       x.existingAssetSegments || [],
       x.candidateSegment,
       x.stockInPoint,
-      x.stockOutPoint
+      x.stockOutPoint,
+      x.spacePoints || []
     );
     if (!assetResult.feasible)
       return JSON.stringify({
@@ -55,7 +56,8 @@ export function assignAssetAndCustodianToSegmentIfFeasible(input, env) {
       x.existingPersonSegments || [],
       x.candidateSegment,
       matching.clockInPoint,
-      matching.clockOutPoint
+      matching.clockOutPoint,
+      x.spacePoints || []
     );
     if (!runnerResult.feasible)
       return JSON.stringify({

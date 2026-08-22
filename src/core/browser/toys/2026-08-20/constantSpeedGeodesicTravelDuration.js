@@ -1,12 +1,13 @@
 // @ts-nocheck
 // Toy: Constant-Speed Geodesic Travel Duration
 import { wgs84Distance } from './wgs84Distance.js';
+import { resolvePointRecords } from '../2026-08-22/spacePointResolution.js';
 
 /** @param {string} input JSON with points, segment, and speedKilometersPerHour. @returns {string} Scalar seconds object. */
 export function constantSpeedGeodesicTravelDuration(input) {
   try {
     const x = JSON.parse(input),
-      points = new Map((x.points || []).map(p => [p.pointId, p])),
+      points = new Map(resolvePointRecords(x.points || [], x.spacePoints || []).map(p => [p.pointId, p])),
       s = x.segment;
     const a = points.get(s?.startPointId),
       b = points.get(s?.endPointId),

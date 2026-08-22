@@ -1,6 +1,7 @@
 // @ts-nocheck
 // Toy: WGS84 Circle Segment Predicate
 import { wgs84CirclePointPredicate } from './wgs84CirclePointPredicate.js';
+import { resolvePointRecords } from '../2026-08-22/spacePointResolution.js';
 
 /** @param {string} input JSON with points, segment, and circle. @returns {string} JSON boolean. */
 export function wgs84CircleSegmentPredicate(input) {
@@ -11,8 +12,8 @@ export function wgs84CircleSegmentPredicate(input) {
     return 'false';
   }
 
-  if (!Array.isArray(x.points) || !x.segment) return 'false';
-  const points = new Map(x.points.map(p => [p.pointId, p]));
+  if (!x || !Array.isArray(x.points) || !x.segment) return 'false';
+  const points = new Map(resolvePointRecords(x.points, x.spacePoints || []).map(p => [p.pointId, p]));
   const start = points.get(x.segment.startPointId),
     end = points.get(x.segment.endPointId);
   if (!start || !end) return 'false';

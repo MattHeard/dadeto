@@ -13,7 +13,8 @@ export function segmentAssignmentFeasibility(input) {
         x.existingSegments || [],
         x.candidateSegment,
         x.entryPoint,
-        x.exitPoint
+        x.exitPoint,
+        x.spacePoints || []
       )
     );
   } catch (error) {

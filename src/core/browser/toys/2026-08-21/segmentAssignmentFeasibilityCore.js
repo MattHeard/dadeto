@@ -1,5 +1,6 @@
 // Shared pure feasibility helpers for safe segment assignment toys.
 // jscpd:ignore-start
+import { resolvePointRecords } from '../2026-08-22/spacePointResolution.js';
 /* eslint-disable jsdoc/require-returns, jsdoc/require-param-description, jsdoc/require-param-type */
 
 /**
@@ -44,6 +45,7 @@ export function resolveSegment(segments, points, segmentId) {
  * @param {Record<string, unknown>} candidateSegment Candidate segment.
  * @param {Record<string, unknown>} entryPoint Entry anchor.
  * @param {Record<string, unknown>|undefined} exitPoint Optional exit anchor.
+ * @param spacePointsInput
  * @returns {{feasible: boolean, reason?: string}} Feasibility result.
  */
 // eslint-disable-next-line max-params
@@ -52,11 +54,15 @@ export function evaluateWorldLine(
   existingSegments,
   candidateSegment,
   entryPoint,
-  exitPoint
+  exitPoint,
+  spacePointsInput = []
 ) {
   try {
     const points = new Map(
-      pointsInput.map(point => [String(point.pointId), point])
+      resolvePointRecords(pointsInput, spacePointsInput).map(point => [
+        String(point.pointId),
+        point,
+      ])
     );
     if (!entryPoint?.pointId)
       return { feasible: false, reason: 'missing-entry-point' };

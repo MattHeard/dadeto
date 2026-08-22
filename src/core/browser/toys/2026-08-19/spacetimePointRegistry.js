@@ -26,13 +26,25 @@ function normalizePoint(value) {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
   const point = /** @type {Record<string, unknown>} */ (value);
   const pointId = trimmedStringOrEmpty(point.pointId);
+  const spacePointId = trimmedStringOrEmpty(point.spacePointId);
   const latitude = normalizeCoordinate(point.latitude, -90, 90);
   const longitude = normalizeCoordinate(point.longitude, -180, 180);
   const timestamp = normalizeUtcMinute(point.timestamp);
-  if (!pointId || latitude === null || longitude === null || !timestamp) {
+  if (
+    !pointId ||
+    (!spacePointId && (latitude === null || longitude === null)) ||
+    (latitude === null) !== (longitude === null) ||
+    !timestamp
+  ) {
     return null;
   }
-  return { pointId, latitude, longitude, timestamp };
+  const normalized = {
+    pointId,
+    ...(spacePointId ? { spacePointId } : {}),
+    ...(latitude === null ? {} : { latitude, longitude }),
+    timestamp,
+  };
+  return normalized;
 }
 
 /**

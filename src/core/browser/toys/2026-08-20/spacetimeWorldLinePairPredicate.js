@@ -1,12 +1,13 @@
 // @ts-nocheck
 // Toy: Spacetime World-Line Pair Predicate
 import { formatToyError } from '../formatToyError.js';
+import { resolvePointRecords } from '../2026-08-22/spacePointResolution.js';
 
 /** @param {string} input JSON with points, segments, and two IDs. @returns {string} JSON boolean. */
 export function spacetimeWorldLinePairPredicate(input) {
   try {
     const x = JSON.parse(input);
-    const points = new Map((x.points || []).map(p => [p.pointId, p]));
+    const points = new Map(resolvePointRecords(x.points || [], x.spacePoints || []).map(p => [p.pointId, p]));
     const segments = new Map((x.segments || []).map(s => [s.segmentId, s]));
     const a = interval(segments, points, x.firstSegmentId);
     const b = interval(segments, points, x.secondSegmentId);
