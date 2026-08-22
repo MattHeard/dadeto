@@ -2126,7 +2126,7 @@ export function initAdmin({
   }
 
   (async () => {
-    const config = (await loadStaticConfigFn()) ?? {};
+    const config = await loadStaticConfigFn();
     if (config.disableGoogleSignIn) {
       return;
     }
@@ -2333,7 +2333,7 @@ export function initAdminApp({
   const initGoogleSignIn = async (
     /** @type {GoogleSignInOptions | undefined} */ options
   ) => {
-    const config = (await loadStaticConfigFn()) ?? {};
+    const config = await loadStaticConfigFn();
     if (config.disableGoogleSignIn) {
       return;
     }
