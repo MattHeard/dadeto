@@ -17,6 +17,7 @@ let mockAllowNoToken = false;
 let mockIsAdmin = true;
 let mockBeaconOptions;
 let mockErrorLog;
+let mockBeaconPath;
 
 jest.unstable_mockModule(
   '../../../src/core/browser/load-static-config-core.js',
@@ -74,7 +75,8 @@ jest.unstable_mockModule('../../../src/core/browser/admin-core.js', () => ({
   isAdminWithDeps: () => mockIsAdmin,
 }));
 jest.unstable_mockModule('../../../src/core/browser/error-beacon.js', () => ({
-  createErrorBeaconReporter: callback => {
+  createErrorBeaconReporter: (callback, path) => {
+    mockBeaconPath = path;
     callback();
     return jest.fn();
   },
@@ -250,6 +252,7 @@ describe('moderate core', () => {
     expect(mockBeaconOptions.getUrl()).toBe('');
     expect(mockBeaconOptions.getUserAgent()).toBe('');
     expect(typeof mockBeaconOptions.getNow()).toBe('number');
+    expect(mockBeaconPath).toBe('/errors');
     const sendBeacon = jest.fn(() => true);
     const disabledHandle = createModerateHandle({
       documentObj: mockDocument,
@@ -308,7 +311,11 @@ describe('moderate core', () => {
     })();
     await expect(authedFetch('/api', { method: 'POST' })).resolves.toEqual({});
     await mockLoadDeps.fetchFn('/config', {});
+    const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
     mockLoadDeps.warn('warning', new Error('warning'));
+    expect(mockFetch).toHaveBeenCalledWith('/config', {});
+    expect(warnSpy).toHaveBeenCalledWith('warning', expect.any(Error));
+    warnSpy.mockRestore();
     mockFetch.mockResolvedValueOnce({
       ok: false,
       status: 500,
