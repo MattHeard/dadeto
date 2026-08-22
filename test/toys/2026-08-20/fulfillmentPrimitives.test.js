@@ -214,6 +214,25 @@ describe('fulfillment primitives', () => {
     );
     expect(result).toEqual({ value: '400750.3625317416', unit: 'seconds' });
   });
+  test('TRAV1 reports exact input and coordinate validation errors', () => {
+    expect(JSON.parse(constantSpeedGeodesicTravelDuration('{}'))).toEqual({
+      valid: false,
+      error: 'Valid segment points and positive speed are required.',
+    });
+    expect(JSON.parse(constantSpeedGeodesicTravelDuration(JSON.stringify({
+      points,
+      segment: { startPointId: 'A', endPointId: 'B' },
+      speedKilometersPerHour: 0,
+    })))).toEqual({
+      valid: false,
+      error: 'Valid segment points and positive speed are required.',
+    });
+    expect(JSON.parse(constantSpeedGeodesicTravelDuration(JSON.stringify({
+      points: [{ ...points[0], latitude: 'bad' }, points[1]],
+      segment: segments[0],
+      speedKilometersPerHour: 10,
+    })))).toEqual({ valid: false, error: 'Point A has invalid coordinates.' });
+  });
   test('FULF proposals preserve endpoint identity and quantize minutes', () => {
     const outbound = JSON.parse(
       deliveryOutboundSegmentProposal(
