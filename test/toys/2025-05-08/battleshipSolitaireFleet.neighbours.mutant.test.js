@@ -21,6 +21,10 @@ const {
   placeAllShips,
   addPlacedShip,
   shouldAbortPlaceShip,
+  exceedsBoardArea,
+  convertShipsToArray,
+  parseDimension,
+  fleetLoopFor,
   shouldAbortPlacement,
   chooseAndMarkCandidate,
 } = battleshipSolitaireFleetTestOnly;
@@ -158,6 +162,34 @@ describe('neighbours mutants', () => {
     ];
     expect(chooseAndMarkCandidate({ candidates, length: 1 }, new Map([['getRandomNumber', () => 0.99]]), occupied)).toEqual(candidates[1]);
     expect(occupied).toContain('1,0');
+  });
+
+  test('normalizes ship inputs and dimensions exactly', () => {
+    expect(exceedsBoardArea({ width: 2, height: 2, ships: [2, 2, 1] })).toBe(true);
+    expect(exceedsBoardArea({ width: 2, height: 2, ships: [2, 2] })).toBe(false);
+    expect(exceedsBoardArea({ width: 2, height: 2, ships: [2, 1] })).toBe(false);
+    const cfg = { ships: '2, ,3,0,-1' };
+    convertShipsToArray(cfg);
+    expect(cfg.ships).toEqual([2, 3, -1]);
+    const alreadyArray = { ships: [4, 5] };
+    convertShipsToArray(alreadyArray);
+    expect(alreadyArray.ships).toEqual([4, 5]);
+    const spaced = { ships: ' 2 , 3 ' };
+    convertShipsToArray(spaced);
+    expect(spaced.ships).toEqual([2, 3]);
+    expect(parseDimension('07px')).toBe(7);
+    expect(parseDimension(4)).toBe(4);
+    expect(parseDimension(4.5)).toBe(4.5);
+  });
+
+  test('returns the first successful fleet-loop result and null otherwise', () => {
+    const calls = [];
+    expect(fleetLoopFor(3, index => {
+      calls.push(index);
+      return index === 1 ? { ok: true } : null;
+    })).toEqual({ ok: true });
+    expect(calls).toEqual([0, 1, 2]);
+    expect(fleetLoopFor(2, () => null)).toBeNull();
   });
 
   test('does not include origin coordinate', () => {

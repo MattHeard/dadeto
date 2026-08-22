@@ -657,7 +657,7 @@ function convertShipsToArray(cfg) {
   if (typeof cfg.ships === 'string') {
     cfg.ships = cfg.ships
       .split(',')
-      .map(s => parseInt(s.trim(), 10))
+      .map(s => parseInt(s, 10))
       .filter(Boolean);
   }
 }
@@ -841,4 +841,8 @@ export const battleshipSolitaireFleetTestOnly = {
   shouldAbortPlacement,
   addPlacedShip,
   shouldAbortPlaceShip,
+  exceedsBoardArea,
+  convertShipsToArray,
+  parseDimension,
+  fleetLoopFor,
 };
