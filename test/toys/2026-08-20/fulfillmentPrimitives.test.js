@@ -527,6 +527,29 @@ describe('fulfillment primitives', () => {
         })
       )
     ).toBe('["A1"]');
+    expect(spacetimeWorldLinePairPredicate(JSON.stringify({
+      points: [
+        { pointId: 'A', timestamp: '2026-01-01T01:00:00Z' },
+        { pointId: 'B', timestamp: '2026-01-01T00:00:00Z' },
+        { pointId: 'C', timestamp: '2026-01-01T00:00:00Z' },
+        { pointId: 'D', timestamp: '2026-01-01T01:00:00Z' },
+      ],
+      segments: [
+        { segmentId: 'AB', startPointId: 'A', endPointId: 'B' },
+        { segmentId: 'CD', startPointId: 'C', endPointId: 'D' },
+      ],
+      firstSegmentId: 'AB',
+      secondSegmentId: 'CD',
+    }))).toContain('ordered valid UTC interval');
+    expect(spacetimeWorldLinePairPredicate(JSON.stringify({
+      points: [
+        { pointId: 'A', timestamp: 'not-a-date' },
+        { pointId: 'B', timestamp: '2026-01-01T00:00:00Z' },
+      ],
+      segments: [{ segmentId: 'AB', startPointId: 'A', endPointId: 'B' }],
+      firstSegmentId: 'AB',
+      secondSegmentId: 'AB',
+    }))).toContain('ordered valid UTC interval');
   });
   test('world-line touching requires matching endpoint identity in either order', () => {
     const worldPoints = [
