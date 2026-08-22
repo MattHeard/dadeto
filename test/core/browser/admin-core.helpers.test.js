@@ -166,6 +166,17 @@ describe('admin token and global helper resolution', () => {
     expect(decodeBase64).toHaveBeenCalledWith('payload');
     expect(isAdminToken('not-a-token', jsonParser, decodeBase64)).toBe(false);
   });
+
+  it('normalizes URL-safe base64 characters before decoding admin tokens', () => {
+    const jsonParser = { parse: jest.fn(() => ({ sub: 'not-admin' })) };
+    const decodeBase64 = jest.fn(value => {
+      expect(value).toBe('a+b/c');
+      return '{}';
+    });
+    expect(isAdminToken('header.a-b_c.signature', jsonParser, decodeBase64)).toBe(
+      false
+    );
+  });
 });
 
 describe('buildSignInCredential', () => {
