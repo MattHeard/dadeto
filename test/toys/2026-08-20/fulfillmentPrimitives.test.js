@@ -118,6 +118,17 @@ describe('fulfillment primitives', () => {
       expect(wgs84CirclePointPredicate(JSON.stringify(value))).toBe('false');
     }
     expect(wgs84CirclePointPredicate('not json')).toBe('false');
+    expect(wgs84CirclePointPredicate('')).toBe('false');
+    expect(
+      wgs84CirclePointPredicate(
+        JSON.stringify({ circle: { center: { latitude: 0, longitude: 0 }, radiusMeters: 1 }, point: { latitude: 91, longitude: 0 } })
+      )
+    ).toBe('false');
+    expect(
+      wgs84CirclePointPredicate(
+        JSON.stringify({ circle: { center: { latitude: 0, longitude: 181 }, radiusMeters: 1 }, point: { latitude: 0, longitude: 0 } })
+      )
+    ).toBe('false');
   });
   test('AREA2 requires both endpoints', () =>
     expect(
