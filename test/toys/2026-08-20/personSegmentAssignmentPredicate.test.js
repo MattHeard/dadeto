@@ -91,16 +91,55 @@ describe('personSegmentAssignmentPredicate', () => {
   test('covers parser, normalization, interval, and overlap boundaries directly', () => {
     expect(() => parseRequest(null)).toThrow();
     expect(() => parseRequest('[]')).toThrow();
+    const valid = JSON.parse(input([{ personId: 'P1', segmentId: 'S1' }]));
+    expect(parseRequest(JSON.stringify({ ...valid, assignments: [null, [], ...valid.assignments] })).assignments).toEqual([
+      { personId: 'P1', segmentId: 'S1' },
+    ]);
+    for (const field of ['points', 'segments', 'assignments']) {
+      const missing = { ...valid };
+      delete missing[field];
+      expect(() => parseRequest(JSON.stringify(missing))).toThrow(
+        `${field} array is required.`
+      );
+    }
     expect(normalizeAssignment(null)).toBeNull();
     expect(normalizeAssignment([])).toBeNull();
+    const arrayAssignment = [];
+    arrayAssignment.personId = 'P1';
+    arrayAssignment.segmentId = 'S1';
+    expect(normalizeAssignment(arrayAssignment)).toBeNull();
     expect(normalizeAssignment({ personId: null, segmentId: 'S1' })).toBeNull();
     expect(normalizeAssignment({ personId: 'P1', segmentId: null })).toBeNull();
     expect(normalizeAssignment({ personId: ' P1 ', segmentId: ' S1 ' })).toEqual({ personId: 'P1', segmentId: 'S1' });
+    expect(() => parseRequest(JSON.stringify({ ...valid, proposedAssignment: null }))).toThrow('A proposed assignment is required.');
     const base = JSON.parse(input([]));
     const pointMap = new Map(base.points.map(point => [point.pointId, point]));
     const segmentMap = new Map(base.segments.map(segment => [segment.segmentId, segment]));
     expect(resolveInterval(segmentMap, pointMap, 'S1').startTime).toBe(Date.parse(base.points[0].timestamp));
-    expect(() => resolveInterval(segmentMap, pointMap, 'missing')).toThrow();
+    expect(() => resolveInterval(segmentMap, pointMap, 'missing')).toThrow(
+      'Unknown segment: missing'
+    );
+    expect(() =>
+      resolveInterval(
+        new Map([['S', { startPointId: 'P1', endPointId: 'missing' }]]),
+        pointMap,
+        'S'
+      )
+    ).toThrow('unknown point');
+    expect(() =>
+      resolveInterval(
+        new Map([['S', { startPointId: 'P2', endPointId: 'P1' }]]),
+        pointMap,
+        'S'
+      )
+    ).toThrow('Segment S must have an ordered valid time interval.');
+    expect(
+      resolveInterval(
+        new Map([['S', { startPointId: 'P1', endPointId: 'P1' }]]),
+        new Map([['P1', base.points[0]]]),
+        'S'
+      )
+    ).toEqual({ startTime: Date.parse(base.points[0].timestamp), endTime: Date.parse(base.points[0].timestamp) });
     expect(overlaps({ startTime: 0, endTime: 1 }, { startTime: 1, endTime: 2 })).toBe(false);
     expect(overlaps({ startTime: 0, endTime: 2 }, { startTime: 1, endTime: 3 })).toBe(true);
   });

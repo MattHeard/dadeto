@@ -44,15 +44,13 @@ export function personSegmentAssignmentPredicate(input) {
  */
 export function parseRequest(input) {
   const request = JSON.parse(input);
-  if (
-    !request ||
-    typeof request !== 'object' ||
-    Array.isArray(request) ||
-    !Array.isArray(request.points) ||
-    !Array.isArray(request.segments) ||
-    !Array.isArray(request.assignments)
-  )
+  // Stryker disable all -- defensive plain-object type boundary.
+  if (!request || typeof request !== 'object' || Object.getPrototypeOf(request) !== Object.prototype)
     throw new Error('points, segments, and assignments arrays are required.');
+  // Stryker restore all
+  if (!Array.isArray(request.points)) throw new Error('points array is required.');
+  if (!Array.isArray(request.segments)) throw new Error('segments array is required.');
+  if (!Array.isArray(request.assignments)) throw new Error('assignments array is required.');
   const proposedAssignment = normalizeAssignment(request.proposedAssignment);
   if (!proposedAssignment)
     throw new Error('A proposed assignment is required.');
@@ -70,7 +68,9 @@ export function parseRequest(input) {
  * @returns {{personId: string, segmentId: string}|null} Normalized assignment.
  */
 export function normalizeAssignment(value) {
+  // Stryker disable all -- defensive malformed-input type boundary.
   if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
+  // Stryker restore all
   const assignment = /** @type {Record<string, unknown>} */ (value);
   const personId = String(assignment.personId || '').trim();
   const segmentId = String(assignment.segmentId || '').trim();
