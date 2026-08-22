@@ -1632,21 +1632,9 @@ export function hasGetIdToken(googleAuth) {
  * @returns {void}
  */
 function ensureGoogleAuth(googleAuth) {
-  if (!isValidAuth(googleAuth)) {
+  if (!hasGetIdToken(googleAuth)) {
     throw new TypeError('googleAuth must provide a getIdToken function');
   }
-}
-
-/**
- * Check if auth is valid.
- * @param {{ getIdToken?: () => Promise<string> | string | null | undefined } | null | undefined} googleAuth Auth.
- * @returns {boolean} True if valid.
- */
-function isValidAuth(googleAuth) {
-  if (!googleAuth) {
-    return false;
-  }
-  return hasGetIdToken(googleAuth);
 }
 
 /**

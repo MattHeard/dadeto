@@ -348,6 +348,26 @@ describe('initializeGoogleSignIn', () => {
     expect(errorSpy).toHaveBeenCalledWith('Google sign-in failed', error);
     errorSpy.mockRestore();
   });
+
+  it('logs callback failures when no error reporter is supplied', async () => {
+    const accountsId = { initialize: jest.fn() };
+    const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+    initializeGoogleSignIn(accountsId, {
+      credentialFactory: jest.fn(() => 'credential'),
+      signInWithCredential: jest.fn().mockRejectedValue(new Error('failed')),
+      auth: { currentUser: null },
+      storage: { setItem: jest.fn() },
+    });
+
+    await accountsId.initialize.mock.calls[0][0].callback({
+      credential: 'token',
+    });
+    expect(errorSpy).toHaveBeenCalledWith(
+      'Google sign-in failed',
+      expect.any(Error)
+    );
+    errorSpy.mockRestore();
+  });
 });
 
 describe('resolveAdminEndpoint', () => {
@@ -668,6 +688,9 @@ describe('admin-core interface predicates', () => {
       'change',
       expect.any(Function)
     );
+    expect(dependencies.matchMedia).toHaveBeenCalledWith(
+      '(prefers-color-scheme: dark)'
+    );
     expect(element.innerHTML).toBe('');
     mediaQueryList.matches = false;
     createInitGoogleSignIn(dependencies)();
@@ -945,13 +968,14 @@ describe('stats and regeneration handlers', () => {
     expect(showMessage).toHaveBeenCalledWith('Stats generated');
 
     const missingMessage = jest.fn();
-    await createTriggerStats({
+    const missingHandler = createTriggerStats({
       googleAuth: { getIdToken: jest.fn().mockResolvedValue(null) },
       getAdminEndpointsFn: () =>
         Promise.resolve({ generateStatsUrl: '/stats' }),
       fetchFn,
       showMessage: missingMessage,
     })();
+    await missingHandler;
     expect(missingMessage).toHaveBeenCalledWith('Stats generation failed');
 
     const reportError = jest.fn();
@@ -965,6 +989,9 @@ describe('stats and regeneration handlers', () => {
       reportError,
     })();
     expect(reportError).toHaveBeenCalledWith(expect.any(Error));
+    expect(reportError.mock.calls[0][0].message).toBe(
+      'Stats generation failed: HTTP 503'
+    );
     expect(failedMessage).toHaveBeenCalledWith('Stats generation failed');
   });
 
@@ -973,6 +1000,19 @@ describe('stats and regeneration handlers', () => {
     const doc = { getElementById: jest.fn().mockReturnValue(input) };
     const fetchFn = jest.fn().mockResolvedValue({ ok: true, status: 200 });
     const showMessage = jest.fn();
+    const missingTokenEndpoints = jest.fn();
+    const missingTokenFetch = jest.fn();
+    const missingTokenHandler = createRegenerateVariant({
+      googleAuth: { getIdToken: jest.fn().mockResolvedValue(null) },
+      doc,
+      showMessage,
+      getAdminEndpointsFn: missingTokenEndpoints,
+      fetchFn: missingTokenFetch,
+    });
+    await missingTokenHandler({ preventDefault: jest.fn() });
+    expect(missingTokenEndpoints).not.toHaveBeenCalled();
+    expect(missingTokenFetch).not.toHaveBeenCalled();
+
     const handler = createRegenerateVariant({
       googleAuth: { getIdToken: jest.fn().mockResolvedValue('token') },
       doc,
@@ -992,10 +1032,49 @@ describe('stats and regeneration handlers', () => {
       })
     );
     expect(showMessage).toHaveBeenCalledWith('Regeneration triggered');
+    const fetchCallCount = fetchFn.mock.calls.length;
 
     input.value = 'invalid';
     await handler({});
     expect(showMessage).toHaveBeenCalledWith('Invalid format');
+    expect(fetchFn).toHaveBeenCalledTimes(fetchCallCount);
+
+    expect(() =>
+      createRegenerateVariant({
+        googleAuth: null,
+        doc,
+        showMessage,
+        getAdminEndpointsFn: jest.fn(),
+        fetchFn,
+      })
+    ).toThrow('googleAuth must provide a getIdToken function');
+    expect(() =>
+      createRegenerateVariant({
+        googleAuth: { getIdToken: jest.fn() },
+        doc,
+        showMessage: null,
+        getAdminEndpointsFn: jest.fn(),
+        fetchFn,
+      })
+    ).toThrow('showMessage must be a function');
+    expect(() =>
+      createRegenerateVariant({
+        googleAuth: { getIdToken: jest.fn() },
+        doc,
+        showMessage,
+        getAdminEndpointsFn: null,
+        fetchFn,
+      })
+    ).toThrow('getAdminEndpointsFn must be a function');
+    expect(() =>
+      createRegenerateVariant({
+        googleAuth: { getIdToken: jest.fn() },
+        doc,
+        showMessage,
+        getAdminEndpointsFn: jest.fn(),
+        fetchFn: null,
+      })
+    ).toThrow('fetchFn must be a function');
   });
 });
 
