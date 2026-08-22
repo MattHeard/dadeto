@@ -237,6 +237,16 @@ describe('fulfillment primitives', () => {
       valid: false,
       error: 'Valid segment points and positive speed are required.',
     });
+    for (const value of [
+      'null',
+      JSON.stringify({ points: {}, segment: {} }),
+      JSON.stringify({ points: [], segment: null }),
+    ]) {
+      expect(JSON.parse(constantSpeedGeodesicTravelDuration(value))).toEqual({
+        valid: false,
+        error: 'Valid segment points and positive speed are required.',
+      });
+    }
     expect(JSON.parse(constantSpeedGeodesicTravelDuration(JSON.stringify({
       points,
       segment: { startPointId: 'A', endPointId: 'B' },
@@ -250,6 +260,35 @@ describe('fulfillment primitives', () => {
       segment: segments[0],
       speedKilometersPerHour: 10,
     })))).toEqual({ valid: false, error: 'Point A has invalid coordinates.' });
+    expect(JSON.parse(constantSpeedGeodesicTravelDuration(JSON.stringify({
+      points: [{ pointId: 'A' }, { pointId: 'B', latitude: 0, longitude: 0 }],
+      segment: { startPointId: 'A', endPointId: 'B' },
+      speedKilometersPerHour: 10,
+    })))).toEqual({ valid: false, error: 'Valid coordinates are required.' });
+    expect(JSON.parse(constantSpeedGeodesicTravelDuration(JSON.stringify({
+      points,
+      segment: { startPointId: 'missing', endPointId: 'B' },
+      speedKilometersPerHour: 10,
+    })))).toEqual({
+      valid: false,
+      error: 'Valid segment points and positive speed are required.',
+    });
+    expect(JSON.parse(constantSpeedGeodesicTravelDuration(JSON.stringify({
+      points,
+      segment: {},
+      speedKilometersPerHour: 10,
+    })))).toEqual({
+      valid: false,
+      error: 'Valid segment points and positive speed are required.',
+    });
+    expect(JSON.parse(constantSpeedGeodesicTravelDuration(JSON.stringify({
+      points,
+      segment: segments[0],
+      speedKilometersPerHour: -1,
+    })))).toEqual({
+      valid: false,
+      error: 'Valid segment points and positive speed are required.',
+    });
   });
   test('FULF proposals preserve endpoint identity and quantize minutes', () => {
     const outbound = JSON.parse(
