@@ -10,9 +10,12 @@ describe('ledgerIngestCsvConverterToy', () => {
 
   it('normalizes date, amount, and text helper boundaries directly', () => {
     expect(ledgerIngestCsvConverterToyTestOnly.isCsvLineBreakCharacter('\n')).toBe(true);
+    expect(ledgerIngestCsvConverterToyTestOnly.isCsvLineBreakCharacter('\r')).toBe(true);
     expect(ledgerIngestCsvConverterToyTestOnly.isCsvLineBreakCharacter('x')).toBe(false);
     expect(ledgerIngestCsvConverterToyTestOnly.isCsvCarriageReturn('\r')).toBe(true);
     expect(ledgerIngestCsvConverterToyTestOnly.isCsvCarriageReturn('\n')).toBe(false);
+    expect(ledgerIngestCsvConverterToyTestOnly.shouldSkipCsvLineBreakTail({ char: '\r', next: '\n' })).toBe(true);
+    expect(ledgerIngestCsvConverterToyTestOnly.shouldSkipCsvLineBreakTail({ char: '\n', next: '\n' })).toBe(false);
     expect(ledgerIngestCsvConverterToyTestOnly.isCsvEscapedQuote('"')).toBe(true);
     expect(ledgerIngestCsvConverterToyTestOnly.isCsvEscapedQuote('x')).toBe(false);
     expect(ledgerIngestCsvConverterToyTestOnly.hasPendingCsvParseData({ cell: '', row: [] })).toBe(false);
@@ -20,6 +23,14 @@ describe('ledgerIngestCsvConverterToy', () => {
     expect(ledgerIngestCsvConverterToyTestOnly.isBlankLedgerCsvRow([''])).toBe(true);
     expect(ledgerIngestCsvConverterToyTestOnly.isBlankLedgerCsvRow(['x'])).toBe(false);
     expect(ledgerIngestCsvConverterToyTestOnly.buildHeaderLookup([' Amount ']).get('Amount')).toBe(0);
+    const pending = { rows: [], row: ['x'], cell: '', inQuotes: false };
+    ledgerIngestCsvConverterToyTestOnly.finalizeCsvParseState(pending);
+    expect(pending.rows).toEqual([['x', '']]);
+    const empty = { rows: [], row: [], cell: '', inQuotes: false };
+    ledgerIngestCsvConverterToyTestOnly.finalizeCsvParseState(empty);
+    expect(empty.rows).toEqual([]);
+    expect(() => ledgerIngestCsvConverterToyTestOnly.ensureLedgerCsvRows([])).toThrow('Invalid ledger-ingest CSV input');
+    expect(ledgerIngestCsvConverterToyTestOnly.ensureLedgerCsvRows([['header'], ['row']])).toBeUndefined();
     expect(ledgerIngestCsvConverterToyTestOnly.normalizeCsvDate('31.12.2025')).toBe('2025-12-31');
     expect(ledgerIngestCsvConverterToyTestOnly.normalizeCsvDate('2025-12-31')).toBe('');
     expect(ledgerIngestCsvConverterToyTestOnly.normalizeCsvDate(null)).toBe('');
