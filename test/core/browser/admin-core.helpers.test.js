@@ -204,8 +204,9 @@ describe('createGoogleAuthModule', () => {
     };
     const getIdToken = jest.fn().mockResolvedValue('fresh-token');
     const auth = { currentUser: { getIdToken } };
+    const getAuthFn = jest.fn(() => auth);
     const module = createGoogleAuthModule({
-      getAuthFn: () => auth,
+      getAuthFn,
       storage,
       consoleObj: { error: jest.fn() },
       globalScope: { sessionStorage: storage },
@@ -219,6 +220,9 @@ describe('createGoogleAuthModule', () => {
     auth.currentUser = null;
     await expect(module.getIdToken()).resolves.toBe('stored-token');
     expect(storage.getItem).toHaveBeenCalledWith('id_token');
+
+    getAuthFn.mockReturnValue(null);
+    await expect(module.getIdToken()).resolves.toBe('stored-token');
   });
 
   it('signs out through auth and clears the session token', async () => {
@@ -236,6 +240,32 @@ describe('createGoogleAuthModule', () => {
     await module.signOut();
     expect(signOut).toHaveBeenCalledTimes(1);
     expect(storage.removeItem).toHaveBeenCalledWith('id_token');
+  });
+
+  it('initializes Google sign-in through the injected browser helpers', async () => {
+    const initialize = jest.fn();
+    const storage = { getItem: jest.fn(), removeItem: jest.fn(), setItem: jest.fn() };
+    const scope = {
+      window: {
+        google: { accounts: { id: { initialize, renderButton: jest.fn() } } },
+        matchMedia: jest.fn(() => ({ matches: false })),
+      },
+      document: { querySelectorAll: jest.fn(() => []) },
+    };
+    const module = createGoogleAuthModule({
+      getAuthFn: () => ({ currentUser: null }),
+      storage,
+      consoleObj: { error: jest.fn() },
+      globalScope: scope,
+      Provider: { credential: jest.fn(token => `credential:${token}`) },
+      credentialFactory: jest.fn(),
+    });
+
+    await module.initGoogleSignIn();
+    expect(initialize).toHaveBeenCalledWith(expect.objectContaining({
+      ux_mode: 'popup',
+      callback: expect.any(Function),
+    }));
   });
 });
 
