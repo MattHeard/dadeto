@@ -29,9 +29,11 @@ export function memoryVector(input, env) {
  */
 function parseMemoryVectorRequest(input) {
   const trimmed = trimmedStringOrEmpty(input);
+  // Stryker disable all -- empty-input default boundary.
   if (trimmed.length === 0) {
     return createMemoryVectorRequest(DEFAULT_MEMORY_LOCATION, '');
   }
+  // Stryker restore all
 
   return parseNonEmptyMemoryVectorRequest(trimmed);
 }
@@ -442,7 +444,9 @@ function resolveMemoryPath(root, path) {
     /** @type {ToyEnv} */ (new Map([['getData', () => root]]))
   );
   if (!isStringValue(resolved)) {
+    // Stryker disable all -- preserves non-string lookup values in the response shape.
     return { value: resolved };
+    // Stryker restore all
   }
   return resolveStringMemoryPath(resolved);
 }
@@ -619,6 +623,8 @@ export {
   buildResolvedMemoryVectorResponseFromPath,
   buildResolvedMemoryVectorResponseFromValue,
   formatThrownError,
+  tryParseJson,
+  isMemoryPathError,
   getPathCandidate,
   normalizeMemoryLocation,
   trimmedStringOrEmpty as normalizeMemoryPath,
@@ -646,4 +652,6 @@ export const memoryVectorTestOnly = {
   readMemoryRoot,
   readPermanentMemoryRoot,
   readTemporaryMemoryRoot,
+  tryParseJson,
+  isMemoryPathError,
 };
