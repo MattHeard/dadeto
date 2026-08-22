@@ -1,4 +1,4 @@
-import { describe, expect, test } from '@jest/globals';
+import { describe, expect, jest, test } from '@jest/globals';
 import {
   spacetimeSegmentGeodesicLength,
   vincentyDistance,
@@ -16,6 +16,16 @@ describe('spacetimeSegmentGeodesicLength', () => {
     expect(vincentyDistance(45, 0, -45, 180)).toBeCloseTo(20037508.342789244, 8);
     expect(vincentyDistance(10, 20, 10, 20)).toBe(0);
     expect(vincentyDistance(0, 0, 0, 180)).toBeCloseTo(20037508.342789244, 6);
+  });
+
+  test('honors the convergence threshold boundary', () => {
+    const absSpy = jest.spyOn(Math, 'abs').mockReturnValue(1e-12);
+    try {
+      expect(vincentyDistance(10, 20, 11, 21)).toBeCloseTo(155602.9891846868, 8);
+      expect(absSpy).toHaveBeenCalledTimes(2);
+    } finally {
+      absSpy.mockRestore();
+    }
   });
 
   test('returns WGS84 surface length with string value and unit', () => {

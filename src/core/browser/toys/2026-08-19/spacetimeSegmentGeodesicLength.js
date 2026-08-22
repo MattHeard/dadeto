@@ -93,7 +93,8 @@ function vincentyDistance(
     sinAlpha = 0,
     cosSquaredAlpha = 1,
     cosTwoSigmaM = 0;
-  for (let iteration = 0; iteration < 100; iteration++) {
+  let converged = false;
+  for (const _iteration of Array(100).keys()) {
     const sinLambda = Math.sin(lambda);
     const cosLambda = Math.cos(lambda);
     sinSigma = Math.sqrt(
@@ -124,15 +125,18 @@ function vincentyDistance(
             sinSigma *
             (cosTwoSigmaM +
               coefficient * cosSigma * (-1 + 2 * cosTwoSigmaM ** 2)));
-    if (Math.abs(lambda - previousLambda) < 1e-12) break;
-    if (iteration === 99)
-      return sphericalFallback(
-        firstLatitude,
-        firstLongitude,
-        secondLatitude,
-        secondLongitude
-      );
+    if (Math.abs(lambda - previousLambda) <= 1e-12) {
+      converged = true;
+      break;
+    }
   }
+  if (!converged)
+    return sphericalFallback(
+      firstLatitude,
+      firstLongitude,
+      secondLatitude,
+      secondLongitude
+    );
   const uSquared =
     (cosSquaredAlpha * (SEMI_MAJOR_AXIS ** 2 - SEMI_MINOR_AXIS ** 2)) /
     SEMI_MINOR_AXIS ** 2;
