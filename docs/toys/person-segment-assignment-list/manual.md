@@ -2,19 +2,19 @@
 
 ## What this toy does
 
-Person Segment Assignment List is a focused toy for exercising one small domain behavior. Use it to inspect the behavior described in [spec.md](spec.md) without needing to understand the surrounding application.
+Person Segment Assignment List is a focused toy for exercising one small domain behavior. Use it to inspect the behavior described in the toy's documented behavior without needing to understand the surrounding application.
 
 ## How to use it
 
-1. Read [spec.md](spec.md) for the supported inputs, outputs, and boundaries.
+1. Read the toy's documented behavior for the supported inputs, outputs, and boundaries.
 2. Start with the smallest valid example shown there (or the default input, if one is provided).
-3. Run the toy through the application’s toy interface or the command described in [harness.md](harness.md).
-4. Change one input at a time and compare the result with [acceptance.md](acceptance.md).
-5. If the result is surprising, check [failure-modes.md](failure-modes.md) before changing the implementation.
+3. Run the toy through the application’s toy interface or the command described in the toy interface or local setup.
+4. Change one input at a time and compare the result with the expected behavior.
+5. If the result is surprising, check the troubleshooting guidance before changing the implementation.
 
 ## Input and output
 
-The exact input shape and normalization rules are defined in [spec.md](spec.md). The toy returns the output described there; treat omitted, malformed, or out-of-range values according to the documented assumptions rather than guessing at new behavior.
+The exact input shape and normalization rules are defined in the toy's documented behavior. The toy returns the output described there; treat omitted, malformed, or out-of-range values according to the documented assumptions rather than guessing at new behavior.
 
 ## Useful experiments
 
@@ -26,10 +26,10 @@ The exact input shape and normalization rules are defined in [spec.md](spec.md).
 
 ## Troubleshooting
 
-- If the toy does not start, follow the setup and fixture instructions in [harness.md](harness.md).
-- If an assertion fails, rerun the exact command in [acceptance.md](acceptance.md) and inspect the first failing condition.
-- If input is rejected, verify its shape and constraints in [spec.md](spec.md).
-- For known edge cases, use the first-response playbook in [failure-modes.md](failure-modes.md).
+- If the toy does not start, follow the setup and fixture instructions in the toy interface or local setup.
+- If an assertion fails, rerun the exact command in the expected behavior and inspect the first failing condition.
+- If input is rejected, verify its shape and constraints in the toy's documented behavior.
+- For known edge cases, use the first-response playbook in the troubleshooting guidance.
 
 ## Scope note
 
