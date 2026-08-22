@@ -11,6 +11,12 @@ import {
   handleCredentialSignIn,
   mapConfigToAdminEndpoints,
   isAdminWithDeps,
+  isDocumentLike,
+  canListenToEvent,
+  hasSignOutMethod,
+  hasQuerySelectorAll,
+  isObject,
+  hasStorageSetItem,
   executeTriggerRender,
   postTriggerRenderContents,
   resolveAdminEndpoint,
@@ -210,6 +216,29 @@ describe('admin DOM binding helpers', () => {
     expect(() => bindRegenerateVariantSubmit(documentWith('regenForm', null), null)).toThrow(
       'regenerateVariantFn must be a function'
     );
+  });
+});
+
+describe('admin-core interface predicates', () => {
+  it('accept only the required callable interfaces', () => {
+    expect(isDocumentLike({ getElementById: jest.fn() })).toBe(true);
+    expect(isDocumentLike(null)).toBe(false);
+    expect(isDocumentLike({ getElementById: true })).toBe(false);
+    expect(canListenToEvent({ addEventListener: jest.fn() })).toBe(true);
+    expect(canListenToEvent({ addEventListener: true })).toBe(false);
+    expect(canListenToEvent(undefined)).toBe(false);
+    expect(hasSignOutMethod({ signOut: jest.fn() })).toBe(true);
+    expect(hasSignOutMethod({ signOut: true })).toBe(false);
+    expect(hasSignOutMethod(null)).toBe(false);
+    expect(hasQuerySelectorAll({ querySelectorAll: jest.fn() })).toBe(true);
+    expect(hasQuerySelectorAll({ querySelectorAll: true })).toBe(false);
+    expect(hasQuerySelectorAll(undefined)).toBe(false);
+    expect(isObject({})).toBe(true);
+    expect(isObject(null)).toBe(false);
+    expect(isObject('object')).toBe(false);
+    expect(hasStorageSetItem({ setItem: jest.fn() })).toBe(true);
+    expect(hasStorageSetItem({ setItem: true })).toBe(false);
+    expect(hasStorageSetItem(undefined)).toBe(false);
   });
 });
 

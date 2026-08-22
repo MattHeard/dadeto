@@ -793,7 +793,7 @@ function requireDocumentLike(value, name = 'doc') {
  * @param {unknown} value - Candidate object evaluated for DOM parity.
  * @returns {boolean} True when the value exposes `getElementById`.
  */
-function isDocumentLike(value) {
+export function isDocumentLike(value) {
   return Boolean(
     value &&
       typeof (
@@ -807,7 +807,7 @@ function isDocumentLike(value) {
  * @param {EventTarget | null | undefined} element - Candidate element.
  * @returns {boolean} True when `addEventListener` exists on the element.
  */
-function canListenToEvent(element) {
+export function canListenToEvent(element) {
   return Boolean(element && typeof element.addEventListener === 'function');
 }
 
@@ -816,7 +816,7 @@ function canListenToEvent(element) {
  * @param {{ signOut?: () => Promise<void> | void } | null | undefined} googleAuth - Auth helper candidate.
  * @returns {boolean} True when a `signOut` method exists.
  */
-function hasSignOutMethod(googleAuth) {
+export function hasSignOutMethod(googleAuth) {
   return Boolean(googleAuth && typeof googleAuth.signOut === 'function');
 }
 
@@ -825,7 +825,7 @@ function hasSignOutMethod(googleAuth) {
  * @param {{ querySelectorAll?: (selector: string) => NodeList } | null | undefined} doc - Candidate document object.
  * @returns {boolean} True when `querySelectorAll` is callable.
  */
-function hasQuerySelectorAll(doc) {
+export function hasQuerySelectorAll(doc) {
   return Boolean(doc && typeof doc.querySelectorAll === 'function');
 }
 
@@ -834,7 +834,7 @@ function hasQuerySelectorAll(doc) {
  * @param {unknown} value - Candidate value.
  * @returns {boolean} True when the value is a non-null object.
  */
-function isObject(value) {
+export function isObject(value) {
   return Boolean(value && typeof value === 'object');
 }
 
@@ -843,7 +843,7 @@ function isObject(value) {
  * @param {{ setItem?: (key: string, value: string) => void } | null | undefined} storage - Storage helper.
  * @returns {boolean} True when a `setItem` function exists.
  */
-function hasStorageSetItem(storage) {
+export function hasStorageSetItem(storage) {
   return Boolean(storage && typeof storage.setItem === 'function');
 }
 
