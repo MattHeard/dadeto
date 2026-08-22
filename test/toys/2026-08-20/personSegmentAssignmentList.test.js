@@ -1,5 +1,8 @@
 import { describe, expect, test } from '@jest/globals';
-import { personSegmentAssignmentList } from '../../../src/core/browser/toys/2026-08-20/personSegmentAssignmentList.js';
+import {
+  personSegmentAssignmentList,
+  parseRequest,
+} from '../../../src/core/browser/toys/2026-08-20/personSegmentAssignmentList.js';
 
 const fixture = () => {
   const state = { temporary: {} };
@@ -21,6 +24,35 @@ const fixture = () => {
 };
 
 describe('personSegmentAssignmentList', () => {
+  test('exposes exact parser guards and coercions', () => {
+    expect(() => parseRequest('null')).toThrow('Input must be a JSON object.');
+    expect(() => parseRequest('[]')).toThrow('Input must be a JSON object.');
+    expect(() => parseRequest('0')).toThrow('Input must be a JSON object.');
+    expect(() => parseRequest(JSON.stringify({ path: 'items' }))).toThrow(
+      'An assignment object is required.'
+    );
+    expect(() => parseRequest(JSON.stringify({ path: 'items', assignment: 0 }))).toThrow(
+      'An assignment object is required.'
+    );
+    expect(() => parseRequest(JSON.stringify({
+      assignment: { personId: 'P', segmentId: 'S' },
+    }))).toThrow('A path is required.');
+    expect(() => parseRequest(JSON.stringify({
+      path: '   ',
+      assignment: { personId: 'P', segmentId: 'S' },
+    }))).toThrow('A path is required.');
+    expect(() => parseRequest(JSON.stringify({
+      path: 'items', memoryLocation: 'other',
+      assignment: { personId: 'P', segmentId: 'S' },
+    }))).toThrow('Unsupported memory location.');
+    expect(parseRequest(JSON.stringify({
+      path: ' items ',
+      assignment: { personId: ' P ', segmentId: ' 7 ' },
+    }))).toMatchObject({
+      path: 'items',
+      assignment: { personId: 'P', segmentId: '7' },
+    });
+  });
   test('appends exact person and segment references', () => {
     const value = fixture();
     const result = JSON.parse(

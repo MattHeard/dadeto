@@ -30,11 +30,11 @@ export function personSegmentAssignmentList(input, env) {
  */
 function parseRequest(input) {
   const request = JSON.parse(input);
-  if (!request || typeof request !== 'object' || Array.isArray(request))
+  if (request === null || typeof request !== 'object' || Array.isArray(request))
     throw new Error('Input must be a JSON object.');
   const assignment = request.assignment;
   if (
-    !assignment ||
+    assignment === null ||
     typeof assignment !== 'object' ||
     Array.isArray(assignment)
   )
@@ -52,3 +52,5 @@ function parseRequest(input) {
 }
 
 // jscpd:ignore-end
+
+export { parseRequest };
