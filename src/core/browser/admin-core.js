@@ -1242,7 +1242,7 @@ function isMissingLogger(logger) {
  * @param {GoogleAccountsClient | (() => GoogleAccountsClient | undefined) | undefined} googleAccountsId - Optional helper that provides the Google Identity client.
  * @returns {() => GoogleAccountsClient | undefined} Resolver that always returns the accounts client.
  */
-function resolveGoogleAccounts(googleAccountsId) {
+export function resolveGoogleAccounts(googleAccountsId) {
   if (typeof googleAccountsId === 'function') {
     return googleAccountsId;
   }
@@ -1254,7 +1254,7 @@ function resolveGoogleAccounts(googleAccountsId) {
  * @param {{ error?: (message: string) => void } | undefined} logger - Optional logger provided by the caller.
  * @returns {Logger} Logger that safely exposes `error`.
  */
-function resolveLogger(logger) {
+export function resolveLogger(logger) {
   if (hasLoggerError(logger)) {
     return /** @type {Logger} */ (logger);
   }
@@ -1286,7 +1286,7 @@ function reportMissingGoogleIdentity(logger) {
  * @param {{ error?: (message: string) => void } | undefined} logger - Logger candidate.
  * @returns {boolean} True when an `error` function is available.
  */
-function hasLoggerError(logger) {
+export function hasLoggerError(logger) {
   return Boolean(logger && typeof logger.error === 'function');
 }
 
@@ -1295,7 +1295,7 @@ function hasLoggerError(logger) {
  * @param {unknown} accountsId - Candidate Google Identity client.
  * @returns {boolean} True when `initialize` exists.
  */
-function hasInitializeMethod(accountsId) {
+export function hasInitializeMethod(accountsId) {
   const client = /** @type {GoogleAccountsClient} */ (accountsId);
   return Boolean(client && typeof client.initialize === 'function');
 }
@@ -1305,7 +1305,7 @@ function hasInitializeMethod(accountsId) {
  * @param {unknown} accountsId - Candidate Google Identity client.
  * @returns {boolean} True when `renderButton` exists.
  */
-function hasRenderButtonMethod(accountsId) {
+export function hasRenderButtonMethod(accountsId) {
   const client = /** @type {GoogleAccountsClient} */ (accountsId);
   return Boolean(client && typeof client.renderButton === 'function');
 }
@@ -1383,7 +1383,7 @@ function resolveCurrentUser(signInResult, auth) {
  * @param {unknown} getter Getter.
  * @returns {asserts getter is GetIdTokenFn} True when the getter can be invoked.
  */
-function validateGetIdToken(getter) {
+export function validateGetIdToken(getter) {
   if (typeof getter !== 'function') {
     throw new TypeError('auth.currentUser.getIdToken must be a function');
   }
@@ -1394,7 +1394,7 @@ function validateGetIdToken(getter) {
  * @param {{ getIdToken?: GetIdTokenFn } | null | undefined} currentUser - Auth user object that may expose `getIdToken`.
  * @returns {() => Promise<string>} Function that returns a promised ID token.
  */
-function resolveGetIdToken(currentUser) {
+export function resolveGetIdToken(currentUser) {
   const getter = currentUser?.getIdToken;
   validateGetIdToken(getter);
   return () => /** @type {() => Promise<string>} */ (getter).call(currentUser);

@@ -17,6 +17,13 @@ import {
   hasQuerySelectorAll,
   isObject,
   hasStorageSetItem,
+  hasLoggerError,
+  hasInitializeMethod,
+  hasRenderButtonMethod,
+  resolveGoogleAccounts,
+  resolveLogger,
+  resolveGetIdToken,
+  validateGetIdToken,
   executeTriggerRender,
   postTriggerRenderContents,
   resolveAdminEndpoint,
@@ -239,6 +246,31 @@ describe('admin-core interface predicates', () => {
     expect(hasStorageSetItem({ setItem: jest.fn() })).toBe(true);
     expect(hasStorageSetItem({ setItem: true })).toBe(false);
     expect(hasStorageSetItem(undefined)).toBe(false);
+  });
+
+  it('resolves Google and logger collaborators without unsafe calls', async () => {
+    const client = { initialize: jest.fn(), renderButton: jest.fn() };
+    expect(hasInitializeMethod(client)).toBe(true);
+    expect(hasInitializeMethod({ initialize: true })).toBe(false);
+    expect(hasInitializeMethod(undefined)).toBe(false);
+    expect(hasRenderButtonMethod(client)).toBe(true);
+    expect(hasRenderButtonMethod({ renderButton: true })).toBe(false);
+    expect(hasRenderButtonMethod(null)).toBe(false);
+    expect(hasLoggerError({ error: jest.fn() })).toBe(true);
+    expect(hasLoggerError({ error: true })).toBe(false);
+    expect(hasLoggerError(undefined)).toBe(false);
+    const logger = { error: jest.fn() };
+    expect(resolveLogger(logger)).toBe(logger);
+    expect(resolveLogger(null)).toBe(console);
+    const direct = resolveGoogleAccounts(client);
+    expect(direct()).toBe(client);
+    const getter = jest.fn().mockReturnValue(client);
+    expect(resolveGoogleAccounts(getter)).toBe(getter);
+    expect(resolveGoogleAccounts(getter)()).toBe(client);
+    const getIdToken = jest.fn().mockResolvedValue('token');
+    expect(await resolveGetIdToken({ getIdToken })()).toBe('token');
+    expect(() => resolveGetIdToken(null)).toThrow('getIdToken must be a function');
+    expect(() => validateGetIdToken(null)).toThrow('getIdToken must be a function');
   });
 });
 
