@@ -36,11 +36,11 @@ export function assetSegmentAssignmentList(input, env) {
 // jscpd:ignore-start — request parsing intentionally mirrors MEMO4's JSON boundary.
 function parseRequest(input) {
   const request = JSON.parse(input);
-  if (!request || typeof request !== 'object' || Array.isArray(request)) {
+  if (request === null || typeof request !== 'object' || Array.isArray(request)) {
     throw new Error('Input must be a JSON object.');
   }
   const source = request.assignment;
-  if (!source || typeof source !== 'object' || Array.isArray(source)) {
+  if (source === null || typeof source !== 'object' || Array.isArray(source)) {
     throw new Error('An assignment object is required.');
   }
   const assetId = String(source.assetId || '').trim();

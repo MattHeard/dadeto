@@ -105,11 +105,19 @@ describe('assetSegmentAssignmentList', () => {
 
   test('exposes exact parser guards for null requests, assignments, and paths', () => {
     expect(() => parseRequest('null')).toThrow('Input must be a JSON object.');
+    expect(() => parseRequest('[]')).toThrow('Input must be a JSON object.');
+    expect(() => parseRequest('0')).toThrow('Input must be a JSON object.');
     expect(() => parseRequest(JSON.stringify({ path: 'items' }))).toThrow(
+      'An assignment object is required.'
+    );
+    expect(() => parseRequest(JSON.stringify({ path: 'items', assignment: 0 }))).toThrow(
       'An assignment object is required.'
     );
     expect(() => parseRequest(JSON.stringify({
       path: ' ',
+      assignment: { assetId: 'A', segmentId: 'S' },
+    }))).toThrow('A path is required.');
+    expect(() => parseRequest(JSON.stringify({
       assignment: { assetId: 'A', segmentId: 'S' },
     }))).toThrow('A path is required.');
     expect(parseRequest(JSON.stringify({
