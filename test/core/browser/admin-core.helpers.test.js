@@ -94,9 +94,13 @@ describe('small admin-core predicates', () => {
 
 describe('regeneration input helpers', () => {
   it('normalizes token results while preserving only truthy tokens', async () => {
-    await expect(getTokenSafely({ getIdToken: () => 'token' })).resolves.toBe('token');
+    await expect(getTokenSafely({ getIdToken: () => 'token' })).resolves.toBe(
+      'token'
+    );
     await expect(getTokenSafely({ getIdToken: () => '' })).resolves.toBeNull();
-    await expect(getTokenSafely({ getIdToken: () => null })).resolves.toBeNull();
+    await expect(
+      getTokenSafely({ getIdToken: () => null })
+    ).resolves.toBeNull();
   });
 
   it('reads string input values and safely handles non-string values or missing inputs', () => {
@@ -107,7 +111,10 @@ describe('regeneration input helpers', () => {
   });
 
   it('parses only numeric-page alphabetic-variant values', () => {
-    expect(parsePageVariantValue('123abc')).toEqual({ page: 123, variant: 'abc' });
+    expect(parsePageVariantValue('123abc')).toEqual({
+      page: 123,
+      variant: 'abc',
+    });
     expect(parsePageVariantValue('123')).toBeNull();
     expect(parsePageVariantValue('abc123')).toBeNull();
     expect(parsePageVariantValue('123abc-')).toBeNull();
@@ -117,15 +124,27 @@ describe('regeneration input helpers', () => {
 describe('admin token and global helper resolution', () => {
   it('returns only callable disableAutoSelect candidates', () => {
     const disable = jest.fn();
-    expect(readDisableAutoSelect({ google: { accounts: { id: { disableAutoSelect: disable } } } })).toBe(disable);
-    expect(readDisableAutoSelect({ google: { accounts: { id: { disableAutoSelect: true } } } })).toBeNull();
+    expect(
+      readDisableAutoSelect({
+        google: { accounts: { id: { disableAutoSelect: disable } } },
+      })
+    ).toBe(disable);
+    expect(
+      readDisableAutoSelect({
+        google: { accounts: { id: { disableAutoSelect: true } } },
+      })
+    ).toBeNull();
     expect(readDisableAutoSelect(null)).toBeNull();
   });
 
   it('accepts the admin subject from a URL-safe JWT payload', () => {
-    const jsonParser = { parse: jest.fn(() => ({ sub: 'qcYSrXTaj1MZUoFsAloBwT86GNM2' })) };
+    const jsonParser = {
+      parse: jest.fn(() => ({ sub: 'qcYSrXTaj1MZUoFsAloBwT86GNM2' })),
+    };
     const decodeBase64 = jest.fn(() => '{}');
-    expect(isAdminToken('header.payload.signature', jsonParser, decodeBase64)).toBe(true);
+    expect(
+      isAdminToken('header.payload.signature', jsonParser, decodeBase64)
+    ).toBe(true);
     expect(decodeBase64).toHaveBeenCalledWith('payload');
     expect(isAdminToken('not-a-token', jsonParser, decodeBase64)).toBe(false);
   });

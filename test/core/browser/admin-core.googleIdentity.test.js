@@ -26,9 +26,18 @@ describe('ensureGoogleIdentityAvailable', () => {
 
 describe('Google Identity interface helpers', () => {
   it('requires both initialization and button-rendering methods', () => {
-    expect(hasRequiredGoogleIdentityMethods({ initialize: jest.fn(), renderButton: jest.fn() })).toBe(true);
-    expect(hasRequiredGoogleIdentityMethods({ initialize: jest.fn() })).toBe(false);
-    expect(hasRequiredGoogleIdentityMethods({ renderButton: jest.fn() })).toBe(false);
+    expect(
+      hasRequiredGoogleIdentityMethods({
+        initialize: jest.fn(),
+        renderButton: jest.fn(),
+      })
+    ).toBe(true);
+    expect(hasRequiredGoogleIdentityMethods({ initialize: jest.fn() })).toBe(
+      false
+    );
+    expect(hasRequiredGoogleIdentityMethods({ renderButton: jest.fn() })).toBe(
+      false
+    );
     expect(hasRequiredGoogleIdentityMethods(null)).toBe(false);
   });
 
@@ -50,8 +59,8 @@ describe('Google Identity interface helpers', () => {
     expect(accountsId.initialize).toHaveBeenCalledTimes(1);
     const config = accountsId.initialize.mock.calls[0][0];
     expect(config).toMatchObject({
-      client_id: expect.stringContaining('.apps.googleusercontent.com'),
-      ux_mode: 'popup',
+      ['client_id']: expect.stringContaining('.apps.googleusercontent.com'),
+      ['ux_mode']: 'popup',
     });
     expect(config.callback).toEqual(expect.any(Function));
   });

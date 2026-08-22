@@ -18,6 +18,7 @@ const coverageRoot = process.env.DADETO_COVERAGE_DIR ?? path.join(os.tmpdir(), `
 const shardRoot = path.join(coverageRoot, 'shards');
 const storeRoot = path.join(coverageRoot, 'files');
 const finalDir = path.resolve(ROOT, 'reports/coverage');
+const SAFE_WORKER_HEAP_MB = 256;
 
 const testFiles = requestedTestFiles() ?? listTestFiles();
 const sourceFiles = listSourceFiles();
@@ -111,10 +112,17 @@ function runShard(testFilesForShard, shardDir) {
     '--coverageReporters=json',
     '--coverageThreshold={"global":{"branches":0,"functions":0,"lines":0,"statements":0}}',
     '--coverageDirectory', shardDir, '--runTestsByPath', ...testFilesForShard];
+  const workerNodeOptions = `${process.env.NODE_OPTIONS ?? ''}`
+    .replace(/--max-old-space-size=\d+/g, '')
+    .trim();
   const child = spawn(process.execPath, args, {
     cwd: ROOT,
     stdio: 'inherit',
-    env: { ...process.env, DADETO_COVERAGE_SHARD: '1', NODE_OPTIONS: `${process.env.NODE_OPTIONS ?? ''} --experimental-vm-modules`.trim() },
+    env: {
+      ...process.env,
+      DADETO_COVERAGE_SHARD: '1',
+      NODE_OPTIONS: `${workerNodeOptions} --max-old-space-size=${SAFE_WORKER_HEAP_MB} --experimental-vm-modules`.trim(),
+    },
   });
   return new Promise((resolve, reject) => {
     child.on('error', reject);
