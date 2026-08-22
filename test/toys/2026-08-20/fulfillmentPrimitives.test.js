@@ -316,6 +316,44 @@ describe('fulfillment primitives', () => {
     expect(outbound.segment.endPointId).toBe('B');
     expect(pickup.segment.startPointId).toBe('B');
   });
+  test('FULF outbound rejects each missing required proposal field', () => {
+    const valid = {
+      possessionStartPoint: { pointId: 'B', timestamp: '2026-01-01T01:00:00Z' },
+      origin: { latitude: 0, longitude: 0 },
+      travelDurationSeconds: 60,
+      startPointId: 'A',
+      segmentId: 'AB',
+    };
+    for (const key of [
+      'possessionStartPoint', 'origin', 'travelDurationSeconds',
+      'startPointId', 'segmentId',
+    ]) {
+      const value = { ...valid };
+      delete value[key];
+      expect(JSON.parse(deliveryOutboundSegmentProposal(JSON.stringify(value)))).toEqual({
+        valid: false,
+        error: 'Valid possession point, origin, duration, and IDs are required.',
+      });
+    }
+    expect(JSON.parse(deliveryOutboundSegmentProposal(JSON.stringify({
+      ...valid,
+      travelDurationSeconds: -1,
+    }))).error).toBe('Valid possession point, origin, duration, and IDs are required.');
+    for (const end of [{ timestamp: valid.possessionStartPoint.timestamp },
+      { pointId: 'B' }]) {
+      expect(JSON.parse(deliveryOutboundSegmentProposal(JSON.stringify({
+        ...valid,
+        possessionStartPoint: end,
+      }))).valid).toBe(false);
+    }
+    expect(JSON.parse(deliveryOutboundSegmentProposal(JSON.stringify({
+      ...valid,
+      origin: { latitude: 'not-a-coordinate', longitude: 0 },
+    })))).toEqual({
+      valid: false,
+      error: 'Valid origin coordinates and timestamp are required.',
+    });
+  });
   test('FULF outbound preserves exact quantized point and segment output', () => {
     expect(
       JSON.parse(

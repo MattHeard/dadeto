@@ -14,7 +14,6 @@ export function deliveryOutboundSegmentProposal(input) {
       !origin ||
       !Number.isFinite(seconds) ||
       seconds < 0 ||
-      !Number.isFinite(minutes) ||
       !x.startPointId ||
       !x.segmentId
     )
