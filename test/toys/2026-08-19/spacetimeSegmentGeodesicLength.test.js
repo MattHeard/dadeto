@@ -58,4 +58,33 @@ describe('spacetimeSegmentGeodesicLength', () => {
       )
     ).toMatchObject({ valid: false });
   });
+
+  test('reports deterministic parser and payload errors', () => {
+    expect(JSON.parse(spacetimeSegmentGeodesicLength('{'))).toEqual({
+      valid: false,
+      error: expect.any(String),
+    });
+    expect(JSON.parse(spacetimeSegmentGeodesicLength('[]'))).toEqual({
+      valid: false,
+      error: 'Input must be a JSON object.',
+    });
+    expect(JSON.parse(spacetimeSegmentGeodesicLength(JSON.stringify({ points: [] })))).toEqual({
+      valid: false,
+      error: 'points and segment are required.',
+    });
+    expect(JSON.parse(spacetimeSegmentGeodesicLength(JSON.stringify({ points: {}, segment: {} })))).toEqual({
+      valid: false,
+      error: 'points and segment are required.',
+    });
+  });
+
+  test('returns the exact unknown-point error', () => {
+    expect(JSON.parse(spacetimeSegmentGeodesicLength(JSON.stringify({
+      points: [{ pointId: 'A', latitude: 0, longitude: 0 }],
+      segment: { startPointId: 'A', endPointId: 'B' },
+    })))).toEqual({
+      valid: false,
+      error: 'Segment references an unknown point.',
+    });
+  });
 });
