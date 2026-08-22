@@ -70,4 +70,38 @@ describe('assetAllocationRegistry', () => {
       summary: { allocationCount: 0 },
     });
   });
+
+  test('rejects non-record and individually incomplete allocations', () => {
+    const base = {
+      possessionContextId: 'CTX',
+      assetId: 'asset',
+      allocatedFrom: '1',
+      allocatedTo: '2',
+    };
+    const allocations = [
+      null,
+      [],
+      0,
+      { ...base, possessionContextId: '' },
+      { ...base, assetId: '' },
+      { ...base, allocatedFrom: '' },
+      { ...base, allocatedTo: '' },
+    ];
+    const result = JSON.parse(assetAllocationRegistry(JSON.stringify({ allocations })));
+    expect(result.allocations).toEqual([]);
+  });
+
+  test('omits empty optional possession bounds', () => {
+    const result = JSON.parse(
+      assetAllocationRegistry(JSON.stringify({
+        allocations: [{
+          possessionContextId: 'CTX', assetId: 'asset', allocatedFrom: '1', allocatedTo: '2',
+          possessionFrom: ' ', possessionTo: '', status: ' held ',
+        }],
+      }))
+    );
+    expect(result.allocations[0]).toEqual({
+      possessionContextId: 'CTX', assetId: 'asset', allocatedFrom: '1', allocatedTo: '2', status: 'held',
+    });
+  });
 });

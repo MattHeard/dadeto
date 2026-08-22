@@ -27,7 +27,7 @@ export const assetAllocationRegistry = input =>
  * @returns {{possessionContextId: string, assetId: string, allocatedFrom: string, allocatedTo: string, status: string, possessionFrom?: string, possessionTo?: string}|null} Normalized allocation.
  */
 function normalizeAllocation(value) {
-  if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
+  if (value === null || Array.isArray(value)) return null;
   const allocation = /** @type {Record<string, unknown>} */ (value);
   const possessionContextId = trimmedStringOrEmpty(
     allocation.possessionContextId
