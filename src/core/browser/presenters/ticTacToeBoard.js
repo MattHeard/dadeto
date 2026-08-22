@@ -54,7 +54,7 @@ function getPosition(move) {
  * @returns {value is number} True when the value is a number between 0 and 2.
  */
 function isValidCoordinate(value) {
-  return [0, 1, 2].includes(value);
+  return typeof value === 'number' && [0, 1, 2].includes(value);
 }
 
 /**
@@ -63,7 +63,7 @@ function isValidCoordinate(value) {
  * @returns {position is TicTacToePosition} True when both row and column are provided.
  */
 function isValidPosition(position) {
-  return arePositionCoordinatesValid(position ?? {});
+  return Boolean(position && arePositionCoordinatesValid(position));
 }
 
 /**
@@ -193,7 +193,7 @@ function renderTicTacToeBoardFromData(data, dom) {
 
   // 3. Apply each legal move (first–come, first-served)
   const moves = Array.isArray(data.moves) ? data.moves : undefined;
-  moves?.forEach(move => applyMove(move, board));
+  moves?.forEach(move => applyMove(move ?? {}, board));
 
   // 4. Render board into a monospace grid
   const rowStrings = board.map(r => ` ${r[0]} | ${r[1]} | ${r[2]} `);

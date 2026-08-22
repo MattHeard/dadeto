@@ -63,9 +63,15 @@ describe('ticTacToeBoard validation helpers', () => {
 
   it('requires both a legal player and an empty valid cell', () => {
     const board = Array.from({ length: 3 }, () => Array(3).fill(' '));
-    expect(isLegalMove({ player: 'X', position: { row: 0, column: 0 } }, board)).toBe(true);
-    expect(isLegalMove({ player: 'Q', position: { row: 0, column: 0 } }, board)).toBe(false);
+    expect(
+      isLegalMove({ player: 'X', position: { row: 0, column: 0 } }, board)
+    ).toBe(true);
+    expect(
+      isLegalMove({ player: 'Q', position: { row: 0, column: 0 } }, board)
+    ).toBe(false);
     board[0][0] = 'X';
-    expect(isLegalMove({ player: 'O', position: { row: 0, column: 0 } }, board)).toBe(false);
+    expect(
+      isLegalMove({ player: 'O', position: { row: 0, column: 0 } }, board)
+    ).toBe(false);
   });
 });

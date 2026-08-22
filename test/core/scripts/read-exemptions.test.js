@@ -10,10 +10,10 @@ const deps = readFileSync => ({
 
 describe('readExemptions', () => {
   test('reads object-shaped exemption payloads', () => {
-    const read = jest.fn(() => JSON.stringify({ exemptions: { 'src/a.js': 'baseline' } }));
-    expect([
-      ...readExemptions(deps(read)),
-    ]).toEqual(['src/a.js']);
+    const read = jest.fn(() =>
+      JSON.stringify({ exemptions: { 'src/a.js': 'baseline' } })
+    );
+    expect([...readExemptions(deps(read))]).toEqual(['src/a.js']);
     expect(read).toHaveBeenCalledWith('/repo/exemptions.json', 'utf8');
   });
 
@@ -26,8 +26,12 @@ describe('readExemptions', () => {
   });
 
   test('treats null and primitive exemption maps as empty', () => {
-    expect([...readExemptions(deps(() => JSON.stringify({ exemptions: null })))]).toEqual([]);
-    expect([...readExemptions(deps(() => JSON.stringify({ exemptions: 'nope' })))]).toEqual([]);
+    expect([
+      ...readExemptions(deps(() => JSON.stringify({ exemptions: null }))),
+    ]).toEqual([]);
+    expect([
+      ...readExemptions(deps(() => JSON.stringify({ exemptions: 'nope' }))),
+    ]).toEqual([]);
   });
 
   test('treats invalid json as empty', () => {

@@ -11,6 +11,10 @@ import {
   toCanvasY,
 } from '../../../../src/core/browser/presenters/graphPlot.js';
 
+/**
+ * Create a mock canvas context.
+ * @returns {object} Canvas context mock.
+ */
 function context() {
   return {
     fillRect: jest.fn(),
@@ -18,17 +22,33 @@ function context() {
     moveTo: jest.fn(),
     lineTo: jest.fn(),
     stroke: jest.fn(),
-    set strokeStyle(value) { this._strokeStyle = value; },
-    set fillStyle(value) { this._fillStyle = value; },
-    set lineWidth(value) { this._lineWidth = value; },
+    set strokeStyle(value) {
+      this._strokeStyle = value;
+    },
+    set fillStyle(value) {
+      this._fillStyle = value;
+    },
+    set lineWidth(value) {
+      this._lineWidth = value;
+    },
   };
 }
 
 const canvas = { width: 100, height: 80 };
 const payload = {
-  background: '#fff', axesColor: '#111', gridColor: '#ddd', lineColor: '#f00',
-  xMin: -4, xMax: 4, yMin: -2, yMax: 2,
-  points: [{ x: -4, y: -2 }, { x: 0, y: 0 }, { x: 4, y: 2 }],
+  background: '#fff',
+  axesColor: '#111',
+  gridColor: '#ddd',
+  lineColor: '#f00',
+  xMin: -4,
+  xMax: 4,
+  yMin: -2,
+  yMax: 2,
+  points: [
+    { x: -4, y: -2 },
+    { x: 0, y: 0 },
+    { x: 4, y: 2 },
+  ],
 };
 
 describe('graphPlot mutation seams', () => {
@@ -70,12 +90,18 @@ describe('graphPlot mutation seams', () => {
     expect(functionContext.stroke).toHaveBeenCalledTimes(1);
     drawSeriesLine(ctx, canvas, payload, { points: [] });
     drawSeriesLine(ctx, canvas, payload, { points: [{ x: 0, y: 0 }] });
-    drawSeriesLine(ctx, canvas, payload, { lineColor: '#0f0', points: payload.points });
-    drawSeries(ctx, canvas, { ...payload, series: [
-      { points: payload.points },
-      { lineColor: '#00f', points: [{ x: 0, y: 0 }] },
-      {},
-    ] });
+    drawSeriesLine(ctx, canvas, payload, {
+      lineColor: '#0f0',
+      points: payload.points,
+    });
+    drawSeries(ctx, canvas, {
+      ...payload,
+      series: [
+        { points: payload.points },
+        { lineColor: '#00f', points: [{ x: 0, y: 0 }] },
+        {},
+      ],
+    });
     expect(ctx.stroke).toHaveBeenCalled();
     expect(ctx._strokeStyle).toBe('#00f');
   });
@@ -88,16 +114,24 @@ describe('graphPlot mutation seams', () => {
     expect(ctx.moveTo).toHaveBeenCalledWith(0, 80);
     expect(ctx.moveTo).toHaveBeenCalledWith(0, 0);
     expect(ctx.moveTo.mock.calls.filter(([x]) => x !== 0).length).toBe(8);
-    expect(ctx.moveTo.mock.calls.filter(([, y]) => y === 0).map(([x]) => x)).toEqual(
-      [0, 12.5, 25, 37.5, 50, 62.5, 75, 87.5, 100, 0]
-    );
+    expect(
+      ctx.moveTo.mock.calls.filter(([, y]) => y === 0).map(([x]) => x)
+    ).toEqual([0, 12.5, 25, 37.5, 50, 62.5, 75, 87.5, 100, 0]);
     expect(ctx.moveTo.mock.calls.filter(([x]) => x === 0).length).toBe(10);
     const asymmetric = context();
     drawGrid(asymmetric, canvas, {
-      ...payload, xMin: -17.3, xMax: 22.7, yMin: -7.3, yMax: 12.7,
+      ...payload,
+      xMin: -17.3,
+      xMax: 22.7,
+      yMin: -7.3,
+      yMax: 12.7,
     });
-    expect(asymmetric.moveTo.mock.calls.filter(([, y]) => y === 0)).toHaveLength(8);
-    expect(asymmetric.moveTo.mock.calls.filter(([x]) => x === 0)).toHaveLength(10);
+    expect(
+      asymmetric.moveTo.mock.calls.filter(([, y]) => y === 0)
+    ).toHaveLength(8);
+    expect(asymmetric.moveTo.mock.calls.filter(([x]) => x === 0)).toHaveLength(
+      10
+    );
     const asymmetricX = asymmetric.moveTo.mock.calls
       .filter(([, y]) => y === 0)
       .map(([x]) => x);

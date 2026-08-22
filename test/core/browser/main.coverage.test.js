@@ -146,7 +146,10 @@ describe('browser main initialization', () => {
       handlers.get(button.dataset.filter)({ preventDefault: jest.fn() })
     );
     expect(mockHideArticlesByClass).toHaveBeenCalledWith('tag-toy', mockDom);
-    expect(mockHideArticlesWithoutClass).toHaveBeenCalledWith('tag-toy', mockDom);
+    expect(mockHideArticlesWithoutClass).toHaveBeenCalledWith(
+      'tag-toy',
+      mockDom
+    );
     expect(mockReveal).toHaveBeenCalledTimes(4);
     expect(buttons[0].classList.add).toHaveBeenCalledWith('active');
     expect(buttons[3].classList.add).toHaveBeenCalledWith('active');
@@ -169,7 +172,10 @@ describe('browser main initialization', () => {
     handlers.get('unhandledrejection')({});
 
     expect(mockHandleTagLinks).toHaveBeenCalledWith(mockDom);
-    expect(mockSetupAudio).toHaveBeenCalledWith(mockDom, mockDom.setTextContent);
+    expect(mockSetupAudio).toHaveBeenCalledWith(
+      mockDom,
+      mockDom.setTextContent
+    );
     expect(mockRevealBetaArticles).toHaveBeenCalledWith(mockDom);
     expect(mockFetchBlogData).toHaveBeenCalled();
   });

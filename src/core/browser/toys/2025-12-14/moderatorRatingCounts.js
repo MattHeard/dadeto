@@ -72,7 +72,9 @@ function incrementCount(counts, moderatorId) {
  * @returns {number} Existing count or zero.
  */
 function getCountValue(counts, moderatorId) {
-  return numberOrZero(counts.get(moderatorId));
+  return numberOrZero(
+    /** @type {number | undefined} */ (counts.get(moderatorId))
+  );
 }
 
 /**
@@ -81,7 +83,9 @@ function getCountValue(counts, moderatorId) {
  * @returns {Array<unknown>} Array of parsed entries or an empty array.
  */
 function parseRatings(value) {
-  return arrayOrEmpty(parseJsonOrFallback(value, []));
+  return arrayOrEmpty(
+    parseJsonOrFallback(typeof value === 'string' ? value : '', [])
+  );
 }
 
 /**

@@ -57,6 +57,10 @@ function parseInput(input) {
   };
 }
 
+/**
+ * @param {unknown} value - Candidate value.
+ * @returns {boolean} Whether the value is a JSON object.
+ */
 function isJsonObject(value) {
   return value !== null && typeof value === 'object' && !Array.isArray(value);
 }

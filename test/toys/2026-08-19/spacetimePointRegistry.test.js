@@ -121,9 +121,7 @@ describe('spacetimePointRegistry', () => {
   });
 
   test('accepts only valid UTC minute timestamps', () => {
-    expect(normalizeUtcMinute(' 2026-08-21T09:05Z ')).toBe(
-      '2026-08-21T09:05Z'
-    );
+    expect(normalizeUtcMinute(' 2026-08-21T09:05Z ')).toBe('2026-08-21T09:05Z');
     expect(normalizeUtcMinute('2026-13-30T09:05Z')).toBeNull();
     expect(normalizeUtcMinute('2026-08-21T09:05:00Z')).toBeNull();
     expect(normalizeUtcMinute('prefix2026-08-21T09:05Z')).toBeNull();

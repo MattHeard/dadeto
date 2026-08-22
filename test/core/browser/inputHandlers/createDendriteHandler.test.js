@@ -201,9 +201,7 @@ describe('createDendriteHandler', () => {
       dom.createElement.mock.calls.filter(([tag]) => tag === 'div')
     ).toHaveLength(2);
     expect(container.children).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({ tagName: 'DIV' }),
-      ])
+      expect.arrayContaining([expect.objectContaining({ tagName: 'DIV' })])
     );
     expect(dom.setType).toHaveBeenCalledWith(
       expect.objectContaining({}),
@@ -220,10 +218,7 @@ describe('createDendriteHandler', () => {
     dom.getValue.mockReturnValueOnce('gamma');
     inputHandler();
 
-    expect(dom.setValue).toHaveBeenCalledWith(
-      textInput,
-      '{"alpha":"gamma"}'
-    );
+    expect(dom.setValue).toHaveBeenCalledWith(textInput, '{"alpha":"gamma"}');
 
     expect(result._dispose).toEqual(expect.any(Function));
     result._dispose();
@@ -279,9 +274,9 @@ describe('createDendriteHandler', () => {
     expect(dom.setTextContent).toHaveBeenCalled();
     expect(dom.createElement).toHaveBeenCalledWith('label');
     expect(dom.appendChild).toHaveBeenCalledWith(form, expect.anything());
-    expect(dom.appendChild.mock.calls.some(([, child]) => child === input)).toBe(
-      true
-    );
+    expect(
+      dom.appendChild.mock.calls.some(([, child]) => child === input)
+    ).toBe(true);
     expect(dom.addEventListener).toHaveBeenCalledWith(input, 'input', handler);
     expect(disposers).toHaveLength(1);
   });

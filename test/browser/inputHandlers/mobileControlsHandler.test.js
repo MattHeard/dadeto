@@ -80,10 +80,16 @@ describe('mobileControlsHandler', () => {
     button._listeners.pointerdown(event);
     button._listeners.pointerdown(event);
     expect(dom.setValue.mock.calls.length - writesBeforePress).toBe(1);
-    expect(button.setAttribute).toHaveBeenLastCalledWith('aria-pressed', 'true');
+    expect(button.setAttribute).toHaveBeenLastCalledWith(
+      'aria-pressed',
+      'true'
+    );
     button._listeners.pointerup(event);
     button._listeners.pointerup(event);
-    expect(button.setAttribute).toHaveBeenLastCalledWith('aria-pressed', 'false');
+    expect(button.setAttribute).toHaveBeenLastCalledWith(
+      'aria-pressed',
+      'false'
+    );
     expect(event.preventDefault).toHaveBeenCalledTimes(4);
     expect(cleanup).toHaveLength(5);
     cleanup.forEach(dispose => dispose());
@@ -118,20 +124,32 @@ describe('mobileControlsHandler', () => {
     const controlWrap = form._children[1];
     const leftButton = controlWrap._children[0];
     expect(controlWrap._children.map(button => button.textContent)).toEqual([
-      'Left', 'Right', 'Launch', 'Pause', 'Reset',
+      'Left',
+      'Right',
+      'Launch',
+      'Pause',
+      'Reset',
     ]);
     expect(controlWrap._children.map(button => button.type)).toEqual([
-      'button', 'button', 'button', 'button', 'button',
+      'button',
+      'button',
+      'button',
+      'button',
+      'button',
     ]);
     expect(form.className).toBe('mobile-controls-form');
     expect(controlWrap.className).toBe('mobile-controls-grid');
     expect(controlWrap.tag).toBe('div');
     expect(controlWrap._children.map(button => button.tag)).toEqual([
-      'button', 'button', 'button', 'button', 'button',
+      'button',
+      'button',
+      'button',
+      'button',
+      'button',
     ]);
-    expect(controlWrap._children.map(button =>
-      button.setAttribute.mock.calls.at(-1)
-    )).toEqual([
+    expect(
+      controlWrap._children.map(button => button.setAttribute.mock.calls.at(-1))
+    ).toEqual([
       ['aria-pressed', 'false'],
       ['aria-pressed', 'false'],
       ['aria-pressed', 'false'],

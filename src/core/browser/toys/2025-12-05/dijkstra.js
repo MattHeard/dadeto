@@ -61,10 +61,19 @@ function runSearch(context) {
   return state.bestDistance;
 }
 
+/**
+ * @param {number} iterations - Current search iteration.
+ * @param {number} nodeCount - Number of nodes in the graph.
+ * @returns {boolean} Whether another iteration is within budget.
+ */
 function hasSearchBudget(iterations, nodeCount) {
   return iterations < nodeCount * nodeCount;
 }
 
+/**
+ * @param {{iterations: number}} state - Mutable search state.
+ * @returns {boolean} Always true after advancing.
+ */
 function advanceIteration(state) {
   state.iterations += 1;
   return true;
@@ -246,7 +255,7 @@ function enqueueIfImproved(entry, queue, distances) {
  */
 function hasShorterPath(distances, neighbor, candidateDistance) {
   const previous = distances.get(neighbor);
-  return previous <= candidateDistance;
+  return previous !== undefined && previous <= candidateDistance;
 }
 
 /**
@@ -296,7 +305,7 @@ function buildNodeList(ratings, moderatorId, adminId) {
 /**
  * Initialize the search state.
  * @param {string} moderatorId - Starting moderator identifier.
- * @returns {{ visited: Set<string>, queue: Array<{id: string, distance: number}>, distances: Map<string, number>, bestDistance: number }} Initial state.
+ * @returns {{ visited: Set<string>, queue: Array<{id: string, distance: number}>, distances: Map<string, number>, bestDistance: number, iterations: number }} Initial state.
  */
 function createInitialState(moderatorId) {
   return {

@@ -42,9 +42,7 @@ function createDefaultData() {
  */
 function parseCells(value, fallback) {
   const parsed = [
-    ...String(value).matchAll(
-      /^\s*(-?\d+)[, \t]+(-?\d+)(?=$|[, \t])/gm
-    ),
+    ...String(value).matchAll(/^\s*(-?\d+)[, \t]+(-?\d+)(?=$|[, \t])/gm),
   ].map(match => [Number(match[1]), Number(match[2])]);
   return parsed.length === 0 ? fallback : parsed;
 }
@@ -273,7 +271,8 @@ export function lifeSeedHandler(dom, container, textInput) {
   prepareInputHandler(dom, container, textInput, [
     browserCore.maybeRemoveTextarea,
   ]);
-  buildForm({ dom, container, textInput });
+  const options = { dom, container, textInput };
+  buildForm(options);
 }
 
 export { createDefaultData, parseCells, normalizeData, parseData };

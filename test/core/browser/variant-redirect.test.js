@@ -220,10 +220,16 @@ describe('variant redirect helpers', () => {
     expect(pickThresholdSlug(pairs, 1)).toBe('alpha');
     expect(pickThresholdSlug(pairs, 2)).toBe('alpha');
     expect(pickThresholdSlug(pairs, 2.1)).toBe('beta');
-    expect(pickThresholdSlug([{ slug: 'negative', w: -1 }, ...pairs], 5.5)).toBeNull();
-    expect(pickWeighted(pairs, { getRandomValues: values => values.fill(0) })).toBe('alpha');
+    expect(
+      pickThresholdSlug([{ slug: 'negative', w: -1 }, ...pairs], 5.5)
+    ).toBeNull();
+    expect(
+      pickWeighted(pairs, { getRandomValues: values => values.fill(0) })
+    ).toBe('alpha');
     const noRandomForZeroWeights = { getRandomValues: jest.fn() };
-    expect(pickWeighted([{ slug: 'none', w: 0 }], noRandomForZeroWeights)).toBeNull();
+    expect(
+      pickWeighted([{ slug: 'none', w: 0 }], noRandomForZeroWeights)
+    ).toBeNull();
     expect(noRandomForZeroWeights.getRandomValues).not.toHaveBeenCalled();
     expect(sumPositiveWeights([{ slug: 'negative', w: -1 }])).toBe(0);
     expect(sumPositiveWeights([{ slug: 'infinite', w: Infinity }])).toBe(0);

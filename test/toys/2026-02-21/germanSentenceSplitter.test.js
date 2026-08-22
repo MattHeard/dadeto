@@ -59,7 +59,8 @@ describe('germanSentenceSplitterToy', () => {
   });
 
   test('protects every repeated abbreviation and restores every placeholder', () => {
-    const input = 'Er nutzt z.B. Heute und z.B. Morgen. Danach u.a. heute u.a. morgen.';
+    const input =
+      'Er nutzt z.B. Heute und z.B. Morgen. Danach u.a. heute u.a. morgen.';
     const result = JSON.parse(germanSentenceSplitterToy(input, new Map()));
     expect(result).toEqual([
       'Er nutzt z.B. Heute und z.B. Morgen.',

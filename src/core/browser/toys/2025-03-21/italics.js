@@ -15,7 +15,7 @@ const UNDERSCORE_MARKER = '_';
  * @returns {boolean} True if there are no bold segments.
  */
 function hasNoBoldSegments(text) {
-  return !findBoldSegments(text);
+  return isEmptyText(text) || !findBoldSegments(text);
 }
 
 /**
@@ -104,7 +104,20 @@ function createItalicsPattern(marker) {
  * @private
  */
 function escapeMarker(marker) {
-  return marker.replace(ASTERISK_MARKER, '\\*');
+  return marker.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+/**
+ * Check whether text is absent or whitespace-only.
+ * @param {unknown} value - Candidate text.
+ * @returns {boolean} Whether the value is empty text.
+ */
+function isEmptyText(value) {
+  return (
+    value === null ||
+    value === undefined ||
+    (typeof value === 'string' && value.trim() === '')
+  );
 }
 
 /**

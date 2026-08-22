@@ -201,13 +201,15 @@ describe('realHourlyWagePresenterTestOnly', () => {
         breakdown: { expensesByType: { foodExpenses: 3 } },
       })
     ).toEqual([['Food Expenses', 3]]);
-    expect(realHourlyWagePresenterTestOnly.getSummaryRows({
-      nominalHourlyWage: 1,
-      realHourlyWage: 2,
-      adjustedNetIncome: 3,
-      totalWorkRelatedHours: 4,
-      totalWorkRelatedExpenses: 5,
-    })).toEqual([
+    expect(
+      realHourlyWagePresenterTestOnly.getSummaryRows({
+        nominalHourlyWage: 1,
+        realHourlyWage: 2,
+        adjustedNetIncome: 3,
+        totalWorkRelatedHours: 4,
+        totalWorkRelatedExpenses: 5,
+      })
+    ).toEqual([
       ['Nominal hourly wage', 1],
       ['Real hourly wage', 2],
       ['Adjusted net income', 3],

@@ -43,7 +43,7 @@ const PLACEHOLDER = '\u00B7';
 function protectAbbreviations(text) {
   return ABBREVIATIONS.reduce((acc, abbr) => {
     return acc.replace(
-      new RegExp(`${abbr.replaceAll('.', '\\.') }\\.`, 'g'),
+      new RegExp(`${abbr.replaceAll('.', '\\.')}\\.`, 'g'),
       abbr + PLACEHOLDER
     );
   }, text);

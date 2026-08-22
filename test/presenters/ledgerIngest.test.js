@@ -366,11 +366,24 @@ describe('createLedgerIngestReportElement storage and fallback states', () => {
       )
     ).toBe(7);
     expect(ledgerIngestReportTestOnly.getCollapsedRunLength([], 0)).toBe(0);
-    expect(ledgerIngestReportTestOnly.getCollapsedRunLength([true, false], 0)).toBe(1);
-    expect(ledgerIngestReportTestOnly.getCollapsedRunLength([true, false], 1)).toBe(0);
-    expect(ledgerIngestReportTestOnly.getCollapsedRunLengthFromIndex([true, false], 0)).toBe(1);
-    expect(ledgerIngestReportTestOnly.getCollapsedRunLengthFromIndex([true, true], 0)).toBe(2);
-    expect(ledgerIngestReportTestOnly.getCollapsedRunLengthFromIndex([false], 0)).toBe(0);
+    expect(
+      ledgerIngestReportTestOnly.getCollapsedRunLength([true, false], 0)
+    ).toBe(1);
+    expect(
+      ledgerIngestReportTestOnly.getCollapsedRunLength([true, false], 1)
+    ).toBe(0);
+    expect(
+      ledgerIngestReportTestOnly.getCollapsedRunLengthFromIndex(
+        [true, false],
+        0
+      )
+    ).toBe(1);
+    expect(
+      ledgerIngestReportTestOnly.getCollapsedRunLengthFromIndex([true, true], 0)
+    ).toBe(2);
+    expect(
+      ledgerIngestReportTestOnly.getCollapsedRunLengthFromIndex([false], 0)
+    ).toBe(0);
     const section = { style: {} };
     ledgerIngestReportTestOnly.setTableSectionVerticalAlign(section);
     expect(section.style.verticalAlign).toBe('top');
@@ -392,7 +405,9 @@ describe('createLedgerIngestReportElement storage and fallback states', () => {
     expect(helpers.getColumnGroupLength([false, true, true], 0)).toBe(1);
     expect(helpers.getColumnGroupLength([false, true, true], 1)).toBe(2);
     expect(helpers.getCollapsedRunLength([true, true], 2)).toBe(0);
-    expect(helpers.getCollapsedRunLengthFromIndex([true, true, false], 0)).toBe(2);
+    expect(helpers.getCollapsedRunLengthFromIndex([true, true, false], 0)).toBe(
+      2
+    );
     expect(helpers.getColumnGroups([false, true, true, false])).toEqual([
       { start: 0, length: 1, collapsed: false },
       { start: 1, length: 2, collapsed: true },
@@ -415,57 +430,93 @@ describe('createLedgerIngestReportElement storage and fallback states', () => {
     expect(helpers.getTableHeaderCellClassName(true)).toContain('--collapsed');
     expect(helpers.getTableHeaderCellClassName(false)).toContain('--expanded');
     expect(helpers.getTableCellClassName(true)).toContain('--collapsed');
-    expect(helpers.getTableCellClassName(false)).toBe('ledger-ingest-transactions-cell');
+    expect(helpers.getTableCellClassName(false)).toBe(
+      'ledger-ingest-transactions-cell'
+    );
   });
 
   test('covers primitive DOM helper branches and table cell rendering', () => {
     const helpers = ledgerIngestReportTestOnly;
     const dom = createMockDom();
     const text = helpers.createTextElement(dom, {
-      tag: 'span', className: 'example', text: 'value',
+      tag: 'span',
+      className: 'example',
+      text: 'value',
     });
-    expect(text).toMatchObject({ tag: 'span', className: 'example', textContent: 'value' });
+    expect(text).toMatchObject({
+      tag: 'span',
+      className: 'example',
+      textContent: 'value',
+    });
     const header = helpers.createHeader(dom);
     expect(header.tag).toBe('div');
     expect(header.className).toBe('ledger-ingest-header');
     expect(header.children[0].tag).toBe('h3');
     expect(header.children[0].className).toBe('ledger-ingest-title');
     expect(header.children[0].textContent).toBe('Ledger Ingest');
-    const overview = helpers.createOverview({
-      fixture: 'fixture', inputMode: 'mode', summary: {
-        rawRecords: 1, canonicalTransactions: 2,
-        duplicatesDetected: 3, errorsDetected: 4,
+    const overview = helpers.createOverview(
+      {
+        fixture: 'fixture',
+        inputMode: 'mode',
+        summary: {
+          rawRecords: 1,
+          canonicalTransactions: 2,
+          duplicatesDetected: 3,
+          errorsDetected: 4,
+        },
       },
-    }, dom);
+      dom
+    );
     expect(overview.tag).toBe('div');
     expect(overview.className).toBe('ledger-ingest-overview');
     expect(overview.children.map(row => row.children[0].textContent)).toEqual([
-      'Fixture', 'Input mode', 'Raw records', 'Canonical transactions',
-      'Duplicates detected', 'Errors detected',
+      'Fixture',
+      'Input mode',
+      'Raw records',
+      'Canonical transactions',
+      'Duplicates detected',
+      'Errors detected',
     ]);
     expect(overview.children.map(row => row.children[1].textContent)).toEqual([
-      'fixture', 'mode', '1', '2', '3', '4',
+      'fixture',
+      'mode',
+      '1',
+      '2',
+      '3',
+      '4',
     ]);
     const overviewRow = helpers.createOverviewRow(dom, 'Label', null);
     expect(overviewRow.tag).toBe('div');
     expect(overviewRow.className).toBe('ledger-ingest-overview-row');
-    expect(overviewRow.children[0].className).toBe('ledger-ingest-overview-label');
+    expect(overviewRow.children[0].className).toBe(
+      'ledger-ingest-overview-label'
+    );
     expect(overviewRow.children[0].tag).toBe('strong');
-    expect(overviewRow.children[1].className).toBe('ledger-ingest-overview-value');
+    expect(overviewRow.children[1].className).toBe(
+      'ledger-ingest-overview-value'
+    );
     expect(overviewRow.children[1].tag).toBe('span');
     expect(overviewRow.children[1].textContent).toBe('null');
     const empty = helpers.createEmptyStateParagraph(dom, 'Empty');
     expect(empty.tag).toBe('p');
     expect(empty.className).toBe('ledger-ingest-transactions-empty');
     expect(empty.textContent).toBe('Empty');
-    expect(helpers.getSummaryCandidate(undefined, 'rawRecords')).toBeUndefined();
+    expect(
+      helpers.getSummaryCandidate(undefined, 'rawRecords')
+    ).toBeUndefined();
     expect(helpers.getSummaryNumberValue(3)).toBe(3);
     expect(helpers.getSummaryNumberValue('3')).toBe(0);
 
     const transaction = {
-      transactionId: 'tx', postedDate: '2026-01-01', amount: 4,
-      currency: 'USD', description: 'desc', dedupeKey: 'key', source: 'bank',
-      rawIndex: 0, metadata: { rawRecord: { id: 'raw' } },
+      transactionId: 'tx',
+      postedDate: '2026-01-01',
+      amount: 4,
+      currency: 'USD',
+      description: 'desc',
+      dedupeKey: 'key',
+      source: 'bank',
+      rawIndex: 0,
+      metadata: { rawRecord: { id: 'raw' } },
     };
     const state = { collapsedColumns: Array(10).fill(false) };
     const cell = helpers.createTransactionCell(
@@ -484,7 +535,9 @@ describe('createLedgerIngestReportElement storage and fallback states', () => {
     const link = helpers.createColumnToggleLink(dom, 'toggle', () => {});
     expect(link.href).toBe('#');
     let clicked = false;
-    const activeLink = helpers.createColumnToggleLink(dom, 'active', () => { clicked = true; });
+    const activeLink = helpers.createColumnToggleLink(dom, 'active', () => {
+      clicked = true;
+    });
     click(activeLink);
     expect(clicked).toBe(true);
     expect(state.collapsedColumns).toHaveLength(10);
@@ -492,7 +545,13 @@ describe('createLedgerIngestReportElement storage and fallback states', () => {
     let rerenders = 0;
     const expandedHeader = helpers.createTableHeaderCell(
       { start: 0, length: 1, collapsed: false },
-      { collapsedColumns: state.collapsedColumns, rerender: () => { rerenders += 1; }, dom }
+      {
+        collapsedColumns: state.collapsedColumns,
+        rerender: () => {
+          rerenders += 1;
+        },
+        dom,
+      }
     );
     expect(expandedHeader.className).toContain('--expanded');
     expect(expandedHeader.tag).toBe('th');
@@ -504,7 +563,13 @@ describe('createLedgerIngestReportElement storage and fallback states', () => {
     expect(rerenders).toBe(1);
     const collapsedHeader = helpers.createTableHeaderCell(
       { start: 0, length: 2, collapsed: true },
-      { collapsedColumns: state.collapsedColumns, rerender: () => { rerenders += 1; }, dom }
+      {
+        collapsedColumns: state.collapsedColumns,
+        rerender: () => {
+          rerenders += 1;
+        },
+        dom,
+      }
     );
     expect(collapsedHeader.className).toContain('--collapsed');
     expect(collapsedHeader.tag).toBe('th');
@@ -525,12 +590,19 @@ describe('createLedgerIngestReportElement storage and fallback states', () => {
     expect(tableBody.tag).toBe('tbody');
     expect(tableBody.className).toBe('ledger-ingest-transactions-body');
     expect(tableBody.children[0].tag).toBe('tr');
-    expect(tableBody.children[0].className).toBe('ledger-ingest-transactions-row');
+    expect(tableBody.children[0].className).toBe(
+      'ledger-ingest-transactions-row'
+    );
     const jsonSection = helpers.createJsonSection(dom, {
-      title: 'Details', value: { ok: true }, className: 'ledger-ingest-section--details',
+      title: 'Details',
+      value: { ok: true },
+      className: 'ledger-ingest-section--details',
     });
     expect(jsonSection.children[0].textContent).toBe('Details');
     expect(jsonSection.children[1].tag).toBe('pre');
-    expect(jsonSection.children[1].className).toBe('ledger-ingest-section-body');
+    expect(jsonSection.children[1].className).toBe(
+      'ledger-ingest-section-body'
+    );
   });
 });
+/* eslint max-lines-per-function: off, max-statements: off */

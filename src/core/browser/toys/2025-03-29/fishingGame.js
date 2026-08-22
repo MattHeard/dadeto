@@ -335,7 +335,8 @@ const fishingOutcomes = /** @type {FishingOutcome[]} */ ([
  */
 function getFishingOutcome(effectiveChance, baitDescription, moodDescription) {
   const outcome =
-    fishingOutcomes.find(({ check }) => check(effectiveChance)) ?? legendaryOutcome;
+    fishingOutcomes.find(({ check }) => check(effectiveChance)) ??
+    legendaryOutcome;
   return outcome.describe(baitDescription, moodDescription);
 }
 

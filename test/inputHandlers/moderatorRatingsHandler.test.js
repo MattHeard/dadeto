@@ -112,14 +112,21 @@ describe('moderatorRatingsTestOnly', () => {
   });
 
   test('normalizes primitive helpers and creates independent defaults', () => {
-    expect(moderatorRatingsTestOnly.toNormalizedString('  value ')).toBe('value');
+    expect(moderatorRatingsTestOnly.toNormalizedString('  value ')).toBe(
+      'value'
+    );
     expect(moderatorRatingsTestOnly.toNormalizedString(null)).toBe('');
     expect(moderatorRatingsTestOnly.toBoolean(true)).toBe(true);
     expect(moderatorRatingsTestOnly.toBoolean('true')).toBe(true);
     expect(moderatorRatingsTestOnly.toBoolean('false')).toBe(false);
     const first = moderatorRatingsTestOnly.createDefaultRatingEntry();
     const second = moderatorRatingsTestOnly.createDefaultRatingEntry();
-    expect(first).toEqual({ moderatorId: '', variantId: '', ratedAt: '', isApproved: false });
+    expect(first).toEqual({
+      moderatorId: '',
+      variantId: '',
+      ratedAt: '',
+      isApproved: false,
+    });
     expect(first).not.toBe(second);
   });
 
@@ -148,10 +155,17 @@ describe('moderatorRatingsTestOnly', () => {
     });
     const select = selectWrapper.children[0];
     expect(select.children.map(option => option.textContent)).toEqual([
-      'Approved', 'Rejected',
+      'Approved',
+      'Rejected',
     ]);
-    expect(select.children.map(option => option.value)).toEqual(['true', 'false']);
-    expect(select.children.map(option => option.tag)).toEqual(['option', 'option']);
+    expect(select.children.map(option => option.value)).toEqual([
+      'true',
+      'false',
+    ]);
+    expect(select.children.map(option => option.tag)).toEqual([
+      'option',
+      'option',
+    ]);
     expect(select.value).toBe('true');
     select.value = 'false';
     select.listeners.change[0]();
@@ -395,7 +409,9 @@ describe('moderatorRatingsHandler', () => {
     };
     const secondRow = { ...storedRow, moderatorId: 'stored-mod-2' };
     const thirdRow = { ...storedRow, moderatorId: 'stored-mod-3' };
-    const textInput = { value: JSON.stringify([storedRow, secondRow, thirdRow]) };
+    const textInput = {
+      value: JSON.stringify([storedRow, secondRow, thirdRow]),
+    };
     const dom = createFakeDom();
     const container = {};
 

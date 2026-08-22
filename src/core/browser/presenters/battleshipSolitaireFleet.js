@@ -230,7 +230,7 @@ export function createBattleshipFleetBoardElement(inputString, dom) {
     fleet = JSON.parse(inputString);
   } catch {
     // On error, render a default empty fleet
-    return renderFleetBoard({ width: 10, height: 10 }, dom);
+    return renderFleetBoard({ width: 10, height: 10, ships: [] }, dom);
   }
   return handleParsedFleet(fleet, dom);
 }

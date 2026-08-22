@@ -8,9 +8,9 @@ describe('parseStaticConfigResponse', () => {
   it('parses successful responses', async () => {
     const json = jest.fn().mockResolvedValue({ feature: true });
 
-    await expect(parseStaticConfigResponse({ ok: true, json })).resolves.toEqual(
-      { feature: true }
-    );
+    await expect(
+      parseStaticConfigResponse({ ok: true, json })
+    ).resolves.toEqual({ feature: true });
     expect(json).toHaveBeenCalledTimes(1);
   });
 
@@ -19,11 +19,14 @@ describe('parseStaticConfigResponse', () => {
     [undefined, 'unknown'],
     [{ ok: false, status: 503 }, '503'],
     [{ ok: false }, 'unknown'],
-  ])('rejects unsuccessful response %p with status %s', async (response, status) => {
-    await expect(parseStaticConfigResponse(response)).rejects.toThrow(
-      `Failed to load static config: ${status}`
-    );
-  });
+  ])(
+    'rejects unsuccessful response %p with status %s',
+    async (response, status) => {
+      await expect(parseStaticConfigResponse(response)).rejects.toThrow(
+        `Failed to load static config: ${status}`
+      );
+    }
+  );
 });
 
 describe('createLoadStaticConfig', () => {

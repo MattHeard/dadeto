@@ -51,7 +51,7 @@ function determineVisibility({ pageId, adminId, ratings }) {
  * @returns {string} Visibility score.
  */
 function resolveWithNormalized({ pageId, adminId, ratings }) {
-  const normalizedRatings = normalizeRatings(ratings, adminId);
+  const normalizedRatings = normalizeRatings(ratings);
   const adminDecision = getAdminDecision(normalizedRatings, adminId, pageId);
   if (adminDecision) {
     return adminDecision;
@@ -126,10 +126,9 @@ function parseInput(input) {
 /**
  * Normalize incoming ratings into plain objects keyed by moderator.
  * @param {unknown} ratings - Raw ratings object.
- * @param {string} adminId - Admin identifier.
  * @returns {Record<string, Record<string, boolean>>} Normalized ratings.
  */
-function normalizeRatings(ratings, adminId) {
+function normalizeRatings(ratings) {
   const normalized =
     /** @type {Record<string, Record<string, boolean>>} */ ({});
   if (isPlainObject(ratings)) {

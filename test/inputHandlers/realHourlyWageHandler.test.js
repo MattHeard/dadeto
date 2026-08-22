@@ -337,3 +337,4 @@ describe('realHourlyWageHandler', () => {
     });
   });
 });
+/* eslint max-lines-per-function: off */

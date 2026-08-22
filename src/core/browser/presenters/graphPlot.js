@@ -65,7 +65,10 @@ function drawGrid(context, canvas, payload) {
   const yStep = niceStep(payload.yMax - payload.yMin);
   const xStart = Math.ceil(payload.xMin / xStep) * xStep;
   const xCount = Math.floor((payload.xMax - xStart) / xStep) + 1;
-  for (const index of Array.from({ length: xCount }, (_, currentIndex) => currentIndex)) {
+  for (const index of Array.from(
+    { length: xCount },
+    (_, currentIndex) => currentIndex
+  )) {
     const x = xStart + index * xStep;
     const px = toCanvasX(canvas, payload, x);
     context.beginPath();
@@ -75,7 +78,10 @@ function drawGrid(context, canvas, payload) {
   }
   const yStart = Math.ceil(payload.yMin / yStep) * yStep;
   const yCount = Math.floor((payload.yMax - yStart) / yStep) + 1;
-  for (const index of Array.from({ length: yCount }, (_, currentIndex) => currentIndex)) {
+  for (const index of Array.from(
+    { length: yCount },
+    (_, currentIndex) => currentIndex
+  )) {
     const y = yStart + index * yStep;
     const py = toCanvasY(canvas, payload, y);
     context.beginPath();

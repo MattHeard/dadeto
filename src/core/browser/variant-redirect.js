@@ -136,9 +136,9 @@ function parseVariants(attr) {
   if (/^\s*[\[{]/.test(source)) {
     return parseJsonVariants(source);
   }
-  return [...source.matchAll(/(?:^|,)\s*(\S[^,:]*?)\s*(?::\s*([^,]+?))?\s*(?=,|$)/g)].map(
-    match => ({ slug: match[1], w: Number(match[2] ?? 1) })
-  );
+  return [
+    ...source.matchAll(/(?:^|,)\s*(\S[^,:]*?)\s*(?::\s*([^,]+?))?\s*(?=,|$)/g),
+  ].map(match => ({ slug: match[1], w: Number(match[2] ?? 1) }));
 }
 
 /**

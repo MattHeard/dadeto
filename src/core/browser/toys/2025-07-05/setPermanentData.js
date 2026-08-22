@@ -12,7 +12,9 @@ import { runToyWithParsedJson } from '../browserToysCore.js';
 export function setPermanentData(input, env) {
   return runToyWithParsedJson(input, parsed => {
     const setLocalPermanentData = env.get('setLocalPermanentData');
-    const result = setLocalPermanentData(parsed);
+    const result = /** @type {(value: unknown) => unknown} */ (
+      setLocalPermanentData
+    )(parsed);
     return JSON.stringify(result);
   });
 }

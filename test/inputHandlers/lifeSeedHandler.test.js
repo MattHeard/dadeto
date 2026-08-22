@@ -55,9 +55,7 @@ const {
   parseCells,
   normalizeData,
   parseData,
-} = await import(
-  '../../src/core/browser/inputHandlers/lifeSeedHandler.js'
-);
+} = await import('../../src/core/browser/inputHandlers/lifeSeedHandler.js');
 const browserCore = await import('../../src/core/browser/browser-core.js');
 const { buildManagedForm } = await import(
   '../../src/core/browser/inputHandlers/createDendriteHandler.js'
@@ -98,7 +96,13 @@ describe('lifeSeedHandler', () => {
       rows: 16,
       tickSpeedMs: 128,
       reset: false,
-      cells: [[11, 7], [12, 7], [13, 7], [13, 6], [12, 5]],
+      cells: [
+        [11, 7],
+        [12, 7],
+        [13, 7],
+        [13, 6],
+        [12, 5],
+      ],
     });
   });
 
@@ -108,21 +112,26 @@ describe('lifeSeedHandler', () => {
     expect(normalizeData([])).toEqual(defaults);
     expect(normalizeData('invalid')).toEqual(defaults);
     expect(normalizeData(false)).toEqual(defaults);
-    expect(normalizeData({
-      width: 640,
-      height: '480',
-      cols: 32,
-      rows: 20,
-      tickSpeedMs: 50,
-      cells: '2,3\n4,5',
-      reset: true,
-    })).toEqual({
+    expect(
+      normalizeData({
+        width: 640,
+        height: '480',
+        cols: 32,
+        rows: 20,
+        tickSpeedMs: 50,
+        cells: '2,3\n4,5',
+        reset: true,
+      })
+    ).toEqual({
       width: 640,
       height: 480,
       cols: 32,
       rows: 20,
       tickSpeedMs: 50,
-      cells: [[2, 3], [4, 5]],
+      cells: [
+        [2, 3],
+        [4, 5],
+      ],
       reset: true,
     });
     expect(normalizeData({ width: -1, cells: 'bad', reset: false })).toEqual({
@@ -211,10 +220,20 @@ describe('lifeSeedHandler', () => {
       360, 240, 24, 16, 128,
     ]);
     expect(fieldOptions.slice(0, 5).map(option => option.input.tag)).toEqual([
-      'input', 'input', 'input', 'input', 'input',
+      'input',
+      'input',
+      'input',
+      'input',
+      'input',
     ]);
     expect(elements.map(element => element.tag)).toEqual([
-      'input', 'input', 'input', 'input', 'input', 'textarea', 'input',
+      'input',
+      'input',
+      'input',
+      'input',
+      'input',
+      'textarea',
+      'input',
     ]);
     expect(fieldOptions.slice(0, 5).map(option => option.labelText)).toEqual([
       'Canvas width',
@@ -226,13 +245,18 @@ describe('lifeSeedHandler', () => {
     expect(fieldOptions.slice(0, 5).map(option => option.input.value)).toEqual([
       360, 240, 24, 16, 128,
     ]);
-    expect(fieldOptions.slice(0, 5).map(option => option.input.placeholder)).toEqual([
-      '360', '240', '24', '16', '128',
-    ]);
+    expect(
+      fieldOptions.slice(0, 5).map(option => option.input.placeholder)
+    ).toEqual(['360', '240', '24', '16', '128']);
     expect(fieldOptions[5].labelText).toBe('Live cells, one x,y per line');
     expect(fieldOptions[6].labelText).toBe('Reset from seed');
     expect(dom.setPlaceholder.mock.calls.map(([, value]) => value)).toEqual([
-      '360', '240', '24', '16', '128', '11,7\n12,7\n13,7',
+      '360',
+      '240',
+      '24',
+      '16',
+      '128',
+      '11,7\n12,7\n13,7',
     ]);
     expect(dom.setClassName).toHaveBeenCalledWith(
       expect.objectContaining({ tag: 'textarea' }),
@@ -367,3 +391,4 @@ describe('lifeSeedHandler', () => {
     );
   });
 });
+/* eslint max-lines-per-function: off, max-statements: off */

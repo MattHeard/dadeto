@@ -83,7 +83,10 @@ describe('plusOneAnnotatorToy', () => {
 
   it('normalizes non-string sentence and known-word fields to empty strings', () => {
     const result = JSON.parse(
-      plusOneAnnotatorToy(JSON.stringify({ sentence: null, knownWords: 42 }), env)
+      plusOneAnnotatorToy(
+        JSON.stringify({ sentence: null, knownWords: 42 }),
+        env
+      )
     );
     expect(result).toEqual({
       tokens: [],

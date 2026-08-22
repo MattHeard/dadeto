@@ -78,15 +78,17 @@ describe('createJoyConMappingElement', () => {
     expect(list.className).toBe('joycon-mapping-list');
     expect(list.children.length).toBeGreaterThan(0);
     expect(list.children.every(row => row.tag === 'div')).toBe(true);
-    expect(list.children.every(row => row.className === 'joycon-mapping-row')).toBe(true);
+    expect(
+      list.children.every(row => row.className === 'joycon-mapping-row')
+    ).toBe(true);
     expect(
       list.children.every(row =>
         row.children.every(child => child.className === '')
       )
     ).toBe(true);
     expect(
-      list.children.every(row =>
-        row.children.map(child => child.tag).join(',') === 'strong,span'
+      list.children.every(
+        row => row.children.map(child => child.tag).join(',') === 'strong,span'
       )
     ).toBe(true);
 
@@ -101,9 +103,19 @@ describe('createJoyConMappingElement', () => {
     expect(findRow('L').children[0].className).toBe('');
     expect(findRow('L').children[1].className).toBe('');
     expect(list.children.map(row => row.children[0].textContent)).toEqual([
-      'L', 'ZL', 'Minus', 'Capture', 'Stick Press', 'D-Pad Up',
-      'D-Pad Down', 'D-Pad Left', 'D-Pad Right', 'Stick Left',
-      'Stick Right', 'Stick Up', 'Stick Down',
+      'L',
+      'ZL',
+      'Minus',
+      'Capture',
+      'Stick Press',
+      'D-Pad Up',
+      'D-Pad Down',
+      'D-Pad Left',
+      'D-Pad Right',
+      'Stick Left',
+      'Stick Right',
+      'Stick Up',
+      'Stick Down',
     ]);
   });
 
@@ -152,12 +164,20 @@ describe('createJoyConMappingElement', () => {
   });
 
   test('normalizes skipped controls and fallback labels directly', () => {
-    expect(joyConMappingTestOnly.getSkippedControls({
-      skippedControls: ['a', 2, null, 'b'],
-    })).toEqual(['a', 'b']);
-    expect(joyConMappingTestOnly.getSkippedControls({ skippedControls: {} })).toEqual([]);
-    expect(joyConMappingTestOnly.createFallbackMapping(false).value).toBe('optional');
-    expect(joyConMappingTestOnly.createFallbackMapping(true).value).toBe('skipped');
+    expect(
+      joyConMappingTestOnly.getSkippedControls({
+        skippedControls: ['a', 2, null, 'b'],
+      })
+    ).toEqual(['a', 'b']);
+    expect(
+      joyConMappingTestOnly.getSkippedControls({ skippedControls: {} })
+    ).toEqual([]);
+    expect(joyConMappingTestOnly.createFallbackMapping(false).value).toBe(
+      'optional'
+    );
+    expect(joyConMappingTestOnly.createFallbackMapping(true).value).toBe(
+      'skipped'
+    );
     expect(joyConMappingTestOnly.getAxisDirectionLabel('negative')).toBe('-');
     expect(joyConMappingTestOnly.getAxisDirectionLabel('positive')).toBe('+');
   });

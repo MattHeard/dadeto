@@ -452,7 +452,7 @@ export const setLocalTemporaryData = (state, loggers) => {
  * @returns {BlogStateRecord} Stored data object.
  */
 function loadPermanentData(permanentLens) {
-  return loadDataFromLens(permanentLens);
+  return permanentLens ? loadDataFromLens(permanentLens) : {};
 }
 
 /**
@@ -483,7 +483,9 @@ function loadDataFromLens(lens) {
  * @param {BlogStateRecord} data - Data to save.
  */
 function savePermanentData(permanentLens, data) {
-  permanentLens.set('permanentData', data);
+  if (permanentLens) {
+    permanentLens.set('permanentData', data);
+  }
 }
 
 /**
@@ -522,12 +524,7 @@ function createWarningLogger(loggers) {
 function normalizeDependencies(bundle) {
   ensureBundleObject(bundle);
 
-  const {
-    fetch: fetchImpl,
-    loggers,
-    storage,
-    permanentLens,
-  } = bundle;
+  const { fetch: fetchImpl, loggers, storage, permanentLens } = bundle;
 
   ensureFetchFunction(fetchImpl);
   ensureLoggersObject(loggers);

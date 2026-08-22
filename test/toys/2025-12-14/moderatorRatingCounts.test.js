@@ -82,12 +82,16 @@ describe('moderatorRatingCounts', () => {
     expect(hasRequiredFields({ ...validRating, variantId: undefined })).toBe(
       true
     );
-    expect(hasRequiredFields({ ...validRating, variantId: undefined, extra: 1 })).toBe(
-      true
-    );
+    expect(
+      hasRequiredFields({ ...validRating, variantId: undefined, extra: 1 })
+    ).toBe(true);
     expect(
       hasRequiredFields(
-        Object.fromEntries(Object.keys(validRating).filter(key => key !== 'variantId').map(key => [key, validRating[key]]))
+        Object.fromEntries(
+          Object.keys(validRating)
+            .filter(key => key !== 'variantId')
+            .map(key => [key, validRating[key]])
+        )
       )
     ).toBe(false);
     expect(hasValidTypes(validRating)).toBe(true);

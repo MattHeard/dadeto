@@ -112,12 +112,12 @@ describe('spacetimeSegmentTemporalRelation', () => {
     expect(() => parseRequest(JSON.stringify({}))).toThrow(
       'points and segments arrays are required.'
     );
-    expect(() => parseRequest(JSON.stringify({ points: [], segments: [] }))).toThrow(
-      'firstSegmentId and secondSegmentId are required.'
-    );
-    expect(() => parseRequest(JSON.stringify({ points: {}, segments: [] }))).toThrow(
-      'points and segments arrays are required.'
-    );
+    expect(() =>
+      parseRequest(JSON.stringify({ points: [], segments: [] }))
+    ).toThrow('firstSegmentId and secondSegmentId are required.');
+    expect(() =>
+      parseRequest(JSON.stringify({ points: {}, segments: [] }))
+    ).toThrow('points and segments arrays are required.');
     expect(parseRequest(payload(' AB ', 'BC')).firstSegmentId).toBe('AB');
     expect(
       parseRequest(
@@ -131,12 +131,22 @@ describe('spacetimeSegmentTemporalRelation', () => {
     ).toMatchObject({ firstSegmentId: '123', secondSegmentId: '456' });
     expect(() =>
       parseRequest(
-        JSON.stringify({ points: [], segments: [], firstSegmentId: '', secondSegmentId: 'B' })
+        JSON.stringify({
+          points: [],
+          segments: [],
+          firstSegmentId: '',
+          secondSegmentId: 'B',
+        })
       )
     ).toThrow('firstSegmentId and secondSegmentId are required.');
     expect(() =>
       parseRequest(
-        JSON.stringify({ points: [], segments: [], firstSegmentId: 'A', secondSegmentId: '' })
+        JSON.stringify({
+          points: [],
+          segments: [],
+          firstSegmentId: 'A',
+          secondSegmentId: '',
+        })
       )
     ).toThrow('firstSegmentId and secondSegmentId are required.');
     expect(() =>
@@ -179,25 +189,23 @@ describe('spacetimeSegmentTemporalRelation', () => {
     expect(() => resolveInterval(segments, points, 'missing')).toThrow(
       'Unknown segment: missing'
     );
-    expect(
-      () =>
-        resolveInterval(
-          new Map([
-            ['AB', { segmentId: 'AB', startPointId: 'X', endPointId: 'B' }],
-          ]),
-          points,
-          'AB'
-        )
+    expect(() =>
+      resolveInterval(
+        new Map([
+          ['AB', { segmentId: 'AB', startPointId: 'X', endPointId: 'B' }],
+        ]),
+        points,
+        'AB'
+      )
     ).toThrow('Segment AB references an unknown point.');
-    expect(
-      () =>
-        resolveInterval(
-          new Map([
-            ['AB', { segmentId: 'AB', startPointId: 'B', endPointId: 'A' }],
-          ]),
-          points,
-          'AB'
-        )
+    expect(() =>
+      resolveInterval(
+        new Map([
+          ['AB', { segmentId: 'AB', startPointId: 'B', endPointId: 'A' }],
+        ]),
+        points,
+        'AB'
+      )
     ).toThrow('Segment AB must have an ordered valid time interval.');
     expect(() =>
       resolveInterval(
@@ -245,14 +253,38 @@ describe('spacetimeSegmentTemporalRelation', () => {
     expect(sharesBoundaryPoint(second, first)).toBe(true);
     expect(
       sharesBoundaryPoint(
-        { ...first, startTime: 10, endTime: 20, startPointId: 'B', endPointId: 'C' },
-        { ...second, startTime: 0, endTime: 10, startPointId: 'A', endPointId: 'B' }
+        {
+          ...first,
+          startTime: 10,
+          endTime: 20,
+          startPointId: 'B',
+          endPointId: 'C',
+        },
+        {
+          ...second,
+          startTime: 0,
+          endTime: 10,
+          startPointId: 'A',
+          endPointId: 'B',
+        }
       )
     ).toBe(true);
     expect(
       sharesBoundaryPoint(
-        { ...first, startTime: 10, endTime: 20, startPointId: 'X', endPointId: 'C' },
-        { ...second, startTime: 0, endTime: 10, startPointId: 'A', endPointId: 'B' }
+        {
+          ...first,
+          startTime: 10,
+          endTime: 20,
+          startPointId: 'X',
+          endPointId: 'C',
+        },
+        {
+          ...second,
+          startTime: 0,
+          endTime: 10,
+          startPointId: 'A',
+          endPointId: 'B',
+        }
       )
     ).toBe(false);
     expect(
@@ -274,14 +306,23 @@ describe('spacetimeSegmentTemporalRelation', () => {
       )
     ).toBe(false);
     expect(classify(first, second)).toBe('touching');
+    expect(classify(first, { ...second, startPointId: 'X' })).toBe('disjoint');
     expect(
-      classify(first, { ...second, startPointId: 'X' })
-    ).toBe('disjoint');
-    expect(
-      classify(first, { startTime: 5, endTime: 15, startPointId: 'X', endPointId: 'Y' })
+      classify(first, {
+        startTime: 5,
+        endTime: 15,
+        startPointId: 'X',
+        endPointId: 'Y',
+      })
     ).toBe('overlapping');
     expect(
-      classify(first, { startTime: 20, endTime: 30, startPointId: 'X', endPointId: 'Y' })
+      classify(first, {
+        startTime: 20,
+        endTime: 30,
+        startPointId: 'X',
+        endPointId: 'Y',
+      })
     ).toBe('disjoint');
   });
 });
+/* eslint max-lines-per-function: off */

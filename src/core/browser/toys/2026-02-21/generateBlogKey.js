@@ -27,8 +27,10 @@ function extractLetterPrefix(title, count) {
  * @returns {string} New unique key.
  */
 function findUniqueKey(prefix, keySet) {
-  const suffix = Array.from({ length: keySet.size + 1 }, (_, index) => index + 1)
-    .find(candidate => !keySet.has(prefix + candidate));
+  const suffix = Array.from(
+    { length: keySet.size + 1 },
+    (_, index) => index + 1
+  ).find(candidate => !keySet.has(prefix + candidate));
   return prefix + (suffix ?? keySet.size + 1);
 }
 

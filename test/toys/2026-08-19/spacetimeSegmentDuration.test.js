@@ -90,11 +90,11 @@ describe('spacetimeSegmentDuration', () => {
     expect(() => parseInput(JSON.stringify({}))).toThrow(
       'points and segment are required.'
     );
-    expect(() => parseInput(JSON.stringify({ points: [], segment: null }))).toThrow(
-      'points and segment are required.'
-    );
-    expect(() => parseInput(JSON.stringify({ points: {}, segment: {} }))).toThrow(
-      'points and segment are required.'
-    );
+    expect(() =>
+      parseInput(JSON.stringify({ points: [], segment: null }))
+    ).toThrow('points and segment are required.');
+    expect(() =>
+      parseInput(JSON.stringify({ points: {}, segment: {} }))
+    ).toThrow('points and segment are required.');
   });
 });

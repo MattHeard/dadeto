@@ -71,12 +71,20 @@ function parseRequest(input) {
   };
 }
 
+/**
+ * @param {unknown} value - Candidate value.
+ * @returns {boolean} Whether the value is a JSON object.
+ */
 function isJsonObject(value) {
   if (value === null) return false;
   if (typeof value !== 'object') return false;
   return !Array.isArray(value);
 }
 
+/**
+ * @param {unknown} value - Candidate segment identifier.
+ * @returns {string} Normalized identifier.
+ */
 function normalizeSegmentId(value) {
   return String(value ?? '').trim();
 }

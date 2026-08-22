@@ -259,7 +259,7 @@ const ensureModeratorRatingsForm = (dom, container, textInput) => {
   const rows = (() => {
     const parsed = browserCore.parseJsonOrDefault(
       browserCore.getInputValue(textInput),
-      null
+      {}
     );
     if (!Array.isArray(parsed)) {
       return [];

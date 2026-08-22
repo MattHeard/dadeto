@@ -241,15 +241,21 @@ function appendWrappedField({ dom, form, fieldWrapper, label, input }) {
 }
 
 /**
- * Build a labelled wrapper div and append it to the form.
- * @param {{ dom: DOMHelpers, form: HTMLElement, labelText: string, input: HTMLInputElement | HTMLTextAreaElement }} options - Label and field to append.
+ * Create and append one labelled input field.
+ * @param {{ dom: DOMHelpers, form: HTMLElement, labelText: string, input?: HTMLInputElement | HTMLTextAreaElement, createInput?: () => HTMLInputElement | HTMLTextAreaElement }} options Field parts.
  * @returns {void}
  */
-export function appendLabelledField({ dom, form, labelText, input }) {
+function appendFieldParts({ dom, form, labelText, input, createInput }) {
   const { fieldWrapper, label } = createFieldWrapper(dom);
   dom.setTextContent(label, labelText);
-  appendWrappedField({ dom, form, fieldWrapper, label, input });
+  /** @type {HTMLInputElement | HTMLTextAreaElement} */
+  const fieldInput = createInput
+    ? createInput()
+    : /** @type {HTMLInputElement | HTMLTextAreaElement} */ (input);
+  appendWrappedField({ dom, form, fieldWrapper, label, input: fieldInput });
 }
+
+export const appendLabelledField = appendFieldParts;
 
 /**
  * Register an input listener and append the input as a labelled field.
@@ -265,7 +271,7 @@ export function wireLabelledField({
   disposers,
 }) {
   registerInputListener({ dom, input, handler, disposers });
-  appendLabelledField({ dom, form, labelText, input });
+  return appendFieldParts({ dom, form, labelText, input });
 }
 
 /**
@@ -292,15 +298,15 @@ function createFieldInput(options) {
 /**
  * Create the wrapper, label, and input elements for a field and append them.
  * @param {{dom: DOMHelpers, form: HTMLElement, key: string, placeholder: string, data: DendriteData, textInput: HTMLInputElement, disposers: Disposer[]}} options - Field render inputs.
- * @returns {{fieldWrapper: HTMLElement, input: HTMLInputElement | HTMLTextAreaElement}} Wrapped elements ready for insertion.
+ * @returns {void} Appends the wrapped field to the form.
  */
 function createFieldElements(options) {
-  const { dom, placeholder, form } = options;
-  const { fieldWrapper, label } = createFieldWrapper(dom);
-  dom.setTextContent(label, placeholder);
-
-  const input = createFieldInput(options);
-  appendWrappedField({ dom, form, fieldWrapper, label, input });
+  appendFieldParts({
+    dom: options.dom,
+    form: options.form,
+    labelText: options.placeholder,
+    createInput: () => createFieldInput(options),
+  });
 }
 
 /**
@@ -507,7 +513,8 @@ export function cleanContainer(dom, container) {
 export function runFormHandler({ dom, container, textInput, buildForm }) {
   browserCore.hideAndDisable(textInput, dom);
   cleanContainer(dom, container);
-  return buildForm({ dom, container, textInput });
+  const options = { dom, container, textInput };
+  return buildForm(options);
 }
 
 /**

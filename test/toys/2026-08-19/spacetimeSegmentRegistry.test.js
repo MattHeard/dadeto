@@ -73,8 +73,12 @@ describe('spacetimeSegmentRegistry', () => {
     });
     expect(normalizeSegment(functionWithSegmentFields)).toBeNull();
     expect(normalizeSegment('segment')).toBeNull();
-    expect(normalizeSegment({ startPointId: 'P001', endPointId: 'P002' })).toBeNull();
+    expect(
+      normalizeSegment({ startPointId: 'P001', endPointId: 'P002' })
+    ).toBeNull();
     expect(normalizeSegment({ segmentId: 'S', endPointId: 'P002' })).toBeNull();
-    expect(normalizeSegment({ segmentId: 'S', startPointId: 'P001' })).toBeNull();
+    expect(
+      normalizeSegment({ segmentId: 'S', startPointId: 'P001' })
+    ).toBeNull();
   });
 });
