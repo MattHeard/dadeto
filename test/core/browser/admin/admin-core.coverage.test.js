@@ -429,9 +429,11 @@ describe('admin-core lazy initialization coverage', () => {
     expect(initializeApp).toHaveBeenCalledTimes(1);
     expect(onAuthStateChanged).toHaveBeenCalledTimes(1);
     expect(querySelectorAll).toHaveBeenCalledWith('#signoutLink');
+    const authCallsBeforeSignOut = getAuth.mock.calls.length;
     await signOutLink.listeners.click({ preventDefault: () => {} });
     await signOutLink.listeners.click({ preventDefault: () => {} });
     expect(auth.signOut).toHaveBeenCalledTimes(2);
+    expect(getAuth.mock.calls.length - authCallsBeforeSignOut).toBe(1);
     googleAuthModule.initGoogleSignIn();
     googleAuthModule.initGoogleSignIn();
     await googleAuthModule.signOut();
