@@ -197,8 +197,23 @@ describe('fulfillment primitives', () => {
             speedKilometersPerHour: 10,
           })
         )
-      ).unit
+    ).unit
     ).toBe('seconds'));
+  test('TRAV1 preserves the exact distance-to-duration conversion', () => {
+    const result = JSON.parse(
+      constantSpeedGeodesicTravelDuration(
+        JSON.stringify({
+          points: [
+            { pointId: 'A', latitude: 0, longitude: 0 },
+            { pointId: 'B', latitude: 0.01, longitude: 10 },
+          ],
+          segment: { startPointId: 'A', endPointId: 'B' },
+          speedKilometersPerHour: 10,
+        })
+      )
+    );
+    expect(result).toEqual({ value: '400750.3625317416', unit: 'seconds' });
+  });
   test('FULF proposals preserve endpoint identity and quantize minutes', () => {
     const outbound = JSON.parse(
       deliveryOutboundSegmentProposal(
