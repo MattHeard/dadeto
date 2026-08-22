@@ -1026,7 +1026,7 @@ function createSignOutClickHandler(googleAuth) {
  * @param {string} message - Error message thrown when validation fails.
  * @returns {void}
  */
-function assertFunction(value, message) {
+export function assertFunction(value, message) {
   if (typeof value !== 'function') {
     throw new TypeError(message);
   }
@@ -1038,7 +1038,7 @@ function assertFunction(value, message) {
  * @param {string} message - Message used for the thrown error when validation fails.
  * @returns {void}
  */
-function ensureObject(value, message) {
+export function ensureObject(value, message) {
   if (!isObject(value)) {
     throw new TypeError(message);
   }
@@ -1049,7 +1049,7 @@ function ensureObject(value, message) {
  * @param {{ setItem?: (key: string, value: string) => void } | null | undefined} storage - Storage-like interface.
  * @returns {void}
  */
-function ensureStorage(storage) {
+export function ensureStorage(storage) {
   if (!hasStorageSetItem(storage)) {
     throw new TypeError('storage must provide a setItem function');
   }
@@ -1067,7 +1067,7 @@ function ensureStorage(storage) {
  * }} deps - Dependencies to validate.
  * @returns {void} - Throws when any dependency is invalid.
  */
-function validateGoogleSignInDeps({
+export function validateGoogleSignInDeps({
   credentialFactory,
   signInWithCredential,
   auth,

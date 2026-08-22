@@ -1,6 +1,7 @@
 import { jest } from '@jest/globals';
 import {
   announceTriggerRenderResult,
+  assertFunction,
   buildSignInCredential,
   bindRegenerateVariantSubmit,
   bindTriggerRenderClick,
@@ -23,6 +24,8 @@ import {
   hasQuerySelectorAll,
   isObject,
   hasStorageSetItem,
+  ensureObject,
+  ensureStorage,
   hasLoggerError,
   hasInitializeMethod,
   hasRenderButtonMethod,
@@ -35,6 +38,7 @@ import {
   resolveAdminEndpoint,
   setupFirebase,
   updateAuthControlsDisplay,
+  validateGoogleSignInDeps,
 } from '../../../src/core/browser/admin-core.js';
 
 describe('buildSignInCredential', () => {
@@ -344,6 +348,37 @@ describe('admin document and auth helpers', () => {
     expect(() => initAdmin({ ...valid, onAuthStateChangedFn: null })).toThrow('onAuthStateChangedFn must be a function');
     expect(() => initAdmin({ ...valid, doc: {} })).toThrow('Document-like');
     expect(() => initAdmin({ ...valid, fetchFn: null })).toThrow('fetchFn must be a function');
+  });
+});
+
+describe('admin dependency validators', () => {
+  it('validates functions, objects, storage, and Google sign-in dependencies', () => {
+    const fn = jest.fn();
+    expect(assertFunction(fn, 'fn')).toBeUndefined();
+    expect(() => assertFunction(null, 'fn')).toThrow('fn');
+    expect(ensureObject({})).toBeUndefined();
+    expect(() => ensureObject(null, 'object required')).toThrow('object required');
+    expect(ensureStorage({ setItem: fn })).toBeUndefined();
+    expect(() => ensureStorage({})).toThrow('setItem function');
+    const valid = {
+      credentialFactory: fn,
+      signInWithCredential: fn,
+      auth: {},
+      storage: { setItem: fn },
+      matchMedia: fn,
+      querySelectorAll: fn,
+    };
+    expect(validateGoogleSignInDeps(valid)).toBeUndefined();
+    for (const [key, value] of [
+      ['credentialFactory', null],
+      ['signInWithCredential', null],
+      ['auth', null],
+      ['storage', {}],
+      ['matchMedia', null],
+      ['querySelectorAll', null],
+    ]) {
+      expect(() => validateGoogleSignInDeps({ ...valid, [key]: value })).toThrow();
+    }
   });
 });
 
