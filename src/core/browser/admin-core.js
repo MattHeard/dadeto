@@ -626,7 +626,7 @@ async function reportTriggerRenderFailure(
     statusText,
     body,
   });
-  reportError?.(new Error(message));
+  reportError(new Error(message));
   showMessage(message);
 }
 
