@@ -181,6 +181,7 @@ export const ticTacToeTestOnly = {
   isMoveApplicationValid,
   determineNextPlayer,
   makeAccumulateScores,
+  minimax,
 };
 
 /**
@@ -624,7 +625,13 @@ function simulateMoves(board, accumulateScores) {
  * @returns {number} Score for the optimal (or pessimal) path at the current depth so callers can choose the best or worst branch.
  */
 function minimax(depth, isMax, params) {
+  if (params.player !== 'X' && params.player !== 'O') {
+    return 0;
+  }
   const opponent = getOpponent(params.player);
+  if (opponent !== 'X' && opponent !== 'O') {
+    return 0;
+  }
   const isWinPlayer = () => isWin(params.board, params.player);
   const isWinOpponent = () => isWin(params.board, opponent);
   const terminalScore = evaluateTerminalState(
