@@ -20,7 +20,8 @@ import {
  * @returns {boolean} True if STAR1 is an array.
  */
 function hasStar1Structure(temporary) {
-  return Array.isArray(temporary?.STAR1);
+  if (temporary === null || temporary === undefined) return false;
+  return Array.isArray(temporary.STAR1);
 }
 
 /**
@@ -29,7 +30,8 @@ function hasStar1Structure(temporary) {
  * @returns {boolean} True if DEND1 is an array.
  */
 function hasDend1Structure(temporary) {
-  return Array.isArray(temporary?.DEND1);
+  if (temporary === null || temporary === undefined) return false;
+  return Array.isArray(temporary.DEND1);
 }
 
 /**
@@ -56,9 +58,6 @@ function shouldSkipStar1(temporary) {
  * @returns {DendriteStoryResult[]} DEND1 array or empty array.
  */
 function resolveLegacyStructure(temporary) {
-  if (shouldSkipDend1(temporary)) {
-    return [];
-  }
   return getLegacyDend1(temporary);
 }
 
@@ -68,9 +67,6 @@ function resolveLegacyStructure(temporary) {
  * @returns {DendriteStoryResult[]} Array to use for STAR1.
  */
 function resolveStar1Structure(temporary) {
-  if (shouldSkipStar1(temporary)) {
-    return resolveLegacyStructure(temporary);
-  }
   return getStar1Stories(temporary, resolveLegacyStructure(temporary));
 }
 
@@ -80,7 +76,8 @@ function resolveStar1Structure(temporary) {
  * @returns {DendriteStoryResult[]} DEND1 stories or an empty array.
  */
 function getLegacyDend1(temporary) {
-  return readStoryArray(temporary?.DEND1);
+  if (temporary === null || temporary === undefined) return [];
+  return readStoryArray(temporary.DEND1);
 }
 
 /**
@@ -90,7 +87,9 @@ function getLegacyDend1(temporary) {
  * @returns {DendriteStoryResult[]} STAR1 stories or the fallback.
  */
 function getStar1Stories(temporary, fallback) {
-  const stories = readStoryArray(temporary?.STAR1);
+  const stories = temporary === null || temporary === undefined
+    ? []
+    : readStoryArray(temporary.STAR1);
   return pickPrimaryStories(stories, fallback);
 }
 
@@ -198,6 +197,7 @@ export function startLocalDendriteStory(input, env) {
 }
 
 export const startLocalDendriteStoryTestOnly = {
+  getLegacyDend1,
   getLegacyDend1,
   getStar1Stories,
   pickPrimaryStories,

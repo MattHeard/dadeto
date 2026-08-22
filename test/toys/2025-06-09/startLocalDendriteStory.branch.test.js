@@ -91,5 +91,15 @@ describe('startLocalDendriteStory missing temporary', () => {
     expect(
       startLocalDendriteStoryTestOnly.pickPrimaryStories([existing], [])
     ).toEqual([existing]);
+    expect(startLocalDendriteStoryTestOnly.shouldSkipDend1(null)).toBe(true);
+    expect(startLocalDendriteStoryTestOnly.shouldSkipDend1({ DEND1: [] })).toBe(false);
+    expect(startLocalDendriteStoryTestOnly.shouldSkipDend1({ DEND1: null })).toBe(true);
+    expect(startLocalDendriteStoryTestOnly.shouldSkipStar1(null)).toBe(true);
+    expect(startLocalDendriteStoryTestOnly.shouldSkipStar1({ STAR1: [] })).toBe(false);
+    expect(startLocalDendriteStoryTestOnly.shouldSkipStar1({ STAR1: null })).toBe(true);
+    expect(startLocalDendriteStoryTestOnly.resolveLegacyStructure(null)).toEqual([]);
+    expect(startLocalDendriteStoryTestOnly.resolveLegacyStructure({ DEND1: [existing] })).toEqual([existing]);
+    expect(startLocalDendriteStoryTestOnly.resolveStar1Structure({ STAR1: [existing], DEND1: [] })).toEqual([existing]);
+    expect(startLocalDendriteStoryTestOnly.getLegacyDend1({ DEND1: [existing] })).toEqual([existing]);
   });
 });
