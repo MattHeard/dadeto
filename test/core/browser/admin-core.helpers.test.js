@@ -141,6 +141,7 @@ describe('regeneration input helpers', () => {
     expect(parsePageVariantValue('123abc-')).toBeNull();
     expect(parsePageVariantValue('123abc def')).toBeNull();
     expect(parsePageVariantValue('123abc456')).toBeNull();
+    expect(parsePageVariantValue('')).toBeNull();
   });
 });
 
@@ -1038,6 +1039,27 @@ describe('stats and regeneration handlers', () => {
     await handler({});
     expect(showMessage).toHaveBeenCalledWith('Invalid format');
     expect(fetchFn).toHaveBeenCalledTimes(fetchCallCount);
+
+    const failedReport = jest.fn();
+    const failedMessage = jest.fn();
+    input.value = '123abc';
+    await createRegenerateVariant({
+      googleAuth: { getIdToken: jest.fn().mockResolvedValue('token') },
+      doc,
+      showMessage: failedMessage,
+      getAdminEndpointsFn: () =>
+        Promise.resolve({ markVariantDirtyUrl: '/dirty' }),
+      fetchFn: jest.fn().mockResolvedValue({
+        ok: false,
+        status: 500,
+        text: () => Promise.resolve(' server detail '),
+      }),
+      reportError: failedReport,
+    })({ preventDefault: jest.fn() });
+    expect(failedReport.mock.calls[0][0].message).toBe(
+      'HTTP 500: server detail'
+    );
+    expect(failedMessage).toHaveBeenCalledWith('Regeneration failed');
 
     expect(() =>
       createRegenerateVariant({
