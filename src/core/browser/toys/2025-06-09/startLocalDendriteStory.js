@@ -20,8 +20,7 @@ import {
  * @returns {boolean} True if STAR1 is an array.
  */
 function hasStar1Structure(temporary) {
-  if (temporary === null || temporary === undefined) return false;
-  return Array.isArray(temporary.STAR1);
+  return Boolean(temporary && Array.isArray(temporary.STAR1));
 }
 
 /**
@@ -30,8 +29,7 @@ function hasStar1Structure(temporary) {
  * @returns {boolean} True if DEND1 is an array.
  */
 function hasDend1Structure(temporary) {
-  if (temporary === null || temporary === undefined) return false;
-  return Array.isArray(temporary.DEND1);
+  return Boolean(temporary && Array.isArray(temporary.DEND1));
 }
 
 /**
@@ -76,8 +74,7 @@ function resolveStar1Structure(temporary) {
  * @returns {DendriteStoryResult[]} DEND1 stories or an empty array.
  */
 function getLegacyDend1(temporary) {
-  if (temporary === null || temporary === undefined) return [];
-  return readStoryArray(temporary.DEND1);
+  return readStoryArray(temporary && temporary.DEND1);
 }
 
 /**
@@ -87,9 +84,7 @@ function getLegacyDend1(temporary) {
  * @returns {DendriteStoryResult[]} STAR1 stories or the fallback.
  */
 function getStar1Stories(temporary, fallback) {
-  const stories = temporary === null || temporary === undefined
-    ? []
-    : readStoryArray(temporary.STAR1);
+  const stories = readStoryArray(temporary && temporary.STAR1);
   return pickPrimaryStories(stories, fallback);
 }
 
