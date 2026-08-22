@@ -43,12 +43,13 @@ function normalizePoint(value) {
  * @returns {number|null} Rounded coordinate or null when invalid.
  */
 function normalizeCoordinate(value, minimum, maximum) {
-  const coordinate =
-    typeof value === 'number' && Number.isFinite(value) ? value : null;
-  if (coordinate === null || coordinate < minimum || coordinate > maximum) {
+  if (!Number.isFinite(value)) {
     return null;
   }
-  return Number(coordinate.toFixed(6));
+  if (value < minimum || value > maximum) {
+    return null;
+  }
+  return Number(value.toFixed(6));
 }
 
 /**
@@ -62,3 +63,5 @@ function normalizeUtcMinute(value) {
   if (!match || Number.isNaN(Date.parse(`${match[1]}:00Z`))) return null;
   return `${match[1]}Z`;
 }
+
+export { normalizeCoordinate, normalizePoint, normalizeUtcMinute };
