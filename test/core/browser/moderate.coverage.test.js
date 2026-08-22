@@ -358,13 +358,15 @@ describe('moderate core', () => {
     const signin = { style: {} };
     const link = { style: {} };
     const content = { innerHTML: 'content', style: { display: 'block' } };
-    const documentObj = {
-      querySelectorAll: selector =>
+    const querySelectorAll = jest.fn(selector =>
         selector === '#signoutWrap'
           ? [signout]
           : selector === '#signinButton'
             ? [signin]
             : [link],
+    );
+    const documentObj = {
+      querySelectorAll,
       getElementById: id => (id === 'pageContent' ? content : null),
     };
     createModerateHandle({
@@ -377,6 +379,7 @@ describe('moderate core', () => {
     expect(signout.style.display).toBe('none');
     expect(signin.style.display).toBe('');
     expect(link.style.display).toBe('none');
+    expect(querySelectorAll).toHaveBeenCalledWith('.admin-link');
     expect(content.innerHTML).toBe('');
     expect(content.style.display).toBe('none');
   });
