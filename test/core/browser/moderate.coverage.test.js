@@ -241,6 +241,19 @@ describe('moderate core', () => {
     expect(mockBeaconOptions.getUrl()).toBe('');
     expect(mockBeaconOptions.getUserAgent()).toBe('');
     expect(typeof mockBeaconOptions.getNow()).toBe('number');
+    const sendBeacon = jest.fn(() => true);
+    createModerateHandle({
+      documentObj: mockDocument,
+      fetchFn: mockFetch,
+      sessionStorageObj: {},
+      globalObject: {
+        navigator: { sendBeacon, userAgent: 'moderate-test' },
+        location: { href: '/moderate-test' },
+      },
+    });
+    expect(mockBeaconOptions.getUrl()).toBe('/moderate-test');
+    expect(mockBeaconOptions.getUserAgent()).toBe('moderate-test');
+    expect(mockBeaconOptions.reportBeacon).toHaveBeenCalled();
     createModerateHandle({
       documentObj: mockDocument,
       fetchFn: mockFetch,
