@@ -129,6 +129,7 @@ describe('realtimeVoicePrototypePresenterTestOnly', () => {
     expect(helpers.getJsonErrorDetail('{"error":12}')).toBe('');
     expect(helpers.getJsonErrorDetail('{"error":{}}')).toBe('');
     expect(helpers.getJsonErrorDetail('{"error":"  "}')).toBe('');
+    expect(helpers.getJsonErrorDetail('{"message":"fallback"}')).toBe('');
     expect(helpers.getJsonErrorDetail('not json')).toBe('');
     expect(helpers.getRealtimeAnswerErrorDetail('  plain  ')).toBe('plain');
     expect(helpers.getRealtimeAnswerErrorDetail('{"error":"relay"}')).toBe(
@@ -143,6 +144,12 @@ describe('realtimeVoicePrototypePresenterTestOnly', () => {
     expect(helpers.formatErrorMessage('nope')).toBe(
       'Error: unknown connection failure.'
     );
+    expect(
+      helpers.formatRealtimeAnswerError(
+        { status: 400 },
+        '{"error":12}'
+      )
+    ).toBe('Realtime session server failed with status 400: {"error":12}');
     const fetchFn = jest.fn(async () => ({ ok: true, text: async () => 'answer' }));
     const failedResponse = { ok: false, status: 418, text: async () => '' };
     await expect(helpers.requestRealtimeAnswer('offer', '/answer', fetchFn)).resolves.toBe(
@@ -161,6 +168,9 @@ describe('realtimeVoicePrototypePresenterTestOnly', () => {
   test('builds controls and exercises DOM helper branches', () => {
     const helpers = realtimeVoicePrototypePresenterTestOnly;
     const dom = createDom();
+    const createElement = jest.spyOn(dom, 'createElement');
+    const setTextContent = jest.spyOn(dom, 'setTextContent');
+    const setClassName = jest.spyOn(dom, 'setClassName');
     const controls = helpers.createControls(dom, {
       title: 'Title',
       description: 'Description',
@@ -189,6 +199,15 @@ describe('realtimeVoicePrototypePresenterTestOnly', () => {
     expect(controls.audioElement.playsInline).toBe(true);
     expect(controls.debugLog.tagName).toBe('OL');
     expect(controls.debugLog.className).toBe('realtime-voice-log');
+    expect(createElement).toHaveBeenCalledWith('audio');
+    expect(setClassName).toHaveBeenCalledWith(
+      expect.anything(),
+      'realtime-voice-controls'
+    );
+    expect(setTextContent).toHaveBeenCalledWith(
+      expect.anything(),
+      'disconnected'
+    );
     expect(
       helpers.createControls(dom, {
         title: 'a',
@@ -268,9 +287,11 @@ describe('realtimeVoicePrototypePresenterTestOnly', () => {
     helpers.toggleMute(state, controls, dom);
     expect(state.muted).toBe(true);
     expect(track.enabled).toBe(false);
+    expect(controls.muteButton.textContent).toBe('Unmute');
     helpers.toggleMute(state, controls, dom);
     expect(state.muted).toBe(false);
     expect(track.enabled).toBe(true);
+    expect(controls.muteButton.textContent).toBe('Mute');
     helpers.stopMediaStream(stream);
     helpers.closeDataChannel(channel);
     helpers.closePeerConnection(peer);
@@ -281,7 +302,16 @@ describe('realtimeVoicePrototypePresenterTestOnly', () => {
     helpers.closeDataChannel(null);
     helpers.closePeerConnection(null);
     expect(controls.muteButton.textContent).toBe('Mute');
+    helpers.disconnectRealtimeVoice(state, controls, 'done', dom);
+    expect(state).toEqual({
+      peerConnection: null,
+      mediaStream: null,
+      dataChannel: null,
+      muted: false,
+    });
+    expect(controls.audioElement.srcObject).toBeNull();
     helpers.appendDebugLog(controls, 'hello', dom);
+    expect(controls.debugLog.children[0].tagName).toBe('LI');
     expect(controls.debugLog.children[0].textContent).toContain('hello');
   });
 
@@ -312,6 +342,7 @@ describe('realtime voice lifecycle', () => {
     const track = { enabled: true, stop: jest.fn() };
     const stream = { getAudioTracks: () => [track], getTracks: () => [track] };
     const listeners = {};
+    let peerInstance;
     const dataChannel = {
       addEventListener: (type, handler) => {
         listeners[`data-${type}`] = handler;
@@ -319,6 +350,9 @@ describe('realtime voice lifecycle', () => {
       close: jest.fn(),
     };
     class FakePeerConnection {
+      constructor() {
+        peerInstance = this;
+      }
       connectionState = 'connected';
       iceConnectionState = 'connected';
       addEventListener(type, handler) {
@@ -367,6 +401,10 @@ describe('realtime voice lifecycle', () => {
     });
     expect(getUserMedia).toHaveBeenCalledWith({ audio: true });
     expect(root.children[5].srcObject).toBe(stream);
+    expect(peerInstance.setRemoteDescription).toHaveBeenCalledWith({
+      type: 'answer',
+      sdp: 'answer',
+    });
     expect(JSON.stringify(root)).toContain('Realtime voice connection is live.');
     expect(JSON.stringify(root)).toContain('Requesting microphone permission.');
     expect(JSON.stringify(root)).toContain('Sending SDP offer to local server.');
