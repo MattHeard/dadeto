@@ -138,7 +138,7 @@ function getDisableAutoSelectCandidate(globalScope) {
  * @param {...string} keys Property path.
  * @returns {unknown} Value at the path or undefined when any segment is missing.
  */
-function getNestedProperty(source, ...keys) {
+export function getNestedProperty(source, ...keys) {
   return keys.reduce(
     (cursor, key) => resolveNestedProperty(cursor, key),
     /** @type {unknown} */ (source)
@@ -151,7 +151,7 @@ function getNestedProperty(source, ...keys) {
  * @param {string} key Next key to read.
  * @returns {unknown} Value at the key when traversable, otherwise `undefined`.
  */
-function resolveNestedProperty(cursor, key) {
+export function resolveNestedProperty(cursor, key) {
   if (!isTraversable(cursor)) {
     return undefined;
   }
@@ -164,7 +164,7 @@ function resolveNestedProperty(cursor, key) {
  * @param {unknown} cursor Candidate traversal target.
  * @returns {boolean} True when the cursor is an object and not `null`.
  */
-function isTraversable(cursor) {
+export function isTraversable(cursor) {
   return Boolean(cursor && typeof cursor === 'object');
 }
 
@@ -173,7 +173,7 @@ function isTraversable(cursor) {
  * @param {unknown} value Candidate to evaluate.
  * @returns {value is () => void} True when the value is a function.
  */
-function isDisableAutoSelectFunction(value) {
+export function isDisableAutoSelectFunction(value) {
   return typeof value === 'function';
 }
 
@@ -1188,7 +1188,7 @@ function buildNormalizedGoogleSignInDeps(deps) {
  * Create a safe logger that can be called even when no logger is configured.
  * @returns {{ error: (message?: string) => void }} Logger stub.
  */
-function createSafeLogger() {
+export function createSafeLogger() {
   return { error: noopLoggerError };
 }
 
@@ -1196,7 +1196,7 @@ function createSafeLogger() {
  * No-op logger implementation used when no logger exists.
  * @returns {void}
  */
-function noopLoggerError() {}
+export function noopLoggerError() {}
 
 /**
  * Ensure logger exists.

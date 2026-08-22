@@ -14,6 +14,12 @@ import {
   getCurrentUser,
   getSignInButtons,
   getSignOutSections,
+  getNestedProperty,
+  resolveNestedProperty,
+  isTraversable,
+  isDisableAutoSelectFunction,
+  createSafeLogger,
+  noopLoggerError,
   initAdmin,
   handleCredentialSignIn,
   mapConfigToAdminEndpoints,
@@ -379,6 +385,30 @@ describe('admin dependency validators', () => {
     ]) {
       expect(() => validateGoogleSignInDeps({ ...valid, [key]: value })).toThrow();
     }
+  });
+});
+
+describe('admin nested traversal and logger helpers', () => {
+  it('traverses only object paths and preserves callable detection', () => {
+    const source = { google: { accounts: { id: { ready: true } } } };
+    expect(getNestedProperty(source, 'google', 'accounts', 'id', 'ready')).toBe(true);
+    expect(getNestedProperty(source, 'google', 'missing')).toBeUndefined();
+    expect(getNestedProperty(null, 'google')).toBeUndefined();
+    expect(resolveNestedProperty(source.google, 'accounts')).toBe(source.google.accounts);
+    expect(resolveNestedProperty('not-object', 'key')).toBeUndefined();
+    expect(isTraversable({})).toBe(true);
+    expect(isTraversable([])).toBe(true);
+    expect(isTraversable(null)).toBe(false);
+    expect(isTraversable('object')).toBe(false);
+    expect(isDisableAutoSelectFunction(jest.fn())).toBe(true);
+    expect(isDisableAutoSelectFunction({})).toBe(false);
+  });
+
+  it('provides a callable safe logger stub', () => {
+    const logger = createSafeLogger();
+    expect(typeof logger.error).toBe('function');
+    expect(logger.error()).toBeUndefined();
+    expect(noopLoggerError()).toBeUndefined();
   });
 });
 
