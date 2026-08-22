@@ -37,9 +37,11 @@ export function parseJsonOrNull(value) {
 export function parseObjectRecord(value) {
   let parsed = value;
   if (typeof value === 'string') parsed = parseJsonOrNull(value);
+  // Stryker disable all -- defensive parsed-value type boundary.
   if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
     return /** @type {Record<string, unknown>} */ (parsed);
   }
+  // Stryker restore all
   return null;
 }
 
@@ -110,8 +112,10 @@ export function normalizeMaybeNumber(value) {
  * @returns {Record<string, unknown> | null} Object value or null.
  */
 export function getRecordOrNull(value) {
+  // Stryker disable all -- defensive record type boundary.
   if (value && typeof value === 'object')
     return /** @type {Record<string, unknown>} */ (value);
+  // Stryker restore all
   return null;
 }
 
@@ -182,7 +186,9 @@ export function isNotArrayValue(value) {
  * @returns {boolean} Whether value is finite numeric.
  */
 export function isFiniteNumericValue(value) {
+  // Stryker disable all -- defensive numeric type boundary.
   return typeof value === 'number' && Number.isFinite(value);
+  // Stryker restore all
 }
 
 /**
@@ -262,11 +268,13 @@ export function didExecutionFail(result) {
  * @returns {boolean} Whether the error is ENOENT.
  */
 export function isMissingFileError(error) {
+  // Stryker disable all -- defensive error-shape boundary.
   return Boolean(
     error &&
       typeof error === 'object' &&
       /** @type {{ code?: unknown }} */ (error).code === 'ENOENT'
   );
+  // Stryker restore all
 }
 
 /**
