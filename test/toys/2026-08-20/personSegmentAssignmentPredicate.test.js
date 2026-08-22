@@ -54,4 +54,27 @@ describe('personSegmentAssignmentPredicate', () => {
       )
     ).toBe('false');
   });
+
+  test('ignores malformed assignments and rejects invalid intervals', () => {
+    expect(
+      personSegmentAssignmentPredicate(
+        input([null, [], {}, { personId: 'P1', segmentId: 'S1' }])
+      )
+    ).toBe('false');
+    const base = JSON.parse(input([]));
+    const invalid = {
+      ...base,
+      points: base.points.map(point =>
+        point.pointId === 'P2' ? { ...point, timestamp: 'bad' } : point
+      ),
+      proposedAssignment: { personId: 'P1', segmentId: 'S2' },
+    };
+    expect(personSegmentAssignmentPredicate(JSON.stringify(invalid))).toBe('false');
+    const reversed = {
+      ...base,
+      segments: [{ segmentId: 'BAD', startPointId: 'P2', endPointId: 'P1' }],
+      proposedAssignment: { personId: 'P1', segmentId: 'BAD' },
+    };
+    expect(personSegmentAssignmentPredicate(JSON.stringify(reversed))).toBe('false');
+  });
 });
