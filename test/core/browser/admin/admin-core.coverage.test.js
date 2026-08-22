@@ -462,20 +462,26 @@ describe('admin-core bootstrap coverage', () => {
       setItem: jest.fn(),
       removeItem: jest.fn(),
     };
+    const googleInitialize = jest.fn();
     const globalScope = {
       window: {
         matchMedia: jest.fn().mockReturnValue({
           matches: false,
           addEventListener: jest.fn(),
         }),
+        google: {
+          accounts: {
+            id: { initialize: googleInitialize, renderButton: jest.fn() },
+          },
+        },
       },
-      google: {},
       sessionStorage,
     };
     const doc = {
       getElementById: jest.fn().mockReturnValue(null),
       querySelectorAll: jest.fn().mockReturnValue([]),
     };
+    globalScope.document = doc;
     const fetchFn = jest.fn().mockResolvedValue({
       ok: true,
       status: 200,
@@ -504,6 +510,10 @@ describe('admin-core bootstrap coverage', () => {
 
     expect(initializeApp).toHaveBeenCalledTimes(1);
     expect(onAuthStateChanged).toHaveBeenCalledTimes(1);
+    await googleAuthModule.initGoogleSignIn();
+    await googleAuthModule.initGoogleSignIn();
+    expect(loadStaticConfig.mock.calls.length).toBeGreaterThanOrEqual(2);
+    expect(googleInitialize).toHaveBeenCalled();
   });
 
   it('skips Google sign-in initialization when config disables it in initAdminApp', async () => {
