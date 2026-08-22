@@ -57,4 +57,6 @@ function parseRequest(input) {
   };
 }
 // jscpd:ignore-end
+
+export { parseRequest };
 // jscpd:ignore-end

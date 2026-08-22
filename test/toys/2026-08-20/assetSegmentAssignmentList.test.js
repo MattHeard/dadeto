@@ -1,5 +1,8 @@
 import { describe, expect, test } from '@jest/globals';
-import { assetSegmentAssignmentList } from '../../../src/core/browser/toys/2026-08-20/assetSegmentAssignmentList.js';
+import {
+  assetSegmentAssignmentList,
+  parseRequest,
+} from '../../../src/core/browser/toys/2026-08-20/assetSegmentAssignmentList.js';
 
 const makeEnv = () => {
   let permanent = {};
@@ -98,5 +101,23 @@ describe('assetSegmentAssignmentList', () => {
     }), fixture.env));
     expect(result).toMatchObject({ appended: true, length: 1 });
     expect(fixture.state.temporary['42']).toEqual([{ assetId: 'A', segmentId: 'S' }]);
+  });
+
+  test('exposes exact parser guards for null requests, assignments, and paths', () => {
+    expect(() => parseRequest('null')).toThrow('Input must be a JSON object.');
+    expect(() => parseRequest(JSON.stringify({ path: 'items' }))).toThrow(
+      'An assignment object is required.'
+    );
+    expect(() => parseRequest(JSON.stringify({
+      path: ' ',
+      assignment: { assetId: 'A', segmentId: 'S' },
+    }))).toThrow('A path is required.');
+    expect(parseRequest(JSON.stringify({
+      path: 42,
+      assignment: { assetId: 'A', segmentId: 'S' },
+    }))).toEqual({
+      path: '42',
+      assignment: { assetId: 'A', segmentId: 'S' },
+    });
   });
 });
