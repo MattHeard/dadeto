@@ -648,11 +648,12 @@ it('covers WebHID no-device and no-HID guards', () => {
 
 it('covers WebHID connect and disconnect listener registration', async () => {
   const disposers = [];
+  let connectHandler;
   const dom = createDom();
   dom.globalThis.navigator = {
     hid: {
       addEventListener: jest.fn((type, handler) => {
-        handler({ device: null });
+        if (type === 'connect') connectHandler = handler;
       }),
       removeEventListener: jest.fn(),
       getDevices: jest.fn(async () => []),
@@ -664,21 +665,35 @@ it('covers WebHID connect and disconnect listener registration', async () => {
   const statusText = {};
   const metaIndex = {};
   const metaId = {};
+  const state = {
+    dom,
+    prompt,
+    subprompt,
+    dot,
+    statusText,
+    metaIndex,
+    metaId,
+    hidDevices: [],
+    hidSnapshot: null,
+  };
+  const logSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
 
-  initializeWebHidCapture(
-    {
-      dom,
-      prompt,
-      subprompt,
-      dot,
-      statusText,
-      metaIndex,
-      metaId,
-      hidSnapshot: null,
-    },
-    disposers
-  );
+  initializeWebHidCapture(state, disposers);
   await Promise.resolve();
+
+  connectHandler({ device: null });
+  expect(state.hidDevices).toEqual([]);
+
+  const device = { productName: 'Joy-Con' };
+  connectHandler({ device });
+  expect(state.hidDevices).toEqual([device]);
+  expect(dom.setTextContent).toHaveBeenCalled();
+  expect(logSpy).toHaveBeenCalledWith(
+    '[joyConMapper:webhid]',
+    'connected',
+    expect.objectContaining({ productName: 'Joy-Con' })
+  );
+  logSpy.mockRestore();
 
   expect(dom.globalThis.navigator.hid.addEventListener).toHaveBeenCalledWith(
     'connect',
