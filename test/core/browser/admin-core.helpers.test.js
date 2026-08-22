@@ -64,6 +64,10 @@ import {
   hasGetIdToken,
   canPreventDefault,
   isAdminUser,
+  getTokenSafely,
+  getValueFromInput,
+  getTrimmedInputValue,
+  parsePageVariantValue,
 } from '../../../src/core/browser/admin-core.js';
 
 describe('small admin-core predicates', () => {
@@ -83,6 +87,28 @@ describe('small admin-core predicates', () => {
     expect(isAdminUser({ uid: 'qcYSrXTaj1MZUoFsAloBwT86GNM2' })).toBe(true);
     expect(isAdminUser({ uid: 'other' })).toBe(false);
     expect(isAdminUser(undefined)).toBe(false);
+  });
+});
+
+describe('regeneration input helpers', () => {
+  it('normalizes token results while preserving only truthy tokens', async () => {
+    await expect(getTokenSafely({ getIdToken: () => 'token' })).resolves.toBe('token');
+    await expect(getTokenSafely({ getIdToken: () => '' })).resolves.toBeNull();
+    await expect(getTokenSafely({ getIdToken: () => null })).resolves.toBeNull();
+  });
+
+  it('reads string input values and safely handles non-string values or missing inputs', () => {
+    expect(getValueFromInput({ value: ' 123abc ' })).toBe(' 123abc ');
+    expect(getValueFromInput({ value: 123 })).toBe('');
+    expect(getTrimmedInputValue({ value: ' 123abc ' })).toBe('123abc');
+    expect(getTrimmedInputValue(null)).toBe('');
+  });
+
+  it('parses only numeric-page alphabetic-variant values', () => {
+    expect(parsePageVariantValue('123abc')).toEqual({ page: 123, variant: 'abc' });
+    expect(parsePageVariantValue('123')).toBeNull();
+    expect(parsePageVariantValue('abc123')).toBeNull();
+    expect(parsePageVariantValue('123abc-')).toBeNull();
   });
 });
 

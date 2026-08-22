@@ -1775,7 +1775,7 @@ function resolveValidPageVariant(doc, showMessage) {
  * @param {object} googleAuth Auth.
  * @returns {Promise<string | null>} Token.
  */
-async function getTokenSafely(googleAuth) {
+export async function getTokenSafely(googleAuth) {
   const auth =
     /** @type {{ getIdToken: () => Promise<string> | string | null | undefined }} */ (
       googleAuth
@@ -1934,7 +1934,7 @@ function parsePageVariantInput(inputElement) {
  * @param {object} inputElement Input.
  * @returns {string} Value.
  */
-function getValueFromInput(inputElement) {
+export function getValueFromInput(inputElement) {
   const el = /** @type {HTMLInputElement} */ (inputElement);
   const { value } = el;
   if (typeof value === 'string') {
@@ -1948,7 +1948,7 @@ function getValueFromInput(inputElement) {
  * @param {HTMLInputElement | null | undefined} inputElement - Element that may hold the regeneration string.
  * @returns {string} Trimmed value or an empty string when input is missing.
  */
-function getTrimmedInputValue(inputElement) {
+export function getTrimmedInputValue(inputElement) {
   if (!inputElement) {
     return '';
   }
@@ -1961,7 +1961,7 @@ function getTrimmedInputValue(inputElement) {
  * @param {string} value - Raw input string in the "123abc" format.
  * @returns {{page: number, variant: string} | null} Parsed page and variant when the value matches the expected format.
  */
-function parsePageVariantValue(value) {
+export function parsePageVariantValue(value) {
   const match = value.match(/^(\d+)([a-zA-Z]+)$/);
   if (!match) {
     return null;
