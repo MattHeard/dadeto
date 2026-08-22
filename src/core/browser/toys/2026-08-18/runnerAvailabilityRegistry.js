@@ -24,7 +24,7 @@ export const runnerAvailabilityRegistry = input =>
  * @returns {{runnerId: string, name: string, availability: Array<{from: string, to: string}>}|null} Normalized runner or null.
  */
 function normalizeRunner(value, index) {
-  if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
+  if (value === null || Array.isArray(value)) return null;
   const runner = /** @type {Record<string, unknown>} */ (value);
   const runnerId =
     trimmedStringOrEmpty(runner.runnerId) || `runner-${index + 1}`;
@@ -40,7 +40,7 @@ function normalizeRunner(value, index) {
  * @returns {{from: string, to: string}|null} Normalized window or null.
  */
 function normalizeWindow(value) {
-  if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
+  if (value === null || Array.isArray(value)) return null;
   const window = /** @type {Record<string, unknown>} */ (value);
   const from = trimmedStringOrEmpty(window.from);
   const to = trimmedStringOrEmpty(window.to);

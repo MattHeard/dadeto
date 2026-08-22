@@ -52,4 +52,19 @@ describe('runnerAvailabilityRegistry', () => {
       summary: { runnerCount: 0 },
     });
   });
+
+  test('ignores null, array, and scalar runner/window records', () => {
+    const result = JSON.parse(
+      runnerAvailabilityRegistry(JSON.stringify({
+        runners: [null, [], 0, { availability: [null, [], 0] }],
+      }))
+    );
+    expect(result).toEqual({
+      runners: [
+        { runnerId: 'runner-3', name: 'runner-3', availability: [] },
+        { runnerId: 'runner-4', name: 'runner-4', availability: [] },
+      ],
+      summary: { runnerCount: 2 },
+    });
+  });
 });
