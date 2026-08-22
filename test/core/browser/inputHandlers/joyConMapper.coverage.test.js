@@ -649,11 +649,13 @@ it('covers WebHID no-device and no-HID guards', () => {
 it('covers WebHID connect and disconnect listener registration', async () => {
   const disposers = [];
   let connectHandler;
+  let disconnectHandler;
   const dom = createDom();
   dom.globalThis.navigator = {
     hid: {
       addEventListener: jest.fn((type, handler) => {
         if (type === 'connect') connectHandler = handler;
+        if (type === 'disconnect') disconnectHandler = handler;
       }),
       removeEventListener: jest.fn(),
       getDevices: jest.fn(async () => []),
@@ -693,6 +695,14 @@ it('covers WebHID connect and disconnect listener registration', async () => {
     'connected',
     expect.objectContaining({ productName: 'Joy-Con' })
   );
+  disconnectHandler({ device });
+  expect(state.hidDevices).toEqual([]);
+  const remainingDevice = { productName: 'Other Joy-Con' };
+  state.hidDevices = [device, remainingDevice];
+  disconnectHandler({ device });
+  expect(state.hidDevices).toEqual([remainingDevice]);
+  disconnectHandler({ device: null });
+  expect(state.hidDevices).toEqual([remainingDevice]);
   logSpy.mockRestore();
 
   expect(dom.globalThis.navigator.hid.addEventListener).toHaveBeenCalledWith(
