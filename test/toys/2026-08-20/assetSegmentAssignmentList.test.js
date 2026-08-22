@@ -67,4 +67,23 @@ describe('assetSegmentAssignmentList', () => {
     );
     expect(result).toMatchObject({ appended: false });
   });
+
+  test.each([
+    ['null', 'Input must be a JSON object.'],
+    ['[]', 'Input must be a JSON object.'],
+    [JSON.stringify({ path: 'items' }), 'An assignment object is required.'],
+    [JSON.stringify({ path: 'items', assignment: [] }), 'An assignment object is required.'],
+    [JSON.stringify({ path: 'items', assignment: { assetId: 'A', segmentId: 'S' } }), ''],
+  ])('returns precise validation for %s', (value, error) => {
+    const result = JSON.parse(assetSegmentAssignmentList(value, makeEnv().env));
+    if (error) expect(result).toEqual({ appended: false, error });
+    else expect(result.appended).toBe(true);
+  });
+
+  test('rejects a blank path with its specific error', () => {
+    expect(JSON.parse(assetSegmentAssignmentList(input({ assetId: 'A', segmentId: 'S' }).replace('assetSegmentAssignments', '   '), makeEnv().env))).toEqual({
+      appended: false,
+      error: 'A path is required.',
+    });
+  });
 });
