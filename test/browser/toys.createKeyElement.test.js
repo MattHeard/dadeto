@@ -108,4 +108,26 @@ describe('createKeyElement', () => {
     disposer();
     expect(mockDom.removeEventListener).toHaveBeenCalledTimes(2);
   });
+
+  it('passes row data into the key input handler', () => {
+    const rowData = { rows: { old: 'value' }, rowTypes: { old: 'string' } };
+    const key = createKeyElement({
+      dom: mockDom,
+      key: 'old',
+      textInput: {},
+      rowData,
+      syncHiddenField,
+      disposers,
+    });
+    const handler = mockDom.addEventListener.mock.calls[0][2];
+    mockDom.getDataAttribute = jest.fn(() => 'old');
+    mockDom.getTargetValue = jest.fn(() => 'new');
+    handler({ target: {} });
+    expect(rowData.rows).toEqual({ new: 'value' });
+    expect(mockDom.setDataAttribute).toHaveBeenLastCalledWith(
+      key,
+      'prevKey',
+      'new'
+    );
+  });
 });

@@ -31,6 +31,10 @@ describe('createTypeToggleButton', () => {
     const disposers = [];
     createTypeToggleButton({ dom, typeSelectEl, disposers });
     expect(dom.createElement).toHaveBeenCalledWith('button');
+    const button = dom.createElement.mock.results[0].value;
+    expect(dom.setType).toHaveBeenCalledWith(button, 'button');
+    expect(dom.setTextContent).toHaveBeenCalledWith(button, '\u25be');
+    expect(dom.addClass).toHaveBeenCalledWith(button, 'kv-type-toggle');
   });
 
   it('hides the type select element initially', () => {
@@ -80,6 +84,16 @@ describe('createTypeToggleButton', () => {
     handler();
     handler();
     expect(dom.hide).toHaveBeenCalledTimes(2);
+    expect(dom.removeEventListener).not.toHaveBeenCalled();
+    const disposer = disposers[0];
+    const button = dom.createElement.mock.results[0].value;
+    const clickHandler = dom.addEventListener.mock.calls[0][2];
+    disposer();
+    expect(dom.removeEventListener).toHaveBeenCalledWith(
+      button,
+      'click',
+      clickHandler
+    );
   });
 });
 
@@ -97,6 +111,12 @@ describe('createTypeElement', () => {
       disposers,
     });
     expect(dom.createElement).toHaveBeenCalledWith('select');
+    const select = dom.createElement.mock.results[0].value;
+    expect(dom.addClass).toHaveBeenCalledWith(select, 'kv-type');
+    expect(dom.setClassName).toHaveBeenCalledWith(
+      expect.anything(),
+      'select-wrapper'
+    );
   });
 
   it('creates four option elements', () => {
@@ -183,6 +203,14 @@ describe('createTypeElement', () => {
       disposers,
     });
     expect(disposers).toHaveLength(1);
+    const select = dom.createElement.mock.results[0].value;
+    const changeHandler = dom.addEventListener.mock.calls[0][2];
+    disposers[0]();
+    expect(dom.removeEventListener).toHaveBeenCalledWith(
+      select,
+      'change',
+      changeHandler
+    );
   });
 
   it('updates rowTypes and calls syncHiddenField on change', () => {
@@ -209,5 +237,28 @@ describe('createTypeElement', () => {
     changeHandler();
     expect(rowData.rowTypes.myKey).toBe('number');
     expect(syncHiddenField).toHaveBeenCalledWith(textInput, rowData, dom);
+  });
+
+  it('uses the original key when the key element has no previous-key attribute', () => {
+    const dom = makeDom();
+    dom.getDataAttribute.mockReturnValue(undefined);
+    dom.getValue.mockReturnValue('json');
+    const syncHiddenField = jest.fn();
+    const rowData = { rows: {}, rowTypes: {} };
+    const textInput = {};
+    const keyEl = {};
+    createTypeElement({
+      dom,
+      key: 'fallback-key',
+      rowData,
+      textInput,
+      keyEl,
+      syncHiddenField,
+      disposers: [],
+    });
+    const [, , changeHandler] = dom.addEventListener.mock.calls[0];
+    changeHandler();
+    expect(rowData.rowTypes).toEqual({ 'fallback-key': 'json' });
+    expect(dom.getDataAttribute).toHaveBeenCalledWith(keyEl, 'prevKey');
   });
 });
