@@ -791,6 +791,44 @@ describe('admin document and auth helpers', () => {
       'fetchFn must be a function'
     );
   });
+
+  it('wires initAdmin and honors the disableGoogleSignIn configuration', async () => {
+    const makeDeps = (config, includeInitGoogleSignIn = true) => {
+      const googleAuthModule = {
+        getIdToken: jest.fn().mockResolvedValue('token'),
+        signOut: jest.fn().mockResolvedValue(),
+        ...(includeInitGoogleSignIn && { initGoogleSignIn: jest.fn() }),
+      };
+      const doc = {
+        getElementById: jest.fn().mockReturnValue(null),
+        querySelectorAll: jest.fn().mockReturnValue([]),
+      };
+      const loadStaticConfigFn = jest.fn().mockResolvedValue(config);
+      initAdmin({
+        googleAuthModule,
+        loadStaticConfigFn,
+        getAuthFn: jest.fn().mockReturnValue({ currentUser: null }),
+        onAuthStateChangedFn: jest.fn((auth, callback) => callback()),
+        doc,
+        fetchFn: jest.fn(),
+      });
+      return { googleAuthModule, doc };
+    };
+
+    const enabled = makeDeps({});
+    await Promise.resolve();
+    await Promise.resolve();
+    expect(enabled.googleAuthModule.initGoogleSignIn).toHaveBeenCalledTimes(1);
+    expect(enabled.doc.getElementById).toHaveBeenCalledWith('regenAuthorForm');
+
+    const disabled = makeDeps({ disableGoogleSignIn: true });
+    await Promise.resolve();
+    await Promise.resolve();
+    expect(disabled.googleAuthModule.initGoogleSignIn).not.toHaveBeenCalled();
+    expect(() => makeDeps({}, false)).toThrow(
+      'googleAuthModule must provide an initGoogleSignIn function'
+    );
+  });
 });
 
 describe('admin dependency validators', () => {
