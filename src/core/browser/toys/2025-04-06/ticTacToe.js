@@ -171,6 +171,13 @@ export function ticTacToeMove(input) {
   return handleValidMoves(moves);
 }
 
+export const ticTacToeTestOnly = {
+  getScoredMoves,
+  getBestScoredMove,
+  hasMoveFields,
+  applyMoveReducer,
+};
+
 /**
  * Continue processing when moves are valid.
  * @param {TicTacToeMove[]} moves - Moves array.

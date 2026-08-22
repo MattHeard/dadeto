@@ -1,5 +1,5 @@
 import { test, expect } from '@jest/globals';
-import { ticTacToeMove } from '../../../src/core/browser/toys/2025-04-06/ticTacToe.js';
+import { ticTacToeMove, ticTacToeTestOnly } from '../../../src/core/browser/toys/2025-04-06/ticTacToe.js';
 
 test('returns optimal move for invalid input', () => {
   const env = new Map();
@@ -10,6 +10,22 @@ test('returns optimal move for invalid input', () => {
     player: 'X',
     position: { row: 1, column: 1 },
   });
+});
+
+test('covers direct scoring defaults and required move fields', () => {
+  const empty = ticTacToeTestOnly.getBestScoredMove([]);
+  expect(empty).toEqual({ moveScore: -Infinity, move: { row: 0, column: 0 } });
+  expect(ticTacToeTestOnly.hasMoveFields({ player: 'X', position: {} })).toBe(true);
+  expect(ticTacToeTestOnly.hasMoveFields({ player: 'X' })).toBe(false);
+  expect(ticTacToeTestOnly.hasMoveFields({ position: {} })).toBe(false);
+  const fullBoard = [['X', 'O', 'X'], ['O', 'X', 'O'], ['X', 'O', 'X']];
+  expect(ticTacToeTestOnly.getScoredMoves(fullBoard, 'X', [])).toEqual([]);
+  const reducer = ticTacToeTestOnly.applyMoveReducer(
+    [{ player: 'X', position: { row: 0, column: 0 } }],
+    [[null, null, null], [null, null, null], [null, null, null]],
+    new Set()
+  );
+  expect(reducer(null, undefined, 0)).toEqual({ valid: true, earlyWin: false, stop: false });
 });
 
 test('minimax early tie return is triggered', () => {
