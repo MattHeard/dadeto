@@ -185,6 +185,13 @@ describe('fulfillment primitives', () => {
   test('AREA2 rejects malformed, missing, and incomplete segment input', () => {
     expect(wgs84CircleSegmentPredicate('not json')).toBe('false');
     expect(wgs84CircleSegmentPredicate('{}')).toBe('false');
+    expect(wgs84CircleSegmentPredicate('null')).toBe('false');
+    expect(wgs84CircleSegmentPredicate(JSON.stringify({ points: {}, segment: {} }))).toBe(
+      'false'
+    );
+    expect(wgs84CircleSegmentPredicate(JSON.stringify({ points: [], segment: null }))).toBe(
+      'false'
+    );
     expect(wgs84CircleSegmentPredicate(JSON.stringify({ points }))).toBe(
       'false'
     );
@@ -406,6 +413,18 @@ describe('fulfillment primitives', () => {
     ).toBe('false');
     expect(
       wgs84CircleSegmentPredicate(JSON.stringify({ points, segment: {} }))
+    ).toBe('false');
+    expect(
+      wgs84CircleSegmentPredicate(JSON.stringify({
+        points,
+        segment: { startPointId: 'missing', endPointId: points[0].pointId },
+      }))
+    ).toBe('false');
+    expect(
+      wgs84CircleSegmentPredicate(JSON.stringify({
+        points,
+        segment: { startPointId: points[0].pointId, endPointId: 'missing' },
+      }))
     ).toBe('false');
     expect(
       JSON.parse(
