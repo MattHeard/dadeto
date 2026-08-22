@@ -126,7 +126,7 @@ function startAnimation(id, text) {
  * @param {string} text The text content to assign.
  * @returns {HTMLElement} The created element.
  */
-function createTextElement(tagName, text) {
+export function createTextElement(tagName, text) {
   const el = moderateDocument.createElement(tagName);
   el.textContent = text || '';
   return el;
@@ -197,7 +197,7 @@ function renderVariant(data) {
  * @param {boolean} retried Whether a retry has already occurred.
  * @returns {boolean} True if a retry should be attempted.
  */
-function shouldRetryLoad(err, retried) {
+export function shouldRetryLoad(err, retried) {
   if (retried) return false;
   return Boolean(
     err && typeof err.message === 'string' && err.message.includes('HTTP 404')
@@ -348,7 +348,7 @@ const fetchJson = async (url, init) => {
  * @param {{ text?: () => Promise<string> }} response Fetch response.
  * @returns {Promise<string>} Response text or an empty string.
  */
-async function readErrorResponseBody(response) {
+export async function readErrorResponseBody(response) {
   if (typeof response.text !== 'function') {
     return '';
   }
@@ -362,7 +362,7 @@ async function readErrorResponseBody(response) {
  * @param {string} body Response body text.
  * @returns {string} Error message.
  */
-function formatHttpErrorMessage(status, body) {
+export function formatHttpErrorMessage(status, body) {
   const snippet = body.trim().slice(0, 300);
   if (!snippet) {
     return `HTTP ${status}`;
