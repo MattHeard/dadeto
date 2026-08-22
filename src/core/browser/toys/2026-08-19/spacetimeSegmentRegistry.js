@@ -31,3 +31,5 @@ function normalizeSegment(value) {
   if (!segmentId || !startPointId || !endPointId) return null;
   return { segmentId, startPointId, endPointId };
 }
+
+export { normalizeSegment };
