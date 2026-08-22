@@ -9,6 +9,7 @@ import {
   bindTriggerStatsClick,
   createAdminEndpointsPromise,
   createGetAdminEndpoints,
+  createGetAdminEndpointsFromStaticConfig,
   createTriggerRender,
   createTriggerStats,
   createRegenerateVariant,
@@ -179,6 +180,38 @@ describe('admin token and global helper resolution', () => {
     expect(
       isAdminToken('header.a-b_c.signature', jsonParser, decodeBase64)
     ).toBe(false);
+    expect(decodeBase64).toHaveBeenCalledTimes(1);
+    expect(decodeBase64).toHaveBeenCalledWith('a+b/c');
+  });
+
+  it('rejects an invalid endpoint-loader value and uses defaults', async () => {
+    await expect(createAdminEndpointsPromise(null)).resolves.toEqual(
+      expect.objectContaining({
+        triggerRenderContentsUrl: expect.any(String),
+        markVariantDirtyUrl: expect.any(String),
+        generateStatsUrl: expect.any(String),
+      })
+    );
+  });
+
+  it('loads static admin endpoints through the returned getter', async () => {
+    const loadStaticConfig = jest.fn().mockResolvedValue({
+      triggerRenderContentsUrl: '/trigger',
+      markVariantDirtyUrl: '/dirty',
+      generateStatsUrl: '/stats',
+    });
+    const getAdminEndpoints = createGetAdminEndpointsFromStaticConfig(
+      loadStaticConfig
+    );
+
+    await expect(getAdminEndpoints()).resolves.toEqual({
+      triggerRenderContentsUrl: '/trigger',
+      markVariantDirtyUrl: '/dirty',
+      generateStatsUrl: '/stats',
+    });
+    expect(loadStaticConfig).toHaveBeenCalledTimes(1);
+    await getAdminEndpoints();
+    expect(loadStaticConfig).toHaveBeenCalledTimes(1);
   });
 
   it('rejects tokens whose payload cannot be decoded', () => {
