@@ -8,6 +8,8 @@ import {
   toggleApproveReject,
   appendOptionsList,
   renderVariant,
+  startAnimation,
+  enableModerationButtons,
   fetchJson,
 } from '../../../src/core/browser/moderate.js';
 
@@ -70,6 +72,13 @@ describe('moderate pure helper contracts', () => {
     toggleApproveReject(false);
     expect(approve.disabled).toBe(false);
     expect(reject.disabled).toBe(false);
+    expect(approve.disabled).toBe(false);
+  });
+
+  it('safely handles a missing animation element', () => {
+    const documentObj = { getElementById: () => null };
+    createModerateHandle({ documentObj, fetchFn: jest.fn(), sessionStorageObj: {}, globalObject: {} });
+    expect(startAnimation('missing', 'Loading')).toEqual(expect.any(Function));
   });
 
   it('renders option lists with and without target page numbers', () => {
@@ -131,6 +140,22 @@ describe('moderate pure helper contracts', () => {
     ).toEqual(['Title', 'By Author', 'Body']);
     expect(elements.get('approveBtn').disabled).toBe(false);
     expect(elements.get('rejectBtn').disabled).toBe(false);
+  });
+
+  it('renders empty optional fields and requires both action buttons', () => {
+    const pageContent = { style: {}, appendChild: jest.fn(), innerHTML: '' };
+    const approve = { disabled: true };
+    const reject = { disabled: true };
+    const documentObj = {
+      getElementById: id => ({ pageContent, approveBtn: approve, rejectBtn: reject }[id] ?? null),
+      createElement: tag => ({ tag, textContent: '', appendChild: jest.fn() }),
+    };
+    createModerateHandle({ documentObj, fetchFn: jest.fn(), sessionStorageObj: {}, globalObject: {} });
+    renderVariant({});
+    expect(pageContent.appendChild.mock.calls.map(([element]) => element.textContent)).toEqual(['', '', '']);
+    enableModerationButtons();
+    expect(typeof approve.onclick).toBe('function');
+    expect(typeof reject.onclick).toBe('function');
   });
 
   it('fetches JSON and preserves successful response metadata', async () => {
