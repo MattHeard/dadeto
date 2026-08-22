@@ -15,6 +15,7 @@ import {
   initAdminApp,
   getCurrentUser,
   getStatusParagraph,
+  hasRequiredGoogleIdentityMethods,
   isAdminWithDeps,
   setupFirebase,
   updateAuthControlsDisplay,
@@ -357,6 +358,15 @@ describe('admin-core additional coverage', () => {
     const doc = { getElementById: jest.fn().mockReturnValue(paragraph) };
     expect(getStatusParagraph(doc)).toBe(paragraph);
     expect(doc.getElementById).toHaveBeenCalledWith('renderStatus');
+  });
+
+  it('requires both Google Identity methods', () => {
+    expect(
+      hasRequiredGoogleIdentityMethods({ initialize: jest.fn(), renderButton: jest.fn() })
+    ).toBe(true);
+    expect(hasRequiredGoogleIdentityMethods({ initialize: jest.fn() })).toBe(false);
+    expect(hasRequiredGoogleIdentityMethods({ renderButton: jest.fn() })).toBe(false);
+    expect(hasRequiredGoogleIdentityMethods({})).toBe(false);
   });
 });
 
