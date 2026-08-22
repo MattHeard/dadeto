@@ -82,8 +82,14 @@ const errorBeaconHandlers = errorBeacon.createErrorBeaconHandlers({
       ),
     '/errors'
   ),
-  getUrl: () => moderateGlobalObject?.location?.href ?? '',
-  getUserAgent: () => moderateGlobalObject?.navigator?.userAgent ?? '',
+  getUrl: () => {
+    if (moderateGlobalObject === null) return '';
+    return moderateGlobalObject.location ? moderateGlobalObject.location.href : '';
+  },
+  getUserAgent: () => {
+    if (moderateGlobalObject === null) return '';
+    return moderateGlobalObject.navigator ? moderateGlobalObject.navigator.userAgent : '';
+  },
   getNow: () => Date.now(),
   logError: console.error.bind(console),
 });

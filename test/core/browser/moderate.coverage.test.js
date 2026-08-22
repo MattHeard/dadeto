@@ -14,6 +14,7 @@ let mockIntervalCallback;
 let mockLoadDeps;
 let mockAllowNoToken = false;
 let mockIsAdmin = true;
+let mockBeaconOptions;
 
 jest.unstable_mockModule(
   '../../../src/core/browser/load-static-config-core.js',
@@ -73,6 +74,7 @@ jest.unstable_mockModule('../../../src/core/browser/error-beacon.js', () => ({
     return jest.fn();
   },
   createErrorBeaconHandlers: jest.fn(options => {
+    mockBeaconOptions = options;
     options.reportBeacon?.();
     options.getUrl();
     options.getUserAgent();
@@ -236,6 +238,9 @@ describe('moderate core', () => {
   });
 
   it('handles disabled sign-in and the authed fetch adapter', async () => {
+    expect(mockBeaconOptions.getUrl()).toBe('');
+    expect(mockBeaconOptions.getUserAgent()).toBe('');
+    expect(typeof mockBeaconOptions.getNow()).toBe('number');
     createModerateHandle({
       documentObj: mockDocument,
       fetchFn: mockFetch,
