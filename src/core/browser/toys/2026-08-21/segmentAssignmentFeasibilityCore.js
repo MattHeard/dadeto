@@ -1,5 +1,4 @@
 // Shared pure feasibility helpers for safe segment assignment toys.
-/* istanbul ignore file -- exercised through the toy integration suite. */
 // jscpd:ignore-start
 /* eslint-disable jsdoc/require-returns, jsdoc/require-param-description, jsdoc/require-param-type */
 
@@ -75,9 +74,7 @@ export function evaluateWorldLine(
         (a, b) =>
           a.startTime - b.startTime || a.segmentId.localeCompare(b.segmentId)
       );
-    // The candidate segment is always included above, so this is defensive only.
-    /* istanbul ignore next */
-    if (!resolved.length) return { feasible: false, reason: 'no-segments' };
+    // resolveSegment above throws unless the candidate contributes a segment.
     const entryTime = Date.parse(String(entryPoint.timestamp));
     if (!Number.isFinite(entryTime))
       return { feasible: false, reason: 'invalid-entry-point' };
@@ -107,7 +104,7 @@ export function evaluateWorldLine(
   } catch (error) {
     return {
       feasible: false,
-      reason: error instanceof Error ? error.message : String(error),
+      reason: error.message,
     };
   }
 }
@@ -127,13 +124,10 @@ function bridge(previousPoint, nextSegmentOrPoint, previousTime) {
       previousPoint.pointId === nextSegmentOrPoint.startPointId ||
       previousPoint.pointId === nextSegmentOrPoint.pointId
     );
-  if (previousTime < nextTime)
-    return sameLocation(
-      previousPoint,
-      nextSegmentOrPoint.start ?? nextSegmentOrPoint
-    );
-  /* istanbul ignore next -- resolved segments are sorted chronologically. */
-  return false;
+  return sameLocation(
+    previousPoint,
+    nextSegmentOrPoint.start ?? nextSegmentOrPoint
+  );
 }
 
 /**

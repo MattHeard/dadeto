@@ -1,5 +1,4 @@
 // Toy: Segment Maximum-Speed Feasibility
-/* istanbul ignore file -- exercised through the toy integration suite. */
 // jscpd:ignore-start
 /* eslint-disable jsdoc/require-returns */
 import { wgs84Distance } from '../2026-08-20/wgs84Distance.js';
@@ -48,7 +47,7 @@ export function segmentMaximumSpeedFeasibility(input) {
   } catch (error) {
     return JSON.stringify({
       feasible: false,
-      reason: error instanceof Error ? error.message : String(error),
+      reason: error.message,
     });
   }
 }

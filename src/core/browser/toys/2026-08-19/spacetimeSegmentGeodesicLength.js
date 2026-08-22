@@ -28,7 +28,7 @@ export function spacetimeSegmentGeodesicLength(input) {
   } catch (error) {
     return JSON.stringify({
       valid: false,
-      error: error instanceof Error ? error.message : String(error),
+      error: error.message,
     });
   }
 }
@@ -43,7 +43,7 @@ export function spacetimeSegmentGeodesicLength(input) {
  * @returns {{points: Array<{pointId: string, latitude: number, longitude: number}>, segment: {startPointId: string, endPointId: string}}} Parsed payload.
  */
 function parseInput(input) {
-  const parsed = JSON.parse(input || '{}');
+  const parsed = JSON.parse(input);
   if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
     throw new Error('Input must be a JSON object.');
   }

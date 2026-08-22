@@ -14,8 +14,16 @@ describe('revealBetaArticles', () => {
     revealBetaArticles(dom);
 
     expect(dom.querySelectorAll).toHaveBeenCalledWith('article.release-beta');
-    expect(dom.removeClass).toHaveBeenNthCalledWith(1, articles[0], 'release-beta');
-    expect(dom.removeClass).toHaveBeenNthCalledWith(2, articles[1], 'release-beta');
+    expect(dom.removeClass).toHaveBeenNthCalledWith(
+      1,
+      articles[0],
+      'release-beta'
+    );
+    expect(dom.removeClass).toHaveBeenNthCalledWith(
+      2,
+      articles[1],
+      'release-beta'
+    );
     expect(dom.reveal).toHaveBeenNthCalledWith(1, articles[0]);
     expect(dom.reveal).toHaveBeenNthCalledWith(2, articles[1]);
   });

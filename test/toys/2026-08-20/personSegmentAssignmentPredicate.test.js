@@ -40,4 +40,18 @@ describe('personSegmentAssignmentPredicate', () => {
         input([{ personId: 'P2', segmentId: 'S1' }])
       )
     ).toBe('true'));
+
+  test('returns false for malformed requests and missing references', () => {
+    expect(personSegmentAssignmentPredicate('{')).toBe('false');
+    expect(
+      personSegmentAssignmentPredicate(
+        input([{ personId: 'P1', segmentId: 'missing' }])
+      )
+    ).toBe('false');
+    expect(
+      personSegmentAssignmentPredicate(
+        JSON.stringify({ ...JSON.parse(input([])), proposedAssignment: {} })
+      )
+    ).toBe('false');
+  });
 });

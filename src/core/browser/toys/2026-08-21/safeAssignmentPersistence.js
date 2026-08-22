@@ -1,5 +1,4 @@
 // Shared atomic append helper for safe assignment writers.
-/* istanbul ignore file -- exercised through the toy integration suite. */
 // jscpd:ignore-start
 import { deepClone } from '../../browser-core.js';
 import { requireEnvHelper } from '../browserToysCore.js';

@@ -24,7 +24,7 @@ export function assetSegmentAssignmentList(input, env) {
   } catch (error) {
     return JSON.stringify({
       appended: false,
-      error: error instanceof Error ? error.message : String(error),
+      error: error.message,
     });
   }
 }
@@ -35,7 +35,7 @@ export function assetSegmentAssignmentList(input, env) {
  */
 // jscpd:ignore-start — request parsing intentionally mirrors MEMO4's JSON boundary.
 function parseRequest(input) {
-  const request = JSON.parse(input || '{}');
+  const request = JSON.parse(input);
   if (!request || typeof request !== 'object' || Array.isArray(request)) {
     throw new Error('Input must be a JSON object.');
   }

@@ -160,39 +160,79 @@ describe('gamepadCaptureHandler', () => {
 
 describe('gamepad capture pure helpers', () => {
   it('preserves helper boundary behavior', () => {
-    const gamepad = createGamepad({ buttons: [{ pressed: false, value: 0 }], axes: [0] });
-    expect(gamepadCaptureTestOnly.buildGamepadMetadata(gamepad, {
-      connected: true,
-      dom: { getGamepads: () => [gamepad] },
-    })).toMatchObject({
+    const gamepad = createGamepad({
+      buttons: [{ pressed: false, value: 0 }],
+      axes: [0],
+    });
+    expect(
+      gamepadCaptureTestOnly.buildGamepadMetadata(gamepad, {
+        connected: true,
+        dom: { getGamepads: () => [gamepad] },
+      })
+    ).toMatchObject({
       gamepadIndex: 0,
       connected: true,
     });
     expect(gamepadCaptureTestOnly.didAxisChange(0, 0.01)).toBe(true);
     expect(gamepadCaptureTestOnly.didAxisChange(0, 0.009)).toBe(false);
     expect(gamepadCaptureTestOnly.didAxisChange(0.2, 0.2)).toBe(false);
-    expect(gamepadCaptureTestOnly.didButtonChange({ pressed: false, value: 0 }, { pressed: true, value: 0 })).toBe(true);
-    expect(gamepadCaptureTestOnly.hasButtonValueChanged({ pressed: true, value: 0 }, { pressed: true, value: 1 })).toBe(true);
+    expect(
+      gamepadCaptureTestOnly.didButtonChange(
+        { pressed: false, value: 0 },
+        { pressed: true, value: 0 }
+      )
+    ).toBe(true);
+    expect(
+      gamepadCaptureTestOnly.hasButtonValueChanged(
+        { pressed: true, value: 0 },
+        { pressed: true, value: 1 }
+      )
+    ).toBe(true);
     expect(gamepadCaptureTestOnly.getPreviousButtons(undefined)).toEqual([]);
-    expect(gamepadCaptureTestOnly.didTrackedAxisChange(undefined, 0.02)).toBe(true);
+    expect(gamepadCaptureTestOnly.didTrackedAxisChange(undefined, 0.02)).toBe(
+      true
+    );
     expect(gamepadCaptureTestOnly.didTrackedAxisChange(0.5, 0.5)).toBe(false);
     expect(gamepadCaptureTestOnly.isPresentGamepad(gamepad)).toBe(true);
     expect(gamepadCaptureTestOnly.isPresentGamepad(null)).toBe(false);
-    expect(gamepadCaptureTestOnly.toConnectedGamepads([gamepad, null])).toEqual([gamepad]);
+    expect(gamepadCaptureTestOnly.toConnectedGamepads([gamepad, null])).toEqual(
+      [gamepad]
+    );
     const state = { snapshots: { 0: { old: true } }, animationFrameId: 3 };
     gamepadCaptureTestOnly.resetSnapshots(state);
     expect(state.snapshots).toEqual({});
-    expect(gamepadCaptureTestOnly.shouldQueuePoll({ capturing: true, animationFrameId: null })).toBe(true);
-    expect(gamepadCaptureTestOnly.shouldQueuePoll({ capturing: true, animationFrameId: 3 })).toBe(false);
-    expect(gamepadCaptureTestOnly.shouldQueuePoll({ capturing: false, animationFrameId: null })).toBe(false);
+    expect(
+      gamepadCaptureTestOnly.shouldQueuePoll({
+        capturing: true,
+        animationFrameId: null,
+      })
+    ).toBe(true);
+    expect(
+      gamepadCaptureTestOnly.shouldQueuePoll({
+        capturing: true,
+        animationFrameId: 3,
+      })
+    ).toBe(false);
+    expect(
+      gamepadCaptureTestOnly.shouldQueuePoll({
+        capturing: false,
+        animationFrameId: null,
+      })
+    ).toBe(false);
     gamepadCaptureTestOnly.storeSnapshot(state, gamepad);
-    expect(state.snapshots[0]).toEqual({ axes: [0], buttons: [{ pressed: false, value: 0 }] });
+    expect(state.snapshots[0]).toEqual({
+      axes: [0],
+      buttons: [{ pressed: false, value: 0 }],
+    });
     const event = { preventDefault: jest.fn() };
     gamepadCaptureTestOnly.preventDefault(event);
     expect(event.preventDefault).toHaveBeenCalledTimes(1);
     gamepadCaptureTestOnly.preventDefault({});
     const cancelAnimationFrame = jest.fn();
-    const cleanupState = { animationFrameId: 9, snapshots: { 0: { axes: [1] } } };
+    const cleanupState = {
+      animationFrameId: 9,
+      snapshots: { 0: { axes: [1] } },
+    };
     gamepadCaptureTestOnly.createGamepadCleanupHandler({
       state: cleanupState,
       dom: { cancelAnimationFrame },
@@ -244,7 +284,9 @@ describe('gamepad capture pure helpers', () => {
       },
       { gamepad: connectedLifecycleGamepad }
     );
-    expect(connectedLifecycleDom.requestAnimationFrame).toHaveBeenCalledTimes(1);
+    expect(connectedLifecycleDom.requestAnimationFrame).toHaveBeenCalledTimes(
+      1
+    );
   });
 });
 
@@ -299,9 +341,9 @@ describe('gamepad capture events', () => {
           { pressed: false, value: 0 },
         ],
       });
-      expect(JSON.parse(readStoredOrElementValue(textInput))).not.toHaveProperty(
-        'connectedGamepads'
-      );
+      expect(
+        JSON.parse(readStoredOrElementValue(textInput))
+      ).not.toHaveProperty('connectedGamepads');
       expect(frames).toHaveLength(1);
       expect(logSpy).toHaveBeenCalledWith('[gamepadCapture]', 'connected', {
         index: 0,
@@ -372,12 +414,16 @@ describe('gamepad capture events', () => {
         ],
       });
       expect(frames).toHaveLength(framesBeforeDisconnect);
-      expect(logSpy).toHaveBeenLastCalledWith('[gamepadCapture]', 'disconnected', {
-        index: 0,
-        id: 'Nintendo Joy-Con (R)',
-        mapping: 'standard',
-        connected: false,
-      });
+      expect(logSpy).toHaveBeenLastCalledWith(
+        '[gamepadCapture]',
+        'disconnected',
+        {
+          index: 0,
+          id: 'Nintendo Joy-Con (R)',
+          mapping: 'standard',
+          connected: false,
+        }
+      );
       const state = { snapshots: { 0: { connected: true } } };
       gamepadCaptureTestOnly.removeSnapshot(state, null);
       expect(state.snapshots).toEqual({ 0: { connected: true } });
@@ -1055,3 +1101,4 @@ describe('escape handling', () => {
     }
   });
 });
+/* eslint max-lines-per-function: off, max-statements: off */

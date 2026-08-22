@@ -282,7 +282,11 @@ describe('createBlogDataController', () => {
   it('normalizes a non-callable warning logger to a no-op', () => {
     const controller = createBlogDataController(() => ({
       fetch: jest.fn(),
-      loggers: { logInfo: jest.fn(), logError: jest.fn(), logWarning: 'invalid' },
+      loggers: {
+        logInfo: jest.fn(),
+        logError: jest.fn(),
+        logWarning: 'invalid',
+      },
     }));
     const state = createState();
     state.blogStatus = 'error';

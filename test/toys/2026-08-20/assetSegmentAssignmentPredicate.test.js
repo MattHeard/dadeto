@@ -63,4 +63,13 @@ describe('assetSegmentAssignmentPredicate', () => {
       'false'
     );
   });
+
+  test('returns false for malformed requests and invalid proposed assignments', () => {
+    expect(assetSegmentAssignmentPredicate('{')).toBe('false');
+    expect(
+      assetSegmentAssignmentPredicate(
+        JSON.stringify({ ...base, assignments: [], proposedAssignment: {} })
+      )
+    ).toBe('false');
+  });
 });

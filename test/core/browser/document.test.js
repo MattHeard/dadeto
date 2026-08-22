@@ -63,7 +63,14 @@ const createDocumentFixture = () => {
     globalThisObj,
     navigatorObj,
   });
-  return { documentObj, element, globalThisObj, navigatorObj, windowObj, handle };
+  return {
+    documentObj,
+    element,
+    globalThisObj,
+    navigatorObj,
+    windowObj,
+    handle,
+  };
 };
 
 describe('document facade', () => {
@@ -121,7 +128,7 @@ describe('document facade', () => {
   });
 
   it('delegates child, timer, and browser operations', () => {
-    const { element, globalThisObj, windowObj, handle } = createDocumentFixture();
+    const { element, globalThisObj, handle } = createDocumentFixture();
     const callback = jest.fn();
     handle.removeAllChildren(element);
     const child = { firstChild: null, removeChild: jest.fn() };
@@ -153,7 +160,8 @@ describe('document facade', () => {
   });
 
   it('delegates state, metadata, and module helpers', async () => {
-    const { element, globalThisObj, windowObj, handle } = createDocumentFixture();
+    const { element, globalThisObj, windowObj, handle } =
+      createDocumentFixture();
     const callback = jest.fn();
     const event = {
       currentTarget: 'current',
@@ -216,12 +224,12 @@ describe('document facade', () => {
     expect(
       handle.getInteractiveComponents({ interactiveComponents: [element] })
     ).toEqual([element]);
-    expect(handle.hasNoInteractiveComponents({ interactiveComponents: [] })).toBe(
-      true
-    );
-    expect(handle.getInteractiveComponentCount({ interactiveComponents: [] })).toBe(
-      0
-    );
+    expect(
+      handle.hasNoInteractiveComponents({ interactiveComponents: [] })
+    ).toBe(true);
+    expect(
+      handle.getInteractiveComponentCount({ interactiveComponents: [] })
+    ).toBe(0);
     await expect(
       new Promise((resolve, reject) => {
         handle.dom.importModule(
@@ -267,8 +275,9 @@ describe('document facade', () => {
       'navigator.getGamepads is not a function'
     );
     expect(empty.hasBetaParam()).toBe(false);
-    expect(empty.hasNoInteractiveComponents({ interactiveComponents: [] })).toBe(
-      true
-    );
+    expect(
+      empty.hasNoInteractiveComponents({ interactiveComponents: [] })
+    ).toBe(true);
   });
 });
+/* eslint max-statements: off */

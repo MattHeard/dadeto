@@ -43,7 +43,7 @@ export function personSegmentAssignmentPredicate(input) {
  * @returns {{points: Array<{pointId: string, timestamp: string}>, segments: Array<{segmentId: string, startPointId: string, endPointId: string}>, assignments: Array<{personId: string, segmentId: string}>, proposedAssignment: {personId: string, segmentId: string}}} Parsed request.
  */
 function parseRequest(input) {
-  const request = JSON.parse(input || '{}');
+  const request = JSON.parse(input);
   if (
     !request ||
     typeof request !== 'object' ||

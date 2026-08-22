@@ -5,7 +5,7 @@ import { formatToyError } from '../formatToyError.js';
 /** @param {string} input JSON with points, segments, and two IDs. @returns {string} JSON boolean. */
 export function spacetimeWorldLinePairPredicate(input) {
   try {
-    const x = JSON.parse(input || '{}');
+    const x = JSON.parse(input);
     const points = new Map((x.points || []).map(p => [p.pointId, p]));
     const segments = new Map((x.segments || []).map(s => [s.segmentId, s]));
     const a = interval(segments, points, x.firstSegmentId);
@@ -19,7 +19,7 @@ export function spacetimeWorldLinePairPredicate(input) {
     return 'true';
   } catch (error) {
     return formatToyError(
-      error instanceof Error ? error.message : String(error)
+      error.message
     );
   }
 }

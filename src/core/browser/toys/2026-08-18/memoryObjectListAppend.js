@@ -40,7 +40,7 @@ export function memoryObjectListAppend(input, env) {
  * @returns {{memoryLocation: string, path: string, object: Record<string, unknown>}} Parsed request.
  */
 function parseRequest(input) {
-  const request = JSON.parse(input || '{}');
+  const request = JSON.parse(input);
   if (!request || typeof request !== 'object' || Array.isArray(request)) {
     throw new Error('Input must be a JSON object.');
   }

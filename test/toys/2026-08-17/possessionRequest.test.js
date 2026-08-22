@@ -63,4 +63,27 @@ describe('possessionRequest', () => {
       ],
     });
   });
+
+  test('rejects non-object locations and non-finite coordinates', () => {
+    const result = JSON.parse(
+      possessionRequest(
+        JSON.stringify({
+          sku: 42,
+          deliveryLocation: [],
+          deliveryTime: '2026-02-30T18:00',
+          pickupLocation: { lat: '52', lon: null },
+          pickupTime: null,
+        })
+      )
+    );
+    expect(result.valid).toBe(false);
+    expect(result.errors).toEqual([
+      'sku must be a non-empty string',
+      'deliveryLocation must contain numeric lat and lon',
+      'deliveryTime must be a valid UTC minute like 2026-08-21T18:00Z',
+      'pickupLocation.lat must be between -90 and 90',
+      'pickupLocation.lon must be between -180 and 180',
+      'pickupTime must be a valid UTC minute like 2026-08-21T18:00Z',
+    ]);
+  });
 });

@@ -77,13 +77,19 @@ describe('createSectionSetter mutation contract', () => {
   });
 
   it.each([new Error('boom'), 'boom'])(
-    'formats thrown values from the merge path: %p', thrown => {
+    'formats thrown values from the merge path: %p',
+    thrown => {
       const setter = createSectionSetter('section');
       const result = setter(
         '{}',
         new Map([
           ['getData', () => ({ section: {} })],
-          ['setLocalTemporaryData', () => { throw thrown; }],
+          [
+            'setLocalTemporaryData',
+            () => {
+              throw thrown;
+            },
+          ],
         ])
       );
 

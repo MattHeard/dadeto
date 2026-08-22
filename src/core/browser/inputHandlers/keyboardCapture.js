@@ -157,7 +157,7 @@ const buildKeyboardCaptureFormContext = ({
   container,
   textInput,
 }) => {
-  const state = {};
+  const state = { capturing: false };
   const autoSubmitCheckbox = captureLifecycleDeps.getAutoSubmitCheckbox(
     container,
     dom

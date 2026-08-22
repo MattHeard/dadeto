@@ -7,10 +7,8 @@ import { parseJsonOrNull } from '../commonCore.js';
  * @returns {number} Normalized number.
  */
 export function numberOr(value, fallback) {
-  return valueOrFallback(
-    value,
-    fallback,
-    candidate => Number.isFinite(candidate)
+  return valueOrFallback(value, fallback, candidate =>
+    Number.isFinite(candidate)
   );
 }
 
@@ -21,14 +19,10 @@ export function numberOr(value, fallback) {
  * @returns {string} Normalized string.
  */
 export function stringOr(value, fallback) {
-  return valueOrFallback(
-    value,
-    fallback,
-    candidate => {
-      if (typeof candidate === 'string') return candidate.length > 0;
-      return false;
-    }
-  );
+  return valueOrFallback(value, fallback, candidate => {
+    if (typeof candidate === 'string') return candidate.length > 0;
+    return false;
+  });
 }
 
 /**

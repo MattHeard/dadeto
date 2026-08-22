@@ -1,5 +1,4 @@
 // Toy: Segment Assignment Feasibility
-/* istanbul ignore file -- exercised through the toy integration suite. */
 // jscpd:ignore-start
 /* eslint-disable jsdoc/require-returns */
 import { evaluateWorldLine } from './segmentAssignmentFeasibilityCore.js';
@@ -20,7 +19,7 @@ export function segmentAssignmentFeasibility(input) {
   } catch (error) {
     return JSON.stringify({
       feasible: false,
-      reason: error instanceof Error ? error.message : String(error),
+      reason: error.message,
     });
   }
 }

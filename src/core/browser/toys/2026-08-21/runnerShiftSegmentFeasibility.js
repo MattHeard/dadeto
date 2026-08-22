@@ -1,5 +1,4 @@
 // Toy: Runner Shift Segment Feasibility
-/* istanbul ignore file -- exercised through the toy integration suite. */
 // jscpd:ignore-start
 /* eslint-disable jsdoc/require-returns, jsdoc/require-param-description */
 import {
@@ -47,7 +46,7 @@ export function runnerShiftSegmentFeasibility(input) {
   } catch (error) {
     return JSON.stringify({
       feasible: false,
-      reason: error instanceof Error ? error.message : String(error),
+      reason: error.message,
     });
   }
 }

@@ -1,5 +1,4 @@
 // Toy: Assign Asset to Segment if Feasible
-/* istanbul ignore file -- exercised through the toy integration suite. */
 // jscpd:ignore-start
 /* eslint-disable jsdoc/require-returns, jsdoc/require-param-description, jsdoc/require-param-type */
 import { evaluateWorldLine } from './segmentAssignmentFeasibilityCore.js';
@@ -11,7 +10,7 @@ import { appendAtomically } from './safeAssignmentPersistence.js';
  */
 export function assignAssetToSegmentIfFeasible(input, env) {
   try {
-    const x = JSON.parse(input || '{}'),
+    const x = JSON.parse(input),
       result = evaluateWorldLine(
         x.points || [],
         x.existingSegments || [],
@@ -32,7 +31,7 @@ export function assignAssetToSegmentIfFeasible(input, env) {
           path: x.path || 'assetSegmentAssignments',
           object: {
             assetId: String(x.assetId || ''),
-            segmentId: String(x.candidateSegment?.segmentId || ''),
+            segmentId: String(x.candidateSegment.segmentId),
           },
         },
       ],
@@ -48,7 +47,7 @@ export function assignAssetToSegmentIfFeasible(input, env) {
     return JSON.stringify({
       appended: false,
       feasible: false,
-      reason: error instanceof Error ? error.message : String(error),
+      reason: error.message,
     });
   }
 }

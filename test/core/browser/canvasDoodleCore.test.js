@@ -26,7 +26,14 @@ describe('canvasDoodleCore', () => {
       width: 320,
       height: 180,
       shapes: [
-        { type: 'rect', x: 20, y: 20, width: 280, height: 140, fill: '#fde68a' },
+        {
+          type: 'rect',
+          x: 20,
+          y: 20,
+          width: 280,
+          height: 140,
+          fill: '#fde68a',
+        },
         { type: 'circle', x: 90, y: 90, radius: 34, fill: '#60a5fa' },
         { type: 'circle', x: 220, y: 90, radius: 34, fill: '#f472b6' },
         {
@@ -58,10 +65,25 @@ describe('canvasDoodleCore', () => {
       )
     ).toEqual([
       { type: 'rect', x: 0, y: 0, width: 100, height: 80, fill: '#abc' },
-      { type: 'rect', x: 10, y: 10, width: 80, height: 14, fill: 'hsl(180, 70%, 65%)' },
+      {
+        type: 'rect',
+        x: 10,
+        y: 10,
+        width: 80,
+        height: 14,
+        fill: 'hsl(180, 70%, 65%)',
+      },
       { type: 'circle', x: 32, y: 46, radius: 13, fill: 'hsl(300, 70%, 60%)' },
       { type: 'circle', x: 68, y: 46, radius: 13, fill: 'hsl(60, 70%, 60%)' },
-      { type: 'line', x1: 10, y1: 70, x2: 90, y2: 70, stroke: '#def', lineWidth: 6 },
+      {
+        type: 'line',
+        x1: 10,
+        y1: 70,
+        x2: 90,
+        y2: 70,
+        stroke: '#def',
+        lineWidth: 6,
+      },
     ]);
   });
 
@@ -147,3 +169,4 @@ describe('canvasDoodleCore', () => {
     expect(context.arc).toHaveBeenCalledTimes(3);
   });
 });
+/* eslint max-statements: off */

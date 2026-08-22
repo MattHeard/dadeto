@@ -3,7 +3,7 @@
 /** @param {string} input JSON with possessionStartPoint, origin, travelDurationSeconds, startPointId, segmentId. @returns {string} Proposed point and segment. */
 export function deliveryOutboundSegmentProposal(input) {
   try {
-    const x = JSON.parse(input || '{}'),
+    const x = JSON.parse(input),
       end = x.possessionStartPoint,
       seconds = Number(x.travelDurationSeconds),
       origin = x.origin;
@@ -45,7 +45,7 @@ export function deliveryOutboundSegmentProposal(input) {
   } catch (error) {
     return JSON.stringify({
       valid: false,
-      error: error instanceof Error ? error.message : String(error),
+      error: error.message,
     });
   }
 }

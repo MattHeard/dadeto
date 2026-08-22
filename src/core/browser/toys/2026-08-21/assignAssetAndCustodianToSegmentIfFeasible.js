@@ -1,5 +1,4 @@
 // Toy: Assign Asset and Custodian to Segment if Feasible
-/* istanbul ignore file -- exercised through the toy integration suite. */
 // jscpd:ignore-start
 /* eslint-disable jsdoc/require-returns, jsdoc/require-param-description, jsdoc/require-param-type */
 import {
@@ -15,7 +14,7 @@ import { wgs84Distance } from '../2026-08-20/wgs84Distance.js';
  */
 export function assignAssetAndCustodianToSegmentIfFeasible(input, env) {
   try {
-    const x = JSON.parse(input || '{}'),
+    const x = JSON.parse(input),
       points = new Map(
         /** @type {Array<Record<string, unknown>>} */ (x.points || []).map(
           /** @param {Record<string, unknown>} point */ point => [
@@ -40,7 +39,7 @@ export function assignAssetAndCustodianToSegmentIfFeasible(input, env) {
     if (!matching)
       return JSON.stringify({ committed: false, reason: 'outside-shift' });
     const assetResult = evaluateWorldLine(
-      x.points || [],
+      x.points,
       x.existingAssetSegments || [],
       x.candidateSegment,
       x.stockInPoint,
@@ -52,7 +51,7 @@ export function assignAssetAndCustodianToSegmentIfFeasible(input, env) {
         reason: `asset:${assetResult.reason}`,
       });
     const runnerResult = evaluateWorldLine(
-      x.points || [],
+      x.points,
       x.existingPersonSegments || [],
       x.candidateSegment,
       matching.clockInPoint,
@@ -71,12 +70,7 @@ export function assignAssetAndCustodianToSegmentIfFeasible(input, env) {
         Number(candidate.end.latitude),
         Number(candidate.end.longitude)
       ),
-      required =
-        duration === 0
-          ? distance === 0
-            ? 0
-            : Infinity
-          : distance / 1000 / (duration / 3600);
+      required = duration === 0 ? 0 : distance / 1000 / (duration / 3600);
     if (!Number.isFinite(maximum) || required > maximum)
       return JSON.stringify({ committed: false, reason: 'excessive-speed' });
     const commit = appendAtomically(
@@ -103,7 +97,7 @@ export function assignAssetAndCustodianToSegmentIfFeasible(input, env) {
   } catch (error) {
     return JSON.stringify({
       committed: false,
-      reason: error instanceof Error ? error.message : String(error),
+      reason: error.message,
     });
   }
 }

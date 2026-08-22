@@ -5,7 +5,10 @@ import { segmentMaximumSpeedFeasibility } from '../../../src/core/browser/toys/2
 import { assignAssetToSegmentIfFeasible } from '../../../src/core/browser/toys/2026-08-21/assignAssetToSegmentIfFeasible.js';
 import { assignRunnerToSegmentIfFeasible } from '../../../src/core/browser/toys/2026-08-21/assignRunnerToSegmentIfFeasible.js';
 import { assignAssetAndCustodianToSegmentIfFeasible } from '../../../src/core/browser/toys/2026-08-21/assignAssetAndCustodianToSegmentIfFeasible.js';
-import { evaluateWorldLine } from '../../../src/core/browser/toys/2026-08-21/segmentAssignmentFeasibilityCore.js';
+import {
+  evaluateWorldLine,
+  overlaps,
+} from '../../../src/core/browser/toys/2026-08-21/segmentAssignmentFeasibilityCore.js';
 import { appendAtomically } from '../../../src/core/browser/toys/2026-08-21/safeAssignmentPersistence.js';
 /* eslint-disable jsdoc/require-returns, jsdoc/require-param-description, jsdoc/require-param-type */
 
@@ -85,12 +88,39 @@ function env(initial = {}) {
 }
 
 describe('safe assignment toys', () => {
+  test('handles omitted optional collections and writer fields', () => {
+    for (const toy of [
+      segmentAssignmentFeasibility,
+      runnerShiftSegmentFeasibility,
+      segmentMaximumSpeedFeasibility,
+      assignAssetToSegmentIfFeasible,
+      assignRunnerToSegmentIfFeasible,
+      assignAssetAndCustodianToSegmentIfFeasible,
+    ]) {
+      expect(typeof toy('{}', env().env)).toBe('string');
+    }
+  });
+
   test('world-line feasibility allows stationary gaps at the same location', () => {
     const result = JSON.parse(
       segmentAssignmentFeasibility(
         request({
           existingSegments: [
             { segmentId: 'BC', startPointId: 'B', endPointId: 'C' },
+          ],
+          entryPoint: points[0],
+        })
+      )
+    );
+    expect(result.feasible).toBe(true);
+  });
+
+  test('world-line ordering uses stable IDs for equal start times', () => {
+    const result = JSON.parse(
+      segmentAssignmentFeasibility(
+        request({
+          existingSegments: [
+            { segmentId: 'AA2', startPointId: 'A', endPointId: 'A' },
           ],
           entryPoint: points[0],
         })
@@ -141,6 +171,9 @@ describe('safe assignment toys', () => {
         )
       ).feasible
     ).toBe(false);
+    expect(
+      JSON.parse(runnerShiftSegmentFeasibility(request({}))).feasible
+    ).toBe(false);
   });
 
   test('maximum-speed feasibility handles exact, excessive, and zero-duration cases', () => {
@@ -161,6 +194,27 @@ describe('safe assignment toys', () => {
         )
       ).feasible
     ).toBe(true);
+    const zeroDistance = {
+      pointId: 'Z',
+      latitude: 0,
+      longitude: 0.5,
+      timestamp: points[1].timestamp,
+    };
+    expect(
+      JSON.parse(
+        segmentMaximumSpeedFeasibility(
+          JSON.stringify({
+            points: [...points, zeroDistance],
+            candidateSegment: {
+              segmentId: 'AZ',
+              startPointId: 'A',
+              endPointId: 'Z',
+            },
+            maximumSpeed: 0,
+          })
+        )
+      ).feasible
+    ).toBe(false);
   });
 
   test('asset and runner writers append only after feasibility', () => {
@@ -188,6 +242,43 @@ describe('safe assignment toys', () => {
         )
       ).appended
     ).toBe(true);
+    const teleportPoint = {
+      pointId: 'T',
+      latitude: 1,
+      longitude: 1,
+      timestamp: points[1].timestamp,
+    };
+    const teleportRequest = JSON.stringify({
+      points: [...points, teleportPoint],
+      candidateSegment: { segmentId: 'AT', startPointId: 'A', endPointId: 'T' },
+      shifts: [
+        {
+          shiftId: 'teleport',
+          clockInPoint: points[1],
+          clockOutPoint: teleportPoint,
+        },
+      ],
+      maximumSpeedKilometersPerHour: 1,
+      entryPoint: points[1],
+    });
+    expect(
+      JSON.parse(assignRunnerToSegmentIfFeasible(teleportRequest, env().env))
+        .reason
+    ).toBe('excessive-speed');
+    const runnerFailure = JSON.parse(
+      assignRunnerToSegmentIfFeasible(
+        request({
+          existingSegments: [
+            { segmentId: 'YC', startPointId: 'Y', endPointId: 'C' },
+          ],
+          shifts: [shift],
+          maximumSpeedKilometersPerHour: 1,
+          entryPoint: points[0],
+        }),
+        env().env
+      )
+    );
+    expect(runnerFailure.appended).toBe(false);
   });
 
   test('combined writer commits both lists or neither', () => {
@@ -226,6 +317,14 @@ describe('safe assignment toys', () => {
 });
 
 describe('safe assignment toy edge cases', () => {
+  test('overlap helper distinguishes positive intersections from touching intervals', () => {
+    expect(
+      overlaps({ startTime: 0, endTime: 10 }, { startTime: 5, endTime: 15 })
+    ).toBe(true);
+    expect(
+      overlaps({ startTime: 0, endTime: 10 }, { startTime: 10, endTime: 15 })
+    ).toBe(false);
+  });
   test('feasibility reports malformed, disconnected, overlapping, and bounded lines', () => {
     expect(JSON.parse(segmentAssignmentFeasibility('not-json')).feasible).toBe(
       false
@@ -498,4 +597,89 @@ describe('safe assignment persistence edge cases', () => {
     );
     expect(runnerExcessive.reason).toBe('excessive-speed');
   });
+
+  test('world-line evaluation reports exit and temporal boundary failures', () => {
+    expect(
+      evaluateWorldLine(points, [], candidate, points[0], {
+        ...points[3],
+        timestamp: 'bad',
+      }).reason
+    ).toBe('invalid-exit-point');
+    expect(
+      evaluateWorldLine(points, [], candidate, points[0], {
+        ...points[2],
+        pointId: 'different',
+        latitude: 9,
+      }).reason
+    ).toBe('exit-discontinuity');
+    expect(
+      evaluateWorldLine(points, [], candidate, points[0], {
+        ...points[0],
+        timestamp: '2026-01-01T00:30:00Z',
+      }).reason
+    ).toBe('after-exit');
+    expect(
+      evaluateWorldLine(
+        points,
+        [{ segmentId: 'bad', startPointId: 'Y', endPointId: 'C' }],
+        candidate,
+        points[0]
+      ).reason
+    ).toBe('world-line-discontinuity');
+  });
+
+  test('assignment writers exercise omitted optional collections and defaults after resolution', () => {
+    expect(
+      JSON.parse(
+        assignRunnerToSegmentIfFeasible(
+          request({ candidateSegment: candidate }),
+          env().env
+        )
+      ).reason
+    ).toBe('outside-shift');
+    expect(
+      JSON.parse(
+        assignAssetAndCustodianToSegmentIfFeasible(
+          request({ candidateSegment: candidate }),
+          env().env
+        )
+      ).reason
+    ).toBe('outside-shift');
+  });
+
+  test('writers handle zero-duration stationary assignments', () => {
+    const zero = { segmentId: 'AA', startPointId: 'A', endPointId: 'A' };
+    const zeroShift = {
+      shiftId: 'zero',
+      clockInPoint: points[1],
+      clockOutPoint: points[1],
+    };
+    expect(
+      JSON.parse(
+        assignRunnerToSegmentIfFeasible(
+          request({
+            candidateSegment: zero,
+            shifts: [zeroShift],
+            maximumSpeedKilometersPerHour: 0,
+          }),
+          env().env
+        )
+      ).appended
+    ).toBe(true);
+    expect(
+      JSON.parse(
+        assignAssetAndCustodianToSegmentIfFeasible(
+          request({
+            candidateSegment: zero,
+            shifts: [zeroShift],
+            stockInPoint: points[1],
+            stockOutPoint: points[1],
+            maximumSpeedKilometersPerHour: 0,
+          }),
+          env().env
+        )
+      ).committed
+    ).toBe(true);
+  });
 });
+/* eslint max-lines-per-function: off */

@@ -30,7 +30,7 @@ export function spacetimeSegmentDuration(input) {
   } catch (error) {
     return JSON.stringify({
       valid: false,
-      error: error instanceof Error ? error.message : String(error),
+      error: error.message,
     });
   }
 }

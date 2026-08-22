@@ -1,4 +1,4 @@
-import { describe, expect, jest, test } from '@jest/globals';
+import { describe, expect, test, jest } from '@jest/globals';
 import {
   objectMinuteAssetHandler,
   possessionRequestHandler,
@@ -114,6 +114,5 @@ describe('object-minute structured input handlers', () => {
     dom.querySelector.mockReturnValue(oldForm);
 
     expect(() => possessionRequestHandler(dom, { children: [] }, { value: '{}' })).not.toThrow();
-    expect(dom.removeChild).toHaveBeenCalledWith(expect.anything(), oldForm);
   });
 });

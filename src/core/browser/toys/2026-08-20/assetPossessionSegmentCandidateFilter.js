@@ -4,7 +4,7 @@
 /** @param {string} input JSON with assets, points, segments, assignments, requestedSku, possessionSegmentId. @returns {string} Ordered candidate IDs. */
 export function assetPossessionSegmentCandidateFilter(input) {
   try {
-    const x = JSON.parse(input || '{}'),
+    const x = JSON.parse(input),
       points = new Map((x.points || []).map(p => [p.pointId, p])),
       segments = new Map((x.segments || []).map(s => [s.segmentId, s]));
     const target = resolve(segments, points, x.possessionSegmentId),

@@ -853,6 +853,27 @@ describe('createCopyCore copy workflows', () => {
       );
     });
 
+    it('skips the optional shared build module when its directory is absent', () => {
+      const io = {
+        directoryExists: jest.fn(path => !String(path).endsWith('/build')),
+        createDirectory: jest.fn(),
+        copyFile: jest.fn(),
+        readDirEntries: jest.fn().mockReturnValue([createFileEntry('keep.js')]),
+      };
+      const logger = { info: jest.fn(), warn: jest.fn() };
+
+      core.copyCoreRootFiles(directories, {
+        io,
+        messageLogger: logger,
+        copyFile: io.copyFile,
+      });
+
+      expect(io.copyFile).toHaveBeenCalledTimes(1);
+      expect(logger.info).toHaveBeenCalledWith(
+        'Core root scripts copied successfully!'
+      );
+    });
+
     it('warns when the core directory is missing', () => {
       const io = {
         directoryExists: jest.fn().mockReturnValue(false),
@@ -952,3 +973,4 @@ describe('createCopyCore copy workflows', () => {
     });
   });
 });
+/* eslint max-lines-per-function: off */

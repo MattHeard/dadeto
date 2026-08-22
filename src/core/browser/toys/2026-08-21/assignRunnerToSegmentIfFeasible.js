@@ -1,5 +1,4 @@
 // Toy: Assign Runner to Segment if Feasible
-/* istanbul ignore file -- exercised through the toy integration suite. */
 // jscpd:ignore-start
 /* eslint-disable jsdoc/require-returns, jsdoc/require-param-description, jsdoc/require-param-type */
 import {
@@ -15,7 +14,7 @@ import { wgs84Distance } from '../2026-08-20/wgs84Distance.js';
  */
 export function assignRunnerToSegmentIfFeasible(input, env) {
   try {
-    const x = JSON.parse(input || '{}'),
+    const x = JSON.parse(input),
       points = new Map(
         /** @type {Array<Record<string, unknown>>} */ (x.points || []).map(
           /** @param {Record<string, unknown>} point */ point => [
@@ -62,7 +61,7 @@ export function assignRunnerToSegmentIfFeasible(input, env) {
         reason: 'excessive-speed',
       });
     const result = evaluateWorldLine(
-      x.points || [],
+      x.points,
       x.existingSegments || [],
       x.candidateSegment,
       matching.clockInPoint,
@@ -97,7 +96,7 @@ export function assignRunnerToSegmentIfFeasible(input, env) {
     return JSON.stringify({
       appended: false,
       feasible: false,
-      reason: error instanceof Error ? error.message : String(error),
+      reason: error.message,
     });
   }
 }

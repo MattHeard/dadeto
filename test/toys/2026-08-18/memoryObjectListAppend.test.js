@@ -44,5 +44,11 @@ describe('memoryObjectListAppend', () => {
       )
     );
     expect(result).toMatchObject({ appended: false });
+    expect(JSON.parse(memoryObjectListAppend('', new Map()))).toMatchObject({
+      appended: false,
+    });
+    expect(JSON.parse(memoryObjectListAppend('null', new Map()))).toMatchObject(
+      { appended: false }
+    );
   });
 });

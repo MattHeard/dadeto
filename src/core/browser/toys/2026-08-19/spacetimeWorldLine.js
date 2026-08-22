@@ -52,9 +52,7 @@ export function spacetimeWorldLine(input) {
       2
     );
   } catch (error) {
-    return formatToyError(
-      error instanceof Error ? error.message : String(error)
-    );
+    return formatToyError(error.message);
   }
 }
 

@@ -85,6 +85,19 @@ describe('spacetimeSegmentTemporalRelation', () => {
     expect(
       JSON.parse(spacetimeSegmentTemporalRelation(payload('AB', 'missing')))
     ).toMatchObject({ valid: false });
+    expect(JSON.parse(spacetimeSegmentTemporalRelation('{'))).toMatchObject({
+      valid: false,
+    });
+    expect(
+      JSON.parse(
+        spacetimeSegmentTemporalRelation(
+          JSON.stringify({
+            ...JSON.parse(payload('AB', 'BC')),
+            firstSegmentId: '',
+          })
+        )
+      )
+    ).toMatchObject({ valid: false });
   });
 
   test('validates relation request shape and identifiers', () => {

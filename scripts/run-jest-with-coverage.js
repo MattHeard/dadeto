@@ -102,18 +102,7 @@ function walk(directory, files) {
 
 function isIgnoredCoverageFile(file) {
   const relative = path.relative(ROOT, file);
-  const recentToyPath = `src${path.sep}core${path.sep}browser${path.sep}toys${path.sep}`;
-  const recentToyRelative = relative.slice(recentToyPath.length);
-  return (
-    relative.includes(`${path.sep}node_modules${path.sep}`) ||
-    (relative.startsWith(recentToyPath) &&
-      ['2026-08-17', '2026-08-18', '2026-08-19', '2026-08-20'].some(
-        date => recentToyRelative.startsWith(`${date}${path.sep}`)
-      )) ||
-    relative === `src${path.sep}core${path.sep}build${path.sep}blog.js` ||
-    relative === `src${path.sep}core${path.sep}browser${path.sep}inputHandlers${path.sep}objectMinuteForms.js` ||
-    relative === `src${path.sep}core${path.sep}local${path.sep}find-surviving-mutant.js`
-  );
+  return relative.includes(`${path.sep}node_modules${path.sep}`);
 }
 
 function runShard(testFilesForShard, shardDir) {

@@ -10,6 +10,7 @@ import {
 import { spawn } from 'node:child_process';
 import crypto from 'node:crypto';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 /**
  * Run the resumable mutation scan.
@@ -18,6 +19,10 @@ import path from 'node:path';
  */
 export async function runSurvivingMutantScan(options = {}) {
   return executeScan(normalizeOptions(options));
+}
+
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
+  await runSurvivingMutantScan();
 }
 
 /**

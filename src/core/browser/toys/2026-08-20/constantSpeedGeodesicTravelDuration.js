@@ -5,7 +5,7 @@ import { wgs84Distance } from './wgs84Distance.js';
 /** @param {string} input JSON with points, segment, and speedKilometersPerHour. @returns {string} Scalar seconds object. */
 export function constantSpeedGeodesicTravelDuration(input) {
   try {
-    const x = JSON.parse(input || '{}'),
+    const x = JSON.parse(input),
       points = new Map((x.points || []).map(p => [p.pointId, p])),
       s = x.segment;
     const a = points.get(s?.startPointId),
@@ -32,7 +32,7 @@ export function constantSpeedGeodesicTravelDuration(input) {
   } catch (error) {
     return JSON.stringify({
       valid: false,
-      error: error instanceof Error ? error.message : String(error),
+      error: error.message,
     });
   }
 }

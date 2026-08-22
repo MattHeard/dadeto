@@ -201,4 +201,78 @@ describe('fulfillment primitives', () => {
     );
     expect(result).toEqual(['A1', 'A2']);
   });
+
+  test('returns deterministic failures for malformed primitive inputs', () => {
+    expect(spacetimeWorldLinePairPredicate('{')).toContain('valid');
+    expect(
+      wgs84CirclePointPredicate(
+        JSON.stringify({ circle: { radiusMeters: -1 } })
+      )
+    ).toBe('false');
+    expect(
+      wgs84CircleSegmentPredicate(JSON.stringify({ points, segment: {} }))
+    ).toBe('false');
+    expect(
+      JSON.parse(
+        constantSpeedGeodesicTravelDuration(
+          JSON.stringify({
+            points,
+            segment: segments[0],
+            speedKilometersPerHour: 0,
+          })
+        )
+      ).valid
+    ).toBe(false);
+    expect(JSON.parse(deliveryOutboundSegmentProposal('{}')).valid).toBe(false);
+    expect(JSON.parse(pickupReturnSegmentProposal('{}')).valid).toBe(false);
+    expect(
+      JSON.parse(
+        possessionContextRegistry(JSON.stringify({ possessionContexts: [{}] }))
+      ).possessionContexts
+    ).toEqual([]);
+    expect(
+      assetPossessionSegmentCandidateFilter(
+        JSON.stringify({ possessionSegmentId: 'missing' })
+      )
+    ).toBe('[]');
+  });
+
+  test('covers alternate assignment fields and world-line boundaries', () => {
+    expect(
+      spacetimeWorldLinePairPredicate(
+        JSON.stringify({
+          points,
+          segments,
+          firstSegmentId: 'BC',
+          secondSegmentId: 'AB',
+        })
+      )
+    ).toBe('true');
+    expect(
+      spacetimeWorldLinePairPredicate(
+        JSON.stringify({
+          points,
+          segments: [{ segmentId: 'bad', startPointId: 'A', endPointId: 'A' }],
+          firstSegmentId: 'bad',
+          secondSegmentId: 'AB',
+        })
+      )
+    ).toContain('Unknown segment');
+    expect(
+      assetPossessionSegmentCandidateFilter(
+        JSON.stringify({
+          assets: [
+            { assetId: 'A1', sku: 'S' },
+            null,
+            { assetId: '', sku: 'S' },
+          ],
+          points,
+          segments,
+          assetAssignments: [{ assetId: 'A1', segmentId: 'AB' }],
+          requestedSku: ' S ',
+          possessionSegmentId: 'BC',
+        })
+      )
+    ).toBe('["A1"]');
+  });
 });
