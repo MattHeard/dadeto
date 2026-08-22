@@ -61,7 +61,30 @@ import {
   setupFirebase,
   updateAuthControlsDisplay,
   validateGoogleSignInDeps,
+  hasGetIdToken,
+  canPreventDefault,
+  isAdminUser,
 } from '../../../src/core/browser/admin-core.js';
+
+describe('small admin-core predicates', () => {
+  it('recognizes only callable auth token providers', () => {
+    expect(hasGetIdToken({ getIdToken: () => 'token' })).toBe(true);
+    expect(hasGetIdToken({ getIdToken: 'token' })).toBe(false);
+    expect(hasGetIdToken(null)).toBe(false);
+  });
+
+  it('recognizes preventDefault-capable events', () => {
+    expect(canPreventDefault({ preventDefault: jest.fn() })).toBe(true);
+    expect(canPreventDefault({})).toBe(false);
+    expect(canPreventDefault(null)).toBe(false);
+  });
+
+  it('matches the configured administrator identity exactly', () => {
+    expect(isAdminUser({ uid: 'qcYSrXTaj1MZUoFsAloBwT86GNM2' })).toBe(true);
+    expect(isAdminUser({ uid: 'other' })).toBe(false);
+    expect(isAdminUser(undefined)).toBe(false);
+  });
+});
 
 describe('buildSignInCredential', () => {
   it('passes auth and credential through to the wrapped signer', () => {

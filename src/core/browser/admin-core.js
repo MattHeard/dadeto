@@ -1657,7 +1657,7 @@ export function createRegenerateVariant(options) {
  * @param {{ getIdToken?: () => Promise<string> | string | null | undefined } | undefined | null} googleAuth - Candidate auth helper.
  * @returns {boolean} True when `getIdToken` is callable.
  */
-function hasGetIdToken(googleAuth) {
+export function hasGetIdToken(googleAuth) {
   return Boolean(googleAuth && typeof googleAuth.getIdToken === 'function');
 }
 
@@ -1825,7 +1825,7 @@ function resolvePageVariantPayload(doc, showMessage, token) {
  * @param {unknown} event Event-like value.
  * @returns {event is { preventDefault: () => void }} True if can default.
  */
-function canPreventDefault(event) {
+export function canPreventDefault(event) {
   const e = /** @type {{ preventDefault?: () => void }} */ (event);
   return Boolean(e && typeof e.preventDefault === 'function');
 }
@@ -2876,7 +2876,7 @@ export function createCheckAccess(getAuthFn, doc) {
  * @param {{ uid?: string } | null | undefined} user - Candidate authenticated user.
  * @returns {boolean} True when the user matches the admin UID.
  */
-function isAdminUser(user) {
+export function isAdminUser(user) {
   return Boolean(user && user.uid === ADMIN_UID);
 }
 
