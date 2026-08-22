@@ -52,7 +52,7 @@ export function assetCustodianSegmentAssignmentPredicate(input) {
  * @param {string} input JSON request.
  * @returns {{points: Array<{pointId: string, timestamp: string}>, segments: Array<{segmentId: string, startPointId: string, endPointId: string}>, assetAssignments: Array<{assetId: string, segmentId: string}>, personAssignments: Array<{personId: string, segmentId: string}>, proposedAssignment: {assetId: string, segmentId: string, custodianPersonId: string}}} Parsed request.
  */
-function parseRequest(input) {
+export function parseRequest(input) {
   const request = JSON.parse(input);
   if (!request || typeof request !== 'object' || Array.isArray(request))
     throw new Error('Input must be a JSON object.');
@@ -86,7 +86,7 @@ function parseRequest(input) {
  * @param {unknown} value Candidate asset assignment.
  * @returns {{assetId: string, segmentId: string}|null} Normalized assignment.
  */
-function normalizeAsset(value) {
+export function normalizeAsset(value) {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
   const record = /** @type {Record<string, unknown>} */ (value);
   const assetId = String(record.assetId || '').trim();
@@ -99,7 +99,7 @@ function normalizeAsset(value) {
  * @param {unknown} value Candidate person assignment.
  * @returns {{personId: string, segmentId: string}|null} Normalized assignment.
  */
-function normalizePerson(value) {
+export function normalizePerson(value) {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
   const record = /** @type {Record<string, unknown>} */ (value);
   const personId = String(record.personId || '').trim();
@@ -112,7 +112,7 @@ function normalizePerson(value) {
  * @param {unknown} value Candidate proposed assignment.
  * @returns {{assetId: string, segmentId: string, custodianPersonId: string}|null} Normalized proposed assignment.
  */
-function normalizeProposed(value) {
+export function normalizeProposed(value) {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
   const record = /** @type {Record<string, unknown>} */ (value);
   const assetId = String(record.assetId || '').trim();
@@ -129,7 +129,7 @@ function normalizeProposed(value) {
  * @param {string} segmentId Segment identifier.
  * @returns {{startTime: number, endTime: number}} Temporal interval.
  */
-function resolveInterval(segments, points, segmentId) {
+export function resolveInterval(segments, points, segmentId) {
   const segment = segments.get(segmentId);
   if (!segment) throw new Error(`Unknown segment: ${segmentId}`);
   const start = points.get(String(segment.startPointId));
@@ -154,7 +154,7 @@ function resolveInterval(segments, points, segmentId) {
  * @param {{startTime: number, endTime: number}} second Second interval.
  * @returns {boolean} Whether intervals overlap in positive duration.
  */
-function overlaps(first, second) {
+export function overlaps(first, second) {
   return (
     Math.max(first.startTime, second.startTime) <
     Math.min(first.endTime, second.endTime)

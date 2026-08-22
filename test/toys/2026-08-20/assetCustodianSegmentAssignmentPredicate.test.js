@@ -1,5 +1,13 @@
 import { describe, expect, test } from '@jest/globals';
-import { assetCustodianSegmentAssignmentPredicate } from '../../../src/core/browser/toys/2026-08-20/assetCustodianSegmentAssignmentPredicate.js';
+import {
+  assetCustodianSegmentAssignmentPredicate,
+  normalizeAsset,
+  normalizePerson,
+  normalizeProposed,
+  overlaps,
+  parseRequest,
+  resolveInterval,
+} from '../../../src/core/browser/toys/2026-08-20/assetCustodianSegmentAssignmentPredicate.js';
 
 const payload = (assetAssignments, personAssignments, proposedAssignment) =>
   JSON.stringify({
@@ -162,5 +170,23 @@ describe('assetCustodianSegmentAssignmentPredicate', () => {
         )
       )
     ).toBe('false');
+  });
+
+  test('covers pure parser and interval contracts', () => {
+    const baseRequest = JSON.parse(payload([], [], {
+      assetId: 'A1', segmentId: 'S1', custodianPersonId: 'C1',
+    }));
+    expect(parseRequest(JSON.stringify(baseRequest)).assetAssignments).toEqual([]);
+    expect(normalizeAsset({ assetId: ' A1 ', segmentId: ' S1 ' })).toEqual({ assetId: 'A1', segmentId: 'S1' });
+    expect(normalizePerson({ personId: ' C1 ', segmentId: ' S1 ' })).toEqual({ personId: 'C1', segmentId: 'S1' });
+    expect(normalizeProposed(baseRequest.proposedAssignment)).toEqual(baseRequest.proposedAssignment);
+    expect(normalizeAsset(null)).toBeNull();
+    expect(normalizePerson([])).toBeNull();
+    expect(normalizeProposed({ assetId: 'A1', segmentId: 'S1' })).toBeNull();
+    const points = new Map(baseRequest.points.map(point => [point.pointId, point]));
+    const segments = new Map(baseRequest.segments.map(segment => [segment.segmentId, segment]));
+    expect(resolveInterval(segments, points, 'S1').startTime).toBe(Date.parse(baseRequest.points[0].timestamp));
+    expect(() => resolveInterval(segments, points, 'missing')).toThrow('Unknown segment: missing');
+    expect(overlaps({ startTime: 0, endTime: 1 }, { startTime: 1, endTime: 2 })).toBe(false);
   });
 });
