@@ -72,4 +72,33 @@ describe('assetSegmentAssignmentPredicate', () => {
       )
     ).toBe('false');
   });
+
+  test('ignores malformed existing assignments while preserving valid candidates', () => {
+    expect(
+      resultFor([null, [], {}, { assetId: 'A1', segmentId: 'S1' }], {
+        assetId: 'A1',
+        segmentId: 'S2',
+      })
+    ).toBe('true');
+  });
+
+  test('rejects invalid and reversed segment intervals', () => {
+    const invalid = {
+      ...base,
+      segments: [{ segmentId: 'BAD', startPointId: 'P1', endPointId: 'P2' }],
+      points: base.points.map(point =>
+        point.pointId === 'P2' ? { ...point, timestamp: 'invalid' } : point
+      ),
+      assignments: [],
+      proposedAssignment: { assetId: 'A1', segmentId: 'BAD' },
+    };
+    expect(assetSegmentAssignmentPredicate(JSON.stringify(invalid))).toBe('false');
+    const reversed = {
+      ...base,
+      segments: [{ segmentId: 'BAD', startPointId: 'P2', endPointId: 'P1' }],
+      assignments: [],
+      proposedAssignment: { assetId: 'A1', segmentId: 'BAD' },
+    };
+    expect(assetSegmentAssignmentPredicate(JSON.stringify(reversed))).toBe('false');
+  });
 });
