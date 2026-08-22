@@ -18,6 +18,19 @@ JSON object containing an `allocations` array. Submit a JSON value in the toy's 
 
 If a field is omitted, the toy applies its default behavior. Invalid values are rejected or normalized according to the limits below.
 
+## Exact property names
+
+The input is a JSON object with these property names:
+
+- `ASSE1`
+- `allocatedFrom`
+- `allocatedTo`
+- `allocations`
+- `possessionContextId`
+- `summary`
+
+Unknown properties are ignored. Required properties and nested fields are described in the behavior above.
+
 ## Output
 
 JSON object containing normalized `allocations` and a `summary`. The result is returned as JSON or rendered by the toy's configured presenter. A representative result is:

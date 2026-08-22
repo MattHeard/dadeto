@@ -16,6 +16,15 @@ Optional JSON settings, currently limited to selecting the storage bucket key. S
 
 If a field is omitted, the toy applies its default behavior. Invalid values are rejected or normalized according to the limits below.
 
+## Exact property names
+
+The input is a JSON object with these property names:
+
+- `getLocalPermanentData`
+- `setLocalPermanentData`
+
+Unknown properties are ignored. Required properties and nested fields are described in the behavior above.
+
 ## Output
 
 JSON report shaped for the ledger-ingest presenter. The result is returned as JSON or rendered by the toy's configured presenter. A representative result is:

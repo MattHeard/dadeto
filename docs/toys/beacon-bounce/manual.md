@@ -16,6 +16,14 @@ JSON text with optional canvas, paddle, orb, life, layout, and reset fields. Sub
 
 If a field is omitted, the toy applies its default behavior. Invalid values are rejected or normalized according to the limits below.
 
+## Exact property names
+
+The input is a JSON object. These are the property names read by this toy:
+
+- `version`
+
+Unknown properties are ignored unless the behavior described above says otherwise.
+
 ## Output
 
 JSON text consumed by the `canvas-2d` presenter. The result is returned as JSON or rendered by the toy's configured presenter. A representative result is:

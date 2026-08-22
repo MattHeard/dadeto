@@ -16,6 +16,34 @@ keyboard capture and generic gamepad/Joy-Con capture mapped inside the toy. Subm
 
 If a field is omitted, the toy applies its default behavior. Invalid values are rejected or normalized according to the limits below.
 
+## Exact property names
+
+The input is a JSON object. These are the property names read by this toy:
+
+- `actions`
+- `axes`
+- `buttons`
+- `gamepad`
+- `height`
+- `keyboard`
+- `launchPressed`
+- `moveLeft`
+- `moveRight`
+- `pausePressed`
+- `previousActions`
+- `radius`
+- `resetPressed`
+- `speed`
+- `stuckToPaddle`
+- `version`
+- `vx`
+- `vy`
+- `width`
+- `x`
+- `y`
+
+Unknown properties are ignored unless the behavior described above says otherwise.
+
 ## Output
 
 canvas-2d payload with rect, circle, line, and text shapes. The result is returned as JSON or rendered by the toy's configured presenter. A representative result is:

@@ -11,10 +11,40 @@ This manual explains the behavior a user can observe by submitting input to the 
 possession context, warehouse location, travel durations, configuration buffers, and caller-provided IDs. Submit a JSON value in the toy's input area. A minimal example is:
 
 ```json
-{}
+{
+  "possessionContext": {
+    "segment": { "segmentId": "possession-1", "startPointId": "start-1", "endPointId": "end-1" },
+    "startPoint": { "pointId": "start-1", "timestamp": "2026-08-22T10:00:00.000Z" },
+    "endPoint": { "pointId": "end-1", "timestamp": "2026-08-22T11:00:00.000Z" }
+  },
+  "warehouse": { "latitude": 52.52, "longitude": 13.405 },
+  "travelDurations": { "deliveryOutboundSeconds": 600, "pickupReturnSeconds": 600 },
+  "configuration": {
+    "procurementDuration": 600, "procurementBuffer": 60, "deliveryBuffer": 60,
+    "pickupBuffer": 60, "inspectionDuration": 600, "inspectionBuffer": 60,
+    "cleaningDuration": 600, "cleaningBuffer": 60
+  },
+  "generatedIds": {
+    "warehouseSpacePointId": "warehouse-1",
+    "points": { "procurementStart": "point-1", "stockReady": "point-2", "pickupReturn": "point-3", "inspectionComplete": "point-4", "cleaningComplete": "point-5" },
+    "segments": { "procurement": "segment-1", "deliveryOutbound": "segment-2", "pickupReturn": "segment-3", "inspection": "segment-4", "cleaning": "segment-5" }
+  }
+}
 ```
 
 If a field is omitted, the toy applies its default behavior. Invalid values are rejected or normalized according to the limits below.
+
+## Exact property names
+
+The input is a JSON object with five properties:
+
+- `possessionContext`: contains `segment`, `startPoint`, and `endPoint`; the segment endpoint IDs must match the point IDs.
+- `warehouse`: contains numeric `latitude` and `longitude` coordinates.
+- `travelDurations`: contains non-negative `deliveryOutboundSeconds` and `pickupReturnSeconds`.
+- `configuration`: contains the eight non-negative duration and buffer properties shown in the example.
+- `generatedIds`: contains `warehouseSpacePointId`, five point IDs under `points`, and five segment IDs under `segments`.
+
+All generated IDs must be non-empty, unique, and distinct from the possession IDs. Timestamps must be valid and align to whole minutes.
 
 ## Output
 

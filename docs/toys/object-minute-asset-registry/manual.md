@@ -18,6 +18,14 @@ JSON object containing an `assets` array. Submit a JSON value in the toy's input
 
 If a field is omitted, the toy applies its default behavior. Invalid values are rejected or normalized according to the limits below.
 
+## Exact property names
+
+The input is a JSON object. These are the property names read by this toy:
+
+- `assets`
+
+Unknown properties are ignored unless the behavior described above says otherwise.
+
 ## Output
 
 JSON object containing normalized `assets` and `summary`. The result is returned as JSON or rendered by the toy's configured presenter. A representative result is:

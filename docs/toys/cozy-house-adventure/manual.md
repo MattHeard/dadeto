@@ -19,6 +19,16 @@ free-text commands such as `build`, `foundation`, `level soil`, `plant herbs`. S
 
 If a field is omitted, the toy applies its default behavior. Invalid values are rejected or normalized according to the limits below.
 
+## Exact property names
+
+The input is a JSON object. These are the property names read by this toy:
+
+- `inventory`
+- `progress`
+- `temporary`
+
+Unknown properties are ignored unless the behavior described above says otherwise.
+
 ## Output
 
 narrative response strings and progress prompts. The result is returned as JSON or rendered by the toy's configured presenter. A representative result is:

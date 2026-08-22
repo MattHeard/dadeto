@@ -16,6 +16,14 @@ A JSON string, valid or malformed. Submit a JSON value in the toy's input area. 
 
 If a field is omitted, the toy applies its default behavior. Invalid values are rejected or normalized according to the limits below.
 
+## Exact property names
+
+The input is a JSON object with these property names:
+
+- `JSON2`
+
+Unknown properties are ignored. Required properties and nested fields are described in the behavior above.
+
 ## Output
 
 A JSON string containing either the parsed value or a structured error object. The result is returned as JSON or rendered by the toy's configured presenter. A representative result is:
