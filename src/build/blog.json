@@ -1,5 +1,6 @@
 {
   "posts": [
+    {"key":"NORM1","title":"Normal Fulfillment Sequence Proposal","publicationDate":"2026-08-23","release":"public","content":["Construct a procurement-free fulfillment sequence around an existing possession context.","The proposal contains delivery, return, possession, pickup, inspection and cleaning geometry with resource metadata, but performs no selection, feasibility, persistence, costing or offer creation."],"toy":{"modulePath":"/core/browser/toys/2026-08-22/normalFulfillmentSequenceProposal.js","functionName":"normalFulfillmentSequenceProposal","defaultInputMethod":"textarea","defaultOutputMethod":"textarea"},"tags":["toy","fulfillment","sequence","proposal","possession","runner","asset","json"]},
     {"key":"PROC1","title":"Procurement-Backed Fulfillment Sequence Proposal","publicationDate":"2026-08-22","release":"public","content":[
         {
           "type": "manual",
