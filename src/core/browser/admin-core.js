@@ -1185,7 +1185,7 @@ function buildNormalizedGoogleSignInDeps(deps) {
 
   noopLoggerError(); // ensure the noop logger executes for coverage reporting
 
-  return ensureLogger(normalized);
+  return normalized;
 }
 
 /**
@@ -1201,45 +1201,6 @@ export function createSafeLogger() {
  * @returns {void}
  */
 export function noopLoggerError() {}
-
-/**
- * Ensure logger exists.
- * @param {SummarizedGoogleSignInDeps} deps Deps.
- * @returns {SummarizedGoogleSignInDeps} Deps with logger.
- */
-function ensureLogger(deps) {
-  applyDefaultLogger(deps);
-  return deps;
-}
-
-/**
- * Assign the default console logger when no logger has been provided.
- * @param {SummarizedGoogleSignInDeps} deps Dependency bag to update.
- * @returns {void}
- */
-function applyDefaultLogger(deps) {
-  if (!hasLogger(deps.logger)) {
-    deps.logger = console;
-  }
-}
-
-/**
- * Determine whether a logger instance is already configured.
- * @param {object | null | undefined} logger Candidate logger.
- * @returns {boolean} True when a logger value exists.
- */
-function hasLogger(logger) {
-  return !isMissingLogger(logger);
-}
-
-/**
- * Determine whether the logger value is missing.
- * @param {unknown} logger Candidate logger reference.
- * @returns {boolean} True when the logger is undefined or null.
- */
-function isMissingLogger(logger) {
-  return logger === undefined || logger === null;
-}
 
 /**
  * Resolve the accounts ID helper into a callable resolver.

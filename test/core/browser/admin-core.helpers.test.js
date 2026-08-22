@@ -4,6 +4,7 @@ import {
   assertFunction,
   buildSignInCredential,
   createGoogleAuthModule,
+  createInitGoogleSignIn,
   bindRegenerateVariantSubmit,
   bindTriggerRenderClick,
   bindTriggerStatsClick,
@@ -610,6 +611,31 @@ describe('admin-core interface predicates', () => {
     expect(() => validateGetIdToken(null)).toThrow(
       'getIdToken must be a function'
     );
+  });
+
+  it('normalizes missing and custom loggers during sign-in initialization', () => {
+    const dependencies = {
+      googleAccountsId: {},
+      credentialFactory: jest.fn(),
+      signInWithCredential: jest.fn(),
+      auth: {},
+      storage: { setItem: jest.fn() },
+      matchMedia: jest.fn(() => ({ matches: false })),
+      querySelectorAll: jest.fn(() => []),
+    };
+    const logger = { error: jest.fn() };
+    createInitGoogleSignIn({ ...dependencies, logger })();
+    expect(logger.error).toHaveBeenCalledWith('Google Identity script missing');
+
+    const consoleError = jest.spyOn(console, 'error').mockImplementation(() => {});
+    try {
+      createInitGoogleSignIn(dependencies)();
+      expect(consoleError).toHaveBeenCalledWith(
+        'Google Identity script missing'
+      );
+    } finally {
+      consoleError.mockRestore();
+    }
   });
 });
 
