@@ -7,13 +7,13 @@ import { resolvePointRecords } from '../2026-08-22/spacePointResolution.js';
 export function wgs84CircleSegmentPredicate(input) {
   let x;
   try {
-    x = JSON.parse(input || '{}');
+    x = JSON.parse(input);
   } catch {
     return 'false';
   }
 
   if (!x || !Array.isArray(x.points) || !x.segment) return 'false';
-  const points = new Map(resolvePointRecords(x.points, x.spacePoints || []).map(p => [p.pointId, p]));
+  const points = new Map(resolvePointRecords(x.points, x.spacePoints).map(p => [p.pointId, p]));
   const start = points.get(x.segment.startPointId),
     end = points.get(x.segment.endPointId);
   if (!start || !end) return 'false';
