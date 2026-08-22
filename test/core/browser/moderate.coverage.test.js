@@ -337,6 +337,19 @@ describe('moderate core', () => {
     expect(mockFetch.mock.calls.at(-1)[1].body.get('id_token')).toBe('token');
   });
 
+  it('rejects assignment without auth and on failed responses', async () => {
+    createModerateHandle({
+      documentObj: mockDocument,
+      fetchFn: mockFetch,
+      sessionStorageObj: {},
+      globalObject: {},
+    });
+    await expect(assignJob()).rejects.toThrow('not signed in');
+    mockToken = 'token';
+    mockFetch.mockResolvedValueOnce({ ok: false, status: 503 });
+    await expect(assignJob()).rejects.toThrow('assign job: HTTP 503');
+  });
+
   it('resets moderation controls to the signed-out state', () => {
     const signout = { style: {} };
     const signin = { style: {} };
