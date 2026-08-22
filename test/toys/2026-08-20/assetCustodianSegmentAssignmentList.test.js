@@ -190,4 +190,28 @@ describe('assetCustodianSegmentAssignmentList', () => {
       ).appended
     ).toBe(true);
   });
+
+  test.each([
+    ['null', 'Input must be a JSON object.'],
+    ['[]', 'Input must be a JSON object.'],
+    ['0', 'Input must be a JSON object.'],
+    [JSON.stringify({ path: 'items' }), 'An assignment object is required.'],
+    [JSON.stringify({ path: 'items', assignment: null }), 'An assignment object is required.'],
+    [JSON.stringify({ path: 'items', assignment: [] }), 'An assignment object is required.'],
+    [JSON.stringify({ path: 'items', assignment: { assetId: 'A', segmentId: 'S', custodianPersonId: 'C' } }), ''],
+  ])('returns the precise validation result for %s', (input, error) => {
+    const result = JSON.parse(assetCustodianSegmentAssignmentList(input, fixture().env));
+    if (error) expect(result).toEqual({ appended: false, error });
+    else expect(result.appended).toBe(true);
+  });
+
+  test('defaults memory location and trims path and identifiers', () => {
+    const value = fixture();
+    const result = JSON.parse(assetCustodianSegmentAssignmentList(JSON.stringify({
+      path: ' items ',
+      assignment: { assetId: ' A ', segmentId: ' S ', custodianPersonId: ' C ' },
+    }), value.env));
+    expect(result).toMatchObject({ appended: true, length: 1 });
+    expect(value.state.temporary.items).toEqual([{ assetId: 'A', segmentId: 'S', custodianPersonId: 'C' }]);
+  });
 });
