@@ -54,6 +54,7 @@ describe('createRealtimeVoicePrototypeElement', () => {
 
     const text = JSON.stringify(root);
     expect(root.className).toBe('realtime-voice-toy');
+    expect(root.children[3].textContent).toBe('disconnected');
     expect(text).toContain('Connect');
     expect(text).toContain('Disconnect');
     expect(text).toContain('Mute');
@@ -131,7 +132,12 @@ describe('realtimeVoicePrototypePresenterTestOnly', () => {
     expect(helpers.getJsonErrorDetail('{"error":"  "}')).toBe('');
     expect(helpers.getJsonErrorDetail('{"message":"fallback"}')).toBe('');
     expect(helpers.getJsonErrorDetail('not json')).toBe('');
+    expect(helpers.getJsonErrorDetail('null')).toBe('');
+    expect(helpers.getJsonErrorDetail('[]')).toBe('');
+    expect(helpers.getJsonErrorDetail('42')).toBe('');
+    expect(helpers.getJsonErrorDetail('true')).toBe('');
     expect(helpers.getRealtimeAnswerErrorDetail('  plain  ')).toBe('plain');
+    expect(helpers.getRealtimeAnswerErrorDetail('   ')).toBe('');
     expect(helpers.getRealtimeAnswerErrorDetail('{"error":"relay"}')).toBe(
       'relay'
     );
@@ -310,6 +316,7 @@ describe('realtimeVoicePrototypePresenterTestOnly', () => {
       muted: false,
     });
     expect(controls.audioElement.srcObject).toBeNull();
+    expect(controls.muteButton.textContent).toBe('Mute');
     helpers.appendDebugLog(controls, 'hello', dom);
     expect(controls.debugLog.children[0].tagName).toBe('LI');
     expect(controls.debugLog.children[0].textContent).toContain('hello');

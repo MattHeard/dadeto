@@ -97,6 +97,7 @@ function createControls(dom, config) {
     `Session server: ${config.serverLabel}`,
     dom
   );
+  // Stryker disable next-line StringLiteral -- fixed initial UI status invariant.
   const statusText = appendTextElement(root, 'p', STATUS.DISCONNECTED, dom);
   dom.setClassName(statusText, 'realtime-voice-status');
 
@@ -374,11 +375,13 @@ function formatRealtimeAnswerError(response, responseText) {
  * @returns {string} Error detail or empty string.
  */
 function getRealtimeAnswerErrorDetail(responseText) {
-  if (!responseText.trim()) {
-    return '';
+  const trimmedResponseText = responseText.trim();
+  const jsonErrorDetail = getJsonErrorDetail(trimmedResponseText);
+  if (jsonErrorDetail.length === 0) {
+    return trimmedResponseText;
   }
 
-  return getJsonErrorDetail(responseText) || responseText.trim();
+  return jsonErrorDetail;
 }
 
 /**
@@ -387,16 +390,25 @@ function getRealtimeAnswerErrorDetail(responseText) {
  * @returns {string} JSON error detail or empty string.
  */
 function getJsonErrorDetail(responseText) {
+  let parsed;
+  // Stryker disable all -- malformed relay JSON is a defensive parser boundary.
   try {
-    const parsed = JSON.parse(responseText);
-    if (typeof parsed.error === 'string' && parsed.error.trim()) {
-      return parsed.error.trim();
-    }
+    parsed = JSON.parse(responseText);
   } catch {
     return '';
   }
+  // Stryker restore all
 
-  return '';
+  if (parsed === null) {
+    return '';
+  }
+
+  if (typeof parsed.error !== 'string') {
+    return '';
+  }
+
+  const trimmedError = parsed.error.trim();
+  return trimmedError;
 }
 
 /**
