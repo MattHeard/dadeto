@@ -2309,7 +2309,7 @@ export function initAdminApp({
   documentObj,
   fetchObj,
   reportError = () => {},
-  onHandlersReady,
+  onHandlersReady = () => {},
 }) {
   setupFirebase(initializeAppFn);
 
@@ -2333,8 +2333,8 @@ export function initAdminApp({
   const initGoogleSignIn = async (
     /** @type {GoogleSignInOptions | undefined} */ options
   ) => {
-    const config = await loadStaticConfigFn();
-    if (config?.disableGoogleSignIn) {
+    const config = (await loadStaticConfigFn()) ?? {};
+    if (config.disableGoogleSignIn) {
       return;
     }
 
@@ -2373,7 +2373,7 @@ export function initAdminApp({
     getIdToken,
   };
 
-  onHandlersReady?.(googleAuth);
+  onHandlersReady(googleAuth);
 
   initAdmin({
     googleAuthModule: googleAuth,

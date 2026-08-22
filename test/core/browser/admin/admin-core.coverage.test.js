@@ -94,8 +94,11 @@ describe('admin-core additional coverage', () => {
       signInWithCredentialFn: jest.fn(),
     });
 
-    expect(() => initFactory()).not.toThrow();
-    expect(typeof initFactory()).toBe('function');
+    const firstHandler = initFactory();
+    const secondHandler = initFactory();
+    expect(firstHandler).toBe(secondHandler);
+    expect(() => firstHandler()).not.toThrow();
+    expect(initialize).toHaveBeenCalledTimes(1);
   });
 
   describe('isAdminWithDeps', () => {
