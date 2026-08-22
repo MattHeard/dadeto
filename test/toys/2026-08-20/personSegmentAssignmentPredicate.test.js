@@ -1,5 +1,11 @@
 import { describe, expect, test } from '@jest/globals';
-import { personSegmentAssignmentPredicate } from '../../../src/core/browser/toys/2026-08-20/personSegmentAssignmentPredicate.js';
+import {
+  personSegmentAssignmentPredicate,
+  normalizeAssignment,
+  overlaps,
+  parseRequest,
+  resolveInterval,
+} from '../../../src/core/browser/toys/2026-08-20/personSegmentAssignmentPredicate.js';
 
 const input = assignments =>
   JSON.stringify({
@@ -69,12 +75,33 @@ describe('personSegmentAssignmentPredicate', () => {
       ),
       proposedAssignment: { personId: 'P1', segmentId: 'S2' },
     };
-    expect(personSegmentAssignmentPredicate(JSON.stringify(invalid))).toBe('false');
+    expect(personSegmentAssignmentPredicate(JSON.stringify(invalid))).toBe(
+      'false'
+    );
     const reversed = {
       ...base,
       segments: [{ segmentId: 'BAD', startPointId: 'P2', endPointId: 'P1' }],
       proposedAssignment: { personId: 'P1', segmentId: 'BAD' },
     };
-    expect(personSegmentAssignmentPredicate(JSON.stringify(reversed))).toBe('false');
+    expect(personSegmentAssignmentPredicate(JSON.stringify(reversed))).toBe(
+      'false'
+    );
+  });
+
+  test('covers parser, normalization, interval, and overlap boundaries directly', () => {
+    expect(() => parseRequest(null)).toThrow();
+    expect(() => parseRequest('[]')).toThrow();
+    expect(normalizeAssignment(null)).toBeNull();
+    expect(normalizeAssignment([])).toBeNull();
+    expect(normalizeAssignment({ personId: null, segmentId: 'S1' })).toBeNull();
+    expect(normalizeAssignment({ personId: 'P1', segmentId: null })).toBeNull();
+    expect(normalizeAssignment({ personId: ' P1 ', segmentId: ' S1 ' })).toEqual({ personId: 'P1', segmentId: 'S1' });
+    const base = JSON.parse(input([]));
+    const pointMap = new Map(base.points.map(point => [point.pointId, point]));
+    const segmentMap = new Map(base.segments.map(segment => [segment.segmentId, segment]));
+    expect(resolveInterval(segmentMap, pointMap, 'S1').startTime).toBe(Date.parse(base.points[0].timestamp));
+    expect(() => resolveInterval(segmentMap, pointMap, 'missing')).toThrow();
+    expect(overlaps({ startTime: 0, endTime: 1 }, { startTime: 1, endTime: 2 })).toBe(false);
+    expect(overlaps({ startTime: 0, endTime: 2 }, { startTime: 1, endTime: 3 })).toBe(true);
   });
 });

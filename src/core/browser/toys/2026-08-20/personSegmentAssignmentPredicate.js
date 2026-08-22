@@ -42,7 +42,7 @@ export function personSegmentAssignmentPredicate(input) {
  * @param {string} input JSON request.
  * @returns {{points: Array<{pointId: string, timestamp: string}>, segments: Array<{segmentId: string, startPointId: string, endPointId: string}>, assignments: Array<{personId: string, segmentId: string}>, proposedAssignment: {personId: string, segmentId: string}}} Parsed request.
  */
-function parseRequest(input) {
+export function parseRequest(input) {
   const request = JSON.parse(input);
   if (
     !request ||
@@ -69,7 +69,7 @@ function parseRequest(input) {
  * @param {unknown} value Candidate assignment.
  * @returns {{personId: string, segmentId: string}|null} Normalized assignment.
  */
-function normalizeAssignment(value) {
+export function normalizeAssignment(value) {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
   const assignment = /** @type {Record<string, unknown>} */ (value);
   const personId = String(assignment.personId || '').trim();
@@ -83,7 +83,7 @@ function normalizeAssignment(value) {
  * @param {string} segmentId Segment identifier.
  * @returns {{startTime: number, endTime: number}} Temporal interval.
  */
-function resolveInterval(segments, points, segmentId) {
+export function resolveInterval(segments, points, segmentId) {
   const segment = segments.get(segmentId);
   if (!segment) throw new Error(`Unknown segment: ${segmentId}`);
   const start = points.get(String(segment.startPointId));
@@ -108,7 +108,7 @@ function resolveInterval(segments, points, segmentId) {
  * @param {{startTime: number, endTime: number}} second Second interval.
  * @returns {boolean} Whether intervals overlap.
  */
-function overlaps(first, second) {
+export function overlaps(first, second) {
   return (
     Math.max(first.startTime, second.startTime) <
     Math.min(first.endTime, second.endTime)
