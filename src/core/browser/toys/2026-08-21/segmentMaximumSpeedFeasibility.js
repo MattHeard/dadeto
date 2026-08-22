@@ -1,6 +1,4 @@
 // Toy: Segment Maximum-Speed Feasibility
-// jscpd:ignore-start
-/* eslint-disable jsdoc/require-returns */
 import { wgs84Distance } from '../2026-08-20/wgs84Distance.js';
 import { resolveSegment } from './segmentAssignmentFeasibilityCore.js';
 import { resolvePointRecords } from '../2026-08-22/spacePointResolution.js';
@@ -52,4 +50,3 @@ export function segmentMaximumSpeedFeasibility(input) {
     });
   }
 }
-// jscpd:ignore-end

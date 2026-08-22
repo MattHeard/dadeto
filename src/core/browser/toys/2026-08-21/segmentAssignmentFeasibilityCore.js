@@ -1,7 +1,5 @@
 // Shared pure feasibility helpers for safe segment assignment toys.
-// jscpd:ignore-start
 import { resolvePointRecords } from '../2026-08-22/spacePointResolution.js';
-/* eslint-disable jsdoc/require-returns, jsdoc/require-param-description, jsdoc/require-param-type */
 
 /**
  * Resolve and validate a segment.
@@ -48,7 +46,6 @@ export function resolveSegment(segments, points, segmentId) {
  * @param {Array<Record<string, unknown>>} spacePointsInput
  * @returns {{feasible: boolean, reason?: string}} Feasibility result.
  */
-// eslint-disable-next-line max-params
 export function evaluateWorldLine(
   pointsInput,
   existingSegments,
@@ -168,4 +165,3 @@ export function overlaps(first, second) {
     Math.min(first.endTime, second.endTime)
   );
 }
-// jscpd:ignore-end

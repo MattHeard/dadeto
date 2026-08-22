@@ -10,7 +10,6 @@ import {
   overlaps,
 } from '../../../src/core/browser/toys/2026-08-21/segmentAssignmentFeasibilityCore.js';
 import { appendAtomically } from '../../../src/core/browser/toys/2026-08-21/safeAssignmentPersistence.js';
-/* eslint-disable jsdoc/require-returns, jsdoc/require-param-description, jsdoc/require-param-type */
 
 const points = [
   {
