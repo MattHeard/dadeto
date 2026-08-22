@@ -20,6 +20,14 @@ export function moderatorRatingCounts(input) {
   return JSON.stringify(buildResultArray(counts));
 }
 
+export {
+  hasRequiredFields,
+  hasValidTypes,
+  isIso8601String,
+  isPlainObject,
+  parseRatings,
+};
+
 /**
  * Build a map of moderators to the number of valid ratings submitted.
  * @param {Array<ModeratorRatingEntry>} ratings - Parsed rating entries.
@@ -73,10 +81,6 @@ function getCountValue(counts, moderatorId) {
  * @returns {Array<unknown>} Array of parsed entries or an empty array.
  */
 function parseRatings(value) {
-  if (typeof value !== 'string') {
-    return [];
-  }
-
   return arrayOrEmpty(parseJsonOrFallback(value, []));
 }
 
