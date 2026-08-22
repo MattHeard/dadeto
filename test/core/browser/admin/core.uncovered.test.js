@@ -9,6 +9,7 @@ import {
   announceTriggerRenderResult,
   createInitAdminAppHandle,
 } from '../../../../src/core/browser/admin-core.js';
+import { jest } from '@jest/globals';
 
 describe('admin/core uncovered branches', () => {
   let mockGoogleAuthModule;
@@ -174,6 +175,57 @@ describe('admin/core uncovered branches', () => {
     });
     await regenerateVariant({ preventDefault: () => {} });
     expect(showMessageCalls).toContain('Regeneration failed');
+  });
+
+  it('includes trimmed response details in regeneration failures', async () => {
+    mockDoc.getElementById = id => {
+      if (id === 'regenInput') return { value: '123abc' };
+      if (id === 'renderStatus') return { innerHTML: '' };
+      return null;
+    };
+    mockFetchFn = async () => ({
+      ok: false,
+      status: 422,
+      text: async () => '  invalid variant  ',
+    });
+    const regenerateVariant = createRegenerateVariant({
+      googleAuth: mockGoogleAuthModule,
+      doc: mockDoc,
+      showMessage: mockShowMessage,
+      getAdminEndpointsFn: async () => ({ markVariantDirtyUrl: 'some-url' }),
+      fetchFn: mockFetchFn,
+    });
+    await regenerateVariant({ preventDefault: () => {} });
+    expect(showMessageCalls).toContain('Regeneration failed');
+  });
+
+  it('does not submit author regeneration without a token', async () => {
+    let submitHandler;
+    const form = {
+      addEventListener: (event, handler) => {
+        submitHandler = handler;
+      },
+    };
+    const doc = {
+      getElementById: id =>
+        ({ regenAuthorForm: form, regenAuthorInput: { value: 'author-42' } })[id] ?? null,
+      querySelectorAll: () => [],
+    };
+    const fetchFn = jest.fn();
+    initAdmin({
+      googleAuthModule: {
+        initGoogleSignIn: () => {},
+        getIdToken: async () => '',
+        signOut: () => {},
+      },
+      loadStaticConfigFn: async () => ({ disableGoogleSignIn: true }),
+      getAuthFn: () => ({}),
+      onAuthStateChangedFn: () => {},
+      doc,
+      fetchFn,
+    });
+    await submitHandler({ preventDefault: () => {} });
+    expect(fetchFn).not.toHaveBeenCalled();
   });
 
   it('uses the cached token when the Firebase user has no token method', async () => {
