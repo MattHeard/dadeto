@@ -291,7 +291,7 @@ describe('moderate pure helper contracts', () => {
       });
       const response = await fetchJson('/global');
       expect(response).toMatchObject({ ok: true, status: 200 });
-      await expect(response.json()).resolves.toEqual({ source: 'global' });
+      expect(await response.json()).toEqual({ source: 'global' });
       expect(globalFetch).toHaveBeenCalledWith('/global', undefined);
     } finally {
       globalThis.fetch = previousFetch;

@@ -472,6 +472,20 @@ describe('moderate core', () => {
     const [approve, reject] = ['approveBtn', 'rejectBtn'].map(id =>
       mockDocument.elements.get(id)
     );
+    mockFetch.mockResolvedValue({ ok: true, json: async () => ({}) });
+    approve.onclick();
+    await new Promise(resolve => setImmediate(resolve));
+    expect(mockAuthedFetch).toHaveBeenCalledWith(
+      '/submit',
+      expect.objectContaining({ body: JSON.stringify({ isApproved: true }) })
+    );
+    mockFetch.mockResolvedValue({ ok: true, json: async () => ({}) });
+    reject.onclick();
+    await new Promise(resolve => setImmediate(resolve));
+    expect(mockAuthedFetch).toHaveBeenCalledWith(
+      '/submit',
+      expect.objectContaining({ body: JSON.stringify({ isApproved: false }) })
+    );
     mockFetch.mockRejectedValueOnce(new Error('submit failed'));
     const originalGetElementById = mockDocument.getElementById;
     mockDocument.getElementById = () => null;
