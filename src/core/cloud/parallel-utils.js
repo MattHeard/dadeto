@@ -6,9 +6,5 @@
  * @template T
  */
 export function runInParallel(items, iterator) {
-  if (!items.length) {
-    return Promise.resolve([]);
-  }
-
   return Promise.all(items.map(iterator));
 }
