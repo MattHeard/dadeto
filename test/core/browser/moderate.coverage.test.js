@@ -7,6 +7,7 @@ const mockAuthedFetch = jest.fn(async () => ({
   content: 'Content',
 }));
 let mockSignInInit;
+let mockSignInOptions;
 const mockSignOut = jest.fn();
 let mockDocument;
 const mockFetch = jest.fn(async () => ({ ok: true, json: async () => ({}) }));
@@ -63,10 +64,13 @@ jest.unstable_mockModule('../../../src/core/browser/document.js', () => ({
 }));
 jest.unstable_mockModule('../../../src/core/browser/admin-core.js', () => ({
   setupFirebase: jest.fn(),
-  createGoogleSignInInit: () => options => {
+  createGoogleSignInInit: options => {
+    mockSignInOptions = options;
+    return options => {
     mockSignInInit = options;
+    };
   },
-  createSignOut: () => mockSignOut,
+  createSignOut: () => jest.fn(mockSignOut),
   isAdminWithDeps: () => mockIsAdmin,
 }));
 jest.unstable_mockModule('../../../src/core/browser/error-beacon.js', () => ({
@@ -479,6 +483,9 @@ describe('moderate core', () => {
     const signOutOne = getSignOutHandler();
     const signOutTwo = getSignOutHandler();
     expect(signOutTwo).toBe(signOutOne);
+    expect(mockSignInOptions).toEqual(
+      expect.objectContaining({ logger: console, globalObject })
+    );
     expect(isAdmin()).toBe(mockIsAdmin);
   });
 
