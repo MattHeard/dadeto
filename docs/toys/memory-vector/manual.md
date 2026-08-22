@@ -58,6 +58,21 @@ A JSON string is also accepted:
 
 If `memoryLocation` is missing or empty, the toy uses `temporary`.
 
+## JSON Schema
+
+This machine-readable schema describes the public input shape.
+
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "string"
+}
+```
+
+## Behavior
+
+The toy applies the input rules above and produces the output described below.
+
 ## Output format
 
 The response contains:

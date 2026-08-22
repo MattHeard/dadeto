@@ -6,7 +6,7 @@ Fractal Generator creates a small recursive tree drawing as a canvas payload. It
 
 The toy accepts optional JSON. Empty input or malformed input falls back to defaults.
 
-## Input format
+## Input
 
 Paste a JSON object with any of these optional fields:
 
@@ -37,12 +37,34 @@ The toy normalizes input before drawing.
 
 `depth` is rounded to the nearest whole number before being clamped.
 
+## Behavior
+
+The toy applies the input rules above and produces the output described below.
+
 ## How to use it
 
 1. Leave the input empty and click **Submit** to see the default tree.
 2. Add a JSON object with one or more fields.
 3. Click **Submit** again.
 4. Adjust values until the tree has the shape and color you want.
+
+## JSON Schema
+
+This machine-readable schema describes the public input shape. It does not include blog identifiers or runtime helpers.
+
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "width": {},
+    "height": {},
+    "depth": {},
+    "hue": {}
+  },
+  "additionalProperties": true
+}
+```
 
 ## Output
 

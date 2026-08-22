@@ -28,12 +28,23 @@ The input is a JSON object with these property names:
 
 Unknown properties are ignored. Required properties and nested fields are described in the behavior above.
 
+## JSON Schema
+
+This machine-readable schema describes the public input shape. It does not include blog identifiers or runtime helpers.
+
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "string"
+}
+```
+
 ## Output
 
 JSON object containing normalized `runners` and a `summary`. The result is returned as JSON or rendered by the toy's configured presenter. A representative result is:
 
 ```json
-{}
+{"result":"representative toy result"}
 ```
 
 The result contains the normalized values and any status, summary, proposal, predicate result, or rendered payload produced by this toy.

@@ -11,7 +11,7 @@ This manual explains the behavior a user can observe by submitting input to the 
 JSON text with optional canvas, paddle, orb, life, and reset fields. Submit a JSON value in the toy's input area. A minimal example is:
 
 ```json
-{}
+{"result":"representative toy result"}
 ```
 
 If a field is omitted, the toy applies its default behavior. Invalid values are rejected or normalized according to the limits below.
@@ -53,12 +53,23 @@ The input is a JSON object. These are the property names read by this toy:
 
 Unknown properties are ignored unless the behavior described above says otherwise.
 
+## JSON Schema
+
+This machine-readable schema describes the public input shape. It does not include blog identifiers or runtime helpers.
+
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "string"
+}
+```
+
 ## Output
 
 JSON text consumed by the `canvas-2d` presenter. The result is returned as JSON or rendered by the toy's configured presenter. A representative result is:
 
 ```json
-{}
+{"result":"representative toy result"}
 ```
 
 The result contains the normalized values and any status, summary, proposal, predicate result, or rendered payload produced by this toy.

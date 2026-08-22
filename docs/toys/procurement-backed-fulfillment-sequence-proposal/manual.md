@@ -46,12 +46,23 @@ The input is a JSON object with five properties:
 
 All generated IDs must be non-empty, unique, and distinct from the possession IDs. Timestamps must be valid and align to whole minutes.
 
+## JSON Schema
+
+This machine-readable schema describes the public input shape. It does not include blog identifiers or runtime helpers.
+
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "string"
+}
+```
+
 ## Output
 
 warehouse space point, spacetime points, segments, and ordered operation metadata. The result is returned as JSON or rendered by the toy's configured presenter. A representative result is:
 
 ```json
-{}
+{"result":"representative toy result"}
 ```
 
 The result contains the normalized values and any status, summary, proposal, predicate result, or rendered payload produced by this toy.

@@ -6,7 +6,7 @@ Canvas Doodle generates a small layered 2D doodle from a few JSON parameters. It
 
 This toy does not render arbitrary user-provided shape lists. It generates a fixed doodle pattern from the parameters you provide.
 
-## Input format
+## Input
 
 Paste a JSON object with any of these optional fields:
 
@@ -37,6 +37,10 @@ If input is empty or malformed, the toy uses:
 }
 ```
 
+## Behavior
+
+The toy applies the input rules above and produces the output described below.
+
 ## How the doodle is generated
 
 The toy produces five shapes:
@@ -48,6 +52,24 @@ The toy produces five shapes:
 5. a bottom accent line
 
 The band and circles use generated hue values. The `accent` value controls the bottom line color.
+
+## JSON Schema
+
+This machine-readable schema describes the public input shape. It does not include blog identifiers or runtime helpers.
+
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "width": {},
+    "height": {},
+    "background": {},
+    "accent": {}
+  },
+  "additionalProperties": true
+}
+```
 
 ## Output
 

@@ -12,7 +12,7 @@ It can write into:
 
 Missing intermediate containers are created automatically. Numeric path segments create or index arrays.
 
-## Input format
+## Input
 
 Paste a JSON object with:
 
@@ -111,6 +111,27 @@ Invalid example:
 ```
 
 The object value will be rejected.
+
+## JSON Schema
+
+This machine-readable schema describes the public input shape.
+
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "memoryLocation": {},
+    "path": {},
+    "value": {}
+  },
+  "additionalProperties": true
+}
+```
+
+## Behavior
+
+The toy applies the input rules above and produces the output described below.
 
 ## Output format
 

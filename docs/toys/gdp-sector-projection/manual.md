@@ -112,6 +112,23 @@ For each year:
 
 Output values are clamped to the visible `0–100` range.
 
+## JSON Schema
+
+This machine-readable schema describes the public input shape. It does not include blog identifiers or runtime helpers.
+
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {},
+  "additionalProperties": true
+}
+```
+
+## Behavior
+
+The toy applies the input rules above and produces the output described below.
+
 ## Output
 
 The toy returns a `graph-plot` payload for the graph presenter. It includes:

@@ -16,6 +16,7 @@
     "test:e2e:local": "npm run build && node scripts/run-e2e.js --suite local",
     "test:synthetic": "npx playwright test --config test/synthetic.config.ts",
     "generate": "node src/build/generate.js",
+    "manuals:check": "node scripts/check-toy-manuals.js",
     "migrate:tree-visibility": "node scripts/migrate-tree-visibility.js",
     "generate:gcp-diagram": "node scripts/generate-gcp-architecture-diagram.js",
     "render:template": "node scripts/render-html-template.js",

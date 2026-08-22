@@ -9,7 +9,7 @@ Change Together Explorer analyzes a static list of change sets and ranks:
 
 Use it when you want a quick, local co-change report before doing heavier repository mining. The toy does not read live Git history. It only analyzes the JSON you paste into it.
 
-## Input format
+## Input
 
 Paste a JSON object with a `changeSets` array.
 
@@ -50,6 +50,26 @@ If a change set has no string `id`, the toy creates a fallback ID such as `chang
   ]
 }
 ```
+
+## JSON Schema
+
+This machine-readable schema describes the public input shape.
+
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "id": {},
+    "files": {}
+  },
+  "additionalProperties": true
+}
+```
+
+## Behavior
+
+The toy applies the input rules above and produces the output described below.
 
 ## How to use it
 

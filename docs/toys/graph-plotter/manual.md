@@ -6,7 +6,7 @@ Graph Plotter draws a single-variable mathematical expression on Cartesian axes.
 
 Use it to sketch simple functions such as sine, cosine, quadratics, exponentials, and logarithms.
 
-## Input format
+## Input
 
 Paste a JSON object.
 
@@ -104,6 +104,23 @@ max(24, round(width / 4))
 Each point is evaluated across the interval from `xMin` to `xMax`.
 
 If an evaluated `y` value is not finite, that point is skipped.
+
+## JSON Schema
+
+This machine-readable schema describes the public input shape. It does not include blog identifiers or runtime helpers.
+
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {},
+  "additionalProperties": true
+}
+```
+
+## Behavior
+
+The toy applies the input rules above and produces the output described below.
 
 ## Output
 

@@ -6,7 +6,7 @@ Realtime Voice Prototype mounts a browser-based WebRTC voice interface for an Op
 
 The browser does not receive the OpenAI API key. Instead, it sends a Session Description Protocol offer to a local or cloud relay endpoint. That server is responsible for talking to OpenAI and returning the SDP answer.
 
-## Input format
+## Input
 
 Paste a JSON config object.
 
@@ -88,6 +88,27 @@ The realtime voice presenter shows:
 - debug log
 
 The debug log records connection lifecycle messages. It does not log raw audio or raw SDP.
+
+## JSON Schema
+
+This machine-readable schema describes the public input shape.
+
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {},
+  "additionalProperties": true
+}
+```
+
+## Output
+
+The toy returns the result described by its behavior and renders it in the configured presenter.
+
+## Behavior
+
+The toy applies the input rules above and produces the output described below.
 
 ## How to use it
 
