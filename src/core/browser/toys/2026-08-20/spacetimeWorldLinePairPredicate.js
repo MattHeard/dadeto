@@ -7,8 +7,10 @@ import { resolvePointRecords } from '../2026-08-22/spacePointResolution.js';
 export function spacetimeWorldLinePairPredicate(input) {
   try {
     const x = JSON.parse(input);
-    const points = new Map(resolvePointRecords(x.points || [], x.spacePoints || []).map(p => [p.pointId, p]));
-    const segments = new Map((x.segments || []).map(s => [s.segmentId, s]));
+    if (!x || !Array.isArray(x.points) || !Array.isArray(x.segments))
+      throw new Error('Points and segments are required.');
+    const points = new Map(resolvePointRecords(x.points, x.spacePoints).map(p => [p.pointId, p]));
+    const segments = new Map(x.segments.map(s => [s.segmentId, s]));
     const a = interval(segments, points, x.firstSegmentId);
     const b = interval(segments, points, x.secondSegmentId);
     if (Math.max(a.startTime, b.startTime) < Math.min(a.endTime, b.endTime))

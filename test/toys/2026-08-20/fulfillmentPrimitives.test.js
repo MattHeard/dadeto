@@ -445,6 +445,15 @@ describe('fulfillment primitives', () => {
 
   test('returns deterministic failures for malformed primitive inputs', () => {
     expect(spacetimeWorldLinePairPredicate('{')).toContain('valid');
+    for (const value of [
+      '{}',
+      JSON.stringify({ points: [], segments: null }),
+      JSON.stringify({ points: null, segments: [] }),
+    ]) {
+      expect(spacetimeWorldLinePairPredicate(value)).toContain(
+        'Points and segments are required.'
+      );
+    }
     expect(
       wgs84CirclePointPredicate(
         JSON.stringify({ circle: { radiusMeters: -1 } })
