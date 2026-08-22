@@ -11,3 +11,5 @@ The lines 680-736 fetch/output-helper scan instrumented 10 mutants: 8 killed, 0 
 The lines 850-1035 key/value element and type-selector scan instrumented 53 mutants: 48 killed, 0 non-static survivors, and 0 timeouts across 68 tests. Added exact key-handler data wiring, toggle labels/classes, type-selector fallback behavior, and disposer identity checks. The full-file `toys.js` scan remains pending.
 
 The lines 1035-1124 add/remove row-handler scan instrumented 27 mutants: 26 killed, 0 non-static survivors, and 0 timeouts across 47 tests. Added exact add-once/remove-state behavior and null row-data fallback coverage. The subsequent row-construction range remains pending.
+
+The lines 1139-1225 row-construction/button-selection scan instrumented 21 mutants: 18 killed, 0 non-static survivors, and 0 timeouts across 53 tests. Added exact row DOM/tag, final-row add versus non-final remove, and null-row construction assertions; removed redundant repeated row-data fallback expressions. Later `toys.js` ranges remain pending.

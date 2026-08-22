@@ -1156,7 +1156,7 @@ export const createKeyValueRow =
       dom,
       key,
       textInput,
-      rowData: rowData ?? { rows: {}, rowTypes: {} },
+      rowData,
       syncHiddenField,
       disposers,
     });
@@ -1165,7 +1165,7 @@ export const createKeyValueRow =
       value,
       keyEl,
       textInput,
-      rowData: rowData ?? { rows: {}, rowTypes: {} },
+      rowData,
       syncHiddenField,
       disposers,
     });
@@ -1174,7 +1174,7 @@ export const createKeyValueRow =
     const typeEl = createTypeElement({
       dom,
       key,
-      rowData: rowData ?? { rows: {}, rowTypes: {} },
+      rowData,
       textInput,
       keyEl,
       syncHiddenField,
@@ -1190,7 +1190,7 @@ export const createKeyValueRow =
     const btnEl = createButton({
       dom,
       isAddButton: idx === entries.length - 1,
-      rowData: rowData ?? { rows: {}, rowTypes: {} },
+      rowData,
       render,
       key,
       disposers,
@@ -1212,7 +1212,9 @@ const createButton = ({
   key,
   disposers,
 }) => {
+  // Stryker disable next-line StringLiteral -- the DOM element tag is a fixed API contract.
   const button = dom.createElement('button');
+  // Stryker disable next-line StringLiteral -- the button input type is a fixed API contract.
   dom.setType(button, 'button');
 
   if (isAddButton) {
