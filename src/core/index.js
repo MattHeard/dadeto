@@ -615,6 +615,7 @@ export function createAsyncFsAdapters(fsPromisesModule) {
  */
 export const CHECK_COMMANDS = [
   { name: 'test', command: 'npm', args: ['test'] },
+  { name: 'manuals:check', command: 'npm', args: ['run', 'manuals:check'] },
   { name: 'lint', command: 'npm', args: ['run', 'lint'] },
   { name: 'depcruise', command: 'npm', args: ['run', 'depcruise'] },
   { name: 'core-parse', command: 'npm', args: ['run', 'core-parse'] },
