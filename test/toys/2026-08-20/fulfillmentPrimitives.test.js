@@ -379,6 +379,25 @@ describe('fulfillment primitives', () => {
       )
     ).toBe('["A1"]');
   });
+  test('world-line touching requires matching endpoint identity in either order', () => {
+    const worldPoints = [
+      { pointId: 'A', timestamp: '2026-01-01T00:00:00Z' },
+      { pointId: 'B', timestamp: '2026-01-01T01:00:00Z' },
+      { pointId: 'C', timestamp: '2026-01-01T01:00:00Z' },
+      { pointId: 'D', timestamp: '2026-01-01T02:00:00Z' },
+    ];
+    const worldSegments = [
+      { segmentId: 'AB', startPointId: 'A', endPointId: 'B' },
+      { segmentId: 'CD', startPointId: 'C', endPointId: 'D' },
+    ];
+    const value = { points: worldPoints, segments: worldSegments };
+    expect(spacetimeWorldLinePairPredicate(JSON.stringify({
+      ...value, firstSegmentId: 'AB', secondSegmentId: 'CD',
+    }))).toBe('false');
+    expect(spacetimeWorldLinePairPredicate(JSON.stringify({
+      ...value, firstSegmentId: 'CD', secondSegmentId: 'AB',
+    }))).toBe('false');
+  });
   test('keeps touching possession intervals available and deduplicates IDs', () => {
     expect(
       JSON.parse(
