@@ -303,4 +303,14 @@ function createInitialState(moderatorId) {
  * @param {unknown} value - Value to test.
  * @returns {boolean} True when the value is a non-array object.
  */
-export { guardStopDistance };
+export {
+  buildNodeList,
+  createInitialState,
+  createNeighborEntry,
+  enqueueIfImproved,
+  guardAdmin,
+  guardBeyondLimit,
+  guardStopDistance,
+  guardVisited,
+  hasShorterPath,
+};

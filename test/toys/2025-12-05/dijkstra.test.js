@@ -1,7 +1,15 @@
 import { describe, expect, it } from '@jest/globals';
 import {
   shortestDistanceToAdmin,
+  buildNodeList,
+  createInitialState,
+  createNeighborEntry,
+  enqueueIfImproved,
+  guardAdmin,
+  guardBeyondLimit,
   guardStopDistance,
+  guardVisited,
+  hasShorterPath,
   dequeue,
 } from '../../../src/core/browser/toys/2025-12-05/dijkstra.js';
 
@@ -97,6 +105,83 @@ describe('guardStopDistance', () => {
     const result = guardStopDistance(state, 0.5);
     expect(result).toBe(true);
     expect(state.queue).toHaveLength(0);
+  });
+});
+
+describe('dijkstra helper contracts', () => {
+  it('marks a new node and skips a previously visited node', () => {
+    const visited = new Set();
+    expect(guardVisited(visited, 'alice')).toBe(false);
+    expect(guardVisited(visited, 'alice')).toBe(true);
+    expect(visited).toEqual(new Set(['alice']));
+  });
+
+  it('updates and clears the state when the admin is reached', () => {
+    const state = { bestDistance: 1, queue: [{ id: 'later', distance: 0.2 }] };
+    const current = { id: 'admin', distance: 0.4 };
+    expect(guardAdmin(state, 'admin', current)).toBe(true);
+    expect(state.bestDistance).toBe(0.4);
+    expect(state.queue).toEqual([]);
+    expect(guardAdmin(state, 'other', current)).toBe(false);
+  });
+
+  it('stops paths at the maximum distance', () => {
+    expect(guardBeyondLimit(1)).toBe(true);
+    expect(guardBeyondLimit(0.99)).toBe(false);
+  });
+
+  it('initializes the priority-search state', () => {
+    expect(createInitialState('matt')).toEqual({
+      visited: new Set(),
+      queue: [{ id: 'matt', distance: 0 }],
+      distances: new Map([['matt', 0]]),
+      bestDistance: 1,
+    });
+  });
+
+  it('builds a unique node list and always includes both endpoints', () => {
+    expect(buildNodeList({ alice: {}, bob: {} }, 'alice', 'admin')).toEqual([
+      'alice',
+      'bob',
+      'admin',
+    ]);
+    expect(buildNodeList(null, 'alice', 'admin')).toEqual(['alice', 'admin']);
+  });
+
+  it('tracks only strictly improved known paths', () => {
+    const distances = new Map([['alice', 0.4]]);
+    expect(hasShorterPath(distances, 'alice', 0.4)).toBe(true);
+    expect(hasShorterPath(distances, 'alice', 0.5)).toBe(true);
+    expect(hasShorterPath(distances, 'alice', 0.3)).toBe(false);
+    expect(hasShorterPath(distances, 'bob', 0.3)).toBe(false);
+    const queue = [];
+    enqueueIfImproved({ id: 'bob', distance: 0.3 }, queue, distances);
+    expect(queue).toEqual([{ id: 'bob', distance: 0.3 }]);
+    expect(distances.get('bob')).toBe(0.3);
+  });
+
+  it('rejects unusable neighbor edges and accepts improving edges', () => {
+    const ratings = {
+      matt: { 'page-A': true },
+      alice: { 'page-A': true, 'page-P': true },
+      admin: { 'page-A': true },
+    };
+    expect(
+      createNeighborEntry({
+        current: { id: 'matt', distance: 0 },
+        neighbor: 'alice',
+        ratings,
+        bestDistance: 1,
+      })
+    ).toEqual({ id: 'alice', distance: 0 });
+    expect(
+      createNeighborEntry({
+        current: { id: 'matt', distance: 0 },
+        neighbor: 'missing',
+        ratings,
+        bestDistance: 1,
+      })
+    ).toBeNull();
   });
 });
 
