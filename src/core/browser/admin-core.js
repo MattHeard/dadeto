@@ -105,7 +105,7 @@ export function createDisableAutoSelect(globalScope) {
  * @param {Window & typeof globalThis} globalScope Global.
  * @returns {(() => void) | null} Disable fn.
  */
-function readDisableAutoSelect(globalScope) {
+export function readDisableAutoSelect(globalScope) {
   const disableCandidate = getDisableAutoSelectCandidate(globalScope);
   if (isDisableAutoSelectFunction(disableCandidate)) {
     return disableCandidate;
@@ -347,7 +347,7 @@ export function isAdminWithDeps(storage, jsonParser, decodeBase64) {
  * @param {(value: string) => string} decodeBase64 Base64 decoder.
  * @returns {boolean} True when the token payload contains the admin UID.
  */
-function isAdminToken(token, jsonParser, decodeBase64) {
+export function isAdminToken(token, jsonParser, decodeBase64) {
   try {
     const payload = token.split('.')[1];
     const json = jsonParser.parse(

@@ -68,6 +68,8 @@ import {
   getValueFromInput,
   getTrimmedInputValue,
   parsePageVariantValue,
+  readDisableAutoSelect,
+  isAdminToken,
 } from '../../../src/core/browser/admin-core.js';
 
 describe('small admin-core predicates', () => {
@@ -109,6 +111,23 @@ describe('regeneration input helpers', () => {
     expect(parsePageVariantValue('123')).toBeNull();
     expect(parsePageVariantValue('abc123')).toBeNull();
     expect(parsePageVariantValue('123abc-')).toBeNull();
+  });
+});
+
+describe('admin token and global helper resolution', () => {
+  it('returns only callable disableAutoSelect candidates', () => {
+    const disable = jest.fn();
+    expect(readDisableAutoSelect({ google: { accounts: { id: { disableAutoSelect: disable } } } })).toBe(disable);
+    expect(readDisableAutoSelect({ google: { accounts: { id: { disableAutoSelect: true } } } })).toBeNull();
+    expect(readDisableAutoSelect(null)).toBeNull();
+  });
+
+  it('accepts the admin subject from a URL-safe JWT payload', () => {
+    const jsonParser = { parse: jest.fn(() => ({ sub: 'qcYSrXTaj1MZUoFsAloBwT86GNM2' })) };
+    const decodeBase64 = jest.fn(() => '{}');
+    expect(isAdminToken('header.payload.signature', jsonParser, decodeBase64)).toBe(true);
+    expect(decodeBase64).toHaveBeenCalledWith('payload');
+    expect(isAdminToken('not-a-token', jsonParser, decodeBase64)).toBe(false);
   });
 });
 
