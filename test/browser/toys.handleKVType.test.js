@@ -1,5 +1,5 @@
 import { describe, test, expect, jest } from '@jest/globals';
-import { handleKVType } from '../../src/browser/toys.js';
+import { ensureKeyValueInput, handleKVType } from '../../src/browser/toys.js';
 
 describe('handleKVType', () => {
   test('can be invoked with an empty DOM object', () => {
@@ -24,6 +24,7 @@ describe('handleKVType', () => {
       setValue: jest.fn(),
       setDataAttribute: jest.fn(),
       addEventListener: jest.fn(),
+      removeEventListener: jest.fn(),
       setTextContent: jest.fn(),
       appendChild: jest.fn(),
       addClass: jest.fn(),
@@ -66,6 +67,7 @@ describe('handleKVType', () => {
       setValue: jest.fn(),
       setDataAttribute: jest.fn(),
       addEventListener: jest.fn(),
+      removeEventListener: jest.fn(),
       setTextContent: jest.fn(),
       appendChild: jest.fn(),
       getValue: jest.fn(() => '{"first":"value"}'),
@@ -95,5 +97,8 @@ describe('handleKVType', () => {
     expect(dom.setValue).toHaveBeenCalledWith(expect.any(Object), 'value');
     expect(dom.setValue).toHaveBeenCalledWith(expect.any(Object), 'string');
     expect(insertBefore).toHaveBeenCalled();
+    const ensured = ensureKeyValueInput(container, textInput, dom);
+    ensured._dispose();
+    expect(dom.removeEventListener).toHaveBeenCalled();
   });
 });

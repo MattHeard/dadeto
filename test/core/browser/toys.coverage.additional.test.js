@@ -6,11 +6,42 @@ import {
   initializeInteractiveComponent,
   toggleToyFocusMode,
   parseExistingRows,
+  createRowData,
+  toysTestOnly,
 } from '../../../src/core/browser/toys.js';
 
 const utils = createToysHandle();
 
 describe('toys additional coverage', () => {
+  test('builds row metadata and keeps every input handler registered', () => {
+    expect(createRowData({ first: 'value', second: false })).toEqual({
+      rows: { first: 'value', second: false },
+      rowTypes: { first: 'string', second: 'string' },
+    });
+    expect(toysTestOnly.inputHandlerTypes).toEqual(
+      expect.arrayContaining([
+        'text',
+        'textarea',
+        'life-seed',
+        'file',
+        'number',
+        'kv',
+        'blog-key',
+        'real-hourly-wage',
+        'dendrite-story',
+        'dendrite-page',
+        'moderator-ratings',
+        'keyboard-capture',
+        'mobile-controls',
+        'gamepad-capture',
+        'gamepad-button-mapper',
+        'object-minute-asset',
+        'possession-request',
+        'default',
+      ])
+    );
+  });
+
   test('normalizes stored rows from input and DOM fallbacks', () => {
     const input = { value: '' };
     expect(

@@ -211,10 +211,7 @@ export const ensureKeyValueInput = (container, textInput, dom) => {
   const rows = parseExistingRows(dom, textInput);
   const disposers = [];
 
-  const rowData = {
-    rows,
-    rowTypes: Object.fromEntries(Object.keys(rows).map(k => [k, 'string'])),
-  };
+  const rowData = createRowData(rows);
 
   const render = createRenderer({
     dom,
@@ -284,6 +281,22 @@ const inputHandlersMap = {
   'object-minute-asset': objectMinuteAssetHandler,
   'possession-request': possessionRequestHandler,
   default: defaultHandler,
+};
+
+/**
+ * Build the row metadata used by the key/value editor.
+ * @param {object} rows Stored key/value rows.
+ * @returns {{ rows: object, rowTypes: object }} Rows and their initial types.
+ */
+export function createRowData(rows) {
+  return {
+    rows,
+    rowTypes: Object.fromEntries(Object.keys(rows).map(k => [k, 'string'])),
+  };
+}
+
+export const toysTestOnly = {
+  inputHandlerTypes: Object.keys(inputHandlersMap),
 };
 
 export const createInputDropdownHandler = dom => {
