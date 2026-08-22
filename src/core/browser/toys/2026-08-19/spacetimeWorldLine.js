@@ -27,7 +27,12 @@ export function spacetimeWorldLine(input) {
     const ordered = [];
     const used = new Set();
     let pointId = request.startPointId;
-    while (pointId !== request.endPointId) {
+    let iterations = 0;
+    while (
+      pointId !== request.endPointId &&
+      iterations++ >= 0 &&
+      iterations <= request.segments.length
+    ) {
       const segment = byStart.get(pointId);
       if (!segment || used.has(segment.segmentId))
         throw new Error('Segments do not form a complete world line.');
@@ -35,7 +40,7 @@ export function spacetimeWorldLine(input) {
       ordered.push(segment);
       pointId = segment.endPointId;
     }
-    if (used.size !== request.segments.length)
+    if (pointId !== request.endPointId || used.size !== request.segments.length)
       throw new Error('World line contains unused or disconnected segments.');
     return JSON.stringify(
       {
@@ -59,12 +64,20 @@ export function spacetimeWorldLine(input) {
  */
 function parseInput(input) {
   const parsed = JSON.parse(input || '{}');
-  if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed))
+  if (!isJsonObject(parsed))
     throw new Error('Input must be a JSON object.');
-  const startPointId = String(parsed.startPointId || '').trim();
-  const endPointId = String(parsed.endPointId || '').trim();
+  const startPointId = String(parsed.startPointId ?? '').trim();
+  const endPointId = String(parsed.endPointId ?? '').trim();
   if (!Array.isArray(parsed.segments) || !startPointId || !endPointId)
     throw new Error('segments, startPointId, and endPointId are required.');
   return { segments: parsed.segments, startPointId, endPointId };
 }
+
+function isJsonObject(value) {
+  if (value === null) return false;
+  if (typeof value !== 'object') return false;
+  return !Array.isArray(value);
+}
+
+export { isJsonObject, parseInput };
 // jscpd:ignore-end
