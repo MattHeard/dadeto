@@ -982,6 +982,19 @@ describe('initAdminApp', () => {
 });
 
 describe('createAdminTokenAction', () => {
+  it('reports a precise validation error for a missing auth helper', () => {
+    expect(() =>
+      createAdminTokenAction({
+        googleAuth: null,
+        getAdminEndpointsFn: jest.fn(),
+        fetchFn: jest.fn(),
+        showMessage: jest.fn(),
+        missingTokenMessage: 'missing',
+        action: jest.fn(),
+      })
+    ).toThrow(new TypeError('googleAuth.getIdToken must be a function'));
+  });
+
   it('throws when the action is not a function', () => {
     expect(() =>
       createAdminTokenAction({
