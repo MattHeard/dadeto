@@ -16,12 +16,16 @@ describe('ledgerIngestCsvConverterToy', () => {
     expect(ledgerIngestCsvConverterToyTestOnly.isCsvCarriageReturn('\n')).toBe(false);
     expect(ledgerIngestCsvConverterToyTestOnly.shouldSkipCsvLineBreakTail({ char: '\r', next: '\n' })).toBe(true);
     expect(ledgerIngestCsvConverterToyTestOnly.shouldSkipCsvLineBreakTail({ char: '\n', next: '\n' })).toBe(false);
+    expect(ledgerIngestCsvConverterToyTestOnly.shouldSkipCsvLineBreakTail({ char: '\r', next: 'x' })).toBe(false);
+    expect(ledgerIngestCsvConverterToyTestOnly.shouldSkipCsvLineBreakTail({ char: 'x', next: '\n' })).toBe(false);
     expect(ledgerIngestCsvConverterToyTestOnly.isCsvEscapedQuote('"')).toBe(true);
     expect(ledgerIngestCsvConverterToyTestOnly.isCsvEscapedQuote('x')).toBe(false);
     expect(ledgerIngestCsvConverterToyTestOnly.hasPendingCsvParseData({ cell: '', row: [] })).toBe(false);
     expect(ledgerIngestCsvConverterToyTestOnly.hasPendingCsvParseData({ cell: 'x', row: [] })).toBe(true);
     expect(ledgerIngestCsvConverterToyTestOnly.isBlankLedgerCsvRow([''])).toBe(true);
     expect(ledgerIngestCsvConverterToyTestOnly.isBlankLedgerCsvRow(['x'])).toBe(false);
+    expect(ledgerIngestCsvConverterToyTestOnly.isBlankLedgerCsvRow(['', ''])).toBe(false);
+    expect(ledgerIngestCsvConverterToyTestOnly.isBlankLedgerCsvRow(['  '])).toBe(true);
     expect(ledgerIngestCsvConverterToyTestOnly.buildHeaderLookup([' Amount ']).get('Amount')).toBe(0);
     const pending = { rows: [], row: ['x'], cell: '', inQuotes: false };
     ledgerIngestCsvConverterToyTestOnly.finalizeCsvParseState(pending);
@@ -31,6 +35,19 @@ describe('ledgerIngestCsvConverterToy', () => {
     expect(empty.rows).toEqual([]);
     expect(() => ledgerIngestCsvConverterToyTestOnly.ensureLedgerCsvRows([])).toThrow('Invalid ledger-ingest CSV input');
     expect(ledgerIngestCsvConverterToyTestOnly.ensureLedgerCsvRows([['header'], ['row']])).toBeUndefined();
+    const header = ledgerIngestCsvConverterToyTestOnly.buildHeaderLookup([
+      'Booking date', 'Value date', 'Transaction type', 'Booking text',
+      'Amount', 'Currency', 'Account IBAN', 'Category',
+    ]);
+    expect(ledgerIngestCsvConverterToyTestOnly.buildLedgerCsvRecord(
+      ['01.03.2026', '02.03.2026', 'CARD', ' Coffee ', '1,50', 'EUR', 'DE1', 'Food'],
+      header,
+      4
+    )).toEqual({
+      recordId: 'DE1:4', bookingDate: '2026-03-01', valueDate: '2026-03-02',
+      transactionType: 'CARD', bookingText: 'Coffee', amount: '1.5',
+      currency: 'EUR', accountIban: 'DE1', category: 'Food',
+    });
     expect(ledgerIngestCsvConverterToyTestOnly.normalizeCsvDate('31.12.2025')).toBe('2025-12-31');
     expect(ledgerIngestCsvConverterToyTestOnly.normalizeCsvDate('2025-12-31')).toBe('');
     expect(ledgerIngestCsvConverterToyTestOnly.normalizeCsvDate(null)).toBe('');
@@ -46,6 +63,8 @@ describe('ledgerIngestCsvConverterToy', () => {
     expect(ledgerIngestCsvConverterToyTestOnly.parseCsvAmount('1.234')).toBe(1234);
     expect(ledgerIngestCsvConverterToyTestOnly.normalizeCsvTextCandidate('  hello  ')).toBe('hello');
     expect(ledgerIngestCsvConverterToyTestOnly.normalizeCsvTextCandidate(null)).toBe('');
+    expect(ledgerIngestCsvConverterToyTestOnly.normalizeCsvMappedField(undefined)).toBe('undefined');
+    expect(ledgerIngestCsvConverterToyTestOnly.normalizeCsvMappedField('  x  ')).toBe('x');
   });
 
   it('returns error payload for invalid inputs', () => {
@@ -73,6 +92,11 @@ describe('ledgerIngestCsvConverterToy', () => {
 
     const parsed = parseLedgerCsv(csv);
     expect(parsed.source).toBe('ledger-ingest-csv');
+    expect(parsed.fieldMapping).toEqual({
+      postedDate: 'bookingDate', amount: 'amount', description: 'bookingText',
+      currency: 'currency', recordId: 'recordId',
+    });
+    expect(parsed.dedupePolicy).toBeDefined();
     expect(parsed.rawRecords).toHaveLength(3);
 
     expect(parsed.rawRecords[0]).toMatchObject({

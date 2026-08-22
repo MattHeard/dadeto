@@ -462,6 +462,16 @@ function normalizeCsvTextCandidate(value) {
 }
 
 /**
+ * Normalize a mapped CSV field while preserving the legacy marker for a
+ * missing indexed cell.
+ * @param {unknown} value Candidate cell value.
+ * @returns {string} Trimmed field value or `undefined` marker.
+ */
+function normalizeCsvMappedField(value) {
+  return value === undefined ? 'undefined' : normalizeCsvTextCandidate(value);
+}
+
+/**
  * Convert the ledger-ingest CSV schema into raw JSON records.
  * @param {string} input Semicolon-delimited CSV text.
  * @returns {{ source: string, fieldMapping: Record<string, string>, dedupePolicy: Record<string, unknown>, rawRecords: Record<string, unknown>[] }} Adapter payload.
@@ -576,12 +586,12 @@ function buildLedgerCsvRecord(row, headerLookup, index) {
     recordId: buildCsvRecordId(accountIban, index),
     bookingDate: normalizeCsvDate(bookingDate),
     valueDate: normalizeCsvDate(valueDate),
-    transactionType: String(transactionType).trim(),
-    bookingText: String(bookingText).trim(),
+    transactionType: normalizeCsvMappedField(transactionType),
+    bookingText: normalizeCsvMappedField(bookingText),
     amount: normalizeCsvAmount(amount),
-    currency: String(currency).trim(),
-    accountIban: String(accountIban).trim(),
-    category: String(category).trim(),
+    currency: normalizeCsvMappedField(currency),
+    accountIban: normalizeCsvMappedField(accountIban),
+    category: normalizeCsvMappedField(category),
   };
 }
 
@@ -636,4 +646,6 @@ export const ledgerIngestCsvConverterToyTestOnly = {
   shouldSkipCsvLineBreakTail,
   finalizeCsvParseState,
   ensureLedgerCsvRows,
+  buildLedgerCsvRecord,
+  normalizeCsvMappedField,
 };
