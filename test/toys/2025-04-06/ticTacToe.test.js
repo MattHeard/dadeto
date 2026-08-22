@@ -2,6 +2,8 @@ import { test, expect } from '@jest/globals';
 import { ticTacToeMove, ticTacToeTestOnly } from '../../../src/core/browser/toys/2025-04-06/ticTacToe.js';
 
 test('returns optimal move for invalid input', () => {
+  expect(ticTacToeTestOnly.getOpponent('X')).toBe('O');
+  expect(ticTacToeTestOnly.getOpponent('O')).toBe('X');
   const env = new Map();
   const result = ticTacToeMove('invalid json', env);
   const output = JSON.parse(result);
