@@ -231,6 +231,8 @@ describe('moderate core', () => {
     mockAllowNoToken = false;
     mockIsAdmin = true;
     mockToken = null;
+    mockSignInInit = undefined;
+    mockSignInOptions = undefined;
     mockAuthedFetch.mockReset().mockResolvedValue({
       title: 'Title',
       author: 'Author',
@@ -249,7 +251,7 @@ describe('moderate core', () => {
     expect(mockBeaconOptions.getUserAgent()).toBe('');
     expect(typeof mockBeaconOptions.getNow()).toBe('number');
     const sendBeacon = jest.fn(() => true);
-    createModerateHandle({
+    const disabledHandle = createModerateHandle({
       documentObj: mockDocument,
       fetchFn: mockFetch,
       sessionStorageObj: {},
@@ -258,6 +260,9 @@ describe('moderate core', () => {
         location: { href: '/moderate-test' },
       },
     });
+    await disabledHandle();
+    expect(mockSignInInit).toBeUndefined();
+    expect(mockDocument.body.classList.add).not.toHaveBeenCalledWith('authed');
     expect(mockBeaconOptions.getUrl()).toBe('/moderate-test');
     expect(mockBeaconOptions.getUserAgent()).toBe('moderate-test');
     expect(mockBeaconOptions.reportBeacon).toHaveBeenCalled();
