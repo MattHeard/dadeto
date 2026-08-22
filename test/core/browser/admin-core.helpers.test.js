@@ -2,11 +2,17 @@ import { jest } from '@jest/globals';
 import {
   announceTriggerRenderResult,
   buildSignInCredential,
+  bindRegenerateVariantSubmit,
+  bindTriggerRenderClick,
+  bindTriggerStatsClick,
   createAdminEndpointsPromise,
   createGetAdminEndpoints,
+  createTriggerRender,
   handleCredentialSignIn,
   mapConfigToAdminEndpoints,
   isAdminWithDeps,
+  executeTriggerRender,
+  postTriggerRenderContents,
   resolveAdminEndpoint,
 } from '../../../src/core/browser/admin-core.js';
 
@@ -83,6 +89,127 @@ describe('announceTriggerRenderResult', () => {
     await announceTriggerRenderResult(null, showMessage);
 
     expect(showMessage).toHaveBeenCalledWith('Render failed: unknown unknown');
+  });
+
+  it('reports successful responses without reading a body', async () => {
+    const showMessage = jest.fn();
+    await announceTriggerRenderResult({ ok: true }, showMessage);
+    expect(showMessage).toHaveBeenCalledWith('Render triggered');
+  });
+
+  it('reports failure details and error telemetry', async () => {
+    const showMessage = jest.fn();
+    const reportError = jest.fn();
+    const text = jest.fn(function readText() {
+      expect(this.status).toBe(500);
+      return Promise.resolve('backend failed');
+    });
+    await announceTriggerRenderResult(
+      { ok: false, status: 500, statusText: 'Server Error', text },
+      showMessage,
+      reportError
+    );
+    expect(showMessage).toHaveBeenCalledWith(
+      'Render failed: 500 Server Error - backend failed'
+    );
+    expect(reportError).toHaveBeenCalledWith(expect.any(Error));
+  });
+});
+
+describe('trigger render execution', () => {
+  it('posts the bearer token and reports success', async () => {
+    const fetchFn = jest.fn().mockResolvedValue({ ok: true });
+    const showMessage = jest.fn();
+    await postTriggerRenderContents(
+      () => Promise.resolve({ triggerRenderContentsUrl: '/render' }),
+      fetchFn,
+      'token-1'
+    );
+    expect(fetchFn).toHaveBeenCalledWith('/render', {
+      method: 'POST',
+      headers: { Authorization: 'Bearer token-1' },
+    });
+    await executeTriggerRender({
+      getAdminEndpoints: () => Promise.resolve({ triggerRenderContentsUrl: '/render' }),
+      fetchFn,
+      token: 'token-1',
+      showMessage,
+    });
+    expect(showMessage).toHaveBeenCalledWith('Render triggered');
+  });
+
+  it('reports thrown fetch errors and non-Error failures', async () => {
+    const showMessage = jest.fn();
+    const reportError = jest.fn();
+    const failure = jest.fn().mockRejectedValue('network failed');
+    await executeTriggerRender({
+      getAdminEndpoints: () => Promise.resolve({ triggerRenderContentsUrl: '/render' }),
+      fetchFn: failure,
+      token: 'token-1',
+      showMessage,
+      reportError,
+    });
+    expect(reportError).toHaveBeenCalledWith('network failed');
+    expect(showMessage).toHaveBeenCalledWith('Render failed: network failed');
+  });
+
+  it('guards the token action and delegates when a token exists', async () => {
+    const showMessage = jest.fn();
+    const fetchFn = jest.fn().mockResolvedValue({ ok: true });
+    const handler = createTriggerRender({
+      googleAuth: { getIdToken: jest.fn().mockResolvedValue(null) },
+      getAdminEndpointsFn: () => Promise.resolve({ triggerRenderContentsUrl: '/render' }),
+      fetchFn,
+      showMessage,
+    });
+    await handler();
+    expect(showMessage).toHaveBeenCalledWith('Render failed: missing ID token');
+    expect(fetchFn).not.toHaveBeenCalled();
+
+    const successMessage = jest.fn();
+    const successHandler = createTriggerRender({
+      googleAuth: { getIdToken: jest.fn().mockResolvedValue('token-2') },
+      getAdminEndpointsFn: () => Promise.resolve({ triggerRenderContentsUrl: '/render' }),
+      fetchFn,
+      showMessage: successMessage,
+    });
+    await successHandler();
+    expect(successMessage).toHaveBeenCalledWith('Render triggered');
+  });
+});
+
+describe('admin DOM binding helpers', () => {
+  function documentWith(elementId, element) {
+    return {
+      getElementById: id => (id === elementId ? element : null),
+      querySelectorAll: jest.fn().mockReturnValue([]),
+    };
+  }
+
+  it('binds click and submit handlers and returns null for missing targets', () => {
+    const button = { addEventListener: jest.fn() };
+    const form = { addEventListener: jest.fn() };
+    const click = jest.fn();
+    const submit = jest.fn();
+    expect(bindTriggerRenderClick(documentWith('renderBtn', button), click)).toBe(button);
+    expect(bindTriggerStatsClick(documentWith('statsBtn', button), click)).toBe(button);
+    expect(bindRegenerateVariantSubmit(documentWith('regenForm', form), submit)).toBe(form);
+    expect(bindTriggerRenderClick(documentWith('other', null), click)).toBeNull();
+    expect(button.addEventListener).toHaveBeenCalledWith('click', click);
+    expect(form.addEventListener).toHaveBeenCalledWith('submit', submit);
+  });
+
+  it('rejects invalid binding dependencies', () => {
+    expect(() => bindTriggerRenderClick({}, jest.fn())).toThrow('Document-like');
+    expect(() => bindTriggerRenderClick(documentWith('renderBtn', null), null)).toThrow(
+      'triggerRenderFn must be a function'
+    );
+    expect(() => bindTriggerStatsClick(documentWith('statsBtn', null), null)).toThrow(
+      'triggerStatsFn must be a function'
+    );
+    expect(() => bindRegenerateVariantSubmit(documentWith('regenForm', null), null)).toThrow(
+      'regenerateVariantFn must be a function'
+    );
   });
 });
 
