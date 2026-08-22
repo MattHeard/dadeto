@@ -142,6 +142,7 @@ describe('regeneration input helpers', () => {
     expect(parsePageVariantValue('123abc-')).toBeNull();
     expect(parsePageVariantValue('123abc def')).toBeNull();
     expect(parsePageVariantValue('123abc456')).toBeNull();
+    expect(parsePageVariantValue('prefix123abc')).toBeNull();
     expect(parsePageVariantValue('')).toBeNull();
   });
 });

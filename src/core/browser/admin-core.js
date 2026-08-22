@@ -1300,10 +1300,7 @@ export async function handleCredentialSignIn(
     signInResult = await signInWithCredential(auth, firebaseCredential);
   } catch (error) {
     await Promise.resolve();
-    if (auth.currentUser) {
-      signInResult = { user: auth.currentUser };
-    }
-    if (!signInResult) {
+    if (!signInResult && !auth.currentUser) {
       throw error;
     }
   }
