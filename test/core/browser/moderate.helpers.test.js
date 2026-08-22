@@ -126,11 +126,9 @@ describe('moderate pure helper contracts', () => {
     expect(pageContent.style.display).toBe('');
     expect(pageContent.innerHTML).toBe('');
     expect(pageContent.appendChild).toHaveBeenCalledTimes(3);
-    expect(pageContent.appendChild.mock.calls.map(([element]) => element.textContent)).toEqual([
-      'Title',
-      'By Author',
-      'Body',
-    ]);
+    expect(
+      pageContent.appendChild.mock.calls.map(([element]) => element.textContent)
+    ).toEqual(['Title', 'By Author', 'Body']);
     expect(elements.get('approveBtn').disabled).toBe(false);
     expect(elements.get('rejectBtn').disabled).toBe(false);
   });

@@ -95,9 +95,17 @@ jest.unstable_mockModule(
   })
 );
 
-const { createModerateHandle, authedFetch, startAnimation, assignJob, resetModerationUi, submitRating, loadVariant, getInitGoogleSignInHandler, getSignOutHandler, isAdmin } = await import(
-  '../../../src/core/browser/moderate.js'
-);
+const {
+  createModerateHandle,
+  authedFetch,
+  startAnimation,
+  assignJob,
+  resetModerationUi,
+  submitRating,
+  getInitGoogleSignInHandler,
+  getSignOutHandler,
+  isAdmin,
+} = await import('../../../src/core/browser/moderate.js');
 
 /** @returns {Document} Test document. */
 function makeDocument() {
@@ -206,6 +214,8 @@ async function exerciseFallbackDocuments(handle) {
   await new Promise(resolve => setImmediate(resolve));
 }
 
+// This coverage suite intentionally keeps related branch fixtures together.
+// eslint-disable-next-line max-lines-per-function
 describe('moderate core', () => {
   beforeEach(() => {
     mockConfig = { disableGoogleSignIn: true };
@@ -236,7 +246,9 @@ describe('moderate core', () => {
     expect(mockDocument.elements.get('fetching').textContent).toBe('Fetching.');
     expect(mockDocument.elements.get('fetching').style.display).toBe('block');
     mockIntervalCallback();
-    expect(mockDocument.elements.get('fetching').textContent).toBe('Fetching..');
+    expect(mockDocument.elements.get('fetching').textContent).toBe(
+      'Fetching..'
+    );
     stopAnimation();
     expect(mockDocument.elements.get('fetching').style.display).toBe('none');
     createModerateHandle();
@@ -296,11 +308,14 @@ describe('moderate core', () => {
       globalObject: {},
     });
     await assignJob();
-    expect(mockFetch).toHaveBeenCalledWith('/assign', expect.objectContaining({
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: expect.any(URLSearchParams),
-    }));
+    expect(mockFetch).toHaveBeenCalledWith(
+      '/assign',
+      expect.objectContaining({
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: expect.any(URLSearchParams),
+      })
+    );
     expect(mockFetch.mock.calls.at(-1)[1].body.get('id_token')).toBe('token');
   });
 
@@ -310,10 +325,20 @@ describe('moderate core', () => {
     const link = { style: {} };
     const content = { innerHTML: 'content', style: { display: 'block' } };
     const documentObj = {
-      querySelectorAll: selector => selector === '#signoutWrap' ? [signout] : selector === '#signinButton' ? [signin] : [link],
-      getElementById: id => id === 'pageContent' ? content : null,
+      querySelectorAll: selector =>
+        selector === '#signoutWrap'
+          ? [signout]
+          : selector === '#signinButton'
+            ? [signin]
+            : [link],
+      getElementById: id => (id === 'pageContent' ? content : null),
     };
-    createModerateHandle({ documentObj, fetchFn: mockFetch, sessionStorageObj: {}, globalObject: {} });
+    createModerateHandle({
+      documentObj,
+      fetchFn: mockFetch,
+      sessionStorageObj: {},
+      globalObject: {},
+    });
     resetModerationUi();
     expect(signout.style.display).toBe('none');
     expect(signin.style.display).toBe('');
@@ -324,7 +349,6 @@ describe('moderate core', () => {
 
   it('submits approval, assigns the next job, and reloads the variant', async () => {
     mockToken = 'token';
-    mockAuthedFetch.mockResolvedValue({ title: 'Next', content: 'Body', options: [] });
     createModerateHandle({
       documentObj: mockDocument,
       fetchFn: mockFetch,
@@ -332,10 +356,13 @@ describe('moderate core', () => {
       globalObject: {},
     });
     await submitRating(true);
-    expect(mockAuthedFetch).toHaveBeenCalledWith('/submit', expect.objectContaining({
-      method: 'POST',
-      body: JSON.stringify({ isApproved: true }),
-    }));
+    expect(mockAuthedFetch).toHaveBeenCalledWith(
+      '/submit',
+      expect.objectContaining({
+        method: 'POST',
+        body: JSON.stringify({ isApproved: true }),
+      })
+    );
     expect(mockFetch).toHaveBeenCalledWith('/assign', expect.any(Object));
     expect(mockAuthedFetch.mock.calls).toContainEqual(['/variant', undefined]);
   });
@@ -372,7 +399,9 @@ describe('moderate core', () => {
     await submitRating(false);
     expect(approve.disabled).toBe(false);
     expect(reject.disabled).toBe(false);
-    expect(globalThis.alert).toHaveBeenCalledWith("Sorry, that didn't work. See console for details.");
+    expect(globalThis.alert).toHaveBeenCalledWith(
+      "Sorry, that didn't work. See console for details."
+    );
   });
 
   it('initializes sign-in, renders, submits, retries, and signs out', async () => {
@@ -404,11 +433,6 @@ describe('moderate core', () => {
           { content: 'No target' },
         ],
       }),
-    });
-    mockAuthedFetch.mockResolvedValueOnce({
-      title: '',
-      content: 'No author',
-      options: [{ content: 'No target' }],
     });
     await handle();
     mockSignInInit.onSignIn();

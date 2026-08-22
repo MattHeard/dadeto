@@ -65,7 +65,8 @@ export const getSignOutHandler = () => {
 
 const signOut = () => getSignOutHandler()();
 
-export const isAdmin = () => isAdminWithDeps(moderateSessionStorage, JSON, atob);
+export const isAdmin = () =>
+  isAdminWithDeps(moderateSessionStorage, JSON, atob);
 
 const getModerationEndpoints = createGetModerationEndpointsFromStaticConfig(
   loadStaticConfig,
