@@ -5,11 +5,57 @@ import {
   createAutoSubmitCheckboxHandler,
   initializeInteractiveComponent,
   toggleToyFocusMode,
+  parseExistingRows,
 } from '../../../src/core/browser/toys.js';
 
 const utils = createToysHandle();
 
 describe('toys additional coverage', () => {
+  test('normalizes stored rows from input and DOM fallbacks', () => {
+    const input = { value: '' };
+    expect(
+      parseExistingRows(
+        { getValue: jest.fn(() => '[{"key":"name","value":"Ada"}]') },
+        input
+      )
+    ).toEqual({ name: 'Ada' });
+    expect(
+      parseExistingRows(
+        { getValue: jest.fn(() => undefined) },
+        { value: '{"name":"Grace"}' }
+      )
+    ).toEqual({ name: 'Grace' });
+    expect(
+      parseExistingRows(
+        { getValue: jest.fn(() => 'not json') },
+        { value: '' }
+      )
+    ).toEqual({});
+    expect(
+      parseExistingRows(
+        { getValue: jest.fn(() => '{"count":0,"active":false}') },
+        { value: '' }
+      )
+    ).toEqual({ count: 0, active: false });
+    expect(parseExistingRows({}, { value: '' })).toEqual({});
+    expect(parseExistingRows({}, { value: '5' })).toEqual({});
+    expect(parseExistingRows({}, { value: 'null' })).toEqual({});
+    expect(parseExistingRows({}, { value: '"text"' })).toEqual({});
+    expect(parseExistingRows({}, { value: 'true' })).toEqual({});
+    expect(
+      parseExistingRows(
+        { getValue: jest.fn(() => '{"from":"dom"}') },
+        { value: '' }
+      )
+    ).toEqual({ from: 'dom' });
+    expect(
+      parseExistingRows(
+        { getValue: jest.fn(() => '{"from":"dom"}') },
+        { value: '{"from":"input"}' }
+      )
+    ).toEqual({ from: 'input' });
+  });
+
   test('clears object-backed row data during dispose', () => {
     const rowData = { rows: { first: {} }, rowTypes: { first: 'text' } };
     const dom = { removeAllChildren: jest.fn() };
@@ -39,6 +85,15 @@ describe('toys additional coverage', () => {
       rows: populatedRows,
     })();
     expect(populatedRows).toHaveLength(0);
+    expect(() =>
+      createDispose({
+        disposers: [],
+        dom,
+        container: {},
+        rowData: false,
+        rows: undefined,
+      })()
+    ).not.toThrow();
   });
 
   test('ignores focus toggles outside an article', () => {

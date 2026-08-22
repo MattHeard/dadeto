@@ -72,7 +72,7 @@ const AUTO_SUBMIT_CHECKBOX_SELECTOR = '.auto-submit-checkbox';
 function normalizeExisting(existing) {
   const converters = [
     [Array.isArray, convertArrayToKeyValueObject],
-    [value => value && typeof value === 'object', value => ({ ...value })],
+    [value => typeof value === 'object', value => ({ ...value })],
   ];
   const match = converters.find(([check]) => check(existing));
   if (match) {
@@ -86,22 +86,6 @@ function normalizeExisting(existing) {
  * @param {unknown} value - Value to check.
  * @returns {boolean} True if value is blank.
  */
-function isBlank(value) {
-  return value === '' || value === undefined;
-}
-
-/**
- * Returns the JSON string to parse for rows.
- * @param {string} value - Raw value from the input element.
- * @returns {string} The JSON to parse.
- */
-function getDefaultRowsJson(value) {
-  if (isBlank(value)) {
-    return '{}';
-  }
-  return value;
-}
-
 /**
  * Retrieves the current value from DOM utilities if available.
  * @param {object} dom - DOM utilities.
@@ -122,7 +106,13 @@ function getDomValue(dom, inputElement) {
  * @returns {unknown|undefined} The first non-blank candidate.
  */
 function pickFirstNonBlank(...candidates) {
-  return candidates.find(candidate => !isBlank(candidate));
+  for (const candidate of candidates) {
+    if (candidate === '') {
+      continue;
+    }
+    return candidate;
+  }
+  return undefined;
 }
 
 /**
@@ -137,7 +127,7 @@ function getRowsJson(dom, inputElement) {
     getDomValue(dom, inputElement)
   );
 
-  return getDefaultRowsJson(preferredValue);
+  return preferredValue;
 }
 
 /**
