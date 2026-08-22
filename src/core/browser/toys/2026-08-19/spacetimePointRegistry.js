@@ -28,18 +28,17 @@ export const spacetimePointRegistry = input =>
  */
 function normalizePoint(value) {
   const point = /** @type {Record<string, unknown>} */ (value ?? {});
-  const coordinates = normalizeCoordinateRecord(value, 'pointId', true);
+  const coordinates = normalizeCoordinateRecord(
+    value,
+    'pointId',
+    Boolean(trimmedStringOrEmpty(point.spacePointId))
+  );
   const pointId = coordinates?.id ?? '';
   const spacePointId = trimmedStringOrEmpty(point.spacePointId);
   const latitude = coordinates?.latitude ?? null;
   const longitude = coordinates?.longitude ?? null;
   const timestamp = normalizeUtcMinute(point.timestamp);
-  if (
-    !pointId ||
-    (!spacePointId && latitude === null && longitude === null) ||
-    (latitude === null) !== (longitude === null) ||
-    !timestamp
-  ) {
+  if (!pointId || !timestamp || (latitude === null) !== (longitude === null)) {
     return null;
   }
   const normalized = {
