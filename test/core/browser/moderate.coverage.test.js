@@ -93,7 +93,7 @@ jest.unstable_mockModule(
   })
 );
 
-const { createModerateHandle, authedFetch, startAnimation, assignJob, resetModerationUi, submitRating, loadVariant } = await import(
+const { createModerateHandle, authedFetch, startAnimation, assignJob, resetModerationUi, submitRating, loadVariant, getInitGoogleSignInHandler, getSignOutHandler, isAdmin } = await import(
   '../../../src/core/browser/moderate.js'
 );
 
@@ -336,6 +336,24 @@ describe('moderate core', () => {
     }));
     expect(mockFetch).toHaveBeenCalledWith('/assign', expect.any(Object));
     expect(mockAuthedFetch).toHaveBeenCalledWith('/variant');
+  });
+
+  it('caches sign-in and sign-out handlers and delegates admin checks', () => {
+    const sessionStorageObj = { getItem: jest.fn(() => 'token') };
+    const globalObject = { navigator: {}, location: { href: '/moderate' } };
+    createModerateHandle({
+      documentObj: mockDocument,
+      fetchFn: mockFetch,
+      sessionStorageObj,
+      globalObject,
+    });
+    const initOne = getInitGoogleSignInHandler();
+    const initTwo = getInitGoogleSignInHandler();
+    expect(initTwo).toBe(initOne);
+    const signOutOne = getSignOutHandler();
+    const signOutTwo = getSignOutHandler();
+    expect(signOutTwo).toBe(signOutOne);
+    expect(isAdmin()).toBe(mockIsAdmin);
   });
 
   it('restores rating buttons after a submission failure', async () => {

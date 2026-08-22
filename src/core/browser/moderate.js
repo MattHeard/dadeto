@@ -37,7 +37,7 @@ const loadStaticConfig = createLoadStaticConfig({
 });
 
 let initGoogleSignInHandler;
-const getInitGoogleSignInHandler = () => {
+export const getInitGoogleSignInHandler = () => {
   if (!initGoogleSignInHandler) {
     const auth = getAuth();
     initGoogleSignInHandler = createGoogleSignInInit({
@@ -55,7 +55,7 @@ const getInitGoogleSignInHandler = () => {
 const initGoogleSignIn = options => getInitGoogleSignInHandler()(options);
 
 let signOutHandler;
-const getSignOutHandler = () => {
+export const getSignOutHandler = () => {
   if (!signOutHandler) {
     const auth = getAuth();
     signOutHandler = createSignOut(auth, moderateGlobalObject);
@@ -65,7 +65,7 @@ const getSignOutHandler = () => {
 
 const signOut = () => getSignOutHandler()();
 
-const isAdmin = () => isAdminWithDeps(moderateSessionStorage, JSON, atob);
+export const isAdmin = () => isAdminWithDeps(moderateSessionStorage, JSON, atob);
 
 const getModerationEndpoints = createGetModerationEndpointsFromStaticConfig(
   loadStaticConfig,
