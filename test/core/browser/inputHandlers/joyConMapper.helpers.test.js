@@ -230,6 +230,36 @@ describe('joyConMapper helper branches', () => {
       value: 0.95,
     });
 
+    const shorterPrevious = {
+      buttons: [previous.buttons[0]],
+      axes: [0, 0],
+    };
+    expect(detectButtonCapture(shorterPrevious, current)).toEqual({
+      type: 'button',
+      index: 1,
+      value: 0.95,
+    });
+    expect(
+      detectButtonCapture(shorterPrevious, {
+        buttons: [previous.buttons[0], { pressed: true, value: 0.4 }],
+        axes: [0, 0],
+      })
+    ).toEqual({
+      type: 'button',
+      index: 1,
+      value: 0.4,
+    });
+    expect(
+      detectButtonCapture(shorterPrevious, {
+        buttons: [previous.buttons[0], { pressed: false, value: 0.7 }],
+        axes: [0, 0],
+      })
+    ).toEqual({
+      type: 'button',
+      index: 1,
+      value: 0.7,
+    });
+
     expect(selectStrongerButtonCapture(null, null)).toBeNull();
   });
 
