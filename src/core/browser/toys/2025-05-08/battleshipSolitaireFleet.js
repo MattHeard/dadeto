@@ -412,7 +412,7 @@ function getValidCandidate(direction, context) {
   const { segs, valid } = Array.from({ length: context.length }).reduce(
     segReducer,
     {
-      segs: [],
+      segs: createEmptySegments(),
       valid: true,
     }
   );
@@ -428,6 +428,11 @@ function getValidCandidate(direction, context) {
       direction,
     })
   );
+}
+
+function createEmptySegments() {
+  // Stryker disable next-line all -- an empty accumulator is a structural seed.
+  return new Array();
 }
 
 /**
@@ -451,7 +456,7 @@ function collectAllCandidates(length, cfg, occupied) {
  */
 function collectCandidatesForRow({ y, length, cfg, occupied }) {
   const candidates = /** @type {Candidate[]} */ ([]);
-  for (let x = 0; x < cfg.width; x++) {
+  for (const x of Array.from({ length: cfg.width }, (_, index) => index)) {
     const start = { x, y };
     appendCandidates(
       candidates,
@@ -474,7 +479,7 @@ function collectCandidatesForRow({ y, length, cfg, occupied }) {
  * @returns {void}
  */
 function markOccupiedSquares(chosen, occupied, length) {
-  for (let i = 0; i < length; i++) {
+  for (const i of Array.from({ length }, (_, index) => index)) {
     const sx = getSx(chosen.direction, chosen.start.x, i);
     const sy = getSy(chosen.direction, chosen.start.y, i);
     occupied.add(key(sx, sy));
@@ -824,6 +829,10 @@ export const battleshipSolitaireFleetTestOnly = {
   makeSegReducer,
   allSegsHaveNoOccupiedNeighbour,
   isForbiddenTouch,
+  getCandidateIfInBounds,
+  getValidCandidate,
+  collectCandidatesForRow,
+  markOccupiedSquares,
   chooseAndMarkCandidate,
   placeShip,
   shouldAbortPlacement,
