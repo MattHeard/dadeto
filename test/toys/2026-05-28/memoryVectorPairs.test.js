@@ -216,6 +216,12 @@ describe('memoryVectorPairs', () => {
       vector: [],
     });
   });
+
+  test('projects null as a scalar instead of treating it as an object', () => {
+    expect(memoryVectorPairsTestOnly.projectObjectOrScalarToVector(null)).toEqual([
+      null,
+    ]);
+  });
 });
 
 describe('memoryVectorPairs edge cases', () => {
