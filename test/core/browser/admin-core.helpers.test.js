@@ -4,6 +4,7 @@ import {
   assertFunction,
   buildSignInCredential,
   createGoogleAuthModule,
+  createCheckAccess,
   createInitGoogleSignIn,
   bindRegenerateVariantSubmit,
   bindTriggerRenderClick,
@@ -700,6 +701,34 @@ describe('admin-core interface predicates', () => {
       size: 'large',
       theme: 'filled_blue',
     });
+  });
+
+  it('updates admin content visibility for access checks, including absent content', () => {
+    const signIn = { style: {} };
+    const signOut = { style: {} };
+    const content = { style: {} };
+    const doc = {
+      getElementById: jest.fn(id => (id === 'adminContent' ? content : null)),
+      querySelectorAll: jest.fn(selector =>
+        selector === '#signinButton' ? [signIn] : [signOut]
+      ),
+    };
+    createCheckAccess(
+      () => ({ currentUser: { uid: 'qcYSrXTaj1MZUoFsAloBwT86GNM2' } }),
+      doc
+    )();
+    expect(content.style.display).toBe('');
+    expect(signIn.style.display).toBe('none');
+    expect(signOut.style.display).toBe('');
+
+    createCheckAccess(() => ({ currentUser: { uid: 'not-admin' } }), doc)();
+    expect(content.style.display).toBe('none');
+
+    const missingDoc = {
+      getElementById: jest.fn(() => null),
+      querySelectorAll: jest.fn(() => []),
+    };
+    expect(() => createCheckAccess(() => ({ currentUser: null }), missingDoc)()).not.toThrow();
   });
 });
 
