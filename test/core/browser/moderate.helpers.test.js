@@ -203,7 +203,7 @@ describe('moderate pure helper contracts', () => {
     elements.set('rejectBtn', { disabled: true });
     const documentObj = {
       getElementById: id => elements.get(id) ?? null,
-      createElement: tag => ({ tag, textContent: '', appendChild: jest.fn() }),
+      createElement: jest.fn(tag => ({ tag, textContent: '', appendChild: jest.fn() })),
     };
     createModerateHandle({
       documentObj,
@@ -272,6 +272,30 @@ describe('moderate pure helper contracts', () => {
     expect(fetchFn).toHaveBeenCalledWith('/ok', { method: 'POST' });
     expect(response).toMatchObject({ ok: true, status: 201 });
     expect(response.json()).toEqual({ ok: true });
+  });
+
+  it('falls back to the global fetch implementation', async () => {
+    const previousFetch = globalThis.fetch;
+    const globalFetch = jest.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: async () => ({ source: 'global' }),
+    });
+    globalThis.fetch = globalFetch;
+    try {
+      createModerateHandle({
+        documentObj: { createElement: () => ({}) },
+        fetchFn: undefined,
+        sessionStorageObj: {},
+        globalObject: {},
+      });
+      const response = await fetchJson('/global');
+      expect(response).toMatchObject({ ok: true, status: 200 });
+      await expect(response.json()).resolves.toEqual({ source: 'global' });
+      expect(globalFetch).toHaveBeenCalledWith('/global', undefined);
+    } finally {
+      globalThis.fetch = previousFetch;
+    }
   });
 
   it('formats failed JSON requests with body, status, and response error details', async () => {
