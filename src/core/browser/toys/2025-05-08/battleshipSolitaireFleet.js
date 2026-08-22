@@ -548,7 +548,7 @@ function shouldAbortPlaceShip(acc) {
  * @returns {boolean} True if placement should abort.
  */
 function shouldAbortPlacement(acc) {
-  return !acc || shouldAbortPlaceShip(acc);
+  return !acc;
 }
 
 /**
@@ -590,12 +590,12 @@ function makePlaceShipReducer(placeShipWithArgs) {
  * @returns {Candidate[] | null} List of placed candidates or null on failure.
  */
 function placeAllShips(cfg, env) {
-  const lengths = cfg.ships.slice();
+  const lengths = [...cfg.ships];
   shuffle(lengths, env);
   const placeShipWithArgs = makePlaceShip(cfg, env);
   const placeShipReducer = makePlaceShipReducer(placeShipWithArgs);
   const result = lengths.reduce(placeShipReducer, []);
-  return whenOrNull(result !== null, () => result);
+  return result;
 }
 
 /**
@@ -833,6 +833,9 @@ export const battleshipSolitaireFleetTestOnly = {
   getValidCandidate,
   collectCandidatesForRow,
   markOccupiedSquares,
+  makePlaceShipReducer,
+  makePlaceShip,
+  placeAllShips,
   chooseAndMarkCandidate,
   placeShip,
   shouldAbortPlacement,

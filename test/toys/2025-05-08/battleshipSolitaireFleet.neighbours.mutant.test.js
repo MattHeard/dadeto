@@ -16,6 +16,13 @@ const {
   getValidCandidate,
   collectCandidatesForRow,
   markOccupiedSquares,
+  makePlaceShipReducer,
+  makePlaceShip,
+  placeAllShips,
+  addPlacedShip,
+  shouldAbortPlaceShip,
+  shouldAbortPlacement,
+  chooseAndMarkCandidate,
 } = battleshipSolitaireFleetTestOnly;
 
 describe('neighbours mutants', () => {
@@ -107,6 +114,50 @@ describe('neighbours mutants', () => {
     const occupied = new Set();
     markOccupiedSquares({ direction: 'H', start: { x: 0, y: 0 } }, occupied, 3);
     expect(occupied).toEqual(new Set(['0,0', '1,0', '2,0']));
+  });
+
+  test('short-circuits placement reduction after a failed placement', () => {
+    const calls = [];
+    const reduce = makePlaceShipReducer(length => {
+      calls.push(length);
+      return null;
+    });
+    expect([2, 1].reduce(reduce, [])).toBeNull();
+    expect(calls).toEqual([2]);
+    expect(shouldAbortPlaceShip([])).toBe(false);
+    expect(shouldAbortPlaceShip(null)).toBe(true);
+    expect(shouldAbortPlacement([])).toBe(false);
+    expect(shouldAbortPlacement(null)).toBe(true);
+    expect(addPlacedShip([], { direction: 'H', start: { x: 0, y: 0 }, length: 1 })).toEqual([
+      { direction: 'H', start: { x: 0, y: 0 }, length: 1 },
+    ]);
+    expect(addPlacedShip([], null)).toBeNull();
+    expect(addPlacedShip(null, { direction: 'H', start: { x: 0, y: 0 }, length: 1 })).toBeNull();
+  });
+
+  test('places ships without mutating configuration and preserves occupancy', () => {
+    const cfg = { width: 3, height: 1, ships: [1, 1] };
+    const original = [...cfg.ships];
+    const env = new Map([['getRandomNumber', () => 0]]);
+    const result = placeAllShips(cfg, env);
+    expect(result).toHaveLength(2);
+    expect(cfg.ships).toEqual(original);
+    const place = makePlaceShip({ width: 2, height: 1, ships: [] }, env);
+    expect(place(1)).toEqual(expect.objectContaining({ length: 1 }));
+    expect(place(1)).toEqual(expect.objectContaining({ length: 1 }));
+    expect(placeAllShips({ width: 1, height: 1, ships: [2] }, env)).toBeNull();
+  });
+
+  test('handles candidate-selection edge cases and exact random choice', () => {
+    const occupied = new Set();
+    expect(chooseAndMarkCandidate({ candidates: [] , length: 1 }, new Map([['getRandomNumber', () => { throw new Error('must not draw'); }]]), occupied)).toBeNull();
+    expect(chooseAndMarkCandidate({ candidates: [null], length: 1 }, new Map([['getRandomNumber', () => 0]]), occupied)).toBeNull();
+    const candidates = [
+      { direction: 'H', start: { x: 0, y: 0 }, length: 1 },
+      { direction: 'V', start: { x: 1, y: 0 }, length: 1 },
+    ];
+    expect(chooseAndMarkCandidate({ candidates, length: 1 }, new Map([['getRandomNumber', () => 0.99]]), occupied)).toEqual(candidates[1]);
+    expect(occupied).toContain('1,0');
   });
 
   test('does not include origin coordinate', () => {
