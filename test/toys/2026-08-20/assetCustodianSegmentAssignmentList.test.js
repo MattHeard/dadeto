@@ -224,4 +224,17 @@ describe('assetCustodianSegmentAssignmentList', () => {
     expect(result).toMatchObject({ appended: true, length: 1 });
     expect(value.state.temporary['42']).toEqual([{ assetId: 'A', segmentId: 'S', custodianPersonId: 'C' }]);
   });
+
+  test('preserves precise errors for empty identifiers, path, and location', () => {
+    const cases = [
+      [{ path: 'items', assignment: { assetId: '', segmentId: 'S', custodianPersonId: 'C' } }, 'An assignment requires assetId, segmentId, and custodianPersonId.'],
+      [{ path: 'items', assignment: { assetId: 'A', segmentId: '', custodianPersonId: 'C' } }, 'An assignment requires assetId, segmentId, and custodianPersonId.'],
+      [{ path: 'items', assignment: { assetId: 'A', segmentId: 'S', custodianPersonId: '' } }, 'An assignment requires assetId, segmentId, and custodianPersonId.'],
+      [{ path: '   ', assignment: { assetId: 'A', segmentId: 'S', custodianPersonId: 'C' } }, 'A path is required.'],
+      [{ path: 'items', memoryLocation: 'other', assignment: { assetId: 'A', segmentId: 'S', custodianPersonId: 'C' } }, 'Unsupported memory location.'],
+    ];
+    for (const [input, error] of cases) {
+      expect(JSON.parse(assetCustodianSegmentAssignmentList(JSON.stringify(input), fixture().env))).toEqual({ appended: false, error });
+    }
+  });
 });
