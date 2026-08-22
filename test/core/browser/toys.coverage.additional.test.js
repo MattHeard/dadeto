@@ -228,14 +228,24 @@ describe('toys additional coverage', () => {
       5
     );
     timerCallback();
-    expect(() => utils.requestAutoSubmitFrame({}, callback)).toThrow(
-      'setTimeout'
-    );
+    try {
+      utils.requestAutoSubmitFrame({}, callback);
+      throw new Error('expected requestAutoSubmitFrame to reject');
+    } catch (error) {
+      expect(error.constructor).toBe(Error);
+      expect(error.message).toBe('dom.setTimeout is not a function');
+    }
     const cancelRaf = jest.fn();
     utils.cancelAutoSubmitFrame({ cancelAnimationFrame: cancelRaf }, 4);
     utils.cancelAutoSubmitFrame({ clearTimeout: jest.fn() }, 5);
     utils.cancelAutoSubmitFrame({}, null);
-    expect(() => utils.cancelAutoSubmitFrame({}, 1)).toThrow('clearTimeout');
+    try {
+      utils.cancelAutoSubmitFrame({}, 1);
+      throw new Error('expected cancelAutoSubmitFrame to reject');
+    } catch (error) {
+      expect(error.constructor).toBe(Error);
+      expect(error.message).toBe('dom.clearTimeout is not a function');
+    }
     const state = { frameId: 1, lastValue: 'old' };
     utils.registerAutoSubmitPolling({
       elements: {},
