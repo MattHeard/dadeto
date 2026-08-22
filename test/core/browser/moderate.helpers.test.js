@@ -9,6 +9,7 @@ import {
   appendOptionsList,
   enableModerationButtons,
   renderVariant,
+  fetchJson,
 } from '../../../src/core/browser/moderate.js';
 
 describe('moderate pure helper contracts', () => {
@@ -98,5 +99,40 @@ describe('moderate pure helper contracts', () => {
     ]);
     expect(elements.get('approveBtn').disabled).toBe(false);
     expect(elements.get('rejectBtn').disabled).toBe(false);
+  });
+
+  it('fetches JSON and preserves successful response metadata', async () => {
+    const fetchFn = jest.fn().mockResolvedValue({
+      ok: true,
+      status: 201,
+      json: async () => ({ ok: true }),
+    });
+    createModerateHandle({
+      documentObj: { createElement: () => ({}) },
+      fetchFn,
+      sessionStorageObj: {},
+      globalObject: {},
+    });
+    const response = await fetchJson('/ok', { method: 'POST' });
+    expect(fetchFn).toHaveBeenCalledWith('/ok', { method: 'POST' });
+    expect(response).toMatchObject({ ok: true, status: 201 });
+    await expect(response.json()).resolves.toEqual({ ok: true });
+  });
+
+  it('formats failed JSON requests with body, status, and response error details', async () => {
+    createModerateHandle({
+      documentObj: { createElement: () => ({}) },
+      fetchFn: jest.fn().mockResolvedValue({
+        ok: false,
+        status: 503,
+        text: async () => ' unavailable ',
+      }),
+      sessionStorageObj: {},
+      globalObject: {},
+    });
+    await expect(fetchJson('/failed')).rejects.toMatchObject({
+      message: 'HTTP 503: unavailable',
+      status: 503,
+    });
   });
 });

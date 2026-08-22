@@ -322,7 +322,7 @@ export function resetModerationUi() {
   }
 }
 
-const fetchJson = async (url, init) => {
+export const fetchJson = async (url, init) => {
   const fetchImpl = moderateFetchFn ?? globalThis.fetch;
   if (typeof fetchImpl !== 'function') {
     throw new Error('fetch is not available');
