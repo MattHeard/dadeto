@@ -154,6 +154,13 @@ describe('admin-core additional coverage', () => {
       handler.removeItem('id_token');
       expect(scope.sessionStorage.removeItem).toHaveBeenCalledWith('id_token');
     });
+
+    it('reports unavailable storage when the scope is missing', () => {
+      const handler = createSessionStorageHandler(undefined);
+      expect(() => handler.removeItem('id_token')).toThrow(
+        new Error('sessionStorage is not available')
+      );
+    });
   });
 
   describe('DOM wrappers', () => {

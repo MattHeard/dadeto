@@ -137,6 +137,8 @@ describe('regeneration input helpers', () => {
     expect(parsePageVariantValue('123')).toBeNull();
     expect(parsePageVariantValue('abc123')).toBeNull();
     expect(parsePageVariantValue('123abc-')).toBeNull();
+    expect(parsePageVariantValue('123abc def')).toBeNull();
+    expect(parsePageVariantValue('123abc456')).toBeNull();
   });
 });
 
@@ -177,6 +179,17 @@ describe('admin token and global helper resolution', () => {
     expect(isAdminToken('header.a-b_c.signature', jsonParser, decodeBase64)).toBe(
       false
     );
+  });
+
+  it('rejects tokens whose payload cannot be decoded', () => {
+    const jsonParser = { parse: jest.fn(() => ({ sub: 'not-admin' })) };
+    const decodeBase64 = jest.fn(() => {
+      throw new Error('invalid payload');
+    });
+    expect(isAdminToken('header.payload.signature', jsonParser, decodeBase64)).toBe(
+      false
+    );
+    expect(jsonParser.parse).not.toHaveBeenCalled();
   });
 });
 
