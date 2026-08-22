@@ -39,7 +39,7 @@ function normalizePoint(value) {
   const timestamp = normalizeUtcMinute(point.timestamp);
   if (
     !pointId ||
-    (!spacePointId && (latitude === null || longitude === null)) ||
+    (!spacePointId && latitude === null && longitude === null) ||
     (latitude === null) !== (longitude === null) ||
     !timestamp
   ) {
