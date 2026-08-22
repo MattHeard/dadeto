@@ -539,3 +539,11 @@ export function cozyHouseAdventure(input, env) {
     return '> SYSTEM ERROR: fireplace smoke in the command line';
   }
 }
+
+export const cozyHouseAdventureTestOnly = {
+  requireEnvFunction,
+  getScopedState,
+  getTemporaryState,
+  introMessage,
+  yardMessage,
+};

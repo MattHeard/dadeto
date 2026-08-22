@@ -1,7 +1,18 @@
 import { beforeEach, describe, expect, test } from '@jest/globals';
-import { cozyHouseAdventure } from '../../../src/core/browser/toys/2026-04-19/cozyHouseAdventure.js';
+import { cozyHouseAdventure, cozyHouseAdventureTestOnly } from '../../../src/core/browser/toys/2026-04-19/cozyHouseAdventure.js';
 
 describe('cozyHouseAdventure', () => {
+  it('covers dependency, state, and narrative helper contracts', () => {
+    const getData = () => ({ ok: true });
+    expect(cozyHouseAdventureTestOnly.requireEnvFunction(new Map([['getData', getData]]), 'getData', 'state accessor')).toBe(getData);
+    expect(() => cozyHouseAdventureTestOnly.requireEnvFunction(new Map(), 'getData', 'state accessor')).toThrow('Missing state accessor dependency');
+    expect(cozyHouseAdventureTestOnly.getScopedState({})).toEqual({});
+    expect(cozyHouseAdventureTestOnly.getScopedState({ temporary: { COZY1: { name: 'A' } } })).toEqual({ name: 'A' });
+    expect(cozyHouseAdventureTestOnly.getTemporaryState({})).toEqual({});
+    expect(cozyHouseAdventureTestOnly.getTemporaryState({ COZY1: { name: 'B' } })).toEqual({ name: 'B' });
+    expect(cozyHouseAdventureTestOnly.introMessage('A')).toContain('Welcome home, A');
+    expect(cozyHouseAdventureTestOnly.yardMessage('12:00')).toContain('12:00');
+  });
   let tempData;
   let env;
 
