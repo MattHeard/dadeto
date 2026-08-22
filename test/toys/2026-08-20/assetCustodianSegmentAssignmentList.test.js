@@ -214,4 +214,14 @@ describe('assetCustodianSegmentAssignmentList', () => {
     expect(result).toMatchObject({ appended: true, length: 1 });
     expect(value.state.temporary.items).toEqual([{ assetId: 'A', segmentId: 'S', custodianPersonId: 'C' }]);
   });
+
+  test('stringifies a numeric path before appending', () => {
+    const value = fixture();
+    const result = JSON.parse(assetCustodianSegmentAssignmentList(JSON.stringify({
+      path: 42,
+      assignment: { assetId: 'A', segmentId: 'S', custodianPersonId: 'C' },
+    }), value.env));
+    expect(result).toMatchObject({ appended: true, length: 1 });
+    expect(value.state.temporary['42']).toEqual([{ assetId: 'A', segmentId: 'S', custodianPersonId: 'C' }]);
+  });
 });

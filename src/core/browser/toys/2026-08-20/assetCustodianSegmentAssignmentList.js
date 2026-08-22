@@ -30,9 +30,9 @@ export function assetCustodianSegmentAssignmentList(input, env) {
  */
 function parseRequest(input) {
   const request = JSON.parse(input);
-  const assignment = request?.assignment;
   if (!request || typeof request !== 'object' || Array.isArray(request))
     throw new Error('Input must be a JSON object.');
+  const assignment = request.assignment;
   if (
     !assignment ||
     typeof assignment !== 'object' ||
