@@ -1,5 +1,8 @@
 import { describe, expect, test } from '@jest/globals';
-import { assetCustodianSegmentAssignmentList } from '../../../src/core/browser/toys/2026-08-20/assetCustodianSegmentAssignmentList.js';
+import {
+  assetCustodianSegmentAssignmentList,
+  parseRequest,
+} from '../../../src/core/browser/toys/2026-08-20/assetCustodianSegmentAssignmentList.js';
 
 const fixture = () => {
   const state = { temporary: {} };
@@ -236,5 +239,37 @@ describe('assetCustodianSegmentAssignmentList', () => {
     for (const [input, error] of cases) {
       expect(JSON.parse(assetCustodianSegmentAssignmentList(JSON.stringify(input), fixture().env))).toEqual({ appended: false, error });
     }
+  });
+
+  test('exposes exact parser guards for type and path fallbacks', () => {
+    expect(() => parseRequest('null')).toThrow('Input must be a JSON object.');
+    expect(() => parseRequest('[]')).toThrow('Input must be a JSON object.');
+    expect(() => parseRequest('0')).toThrow('Input must be a JSON object.');
+    expect(() => parseRequest(JSON.stringify({ path: 'items' }))).toThrow(
+      'An assignment object is required.'
+    );
+    expect(() => parseRequest(JSON.stringify({ path: 'items', assignment: 0 }))).toThrow(
+      'An assignment object is required.'
+    );
+    expect(() => parseRequest(JSON.stringify({
+      assignment: { assetId: 'A', segmentId: 'S', custodianPersonId: 'C' },
+    }))).toThrow('A path is required.');
+    expect(parseRequest(JSON.stringify({
+      path: ' items ',
+      assignment: { assetId: 'A', segmentId: 'S', custodianPersonId: 'C' },
+    }))).toMatchObject({ path: 'items' });
+    expect(() => parseRequest(JSON.stringify({
+      path: '   ',
+      assignment: { assetId: 'A', segmentId: 'S', custodianPersonId: 'C' },
+    }))).toThrow('A path is required.');
+    expect(() => parseRequest(JSON.stringify({
+      path: 'items',
+      memoryLocation: 'other',
+      assignment: { assetId: 'A', segmentId: 'S', custodianPersonId: 'C' },
+    }))).toThrow('Unsupported memory location.');
+    expect(parseRequest(JSON.stringify({
+      path: 42,
+      assignment: { assetId: 'A', segmentId: 'S', custodianPersonId: 'C' },
+    }))).toMatchObject({ path: '42' });
   });
 });
