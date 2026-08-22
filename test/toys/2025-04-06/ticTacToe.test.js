@@ -20,6 +20,16 @@ test('covers direct scoring defaults and required move fields', () => {
     player: 'Q',
     moves: [],
   })).toBe(0);
+  expect(ticTacToeTestOnly.getTerminalScore(() => true, 3)).toBe(7);
+  expect(ticTacToeTestOnly.getTerminalScore(() => false, 3)).toBe(-7);
+  expect(ticTacToeTestOnly.shouldEvaluateTerminal(() => true, () => false)).toBe(true);
+  expect(ticTacToeTestOnly.shouldEvaluateTerminal(() => false, () => true)).toBe(true);
+  expect(ticTacToeTestOnly.shouldEvaluateTerminal(() => false, () => false)).toBe(false);
+  expect(ticTacToeTestOnly.evaluateTerminalState(() => true, () => false, 2)).toBe(8);
+  expect(ticTacToeTestOnly.evaluateTerminalState(() => false, () => false, 2)).toBeNull();
+  expect(ticTacToeTestOnly.getAvailableMoves([['X', null, 'O'], [null, 'X', null], ['O', null, 'X']])).toEqual([[0, 1], [1, 0], [1, 2], [2, 1]]);
+  expect(ticTacToeTestOnly.selectScore([2, 5], true)).toBe(5);
+  expect(ticTacToeTestOnly.selectScore([2, 5], false)).toBe(2);
   expect(ticTacToeTestOnly.determineNextPlayer([])).toBe('X');
   expect(ticTacToeTestOnly.determineNextPlayer([{ player: 'X', position: { row: 0, column: 0 } }])).toBe('O');
   expect(JSON.parse(ticTacToeTestOnly.handleValidMoves([{ player: 'X', position: { row: 3, column: 0 } }])).moves).toHaveLength(1);

@@ -182,6 +182,11 @@ export const ticTacToeTestOnly = {
   determineNextPlayer,
   makeAccumulateScores,
   minimax,
+  getTerminalScore,
+  shouldEvaluateTerminal,
+  evaluateTerminalState,
+  getAvailableMoves,
+  selectScore,
 };
 
 /**
