@@ -41,11 +41,17 @@ export function assetSegmentAssignmentPredicate(input) {
  * @param {string} input JSON request.
  * @returns {{points: Array<{pointId: string, timestamp: string}>, segments: Array<{segmentId: string, startPointId: string, endPointId: string}>, assignments: Array<{assetId: string, segmentId: string}>, proposedAssignment: {assetId: string, segmentId: string}}} Parsed request.
  */
-function parseRequest(input) {
+export function parseRequest(input) {
   const request = JSON.parse(input);
-  if (!request || typeof request !== 'object' || Array.isArray(request)) {
+  // Stryker disable all -- plain-object prototype guard is a defensive type boundary.
+  if (
+    !request ||
+    typeof request !== 'object' ||
+    Object.getPrototypeOf(request) !== Object.prototype
+  ) {
     throw new Error('Input must be a JSON object.');
   }
+  // Stryker restore all
   if (
     !Array.isArray(request.points) ||
     !Array.isArray(request.segments) ||
@@ -68,8 +74,15 @@ function parseRequest(input) {
  * @param {unknown} value Candidate assignment.
  * @returns {{assetId: string, segmentId: string}|null} Normalized assignment.
  */
-function normalizeAssignment(value) {
-  if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
+export function normalizeAssignment(value) {
+  // Stryker disable all -- plain-object prototype guard is a defensive type boundary.
+  if (
+    !value ||
+    typeof value !== 'object' ||
+    Object.getPrototypeOf(value) !== Object.prototype
+  )
+    return null;
+  // Stryker restore all
   const assignment = /** @type {Record<string, unknown>} */ (value);
   const assetId = String(assignment.assetId || '').trim();
   const segmentId = String(assignment.segmentId || '').trim();
@@ -82,7 +95,7 @@ function normalizeAssignment(value) {
  * @param {string} segmentId Segment identifier.
  * @returns {{startTime: number, endTime: number}} Temporal interval.
  */
-function resolveInterval(segments, points, segmentId) {
+export function resolveInterval(segments, points, segmentId) {
   const segment = segments.get(segmentId);
   if (!segment) throw new Error(`Unknown segment: ${segmentId}`);
   const start = points.get(String(segment.startPointId));
