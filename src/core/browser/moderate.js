@@ -91,7 +91,7 @@ const errorBeaconHandlers = errorBeacon.createErrorBeaconHandlers({
  * Enable or disable moderation action buttons.
  * @param {boolean} disabled Whether buttons should be disabled.
  */
-function toggleApproveReject(disabled) {
+export function toggleApproveReject(disabled) {
   ['approveBtn', 'rejectBtn'].forEach(id => {
     const el = moderateDocument.getElementById(id);
     if (el) el.disabled = disabled;
@@ -104,7 +104,7 @@ function toggleApproveReject(disabled) {
  * @param {string} text Base text for the message.
  * @returns {() => void} Function to stop the animation.
  */
-function startAnimation(id, text) {
+export function startAnimation(id, text) {
   const el = moderateDocument.getElementById(id);
   if (!el) return () => {};
   let dots = 1;
@@ -138,7 +138,7 @@ export function createTextElement(tagName, text) {
  * @param {Array<{content: string, targetPageNumber?: number}>} options Variant options.
  * @returns {void}
  */
-function appendOptionsList(container, options) {
+export function appendOptionsList(container, options) {
   if (!Array.isArray(options) || options.length === 0) return;
   const list = moderateDocument.createElement('ol');
   options.forEach(opt => {
@@ -157,7 +157,7 @@ function appendOptionsList(container, options) {
  * Wire up and enable moderation action buttons.
  * @returns {void}
  */
-function enableModerationButtons() {
+export function enableModerationButtons() {
   const approve = moderateDocument.getElementById('approveBtn');
   const reject = moderateDocument.getElementById('rejectBtn');
   if (!approve || !reject) return;
@@ -172,7 +172,7 @@ function enableModerationButtons() {
  * @param {{title?: string, author?: string, content?: string, options?: Array<{content: string, targetPageNumber?: number}>}} data Variant payload.
  * @returns {void}
  */
-function renderVariant(data) {
+export function renderVariant(data) {
   const container = moderateDocument.getElementById('pageContent');
   if (!container) return;
 

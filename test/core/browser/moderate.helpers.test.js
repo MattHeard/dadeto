@@ -5,6 +5,10 @@ import {
   readErrorResponseBody,
   formatHttpErrorMessage,
   createModerateHandle,
+  toggleApproveReject,
+  appendOptionsList,
+  enableModerationButtons,
+  renderVariant,
 } from '../../../src/core/browser/moderate.js';
 
 describe('moderate pure helper contracts', () => {
@@ -40,5 +44,52 @@ describe('moderate pure helper contracts', () => {
     expect(formatHttpErrorMessage(500, '  failed  ')).toBe('HTTP 500: failed');
     expect(formatHttpErrorMessage(404, '   ')).toBe('HTTP 404');
     expect(formatHttpErrorMessage(500, 'x'.repeat(301))).toBe(`HTTP 500: ${'x'.repeat(300)}`);
+  });
+
+  it('toggles moderation buttons and wires approval callbacks', () => {
+    const approve = { disabled: false };
+    const reject = { disabled: false };
+    const documentObj = { getElementById: id => id === 'approveBtn' ? approve : reject };
+    createModerateHandle({ documentObj, fetchFn: jest.fn(), sessionStorageObj: {}, globalObject: {} });
+    toggleApproveReject(true);
+    expect(approve.disabled).toBe(true);
+    expect(reject.disabled).toBe(true);
+    toggleApproveReject(false);
+    expect(approve.disabled).toBe(false);
+    expect(reject.disabled).toBe(false);
+  });
+
+  it('renders option lists with and without target page numbers', () => {
+    const created = [];
+    const container = { appendChild: jest.fn(node => created.push(node)) };
+    const documentObj = {
+      createElement: jest.fn(tag => ({ tag, textContent: '', appendChild: jest.fn() })),
+      getElementById: () => null,
+    };
+    createModerateHandle({ documentObj, fetchFn: jest.fn(), sessionStorageObj: {}, globalObject: {} });
+    appendOptionsList(container, []);
+    appendOptionsList(container, [{ content: 'A', targetPageNumber: 3 }, { content: 'B' }]);
+    expect(created).toHaveLength(1);
+    expect(created[0].tag).toBe('ol');
+    expect(created[0].appendChild).toHaveBeenCalledTimes(2);
+  });
+
+  it('renders a variant title, author, content, and options', () => {
+    const elements = new Map();
+    const pageContent = { style: {}, appendChild: jest.fn(), innerHTML: '' };
+    elements.set('pageContent', pageContent);
+    elements.set('approveBtn', { disabled: true });
+    elements.set('rejectBtn', { disabled: true });
+    const documentObj = {
+      getElementById: id => elements.get(id) ?? null,
+      createElement: tag => ({ tag, textContent: '', appendChild: jest.fn() }),
+    };
+    createModerateHandle({ documentObj, fetchFn: jest.fn(), sessionStorageObj: {}, globalObject: {} });
+    renderVariant({ title: 'Title', author: 'Author', content: 'Body', options: [] });
+    expect(pageContent.style.display).toBe('');
+    expect(pageContent.innerHTML).toBe('');
+    expect(pageContent.appendChild).toHaveBeenCalledTimes(3);
+    expect(elements.get('approveBtn').disabled).toBe(false);
+    expect(elements.get('rejectBtn').disabled).toBe(false);
   });
 });
