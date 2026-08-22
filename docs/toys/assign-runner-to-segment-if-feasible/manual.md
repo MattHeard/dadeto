@@ -2,19 +2,19 @@
 
 ## What this toy does
 
-Assign Runner To Segment If Feasible is a focused toy for exercising one small domain behavior. Use it to inspect the behavior described in the toy's documented behavior without needing to understand the surrounding application.
+Assign Runner To Segment If Feasible is a focused toy for exercising one small domain behavior. Use it to explore this focused behavior directly in the toy interface.
 
 ## How to use it
 
-1. Read the toy's documented behavior for the supported inputs, outputs, and boundaries.
+1. Start with the input examples and behavior described in this manual.
 2. Start with the smallest valid example shown there (or the default input, if one is provided).
-3. Run the toy through the application’s toy interface or the command described in the toy interface or local setup.
-4. Change one input at a time and compare the result with the expected behavior.
-5. If the result is surprising, check the troubleshooting guidance before changing the implementation.
+3. Run the toy through the application’s toy interface or the toy interface.
+4. Change one input at a time and compare the result with the behavior described in this manual.
+5. If the result is surprising, use the troubleshooting advice below before changing the implementation.
 
 ## Input and output
 
-The exact input shape and normalization rules are defined in the toy's documented behavior. The toy returns the output described there; treat omitted, malformed, or out-of-range values according to the documented assumptions rather than guessing at new behavior.
+Use the input shape and limits described in this manual. The toy returns the output described here; omitted, malformed, or out-of-range values use the fallback behavior explained below.
 
 ## Useful experiments
 
@@ -26,10 +26,10 @@ The exact input shape and normalization rules are defined in the toy's documente
 
 ## Troubleshooting
 
-- If the toy does not start, follow the setup and fixture instructions in the toy interface or local setup.
-- If an assertion fails, rerun the exact command in the expected behavior and inspect the first failing condition.
-- If input is rejected, verify its shape and constraints in the toy's documented behavior.
-- For known edge cases, use the first-response playbook in the troubleshooting guidance.
+- If the toy does not start, open the toy interface and submit a valid example.
+- If an assertion fails, repeat the example input from this manual and inspect the first failing condition.
+- If input is rejected, verify its shape and constraints in this manual.
+- For known edge cases, use the troubleshooting advice below.
 
 ## Scope note
 
