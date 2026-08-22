@@ -50,11 +50,24 @@ function runSearch(context) {
   );
   const state = createInitialState(context.moderatorId);
 
-  while (state.queue.length > 0) {
+  while (
+    state.queue.length > 0 &&
+    hasSearchBudget(state.iterations, nodes.length) &&
+    advanceIteration(state)
+  ) {
     processNextNode({ nodes, state, context });
   }
 
   return state.bestDistance;
+}
+
+function hasSearchBudget(iterations, nodeCount) {
+  return iterations < nodeCount * nodeCount;
+}
+
+function advanceIteration(state) {
+  state.iterations += 1;
+  return true;
 }
 
 /**
@@ -233,7 +246,7 @@ function enqueueIfImproved(entry, queue, distances) {
  */
 function hasShorterPath(distances, neighbor, candidateDistance) {
   const previous = distances.get(neighbor);
-  return previous !== undefined && previous <= candidateDistance;
+  return previous <= candidateDistance;
 }
 
 /**
@@ -291,6 +304,7 @@ function createInitialState(moderatorId) {
     queue: [{ id: moderatorId, distance: 0 }],
     distances: new Map([[moderatorId, 0]]),
     bestDistance: NO_PATH_DISTANCE,
+    iterations: 0,
   };
 }
 
@@ -301,6 +315,7 @@ function createInitialState(moderatorId) {
  */
 export {
   buildNodeList,
+  createGuards,
   createInitialState,
   createNeighborEntry,
   enqueueNeighbors,
@@ -310,5 +325,7 @@ export {
   guardStopDistance,
   guardVisited,
   hasShorterPath,
+  hasSearchBudget,
+  advanceIteration,
   processNextNode,
 };

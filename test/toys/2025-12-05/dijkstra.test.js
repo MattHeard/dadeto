@@ -2,14 +2,18 @@ import { describe, expect, it } from '@jest/globals';
 import {
   shortestDistanceToAdmin,
   buildNodeList,
+  createGuards,
   createInitialState,
   createNeighborEntry,
+  enqueueNeighbors,
   enqueueIfImproved,
   guardAdmin,
   guardBeyondLimit,
   guardStopDistance,
   guardVisited,
   hasShorterPath,
+  hasSearchBudget,
+  advanceIteration,
   processNextNode,
   dequeue,
 } from '../../../src/core/browser/toys/2025-12-05/dijkstra.js';
@@ -113,6 +117,12 @@ describe('guardStopDistance', () => {
     expect(guardStopDistance(state, 0.3)).toBe(false);
     expect(state.queue).toEqual([{ id: 'next' }]);
   });
+
+  it('stops at the exact best distance boundary', () => {
+    const state = { bestDistance: 0.4, queue: [{}, {}] };
+    expect(guardStopDistance(state, 0.4)).toBe(true);
+    expect(state.queue).toHaveLength(0);
+  });
 });
 
 describe('dijkstra helper contracts', () => {
@@ -143,6 +153,7 @@ describe('dijkstra helper contracts', () => {
       queue: [{ id: 'matt', distance: 0 }],
       distances: new Map([['matt', 0]]),
       bestDistance: 1,
+      iterations: 0,
     });
   });
 
@@ -155,6 +166,18 @@ describe('dijkstra helper contracts', () => {
     expect(buildNodeList(null, 'alice', 'admin')).toEqual(['alice', 'admin']);
   });
 
+  it('enforces the finite search budget at its exact boundary', () => {
+    expect(hasSearchBudget(0, 2)).toBe(true);
+    expect(hasSearchBudget(3, 2)).toBe(true);
+    expect(hasSearchBudget(4, 2)).toBe(false);
+  });
+
+  it('advances the bounded search state exactly once', () => {
+    const state = { iterations: 2 };
+    expect(advanceIteration(state)).toBe(true);
+    expect(state.iterations).toBe(3);
+  });
+
   it('tracks only strictly improved known paths', () => {
     const distances = new Map([['alice', 0.4]]);
     expect(hasShorterPath(distances, 'alice', 0.4)).toBe(true);
@@ -165,6 +188,8 @@ describe('dijkstra helper contracts', () => {
     enqueueIfImproved({ id: 'bob', distance: 0.3 }, queue, distances);
     expect(queue).toEqual([{ id: 'bob', distance: 0.3 }]);
     expect(distances.get('bob')).toBe(0.3);
+    enqueueIfImproved({ id: 'alice', distance: 0.5 }, queue, distances);
+    expect(queue).toHaveLength(1);
   });
 
   it('rejects unusable neighbor edges and accepts improving edges', () => {
@@ -172,6 +197,10 @@ describe('dijkstra helper contracts', () => {
       matt: { 'page-A': true },
       alice: { 'page-A': true, 'page-P': true },
       admin: { 'page-A': true },
+    };
+    const splitRatings = {
+      matt: { 'page-A': true, 'page-B': false },
+      alice: { 'page-A': true, 'page-B': true },
     };
     expect(
       createNeighborEntry({
@@ -190,10 +219,31 @@ describe('dijkstra helper contracts', () => {
       })
     ).toBeNull();
 
-    const splitRatings = {
-      matt: { 'page-A': true, 'page-B': false },
-      alice: { 'page-A': true, 'page-B': true },
-    };
+    expect(
+      createNeighborEntry({
+        current: { id: 'matt', distance: -0.2 },
+        neighbor: 'missing',
+        ratings: {},
+        bestDistance: 2,
+      })
+    ).toBeNull();
+    expect(
+      createNeighborEntry({
+        current: { id: 'matt', distance: 0.5 },
+        neighbor: 'alice',
+        ratings: splitRatings,
+        bestDistance: 2,
+      })
+    ).toBeNull();
+    expect(
+      createNeighborEntry({
+        current: { id: 'matt', distance: 0 },
+        neighbor: 'alice',
+        ratings: splitRatings,
+        bestDistance: 0.5,
+      })
+    ).toBeNull();
+
     expect(
       createNeighborEntry({
         current: { id: 'matt', distance: 0.6 },
@@ -220,11 +270,39 @@ describe('dijkstra helper contracts', () => {
       bestDistance: 1,
     };
     processNextNode({
-      nodes: ['matt'],
+      nodes: ['matt', 'alice'],
       state,
-      context: { moderatorId: 'matt', adminId: 'admin', ratings: {} },
+      context: {
+        moderatorId: 'matt',
+        adminId: 'admin',
+        ratings: { matt: { 'page-A': true }, alice: { 'page-A': true } },
+      },
     });
     expect(state.queue).toEqual([]);
+  });
+
+  it('builds four independently callable guard checks', () => {
+    const state = { visited: new Set(), queue: [], bestDistance: 1 };
+    const checks = createGuards({
+      current: { id: 'matt', distance: 0 },
+      state,
+      context: { adminId: 'admin' },
+    });
+    expect(checks).toHaveLength(4);
+    expect(checks.map(check => check())).toEqual([false, false, false, false]);
+  });
+
+  it('does not enqueue the current node while exploring neighbors', () => {
+    const queue = [];
+    enqueueNeighbors({
+      nodes: ['matt', 'alice'],
+      current: { id: 'matt', distance: 0 },
+      ratings: { matt: { 'page-A': true }, alice: { 'page-A': true } },
+      queue,
+      distances: new Map(),
+      bestDistance: 1,
+    });
+    expect(queue).toEqual([{ id: 'alice', distance: 0 }]);
   });
 
   it('dequeues entries in ascending distance order', () => {
