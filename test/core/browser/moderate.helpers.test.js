@@ -72,6 +72,8 @@ describe('moderate pure helper contracts', () => {
     expect(created).toHaveLength(1);
     expect(created[0].tag).toBe('ol');
     expect(created[0].appendChild).toHaveBeenCalledTimes(2);
+    expect(created[0].appendChild.mock.calls[0][0].textContent).toBe('A (3)');
+    expect(created[0].appendChild.mock.calls[1][0].textContent).toBe('B');
   });
 
   it('renders a variant title, author, content, and options', () => {
@@ -89,6 +91,11 @@ describe('moderate pure helper contracts', () => {
     expect(pageContent.style.display).toBe('');
     expect(pageContent.innerHTML).toBe('');
     expect(pageContent.appendChild).toHaveBeenCalledTimes(3);
+    expect(pageContent.appendChild.mock.calls.map(([element]) => element.textContent)).toEqual([
+      'Title',
+      'By Author',
+      'Body',
+    ]);
     expect(elements.get('approveBtn').disabled).toBe(false);
     expect(elements.get('rejectBtn').disabled).toBe(false);
   });
