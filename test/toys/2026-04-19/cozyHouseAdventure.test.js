@@ -19,6 +19,23 @@ describe('cozyHouseAdventure', () => {
     expect(cozyHouseAdventureTestOnly.isHouseComplete(['foundation', 'materials'])).toBe(false);
     expect(cozyHouseAdventureTestOnly.getCompletionLine(['foundation'])).toContain('next cozy task');
     expect(cozyHouseAdventureTestOnly.getCompletionLine(['foundation', 'materials', 'roof', 'garden'])).toContain('peaceful home');
+    expect(cozyHouseAdventureTestOnly.introMessage('A')).toBe(
+      "> Welcome home, A.\n> A gentle rain taps the porch while your tiny-house project waits in the yard.\n> Type 'build' when you're ready to start laying out your cozy home."
+    );
+    expect(cozyHouseAdventureTestOnly.yardMessage('12:00')).toBe(
+      '> 12:00 — You stand in the yard with tea in hand and a warm checklist.\n> Next tasks: foundation / materials / roof / garden.\n> What would you like to do?'
+    );
+    expect(cozyHouseAdventureTestOnly.resolveYardSelection('roof')).toBe('roof');
+    expect(cozyHouseAdventureTestOnly.resolveYardSelection('nothing')).toBe('yard');
+    expect(cozyHouseAdventureTestOnly.getInputName('  ')).toBe('Builder');
+    expect(cozyHouseAdventureTestOnly.getInputName(' Rowan ')).toBe('Rowan');
+    expect(cozyHouseAdventureTestOnly.getPlayerState({})).toBe('intro');
+    expect(cozyHouseAdventureTestOnly.getPlayerState({ state: 'garden' })).toBe('garden');
+    expect(cozyHouseAdventureTestOnly.getStoredList()).toEqual([]);
+    expect(cozyHouseAdventureTestOnly.getStoredList(['roof'])).toEqual(['roof']);
+    expect(cozyHouseAdventureTestOnly.getBonusText(0.8)).toBe('');
+    expect(cozyHouseAdventureTestOnly.getBonusText(0.81)).toContain('A robin lands nearby');
+    expect(cozyHouseAdventureTestOnly.getStateHandler('yard')).toBeDefined();
   });
   let tempData;
   let env;
@@ -105,6 +122,37 @@ describe('cozyHouseAdventure', () => {
     const result = cozyHouseAdventure('anything', env);
 
     expect(result).toMatch(/SYSTEM ERROR: fireplace smoke in the command line/);
+  });
+
+  test('reports each missing runtime dependency and normalizes commands', () => {
+    for (const key of ['getCurrentTime', 'getRandomNumber', 'setLocalTemporaryData']) {
+      const missing = new Map(env);
+      missing.delete(key);
+      expect(cozyHouseAdventure('Rowan', missing)).toMatch(/SYSTEM ERROR/);
+    }
+    cozyHouseAdventure('Rowan', env);
+    expect(cozyHouseAdventure(' BUILD ', env)).toMatch(/Next tasks/);
+  });
+
+  test('exposes exact dependency contracts for runtime context and adventure entry', () => {
+    for (const [key, label] of [
+      ['getCurrentTime', 'time provider'],
+      ['getRandomNumber', 'random number generator'],
+      ['setLocalTemporaryData', 'temporary state setter'],
+    ]) {
+      const missing = new Map(env);
+      missing.delete(key);
+      expect(() => cozyHouseAdventureTestOnly.createRuntimeContext('build', {}, missing)).toThrow(
+        `Missing ${label} dependency for cozy house adventure.`
+      );
+    }
+    const context = cozyHouseAdventureTestOnly.createRuntimeContext('  BuIlD  ', {}, env);
+    expect(context.lowerInput).toBe('build');
+    const noData = new Map(env);
+    noData.delete('getData');
+    expect(() => cozyHouseAdventureTestOnly.runAdventure('anything', noData)).toThrow(
+      'Missing state accessor dependency for cozy house adventure.'
+    );
   });
 
   test('starts from empty temporary data shapes', () => {

@@ -459,8 +459,6 @@ function getStateHandler(state) {
       return context => handleBuildStage(context, 'roof');
     case 'garden':
       return context => handleBuildStage(context, 'garden');
-    case 'yard':
-    case 'intro':
     default:
       return handleYard;
   }
@@ -550,4 +548,12 @@ export const cozyHouseAdventureTestOnly = {
   addCompletedStage,
   isHouseComplete,
   getCompletionLine,
+  resolveYardSelection,
+  getInputName,
+  getPlayerState,
+  getStoredList,
+  getBonusText,
+  getStateHandler,
+  createRuntimeContext,
+  runAdventure,
 };
