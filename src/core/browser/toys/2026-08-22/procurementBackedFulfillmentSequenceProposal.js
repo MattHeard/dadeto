@@ -1,3 +1,5 @@
+import { normalizeCoordinate } from '../2026-08-18/registryUtils.js';
+
 // Toy: Procurement-Backed Fulfillment Sequence Proposal
 
 const MINUTE_MS = 60_000;
@@ -43,8 +45,8 @@ export function procurementBackedFulfillmentSequenceProposal(input) {
 
     const warehouseSpacePoint = {
       spacePointId: ids.warehouseSpacePointId,
-      latitude: warehouse.latitude,
-      longitude: warehouse.longitude,
+      latitude: normalizeCoordinate(warehouse.latitude, -90, 90),
+      longitude: normalizeCoordinate(warehouse.longitude, -180, 180),
     };
     const points = [
       point(
@@ -146,8 +148,9 @@ export function procurementBackedFulfillmentSequenceProposal(input) {
 }
 
 /**
- * Validate and normalize the proposal request. @param {any} request Request. @returns {any} Validated request.
- * @param request
+ * Validate and normalize the proposal request.
+ * @param {any} request Request to validate.
+ * @returns {any} Validated request.
  */
 function validateRequest(request) {
   const context = request?.possessionContext;
@@ -196,8 +199,6 @@ function validateRequest(request) {
     if (!Number.isFinite(value) || value < 0)
       throw new Error('Durations must be finite and non-negative.');
   });
-  if (!travel || !configuration)
-    throw new Error('Travel durations and configuration are required.');
   const ids = request.generatedIds;
   const pointIds = ids?.points;
   const segmentIds = ids?.segments;
@@ -235,10 +236,11 @@ function validateRequest(request) {
 }
 
 /**
- * Validate a WGS84 coordinate. @param {unknown} value Candidate coordinate. @param {number} minimum Lower bound. @param {number} maximum Upper bound. @returns {boolean} Whether valid.
- * @param value
- * @param minimum
- * @param maximum
+ * Validate a WGS84 coordinate.
+ * @param {unknown} value Candidate coordinate.
+ * @param {number} minimum Lower bound.
+ * @param {number} maximum Upper bound.
+ * @returns {boolean} Whether valid.
  */
 function validCoordinate(value, minimum, maximum) {
   return (
@@ -250,18 +252,20 @@ function validCoordinate(value, minimum, maximum) {
 }
 
 /**
- * Check the repository's minute timestamp precision. @param {number} value Epoch milliseconds. @returns {boolean} Whether minute aligned.
- * @param value
+ * Check the repository's minute timestamp precision.
+ * @param {number} value Epoch milliseconds.
+ * @returns {boolean} Whether minute aligned.
  */
 function isMinuteTimestamp(value) {
   return Number.isFinite(value) && value % MINUTE_MS === 0;
 }
 
 /**
- * Create a referenced spacetime point. @param {string} pointId Point ID. @param {string} spacePointId Space-point ID. @param {number} timestamp Epoch milliseconds. @returns {object} Point record.
- * @param pointId
- * @param spacePointId
- * @param timestamp
+ * Create a referenced spacetime point.
+ * @param {string} pointId Point ID.
+ * @param {string} spacePointId Space-point ID.
+ * @param {number} timestamp Epoch milliseconds.
+ * @returns {object} Point record.
  */
 function point(pointId, spacePointId, timestamp) {
   return {
@@ -272,23 +276,20 @@ function point(pointId, spacePointId, timestamp) {
 }
 
 /**
- * Create a segment reference. @param {string} segmentId Segment ID. @param {string} startPointId Start point ID. @param {string} endPointId End point ID. @returns {object} Segment record.
- * @param segmentId
- * @param startPointId
- * @param endPointId
+ * Create a segment reference.
+ * @param {string} segmentId Segment ID.
+ * @param {string} startPointId Start point ID.
+ * @param {string} endPointId End point ID.
+ * @returns {object} Segment record.
  */
 function segment(segmentId, startPointId, endPointId) {
   return { segmentId, startPointId, endPointId };
 }
 
 /**
- * Create operation metadata. @param {object} value Operation values. @returns {object} Operation record.
- * @param root0
- * @param root0.operationName
- * @param root0.segmentId
- * @param root0.baseDurationSeconds
- * @param root0.bufferSeconds
- * @param root0.allocatedDurationSeconds
+ * Create operation metadata.
+ * @param {{operationName: string, segmentId: string, baseDurationSeconds: number, bufferSeconds: number, allocatedDurationSeconds: number}} value Operation values.
+ * @returns {object} Operation record.
  */
 function operation({
   operationName,

@@ -23,14 +23,14 @@ export function pickupReturnSegmentProposal(input) {
       );
     const point = {
       pointId: String(x.endPointId),
-      latitude: Number(destination.latitude),
-      longitude: Number(destination.longitude),
+      latitude: Number(destination.latitude).toFixed(6),
+      longitude: Number(destination.longitude).toFixed(6),
       timestamp: new Date(
         Date.parse(start.timestamp) + minutes * 60000
       ).toISOString(),
     };
     if (
-      ![point.latitude, point.longitude].every(Number.isFinite) ||
+      ![point.latitude, point.longitude].every(value => Number.isFinite(Number(value))) ||
       !Number.isFinite(Date.parse(point.timestamp))
     )
       throw new Error(

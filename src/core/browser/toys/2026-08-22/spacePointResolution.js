@@ -1,5 +1,7 @@
 // Shared compatibility resolver for legacy inline and referenced space points.
 
+import { normalizeCoordinate } from '../2026-08-18/registryUtils.js';
+
 /**
  * Resolve spacetime-point coordinate references while preserving legacy points.
  * @param {Array<Record<string, unknown>>} points Spacetime points.
@@ -44,7 +46,21 @@ export function resolvePoint(point, spacePoints, requireCoordinates = false) {
       Number(point.longitude) !== Number(reference.longitude))
   )
     throw new Error(`Point ${point.pointId} conflicts with its space point.`);
-  return reference && !hasLatitude
-    ? { ...point, latitude: reference.latitude, longitude: reference.longitude }
-    : point;
+  const latitude = normalizeCoordinate(
+      reference ? reference.latitude : point.latitude,
+      -90,
+      90
+    ),
+    longitude = normalizeCoordinate(
+      reference ? reference.longitude : point.longitude,
+      -180,
+      180
+    );
+  if ((hasLatitude || reference) && (latitude === null || longitude === null))
+    throw new Error(`Point ${point.pointId} has invalid coordinates.`);
+  if (reference && !hasLatitude)
+    return { ...point, latitude, longitude };
+  if (hasLatitude)
+    return { ...point, latitude, longitude };
+  return point;
 }

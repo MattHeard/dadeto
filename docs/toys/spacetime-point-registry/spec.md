@@ -20,7 +20,7 @@ SPAC1 defines points only. It knows nothing about customers, runners, assets, po
 - Output: normalized `points` and a `summary` count.
 
 ## Assumptions and Constraints
-- Coordinates follow POSS1 semantics and are rounded to six decimals.
+- Coordinates follow POSS1 semantics, are represented as canonical decimal strings, and are rounded to six decimal places.
 - Times follow POSS1’s `YYYY-MM-DDTHH:MMZ` UTC-minute contract.
 - Altitude is intentionally deferred.
 

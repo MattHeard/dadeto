@@ -1,3 +1,5 @@
+import { normalizeCoordinate } from '../2026-08-18/registryUtils.js';
+
 // Toy: Normal Fulfillment Sequence Proposal
 
 const MINUTE_MS = 60_000;
@@ -178,8 +180,8 @@ export function normalFulfillmentSequenceProposal(input) {
       spacePoints: [
         {
           spacePointId: warehouse.spacePointId,
-          latitude: warehouse.latitude,
-          longitude: warehouse.longitude,
+          latitude: normalizeCoordinate(warehouse.latitude, -90, 90),
+          longitude: normalizeCoordinate(warehouse.longitude, -180, 180),
         },
       ],
       points,
@@ -192,7 +194,10 @@ export function normalFulfillmentSequenceProposal(input) {
   }
 }
 
-/** Validate the proposal input. @param {any} request Request. @returns {any} Validated values. */
+/**
+ * Validate the proposal input. @param {any} request Request. @returns {any} Validated values.
+ * @param request
+ */
 function validate(request) {
   const context = request?.possessionContext;
   const segment = context?.segment;
@@ -287,7 +292,11 @@ function referencedPoint(point) {
   );
 }
 
-/** @param {unknown} value Coordinate. @param {number} min Lower bound. @param {number} max Upper bound. @returns {boolean} Whether valid. */
+/**
+ * @param {unknown} value Coordinate. @param {number} min Lower bound. @param {number} max Upper bound. @returns {boolean} Whether valid.
+ * @param min
+ * @param max
+ */
 function coordinate(value, min, max) {
   return (
     typeof value === 'number' &&
@@ -297,7 +306,10 @@ function coordinate(value, min, max) {
   );
 }
 
-/** @param {number} base Base duration. @param {number} buffer Buffer. @returns {number} Allocated duration. */
+/**
+ * @param {number} base Base duration. @param {number} buffer Buffer. @returns {number} Allocated duration.
+ * @param buffer
+ */
 function allocated(base, buffer) {
   return base + buffer;
 }
@@ -307,7 +319,11 @@ function minuteAligned(timestamp) {
   return Number.isFinite(timestamp) && timestamp % MINUTE_MS === 0;
 }
 
-/** @param {string} pointId Point ID. @param {string} spacePointId Space point ID. @param {number} timestamp Epoch milliseconds. @returns {object} Point. */
+/**
+ * @param {string} pointId Point ID. @param {string} spacePointId Space point ID. @param {number} timestamp Epoch milliseconds. @returns {object} Point.
+ * @param spacePointId
+ * @param timestamp
+ */
 function warehousePoint(pointId, spacePointId, timestamp) {
   return {
     pointId,
@@ -316,12 +332,25 @@ function warehousePoint(pointId, spacePointId, timestamp) {
   };
 }
 
-/** @param {string} segmentId Segment ID. @param {string} startPointId Start point ID. @param {string} endPointId End point ID. @returns {object} Segment. */
+/**
+ * @param {string} segmentId Segment ID. @param {string} startPointId Start point ID. @param {string} endPointId End point ID. @returns {object} Segment.
+ * @param startPointId
+ * @param endPointId
+ */
 function makeSegment(segmentId, startPointId, endPointId) {
   return { segmentId, startPointId, endPointId };
 }
 
-/** Create operation metadata. @param {string} operationName Operation name. @param {string} segmentId Segment ID. @param {boolean} requiresAsset Asset requirement. @param {boolean} requiresRunner Runner requirement. @param {boolean} runnerCustody Custody requirement. @param {number} baseDurationSeconds Base duration. @param {number} bufferSeconds Buffer. @returns {object} Metadata. */
+/**
+ * Create operation metadata. @param {string} operationName Operation name. @param {string} segmentId Segment ID. @param {boolean} requiresAsset Asset requirement. @param {boolean} requiresRunner Runner requirement. @param {boolean} runnerCustody Custody requirement. @param {number} baseDurationSeconds Base duration. @param {number} bufferSeconds Buffer. @returns {object} Metadata.
+ * @param operationName
+ * @param segmentId
+ * @param requiresAsset
+ * @param requiresRunner
+ * @param runnerCustody
+ * @param baseDurationSeconds
+ * @param bufferSeconds
+ */
 function metadata(
   operationName,
   segmentId,

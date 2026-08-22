@@ -23,14 +23,14 @@ export function deliveryOutboundSegmentProposal(input) {
       );
     const point = {
       pointId: String(x.startPointId),
-      latitude: Number(origin.latitude),
-      longitude: Number(origin.longitude),
+      latitude: Number(origin.latitude).toFixed(6),
+      longitude: Number(origin.longitude).toFixed(6),
       timestamp: new Date(
         Date.parse(end.timestamp) - minutes * 60000
       ).toISOString(),
     };
     if (
-      ![point.latitude, point.longitude].every(Number.isFinite) ||
+      ![point.latitude, point.longitude].every(value => Number.isFinite(Number(value))) ||
       !Number.isFinite(Date.parse(point.timestamp))
     )
       throw new Error('Valid origin coordinates and timestamp are required.');

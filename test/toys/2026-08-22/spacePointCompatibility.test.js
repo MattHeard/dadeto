@@ -10,7 +10,7 @@ import {
 } from '../../../src/core/browser/toys/2026-08-22/spacePointResolution.js';
 
 const spacePoints = [
-  { spacePointId: 'LOC1', latitude: 51.5, longitude: -0.12 },
+  { spacePointId: 'LOC1', latitude: '51.500000', longitude: '-0.120000' },
 ];
 const point = {
   pointId: 'TIME1',
@@ -65,7 +65,54 @@ describe('atemporal space-point compatibility', () => {
     const result = JSON.parse(
       spacePointRegistry(JSON.stringify({ spacePoints }))
     );
-    expect(result.spacePoints).toEqual(spacePoints);
+    expect(result.spacePoints).toEqual([
+      { spacePointId: 'LOC1', latitude: '51.500000', longitude: '-0.120000' },
+    ]);
+  });
+
+  test('sorts multiple atemporal points and covers legacy resolver defaults', () => {
+    const result = JSON.parse(
+      spacePointRegistry(
+        JSON.stringify({
+          spacePoints: [
+            { spacePointId: 'B', latitude: 2, longitude: 3 },
+            { spacePointId: 'A', latitude: 1, longitude: 2 },
+          ],
+        })
+      )
+    );
+    expect(result.spacePoints.map(value => value.spacePointId)).toEqual([
+      'A',
+      'B',
+    ]);
+    expect(
+      resolvePointRecords([{ pointId: 'INLINE', latitude: 1, longitude: 2 }])[0]
+    ).toEqual({
+      pointId: 'INLINE',
+      latitude: '1.000000',
+      longitude: '2.000000',
+    });
+    expect(
+      resolvePoint({ pointId: 'INLINE', latitude: 1, longitude: 2 }, new Map())
+    ).toEqual({
+      pointId: 'INLINE',
+      latitude: '1.000000',
+      longitude: '2.000000',
+    });
+    expect(() =>
+      resolvePoint({ pointId: 'PARTIAL', latitude: 1 }, new Map(), true)
+    ).toThrow('has no coordinates');
+    expect(
+      resolvePoint(
+        {
+          pointId: 'P',
+          spacePointId: 'LOC1',
+          latitude: 51.5,
+          longitude: -0.12,
+        },
+        new Map(spacePoints.map(value => [value.spacePointId, value]))
+      )
+    ).toMatchObject(spacePoints[0]);
   });
 
   test('SPAC1 accepts referenced points and preserves legacy inline points', () => {
@@ -87,8 +134,8 @@ describe('atemporal space-point compatibility', () => {
     expect(result.points).toContainEqual(point);
     expect(result.points).toContainEqual({
       pointId: 'LEGACY',
-      latitude: 1,
-      longitude: 2,
+      latitude: '1.000000',
+      longitude: '2.000000',
       timestamp: '2026-08-22T12:00Z',
     });
   });

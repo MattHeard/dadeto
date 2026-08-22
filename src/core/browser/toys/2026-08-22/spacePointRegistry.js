@@ -20,15 +20,15 @@ export const spacePointRegistry = input =>
 
 /**
  * @param {unknown} value Candidate space point.
- * @returns {{spacePointId: string, latitude: number, longitude: number}|null} Normalized space point.
+ * @returns {{spacePointId: string, latitude: string, longitude: string}|null} Normalized space point.
  */
 function normalize(value) {
   const coordinates = normalizeCoordinateRecord(value, 'spacePointId');
   return coordinates
     ? {
         spacePointId: coordinates.id,
-        latitude: /** @type {number} */ (coordinates.latitude),
-        longitude: /** @type {number} */ (coordinates.longitude),
+        latitude: /** @type {string} */ (coordinates.latitude),
+        longitude: /** @type {string} */ (coordinates.longitude),
       }
     : null;
 }

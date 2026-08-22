@@ -24,10 +24,13 @@ export const spacetimePointRegistry = input =>
 
 /**
  * @param {unknown} value Candidate point.
- * @returns {{pointId: string, latitude: number, longitude: number, timestamp: string}|null} Normalized point.
+ * @returns {{pointId: string, latitude: string, longitude: string, timestamp: string}|null} Normalized point.
  */
 function normalizePoint(value) {
-  const point = /** @type {Record<string, unknown>} */ (value);
+  const point =
+    value && typeof value === 'object' && !Array.isArray(value)
+      ? /** @type {Record<string, unknown>} */ (value)
+      : {};
   const coordinates = normalizeCoordinateRecord(value, 'pointId', true);
   const pointId = coordinates?.id ?? '';
   const spacePointId = trimmedStringOrEmpty(point.spacePointId);
@@ -48,7 +51,7 @@ function normalizePoint(value) {
     ...(latitude === null ? {} : { latitude, longitude }),
     timestamp,
   };
-  return /** @type {{pointId: string, latitude: number, longitude: number, timestamp: string}} */ (
+  return /** @type {{pointId: string, latitude: string, longitude: string, timestamp: string}} */ (
     normalized
   );
 }

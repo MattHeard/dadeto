@@ -17,7 +17,7 @@ possession context, warehouse location, travel durations, configuration buffers,
     "startPoint": { "pointId": "start-1", "timestamp": "2026-08-22T10:00:00.000Z" },
     "endPoint": { "pointId": "end-1", "timestamp": "2026-08-22T11:00:00.000Z" }
   },
-  "warehouse": { "latitude": 52.52, "longitude": 13.405 },
+  "warehouse": { "latitude": "52.520000", "longitude": "13.405000" },
   "travelDurations": { "deliveryOutboundSeconds": 600, "pickupReturnSeconds": 600 },
   "configuration": {
     "procurementDuration": 600, "procurementBuffer": 60, "deliveryBuffer": 60,
@@ -39,7 +39,7 @@ If a field is omitted, the toy applies its default behavior. Invalid values are 
 The input is a JSON object with five properties:
 
 - `possessionContext`: contains `segment`, `startPoint`, and `endPoint`; the segment endpoint IDs must match the point IDs.
-- `warehouse`: contains numeric `latitude` and `longitude` coordinates.
+- `warehouse`: contains canonical decimal-string `latitude` and `longitude` coordinates.
 - `travelDurations`: contains non-negative `deliveryOutboundSeconds` and `pickupReturnSeconds`.
 - `configuration`: contains the eight non-negative duration and buffer properties shown in the example.
 - `generatedIds`: contains `warehouseSpacePointId`, five point IDs under `points`, and five segment IDs under `segments`.

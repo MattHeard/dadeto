@@ -31,14 +31,14 @@ describe('spacetimePointRegistry', () => {
     expect(result.points).toEqual([
       {
         pointId: 'P001',
-        latitude: 51.507352,
-        longitude: -0.127758,
+        latitude: '51.507352',
+        longitude: '-0.127758',
         timestamp: '2026-08-21T09:05Z',
       },
       {
         pointId: 'P002',
-        latitude: 90,
-        longitude: -180,
+        latitude: '90.000000',
+        longitude: '-180.000000',
         timestamp: '2026-08-21T18:00Z',
       },
     ]);
@@ -65,8 +65,8 @@ describe('spacetimePointRegistry', () => {
     expect(result.points).toEqual([
       {
         pointId: 'valid',
-        latitude: 0,
-        longitude: 0,
+        latitude: '0.000000',
+        longitude: '0.000000',
         timestamp: '2026-08-21T09:05Z',
       },
     ]);
@@ -88,8 +88,8 @@ describe('spacetimePointRegistry', () => {
     };
     expect(normalizePoint(point)).toEqual({
       pointId: 'P001',
-      latitude: 51.507352,
-      longitude: -0.127758,
+      latitude: '51.507352',
+      longitude: '-0.127758',
       timestamp: '2026-08-21T09:05Z',
     });
     expect(normalizePoint(null)).toBeNull();
@@ -103,8 +103,8 @@ describe('spacetimePointRegistry', () => {
       })
     ).toEqual({
       pointId: 'P',
-      latitude: 0,
-      longitude: 0,
+      latitude: '0.000000',
+      longitude: '0.000000',
       timestamp: '2026-08-21T09:05Z',
     });
     const functionWithPointFields = Object.assign(() => {}, {
@@ -121,12 +121,12 @@ describe('spacetimePointRegistry', () => {
   });
 
   test('enforces inclusive coordinate bounds and finite numeric values', () => {
-    expect(normalizeCoordinate(-90, -90, 90)).toBe(-90);
-    expect(normalizeCoordinate(90, -90, 90)).toBe(90);
-    expect(normalizeCoordinate(-180, -180, 180)).toBe(-180);
-    expect(normalizeCoordinate(180, -180, 180)).toBe(180);
-    expect(normalizeCoordinate(1.2345678, -90, 90)).toBe(1.234568);
-    expect(normalizeCoordinate('1', -90, 90)).toBeNull();
+    expect(normalizeCoordinate(-90, -90, 90)).toBe('-90.000000');
+    expect(normalizeCoordinate(90, -90, 90)).toBe('90.000000');
+    expect(normalizeCoordinate(-180, -180, 180)).toBe('-180.000000');
+    expect(normalizeCoordinate(180, -180, 180)).toBe('180.000000');
+    expect(normalizeCoordinate(1.2345678, -90, 90)).toBe('1.234568');
+    expect(normalizeCoordinate('1', -90, 90)).toBe('1.000000');
     expect(normalizeCoordinate(Infinity, -90, 90)).toBeNull();
     expect(normalizeCoordinate(NaN, -90, 90)).toBeNull();
     expect(normalizeCoordinate(-91, -90, 90)).toBeNull();

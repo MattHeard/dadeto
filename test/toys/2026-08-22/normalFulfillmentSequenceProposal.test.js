@@ -77,7 +77,9 @@ describe('NORM1 normal fulfillment sequence proposal', () => {
       request.possessionContext.startPoint,
       request.possessionContext.endPoint,
     ]);
-    expect(result.spacePoints).toEqual([request.warehouse]);
+    expect(result.spacePoints).toEqual([
+      { spacePointId: 'WAREHOUSE', latitude: '52.123456', longitude: '13.123456' },
+    ]);
   });
 
   test('shares exact point identities and calculates timing', () => {

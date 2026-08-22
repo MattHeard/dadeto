@@ -20,15 +20,14 @@ export function nonNullRecords(values) {
 export function sortByStableKey(values, key) {
   return values.sort((left, right) => key(left).localeCompare(key(right)));
 }
-import { parseObjectRecord } from '../../validation.js';
-import { trimmedStringOrEmpty } from '../../validation.js';
+import { parseObjectRecord, trimmedStringOrEmpty } from '../../validation.js';
 
 /**
  * Normalize a record containing an identifier and bounded WGS84 coordinates.
  * @param {unknown} value Candidate record.
  * @param {string} idKey Identifier field.
  * @param {boolean} [allowMissingCoordinates] Whether an identifier-only record is valid.
- * @returns {{id: string, latitude: number|null, longitude: number|null}|null} Normalized coordinates.
+ * @returns {{id: string, latitude: string|null, longitude: string|null}|null} Normalized coordinates.
  */
 export function normalizeCoordinateRecord(
   value,
@@ -51,17 +50,18 @@ export function normalizeCoordinateRecord(
  * @param {unknown} value Candidate coordinate.
  * @param {number} minimum Inclusive lower bound.
  * @param {number} maximum Inclusive upper bound.
- * @returns {number|null} Rounded coordinate or null when invalid.
+ * @returns {string|null} Canonical decimal coordinate or null when invalid.
  */
 export function normalizeCoordinate(value, minimum, maximum) {
+  const number = typeof value === 'number' ? value : Number(value);
   if (
-    typeof value !== 'number' ||
-    !Number.isFinite(value) ||
-    value < minimum ||
-    value > maximum
+    (typeof value !== 'number' && typeof value !== 'string') ||
+    !Number.isFinite(number) ||
+    number < minimum ||
+    number > maximum
   )
     return null;
-  return Number(value.toFixed(6));
+  return number.toFixed(6);
 }
 
 /**
