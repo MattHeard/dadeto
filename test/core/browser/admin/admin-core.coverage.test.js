@@ -77,6 +77,27 @@ describe('admin-core additional coverage', () => {
     );
   });
 
+  it('supplies the default logger when the handler factory has none', () => {
+    const initialize = jest.fn();
+    const initFactory = createInitGoogleSignInHandlerFactory({
+      getAuthFn: () => ({ currentUser: null }),
+      sessionStorageObj: { setItem: jest.fn() },
+      consoleObj: undefined,
+      globalThisObj: {
+        window: {
+          google: { accounts: { id: { initialize, renderButton: jest.fn() } } },
+          matchMedia: jest.fn(() => ({ matches: false })),
+        },
+        document: { querySelectorAll: jest.fn(() => []) },
+      },
+      googleAuthProviderFn: { credential: jest.fn() },
+      signInWithCredentialFn: jest.fn(),
+    });
+
+    expect(() => initFactory()).not.toThrow();
+    expect(typeof initFactory()).toBe('function');
+  });
+
   describe('isAdminWithDeps', () => {
     it('returns false when no token is present', () => {
       const storage = { getItem: jest.fn().mockReturnValue(null) };
