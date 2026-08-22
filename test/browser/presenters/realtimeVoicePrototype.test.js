@@ -144,6 +144,7 @@ describe('realtimeVoicePrototypePresenterTestOnly', () => {
       'Error: unknown connection failure.'
     );
     const fetchFn = jest.fn(async () => ({ ok: true, text: async () => 'answer' }));
+    const failedResponse = { ok: false, status: 418, text: async () => '' };
     await expect(helpers.requestRealtimeAnswer('offer', '/answer', fetchFn)).resolves.toBe(
       'answer'
     );
@@ -152,13 +153,9 @@ describe('realtimeVoicePrototypePresenterTestOnly', () => {
       headers: { 'Content-Type': 'application/sdp' },
       body: 'offer',
     });
-    await expect(
-      helpers.requestRealtimeAnswer('offer', '/answer', async () => ({
-        ok: false,
-        status: 418,
-        text: async () => '',
-      }))
-    ).rejects.toThrow('Realtime session server failed with status 418.');
+    await expect(helpers.requestRealtimeAnswer('offer', '/answer', async () => failedResponse)).rejects.toThrow(
+      'Realtime session server failed with status 418.'
+    );
   });
 
   test('builds controls and exercises DOM helper branches', () => {
@@ -217,6 +214,13 @@ describe('realtimeVoicePrototypePresenterTestOnly', () => {
     expect(helpers.hasUsableEndpoint(controls, dom)).toBe(false);
     expect(controls.statusText.textContent).toBe('error');
     expect(controls.debugLog.children[0].textContent).toContain('bad endpoint');
+    helpers.connectRealtimeVoice(
+      { mediaStream: null, dataChannel: null, peerConnection: null, muted: false },
+      controls,
+      dom,
+      jest.fn()
+    );
+    expect(controls.statusText.textContent).toBe('error');
   });
 
   test('handles media, channel, peer, mute, and remote-audio helpers', () => {
@@ -254,6 +258,7 @@ describe('realtimeVoicePrototypePresenterTestOnly', () => {
     expect(controls.audioElement.srcObject).toBe('remote');
     expect(controls.audioElement.play).toHaveBeenCalled();
     helpers.createDebugDataChannel(state, peer, controls, dom);
+    expect(peer.createDataChannel).toHaveBeenCalledWith('oai-events');
     channelListeners.open();
     channelListeners.message({ data: '{"type":"ping"}' });
     channelListeners.close();
@@ -275,6 +280,9 @@ describe('realtimeVoicePrototypePresenterTestOnly', () => {
     helpers.stopMediaStream(null);
     helpers.closeDataChannel(null);
     helpers.closePeerConnection(null);
+    expect(controls.muteButton.textContent).toBe('Mute');
+    helpers.appendDebugLog(controls, 'hello', dom);
+    expect(controls.debugLog.children[0].textContent).toContain('hello');
   });
 
   test('includes relay JSON error details in failed session messages', () => {
@@ -324,9 +332,8 @@ describe('realtime voice lifecycle', () => {
       close = jest.fn();
     }
     globalThis.RTCPeerConnection = FakePeerConnection;
-    globalThis.navigator = {
-      mediaDevices: { getUserMedia: jest.fn(async () => stream) },
-    };
+    const getUserMedia = jest.fn(async () => stream);
+    globalThis.navigator = { mediaDevices: { getUserMedia } };
     const fetchFn = jest.fn(async () => ({
       ok: true,
       text: async () => 'answer',
@@ -358,6 +365,8 @@ describe('realtime voice lifecycle', () => {
       headers: { 'Content-Type': 'application/sdp' },
       body: '',
     });
+    expect(getUserMedia).toHaveBeenCalledWith({ audio: true });
+    expect(root.children[5].srcObject).toBe(stream);
     expect(JSON.stringify(root)).toContain('Realtime voice connection is live.');
     buttons[2].listeners.click();
     expect(JSON.stringify(root)).toContain('Microphone muted.');
