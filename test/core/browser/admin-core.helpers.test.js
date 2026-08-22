@@ -72,6 +72,7 @@ import {
   readDisableAutoSelect,
   isAdminToken,
   getDefaultAdminEndpointsCopy,
+  initializeGoogleSignIn,
 } from '../../../src/core/browser/admin-core.js';
 
 describe('small admin-core predicates', () => {
@@ -235,6 +236,34 @@ describe('createGoogleAuthModule', () => {
     await module.signOut();
     expect(signOut).toHaveBeenCalledTimes(1);
     expect(storage.removeItem).toHaveBeenCalledWith('id_token');
+  });
+});
+
+describe('initializeGoogleSignIn', () => {
+  it('initializes popup sign-in and reports callback failures', async () => {
+    const accountsId = { initialize: jest.fn() };
+    const reportError = jest.fn();
+    const error = new Error('sign-in failed');
+    const options = {
+      credentialFactory: jest.fn(() => 'credential'),
+      signInWithCredential: jest.fn().mockRejectedValue(error),
+      auth: { currentUser: null },
+      storage: { setItem: jest.fn() },
+      reportError,
+    };
+    const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+
+    initializeGoogleSignIn(accountsId, options);
+    const config = accountsId.initialize.mock.calls[0][0];
+    expect(config).toMatchObject({
+      client_id:
+        '848377461162-rv51umkquokgoq0hsnp1g0nbmmrv7kl0.apps.googleusercontent.com',
+      ux_mode: 'popup',
+    });
+    await config.callback({ credential: 'token' });
+    expect(reportError).toHaveBeenCalledWith(error);
+    expect(errorSpy).toHaveBeenCalledWith('Google sign-in failed', error);
+    errorSpy.mockRestore();
   });
 });
 
