@@ -894,12 +894,14 @@ describe('initAdminApp', () => {
     const loadStaticConfigFn = jest
       .fn()
       .mockResolvedValue({ disableGoogleSignIn: true });
-    const getAuthFn = jest.fn(() => ({
+    const getIdToken = jest.fn().mockReturnValue('token');
+    let authState = {
       currentUser: {
         uid: ADMIN_UID,
-        getIdToken: jest.fn().mockReturnValue('token'),
+        getIdToken,
       },
-    }));
+    };
+    const getAuthFn = jest.fn(() => authState);
     const GoogleAuthProviderFn = jest.fn(() => ({
       credential: jest.fn(),
     }));
@@ -971,10 +973,30 @@ describe('initAdminApp', () => {
 
       expect(initializeAppFn).toHaveBeenCalledTimes(1);
       expect(onHandlersReady).toHaveBeenCalledTimes(1);
+      await expect(onHandlersReady.mock.calls[0][0].getIdToken()).resolves.toBe(
+        'token'
+      );
+      expect(getIdToken).toHaveBeenCalledWith(true);
+      sessionStorageObj.getItem.mockReturnValue('token');
+      authState = null;
+      await expect(onHandlersReady.mock.calls[0][0].getIdToken()).resolves.toBe(
+        'token'
+      );
+      authState = { currentUser: {} };
+      await expect(onHandlersReady.mock.calls[0][0].getIdToken()).resolves.toBe(
+        'token'
+      );
+      authState = {
+        currentUser: {
+          uid: ADMIN_UID,
+          getIdToken,
+        },
+      };
       const renderClick = elements.renderBtn.addEventListener.mock.calls.find(
         ([event]) => event === 'click'
       )?.[1];
       await renderClick();
+      expect(getIdToken).toHaveBeenCalledWith(true);
     } finally {
       globalThis.sessionStorage = originalSessionStorage;
     }

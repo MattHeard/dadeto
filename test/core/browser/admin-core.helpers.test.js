@@ -352,6 +352,21 @@ describe('initializeGoogleSignIn', () => {
     errorSpy.mockRestore();
   });
 
+  it('passes credential dependencies through to the Google callback', async () => {
+    const accountsId = { initialize: jest.fn() };
+    const getIdToken = jest.fn().mockResolvedValue('id-token');
+    const storage = { setItem: jest.fn() };
+    initializeGoogleSignIn(accountsId, {
+      credentialFactory: jest.fn(token => `credential:${token}`),
+      signInWithCredential: jest.fn().mockResolvedValue({ user: { getIdToken } }),
+      auth: { currentUser: null },
+      storage,
+    });
+
+    await accountsId.initialize.mock.calls[0][0].callback({ credential: 'token' });
+    expect(storage.setItem).toHaveBeenCalledWith('id_token', 'id-token');
+  });
+
   it('logs callback failures when no error reporter is supplied', async () => {
     const accountsId = { initialize: jest.fn() };
     const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
@@ -682,6 +697,7 @@ describe('admin-core interface predicates', () => {
     };
 
     createInitGoogleSignIn(dependencies)();
+    expect(dependencies.querySelectorAll).toHaveBeenCalledWith('#signinButton');
     expect(renderButton).toHaveBeenCalledWith(element, {
       text: 'signin_with',
       size: 'large',
@@ -702,6 +718,44 @@ describe('admin-core interface predicates', () => {
       size: 'large',
       theme: 'filled_blue',
     });
+  });
+
+  it('uses the light theme when the media-query provider has no result', () => {
+    const renderButton = jest.fn();
+    const dependencies = {
+      googleAccountsId: { initialize: jest.fn(), renderButton },
+      credentialFactory: jest.fn(),
+      signInWithCredential: jest.fn(),
+      auth: {},
+      storage: { setItem: jest.fn() },
+      matchMedia: jest.fn(() => undefined),
+      querySelectorAll: jest.fn(() => [{ innerHTML: '' }]),
+    };
+
+    expect(() => createInitGoogleSignIn(dependencies)()).not.toThrow();
+    expect(renderButton).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({ theme: 'filled_blue' })
+    );
+  });
+
+  it('passes sign-in dependencies through the injected initializer', async () => {
+    const initialize = jest.fn();
+    const getIdToken = jest.fn().mockResolvedValue('token');
+    const storage = { setItem: jest.fn() };
+    const dependencies = {
+      googleAccountsId: { initialize, renderButton: jest.fn() },
+      credentialFactory: jest.fn(value => value),
+      signInWithCredential: jest.fn().mockResolvedValue({ user: { getIdToken } }),
+      auth: { currentUser: null },
+      storage,
+      matchMedia: jest.fn(() => ({ matches: false })),
+      querySelectorAll: jest.fn(() => []),
+    };
+
+    createInitGoogleSignIn(dependencies)();
+    await initialize.mock.calls[0][0].callback({ credential: 'credential' });
+    expect(storage.setItem).toHaveBeenCalledWith('id_token', 'token');
   });
 
   it('updates admin content visibility for access checks, including absent content', () => {
@@ -747,9 +801,12 @@ describe('admin document and auth helpers', () => {
     expect(getAdminContent(doc)).toBe(content);
     expect(getSignInButtons(doc)).toBe(signins);
     expect(getSignOutSections(doc)).toBe(signouts);
+    expect(doc.querySelectorAll).toHaveBeenNthCalledWith(1, '#signinButton');
+    expect(doc.querySelectorAll).toHaveBeenNthCalledWith(2, '#signoutWrap');
     const user = { uid: 'user' };
     expect(getCurrentUser(() => ({ currentUser: user }))).toBe(user);
     expect(getCurrentUser(() => null)).toBeNull();
+    expect(getCurrentUser(() => ({ currentUser: undefined }))).toBeNull();
     expect(getCurrentUser(null)).toBeNull();
   });
 
@@ -1093,10 +1150,15 @@ describe('stats and regeneration handlers', () => {
     const event = { preventDefault: jest.fn() };
     await handler(event);
     expect(event.preventDefault).toHaveBeenCalled();
+    expect(doc.getElementById).toHaveBeenCalledWith('regenInput');
     expect(fetchFn).toHaveBeenCalledWith(
       '/dirty',
       expect.objectContaining({
         method: 'POST',
+        headers: {
+          Authorization: 'Bearer token',
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify({ page: 123, variant: 'abc' }),
       })
     );
@@ -1104,6 +1166,11 @@ describe('stats and regeneration handlers', () => {
     const fetchCallCount = fetchFn.mock.calls.length;
 
     input.value = 'invalid';
+    await handler({});
+    expect(showMessage).toHaveBeenCalledWith('Invalid format');
+    expect(fetchFn).toHaveBeenCalledTimes(fetchCallCount);
+
+    input.value = '   ';
     await handler({});
     expect(showMessage).toHaveBeenCalledWith('Invalid format');
     expect(fetchFn).toHaveBeenCalledTimes(fetchCallCount);

@@ -1867,10 +1867,6 @@ async function performRegeneration({
  */
 function parsePageVariantInput(inputElement) {
   const trimmedValue = getTrimmedInputValue(inputElement);
-  if (!trimmedValue) {
-    return null;
-  }
-
   return parsePageVariantValue(trimmedValue);
 }
 
