@@ -61,7 +61,7 @@ function parseRequest(input) {
   }
   return {
     points: /** @type {Array<{pointId: string, timestamp: string}>} */ (
-      resolvePointRecords(request.points, request.spacePoints || [])
+      resolvePointRecords(request.points, request.spacePoints)
     ),
     segments:
       /** @type {Array<{segmentId: string, startPointId: string, endPointId: string}>} */ (

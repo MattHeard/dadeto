@@ -88,6 +88,10 @@ describe('spacetimeSegmentTemporalRelation', () => {
     expect(JSON.parse(spacetimeSegmentTemporalRelation('{'))).toMatchObject({
       valid: false,
     });
+    expect(JSON.parse(spacetimeSegmentTemporalRelation(''))).toEqual({
+      valid: false,
+      error: 'points and segments arrays are required.',
+    });
     expect(
       JSON.parse(
         spacetimeSegmentTemporalRelation(
@@ -98,6 +102,27 @@ describe('spacetimeSegmentTemporalRelation', () => {
         )
       )
     ).toMatchObject({ valid: false });
+  });
+
+  test('resolves points through spacePoints references', () => {
+    const result = JSON.parse(
+      spacetimeSegmentTemporalRelation(
+        JSON.stringify({
+          points: [
+            { pointId: 'A', spacePointId: 'SP-A', timestamp: '2026-08-19T09:00Z' },
+            { pointId: 'B', spacePointId: 'SP-B', timestamp: '2026-08-19T10:00Z' },
+          ],
+          spacePoints: [
+            { spacePointId: 'SP-A', latitude: 0, longitude: 0, timestamp: '2026-08-19T09:00Z' },
+            { spacePointId: 'SP-B', latitude: 0, longitude: 1, timestamp: '2026-08-19T10:00Z' },
+          ],
+          segments: [{ segmentId: 'AB', startPointId: 'A', endPointId: 'B' }],
+          firstSegmentId: 'AB',
+          secondSegmentId: 'AB',
+        })
+      )
+    );
+    expect(result.relation).toBe('overlapping');
   });
 
   test('validates relation request shape and identifiers', () => {
