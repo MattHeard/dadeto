@@ -27,6 +27,10 @@ describe('moderate pure helper contracts', () => {
     expect(element.textContent).toBe('hello');
     expect(createTextElement('span', '')).toBe(element);
     expect(element.textContent).toBe('');
+    expect(createTextElement('span', 0)).toBe(element);
+    expect(element.textContent).toBe('');
+    expect(createTextElement('span', null)).toBe(element);
+    expect(element.textContent).toBe('');
   });
 
   it('retries only the first HTTP 404 failure', () => {
@@ -127,17 +131,20 @@ describe('moderate pure helper contracts', () => {
     appendOptionsList(container, []);
     appendOptionsList(container, null);
     appendOptionsList(container, [{ content: 'Zero', targetPageNumber: 0 }]);
+    appendOptionsList(container, [{ content: 'Null', targetPageNumber: null }]);
     appendOptionsList(container, [
       { content: 'A', targetPageNumber: 3 },
       { content: 'B' },
     ]);
-    expect(created).toHaveLength(2);
+    expect(created).toHaveLength(3);
     expect(created[0].tag).toBe('ol');
     expect(created[0].appendChild).toHaveBeenCalledTimes(1);
     expect(created[0].appendChild.mock.calls[0][0].textContent).toBe('Zero (0)');
-    expect(created[1].appendChild).toHaveBeenCalledTimes(2);
-    expect(created[1].appendChild.mock.calls[0][0].textContent).toBe('A (3)');
-    expect(created[1].appendChild.mock.calls[1][0].textContent).toBe('B');
+    expect(created[1].appendChild).toHaveBeenCalledTimes(1);
+    expect(created[1].appendChild.mock.calls[0][0].textContent).toBe('Null (null)');
+    expect(created[2].appendChild).toHaveBeenCalledTimes(2);
+    expect(created[2].appendChild.mock.calls[0][0].textContent).toBe('A (3)');
+    expect(created[2].appendChild.mock.calls[1][0].textContent).toBe('B');
   });
 
   it('renders a variant title, author, content, and options', () => {
