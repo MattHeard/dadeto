@@ -389,7 +389,11 @@ describe('moderate core', () => {
       sessionStorageObj: {},
       globalObject: {},
     });
-    await submitRating(true);
+    const submission = submitRating(true);
+    expect(mockDocument.elements.get('approveBtn').disabled).toBe(true);
+    expect(mockDocument.elements.get('rejectBtn').disabled).toBe(true);
+    expect(mockDocument.elements.get('saving').textContent).toBe('Saving.');
+    await submission;
     expect(mockAuthedFetch).toHaveBeenCalledWith(
       '/submit',
       expect.objectContaining({
@@ -486,7 +490,11 @@ describe('moderate core', () => {
       sessionStorageObj: {},
       globalObject: {},
     });
-    await submitRating(false);
+    const submission = submitRating(false);
+    expect(approve.disabled).toBe(true);
+    expect(reject.disabled).toBe(true);
+    expect(mockDocument.elements.get('saving').textContent).toBe('Saving.');
+    await submission;
     expect(approve.disabled).toBe(false);
     expect(reject.disabled).toBe(false);
     expect(globalThis.alert).toHaveBeenCalledWith(
