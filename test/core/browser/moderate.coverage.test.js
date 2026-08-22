@@ -93,7 +93,7 @@ jest.unstable_mockModule(
   })
 );
 
-const { createModerateHandle, authedFetch } = await import(
+const { createModerateHandle, authedFetch, startAnimation } = await import(
   '../../../src/core/browser/moderate.js'
 );
 
@@ -224,6 +224,19 @@ describe('moderate core', () => {
   });
 
   it('handles disabled sign-in and the authed fetch adapter', async () => {
+    createModerateHandle({
+      documentObj: mockDocument,
+      fetchFn: mockFetch,
+      sessionStorageObj: {},
+      globalObject: {},
+    });
+    const stopAnimation = startAnimation('fetching', 'Fetching');
+    expect(mockDocument.elements.get('fetching').textContent).toBe('Fetching.');
+    expect(mockDocument.elements.get('fetching').style.display).toBe('block');
+    mockIntervalCallback();
+    expect(mockDocument.elements.get('fetching').textContent).toBe('Fetching..');
+    stopAnimation();
+    expect(mockDocument.elements.get('fetching').style.display).toBe('none');
     createModerateHandle();
     await createModerateHandle({
       documentObj: mockDocument,
