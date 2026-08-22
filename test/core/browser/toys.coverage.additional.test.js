@@ -42,6 +42,59 @@ describe('toys additional coverage', () => {
     );
   });
 
+  test('adds and removes rows with exact state and render behavior', () => {
+    const rowData = { rows: { keep: 'value' }, rowTypes: { keep: 'number' } };
+    const render = jest.fn();
+    const add = utils.createOnAddHandler(rowData, render);
+    add();
+    expect(rowData).toEqual({
+      rows: { keep: 'value', '': '' },
+      rowTypes: { keep: 'number', '': 'string' },
+    });
+    expect(render).toHaveBeenCalledTimes(1);
+    add();
+    expect(render).toHaveBeenCalledTimes(1);
+
+    const preventDefault = jest.fn();
+    const remove = utils.createOnRemove(rowData, render, 'keep');
+    remove({ preventDefault });
+    expect(preventDefault).toHaveBeenCalledTimes(1);
+    expect(rowData.rows).toEqual({ '': '' });
+    expect(rowData.rowTypes).toEqual({ '': 'string' });
+    expect(render).toHaveBeenCalledTimes(2);
+  });
+
+  test('provides usable empty row state when button setup receives null data', () => {
+    const dom = {
+      setTextContent: jest.fn(),
+      addEventListener: jest.fn(),
+      removeEventListener: jest.fn(),
+    };
+    const render = jest.fn();
+    const addDisposers = [];
+    utils.setupAddButton({
+      dom,
+      button: {},
+      rowData: null,
+      render,
+      disposers: addDisposers,
+    });
+    dom.addEventListener.mock.calls[0][2]();
+    expect(render).toHaveBeenCalledTimes(1);
+
+    const removeDisposers = [];
+    utils.setupRemoveButton({
+      dom,
+      button: {},
+      rowData: null,
+      render,
+      key: 'missing',
+      disposers: removeDisposers,
+    });
+    dom.addEventListener.mock.calls[1][2]({ preventDefault: jest.fn() });
+    expect(render).toHaveBeenCalledTimes(2);
+  });
+
   test('normalizes stored rows from input and DOM fallbacks', () => {
     const input = { value: '' };
     expect(
