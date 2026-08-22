@@ -3,6 +3,7 @@ import {
   ensureGoogleIdentityAvailable,
   hasRequiredGoogleIdentityMethods,
   reportMissingGoogleIdentity,
+  initializeGoogleSignIn,
 } from '../../../src/core/browser/admin-core.js';
 
 describe('ensureGoogleIdentityAvailable', () => {
@@ -36,5 +37,22 @@ describe('Google Identity interface helpers', () => {
     reportMissingGoogleIdentity(logger);
     expect(logger.error).toHaveBeenCalledWith('Google Identity script missing');
     expect(() => reportMissingGoogleIdentity(undefined)).not.toThrow();
+  });
+
+  it('initializes the client with the production client id and popup UX mode', () => {
+    const accountsId = { initialize: jest.fn() };
+    initializeGoogleSignIn(accountsId, {
+      credentialFactory: jest.fn(),
+      signInWithCredential: jest.fn(),
+      auth: {},
+      storage: { setItem: jest.fn() },
+    });
+    expect(accountsId.initialize).toHaveBeenCalledTimes(1);
+    const config = accountsId.initialize.mock.calls[0][0];
+    expect(config).toMatchObject({
+      client_id: expect.stringContaining('.apps.googleusercontent.com'),
+      ux_mode: 'popup',
+    });
+    expect(config.callback).toEqual(expect.any(Function));
   });
 });

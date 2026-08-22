@@ -1558,7 +1558,7 @@ function initGoogleSignInCore(deps, onSignIn, reportError) {
  * }} options - Dependencies for acquiring and storing the ID token.
  * @returns {void}
  */
-function initializeGoogleSignIn(accountsId, options) {
+export function initializeGoogleSignIn(accountsId, options) {
   accountsId.initialize({
     ['client_id']:
       '848377461162-rv51umkquokgoq0hsnp1g0nbmmrv7kl0.apps.googleusercontent.com',
