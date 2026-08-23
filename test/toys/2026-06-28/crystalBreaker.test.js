@@ -95,7 +95,10 @@ describe('crystalBreaker helper contracts', () => {
       actions: { moveLeft: false, moveRight: false, launchPressed: false, pausePressed: false, resetPressed: false },
       previousActions: { moveLeft: false, moveRight: false, launchPressed: false, pausePressed: false, resetPressed: false },
     });
-    expect(h.createHudTextShape(4, 'HUD')).toMatchObject({ type: 'text', x: 4, y: 16, text: 'HUD' });
+    expect(h.createHudTextShape(4, 'HUD')).toEqual({
+      type: 'text', x: 4, y: 16, text: 'HUD', fill: '#dbeafe',
+      font: '11px monospace', align: 'left', baseline: 'alphabetic',
+    });
     expect(h.normalizeStatus('running')).toBe('running');
     expect(h.normalizeStatus('invalid')).toBe('ready');
     expect(h.normalizeBooleanRecord(null)).toEqual({});
