@@ -13,4 +13,5 @@
 - Additional focused contracts now cover empty persisted storage, null/array state normalization, non-ready launch input, and negative cooldown values. The file remains incomplete and the progress count is unchanged.
 - Latest authoritative rerun: 958 mutants, 923 killed, 31 non-static survivors, 0 timeouts, and 1 runtime error after removing redundant parser/storage guards and adding status, normalization, cooldown, and narrow-cell canvas contracts.
 - Latest authoritative rerun: 958 mutants, 925 killed, 29 non-static survivors, 0 timeouts, and 1 runtime error after input/state branch contracts. The focused suite remains green; additional non-empty-array normalization contracts are now added for the next rerun.
+- Latest authoritative rerun: 958 mutants, 925 killed, 29 non-static survivors, 0 timeouts, and 1 runtime error after the non-empty-array normalization contracts. No progress count incremented.
 - The file remains incomplete and the progress count is unchanged.

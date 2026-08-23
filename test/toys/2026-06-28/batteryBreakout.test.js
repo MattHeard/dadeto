@@ -2181,6 +2181,8 @@ describe('batteryBreakout final normalization', () => {
     expect(h.normalizeState({ version: 0 })).toBeNull();
     expect(h.normalizeState(null)).toBeNull();
     expect(h.normalizeState([])).toBeNull();
+    expect(h.normalizeSeedLayoutSeed({}, { layoutSeed: 9 })).toBe(9);
+    expect(h.normalizeSeedLayoutSeed({ layoutSeed: 4 }, { layoutSeed: 9 })).toBe(4);
     expect(h.normalizeState({ version: 1 })).toMatchObject({ version: 1, width: 360, height: 240, frame: 0, status: 'ready', score: 0, lives: 3, faults: 0 });
     expect(h.normalizeBooleanRecord({ x: true, y: 0 })).toEqual({ x: true, y: false });
     expect(h.normalizeBooleanRecord(null)).toEqual({});
@@ -2189,6 +2191,7 @@ describe('batteryBreakout final normalization', () => {
     expect(h.normalizeActions([{ moveLeft: true }])).toMatchObject({ moveLeft: false, resetPressed: false });
     expect(h.normalizePaddle([])).toEqual(expect.objectContaining({ width: 48, height: 6 }));
     expect(h.normalizeNonNegativeInteger(-1, 7)).toBe(7);
+    expect(h.normalizeNonNegativeInteger(0, 7)).toBe(0);
     expect(h.normalizeGamepadButtons([true, 0])).toEqual([true, false]);
     expect(h.normalizeGamepadAxes([1, 'bad'])).toEqual([1, 0]);
     expect(h.normalizeActions({
