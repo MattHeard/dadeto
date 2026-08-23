@@ -115,11 +115,15 @@ describe('crystalBreaker helper contracts', () => {
     expect(h.normalizeKeyName('ArrowLeft')).toBe('arrowleft');
     expect(h.normalizeKeyName('')).toBe('');
     expect(h.getCrystalHp(0)).toBeGreaterThan(0);
+    expect(h.getCrystalHp(1)).toBeGreaterThan(0);
     expect(h.getCrystalRowOffset(0)).toBe(0);
     expect(h.getCrystalRowOffset(1)).toBe(10);
     expect(h.normalizeCrystalState('fractured')).toBe('fractured');
     expect(h.normalizeCrystalState('bad')).toBe('whole');
     expect(h.getCrystalFill('shattered')).toBe('#4f46e5');
+    expect(h.getCrystalFill('whole')).toBe('#5eead4');
+    expect(h.getCrystalFill('fractured')).toBe('#8dd3ff');
+    expect(h.getCrystalFill('unknown')).toBe('#5eead4');
     expect(h.getLossStatus(0)).toBe('lost');
     expect(h.getLossStatus(1)).toBe('ready');
     const state = h.createSeedState({ width: 180, height: 140 }, null);
@@ -142,6 +146,11 @@ describe('crystalBreaker helper contracts', () => {
     expect(h.toCanvasPayload(state).width).toBe(180);
     expect(h.orbHitsPaddle(state.orb, state.paddle)).toBe(false);
     expect(h.orbHitsCrystal(state.orb, state.crystals[0])).toBe(false);
+    expect(h.orbHitsPaddle({ x: state.paddle.x + 24, y: state.paddle.y + 2, radius: 4, vy: 1 }, state.paddle)).toBe(true);
+    expect(h.orbHitsCrystal({ x: state.crystals[0].x, y: state.crystals[0].y, radius: 4 }, state.crystals[0])).toBe(true);
+    const lossState = { ...state, lives: 1, combo: 4, orb: { ...state.orb }, paddle: { ...state.paddle } };
+    h.resetOrbAfterLoss(lossState);
+    expect(lossState).toMatchObject({ lives: 0, combo: 0, status: 'lost', orb: { stuckToPaddle: true, vx: 1.6, vy: -2.4 } });
     expect(h.normalizePaddle(null)).toMatchObject({ width: 48, height: 6, speed: 4 });
     expect(h.normalizePaddle({ x: 12, y: 20, width: 60, height: 8, speed: 5 }))
       .toEqual({ x: 12, y: 20, width: 60, height: 8, speed: 5 });
