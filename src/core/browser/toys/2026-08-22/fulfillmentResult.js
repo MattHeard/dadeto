@@ -75,3 +75,14 @@ export function fulfillmentFindMatchingAsset(request, evaluate) {
   }
   return JSON.stringify({ feasible: false });
 }
+
+/**
+ * @param {string} input JSON request.
+ * @param {(asset: Record<string, any>, request: Record<string, any>) => string} evaluate Asset evaluator.
+ * @returns {string} Feasibility JSON.
+ */
+export function fulfillmentSkuBoundary(input, evaluate) {
+  return fulfillmentBoundary(input, 'feasible', request =>
+    fulfillmentFindMatchingAsset(request, asset => evaluate(asset, request))
+  );
+}

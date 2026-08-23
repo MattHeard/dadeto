@@ -1,7 +1,6 @@
 import { existingAssetFulfillmentFeasibility } from './existingAssetFulfillmentFeasibility.js';
 import {
-  fulfillmentBoundary,
-  fulfillmentFindMatchingAsset,
+  fulfillmentSkuBoundary,
 } from '../2026-08-22/fulfillmentResult.js';
 
 /**
@@ -10,16 +9,12 @@ import {
  * @returns {string} JSON feasibility result.
  */
 export function skuExistingStockFeasibility(input) {
-  return fulfillmentBoundary(input, 'feasible', request =>
-    fulfillmentFindMatchingAsset(request, asset =>
-      existingAssetFulfillmentFeasibility(
-        JSON.stringify({
-          asset,
-          proposal: request.proposal,
-          points: request.points,
-          spacePoints: request.spacePoints,
-        })
-      )
-    )
+  return fulfillmentSkuBoundary(input, (asset, request) =>
+    existingAssetFulfillmentFeasibility(JSON.stringify({
+      asset,
+      proposal: request.proposal,
+      points: request.points,
+      spacePoints: request.spacePoints,
+    }))
   );
 }
