@@ -87,8 +87,8 @@ function normalizeChangeSets(changeSets) {
 
   /** @type {ChangeSet[]} */
   const normalized = [];
-  for (let index = 0; index < changeSets.length; index++) {
-    normalized.push(normalizeChangeSet(changeSets[index], index));
+  for (const [index, changeSet] of changeSets.entries()) {
+    normalized.push(normalizeChangeSet(changeSet, index));
   }
 
   return normalized;
@@ -161,31 +161,11 @@ function buildCoChangeStats(changeSets) {
   const fileStats = new Map();
 
   for (const changeSet of changeSets) {
-    if (changeSet.files.length === 0) {
-      continue;
-    }
-
     for (const file of changeSet.files) {
       ensureFileStat(fileStats, file).touchCount += 1;
     }
-
-    if (changeSet.files.length < 2) {
-      continue;
-    }
-
-    for (
-      let leftIndex = 0;
-      leftIndex < changeSet.files.length - 1;
-      leftIndex++
-    ) {
-      const left = changeSet.files[leftIndex];
-
-      for (
-        let rightIndex = leftIndex + 1;
-        rightIndex < changeSet.files.length;
-        rightIndex++
-      ) {
-        const right = changeSet.files[rightIndex];
+    for (const [leftIndex, left] of changeSet.files.entries()) {
+      for (const right of changeSet.files.slice(leftIndex + 1)) {
         const key = pairKey(left, right);
         const pairStat = ensurePairStat(pairStats, key, left, right);
 
@@ -354,3 +334,20 @@ function toText(value) {
 
   return text;
 }
+
+export const changeTogetherExplorerTestOnly = {
+  normalizeChangeSets,
+  normalizeChangeSet,
+  normalizeFileList,
+  parseChangeTogetherInput,
+  buildCoChangeStats,
+  ensurePairStat,
+  ensureFileStat,
+  scorePair,
+  scoreFile,
+  compareRankedPairs,
+  compareRankedFiles,
+  pairKey,
+  isRecord,
+  toText,
+};

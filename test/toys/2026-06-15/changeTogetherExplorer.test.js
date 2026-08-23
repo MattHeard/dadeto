@@ -1,5 +1,8 @@
 import { describe, expect, test } from '@jest/globals';
-import { changeTogetherExplorer } from '../../../src/core/browser/toys/2026-06-15/changeTogetherExplorer.js';
+import {
+  changeTogetherExplorer,
+  changeTogetherExplorerTestOnly,
+} from '../../../src/core/browser/toys/2026-06-15/changeTogetherExplorer.js';
 import {
   COCHANGE_FIXTURE,
   FALLBACK_FIXTURE,
@@ -115,5 +118,76 @@ describe('changeTogetherExplorer', () => {
       'src/c.js',
       'src/a.js',
     ]);
+  });
+
+  test('covers normalization, parsing, and deterministic helper contracts', () => {
+    expect(changeTogetherExplorerTestOnly.normalizeFileList([
+      'b.js', 'a.js', 'a.js', 3,
+    ])).toEqual(['a.js', 'b.js']);
+    expect(changeTogetherExplorerTestOnly.normalizeFileList(null)).toEqual([]);
+    expect(changeTogetherExplorerTestOnly.normalizeChangeSet({}, 2)).toEqual({
+      id: 'change-set-3', files: [],
+    });
+    expect(changeTogetherExplorerTestOnly.normalizeChangeSets([null, { id: 'x', files: ['a'] }])).toEqual([
+      { id: 'change-set-1', files: [] }, { id: 'x', files: ['a'] },
+    ]);
+    expect(changeTogetherExplorerTestOnly.parseChangeTogetherInput('{')).toEqual({ changeSets: [] });
+    expect(changeTogetherExplorerTestOnly.parseChangeTogetherInput('[]')).toStrictEqual({ changeSets: [] });
+    expect(changeTogetherExplorerTestOnly.parseChangeTogetherInput(JSON.stringify({ changeSets: [] }))).toEqual({ changeSets: [] });
+    expect(changeTogetherExplorerTestOnly.isRecord({})).toBe(true);
+    expect(changeTogetherExplorerTestOnly.isRecord([])).toBe(false);
+    expect(changeTogetherExplorerTestOnly.isRecord(null)).toBe(false);
+    expect(changeTogetherExplorerTestOnly.isRecord('text')).toBe(false);
+    expect(changeTogetherExplorerTestOnly.toText('x')).toBe('x');
+    expect(changeTogetherExplorerTestOnly.toText(3)).toBe('');
+    expect(changeTogetherExplorerTestOnly.pairKey('z', 'a')).toBe('a\u0000z');
+  });
+
+  test('builds pair and file statistics for duplicate and singleton sets', () => {
+    const stats = changeTogetherExplorerTestOnly.buildCoChangeStats([
+      { id: 'b', files: ['b.js', 'a.js'] },
+      { id: 'a', files: ['a.js', 'b.js'] },
+      { id: 'solo', files: ['c.js'] },
+      { id: 'empty', files: [] },
+    ]);
+    const pair = stats.pairStats.get('a.js\u0000b.js');
+    expect(pair.coChangeCount).toBe(2);
+    expect(pair.supportingChangeSetIds).toEqual(new Set(['a', 'b']));
+    expect(stats.fileStats.get('a.js').touchCount).toBe(2);
+    expect(changeTogetherExplorerTestOnly.scorePair(pair)).toMatchObject({
+      files: ['b.js', 'a.js'], supportingChangeSetIds: ['a', 'b'],
+    });
+    expect(changeTogetherExplorerTestOnly.scoreFile('a.js', stats.fileStats.get('a.js'))).toMatchObject({
+      partnerCount: 1, partnerFiles: ['b.js'],
+    });
+    expect(changeTogetherExplorerTestOnly.scoreFile('x.js', {
+      touchCount: 1,
+      partners: new Set(['z.js', 'a.js']),
+    }).partnerFiles).toEqual(['a.js', 'z.js']);
+    expect(changeTogetherExplorerTestOnly.compareRankedPairs(
+      { files: ['z', 'z'], coChangeCount: 2 },
+      { files: ['a', 'a'], coChangeCount: 1 }
+    )).toBeLessThan(0);
+    expect(changeTogetherExplorerTestOnly.compareRankedPairs(
+      { files: ['a', 'z'], coChangeCount: 1 },
+      { files: ['a', 'b'], coChangeCount: 1 }
+    )).toBeGreaterThan(0);
+    expect(changeTogetherExplorerTestOnly.compareRankedFiles(
+      { file: 'a', touchCount: 2, partnerCount: 0 },
+      { file: 'b', touchCount: 1, partnerCount: 4 }
+    )).toBeLessThan(0);
+    expect(changeTogetherExplorerTestOnly.compareRankedFiles(
+      { file: 'a', touchCount: 1, partnerCount: 2 },
+      { file: 'b', touchCount: 1, partnerCount: 1 }
+    )).toBeLessThan(0);
+    expect(changeTogetherExplorerTestOnly.compareRankedFiles(
+      { file: 'a', touchCount: 1, partnerCount: 1 },
+      { file: 'b', touchCount: 1, partnerCount: 1 }
+    )).toBeLessThan(0);
+    const triple = changeTogetherExplorerTestOnly.buildCoChangeStats([
+      { id: 'triple', files: ['a.js', 'b.js', 'c.js'] },
+    ]);
+    expect(triple.pairStats.size).toBe(3);
+    expect(triple.fileStats.get('c.js').partners).toEqual(new Set(['a.js', 'b.js']));
   });
 });
