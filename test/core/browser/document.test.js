@@ -179,6 +179,7 @@ describe('document facade', () => {
     expect(element.classList.remove).toHaveBeenCalledWith('warning');
     handle.reveal(element);
     expect(element.style.display).toBe('');
+    expect(() => handle.reveal(null)).not.toThrow();
     expect(handle.getCurrentTarget(event)).toBe('current');
     expect(handle.getParentElement(element)).toBe('parent');
     expect(handle.getTargetValue(event)).toBe('value');
@@ -191,6 +192,7 @@ describe('document facade', () => {
     expect(() => handle.setValue(null, 'set')).not.toThrow();
     handle.enable(element);
     expect(element.disabled).toBe(false);
+    expect(() => handle.enable(null)).not.toThrow();
     handle.disable(element);
     expect(element.disabled).toBe(true);
     expect(() => handle.disable(null)).not.toThrow();

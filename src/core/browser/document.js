@@ -268,7 +268,9 @@ export const removeWarning = outputElement =>
   outputElement.classList.remove('warning');
 
 // Reveals the given element by resetting its display style
-export const reveal = element => (element.style.display = '');
+export const reveal = element => {
+  if (element) element.style.display = '';
+};
 
 /**
  * Gets the current target of an event
@@ -322,7 +324,7 @@ export const setValue = (element, value) => {
  * @param {HTMLElement} input - The input element to enable
  */
 export const enable = input => {
-  input.disabled = false;
+  if (input) input.disabled = false;
 };
 
 /**
