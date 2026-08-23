@@ -128,6 +128,12 @@ describe('crystalBreaker helper contracts', () => {
     expect(h.buildNextState(state, {})).toMatchObject({ frame: 1, width: 180, height: 140 });
     const resetNext = h.buildNextState(state, { reset: true, width: 200, height: 100 });
     expect(resetNext).toMatchObject({ width: 200, height: 100, status: 'ready' });
+    const shatteredState = {
+      ...state,
+      crystals: [{ ...state.crystals[0], state: 'shattered' }, ...state.crystals.slice(1)],
+    };
+    const resetShattered = h.buildNextState(shatteredState, { reset: true });
+    expect(resetShattered.crystals.every(crystal => crystal.state !== 'shattered')).toBe(true);
     expect(h.buildResetFallback(state)).toEqual({ width: 180, height: 140, lives: 3 });
     expect(h.buildResetFallback(null)).toBeUndefined();
     expect(h.mergeSeedAndState(state, h.createSeedState({ width: 200, height: 100 }, null))).toMatchObject({ width: 200, height: 100 });
