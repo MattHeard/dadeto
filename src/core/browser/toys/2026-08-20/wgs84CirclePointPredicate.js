@@ -17,7 +17,7 @@ export function wgs84CirclePointPredicate(input) {
   let resolvedPoint;
   try {
     if (parsed.spacePoints === undefined) {
-      resolvedPoint = resolvePoint(point);
+      resolvedPoint = resolvePoint(point, new Map());
     } else {
       resolvedPoint = resolvePoint(point, new Map(parsed.spacePoints.map(
         /** @param {Record<string, unknown>} spacePoint */ spacePoint => [String(spacePoint.spacePointId), spacePoint]

@@ -12,7 +12,7 @@ export function fulfillmentFailure(error, key = 'valid') {
 /**
  * Execute a JSON fulfillment calculation with its standardized failure shape.
  * @param {string} input JSON request.
- * @param {string} key Result validity key.
+ * @param {'valid'|'feasible'} key Result validity key.
  * @param {(request: Record<string, any>) => string} calculate Calculation.
  * @returns {string} JSON result.
  */

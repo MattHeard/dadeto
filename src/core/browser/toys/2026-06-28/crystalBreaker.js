@@ -30,6 +30,10 @@ const DEFAULT_ORB_SPEED_Y = -2.4;
 const DEFAULT_LIVES = 3;
 const HUD_HEIGHT = 24;
 
+/**
+ *
+ * @param value
+ */
 function isRecord(value) {
   return value !== null && typeof value === 'object' && !Array.isArray(value);
 }
@@ -289,8 +293,7 @@ function createHudTextShape(x, text) {
  * @returns {ReturnType<typeof createSeedState>|null} - result
  */
 function normalizeState(value) {
-  if (!isRecord(value) || value.version !== 1)
-    return null;
+  if (!isRecord(value) || value.version !== 1) return null;
   const candidate = value;
   return {
     version: 1,

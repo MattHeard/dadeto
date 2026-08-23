@@ -208,7 +208,7 @@ function createNextContainer(current, segment, nextSegment) {
  */
 function getContainerValue(container, segment) {
   assertWritableContainerSegment(container, segment);
-  return container[segment];
+  return /** @type {Record<string, unknown>} */ (container)[segment];
 }
 
 /**
@@ -219,7 +219,7 @@ function getContainerValue(container, segment) {
  */
 function assignContainerValue(container, segment, value) {
   assertWritableContainerSegment(container, segment);
-  container[segment] = value;
+  /** @type {Record<string, unknown>} */ (container)[segment] = value;
 }
 
 /**

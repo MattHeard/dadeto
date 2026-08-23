@@ -45,7 +45,7 @@ function parseJsonOrNull(input) {
  */
 function numberOr(value, fallback) {
   if (Number.isFinite(value)) {
-    return value;
+    return Number(value);
   }
 
   return fallback;
