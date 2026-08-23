@@ -152,4 +152,10 @@ describe('gdpSectorProjection', () => {
     expect(result.xMax).toBe(2050);
     expect(result.yMax).toBe(100);
   });
+
+  test('looks up the random helper by its exact environment name', () => {
+    const get = jest.fn(() => jest.fn(() => 0.5));
+    gdpSectorProjection(JSON.stringify({}), { get });
+    expect(get).toHaveBeenCalledWith('getRandomNumber');
+  });
 });
