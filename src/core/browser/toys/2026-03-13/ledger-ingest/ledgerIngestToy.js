@@ -35,10 +35,6 @@ function getFixtureCandidate(parsed) {
  * @returns {candidate is keyof typeof fixtures} True when the fixture exists.
  */
 function isKnownFixtureCandidate(candidate) {
-  if (typeof candidate !== 'string') {
-    return false;
-  }
-
   return isKnownFixture(candidate);
 }
 

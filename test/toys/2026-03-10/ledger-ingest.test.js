@@ -335,7 +335,22 @@ describe('ledger ingest helpers', () => {
   it('covers toy fixture selection and import detection branches', () => {
     expect(ledgerIngestToyTestOnly.isKnownFixture('happyPath')).toBe(true);
     expect(ledgerIngestToyTestOnly.isKnownFixture('missing')).toBe(false);
+    expect(ledgerIngestToyTestOnly.isKnownFixture(42)).toBe(false);
+    expect(
+      ledgerIngestToyTestOnly.isKnownFixture({
+        toString: () => 'happyPath',
+      })
+    ).toBe(false);
+    expect(
+      ledgerIngestToyTestOnly.resolveFixture({
+        fixture: { toString: () => 'duplicateDetection' },
+      })
+    ).toBe('happyPath');
+    expect(ledgerIngestToyTestOnly.isImportInput('not-an-object')).toBe(false);
     expect(ledgerIngestToyTestOnly.getImportSource({})).toBe('jsonImport');
+    expect(
+      ledgerIngestToyTestOnly.getImportSource({ source: 'bank-export' })
+    ).toBe('bank-export');
     expect(
       ledgerIngestToyTestOnly.buildImportedLedgerIngestInput(
         {
@@ -365,6 +380,7 @@ describe('ledger ingest helpers', () => {
       })
     ).toBe('duplicateDetection');
     expect(ledgerIngestToyTestOnly.isImportInput(null)).toBe(false);
+    expect(ledgerIngestToyTestOnly.isImportInput(undefined)).toBe(false);
     expect(ledgerIngestToyTestOnly.isImportInput({ rawRecords: [] })).toBe(
       true
     );
