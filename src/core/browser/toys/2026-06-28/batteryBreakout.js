@@ -443,7 +443,8 @@ function normalizeState(value) {
  * @returns {unknown} Return value.
  */
 function normalizeStatus(value) {
-  if (['ready', 'running', 'paused', 'won', 'lost'].includes(value)) {
+  const validStatuses = new Set('ready,running,paused,won,lost'.split(','));
+  if (validStatuses.has(value)) {
     return value;
   }
   return 'ready';

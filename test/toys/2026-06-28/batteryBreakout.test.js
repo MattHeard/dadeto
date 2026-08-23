@@ -2165,6 +2165,12 @@ describe('batteryBreakout final normalization', () => {
     );
     expect(resetCandidate).toMatchObject({ width: 120, height: 80, status: 'ready' });
     expect(resetCandidate.cells).not.toEqual(state.cells);
+    const alternateReset = h.maybeBuildResetState(
+      { ...state, layoutSeed: 5 },
+      { width: 120, height: 80 },
+      { actions: { resetPressed: true }, previousActions: { resetPressed: false } }
+    );
+    expect(resetCandidate.cells).not.toEqual(alternateReset.cells);
     expect(h.buildNextState(state, { reset: true })).toMatchObject({ status: 'ready', frame: 1 });
     expect(h.buildNextState(state, { reset: true, width: 200, height: 100 })).toMatchObject({ width: 200, height: 100 });
     expect(h.buildNextState(state, { reset: true, width: 200, height: 100 }).cells.length).toBeGreaterThan(0);
@@ -2345,6 +2351,7 @@ describe('batteryBreakout final normalization', () => {
     h.applyGamepadInput({ buttons: [true], axes: ['1'], buttonIndex: 2, pressed: true }, gamepad);
     h.applyGamepadInput({ buttons: {}, axes: {}, buttonIndex: '2', pressed: true }, gamepad);
     h.applyGamepadInput({ pressed: true }, gamepad);
+    expect(Object.prototype.hasOwnProperty.call(gamepad.buttons, 'undefined')).toBe(false);
     expect(keyboard).toEqual({ a: false, ArrowLeft: false });
     expect(gamepad).toEqual({ buttons: [true, undefined, true], axes: [1] });
     expect(h.circleIntersectsCell({ x: 1, y: 1, radius: 2 }, { x: 0, y: 0, width: 4, height: 4 })).toBe(true);
