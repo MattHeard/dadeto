@@ -76,7 +76,7 @@ function readPersistedState(storage) {
  * @returns {unknown} Return value.
  */
 function parseInput(input) {
-  if (typeof input !== 'string' || input.trim() === '') return null;
+  if (typeof input !== 'string' || input === '') return null;
   return parseObjectRecord(input);
 }
 
@@ -87,7 +87,7 @@ function parseInput(input) {
  */
 function parseObjectRecord(value) {
   const parsed = parseJsonOrNull(value);
-  if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+  if (parsed !== null && typeof parsed === 'object' && !Array.isArray(parsed)) {
     return parsed;
   }
   return null;
@@ -1508,6 +1508,7 @@ export const batteryBreakoutTestOnly = {
   stickOrbToPaddle,
   resolveWalls,
   resolvePaddle,
+  stepSimulation,
   advanceCellCooldowns,
   applyCellHit,
   resolveCells,

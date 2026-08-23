@@ -6,4 +6,5 @@
 - Follow-up rerun: 974 mutants, 845 killed, 125 non-static survivors, 0 timeouts, and 1 runtime error after exact helper contracts and finite loop rewrites.
 - Latest rerun: 974 mutants, 889 killed, 81 non-static survivors, 0 timeouts, and 1 runtime error after exact parser, state, collision, reflection, cooldown, and canvas contracts.
 - Current authoritative rerun: 974 mutants, 910 killed, 60 non-static survivors, 0 timeouts, and 1 runtime error after populated-cell canvas, direct collision, parser, malformed-state, and input-key contracts.
+- Latest authoritative rerun: 975 mutants, 922 killed, 49 non-static survivors, 0 timeouts, and 1 runtime error after small-board geometry, normalized-ID, stuck-simulation, circle-distance, and narrow-canvas contracts.
 - The file remains incomplete and the progress count is unchanged.

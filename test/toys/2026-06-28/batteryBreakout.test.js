@@ -2155,6 +2155,12 @@ describe('batteryBreakout final normalization', () => {
     expect(h.buildResetSeedFallback(state)).toMatchObject({ width: state.width, height: state.height });
     expect(h.buildMergedState(true, state, { marker: 'seed' })).toEqual({ marker: 'seed' });
     expect(h.buildMergedState(false, state, state)).toMatchObject({ width: state.width, cells: state.cells });
+    const resetCandidate = h.maybeBuildResetState(
+      { ...state, layoutSeed: 4 },
+      { width: 120, height: 90 },
+      { actions: { resetPressed: true }, previousActions: { resetPressed: false } }
+    );
+    expect(resetCandidate).toMatchObject({ width: 120, height: 90, status: 'ready' });
     expect(h.mergeSeedAndState(state, state)).toMatchObject({ width: state.width });
     expect(h.createSeedState({}, null)).toMatchObject({ status: 'ready' });
     expect(seed.width).toBeGreaterThan(0);
@@ -2205,10 +2211,23 @@ describe('batteryBreakout final normalization', () => {
     expect(h.normalizeCellState({ value: 'bad', charge: 2, targetCharge: 2, maxCharge: 3, overchargeCooldown: 0 })).toBe('stable');
     expect(h.normalizeCellState({ value: 'bad', charge: 1, targetCharge: 2, maxCharge: 3, overchargeCooldown: 0 })).toBe('charging');
     expect(h.normalizeCells(120, 90, 3).length).toBeGreaterThan(0);
+    expect(h.normalizeCells(360, 240, 1).map(cell => cell.id)).toEqual([
+      'cell-1-1', 'cell-1-2', 'cell-2-1', 'cell-2-2', 'cell-2-3', 'cell-2-4', 'cell-3-1', 'cell-3-2', 'cell-3-3',
+    ]);
     expect(h.buildCellPositions(360, 240, 28, 12)).toEqual([
       { x: 34, y: 32 }, { x: 70, y: 34 }, { x: 122, y: 34 }, { x: 192, y: 32 }, { x: 245, y: 34 },
       { x: 44, y: 50 }, { x: 80, y: 52 }, { x: 132, y: 52 }, { x: 202, y: 50 }, { x: 255, y: 52 },
       { x: 34, y: 68 }, { x: 64, y: 70 }, { x: 116, y: 70 }, { x: 186, y: 68 }, { x: 239, y: 70 },
+    ]);
+    expect(h.buildCellPositions(200, 140, 20, 10)).toEqual([
+      { x: 34, y: 32 }, { x: 57, y: 34 }, { x: 70, y: 34 }, { x: 109, y: 32 }, { x: 136, y: 34 },
+      { x: 44, y: 50 }, { x: 67, y: 52 }, { x: 80, y: 52 }, { x: 119, y: 50 }, { x: 146, y: 52 },
+      { x: 34, y: 68 }, { x: 51, y: 70 }, { x: 64, y: 70 }, { x: 103, y: 68 }, { x: 130, y: 70 },
+    ]);
+    expect(h.buildCellPositions(150, 140, 20, 10)).toEqual([
+      { x: 34, y: 32 }, { x: 57, y: 34 }, { x: 70, y: 34 }, { x: 93, y: 32 }, { x: 96, y: 34 },
+      { x: 44, y: 50 }, { x: 67, y: 52 }, { x: 80, y: 52 }, { x: 96, y: 50 }, { x: 96, y: 52 },
+      { x: 34, y: 68 }, { x: 51, y: 70 }, { x: 64, y: 70 }, { x: 87, y: 68 }, { x: 96, y: 70 },
     ]);
     expect(h.getCellColumnOffset(2)).toEqual(expect.any(Number));
     expect(h.getCellRowOffset(2)).toEqual(expect.any(Number));
@@ -2217,6 +2236,10 @@ describe('batteryBreakout final normalization', () => {
     expect(h.getCellRowOffset(0)).toBe(0);
     expect(h.getCellRowOffset(1)).toBe(2);
     expect(h.shufflePositions([{ x: 1 }, { x: 2 }, { x: 3 }], 1)).toEqual([{ x: 3 }, { x: 2 }, { x: 1 }]);
+    expect(h.shufflePositions([], 1)).toEqual([]);
+    expect(h.shufflePositions([{ x: 1 }], 1)).toEqual([{ x: 1 }]);
+    expect(h.normalizeNonNegativeInteger(2.6, 0)).toBe(3);
+    expect(h.normalizeNonNegativeInteger(-1, 7)).toBe(7);
     expect(h.deriveActions({}, {}, { buttons: [], axes: [] })).toHaveProperty('actions.launchPressed');
     expect(h.createActionsFromState({}, { buttons: [], axes: [] })).toHaveProperty('actions.resetPressed');
     expect(h.isMoveLeftPressed({}, { buttons: [], axes: [] })).toBe(false);
@@ -2248,6 +2271,10 @@ describe('batteryBreakout final normalization', () => {
     expect(keyboard).toEqual({ a: false, ArrowLeft: false });
     expect(gamepad).toEqual({ buttons: [true, undefined, true], axes: [1] });
     expect(h.circleIntersectsCell({ x: 1, y: 1, radius: 2 }, { x: 0, y: 0, width: 4, height: 4 })).toBe(true);
+    expect(h.circleIntersectsCell({ x: 6.1, y: 2, radius: 1 }, { x: 0, y: 0, width: 4, height: 4 })).toBe(false);
+    const stuck = { ...state, orb: { ...state.orb, stuckToPaddle: true, x: 1, y: 1 } };
+    h.stepSimulation(stuck);
+    expect(stuck.orb).toMatchObject({ x: 1, y: 1, stuckToPaddle: true });
     expect(h.clamp(5, 0, 3)).toBe(3);
     expect(h.getOrbFill('lost')).toBe('#fca5a5');
     expect(h.getOrbFill('running')).toBe('#fde047');
@@ -2282,6 +2309,10 @@ describe('batteryBreakout final normalization', () => {
     ] });
     expect(h.toCanvasPayload({ ...state, score: 3 })).toEqual(expect.objectContaining({
       shapes: expect.arrayContaining([{ type: 'rect', x: 18, y: 78, width: 56, height: 4, fill: '#34d399' }]),
+    }));
+    const narrowCanvas = h.createState({ ...h.createSeedOptions(), width: 40, height: 90, cells: [] });
+    expect(h.toCanvasPayload({ ...narrowCanvas, score: 3 })).toEqual(expect.objectContaining({
+      shapes: expect.arrayContaining([{ type: 'rect', x: 18, y: 78, width: 8, height: 4, fill: '#34d399' }]),
     }));
     const charging = { ...state, score: 0, faults: 0 };
     const chargingCell = { id: 'c', state: 'empty', charge: 0, targetCharge: 2, maxCharge: 3, overchargeCooldown: 0 };
