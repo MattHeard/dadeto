@@ -216,6 +216,18 @@ describe('crystalBreaker helper contracts', () => {
       expect.objectContaining({ id: 'crystal-6', x: 46, y: 68, hp: 1, maxHp: 1 }),
     ]);
     expect(h.normalizeCrystalsFromState([])).toEqual([]);
+    expect(h.normalizeState({
+      version: 1, width: 200, height: 100, frame: 7, status: 'paused', score: 12, lives: 2, combo: 3,
+      input: { keyboard: { arrowleft: true }, gamepad: { buttons: [true, 0], axes: [1, 'bad'] }, actions: { moveRight: true }, previousActions: { pausePressed: true } },
+      paddle: { x: 12, y: 80, width: 60, height: 8, speed: 5 },
+      orb: { x: 30, y: 40, vx: 2, vy: -3, radius: 5, stuckToPaddle: false },
+      crystals: [{ id: 'custom', x: 4, y: 5, width: 20, height: 10, hp: 1, maxHp: 2, fracture: 1, state: 'fractured' }],
+    })).toMatchObject({
+      version: 1, width: 200, height: 100, frame: 7, status: 'paused', score: 12, lives: 2, combo: 3,
+      input: { keyboard: { arrowleft: true }, gamepad: { buttons: [true, false], axes: [1, 0] }, actions: { moveRight: true }, previousActions: { pausePressed: true } },
+      paddle: { x: 12, y: 80, width: 60, height: 8, speed: 5 }, orb: { x: 30, y: 40, vx: 2, vy: -3, radius: 5, stuckToPaddle: false },
+      crystals: [{ id: 'custom', state: 'fractured', hp: 1, maxHp: 2, fracture: 1 }],
+    });
     expect(h.normalizeCrystalFromState({}, 0)).toMatchObject({
       id: 'crystal-1',
       state: 'whole',
