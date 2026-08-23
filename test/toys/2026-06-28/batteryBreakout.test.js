@@ -2134,6 +2134,7 @@ describe('batteryBreakout final normalization', () => {
     expect(h.getStorageAccessor(null)).toBeNull();
     expect(h.getStorageAccessor({ get: () => 1 })).toBeNull();
     expect(h.readPersistedState(null)).toBeNull();
+    expect(h.readPersistedState(() => ({}))).toBeNull();
     expect(h.readPersistedState(() => ({ BATT4: { version: 0 } }))).toBeNull();
     expect(h.parseInput('')).toBeNull();
     expect(h.parseInput(42)).toBeNull();
@@ -2172,6 +2173,8 @@ describe('batteryBreakout final normalization', () => {
     expect(h.normalizeStatus('paused')).toBe('paused');
     expect(h.normalizeStatus('invalid')).toBe('ready');
     expect(h.normalizeState({ version: 0 })).toBeNull();
+    expect(h.normalizeState(null)).toBeNull();
+    expect(h.normalizeState([])).toBeNull();
     expect(h.normalizeState({ version: 1 })).toMatchObject({ version: 1, width: 360, height: 240, frame: 0, status: 'ready', score: 0, lives: 3, faults: 0 });
     expect(h.normalizeBooleanRecord({ x: true, y: 0 })).toEqual({ x: true, y: false });
     expect(h.normalizeBooleanRecord(null)).toEqual({});
@@ -2201,6 +2204,7 @@ describe('batteryBreakout final normalization', () => {
     expect(h.normalizePaddle({ x: 4.4, y: -2, width: 20, height: 5, speed: 3 }, 90))
       .toEqual({ x: 4, y: 72, width: 20, height: 5, speed: 3 });
     expect(h.normalizePaddle([], 90)).toEqual(h.createState(h.createSeedOptions()).paddle);
+    expect(h.normalizePaddle({ x: 'bad' }, 90).x).toBe(180);
     expect(h.normalizeOrb({ x: 0, y: 0, vx: 2, vy: -3, radius: 5, stuckToPaddle: true }))
       .toEqual({ x: 180, y: 0, vx: 2, vy: -3, radius: 5, stuckToPaddle: true });
     expect(h.normalizeOrb([])).toEqual(h.createState(h.createSeedOptions()).orb);
@@ -2447,6 +2451,9 @@ describe('batteryBreakout final normalization', () => {
     const heldLaunch = { status: 'ready', orb: { stuckToPaddle: true } };
     h.handleLaunchInput(heldLaunch, { actions: { launchPressed: true }, previousActions: { launchPressed: true } });
     expect(heldLaunch.status).toBe('ready');
+    const nonReadyLaunch = { status: 'paused', orb: { stuckToPaddle: true } };
+    h.handleLaunchInput(nonReadyLaunch, { actions: { launchPressed: true }, previousActions: { launchPressed: false } });
+    expect(nonReadyLaunch.status).toBe('paused');
     const cooldownState = { cells: [{ state: 'overcharged', overchargeCooldown: 1, charge: 4, targetCharge: 2 }] };
     h.advanceCellCooldowns(cooldownState);
     expect(cooldownState.cells[0]).toMatchObject({ state: 'charging', overchargeCooldown: 0, charge: 2 });
@@ -2456,6 +2463,9 @@ describe('batteryBreakout final normalization', () => {
     const inactiveCooldown = { cells: [{ state: 'charging', overchargeCooldown: 1, charge: 1, targetCharge: 2 }] };
     h.advanceCellCooldowns(inactiveCooldown);
     expect(inactiveCooldown.cells[0].overchargeCooldown).toBe(1);
+    const negativeCooldown = { cells: [{ state: 'overcharged', overchargeCooldown: -1, charge: 4, targetCharge: 2 }] };
+    h.advanceCellCooldowns(negativeCooldown);
+    expect(negativeCooldown.cells[0]).toMatchObject({ state: 'overcharged', overchargeCooldown: -1 });
     expect(h.circleIntersectsCell({ x: 5, y: 2, radius: 1 }, { x: 0, y: 0, width: 4, height: 4 })).toBe(true);
     const bottomBoundary = { ...state, lives: 2, status: 'running', orb: { ...state.orb, y: state.height - state.orb.radius } };
     h.resolveBottom(bottomBoundary);

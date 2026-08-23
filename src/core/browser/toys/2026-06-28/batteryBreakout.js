@@ -875,10 +875,11 @@ function deriveActions(input, keyboard, gamepad) {
  * @param {Record<string, boolean>} keyboard Keyboard state.
  */
 function applyKeyboardInput(input, keyboard) {
-  if (input?.type === 'keydown' && typeof input.key === 'string') {
+  if (typeof input?.key !== 'string') return;
+  if (input.type === 'keydown') {
     keyboard[input.key] = true;
   }
-  if (input?.type === 'keyup' && typeof input.key === 'string') {
+  if (input.type === 'keyup') {
     keyboard[input.key] = false;
   }
 }
@@ -1198,7 +1199,8 @@ function updateCellStateAfterCharge(state, cell) {
  */
 export function advanceCellCooldowns(state) {
   for (const cell of state.cells) {
-    if (cell.state !== 'overcharged' || cell.overchargeCooldown <= 0) continue;
+    if (cell.state !== 'overcharged') continue;
+    if (cell.overchargeCooldown <= 0) continue;
     cell.overchargeCooldown -= 1;
     if (cell.overchargeCooldown <= 0) {
       cell.state = 'charging';

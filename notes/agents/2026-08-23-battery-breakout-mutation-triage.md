@@ -9,4 +9,6 @@
 - Latest authoritative rerun: 975 mutants, 922 killed, 49 non-static survivors, 0 timeouts, and 1 runtime error after small-board geometry, normalized-ID, stuck-simulation, circle-distance, and narrow-canvas contracts.
 - Latest authoritative rerun: 970 mutants, 924 killed, 42 non-static survivors, 0 timeouts, and 1 runtime error after parser simplification, reset-state, small-board lower-bound, finite-shuffle, and paddle-boundary contracts.
 - Latest authoritative rerun: 968 mutants, 926 killed, 38 non-static survivors, 0 timeouts, and 1 runtime error after reset-path, malformed-state, normalized-cell, and small-board-height contracts.
+- Latest authoritative rerun: 960 mutants, 920 killed, 36 non-static survivors, 0 timeouts, and 1 runtime error after parser, finite-loop, keyboard-input, cooldown, and canvas-contract changes.
+- Additional focused contracts now cover empty persisted storage, null/array state normalization, non-ready launch input, and negative cooldown values. The file remains incomplete and the progress count is unchanged.
 - The file remains incomplete and the progress count is unchanged.
