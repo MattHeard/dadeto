@@ -223,8 +223,10 @@ describe('gdpSectorProjection', () => {
     const anchorSeries = gdpSectorProjectionTestOnly.buildProjectionSeries([
       { year: 2020, primary: 10, secondary: 20, tertiary: 70 },
       { year: 2024, primary: 40, secondary: 30, tertiary: 30 },
+      { year: 2025, primary: 80, secondary: 10, tertiary: 10 },
     ], { inputEndYear: 2024, primaryDropYear: 2030, secondaryDropYear: 2035, tertiaryTarget: 100, outputEndYear: 2035 });
     expect(anchorSeries.primary.find(point => point.x === 2024).y).toBe(40);
+    expect(anchorSeries.primary.find(point => point.x === 2026).y).toBeCloseTo(26.6666667);
     const fallbackAnchor = gdpSectorProjectionTestOnly.buildProjectionSeries([
       { year: 2020, primary: 10, secondary: 20, tertiary: 70 },
     ], { inputEndYear: 2024, primaryDropYear: 2030, secondaryDropYear: 2035, tertiaryTarget: 100, outputEndYear: 2030 });

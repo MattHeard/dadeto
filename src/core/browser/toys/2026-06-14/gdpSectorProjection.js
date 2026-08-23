@@ -172,7 +172,11 @@ function buildProjectionSeries(rows, forecast) {
   /** @type {{ x: number, y: number }[]} */
   const tertiary = [];
 
-  for (let year = INPUT_START_YEAR; year <= forecast.outputEndYear; year += 1) {
+  const years = Array.from(
+    { length: forecast.outputEndYear - INPUT_START_YEAR + 1 },
+    (_, offset) => INPUT_START_YEAR + offset
+  );
+  for (const year of years) {
     const source = knownByYear.get(year);
     const data =
       source ||
