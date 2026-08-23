@@ -9,6 +9,7 @@ import {
   createRowData,
   toysTestOnly,
 } from '../../../src/core/browser/toys.js';
+import { readStoredOrElementValue } from '../../../src/core/browser/inputValueStore.js';
 
 const utils = createToysHandle();
 
@@ -370,11 +371,15 @@ describe('additional key/value toy coverage', () => {
         loggers: { logInfo: jest.fn(), logWarning: jest.fn() },
       }
     );
+    expect(checkbox.checked).toBe(false);
     const inputHandler = listeners.find(
       entry => entry.element === input && entry.event === 'input'
     );
+    delete dom.getValue;
+    input.value = 'changed';
     inputHandler.handler();
-    expect(input.value).toBe('initial');
+    expect(input.value).toBe('changed');
+    expect(readStoredOrElementValue(input)).toBe('changed');
     const checkboxHandler = listeners.find(
       entry => entry.element === checkbox && entry.event === 'change'
     );
@@ -384,6 +389,7 @@ describe('additional key/value toy coverage', () => {
     checkbox.checked = false;
     checkboxHandler.handler();
     expect(dom.cancelAnimationFrame).toHaveBeenCalledWith(11);
+    expect(checkbox.checked).toBe(false);
     expect(utils.getDeepStateCopy({ nested: { value: 1 } })).toEqual({
       nested: { value: 1 },
     });

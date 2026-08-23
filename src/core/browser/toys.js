@@ -1532,7 +1532,7 @@ export function initializeInteractiveComponent(
     return;
   }
   const { inputElement, submitButton } = elements;
-  const initialValue = inputElement?.value ?? '';
+  const initialValue = inputElement.value;
   setInputValue(inputElement, initialValue);
   const handleInputUpdate = () => {
     const nextValue = dom.getValue?.(inputElement) ?? inputElement.value;
