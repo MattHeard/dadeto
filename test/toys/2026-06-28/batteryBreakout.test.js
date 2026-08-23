@@ -2132,10 +2132,18 @@ describe('batteryBreakout final normalization', () => {
     const state = h.createState({ ...h.createSeedOptions(), width: 120, height: 90, cells: [] });
     expect(h.getStorageAccessor({ get: () => jest.fn() })).toEqual(expect.any(Function));
     expect(h.getStorageAccessor(null)).toBeNull();
+    expect(h.getStorageAccessor({ get: () => 1 })).toBeNull();
     expect(h.readPersistedState(null)).toBeNull();
     expect(h.parseInput('')).toBeNull();
+    expect(h.parseInput(42)).toBeNull();
     expect(h.parseInput('{"lives":2}')).toEqual({ lives: 2 });
     expect(h.parseObjectRecord('[]')).toBeNull();
+    expect(h.parseObjectRecord('{bad')).toBeNull();
+    expect(h.createInitialInputState()).toEqual({
+      keyboard: {}, gamepad: { buttons: [], axes: [] },
+      actions: { moveLeft: false, moveRight: false, launchPressed: false, pausePressed: false, resetPressed: false },
+      previousActions: { moveLeft: false, moveRight: false, launchPressed: false, pausePressed: false, resetPressed: false },
+    });
     expect(h.buildResetSeedFallback(null)).toBeUndefined();
     expect(h.buildResetSeedFallback(state)).toMatchObject({ width: state.width, height: state.height });
     expect(h.mergeSeedAndState(state, state)).toMatchObject({ width: state.width });
@@ -2143,21 +2151,54 @@ describe('batteryBreakout final normalization', () => {
     expect(seed.width).toBeGreaterThan(0);
     expect(h.normalizeStatus('paused')).toBe('paused');
     expect(h.normalizeStatus('invalid')).toBe('ready');
+    expect(h.normalizeState({ version: 0 })).toBeNull();
+    expect(h.normalizeState({ version: 1 })).toMatchObject({ version: 1, width: 360, height: 240, frame: 0, status: 'ready', score: 0, lives: 3, faults: 0 });
     expect(h.normalizeBooleanRecord({ x: true, y: 0 })).toEqual({ x: true, y: false });
     expect(h.normalizeGamepadButtons([true, 0])).toEqual([true, false]);
     expect(h.normalizeGamepadAxes([1, 'bad'])).toEqual([1, 0]);
-    expect(h.normalizeActions({ moveLeft: true })).toMatchObject({ moveLeft: true, moveRight: false });
-    expect(h.normalizePaddle({}, 90)).toHaveProperty('height');
-    expect(h.normalizeOrb({}, state.paddle)).toHaveProperty('radius');
+    expect(h.normalizeActions({
+      moveLeft: true, moveRight: true, launchPressed: true, pausePressed: true, resetPressed: true,
+    })).toEqual({ moveLeft: true, moveRight: true, launchPressed: true, pausePressed: true, resetPressed: true });
+    expect(h.normalizeActions([])).toEqual({ moveLeft: false, moveRight: false, launchPressed: false, pausePressed: false, resetPressed: false });
+    expect(h.normalizeInputState({
+      keyboard: { a: true }, gamepad: { buttons: [true], axes: [0.5] },
+      actions: { moveLeft: true }, previousActions: { resetPressed: true },
+    })).toEqual({
+      keyboard: { a: true }, gamepad: { buttons: [true], axes: [0.5] },
+      actions: { moveLeft: true, moveRight: false, launchPressed: false, pausePressed: false, resetPressed: false },
+      previousActions: { moveLeft: false, moveRight: false, launchPressed: false, pausePressed: false, resetPressed: true },
+    });
+    expect(h.normalizeGamepadState({ buttons: [true, 0], axes: ['2', 'bad'] }))
+      .toEqual({ buttons: [true, false], axes: [2, 0] });
+    expect(h.normalizePaddle({ x: 4.4, y: -2, width: 20, height: 5, speed: 3 }, 90))
+      .toEqual({ x: 4, y: 72, width: 20, height: 5, speed: 3 });
+    expect(h.normalizeOrb({ x: 0, y: 0, vx: 2, vy: -3, radius: 5, stuckToPaddle: true }))
+      .toEqual({ x: 180, y: 0, vx: 2, vy: -3, radius: 5, stuckToPaddle: true });
     expect(h.normalizeNumber('bad', 7)).toBe(7);
     expect(h.normalizeCellsFromState(null).length).toBeGreaterThan(0);
+    expect(h.normalizeCellsFromState([{ id: 'cell-x', x: 3, y: 4, width: 20, height: 8, charge: 1, targetCharge: 2, maxCharge: 3, overchargeCooldown: 0, state: 'charging' }]))
+      .toEqual([{ id: 'cell-x', x: 3, y: 4, width: 20, height: 8, charge: 1, targetCharge: 2, maxCharge: 3, overchargeCooldown: 0, state: 'charging' }]);
     expect(h.getCellId({ id: 'x' }, 2)).toBe('cell-3');
     expect(h.getCellId({}, 2)).toBe('cell-3');
     expect(h.normalizeCellState({ id: 'x' }, 0)).toBe('empty');
+    expect(h.normalizeCellState({ value: 'stable', charge: 0, targetCharge: 2, maxCharge: 3, overchargeCooldown: 0 })).toBe('stable');
+    expect(h.normalizeCellState({ value: 'bad', charge: 0, targetCharge: 2, maxCharge: 3, overchargeCooldown: 1 })).toBe('overcharged');
+    expect(h.normalizeCellState({ value: 'bad', charge: 4, targetCharge: 2, maxCharge: 3, overchargeCooldown: 0 })).toBe('overcharged');
+    expect(h.normalizeCellState({ value: 'bad', charge: 2, targetCharge: 2, maxCharge: 3, overchargeCooldown: 0 })).toBe('stable');
+    expect(h.normalizeCellState({ value: 'bad', charge: 1, targetCharge: 2, maxCharge: 3, overchargeCooldown: 0 })).toBe('charging');
     expect(h.normalizeCells(120, 90, 3).length).toBeGreaterThan(0);
-    expect(h.buildCellPositions(120, 90, 24, 10).length).toBeGreaterThan(0);
+    expect(h.buildCellPositions(360, 240, 28, 12)).toEqual([
+      { x: 34, y: 32 }, { x: 70, y: 34 }, { x: 122, y: 34 }, { x: 192, y: 32 }, { x: 245, y: 34 },
+      { x: 44, y: 50 }, { x: 80, y: 52 }, { x: 132, y: 52 }, { x: 202, y: 50 }, { x: 255, y: 52 },
+      { x: 34, y: 68 }, { x: 64, y: 70 }, { x: 116, y: 70 }, { x: 186, y: 68 }, { x: 239, y: 70 },
+    ]);
     expect(h.getCellColumnOffset(2)).toEqual(expect.any(Number));
     expect(h.getCellRowOffset(2)).toEqual(expect.any(Number));
+    expect(h.getCellColumnOffset(0)).toBe(0);
+    expect(h.getCellColumnOffset(1)).toBe(5);
+    expect(h.getCellRowOffset(0)).toBe(0);
+    expect(h.getCellRowOffset(1)).toBe(2);
+    expect(h.shufflePositions([{ x: 1 }, { x: 2 }, { x: 3 }], 1)).toHaveLength(3);
     expect(h.deriveActions({}, {}, { buttons: [], axes: [] })).toHaveProperty('actions.launchPressed');
     expect(h.createActionsFromState({}, { buttons: [], axes: [] })).toHaveProperty('actions.resetPressed');
     expect(h.isMoveLeftPressed({}, { buttons: [], axes: [] })).toBe(false);
@@ -2167,14 +2208,108 @@ describe('batteryBreakout final normalization', () => {
     expect(h.isResetPressed({}, { buttons: [], axes: [] })).toBe(false);
     expect(h.isAxisLeft(-1)).toBe(true);
     expect(h.isAxisRight(1)).toBe(true);
+    expect(h.isAxisLeft(-0.4)).toBe(false);
+    expect(h.isAxisLeft(-0.5)).toBe(true);
+    expect(h.isAxisRight(0.4)).toBe(false);
+    expect(h.isAxisRight(0.5)).toBe(true);
+    expect(h.createActionsFromState(
+      { ArrowLeft: true, ArrowRight: true, Space: true, p: true, r: true },
+      { buttons: [], axes: [] }
+    )).toEqual({ actions: {
+      moveLeft: true, moveRight: true, launchPressed: true, pausePressed: true, resetPressed: true,
+    } });
+    const keyboard = {};
+    const gamepad = { buttons: [], axes: [] };
+    h.applyKeyboardInput({ type: 'keydown', key: 'a' }, keyboard);
+    h.applyKeyboardInput({ type: 'keyup', key: 'a' }, keyboard);
+    h.applyGamepadInput({ buttons: [true], axes: ['1'], buttonIndex: 2, pressed: true }, gamepad);
+    expect(keyboard).toEqual({ a: false });
+    expect(gamepad).toEqual({ buttons: [true, undefined, true], axes: [1] });
     expect(h.circleIntersectsCell({ x: 1, y: 1, radius: 2 }, { x: 0, y: 0, width: 4, height: 4 })).toBe(true);
     expect(h.clamp(5, 0, 3)).toBe(3);
-    expect(h.getOrbFill('running')).toEqual(expect.any(String));
-    expect(h.buildFaultIndicator(state)).toEqual(expect.any(Array));
-    expect(h.getFaultIndicatorFill(1)).toEqual(expect.any(String));
-    expect(h.getCellChargeFill('overcharged')).toEqual(expect.any(String));
-    expect(h.getCellFill('stable')).toEqual(expect.any(String));
-    expect(h.toCanvasPayload(state)).toHaveProperty('shapes');
+    expect(h.getOrbFill('lost')).toBe('#fca5a5');
+    expect(h.getOrbFill('running')).toBe('#fde047');
+    expect(h.buildFaultIndicator({ ...state, faults: 0 })).toEqual([]);
+    expect(h.buildFaultIndicator({ ...state, faults: 1 })).toEqual([{ type: 'rect', x: 66, y: 18, width: 36, height: 6, fill: '#94a3b8' }]);
+    expect(h.getFaultIndicatorFill(4)).toBe('#ef4444');
+    expect(h.getFaultIndicatorFill(1)).toBe('#94a3b8');
+    expect(h.getCellChargeFill('overcharged')).toBe('#f97316');
+    expect(h.getCellChargeFill('stable')).toBe('#dbeafe');
+    expect(h.getCellFill('stable')).toBe('#4ade80');
+    expect(h.getCellFill('overcharged')).toBe('#fb7185');
+    expect(h.getCellFill('empty')).toBe('#60a5fa');
+    expect(h.toCanvasPayload(state)).toEqual({ width: 120, height: 90, shapes: [
+      { type: 'rect', x: 0, y: 0, width: 120, height: 90, fill: '#07111f' },
+      { type: 'rect', x: 14, y: 14, width: 92, height: 62, fill: '#0e1b2d' },
+      { type: 'rect', x: 36, y: 66, width: 48, height: 6, fill: '#e5e7eb' },
+      { type: 'circle', x: 60, y: 61, radius: 4, fill: '#fde047' },
+      { type: 'rect', x: 18, y: 78, width: 20, height: 4, fill: '#34d399' },
+    ] });
+    const charging = { ...state, score: 0, faults: 0 };
+    const chargingCell = { id: 'c', state: 'empty', charge: 0, targetCharge: 2, maxCharge: 3, overchargeCooldown: 0 };
+    h.applyCellHit(charging, chargingCell);
+    expect(chargingCell).toMatchObject({ charge: 1, state: 'charging' });
+    h.applyCellHit(charging, chargingCell);
+    expect(chargingCell.state).toBe('stable');
+    expect(charging.score).toBe(1);
+    const faultState = { ...state, score: 0, faults: 0 };
+    const faultCell = { id: 'f', state: 'empty', charge: 3, targetCharge: 2, maxCharge: 3, overchargeCooldown: 0 };
+    h.applyCellHit(faultState, faultCell);
+    expect(faultCell.state).toBe('overcharged');
+    expect(faultState.faults).toBe(1);
+    const alreadyOvercharged = { id: 'o', state: 'overcharged', charge: 0, targetCharge: 2, maxCharge: 3, overchargeCooldown: 0 };
+    h.applyCellHit(faultState, alreadyOvercharged);
+    expect(alreadyOvercharged.overchargeCooldown).toBe(120);
+    h.advanceCellCooldowns({ cells: [{ ...alreadyOvercharged, overchargeCooldown: 1 }] });
+    expect(alreadyOvercharged.state).toBe('overcharged');
+    const horizontal = { orb: { x: 0, y: 5, radius: 2, vx: 1, vy: 1 } };
+    h.reflectOrb(horizontal, { x: 2, y: 4, width: 4, height: 4 });
+    expect(horizontal.orb.vx).toBe(-1);
+    const vertical = { orb: { x: 5, y: 0, radius: 2, vx: 1, vy: 1 } };
+    h.reflectOrb(vertical, { x: 4, y: 2, width: 4, height: 4 });
+    expect(vertical.orb.vy).toBe(-1);
+    const loss = { ...state, lives: 1, status: 'running', orb: { ...state.orb, y: 100 } };
+    h.resolveBottom(loss);
+    expect(loss.status).toBe('lost');
+    const reset = { ...state, lives: 2, status: 'running', orb: { ...state.orb, y: 100 } };
+    h.resolveBottom(reset);
+    expect(reset.status).toBe('ready');
+    const won = { ...state, cells: [{ state: 'stable' }], faults: 0, lives: 1 };
+    h.resolveWinLoss(won);
+    expect(won.status).toBe('won');
+    const lost = { ...state, cells: [], faults: 4, lives: 1 };
+    h.resolveWinLoss(lost);
+    expect(lost.status).toBe('lost');
+    const paddleHit = { width: 120, paddle: { x: 40, y: 60, width: 40, height: 6, speed: 4 }, orb: { x: 60, y: 64, radius: 4, vx: 0, vy: 2 } };
+    h.resolvePaddle(paddleHit);
+    expect(paddleHit.orb).toMatchObject({ y: 55, vy: -2, vx: 1 });
+    const paddleMiss = { width: 120, paddle: { x: 40, y: 60, width: 40, height: 6, speed: 4 }, orb: { x: 10, y: 64, radius: 4, vx: 0, vy: 2 } };
+    h.resolvePaddle(paddleMiss);
+    expect(paddleMiss.orb.vy).toBe(2);
+    const walls = { width: 100, orb: { x: 0, y: 0, radius: 4, vx: -2, vy: -3 } };
+    h.resolveWalls(walls);
+    expect(walls.orb).toMatchObject({ x: 4, y: 4, vx: 2, vy: 3 });
+    const rightWall = { width: 100, orb: { x: 100, y: 20, radius: 4, vx: 2, vy: 1 } };
+    h.resolveWalls(rightWall);
+    expect(rightWall.orb).toMatchObject({ x: 96, vx: -2 });
+    const boundaryWalls = { width: 100, orb: { x: 4, y: 4, radius: 4, vx: -2, vy: -3 } };
+    h.resolveWalls(boundaryWalls);
+    expect(boundaryWalls.orb).toMatchObject({ x: 4, y: 4, vx: 2, vy: 3 });
+    const boundaryRight = { width: 100, orb: { x: 96, y: 20, radius: 4, vx: 2, vy: 1 } };
+    h.resolveWalls(boundaryRight);
+    expect(boundaryRight.orb).toMatchObject({ x: 96, vx: -2 });
+    const launched = { status: 'ready', orb: { stuckToPaddle: true }, };
+    h.handleLaunchInput(launched, { actions: { launchPressed: true }, previousActions: { launchPressed: false } });
+    expect(launched).toEqual({ status: 'running', orb: { stuckToPaddle: false } });
+    const heldLaunch = { status: 'ready', orb: { stuckToPaddle: true } };
+    h.handleLaunchInput(heldLaunch, { actions: { launchPressed: true }, previousActions: { launchPressed: true } });
+    expect(heldLaunch.status).toBe('ready');
+    const cooldownState = { cells: [{ state: 'overcharged', overchargeCooldown: 1, charge: 4, targetCharge: 2 }] };
+    h.advanceCellCooldowns(cooldownState);
+    expect(cooldownState.cells[0]).toMatchObject({ state: 'charging', overchargeCooldown: 0, charge: 2 });
+    const noCooldown = { cells: [{ state: 'charging', overchargeCooldown: 0, charge: 1, targetCharge: 2 }] };
+    h.advanceCellCooldowns(noCooldown);
+    expect(noCooldown.cells[0]).toEqual({ state: 'charging', overchargeCooldown: 0, charge: 1, targetCharge: 2 });
     expect(h.persistState(jest.fn(), state)).toBeUndefined();
   });
 });

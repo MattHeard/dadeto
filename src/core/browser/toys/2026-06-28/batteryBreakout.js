@@ -828,7 +828,7 @@ function getCellRowOffset(colIndex) {
 export function shufflePositions(positions, seed) {
   const items = positions.slice();
   let state = seed || 1;
-  for (let i = items.length - 1; i > 0; i -= 1) {
+  for (const i of Array.from({ length: Math.max(0, items.length - 1) }, (_, index) => items.length - 1 - index)) {
     state = (state * 1664525 + 1013904223) >>> 0;
     const j = state % (i + 1);
     [items[i], items[j]] = [items[j], items[i]];
@@ -865,9 +865,6 @@ export function updateInputState(previous, input) {
 function deriveActions(input, keyboard, gamepad) {
   applyKeyboardInput(input, keyboard);
   applyGamepadInput(input, gamepad);
-  if (input?.type === 'capture' && input.capturing === false) {
-    return createActionsFromState(keyboard, gamepad);
-  }
   return createActionsFromState(keyboard, gamepad);
 }
 
@@ -1077,7 +1074,7 @@ export function stepSimulation(state) {
   const substeps = 3;
   const hitCells = new Set();
   advanceCellCooldowns(state);
-  for (let i = 0; i < substeps; i += 1) {
+  for (const _step of [0, 1, 2]) {
     state.orb.x += state.orb.vx / substeps;
     state.orb.y += state.orb.vy / substeps;
     resolveWalls(state);
@@ -1085,7 +1082,6 @@ export function stepSimulation(state) {
     resolveCells(state, hitCells);
     resolveBottom(state);
   }
-  state.frame += 0;
   resolveWinLoss(state);
 }
 
@@ -1492,6 +1488,7 @@ export const batteryBreakoutTestOnly = {
   normalizeCellState,
   normalizeCells,
   buildCellPositions,
+  shufflePositions,
   getCellColumnOffset,
   getCellRowOffset,
   updateInputState,
@@ -1510,8 +1507,11 @@ export const batteryBreakoutTestOnly = {
   handlePauseInput,
   stickOrbToPaddle,
   resolveWalls,
+  resolvePaddle,
+  advanceCellCooldowns,
   applyCellHit,
   updateCellStateAfterCharge,
+  reflectOrb,
   circleIntersectsCell,
   resolveBottom,
   resolveWinLoss,
