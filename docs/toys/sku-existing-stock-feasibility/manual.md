@@ -8,6 +8,8 @@ Test matching assets for a requested SKU.
 
 Submit requestedSku and assets.
 
+### Example
+
 ```json
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -15,9 +17,21 @@ Submit requestedSku and assets.
 }
 ```
 
+### Schema
+
+```json
+{"type":"object"}
+```
+
 ## Output
 
 Returns a JSON feasibility result.
+
+### Example
+
+```json
+{"example": true}
+```
 
 ## Behavior
 
