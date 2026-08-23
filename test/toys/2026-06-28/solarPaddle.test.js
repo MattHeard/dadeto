@@ -401,6 +401,21 @@ describe('solarPaddle helper contracts', () => {
     expect(state.orb.y).toBe(-5);
     expect(state.orb.stuckToPaddle).toBe(true);
   });
+
+  it('distinguishes parser and storage accessor input forms', () => {
+    expect(h.parseObjectRecord('true')).toBeNull();
+    expect(h.parseObjectRecord('false')).toBeNull();
+    expect(h.parseObjectRecord('"text"')).toBeNull();
+    expect(h.parseObjectRecord('null')).toBeNull();
+    expect(h.parseObjectRecord('[1,2]')).toBeNull();
+    expect(h.parseObjectRecord('{"nested":{"ok":true}}')).toEqual({ nested: { ok: true } });
+    const setter = () => {};
+    expect(h.getStorageAccessor(new Map([['setLocalPermanentData', setter]]))).toBe(setter);
+    expect(h.getStorageAccessor(new Map([['setLocalPermanentData', null]]))).toBeNull();
+    expect(h.getStorageAccessor({ get: 'not a function' })).toBeNull();
+    expect(h.parseInput(42)).toBeNull();
+    expect(h.parseInput('  ')).toBeNull();
+  });
 });
 
 /**
