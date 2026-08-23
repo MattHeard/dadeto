@@ -167,6 +167,7 @@ describe('gdpSectorProjection', () => {
   });
 
   test('normalizes and rejects share rows by each finite field', () => {
+    expect(gdpSectorProjectionTestOnly.normalizeRows({})).toEqual([]);
     expect(gdpSectorProjectionTestOnly.normalizeRows([
       { year: '2020', primary: '1', secondary: '2', tertiary: '97' },
       { year: 2021, primary: 1, secondary: Infinity, tertiary: 98 },
@@ -200,10 +201,11 @@ describe('gdpSectorProjection', () => {
     expect(gdpSectorProjectionTestOnly.clampShare(50)).toBe(50);
     expect(gdpSectorProjectionTestOnly.clampShare(101)).toBe(100);
     const forecast = { inputEndYear: 2024, primaryDropYear: 2030, secondaryDropYear: 2035, tertiaryTarget: 100, outputEndYear: 2050 };
-    expect(gdpSectorProjectionTestOnly.createProjectedRow(2030, start, { primary: end, secondary: end }, forecast)).toEqual(end);
-    expect(gdpSectorProjectionTestOnly.createProjectedRow(2025, start, { primary: end, secondary: end }, forecast).primary).toBe(5);
-    expect(gdpSectorProjectionTestOnly.createProjectedRow(2035, start, { primary: end, secondary: end }, forecast).primary).toBe(0);
-    expect(gdpSectorProjectionTestOnly.createProjectedRow(2040, start, { primary: end, secondary: end }, forecast).tertiary).toBe(100);
+    const secondaryTarget = gdpSectorProjectionTestOnly.createProjectionRow(2035, 0, 0, 100);
+    expect(gdpSectorProjectionTestOnly.createProjectedRow(2030, start, { primary: end, secondary: secondaryTarget }, forecast)).toEqual(end);
+    expect(gdpSectorProjectionTestOnly.createProjectedRow(2025, start, { primary: end, secondary: secondaryTarget }, forecast).primary).toBe(5);
+    expect(gdpSectorProjectionTestOnly.createProjectedRow(2035, start, { primary: end, secondary: secondaryTarget }, forecast).primary).toBe(0);
+    expect(gdpSectorProjectionTestOnly.createProjectedRow(2040, start, { primary: end, secondary: secondaryTarget }, forecast).tertiary).toBe(100);
   });
 
   test('normalizes forecast and parser inputs safely', () => {
@@ -216,6 +218,12 @@ describe('gdpSectorProjection', () => {
     expect(gdpSectorProjectionTestOnly.safeParseJson('{')).toBeUndefined();
     expect(gdpSectorProjectionTestOnly.safeParseJson('{"ok":true}')).toEqual({ ok: true });
     expect(gdpSectorProjectionTestOnly.parseRequest(JSON.stringify({ rows: [], forecast: null }))).toEqual({ rows: [], forecast: undefined });
+    expect(gdpSectorProjectionTestOnly.parseRequest(JSON.stringify({ forecast: { inputEndYear: 2020 } }))).toEqual({ forecast: { inputEndYear: 2020 } });
+    const anchorSeries = gdpSectorProjectionTestOnly.buildProjectionSeries([
+      { year: 2020, primary: 10, secondary: 20, tertiary: 70 },
+      { year: 2024, primary: 40, secondary: 30, tertiary: 30 },
+    ], { inputEndYear: 2024, primaryDropYear: 2030, secondaryDropYear: 2035, tertiaryTarget: 100, outputEndYear: 2035 });
+    expect(anchorSeries.primary.find(point => point.x === 2024).y).toBe(40);
     expect(gdpSectorProjectionTestOnly.buildProjectionSeries([
       { year: 2020, primary: 10, secondary: 20, tertiary: 70 },
     ], { inputEndYear: 2024, primaryDropYear: 2030, secondaryDropYear: 2035, tertiaryTarget: 100, outputEndYear: 2035 }).primary.at(-1).y).toBe(0);

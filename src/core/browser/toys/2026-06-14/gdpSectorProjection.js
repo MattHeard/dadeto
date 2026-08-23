@@ -238,6 +238,7 @@ function safeParseJson(input) {
   try {
     return JSON.parse(input);
   } catch {
+    // Stryker disable next-line BlockStatement -- malformed JSON always maps to the same undefined contract.
     return undefined;
   }
 }
