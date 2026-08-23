@@ -39,6 +39,25 @@ describe('solarPaddle helper contracts', () => {
     expect(h.clamp(-1, 0, 10)).toBe(0);
     expect(h.clamp(11, 0, 10)).toBe(10);
     expect(h.clamp(5, 0, 10)).toBe(5);
+    expect(h.normalizePaddle({ x: 12, y: 40, width: 60, height: 8, speed: 5 }, 160))
+      .toEqual({ x: 12, y: 40, width: 60, height: 8, speed: 5 });
+    expect(h.normalizeOrb({ x: 10, y: 12, vx: 2, vy: -3, radius: 5, stuckToPaddle: true }))
+      .toMatchObject({ x: 10, y: 12, vx: 2, vy: -3, radius: 5, stuckToPaddle: true });
+    expect(h.normalizeNonNegativeInteger(-1, 7)).toBe(7);
+    expect(h.normalizeNonNegativeInteger(2.6, 7)).toBe(3);
+    expect(h.normalizeNumber(0, 4)).toBe(4);
+    expect(h.normalizeNumber(2.5, 4)).toBe(2.5);
+    const keyboard = { ArrowLeft: true, a: true, A: true, ArrowRight: true, d: true, D: true, Space: true, ' ': true, Button0: true, p: true, P: true, Button9: true, r: true, R: true, Button8: true };
+    const gamepad = { buttons: Array(10).fill(true), axes: [-1, 1] };
+    expect(h.isLeftActionPressed(keyboard, gamepad)).toBe(true);
+    expect(h.isRightActionPressed(keyboard, gamepad)).toBe(true);
+    expect(h.isLaunchActionPressed(keyboard, gamepad)).toBe(true);
+    expect(h.isPauseActionPressed(keyboard, gamepad)).toBe(true);
+    expect(h.isResetActionPressed(keyboard, gamepad)).toBe(true);
+    expect(h.isAxisLeft(-0.5)).toBe(true);
+    expect(h.isAxisRight(0.5)).toBe(true);
+    expect(h.createEdgeActions({ left: true, right: false, launch: true, pause: false, reset: true }, { left: false, right: false, launch: false, pause: false, reset: false }))
+      .toEqual({ left: true, right: false, launchPressed: true, pausePressed: false, resetPressed: true });
   });
 });
 
