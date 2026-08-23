@@ -330,7 +330,7 @@ export const enable = input => {
  * @param {HTMLElement} input - The input element to disable
  */
 export const disable = input => {
-  input.disabled = true;
+  if (input) input.disabled = true;
 };
 
 /**

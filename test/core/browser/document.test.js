@@ -191,6 +191,7 @@ describe('document facade', () => {
     expect(element.disabled).toBe(false);
     handle.disable(element);
     expect(element.disabled).toBe(true);
+    expect(() => handle.disable(null)).not.toThrow();
     expect(handle.getNextSibling(element)).toBe('next');
     handle.removeNextSibling(element);
     handle.removeEventListener(element, 'click', callback);
