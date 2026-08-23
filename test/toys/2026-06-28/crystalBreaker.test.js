@@ -210,11 +210,20 @@ describe('crystalBreaker helper contracts', () => {
     expect(h.orbHitsPaddle({ x: 5, y: 52, radius: 1, vy: 1 }, paddle)).toBe(false);
     expect(h.orbHitsPaddle({ x: 31, y: 52, radius: 1, vy: 1 }, paddle)).toBe(false);
     expect(h.orbHitsPaddle({ x: 20, y: 52, radius: 1, vy: -1 }, paddle)).toBe(false);
+    expect(h.orbHitsPaddle({ x: 20, y: 46, radius: 4, vy: 1 }, paddle)).toBe(true);
+    expect(h.orbHitsPaddle({ x: 20, y: 60, radius: 4, vy: 1 }, paddle)).toBe(true);
+    expect(h.orbHitsPaddle({ x: 10, y: 52, radius: 1, vy: 1 }, paddle)).toBe(true);
+    expect(h.orbHitsPaddle({ x: 30, y: 52, radius: 1, vy: 1 }, paddle)).toBe(true);
+    expect(h.orbHitsPaddle({ x: 20, y: 52, radius: 1, vy: 0 }, paddle)).toBe(false);
     const crystal = { x: 10, y: 50, width: 20, height: 10 };
     expect(h.orbHitsCrystal({ x: 0, y: 55, radius: 1 }, crystal)).toBe(false);
     expect(h.orbHitsCrystal({ x: 32, y: 55, radius: 1 }, crystal)).toBe(false);
     expect(h.orbHitsCrystal({ x: 20, y: 40, radius: 1 }, crystal)).toBe(false);
     expect(h.orbHitsCrystal({ x: 20, y: 62, radius: 1 }, crystal)).toBe(false);
+    expect(h.orbHitsCrystal({ x: 10, y: 55, radius: 1 }, crystal)).toBe(true);
+    expect(h.orbHitsCrystal({ x: 30, y: 55, radius: 1 }, crystal)).toBe(true);
+    expect(h.orbHitsCrystal({ x: 20, y: 50, radius: 1 }, crystal)).toBe(true);
+    expect(h.orbHitsCrystal({ x: 20, y: 60, radius: 1 }, crystal)).toBe(true);
     expect(h.normalizePaddle(null)).toMatchObject({
       width: 48,
       height: 6,
