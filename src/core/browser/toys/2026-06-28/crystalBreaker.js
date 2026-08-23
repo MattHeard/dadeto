@@ -482,8 +482,8 @@ function normalizeCrystals(width, height, layoutSeed) {
   const rows = 3;
   const result = [];
   let id = 1;
-  for (let row = 0; row < rows; row++) {
-    for (let col = 0; col < cols; col++) {
+  for (const row of Array.from({ length: rows }, (_, index) => index)) {
+    for (const col of Array.from({ length: cols }, (_, index) => index)) {
       const hp = getCrystalHp(row);
       result.push({
         id: `crystal-${id++}`,
