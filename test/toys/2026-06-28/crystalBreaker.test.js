@@ -79,9 +79,18 @@ describe('crystalBreaker helper contracts', () => {
     expect(h.getCrystalBackdropFill(true)).toBe('#0f172a');
     expect(h.getCrystalBackdropFill(false)).toBe('#08111f');
     expect(h.normalizeSeedWidth({}, null)).toBe(360);
+    expect(h.normalizeSeedWidth({ width: 0 }, { width: 77 })).toBe(77);
+    expect(h.normalizeSeedWidth(null, { width: 77 })).toBe(77);
     expect(h.normalizeSeedHeight({ height: 160 }, null)).toBe(160);
+    expect(h.normalizeSeedHeight(null, { height: 88 })).toBe(88);
     expect(h.normalizeSeedLives({ lives: 2 }, null)).toBe(2);
+    expect(h.normalizeSeedLives(null, { lives: 4 })).toBe(4);
+    expect(h.normalizeSeedPaddleWidth(null)).toBe(48);
+    expect(h.normalizeSeedPaddleHeight(null)).toBe(6);
+    expect(h.normalizeSeedPaddleSpeed(null)).toBe(4);
+    expect(h.normalizeSeedOrbRadius(null)).toBe(4);
     expect(h.normalizeSeedLayoutSeed({ layoutSeed: 3 })).toBe(3);
+    expect(h.normalizeSeedLayoutSeed(null)).toBe(1);
     expect(h.normalizeStatus('running')).toBe('running');
     expect(h.normalizeStatus('invalid')).toBe('ready');
     expect(h.normalizeBooleanRecord(null)).toEqual({});
@@ -95,6 +104,9 @@ describe('crystalBreaker helper contracts', () => {
       moveLeft: false,
       resetPressed: false,
     });
+    expect(h.normalizeActions({ moveLeft: true, moveRight: true, launchPressed: true, pausePressed: true, resetPressed: true }))
+      .toEqual({ moveLeft: true, moveRight: true, launchPressed: true, pausePressed: true, resetPressed: true });
+    expect(h.normalizeInputState(null)).toMatchObject({ keyboard: {}, gamepad: { buttons: [], axes: [] } });
     expect(h.normalizeKeyName('ArrowLeft')).toBe('arrowleft');
     expect(h.normalizeKeyName('')).toBe('');
     expect(h.getCrystalHp(0)).toBeGreaterThan(0);
