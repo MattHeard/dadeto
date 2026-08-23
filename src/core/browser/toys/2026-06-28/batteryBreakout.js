@@ -827,7 +827,6 @@ function getCellRowOffset(colIndex) {
  */
 export function shufflePositions(positions, seed) {
   const items = positions.slice();
-  if (items.length < 2) return items;
   let state = seed || 1;
   const indices = Array.from(
     { length: items.length - 1 },
