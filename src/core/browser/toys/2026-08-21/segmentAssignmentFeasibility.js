@@ -1,6 +1,4 @@
 // Toy: Segment Assignment Feasibility
-// jscpd:ignore-start
-/* eslint-disable jsdoc/require-returns */
 import { evaluateWorldLine } from './segmentAssignmentFeasibilityCore.js';
 
 /** @param {string} input JSON with points, existingSegments, candidateSegment, entryPoint, and optional exitPoint. @returns {string} Structured feasibility result. */
@@ -24,4 +22,3 @@ export function segmentAssignmentFeasibility(input) {
     });
   }
 }
-// jscpd:ignore-end

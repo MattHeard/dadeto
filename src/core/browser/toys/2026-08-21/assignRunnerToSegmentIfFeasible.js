@@ -1,6 +1,4 @@
 // Toy: Assign Runner to Segment if Feasible
-// jscpd:ignore-start
-/* eslint-disable jsdoc/require-returns, jsdoc/require-param-description, jsdoc/require-param-type */
 import {
   evaluateWorldLine,
   resolveSegment,
@@ -101,4 +99,3 @@ export function assignRunnerToSegmentIfFeasible(input, env) {
     });
   }
 }
-// jscpd:ignore-end

@@ -1,6 +1,4 @@
 // Toy: Runner Shift Segment Feasibility
-// jscpd:ignore-start
-/* eslint-disable jsdoc/require-returns, jsdoc/require-param-description */
 import {
   resolveSegment,
   containedBy,
@@ -59,4 +57,3 @@ function pointTime(point) {
   if (!Number.isFinite(time)) throw new Error('Invalid shift point timestamp.');
   return time;
 }
-// jscpd:ignore-end

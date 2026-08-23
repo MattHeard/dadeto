@@ -1,6 +1,4 @@
 // Toy: Assign Asset to Segment if Feasible
-// jscpd:ignore-start
-/* eslint-disable jsdoc/require-returns, jsdoc/require-param-description, jsdoc/require-param-type */
 import { evaluateWorldLine } from './segmentAssignmentFeasibilityCore.js';
 import { appendAtomically } from './safeAssignmentPersistence.js';
 
@@ -52,4 +50,3 @@ export function assignAssetToSegmentIfFeasible(input, env) {
     });
   }
 }
-// jscpd:ignore-end

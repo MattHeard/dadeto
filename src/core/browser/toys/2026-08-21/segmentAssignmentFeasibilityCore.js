@@ -46,7 +46,6 @@ export function resolveSegment(segments, points, segmentId) {
  * @param {Array<Record<string, unknown>>} spacePointsInput
  * @returns {{feasible: boolean, reason?: string}} Feasibility result.
  */
-// eslint-disable-next-line max-params
 export function evaluateWorldLine(
   pointsInput,
   existingSegments,
@@ -75,7 +74,6 @@ export function evaluateWorldLine(
  * @param {Array<Record<string, unknown>>} spacePointsInput Space points.
  * @returns {{feasible: boolean, reason?: string}} Feasibility result.
  */
-// eslint-disable-next-line max-params
 export function evaluateWorldLineMany(
   pointsInput,
   existingSegments,

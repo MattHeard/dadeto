@@ -1,6 +1,4 @@
 // Toy: Assign Asset and Custodian to Segment if Feasible
-// jscpd:ignore-start
-/* eslint-disable jsdoc/require-returns, jsdoc/require-param-description, jsdoc/require-param-type */
 import {
   evaluateWorldLine,
   resolveSegment,
@@ -103,4 +101,3 @@ export function assignAssetAndCustodianToSegmentIfFeasible(input, env) {
     });
   }
 }
-// jscpd:ignore-end
