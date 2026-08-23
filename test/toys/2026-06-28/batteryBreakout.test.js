@@ -2167,10 +2167,14 @@ describe('batteryBreakout final normalization', () => {
     expect(resetCandidate.cells).not.toEqual(state.cells);
     expect(h.buildNextState(state, { reset: true })).toMatchObject({ status: 'ready', frame: 1 });
     expect(h.buildNextState(state, { reset: true, width: 200, height: 100 })).toMatchObject({ width: 200, height: 100 });
+    expect(h.buildNextState(state, { reset: true, width: 200, height: 100 }).cells.length).toBeGreaterThan(0);
     expect(h.buildNextState(null, { reset: true })).toMatchObject({ status: 'ready' });
     const moving = { ...state, status: 'running', frame: 4, orb: { ...state.orb, stuckToPaddle: false, vx: 1, vy: 1 } };
     const movingX = moving.orb.x;
     expect(h.buildNextState(moving, {}).orb.x).toBeGreaterThan(movingX);
+    const paused = { ...state, status: 'paused', orb: { ...state.orb, stuckToPaddle: false, vx: 1, vy: 1 } };
+    const pausedX = paused.orb.x;
+    expect(h.buildNextState(paused, {}).orb.x).toBe(pausedX);
     const advanced = h.buildNextState({ ...state, status: 'running', frame: 4 }, {});
     expect(advanced).toMatchObject({ status: 'running', frame: 5 });
     expect(advanced.cells).toEqual(state.cells);
@@ -2335,6 +2339,7 @@ describe('batteryBreakout final normalization', () => {
     h.applyKeyboardInput({ type: 'keydown', key: 'a' }, keyboard);
     h.applyKeyboardInput({ type: 'keyup', key: 'a' }, keyboard);
     h.applyKeyboardInput({ type: 'keydown' }, keyboard);
+    h.applyKeyboardInput({ type: 'keypress', key: 'x' }, keyboard);
     h.applyKeyboardInput({ type: 'keydown', key: 'ArrowLeft' }, keyboard);
     h.applyKeyboardInput({ type: 'keyup', key: 'ArrowLeft' }, keyboard);
     h.applyGamepadInput({ buttons: [true], axes: ['1'], buttonIndex: 2, pressed: true }, gamepad);

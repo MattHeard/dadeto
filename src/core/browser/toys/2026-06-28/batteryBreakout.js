@@ -827,8 +827,7 @@ function getCellRowOffset(colIndex) {
 export function shufflePositions(positions, seed) {
   const items = positions.slice();
   let state = seed || 1;
-  const indices = items.slice(1).map((_, index) => items.length - 1 - index);
-  for (const i of indices) {
+  for (let i = items.length - 1; i > 0; i -= 1) {
     state = (state * 1664525 + 1013904223) >>> 0;
     const j = state % (i + 1);
     [items[i], items[j]] = [items[j], items[i]];
@@ -1324,20 +1323,20 @@ function toCanvasPayload(state) {
       height: cell.height,
       fill: getCellFill(cell.state),
     })),
-    ...state.cells.map(cell => ({
-      type: 'rect',
-      x: cell.x + 3,
-      y: cell.y + 3,
-      width: Math.max(
-        0,
-        Math.min(
-          cell.width - 6,
-          Math.round((cell.charge / cell.maxCharge) * (cell.width - 6))
-        )
-      ),
-      height: Math.max(2, cell.height - 6),
-      fill: getCellChargeFill(cell.state),
-    })),
+    ...state.cells.map(cell => {
+      const innerWidth = cell.width - 6;
+      return {
+        type: 'rect',
+        x: cell.x + 3,
+        y: cell.y + 3,
+        width: Math.max(
+          0,
+          Math.min(innerWidth, Math.round((cell.charge / cell.maxCharge) * innerWidth))
+        ),
+        height: Math.max(2, cell.height - 6),
+        fill: getCellChargeFill(cell.state),
+      };
+    }),
     {
       type: 'rect',
       x: state.paddle.x,
