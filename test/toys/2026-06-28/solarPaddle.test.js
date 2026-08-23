@@ -137,6 +137,39 @@ describe('solarPaddle helper contracts', () => {
     expect(h.readPersistedState(() => ({ SOLA1: seed }))).toMatchObject(seed);
     expect(h.readPersistedState(null)).toBeNull();
   });
+
+  it('locks exact defaults and invalid-input handling', () => {
+    expect(h.getStorageAccessor(null)).toBeNull();
+    expect(h.getStorageAccessor(new Map())).toBeNull();
+    expect(h.parseInput('{}')).toEqual({});
+    expect(h.parseInput('{bad')).toBeNull();
+    expect(h.parseObjectRecord('1')).toBeNull();
+    expect(h.normalizeBooleanRecord([])).toEqual({});
+    expect(h.normalizeGamepadState([])).toEqual({ buttons: [], axes: [] });
+    expect(h.normalizeGamepadButtons(null)).toEqual([]);
+    expect(h.normalizeGamepadAxes(null)).toEqual([]);
+    expect(h.normalizeActions([])).toEqual({ left: false, right: false, launch: false, pause: false, reset: false });
+    expect(h.normalizeEdgeActions([])).toEqual({ left: false, right: false, launchPressed: false, pausePressed: false, resetPressed: false });
+    expect(h.createInitialInputState()).toEqual({
+      keyboard: {}, gamepad: { buttons: [], axes: [] },
+      actions: { left: false, right: false, launch: false, pause: false, reset: false },
+      edgeActions: { left: false, right: false, launchPressed: false, pausePressed: false, resetPressed: false },
+      previousActions: { left: false, right: false, launch: false, pause: false, reset: false },
+    });
+    expect(h.normalizePanelFromState({}, 0)).toEqual({ id: 'p1', x: 0, y: 0, width: 20, height: 10, charge: false });
+    expect(h.normalizePanelsFromState([null])).toEqual([]);
+    expect(h.getPanelColumnOffset(1)).toBe(6);
+    expect(h.getPanelRowOffset(1)).toBe(2);
+    expect(h.normalizeNumber('bad', 7)).toBe(7);
+    expect(h.normalizeNonNegativeInteger(0, 7)).toBe(0);
+    expect(h.normalizePaddle(null, 100)).toMatchObject({ width: 52, height: 7, speed: 4 });
+    expect(h.normalizeOrb(null)).toMatchObject({ radius: 4, vx: 1, vy: -2, stuckToPaddle: true });
+    expect(h.isLeftActionPressed({}, { buttons: [], axes: [] })).toBe(false);
+    expect(h.isRightActionPressed({}, { buttons: [], axes: [] })).toBe(false);
+    expect(h.isLaunchActionPressed({}, { buttons: [], axes: [] })).toBe(false);
+    expect(h.isPauseActionPressed({}, { buttons: [], axes: [] })).toBe(false);
+    expect(h.isResetActionPressed({}, { buttons: [], axes: [] })).toBe(false);
+  });
 });
 
 /**
