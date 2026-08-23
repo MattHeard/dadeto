@@ -3,7 +3,35 @@ import {
   resolvePaddle,
   separateOrbFromPanel,
   solarPaddle,
+  solarPaddleTestOnly as h,
 } from '../../../src/core/browser/toys/2026-06-28/solarPaddle.js';
+
+describe('solarPaddle helper contracts', () => {
+  it('covers parsing, normalization, layout, and input boundaries', () => {
+    expect(h.parseInput('')).toBeNull();
+    expect(h.parseInput('null')).toBeNull();
+    expect(h.parseInput('{"width":240}')).toEqual({ width: 240 });
+    expect(h.parseObjectRecord('[]')).toBeNull();
+    expect(h.normalizeStatus('running')).toBe('running');
+    expect(h.normalizeStatus('bad')).toBe('ready');
+    expect(h.normalizeSeedWidth({}, null, h.createSeedDefaults())).toBe(360);
+    expect(h.normalizeSeedHeight({ height: 160 }, null, h.createSeedDefaults())).toBe(160);
+    expect(h.normalizeSeedLives({ lives: 2 }, null, h.createSeedDefaults())).toBe(2);
+    expect(h.normalizeSeedLayout({ layoutSeed: 3 }, null, h.createSeedDefaults())).toBe(3);
+    expect(h.normalizeGamepadButtons([true, 0])).toEqual([true, false]);
+    expect(h.normalizeGamepadAxes([1, 'bad'])).toEqual([1, 0]);
+    expect(h.normalizeActions({ left: true, right: false, launch: true, pause: false, reset: true }))
+      .toMatchObject({ left: true, launch: true, reset: true });
+    expect(h.normalizePanels(240, 160, 2)).toHaveLength(12);
+    expect(h.normalizePanelsFromState([])).toHaveLength(12);
+    expect(h.getPanelColumnOffset(0)).toBe(0);
+    expect(h.getPanelRowOffset(1)).toBe(2);
+    expect(h.shufflePositions([{ x: 1, y: 1 }, { x: 2, y: 2 }], 3)).toHaveLength(2);
+    expect(h.clamp(-1, 0, 10)).toBe(0);
+    expect(h.clamp(11, 0, 10)).toBe(10);
+    expect(h.clamp(5, 0, 10)).toBe(5);
+  });
+});
 
 /**
  * Run the toy with a mock persistence store.

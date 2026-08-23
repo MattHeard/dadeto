@@ -1411,3 +1411,24 @@ function getOrbFill(status) {
 function persistState(storage, state) {
   storage?.({ [STORAGE_KEY]: state });
 }
+
+/** Internal contracts used by the focused mutation suite. */
+export const solarPaddleTestOnly = {
+  getStorageAccessor, readPersistedState, parseInput, parseObjectRecord,
+  buildNextState, buildMergedState, finalizeNextState, createResetSeedState,
+  buildResetFallback, mergeSeedAndState, createSeedState, normalizeSeedValues,
+  normalizeSeedWidth, normalizeSeedHeight, normalizeSeedLayout, normalizeSeedLives,
+  createSeedDefaults, createState, createInitialInputState, normalizeState,
+  normalizeStatus, normalizeInputState, normalizeBooleanRecord, normalizeGamepadState,
+  normalizeGamepadButtons, normalizeGamepadAxes, normalizeActions, normalizeEdgeActions,
+  normalizePaddle, normalizeNonNegativeInteger, normalizeOrb, normalizeNumber,
+  createSeedOptions, normalizePanelsFromState, normalizePanelFromState, getPanelId,
+  normalizePanels, buildPanelPositions, getPanelColumnOffset, getPanelRowOffset,
+  shufflePositions, updateInputState, createEdgeActions, deriveActions,
+  applyKeyboardInput, applyGamepadInput, createActionsFromState, isLeftActionPressed,
+  isRightActionPressed, isLaunchActionPressed, isPauseActionPressed,
+  isResetActionPressed, isAxisLeft, isAxisRight, applyGameplayInput, movePaddle,
+  stepSimulation, stickOrbToPaddle, resolveWalls, resolvePanels, getPanelCollisionAxis,
+  circleIntersectsPanel, resolveBottom, resolveWinLoss, resetOrbToPaddle, clamp,
+  toCanvasPayload, getPanelFill, getOrbFill, persistState,
+};
