@@ -1,187 +1,888 @@
 {
   "posts": [
-    {"key":"EXIS1","title":"Existing Asset Fulfillment Feasibility","publicationDate":"2026-08-23","release":"public","content":["Test whether one concrete asset can accommodate the asset-relevant operations in a normal fulfillment proposal.","Uses the canonical asset world-line evaluator and performs no runner checks, selection, persistence, costing or offers."],"toy":{"modulePath":"/core/browser/toys/2026-08-23/existingAssetFulfillmentFeasibility.js","functionName":"existingAssetFulfillmentFeasibility","defaultInputMethod":"textarea","defaultOutputMethod":"textarea"},"tags":["toy","fulfillment","asset","feasibility","world-line","json"]},
-    {"key":"SKUE1","title":"SKU Existing-Stock Feasibility","publicationDate":"2026-08-23","release":"public","content":["Test existing assets for a requested SKU in deterministic asset-ID order.","Short-circuits on the first feasible asset and performs no mutation or resource selection."],"toy":{"modulePath":"/core/browser/toys/2026-08-23/skuExistingStockFeasibility.js","functionName":"skuExistingStockFeasibility","defaultInputMethod":"textarea","defaultOutputMethod":"textarea"},"tags":["toy","fulfillment","sku","stock","feasibility","json"]},
-    {"key":"SKUF1","title":"SKU Fulfillment Feasibility","publicationDate":"2026-08-23","release":"public","content":["Combine precomputed procurement and existing-stock feasibility branches.","Returns true when either branch is feasible without calculating or persisting either branch."],"toy":{"modulePath":"/core/browser/toys/2026-08-23/skuFulfillmentFeasibility.js","functionName":"skuFulfillmentFeasibility","defaultInputMethod":"textarea","defaultOutputMethod":"textarea"},"tags":["toy","fulfillment","sku","feasibility","composition","json"]},
-    {"key":"FULF1","title":"Procurement Normal Fulfillment Composer","publicationDate":"2026-08-23","release":"public","content":[
+    {
+      "key": "EXIS2",
+      "title": "Existing Asset Fulfillment Sequence Feasibility",
+      "publicationDate": "2026-08-23",
+      "release": "public",
+      "content": [
+        "Build the normal seven-operation fulfillment proposal from canonical SPAC8 space points.",
+        "The returned proposal includes all referenced spatial context and remains a pure candidate for downstream feasibility checks.",
         {
           "type": "manual",
-          "id": "PROC2-manual",
+          "id": "EXIS2-manual",
           "title": "User manual",
-          "markdown": "# PROC2 — Procurement Prefix Proposal\n\n## What this toy does\n\nBuilds the warehouse procurement and candidate stock-in prefix immediately before an existing delivery-outbound start point. It proposes geometry and timing only.\n\n## Input\n\nSubmit the JSON object accepted by the toy: an existing delivery start point, warehouse location, procurement duration and buffer, and generated point and segment IDs.\n\n```json\n{\n  \"deliveryOutboundStart\": { \"pointId\": \"delivery-start\", \"timestamp\": \"2026-08-23T10:00:00.000Z\" },\n  \"warehouse\": { \"spacePointId\": \"warehouse-1\", \"latitude\": 52.52, \"longitude\": 13.405 },\n  \"procurementDurationSeconds\": 600,\n  \"procurementBufferSeconds\": 60,\n  \"generatedIds\": { \"procurementStartPointId\": \"procurement-start\", \"stockReadyPointId\": \"stock-ready\", \"procurementSegmentId\": \"procurement-1\" }\n}\n```\n\n## JSON Schema\n\n```json\n{\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"type\": \"object\",\n  \"required\": [\"deliveryOutboundStart\", \"warehouse\", \"procurementDurationSeconds\", \"procurementBufferSeconds\", \"generatedIds\"],\n  \"properties\": {\n    \"deliveryOutboundStart\": { \"type\": \"object\" }, \"warehouse\": { \"type\": \"object\" },\n    \"procurementDurationSeconds\": { \"type\": \"number\", \"minimum\": 0 }, \"procurementBufferSeconds\": { \"type\": \"number\", \"minimum\": 0 },\n    \"generatedIds\": { \"type\": \"object\" }\n  },\n  \"additionalProperties\": false\n}\n```\n\n## Output\n\nReturns the warehouse space point, procurement-start and stock-ready points, and one procurement segment that ends at the existing delivery start. Invalid durations, coordinates, IDs, or timestamps return a structured failure.\n\n## Behavior\n\nThe allocated procurement time is the base duration plus the buffer. Resulting timestamps must align to whole minutes. The toy performs no procurement, persistence, assignment, feasibility, or pricing.\n\n## How to use it\n\nSubmit the example, then change the duration or buffer and observe the proposed procurement start. Keep the existing delivery-start timestamp fixed to see the prefix move earlier."
-        },
+          "markdown": "# EXIS2 — Existing Asset Fulfillment Sequence Feasibility\n\n## What this toy does\n\nTest whether one asset can accommodate every asset-relevant segment in a normal fulfillment proposal.\n\n## Input\n\nSubmit an asset with a stock-in point, a valid proposal, and resolved points and space points.\n\n```json\n{\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"type\": \"object\",\n  \"properties\": { \"asset\": { \"type\": \"object\" }, \"proposal\": { \"type\": \"object\" } }\n}\n```\n\n## Output\n\nReturns `{ \"feasible\": true }` only when all five asset operations form one coherent world line.\n\n## Behavior\n\nEXIS2 checks delivery outbound, possession, pickup return, inspection, and cleaning together. It supersedes EXIS1 and performs no assignment or reservation.\nSubmit an asset with a stock-in point, a valid normal proposal, and resolved points and space points. EXIS2 evaluates delivery outbound, possession, pickup return, inspection, and cleaning together, so conflicts late in the sequence are rejected. It supersedes EXIS1 and performs no assignment or reservation."
+        }
+      ],
+      "toy": {
+        "modulePath": "/core/browser/toys/2026-08-23/existingAssetFulfillmentSequenceFeasibility.js",
+        "functionName": "existingAssetFulfillmentSequenceFeasibility",
+        "defaultInputMethod": "textarea",
+        "defaultOutputMethod": "textarea"
+      },
+      "tags": [
+        "toy",
+        "fulfillment",
+        "asset",
+        "sequence",
+        "feasibility",
+        "world-line",
+        "json"
+      ]
+    },
+    {
+      "key": "SKUE2",
+      "title": "SKU Existing-Stock Fulfillment Feasibility",
+      "publicationDate": "2026-08-23",
+      "release": "public",
+      "content": [
+        "Test whether at least one existing asset for a requested SKU supports the complete fulfillment sequence.",
+        "This supersedes SKUE1 and delegates each candidate to EXIS2 in deterministic asset-ID order.",
+        {
+          "type": "manual",
+          "id": "SKUE2-manual",
+          "title": "User manual",
+          "markdown": "# SKUE2 — SKU Existing-Stock Fulfillment Feasibility\n\n## What this toy does\n\nTest whether at least one existing asset for a requested SKU supports a complete fulfillment sequence.\n\n## Input\n\nSubmit requestedSku, assets, proposal, points, and spacePoints.\n\n```json\n{\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"type\": \"object\",\n  \"properties\": { \"requestedSku\": { \"type\": \"string\" }, \"assets\": { \"type\": \"array\" } }\n}\n```\n\n## Output\n\nReturns `{ \"feasible\": true }` when one matching asset succeeds, otherwise false.\n\n## Behavior\n\nSKUE2 checks exact-SKU assets in deterministic ID order using EXIS2 and stops on success. It creates no reservation.\nSubmit a requested SKU, asset candidates, and one normal fulfillment proposal. SKUE2 checks exact-SKU assets in deterministic ID order using EXIS2 and stops when one complete asset sequence succeeds. It reports only SKU feasibility and creates no reservation."
+        }
+      ],
+      "toy": {
+        "modulePath": "/core/browser/toys/2026-08-23/skuExistingStockFulfillmentFeasibility.js",
+        "functionName": "skuExistingStockFulfillmentFeasibility",
+        "defaultInputMethod": "textarea",
+        "defaultOutputMethod": "textarea"
+      },
+      "tags": [
+        "toy",
+        "fulfillment",
+        "sku",
+        "existing-stock",
+        "feasibility",
+        "json"
+      ]
+    },
+    {
+      "key": "EXIS1",
+      "title": "Existing Asset Fulfillment Feasibility",
+      "publicationDate": "2026-08-23",
+      "release": "public",
+      "content": [
+        "Test whether one concrete asset can accommodate the asset-relevant operations in a normal fulfillment proposal.",
+        "Uses the canonical asset world-line evaluator and performs no runner checks, selection, persistence, costing or offers.",
+        {
+          "type": "manual",
+          "id": "EXIS1-manual",
+          "title": "User manual",
+          "markdown": "# EXIS1 — Existing Asset Fulfillment Feasibility\n\n## What this toy does\n\nTest one asset against a normal fulfillment proposal.\n\n## Input\n\nSubmit an object containing asset, proposal, points, and spacePoints.\n\n```json\n{\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"type\": \"object\"\n}\n```\n\n## Output\n\nReturns a JSON feasibility result.\n\n## Behavior\n\nThe calculation is deterministic and has no side effects."
+        }
+      ],
+      "toy": {
+        "modulePath": "/core/browser/toys/2026-08-23/existingAssetFulfillmentFeasibility.js",
+        "functionName": "existingAssetFulfillmentFeasibility",
+        "defaultInputMethod": "textarea",
+        "defaultOutputMethod": "textarea"
+      },
+      "tags": [
+        "toy",
+        "fulfillment",
+        "asset",
+        "feasibility",
+        "world-line",
+        "json"
+      ]
+    },
+    {
+      "key": "SKUE1",
+      "title": "SKU Existing-Stock Feasibility",
+      "publicationDate": "2026-08-23",
+      "release": "public",
+      "content": [
+        "Test existing assets for a requested SKU in deterministic asset-ID order.",
+        "Short-circuits on the first feasible asset and performs no mutation or resource selection.",
+        {
+          "type": "manual",
+          "id": "SKUE1-manual",
+          "title": "User manual",
+          "markdown": "# SKUE1 — SKU Existing-Stock Feasibility\n\n## What this toy does\n\nTest matching assets for a requested SKU.\n\n## Input\n\nSubmit requestedSku and assets.\n\n```json\n{\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"type\": \"object\"\n}\n```\n\n## Output\n\nReturns a JSON feasibility result.\n\n## Behavior\n\nMatching assets are checked in deterministic order with no side effects."
+        }
+      ],
+      "toy": {
+        "modulePath": "/core/browser/toys/2026-08-23/skuExistingStockFeasibility.js",
+        "functionName": "skuExistingStockFeasibility",
+        "defaultInputMethod": "textarea",
+        "defaultOutputMethod": "textarea"
+      },
+      "tags": [
+        "toy",
+        "fulfillment",
+        "sku",
+        "stock",
+        "feasibility",
+        "json"
+      ]
+    },
+    {
+      "key": "SKUF1",
+      "title": "SKU Fulfillment Feasibility",
+      "publicationDate": "2026-08-23",
+      "release": "public",
+      "content": [
+        "Combine precomputed procurement and existing-stock feasibility branches.",
+        "Returns true when either branch is feasible without calculating or persisting either branch.",
+        {
+          "type": "manual",
+          "id": "SKUF1-manual",
+          "title": "User manual",
+          "markdown": "# SKUF1 — SKU Fulfillment Feasibility\n\n## What this toy does\n\nCombine two precomputed feasibility branches.\n\n## Input\n\nSubmit procurementFeasible and existingStockFeasible.\n\n```json\n{\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"type\": \"object\"\n}\n```\n\n## Output\n\nReturns the combined feasibility result.\n\n## Behavior\n\nThe result is true when either branch is true."
+        }
+      ],
+      "toy": {
+        "modulePath": "/core/browser/toys/2026-08-23/skuFulfillmentFeasibility.js",
+        "functionName": "skuFulfillmentFeasibility",
+        "defaultInputMethod": "textarea",
+        "defaultOutputMethod": "textarea"
+      },
+      "tags": [
+        "toy",
+        "fulfillment",
+        "sku",
+        "feasibility",
+        "composition",
+        "json"
+      ]
+    },
+    {
+      "key": "FULF1",
+      "title": "Procurement Normal Fulfillment Composer",
+      "publicationDate": "2026-08-23",
+      "release": "public",
+      "content": [
+        "Compose a procurement prefix with a canonical normal fulfillment proposal without recalculating either component.",
+        "The composer validates exact shared boundaries and returns a fully resolvable candidate sequence.",
         {
           "type": "manual",
           "id": "FULF1-manual",
           "title": "User manual",
           "markdown": "# FULF1 — Procurement Normal Fulfillment Composer\n\n## What this toy does\n\nPrepends one validated warehouse-procurement prefix to one validated canonical normal-fulfillment proposal. It composes the two existing results without recalculating their timings.\n\n## Input\n\nSubmit a JSON object with `procurementProposal` and `normalProposal`. Each property contains the corresponding validated proposal object.\n\n```json\n{\n  \"procurementProposal\": { \"valid\": true, \"spacePoints\": [], \"points\": [], \"segments\": [], \"sequence\": [] },\n  \"normalProposal\": { \"valid\": true, \"spacePoints\": [], \"points\": [], \"segments\": [], \"sequence\": [] }\n}\n```\n\n## JSON Schema\n\n```json\n{\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"type\": \"object\",\n  \"required\": [\"procurementProposal\", \"normalProposal\"],\n  \"properties\": { \"procurementProposal\": { \"type\": \"object\" }, \"normalProposal\": { \"type\": \"object\" } },\n  \"additionalProperties\": false\n}\n```\n\n## Output\n\nReturns one composed proposal containing the procurement prefix followed by the normal proposal’s points, segments, and ordered operations. Invalid or incompatible components return a structured failure.\n\n## Behavior\n\nThe toy does not execute procurement, persist data, assign resources, recalculate durations, or prove feasibility. It only validates the two supplied components and composes them deterministically.\n\n## How to use it\n\n1. Produce valid procurement and normal proposals.\n2. Submit them under the two required properties.\n3. Inspect the resulting operation order and shared point references."
-        },
+        }
+      ],
+      "toy": {
+        "modulePath": "/core/browser/toys/2026-08-22/procurementNormalFulfillmentComposer.js",
+        "functionName": "procurementNormalFulfillmentComposer",
+        "defaultInputMethod": "textarea",
+        "defaultOutputMethod": "textarea"
+      },
+      "tags": [
+        "toy",
+        "fulfillment",
+        "procurement",
+        "composer",
+        "composition",
+        "json"
+      ]
+    },
+    {
+      "key": "PROC2",
+      "title": "Procurement Prefix Proposal",
+      "publicationDate": "2026-08-23",
+      "release": "public",
+      "content": [
+        "Propose only the procurement and candidate stock-in prefix before an existing delivery-outbound start point.",
+        "The prefix is pure geometry and timing with no procurement execution, persistence or feasibility decision.",
+        {
+          "type": "manual",
+          "id": "PROC2-manual",
+          "title": "User manual",
+          "markdown": "# PROC2 — Procurement Prefix Proposal\n\n## What this toy does\n\nBuilds the warehouse procurement and candidate stock-in prefix immediately before an existing delivery-outbound start point. It proposes geometry and timing only.\n\n## Input\n\nSubmit the JSON object accepted by the toy: an existing delivery start point, warehouse location, procurement duration and buffer, and generated point and segment IDs.\n\n```json\n{\n  \"deliveryOutboundStart\": { \"pointId\": \"delivery-start\", \"timestamp\": \"2026-08-23T10:00:00.000Z\" },\n  \"warehouse\": { \"spacePointId\": \"warehouse-1\", \"latitude\": 52.52, \"longitude\": 13.405 },\n  \"procurementDurationSeconds\": 600,\n  \"procurementBufferSeconds\": 60,\n  \"generatedIds\": { \"procurementStartPointId\": \"procurement-start\", \"stockReadyPointId\": \"stock-ready\", \"procurementSegmentId\": \"procurement-1\" }\n}\n```\n\n## JSON Schema\n\n```json\n{\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"type\": \"object\",\n  \"required\": [\"deliveryOutboundStart\", \"warehouse\", \"procurementDurationSeconds\", \"procurementBufferSeconds\", \"generatedIds\"],\n  \"properties\": {\n    \"deliveryOutboundStart\": { \"type\": \"object\" }, \"warehouse\": { \"type\": \"object\" },\n    \"procurementDurationSeconds\": { \"type\": \"number\", \"minimum\": 0 }, \"procurementBufferSeconds\": { \"type\": \"number\", \"minimum\": 0 },\n    \"generatedIds\": { \"type\": \"object\" }\n  },\n  \"additionalProperties\": false\n}\n```\n\n## Output\n\nReturns the warehouse space point, procurement-start and stock-ready points, and one procurement segment that ends at the existing delivery start. Invalid durations, coordinates, IDs, or timestamps return a structured failure.\n\n## Behavior\n\nThe allocated procurement time is the base duration plus the buffer. Resulting timestamps must align to whole minutes. The toy performs no procurement, persistence, assignment, feasibility, or pricing.\n\n## How to use it\n\nSubmit the example, then change the duration or buffer and observe the proposed procurement start. Keep the existing delivery-start timestamp fixed to see the prefix move earlier."
+        }
+      ],
+      "toy": {
+        "modulePath": "/core/browser/toys/2026-08-22/procurementPrefixProposal.js",
+        "functionName": "procurementPrefixProposal",
+        "defaultInputMethod": "textarea",
+        "defaultOutputMethod": "textarea"
+      },
+      "tags": [
+        "toy",
+        "fulfillment",
+        "procurement",
+        "prefix",
+        "stock-in",
+        "json"
+      ]
+    },
+    {
+      "key": "CANO1",
+      "title": "Canonical Normal Fulfillment Sequence Proposal",
+      "publicationDate": "2026-08-23",
+      "release": "public",
+      "content": [
+        "Build the normal seven-operation fulfillment proposal from canonical SPAC8 space points.",
+        "The returned proposal includes all referenced spatial context and remains a pure candidate for downstream feasibility checks.",
         {
           "type": "manual",
           "id": "CANO1-manual",
           "title": "User manual",
           "markdown": "# CANO1 — Canonical Normal Fulfillment Sequence Proposal\n\n## What this toy does\n\nConsumes SPAC8-compatible space points and returns a self-contained seven-operation normal fulfillment proposal. It validates and canonicalizes spatial composition; it does not select resources or check feasibility.\n\n## Input\n\nSubmit a JSON object containing `possessionContext`, `spacePoints`, `warehouse`, `travelDurations`, `configuration`, and `generatedIds`. The possession segment’s endpoint IDs must match its endpoint points; generated IDs must be unique.\n\n```json\n{\n  \"possessionContext\": { \"segment\": {}, \"startPoint\": {}, \"endPoint\": {} },\n  \"spacePoints\": [{ \"spacePointId\": \"warehouse-1\", \"latitude\": 52.52, \"longitude\": 13.405 }],\n  \"warehouse\": { \"spacePointId\": \"warehouse-1\" },\n  \"travelDurations\": {},\n  \"configuration\": {},\n  \"generatedIds\": { \"points\": {}, \"segments\": {} }\n}\n```\n\n## JSON Schema\n\n```json\n{\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"type\": \"object\",\n  \"required\": [\"possessionContext\", \"spacePoints\", \"warehouse\", \"travelDurations\", \"configuration\", \"generatedIds\"],\n  \"properties\": {\n    \"possessionContext\": { \"type\": \"object\" }, \"spacePoints\": { \"type\": \"array\" }, \"warehouse\": { \"type\": \"object\" },\n    \"travelDurations\": { \"type\": \"object\" }, \"configuration\": { \"type\": \"object\" }, \"generatedIds\": { \"type\": \"object\" }\n  },\n  \"additionalProperties\": false\n}\n```\n\n## Output\n\nReturns deduplicated, sorted `spacePoints`, eight points, seven segments, seven ordered operation records, and the unchanged possession reference. Invalid composition returns a structured failure.\n\n## Behavior\n\nAll generated points reference the canonical warehouse space point. Durations are finite and non-negative, and generated timestamps must align to whole minutes. The toy does not persist state, assign resources, calculate price, or prove feasibility.\n\n## How to use it\n\nSubmit the example, then add a duplicate space point or change an ID to observe canonicalization and validation behavior."
-        },"Compose a procurement prefix with a canonical normal fulfillment proposal without recalculating either component.","The composer validates exact shared boundaries and returns a fully resolvable candidate sequence."],"toy":{"modulePath":"/core/browser/toys/2026-08-22/procurementNormalFulfillmentComposer.js","functionName":"procurementNormalFulfillmentComposer","defaultInputMethod":"textarea","defaultOutputMethod":"textarea"},"tags":["toy","fulfillment","procurement","composer","composition","json"]},
-    {"key":"PROC2","title":"Procurement Prefix Proposal","publicationDate":"2026-08-23","release":"public","content":["Propose only the procurement and candidate stock-in prefix before an existing delivery-outbound start point.","The prefix is pure geometry and timing with no procurement execution, persistence or feasibility decision."],"toy":{"modulePath":"/core/browser/toys/2026-08-22/procurementPrefixProposal.js","functionName":"procurementPrefixProposal","defaultInputMethod":"textarea","defaultOutputMethod":"textarea"},"tags":["toy","fulfillment","procurement","prefix","stock-in","json"]},
-    {"key":"CANO1","title":"Canonical Normal Fulfillment Sequence Proposal","publicationDate":"2026-08-23","release":"public","content":["Build the normal seven-operation fulfillment proposal from canonical SPAC8 space points.","The returned proposal includes all referenced spatial context and remains a pure candidate for downstream feasibility checks."],"toy":{"modulePath":"/core/browser/toys/2026-08-22/canonicalNormalFulfillmentSequenceProposal.js","functionName":"canonicalNormalFulfillmentSequenceProposal","defaultInputMethod":"textarea","defaultOutputMethod":"textarea"},"tags":["toy","fulfillment","canonical","space-point","sequence","proposal","json"]},
-    {"key":"NORM1","title":"Normal Fulfillment Sequence Proposal","publicationDate":"2026-08-23","release":"public","content":[
+        }
+      ],
+      "toy": {
+        "modulePath": "/core/browser/toys/2026-08-22/canonicalNormalFulfillmentSequenceProposal.js",
+        "functionName": "canonicalNormalFulfillmentSequenceProposal",
+        "defaultInputMethod": "textarea",
+        "defaultOutputMethod": "textarea"
+      },
+      "tags": [
+        "toy",
+        "fulfillment",
+        "canonical",
+        "space-point",
+        "sequence",
+        "proposal",
+        "json"
+      ]
+    },
+    {
+      "key": "NORM1",
+      "title": "Normal Fulfillment Sequence Proposal",
+      "publicationDate": "2026-08-23",
+      "release": "public",
+      "content": [
+        "Construct a procurement-free fulfillment sequence around an existing possession context.",
+        "The proposal contains delivery, return, possession, pickup, inspection and cleaning geometry with resource metadata, but performs no selection, feasibility, persistence, costing or offer creation.",
         {
           "type": "manual",
           "id": "NORM1-manual",
           "title": "User manual",
           "markdown": "# NORM1 — Normal Fulfillment Sequence Proposal\n\n## What this toy does\n\nNormal Fulfillment Sequence Proposal builds the procurement-free transport, possession, pickup, inspection, and cleaning sequence around an existing possession interval. It returns geometry and timing only; it does not select assets, assign runners, check feasibility, persist data, or calculate cost.\n\n## Input\n\nSubmit one JSON object with these properties:\n\n- `possessionContext`: existing `segment`, `startPoint`, and `endPoint`; the segment endpoint IDs must match the points.\n- `warehouse`: `spacePointId`, numeric `latitude`, and numeric `longitude`.\n- `travelDurations`: non-negative `deliveryOutboundSeconds`, `deliveryReturnSeconds`, `pickupOutboundSeconds`, and `pickupReturnSeconds`.\n- `configuration`: non-negative duration and buffer values for delivery, pickup, inspection, and cleaning.\n- `generatedIds`: IDs for the six generated warehouse points and seven generated segments.\n\n```json\n{\n  \"possessionContext\": {\n    \"segment\": { \"segmentId\": \"possession-1\", \"startPointId\": \"start-1\", \"endPointId\": \"end-1\" },\n    \"startPoint\": { \"pointId\": \"start-1\", \"timestamp\": \"2026-08-23T10:00:00.000Z\" },\n    \"endPoint\": { \"pointId\": \"end-1\", \"timestamp\": \"2026-08-23T11:00:00.000Z\" }\n  },\n  \"warehouse\": { \"spacePointId\": \"warehouse-1\", \"latitude\": 52.52, \"longitude\": 13.405 },\n  \"travelDurations\": { \"deliveryOutboundSeconds\": 600, \"deliveryReturnSeconds\": 600, \"pickupOutboundSeconds\": 600, \"pickupReturnSeconds\": 600 },\n  \"configuration\": {\n    \"deliveryOutboundBufferSeconds\": 60, \"deliveryReturnBufferSeconds\": 60,\n    \"pickupOutboundBufferSeconds\": 60, \"pickupReturnBufferSeconds\": 60,\n    \"inspectionDurationSeconds\": 600, \"inspectionBufferSeconds\": 60,\n    \"cleaningDurationSeconds\": 600, \"cleaningBufferSeconds\": 60\n  },\n  \"generatedIds\": {\n    \"points\": { \"deliveryOutboundStart\": \"point-1\", \"deliveryReturnEnd\": \"point-2\", \"pickupOutboundStart\": \"point-3\", \"pickupReturnEnd\": \"point-4\", \"inspectionComplete\": \"point-5\", \"cleaningComplete\": \"point-6\" },\n    \"segments\": { \"deliveryOutbound\": \"segment-1\", \"deliveryReturn\": \"segment-2\", \"pickupOutbound\": \"segment-3\", \"pickupReturn\": \"segment-4\", \"inspection\": \"segment-5\", \"cleaning\": \"segment-6\" }\n  }\n}\n```\n\n## JSON Schema\n\n```json\n{\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"type\": \"object\",\n  \"required\": [\"possessionContext\", \"warehouse\", \"travelDurations\", \"configuration\", \"generatedIds\"],\n  \"properties\": {\n    \"possessionContext\": { \"type\": \"object\" },\n    \"warehouse\": { \"type\": \"object\" },\n    \"travelDurations\": { \"type\": \"object\" },\n    \"configuration\": { \"type\": \"object\" },\n    \"generatedIds\": { \"type\": \"object\" }\n  },\n  \"additionalProperties\": false\n}\n```\n\n## Output\n\nOn success, the toy returns `valid: true`, one warehouse space point, eight points, seven segments, seven ordered operation records, and the possession segment reference. On failure it returns `{ \"valid\": false, \"error\": \"...\" }` and does not persist or mutate anything.\n\n## Behavior\n\nThe sequence is ordered as delivery outbound, delivery return, possession, pickup outbound, pickup return, inspection, and cleaning. Each generated timestamp is aligned to a whole minute. The possession points and segment are returned unchanged.\n\n## How to use it\n\n1. Submit the example above.\n2. Inspect the ordered `sequence` and compare each operation’s `segmentId` with `segments`.\n3. Change one duration or buffer and observe the affected timestamps.\n4. Try a negative duration or mismatched endpoint ID to see structured failure behavior.\n\n## Limitations\n\nThis toy proposes a deterministic candidate sequence. It does not prove that the sequence is feasible, reserve resources, select an asset, assign a runner, or model reliability."
-        },"Construct a procurement-free fulfillment sequence around an existing possession context.","The proposal contains delivery, return, possession, pickup, inspection and cleaning geometry with resource metadata, but performs no selection, feasibility, persistence, costing or offer creation."],"toy":{"modulePath":"/core/browser/toys/2026-08-22/normalFulfillmentSequenceProposal.js","functionName":"normalFulfillmentSequenceProposal","defaultInputMethod":"textarea","defaultOutputMethod":"textarea"},"tags":["toy","fulfillment","sequence","proposal","possession","runner","asset","json"]},
-    {"key":"PROC1","title":"Procurement-Backed Fulfillment Sequence Proposal","publicationDate":"2026-08-22","release":"public","content":[
+        }
+      ],
+      "toy": {
+        "modulePath": "/core/browser/toys/2026-08-22/normalFulfillmentSequenceProposal.js",
+        "functionName": "normalFulfillmentSequenceProposal",
+        "defaultInputMethod": "textarea",
+        "defaultOutputMethod": "textarea"
+      },
+      "tags": [
+        "toy",
+        "fulfillment",
+        "sequence",
+        "proposal",
+        "possession",
+        "runner",
+        "asset",
+        "json"
+      ]
+    },
+    {
+      "key": "PROC1",
+      "title": "Procurement-Backed Fulfillment Sequence Proposal",
+      "publicationDate": "2026-08-22",
+      "release": "public",
+      "content": [
+        "Construct a deterministic candidate fulfillment sequence from procurement through delivery, possession, pickup, inspection and cleaning.",
+        "The toy proposes geometry and timing only; it does not persist, assign, price, procure or claim feasibility.",
         {
           "type": "manual",
           "id": "PROC1-manual",
           "title": "User manual",
           "markdown": "# Procurement-Backed Fulfillment Sequence Proposal\n\n## What this toy does\n\nPropose a complete candidate sequence when fulfillment begins without assuming ready warehouse stock.\n\nThis manual explains the behavior a user can observe by submitting input to the toy. The toy is synchronous and deterministic unless the behavior below says that it persists state or advances between submissions.\n\n## Input\n\npossession context, warehouse location, travel durations, configuration buffers, and caller-provided IDs. Submit a JSON value in the toy's input area. A minimal example is:\n\n```json\n{\n  \"possessionContext\": {\n    \"segment\": { \"segmentId\": \"possession-1\", \"startPointId\": \"start-1\", \"endPointId\": \"end-1\" },\n    \"startPoint\": { \"pointId\": \"start-1\", \"timestamp\": \"2026-08-22T10:00:00.000Z\" },\n    \"endPoint\": { \"pointId\": \"end-1\", \"timestamp\": \"2026-08-22T11:00:00.000Z\" }\n  },\n  \"warehouse\": { \"latitude\": \"52.520000\", \"longitude\": \"13.405000\" },\n  \"travelDurations\": { \"deliveryOutboundSeconds\": 600, \"pickupReturnSeconds\": 600 },\n  \"configuration\": {\n    \"procurementDuration\": 600, \"procurementBuffer\": 60, \"deliveryBuffer\": 60,\n    \"pickupBuffer\": 60, \"inspectionDuration\": 600, \"inspectionBuffer\": 60,\n    \"cleaningDuration\": 600, \"cleaningBuffer\": 60\n  },\n  \"generatedIds\": {\n    \"warehouseSpacePointId\": \"warehouse-1\",\n    \"points\": { \"procurementStart\": \"point-1\", \"stockReady\": \"point-2\", \"pickupReturn\": \"point-3\", \"inspectionComplete\": \"point-4\", \"cleaningComplete\": \"point-5\" },\n    \"segments\": { \"procurement\": \"segment-1\", \"deliveryOutbound\": \"segment-2\", \"pickupReturn\": \"segment-3\", \"inspection\": \"segment-4\", \"cleaning\": \"segment-5\" }\n  }\n}\n```\n\nIf a field is omitted, the toy applies its default behavior. Invalid values are rejected or normalized according to the limits below.\n\n## Exact property names\n\nThe input is a JSON object with five properties:\n\n- `possessionContext`: contains `segment`, `startPoint`, and `endPoint`; the segment endpoint IDs must match the point IDs.\n- `warehouse`: contains canonical decimal-string `latitude` and `longitude` coordinates.\n- `travelDurations`: contains non-negative `deliveryOutboundSeconds` and `pickupReturnSeconds`.\n- `configuration`: contains the eight non-negative duration and buffer properties shown in the example.\n- `generatedIds`: contains `warehouseSpacePointId`, five point IDs under `points`, and five segment IDs under `segments`.\n\nAll generated IDs must be non-empty, unique, and distinct from the possession IDs. Timestamps must be valid and align to whole minutes.\n\n## JSON Schema\n\nThis machine-readable schema describes the public input shape. It does not include blog identifiers or runtime helpers.\n\n```json\n{\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"type\": \"string\"\n}\n```\n\n## Output\n\nwarehouse space point, spacetime points, segments, and ordered operation metadata. The result is returned as JSON or rendered by the toy's configured presenter. A representative result is:\n\n```json\n{\"result\":\"representative toy result\"}\n```\n\nThe result contains the normalized values and any status, summary, proposal, predicate result, or rendered payload produced by this toy.\n\n## Behavior\n\nIn scope: deterministic procurement, delivery, possession, pickup, inspection, and cleaning geometry and timing. Out of scope: persistence, assignment, feasibility, procurement execution, pricing, offers, and reliability claims.\n\n### Limits and assumptions\n\nDurations are finite, non-negative seconds. Generated timestamps align to the existing minute-resolution spacetime-point contract. Warehouse points reference one timeless space point.\n\n## How to use it\n\n1. Submit the minimal example to see the default result.\n2. Change one input field at a time.\n3. Submit the same input again to confirm deterministic behavior.\n4. Try an omitted or invalid value to observe the fallback or rejection behavior.\n\n## Troubleshooting\n\n- If the input is rejected, check that it is valid JSON and uses the field names shown above.\n- If a value is ignored, it may be omitted, outside the supported range, or normalized by the toy.\n- If the output is empty, verify that the input contains the records, points, or configuration needed for this operation.\n- Stateful toys may require the reset input described above to return to their initial state."
-        },"Construct a deterministic candidate fulfillment sequence from procurement through delivery, possession, pickup, inspection and cleaning.","The toy proposes geometry and timing only; it does not persist, assign, price, procure or claim feasibility."],"toy":{"modulePath":"/core/browser/toys/2026-08-22/procurementBackedFulfillmentSequenceProposal.js","functionName":"procurementBackedFulfillmentSequenceProposal","defaultInputMethod":"textarea","defaultOutputMethod":"textarea"},"tags":["toy","fulfillment","procurement","sequence","proposal","spacetime","json"]},
-    {"key":"SPAC8","title":"Space Point Registry","publicationDate":"2026-08-22","release":"public","content":[
+        }
+      ],
+      "toy": {
+        "modulePath": "/core/browser/toys/2026-08-22/procurementBackedFulfillmentSequenceProposal.js",
+        "functionName": "procurementBackedFulfillmentSequenceProposal",
+        "defaultInputMethod": "textarea",
+        "defaultOutputMethod": "textarea"
+      },
+      "tags": [
+        "toy",
+        "fulfillment",
+        "procurement",
+        "sequence",
+        "proposal",
+        "spacetime",
+        "json"
+      ]
+    },
+    {
+      "key": "SPAC8",
+      "title": "Space Point Registry",
+      "publicationDate": "2026-08-22",
+      "release": "public",
+      "content": [
+        "Register atemporal WGS84 locations that spacetime points can reference.",
+        "Existing inline latitude/longitude spacetime points remain supported, while coordinate-consuming toys can resolve either representation.",
         {
           "type": "manual",
           "id": "SPAC8-manual",
           "title": "User manual",
           "markdown": "# SPAC8 — Space Point Registry\n\n## What this toy does\n\nExplore SPAC8 — Space Point Registry with deterministic input and output.\n\nThis manual explains the behavior a user can observe by submitting input to the toy. The toy is synchronous and deterministic unless the behavior below says that it persists state or advances between submissions.\n\n## Input\n\nJSON input. Submit a JSON value in the toy's input area. A minimal example is:\n\n```json\n{\"result\":\"representative toy result\"}\n```\n\nIf a field is omitted, the toy applies its default behavior. Invalid values are rejected or normalized according to the limits below.\n\n## Exact property names\n\nThe input is a JSON object with these property names:\n\n- `spacePointId`\n\nUnknown properties are ignored. Required properties and nested fields are described in the behavior above.\n\n## JSON Schema\n\nThis machine-readable schema describes the public input shape. It does not include blog identifiers or runtime helpers.\n\n```json\n{\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"type\": \"string\"\n}\n```\n\n## Output\n\nJSON output. The result is returned as JSON or rendered by the toy's configured presenter. A representative result is:\n\n```json\n{\"result\":\"representative toy result\"}\n```\n\nThe result contains the normalized values and any status, summary, proposal, predicate result, or rendered payload produced by this toy.\n\n## Behavior\n\nThe toy performs only the focused operation described above. It does not add persistence, network access, scheduling, or unrelated business rules.\n\n\n## How to use it\n\n1. Submit the minimal example to see the default result.\n2. Change one input field at a time.\n3. Submit the same input again to confirm deterministic behavior.\n4. Try an omitted or invalid value to observe the fallback or rejection behavior.\n\n## Troubleshooting\n\n- If the input is rejected, check that it is valid JSON and uses the field names shown above.\n- If a value is ignored, it may be omitted, outside the supported range, or normalized by the toy.\n- If the output is empty, verify that the input contains the records, points, or configuration needed for this operation.\n- Stateful toys may require the reset input described above to return to their initial state."
-        },"Register atemporal WGS84 locations that spacetime points can reference.","Existing inline latitude/longitude spacetime points remain supported, while coordinate-consuming toys can resolve either representation."],"toy":{"modulePath":"/core/browser/toys/2026-08-22/spacePointRegistry.js","functionName":"spacePointRegistry","defaultInputMethod":"textarea","defaultOutputMethod":"textarea"},"tags":["toy","spacetime","space","point","wgs84","registry","json"]},
-    {"key":"VALI3","title":"Validated Asset Custodian Segment Assignment","publicationDate":"2026-08-22","release":"public","content":[
+        }
+      ],
+      "toy": {
+        "modulePath": "/core/browser/toys/2026-08-22/spacePointRegistry.js",
+        "functionName": "spacePointRegistry",
+        "defaultInputMethod": "textarea",
+        "defaultOutputMethod": "textarea"
+      },
+      "tags": [
+        "toy",
+        "spacetime",
+        "space",
+        "point",
+        "wgs84",
+        "registry",
+        "json"
+      ]
+    },
+    {
+      "key": "VALI3",
+      "title": "Validated Asset Custodian Segment Assignment",
+      "publicationDate": "2026-08-22",
+      "release": "public",
+      "content": [
+        "Supersedes the earlier ASSI3 transport writer with strict identifier and maximum-speed validation.",
+        "It preserves canonical asset and runner feasibility semantics and commits both assignment lists atomically.",
         {
           "type": "manual",
           "id": "VALI3-manual",
           "title": "User manual",
           "markdown": "# VALI3 — Validated Asset Custodian Segment Assignment\n\n## What this toy does\n\nExplore VALI3 — Validated Asset Custodian Segment Assignment with deterministic input and output.\n\nThis manual explains the behavior a user can observe by submitting input to the toy. The toy is synchronous and deterministic unless the behavior below says that it persists state or advances between submissions.\n\n## Input\n\nJSON input. Submit a JSON value in the toy's input area. A minimal example is:\n\n```json\n{\"result\":\"representative toy result\"}\n```\n\nIf a field is omitted, the toy applies its default behavior. Invalid values are rejected or normalized according to the limits below.\n\n## Exact property names\n\nThe input is a JSON object with these property names:\n\n- `(see the JSON object described by the toy)`\n\nUnknown properties are ignored. Required properties and nested fields are described in the behavior above.\n\n## JSON Schema\n\nThis machine-readable schema describes the public input shape. It does not include blog identifiers or runtime helpers.\n\n```json\n{\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"type\": \"string\"\n}\n```\n\n## Output\n\nJSON output. The result is returned as JSON or rendered by the toy's configured presenter. A representative result is:\n\n```json\n{\"result\":\"representative toy result\"}\n```\n\nThe result contains the normalized values and any status, summary, proposal, predicate result, or rendered payload produced by this toy.\n\n## Behavior\n\nThe toy performs only the focused operation described above. It does not add persistence, network access, scheduling, or unrelated business rules.\n\n\n## How to use it\n\n1. Submit the minimal example to see the default result.\n2. Change one input field at a time.\n3. Submit the same input again to confirm deterministic behavior.\n4. Try an omitted or invalid value to observe the fallback or rejection behavior.\n\n## Troubleshooting\n\n- If the input is rejected, check that it is valid JSON and uses the field names shown above.\n- If a value is ignored, it may be omitted, outside the supported range, or normalized by the toy.\n- If the output is empty, verify that the input contains the records, points, or configuration needed for this operation.\n- Stateful toys may require the reset input described above to return to their initial state."
-        },"Supersedes the earlier ASSI3 transport writer with strict identifier and maximum-speed validation.","It preserves canonical asset and runner feasibility semantics and commits both assignment lists atomically."],"toy":{"modulePath":"/core/browser/toys/2026-08-22/validatedAssetCustodianSegmentAssignment.js","functionName":"validatedAssetCustodianSegmentAssignment","defaultInputMethod":"textarea","defaultOutputMethod":"textarea"},"tags":["toy","assignment","asset","custodian","runner","validation","atomic","json"]},
-    {"key":"VALI2","title":"Validated Runner Segment Assignment","publicationDate":"2026-08-22","release":"public","content":[
+        }
+      ],
+      "toy": {
+        "modulePath": "/core/browser/toys/2026-08-22/validatedAssetCustodianSegmentAssignment.js",
+        "functionName": "validatedAssetCustodianSegmentAssignment",
+        "defaultInputMethod": "textarea",
+        "defaultOutputMethod": "textarea"
+      },
+      "tags": [
+        "toy",
+        "assignment",
+        "asset",
+        "custodian",
+        "runner",
+        "validation",
+        "atomic",
+        "json"
+      ]
+    },
+    {
+      "key": "VALI2",
+      "title": "Validated Runner Segment Assignment",
+      "publicationDate": "2026-08-22",
+      "release": "public",
+      "content": [
+        "Supersedes the earlier ASSI2 runner writer with strict person-ID and finite non-negative maximum-speed validation.",
+        "It retains shift, speed, world-line short-circuiting and append-only persistence.",
         {
           "type": "manual",
           "id": "VALI2-manual",
           "title": "User manual",
           "markdown": "# VALI2 — Validated Runner Segment Assignment\n\n## What this toy does\n\nExplore VALI2 — Validated Runner Segment Assignment with deterministic input and output.\n\nThis manual explains the behavior a user can observe by submitting input to the toy. The toy is synchronous and deterministic unless the behavior below says that it persists state or advances between submissions.\n\n## Input\n\nJSON input. Submit a JSON value in the toy's input area. A minimal example is:\n\n```json\n{\"result\":\"representative toy result\"}\n```\n\nIf a field is omitted, the toy applies its default behavior. Invalid values are rejected or normalized according to the limits below.\n\n## Exact property names\n\nThe input is a JSON object with these property names:\n\n- `maximumSpeed`\n\nUnknown properties are ignored. Required properties and nested fields are described in the behavior above.\n\n## JSON Schema\n\nThis machine-readable schema describes the public input shape. It does not include blog identifiers or runtime helpers.\n\n```json\n{\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"type\": \"string\"\n}\n```\n\n## Output\n\nJSON output. The result is returned as JSON or rendered by the toy's configured presenter. A representative result is:\n\n```json\n{\"result\":\"representative toy result\"}\n```\n\nThe result contains the normalized values and any status, summary, proposal, predicate result, or rendered payload produced by this toy.\n\n## Behavior\n\nThe toy performs only the focused operation described above. It does not add persistence, network access, scheduling, or unrelated business rules.\n\n\n## How to use it\n\n1. Submit the minimal example to see the default result.\n2. Change one input field at a time.\n3. Submit the same input again to confirm deterministic behavior.\n4. Try an omitted or invalid value to observe the fallback or rejection behavior.\n\n## Troubleshooting\n\n- If the input is rejected, check that it is valid JSON and uses the field names shown above.\n- If a value is ignored, it may be omitted, outside the supported range, or normalized by the toy.\n- If the output is empty, verify that the input contains the records, points, or configuration needed for this operation.\n- Stateful toys may require the reset input described above to return to their initial state."
-        },"Supersedes the earlier ASSI2 runner writer with strict person-ID and finite non-negative maximum-speed validation.","It retains shift, speed, world-line short-circuiting and append-only persistence."],"toy":{"modulePath":"/core/browser/toys/2026-08-22/validatedRunnerSegmentAssignment.js","functionName":"validatedRunnerSegmentAssignment","defaultInputMethod":"textarea","defaultOutputMethod":"textarea"},"tags":["toy","assignment","runner","person","validation","feasibility","json"]},
-    {"key":"VALI1","title":"Validated Asset Segment Assignment","publicationDate":"2026-08-22","release":"public","content":[
+        }
+      ],
+      "toy": {
+        "modulePath": "/core/browser/toys/2026-08-22/validatedRunnerSegmentAssignment.js",
+        "functionName": "validatedRunnerSegmentAssignment",
+        "defaultInputMethod": "textarea",
+        "defaultOutputMethod": "textarea"
+      },
+      "tags": [
+        "toy",
+        "assignment",
+        "runner",
+        "person",
+        "validation",
+        "feasibility",
+        "json"
+      ]
+    },
+    {
+      "key": "VALI1",
+      "title": "Validated Asset Segment Assignment",
+      "publicationDate": "2026-08-22",
+      "release": "public",
+      "content": [
+        "Supersedes the earlier ASSI1 asset writer with strict asset and segment identifier validation.",
+        "It preserves bounded world-line feasibility and never persists malformed assignment references.",
         {
           "type": "manual",
           "id": "VALI1-manual",
           "title": "User manual",
           "markdown": "# VALI1 — Validated Asset Segment Assignment\n\n## What this toy does\n\nExplore VALI1 — Validated Asset Segment Assignment with deterministic input and output.\n\nThis manual explains the behavior a user can observe by submitting input to the toy. The toy is synchronous and deterministic unless the behavior below says that it persists state or advances between submissions.\n\n## Input\n\nJSON input. Submit a JSON value in the toy's input area. A minimal example is:\n\n```json\n{\"result\":\"representative toy result\"}\n```\n\nIf a field is omitted, the toy applies its default behavior. Invalid values are rejected or normalized according to the limits below.\n\n## Exact property names\n\nThe input is a JSON object with these property names:\n\n- `(see the JSON object described by the toy)`\n\nUnknown properties are ignored. Required properties and nested fields are described in the behavior above.\n\n## JSON Schema\n\nThis machine-readable schema describes the public input shape. It does not include blog identifiers or runtime helpers.\n\n```json\n{\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"type\": \"string\"\n}\n```\n\n## Output\n\nJSON output. The result is returned as JSON or rendered by the toy's configured presenter. A representative result is:\n\n```json\n{\"result\":\"representative toy result\"}\n```\n\nThe result contains the normalized values and any status, summary, proposal, predicate result, or rendered payload produced by this toy.\n\n## Behavior\n\nThe toy performs only the focused operation described above. It does not add persistence, network access, scheduling, or unrelated business rules.\n\n\n## How to use it\n\n1. Submit the minimal example to see the default result.\n2. Change one input field at a time.\n3. Submit the same input again to confirm deterministic behavior.\n4. Try an omitted or invalid value to observe the fallback or rejection behavior.\n\n## Troubleshooting\n\n- If the input is rejected, check that it is valid JSON and uses the field names shown above.\n- If a value is ignored, it may be omitted, outside the supported range, or normalized by the toy.\n- If the output is empty, verify that the input contains the records, points, or configuration needed for this operation.\n- Stateful toys may require the reset input described above to return to their initial state."
-        },"Supersedes the earlier ASSI1 asset writer with strict asset and segment identifier validation.","It preserves bounded world-line feasibility and never persists malformed assignment references."],"toy":{"modulePath":"/core/browser/toys/2026-08-22/validatedAssetSegmentAssignment.js","functionName":"validatedAssetSegmentAssignment","defaultInputMethod":"textarea","defaultOutputMethod":"textarea"},"tags":["toy","assignment","asset","validation","feasibility","json"]},
-    {"key":"ASSI3","title":"Assign Asset and Custodian to Segment if Feasible","publicationDate":"2026-08-21","release":"public","content":[
+        }
+      ],
+      "toy": {
+        "modulePath": "/core/browser/toys/2026-08-22/validatedAssetSegmentAssignment.js",
+        "functionName": "validatedAssetSegmentAssignment",
+        "defaultInputMethod": "textarea",
+        "defaultOutputMethod": "textarea"
+      },
+      "tags": [
+        "toy",
+        "assignment",
+        "asset",
+        "validation",
+        "feasibility",
+        "json"
+      ]
+    },
+    {
+      "key": "ASSI3",
+      "title": "Assign Asset and Custodian to Segment if Feasible",
+      "publicationDate": "2026-08-21",
+      "release": "public",
+      "content": [
+        "Atomically commit an asset-to-segment and person-to-segment transport assignment only when both world-line and runner constraints pass.",
+        "Rejected or failed operations leave both committed lists unchanged.",
         {
           "type": "manual",
           "id": "ASSI3-manual",
           "title": "User manual",
           "markdown": "# Assign Asset and Custodian to Segment if Feasible\n\n## What this toy does\n\nExplore Assign Asset and Custodian to Segment if Feasible with deterministic input and output.\n\nThis manual explains the behavior a user can observe by submitting input to the toy. The toy is synchronous and deterministic unless the behavior below says that it persists state or advances between submissions.\n\n## Input\n\nJSON input. Submit a JSON value in the toy's input area. A minimal example is:\n\n```json\n{\"result\":\"representative toy result\"}\n```\n\nIf a field is omitted, the toy applies its default behavior. Invalid values are rejected or normalized according to the limits below.\n\n## Exact property names\n\nThe input is a JSON object with these property names:\n\n- `ASSI3`\n\nUnknown properties are ignored. Required properties and nested fields are described in the behavior above.\n\n## JSON Schema\n\nThis machine-readable schema describes the public input shape. It does not include blog identifiers or runtime helpers.\n\n```json\n{\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"type\": \"string\"\n}\n```\n\n## Output\n\nJSON output. The result is returned as JSON or rendered by the toy's configured presenter. A representative result is:\n\n```json\n{\"result\":\"representative toy result\"}\n```\n\nThe result contains the normalized values and any status, summary, proposal, predicate result, or rendered payload produced by this toy.\n\n## Behavior\n\nThe toy performs only the focused operation described above. It does not add persistence, network access, scheduling, or unrelated business rules.\n\n\n## How to use it\n\n1. Submit the minimal example to see the default result.\n2. Change one input field at a time.\n3. Submit the same input again to confirm deterministic behavior.\n4. Try an omitted or invalid value to observe the fallback or rejection behavior.\n\n## Troubleshooting\n\n- If the input is rejected, check that it is valid JSON and uses the field names shown above.\n- If a value is ignored, it may be omitted, outside the supported range, or normalized by the toy.\n- If the output is empty, verify that the input contains the records, points, or configuration needed for this operation.\n- Stateful toys may require the reset input described above to return to their initial state."
-        },"Atomically commit an asset-to-segment and person-to-segment transport assignment only when both world-line and runner constraints pass.","Rejected or failed operations leave both committed lists unchanged."],"toy":{"modulePath":"/core/browser/toys/2026-08-21/assignAssetAndCustodianToSegmentIfFeasible.js","functionName":"assignAssetAndCustodianToSegmentIfFeasible","defaultInputMethod":"textarea","defaultOutputMethod":"textarea"},"tags":["toy","assignment","asset","custodian","runner","feasibility","json"]},
-    {"key":"ASSI2","title":"Assign Runner to Segment if Feasible","publicationDate":"2026-08-21","release":"public","content":[
+        }
+      ],
+      "toy": {
+        "modulePath": "/core/browser/toys/2026-08-21/assignAssetAndCustodianToSegmentIfFeasible.js",
+        "functionName": "assignAssetAndCustodianToSegmentIfFeasible",
+        "defaultInputMethod": "textarea",
+        "defaultOutputMethod": "textarea"
+      },
+      "tags": [
+        "toy",
+        "assignment",
+        "asset",
+        "custodian",
+        "runner",
+        "feasibility",
+        "json"
+      ]
+    },
+    {
+      "key": "ASSI2",
+      "title": "Assign Runner to Segment if Feasible",
+      "publicationDate": "2026-08-21",
+      "release": "public",
+      "content": [
+        "Append a person-to-segment assignment only after shift containment, maximum-speed, and bounded world-line checks pass.",
+        "The predicates short-circuit before persistence.",
         {
           "type": "manual",
           "id": "ASSI2-manual",
           "title": "User manual",
           "markdown": "# Assign Runner to Segment if Feasible\n\n## What this toy does\n\nExplore Assign Runner to Segment if Feasible with deterministic input and output.\n\nThis manual explains the behavior a user can observe by submitting input to the toy. The toy is synchronous and deterministic unless the behavior below says that it persists state or advances between submissions.\n\n## Input\n\nJSON input. Submit a JSON value in the toy's input area. A minimal example is:\n\n```json\n{\"result\":\"representative toy result\"}\n```\n\nIf a field is omitted, the toy applies its default behavior. Invalid values are rejected or normalized according to the limits below.\n\n## Exact property names\n\nThe input is a JSON object with these property names:\n\n- `ASSI2`\n\nUnknown properties are ignored. Required properties and nested fields are described in the behavior above.\n\n## JSON Schema\n\nThis machine-readable schema describes the public input shape. It does not include blog identifiers or runtime helpers.\n\n```json\n{\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"type\": \"string\"\n}\n```\n\n## Output\n\nJSON output. The result is returned as JSON or rendered by the toy's configured presenter. A representative result is:\n\n```json\n{\"result\":\"representative toy result\"}\n```\n\nThe result contains the normalized values and any status, summary, proposal, predicate result, or rendered payload produced by this toy.\n\n## Behavior\n\nThe toy performs only the focused operation described above. It does not add persistence, network access, scheduling, or unrelated business rules.\n\n\n## How to use it\n\n1. Submit the minimal example to see the default result.\n2. Change one input field at a time.\n3. Submit the same input again to confirm deterministic behavior.\n4. Try an omitted or invalid value to observe the fallback or rejection behavior.\n\n## Troubleshooting\n\n- If the input is rejected, check that it is valid JSON and uses the field names shown above.\n- If a value is ignored, it may be omitted, outside the supported range, or normalized by the toy.\n- If the output is empty, verify that the input contains the records, points, or configuration needed for this operation.\n- Stateful toys may require the reset input described above to return to their initial state."
-        },"Append a person-to-segment assignment only after shift containment, maximum-speed, and bounded world-line checks pass.","The predicates short-circuit before persistence."],"toy":{"modulePath":"/core/browser/toys/2026-08-21/assignRunnerToSegmentIfFeasible.js","functionName":"assignRunnerToSegmentIfFeasible","defaultInputMethod":"textarea","defaultOutputMethod":"textarea"},"tags":["toy","assignment","runner","person","segment","feasibility","json"]},
-    {"key":"ASSI1","title":"Assign Asset to Segment if Feasible","publicationDate":"2026-08-21","release":"public","content":[
+        }
+      ],
+      "toy": {
+        "modulePath": "/core/browser/toys/2026-08-21/assignRunnerToSegmentIfFeasible.js",
+        "functionName": "assignRunnerToSegmentIfFeasible",
+        "defaultInputMethod": "textarea",
+        "defaultOutputMethod": "textarea"
+      },
+      "tags": [
+        "toy",
+        "assignment",
+        "runner",
+        "person",
+        "segment",
+        "feasibility",
+        "json"
+      ]
+    },
+    {
+      "key": "ASSI1",
+      "title": "Assign Asset to Segment if Feasible",
+      "publicationDate": "2026-08-21",
+      "release": "public",
+      "content": [
+        "Append an asset-to-segment assignment only when the candidate fits the asset's bounded world line.",
+        "This asset-only writer does not apply runner speed or custodian constraints.",
         {
           "type": "manual",
           "id": "ASSI1-manual",
           "title": "User manual",
           "markdown": "# Assign Asset to Segment if Feasible\n\n## What this toy does\n\nExplore Assign Asset to Segment if Feasible with deterministic input and output.\n\nThis manual explains the behavior a user can observe by submitting input to the toy. The toy is synchronous and deterministic unless the behavior below says that it persists state or advances between submissions.\n\n## Input\n\nJSON input. Submit a JSON value in the toy's input area. A minimal example is:\n\n```json\n{\"result\":\"representative toy result\"}\n```\n\nIf a field is omitted, the toy applies its default behavior. Invalid values are rejected or normalized according to the limits below.\n\n## Exact property names\n\nThe input is a JSON object with these property names:\n\n- `ASSI1`\n\nUnknown properties are ignored. Required properties and nested fields are described in the behavior above.\n\n## JSON Schema\n\nThis machine-readable schema describes the public input shape. It does not include blog identifiers or runtime helpers.\n\n```json\n{\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"type\": \"string\"\n}\n```\n\n## Output\n\nJSON output. The result is returned as JSON or rendered by the toy's configured presenter. A representative result is:\n\n```json\n{\"result\":\"representative toy result\"}\n```\n\nThe result contains the normalized values and any status, summary, proposal, predicate result, or rendered payload produced by this toy.\n\n## Behavior\n\nThe toy performs only the focused operation described above. It does not add persistence, network access, scheduling, or unrelated business rules.\n\n\n## How to use it\n\n1. Submit the minimal example to see the default result.\n2. Change one input field at a time.\n3. Submit the same input again to confirm deterministic behavior.\n4. Try an omitted or invalid value to observe the fallback or rejection behavior.\n\n## Troubleshooting\n\n- If the input is rejected, check that it is valid JSON and uses the field names shown above.\n- If a value is ignored, it may be omitted, outside the supported range, or normalized by the toy.\n- If the output is empty, verify that the input contains the records, points, or configuration needed for this operation.\n- Stateful toys may require the reset input described above to return to their initial state."
-        },"Append an asset-to-segment assignment only when the candidate fits the asset's bounded world line.","This asset-only writer does not apply runner speed or custodian constraints."],"toy":{"modulePath":"/core/browser/toys/2026-08-21/assignAssetToSegmentIfFeasible.js","functionName":"assignAssetToSegmentIfFeasible","defaultInputMethod":"textarea","defaultOutputMethod":"textarea"},"tags":["toy","assignment","asset","segment","feasibility","json"]},
-    {"key":"SEGM2","title":"Segment Maximum-Speed Feasibility","publicationDate":"2026-08-21","release":"public","content":[
+        }
+      ],
+      "toy": {
+        "modulePath": "/core/browser/toys/2026-08-21/assignAssetToSegmentIfFeasible.js",
+        "functionName": "assignAssetToSegmentIfFeasible",
+        "defaultInputMethod": "textarea",
+        "defaultOutputMethod": "textarea"
+      },
+      "tags": [
+        "toy",
+        "assignment",
+        "asset",
+        "segment",
+        "feasibility",
+        "json"
+      ]
+    },
+    {
+      "key": "SEGM2",
+      "title": "Segment Maximum-Speed Feasibility",
+      "publicationDate": "2026-08-21",
+      "release": "public",
+      "content": [
+        "Check whether a segment's required average geodesic speed is within a supplied maximum.",
+        "Zero-distance zero-duration segments are feasible; non-zero-distance zero-duration segments are not.",
         {
           "type": "manual",
           "id": "SEGM2-manual",
           "title": "User manual",
           "markdown": "# Segment Maximum-Speed Feasibility\n\n## What this toy does\n\nExplore Segment Maximum-Speed Feasibility with deterministic input and output.\n\nThis manual explains the behavior a user can observe by submitting input to the toy. The toy is synchronous and deterministic unless the behavior below says that it persists state or advances between submissions.\n\n## Input\n\nJSON input. Submit a JSON value in the toy's input area. A minimal example is:\n\n```json\n{\"result\":\"representative toy result\"}\n```\n\nIf a field is omitted, the toy applies its default behavior. Invalid values are rejected or normalized according to the limits below.\n\n## Exact property names\n\nThe input is a JSON object with these property names:\n\n- `SEGM2`\n\nUnknown properties are ignored. Required properties and nested fields are described in the behavior above.\n\n## JSON Schema\n\nThis machine-readable schema describes the public input shape. It does not include blog identifiers or runtime helpers.\n\n```json\n{\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"type\": \"string\"\n}\n```\n\n## Output\n\nJSON output. The result is returned as JSON or rendered by the toy's configured presenter. A representative result is:\n\n```json\n{\"result\":\"representative toy result\"}\n```\n\nThe result contains the normalized values and any status, summary, proposal, predicate result, or rendered payload produced by this toy.\n\n## Behavior\n\nThe toy performs only the focused operation described above. It does not add persistence, network access, scheduling, or unrelated business rules.\n\n\n## How to use it\n\n1. Submit the minimal example to see the default result.\n2. Change one input field at a time.\n3. Submit the same input again to confirm deterministic behavior.\n4. Try an omitted or invalid value to observe the fallback or rejection behavior.\n\n## Troubleshooting\n\n- If the input is rejected, check that it is valid JSON and uses the field names shown above.\n- If a value is ignored, it may be omitted, outside the supported range, or normalized by the toy.\n- If the output is empty, verify that the input contains the records, points, or configuration needed for this operation.\n- Stateful toys may require the reset input described above to return to their initial state."
-        },"Check whether a segment's required average geodesic speed is within a supplied maximum.","Zero-distance zero-duration segments are feasible; non-zero-distance zero-duration segments are not."],"toy":{"modulePath":"/core/browser/toys/2026-08-21/segmentMaximumSpeedFeasibility.js","functionName":"segmentMaximumSpeedFeasibility","defaultInputMethod":"textarea","defaultOutputMethod":"textarea"},"tags":["toy","segment","speed","feasibility","geodesic","json"]},
-    {"key":"RUNN2","title":"Runner Shift Segment Feasibility","publicationDate":"2026-08-21","release":"public","content":[
+        }
+      ],
+      "toy": {
+        "modulePath": "/core/browser/toys/2026-08-21/segmentMaximumSpeedFeasibility.js",
+        "functionName": "segmentMaximumSpeedFeasibility",
+        "defaultInputMethod": "textarea",
+        "defaultOutputMethod": "textarea"
+      },
+      "tags": [
+        "toy",
+        "segment",
+        "speed",
+        "feasibility",
+        "geodesic",
+        "json"
+      ]
+    },
+    {
+      "key": "RUNN2",
+      "title": "Runner Shift Segment Feasibility",
+      "publicationDate": "2026-08-21",
+      "release": "public",
+      "content": [
+        "Check whether a candidate segment is fully contained by one runner shift.",
+        "Touching clock-in and clock-out boundaries is allowed; other committed segments are out of scope.",
         {
           "type": "manual",
           "id": "RUNN2-manual",
           "title": "User manual",
           "markdown": "# Runner Shift Segment Feasibility\n\n## What this toy does\n\nExplore Runner Shift Segment Feasibility with deterministic input and output.\n\nThis manual explains the behavior a user can observe by submitting input to the toy. The toy is synchronous and deterministic unless the behavior below says that it persists state or advances between submissions.\n\n## Input\n\nJSON input. Submit a JSON value in the toy's input area. A minimal example is:\n\n```json\n{\"result\":\"representative toy result\"}\n```\n\nIf a field is omitted, the toy applies its default behavior. Invalid values are rejected or normalized according to the limits below.\n\n## Exact property names\n\nThe input is a JSON object with these property names:\n\n- `RUNN2`\n\nUnknown properties are ignored. Required properties and nested fields are described in the behavior above.\n\n## JSON Schema\n\nThis machine-readable schema describes the public input shape. It does not include blog identifiers or runtime helpers.\n\n```json\n{\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"type\": \"string\"\n}\n```\n\n## Output\n\nJSON output. The result is returned as JSON or rendered by the toy's configured presenter. A representative result is:\n\n```json\n{\"result\":\"representative toy result\"}\n```\n\nThe result contains the normalized values and any status, summary, proposal, predicate result, or rendered payload produced by this toy.\n\n## Behavior\n\nThe toy performs only the focused operation described above. It does not add persistence, network access, scheduling, or unrelated business rules.\n\n\n## How to use it\n\n1. Submit the minimal example to see the default result.\n2. Change one input field at a time.\n3. Submit the same input again to confirm deterministic behavior.\n4. Try an omitted or invalid value to observe the fallback or rejection behavior.\n\n## Troubleshooting\n\n- If the input is rejected, check that it is valid JSON and uses the field names shown above.\n- If a value is ignored, it may be omitted, outside the supported range, or normalized by the toy.\n- If the output is empty, verify that the input contains the records, points, or configuration needed for this operation.\n- Stateful toys may require the reset input described above to return to their initial state."
-        },"Check whether a candidate segment is fully contained by one runner shift.","Touching clock-in and clock-out boundaries is allowed; other committed segments are out of scope."],"toy":{"modulePath":"/core/browser/toys/2026-08-21/runnerShiftSegmentFeasibility.js","functionName":"runnerShiftSegmentFeasibility","defaultInputMethod":"textarea","defaultOutputMethod":"textarea"},"tags":["toy","runner","shift","segment","feasibility","json"]},
-    {"key":"SEGM1","title":"Segment Assignment Feasibility","publicationDate":"2026-08-21","release":"public","content":[
+        }
+      ],
+      "toy": {
+        "modulePath": "/core/browser/toys/2026-08-21/runnerShiftSegmentFeasibility.js",
+        "functionName": "runnerShiftSegmentFeasibility",
+        "defaultInputMethod": "textarea",
+        "defaultOutputMethod": "textarea"
+      },
+      "tags": [
+        "toy",
+        "runner",
+        "shift",
+        "segment",
+        "feasibility",
+        "json"
+      ]
+    },
+    {
+      "key": "SEGM1",
+      "title": "Segment Assignment Feasibility",
+      "publicationDate": "2026-08-21",
+      "release": "public",
+      "content": [
+        "Check whether a candidate segment can join an entity's bounded coherent world line.",
+        "The predicate validates points, time ordering, overlaps, touching point identity, stationary gaps, and optional entry/exit anchors.",
         {
           "type": "manual",
           "id": "SEGM1-manual",
           "title": "User manual",
           "markdown": "# Segment Assignment Feasibility\n\n## What this toy does\n\nExplore Segment Assignment Feasibility with deterministic input and output.\n\nThis manual explains the behavior a user can observe by submitting input to the toy. The toy is synchronous and deterministic unless the behavior below says that it persists state or advances between submissions.\n\n## Input\n\nJSON input. Submit a JSON value in the toy's input area. A minimal example is:\n\n```json\n{\"result\":\"representative toy result\"}\n```\n\nIf a field is omitted, the toy applies its default behavior. Invalid values are rejected or normalized according to the limits below.\n\n## Exact property names\n\nThe input is a JSON object with these property names:\n\n- `SEGM1`\n\nUnknown properties are ignored. Required properties and nested fields are described in the behavior above.\n\n## JSON Schema\n\nThis machine-readable schema describes the public input shape. It does not include blog identifiers or runtime helpers.\n\n```json\n{\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"type\": \"string\"\n}\n```\n\n## Output\n\nJSON output. The result is returned as JSON or rendered by the toy's configured presenter. A representative result is:\n\n```json\n{\"result\":\"representative toy result\"}\n```\n\nThe result contains the normalized values and any status, summary, proposal, predicate result, or rendered payload produced by this toy.\n\n## Behavior\n\nThe toy performs only the focused operation described above. It does not add persistence, network access, scheduling, or unrelated business rules.\n\n\n## How to use it\n\n1. Submit the minimal example to see the default result.\n2. Change one input field at a time.\n3. Submit the same input again to confirm deterministic behavior.\n4. Try an omitted or invalid value to observe the fallback or rejection behavior.\n\n## Troubleshooting\n\n- If the input is rejected, check that it is valid JSON and uses the field names shown above.\n- If a value is ignored, it may be omitted, outside the supported range, or normalized by the toy.\n- If the output is empty, verify that the input contains the records, points, or configuration needed for this operation.\n- Stateful toys may require the reset input described above to return to their initial state."
-        },"Check whether a candidate segment can join an entity's bounded coherent world line.","The predicate validates points, time ordering, overlaps, touching point identity, stationary gaps, and optional entry/exit anchors."],"toy":{"modulePath":"/core/browser/toys/2026-08-21/segmentAssignmentFeasibility.js","functionName":"segmentAssignmentFeasibility","defaultInputMethod":"textarea","defaultOutputMethod":"textarea"},"tags":["toy","segment","assignment","world-line","feasibility","json"]},
-    {"key":"ASSE6","title":"Asset Possession Segment Candidate Filter","publicationDate":"2026-08-20","release":"public","content":[
+        }
+      ],
+      "toy": {
+        "modulePath": "/core/browser/toys/2026-08-21/segmentAssignmentFeasibility.js",
+        "functionName": "segmentAssignmentFeasibility",
+        "defaultInputMethod": "textarea",
+        "defaultOutputMethod": "textarea"
+      },
+      "tags": [
+        "toy",
+        "segment",
+        "assignment",
+        "world-line",
+        "feasibility",
+        "json"
+      ]
+    },
+    {
+      "key": "ASSE6",
+      "title": "Asset Possession Segment Candidate Filter",
+      "publicationDate": "2026-08-20",
+      "release": "public",
+      "content": [
+        "Return deterministically ordered physical asset IDs matching a requested SKU and temporally available for a possession segment.",
+        "This toy does not evaluate delivery, service area, runners, cost, or custodians.",
         {
           "type": "manual",
           "id": "ASSE6-manual",
           "title": "User manual",
           "markdown": "# Asset Possession Segment Candidate Filter\n\n## What this toy does\n\nExplore Asset Possession Segment Candidate Filter with deterministic input and output.\n\nThis manual explains the behavior a user can observe by submitting input to the toy. The toy is synchronous and deterministic unless the behavior below says that it persists state or advances between submissions.\n\n## Input\n\nJSON input. Submit a JSON value in the toy's input area. A minimal example is:\n\n```json\n{\"result\":\"representative toy result\"}\n```\n\nIf a field is omitted, the toy applies its default behavior. Invalid values are rejected or normalized according to the limits below.\n\n## Exact property names\n\nThe input is a JSON object with these property names:\n\n- `ASSE6`\n\nUnknown properties are ignored. Required properties and nested fields are described in the behavior above.\n\n## JSON Schema\n\nThis machine-readable schema describes the public input shape. It does not include blog identifiers or runtime helpers.\n\n```json\n{\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"type\": \"string\"\n}\n```\n\n## Output\n\nJSON output. The result is returned as JSON or rendered by the toy's configured presenter. A representative result is:\n\n```json\n{\"result\":\"representative toy result\"}\n```\n\nThe result contains the normalized values and any status, summary, proposal, predicate result, or rendered payload produced by this toy.\n\n## Behavior\n\nThe toy performs only the focused operation described above. It does not add persistence, network access, scheduling, or unrelated business rules.\n\n\n## How to use it\n\n1. Submit the minimal example to see the default result.\n2. Change one input field at a time.\n3. Submit the same input again to confirm deterministic behavior.\n4. Try an omitted or invalid value to observe the fallback or rejection behavior.\n\n## Troubleshooting\n\n- If the input is rejected, check that it is valid JSON and uses the field names shown above.\n- If a value is ignored, it may be omitted, outside the supported range, or normalized by the toy.\n- If the output is empty, verify that the input contains the records, points, or configuration needed for this operation.\n- Stateful toys may require the reset input described above to return to their initial state."
-        },"Return deterministically ordered physical asset IDs matching a requested SKU and temporally available for a possession segment.","This toy does not evaluate delivery, service area, runners, cost, or custodians."],"toy":{"modulePath":"/core/browser/toys/2026-08-20/assetPossessionSegmentCandidateFilter.js","functionName":"assetPossessionSegmentCandidateFilter","defaultInputMethod":"textarea","defaultOutputMethod":"textarea"},"tags":["toy","asset","possession","segment","filter","json"]},
-    {"key":"POSS2","title":"Possession Context Registry","publicationDate":"2026-08-20","release":"public","content":[
+        }
+      ],
+      "toy": {
+        "modulePath": "/core/browser/toys/2026-08-20/assetPossessionSegmentCandidateFilter.js",
+        "functionName": "assetPossessionSegmentCandidateFilter",
+        "defaultInputMethod": "textarea",
+        "defaultOutputMethod": "textarea"
+      },
+      "tags": [
+        "toy",
+        "asset",
+        "possession",
+        "segment",
+        "filter",
+        "json"
+      ]
+    },
+    {
+      "key": "POSS2",
+      "title": "Possession Context Registry",
+      "publicationDate": "2026-08-20",
+      "release": "public",
+      "content": [
+        "Register compact possession contexts containing a context ID, SKU, and spacetime segment ID.",
+        "This additive registry keeps location and time in the segment model and does not select assets or runners.",
         {
           "type": "manual",
           "id": "POSS2-manual",
           "title": "User manual",
           "markdown": "# POSS2 — Possession Context Registry\n\n## What this toy does\n\nExplore POSS2 — Possession Context Registry with deterministic input and output.\n\nThis manual explains the behavior a user can observe by submitting input to the toy. The toy is synchronous and deterministic unless the behavior below says that it persists state or advances between submissions.\n\n## Input\n\nJSON input. Submit a JSON value in the toy's input area. A minimal example is:\n\n```json\n{\"result\":\"representative toy result\"}\n```\n\nIf a field is omitted, the toy applies its default behavior. Invalid values are rejected or normalized according to the limits below.\n\n## Exact property names\n\nThe input is a JSON object with these property names:\n\n- `(see the JSON object described by the toy)`\n\nUnknown properties are ignored. Required properties and nested fields are described in the behavior above.\n\n## JSON Schema\n\nThis machine-readable schema describes the public input shape. It does not include blog identifiers or runtime helpers.\n\n```json\n{\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"type\": \"string\"\n}\n```\n\n## Output\n\nJSON output. The result is returned as JSON or rendered by the toy's configured presenter. A representative result is:\n\n```json\n{\"result\":\"representative toy result\"}\n```\n\nThe result contains the normalized values and any status, summary, proposal, predicate result, or rendered payload produced by this toy.\n\n## Behavior\n\nThe toy performs only the focused operation described above. It does not add persistence, network access, scheduling, or unrelated business rules.\n\n\n## How to use it\n\n1. Submit the minimal example to see the default result.\n2. Change one input field at a time.\n3. Submit the same input again to confirm deterministic behavior.\n4. Try an omitted or invalid value to observe the fallback or rejection behavior.\n\n## Troubleshooting\n\n- If the input is rejected, check that it is valid JSON and uses the field names shown above.\n- If a value is ignored, it may be omitted, outside the supported range, or normalized by the toy.\n- If the output is empty, verify that the input contains the records, points, or configuration needed for this operation.\n- Stateful toys may require the reset input described above to return to their initial state."
-        },"Register compact possession contexts containing a context ID, SKU, and spacetime segment ID.","This additive registry keeps location and time in the segment model and does not select assets or runners."],"toy":{"modulePath":"/core/browser/toys/2026-08-20/possessionContextRegistry.js","functionName":"possessionContextRegistry","defaultInputMethod":"textarea","defaultOutputMethod":"textarea"},"tags":["toy","possession","context","registry","segment","json"]},
-    {"key":"PICK1","title":"Pickup Return Segment Proposal","publicationDate":"2026-08-20","release":"public","content":[
+        }
+      ],
+      "toy": {
+        "modulePath": "/core/browser/toys/2026-08-20/possessionContextRegistry.js",
+        "functionName": "possessionContextRegistry",
+        "defaultInputMethod": "textarea",
+        "defaultOutputMethod": "textarea"
+      },
+      "tags": [
+        "toy",
+        "possession",
+        "context",
+        "registry",
+        "segment",
+        "json"
+      ]
+    },
+    {
+      "key": "PICK1",
+      "title": "Pickup Return Segment Proposal",
+      "publicationDate": "2026-08-20",
+      "release": "public",
+      "content": [
+        "Propose the earliest return segment from a possession end point to a processing station destination.",
+        "Travel duration is rounded upward to whole SPAC1 minutes without adding reliability buffers.",
         {
           "type": "manual",
           "id": "PICK1-manual",
           "title": "User manual",
           "markdown": "# Pickup Return Segment Proposal\n\n## What this toy does\n\nExplore Pickup Return Segment Proposal with deterministic input and output.\n\nThis manual explains the behavior a user can observe by submitting input to the toy. The toy is synchronous and deterministic unless the behavior below says that it persists state or advances between submissions.\n\n## Input\n\nJSON input. Submit a JSON value in the toy's input area. A minimal example is:\n\n```json\n{\"result\":\"representative toy result\"}\n```\n\nIf a field is omitted, the toy applies its default behavior. Invalid values are rejected or normalized according to the limits below.\n\n## Exact property names\n\nThe input is a JSON object with these property names:\n\n- `PICK1`\n\nUnknown properties are ignored. Required properties and nested fields are described in the behavior above.\n\n## JSON Schema\n\nThis machine-readable schema describes the public input shape. It does not include blog identifiers or runtime helpers.\n\n```json\n{\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"type\": \"string\"\n}\n```\n\n## Output\n\nJSON output. The result is returned as JSON or rendered by the toy's configured presenter. A representative result is:\n\n```json\n{\"result\":\"representative toy result\"}\n```\n\nThe result contains the normalized values and any status, summary, proposal, predicate result, or rendered payload produced by this toy.\n\n## Behavior\n\nThe toy performs only the focused operation described above. It does not add persistence, network access, scheduling, or unrelated business rules.\n\n\n## How to use it\n\n1. Submit the minimal example to see the default result.\n2. Change one input field at a time.\n3. Submit the same input again to confirm deterministic behavior.\n4. Try an omitted or invalid value to observe the fallback or rejection behavior.\n\n## Troubleshooting\n\n- If the input is rejected, check that it is valid JSON and uses the field names shown above.\n- If a value is ignored, it may be omitted, outside the supported range, or normalized by the toy.\n- If the output is empty, verify that the input contains the records, points, or configuration needed for this operation.\n- Stateful toys may require the reset input described above to return to their initial state."
-        },"Propose the earliest return segment from a possession end point to a processing station destination.","Travel duration is rounded upward to whole SPAC1 minutes without adding reliability buffers."],"toy":{"modulePath":"/core/browser/toys/2026-08-20/pickupReturnSegmentProposal.js","functionName":"pickupReturnSegmentProposal","defaultInputMethod":"textarea","defaultOutputMethod":"textarea"},"tags":["toy","fulfillment","pickup","segment","proposal","json"]},
-    {"key":"DELI1","title":"Delivery Outbound Segment Proposal","publicationDate":"2026-08-20","release":"public","content":[
+        }
+      ],
+      "toy": {
+        "modulePath": "/core/browser/toys/2026-08-20/pickupReturnSegmentProposal.js",
+        "functionName": "pickupReturnSegmentProposal",
+        "defaultInputMethod": "textarea",
+        "defaultOutputMethod": "textarea"
+      },
+      "tags": [
+        "toy",
+        "fulfillment",
+        "pickup",
+        "segment",
+        "proposal",
+        "json"
+      ]
+    },
+    {
+      "key": "DELI1",
+      "title": "Delivery Outbound Segment Proposal",
+      "publicationDate": "2026-08-20",
+      "release": "public",
+      "content": [
+        "Propose the latest outbound departure that reaches an exact possession-start point.",
+        "Travel duration is rounded upward to whole SPAC1 minutes and the existing possession endpoint reference is preserved.",
         {
           "type": "manual",
           "id": "DELI1-manual",
           "title": "User manual",
           "markdown": "# Delivery Outbound Segment Proposal\n\n## What this toy does\n\nExplore Delivery Outbound Segment Proposal with deterministic input and output.\n\nThis manual explains the behavior a user can observe by submitting input to the toy. The toy is synchronous and deterministic unless the behavior below says that it persists state or advances between submissions.\n\n## Input\n\nJSON input. Submit a JSON value in the toy's input area. A minimal example is:\n\n```json\n{\"result\":\"representative toy result\"}\n```\n\nIf a field is omitted, the toy applies its default behavior. Invalid values are rejected or normalized according to the limits below.\n\n## Exact property names\n\nThe input is a JSON object with these property names:\n\n- `DELI1`\n\nUnknown properties are ignored. Required properties and nested fields are described in the behavior above.\n\n## JSON Schema\n\nThis machine-readable schema describes the public input shape. It does not include blog identifiers or runtime helpers.\n\n```json\n{\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"type\": \"string\"\n}\n```\n\n## Output\n\nJSON output. The result is returned as JSON or rendered by the toy's configured presenter. A representative result is:\n\n```json\n{\"result\":\"representative toy result\"}\n```\n\nThe result contains the normalized values and any status, summary, proposal, predicate result, or rendered payload produced by this toy.\n\n## Behavior\n\nThe toy performs only the focused operation described above. It does not add persistence, network access, scheduling, or unrelated business rules.\n\n\n## How to use it\n\n1. Submit the minimal example to see the default result.\n2. Change one input field at a time.\n3. Submit the same input again to confirm deterministic behavior.\n4. Try an omitted or invalid value to observe the fallback or rejection behavior.\n\n## Troubleshooting\n\n- If the input is rejected, check that it is valid JSON and uses the field names shown above.\n- If a value is ignored, it may be omitted, outside the supported range, or normalized by the toy.\n- If the output is empty, verify that the input contains the records, points, or configuration needed for this operation.\n- Stateful toys may require the reset input described above to return to their initial state."
-        },"Propose the latest outbound departure that reaches an exact possession-start point.","Travel duration is rounded upward to whole SPAC1 minutes and the existing possession endpoint reference is preserved."],"toy":{"modulePath":"/core/browser/toys/2026-08-20/deliveryOutboundSegmentProposal.js","functionName":"deliveryOutboundSegmentProposal","defaultInputMethod":"textarea","defaultOutputMethod":"textarea"},"tags":["toy","fulfillment","delivery","segment","proposal","json"]},
-    {"key":"CONS1","title":"Constant-Speed Geodesic Travel Duration","publicationDate":"2026-08-20","release":"public","content":[
+        }
+      ],
+      "toy": {
+        "modulePath": "/core/browser/toys/2026-08-20/deliveryOutboundSegmentProposal.js",
+        "functionName": "deliveryOutboundSegmentProposal",
+        "defaultInputMethod": "textarea",
+        "defaultOutputMethod": "textarea"
+      },
+      "tags": [
+        "toy",
+        "fulfillment",
+        "delivery",
+        "segment",
+        "proposal",
+        "json"
+      ]
+    },
+    {
+      "key": "CONS1",
+      "title": "Constant-Speed Geodesic Travel Duration",
+      "publicationDate": "2026-08-20",
+      "release": "public",
+      "content": [
+        "Estimate unbuffered traversal duration from direct WGS84 geodesic distance and a constant speed.",
+        "The result is a scalar number of seconds and includes no routing, traffic, or reliability model.",
         {
           "type": "manual",
           "id": "CONS1-manual",
           "title": "User manual",
           "markdown": "# Constant-Speed Geodesic Travel Duration\n\n## What this toy does\n\nExplore Constant-Speed Geodesic Travel Duration with deterministic input and output.\n\nThis manual explains the behavior a user can observe by submitting input to the toy. The toy is synchronous and deterministic unless the behavior below says that it persists state or advances between submissions.\n\n## Input\n\nJSON input. Submit a JSON value in the toy's input area. A minimal example is:\n\n```json\n{\"result\":\"representative toy result\"}\n```\n\nIf a field is omitted, the toy applies its default behavior. Invalid values are rejected or normalized according to the limits below.\n\n## Exact property names\n\nThe input is a JSON object with these property names:\n\n- `CONS1`\n\nUnknown properties are ignored. Required properties and nested fields are described in the behavior above.\n\n## JSON Schema\n\nThis machine-readable schema describes the public input shape. It does not include blog identifiers or runtime helpers.\n\n```json\n{\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"type\": \"string\"\n}\n```\n\n## Output\n\nJSON output. The result is returned as JSON or rendered by the toy's configured presenter. A representative result is:\n\n```json\n{\"result\":\"representative toy result\"}\n```\n\nThe result contains the normalized values and any status, summary, proposal, predicate result, or rendered payload produced by this toy.\n\n## Behavior\n\nThe toy performs only the focused operation described above. It does not add persistence, network access, scheduling, or unrelated business rules.\n\n\n## How to use it\n\n1. Submit the minimal example to see the default result.\n2. Change one input field at a time.\n3. Submit the same input again to confirm deterministic behavior.\n4. Try an omitted or invalid value to observe the fallback or rejection behavior.\n\n## Troubleshooting\n\n- If the input is rejected, check that it is valid JSON and uses the field names shown above.\n- If a value is ignored, it may be omitted, outside the supported range, or normalized by the toy.\n- If the output is empty, verify that the input contains the records, points, or configuration needed for this operation.\n- Stateful toys may require the reset input described above to return to their initial state."
-        },"Estimate unbuffered traversal duration from direct WGS84 geodesic distance and a constant speed.","The result is a scalar number of seconds and includes no routing, traffic, or reliability model."],"toy":{"modulePath":"/core/browser/toys/2026-08-20/constantSpeedGeodesicTravelDuration.js","functionName":"constantSpeedGeodesicTravelDuration","defaultInputMethod":"textarea","defaultOutputMethod":"textarea"},"tags":["toy","travel","geodesic","duration","segment","json"]},
-    {"key":"WGSC2","title":"WGS84 Circle Segment Predicate","publicationDate":"2026-08-20","release":"public","content":[
+        }
+      ],
+      "toy": {
+        "modulePath": "/core/browser/toys/2026-08-20/constantSpeedGeodesicTravelDuration.js",
+        "functionName": "constantSpeedGeodesicTravelDuration",
+        "defaultInputMethod": "textarea",
+        "defaultOutputMethod": "textarea"
+      },
+      "tags": [
+        "toy",
+        "travel",
+        "geodesic",
+        "duration",
+        "segment",
+        "json"
+      ]
+    },
+    {
+      "key": "WGSC2",
+      "title": "WGS84 Circle Segment Predicate",
+      "publicationDate": "2026-08-20",
+      "release": "public",
+      "content": [
+        "Determine whether both endpoints of a spacetime segment lie inside or on a WGS84 circular service area.",
+        "The toy intentionally does not reason about routes between endpoints.",
         {
           "type": "manual",
           "id": "WGSC2-manual",
           "title": "User manual",
           "markdown": "# WGS84 Circle Segment Predicate\n\n## What this toy does\n\nExplore WGS84 Circle Segment Predicate with deterministic input and output.\n\nThis manual explains the behavior a user can observe by submitting input to the toy. The toy is synchronous and deterministic unless the behavior below says that it persists state or advances between submissions.\n\n## Input\n\nJSON input. Submit a JSON value in the toy's input area. A minimal example is:\n\n```json\n{\"result\":\"representative toy result\"}\n```\n\nIf a field is omitted, the toy applies its default behavior. Invalid values are rejected or normalized according to the limits below.\n\n## Exact property names\n\nThe input is a JSON object with these property names:\n\n- `WGSC2`\n\nUnknown properties are ignored. Required properties and nested fields are described in the behavior above.\n\n## JSON Schema\n\nThis machine-readable schema describes the public input shape. It does not include blog identifiers or runtime helpers.\n\n```json\n{\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"type\": \"string\"\n}\n```\n\n## Output\n\nJSON output. The result is returned as JSON or rendered by the toy's configured presenter. A representative result is:\n\n```json\n{\"result\":\"representative toy result\"}\n```\n\nThe result contains the normalized values and any status, summary, proposal, predicate result, or rendered payload produced by this toy.\n\n## Behavior\n\nThe toy performs only the focused operation described above. It does not add persistence, network access, scheduling, or unrelated business rules.\n\n\n## How to use it\n\n1. Submit the minimal example to see the default result.\n2. Change one input field at a time.\n3. Submit the same input again to confirm deterministic behavior.\n4. Try an omitted or invalid value to observe the fallback or rejection behavior.\n\n## Troubleshooting\n\n- If the input is rejected, check that it is valid JSON and uses the field names shown above.\n- If a value is ignored, it may be omitted, outside the supported range, or normalized by the toy.\n- If the output is empty, verify that the input contains the records, points, or configuration needed for this operation.\n- Stateful toys may require the reset input described above to return to their initial state."
-        },"Determine whether both endpoints of a spacetime segment lie inside or on a WGS84 circular service area.","The toy intentionally does not reason about routes between endpoints."],"toy":{"modulePath":"/core/browser/toys/2026-08-20/wgs84CircleSegmentPredicate.js","functionName":"wgs84CircleSegmentPredicate","defaultInputMethod":"textarea","defaultOutputMethod":"textarea"},"tags":["toy","wgs84","service-area","segment","predicate","json"]},
-    {"key":"WGSC1","title":"WGS84 Circle Point Predicate","publicationDate":"2026-08-20","release":"public","content":[
+        }
+      ],
+      "toy": {
+        "modulePath": "/core/browser/toys/2026-08-20/wgs84CircleSegmentPredicate.js",
+        "functionName": "wgs84CircleSegmentPredicate",
+        "defaultInputMethod": "textarea",
+        "defaultOutputMethod": "textarea"
+      },
+      "tags": [
+        "toy",
+        "wgs84",
+        "service-area",
+        "segment",
+        "predicate",
+        "json"
+      ]
+    },
+    {
+      "key": "WGSC1",
+      "title": "WGS84 Circle Point Predicate",
+      "publicationDate": "2026-08-20",
+      "release": "public",
+      "content": [
+        "Determine whether a WGS84 coordinate lies inside or on the boundary of a circular service area.",
+        "Distance uses the shared WGS84 geodesic implementation and the boundary is inclusive.",
         {
           "type": "manual",
           "id": "WGSC1-manual",
           "title": "User manual",
           "markdown": "# WGS84 Circle Point Predicate\n\n## What this toy does\n\nExplore WGS84 Circle Point Predicate with deterministic input and output.\n\nThis manual explains the behavior a user can observe by submitting input to the toy. The toy is synchronous and deterministic unless the behavior below says that it persists state or advances between submissions.\n\n## Input\n\nJSON input. Submit a JSON value in the toy's input area. A minimal example is:\n\n```json\n{\"result\":\"representative toy result\"}\n```\n\nIf a field is omitted, the toy applies its default behavior. Invalid values are rejected or normalized according to the limits below.\n\n## Exact property names\n\nThe input is a JSON object. These are the property names read by this toy:\n\n- `spacePoints`\n\nUnknown properties are ignored unless the behavior described above says otherwise.\n\n## JSON Schema\n\nThis machine-readable schema describes the public input shape. It does not include blog identifiers or runtime helpers.\n\n```json\n{\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"type\": \"string\"\n}\n```\n\n## Output\n\nJSON output. The result is returned as JSON or rendered by the toy's configured presenter. A representative result is:\n\n```json\n{\"result\":\"representative toy result\"}\n```\n\nThe result contains the normalized values and any status, summary, proposal, predicate result, or rendered payload produced by this toy.\n\n## Behavior\n\nThe toy performs only the focused operation described above. It does not add persistence, network access, scheduling, or unrelated business rules.\n\n\n## How to use it\n\n1. Submit the minimal example to see the default result.\n2. Change one input field at a time.\n3. Submit the same input again to confirm deterministic behavior.\n4. Try an omitted or invalid value to observe the fallback or rejection behavior.\n\n## Troubleshooting\n\n- If the input is rejected, check that it is valid JSON and uses the field names shown above.\n- If a value is ignored, it may be omitted, outside the supported range, or normalized by the toy.\n- If the output is empty, verify that the input contains the records, points, or configuration needed for this operation.\n- Stateful toys may require the reset input described above to return to their initial state."
-        },"Determine whether a WGS84 coordinate lies inside or on the boundary of a circular service area.","Distance uses the shared WGS84 geodesic implementation and the boundary is inclusive."],"toy":{"modulePath":"/core/browser/toys/2026-08-20/wgs84CirclePointPredicate.js","functionName":"wgs84CirclePointPredicate","defaultInputMethod":"textarea","defaultOutputMethod":"textarea"},"tags":["toy","wgs84","service-area","point","predicate","json"]},
-    {"key":"SPAC7","title":"Spacetime World-Line Pair Predicate","publicationDate":"2026-08-20","release":"public","content":[
+        }
+      ],
+      "toy": {
+        "modulePath": "/core/browser/toys/2026-08-20/wgs84CirclePointPredicate.js",
+        "functionName": "wgs84CirclePointPredicate",
+        "defaultInputMethod": "textarea",
+        "defaultOutputMethod": "textarea"
+      },
+      "tags": [
+        "toy",
+        "wgs84",
+        "service-area",
+        "point",
+        "predicate",
+        "json"
+      ]
+    },
+    {
+      "key": "SPAC7",
+      "title": "Spacetime World-Line Pair Predicate",
+      "publicationDate": "2026-08-20",
+      "release": "public",
+      "content": [
+        "Determine whether two segments can belong to one entity world line.",
+        "Positive temporal overlap is rejected, and equal-time boundaries require identical point references; positive gaps are allowed.",
         {
           "type": "manual",
           "id": "SPAC7-manual",
           "title": "User manual",
           "markdown": "# SPAC7 — Spacetime World-Line Pair Predicate\n\n## What this toy does\n\nExplore SPAC7 — Spacetime World-Line Pair Predicate with deterministic input and output.\n\nThis manual explains the behavior a user can observe by submitting input to the toy. The toy is synchronous and deterministic unless the behavior below says that it persists state or advances between submissions.\n\n## Input\n\nJSON input. Submit a JSON value in the toy's input area. A minimal example is:\n\n```json\n{\"result\":\"representative toy result\"}\n```\n\nIf a field is omitted, the toy applies its default behavior. Invalid values are rejected or normalized according to the limits below.\n\n## Exact property names\n\nThe input is a JSON object with these property names:\n\n- `(see the JSON object described by the toy)`\n\nUnknown properties are ignored. Required properties and nested fields are described in the behavior above.\n\n## JSON Schema\n\nThis machine-readable schema describes the public input shape. It does not include blog identifiers or runtime helpers.\n\n```json\n{\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"type\": \"string\"\n}\n```\n\n## Output\n\nJSON output. The result is returned as JSON or rendered by the toy's configured presenter. A representative result is:\n\n```json\n{\"result\":\"representative toy result\"}\n```\n\nThe result contains the normalized values and any status, summary, proposal, predicate result, or rendered payload produced by this toy.\n\n## Behavior\n\nThe toy performs only the focused operation described above. It does not add persistence, network access, scheduling, or unrelated business rules.\n\n\n## How to use it\n\n1. Submit the minimal example to see the default result.\n2. Change one input field at a time.\n3. Submit the same input again to confirm deterministic behavior.\n4. Try an omitted or invalid value to observe the fallback or rejection behavior.\n\n## Troubleshooting\n\n- If the input is rejected, check that it is valid JSON and uses the field names shown above.\n- If a value is ignored, it may be omitted, outside the supported range, or normalized by the toy.\n- If the output is empty, verify that the input contains the records, points, or configuration needed for this operation.\n- Stateful toys may require the reset input described above to return to their initial state."
-        },"Determine whether two segments can belong to one entity world line.","Positive temporal overlap is rejected, and equal-time boundaries require identical point references; positive gaps are allowed."],"toy":{"modulePath":"/core/browser/toys/2026-08-20/spacetimeWorldLinePairPredicate.js","functionName":"spacetimeWorldLinePairPredicate","defaultInputMethod":"textarea","defaultOutputMethod":"textarea"},"tags":["toy","spacetime","world-line","predicate","segment","json"]},
+        }
+      ],
+      "toy": {
+        "modulePath": "/core/browser/toys/2026-08-20/spacetimeWorldLinePairPredicate.js",
+        "functionName": "spacetimeWorldLinePairPredicate",
+        "defaultInputMethod": "textarea",
+        "defaultOutputMethod": "textarea"
+      },
+      "tags": [
+        "toy",
+        "spacetime",
+        "world-line",
+        "predicate",
+        "segment",
+        "json"
+      ]
+    },
     {
       "key": "ASSE5",
       "title": "Asset Custodian Segment Assignment Predicate",
       "publicationDate": "2026-08-20",
       "release": "public",
       "content": [
+        "Determine whether an asset and its custodian person can be assigned to a segment.",
+        "The predicate rejects temporal overlap for either the asset or the custodian person.",
+        "Touching intervals are allowed, and all assignment lists remain unchanged.",
         {
           "type": "manual",
           "id": "ASSE5-manual",
           "title": "User manual",
           "markdown": "# Toy Spec: Asset Custodian Segment Assignment Predicate\n\n## What this toy does\n\nExplore Toy Spec: Asset Custodian Segment Assignment Predicate with deterministic input and output.\n\nThis manual explains the behavior a user can observe by submitting input to the toy. The toy is synchronous and deterministic unless the behavior below says that it persists state or advances between submissions.\n\n## Input\n\nJSON input. Submit a JSON value in the toy's input area. A minimal example is:\n\n```json\n{\"result\":\"representative toy result\"}\n```\n\nIf a field is omitted, the toy applies its default behavior. Invalid values are rejected or normalized according to the limits below.\n\n## Exact property names\n\nThe input is a JSON object. These are the property names read by this toy:\n\n- `assetAssignments`\n- `personAssignments`\n- `points`\n- `proposedAssignment`\n- `segments`\n\nUnknown properties are ignored unless the behavior described above says otherwise.\n\n## JSON Schema\n\nThis machine-readable schema describes the public input shape. It does not include blog identifiers or runtime helpers.\n\n```json\n{\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"type\": \"string\"\n}\n```\n\n## Output\n\nJSON output. The result is returned as JSON or rendered by the toy's configured presenter. A representative result is:\n\n```json\n{\"result\":\"representative toy result\"}\n```\n\nThe result contains the normalized values and any status, summary, proposal, predicate result, or rendered payload produced by this toy.\n\n## Behavior\n\nThe toy performs only the focused operation described above. It does not add persistence, network access, scheduling, or unrelated business rules.\n\n\n## How to use it\n\n1. Submit the minimal example to see the default result.\n2. Change one input field at a time.\n3. Submit the same input again to confirm deterministic behavior.\n4. Try an omitted or invalid value to observe the fallback or rejection behavior.\n\n## Troubleshooting\n\n- If the input is rejected, check that it is valid JSON and uses the field names shown above.\n- If a value is ignored, it may be omitted, outside the supported range, or normalized by the toy.\n- If the output is empty, verify that the input contains the records, points, or configuration needed for this operation.\n- Stateful toys may require the reset input described above to return to their initial state."
-        },
-        "Determine whether an asset and its custodian person can be assigned to a segment.",
-        "The predicate rejects temporal overlap for either the asset or the custodian person.",
-        "Touching intervals are allowed, and all assignment lists remain unchanged."
+        }
       ],
-      "toy": {"modulePath": "/core/browser/toys/2026-08-20/assetCustodianSegmentAssignmentPredicate.js", "functionName": "assetCustodianSegmentAssignmentPredicate", "defaultInputMethod": "textarea", "defaultOutputMethod": "textarea"},
-      "tags": ["toy", "object-minute-rental", "asset", "custodian", "person", "segment", "predicate", "json"]
+      "toy": {
+        "modulePath": "/core/browser/toys/2026-08-20/assetCustodianSegmentAssignmentPredicate.js",
+        "functionName": "assetCustodianSegmentAssignmentPredicate",
+        "defaultInputMethod": "textarea",
+        "defaultOutputMethod": "textarea"
+      },
+      "tags": [
+        "toy",
+        "object-minute-rental",
+        "asset",
+        "custodian",
+        "person",
+        "segment",
+        "predicate",
+        "json"
+      ]
     },
     {
       "key": "ASSE4",
@@ -189,18 +890,33 @@
       "publicationDate": "2026-08-20",
       "release": "public",
       "content": [
+        "Append asset-to-segment references with the person responsible for the asset during that segment.",
+        "Each record contains only assetId, segmentId, and custodianPersonId.",
+        "This new list does not modify the earlier asset assignment toys.",
         {
           "type": "manual",
           "id": "ASSE4-manual",
           "title": "User manual",
           "markdown": "# Toy Spec: Asset Custodian Segment Assignment List\n\n## What this toy does\n\nExplore Toy Spec: Asset Custodian Segment Assignment List with deterministic input and output.\n\nThis manual explains the behavior a user can observe by submitting input to the toy. The toy is synchronous and deterministic unless the behavior below says that it persists state or advances between submissions.\n\n## Input\n\nJSON input. Submit a JSON value in the toy's input area. A minimal example is:\n\n```json\n{\"result\":\"representative toy result\"}\n```\n\nIf a field is omitted, the toy applies its default behavior. Invalid values are rejected or normalized according to the limits below.\n\n## Exact property names\n\nThe input is a JSON object. These are the property names read by this toy:\n\n- `assignment`\n- `memoryLocation`\n- `path`\n\nUnknown properties are ignored unless the behavior described above says otherwise.\n\n## JSON Schema\n\nThis machine-readable schema describes the public input shape. It does not include blog identifiers or runtime helpers.\n\n```json\n{\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"type\": \"string\"\n}\n```\n\n## Output\n\nJSON output. The result is returned as JSON or rendered by the toy's configured presenter. A representative result is:\n\n```json\n{\"result\":\"representative toy result\"}\n```\n\nThe result contains the normalized values and any status, summary, proposal, predicate result, or rendered payload produced by this toy.\n\n## Behavior\n\nThe toy performs only the focused operation described above. It does not add persistence, network access, scheduling, or unrelated business rules.\n\n\n## How to use it\n\n1. Submit the minimal example to see the default result.\n2. Change one input field at a time.\n3. Submit the same input again to confirm deterministic behavior.\n4. Try an omitted or invalid value to observe the fallback or rejection behavior.\n\n## Troubleshooting\n\n- If the input is rejected, check that it is valid JSON and uses the field names shown above.\n- If a value is ignored, it may be omitted, outside the supported range, or normalized by the toy.\n- If the output is empty, verify that the input contains the records, points, or configuration needed for this operation.\n- Stateful toys may require the reset input described above to return to their initial state."
-        },
-        "Append asset-to-segment references with the person responsible for the asset during that segment.",
-        "Each record contains only assetId, segmentId, and custodianPersonId.",
-        "This new list does not modify the earlier asset assignment toys."
+        }
       ],
-      "toy": {"modulePath": "/core/browser/toys/2026-08-20/assetCustodianSegmentAssignmentList.js", "functionName": "assetCustodianSegmentAssignmentList", "defaultInputMethod": "textarea", "defaultOutputMethod": "textarea"},
-      "tags": ["toy", "object-minute-rental", "asset", "custodian", "person", "segment", "assignment", "append", "json"]
+      "toy": {
+        "modulePath": "/core/browser/toys/2026-08-20/assetCustodianSegmentAssignmentList.js",
+        "functionName": "assetCustodianSegmentAssignmentList",
+        "defaultInputMethod": "textarea",
+        "defaultOutputMethod": "textarea"
+      },
+      "tags": [
+        "toy",
+        "object-minute-rental",
+        "asset",
+        "custodian",
+        "person",
+        "segment",
+        "assignment",
+        "append",
+        "json"
+      ]
     },
     {
       "key": "PERS2",
@@ -208,15 +924,15 @@
       "publicationDate": "2026-08-20",
       "release": "public",
       "content": [
+        "Determine whether a proposed person-to-segment assignment can be appended.",
+        "The predicate checks temporal overlap only against existing segments assigned to the same person.",
+        "Touching intervals are allowed, and the predicate does not mutate any list.",
         {
           "type": "manual",
           "id": "PERS2-manual",
           "title": "User manual",
           "markdown": "# Toy Spec: Person Segment Assignment Predicate\n\n## What this toy does\n\nExplore Toy Spec: Person Segment Assignment Predicate with deterministic input and output.\n\nThis manual explains the behavior a user can observe by submitting input to the toy. The toy is synchronous and deterministic unless the behavior below says that it persists state or advances between submissions.\n\n## Input\n\nJSON input. Submit a JSON value in the toy's input area. A minimal example is:\n\n```json\n{\"result\":\"representative toy result\"}\n```\n\nIf a field is omitted, the toy applies its default behavior. Invalid values are rejected or normalized according to the limits below.\n\n## Exact property names\n\nThe input is a JSON object. These are the property names read by this toy:\n\n- `assignments`\n- `points`\n- `proposedAssignment`\n- `segments`\n\nUnknown properties are ignored unless the behavior described above says otherwise.\n\n## JSON Schema\n\nThis machine-readable schema describes the public input shape. It does not include blog identifiers or runtime helpers.\n\n```json\n{\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"type\": \"string\"\n}\n```\n\n## Output\n\nJSON output. The result is returned as JSON or rendered by the toy's configured presenter. A representative result is:\n\n```json\n{\"result\":\"representative toy result\"}\n```\n\nThe result contains the normalized values and any status, summary, proposal, predicate result, or rendered payload produced by this toy.\n\n## Behavior\n\nThe toy performs only the focused operation described above. It does not add persistence, network access, scheduling, or unrelated business rules.\n\n\n## How to use it\n\n1. Submit the minimal example to see the default result.\n2. Change one input field at a time.\n3. Submit the same input again to confirm deterministic behavior.\n4. Try an omitted or invalid value to observe the fallback or rejection behavior.\n\n## Troubleshooting\n\n- If the input is rejected, check that it is valid JSON and uses the field names shown above.\n- If a value is ignored, it may be omitted, outside the supported range, or normalized by the toy.\n- If the output is empty, verify that the input contains the records, points, or configuration needed for this operation.\n- Stateful toys may require the reset input described above to return to their initial state."
-        },
-        "Determine whether a proposed person-to-segment assignment can be appended.",
-        "The predicate checks temporal overlap only against existing segments assigned to the same person.",
-        "Touching intervals are allowed, and the predicate does not mutate any list."
+        }
       ],
       "toy": {
         "modulePath": "/core/browser/toys/2026-08-20/personSegmentAssignmentPredicate.js",
@@ -224,7 +940,15 @@
         "defaultInputMethod": "textarea",
         "defaultOutputMethod": "textarea"
       },
-      "tags": ["toy", "object-minute-rental", "person", "segment", "assignment", "predicate", "json"]
+      "tags": [
+        "toy",
+        "object-minute-rental",
+        "person",
+        "segment",
+        "assignment",
+        "predicate",
+        "json"
+      ]
     },
     {
       "key": "PERS1",
@@ -232,15 +956,15 @@
       "publicationDate": "2026-08-20",
       "release": "public",
       "content": [
+        "Append immutable references connecting people to spacetime segments.",
+        "Each assignment contains only a personId and segmentId, preserving list order and allowing duplicate references.",
+        "The toy is an append-only persistence primitive with no scheduling or feasibility behavior.",
         {
           "type": "manual",
           "id": "PERS1-manual",
           "title": "User manual",
           "markdown": "# Toy Spec: Person Segment Assignment List\n\n## What this toy does\n\nExplore Toy Spec: Person Segment Assignment List with deterministic input and output.\n\nThis manual explains the behavior a user can observe by submitting input to the toy. The toy is synchronous and deterministic unless the behavior below says that it persists state or advances between submissions.\n\n## Input\n\nJSON input. Submit a JSON value in the toy's input area. A minimal example is:\n\n```json\n{\"result\":\"representative toy result\"}\n```\n\nIf a field is omitted, the toy applies its default behavior. Invalid values are rejected or normalized according to the limits below.\n\n## Exact property names\n\nThe input is a JSON object. These are the property names read by this toy:\n\n- `assignment`\n- `memoryLocation`\n- `path`\n\nUnknown properties are ignored unless the behavior described above says otherwise.\n\n## JSON Schema\n\nThis machine-readable schema describes the public input shape. It does not include blog identifiers or runtime helpers.\n\n```json\n{\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"type\": \"string\"\n}\n```\n\n## Output\n\nJSON output. The result is returned as JSON or rendered by the toy's configured presenter. A representative result is:\n\n```json\n{\"result\":\"representative toy result\"}\n```\n\nThe result contains the normalized values and any status, summary, proposal, predicate result, or rendered payload produced by this toy.\n\n## Behavior\n\nThe toy performs only the focused operation described above. It does not add persistence, network access, scheduling, or unrelated business rules.\n\n\n## How to use it\n\n1. Submit the minimal example to see the default result.\n2. Change one input field at a time.\n3. Submit the same input again to confirm deterministic behavior.\n4. Try an omitted or invalid value to observe the fallback or rejection behavior.\n\n## Troubleshooting\n\n- If the input is rejected, check that it is valid JSON and uses the field names shown above.\n- If a value is ignored, it may be omitted, outside the supported range, or normalized by the toy.\n- If the output is empty, verify that the input contains the records, points, or configuration needed for this operation.\n- Stateful toys may require the reset input described above to return to their initial state."
-        },
-        "Append immutable references connecting people to spacetime segments.",
-        "Each assignment contains only a personId and segmentId, preserving list order and allowing duplicate references.",
-        "The toy is an append-only persistence primitive with no scheduling or feasibility behavior."
+        }
       ],
       "toy": {
         "modulePath": "/core/browser/toys/2026-08-20/personSegmentAssignmentList.js",
@@ -248,7 +972,15 @@
         "defaultInputMethod": "textarea",
         "defaultOutputMethod": "textarea"
       },
-      "tags": ["toy", "object-minute-rental", "person", "segment", "assignment", "append", "json"]
+      "tags": [
+        "toy",
+        "object-minute-rental",
+        "person",
+        "segment",
+        "assignment",
+        "append",
+        "json"
+      ]
     },
     {
       "key": "ASSE3",
@@ -256,15 +988,15 @@
       "publicationDate": "2026-08-20",
       "release": "public",
       "content": [
+        "Determine whether a proposed asset-to-segment assignment can be appended.",
+        "The predicate checks temporal overlap only against existing segments assigned to the same asset.",
+        "Touching intervals are allowed, and the predicate does not mutate any list.",
         {
           "type": "manual",
           "id": "ASSE3-manual",
           "title": "User manual",
           "markdown": "# Toy Spec: Asset Segment Assignment Predicate\n\n## What this toy does\n\nDetermine whether a proposed asset-to-segment reference can be appended without assigning overlapping time to the same asset.\n\nThis manual explains the behavior a user can observe by submitting input to the toy. The toy is synchronous and deterministic unless the behavior below says that it persists state or advances between submissions.\n\n## Input\n\nJSON input. Submit a JSON value in the toy's input area. A minimal example is:\n\n```json\n{\"result\":\"representative toy result\"}\n```\n\nIf a field is omitted, the toy applies its default behavior. Invalid values are rejected or normalized according to the limits below.\n\n## Exact property names\n\nThe input is a JSON object. These are the property names read by this toy:\n\n- `assignments`\n- `points`\n- `proposedAssignment`\n- `segments`\n\nUnknown properties are ignored unless the behavior described above says otherwise.\n\n## JSON Schema\n\nThis machine-readable schema describes the public input shape. It does not include blog identifiers or runtime helpers.\n\n```json\n{\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"type\": \"string\"\n}\n```\n\n## Output\n\nJSON output. The result is returned as JSON or rendered by the toy's configured presenter. A representative result is:\n\n```json\n{\"result\":\"representative toy result\"}\n```\n\nThe result contains the normalized values and any status, summary, proposal, predicate result, or rendered payload produced by this toy.\n\n## Behavior\n\nThe toy performs only the focused operation described above. It does not add persistence, network access, scheduling, or unrelated business rules.\n\n\n## How to use it\n\n1. Submit the minimal example to see the default result.\n2. Change one input field at a time.\n3. Submit the same input again to confirm deterministic behavior.\n4. Try an omitted or invalid value to observe the fallback or rejection behavior.\n\n## Troubleshooting\n\n- If the input is rejected, check that it is valid JSON and uses the field names shown above.\n- If a value is ignored, it may be omitted, outside the supported range, or normalized by the toy.\n- If the output is empty, verify that the input contains the records, points, or configuration needed for this operation.\n- Stateful toys may require the reset input described above to return to their initial state."
-        },
-        "Determine whether a proposed asset-to-segment assignment can be appended.",
-        "The predicate checks temporal overlap only against existing segments assigned to the same asset.",
-        "Touching intervals are allowed, and the predicate does not mutate any list."
+        }
       ],
       "toy": {
         "modulePath": "/core/browser/toys/2026-08-20/assetSegmentAssignmentPredicate.js",
@@ -272,7 +1004,15 @@
         "defaultInputMethod": "textarea",
         "defaultOutputMethod": "textarea"
       },
-      "tags": ["toy", "object-minute-rental", "asset", "segment", "assignment", "predicate", "json"]
+      "tags": [
+        "toy",
+        "object-minute-rental",
+        "asset",
+        "segment",
+        "assignment",
+        "predicate",
+        "json"
+      ]
     },
     {
       "key": "ASSE2",
@@ -280,15 +1020,15 @@
       "publicationDate": "2026-08-20",
       "release": "public",
       "content": [
+        "Append immutable references connecting assets to spacetime segments.",
+        "Each assignment contains only an assetId and segmentId; the list preserves order and allows duplicate references.",
+        "The toy delegates append-only persistence to MEMO4 and does not resolve assets, segments, or business state.",
         {
           "type": "manual",
           "id": "ASSE2-manual",
           "title": "User manual",
           "markdown": "# Toy Spec: Asset Segment Assignment List\n\n## What this toy does\n\nAppend immutable references connecting an asset to a spacetime segment.\n\nThis manual explains the behavior a user can observe by submitting input to the toy. The toy is synchronous and deterministic unless the behavior below says that it persists state or advances between submissions.\n\n## Input\n\nJSON input. Submit a JSON value in the toy's input area. A minimal example is:\n\n```json\n{\"result\":\"representative toy result\"}\n```\n\nIf a field is omitted, the toy applies its default behavior. Invalid values are rejected or normalized according to the limits below.\n\n## Exact property names\n\nThe input is a JSON object. These are the property names read by this toy:\n\n- `assignment`\n- `memoryLocation`\n- `path`\n\nUnknown properties are ignored unless the behavior described above says otherwise.\n\n## JSON Schema\n\nThis machine-readable schema describes the public input shape. It does not include blog identifiers or runtime helpers.\n\n```json\n{\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"type\": \"string\"\n}\n```\n\n## Output\n\nJSON output. The result is returned as JSON or rendered by the toy's configured presenter. A representative result is:\n\n```json\n{\"result\":\"representative toy result\"}\n```\n\nThe result contains the normalized values and any status, summary, proposal, predicate result, or rendered payload produced by this toy.\n\n## Behavior\n\nIn scope: validate `assetId` and `segmentId`, then append the pair to a selected memory list. Out of scope: updates, removal, deduplication, lookups, and feasibility.\n\n\n## How to use it\n\n1. Submit the minimal example to see the default result.\n2. Change one input field at a time.\n3. Submit the same input again to confirm deterministic behavior.\n4. Try an omitted or invalid value to observe the fallback or rejection behavior.\n\n## Troubleshooting\n\n- If the input is rejected, check that it is valid JSON and uses the field names shown above.\n- If a value is ignored, it may be omitted, outside the supported range, or normalized by the toy.\n- If the output is empty, verify that the input contains the records, points, or configuration needed for this operation.\n- Stateful toys may require the reset input described above to return to their initial state."
-        },
-        "Append immutable references connecting assets to spacetime segments.",
-        "Each assignment contains only an assetId and segmentId; the list preserves order and allows duplicate references.",
-        "The toy delegates append-only persistence to MEMO4 and does not resolve assets, segments, or business state."
+        }
       ],
       "toy": {
         "modulePath": "/core/browser/toys/2026-08-20/assetSegmentAssignmentList.js",
@@ -296,7 +1036,15 @@
         "defaultInputMethod": "textarea",
         "defaultOutputMethod": "textarea"
       },
-      "tags": ["toy", "object-minute-rental", "asset", "segment", "assignment", "append", "json"]
+      "tags": [
+        "toy",
+        "object-minute-rental",
+        "asset",
+        "segment",
+        "assignment",
+        "append",
+        "json"
+      ]
     },
     {
       "key": "SPAC6",
@@ -304,15 +1052,15 @@
       "publicationDate": "2026-08-19",
       "release": "public",
       "content": [
+        "Assemble non-overlapping spacetime segments into an ordered contiguous world line.",
+        "The toy requires the line to begin and end at requested point IDs and to include every supplied segment exactly once.",
+        "This remains a pure geometric composition primitive with no domain or persistence behavior.",
         {
           "type": "manual",
           "id": "SPAC6-manual",
           "title": "User manual",
           "markdown": "# Toy Spec: Spacetime World Line\n\n## What this toy does\n\nAssemble a list of non-overlapping spacetime segments into one ordered contiguous world line.\n\nThis manual explains the behavior a user can observe by submitting input to the toy. The toy is synchronous and deterministic unless the behavior below says that it persists state or advances between submissions.\n\n## Input\n\nJSON input. Submit a JSON value in the toy's input area. A minimal example is:\n\n```json\n{\"result\":\"representative toy result\"}\n```\n\nIf a field is omitted, the toy applies its default behavior. Invalid values are rejected or normalized according to the limits below.\n\n## Exact property names\n\nThe input is a JSON object. These are the property names read by this toy:\n\n- `endPointId`\n- `segments`\n- `startPointId`\n\nUnknown properties are ignored unless the behavior described above says otherwise.\n\n## JSON Schema\n\nThis machine-readable schema describes the public input shape. It does not include blog identifiers or runtime helpers.\n\n```json\n{\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"type\": \"string\"\n}\n```\n\n## Output\n\nJSON output. The result is returned as JSON or rendered by the toy's configured presenter. A representative result is:\n\n```json\n{\"result\":\"representative toy result\"}\n```\n\nThe result contains the normalized values and any status, summary, proposal, predicate result, or rendered payload produced by this toy.\n\n## Behavior\n\nIn scope: endpoint continuity, ordering, and complete segment use. Out of scope: routing, feasibility, domain entities, persistence, and segment intersection.\n\n\n## How to use it\n\n1. Submit the minimal example to see the default result.\n2. Change one input field at a time.\n3. Submit the same input again to confirm deterministic behavior.\n4. Try an omitted or invalid value to observe the fallback or rejection behavior.\n\n## Troubleshooting\n\n- If the input is rejected, check that it is valid JSON and uses the field names shown above.\n- If a value is ignored, it may be omitted, outside the supported range, or normalized by the toy.\n- If the output is empty, verify that the input contains the records, points, or configuration needed for this operation.\n- Stateful toys may require the reset input described above to return to their initial state."
-        },
-        "Assemble non-overlapping spacetime segments into an ordered contiguous world line.",
-        "The toy requires the line to begin and end at requested point IDs and to include every supplied segment exactly once.",
-        "This remains a pure geometric composition primitive with no domain or persistence behavior."
+        }
       ],
       "toy": {
         "modulePath": "/core/browser/toys/2026-08-19/spacetimeWorldLine.js",
@@ -320,7 +1068,14 @@
         "defaultInputMethod": "textarea",
         "defaultOutputMethod": "textarea"
       },
-      "tags": ["toy", "spacetime", "world-line", "segments", "geometry", "json"]
+      "tags": [
+        "toy",
+        "spacetime",
+        "world-line",
+        "segments",
+        "geometry",
+        "json"
+      ]
     },
     {
       "key": "SPAC5",
@@ -328,15 +1083,15 @@
       "publicationDate": "2026-08-19",
       "release": "public",
       "content": [
+        "Calculate the UTC duration between a segment's start and end points.",
+        "The result ignores distance, routing, and business-domain concepts and returns seconds as a string scalar with a unit label.",
+        "This is a pure temporal primitive for the spacetime layer.",
         {
           "type": "manual",
           "id": "SPAC5-manual",
           "title": "User manual",
           "markdown": "# Toy Spec: Spacetime Segment Duration\n\n## What this toy does\n\nCalculate the UTC duration between a SPAC2 segment’s start and end points.\n\nThis manual explains the behavior a user can observe by submitting input to the toy. The toy is synchronous and deterministic unless the behavior below says that it persists state or advances between submissions.\n\n## Input\n\nJSON input. Submit a JSON value in the toy's input area. A minimal example is:\n\n```json\n{\"result\":\"representative toy result\"}\n```\n\nIf a field is omitted, the toy applies its default behavior. Invalid values are rejected or normalized according to the limits below.\n\n## Exact property names\n\nThe input is a JSON object. These are the property names read by this toy:\n\n- `points`\n- `segment`\n- `spacePoints`\n\nUnknown properties are ignored unless the behavior described above says otherwise.\n\n## JSON Schema\n\nThis machine-readable schema describes the public input shape. It does not include blog identifiers or runtime helpers.\n\n```json\n{\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"type\": \"string\"\n}\n```\n\n## Output\n\nJSON output. The result is returned as JSON or rendered by the toy's configured presenter. A representative result is:\n\n```json\n{\"result\":\"representative toy result\"}\n```\n\nThe result contains the normalized values and any status, summary, proposal, predicate result, or rendered payload produced by this toy.\n\n## Behavior\n\nIn scope: UTC timestamp subtraction in seconds. Out of scope: distance, travel time, routing, feasibility, and persistence.\n\n\n## How to use it\n\n1. Submit the minimal example to see the default result.\n2. Change one input field at a time.\n3. Submit the same input again to confirm deterministic behavior.\n4. Try an omitted or invalid value to observe the fallback or rejection behavior.\n\n## Troubleshooting\n\n- If the input is rejected, check that it is valid JSON and uses the field names shown above.\n- If a value is ignored, it may be omitted, outside the supported range, or normalized by the toy.\n- If the output is empty, verify that the input contains the records, points, or configuration needed for this operation.\n- Stateful toys may require the reset input described above to return to their initial state."
-        },
-        "Calculate the UTC duration between a segment's start and end points.",
-        "The result ignores distance, routing, and business-domain concepts and returns seconds as a string scalar with a unit label.",
-        "This is a pure temporal primitive for the spacetime layer."
+        }
       ],
       "toy": {
         "modulePath": "/core/browser/toys/2026-08-19/spacetimeSegmentDuration.js",
@@ -344,7 +1099,14 @@
         "defaultInputMethod": "textarea",
         "defaultOutputMethod": "textarea"
       },
-      "tags": ["toy", "spacetime", "segment", "duration", "utc", "json"]
+      "tags": [
+        "toy",
+        "spacetime",
+        "segment",
+        "duration",
+        "utc",
+        "json"
+      ]
     },
     {
       "key": "SPAC4",
@@ -352,15 +1114,15 @@
       "publicationDate": "2026-08-19",
       "release": "public",
       "content": [
+        "Calculate the direct WGS84 ellipsoidal surface length of a segment between two SPAC1 points.",
+        "The result ignores altitude and time and returns a scalar value with a unit label, both as strings.",
+        "This is a pure geometric calculator with no routing or business-domain behavior.",
         {
           "type": "manual",
           "id": "SPAC4-manual",
           "title": "User manual",
           "markdown": "# Toy Spec: Spacetime Segment Geodesic Length\n\n## What this toy does\n\nCalculate the direct WGS84 surface length of a segment between two SPAC1 points.\n\nThis manual explains the behavior a user can observe by submitting input to the toy. The toy is synchronous and deterministic unless the behavior below says that it persists state or advances between submissions.\n\n## Input\n\nJSON input. Submit a JSON value in the toy's input area. A minimal example is:\n\n```json\n{\"result\":\"representative toy result\"}\n```\n\nIf a field is omitted, the toy applies its default behavior. Invalid values are rejected or normalized according to the limits below.\n\n## Exact property names\n\nThe input is a JSON object. These are the property names read by this toy:\n\n- `points`\n- `segment`\n- `spacePoints`\n\nUnknown properties are ignored unless the behavior described above says otherwise.\n\n## JSON Schema\n\nThis machine-readable schema describes the public input shape. It does not include blog identifiers or runtime helpers.\n\n```json\n{\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"type\": \"string\"\n}\n```\n\n## Output\n\nJSON output. The result is returned as JSON or rendered by the toy's configured presenter. A representative result is:\n\n```json\n{\"result\":\"representative toy result\"}\n```\n\nThe result contains the normalized values and any status, summary, proposal, predicate result, or rendered payload produced by this toy.\n\n## Behavior\n\nIn scope: WGS84 ellipsoidal surface distance in meters. Out of scope: altitude, time, roads, routing, travel duration, and persistence.\n\n\n## How to use it\n\n1. Submit the minimal example to see the default result.\n2. Change one input field at a time.\n3. Submit the same input again to confirm deterministic behavior.\n4. Try an omitted or invalid value to observe the fallback or rejection behavior.\n\n## Troubleshooting\n\n- If the input is rejected, check that it is valid JSON and uses the field names shown above.\n- If a value is ignored, it may be omitted, outside the supported range, or normalized by the toy.\n- If the output is empty, verify that the input contains the records, points, or configuration needed for this operation.\n- Stateful toys may require the reset input described above to return to their initial state."
-        },
-        "Calculate the direct WGS84 ellipsoidal surface length of a segment between two SPAC1 points.",
-        "The result ignores altitude and time and returns a scalar value with a unit label, both as strings.",
-        "This is a pure geometric calculator with no routing or business-domain behavior."
+        }
       ],
       "toy": {
         "modulePath": "/core/browser/toys/2026-08-19/spacetimeSegmentGeodesicLength.js",
@@ -368,7 +1130,15 @@
         "defaultInputMethod": "textarea",
         "defaultOutputMethod": "textarea"
       },
-      "tags": ["toy", "spacetime", "segment", "geodesic", "wgs84", "geometry", "json"]
+      "tags": [
+        "toy",
+        "spacetime",
+        "segment",
+        "geodesic",
+        "wgs84",
+        "geometry",
+        "json"
+      ]
     },
     {
       "key": "SPAC3",
@@ -376,15 +1146,15 @@
       "publicationDate": "2026-08-19",
       "release": "public",
       "content": [
+        "Classify two spacetime segments as disjoint, touching, or overlapping in time.",
+        "Closed intervals are used: shared boundary instants touch, while shared duration overlaps.",
+        "This remains a pure geometric primitive with no business-domain or persistence behavior.",
         {
           "type": "manual",
           "id": "SPAC3-manual",
           "title": "User manual",
           "markdown": "# Toy Spec: Spacetime Segment Temporal Relation\n\n## What this toy does\n\nClassify the temporal relationship between two spacetime segments without applying business logic.\n\nThis manual explains the behavior a user can observe by submitting input to the toy. The toy is synchronous and deterministic unless the behavior below says that it persists state or advances between submissions.\n\n## Input\n\nJSON input. Submit a JSON value in the toy's input area. A minimal example is:\n\n```json\n{\"result\":\"representative toy result\"}\n```\n\nIf a field is omitted, the toy applies its default behavior. Invalid values are rejected or normalized according to the limits below.\n\n## Exact property names\n\nThe input is a JSON object. These are the property names read by this toy:\n\n- `firstSegmentId`\n- `points`\n- `secondSegmentId`\n- `segments`\n- `spacePoints`\n\nUnknown properties are ignored unless the behavior described above says otherwise.\n\n## JSON Schema\n\nThis machine-readable schema describes the public input shape. It does not include blog identifiers or runtime helpers.\n\n```json\n{\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"type\": \"string\"\n}\n```\n\n## Output\n\nJSON output. The result is returned as JSON or rendered by the toy's configured presenter. A representative result is:\n\n```json\n{\"result\":\"representative toy result\"}\n```\n\nThe result contains the normalized values and any status, summary, proposal, predicate result, or rendered payload produced by this toy.\n\n## Behavior\n\nIn scope: `disjoint`, `touching`, and `overlapping` temporal relations. Out of scope: spatial intersection, routing, domain participation, persistence, and scheduling.\n\n\n## How to use it\n\n1. Submit the minimal example to see the default result.\n2. Change one input field at a time.\n3. Submit the same input again to confirm deterministic behavior.\n4. Try an omitted or invalid value to observe the fallback or rejection behavior.\n\n## Troubleshooting\n\n- If the input is rejected, check that it is valid JSON and uses the field names shown above.\n- If a value is ignored, it may be omitted, outside the supported range, or normalized by the toy.\n- If the output is empty, verify that the input contains the records, points, or configuration needed for this operation.\n- Stateful toys may require the reset input described above to return to their initial state."
-        },
-        "Classify two spacetime segments as disjoint, touching, or overlapping in time.",
-        "Closed intervals are used: shared boundary instants touch, while shared duration overlaps.",
-        "This remains a pure geometric primitive with no business-domain or persistence behavior."
+        }
       ],
       "toy": {
         "modulePath": "/core/browser/toys/2026-08-19/spacetimeSegmentTemporalRelation.js",
@@ -392,7 +1162,14 @@
         "defaultInputMethod": "textarea",
         "defaultOutputMethod": "textarea"
       },
-      "tags": ["toy", "spacetime", "segment", "temporal", "geometry", "json"]
+      "tags": [
+        "toy",
+        "spacetime",
+        "segment",
+        "temporal",
+        "geometry",
+        "json"
+      ]
     },
     {
       "key": "SPAC2",
@@ -400,15 +1177,15 @@
       "publicationDate": "2026-08-19",
       "release": "public",
       "content": [
+        "Define ordered spacetime segments using references to canonical SPAC1 points.",
+        "SPAC2 is a pure, domain-neutral primitive with no routing, feasibility, duration, or persistence behavior.",
+        "Later asset, runner, and possession-domain toys can participate in these segments.",
         {
           "type": "manual",
           "id": "SPAC2-manual",
           "title": "User manual",
           "markdown": "# Toy Spec: Spacetime Segment Registry\n\n## What this toy does\n\nDefine ordered spacetime segments using references to canonical SPAC1 points.\n\nThis manual explains the behavior a user can observe by submitting input to the toy. The toy is synchronous and deterministic unless the behavior below says that it persists state or advances between submissions.\n\n## Input\n\nJSON object containing a `segments` array. Submit a JSON value in the toy's input area. A minimal example is:\n\n```json\n{\n  \"segments\": null\n}\n```\n\nIf a field is omitted, the toy applies its default behavior. Invalid values are rejected or normalized according to the limits below.\n\n## Exact property names\n\nThe input is a JSON object with these property names:\n\n- `SPAC2`\n- `endPointId`\n- `segmentId`\n- `segments`\n- `startPointId`\n- `summary`\n\nUnknown properties are ignored. Required properties and nested fields are described in the behavior above.\n\n## JSON Schema\n\nThis machine-readable schema describes the public input shape. It does not include blog identifiers or runtime helpers.\n\n```json\n{\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"type\": \"string\"\n}\n```\n\n## Output\n\nnormalized `segments` and a `summary` count. The result is returned as JSON or rendered by the toy's configured presenter. A representative result is:\n\n```json\n{\"result\":\"representative toy result\"}\n```\n\nThe result contains the normalized values and any status, summary, proposal, predicate result, or rendered payload produced by this toy.\n\n## Behavior\n\nIn scope: normalize `segmentId`, `startPointId`, and `endPointId`. Out of scope: point lookup, routing, feasibility, duration, pricing, persistence, and domain participation.\n\n### Limits and assumptions\n\nPoint IDs are opaque references to SPAC1 records. Start/end ordering is preserved exactly as supplied. The toy is synchronous, pure, and deterministic.\n\n## How to use it\n\n1. Submit the minimal example to see the default result.\n2. Change one input field at a time.\n3. Submit the same input again to confirm deterministic behavior.\n4. Try an omitted or invalid value to observe the fallback or rejection behavior.\n\n## Troubleshooting\n\n- If the input is rejected, check that it is valid JSON and uses the field names shown above.\n- If a value is ignored, it may be omitted, outside the supported range, or normalized by the toy.\n- If the output is empty, verify that the input contains the records, points, or configuration needed for this operation.\n- Stateful toys may require the reset input described above to return to their initial state."
-        },
-        "Define ordered spacetime segments using references to canonical SPAC1 points.",
-        "SPAC2 is a pure, domain-neutral primitive with no routing, feasibility, duration, or persistence behavior.",
-        "Later asset, runner, and possession-domain toys can participate in these segments."
+        }
       ],
       "toy": {
         "modulePath": "/core/browser/toys/2026-08-19/spacetimeSegmentRegistry.js",
@@ -416,7 +1193,14 @@
         "defaultInputMethod": "textarea",
         "defaultOutputMethod": "textarea"
       },
-      "tags": ["toy", "spacetime", "segment", "registry", "references", "json"]
+      "tags": [
+        "toy",
+        "spacetime",
+        "segment",
+        "registry",
+        "references",
+        "json"
+      ]
     },
     {
       "key": "SPAC1",
@@ -424,15 +1208,15 @@
       "publicationDate": "2026-08-19",
       "release": "public",
       "content": [
+        "Normalize opaque spacetime-point IDs into canonical WGS84 coordinates and UTC-minute timestamps.",
+        "SPAC1 is a pure primitive with no persistence and no knowledge of rental-domain entities.",
+        "Later segment and participation toys can reference these canonical points.",
         {
           "type": "manual",
           "id": "SPAC1-manual",
           "title": "User manual",
           "markdown": "# Toy Spec: Spacetime Point Registry\n\n## What this toy does\n\nNormalize opaque spacetime-point IDs into canonical values that later domain toys can reference.\n\nThis manual explains the behavior a user can observe by submitting input to the toy. The toy is synchronous and deterministic unless the behavior below says that it persists state or advances between submissions.\n\n## Input\n\nJSON object containing a `points` array. Submit a JSON value in the toy's input area. A minimal example is:\n\n```json\n{\n  \"points\": null\n}\n```\n\nIf a field is omitted, the toy applies its default behavior. Invalid values are rejected or normalized according to the limits below.\n\n## Exact property names\n\nThe input is a JSON object with these property names:\n\n- `SPAC1`\n- `points`\n- `summary`\n\nUnknown properties are ignored. Required properties and nested fields are described in the behavior above.\n\n## JSON Schema\n\nThis machine-readable schema describes the public input shape. It does not include blog identifiers or runtime helpers.\n\n```json\n{\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"type\": \"string\"\n}\n```\n\n## Output\n\nnormalized `points` and a `summary` count. The result is returned as JSON or rendered by the toy's configured presenter. A representative result is:\n\n```json\n{\"result\":\"representative toy result\"}\n```\n\nThe result contains the normalized values and any status, summary, proposal, predicate result, or rendered payload produced by this toy.\n\n## Behavior\n\nIn scope: point IDs, WGS84 latitude/longitude, and UTC-minute timestamps. Out of scope: persistence, feasibility, segments, routing, and rental-domain relationships.\n\n### Limits and assumptions\n\nCoordinates follow POSS1 semantics and are rounded to six decimals. Times follow POSS1’s `YYYY-MM-DDTHH:MMZ` UTC-minute contract. Altitude is intentionally deferred.\n\n## How to use it\n\n1. Submit the minimal example to see the default result.\n2. Change one input field at a time.\n3. Submit the same input again to confirm deterministic behavior.\n4. Try an omitted or invalid value to observe the fallback or rejection behavior.\n\n## Troubleshooting\n\n- If the input is rejected, check that it is valid JSON and uses the field names shown above.\n- If a value is ignored, it may be omitted, outside the supported range, or normalized by the toy.\n- If the output is empty, verify that the input contains the records, points, or configuration needed for this operation.\n- Stateful toys may require the reset input described above to return to their initial state."
-        },
-        "Normalize opaque spacetime-point IDs into canonical WGS84 coordinates and UTC-minute timestamps.",
-        "SPAC1 is a pure primitive with no persistence and no knowledge of rental-domain entities.",
-        "Later segment and participation toys can reference these canonical points."
+        }
       ],
       "toy": {
         "modulePath": "/core/browser/toys/2026-08-19/spacetimePointRegistry.js",
@@ -440,7 +1224,14 @@
         "defaultInputMethod": "textarea",
         "defaultOutputMethod": "textarea"
       },
-      "tags": ["toy", "spacetime", "coordinates", "utc", "registry", "json"]
+      "tags": [
+        "toy",
+        "spacetime",
+        "coordinates",
+        "utc",
+        "registry",
+        "json"
+      ]
     },
     {
       "key": "MEMO4",
@@ -448,15 +1239,15 @@
       "publicationDate": "2026-08-18",
       "release": "public",
       "content": [
+        "Append one structured object to a list in temporary, permanent, or envelope memory.",
+        "The toy preserves existing list entries and reports the resulting length.",
+        "This is a generic memory-management primitive for registries such as runner and asset records.",
         {
           "type": "manual",
           "id": "MEMO4-manual",
           "title": "User manual",
           "markdown": "# Toy Spec: Memory Object List Append\n\n## What this toy does\n\nAppend one structured object to a persisted list without replacing the list.\n\nThis manual explains the behavior a user can observe by submitting input to the toy. The toy is synchronous and deterministic unless the behavior below says that it persists state or advances between submissions.\n\n## Input\n\nJSON input. Submit a JSON value in the toy's input area. A minimal example is:\n\n```json\n{\"result\":\"representative toy result\"}\n```\n\nIf a field is omitted, the toy applies its default behavior. Invalid values are rejected or normalized according to the limits below.\n\n## Exact property names\n\nThe input is a JSON object. These are the property names read by this toy:\n\n- `memoryLocation`\n- `object`\n- `path`\n\nUnknown properties are ignored unless the behavior described above says otherwise.\n\n## JSON Schema\n\nThis machine-readable schema describes the public input shape. It does not include blog identifiers or runtime helpers.\n\n```json\n{\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"type\": \"string\"\n}\n```\n\n## Output\n\nJSON output. The result is returned as JSON or rendered by the toy's configured presenter. A representative result is:\n\n```json\n{\"result\":\"representative toy result\"}\n```\n\nThe result contains the normalized values and any status, summary, proposal, predicate result, or rendered payload produced by this toy.\n\n## Behavior\n\nIn scope: temporary, permanent, and envelope memory; dot paths; JSON object append. Out of scope: deduplication, removal, querying, transactions, and schema validation.\n\n\n## How to use it\n\n1. Submit the minimal example to see the default result.\n2. Change one input field at a time.\n3. Submit the same input again to confirm deterministic behavior.\n4. Try an omitted or invalid value to observe the fallback or rejection behavior.\n\n## Troubleshooting\n\n- If the input is rejected, check that it is valid JSON and uses the field names shown above.\n- If a value is ignored, it may be omitted, outside the supported range, or normalized by the toy.\n- If the output is empty, verify that the input contains the records, points, or configuration needed for this operation.\n- Stateful toys may require the reset input described above to return to their initial state."
-        },
-        "Append one structured object to a list in temporary, permanent, or envelope memory.",
-        "The toy preserves existing list entries and reports the resulting length.",
-        "This is a generic memory-management primitive for registries such as runner and asset records."
+        }
       ],
       "toy": {
         "modulePath": "/core/browser/toys/2026-08-18/memoryObjectListAppend.js",
@@ -464,7 +1255,14 @@
         "defaultInputMethod": "textarea",
         "defaultOutputMethod": "textarea"
       },
-      "tags": ["toy", "memory", "storage", "append", "object", "json"]
+      "tags": [
+        "toy",
+        "memory",
+        "storage",
+        "append",
+        "object",
+        "json"
+      ]
     },
     {
       "key": "ASSE1",
@@ -472,15 +1270,15 @@
       "publicationDate": "2026-08-18",
       "release": "public",
       "content": [
+        "Allocate physical assets to possession contexts for the complete operational period.",
+        "The allocation window includes transport to the customer, possession, transport back, and return/reset.",
+        "Allocations reference possession contexts rather than possession requests directly.",
         {
           "type": "manual",
           "id": "ASSE1-manual",
           "title": "User manual",
           "markdown": "# Toy Spec: Asset Allocation Registry\n\n## What this toy does\n\nRecord which physical asset is allocated to a possession context for the entire operational period, including transport to and from the customer.\n\nThis manual explains the behavior a user can observe by submitting input to the toy. The toy is synchronous and deterministic unless the behavior below says that it persists state or advances between submissions.\n\n## Input\n\nJSON object containing an `allocations` array. Submit a JSON value in the toy's input area. A minimal example is:\n\n```json\n{\n  \"allocations\": null\n}\n```\n\nIf a field is omitted, the toy applies its default behavior. Invalid values are rejected or normalized according to the limits below.\n\n## Exact property names\n\nThe input is a JSON object with these property names:\n\n- `ASSE1`\n- `allocatedFrom`\n- `allocatedTo`\n- `allocations`\n- `possessionContextId`\n- `summary`\n\nUnknown properties are ignored. Required properties and nested fields are described in the behavior above.\n\n## JSON Schema\n\nThis machine-readable schema describes the public input shape. It does not include blog identifiers or runtime helpers.\n\n```json\n{\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"type\": \"string\"\n}\n```\n\n## Output\n\nJSON object containing normalized `allocations` and a `summary`. The result is returned as JSON or rendered by the toy's configured presenter. A representative result is:\n\n```json\n{\"result\":\"representative toy result\"}\n```\n\nThe result contains the normalized values and any status, summary, proposal, predicate result, or rendered payload produced by this toy.\n\n## Behavior\n\nIn scope: normalize allocations, transport-inclusive windows, status, and deterministic ordering. Out of scope: request references, runner assignment, route planning, persistence, and conflict detection.\n\n### Limits and assumptions\n\n`possessionContextId` is the shared relationship key. `allocatedFrom` and `allocatedTo` cover transport, possession, and return. The toy is synchronous, pure, and deterministic.\n\n## How to use it\n\n1. Submit the minimal example to see the default result.\n2. Change one input field at a time.\n3. Submit the same input again to confirm deterministic behavior.\n4. Try an omitted or invalid value to observe the fallback or rejection behavior.\n\n## Troubleshooting\n\n- If the input is rejected, check that it is valid JSON and uses the field names shown above.\n- If a value is ignored, it may be omitted, outside the supported range, or normalized by the toy.\n- If the output is empty, verify that the input contains the records, points, or configuration needed for this operation.\n- Stateful toys may require the reset input described above to return to their initial state."
-        },
-        "Allocate physical assets to possession contexts for the complete operational period.",
-        "The allocation window includes transport to the customer, possession, transport back, and return/reset.",
-        "Allocations reference possession contexts rather than possession requests directly."
+        }
       ],
       "toy": {
         "modulePath": "/core/browser/toys/2026-08-18/assetAllocationRegistry.js",
@@ -488,7 +1286,14 @@
         "defaultInputMethod": "textarea",
         "defaultOutputMethod": "textarea"
       },
-      "tags": ["toy", "object-minute-rental", "allocation", "asset", "possession-context", "json"]
+      "tags": [
+        "toy",
+        "object-minute-rental",
+        "allocation",
+        "asset",
+        "possession-context",
+        "json"
+      ]
     },
     {
       "key": "RUNN1",
@@ -496,15 +1301,15 @@
       "publicationDate": "2026-08-18",
       "release": "public",
       "content": [
+        "Register runners and the time windows in which they are available for runs.",
+        "This registry intentionally models availability only; jobs, routing, and matching come later.",
+        "It is the next scheduling primitive for the object-minute rental proof of concept.",
         {
           "type": "manual",
           "id": "RUNN1-manual",
           "title": "User manual",
           "markdown": "# Toy Spec: Runner Availability Registry\n\n## What this toy does\n\nRegister the runner pool and the time windows in which each runner is available for future runs.\n\nThis manual explains the behavior a user can observe by submitting input to the toy. The toy is synchronous and deterministic unless the behavior below says that it persists state or advances between submissions.\n\n## Input\n\nJSON object containing a `runners` array. Submit a JSON value in the toy's input area. A minimal example is:\n\n```json\n{\n  \"runners\": null\n}\n```\n\nIf a field is omitted, the toy applies its default behavior. Invalid values are rejected or normalized according to the limits below.\n\n## Exact property names\n\nThe input is a JSON object with these property names:\n\n- `RUNN1`\n- `runners`\n- `summary`\n\nUnknown properties are ignored. Required properties and nested fields are described in the behavior above.\n\n## JSON Schema\n\nThis machine-readable schema describes the public input shape. It does not include blog identifiers or runtime helpers.\n\n```json\n{\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"type\": \"string\"\n}\n```\n\n## Output\n\nJSON object containing normalized `runners` and a `summary`. The result is returned as JSON or rendered by the toy's configured presenter. A representative result is:\n\n```json\n{\"result\":\"representative toy result\"}\n```\n\nThe result contains the normalized values and any status, summary, proposal, predicate result, or rendered payload produced by this toy.\n\n## Behavior\n\nIn scope: normalize multiple runners and their availability windows. Out of scope: jobs, routing, travel time, matching, persistence, and optimization.\n\n### Limits and assumptions\n\nAvailability windows use caller-provided time strings. The toy is synchronous, pure, and deterministic.\n\n## How to use it\n\n1. Submit the minimal example to see the default result.\n2. Change one input field at a time.\n3. Submit the same input again to confirm deterministic behavior.\n4. Try an omitted or invalid value to observe the fallback or rejection behavior.\n\n## Troubleshooting\n\n- If the input is rejected, check that it is valid JSON and uses the field names shown above.\n- If a value is ignored, it may be omitted, outside the supported range, or normalized by the toy.\n- If the output is empty, verify that the input contains the records, points, or configuration needed for this operation.\n- Stateful toys may require the reset input described above to return to their initial state."
-        },
-        "Register runners and the time windows in which they are available for runs.",
-        "This registry intentionally models availability only; jobs, routing, and matching come later.",
-        "It is the next scheduling primitive for the object-minute rental proof of concept."
+        }
       ],
       "toy": {
         "modulePath": "/core/browser/toys/2026-08-18/runnerAvailabilityRegistry.js",
@@ -512,7 +1317,14 @@
         "defaultInputMethod": "textarea",
         "defaultOutputMethod": "textarea"
       },
-      "tags": ["toy", "object-minute-rental", "runner", "availability", "registry", "json"]
+      "tags": [
+        "toy",
+        "object-minute-rental",
+        "runner",
+        "availability",
+        "registry",
+        "json"
+      ]
     },
     {
       "key": "POSS1",
@@ -520,15 +1332,15 @@
       "publicationDate": "2026-08-17",
       "release": "public",
       "content": [
+        "Normalize the exact object, locations, and UTC-minute times a customer wants to possess.",
+        "Coordinates are validated as WGS84 and rounded to six decimal places.",
+        "This is the request primitive for the object-minute rental proof of concept.",
         {
           "type": "manual",
           "id": "POSS1-manual",
           "title": "User manual",
           "markdown": "# Toy Spec: Possession Request\n\n## What this toy does\n\nRepresent the exact object, places, and times a customer wants to possess before feasibility is considered.\n\nThis manual explains the behavior a user can observe by submitting input to the toy. The toy is synchronous and deterministic unless the behavior below says that it persists state or advances between submissions.\n\n## Input\n\nJSON with `sku`, delivery/pickup locations, and delivery/pickup UTC-minute times. Submit a JSON value in the toy's input area. A minimal example is:\n\n```json\n{\n  \"sku\": null\n}\n```\n\nIf a field is omitted, the toy applies its default behavior. Invalid values are rejected or normalized according to the limits below.\n\n## Exact property names\n\nThe input is a JSON object. These are the property names read by this toy:\n\n- `deliveryLocation`\n- `deliveryTime`\n- `lat`\n- `lon`\n- `pickupLocation`\n- `pickupTime`\n- `sku`\n- `toFixed`\n\nUnknown properties are ignored unless the behavior described above says otherwise.\n\n## JSON Schema\n\nThis machine-readable schema describes the public input shape. It does not include blog identifiers or runtime helpers.\n\n```json\n{\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"type\": \"string\"\n}\n```\n\n## Output\n\n`{valid, request}` or `{valid: false, errors}`. The result is returned as JSON or rendered by the toy's configured presenter. A representative result is:\n\n```json\n{\"result\":\"representative toy result\"}\n```\n\nThe result contains the normalized values and any status, summary, proposal, predicate result, or rendered payload produced by this toy.\n\n## Behavior\n\nIn scope: SKU normalization, WGS84 coordinate validation/rounding, and UTC-minute validation. Out of scope: inventory lookup, travel time, pricing, reservations, and offer creation.\n\n### Limits and assumptions\n\nCoordinates use `lat` and `lon` in WGS84 degrees. Coordinates are emitted to six decimal places. Times must use the `YYYY-MM-DDTHH:MMZ` UTC-minute form. Output and error ordering are deterministic.\n\n## How to use it\n\n1. Submit the minimal example to see the default result.\n2. Change one input field at a time.\n3. Submit the same input again to confirm deterministic behavior.\n4. Try an omitted or invalid value to observe the fallback or rejection behavior.\n\n## Troubleshooting\n\n- If the input is rejected, check that it is valid JSON and uses the field names shown above.\n- If a value is ignored, it may be omitted, outside the supported range, or normalized by the toy.\n- If the output is empty, verify that the input contains the records, points, or configuration needed for this operation.\n- Stateful toys may require the reset input described above to return to their initial state."
-        },
-        "Normalize the exact object, locations, and UTC-minute times a customer wants to possess.",
-        "Coordinates are validated as WGS84 and rounded to six decimal places.",
-        "This is the request primitive for the object-minute rental proof of concept."
+        }
       ],
       "toy": {
         "modulePath": "/core/browser/toys/2026-08-17/possessionRequest.js",
@@ -536,7 +1348,13 @@
         "defaultInputMethod": "possession-request",
         "defaultOutputMethod": "textarea"
       },
-      "tags": ["toy", "object-minute-rental", "request", "coordinates", "json"]
+      "tags": [
+        "toy",
+        "object-minute-rental",
+        "request",
+        "coordinates",
+        "json"
+      ]
     },
     {
       "key": "OBJE1",
@@ -544,15 +1362,15 @@
       "publicationDate": "2026-08-16",
       "release": "public",
       "content": [
+        "Register physical objects that Dadeto can make available for timed possession.",
+        "The toy normalizes asset metadata, sorts it deterministically, and reports inventory counts.",
+        "This is the first inventory primitive for the object-minute rental proof of concept.",
         {
           "type": "manual",
           "id": "OBJE1-manual",
           "title": "User manual",
           "markdown": "# Toy Spec: Object-minute Asset Registry\n\n## What this toy does\n\nProve the smallest inventory primitive needed to offer a physical object for timed possession.\n\nThis manual explains the behavior a user can observe by submitting input to the toy. The toy is synchronous and deterministic unless the behavior below says that it persists state or advances between submissions.\n\n## Input\n\nJSON object containing an `assets` array. Submit a JSON value in the toy's input area. A minimal example is:\n\n```json\n{\n  \"assets\": null\n}\n```\n\nIf a field is omitted, the toy applies its default behavior. Invalid values are rejected or normalized according to the limits below.\n\n## Exact property names\n\nThe input is a JSON object. These are the property names read by this toy:\n\n- `assets`\n\nUnknown properties are ignored unless the behavior described above says otherwise.\n\n## JSON Schema\n\nThis machine-readable schema describes the public input shape. It does not include blog identifiers or runtime helpers.\n\n```json\n{\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"type\": \"string\"\n}\n```\n\n## Output\n\nJSON object containing normalized `assets` and `summary`. The result is returned as JSON or rendered by the toy's configured presenter. A representative result is:\n\n```json\n{\"result\":\"representative toy result\"}\n```\n\nThe result contains the normalized values and any status, summary, proposal, predicate result, or rendered payload produced by this toy.\n\n## Behavior\n\nIn scope: normalize physical assets, apply safe defaults, sort deterministically, and summarize inventory. Out of scope: persistence, authentication, reservations, logistics, pricing, and mutation.\n\n### Limits and assumptions\n\nAsset IDs are stable physical identifiers. Missing optional fields receive explicit defaults. The toy is synchronous, pure, and deterministic.\n\n## How to use it\n\n1. Submit the minimal example to see the default result.\n2. Change one input field at a time.\n3. Submit the same input again to confirm deterministic behavior.\n4. Try an omitted or invalid value to observe the fallback or rejection behavior.\n\n## Troubleshooting\n\n- If the input is rejected, check that it is valid JSON and uses the field names shown above.\n- If a value is ignored, it may be omitted, outside the supported range, or normalized by the toy.\n- If the output is empty, verify that the input contains the records, points, or configuration needed for this operation.\n- Stateful toys may require the reset input described above to return to their initial state."
-        },
-        "Register physical objects that Dadeto can make available for timed possession.",
-        "The toy normalizes asset metadata, sorts it deterministically, and reports inventory counts.",
-        "This is the first inventory primitive for the object-minute rental proof of concept."
+        }
       ],
       "toy": {
         "modulePath": "/core/browser/toys/2026-08-16/assetRegistry.js",
@@ -560,7 +1378,13 @@
         "defaultInputMethod": "object-minute-asset",
         "defaultOutputMethod": "textarea"
       },
-      "tags": ["toy", "object-minute-rental", "inventory", "assets", "json"]
+      "tags": [
+        "toy",
+        "object-minute-rental",
+        "inventory",
+        "assets",
+        "json"
+      ]
     },
     {
       "key": "LEDG5",
@@ -945,11 +1769,11 @@
         }
       ],
       "toy": {
-      "modulePath": "/core/browser/toys/2026-06-22/conwayLife.js",
-      "functionName": "conwayLife",
-      "defaultInputMethod": "life-seed",
-      "defaultOutputMethod": "canvas-2d"
-    },
+        "modulePath": "/core/browser/toys/2026-06-22/conwayLife.js",
+        "functionName": "conwayLife",
+        "defaultInputMethod": "life-seed",
+        "defaultOutputMethod": "canvas-2d"
+      },
       "release": "public",
       "tags": [
         "toy",
@@ -1080,15 +1904,15 @@
       "title": "Cozy House Adventure",
       "publicationDate": "2026-04-19",
       "content": [
+        "A stateful text adventure where you build a tiny cozy home by completing foundation, materials, roof, and garden milestones.",
+        "The toy saves progress in temporary local storage so each command continues from your current construction step.",
+        "Play by entering simple commands like build, foundation, and level soil; the response returns narrative output plus completion updates.",
         {
           "type": "manual",
           "id": "COZY1-manual",
           "title": "User manual",
           "markdown": "# Cozy House Adventure Spec\n\n## What this toy does\n\nProvide a relaxing text adventure toy that models tiny-house construction with small, readable command loops.\n\nThis manual explains the behavior a user can observe by submitting input to the toy. The toy is synchronous and deterministic unless the behavior below says that it persists state or advances between submissions.\n\n## Input\n\nfree-text commands such as `build`, `foundation`, `level soil`, `plant herbs`. Submit a JSON value in the toy's input area. A minimal example is:\n\n```json\n{\n  \"build\": null,\n  \"foundation\": null\n}\n```\n\nIf a field is omitted, the toy applies its default behavior. Invalid values are rejected or normalized according to the limits below.\n\n## Exact property names\n\nThe input is a JSON object. These are the property names read by this toy:\n\n- `inventory`\n- `progress`\n- `temporary`\n\nUnknown properties are ignored unless the behavior described above says otherwise.\n\n## JSON Schema\n\nThis machine-readable schema describes the public input shape. It does not include blog identifiers or runtime helpers.\n\n```json\n{\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"type\": \"string\"\n}\n```\n\n## Output\n\nnarrative response strings and progress prompts. The result is returned as JSON or rendered by the toy's configured presenter. A representative result is:\n\n```json\n{\"result\":\"representative toy result\"}\n```\n\nThe result contains the normalized values and any status, summary, proposal, predicate result, or rendered payload produced by this toy.\n\n## Behavior\n\nIn scope: - Name capture and start prompt. - Multi-step build loop for foundation/materials/roof/garden. - Temporary progression persistence under `temporary.COZY1`. Out of scope: - New UI presenters. - Multiplayer state. - Persisting game progress to permanent storage.\n\n### Limits and assumptions\n\nAssumptions: - Runtime provides `getData`, `setLocalTemporaryData`, `getCurrentTime`, and `getRandomNumber`. Constraints: - Toy must remain synchronous and return text. - State key must not collide with existing toy keys.\n\n## How to use it\n\n1. Submit the minimal example to see the default result.\n2. Change one input field at a time.\n3. Submit the same input again to confirm deterministic behavior.\n4. Try an omitted or invalid value to observe the fallback or rejection behavior.\n\n## Troubleshooting\n\n- If the input is rejected, check that it is valid JSON and uses the field names shown above.\n- If a value is ignored, it may be omitted, outside the supported range, or normalized by the toy.\n- If the output is empty, verify that the input contains the records, points, or configuration needed for this operation.\n- Stateful toys may require the reset input described above to return to their initial state."
-        },
-        "A stateful text adventure where you build a tiny cozy home by completing foundation, materials, roof, and garden milestones.",
-        "The toy saves progress in temporary local storage so each command continues from your current construction step.",
-        "Play by entering simple commands like build, foundation, and level soil; the response returns narrative output plus completion updates."
+        }
       ],
       "toy": {
         "modulePath": "/core/browser/toys/2026-04-19/cozyHouseAdventure.js",
@@ -1108,15 +1932,15 @@
       "title": "Real Hourly Wage",
       "publicationDate": "2026-04-03",
       "content": [
+        "Calculates a real hourly wage by subtracting work-related expenses and adding unpaid overhead hours to a job's paid work period.",
+        "Keep the calculation pure by passing a normalized JSON payload with period totals and overhead buckets.",
+        "The toy returns a JSON wage report with nominal wage, real wage, totals, and a breakdown that downstream toys can reuse.",
         {
           "type": "manual",
           "id": "REAL1-manual",
           "title": "User manual",
           "markdown": "# Toy Spec\n\n## What this toy does\n\nShow how much of an hourly wage remains after accounting for the unpaid time and expenses that support the paid job.\n\nThis manual explains the behavior a user can observe by submitting input to the toy. The toy is synchronous and deterministic unless the behavior below says that it persists state or advances between submissions.\n\n## Input\n\nA JSON object with `period` totals and `overhead` hour/expense buckets. Submit a JSON value in the toy's input area. A minimal example is:\n\n```json\n{\n  \"period\": null,\n  \"overhead\": null\n}\n```\n\nIf a field is omitted, the toy applies its default behavior. Invalid values are rejected or normalized according to the limits below.\n\n## Exact property names\n\nThe input is a JSON object with these property names:\n\n- `overhead`\n- `period`\n\nUnknown properties are ignored. Required properties and nested fields are described in the behavior above.\n\n## JSON Schema\n\nThis machine-readable schema describes the public input shape. It does not include blog identifiers or runtime helpers.\n\n```json\n{\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"type\": \"string\"\n}\n```\n\n## Output\n\nA JSON wage report with nominal wage, real wage, totals, and a breakdown. The result is returned as JSON or rendered by the toy's configured presenter. A representative result is:\n\n```json\n{\"result\":\"representative toy result\"}\n```\n\nThe result contains the normalized values and any status, summary, proposal, predicate result, or rendered payload produced by this toy.\n\n## Behavior\n\nIn scope: - A single pure calculation interface that accepts normalized wage inputs. - A readable breakdown of paid hours, overhead hours, and overhead expenses. - Deterministic output that downstream toys can reuse without recomputing the totals. Out of scope: - Currency conversion. - Time-series tracking. - Storage or persistence. - UI formatting beyond returning JSON.\n\n### Limits and assumptions\n\nAssumptions: - The calculation period is already chosen before the toy runs. - The input numbers are normalized and non-negative. Constraints: - The calculation must remain deterministic. - The toy must not read or write local storage. - The pure core must not depend on dates or external services.\n\n## How to use it\n\n1. Submit the minimal example to see the default result.\n2. Change one input field at a time.\n3. Submit the same input again to confirm deterministic behavior.\n4. Try an omitted or invalid value to observe the fallback or rejection behavior.\n\n## Troubleshooting\n\n- If the input is rejected, check that it is valid JSON and uses the field names shown above.\n- If a value is ignored, it may be omitted, outside the supported range, or normalized by the toy.\n- If the output is empty, verify that the input contains the records, points, or configuration needed for this operation.\n- Stateful toys may require the reset input described above to return to their initial state."
-        },
-        "Calculates a real hourly wage by subtracting work-related expenses and adding unpaid overhead hours to a job's paid work period.",
-        "Keep the calculation pure by passing a normalized JSON payload with period totals and overhead buckets.",
-        "The toy returns a JSON wage report with nominal wage, real wage, totals, and a breakdown that downstream toys can reuse."
+        }
       ],
       "toy": {
         "modulePath": "/core/browser/toys/2026-04-03/realHourlyWage.js",
@@ -1137,15 +1961,15 @@
       "title": "Ledger Ingest Permanent Data View",
       "publicationDate": "2026-04-02",
       "content": [
+        "Reads the LEDG3 permanent storage bucket and renders the stored transactions with the same ledger-ingest table presenter.",
+        "Use the ledger-ingest output mode to inspect the stored transactions and compare them with the import report without mutating storage.",
+        "This is the read-only companion toy for checking what LEDG3 has already persisted.",
         {
           "type": "manual",
           "id": "LEDG4-manual",
           "title": "User manual",
           "markdown": "# Ledger Ingest Permanent Data View\n\n## What this toy does\n\nProvide a read-only way to inspect the LEDG3 permanent storage bucket in the same table style used by the ledger ingest report presenter.\n\nThis manual explains the behavior a user can observe by submitting input to the toy. The toy is synchronous and deterministic unless the behavior below says that it persists state or advances between submissions.\n\n## Input\n\nOptional JSON settings, currently limited to selecting the storage bucket key. Submit a JSON value in the toy's input area. A minimal example is:\n\n```json\n{\"result\":\"representative toy result\"}\n```\n\nIf a field is omitted, the toy applies its default behavior. Invalid values are rejected or normalized according to the limits below.\n\n## Exact property names\n\nThe input is a JSON object with these property names:\n\n- `getLocalPermanentData`\n- `setLocalPermanentData`\n\nUnknown properties are ignored. Required properties and nested fields are described in the behavior above.\n\n## JSON Schema\n\nThis machine-readable schema describes the public input shape. It does not include blog identifiers or runtime helpers.\n\n```json\n{\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"type\": \"string\"\n}\n```\n\n## Output\n\nJSON report shaped for the ledger-ingest presenter. The result is returned as JSON or rendered by the toy's configured presenter. A representative result is:\n\n```json\n{\"result\":\"representative toy result\"}\n```\n\nThe result contains the normalized values and any status, summary, proposal, predicate result, or rendered payload produced by this toy.\n\n## Behavior\n\nIn scope: Read the LEDG3 permanent storage bucket. Render the stored transactions through the existing ledger-ingest presenter. Keep the toy read-only. Out of scope: Mutating permanent storage. Re-importing ledger data. Changing the canonical transaction merge policy.\n\n### Limits and assumptions\n\nAssumptions: LEDG3 is the bucket key used by the storage toy. The existing ledger-ingest presenter can render a report object that includes canonical transactions. Constraints: The toy must not call `setLocalPermanentData`.\n\n## How to use it\n\n1. Submit the minimal example to see the default result.\n2. Change one input field at a time.\n3. Submit the same input again to confirm deterministic behavior.\n4. Try an omitted or invalid value to observe the fallback or rejection behavior.\n\n## Troubleshooting\n\n- If the input is rejected, check that it is valid JSON and uses the field names shown above.\n- If a value is ignored, it may be omitted, outside the supported range, or normalized by the toy.\n- If the output is empty, verify that the input contains the records, points, or configuration needed for this operation.\n- Stateful toys may require the reset input described above to return to their initial state."
-        },
-        "Reads the LEDG3 permanent storage bucket and renders the stored transactions with the same ledger-ingest table presenter.",
-        "Use the ledger-ingest output mode to inspect the stored transactions and compare them with the import report without mutating storage.",
-        "This is the read-only companion toy for checking what LEDG3 has already persisted."
+        }
       ],
       "toy": {
         "modulePath": "/core/browser/toys/2026-04-02/ledger-ingest/ledgerIngestStorageViewToy.js",
@@ -1211,15 +2035,15 @@
       "title": "Ledger Ingest",
       "publicationDate": "2026-03-13",
       "content": [
+        "Runs a deterministic transaction-import core against either a named fixture or a pasted ImportTransactionsInput JSON payload and returns canonical rows, duplicate reports, structured errors, and summary data.",
+        "Provide JSON like {\"fixture\":\"happyPath\"} for demo runs, or paste the JSON payload emitted by the CSV converter toy to inspect a real personal import path.",
+        "The toy is a thin wrapper over the ledger-ingest core so the import flow can be tried end to end without adding file IO, network calls, or persistence.",
         {
           "type": "manual",
           "id": "LEDG1-manual",
           "title": "User manual",
           "markdown": "# Ledger Ingest Toy\n\n## What this toy does\n\nDefine and document the pure, deterministic core contract for importing raw exports into a canonical ledger without hiding adapters or IO.\n\nThis manual explains the behavior a user can observe by submitting input to the toy. The toy is synchronous and deterministic unless the behavior below says that it persists state or advances between submissions.\n\n## Input\n\n`ImportTransactionsInput` (source label, explicit field mapping, rawRecords array, dedupe policy knobs). Submit a JSON value in the toy's input area. A minimal example is:\n\n```json\n{\n  \"ImportTransactionsInput\": null\n}\n```\n\nIf a field is omitted, the toy applies its default behavior. Invalid values are rejected or normalized according to the limits below.\n\n## Exact property names\n\nThe input is a JSON object. These are the property names read by this toy:\n\n- `dedupePolicy`\n- `fieldMapping`\n- `fixture`\n- `rawRecords`\n- `source`\n\nUnknown properties are ignored unless the behavior described above says otherwise.\n\n## JSON Schema\n\nThis machine-readable schema describes the public input shape. It does not include blog identifiers or runtime helpers.\n\n```json\n{\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"type\": \"string\"\n}\n```\n\n## Output\n\n`ImportTransactionsOutput` (canonical transactions, duplicate reports, policy/summary metadata consumed by adapters or tests). The result is returned as JSON or rendered by the toy's configured presenter. A representative result is:\n\n```json\n{\"result\":\"representative toy result\"}\n```\n\nThe result contains the normalized values and any status, summary, proposal, predicate result, or rendered payload produced by this toy.\n\n## Behavior\n\nIn scope: - Explicit `ImportTransactionsInput`/`ImportTransactionsOutput` schemas. - Normalization examples (dates, amounts, descriptions) and dedupe key policy. - At least two fixtures that prove normalization, dedupe, and summary behavior. - Structured error reporting for rows that are missing required fields so adapters can react without crashing. - Tests that read the fixtures and validate the core behavior without relying on adapters. Out of scope: - CSV parsing, database writes, network calls, adapter orchestration, or UI layers. - Encrypting, persistence, or credential management that belongs to downstream systems.\n\n### Limits and assumptions\n\nAssumptions: - Adapters provide solid raw JSON rows and deliver the field names referenced in `fieldMapping`. - Normalization steps (dates -> ISO, amounts -> signed numbers, descriptions -> trimmed lower-case) are sufficient for early dedupe. - Duplicate detection is first-wins so adapters can rely on policy reporting rather than silent overwrites. Constraints: - The core must stay pure (no filesystem, DB, or network calls). - All inputs/outputs remain JSON serializable. - Behavior must be deterministic so fixtures remain reliable across runs.\n\n## How to use it\n\n1. Submit the minimal example to see the default result.\n2. Change one input field at a time.\n3. Submit the same input again to confirm deterministic behavior.\n4. Try an omitted or invalid value to observe the fallback or rejection behavior.\n\n## Troubleshooting\n\n- If the input is rejected, check that it is valid JSON and uses the field names shown above.\n- If a value is ignored, it may be omitted, outside the supported range, or normalized by the toy.\n- If the output is empty, verify that the input contains the records, points, or configuration needed for this operation.\n- Stateful toys may require the reset input described above to return to their initial state."
-        },
-        "Runs a deterministic transaction-import core against either a named fixture or a pasted ImportTransactionsInput JSON payload and returns canonical rows, duplicate reports, structured errors, and summary data.",
-        "Provide JSON like {\"fixture\":\"happyPath\"} for demo runs, or paste the JSON payload emitted by the CSV converter toy to inspect a real personal import path.",
-        "The toy is a thin wrapper over the ledger-ingest core so the import flow can be tried end to end without adding file IO, network calls, or persistence."
+        }
       ],
       "toy": {
         "modulePath": "/core/browser/toys/2026-03-13/ledger-ingest/ledgerIngestToy.js",
@@ -2370,7 +3194,8 @@
     {
       "key": "HILO2",
       "publicationDate": "2024-10-03",
-      "title": "HI-LO"
+      "title": "HI-LO",
+      "content": []
     },
     {
       "key": "HELL1",
