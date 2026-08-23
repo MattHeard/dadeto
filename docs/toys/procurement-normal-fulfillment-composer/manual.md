@@ -8,6 +8,8 @@ Prepends one validated warehouse-procurement prefix to one validated canonical n
 
 Submit a JSON object with `procurementProposal` and `normalProposal`. Each property contains the corresponding validated proposal object.
 
+### Example
+
 ```json
 {
   "procurementProposal": { "valid": true, "spacePoints": [], "points": [], "segments": [], "sequence": [] },
@@ -15,7 +17,7 @@ Submit a JSON object with `procurementProposal` and `normalProposal`. Each prope
 }
 ```
 
-## JSON Schema
+### Schema
 
 ```json
 {
@@ -30,6 +32,12 @@ Submit a JSON object with `procurementProposal` and `normalProposal`. Each prope
 ## Output
 
 Returns one composed proposal containing the procurement prefix followed by the normal proposal’s points, segments, and ordered operations. Invalid or incompatible components return a structured failure.
+
+### Example
+
+```json
+{"example": true}
+```
 
 ## Behavior
 

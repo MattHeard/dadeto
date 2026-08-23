@@ -12,6 +12,8 @@ Paste a JSON config object.
 
 ### Local mode
 
+### Example
+
 ```json
 {
   "server": "local"
@@ -39,6 +41,19 @@ You can override the local endpoint:
 ```
 
 Cloud mode requires `cloudEndpoint`.
+
+### Schema
+
+This machine-readable schema describes the public input shape.
+
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {},
+  "additionalProperties": true
+}
+```
 
 ## Optional display fields
 
@@ -89,22 +104,15 @@ The realtime voice presenter shows:
 
 The debug log records connection lifecycle messages. It does not log raw audio or raw SDP.
 
-## JSON Schema
-
-This machine-readable schema describes the public input shape.
-
-```json
-{
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "type": "object",
-  "properties": {},
-  "additionalProperties": true
-}
-```
-
 ## Output
 
 The toy returns the result described by its behavior and renders it in the configured presenter.
+
+### Example
+
+```json
+{"example": true}
+```
 
 ## Behavior
 

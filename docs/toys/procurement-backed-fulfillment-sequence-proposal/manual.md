@@ -10,6 +10,8 @@ This manual explains the behavior a user can observe by submitting input to the 
 
 possession context, warehouse location, travel durations, configuration buffers, and caller-provided IDs. Submit a JSON value in the toy's input area. A minimal example is:
 
+### Example
+
 ```json
 {
   "possessionContext": {
@@ -34,6 +36,17 @@ possession context, warehouse location, travel durations, configuration buffers,
 
 If a field is omitted, the toy applies its default behavior. Invalid values are rejected or normalized according to the limits below.
 
+### Schema
+
+This machine-readable schema describes the public input shape. It does not include blog identifiers or runtime helpers.
+
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "string"
+}
+```
+
 ## Exact property names
 
 The input is a JSON object with five properties:
@@ -46,20 +59,11 @@ The input is a JSON object with five properties:
 
 All generated IDs must be non-empty, unique, and distinct from the possession IDs. Timestamps must be valid and align to whole minutes.
 
-## JSON Schema
-
-This machine-readable schema describes the public input shape. It does not include blog identifiers or runtime helpers.
-
-```json
-{
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "type": "string"
-}
-```
-
 ## Output
 
 warehouse space point, spacetime points, segments, and ordered operation metadata. The result is returned as JSON or rendered by the toy's configured presenter. A representative result is:
+
+### Example
 
 ```json
 {"result":"representative toy result"}

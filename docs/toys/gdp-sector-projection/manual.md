@@ -6,12 +6,31 @@ GDP Sector Projection plots primary, secondary, and tertiary GDP sector shares o
 
 If you submit no valid rows, the toy uses its built-in public historical snapshot. This makes the graph render even with empty input.
 
-## Input formats
+## Input
 
 You can provide either:
 
 1. a raw array of yearly rows
 2. an object with `rows` and optional `forecast`
+
+### Example
+
+```json
+{"example": true}
+```
+
+### Schema
+
+This machine-readable schema describes the public input shape. It does not include blog identifiers or runtime helpers.
+
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {},
+  "additionalProperties": true
+}
+```
 
 ## Option 1: raw row array
 
@@ -112,19 +131,6 @@ For each year:
 
 Output values are clamped to the visible `0–100` range.
 
-## JSON Schema
-
-This machine-readable schema describes the public input shape. It does not include blog identifiers or runtime helpers.
-
-```json
-{
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "type": "object",
-  "properties": {},
-  "additionalProperties": true
-}
-```
-
 ## Behavior
 
 The toy applies the input rules above and produces the output described below.
@@ -141,6 +147,12 @@ The toy returns a `graph-plot` payload for the graph presenter. It includes:
 - tertiary sector series
 
 The graph presenter renders the three series as lines.
+
+### Example
+
+```json
+{"example": true}
+```
 
 ## How to use it
 

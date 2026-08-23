@@ -10,6 +10,8 @@ This manual explains the behavior a user can observe by submitting input to the 
 
 A JSON string with optional `width`, `height`, `cols`, `rows`, `tickSpeedMs`, `cells`, and `reset`. Submit a JSON value in the toy's input area. A minimal example is:
 
+### Example
+
 ```json
 {
   "width": null,
@@ -23,6 +25,17 @@ A JSON string with optional `width`, `height`, `cols`, `rows`, `tickSpeedMs`, `c
 ```
 
 If a field is omitted, the toy applies its default behavior. Invalid values are rejected or normalized according to the limits below.
+
+### Schema
+
+This machine-readable schema describes the public input shape. It does not include blog identifiers or runtime helpers.
+
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "string"
+}
+```
 
 ## Exact property names
 
@@ -40,20 +53,11 @@ The input is a JSON object with these property names:
 
 Unknown properties are ignored. Required properties and nested fields are described in the behavior above.
 
-## JSON Schema
-
-This machine-readable schema describes the public input shape. It does not include blog identifiers or runtime helpers.
-
-```json
-{
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "type": "string"
-}
-```
-
 ## Output
 
 A JSON string consumed by the `canvas-2d` presenter. The result is returned as JSON or rendered by the toy's configured presenter. A representative result is:
+
+### Example
 
 ```json
 {"result":"representative toy result"}

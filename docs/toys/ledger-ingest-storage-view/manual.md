@@ -10,22 +10,15 @@ This manual explains the behavior a user can observe by submitting input to the 
 
 Optional JSON settings, currently limited to selecting the storage bucket key. Submit a JSON value in the toy's input area. A minimal example is:
 
+### Example
+
 ```json
 {"result":"representative toy result"}
 ```
 
 If a field is omitted, the toy applies its default behavior. Invalid values are rejected or normalized according to the limits below.
 
-## Exact property names
-
-The input is a JSON object with these property names:
-
-- `getLocalPermanentData`
-- `setLocalPermanentData`
-
-Unknown properties are ignored. Required properties and nested fields are described in the behavior above.
-
-## JSON Schema
+### Schema
 
 This machine-readable schema describes the public input shape. It does not include blog identifiers or runtime helpers.
 
@@ -36,9 +29,20 @@ This machine-readable schema describes the public input shape. It does not inclu
 }
 ```
 
+## Exact property names
+
+The input is a JSON object with these property names:
+
+- `getLocalPermanentData`
+- `setLocalPermanentData`
+
+Unknown properties are ignored. Required properties and nested fields are described in the behavior above.
+
 ## Output
 
 JSON report shaped for the ledger-ingest presenter. The result is returned as JSON or rendered by the toy's configured presenter. A representative result is:
+
+### Example
 
 ```json
 {"result":"representative toy result"}

@@ -1,3 +1,38 @@
 # SKUE1 — SKU Existing-Stock Feasibility
 
-Submit `requestedSku`, an asset list, a valid normal proposal, and resolved spatial records. Matching assets are checked in lexical asset-ID order and the toy stops at the first feasible asset. The result is a boolean query predicate; it performs no selection persistence, assignment, or pricing.
+## What this toy does
+
+Test matching assets for a requested SKU.
+
+## Input
+
+Submit requestedSku and assets.
+
+### Example
+
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object"
+}
+```
+
+### Schema
+
+```json
+{"type":"object"}
+```
+
+## Output
+
+Returns a JSON feasibility result.
+
+### Example
+
+```json
+{"example": true}
+```
+
+## Behavior
+
+Matching assets are checked in deterministic order with no side effects.

@@ -14,6 +14,8 @@ Submit one JSON object with these properties:
 - `configuration`: non-negative duration and buffer values for delivery, pickup, inspection, and cleaning.
 - `generatedIds`: IDs for the six generated warehouse points and seven generated segments.
 
+### Example
+
 ```json
 {
   "possessionContext": {
@@ -36,7 +38,7 @@ Submit one JSON object with these properties:
 }
 ```
 
-## JSON Schema
+### Schema
 
 ```json
 {
@@ -57,6 +59,12 @@ Submit one JSON object with these properties:
 ## Output
 
 On success, the toy returns `valid: true`, one warehouse space point, eight points, seven segments, seven ordered operation records, and the possession segment reference. On failure it returns `{ "valid": false, "error": "..." }` and does not persist or mutate anything.
+
+### Example
+
+```json
+{"example": true}
+```
 
 ## Behavior
 

@@ -8,6 +8,8 @@ Test whether one asset can accommodate every asset-relevant segment in a normal 
 
 Submit an asset with a stock-in point, a valid proposal, and resolved points and space points.
 
+### Example
+
 ```json
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -16,9 +18,21 @@ Submit an asset with a stock-in point, a valid proposal, and resolved points and
 }
 ```
 
+### Schema
+
+```json
+{"type":"object"}
+```
+
 ## Output
 
 Returns `{ "feasible": true }` only when all five asset operations form one coherent world line.
+
+### Example
+
+```json
+{"example": true}
+```
 
 ## Behavior
 

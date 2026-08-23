@@ -12,11 +12,13 @@ It is the key-value-pair variant of the memory vector tool:
 
 This makes it useful for inspecting object-like memory containers.
 
-## Input formats
+## Input
 
 MEMO2 accepts either a plain path string or a JSON object.
 
 ### Plain path string
+
+### Example
 
 ```text
 project.tasks
@@ -42,17 +44,7 @@ You can also use `key` instead of `path`:
 }
 ```
 
-## Supported memory locations
-
-| `memoryLocation` | Meaning |
-|---|---|
-| `temporary` | Session/local temporary data |
-| `permanent` | Persistent local permanent data |
-| `envelope` | Full data envelope |
-
-If `memoryLocation` is missing or empty, the toy uses `temporary`.
-
-## JSON Schema
+### Schema
 
 This machine-readable schema describes the public input shape.
 
@@ -65,11 +57,21 @@ This machine-readable schema describes the public input shape.
 }
 ```
 
+## Supported memory locations
+
+| `memoryLocation` | Meaning |
+|---|---|
+| `temporary` | Session/local temporary data |
+| `permanent` | Persistent local permanent data |
+| `envelope` | Full data envelope |
+
+If `memoryLocation` is missing or empty, the toy uses `temporary`.
+
 ## Behavior
 
 The toy applies the input rules above and produces the output described below.
 
-## Output format
+## Output
 
 The response contains:
 
@@ -78,6 +80,12 @@ The response contains:
 - `found`
 - `vector`
 - optional `error`
+
+### Example
+
+```json
+{"example": true}
+```
 
 ## Projection behavior
 

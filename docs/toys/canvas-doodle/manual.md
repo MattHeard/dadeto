@@ -15,12 +15,32 @@ Paste a JSON object with any of these optional fields:
 - `background`
 - `accent`
 
+### Example
+
 ```json
 {
   "width": 320,
   "height": 180,
   "background": "#f8f6f2",
   "accent": "#1f2937"
+}
+```
+
+### Schema
+
+This machine-readable schema describes the public input shape. It does not include blog identifiers or runtime helpers.
+
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "width": {},
+    "height": {},
+    "background": {},
+    "accent": {}
+  },
+  "additionalProperties": true
 }
 ```
 
@@ -53,27 +73,11 @@ The toy produces five shapes:
 
 The band and circles use generated hue values. The `accent` value controls the bottom line color.
 
-## JSON Schema
-
-This machine-readable schema describes the public input shape. It does not include blog identifiers or runtime helpers.
-
-```json
-{
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "type": "object",
-  "properties": {
-    "width": {},
-    "height": {},
-    "background": {},
-    "accent": {}
-  },
-  "additionalProperties": true
-}
-```
-
 ## Output
 
 The toy returns a canvas payload:
+
+### Example
 
 ```json
 {

@@ -22,6 +22,8 @@ Only string file paths are counted. Duplicate file paths inside one change set a
 
 If a change set has no string `id`, the toy creates a fallback ID such as `change-set-1`.
 
+### Example
+
 ```json
 {
   "changeSets": [
@@ -51,7 +53,7 @@ If a change set has no string `id`, the toy creates a fallback ID such as `chang
 }
 ```
 
-## JSON Schema
+### Schema
 
 This machine-readable schema describes the public input shape.
 
@@ -79,9 +81,11 @@ The toy applies the input rules above and produces the output described below.
 4. Click **Submit**.
 5. Read the JSON report.
 
-## Output format
+## Output
 
 The toy returns JSON with three top-level fields:
+
+### Example
 
 ```json
 {

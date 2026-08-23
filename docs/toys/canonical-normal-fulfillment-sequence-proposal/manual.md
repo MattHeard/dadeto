@@ -8,6 +8,8 @@ Consumes SPAC8-compatible space points and returns a self-contained seven-operat
 
 Submit a JSON object containing `possessionContext`, `spacePoints`, `warehouse`, `travelDurations`, `configuration`, and `generatedIds`. The possession segment’s endpoint IDs must match its endpoint points; generated IDs must be unique.
 
+### Example
+
 ```json
 {
   "possessionContext": { "segment": {}, "startPoint": {}, "endPoint": {} },
@@ -19,7 +21,7 @@ Submit a JSON object containing `possessionContext`, `spacePoints`, `warehouse`,
 }
 ```
 
-## JSON Schema
+### Schema
 
 ```json
 {
@@ -37,6 +39,12 @@ Submit a JSON object containing `possessionContext`, `spacePoints`, `warehouse`,
 ## Output
 
 Returns deduplicated, sorted `spacePoints`, eight points, seven segments, seven ordered operation records, and the unchanged possession reference. Invalid composition returns a structured failure.
+
+### Example
+
+```json
+{"example": true}
+```
 
 ## Behavior
 

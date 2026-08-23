@@ -1,3 +1,38 @@
 # SKUF1 — SKU Fulfillment Feasibility
 
-Submit the two precomputed booleans `procurementFeasible` and `existingStockFeasible`. The toy returns true when either is literally true. It does not calculate either branch or persist any fulfillment state.
+## What this toy does
+
+Combine two precomputed feasibility branches.
+
+## Input
+
+Submit procurementFeasible and existingStockFeasible.
+
+### Example
+
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object"
+}
+```
+
+### Schema
+
+```json
+{"type":"object"}
+```
+
+## Output
+
+Returns the combined feasibility result.
+
+### Example
+
+```json
+{"example": true}
+```
+
+## Behavior
+
+The result is true when either branch is true.

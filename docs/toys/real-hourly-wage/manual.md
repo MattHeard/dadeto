@@ -10,6 +10,8 @@ This manual explains the behavior a user can observe by submitting input to the 
 
 A JSON object with `period` totals and `overhead` hour/expense buckets. Submit a JSON value in the toy's input area. A minimal example is:
 
+### Example
+
 ```json
 {
   "period": null,
@@ -19,16 +21,7 @@ A JSON object with `period` totals and `overhead` hour/expense buckets. Submit a
 
 If a field is omitted, the toy applies its default behavior. Invalid values are rejected or normalized according to the limits below.
 
-## Exact property names
-
-The input is a JSON object with these property names:
-
-- `overhead`
-- `period`
-
-Unknown properties are ignored. Required properties and nested fields are described in the behavior above.
-
-## JSON Schema
+### Schema
 
 This machine-readable schema describes the public input shape. It does not include blog identifiers or runtime helpers.
 
@@ -39,9 +32,20 @@ This machine-readable schema describes the public input shape. It does not inclu
 }
 ```
 
+## Exact property names
+
+The input is a JSON object with these property names:
+
+- `overhead`
+- `period`
+
+Unknown properties are ignored. Required properties and nested fields are described in the behavior above.
+
 ## Output
 
 A JSON wage report with nominal wage, real wage, totals, and a breakdown. The result is returned as JSON or rendered by the toy's configured presenter. A representative result is:
+
+### Example
 
 ```json
 {"result":"representative toy result"}

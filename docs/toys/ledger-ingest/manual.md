@@ -10,6 +10,8 @@ This manual explains the behavior a user can observe by submitting input to the 
 
 `ImportTransactionsInput` (source label, explicit field mapping, rawRecords array, dedupe policy knobs). Submit a JSON value in the toy's input area. A minimal example is:
 
+### Example
+
 ```json
 {
   "ImportTransactionsInput": null
@@ -17,6 +19,17 @@ This manual explains the behavior a user can observe by submitting input to the 
 ```
 
 If a field is omitted, the toy applies its default behavior. Invalid values are rejected or normalized according to the limits below.
+
+### Schema
+
+This machine-readable schema describes the public input shape. It does not include blog identifiers or runtime helpers.
+
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "string"
+}
+```
 
 ## Exact property names
 
@@ -30,20 +43,11 @@ The input is a JSON object. These are the property names read by this toy:
 
 Unknown properties are ignored unless the behavior described above says otherwise.
 
-## JSON Schema
-
-This machine-readable schema describes the public input shape. It does not include blog identifiers or runtime helpers.
-
-```json
-{
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "type": "string"
-}
-```
-
 ## Output
 
 `ImportTransactionsOutput` (canonical transactions, duplicate reports, policy/summary metadata consumed by adapters or tests). The result is returned as JSON or rendered by the toy's configured presenter. A representative result is:
+
+### Example
 
 ```json
 {"result":"representative toy result"}

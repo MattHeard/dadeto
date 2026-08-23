@@ -37,6 +37,14 @@ function extractSchema(markdown, toy) {
   }
 }
 
+function topLevelSection(markdown, title) {
+  const start = markdown.search(new RegExp(`^## ${title}$`, 'm'));
+  if (start < 0) return '';
+  const bodyStart = markdown.indexOf('\n', start) + 1;
+  const next = markdown.slice(bodyStart).search(/^## (?!#)/m);
+  return markdown.slice(bodyStart, next < 0 ? markdown.length : bodyStart + next);
+}
+
 for (const toy of toyDirectories) {
   const manualPath = path.join(toysRoot, toy, 'manual.md');
   const markdown = fs.readFileSync(manualPath, 'utf8');
@@ -48,6 +56,12 @@ for (const toy of toyDirectories) {
   }
   if (/```json\n\{\}\n```/.test(markdown)) fail(toy, 'contains an empty JSON example');
   const schema = extractSchema(markdown, toy);
+  const inputSection = topLevelSection(markdown, 'Input');
+  const outputSection = topLevelSection(markdown, 'Output');
+  if (!/^### Schema$/m.test(inputSection)) fail(toy, 'Input must contain a Schema subsection');
+  if (!/^### Example$/m.test(inputSection)) fail(toy, 'Input must contain an Example subsection');
+  if (!/^### Example$/m.test(outputSection)) fail(toy, 'Output must contain an Example subsection');
+  if (/^## JSON Schema$/m.test(markdown)) fail(toy, 'JSON Schema must be nested under Input');
   if (!schema.type) fail(toy, 'schema must declare type');
   const properties = Object.keys(schema.properties ?? {});
   for (const property of properties) {

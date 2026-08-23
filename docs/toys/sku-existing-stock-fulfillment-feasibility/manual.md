@@ -8,6 +8,8 @@ Test whether at least one existing asset for a requested SKU supports a complete
 
 Submit requestedSku, assets, proposal, points, and spacePoints.
 
+### Example
+
 ```json
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -16,9 +18,21 @@ Submit requestedSku, assets, proposal, points, and spacePoints.
 }
 ```
 
+### Schema
+
+```json
+{"type":"object"}
+```
+
 ## Output
 
 Returns `{ "feasible": true }` when one matching asset succeeds, otherwise false.
+
+### Example
+
+```json
+{"example": true}
+```
 
 ## Behavior
 

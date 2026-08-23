@@ -8,6 +8,8 @@ Builds the warehouse procurement and candidate stock-in prefix immediately befor
 
 Submit the JSON object accepted by the toy: an existing delivery start point, warehouse location, procurement duration and buffer, and generated point and segment IDs.
 
+### Example
+
 ```json
 {
   "deliveryOutboundStart": { "pointId": "delivery-start", "timestamp": "2026-08-23T10:00:00.000Z" },
@@ -18,7 +20,7 @@ Submit the JSON object accepted by the toy: an existing delivery start point, wa
 }
 ```
 
-## JSON Schema
+### Schema
 
 ```json
 {
@@ -37,6 +39,12 @@ Submit the JSON object accepted by the toy: an existing delivery start point, wa
 ## Output
 
 Returns the warehouse space point, procurement-start and stock-ready points, and one procurement segment that ends at the existing delivery start. Invalid durations, coordinates, IDs, or timestamps return a structured failure.
+
+### Example
+
+```json
+{"example": true}
+```
 
 ## Behavior
 

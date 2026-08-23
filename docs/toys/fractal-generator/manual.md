@@ -15,12 +15,32 @@ Paste a JSON object with any of these optional fields:
 - `depth`: recursive branch depth
 - `hue`: base hue for branch colors
 
+### Example
+
 ```json
 {
   "width": 420,
   "height": 280,
   "depth": 6,
   "hue": 140
+}
+```
+
+### Schema
+
+This machine-readable schema describes the public input shape. It does not include blog identifiers or runtime helpers.
+
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "width": {},
+    "height": {},
+    "depth": {},
+    "hue": {}
+  },
+  "additionalProperties": true
 }
 ```
 
@@ -48,27 +68,11 @@ The toy applies the input rules above and produces the output described below.
 3. Click **Submit** again.
 4. Adjust values until the tree has the shape and color you want.
 
-## JSON Schema
-
-This machine-readable schema describes the public input shape. It does not include blog identifiers or runtime helpers.
-
-```json
-{
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "type": "object",
-  "properties": {
-    "width": {},
-    "height": {},
-    "depth": {},
-    "hue": {}
-  },
-  "additionalProperties": true
-}
-```
-
 ## Output
 
 The toy returns a canvas drawing payload:
+
+### Example
 
 ```json
 {

@@ -10,6 +10,8 @@ Use it to sketch simple functions such as sine, cosine, quadratics, exponentials
 
 Paste a JSON object.
 
+### Example
+
 ```json
 {
   "expression": "Math.sin(x)",
@@ -27,6 +29,19 @@ Paste a JSON object.
 ```
 
 All fields are optional. Invalid or missing fields fall back to defaults.
+
+### Schema
+
+This machine-readable schema describes the public input shape. It does not include blog identifiers or runtime helpers.
+
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {},
+  "additionalProperties": true
+}
+```
 
 ## Default graph
 
@@ -105,19 +120,6 @@ Each point is evaluated across the interval from `xMin` to `xMax`.
 
 If an evaluated `y` value is not finite, that point is skipped.
 
-## JSON Schema
-
-This machine-readable schema describes the public input shape. It does not include blog identifiers or runtime helpers.
-
-```json
-{
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "type": "object",
-  "properties": {},
-  "additionalProperties": true
-}
-```
-
 ## Behavior
 
 The toy applies the input rules above and produces the output described below.
@@ -125,6 +127,8 @@ The toy applies the input rules above and produces the output described below.
 ## Output
 
 The toy returns a graph payload:
+
+### Example
 
 ```json
 {

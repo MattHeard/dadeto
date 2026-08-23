@@ -13,6 +13,8 @@ Paste a JSON object with:
 - `candidates`: array of candidate product increments
 - `activeWork`: array of current work items
 
+### Example
+
 ```json
 {
   "candidates": [
@@ -44,6 +46,22 @@ Paste a JSON object with:
       ]
     }
   ]
+}
+```
+
+### Schema
+
+This machine-readable schema describes the public input shape.
+
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "candidates": {},
+    "activeWork": {}
+  },
+  "additionalProperties": true
 }
 ```
 
@@ -123,29 +141,15 @@ Where:
 - `expectedFileOverlap` counts overlap between candidate `expectedTouchSet` and active-work `touchSet`.
 - `expectedSharedInfrastructureTouch` equals `sharedTouchRisk` plus overlap between candidate `expectedTouchSet` and active-work `reservedSurfaces`.
 
-## JSON Schema
-
-This machine-readable schema describes the public input shape.
-
-```json
-{
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "type": "object",
-  "properties": {
-    "candidates": {},
-    "activeWork": {}
-  },
-  "additionalProperties": true
-}
-```
-
 ## Behavior
 
 The toy applies the input rules above and produces the output described below.
 
-## Output format
+## Output
 
 The toy returns JSON:
+
+### Example
 
 ```json
 {

@@ -12,11 +12,13 @@ It is the simple memory vector inspector:
 
 Use it when you want to inspect one memory value without mutating state.
 
-## Input formats
+## Input
 
 MEMO1 accepts either a plain path string or a JSON object.
 
 ### Plain path string
+
+### Example
 
 ```text
 project.tasks
@@ -48,17 +50,7 @@ A JSON string is also accepted:
 "project.tasks"
 ```
 
-## Supported memory locations
-
-| `memoryLocation` | Meaning |
-|---|---|
-| `temporary` | Session/local temporary data |
-| `permanent` | Persistent local permanent data |
-| `envelope` | Full data envelope |
-
-If `memoryLocation` is missing or empty, the toy uses `temporary`.
-
-## JSON Schema
+### Schema
 
 This machine-readable schema describes the public input shape.
 
@@ -69,11 +61,21 @@ This machine-readable schema describes the public input shape.
 }
 ```
 
+## Supported memory locations
+
+| `memoryLocation` | Meaning |
+|---|---|
+| `temporary` | Session/local temporary data |
+| `permanent` | Persistent local permanent data |
+| `envelope` | Full data envelope |
+
+If `memoryLocation` is missing or empty, the toy uses `temporary`.
+
 ## Behavior
 
 The toy applies the input rules above and produces the output described below.
 
-## Output format
+## Output
 
 The response contains:
 
@@ -84,6 +86,8 @@ The response contains:
 - optional `error`
 
 Example:
+
+### Example
 
 ```json
 {

@@ -20,11 +20,30 @@ Paste a JSON object with:
 - `path` or `key`
 - `value`
 
+### Example
+
 ```json
 {
   "memoryLocation": "temporary",
   "path": "project.tasks.0.title",
   "value": "Design prototype"
+}
+```
+
+### Schema
+
+This machine-readable schema describes the public input shape.
+
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "memoryLocation": {},
+    "path": {},
+    "value": {}
+  },
+  "additionalProperties": true
 }
 ```
 
@@ -112,30 +131,15 @@ Invalid example:
 
 The object value will be rejected.
 
-## JSON Schema
-
-This machine-readable schema describes the public input shape.
-
-```json
-{
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "type": "object",
-  "properties": {
-    "memoryLocation": {},
-    "path": {},
-    "value": {}
-  },
-  "additionalProperties": true
-}
-```
-
 ## Behavior
 
 The toy applies the input rules above and produces the output described below.
 
-## Output format
+## Output
 
 On success:
+
+### Example
 
 ```json
 {
