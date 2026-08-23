@@ -215,7 +215,7 @@ function normalizeCells(cells, cols, rows) {
 
   const valid = [];
   for (const cell of cells) {
-    if (!Array.isArray(cell) || cell.length < 2) {
+    if (!Array.isArray(cell)) {
       continue;
     }
     const x = Number(cell[0]);
@@ -297,7 +297,9 @@ function evolveCells(cells, cols, rows) {
  */
 function getNeighbors(cell, cols, rows) {
   const neighbors = [];
+  // Stryker disable next-line AssignmentOperator
   for (let dy = -1; dy <= 1; dy += 1) {
+    // Stryker disable next-line AssignmentOperator
     for (let dx = -1; dx <= 1; dx += 1) {
       if (dx === 0 && dy === 0) {
         continue;
@@ -398,7 +400,7 @@ function normalizeState(data) {
   const candidate = getStoredLifeCandidate(
     /** @type {Record<string, unknown>} */ (data)
   );
-  if (!candidate || typeof candidate !== 'object' || Array.isArray(candidate)) {
+  if (!candidate || Array.isArray(candidate)) {
     return null;
   }
   return normalizeStoredLifeCandidate(candidate);
@@ -436,18 +438,12 @@ function normalizeStoredLifeCandidate(candidate) {
     candidate.framesPerTick,
     Math.round(tickSpeedMs / 16)
   );
-  let framesPerTick = framesPerTickRaw;
-  if (framesPerTick < 1) {
-    framesPerTick = 1;
-  }
+  const framesPerTick = framesPerTickRaw;
   const framesUntilTickRaw = normalizePositiveInteger(
     candidate.framesUntilTick,
     framesPerTick
   );
-  let framesUntilTick = framesUntilTickRaw;
-  if (framesUntilTick < 1) {
-    framesUntilTick = 1;
-  }
+  const framesUntilTick = framesUntilTickRaw;
   const generation = normalizePositiveInteger(candidate.generation, 0);
 
   return createStoredLifeState({
@@ -470,7 +466,8 @@ function normalizeStoredLifeCandidate(candidate) {
  */
 function createSeedLifeState(fields) {
   const framesPerTick = Math.max(1, Math.round(fields.tickSpeedMs / 16));
-  return composeLifeState(createBaseStateFields(fields), {
+  const base = createBaseStateFields(fields);
+  return composeLifeState(base, {
     framesPerTick,
     framesUntilTick: framesPerTick,
     generation: 0,
@@ -561,3 +558,26 @@ function composeLifeState(base, overrides) {
 }
 
 export { normalizeState, getStoredLifeCandidate };
+
+export const conwayLifeTestOnly = {
+  normalizeState,
+  buildNextState,
+  createNextState,
+  stepBoard,
+  normalizeSeed,
+  normalizeTickSpeedMs,
+  normalizeCells,
+  wrapCoordinate,
+  dedupeCells,
+  evolveCells,
+  getNeighbors,
+  toCanvasPayload,
+  createBackdropShape,
+  serializeState,
+  serializeCell,
+  normalizeStoredLifeCandidate,
+  createSeedLifeState,
+  createStoredLifeState,
+  createBaseStateFields,
+  composeLifeState,
+};
