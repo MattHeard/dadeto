@@ -127,6 +127,11 @@ describe('crystalBreaker helper contracts', () => {
     expect(h.normalizeCrystalState('whole')).toBe('whole');
     expect(h.normalizeCrystalState('shattered')).toBe('shattered');
     expect(h.normalizeCrystalState('bad')).toBe('whole');
+    expect(h.normalizeCrystalState('whole')).toBe('whole');
+    expect(h.normalizeStatus('ready')).toBe('ready');
+    expect(h.normalizeStatus('paused')).toBe('paused');
+    expect(h.normalizeStatus('won')).toBe('won');
+    expect(h.normalizeStatus('lost')).toBe('lost');
     expect(h.getCrystalFill('shattered')).toBe('#4f46e5');
     expect(h.getCrystalFill('fractured')).toBe('#8dd3ff');
     expect(h.getCrystalFill('whole')).toBe('#5eead4');
@@ -312,6 +317,7 @@ describe('crystalBreaker helper contracts', () => {
     expect(h.buildActionState({ type: 'keydown' }, {}, 'p')).toMatchObject({ pausePressed: true, resetPressed: false, launchPressed: false });
     expect(h.buildActionState({ type: 'keydown' }, {}, 'r')).toMatchObject({ pausePressed: false, resetPressed: true, launchPressed: false });
     expect(h.buildActionState({ type: 'keydown' }, {}, 'space')).toMatchObject({ launchPressed: true, pausePressed: false, resetPressed: false });
+    expect(h.buildActionState({ type: 'keydown' }, {}, ' ')).toMatchObject({ launchPressed: true, pausePressed: false, resetPressed: false });
     expect(h.buildActionState({ type: 'keydown' }, {}, 'x')).toMatchObject({ launchPressed: false, pausePressed: false, resetPressed: false });
     expect(h.buildActionState({ type: 'keyup' }, {}, 'p')).toMatchObject({ pausePressed: false });
     expect(h.buildActionState({ type: 'keyup' }, {}, 'r')).toMatchObject({ resetPressed: false });
@@ -337,6 +343,15 @@ describe('crystalBreaker helper contracts', () => {
     const clearWall = { width: 180, orb: { x: 90, y: 80, vx: 3, vy: -2, radius: 4 } };
     h.resolveOrbWalls(clearWall);
     expect(clearWall.orb).toMatchObject({ vx: 3, vy: -2 });
+    const exactWalls = { width: 180, orb: { x: 4, y: 28, vx: -3, vy: -2, radius: 4 } };
+    h.resolveOrbWalls(exactWalls);
+    expect(exactWalls.orb).toMatchObject({ vx: 3, vy: 2 });
+    exactWalls.orb.x = 176;
+    exactWalls.orb.vx = 3;
+    h.resolveOrbWalls(exactWalls);
+    expect(exactWalls.orb.vx).toBe(-3);
+    h.advanceOrb(exactWalls);
+    expect(exactWalls.orb.x).toBe(173);
     expect(h.calculatePaddleBounce({ orb: { x: 126 }, paddle: { x: 90, width: 48 } })).toBe(2 / 3);
     const crystalHit = h.createSeedState({ width: 180, height: 140 }, null);
     crystalHit.orb = { x: 36, y: 47, vx: 1, vy: 2, radius: 4, stuckToPaddle: false };
