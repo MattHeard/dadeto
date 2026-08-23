@@ -113,6 +113,30 @@ describe('solarPaddle helper contracts', () => {
     expect(h.toCanvasPayload(state).shapes).toHaveLength(6);
     const persist = jest.fn(); h.persistState(persist, state); expect(persist).toHaveBeenCalledWith({ SOLA1: state });
   });
+
+  it('covers seed fallback, merge, reset, and persistence boundaries', () => {
+    const defaults = h.createSeedDefaults();
+    const fallback = { width: 200, height: 140, layoutSeed: 9, lives: 2 };
+    expect(h.normalizeSeedWidth({}, fallback, defaults)).toBe(200);
+    expect(h.normalizeSeedHeight({}, fallback, defaults)).toBe(140);
+    expect(h.normalizeSeedLayout({}, fallback, defaults)).toBe(9);
+    expect(h.normalizeSeedLives({}, fallback, defaults)).toBe(2);
+    const seed = h.createSeedState({}, fallback);
+    expect(seed.width).toBe(200);
+    expect(h.buildResetFallback(seed)).toEqual({ width: 200, height: 140, lives: 2, layoutSeed: undefined });
+    expect(h.buildResetFallback(null)).toBeUndefined();
+    const merged = h.mergeSeedAndState(seed, h.createSeedState({ width: 220, height: 150 }, fallback));
+    expect(merged.width).toBe(220);
+    expect(merged.height).toBe(150);
+    expect(merged.orb.radius).toBe(4);
+    expect(h.buildMergedState(true, seed, seed)).toBe(seed);
+    expect(h.buildMergedState(false, seed, seed)).not.toBe(seed);
+    expect(h.createResetSeedState({}, seed).panels).not.toEqual(seed.panels);
+    expect(h.finalizeNextState(seed, 4, h.createInitialInputState()).frame).toBe(5);
+    expect(h.updateInputState(h.createInitialInputState(), { type: 'keydown', key: 'ArrowRight' }).actions.right).toBe(true);
+    expect(h.readPersistedState(() => ({ SOLA1: seed }))).toMatchObject(seed);
+    expect(h.readPersistedState(null)).toBeNull();
+  });
 });
 
 /**
