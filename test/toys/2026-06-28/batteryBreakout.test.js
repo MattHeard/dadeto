@@ -2322,6 +2322,7 @@ describe('batteryBreakout final normalization', () => {
     const shuffledInput = h.shufflePositions(shuffleInput, 1);
     expect(shuffledInput).toEqual([{ x: 3 }, { x: 2 }, { x: 1 }]);
     expect(Object.prototype.hasOwnProperty.call(shuffledInput, '3')).toBe(false);
+    expect(Object.keys(shuffledInput)).toEqual(['0', '1', '2']);
     expect(shuffleInput).toEqual([{ x: 1 }, { x: 2 }, { x: 3 }]);
     expect(h.shufflePositions([1, 2], 1)).toEqual([2, 1]);
     expect(h.shufflePositions([], 1)).toEqual([]);
