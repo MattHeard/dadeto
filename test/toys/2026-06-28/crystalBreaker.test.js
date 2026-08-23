@@ -340,6 +340,15 @@ describe('crystalBreaker helper contracts', () => {
         previousActions: { resetPressed: false },
       })
     ).toBe(true);
+    const resetPosition = {
+      lives: 2,
+      combo: 4,
+      status: 'running',
+      paddle: { x: 10, width: 20, y: 50 },
+      orb: { stuckToPaddle: false, vx: 0, vy: 0, x: 0, y: 0, radius: 4 },
+    };
+    h.resetOrbAfterLoss(resetPosition);
+    expect(resetPosition).toMatchObject({ lives: 1, combo: 0, status: 'ready', orb: { x: 20, y: 45, vx: 1.6, vy: -2.4, stuckToPaddle: true } });
     const inputState = h.createInitialInputState();
     inputState.actions.pausePressed = true;
     const paused = { ...state, status: 'running' };
