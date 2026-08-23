@@ -372,6 +372,23 @@ describe('solarPaddle helper contracts', () => {
     expect(h.readPersistedState(() => ({ SOLA1: null }))).toBeNull();
     expect(h.readPersistedState(() => null)).toBeNull();
   });
+
+  it('covers custom seed dimensions and motion parameters', () => {
+    const seed = h.createSeedState({
+      width: 240, height: 180, paddleWidth: 64, paddleHeight: 9,
+      paddleSpeed: 6, orbRadius: 6, orbSpeedX: 3, orbSpeedY: -4,
+      layoutSeed: 5, lives: 5,
+    }, null);
+    expect(seed.width).toBe(240);
+    expect(seed.height).toBe(180);
+    expect(seed.lives).toBe(5);
+    expect(seed.paddle).toMatchObject({ width: 64, height: 9, speed: 6 });
+    expect(seed.orb).toMatchObject({ radius: 6, vx: 3, vy: -4, stuckToPaddle: true });
+    expect(seed.panels).toHaveLength(12);
+    const values = h.normalizeSeedValues({ paddleWidth: 70, paddleHeight: 8, paddleSpeed: 7, orbRadius: 5, orbSpeedX: 2, orbSpeedY: -3 }, null, h.createSeedDefaults());
+    expect(values).toMatchObject({ paddleWidth: 70, paddleHeight: 8, paddleSpeed: 7, orbRadius: 5, orbSpeedX: 2, orbSpeedY: -3 });
+    expect(h.normalizeSeedValues({}, null, h.createSeedDefaults())).toMatchObject({ paddleWidth: 52, paddleHeight: 7, paddleSpeed: 4, orbRadius: 4, orbSpeedX: 1, orbSpeedY: -2 });
+  });
 });
 
 /**
