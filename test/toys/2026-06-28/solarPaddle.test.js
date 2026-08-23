@@ -350,6 +350,28 @@ describe('solarPaddle helper contracts', () => {
     separateOrbFromPanel(orb, panel, 'y');
     expect(orb.y).toBeGreaterThan(5);
   });
+
+  it('covers persisted-state status and shape validation', () => {
+    for (const status of ['ready', 'running', 'paused', 'won', 'lost']) {
+      expect(h.normalizeStatus(status)).toBe(status);
+    }
+    expect(h.normalizeState(null)).toBeNull();
+    expect(h.normalizeState([])).toBeNull();
+    expect(h.normalizeState({ version: 2 })).toBeNull();
+    const normalized = h.normalizeState({
+      version: 1, width: -1, height: 0, frame: -1, status: 'paused', score: 2,
+      lives: 1, input: {}, paddle: {}, orb: {}, panels: [],
+    });
+    expect(normalized).toMatchObject({ version: 1, status: 'paused', score: 2, lives: 1 });
+    expect(normalized.width).toBe(360);
+    expect(normalized.height).toBe(240);
+    expect(normalized.frame).toBe(0);
+    expect(normalized.input.actions.left).toBe(false);
+    expect(normalized.paddle.width).toBe(52);
+    expect(normalized.orb.radius).toBe(4);
+    expect(h.readPersistedState(() => ({ SOLA1: null }))).toBeNull();
+    expect(h.readPersistedState(() => null)).toBeNull();
+  });
 });
 
 /**
