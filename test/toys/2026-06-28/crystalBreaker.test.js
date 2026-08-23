@@ -91,6 +91,14 @@ describe('crystalBreaker helper contracts', () => {
     expect(h.normalizeSeedOrbRadius(null)).toBe(4);
     expect(h.normalizeSeedLayoutSeed({ layoutSeed: 3 })).toBe(3);
     expect(h.normalizeSeedLayoutSeed(null)).toBe(1);
+    expect(h.createInitialInputState()).toEqual({
+      keyboard: {}, gamepad: { buttons: [], axes: [] },
+      actions: { moveLeft: false, moveRight: false, launchPressed: false, pausePressed: false, resetPressed: false },
+      previousActions: { moveLeft: false, moveRight: false, launchPressed: false, pausePressed: false, resetPressed: false },
+    });
+    expect(h.createHudTextShape(4, 'HUD')).toEqual({
+      type: 'text', x: 4, y: 16, text: 'HUD', fill: '#dbeafe', font: '11px monospace', align: 'left', baseline: 'alphabetic',
+    });
     expect(h.normalizeStatus('running')).toBe('running');
     expect(h.normalizeStatus('invalid')).toBe('ready');
     expect(h.normalizeBooleanRecord(null)).toEqual({});
@@ -244,6 +252,7 @@ describe('crystalBreaker helper contracts', () => {
       stuckToPaddle: true,
     });
     expect(h.normalizeCrystals(180, 140, 2)).toHaveLength(15);
+    expect(h.normalizeCrystals(180, 140, 2)[10]).toMatchObject({ id: 'crystal-11', x: 36, y: 96 });
     expect(h.normalizeCrystals(180, 140, 2).slice(0, 6)).toEqual([
       expect.objectContaining({ id: 'crystal-1', x: 36, y: 40, width: 24, height: 14, hp: 2, maxHp: 2, fracture: 0, state: 'whole' }),
       expect.objectContaining({ id: 'crystal-2', x: 94, y: 40 }),
