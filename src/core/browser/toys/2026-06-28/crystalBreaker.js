@@ -30,6 +30,10 @@ const DEFAULT_ORB_SPEED_Y = -2.4;
 const DEFAULT_LIVES = 3;
 const HUD_HEIGHT = 24;
 
+function isRecord(value) {
+  return value !== null && typeof value === 'object' && !Array.isArray(value);
+}
+
 /**
  * Runs the crystal breaker toy.
  * @param {unknown} input - input value
@@ -285,12 +289,7 @@ function createHudTextShape(x, text) {
  * @returns {ReturnType<typeof createSeedState>|null} - result
  */
 function normalizeState(value) {
-  if (
-    !value ||
-    typeof value !== 'object' ||
-    Array.isArray(value) ||
-    value.version !== 1
-  )
+  if (!isRecord(value) || value.version !== 1)
     return null;
   const candidate = value;
   return {
@@ -366,7 +365,7 @@ function normalizeGamepadAxes(value) {
  * @returns {Record<string, boolean>} - result
  */
 function normalizeBooleanRecord(value) {
-  if (!value || typeof value !== 'object' || Array.isArray(value)) return {};
+  if (!isRecord(value)) return {};
   return Object.fromEntries(
     Object.entries(value).map(([key, next]) => [key, next === true])
   );
@@ -378,7 +377,7 @@ function normalizeBooleanRecord(value) {
  * @returns {object} - result
  */
 function normalizeActions(value) {
-  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+  if (!isRecord(value)) {
     return createActionFlags();
   }
 
@@ -422,7 +421,7 @@ function resetPressed(inputState) {
  * @returns {object} - result
  */
 function normalizePaddle(value) {
-  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+  if (!isRecord(value)) {
     return {
       x: 156,
       y: 220,
@@ -446,7 +445,7 @@ function normalizePaddle(value) {
  * @returns {object} - result
  */
 function normalizeOrb(value) {
-  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+  if (!isRecord(value)) {
     return {
       x: 180,
       y: 200,
