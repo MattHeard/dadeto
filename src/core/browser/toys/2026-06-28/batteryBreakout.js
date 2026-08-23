@@ -1510,6 +1510,7 @@ export const batteryBreakoutTestOnly = {
   resolvePaddle,
   advanceCellCooldowns,
   applyCellHit,
+  resolveCells,
   updateCellStateAfterCharge,
   reflectOrb,
   circleIntersectsCell,
