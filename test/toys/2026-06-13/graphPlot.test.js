@@ -58,7 +58,37 @@ describe('graphPlot', () => {
       )
     );
 
+    const explicitDefault = JSON.parse(
+      graphPlot(
+        JSON.stringify({
+          expression: 'x',
+          width: 220,
+          height: 140,
+          xMin: -3,
+          xMax: 3,
+          yMin: -1,
+          yMax: 10,
+          background: '#fff',
+          axesColor: '#111',
+          gridColor: '#ddd',
+          lineColor: '#f00',
+        }),
+        {
+          get: (name) =>
+            name === 'getRandomNumber' ? jest.fn(() => 0.5) : undefined,
+        }
+      )
+    );
+    const namedLookup = jest.fn(() => jest.fn(() => 0.5));
+    graphPlot(JSON.stringify({ expression: 'x' }), { get: namedLookup });
+    expect(namedLookup).toHaveBeenCalledWith('getRandomNumber');
+    expect(result).toEqual(explicitDefault);
     expect(result.type).toBe('graph-plot');
     expect(result.points.length).toBeGreaterThan(0);
+  });
+
+  test('supports an environment without get', () => {
+    const result = JSON.parse(graphPlot(JSON.stringify({ expression: 'x' }), {}));
+    expect(result.type).toBe('graph-plot');
   });
 });
