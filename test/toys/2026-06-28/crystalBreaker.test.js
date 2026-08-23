@@ -1,9 +1,12 @@
 import { describe, expect, it, jest } from '@jest/globals';
 import {
   crystalBreaker,
+  crystalBreakerTestOnly,
   getCrystalFill,
   resetOrbAfterLoss,
 } from '../../../src/core/browser/toys/2026-06-28/crystalBreaker.js';
+
+const h = crystalBreakerTestOnly;
 
 /**
  * Runs the crystal breaker toy with a mocked storage accessor.
@@ -68,6 +71,39 @@ describe('crystalBreaker', () => {
 
     expect(hudTexts).toHaveLength(4);
     expect(Math.max(...hudTexts.map(shape => shape.x))).toBeLessThan(360);
+  });
+});
+
+describe('crystalBreaker helper contracts', () => {
+  it('covers normalization, input, geometry, and terminal helper boundaries', () => {
+    expect(h.getCrystalBackdropFill(true)).toBe('#0f172a');
+    expect(h.getCrystalBackdropFill(false)).toBe('#08111f');
+    expect(h.normalizeSeedWidth({}, null)).toBe(360);
+    expect(h.normalizeSeedHeight({ height: 160 }, null)).toBe(160);
+    expect(h.normalizeSeedLives({ lives: 2 }, null)).toBe(2);
+    expect(h.normalizeSeedLayoutSeed({ layoutSeed: 3 })).toBe(3);
+    expect(h.normalizeStatus('running')).toBe('running');
+    expect(h.normalizeStatus('invalid')).toBe('ready');
+    expect(h.normalizeBooleanRecord(null)).toEqual({});
+    expect(h.normalizeBooleanRecord({ left: true, right: 1 })).toEqual({ left: true, right: false });
+    expect(h.normalizeGamepadButtons([true, 0])).toEqual([true, false]);
+    expect(h.normalizeGamepadAxes([1, 'bad'])).toEqual([1, 0]);
+    expect(h.normalizeActions(null)).toMatchObject({ moveLeft: false, resetPressed: false });
+    expect(h.normalizeKeyName('ArrowLeft')).toBe('arrowleft');
+    expect(h.normalizeKeyName('')).toBe('');
+    expect(h.getCrystalHp(0)).toBeGreaterThan(0);
+    expect(h.getCrystalRowOffset(0)).toBe(0);
+    expect(h.getCrystalRowOffset(1)).toBe(10);
+    expect(h.normalizeCrystalState('fractured')).toBe('fractured');
+    expect(h.normalizeCrystalState('bad')).toBe('whole');
+    expect(h.getCrystalFill('shattered')).toBe('#4f46e5');
+    expect(h.getLossStatus(0)).toBe('lost');
+    expect(h.getLossStatus(1)).toBe('ready');
+    const state = h.createSeedState({ width: 180, height: 140 }, null);
+    expect(state.crystals.length).toBeGreaterThan(0);
+    expect(h.toCanvasPayload(state).width).toBe(180);
+    expect(h.orbHitsPaddle(state.orb, state.paddle)).toBe(false);
+    expect(h.orbHitsCrystal(state.orb, state.crystals[0])).toBe(false);
   });
 });
 

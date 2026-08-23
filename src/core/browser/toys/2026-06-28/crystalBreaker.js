@@ -1043,3 +1043,23 @@ function getLossStatus(lives) {
   }
   return 'ready';
 }
+
+export const crystalBreakerTestOnly = {
+  getCrystalBackdropFill, buildNextState, buildMergedState, buildResetFallback,
+  mergeSeedAndState, createSeedState, normalizeSeedWidth, normalizeSeedHeight,
+  normalizeSeedLives, normalizeSeedPaddleWidth, normalizeSeedPaddleHeight,
+  normalizeSeedPaddleSpeed, normalizeSeedOrbRadius, normalizeSeedLayoutSeed,
+  createInitialInputState, createHudTextShape, normalizeState, normalizeInputState,
+  normalizeGamepadState, normalizeGamepadButtons, normalizeGamepadAxes,
+  normalizeBooleanRecord, normalizeActions, createActionFlags, resetPressed,
+  normalizePaddle, normalizeOrb, normalizeCrystals, getCrystalHp,
+  getCrystalRowOffset, normalizeCrystalsFromState, normalizeCrystalFromState,
+  normalizeCrystalPositionAndSize, normalizeCrystalStats, getCrystalId,
+  normalizeCrystalState, parseActions, buildNextKeyboardState, buildActionState,
+  isMoveLeftPressed, isMoveRightPressed, updateInputState, normalizeKeyName,
+  applyGameplayInput, applyPauseInput, applyLaunchInput, applyPaddleMotion,
+  stickOrbToPaddle, stepSimulation, advanceOrb, resolveOrbWalls,
+  resolveOrbPaddle, calculatePaddleBounce, resolveOrbCrystals, resolveOrbLoss,
+  isCrystalShattered, orbHitsPaddle, orbHitsCrystal, toCanvasPayload,
+  normalizeStatus, getCrystalFill, resetOrbAfterLoss, getLossStatus,
+};
