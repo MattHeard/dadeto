@@ -829,8 +829,11 @@ export function shufflePositions(positions, seed) {
   const items = positions.slice();
   if (items.length < 2) return items;
   let state = seed || 1;
-  for (let i = items.length - 1; ; i -= 1) {
-    if (i === 0) break;
+  const indices = Array.from(
+    { length: items.length - 1 },
+    (_, index) => items.length - 1 - index
+  );
+  for (const i of indices) {
     state = (state * 1664525 + 1013904223) >>> 0;
     const j = state % (i + 1);
     [items[i], items[j]] = [items[j], items[i]];
