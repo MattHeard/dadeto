@@ -93,6 +93,10 @@ function parseObjectRecord(value) {
   return null;
 }
 
+function isRecord(value) {
+  return value !== null && typeof value === 'object' && !Array.isArray(value);
+}
+
 /**
  * Build Next State.
  * @param {unknown} persisted Parameter.
@@ -413,12 +417,7 @@ function createInitialInputState() {
  * @returns {unknown} Return value.
  */
 function normalizeState(value) {
-  if (
-    !value ||
-    typeof value !== 'object' ||
-    Array.isArray(value) ||
-    value.version !== 1
-  )
+  if (!isRecord(value) || value.version !== 1)
     return null;
   const candidate = value;
   return {
@@ -470,7 +469,7 @@ function normalizeInputState(value) {
  * @returns {unknown} Return value.
  */
 function normalizeBooleanRecord(value) {
-  if (!value || typeof value !== 'object' || Array.isArray(value)) return {};
+  if (!isRecord(value)) return {};
   return Object.fromEntries(
     Object.entries(value).map(([key, next]) => [key, next === true])
   );
@@ -482,7 +481,7 @@ function normalizeBooleanRecord(value) {
  * @returns {unknown} Return value.
  */
 function normalizeGamepadState(value) {
-  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+  if (!isRecord(value)) {
     return { buttons: [], axes: [] };
   }
   return {
@@ -521,7 +520,7 @@ function normalizeGamepadAxes(value) {
  * @returns {unknown} Return value.
  */
 function normalizeActions(value) {
-  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+  if (!isRecord(value)) {
     return {
       moveLeft: false,
       moveRight: false,
@@ -546,7 +545,7 @@ function normalizeActions(value) {
  * @returns {unknown} Return value.
  */
 function normalizePaddle(value, height) {
-  if (!value || typeof value !== 'object' || Array.isArray(value))
+  if (!isRecord(value))
     return createState(createSeedOptions()).paddle;
   const seed = createSeedOptions();
   return {
@@ -578,7 +577,7 @@ function normalizeNonNegativeInteger(value, fallback) {
  * @returns {unknown} Return value.
  */
 function normalizeOrb(value) {
-  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+  if (!isRecord(value)) {
     return createState(createSeedOptions()).orb;
   }
   return {
