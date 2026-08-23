@@ -231,6 +231,9 @@ describe('crystalBreaker helper contracts', () => {
     ).toBe(true);
     expect(h.buildActionState({ type: 'keyup', key: ' ' }, { space: true }, 'space'))
       .toEqual({ moveLeft: false, moveRight: false, launchPressed: false, pausePressed: false, resetPressed: false });
+    expect(h.buildActionState({ type: 'keydown' }, {}, 'p')).toMatchObject({ pausePressed: true, resetPressed: false, launchPressed: false });
+    expect(h.buildActionState({ type: 'keydown' }, {}, 'r')).toMatchObject({ pausePressed: false, resetPressed: true, launchPressed: false });
+    expect(h.buildActionState({ type: 'keydown' }, {}, 'space')).toMatchObject({ launchPressed: true, pausePressed: false, resetPressed: false });
     const physics = h.createSeedState({ width: 180, height: 140 }, null);
     physics.orb = { x: 90, y: 115, vx: 2, vy: 3, radius: 4, stuckToPaddle: false };
     physics.paddle = { x: 66, y: 116, width: 48, height: 6, speed: 4 };
@@ -273,6 +276,10 @@ describe('crystalBreaker helper contracts', () => {
       .toEqual({ arrowleft: false });
     expect(h.isMoveLeftPressed({ arrowleft: true })).toBe(true);
     expect(h.isMoveRightPressed({ arrowright: true })).toBe(true);
+    expect(h.isMoveLeftPressed({ a: true })).toBe(true);
+    expect(h.isMoveLeftPressed({ left: true })).toBe(true);
+    expect(h.isMoveRightPressed({ d: true })).toBe(true);
+    expect(h.isMoveRightPressed({ right: true })).toBe(true);
     expect(
       h.resetPressed({
         actions: { resetPressed: true },
