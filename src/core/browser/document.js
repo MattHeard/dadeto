@@ -314,7 +314,7 @@ export const getValue = element => element?.value;
  * @returns {void}
  */
 export const setValue = (element, value) => {
-  element.value = value;
+  if (element) element.value = value;
 };
 
 /**

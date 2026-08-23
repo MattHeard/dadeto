@@ -188,6 +188,7 @@ describe('document facade', () => {
     expect(handle.getValue(null)).toBeUndefined();
     handle.setValue(element, 'set');
     expect(element.value).toBe('set');
+    expect(() => handle.setValue(null, 'set')).not.toThrow();
     handle.enable(element);
     expect(element.disabled).toBe(false);
     handle.disable(element);
