@@ -46,10 +46,40 @@ export function resolveSegment(segments, points, segmentId) {
  * @param {Array<Record<string, unknown>>} spacePointsInput
  * @returns {{feasible: boolean, reason?: string}} Feasibility result.
  */
+// eslint-disable-next-line max-params
 export function evaluateWorldLine(
   pointsInput,
   existingSegments,
   candidateSegment,
+  entryPoint,
+  exitPoint,
+  spacePointsInput = []
+) {
+  return evaluateWorldLineMany(
+    pointsInput,
+    existingSegments,
+    [candidateSegment],
+    entryPoint,
+    exitPoint,
+    spacePointsInput
+  );
+}
+
+/**
+ * Determine whether multiple candidate segments fit one bounded world line.
+ * @param {Array<Record<string, unknown>>} pointsInput Resolved points.
+ * @param {Array<Record<string, unknown>>} existingSegments Existing segments.
+ * @param {Array<Record<string, unknown>>} candidateSegments Candidate segments.
+ * @param {Record<string, unknown>} entryPoint Entry anchor.
+ * @param {Record<string, unknown>|undefined} exitPoint Optional exit anchor.
+ * @param {Array<Record<string, unknown>>} spacePointsInput Space points.
+ * @returns {{feasible: boolean, reason?: string}} Feasibility result.
+ */
+// eslint-disable-next-line max-params
+export function evaluateWorldLineMany(
+  pointsInput,
+  existingSegments,
+  candidateSegments,
   entryPoint,
   exitPoint,
   spacePointsInput = []
@@ -65,8 +95,22 @@ export function evaluateWorldLine(
       return { feasible: false, reason: 'missing-entry-point' };
     points.set(String(entryPoint.pointId), entryPoint);
     if (exitPoint?.pointId) points.set(String(exitPoint.pointId), exitPoint);
+    if (!Array.isArray(candidateSegments) || candidateSegments.length === 0)
+      return { feasible: false, reason: 'missing-candidate-segments' };
+    if (candidateSegments.some(segment => !segment?.segmentId))
+      return { feasible: false, reason: 'invalid-candidate-segment' };
+    const candidateIds = candidateSegments.map(segment =>
+      String(segment.segmentId)
+    );
+    if (new Set(candidateIds).size !== candidateIds.length)
+      return { feasible: false, reason: 'duplicate-candidate-segment' };
+    const existingIds = new Set(
+      existingSegments.map(segment => String(segment?.segmentId))
+    );
+    if (candidateIds.some(id => existingIds.has(id)))
+      return { feasible: false, reason: 'duplicate-segment' };
     const segments = new Map(
-      [...existingSegments, candidateSegment].map(segment => [
+      [...existingSegments, ...candidateSegments].map(segment => [
         String(segment.segmentId),
         segment,
       ])
