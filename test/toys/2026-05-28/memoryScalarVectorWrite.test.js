@@ -349,6 +349,54 @@ describe('memoryScalarVectorWrite validation paths', () => {
       error: 'Cannot write non-numeric segment "left" into an array.',
     });
   });
+
+  test('reads and assigns numeric array segments', () => {
+    const values = ['Ada'];
+    expect(memoryScalarVectorWriteTestOnly.getContainerValue(values, '0')).toBe(
+      'Ada'
+    );
+    memoryScalarVectorWriteTestOnly.assignContainerValue(values, '0', 'Grace');
+    expect(values).toEqual(['Grace']);
+    expect(
+      memoryScalarVectorWriteTestOnly.writePathValue(
+        [{ name: 'Ada' }],
+        { path: '0.name', value: 'Grace' }
+      )
+    ).toEqual([{ name: 'Grace' }]);
+  });
+
+  test('writes valid permanent memory and rejects incomplete envelopes', () => {
+    const permanent = { saved: true };
+    const env = {
+      get: (name) =>
+        name === 'getLocalPermanentData'
+          ? () => permanent
+          : name === 'setLocalPermanentData'
+            ? (value) => Object.assign(permanent, value)
+            : undefined,
+    };
+    expect(JSON.parse(memoryScalarVectorWrite(writeRequest({
+      memoryLocation: 'permanent',
+      path: 'saved',
+      value: false,
+    }), env))).toMatchObject({ written: true, value: false });
+    expect(() =>
+      memoryScalarVectorWriteTestOnly.ensureEnvelopeCanBePersisted({})
+    ).toThrow('Envelope writes must preserve an object with a temporary property.');
+    expect(memoryScalarVectorWriteTestOnly.readEnvelopeForWriting({
+      get: () => null,
+    })).toEqual({ temporary: {} });
+    expect(memoryScalarVectorWriteTestOnly.readPermanentForWriting({
+      get: (name) =>
+        name === 'getLocalPermanentData'
+          ? () => null
+          : () => ({ wrong: true }),
+    })).toStrictEqual({});
+    const permanentSource = { nested: { value: 1 } };
+    expect(memoryScalarVectorWriteTestOnly.readPermanentForWriting({
+      get: () => () => permanentSource,
+    })).toEqual(permanentSource);
+  });
 });
 
 describe('memoryScalarVectorWrite helpers', () => {
@@ -387,6 +435,10 @@ describe('memoryScalarVectorWrite helpers', () => {
   });
 
   test('creates a writable root when an existing root is primitive', () => {
+    expect(memoryScalarVectorWriteTestOnly.getContainerRoot(['Ada'])).toEqual([
+      'Ada',
+    ]);
+    expect(memoryScalarVectorWriteTestOnly.getContainerRoot('Ada')).toEqual({});
     expect(
       memoryScalarVectorWriteTestOnly.writePathValue('Ada', {
         path: '0.name',
@@ -402,5 +454,41 @@ describe('memoryScalarVectorWrite helpers', () => {
     expect(
       memoryScalarVectorWriteTestOnly.createContainerForSegment('name')
     ).toEqual({});
+  });
+
+  test('accepts only canonical non-negative array index segments', () => {
+    expect(memoryScalarVectorWriteTestOnly.isArrayIndexSegment('0')).toBe(true);
+    expect(memoryScalarVectorWriteTestOnly.isArrayIndexSegment('12')).toBe(true);
+    expect(memoryScalarVectorWriteTestOnly.isArrayIndexSegment('-1')).toBe(false);
+    expect(memoryScalarVectorWriteTestOnly.isArrayIndexSegment('01')).toBe(false);
+    expect(memoryScalarVectorWriteTestOnly.isArrayIndexSegment('1.0')).toBe(false);
+  });
+
+  test('distinguishes request errors and optional helper types', () => {
+    expect(
+      memoryScalarVectorWriteTestOnly.createMemoryWriteRequest(
+        'temporary',
+        'a',
+        1
+      )
+    ).toStrictEqual({ memoryLocation: 'temporary', path: 'a', value: 1 });
+    expect(
+      memoryScalarVectorWriteTestOnly.createMemoryWriteRequest(
+        'temporary',
+        'a',
+        1,
+        'bad request'
+      )
+    ).toEqual({
+      memoryLocation: 'temporary',
+      path: 'a',
+      value: 1,
+      error: 'bad request',
+    });
+    expect(
+      memoryScalarVectorWriteTestOnly.getOptionalEnvHelper({
+        get: () => 'not-a-function',
+      }, 'helper')
+    ).toBeNull();
   });
 });

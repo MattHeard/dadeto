@@ -208,10 +208,6 @@ function createNextContainer(current, segment, nextSegment) {
  */
 function getContainerValue(container, segment) {
   assertWritableContainerSegment(container, segment);
-  if (Array.isArray(container)) {
-    return container[Number(segment)];
-  }
-
   return container[segment];
 }
 
@@ -223,11 +219,6 @@ function getContainerValue(container, segment) {
  */
 function assignContainerValue(container, segment, value) {
   assertWritableContainerSegment(container, segment);
-  if (Array.isArray(container)) {
-    container[Number(segment)] = value;
-    return;
-  }
-
   container[segment] = value;
 }
 
@@ -565,12 +556,20 @@ function isArrayIndexSegment(segment) {
 
 export const memoryScalarVectorWriteTestOnly = {
   assignNestedValue,
+  assignContainerValue,
   buildMemoryWriteError,
   buildMemoryWriteSuccess,
   createContainerForSegment,
   getMemoryWriter,
+  getContainerRoot,
+  getContainerValue,
   ensureEnvelopeCanBePersisted,
   isScalarOrVector,
+  isArrayIndexSegment,
   parseMemoryWriteRequest,
+  readEnvelopeForWriting,
+  readPermanentForWriting,
+  createMemoryWriteRequest,
+  getOptionalEnvHelper,
   writePathValue,
 };
