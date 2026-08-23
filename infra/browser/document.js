@@ -34,7 +34,14 @@ export const createTextNode = value => document.createTextNode(value);
 export const getElementsByTagName = tagName =>
   document.getElementsByTagName(tagName);
 export const hasClass = (element, cls) => element.classList.contains(cls);
-export const hide = element => (element.style.display = 'none');
+/**
+ * Hides an element when it is still present in the document.
+ * @param {HTMLElement|null|undefined} element - Element to hide.
+ * @returns {void}
+ */
+export const hide = element => {
+  if (element) element.style.display = 'none';
+};
 export const addEventListener = (element, event, func) =>
   element.addEventListener(event, func);
 export const appendChild = (parentNode, newChild) =>

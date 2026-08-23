@@ -107,6 +107,7 @@ describe('document facade', () => {
     expect(handle.hasClass(element, 'x')).toBe(true);
     handle.hide(element);
     expect(element.style.display).toBe('none');
+    expect(() => handle.hide(null)).not.toThrow();
     handle.addEventListener(element, 'click', callback);
     expect(element.addEventListener).toHaveBeenCalledWith('click', callback);
     handle.appendChild(element, 'child');

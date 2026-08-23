@@ -92,9 +92,14 @@ describe('personSegmentAssignmentPredicate', () => {
     expect(() => parseRequest(null)).toThrow();
     expect(() => parseRequest('[]')).toThrow();
     const valid = JSON.parse(input([{ personId: 'P1', segmentId: 'S1' }]));
-    expect(parseRequest(JSON.stringify({ ...valid, assignments: [null, [], ...valid.assignments] })).assignments).toEqual([
-      { personId: 'P1', segmentId: 'S1' },
-    ]);
+    expect(
+      parseRequest(
+        JSON.stringify({
+          ...valid,
+          assignments: [null, [], ...valid.assignments],
+        })
+      ).assignments
+    ).toEqual([{ personId: 'P1', segmentId: 'S1' }]);
     for (const field of ['points', 'segments', 'assignments']) {
       const missing = { ...valid };
       delete missing[field];
@@ -110,12 +115,20 @@ describe('personSegmentAssignmentPredicate', () => {
     expect(normalizeAssignment(arrayAssignment)).toBeNull();
     expect(normalizeAssignment({ personId: null, segmentId: 'S1' })).toBeNull();
     expect(normalizeAssignment({ personId: 'P1', segmentId: null })).toBeNull();
-    expect(normalizeAssignment({ personId: ' P1 ', segmentId: ' S1 ' })).toEqual({ personId: 'P1', segmentId: 'S1' });
-    expect(() => parseRequest(JSON.stringify({ ...valid, proposedAssignment: null }))).toThrow('A proposed assignment is required.');
+    expect(
+      normalizeAssignment({ personId: ' P1 ', segmentId: ' S1 ' })
+    ).toEqual({ personId: 'P1', segmentId: 'S1' });
+    expect(() =>
+      parseRequest(JSON.stringify({ ...valid, proposedAssignment: null }))
+    ).toThrow('A proposed assignment is required.');
     const base = JSON.parse(input([]));
     const pointMap = new Map(base.points.map(point => [point.pointId, point]));
-    const segmentMap = new Map(base.segments.map(segment => [segment.segmentId, segment]));
-    expect(resolveInterval(segmentMap, pointMap, 'S1').startTime).toBe(Date.parse(base.points[0].timestamp));
+    const segmentMap = new Map(
+      base.segments.map(segment => [segment.segmentId, segment])
+    );
+    expect(resolveInterval(segmentMap, pointMap, 'S1').startTime).toBe(
+      Date.parse(base.points[0].timestamp)
+    );
     expect(() => resolveInterval(segmentMap, pointMap, 'missing')).toThrow(
       'Unknown segment: missing'
     );
@@ -139,8 +152,15 @@ describe('personSegmentAssignmentPredicate', () => {
         new Map([['P1', base.points[0]]]),
         'S'
       )
-    ).toEqual({ startTime: Date.parse(base.points[0].timestamp), endTime: Date.parse(base.points[0].timestamp) });
-    expect(overlaps({ startTime: 0, endTime: 1 }, { startTime: 1, endTime: 2 })).toBe(false);
-    expect(overlaps({ startTime: 0, endTime: 2 }, { startTime: 1, endTime: 3 })).toBe(true);
+    ).toEqual({
+      startTime: Date.parse(base.points[0].timestamp),
+      endTime: Date.parse(base.points[0].timestamp),
+    });
+    expect(
+      overlaps({ startTime: 0, endTime: 1 }, { startTime: 1, endTime: 2 })
+    ).toBe(false);
+    expect(
+      overlaps({ startTime: 0, endTime: 2 }, { startTime: 1, endTime: 3 })
+    ).toBe(true);
   });
 });

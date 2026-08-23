@@ -102,7 +102,17 @@ export const createTextNode = value => getDocumentObj().createTextNode(value);
 export const getElementsByTagName = tagName =>
   getDocumentObj().getElementsByTagName(tagName);
 export const hasClass = (element, cls) => element.classList.contains(cls);
-export const hide = element => (element.style.display = 'none');
+/**
+ * Hides an element when it is still present in the document.
+ *
+ * UI teardown can race with event handlers, so a missing element is a
+ * legitimate no-op rather than an application error.
+ * @param {HTMLElement|null|undefined} element - Element to hide.
+ * @returns {void}
+ */
+export const hide = element => {
+  if (element) element.style.display = 'none';
+};
 export const addEventListener = (element, event, func) =>
   element.addEventListener(event, func);
 export const appendChild = (parentNode, newChild) =>

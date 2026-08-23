@@ -1,7 +1,5 @@
 import { existingAssetFulfillmentSequenceFeasibility } from './existingAssetFulfillmentSequenceFeasibility.js';
-import {
-  fulfillmentSkuBoundary,
-} from '../2026-08-22/fulfillmentResult.js';
+import { fulfillmentSkuBoundary } from '../2026-08-22/fulfillmentResult.js';
 
 /**
  * Test existing assets for a SKU against a complete fulfillment sequence.
@@ -10,11 +8,13 @@ import {
  */
 export function skuExistingStockFulfillmentFeasibility(input) {
   return fulfillmentSkuBoundary(input, (asset, request) =>
-    existingAssetFulfillmentSequenceFeasibility(JSON.stringify({
-      asset,
-      proposal: request.proposal,
-      points: request.points,
-      spacePoints: request.spacePoints,
-    }))
+    existingAssetFulfillmentSequenceFeasibility(
+      JSON.stringify({
+        asset,
+        proposal: request.proposal,
+        points: request.points,
+        spacePoints: request.spacePoints,
+      })
+    )
   );
 }
