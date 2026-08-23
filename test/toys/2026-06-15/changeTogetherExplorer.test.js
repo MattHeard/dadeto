@@ -121,19 +121,39 @@ describe('changeTogetherExplorer', () => {
   });
 
   test('covers normalization, parsing, and deterministic helper contracts', () => {
-    expect(changeTogetherExplorerTestOnly.normalizeFileList([
-      'b.js', 'a.js', 'a.js', 3,
-    ])).toEqual(['a.js', 'b.js']);
+    expect(
+      changeTogetherExplorerTestOnly.normalizeFileList([
+        'b.js',
+        'a.js',
+        'a.js',
+        3,
+      ])
+    ).toEqual(['a.js', 'b.js']);
     expect(changeTogetherExplorerTestOnly.normalizeFileList(null)).toEqual([]);
     expect(changeTogetherExplorerTestOnly.normalizeChangeSet({}, 2)).toEqual({
-      id: 'change-set-3', files: [],
+      id: 'change-set-3',
+      files: [],
     });
-    expect(changeTogetherExplorerTestOnly.normalizeChangeSets([null, { id: 'x', files: ['a'] }])).toEqual([
-      { id: 'change-set-1', files: [] }, { id: 'x', files: ['a'] },
+    expect(
+      changeTogetherExplorerTestOnly.normalizeChangeSets([
+        null,
+        { id: 'x', files: ['a'] },
+      ])
+    ).toEqual([
+      { id: 'change-set-1', files: [] },
+      { id: 'x', files: ['a'] },
     ]);
-    expect(changeTogetherExplorerTestOnly.parseChangeTogetherInput('{')).toEqual({ changeSets: [] });
-    expect(changeTogetherExplorerTestOnly.parseChangeTogetherInput('[]')).toStrictEqual({ changeSets: [] });
-    expect(changeTogetherExplorerTestOnly.parseChangeTogetherInput(JSON.stringify({ changeSets: [] }))).toEqual({ changeSets: [] });
+    expect(
+      changeTogetherExplorerTestOnly.parseChangeTogetherInput('{')
+    ).toEqual({ changeSets: [] });
+    expect(
+      changeTogetherExplorerTestOnly.parseChangeTogetherInput('[]')
+    ).toStrictEqual({ changeSets: [] });
+    expect(
+      changeTogetherExplorerTestOnly.parseChangeTogetherInput(
+        JSON.stringify({ changeSets: [] })
+      )
+    ).toEqual({ changeSets: [] });
     expect(changeTogetherExplorerTestOnly.isRecord({})).toBe(true);
     expect(changeTogetherExplorerTestOnly.isRecord([])).toBe(false);
     expect(changeTogetherExplorerTestOnly.isRecord(null)).toBe(false);
@@ -155,39 +175,60 @@ describe('changeTogetherExplorer', () => {
     expect(pair.supportingChangeSetIds).toEqual(new Set(['a', 'b']));
     expect(stats.fileStats.get('a.js').touchCount).toBe(2);
     expect(changeTogetherExplorerTestOnly.scorePair(pair)).toMatchObject({
-      files: ['b.js', 'a.js'], supportingChangeSetIds: ['a', 'b'],
+      files: ['b.js', 'a.js'],
+      supportingChangeSetIds: ['a', 'b'],
     });
-    expect(changeTogetherExplorerTestOnly.scoreFile('a.js', stats.fileStats.get('a.js'))).toMatchObject({
-      partnerCount: 1, partnerFiles: ['b.js'],
+    expect(
+      changeTogetherExplorerTestOnly.scoreFile(
+        'a.js',
+        stats.fileStats.get('a.js')
+      )
+    ).toMatchObject({
+      partnerCount: 1,
+      partnerFiles: ['b.js'],
     });
-    expect(changeTogetherExplorerTestOnly.scoreFile('x.js', {
-      touchCount: 1,
-      partners: new Set(['z.js', 'a.js']),
-    }).partnerFiles).toEqual(['a.js', 'z.js']);
-    expect(changeTogetherExplorerTestOnly.compareRankedPairs(
-      { files: ['z', 'z'], coChangeCount: 2 },
-      { files: ['a', 'a'], coChangeCount: 1 }
-    )).toBeLessThan(0);
-    expect(changeTogetherExplorerTestOnly.compareRankedPairs(
-      { files: ['a', 'z'], coChangeCount: 1 },
-      { files: ['a', 'b'], coChangeCount: 1 }
-    )).toBeGreaterThan(0);
-    expect(changeTogetherExplorerTestOnly.compareRankedFiles(
-      { file: 'a', touchCount: 2, partnerCount: 0 },
-      { file: 'b', touchCount: 1, partnerCount: 4 }
-    )).toBeLessThan(0);
-    expect(changeTogetherExplorerTestOnly.compareRankedFiles(
-      { file: 'a', touchCount: 1, partnerCount: 2 },
-      { file: 'b', touchCount: 1, partnerCount: 1 }
-    )).toBeLessThan(0);
-    expect(changeTogetherExplorerTestOnly.compareRankedFiles(
-      { file: 'a', touchCount: 1, partnerCount: 1 },
-      { file: 'b', touchCount: 1, partnerCount: 1 }
-    )).toBeLessThan(0);
+    expect(
+      changeTogetherExplorerTestOnly.scoreFile('x.js', {
+        touchCount: 1,
+        partners: new Set(['z.js', 'a.js']),
+      }).partnerFiles
+    ).toEqual(['a.js', 'z.js']);
+    expect(
+      changeTogetherExplorerTestOnly.compareRankedPairs(
+        { files: ['z', 'z'], coChangeCount: 2 },
+        { files: ['a', 'a'], coChangeCount: 1 }
+      )
+    ).toBeLessThan(0);
+    expect(
+      changeTogetherExplorerTestOnly.compareRankedPairs(
+        { files: ['a', 'z'], coChangeCount: 1 },
+        { files: ['a', 'b'], coChangeCount: 1 }
+      )
+    ).toBeGreaterThan(0);
+    expect(
+      changeTogetherExplorerTestOnly.compareRankedFiles(
+        { file: 'a', touchCount: 2, partnerCount: 0 },
+        { file: 'b', touchCount: 1, partnerCount: 4 }
+      )
+    ).toBeLessThan(0);
+    expect(
+      changeTogetherExplorerTestOnly.compareRankedFiles(
+        { file: 'a', touchCount: 1, partnerCount: 2 },
+        { file: 'b', touchCount: 1, partnerCount: 1 }
+      )
+    ).toBeLessThan(0);
+    expect(
+      changeTogetherExplorerTestOnly.compareRankedFiles(
+        { file: 'a', touchCount: 1, partnerCount: 1 },
+        { file: 'b', touchCount: 1, partnerCount: 1 }
+      )
+    ).toBeLessThan(0);
     const triple = changeTogetherExplorerTestOnly.buildCoChangeStats([
       { id: 'triple', files: ['a.js', 'b.js', 'c.js'] },
     ]);
     expect(triple.pairStats.size).toBe(3);
-    expect(triple.fileStats.get('c.js').partners).toEqual(new Set(['a.js', 'b.js']));
+    expect(triple.fileStats.get('c.js').partners).toEqual(
+      new Set(['a.js', 'b.js'])
+    );
   });
 });

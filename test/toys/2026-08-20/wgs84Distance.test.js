@@ -23,7 +23,10 @@ describe('wgs84Distance', () => {
   });
 
   test('handles antimeridian longitude wrapping and latitude extremes', () => {
-    expect(wgs84Distance(0, 179.9, 0, -179.9)).toBeCloseTo(22263.898155840816, 6);
+    expect(wgs84Distance(0, 179.9, 0, -179.9)).toBeCloseTo(
+      22263.898155840816,
+      6
+    );
     expect(wgs84Distance(89.9, 0, 89.9, 180)).toBeCloseTo(22263.92975486588, 6);
   });
 

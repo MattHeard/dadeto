@@ -95,7 +95,10 @@ function getExistingMergeTransactionOperation(existing, incoming) {
  * @returns {LedgerStorageAction} Merge action payload.
  */
 function createMergeAction(action, transaction, existing) {
-  return CREATE_MERGE_ACTION_REPORTS[action](transaction, existing);
+  return CREATE_MERGE_ACTION_REPORTS[action](
+    transaction,
+    /** @type {LedgerIngestTransaction} */ (existing)
+  );
 }
 
 /**

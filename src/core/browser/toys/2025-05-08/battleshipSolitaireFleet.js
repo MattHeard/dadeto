@@ -431,7 +431,8 @@ function getValidCandidate(direction, context) {
 }
 
 /**
- *
+ * Create an empty segment accumulator.
+ * @returns {Array<object>} Empty segment list.
  */
 function createEmptySegments() {
   // Stryker disable next-line all -- an empty accumulator is a structural seed.

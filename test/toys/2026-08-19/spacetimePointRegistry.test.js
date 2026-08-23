@@ -95,15 +95,19 @@ describe('spacetimePointRegistry', () => {
     expect(normalizePoint(null)).toBeNull();
     expect(normalizePoint([])).toBeNull();
     expect(normalizePoint('point')).toBeNull();
-    expect(normalizePoint({
-      latitude: 0,
-      longitude: 0,
-      timestamp: '2026-08-21T09:05Z',
-    })).toBeNull();
-    expect(normalizePoint({
-      spacePointId: 'SP',
-      timestamp: '2026-08-21T09:05Z',
-    })).toBeNull();
+    expect(
+      normalizePoint({
+        latitude: 0,
+        longitude: 0,
+        timestamp: '2026-08-21T09:05Z',
+      })
+    ).toBeNull();
+    expect(
+      normalizePoint({
+        spacePointId: 'SP',
+        timestamp: '2026-08-21T09:05Z',
+      })
+    ).toBeNull();
     expect(
       normalizePoint({
         pointId: 'P',
@@ -127,24 +131,30 @@ describe('spacetimePointRegistry', () => {
     expect(normalizePoint({ ...point, pointId: '' })).toBeNull();
     expect(normalizePoint({ ...point, latitude: null })).toBeNull();
     expect(normalizePoint({ ...point, longitude: null })).toBeNull();
-    expect(normalizePoint({
-      ...point,
-      latitude: null,
-      longitude: null,
-    })).toBeNull();
-    expect(normalizePoint({
-      pointId: 'P',
-      spacePointId: 'SP',
-      latitude: 0,
-      timestamp: '2026-08-21T09:05Z',
-    })).toBeNull();
-    expect(normalizePoint({
-      pointId: 'P',
-      spacePointId: '',
-      latitude: 0,
-      longitude: null,
-      timestamp: '2026-08-21T09:05Z',
-    })).toBeNull();
+    expect(
+      normalizePoint({
+        ...point,
+        latitude: null,
+        longitude: null,
+      })
+    ).toBeNull();
+    expect(
+      normalizePoint({
+        pointId: 'P',
+        spacePointId: 'SP',
+        latitude: 0,
+        timestamp: '2026-08-21T09:05Z',
+      })
+    ).toBeNull();
+    expect(
+      normalizePoint({
+        pointId: 'P',
+        spacePointId: '',
+        latitude: 0,
+        longitude: null,
+        timestamp: '2026-08-21T09:05Z',
+      })
+    ).toBeNull();
     expect(normalizePoint({ ...point, timestamp: null })).toBeNull();
     expect(
       normalizePoint({

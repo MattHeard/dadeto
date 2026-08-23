@@ -61,8 +61,9 @@ describe('createKeyValueRow DOM appends', () => {
     expect(dom.setTextContent).toHaveBeenCalledWith(button, '+');
     expect(dom.setType).toHaveBeenCalledWith(button, 'button');
     expect(dom.createElement).toHaveBeenCalledWith('button');
-    expect(dom.createElement.mock.calls.filter(([tag]) => tag === 'button'))
-      .toHaveLength(2);
+    expect(
+      dom.createElement.mock.calls.filter(([tag]) => tag === 'button')
+    ).toHaveLength(2);
     expect(dom.appendChild).toHaveBeenNthCalledWith(1, typeSelect, option1);
     expect(dom.appendChild).toHaveBeenNthCalledWith(2, typeSelect, option2);
     expect(dom.appendChild).toHaveBeenNthCalledWith(3, typeSelect, option3);

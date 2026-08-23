@@ -58,9 +58,7 @@ export function resolvePoint(point, spacePoints, requireCoordinates = false) {
     );
   if ((hasLatitude || reference) && (latitude === null || longitude === null))
     throw new Error(`Point ${point.pointId} has invalid coordinates.`);
-  if (reference && !hasLatitude)
-    return { ...point, latitude, longitude };
-  if (hasLatitude)
-    return { ...point, latitude, longitude };
+  if (reference && !hasLatitude) return { ...point, latitude, longitude };
+  if (hasLatitude) return { ...point, latitude, longitude };
   return point;
 }

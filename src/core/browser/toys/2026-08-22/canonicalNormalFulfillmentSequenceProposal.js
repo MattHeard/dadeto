@@ -3,6 +3,7 @@
 import { normalizeCoordinateRecord } from '../2026-08-18/registryUtils.js';
 import { resolvePointRecords } from './spacePointResolution.js';
 import { normalFulfillmentSequenceProposal } from './normalFulfillmentSequenceProposal.js';
+import { fulfillmentFailure } from './fulfillmentResult.js';
 
 /**
  * Build a normal fulfillment proposal with a self-contained canonical spatial context.
@@ -40,10 +41,16 @@ export function canonicalNormalFulfillmentSequenceProposal(input) {
     ]);
     return JSON.stringify({ ...proposal, spacePoints: allSpacePoints });
   } catch (error) {
-    return JSON.stringify({ valid: false, error: error.message });
+    return fulfillmentFailure(error);
   }
 }
 
+// Canonicalization owns the spatial normalization boundary.
+
+/**
+ * @param {Array<any>} values Candidate space points.
+ * @returns {Array<any>} Canonical space points.
+ */
 function canonicalSpacePoints(values) {
   if (!Array.isArray(values)) throw new Error('spacePoints must be an array.');
   const records = values.map(canonicalSpacePoint);
@@ -63,6 +70,10 @@ function canonicalSpacePoints(values) {
   );
 }
 
+/**
+ * @param {any} value Candidate space point.
+ * @returns {{spacePointId: string, latitude: number, longitude: number}} Canonical point.
+ */
 function canonicalSpacePoint(value) {
   const record = normalizeCoordinateRecord(value, 'spacePointId');
   if (!record || record.latitude === null || record.longitude === null)

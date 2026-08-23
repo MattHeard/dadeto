@@ -8,8 +8,6 @@ Combine two precomputed feasibility branches.
 
 Submit procurementFeasible and existingStockFeasible.
 
-### Example
-
 ```json
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -17,21 +15,9 @@ Submit procurementFeasible and existingStockFeasible.
 }
 ```
 
-### Schema
-
-```json
-{"type":"object"}
-```
-
 ## Output
 
 Returns the combined feasibility result.
-
-### Example
-
-```json
-{"example": true}
-```
 
 ## Behavior
 

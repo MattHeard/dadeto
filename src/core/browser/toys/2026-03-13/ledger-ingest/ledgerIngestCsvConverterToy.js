@@ -1,8 +1,4 @@
-import {
-  isBlankStringValue,
-  whenOrDefault,
-  whenOrNull,
-} from '../../../browser-core.js';
+import { isBlankStringValue, whenOrNull } from '../../../browser-core.js';
 import { createDefaultLedgerIngestDedupePolicy } from './ledgerIngestShared.js';
 import { formatToyConversionError } from '../../formatToyError.js';
 
@@ -55,7 +51,7 @@ function splitCsvRows(input) {
 }
 
 /**
- * @returns {{ rows: string[][], row: string[], cell: string, inQuotes: boolean }} CSV parse state.
+ * @returns {{ rows: string[][], row: string[], cell: string, inQuotes: boolean, skipLineBreakTail: boolean }} CSV parse state.
  */
 function createCsvParseState() {
   return {
@@ -68,7 +64,7 @@ function createCsvParseState() {
 }
 
 /**
- * @param {{ rows: string[][], row: string[], cell: string, inQuotes: boolean }} state CSV parse state.
+ * @param {{ rows: string[][], row: string[], cell: string, inQuotes: boolean, skipLineBreakTail: boolean }} state CSV parse state.
  * @param {string} input CSV text.
  * @param {number} index Current character index.
  * @returns {number} Index that should be assigned back to the loop.
@@ -87,10 +83,10 @@ function processCsvCharacter(state, input, index) {
 }
 
 /**
- * @param {{ rows: string[][], row: string[], cell: string, inQuotes: boolean }} state CSV parse state.
+ * @param {{ rows: string[][], row: string[], cell: string, inQuotes: boolean, skipLineBreakTail: boolean }} state CSV parse state.
  * @param {string} input CSV text.
  * @param {number} index Current character index.
- * @param {Array<(state: { rows: string[][], row: string[], cell: string, inQuotes: boolean }, chars: { char: string, next: string | undefined }, index: number) => number | null>} handlers Character handlers to evaluate.
+ * @param {Array<(state: { rows: string[][], row: string[], cell: string, inQuotes: boolean, skipLineBreakTail: boolean }, chars: { char: string, next: string | undefined }, index: number) => number | null>} handlers Character handlers to evaluate.
  * @returns {number} Index that should be assigned back to the loop.
  */
 function processCsvCharacterWithHandlers(state, input, index, handlers) {
@@ -122,7 +118,7 @@ function whenCsvBranch(condition, onMatch, onFallback) {
 }
 
 /**
- * @param {{ rows: string[][], row: string[], cell: string, inQuotes: boolean }} state CSV parse state.
+ * @param {{ rows: string[][], row: string[], cell: string, inQuotes: boolean, skipLineBreakTail: boolean }} state CSV parse state.
  * @param {{ char: string, next: string | undefined }} chars Current and next character.
  * @param {number} index Current character index.
  * @returns {number | null} Updated index when the quoted character was handled.
@@ -135,7 +131,7 @@ function processCsvQuotedCharacter(state, chars, index) {
 }
 
 /**
- * @param {{ rows: string[][], row: string[], cell: string, inQuotes: boolean }} state CSV parse state.
+ * @param {{ rows: string[][], row: string[], cell: string, inQuotes: boolean, skipLineBreakTail: boolean }} state CSV parse state.
  * @param {{ char: string, next: string | undefined }} chars Current and next character.
  * @param {number} index Current character index.
  * @returns {number} Updated index when the quote was handled.
@@ -152,7 +148,7 @@ function processCsvQuotedCharacterState(state, chars, index) {
 }
 
 /**
- * @param {{ rows: string[][], row: string[], cell: string, inQuotes: boolean }} state CSV parse state.
+ * @param {{ rows: string[][], row: string[], cell: string, inQuotes: boolean, skipLineBreakTail: boolean }} state CSV parse state.
  * @param {string | undefined} next Next character.
  * @param {number} index Current character index.
  * @returns {number} Updated index after quote handling.
@@ -167,7 +163,7 @@ function processCsvQuotedCharacterInside(state, next, index) {
 }
 
 /**
- * @param {{ rows: string[][], row: string[], cell: string, inQuotes: boolean }} state CSV parse state.
+ * @param {{ rows: string[][], row: string[], cell: string, inQuotes: boolean, skipLineBreakTail: boolean }} state CSV parse state.
  * @param {{ char: string, next: string | undefined }} chars Current and next character.
  * @param {number} index Current character index.
  * @returns {number | null} Updated index when a delimiter was handled.
@@ -189,6 +185,12 @@ function processCsvDelimiterCharacter(state, chars, index) {
  * @param {{ char: string, next: string | undefined }} chars Current and next character.
  * @param {number} index Current character index.
  * @returns {number} Updated index after the line break is handled.
+ */
+/**
+ * @param {{ rows: string[][], row: string[], cell: string, inQuotes: boolean, skipLineBreakTail: boolean }} state - CSV parse state.
+ * @param {{ char: string, next: string | undefined }} chars - Current and next character.
+ * @param {number} index - Character index.
+ * @returns {number} Updated index.
  */
 function processCsvLineBreakContinuation(state, chars, index) {
   flushCsvRow(state);

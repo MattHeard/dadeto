@@ -111,10 +111,7 @@ describe('toys additional coverage', () => {
       )
     ).toEqual({ name: 'Grace' });
     expect(
-      parseExistingRows(
-        { getValue: jest.fn(() => 'not json') },
-        { value: '' }
-      )
+      parseExistingRows({ getValue: jest.fn(() => 'not json') }, { value: '' })
     ).toEqual({});
     expect(
       parseExistingRows(
@@ -430,7 +427,9 @@ describe('additional dropdown and focus coverage', () => {
     };
     utils.handleDropdownChange(
       dropdown,
-      () => ({ output: { 'post-id': { presenterKey: 'text', content: 'ok' } } }),
+      () => ({
+        output: { 'post-id': { presenterKey: 'text', content: 'ok' } },
+      }),
       dom
     );
     expect(dom.removeAllChildren).toHaveBeenCalledWith(parent);
@@ -442,11 +441,7 @@ describe('additional dropdown and focus coverage', () => {
     });
 
     dom.removeAllChildren.mockClear();
-    utils.handleDropdownChange(
-      dropdown,
-      () => ({ output: null }),
-      dom
-    );
+    utils.handleDropdownChange(dropdown, () => ({ output: null }), dom);
     expect(dom.removeAllChildren).toHaveBeenCalledWith(parent);
     expect(dom.setTextContent).toHaveBeenCalledWith(child, '');
     const noParentDropdown = {
@@ -457,7 +452,9 @@ describe('additional dropdown and focus coverage', () => {
     dom.querySelector.mockClear();
     utils.handleDropdownChange(
       noParentDropdown,
-      () => ({ output: { 'post-id': { presenterKey: 'text', content: 'ignored' } } }),
+      () => ({
+        output: { 'post-id': { presenterKey: 'text', content: 'ignored' } },
+      }),
       dom
     );
     expect(dom.querySelector).not.toHaveBeenCalled();
@@ -611,28 +608,24 @@ describe('additional dropdown and focus coverage', () => {
     const migrateKey = {};
     dom.getDataAttribute.mockReturnValue('old');
     dom.getTargetValue.mockReturnValue('new');
-    utils
-      .createKeyInputHandler({
-        dom,
-        keyEl: migrateKey,
-        textInput: {},
-        rowData: migratedData,
-        syncHiddenField: sync,
-      })
-      ({ target: {} });
+    utils.createKeyInputHandler({
+      dom,
+      keyEl: migrateKey,
+      textInput: {},
+      rowData: migratedData,
+      syncHiddenField: sync,
+    })({ target: {} });
     expect(migratedRows).toEqual({ new: 'value' });
     expect(migratedTypes).toEqual({ new: 'number' });
     const defaultTypeRows = { old: 'value' };
     const defaultTypeData = { rows: defaultTypeRows, rowTypes: {} };
-    utils
-      .createKeyInputHandler({
-        dom,
-        keyEl: {},
-        textInput: {},
-        rowData: defaultTypeData,
-        syncHiddenField: sync,
-      })
-      ({ target: {} });
+    utils.createKeyInputHandler({
+      dom,
+      keyEl: {},
+      textInput: {},
+      rowData: defaultTypeData,
+      syncHiddenField: sync,
+    })({ target: {} });
     expect(defaultTypeData.rowTypes).toEqual({ new: 'string' });
     const valueHandler = utils.createValueInputHandler({
       dom,
@@ -690,10 +683,6 @@ describe('additional dropdown and focus coverage', () => {
     renderer();
     sync.mockClear();
     utils.syncRowData(sync, {}, null, dom);
-    expect(sync).toHaveBeenCalledWith(
-      {},
-      { rows: {}, rowTypes: {} },
-      dom
-    );
+    expect(sync).toHaveBeenCalledWith({}, { rows: {}, rowTypes: {} }, dom);
   });
 });

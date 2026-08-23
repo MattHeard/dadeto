@@ -61,6 +61,9 @@ const normalRequest = {
   },
 };
 
+/**
+ *
+ */
 function normalProposal() {
   return JSON.parse(
     canonicalNormalFulfillmentSequenceProposal(JSON.stringify(normalRequest))

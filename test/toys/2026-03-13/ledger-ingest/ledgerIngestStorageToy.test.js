@@ -100,7 +100,9 @@ describe('ledgerIngestStorageToy', () => {
       createStoredRoot('LEDG3', firstRun.canonicalTransactions)
     );
   });
+});
 
+describe('ledgerIngestStorageToy updates', () => {
   it('updates a stored transaction when the merge key matches but the id changes', () => {
     const input = JSON.stringify({ fixture: 'repeatImport' });
     const firstRun = JSON.parse(ledgerIngestToy(input));
@@ -141,14 +143,34 @@ describe('ledgerIngestStorageToy', () => {
 
   it('normalizes helper fallbacks and missing storage access', () => {
     const transaction = { transactionId: 'new', dedupeKey: 'key' };
-    expect(ledgerIngestStorageToyTestOnly.createMergeAction('insert', transaction)).toEqual({
-      action: 'insert', mergeKey: 'key', transactionId: 'new',
+    expect(
+      ledgerIngestStorageToyTestOnly.createMergeAction('insert', transaction)
+    ).toEqual({
+      action: 'insert',
+      mergeKey: 'key',
+      transactionId: 'new',
     });
-    expect(ledgerIngestStorageToyTestOnly.createMergeAction('skip', transaction, transaction)).toEqual({
-      action: 'skip', mergeKey: 'key', transactionId: 'new',
+    expect(
+      ledgerIngestStorageToyTestOnly.createMergeAction(
+        'skip',
+        transaction,
+        transaction
+      )
+    ).toEqual({
+      action: 'skip',
+      mergeKey: 'key',
+      transactionId: 'new',
     });
-    expect(ledgerIngestStorageToyTestOnly.createMergeAction('update', transaction, { ...transaction, transactionId: 'old' })).toEqual({
-      action: 'update', mergeKey: 'key', transactionId: 'new', previousTransactionId: 'old',
+    expect(
+      ledgerIngestStorageToyTestOnly.createMergeAction('update', transaction, {
+        ...transaction,
+        transactionId: 'old',
+      })
+    ).toEqual({
+      action: 'update',
+      mergeKey: 'key',
+      transactionId: 'new',
+      previousTransactionId: 'old',
     });
     expect(ledgerIngestStorageCoreTestOnly.cloneRecord(null)).toEqual({});
     expect(

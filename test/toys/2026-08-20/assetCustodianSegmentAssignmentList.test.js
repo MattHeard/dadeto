@@ -199,45 +199,115 @@ describe('assetCustodianSegmentAssignmentList', () => {
     ['[]', 'Input must be a JSON object.'],
     ['0', 'Input must be a JSON object.'],
     [JSON.stringify({ path: 'items' }), 'An assignment object is required.'],
-    [JSON.stringify({ path: 'items', assignment: null }), 'An assignment object is required.'],
-    [JSON.stringify({ path: 'items', assignment: [] }), 'An assignment object is required.'],
-    [JSON.stringify({ path: 'items', assignment: { assetId: 'A', segmentId: 'S', custodianPersonId: 'C' } }), ''],
+    [
+      JSON.stringify({ path: 'items', assignment: null }),
+      'An assignment object is required.',
+    ],
+    [
+      JSON.stringify({ path: 'items', assignment: [] }),
+      'An assignment object is required.',
+    ],
+    [
+      JSON.stringify({
+        path: 'items',
+        assignment: { assetId: 'A', segmentId: 'S', custodianPersonId: 'C' },
+      }),
+      '',
+    ],
   ])('returns the precise validation result for %s', (input, error) => {
-    const result = JSON.parse(assetCustodianSegmentAssignmentList(input, fixture().env));
+    const result = JSON.parse(
+      assetCustodianSegmentAssignmentList(input, fixture().env)
+    );
     if (error) expect(result).toEqual({ appended: false, error });
     else expect(result.appended).toBe(true);
   });
 
   test('defaults memory location and trims path and identifiers', () => {
     const value = fixture();
-    const result = JSON.parse(assetCustodianSegmentAssignmentList(JSON.stringify({
-      path: ' items ',
-      assignment: { assetId: ' A ', segmentId: ' S ', custodianPersonId: ' C ' },
-    }), value.env));
+    const result = JSON.parse(
+      assetCustodianSegmentAssignmentList(
+        JSON.stringify({
+          path: ' items ',
+          assignment: {
+            assetId: ' A ',
+            segmentId: ' S ',
+            custodianPersonId: ' C ',
+          },
+        }),
+        value.env
+      )
+    );
     expect(result).toMatchObject({ appended: true, length: 1 });
-    expect(value.state.temporary.items).toEqual([{ assetId: 'A', segmentId: 'S', custodianPersonId: 'C' }]);
+    expect(value.state.temporary.items).toEqual([
+      { assetId: 'A', segmentId: 'S', custodianPersonId: 'C' },
+    ]);
   });
 
   test('stringifies a numeric path before appending', () => {
     const value = fixture();
-    const result = JSON.parse(assetCustodianSegmentAssignmentList(JSON.stringify({
-      path: 42,
-      assignment: { assetId: 'A', segmentId: 'S', custodianPersonId: 'C' },
-    }), value.env));
+    const result = JSON.parse(
+      assetCustodianSegmentAssignmentList(
+        JSON.stringify({
+          path: 42,
+          assignment: { assetId: 'A', segmentId: 'S', custodianPersonId: 'C' },
+        }),
+        value.env
+      )
+    );
     expect(result).toMatchObject({ appended: true, length: 1 });
-    expect(value.state.temporary['42']).toEqual([{ assetId: 'A', segmentId: 'S', custodianPersonId: 'C' }]);
+    expect(value.state.temporary['42']).toEqual([
+      { assetId: 'A', segmentId: 'S', custodianPersonId: 'C' },
+    ]);
   });
 
   test('preserves precise errors for empty identifiers, path, and location', () => {
     const cases = [
-      [{ path: 'items', assignment: { assetId: '', segmentId: 'S', custodianPersonId: 'C' } }, 'An assignment requires assetId, segmentId, and custodianPersonId.'],
-      [{ path: 'items', assignment: { assetId: 'A', segmentId: '', custodianPersonId: 'C' } }, 'An assignment requires assetId, segmentId, and custodianPersonId.'],
-      [{ path: 'items', assignment: { assetId: 'A', segmentId: 'S', custodianPersonId: '' } }, 'An assignment requires assetId, segmentId, and custodianPersonId.'],
-      [{ path: '   ', assignment: { assetId: 'A', segmentId: 'S', custodianPersonId: 'C' } }, 'A path is required.'],
-      [{ path: 'items', memoryLocation: 'other', assignment: { assetId: 'A', segmentId: 'S', custodianPersonId: 'C' } }, 'Unsupported memory location.'],
+      [
+        {
+          path: 'items',
+          assignment: { assetId: '', segmentId: 'S', custodianPersonId: 'C' },
+        },
+        'An assignment requires assetId, segmentId, and custodianPersonId.',
+      ],
+      [
+        {
+          path: 'items',
+          assignment: { assetId: 'A', segmentId: '', custodianPersonId: 'C' },
+        },
+        'An assignment requires assetId, segmentId, and custodianPersonId.',
+      ],
+      [
+        {
+          path: 'items',
+          assignment: { assetId: 'A', segmentId: 'S', custodianPersonId: '' },
+        },
+        'An assignment requires assetId, segmentId, and custodianPersonId.',
+      ],
+      [
+        {
+          path: '   ',
+          assignment: { assetId: 'A', segmentId: 'S', custodianPersonId: 'C' },
+        },
+        'A path is required.',
+      ],
+      [
+        {
+          path: 'items',
+          memoryLocation: 'other',
+          assignment: { assetId: 'A', segmentId: 'S', custodianPersonId: 'C' },
+        },
+        'Unsupported memory location.',
+      ],
     ];
     for (const [input, error] of cases) {
-      expect(JSON.parse(assetCustodianSegmentAssignmentList(JSON.stringify(input), fixture().env))).toEqual({ appended: false, error });
+      expect(
+        JSON.parse(
+          assetCustodianSegmentAssignmentList(
+            JSON.stringify(input),
+            fixture().env
+          )
+        )
+      ).toEqual({ appended: false, error });
     }
   });
 
@@ -248,28 +318,48 @@ describe('assetCustodianSegmentAssignmentList', () => {
     expect(() => parseRequest(JSON.stringify({ path: 'items' }))).toThrow(
       'An assignment object is required.'
     );
-    expect(() => parseRequest(JSON.stringify({ path: 'items', assignment: 0 }))).toThrow(
-      'An assignment object is required.'
-    );
-    expect(() => parseRequest(JSON.stringify({
-      assignment: { assetId: 'A', segmentId: 'S', custodianPersonId: 'C' },
-    }))).toThrow('A path is required.');
-    expect(parseRequest(JSON.stringify({
-      path: ' items ',
-      assignment: { assetId: 'A', segmentId: 'S', custodianPersonId: 'C' },
-    }))).toMatchObject({ path: 'items' });
-    expect(() => parseRequest(JSON.stringify({
-      path: '   ',
-      assignment: { assetId: 'A', segmentId: 'S', custodianPersonId: 'C' },
-    }))).toThrow('A path is required.');
-    expect(() => parseRequest(JSON.stringify({
-      path: 'items',
-      memoryLocation: 'other',
-      assignment: { assetId: 'A', segmentId: 'S', custodianPersonId: 'C' },
-    }))).toThrow('Unsupported memory location.');
-    expect(parseRequest(JSON.stringify({
-      path: 42,
-      assignment: { assetId: 'A', segmentId: 'S', custodianPersonId: 'C' },
-    }))).toMatchObject({ path: '42' });
+    expect(() =>
+      parseRequest(JSON.stringify({ path: 'items', assignment: 0 }))
+    ).toThrow('An assignment object is required.');
+    expect(() =>
+      parseRequest(
+        JSON.stringify({
+          assignment: { assetId: 'A', segmentId: 'S', custodianPersonId: 'C' },
+        })
+      )
+    ).toThrow('A path is required.');
+    expect(
+      parseRequest(
+        JSON.stringify({
+          path: ' items ',
+          assignment: { assetId: 'A', segmentId: 'S', custodianPersonId: 'C' },
+        })
+      )
+    ).toMatchObject({ path: 'items' });
+    expect(() =>
+      parseRequest(
+        JSON.stringify({
+          path: '   ',
+          assignment: { assetId: 'A', segmentId: 'S', custodianPersonId: 'C' },
+        })
+      )
+    ).toThrow('A path is required.');
+    expect(() =>
+      parseRequest(
+        JSON.stringify({
+          path: 'items',
+          memoryLocation: 'other',
+          assignment: { assetId: 'A', segmentId: 'S', custodianPersonId: 'C' },
+        })
+      )
+    ).toThrow('Unsupported memory location.');
+    expect(
+      parseRequest(
+        JSON.stringify({
+          path: 42,
+          assignment: { assetId: 'A', segmentId: 'S', custodianPersonId: 'C' },
+        })
+      )
+    ).toMatchObject({ path: '42' });
   });
 });

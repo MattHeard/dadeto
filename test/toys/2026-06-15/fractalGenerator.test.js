@@ -95,7 +95,9 @@ describe('fractalGenerator', () => {
     expect(fractalGeneratorTestOnly.parseConfig('')).toEqual({});
     expect(fractalGeneratorTestOnly.parseConfig('null')).toEqual({});
     expect(fractalGeneratorTestOnly.parseJsonOrNull('{')).toBeNull();
-    expect(fractalGeneratorTestOnly.parseJsonOrNull('{"x":1}')).toEqual({ x: 1 });
+    expect(fractalGeneratorTestOnly.parseJsonOrNull('{"x":1}')).toEqual({
+      x: 1,
+    });
     expect(fractalGeneratorTestOnly.numberOr(3, 0)).toBe(3);
     expect(fractalGeneratorTestOnly.numberOr('3', 0)).toBe(0);
     expect(fractalGeneratorTestOnly.numberOr(Infinity, 7)).toBe(7);
@@ -104,25 +106,60 @@ describe('fractalGenerator', () => {
     expect(fractalGeneratorTestOnly.clamp(11, 0, 10)).toBe(10);
     const shapes = [];
     fractalGeneratorTestOnly.addBranch(shapes, {
-      x: 0, y: 0, length: 1, angle: 0, depth: 2, hue: 10,
+      x: 0,
+      y: 0,
+      length: 1,
+      angle: 0,
+      depth: 2,
+      hue: 10,
     });
     expect(shapes).toEqual([]);
     fractalGeneratorTestOnly.addBranch(shapes, {
-      x: 0, y: 0, length: 10, angle: 0, depth: 1, hue: 10,
+      x: 0,
+      y: 0,
+      length: 10,
+      angle: 0,
+      depth: 1,
+      hue: 10,
     });
     expect(shapes).toHaveLength(1);
     expect(shapes[0]).toMatchObject({ x1: 0, y1: 0, x2: 10, y2: 0 });
     const recursiveShapes = [];
     fractalGeneratorTestOnly.addBranch(recursiveShapes, {
-      x: 10, y: 20, length: 20, angle: 0, depth: 2, hue: 10,
+      x: 10,
+      y: 20,
+      length: 20,
+      angle: 0,
+      depth: 2,
+      hue: 10,
     });
     expect(recursiveShapes).toHaveLength(3);
-    expect(recursiveShapes[0]).toMatchObject({ x1: 10, y1: 20, x2: 30, y2: 20 });
-    expect(recursiveShapes[1]).toMatchObject({ x1: 30, y1: 20, x2: 42, y2: 13 });
-    expect(recursiveShapes[2]).toMatchObject({ x1: 30, y1: 20, x2: 42, y2: 27 });
+    expect(recursiveShapes[0]).toMatchObject({
+      x1: 10,
+      y1: 20,
+      x2: 30,
+      y2: 20,
+    });
+    expect(recursiveShapes[1]).toMatchObject({
+      x1: 30,
+      y1: 20,
+      x2: 42,
+      y2: 13,
+    });
+    expect(recursiveShapes[2]).toMatchObject({
+      x1: 30,
+      y1: 20,
+      x2: 42,
+      y2: 27,
+    });
     const thresholdShapes = [];
     fractalGeneratorTestOnly.addBranch(thresholdShapes, {
-      x: 0, y: 0, length: 2, angle: 0, depth: 1, hue: 0,
+      x: 0,
+      y: 0,
+      length: 2,
+      angle: 0,
+      depth: 1,
+      hue: 0,
     });
     expect(thresholdShapes).toHaveLength(1);
     expect(parseResult('{}').shapes[1]).toMatchObject({ x2: 180, y2: 155 });

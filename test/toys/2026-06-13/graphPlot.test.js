@@ -74,7 +74,7 @@ describe('graphPlot', () => {
           lineColor: '#f00',
         }),
         {
-          get: (name) =>
+          get: name =>
             name === 'getRandomNumber' ? jest.fn(() => 0.5) : undefined,
         }
       )
@@ -88,7 +88,9 @@ describe('graphPlot', () => {
   });
 
   test('supports an environment without get', () => {
-    const result = JSON.parse(graphPlot(JSON.stringify({ expression: 'x' }), {}));
+    const result = JSON.parse(
+      graphPlot(JSON.stringify({ expression: 'x' }), {})
+    );
     expect(result.type).toBe('graph-plot');
   });
 });

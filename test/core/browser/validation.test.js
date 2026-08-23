@@ -55,7 +55,9 @@ describe('browser validation helpers', () => {
 
   test('covers callable, conditional, filesystem, and reporting helpers', () => {
     expect(() => validation.assertFunction(() => {}, 'fn')).not.toThrow();
-    expect(() => validation.assertFunction(null, 'fn')).toThrow('fn must be a function');
+    expect(() => validation.assertFunction(null, 'fn')).toThrow(
+      'fn must be a function'
+    );
     expect(validation.resolveWhenFallback(() => 1)()).toBe(1);
     expect(validation.resolveWhenFallback(null)()).toBeNull();
     const callback = jest.fn(value => value);
@@ -73,13 +75,28 @@ describe('browser validation helpers', () => {
     expect(validation.isMissingFileError(null)).toBe(false);
     expect(validation.isMissingFileError('ENOENT')).toBe(false);
     expect(validation.requirePathModule({})).toEqual({});
-    expect(() => validation.requirePathModule(null)).toThrow('pathModule is required');
-    expect(validation.functionOrFallback(() => 1, () => 2)).toBeInstanceOf(Function);
+    expect(() => validation.requirePathModule(null)).toThrow(
+      'pathModule is required'
+    );
+    expect(
+      validation.functionOrFallback(
+        () => 1,
+        () => 2
+      )
+    ).toBeInstanceOf(Function);
     expect(validation.functionOrFallback(null, () => 2)).toBe(2);
     const output = { error: jest.fn() };
     const setExitCode = jest.fn();
-    expect(validation.reportFailuresAndExit({ failures: [], output, setExitCode })).toBe(false);
-    expect(validation.reportFailuresAndExit({ failures: ['bad'], output, setExitCode })).toBe(true);
+    expect(
+      validation.reportFailuresAndExit({ failures: [], output, setExitCode })
+    ).toBe(false);
+    expect(
+      validation.reportFailuresAndExit({
+        failures: ['bad'],
+        output,
+        setExitCode,
+      })
+    ).toBe(true);
     expect(output.error).toHaveBeenCalledWith('bad');
     expect(setExitCode).toHaveBeenCalledWith(1);
   });

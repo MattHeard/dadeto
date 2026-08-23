@@ -8,8 +8,6 @@ Test one asset against a normal fulfillment proposal.
 
 Submit an object containing asset, proposal, points, and spacePoints.
 
-### Example
-
 ```json
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -17,21 +15,9 @@ Submit an object containing asset, proposal, points, and spacePoints.
 }
 ```
 
-### Schema
-
-```json
-{"type":"object"}
-```
-
 ## Output
 
 Returns a JSON feasibility result.
-
-### Example
-
-```json
-{"example": true}
-```
 
 ## Behavior
 

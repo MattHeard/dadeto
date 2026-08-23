@@ -11,69 +11,68 @@ import {
 } from '../../../../src/core/browser/admin-core.js';
 import { jest } from '@jest/globals';
 
-describe('admin/core uncovered branches', () => {
-  let mockGoogleAuthModule;
-  let mockLoadStaticConfigFn;
-  let mockGetAuthFn;
-  let mockOnAuthStateChangedFn;
-  let mockDoc;
-  let mockFetchFn;
-  let showMessageCalls;
-  let mockShowMessage;
+let mockGoogleAuthModule;
+let mockLoadStaticConfigFn;
+let mockGetAuthFn;
+let mockOnAuthStateChangedFn;
+let mockDoc;
+let mockFetchFn;
+let showMessageCalls;
+let mockShowMessage;
 
-  beforeEach(() => {
-    mockGoogleAuthModule = {
-      getIdToken: () => 'some-token',
-      signOut: () => {},
-    };
-    mockLoadStaticConfigFn = () => Promise.resolve({});
-    mockGetAuthFn = () => ({});
-    mockOnAuthStateChangedFn = () => {};
+beforeEach(() => {
+  mockGoogleAuthModule = {
+    getIdToken: () => 'some-token',
+    signOut: () => {},
+  };
+  mockLoadStaticConfigFn = () => Promise.resolve({});
+  mockGetAuthFn = () => ({});
+  mockOnAuthStateChangedFn = () => {};
 
-    const mockRenderStatusElement = {
-      _innerHTML: '',
-      set innerHTML(value) {
-        this._innerHTML = value;
-      },
-      get innerHTML() {
-        return this._innerHTML;
-      },
-    };
+  const mockRenderStatusElement = {
+    _innerHTML: '',
+    set innerHTML(value) {
+      this._innerHTML = value;
+    },
+    get innerHTML() {
+      return this._innerHTML;
+    },
+  };
 
-    mockDoc = {
-      getElementById: id => {
-        if (id === 'renderStatus') {
-          return mockRenderStatusElement;
-        }
-        if (id === 'regenInput') {
-          // This will be overridden in specific tests
-          return { value: '' };
-        }
-        return null;
-      },
-      querySelectorAll: () => [],
-    };
-
-    mockFetchFn = (url, options) => {
-      mockFetchFn.calls.push({ url, options });
-      if (mockFetchFn.shouldThrow) {
-        return Promise.reject(new Error('Fetch error'));
+  mockDoc = {
+    getElementById: id => {
+      if (id === 'renderStatus') {
+        return mockRenderStatusElement;
       }
-      return Promise.resolve({ ok: true });
-    };
-    mockFetchFn.calls = [];
-    mockFetchFn.shouldThrow = false;
-
-    showMessageCalls = [];
-    mockShowMessage = text => {
-      showMessageCalls.push(text);
-      const statusParagraph = mockDoc.getElementById('renderStatus');
-      if (statusParagraph) {
-        statusParagraph.innerHTML = `<strong>${String(text)}</strong>`;
+      if (id === 'regenInput') {
+        // This will be overridden in specific tests
+        return { value: '' };
       }
-    };
-  });
+      return null;
+    },
+    querySelectorAll: () => [],
+  };
 
+  mockFetchFn = (url, options) => {
+    mockFetchFn.calls.push({ url, options });
+    if (mockFetchFn.shouldThrow) {
+      return Promise.reject(new Error('Fetch error'));
+    }
+    return Promise.resolve({ ok: true });
+  };
+  mockFetchFn.calls = [];
+  mockFetchFn.shouldThrow = false;
+
+  showMessageCalls = [];
+  mockShowMessage = text => {
+    showMessageCalls.push(text);
+    const statusParagraph = mockDoc.getElementById('renderStatus');
+    if (statusParagraph) {
+      statusParagraph.innerHTML = `<strong>${String(text)}</strong>`;
+    }
+  };
+});
+describe('admin/core uncovered continuation', () => {
   it('should throw TypeError if googleAuthModule does not provide initGoogleSignIn', () => {
     expect(() =>
       initAdmin({

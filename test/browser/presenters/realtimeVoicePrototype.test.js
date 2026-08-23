@@ -151,24 +151,28 @@ describe('realtimeVoicePrototypePresenterTestOnly', () => {
       'Error: unknown connection failure.'
     );
     expect(
-      helpers.formatRealtimeAnswerError(
-        { status: 400 },
-        '{"error":12}'
-      )
+      helpers.formatRealtimeAnswerError({ status: 400 }, '{"error":12}')
     ).toBe('Realtime session server failed with status 400: {"error":12}');
-    const fetchFn = jest.fn(async () => ({ ok: true, text: async () => 'answer' }));
+    const fetchFn = jest.fn(async () => ({
+      ok: true,
+      text: async () => 'answer',
+    }));
     const failedResponse = { ok: false, status: 418, text: async () => '' };
-    await expect(helpers.requestRealtimeAnswer('offer', '/answer', fetchFn)).resolves.toBe(
-      'answer'
-    );
+    await expect(
+      helpers.requestRealtimeAnswer('offer', '/answer', fetchFn)
+    ).resolves.toBe('answer');
     expect(fetchFn).toHaveBeenCalledWith('/answer', {
       method: 'POST',
       headers: { 'Content-Type': 'application/sdp' },
       body: 'offer',
     });
-    await expect(helpers.requestRealtimeAnswer('offer', '/answer', async () => failedResponse)).rejects.toThrow(
-      'Realtime session server failed with status 418.'
-    );
+    await expect(
+      helpers.requestRealtimeAnswer(
+        'offer',
+        '/answer',
+        async () => failedResponse
+      )
+    ).rejects.toThrow('Realtime session server failed with status 418.');
   });
 
   test('builds controls and exercises DOM helper branches', () => {
@@ -224,7 +228,12 @@ describe('realtimeVoicePrototypePresenterTestOnly', () => {
       }).statusText.textContent
     ).toBe(helpers.STATUS.DISCONNECTED);
     const extraParent = dom.createElement('div');
-    const extraText = helpers.appendTextElement(extraParent, 'span', 'extra', dom);
+    const extraText = helpers.appendTextElement(
+      extraParent,
+      'span',
+      'extra',
+      dom
+    );
     const extraButton = helpers.appendButton(extraParent, 'Extra', dom);
     expect(extraText.textContent).toBe('extra');
     expect(extraButton.tagName).toBe('BUTTON');
@@ -240,7 +249,12 @@ describe('realtimeVoicePrototypePresenterTestOnly', () => {
     expect(controls.statusText.textContent).toBe('error');
     expect(controls.debugLog.children[0].textContent).toContain('bad endpoint');
     helpers.connectRealtimeVoice(
-      { mediaStream: null, dataChannel: null, peerConnection: null, muted: false },
+      {
+        mediaStream: null,
+        dataChannel: null,
+        peerConnection: null,
+        muted: false,
+      },
       controls,
       dom,
       jest.fn()
@@ -252,7 +266,11 @@ describe('realtimeVoicePrototypePresenterTestOnly', () => {
     const helpers = realtimeVoicePrototypePresenterTestOnly;
     const dom = createDom();
     const controls = helpers.createControls(dom, {
-      title: 't', description: 'd', endpoint: 'e', serverLabel: 's', endpointError: '',
+      title: 't',
+      description: 'd',
+      endpoint: 'e',
+      serverLabel: 's',
+      endpointError: '',
     });
     const track = { enabled: true, stop: jest.fn() };
     const stream = {
@@ -263,7 +281,9 @@ describe('realtimeVoicePrototypePresenterTestOnly', () => {
     state.mediaStream = stream;
     const channelListeners = {};
     const channel = {
-      addEventListener: (type, fn) => { channelListeners[type] = fn; },
+      addEventListener: (type, fn) => {
+        channelListeners[type] = fn;
+      },
       close: jest.fn(),
     };
     const peerListeners = {};
@@ -271,7 +291,9 @@ describe('realtimeVoicePrototypePresenterTestOnly', () => {
       connectionState: 'connected',
       iceConnectionState: 'completed',
       addTrack: jest.fn(),
-      addEventListener: (type, fn) => { peerListeners[type] = fn; },
+      addEventListener: (type, fn) => {
+        peerListeners[type] = fn;
+      },
       createDataChannel: jest.fn(() => channel),
       close: jest.fn(),
     };
@@ -412,10 +434,16 @@ describe('realtime voice lifecycle', () => {
       type: 'answer',
       sdp: 'answer',
     });
-    expect(JSON.stringify(root)).toContain('Realtime voice connection is live.');
+    expect(JSON.stringify(root)).toContain(
+      'Realtime voice connection is live.'
+    );
     expect(JSON.stringify(root)).toContain('Requesting microphone permission.');
-    expect(JSON.stringify(root)).toContain('Sending SDP offer to local server.');
-    expect(JSON.stringify(root)).toContain('Applied SDP answer from local server.');
+    expect(JSON.stringify(root)).toContain(
+      'Sending SDP offer to local server.'
+    );
+    expect(JSON.stringify(root)).toContain(
+      'Applied SDP answer from local server.'
+    );
     buttons[2].listeners.click();
     expect(JSON.stringify(root)).toContain('Microphone muted.');
     buttons[2].listeners.click();
@@ -474,7 +502,9 @@ describe('realtime voice lifecycle', () => {
     };
     failingButtons[0].listeners.click();
     await new Promise(resolve => setTimeout(resolve, 0));
-    expect(JSON.stringify(failingRoot)).toContain('Connection cleanup complete.');
+    expect(JSON.stringify(failingRoot)).toContain(
+      'Connection cleanup complete.'
+    );
     expect(
       realtimeVoicePrototypePresenterTestOnly.getRealtimeAnswerErrorDetail(
         'not json'

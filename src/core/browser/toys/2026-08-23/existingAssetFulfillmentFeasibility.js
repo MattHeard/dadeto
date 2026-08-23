@@ -1,4 +1,8 @@
 import { evaluateWorldLine } from '../2026-08-21/segmentAssignmentFeasibilityCore.js';
+import {
+  fulfillmentBoundary,
+  fulfillmentNonblank,
+} from '../2026-08-22/fulfillmentResult.js';
 
 const ASSET_OPERATIONS = new Set([
   'delivery-outbound',
@@ -14,13 +18,12 @@ const ASSET_OPERATIONS = new Set([
  * @returns {string} JSON feasibility result.
  */
 export function existingAssetFulfillmentFeasibility(input) {
-  try {
-    const request = JSON.parse(input);
+  return fulfillmentBoundary(input, 'feasible', request => {
     const asset = request?.asset;
     const proposal = request?.proposal;
-    if (!nonblank(asset?.assetId))
+    if (!fulfillmentNonblank(asset?.assetId))
       throw new Error('A valid asset is required.');
-    if (!nonblank(asset?.stockInPoint?.pointId))
+    if (!fulfillmentNonblank(asset?.stockInPoint?.pointId))
       throw new Error('A stock-in point is required.');
     const selected = selectAssetSegments(proposal);
     const points = mergeById(
@@ -45,10 +48,10 @@ export function existingAssetFulfillmentFeasibility(input) {
       spacePoints
     );
     return JSON.stringify(result);
-  } catch (error) {
-    return JSON.stringify({ feasible: false, reason: error.message });
-  }
+  });
 }
+
+// Asset feasibility continues with operation selection after the result boundary.
 
 /**
  * @param {Record<string, any>} proposal Proposal.
@@ -106,7 +109,7 @@ function resolvePoint(point, spacePoints) {
 function mergeById(records, field) {
   const byId = new Map();
   records.forEach(record => {
-    if (!record || !nonblank(record[field]))
+    if (!record || !fulfillmentNonblank(record[field]))
       throw new Error(`Invalid ${field}.`);
     const id = String(record[field]);
     const existing = byId.get(id);
@@ -121,6 +124,3 @@ function mergeById(records, field) {
  * @param {unknown} value Candidate value.
  * @returns {boolean} Whether nonblank.
  */
-function nonblank(value) {
-  return value !== undefined && value !== null && String(value).trim() !== '';
-}

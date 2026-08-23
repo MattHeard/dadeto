@@ -87,13 +87,15 @@ describe('possessionRequest', () => {
     ]);
 
     const scalarLocations = JSON.parse(
-      possessionRequest(JSON.stringify({
-        sku: 'ok',
-        deliveryLocation: 0,
-        deliveryTime: '2026-08-21T18:00Z',
-        pickupLocation: true,
-        pickupTime: '2026-08-21T20:00Z',
-      }))
+      possessionRequest(
+        JSON.stringify({
+          sku: 'ok',
+          deliveryLocation: 0,
+          deliveryTime: '2026-08-21T18:00Z',
+          pickupLocation: true,
+          pickupTime: '2026-08-21T20:00Z',
+        })
+      )
     );
     expect(scalarLocations.errors).toEqual([
       'deliveryLocation must contain numeric lat and lon',
@@ -103,24 +105,28 @@ describe('possessionRequest', () => {
 
   test('accepts inclusive coordinate bounds and rejects adjacent values', () => {
     const valid = JSON.parse(
-      possessionRequest(JSON.stringify({
-        sku: 'edge',
-        deliveryLocation: { lat: -90, lon: -180 },
-        deliveryTime: '2026-08-21T18:00Z',
-        pickupLocation: { lat: 90, lon: 180 },
-        pickupTime: '2026-08-21T20:00Z',
-      }))
+      possessionRequest(
+        JSON.stringify({
+          sku: 'edge',
+          deliveryLocation: { lat: -90, lon: -180 },
+          deliveryTime: '2026-08-21T18:00Z',
+          pickupLocation: { lat: 90, lon: 180 },
+          pickupTime: '2026-08-21T20:00Z',
+        })
+      )
     );
     expect(valid.valid).toBe(true);
 
     const invalid = JSON.parse(
-      possessionRequest(JSON.stringify({
-        sku: 'edge',
-        deliveryLocation: { lat: -90.000001, lon: -180.000001 },
-        deliveryTime: 'x2026-08-21T18:00Z',
-        pickupLocation: { lat: 90.000001, lon: 180.000001 },
-        pickupTime: '2026-08-21T20:00Zsuffix',
-      }))
+      possessionRequest(
+        JSON.stringify({
+          sku: 'edge',
+          deliveryLocation: { lat: -90.000001, lon: -180.000001 },
+          deliveryTime: 'x2026-08-21T18:00Z',
+          pickupLocation: { lat: 90.000001, lon: 180.000001 },
+          pickupTime: '2026-08-21T20:00Zsuffix',
+        })
+      )
     );
     expect(invalid.valid).toBe(false);
     expect(invalid.errors).toHaveLength(6);

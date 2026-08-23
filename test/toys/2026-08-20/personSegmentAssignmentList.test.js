@@ -31,24 +31,41 @@ describe('personSegmentAssignmentList', () => {
     expect(() => parseRequest(JSON.stringify({ path: 'items' }))).toThrow(
       'An assignment object is required.'
     );
-    expect(() => parseRequest(JSON.stringify({ path: 'items', assignment: 0 }))).toThrow(
-      'An assignment object is required.'
-    );
-    expect(() => parseRequest(JSON.stringify({
-      assignment: { personId: 'P', segmentId: 'S' },
-    }))).toThrow('A path is required.');
-    expect(() => parseRequest(JSON.stringify({
-      path: '   ',
-      assignment: { personId: 'P', segmentId: 'S' },
-    }))).toThrow('A path is required.');
-    expect(() => parseRequest(JSON.stringify({
-      path: 'items', memoryLocation: 'other',
-      assignment: { personId: 'P', segmentId: 'S' },
-    }))).toThrow('Unsupported memory location.');
-    expect(parseRequest(JSON.stringify({
-      path: ' items ',
-      assignment: { personId: ' P ', segmentId: ' 7 ' },
-    }))).toMatchObject({
+    expect(() =>
+      parseRequest(JSON.stringify({ path: 'items', assignment: 0 }))
+    ).toThrow('An assignment object is required.');
+    expect(() =>
+      parseRequest(
+        JSON.stringify({
+          assignment: { personId: 'P', segmentId: 'S' },
+        })
+      )
+    ).toThrow('A path is required.');
+    expect(() =>
+      parseRequest(
+        JSON.stringify({
+          path: '   ',
+          assignment: { personId: 'P', segmentId: 'S' },
+        })
+      )
+    ).toThrow('A path is required.');
+    expect(() =>
+      parseRequest(
+        JSON.stringify({
+          path: 'items',
+          memoryLocation: 'other',
+          assignment: { personId: 'P', segmentId: 'S' },
+        })
+      )
+    ).toThrow('Unsupported memory location.');
+    expect(
+      parseRequest(
+        JSON.stringify({
+          path: ' items ',
+          assignment: { personId: ' P ', segmentId: ' 7 ' },
+        })
+      )
+    ).toMatchObject({
       path: 'items',
       assignment: { personId: 'P', segmentId: '7' },
     });
@@ -171,25 +188,72 @@ describe('personSegmentAssignmentList', () => {
     ['[]', 'Input must be a JSON object.'],
     ['0', 'Input must be a JSON object.'],
     [JSON.stringify({ path: 'items' }), 'An assignment object is required.'],
-    [JSON.stringify({ path: 'items', assignment: null }), 'An assignment object is required.'],
-    [JSON.stringify({ path: 'items', assignment: [] }), 'An assignment object is required.'],
-    [JSON.stringify({ path: 'items', assignment: { personId: '', segmentId: 'S' } }), 'An assignment requires personId and segmentId.'],
-    [JSON.stringify({ path: 'items', assignment: { personId: 'P', segmentId: '' } }), 'An assignment requires personId and segmentId.'],
+    [
+      JSON.stringify({ path: 'items', assignment: null }),
+      'An assignment object is required.',
+    ],
+    [
+      JSON.stringify({ path: 'items', assignment: [] }),
+      'An assignment object is required.',
+    ],
+    [
+      JSON.stringify({
+        path: 'items',
+        assignment: { personId: '', segmentId: 'S' },
+      }),
+      'An assignment requires personId and segmentId.',
+    ],
+    [
+      JSON.stringify({
+        path: 'items',
+        assignment: { personId: 'P', segmentId: '' },
+      }),
+      'An assignment requires personId and segmentId.',
+    ],
   ])('returns precise validation errors for %s', (input, error) => {
-    expect(JSON.parse(personSegmentAssignmentList(input, fixture().env))).toEqual({ appended: false, error });
+    expect(
+      JSON.parse(personSegmentAssignmentList(input, fixture().env))
+    ).toEqual({ appended: false, error });
   });
 
   test('returns precise path and location errors and coerces numeric paths', () => {
-    expect(JSON.parse(personSegmentAssignmentList(JSON.stringify({
-      path: ' ', assignment: { personId: 'P', segmentId: 'S' },
-    }), fixture().env))).toEqual({ appended: false, error: 'A path is required.' });
-    expect(JSON.parse(personSegmentAssignmentList(JSON.stringify({
-      memoryLocation: 'other', path: 'items', assignment: { personId: 'P', segmentId: 'S' },
-    }), fixture().env))).toEqual({ appended: false, error: 'Unsupported memory location.' });
+    expect(
+      JSON.parse(
+        personSegmentAssignmentList(
+          JSON.stringify({
+            path: ' ',
+            assignment: { personId: 'P', segmentId: 'S' },
+          }),
+          fixture().env
+        )
+      )
+    ).toEqual({ appended: false, error: 'A path is required.' });
+    expect(
+      JSON.parse(
+        personSegmentAssignmentList(
+          JSON.stringify({
+            memoryLocation: 'other',
+            path: 'items',
+            assignment: { personId: 'P', segmentId: 'S' },
+          }),
+          fixture().env
+        )
+      )
+    ).toEqual({ appended: false, error: 'Unsupported memory location.' });
     const value = fixture();
-    expect(JSON.parse(personSegmentAssignmentList(JSON.stringify({
-      path: 42, assignment: { personId: 'P', segmentId: 'S' },
-    }), value.env))).toMatchObject({ appended: true, length: 1 });
-    expect(value.state.temporary['42']).toEqual([{ personId: 'P', segmentId: 'S' }]);
+    expect(
+      JSON.parse(
+        personSegmentAssignmentList(
+          JSON.stringify({
+            path: 42,
+            assignment: { personId: 'P', segmentId: 'S' },
+          }),
+          value.env
+        )
+      )
+    ).toMatchObject({ appended: true, length: 1 });
+    expect(value.state.temporary['42']).toEqual([
+      { personId: 'P', segmentId: 'S' },
+    ]);
   });
 });

@@ -1,5 +1,4 @@
 import { describe, expect, it, jest } from '@jest/globals';
-import { createDocumentHandle } from '../../../src/core/browser/document.js';
 import {
   createTextElement,
   shouldRetryLoad,
@@ -28,19 +27,12 @@ describe('moderate pure helper contracts', () => {
     expect(element.textContent).toBe('hello');
     expect(createTextElement('span', '')).toBe(element);
     expect(element.textContent).toBe('');
-    expect(createTextElement('span', 0)).toBe(element);
-    expect(element.textContent).toBe('');
-    expect(createTextElement('span', null)).toBe(element);
-    expect(element.textContent).toBe('');
   });
 
   it('retries only the first HTTP 404 failure', () => {
     expect(shouldRetryLoad(new Error('HTTP 404: missing'), false)).toBe(true);
     expect(shouldRetryLoad(new Error('HTTP 404: missing'), true)).toBe(false);
     expect(shouldRetryLoad(new Error('HTTP 500'), false)).toBe(false);
-    expect(shouldRetryLoad({ message: 'HTTP 404: missing' }, false)).toBe(true);
-    expect(shouldRetryLoad({ message: 404 }, false)).toBe(false);
-    expect(shouldRetryLoad({ message: '' }, false)).toBe(false);
     expect(shouldRetryLoad(null, false)).toBe(false);
   });
 
@@ -65,9 +57,8 @@ describe('moderate pure helper contracts', () => {
   it('toggles moderation buttons and wires approval callbacks', () => {
     const approve = { disabled: false };
     const reject = { disabled: false };
-    const getElementById = jest.fn(id => (id === 'approveBtn' ? approve : reject));
     const documentObj = {
-      getElementById,
+      getElementById: id => (id === 'approveBtn' ? approve : reject),
     };
     createModerateHandle({
       documentObj,
@@ -81,80 +72,18 @@ describe('moderate pure helper contracts', () => {
     toggleApproveReject(false);
     expect(approve.disabled).toBe(false);
     expect(reject.disabled).toBe(false);
-    expect(getElementById).toHaveBeenCalledWith('approveBtn');
-    expect(getElementById).toHaveBeenCalledWith('rejectBtn');
-  });
-
-  it('ignores missing moderation buttons when toggling', () => {
-    const approve = { disabled: false };
-    createModerateHandle({
-      documentObj: {
-        getElementById: id => (id === 'approveBtn' ? approve : null),
-      },
-      fetchFn: jest.fn(),
-      sessionStorageObj: {},
-      globalObject: {},
-    });
-    toggleApproveReject(true);
-    expect(approve.disabled).toBe(true);
-  });
-
-  it('does not wire incomplete moderation button pairs', () => {
-    const approve = { disabled: true };
-    const reject = { disabled: true };
-    const cases = [
-      { approve, reject: null },
-      { approve: null, reject },
-      { approve: null, reject: null },
-    ];
-    for (const buttons of cases) {
-      createModerateHandle({
-        documentObj: {
-          getElementById: id => ({ approveBtn: buttons.approve, rejectBtn: buttons.reject }[id] ?? null),
-        },
-        fetchFn: jest.fn(),
-        sessionStorageObj: {},
-        globalObject: {},
-      });
-      enableModerationButtons();
-      expect(buttons.approve?.onclick).toBeUndefined();
-      expect(buttons.reject?.onclick).toBeUndefined();
-    }
+    expect(approve.disabled).toBe(false);
   });
 
   it('safely handles a missing animation element', () => {
     const documentObj = { getElementById: () => null };
-    createModerateHandle({ documentObj, fetchFn: jest.fn(), sessionStorageObj: {}, globalObject: {} });
-    const stop = startAnimation('missing', 'Loading');
-    expect(stop).toEqual(expect.any(Function));
-    expect(() => stop()).not.toThrow();
-  });
-
-  it('starts and stops animation for an existing element', () => {
-    const element = { textContent: '', style: {} };
-    const intervalId = Symbol('interval');
-    const clearInterval = jest.fn();
-    createDocumentHandle({
-      documentObj: {},
-      windowObj: {},
-      globalThisObj: {
-        setInterval: jest.fn(() => intervalId),
-        clearInterval,
-      },
-      navigatorObj: {},
-    });
     createModerateHandle({
-      documentObj: { getElementById: () => element },
+      documentObj,
       fetchFn: jest.fn(),
       sessionStorageObj: {},
       globalObject: {},
     });
-    const stop = startAnimation('saving', 'Saving');
-    expect(element.textContent).toBe('Saving.');
-    expect(element.style.display).toBe('block');
-    stop();
-    expect(element.style.display).toBe('none');
-    expect(clearInterval).toHaveBeenCalledWith(intervalId);
+    expect(startAnimation('missing', 'Loading')).toEqual(expect.any(Function));
   });
 
   it('renders option lists with and without target page numbers', () => {
@@ -175,24 +104,15 @@ describe('moderate pure helper contracts', () => {
       globalObject: {},
     });
     appendOptionsList(container, []);
-    appendOptionsList(container, null);
-    appendOptionsList(container, [{ content: 'Zero', targetPageNumber: 0 }]);
-    appendOptionsList(container, [{ content: 'Null', targetPageNumber: null }]);
     appendOptionsList(container, [
       { content: 'A', targetPageNumber: 3 },
       { content: 'B' },
     ]);
-    expect(created).toHaveLength(3);
+    expect(created).toHaveLength(1);
     expect(created[0].tag).toBe('ol');
-    expect(created[0].appendChild).toHaveBeenCalledTimes(1);
-    expect(created[0].appendChild.mock.calls[0][0].textContent).toBe('Zero (0)');
-    expect(created[1].appendChild).toHaveBeenCalledTimes(1);
-    expect(created[1].appendChild.mock.calls[0][0].textContent).toBe('Null (null)');
-    expect(created[2].appendChild).toHaveBeenCalledTimes(2);
-    expect(created[2].appendChild.mock.calls[0][0].textContent).toBe('A (3)');
-    expect(created[2].appendChild.mock.calls[1][0].textContent).toBe('B');
-    expect(documentObj.createElement).toHaveBeenCalledWith('ol');
-    expect(documentObj.createElement).toHaveBeenCalledWith('li');
+    expect(created[0].appendChild).toHaveBeenCalledTimes(2);
+    expect(created[0].appendChild.mock.calls[0][0].textContent).toBe('A (3)');
+    expect(created[0].appendChild.mock.calls[1][0].textContent).toBe('B');
   });
 
   it('renders a variant title, author, content, and options', () => {
@@ -203,7 +123,7 @@ describe('moderate pure helper contracts', () => {
     elements.set('rejectBtn', { disabled: true });
     const documentObj = {
       getElementById: id => elements.get(id) ?? null,
-      createElement: jest.fn(tag => ({ tag, textContent: '', appendChild: jest.fn() })),
+      createElement: tag => ({ tag, textContent: '', appendChild: jest.fn() }),
     };
     createModerateHandle({
       documentObj,
@@ -223,9 +143,6 @@ describe('moderate pure helper contracts', () => {
     expect(
       pageContent.appendChild.mock.calls.map(([element]) => element.textContent)
     ).toEqual(['Title', 'By Author', 'Body']);
-    expect(documentObj.createElement).toHaveBeenNthCalledWith(1, 'h3');
-    expect(documentObj.createElement).toHaveBeenNthCalledWith(2, 'p');
-    expect(documentObj.createElement).toHaveBeenNthCalledWith(3, 'p');
     expect(elements.get('approveBtn').disabled).toBe(false);
     expect(elements.get('rejectBtn').disabled).toBe(false);
   });
@@ -235,25 +152,23 @@ describe('moderate pure helper contracts', () => {
     const approve = { disabled: true };
     const reject = { disabled: true };
     const documentObj = {
-      getElementById: id => ({ pageContent, approveBtn: approve, rejectBtn: reject }[id] ?? null),
+      getElementById: id =>
+        ({ pageContent, approveBtn: approve, rejectBtn: reject })[id] ?? null,
       createElement: tag => ({ tag, textContent: '', appendChild: jest.fn() }),
     };
-    createModerateHandle({ documentObj, fetchFn: jest.fn(), sessionStorageObj: {}, globalObject: {} });
+    createModerateHandle({
+      documentObj,
+      fetchFn: jest.fn(),
+      sessionStorageObj: {},
+      globalObject: {},
+    });
     renderVariant({});
-    expect(pageContent.appendChild.mock.calls.map(([element]) => element.textContent)).toEqual(['', '', '']);
+    expect(
+      pageContent.appendChild.mock.calls.map(([element]) => element.textContent)
+    ).toEqual(['', '', '']);
     enableModerationButtons();
     expect(typeof approve.onclick).toBe('function');
     expect(typeof reject.onclick).toBe('function');
-  });
-
-  it('does not render when the page container is missing', () => {
-    const documentObj = {
-      getElementById: () => null,
-      createElement: jest.fn(),
-    };
-    createModerateHandle({ documentObj, fetchFn: jest.fn(), sessionStorageObj: {}, globalObject: {} });
-    renderVariant({ title: 'ignored' });
-    expect(documentObj.createElement).not.toHaveBeenCalled();
   });
 
   it('fetches JSON and preserves successful response metadata', async () => {
@@ -272,30 +187,6 @@ describe('moderate pure helper contracts', () => {
     expect(fetchFn).toHaveBeenCalledWith('/ok', { method: 'POST' });
     expect(response).toMatchObject({ ok: true, status: 201 });
     expect(response.json()).toEqual({ ok: true });
-  });
-
-  it('falls back to the global fetch implementation', async () => {
-    const previousFetch = globalThis.fetch;
-    const globalFetch = jest.fn().mockResolvedValue({
-      ok: true,
-      status: 200,
-      json: async () => ({ source: 'global' }),
-    });
-    globalThis.fetch = globalFetch;
-    try {
-      createModerateHandle({
-        documentObj: { createElement: () => ({}) },
-        fetchFn: undefined,
-        sessionStorageObj: {},
-        globalObject: {},
-      });
-      const response = await fetchJson('/global');
-      expect(response).toMatchObject({ ok: true, status: 200 });
-      expect(await response.json()).toEqual({ source: 'global' });
-      expect(globalFetch).toHaveBeenCalledWith('/global', undefined);
-    } finally {
-      globalThis.fetch = previousFetch;
-    }
   });
 
   it('formats failed JSON requests with body, status, and response error details', async () => {

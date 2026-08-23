@@ -466,64 +466,184 @@ describe('conwayLife state normalization', () => {
   it('covers pure board, wrapping, neighbor, and serialization helpers', () => {
     expect(conwayLifeTestOnly.wrapCoordinate(-1, 5)).toBe(4);
     expect(conwayLifeTestOnly.wrapCoordinate(5, 5)).toBe(0);
-       expect(conwayLifeTestOnly.dedupeCells([{ x: 1, y: 2 }, { x: 1, y: 2 }, { x: 2, y: 3 }])).toEqual([
-         { x: 1, y: 2 }, { x: 2, y: 3 },
-       ]);
-       expect(conwayLifeTestOnly.getNeighbors({ x: 0, y: 0 }, 3, 3)).toHaveLength(8);
-       expect(conwayLifeTestOnly.evolveCells([{ x: 1, y: 0 }, { x: 1, y: 1 }, { x: 1, y: 2 }], 3, 3)).toEqual(
-         expect.arrayContaining([{ x: 0, y: 1 }, { x: 1, y: 1 }, { x: 2, y: 1 }])
-       );
-       expect(conwayLifeTestOnly.serializeCell({ x: 2, y: 3 })).toEqual([2, 3]);
-       expect(conwayLifeTestOnly.serializeState({ generation: 2, cells: [{ x: 1, y: 1 }] })).toMatchObject({ generation: 2 });
-    expect(conwayLifeTestOnly.createBackdropShape(10, 20)).toMatchObject({ width: 10, height: 20 });
-       expect(conwayLifeTestOnly.normalizeTickSpeedMs('bad')).toBeGreaterThan(0);
-       expect(conwayLifeTestOnly.normalizeCells(null, 4, 4)).toEqual([
-         { x: 11, y: 7 }, { x: 12, y: 7 }, { x: 13, y: 7 }, { x: 13, y: 6 }, { x: 12, y: 5 },
-       ]);
-       expect(conwayLifeTestOnly.normalizeCells([[5, -1], ['bad', 2], [1]], 4, 4)).toEqual([
-         { x: 1, y: 3 },
-       ]);
-       expect(conwayLifeTestOnly.normalizeCells([{ length: 2, 0: 1, 1: 2 }], 4, 4)).toEqual([]);
-       expect(conwayLifeTestOnly.getNeighbors({ x: 0, y: 0 }, 3, 3)).toEqual(
-         expect.arrayContaining([{ x: 2, y: 2 }, { x: 0, y: 2 }, { x: 1, y: 1 }])
-       );
-       expect(conwayLifeTestOnly.getNeighbors({ x: 0, y: 0 }, 3, 3)).toEqual([
-         { x: 2, y: 2 }, { x: 0, y: 2 }, { x: 1, y: 2 },
-         { x: 2, y: 0 }, { x: 1, y: 0 }, { x: 2, y: 1 },
-         { x: 0, y: 1 }, { x: 1, y: 1 },
-       ]);
-       expect(conwayLifeTestOnly.toCanvasPayload({
-         width: 10, height: 20, cols: 4, rows: 5, cells: [{ x: 2, y: 3 }],
-       })).toEqual({
-         width: 10, height: 20,
-         shapes: [
-           { type: 'rect', x: 0, y: 0, width: 10, height: 20, fill: '#0f172a' },
-           { type: 'rect', x: 6, y: 13, width: 1, height: 2, fill: '#dbeafe' },
-         ],
-       });
-       expect(conwayLifeTestOnly.normalizeState([])).toBeNull();
-       expect(conwayLifeTestOnly.normalizeState({ width: 10, height: 20, cols: 2, rows: 2, cells: [] }))
-         .toMatchObject({ width: 10, height: 20, cols: 2, rows: 2 });
-       expect(conwayLifeTestOnly.normalizeState({ CONW1: [] })).toBeNull();
-       expect(conwayLifeTestOnly.normalizeStoredLifeCandidate({
-         width: 10, height: 10, cols: 2, rows: 2, tickSpeedMs: 16,
-         framesPerTick: 0, framesUntilTick: 0, cells: [],
-       })).toMatchObject({ framesPerTick: 1, framesUntilTick: 1 });
-       expect(conwayLifeTestOnly.createSeedLifeState({
-         width: 10, height: 10, cols: 2, rows: 2, tickSpeedMs: 32, cells: [], framesPerTick: 7,
-       })).toEqual({ width: 10, height: 10, cols: 2, rows: 2, tickSpeedMs: 32, framesPerTick: 2, framesUntilTick: 2, generation: 0, cells: [] });
-       expect(conwayLifeTestOnly.createBaseStateFields({
-         width: 10, height: 10, cols: 2, rows: 2, tickSpeedMs: 16, cells: [],
-       })).toMatchObject({ framesPerTick: 1, framesUntilTick: 1, generation: 0 });
-       expect(conwayLifeTestOnly.createBaseStateFields({
-         width: 10, height: 10, cols: 2, rows: 2, tickSpeedMs: 32, cells: [],
-       })).toMatchObject({ framesPerTick: 2, framesUntilTick: 2 });
-       expect(conwayLifeTestOnly.createBaseStateFields({
-         width: 10, height: 10, cols: 2, rows: 2, tickSpeedMs: 32, cells: [], framesPerTick: 7,
-       })).toMatchObject({ framesPerTick: 7, framesUntilTick: 7 });
-       expect(conwayLifeTestOnly.composeLifeState(
-         { width: 10, height: 10, cols: 2, rows: 2, tickSpeedMs: 16, framesPerTick: 2, framesUntilTick: 2, generation: 3, cells: [] },
-         {}
-       )).toMatchObject({ framesPerTick: 2, framesUntilTick: 2, generation: 3 });
-     });
+    expect(
+      conwayLifeTestOnly.dedupeCells([
+        { x: 1, y: 2 },
+        { x: 1, y: 2 },
+        { x: 2, y: 3 },
+      ])
+    ).toEqual([
+      { x: 1, y: 2 },
+      { x: 2, y: 3 },
+    ]);
+    expect(conwayLifeTestOnly.getNeighbors({ x: 0, y: 0 }, 3, 3)).toHaveLength(
+      8
+    );
+    expect(
+      conwayLifeTestOnly.evolveCells(
+        [
+          { x: 1, y: 0 },
+          { x: 1, y: 1 },
+          { x: 1, y: 2 },
+        ],
+        3,
+        3
+      )
+    ).toEqual(
+      expect.arrayContaining([
+        { x: 0, y: 1 },
+        { x: 1, y: 1 },
+        { x: 2, y: 1 },
+      ])
+    );
+    expect(conwayLifeTestOnly.serializeCell({ x: 2, y: 3 })).toEqual([2, 3]);
+    expect(
+      conwayLifeTestOnly.serializeState({
+        generation: 2,
+        cells: [{ x: 1, y: 1 }],
+      })
+    ).toMatchObject({ generation: 2 });
+    expect(conwayLifeTestOnly.createBackdropShape(10, 20)).toMatchObject({
+      width: 10,
+      height: 20,
+    });
+    expect(conwayLifeTestOnly.normalizeTickSpeedMs('bad')).toBeGreaterThan(0);
+    expect(conwayLifeTestOnly.normalizeCells(null, 4, 4)).toEqual([
+      { x: 11, y: 7 },
+      { x: 12, y: 7 },
+      { x: 13, y: 7 },
+      { x: 13, y: 6 },
+      { x: 12, y: 5 },
+    ]);
+    expect(
+      conwayLifeTestOnly.normalizeCells([[5, -1], ['bad', 2], [1]], 4, 4)
+    ).toEqual([{ x: 1, y: 3 }]);
+    expect(
+      conwayLifeTestOnly.normalizeCells([{ length: 2, 0: 1, 1: 2 }], 4, 4)
+    ).toEqual([]);
+    expect(conwayLifeTestOnly.getNeighbors({ x: 0, y: 0 }, 3, 3)).toEqual(
+      expect.arrayContaining([
+        { x: 2, y: 2 },
+        { x: 0, y: 2 },
+        { x: 1, y: 1 },
+      ])
+    );
+    expect(conwayLifeTestOnly.getNeighbors({ x: 0, y: 0 }, 3, 3)).toEqual([
+      { x: 2, y: 2 },
+      { x: 0, y: 2 },
+      { x: 1, y: 2 },
+      { x: 2, y: 0 },
+      { x: 1, y: 0 },
+      { x: 2, y: 1 },
+      { x: 0, y: 1 },
+      { x: 1, y: 1 },
+    ]);
+    expect(
+      conwayLifeTestOnly.toCanvasPayload({
+        width: 10,
+        height: 20,
+        cols: 4,
+        rows: 5,
+        cells: [{ x: 2, y: 3 }],
+      })
+    ).toEqual({
+      width: 10,
+      height: 20,
+      shapes: [
+        { type: 'rect', x: 0, y: 0, width: 10, height: 20, fill: '#0f172a' },
+        { type: 'rect', x: 6, y: 13, width: 1, height: 2, fill: '#dbeafe' },
+      ],
+    });
+    expect(conwayLifeTestOnly.normalizeState([])).toBeNull();
+    expect(
+      conwayLifeTestOnly.normalizeState({
+        width: 10,
+        height: 20,
+        cols: 2,
+        rows: 2,
+        cells: [],
+      })
+    ).toMatchObject({ width: 10, height: 20, cols: 2, rows: 2 });
+    expect(conwayLifeTestOnly.normalizeState({ CONW1: [] })).toBeNull();
+    expect(
+      conwayLifeTestOnly.normalizeStoredLifeCandidate({
+        width: 10,
+        height: 10,
+        cols: 2,
+        rows: 2,
+        tickSpeedMs: 16,
+        framesPerTick: 0,
+        framesUntilTick: 0,
+        cells: [],
+      })
+    ).toMatchObject({ framesPerTick: 1, framesUntilTick: 1 });
+    expect(
+      conwayLifeTestOnly.createSeedLifeState({
+        width: 10,
+        height: 10,
+        cols: 2,
+        rows: 2,
+        tickSpeedMs: 32,
+        cells: [],
+        framesPerTick: 7,
+      })
+    ).toEqual({
+      width: 10,
+      height: 10,
+      cols: 2,
+      rows: 2,
+      tickSpeedMs: 32,
+      framesPerTick: 2,
+      framesUntilTick: 2,
+      generation: 0,
+      cells: [],
+    });
+    expect(
+      conwayLifeTestOnly.createBaseStateFields({
+        width: 10,
+        height: 10,
+        cols: 2,
+        rows: 2,
+        tickSpeedMs: 16,
+        cells: [],
+      })
+    ).toMatchObject({ framesPerTick: 1, framesUntilTick: 1, generation: 0 });
+    expect(
+      conwayLifeTestOnly.createBaseStateFields({
+        width: 10,
+        height: 10,
+        cols: 2,
+        rows: 2,
+        tickSpeedMs: 32,
+        cells: [],
+      })
+    ).toMatchObject({ framesPerTick: 2, framesUntilTick: 2 });
+    expect(
+      conwayLifeTestOnly.createBaseStateFields({
+        width: 10,
+        height: 10,
+        cols: 2,
+        rows: 2,
+        tickSpeedMs: 32,
+        cells: [],
+        framesPerTick: 7,
+      })
+    ).toMatchObject({ framesPerTick: 7, framesUntilTick: 7 });
+    expect(
+      conwayLifeTestOnly.composeLifeState(
+        {
+          width: 10,
+          height: 10,
+          cols: 2,
+          rows: 2,
+          tickSpeedMs: 16,
+          framesPerTick: 2,
+          framesUntilTick: 2,
+          generation: 3,
+          cells: [],
+        },
+        {}
+      )
+    ).toMatchObject({ framesPerTick: 2, framesUntilTick: 2, generation: 3 });
+  });
 });

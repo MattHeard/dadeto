@@ -78,7 +78,11 @@ describe('NORM1 normal fulfillment sequence proposal', () => {
       request.possessionContext.endPoint,
     ]);
     expect(result.spacePoints).toEqual([
-      { spacePointId: 'WAREHOUSE', latitude: '52.123456', longitude: '13.123456' },
+      {
+        spacePointId: 'WAREHOUSE',
+        latitude: '52.123456',
+        longitude: '13.123456',
+      },
     ]);
   });
 
@@ -157,6 +161,27 @@ describe('NORM1 normal fulfillment sequence proposal', () => {
       },
     ],
     [
+      'mismatched endpoint reference',
+      {
+        possessionContext: {
+          ...request.possessionContext,
+          segment: {
+            ...request.possessionContext.segment,
+            endPointId: 'OTHER',
+          },
+        },
+      },
+    ],
+    [
+      'invalid possession timestamp',
+      {
+        possessionContext: {
+          ...request.possessionContext,
+          endPoint: { ...request.possessionContext.endPoint, timestamp: 'bad' },
+        },
+      },
+    ],
+    [
       'invalid warehouse',
       { warehouse: { ...request.warehouse, longitude: 181 } },
     ],
@@ -199,6 +224,19 @@ describe('NORM1 normal fulfillment sequence proposal', () => {
         generatedIds: {
           ...request.generatedIds,
           segments: { ...request.generatedIds.segments, cleaning: 'S5' },
+        },
+      },
+    ],
+    [
+      'missing generated collections',
+      { generatedIds: { points: undefined, segments: undefined } },
+    ],
+    [
+      'non-minute resulting timestamp',
+      {
+        travelDurations: {
+          ...request.travelDurations,
+          deliveryOutboundSeconds: 1,
         },
       },
     ],

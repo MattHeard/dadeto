@@ -7,6 +7,9 @@ const runCheckSuite = createRunCheckSuite({
   defaultStdout: process.stdout,
   defaultStderr: process.stderr,
   defaultNow: () => Date.now(),
+  defaultTimeoutMs: Number(
+    process.env.DADETO_CHECK_TIMEOUT_MS ?? 30 * 60 * 1000
+  ),
 });
 
 const handle = createRunCheckHandle({

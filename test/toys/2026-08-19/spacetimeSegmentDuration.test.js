@@ -98,21 +98,31 @@ describe('spacetimeSegmentDuration', () => {
     expect(() =>
       parseInput(JSON.stringify({ points: {}, segment: {} }))
     ).toThrow('points and segment are required.');
-    expect(parseInput(JSON.stringify({
-      points: [{ pointId: 'A', timestamp: '2026-08-19T09:00Z' }],
-      segment: { startPointId: 'A', endPointId: 'A' },
-    }))).toEqual({
+    expect(
+      parseInput(
+        JSON.stringify({
+          points: [{ pointId: 'A', timestamp: '2026-08-19T09:00Z' }],
+          segment: { startPointId: 'A', endPointId: 'A' },
+        })
+      )
+    ).toEqual({
       points: [{ pointId: 'A', timestamp: '2026-08-19T09:00Z' }],
       segment: { startPointId: 'A', endPointId: 'A' },
     });
-    expect(() => parseInput(JSON.stringify({
-      points: [{
-        pointId: 'A',
-        spacePointId: 'undefined',
-        timestamp: '2026-08-19T09:00Z',
-      }],
-      spacePoints: null,
-      segment: { startPointId: 'A', endPointId: 'A' },
-    }))).toThrow('Unknown space point: undefined');
+    expect(() =>
+      parseInput(
+        JSON.stringify({
+          points: [
+            {
+              pointId: 'A',
+              spacePointId: 'undefined',
+              timestamp: '2026-08-19T09:00Z',
+            },
+          ],
+          spacePoints: null,
+          segment: { startPointId: 'A', endPointId: 'A' },
+        })
+      )
+    ).toThrow('Unknown space point: undefined');
   });
 });

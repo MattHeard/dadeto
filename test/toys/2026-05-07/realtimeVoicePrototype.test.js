@@ -118,8 +118,8 @@ describe('realtimeVoicePrototype toy', () => {
   });
 
   test('does not report a cloud error for a local empty endpoint', () => {
-    expect(
-      realtimeVoicePrototypeTestOnly.getEndpointError('local', '')
-    ).toBe('');
+    expect(realtimeVoicePrototypeTestOnly.getEndpointError('local', '')).toBe(
+      ''
+    );
   });
 });

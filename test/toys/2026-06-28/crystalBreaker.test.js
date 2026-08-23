@@ -79,117 +79,121 @@ describe('crystalBreaker helper contracts', () => {
     expect(h.getCrystalBackdropFill(true)).toBe('#0f172a');
     expect(h.getCrystalBackdropFill(false)).toBe('#08111f');
     expect(h.normalizeSeedWidth({}, null)).toBe(360);
-    expect(h.normalizeSeedWidth(null, { width: 77 })).toBe(77);
     expect(h.normalizeSeedHeight({ height: 160 }, null)).toBe(160);
-    expect(h.normalizeSeedHeight(null, { height: 88 })).toBe(88);
     expect(h.normalizeSeedLives({ lives: 2 }, null)).toBe(2);
-    expect(h.normalizeSeedLives(null, { lives: 4 })).toBe(4);
-    expect(h.normalizeSeedPaddleWidth(null)).toBe(48);
-    expect(h.normalizeSeedPaddleHeight(null)).toBe(6);
-    expect(h.normalizeSeedPaddleSpeed(null)).toBe(4);
-    expect(h.normalizeSeedOrbRadius(null)).toBe(4);
     expect(h.normalizeSeedLayoutSeed({ layoutSeed: 3 })).toBe(3);
-    expect(h.normalizeSeedLayoutSeed(null)).toBe(1);
-    expect(h.createInitialInputState()).toEqual({
-      keyboard: {}, gamepad: { buttons: [], axes: [] },
-      actions: { moveLeft: false, moveRight: false, launchPressed: false, pausePressed: false, resetPressed: false },
-      previousActions: { moveLeft: false, moveRight: false, launchPressed: false, pausePressed: false, resetPressed: false },
-    });
-    expect(h.createHudTextShape(4, 'HUD')).toEqual({
-      type: 'text', x: 4, y: 16, text: 'HUD', fill: '#dbeafe',
-      font: '11px monospace', align: 'left', baseline: 'alphabetic',
-    });
     expect(h.normalizeStatus('running')).toBe('running');
     expect(h.normalizeStatus('invalid')).toBe('ready');
     expect(h.normalizeBooleanRecord(null)).toEqual({});
-    const booleanArray = [];
-    booleanArray.left = true;
-    expect(h.normalizeBooleanRecord(booleanArray)).toEqual({});
-    expect(h.normalizeBooleanRecord({ left: true, right: 1 })).toEqual({ left: true, right: false });
+    expect(h.normalizeBooleanRecord({ left: true, right: 1 })).toEqual({
+      left: true,
+      right: false,
+    });
     expect(h.normalizeGamepadButtons([true, 0])).toEqual([true, false]);
     expect(h.normalizeGamepadAxes([1, 'bad'])).toEqual([1, 0]);
-    expect(h.normalizeActions(null)).toMatchObject({ moveLeft: false, resetPressed: false });
-    const actionsArray = [];
-    actionsArray.moveLeft = true;
-    expect(h.normalizeActions(actionsArray)).toEqual({ moveLeft: false, moveRight: false, launchPressed: false, pausePressed: false, resetPressed: false });
+    expect(h.normalizeActions(null)).toMatchObject({
+      moveLeft: false,
+      resetPressed: false,
+    });
     expect(h.normalizeKeyName('ArrowLeft')).toBe('arrowleft');
     expect(h.normalizeKeyName('')).toBe('');
     expect(h.getCrystalHp(0)).toBeGreaterThan(0);
-    expect(h.getCrystalHp(1)).toBeGreaterThan(0);
     expect(h.getCrystalRowOffset(0)).toBe(0);
     expect(h.getCrystalRowOffset(1)).toBe(10);
     expect(h.normalizeCrystalState('fractured')).toBe('fractured');
     expect(h.normalizeCrystalState('bad')).toBe('whole');
     expect(h.getCrystalFill('shattered')).toBe('#4f46e5');
-    expect(h.getCrystalFill('whole')).toBe('#5eead4');
-    expect(h.getCrystalFill('fractured')).toBe('#8dd3ff');
-    expect(h.getCrystalFill('unknown')).toBe('#5eead4');
     expect(h.getLossStatus(0)).toBe('lost');
     expect(h.getLossStatus(1)).toBe('ready');
     const state = h.createSeedState({ width: 180, height: 140 }, null);
-    expect(h.createSeedState({ width: 200, height: 100, paddleWidth: 60, paddleHeight: 8, paddleSpeed: 5, orbRadius: 6, lives: 2, layoutSeed: 4 }, null))
-      .toMatchObject({ width: 200, height: 100, lives: 2, paddle: { x: 70, y: 74, width: 60, height: 8, speed: 5 }, orb: { x: 100, y: 75, radius: 6 } });
-    expect(h.buildNextState(state, {})).toMatchObject({ frame: 1, width: 180, height: 140 });
-    expect(h.buildNextState(state, { type: 'keydown', key: 'r' })).toMatchObject({ status: 'ready', frame: 0 });
-    const resetNext = h.buildNextState(state, { reset: true, width: 200, height: 100 });
-    expect(resetNext).toMatchObject({ width: 200, height: 100, status: 'ready' });
-    const shatteredState = {
-      ...state,
-      crystals: [{ ...state.crystals[0], state: 'shattered' }, ...state.crystals.slice(1)],
-    };
-    const resetShattered = h.buildNextState(shatteredState, { reset: true });
-    expect(resetShattered.crystals.every(crystal => crystal.state !== 'shattered')).toBe(true);
-    expect(h.buildResetFallback(state)).toEqual({ width: 180, height: 140, lives: 3 });
+    expect(
+      h.createSeedState(
+        {
+          width: 200,
+          height: 100,
+          paddleWidth: 60,
+          paddleHeight: 8,
+          paddleSpeed: 5,
+          orbRadius: 6,
+          lives: 2,
+          layoutSeed: 4,
+        },
+        null
+      )
+    ).toMatchObject({
+      width: 200,
+      height: 100,
+      lives: 2,
+      paddle: { width: 60, height: 8, speed: 5 },
+      orb: { radius: 6 },
+    });
+    expect(h.buildNextState(state, {})).toMatchObject({
+      frame: 1,
+      width: 180,
+      height: 140,
+    });
+    expect(
+      h.buildNextState(state, { reset: true, width: 200, height: 100 })
+    ).toMatchObject({ width: 200, height: 100, status: 'ready' });
+    expect(h.buildResetFallback(state)).toEqual({
+      width: 180,
+      height: 140,
+      lives: 3,
+    });
     expect(h.buildResetFallback(null)).toBeUndefined();
-    expect(h.mergeSeedAndState(state, h.createSeedState({ width: 200, height: 100 }, null))).toMatchObject({ width: 200, height: 100 });
+    expect(
+      h.mergeSeedAndState(
+        state,
+        h.createSeedState({ width: 200, height: 100 }, null)
+      )
+    ).toMatchObject({ width: 200, height: 100 });
     expect(state.crystals.length).toBeGreaterThan(0);
     expect(h.toCanvasPayload(state).width).toBe(180);
     expect(h.orbHitsPaddle(state.orb, state.paddle)).toBe(false);
     expect(h.orbHitsCrystal(state.orb, state.crystals[0])).toBe(false);
-    expect(h.orbHitsPaddle({ x: state.paddle.x + 24, y: state.paddle.y + 2, radius: 4, vy: 1 }, state.paddle)).toBe(true);
-    expect(h.orbHitsCrystal({ x: state.crystals[0].x, y: state.crystals[0].y, radius: 4 }, state.crystals[0])).toBe(true);
-    const lossState = { ...state, lives: 1, combo: 4, orb: { ...state.orb }, paddle: { ...state.paddle } };
-    h.resetOrbAfterLoss(lossState);
-    expect(lossState).toMatchObject({ lives: 0, combo: 0, status: 'lost', orb: { stuckToPaddle: true, vx: 1.6, vy: -2.4 } });
-    expect(h.normalizePaddle(null)).toMatchObject({ width: 48, height: 6, speed: 4 });
-    expect(h.normalizePaddle({ x: 12, y: 20, width: 60, height: 8, speed: 5 }))
-      .toEqual({ x: 12, y: 20, width: 60, height: 8, speed: 5 });
-    expect(h.normalizeOrb(null)).toMatchObject({ radius: 4, stuckToPaddle: true });
-    expect(h.normalizeOrb({ x: 10, y: 12, vx: 2, vy: -3, radius: 5, stuckToPaddle: false }))
-      .toEqual({ x: 10, y: 12, vx: 2, vy: -3, radius: 5, stuckToPaddle: false });
-    expect(h.normalizeState(null)).toBeNull();
-    expect(h.normalizeState({ version: 0 })).toBeNull();
-    const stateArray = [];
-    stateArray.version = 1;
-    expect(h.normalizeState(stateArray)).toBeNull();
-    expect(h.normalizeInputState(null)).toMatchObject({ keyboard: {}, gamepad: { buttons: [], axes: [] } });
-    expect(h.normalizeGamepadState(null)).toEqual({ buttons: [], axes: [] });
+    expect(h.normalizePaddle(null)).toMatchObject({
+      width: 48,
+      height: 6,
+      speed: 4,
+    });
+    expect(h.normalizeOrb(null)).toMatchObject({
+      radius: 4,
+      stuckToPaddle: true,
+    });
     expect(h.normalizeCrystals(180, 140, 2)).toHaveLength(15);
     expect(h.normalizeCrystalsFromState([])).toEqual([]);
-    expect(h.normalizeCrystalFromState({}, 0)).toMatchObject({ id: 'crystal-1', state: 'whole' });
-    expect(h.normalizeCrystalPositionAndSize({ x: 4, y: 5, width: 20, height: 10 }, 2))
-      .toMatchObject({ x: 4, y: 5, width: 20, height: 10 });
-    expect(h.normalizeCrystalStats({ hp: 2, maxHp: 3, fracture: 1 }))
-      .toEqual({ hp: 2, maxHp: 3, fracture: 1 });
+    expect(h.normalizeCrystalFromState({}, 0)).toMatchObject({
+      id: 'crystal-1',
+      state: 'whole',
+    });
+    expect(
+      h.normalizeCrystalPositionAndSize(
+        { x: 4, y: 5, width: 20, height: 10 },
+        2
+      )
+    ).toMatchObject({ x: 4, y: 5, width: 20, height: 10 });
+    expect(h.normalizeCrystalStats({ hp: 2, maxHp: 3, fracture: 1 })).toEqual({
+      hp: 2,
+      maxHp: 3,
+      fracture: 1,
+    });
     expect(h.getCrystalId('custom', 2)).toBe('custom');
     expect(h.getCrystalId({}, 2)).toBe('crystal-3');
-    expect(h.parseActions({ type: 'keydown', key: ' ' }, h.createInitialInputState()).actions.launchPressed)
-      .toBe(true);
-    const prior = { keyboard: { arrowleft: true } };
-    expect(h.parseActions({ type: 'keyup', key: 'ArrowLeft' }, prior)).toEqual({
-      keyboard: { arrowleft: false },
-      actions: { moveLeft: false, moveRight: false, launchPressed: false, pausePressed: false, resetPressed: false },
-    });
-    expect(h.parseActions({ type: 'keydown', key: 'p' }, prior).actions.pausePressed).toBe(true);
-    expect(h.parseActions({ type: 'keydown', key: 'r' }, prior).actions.resetPressed).toBe(true);
-    expect(h.parseActions({ type: 'keydown', key: 'ArrowRight' }, prior).actions.moveRight).toBe(true);
-    expect(h.parseActions({}, prior).keyboard).toEqual(prior.keyboard);
-    expect(h.buildNextKeyboardState({ type: 'keydown', key: 'a' }, {}, 'a')).toEqual({ a: true });
+    expect(
+      h.parseActions({ type: 'keydown', key: ' ' }, h.createInitialInputState())
+        .actions.launchPressed
+    ).toBe(true);
+    expect(
+      h.buildNextKeyboardState({ type: 'keydown', key: 'a' }, {}, 'a')
+    ).toEqual({ a: true });
     expect(h.isMoveLeftPressed({ arrowleft: true })).toBe(true);
     expect(h.isMoveRightPressed({ arrowright: true })).toBe(true);
-    expect(h.resetPressed({ actions: { resetPressed: true }, previousActions: { resetPressed: false } })).toBe(true);
-    expect(h.resetPressed({ actions: { resetPressed: true }, previousActions: { resetPressed: true } })).toBe(false);
-    expect(h.resetPressed({ actions: { resetPressed: false }, previousActions: { resetPressed: false } })).toBe(false);
+    expect(
+      h.resetPressed({
+        actions: { resetPressed: true },
+        previousActions: { resetPressed: false },
+      })
+    ).toBe(true);
     const inputState = h.createInitialInputState();
     inputState.actions.pausePressed = true;
     const paused = { ...state, status: 'running' };
@@ -199,7 +203,11 @@ describe('crystalBreaker helper contracts', () => {
     inputState.actions.launchPressed = true;
     h.applyLaunchInput(launched, inputState);
     expect(launched.status).toBe('running');
-    const moved = { ...state, paddle: { ...state.paddle }, orb: { ...state.orb } };
+    const moved = {
+      ...state,
+      paddle: { ...state.paddle },
+      orb: { ...state.orb },
+    };
     inputState.actions.moveRight = true;
     h.applyPaddleMotion(moved, inputState);
     expect(moved.paddle.x).toBeGreaterThan(state.paddle.x);

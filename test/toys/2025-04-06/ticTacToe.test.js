@@ -1,7 +1,13 @@
 import { test, expect } from '@jest/globals';
-import { ticTacToeMove, ticTacToeTestOnly } from '../../../src/core/browser/toys/2025-04-06/ticTacToe.js';
+import {
+  ticTacToeMove,
+  ticTacToeTestOnly,
+} from '../../../src/core/browser/toys/2025-04-06/ticTacToe.js';
 
-if (ticTacToeTestOnly.getOpponent('X') !== 'O' || ticTacToeTestOnly.getOpponent('O') !== 'X') {
+if (
+  ticTacToeTestOnly.getOpponent('X') !== 'O' ||
+  ticTacToeTestOnly.getOpponent('O') !== 'X'
+) {
   throw new Error('ticTacToe opponent token contract violated');
 }
 
@@ -25,46 +31,124 @@ test('covers direct scoring defaults and required move fields', () => {
   expect(ticTacToeTestOnly.isValidPlayerToken('O')).toBe(true);
   expect(ticTacToeTestOnly.isValidPlayerToken('Q')).toBe(false);
   expect(ticTacToeTestOnly.isValidPlayerToken(null)).toBe(false);
-  expect(ticTacToeTestOnly.minimax(0, true, {
-    board: [[null, null, null], [null, null, null], [null, null, null]],
-    player: 'Q',
-    moves: [],
-  })).toBe(0);
+  expect(
+    ticTacToeTestOnly.minimax(0, true, {
+      board: [
+        [null, null, null],
+        [null, null, null],
+        [null, null, null],
+      ],
+      player: 'Q',
+      moves: [],
+    })
+  ).toBe(0);
   expect(ticTacToeTestOnly.getTerminalScore(() => true, 3)).toBe(7);
   expect(ticTacToeTestOnly.getTerminalScore(() => false, 3)).toBe(-7);
-  expect(ticTacToeTestOnly.shouldEvaluateTerminal(() => true, () => false)).toBe(true);
-  expect(ticTacToeTestOnly.shouldEvaluateTerminal(() => false, () => true)).toBe(true);
-  expect(ticTacToeTestOnly.shouldEvaluateTerminal(() => false, () => false)).toBe(false);
-  expect(ticTacToeTestOnly.evaluateTerminalState(() => true, () => false, 2)).toBe(8);
-  expect(ticTacToeTestOnly.evaluateTerminalState(() => false, () => false, 2)).toBeNull();
-  expect(ticTacToeTestOnly.getAvailableMoves([['X', null, 'O'], [null, 'X', null], ['O', null, 'X']])).toEqual([[0, 1], [1, 0], [1, 2], [2, 1]]);
+  expect(
+    ticTacToeTestOnly.shouldEvaluateTerminal(
+      () => true,
+      () => false
+    )
+  ).toBe(true);
+  expect(
+    ticTacToeTestOnly.shouldEvaluateTerminal(
+      () => false,
+      () => true
+    )
+  ).toBe(true);
+  expect(
+    ticTacToeTestOnly.shouldEvaluateTerminal(
+      () => false,
+      () => false
+    )
+  ).toBe(false);
+  expect(
+    ticTacToeTestOnly.evaluateTerminalState(
+      () => true,
+      () => false,
+      2
+    )
+  ).toBe(8);
+  expect(
+    ticTacToeTestOnly.evaluateTerminalState(
+      () => false,
+      () => false,
+      2
+    )
+  ).toBeNull();
+  expect(
+    ticTacToeTestOnly.getAvailableMoves([
+      ['X', null, 'O'],
+      [null, 'X', null],
+      ['O', null, 'X'],
+    ])
+  ).toEqual([
+    [0, 1],
+    [1, 0],
+    [1, 2],
+    [2, 1],
+  ]);
   expect(ticTacToeTestOnly.selectScore([2, 5], true)).toBe(5);
   expect(ticTacToeTestOnly.selectScore([2, 5], false)).toBe(2);
   expect(ticTacToeTestOnly.determineNextPlayer([])).toBe('X');
-  expect(ticTacToeTestOnly.determineNextPlayer([{ player: 'X', position: { row: 0, column: 0 } }])).toBe('O');
-  expect(JSON.parse(ticTacToeTestOnly.handleValidMoves([{ player: 'X', position: { row: 3, column: 0 } }])).moves).toHaveLength(1);
-  expect(ticTacToeTestOnly.isMoveApplicationValid(0, [], () => true)).toBe(false);
+  expect(
+    ticTacToeTestOnly.determineNextPlayer([
+      { player: 'X', position: { row: 0, column: 0 } },
+    ])
+  ).toBe('O');
+  expect(
+    JSON.parse(
+      ticTacToeTestOnly.handleValidMoves([
+        { player: 'X', position: { row: 3, column: 0 } },
+      ])
+    ).moves
+  ).toHaveLength(1);
+  expect(ticTacToeTestOnly.isMoveApplicationValid(0, [], () => true)).toBe(
+    false
+  );
   const scoreParams = {
-    board: [['X', 'O', 'X'], ['O', 'X', 'O'], ['X', 'O', 'X']],
+    board: [
+      ['X', 'O', 'X'],
+      ['O', 'X', 'O'],
+      ['X', 'O', 'X'],
+    ],
     player: 'X',
     getScore: () => 0,
     getAvailableMoves: () => [],
   };
-  expect(ticTacToeTestOnly.makeAccumulateScores(scoreParams, 0, true)([], [0, 0])).toHaveLength(1);
-  expect(ticTacToeTestOnly.makeAccumulateScores(scoreParams, 0, false)([], [0, 1])).toHaveLength(1);
+  expect(
+    ticTacToeTestOnly.makeAccumulateScores(scoreParams, 0, true)([], [0, 0])
+  ).toHaveLength(1);
+  expect(
+    ticTacToeTestOnly.makeAccumulateScores(scoreParams, 0, false)([], [0, 1])
+  ).toHaveLength(1);
   const empty = ticTacToeTestOnly.getBestScoredMove([]);
   expect(empty).toEqual({ moveScore: -Infinity, move: { row: 0, column: 0 } });
-  expect(ticTacToeTestOnly.hasMoveFields({ player: 'X', position: {} })).toBe(true);
+  expect(ticTacToeTestOnly.hasMoveFields({ player: 'X', position: {} })).toBe(
+    true
+  );
   expect(ticTacToeTestOnly.hasMoveFields({ player: 'X' })).toBe(false);
   expect(ticTacToeTestOnly.hasMoveFields({ position: {} })).toBe(false);
-  const fullBoard = [['X', 'O', 'X'], ['O', 'X', 'O'], ['X', 'O', 'X']];
+  const fullBoard = [
+    ['X', 'O', 'X'],
+    ['O', 'X', 'O'],
+    ['X', 'O', 'X'],
+  ];
   expect(ticTacToeTestOnly.getScoredMoves(fullBoard, 'X', [])).toEqual([]);
   const reducer = ticTacToeTestOnly.applyMoveReducer(
     [{ player: 'X', position: { row: 0, column: 0 } }],
-    [[null, null, null], [null, null, null], [null, null, null]],
+    [
+      [null, null, null],
+      [null, null, null],
+      [null, null, null],
+    ],
     new Set()
   );
-  expect(reducer(null, undefined, 0)).toEqual({ valid: true, earlyWin: false, stop: false });
+  expect(reducer(null, undefined, 0)).toEqual({
+    valid: true,
+    earlyWin: false,
+    stop: false,
+  });
 });
 
 test('minimax early tie return is triggered', () => {

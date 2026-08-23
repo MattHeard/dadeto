@@ -55,9 +55,11 @@ describe('runnerAvailabilityRegistry', () => {
 
   test('ignores null, array, and scalar runner/window records', () => {
     const result = JSON.parse(
-      runnerAvailabilityRegistry(JSON.stringify({
-        runners: [null, [], 0, { availability: [null, [], 0] }],
-      }))
+      runnerAvailabilityRegistry(
+        JSON.stringify({
+          runners: [null, [], 0, { availability: [null, [], 0] }],
+        })
+      )
     );
     expect(result).toEqual({
       runners: [

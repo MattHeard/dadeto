@@ -263,12 +263,19 @@ describe('memoryVector edge cases', () => {
       path: '',
       error: 'Input must be a JSON object or a string path.',
     });
-    expect(memoryVectorTestOnly.tryParseJson('{"ok":true}')).toEqual({ ok: true, value: { ok: true } });
+    expect(memoryVectorTestOnly.tryParseJson('{"ok":true}')).toEqual({
+      ok: true,
+      value: { ok: true },
+    });
     expect(memoryVectorTestOnly.tryParseJson('{')).toEqual({ ok: false });
     expect(memoryVectorTestOnly.isMemoryPathError('Error: bad')).toBe(true);
-    expect(memoryVectorTestOnly.isMemoryPathError('Error during lookup')).toBe(true);
+    expect(memoryVectorTestOnly.isMemoryPathError('Error during lookup')).toBe(
+      true
+    );
     expect(memoryVectorTestOnly.isMemoryPathError('value')).toBe(false);
-    expect(memoryVectorTestOnly.readMemoryPath({ value: { nested: true } }, 'value')).toEqual({ value: { nested: true } });
+    expect(
+      memoryVectorTestOnly.readMemoryPath({ value: { nested: true } }, 'value')
+    ).toEqual({ value: { nested: true } });
   });
 });
 

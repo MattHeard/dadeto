@@ -95,10 +95,20 @@ export function procurementPrefixProposal(input) {
   }
 }
 
+/**
+ *
+ * @param value
+ */
 function nonblank(value) {
   return typeof value === 'string' && value.trim().length > 0;
 }
 
+/**
+ *
+ * @param value
+ * @param minimum
+ * @param maximum
+ */
 function coordinate(value, minimum, maximum) {
   const number = Number(value);
   return (
@@ -109,14 +119,26 @@ function coordinate(value, minimum, maximum) {
   );
 }
 
+/**
+ *
+ * @param value
+ */
 function finiteNonNegative(value) {
   return typeof value === 'number' && Number.isFinite(value) && value >= 0;
 }
 
+/**
+ *
+ * @param value
+ */
 function minuteAligned(value) {
   return Number.isFinite(value) && value % MINUTE_MS === 0;
 }
 
+/**
+ *
+ * @param value
+ */
 function timestamp(value) {
   return `${new Date(value).toISOString().slice(0, 16)}Z`;
 }

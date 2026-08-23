@@ -212,7 +212,14 @@ describe('validated superseding assignment toys', () => {
         )
       ).reason
     ).toBe('storage-failure');
-    expect(buildPoints({})).toEqual(new Map());
+    expect(
+      buildPoints({ points: [{ pointId: 'P2' }, { pointId: 'P1' }] })
+    ).toEqual(
+      new Map([
+        ['P2', { pointId: 'P2' }],
+        ['P1', { pointId: 'P1' }],
+      ])
+    );
     expect(normalizeMaximumSpeed(1)).toBe(1);
 
     const nonZeroInstant = fixture();
@@ -232,7 +239,9 @@ describe('validated superseding assignment toys', () => {
       ).reason
     ).toBe('excessive-speed');
   });
+});
 
+describe('validated superseding assignment persistence', () => {
   test('asset writer commits valid IDs and rejects every invalid asset/segment ID', () => {
     const valid = fixture();
     expect(

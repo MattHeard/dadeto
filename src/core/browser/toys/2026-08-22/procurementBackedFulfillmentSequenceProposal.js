@@ -1,4 +1,5 @@
 import { normalizeCoordinate } from '../2026-08-18/registryUtils.js';
+import { fulfillmentFailure } from './fulfillmentResult.js';
 
 // Toy: Procurement-Backed Fulfillment Sequence Proposal
 
@@ -143,9 +144,11 @@ export function procurementBackedFulfillmentSequenceProposal(input) {
       possessionContext: { segmentId: context.segment.segmentId },
     });
   } catch (error) {
-    return JSON.stringify({ valid: false, error: error.message });
+    return fulfillmentFailure(error);
   }
 }
+
+// Procurement-backed proposals finish at the serialization boundary.
 
 /**
  * Validate and normalize the proposal request.

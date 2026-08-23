@@ -193,7 +193,6 @@ export function startLocalDendriteStory(input, env) {
 
 export const startLocalDendriteStoryTestOnly = {
   getLegacyDend1,
-  getLegacyDend1,
   getStar1Stories,
   pickPrimaryStories,
   readStoryArray,

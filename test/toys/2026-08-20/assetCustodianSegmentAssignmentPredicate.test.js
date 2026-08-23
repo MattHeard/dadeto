@@ -209,10 +209,16 @@ describe('assetCustodianSegmentAssignmentPredicate', () => {
   });
 
   test('covers pure parser and interval contracts', () => {
-    const baseRequest = JSON.parse(payload([], [], {
-      assetId: 'A1', segmentId: 'S1', custodianPersonId: 'C1',
-    }));
-    expect(parseRequest(JSON.stringify(baseRequest)).assetAssignments).toEqual([]);
+    const baseRequest = JSON.parse(
+      payload([], [], {
+        assetId: 'A1',
+        segmentId: 'S1',
+        custodianPersonId: 'C1',
+      })
+    );
+    expect(parseRequest(JSON.stringify(baseRequest)).assetAssignments).toEqual(
+      []
+    );
     expect(
       parseRequest(
         JSON.stringify({
@@ -225,14 +231,30 @@ describe('assetCustodianSegmentAssignmentPredicate', () => {
       assetAssignments: [{ assetId: 'A1', segmentId: 'S1' }],
       personAssignments: [{ personId: 'C1', segmentId: 'S1' }],
     });
-    expect(normalizeAsset({ assetId: ' A1 ', segmentId: ' S1 ' })).toEqual({ assetId: 'A1', segmentId: 'S1' });
-    expect(normalizeAsset({ assetId: 1, segmentId: 2 })).toEqual({ assetId: '1', segmentId: '2' });
+    expect(normalizeAsset({ assetId: ' A1 ', segmentId: ' S1 ' })).toEqual({
+      assetId: 'A1',
+      segmentId: 'S1',
+    });
+    expect(normalizeAsset({ assetId: 1, segmentId: 2 })).toEqual({
+      assetId: '1',
+      segmentId: '2',
+    });
     expect(normalizeAsset({ assetId: null, segmentId: 'S1' })).toBeNull();
-    expect(normalizePerson({ personId: ' C1 ', segmentId: ' S1 ' })).toEqual({ personId: 'C1', segmentId: 'S1' });
-    expect(normalizePerson({ personId: 1, segmentId: 2 })).toEqual({ personId: '1', segmentId: '2' });
+    expect(normalizePerson({ personId: ' C1 ', segmentId: ' S1 ' })).toEqual({
+      personId: 'C1',
+      segmentId: 'S1',
+    });
+    expect(normalizePerson({ personId: 1, segmentId: 2 })).toEqual({
+      personId: '1',
+      segmentId: '2',
+    });
     expect(normalizePerson({ personId: null, segmentId: 'S1' })).toBeNull();
-    expect(normalizeProposed(baseRequest.proposedAssignment)).toEqual(baseRequest.proposedAssignment);
-    expect(normalizeProposed({ assetId: 1, segmentId: 2, custodianPersonId: 3 })).toEqual({ assetId: '1', segmentId: '2', custodianPersonId: '3' });
+    expect(normalizeProposed(baseRequest.proposedAssignment)).toEqual(
+      baseRequest.proposedAssignment
+    );
+    expect(
+      normalizeProposed({ assetId: 1, segmentId: 2, custodianPersonId: 3 })
+    ).toEqual({ assetId: '1', segmentId: '2', custodianPersonId: '3' });
     expect(
       normalizeProposed({
         assetId: { toString: () => 'A1' },
@@ -240,24 +262,72 @@ describe('assetCustodianSegmentAssignmentPredicate', () => {
         custodianPersonId: { toString: () => 'C1' },
       })
     ).toEqual({ assetId: 'A1', segmentId: 'S1', custodianPersonId: 'C1' });
-    expect(normalizeProposed({ assetId: null, segmentId: 'S1', custodianPersonId: 'C1' })).toBeNull();
-    expect(normalizeProposed({ assetId: 'A1', segmentId: null, custodianPersonId: 'C1' })).toBeNull();
-    expect(normalizeProposed({ assetId: 'A1', segmentId: 'S1', custodianPersonId: null })).toBeNull();
-    expect(() => parseRequest(JSON.stringify({ ...baseRequest, proposedAssignment: null }))).toThrow('A complete proposed assignment is required.');
+    expect(
+      normalizeProposed({
+        assetId: null,
+        segmentId: 'S1',
+        custodianPersonId: 'C1',
+      })
+    ).toBeNull();
+    expect(
+      normalizeProposed({
+        assetId: 'A1',
+        segmentId: null,
+        custodianPersonId: 'C1',
+      })
+    ).toBeNull();
+    expect(
+      normalizeProposed({
+        assetId: 'A1',
+        segmentId: 'S1',
+        custodianPersonId: null,
+      })
+    ).toBeNull();
+    expect(() =>
+      parseRequest(JSON.stringify({ ...baseRequest, proposedAssignment: null }))
+    ).toThrow('A complete proposed assignment is required.');
     expect(normalizeAsset(null)).toBeNull();
     expect(normalizePerson([])).toBeNull();
     expect(normalizeProposed({ assetId: 'A1', segmentId: 'S1' })).toBeNull();
-    const points = new Map(baseRequest.points.map(point => [point.pointId, point]));
-    const segments = new Map(baseRequest.segments.map(segment => [segment.segmentId, segment]));
-    expect(resolveInterval(segments, points, 'S1').startTime).toBe(Date.parse(baseRequest.points[0].timestamp));
-    expect(() => resolveInterval(segments, points, 'missing')).toThrow('Unknown segment: missing');
+    const points = new Map(
+      baseRequest.points.map(point => [point.pointId, point])
+    );
+    const segments = new Map(
+      baseRequest.segments.map(segment => [segment.segmentId, segment])
+    );
+    expect(resolveInterval(segments, points, 'S1').startTime).toBe(
+      Date.parse(baseRequest.points[0].timestamp)
+    );
+    expect(() => resolveInterval(segments, points, 'missing')).toThrow(
+      'Unknown segment: missing'
+    );
     expect(() => resolveInterval(segments, points, 'S1')).not.toThrow();
-    expect(() => resolveInterval(new Map([['S', { startPointId: 'P1', endPointId: 'missing' }]]), points, 'S')).toThrow('unknown point');
-    expect(() => resolveInterval(new Map([['S', { startPointId: 'P2', endPointId: 'P1' }]]), points, 'S')).toThrow('ordered valid time interval');
-    expect(resolveInterval(new Map([['S', { startPointId: 'P1', endPointId: 'P1' }]]), points, 'S')).toEqual({
+    expect(() =>
+      resolveInterval(
+        new Map([['S', { startPointId: 'P1', endPointId: 'missing' }]]),
+        points,
+        'S'
+      )
+    ).toThrow('unknown point');
+    expect(() =>
+      resolveInterval(
+        new Map([['S', { startPointId: 'P2', endPointId: 'P1' }]]),
+        points,
+        'S'
+      )
+    ).toThrow('ordered valid time interval');
+    expect(
+      resolveInterval(
+        new Map([['S', { startPointId: 'P1', endPointId: 'P1' }]]),
+        points,
+        'S'
+      )
+    ).toEqual({
       startTime: Date.parse(baseRequest.points[0].timestamp),
       endTime: Date.parse(baseRequest.points[0].timestamp),
     });
-    expect(overlaps({ startTime: 0, endTime: 1 }, { startTime: 1, endTime: 2 })).toBe(false);
+    expect(
+      overlaps({ startTime: 0, endTime: 1 }, { startTime: 1, endTime: 2 })
+    ).toBe(false);
   });
 });

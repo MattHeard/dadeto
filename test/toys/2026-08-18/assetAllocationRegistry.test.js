@@ -87,21 +87,36 @@ describe('assetAllocationRegistry', () => {
       { ...base, allocatedFrom: '' },
       { ...base, allocatedTo: '' },
     ];
-    const result = JSON.parse(assetAllocationRegistry(JSON.stringify({ allocations })));
+    const result = JSON.parse(
+      assetAllocationRegistry(JSON.stringify({ allocations }))
+    );
     expect(result.allocations).toEqual([]);
   });
 
   test('omits empty optional possession bounds', () => {
     const result = JSON.parse(
-      assetAllocationRegistry(JSON.stringify({
-        allocations: [{
-          possessionContextId: 'CTX', assetId: 'asset', allocatedFrom: '1', allocatedTo: '2',
-          possessionFrom: ' ', possessionTo: '', status: ' held ',
-        }],
-      }))
+      assetAllocationRegistry(
+        JSON.stringify({
+          allocations: [
+            {
+              possessionContextId: 'CTX',
+              assetId: 'asset',
+              allocatedFrom: '1',
+              allocatedTo: '2',
+              possessionFrom: ' ',
+              possessionTo: '',
+              status: ' held ',
+            },
+          ],
+        })
+      )
     );
     expect(result.allocations[0]).toEqual({
-      possessionContextId: 'CTX', assetId: 'asset', allocatedFrom: '1', allocatedTo: '2', status: 'held',
+      possessionContextId: 'CTX',
+      assetId: 'asset',
+      allocatedFrom: '1',
+      allocatedTo: '2',
+      status: 'held',
     });
   });
 });

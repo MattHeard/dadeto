@@ -204,9 +204,8 @@ describe('admin token and global helper resolution', () => {
       markVariantDirtyUrl: '/dirty',
       generateStatsUrl: '/stats',
     });
-    const getAdminEndpoints = createGetAdminEndpointsFromStaticConfig(
-      loadStaticConfig
-    );
+    const getAdminEndpoints =
+      createGetAdminEndpointsFromStaticConfig(loadStaticConfig);
 
     await expect(getAdminEndpoints()).resolves.toEqual({
       triggerRenderContentsUrl: '/trigger',
@@ -318,7 +317,7 @@ describe('createGoogleAuthModule', () => {
     await module.initGoogleSignIn();
     expect(initialize).toHaveBeenCalledWith(
       expect.objectContaining({
-        ux_mode: 'popup',
+        ['ux_mode']: 'popup',
         callback: expect.any(Function),
       })
     );
@@ -342,9 +341,9 @@ describe('initializeGoogleSignIn', () => {
     initializeGoogleSignIn(accountsId, options);
     const config = accountsId.initialize.mock.calls[0][0];
     expect(config).toMatchObject({
-      client_id:
+      ['client_id']:
         '848377461162-rv51umkquokgoq0hsnp1g0nbmmrv7kl0.apps.googleusercontent.com',
-      ux_mode: 'popup',
+      ['ux_mode']: 'popup',
     });
     await config.callback({ credential: 'token' });
     expect(reportError).toHaveBeenCalledWith(error);
@@ -358,12 +357,16 @@ describe('initializeGoogleSignIn', () => {
     const storage = { setItem: jest.fn() };
     initializeGoogleSignIn(accountsId, {
       credentialFactory: jest.fn(token => `credential:${token}`),
-      signInWithCredential: jest.fn().mockResolvedValue({ user: { getIdToken } }),
+      signInWithCredential: jest
+        .fn()
+        .mockResolvedValue({ user: { getIdToken } }),
       auth: { currentUser: null },
       storage,
     });
 
-    await accountsId.initialize.mock.calls[0][0].callback({ credential: 'token' });
+    await accountsId.initialize.mock.calls[0][0].callback({
+      credential: 'token',
+    });
     expect(storage.setItem).toHaveBeenCalledWith('id_token', 'id-token');
   });
 
@@ -665,7 +668,9 @@ describe('admin-core interface predicates', () => {
     createInitGoogleSignIn({ ...dependencies, logger })();
     expect(logger.error).toHaveBeenCalledWith('Google Identity script missing');
 
-    const consoleError = jest.spyOn(console, 'error').mockImplementation(() => {});
+    const consoleError = jest
+      .spyOn(console, 'error')
+      .mockImplementation(() => {});
     try {
       createInitGoogleSignIn(dependencies)();
       expect(consoleError).toHaveBeenCalledWith(
@@ -746,7 +751,9 @@ describe('admin-core interface predicates', () => {
     const dependencies = {
       googleAccountsId: { initialize, renderButton: jest.fn() },
       credentialFactory: jest.fn(value => value),
-      signInWithCredential: jest.fn().mockResolvedValue({ user: { getIdToken } }),
+      signInWithCredential: jest
+        .fn()
+        .mockResolvedValue({ user: { getIdToken } }),
       auth: { currentUser: null },
       storage,
       matchMedia: jest.fn(() => ({ matches: false })),
@@ -783,7 +790,9 @@ describe('admin-core interface predicates', () => {
       getElementById: jest.fn(() => null),
       querySelectorAll: jest.fn(() => []),
     };
-    expect(() => createCheckAccess(() => ({ currentUser: null }), missingDoc)()).not.toThrow();
+    expect(() =>
+      createCheckAccess(() => ({ currentUser: null }), missingDoc)()
+    ).not.toThrow();
   });
 });
 

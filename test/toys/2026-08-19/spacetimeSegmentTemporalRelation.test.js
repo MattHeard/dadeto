@@ -109,12 +109,30 @@ describe('spacetimeSegmentTemporalRelation', () => {
       spacetimeSegmentTemporalRelation(
         JSON.stringify({
           points: [
-            { pointId: 'A', spacePointId: 'SP-A', timestamp: '2026-08-19T09:00Z' },
-            { pointId: 'B', spacePointId: 'SP-B', timestamp: '2026-08-19T10:00Z' },
+            {
+              pointId: 'A',
+              spacePointId: 'SP-A',
+              timestamp: '2026-08-19T09:00Z',
+            },
+            {
+              pointId: 'B',
+              spacePointId: 'SP-B',
+              timestamp: '2026-08-19T10:00Z',
+            },
           ],
           spacePoints: [
-            { spacePointId: 'SP-A', latitude: 0, longitude: 0, timestamp: '2026-08-19T09:00Z' },
-            { spacePointId: 'SP-B', latitude: 0, longitude: 1, timestamp: '2026-08-19T10:00Z' },
+            {
+              spacePointId: 'SP-A',
+              latitude: 0,
+              longitude: 0,
+              timestamp: '2026-08-19T09:00Z',
+            },
+            {
+              spacePointId: 'SP-B',
+              latitude: 0,
+              longitude: 1,
+              timestamp: '2026-08-19T10:00Z',
+            },
           ],
           segments: [{ segmentId: 'AB', startPointId: 'A', endPointId: 'B' }],
           firstSegmentId: 'AB',

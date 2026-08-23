@@ -68,7 +68,7 @@ jest.unstable_mockModule('../../../src/core/browser/admin-core.js', () => ({
   createGoogleSignInInit: options => {
     mockSignInOptions = options;
     return options => {
-    mockSignInInit = options;
+      mockSignInInit = options;
     };
   },
   createSignOut: () => jest.fn(mockSignOut),
@@ -225,9 +225,96 @@ async function exerciseFallbackDocuments(handle) {
   await new Promise(resolve => setImmediate(resolve));
 }
 
+/**
+ * @param {Array} links - Sign-out link fixtures.
+ * @param {object} approve - Approval button fixture.
+ * @param {object} reject - Rejection button fixture.
+ * @param {Function} handle - Moderate initialization handler.
+ */
+async function exerciseModerateSubmissionFailures(
+  links,
+  approve,
+  reject,
+  handle
+) {
+  mockFetch.mockRejectedValueOnce(new Error('submit failed'));
+  const originalGetElementById = mockDocument.getElementById;
+  mockDocument.getElementById = () => null;
+  approve.onclick();
+  reject.onclick();
+  mockDocument.getElementById = originalGetElementById;
+  await new Promise(resolve => setImmediate(resolve));
+  mockFetch.mockRejectedValueOnce(new Error('submit failed again'));
+  approve.onclick();
+  await new Promise(resolve => setImmediate(resolve));
+  links[0].addEventListener.mock.calls[0][1]({ preventDefault: jest.fn() });
+  await new Promise(resolve => setImmediate(resolve));
+  expect(mockSignOut).toHaveBeenCalled();
+  expect(mockDocument.body.classList.remove).toHaveBeenCalledWith('authed');
+  expect(approve.disabled).toBe(true);
+  expect(reject.disabled).toBe(true);
+  mockDocument.getElementById = () => null;
+  links[0].addEventListener.mock.calls[0][1]({ preventDefault: jest.fn() });
+  await new Promise(resolve => setImmediate(resolve));
+  mockDocument.getElementById = originalGetElementById;
+  mockFetch
+    .mockRejectedValueOnce(new Error('HTTP 404'))
+    .mockRejectedValueOnce(new Error('assign failed'));
+  mockSignInInit.onSignIn();
+  await new Promise(resolve => setImmediate(resolve));
+  links[0].addEventListener.mock.calls[0][1]({ preventDefault: jest.fn() });
+  await Promise.all([
+    new Promise(resolve => setImmediate(resolve)),
+    new Promise(resolve => setImmediate(resolve)),
+  ]);
+  await exerciseFallbackDocuments(handle);
+}
+
+/**
+ *
+ */
+function exerciseModerateAnimation() {
+  const stopAnimation = startAnimation('fetching', 'Fetching');
+  expect(mockDocument.elements.get('fetching').textContent).toBe('Fetching.');
+  expect(mockDocument.elements.get('fetching').style.display).toBe('block');
+  mockIntervalCallback();
+  expect(mockDocument.elements.get('fetching').textContent).toBe('Fetching..');
+  stopAnimation();
+  expect(mockDocument.elements.get('fetching').style.display).toBe('none');
+}
+
 // This coverage suite intentionally keeps related branch fixtures together.
-// eslint-disable-next-line max-lines-per-function
+
 describe('moderate core', () => {
+  it('reads optional error-beacon location and user-agent values', () => {
+    createModerateHandle({
+      documentObj: mockDocument,
+      fetchFn: mockFetch,
+      sessionStorageObj: {},
+      globalObject: {},
+    });
+    expect(mockBeaconOptions.getUrl()).toBe('');
+    expect(mockBeaconOptions.getUserAgent()).toBe('');
+
+    createModerateHandle({
+      documentObj: mockDocument,
+      fetchFn: mockFetch,
+      sessionStorageObj: {},
+      globalObject: {
+        location: { href: '/moderate' },
+        navigator: { userAgent: 'UA' },
+      },
+    });
+    expect(mockBeaconOptions.getUrl()).toBe('/moderate');
+    expect(mockBeaconOptions.getUserAgent()).toBe('UA');
+
+    createModerateHandle({
+      documentObj: mockDocument,
+      fetchFn: mockFetch,
+      sessionStorageObj: {},
+      globalObject: {},
+    });
+  });
   beforeEach(() => {
     mockConfig = { disableGoogleSignIn: true };
     mockAllowNoToken = false;
@@ -275,15 +362,7 @@ describe('moderate core', () => {
       sessionStorageObj: {},
       globalObject: {},
     });
-    const stopAnimation = startAnimation('fetching', 'Fetching');
-    expect(mockDocument.elements.get('fetching').textContent).toBe('Fetching.');
-    expect(mockDocument.elements.get('fetching').style.display).toBe('block');
-    mockIntervalCallback();
-    expect(mockDocument.elements.get('fetching').textContent).toBe(
-      'Fetching..'
-    );
-    stopAnimation();
-    expect(mockDocument.elements.get('fetching').style.display).toBe('none');
+    exerciseModerateAnimation();
     createModerateHandle();
     await createModerateHandle({
       documentObj: mockDocument,
@@ -375,11 +454,11 @@ describe('moderate core', () => {
     const link = { style: {} };
     const content = { innerHTML: 'content', style: { display: 'block' } };
     const querySelectorAll = jest.fn(selector =>
-        selector === '#signoutWrap'
-          ? [signout]
-          : selector === '#signinButton'
-            ? [signin]
-            : [link],
+      selector === '#signoutWrap'
+        ? [signout]
+        : selector === '#signinButton'
+          ? [signin]
+          : [link]
     );
     const documentObj = {
       querySelectorAll,
@@ -455,7 +534,9 @@ describe('moderate core', () => {
       globalObject: {},
     });
     await loadVariant(true);
-    expect(errorSpy).toHaveBeenCalledWith(expect.objectContaining({ message: 'HTTP 500: failed' }));
+    expect(errorSpy).toHaveBeenCalledWith(
+      expect.objectContaining({ message: 'HTTP 500: failed' })
+    );
     expect(mockDocument.elements.get('fetching').style.display).toBe('none');
     errorSpy.mockRestore();
   });
@@ -603,36 +684,6 @@ describe('moderate core', () => {
       '/submit',
       expect.objectContaining({ body: JSON.stringify({ isApproved: false }) })
     );
-    mockFetch.mockRejectedValueOnce(new Error('submit failed'));
-    const originalGetElementById = mockDocument.getElementById;
-    mockDocument.getElementById = () => null;
-    approve.onclick();
-    reject.onclick();
-    mockDocument.getElementById = originalGetElementById;
-    await new Promise(resolve => setImmediate(resolve));
-    mockFetch.mockRejectedValueOnce(new Error('submit failed again'));
-    approve.onclick();
-    await new Promise(resolve => setImmediate(resolve));
-    links[0].addEventListener.mock.calls[0][1]({ preventDefault: jest.fn() });
-    await new Promise(resolve => setImmediate(resolve));
-    expect(mockSignOut).toHaveBeenCalled();
-    expect(mockDocument.body.classList.remove).toHaveBeenCalledWith('authed');
-    expect(mockDocument.elements.get('approveBtn').disabled).toBe(true);
-    expect(mockDocument.elements.get('rejectBtn').disabled).toBe(true);
-    mockDocument.getElementById = () => null;
-    links[0].addEventListener.mock.calls[0][1]({ preventDefault: jest.fn() });
-    await new Promise(resolve => setImmediate(resolve));
-    mockDocument.getElementById = originalGetElementById;
-    mockFetch
-      .mockRejectedValueOnce(new Error('HTTP 404'))
-      .mockRejectedValueOnce(new Error('assign failed'));
-    mockSignInInit.onSignIn();
-    await new Promise(resolve => setImmediate(resolve));
-    links[0].addEventListener.mock.calls[0][1]({ preventDefault: jest.fn() });
-    await Promise.all([
-      new Promise(resolve => setImmediate(resolve)),
-      new Promise(resolve => setImmediate(resolve)),
-    ]);
-    await exerciseFallbackDocuments(handle);
+    await exerciseModerateSubmissionFailures(links, approve, reject, handle);
   });
 });

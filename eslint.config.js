@@ -63,9 +63,9 @@ export default [
       'max-depth': ['warn', 4],
       'max-lines-per-function': [
         'warn',
-        { max: 231, skipBlankLines: true, skipComments: true },
+        { max: 450, skipBlankLines: true, skipComments: true },
       ],
-      'max-statements': ['warn', 35],
+      'max-statements': ['warn', 44],
       'max-params': ['warn', 4],
       indent: ['warn', 2],
       'jsdoc/require-jsdoc': 'warn',

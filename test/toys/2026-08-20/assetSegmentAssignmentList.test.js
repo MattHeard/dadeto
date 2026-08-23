@@ -76,10 +76,28 @@ describe('assetSegmentAssignmentList', () => {
     ['[]', 'Input must be a JSON object.'],
     ['0', 'Input must be a JSON object.'],
     [JSON.stringify({ path: 'items' }), 'An assignment object is required.'],
-    [JSON.stringify({ path: 'items', assignment: null }), 'An assignment object is required.'],
-    [JSON.stringify({ path: 'items', assignment: [] }), 'An assignment object is required.'],
-    [JSON.stringify({ path: 'items', assignment: { assetId: '', segmentId: 'S' } }), 'An assignment requires assetId and segmentId.'],
-    [JSON.stringify({ path: 'items', assignment: { assetId: 'A', segmentId: '' } }), 'An assignment requires assetId and segmentId.'],
+    [
+      JSON.stringify({ path: 'items', assignment: null }),
+      'An assignment object is required.',
+    ],
+    [
+      JSON.stringify({ path: 'items', assignment: [] }),
+      'An assignment object is required.',
+    ],
+    [
+      JSON.stringify({
+        path: 'items',
+        assignment: { assetId: '', segmentId: 'S' },
+      }),
+      'An assignment requires assetId and segmentId.',
+    ],
+    [
+      JSON.stringify({
+        path: 'items',
+        assignment: { assetId: 'A', segmentId: '' },
+      }),
+      'An assignment requires assetId and segmentId.',
+    ],
   ])('returns precise validation for %s', (value, error) => {
     const result = JSON.parse(assetSegmentAssignmentList(value, makeEnv().env));
     if (error) expect(result).toEqual({ appended: false, error });
@@ -87,7 +105,17 @@ describe('assetSegmentAssignmentList', () => {
   });
 
   test('rejects a blank path with its specific error', () => {
-    expect(JSON.parse(assetSegmentAssignmentList(input({ assetId: 'A', segmentId: 'S' }).replace('assetSegmentAssignments', '   '), makeEnv().env))).toEqual({
+    expect(
+      JSON.parse(
+        assetSegmentAssignmentList(
+          input({ assetId: 'A', segmentId: 'S' }).replace(
+            'assetSegmentAssignments',
+            '   '
+          ),
+          makeEnv().env
+        )
+      )
+    ).toEqual({
       appended: false,
       error: 'A path is required.',
     });
@@ -95,12 +123,19 @@ describe('assetSegmentAssignmentList', () => {
 
   test('coerces a numeric path before persisting', () => {
     const fixture = makeEnv();
-    const result = JSON.parse(assetSegmentAssignmentList(JSON.stringify({
-      path: 42,
-      assignment: { assetId: 'A', segmentId: 'S' },
-    }), fixture.env));
+    const result = JSON.parse(
+      assetSegmentAssignmentList(
+        JSON.stringify({
+          path: 42,
+          assignment: { assetId: 'A', segmentId: 'S' },
+        }),
+        fixture.env
+      )
+    );
     expect(result).toMatchObject({ appended: true, length: 1 });
-    expect(fixture.state.temporary['42']).toEqual([{ assetId: 'A', segmentId: 'S' }]);
+    expect(fixture.state.temporary['42']).toEqual([
+      { assetId: 'A', segmentId: 'S' },
+    ]);
   });
 
   test('exposes exact parser guards for null requests, assignments, and paths', () => {
@@ -110,20 +145,32 @@ describe('assetSegmentAssignmentList', () => {
     expect(() => parseRequest(JSON.stringify({ path: 'items' }))).toThrow(
       'An assignment object is required.'
     );
-    expect(() => parseRequest(JSON.stringify({ path: 'items', assignment: 0 }))).toThrow(
-      'An assignment object is required.'
-    );
-    expect(() => parseRequest(JSON.stringify({
-      path: ' ',
-      assignment: { assetId: 'A', segmentId: 'S' },
-    }))).toThrow('A path is required.');
-    expect(() => parseRequest(JSON.stringify({
-      assignment: { assetId: 'A', segmentId: 'S' },
-    }))).toThrow('A path is required.');
-    expect(parseRequest(JSON.stringify({
-      path: 42,
-      assignment: { assetId: 'A', segmentId: 'S' },
-    }))).toEqual({
+    expect(() =>
+      parseRequest(JSON.stringify({ path: 'items', assignment: 0 }))
+    ).toThrow('An assignment object is required.');
+    expect(() =>
+      parseRequest(
+        JSON.stringify({
+          path: ' ',
+          assignment: { assetId: 'A', segmentId: 'S' },
+        })
+      )
+    ).toThrow('A path is required.');
+    expect(() =>
+      parseRequest(
+        JSON.stringify({
+          assignment: { assetId: 'A', segmentId: 'S' },
+        })
+      )
+    ).toThrow('A path is required.');
+    expect(
+      parseRequest(
+        JSON.stringify({
+          path: 42,
+          assignment: { assetId: 'A', segmentId: 'S' },
+        })
+      )
+    ).toEqual({
       path: '42',
       assignment: { assetId: 'A', segmentId: 'S' },
     });

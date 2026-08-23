@@ -41,7 +41,7 @@ export function spacetimeSegmentGeodesicLength(input) {
 /**
  * Parse the point and segment payload.
  * @param {string} input Raw JSON input.
- * @returns {{points: Array<{pointId: string, latitude: string, longitude: string}>, segment: {startPointId: string, endPointId: string}}} Parsed payload.
+ * @returns {{points: Array<{pointId: string, latitude: number, longitude: number}>, segment: {startPointId: string, endPointId: string}}} Parsed payload.
  */
 function parseInput(input) {
   const parsed = JSON.parse(input);
@@ -53,8 +53,8 @@ function parseInput(input) {
   }
   return {
     points:
-      /** @type {Array<{pointId: string, latitude: string, longitude: string}>} */ (
-        resolvePointRecords(parsed.points, parsed.spacePoints)
+      /** @type {Array<{pointId: string, latitude: number, longitude: number}>} */ (
+        resolvePointRecords(parsed.points, parsed.spacePoints || [])
       ),
     segment: /** @type {{startPointId: string, endPointId: string}} */ (
       parsed.segment

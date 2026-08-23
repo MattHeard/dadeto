@@ -1,4 +1,5 @@
 // Toy: Procurement Normal Fulfillment Composer
+import { fulfillmentFailure } from './fulfillmentResult.js';
 
 /**
  * Prepend a valid procurement prefix to a valid normal proposal.
@@ -59,10 +60,17 @@ export function procurementNormalFulfillmentComposer(input) {
       stockInPointId: procurement.stockInPointId,
     });
   } catch (error) {
-    return JSON.stringify({ valid: false, error: error.message });
+    return fulfillmentFailure(error);
   }
 }
 
+// Composition validates cross-proposal continuity before helper declarations.
+
+/**
+ * @param {any} value Candidate proposal.
+ * @param {string} name Proposal name.
+ * @returns {any} Valid proposal.
+ */
 function validProposal(value, name) {
   if (
     !value?.valid ||
@@ -75,10 +83,21 @@ function validProposal(value, name) {
   return value;
 }
 
+/**
+ * @param {any} proposal Proposal.
+ * @param {string} pointId Point ID.
+ * @returns {any} Matching point.
+ */
 function findPoint(proposal, pointId) {
   return proposal.points.find(point => point.pointId === pointId);
 }
 
+/**
+ * @param {Array<any>} left Left records.
+ * @param {Array<any>} right Right records.
+ * @param {string} idKey ID field.
+ * @returns {Array<any>} Merged records.
+ */
 function mergeById(left, right, idKey) {
   const records = new Map();
   [...left, ...right].forEach(record => {
@@ -91,6 +110,11 @@ function mergeById(left, right, idKey) {
   return [...records.values()];
 }
 
+/**
+ * @param {Array<any>} left Left space points.
+ * @param {Array<any>} right Right space points.
+ * @returns {Array<any>} Merged space points.
+ */
 function mergeSpacePoints(left, right) {
   const records = new Map();
   [...left, ...right].forEach(record => {
@@ -106,6 +130,10 @@ function mergeSpacePoints(left, right) {
   return [...records.values()];
 }
 
+/**
+ * @param {any} record Record to canonicalize.
+ * @returns {string} Stable JSON record.
+ */
 function stableRecord(record) {
   return JSON.stringify(
     Object.keys(record)
@@ -114,6 +142,11 @@ function stableRecord(record) {
   );
 }
 
+/**
+ * @param {Array<any>} points Point records.
+ * @param {Array<any>} spacePoints Space-point records.
+ * @returns {void} Throws if a point cannot resolve.
+ */
 function ensureResolvable(points, spacePoints) {
   const ids = new Set(spacePoints.map(point => point.spacePointId));
   if (points.some(point => !ids.has(point.spacePointId)))

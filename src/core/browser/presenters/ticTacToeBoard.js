@@ -94,11 +94,11 @@ function hasValidColumn(position) {
 
 /**
  * Ensure the provided player symbol is either 'X' or 'O'.
- * @param {unknown} player - Candidate player symbol.
+ * @param {string | undefined} player - Candidate player symbol.
  * @returns {player is 'X' | 'O'} True when the symbol matches a legal player.
  */
 function isValidPlayer(player) {
-  return player === 'X' || player === 'O';
+  return ['X', 'O'].includes(/** @type {string} */ (player));
 }
 
 /**

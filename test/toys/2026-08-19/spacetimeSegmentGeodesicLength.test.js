@@ -13,7 +13,10 @@ describe('spacetimeSegmentGeodesicLength', () => {
     );
     expect(vincentyDistance(0, 0, 0, 179)).toBeCloseTo(19926188.85199594, 8);
     expect(vincentyDistance(89, 0, 80, 179)).toBeCloseTo(1224475.4186494146, 8);
-    expect(vincentyDistance(45, 0, -45, 180)).toBeCloseTo(20037508.342789244, 8);
+    expect(vincentyDistance(45, 0, -45, 180)).toBeCloseTo(
+      20037508.342789244,
+      8
+    );
     expect(vincentyDistance(10, 20, 10, 20)).toBe(0);
     expect(vincentyDistance(0, 0, 0, 180)).toBeCloseTo(20037508.342789244, 6);
   });
@@ -21,7 +24,10 @@ describe('spacetimeSegmentGeodesicLength', () => {
   test('honors the convergence threshold boundary', () => {
     const absSpy = jest.spyOn(Math, 'abs').mockReturnValue(1e-12);
     try {
-      expect(vincentyDistance(10, 20, 11, 21)).toBeCloseTo(155602.9891846868, 8);
+      expect(vincentyDistance(10, 20, 11, 21)).toBeCloseTo(
+        155602.9891846868,
+        8
+      );
       expect(absSpy).toHaveBeenCalledTimes(2);
     } finally {
       absSpy.mockRestore();
@@ -106,21 +112,35 @@ describe('spacetimeSegmentGeodesicLength', () => {
       valid: false,
       error: 'Input must be a JSON object.',
     });
-    expect(JSON.parse(spacetimeSegmentGeodesicLength(JSON.stringify({ points: [] })))).toEqual({
+    expect(
+      JSON.parse(spacetimeSegmentGeodesicLength(JSON.stringify({ points: [] })))
+    ).toEqual({
       valid: false,
       error: 'points and segment are required.',
     });
-    expect(JSON.parse(spacetimeSegmentGeodesicLength(JSON.stringify({ points: {}, segment: {} })))).toEqual({
+    expect(
+      JSON.parse(
+        spacetimeSegmentGeodesicLength(
+          JSON.stringify({ points: {}, segment: {} })
+        )
+      )
+    ).toEqual({
       valid: false,
       error: 'points and segment are required.',
     });
   });
 
   test('returns the exact unknown-point error', () => {
-    expect(JSON.parse(spacetimeSegmentGeodesicLength(JSON.stringify({
-      points: [{ pointId: 'A', latitude: 0, longitude: 0 }],
-      segment: { startPointId: 'A', endPointId: 'B' },
-    })))).toEqual({
+    expect(
+      JSON.parse(
+        spacetimeSegmentGeodesicLength(
+          JSON.stringify({
+            points: [{ pointId: 'A', latitude: 0, longitude: 0 }],
+            segment: { startPointId: 'A', endPointId: 'B' },
+          })
+        )
+      )
+    ).toEqual({
       valid: false,
       error: 'Segment references an unknown point.',
     });
@@ -128,14 +148,16 @@ describe('spacetimeSegmentGeodesicLength', () => {
 
   test('resolves coordinates from referenced space points', () => {
     const result = JSON.parse(
-      spacetimeSegmentGeodesicLength(JSON.stringify({
-        points: [
-          { pointId: 'A', spacePointId: 'SP-A' },
-          { pointId: 'B', latitude: 0, longitude: 1 },
-        ],
-        spacePoints: [{ spacePointId: 'SP-A', latitude: 0, longitude: 0 }],
-        segment: { startPointId: 'A', endPointId: 'B' },
-      }))
+      spacetimeSegmentGeodesicLength(
+        JSON.stringify({
+          points: [
+            { pointId: 'A', spacePointId: 'SP-A' },
+            { pointId: 'B', latitude: 0, longitude: 1 },
+          ],
+          spacePoints: [{ spacePointId: 'SP-A', latitude: 0, longitude: 0 }],
+          segment: { startPointId: 'A', endPointId: 'B' },
+        })
+      )
     );
     expect(result).toEqual({ value: '111319.49', unit: 'meters' });
   });
@@ -164,16 +186,21 @@ describe('spacetimeSegmentGeodesicLength', () => {
     [-75, -175, 5, -5, '12204960.26'],
     [42.1, -71.2, -33.4, 151.2, '16209224.78'],
     [66.6, 25.7, -1.2, -77, '10686268.42'],
-  ])('preserves WGS84 results for varied coordinates', (lat1, lon1, lat2, lon2, value) => {
-    const result = JSON.parse(
-      spacetimeSegmentGeodesicLength(JSON.stringify({
-        points: [
-          { pointId: 'A', latitude: lat1, longitude: lon1 },
-          { pointId: 'B', latitude: lat2, longitude: lon2 },
-        ],
-        segment: { startPointId: 'A', endPointId: 'B' },
-      }))
-    );
-    expect(result).toEqual({ value, unit: 'meters' });
-  });
+  ])(
+    'preserves WGS84 results for varied coordinates',
+    (lat1, lon1, lat2, lon2, value) => {
+      const result = JSON.parse(
+        spacetimeSegmentGeodesicLength(
+          JSON.stringify({
+            points: [
+              { pointId: 'A', latitude: lat1, longitude: lon1 },
+              { pointId: 'B', latitude: lat2, longitude: lon2 },
+            ],
+            segment: { startPointId: 'A', endPointId: 'B' },
+          })
+        )
+      );
+      expect(result).toEqual({ value, unit: 'meters' });
+    }
+  );
 });

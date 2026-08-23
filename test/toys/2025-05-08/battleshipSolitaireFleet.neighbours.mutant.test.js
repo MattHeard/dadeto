@@ -156,7 +156,9 @@ describe('neighbours mutants', () => {
       })
     ).toEqual({ start: base.start, length: 1, direction: 'H' });
   });
+});
 
+describe('neighbours mutants continuation', () => {
   test('enumerates every row start and marks every chosen segment', () => {
     const cfg = { width: 3, height: 1, noTouching: false };
     const candidates = collectCandidatesForRow({
@@ -183,11 +185,13 @@ describe('neighbours mutants', () => {
     expect(shouldAbortPlaceShip(null)).toBe(true);
     expect(shouldAbortPlacement([])).toBe(false);
     expect(shouldAbortPlacement(null)).toBe(true);
-    expect(addPlacedShip([], { direction: 'H', start: { x: 0, y: 0 }, length: 1 })).toEqual([
-      { direction: 'H', start: { x: 0, y: 0 }, length: 1 },
-    ]);
+    expect(
+      addPlacedShip([], { direction: 'H', start: { x: 0, y: 0 }, length: 1 })
+    ).toEqual([{ direction: 'H', start: { x: 0, y: 0 }, length: 1 }]);
     expect(addPlacedShip([], null)).toBeNull();
-    expect(addPlacedShip(null, { direction: 'H', start: { x: 0, y: 0 }, length: 1 })).toBeNull();
+    expect(
+      addPlacedShip(null, { direction: 'H', start: { x: 0, y: 0 }, length: 1 })
+    ).toBeNull();
   });
 
   test('places ships without mutating configuration and preserves occupancy', () => {
@@ -205,20 +209,51 @@ describe('neighbours mutants', () => {
 
   test('handles candidate-selection edge cases and exact random choice', () => {
     const occupied = new Set();
-    expect(chooseAndMarkCandidate({ candidates: [] , length: 1 }, new Map([['getRandomNumber', () => { throw new Error('must not draw'); }]]), occupied)).toBeNull();
-    expect(chooseAndMarkCandidate({ candidates: [null], length: 1 }, new Map([['getRandomNumber', () => 0]]), occupied)).toBeNull();
+    expect(
+      chooseAndMarkCandidate(
+        { candidates: [], length: 1 },
+        new Map([
+          [
+            'getRandomNumber',
+            () => {
+              throw new Error('must not draw');
+            },
+          ],
+        ]),
+        occupied
+      )
+    ).toBeNull();
+    expect(
+      chooseAndMarkCandidate(
+        { candidates: [null], length: 1 },
+        new Map([['getRandomNumber', () => 0]]),
+        occupied
+      )
+    ).toBeNull();
     const candidates = [
       { direction: 'H', start: { x: 0, y: 0 }, length: 1 },
       { direction: 'V', start: { x: 1, y: 0 }, length: 1 },
     ];
-    expect(chooseAndMarkCandidate({ candidates, length: 1 }, new Map([['getRandomNumber', () => 0.99]]), occupied)).toEqual(candidates[1]);
+    expect(
+      chooseAndMarkCandidate(
+        { candidates, length: 1 },
+        new Map([['getRandomNumber', () => 0.99]]),
+        occupied
+      )
+    ).toEqual(candidates[1]);
     expect(occupied).toContain('1,0');
   });
 
   test('normalizes ship inputs and dimensions exactly', () => {
-    expect(exceedsBoardArea({ width: 2, height: 2, ships: [2, 2, 1] })).toBe(true);
-    expect(exceedsBoardArea({ width: 2, height: 2, ships: [2, 2] })).toBe(false);
-    expect(exceedsBoardArea({ width: 2, height: 2, ships: [2, 1] })).toBe(false);
+    expect(exceedsBoardArea({ width: 2, height: 2, ships: [2, 2, 1] })).toBe(
+      true
+    );
+    expect(exceedsBoardArea({ width: 2, height: 2, ships: [2, 2] })).toBe(
+      false
+    );
+    expect(exceedsBoardArea({ width: 2, height: 2, ships: [2, 1] })).toBe(
+      false
+    );
     const cfg = { ships: '2, ,3,0,-1' };
     convertShipsToArray(cfg);
     expect(cfg.ships).toEqual([2, 3, -1]);
@@ -235,10 +270,12 @@ describe('neighbours mutants', () => {
 
   test('returns the first successful fleet-loop result and null otherwise', () => {
     const calls = [];
-    expect(fleetLoopFor(3, index => {
-      calls.push(index);
-      return index === 1 ? { ok: true } : null;
-    })).toEqual({ ok: true });
+    expect(
+      fleetLoopFor(3, index => {
+        calls.push(index);
+        return index === 1 ? { ok: true } : null;
+      })
+    ).toEqual({ ok: true });
     expect(calls).toEqual([0, 1, 2]);
     expect(fleetLoopFor(2, () => null)).toBeNull();
   });

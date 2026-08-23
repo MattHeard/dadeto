@@ -78,16 +78,24 @@ describe('fulfillment primitives', () => {
     ).toBe('true');
   });
   test('AREA1 resolves referenced space-point coordinates', () => {
-    expect(wgs84CirclePointPredicate(JSON.stringify({
-      circle: { center: { latitude: 0, longitude: 0 }, radiusMeters: 100 },
-      point: { pointId: 'P', spacePointId: 'SP' },
-      spacePoints: [{ spacePointId: 'SP', latitude: 0, longitude: 0 }],
-    }))).toBe('true');
-    expect(wgs84CirclePointPredicate(JSON.stringify({
-      circle: { center: { latitude: 0, longitude: 0 }, radiusMeters: 100 },
-      point: { pointId: 'P', latitude: 0, longitude: 0 },
-      spacePoints: null,
-    }))).toBe('false');
+    expect(
+      wgs84CirclePointPredicate(
+        JSON.stringify({
+          circle: { center: { latitude: 0, longitude: 0 }, radiusMeters: 100 },
+          point: { pointId: 'P', spacePointId: 'SP' },
+          spacePoints: [{ spacePointId: 'SP', latitude: 0, longitude: 0 }],
+        })
+      )
+    ).toBe('true');
+    expect(
+      wgs84CirclePointPredicate(
+        JSON.stringify({
+          circle: { center: { latitude: 0, longitude: 0 }, radiusMeters: 100 },
+          point: { pointId: 'P', latitude: 0, longitude: 0 },
+          spacePoints: null,
+        })
+      )
+    ).toBe('false');
   });
   test('AREA1 rejects missing, non-finite, negative, and out-of-range values', () => {
     const validPoint = { latitude: 0, longitude: 0 };
@@ -133,12 +141,18 @@ describe('fulfillment primitives', () => {
     expect(wgs84CirclePointPredicate('')).toBe('false');
     expect(
       wgs84CirclePointPredicate(
-        JSON.stringify({ circle: { center: { latitude: 0, longitude: 0 }, radiusMeters: 1 }, point: { latitude: 91, longitude: 0 } })
+        JSON.stringify({
+          circle: { center: { latitude: 0, longitude: 0 }, radiusMeters: 1 },
+          point: { latitude: 91, longitude: 0 },
+        })
       )
     ).toBe('false');
     expect(
       wgs84CirclePointPredicate(
-        JSON.stringify({ circle: { center: { latitude: 0, longitude: 181 }, radiusMeters: 1 }, point: { latitude: 0, longitude: 0 } })
+        JSON.stringify({
+          circle: { center: { latitude: 0, longitude: 181 }, radiusMeters: 1 },
+          point: { latitude: 0, longitude: 0 },
+        })
       )
     ).toBe('false');
   });
@@ -198,12 +212,12 @@ describe('fulfillment primitives', () => {
     expect(wgs84CircleSegmentPredicate('not json')).toBe('false');
     expect(wgs84CircleSegmentPredicate('{}')).toBe('false');
     expect(wgs84CircleSegmentPredicate('null')).toBe('false');
-    expect(wgs84CircleSegmentPredicate(JSON.stringify({ points: {}, segment: {} }))).toBe(
-      'false'
-    );
-    expect(wgs84CircleSegmentPredicate(JSON.stringify({ points: [], segment: null }))).toBe(
-      'false'
-    );
+    expect(
+      wgs84CircleSegmentPredicate(JSON.stringify({ points: {}, segment: {} }))
+    ).toBe('false');
+    expect(
+      wgs84CircleSegmentPredicate(JSON.stringify({ points: [], segment: null }))
+    ).toBe('false');
     expect(wgs84CircleSegmentPredicate(JSON.stringify({ points }))).toBe(
       'false'
     );
@@ -227,7 +241,7 @@ describe('fulfillment primitives', () => {
             speedKilometersPerHour: 10,
           })
         )
-    ).unit
+      ).unit
     ).toBe('seconds'));
   test('TRAV1 preserves the exact distance-to-duration conversion', () => {
     const result = JSON.parse(
@@ -259,45 +273,84 @@ describe('fulfillment primitives', () => {
         error: 'Valid segment points and positive speed are required.',
       });
     }
-    expect(JSON.parse(constantSpeedGeodesicTravelDuration(JSON.stringify({
-      points,
-      segment: { startPointId: 'A', endPointId: 'B' },
-      speedKilometersPerHour: 0,
-    })))).toEqual({
+    expect(
+      JSON.parse(
+        constantSpeedGeodesicTravelDuration(
+          JSON.stringify({
+            points,
+            segment: { startPointId: 'A', endPointId: 'B' },
+            speedKilometersPerHour: 0,
+          })
+        )
+      )
+    ).toEqual({
       valid: false,
       error: 'Valid segment points and positive speed are required.',
     });
-    expect(JSON.parse(constantSpeedGeodesicTravelDuration(JSON.stringify({
-      points: [{ ...points[0], latitude: 'bad' }, points[1]],
-      segment: segments[0],
-      speedKilometersPerHour: 10,
-    })))).toEqual({ valid: false, error: 'Point A has invalid coordinates.' });
-    expect(JSON.parse(constantSpeedGeodesicTravelDuration(JSON.stringify({
-      points: [{ pointId: 'A' }, { pointId: 'B', latitude: 0, longitude: 0 }],
-      segment: { startPointId: 'A', endPointId: 'B' },
-      speedKilometersPerHour: 10,
-    })))).toEqual({ valid: false, error: 'Valid coordinates are required.' });
-    expect(JSON.parse(constantSpeedGeodesicTravelDuration(JSON.stringify({
-      points,
-      segment: { startPointId: 'missing', endPointId: 'B' },
-      speedKilometersPerHour: 10,
-    })))).toEqual({
+    expect(
+      JSON.parse(
+        constantSpeedGeodesicTravelDuration(
+          JSON.stringify({
+            points: [{ ...points[0], latitude: 'bad' }, points[1]],
+            segment: segments[0],
+            speedKilometersPerHour: 10,
+          })
+        )
+      )
+    ).toEqual({ valid: false, error: 'Point A has invalid coordinates.' });
+    expect(
+      JSON.parse(
+        constantSpeedGeodesicTravelDuration(
+          JSON.stringify({
+            points: [
+              { pointId: 'A' },
+              { pointId: 'B', latitude: 0, longitude: 0 },
+            ],
+            segment: { startPointId: 'A', endPointId: 'B' },
+            speedKilometersPerHour: 10,
+          })
+        )
+      )
+    ).toEqual({ valid: false, error: 'Valid coordinates are required.' });
+    expect(
+      JSON.parse(
+        constantSpeedGeodesicTravelDuration(
+          JSON.stringify({
+            points,
+            segment: { startPointId: 'missing', endPointId: 'B' },
+            speedKilometersPerHour: 10,
+          })
+        )
+      )
+    ).toEqual({
       valid: false,
       error: 'Valid segment points and positive speed are required.',
     });
-    expect(JSON.parse(constantSpeedGeodesicTravelDuration(JSON.stringify({
-      points,
-      segment: {},
-      speedKilometersPerHour: 10,
-    })))).toEqual({
+    expect(
+      JSON.parse(
+        constantSpeedGeodesicTravelDuration(
+          JSON.stringify({
+            points,
+            segment: {},
+            speedKilometersPerHour: 10,
+          })
+        )
+      )
+    ).toEqual({
       valid: false,
       error: 'Valid segment points and positive speed are required.',
     });
-    expect(JSON.parse(constantSpeedGeodesicTravelDuration(JSON.stringify({
-      points,
-      segment: segments[0],
-      speedKilometersPerHour: -1,
-    })))).toEqual({
+    expect(
+      JSON.parse(
+        constantSpeedGeodesicTravelDuration(
+          JSON.stringify({
+            points,
+            segment: segments[0],
+            speedKilometersPerHour: -1,
+          })
+        )
+      )
+    ).toEqual({
       valid: false,
       error: 'Valid segment points and positive speed are required.',
     });
@@ -337,31 +390,57 @@ describe('fulfillment primitives', () => {
       segmentId: 'AB',
     };
     for (const key of [
-      'possessionStartPoint', 'origin', 'travelDurationSeconds',
-      'startPointId', 'segmentId',
+      'possessionStartPoint',
+      'origin',
+      'travelDurationSeconds',
+      'startPointId',
+      'segmentId',
     ]) {
       const value = { ...valid };
       delete value[key];
-      expect(JSON.parse(deliveryOutboundSegmentProposal(JSON.stringify(value)))).toEqual({
+      expect(
+        JSON.parse(deliveryOutboundSegmentProposal(JSON.stringify(value)))
+      ).toEqual({
         valid: false,
-        error: 'Valid possession point, origin, duration, and IDs are required.',
+        error:
+          'Valid possession point, origin, duration, and IDs are required.',
       });
     }
-    expect(JSON.parse(deliveryOutboundSegmentProposal(JSON.stringify({
-      ...valid,
-      travelDurationSeconds: -1,
-    }))).error).toBe('Valid possession point, origin, duration, and IDs are required.');
-    for (const end of [{ timestamp: valid.possessionStartPoint.timestamp },
-      { pointId: 'B' }]) {
-      expect(JSON.parse(deliveryOutboundSegmentProposal(JSON.stringify({
-        ...valid,
-        possessionStartPoint: end,
-      }))).valid).toBe(false);
+    expect(
+      JSON.parse(
+        deliveryOutboundSegmentProposal(
+          JSON.stringify({
+            ...valid,
+            travelDurationSeconds: -1,
+          })
+        )
+      ).error
+    ).toBe('Valid possession point, origin, duration, and IDs are required.');
+    for (const end of [
+      { timestamp: valid.possessionStartPoint.timestamp },
+      { pointId: 'B' },
+    ]) {
+      expect(
+        JSON.parse(
+          deliveryOutboundSegmentProposal(
+            JSON.stringify({
+              ...valid,
+              possessionStartPoint: end,
+            })
+          )
+        ).valid
+      ).toBe(false);
     }
-    expect(JSON.parse(deliveryOutboundSegmentProposal(JSON.stringify({
-      ...valid,
-      origin: { latitude: 'not-a-coordinate', longitude: 0 },
-    })))).toEqual({
+    expect(
+      JSON.parse(
+        deliveryOutboundSegmentProposal(
+          JSON.stringify({
+            ...valid,
+            origin: { latitude: 'not-a-coordinate', longitude: 0 },
+          })
+        )
+      )
+    ).toEqual({
       valid: false,
       error: 'Valid origin coordinates and timestamp are required.',
     });
@@ -455,24 +534,44 @@ describe('fulfillment primitives', () => {
       segmentId: 'RET',
     };
     for (const key of [
-      'possessionEndPoint', 'destination', 'travelDurationSeconds',
-      'endPointId', 'segmentId',
+      'possessionEndPoint',
+      'destination',
+      'travelDurationSeconds',
+      'endPointId',
+      'segmentId',
     ]) {
       const value = { ...valid };
       delete value[key];
-      expect(JSON.parse(pickupReturnSegmentProposal(JSON.stringify(value)))).toEqual({
+      expect(
+        JSON.parse(pickupReturnSegmentProposal(JSON.stringify(value)))
+      ).toEqual({
         valid: false,
-        error: 'Valid possession point, destination, duration, and IDs are required.',
+        error:
+          'Valid possession point, destination, duration, and IDs are required.',
       });
     }
-    expect(JSON.parse(pickupReturnSegmentProposal(JSON.stringify({
-      ...valid,
-      travelDurationSeconds: -1,
-    }))).error).toBe('Valid possession point, destination, duration, and IDs are required.');
-    expect(JSON.parse(pickupReturnSegmentProposal(JSON.stringify({
-      ...valid,
-      destination: { latitude: 'not-a-coordinate', longitude: 0 },
-    }))).error).toBe('Valid destination coordinates and timestamp are required.');
+    expect(
+      JSON.parse(
+        pickupReturnSegmentProposal(
+          JSON.stringify({
+            ...valid,
+            travelDurationSeconds: -1,
+          })
+        )
+      ).error
+    ).toBe(
+      'Valid possession point, destination, duration, and IDs are required.'
+    );
+    expect(
+      JSON.parse(
+        pickupReturnSegmentProposal(
+          JSON.stringify({
+            ...valid,
+            destination: { latitude: 'not-a-coordinate', longitude: 0 },
+          })
+        )
+      ).error
+    ).toBe('Valid destination coordinates and timestamp are required.');
   });
   test('POSS2 normalizes and sorts contexts', () =>
     expect(
@@ -485,7 +584,7 @@ describe('fulfillment primitives', () => {
             ],
           })
         )
-    ).possessionContexts.map(x => x.possessionContextId)
+      ).possessionContexts.map(x => x.possessionContextId)
     ).toEqual(['A', 'B']));
   test('POSS2 requires all context identity fields', () => {
     for (const context of [
@@ -496,8 +595,11 @@ describe('fulfillment primitives', () => {
       [],
     ]) {
       expect(
-        JSON.parse(possessionContextRegistry(JSON.stringify({ possessionContexts: [context] })))
-          .possessionContexts
+        JSON.parse(
+          possessionContextRegistry(
+            JSON.stringify({ possessionContexts: [context] })
+          )
+        ).possessionContexts
       ).toEqual([]);
     }
   });
@@ -541,16 +643,20 @@ describe('fulfillment primitives', () => {
       wgs84CircleSegmentPredicate(JSON.stringify({ points, segment: {} }))
     ).toBe('false');
     expect(
-      wgs84CircleSegmentPredicate(JSON.stringify({
-        points,
-        segment: { startPointId: 'missing', endPointId: points[0].pointId },
-      }))
+      wgs84CircleSegmentPredicate(
+        JSON.stringify({
+          points,
+          segment: { startPointId: 'missing', endPointId: points[0].pointId },
+        })
+      )
     ).toBe('false');
     expect(
-      wgs84CircleSegmentPredicate(JSON.stringify({
-        points,
-        segment: { startPointId: points[0].pointId, endPointId: 'missing' },
-      }))
+      wgs84CircleSegmentPredicate(
+        JSON.stringify({
+          points,
+          segment: { startPointId: points[0].pointId, endPointId: 'missing' },
+        })
+      )
     ).toBe('false');
     expect(
       JSON.parse(
@@ -614,29 +720,37 @@ describe('fulfillment primitives', () => {
         })
       )
     ).toBe('["A1"]');
-    expect(spacetimeWorldLinePairPredicate(JSON.stringify({
-      points: [
-        { pointId: 'A', timestamp: '2026-01-01T01:00:00Z' },
-        { pointId: 'B', timestamp: '2026-01-01T00:00:00Z' },
-        { pointId: 'C', timestamp: '2026-01-01T00:00:00Z' },
-        { pointId: 'D', timestamp: '2026-01-01T01:00:00Z' },
-      ],
-      segments: [
-        { segmentId: 'AB', startPointId: 'A', endPointId: 'B' },
-        { segmentId: 'CD', startPointId: 'C', endPointId: 'D' },
-      ],
-      firstSegmentId: 'AB',
-      secondSegmentId: 'CD',
-    }))).toContain('ordered valid UTC interval');
-    expect(spacetimeWorldLinePairPredicate(JSON.stringify({
-      points: [
-        { pointId: 'A', timestamp: 'not-a-date' },
-        { pointId: 'B', timestamp: '2026-01-01T00:00:00Z' },
-      ],
-      segments: [{ segmentId: 'AB', startPointId: 'A', endPointId: 'B' }],
-      firstSegmentId: 'AB',
-      secondSegmentId: 'AB',
-    }))).toContain('ordered valid UTC interval');
+    expect(
+      spacetimeWorldLinePairPredicate(
+        JSON.stringify({
+          points: [
+            { pointId: 'A', timestamp: '2026-01-01T01:00:00Z' },
+            { pointId: 'B', timestamp: '2026-01-01T00:00:00Z' },
+            { pointId: 'C', timestamp: '2026-01-01T00:00:00Z' },
+            { pointId: 'D', timestamp: '2026-01-01T01:00:00Z' },
+          ],
+          segments: [
+            { segmentId: 'AB', startPointId: 'A', endPointId: 'B' },
+            { segmentId: 'CD', startPointId: 'C', endPointId: 'D' },
+          ],
+          firstSegmentId: 'AB',
+          secondSegmentId: 'CD',
+        })
+      )
+    ).toContain('ordered valid UTC interval');
+    expect(
+      spacetimeWorldLinePairPredicate(
+        JSON.stringify({
+          points: [
+            { pointId: 'A', timestamp: 'not-a-date' },
+            { pointId: 'B', timestamp: '2026-01-01T00:00:00Z' },
+          ],
+          segments: [{ segmentId: 'AB', startPointId: 'A', endPointId: 'B' }],
+          firstSegmentId: 'AB',
+          secondSegmentId: 'AB',
+        })
+      )
+    ).toContain('ordered valid UTC interval');
   });
   test('world-line touching requires matching endpoint identity in either order', () => {
     const worldPoints = [
@@ -650,12 +764,24 @@ describe('fulfillment primitives', () => {
       { segmentId: 'CD', startPointId: 'C', endPointId: 'D' },
     ];
     const value = { points: worldPoints, segments: worldSegments };
-    expect(spacetimeWorldLinePairPredicate(JSON.stringify({
-      ...value, firstSegmentId: 'AB', secondSegmentId: 'CD',
-    }))).toBe('false');
-    expect(spacetimeWorldLinePairPredicate(JSON.stringify({
-      ...value, firstSegmentId: 'CD', secondSegmentId: 'AB',
-    }))).toBe('false');
+    expect(
+      spacetimeWorldLinePairPredicate(
+        JSON.stringify({
+          ...value,
+          firstSegmentId: 'AB',
+          secondSegmentId: 'CD',
+        })
+      )
+    ).toBe('false');
+    expect(
+      spacetimeWorldLinePairPredicate(
+        JSON.stringify({
+          ...value,
+          firstSegmentId: 'CD',
+          secondSegmentId: 'AB',
+        })
+      )
+    ).toBe('false');
   });
   test('keeps touching possession intervals available and deduplicates IDs', () => {
     expect(

@@ -18,7 +18,7 @@ const TERTIARY_COLOR = '#4338ca';
  * @returns {string} JSON graph payload for the graph presenter.
  */
 export function gdpSectorProjection(input, env) {
-  const getRandomNumber = env.get?.('getRandomNumber') || Math.random;
+  const getRandomNumber = env.get?.('getRandomNumber') || (() => 0.5);
   const request = parseRequest(input);
   let rows = publicHistoricalRows;
   if (request.rows !== undefined) {
@@ -93,9 +93,9 @@ function normalizeRows(rows) {
     return [];
   }
   const typedRows =
-      /** @type {{ year?: unknown, primary?: unknown, secondary?: unknown, tertiary?: unknown }[]} */ (
-        rows
-      );
+    /** @type {{ year?: unknown, primary?: unknown, secondary?: unknown, tertiary?: unknown }[]} */ (
+      rows
+    );
   const normalizedRows = typedRows
     .map(normalizeRow)
     .filter(row => row !== null);

@@ -81,7 +81,9 @@ describe('admin-core additional coverage', () => {
       new Error('Firebase auth client is not ready')
     );
   });
+});
 
+describe('admin-core additional logger coverage', () => {
   it('supplies the default logger when the handler factory has none', () => {
     const initialize = jest.fn();
     const initFactory = createInitGoogleSignInHandlerFactory({
@@ -362,10 +364,17 @@ describe('admin-core additional coverage', () => {
 
   it('requires both Google Identity methods', () => {
     expect(
-      hasRequiredGoogleIdentityMethods({ initialize: jest.fn(), renderButton: jest.fn() })
+      hasRequiredGoogleIdentityMethods({
+        initialize: jest.fn(),
+        renderButton: jest.fn(),
+      })
     ).toBe(true);
-    expect(hasRequiredGoogleIdentityMethods({ initialize: jest.fn() })).toBe(false);
-    expect(hasRequiredGoogleIdentityMethods({ renderButton: jest.fn() })).toBe(false);
+    expect(hasRequiredGoogleIdentityMethods({ initialize: jest.fn() })).toBe(
+      false
+    );
+    expect(hasRequiredGoogleIdentityMethods({ renderButton: jest.fn() })).toBe(
+      false
+    );
     expect(hasRequiredGoogleIdentityMethods({})).toBe(false);
   });
 });

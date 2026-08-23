@@ -106,7 +106,12 @@ describe('assetPossessionSegmentCandidateFilter', () => {
     expect(assetPossessionSegmentCandidateFilter('{')).toBe('[]');
     expect(
       assetPossessionSegmentCandidateFilter(
-        JSON.stringify({ points, segments, possessionSegmentId: 'S2', assets: [] })
+        JSON.stringify({
+          points,
+          segments,
+          possessionSegmentId: 'S2',
+          assets: [],
+        })
       )
     ).toBe('[]');
     expect(
@@ -126,12 +131,16 @@ describe('assetPossessionSegmentCandidateFilter', () => {
 
   test('resolves valid intervals and rejects invalid references or times', () => {
     const pointMap = new Map(points.map(point => [point.pointId, point]));
-    const segmentMap = new Map(segments.map(segment => [segment.segmentId, segment]));
+    const segmentMap = new Map(
+      segments.map(segment => [segment.segmentId, segment])
+    );
     expect(resolve(segmentMap, pointMap, 'S1')).toEqual({
       startTime: Date.parse(points[0].timestamp),
       endTime: Date.parse(points[1].timestamp),
     });
-    expect(() => resolve(segmentMap, pointMap, 'missing')).toThrow('Unknown segment');
+    expect(() => resolve(segmentMap, pointMap, 'missing')).toThrow(
+      'Unknown segment'
+    );
     expect(() =>
       resolve(
         new Map([['S', { startPointId: 'P1', endPointId: 'missing' }]]),
@@ -159,9 +168,15 @@ describe('assetPossessionSegmentCandidateFilter', () => {
   });
 
   test('overlap is strict, allowing touching and zero-duration intervals', () => {
-    expect(overlap({ startTime: 0, endTime: 1 }, { startTime: 1, endTime: 2 })).toBe(false);
-    expect(overlap({ startTime: 0, endTime: 2 }, { startTime: 1, endTime: 3 })).toBe(true);
-    expect(overlap({ startTime: 1, endTime: 1 }, { startTime: 1, endTime: 2 })).toBe(false);
+    expect(
+      overlap({ startTime: 0, endTime: 1 }, { startTime: 1, endTime: 2 })
+    ).toBe(false);
+    expect(
+      overlap({ startTime: 0, endTime: 2 }, { startTime: 1, endTime: 3 })
+    ).toBe(true);
+    expect(
+      overlap({ startTime: 1, endTime: 1 }, { startTime: 1, endTime: 2 })
+    ).toBe(false);
     expect(
       resolve(
         new Map([['S', { startPointId: 'P1', endPointId: 'P1' }]]),

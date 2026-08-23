@@ -317,7 +317,9 @@ describe('joyConMapper helper branches', () => {
       magnitude: 0.9,
     });
   });
+});
 
+describe('joyConMapper helper formatting', () => {
   it('builds payload control keys and derives row state text', () => {
     const state = {
       started: true,

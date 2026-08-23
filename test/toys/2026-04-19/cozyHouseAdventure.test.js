@@ -1,40 +1,100 @@
 import { beforeEach, describe, expect, test } from '@jest/globals';
-import { cozyHouseAdventure, cozyHouseAdventureTestOnly } from '../../../src/core/browser/toys/2026-04-19/cozyHouseAdventure.js';
+import {
+  cozyHouseAdventure,
+  cozyHouseAdventureTestOnly,
+} from '../../../src/core/browser/toys/2026-04-19/cozyHouseAdventure.js';
 
 describe('cozyHouseAdventure', () => {
   it('covers dependency, state, and narrative helper contracts', () => {
     const getData = () => ({ ok: true });
-    expect(cozyHouseAdventureTestOnly.requireEnvFunction(new Map([['getData', getData]]), 'getData', 'state accessor')).toBe(getData);
-    expect(() => cozyHouseAdventureTestOnly.requireEnvFunction(new Map(), 'getData', 'state accessor')).toThrow('Missing state accessor dependency');
+    expect(
+      cozyHouseAdventureTestOnly.requireEnvFunction(
+        new Map([['getData', getData]]),
+        'getData',
+        'state accessor'
+      )
+    ).toBe(getData);
+    expect(() =>
+      cozyHouseAdventureTestOnly.requireEnvFunction(
+        new Map(),
+        'getData',
+        'state accessor'
+      )
+    ).toThrow('Missing state accessor dependency');
     expect(cozyHouseAdventureTestOnly.getScopedState({})).toEqual({});
-    expect(cozyHouseAdventureTestOnly.getScopedState({ temporary: { COZY1: { name: 'A' } } })).toEqual({ name: 'A' });
+    expect(
+      cozyHouseAdventureTestOnly.getScopedState({
+        temporary: { COZY1: { name: 'A' } },
+      })
+    ).toEqual({ name: 'A' });
     expect(cozyHouseAdventureTestOnly.getTemporaryState({})).toEqual({});
-    expect(cozyHouseAdventureTestOnly.getTemporaryState({ COZY1: { name: 'B' } })).toEqual({ name: 'B' });
-    expect(cozyHouseAdventureTestOnly.introMessage('A')).toContain('Welcome home, A');
+    expect(
+      cozyHouseAdventureTestOnly.getTemporaryState({ COZY1: { name: 'B' } })
+    ).toEqual({ name: 'B' });
+    expect(cozyHouseAdventureTestOnly.introMessage('A')).toContain(
+      'Welcome home, A'
+    );
     expect(cozyHouseAdventureTestOnly.yardMessage('12:00')).toContain('12:00');
-    expect(cozyHouseAdventureTestOnly.appendIfMissing(['foundation'], 'foundation')).toEqual(['foundation']);
-    expect(cozyHouseAdventureTestOnly.appendIfMissing(['foundation'], 'roof')).toEqual(['foundation', 'roof']);
-    expect(cozyHouseAdventureTestOnly.addCompletedStage({ inventory: [], progress: [] }, 'garden')).toEqual({ inventory: ['garden'], progress: ['garden'] });
-    expect(cozyHouseAdventureTestOnly.isHouseComplete(['foundation', 'materials', 'roof', 'garden'])).toBe(true);
-    expect(cozyHouseAdventureTestOnly.isHouseComplete(['foundation', 'materials'])).toBe(false);
-    expect(cozyHouseAdventureTestOnly.getCompletionLine(['foundation'])).toContain('next cozy task');
-    expect(cozyHouseAdventureTestOnly.getCompletionLine(['foundation', 'materials', 'roof', 'garden'])).toContain('peaceful home');
+    expect(
+      cozyHouseAdventureTestOnly.appendIfMissing(['foundation'], 'foundation')
+    ).toEqual(['foundation']);
+    expect(
+      cozyHouseAdventureTestOnly.appendIfMissing(['foundation'], 'roof')
+    ).toEqual(['foundation', 'roof']);
+    expect(
+      cozyHouseAdventureTestOnly.addCompletedStage(
+        { inventory: [], progress: [] },
+        'garden'
+      )
+    ).toEqual({ inventory: ['garden'], progress: ['garden'] });
+    expect(
+      cozyHouseAdventureTestOnly.isHouseComplete([
+        'foundation',
+        'materials',
+        'roof',
+        'garden',
+      ])
+    ).toBe(true);
+    expect(
+      cozyHouseAdventureTestOnly.isHouseComplete(['foundation', 'materials'])
+    ).toBe(false);
+    expect(
+      cozyHouseAdventureTestOnly.getCompletionLine(['foundation'])
+    ).toContain('next cozy task');
+    expect(
+      cozyHouseAdventureTestOnly.getCompletionLine([
+        'foundation',
+        'materials',
+        'roof',
+        'garden',
+      ])
+    ).toContain('peaceful home');
     expect(cozyHouseAdventureTestOnly.introMessage('A')).toBe(
       "> Welcome home, A.\n> A gentle rain taps the porch while your tiny-house project waits in the yard.\n> Type 'build' when you're ready to start laying out your cozy home."
     );
     expect(cozyHouseAdventureTestOnly.yardMessage('12:00')).toBe(
       '> 12:00 — You stand in the yard with tea in hand and a warm checklist.\n> Next tasks: foundation / materials / roof / garden.\n> What would you like to do?'
     );
-    expect(cozyHouseAdventureTestOnly.resolveYardSelection('roof')).toBe('roof');
-    expect(cozyHouseAdventureTestOnly.resolveYardSelection('nothing')).toBe('yard');
+    expect(cozyHouseAdventureTestOnly.resolveYardSelection('roof')).toBe(
+      'roof'
+    );
+    expect(cozyHouseAdventureTestOnly.resolveYardSelection('nothing')).toBe(
+      'yard'
+    );
     expect(cozyHouseAdventureTestOnly.getInputName('  ')).toBe('Builder');
     expect(cozyHouseAdventureTestOnly.getInputName(' Rowan ')).toBe('Rowan');
     expect(cozyHouseAdventureTestOnly.getPlayerState({})).toBe('intro');
-    expect(cozyHouseAdventureTestOnly.getPlayerState({ state: 'garden' })).toBe('garden');
+    expect(cozyHouseAdventureTestOnly.getPlayerState({ state: 'garden' })).toBe(
+      'garden'
+    );
     expect(cozyHouseAdventureTestOnly.getStoredList()).toEqual([]);
-    expect(cozyHouseAdventureTestOnly.getStoredList(['roof'])).toEqual(['roof']);
+    expect(cozyHouseAdventureTestOnly.getStoredList(['roof'])).toEqual([
+      'roof',
+    ]);
     expect(cozyHouseAdventureTestOnly.getBonusText(0.8)).toBe('');
-    expect(cozyHouseAdventureTestOnly.getBonusText(0.81)).toContain('A robin lands nearby');
+    expect(cozyHouseAdventureTestOnly.getBonusText(0.81)).toContain(
+      'A robin lands nearby'
+    );
     expect(cozyHouseAdventureTestOnly.getStateHandler('yard')).toBeDefined();
   });
   let tempData;
@@ -54,7 +114,6 @@ describe('cozyHouseAdventure', () => {
       ],
     ]);
   });
-
   test('welcomes player and prompts to begin build', () => {
     const result = cozyHouseAdventure('Rowan', env);
 
@@ -125,7 +184,11 @@ describe('cozyHouseAdventure', () => {
   });
 
   test('reports each missing runtime dependency and normalizes commands', () => {
-    for (const key of ['getCurrentTime', 'getRandomNumber', 'setLocalTemporaryData']) {
+    for (const key of [
+      'getCurrentTime',
+      'getRandomNumber',
+      'setLocalTemporaryData',
+    ]) {
       const missing = new Map(env);
       missing.delete(key);
       expect(cozyHouseAdventure('Rowan', missing)).toMatch(/SYSTEM ERROR/);
@@ -142,17 +205,21 @@ describe('cozyHouseAdventure', () => {
     ]) {
       const missing = new Map(env);
       missing.delete(key);
-      expect(() => cozyHouseAdventureTestOnly.createRuntimeContext('build', {}, missing)).toThrow(
-        `Missing ${label} dependency for cozy house adventure.`
-      );
+      expect(() =>
+        cozyHouseAdventureTestOnly.createRuntimeContext('build', {}, missing)
+      ).toThrow(`Missing ${label} dependency for cozy house adventure.`);
     }
-    const context = cozyHouseAdventureTestOnly.createRuntimeContext('  BuIlD  ', {}, env);
+    const context = cozyHouseAdventureTestOnly.createRuntimeContext(
+      '  BuIlD  ',
+      {},
+      env
+    );
     expect(context.lowerInput).toBe('build');
     const noData = new Map(env);
     noData.delete('getData');
-    expect(() => cozyHouseAdventureTestOnly.runAdventure('anything', noData)).toThrow(
-      'Missing state accessor dependency for cozy house adventure.'
-    );
+    expect(() =>
+      cozyHouseAdventureTestOnly.runAdventure('anything', noData)
+    ).toThrow('Missing state accessor dependency for cozy house adventure.');
   });
 
   test('starts from empty temporary data shapes', () => {

@@ -218,9 +218,9 @@ describe('memoryVectorPairs', () => {
   });
 
   test('projects null as a scalar instead of treating it as an object', () => {
-    expect(memoryVectorPairsTestOnly.projectObjectOrScalarToVector(null)).toEqual([
-      null,
-    ]);
+    expect(
+      memoryVectorPairsTestOnly.projectObjectOrScalarToVector(null)
+    ).toEqual([null]);
   });
 });
 

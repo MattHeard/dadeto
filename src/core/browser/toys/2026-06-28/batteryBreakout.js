@@ -93,6 +93,10 @@ function parseObjectRecord(value) {
   return null;
 }
 
+/**
+ *
+ * @param value
+ */
 function isRecord(value) {
   return value !== null && typeof value === 'object' && !Array.isArray(value);
 }
@@ -417,8 +421,7 @@ function createInitialInputState() {
  * @returns {unknown} Return value.
  */
 function normalizeState(value) {
-  if (!isRecord(value) || value.version !== 1)
-    return null;
+  if (!isRecord(value) || value.version !== 1) return null;
   const candidate = value;
   return {
     version: 1,
@@ -546,8 +549,7 @@ function normalizeActions(value) {
  * @returns {unknown} Return value.
  */
 function normalizePaddle(value, height) {
-  if (!isRecord(value))
-    return createState(createSeedOptions()).paddle;
+  if (!isRecord(value)) return createState(createSeedOptions()).paddle;
   const seed = createSeedOptions();
   return {
     x: normalizeNonNegativeInteger(value.x, seed.width / 2),
@@ -1336,7 +1338,10 @@ function toCanvasPayload(state) {
         y: cell.y + 3,
         width: Math.max(
           0,
-          Math.min(innerWidth, Math.round((cell.charge / cell.maxCharge) * innerWidth))
+          Math.min(
+            innerWidth,
+            Math.round((cell.charge / cell.maxCharge) * innerWidth)
+          )
         ),
         height: Math.max(2, cell.height - 6),
         fill: getCellChargeFill(cell.state),

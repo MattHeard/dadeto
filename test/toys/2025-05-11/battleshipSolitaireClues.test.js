@@ -1,14 +1,21 @@
 // Tests for Battleship Solitaire Clue Generator
 // Created: 2025-05-11
 
-import { generateClues, battleshipSolitaireCluesTestOnly } from '../../../src/core/browser/toys/2025-05-11/battleshipSolitaireClues.js';
+import {
+  generateClues,
+  battleshipSolitaireCluesTestOnly,
+} from '../../../src/core/browser/toys/2025-05-11/battleshipSolitaireClues.js';
 
 const { getCellsAlongAxis } = battleshipSolitaireCluesTestOnly;
 
 describe('generateClues', () => {
   it('returns no cells for a zero-length ship and exact axis cells otherwise', () => {
-    expect(getCellsAlongAxis({ start: { x: 2, y: 3 }, length: 0 }, 1, 0)).toEqual([]);
-    expect(getCellsAlongAxis({ start: { x: 2, y: 3 }, length: 2 }, 1, 0)).toEqual([
+    expect(
+      getCellsAlongAxis({ start: { x: 2, y: 3 }, length: 0 }, 1, 0)
+    ).toEqual([]);
+    expect(
+      getCellsAlongAxis({ start: { x: 2, y: 3 }, length: 2 }, 1, 0)
+    ).toEqual([
       { x: 2, y: 3 },
       { x: 3, y: 3 },
     ]);

@@ -116,7 +116,6 @@ export function evaluateRunnerWorldLine(input, shift) {
  * @returns {Map<string, Record<string, unknown>>} Point map.
  */
 export function buildPoints(input) {
-  const pointValues = readAssignmentRecords(input, 'points');
   return new Map(
     readAssignmentRecords(input, 'points').map(point => [
       String(point.pointId),

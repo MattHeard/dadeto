@@ -97,7 +97,40 @@ describe('PROC1 procurement-backed fulfillment sequence proposal', () => {
   });
 
   test.each([
+    ['missing context', { possessionContext: {} }],
+    [
+      'mismatched endpoint references',
+      {
+        possessionContext: {
+          ...request.possessionContext,
+          segment: {
+            ...request.possessionContext.segment,
+            endPointId: 'OTHER',
+          },
+        },
+      },
+    ],
+    [
+      'invalid possession timestamps',
+      {
+        possessionContext: {
+          ...request.possessionContext,
+          endPoint: { ...request.possessionContext.endPoint, timestamp: 'bad' },
+        },
+      },
+    ],
     ['invalid warehouse', { warehouse: { latitude: 91, longitude: 0 } }],
+    ['missing travel durations', { travelDurations: undefined }],
+    ['missing configuration', { configuration: undefined }],
+    [
+      'non-minute resulting timestamp',
+      {
+        travelDurations: {
+          ...request.travelDurations,
+          deliveryOutboundSeconds: 1,
+        },
+      },
+    ],
     [
       'negative duration',
       { configuration: { ...request.configuration, cleaningDuration: -1 } },
@@ -117,6 +150,20 @@ describe('PROC1 procurement-backed fulfillment sequence proposal', () => {
         generatedIds: {
           ...request.generatedIds,
           segments: { ...request.generatedIds.segments, cleaning: 'SEG4' },
+        },
+      },
+    ],
+    [
+      'empty generated collections',
+      { generatedIds: { ...request.generatedIds, points: {}, segments: {} } },
+    ],
+    [
+      'missing generated collections',
+      {
+        generatedIds: {
+          ...request.generatedIds,
+          points: undefined,
+          segments: undefined,
         },
       },
     ],

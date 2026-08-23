@@ -165,6 +165,7 @@ describe('assetSegmentAssignmentPredicate', () => {
     expect(assetSegmentAssignmentPredicate(JSON.stringify(reversed))).toBe(
       'false'
     );
+<<<<<<< Updated upstream
     const equal = {
       ...base,
       segments: [{ segmentId: 'BAD', startPointId: 'P1', endPointId: 'P1' }],
@@ -192,5 +193,7 @@ describe('assetSegmentAssignmentPredicate', () => {
         'S1'
       )
     ).toThrow('must have an ordered valid time interval');
+=======
+>>>>>>> Stashed changes
   });
 });
