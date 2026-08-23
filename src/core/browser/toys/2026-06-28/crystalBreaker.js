@@ -599,7 +599,6 @@ function getCrystalId(value, index) {
  */
 function normalizeCrystalState(value) {
   switch (value) {
-    case 'whole':
     case 'fractured':
     case 'shattered':
       return value;
@@ -1002,10 +1001,15 @@ function toCanvasPayload(state) {
  * @returns {string} - result
  */
 function normalizeStatus(value) {
-  if (['ready', 'running', 'paused', 'won', 'lost'].includes(value)) {
-    return value;
+  switch (value) {
+    case 'running':
+    case 'paused':
+    case 'won':
+    case 'lost':
+      return value;
+    default:
+      return 'ready';
   }
-  return 'ready';
 }
 
 /**
