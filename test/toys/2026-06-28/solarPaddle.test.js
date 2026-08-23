@@ -229,6 +229,31 @@ describe('solarPaddle helper contracts', () => {
     expect(h.isPauseActionPressed({}, { buttons: Array(10).fill(false).map((_, i) => i === 9), axes: [] })).toBe(true);
     expect(h.isResetActionPressed({}, { buttons: Array(9).fill(false).map((_, i) => i === 8), axes: [] })).toBe(true);
   });
+
+  it('locks panel normalization and score-bar rendering boundaries', () => {
+    const normalized = h.normalizePanelsFromState([
+      { id: 'charged', x: 2, y: 3, width: 30, height: 11, charge: true },
+      null,
+      { x: 4, y: 5, charge: false },
+    ]);
+    expect(normalized).toHaveLength(2);
+    expect(normalized[0]).toEqual({ id: 'charged', x: 2, y: 3, width: 30, height: 11, charge: true });
+    expect(normalized[1]).toEqual({ id: 'p2', x: 4, y: 5, width: 20, height: 10, charge: false });
+    const state = h.createState(h.createSeedOptions());
+    state.panels = normalized;
+    state.score = 0;
+    let payload = h.toCanvasPayload(state);
+    expect(payload.shapes.filter(shape => shape.type === 'rect')).toHaveLength(6);
+    expect(payload.shapes[2].fill).toBe('#1d4ed8');
+    expect(payload.shapes[3].fill).toBe('#7dd3fc');
+    expect(payload.shapes.at(-1).width).toBe(20);
+    state.score = 100;
+    payload = h.toCanvasPayload(state);
+    expect(payload.shapes.at(-1).width).toBe(state.width - 36);
+    state.status = 'lost';
+    expect(payload.shapes.find(shape => shape.type === 'circle').fill).toBe('#fbbf24');
+    expect(h.toCanvasPayload(state).shapes.find(shape => shape.type === 'circle').fill).toBe('#f87171');
+  });
 });
 
 /**
