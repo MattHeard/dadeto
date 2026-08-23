@@ -2186,6 +2186,7 @@ describe('batteryBreakout final normalization', () => {
     expect(h.normalizeBooleanRecord(null)).toEqual({});
     expect(h.normalizeBooleanRecord([])).toEqual({});
     expect(h.normalizeActions([])).toMatchObject({ moveLeft: false, resetPressed: false });
+    expect(h.normalizeActions([{ moveLeft: true }])).toMatchObject({ moveLeft: false, resetPressed: false });
     expect(h.normalizePaddle([])).toEqual(expect.objectContaining({ width: 48, height: 6 }));
     expect(h.normalizeNonNegativeInteger(-1, 7)).toBe(7);
     expect(h.normalizeGamepadButtons([true, 0])).toEqual([true, false]);
@@ -2208,15 +2209,18 @@ describe('batteryBreakout final normalization', () => {
       previousActions: { moveLeft: false, moveRight: false, launchPressed: false, pausePressed: false, resetPressed: false },
     });
     expect(h.normalizeGamepadState([])).toEqual({ buttons: [], axes: [] });
+    expect(h.normalizeGamepadState([{ buttons: [true] }])).toEqual({ buttons: [], axes: [] });
     expect(h.normalizeGamepadState({ buttons: [true, 0], axes: ['2', 'bad'] }))
       .toEqual({ buttons: [true, false], axes: [2, 0] });
     expect(h.normalizePaddle({ x: 4.4, y: -2, width: 20, height: 5, speed: 3 }, 90))
       .toEqual({ x: 4, y: 72, width: 20, height: 5, speed: 3 });
     expect(h.normalizePaddle([], 90)).toEqual(h.createState(h.createSeedOptions()).paddle);
+    expect(h.normalizePaddle([{ x: 4 }], 90)).toEqual(h.createState(h.createSeedOptions()).paddle);
     expect(h.normalizePaddle({ x: 'bad' }, 90).x).toBe(180);
     expect(h.normalizeOrb({ x: 0, y: 0, vx: 2, vy: -3, radius: 5, stuckToPaddle: true }))
       .toEqual({ x: 180, y: 0, vx: 2, vy: -3, radius: 5, stuckToPaddle: true });
     expect(h.normalizeOrb([])).toEqual(h.createState(h.createSeedOptions()).orb);
+    expect(h.normalizeOrb([{ x: 4 }])).toEqual(h.createState(h.createSeedOptions()).orb);
     expect(h.normalizeNumber('bad', 7)).toBe(7);
     expect(h.normalizeCellsFromState(null).length).toBeGreaterThan(0);
     expect(h.normalizeCellsFromState([{ id: 'cell-x', x: 3, y: 4, width: 20, height: 8, charge: 1, targetCharge: 2, maxCharge: 3, overchargeCooldown: 0, state: 'charging' }]))
