@@ -205,6 +205,30 @@ describe('solarPaddle helper contracts', () => {
     expect(payload.shapes[0]).toMatchObject({ type: 'rect', x: 0, y: 0, fill: '#0b1220' });
     expect(payload.shapes.at(-1)).toMatchObject({ type: 'rect', x: 18, height: 4 });
   });
+
+  it('distinguishes every keyboard and gamepad action source', () => {
+    const emptyPad = { buttons: [], axes: [0] };
+    for (const key of ['ArrowLeft', 'a', 'A']) {
+      expect(h.isLeftActionPressed({ [key]: true }, emptyPad)).toBe(true);
+    }
+    for (const key of ['ArrowRight', 'd', 'D']) {
+      expect(h.isRightActionPressed({ [key]: true }, emptyPad)).toBe(true);
+    }
+    for (const key of ['Space', ' ', 'Button0']) {
+      expect(h.isLaunchActionPressed({ [key]: true }, emptyPad)).toBe(true);
+    }
+    for (const key of ['p', 'P', 'Button9']) {
+      expect(h.isPauseActionPressed({ [key]: true }, emptyPad)).toBe(true);
+    }
+    for (const key of ['r', 'R', 'Button8']) {
+      expect(h.isResetActionPressed({ [key]: true }, emptyPad)).toBe(true);
+    }
+    expect(h.isLeftActionPressed({}, { buttons: [], axes: [-1] })).toBe(true);
+    expect(h.isRightActionPressed({}, { buttons: [], axes: [1] })).toBe(true);
+    expect(h.isLaunchActionPressed({}, { buttons: [true], axes: [] })).toBe(true);
+    expect(h.isPauseActionPressed({}, { buttons: Array(10).fill(false).map((_, i) => i === 9), axes: [] })).toBe(true);
+    expect(h.isResetActionPressed({}, { buttons: Array(9).fill(false).map((_, i) => i === 8), axes: [] })).toBe(true);
+  });
 });
 
 /**
