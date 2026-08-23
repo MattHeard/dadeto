@@ -5,4 +5,5 @@
 - Rerun: 988 mutants, 673 killed, 309 non-static survivors, 2 timeouts, and 1 runtime error. The file is not complete; no progress count was incremented.
 - Follow-up rerun: 974 mutants, 845 killed, 125 non-static survivors, 0 timeouts, and 1 runtime error after exact helper contracts and finite loop rewrites.
 - Latest rerun: 974 mutants, 889 killed, 81 non-static survivors, 0 timeouts, and 1 runtime error after exact parser, state, collision, reflection, cooldown, and canvas contracts.
+- Current authoritative rerun: 974 mutants, 910 killed, 60 non-static survivors, 0 timeouts, and 1 runtime error after populated-cell canvas, direct collision, parser, malformed-state, and input-key contracts.
 - The file remains incomplete and the progress count is unchanged.
