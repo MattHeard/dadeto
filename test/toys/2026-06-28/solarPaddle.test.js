@@ -2,6 +2,7 @@ import { describe, expect, it, jest } from '@jest/globals';
 import {
   resolvePaddle,
   separateOrbFromPanel,
+  reflectOrbVelocityFromPanel,
   solarPaddle,
   solarPaddleTestOnly as h,
 } from '../../../src/core/browser/toys/2026-06-28/solarPaddle.js';
@@ -169,6 +170,40 @@ describe('solarPaddle helper contracts', () => {
     expect(h.isLaunchActionPressed({}, { buttons: [], axes: [] })).toBe(false);
     expect(h.isPauseActionPressed({}, { buttons: [], axes: [] })).toBe(false);
     expect(h.isResetActionPressed({}, { buttons: [], axes: [] })).toBe(false);
+  });
+
+  it('covers collision axes, pause toggles, and payload geometry', () => {
+    const state = h.createState(h.createSeedOptions());
+    state.status = 'paused';
+    h.applyGameplayInput(state, { actions: { left: false, right: false, launch: false, pause: true, reset: false }, edgeActions: { left: false, right: false, launchPressed: false, pausePressed: true, resetPressed: false } });
+    expect(state.status).toBe('running');
+    h.movePaddle(state, { left: true, right: false });
+    h.movePaddle(state, { left: false, right: true });
+    expect(state.paddle.x).toBeGreaterThanOrEqual(0);
+    state.orb.stuckToPaddle = false;
+    state.orb.x = 1; state.orb.y = 50; state.orb.vx = -1; state.orb.vy = 1;
+    h.stepSimulation(state);
+    expect(state.orb.x).toBeGreaterThanOrEqual(state.orb.radius);
+    state.orb.x = state.paddle.x + state.paddle.width / 2;
+    state.orb.y = state.paddle.y - 1;
+    state.orb.vy = 2;
+    resolvePaddle(state);
+    expect(state.orb.vy).toBeLessThan(0);
+    const orb = { x: 5, y: 5, vx: 2, vy: 3, radius: 2, stuckToPaddle: false };
+    const panel = { x: 0, y: 0, width: 10, height: 10, charge: false };
+    reflectOrbVelocityFromPanel(orb, 'x'); expect(orb.vx).toBe(-2);
+    reflectOrbVelocityFromPanel(orb, 'y'); expect(orb.vy).toBe(-3);
+    separateOrbFromPanel(orb, panel, 'x'); expect(orb.x).not.toBe(5);
+    separateOrbFromPanel(orb, panel, 'y'); expect(orb.y).not.toBe(5);
+    state.lives = 2; state.status = 'running'; state.orb.y = state.height + 1;
+    h.resolveBottom(state);
+    expect(state.lives).toBe(1);
+    expect(state.status).toBe('ready');
+    expect(state.orb.stuckToPaddle).toBe(true);
+    const payload = h.toCanvasPayload(state);
+    expect(payload.width).toBe(state.width);
+    expect(payload.shapes[0]).toMatchObject({ type: 'rect', x: 0, y: 0, fill: '#0b1220' });
+    expect(payload.shapes.at(-1)).toMatchObject({ type: 'rect', x: 18, height: 4 });
   });
 });
 
