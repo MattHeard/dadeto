@@ -2135,6 +2135,7 @@ describe('batteryBreakout final normalization', () => {
     expect(h.getStorageAccessor({ get: () => 1 })).toBeNull();
     expect(h.readPersistedState(null)).toBeNull();
     expect(h.readPersistedState(() => ({}))).toBeNull();
+    expect(h.readPersistedState(() => null)).toBeNull();
     expect(h.readPersistedState(() => ({ BATT4: { version: 0 } }))).toBeNull();
     expect(h.parseInput('')).toBeNull();
     expect(h.parseInput(42)).toBeNull();
@@ -2171,6 +2172,9 @@ describe('batteryBreakout final normalization', () => {
     expect(h.createSeedState({}, null)).toMatchObject({ status: 'ready' });
     expect(seed.width).toBeGreaterThan(0);
     expect(h.normalizeStatus('paused')).toBe('paused');
+    for (const status of ['ready', 'running', 'paused', 'won', 'lost']) {
+      expect(h.normalizeStatus(status)).toBe(status);
+    }
     expect(h.normalizeStatus('invalid')).toBe('ready');
     expect(h.normalizeState({ version: 0 })).toBeNull();
     expect(h.normalizeState(null)).toBeNull();
@@ -2179,6 +2183,9 @@ describe('batteryBreakout final normalization', () => {
     expect(h.normalizeBooleanRecord({ x: true, y: 0 })).toEqual({ x: true, y: false });
     expect(h.normalizeBooleanRecord(null)).toEqual({});
     expect(h.normalizeBooleanRecord([])).toEqual({});
+    expect(h.normalizeActions([])).toMatchObject({ moveLeft: false, resetPressed: false });
+    expect(h.normalizePaddle([])).toEqual(expect.objectContaining({ width: 48, height: 6 }));
+    expect(h.normalizeNonNegativeInteger(-1, 7)).toBe(7);
     expect(h.normalizeGamepadButtons([true, 0])).toEqual([true, false]);
     expect(h.normalizeGamepadAxes([1, 'bad'])).toEqual([1, 0]);
     expect(h.normalizeActions({
@@ -2344,6 +2351,12 @@ describe('batteryBreakout final normalization', () => {
     expect(h.toCanvasPayload({ ...narrowCanvas, score: 3 })).toEqual(expect.objectContaining({
       shapes: expect.arrayContaining([{ type: 'rect', x: 18, y: 78, width: 8, height: 4, fill: '#34d399' }]),
     }));
+    const narrowCellState = h.createState({ ...h.createSeedOptions(), width: 80, height: 90, cells: [
+      { id: 'n', x: 10, y: 20, width: 8, height: 10, charge: 1, targetCharge: 2, maxCharge: 3, state: 'charging', overchargeCooldown: 0 },
+    ] });
+    expect(h.toCanvasPayload(narrowCellState).shapes).toEqual(expect.arrayContaining([
+      { type: 'rect', x: 13, y: 23, width: 1, height: 4, fill: '#dbeafe' },
+    ]));
     const charging = { ...state, score: 0, faults: 0 };
     const chargingCell = { id: 'c', state: 'empty', charge: 0, targetCharge: 2, maxCharge: 3, overchargeCooldown: 0 };
     h.applyCellHit(charging, chargingCell);

@@ -67,7 +67,8 @@ function getStorageAccessor(env) {
 function readPersistedState(storage) {
   if (!storage) return null;
   const stored = storage({});
-  return normalizeState(stored?.[STORAGE_KEY]);
+  if (!stored) return null;
+  return normalizeState(stored[STORAGE_KEY]);
 }
 
 /**
@@ -76,7 +77,6 @@ function readPersistedState(storage) {
  * @returns {unknown} Return value.
  */
 function parseInput(input) {
-  if (typeof input !== 'string') return null;
   return parseObjectRecord(input);
 }
 
