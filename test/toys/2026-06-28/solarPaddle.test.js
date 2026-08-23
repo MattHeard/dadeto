@@ -323,6 +323,33 @@ describe('solarPaddle helper contracts', () => {
     expect(reset.status).toBe('ready');
     expect(reset.panels).toEqual(seed.panels);
   });
+
+  it('distinguishes paddle and panel collision conditions', () => {
+    const state = h.createState(h.createSeedOptions());
+    state.orb = { x: -20, y: state.paddle.y, vx: 1, vy: 2, radius: 3, stuckToPaddle: false };
+    resolvePaddle(state);
+    expect(state.orb.vy).toBe(2);
+    state.orb.x = state.paddle.x + state.paddle.width / 2;
+    state.orb.y = state.paddle.y - 20;
+    resolvePaddle(state);
+    expect(state.orb.vy).toBe(2);
+    state.orb.y = state.paddle.y - 1;
+    state.orb.vy = -2;
+    resolvePaddle(state);
+    expect(state.orb.vy).toBe(-2);
+    state.orb.vy = 2;
+    state.orb.x = state.paddle.x;
+    resolvePaddle(state);
+    expect(state.orb.vy).toBeLessThan(0);
+    expect(h.getPanelCollisionAxis({ x: -3, y: 5, radius: 3 }, { x: 0, y: 0, width: 20, height: 10 })).toBe('x');
+    expect(h.getPanelCollisionAxis({ x: 10, y: -3, radius: 3 }, { x: 0, y: 0, width: 20, height: 10 })).toBe('y');
+    const orb = { x: 10, y: 5, vx: 1, vy: 1, radius: 2, stuckToPaddle: false };
+    const panel = { x: 0, y: 0, width: 20, height: 10 };
+    separateOrbFromPanel(orb, panel, 'x');
+    expect(orb.x).toBeGreaterThan(10);
+    separateOrbFromPanel(orb, panel, 'y');
+    expect(orb.y).toBeGreaterThan(5);
+  });
 });
 
 /**
