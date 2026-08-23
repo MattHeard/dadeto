@@ -114,6 +114,8 @@ describe('crystalBreaker helper contracts', () => {
     });
     expect(h.normalizeActions({ moveLeft: true, moveRight: true, launchPressed: true, pausePressed: true, resetPressed: true }))
       .toEqual({ moveLeft: true, moveRight: true, launchPressed: true, pausePressed: true, resetPressed: true });
+    expect(h.normalizeActions({ moveLeft: false, moveRight: false, launchPressed: false, pausePressed: false, resetPressed: false }))
+      .toEqual({ moveLeft: false, moveRight: false, launchPressed: false, pausePressed: false, resetPressed: false });
     expect(h.normalizeInputState(null)).toMatchObject({ keyboard: {}, gamepad: { buttons: [], axes: [] } });
     expect(h.normalizeKeyName('ArrowLeft')).toBe('arrowleft');
     expect(h.normalizeKeyName('')).toBe('');
@@ -130,6 +132,7 @@ describe('crystalBreaker helper contracts', () => {
     expect(h.getCrystalFill('whole')).toBe('#5eead4');
     expect(h.getLossStatus(0)).toBe('lost');
     expect(h.getLossStatus(1)).toBe('ready');
+    expect(h.normalizeOrb({ x: 10, y: 12, vx: 2, vy: -3, radius: 5, stuckToPaddle: true }).stuckToPaddle).toBe(true);
     const stuckInput = h.createSeedState({ width: 180, height: 140 }, null);
     h.applyGameplayInput(stuckInput, { actions: { moveLeft: false, moveRight: false, launchPressed: false, pausePressed: false }, previousActions: {} });
     expect(stuckInput.orb).toMatchObject({ x: 90, y: 111 });
@@ -245,6 +248,10 @@ describe('crystalBreaker helper contracts', () => {
     expect(h.orbHitsCrystal({ x: 30, y: 55, radius: 1 }, crystal)).toBe(true);
     expect(h.orbHitsCrystal({ x: 20, y: 50, radius: 1 }, crystal)).toBe(true);
     expect(h.orbHitsCrystal({ x: 20, y: 60, radius: 1 }, crystal)).toBe(true);
+    expect(h.orbHitsCrystal({ x: 9, y: 55, radius: 1 }, crystal)).toBe(true);
+    expect(h.orbHitsCrystal({ x: 31, y: 55, radius: 1 }, crystal)).toBe(true);
+    expect(h.orbHitsCrystal({ x: 20, y: 49, radius: 1 }, crystal)).toBe(true);
+    expect(h.orbHitsCrystal({ x: 20, y: 61, radius: 1 }, crystal)).toBe(true);
     expect(h.normalizePaddle(null)).toMatchObject({
       width: 48,
       height: 6,
@@ -305,6 +312,9 @@ describe('crystalBreaker helper contracts', () => {
     expect(h.buildActionState({ type: 'keydown' }, {}, 'p')).toMatchObject({ pausePressed: true, resetPressed: false, launchPressed: false });
     expect(h.buildActionState({ type: 'keydown' }, {}, 'r')).toMatchObject({ pausePressed: false, resetPressed: true, launchPressed: false });
     expect(h.buildActionState({ type: 'keydown' }, {}, 'space')).toMatchObject({ launchPressed: true, pausePressed: false, resetPressed: false });
+    expect(h.buildActionState({ type: 'keydown' }, {}, 'x')).toMatchObject({ launchPressed: false, pausePressed: false, resetPressed: false });
+    expect(h.buildActionState({ type: 'keyup' }, {}, 'p')).toMatchObject({ pausePressed: false });
+    expect(h.buildActionState({ type: 'keyup' }, {}, 'r')).toMatchObject({ resetPressed: false });
     const physics = h.createSeedState({ width: 180, height: 140 }, null);
     physics.orb = { x: 90, y: 115, vx: 2, vy: 3, radius: 4, stuckToPaddle: false };
     physics.paddle = { x: 66, y: 116, width: 48, height: 6, speed: 4 };
