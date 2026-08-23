@@ -76,7 +76,7 @@ function readPersistedState(storage) {
  * @returns {unknown} Return value.
  */
 function parseInput(input) {
-  if (typeof input !== 'string' || input === '') return null;
+  if (typeof input !== 'string') return null;
   return parseObjectRecord(input);
 }
 
@@ -1451,6 +1451,7 @@ function getCellFill(cellState) {
 }
 
 export const batteryBreakoutTestOnly = {
+  buildNextState,
   getStorageAccessor,
   readPersistedState,
   parseInput,

@@ -2161,6 +2161,8 @@ describe('batteryBreakout final normalization', () => {
       { actions: { resetPressed: true }, previousActions: { resetPressed: false } }
     );
     expect(resetCandidate).toMatchObject({ width: 120, height: 90, status: 'ready' });
+    expect(resetCandidate.cells).not.toEqual(state.cells);
+    expect(h.buildNextState(state, { reset: true })).toMatchObject({ status: 'ready', frame: 1 });
     expect(h.mergeSeedAndState(state, state)).toMatchObject({ width: state.width });
     expect(h.createSeedState({}, null)).toMatchObject({ status: 'ready' });
     expect(seed.width).toBeGreaterThan(0);
@@ -2229,6 +2231,11 @@ describe('batteryBreakout final normalization', () => {
       { x: 44, y: 50 }, { x: 67, y: 52 }, { x: 80, y: 52 }, { x: 96, y: 50 }, { x: 96, y: 52 },
       { x: 34, y: 68 }, { x: 51, y: 70 }, { x: 64, y: 70 }, { x: 87, y: 68 }, { x: 96, y: 70 },
     ]);
+    expect(h.buildCellPositions(150, 140, 10, 10)).toEqual([
+      { x: 34, y: 32 }, { x: 57, y: 34 }, { x: 70, y: 34 }, { x: 93, y: 32 }, { x: 106, y: 34 },
+      { x: 44, y: 50 }, { x: 67, y: 52 }, { x: 80, y: 52 }, { x: 103, y: 50 }, { x: 106, y: 52 },
+      { x: 34, y: 68 }, { x: 51, y: 70 }, { x: 64, y: 70 }, { x: 87, y: 68 }, { x: 100, y: 70 },
+    ]);
     expect(h.getCellColumnOffset(2)).toEqual(expect.any(Number));
     expect(h.getCellRowOffset(2)).toEqual(expect.any(Number));
     expect(h.getCellColumnOffset(0)).toBe(0);
@@ -2236,6 +2243,7 @@ describe('batteryBreakout final normalization', () => {
     expect(h.getCellRowOffset(0)).toBe(0);
     expect(h.getCellRowOffset(1)).toBe(2);
     expect(h.shufflePositions([{ x: 1 }, { x: 2 }, { x: 3 }], 1)).toEqual([{ x: 3 }, { x: 2 }, { x: 1 }]);
+    expect(h.shufflePositions([1, 2], 1)).toEqual([2, 1]);
     expect(h.shufflePositions([], 1)).toEqual([]);
     expect(h.shufflePositions([{ x: 1 }], 1)).toEqual([{ x: 1 }]);
     expect(h.normalizeNonNegativeInteger(2.6, 0)).toBe(3);
@@ -2272,6 +2280,7 @@ describe('batteryBreakout final normalization', () => {
     expect(gamepad).toEqual({ buttons: [true, undefined, true], axes: [1] });
     expect(h.circleIntersectsCell({ x: 1, y: 1, radius: 2 }, { x: 0, y: 0, width: 4, height: 4 })).toBe(true);
     expect(h.circleIntersectsCell({ x: 6.1, y: 2, radius: 1 }, { x: 0, y: 0, width: 4, height: 4 })).toBe(false);
+    expect(h.circleIntersectsCell({ x: 5.5, y: 2, radius: 2 }, { x: 0, y: 0, width: 4, height: 4 })).toBe(true);
     const stuck = { ...state, orb: { ...state.orb, stuckToPaddle: true, x: 1, y: 1 } };
     h.stepSimulation(stuck);
     expect(stuck.orb).toMatchObject({ x: 1, y: 1, stuckToPaddle: true });
@@ -2397,6 +2406,9 @@ describe('batteryBreakout final normalization', () => {
     const verticalEdgeHit = { width: 120, paddle: { x: 40, y: 60, width: 40, height: 6, speed: 4 }, orb: { x: 60, y: 68, radius: 4, vx: 0, vy: 2 } };
     h.resolvePaddle(verticalEdgeHit);
     expect(verticalEdgeHit.orb.vy).toBe(-2);
+    const lowerEdgeHit = { width: 120, paddle: { x: 40, y: 60, width: 40, height: 6, speed: 4 }, orb: { x: 60, y: 56, radius: 4, vx: 0, vy: 2 } };
+    h.resolvePaddle(lowerEdgeHit);
+    expect(lowerEdgeHit.orb).toMatchObject({ y: 55, vy: -2 });
     const stationaryOrb = { width: 120, paddle: { x: 40, y: 60, width: 40, height: 6, speed: 4 }, orb: { x: 60, y: 64, radius: 4, vx: 0, vy: 0 } };
     h.resolvePaddle(stationaryOrb);
     expect(stationaryOrb.orb.vy).toBe(0);
