@@ -389,6 +389,18 @@ describe('solarPaddle helper contracts', () => {
     expect(values).toMatchObject({ paddleWidth: 70, paddleHeight: 8, paddleSpeed: 7, orbRadius: 5, orbSpeedX: 2, orbSpeedY: -3 });
     expect(h.normalizeSeedValues({}, null, h.createSeedDefaults())).toMatchObject({ paddleWidth: 52, paddleHeight: 7, paddleSpeed: 4, orbRadius: 4, orbSpeedX: 1, orbSpeedY: -2 });
   });
+
+  it('locks reset seed increments and exact state geometry', () => {
+    const resetFromThree = h.createResetSeedState({}, { layoutSeed: 3, width: 200, height: 140, lives: 2 });
+    const resetFromFour = h.createSeedState({ layoutSeed: 4, width: 200, height: 140, lives: 2 }, null);
+    expect(resetFromThree.panels).toEqual(resetFromFour.panels);
+    const state = h.createState({ width: 241, height: 20, paddleWidth: 52, paddleHeight: 7, paddleSpeed: 4, orbRadius: 4, orbSpeedX: 1, orbSpeedY: -2, lives: 3, panels: [] });
+    expect(state.paddle.x).toBe(95);
+    expect(state.paddle.y).toBe(0);
+    expect(state.orb.x).toBe(121);
+    expect(state.orb.y).toBe(-5);
+    expect(state.orb.stuckToPaddle).toBe(true);
+  });
 });
 
 /**
