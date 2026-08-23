@@ -343,3 +343,20 @@ function numberOr(value, fallback) {
   }
   return fallback;
 }
+
+export const gdpSectorProjectionTestOnly = {
+  parseRequest,
+  normalizeRows,
+  normalizeRow,
+  isFiniteShareRow,
+  buildProjectionSeries,
+  createProjectedRow,
+  createProjectionRow,
+  safeParseJson,
+  interpolateRow,
+  lerp,
+  clampShare,
+  normalizeForecastConfig,
+  normalizeForecastInput,
+  numberOr,
+};
