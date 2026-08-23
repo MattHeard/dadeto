@@ -59,6 +59,60 @@ describe('solarPaddle helper contracts', () => {
     expect(h.createEdgeActions({ left: true, right: false, launch: true, pause: false, reset: true }, { left: false, right: false, launch: false, pause: false, reset: false }))
       .toEqual({ left: true, right: false, launchPressed: true, pausePressed: false, resetPressed: true });
   });
+
+  it('covers input transitions, physics boundaries, and rendering helpers', () => {
+    const keyboard = {};
+    h.applyKeyboardInput({ type: 'keydown', key: 'ArrowLeft' }, keyboard);
+    expect(keyboard.ArrowLeft).toBe(true);
+    h.applyKeyboardInput({ type: 'keyup', key: 'ArrowLeft' }, keyboard);
+    expect(keyboard.ArrowLeft).toBe(false);
+    const gamepad = { buttons: [], axes: [] };
+    h.applyGamepadInput({ buttons: [true], axes: ['bad'], buttonIndex: 2, pressed: true }, gamepad);
+    expect(gamepad).toEqual({ buttons: [true, undefined, true], axes: [0] });
+    expect(h.createActionsFromState({}, { buttons: [true], axes: [] }).actions.launch).toBe(true);
+    expect(h.normalizeBooleanRecord({ a: true, b: 1 })).toEqual({ a: true, b: false });
+    expect(h.getPanelId('custom', 2)).toBe('custom');
+    expect(h.getPanelId(null, 2)).toBe('p3');
+    expect(h.normalizePanelFromState({ id: 'x', x: 4, y: 5, width: 20, height: 10, charge: true }, 0))
+      .toEqual({ id: 'x', x: 4, y: 5, width: 20, height: 10, charge: true });
+    expect(h.buildPanelPositions(240, 160, 28, 10)).toHaveLength(15);
+    expect(h.isAxisLeft(-0.1)).toBe(false);
+    expect(h.isAxisRight(0.1)).toBe(false);
+
+    const state = h.createState(h.createSeedOptions());
+    state.status = 'ready';
+    h.applyGameplayInput(state, { actions: { left: false, right: false, launch: true, pause: false, reset: false }, edgeActions: { left: false, right: false, launchPressed: true, pausePressed: false, resetPressed: false } });
+    expect(state.status).toBe('running');
+    state.status = 'running';
+    h.applyGameplayInput(state, { actions: { left: false, right: false, launch: false, pause: true, reset: false }, edgeActions: { left: false, right: false, launchPressed: false, pausePressed: true, resetPressed: false } });
+    expect(state.status).toBe('paused');
+    h.movePaddle(state, { left: true, right: false });
+    expect(state.paddle.x).toBeGreaterThanOrEqual(0);
+    h.stickOrbToPaddle(state);
+    expect(state.orb.y).toBe(state.paddle.y - state.orb.radius - 1);
+    state.orb.x = 1; state.orb.y = 1; state.orb.vx = -2; state.orb.vy = -2;
+    h.resolveWalls(state);
+    expect(state.orb.vx).toBe(2);
+    expect(state.orb.vy).toBe(2);
+    expect(h.getPanelCollisionAxis({ x: 14, y: 15, radius: 4 }, { x: 0, y: 0, width: 28, height: 10 })).toBe('y');
+    expect(h.circleIntersectsPanel({ x: 5, y: 5, radius: 2 }, { x: 0, y: 0, width: 10, height: 10 })).toBe(true);
+    expect(h.circleIntersectsPanel({ x: 30, y: 30, radius: 2 }, { x: 0, y: 0, width: 10, height: 10 })).toBe(false);
+    const panel = { x: 0, y: 0, width: 20, height: 10, charge: false };
+    state.panels = [panel]; state.orb = { x: 10, y: 5, vx: 1, vy: -1, radius: 3, stuckToPaddle: false }; state.score = 0;
+    h.resolvePanels(state);
+    expect(panel.charge).toBe(true);
+    expect(state.score).toBe(1);
+    state.panels = [{ ...panel, charge: true }];
+    h.resolveWinLoss(state);
+    expect(state.status).toBe('won');
+    state.lives = 1; state.orb.y = state.height + 10; state.status = 'running';
+    h.resolveBottom(state);
+    expect(state.status).toBe('lost');
+    expect(h.getPanelFill(true)).not.toBe(h.getPanelFill(false));
+    expect(h.getOrbFill('lost')).not.toBe(h.getOrbFill('running'));
+    expect(h.toCanvasPayload(state).shapes).toHaveLength(6);
+    const persist = jest.fn(); h.persistState(persist, state); expect(persist).toHaveBeenCalledWith({ SOLA1: state });
+  });
 });
 
 /**
