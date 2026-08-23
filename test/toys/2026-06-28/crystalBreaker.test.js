@@ -155,6 +155,12 @@ describe('crystalBreaker helper contracts', () => {
       width: 180,
       height: 140,
     });
+    const dirtyState = { ...state, score: 99, crystals: [{ ...state.crystals[0], state: 'shattered' }, ...state.crystals.slice(1)] };
+    const resetByFlag = h.buildNextState(dirtyState, { reset: true });
+    expect(resetByFlag).toMatchObject({ score: 0, status: 'ready' });
+    expect(resetByFlag.crystals[0].state).toBe('whole');
+    const preservedState = h.buildNextState(dirtyState, { reset: false });
+    expect(preservedState.score).toBe(99);
     expect(
       h.buildNextState(state, { reset: true, width: 200, height: 100 })
     ).toMatchObject({ width: 200, height: 100, status: 'ready' });
