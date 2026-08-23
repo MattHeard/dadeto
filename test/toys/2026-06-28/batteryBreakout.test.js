@@ -9,6 +9,7 @@ import {
   resolvePaddle,
   shufflePositions,
   updateInputState,
+  batteryBreakoutTestOnly,
 } from '../../../src/core/browser/toys/2026-06-28/batteryBreakout.js';
 
 /**
@@ -2123,5 +2124,57 @@ describe('batteryBreakout final normalization', () => {
 
     expect(next.storageValue.current.BATT4.status).toBe('lost');
     expect(next.storageValue.current.BATT4.lives).toBeLessThanOrEqual(0);
+  });
+
+  it('covers pure normalization, input, geometry, collision, and presentation helpers', () => {
+    const h = batteryBreakoutTestOnly;
+    const seed = h.normalizeSeedValues({}, {});
+    const state = h.createState({ ...h.createSeedOptions(), width: 120, height: 90, cells: [] });
+    expect(h.getStorageAccessor({ get: () => jest.fn() })).toEqual(expect.any(Function));
+    expect(h.getStorageAccessor(null)).toBeNull();
+    expect(h.readPersistedState(null)).toBeNull();
+    expect(h.parseInput('')).toBeNull();
+    expect(h.parseInput('{"lives":2}')).toEqual({ lives: 2 });
+    expect(h.parseObjectRecord('[]')).toBeNull();
+    expect(h.buildResetSeedFallback(null)).toBeUndefined();
+    expect(h.buildResetSeedFallback(state)).toMatchObject({ width: state.width, height: state.height });
+    expect(h.mergeSeedAndState(state, state)).toMatchObject({ width: state.width });
+    expect(h.createSeedState({}, null)).toMatchObject({ status: 'ready' });
+    expect(seed.width).toBeGreaterThan(0);
+    expect(h.normalizeStatus('paused')).toBe('paused');
+    expect(h.normalizeStatus('invalid')).toBe('ready');
+    expect(h.normalizeBooleanRecord({ x: true, y: 0 })).toEqual({ x: true, y: false });
+    expect(h.normalizeGamepadButtons([true, 0])).toEqual([true, false]);
+    expect(h.normalizeGamepadAxes([1, 'bad'])).toEqual([1, 0]);
+    expect(h.normalizeActions({ moveLeft: true })).toMatchObject({ moveLeft: true, moveRight: false });
+    expect(h.normalizePaddle({}, 90)).toHaveProperty('height');
+    expect(h.normalizeOrb({}, state.paddle)).toHaveProperty('radius');
+    expect(h.normalizeNumber('bad', 7)).toBe(7);
+    expect(h.normalizeCellsFromState(null).length).toBeGreaterThan(0);
+    expect(h.getCellId({ id: 'x' }, 2)).toBe('cell-3');
+    expect(h.getCellId({}, 2)).toBe('cell-3');
+    expect(h.normalizeCellState({ id: 'x' }, 0)).toBe('empty');
+    expect(h.normalizeCells(120, 90, 3).length).toBeGreaterThan(0);
+    expect(h.buildCellPositions(120, 90, 24, 10).length).toBeGreaterThan(0);
+    expect(h.getCellColumnOffset(2)).toEqual(expect.any(Number));
+    expect(h.getCellRowOffset(2)).toEqual(expect.any(Number));
+    expect(h.deriveActions({}, {}, { buttons: [], axes: [] })).toHaveProperty('actions.launchPressed');
+    expect(h.createActionsFromState({}, { buttons: [], axes: [] })).toHaveProperty('actions.resetPressed');
+    expect(h.isMoveLeftPressed({}, { buttons: [], axes: [] })).toBe(false);
+    expect(h.isMoveRightPressed({}, { buttons: [], axes: [] })).toBe(false);
+    expect(h.isLaunchPressed({}, { buttons: [], axes: [] })).toBe(false);
+    expect(h.isPausePressed({}, { buttons: [], axes: [] })).toBe(false);
+    expect(h.isResetPressed({}, { buttons: [], axes: [] })).toBe(false);
+    expect(h.isAxisLeft(-1)).toBe(true);
+    expect(h.isAxisRight(1)).toBe(true);
+    expect(h.circleIntersectsCell({ x: 1, y: 1, radius: 2 }, { x: 0, y: 0, width: 4, height: 4 })).toBe(true);
+    expect(h.clamp(5, 0, 3)).toBe(3);
+    expect(h.getOrbFill('running')).toEqual(expect.any(String));
+    expect(h.buildFaultIndicator(state)).toEqual(expect.any(Array));
+    expect(h.getFaultIndicatorFill(1)).toEqual(expect.any(String));
+    expect(h.getCellChargeFill('overcharged')).toEqual(expect.any(String));
+    expect(h.getCellFill('stable')).toEqual(expect.any(String));
+    expect(h.toCanvasPayload(state)).toHaveProperty('shapes');
+    expect(h.persistState(jest.fn(), state)).toBeUndefined();
   });
 });
