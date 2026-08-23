@@ -152,7 +152,23 @@ describe('crystalBreaker helper contracts', () => {
       )
     ).toMatchObject({ width: 200, height: 100 });
     expect(state.crystals.length).toBeGreaterThan(0);
-    expect(h.toCanvasPayload(state).width).toBe(180);
+    const payload = h.toCanvasPayload(state);
+    expect(payload).toMatchObject({ width: 180, height: 140 });
+    expect(payload.shapes.slice(0, 6)).toEqual([
+      { type: 'rect', x: 0, y: 0, width: 180, height: 140, fill: '#08111f' },
+      { type: 'rect', x: 0, y: 0, width: 180, height: 24, fill: '#0f172a' },
+      expect.objectContaining({ type: 'text', x: 8, text: 'Score 0' }),
+      expect.objectContaining({ type: 'text', x: 88, text: 'Lives 3' }),
+      expect.objectContaining({ type: 'text', x: 160, text: 'Crystals 15' }),
+      expect.objectContaining({ type: 'text', x: 250, text: 'Status READY' }),
+    ]);
+    expect(payload.shapes.filter(shape => shape.type === 'rect')).toHaveLength(18);
+    expect(payload.shapes.at(-2)).toEqual({
+      type: 'rect', x: 66, y: 116, width: 48, height: 6, fill: '#f59e0b',
+    });
+    expect(payload.shapes.at(-1)).toEqual({
+      type: 'circle', x: 90, y: 117, radius: 4, fill: '#f8fafc',
+    });
     expect(h.orbHitsPaddle(state.orb, state.paddle)).toBe(false);
     expect(h.orbHitsCrystal(state.orb, state.crystals[0])).toBe(false);
     expect(h.normalizePaddle(null)).toMatchObject({
