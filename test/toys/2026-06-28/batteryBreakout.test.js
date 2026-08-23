@@ -2167,7 +2167,9 @@ describe('batteryBreakout final normalization', () => {
     expect(resetCandidate.cells).not.toEqual(state.cells);
     expect(h.buildNextState(state, { reset: true })).toMatchObject({ status: 'ready', frame: 1 });
     expect(h.buildNextState(null, { reset: true })).toMatchObject({ status: 'ready' });
-    expect(h.buildNextState({ ...state, status: 'running', frame: 4 }, {})).toMatchObject({ status: 'running', frame: 5 });
+    const advanced = h.buildNextState({ ...state, status: 'running', frame: 4 }, {});
+    expect(advanced).toMatchObject({ status: 'running', frame: 5 });
+    expect(advanced.cells).toEqual(state.cells);
     expect(h.mergeSeedAndState(state, state)).toMatchObject({ width: state.width });
     expect(h.createSeedState({}, null)).toMatchObject({ status: 'ready' });
     expect(seed.width).toBeGreaterThan(0);
@@ -2304,6 +2306,7 @@ describe('batteryBreakout final normalization', () => {
     h.applyKeyboardInput({ type: 'keydown', key: 'ArrowLeft' }, keyboard);
     h.applyKeyboardInput({ type: 'keyup', key: 'ArrowLeft' }, keyboard);
     h.applyGamepadInput({ buttons: [true], axes: ['1'], buttonIndex: 2, pressed: true }, gamepad);
+    h.applyGamepadInput({ buttons: {}, axes: {}, buttonIndex: '2', pressed: true }, gamepad);
     expect(keyboard).toEqual({ a: false, ArrowLeft: false });
     expect(gamepad).toEqual({ buttons: [true, undefined, true], axes: [1] });
     expect(h.circleIntersectsCell({ x: 1, y: 1, radius: 2 }, { x: 0, y: 0, width: 4, height: 4 })).toBe(true);
