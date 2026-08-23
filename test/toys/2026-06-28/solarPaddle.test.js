@@ -254,6 +254,19 @@ describe('solarPaddle helper contracts', () => {
     expect(payload.shapes.find(shape => shape.type === 'circle').fill).toBe('#fbbf24');
     expect(h.toCanvasPayload(state).shapes.find(shape => shape.type === 'circle').fill).toBe('#f87171');
   });
+
+  it('locks deterministic panel coordinates and seeded ordering', () => {
+    const positions = h.buildPanelPositions(240, 160, 28, 10);
+    expect(positions).toHaveLength(15);
+    expect(positions[0]).toEqual({ x: 28, y: 30 });
+    expect(positions[1]).toEqual({ x: 54, y: 32 });
+    expect(positions[2]).toEqual({ x: 91, y: 32 });
+    expect(positions.every(position => position.x >= 28 && position.y >= 30)).toBe(true);
+    const source = positions.slice(0, 5);
+    expect(h.shufflePositions(source, 7)).toEqual(h.shufflePositions(source, 7));
+    expect(h.shufflePositions(source, 7)).not.toEqual(source);
+    expect(h.normalizePanels(240, 160, 7).map(panel => panel.id)).toEqual(['p1-1', 'p1-2', 'p1-3', 'p2-1', 'p2-2', 'p2-3', 'p2-4', 'p2-5', 'p3-1', 'p3-2', 'p3-3', 'p3-4']);
+  });
 });
 
 /**
