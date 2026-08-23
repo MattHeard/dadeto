@@ -120,7 +120,15 @@ describe('crystalBreaker helper contracts', () => {
     expect(h.orbHitsPaddle(state.orb, state.paddle)).toBe(false);
     expect(h.orbHitsCrystal(state.orb, state.crystals[0])).toBe(false);
     expect(h.normalizePaddle(null)).toMatchObject({ width: 48, height: 6, speed: 4 });
+    expect(h.normalizePaddle({ x: 12, y: 20, width: 60, height: 8, speed: 5 }))
+      .toEqual({ x: 12, y: 20, width: 60, height: 8, speed: 5 });
     expect(h.normalizeOrb(null)).toMatchObject({ radius: 4, stuckToPaddle: true });
+    expect(h.normalizeOrb({ x: 10, y: 12, vx: 2, vy: -3, radius: 5, stuckToPaddle: false }))
+      .toEqual({ x: 10, y: 12, vx: 2, vy: -3, radius: 5, stuckToPaddle: false });
+    expect(h.normalizeState(null)).toBeNull();
+    expect(h.normalizeState({ version: 0 })).toBeNull();
+    expect(h.normalizeInputState(null)).toMatchObject({ keyboard: {}, gamepad: { buttons: [], axes: [] } });
+    expect(h.normalizeGamepadState(null)).toEqual({ buttons: [], axes: [] });
     expect(h.normalizeCrystals(180, 140, 2)).toHaveLength(15);
     expect(h.normalizeCrystalsFromState([])).toEqual([]);
     expect(h.normalizeCrystalFromState({}, 0)).toMatchObject({ id: 'crystal-1', state: 'whole' });
