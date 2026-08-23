@@ -86,7 +86,6 @@ describe('personSegmentAssignmentPredicate', () => {
     expect(personSegmentAssignmentPredicate(JSON.stringify(reversed))).toBe(
       'false'
     );
-<<<<<<< Updated upstream
   });
 
   test('covers parser, normalization, interval, and overlap boundaries directly', () => {
@@ -143,7 +142,5 @@ describe('personSegmentAssignmentPredicate', () => {
     ).toEqual({ startTime: Date.parse(base.points[0].timestamp), endTime: Date.parse(base.points[0].timestamp) });
     expect(overlaps({ startTime: 0, endTime: 1 }, { startTime: 1, endTime: 2 })).toBe(false);
     expect(overlaps({ startTime: 0, endTime: 2 }, { startTime: 1, endTime: 3 })).toBe(true);
-=======
->>>>>>> Stashed changes
   });
 });
