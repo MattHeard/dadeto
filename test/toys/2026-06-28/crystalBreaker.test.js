@@ -104,6 +104,36 @@ describe('crystalBreaker helper contracts', () => {
     expect(h.toCanvasPayload(state).width).toBe(180);
     expect(h.orbHitsPaddle(state.orb, state.paddle)).toBe(false);
     expect(h.orbHitsCrystal(state.orb, state.crystals[0])).toBe(false);
+    expect(h.normalizePaddle(null)).toMatchObject({ width: 48, height: 6, speed: 4 });
+    expect(h.normalizeOrb(null)).toMatchObject({ radius: 4, stuckToPaddle: true });
+    expect(h.normalizeCrystals(180, 140, 2)).toHaveLength(15);
+    expect(h.normalizeCrystalsFromState([])).toEqual([]);
+    expect(h.normalizeCrystalFromState({}, 0)).toMatchObject({ id: 'crystal-1', state: 'whole' });
+    expect(h.normalizeCrystalPositionAndSize({ x: 4, y: 5, width: 20, height: 10 }, 2))
+      .toMatchObject({ x: 4, y: 5, width: 20, height: 10 });
+    expect(h.normalizeCrystalStats({ hp: 2, maxHp: 3, fracture: 1 }))
+      .toEqual({ hp: 2, maxHp: 3, fracture: 1 });
+    expect(h.getCrystalId('custom', 2)).toBe('custom');
+    expect(h.getCrystalId({}, 2)).toBe('crystal-3');
+    expect(h.parseActions({ type: 'keydown', key: ' ' }, h.createInitialInputState()).actions.launchPressed)
+      .toBe(true);
+    expect(h.buildNextKeyboardState({ type: 'keydown', key: 'a' }, {}, 'a')).toEqual({ a: true });
+    expect(h.isMoveLeftPressed({ arrowleft: true })).toBe(true);
+    expect(h.isMoveRightPressed({ arrowright: true })).toBe(true);
+    expect(h.resetPressed({ actions: { resetPressed: true }, previousActions: { resetPressed: false } })).toBe(true);
+    const inputState = h.createInitialInputState();
+    inputState.actions.pausePressed = true;
+    const paused = { ...state, status: 'running' };
+    h.applyPauseInput(paused, inputState);
+    expect(paused.status).toBe('paused');
+    const launched = { ...state, status: 'ready' };
+    inputState.actions.launchPressed = true;
+    h.applyLaunchInput(launched, inputState);
+    expect(launched.status).toBe('running');
+    const moved = { ...state, paddle: { ...state.paddle }, orb: { ...state.orb } };
+    inputState.actions.moveRight = true;
+    h.applyPaddleMotion(moved, inputState);
+    expect(moved.paddle.x).toBeGreaterThan(state.paddle.x);
   });
 });
 
