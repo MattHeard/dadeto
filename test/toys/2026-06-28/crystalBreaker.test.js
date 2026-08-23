@@ -176,6 +176,14 @@ describe('crystalBreaker helper contracts', () => {
     expect(payload.shapes.at(-1)).toEqual({
       type: 'circle', x: 90, y: 117, radius: 4, fill: '#f8fafc',
     });
+    const partialPayloadState = {
+      ...state,
+      status: 'paused',
+      crystals: [{ ...state.crystals[0], state: 'shattered' }, ...state.crystals.slice(1)],
+    };
+    const partialPayload = h.toCanvasPayload(partialPayloadState);
+    expect(partialPayload.shapes.filter(shape => shape.type === 'rect')).toHaveLength(17);
+    expect(partialPayload.shapes).toContainEqual(expect.objectContaining({ type: 'text', text: 'Status PAUSED' }));
     expect(h.orbHitsPaddle(state.orb, state.paddle)).toBe(false);
     expect(h.orbHitsCrystal(state.orb, state.crystals[0])).toBe(false);
     const paddle = { x: 10, y: 50, width: 20, height: 6 };
