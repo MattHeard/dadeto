@@ -1,5 +1,8 @@
 import { describe, expect, test } from '@jest/globals';
-import { conflictAwareProductScheduler } from '../../../src/core/browser/toys/2026-06-15/conflictAwareProductScheduler.js';
+import {
+  conflictAwareProductScheduler,
+  conflictAwareProductSchedulerTestOnly,
+} from '../../../src/core/browser/toys/2026-06-15/conflictAwareProductScheduler.js';
 import {
   DEFAULTS_FIXTURE,
   INVALID_JSON_INPUT,
@@ -150,5 +153,62 @@ describe('conflictAwareProductScheduler', () => {
       'Alpha Title',
       'Zulu Title',
     ]);
+  });
+});
+
+describe('conflictAwareProductScheduler helpers', () => {
+  test('normalizes parser, records, arrays, and numbers', () => {
+    expect(conflictAwareProductSchedulerTestOnly.parseSchedulerInput('{')).toEqual({ candidates: [], activeWork: [] });
+    expect(conflictAwareProductSchedulerTestOnly.parseSchedulerInput('[]')).toEqual({ candidates: [], activeWork: [] });
+    expect(conflictAwareProductSchedulerTestOnly.parseSchedulerInput('{}')).toStrictEqual({ candidates: [], activeWork: [] });
+    expect(conflictAwareProductSchedulerTestOnly.toArray(['a', 2])).toEqual(['a', 2]);
+    expect(conflictAwareProductSchedulerTestOnly.toArray('no')).toEqual([]);
+    expect(conflictAwareProductSchedulerTestOnly.toTextArray(['a', 2, 'b'])).toEqual(['a', 'b']);
+    expect(conflictAwareProductSchedulerTestOnly.toTextArray(null)).toEqual([]);
+    expect(conflictAwareProductSchedulerTestOnly.toNumber(2)).toBe(2);
+    expect(conflictAwareProductSchedulerTestOnly.toNumber(Infinity)).toBe(0);
+    expect(conflictAwareProductSchedulerTestOnly.toNumber('2')).toBe(0);
+    expect(conflictAwareProductSchedulerTestOnly.toText('x')).toBe('x');
+    expect(conflictAwareProductSchedulerTestOnly.toText(2)).toBe('');
+    expect(conflictAwareProductSchedulerTestOnly.isRecord({})).toBe(true);
+    expect(conflictAwareProductSchedulerTestOnly.isRecord([])).toBe(false);
+    expect(conflictAwareProductSchedulerTestOnly.normalizeCandidate({}, 2)).toMatchObject({ id: 'candidate-3', title: 'candidate-3' });
+    expect(conflictAwareProductSchedulerTestOnly.normalizeActiveWorkItem({ touchSet: ['a', 1], reservedSurfaces: ['db'] })).toEqual({ touchSet: ['a'], reservedSurfaces: ['db'] });
+    expect(conflictAwareProductSchedulerTestOnly.normalizeActiveWorkItem('no')).toEqual({ touchSet: [], reservedSurfaces: [] });
+  });
+
+  test('scores overlaps and renders penalty details', () => {
+    const active = conflictAwareProductSchedulerTestOnly.normalizeActiveWork([
+      { touchSet: ['src/a.js'], reservedSurfaces: ['db'] },
+    ]);
+    const candidate = conflictAwareProductSchedulerTestOnly.normalizeCandidate({
+      id: 'x', title: 'X', expectedTouchSet: ['src/a.js'], sharedTouchRisk: 2,
+      expectedTestRefactorCollision: 1, expectedDeploymentRisk: 3,
+    }, 0);
+    const scored = conflictAwareProductSchedulerTestOnly.scoreCandidate(candidate, active);
+    expect(scored.penalties.expectedFileOverlap).toBe(1);
+    expect(scored.score).toBeLessThan(0);
+    expect(scored.reason).toContain('file overlap');
+    expect(conflictAwareProductSchedulerTestOnly.countOverlap(['a', 'b'], new Set(['b']))).toBe(1);
+    expect(conflictAwareProductSchedulerTestOnly.buildReason(4, {
+      expectedFileOverlap: 0, expectedSharedInfrastructureTouch: 0,
+      expectedTestRefactorCollision: 0, expectedDeploymentRisk: 0,
+    })).toBe('score 4; no coordination penalties');
+    expect(conflictAwareProductSchedulerTestOnly.buildReason(0, {
+      expectedFileOverlap: 1, expectedSharedInfrastructureTouch: 2,
+      expectedTestRefactorCollision: 3, expectedDeploymentRisk: 4,
+    })).toBe('score 0; 1 file overlap, 2 shared-surface touchs, 3 test collisions, 4 deployment risks');
+    const details = [];
+    conflictAwareProductSchedulerTestOnly.appendPenaltyDetail(details, 1, 'risk');
+    conflictAwareProductSchedulerTestOnly.appendPenaltyDetail(details, 2, 'risk');
+    expect(details).toEqual(['1 risk', '2 risks']);
+    expect(conflictAwareProductSchedulerTestOnly.compareRankedCandidates(
+      { score: 1, id: 'same', title: 'z' },
+      { score: 1, id: 'same', title: 'a' }
+    )).toBeGreaterThan(0);
+    expect(conflictAwareProductSchedulerTestOnly.compareRankedCandidates(
+      { score: 1, id: 'z', title: 'a' },
+      { score: 1, id: 'a', title: 'z' }
+    )).toBeGreaterThan(0);
   });
 });
