@@ -688,6 +688,12 @@ describe('additional dropdown and focus coverage', () => {
     });
     expect(renderer).toBeDefined();
     renderer();
+    sync.mockClear();
     utils.syncRowData(sync, {}, null, dom);
+    expect(sync).toHaveBeenCalledWith(
+      {},
+      { rows: {}, rowTypes: {} },
+      dom
+    );
   });
 });

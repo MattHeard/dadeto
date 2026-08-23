@@ -1725,7 +1725,7 @@ export const syncHiddenField = (textInput, rowData, dom) => {
   const coerced = Object.fromEntries(
     Object.entries(filtered).map(([k, v]) => [
       k,
-      coerceValue(v, rowData.rowTypes[k] ?? 'string'),
+      coerceValue(v, rowData.rowTypes[k]),
     ])
   );
   const serialised = JSON.stringify(coerced);
