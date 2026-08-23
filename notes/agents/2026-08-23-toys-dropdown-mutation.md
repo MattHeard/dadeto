@@ -19,3 +19,5 @@ The lines 1229-1367 request-validation/submit-processing scan instrumented 34 mu
 The lines 1470-1676 interactive-initialization scan instrumented 65 mutants: all 65 killed, 0 non-static survivors, and 0 timeouts across 76 tests. Added exact initialization logging, input-store update, checkbox-reset, and optional-DOM-helper assertions; removed redundant optional/fallback input initialization logic. Later `toys.js` ranges remain pending.
 
 The lines 1676-1796 coercion/synchronization/rendering scan instrumented 50 mutants: 48 killed, 0 non-static survivors, and 0 timeouts across 53 tests. Added exact null row-data fallback coverage and removed the equivalent default `string` coercion fallback. Later `toys.js` ranges remain pending.
+
+The lines 1796-1840 dropdown-initialization/deep-state scan instrumented 9 mutants: all 9 killed, 0 non-static survivors, and 0 timeouts across 99 tests. Existing dropdown listener and deep-clone contracts covered the complete tail range. An authoritative full-file `toys.js` scan remains required before counting the file complete.
