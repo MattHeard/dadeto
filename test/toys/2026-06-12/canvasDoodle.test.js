@@ -49,6 +49,25 @@ describe('canvasDoodle', () => {
       )
     );
 
+    const explicitDefault = JSON.parse(
+      canvasDoodle(
+        JSON.stringify({
+          width: 240,
+          height: 160,
+          background: '#ffffff',
+          accent: '#000000',
+        }),
+        { get: () => jest.fn(() => 0.5) }
+      )
+    );
+    expect(result).toEqual(explicitDefault);
+    expect(result.shapes).toHaveLength(5);
+  });
+
+  test('supports environments without a get helper', () => {
+    const result = JSON.parse(
+      canvasDoodle(JSON.stringify({ width: 240, height: 160 }), {})
+    );
     expect(result.shapes).toHaveLength(5);
   });
 });

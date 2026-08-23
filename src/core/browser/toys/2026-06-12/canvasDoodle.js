@@ -13,8 +13,6 @@ export function canvasDoodle(input, env) {
   const parsed = parseCanvasDoodle(input) || {
     width: 320,
     height: 180,
-    background: '#f8f6f2',
-    accent: '#1f2937',
   };
   const getRandomNumber = env.get?.('getRandomNumber') || (() => 0.5);
 
