@@ -89,6 +89,13 @@ describe('crystalBreaker helper contracts', () => {
     expect(h.normalizeSeedPaddleSpeed(null)).toBe(4);
     expect(h.normalizeSeedOrbRadius(null)).toBe(4);
     expect(h.normalizeSeedLayoutSeed({ layoutSeed: 3 })).toBe(3);
+    expect(h.normalizeSeedLayoutSeed(null)).toBe(1);
+    expect(h.createInitialInputState()).toEqual({
+      keyboard: {}, gamepad: { buttons: [], axes: [] },
+      actions: { moveLeft: false, moveRight: false, launchPressed: false, pausePressed: false, resetPressed: false },
+      previousActions: { moveLeft: false, moveRight: false, launchPressed: false, pausePressed: false, resetPressed: false },
+    });
+    expect(h.createHudTextShape(4, 'HUD')).toMatchObject({ type: 'text', x: 4, y: 16, text: 'HUD' });
     expect(h.normalizeStatus('running')).toBe('running');
     expect(h.normalizeStatus('invalid')).toBe('ready');
     expect(h.normalizeBooleanRecord(null)).toEqual({});
