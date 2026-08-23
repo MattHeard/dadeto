@@ -267,6 +267,37 @@ describe('solarPaddle helper contracts', () => {
     expect(h.shufflePositions(source, 7)).not.toEqual(source);
     expect(h.normalizePanels(240, 160, 7).map(panel => panel.id)).toEqual(['p1-1', 'p1-2', 'p1-3', 'p2-1', 'p2-2', 'p2-3', 'p2-4', 'p2-5', 'p3-1', 'p3-2', 'p3-3', 'p3-4']);
   });
+
+  it('covers physics edge branches and panel-hit ordering', () => {
+    const state = h.createState(h.createSeedOptions());
+    state.orb.stuckToPaddle = false;
+    state.orb.x = state.width - 1; state.orb.y = 1; state.orb.vx = 2; state.orb.vy = -2;
+    h.resolveWalls(state);
+    expect(state.orb.x).toBe(state.width - state.orb.radius);
+    expect(state.orb.vx).toBe(-2);
+    expect(state.orb.y).toBe(state.orb.radius);
+    expect(state.orb.vy).toBe(2);
+    state.paddle.x = 0;
+    h.movePaddle(state, { left: true, right: false });
+    expect(state.paddle.x).toBe(0);
+    state.paddle.x = state.width - state.paddle.width;
+    h.movePaddle(state, { left: false, right: true });
+    expect(state.paddle.x).toBe(state.width - state.paddle.width);
+    state.panels = [
+      { id: 'charged', x: 0, y: 0, width: 20, height: 10, charge: true },
+      { id: 'live', x: 30, y: 0, width: 20, height: 10, charge: false },
+    ];
+    state.orb = { x: 35, y: 5, vx: 1, vy: -1, radius: 3, stuckToPaddle: false };
+    state.score = 0;
+    h.resolvePanels(state);
+    expect(state.panels[0].charge).toBe(true);
+    expect(state.panels[1].charge).toBe(true);
+    expect(state.score).toBe(1);
+    state.panels = [{ id: 'only', x: 0, y: 0, width: 20, height: 10, charge: true }];
+    state.lives = 0; state.status = 'running';
+    h.resolveWinLoss(state);
+    expect(state.status).toBe('lost');
+  });
 });
 
 /**
