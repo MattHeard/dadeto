@@ -598,10 +598,14 @@ function getCrystalId(value, index) {
  * @returns {string} - result
  */
 function normalizeCrystalState(value) {
-  if (['whole', 'fractured', 'shattered'].includes(value)) {
-    return value;
+  switch (value) {
+    case 'whole':
+    case 'fractured':
+    case 'shattered':
+      return value;
+    default:
+      return 'whole';
   }
-  return 'whole';
 }
 
 /**
@@ -832,7 +836,7 @@ function resolveOrbWalls(state) {
     state.orb.x - state.orb.radius <= 0 ||
     state.orb.x + state.orb.radius >= state.width
   ) {
-    state.orb.vx *= -1;
+    state.orb.vx = -state.orb.vx;
   }
   if (state.orb.y - state.orb.radius <= HUD_HEIGHT) {
     state.orb.vy = Math.abs(state.orb.vy);
@@ -883,7 +887,7 @@ function resolveOrbCrystals(state) {
       state.score += 1;
     }
     state.combo += 1;
-    state.orb.vy *= -1;
+    state.orb.vy = -state.orb.vy;
     break;
   }
 }

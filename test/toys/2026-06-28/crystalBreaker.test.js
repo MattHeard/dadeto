@@ -433,6 +433,20 @@ describe('crystalBreaker helper contracts', () => {
     inputState.actions.moveRight = true;
     h.applyPaddleMotion(moved, inputState);
     expect(moved.paddle.x).toBeGreaterThan(state.paddle.x);
+    const clampedRight = { ...state, paddle: { ...state.paddle, x: 170 } };
+    inputState.actions.moveRight = true;
+    h.applyPaddleMotion(clampedRight, inputState);
+    expect(clampedRight.paddle.x).toBe(132);
+    const clampedLeft = { ...state, paddle: { ...state.paddle, x: -10 } };
+    inputState.actions.moveRight = false;
+    inputState.actions.moveLeft = true;
+    h.applyPaddleMotion(clampedLeft, inputState);
+    expect(clampedLeft.paddle.x).toBe(0);
+    const partiallyCleared = h.createSeedState({ width: 180, height: 140 }, null);
+    partiallyCleared.crystals[0].state = 'shattered';
+    partiallyCleared.status = 'running';
+    h.stepSimulation(partiallyCleared);
+    expect(partiallyCleared.status).not.toBe('won');
   });
 });
 
