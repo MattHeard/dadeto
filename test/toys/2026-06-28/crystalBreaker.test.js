@@ -115,8 +115,17 @@ describe('crystalBreaker helper contracts', () => {
     expect(h.normalizeCrystalState('fractured')).toBe('fractured');
     expect(h.normalizeCrystalState('bad')).toBe('whole');
     expect(h.getCrystalFill('shattered')).toBe('#4f46e5');
+    expect(h.getCrystalFill('fractured')).toBe('#8dd3ff');
+    expect(h.getCrystalFill('whole')).toBe('#5eead4');
     expect(h.getLossStatus(0)).toBe('lost');
     expect(h.getLossStatus(1)).toBe('ready');
+    const stuckInput = h.createSeedState({ width: 180, height: 140 }, null);
+    h.applyGameplayInput(stuckInput, { actions: { moveLeft: false, moveRight: false, launchPressed: false, pausePressed: false }, previousActions: {} });
+    expect(stuckInput.orb).toMatchObject({ x: 90, y: 111 });
+    stuckInput.orb.stuckToPaddle = false;
+    stuckInput.orb.x = 12;
+    h.applyGameplayInput(stuckInput, { actions: { moveLeft: false, moveRight: false, launchPressed: false, pausePressed: false }, previousActions: {} });
+    expect(stuckInput.orb.x).toBe(12);
   });
 
   it('covers crystal state, collision, and input boundaries', () => {
@@ -148,6 +157,7 @@ describe('crystalBreaker helper contracts', () => {
       width: 180,
       height: 140,
     });
+    expect(h.buildNextState(state, null)).toMatchObject({ frame: 1, width: 180, height: 140 });
     expect(h.buildNextState(null, { reset: true, width: 200, height: 100 }))
       .toMatchObject({ frame: 1, width: 200, height: 100, status: 'ready' });
     expect(h.buildNextState(state, { reset: false })).toMatchObject({
