@@ -827,8 +827,10 @@ function getCellRowOffset(colIndex) {
  */
 export function shufflePositions(positions, seed) {
   const items = positions.slice();
+  if (items.length < 2) return items;
   let state = seed || 1;
-  for (let i = items.length - 1; i > 0; i -= 1) {
+  for (let i = items.length - 1; ; i -= 1) {
+    if (i === 0) break;
     state = (state * 1664525 + 1013904223) >>> 0;
     const j = state % (i + 1);
     [items[i], items[j]] = [items[j], items[i]];
@@ -895,9 +897,9 @@ function applyGamepadInput(input, gamepad) {
   if (Array.isArray(input?.axes)) {
     gamepad.axes = input.axes.map(next => Number(next) || 0);
   }
-  if (typeof input?.buttonIndex === 'number') {
-    gamepad.buttons[input.buttonIndex] = input.pressed === true;
-  }
+  const buttonIndex = input?.buttonIndex;
+  if (!Number.isInteger(buttonIndex)) return;
+  gamepad.buttons[buttonIndex] = input.pressed === true;
 }
 
 /**

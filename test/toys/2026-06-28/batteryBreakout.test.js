@@ -2171,6 +2171,12 @@ describe('batteryBreakout final normalization', () => {
       { actions: { resetPressed: true }, previousActions: { resetPressed: false } }
     );
     expect(resetCandidate.cells).not.toEqual(alternateReset.cells);
+    const seedThreeReset = h.maybeBuildResetState(
+      { ...state, layoutSeed: 2 },
+      { width: 120, height: 80 },
+      { actions: { resetPressed: true }, previousActions: { resetPressed: false } }
+    );
+    expect(resetCandidate.cells).not.toEqual(seedThreeReset.cells);
     expect(h.buildNextState(state, { reset: true })).toMatchObject({ status: 'ready', frame: 1 });
     expect(h.buildNextState(state, { reset: true, width: 200, height: 100 })).toMatchObject({ width: 200, height: 100 });
     expect(h.buildNextState(state, { reset: true, width: 200, height: 100 }).cells.length).toBeGreaterThan(0);
