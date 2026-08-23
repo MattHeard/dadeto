@@ -38,22 +38,18 @@ export function resolveSegment(segments, points, segmentId) {
 
 /**
  * Determine whether a candidate fits a bounded entity world line.
- * @param {Array<Record<string, unknown>>} pointsInput Resolved points.
- * @param {Array<Record<string, unknown>>} existingSegments Existing segments.
- * @param {Record<string, unknown>} candidateSegment Candidate segment.
- * @param {Record<string, unknown>} entryPoint Entry anchor.
- * @param {Record<string, unknown>|undefined} exitPoint Optional exit anchor.
- * @param {Array<Record<string, unknown>>} spacePointsInput
+ * @param {Array<unknown>} args Legacy positional feasibility arguments.
  * @returns {{feasible: boolean, reason?: string}} Feasibility result.
  */
-export function evaluateWorldLine(
-  pointsInput,
-  existingSegments,
-  candidateSegment,
-  entryPoint,
-  exitPoint,
-  spacePointsInput = []
-) {
+export function evaluateWorldLine(...args) {
+  const [
+    pointsInput,
+    existingSegments,
+    candidateSegment,
+    entryPoint,
+    exitPoint,
+    spacePointsInput = [],
+  ] = args;
   return evaluateWorldLineMany(
     pointsInput,
     existingSegments,
@@ -66,22 +62,18 @@ export function evaluateWorldLine(
 
 /**
  * Determine whether multiple candidate segments fit one bounded world line.
- * @param {Array<Record<string, unknown>>} pointsInput Resolved points.
- * @param {Array<Record<string, unknown>>} existingSegments Existing segments.
- * @param {Array<Record<string, unknown>>} candidateSegments Candidate segments.
- * @param {Record<string, unknown>} entryPoint Entry anchor.
- * @param {Record<string, unknown>|undefined} exitPoint Optional exit anchor.
- * @param {Array<Record<string, unknown>>} spacePointsInput Space points.
+ * @param {Array<unknown>} args Legacy positional feasibility arguments.
  * @returns {{feasible: boolean, reason?: string}} Feasibility result.
  */
-export function evaluateWorldLineMany(
-  pointsInput,
-  existingSegments,
-  candidateSegments,
-  entryPoint,
-  exitPoint,
-  spacePointsInput = []
-) {
+export function evaluateWorldLineMany(...args) {
+  const [
+    pointsInput,
+    existingSegments,
+    candidateSegments,
+    entryPoint,
+    exitPoint,
+    spacePointsInput = [],
+  ] = args;
   try {
     const points = new Map(
       resolvePointRecords(pointsInput, spacePointsInput).map(point => [
@@ -155,10 +147,10 @@ export function evaluateWorldLineMany(
 }
 
 /**
- *
- * @param {Record<string, any>} previousPoint
- * @param {Record<string, any>} nextSegmentOrPoint
- * @param {number} previousTime
+ * @returns {boolean} Whether the next point is connected in time and space.
+ * @param {Record<string, any>} previousPoint Previous point.
+ * @param {Record<string, any>} nextSegmentOrPoint Next segment or point.
+ * @param {number} previousTime Previous timestamp.
  */
 function bridge(previousPoint, nextSegmentOrPoint, previousTime) {
   const nextTime =
@@ -176,9 +168,9 @@ function bridge(previousPoint, nextSegmentOrPoint, previousTime) {
 }
 
 /**
- *
- * @param {Record<string, any>} first
- * @param {Record<string, any>} second
+ * @returns {boolean} Whether both points share coordinates.
+ * @param {Record<string, any>} first First point.
+ * @param {Record<string, any>} second Second point.
  */
 function sameLocation(first, second) {
   return (
@@ -188,8 +180,9 @@ function sameLocation(first, second) {
 }
 
 /**
- * @param {{startTime: number, endTime: number}} interval Candidate interval. @param {{startTime: number, endTime: number}} shift Shift interval. @returns {boolean} Whether shift contains interval.
- * @param shift
+ * @param {{startTime: number, endTime: number}} interval Candidate interval.
+ * @param {{startTime: number, endTime: number}} shift Shift interval.
+ * @returns {boolean} Whether shift contains interval.
  */
 export function containedBy(interval, shift) {
   return (
@@ -198,8 +191,9 @@ export function containedBy(interval, shift) {
 }
 
 /**
- * @param {{startTime: number, endTime: number}} first First interval. @param {{startTime: number, endTime: number}} second Second interval. @returns {boolean} Whether positive-duration overlap exists.
- * @param second
+ * @param {{startTime: number, endTime: number}} first First interval.
+ * @param {{startTime: number, endTime: number}} second Second interval.
+ * @returns {boolean} Whether positive-duration overlap exists.
  */
 export function overlaps(first, second) {
   return (
