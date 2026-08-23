@@ -2255,6 +2255,7 @@ describe('batteryBreakout final normalization', () => {
     expect(h.buildFaultIndicator({ ...state, faults: 1 })).toEqual([{ type: 'rect', x: 66, y: 18, width: 36, height: 6, fill: '#94a3b8' }]);
     expect(h.getFaultIndicatorFill(4)).toBe('#ef4444');
     expect(h.getFaultIndicatorFill(1)).toBe('#94a3b8');
+    expect(h.getFaultIndicatorFill(3)).toBe('#94a3b8');
     expect(h.getCellChargeFill('overcharged')).toBe('#f97316');
     expect(h.getCellChargeFill('stable')).toBe('#dbeafe');
     expect(h.getCellFill('stable')).toBe('#4ade80');
@@ -2279,6 +2280,9 @@ describe('batteryBreakout final normalization', () => {
       { type: 'circle', x: 60, y: 61, radius: 4, fill: '#fde047' },
       { type: 'rect', x: 18, y: 78, width: 20, height: 4, fill: '#34d399' },
     ] });
+    expect(h.toCanvasPayload({ ...state, score: 3 })).toEqual(expect.objectContaining({
+      shapes: expect.arrayContaining([{ type: 'rect', x: 18, y: 78, width: 56, height: 4, fill: '#34d399' }]),
+    }));
     const charging = { ...state, score: 0, faults: 0 };
     const chargingCell = { id: 'c', state: 'empty', charge: 0, targetCharge: 2, maxCharge: 3, overchargeCooldown: 0 };
     h.applyCellHit(charging, chargingCell);
@@ -2337,6 +2341,9 @@ describe('batteryBreakout final normalization', () => {
     const maxFaults = { ...state, cells: [{ state: 'stable' }], faults: 3, lives: 1 };
     h.resolveWinLoss(maxFaults);
     expect(maxFaults.status).toBe('won');
+    const mixedCells = { ...state, cells: [{ state: 'stable' }, { state: 'charging' }], faults: 0, lives: 1 };
+    h.resolveWinLoss(mixedCells);
+    expect(mixedCells.status).toBe('ready');
     const zeroLives = { ...state, cells: [], faults: 0, lives: 0 };
     h.resolveWinLoss(zeroLives);
     expect(zeroLives.status).toBe('lost');
