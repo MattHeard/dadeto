@@ -185,6 +185,7 @@ describe('document facade', () => {
     handle.setTargetValue(event, 'new');
     expect(event.target.value).toBe('new');
     expect(handle.getValue(element)).toBeUndefined();
+    expect(handle.getValue(null)).toBeUndefined();
     handle.setValue(element, 'set');
     expect(element.value).toBe('set');
     handle.enable(element);
