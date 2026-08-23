@@ -166,6 +166,15 @@ describe('crystalBreaker helper contracts', () => {
     expect(h.getCrystalId({}, 2)).toBe('crystal-3');
     expect(h.parseActions({ type: 'keydown', key: ' ' }, h.createInitialInputState()).actions.launchPressed)
       .toBe(true);
+    const prior = { keyboard: { arrowleft: true } };
+    expect(h.parseActions({ type: 'keyup', key: 'ArrowLeft' }, prior)).toEqual({
+      keyboard: { arrowleft: false },
+      actions: { moveLeft: false, moveRight: false, launchPressed: false, pausePressed: false, resetPressed: false },
+    });
+    expect(h.parseActions({ type: 'keydown', key: 'p' }, prior).actions.pausePressed).toBe(true);
+    expect(h.parseActions({ type: 'keydown', key: 'r' }, prior).actions.resetPressed).toBe(true);
+    expect(h.parseActions({ type: 'keydown', key: 'ArrowRight' }, prior).actions.moveRight).toBe(true);
+    expect(h.parseActions({}, prior).keyboard).toEqual(prior.keyboard);
     expect(h.buildNextKeyboardState({ type: 'keydown', key: 'a' }, {}, 'a')).toEqual({ a: true });
     expect(h.isMoveLeftPressed({ arrowleft: true })).toBe(true);
     expect(h.isMoveRightPressed({ arrowright: true })).toBe(true);
