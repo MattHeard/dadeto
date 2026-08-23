@@ -166,7 +166,7 @@ export const disable = input => {
  * @param {Node} element - The element to get the next sibling of
  * @returns {Node|null} The next sibling node (which could be an element, text node, etc.), or null if there isn't one
  */
-export const getNextSibling = element => element.nextSibling;
+export const getNextSibling = element => element?.nextSibling;
 
 export const removeNextSibling = link => link.nextElementSibling?.remove();
 
