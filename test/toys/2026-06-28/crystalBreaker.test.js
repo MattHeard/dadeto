@@ -178,6 +178,17 @@ describe('crystalBreaker helper contracts', () => {
     });
     expect(h.orbHitsPaddle(state.orb, state.paddle)).toBe(false);
     expect(h.orbHitsCrystal(state.orb, state.crystals[0])).toBe(false);
+    const paddle = { x: 10, y: 50, width: 20, height: 6 };
+    expect(h.orbHitsPaddle({ x: 20, y: 45, radius: 4, vy: 1 }, paddle)).toBe(false);
+    expect(h.orbHitsPaddle({ x: 20, y: 61, radius: 4, vy: 1 }, paddle)).toBe(false);
+    expect(h.orbHitsPaddle({ x: 5, y: 52, radius: 1, vy: 1 }, paddle)).toBe(false);
+    expect(h.orbHitsPaddle({ x: 31, y: 52, radius: 1, vy: 1 }, paddle)).toBe(false);
+    expect(h.orbHitsPaddle({ x: 20, y: 52, radius: 1, vy: -1 }, paddle)).toBe(false);
+    const crystal = { x: 10, y: 50, width: 20, height: 10 };
+    expect(h.orbHitsCrystal({ x: 0, y: 55, radius: 1 }, crystal)).toBe(false);
+    expect(h.orbHitsCrystal({ x: 32, y: 55, radius: 1 }, crystal)).toBe(false);
+    expect(h.orbHitsCrystal({ x: 20, y: 40, radius: 1 }, crystal)).toBe(false);
+    expect(h.orbHitsCrystal({ x: 20, y: 62, radius: 1 }, crystal)).toBe(false);
     expect(h.normalizePaddle(null)).toMatchObject({
       width: 48,
       height: 6,
