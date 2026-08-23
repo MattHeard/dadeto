@@ -15,7 +15,7 @@ const SERVER_LABELS = {
  * @param {string} input JSON config selecting `local` or `cloud` server mode.
  * @returns {string} JSON payload consumed by the realtime-voice presenter.
  */
-export function realtimeVoicePrototype(input = '') {
+export function realtimeVoicePrototype(input) {
   const config = parseJsonObjectOrDefault(input);
   const server = getServer(config.server);
   const endpoint = getEndpoint(server, config);
@@ -63,11 +63,7 @@ function getEndpoint(server, config) {
  * @returns {string} Empty string when endpoint can be used.
  */
 function getEndpointError(server, endpoint) {
-  if (server !== 'cloud') {
-    return '';
-  }
-
-  return getCloudEndpointError(endpoint);
+  return server === 'cloud' ? getCloudEndpointError(endpoint) : '';
 }
 
 /**
@@ -82,6 +78,10 @@ function getCloudEndpointError(endpoint) {
 
   return 'Cloud server mode requires a cloudEndpoint URL.';
 }
+
+export const realtimeVoicePrototypeTestOnly = {
+  getEndpointError,
+};
 
 /**
  * Check whether a candidate is a non-empty string.

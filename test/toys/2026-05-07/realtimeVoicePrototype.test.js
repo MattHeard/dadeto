@@ -1,4 +1,7 @@
-import { realtimeVoicePrototype } from '../../../src/core/browser/toys/2026-05-07/realtimeVoicePrototype.js';
+import {
+  realtimeVoicePrototype,
+  realtimeVoicePrototypeTestOnly,
+} from '../../../src/core/browser/toys/2026-05-07/realtimeVoicePrototype.js';
 
 const DEFAULT_DESCRIPTION =
   'Press Connect, grant microphone permission, speak, and listen for streamed OpenAI Realtime audio.';
@@ -112,5 +115,11 @@ describe('realtimeVoicePrototype toy', () => {
       server: 'local',
       endpoint: '/api/realtime/call',
     });
+  });
+
+  test('does not report a cloud error for a local empty endpoint', () => {
+    expect(
+      realtimeVoicePrototypeTestOnly.getEndpointError('local', '')
+    ).toBe('');
   });
 });
