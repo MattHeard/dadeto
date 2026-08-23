@@ -2146,6 +2146,7 @@ describe('batteryBreakout final normalization', () => {
     expect(h.parseObjectRecord('0')).toBeNull();
     expect(h.parseObjectRecord('false')).toBeNull();
     expect(h.parseObjectRecord('"text"')).toBeNull();
+    expect(h.parseObjectRecord('{}')).toEqual({});
     expect(h.createInitialInputState()).toEqual({
       keyboard: {}, gamepad: { buttons: [], axes: [] },
       actions: { moveLeft: false, moveRight: false, launchPressed: false, pausePressed: false, resetPressed: false },
@@ -2163,6 +2164,8 @@ describe('batteryBreakout final normalization', () => {
     expect(resetCandidate).toMatchObject({ width: 120, height: 90, status: 'ready' });
     expect(resetCandidate.cells).not.toEqual(state.cells);
     expect(h.buildNextState(state, { reset: true })).toMatchObject({ status: 'ready', frame: 1 });
+    expect(h.buildNextState(null, { reset: true })).toMatchObject({ status: 'ready' });
+    expect(h.buildNextState({ ...state, status: 'running', frame: 4 }, {})).toMatchObject({ status: 'running', frame: 5 });
     expect(h.mergeSeedAndState(state, state)).toMatchObject({ width: state.width });
     expect(h.createSeedState({}, null)).toMatchObject({ status: 'ready' });
     expect(seed.width).toBeGreaterThan(0);
@@ -2187,6 +2190,12 @@ describe('batteryBreakout final normalization', () => {
       actions: { moveLeft: true, moveRight: false, launchPressed: false, pausePressed: false, resetPressed: false },
       previousActions: { moveLeft: false, moveRight: false, launchPressed: false, pausePressed: false, resetPressed: true },
     });
+    expect(h.normalizeInputState(null)).toEqual({
+      keyboard: {}, gamepad: { buttons: [], axes: [] },
+      actions: { moveLeft: false, moveRight: false, launchPressed: false, pausePressed: false, resetPressed: false },
+      previousActions: { moveLeft: false, moveRight: false, launchPressed: false, pausePressed: false, resetPressed: false },
+    });
+    expect(h.normalizeGamepadState([])).toEqual({ buttons: [], axes: [] });
     expect(h.normalizeGamepadState({ buttons: [true, 0], axes: ['2', 'bad'] }))
       .toEqual({ buttons: [true, false], axes: [2, 0] });
     expect(h.normalizePaddle({ x: 4.4, y: -2, width: 20, height: 5, speed: 3 }, 90))
@@ -2216,6 +2225,9 @@ describe('batteryBreakout final normalization', () => {
     expect(h.normalizeCells(360, 240, 1).map(cell => cell.id)).toEqual([
       'cell-1-1', 'cell-1-2', 'cell-2-1', 'cell-2-2', 'cell-2-3', 'cell-2-4', 'cell-3-1', 'cell-3-2', 'cell-3-3',
     ]);
+    expect(h.normalizeCells(360, 240, 1).map(cell => cell.state)).toEqual([
+      'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty',
+    ]);
     expect(h.buildCellPositions(360, 240, 28, 12)).toEqual([
       { x: 34, y: 32 }, { x: 70, y: 34 }, { x: 122, y: 34 }, { x: 192, y: 32 }, { x: 245, y: 34 },
       { x: 44, y: 50 }, { x: 80, y: 52 }, { x: 132, y: 52 }, { x: 202, y: 50 }, { x: 255, y: 52 },
@@ -2235,6 +2247,11 @@ describe('batteryBreakout final normalization', () => {
       { x: 34, y: 32 }, { x: 57, y: 34 }, { x: 70, y: 34 }, { x: 93, y: 32 }, { x: 106, y: 34 },
       { x: 44, y: 50 }, { x: 67, y: 52 }, { x: 80, y: 52 }, { x: 103, y: 50 }, { x: 106, y: 52 },
       { x: 34, y: 68 }, { x: 51, y: 70 }, { x: 64, y: 70 }, { x: 87, y: 68 }, { x: 100, y: 70 },
+    ]);
+    expect(h.buildCellPositions(200, 100, 10, 10)).toEqual([
+      { x: 34, y: 30 }, { x: 57, y: 30 }, { x: 70, y: 30 }, { x: 109, y: 30 }, { x: 136, y: 30 },
+      { x: 44, y: 30 }, { x: 67, y: 30 }, { x: 80, y: 30 }, { x: 119, y: 30 }, { x: 146, y: 30 },
+      { x: 34, y: 30 }, { x: 51, y: 30 }, { x: 64, y: 30 }, { x: 103, y: 30 }, { x: 130, y: 30 },
     ]);
     expect(h.getCellColumnOffset(2)).toEqual(expect.any(Number));
     expect(h.getCellRowOffset(2)).toEqual(expect.any(Number));
