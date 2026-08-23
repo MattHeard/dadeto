@@ -87,7 +87,7 @@ function parseInput(input) {
  */
 function parseObjectRecord(value) {
   const parsed = parseJsonOrNull(value);
-  if (parsed !== null && typeof parsed === 'object' && !Array.isArray(parsed)) {
+  if (typeof parsed === 'object' && !Array.isArray(parsed)) {
     return parsed;
   }
   return null;
@@ -1264,14 +1264,10 @@ function resolveBottom(state) {
  * @param {unknown} state Parameter.
  */
 function resolveWinLoss(state) {
-  if (
-    state.cells.every(cell => cell.state === 'stable') &&
-    state.faults <= DEFAULT_MAX_FAULTS
-  ) {
-    state.status = 'won';
-  }
   if (state.faults > DEFAULT_MAX_FAULTS || state.lives <= 0) {
     state.status = 'lost';
+  } else if (state.cells.every(cell => cell.state === 'stable')) {
+    state.status = 'won';
   }
 }
 
