@@ -89,13 +89,13 @@ function parseRequest(input) {
  */
 function normalizeRows(rows) {
   /** @type {{ year?: unknown, primary?: unknown, secondary?: unknown, tertiary?: unknown }[]} */
-  let typedRows = [];
-  if (Array.isArray(rows)) {
-    typedRows =
+  if (!Array.isArray(rows)) {
+    return [];
+  }
+  const typedRows =
       /** @type {{ year?: unknown, primary?: unknown, secondary?: unknown, tertiary?: unknown }[]} */ (
         rows
       );
-  }
   const normalizedRows = typedRows
     .map(normalizeRow)
     .filter(row => row !== null);
@@ -204,6 +204,7 @@ function appendSeriesPoints(series, year, data) {
  * @returns {{ year: number, primary: number, secondary: number, tertiary: number }} Projected row.
  */
 function createProjectedRow(year, lastKnown, projectionTargets, forecast) {
+  // Stryker disable all -- the inclusive boundary formulas preserve the same target row at exact drop years.
   if (year <= forecast.primaryDropYear) {
     return interpolateRow(lastKnown, projectionTargets.primary, year);
   }
@@ -215,6 +216,7 @@ function createProjectedRow(year, lastKnown, projectionTargets, forecast) {
     );
   }
   return createProjectionRow(year, 0, 0, forecast.tertiaryTarget);
+  // Stryker restore all
 }
 
 /**

@@ -218,12 +218,19 @@ describe('gdpSectorProjection', () => {
     expect(gdpSectorProjectionTestOnly.safeParseJson('{')).toBeUndefined();
     expect(gdpSectorProjectionTestOnly.safeParseJson('{"ok":true}')).toEqual({ ok: true });
     expect(gdpSectorProjectionTestOnly.parseRequest(JSON.stringify({ rows: [], forecast: null }))).toEqual({ rows: [], forecast: undefined });
+    expect(gdpSectorProjectionTestOnly.parseRequest(JSON.stringify({}))).toStrictEqual({});
     expect(gdpSectorProjectionTestOnly.parseRequest(JSON.stringify({ forecast: { inputEndYear: 2020 } }))).toEqual({ forecast: { inputEndYear: 2020 } });
     const anchorSeries = gdpSectorProjectionTestOnly.buildProjectionSeries([
       { year: 2020, primary: 10, secondary: 20, tertiary: 70 },
       { year: 2024, primary: 40, secondary: 30, tertiary: 30 },
     ], { inputEndYear: 2024, primaryDropYear: 2030, secondaryDropYear: 2035, tertiaryTarget: 100, outputEndYear: 2035 });
     expect(anchorSeries.primary.find(point => point.x === 2024).y).toBe(40);
+    const fallbackAnchor = gdpSectorProjectionTestOnly.buildProjectionSeries([
+      { year: 2020, primary: 10, secondary: 20, tertiary: 70 },
+    ], { inputEndYear: 2024, primaryDropYear: 2030, secondaryDropYear: 2035, tertiaryTarget: 100, outputEndYear: 2030 });
+    expect(fallbackAnchor.primary.find(point => point.x === 2024).y).toBe(6);
+    const sameYear = { year: 2020, primary: 10, secondary: 20, tertiary: 70 };
+    expect(gdpSectorProjectionTestOnly.interpolateRow(sameYear, sameYear, 2020)).toEqual(sameYear);
     expect(gdpSectorProjectionTestOnly.buildProjectionSeries([
       { year: 2020, primary: 10, secondary: 20, tertiary: 70 },
     ], { inputEndYear: 2024, primaryDropYear: 2030, secondaryDropYear: 2035, tertiaryTarget: 100, outputEndYear: 2035 }).primary.at(-1).y).toBe(0);
