@@ -108,9 +108,10 @@ describe('crystalBreaker helper contracts', () => {
     expect(h.getLossStatus(1)).toBe('ready');
     const state = h.createSeedState({ width: 180, height: 140 }, null);
     expect(h.createSeedState({ width: 200, height: 100, paddleWidth: 60, paddleHeight: 8, paddleSpeed: 5, orbRadius: 6, lives: 2, layoutSeed: 4 }, null))
-      .toMatchObject({ width: 200, height: 100, lives: 2, paddle: { width: 60, height: 8, speed: 5 }, orb: { radius: 6 } });
+      .toMatchObject({ width: 200, height: 100, lives: 2, paddle: { x: 70, y: 74, width: 60, height: 8, speed: 5 }, orb: { x: 100, y: 75, radius: 6 } });
     expect(h.buildNextState(state, {})).toMatchObject({ frame: 1, width: 180, height: 140 });
-    expect(h.buildNextState(state, { reset: true, width: 200, height: 100 })).toMatchObject({ width: 200, height: 100, status: 'ready' });
+    const resetNext = h.buildNextState(state, { reset: true, width: 200, height: 100 });
+    expect(resetNext).toMatchObject({ width: 200, height: 100, status: 'ready' });
     expect(h.buildResetFallback(state)).toEqual({ width: 180, height: 140, lives: 3 });
     expect(h.buildResetFallback(null)).toBeUndefined();
     expect(h.mergeSeedAndState(state, h.createSeedState({ width: 200, height: 100 }, null))).toMatchObject({ width: 200, height: 100 });
