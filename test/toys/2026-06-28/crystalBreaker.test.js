@@ -102,10 +102,16 @@ describe('crystalBreaker helper contracts', () => {
     expect(h.normalizeStatus('running')).toBe('running');
     expect(h.normalizeStatus('invalid')).toBe('ready');
     expect(h.normalizeBooleanRecord(null)).toEqual({});
+    const booleanArray = [];
+    booleanArray.left = true;
+    expect(h.normalizeBooleanRecord(booleanArray)).toEqual({});
     expect(h.normalizeBooleanRecord({ left: true, right: 1 })).toEqual({ left: true, right: false });
     expect(h.normalizeGamepadButtons([true, 0])).toEqual([true, false]);
     expect(h.normalizeGamepadAxes([1, 'bad'])).toEqual([1, 0]);
     expect(h.normalizeActions(null)).toMatchObject({ moveLeft: false, resetPressed: false });
+    const actionsArray = [];
+    actionsArray.moveLeft = true;
+    expect(h.normalizeActions(actionsArray)).toEqual({ moveLeft: false, moveRight: false, launchPressed: false, pausePressed: false, resetPressed: false });
     expect(h.normalizeKeyName('ArrowLeft')).toBe('arrowleft');
     expect(h.normalizeKeyName('')).toBe('');
     expect(h.getCrystalHp(0)).toBeGreaterThan(0);
@@ -137,6 +143,9 @@ describe('crystalBreaker helper contracts', () => {
       .toEqual({ x: 10, y: 12, vx: 2, vy: -3, radius: 5, stuckToPaddle: false });
     expect(h.normalizeState(null)).toBeNull();
     expect(h.normalizeState({ version: 0 })).toBeNull();
+    const stateArray = [];
+    stateArray.version = 1;
+    expect(h.normalizeState(stateArray)).toBeNull();
     expect(h.normalizeInputState(null)).toMatchObject({ keyboard: {}, gamepad: { buttons: [], axes: [] } });
     expect(h.normalizeGamepadState(null)).toEqual({ buttons: [], axes: [] });
     expect(h.normalizeCrystals(180, 140, 2)).toHaveLength(15);
