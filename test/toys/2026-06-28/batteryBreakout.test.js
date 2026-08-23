@@ -2166,7 +2166,11 @@ describe('batteryBreakout final normalization', () => {
     expect(resetCandidate).toMatchObject({ width: 120, height: 80, status: 'ready' });
     expect(resetCandidate.cells).not.toEqual(state.cells);
     expect(h.buildNextState(state, { reset: true })).toMatchObject({ status: 'ready', frame: 1 });
+    expect(h.buildNextState(state, { reset: true, width: 200, height: 100 })).toMatchObject({ width: 200, height: 100 });
     expect(h.buildNextState(null, { reset: true })).toMatchObject({ status: 'ready' });
+    const moving = { ...state, status: 'running', frame: 4, orb: { ...state.orb, stuckToPaddle: false, vx: 1, vy: 1 } };
+    const movingX = moving.orb.x;
+    expect(h.buildNextState(moving, {}).orb.x).toBeGreaterThan(movingX);
     const advanced = h.buildNextState({ ...state, status: 'running', frame: 4 }, {});
     expect(advanced).toMatchObject({ status: 'running', frame: 5 });
     expect(advanced.cells).toEqual(state.cells);
@@ -2181,6 +2185,9 @@ describe('batteryBreakout final normalization', () => {
     expect(h.normalizeState({ version: 0 })).toBeNull();
     expect(h.normalizeState(null)).toBeNull();
     expect(h.normalizeState([])).toBeNull();
+    const stateArray = [];
+    stateArray.version = 1;
+    expect(h.normalizeState(stateArray)).toBeNull();
     expect(h.normalizeSeedLayoutSeed({}, { layoutSeed: 9 })).toBe(9);
     expect(h.normalizeSeedLayoutSeed({ layoutSeed: 4 }, { layoutSeed: 9 })).toBe(4);
     expect(h.normalizeState({ version: 1 })).toMatchObject({ version: 1, width: 360, height: 240, frame: 0, status: 'ready', score: 0, lives: 3, faults: 0 });
@@ -2191,9 +2198,13 @@ describe('batteryBreakout final normalization', () => {
     booleanArray.x = true;
     expect(h.normalizeBooleanRecord(booleanArray)).toEqual({});
     expect(h.normalizeActions([])).toMatchObject({ moveLeft: false, resetPressed: false });
-    expect(h.normalizeActions([{ moveLeft: true }])).toMatchObject({ moveLeft: false, resetPressed: false });
+    const actionsArray = [];
+    actionsArray.moveLeft = true;
+    expect(h.normalizeActions(actionsArray)).toMatchObject({ moveLeft: false, resetPressed: false });
     expect(h.normalizePaddle([])).toEqual(expect.objectContaining({ width: 48, height: 6 }));
-    expect(h.normalizePaddle([{ x: 4 }])).toEqual(expect.objectContaining({ width: 48, height: 6 }));
+    const paddleArray = [];
+    paddleArray.x = 4;
+    expect(h.normalizePaddle(paddleArray)).toEqual(expect.objectContaining({ width: 48, height: 6 }));
     expect(h.normalizeNonNegativeInteger(-1, 7)).toBe(7);
     expect(h.normalizeNonNegativeInteger(0, 7)).toBe(0);
     expect(h.normalizeGamepadButtons([true, 0])).toEqual([true, false]);
@@ -2231,7 +2242,9 @@ describe('batteryBreakout final normalization', () => {
     expect(h.normalizeOrb({ x: 0, y: 0, vx: 2, vy: -3, radius: 5, stuckToPaddle: true }))
       .toEqual({ x: 180, y: 0, vx: 2, vy: -3, radius: 5, stuckToPaddle: true });
     expect(h.normalizeOrb([])).toEqual(h.createState(h.createSeedOptions()).orb);
-    expect(h.normalizeOrb([{ x: 4 }])).toEqual(h.createState(h.createSeedOptions()).orb);
+    const orbArray = [];
+    orbArray.x = 4;
+    expect(h.normalizeOrb(orbArray)).toEqual(h.createState(h.createSeedOptions()).orb);
     expect(h.normalizeOrb([{ x: 4 }])).toEqual(h.createState(h.createSeedOptions()).orb);
     expect(h.normalizeNumber('bad', 7)).toBe(7);
     expect(h.normalizeCellsFromState(null).length).toBeGreaterThan(0);
