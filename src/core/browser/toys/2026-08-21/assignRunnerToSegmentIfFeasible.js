@@ -7,18 +7,20 @@ import { appendAtomically } from './safeAssignmentPersistence.js';
 import { wgs84Distance } from '../2026-08-20/wgs84Distance.js';
 
 /**
- * @param {string} input JSON runner assignment request. @param {import('../browserToysCore.js').ToyEnv} env Storage helpers. @returns {string} Append result.
- * @param env
+ * @param {string} input JSON runner assignment request.
+ * @param {import('../browserToysCore.js').ToyEnv} env Storage helpers.
+ * @returns {string} Append result.
  */
 export function assignRunnerToSegmentIfFeasible(input, env) {
   try {
     const x = JSON.parse(input),
       points = new Map(
         /** @type {Array<Record<string, unknown>>} */ (x.points || []).map(
-          /** @param {Record<string, unknown>} point */ point => [
-            String(point.pointId),
-            point,
-          ]
+          /**
+           * @param {Record<string, unknown>} point Point record.
+           * @returns {[string, Record<string, unknown>]} Point map entry.
+           */
+          point => [String(point.pointId), point]
         )
       );
     const candidate = resolveSegment(
@@ -28,7 +30,10 @@ export function assignRunnerToSegmentIfFeasible(input, env) {
     );
     const shifts = /** @type {Array<Record<string, any>>} */ (x.shifts || []);
     const matching = shifts.find(
-      /** @param {Record<string, any>} shift */
+      /**
+       * @param {Record<string, any>} shift Shift record.
+       * @returns {boolean} Whether the segment fits.
+       */
       shift =>
         candidate.startTime >= Date.parse(shift.clockInPoint.timestamp) &&
         candidate.endTime <= Date.parse(shift.clockOutPoint.timestamp)

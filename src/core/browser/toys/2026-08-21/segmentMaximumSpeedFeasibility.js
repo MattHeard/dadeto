@@ -3,16 +3,20 @@ import { wgs84Distance } from '../2026-08-20/wgs84Distance.js';
 import { resolveSegment } from './segmentAssignmentFeasibilityCore.js';
 import { resolvePointRecords } from '../2026-08-22/spacePointResolution.js';
 
-/** @param {string} input JSON with points, candidateSegment, maximumSpeed, and speedUnit. @returns {string} Structured feasibility result. */
+/**
+ * @param {string} input JSON with points, candidateSegment, maximumSpeed, and speedUnit.
+ * @returns {string} Structured feasibility result.
+ */
 export function segmentMaximumSpeedFeasibility(input) {
   try {
     const x = JSON.parse(input || '{}'),
       points = new Map(
         resolvePointRecords(x.points || [], x.spacePoints || []).map(
-          /** @param {Record<string, unknown>} point Point record. */ point => [
-            String(point.pointId),
-            point,
-          ]
+          /**
+           * @param {Record<string, unknown>} point Point record.
+           * @returns {[string, Record<string, unknown>]} Point map entry.
+           */
+          point => [String(point.pointId), point]
         )
       );
     const candidate = resolveSegment(

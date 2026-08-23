@@ -1,7 +1,10 @@
 // Toy: Segment Assignment Feasibility
 import { evaluateWorldLine } from './segmentAssignmentFeasibilityCore.js';
 
-/** @param {string} input JSON with points, existingSegments, candidateSegment, entryPoint, and optional exitPoint. @returns {string} Structured feasibility result. */
+/**
+ * @param {string} input JSON with points, existingSegments, candidateSegment, entryPoint, and optional exitPoint.
+ * @returns {string} Structured feasibility result.
+ */
 export function segmentAssignmentFeasibility(input) {
   try {
     const x = JSON.parse(input || '{}');

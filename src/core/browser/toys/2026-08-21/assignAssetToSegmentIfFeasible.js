@@ -3,8 +3,9 @@ import { evaluateWorldLine } from './segmentAssignmentFeasibilityCore.js';
 import { appendAtomically } from './safeAssignmentPersistence.js';
 
 /**
- * @param {string} input JSON asset assignment request. @param {import('../browserToysCore.js').ToyEnv} env Storage helpers. @returns {string} Append result.
- * @param env
+ * @param {string} input JSON asset assignment request.
+ * @param {import('../browserToysCore.js').ToyEnv} env Storage helpers.
+ * @returns {string} Append result.
  */
 export function assignAssetToSegmentIfFeasible(input, env) {
   try {

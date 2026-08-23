@@ -4,16 +4,20 @@ import {
   containedBy,
 } from './segmentAssignmentFeasibilityCore.js';
 
-/** @param {string} input JSON with points, candidateSegment, and shifts. @returns {string} Structured feasibility result. */
+/**
+ * @param {string} input JSON with points, candidateSegment, and shifts.
+ * @returns {string} Structured feasibility result.
+ */
 export function runnerShiftSegmentFeasibility(input) {
   try {
     const x = JSON.parse(input || '{}'),
       points = new Map(
         /** @type {Array<Record<string, unknown>>} */ (x.points || []).map(
-          /** @param {Record<string, unknown>} point */ point => [
-            String(point.pointId),
-            point,
-          ]
+          /**
+           * @param {Record<string, unknown>} point Point record.
+           * @returns {[string, Record<string, unknown>]} Point map entry.
+           */
+          point => [String(point.pointId), point]
         )
       );
     const candidate = resolveSegment(
@@ -49,8 +53,8 @@ export function runnerShiftSegmentFeasibility(input) {
   }
 }
 /**
- *
- * @param {Record<string, unknown>} point
+ * @param {Record<string, unknown>} point Shift point.
+ * @returns {number} Parsed point timestamp.
  */
 function pointTime(point) {
   const time = Date.parse(String(point?.timestamp));
