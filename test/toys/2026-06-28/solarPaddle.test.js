@@ -298,6 +298,31 @@ describe('solarPaddle helper contracts', () => {
     h.resolveWinLoss(state);
     expect(state.status).toBe('lost');
   });
+
+  it('covers input persistence, release, and reset transitions', () => {
+    const initial = h.createInitialInputState();
+    const held = h.updateInputState(initial, { type: 'keydown', key: 'ArrowLeft' });
+    expect(held.keyboard).toEqual({ ArrowLeft: true });
+    expect(held.actions.left).toBe(true);
+    expect(held.edgeActions.left).toBe(true);
+    const released = h.updateInputState(held, { type: 'keyup', key: 'ArrowLeft' });
+    expect(released.keyboard).toEqual({ ArrowLeft: false });
+    expect(released.actions.left).toBe(false);
+    expect(released.edgeActions.left).toBe(false);
+    const button = h.updateInputState(initial, { buttons: [true], buttonIndex: 0, pressed: true });
+    expect(button.gamepad.buttons[0]).toBe(true);
+    expect(button.edgeActions.launchPressed).toBe(true);
+    const axes = h.updateInputState(initial, { axes: [-1] });
+    expect(axes.gamepad.axes).toEqual([-1]);
+    expect(axes.actions.left).toBe(true);
+    const seed = h.createSeedState({ width: 200, height: 140 }, null);
+    const advanced = h.buildNextState(seed, {});
+    expect(advanced.frame).toBe(1);
+    const reset = h.buildNextState(seed, { type: 'keydown', key: 'r' });
+    expect(reset.frame).toBe(0);
+    expect(reset.status).toBe('ready');
+    expect(reset.panels).toEqual(seed.panels);
+  });
 });
 
 /**
