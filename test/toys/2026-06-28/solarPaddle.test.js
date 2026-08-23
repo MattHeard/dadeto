@@ -22,6 +22,15 @@ describe('solarPaddle helper contracts', () => {
     expect(h.normalizeGamepadAxes([1, 'bad'])).toEqual([1, 0]);
     expect(h.normalizeActions({ left: true, right: false, launch: true, pause: false, reset: true }))
       .toMatchObject({ left: true, launch: true, reset: true });
+    expect(h.normalizeActions({ left: false, right: false, launch: false, pause: false, reset: false }))
+      .toEqual({ left: false, right: false, launch: false, pause: false, reset: false });
+    expect(h.normalizeEdgeActions({ left: true, right: false, launchPressed: true, pausePressed: false, resetPressed: true }))
+      .toEqual({ left: true, right: false, launchPressed: true, pausePressed: false, resetPressed: true });
+    expect(h.normalizeInputState(null)).toMatchObject({ keyboard: {}, gamepad: { buttons: [], axes: [] } });
+    const seedOptions = h.createSeedOptions();
+    expect(h.createState(seedOptions)).toMatchObject({ version: 1, width: 360, height: 240, frame: 0, status: 'ready', lives: 3, paddle: { width: 52, height: 7 }, orb: { radius: 4, stuckToPaddle: true } });
+    expect(h.normalizeState({ version: 0 })).toBeNull();
+    expect(h.normalizeState({ version: 1 })).toMatchObject({ version: 1, width: 360, height: 240, status: 'ready', lives: 3 });
     expect(h.normalizePanels(240, 160, 2)).toHaveLength(12);
     expect(h.normalizePanelsFromState([])).toHaveLength(12);
     expect(h.getPanelColumnOffset(0)).toBe(0);
