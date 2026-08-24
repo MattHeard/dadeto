@@ -415,6 +415,9 @@ describe('solarPaddle helper contracts', () => {
     state.orb = { x: -20, y: state.paddle.y, vx: 1, vy: 2, radius: 3, stuckToPaddle: false };
     resolvePaddle(state);
     expect(state.orb.vy).toBe(2);
+    expect(state.orb.x).toBe(-20);
+    expect(state.orb.y).toBe(state.paddle.y);
+    expect(state.orb.vx).toBe(1);
     state.orb.x = state.paddle.x + state.paddle.width / 2;
     state.orb.y = state.paddle.y - 20;
     resolvePaddle(state);
