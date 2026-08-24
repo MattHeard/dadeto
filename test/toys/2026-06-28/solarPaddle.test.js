@@ -27,10 +27,13 @@ describe('solarPaddle helper contracts', () => {
     expect(h.normalizeGamepadAxes([1, 'bad'])).toEqual([1, 0]);
     expect(h.normalizeActions({ left: true, right: false, launch: true, pause: false, reset: true }))
       .toMatchObject({ left: true, launch: true, reset: true });
+    expect(h.normalizeActions({ left: false, right: true, launch: false, pause: false, reset: false }).right).toBe(true);
     expect(h.normalizeActions({ left: false, right: false, launch: false, pause: false, reset: false }))
       .toEqual({ left: false, right: false, launch: false, pause: false, reset: false });
     expect(h.normalizeEdgeActions({ left: true, right: false, launchPressed: true, pausePressed: false, resetPressed: true }))
       .toEqual({ left: true, right: false, launchPressed: true, pausePressed: false, resetPressed: true });
+    expect(h.normalizeEdgeActions({ left: false, right: true, launchPressed: false, pausePressed: true, resetPressed: false }))
+      .toMatchObject({ right: true, pausePressed: true });
     expect(h.normalizeInputState(null)).toMatchObject({ keyboard: {}, gamepad: { buttons: [], axes: [] } });
     expect(h.updateInputState(undefined, {})).toMatchObject({
       keyboard: {},
