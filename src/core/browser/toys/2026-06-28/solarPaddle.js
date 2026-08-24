@@ -861,9 +861,6 @@ function shufflePositions(positions, seed) {
       return;
     }
     const i = items.length - 1 - index;
-    if (i === 0) {
-      throw new Error('shuffle index underflow');
-    }
     state = (state * 1664525 + 1013904223) >>> 0;
     const j = state % (i + 1);
     [items[i], items[j]] = [items[j], items[i]];
