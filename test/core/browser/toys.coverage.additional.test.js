@@ -529,25 +529,6 @@ describe('additional dropdown and focus coverage', () => {
   });
 
   test('covers focus and row handlers', () => {
-    const dom = {
-      querySelector: jest.fn(() => ({})),
-      getDataAttribute: jest.fn(() => 'old'),
-      setDataAttribute: jest.fn(),
-      getTargetValue: jest.fn(() => 'new'),
-      getValue: jest.fn(() => 'number'),
-      setValue: jest.fn(),
-      createElement: jest.fn(() => ({})),
-      setType: jest.fn(),
-      setClassName: jest.fn(),
-      setPlaceholder: jest.fn(),
-      setTextContent: jest.fn(),
-      addClass: jest.fn(),
-      hide: jest.fn(),
-      reveal: jest.fn(),
-      appendChild: jest.fn(),
-      addEventListener: jest.fn(),
-      removeAllChildren: jest.fn(),
-    };
     const article = { closest: jest.fn(() => null) };
     const button = { closest: jest.fn(() => article) };
     const enterFocusDom = {
@@ -635,6 +616,29 @@ describe('additional dropdown and focus coverage', () => {
       { closest: () => ({ closest: () => null }) },
       focusDom
     );
+  });
+
+  test('covers key, type, and row rendering handlers', () => {
+    const sync = jest.fn();
+    const dom = {
+      querySelector: jest.fn(() => ({})),
+      getDataAttribute: jest.fn(() => 'old'),
+      setDataAttribute: jest.fn(),
+      getTargetValue: jest.fn(() => 'new'),
+      getValue: jest.fn(() => 'number'),
+      setValue: jest.fn(),
+      createElement: jest.fn(() => ({})),
+      setType: jest.fn(),
+      setClassName: jest.fn(),
+      setPlaceholder: jest.fn(),
+      setTextContent: jest.fn(),
+      addClass: jest.fn(),
+      hide: jest.fn(),
+      reveal: jest.fn(),
+      appendChild: jest.fn(),
+      addEventListener: jest.fn(),
+      removeAllChildren: jest.fn(),
+    };
     const keyHandler = utils.createKeyInputHandler({
       dom,
       keyEl: {},
