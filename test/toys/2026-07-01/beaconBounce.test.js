@@ -1380,6 +1380,27 @@ describe('beaconBounce physics and rendering', () => {
     expect(paddleState.orb.vx).toBeGreaterThanOrEqual(-3);
     expect(paddleState.orb.vx).toBeLessThanOrEqual(3);
 
+    const centeredPaddle = {
+      paddle: { x: 10, y: 30, width: 40, height: 6, speed: 4 },
+      orb: { x: 30, y: 34, vx: 0, vy: 3, radius: 4, stuckToPaddle: false },
+    };
+    resolvePaddle(centeredPaddle);
+    expect(centeredPaddle.orb.vx).toBe(1);
+
+    const rightPaddle = {
+      paddle: { x: 10, y: 30, width: 20, height: 6, speed: 4 },
+      orb: { x: 34, y: 34, vx: 0, vy: 3, radius: 4, stuckToPaddle: false },
+    };
+    resolvePaddle(rightPaddle);
+    expect(rightPaddle.orb.vx).toBe(3);
+
+    const upwardOrb = {
+      paddle: { x: 10, y: 30, width: 40, height: 6, speed: 4 },
+      orb: { x: 30, y: 34, vx: 0, vy: -3, radius: 4, stuckToPaddle: false },
+    };
+    resolvePaddle(upwardOrb);
+    expect(upwardOrb.orb).toMatchObject({ vx: 0, vy: -3, y: 34 });
+
     const beaconState = {
       orb: { x: 20, y: 20, vx: 1, vy: 1, radius: 4, stuckToPaddle: false },
       score: 0,
