@@ -6,6 +6,49 @@ import {
 import { createRealtimeVoicePrototypeElement as createCoreElement } from '../../../src/core/browser/presenters/realtimeVoicePrototype.js';
 
 /**
+ * Exercise endpoint and DOM helper branches for a control set.
+ * @param {Record<string, Function>} helpers Presenter test helpers.
+ * @param {Record<string, unknown>} controls Created controls.
+ * @param {Record<string, Function>} dom Test DOM adapter.
+ * @returns {void} Nothing.
+ */
+function exerciseControlBranches(helpers, controls, dom) {
+  const extraParent = dom.createElement('div');
+  const extraText = helpers.appendTextElement(
+    extraParent,
+    'span',
+    'extra',
+    dom
+  );
+  const extraButton = helpers.appendButton(extraParent, 'Extra', dom);
+  expect(extraText.textContent).toBe('extra');
+  expect(extraButton.tagName).toBe('BUTTON');
+  expect(extraButton.type).toBe('button');
+  expect(extraButton.textContent).toBe('Extra');
+  helpers.setStatus(controls, 'live', dom);
+  helpers.appendDebugLog(controls, 'hello', dom);
+  expect(controls.statusText.textContent).toBe('live');
+  expect(controls.debugLog.children[0].textContent).toContain('hello');
+  expect(helpers.hasUsableEndpoint(controls, dom)).toBe(true);
+  controls.endpointError = 'bad endpoint';
+  expect(helpers.hasUsableEndpoint(controls, dom)).toBe(false);
+  expect(controls.statusText.textContent).toBe('error');
+  expect(controls.debugLog.children[0].textContent).toContain('bad endpoint');
+  helpers.connectRealtimeVoice(
+    {
+      mediaStream: null,
+      dataChannel: null,
+      peerConnection: null,
+      muted: false,
+    },
+    controls,
+    dom,
+    jest.fn()
+  );
+  expect(controls.statusText.textContent).toBe('error');
+}
+
+/**
  *
  */
 /**
@@ -227,39 +270,7 @@ describe('realtimeVoicePrototypePresenterTestOnly', () => {
         endpointError: 'e',
       }).statusText.textContent
     ).toBe(helpers.STATUS.DISCONNECTED);
-    const extraParent = dom.createElement('div');
-    const extraText = helpers.appendTextElement(
-      extraParent,
-      'span',
-      'extra',
-      dom
-    );
-    const extraButton = helpers.appendButton(extraParent, 'Extra', dom);
-    expect(extraText.textContent).toBe('extra');
-    expect(extraButton.tagName).toBe('BUTTON');
-    expect(extraButton.type).toBe('button');
-    expect(extraButton.textContent).toBe('Extra');
-    helpers.setStatus(controls, 'live', dom);
-    helpers.appendDebugLog(controls, 'hello', dom);
-    expect(controls.statusText.textContent).toBe('live');
-    expect(controls.debugLog.children[0].textContent).toContain('hello');
-    expect(helpers.hasUsableEndpoint(controls, dom)).toBe(true);
-    controls.endpointError = 'bad endpoint';
-    expect(helpers.hasUsableEndpoint(controls, dom)).toBe(false);
-    expect(controls.statusText.textContent).toBe('error');
-    expect(controls.debugLog.children[0].textContent).toContain('bad endpoint');
-    helpers.connectRealtimeVoice(
-      {
-        mediaStream: null,
-        dataChannel: null,
-        peerConnection: null,
-        muted: false,
-      },
-      controls,
-      dom,
-      jest.fn()
-    );
-    expect(controls.statusText.textContent).toBe('error');
+    exerciseControlBranches(helpers, controls, dom);
   });
 
   test('handles media, channel, peer, mute, and remote-audio helpers', () => {
