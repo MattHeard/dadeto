@@ -144,4 +144,43 @@ describe('fulfillment toy validation boundaries', () => {
     ])
       expect(JSON.parse(calculate('{}'))).toMatchObject({ feasible: false });
   });
+
+  test('covers canonical spatial and procurement timestamp failures', () => {
+    expect(
+      JSON.parse(
+        canonicalNormalFulfillmentSequenceProposal('{"spacePoints":[]}')
+      )
+    ).toMatchObject({ valid: false });
+    expect(
+      JSON.parse(
+        canonicalNormalFulfillmentSequenceProposal(
+          JSON.stringify({ spacePoints: [{}] })
+        )
+      )
+    ).toMatchObject({ valid: false });
+    expect(
+      JSON.parse(
+        procurementPrefixProposal(
+          JSON.stringify({
+            deliveryOutboundStartPoint: {
+              pointId: 'delivery',
+              spacePointId: 'warehouse',
+              timestamp: 'invalid',
+            },
+            warehouse: {
+              spacePointId: 'warehouse',
+              latitude: 52,
+              longitude: 13,
+            },
+            procurementDurationSeconds: 0,
+            procurementBufferSeconds: 0,
+            generatedIds: {
+              procurementStartPointId: 'start',
+              procurementSegmentId: 'segment',
+            },
+          })
+        )
+      )
+    ).toMatchObject({ valid: false });
+  });
 });
