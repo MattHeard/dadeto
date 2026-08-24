@@ -1,9 +1,13 @@
-// @ts-nocheck
 // Shared WGS84 inverse distance helper for AREA and travel toys.
 // jscpd:ignore-start — extracted geodesic implementation shared by new toys.
 const A = 6378137;
 const F = 1 / 298.257223563;
 const B = (1 - F) * A;
+/**
+ * Convert degrees to radians.
+ * @param {number} degrees Degrees.
+ * @returns {number} Radians.
+ */
 const rad = degrees => (degrees * Math.PI) / 180;
 
 /**
@@ -78,11 +82,12 @@ export function wgs84Distance(lat1, lon1, lat2, lon2) {
 }
 
 /**
- *
- * @param lat1
- * @param lon1
- * @param lat2
- * @param lon2
+ * Calculate a spherical WGS84 approximation.
+ * @param {number} lat1 First latitude.
+ * @param {number} lon1 First longitude.
+ * @param {number} lat2 Second latitude.
+ * @param {number} lon2 Second longitude.
+ * @returns {number} Distance in meters.
  */
 export function spherical(lat1, lon1, lat2, lon2) {
   const p1 = rad(lat1),
