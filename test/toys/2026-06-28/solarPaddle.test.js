@@ -476,6 +476,28 @@ describe('solarPaddle helper contracts', () => {
     h.applyGameplayInput(state, { actions: noInput.actions, edgeActions: { ...noInput.edgeActions, pausePressed: true } });
     expect(state.status).toBe('paused');
   });
+
+  it('locks exact canvas payload geometry and rounding', () => {
+    const state = h.createState({ width: 100, height: 80, paddleWidth: 20, paddleHeight: 5, paddleSpeed: 3, orbRadius: 3, orbSpeedX: 1, orbSpeedY: -1, lives: 2, panels: [{ id: 'p', x: 8, y: 12, width: 16, height: 6, charge: false }] });
+    state.paddle.x = 21;
+    state.paddle.y = 60;
+    state.orb.x = 20.6;
+    state.orb.y = 30.4;
+    state.score = 3;
+    const payload = h.toCanvasPayload(state);
+    expect(payload).toEqual({
+      width: 100,
+      height: 80,
+      shapes: [
+        { type: 'rect', x: 0, y: 0, width: 100, height: 80, fill: '#0b1220' },
+        { type: 'rect', x: 14, y: 14, width: 72, height: 52, fill: '#10233f' },
+        { type: 'rect', x: 8, y: 12, width: 16, height: 6, fill: '#7dd3fc' },
+        { type: 'rect', x: 21, y: 60, width: 20, height: 5, fill: '#cbd5e1' },
+        { type: 'circle', x: 21, y: 30, radius: 3, fill: '#fbbf24' },
+        { type: 'rect', x: 18, y: 68, width: 50, height: 4, fill: '#34d399' },
+      ],
+    });
+  });
 });
 
 /**
