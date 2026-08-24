@@ -402,6 +402,7 @@ describe('solarPaddle helper contracts', () => {
     expect(held.edgeActions.left).toBe(true);
     const released = h.updateInputState(held, { type: 'keyup', key: 'ArrowLeft' });
     expect(released.keyboard).toEqual({ ArrowLeft: false });
+    expect(released.previousActions.left).toBe(true);
     expect(released.actions.left).toBe(false);
     expect(released.edgeActions.left).toBe(false);
     const button = h.updateInputState(initial, { buttons: [true], buttonIndex: 0, pressed: true });
