@@ -101,15 +101,12 @@ function findPoint(proposal, pointId) {
  * @returns {Array<any>} Merged records.
  */
 function mergeById(left, right, idKey) {
-  const records = new Map();
-  [...left, ...right].forEach(record => {
-    const id = record[idKey];
-    const previous = records.get(id);
-    if (previous && stableRecord(previous) !== stableRecord(record))
-      throw new Error(`Conflicting record: ${id}`);
-    records.set(id, record);
-  });
-  return [...records.values()];
+  return mergeRecords(
+    left,
+    right,
+    record => record[idKey],
+    (previous, record) => stableRecord(previous) !== stableRecord(record)
+  );
 }
 
 /**
@@ -118,16 +115,32 @@ function mergeById(left, right, idKey) {
  * @returns {Array<any>} Merged space points.
  */
 function mergeSpacePoints(left, right) {
+  return mergeRecords(
+    left,
+    right,
+    record => record.spacePointId,
+    (previous, record) =>
+      String(previous.latitude) !== String(record.latitude) ||
+      String(previous.longitude) !== String(record.longitude)
+  );
+}
+
+/**
+ * Merge records while applying a caller-provided conflict predicate.
+ * @param {Array<any>} left Left records.
+ * @param {Array<any>} right Right records.
+ * @param {(record: any) => string} getId Identifier selector.
+ * @param {(previous: any, record: any) => boolean} conflicts Conflict predicate.
+ * @returns {Array<any>} Merged records.
+ */
+function mergeRecords(left, right, getId, conflicts) {
   const records = new Map();
   [...left, ...right].forEach(record => {
-    const previous = records.get(record.spacePointId);
-    if (
-      previous &&
-      (String(previous.latitude) !== String(record.latitude) ||
-        String(previous.longitude) !== String(record.longitude))
-    )
-      throw new Error(`Conflicting record: ${record.spacePointId}`);
-    records.set(record.spacePointId, record);
+    const id = getId(record);
+    const previous = records.get(id);
+    if (previous && conflicts(previous, record))
+      throw new Error(`Conflicting record: ${id}`);
+    records.set(id, record);
   });
   return [...records.values()];
 }
