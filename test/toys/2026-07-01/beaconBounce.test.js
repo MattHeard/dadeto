@@ -142,6 +142,28 @@ describe('beaconBounce', () => {
     expect(reset.status).toBe('ready');
     expect(reset.frame).toBe(0);
   });
+
+  it('honors an explicit reset payload and fallback life precedence', () => {
+    const persisted = buildNextState(null, {
+      width: 240,
+      height: 160,
+      lives: 5,
+    });
+    persisted.initialLives = 7;
+    const reset = buildNextState(persisted, {
+      reset: true,
+      width: 120,
+      height: 90,
+      lives: 2,
+    });
+    expect(reset.width).toBe(120);
+    expect(reset.height).toBe(90);
+    expect(reset.lives).toBe(2);
+    expect(reset.frame).toBe(persisted.frame + 1);
+    expect(reset.beacons[0].id).toBe('beacon-1-1');
+    expect(buildResetFallback({ lives: 3, initialLives: 6 }).lives).toBe(6);
+    expect(buildResetFallback({ lives: 3 }).lives).toBe(3);
+  });
 });
 
 describe('beaconBounce gameplay transitions', () => {
