@@ -77,6 +77,28 @@ function exerciseMediaCleanup(helpers, context) {
 }
 
 /**
+ * Assert the lifecycle messages emitted by a connected realtime presenter.
+ * @param {Record<string, unknown>} root Rendered presenter root.
+ * @returns {void} Nothing.
+ */
+function expectLifecycleMessages(root) {
+  const rendered = JSON.stringify(root);
+  [
+    'Peer state: connected.',
+    'ICE state: connected.',
+    'Data channel opened.',
+    'Event: response.done',
+    'Event: unknown event',
+    'Event: unparseable event',
+    'Data channel closed.',
+    'Realtime voice connection is live.',
+    'Requesting microphone permission.',
+    'Sending SDP offer to local server.',
+    'Applied SDP answer from local server.',
+  ].forEach(message => expect(rendered).toContain(message));
+}
+
+/**
  *
  */
 /**
@@ -445,13 +467,7 @@ describe('realtime voice lifecycle', () => {
     listeners['data-message']({ data: JSON.stringify({}) });
     listeners['data-message']({ data: 'not json' });
     listeners['data-close']();
-    expect(JSON.stringify(root)).toContain('Peer state: connected.');
-    expect(JSON.stringify(root)).toContain('ICE state: connected.');
-    expect(JSON.stringify(root)).toContain('Data channel opened.');
-    expect(JSON.stringify(root)).toContain('Event: response.done');
-    expect(JSON.stringify(root)).toContain('Event: unknown event');
-    expect(JSON.stringify(root)).toContain('Event: unparseable event');
-    expect(JSON.stringify(root)).toContain('Data channel closed.');
+    expectLifecycleMessages(root);
     expect(fetchFn).toHaveBeenCalledWith('/api/realtime/call', {
       method: 'POST',
       headers: { 'Content-Type': 'application/sdp' },
@@ -463,16 +479,6 @@ describe('realtime voice lifecycle', () => {
       type: 'answer',
       sdp: 'answer',
     });
-    expect(JSON.stringify(root)).toContain(
-      'Realtime voice connection is live.'
-    );
-    expect(JSON.stringify(root)).toContain('Requesting microphone permission.');
-    expect(JSON.stringify(root)).toContain(
-      'Sending SDP offer to local server.'
-    );
-    expect(JSON.stringify(root)).toContain(
-      'Applied SDP answer from local server.'
-    );
     buttons[2].listeners.click();
     expect(JSON.stringify(root)).toContain('Microphone muted.');
     buttons[2].listeners.click();
