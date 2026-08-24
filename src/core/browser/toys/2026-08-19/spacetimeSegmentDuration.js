@@ -1,6 +1,5 @@
 // Toy: Spacetime Segment Duration
 // (input, env) -> string
-// jscpd:ignore-start
 import { resolvePointRecords } from '../2026-08-22/spacePointResolution.js';
 
 /**
@@ -67,4 +66,3 @@ function isJsonObject(value) {
 }
 
 export { isJsonObject, parseInput };
-// jscpd:ignore-end
