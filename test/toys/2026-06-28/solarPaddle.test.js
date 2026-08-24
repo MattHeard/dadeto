@@ -404,6 +404,9 @@ describe('solarPaddle helper contracts', () => {
     const explicitReset = h.buildNextState(seed, { reset: true });
     expect(explicitReset.frame).toBe(1);
     expect(explicitReset.status).toBe('ready');
+    const persistedFrame = { ...seed, frame: 42, status: 'running' };
+    expect(h.buildNextState(persistedFrame, { reset: false }).frame).toBe(43);
+    expect(h.buildNextState(persistedFrame, { reset: true }).status).toBe('ready');
     const repeated = h.updateInputState(held, { type: 'keydown', key: 'ArrowLeft' });
     expect(repeated.actions.left).toBe(true);
     expect(repeated.edgeActions.left).toBe(false);
