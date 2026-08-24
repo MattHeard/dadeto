@@ -1,7 +1,7 @@
 // Toy: Spacetime Segment Temporal Relation
 // (input, env) -> string
-// jscpd:ignore-start
 import { resolvePointRecords } from '../2026-08-22/spacePointResolution.js';
+import { isJsonObject, normalizeSegmentId } from './spacetimeInput.js';
 
 /**
  * Classify the temporal relation between two SPAC2 segments.
@@ -70,24 +70,6 @@ function parseRequest(input) {
     firstSegmentId,
     secondSegmentId,
   };
-}
-
-/**
- * @param {unknown} value - Candidate value.
- * @returns {boolean} Whether the value is a JSON object.
- */
-function isJsonObject(value) {
-  if (value === null) return false;
-  if (typeof value !== 'object') return false;
-  return !Array.isArray(value);
-}
-
-/**
- * @param {unknown} value - Candidate segment identifier.
- * @returns {string} Normalized identifier.
- */
-function normalizeSegmentId(value) {
-  return String(value ?? '').trim();
 }
 
 /**
@@ -167,4 +149,3 @@ export {
   resolveInterval,
   sharesBoundaryPoint,
 };
-// jscpd:ignore-end

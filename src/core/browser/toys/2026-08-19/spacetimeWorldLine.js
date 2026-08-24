@@ -1,6 +1,7 @@
 // Toy: Spacetime World Line
 // (input, env) -> string
 import { formatToyError } from '../formatToyError.js';
+import { isJsonObject } from './spacetimeInput.js';
 
 /**
  * Assemble every supplied segment into one contiguous ordered world line.
@@ -66,17 +67,6 @@ function parseInput(input) {
   if (!Array.isArray(parsed.segments) || !startPointId || !endPointId)
     throw new Error('segments, startPointId, and endPointId are required.');
   return { segments: parsed.segments, startPointId, endPointId };
-}
-
-/**
- * Determine whether a value is a non-array object.
- * @param {unknown} value - Candidate value.
- * @returns {boolean} Whether the value is a JSON object.
- */
-function isJsonObject(value) {
-  if (value === null) return false;
-  if (typeof value !== 'object') return false;
-  return !Array.isArray(value);
 }
 
 export { isJsonObject, parseInput };

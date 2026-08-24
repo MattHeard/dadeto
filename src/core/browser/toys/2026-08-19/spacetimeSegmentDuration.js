@@ -1,6 +1,7 @@
 // Toy: Spacetime Segment Duration
 // (input, env) -> string
 import { resolvePointRecords } from '../2026-08-22/spacePointResolution.js';
+import { isJsonObject } from './spacetimeInput.js';
 
 /**
  * Calculate UTC duration for a SPAC2 segment.
@@ -55,14 +56,6 @@ function parseInput(input) {
       parsed.segment
     ),
   };
-}
-
-/**
- * @param {unknown} value - Candidate value.
- * @returns {boolean} Whether the value is a JSON object.
- */
-function isJsonObject(value) {
-  return value !== null && typeof value === 'object' && !Array.isArray(value);
 }
 
 export { isJsonObject, parseInput };
