@@ -170,3 +170,18 @@ export function fulfillmentExistingAssetBoundary(
     );
   });
 }
+
+/**
+ * Serialize the common asset-feasibility request shape.
+ * @param {Record<string, any>} asset Selected asset.
+ * @param {Record<string, any>} request Original SKU request.
+ * @returns {string} Asset feasibility request JSON.
+ */
+export function fulfillmentAssetRequest(asset, request) {
+  return JSON.stringify({
+    asset,
+    proposal: request.proposal,
+    points: request.points,
+    spacePoints: request.spacePoints,
+  });
+}
