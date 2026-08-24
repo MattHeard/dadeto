@@ -13,6 +13,7 @@ describe('solarPaddle helper contracts', () => {
     expect(h.parseInput('null')).toBeNull();
     expect(h.parseInput('{"width":240}')).toEqual({ width: 240 });
     expect(h.parseObjectRecord('[]')).toBeNull();
+    expect(h.parseObjectRecord('{"ready":true}')).toEqual({ ready: true });
     expect(h.normalizeStatus('running')).toBe('running');
     expect(h.normalizeStatus('bad')).toBe('ready');
     expect(h.normalizeSeedWidth({}, null, h.createSeedDefaults())).toBe(360);
@@ -404,9 +405,9 @@ describe('solarPaddle helper contracts', () => {
     const orb = { x: 10, y: 5, vx: 1, vy: 1, radius: 2, stuckToPaddle: false };
     const panel = { x: 0, y: 0, width: 20, height: 10 };
     separateOrbFromPanel(orb, panel, 'x');
-    expect(orb.x).toBeGreaterThan(10);
+    expect(orb.x).toBe(22.5);
     separateOrbFromPanel(orb, panel, 'y');
-    expect(orb.y).toBeGreaterThan(5);
+    expect(orb.y).toBe(12.5);
   });
 
   it('covers persisted-state status and shape validation', () => {
