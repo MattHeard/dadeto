@@ -53,6 +53,14 @@ describe('beaconBounce', () => {
       radius: 4,
       stuckToPaddle: true,
     });
+    expect(storageValue.current.BEAC1.beacons).toEqual([
+      expect.objectContaining({ id: 'beacon-1-1', x: 74, y: 44, radius: 9 }),
+      expect.objectContaining({ id: 'beacon-1-2', x: 142, y: 33, radius: 8 }),
+      expect.objectContaining({ id: 'beacon-1-3', x: 216, y: 46, radius: 8 }),
+      expect.objectContaining({ id: 'beacon-1-4', x: 106, y: 99, radius: 8 }),
+      expect.objectContaining({ id: 'beacon-1-5', x: 182, y: 102, radius: 8 }),
+      expect.objectContaining({ id: 'beacon-1-6', x: 220, y: 85, radius: 8 }),
+    ]);
 
     const fallback = runToy(JSON.stringify({ width: 0, height: -1, lives: 0 }));
     expect(fallback.storageValue.current.BEAC1.width).toBeGreaterThan(0);
@@ -1119,6 +1127,16 @@ describe('beaconBounce stuck orb and helpers', () => {
       paused: false,
       speedMultiplier: 4,
       stepCount: 5,
+    });
+    expect(updateInputState(undefined, { speed: -4, step: -2 }).control).toEqual({
+      paused: false,
+      speedMultiplier: 1,
+      stepCount: 0,
+    });
+    expect(updateInputState(undefined, { speedMultiplier: 0.4, stepCount: 1.6 }).control).toEqual({
+      paused: false,
+      speedMultiplier: 1,
+      stepCount: 2,
     });
 
     const derivedActions = updateInputState(undefined, {
