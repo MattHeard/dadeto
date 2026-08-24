@@ -62,7 +62,8 @@ const normalRequest = {
 };
 
 /**
- *
+ * Parse a canonical normal fulfillment proposal for assertions.
+ * @returns {Record<string, unknown>} Parsed proposal.
  */
 function normalProposal() {
   return JSON.parse(

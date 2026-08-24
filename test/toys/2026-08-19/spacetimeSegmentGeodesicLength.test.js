@@ -186,21 +186,19 @@ describe('spacetimeSegmentGeodesicLength', () => {
     [-75, -175, 5, -5, '12204960.26'],
     [42.1, -71.2, -33.4, 151.2, '16209224.78'],
     [66.6, 25.7, -1.2, -77, '10686268.42'],
-  ])(
-    'preserves WGS84 results for varied coordinates',
-    (lat1, lon1, lat2, lon2, value) => {
-      const result = JSON.parse(
-        spacetimeSegmentGeodesicLength(
-          JSON.stringify({
-            points: [
-              { pointId: 'A', latitude: lat1, longitude: lon1 },
-              { pointId: 'B', latitude: lat2, longitude: lon2 },
-            ],
-            segment: { startPointId: 'A', endPointId: 'B' },
-          })
-        )
-      );
-      expect(result).toEqual({ value, unit: 'meters' });
-    }
-  );
+  ])('preserves WGS84 results for varied coordinates', (...args) => {
+    const [lat1, lon1, lat2, lon2, value] = args;
+    const result = JSON.parse(
+      spacetimeSegmentGeodesicLength(
+        JSON.stringify({
+          points: [
+            { pointId: 'A', latitude: lat1, longitude: lon1 },
+            { pointId: 'B', latitude: lat2, longitude: lon2 },
+          ],
+          segment: { startPointId: 'A', endPointId: 'B' },
+        })
+      )
+    );
+    expect(result).toEqual({ value, unit: 'meters' });
+  });
 });

@@ -65,8 +65,9 @@ const request = extra =>
   JSON.stringify({ points, candidateSegment: candidate, ...extra });
 
 /**
- *
- * @param initial
+ * Build the local environment used by assignment toy tests.
+ * @param {Record<string, unknown>} initial Initial temporary state.
+ * @returns {{state: Record<string, unknown>, env: Map<string, Function>}} Test environment.
  */
 function env(initial = {}) {
   const state = { temporary: initial };

@@ -4,7 +4,6 @@ import {
   numberOrZero,
   whenOrNull,
 } from '../../../commonCore.js';
-import { fulfillmentFiniteNonNegative } from '../2026-08-22/fulfillmentResult.js';
 
 const HOUR_FIELDS = [
   'commuteHours',
@@ -31,8 +30,7 @@ const VALIDATION_ERROR = 'Invalid real hourly wage input';
  * @returns {boolean} True when the value is valid.
  */
 function isValidRealHourlyWageNumber(value) {
-  // Keep wage validation local to preserve the toy's domain wording.
-  return fulfillmentFiniteNonNegative(value);
+  return typeof value === 'number' && Number.isFinite(value) && value >= 0;
 }
 
 /**
