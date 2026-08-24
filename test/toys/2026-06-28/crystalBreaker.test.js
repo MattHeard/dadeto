@@ -105,6 +105,10 @@ describe('crystalBreaker helper contracts', () => {
     expect(h.getCrystalFill('shattered')).toBe('#4f46e5');
     expect(h.getLossStatus(0)).toBe('lost');
     expect(h.getLossStatus(1)).toBe('ready');
+  });
+
+  it('covers crystal state, collision, and input boundaries', () => {
+    const h = crystalBreakerTestOnly;
     const state = h.createSeedState({ width: 180, height: 140 }, null);
     expect(
       h.createSeedState(
