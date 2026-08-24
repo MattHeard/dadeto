@@ -795,8 +795,8 @@ function buildPanelPositions(width, height, panelWidth, panelHeight) {
     PANEL_LEFT,
     Math.max(PANEL_LEFT + 20, Math.round(width * 0.2)),
     Math.max(PANEL_LEFT + 40, Math.round(width * 0.38)),
-    Math.max(PANEL_LEFT + 60, Math.round(width * 0.56)),
-    Math.max(PANEL_LEFT + 80, Math.round(width * 0.72)),
+    Math.round(width * 0.56),
+    Math.round(width * 0.72),
   ];
   return yPositions.flatMap((y, rowIndex) =>
     xPositions.map((x, colIndex) => {
