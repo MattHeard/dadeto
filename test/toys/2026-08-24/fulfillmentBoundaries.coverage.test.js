@@ -161,6 +161,21 @@ describe('fulfillment toy validation boundaries', () => {
     expect(
       JSON.parse(
         canonicalNormalFulfillmentSequenceProposal(
+          JSON.stringify({
+            spacePoints: [],
+            warehouse: { spacePointId: 'warehouse', latitude: 52, longitude: 13 },
+            deliveryOutboundStartPoint: {
+              pointId: 'delivery',
+              spacePointId: 'warehouse',
+              timestamp: '2026-08-24T10:00:00.000Z',
+            },
+          })
+        )
+      )
+    ).toMatchObject({ valid: false });
+    expect(
+      JSON.parse(
+        canonicalNormalFulfillmentSequenceProposal(
           JSON.stringify({ spacePoints: [{}] })
         )
       )
@@ -218,6 +233,42 @@ describe('fulfillment toy validation boundaries', () => {
           }),
           select,
           evaluate
+        )
+      )
+    ).toMatchObject({ feasible: false });
+    expect(
+      JSON.parse(
+        procurementNormalFulfillmentComposer(
+          JSON.stringify({ procurementProposal: {}, normalProposal: {} })
+        )
+      )
+    ).toMatchObject({ valid: false });
+    const base = {
+      asset: { assetId: 'a', stockInPoint: { pointId: 'stock', spacePointId: 'warehouse' } },
+      points: [],
+      spacePoints: [],
+    };
+    expect(
+      JSON.parse(
+        existingAssetFulfillmentFeasibility(
+          JSON.stringify({ ...base, proposal: { valid: true } })
+        )
+      )
+    ).toMatchObject({ feasible: false });
+    expect(
+      JSON.parse(
+        existingAssetFulfillmentSequenceFeasibility(
+          JSON.stringify({ ...base, proposal: { valid: true, sequence: [] } })
+        )
+      )
+    ).toMatchObject({ feasible: false });
+    expect(
+      JSON.parse(
+        existingAssetFulfillmentSequenceFeasibility(
+          JSON.stringify({
+            ...base,
+            proposal: { valid: true, sequence: [], segments: [] },
+          })
         )
       )
     ).toMatchObject({ feasible: false });

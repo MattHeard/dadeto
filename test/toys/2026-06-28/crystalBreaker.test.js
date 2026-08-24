@@ -92,12 +92,32 @@ describe('crystalBreaker helper contracts', () => {
     expect(h.normalizeSeedLayoutSeed({ layoutSeed: 3 })).toBe(3);
     expect(h.normalizeSeedLayoutSeed(null)).toBe(1);
     expect(h.createInitialInputState()).toEqual({
-      keyboard: {}, gamepad: { buttons: [], axes: [] },
-      actions: { moveLeft: false, moveRight: false, launchPressed: false, pausePressed: false, resetPressed: false },
-      previousActions: { moveLeft: false, moveRight: false, launchPressed: false, pausePressed: false, resetPressed: false },
+      keyboard: {},
+      gamepad: { buttons: [], axes: [] },
+      actions: {
+        moveLeft: false,
+        moveRight: false,
+        launchPressed: false,
+        pausePressed: false,
+        resetPressed: false,
+      },
+      previousActions: {
+        moveLeft: false,
+        moveRight: false,
+        launchPressed: false,
+        pausePressed: false,
+        resetPressed: false,
+      },
     });
     expect(h.createHudTextShape(4, 'HUD')).toEqual({
-      type: 'text', x: 4, y: 16, text: 'HUD', fill: '#dbeafe', font: '11px monospace', align: 'left', baseline: 'alphabetic',
+      type: 'text',
+      x: 4,
+      y: 16,
+      text: 'HUD',
+      fill: '#dbeafe',
+      font: '11px monospace',
+      align: 'left',
+      baseline: 'alphabetic',
     });
     expect(h.normalizeStatus('running')).toBe('running');
     expect(h.normalizeStatus('invalid')).toBe('ready');
@@ -112,11 +132,40 @@ describe('crystalBreaker helper contracts', () => {
       moveLeft: false,
       resetPressed: false,
     });
-    expect(h.normalizeActions({ moveLeft: true, moveRight: true, launchPressed: true, pausePressed: true, resetPressed: true }))
-      .toEqual({ moveLeft: true, moveRight: true, launchPressed: true, pausePressed: true, resetPressed: true });
-    expect(h.normalizeActions({ moveLeft: false, moveRight: false, launchPressed: false, pausePressed: false, resetPressed: false }))
-      .toEqual({ moveLeft: false, moveRight: false, launchPressed: false, pausePressed: false, resetPressed: false });
-    expect(h.normalizeInputState(null)).toMatchObject({ keyboard: {}, gamepad: { buttons: [], axes: [] } });
+    expect(
+      h.normalizeActions({
+        moveLeft: true,
+        moveRight: true,
+        launchPressed: true,
+        pausePressed: true,
+        resetPressed: true,
+      })
+    ).toEqual({
+      moveLeft: true,
+      moveRight: true,
+      launchPressed: true,
+      pausePressed: true,
+      resetPressed: true,
+    });
+    expect(
+      h.normalizeActions({
+        moveLeft: false,
+        moveRight: false,
+        launchPressed: false,
+        pausePressed: false,
+        resetPressed: false,
+      })
+    ).toEqual({
+      moveLeft: false,
+      moveRight: false,
+      launchPressed: false,
+      pausePressed: false,
+      resetPressed: false,
+    });
+    expect(h.normalizeInputState(null)).toMatchObject({
+      keyboard: {},
+      gamepad: { buttons: [], axes: [] },
+    });
     expect(h.normalizeKeyName('ArrowLeft')).toBe('arrowleft');
     expect(h.normalizeKeyName('')).toBe('');
     expect(h.normalizeKeyName(' ')).toBe('space');
@@ -137,13 +186,38 @@ describe('crystalBreaker helper contracts', () => {
     expect(h.getCrystalFill('whole')).toBe('#5eead4');
     expect(h.getLossStatus(0)).toBe('lost');
     expect(h.getLossStatus(1)).toBe('ready');
-    expect(h.normalizeOrb({ x: 10, y: 12, vx: 2, vy: -3, radius: 5, stuckToPaddle: true }).stuckToPaddle).toBe(true);
+    expect(
+      h.normalizeOrb({
+        x: 10,
+        y: 12,
+        vx: 2,
+        vy: -3,
+        radius: 5,
+        stuckToPaddle: true,
+      }).stuckToPaddle
+    ).toBe(true);
     const stuckInput = h.createSeedState({ width: 180, height: 140 }, null);
-    h.applyGameplayInput(stuckInput, { actions: { moveLeft: false, moveRight: false, launchPressed: false, pausePressed: false }, previousActions: {} });
+    h.applyGameplayInput(stuckInput, {
+      actions: {
+        moveLeft: false,
+        moveRight: false,
+        launchPressed: false,
+        pausePressed: false,
+      },
+      previousActions: {},
+    });
     expect(stuckInput.orb).toMatchObject({ x: 90, y: 111 });
     stuckInput.orb.stuckToPaddle = false;
     stuckInput.orb.x = 12;
-    h.applyGameplayInput(stuckInput, { actions: { moveLeft: false, moveRight: false, launchPressed: false, pausePressed: false }, previousActions: {} });
+    h.applyGameplayInput(stuckInput, {
+      actions: {
+        moveLeft: false,
+        moveRight: false,
+        launchPressed: false,
+        pausePressed: false,
+      },
+      previousActions: {},
+    });
     expect(stuckInput.orb.x).toBe(12);
   });
 
@@ -176,15 +250,27 @@ describe('crystalBreaker helper contracts', () => {
       width: 180,
       height: 140,
     });
-    expect(h.buildNextState(state, null)).toMatchObject({ frame: 1, width: 180, height: 140 });
-    expect(h.buildNextState(null, { reset: true, width: 200, height: 100 }))
-      .toMatchObject({ frame: 1, width: 200, height: 100, status: 'ready' });
+    expect(h.buildNextState(state, null)).toMatchObject({
+      frame: 1,
+      width: 180,
+      height: 140,
+    });
+    expect(
+      h.buildNextState(null, { reset: true, width: 200, height: 100 })
+    ).toMatchObject({ frame: 1, width: 200, height: 100, status: 'ready' });
     expect(h.buildNextState(state, { reset: false })).toMatchObject({
       frame: 1,
       width: 180,
       height: 140,
     });
-    const dirtyState = { ...state, score: 99, crystals: [{ ...state.crystals[0], state: 'shattered' }, ...state.crystals.slice(1)] };
+    const dirtyState = {
+      ...state,
+      score: 99,
+      crystals: [
+        { ...state.crystals[0], state: 'shattered' },
+        ...state.crystals.slice(1),
+      ],
+    };
     const resetByFlag = h.buildNextState(dirtyState, { reset: true });
     expect(resetByFlag).toMatchObject({ score: 0, status: 'ready' });
     expect(resetByFlag.crystals[0].state).toBe('whole');
@@ -216,34 +302,72 @@ describe('crystalBreaker helper contracts', () => {
       expect.objectContaining({ type: 'text', x: 160, text: 'Crystals 15' }),
       expect.objectContaining({ type: 'text', x: 250, text: 'Status READY' }),
     ]);
-    expect(payload.shapes.filter(shape => shape.type === 'rect')).toHaveLength(18);
+    expect(payload.shapes.filter(shape => shape.type === 'rect')).toHaveLength(
+      18
+    );
     expect(payload.shapes.at(-2)).toEqual({
-      type: 'rect', x: 66, y: 116, width: 48, height: 6, fill: '#f59e0b',
+      type: 'rect',
+      x: 66,
+      y: 116,
+      width: 48,
+      height: 6,
+      fill: '#f59e0b',
     });
     expect(payload.shapes.at(-1)).toEqual({
-      type: 'circle', x: 90, y: 117, radius: 4, fill: '#f8fafc',
+      type: 'circle',
+      x: 90,
+      y: 117,
+      radius: 4,
+      fill: '#f8fafc',
     });
     const partialPayloadState = {
       ...state,
       status: 'paused',
-      crystals: [{ ...state.crystals[0], state: 'shattered' }, ...state.crystals.slice(1)],
+      crystals: [
+        { ...state.crystals[0], state: 'shattered' },
+        ...state.crystals.slice(1),
+      ],
     };
     const partialPayload = h.toCanvasPayload(partialPayloadState);
-    expect(partialPayload.shapes.filter(shape => shape.type === 'rect')).toHaveLength(17);
-    expect(partialPayload.shapes).toContainEqual(expect.objectContaining({ type: 'text', text: 'Status PAUSED' }));
+    expect(
+      partialPayload.shapes.filter(shape => shape.type === 'rect')
+    ).toHaveLength(17);
+    expect(partialPayload.shapes).toContainEqual(
+      expect.objectContaining({ type: 'text', text: 'Status PAUSED' })
+    );
     expect(h.orbHitsPaddle(state.orb, state.paddle)).toBe(false);
     expect(h.orbHitsCrystal(state.orb, state.crystals[0])).toBe(false);
     const paddle = { x: 10, y: 50, width: 20, height: 6 };
-    expect(h.orbHitsPaddle({ x: 20, y: 45, radius: 4, vy: 1 }, paddle)).toBe(false);
-    expect(h.orbHitsPaddle({ x: 20, y: 61, radius: 4, vy: 1 }, paddle)).toBe(false);
-    expect(h.orbHitsPaddle({ x: 5, y: 52, radius: 1, vy: 1 }, paddle)).toBe(false);
-    expect(h.orbHitsPaddle({ x: 31, y: 52, radius: 1, vy: 1 }, paddle)).toBe(false);
-    expect(h.orbHitsPaddle({ x: 20, y: 52, radius: 1, vy: -1 }, paddle)).toBe(false);
-    expect(h.orbHitsPaddle({ x: 20, y: 46, radius: 4, vy: 1 }, paddle)).toBe(true);
-    expect(h.orbHitsPaddle({ x: 20, y: 60, radius: 4, vy: 1 }, paddle)).toBe(true);
-    expect(h.orbHitsPaddle({ x: 10, y: 52, radius: 1, vy: 1 }, paddle)).toBe(true);
-    expect(h.orbHitsPaddle({ x: 30, y: 52, radius: 1, vy: 1 }, paddle)).toBe(true);
-    expect(h.orbHitsPaddle({ x: 20, y: 52, radius: 1, vy: 0 }, paddle)).toBe(false);
+    expect(h.orbHitsPaddle({ x: 20, y: 45, radius: 4, vy: 1 }, paddle)).toBe(
+      false
+    );
+    expect(h.orbHitsPaddle({ x: 20, y: 61, radius: 4, vy: 1 }, paddle)).toBe(
+      false
+    );
+    expect(h.orbHitsPaddle({ x: 5, y: 52, radius: 1, vy: 1 }, paddle)).toBe(
+      false
+    );
+    expect(h.orbHitsPaddle({ x: 31, y: 52, radius: 1, vy: 1 }, paddle)).toBe(
+      false
+    );
+    expect(h.orbHitsPaddle({ x: 20, y: 52, radius: 1, vy: -1 }, paddle)).toBe(
+      false
+    );
+    expect(h.orbHitsPaddle({ x: 20, y: 46, radius: 4, vy: 1 }, paddle)).toBe(
+      true
+    );
+    expect(h.orbHitsPaddle({ x: 20, y: 60, radius: 4, vy: 1 }, paddle)).toBe(
+      true
+    );
+    expect(h.orbHitsPaddle({ x: 10, y: 52, radius: 1, vy: 1 }, paddle)).toBe(
+      true
+    );
+    expect(h.orbHitsPaddle({ x: 30, y: 52, radius: 1, vy: 1 }, paddle)).toBe(
+      true
+    );
+    expect(h.orbHitsPaddle({ x: 20, y: 52, radius: 1, vy: 0 }, paddle)).toBe(
+      false
+    );
     const crystal = { x: 10, y: 50, width: 20, height: 10 };
     expect(h.orbHitsCrystal({ x: 0, y: 55, radius: 1 }, crystal)).toBe(false);
     expect(h.orbHitsCrystal({ x: 32, y: 55, radius: 1 }, crystal)).toBe(false);
@@ -267,29 +391,97 @@ describe('crystalBreaker helper contracts', () => {
       stuckToPaddle: true,
     });
     expect(h.normalizeCrystals(180, 140, 2)).toHaveLength(15);
-    expect(h.normalizeCrystals(180, 140, 2)[10]).toMatchObject({ id: 'crystal-11', x: 36, y: 96 });
+    expect(h.normalizeCrystals(180, 140, 2)[10]).toMatchObject({
+      id: 'crystal-11',
+      x: 36,
+      y: 96,
+    });
     expect(h.normalizeCrystals(180, 140, 2).slice(0, 6)).toEqual([
-      expect.objectContaining({ id: 'crystal-1', x: 36, y: 40, width: 24, height: 14, hp: 2, maxHp: 2, fracture: 0, state: 'whole' }),
+      expect.objectContaining({
+        id: 'crystal-1',
+        x: 36,
+        y: 40,
+        width: 24,
+        height: 14,
+        hp: 2,
+        maxHp: 2,
+        fracture: 0,
+        state: 'whole',
+      }),
       expect.objectContaining({ id: 'crystal-2', x: 94, y: 40 }),
       expect.objectContaining({ id: 'crystal-3', x: 152, y: 40 }),
       expect.objectContaining({ id: 'crystal-4', x: 210, y: 40 }),
       expect.objectContaining({ id: 'crystal-5', x: 268, y: 40 }),
-      expect.objectContaining({ id: 'crystal-6', x: 46, y: 68, hp: 1, maxHp: 1 }),
+      expect.objectContaining({
+        id: 'crystal-6',
+        x: 46,
+        y: 68,
+        hp: 1,
+        maxHp: 1,
+      }),
     ]);
     expect(h.normalizeCrystalsFromState([])).toEqual([]);
     expect(h.normalizeState({ version: 0 })).toBeNull();
-    expect(h.normalizeState({ version: 1 })).toMatchObject({ version: 1, width: 360, height: 240, status: 'ready', score: 0, lives: 3 });
-    expect(h.normalizeState({
-      version: 1, width: 200, height: 100, frame: 7, status: 'paused', score: 12, lives: 2, combo: 3,
-      input: { keyboard: { arrowleft: true }, gamepad: { buttons: [true, 0], axes: [1, 'bad'] }, actions: { moveRight: true }, previousActions: { pausePressed: true } },
+    expect(h.normalizeState({ version: 1 })).toMatchObject({
+      version: 1,
+      width: 360,
+      height: 240,
+      status: 'ready',
+      score: 0,
+      lives: 3,
+    });
+    expect(
+      h.normalizeState({
+        version: 1,
+        width: 200,
+        height: 100,
+        frame: 7,
+        status: 'paused',
+        score: 12,
+        lives: 2,
+        combo: 3,
+        input: {
+          keyboard: { arrowleft: true },
+          gamepad: { buttons: [true, 0], axes: [1, 'bad'] },
+          actions: { moveRight: true },
+          previousActions: { pausePressed: true },
+        },
+        paddle: { x: 12, y: 80, width: 60, height: 8, speed: 5 },
+        orb: { x: 30, y: 40, vx: 2, vy: -3, radius: 5, stuckToPaddle: false },
+        crystals: [
+          {
+            id: 'custom',
+            x: 4,
+            y: 5,
+            width: 20,
+            height: 10,
+            hp: 1,
+            maxHp: 2,
+            fracture: 1,
+            state: 'fractured',
+          },
+        ],
+      })
+    ).toMatchObject({
+      version: 1,
+      width: 200,
+      height: 100,
+      frame: 7,
+      status: 'paused',
+      score: 12,
+      lives: 2,
+      combo: 3,
+      input: {
+        keyboard: { arrowleft: true },
+        gamepad: { buttons: [true, false], axes: [1, 0] },
+        actions: { moveRight: true },
+        previousActions: { pausePressed: true },
+      },
       paddle: { x: 12, y: 80, width: 60, height: 8, speed: 5 },
       orb: { x: 30, y: 40, vx: 2, vy: -3, radius: 5, stuckToPaddle: false },
-      crystals: [{ id: 'custom', x: 4, y: 5, width: 20, height: 10, hp: 1, maxHp: 2, fracture: 1, state: 'fractured' }],
-    })).toMatchObject({
-      version: 1, width: 200, height: 100, frame: 7, status: 'paused', score: 12, lives: 2, combo: 3,
-      input: { keyboard: { arrowleft: true }, gamepad: { buttons: [true, false], axes: [1, 0] }, actions: { moveRight: true }, previousActions: { pausePressed: true } },
-      paddle: { x: 12, y: 80, width: 60, height: 8, speed: 5 }, orb: { x: 30, y: 40, vx: 2, vy: -3, radius: 5, stuckToPaddle: false },
-      crystals: [{ id: 'custom', state: 'fractured', hp: 1, maxHp: 2, fracture: 1 }],
+      crystals: [
+        { id: 'custom', state: 'fractured', hp: 1, maxHp: 2, fracture: 1 },
+      ],
     });
     expect(h.normalizeCrystalFromState({}, 0)).toMatchObject({
       id: 'crystal-1',
@@ -312,38 +504,95 @@ describe('crystalBreaker helper contracts', () => {
       h.parseActions({ type: 'keydown', key: ' ' }, h.createInitialInputState())
         .actions.launchPressed
     ).toBe(true);
-    expect(h.buildActionState({ type: 'keyup', key: ' ' }, { space: true }, 'space'))
-      .toEqual({ moveLeft: false, moveRight: false, launchPressed: false, pausePressed: false, resetPressed: false });
-    expect(h.buildActionState({ type: 'keydown' }, {}, 'p')).toMatchObject({ pausePressed: true, resetPressed: false, launchPressed: false });
-    expect(h.buildActionState({ type: 'keydown' }, {}, 'r')).toMatchObject({ pausePressed: false, resetPressed: true, launchPressed: false });
-    expect(h.buildActionState({ type: 'keydown' }, {}, 'space')).toMatchObject({ launchPressed: true, pausePressed: false, resetPressed: false });
-    expect(h.buildActionState({ type: 'keydown' }, {}, ' ')).toMatchObject({ launchPressed: true, pausePressed: false, resetPressed: false });
-    expect(h.buildActionState({ type: 'keydown' }, {}, 'x')).toMatchObject({ launchPressed: false, pausePressed: false, resetPressed: false });
-    expect(h.buildActionState({ type: 'keyup' }, {}, 'p')).toMatchObject({ pausePressed: false });
-    expect(h.buildActionState({ type: 'keyup' }, {}, 'r')).toMatchObject({ resetPressed: false });
+    expect(
+      h.buildActionState({ type: 'keyup', key: ' ' }, { space: true }, 'space')
+    ).toEqual({
+      moveLeft: false,
+      moveRight: false,
+      launchPressed: false,
+      pausePressed: false,
+      resetPressed: false,
+    });
+    expect(h.buildActionState({ type: 'keydown' }, {}, 'p')).toMatchObject({
+      pausePressed: true,
+      resetPressed: false,
+      launchPressed: false,
+    });
+    expect(h.buildActionState({ type: 'keydown' }, {}, 'r')).toMatchObject({
+      pausePressed: false,
+      resetPressed: true,
+      launchPressed: false,
+    });
+    expect(h.buildActionState({ type: 'keydown' }, {}, 'space')).toMatchObject({
+      launchPressed: true,
+      pausePressed: false,
+      resetPressed: false,
+    });
+    expect(h.buildActionState({ type: 'keydown' }, {}, ' ')).toMatchObject({
+      launchPressed: true,
+      pausePressed: false,
+      resetPressed: false,
+    });
+    expect(h.buildActionState({ type: 'keydown' }, {}, 'x')).toMatchObject({
+      launchPressed: false,
+      pausePressed: false,
+      resetPressed: false,
+    });
+    expect(h.buildActionState({ type: 'keyup' }, {}, 'p')).toMatchObject({
+      pausePressed: false,
+    });
+    expect(h.buildActionState({ type: 'keyup' }, {}, 'r')).toMatchObject({
+      resetPressed: false,
+    });
     const physics = h.createSeedState({ width: 180, height: 140 }, null);
-    physics.orb = { x: 90, y: 115, vx: 2, vy: 3, radius: 4, stuckToPaddle: false };
+    physics.orb = {
+      x: 90,
+      y: 115,
+      vx: 2,
+      vy: 3,
+      radius: 4,
+      stuckToPaddle: false,
+    };
     physics.paddle = { x: 66, y: 116, width: 48, height: 6, speed: 4 };
     h.resolveOrbPaddle(physics);
     expect(physics.orb.vy).toBe(-3);
     expect(physics.combo).toBe(0);
     const offCenter = h.createSeedState({ width: 180, height: 140 }, null);
-    offCenter.orb = { x: 108, y: 115, vx: 0, vy: 3, radius: 4, stuckToPaddle: false };
+    offCenter.orb = {
+      x: 108,
+      y: 115,
+      vx: 0,
+      vy: 3,
+      radius: 4,
+      stuckToPaddle: false,
+    };
     h.resolveOrbPaddle(offCenter);
     expect(offCenter.orb.vx).toBe(1);
     const stuck = { paddle: { x: 66, y: 116, width: 48 }, orb: { radius: 4 } };
     h.stickOrbToPaddle(stuck);
     expect(stuck.orb).toMatchObject({ x: 90, y: 111 });
-    const walls = { width: 180, orb: { x: 2, y: 25, vx: -3, vy: -2, radius: 4 } };
+    const walls = {
+      width: 180,
+      orb: { x: 2, y: 25, vx: -3, vy: -2, radius: 4 },
+    };
     h.resolveOrbWalls(walls);
     expect(walls.orb).toMatchObject({ vx: 3, vy: 2 });
-    const rightWall = { width: 180, orb: { x: 178, y: 80, vx: 3, vy: 2, radius: 4 } };
+    const rightWall = {
+      width: 180,
+      orb: { x: 178, y: 80, vx: 3, vy: 2, radius: 4 },
+    };
     h.resolveOrbWalls(rightWall);
     expect(rightWall.orb.vx).toBe(-3);
-    const clearWall = { width: 180, orb: { x: 90, y: 80, vx: 3, vy: -2, radius: 4 } };
+    const clearWall = {
+      width: 180,
+      orb: { x: 90, y: 80, vx: 3, vy: -2, radius: 4 },
+    };
     h.resolveOrbWalls(clearWall);
     expect(clearWall.orb).toMatchObject({ vx: 3, vy: -2 });
-    const exactWalls = { width: 180, orb: { x: 4, y: 28, vx: -3, vy: -2, radius: 4 } };
+    const exactWalls = {
+      width: 180,
+      orb: { x: 4, y: 28, vx: -3, vy: -2, radius: 4 },
+    };
     h.resolveOrbWalls(exactWalls);
     expect(exactWalls.orb).toMatchObject({ vx: 3, vy: 2 });
     exactWalls.orb.x = 176;
@@ -352,26 +601,60 @@ describe('crystalBreaker helper contracts', () => {
     expect(exactWalls.orb.vx).toBe(-3);
     h.advanceOrb(exactWalls);
     expect(exactWalls.orb.x).toBe(173);
-    expect(h.calculatePaddleBounce({ orb: { x: 126 }, paddle: { x: 90, width: 48 } })).toBe(2 / 3);
+    expect(
+      h.calculatePaddleBounce({ orb: { x: 126 }, paddle: { x: 90, width: 48 } })
+    ).toBe(2 / 3);
     const crystalHit = h.createSeedState({ width: 180, height: 140 }, null);
-    crystalHit.orb = { x: 36, y: 47, vx: 1, vy: 2, radius: 4, stuckToPaddle: false };
+    crystalHit.orb = {
+      x: 36,
+      y: 47,
+      vx: 1,
+      vy: 2,
+      radius: 4,
+      stuckToPaddle: false,
+    };
     h.resolveOrbCrystals(crystalHit);
-    expect(crystalHit.crystals[0]).toMatchObject({ hp: 1, fracture: 1, state: 'fractured' });
+    expect(crystalHit.crystals[0]).toMatchObject({
+      hp: 1,
+      fracture: 1,
+      state: 'fractured',
+    });
     expect(crystalHit.score).toBe(1);
     expect(crystalHit.combo).toBe(1);
     expect(crystalHit.orb.vy).toBe(-2);
     const skipped = h.createSeedState({ width: 180, height: 140 }, null);
     skipped.crystals[0].state = 'shattered';
-    skipped.orb = { x: 36, y: 47, vx: 1, vy: 2, radius: 4, stuckToPaddle: false };
+    skipped.orb = {
+      x: 36,
+      y: 47,
+      vx: 1,
+      vy: 2,
+      radius: 4,
+      stuckToPaddle: false,
+    };
     h.resolveOrbCrystals(skipped);
     expect(skipped.score).toBe(0);
     expect(skipped.combo).toBe(0);
     const noPaddleHit = h.createSeedState({ width: 180, height: 140 }, null);
-    noPaddleHit.orb = { x: 10, y: 20, vx: 1, vy: -2, radius: 4, stuckToPaddle: false };
+    noPaddleHit.orb = {
+      x: 10,
+      y: 20,
+      vx: 1,
+      vy: -2,
+      radius: 4,
+      stuckToPaddle: false,
+    };
     h.resolveOrbPaddle(noPaddleHit);
     expect(noPaddleHit.orb.vy).toBe(-2);
     const shattered = h.createSeedState({ width: 180, height: 140 }, null);
-    shattered.orb = { x: 36, y: 47, vx: 1, vy: 2, radius: 4, stuckToPaddle: false };
+    shattered.orb = {
+      x: 36,
+      y: 47,
+      vx: 1,
+      vy: 2,
+      radius: 4,
+      stuckToPaddle: false,
+    };
     shattered.crystals[0].hp = 1;
     shattered.crystals[0].fracture = 1;
     h.resolveOrbCrystals(shattered);
@@ -379,7 +662,10 @@ describe('crystalBreaker helper contracts', () => {
     expect(shattered.score).toBe(10);
     expect(shattered.combo).toBe(1);
     const won = h.createSeedState({ width: 180, height: 140 }, null);
-    won.crystals = won.crystals.map(crystal => ({ ...crystal, state: 'shattered' }));
+    won.crystals = won.crystals.map(crystal => ({
+      ...crystal,
+      state: 'shattered',
+    }));
     h.stepSimulation(won);
     expect(won.status).toBe('won');
     const lost = h.createSeedState({ width: 180, height: 140 }, null);
@@ -393,8 +679,13 @@ describe('crystalBreaker helper contracts', () => {
     expect(
       h.buildNextKeyboardState({ type: 'keydown', key: 'a' }, {}, 'a')
     ).toEqual({ a: true });
-    expect(h.buildNextKeyboardState({ type: 'keyup', key: 'ArrowLeft' }, { arrowleft: true }, 'arrowleft'))
-      .toEqual({ arrowleft: false });
+    expect(
+      h.buildNextKeyboardState(
+        { type: 'keyup', key: 'ArrowLeft' },
+        { arrowleft: true },
+        'arrowleft'
+      )
+    ).toEqual({ arrowleft: false });
     expect(h.isMoveLeftPressed({ arrowleft: true })).toBe(true);
     expect(h.isMoveRightPressed({ arrowright: true })).toBe(true);
     expect(h.isMoveLeftPressed({ a: true })).toBe(true);
@@ -415,7 +706,12 @@ describe('crystalBreaker helper contracts', () => {
       orb: { stuckToPaddle: false, vx: 0, vy: 0, x: 0, y: 0, radius: 4 },
     };
     h.resetOrbAfterLoss(resetPosition);
-    expect(resetPosition).toMatchObject({ lives: 1, combo: 0, status: 'ready', orb: { x: 20, y: 45, vx: 1.6, vy: -2.4, stuckToPaddle: true } });
+    expect(resetPosition).toMatchObject({
+      lives: 1,
+      combo: 0,
+      status: 'ready',
+      orb: { x: 20, y: 45, vx: 1.6, vy: -2.4, stuckToPaddle: true },
+    });
     const inputState = h.createInitialInputState();
     inputState.actions.pausePressed = true;
     const paused = { ...state, status: 'running' };
@@ -442,7 +738,10 @@ describe('crystalBreaker helper contracts', () => {
     inputState.actions.moveLeft = true;
     h.applyPaddleMotion(clampedLeft, inputState);
     expect(clampedLeft.paddle.x).toBe(0);
-    const partiallyCleared = h.createSeedState({ width: 180, height: 140 }, null);
+    const partiallyCleared = h.createSeedState(
+      { width: 180, height: 140 },
+      null
+    );
     partiallyCleared.crystals[0].state = 'shattered';
     partiallyCleared.status = 'running';
     h.stepSimulation(partiallyCleared);

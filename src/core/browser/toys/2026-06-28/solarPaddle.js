@@ -857,17 +857,20 @@ function shufflePositions(positions, seed) {
   const items = positions.slice();
   let state = Math.max(1, seed);
   // Stryker disable next-line MethodExpression -- terminal position must be excluded.
-  items.slice(0, -1).reverse().forEach((_, index) => {
-    const i = items.length - 1 - index;
-    // Stryker disable next-line ConditionalExpression -- unreachable underflow guard.
-    if (i !== 0) {
-      state = (state * 1664525 + 1013904223) >>> 0;
-      const j = state % (i + 1);
-      [items[i], items[j]] = [items[j], items[i]];
-    } else {
-      throw new Error('shuffle index underflow');
-    }
-  });
+  items
+    .slice(0, -1)
+    .reverse()
+    .forEach((_, index) => {
+      const i = items.length - 1 - index;
+      // Stryker disable next-line ConditionalExpression -- unreachable underflow guard.
+      if (i !== 0) {
+        state = (state * 1664525 + 1013904223) >>> 0;
+        const j = state % (i + 1);
+        [items[i], items[j]] = [items[j], items[i]];
+      } else {
+        throw new Error('shuffle index underflow');
+      }
+    });
   return items;
 }
 
@@ -1225,14 +1228,12 @@ export function separateOrbFromPanel(orb, panel, collisionAxis) {
 
   if (collisionAxis === 'x') {
     const direction = dx < 0 ? -1 : 1;
-    orb.x =
-      panelCenterX + direction * (panel.width / 2 + orb.radius + 0.5);
+    orb.x = panelCenterX + direction * (panel.width / 2 + orb.radius + 0.5);
     return;
   }
 
   const direction = dy < 0 ? -1 : 1;
-  orb.y =
-    panelCenterY + direction * (panel.height / 2 + orb.radius + 0.5);
+  orb.y = panelCenterY + direction * (panel.height / 2 + orb.radius + 0.5);
 }
 
 /**
@@ -1419,21 +1420,74 @@ function persistState(storage, state) {
 
 /** Internal contracts used by the focused mutation suite. */
 export const solarPaddleTestOnly = {
-  getStorageAccessor, readPersistedState, parseInput, parseObjectRecord,
-  buildNextState, buildMergedState, finalizeNextState, createResetSeedState,
-  buildResetFallback, mergeSeedAndState, createSeedState, normalizeSeedValues,
-  normalizeSeedWidth, normalizeSeedHeight, normalizeSeedLayout, normalizeSeedLives,
-  createSeedDefaults, createState, createInitialInputState, normalizeState,
-  normalizeStatus, normalizeInputState, normalizeBooleanRecord, normalizeGamepadState,
-  normalizeGamepadButtons, normalizeGamepadAxes, normalizeActions, normalizeEdgeActions,
-  normalizePaddle, normalizeNonNegativeInteger, normalizeOrb, normalizeNumber,
-  createSeedOptions, normalizePanelsFromState, normalizePanelFromState, getPanelId,
-  normalizePanels, buildPanelPositions, getPanelColumnOffset, getPanelRowOffset,
-  shufflePositions, updateInputState, createEdgeActions, deriveActions,
-  applyKeyboardInput, applyGamepadInput, createActionsFromState, isLeftActionPressed,
-  isRightActionPressed, isLaunchActionPressed, isPauseActionPressed,
-  isResetActionPressed, isAxisLeft, isAxisRight, applyGameplayInput, movePaddle,
-  stepSimulation, stickOrbToPaddle, resolveWalls, resolvePanels, getPanelCollisionAxis,
-  circleIntersectsPanel, resolveBottom, resolveWinLoss, resetOrbToPaddle, clamp,
-  toCanvasPayload, getPanelFill, getOrbFill, persistState,
+  getStorageAccessor,
+  readPersistedState,
+  parseInput,
+  parseObjectRecord,
+  buildNextState,
+  buildMergedState,
+  finalizeNextState,
+  createResetSeedState,
+  buildResetFallback,
+  mergeSeedAndState,
+  createSeedState,
+  normalizeSeedValues,
+  normalizeSeedWidth,
+  normalizeSeedHeight,
+  normalizeSeedLayout,
+  normalizeSeedLives,
+  createSeedDefaults,
+  createState,
+  createInitialInputState,
+  normalizeState,
+  normalizeStatus,
+  normalizeInputState,
+  normalizeBooleanRecord,
+  normalizeGamepadState,
+  normalizeGamepadButtons,
+  normalizeGamepadAxes,
+  normalizeActions,
+  normalizeEdgeActions,
+  normalizePaddle,
+  normalizeNonNegativeInteger,
+  normalizeOrb,
+  normalizeNumber,
+  createSeedOptions,
+  normalizePanelsFromState,
+  normalizePanelFromState,
+  getPanelId,
+  normalizePanels,
+  buildPanelPositions,
+  getPanelColumnOffset,
+  getPanelRowOffset,
+  shufflePositions,
+  updateInputState,
+  createEdgeActions,
+  deriveActions,
+  applyKeyboardInput,
+  applyGamepadInput,
+  createActionsFromState,
+  isLeftActionPressed,
+  isRightActionPressed,
+  isLaunchActionPressed,
+  isPauseActionPressed,
+  isResetActionPressed,
+  isAxisLeft,
+  isAxisRight,
+  applyGameplayInput,
+  movePaddle,
+  stepSimulation,
+  stickOrbToPaddle,
+  resolveWalls,
+  resolvePanels,
+  getPanelCollisionAxis,
+  circleIntersectsPanel,
+  resolveBottom,
+  resolveWinLoss,
+  resetOrbToPaddle,
+  clamp,
+  toCanvasPayload,
+  getPanelFill,
+  getOrbFill,
+  persistState,
 };

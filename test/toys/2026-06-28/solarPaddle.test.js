@@ -20,66 +20,249 @@ describe('solarPaddle helper contracts', () => {
     expect(h.normalizeStatus('running')).toBe('running');
     expect(h.normalizeStatus('bad')).toBe('ready');
     expect(h.normalizeSeedWidth({}, null, h.createSeedDefaults())).toBe(360);
-    expect(h.normalizeSeedHeight({ height: 160 }, null, h.createSeedDefaults())).toBe(160);
-    expect(h.normalizeSeedLives({ lives: 2 }, null, h.createSeedDefaults())).toBe(2);
-    expect(h.normalizeSeedLayout({ layoutSeed: 3 }, null, h.createSeedDefaults())).toBe(3);
+    expect(
+      h.normalizeSeedHeight({ height: 160 }, null, h.createSeedDefaults())
+    ).toBe(160);
+    expect(
+      h.normalizeSeedLives({ lives: 2 }, null, h.createSeedDefaults())
+    ).toBe(2);
+    expect(
+      h.normalizeSeedLayout({ layoutSeed: 3 }, null, h.createSeedDefaults())
+    ).toBe(3);
     expect(h.normalizeGamepadButtons([true, 0])).toEqual([true, false]);
     expect(h.normalizeGamepadAxes([1, 'bad'])).toEqual([1, 0]);
-    expect(h.normalizeActions({ left: true, right: false, launch: true, pause: false, reset: true }))
-      .toMatchObject({ left: true, launch: true, reset: true });
-    expect(h.normalizeActions({ left: false, right: true, launch: false, pause: false, reset: false }).right).toBe(true);
-    expect(h.normalizeActions({ left: false, right: false, launch: false, pause: false, reset: false }))
-      .toEqual({ left: false, right: false, launch: false, pause: false, reset: false });
-    expect(h.normalizeEdgeActions({ left: true, right: false, launchPressed: true, pausePressed: false, resetPressed: true }))
-      .toEqual({ left: true, right: false, launchPressed: true, pausePressed: false, resetPressed: true });
-    expect(h.normalizeEdgeActions({ left: false, right: true, launchPressed: false, pausePressed: true, resetPressed: false }))
-      .toMatchObject({ right: true, pausePressed: true });
-    expect(h.normalizeInputState(null)).toMatchObject({ keyboard: {}, gamepad: { buttons: [], axes: [] } });
+    expect(
+      h.normalizeActions({
+        left: true,
+        right: false,
+        launch: true,
+        pause: false,
+        reset: true,
+      })
+    ).toMatchObject({ left: true, launch: true, reset: true });
+    expect(
+      h.normalizeActions({
+        left: false,
+        right: true,
+        launch: false,
+        pause: false,
+        reset: false,
+      }).right
+    ).toBe(true);
+    expect(
+      h.normalizeActions({
+        left: false,
+        right: false,
+        launch: false,
+        pause: false,
+        reset: false,
+      })
+    ).toEqual({
+      left: false,
+      right: false,
+      launch: false,
+      pause: false,
+      reset: false,
+    });
+    expect(
+      h.normalizeEdgeActions({
+        left: true,
+        right: false,
+        launchPressed: true,
+        pausePressed: false,
+        resetPressed: true,
+      })
+    ).toEqual({
+      left: true,
+      right: false,
+      launchPressed: true,
+      pausePressed: false,
+      resetPressed: true,
+    });
+    expect(
+      h.normalizeEdgeActions({
+        left: false,
+        right: true,
+        launchPressed: false,
+        pausePressed: true,
+        resetPressed: false,
+      })
+    ).toMatchObject({ right: true, pausePressed: true });
+    expect(h.normalizeInputState(null)).toMatchObject({
+      keyboard: {},
+      gamepad: { buttons: [], axes: [] },
+    });
     expect(h.updateInputState(undefined, {})).toMatchObject({
       keyboard: {},
       gamepad: { buttons: [], axes: [] },
-      actions: { left: false, right: false, launch: false, pause: false, reset: false },
+      actions: {
+        left: false,
+        right: false,
+        launch: false,
+        pause: false,
+        reset: false,
+      },
     });
     const seedOptions = h.createSeedOptions();
-    expect(h.createState(seedOptions)).toMatchObject({ version: 1, width: 360, height: 240, frame: 0, status: 'ready', lives: 3, paddle: { width: 52, height: 7 }, orb: { radius: 4, stuckToPaddle: true } });
+    expect(h.createState(seedOptions)).toMatchObject({
+      version: 1,
+      width: 360,
+      height: 240,
+      frame: 0,
+      status: 'ready',
+      lives: 3,
+      paddle: { width: 52, height: 7 },
+      orb: { radius: 4, stuckToPaddle: true },
+    });
     expect(h.normalizeState({ version: 0 })).toBeNull();
     expect(h.normalizeState('bad')).toBeNull();
     expect(h.normalizeState([1])).toBeNull();
-    expect(h.normalizeState(Object.assign([], { version: 1, width: 200, height: 140 }))).toBeNull();
+    expect(
+      h.normalizeState(
+        Object.assign([], { version: 1, width: 200, height: 140 })
+      )
+    ).toBeNull();
     expect(h.normalizeBooleanRecord('bad')).toEqual({});
     expect(h.normalizeGamepadState('bad')).toEqual({ buttons: [], axes: [] });
     expect(h.normalizeGamepadState([1])).toEqual({ buttons: [], axes: [] });
-    expect(h.normalizeGamepadState(Object.assign([], { buttons: [true], axes: [1] }))).toEqual({ buttons: [], axes: [] });
-    expect(h.normalizeActions([])).toEqual({ left: false, right: false, launch: false, pause: false, reset: false });
-    expect(h.normalizeActions([true])).toEqual({ left: false, right: false, launch: false, pause: false, reset: false });
-    expect(h.normalizeActions(Object.assign([], { left: true }))).toEqual({ left: false, right: false, launch: false, pause: false, reset: false });
-    expect(h.normalizeEdgeActions([])).toEqual({ left: false, right: false, launchPressed: false, pausePressed: false, resetPressed: false });
-    expect(h.normalizeEdgeActions([true])).toEqual({ left: false, right: false, launchPressed: false, pausePressed: false, resetPressed: false });
-    expect(h.normalizeEdgeActions(Object.assign([], { left: true }))).toEqual({ left: false, right: false, launchPressed: false, pausePressed: false, resetPressed: false });
-    expect(h.normalizePaddle([1], 140)).toEqual(h.createState(h.createSeedOptions()).paddle);
-    expect(h.normalizePaddle(Object.assign([], { x: 12, y: 20, width: 30, height: 5, speed: 2 }), 140)).toEqual(h.createState(h.createSeedOptions()).paddle);
-    expect(h.normalizeOrb([1])).toEqual(h.createState(h.createSeedOptions()).orb);
-    expect(h.normalizeOrb(Object.assign([], { x: 12, y: 20, vx: 1, vy: -2, radius: 3, stuckToPaddle: false }))).toEqual(h.createState(h.createSeedOptions()).orb);
+    expect(
+      h.normalizeGamepadState(Object.assign([], { buttons: [true], axes: [1] }))
+    ).toEqual({ buttons: [], axes: [] });
+    expect(h.normalizeActions([])).toEqual({
+      left: false,
+      right: false,
+      launch: false,
+      pause: false,
+      reset: false,
+    });
+    expect(h.normalizeActions([true])).toEqual({
+      left: false,
+      right: false,
+      launch: false,
+      pause: false,
+      reset: false,
+    });
+    expect(h.normalizeActions(Object.assign([], { left: true }))).toEqual({
+      left: false,
+      right: false,
+      launch: false,
+      pause: false,
+      reset: false,
+    });
+    expect(h.normalizeEdgeActions([])).toEqual({
+      left: false,
+      right: false,
+      launchPressed: false,
+      pausePressed: false,
+      resetPressed: false,
+    });
+    expect(h.normalizeEdgeActions([true])).toEqual({
+      left: false,
+      right: false,
+      launchPressed: false,
+      pausePressed: false,
+      resetPressed: false,
+    });
+    expect(h.normalizeEdgeActions(Object.assign([], { left: true }))).toEqual({
+      left: false,
+      right: false,
+      launchPressed: false,
+      pausePressed: false,
+      resetPressed: false,
+    });
+    expect(h.normalizePaddle([1], 140)).toEqual(
+      h.createState(h.createSeedOptions()).paddle
+    );
+    expect(
+      h.normalizePaddle(
+        Object.assign([], { x: 12, y: 20, width: 30, height: 5, speed: 2 }),
+        140
+      )
+    ).toEqual(h.createState(h.createSeedOptions()).paddle);
+    expect(h.normalizeOrb([1])).toEqual(
+      h.createState(h.createSeedOptions()).orb
+    );
+    expect(
+      h.normalizeOrb(
+        Object.assign([], {
+          x: 12,
+          y: 20,
+          vx: 1,
+          vy: -2,
+          radius: 3,
+          stuckToPaddle: false,
+        })
+      )
+    ).toEqual(h.createState(h.createSeedOptions()).orb);
     expect(h.normalizePaddle([], 200)).toMatchObject({ width: 52, height: 7 });
-    expect(h.normalizeOrb([])).toMatchObject({ radius: 4, stuckToPaddle: true });
-    expect(h.normalizeState({ version: 1 })).toMatchObject({ version: 1, width: 360, height: 240, status: 'ready', lives: 3 });
+    expect(h.normalizeOrb([])).toMatchObject({
+      radius: 4,
+      stuckToPaddle: true,
+    });
+    expect(h.normalizeState({ version: 1 })).toMatchObject({
+      version: 1,
+      width: 360,
+      height: 240,
+      status: 'ready',
+      lives: 3,
+    });
     expect(h.normalizePanels(240, 160, 2)).toHaveLength(12);
     expect(h.normalizePanelsFromState([])).toHaveLength(12);
     expect(h.getPanelColumnOffset(0)).toBe(0);
     expect(h.getPanelRowOffset(1)).toBe(2);
-    expect(h.shufflePositions([{ x: 1, y: 1 }, { x: 2, y: 2 }], 3)).toHaveLength(2);
+    expect(
+      h.shufflePositions(
+        [
+          { x: 1, y: 1 },
+          { x: 2, y: 2 },
+        ],
+        3
+      )
+    ).toHaveLength(2);
     expect(h.clamp(-1, 0, 10)).toBe(0);
     expect(h.clamp(11, 0, 10)).toBe(10);
     expect(h.clamp(5, 0, 10)).toBe(5);
-    expect(h.normalizePaddle({ x: 12, y: 40, width: 60, height: 8, speed: 5 }, 160))
-      .toEqual({ x: 12, y: 40, width: 60, height: 8, speed: 5 });
-    expect(h.normalizeOrb({ x: 10, y: 12, vx: 2, vy: -3, radius: 5, stuckToPaddle: true }))
-      .toMatchObject({ x: 10, y: 12, vx: 2, vy: -3, radius: 5, stuckToPaddle: true });
+    expect(
+      h.normalizePaddle({ x: 12, y: 40, width: 60, height: 8, speed: 5 }, 160)
+    ).toEqual({ x: 12, y: 40, width: 60, height: 8, speed: 5 });
+    expect(
+      h.normalizeOrb({
+        x: 10,
+        y: 12,
+        vx: 2,
+        vy: -3,
+        radius: 5,
+        stuckToPaddle: true,
+      })
+    ).toMatchObject({
+      x: 10,
+      y: 12,
+      vx: 2,
+      vy: -3,
+      radius: 5,
+      stuckToPaddle: true,
+    });
     expect(h.normalizeNonNegativeInteger(-1, 7)).toBe(7);
     expect(h.normalizeNonNegativeInteger(2.6, 7)).toBe(3);
     expect(h.normalizeNumber(0, 4)).toBe(4);
     expect(h.normalizeNumber(2.5, 4)).toBe(2.5);
-    const keyboard = { ArrowLeft: true, a: true, A: true, ArrowRight: true, d: true, D: true, Space: true, ' ': true, Button0: true, p: true, P: true, Button9: true, r: true, R: true, Button8: true };
+    const keyboard = {
+      ArrowLeft: true,
+      a: true,
+      A: true,
+      ArrowRight: true,
+      d: true,
+      D: true,
+      Space: true,
+      ' ': true,
+      Button0: true,
+      p: true,
+      P: true,
+      Button9: true,
+      r: true,
+      R: true,
+      Button8: true,
+    };
     const gamepad = { buttons: Array(10).fill(true), axes: [-1, 1] };
     expect(h.isLeftActionPressed(keyboard, gamepad)).toBe(true);
     expect(h.isRightActionPressed(keyboard, gamepad)).toBe(true);
@@ -88,8 +271,18 @@ describe('solarPaddle helper contracts', () => {
     expect(h.isResetActionPressed(keyboard, gamepad)).toBe(true);
     expect(h.isAxisLeft(-0.5)).toBe(true);
     expect(h.isAxisRight(0.5)).toBe(true);
-    expect(h.createEdgeActions({ left: true, right: false, launch: true, pause: false, reset: true }, { left: false, right: false, launch: false, pause: false, reset: false }))
-      .toEqual({ left: true, right: false, launchPressed: true, pausePressed: false, resetPressed: true });
+    expect(
+      h.createEdgeActions(
+        { left: true, right: false, launch: true, pause: false, reset: true },
+        { left: false, right: false, launch: false, pause: false, reset: false }
+      )
+    ).toEqual({
+      left: true,
+      right: false,
+      launchPressed: true,
+      pausePressed: false,
+      resetPressed: true,
+    });
   });
 
   it('covers input transitions, physics boundaries, and rendering helpers', () => {
@@ -99,14 +292,26 @@ describe('solarPaddle helper contracts', () => {
     h.applyKeyboardInput({ type: 'keyup', key: 'ArrowLeft' }, keyboard);
     expect(keyboard.ArrowLeft).toBe(false);
     const gamepad = { buttons: [], axes: [] };
-    h.applyGamepadInput({ buttons: [true], axes: ['bad'], buttonIndex: 2, pressed: true }, gamepad);
+    h.applyGamepadInput(
+      { buttons: [true], axes: ['bad'], buttonIndex: 2, pressed: true },
+      gamepad
+    );
     expect(gamepad).toEqual({ buttons: [true, undefined, true], axes: [0] });
-    expect(h.createActionsFromState({}, { buttons: [true], axes: [] }).actions.launch).toBe(true);
-    expect(h.normalizeBooleanRecord({ a: true, b: 1 })).toEqual({ a: true, b: false });
+    expect(
+      h.createActionsFromState({}, { buttons: [true], axes: [] }).actions.launch
+    ).toBe(true);
+    expect(h.normalizeBooleanRecord({ a: true, b: 1 })).toEqual({
+      a: true,
+      b: false,
+    });
     expect(h.getPanelId('custom', 2)).toBe('custom');
     expect(h.getPanelId(null, 2)).toBe('p3');
-    expect(h.normalizePanelFromState({ id: 'x', x: 4, y: 5, width: 20, height: 10, charge: true }, 0))
-      .toEqual({ id: 'x', x: 4, y: 5, width: 20, height: 10, charge: true });
+    expect(
+      h.normalizePanelFromState(
+        { id: 'x', x: 4, y: 5, width: 20, height: 10, charge: true },
+        0
+      )
+    ).toEqual({ id: 'x', x: 4, y: 5, width: 20, height: 10, charge: true });
     expect(h.buildPanelPositions(240, 160, 28, 10)).toHaveLength(15);
     expect(h.isAxisLeft(-0.1)).toBe(false);
     expect(h.isAxisRight(0.1)).toBe(false);
@@ -117,11 +322,41 @@ describe('solarPaddle helper contracts', () => {
 
     const state = h.createState(h.createSeedOptions());
     state.status = 'ready';
-    h.applyGameplayInput(state, { actions: { left: false, right: false, launch: true, pause: false, reset: false }, edgeActions: { left: false, right: false, launchPressed: true, pausePressed: false, resetPressed: false } });
+    h.applyGameplayInput(state, {
+      actions: {
+        left: false,
+        right: false,
+        launch: true,
+        pause: false,
+        reset: false,
+      },
+      edgeActions: {
+        left: false,
+        right: false,
+        launchPressed: true,
+        pausePressed: false,
+        resetPressed: false,
+      },
+    });
     expect(state.status).toBe('running');
     expect(state.orb.stuckToPaddle).toBe(false);
     state.status = 'running';
-    h.applyGameplayInput(state, { actions: { left: false, right: false, launch: false, pause: true, reset: false }, edgeActions: { left: false, right: false, launchPressed: false, pausePressed: true, resetPressed: false } });
+    h.applyGameplayInput(state, {
+      actions: {
+        left: false,
+        right: false,
+        launch: false,
+        pause: true,
+        reset: false,
+      },
+      edgeActions: {
+        left: false,
+        right: false,
+        launchPressed: false,
+        pausePressed: true,
+        resetPressed: false,
+      },
+    });
     expect(state.status).toBe('paused');
     h.movePaddle(state, { left: true, right: false });
     expect(state.paddle.x).toBeGreaterThanOrEqual(0);
@@ -130,28 +365,52 @@ describe('solarPaddle helper contracts', () => {
     expect(state.paddle.x).toBe(104);
     h.stickOrbToPaddle(state);
     expect(state.orb.y).toBe(state.paddle.y - state.orb.radius - 1);
-    state.orb.x = 1; state.orb.y = 1; state.orb.vx = -2; state.orb.vy = -2;
+    state.orb.x = 1;
+    state.orb.y = 1;
+    state.orb.vx = -2;
+    state.orb.vy = -2;
     h.resolveWalls(state);
     expect(state.orb.vx).toBe(2);
     expect(state.orb.vy).toBe(2);
-    expect(h.getPanelCollisionAxis({ x: 14, y: 15, radius: 4 }, { x: 0, y: 0, width: 28, height: 10 })).toBe('y');
-    expect(h.circleIntersectsPanel({ x: 5, y: 5, radius: 2 }, { x: 0, y: 0, width: 10, height: 10 })).toBe(true);
-    expect(h.circleIntersectsPanel({ x: 30, y: 30, radius: 2 }, { x: 0, y: 0, width: 10, height: 10 })).toBe(false);
+    expect(
+      h.getPanelCollisionAxis(
+        { x: 14, y: 15, radius: 4 },
+        { x: 0, y: 0, width: 28, height: 10 }
+      )
+    ).toBe('y');
+    expect(
+      h.circleIntersectsPanel(
+        { x: 5, y: 5, radius: 2 },
+        { x: 0, y: 0, width: 10, height: 10 }
+      )
+    ).toBe(true);
+    expect(
+      h.circleIntersectsPanel(
+        { x: 30, y: 30, radius: 2 },
+        { x: 0, y: 0, width: 10, height: 10 }
+      )
+    ).toBe(false);
     const panel = { x: 0, y: 0, width: 20, height: 10, charge: false };
-    state.panels = [panel]; state.orb = { x: 10, y: 5, vx: 1, vy: -1, radius: 3, stuckToPaddle: false }; state.score = 0;
+    state.panels = [panel];
+    state.orb = { x: 10, y: 5, vx: 1, vy: -1, radius: 3, stuckToPaddle: false };
+    state.score = 0;
     h.resolvePanels(state);
     expect(panel.charge).toBe(true);
     expect(state.score).toBe(1);
     state.panels = [{ ...panel, charge: true }];
     h.resolveWinLoss(state);
     expect(state.status).toBe('won');
-    state.lives = 1; state.orb.y = state.height + 10; state.status = 'running';
+    state.lives = 1;
+    state.orb.y = state.height + 10;
+    state.status = 'running';
     h.resolveBottom(state);
     expect(state.status).toBe('lost');
     expect(h.getPanelFill(true)).not.toBe(h.getPanelFill(false));
     expect(h.getOrbFill('lost')).not.toBe(h.getOrbFill('running'));
     expect(h.toCanvasPayload(state).shapes).toHaveLength(6);
-    const persist = jest.fn(); h.persistState(persist, state); expect(persist).toHaveBeenCalledWith({ SOLA1: state });
+    const persist = jest.fn();
+    h.persistState(persist, state);
+    expect(persist).toHaveBeenCalledWith({ SOLA1: state });
   });
 
   it('covers seed fallback, merge, reset, and persistence boundaries', () => {
@@ -163,17 +422,32 @@ describe('solarPaddle helper contracts', () => {
     expect(h.normalizeSeedLives({}, fallback, defaults)).toBe(2);
     const seed = h.createSeedState({}, fallback);
     expect(seed.width).toBe(200);
-    expect(h.buildResetFallback(seed)).toEqual({ width: 200, height: 140, lives: 2, layoutSeed: undefined });
+    expect(h.buildResetFallback(seed)).toEqual({
+      width: 200,
+      height: 140,
+      lives: 2,
+      layoutSeed: undefined,
+    });
     expect(h.buildResetFallback(null)).toBeUndefined();
-    const merged = h.mergeSeedAndState(seed, h.createSeedState({ width: 220, height: 150 }, fallback));
+    const merged = h.mergeSeedAndState(
+      seed,
+      h.createSeedState({ width: 220, height: 150 }, fallback)
+    );
     expect(merged.width).toBe(220);
     expect(merged.height).toBe(150);
     expect(merged.orb.radius).toBe(4);
     expect(h.buildMergedState(true, seed, seed)).toBe(seed);
     expect(h.buildMergedState(false, seed, seed)).not.toBe(seed);
     expect(h.createResetSeedState({}, seed).panels).not.toEqual(seed.panels);
-    expect(h.finalizeNextState(seed, 4, h.createInitialInputState()).frame).toBe(5);
-    expect(h.updateInputState(h.createInitialInputState(), { type: 'keydown', key: 'ArrowRight' }).actions.right).toBe(true);
+    expect(
+      h.finalizeNextState(seed, 4, h.createInitialInputState()).frame
+    ).toBe(5);
+    expect(
+      h.updateInputState(h.createInitialInputState(), {
+        type: 'keydown',
+        key: 'ArrowRight',
+      }).actions.right
+    ).toBe(true);
     expect(h.readPersistedState(() => ({ SOLA1: seed }))).toMatchObject(seed);
     expect(h.readPersistedState(null)).toBeNull();
   });
@@ -188,22 +462,69 @@ describe('solarPaddle helper contracts', () => {
     expect(h.normalizeGamepadState([])).toEqual({ buttons: [], axes: [] });
     expect(h.normalizeGamepadButtons(null)).toEqual([]);
     expect(h.normalizeGamepadAxes(null)).toEqual([]);
-    expect(h.normalizeActions([])).toEqual({ left: false, right: false, launch: false, pause: false, reset: false });
-    expect(h.normalizeEdgeActions([])).toEqual({ left: false, right: false, launchPressed: false, pausePressed: false, resetPressed: false });
-    expect(h.createInitialInputState()).toEqual({
-      keyboard: {}, gamepad: { buttons: [], axes: [] },
-      actions: { left: false, right: false, launch: false, pause: false, reset: false },
-      edgeActions: { left: false, right: false, launchPressed: false, pausePressed: false, resetPressed: false },
-      previousActions: { left: false, right: false, launch: false, pause: false, reset: false },
+    expect(h.normalizeActions([])).toEqual({
+      left: false,
+      right: false,
+      launch: false,
+      pause: false,
+      reset: false,
     });
-    expect(h.normalizePanelFromState({}, 0)).toEqual({ id: 'p1', x: 0, y: 0, width: 20, height: 10, charge: false });
+    expect(h.normalizeEdgeActions([])).toEqual({
+      left: false,
+      right: false,
+      launchPressed: false,
+      pausePressed: false,
+      resetPressed: false,
+    });
+    expect(h.createInitialInputState()).toEqual({
+      keyboard: {},
+      gamepad: { buttons: [], axes: [] },
+      actions: {
+        left: false,
+        right: false,
+        launch: false,
+        pause: false,
+        reset: false,
+      },
+      edgeActions: {
+        left: false,
+        right: false,
+        launchPressed: false,
+        pausePressed: false,
+        resetPressed: false,
+      },
+      previousActions: {
+        left: false,
+        right: false,
+        launch: false,
+        pause: false,
+        reset: false,
+      },
+    });
+    expect(h.normalizePanelFromState({}, 0)).toEqual({
+      id: 'p1',
+      x: 0,
+      y: 0,
+      width: 20,
+      height: 10,
+      charge: false,
+    });
     expect(h.normalizePanelsFromState([null])).toEqual([]);
     expect(h.getPanelColumnOffset(1)).toBe(6);
     expect(h.getPanelRowOffset(1)).toBe(2);
     expect(h.normalizeNumber('bad', 7)).toBe(7);
     expect(h.normalizeNonNegativeInteger(0, 7)).toBe(0);
-    expect(h.normalizePaddle(null, 100)).toMatchObject({ width: 52, height: 7, speed: 4 });
-    expect(h.normalizeOrb(null)).toMatchObject({ radius: 4, vx: 1, vy: -2, stuckToPaddle: true });
+    expect(h.normalizePaddle(null, 100)).toMatchObject({
+      width: 52,
+      height: 7,
+      speed: 4,
+    });
+    expect(h.normalizeOrb(null)).toMatchObject({
+      radius: 4,
+      vx: 1,
+      vy: -2,
+      stuckToPaddle: true,
+    });
     expect(h.isLeftActionPressed({}, { buttons: [], axes: [] })).toBe(false);
     expect(h.isRightActionPressed({}, { buttons: [], axes: [] })).toBe(false);
     expect(h.isLaunchActionPressed({}, { buttons: [], axes: [] })).toBe(false);
@@ -213,33 +534,95 @@ describe('solarPaddle helper contracts', () => {
     expect(h.isAxisLeft(-0.41)).toBe(true);
     expect(h.isAxisRight(0.4)).toBe(false);
     expect(h.isAxisRight(0.41)).toBe(true);
-    expect(h.normalizePanelFromState({ id: 4, x: 0, y: 0, width: -1, height: 0, charge: 1 }, 2))
-      .toEqual({ id: 'p3', x: 0, y: 0, width: 20, height: 10, charge: false });
-    expect(h.normalizePaddle({ x: -1, y: -1, width: -1, height: 0, speed: -1 }, 4))
-      .toEqual({ x: 180, y: 0, width: 52, height: 7, speed: 4 });
-    expect(h.normalizeOrb({ x: 0, y: 0, vx: 0, vy: 0, radius: 0, stuckToPaddle: false }))
-      .toEqual({ x: 180, y: 0, vx: 1, vy: -2, radius: 4, stuckToPaddle: false });
-    expect(h.normalizePanelsFromState([false, 1, 'panel', { x: 1, y: 2 }])).toHaveLength(1);
-    for (const invalid of [undefined, null, 0, '', [], {}, 'READY', 'running ']) {
+    expect(
+      h.normalizePanelFromState(
+        { id: 4, x: 0, y: 0, width: -1, height: 0, charge: 1 },
+        2
+      )
+    ).toEqual({ id: 'p3', x: 0, y: 0, width: 20, height: 10, charge: false });
+    expect(
+      h.normalizePaddle({ x: -1, y: -1, width: -1, height: 0, speed: -1 }, 4)
+    ).toEqual({ x: 180, y: 0, width: 52, height: 7, speed: 4 });
+    expect(
+      h.normalizeOrb({
+        x: 0,
+        y: 0,
+        vx: 0,
+        vy: 0,
+        radius: 0,
+        stuckToPaddle: false,
+      })
+    ).toEqual({ x: 180, y: 0, vx: 1, vy: -2, radius: 4, stuckToPaddle: false });
+    expect(
+      h.normalizePanelsFromState([false, 1, 'panel', { x: 1, y: 2 }])
+    ).toHaveLength(1);
+    for (const invalid of [
+      undefined,
+      null,
+      0,
+      '',
+      [],
+      {},
+      'READY',
+      'running ',
+    ]) {
       expect(h.normalizeStatus(invalid)).toBe('ready');
     }
-    expect(h.normalizeGamepadState({ buttons: [true, false, 1], axes: [0, -1, 'bad'] }))
-      .toEqual({ buttons: [true, false, false], axes: [0, -1, 0] });
-    expect(h.normalizeGamepadState({ buttons: {}, axes: {} })).toEqual({ buttons: [], axes: [] });
-    expect(h.normalizeActions({ left: 1, right: 'true', launch: null, pause: {}, reset: [] }))
-      .toEqual({ left: false, right: false, launch: false, pause: false, reset: false });
+    expect(
+      h.normalizeGamepadState({
+        buttons: [true, false, 1],
+        axes: [0, -1, 'bad'],
+      })
+    ).toEqual({ buttons: [true, false, false], axes: [0, -1, 0] });
+    expect(h.normalizeGamepadState({ buttons: {}, axes: {} })).toEqual({
+      buttons: [],
+      axes: [],
+    });
+    expect(
+      h.normalizeActions({
+        left: 1,
+        right: 'true',
+        launch: null,
+        pause: {},
+        reset: [],
+      })
+    ).toEqual({
+      left: false,
+      right: false,
+      launch: false,
+      pause: false,
+      reset: false,
+    });
   });
 
   it('covers collision axes, pause toggles, and payload geometry', () => {
     const state = h.createState(h.createSeedOptions());
     state.status = 'paused';
-    h.applyGameplayInput(state, { actions: { left: false, right: false, launch: false, pause: true, reset: false }, edgeActions: { left: false, right: false, launchPressed: false, pausePressed: true, resetPressed: false } });
+    h.applyGameplayInput(state, {
+      actions: {
+        left: false,
+        right: false,
+        launch: false,
+        pause: true,
+        reset: false,
+      },
+      edgeActions: {
+        left: false,
+        right: false,
+        launchPressed: false,
+        pausePressed: true,
+        resetPressed: false,
+      },
+    });
     expect(state.status).toBe('running');
     h.movePaddle(state, { left: true, right: false });
     h.movePaddle(state, { left: false, right: true });
     expect(state.paddle.x).toBeGreaterThanOrEqual(0);
     state.orb.stuckToPaddle = false;
-    state.orb.x = 1; state.orb.y = 50; state.orb.vx = -1; state.orb.vy = 1;
+    state.orb.x = 1;
+    state.orb.y = 50;
+    state.orb.vx = -1;
+    state.orb.vy = 1;
     h.stepSimulation(state);
     expect(state.orb.x).toBeGreaterThanOrEqual(state.orb.radius);
     state.orb.x = state.paddle.x + state.paddle.width / 2;
@@ -249,19 +632,34 @@ describe('solarPaddle helper contracts', () => {
     expect(state.orb.vy).toBeLessThan(0);
     const orb = { x: 5, y: 5, vx: 2, vy: 3, radius: 2, stuckToPaddle: false };
     const panel = { x: 0, y: 0, width: 10, height: 10, charge: false };
-    reflectOrbVelocityFromPanel(orb, 'x'); expect(orb.vx).toBe(-2);
-    reflectOrbVelocityFromPanel(orb, 'y'); expect(orb.vy).toBe(-3);
-    separateOrbFromPanel(orb, panel, 'x'); expect(orb.x).not.toBe(5);
-    separateOrbFromPanel(orb, panel, 'y'); expect(orb.y).not.toBe(5);
-    state.lives = 2; state.status = 'running'; state.orb.y = state.height + 1;
+    reflectOrbVelocityFromPanel(orb, 'x');
+    expect(orb.vx).toBe(-2);
+    reflectOrbVelocityFromPanel(orb, 'y');
+    expect(orb.vy).toBe(-3);
+    separateOrbFromPanel(orb, panel, 'x');
+    expect(orb.x).not.toBe(5);
+    separateOrbFromPanel(orb, panel, 'y');
+    expect(orb.y).not.toBe(5);
+    state.lives = 2;
+    state.status = 'running';
+    state.orb.y = state.height + 1;
     h.resolveBottom(state);
     expect(state.lives).toBe(1);
     expect(state.status).toBe('ready');
     expect(state.orb.stuckToPaddle).toBe(true);
     const payload = h.toCanvasPayload(state);
     expect(payload.width).toBe(state.width);
-    expect(payload.shapes[0]).toMatchObject({ type: 'rect', x: 0, y: 0, fill: '#0b1220' });
-    expect(payload.shapes.at(-1)).toMatchObject({ type: 'rect', x: 18, height: 4 });
+    expect(payload.shapes[0]).toMatchObject({
+      type: 'rect',
+      x: 0,
+      y: 0,
+      fill: '#0b1220',
+    });
+    expect(payload.shapes.at(-1)).toMatchObject({
+      type: 'rect',
+      x: 18,
+      height: 4,
+    });
   });
 
   it('distinguishes every keyboard and gamepad action source', () => {
@@ -283,9 +681,31 @@ describe('solarPaddle helper contracts', () => {
     }
     expect(h.isLeftActionPressed({}, { buttons: [], axes: [-1] })).toBe(true);
     expect(h.isRightActionPressed({}, { buttons: [], axes: [1] })).toBe(true);
-    expect(h.isLaunchActionPressed({}, { buttons: [true], axes: [] })).toBe(true);
-    expect(h.isPauseActionPressed({}, { buttons: Array(10).fill(false).map((_, i) => i === 9), axes: [] })).toBe(true);
-    expect(h.isResetActionPressed({}, { buttons: Array(9).fill(false).map((_, i) => i === 8), axes: [] })).toBe(true);
+    expect(h.isLaunchActionPressed({}, { buttons: [true], axes: [] })).toBe(
+      true
+    );
+    expect(
+      h.isPauseActionPressed(
+        {},
+        {
+          buttons: Array(10)
+            .fill(false)
+            .map((_, i) => i === 9),
+          axes: [],
+        }
+      )
+    ).toBe(true);
+    expect(
+      h.isResetActionPressed(
+        {},
+        {
+          buttons: Array(9)
+            .fill(false)
+            .map((_, i) => i === 8),
+          axes: [],
+        }
+      )
+    ).toBe(true);
   });
 
   it('locks panel normalization and score-bar rendering boundaries', () => {
@@ -295,13 +715,29 @@ describe('solarPaddle helper contracts', () => {
       { x: 4, y: 5, charge: false },
     ]);
     expect(normalized).toHaveLength(2);
-    expect(normalized[0]).toEqual({ id: 'charged', x: 2, y: 3, width: 30, height: 11, charge: true });
-    expect(normalized[1]).toEqual({ id: 'p2', x: 4, y: 5, width: 20, height: 10, charge: false });
+    expect(normalized[0]).toEqual({
+      id: 'charged',
+      x: 2,
+      y: 3,
+      width: 30,
+      height: 11,
+      charge: true,
+    });
+    expect(normalized[1]).toEqual({
+      id: 'p2',
+      x: 4,
+      y: 5,
+      width: 20,
+      height: 10,
+      charge: false,
+    });
     const state = h.createState(h.createSeedOptions());
     state.panels = normalized;
     state.score = 0;
     let payload = h.toCanvasPayload(state);
-    expect(payload.shapes.filter(shape => shape.type === 'rect')).toHaveLength(6);
+    expect(payload.shapes.filter(shape => shape.type === 'rect')).toHaveLength(
+      6
+    );
     expect(payload.shapes[2].fill).toBe('#1d4ed8');
     expect(payload.shapes[3].fill).toBe('#7dd3fc');
     expect(payload.shapes.at(-1).width).toBe(20);
@@ -309,8 +745,13 @@ describe('solarPaddle helper contracts', () => {
     payload = h.toCanvasPayload(state);
     expect(payload.shapes.at(-1).width).toBe(state.width - 36);
     state.status = 'lost';
-    expect(payload.shapes.find(shape => shape.type === 'circle').fill).toBe('#fbbf24');
-    expect(h.toCanvasPayload(state).shapes.find(shape => shape.type === 'circle').fill).toBe('#f87171');
+    expect(payload.shapes.find(shape => shape.type === 'circle').fill).toBe(
+      '#fbbf24'
+    );
+    expect(
+      h.toCanvasPayload(state).shapes.find(shape => shape.type === 'circle')
+        .fill
+    ).toBe('#f87171');
   });
 
   it('locks deterministic panel coordinates and seeded ordering', () => {
@@ -320,31 +761,74 @@ describe('solarPaddle helper contracts', () => {
     expect(positions[1]).toEqual({ x: 54, y: 32 });
     expect(positions[2]).toEqual({ x: 91, y: 32 });
     expect(positions).toEqual([
-      { x: 28, y: 30 }, { x: 54, y: 32 }, { x: 91, y: 32 }, { x: 140, y: 30 }, { x: 173, y: 32 },
-      { x: 40, y: 46 }, { x: 66, y: 48 }, { x: 103, y: 48 }, { x: 152, y: 46 }, { x: 184, y: 48 },
-      { x: 28, y: 62 }, { x: 46, y: 64 }, { x: 83, y: 64 }, { x: 132, y: 62 }, { x: 165, y: 64 },
+      { x: 28, y: 30 },
+      { x: 54, y: 32 },
+      { x: 91, y: 32 },
+      { x: 140, y: 30 },
+      { x: 173, y: 32 },
+      { x: 40, y: 46 },
+      { x: 66, y: 48 },
+      { x: 103, y: 48 },
+      { x: 152, y: 46 },
+      { x: 184, y: 48 },
+      { x: 28, y: 62 },
+      { x: 46, y: 64 },
+      { x: 83, y: 64 },
+      { x: 132, y: 62 },
+      { x: 165, y: 64 },
     ]);
     const widePositions = h.buildPanelPositions(400, 200, 28, 10);
     expect(widePositions.slice(0, 5)).toEqual([
-      { x: 28, y: 30 }, { x: 86, y: 32 }, { x: 152, y: 32 }, { x: 230, y: 30 }, { x: 288, y: 32 },
+      { x: 28, y: 30 },
+      { x: 86, y: 32 },
+      { x: 152, y: 32 },
+      { x: 230, y: 30 },
+      { x: 288, y: 32 },
     ]);
     const narrowPositions = h.buildPanelPositions(120, 160, 28, 10);
     expect(narrowPositions.slice(0, 3)).toEqual([
-      { x: 28, y: 30 }, { x: 54, y: 32 }, { x: 64, y: 32 },
+      { x: 28, y: 30 },
+      { x: 54, y: 32 },
+      { x: 64, y: 32 },
     ]);
     expect(narrowPositions.slice(3, 5)).toEqual([
-      { x: 64, y: 30 }, { x: 64, y: 32 },
+      { x: 64, y: 30 },
+      { x: 64, y: 32 },
     ]);
     const mediumPositions = h.buildPanelPositions(180, 160, 28, 10);
     expect(mediumPositions.slice(0, 5)).toEqual([
-      { x: 28, y: 30 }, { x: 54, y: 32 }, { x: 68, y: 32 }, { x: 107, y: 30 }, { x: 124, y: 32 },
+      { x: 28, y: 30 },
+      { x: 54, y: 32 },
+      { x: 68, y: 32 },
+      { x: 107, y: 30 },
+      { x: 124, y: 32 },
     ]);
-    expect(positions.every(position => position.x >= 28 && position.y >= 30)).toBe(true);
+    expect(
+      positions.every(position => position.x >= 28 && position.y >= 30)
+    ).toBe(true);
     const source = positions.slice(0, 5);
-    expect(h.shufflePositions(source, 7)).toEqual(h.shufflePositions(source, 7));
+    expect(h.shufflePositions(source, 7)).toEqual(
+      h.shufflePositions(source, 7)
+    );
     expect(h.shufflePositions(source, 7)).not.toEqual(source);
-    expect(h.shufflePositions([{ x: 1, y: 1 }, { x: 2, y: 2 }, { x: 3, y: 3 }, { x: 4, y: 4 }, { x: 5, y: 5 }], 7))
-      .toEqual([{ x: 1, y: 1 }, { x: 3, y: 3 }, { x: 5, y: 5 }, { x: 2, y: 2 }, { x: 4, y: 4 }]);
+    expect(
+      h.shufflePositions(
+        [
+          { x: 1, y: 1 },
+          { x: 2, y: 2 },
+          { x: 3, y: 3 },
+          { x: 4, y: 4 },
+          { x: 5, y: 5 },
+        ],
+        7
+      )
+    ).toEqual([
+      { x: 1, y: 1 },
+      { x: 3, y: 3 },
+      { x: 5, y: 5 },
+      { x: 2, y: 2 },
+      { x: 4, y: 4 },
+    ]);
     expect(h.shufflePositions([], 7)).toEqual([]);
     expect(h.shufflePositions([{ x: 1, y: 1 }], 7)).toEqual([{ x: 1, y: 1 }]);
     expect(h.normalizePanels(240, 160, 7)).toEqual([
@@ -366,7 +850,10 @@ describe('solarPaddle helper contracts', () => {
   it('covers physics edge branches and panel-hit ordering', () => {
     const state = h.createState(h.createSeedOptions());
     state.orb.stuckToPaddle = false;
-    state.orb.x = state.width - 1; state.orb.y = 1; state.orb.vx = 2; state.orb.vy = -2;
+    state.orb.x = state.width - 1;
+    state.orb.y = 1;
+    state.orb.vx = 2;
+    state.orb.vy = -2;
     h.resolveWalls(state);
     expect(state.orb.x).toBe(state.width - state.orb.radius);
     expect(state.orb.vx).toBe(-2);
@@ -388,26 +875,42 @@ describe('solarPaddle helper contracts', () => {
     expect(state.panels[0].charge).toBe(true);
     expect(state.panels[1].charge).toBe(true);
     expect(state.score).toBe(1);
-    state.panels = [{ id: 'only', x: 0, y: 0, width: 20, height: 10, charge: true }];
-    state.lives = 0; state.status = 'running';
+    state.panels = [
+      { id: 'only', x: 0, y: 0, width: 20, height: 10, charge: true },
+    ];
+    state.lives = 0;
+    state.status = 'running';
     h.resolveWinLoss(state);
     expect(state.status).toBe('lost');
   });
 
   it('covers input persistence, release, and reset transitions', () => {
     const initial = h.createInitialInputState();
-    const held = h.updateInputState(initial, { type: 'keydown', key: 'ArrowLeft' });
+    const held = h.updateInputState(initial, {
+      type: 'keydown',
+      key: 'ArrowLeft',
+    });
     expect(held.keyboard).toEqual({ ArrowLeft: true });
     expect(held.actions.left).toBe(true);
     expect(held.edgeActions.left).toBe(true);
-    const released = h.updateInputState(held, { type: 'keyup', key: 'ArrowLeft' });
+    const released = h.updateInputState(held, {
+      type: 'keyup',
+      key: 'ArrowLeft',
+    });
     expect(released.keyboard).toEqual({ ArrowLeft: false });
     expect(released.previousActions.left).toBe(true);
     expect(released.actions.left).toBe(false);
     expect(released.edgeActions.left).toBe(false);
-    const button = h.updateInputState(initial, { buttons: [true], buttonIndex: 0, pressed: true });
+    const button = h.updateInputState(initial, {
+      buttons: [true],
+      buttonIndex: 0,
+      pressed: true,
+    });
     expect(button.gamepad.buttons[0]).toBe(true);
-    const releasedButton = h.updateInputState(button, { buttonIndex: 0, pressed: false });
+    const releasedButton = h.updateInputState(button, {
+      buttonIndex: 0,
+      pressed: false,
+    });
     expect(releasedButton.gamepad.buttons[0]).toBe(false);
     expect(button.edgeActions.launchPressed).toBe(true);
     const axes = h.updateInputState(initial, { axes: [-1] });
@@ -425,8 +928,13 @@ describe('solarPaddle helper contracts', () => {
     expect(explicitReset.status).toBe('ready');
     const persistedFrame = { ...seed, frame: 42, status: 'running' };
     expect(h.buildNextState(persistedFrame, { reset: false }).frame).toBe(43);
-    expect(h.buildNextState(persistedFrame, { reset: true }).status).toBe('ready');
-    const repeated = h.updateInputState(held, { type: 'keydown', key: 'ArrowLeft' });
+    expect(h.buildNextState(persistedFrame, { reset: true }).status).toBe(
+      'ready'
+    );
+    const repeated = h.updateInputState(held, {
+      type: 'keydown',
+      key: 'ArrowLeft',
+    });
     expect(repeated.actions.left).toBe(true);
     expect(repeated.edgeActions.left).toBe(false);
     expect(repeated.previousActions.left).toBe(true);
@@ -434,7 +942,14 @@ describe('solarPaddle helper contracts', () => {
 
   it('distinguishes paddle and panel collision conditions', () => {
     const state = h.createState(h.createSeedOptions());
-    state.orb = { x: -20, y: state.paddle.y, vx: 1, vy: 2, radius: 3, stuckToPaddle: false };
+    state.orb = {
+      x: -20,
+      y: state.paddle.y,
+      vx: 1,
+      vy: 2,
+      radius: 3,
+      stuckToPaddle: false,
+    };
     resolvePaddle(state);
     expect(state.orb.vy).toBe(2);
     expect(state.orb.x).toBe(-20);
@@ -462,7 +977,8 @@ describe('solarPaddle helper contracts', () => {
     state.orb.vy = 2;
     resolvePaddle(state);
     expect(state.orb.vy).toBe(2);
-    state.orb.y = state.paddle.y + state.paddle.height + 6 - state.orb.radius + 0.1;
+    state.orb.y =
+      state.paddle.y + state.paddle.height + 6 - state.orb.radius + 0.1;
     resolvePaddle(state);
     expect(state.orb.vy).toBe(2);
     state.orb.y = state.paddle.y - state.orb.radius;
@@ -490,9 +1006,24 @@ describe('solarPaddle helper contracts', () => {
     state.orb.vx = 0;
     resolvePaddle(state);
     expect(state.orb.vx).toBe(2);
-    expect(h.getPanelCollisionAxis({ x: -3, y: 5, radius: 3 }, { x: 0, y: 0, width: 20, height: 10 })).toBe('x');
-    expect(h.getPanelCollisionAxis({ x: 10, y: -3, radius: 3 }, { x: 0, y: 0, width: 20, height: 10 })).toBe('y');
-    expect(h.getPanelCollisionAxis({ x: 15, y: 5, radius: 3 }, { x: 0, y: 0, width: 20, height: 10 })).toBe('y');
+    expect(
+      h.getPanelCollisionAxis(
+        { x: -3, y: 5, radius: 3 },
+        { x: 0, y: 0, width: 20, height: 10 }
+      )
+    ).toBe('x');
+    expect(
+      h.getPanelCollisionAxis(
+        { x: 10, y: -3, radius: 3 },
+        { x: 0, y: 0, width: 20, height: 10 }
+      )
+    ).toBe('y');
+    expect(
+      h.getPanelCollisionAxis(
+        { x: 15, y: 5, radius: 3 },
+        { x: 0, y: 0, width: 20, height: 10 }
+      )
+    ).toBe('y');
     const orb = { x: 10, y: 5, vx: 1, vy: 1, radius: 2, stuckToPaddle: false };
     const panel = { x: 0, y: 0, width: 20, height: 10 };
     separateOrbFromPanel(orb, panel, 'x');
@@ -509,10 +1040,24 @@ describe('solarPaddle helper contracts', () => {
     expect(h.normalizeState([])).toBeNull();
     expect(h.normalizeState({ version: 2 })).toBeNull();
     const normalized = h.normalizeState({
-      version: 1, width: -1, height: 0, frame: -1, status: 'paused', score: 2,
-      lives: 1, input: {}, paddle: {}, orb: {}, panels: [],
+      version: 1,
+      width: -1,
+      height: 0,
+      frame: -1,
+      status: 'paused',
+      score: 2,
+      lives: 1,
+      input: {},
+      paddle: {},
+      orb: {},
+      panels: [],
     });
-    expect(normalized).toMatchObject({ version: 1, status: 'paused', score: 2, lives: 1 });
+    expect(normalized).toMatchObject({
+      version: 1,
+      status: 'paused',
+      score: 2,
+      lives: 1,
+    });
     expect(normalized.width).toBe(360);
     expect(normalized.height).toBe(240);
     expect(normalized.frame).toBe(0);
@@ -524,27 +1069,86 @@ describe('solarPaddle helper contracts', () => {
   });
 
   it('covers custom seed dimensions and motion parameters', () => {
-    const seed = h.createSeedState({
-      width: 240, height: 180, paddleWidth: 64, paddleHeight: 9,
-      paddleSpeed: 6, orbRadius: 6, orbSpeedX: 3, orbSpeedY: -4,
-      layoutSeed: 5, lives: 5,
-    }, null);
+    const seed = h.createSeedState(
+      {
+        width: 240,
+        height: 180,
+        paddleWidth: 64,
+        paddleHeight: 9,
+        paddleSpeed: 6,
+        orbRadius: 6,
+        orbSpeedX: 3,
+        orbSpeedY: -4,
+        layoutSeed: 5,
+        lives: 5,
+      },
+      null
+    );
     expect(seed.width).toBe(240);
     expect(seed.height).toBe(180);
     expect(seed.lives).toBe(5);
     expect(seed.paddle).toMatchObject({ width: 64, height: 9, speed: 6 });
-    expect(seed.orb).toMatchObject({ radius: 6, vx: 3, vy: -4, stuckToPaddle: true });
+    expect(seed.orb).toMatchObject({
+      radius: 6,
+      vx: 3,
+      vy: -4,
+      stuckToPaddle: true,
+    });
     expect(seed.panels).toHaveLength(12);
-    const values = h.normalizeSeedValues({ paddleWidth: 70, paddleHeight: 8, paddleSpeed: 7, orbRadius: 5, orbSpeedX: 2, orbSpeedY: -3 }, null, h.createSeedDefaults());
-    expect(values).toMatchObject({ paddleWidth: 70, paddleHeight: 8, paddleSpeed: 7, orbRadius: 5, orbSpeedX: 2, orbSpeedY: -3 });
-    expect(h.normalizeSeedValues({}, null, h.createSeedDefaults())).toMatchObject({ paddleWidth: 52, paddleHeight: 7, paddleSpeed: 4, orbRadius: 4, orbSpeedX: 1, orbSpeedY: -2 });
+    const values = h.normalizeSeedValues(
+      {
+        paddleWidth: 70,
+        paddleHeight: 8,
+        paddleSpeed: 7,
+        orbRadius: 5,
+        orbSpeedX: 2,
+        orbSpeedY: -3,
+      },
+      null,
+      h.createSeedDefaults()
+    );
+    expect(values).toMatchObject({
+      paddleWidth: 70,
+      paddleHeight: 8,
+      paddleSpeed: 7,
+      orbRadius: 5,
+      orbSpeedX: 2,
+      orbSpeedY: -3,
+    });
+    expect(
+      h.normalizeSeedValues({}, null, h.createSeedDefaults())
+    ).toMatchObject({
+      paddleWidth: 52,
+      paddleHeight: 7,
+      paddleSpeed: 4,
+      orbRadius: 4,
+      orbSpeedX: 1,
+      orbSpeedY: -2,
+    });
   });
 
   it('locks reset seed increments and exact state geometry', () => {
-    const resetFromThree = h.createResetSeedState({}, { layoutSeed: 3, width: 200, height: 140, lives: 2 });
-    const resetFromFour = h.createSeedState({ layoutSeed: 4, width: 200, height: 140, lives: 2 }, null);
+    const resetFromThree = h.createResetSeedState(
+      {},
+      { layoutSeed: 3, width: 200, height: 140, lives: 2 }
+    );
+    const resetFromFour = h.createSeedState(
+      { layoutSeed: 4, width: 200, height: 140, lives: 2 },
+      null
+    );
     expect(resetFromThree.panels).toEqual(resetFromFour.panels);
-    const state = h.createState({ width: 241, height: 20, paddleWidth: 52, paddleHeight: 7, paddleSpeed: 4, orbRadius: 4, orbSpeedX: 1, orbSpeedY: -2, lives: 3, panels: [] });
+    const state = h.createState({
+      width: 241,
+      height: 20,
+      paddleWidth: 52,
+      paddleHeight: 7,
+      paddleSpeed: 4,
+      orbRadius: 4,
+      orbSpeedX: 1,
+      orbSpeedY: -2,
+      lives: 3,
+      panels: [],
+    });
     expect(state.paddle.x).toBe(95);
     expect(state.paddle.y).toBe(0);
     expect(state.orb.x).toBe(121);
@@ -558,10 +1162,16 @@ describe('solarPaddle helper contracts', () => {
     expect(h.parseObjectRecord('"text"')).toBeNull();
     expect(h.parseObjectRecord('null')).toBeNull();
     expect(h.parseObjectRecord('[1,2]')).toBeNull();
-    expect(h.parseObjectRecord('{"nested":{"ok":true}}')).toEqual({ nested: { ok: true } });
+    expect(h.parseObjectRecord('{"nested":{"ok":true}}')).toEqual({
+      nested: { ok: true },
+    });
     const setter = () => {};
-    expect(h.getStorageAccessor(new Map([['setLocalPermanentData', setter]]))).toBe(setter);
-    expect(h.getStorageAccessor(new Map([['setLocalPermanentData', null]]))).toBeNull();
+    expect(
+      h.getStorageAccessor(new Map([['setLocalPermanentData', setter]]))
+    ).toBe(setter);
+    expect(
+      h.getStorageAccessor(new Map([['setLocalPermanentData', null]]))
+    ).toBeNull();
     expect(h.getStorageAccessor({ get: 'not a function' })).toBeNull();
     expect(h.parseInput(42)).toBeNull();
     expect(h.parseInput('  ')).toBeNull();
@@ -575,26 +1185,81 @@ describe('solarPaddle helper contracts', () => {
     expect(keyboard).toEqual({ held: true });
     const gamepad = { buttons: [true], axes: [1] };
     h.applyGamepadInput(null, gamepad);
-    h.applyGamepadInput({ buttons: 'bad', axes: 'bad', buttonIndex: '0' }, gamepad);
+    h.applyGamepadInput(
+      { buttons: 'bad', axes: 'bad', buttonIndex: '0' },
+      gamepad
+    );
     expect(gamepad).toEqual({ buttons: [true], axes: [1] });
-    const all = { left: true, right: true, launch: true, pause: true, reset: true };
-    const none = { left: false, right: false, launch: false, pause: false, reset: false };
-    expect(h.createEdgeActions(all, none)).toEqual({ left: true, right: true, launchPressed: true, pausePressed: true, resetPressed: true });
-    expect(h.createEdgeActions(all, all)).toEqual({ left: false, right: false, launchPressed: false, pausePressed: false, resetPressed: false });
-    const result = h.createActionsFromState({ ArrowLeft: true }, { buttons: [], axes: [] });
-    expect(result.edgeActions).toEqual({ left: true, right: false, launchPressed: false, pausePressed: false, resetPressed: false });
+    const all = {
+      left: true,
+      right: true,
+      launch: true,
+      pause: true,
+      reset: true,
+    };
+    const none = {
+      left: false,
+      right: false,
+      launch: false,
+      pause: false,
+      reset: false,
+    };
+    expect(h.createEdgeActions(all, none)).toEqual({
+      left: true,
+      right: true,
+      launchPressed: true,
+      pausePressed: true,
+      resetPressed: true,
+    });
+    expect(h.createEdgeActions(all, all)).toEqual({
+      left: false,
+      right: false,
+      launchPressed: false,
+      pausePressed: false,
+      resetPressed: false,
+    });
+    const result = h.createActionsFromState(
+      { ArrowLeft: true },
+      { buttons: [], axes: [] }
+    );
+    expect(result.edgeActions).toEqual({
+      left: true,
+      right: false,
+      launchPressed: false,
+      pausePressed: false,
+      resetPressed: false,
+    });
   });
 
   it('covers gameplay status transitions and stuck-orb behavior', () => {
     const state = h.createState(h.createSeedOptions());
-    const noInput = { actions: { left: false, right: false, launch: false, pause: false, reset: false }, edgeActions: { left: false, right: false, launchPressed: false, pausePressed: false, resetPressed: false } };
+    const noInput = {
+      actions: {
+        left: false,
+        right: false,
+        launch: false,
+        pause: false,
+        reset: false,
+      },
+      edgeActions: {
+        left: false,
+        right: false,
+        launchPressed: false,
+        pausePressed: false,
+        resetPressed: false,
+      },
+    };
     h.applyGameplayInput(state, noInput);
     expect(state.status).toBe('ready');
-    expect(state.orb.x).toBe(state.paddle.x + Math.round(state.paddle.width / 2));
+    expect(state.orb.x).toBe(
+      state.paddle.x + Math.round(state.paddle.width / 2)
+    );
     state.orb.x = 0;
     state.orb.y = 0;
     h.applyGameplayInput(state, noInput);
-    expect(state.orb.x).toBe(state.paddle.x + Math.round(state.paddle.width / 2));
+    expect(state.orb.x).toBe(
+      state.paddle.x + Math.round(state.paddle.width / 2)
+    );
     expect(state.orb.y).toBe(state.paddle.y - state.orb.radius - 1);
     state.status = 'running';
     state.orb.stuckToPaddle = false;
@@ -611,17 +1276,29 @@ describe('solarPaddle helper contracts', () => {
     h.stepSimulation(state);
     expect(state.orb).toMatchObject(stuck);
     state.status = 'paused';
-    h.applyGameplayInput(state, { actions: noInput.actions, edgeActions: { ...noInput.edgeActions, pausePressed: true } });
+    h.applyGameplayInput(state, {
+      actions: noInput.actions,
+      edgeActions: { ...noInput.edgeActions, pausePressed: true },
+    });
     expect(state.status).toBe('running');
     state.status = 'running';
-    h.applyGameplayInput(state, { actions: noInput.actions, edgeActions: { ...noInput.edgeActions, pausePressed: true } });
+    h.applyGameplayInput(state, {
+      actions: noInput.actions,
+      edgeActions: { ...noInput.edgeActions, pausePressed: true },
+    });
     expect(state.status).toBe('paused');
     state.status = 'ready';
-    h.applyGameplayInput(state, { actions: noInput.actions, edgeActions: { ...noInput.edgeActions, pausePressed: true } });
+    h.applyGameplayInput(state, {
+      actions: noInput.actions,
+      edgeActions: { ...noInput.edgeActions, pausePressed: true },
+    });
     expect(state.status).toBe('ready');
     state.status = 'running';
     state.orb.stuckToPaddle = true;
-    h.applyGameplayInput(state, { actions: noInput.actions, edgeActions: { ...noInput.edgeActions, launchPressed: true } });
+    h.applyGameplayInput(state, {
+      actions: noInput.actions,
+      edgeActions: { ...noInput.edgeActions, launchPressed: true },
+    });
     expect(state.status).toBe('running');
     expect(state.orb.stuckToPaddle).toBe(true);
     state.status = 'paused';
@@ -630,7 +1307,18 @@ describe('solarPaddle helper contracts', () => {
   });
 
   it('locks exact canvas payload geometry and rounding', () => {
-    const state = h.createState({ width: 100, height: 80, paddleWidth: 20, paddleHeight: 5, paddleSpeed: 3, orbRadius: 3, orbSpeedX: 1, orbSpeedY: -1, lives: 2, panels: [{ id: 'p', x: 8, y: 12, width: 16, height: 6, charge: false }] });
+    const state = h.createState({
+      width: 100,
+      height: 80,
+      paddleWidth: 20,
+      paddleHeight: 5,
+      paddleSpeed: 3,
+      orbRadius: 3,
+      orbSpeedX: 1,
+      orbSpeedY: -1,
+      lives: 2,
+      panels: [{ id: 'p', x: 8, y: 12, width: 16, height: 6, charge: false }],
+    });
     state.paddle.x = 21;
     state.paddle.y = 60;
     state.orb.x = 20.6;
@@ -654,11 +1342,33 @@ describe('solarPaddle helper contracts', () => {
   it('covers panel clamps and circle/bottom boundary inclusivity', () => {
     const small = h.buildPanelPositions(80, 80, 28, 10);
     expect(small).toHaveLength(15);
-    expect(new Set(small.map(position => `${position.x},${position.y}`))).toEqual(new Set(['24,10']));
-    expect(h.circleIntersectsPanel({ x: -2, y: 5, radius: 2 }, { x: 0, y: 0, width: 10, height: 10 })).toBe(true);
-    expect(h.circleIntersectsPanel({ x: -3, y: 5, radius: 2 }, { x: 0, y: 0, width: 10, height: 10 })).toBe(false);
-    expect(h.circleIntersectsPanel({ x: -1, y: -1, radius: Math.sqrt(2) }, { x: 0, y: 0, width: 10, height: 10 })).toBe(true);
-    expect(h.circleIntersectsPanel({ x: -1, y: -1, radius: 1.4 }, { x: 0, y: 0, width: 10, height: 10 })).toBe(false);
+    expect(
+      new Set(small.map(position => `${position.x},${position.y}`))
+    ).toEqual(new Set(['24,10']));
+    expect(
+      h.circleIntersectsPanel(
+        { x: -2, y: 5, radius: 2 },
+        { x: 0, y: 0, width: 10, height: 10 }
+      )
+    ).toBe(true);
+    expect(
+      h.circleIntersectsPanel(
+        { x: -3, y: 5, radius: 2 },
+        { x: 0, y: 0, width: 10, height: 10 }
+      )
+    ).toBe(false);
+    expect(
+      h.circleIntersectsPanel(
+        { x: -1, y: -1, radius: Math.sqrt(2) },
+        { x: 0, y: 0, width: 10, height: 10 }
+      )
+    ).toBe(true);
+    expect(
+      h.circleIntersectsPanel(
+        { x: -1, y: -1, radius: 1.4 },
+        { x: 0, y: 0, width: 10, height: 10 }
+      )
+    ).toBe(false);
     const state = h.createState(h.createSeedOptions());
     state.orb.y = state.height - state.orb.radius;
     state.lives = 2;
@@ -693,8 +1403,13 @@ describe('solarPaddle helper contracts', () => {
     edgePaddle.orb.vy = 2;
     resolvePaddle(edgePaddle);
     expect(edgePaddle.orb.vy).toBeLessThan(0);
-    edgePaddle.orb.x = edgePaddle.paddle.x + edgePaddle.paddle.width + edgePaddle.orb.radius;
-    edgePaddle.orb.y = edgePaddle.paddle.y + edgePaddle.paddle.height + 6 - edgePaddle.orb.radius;
+    edgePaddle.orb.x =
+      edgePaddle.paddle.x + edgePaddle.paddle.width + edgePaddle.orb.radius;
+    edgePaddle.orb.y =
+      edgePaddle.paddle.y +
+      edgePaddle.paddle.height +
+      6 -
+      edgePaddle.orb.radius;
     edgePaddle.orb.vy = 2;
     resolvePaddle(edgePaddle);
     expect(edgePaddle.orb.vy).toBeLessThan(0);
