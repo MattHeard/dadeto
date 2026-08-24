@@ -73,23 +73,11 @@ function point(pointId, spacePointId, time) {
 }
 
 /**
- * @param {string} segmentId Segment ID.
- * @param {string} startId Start point ID.
- * @param {string} endId End point ID.
- * @param {string} start Start time.
- * @param {string} end End time.
- * @param {string} location Space point ID.
+ * @param {Array<string>} args Segment ID, point IDs, times, and optional location.
  * @returns {Record<string, unknown>} A test segment with its points.
  */
-// eslint-disable-next-line max-params
-function blockedSegment(
-  segmentId,
-  startId,
-  endId,
-  start,
-  end,
-  location = 'CUSTOMER'
-) {
+function blockedSegment(...args) {
+  const [segmentId, startId, endId, start, end, location = 'CUSTOMER'] = args;
   return {
     segmentId,
     startPointId: startId,
