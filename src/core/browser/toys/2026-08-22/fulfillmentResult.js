@@ -88,6 +88,18 @@ export function fulfillmentSkuBoundary(input, evaluate) {
 }
 
 /**
+ * Run an existing-asset SKU evaluator with the canonical asset request shape.
+ * @param {string} input JSON request.
+ * @param {(request: string) => string} evaluate Asset feasibility evaluator.
+ * @returns {string} Feasibility JSON.
+ */
+export function fulfillmentSkuAssetBoundary(input, evaluate) {
+  return fulfillmentSkuBoundary(input, (asset, request) =>
+    evaluate(fulfillmentAssetRequest(asset, request))
+  );
+}
+
+/**
  * Resolve a point with coordinates from its referenced space point.
  * @param {Record<string, any>} point Point record.
  * @param {Array<Record<string, any>>} spacePoints Space-point records.
