@@ -280,6 +280,10 @@ describe('solarPaddle helper contracts', () => {
     const source = positions.slice(0, 5);
     expect(h.shufflePositions(source, 7)).toEqual(h.shufflePositions(source, 7));
     expect(h.shufflePositions(source, 7)).not.toEqual(source);
+    expect(h.shufflePositions([{ x: 1, y: 1 }, { x: 2, y: 2 }, { x: 3, y: 3 }, { x: 4, y: 4 }, { x: 5, y: 5 }], 7))
+      .toEqual([{ x: 1, y: 1 }, { x: 3, y: 3 }, { x: 5, y: 5 }, { x: 2, y: 2 }, { x: 4, y: 4 }]);
+    expect(h.shufflePositions([], 7)).toEqual([]);
+    expect(h.shufflePositions([{ x: 1, y: 1 }], 7)).toEqual([{ x: 1, y: 1 }]);
     expect(h.normalizePanels(240, 160, 7)).toEqual([
       { id: 'p1-1', x: 152, y: 46, width: 28, height: 10, charge: false },
       { id: 'p1-2', x: 173, y: 32, width: 28, height: 10, charge: false },
