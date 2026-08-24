@@ -856,9 +856,10 @@ function getPanelRowOffset(colIndex) {
 function shufflePositions(positions, seed) {
   const items = positions.slice();
   let state = Math.max(1, seed);
-  const indexes = items
-    .slice(1)
-    .map((_, index) => items.length - 1 - index);
+  const indexes = Array.from(
+    { length: items.length },
+    (_, index) => items.length - 1 - index
+  ).filter((_, index) => index < items.length - 1);
   for (const i of indexes) {
     state = (state * 1664525 + 1013904223) >>> 0;
     const j = state % (i + 1);
