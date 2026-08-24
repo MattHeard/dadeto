@@ -1,10 +1,5 @@
 import { evaluateWorldLine } from '../2026-08-21/segmentAssignmentFeasibilityCore.js';
-import {
-  fulfillmentBoundary,
-  fulfillmentMergeById,
-  fulfillmentNonblank,
-  fulfillmentResolvePoint,
-} from '../2026-08-22/fulfillmentResult.js';
+import { fulfillmentExistingAssetBoundary } from '../2026-08-22/fulfillmentResult.js';
 
 const ASSET_OPERATIONS = new Set([
   'delivery-outbound',
@@ -20,37 +15,19 @@ const ASSET_OPERATIONS = new Set([
  * @returns {string} JSON feasibility result.
  */
 export function existingAssetFulfillmentFeasibility(input) {
-  return fulfillmentBoundary(input, 'feasible', request => {
-    const asset = request?.asset;
-    const proposal = request?.proposal;
-    if (!fulfillmentNonblank(asset?.assetId))
-      throw new Error('A valid asset is required.');
-    if (!fulfillmentNonblank(asset?.stockInPoint?.pointId))
-      throw new Error('A stock-in point is required.');
-    const selected = selectAssetSegments(proposal);
-    const points = fulfillmentMergeById(
-      [
-        ...(request.points || []),
-        ...(proposal.points || []),
-        asset.stockInPoint,
-      ],
-      'pointId'
-    );
-    const spacePoints = fulfillmentMergeById(
-      [...(request.spacePoints || []), ...(proposal.spacePoints || [])],
-      'spacePointId'
-    );
-    const entry = fulfillmentResolvePoint(asset.stockInPoint, spacePoints);
-    const result = evaluateWorldLine(
-      points,
-      asset.existingSegments || [],
-      selected[0],
-      entry,
-      undefined,
-      spacePoints
-    );
-    return JSON.stringify(result);
-  });
+  return fulfillmentExistingAssetBoundary(
+    input,
+    proposal => selectAssetSegments(proposal),
+    ({ points, existing, candidates, entry, spacePoints }) =>
+      evaluateWorldLine(
+        points,
+        existing,
+        candidates[0],
+        entry,
+        undefined,
+        spacePoints
+      )
+  );
 }
 
 // Asset feasibility continues with operation selection after the result boundary.

@@ -125,3 +125,48 @@ export function fulfillmentMergeById(records, field) {
   });
   return [...byId.values()];
 }
+
+/**
+ * Run a shared existing-asset feasibility boundary.
+ * @param {string} input JSON request.
+ * @param {(proposal: Record<string, any>) => Array<Record<string, any>>} selectSegments Segment selector.
+ * @param {(context: {points: Array<Record<string, any>>, existing: Array<Record<string, any>>, candidates: Array<Record<string, any>>, entry: Record<string, any>, spacePoints: Array<Record<string, any>>}) => Record<string, any>} evaluate World-line evaluator.
+ * @returns {string} Feasibility JSON.
+ */
+export function fulfillmentExistingAssetBoundary(
+  input,
+  selectSegments,
+  evaluate
+) {
+  return fulfillmentBoundary(input, 'feasible', request => {
+    const asset = request?.asset;
+    const proposal = request?.proposal;
+    if (!fulfillmentNonblank(asset?.assetId))
+      throw new Error('A valid asset is required.');
+    if (!fulfillmentNonblank(asset?.stockInPoint?.pointId))
+      throw new Error('A stock-in point is required.');
+    const candidates = selectSegments(proposal);
+    const points = fulfillmentMergeById(
+      [
+        ...(request.points || []),
+        ...(proposal.points || []),
+        asset.stockInPoint,
+      ],
+      'pointId'
+    );
+    const spacePoints = fulfillmentMergeById(
+      [...(request.spacePoints || []), ...(proposal.spacePoints || [])],
+      'spacePointId'
+    );
+    const entry = fulfillmentResolvePoint(asset.stockInPoint, spacePoints);
+    return JSON.stringify(
+      evaluate({
+        points,
+        existing: asset.existingSegments || [],
+        candidates,
+        entry,
+        spacePoints,
+      })
+    );
+  });
+}
