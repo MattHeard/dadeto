@@ -163,7 +163,11 @@ describe('fulfillment toy validation boundaries', () => {
         canonicalNormalFulfillmentSequenceProposal(
           JSON.stringify({
             spacePoints: [],
-            warehouse: { spacePointId: 'warehouse', latitude: 52, longitude: 13 },
+            warehouse: {
+              spacePointId: 'warehouse',
+              latitude: 52,
+              longitude: 13,
+            },
             deliveryOutboundStartPoint: {
               pointId: 'delivery',
               spacePointId: 'warehouse',
@@ -244,7 +248,10 @@ describe('fulfillment toy validation boundaries', () => {
       )
     ).toMatchObject({ valid: false });
     const base = {
-      asset: { assetId: 'a', stockInPoint: { pointId: 'stock', spacePointId: 'warehouse' } },
+      asset: {
+        assetId: 'a',
+        stockInPoint: { pointId: 'stock', spacePointId: 'warehouse' },
+      },
       points: [],
       spacePoints: [],
     };

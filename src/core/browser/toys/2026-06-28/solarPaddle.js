@@ -856,20 +856,14 @@ function getPanelRowOffset(colIndex) {
 function shufflePositions(positions, seed) {
   const items = positions.slice();
   let state = Math.max(1, seed);
-  // Stryker disable next-line MethodExpression -- terminal position must be excluded.
   items
     .slice(0, -1)
     .reverse()
     .forEach((_, index) => {
       const i = items.length - 1 - index;
-      // Stryker disable next-line ConditionalExpression -- unreachable underflow guard.
-      if (i !== 0) {
-        state = (state * 1664525 + 1013904223) >>> 0;
-        const j = state % (i + 1);
-        [items[i], items[j]] = [items[j], items[i]];
-      } else {
-        throw new Error('shuffle index underflow');
-      }
+      state = (state * 1664525 + 1013904223) >>> 0;
+      const j = state % (i + 1);
+      [items[i], items[j]] = [items[j], items[i]];
     });
   return items;
 }

@@ -86,7 +86,9 @@ describe('beaconBounce', () => {
     expect(fallback.storageValue.current.BEAC1.height).toBeGreaterThan(0);
     expect(fallback.storageValue.current.BEAC1.lives).toBeGreaterThan(0);
 
-    const compact = runToy(JSON.stringify({ width: 100, height: 60, layoutSeed: 2 }));
+    const compact = runToy(
+      JSON.stringify({ width: 100, height: 60, layoutSeed: 2 })
+    );
     expect(compact.storageValue.current.BEAC1.paddle).toMatchObject({
       x: 26,
       y: 36,
@@ -99,11 +101,13 @@ describe('beaconBounce', () => {
       vx: 1.6,
       vy: -2.4,
     });
-    expect(compact.storageValue.current.BEAC1.beacons).toEqual(expect.arrayContaining([
-      expect.objectContaining({ id: 'beacon-2-1', x: 76, y: 20 }),
-      expect.objectContaining({ id: 'beacon-2-2', x: 80, y: 20 }),
-      expect.objectContaining({ id: 'beacon-2-6', x: 80, y: 20 }),
-    ]));
+    expect(compact.storageValue.current.BEAC1.beacons).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ id: 'beacon-2-1', x: 76, y: 20 }),
+        expect.objectContaining({ id: 'beacon-2-2', x: 80, y: 20 }),
+        expect.objectContaining({ id: 'beacon-2-6', x: 80, y: 20 }),
+      ])
+    );
   });
 
   it('launches on space and keeps launch edge-triggered', () => {
@@ -119,7 +123,9 @@ describe('beaconBounce', () => {
       storageValue
     );
     expect(stepped.storageValue.current.BEAC1.simulationSpeed).toBe(2);
-    expect(stepped.storageValue.current.BEAC1.frame).toBeGreaterThan(frameBeforeStepping);
+    expect(stepped.storageValue.current.BEAC1.frame).toBeGreaterThan(
+      frameBeforeStepping
+    );
   });
 
   it('does not relaunch a game that is already running', () => {
@@ -1120,9 +1126,17 @@ describe('beaconBounce reset rendering', () => {
       orb: { x: 20, y: 20, vx: -1, vy: -1, radius: 4, stuckToPaddle: false },
       score: 10,
       lastActivatedBeaconId: 'beacon-1',
-      beacons: [{
-        id: 'beacon-1', x: 20, y: 20, radius: 8, active: true, required: true, hitCount: 1,
-      }],
+      beacons: [
+        {
+          id: 'beacon-1',
+          x: 20,
+          y: 20,
+          radius: 8,
+          active: true,
+          required: true,
+          hitCount: 1,
+        },
+      ],
       links: [],
     };
     resolveBeacons(alreadyActive);
@@ -1134,14 +1148,25 @@ describe('beaconBounce reset rendering', () => {
       orb: { x: 20, y: 20, vx: 2, vy: 3, radius: 4, stuckToPaddle: false },
       score: 0,
       lastActivatedBeaconId: null,
-      beacons: [{
-        id: 'upper-left', x: 24, y: 24, radius: 8, active: false, required: true, hitCount: 0,
-      }],
+      beacons: [
+        {
+          id: 'upper-left',
+          x: 24,
+          y: 24,
+          radius: 8,
+          active: false,
+          required: true,
+          hitCount: 0,
+        },
+      ],
       links: [],
     };
     resolveBeacons(upperLeftBeacon);
     expect(upperLeftBeacon.orb).toMatchObject({ vx: -2, vy: -3 });
-    expect(upperLeftBeacon.beacons[0]).toMatchObject({ active: true, hitCount: 1 });
+    expect(upperLeftBeacon.beacons[0]).toMatchObject({
+      active: true,
+      hitCount: 1,
+    });
 
     const missedPaddle = {
       paddle: { x: 10, y: 30, width: 40, height: 6, speed: 4 },
@@ -1273,12 +1298,17 @@ describe('beaconBounce stuck orb and helpers', () => {
       speedMultiplier: 4,
       stepCount: 5,
     });
-    expect(updateInputState(undefined, { speed: -4, step: -2 }).control).toEqual({
+    expect(
+      updateInputState(undefined, { speed: -4, step: -2 }).control
+    ).toEqual({
       paused: false,
       speedMultiplier: 1,
       stepCount: 0,
     });
-    expect(updateInputState(undefined, { speedMultiplier: 0.4, stepCount: 1.6 }).control).toEqual({
+    expect(
+      updateInputState(undefined, { speedMultiplier: 0.4, stepCount: 1.6 })
+        .control
+    ).toEqual({
       paused: false,
       speedMultiplier: 1,
       stepCount: 2,
@@ -1598,13 +1628,64 @@ describe('beaconBounce physics and rendering', () => {
     expect(canvas.shapes.some(shape => shape.stroke === '#335')).toBe(true);
     expect(canvas.shapes.some(shape => shape.type === 'line')).toBe(true);
     expect(canvas.shapes).toEqual([
-      expect.objectContaining({ type: 'rect', x: 0, y: 0, width: 120, height: 80, fill: '#09111d' }),
-      expect.objectContaining({ type: 'line', x1: 10, y1: 10, x2: 20, y2: 20, stroke: '#49d8ff', lineWidth: 1 }),
-      expect.objectContaining({ type: 'circle', x: 10, y: 10, radius: 8, fill: '#6ee7ff', stroke: '#335' }),
-      expect.objectContaining({ type: 'circle', x: 20, y: 20, radius: 8, fill: '#6ee7ff', stroke: '#335' }),
-      expect.objectContaining({ type: 'rect', x: 0, y: 0, width: 10, height: 4, fill: '#d7f3ff' }),
-      expect.objectContaining({ type: 'circle', x: 0, y: 0, radius: 4, fill: '#f8fafc' }),
-      expect.objectContaining({ type: 'text', x: 8, y: 14, text: 'Score 0 Lives 1 RUNNING', fill: '#dbeafe', font: '11px monospace', align: 'left', baseline: 'alphabetic' }),
+      expect.objectContaining({
+        type: 'rect',
+        x: 0,
+        y: 0,
+        width: 120,
+        height: 80,
+        fill: '#09111d',
+      }),
+      expect.objectContaining({
+        type: 'line',
+        x1: 10,
+        y1: 10,
+        x2: 20,
+        y2: 20,
+        stroke: '#49d8ff',
+        lineWidth: 1,
+      }),
+      expect.objectContaining({
+        type: 'circle',
+        x: 10,
+        y: 10,
+        radius: 8,
+        fill: '#6ee7ff',
+        stroke: '#335',
+      }),
+      expect.objectContaining({
+        type: 'circle',
+        x: 20,
+        y: 20,
+        radius: 8,
+        fill: '#6ee7ff',
+        stroke: '#335',
+      }),
+      expect.objectContaining({
+        type: 'rect',
+        x: 0,
+        y: 0,
+        width: 10,
+        height: 4,
+        fill: '#d7f3ff',
+      }),
+      expect.objectContaining({
+        type: 'circle',
+        x: 0,
+        y: 0,
+        radius: 4,
+        fill: '#f8fafc',
+      }),
+      expect.objectContaining({
+        type: 'text',
+        x: 8,
+        y: 14,
+        text: 'Score 0 Lives 1 RUNNING',
+        fill: '#dbeafe',
+        font: '11px monospace',
+        align: 'left',
+        baseline: 'alphabetic',
+      }),
     ]);
 
     const filteredCanvas = toCanvasPayload({
