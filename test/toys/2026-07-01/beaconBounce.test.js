@@ -201,6 +201,12 @@ describe('beaconBounce', () => {
     expect(reset.beacons[0].id).toBe('beacon-1-1');
     expect(buildResetFallback({ lives: 3, initialLives: 6 }).lives).toBe(6);
     expect(buildResetFallback({ lives: 3 }).lives).toBe(3);
+    expect(buildResetFallback({ width: 10, height: 20 })).toEqual({
+      width: 10,
+      height: 20,
+      lives: undefined,
+      layoutSeed: undefined,
+    });
   });
 });
 
@@ -1277,6 +1283,12 @@ describe('beaconBounce stuck orb and helpers', () => {
         buttons: Array.from({ length: 10 }, (_, index) => index === 9),
         axes: [0],
       }).actions.pausePressed
+    ).toBe(true);
+    expect(
+      updateInputState(undefined, {
+        buttons: Array.from({ length: 15 }, (_, index) => index === 14),
+        axes: [0],
+      }).actions.moveLeft
     ).toBe(true);
     expect(
       updateInputState(undefined, {
