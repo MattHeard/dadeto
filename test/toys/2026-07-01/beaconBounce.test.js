@@ -598,6 +598,12 @@ describe('beaconBounce input and state fallbacks', () => {
 
     const normalized = buildNextState(null, {});
     expect(normalized.status).toBe('ready');
+
+    for (const invalid of [null, [], {}, { version: 2 }]) {
+      const storage = { current: { BEAC1: invalid } };
+      runToy('{}', storage);
+      expect(storage.current.BEAC1.version).toBe(1);
+    }
   });
 
   it('covers input state fallbacks and both movement directions', () => {
