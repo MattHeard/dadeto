@@ -2275,6 +2275,24 @@ describe('solarPaddle panel reflection behavior', () => {
     expect(orb.x).toBeGreaterThan(panel.x + panel.width / 2);
   });
 
+  it('separates panel hits toward the side they came from', () => {
+    const panel = { x: 42, y: 32, width: 4, height: 40 };
+    const leftOrb = { x: 40, y: 44, vx: 0, vy: 1, radius: 4 };
+    const rightOrb = { x: 48, y: 44, vx: 0, vy: 1, radius: 4 };
+    const topOrb = { x: 44, y: 28, vx: 0, vy: 1, radius: 4 };
+    const bottomOrb = { x: 44, y: 80, vx: 0, vy: 1, radius: 4 };
+
+    separateOrbFromPanel(leftOrb, panel, 'x');
+    separateOrbFromPanel(rightOrb, panel, 'x');
+    separateOrbFromPanel(topOrb, panel, 'y');
+    separateOrbFromPanel(bottomOrb, panel, 'y');
+
+    expect(leftOrb.x).toBe(panel.x - leftOrb.radius - 0.5);
+    expect(rightOrb.x).toBe(panel.x + panel.width + rightOrb.radius + 0.5);
+    expect(topOrb.y).toBe(panel.y - topOrb.radius - 0.5);
+    expect(bottomOrb.y).toBe(panel.y + panel.height + bottomOrb.radius + 0.5);
+  });
+
   it('reflects from the top of a panel', () => {
     const storageValue = {
       current: {
