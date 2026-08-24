@@ -40,6 +40,19 @@ describe('beaconBounce', () => {
     expect(payload.height).toBe(160);
     expect(payload.shapes.some(shape => shape.type === 'circle')).toBe(true);
     expect(storageValue.current.BEAC1.version).toBe(1);
+    expect(storageValue.current.BEAC1.frame).toBe(1);
+    expect(storageValue.current.BEAC1.status).toBe('ready');
+    expect(storageValue.current.BEAC1.lives).toBe(3);
+    expect(storageValue.current.BEAC1.initialLives).toBe(3);
+    expect(storageValue.current.BEAC1.paddle).toMatchObject({
+      width: 48,
+      height: 6,
+      speed: 4,
+    });
+    expect(storageValue.current.BEAC1.orb).toMatchObject({
+      radius: 4,
+      stuckToPaddle: true,
+    });
   });
 
   it('launches on space and keeps launch edge-triggered', () => {
@@ -90,6 +103,23 @@ describe('beaconBounce', () => {
     );
     const next = runToy('{}', storageValue);
     expect(next.storageValue.current.BEAC1.paddle.x).toBeGreaterThan(100);
+  });
+
+  it('preserves persisted dimensions and increments the layout seed on reset', () => {
+    const initial = buildNextState(null, {
+      width: 240,
+      height: 160,
+      layoutSeed: 7,
+      lives: 5,
+    });
+    initial.layoutSeed = 7;
+    const reset = buildNextState(initial, { type: 'keydown', key: 'r' });
+    expect(reset.width).toBe(240);
+    expect(reset.height).toBe(160);
+    expect(reset.lives).toBe(5);
+    expect(reset.beacons[0].id).toBe('beacon-8-1');
+    expect(reset.status).toBe('ready');
+    expect(reset.frame).toBe(0);
   });
 });
 
