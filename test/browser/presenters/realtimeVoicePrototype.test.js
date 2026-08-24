@@ -49,6 +49,34 @@ function exerciseControlBranches(helpers, controls, dom) {
 }
 
 /**
+ * Exercise mute toggling and resource cleanup.
+ * @param {Record<string, Function>} helpers Presenter test helpers.
+ * @param {{state: Record<string, unknown>, controls: Record<string, unknown>, track: Record<string, unknown>, stream: Record<string, unknown>, channel: Record<string, unknown>, peer: Record<string, unknown>, dom: Record<string, Function>}} context Test context.
+ * @returns {void} Nothing.
+ */
+function exerciseMediaCleanup(helpers, context) {
+  const { state, controls, track, stream, channel, peer, dom } = context;
+  helpers.toggleMute(state, controls, dom);
+  expect(state.muted).toBe(true);
+  expect(track.enabled).toBe(false);
+  expect(controls.muteButton.textContent).toBe('Unmute');
+  helpers.toggleMute(state, controls, dom);
+  expect(state.muted).toBe(false);
+  expect(track.enabled).toBe(true);
+  expect(controls.muteButton.textContent).toBe('Mute');
+  helpers.stopMediaStream(stream);
+  helpers.closeDataChannel(channel);
+  helpers.closePeerConnection(peer);
+  expect(track.stop).toHaveBeenCalled();
+  expect(channel.close).toHaveBeenCalled();
+  expect(peer.close).toHaveBeenCalled();
+  helpers.stopMediaStream(null);
+  helpers.closeDataChannel(null);
+  helpers.closePeerConnection(null);
+  helpers.disconnectRealtimeVoice(state, controls, 'done', dom);
+}
+
+/**
  *
  */
 /**
@@ -323,25 +351,15 @@ describe('realtimeVoicePrototypePresenterTestOnly', () => {
     helpers.wirePeerConnectionEvents(peer, controls, dom);
     peerListeners.connectionstatechange();
     peerListeners.iceconnectionstatechange();
-    helpers.toggleMute(state, controls, dom);
-    expect(state.muted).toBe(true);
-    expect(track.enabled).toBe(false);
-    expect(controls.muteButton.textContent).toBe('Unmute');
-    helpers.toggleMute(state, controls, dom);
-    expect(state.muted).toBe(false);
-    expect(track.enabled).toBe(true);
-    expect(controls.muteButton.textContent).toBe('Mute');
-    helpers.stopMediaStream(stream);
-    helpers.closeDataChannel(channel);
-    helpers.closePeerConnection(peer);
-    expect(track.stop).toHaveBeenCalled();
-    expect(channel.close).toHaveBeenCalled();
-    expect(peer.close).toHaveBeenCalled();
-    helpers.stopMediaStream(null);
-    helpers.closeDataChannel(null);
-    helpers.closePeerConnection(null);
-    expect(controls.muteButton.textContent).toBe('Mute');
-    helpers.disconnectRealtimeVoice(state, controls, 'done', dom);
+    exerciseMediaCleanup(helpers, {
+      state,
+      controls,
+      track,
+      stream,
+      channel,
+      peer,
+      dom,
+    });
     expect(state).toEqual({
       peerConnection: null,
       mediaStream: null,
