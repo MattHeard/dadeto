@@ -540,6 +540,10 @@ describe('solarPaddle helper contracts', () => {
     h.stepSimulation(state);
     expect(state.orb.x).not.toBe(before.x);
     expect(state.orb.y).not.toBe(before.y);
+    state.panels = [];
+    state.orb = { x: 10, y: 20, vx: 2, vy: 3, radius: 2, stuckToPaddle: false };
+    h.stepSimulation(state);
+    expect(state.orb).toMatchObject({ x: 12, y: 23 });
     state.orb.stuckToPaddle = true;
     const stuck = { x: state.orb.x, y: state.orb.y };
     h.stepSimulation(state);
