@@ -2125,7 +2125,9 @@ describe('batteryBreakout final normalization', () => {
     expect(next.storageValue.current.BATT4.status).toBe('lost');
     expect(next.storageValue.current.BATT4.lives).toBeLessThanOrEqual(0);
   });
+});
 
+describe('batteryBreakout helper coverage', () => {
   it('covers pure normalization, input, geometry, collision, and presentation helpers', () => {
     const h = batteryBreakoutTestOnly;
     const seed = h.normalizeSeedValues({}, {});
