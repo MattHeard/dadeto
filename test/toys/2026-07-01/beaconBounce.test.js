@@ -85,6 +85,25 @@ describe('beaconBounce', () => {
     expect(fallback.storageValue.current.BEAC1.width).toBeGreaterThan(0);
     expect(fallback.storageValue.current.BEAC1.height).toBeGreaterThan(0);
     expect(fallback.storageValue.current.BEAC1.lives).toBeGreaterThan(0);
+
+    const compact = runToy(JSON.stringify({ width: 100, height: 60, layoutSeed: 2 }));
+    expect(compact.storageValue.current.BEAC1.paddle).toMatchObject({
+      x: 26,
+      y: 36,
+      width: 48,
+      height: 6,
+    });
+    expect(compact.storageValue.current.BEAC1.orb).toMatchObject({
+      x: 50,
+      y: 37,
+      vx: 1.6,
+      vy: -2.4,
+    });
+    expect(compact.storageValue.current.BEAC1.beacons).toEqual(expect.arrayContaining([
+      expect.objectContaining({ id: 'beacon-2-1', x: 76, y: 20 }),
+      expect.objectContaining({ id: 'beacon-2-2', x: 80, y: 20 }),
+      expect.objectContaining({ id: 'beacon-2-6', x: 80, y: 20 }),
+    ]));
   });
 
   it('launches on space and keeps launch edge-triggered', () => {
