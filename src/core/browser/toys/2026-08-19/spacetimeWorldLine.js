@@ -1,7 +1,5 @@
 // Toy: Spacetime World Line
 // (input, env) -> string
-// jscpd:ignore-start
-
 import { formatToyError } from '../formatToyError.js';
 
 /**
@@ -82,4 +80,3 @@ function isJsonObject(value) {
 }
 
 export { isJsonObject, parseInput };
-// jscpd:ignore-end
