@@ -95,6 +95,10 @@ describe('solarPaddle helper contracts', () => {
     expect(h.buildPanelPositions(240, 160, 28, 10)).toHaveLength(15);
     expect(h.isAxisLeft(-0.1)).toBe(false);
     expect(h.isAxisRight(0.1)).toBe(false);
+    expect(h.isAxisLeft(-0.25)).toBe(false);
+    expect(h.isAxisRight(0.25)).toBe(false);
+    expect(h.isAxisLeft(-0.401)).toBe(true);
+    expect(h.isAxisRight(0.401)).toBe(true);
 
     const state = h.createState(h.createSeedOptions());
     state.status = 'ready';
@@ -384,6 +388,8 @@ describe('solarPaddle helper contracts', () => {
     expect(released.edgeActions.left).toBe(false);
     const button = h.updateInputState(initial, { buttons: [true], buttonIndex: 0, pressed: true });
     expect(button.gamepad.buttons[0]).toBe(true);
+    const releasedButton = h.updateInputState(button, { buttonIndex: 0, pressed: false });
+    expect(releasedButton.gamepad.buttons[0]).toBe(false);
     expect(button.edgeActions.launchPressed).toBe(true);
     const axes = h.updateInputState(initial, { axes: [-1] });
     expect(axes.gamepad.axes).toEqual([-1]);
