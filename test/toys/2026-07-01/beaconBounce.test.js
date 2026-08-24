@@ -1105,6 +1105,31 @@ describe('beaconBounce stuck orb and helpers', () => {
       resetPressed: false,
     });
 
+    expect(
+      updateInputState(undefined, {
+        type: 'keydown',
+        key: 'd',
+        buttons: Array.from({ length: 16 }, (_, index) => index === 15),
+        axes: [1],
+      }).actions
+    ).toMatchObject({ moveRight: true });
+    expect(
+      updateInputState(undefined, {
+        type: 'keydown',
+        key: 'p',
+        buttons: Array.from({ length: 10 }, (_, index) => index === 9),
+        axes: [0],
+      }).actions.pausePressed
+    ).toBe(true);
+    expect(
+      updateInputState(undefined, {
+        type: 'keydown',
+        key: 'r',
+        buttons: [false, true],
+        axes: [0],
+      }).actions.resetPressed
+    ).toBe(true);
+
     const heldPause = {
       status: 'running',
       paused: false,
@@ -1155,6 +1180,22 @@ describe('beaconBounce stuck orb and helpers', () => {
     });
     expect(wonLocked.paddle.x).toBe(20);
 
+    const clamped = {
+      status: 'running',
+      paused: false,
+      width: 100,
+      paddle: { x: 90, y: 30, width: 40, height: 6, speed: 20 },
+      beacons: [],
+      links: [],
+      orb: { x: 0, y: 0, vx: 0, vy: 0, radius: 4, stuckToPaddle: true },
+      initialLives: 3,
+    };
+    applyGameplayInput(clamped, {
+      actions: { ...createActionFlags(), moveRight: true },
+      previousActions: createActionFlags(),
+    });
+    expect(clamped.paddle.x).toBe(60);
+
     const relaunchFromLost = {
       status: 'lost',
       paused: false,
@@ -1188,6 +1229,36 @@ describe('beaconBounce stuck orb and helpers', () => {
     });
     expect(relaunchFromLost.lives).toBe(1);
     expect(relaunchFromLost.status).toBe('running');
+
+    const resetState = {
+      status: 'running',
+      paused: true,
+      score: 25,
+      lives: 1,
+      initialLives: 4,
+      simulationSpeed: 3,
+      lastActivatedBeaconId: 'beacon-1',
+      width: 120,
+      paddle: { x: 20, y: 30, width: 40, height: 6, speed: 4 },
+      beacons: [{ active: true, hitCount: 2 }],
+      links: [{ from: 'beacon-1', to: 'beacon-2', active: true }],
+      orb: { stuckToPaddle: false },
+    };
+    applyGameplayInput(resetState, {
+      actions: { ...createActionFlags(), resetPressed: true },
+      previousActions: createActionFlags(),
+    });
+    expect(resetState).toMatchObject({
+      status: 'ready',
+      paused: false,
+      score: 0,
+      lives: 4,
+      simulationSpeed: 1,
+      lastActivatedBeaconId: null,
+    });
+    expect(resetState.beacons[0]).toEqual({ active: false, hitCount: 0 });
+    expect(resetState.links).toEqual([]);
+    expect(resetState.orb.stuckToPaddle).toBe(true);
   });
 });
 
@@ -1199,6 +1270,9 @@ describe('beaconBounce physics and rendering', () => {
     };
     resolvePaddle(paddleState);
     expect(paddleState.orb.vy).toBeLessThan(0);
+    expect(paddleState.orb.y).toBe(25);
+    expect(paddleState.orb.vx).toBeGreaterThanOrEqual(-3);
+    expect(paddleState.orb.vx).toBeLessThanOrEqual(3);
 
     const beaconState = {
       orb: { x: 20, y: 20, vx: 1, vy: 1, radius: 4, stuckToPaddle: false },
@@ -1219,6 +1293,10 @@ describe('beaconBounce physics and rendering', () => {
     };
     resolveBeacons(beaconState);
     expect(beaconState.score).toBe(10);
+    expect(beaconState.beacons[0]).toMatchObject({
+      active: true,
+      hitCount: 1,
+    });
     expect(beaconState.links).toHaveLength(0);
 
     const beaconLinkedState = {
@@ -1240,6 +1318,11 @@ describe('beaconBounce physics and rendering', () => {
     };
     resolveBeacons(beaconLinkedState);
     expect(beaconLinkedState.links).toHaveLength(1);
+    expect(beaconLinkedState.links[0]).toEqual({
+      from: 'beacon-0',
+      to: 'beacon-1',
+      active: true,
+    });
 
     const canvas = toCanvasPayload({
       width: 120,
