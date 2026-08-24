@@ -541,6 +541,11 @@ describe('solarPaddle helper contracts', () => {
     h.applyGameplayInput(state, noInput);
     expect(state.status).toBe('ready');
     expect(state.orb.x).toBe(state.paddle.x + Math.round(state.paddle.width / 2));
+    state.orb.x = 0;
+    state.orb.y = 0;
+    h.applyGameplayInput(state, noInput);
+    expect(state.orb.x).toBe(state.paddle.x + Math.round(state.paddle.width / 2));
+    expect(state.orb.y).toBe(state.paddle.y - state.orb.radius - 1);
     state.status = 'running';
     state.orb.stuckToPaddle = false;
     const before = { x: state.orb.x, y: state.orb.y };
