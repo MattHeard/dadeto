@@ -561,6 +561,15 @@ describe('solarPaddle helper contracts', () => {
     state.status = 'running';
     h.applyGameplayInput(state, { actions: noInput.actions, edgeActions: { ...noInput.edgeActions, pausePressed: true } });
     expect(state.status).toBe('paused');
+    state.status = 'ready';
+    h.applyGameplayInput(state, { actions: noInput.actions, edgeActions: { ...noInput.edgeActions, pausePressed: true } });
+    expect(state.status).toBe('ready');
+    state.status = 'running';
+    state.orb.stuckToPaddle = true;
+    h.applyGameplayInput(state, { actions: noInput.actions, edgeActions: { ...noInput.edgeActions, launchPressed: true } });
+    expect(state.status).toBe('running');
+    expect(state.orb.stuckToPaddle).toBe(true);
+    state.status = 'paused';
     h.applyGameplayInput(state, noInput);
     expect(state.status).toBe('paused');
   });
