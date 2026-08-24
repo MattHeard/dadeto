@@ -106,6 +106,9 @@ describe('solarPaddle helper contracts', () => {
     expect(state.status).toBe('paused');
     h.movePaddle(state, { left: true, right: false });
     expect(state.paddle.x).toBeGreaterThanOrEqual(0);
+    state.paddle.x = 100;
+    h.movePaddle(state, { left: false, right: true });
+    expect(state.paddle.x).toBe(104);
     h.stickOrbToPaddle(state);
     expect(state.orb.y).toBe(state.paddle.y - state.orb.radius - 1);
     state.orb.x = 1; state.orb.y = 1; state.orb.vx = -2; state.orb.vy = -2;
@@ -533,6 +536,10 @@ describe('solarPaddle helper contracts', () => {
     h.stepSimulation(state);
     expect(state.orb.x).not.toBe(before.x);
     expect(state.orb.y).not.toBe(before.y);
+    state.orb.stuckToPaddle = true;
+    const stuck = { x: state.orb.x, y: state.orb.y };
+    h.stepSimulation(state);
+    expect(state.orb).toMatchObject(stuck);
     state.status = 'paused';
     h.applyGameplayInput(state, { actions: noInput.actions, edgeActions: { ...noInput.edgeActions, pausePressed: true } });
     expect(state.status).toBe('running');
