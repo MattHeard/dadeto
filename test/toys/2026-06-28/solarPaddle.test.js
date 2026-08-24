@@ -261,11 +261,29 @@ describe('solarPaddle helper contracts', () => {
     expect(positions[0]).toEqual({ x: 28, y: 30 });
     expect(positions[1]).toEqual({ x: 54, y: 32 });
     expect(positions[2]).toEqual({ x: 91, y: 32 });
+    expect(positions).toEqual([
+      { x: 28, y: 30 }, { x: 54, y: 32 }, { x: 91, y: 32 }, { x: 140, y: 30 }, { x: 173, y: 32 },
+      { x: 40, y: 46 }, { x: 66, y: 48 }, { x: 103, y: 48 }, { x: 152, y: 46 }, { x: 184, y: 48 },
+      { x: 28, y: 62 }, { x: 46, y: 64 }, { x: 83, y: 64 }, { x: 132, y: 62 }, { x: 165, y: 64 },
+    ]);
     expect(positions.every(position => position.x >= 28 && position.y >= 30)).toBe(true);
     const source = positions.slice(0, 5);
     expect(h.shufflePositions(source, 7)).toEqual(h.shufflePositions(source, 7));
     expect(h.shufflePositions(source, 7)).not.toEqual(source);
-    expect(h.normalizePanels(240, 160, 7).map(panel => panel.id)).toEqual(['p1-1', 'p1-2', 'p1-3', 'p2-1', 'p2-2', 'p2-3', 'p2-4', 'p2-5', 'p3-1', 'p3-2', 'p3-3', 'p3-4']);
+    expect(h.normalizePanels(240, 160, 7)).toEqual([
+      { id: 'p1-1', x: 152, y: 46, width: 28, height: 10, charge: false },
+      { id: 'p1-2', x: 173, y: 32, width: 28, height: 10, charge: false },
+      { id: 'p1-3', x: 91, y: 32, width: 28, height: 10, charge: false },
+      { id: 'p2-1', x: 165, y: 64, width: 28, height: 10, charge: false },
+      { id: 'p2-2', x: 83, y: 64, width: 28, height: 10, charge: false },
+      { id: 'p2-3', x: 54, y: 32, width: 28, height: 10, charge: false },
+      { id: 'p2-4', x: 28, y: 30, width: 28, height: 10, charge: false },
+      { id: 'p2-5', x: 132, y: 62, width: 28, height: 10, charge: false },
+      { id: 'p3-1', x: 66, y: 48, width: 28, height: 10, charge: false },
+      { id: 'p3-2', x: 184, y: 48, width: 28, height: 10, charge: false },
+      { id: 'p3-3', x: 40, y: 46, width: 28, height: 10, charge: false },
+      { id: 'p3-4', x: 103, y: 48, width: 28, height: 10, charge: false },
+    ]);
   });
 
   it('covers physics edge branches and panel-hit ordering', () => {
