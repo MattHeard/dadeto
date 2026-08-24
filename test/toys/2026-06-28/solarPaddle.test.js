@@ -180,6 +180,7 @@ describe('solarPaddle helper contracts', () => {
       .toEqual({ x: 180, y: 0, width: 52, height: 7, speed: 4 });
     expect(h.normalizeOrb({ x: 0, y: 0, vx: 0, vy: 0, radius: 0, stuckToPaddle: false }))
       .toEqual({ x: 180, y: 0, vx: 1, vy: -2, radius: 4, stuckToPaddle: false });
+    expect(h.normalizePanelsFromState([false, 1, 'panel', { x: 1, y: 2 }])).toHaveLength(1);
   });
 
   it('covers collision axes, pause toggles, and payload geometry', () => {
@@ -507,6 +508,22 @@ describe('solarPaddle helper contracts', () => {
         { type: 'rect', x: 18, y: 68, width: 50, height: 4, fill: '#34d399' },
       ],
     });
+  });
+
+  it('covers panel clamps and circle/bottom boundary inclusivity', () => {
+    const small = h.buildPanelPositions(80, 80, 28, 10);
+    expect(small).toHaveLength(15);
+    expect(new Set(small.map(position => `${position.x},${position.y}`))).toEqual(new Set(['24,10']));
+    expect(h.circleIntersectsPanel({ x: -2, y: 5, radius: 2 }, { x: 0, y: 0, width: 10, height: 10 })).toBe(true);
+    expect(h.circleIntersectsPanel({ x: -3, y: 5, radius: 2 }, { x: 0, y: 0, width: 10, height: 10 })).toBe(false);
+    const state = h.createState(h.createSeedOptions());
+    state.orb.y = state.height - state.orb.radius;
+    state.lives = 2;
+    h.resolveBottom(state);
+    expect(state.lives).toBe(2);
+    state.orb.y = state.height - state.orb.radius + 0.1;
+    h.resolveBottom(state);
+    expect(state.lives).toBe(1);
   });
 });
 
