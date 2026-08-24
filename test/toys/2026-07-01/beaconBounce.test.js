@@ -1058,6 +1058,14 @@ describe('beaconBounce reset rendering', () => {
     resolveWalls(clearWalls);
     expect(clearWalls.orb).toEqual({ x: 40, y: 40, vx: 2, vy: 2, radius: 4 });
 
+    const exactWalls = {
+      orb: { x: 4, y: 22, vx: -2, vy: -2, radius: 4 },
+      width: 120,
+      height: 80,
+    };
+    resolveWalls(exactWalls);
+    expect(exactWalls.orb).toMatchObject({ x: 4, y: 22, vx: 2, vy: 2 });
+
     const alreadyActive = {
       orb: { x: 20, y: 20, vx: -1, vy: -1, radius: 4, stuckToPaddle: false },
       score: 10,
@@ -1071,6 +1079,20 @@ describe('beaconBounce reset rendering', () => {
     expect(alreadyActive.score).toBe(10);
     expect(alreadyActive.beacons[0].hitCount).toBe(2);
     expect(alreadyActive.links).toEqual([]);
+
+    const missedPaddle = {
+      paddle: { x: 10, y: 30, width: 40, height: 6, speed: 4 },
+      orb: { x: 80, y: 34, vx: 1, vy: 3, radius: 4, stuckToPaddle: false },
+    };
+    resolvePaddle(missedPaddle);
+    expect(missedPaddle.orb).toEqual({
+      x: 80,
+      y: 34,
+      vx: 1,
+      vy: 3,
+      radius: 4,
+      stuckToPaddle: false,
+    });
   });
 });
 
