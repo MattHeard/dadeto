@@ -1170,6 +1170,37 @@ describe('beaconBounce stuck orb and helpers', () => {
     expect(state.orb.y).toBe(25);
   });
 
+  it('distinguishes exact bottom contact from a life loss and completes wins', () => {
+    const exactBottom = {
+      status: 'running',
+      lives: 2,
+      width: 120,
+      height: 80,
+      orb: { x: 60, y: 84, vx: 0, vy: 0, radius: 4, stuckToPaddle: false },
+      paddle: { x: 0, y: 0, width: 10, height: 4, speed: 2 },
+      beacons: [{ required: true, active: false, x: 10, y: 10, radius: 8, hitCount: 0 }],
+    };
+    stepSimulation(exactBottom);
+    expect(exactBottom.lives).toBe(2);
+    expect(exactBottom.status).toBe('running');
+
+    const belowBottom = {
+      ...exactBottom,
+      orb: { ...exactBottom.orb, y: 85 },
+    };
+    stepSimulation(belowBottom);
+    expect(belowBottom.lives).toBe(1);
+    expect(belowBottom.status).toBe('ready');
+
+    const won = {
+      ...exactBottom,
+      beacons: [{ required: false, active: false, x: 10, y: 10, radius: 8, hitCount: 0 }],
+      orb: { ...exactBottom.orb, y: 40 },
+    };
+    stepSimulation(won);
+    expect(won.status).toBe('won');
+  });
+
   it('covers helper branches for input normalization and fallback building', () => {
     expect(buildResetFallback(null)).toBeUndefined();
     expect(
