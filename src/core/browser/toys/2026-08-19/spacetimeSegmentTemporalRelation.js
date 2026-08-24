@@ -2,6 +2,7 @@
 // (input, env) -> string
 import { resolvePointRecords } from '../2026-08-22/spacePointResolution.js';
 import { isJsonObject, normalizeSegmentId } from './spacetimeInput.js';
+import { resolveSegmentTiming } from '../2026-08-21/segmentAssignmentFeasibilityCore.js';
 
 /**
  * Classify the temporal relation between two SPAC2 segments.
@@ -80,34 +81,19 @@ function parseRequest(input) {
  * @returns {{start: string, end: string, startTime: number, endTime: number, startPointId: string, endPointId: string}} Resolved interval.
  */
 function resolveInterval(segments, points, segmentId) {
-  const segment = segments.get(segmentId);
-  if (!segment) throw new Error(`Unknown segment: ${segmentId}`);
-  const startPointId = String(segment.startPointId);
-  const endPointId = String(segment.endPointId);
-  const start = points.get(startPointId);
-  const end = points.get(endPointId);
-  if (!start || !end)
-    throw new Error(`Segment ${segmentId} references an unknown point.`);
-  const startTimestamp = String(start.timestamp);
-  const endTimestamp = String(end.timestamp);
-  const startTime = Date.parse(startTimestamp);
-  const endTime = Date.parse(endTimestamp);
-  if (
-    !Number.isFinite(startTime) ||
-    !Number.isFinite(endTime) ||
-    endTime < startTime
-  ) {
-    throw new Error(
-      `Segment ${segmentId} must have an ordered valid time interval.`
-    );
-  }
+  const timing = resolveSegmentTiming(
+    segments,
+    points,
+    segmentId,
+    'time interval'
+  );
   return {
-    start: startTimestamp,
-    end: endTimestamp,
-    startTime,
-    endTime,
-    startPointId,
-    endPointId,
+    start: timing.startTimestamp,
+    end: timing.endTimestamp,
+    startTime: timing.startTime,
+    endTime: timing.endTime,
+    startPointId: timing.startPointId,
+    endPointId: timing.endPointId,
   };
 }
 

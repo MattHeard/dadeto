@@ -2,6 +2,52 @@
 import { resolvePointRecords } from '../2026-08-22/spacePointResolution.js';
 
 /**
+ * Resolve a segment's endpoint records and timestamps.
+ * @param {Map<string, Record<string, unknown>>} segments Segment records.
+ * @param {Map<string, Record<string, unknown>>} points Point records.
+ * @param {string} segmentId Segment identifier.
+ * @param {string} intervalLabel Error message interval label.
+ * @returns {{startPointId: string, endPointId: string, startTimestamp: string, endTimestamp: string, startTime: number, endTime: number, start: Record<string, unknown>, end: Record<string, unknown>}} Resolved segment timing.
+ */
+export function resolveSegmentTiming(
+  segments,
+  points,
+  segmentId,
+  intervalLabel = 'interval'
+) {
+  const segment = segments.get(segmentId);
+  if (!segment) throw new Error(`Unknown segment: ${segmentId}`);
+  const startPointId = String(segment.startPointId);
+  const endPointId = String(segment.endPointId);
+  const start = points.get(startPointId);
+  const end = points.get(endPointId);
+  if (!start || !end)
+    throw new Error(`Segment ${segmentId} references an unknown point.`);
+  const startTimestamp = String(start.timestamp);
+  const endTimestamp = String(end.timestamp);
+  const startTime = Date.parse(startTimestamp);
+  const endTime = Date.parse(endTimestamp);
+  if (
+    !Number.isFinite(startTime) ||
+    !Number.isFinite(endTime) ||
+    endTime < startTime
+  )
+    throw new Error(
+      `Segment ${segmentId} must have an ordered valid ${intervalLabel}.`
+    );
+  return {
+    startPointId,
+    endPointId,
+    startTimestamp,
+    endTimestamp,
+    startTime,
+    endTime,
+    start,
+    end,
+  };
+}
+
+/**
  * Index point records by point ID.
  * @param {Array<Record<string, unknown>>} points Point records.
  * @returns {Map<string, Record<string, unknown>>} Point index.
@@ -18,30 +64,15 @@ export function indexPointRecords(points) {
  * @returns {{segmentId: string, startPointId: string, endPointId: string, startTime: number, endTime: number, start: Record<string, unknown>, end: Record<string, unknown>}} Resolved segment.
  */
 export function resolveSegment(segments, points, segmentId) {
-  const segment = segments.get(segmentId);
-  if (!segment) throw new Error(`Unknown segment: ${segmentId}`);
-  const start = points.get(String(segment.startPointId));
-  const end = points.get(String(segment.endPointId));
-  if (!start || !end)
-    throw new Error(`Segment ${segmentId} references an unknown point.`);
-  const startTime = Date.parse(String(start.timestamp));
-  const endTime = Date.parse(String(end.timestamp));
-  if (
-    !Number.isFinite(startTime) ||
-    !Number.isFinite(endTime) ||
-    endTime < startTime
-  )
-    throw new Error(
-      `Segment ${segmentId} must have an ordered valid interval.`
-    );
+  const timing = resolveSegmentTiming(segments, points, segmentId);
   return {
     segmentId,
-    startPointId: String(segment.startPointId),
-    endPointId: String(segment.endPointId),
-    startTime,
-    endTime,
-    start,
-    end,
+    startPointId: timing.startPointId,
+    endPointId: timing.endPointId,
+    startTime: timing.startTime,
+    endTime: timing.endTime,
+    start: timing.start,
+    end: timing.end,
   };
 }
 
