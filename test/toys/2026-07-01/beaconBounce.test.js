@@ -1465,6 +1465,15 @@ describe('beaconBounce physics and rendering', () => {
     });
     expect(canvas.shapes.some(shape => shape.stroke === '#335')).toBe(true);
     expect(canvas.shapes.some(shape => shape.type === 'line')).toBe(true);
+    expect(canvas.shapes).toEqual([
+      expect.objectContaining({ type: 'rect', x: 0, y: 0, width: 120, height: 80, fill: '#09111d' }),
+      expect.objectContaining({ type: 'line', x1: 10, y1: 10, x2: 20, y2: 20, stroke: '#49d8ff', lineWidth: 1 }),
+      expect.objectContaining({ type: 'circle', x: 10, y: 10, radius: 8, fill: '#6ee7ff', stroke: '#335' }),
+      expect.objectContaining({ type: 'circle', x: 20, y: 20, radius: 8, fill: '#6ee7ff', stroke: '#335' }),
+      expect.objectContaining({ type: 'rect', x: 0, y: 0, width: 10, height: 4, fill: '#d7f3ff' }),
+      expect.objectContaining({ type: 'circle', x: 0, y: 0, radius: 4, fill: '#f8fafc' }),
+      expect.objectContaining({ type: 'text', x: 8, y: 14, text: 'Score 0 Lives 1 RUNNING', fill: '#dbeafe', font: '11px monospace', align: 'left', baseline: 'alphabetic' }),
+    ]);
 
     const filteredCanvas = toCanvasPayload({
       width: 120,
