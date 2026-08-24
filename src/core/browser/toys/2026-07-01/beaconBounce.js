@@ -307,9 +307,8 @@ function createInitialInputState() {
  */
 function normalizeStepCount(value, fallback) {
   const next = Number(value);
-  if (Number.isFinite(next) && next >= 0)
-    return Math.max(fallback, Math.round(next));
-  return fallback;
+  if (!Number.isFinite(next)) return fallback;
+  return Math.max(fallback, Math.round(Math.max(0, next)));
 }
 
 /**
