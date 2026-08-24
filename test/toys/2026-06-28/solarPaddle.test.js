@@ -181,6 +181,14 @@ describe('solarPaddle helper contracts', () => {
     expect(h.normalizeOrb({ x: 0, y: 0, vx: 0, vy: 0, radius: 0, stuckToPaddle: false }))
       .toEqual({ x: 180, y: 0, vx: 1, vy: -2, radius: 4, stuckToPaddle: false });
     expect(h.normalizePanelsFromState([false, 1, 'panel', { x: 1, y: 2 }])).toHaveLength(1);
+    for (const invalid of [undefined, null, 0, '', [], {}, 'READY', 'running ']) {
+      expect(h.normalizeStatus(invalid)).toBe('ready');
+    }
+    expect(h.normalizeGamepadState({ buttons: [true, false, 1], axes: [0, -1, 'bad'] }))
+      .toEqual({ buttons: [true, false, false], axes: [0, -1, 0] });
+    expect(h.normalizeGamepadState({ buttons: {}, axes: {} })).toEqual({ buttons: [], axes: [] });
+    expect(h.normalizeActions({ left: 1, right: 'true', launch: null, pause: {}, reset: [] }))
+      .toEqual({ left: false, right: false, launch: false, pause: false, reset: false });
   });
 
   it('covers collision axes, pause toggles, and payload geometry', () => {
