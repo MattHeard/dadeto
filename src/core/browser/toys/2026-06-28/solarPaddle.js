@@ -856,11 +856,11 @@ function getPanelRowOffset(colIndex) {
 function shufflePositions(positions, seed) {
   const items = positions.slice();
   let state = Math.max(1, seed);
-  items.forEach((_, index) => {
-    if (index === items.length - 1) {
-      return;
-    }
+  items.slice(0, -1).reverse().forEach((_, index) => {
     const i = items.length - 1 - index;
+    if (i === 0) {
+      throw new Error('shuffle index underflow');
+    }
     state = (state * 1664525 + 1013904223) >>> 0;
     const j = state % (i + 1);
     [items[i], items[j]] = [items[j], items[i]];
