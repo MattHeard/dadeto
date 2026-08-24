@@ -44,6 +44,25 @@ describe('beaconBounce', () => {
     expect(storageValue.current.BEAC1.status).toBe('ready');
     expect(storageValue.current.BEAC1.lives).toBe(3);
     expect(storageValue.current.BEAC1.initialLives).toBe(3);
+    expect(storageValue.current.BEAC1.input).toEqual({
+      keyboard: {},
+      gamepad: { buttons: [], axes: [] },
+      actions: {
+        moveLeft: false,
+        moveRight: false,
+        launchPressed: false,
+        pausePressed: false,
+        resetPressed: false,
+      },
+      previousActions: {
+        moveLeft: false,
+        moveRight: false,
+        launchPressed: false,
+        pausePressed: false,
+        resetPressed: false,
+      },
+      control: { paused: false, speedMultiplier: 1, stepCount: 0 },
+    });
     expect(storageValue.current.BEAC1.paddle).toMatchObject({
       width: 48,
       height: 6,
