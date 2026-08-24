@@ -170,6 +170,10 @@ describe('solarPaddle helper contracts', () => {
     expect(h.isLaunchActionPressed({}, { buttons: [], axes: [] })).toBe(false);
     expect(h.isPauseActionPressed({}, { buttons: [], axes: [] })).toBe(false);
     expect(h.isResetActionPressed({}, { buttons: [], axes: [] })).toBe(false);
+    expect(h.isAxisLeft(-0.4)).toBe(false);
+    expect(h.isAxisLeft(-0.41)).toBe(true);
+    expect(h.isAxisRight(0.4)).toBe(false);
+    expect(h.isAxisRight(0.41)).toBe(true);
   });
 
   it('covers collision axes, pause toggles, and payload geometry', () => {
@@ -451,6 +455,26 @@ describe('solarPaddle helper contracts', () => {
     expect(h.createEdgeActions(all, all)).toEqual({ left: false, right: false, launchPressed: false, pausePressed: false, resetPressed: false });
     const result = h.createActionsFromState({ ArrowLeft: true }, { buttons: [], axes: [] });
     expect(result.edgeActions).toEqual({ left: true, right: false, launchPressed: false, pausePressed: false, resetPressed: false });
+  });
+
+  it('covers gameplay status transitions and stuck-orb behavior', () => {
+    const state = h.createState(h.createSeedOptions());
+    const noInput = { actions: { left: false, right: false, launch: false, pause: false, reset: false }, edgeActions: { left: false, right: false, launchPressed: false, pausePressed: false, resetPressed: false } };
+    h.applyGameplayInput(state, noInput);
+    expect(state.status).toBe('ready');
+    expect(state.orb.x).toBe(state.paddle.x + Math.round(state.paddle.width / 2));
+    state.status = 'running';
+    state.orb.stuckToPaddle = false;
+    const before = { x: state.orb.x, y: state.orb.y };
+    h.stepSimulation(state);
+    expect(state.orb.x).not.toBe(before.x);
+    expect(state.orb.y).not.toBe(before.y);
+    state.status = 'paused';
+    h.applyGameplayInput(state, { actions: noInput.actions, edgeActions: { ...noInput.edgeActions, pausePressed: true } });
+    expect(state.status).toBe('running');
+    state.status = 'running';
+    h.applyGameplayInput(state, { actions: noInput.actions, edgeActions: { ...noInput.edgeActions, pausePressed: true } });
+    expect(state.status).toBe('paused');
   });
 });
 
