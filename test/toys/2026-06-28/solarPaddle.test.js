@@ -537,6 +537,8 @@ describe('solarPaddle helper contracts', () => {
     expect(new Set(small.map(position => `${position.x},${position.y}`))).toEqual(new Set(['24,10']));
     expect(h.circleIntersectsPanel({ x: -2, y: 5, radius: 2 }, { x: 0, y: 0, width: 10, height: 10 })).toBe(true);
     expect(h.circleIntersectsPanel({ x: -3, y: 5, radius: 2 }, { x: 0, y: 0, width: 10, height: 10 })).toBe(false);
+    expect(h.circleIntersectsPanel({ x: -1, y: -1, radius: Math.sqrt(2) }, { x: 0, y: 0, width: 10, height: 10 })).toBe(true);
+    expect(h.circleIntersectsPanel({ x: -1, y: -1, radius: 1.4 }, { x: 0, y: 0, width: 10, height: 10 })).toBe(false);
     const state = h.createState(h.createSeedOptions());
     state.orb.y = state.height - state.orb.radius;
     state.lives = 2;
@@ -545,6 +547,14 @@ describe('solarPaddle helper contracts', () => {
     state.orb.y = state.height - state.orb.radius + 0.1;
     h.resolveBottom(state);
     expect(state.lives).toBe(1);
+    state.orb.x = state.width - 1;
+    state.orb.vx = 3;
+    h.resolveWalls(state);
+    expect(state.orb.vx).toBe(-3);
+    state.orb.x = 1;
+    state.orb.vx = 3;
+    h.resolveWalls(state);
+    expect(state.orb.vx).toBe(3);
   });
 });
 
