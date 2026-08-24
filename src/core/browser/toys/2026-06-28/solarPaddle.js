@@ -437,7 +437,7 @@ function createInitialInputState() {
  * @returns {PaddleState | null} Normalized state or null.
  */
 function normalizeState(value) {
-  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+  if (value === null || typeof value !== 'object' || Array.isArray(value)) {
     return null;
   }
 
@@ -495,7 +495,7 @@ function normalizeInputState(value) {
  * @returns {Record<string, boolean>} Boolean record.
  */
 function normalizeBooleanRecord(value) {
-  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+  if (value === null || typeof value !== 'object' || Array.isArray(value)) {
     return {};
   }
 
@@ -511,7 +511,7 @@ function normalizeBooleanRecord(value) {
  * @returns {PaddleGamepadState} Normalized gamepad state.
  */
 function normalizeGamepadState(value) {
-  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+  if (value === null || typeof value !== 'object' || Array.isArray(value)) {
     return { buttons: [], axes: [] };
   }
 
@@ -552,7 +552,7 @@ function normalizeGamepadAxes(value) {
  * @returns {PaddleActions} Normalized actions.
  */
 function normalizeActions(value) {
-  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+  if (value === null || typeof value !== 'object' || Array.isArray(value)) {
     return {
       left: false,
       right: false,
@@ -578,7 +578,7 @@ function normalizeActions(value) {
  * @returns {PaddleEdgeActions} Normalized edge actions.
  */
 function normalizeEdgeActions(value) {
-  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+  if (value === null || typeof value !== 'object' || Array.isArray(value)) {
     return {
       left: false,
       right: false,
@@ -605,7 +605,7 @@ function normalizeEdgeActions(value) {
  * @returns {PaddleState['paddle']} Normalized paddle.
  */
 function normalizePaddle(value, height) {
-  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+  if (value === null || typeof value !== 'object' || Array.isArray(value)) {
     return createState(createSeedOptions()).paddle;
   }
 
@@ -644,7 +644,7 @@ function normalizeNonNegativeInteger(value, fallback) {
  * @returns {PaddleState['orb']} Normalized orb.
  */
 function normalizeOrb(value) {
-  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+  if (value === null || typeof value !== 'object' || Array.isArray(value)) {
     return createState(createSeedOptions()).orb;
   }
 
