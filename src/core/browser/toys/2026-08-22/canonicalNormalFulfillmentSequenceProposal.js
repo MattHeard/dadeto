@@ -72,7 +72,7 @@ function canonicalSpacePoints(values) {
 
 /**
  * @param {any} value Candidate space point.
- * @returns {{spacePointId: string, latitude: number, longitude: number}} Canonical point.
+ * @returns {{spacePointId: string, latitude: string, longitude: string}} Canonical point.
  */
 function canonicalSpacePoint(value) {
   const record = normalizeCoordinateRecord(value, 'spacePointId');
@@ -80,7 +80,7 @@ function canonicalSpacePoint(value) {
     throw new Error('Invalid canonical space point.');
   return {
     spacePointId: record.id,
-    latitude: Number(record.latitude),
-    longitude: Number(record.longitude),
+    latitude: String(record.latitude),
+    longitude: String(record.longitude),
   };
 }
