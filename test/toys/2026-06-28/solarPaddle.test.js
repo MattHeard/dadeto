@@ -442,6 +442,7 @@ describe('solarPaddle helper contracts', () => {
     expect(state.orb.vx).toBe(2);
     expect(h.getPanelCollisionAxis({ x: -3, y: 5, radius: 3 }, { x: 0, y: 0, width: 20, height: 10 })).toBe('x');
     expect(h.getPanelCollisionAxis({ x: 10, y: -3, radius: 3 }, { x: 0, y: 0, width: 20, height: 10 })).toBe('y');
+    expect(h.getPanelCollisionAxis({ x: 15, y: 5, radius: 3 }, { x: 0, y: 0, width: 20, height: 10 })).toBe('y');
     const orb = { x: 10, y: 5, vx: 1, vy: 1, radius: 2, stuckToPaddle: false };
     const panel = { x: 0, y: 0, width: 20, height: 10 };
     separateOrbFromPanel(orb, panel, 'x');
