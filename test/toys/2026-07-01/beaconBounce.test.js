@@ -1080,6 +1080,19 @@ describe('beaconBounce reset rendering', () => {
     expect(alreadyActive.beacons[0].hitCount).toBe(2);
     expect(alreadyActive.links).toEqual([]);
 
+    const upperLeftBeacon = {
+      orb: { x: 20, y: 20, vx: 2, vy: 3, radius: 4, stuckToPaddle: false },
+      score: 0,
+      lastActivatedBeaconId: null,
+      beacons: [{
+        id: 'upper-left', x: 24, y: 24, radius: 8, active: false, required: true, hitCount: 0,
+      }],
+      links: [],
+    };
+    resolveBeacons(upperLeftBeacon);
+    expect(upperLeftBeacon.orb).toMatchObject({ vx: -2, vy: -3 });
+    expect(upperLeftBeacon.beacons[0]).toMatchObject({ active: true, hitCount: 1 });
+
     const missedPaddle = {
       paddle: { x: 10, y: 30, width: 40, height: 6, speed: 4 },
       orb: { x: 80, y: 34, vx: 1, vy: 3, radius: 4, stuckToPaddle: false },
