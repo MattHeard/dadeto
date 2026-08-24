@@ -41,10 +41,16 @@ describe('solarPaddle helper contracts', () => {
     expect(h.createState(seedOptions)).toMatchObject({ version: 1, width: 360, height: 240, frame: 0, status: 'ready', lives: 3, paddle: { width: 52, height: 7 }, orb: { radius: 4, stuckToPaddle: true } });
     expect(h.normalizeState({ version: 0 })).toBeNull();
     expect(h.normalizeState('bad')).toBeNull();
+    expect(h.normalizeState([1])).toBeNull();
     expect(h.normalizeBooleanRecord('bad')).toEqual({});
     expect(h.normalizeGamepadState('bad')).toEqual({ buttons: [], axes: [] });
+    expect(h.normalizeGamepadState([1])).toEqual({ buttons: [], axes: [] });
     expect(h.normalizeActions([])).toEqual({ left: false, right: false, launch: false, pause: false, reset: false });
+    expect(h.normalizeActions([true])).toEqual({ left: false, right: false, launch: false, pause: false, reset: false });
     expect(h.normalizeEdgeActions([])).toEqual({ left: false, right: false, launchPressed: false, pausePressed: false, resetPressed: false });
+    expect(h.normalizeEdgeActions([true])).toEqual({ left: false, right: false, launchPressed: false, pausePressed: false, resetPressed: false });
+    expect(h.normalizePaddle([1], 140)).toEqual(h.createState(h.createSeedOptions()).paddle);
+    expect(h.normalizeOrb([1])).toEqual(h.createState(h.createSeedOptions()).orb);
     expect(h.normalizePaddle([], 200)).toMatchObject({ width: 52, height: 7 });
     expect(h.normalizeOrb([])).toMatchObject({ radius: 4, stuckToPaddle: true });
     expect(h.normalizeState({ version: 1 })).toMatchObject({ version: 1, width: 360, height: 240, status: 'ready', lives: 3 });
