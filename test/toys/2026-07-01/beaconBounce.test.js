@@ -53,6 +53,11 @@ describe('beaconBounce', () => {
       radius: 4,
       stuckToPaddle: true,
     });
+
+    const fallback = runToy(JSON.stringify({ width: 0, height: -1, lives: 0 }));
+    expect(fallback.storageValue.current.BEAC1.width).toBeGreaterThan(0);
+    expect(fallback.storageValue.current.BEAC1.height).toBeGreaterThan(0);
+    expect(fallback.storageValue.current.BEAC1.lives).toBeGreaterThan(0);
   });
 
   it('launches on space and keeps launch edge-triggered', () => {
@@ -61,6 +66,14 @@ describe('beaconBounce', () => {
     const second = runToy('{}', storageValue);
     expect(second.storageValue.current.BEAC1.status).toBe('running');
     expect(second.storageValue.current.BEAC1.orb.stuckToPaddle).toBe(false);
+
+    const frameBeforeStepping = second.storageValue.current.BEAC1.frame;
+    const stepped = runToy(
+      JSON.stringify({ speedMultiplier: 2, stepCount: 2 }),
+      storageValue
+    );
+    expect(stepped.storageValue.current.BEAC1.simulationSpeed).toBe(2);
+    expect(stepped.storageValue.current.BEAC1.frame).toBeGreaterThan(frameBeforeStepping);
   });
 
   it('does not relaunch a game that is already running', () => {
