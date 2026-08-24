@@ -174,6 +174,12 @@ describe('solarPaddle helper contracts', () => {
     expect(h.isAxisLeft(-0.41)).toBe(true);
     expect(h.isAxisRight(0.4)).toBe(false);
     expect(h.isAxisRight(0.41)).toBe(true);
+    expect(h.normalizePanelFromState({ id: 4, x: 0, y: 0, width: -1, height: 0, charge: 1 }, 2))
+      .toEqual({ id: 'p3', x: 0, y: 0, width: 20, height: 10, charge: false });
+    expect(h.normalizePaddle({ x: -1, y: -1, width: -1, height: 0, speed: -1 }, 4))
+      .toEqual({ x: 180, y: 0, width: 52, height: 7, speed: 4 });
+    expect(h.normalizeOrb({ x: 0, y: 0, vx: 0, vy: 0, radius: 0, stuckToPaddle: false }))
+      .toEqual({ x: 180, y: 0, vx: 1, vy: -2, radius: 4, stuckToPaddle: false });
   });
 
   it('covers collision axes, pause toggles, and payload geometry', () => {
