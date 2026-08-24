@@ -496,7 +496,6 @@ describe('additional dropdown and focus coverage', () => {
   });
 
   test('covers focus, row handlers, and fallback row data', () => {
-    const sync = jest.fn();
     const dom = {
       querySelector: jest.fn(() => ({})),
       getDataAttribute: jest.fn(() => 'old'),
