@@ -416,6 +416,24 @@ describe('solarPaddle helper contracts', () => {
     expect(h.parseInput(42)).toBeNull();
     expect(h.parseInput('  ')).toBeNull();
   });
+
+  it('covers no-op input events and exact edge-action projection', () => {
+    const keyboard = { held: true };
+    h.applyKeyboardInput(null, keyboard);
+    h.applyKeyboardInput({ type: 'keydown', key: 4 }, keyboard);
+    h.applyKeyboardInput({ type: 'keyup' }, keyboard);
+    expect(keyboard).toEqual({ held: true });
+    const gamepad = { buttons: [true], axes: [1] };
+    h.applyGamepadInput(null, gamepad);
+    h.applyGamepadInput({ buttons: 'bad', axes: 'bad', buttonIndex: '0' }, gamepad);
+    expect(gamepad).toEqual({ buttons: [true], axes: [1] });
+    const all = { left: true, right: true, launch: true, pause: true, reset: true };
+    const none = { left: false, right: false, launch: false, pause: false, reset: false };
+    expect(h.createEdgeActions(all, none)).toEqual({ left: true, right: true, launchPressed: true, pausePressed: true, resetPressed: true });
+    expect(h.createEdgeActions(all, all)).toEqual({ left: false, right: false, launchPressed: false, pausePressed: false, resetPressed: false });
+    const result = h.createActionsFromState({ ArrowLeft: true }, { buttons: [], axes: [] });
+    expect(result.edgeActions).toEqual({ left: true, right: false, launchPressed: false, pausePressed: false, resetPressed: false });
+  });
 });
 
 /**
