@@ -14,6 +14,11 @@ import {
   resolveSegment,
   resolveSegmentTiming,
 } from '../../../src/core/browser/toys/2026-08-21/segmentAssignmentFeasibilityCore.js';
+import { canonicalNormalFulfillmentSequenceProposal } from '../../../src/core/browser/toys/2026-08-22/canonicalNormalFulfillmentSequenceProposal.js';
+import { procurementNormalFulfillmentComposer } from '../../../src/core/browser/toys/2026-08-22/procurementNormalFulfillmentComposer.js';
+import { procurementPrefixProposal } from '../../../src/core/browser/toys/2026-08-22/procurementPrefixProposal.js';
+import { existingAssetFulfillmentFeasibility } from '../../../src/core/browser/toys/2026-08-23/existingAssetFulfillmentFeasibility.js';
+import { existingAssetFulfillmentSequenceFeasibility } from '../../../src/core/browser/toys/2026-08-23/existingAssetFulfillmentSequenceFeasibility.js';
 
 describe('fulfillment boundary helpers', () => {
   test('covers scalar predicates and failure serialization', () => {
@@ -122,5 +127,21 @@ describe('segment timing and world-line boundaries', () => {
         entry
       )
     ).toMatchObject({ reason: 'duplicate-segment' });
+  });
+});
+
+describe('fulfillment toy validation boundaries', () => {
+  test('serializes invalid requests without suppressing validation branches', () => {
+    for (const calculate of [
+      canonicalNormalFulfillmentSequenceProposal,
+      procurementNormalFulfillmentComposer,
+      procurementPrefixProposal,
+    ])
+      expect(JSON.parse(calculate('{}'))).toMatchObject({ valid: false });
+    for (const calculate of [
+      existingAssetFulfillmentFeasibility,
+      existingAssetFulfillmentSequenceFeasibility,
+    ])
+      expect(JSON.parse(calculate('{}'))).toMatchObject({ feasible: false });
   });
 });
