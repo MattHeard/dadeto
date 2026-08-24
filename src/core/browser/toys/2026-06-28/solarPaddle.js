@@ -1221,13 +1221,15 @@ export function separateOrbFromPanel(orb, panel, collisionAxis) {
   const dy = orb.y - panelCenterY;
 
   if (collisionAxis === 'x') {
+    const direction = dx < 0 ? -1 : 1;
     orb.x =
-      panelCenterX + Math.sign(dx || 1) * (panel.width / 2 + orb.radius + 0.5);
+      panelCenterX + direction * (panel.width / 2 + orb.radius + 0.5);
     return;
   }
 
+  const direction = dy < 0 ? -1 : 1;
   orb.y =
-    panelCenterY + Math.sign(dy || 1) * (panel.height / 2 + orb.radius + 0.5);
+    panelCenterY + direction * (panel.height / 2 + orb.radius + 0.5);
 }
 
 /**
