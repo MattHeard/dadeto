@@ -86,3 +86,42 @@ export function fulfillmentSkuBoundary(input, evaluate) {
     fulfillmentFindMatchingAsset(request, asset => evaluate(asset, request))
   );
 }
+
+/**
+ * Resolve a point with coordinates from its referenced space point.
+ * @param {Record<string, any>} point Point record.
+ * @param {Array<Record<string, any>>} spacePoints Space-point records.
+ * @returns {Record<string, any>} Coordinate-bearing point.
+ */
+export function fulfillmentResolvePoint(point, spacePoints) {
+  const spacePoint = spacePoints.find(
+    candidate => candidate.spacePointId === point.spacePointId
+  );
+  if (!spacePoint)
+    throw new Error(`Unknown space point: ${point.spacePointId}`);
+  return {
+    ...point,
+    latitude: spacePoint.latitude,
+    longitude: spacePoint.longitude,
+  };
+}
+
+/**
+ * Merge records by an identifier and reject conflicting duplicates.
+ * @param {Array<Record<string, any>>} records Records to merge.
+ * @param {string} field Identifier field.
+ * @returns {Array<Record<string, any>>} Deduplicated records.
+ */
+export function fulfillmentMergeById(records, field) {
+  const byId = new Map();
+  records.forEach(record => {
+    if (!record || !fulfillmentNonblank(record[field]))
+      throw new Error(`Invalid ${field}.`);
+    const id = String(record[field]);
+    const existing = byId.get(id);
+    if (existing && JSON.stringify(existing) !== JSON.stringify(record))
+      throw new Error(`Conflicting ${field}: ${id}`);
+    byId.set(id, { ...record, [field]: id });
+  });
+  return [...byId.values()];
+}

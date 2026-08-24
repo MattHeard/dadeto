@@ -1,7 +1,9 @@
 import { evaluateWorldLineMany } from '../2026-08-21/segmentAssignmentFeasibilityCore.js';
 import {
   fulfillmentBoundary,
+  fulfillmentMergeById,
   fulfillmentNonblank,
+  fulfillmentResolvePoint,
 } from '../2026-08-22/fulfillmentResult.js';
 
 const ASSET_OPERATIONS = [
@@ -26,7 +28,7 @@ export function existingAssetFulfillmentSequenceFeasibility(input) {
     if (!fulfillmentNonblank(asset?.stockInPoint?.pointId))
       throw new Error('A stock-in point is required.');
     const candidates = selectAssetSegments(proposal);
-    const points = mergeById(
+    const points = fulfillmentMergeById(
       [
         ...(request.points || []),
         ...(proposal.points || []),
@@ -34,11 +36,11 @@ export function existingAssetFulfillmentSequenceFeasibility(input) {
       ],
       'pointId'
     );
-    const spacePoints = mergeById(
+    const spacePoints = fulfillmentMergeById(
       [...(request.spacePoints || []), ...(proposal.spacePoints || [])],
       'spacePointId'
     );
-    const entry = resolvePoint(asset.stockInPoint, spacePoints);
+    const entry = fulfillmentResolvePoint(asset.stockInPoint, spacePoints);
     return JSON.stringify(
       evaluateWorldLineMany(
         points,
@@ -78,41 +80,4 @@ function selectAssetSegments(proposal) {
   if (new Set(ids).size !== ids.length)
     throw new Error('Asset operations must reference distinct segments.');
   return operations;
-}
-
-/**
- * @param {Record<string, any>} point Point.
- * @param {Array<Record<string, any>>} spacePoints Space points.
- * @returns {Record<string, any>} Coordinate-bearing point.
- */
-function resolvePoint(point, spacePoints) {
-  const spacePoint = spacePoints.find(
-    candidate => candidate.spacePointId === point.spacePointId
-  );
-  if (!spacePoint)
-    throw new Error(`Unknown space point: ${point.spacePointId}`);
-  return {
-    ...point,
-    latitude: spacePoint.latitude,
-    longitude: spacePoint.longitude,
-  };
-}
-
-/**
- * @param {Array<Record<string, any>>} records Records.
- * @param {string} field Identifier field.
- * @returns {Array<Record<string, any>>} Deduplicated records.
- */
-function mergeById(records, field) {
-  const byId = new Map();
-  records.forEach(record => {
-    if (!record || !fulfillmentNonblank(record[field]))
-      throw new Error(`Invalid ${field}.`);
-    const id = String(record[field]);
-    const existing = byId.get(id);
-    if (existing && JSON.stringify(existing) !== JSON.stringify(record))
-      throw new Error(`Conflicting ${field}: ${id}`);
-    byId.set(id, { ...record, [field]: id });
-  });
-  return [...byId.values()];
 }
