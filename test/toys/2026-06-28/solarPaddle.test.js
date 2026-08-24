@@ -623,6 +623,11 @@ describe('solarPaddle helper contracts', () => {
     edgePaddle.orb.vy = 2;
     resolvePaddle(edgePaddle);
     expect(edgePaddle.orb.vy).toBeLessThan(0);
+    edgePaddle.orb.x = edgePaddle.paddle.x + edgePaddle.paddle.width / 2;
+    edgePaddle.orb.y = edgePaddle.paddle.y - edgePaddle.orb.radius;
+    edgePaddle.orb.vy = 2;
+    resolvePaddle(edgePaddle);
+    expect(edgePaddle.orb.vy).toBe(-2);
   });
 });
 
