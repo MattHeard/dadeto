@@ -10,6 +10,9 @@ import {
 describe('solarPaddle helper contracts', () => {
   it('covers parsing, normalization, layout, and input boundaries', () => {
     expect(h.parseInput('')).toBeNull();
+    expect(h.parseInput('   ')).toBeNull();
+    expect(h.parseInput(null)).toBeNull();
+    expect(h.parseInput({})).toBeNull();
     expect(h.parseInput('null')).toBeNull();
     expect(h.parseInput('{"width":240}')).toEqual({ width: 240 });
     expect(h.parseObjectRecord('[]')).toBeNull();
@@ -380,6 +383,9 @@ describe('solarPaddle helper contracts', () => {
     expect(reset.frame).toBe(0);
     expect(reset.status).toBe('ready');
     expect(reset.panels).toEqual(seed.panels);
+    const explicitReset = h.buildNextState(seed, { reset: true });
+    expect(explicitReset.frame).toBe(1);
+    expect(explicitReset.status).toBe('ready');
     const repeated = h.updateInputState(held, { type: 'keydown', key: 'ArrowLeft' });
     expect(repeated.actions.left).toBe(true);
     expect(repeated.edgeActions.left).toBe(false);
