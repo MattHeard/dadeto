@@ -856,7 +856,10 @@ function getPanelRowOffset(colIndex) {
 function shufflePositions(positions, seed) {
   const items = positions.slice();
   let state = Math.max(1, seed);
-  for (let i = items.length - 1; i > 0; i -= 1) {
+  const indexes = items
+    .slice(1)
+    .map((_, index) => items.length - 1 - index);
+  for (const i of indexes) {
     state = (state * 1664525 + 1013904223) >>> 0;
     const j = state % (i + 1);
     [items[i], items[j]] = [items[j], items[i]];
@@ -871,7 +874,7 @@ function shufflePositions(positions, seed) {
  * @returns {PaddleInputState} Updated input state.
  */
 function updateInputState(previous, input) {
-  const nextKeyboard = { ...previous?.keyboard };
+  const nextKeyboard = Object.assign({}, previous?.keyboard);
   const nextGamepad = normalizeGamepadState(previous?.gamepad);
   const nextActions = deriveActions(input, nextKeyboard, nextGamepad);
   const previousActions = normalizeActions(previous?.actions);
