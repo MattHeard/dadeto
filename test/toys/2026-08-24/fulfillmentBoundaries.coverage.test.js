@@ -8,6 +8,7 @@ import {
   fulfillmentMinuteAligned,
   fulfillmentNonblank,
   fulfillmentResolvePoint,
+  fulfillmentExistingAssetBoundary,
 } from '../../../src/core/browser/toys/2026-08-22/fulfillmentResult.js';
 import {
   evaluateWorldLineMany,
@@ -127,6 +128,12 @@ describe('segment timing and world-line boundaries', () => {
         entry
       )
     ).toMatchObject({ reason: 'duplicate-segment' });
+    expect(evaluateWorldLineMany(null, null, null, entry)).toMatchObject({
+      reason: 'missing-candidate-segments',
+    });
+    expect(
+      evaluateWorldLineMany([], [], [{ segmentId: 's' }], {})
+    ).toMatchObject({ reason: 'missing-entry-point' });
   });
 });
 
@@ -182,5 +189,37 @@ describe('fulfillment toy validation boundaries', () => {
         )
       )
     ).toMatchObject({ valid: false });
+  });
+
+  test('covers existing-asset request fallback and required-field failures', () => {
+    const select = () => [];
+    const evaluate = () => ({ feasible: true });
+    expect(
+      JSON.parse(fulfillmentExistingAssetBoundary('{}', select, evaluate))
+    ).toMatchObject({ feasible: false });
+    expect(
+      JSON.parse(
+        fulfillmentExistingAssetBoundary(
+          JSON.stringify({ asset: { assetId: 'a' }, proposal: {} }),
+          select,
+          evaluate
+        )
+      )
+    ).toMatchObject({ feasible: false });
+    expect(
+      JSON.parse(
+        fulfillmentExistingAssetBoundary(
+          JSON.stringify({
+            asset: {
+              assetId: 'a',
+              stockInPoint: { pointId: 'stock', spacePointId: 'warehouse' },
+            },
+            proposal: { points: [], spacePoints: [] },
+          }),
+          select,
+          evaluate
+        )
+      )
+    ).toMatchObject({ feasible: false });
   });
 });
