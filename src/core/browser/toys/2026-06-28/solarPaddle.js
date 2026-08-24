@@ -91,10 +91,6 @@ function readPersistedState(storage) {
  * @returns {unknown} Parsed record or null.
  */
 function parseInput(input) {
-  if (typeof input !== 'string' || input.trim() === '') {
-    return null;
-  }
-
   return parseObjectRecord(input);
 }
 
