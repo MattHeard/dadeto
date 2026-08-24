@@ -94,7 +94,7 @@ function vincentyDistance(
     cosSquaredAlpha = 1,
     cosTwoSigmaM = 0;
   let converged = false;
-  for (const _iteration of Array(100).keys()) {
+  for (let iteration = 0; iteration < 100; iteration += 1) {
     const sinLambda = Math.sin(lambda);
     const cosLambda = Math.cos(lambda);
     sinSigma = Math.sqrt(

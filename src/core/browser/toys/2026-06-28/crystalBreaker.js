@@ -31,8 +31,8 @@ const DEFAULT_LIVES = 3;
 const HUD_HEIGHT = 24;
 
 /**
- *
- * @param value
+ * @param {unknown} value Candidate record.
+ * @returns {boolean} Whether the value is a record.
  */
 function isRecord(value) {
   return value !== null && typeof value === 'object' && !Array.isArray(value);

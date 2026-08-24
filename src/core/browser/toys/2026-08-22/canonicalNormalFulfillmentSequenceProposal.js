@@ -80,7 +80,7 @@ function canonicalSpacePoint(value) {
     throw new Error('Invalid canonical space point.');
   return {
     spacePointId: record.id,
-    latitude: Number(record.latitude),
-    longitude: Number(record.longitude),
+    latitude: record.latitude,
+    longitude: record.longitude,
   };
 }

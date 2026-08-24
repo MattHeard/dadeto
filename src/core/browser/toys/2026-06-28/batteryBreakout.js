@@ -94,8 +94,8 @@ function parseObjectRecord(value) {
 }
 
 /**
- *
- * @param value
+ * @param {unknown} value Candidate record.
+ * @returns {boolean} Whether the value is a record.
  */
 function isRecord(value) {
   return value !== null && typeof value === 'object' && !Array.isArray(value);
@@ -1081,7 +1081,7 @@ export function stepSimulation(state) {
   const substeps = 3;
   const hitCells = new Set();
   advanceCellCooldowns(state);
-  for (const _step of [0, 1, 2]) {
+  for (let remaining = substeps; remaining > 0; remaining -= 1) {
     state.orb.x += state.orb.vx / substeps;
     state.orb.y += state.orb.vy / substeps;
     resolveWalls(state);

@@ -96,18 +96,18 @@ export function procurementPrefixProposal(input) {
 }
 
 /**
- *
- * @param value
+ * @param {unknown} value Candidate text.
+ * @returns {boolean} Whether the value is nonblank text.
  */
 function nonblank(value) {
   return typeof value === 'string' && value.trim().length > 0;
 }
 
 /**
- *
- * @param value
- * @param minimum
- * @param maximum
+ * @param {unknown} value Candidate coordinate.
+ * @param {number} minimum Inclusive lower bound.
+ * @param {number} maximum Inclusive upper bound.
+ * @returns {boolean} Whether the coordinate is valid.
  */
 function coordinate(value, minimum, maximum) {
   const number = Number(value);
@@ -120,24 +120,24 @@ function coordinate(value, minimum, maximum) {
 }
 
 /**
- *
- * @param value
+ * @param {unknown} value Candidate duration.
+ * @returns {boolean} Whether the value is finite and non-negative.
  */
 function finiteNonNegative(value) {
   return typeof value === 'number' && Number.isFinite(value) && value >= 0;
 }
 
 /**
- *
- * @param value
+ * @param {number} value Epoch milliseconds.
+ * @returns {boolean} Whether the timestamp is minute-aligned.
  */
 function minuteAligned(value) {
   return Number.isFinite(value) && value % MINUTE_MS === 0;
 }
 
 /**
- *
- * @param value
+ * @param {number} value Epoch milliseconds.
+ * @returns {string} ISO minute timestamp.
  */
 function timestamp(value) {
   return `${new Date(value).toISOString().slice(0, 16)}Z`;
