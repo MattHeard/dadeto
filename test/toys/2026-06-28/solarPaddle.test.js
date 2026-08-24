@@ -100,6 +100,7 @@ describe('solarPaddle helper contracts', () => {
     state.status = 'ready';
     h.applyGameplayInput(state, { actions: { left: false, right: false, launch: true, pause: false, reset: false }, edgeActions: { left: false, right: false, launchPressed: true, pausePressed: false, resetPressed: false } });
     expect(state.status).toBe('running');
+    expect(state.orb.stuckToPaddle).toBe(false);
     state.status = 'running';
     h.applyGameplayInput(state, { actions: { left: false, right: false, launch: false, pause: true, reset: false }, edgeActions: { left: false, right: false, launchPressed: false, pausePressed: true, resetPressed: false } });
     expect(state.status).toBe('paused');
@@ -537,6 +538,8 @@ describe('solarPaddle helper contracts', () => {
     expect(state.status).toBe('running');
     state.status = 'running';
     h.applyGameplayInput(state, { actions: noInput.actions, edgeActions: { ...noInput.edgeActions, pausePressed: true } });
+    expect(state.status).toBe('paused');
+    h.applyGameplayInput(state, noInput);
     expect(state.status).toBe('paused');
   });
 
