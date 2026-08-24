@@ -1290,6 +1290,10 @@ describe('beaconBounce stuck orb and helpers', () => {
         axes: [0],
       }).actions.moveLeft
     ).toBe(true);
+    expect(updateInputState(undefined, { axes: [-0.4] }).actions.moveLeft).toBe(false);
+    expect(updateInputState(undefined, { axes: [-0.41] }).actions.moveLeft).toBe(true);
+    expect(updateInputState(undefined, { axes: [0.4] }).actions.moveRight).toBe(false);
+    expect(updateInputState(undefined, { axes: [0.41] }).actions.moveRight).toBe(true);
     expect(
       updateInputState(undefined, {
         type: 'keydown',
