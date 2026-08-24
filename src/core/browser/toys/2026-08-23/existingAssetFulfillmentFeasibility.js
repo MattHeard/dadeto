@@ -64,11 +64,12 @@ function selectAssetSegments(proposal) {
     throw new Error('The fulfillment proposal sequence is required.');
   const selected = proposal.sequence
     .filter(operation => ASSET_OPERATIONS.has(operation?.operation))
-    .map(operation =>
-      proposal.segments.find(
+    .map(operation => {
+      const segments = /** @type {Array<any>} */ (proposal.segments);
+      return segments.find(
         segment => segment.segmentId === operation.segmentId
-      )
-    );
+      );
+    });
   const operations = proposal.sequence
     .filter(operation => ASSET_OPERATIONS.has(operation?.operation))
     .map(operation => operation.operation);

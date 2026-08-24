@@ -74,33 +74,51 @@ export function evaluateWorldLineMany(...args) {
     exitPoint,
     spacePointsInput = [],
   ] = args;
+  /** @type {Record<string, unknown>[]} */
+  const pointsRecords = Array.isArray(pointsInput) ? pointsInput : [];
+  /** @type {Record<string, unknown>[]} */
+  const existingRecords = Array.isArray(existingSegments)
+    ? existingSegments
+    : [];
+  /** @type {Record<string, unknown>[]} */
+  const candidateRecords = Array.isArray(candidateSegments)
+    ? candidateSegments
+    : [];
+  /** @type {Record<string, unknown>} */
+  const entryRecord = /** @type {Record<string, unknown>} */ (entryPoint || {});
+  /** @type {Record<string, unknown>} */
+  const exitRecord = /** @type {Record<string, unknown>} */ (exitPoint || {});
+  /** @type {Record<string, unknown>[] | undefined} */
+  const spacePointRecords = Array.isArray(spacePointsInput)
+    ? spacePointsInput
+    : undefined;
   try {
     const points = new Map(
-      resolvePointRecords(pointsInput, spacePointsInput).map(point => [
+      resolvePointRecords(pointsRecords, spacePointRecords).map(point => [
         String(point.pointId),
         point,
       ])
     );
-    if (!entryPoint?.pointId)
+    if (!entryRecord.pointId)
       return { feasible: false, reason: 'missing-entry-point' };
-    points.set(String(entryPoint.pointId), entryPoint);
-    if (exitPoint?.pointId) points.set(String(exitPoint.pointId), exitPoint);
-    if (!Array.isArray(candidateSegments) || candidateSegments.length === 0)
+    points.set(String(entryRecord.pointId), entryRecord);
+    if (exitRecord.pointId) points.set(String(exitRecord.pointId), exitRecord);
+    if (candidateRecords.length === 0)
       return { feasible: false, reason: 'missing-candidate-segments' };
-    if (candidateSegments.some(segment => !segment?.segmentId))
+    if (candidateRecords.some(segment => !segment?.segmentId))
       return { feasible: false, reason: 'invalid-candidate-segment' };
-    const candidateIds = candidateSegments.map(segment =>
+    const candidateIds = candidateRecords.map(segment =>
       String(segment.segmentId)
     );
     if (new Set(candidateIds).size !== candidateIds.length)
       return { feasible: false, reason: 'duplicate-candidate-segment' };
     const existingIds = new Set(
-      existingSegments.map(segment => String(segment?.segmentId))
+      existingRecords.map(segment => String(segment?.segmentId))
     );
     if (candidateIds.some(id => existingIds.has(id)))
       return { feasible: false, reason: 'duplicate-segment' };
     const segments = new Map(
-      [...existingSegments, ...candidateSegments].map(segment => [
+      [...existingRecords, ...candidateRecords].map(segment => [
         String(segment.segmentId),
         segment,
       ])
@@ -112,12 +130,12 @@ export function evaluateWorldLineMany(...args) {
           a.startTime - b.startTime || a.segmentId.localeCompare(b.segmentId)
       );
     // resolveSegment above throws unless the candidate contributes a segment.
-    const entryTime = Date.parse(String(entryPoint.timestamp));
+    const entryTime = Date.parse(String(entryRecord.timestamp));
     if (!Number.isFinite(entryTime))
       return { feasible: false, reason: 'invalid-entry-point' };
     if (resolved[0].startTime < entryTime)
       return { feasible: false, reason: 'before-entry' };
-    if (!bridge(entryPoint, resolved[0], entryTime))
+    if (!bridge(entryRecord, resolved[0], entryTime))
       return { feasible: false, reason: 'entry-discontinuity' };
     for (let index = 1; index < resolved.length; index++) {
       const previous = resolved[index - 1],
@@ -127,14 +145,14 @@ export function evaluateWorldLineMany(...args) {
       if (!bridge(previous.end, next, previous.endTime))
         return { feasible: false, reason: 'world-line-discontinuity' };
     }
-    if (exitPoint) {
-      const exitTime = Date.parse(String(exitPoint.timestamp));
+    if (exitRecord.pointId) {
+      const exitTime = Date.parse(String(exitRecord.timestamp));
       if (!Number.isFinite(exitTime))
         return { feasible: false, reason: 'invalid-exit-point' };
       const last = resolved[resolved.length - 1];
       if (last.endTime > exitTime)
         return { feasible: false, reason: 'after-exit' };
-      if (!bridge(last.end, exitPoint, last.endTime))
+      if (!bridge(last.end, exitRecord, last.endTime))
         return { feasible: false, reason: 'exit-discontinuity' };
     }
     return { feasible: true };

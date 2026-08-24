@@ -15,7 +15,8 @@ export function procurementNormalFulfillmentComposer(input) {
     );
     const normal = validProposal(request.normalProposal, 'normal');
     const procurementSegment = procurement.segments[0];
-    const normalDelivery = normal.segments.find(
+    const normalSegments = /** @type {Array<any>} */ (normal.segments);
+    const normalDelivery = normalSegments.find(
       segment => segment.segmentId === normal.sequence[0].segmentId
     );
     if (
@@ -89,7 +90,8 @@ function validProposal(value, name) {
  * @returns {any} Matching point.
  */
 function findPoint(proposal, pointId) {
-  return proposal.points.find(point => point.pointId === pointId);
+  const points = /** @type {Array<any>} */ (proposal.points);
+  return points.find(point => point.pointId === pointId);
 }
 
 /**

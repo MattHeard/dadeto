@@ -62,12 +62,12 @@ function selectAssetSegments(proposal) {
   if (!Array.isArray(proposal.segments))
     throw new Error('A valid fulfillment proposal segment list is required.');
   const operations = ASSET_OPERATIONS.map(operation => {
-    const matches = proposal.sequence.filter(
-      item => item?.operation === operation
-    );
+    const sequence = /** @type {Array<any>} */ (proposal.sequence);
+    const matches = sequence.filter(item => item?.operation === operation);
     if (matches.length !== 1)
       throw new Error(`Operation ${operation} must occur exactly once.`);
-    const segment = proposal.segments.filter(
+    const segments = /** @type {Array<any>} */ (proposal.segments);
+    const segment = segments.filter(
       candidate => candidate?.segmentId === matches[0].segmentId
     );
     if (segment.length !== 1)
