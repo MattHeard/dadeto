@@ -94,8 +94,7 @@ function createResetState(inputState, persisted, input) {
 function advanceSimulation(next, inputState) {
   let framesToAdvance = inputState.control.stepCount;
   if (!next.paused)
-    framesToAdvance =
-      next.simulationSpeed * Math.max(1, inputState.control.stepCount || 1);
+    framesToAdvance = next.simulationSpeed * Math.max(1, inputState.control.stepCount);
   if (next.status === 'running') {
     for (let index = 0; index < framesToAdvance; index += 1)
       stepSimulation(next);
