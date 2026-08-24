@@ -29,6 +29,11 @@ describe('solarPaddle helper contracts', () => {
     expect(h.normalizeEdgeActions({ left: true, right: false, launchPressed: true, pausePressed: false, resetPressed: true }))
       .toEqual({ left: true, right: false, launchPressed: true, pausePressed: false, resetPressed: true });
     expect(h.normalizeInputState(null)).toMatchObject({ keyboard: {}, gamepad: { buttons: [], axes: [] } });
+    expect(h.updateInputState(undefined, {})).toMatchObject({
+      keyboard: {},
+      gamepad: { buttons: [], axes: [] },
+      actions: { left: false, right: false, launch: false, pause: false, reset: false },
+    });
     const seedOptions = h.createSeedOptions();
     expect(h.createState(seedOptions)).toMatchObject({ version: 1, width: 360, height: 240, frame: 0, status: 'ready', lives: 3, paddle: { width: 52, height: 7 }, orb: { radius: 4, stuckToPaddle: true } });
     expect(h.normalizeState({ version: 0 })).toBeNull();
@@ -285,6 +290,10 @@ describe('solarPaddle helper contracts', () => {
       { x: 28, y: 30 }, { x: 54, y: 32 }, { x: 91, y: 32 }, { x: 140, y: 30 }, { x: 173, y: 32 },
       { x: 40, y: 46 }, { x: 66, y: 48 }, { x: 103, y: 48 }, { x: 152, y: 46 }, { x: 184, y: 48 },
       { x: 28, y: 62 }, { x: 46, y: 64 }, { x: 83, y: 64 }, { x: 132, y: 62 }, { x: 165, y: 64 },
+    ]);
+    const widePositions = h.buildPanelPositions(400, 200, 28, 10);
+    expect(widePositions.slice(0, 5)).toEqual([
+      { x: 28, y: 30 }, { x: 86, y: 32 }, { x: 152, y: 32 }, { x: 230, y: 30 }, { x: 288, y: 32 },
     ]);
     expect(positions.every(position => position.x >= 28 && position.y >= 30)).toBe(true);
     const source = positions.slice(0, 5);
