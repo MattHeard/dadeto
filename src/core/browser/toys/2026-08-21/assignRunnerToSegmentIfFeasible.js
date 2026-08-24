@@ -1,5 +1,6 @@
 // Toy: Assign Runner to Segment if Feasible
 import {
+  indexPointRecords,
   evaluateWorldLine,
   resolveSegment,
 } from './segmentAssignmentFeasibilityCore.js';
@@ -14,15 +15,7 @@ import { wgs84Distance } from '../2026-08-20/wgs84Distance.js';
 export function assignRunnerToSegmentIfFeasible(input, env) {
   try {
     const x = JSON.parse(input),
-      points = new Map(
-        /** @type {Array<Record<string, unknown>>} */ (x.points || []).map(
-          /**
-           * @param {Record<string, unknown>} point Point record.
-           * @returns {[string, Record<string, unknown>]} Point map entry.
-           */
-          point => [String(point.pointId), point]
-        )
-      );
+      points = indexPointRecords(x.points || []);
     const candidate = resolveSegment(
       new Map([[String(x.candidateSegment?.segmentId), x.candidateSegment]]),
       points,

@@ -2,6 +2,15 @@
 import { resolvePointRecords } from '../2026-08-22/spacePointResolution.js';
 
 /**
+ * Index point records by point ID.
+ * @param {Array<Record<string, unknown>>} points Point records.
+ * @returns {Map<string, Record<string, unknown>>} Point index.
+ */
+export function indexPointRecords(points) {
+  return new Map(points.map(point => [String(point.pointId), point]));
+}
+
+/**
  * Resolve and validate a segment.
  * @param {Map<string, Record<string, unknown>>} segments Segment records.
  * @param {Map<string, Record<string, unknown>>} points Point records.

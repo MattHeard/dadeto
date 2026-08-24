@@ -1,6 +1,9 @@
 // Toy: Segment Maximum-Speed Feasibility
 import { wgs84Distance } from '../2026-08-20/wgs84Distance.js';
-import { resolveSegment } from './segmentAssignmentFeasibilityCore.js';
+import {
+  indexPointRecords,
+  resolveSegment,
+} from './segmentAssignmentFeasibilityCore.js';
 import { resolvePointRecords } from '../2026-08-22/spacePointResolution.js';
 
 /**
@@ -10,14 +13,8 @@ import { resolvePointRecords } from '../2026-08-22/spacePointResolution.js';
 export function segmentMaximumSpeedFeasibility(input) {
   try {
     const x = JSON.parse(input || '{}'),
-      points = new Map(
-        resolvePointRecords(x.points || [], x.spacePoints || []).map(
-          /**
-           * @param {Record<string, unknown>} point Point record.
-           * @returns {[string, Record<string, unknown>]} Point map entry.
-           */
-          point => [String(point.pointId), point]
-        )
+      points = indexPointRecords(
+        resolvePointRecords(x.points || [], x.spacePoints || [])
       );
     const candidate = resolveSegment(
       new Map([[String(x.candidateSegment?.segmentId), x.candidateSegment]]),

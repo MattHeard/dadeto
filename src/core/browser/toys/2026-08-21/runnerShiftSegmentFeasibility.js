@@ -1,5 +1,6 @@
 // Toy: Runner Shift Segment Feasibility
 import {
+  indexPointRecords,
   resolveSegment,
   containedBy,
 } from './segmentAssignmentFeasibilityCore.js';
@@ -11,15 +12,7 @@ import {
 export function runnerShiftSegmentFeasibility(input) {
   try {
     const x = JSON.parse(input || '{}'),
-      points = new Map(
-        /** @type {Array<Record<string, unknown>>} */ (x.points || []).map(
-          /**
-           * @param {Record<string, unknown>} point Point record.
-           * @returns {[string, Record<string, unknown>]} Point map entry.
-           */
-          point => [String(point.pointId), point]
-        )
-      );
+      points = indexPointRecords(x.points || []);
     const candidate = resolveSegment(
       new Map([[String(x.candidateSegment?.segmentId), x.candidateSegment]]),
       points,
