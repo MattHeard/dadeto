@@ -997,6 +997,37 @@ describe('beaconBounce reset rendering', () => {
     resolveWalls(wallState);
     expect(wallState.orb.vx).toBeGreaterThanOrEqual(0);
     expect(wallState.orb.vy).toBeGreaterThanOrEqual(0);
+
+    const rightWall = {
+      orb: { x: 119, y: 40, vx: 2, vy: 2, radius: 4 },
+      width: 120,
+      height: 80,
+    };
+    resolveWalls(rightWall);
+    expect(rightWall.orb.x).toBe(116);
+    expect(rightWall.orb.vx).toBe(-2);
+
+    const clearWalls = {
+      orb: { x: 40, y: 40, vx: 2, vy: 2, radius: 4 },
+      width: 120,
+      height: 80,
+    };
+    resolveWalls(clearWalls);
+    expect(clearWalls.orb).toEqual({ x: 40, y: 40, vx: 2, vy: 2, radius: 4 });
+
+    const alreadyActive = {
+      orb: { x: 20, y: 20, vx: -1, vy: -1, radius: 4, stuckToPaddle: false },
+      score: 10,
+      lastActivatedBeaconId: 'beacon-1',
+      beacons: [{
+        id: 'beacon-1', x: 20, y: 20, radius: 8, active: true, required: true, hitCount: 1,
+      }],
+      links: [],
+    };
+    resolveBeacons(alreadyActive);
+    expect(alreadyActive.score).toBe(10);
+    expect(alreadyActive.beacons[0].hitCount).toBe(2);
+    expect(alreadyActive.links).toEqual([]);
   });
 });
 
