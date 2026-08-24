@@ -1191,6 +1191,13 @@ describe('beaconBounce stuck orb and helpers', () => {
     stepSimulation(belowBottom);
     expect(belowBottom.lives).toBe(1);
     expect(belowBottom.status).toBe('ready');
+    expect(belowBottom.orb).toMatchObject({
+      stuckToPaddle: true,
+      x: 5,
+      y: -5,
+      vx: 1.6,
+      vy: -2.4,
+    });
 
     const won = {
       ...exactBottom,
