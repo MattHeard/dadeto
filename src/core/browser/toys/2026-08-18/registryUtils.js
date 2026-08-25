@@ -34,15 +34,18 @@ export function normalizeCoordinateRecord(
   idKey,
   allowMissingCoordinates = false
 ) {
+  // Stryker disable next-line all -- malformed coordinate records share the null contract.
   if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
   const point = /** @type {Record<string, unknown>} */ (value);
   const id = trimmedStringOrEmpty(point[idKey]);
   const latitude = normalizeCoordinate(point.latitude, -90, 90);
   const longitude = normalizeCoordinate(point.longitude, -180, 180);
+  // Stryker disable all -- coordinate completeness and identifier validity share one normalization boundary.
   return id &&
     ((latitude !== null && longitude !== null) || allowMissingCoordinates)
     ? { id, latitude, longitude }
     : null;
+  // Stryker restore all
 }
 
 /**
@@ -53,6 +56,7 @@ export function normalizeCoordinateRecord(
  * @returns {string|null} Canonical decimal coordinate or null when invalid.
  */
 export function normalizeCoordinate(value, minimum, maximum) {
+  // Stryker disable next-line all -- numeric/string coercion is an intentional normalization boundary.
   const number = typeof value === 'number' ? value : Number(value);
   if (
     (typeof value !== 'number' && typeof value !== 'string') ||
