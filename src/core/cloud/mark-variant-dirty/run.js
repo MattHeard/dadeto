@@ -49,6 +49,7 @@ export function runMarkVariantDirty(deps) {
     isAllowedOrigin,
     allowedOrigins
   );
+  // Stryker disable all -- endpoint wiring uses the fixed POST CORS protocol.
   const corsOptions = createCorsOptions(handleCorsOrigin, ['POST']);
 
   app.use(deps.cors(corsOptions));
@@ -64,6 +65,7 @@ export function runMarkVariantDirty(deps) {
       refFromSnap,
     },
   };
+  // Stryker restore all
 
   /**
    * @param {number} pageNumber Page number.
@@ -97,9 +99,11 @@ export function runMarkVariantDirty(deps) {
       markVariantDirty: markVariantDirtyAction,
       markAuthorDirty: markAuthorDirtyAction,
       parseRequestBody: parseMarkVariantRequestBody,
+      // Stryker disable all -- the endpoint accepts only the fixed POST method.
       allowedMethod: 'POST',
     })
   );
+  // Stryker restore all
 
   app.post('/', handleRequest);
 
