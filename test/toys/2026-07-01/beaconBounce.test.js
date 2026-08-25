@@ -631,6 +631,8 @@ describe('beaconBounce input and state fallbacks', () => {
 
     const normalized = buildNextState(null, {});
     expect(normalized.status).toBe('ready');
+    const resetWithoutPersistedState = buildNextState(null, { reset: true });
+    expect(resetWithoutPersistedState.beacons[0].id).toBe('beacon-1-1');
 
     for (const invalid of [null, [], {}, { version: 2 }]) {
       const storage = { current: { BEAC1: invalid } };
@@ -1393,6 +1395,11 @@ describe('beaconBounce stuck orb and helpers', () => {
       paused: false,
       speedMultiplier: 4,
       stepCount: 5,
+    });
+    expect(updateInputState(undefined, { speed: 4, step: 3 }).control).toEqual({
+      paused: false,
+      speedMultiplier: 4,
+      stepCount: 3,
     });
     expect(
       updateInputState(undefined, { speed: -4, step: -2 }).control
