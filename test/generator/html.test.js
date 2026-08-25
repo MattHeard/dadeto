@@ -13,6 +13,7 @@ import {
   tagClose,
   equals,
   quote,
+  attrName,
 } from '../../src/build/html.js';
 
 describe('html utilities', () => {
@@ -50,6 +51,10 @@ describe('html utilities', () => {
 
   test('wrapHtml adds doctype and html tag', () => {
     expect(wrapHtml('hi')).toBe('<!DOCTYPE html><html lang="en">hi</html>');
+  });
+
+  test('attrName returns all supported attribute names', () => {
+    expect(attrName()).toEqual({ LANG: 'lang', CLASS: 'class', ID: 'id' });
   });
 
   test('getClosingTagParts returns correct parts', () => {
