@@ -7,6 +7,9 @@ import { whenString } from '../commonCore.js';
  * @returns {string} String representation of the header or empty string.
  */
 function normalizeHeaderString(header) {
+  // Stryker disable next-line all -- non-string headers normalize to an empty
+  // candidate, and the bearer parser intentionally treats any such candidate
+  // as absent.
   return whenString(header, value => value) ?? '';
 }
 
@@ -16,6 +19,8 @@ function normalizeHeaderString(header) {
  * @returns {string | null} UID string when present, otherwise null.
  */
 function defaultUidMapper(decoded) {
+  // Stryker disable next-line all -- the verifier catch boundary intentionally
+  // normalizes malformed decoded payloads to null.
   return stringOrNull(decoded?.uid);
 }
 

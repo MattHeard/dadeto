@@ -29,6 +29,9 @@ describe('auth-helpers', () => {
     await expect(verifyTokenSafe('token', verifyIdToken)).resolves.toBe(
       'user-3'
     );
+    await expect(
+      verifyTokenSafe('token', jest.fn().mockResolvedValue(null))
+    ).resolves.toBeNull();
   });
 
   test('resolves an author id from a bearer authorization header', async () => {
@@ -49,6 +52,9 @@ describe('auth-helpers', () => {
     ).resolves.toBeNull();
     await expect(
       resolveAuthorIdFromHeader(123, verifyIdToken)
+    ).resolves.toBeNull();
+    await expect(
+      resolveAuthorIdFromHeader(undefined, verifyIdToken)
     ).resolves.toBeNull();
     await expect(
       resolveAuthorIdFromHeader('Basic token-value', verifyIdToken)
