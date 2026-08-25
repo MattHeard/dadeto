@@ -195,7 +195,7 @@ describe('generate-stats run', () => {
   });
 
   it('caches the default firestore instance', async () => {
-    const { mod } = await loadModule();
+    const { mod, getFirestore } = await loadModule();
     const originalDatabaseId = process.env.DATABASE_ID;
     process.env.DATABASE_ID = 'cached-db';
 
@@ -204,6 +204,7 @@ describe('generate-stats run', () => {
       const second = mod.getFirestoreInstance();
 
       expect(first).toBe(second);
+      expect(getFirestore).toHaveBeenCalledTimes(1);
     } finally {
       if (originalDatabaseId === undefined) {
         delete process.env.DATABASE_ID;
@@ -239,6 +240,33 @@ describe('generate-stats run', () => {
     expect(getFirestoreFn).toHaveBeenCalledTimes(2);
   });
 
+  it('bypasses the Firestore cache for each identity component independently', async () => {
+    const previousDatabaseId = process.env.DATABASE_ID;
+    process.env.DATABASE_ID = 'cache-test';
+    try {
+      const ensureCase = await loadModule();
+      const customEnsure = jest.fn();
+      ensureCase.mod.getFirestoreInstance({ ensureAppFn: customEnsure });
+      ensureCase.mod.getFirestoreInstance({ ensureAppFn: customEnsure });
+      expect(ensureCase.getFirestore).toHaveBeenCalledTimes(2);
+
+      const factoryCase = await loadModule();
+      const customFactory = jest.fn(() => 'custom');
+      factoryCase.mod.getFirestoreInstance({ getFirestoreFn: customFactory });
+      factoryCase.mod.getFirestoreInstance({ getFirestoreFn: customFactory });
+      expect(customFactory).toHaveBeenCalledTimes(2);
+
+      const environmentCase = await loadModule();
+      const environment = { DATABASE_ID: 'environment-db' };
+      environmentCase.mod.getFirestoreInstance({ environment });
+      environmentCase.mod.getFirestoreInstance({ environment });
+      expect(environmentCase.getFirestore).toHaveBeenCalledTimes(2);
+    } finally {
+      if (previousDatabaseId === undefined) delete process.env.DATABASE_ID;
+      else process.env.DATABASE_ID = previousDatabaseId;
+    }
+  });
+
   it('rejects a non-function firestore factory', async () => {
     const { mod } = await loadModule();
 
@@ -250,7 +278,16 @@ describe('generate-stats run', () => {
   });
 
   it('wires the cloud handler and returns the function export', async () => {
-    const { mod, app, cors, express, functions, onRequest, deps } =
+    const {
+      mod,
+      app,
+      cors,
+      express,
+      functions,
+      onRequest,
+      deps,
+      createGenerateStatsCore,
+    } =
       await loadModule({
         environment: {
           DENDRITE_ENVIRONMENT: 't-123',
@@ -261,6 +298,9 @@ describe('generate-stats run', () => {
 
     const result = mod.runGenerateStats(deps);
 
+    expect(createGenerateStatsCore).toHaveBeenCalledWith(
+      expect.objectContaining({ ...deps, console: expect.anything() })
+    );
     expect(express).toHaveBeenCalledTimes(1);
     expect(cors).toHaveBeenCalledWith({
       origin: expect.any(Function),
