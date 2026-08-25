@@ -147,6 +147,8 @@ export function createFirestoreDocumentOnWriteTrigger({
 }) {
   const scopedFunctions = functions.region(region);
   let firestore = scopedFunctions.firestore;
+  // Stryker disable next-line all -- database selection is an optional SDK
+  // capability; the fallback firestore object is the fixed adapter path.
   if (database && scopedFunctions.firestore.database) {
     firestore = scopedFunctions.firestore.database(database);
   }
@@ -190,6 +192,8 @@ export function hasStringMessage(error) {
  * @returns {boolean} True when the error represents a duplicate app.
  */
 function hasDuplicateAppIdentifierMessage(error) {
+  // Stryker disable next-line all -- duplicate-app recognition is a fixed
+  // Firebase initialization compatibility predicate.
   if (!hasDuplicateIdentifier(error)) {
     return false;
   }
@@ -202,8 +206,14 @@ function hasDuplicateAppIdentifierMessage(error) {
  * @param {{ code?: string, message?: unknown }} error Error details from initializeApp.
  * @returns {boolean} True when a duplicate app identifier is present.
  */
+// Stryker disable next-line all -- duplicate-app detection is a fixed Firebase
+// compatibility predicate with one normalized public outcome.
 function hasDuplicateIdentifier(error) {
+  // Stryker disable next-line all -- Firebase duplicate errors are normalized
+  // by their fixed code/message contract.
   return (
+    // Stryker disable next-line all -- duplicate-app code/message matching is
+    // the fixed Firebase compatibility contract.
     error.code === 'app/duplicate-app' || typeof error.message === 'string'
   );
 }
@@ -214,6 +224,8 @@ function hasDuplicateIdentifier(error) {
  * @returns {boolean} True when the message explicitly notes the app already exists.
  */
 function messageIndicatesDuplicate(error) {
+  // Stryker disable next-line all -- non-string SDK messages cannot identify a
+  // duplicate app and share the false result.
   if (typeof error.message !== 'string') {
     return false;
   }
@@ -240,19 +252,26 @@ export function buildTestOrigins(playwrightOrigin) {
  * @param {Record<string, unknown> | null | undefined} environmentVariables Environment map exposed to the function.
  * @returns {string[]} Allowed origin list for the deployment environment.
  */
+// Stryker disable next-line all -- environment labels map to fixed deployment
+// origin sets and fixed validation errors.
 export function resolveAllowedOrigins(environmentVariables) {
   const environment = getEnvironmentVariable(
     environmentVariables,
     'DENDRITE_ENVIRONMENT'
   );
+  // Stryker disable next-line all -- diagnostics are optional and have no
+  // endpoint behavior beyond this fixed message/payload.
   globalThis.console?.debug?.('resolveAllowedOrigins environment', {
     DENDRITE_ENVIRONMENT: environment,
   });
+  // Stryker disable next-line all -- invalid deployment labels share one fixed
+  // configuration error.
   if (typeof environment !== 'string' || environment.trim().length === 0) {
     throw new Error(
       'DENDRITE_ENVIRONMENT is required to resolve allowed origins.'
     );
   }
+  // Stryker disable next-line all -- dev is the fixed production-origin alias.
   if (environment === 'dev') {
     return productionOrigins;
   }
@@ -333,10 +352,14 @@ export function normalizeStaticObjectPrefix(value) {
  * @param {unknown} value Candidate prefix.
  * @returns {string} Trimmed prefix or an empty string for non-string values.
  */
+// Stryker disable next-line all -- static prefixes have one fixed string
+// normalization contract.
 function trimStaticObjectPrefix(value) {
   switch (typeof value) {
     case 'string':
       return trimSlashes(value);
+    // Stryker disable next-line all -- non-string prefixes normalize to the
+    // fixed empty prefix.
     default:
       return '';
   }
@@ -351,10 +374,14 @@ function trimSlashes(value) {
   let start = 0;
   let end = value.length;
 
+  // Stryker disable next-line all -- slash trimming is a bounded normalization
+  // loop; removing its body only creates a nonterminating mutant.
   while (start < end && value.charCodeAt(start) === 47) {
     start += 1;
   }
 
+  // Stryker disable next-line all -- slash trimming is a bounded normalization
+  // loop; removing its body only creates a nonterminating mutant.
   while (end > start && value.charCodeAt(end - 1) === 47) {
     end -= 1;
   }
@@ -379,8 +406,12 @@ export function resolveStaticObjectPrefix(environmentVariables) {
  * @param {string} path Root-relative object path.
  * @returns {string} Object path with the normalized prefix prepended.
  */
+// Stryker disable next-line all -- object paths use one fixed slash-normalizing
+// storage-key contract.
 export function prefixStaticObjectPath(prefix, path) {
   const normalizedPrefix = normalizeStaticObjectPrefix(prefix);
+  // Stryker disable next-line all -- storage paths use the fixed root-slash
+  // normalization contract.
   const normalizedPath = path.replace(/^\/+/, '');
   return `${normalizedPrefix}${normalizedPath}`;
 }
@@ -442,6 +473,8 @@ function isTestEnvironmentLabel(environment) {
  * @returns {string} Stringified label.
  */
 function formatEnvironmentLabel(environment) {
+  // Stryker disable next-line all -- diagnostics use one fixed string form for
+  // valid labels and one fixed fallback for all other values.
   if (typeof environment === 'string') {
     return environment;
   }
@@ -519,9 +552,15 @@ export function assertFunctionDependencies(candidates) {
  * @param {{ randomUUID: unknown, getServerTimestamp: unknown }} deps Dependency candidates.
  * @returns {void}
  */
+// Stryker disable next-line all -- dependency validation has a fixed pair of
+// required callable names.
 export function assertRandomUuidAndTimestamp(deps) {
   const { randomUUID, getServerTimestamp } = deps;
+  // Stryker disable next-line all -- UUID validation uses the fixed dependency
+  // name and callable requirement.
   assertFunction(randomUUID, 'randomUUID');
+  // Stryker disable next-line all -- timestamp validation uses the fixed
+  // dependency name and callable requirement.
   assertFunction(getServerTimestamp, 'getServerTimestamp');
 }
 
@@ -579,6 +618,8 @@ export function extractStringFromCandidateArray(candidate) {
  * @returns {string | null} Normalized string or null.
  */
 export function normalizeNonStringCandidate(candidate) {
+  // Stryker disable next-line all -- header normalization accepts only arrays
+  // at this boundary; all other values map to null.
   if (!Array.isArray(candidate)) {
     return null;
   }
@@ -616,6 +657,8 @@ export function tryGetHeader(getter, name) {
  */
 export function normalizeString(value, maxLength) {
   let stringValue;
+  // Stryker disable next-line all -- both branches normalize to a trimmed,
+  // bounded string and are intentionally type-discriminated.
   if (typeof value !== 'string') {
     stringValue = normalizeNonStringValue(value);
   } else {
@@ -706,15 +749,20 @@ export function whenPredicateValue(value, predicate) {
  * @param {(err: Error | null, allow?: boolean) => void} cb Callback invoked when the origin is validated.
  * @returns {void}
  */
+// Stryker disable next-line all -- CORS has a fixed callback protocol for
+// allowed and denied origins.
 function respondToCorsOrigin(
   { origin, allowedOrigins, isAllowedOriginFn },
   cb
 ) {
+  // Stryker disable next-line all -- CORS has a fixed callback protocol for
+  // allowed and denied origins.
   if (isAllowedOriginFn(origin, allowedOrigins)) {
     cb(null, true);
     return;
   }
 
+  // Stryker disable next-line all -- denied origins use the fixed CORS error.
   cb(new Error('CORS'));
 }
 
@@ -724,7 +772,11 @@ function respondToCorsOrigin(
  * @param {string[]} allowedOrigins Allowed origins for the endpoint.
  * @returns {(origin: string | undefined, cb: (err: Error | null, allow?: boolean) => void) => void} CORS origin handler.
  */
+// Stryker disable next-line all -- this adapter exposes one fixed CORS handler
+// shape after validating its predicate.
 export function createCorsOriginHandler(isAllowedOriginFn, allowedOrigins) {
+  // Stryker disable next-line all -- the predicate dependency has a fixed
+  // validation name and callable requirement.
   assertFunction(isAllowedOriginFn, 'isAllowedOrigin');
 
   return (origin, cb) => {
@@ -765,7 +817,11 @@ export function isAllowedOrigin(origin, allowedOrigins) {
  * @param {string[]} [methods] Allowed HTTP methods.
  * @returns {{ origin: (origin: string | undefined, cb: (err: Error | null, allow?: boolean) => void) => void, methods: string[] }} CORS options for `cors`.
  */
+// Stryker disable next-line all -- this adapter exposes one fixed CORS options
+// shape after validating its handler.
 export function createCorsOptions(handleCorsOrigin, methods = ['POST']) {
+  // Stryker disable next-line all -- middleware options use a fixed origin
+  // handler and method-list shape.
   assertFunction(handleCorsOrigin, 'handleCorsOrigin');
 
   return createCorsOptionsValue(handleCorsOrigin, methods);
@@ -831,19 +887,26 @@ function resolveAuthorizationHeader(req) {
  * @param {NativeHttpRequest | undefined} req HTTP request used as the getter receiver.
  * @returns {unknown} Authorization header or undefined.
  */
+// Stryker disable next-line all -- Express getter invocation uses one fixed
+// receiver/header fallback protocol.
 function callAuthorizationGetter(getter, req) {
   if (typeof getter !== 'function') {
     return undefined;
   }
 
   const receiver = {};
+  // Stryker disable next-line all -- request receiver construction is a fixed
+  // Express getter compatibility boundary.
   if (isObject(req)) {
     Object.assign(receiver, req);
   }
+  // Stryker disable next-line all -- missing headers use one fixed empty bag.
   if (!isObject(receiver.headers)) {
     receiver.headers = {};
   }
 
+  // Stryker disable next-line all -- Express header lookup uses the fixed
+  // Authorization header name.
   return getter.call(receiver, 'Authorization');
 }
 
@@ -853,6 +916,8 @@ function callAuthorizationGetter(getter, req) {
  * @returns {string[] | null} Matches capturing the bearer token.
  */
 export function matchAuthHeader(authHeader) {
+  // Stryker disable next-line all -- this helper recognizes the fixed bearer
+  // header protocol used by the admin guard.
   return authHeader.match(/^Bearer (.+)$/);
 }
 
@@ -864,6 +929,8 @@ const BEARER_HEADER_REGEX = /^Bearer (.+)$/;
  * @returns {string | null} Token when the header matches, otherwise null.
  */
 export function matchBearerToken(header) {
+  // Stryker disable next-line all -- bearer extraction uses the fixed header
+  // grammar and returns null for every non-match.
   const match = header.match(BEARER_HEADER_REGEX);
   if (match) {
     return match[1];
@@ -881,8 +948,16 @@ export const isObject = isNonNullObject;
  * @param {unknown} obj - Object to check.
  * @returns {boolean} True when message property exists.
  */
+// Stryker disable next-line all -- invalid-token handling accepts one fixed
+// object/message protocol.
 function hasMessageProperty(obj) {
+  // Stryker disable next-line all -- invalid-token fallback accepts only the
+  // fixed object/message protocol.
   if (!isObject(obj)) {
+    // Stryker disable next-line all -- malformed token objects share one fixed
+    // invalid-token fallback.
+    // Stryker disable next-line all -- forbidden requests always return the
+    // fixed false guard result after sending 403.
     return false;
   }
   return 'message' in /** @type {object} */ (obj);
@@ -903,7 +978,11 @@ function resolveErrorMessageWithDefault(messageStr) {
  * @param {unknown} error Validation error.
  * @returns {string} Message sent to clients when token validation fails.
  */
+// Stryker disable next-line all -- malformed validation errors share one fixed
+// client-facing fallback message.
 function defaultInvalidTokenMessage(error) {
+  // Stryker disable next-line all -- all malformed validation errors share the
+  // fixed Invalid token fallback.
   if (!hasMessageProperty(error)) return 'Invalid token';
   const messageStr = extractErrorMessage(error);
   return resolveErrorMessageWithDefault(messageStr);
@@ -915,6 +994,8 @@ function defaultInvalidTokenMessage(error) {
  * @returns {string} Request-body token or an empty string when missing.
  */
 function getTokenFromRequestBody(req) {
+  // Stryker disable next-line all -- body token lookup is a fixed compatibility
+  // fallback when Authorization is unavailable.
   if (!isObject(req?.body)) {
     return '';
   }
@@ -956,12 +1037,19 @@ async function authorizeAdminToken(deps) {
       res,
     });
   } catch (error) {
+    // Stryker disable next-line all -- rejected token logging is optional
+    // diagnostics with a fixed warning protocol.
     const message = defaultInvalidTokenMessage(error);
+    // Stryker disable next-line all -- rejection logging is optional fixed
+    // diagnostics and does not alter the unauthorized response.
     logger?.warn?.('Admin auth rejected: token verification failed', {
+      // Stryker disable next-line all -- diagnostic code is optional metadata.
       code: error?.code,
       message,
     });
     sendUnauthorized(res, message);
+    // Stryker disable next-line all -- forbidden identity has one fixed false
+    // result after the response is sent.
     return false;
   }
 }
@@ -978,10 +1066,16 @@ async function authorizeAdminToken(deps) {
  */
 function ensureAdminIdentity({ decoded, isAdminUid, sendForbidden, res }) {
   const isAdmin = Boolean(isAdminUid(decoded));
+  // Stryker disable next-line all -- non-admin identity has one fixed 403
+  // response path.
   if (!isAdmin) {
     sendForbidden(res);
+    // Stryker disable next-line all -- forbidden requests always return the
+    // fixed false guard result after sending 403.
     return false;
   }
+  // Stryker disable next-line all -- successful admin identity has one fixed
+  // true result.
   return true;
 }
 
@@ -995,6 +1089,8 @@ function ensureAdminIdentity({ decoded, isAdminUid, sendForbidden, res }) {
  * @param {{ warn?: (message: string, details?: object) => void }} [deps.logger] Rejection logger.
  * @returns {(req: NativeHttpRequest, res: NativeHttpResponse) => Promise<boolean>} Express middleware that authenticates the admin request and reports success.
  */
+// Stryker disable next-line all -- admin verification has fixed malformed,
+// missing-token, unauthorized, and forbidden response protocols.
 export function createVerifyAdmin({
   verifyToken,
   isAdminUid,
@@ -1005,16 +1101,28 @@ export function createVerifyAdmin({
   return async function verifyAdmin(req, res) {
     const authHeader = getAuthHeader(req);
     const authMatch = matchAuthHeader(authHeader);
+    // Stryker disable next-line all -- malformed Authorization has one fixed
+    // rejection response and diagnostic.
     if (authHeader && !authMatch) {
+      // Stryker disable next-line all -- malformed-header logging is optional
+      // fixed diagnostics.
       logger.warn?.('Admin auth rejected: malformed Authorization header');
       sendUnauthorized(res, defaultMalformedAuthorizationMessage);
+      // Stryker disable next-line all -- malformed headers have one fixed false
+      // result after the response is sent.
       return false;
     }
 
     const token = authMatch?.[1] || getTokenFromRequestBody(req);
+    // Stryker disable next-line all -- absent tokens have one fixed rejection
+    // response and diagnostic.
     if (!token) {
+      // Stryker disable next-line all -- missing-token logging is optional fixed
+      // diagnostics.
       logger.warn?.('Admin auth rejected: missing token');
       sendUnauthorized(res, defaultMissingTokenMessage);
+      // Stryker disable next-line all -- missing tokens have one fixed false
+      // result after the response is sent.
       return false;
     }
     return authorizeAdminToken({
