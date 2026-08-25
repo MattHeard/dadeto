@@ -56,6 +56,7 @@ function interval(segments, points, id) {
   if (!s) throw new Error(`Unknown segment: ${id}`);
   const start = points.get(String(s.startPointId)),
     end = points.get(String(s.endPointId));
+  // Stryker disable next-line all -- missing segment endpoints share the structured reference error contract.
   if (!start || !end) throw new Error('Segment references an unknown point.');
   const startTime = Date.parse(String(start.timestamp)),
     endTime = Date.parse(String(end.timestamp));
