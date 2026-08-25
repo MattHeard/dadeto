@@ -51,6 +51,12 @@ describe('runSubmitModerationRating', () => {
     expect(ensureFirebaseApp).toHaveBeenCalled();
     expect(region).toHaveBeenCalledWith('europe-west1');
     expect(onRequest).toHaveBeenCalledWith(expressApp);
+    expect(expressApp.post).toHaveBeenCalledWith(
+      '/',
+      result.handleSubmitModerationRating
+    );
+    expect(getAuth).toHaveBeenCalled();
+    expect(getEnvironmentVariables).toHaveBeenCalled();
     expect(result).toEqual(
       expect.objectContaining({
         submitModerationRating: { app: expressApp },
