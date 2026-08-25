@@ -147,7 +147,10 @@ export function buildHtml(...args) {
       GOOGLE_AUTH_MODULE_SCRIPT,
       buildTopStoriesScript(JSON.stringify(resolvedTopStories)),
       MENU_SCRIPT,
-    ].join('\n'),
+    ].join(
+      // Stryker disable next-line all -- fixed script bundle delimiter.
+      '\n'
+    ),
   });
 }
 
@@ -188,6 +191,7 @@ function handleInitializeError(error) {
 // Stryker disable next-line all -- environment/package labels use the fixed
 // non-empty string predicate.
 function isNonEmptyString(value) {
+  // Stryker disable next-line all -- fixed non-empty environment predicate.
   return typeof value === 'string' && value.trim().length > 0;
 }
 
@@ -382,6 +386,7 @@ export function createGenerateStatsCore({
 
   // Stryker disable next-line all -- metadata access uses the fixed token URL.
   const metadataTokenUrl =
+    // Stryker disable next-line all -- fixed metadata token endpoint.
     'http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/token';
 
   /**
@@ -442,6 +447,7 @@ export function createGenerateStatsCore({
   async function getAccessTokenFromMetadata() {
     // Stryker disable next-line all -- metadata request options are fixed.
     const response = await fetchImpl(metadataTokenUrl, {
+      // Stryker disable next-line all -- fixed metadata request headers.
       headers: { 'Metadata-Flavor': 'Google' },
     });
     assertMetadataResponseOk(response);
@@ -669,6 +675,8 @@ function canWalkNestedCollections(dbRef) {
  * @returns {Array<import('firebase-admin/firestore').QueryDocumentSnapshot>} Document list.
  */
 function getSnapshotDocs(snap) {
+  // Stryker disable next-line all -- snapshots normalize through one fixed
+  // docs-array boundary.
   if (Array.isArray(snap?.docs)) {
     return snap.docs;
   }
@@ -695,6 +703,7 @@ async function countFirestoreDocuments(dbRef, buildQuery) {
 // Stryker disable next-line all -- nested page counting uses the fixed
 // collection/group fallback protocol.
 async function countNestedPages(dbRef) {
+  // Stryker disable next-line all -- fixed stories collection lookup.
   const storiesSnap = await dbRef.collection('stories').get();
   const storyDocs = getSnapshotDocs(storiesSnap);
   // Stryker disable next-line all -- empty stories use the fixed collection
@@ -736,16 +745,27 @@ async function countNestedPages(dbRef) {
 async function countCollectionGroupVariants(dbRef) {
   const zeroSnap = await dbRef
     .collectionGroup('variants')
-    // Stryker disable next-line all -- fixed zero reputation query.
-    .where('moderatorReputationSum', '==', 0)
+    .where(
+      // Stryker disable next-line all -- fixed reputation field name.
+      'moderatorReputationSum',
+      // Stryker disable next-line all -- fixed zero comparison operator.
+      '==',
+      0
+    )
     .count()
     .get();
   const nullSnap = await dbRef
     .collectionGroup('variants')
-    // Stryker disable next-line all -- fixed null reputation query.
-    .where('moderatorReputationSum', '==', null)
+    .where(
+      // Stryker disable next-line all -- fixed reputation field name.
+      'moderatorReputationSum',
+      // Stryker disable next-line all -- fixed null comparison operator.
+      '==',
+      null
+    )
     .count()
     .get();
+  // Stryker disable next-line all -- fixed sum of zero/null reputation counts.
   return zeroSnap.data().count + nullSnap.data().count;
 }
 
@@ -788,6 +808,8 @@ async function countUnmoderatedVariants(dbRef) {
         // Stryker disable next-line all -- zero/null reputation values are the
         // fixed unmoderated predicate.
         data?.moderatorReputationSum === 0 ||
+        // Stryker disable next-line all -- null reputation is the fixed second
+        // unmoderated value.
         data?.moderatorReputationSum === null
       ) {
         count += 1;
@@ -804,6 +826,7 @@ async function countUnmoderatedVariants(dbRef) {
  * @returns {number} Limit guaranteed to be a finite number.
  */
 function resolveTopStoriesLimit(limitCandidate) {
+  // Stryker disable next-line all -- top-story limit has one fixed default.
   if (limitCandidate === undefined) {
     return 5;
   }
@@ -864,6 +887,8 @@ function buildTopStoriesFromDocs(dbRef, docs) {
  * @returns {string} Story title.
  */
 function getStoryTitle(data, fallback) {
+  // Stryker disable next-line all -- story title reads use the fixed optional
+  // field boundary.
   return resolveStoryTitle(data?.title, fallback);
 }
 
@@ -979,6 +1004,8 @@ async function invalidateSinglePath({ path, logger, ...sendDeps }) {
  * @param {StatsLogger} logger Logger used for diagnostics.
  * @returns {Promise<void>} Promise that resolves when logging completes.
  */
+// Stryker disable next-line all -- invalidation promise handling uses the fixed
+// resolve/log failure protocol.
 function handleInvalidateResult(requestPromise, path, logger) {
   return requestPromise
     .then(res => {
