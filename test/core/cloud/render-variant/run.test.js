@@ -69,10 +69,6 @@ describe('runRenderVariant', () => {
     ensureFirebaseApp.mockClear();
     onWrite.mockClear();
     importedFetchFn.mockClear();
-    mockCreateCloudRenderInstanceBuilder.mockImplementationOnce(options => {
-      options.consoleError('builder check');
-      return jest.fn();
-    });
     const globalFetch = jest.fn(() => Promise.resolve({ ok: true }));
     globalThis.fetch = globalFetch;
 
@@ -88,6 +84,19 @@ describe('runRenderVariant', () => {
     const FieldValue = { delete: jest.fn(() => 'delete-sentinel') };
     const crypto = { randomUUID: jest.fn(() => 'uuid') };
     const functions = { region };
+    const consoleError = jest.fn();
+
+    let capturedWriteOptions;
+    let capturedBuilderOptions;
+    const writeHandler = jest.fn();
+    mockCreateHandleVariantWrite.mockImplementationOnce(options => {
+      capturedWriteOptions = options;
+      return writeHandler;
+    });
+    mockCreateCloudRenderInstanceBuilder.mockImplementationOnce(options => {
+      capturedBuilderOptions = options;
+      return jest.fn();
+    });
 
     const { render } = runRenderVariant({
       initializeApp,
@@ -99,13 +108,40 @@ describe('runRenderVariant', () => {
       Storage,
       fetchFn: importedFetchFn,
       crypto,
+      console: { error: consoleError },
     });
 
-    await render('snap', 'context');
+    expect(render('snap', 'context')).toBe('rendered');
 
     expect(mockCreateRenderVariant).not.toHaveBeenCalled();
     expect(globalFetch).not.toHaveBeenCalled();
     expect(importedFetchFn).not.toHaveBeenCalled();
+    await expect(capturedWriteOptions.renderVariant('snap')).resolves.toBe(
+      'rendered'
+    );
+    expect(capturedWriteOptions.getDeleteSentinel()).toBe('delete-sentinel');
+    expect(writeHandler).toHaveBeenCalledWith('change');
+    expect(capturedBuilderOptions.createRenderer).toBe(mockCreateRenderVariant);
+    capturedBuilderOptions.consoleError('builder failure');
+    expect(consoleError).toHaveBeenCalledWith('builder failure');
+    expect(mockCreateCloudRenderInstanceBuilder).toHaveBeenCalled();
+    expect(
+      mockCreateCloudRenderInstanceBuilder.mock.calls.at(-1)[0]
+    ).toEqual(expect.objectContaining({ createRenderer: mockCreateRenderVariant }));
+    expect(
+      mockCreateCloudRenderEntrypointState.mock.calls.at(-1)[0]
+    ).toEqual(
+      expect.objectContaining({
+        entrypointKind: 'variant',
+        defaultBucketName: 'bucket',
+      })
+    );
+    expect(mockCreateFirestoreDocumentOnWriteTrigger).toHaveBeenCalledWith(
+      expect.objectContaining({
+        region: 'europe-west1',
+        documentPath: 'stories/{storyId}/pages/{pageId}/variants/{variantId}',
+      })
+    );
   });
 
   test('falls back to the imported fetch helper when global fetch is missing', async () => {
