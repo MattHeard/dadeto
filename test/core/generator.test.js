@@ -73,4 +73,48 @@ describe('generator runtime handle', () => {
       )
     ).toBe('HF');
   });
+
+  it('renders media, quotes, links, beta releases, and toy controls together', () => {
+    const html = handle.generateBlogOuter({
+      posts: [
+        {
+          key: 'rich',
+          title: 'Rich post',
+          publicationDate: '2024-06-01',
+          release: 'beta',
+          content: [{ type: 'quote', content: 'Quoted text' }, 'plain text'],
+          illustration: { fileType: 'png', altText: 'Illustration' },
+          audio: { fileType: 'mp3' },
+          youtube: { id: 'video-id', timestamp: 4, title: 'Video' },
+          relatedLinks: [
+            {
+              url: 'https://example.com',
+              title: 'Example',
+              author: 'Author',
+              source: 'Source',
+              quote: 'A quote',
+              type: 'article',
+            },
+          ],
+          toy: {
+            modulePath: './toys/example.js',
+            functionName: 'example',
+            defaultInputMethod: 'number',
+            defaultOutputMethod: 'graph-2d',
+          },
+        },
+      ],
+    });
+
+    expect(html).toContain('release-beta');
+    expect(html).toContain('<blockquote class="value">');
+    expect(html).toContain('Quoted text');
+    expect(html).toContain('<img');
+    expect(html).toContain('<audio');
+    expect(html).toContain('<iframe');
+    expect(html).toContain('https://example.com');
+    expect(html).toContain('A quote');
+    expect(html).toContain('<option value="number" selected>');
+    expect(html).toContain('<option value="graph-2d" selected>');
+  });
 });
