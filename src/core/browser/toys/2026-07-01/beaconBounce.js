@@ -97,8 +97,8 @@ function advanceSimulation(next, inputState) {
     framesToAdvance =
       next.simulationSpeed * Math.max(1, inputState.control.stepCount);
   if (next.status === 'running') {
-    for (let index = 0; index < framesToAdvance; index += 1)
-      stepSimulation(next);
+    const frameCount = Math.max(0, Math.floor(framesToAdvance));
+    Array.from({ length: frameCount }, () => stepSimulation(next));
   }
 }
 
