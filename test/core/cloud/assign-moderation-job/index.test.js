@@ -105,7 +105,15 @@ describe('createAssignModerationJobEntrypoint', () => {
 
     expect(cachedDefaultFirestore).toBe(defaultFirestore);
 
-    expect(() => entrypoint.testing.ensureFirebaseApp()).not.toThrow();
+    entrypoint.testing.firebaseInitialization.reset();
+    const ensureOnce = jest.fn();
+    expect(() =>
+      entrypoint.testing.ensureFirebaseApp(ensureOnce)
+    ).not.toThrow();
+    expect(() =>
+      entrypoint.testing.ensureFirebaseApp(ensureOnce)
+    ).not.toThrow();
+    expect(ensureOnce).toHaveBeenCalledTimes(1);
 
     entrypoint.testing.firebaseInitialization.reset();
     expect(() =>
@@ -121,6 +129,10 @@ describe('createAssignModerationJobEntrypoint', () => {
       })
     ).toThrow('boom');
 
+    entrypoint.testing.firebaseInitialization.markInitialized();
     entrypoint.testing.clearFirestoreInstanceCache();
+    expect(entrypoint.testing.firebaseInitialization.hasBeenInitialized()).toBe(
+      false
+    );
   });
 });
