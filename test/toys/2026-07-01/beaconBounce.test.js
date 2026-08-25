@@ -213,6 +213,12 @@ describe('beaconBounce', () => {
     expect(state.frame).toBe(1);
     expect(state.simulationSpeed).toBe(2);
     expect(state.orb.x).toBe(54);
+
+    const pausedState = buildNextState(
+      { ...state, paused: true, orb: { ...state.orb, x: 50, vy: 0 } },
+      { stepCount: 2 }
+    );
+    expect(pausedState.orb.x).toBe(50);
   });
 
   it('honors an explicit reset payload and fallback life precedence', () => {
@@ -1402,6 +1408,12 @@ describe('beaconBounce stuck orb and helpers', () => {
       speedMultiplier: 4,
       stepCount: 5,
     });
+    expect(
+      updateInputState(
+        { control: { paused: true, speedMultiplier: 1, stepCount: 0 } },
+        { resume: true }
+      ).control.paused
+    ).toBe(false);
     expect(updateInputState(undefined, { speed: 4, step: 3 }).control).toEqual({
       paused: false,
       speedMultiplier: 4,
