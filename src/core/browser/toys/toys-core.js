@@ -39,7 +39,11 @@ class CsvLineParser {
   }
 
   parse() {
-    while (this.hasMore()) {
+    for (const iteration of Array.from({ length: this.line.length })) {
+      void iteration;
+      if (!this.hasMore()) {
+        break;
+      }
       this.consume();
     }
 
