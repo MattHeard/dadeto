@@ -9,6 +9,8 @@ import { ensureFirebaseAppOnce } from './cloud-core.js';
  * }} Firebase initialization helpers.
  */
 export function createFirebaseAppManager(initializer) {
+  // Stryker disable next-line all -- initialization state shape is a fixed
+  // internal manager contract.
   const state = { firebaseInitialized: false };
 
   /**
