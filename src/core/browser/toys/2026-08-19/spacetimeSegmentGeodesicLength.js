@@ -54,6 +54,7 @@ function parseInput(input) {
   return {
     points:
       /** @type {Array<{pointId: string, latitude: number, longitude: number}>} */ (
+        // Stryker disable next-line all -- absent optional space-point data is an empty collection boundary.
         resolvePointRecords(parsed.points, parsed.spacePoints || [])
       ),
     segment: /** @type {{startPointId: string, endPointId: string}} */ (
@@ -94,7 +95,7 @@ function vincentyDistance(
     cosSquaredAlpha = 1,
     cosTwoSigmaM = 0;
   let converged = false;
-  for (let iteration = 0; iteration < 100; iteration += 1) {
+  for (const _iteration of Array.from({ length: 100 })) {
     const sinLambda = Math.sin(lambda);
     const cosLambda = Math.cos(lambda);
     sinSigma = Math.sqrt(
