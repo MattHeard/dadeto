@@ -573,19 +573,23 @@ describe('fulfillment primitives', () => {
       ).error
     ).toBe('Valid destination coordinates and timestamp are required.');
   });
-  test('POSS2 normalizes and sorts contexts', () =>
-    expect(
-      JSON.parse(
-        possessionContextRegistry(
-          JSON.stringify({
-            possessionContexts: [
-              { possessionContextId: 'B', sku: 'S', segmentId: 'X' },
-              { possessionContextId: 'A', sku: 'S', segmentId: 'Y' },
-            ],
-          })
-        )
-      ).possessionContexts.map(x => x.possessionContextId)
-    ).toEqual(['A', 'B']));
+  test('POSS2 normalizes and sorts contexts', () => {
+    const output = JSON.parse(
+      possessionContextRegistry(
+        JSON.stringify({
+          possessionContexts: [
+            { possessionContextId: 'B', sku: 'S', segmentId: 'X' },
+            { possessionContextId: 'A', sku: 'S', segmentId: 'Y' },
+          ],
+        })
+      )
+    );
+    expect(output.possessionContexts.map(x => x.possessionContextId)).toEqual([
+      'A',
+      'B',
+    ]);
+    expect(output.summary.possessionContextCount).toBe(2);
+  });
   test('POSS2 requires all context identity fields', () => {
     for (const context of [
       { sku: 'S', segmentId: 'X' },
