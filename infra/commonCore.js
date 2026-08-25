@@ -4,37 +4,6 @@
 export const ADMIN_UID = 'qcYSrXTaj1MZUoFsAloBwT86GNM2';
 
 /**
- * Checks if a string is non-empty.
- * @param {unknown} str - Candidate string to validate.
- * @returns {boolean} True when the input is a non-empty string.
- */
-export function isValidString(str) {
-  return typeof str === 'string' && str.length > 0;
-}
-
-/**
- * Detects whether a value is `null` or `undefined`.
- * @param {unknown} value Candidate value.
- * @returns {boolean} True when the input is nullish.
- */
-export function isNullish(value) {
-  return value === undefined || value === null;
-}
-
-/**
- * Determine whether an error represents a missing filesystem entry.
- * @param {unknown} error Error candidate.
- * @returns {boolean} True for an ENOENT error.
- */
-export function isMissingFileError(error) {
-  return Boolean(
-    error &&
-      typeof error === 'object' &&
-      /** @type {{ code?: unknown }} */ (error).code === 'ENOENT'
-  );
-}
-
-/**
  * Return a dependency with its injected callable type preserved.
  * @template T
  * @param {T | undefined} dependency Dependency to return.
@@ -49,104 +18,17 @@ export function resolveCallable(dependency) {
  * @param {unknown} value Candidate value.
  * @returns {unknown[]} Array candidate or empty array.
  */
-export function arrayOrEmpty(value) {
-  if (Array.isArray(value)) {
-    return value;
-  }
-
-  return [];
-}
-
 /**
  * Parse JSON and return null on failure.
  * @param {string} value Raw JSON string.
  * @returns {unknown} Parsed JSON value or null.
  */
-export function parseJsonOrNull(value) {
-  try {
-    return JSON.parse(value);
-  } catch {
-    return null;
-  }
-}
-
-/**
- * Ensure a path module is available.
- * @param {{
- *   join?: (...segments: string[]) => string,
- *   resolve?: (...segments: string[]) => string,
- *   relative?: (from: string, to: string) => string,
- *   sep?: string,
- * } | null | undefined} pathModule Path module candidate.
- * @returns {{
- *   join: (...segments: string[]) => string,
- *   resolve: (...segments: string[]) => string,
- *   relative: (from: string, to: string) => string,
- *   sep: string,
- * }} Required path module.
- */
-export function requirePathModule(pathModule) {
-  if (!pathModule) {
-    throw new Error('pathModule is required.');
-  }
-
-  return /** @type {{ join: (...segments: string[]) => string, resolve: (...segments: string[]) => string, relative: (from: string, to: string) => string, sep: string }} */ (
-    pathModule
-  );
-}
-
-/**
- * Normalize a possibly missing numeric value.
- * @param {number | null | undefined} value Maybe-present number.
- * @returns {number | null} Normalized numeric value.
- */
-export function normalizeMaybeNumber(value) {
-  if (typeof value === 'number') {
-    return value;
-  }
-
-  return null;
-}
-
-/**
- * @param {unknown} value Candidate object value.
- * @returns {Record<string, unknown> | null} Object value or null.
- */
-export function getRecordOrNull(value) {
-  if (value && typeof value === 'object') {
-    return /** @type {Record<string, unknown>} */ (value);
-  }
-
-  return null;
-}
-
 /**
  * @param {...(string | null)} values Candidate strings.
  * @returns {string[]} Defined string values.
  */
 export function getDefinedStrings(...values) {
   return values.filter(value => typeof value === 'string');
-}
-
-/**
- * Report failures and set a non-zero exit code when needed.
- * @param {{
- *   failures: string[],
- *   output: { error: (line: string) => void },
- *   setExitCode: (exitCode: number) => void,
- }} options Failure reporting dependencies.
- * @returns {boolean} True when failures were reported.
- */
-export function reportFailuresAndExit({ failures, output, setExitCode }) {
-  if (failures.length === 0) {
-    return false;
-  }
-
-  failures.forEach(failure => {
-    output.error(failure);
-  });
-  setExitCode(1);
-  return true;
 }
 
 /**
@@ -174,15 +56,6 @@ export function reportFailuresAndMaybeLogSuccess({
 }
 
 /**
- * Check whether a value is a non-empty string.
- * @param {unknown} candidate Candidate value.
- * @returns {candidate is string} True when the candidate is a non-empty string.
- */
-export function isNonEmptyString(candidate) {
-  return typeof candidate === 'string' && Boolean(candidate.trim());
-}
-
-/**
  * Resolve a string fallback.
  * @param {unknown} candidate Candidate value.
  * @param {string} fallback Fallback value.
@@ -194,40 +67,6 @@ export function stringOr(candidate, fallback) {
   }
 
   return candidate;
-}
-
-/**
- * Resolve the first non-empty string from a candidate value.
- * @param {unknown} candidate Candidate string or string array.
- * @returns {string | null} First non-empty string, or null when missing.
- */
-export function firstStringOrNull(candidate) {
-  if (typeof candidate === 'string') {
-    if (isNonEmptyString(candidate)) {
-      return candidate.trim();
-    }
-    return null;
-  }
-
-  if (Array.isArray(candidate)) {
-    const [first] = candidate;
-    return firstStringOrNull(first);
-  }
-
-  return null;
-}
-
-/**
- * Return the string candidate when available.
- * @param {unknown} value Candidate value.
- * @returns {string | undefined} String when provided, otherwise undefined.
- */
-export function getStringCandidate(value) {
-  if (typeof value === 'string') {
-    return value;
-  }
-
-  return undefined;
 }
 
 /**
@@ -286,20 +125,6 @@ export function whenOrDefault(condition, transform, fallback) {
 }
 
 /**
- * Return the provided function candidate when available, otherwise use the fallback.
- * @param {unknown} candidate Candidate value.
- * @param {() => unknown} fallback Factory returning the fallback function.
- * @returns {unknown} Callable derived from the candidate or fallback.
- */
-export function functionOrFallback(candidate, fallback) {
-  if (typeof candidate === 'function') {
-    return candidate;
-  }
-
-  return fallback();
-}
-
-/**
  * Choose the most readable representation for a relative path.
  * @param {string} absolutePath Original absolute path provided to the logger.
  * @param {string} relativePath Path relative to the project root.
@@ -354,14 +179,6 @@ export function createMappedTask(mapEntry, runEntry) {
  * @param {(entry: T) => Promise<unknown>} iterator Async callback per entry.
  * @returns {Promise<unknown[]>} Promise resolving once every callback completes.
  */
-export function runEntriesInParallel(entries, iterator) {
-  if (!entries.length) {
-    return Promise.resolve([]);
-  }
-
-  return Promise.all(entries.map(iterator));
-}
-
 /**
  * Map entries to payloads and execute them in parallel.
  * @template TEntry
@@ -412,66 +229,21 @@ export function buildCopyLogMessage({
 }
 
 /**
- * Determines whether a value is an object that is not null.
- * @param {unknown} value Candidate value.
- * @returns {boolean} True when the value is an object and not null.
- */
-export function isNonNullObject(value) {
-  return Boolean(value) && typeof value === 'object';
-}
-
-/**
  * Normalize a candidate value to a plain object or an empty object.
  * @param {unknown} value Candidate object-like value.
  * @returns {Record<string, unknown>} Plain object or empty object.
  */
-export function objectOrEmpty(value) {
-  if (isNonNullObject(value)) {
-    return /** @type {Record<string, unknown>} */ (value);
-  }
-
-  return {};
-}
-
 /**
  * Ensure a dependency is callable.
  * @param {unknown} candidate Candidate value.
  * @param {string} name Name used in the error message.
  * @returns {void}
  */
-export function assertFunction(candidate, name) {
-  if (typeof candidate !== 'function') {
-    throw new TypeError(`${name} must be a function`);
-  }
-}
-
-/**
- * Returns the input string when available; otherwise returns an empty string.
- * @param {unknown} value Candidate value.
- * @returns {string} Input string or empty fallback.
- */
-export function ensureString(value) {
-  const normalized = getStringCandidate(value);
-  if (normalized === undefined) {
-    return '';
-  }
-
-  return normalized;
-}
-
 /**
  * Converts a non-string value into a string, defaulting to empty when nullish.
  * @param {unknown} value Candidate value.
  * @returns {string} Safe string representation.
  */
-export function normalizeNonStringValue(value) {
-  if (isNullish(value)) {
-    return '';
-  }
-
-  return String(value);
-}
-
 /**
  * Return the callback result when the value is not nullish; otherwise `null`.
  * @template T
@@ -511,19 +283,6 @@ export function whenString(value, fn) {
 }
 
 /**
- * Normalize a string candidate to a trimmed string or an empty string.
- * @param {unknown} value Candidate string value.
- * @returns {string} Trimmed string or empty string when the value is not a string.
- */
-export function trimmedStringOrEmpty(value) {
-  if (typeof value !== 'string') {
-    return '';
-  }
-
-  return value.trim();
-}
-
-/**
  * Normalize a string candidate to a trimmed string or `null`.
  * @param {unknown} value Candidate string value.
  * @returns {string | null} Trimmed string or `null` when the value is not a string or trims to nothing.
@@ -535,18 +294,6 @@ export function trimmedStringOrNull(value) {
   }
 
   return trimmed;
-}
-
-/**
- * Run the provided callback when the value matches the requested typeof.
- * @template T
- * @param {unknown} value Candidate value.
- * @param {string} typeName Expected typeof result.
- * @param {(value: unknown) => T} fn Callback invoked when the type matches.
- * @returns {T | null} Callback result or `null` when the type does not match.
- */
-export function whenType(value, typeName, fn) {
-  return whenOrNull(typeof value === typeName, () => fn(value));
 }
 
 /**
@@ -587,23 +334,6 @@ export function whenArray(value, fn) {
 }
 
 /**
- * Run the provided callback when the value is truthy.
- * @param {unknown} value Candidate value.
- * @param {(value: unknown) => T} fn Callback invoked with the value.
- * @returns {T | null} Callback result or `null` when the input is falsy.
- * @template T
- */
-export function whenTruthy(value, fn) {
-  return /** @type {T | null} */ (
-    when(
-      Boolean(value),
-      () => fn(value),
-      () => null
-    )
-  );
-}
-
-/**
  * Run the provided callback when the condition passes.
  * @template T
  * @param {boolean} condition Gate determining whether to invoke the callback.
@@ -631,24 +361,6 @@ function whenValueMatches(value, isRejected, fn) {
 }
 
 /**
- * Check whether the candidate is not a string value.
- * @param {unknown} value Candidate value.
- * @returns {boolean} True when the value is not a string.
- */
-function isNotStringValue(value) {
-  return typeof value !== 'string';
-}
-
-/**
- * Check whether the candidate is not an array value.
- * @param {unknown} value Candidate value.
- * @returns {boolean} True when the value is not an array.
- */
-function isNotArrayValue(value) {
-  return !Array.isArray(value);
-}
-
-/**
  * Return a value when available, otherwise invoke the fallback.
  * @template T
  * @param {boolean} available Whether the value can be returned.
@@ -665,15 +377,6 @@ function returnFallbackValue(available, value, fallback) {
 }
 
 /**
- * Determine whether a numeric candidate is finite.
- * @param {unknown} value Candidate numeric value.
- * @returns {boolean} True when the value is a finite number.
- */
-function isFiniteNumericValue(value) {
-  return typeof value === 'number' && Number.isFinite(value);
-}
-
-/**
  * Normalize a numeric candidate, returning zero when the input is not a number.
  * @param {unknown} value Candidate numeric value.
  * @returns {number} Number when provided, otherwise zero.
@@ -686,19 +389,6 @@ export function numberOrZero(value) {
       () => 0
     )
   );
-}
-
-/**
- * Provide a safe fallback resolver for cases when one isn't supplied.
- * @param {(() => unknown) | undefined} fallback Optional fallback resolver.
- * @returns {() => unknown} Resolver to invoke when the condition fails.
- */
-function resolveWhenFallback(fallback) {
-  if (typeof fallback === 'function') {
-    return fallback;
-  }
-
-  return () => null;
 }
 
 /**
@@ -727,15 +417,6 @@ function executeSafely(action) {
   } catch {
     return undefined;
   }
-}
-
-/**
- * Check if a result indicates an execution error.
- * @param {unknown} result The result to check.
- * @returns {boolean} True if result is undefined (indicating error).
- */
-function didExecutionFail(result) {
-  return result === undefined;
 }
 
 /**
@@ -915,18 +596,8 @@ export function createAsyncFsAdapters(fsPromisesModule) {
     async copyFile(source, destination) {
       await typedFsPromisesModule.copyFile(source, destination);
     },
-    async setCopiedFileTimestamp(target) {
-      if (typeof typedFsPromisesModule.utimes !== 'function') {
-        return;
-      }
-
-      const stableTimestamp = new Date('2000-01-01T00:00:00.000Z');
-      await typedFsPromisesModule.utimes(
-        target,
-        stableTimestamp,
-        stableTimestamp
-      );
-    },
+    ['setCopiedFileTimestamp']: target =>
+      writeStableFileTimestamp(typedFsPromisesModule, target),
     async readFile(filePath, encoding) {
       return /** @type {Promise<string>} */ (
         typedFsPromisesModule.readFile(filePath, encoding)
@@ -944,6 +615,7 @@ export function createAsyncFsAdapters(fsPromisesModule) {
  */
 export const CHECK_COMMANDS = [
   { name: 'test', command: 'npm', args: ['test'] },
+  { name: 'manuals:check', command: 'npm', args: ['run', 'manuals:check'] },
   { name: 'lint', command: 'npm', args: ['run', 'lint'] },
   { name: 'depcruise', command: 'npm', args: ['run', 'depcruise'] },
   { name: 'core-parse', command: 'npm', args: ['run', 'core-parse'] },
@@ -1194,6 +866,7 @@ export function createRunCheckSuite(defaults) {
                 emitEvent,
                 finishWithFailure,
                 resolve,
+                renderCommand,
               });
             }
           );
@@ -1288,105 +961,6 @@ function resolveFailFast(options) {
 }
 
 /**
- * Handle a child process close event without inflating the listener complexity.
- * @param {{
- *   activeChildren: Map<string, CheckChild>,
- *   command: CheckCommand,
- *   now: () => number,
- *   startedAt: number,
- *   exitCode: number | null,
- *   signal: string | null,
- *   stderr: { write: (text: string) => void },
- *   state: { settled: boolean, timeoutId: ReturnType<typeof globalThis.setTimeout> | null },
- *   aborted: boolean,
- *   failFast: boolean,
- *   failures: CheckFailure[],
- *   emitEvent: (stream: { write: (text: string) => void }, event: CheckEvent) => void,
- *   finishWithFailure: (failure: CheckFailure, shouldAbort: boolean) => void,
- *   resolve: (value?: unknown) => void,
- * }} input Close event input.
- * @returns {void} Nothing.
- */
-function handleChildClose({
-  activeChildren,
-  command,
-  now,
-  startedAt,
-  exitCode,
-  signal,
-  stderr,
-  state,
-  aborted,
-  failFast,
-  failures,
-  emitEvent,
-  finishWithFailure,
-  resolve,
-}) {
-  activeChildren.delete(command.name);
-
-  if (state.settled) {
-    resolve(undefined);
-    return;
-  }
-
-  if (state.timeoutId !== null) {
-    clearTimeout(state.timeoutId);
-  }
-
-  if (shouldIgnoreClosedChild(aborted, failFast, failures, command.name)) {
-    resolve(undefined);
-    return;
-  }
-
-  const durationMs = Math.max(0, now() - startedAt);
-  if (exitCode === 0 && signal === null) {
-    state.settled = true;
-    emitEvent(stderr, {
-      type: 'check-success',
-      name: command.name,
-      command: renderCommand(command),
-      exitCode,
-      signal,
-      durationMs,
-    });
-    resolve(undefined);
-    return;
-  }
-
-  const failure = {
-    name: command.name,
-    command: renderCommand(command),
-    exitCode,
-    signal,
-    durationMs,
-  };
-  state.settled = true;
-  finishWithFailure(failure, true);
-  resolve(undefined);
-}
-
-/**
- * Determine whether a close event should be ignored after fail-fast aborts.
- * @param {boolean} aborted Whether the run has aborted.
- * @param {boolean} failFast Whether fail-fast mode is enabled.
- * @param {Array<{ name: string }>} failures Recorded failures.
- * @param {string} commandName Current command name.
- * @returns {boolean} True when the close event should be ignored.
- */
-function shouldIgnoreClosedChild(aborted, failFast, failures, commandName) {
-  if (!aborted || !failFast) {
-    return false;
-  }
-
-  if (failures.length === 0) {
-    return false;
-  }
-
-  return failures[0].name !== commandName;
-}
-
-/**
  * Resolve the child-process spawn implementation.
  * @param {{ spawnImpl?: CheckSpawn }} options Runner options.
  * @param {{ defaultSpawn?: CheckSpawn }} defaults Injected defaults.
@@ -1418,24 +992,6 @@ function resolveNow(options, defaults) {
 }
 
 /**
- * Abort every active child process except the named one.
- * @param {Map<string, { kill?: (signal?: string) => boolean }>} activeChildren Active child process map.
- * @param {string} exemptName Command name to keep alive.
- * @returns {void}
- */
-function abortRemainingChildren(activeChildren, exemptName) {
-  for (const [name, child] of activeChildren.entries()) {
-    if (name === exemptName) {
-      continue;
-    }
-
-    if (child && typeof child.kill === 'function') {
-      child.kill('SIGTERM');
-    }
-  }
-}
-
-/**
  * Build a structured failure payload for a child process spawn error.
  * @param {CheckCommand} command Command that failed to spawn.
  * @param {number} startedAt Start timestamp.
@@ -1443,61 +999,6 @@ function abortRemainingChildren(activeChildren, exemptName) {
  * @param {() => number} now Clock helper.
  * @returns {CheckFailure} Structured spawn failure.
  */
-function buildSpawnFailure(command, startedAt, error, now) {
-  let errorMessage = String(error);
-  if (error instanceof Error) {
-    errorMessage = error.message;
-  }
-
-  return {
-    name: command.name,
-    command: renderCommand(command),
-    exitCode: 1,
-    signal: null,
-    durationMs: Math.max(0, now() - startedAt),
-    error: errorMessage,
-  };
-}
-
-/**
- * Forward a stream's lines to a writer callback.
- * @param {{ on: (event: string, handler: (...args: unknown[]) => void) => unknown, setEncoding?: (encoding: string) => void } | null | undefined} stream Stream to forward.
- * @param {(line: string) => void} writer Line writer callback.
- * @returns {void}
- */
-function forwardStreamLines(stream, writer) {
-  if (!stream || typeof stream.on !== 'function') {
-    return;
-  }
-
-  if (typeof stream.setEncoding === 'function') {
-    stream.setEncoding('utf8');
-  }
-
-  const bufferState = { text: '' };
-
-  stream.on('data', chunk => {
-    bufferState.text += String(chunk);
-    const lines = bufferState.text.split(/\r?\n/);
-    bufferState.text = /** @type {string} */ (lines.pop());
-    for (const line of lines) {
-      if (line.length > 0) {
-        writer(line);
-      }
-    }
-  });
-
-  const flush = () => {
-    if (bufferState.text.length > 0) {
-      writer(bufferState.text);
-      bufferState.text = '';
-    }
-  };
-
-  stream.on('end', flush);
-  stream.on('close', flush);
-}
-
 /**
  * Render a command line string for structured events.
  * @param {CheckCommand} command Command to render.
@@ -1541,21 +1042,91 @@ function emitFailureEvent(writer, name, failure) {
  * @param {'stdout' | 'stderr'} streamName Stream name to use when available.
  * @returns {{ write: (text: string) => void }} Writable stream-like object.
  */
-function getDefaultOutputStream(streamName) {
-  if (typeof process !== 'undefined' && process?.[streamName]) {
-    return process[streamName];
-  }
-
-  return { write: () => {} };
-}
-
 /**
  * Internal check-runner seams used to exercise lifecycle edge cases in tests.
- * @type {{ handleChildClose: (...args: never[]) => unknown, shouldIgnoreClosedChild: (...args: never[]) => unknown, abortRemainingChildren: (...args: never[]) => unknown, forwardStreamLines: (...args: never[]) => unknown }}
+ * @type {{ handleChildClose: (...args: never[]) => unknown, runEntriesInParallel: (...args: never[]) => unknown, shouldIgnoreClosedChild: (...args: never[]) => unknown, abortRemainingChildren: (...args: never[]) => unknown, forwardStreamLines: (...args: never[]) => unknown, writeStableFileTimestamp: (...args: never[]) => unknown }}
  */
 export const commonCoreTestUtils = {
   handleChildClose,
+  runEntriesInParallel,
   shouldIgnoreClosedChild,
+  writeStableFileTimestamp,
   abortRemainingChildren,
   forwardStreamLines,
 };
+import {
+  arrayOrEmpty,
+  assertFunction,
+  ensureString,
+  firstStringOrNull,
+  functionOrFallback,
+  getRecordOrNull,
+  getStringCandidate,
+  didExecutionFail,
+  isFiniteNumericValue,
+  isNotArrayValue,
+  isNotStringValue,
+  isNonEmptyString,
+  isNullish,
+  isValidString,
+  isNonNullObject,
+  isMissingFileError,
+  normalizeNonStringValue,
+  parseJsonOrNull,
+  normalizeMaybeNumber,
+  requirePathModule,
+  reportFailuresAndExit,
+  resolveWhenFallback,
+  trimmedStringOrEmpty,
+  whenTruthy,
+  whenType,
+  objectOrEmpty,
+} from './browser/validation.js';
+import {
+  abortRemainingChildren,
+  buildSpawnFailure,
+  forwardStreamLines,
+  getDefaultOutputStream,
+  handleChildClose,
+  runEntriesInParallel,
+  shouldIgnoreClosedChild,
+  writeStableFileTimestamp,
+} from './build/process-utils.js';
+
+export {
+  arrayOrEmpty,
+  assertFunction,
+  getRecordOrNull,
+  didExecutionFail,
+  ensureString,
+  firstStringOrNull,
+  functionOrFallback,
+  getStringCandidate,
+  isFiniteNumericValue,
+  isNotArrayValue,
+  isNotStringValue,
+  isNonEmptyString,
+  isNullish,
+  isValidString,
+  isNonNullObject,
+  isMissingFileError,
+  normalizeNonStringValue,
+  objectOrEmpty,
+  parseJsonOrNull,
+  normalizeMaybeNumber,
+  requirePathModule,
+  reportFailuresAndExit,
+  resolveWhenFallback,
+  trimmedStringOrEmpty,
+  whenTruthy,
+  whenType,
+};
+export {
+  abortRemainingChildren,
+  buildSpawnFailure,
+  forwardStreamLines,
+  getDefaultOutputStream,
+  handleChildClose,
+  runEntriesInParallel,
+  shouldIgnoreClosedChild,
+} from './build/process-utils.js';

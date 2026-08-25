@@ -1164,7 +1164,10 @@ function createCopyCloudSourceCopies(planValues) {
   );
 
   const cloudCoreSource = join(srcCoreCloudDir, 'cloud-core.js');
-  const commonCoreSource = join(srcCoreDir, 'commonCore.js');
+  // Package the implementation behind the source barrel. Function archives
+  // flatten imports, so copying commonCore.js would leave a missing
+  // ./index.js dependency at runtime.
+  const commonCoreSource = join(srcCoreDir, 'index.js');
   const errorReportingSource = join(srcCoreDir, 'error-reporting.js');
   const paymentWebhookCoreSource = join(srcCoreDir, 'payment-webhook-core.js');
   const expressAppSource = join(srcCoreDir, 'express-app.js');

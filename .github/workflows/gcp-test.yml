@@ -495,6 +495,8 @@ jobs:
         if: always() && steps.terraform_init.outcome == 'success'
         run: |
           set -euo pipefail
+          gcloud scheduler jobs delete "${ENVIRONMENT}-generate-stats-daily" \
+            --location="${REGION}" --quiet || true
           TEST_STATIC_BUCKET="${TF_VAR_test_static_site_bucket_name:-${GOOGLE_PROJECT}-${REGION}-dendrite-test-static}"
           gcloud storage rm --recursive "gs://${TEST_STATIC_BUCKET}/${ENVIRONMENT}/**" || true
 
@@ -585,5 +587,7 @@ jobs:
         if: always()
         run: |
           set -euo pipefail
+          gcloud scheduler jobs delete "${ENVIRONMENT}-generate-stats-daily" \
+            --location="${REGION}" --quiet || true
           TEST_STATIC_BUCKET="${TF_VAR_test_static_site_bucket_name:-${GOOGLE_PROJECT}-${REGION}-dendrite-test-static}"
           gcloud storage rm --recursive "gs://${TEST_STATIC_BUCKET}/${ENVIRONMENT}/**" || true

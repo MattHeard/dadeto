@@ -146,6 +146,9 @@ describe('cloud browser entrypoints', () => {
       "target: join(infraDir, 'core', 'commonCore.js')"
     );
     expect(copyCloudJs).toContain(
+      "const commonCoreSource = join(srcCoreDir, 'index.js');"
+    );
+    expect(copyCloudJs).toContain(
       "target: join(infraDir, 'core', 'express-app.js')"
     );
     expect(copyCloudJs).toMatch(
