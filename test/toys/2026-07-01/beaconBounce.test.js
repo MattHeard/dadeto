@@ -1813,6 +1813,21 @@ describe('beaconBounce physics and rendering', () => {
       status: 'ready',
     });
     expect(oneMissingEndpoint.shapes.some(shape => shape.type === 'line')).toBe(false);
+
+    const inactiveRequiredCanvas = toCanvasPayload({
+      width: 120,
+      height: 80,
+      links: [],
+      beacons: [{ id: 'required', x: 12, y: 18, radius: 8, active: false, required: true, hitCount: 0 }],
+      paddle: { x: 0, y: 0, width: 10, height: 4, speed: 2 },
+      orb: { x: 0, y: 0, vx: 0, vy: 0, radius: 4, stuckToPaddle: false },
+      score: 0,
+      lives: 1,
+      status: 'ready',
+    });
+    expect(inactiveRequiredCanvas.shapes).toContainEqual(
+      expect.objectContaining({ type: 'circle', x: 12, y: 18, fill: '#1e3a5f', stroke: '#bff3ff' })
+    );
   });
 
   it('falls back cleanly on malformed input', () => {
