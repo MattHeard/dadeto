@@ -54,10 +54,14 @@ const {
  * @param {{ isMissingCustomer: () => boolean, set: Function }} options Fixture callbacks.
  * @returns {{ collection: Function }} Firestore-like database stub.
  */
-function createPaymentWebhookDb({ isMissingCustomer, set }) {
+function createPaymentWebhookDb({
+  isMissingCustomer,
+  set,
+  getCustomerApiKeyUuid = () => 'uuid-1',
+}) {
   return {
     collection: jest.fn(name => ({
-      doc: jest.fn(() => ({
+      doc: jest.fn(eventId => ({
         get: jest.fn(async () => {
           if (name === 'payment-customers') {
             return {
@@ -65,11 +69,19 @@ function createPaymentWebhookDb({ isMissingCustomer, set }) {
                 if (isMissingCustomer()) {
                   return {};
                 }
-                return { apiKeyUuid: 'uuid-1' };
+                return { apiKeyUuid: getCustomerApiKeyUuid() };
               },
             };
           }
-          return { exists: true, data: () => ({}) };
+          return {
+            exists: eventId !== 'evt-missing',
+            data: () =>
+              eventId === 'evt-received'
+                ? { status: 'received' }
+                : eventId === 'evt-deferred'
+                  ? { status: 'deferred' }
+                  : {},
+          };
         }),
         set,
       })),
@@ -118,9 +130,11 @@ describe('payment webhook cloud wrapper', () => {
   it('builds dependencies and forwards the structured response', async () => {
     const set = jest.fn(async () => undefined);
     let missingCustomer = false;
+    let customerApiKeyUuid = 'uuid-1';
     const db = createPaymentWebhookDb({
       isMissingCustomer: () => missingCustomer,
       set,
+      getCustomerApiKeyUuid: () => customerApiKeyUuid,
     });
     const billing = {
       markPurchasePaid: jest.fn(async input => ({ status: 201, body: input })),
@@ -171,7 +185,15 @@ describe('payment webhook cloud wrapper', () => {
     });
     missingCustomer = false;
     await captured.resolveApiKeyUuid({ data: { object: {} } });
+    customerApiKeyUuid = '';
+    await captured.resolveApiKeyUuid({ data: { object: { customer: 'cus-empty' } } });
+    customerApiKeyUuid = 42;
+    await captured.resolveApiKeyUuid({ data: { object: { customer: 'cus-number' } } });
+    customerApiKeyUuid = 'uuid-1';
     await expect(captured.isDuplicateEvent('evt-1')).resolves.toBe(true);
+    await expect(captured.isDuplicateEvent('evt-received')).resolves.toBe(false);
+    await expect(captured.isDuplicateEvent('evt-deferred')).resolves.toBe(false);
+    await expect(captured.isDuplicateEvent('evt-missing')).resolves.toBe(false);
     await Promise.all([
       captured.getPaymentEvent({
         rawBody: '{"id":"evt-verified"}',
@@ -186,12 +208,35 @@ describe('payment webhook cloud wrapper', () => {
         'uuid-1'
       ),
     ]);
+    expect(set).toHaveBeenCalledWith(
+      expect.objectContaining({
+        apiKeyUuid: 'uuid-1',
+        type: 'payment_intent.succeeded',
+        status: 'applied',
+        createdAt: new Date(10000),
+      }),
+      { merge: true }
+    );
     await Promise.all([
       expect(
         captured.handlePurchaseEvent({
           id: 'evt-empty',
           type: 'customer.created',
           data: { object: {} },
+        })
+      ).resolves.toBeNull(),
+      expect(
+        captured.handlePurchaseEvent({
+          id: 'evt-missing-purchase',
+          type: 'checkout.session.completed',
+          data: { object: { payment_status: 'paid' } },
+        })
+      ).resolves.toBeNull(),
+      expect(
+        captured.handlePurchaseEvent({
+          id: 'evt-no-object',
+          type: 'checkout.session.completed',
+          data: { object: { metadata: { ['purchase_id']: 'p1' } } },
         })
       ).resolves.toBeNull(),
       expect(
@@ -339,6 +384,65 @@ describe('payment webhook cloud wrapper', () => {
       response: creditResponse,
       assertion: response => expect(response.status).toHaveBeenCalledWith(201),
     });
+    for (const body of [
+      { type: 'other', applied: true },
+      {},
+    ]) {
+      const unchangedResponse = createWebhookResponse();
+      await runWebhookResponse({
+        mockDomainHandler,
+        handle,
+        request,
+        body: { status: 200, body },
+        response: unchangedResponse,
+        assertion: response => {
+          expect(response.status).toHaveBeenCalledWith(200);
+          expect(response.json).toHaveBeenCalledWith(body);
+        },
+      });
+    }
+    const jsonResponse = createWebhookResponse();
+    await runWebhookResponse({
+      mockDomainHandler,
+      handle,
+      request,
+      body: { status: 200, body: { type: 'credit_added', applied: false } },
+      response: jsonResponse,
+      assertion: response => {
+        expect(response.status).toHaveBeenCalledWith(200);
+        expect(response.json).toHaveBeenCalledWith({
+          type: 'credit_added',
+          applied: false,
+        });
+      },
+    });
+    const headerResponse = createWebhookResponse();
+    await runWebhookResponse({
+      mockDomainHandler,
+      handle,
+      request,
+      body: { status: 204, body: null, headers: { 'x-test': 'header' } },
+      response: headerResponse,
+      assertion: response => {
+        expect(response.set).toHaveBeenCalledWith('x-test', 'header');
+        expect(response.status).toHaveBeenCalledWith(204);
+        expect(response.send).toHaveBeenCalledWith(null);
+      },
+    });
+    for (const body of [null, '', 0]) {
+      const falsyResponse = createWebhookResponse();
+      await runWebhookResponse({
+        mockDomainHandler,
+        handle,
+        request,
+        body: { status: 202, body },
+        response: falsyResponse,
+        assertion: response => {
+          expect(response.status).toHaveBeenCalledWith(202);
+          expect(response.send).toHaveBeenCalledWith(body);
+        },
+      });
+    }
   });
 });
 
@@ -376,6 +480,13 @@ describe('payment webhook cloud wrapper validation', () => {
         { rawBody: '{}', headers: { 'stripe-signature': 'signed' } },
         { STRIPE_WEBHOOK_SECRET: 'secret' },
         () => null
+      )
+    ).toThrow('Invalid Stripe webhook signature');
+    expect(() =>
+      parseStripePaymentWebhookEvent(
+        { rawBody: '{}', headers: { 'stripe-signature': 'signed' } },
+        { STRIPE_WEBHOOK_SECRET: 'secret' },
+        () => ({ id: 42 })
       )
     ).toThrow('Invalid Stripe webhook signature');
     expect(() =>
