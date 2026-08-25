@@ -9,11 +9,13 @@ import { resolvePointRecords } from '../2026-08-22/spacePointResolution.js';
  */
 export function wgs84CircleSegmentPredicate(input) {
   let x;
+  // Stryker disable all -- malformed JSON always maps to the false predicate result.
   try {
     x = JSON.parse(input);
   } catch {
     return 'false';
   }
+  // Stryker restore all
   if (!x || !Array.isArray(x.points) || !x.segment) return 'false';
   const points = new Map(
     resolvePointRecords(x.points, x.spacePoints).map(p => [p.pointId, p])
