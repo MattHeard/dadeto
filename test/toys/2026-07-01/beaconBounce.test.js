@@ -1228,6 +1228,26 @@ describe('beaconBounce reset rendering', () => {
     resolveBeacons(outsideBeacon);
     expect(outsideBeacon.beacons[0].active).toBe(false);
 
+    const horizontalAligned = {
+      orb: { x: 20, y: 20, vx: 1, vy: 1, radius: 4, stuckToPaddle: false },
+      score: 0,
+      lastActivatedBeaconId: null,
+      beacons: [{ id: 'horizontal', x: 24, y: 20, radius: 8, active: false, required: true, hitCount: 0 }],
+      links: [],
+    };
+    resolveBeacons(horizontalAligned);
+    expect(horizontalAligned.orb).toMatchObject({ vx: -1, vy: 1 });
+
+    const verticalAligned = {
+      orb: { x: 20, y: 20, vx: 1, vy: 1, radius: 4, stuckToPaddle: false },
+      score: 0,
+      lastActivatedBeaconId: null,
+      beacons: [{ id: 'vertical', x: 20, y: 24, radius: 8, active: false, required: true, hitCount: 0 }],
+      links: [],
+    };
+    resolveBeacons(verticalAligned);
+    expect(verticalAligned.orb).toMatchObject({ vx: 1, vy: -1 });
+
     const missedPaddle = {
       paddle: { x: 10, y: 30, width: 40, height: 6, speed: 4 },
       orb: { x: 80, y: 34, vx: 1, vy: 3, radius: 4, stuckToPaddle: false },
