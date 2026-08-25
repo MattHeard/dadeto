@@ -1154,6 +1154,14 @@ describe('beaconBounce reset rendering', () => {
     resolveWalls(exactWalls);
     expect(exactWalls.orb).toMatchObject({ x: 4, y: 22, vx: 2, vy: 2 });
 
+    const exactRightWall = {
+      orb: { x: 116, y: 40, vx: 2, vy: 2, radius: 4 },
+      width: 120,
+      height: 80,
+    };
+    resolveWalls(exactRightWall);
+    expect(exactRightWall.orb).toMatchObject({ x: 116, vx: -2 });
+
     const alreadyActive = {
       orb: { x: 20, y: 20, vx: -1, vy: -1, radius: 4, stuckToPaddle: false },
       score: 10,
