@@ -36,6 +36,7 @@ function canonicalizeValue(value) {
  * @returns {Record<string, unknown>} Canonical object.
  */
 function canonicalizeObject(value) {
+  if (value === null || typeof value !== 'object') return value;
   return Object.keys(value)
     .sort()
     .reduce((record, key) => {
