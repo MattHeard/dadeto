@@ -1249,9 +1249,17 @@ describe('beaconBounce reset rendering', () => {
       orb: { x: 20, y: 20, vx: 1, vy: 1, radius: 4, stuckToPaddle: false },
       score: 0,
       lastActivatedBeaconId: null,
-      beacons: [{
-        id: 'exact', x: 32, y: 20, radius: 8, active: false, required: true, hitCount: 0,
-      }],
+      beacons: [
+        {
+          id: 'exact',
+          x: 32,
+          y: 20,
+          radius: 8,
+          active: false,
+          required: true,
+          hitCount: 0,
+        },
+      ],
       links: [],
     };
     resolveBeacons(exactBeaconTouch);
@@ -1260,7 +1268,9 @@ describe('beaconBounce reset rendering', () => {
     const outsideBeacon = {
       ...exactBeaconTouch,
       orb: { ...exactBeaconTouch.orb },
-      beacons: [{ ...exactBeaconTouch.beacons[0], active: false, hitCount: 0, x: 32.1 }],
+      beacons: [
+        { ...exactBeaconTouch.beacons[0], active: false, hitCount: 0, x: 32.1 },
+      ],
     };
     resolveBeacons(outsideBeacon);
     expect(outsideBeacon.beacons[0].active).toBe(false);
@@ -1269,7 +1279,17 @@ describe('beaconBounce reset rendering', () => {
       orb: { x: 20, y: 20, vx: 1, vy: 1, radius: 4, stuckToPaddle: false },
       score: 0,
       lastActivatedBeaconId: null,
-      beacons: [{ id: 'horizontal', x: 24, y: 20, radius: 8, active: false, required: true, hitCount: 0 }],
+      beacons: [
+        {
+          id: 'horizontal',
+          x: 24,
+          y: 20,
+          radius: 8,
+          active: false,
+          required: true,
+          hitCount: 0,
+        },
+      ],
       links: [],
     };
     resolveBeacons(horizontalAligned);
@@ -1279,7 +1299,17 @@ describe('beaconBounce reset rendering', () => {
       orb: { x: 20, y: 20, vx: 1, vy: 1, radius: 4, stuckToPaddle: false },
       score: 0,
       lastActivatedBeaconId: null,
-      beacons: [{ id: 'vertical', x: 20, y: 24, radius: 8, active: false, required: true, hitCount: 0 }],
+      beacons: [
+        {
+          id: 'vertical',
+          x: 20,
+          y: 24,
+          radius: 8,
+          active: false,
+          required: true,
+          hitCount: 0,
+        },
+      ],
       links: [],
     };
     resolveBeacons(verticalAligned);
@@ -1320,7 +1350,9 @@ describe('beaconBounce stuck orb and helpers', () => {
       height: 80,
       orb: { x: 60, y: 84, vx: 0, vy: 0, radius: 4, stuckToPaddle: false },
       paddle: { x: 0, y: 0, width: 10, height: 4, speed: 2 },
-      beacons: [{ required: true, active: false, x: 10, y: 10, radius: 8, hitCount: 0 }],
+      beacons: [
+        { required: true, active: false, x: 10, y: 10, radius: 8, hitCount: 0 },
+      ],
     };
     stepSimulation(exactBottom);
     expect(exactBottom.lives).toBe(2);
@@ -1343,7 +1375,16 @@ describe('beaconBounce stuck orb and helpers', () => {
 
     const won = {
       ...exactBottom,
-      beacons: [{ required: false, active: false, x: 10, y: 10, radius: 8, hitCount: 0 }],
+      beacons: [
+        {
+          required: false,
+          active: false,
+          x: 10,
+          y: 10,
+          radius: 8,
+          hitCount: 0,
+        },
+      ],
       orb: { ...exactBottom.orb, y: 40 },
     };
     stepSimulation(won);
@@ -1354,7 +1395,14 @@ describe('beaconBounce stuck orb and helpers', () => {
       status: 'running',
       beacons: [
         { required: true, active: true, x: 10, y: 10, radius: 8, hitCount: 0 },
-        { required: true, active: false, x: 110, y: 10, radius: 8, hitCount: 0 },
+        {
+          required: true,
+          active: false,
+          x: 110,
+          y: 10,
+          radius: 8,
+          hitCount: 0,
+        },
       ],
     };
     stepSimulation(incompleteWin);
@@ -1378,7 +1426,9 @@ describe('beaconBounce stuck orb and helpers', () => {
     expect(normalizeKeyboard(undefined, { type: 'keydown', key: 'd' }).d).toBe(
       true
     );
-    expect(normalizeKeyboard(undefined, { type: 'keydown', key: 1 })).toEqual({});
+    expect(normalizeKeyboard(undefined, { type: 'keydown', key: 1 })).toEqual(
+      {}
+    );
     expect(normalizeKeyboard(undefined, { type: 'keyup', key: 1 })).toEqual({});
     expect(normalizeKeyboard(undefined, null)).toEqual({});
     expect(normalizeGamepad({ buttons: [1, 0], axes: ['2', null] })).toEqual({
@@ -1541,10 +1591,18 @@ describe('beaconBounce stuck orb and helpers', () => {
         axes: [0],
       }).actions.moveLeft
     ).toBe(true);
-    expect(updateInputState(undefined, { axes: [-0.4] }).actions.moveLeft).toBe(false);
-    expect(updateInputState(undefined, { axes: [-0.41] }).actions.moveLeft).toBe(true);
-    expect(updateInputState(undefined, { axes: [0.4] }).actions.moveRight).toBe(false);
-    expect(updateInputState(undefined, { axes: [0.41] }).actions.moveRight).toBe(true);
+    expect(updateInputState(undefined, { axes: [-0.4] }).actions.moveLeft).toBe(
+      false
+    );
+    expect(
+      updateInputState(undefined, { axes: [-0.41] }).actions.moveLeft
+    ).toBe(true);
+    expect(updateInputState(undefined, { axes: [0.4] }).actions.moveRight).toBe(
+      false
+    );
+    expect(
+      updateInputState(undefined, { axes: [0.41] }).actions.moveRight
+    ).toBe(true);
     expect(
       updateInputState(undefined, {
         type: 'keydown',
@@ -1615,7 +1673,11 @@ describe('beaconBounce stuck orb and helpers', () => {
     expect(wonLaunchLocked.status).toBe('won');
     expect(wonLaunchLocked.orb.stuckToPaddle).toBe(true);
 
-    const lostLocked = { ...wonLocked, status: 'lost', paddle: { ...wonLocked.paddle } };
+    const lostLocked = {
+      ...wonLocked,
+      status: 'lost',
+      paddle: { ...wonLocked.paddle },
+    };
     applyGameplayInput(lostLocked, {
       actions: { ...createActionFlags(), moveLeft: true },
       previousActions: createActionFlags(),
@@ -1992,20 +2054,42 @@ describe('beaconBounce physics and rendering', () => {
         { from: 'missing', to: 'beacon-1', active: true },
         { from: 'beacon-1', to: 'missing', active: true },
       ],
-      beacons: [{ id: 'beacon-1', x: 10, y: 10, radius: 8, active: false, required: true, hitCount: 0 }],
+      beacons: [
+        {
+          id: 'beacon-1',
+          x: 10,
+          y: 10,
+          radius: 8,
+          active: false,
+          required: true,
+          hitCount: 0,
+        },
+      ],
       paddle: { x: 0, y: 0, width: 10, height: 4, speed: 2 },
       orb: { x: 0, y: 0, vx: 0, vy: 0, radius: 4, stuckToPaddle: false },
       score: 0,
       lives: 1,
       status: 'ready',
     });
-    expect(oneMissingEndpoint.shapes.some(shape => shape.type === 'line')).toBe(false);
+    expect(oneMissingEndpoint.shapes.some(shape => shape.type === 'line')).toBe(
+      false
+    );
 
     const inactiveRequiredCanvas = toCanvasPayload({
       width: 120,
       height: 80,
       links: [],
-      beacons: [{ id: 'required', x: 12, y: 18, radius: 8, active: false, required: true, hitCount: 0 }],
+      beacons: [
+        {
+          id: 'required',
+          x: 12,
+          y: 18,
+          radius: 8,
+          active: false,
+          required: true,
+          hitCount: 0,
+        },
+      ],
       paddle: { x: 0, y: 0, width: 10, height: 4, speed: 2 },
       orb: { x: 0, y: 0, vx: 0, vy: 0, radius: 4, stuckToPaddle: false },
       score: 0,
@@ -2013,7 +2097,13 @@ describe('beaconBounce physics and rendering', () => {
       status: 'ready',
     });
     expect(inactiveRequiredCanvas.shapes).toContainEqual(
-      expect.objectContaining({ type: 'circle', x: 12, y: 18, fill: '#1e3a5f', stroke: '#bff3ff' })
+      expect.objectContaining({
+        type: 'circle',
+        x: 12,
+        y: 18,
+        fill: '#1e3a5f',
+        stroke: '#bff3ff',
+      })
     );
   });
 
