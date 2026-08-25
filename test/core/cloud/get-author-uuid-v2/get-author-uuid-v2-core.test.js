@@ -15,15 +15,16 @@ const authorizationHeader = name => {
 function createDb() {
   const set = jest.fn().mockResolvedValue();
   const get = jest.fn();
+  const doc = jest.fn(() => ({
+    get,
+    set,
+  }));
+  const collection = jest.fn(() => ({ doc }));
   return {
     set,
     get,
-    collection: jest.fn(() => ({
-      doc: jest.fn(() => ({
-        get,
-        set,
-      })),
-    })),
+    collection,
+    doc,
   };
 }
 
@@ -46,6 +47,8 @@ describe('createGetAuthorUuidV2Handler', () => {
         get: authorizationHeader,
       })
     ).resolves.toEqual({ status: 200, body: { uuid: 'author-uuid' } });
+    expect(db.collection).toHaveBeenCalledWith('authors');
+    expect(db.doc).toHaveBeenCalledWith('user-1');
   });
 
   it('creates an author uuid when one is missing', async () => {
