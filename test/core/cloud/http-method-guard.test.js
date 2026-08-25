@@ -26,6 +26,9 @@ describe('http method guard', () => {
     expect(
       validatePostMethod(undefined, undefined, { treatNonStringAsPost: true })
     ).toBeNull();
+    expect(
+      validatePostMethod(undefined, undefined, { treatNonStringAsPost: false })
+    ).toBe(METHOD_NOT_ALLOWED_RESPONSE);
   });
 
   test('still rejects POST-only string methods when asked to treat non-strings as POST', () => {
