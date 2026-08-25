@@ -1671,6 +1671,13 @@ describe('beaconBounce physics and rendering', () => {
     resolvePaddle(rightPaddle);
     expect(rightPaddle.orb.vx).toBe(3);
 
+    const leftClampedPaddle = {
+      paddle: { x: 10, y: 30, width: 20, height: 6, speed: 4 },
+      orb: { x: 6, y: 34, vx: 0, vy: 3, radius: 4, stuckToPaddle: false },
+    };
+    resolvePaddle(leftClampedPaddle);
+    expect(leftClampedPaddle.orb.vx).toBe(-3);
+
     const upwardOrb = {
       paddle: { x: 10, y: 30, width: 40, height: 6, speed: 4 },
       orb: { x: 30, y: 34, vx: 0, vy: -3, radius: 4, stuckToPaddle: false },
