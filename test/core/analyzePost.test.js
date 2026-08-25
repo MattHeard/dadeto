@@ -56,7 +56,11 @@ describe('analyzePost', () => {
     expect(log).toHaveBeenCalledWith('--- Post Analysis ---');
     expect(log).toHaveBeenCalledWith('Words: 3 / 100');
     expect(log).toHaveBeenCalledWith('Delta: -97');
+    expect(log).toHaveBeenCalledWith('Sentences: 1');
+    expect(log).toHaveBeenCalledWith('Avg words/sentence: 3');
+    expect(log).toHaveBeenCalledWith('');
     expect(log).toHaveBeenCalledWith('--- Feedback ---');
+    expect(log).toHaveBeenCalledWith('- 97 words under. Add 97 words.');
     expect(log).not.toHaveBeenCalledWith('Ready for title suggestions!');
   });
 
@@ -73,6 +77,11 @@ describe('analyzePost', () => {
     });
 
     expect(log).toHaveBeenCalledWith('Delta: +0');
+    expect(log).toHaveBeenCalledWith('');
     expect(log).toHaveBeenCalledWith('Ready for title suggestions!');
+    expect(log.mock.calls.slice(-2)).toEqual([
+      [''],
+      ['Ready for title suggestions!'],
+    ]);
   });
 });
