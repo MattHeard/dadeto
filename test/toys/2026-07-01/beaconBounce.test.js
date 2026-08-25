@@ -1494,6 +1494,17 @@ describe('beaconBounce stuck orb and helpers', () => {
     });
     expect(wonLocked.paddle.x).toBe(20);
 
+    const wonLaunchLocked = {
+      ...wonLocked,
+      orb: { ...wonLocked.orb, stuckToPaddle: true },
+    };
+    applyGameplayInput(wonLaunchLocked, {
+      actions: { ...createActionFlags(), launchPressed: true },
+      previousActions: createActionFlags(),
+    });
+    expect(wonLaunchLocked.status).toBe('won');
+    expect(wonLaunchLocked.orb.stuckToPaddle).toBe(true);
+
     const clamped = {
       status: 'running',
       paused: false,
@@ -1543,6 +1554,18 @@ describe('beaconBounce stuck orb and helpers', () => {
     });
     expect(relaunchFromLost.lives).toBe(1);
     expect(relaunchFromLost.status).toBe('running');
+
+    const relaunchNegative = {
+      ...relaunchFromLost,
+      status: 'lost',
+      lives: -1,
+      orb: { ...relaunchFromLost.orb, stuckToPaddle: true },
+    };
+    applyGameplayInput(relaunchNegative, {
+      actions: { ...createActionFlags(), launchPressed: true },
+      previousActions: createActionFlags(),
+    });
+    expect(relaunchNegative.lives).toBe(1);
 
     const resetState = {
       status: 'running',
