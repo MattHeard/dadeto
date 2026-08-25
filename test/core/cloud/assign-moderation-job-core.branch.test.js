@@ -95,6 +95,28 @@ describe('assignModerationJobTestUtils', () => {
     expect(
       assignModerationJobTestUtils.chooseVariantDocFromCandidates([], () => 0)
     ).toBeUndefined();
+    const ranked = Array.from({ length: 6 }, (_, index) => ({
+      variantDoc: {
+        ref: { path: `variants/${index}` },
+        data: () => ({
+          moderationUrgency: 10 - index,
+          pagePath: `page/${index}`,
+        }),
+      },
+    }));
+    ranked.push({});
+    expect(
+      assignModerationJobTestUtils.chooseVariantDocFromCandidates(
+        ranked,
+        () => 0
+      )
+    ).toBe(ranked[0]);
+    expect(
+      assignModerationJobTestUtils.chooseVariantDocFromCandidates(
+        ranked,
+        () => 0.99
+      )
+    ).toBe(ranked[4]);
     expect(assignModerationJobTestUtils.getNumericCandidateValue('bad')).toBe(
       0
     );

@@ -201,7 +201,12 @@ describe('assign moderation job query and workflow coverage', () => {
     expect(createModeratorRefFactory(db)('mod')).toBe('moderator-doc');
     expect(createVariantsQuery(db)).toBe(query);
     expect(createReputationScopedVariantsQuery(db, 'any')).toBe(query);
-    expect(buildVariantQueryPlan(0.25)).toHaveLength(4);
+    expect(buildVariantQueryPlan(0.25)).toEqual([
+      { reputation: 'zeroRated', comparator: '>=', randomValue: 0.25 },
+      { reputation: 'zeroRated', comparator: '<', randomValue: 0.25 },
+      { reputation: 'any', comparator: '>=', randomValue: 0.25 },
+      { reputation: 'any', comparator: '<', randomValue: 0.25 },
+    ]);
   });
 
   test('fetches snapshots through query adapters', async () => {
