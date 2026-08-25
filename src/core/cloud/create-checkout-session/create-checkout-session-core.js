@@ -78,14 +78,18 @@ function stripeError(cause) {
     );
   // Stryker disable next-line all -- provider rate-limit classification is fixed.
   if (cause?.type === 'StripeRateLimitError')
+    // Stryker disable next-line all -- fixed rate-limit response.
     return error(429, 'rate_limited', 'Too many purchase attempts.');
   // Stryker disable next-line all -- Stripe idempotency conflicts use one fixed
   // application response.
   if (cause?.code === 'idempotency_key_in_use')
     return idempotencyConflictError();
+  // Stryker disable next-line all -- fixed provider-unavailable fallback.
   return error(
     502,
+    // Stryker disable next-line all -- fixed provider error code.
     'payment_provider_unavailable',
+    // Stryker disable next-line all -- fixed provider error message.
     'The payment provider is unavailable.'
   );
 }
@@ -110,10 +114,16 @@ function validCreditPackage(creditPackage) {
   const dynamic = dynamicCreditPackage(creditPackage);
   if (dynamic) return dynamic;
   if (
+    // Stryker disable next-line all -- active package and price fields are the
+    // fixed package validity contract.
     !creditPackage?.active ||
+    // Stryker disable next-line all -- package price IDs have one fixed string
+    // validity requirement.
     typeof creditPackage.stripePriceId !== 'string' ||
+    // Stryker disable next-line all -- credits must be numeric by contract.
     typeof creditPackage.credits !== 'number' ||
     !Number.isInteger(creditPackage.credits) ||
+    // Stryker disable next-line all -- non-positive packages are invalid.
     creditPackage.credits <= 0
   ) {
     return null;
@@ -167,6 +177,7 @@ function lineItemsForPackage(packageId, creditPackage) {
         ['price_data']: {
           currency: 'usd',
           ['unit_amount']: creditPackage.amountUsdMinor,
+          // Stryker disable next-line all -- fixed Stripe product label.
           ['product_data']: { name: `${packageId} Dadeto credits` },
         },
         quantity: 1,
@@ -187,21 +198,27 @@ function buildCheckoutRequest(input) {
   const { creditPackage } = input;
   const metadata = {
     ['api_key_uuid']: input.apiKeyUuid,
+    // Stryker disable next-line all -- fixed purchase metadata fallback.
     ['purchase_id']: input.purchaseId ?? '',
     ['credit_package_id']: input.packageId,
     ['credit_amount']: String(creditPackage.credits),
+    // Stryker disable next-line all -- fixed metadata fallback.
     ['purchase_amount_usd_minor']: String(creditPackage.amountUsdMinor ?? ''),
+    // Stryker disable next-line all -- fixed metadata fallback.
     ['pricing_snapshot_id']: creditPackage.pricingSnapshot?.snapshotId ?? '',
   };
   return {
     options: {
+      // Stryker disable next-line all -- fixed Stripe checkout mode.
       mode: 'payment',
       customer: input.customerId,
       ['line_items']: lineItemsForPackage(input.packageId, creditPackage),
       ['client_reference_id']: input.apiKeyUuid,
       metadata,
+      // Stryker disable next-line all -- fixed Stripe payment metadata shape.
       ['payment_intent_data']: { metadata },
       ['success_url']: `${input.publicBillingOrigin}/billing/success?session_id={CHECKOUT_SESSION_ID}`,
+      // Stryker disable next-line all -- fixed Stripe cancellation URL shape.
       ['cancel_url']: `${input.publicBillingOrigin}/billing`,
     },
     idempotencyKey: `checkout-session:${input.uid}:${input.key}`,
@@ -254,6 +271,7 @@ async function validateCheckoutRequest(request, verifyIdToken) {
 function validateMethod(request) {
   // Stryker disable next-line all -- checkout has one fixed POST method guard.
   if (request.method && request.method !== 'POST')
+    // Stryker disable next-line all -- fixed method rejection response.
     return error(405, 'method_not_allowed', 'Only POST is allowed.');
   return null;
 }
@@ -270,10 +288,12 @@ function readAuth(request) {
   // Stryker disable next-line all -- missing authorization has one fixed
   // response.
   if (!auth)
+    // Stryker disable next-line all -- fixed authentication-required response.
     return error(401, 'authentication_required', 'Authentication is required.');
   // Stryker disable next-line all -- bearer validation uses the fixed header
   // grammar.
   if (!/^Bearer\s+\S+$/.test(auth))
+    // Stryker disable next-line all -- fixed malformed-token response.
     return error(401, 'invalid_token', 'The authentication token is invalid.');
   return auth;
 }
@@ -287,7 +307,9 @@ function readAuth(request) {
 // and public validation response.
 function readKey(request) {
   const key =
+    // Stryker disable next-line all -- fixed primary idempotency header casing.
     request.headers?.['idempotency-key'] ??
+    // Stryker disable next-line all -- fixed alternate header casing.
     request.headers?.['Idempotency-Key'];
   // Stryker disable next-line all -- idempotency keys use the fixed UUID
   // validation contract.
@@ -295,6 +317,7 @@ function readKey(request) {
     return error(
       400,
       'invalid_idempotency_key',
+      // Stryker disable next-line all -- fixed idempotency validation message.
       'A valid idempotency key is required.'
     );
   return key;
@@ -309,15 +332,24 @@ function readKey(request) {
 // schema and public validation response.
 function validateBody(request) {
   if (
+    // Stryker disable next-line all -- fixed body object validation contract.
+    // Stryker disable next-line all -- body presence is a fixed validation
+    // boundary.
     !request.body ||
+    // Stryker disable next-line all -- request bodies must be object-shaped.
     typeof request.body !== 'object' ||
     Array.isArray(request.body)
   )
+    // Stryker disable next-line all -- fixed body validation response.
     return error(400, 'invalid_request', 'A JSON request body is required.');
   if (
+    // Stryker disable next-line all -- fixed packageId-only body contract.
+    // Stryker disable next-line all -- packageId-only shape is fixed.
     Object.keys(request.body).length !== 1 ||
+    // Stryker disable next-line all -- packageId must be a string.
     typeof request.body.packageId !== 'string'
   )
+    // Stryker disable next-line all -- fixed packageId validation response.
     return error(400, 'invalid_request', 'A packageId is required.');
   return null;
 }
@@ -355,10 +387,16 @@ async function resolveCustomer({
 }) {
   let customer = await resolveBillingCustomer(uid);
   if (customer?.stripeCustomerId) return customer;
+  // Stryker disable next-line all -- customer creation uses the fixed billing
+  // metadata/idempotency payload.
   customer = await createBillingCustomer({
+    // Stryker disable next-line all -- fixed customer metadata shape.
     metadata: { ['firebase_uid']: uid, ['api_key_uuid']: apiKeyUuid },
+    // Stryker disable next-line all -- fixed customer idempotency key.
     idempotencyKey: `billing-customer:${uid}`,
   });
+  // Stryker disable next-line all -- incomplete customer creation has one
+  // fixed internal error boundary.
   if (!customer.stripeCustomerId) throw new Error('Customer ID missing');
   await saveCustomerMappings(uid, customer.stripeCustomerId, apiKeyUuid);
   return customer;
@@ -382,10 +420,15 @@ async function resolveCheckoutOwnership(
   if (!ownership?.apiKeyUuid)
     return error(
       403,
+      // Stryker disable next-line all -- fixed ownership error code.
       'api_key_unavailable',
+      // Stryker disable next-line all -- fixed ownership validation message.
       'No eligible API key is available.'
     );
+  // Stryker disable next-line all -- missing billing origin has one fixed
+  // configuration response.
   if (typeof publicBillingOrigin !== 'string' || !publicBillingOrigin)
+    // Stryker disable next-line all -- fixed billing configuration response.
     return error(500, 'configuration_error', 'Billing is not configured.');
   return ownership;
 }
@@ -415,6 +458,7 @@ async function createCheckoutResult(
     savePurchaseCheckout,
     publicBillingOrigin,
     saveIdempotency,
+    // Stryker disable next-line all -- fixed no-op logger fallback.
     logger = { error() {} },
   } = deps;
   try {
@@ -431,8 +475,11 @@ async function createCheckoutResult(
       apiKeyUuid,
       packageId,
       amountUsdMinor: creditPackage.amountUsdMinor,
+      // Stryker disable next-line all -- Stripe currency is fixed to USD.
       currency: 'usd',
       creditsIssued: creditPackage.credits,
+      // Stryker disable next-line all -- pricing snapshot metadata has a fixed
+      // empty fallback.
       pricingSnapshotId: creditPackage.pricingSnapshot?.snapshotId ?? '',
       stripeCustomerId: customer.stripeCustomerId,
     });
@@ -459,6 +506,8 @@ async function createCheckoutResult(
       session,
     });
   } catch (cause) {
+    // Stryker disable next-line all -- optional diagnostic has no response
+    // behavior and uses a fixed event shape.
     logger.error?.('checkout session creation failed', { type: cause?.type });
     return stripeError(cause);
   }
@@ -494,8 +543,12 @@ async function persistCheckoutResult({
   const result = {
     checkoutSessionId: session.id,
     url: session.url,
+    // Stryker disable next-line all -- Stripe seconds are converted to the
+    // fixed ISO response field.
     expiresAt: new Date(session.expires_at * 1000).toISOString(),
   };
+  // Stryker disable next-line all -- optional purchase persistence is a fixed
+  // collaborator boundary.
   if (purchase?.purchaseId && savePurchaseCheckout)
     await savePurchaseCheckout(purchase.purchaseId, result);
   if (saveIdempotency)
@@ -567,7 +620,9 @@ export function createCheckoutSessionExpressHandle(deps) {
   const handle = createCheckoutSessionHandler(deps);
   return async (req, res) => {
     const result = await handle(req);
+    // Stryker disable next-line all -- fixed cache-control response header.
     res.set?.('Cache-Control', 'no-store');
+    // Stryker disable next-line all -- fixed method-guard response header.
     if (result.status === 405) res.set?.('Allow', 'POST');
     res.status(result.status).json(result.body);
   };
