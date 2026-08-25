@@ -642,6 +642,8 @@ describe('beaconBounce input and state fallbacks', () => {
       status: 'ready',
     });
     expect(normalizeState(['version', 1])).toBeNull();
+    expect(normalizeState('version 1')).toBeNull();
+    expect(normalizeState(() => ({ version: 1 }))).toBeNull();
   });
 
   it('covers input state fallbacks and both movement directions', () => {
@@ -1722,11 +1724,12 @@ describe('beaconBounce physics and rendering', () => {
 
     const stationaryOrb = {
       paddle: { x: 30, y: 30, width: 40, height: 6, speed: 4 },
-      orb: { x: 50, y: 34, vx: 0, vy: 0, radius: 4, stuckToPaddle: false },
+      orb: { x: 50, y: 32, vx: 0, vy: 0, radius: 4, stuckToPaddle: false },
     };
     resolvePaddle(stationaryOrb);
     expect(stationaryOrb.orb.vy).toBe(0);
     expect(Object.is(stationaryOrb.orb.vy, 0)).toBe(true);
+    expect(stationaryOrb.orb.y).toBe(32);
 
     const offsetPaddle = {
       paddle: { x: 10, y: 30, width: 30, height: 6, speed: 4 },
