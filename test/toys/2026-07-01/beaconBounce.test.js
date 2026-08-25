@@ -1797,6 +1797,22 @@ describe('beaconBounce physics and rendering', () => {
     expect(filteredCanvas.shapes.some(shape => shape.type === 'line')).toBe(
       false
     );
+
+    const oneMissingEndpoint = toCanvasPayload({
+      width: 120,
+      height: 80,
+      links: [
+        { from: 'missing', to: 'beacon-1', active: true },
+        { from: 'beacon-1', to: 'missing', active: true },
+      ],
+      beacons: [{ id: 'beacon-1', x: 10, y: 10, radius: 8, active: false, required: true, hitCount: 0 }],
+      paddle: { x: 0, y: 0, width: 10, height: 4, speed: 2 },
+      orb: { x: 0, y: 0, vx: 0, vy: 0, radius: 4, stuckToPaddle: false },
+      score: 0,
+      lives: 1,
+      status: 'ready',
+    });
+    expect(oneMissingEndpoint.shapes.some(shape => shape.type === 'line')).toBe(false);
   });
 
   it('falls back cleanly on malformed input', () => {
