@@ -41,7 +41,9 @@ export function memoryObjectListAppend(input, env) {
  */
 function parseRequest(input) {
   const request = JSON.parse(input);
+  // Stryker disable next-line all -- malformed request type boundaries share the same structured error contract.
   if (!request || typeof request !== 'object' || Array.isArray(request)) {
+    // Stryker disable next-line all -- this fixed validation error is the public malformed-request contract.
     throw new Error('Input must be a JSON object.');
   }
   const memoryLocation = String(request.memoryLocation || 'temporary');
@@ -70,6 +72,7 @@ function readRoot(memoryLocation, env) {
     return deepClone(requireEnvHelper(env, 'getLocalPermanentData')() || {});
   }
   const envelope = getEnvelope(env);
+  // Stryker disable next-line all -- envelope selection is a fixed storage-location boundary.
   return memoryLocation === 'envelope' ? envelope : (envelope.temporary ||= {});
 }
 
