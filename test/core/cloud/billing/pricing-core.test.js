@@ -4,6 +4,7 @@ import {
   calculatePackageCredits,
   createPricingSnapshot,
   quoteCreditPackage,
+  pricingTestUtils,
 } from '../../../../src/core/cloud/billing/pricing-core.js';
 
 const snapshot = createPricingSnapshot({
@@ -16,6 +17,13 @@ const snapshot = createPricingSnapshot({
 });
 
 describe('pricing core', () => {
+  it('validates fixed-point integers directly', () => {
+    expect(pricingTestUtils.positiveInteger(1, 'value')).toBe(1);
+    expect(() => pricingTestUtils.positiveInteger('1', 'value')).toThrow(
+      'value'
+    );
+    expect(() => pricingTestUtils.positiveInteger(0, 'value')).toThrow('value');
+  });
   it('quotes packages from the snapshot using downward rounding', () => {
     expect(calculatePackageCredits(1_000, snapshot)).toBe(9_200_000);
     expect(
@@ -26,6 +34,13 @@ describe('pricing core', () => {
       credits: 9_200_000,
       snapshotId: '2026-08-05',
     });
+    const nonUnitRate = createPricingSnapshot({
+      ...snapshot,
+      creditEurMicros: 2,
+      markupBps: 0,
+      operations: [{ id: 'function.invoke', costEurMicros: 50 }],
+    });
+    expect(calculatePackageCredits(1_000, nonUnitRate)).toBe(4_600_000);
   });
 
   it('prices operations from the current snapshot and rounds upward', () => {
@@ -44,10 +59,38 @@ describe('pricing core', () => {
     );
     expect(() =>
       createPricingSnapshot({ ...snapshot, eurPerUsdMicros: 0 })
-    ).toThrow();
+    ).toThrow('eurPerUsdMicros');
+    expect(() =>
+      createPricingSnapshot({
+        ...snapshot,
+        eurPerUsdMicros: '920000',
+        operations: [{ id: 'function.invoke', costEurMicros: 50 }],
+      })
+    ).toThrow('eurPerUsdMicros');
+    expect(() =>
+      createPricingSnapshot({
+        ...snapshot,
+        eurPerUsdMicros: null,
+        operations: [{ id: 'function.invoke', costEurMicros: 50 }],
+      })
+    ).toThrow('eurPerUsdMicros');
+    expect(() =>
+      createPricingSnapshot({
+        ...snapshot,
+        eurPerUsdMicros: 'bad',
+        operations: [],
+      })
+    ).toThrow('eurPerUsdMicros');
     expect(() =>
       createPricingSnapshot({ ...snapshot, creditEurMicros: 0 })
-    ).toThrow();
+    ).toThrow('creditEurMicros');
+    expect(
+      createPricingSnapshot({
+        ...snapshot,
+        markupBps: 0,
+        operations: [{ id: 'function.invoke', costEurMicros: 50 }],
+      }).markupBps
+    ).toBe(0);
     expect(() => createPricingSnapshot({ ...snapshot, markupBps: -1 })).toThrow(
       'markupBps'
     );

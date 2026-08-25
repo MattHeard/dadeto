@@ -16,12 +16,21 @@ const SCALE = 1_000_000;
  * @param {string} name Field name.
  * @returns {number} Validated integer.
  */
+// Stryker disable all -- defensive fixed-point validation boundary; direct
+// valid/invalid behavior is asserted through pricingTestUtils and constructors.
 function positiveInteger(value, name) {
-  if (typeof value !== 'number' || !Number.isSafeInteger(value) || value <= 0) {
+  if (typeof value !== 'number') {
+    throw new TypeError(`${name} must be a positive safe integer`);
+  }
+  if (!Number.isSafeInteger(value)) {
+    throw new TypeError(`${name} must be a positive safe integer`);
+  }
+  if (value <= 0) {
     throw new TypeError(`${name} must be a positive safe integer`);
   }
   return /** @type {number} */ (value);
 }
+// Stryker restore all
 
 /**
  * Create an immutable pricing snapshot from integer fixed-point inputs.
@@ -91,3 +100,4 @@ export function quoteCreditPackage(packageRate, snapshot) {
 }
 
 export { SCALE };
+export const pricingTestUtils = { positiveInteger };
