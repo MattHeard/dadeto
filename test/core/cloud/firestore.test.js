@@ -60,6 +60,39 @@ describe('createFirestoreModule', () => {
     expect(getFirestore).not.toHaveBeenCalled();
   });
 
+  it('bypasses independently for each cache identity component', () => {
+    const first = createFixture();
+    const customEnsure = jest.fn();
+    const previousDatabaseId = process.env.DATABASE_ID;
+    process.env.DATABASE_ID = 't-test';
+    expect(
+      first.module.getFirestoreInstance({ ensureAppFn: customEnsure })
+    ).toEqual({ app: undefined, databaseId: 't-test' });
+    first.module.getFirestoreInstance({ ensureAppFn: customEnsure });
+    expect(first.getFirestore).toHaveBeenCalledWith(undefined, 't-test');
+    expect(first.getFirestore).toHaveBeenCalledTimes(2);
+
+    const second = createFixture();
+    const customGetFirestore = jest.fn(() => 'custom-get');
+    expect(
+      second.module.getFirestoreInstance({ getFirestoreFn: customGetFirestore })
+    ).toBe('custom-get');
+    second.module.getFirestoreInstance({ getFirestoreFn: customGetFirestore });
+    expect(customGetFirestore).toHaveBeenCalledTimes(2);
+    expect(second.getFirestore).not.toHaveBeenCalled();
+
+    const third = createFixture();
+    const customEnvironment = { DATABASE_ID: 'isolated-db' };
+    expect(
+      third.module.getFirestoreInstance({ environment: customEnvironment })
+    ).toEqual({ app: undefined, databaseId: 'isolated-db' });
+    third.module.getFirestoreInstance({ environment: customEnvironment });
+    expect(third.getFirestore).toHaveBeenCalledWith(undefined, 'isolated-db');
+    expect(third.getFirestore).toHaveBeenCalledTimes(2);
+    if (previousDatabaseId === undefined) delete process.env.DATABASE_ID;
+    else process.env.DATABASE_ID = previousDatabaseId;
+  });
+
   it('clears the cache and resets Firebase initialization state', () => {
     const { module, resetFirebaseInitializationState, getFirestore } =
       createFixture();
