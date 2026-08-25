@@ -91,7 +91,7 @@ function createResetState(inputState, persisted, input) {
  * @param {BeaconInputState} inputState Current input state.
  * @returns {void}
  */
-function advanceSimulation(next, inputState) {
+export function advanceSimulation(next, inputState) {
   let framesToAdvance = inputState.control.stepCount;
   if (!next.paused)
     framesToAdvance =

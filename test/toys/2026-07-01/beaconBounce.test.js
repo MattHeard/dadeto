@@ -2,6 +2,7 @@ import { describe, expect, it, jest } from '@jest/globals';
 import {
   beaconBounce,
   applyGameplayInput,
+  advanceSimulation,
   buildNextState,
   createActionFlags,
   resolveBeacons,
@@ -214,11 +215,15 @@ describe('beaconBounce', () => {
     expect(state.simulationSpeed).toBe(2);
     expect(state.orb.x).toBe(54);
 
-    const pausedState = buildNextState(
-      { ...state, paused: true, orb: { ...state.orb, x: 50, vy: 0 } },
-      { stepCount: 2 }
-    );
-    expect(pausedState.orb.x).toBe(50);
+    const pausedState = {
+      ...state,
+      status: 'running',
+      paused: true,
+      simulationSpeed: 3,
+      orb: { ...state.orb, x: 50, vy: 0, stuckToPaddle: false },
+    };
+    advanceSimulation(pausedState, { control: { stepCount: 2 } });
+    expect(pausedState.orb.x).toBe(52);
   });
 
   it('honors an explicit reset payload and fallback life precedence', () => {
@@ -657,7 +662,9 @@ describe('beaconBounce input and state fallbacks', () => {
     });
     expect(normalizeState(['version', 1])).toBeNull();
     expect(normalizeState('version 1')).toBeNull();
-    expect(normalizeState(() => ({ version: 1 }))).toBeNull();
+    const callableSnapshot = () => ({ version: 1 });
+    callableSnapshot.version = 1;
+    expect(normalizeState(callableSnapshot)).toBeNull();
   });
 
   it('covers input state fallbacks and both movement directions', () => {
@@ -1639,6 +1646,13 @@ describe('beaconBounce stuck orb and helpers', () => {
       previousActions: createActionFlags(),
     });
     expect(relaunchNegative.lives).toBe(1);
+
+    const relaunchWithLives = { ...relaunchFromLost, status: 'lost', lives: 2 };
+    applyGameplayInput(relaunchWithLives, {
+      actions: { ...createActionFlags(), launchPressed: true },
+      previousActions: createActionFlags(),
+    });
+    expect(relaunchWithLives.lives).toBe(2);
 
     const resetState = {
       status: 'running',
