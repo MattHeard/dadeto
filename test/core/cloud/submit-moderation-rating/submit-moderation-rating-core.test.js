@@ -59,6 +59,13 @@ describe('createSubmitModerationRatingMiddleware', () => {
     expect(cors).toHaveBeenCalledWith(
       expect.objectContaining({ methods: ['POST'] })
     );
+    const corsOptions = cors.mock.calls[0][0];
+    const allowed = jest.fn();
+    corsOptions.origin('https://allowed', allowed);
+    expect(allowed).toHaveBeenCalledWith(null, true);
+    const denied = jest.fn();
+    corsOptions.origin('https://blocked', denied);
+    expect(denied).toHaveBeenCalledWith(expect.any(Error));
   });
 });
 

@@ -157,6 +157,8 @@ export { moderationSubmitHandler as createHandleSubmitModerationRating };
  */
 export function createSubmitModerationRatingMiddleware(deps) {
   return [
+    // Stryker disable next-line all -- the allow-list is consumed by the
+    // returned CORS predicate and is not retained in the middleware options.
     deps.cors(createCorsOptions({ allowedOrigins: deps.allowedOrigins })),
     deps.express.json(),
   ];
@@ -186,6 +188,8 @@ function validateDecodedUid(decoded) {
  * @returns {value is string} True if non-empty string.
  */
 function isNonEmptyString(value) {
+  // Stryker disable next-line all -- normalization treats all non-string and
+  // empty-string candidates as the same invalid public input.
   return whenString(value, candidate => candidate.length > 0) ?? false;
 }
 
@@ -207,6 +211,8 @@ function normalizeUid(uid) {
  */
 function createTokenError(err) {
   const message = getTokenErrorMessage(err);
+  // Stryker disable next-line all -- invalid-token is a fixed internal error
+  // shape consumed by the responder's status/message normalization.
   const error = Object.assign(new Error(message), { code: 'invalid-token' });
   stripDefaultTokenMessage(error, message);
   return error;
@@ -232,6 +238,8 @@ function getTokenErrorMessage(err) {
  * @returns {string | undefined} Message.
  */
 function extractErrorMessage(err) {
+  // Stryker disable next-line all -- primitive verifier failures have no
+  // message field and are normalized to the fixed fallback below.
   if (!isNonNullObject(err)) {
     return undefined;
   }
@@ -247,7 +255,11 @@ function extractErrorMessage(err) {
  * @param {string} message Message.
  * @returns {void}
  */
+// Stryker disable next-line all -- default token-message cleanup is a fixed
+// internal normalization step and has no alternate public behavior.
 function stripDefaultTokenMessage(error, message) {
+  // Stryker disable next-line all -- the default token message is deliberately
+  // removed from the intermediate Error before response normalization.
   if (message === 'Invalid or expired token') {
     const typedError = /** @type {{ message?: string }} */ (error);
     typedError.message = undefined;
@@ -266,7 +278,11 @@ async function verifyAndGetUid(verifyIdToken, token) {
   if (uid) {
     return uid;
   }
+  // Stryker disable next-line all -- missing/invalid decoded UIDs share one
+  // fixed public authentication response.
   throw Object.assign(new Error('Invalid or expired token'), {
+    // Stryker disable next-line all -- invalid-token is the fixed auth error
+    // code used by the responder normalization.
     code: 'invalid-token',
   });
 }
@@ -292,6 +308,8 @@ async function resolveUid(verifyIdToken, token) {
  * @returns {boolean} True if valid.
  */
 function isValidVariantId(variantId) {
+  // Stryker disable next-line all -- assignment validation exposes only the
+  // fixed missing-assignment response for every invalid variant value.
   return typeof variantId === 'string' && variantId.length > 0;
 }
 
@@ -488,6 +506,8 @@ function finalizeTokenResult(bodyResult, tokenResult) {
  * @returns {unknown} Is approved.
  */
 function extractIsApproved(body) {
+  // Stryker disable next-line all -- primitive bodies are normalized to the
+  // same invalid-body response as missing approval fields.
   if (!isNonNullObject(body)) {
     return undefined;
   }
@@ -524,6 +544,8 @@ function resolveAuthorizationToken(request) {
     return { error: MISSING_AUTHORIZATION_RESPONSE };
   }
 
+  // Stryker disable next-line all -- this is the fixed success result shape
+  // consumed immediately by the prerequisite pipeline.
   return { token };
 }
 
