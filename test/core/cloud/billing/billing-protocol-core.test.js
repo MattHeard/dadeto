@@ -30,7 +30,14 @@ describe('billing protocol', () => {
         state: 'paid',
         nextState: 'expired',
       })
-    ).toThrow();
+    ).toThrow('Invalid purchase transition: paid -> expired');
+    expect(() =>
+      applyStateTransition({
+        kind: 'operation',
+        state: 'quoted',
+        nextState: 'released',
+      })
+    ).toThrow('Invalid operation transition: quoted -> released');
   });
 
   it('supports reserve settlement and recovery release', () => {
@@ -61,6 +68,7 @@ describe('billing protocol', () => {
     expect(verifyLedgerBalance([event, { amount: -2 }], 3).valid).toBe(true);
     expect(verifyLedgerBalance([event], -1).valid).toBe(false);
     expect(verifyLedgerBalance([{}], 0).valid).toBe(true);
+    expect(verifyLedgerBalance([{ amount: -2 }], -2).valid).toBe(false);
   });
 
   it.each([
@@ -79,8 +87,63 @@ describe('billing protocol', () => {
       'amount',
     ],
     [{ eventId: 'e1', type: 'credits_issued', amount: 5 }, 'billingIdentityId'],
+    [
+      {
+        eventId: '',
+        type: 'credits_issued',
+        amount: 5,
+        billingIdentityId: 'key-1',
+      },
+      'eventId',
+    ],
+    [
+      { eventId: 'e1', type: '', amount: 5, billingIdentityId: 'key-1' },
+      'type',
+    ],
+    [
+      {
+        eventId: 'e1',
+        type: 'credits_issued',
+        amount: 5,
+        billingIdentityId: '',
+      },
+      'billingIdentityId',
+    ],
+    [
+      {
+        eventId: 42,
+        type: 'credits_issued',
+        amount: 5,
+        billingIdentityId: 'key-1',
+      },
+      'eventId',
+    ],
+    [
+      { eventId: 'e1', type: 42, amount: 5, billingIdentityId: 'key-1' },
+      'type',
+    ],
+    [
+      {
+        eventId: 'e1',
+        type: 'credits_issued',
+        amount: 5,
+        billingIdentityId: 42,
+      },
+      'billingIdentityId',
+    ],
   ])('rejects ledger events missing or invalid %s', (input, field) => {
     expect(() => createLedgerEvent(input)).toThrow(field);
+  });
+
+  it('marks ledger events immutable', () => {
+    expect(
+      createLedgerEvent({
+        eventId: 'e2',
+        type: 'credits_spent',
+        amount: -1,
+        billingIdentityId: 'key-1',
+      }).immutable
+    ).toBe(true);
   });
 });
 
