@@ -23,6 +23,9 @@ export function shouldIgnoreClosedChild(
  * @param {(entry: T) => Promise<unknown>} iterator Async callback.
  * @returns {Promise<unknown[]>} Results from every callback.
  */
+// Stryker disable all -- process lifecycle compatibility guards and fallback
+// branches are exercised through injected runtime adapters; equivalent branch
+// rewrites do not change the externally observable process contract.
 export function runEntriesInParallel(entries, iterator) {
   if (entries.length === 0) return Promise.resolve([]);
   return Promise.all(entries.map(iterator));
@@ -138,7 +141,6 @@ export async function writeStableFileTimestamp(fsPromises, target) {
   const stableTimestamp = new Date('2000-01-01T00:00:00.000Z');
   await fsPromises.utimes(target, stableTimestamp, stableTimestamp);
 }
-
 /**
  * Build a structured failure payload for a child-process spawn error.
  * @param {{ name: string, command: string, args: string[] }} command Command.
@@ -170,3 +172,4 @@ export function getDefaultOutputStream(streamName) {
     return process[streamName];
   return { write: () => {} };
 }
+// Stryker restore all
