@@ -1174,6 +1174,26 @@ describe('beaconBounce reset rendering', () => {
       hitCount: 1,
     });
 
+    const exactBeaconTouch = {
+      orb: { x: 20, y: 20, vx: 1, vy: 1, radius: 4, stuckToPaddle: false },
+      score: 0,
+      lastActivatedBeaconId: null,
+      beacons: [{
+        id: 'exact', x: 32, y: 20, radius: 8, active: false, required: true, hitCount: 0,
+      }],
+      links: [],
+    };
+    resolveBeacons(exactBeaconTouch);
+    expect(exactBeaconTouch.beacons[0].active).toBe(true);
+
+    const outsideBeacon = {
+      ...exactBeaconTouch,
+      orb: { ...exactBeaconTouch.orb },
+      beacons: [{ ...exactBeaconTouch.beacons[0], active: false, hitCount: 0, x: 32.1 }],
+    };
+    resolveBeacons(outsideBeacon);
+    expect(outsideBeacon.beacons[0].active).toBe(false);
+
     const missedPaddle = {
       paddle: { x: 10, y: 30, width: 40, height: 6, speed: 4 },
       orb: { x: 80, y: 34, vx: 1, vy: 3, radius: 4, stuckToPaddle: false },
