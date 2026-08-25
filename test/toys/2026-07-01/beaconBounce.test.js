@@ -11,6 +11,8 @@ import {
   normalizeGamepad,
   normalizeKeyboard,
   normalizeState,
+  normalizeControlState,
+  createInitialInputState,
   buildResetFallback,
   stepSimulation,
   toCanvasPayload,
@@ -1382,6 +1384,23 @@ describe('beaconBounce stuck orb and helpers', () => {
       true
     );
     expect(normalizeGamepad(undefined)).toEqual({ buttons: [], axes: [] });
+    expect(normalizeControlState(undefined, { paused: true })).toEqual({
+      paused: true,
+      speedMultiplier: 1,
+      stepCount: 0,
+    });
+    expect(normalizeControlState(undefined, null)).toEqual({
+      paused: false,
+      speedMultiplier: 1,
+      stepCount: 0,
+    });
+    expect(createInitialInputState()).toEqual({
+      keyboard: {},
+      gamepad: { buttons: [], axes: [] },
+      actions: createActionFlags(),
+      previousActions: createActionFlags(),
+      control: { paused: false, speedMultiplier: 1, stepCount: 0 },
+    });
 
     const previousInput = {
       keyboard: { p: true },
@@ -1425,6 +1444,12 @@ describe('beaconBounce stuck orb and helpers', () => {
       paused: false,
       speedMultiplier: 4,
       stepCount: 3,
+    });
+    expect(buildNextState(null, { speed: 5 }).simulationSpeed).toBe(5);
+    expect(updateInputState(undefined, null).control).toEqual({
+      paused: false,
+      speedMultiplier: 1,
+      stepCount: 0,
     });
     expect(
       updateInputState(undefined, { speed: -4, step: -2 }).control

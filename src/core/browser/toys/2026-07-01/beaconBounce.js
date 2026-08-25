@@ -123,7 +123,7 @@ export function updateInputState(previous, input) {
  * @param {unknown} input Latest input payload.
  * @returns {BeaconControlState} Normalized controls.
  */
-function normalizeControlState(previous, input) {
+export function normalizeControlState(previous, input) {
   const control = {
     paused: Boolean(
       firstDefined(readInput(input, 'paused'), previous?.paused, false)
@@ -289,7 +289,7 @@ function fallbackValue(fallback, key, defaultValue) {
  * Create the default normalized input state.
  * @returns {BeaconInputState} Empty input state with neutral controls.
  */
-function createInitialInputState() {
+export function createInitialInputState() {
   return {
     keyboard: {},
     gamepad: { buttons: [], axes: [] },
