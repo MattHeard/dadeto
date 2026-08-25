@@ -69,6 +69,9 @@ function createPaymentWebhookDb({
                 if (isMissingCustomer()) {
                   return {};
                 }
+                if (eventId === 'cus-no-data') {
+                  return undefined;
+                }
                 return { apiKeyUuid: getCustomerApiKeyUuid() };
               },
             };
@@ -76,7 +79,9 @@ function createPaymentWebhookDb({
           return {
             exists: eventId !== 'evt-missing',
             data: () =>
-              eventId === 'evt-received'
+              eventId === 'evt-no-event-data'
+                ? undefined
+                : eventId === 'evt-received'
                 ? { status: 'received' }
                 : eventId === 'evt-deferred'
                   ? { status: 'deferred' }
@@ -186,13 +191,21 @@ describe('payment webhook cloud wrapper', () => {
     missingCustomer = false;
     await captured.resolveApiKeyUuid({ data: { object: {} } });
     customerApiKeyUuid = '';
-    await captured.resolveApiKeyUuid({ data: { object: { customer: 'cus-empty' } } });
+    await expect(
+      captured.resolveApiKeyUuid({ data: { object: { customer: 'cus-empty' } } })
+    ).resolves.toBeNull();
     customerApiKeyUuid = 42;
-    await captured.resolveApiKeyUuid({ data: { object: { customer: 'cus-number' } } });
+    await expect(
+      captured.resolveApiKeyUuid({ data: { object: { customer: 'cus-number' } } })
+    ).resolves.toBeNull();
+    await expect(
+      captured.resolveApiKeyUuid({ data: { object: { customer: 'cus-no-data' } } })
+    ).resolves.toBeNull();
     customerApiKeyUuid = 'uuid-1';
     await expect(captured.isDuplicateEvent('evt-1')).resolves.toBe(true);
     await expect(captured.isDuplicateEvent('evt-received')).resolves.toBe(false);
     await expect(captured.isDuplicateEvent('evt-deferred')).resolves.toBe(false);
+    await expect(captured.isDuplicateEvent('evt-no-event-data')).resolves.toBe(true);
     await expect(captured.isDuplicateEvent('evt-missing')).resolves.toBe(false);
     await Promise.all([
       captured.getPaymentEvent({
