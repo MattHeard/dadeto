@@ -332,7 +332,9 @@ describe('createCopyCore', () => {
       });
 
       expect(resolveMessage).toHaveBeenCalledTimes(entries.length);
+      expect(resolveMessage).toHaveBeenCalledWith(entries[0]);
       expect(logger.info).toHaveBeenCalledTimes(entries.length);
+      expect(logger.info).toHaveBeenCalledWith(`copied ${entries[0].source}`);
       expect(io.copyFile).toHaveBeenCalledTimes(entries.length);
       expect(io.copyFile).toHaveBeenNthCalledWith(
         1,
@@ -561,7 +563,9 @@ describe('createCopyCore directory traversal', () => {
         createDirectory: jest.fn(),
         removeDirectory: jest.fn(),
         copyFile: jest.fn(),
-        readDirEntries: jest.fn().mockReturnValue([]),
+        readDirEntries: jest.fn(target =>
+          target === directories.srcCoreDir ? [createFileEntry('root.js')] : []
+        ),
       };
       const consoleLike = { log: jest.fn(), warn: jest.fn() };
       const createFsAdapters = jest.fn(() => io);
@@ -594,6 +598,11 @@ describe('createCopyCore directory traversal', () => {
         'Core root scripts copied successfully!'
       );
       expect(io.readDirEntries).toHaveBeenCalledWith(directories.srcCoreDir);
+      expect(io.copyFile).toHaveBeenCalledWith(
+        posix.join(directories.srcCoreDir, 'root.js'),
+        posix.join(directories.publicCoreDir, 'root.js')
+      );
+      expect(core.copyPlannedDirectoryTrees).toEqual(expect.any(Function));
     });
   });
 });
@@ -725,6 +734,114 @@ describe('createCopyCore copy workflows', () => {
   });
 
   describe('copy workflows', () => {
+    it('reports missing browser and static content directories', () => {
+      const io = {
+        directoryExists: jest.fn().mockReturnValue(false),
+        createDirectory: jest.fn(),
+        copyFile: jest.fn(),
+        readDirEntries: jest.fn(),
+      };
+      const logger = { info: jest.fn(), warn: jest.fn() };
+
+      core.copyBrowserTrees(directories, {
+        io,
+        messageLogger: logger,
+        copyFile: io.copyFile,
+      });
+      core.copyStaticContentTrees(directories, {
+        io,
+        messageLogger: logger,
+        copyFile: io.copyFile,
+      });
+
+      expect(logger.warn.mock.calls).toEqual([
+        ['Warning: browser directory not found at src/browser'],
+        ['Warning: core/browser directory not found at src/core/browser'],
+        ['Warning: browser/assets directory not found at src/browser/assets'],
+        [
+          'Warning: content/blog-media directory not found at src/content/blog-media',
+        ],
+        ['Warning: content/pages directory not found at src/content/pages'],
+      ]);
+      expect(logger.info).not.toHaveBeenCalled();
+    });
+
+    it('copies root core modules, shared process utilities, and constants', () => {
+      const rootEntry = createFileEntry('root.js');
+      const testEntry = createFileEntry('root.test.js');
+      const directoryEntry = createDirectoryEntry('nested');
+      const io = {
+        directoryExists: jest.fn(
+          target =>
+            target === directories.srcCoreDir ||
+            target === posix.join(directories.srcCoreDir, 'build') ||
+            target === posix.join(directories.srcCoreDir, 'constants')
+        ),
+        createDirectory: jest.fn(),
+        copyFile: jest.fn(),
+        readDirEntries: jest.fn(target => {
+          if (target === directories.srcCoreDir) {
+            return [rootEntry, testEntry, directoryEntry];
+          }
+          return [];
+        }),
+      };
+      const logger = { info: jest.fn(), warn: jest.fn() };
+
+      core.copyCoreRootFiles(directories, {
+        io,
+        messageLogger: logger,
+        copyFile: io.copyFile,
+      });
+      core.copyCoreConstants(directories, {
+        io,
+        messageLogger: logger,
+        copyFile: io.copyFile,
+      });
+
+      expect(io.copyFile).toHaveBeenCalledWith(
+        posix.join(directories.srcCoreDir, 'root.js'),
+        posix.join(directories.publicCoreDir, 'root.js')
+      );
+      expect(io.copyFile).toHaveBeenCalledWith(
+        posix.join(directories.srcCoreDir, 'build/process-utils.js'),
+        posix.join(directories.publicCoreDir, 'build/process-utils.js')
+      );
+      expect(logger.info).toHaveBeenCalledWith(
+        'Core root scripts copied successfully!'
+      );
+      expect(logger.info).toHaveBeenCalledWith(
+        'Core constants copied successfully!'
+      );
+      expect(io.createDirectory).toHaveBeenCalledWith(
+        posix.join(directories.publicCoreDir, 'constants')
+      );
+      expect(io.copyFile).not.toHaveBeenCalledWith(
+        posix.join(directories.srcCoreDir, 'root.test.js'),
+        expect.any(String)
+      );
+    });
+
+    it('warns when the constants directory is missing', () => {
+      const io = {
+        directoryExists: jest.fn().mockReturnValue(false),
+        createDirectory: jest.fn(),
+        copyFile: jest.fn(),
+        readDirEntries: jest.fn(),
+      };
+      const logger = { info: jest.fn(), warn: jest.fn() };
+
+      core.copyCoreConstants(directories, {
+        io,
+        messageLogger: logger,
+        copyFile: io.copyFile,
+      });
+
+      expect(logger.warn).toHaveBeenCalledWith(
+        'Warning: core/constants directory not found at src/core/constants'
+      );
+    });
+
     it('copies directory trees when they exist', () => {
       const io = {
         directoryExists: jest
@@ -732,7 +849,9 @@ describe('createCopyCore copy workflows', () => {
           .mockImplementation(target => target === directories.srcBrowserDir),
         createDirectory: jest.fn(),
         copyFile: jest.fn(),
-        readDirEntries: jest.fn().mockReturnValue([]),
+        readDirEntries: jest
+          .fn()
+          .mockReturnValue([createFileEntry('widget.js')]),
       };
       const logger = { info: jest.fn(), warn: jest.fn() };
 
@@ -748,6 +867,10 @@ describe('createCopyCore copy workflows', () => {
 
       expect(logger.info).toHaveBeenCalledWith(
         'Browser files copied successfully!'
+      );
+      expect(io.copyFile).toHaveBeenCalledWith(
+        posix.join(directories.srcBrowserDir, 'widget.js'),
+        posix.join(directories.publicBrowserDir, 'widget.js')
       );
 
       core.copyDirectoryTreeIfExists(
@@ -814,6 +937,12 @@ describe('createCopyCore copy workflows', () => {
       expect(io.copyFile).not.toHaveBeenCalled();
       expect(logger.info).toHaveBeenCalledWith(
         'Browser assets copied successfully!'
+      );
+      expect(logger.info).toHaveBeenCalledWith(
+        'Blog media copied successfully!'
+      );
+      expect(logger.info).toHaveBeenCalledWith(
+        'Content pages copied successfully!'
       );
     });
 

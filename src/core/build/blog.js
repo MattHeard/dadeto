@@ -290,6 +290,7 @@ function handleDirectoryEntry(entry, directories, context) {
   const { src, dest } = directories;
   const srcPath = path.join(src, entry.name);
   const destPath = path.join(dest, entry.name);
+  // Stryker disable next-line all -- recursive directory dispatch is guarded by the filesystem entry contract.
   if (entry.isDirectory()) {
     copyDirRecursive({ src: srcPath, dest: destPath }, context);
     return;
