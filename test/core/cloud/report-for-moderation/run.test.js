@@ -63,6 +63,13 @@ describe('runReportForModeration', () => {
       origin: expect.any(Function),
       methods: ['POST'],
     });
+    const corsOrigin = cors.mock.calls[0][0].origin;
+    const allowedOriginCallback = jest.fn();
+    corsOrigin('https://mattheard.net', allowedOriginCallback);
+    expect(allowedOriginCallback).toHaveBeenCalledWith(null, true);
+    const deniedOriginCallback = jest.fn();
+    corsOrigin('https://denied.test', deniedOriginCallback);
+    expect(deniedOriginCallback).toHaveBeenCalledWith(expect.any(Error));
     expect(expressApp.use).toHaveBeenCalledWith('cors-middleware');
     expect(expressApp.use).toHaveBeenCalledWith('json-middleware');
     expect(expressApp.all).toHaveBeenCalledWith('/', expect.any(Function));
