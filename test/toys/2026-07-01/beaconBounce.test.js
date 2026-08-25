@@ -1726,6 +1726,14 @@ describe('beaconBounce physics and rendering', () => {
     };
     resolvePaddle(stationaryOrb);
     expect(stationaryOrb.orb.vy).toBe(0);
+    expect(Object.is(stationaryOrb.orb.vy, 0)).toBe(true);
+
+    const offsetPaddle = {
+      paddle: { x: 10, y: 30, width: 30, height: 6, speed: 4 },
+      orb: { x: 30, y: 34, vx: 0, vy: 3, radius: 4, stuckToPaddle: false },
+    };
+    resolvePaddle(offsetPaddle);
+    expect(offsetPaddle.orb.vx).toBeCloseTo(0.7333333333, 10);
 
     const beaconState = {
       orb: { x: 20, y: 20, vx: 1, vy: 1, radius: 4, stuckToPaddle: false },
