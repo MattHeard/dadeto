@@ -44,6 +44,15 @@ describe('reconcileBillingIdentity', () => {
     });
   });
 
+  test('matches provider payments through purchase payment ids after empty rows', () => {
+    expect(
+      reconcileBillingIdentity({
+        providerPayments: [{ id: 'known' }],
+        purchases: [{}, { paymentId: 'known' }],
+      })
+    ).toEqual({ discrepancies: [], ok: true });
+  });
+
   test('defaults absent collections and balance to a consistent empty identity', () => {
     expect(reconcileBillingIdentity({ lots: [{}] })).toEqual({
       discrepancies: [],
