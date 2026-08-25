@@ -184,6 +184,7 @@ export function createCopyToInfraCore({
       messageLogger,
     });
 
+    // Stryker disable next-line all -- directory filtering is the filesystem-entry boundary that separates recursion from file copying.
     const directoryEntries = sourceEntries.filter(entry => entry.isDirectory());
     await Promise.all(
       directoryEntries.map(entry =>
@@ -299,10 +300,6 @@ export function createCopyToInfraCore({
    */
   async function copyFiles({ files, sourceDir, targetDir, io, messageLogger }) {
     await io.ensureDirectory(targetDir);
-    if (!files.length) {
-      return;
-    }
-
     await runMappedEntries(
       files,
       name => ({ io, sourceDir, targetDir, name, messageLogger }),

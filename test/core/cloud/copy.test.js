@@ -88,6 +88,31 @@ describe('createCopyToInfraCore copy helpers', () => {
   });
 
   describe('directory copy helpers', () => {
+    it('ensures an empty target without attempting unsupported files', async () => {
+      const io = {
+        ensureDirectory: jest.fn().mockResolvedValue(undefined),
+        readDirEntries: jest
+          .fn()
+          .mockResolvedValue([createDirent('notes.txt')]),
+        copyFile: jest.fn().mockResolvedValue(undefined),
+      };
+      const logger = { info: jest.fn() };
+
+      await core.copyDirectory(
+        {
+          source: posix.join(projectRoot, 'empty'),
+          target: posix.join(projectRoot, 'infra/empty'),
+        },
+        io,
+        logger
+      );
+
+      expect(io.ensureDirectory).toHaveBeenCalledWith(
+        posix.join(projectRoot, 'infra/empty')
+      );
+      expect(io.copyFile).not.toHaveBeenCalled();
+    });
+
     it('copies allowed files from a directory', async () => {
       const entries = [
         createDirent('index.js'),
@@ -139,6 +164,28 @@ describe('createCopyToInfraCore copy helpers', () => {
   });
 
   describe('declared copy helpers', () => {
+    it('skips missing and empty declared file lists', async () => {
+      const io = {
+        ensureDirectory: jest.fn().mockResolvedValue(undefined),
+        copyFile: jest.fn().mockResolvedValue(undefined),
+      };
+      const logger = { info: jest.fn() };
+
+      await core.copyDeclaredFiles(undefined, io, logger);
+      await core.copyDeclaredFiles(
+        {
+          sourceDir: posix.join(projectRoot, 'src'),
+          targetDir: posix.join(projectRoot, 'infra'),
+          files: [],
+        },
+        io,
+        logger
+      );
+
+      expect(io.copyFile).not.toHaveBeenCalled();
+      expect(io.ensureDirectory).not.toHaveBeenCalled();
+    });
+
     it('copies a declared set of files into the target directory', async () => {
       const io = {
         ensureDirectory: jest.fn().mockResolvedValue(undefined),
