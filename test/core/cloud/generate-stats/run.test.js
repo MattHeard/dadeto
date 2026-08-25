@@ -229,6 +229,14 @@ describe('generate-stats run', () => {
     expect(ensureAppFn).toHaveBeenCalledTimes(1);
     expect(getFirestoreFn).toHaveBeenCalledWith(undefined, 'custom-db');
     expect(result).toEqual([undefined, 'custom-db']);
+    mod.getFirestoreInstance({
+      ensureAppFn,
+      getFirestoreFn,
+      environment: {
+        DATABASE_ID: 'custom-db',
+      },
+    });
+    expect(getFirestoreFn).toHaveBeenCalledTimes(2);
   });
 
   it('rejects a non-function firestore factory', async () => {

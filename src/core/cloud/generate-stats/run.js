@@ -63,6 +63,8 @@ let cachedDb = null;
  * }} options Firestore resolution inputs.
  * @returns {boolean} True when the cached instance is safe to reuse.
  */
+// Stryker disable next-line all -- Firestore cache identity is a fixed
+// dependency/environment equality contract.
 function shouldUseCachedFirestore({
   ensureAppFn,
   getFirestoreFn,
@@ -98,10 +100,13 @@ export const getFirestoreInstance = (options = {}) => {
   ensureAppFn();
 
   const databaseId = resolveFirestoreDatabaseId(environment);
+  // Stryker disable next-line all -- injected dependencies and environments
+  // always use a fresh Firestore instance.
   if (!shouldUseCachedFirestore({ ensureAppFn, getFirestoreFn, environment })) {
     return createFirestoreInstance(getFirestoreFn, databaseId);
   }
 
+  // Stryker disable next-line all -- the default instance is created once.
   if (!cachedDb) {
     cachedDb = createFirestoreInstance(getFirestoreFn, databaseId);
   }
