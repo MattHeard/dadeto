@@ -54,6 +54,7 @@ describe('generator runtime handle', () => {
     ).toBe('graph');
     expect(handle.getDefaultOutputMethod({})).toBeUndefined();
     expect(handle.getSelectedMethod('')).toBe('');
+    expect(handle.getSelectedMethod('text')).toBeUndefined();
     expect(handle.getSelectedMethod('number')).toBe('number');
     expect(handle.createIdAttributeIfNeeded({ key: 'post-key' })).toBe(
       ' id="post-key"'
@@ -107,6 +108,7 @@ describe('generator runtime handle', () => {
     });
 
     expect(html).toContain('release-beta');
+    expect(html).toContain('<article class="entry release-beta"');
     expect(html).toContain('<blockquote class="value">');
     expect(html).toContain('Quoted text');
     expect(html).toContain('<img');
@@ -116,5 +118,118 @@ describe('generator runtime handle', () => {
     expect(html).toContain('A quote');
     expect(html).toContain('<option value="number" selected>');
     expect(html).toContain('<option value="graph-2d" selected>');
+  });
+
+  it('renders manual content with its dedicated key and escaped identifiers', () => {
+    const html = handle.generateBlogOuter({
+      posts: [
+        {
+          key: 'manual-post',
+          title: 'Manual post',
+          publicationDate: '2024-07-01',
+          content: [
+            {
+              type: 'manual',
+              id: 'setup&guide',
+              title: 'Setup guide',
+              content: ['Step one'],
+            },
+          ],
+        },
+      ],
+    });
+
+    expect(html).toContain('<div class="key">man</div>');
+    expect(html).toContain('id="setup&amp;guide"');
+    expect(html).toContain('Setup guide');
+    expect(html).toContain('<p>Step one</p>');
+    expect(html).toContain('getElementById("setup&guide")');
+    expect(html).toContain('aria-controls="setup&amp;guide-body"');
+    expect(html).toContain('aria-expanded="false">show</button>');
+  });
+
+  it('uses manual defaults and renders escaped markdown manuals', () => {
+    const html = handle.generateBlog(
+      {
+        blog: {
+          posts: [
+            {
+              key: 'manual-defaults',
+              title: 'Manual defaults',
+              content: [
+                { type: 'manual', id: 42, title: '', markdown: '<step>' },
+              ],
+            },
+          ],
+        },
+        header: '',
+        footer: '',
+      },
+      content => content
+    );
+
+    expect(html).toContain('class="manual" id="manual"');
+    expect(html).toContain('>User manual <');
+    expect(html).toContain('<p class="manual-toggle">User manual <span');
+    expect(html).not.toContain('<p class="manual-toggle"> <span');
+    expect(html).toContain('manual-markdown');
+    expect(html).toContain('&lt;step&gt;');
+    expect(html).toContain('aria-controls="manual-body"');
+  });
+
+  it('omits empty related-link collections and falsy metadata', () => {
+    const emptyLinksHtml = handle.generateBlog(
+      {
+        blog: {
+          posts: [
+            {
+              key: 'empty-links',
+              title: 'Empty links',
+              publicationDate: '2024-07-02',
+              content: ['text'],
+              relatedLinks: [],
+            },
+          ],
+        },
+        header: '',
+        footer: '',
+      },
+      content => content
+    );
+    expect(emptyLinksHtml).not.toContain('<div class="key">links</div>');
+
+    const html = handle.generateBlog(
+      {
+        blog: {
+          posts: [
+            {
+              key: 'falsy-link-fields',
+              title: 'Falsy link fields',
+              publicationDate: '2024-07-03',
+              content: ['text'],
+              relatedLinks: [
+                {
+                  url: 'https://example.com',
+                  type: 'article',
+                  title: '',
+                  author: null,
+                  source: false,
+                  quote: 0,
+                },
+              ],
+            },
+          ],
+        },
+        header: '',
+        footer: '',
+      },
+      content => content
+    );
+
+    expect(html).toContain(
+      '<a href="https://example.com" target="_blank" rel="noopener">""</a>'
+    );
+    expect(html).not.toContain('null');
+    expect(html).not.toContain('false');
   });
 });
