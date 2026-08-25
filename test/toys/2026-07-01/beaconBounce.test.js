@@ -1505,6 +1505,13 @@ describe('beaconBounce stuck orb and helpers', () => {
     expect(wonLaunchLocked.status).toBe('won');
     expect(wonLaunchLocked.orb.stuckToPaddle).toBe(true);
 
+    const lostLocked = { ...wonLocked, status: 'lost', paddle: { ...wonLocked.paddle } };
+    applyGameplayInput(lostLocked, {
+      actions: { ...createActionFlags(), moveLeft: true },
+      previousActions: createActionFlags(),
+    });
+    expect(lostLocked.paddle.x).toBe(wonLocked.paddle.x);
+
     const clamped = {
       status: 'running',
       paused: false,
