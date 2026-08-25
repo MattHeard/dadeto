@@ -15,6 +15,11 @@ describe('toyPersistence', () => {
     expect(parseObjectRecord(42)).toBeNull();
     expect(parseObjectRecord([1, 2, 3])).toBeNull();
     expect(parseObjectRecord('{"foo":"bar"}')).toEqual({ foo: 'bar' });
+    expect(parseObjectRecord('{"foo":null}')).toEqual({ foo: null });
+    expect(parseObjectRecord('null')).toBeNull();
+    expect(parseObjectRecord('[]')).toBeNull();
+    expect(parseObjectRecord('42')).toBeNull();
+    expect(parseObjectRecord('')).toBeNull();
   });
 
   it('resolves storage accessors and persists state conditionally', () => {
@@ -92,6 +97,11 @@ describe('toyPersistence', () => {
     expect(readPersistedState(null, 'KEY', normalizeState)).toBeNull();
     expect(normalizeState).not.toHaveBeenCalled();
     expect(readPersistedState(() => false, 'KEY', normalizeState)).toBeNull();
+    expect(readPersistedState(() => null, 'KEY', normalizeState)).toBeNull();
+    expect(
+      readPersistedState(() => 'stored', 'KEY', normalizeState)
+    ).toBeNull();
+    expect(readPersistedState(() => 0, 'KEY', normalizeState)).toBeNull();
     expect(normalizeState).not.toHaveBeenCalled();
     expect(
       readPersistedState(() => ({ KEY: [1, 2, 3] }), 'KEY', normalizeState)
@@ -115,6 +125,12 @@ describe('toyPersistence', () => {
     expect(parseObjectRecord(null)).toBeNull();
     expect(parseObjectRecord('')).toBeNull();
     expect(parseInput('   ')).toBeNull();
+    expect(parseInput(null)).toBeNull();
+    expect(parseInput(42)).toBeNull();
+    expect(parseInput('{}')).toEqual({});
+    expect(parseInput('[]')).toBeNull();
+    expect(parseInput('42')).toBeNull();
+    expect(parseInput('null')).toBeNull();
   });
 
   it('creates rectangle shapes', () => {

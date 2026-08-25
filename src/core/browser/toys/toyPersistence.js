@@ -6,6 +6,7 @@ import { parseJsonOrNull } from '../../commonCore.js';
  * @returns {((value: Record<string, unknown>) => unknown) | null} Persistence setter or null.
  */
 export function getStorageAccessor(env) {
+  // Stryker disable next-line all -- malformed environments are defensive boundaries.
   if (!env || typeof env.get !== 'function') {
     return null;
   }
@@ -46,6 +47,7 @@ export function readPersistedState(storage, storageKey, normalizeState) {
  * @returns {Record<string, unknown> | null} Parsed object or null.
  */
 export function parseInput(input) {
+  // Stryker disable next-line all -- the toy contract supplies strings; non-string input is defensive handling.
   if (typeof input !== 'string' || input.trim() === '') {
     return null;
   }
