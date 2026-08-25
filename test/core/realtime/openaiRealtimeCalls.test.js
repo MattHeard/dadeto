@@ -58,6 +58,7 @@ describe('openaiRealtimeCalls core', () => {
     });
 
     expect(form.fields.get('sdp')).toBe('offer-sdp');
+    expect(form.fields.get('session')).toBe('{"type":"realtime"}');
   });
 
   test('uses the OpenAI realtime calls URL by default', async () => {
@@ -99,6 +100,7 @@ describe('openaiRealtimeCalls core', () => {
     expect(fetchImpl).toHaveBeenCalledWith(
       'https://example.test/calls',
       expect.objectContaining({
+        method: 'POST',
         headers: { Authorization: 'Bearer explicit-key' },
       })
     );
