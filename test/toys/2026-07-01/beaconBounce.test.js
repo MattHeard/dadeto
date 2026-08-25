@@ -1283,6 +1283,17 @@ describe('beaconBounce stuck orb and helpers', () => {
     };
     stepSimulation(won);
     expect(won.status).toBe('won');
+
+    const incompleteWin = {
+      ...won,
+      status: 'running',
+      beacons: [
+        { required: true, active: true, x: 10, y: 10, radius: 8, hitCount: 0 },
+        { required: true, active: false, x: 110, y: 10, radius: 8, hitCount: 0 },
+      ],
+    };
+    stepSimulation(incompleteWin);
+    expect(incompleteWin.status).toBe('running');
   });
 
   it('covers helper branches for input normalization and fallback building', () => {
