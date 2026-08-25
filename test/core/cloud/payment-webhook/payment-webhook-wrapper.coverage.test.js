@@ -306,7 +306,8 @@ describe('payment webhook cloud wrapper', () => {
         stripePaymentIntentId: 'pi1',
       },
     });
-    await captured.handlePurchaseEvent({
+    await expect(
+      captured.handlePurchaseEvent({
       id: 'evt-no-intent',
       type: 'checkout.session.completed',
       data: {
@@ -314,6 +315,14 @@ describe('payment webhook cloud wrapper', () => {
           metadata: { ['purchase_id']: 'p1' },
           ['payment_status']: 'paid',
         },
+      },
+      })
+    ).resolves.toEqual({
+      status: 201,
+      body: {
+        purchaseId: 'p1',
+        eventId: 'evt-no-intent',
+        stripePaymentIntentId: '',
       },
     });
     await Promise.all([
@@ -362,7 +371,8 @@ describe('payment webhook cloud wrapper', () => {
         },
       }),
     ]);
-    await captured.handlePurchaseEvent({
+    await expect(
+      captured.handlePurchaseEvent({
       id: 'evt-3b',
       type: 'charge.refunded',
       data: {
@@ -372,6 +382,15 @@ describe('payment webhook cloud wrapper', () => {
             ['pricing_snapshot_id']: 'snap-1',
           },
         },
+      },
+      })
+    ).resolves.toEqual({
+      status: 200,
+      body: {
+        purchaseId: 'p1',
+        eventId: 'evt-3b',
+        refundedUsdMinor: 0,
+        pricingSnapshotId: 'snap-1',
       },
     });
     await Promise.all([
@@ -457,6 +476,19 @@ describe('payment webhook cloud wrapper', () => {
         expect(response.send).toHaveBeenCalledWith(null);
       },
     });
+    const responseWithoutSet = createWebhookResponse();
+    delete responseWithoutSet.set;
+    await expect(
+      runWebhookResponse({
+        mockDomainHandler,
+        handle,
+        request,
+        body: { status: 200, body: 'ok', headers: { 'x-test': 'yes' } },
+        response: responseWithoutSet,
+        assertion: response =>
+          expect(response.send).toHaveBeenCalledWith('ok'),
+      })
+    ).resolves.toBeUndefined();
     for (const body of [null, '', 0]) {
       const falsyResponse = createWebhookResponse();
       await runWebhookResponse({
