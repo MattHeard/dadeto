@@ -1302,6 +1302,9 @@ describe('beaconBounce stuck orb and helpers', () => {
     expect(normalizeKeyboard(undefined, { type: 'keydown', key: 'd' }).d).toBe(
       true
     );
+    expect(normalizeKeyboard(undefined, { type: 'keydown', key: 1 })).toEqual({});
+    expect(normalizeKeyboard(undefined, { type: 'keyup', key: 1 })).toEqual({});
+    expect(normalizeKeyboard(undefined, null)).toEqual({});
     expect(normalizeGamepad({ buttons: [1, 0], axes: ['2', null] })).toEqual({
       buttons: [true, false],
       axes: [2, 0],
