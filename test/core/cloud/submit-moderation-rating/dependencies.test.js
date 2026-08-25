@@ -53,6 +53,8 @@ describe('createModerationRatingDependencies', () => {
       isApproved: true,
       ratedAt: 123,
     });
+    expect(db.collection).toHaveBeenCalledWith('moderators');
+    expect(db.collection).toHaveBeenCalledWith('moderationRatings');
 
     expect(deps.randomUUID()).toBe('uuid-1');
     expect(deps.getServerTimestamp()).toBe('SERVER_TS');
