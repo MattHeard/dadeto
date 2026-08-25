@@ -181,9 +181,11 @@ describe('payment webhook cloud wrapper', () => {
     expect(response.json).toHaveBeenCalledWith({ request });
 
     const captured = mockCreatePaymentWebhookHandler.mock.calls[0][0];
-    await captured.resolveApiKeyUuid({
-      data: { object: { customer: 'cus-1' } },
-    });
+    await expect(
+      captured.resolveApiKeyUuid({
+        data: { object: { customer: 'cus-1' } },
+      })
+    ).resolves.toBe('uuid-1');
     missingCustomer = true;
     await captured.resolveApiKeyUuid({
       data: { object: { customer: 'cus-2' } },
@@ -221,6 +223,8 @@ describe('payment webhook cloud wrapper', () => {
         'uuid-1'
       ),
     ]);
+    expect(db.collection).toHaveBeenCalledWith('payment-customers');
+    expect(db.collection).toHaveBeenCalledWith('payment-events');
     expect(set).toHaveBeenCalledWith(
       expect.objectContaining({
         apiKeyUuid: 'uuid-1',
@@ -229,6 +233,17 @@ describe('payment webhook cloud wrapper', () => {
         createdAt: new Date(10000),
       }),
       { merge: true }
+    );
+    expect(
+      set.mock.calls.map(([value]) => ({
+        status: value.status,
+        createdAt: value.createdAt,
+      }))
+    ).toEqual(
+      expect.arrayContaining([
+        { status: 'applied', createdAt: new Date(10000) },
+        { status: 'applied', createdAt: expect.any(Date) },
+      ])
     );
     await Promise.all([
       expect(
