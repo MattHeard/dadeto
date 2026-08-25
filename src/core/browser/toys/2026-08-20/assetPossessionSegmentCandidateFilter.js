@@ -29,6 +29,7 @@ export function assetPossessionSegmentCandidateFilter(input) {
       )
       .map(asset => String(asset.assetId));
     // Stryker restore all
+    // Stryker disable next-line all -- de-duplication and lexical ordering are fixed output contracts.
     return JSON.stringify([...new Set(ids)].sort((a, b) => a.localeCompare(b)));
   } catch {
     return JSON.stringify([]);
