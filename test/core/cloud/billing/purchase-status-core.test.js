@@ -29,8 +29,9 @@ describe('purchase status', () => {
       status: 400,
       body: { error: 'invalid_session' },
     });
-    await expect(handle({ sessionId: 42 })).resolves.toMatchObject({
+    await expect(handle({ sessionId: 42 })).resolves.toEqual({
       status: 400,
+      body: { error: 'invalid_session' },
     });
   });
   it('requires auth and ownership and returns safe pending/paid data', async () => {
@@ -38,6 +39,45 @@ describe('purchase status', () => {
     await expect(handle({ sessionId: 'cs-1' })).resolves.toMatchObject({
       status: 401,
     });
+    const anchored = createPurchaseStatusHandler({
+      verifyIdToken: async token => {
+        if (token !== 'token' && token !== 'xxtoken')
+          throw new Error('bad token');
+        return { uid: 'uid-1' };
+      },
+      getPurchaseByCheckoutSession: async () => ({
+        uid: 'uid-1',
+        status: 'pending',
+        purchaseId: 'p-1',
+        packageId: 'usd-10',
+        creditsIssued: 10,
+      }),
+      getBalance: async () => 42,
+    });
+    await expect(
+      anchored({ sessionId: 'cs-1', authorization: 'xxBearer token' })
+    ).resolves.toEqual({
+      status: 401,
+      body: { error: 'authentication_required' },
+    });
+    await expect(
+      anchored({ sessionId: 'cs-1', authorization: 'Bearerx token' })
+    ).resolves.toEqual({
+      status: 401,
+      body: { error: 'authentication_required' },
+    });
+    await expect(
+      anchored({ sessionId: 'cs-1', authorization: 'Bearer  token' })
+    ).resolves.toMatchObject({ status: 200 });
+    await expect(
+      handle({ sessionId: 'cs-1', authorization: 42 })
+    ).resolves.toEqual({
+      status: 401,
+      body: { error: 'authentication_required' },
+    });
+    await expect(
+      handle({ sessionId: 'cs-1', authorization: 'bearer token' })
+    ).resolves.toMatchObject({ status: 200 });
     await expect(
       handle({ sessionId: 'cs-1', authorization: 'Bearer token' })
     ).resolves.toEqual({
@@ -66,7 +106,16 @@ describe('purchase status', () => {
         creditsIssued: 10,
         apiKeyUuid: 'key-1',
       })({ sessionId: 'cs-1', authorization: 'Bearer token' })
-    ).resolves.toMatchObject({ body: { status: 'paid', credit: 42 } });
+    ).resolves.toEqual({
+      status: 200,
+      body: {
+        status: 'paid',
+        purchaseId: 'p-1',
+        packageId: 'usd-10',
+        creditsIssued: 10,
+        credit: 42,
+      },
+    });
   });
   it('handles token verification failures and missing purchases', async () => {
     const verifyIdToken = jest.fn(async () => {
