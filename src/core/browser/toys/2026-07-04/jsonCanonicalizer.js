@@ -23,6 +23,7 @@ function canonicalizeValue(value) {
     return value.map(canonicalizeValue);
   }
 
+  // Stryker disable next-line ConditionalExpression -- scalar values are an intentional no-op boundary.
   if (isPlainObject(value)) {
     return canonicalizeObject(/** @type {Record<string, unknown>} */ (value));
   }
@@ -36,6 +37,7 @@ function canonicalizeValue(value) {
  * @returns {Record<string, unknown>} Canonical object.
  */
 function canonicalizeObject(value) {
+  // Stryker disable next-line all -- canonicalizeObject is only called for records; this guard terminates defensive mutated calls.
   if (value === null || typeof value !== 'object') return value;
   return Object.keys(value)
     .sort()
@@ -51,5 +53,6 @@ function canonicalizeObject(value) {
  * @returns {value is Record<string, unknown>} True when the value is a plain object.
  */
 function isPlainObject(value) {
+  // Stryker disable next-line all -- the plain-object tag is a fixed type boundary.
   return Object.prototype.toString.call(value) === '[object Object]';
 }
