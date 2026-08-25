@@ -166,6 +166,38 @@ describe('computeModerationUrgency', () => {
       })
     ).toBe(0);
   });
+
+  it('preserves each configured signal weight and normalization divisor', () => {
+    const base = {
+      reportCount: 0,
+      reportRecency: 0,
+      pageAge: 0,
+      timeSinceLastReview: 0,
+      visibilityDistanceFromThreshold: 0,
+      moderationCount: 5,
+    };
+    expect(
+      computeModerationUrgency({ ...base, reportCount: 2.5 })
+    ).toBeCloseTo(0.15);
+    expect(
+      computeModerationUrgency({ ...base, reportRecency: 0.5 })
+    ).toBeCloseTo(0.1);
+    expect(computeModerationUrgency({ ...base, pageAge: 0.5 })).toBeCloseTo(
+      0.05
+    );
+    expect(
+      computeModerationUrgency({ ...base, timeSinceLastReview: 0.5 })
+    ).toBeCloseTo(0.075);
+    expect(
+      computeModerationUrgency({
+        ...base,
+        visibilityDistanceFromThreshold: 0.5,
+      })
+    ).toBeCloseTo(0.1);
+    expect(
+      computeModerationUrgency({ ...base, moderationCount: 2.5 })
+    ).toBeCloseTo(0.025);
+  });
 });
 
 describe('createCorsOriginValidator', () => {
