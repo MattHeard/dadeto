@@ -9,6 +9,7 @@ import {
   resolveWalls,
   normalizeGamepad,
   normalizeKeyboard,
+  normalizeState,
   buildResetFallback,
   stepSimulation,
   toCanvasPayload,
@@ -610,6 +611,11 @@ describe('beaconBounce input and state fallbacks', () => {
       runToy('{}', storage);
       expect(storage.current.BEAC1.version).toBe(1);
     }
+    expect(normalizeState({ version: 1, status: 'ready' })).toEqual({
+      version: 1,
+      status: 'ready',
+    });
+    expect(normalizeState(['version', 1])).toBeNull();
   });
 
   it('covers input state fallbacks and both movement directions', () => {

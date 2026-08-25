@@ -604,7 +604,7 @@ function resetOrbToPaddle(state) {
  * @param {unknown} value - Candidate persisted state.
  * @returns {BeaconState | null} Valid state or null when rejected.
  */
-function normalizeState(value) {
+export function normalizeState(value) {
   if (
     !value ||
     typeof value !== 'object' ||
