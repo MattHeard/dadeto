@@ -102,6 +102,8 @@ describe('checkout runtime adapters', () => {
       publicBillingOrigin: 'https://pay.example',
     });
 
+    expect(deps.verifyIdToken).toBe(verifyIdToken);
+    expect(deps.stripeConfigured).toBe(true);
     expect(await deps.verifyIdToken('token')).toBeUndefined();
     expect(await deps.resolveApiKeyUuidForUid('uid')).toEqual({
       apiKeyUuid: 'key-1',
@@ -113,6 +115,8 @@ describe('checkout runtime adapters', () => {
       await deps.createBillingCustomer({ email: 'a@example.com' })
     ).toEqual({ id: 'cus-new', options: { email: 'a@example.com' } });
     await deps.saveCustomerMappings('uid', 'cus-1', 'key-1');
+    expect(db.collection).toHaveBeenCalledWith('billing-customers');
+    expect(db.collection).toHaveBeenCalledWith('payment-customers');
     expect(await deps.getCreditPackage('package-1')).toMatchObject({
       credits: 100,
     });
@@ -158,6 +162,9 @@ describe('checkout runtime adapters', () => {
         expiresAt: 123,
       },
     });
+    expect(billing.getPurchase).toHaveBeenLastCalledWith(
+      'purchase-uid-complete'
+    );
   });
 
   it('returns null for absent ownership and billing customer records', async () => {
