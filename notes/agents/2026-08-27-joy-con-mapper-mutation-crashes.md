@@ -1,0 +1,5 @@
+# Joy-Con mapper mutation-induced crashes
+
+Mutation testing of `src/core/browser/inputHandlers/joyConMapper.js` can produce apparent crashes rather than ordinary assertion failures. The mapper talks to WebHID and browser device handles; mutated guards or byte-processing assumptions can therefore reach unavailable device APIs, malformed report data, or asynchronous rejection paths. Treat these crashes as mutation-survivability evidence: preserve the production guard, add a deterministic helper-level assertion where possible, and isolate browser-only I/O behind the existing test doubles. Do not weaken device validation merely to make a mutant run.
+
+When triaging a crash, record the mutant location, whether the failure occurred during device discovery, opening, report reading, or byte decoding, and the mocked input that reached it. A valid completion requires the focused helper and re-export suites to pass, with no surviving or timed-out mutants; expected fixed WebHID boundaries should be documented with a local suppression marker.
