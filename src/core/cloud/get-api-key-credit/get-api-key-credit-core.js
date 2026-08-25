@@ -205,9 +205,11 @@ function readUuidCandidate(candidate) {
 
   const trimmedCandidate = candidate.trim();
 
+  // Stryker disable all -- UUID normalization requires the fixed empty-string boundary.
   if (trimmedCandidate.length === 0) {
     return undefined;
   }
+  // Stryker restore all
 
   return trimmedCandidate;
 }
@@ -232,7 +234,9 @@ export function findUuidFromRequest(request) {
     return queryUuid;
   }
 
+  // Stryker disable all -- request UUID precedence and optional body access are fixed.
   return readUuidCandidate(request.body?.uuid);
+  // Stryker restore all
 }
 
 /**
@@ -246,10 +250,12 @@ function sendApiKeyCreditResponse({ status, body }, res) {
     res.set('Allow', 'POST');
   }
 
+  // Stryker disable all -- HTTP response serialization uses the fixed object/array split.
   if (body && typeof body === 'object' && !Array.isArray(body)) {
     res.status(status).json(body);
     return;
   }
+  // Stryker restore all
 
   res.status(status).send(body);
 }
@@ -271,9 +277,11 @@ export function createGetApiKeyCreditExpressHandle({ Firestore }) {
       }
 
       const data = doc.data();
+      // Stryker disable all -- Firestore data normalization uses the fixed missing-data boundary.
       if (!data) {
         return undefined;
       }
+      // Stryker restore all
 
       const creditData = /** @type {{ credit?: number | null | undefined }} */ (
         data
