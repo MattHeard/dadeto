@@ -1339,6 +1339,18 @@ describe('beaconBounce stuck orb and helpers', () => {
       speedMultiplier: 1,
       stepCount: 2,
     });
+    expect(
+      updateInputState(
+        { control: { paused: true, speedMultiplier: 3, stepCount: 4 } },
+        {
+          paused: null,
+          speedMultiplier: null,
+          stepCount: null,
+          pause: false,
+          resume: false,
+        }
+      ).control
+    ).toEqual({ paused: true, speedMultiplier: 3, stepCount: 0 });
 
     const derivedActions = updateInputState(undefined, {
       buttons: [
