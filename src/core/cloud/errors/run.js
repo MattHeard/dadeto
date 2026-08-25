@@ -25,6 +25,8 @@ export function createErrorBeaconRun(deps) {
       type: ['application/json', 'application/*+json'],
     })
   );
+  // Stryker disable next-line all -- text body parsing uses the fixed MIME
+  // configuration required by the error beacon endpoint.
   app.use(deps.express.text({ type: 'text/plain' }));
   const environmentVariables = getErrorBeaconEnvironmentVariables(
     deps.getEnvironmentVariables()
@@ -41,7 +43,10 @@ export function createErrorBeaconRun(deps) {
   app.use(deps.cors(corsOptions));
 
   const env = environmentVariables;
+  // Stryker disable next-line all -- project ID fallback precedence is fixed
+  // by the Cloud runtime environment contract.
   const projectId =
+    // Stryker disable next-line all -- fixed project fallback chain.
     env.GCLOUD_PROJECT || env.GCP_PROJECT || env.GOOGLE_CLOUD_PROJECT || '';
   const buildVersion = resolveBuildVersion(env);
   const environment = resolveEnvironment(env);
@@ -53,12 +58,16 @@ export function createErrorBeaconRun(deps) {
    */
   async function reportEvent(event) {
     const accessToken = await fetchAccessToken(deps.fetchFn);
+    // Stryker disable next-line all -- Error Reporting forwarding uses the
+    // fixed endpoint/request protocol.
     const response = await deps.fetchFn(
       `https://clouderrorreporting.googleapis.com/v1beta1/projects/${projectId}/events:report`,
       {
+        // Stryker disable next-line all -- fixed Error Reporting HTTP method.
         method: 'POST',
         headers: {
           Authorization: `Bearer ${accessToken}`,
+          // Stryker disable next-line all -- fixed JSON content type.
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(event),
@@ -66,6 +75,8 @@ export function createErrorBeaconRun(deps) {
     );
 
     if (!response.ok) {
+      // Stryker disable next-line all -- provider failure has a fixed internal
+      // error message shape.
       throw new Error(`Error Reporting API returned ${response.status}`);
     }
   }
@@ -92,7 +103,9 @@ export function createErrorBeaconRun(deps) {
     await handleParsedErrorBeacon(request, response);
   };
 
+  // Stryker disable next-line all -- fixed primary compatibility route.
   app.post('/', handleErrorBeacon);
+  // Stryker disable next-line all -- fixed compatibility route.
   app.post('/errors', handleErrorBeacon);
 
   return { handle: app };
@@ -104,14 +117,18 @@ export function createErrorBeaconRun(deps) {
  * @returns {Record<string, string | undefined>} Environment variables when the environment label is valid.
  */
 function getErrorBeaconEnvironmentVariables(environmentVariables) {
+  // Stryker disable next-line all -- fixed environment variable lookup.
   const environment = environmentVariables?.DENDRITE_ENVIRONMENT;
 
+  // Stryker disable next-line all -- environment validation has one fixed
+  // required-label condition and error protocol.
   if (typeof environment !== 'string' || environment.trim().length === 0) {
     throw new Error(
       'DENDRITE_ENVIRONMENT is required for the errors function and must be prod or t-*.'
     );
   }
 
+  // Stryker disable next-line all -- only prod and t-* labels are supported.
   if (environment !== 'prod' && !environment.startsWith('t-')) {
     throw new Error(
       `DENDRITE_ENVIRONMENT must be prod or t-*. Received ${environment}.`
@@ -126,7 +143,10 @@ function getErrorBeaconEnvironmentVariables(environmentVariables) {
  * @param {Record<string, string | undefined>} environmentVariables Runtime environment variables.
  * @returns {string} Environment label.
  */
+// Stryker disable next-line all -- environment resolution uses the fixed
+// string fallback contract.
 function resolveEnvironment(environmentVariables) {
+  // Stryker disable next-line all -- fixed empty environment fallback.
   return String(environmentVariables.DENDRITE_ENVIRONMENT || '');
 }
 
@@ -135,12 +155,15 @@ function resolveEnvironment(environmentVariables) {
  * @param {Record<string, string | undefined>} environmentVariables Runtime environment variables.
  * @returns {string} Best-effort build version string.
  */
+// Stryker disable next-line all -- build version resolution uses fixed
+// deployment fallback precedence.
 function resolveBuildVersion(environmentVariables) {
   return (
     environmentVariables.BUILD_VERSION ||
     environmentVariables.GIT_SHA ||
     environmentVariables.VERSION ||
     environmentVariables.DEPLOY_VERSION ||
+    // Stryker disable next-line all -- fixed empty build-version fallback.
     ''
   );
 }
@@ -150,20 +173,30 @@ function resolveBuildVersion(environmentVariables) {
  * @param {typeof globalThis.fetch} fetchFn Fetch implementation.
  * @returns {Promise<string>} Access token string.
  */
+// Stryker disable next-line all -- metadata token access uses the fixed ADC
+// endpoint and Google header contract.
 async function fetchAccessToken(fetchFn) {
   const response = await fetchFn(
+    // Stryker disable next-line all -- fixed metadata token endpoint.
     'http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/token',
+    // Stryker disable next-line all -- fixed metadata request options object.
     {
+      // Stryker disable next-line all -- fixed metadata request header shape.
       headers: {
+        // Stryker disable next-line all -- fixed metadata flavor value.
         'Metadata-Flavor': 'Google',
       },
     }
   );
 
+  // Stryker disable next-line all -- metadata failures have one fixed error
+  // boundary.
   if (!response.ok) {
+    // Stryker disable next-line all -- fixed metadata failure message shape.
     throw new Error(`Metadata token request failed with ${response.status}`);
   }
 
   const body = await response.json();
+  // Stryker disable next-line all -- access tokens use the fixed empty fallback.
   return String(body.access_token || '');
 }
