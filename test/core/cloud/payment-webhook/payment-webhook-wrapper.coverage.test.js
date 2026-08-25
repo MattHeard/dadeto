@@ -209,6 +209,7 @@ describe('payment webhook cloud wrapper', () => {
     await expect(captured.isDuplicateEvent('evt-deferred')).resolves.toBe(false);
     await expect(captured.isDuplicateEvent('evt-no-event-data')).resolves.toBe(true);
     await expect(captured.isDuplicateEvent('evt-missing')).resolves.toBe(false);
+    const nowSpy = jest.spyOn(Date, 'now').mockReturnValue(1234);
     await Promise.all([
       captured.getPaymentEvent({
         rawBody: '{"id":"evt-verified"}',
@@ -242,9 +243,10 @@ describe('payment webhook cloud wrapper', () => {
     ).toEqual(
       expect.arrayContaining([
         { status: 'applied', createdAt: new Date(10000) },
-        { status: 'applied', createdAt: expect.any(Date) },
+        { status: 'applied', createdAt: new Date(1234) },
       ])
     );
+    nowSpy.mockRestore();
     await Promise.all([
       expect(
         captured.handlePurchaseEvent({
@@ -431,6 +433,21 @@ describe('payment webhook cloud wrapper', () => {
       response: creditResponse,
       assertion: response => expect(response.status).toHaveBeenCalledWith(201),
     });
+    const nonSuccessCreditResponse = createWebhookResponse();
+    await runWebhookResponse({
+      mockDomainHandler,
+      handle,
+      request,
+      body: { status: 500, body: { type: 'credit_added', applied: true } },
+      response: nonSuccessCreditResponse,
+      assertion: response => {
+        expect(response.status).toHaveBeenCalledWith(500);
+        expect(response.json).toHaveBeenCalledWith({
+          type: 'credit_added',
+          applied: true,
+        });
+      },
+    });
     for (const body of [
       { type: 'other', applied: true },
       {},
@@ -503,6 +520,28 @@ describe('payment webhook cloud wrapper', () => {
         },
       });
     }
+    const truthyPrimitiveResponse = createWebhookResponse();
+    await runWebhookResponse({
+      mockDomainHandler,
+      handle,
+      request,
+      body: { status: 202, body: 7 },
+      response: truthyPrimitiveResponse,
+      assertion: response =>
+        expect(response.send).toHaveBeenCalledWith(7),
+    });
+    const successfulPrimitiveResponse = createWebhookResponse();
+    await runWebhookResponse({
+      mockDomainHandler,
+      handle,
+      request,
+      body: { status: 200, body: 7 },
+      response: successfulPrimitiveResponse,
+      assertion: response => {
+        expect(response.status).toHaveBeenCalledWith(200);
+        expect(response.send).toHaveBeenCalledWith(7);
+      },
+    });
   });
 });
 
