@@ -188,6 +188,32 @@ describe('beaconBounce', () => {
     expect(reset.frame).toBe(0);
   });
 
+  it('advances exactly speed times the requested step count', () => {
+    const state = buildNextState(
+      {
+        version: 1,
+        width: 200,
+        height: 160,
+        frame: 0,
+        status: 'running',
+        score: 0,
+        lives: 3,
+        input: updateInputState(undefined, {}),
+        paused: false,
+        simulationSpeed: 1,
+        paddle: { x: 0, y: 140, width: 40, height: 6, speed: 4 },
+        orb: { x: 50, y: 80, vx: 1, vy: 0, radius: 4, stuckToPaddle: false },
+        beacons: [],
+        links: [],
+        lastActivatedBeaconId: null,
+      },
+      { speedMultiplier: 2, stepCount: 2 }
+    );
+    expect(state.frame).toBe(1);
+    expect(state.simulationSpeed).toBe(2);
+    expect(state.orb.x).toBe(54);
+  });
+
   it('honors an explicit reset payload and fallback life precedence', () => {
     const persisted = buildNextState(null, {
       width: 240,
