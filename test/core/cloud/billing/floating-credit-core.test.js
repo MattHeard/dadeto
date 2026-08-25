@@ -48,4 +48,11 @@ it('quotes the refundable unused credits at the current rate', () => {
     remainingCredits: 45_000,
     snapshotId: 'daily-1',
   });
+  expect(
+    quoteUnusedCreditRefund(
+      { purchaseId: 'p2', issuedCredits: 50_000, remainingCredits: 45_000 },
+      100,
+      { ...snapshot, creditEurMicros: 2 }
+    )
+  ).toMatchObject({ amountUsdMinor: 10, snapshotId: 'daily-1' });
 });
