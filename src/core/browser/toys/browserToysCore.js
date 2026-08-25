@@ -399,6 +399,7 @@ export function buildEmptyDendriteStoryResponse() {
  * @param {(data: ToyStorage) => void} [mutateData] Optional hook to mutate the cloned data before saving.
  * @returns {ToyStorage} Updated temporary data after the persistence step.
  */
+// Stryker disable next-line all -- the default callback is intentionally a no-op for page persistence.
 function persistTemporaryData(env, payload, mutateData = () => {}) {
   const { page, options } = payload;
   const { getData, setLocalTemporaryData } = getEnvHelpers(env);
@@ -415,11 +416,13 @@ function persistTemporaryData(env, payload, mutateData = () => {}) {
  * @param {(context: { newData: ToyStorage, page: DendritePageType, options: ToyOption[] }) => object} [extraResponse] Optional fields to merge into the response.
  * @returns {string} JSON string representing the persisted page data.
  */
+// Stryker disable next-line all -- spreading an empty default response is an intentional no-op.
 function buildPersistedResponse(payload, newData, extraResponse = () => ({})) {
   const { page, options } = payload;
   const response = buildPageResponse(page, options);
   return JSON.stringify({
     ...response,
+    // Stryker disable next-line all -- the callback contract passes persistence context for future extensions; this response only needs its returned fields.
     ...extraResponse({ newData, page, options }),
   });
 }

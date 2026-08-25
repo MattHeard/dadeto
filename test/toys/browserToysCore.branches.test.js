@@ -9,6 +9,16 @@ import {
   isPlainObject,
   toRecordOrNull,
   createOptions,
+  cloneTemporaryDend2Data,
+  appendPageAndOptions,
+  appendPageAndSave,
+  buildPageResponse,
+  isValidStoryInput,
+  isValidPageInput,
+  buildEmptyDendritePageResponse,
+  buildEmptyDendriteStoryResponse,
+  persistDendritePage,
+  persistDendriteStory,
 } from '../../src/core/browser/toys/browserToysCore.js';
 
 describe('getEnvHelpers', () => {
@@ -117,5 +127,91 @@ describe('runToy helpers', () => {
     expect(runToyWithParsedJson('not-json', () => 'unreachable')).toBe(
       JSON.stringify({})
     );
+  });
+});
+
+describe('browser toy persistence and payload helpers', () => {
+  test('validates payloads and builds empty responses', () => {
+    expect(isValidStoryInput({ title: 'T', content: 'C' })).toBe(true);
+    expect(isValidStoryInput({ title: '', content: 'C' })).toBe(false);
+    expect(isValidStoryInput(null)).toBe(false);
+    expect(isValidPageInput({ optionId: 'O', content: 'C' })).toBe(true);
+    expect(isValidPageInput({ optionId: 'O', content: '' })).toBe(false);
+    expect(isValidPageInput(null)).toBe(false);
+    expect(JSON.parse(buildEmptyDendritePageResponse())).toEqual({
+      pages: [],
+      options: [],
+    });
+    expect(JSON.parse(buildEmptyDendriteStoryResponse())).toEqual({
+      stories: [],
+      pages: [],
+      options: [],
+    });
+    expect(buildPageResponse(undefined, [{ id: 'o' }])).toEqual({
+      pages: [],
+      options: [{ id: 'o' }],
+    });
+    expect(buildPageResponse({ id: 'p' }, [])).toEqual({
+      pages: [{ id: 'p' }],
+      options: [],
+    });
+  });
+
+  test('clones, appends, saves, and persists page data', () => {
+    const source = {
+      temporary: { DEND2: { stories: [], pages: [], options: [] } },
+    };
+    const saved = jest.fn();
+    const cloned = cloneTemporaryDend2Data(() => source);
+    expect(cloned).not.toBe(source);
+    appendPageAndOptions(cloned, { id: 'p' }, [{ id: 'o' }]);
+    expect(cloned.temporary.TRAN1.pages).toEqual([{ id: 'p' }]);
+    appendPageAndSave(cloned, {
+      page: { id: 'p2' },
+      opts: [],
+      setLocalTemporaryData: saved,
+    });
+    expect(saved).toHaveBeenCalledWith(cloned);
+
+    let uuid = 0;
+    const env = new Map([
+      ['getUuid', () => `id-${++uuid}`],
+      ['getData', () => source],
+      ['setLocalTemporaryData', saved],
+    ]);
+    const pageResult = JSON.parse(
+      persistDendritePage(
+        { optionId: 'O', content: 'C', firstOption: 'One' },
+        env
+      )
+    );
+    expect(pageResult.pages[0]).toMatchObject({ optionId: 'O', content: 'C' });
+    const storyResult = JSON.parse(
+      persistDendriteStory(
+        { title: 'T', content: 'C', firstOption: 'One' },
+        env
+      )
+    );
+    expect(storyResult.stories[0]).toEqual({ id: 'id-3', title: 'T' });
+    expect(storyResult.pages[0]).toMatchObject({
+      id: 'id-4',
+      storyId: 'id-3',
+      content: 'C',
+    });
+    expect(storyResult.options[0]).toMatchObject({
+      content: 'One',
+      pageId: 'id-4',
+    });
+    const persisted = saved.mock.lastCall[0];
+    expect(persisted.temporary.TRAN1.stories).toContainEqual({
+      id: 'id-3',
+      title: 'T',
+    });
+    expect(persisted.temporary.TRAN1.pages).toContainEqual({
+      id: 'id-4',
+      storyId: 'id-3',
+      content: 'C',
+    });
+    expect(saved).toHaveBeenCalled();
   });
 });
