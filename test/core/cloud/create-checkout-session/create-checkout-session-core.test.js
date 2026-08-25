@@ -209,18 +209,24 @@ describe('createCheckoutSessionHandler pricing paths', () => {
     );
   });
   it.each([
-    [{}, 401, 'authentication_required'],
+    [{}, 401, 'authentication_required', 'Authentication is required.'],
     [
       { headers: { authorization: 'Bearer token' } },
       400,
       'invalid_idempotency_key',
+      'A valid idempotency key is required.',
     ],
-    [request({ packageId: 'missing' }), 400, 'invalid_package'],
-  ])('rejects invalid input', async (input, status, code) => {
+    [
+      request({ packageId: 'missing' }),
+      400,
+      'invalid_package',
+      'The selected credit package is unavailable.',
+    ],
+  ])('rejects invalid input', async (input, status, code, message) => {
     const { handler } = setup();
-    await expect(handler(input)).resolves.toMatchObject({
+    await expect(handler(input)).resolves.toEqual({
       status,
-      body: { error: { code } },
+      body: { error: { code, message } },
     });
   });
 });
@@ -274,14 +280,26 @@ describe('createCheckoutSessionHandler validation paths', () => {
     const rejected = setup({
       verifyIdToken: jest.fn().mockRejectedValue(new Error()),
     });
-    await expect(rejected.handler(request())).resolves.toMatchObject({
+    await expect(rejected.handler(request())).resolves.toEqual({
       status: 401,
+      body: {
+        error: {
+          code: 'invalid_token',
+          message: 'The authentication token is invalid or expired.',
+        },
+      },
     });
     const missingUid = setup({
       verifyIdToken: jest.fn().mockResolvedValue({}),
     });
-    await expect(missingUid.handler(request())).resolves.toMatchObject({
+    await expect(missingUid.handler(request())).resolves.toEqual({
       status: 401,
+      body: {
+        error: {
+          code: 'invalid_token',
+          message: 'The authentication token is invalid.',
+        },
+      },
     });
   });
 
@@ -291,28 +309,44 @@ describe('createCheckoutSessionHandler validation paths', () => {
         .fn()
         .mockRejectedValue({ type: 'StripeAuthenticationError' }),
     });
-    await expect(authFailure.handler(request())).resolves.toMatchObject({
+    await expect(authFailure.handler(request())).resolves.toEqual({
       status: 502,
+      body: {
+        error: {
+          code: 'payment_provider_unavailable',
+          message: 'The payment provider is unavailable.',
+        },
+      },
     });
     const rateFailure = setup({
       createStripeCheckoutSession: jest
         .fn()
         .mockRejectedValue({ type: 'StripeRateLimitError' }),
     });
-    await expect(rateFailure.handler(request())).resolves.toMatchObject({
+    await expect(rateFailure.handler(request())).resolves.toEqual({
       status: 429,
+      body: { error: { code: 'rate_limited', message: 'Too many purchase attempts.' } },
     });
     const keyFailure = setup({
       createStripeCheckoutSession: jest
         .fn()
         .mockRejectedValue({ code: 'idempotency_key_in_use' }),
     });
-    await expect(keyFailure.handler(request())).resolves.toMatchObject({
+    await expect(keyFailure.handler(request())).resolves.toEqual({
       status: 409,
+      body: {
+        error: {
+          code: 'idempotency_conflict',
+          message: 'This purchase attempt was already used with different parameters.',
+        },
+      },
     });
     const config = setup({ publicBillingOrigin: '' });
-    await expect(config.handler(request())).resolves.toMatchObject({
+    await expect(config.handler(request())).resolves.toEqual({
       status: 500,
+      body: {
+        error: { code: 'configuration_error', message: 'Billing is not configured.' },
+      },
     });
   });
 
@@ -348,5 +382,6 @@ describe('createCheckoutSessionHandler validation paths', () => {
     );
     expect(response.set).toHaveBeenCalledWith('Allow', 'POST');
     await createCheckoutSessionExpressHandle(dependencies)(request(), response);
+    expect(response.set).toHaveBeenCalledWith('Cache-Control', 'no-store');
   });
 });
