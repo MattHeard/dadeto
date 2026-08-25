@@ -29,6 +29,79 @@ function setup() {
 }
 
 describe('createBillingRuntime', () => {
+  it('normalizes operation identities, snapshots, lots, and refund status', async () => {
+    expect(
+      billingRuntimeTestUtils.readOperationIdentity({
+        operationType: 'function.invoke',
+        operationAttemptId: 'attempt-1',
+      })
+    ).toEqual({
+      operationType: 'function.invoke',
+      operationAttemptId: 'attempt-1',
+    });
+    expect(() =>
+      billingRuntimeTestUtils.readOperationIdentity({ operationType: '' })
+    ).toThrow('operationType and operationAttemptId are required');
+    expect(() =>
+      billingRuntimeTestUtils.readOperationIdentity({
+        operationType: 'function.invoke',
+        operationAttemptId: '',
+      })
+    ).toThrow('operationType and operationAttemptId are required');
+
+    expect(billingRuntimeTestUtils.readData({ exists: false })).toEqual({});
+    expect(billingRuntimeTestUtils.readData({ exists: true })).toEqual({});
+    expect(
+      billingRuntimeTestUtils.readData({ exists: true, data: () => null })
+    ).toEqual({});
+    expect(
+      billingRuntimeTestUtils.readData({
+        exists: true,
+        data: () => ({ ok: true }),
+      })
+    ).toEqual({ ok: true });
+    const firstRef = {};
+    const secondRef = {};
+    const lotsDb = {
+      collection: () => ({
+        doc: () => ({
+          collection: () => ({
+            orderBy: () => ({
+              get: async () => ({
+                docs: [
+                  {
+                    ref: firstRef,
+                    exists: true,
+                    data: () => ({ remainingCredits: 2 }),
+                  },
+                  {
+                    ref: secondRef,
+                    exists: true,
+                    data: () => ({ remainingCredits: 0 }),
+                  },
+                ],
+              }),
+            }),
+          }),
+        }),
+      }),
+    };
+    await expect(
+      billingRuntimeTestUtils.listBillingLots(lotsDb, 'key-lots')
+    ).resolves.toEqual([{ ref: firstRef, data: { remainingCredits: 2 } }]);
+    expect(billingRuntimeTestUtils.createLegacyLot(3, 'now')).toMatchObject({
+      purchaseId: 'legacy',
+      issuedCredits: 3,
+      remainingCredits: 3,
+      refundable: false,
+      pricingSnapshotId: 'legacy',
+    });
+    expect(billingRuntimeTestUtils.resolveRefundStatus(5, 5)).toBe('refunded');
+    expect(billingRuntimeTestUtils.resolveRefundStatus(2, 5)).toBe(
+      'partially_refunded'
+    );
+  });
+
   it('reads transaction lots and omits missing snapshots', async () => {
     const firstRef = {};
     const secondRef = {};
@@ -162,6 +235,12 @@ describe('billing runtime snapshot paths', () => {
       creditsIssued: 1,
     });
     expect(generated.purchaseId).toBe('generated-id');
+    expect(generated).toMatchObject({
+      status: 'pending',
+      creditsRemaining: 1,
+      refundedUsdMinor: 0,
+      createdAt: new Date('2026-08-05T00:00:00.000Z'),
+    });
 
     await db.collection('billing-packages').doc('scalar').set('not-an-object');
     await expect(billing.getPackage('scalar')).resolves.toBe('not-an-object');
@@ -508,6 +587,15 @@ describe('billing runtime reservation paths', () => {
         pricingSnapshot: snapshot,
       })
     ).rejects.toThrow('operationType and operationAttemptId are required');
+    await expect(
+      billing.reserveOperation({
+        uuid: 'key-reserve-paths',
+        operationType: 'function.invoke',
+        operationAttemptId: '',
+        eventId: 'invalid-attempt-empty',
+        pricingSnapshot: snapshot,
+      })
+    ).rejects.toThrow('operationType and operationAttemptId are required');
   });
 });
 
@@ -633,7 +721,15 @@ describe('billing runtime reconciliation paths', () => {
         purchaseId: 'untouched-purchase',
         eventId: 'refund-untouched',
       })
-    ).resolves.toMatchObject({ body: { refunded: true, creditsReversed: 5 } });
+    ).resolves.toMatchObject({
+      body: { refunded: true, creditsReversed: 5 },
+    });
+    await expect(
+      billing.applyRefundEvent({
+        purchaseId: 'untouched-purchase',
+        eventId: 'refund-untouched-repeat',
+      })
+    ).resolves.toMatchObject({ body: { refunded: false } });
   });
 
   it('rejects a charge when the aggregate balance is lower than its lot', async () => {
@@ -903,7 +999,10 @@ describe('billing runtime charging paths', () => {
       })
     ).resolves.toMatchObject({
       status: 200,
-      body: { refunded: true, creditsReversed: 7 },
+      body: {
+        refunded: true,
+        creditsReversed: 7,
+      },
     });
     await expect(db.doc('api-key-credit/key-1').get()).resolves.toMatchObject({
       data: expect.any(Function),
