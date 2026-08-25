@@ -652,6 +652,12 @@ describe('beaconBounce input and state fallbacks', () => {
       key: 'r',
     });
     expect(resetFromEmptyStorage.beacons[0].id).toBe('beacon-1-1');
+    const resetWithSpeedAlias = buildNextState(null, {
+      type: 'keydown',
+      key: 'r',
+      speed: 5,
+    });
+    expect(resetWithSpeedAlias.simulationSpeed).toBe(5);
 
     for (const invalid of [null, [], {}, { version: 2 }]) {
       const storage = { current: { BEAC1: invalid } };

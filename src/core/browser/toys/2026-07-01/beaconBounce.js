@@ -157,7 +157,7 @@ export function normalizeControlState(previous, input) {
  * @returns {unknown} Property value, or undefined.
  */
 function readInput(input, key) {
-  if (!input || typeof input !== 'object') return undefined;
+  if (!input) return undefined;
   return input[key];
 }
 
