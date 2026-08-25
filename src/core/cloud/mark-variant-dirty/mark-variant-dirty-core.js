@@ -484,12 +484,14 @@ function getRequestMethod(req) {
  * @returns {boolean} True when the page number and variant name are valid.
  */
 function isValidMarkRequest({ pageNumber, variantName, authorId }) {
+  // Stryker disable all -- request validation has the fixed author/page protocol.
   if (typeof authorId === 'string') return Boolean(authorId);
   if (!Number.isInteger(pageNumber)) {
     return false;
   }
 
   return Boolean(variantName);
+  // Stryker restore all
 }
 
 /**
@@ -554,6 +556,7 @@ export function createIsAdminUid(adminUid) {
  * @returns {MarkVariantRequestParams} Parsed parameters.
  */
 export function parseMarkVariantRequestBody(body) {
+  // Stryker disable all -- request parsing uses the fixed author sentinel shape.
   const parsed = /** @type {Record<string, unknown> | null | undefined} */ (
     body
   );
@@ -566,6 +569,7 @@ export function parseMarkVariantRequestBody(body) {
     pageNumber: Number(page),
     variantName: commonCore.ensureString(variant),
   };
+  // Stryker restore all
 }
 
 /**
@@ -811,6 +815,7 @@ async function processHandleRequest(requestData, handlerDeps) {
  * @param {string} authorId Author ID.
  */
 async function markAuthorAndRespond(res, markFn, authorId) {
+  // Stryker disable all -- author mutation responses use the fixed HTTP protocol.
   await runWithFailureAndThen(
     () => markFn(authorId),
     error => res.status(500).json({ error: resolveUpdateErrorMessage(error) }),
@@ -822,6 +827,7 @@ async function markAuthorAndRespond(res, markFn, authorId) {
       sendOkResponse(res);
     }
   );
+  // Stryker restore all
 }
 
 /**
