@@ -43,6 +43,7 @@ describe('beaconBounce', () => {
     expect(storageValue.current.BEAC1.version).toBe(1);
     expect(storageValue.current.BEAC1.frame).toBe(1);
     expect(storageValue.current.BEAC1.status).toBe('ready');
+    expect(storageValue.current.BEAC1.paused).toBe(false);
     expect(storageValue.current.BEAC1.lives).toBe(3);
     expect(storageValue.current.BEAC1.initialLives).toBe(3);
     expect(storageValue.current.BEAC1.input).toEqual({
@@ -633,6 +634,11 @@ describe('beaconBounce input and state fallbacks', () => {
     expect(normalized.status).toBe('ready');
     const resetWithoutPersistedState = buildNextState(null, { reset: true });
     expect(resetWithoutPersistedState.beacons[0].id).toBe('beacon-1-1');
+    const resetFromEmptyStorage = buildNextState(null, {
+      type: 'keydown',
+      key: 'r',
+    });
+    expect(resetFromEmptyStorage.beacons[0].id).toBe('beacon-1-1');
 
     for (const invalid of [null, [], {}, { version: 2 }]) {
       const storage = { current: { BEAC1: invalid } };
