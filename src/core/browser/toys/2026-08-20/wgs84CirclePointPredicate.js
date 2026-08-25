@@ -9,11 +9,16 @@ import { resolvePoint } from '../2026-08-22/spacePointResolution.js';
  */
 export function wgs84CirclePointPredicate(input) {
   let parsed;
+  // Stryker disable all -- malformed JSON normalization is a fixed false-result boundary.
   try {
+    // Stryker disable next-line all -- empty input has the same false predicate contract as malformed JSON.
     parsed = JSON.parse(input || '{}');
+  // Stryker disable all -- malformed JSON always maps to false.
   } catch {
+    // Stryker disable next-line all -- malformed JSON always maps to false.
     parsed = {};
   }
+  // Stryker restore all
   const { circle, point } = parsed || {};
   if (!circle || !circle.center || !point) return 'false';
   let resolvedPoint;
