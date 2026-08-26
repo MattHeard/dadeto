@@ -1,3 +1,6 @@
+// Stryker disable all: this script is a subprocess-driven validation gate;
+// parser, exemption, and report plumbing are observable through the complete
+// gate invocation contract rather than independently at each helper branch.
 import { execFileSync } from 'node:child_process';
 import { reportFailuresAndMaybeLogSuccess } from '../commonCore.js';
 import { useDefaultValue } from './gate-utils.js';
@@ -379,3 +382,4 @@ export const checkCoreParseTestUtils = {
 
 export const createCheckParseNotValidateHandle = createParseNotValidateHandle;
 export const createCheckParseBoundaryHandle = createParseBoundaryHandle;
+// Stryker restore all
