@@ -17,7 +17,7 @@ export function createBrowserGlobalReferenceFinder(deps) {
     scopeManager.scopes.forEach(scope => {
       scope.through.forEach(reference => {
         const name = reference.identifier?.name;
-        if (typeof name === 'string' && CORE_GLOBALS.includes(name)) {
+        if (CORE_GLOBALS.includes(name)) {
           references.add(name);
         }
       });

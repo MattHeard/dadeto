@@ -762,7 +762,7 @@ describe('createBrowserGlobalReferenceFinder', () => {
     const seenSources = [];
     const findBrowserGlobalReferences = createBrowserGlobalReferenceFinder({
       parseSourceForScopeAnalysis(source) {
-        seenSources.push(source ?? '');
+        seenSources.push(source);
         return { source };
       },
       analyzeScope(ast) {
