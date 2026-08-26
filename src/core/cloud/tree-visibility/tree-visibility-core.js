@@ -30,8 +30,6 @@ export function calculateTreeVisibilitySum(visibility, descendantSums = []) {
  * @returns {boolean} Whether the threshold was crossed.
  */
 export function changedByTreeWeightThreshold(previous, current) {
-  if (previous === current) return false;
-  if (previous === 0) return true;
   return (
     Math.abs(current - previous) / Math.abs(previous) >=
     TREE_WEIGHT_DIRTY_THRESHOLD
@@ -73,6 +71,7 @@ export async function propagateTreeVisibilityDelta({
   markParentDirty,
 }) {
   let currentRef = variantRef;
+  // Stryker disable next-line BlockStatement -- emptying this traversal body creates an infinite non-static mutant.
   while (currentRef) {
     const snapshot = await currentRef.get();
     if (!snapshot?.exists) break;

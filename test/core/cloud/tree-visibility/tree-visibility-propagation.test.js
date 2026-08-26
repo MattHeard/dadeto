@@ -1,3 +1,4 @@
+import { jest } from '@jest/globals';
 import { propagateTreeVisibilityDelta } from '../../../../src/core/cloud/tree-visibility/tree-visibility-core.js';
 
 /**
@@ -65,4 +66,21 @@ test('stops when an ancestor snapshot is missing and handles default data', asyn
 
   expect(updates).toEqual([['child', { treeVisibilitySum: 1.1 }]]);
   expect(dirty).toEqual(['child']);
+});
+
+test('stops when a reference returns no snapshot', async () => {
+  const variantRef = { get: async () => null };
+  const updateVariant = jest.fn();
+  const markParentDirty = jest.fn();
+
+  await propagateTreeVisibilityDelta({
+    variantRef,
+    delta: 1,
+    getParentVariantRef: jest.fn(),
+    updateVariant,
+    markParentDirty,
+  });
+
+  expect(updateVariant).not.toHaveBeenCalled();
+  expect(markParentDirty).not.toHaveBeenCalled();
 });
