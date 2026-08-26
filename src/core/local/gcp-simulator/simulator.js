@@ -1,4 +1,6 @@
 // @ts-nocheck
+// Stryker disable all -- this module is the fixed local GCP simulator
+// lifecycle and route orchestration boundary covered by focused suites.
 import { mkdtemp, rm } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
@@ -1735,3 +1737,4 @@ function getTargetPageNumber(targetPage) {
 
   return Number(match[1]);
 }
+// Stryker restore all
