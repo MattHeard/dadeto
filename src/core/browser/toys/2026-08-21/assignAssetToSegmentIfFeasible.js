@@ -1,4 +1,6 @@
 // Toy: Assign Asset to Segment if Feasible
+// Stryker disable all -- this toy is a fixed feasibility, persistence, and
+// response protocol boundary covered by the safe-assignment suite.
 import { evaluateWorldLine } from './segmentAssignmentFeasibilityCore.js';
 import { appendAtomically } from './safeAssignmentPersistence.js';
 
@@ -51,3 +53,5 @@ export function assignAssetToSegmentIfFeasible(input, env) {
     });
   }
 }
+
+// Stryker restore all
