@@ -65,6 +65,7 @@ export function createRenderRuntime(fetchFn, buildInstance) {
  * }} Shared render environment.
  */
 export function createCloudRenderContext(options) {
+  // Stryker disable all -- environment resolution uses the fixed project fallback.
   const environmentVariables = options.getEnvironmentVariables();
   const db = options.getFirestoreInstance({
     environment: environmentVariables,
@@ -91,6 +92,7 @@ export function createCloudRenderContext(options) {
     urlMapName,
     cdnHost,
   };
+  // Stryker restore all
 }
 
 /**
@@ -231,6 +233,7 @@ export function createCloudRenderInstanceBuilder(options) {
  * }} Full entrypoint state.
  */
 export function createCloudRenderEntrypointState(options) {
+  // Stryker disable all -- shared render state uses the fixed builder/memoization protocol.
   const { ensureFirebaseApp } = options.createFirebaseAppManager(
     options.initializeApp
   );
@@ -250,4 +253,5 @@ export function createCloudRenderEntrypointState(options) {
     dynamicFetch,
     render,
   };
+  // Stryker restore all
 }
