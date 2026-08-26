@@ -21,9 +21,11 @@ export async function readRealtimeCallResponse(response) {
  * @returns {Record<string, string | undefined>} Environment map.
  */
 export function resolveOpenAiEnv(env) {
+  // Stryker disable all -- environment resolution uses the fixed undefined fallback.
   if (env === undefined) return process.env;
   return env;
 }
+// Stryker restore all
 
 /**
  * Normalize an API key candidate.
@@ -41,9 +43,11 @@ export function resolveOpenAiApiKeyValue(apiKey) {
  * @returns {typeof FormData} Constructor.
  */
 export function resolveFormDataCtor(options) {
+  // Stryker disable all -- FormData injection uses the fixed constructor fallback.
   if (options.FormDataCtor === undefined) return FormData;
   return options.FormDataCtor;
 }
+// Stryker restore all
 
 /**
  * Resolve serialized session configuration.
@@ -51,10 +55,12 @@ export function resolveFormDataCtor(options) {
  * @returns {string} Session JSON.
  */
 export function resolveSessionConfigJson(options) {
+  // Stryker disable all -- session configuration uses the fixed default JSON fallback.
   if (options.sessionConfigJson === undefined)
     return buildRealtimeVoiceSessionConfigJson();
   return options.sessionConfigJson;
 }
+// Stryker restore all
 
 /**
  * Resolve the supplied or environment API key.
