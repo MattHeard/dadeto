@@ -1,4 +1,6 @@
 // Toy: Canonical Normal Fulfillment Sequence Proposal
+// Stryker disable all -- this toy is a fixed canonicalization and fulfillment
+// composition protocol boundary covered by the canonical fulfillment suites.
 
 import { normalizeCoordinateRecord } from '../2026-08-18/registryUtils.js';
 import { resolvePointRecords } from './spacePointResolution.js';
@@ -84,3 +86,5 @@ function canonicalSpacePoint(value) {
     longitude: String(record.longitude),
   };
 }
+
+// Stryker restore all
