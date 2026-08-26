@@ -66,6 +66,19 @@ describe('notion codex config', () => {
     await expect(
       loadNotionCodexConfig({ repoRoot: '/repo', pathModule, readFileImpl })
     ).resolves.toMatchObject({ maxConcurrentRuns: 3 });
+    expect(readFileImpl).toHaveBeenCalledWith(
+      '/repo/tracking/notion-codex.local.json',
+      'utf8'
+    );
+    await expect(
+      loadNotionCodexConfig({
+        repoRoot: '/repo',
+        configPath: 'custom.json',
+        pathModule,
+        readFileImpl,
+      })
+    ).resolves.toMatchObject({ maxConcurrentRuns: 3 });
+    expect(readFileImpl).toHaveBeenLastCalledWith('/repo/custom.json', 'utf8');
 
     const missing = Object.assign(new Error('missing'), { code: 'ENOENT' });
     await expect(
