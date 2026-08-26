@@ -255,8 +255,8 @@ async function sendPaymentWebhookResponse(res, response) {
       if (typeof value !== 'undefined') {
         /** @type {{ set?: (name: string, value: string) => void }} */ (
           res
-        // Stryker disable next-line all -- response adapters may omit header
-        // setters; optional invocation is a platform compatibility contract.
+          // Stryker disable next-line all -- response adapters may omit header
+          // setters; optional invocation is a platform compatibility contract.
         ).set?.(key, value);
       }
     }

@@ -287,14 +287,13 @@ describe('generate-stats run', () => {
       onRequest,
       deps,
       createGenerateStatsCore,
-    } =
-      await loadModule({
-        environment: {
-          DENDRITE_ENVIRONMENT: 't-123',
-          PLAYWRIGHT_ORIGIN: 'https://playwright.example',
-          DATABASE_ID: 'custom-db',
-        },
-      });
+    } = await loadModule({
+      environment: {
+        DENDRITE_ENVIRONMENT: 't-123',
+        PLAYWRIGHT_ORIGIN: 'https://playwright.example',
+        DATABASE_ID: 'custom-db',
+      },
+    });
 
     const result = mod.runGenerateStats(deps);
 

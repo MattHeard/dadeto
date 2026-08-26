@@ -127,8 +127,8 @@ async function resolvePurchaseEvent(resolved, event) {
   if (!response) {
     // Stryker disable all -- ignored purchase events use the fixed ledger status.
     await resolved.markProcessedEvent(event, identity, 'ignored');
-  return null;
-  // Stryker restore all
+    return null;
+    // Stryker restore all
   }
   await resolved.markProcessedEvent(event, identity, getEventStatus(response));
   return response;

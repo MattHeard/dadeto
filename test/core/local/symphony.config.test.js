@@ -131,16 +131,17 @@ describe('Symphony config', () => {
     );
     expect(result.logDir).toBe('/repo/custom-logs');
     expect(result.defaultBranch).toBe('release');
-    const customReadFileImpl = jest
-      .fn()
-      .mockResolvedValue(JSON.stringify({}));
+    const customReadFileImpl = jest.fn().mockResolvedValue(JSON.stringify({}));
     await loadSymphonyConfig({
       repoRoot: '/repo',
       configPath: 'custom.json',
       pathModule,
       readFileImpl: customReadFileImpl,
     });
-    expect(customReadFileImpl).toHaveBeenCalledWith('/repo/custom.json', 'utf8');
+    expect(customReadFileImpl).toHaveBeenCalledWith(
+      '/repo/custom.json',
+      'utf8'
+    );
     await expect(loadSymphonyConfig(undefined)).rejects.toThrow(
       'pathModule is required.'
     );

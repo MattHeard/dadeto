@@ -13,10 +13,9 @@ describe('registryUtils', () => {
   test('filters null records and sorts in place by stable key', () => {
     const records = [{ id: 'b' }, null, { id: 'a' }];
     expect(nonNullRecords(records)).toEqual([{ id: 'b' }, { id: 'a' }]);
-    expect(sortByStableKey(records.filter(Boolean), value => value.id)).toEqual([
-      { id: 'a' },
-      { id: 'b' },
-    ]);
+    expect(sortByStableKey(records.filter(Boolean), value => value.id)).toEqual(
+      [{ id: 'a' }, { id: 'b' }]
+    );
   });
 
   test('normalizes bounded numeric and string coordinates', () => {

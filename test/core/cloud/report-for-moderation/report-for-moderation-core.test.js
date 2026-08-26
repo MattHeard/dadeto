@@ -176,9 +176,9 @@ describe('computeModerationUrgency', () => {
       visibilityDistanceFromThreshold: 0,
       moderationCount: 5,
     };
-    expect(
-      computeModerationUrgency({ ...base, reportCount: 2.5 })
-    ).toBeCloseTo(0.15);
+    expect(computeModerationUrgency({ ...base, reportCount: 2.5 })).toBeCloseTo(
+      0.15
+    );
     expect(
       computeModerationUrgency({ ...base, reportRecency: 0.5 })
     ).toBeCloseTo(0.1);

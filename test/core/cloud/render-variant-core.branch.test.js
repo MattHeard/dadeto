@@ -64,6 +64,15 @@ test('covers option href and pending-path fallbacks', () => {
   expect(utils.readSnapshotData({ data: () => ({ value: 1 }) })).toEqual({
     value: 1,
   });
+  const receiverSensitiveSnapshot = {
+    value: { value: 2 },
+    data() {
+      return this.value;
+    },
+  };
+  expect(utils.readSnapshotData(receiverSensitiveSnapshot)).toEqual({
+    value: 2,
+  });
   expect(utils.resolveStoredVisibilitySum({ treeVisibilitySum: 2 })).toBe(2);
   expect(utils.resolveStoredVisibilitySum({ visibility: 0.75 })).toBe(0.75);
   expect(utils.resolveIncomingParentRef({}, {})).toBeNull();

@@ -125,12 +125,10 @@ describe('runRenderVariant', () => {
     capturedBuilderOptions.consoleError('builder failure');
     expect(consoleError).toHaveBeenCalledWith('builder failure');
     expect(mockCreateCloudRenderInstanceBuilder).toHaveBeenCalled();
-    expect(
-      mockCreateCloudRenderInstanceBuilder.mock.calls.at(-1)[0]
-    ).toEqual(expect.objectContaining({ createRenderer: mockCreateRenderVariant }));
-    expect(
-      mockCreateCloudRenderEntrypointState.mock.calls.at(-1)[0]
-    ).toEqual(
+    expect(mockCreateCloudRenderInstanceBuilder.mock.calls.at(-1)[0]).toEqual(
+      expect.objectContaining({ createRenderer: mockCreateRenderVariant })
+    );
+    expect(mockCreateCloudRenderEntrypointState.mock.calls.at(-1)[0]).toEqual(
       expect.objectContaining({
         entrypointKind: 'variant',
         defaultBucketName: 'bucket',

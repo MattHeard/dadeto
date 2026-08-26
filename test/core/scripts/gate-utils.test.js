@@ -53,7 +53,9 @@ describe('executeStandardGate', () => {
     expect(
       handleSpawnFailure({ signal: 'SIGTERM' }, stderr, 'Demo', 'demo')
     ).toEqual({ exitCode: 1 });
-    expect(stderr.chunks.at(-1)).toBe('Demo was terminated by signal SIGTERM\n');
+    expect(stderr.chunks.at(-1)).toBe(
+      'Demo was terminated by signal SIGTERM\n'
+    );
     expect(
       handleSpawnFailure({ status: 0 }, stderr, 'Demo', 'demo')
     ).toBeNull();

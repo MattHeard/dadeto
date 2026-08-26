@@ -20,9 +20,9 @@ export function createDynamicPackageResolver({
     )
       return null;
     const snapshot = await getCurrentPricingSnapshot();
-  // Stryker disable next-line all -- absent pricing snapshots have one fixed
-  // null result at the runtime adapter boundary.
-  if (!snapshot) return null;
+    // Stryker disable next-line all -- absent pricing snapshots have one fixed
+    // null result at the runtime adapter boundary.
+    if (!snapshot) return null;
     const credits = calculatePackageCredits(
       packageData.amountUsdMinor,
       snapshot

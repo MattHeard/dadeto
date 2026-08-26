@@ -325,7 +325,9 @@ describe('createCheckoutSessionHandler validation paths', () => {
     });
     await expect(rateFailure.handler(request())).resolves.toEqual({
       status: 429,
-      body: { error: { code: 'rate_limited', message: 'Too many purchase attempts.' } },
+      body: {
+        error: { code: 'rate_limited', message: 'Too many purchase attempts.' },
+      },
     });
     const keyFailure = setup({
       createStripeCheckoutSession: jest
@@ -337,7 +339,8 @@ describe('createCheckoutSessionHandler validation paths', () => {
       body: {
         error: {
           code: 'idempotency_conflict',
-          message: 'This purchase attempt was already used with different parameters.',
+          message:
+            'This purchase attempt was already used with different parameters.',
         },
       },
     });
@@ -345,7 +348,10 @@ describe('createCheckoutSessionHandler validation paths', () => {
     await expect(config.handler(request())).resolves.toEqual({
       status: 500,
       body: {
-        error: { code: 'configuration_error', message: 'Billing is not configured.' },
+        error: {
+          code: 'configuration_error',
+          message: 'Billing is not configured.',
+        },
       },
     });
   });

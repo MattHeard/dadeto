@@ -30,9 +30,9 @@ test('builds daily and HTTP regeneration entrypoints', async () => {
   expect(functions.region).toHaveBeenNthCalledWith(2, 'europe-west1');
   const firstRegion = functions.region.mock.results[0].value;
   expect(firstRegion.pubsub.schedule).toHaveBeenCalledWith('every 24 hours');
-  expect(functions.region.mock.results[1].value.https.onRequest).toHaveBeenCalledWith(
-    expect.any(Function)
-  );
+  expect(
+    functions.region.mock.results[1].value.https.onRequest
+  ).toHaveBeenCalledWith(expect.any(Function));
   await handles.scheduled.fn();
   const response = { status: jest.fn() };
   response.status.mockReturnValue({ json: jest.fn() });

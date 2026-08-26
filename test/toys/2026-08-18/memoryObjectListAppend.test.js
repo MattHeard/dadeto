@@ -54,11 +54,27 @@ describe('memoryObjectListAppend', () => {
 
   test('reports exact request validation errors', () => {
     for (const [payload, message] of [
-      [JSON.stringify({ path: 'items', object: [] }), 'An object property containing a JSON object is required.'],
-      [JSON.stringify({ path: 'items', object: null }), 'An object property containing a JSON object is required.'],
-      [JSON.stringify({ path: 'items', object: 'value' }), 'An object property containing a JSON object is required.'],
+      [
+        JSON.stringify({ path: 'items', object: [] }),
+        'An object property containing a JSON object is required.',
+      ],
+      [
+        JSON.stringify({ path: 'items', object: null }),
+        'An object property containing a JSON object is required.',
+      ],
+      [
+        JSON.stringify({ path: 'items', object: 'value' }),
+        'An object property containing a JSON object is required.',
+      ],
       [JSON.stringify({ path: '', object: {} }), 'A path is required.'],
-      [JSON.stringify({ path: 'items', object: {}, memoryLocation: 'unknown' }), 'Unsupported memory location.'],
+      [
+        JSON.stringify({
+          path: 'items',
+          object: {},
+          memoryLocation: 'unknown',
+        }),
+        'Unsupported memory location.',
+      ],
     ]) {
       expect(JSON.parse(memoryObjectListAppend(payload, new Map()))).toEqual({
         appended: false,
@@ -76,12 +92,17 @@ describe('memoryObjectListAppend', () => {
     ]);
 
     const nested = JSON.parse(
-      memoryObjectListAppend(request({ path: 'items', object: { id: 'new' } }), env)
+      memoryObjectListAppend(
+        request({ path: 'items', object: { id: 'new' } }),
+        env
+      )
     );
     expect(nested).toMatchObject({ appended: true, path: 'items', length: 2 });
     expect(state.temporary.items).toEqual([{ id: 'old' }, { id: 'new' }]);
 
-    expect(JSON.parse(memoryObjectListAppend(request({ path: 'bad' }), env))).toEqual({
+    expect(
+      JSON.parse(memoryObjectListAppend(request({ path: 'bad' }), env))
+    ).toEqual({
       appended: false,
       error: 'Path is not a list: bad',
     });
@@ -129,12 +150,20 @@ describe('memoryObjectListAppend', () => {
       ['setLocalTemporaryData', setTemporary],
     ]);
 
-    expect(JSON.parse(memoryObjectListAppend(request({ memoryLocation: 'permanent' }), env))).toMatchObject({
+    expect(
+      JSON.parse(
+        memoryObjectListAppend(request({ memoryLocation: 'permanent' }), env)
+      )
+    ).toMatchObject({
       memoryLocation: 'permanent',
       appended: true,
     });
     expect(setPermanent).toHaveBeenCalledTimes(1);
-    expect(JSON.parse(memoryObjectListAppend(request({ memoryLocation: 'envelope' }), env))).toMatchObject({
+    expect(
+      JSON.parse(
+        memoryObjectListAppend(request({ memoryLocation: 'envelope' }), env)
+      )
+    ).toMatchObject({
       memoryLocation: 'envelope',
       appended: true,
     });
@@ -151,7 +180,12 @@ describe('memoryObjectListAppend', () => {
       ['setLocalTemporaryData', next => Object.assign(distinctEnvelope, next)],
     ]);
     expect(
-      JSON.parse(memoryObjectListAppend(request({ memoryLocation: 'envelope' }), distinctEnv))
+      JSON.parse(
+        memoryObjectListAppend(
+          request({ memoryLocation: 'envelope' }),
+          distinctEnv
+        )
+      )
     ).toMatchObject({ appended: true, memoryLocation: 'envelope', length: 2 });
     expect(distinctEnvelope.items).toHaveLength(2);
     expect(distinctEnvelope.temporary.items).toHaveLength(1);
@@ -161,7 +195,12 @@ describe('memoryObjectListAppend', () => {
       ['setLocalPermanentData', setPermanent],
     ]);
     expect(
-      JSON.parse(memoryObjectListAppend(request({ memoryLocation: 'permanent' }), emptyPermanent))
+      JSON.parse(
+        memoryObjectListAppend(
+          request({ memoryLocation: 'permanent' }),
+          emptyPermanent
+        )
+      )
     ).toMatchObject({ appended: true, length: 1 });
     expect(envelope.items).toEqual([{ id: 'A1' }]);
   });

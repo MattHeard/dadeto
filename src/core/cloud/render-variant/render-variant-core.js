@@ -205,7 +205,7 @@ function resolveIncomingParentRef(data, db) {
 function readSnapshotData(snapshot) {
   const read = snapshot?.data;
   if (typeof read !== 'function') return {};
-  return read() ?? {};
+  return snapshot.data() ?? {};
 }
 
 /**

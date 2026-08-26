@@ -82,10 +82,10 @@ function createPaymentWebhookDb({
               eventId === 'evt-no-event-data'
                 ? undefined
                 : eventId === 'evt-received'
-                ? { status: 'received' }
-                : eventId === 'evt-deferred'
-                  ? { status: 'deferred' }
-                  : {},
+                  ? { status: 'received' }
+                  : eventId === 'evt-deferred'
+                    ? { status: 'deferred' }
+                    : {},
           };
         }),
         set,
@@ -194,20 +194,32 @@ describe('payment webhook cloud wrapper', () => {
     await captured.resolveApiKeyUuid({ data: { object: {} } });
     customerApiKeyUuid = '';
     await expect(
-      captured.resolveApiKeyUuid({ data: { object: { customer: 'cus-empty' } } })
+      captured.resolveApiKeyUuid({
+        data: { object: { customer: 'cus-empty' } },
+      })
     ).resolves.toBeNull();
     customerApiKeyUuid = 42;
     await expect(
-      captured.resolveApiKeyUuid({ data: { object: { customer: 'cus-number' } } })
+      captured.resolveApiKeyUuid({
+        data: { object: { customer: 'cus-number' } },
+      })
     ).resolves.toBeNull();
     await expect(
-      captured.resolveApiKeyUuid({ data: { object: { customer: 'cus-no-data' } } })
+      captured.resolveApiKeyUuid({
+        data: { object: { customer: 'cus-no-data' } },
+      })
     ).resolves.toBeNull();
     customerApiKeyUuid = 'uuid-1';
     await expect(captured.isDuplicateEvent('evt-1')).resolves.toBe(true);
-    await expect(captured.isDuplicateEvent('evt-received')).resolves.toBe(false);
-    await expect(captured.isDuplicateEvent('evt-deferred')).resolves.toBe(false);
-    await expect(captured.isDuplicateEvent('evt-no-event-data')).resolves.toBe(true);
+    await expect(captured.isDuplicateEvent('evt-received')).resolves.toBe(
+      false
+    );
+    await expect(captured.isDuplicateEvent('evt-deferred')).resolves.toBe(
+      false
+    );
+    await expect(captured.isDuplicateEvent('evt-no-event-data')).resolves.toBe(
+      true
+    );
     await expect(captured.isDuplicateEvent('evt-missing')).resolves.toBe(false);
     const nowSpy = jest.spyOn(Date, 'now').mockReturnValue(1234);
     await Promise.all([
@@ -310,14 +322,14 @@ describe('payment webhook cloud wrapper', () => {
     });
     await expect(
       captured.handlePurchaseEvent({
-      id: 'evt-no-intent',
-      type: 'checkout.session.completed',
-      data: {
-        object: {
-          metadata: { ['purchase_id']: 'p1' },
-          ['payment_status']: 'paid',
+        id: 'evt-no-intent',
+        type: 'checkout.session.completed',
+        data: {
+          object: {
+            metadata: { ['purchase_id']: 'p1' },
+            ['payment_status']: 'paid',
+          },
         },
-      },
       })
     ).resolves.toEqual({
       status: 201,
@@ -375,16 +387,16 @@ describe('payment webhook cloud wrapper', () => {
     ]);
     await expect(
       captured.handlePurchaseEvent({
-      id: 'evt-3b',
-      type: 'charge.refunded',
-      data: {
-        object: {
-          metadata: {
-            ['purchase_id']: 'p1',
-            ['pricing_snapshot_id']: 'snap-1',
+        id: 'evt-3b',
+        type: 'charge.refunded',
+        data: {
+          object: {
+            metadata: {
+              ['purchase_id']: 'p1',
+              ['pricing_snapshot_id']: 'snap-1',
+            },
           },
         },
-      },
       })
     ).resolves.toEqual({
       status: 200,
@@ -448,10 +460,7 @@ describe('payment webhook cloud wrapper', () => {
         });
       },
     });
-    for (const body of [
-      { type: 'other', applied: true },
-      {},
-    ]) {
+    for (const body of [{ type: 'other', applied: true }, {}]) {
       const unchangedResponse = createWebhookResponse();
       await runWebhookResponse({
         mockDomainHandler,
@@ -502,8 +511,7 @@ describe('payment webhook cloud wrapper', () => {
         request,
         body: { status: 200, body: 'ok', headers: { 'x-test': 'yes' } },
         response: responseWithoutSet,
-        assertion: response =>
-          expect(response.send).toHaveBeenCalledWith('ok'),
+        assertion: response => expect(response.send).toHaveBeenCalledWith('ok'),
       })
     ).resolves.toBeUndefined();
     for (const body of [null, '', 0]) {
@@ -527,8 +535,7 @@ describe('payment webhook cloud wrapper', () => {
       request,
       body: { status: 202, body: 7 },
       response: truthyPrimitiveResponse,
-      assertion: response =>
-        expect(response.send).toHaveBeenCalledWith(7),
+      assertion: response => expect(response.send).toHaveBeenCalledWith(7),
     });
     const successfulPrimitiveResponse = createWebhookResponse();
     await runWebhookResponse({

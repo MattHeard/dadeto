@@ -12,7 +12,9 @@ test('regenerates only dirty variants and continues after failures', async () =>
     .mockResolvedValueOnce(undefined)
     .mockRejectedValueOnce(new Error('nope'));
   const consoleError = jest.fn();
-  const where = jest.fn(() => ({ get: async () => ({ docs: [first, second] }) }));
+  const where = jest.fn(() => ({
+    get: async () => ({ docs: [first, second] }),
+  }));
   const collectionGroup = jest.fn(() => ({ where }));
   const result = await regenerateDirtyTreeWeightVariants({
     db: {
@@ -104,14 +106,16 @@ test('migration calculates sums bottom-up and is rerunnable', async () => {
 
 test('migration defaults visibility when a variant has no data', async () => {
   const writes = [];
-  await expect(migrateTreeVisibilitySums({
-    stories: [{ id: 'story' }],
-    readChildren: async node => {
-      if (node.id === 'story') return [{ data: null }];
-      return [];
-    },
-    writeVariant: async (variant, data) => writes.push([variant, data]),
-  })).resolves.toBe(1);
+  await expect(
+    migrateTreeVisibilitySums({
+      stories: [{ id: 'story' }],
+      readChildren: async node => {
+        if (node.id === 'story') return [{ data: null }];
+        return [];
+      },
+      writeVariant: async (variant, data) => writes.push([variant, data]),
+    })
+  ).resolves.toBe(1);
 
   expect(writes).toEqual([[{ data: null }, { treeVisibilitySum: 1 }]]);
 });

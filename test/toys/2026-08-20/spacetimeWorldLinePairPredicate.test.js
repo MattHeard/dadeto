@@ -16,14 +16,22 @@ const segments = [
 ];
 const call = (extra = {}) =>
   spacetimeWorldLinePairPredicate(
-    JSON.stringify({ points, segments, firstSegmentId: 'S1', secondSegmentId: 'S2', ...extra })
+    JSON.stringify({
+      points,
+      segments,
+      firstSegmentId: 'S1',
+      secondSegmentId: 'S2',
+      ...extra,
+    })
   );
 
 describe('spacetimeWorldLinePairPredicate', () => {
   test('accepts connected touching segments and rejects disconnected touching segments', () => {
     expect(call()).toBe('true');
     expect(call({ firstSegmentId: 'S2', secondSegmentId: 'S1' })).toBe('true');
-    expect(call({ segments: segments.map(s => ({ ...s })), secondSegmentId: 'S3' })).toBe('true');
+    expect(
+      call({ segments: segments.map(s => ({ ...s })), secondSegmentId: 'S3' })
+    ).toBe('true');
     expect(
       call({
         segments: [
@@ -38,7 +46,10 @@ describe('spacetimeWorldLinePairPredicate', () => {
       call({
         firstSegmentId: 'S2',
         secondSegmentId: 'S6',
-        segments: [...segments, { segmentId: 'S6', startPointId: 'P1', endPointId: 'P5' }],
+        segments: [
+          ...segments,
+          { segmentId: 'S6', startPointId: 'P1', endPointId: 'P5' },
+        ],
       })
     ).toBe('false');
   });
@@ -56,23 +67,35 @@ describe('spacetimeWorldLinePairPredicate', () => {
   });
 
   test('returns structured errors for malformed and unknown references', () => {
-    expect(spacetimeWorldLinePairPredicate('{}')).toContain('Points and segments are required.');
+    expect(spacetimeWorldLinePairPredicate('{}')).toContain(
+      'Points and segments are required.'
+    );
     expect(
-      spacetimeWorldLinePairPredicate(JSON.stringify({ points, segments: undefined }))
+      spacetimeWorldLinePairPredicate(
+        JSON.stringify({ points, segments: undefined })
+      )
     ).toContain('Points and segments are required.');
     expect(
-      spacetimeWorldLinePairPredicate(JSON.stringify({ points: undefined, segments }))
+      spacetimeWorldLinePairPredicate(
+        JSON.stringify({ points: undefined, segments })
+      )
     ).toContain('Points and segments are required.');
-    expect(call({ firstSegmentId: 'missing' })).toContain('Unknown segment: missing');
+    expect(call({ firstSegmentId: 'missing' })).toContain(
+      'Unknown segment: missing'
+    );
     expect(
       call({
-        segments: [{ segmentId: 'S', startPointId: 'P1', endPointId: 'missing' }],
+        segments: [
+          { segmentId: 'S', startPointId: 'P1', endPointId: 'missing' },
+        ],
         firstSegmentId: 'S',
       })
     ).toContain('Segment references an unknown point.');
     expect(
       call({
-        segments: [{ segmentId: 'S', startPointId: 'missing', endPointId: 'P2' }],
+        segments: [
+          { segmentId: 'S', startPointId: 'missing', endPointId: 'P2' },
+        ],
         firstSegmentId: 'S',
       })
     ).toContain('Segment references an unknown point.');
