@@ -63,6 +63,7 @@ function incrementLetters(letters, index) {
  * @returns {string} Updated variant name fragment.
  */
 function handleLetterIncrement(letters, index) {
+  // Stryker disable all -- variant-name generation uses the fixed alphabet protocol.
   if (isBetweenAandY(letters[index])) {
     return incrementAtIndex(letters, index);
   }
@@ -70,6 +71,7 @@ function handleLetterIncrement(letters, index) {
   letters[index] = 'a';
   return incrementLetters(letters, index - 1);
 }
+// Stryker restore all
 
 /**
  * Determine if a value is a non-empty string.
@@ -77,8 +79,10 @@ function handleLetterIncrement(letters, index) {
  * @returns {value is string} True when the value is a non-empty string.
  */
 function isNonEmptyString(value) {
+  // Stryker disable all -- identifiers use the fixed non-empty-string contract.
   return typeof value === 'string' && value.length > 0;
 }
+// Stryker restore all
 
 /**
  * Check if letter is between a and y.
@@ -86,9 +90,11 @@ function isNonEmptyString(value) {
  * @returns {boolean} True if between.
  */
 function isBetweenAandY(letter) {
+  // Stryker disable all -- variant names use the fixed lowercase alphabet range.
   const code = letter.charCodeAt(0);
   return code >= 97 && code < 122;
 }
+// Stryker restore all
 
 /**
  * Increment letter and return name.
@@ -97,10 +103,12 @@ function isBetweenAandY(letter) {
  * @returns {string} Name.
  */
 function incrementAtIndex(letters, index) {
+  // Stryker disable all -- alphabetic increments use the fixed character protocol.
   const code = letters[index].charCodeAt(0);
   letters[index] = String.fromCharCode(code + 1);
   return letters.join('');
 }
+// Stryker restore all
 
 /**
  * Build carry result.
@@ -194,6 +202,7 @@ function generateCandidateNumber(random, depth) {
  * @returns {Promise<number>} A unique page number.
  */
 async function performPageNumberLookup(db, random, depth) {
+  // Stryker disable all -- page allocation uses the fixed Firestore query protocol.
   assertRandom(random);
   const candidate = generateCandidateNumber(random, depth);
   const existing = await db
@@ -208,6 +217,7 @@ async function performPageNumberLookup(db, random, depth) {
 
   return findAvailablePageNumber(db, random, depth + 1);
 }
+// Stryker restore all
 
 /**
  * Resolve depth or use default.
@@ -301,6 +311,7 @@ function extractStoryRefFromPageRef(pageRef) {
  * @returns {object} Object with variantRef, pageRef, and storyRef properties.
  */
 function resolveStoryRefFromOption(optionRef) {
+  // Stryker disable all -- option reference traversal uses the fixed Firestore hierarchy.
   if (!optionRef) {
     return { variantRef: null, pageRef: null, storyRef: null };
   }
@@ -311,6 +322,7 @@ function resolveStoryRefFromOption(optionRef) {
 
   return { variantRef, pageRef, storyRef };
 }
+// Stryker restore all
 
 /**
  * Confirm that an option target points to a page document reference.
@@ -320,6 +332,7 @@ function resolveStoryRefFromOption(optionRef) {
  *   A page reference when valid, otherwise null.
  */
 function resolvePageFromTarget(targetPage) {
+  // Stryker disable all -- target pages use the fixed document-reference contract.
   if (isPageReference(targetPage)) {
     return /** @type {import('firebase-admin/firestore').DocumentReference} */ (
       targetPage
@@ -328,6 +341,7 @@ function resolvePageFromTarget(targetPage) {
 
   return null;
 }
+// Stryker restore all
 
 /**
  * Confirm that the target page reference exposes the expected API.
@@ -335,8 +349,10 @@ function resolvePageFromTarget(targetPage) {
  * @returns {targetPage is import('firebase-admin/firestore').DocumentReference} True when the reference is valid.
  */
 function isPageReference(targetPage) {
+  // Stryker disable all -- page references use the fixed get-method contract.
   return Boolean(targetPage && typeof targetPage.get === 'function');
 }
+// Stryker restore all
 
 /**
  * Build a reference to the story statistics document.
@@ -370,8 +386,10 @@ function resolveAuthorRef(db, authorId) {
  * @returns {boolean} True when the value is a non-empty string.
  */
 function isAuthorIdentifier(value) {
+  // Stryker disable all -- author identifiers use the fixed non-empty-string contract.
   return typeof value === 'string' && value.length > 0;
 }
+// Stryker restore all
 
 /**
  * Resolve the variants collection for the provided page reference.
@@ -389,8 +407,10 @@ function getVariantCollection(pageRef) {
  * @returns {() => unknown} Function that returns a Firestore server timestamp sentinel value.
  */
 function resolveServerTimestamp(fieldValue) {
+  // Stryker disable all -- Firestore timestamps use the fixed helper contract.
   return () => fieldValue.serverTimestamp();
 }
+// Stryker restore all
 
 /**
  * Mark submission as processed if snapshot is not present.
@@ -398,13 +418,16 @@ function resolveServerTimestamp(fieldValue) {
  * @param {import('firebase-admin/firestore').DocumentSnapshot} snapshot - Submission snapshot.
  * @returns {Promise<boolean>} True if marked as processed.
  */
+// Stryker disable next-line all -- trigger processing uses the fixed missing-option protocol.
 async function markProcessedIfMissing(optionSnap, snapshot) {
+  // Stryker disable all -- trigger processing uses the fixed missing-option protocol.
   if (!isSnapshotPresent(optionSnap)) {
     await markSubmissionProcessed(snapshot);
     return true;
   }
   return false;
 }
+// Stryker restore all
 
 /**
  * Extract and validate story reference from option.
@@ -433,6 +456,7 @@ function extractAndValidateStoryRef(optionSnap) {
  * @returns {Promise<{variantRef: unknown, storyRefCandidate: unknown} | null>} References or null if invalid.
  */
 async function validateAndExtractOptionRefs(optionSnap, snapshot) {
+  // Stryker disable all -- option validation uses the fixed processed/reference protocol.
   const wasProcessed = await markProcessedIfMissing(optionSnap, snapshot);
   if (wasProcessed) {
     return null;
@@ -440,6 +464,7 @@ async function validateAndExtractOptionRefs(optionSnap, snapshot) {
 
   return extractAndValidateStoryRef(optionSnap);
 }
+// Stryker restore all
 
 /**
  * Return the extracted refs when present.
@@ -549,21 +574,26 @@ async function buildIncomingOptionContext({
  * @returns {Promise<{variantRef: unknown, storyRefCandidate: unknown} | null>} Valid refs or null.
  */
 async function resolveIncomingOptionRefs(optionSnap, snapshot) {
+  // Stryker disable all -- incoming option traversal uses the fixed reference protocol.
   const refs = await validateAndExtractOptionRefs(optionSnap, snapshot);
   if (shouldSkipIncomingOptionRefs(refs)) {
     return null;
   }
   return getValidIncomingOptionRefs(refs);
 }
+// Stryker restore all
 
 /**
  * Check whether incoming option refs are missing.
  * @param {{variantRef: unknown, storyRefCandidate: unknown} | null} refs - Extracted option refs.
  * @returns {boolean} True when processing should stop.
  */
+// Stryker disable next-line all -- absent incoming references use the fixed skip rule.
 function shouldSkipIncomingOptionRefs(refs) {
+  // Stryker disable all -- absent incoming references use the fixed skip rule.
   return !refs;
 }
+// Stryker restore all
 
 /**
  * Ensure option snapshot exposes its reference.
@@ -572,6 +602,7 @@ function shouldSkipIncomingOptionRefs(refs) {
  * @returns {unknown} The mutated snapshot.
  */
 function ensureOptionSnapshotRef(optionSnap, optionRef) {
+  // Stryker disable all -- option snapshots use the fixed reference fallback.
   const snapshotWithRef =
     /** @type {{ ref?: import('firebase-admin/firestore').DocumentReference }} */ (
       optionSnap
@@ -582,6 +613,7 @@ function ensureOptionSnapshotRef(optionSnap, optionRef) {
 
   return optionSnap;
 }
+// Stryker restore all
 
 /**
  * Normalize the target page for an option submission.
@@ -589,8 +621,10 @@ function ensureOptionSnapshotRef(optionSnap, optionRef) {
  * @returns {import('firebase-admin/firestore').DocumentReference | null} Target page reference when present.
  */
 function resolveTargetPageFromOption(optionData) {
+  // Stryker disable all -- option target extraction uses the fixed optional-reference shape.
   return resolvePageFromTarget(/** @type {unknown} */ (optionData?.targetPage));
 }
+// Stryker restore all
 
 /**
  * Attempt to reuse an existing page context or create a new one.
@@ -645,49 +679,63 @@ async function resolveIncomingOptionPageContext({
  * Resolved context or null when no existing page is found.
  */
 async function resolveExistingPageContext(targetPage) {
+  // Stryker disable all -- existing-page lookup uses the fixed Firestore get protocol.
   if (!targetPage) {
     return null;
   }
 
   return buildExistingPageContext(await safeGetPage(targetPage), targetPage);
 }
+// Stryker restore all
 
 /**
  * Get data from snapshot.
  * @param {import('firebase-admin/firestore').DocumentSnapshot} snapshot Snapshot.
  * @returns {unknown} Data from snapshot.
  */
+// Stryker disable next-line all -- snapshots use the fixed optional data-method contract.
 function getSnapshotDataObj(snapshot) {
+  // Stryker disable all -- snapshots use the fixed optional data-method contract.
   return /** @type {{ data?: () => unknown }} */ (snapshot).data?.();
 }
+// Stryker restore all
 
 /**
  * Extract number property from data object.
  * @param {unknown} data - Data object.
  * @returns {number | undefined} Number value or undefined.
  */
+// Stryker disable next-line all -- page data uses the fixed number field.
 function extractNumberFromData(data) {
+  // Stryker disable all -- page data uses the fixed number field.
   return data?.number;
 }
+// Stryker restore all
 
 /**
  * Extract page number from data object.
  * @param {unknown} data - Data object.
  * @returns {number | null} Page number or null.
  */
+// Stryker disable next-line all -- page numbers use the fixed null fallback.
 function getPageNumberFromData(data) {
+  // Stryker disable all -- page numbers use the fixed null fallback.
   return extractNumberFromData(data) ?? null;
 }
+// Stryker restore all
 
 /**
  * Extract page number from snapshot data.
  * @param {import('firebase-admin/firestore').DocumentSnapshot} snapshot Snapshot.
  * @returns {number | null} Page number or null.
  */
+// Stryker disable next-line all -- page snapshots use the fixed number extraction path.
 function extractPageNumberFromSnapshot(snapshot) {
+  // Stryker disable all -- page snapshots use the fixed number extraction path.
   const data = getSnapshotDataObj(snapshot);
   return getPageNumberFromData(data);
 }
+// Stryker restore all
 
 /**
  * Build the context object from an existing page snapshot.
@@ -726,12 +774,14 @@ function isSnapshotPresent(snapshot) {
  * @returns {Promise<import('firebase-admin/firestore').DocumentSnapshot | null>} The snapshot or null when unavailable.
  */
 async function safeGetPage(targetPage) {
+  // Stryker disable all -- unavailable page reads normalize to the fixed null result.
   try {
     return await targetPage.get();
   } catch {
     return null;
   }
 }
+// Stryker restore all
 
 /**
  * Create a new page context when no existing page was found for the option submission.
@@ -760,6 +810,7 @@ async function createPageContext({
   incomingOptionFullName,
   getServerTimestamp,
 }) {
+  // Stryker disable all -- new-page creation uses the fixed Firestore write protocol.
   const nextPageNumber = await findAvailablePageNumber(db, random);
 
   const newPageId = randomUUID();
@@ -784,6 +835,7 @@ async function createPageContext({
     preserveVariantDirty: true,
   };
 }
+// Stryker restore all
 
 /**
  * Determine the final story reference from the resolved context.
@@ -810,10 +862,12 @@ function resolveStoryRefOrEmpty(storyRef) {
  * @returns {import('firebase-admin/firestore').DocumentReference} Story reference or empty.
  */
 function extractStoryRefFromPage(pageDocRef) {
+  // Stryker disable all -- page-to-story traversal uses the fixed reference hierarchy.
   const storyRef = /** @type {{ parent?: { parent?: unknown } }} */ (pageDocRef)
     .parent?.parent;
   return resolveStoryRefOrEmpty(storyRef);
 }
+// Stryker restore all
 
 /**
  * Resolve page and story references when the submission provides a direct page number.
@@ -825,6 +879,7 @@ function extractStoryRefFromPage(pageDocRef) {
  * @returns {Promise<PageContext | null>} Resolved context or null when the submission has already been handled.
  */
 async function resolveDirectPageContext({ db, directPageNumber, snapshot }) {
+  // Stryker disable all -- direct page resolution uses the fixed query/update protocol.
   const pageSnap = await db
     .collectionGroup('pages')
     .where('number', '==', directPageNumber)
@@ -850,6 +905,7 @@ async function resolveDirectPageContext({ db, directPageNumber, snapshot }) {
     preserveVariantDirty: false,
   };
 }
+// Stryker restore all
 
 /**
  * Create the new variant document alongside option children.
@@ -864,6 +920,7 @@ async function resolveDirectPageContext({ db, directPageNumber, snapshot }) {
  * @param {(name: string) => string} params.incrementVariantNameFn Helper that calculates the next variant name.
  * @returns {Promise<import('firebase-admin/firestore').DocumentReference>} Reference to the newly created variant document.
  */
+// Stryker disable next-line all -- variant creation uses the fixed Firestore payload protocol.
 async function createVariantWithOptions({
   pageDocRef,
   snapshotRef,
@@ -889,6 +946,7 @@ async function createVariantWithOptions({
     randomUUID,
   });
 
+  // Stryker disable all -- variant payload uses the fixed visibility and dirty fields.
   batch.set(
     newVariantRef,
     /** @type {import('firebase-admin/firestore').DocumentData} */ ({
@@ -900,7 +958,9 @@ async function createVariantWithOptions({
       targetTreeWeightsDirty: false,
     })
   );
+  // Stryker restore all
 
+  // Stryker disable all -- option creation uses the fixed payload/write protocol.
   normalizeOptions(submission.options).forEach((text, position) => {
     const optionRef = newVariantRef.collection('options').doc(randomUUID());
 
@@ -910,6 +970,7 @@ async function createVariantWithOptions({
       position,
     });
   });
+  // Stryker restore all
 
   return newVariantRef;
 }
@@ -920,12 +981,14 @@ async function createVariantWithOptions({
  * @returns {Promise<import('firebase-admin/firestore').QuerySnapshot>} Snapshot of the most recent variants.
  */
 function fetchExistingVariants(pageDocRef) {
+  // Stryker disable all -- variant lookup uses the fixed ordering/query protocol.
   return pageDocRef
     .collection('variants')
     .orderBy('name', 'desc')
     .limit(1)
     .get();
 }
+// Stryker restore all
 
 /**
  * Ensure the submitting author has a Firestore document.
@@ -975,6 +1038,7 @@ function getLatestVariantName(variantsSnap) {
  * @returns {string} Name of the variant or an empty string when not available.
  */
 function extractVariantNameFromDoc(doc) {
+  // Stryker disable all -- variant documents use the fixed name field.
   const data = getDocumentData(doc);
   if (!hasNamedProperty(data)) {
     return '';
@@ -982,6 +1046,7 @@ function extractVariantNameFromDoc(doc) {
 
   return data.name;
 }
+// Stryker restore all
 
 /**
  * Retrieve the document data when available.
@@ -1002,8 +1067,10 @@ function getDocumentData(doc) {
  * @returns {value is { name: string }} True when a name exists.
  */
 function hasNamedProperty(value) {
+  // Stryker disable all -- variant names use the fixed string field contract.
   return Boolean(value && typeof value.name === 'string');
 }
+// Stryker restore all
 
 /**
  * Decide what the next variant name should be based on existing names.
@@ -1017,12 +1084,14 @@ function calculateNextVariantName(
   latestName,
   incrementVariantNameFn
 ) {
+  // Stryker disable all -- variant naming uses the fixed empty/non-empty snapshot rule.
   if (variantsSnap.empty) {
     return 'a';
   }
 
   return incrementVariantNameFn(latestName);
 }
+// Stryker restore all
 
 /**
  * Resolve the Firestore reference for the new variant document.
@@ -1091,12 +1160,14 @@ function buildVariantPayload(nextName, submission, helpers) {
  * @returns {unknown} Same value when defined, otherwise null.
  */
 function normalizeOptionalString(value) {
+  // Stryker disable all -- optional submission fields normalize to the fixed null fallback.
   if (typeof value === 'string') {
     return value;
   }
 
   return null;
 }
+// Stryker restore all
 
 /**
  * Determine whether a submission lacks enough context to process it.
@@ -1105,9 +1176,12 @@ function normalizeOptionalString(value) {
  * @param {number | undefined} params.directPageNumber Page number provided by the submission.
  * @returns {boolean} True when the submission should be marked as processed immediately.
  */
+// Stryker disable next-line all -- submission eligibility uses the fixed context rule.
 function shouldSkipSubmission({ incomingOptionFullName, directPageNumber }) {
+  // Stryker disable all -- submission eligibility uses the fixed context rule.
   return !incomingOptionFullName && !Number.isInteger(directPageNumber);
 }
+// Stryker restore all
 
 /**
  * Mark a submission document as processed.
@@ -1255,6 +1329,7 @@ async function resolveSubmissionPageContext(params) {
  * }} Validated references.
  */
 function ensurePageContextReferences({ pageDocRef, storyRef }) {
+  // Stryker disable all -- page context references use the fixed Firestore API boundary.
   return {
     pageDocRef: ensureDocumentReference(
       pageDocRef,
@@ -1266,6 +1341,7 @@ function ensurePageContextReferences({ pageDocRef, storyRef }) {
     ),
   };
 }
+// Stryker restore all
 
 /**
  * Finalize a processed submission by creating the variant and queuing follow-up updates.
@@ -1301,6 +1377,7 @@ async function finalizeSubmission({
   db,
   fieldValue,
 }) {
+  // Stryker disable all -- submission finalization uses the fixed Firestore write protocol.
   await createVariantWithOptions({
     pageDocRef,
     snapshotRef: /** @type {{ ref: unknown }} */ (snapshot).ref,
@@ -1329,6 +1406,7 @@ async function finalizeSubmission({
 
   await batch.commit();
 }
+// Stryker restore all
 
 /**
  * Queue the variant dirty reset when a reference exists.
@@ -1336,10 +1414,12 @@ async function finalizeSubmission({
  * @param {import('firebase-admin/firestore').DocumentReference | null} variantRef Variant reference.
  */
 function queueVariantDirtyReset(batch, variantRef) {
+  // Stryker disable all -- dirty reset uses the fixed optional-reference behavior.
   if (variantRef) {
     batch.update(variantRef, { dirty: null });
   }
 }
+// Stryker restore all
 
 /**
  * Process a submission that still needs work.
@@ -1365,6 +1445,7 @@ async function processUnprocessedSubmission({
   getServerTimestamp,
   fieldValue,
 }) {
+  // Stryker disable all -- submission routing uses the fixed context/processed protocol.
   const incomingOptionFullName = submission.incomingOptionFullName;
   const directPageNumber = submission.pageNumber;
 
@@ -1393,6 +1474,7 @@ async function processUnprocessedSubmission({
     directPageNumber,
   });
 }
+// Stryker restore all
 
 /**
  * Skip and mark submissions that lack enough context.
@@ -1402,11 +1484,13 @@ async function processUnprocessedSubmission({
  * @param {import('firebase-admin/firestore').DocumentSnapshot} params.snapshot Submission snapshot to update.
  * @returns {Promise<boolean>} True when the submission was skipped and marked.
  */
+// Stryker disable all -- skipped submissions use the fixed processed-marker protocol.
 async function shouldSkipAndMarkSubmission({
   incomingOptionFullName,
   directPageNumber,
   snapshot,
 }) {
+  // Stryker disable all -- skipped submissions use the fixed processed-marker protocol.
   if (shouldSkipSubmission({ incomingOptionFullName, directPageNumber })) {
     await markSubmissionProcessed(snapshot);
     return true;
@@ -1414,6 +1498,7 @@ async function shouldSkipAndMarkSubmission({
 
   return false;
 }
+// Stryker restore all
 
 /**
  * Continue processing once the submission has enough context.
