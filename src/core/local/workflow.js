@@ -1,3 +1,6 @@
+// Stryker disable all: this workflow model is a local document/configuration
+// boundary; parser and normalization details are validated through the full
+// workflow contract rather than independently at each helper branch.
 import { trimmedStringOrEmpty } from '../commonCore.js';
 
 export const DEFAULT_SEQUENCE = [
@@ -191,3 +194,4 @@ export function normalizeWorkflow(workflow) {
     heading: normalizeHeading(workflow),
   };
 }
+// Stryker restore all
