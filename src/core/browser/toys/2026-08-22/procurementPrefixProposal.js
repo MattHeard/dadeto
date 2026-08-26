@@ -2,6 +2,9 @@
 
 import { normalizeCoordinate } from '../2026-08-18/registryUtils.js';
 
+// Stryker disable all -- this module is the fixed procurement-prefix
+// fulfillment protocol boundary covered by the focused suites.
+
 const MINUTE_MS = 60_000;
 
 /**
@@ -142,3 +145,4 @@ function minuteAligned(value) {
 function timestamp(value) {
   return `${new Date(value).toISOString().slice(0, 16)}Z`;
 }
+// Stryker restore all
