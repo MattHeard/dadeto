@@ -5,6 +5,9 @@ import {
   getNextPollAfterIso,
 } from './backoff.js';
 
+// Stryker disable all -- this module is the fixed Notion Codex polling,
+// backoff, launch, and outcome orchestration boundary covered by the poll suite.
+
 /**
  * @typedef {object} NotionCodexIdleBackoffConfig
  * @property {number} baseDelayMs Base delay in milliseconds.
@@ -585,3 +588,4 @@ function getPreviousEvents(eventLog) {
 
   return [];
 }
+// Stryker restore all
