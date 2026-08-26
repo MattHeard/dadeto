@@ -53,6 +53,7 @@ describe('executeStandardGate', () => {
     expect(
       handleSpawnFailure({ signal: 'SIGTERM' }, stderr, 'Demo', 'demo')
     ).toEqual({ exitCode: 1 });
+    expect(stderr.chunks.at(-1)).toBe('Demo was terminated by signal SIGTERM\n');
     expect(
       handleSpawnFailure({ status: 0 }, stderr, 'Demo', 'demo')
     ).toBeNull();
@@ -72,6 +73,7 @@ describe('executeStandardGate', () => {
       signal: null,
     }));
 
+    const readResult = jest.fn(() => ({ exitCode: 0, count: 0 }));
     const result = executeStandardGate({
       spawnImpl,
       command: 'demo',
@@ -80,7 +82,7 @@ describe('executeStandardGate', () => {
       stderr,
       launchLabel: 'Demo gate',
       commandLabel: 'demo',
-      readResult: () => null,
+      readResult,
       onSuccess: jest.fn(),
     });
 
@@ -88,6 +90,7 @@ describe('executeStandardGate', () => {
     expect(stderr.chunks.join('')).toContain(
       'Demo gate failed to launch demo: boom'
     );
+    expect(readResult).not.toHaveBeenCalled();
   });
 
   test('returns a read failure when the result is missing', () => {
@@ -160,6 +163,24 @@ describe('executeStandardGate', () => {
     expect(result).toEqual({ exitCode: 1, count: 1 });
     expect(stderr.chunks).toEqual([]);
     expect(onSuccess).not.toHaveBeenCalled();
+  });
+
+  test('does not write when a positive result has no message', () => {
+    const stderr = createWriter();
+    expect(
+      executeStandardGate({
+        spawnImpl: () => ({ status: 0, signal: null }),
+        command: 'demo',
+        args: [],
+        rootDir: '/repo',
+        stderr,
+        launchLabel: 'Demo gate',
+        commandLabel: 'demo',
+        readResult: () => ({ exitCode: 1, count: 2, message: '' }),
+        onSuccess: jest.fn(),
+      })
+    ).toEqual({ exitCode: 1, count: 2 });
+    expect(stderr.chunks).toEqual([]);
   });
 
   test('calls success callback when the result count is zero', () => {
