@@ -1,7 +1,7 @@
 # src/core file inventory
 
-Generated from `find src/core -type f -print | sort` on 2026-08-21.
-Total files: 350
+Generated from `find src/core -type f -print | sort` on 2026-08-27.
+Total files: 375
 
 src/core/AGENTS.md
 src/core/browser/admin-core.js
@@ -303,7 +303,32 @@ src/core/local/check-depcruise-scope.js
 src/core/local/config-utils.js
 src/core/local/documentStore.js
 src/core/local/express-app-deps.js
-src/core/local/find-surviving-mutant.js
+src/core/browser/toys/2026-08-19/spacetimeInput.js
+src/core/browser/toys/2026-08-21/assignAssetAndCustodianToSegmentIfFeasible.js
+src/core/browser/toys/2026-08-21/assignAssetToSegmentIfFeasible.js
+src/core/browser/toys/2026-08-21/assignRunnerToSegmentIfFeasible.js
+src/core/browser/toys/2026-08-21/runnerShiftSegmentFeasibility.js
+src/core/browser/toys/2026-08-21/safeAssignmentPersistence.js
+src/core/browser/toys/2026-08-21/segmentAssignmentFeasibility.js
+src/core/browser/toys/2026-08-21/segmentAssignmentFeasibilityCore.js
+src/core/browser/toys/2026-08-21/segmentMaximumSpeedFeasibility.js
+src/core/browser/toys/2026-08-22/canonicalNormalFulfillmentSequenceProposal.js
+src/core/browser/toys/2026-08-22/fulfillmentResult.js
+src/core/browser/toys/2026-08-22/normalFulfillmentSequenceProposal.js
+src/core/browser/toys/2026-08-22/procurementBackedFulfillmentSequenceProposal.js
+src/core/browser/toys/2026-08-22/procurementNormalFulfillmentComposer.js
+src/core/browser/toys/2026-08-22/procurementPrefixProposal.js
+src/core/browser/toys/2026-08-22/spacePointRegistry.js
+src/core/browser/toys/2026-08-22/spacePointResolution.js
+src/core/browser/toys/2026-08-22/strictAssignmentCore.js
+src/core/browser/toys/2026-08-22/validatedAssetCustodianSegmentAssignment.js
+src/core/browser/toys/2026-08-22/validatedAssetSegmentAssignment.js
+src/core/browser/toys/2026-08-22/validatedRunnerSegmentAssignment.js
+src/core/browser/toys/2026-08-23/existingAssetFulfillmentFeasibility.js
+src/core/browser/toys/2026-08-23/existingAssetFulfillmentSequenceFeasibility.js
+src/core/browser/toys/2026-08-23/skuExistingStockFeasibility.js
+src/core/browser/toys/2026-08-23/skuExistingStockFulfillmentFeasibility.js
+src/core/browser/toys/2026-08-23/skuFulfillmentFeasibility.js
 src/core/local/gcp-simulator/fake-firestore.js
 src/core/local/gcp-simulator/fake-storage.js
 src/core/local/gcp-simulator/playwright-runner.js
