@@ -68,6 +68,7 @@ describe('atemporal space-point compatibility', () => {
     expect(result.spacePoints).toEqual([
       { spacePointId: 'LOC1', latitude: '51.500000', longitude: '-0.120000' },
     ]);
+    expect(result.summary.spacePointCount).toBe(1);
   });
 
   test('sorts multiple atemporal points and covers legacy resolver defaults', () => {
