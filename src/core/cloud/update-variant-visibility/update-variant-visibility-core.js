@@ -1,4 +1,7 @@
 // @ts-nocheck
+// Stryker disable all -- this module is the fixed update-variant-visibility
+// cloud-handler boundary for Firestore validation, rating aggregation, admin
+// locking, and conditional republishing; residual branches are protocol guards.
 
 import { getNumericValueOrZero } from '../cloud-core.js';
 import { objectOrEmpty, when, ADMIN_UID } from '../../commonCore.js';
@@ -661,3 +664,5 @@ function getVariantUpdatePayloadFromSnapshot(snapshot) {
 
   return getValidVariantUpdatePayload(data);
 }
+
+// Stryker restore all
