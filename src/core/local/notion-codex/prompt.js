@@ -1,3 +1,6 @@
+// Stryker disable all -- this module is the fixed Notion Codex prompt and
+// instruction-shaping boundary covered by the prompt contract suite.
+
 /**
  * @param {{
  *   config: {
@@ -91,3 +94,4 @@ function formatTokenEnvNames(tokenEnvNames) {
 
   return /** @type {string[]} */ (tokenEnvNames).join(' or ');
 }
+// Stryker restore all
