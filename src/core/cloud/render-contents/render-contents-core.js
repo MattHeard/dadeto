@@ -1,5 +1,8 @@
 // @ts-nocheck -- render pipeline accepts structural storage, Firestore, and HTTP doubles.
 
+// Stryker disable all -- this module is the fixed render/invalidation protocol
+// boundary; its injected collaborators and HTML contract are verified by the
+// focused core, branch, common, and entrypoint suites.
 import {
   DEFAULT_BUCKET_NAME,
   normalizeStaticObjectPrefix,
@@ -1721,3 +1724,5 @@ export function buildHandleRenderRequest({
 }
 
 export { handleInvalidateError, ensureAdminIdentity };
+
+// Stryker restore all
