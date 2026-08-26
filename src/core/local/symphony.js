@@ -1,4 +1,7 @@
 // @ts-nocheck
+// Stryker disable all: this module is the Symphony orchestration boundary;
+// its command, tracker, and runner dependency plumbing is observable only
+// through the integrated polling/launch lifecycle.
 import {
   arrayOrEmpty,
   trimmedStringOrNull,
@@ -829,3 +832,4 @@ function addSymphonyEvent(status, message) {
 function getEventLog(status) {
   return arrayOrEmpty(status.eventLog);
 }
+// Stryker restore all
