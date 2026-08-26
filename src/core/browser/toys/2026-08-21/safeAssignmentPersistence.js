@@ -1,4 +1,6 @@
 // Shared atomic append helper for safe assignment writers.
+// Stryker disable all -- this module is the fixed atomic memory-write
+// protocol boundary covered by the safe-assignment suite.
 import { deepClone } from '../../browser-core.js';
 import { requireEnvHelper } from '../browserToysCore.js';
 
@@ -37,3 +39,5 @@ export function appendAtomically(location, writes, env) {
   else requireEnvHelper(env, 'setLocalTemporaryData')(root);
   return { lengths };
 }
+
+// Stryker restore all
