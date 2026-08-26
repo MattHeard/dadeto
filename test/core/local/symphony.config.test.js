@@ -86,6 +86,30 @@ describe('Symphony config', () => {
     expect(result.pollIntervalMs).toBe(30000);
     expect(result.maxConcurrentRuns).toBe(1);
     expect(result.defaultBranch).toBe('main');
+
+    expect(
+      normalizeSymphonyConfig({
+        config: { tracker: null, launcher: null },
+        repoRoot: '/repo',
+        configPath: '/repo/config.json',
+        pathModule,
+      })
+    ).toMatchObject({
+      tracker: DEFAULT_SYMPHONY_CONFIG.tracker,
+      launcher: DEFAULT_SYMPHONY_CONFIG.launcher,
+    });
+
+    expect(
+      normalizeSymphonyConfig({
+        config: { tracker: undefined, launcher: undefined },
+        repoRoot: '/repo',
+        configPath: '/repo/config.json',
+        pathModule,
+      })
+    ).toMatchObject({
+      tracker: DEFAULT_SYMPHONY_CONFIG.tracker,
+      launcher: DEFAULT_SYMPHONY_CONFIG.launcher,
+    });
   });
 
   it('loads and normalizes a local JSON config through injected IO', async () => {
@@ -101,9 +125,22 @@ describe('Symphony config', () => {
       readFileImpl,
     });
 
-    expect(readFileImpl).toHaveBeenCalled();
+    expect(readFileImpl).toHaveBeenCalledWith(
+      '/repo/tracking/symphony.local.json',
+      'utf8'
+    );
     expect(result.logDir).toBe('/repo/custom-logs');
     expect(result.defaultBranch).toBe('release');
+    const customReadFileImpl = jest
+      .fn()
+      .mockResolvedValue(JSON.stringify({}));
+    await loadSymphonyConfig({
+      repoRoot: '/repo',
+      configPath: 'custom.json',
+      pathModule,
+      readFileImpl: customReadFileImpl,
+    });
+    expect(customReadFileImpl).toHaveBeenCalledWith('/repo/custom.json', 'utf8');
     await expect(loadSymphonyConfig(undefined)).rejects.toThrow(
       'pathModule is required.'
     );

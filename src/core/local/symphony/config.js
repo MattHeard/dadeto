@@ -31,6 +31,8 @@ export const DEFAULT_SYMPHONY_CONFIG = {
  * @returns {{ kind: string, readyCommand: string }} Normalized tracker config.
  */
 function normalizeTracker(tracker) {
+  // Stryker disable next-line ConditionalExpression: truthy primitives safely
+  // expose undefined properties and normalize to the same defaults.
   if (!tracker || typeof tracker !== 'object') {
     return { ...DEFAULT_SYMPHONY_CONFIG.tracker };
   }
@@ -54,6 +56,8 @@ function normalizeTracker(tracker) {
  * @returns {{ kind: string, command: string, args: string[], mcpServers: string[] }} Normalized launcher config.
  */
 function normalizeLauncher(launcher) {
+  // Stryker disable next-line ConditionalExpression: truthy primitives safely
+  // expose undefined properties and normalize to the same defaults.
   if (!launcher || typeof launcher !== 'object') {
     return { ...DEFAULT_SYMPHONY_CONFIG.launcher };
   }
