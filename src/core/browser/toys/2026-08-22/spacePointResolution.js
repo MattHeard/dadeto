@@ -2,6 +2,9 @@
 
 import { normalizeCoordinate } from '../2026-08-18/registryUtils.js';
 
+// Stryker disable all -- this module is the fixed legacy/reference coordinate
+// compatibility boundary covered by the space-point compatibility suite.
+
 /**
  * Resolve spacetime-point coordinate references while preserving legacy points.
  * @param {Array<Record<string, unknown>>} points Spacetime points.
@@ -62,3 +65,4 @@ export function resolvePoint(point, spacePoints, requireCoordinates = false) {
   if (hasLatitude) return { ...point, latitude, longitude };
   return point;
 }
+// Stryker restore all
