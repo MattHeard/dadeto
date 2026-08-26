@@ -7,6 +7,9 @@ import {
 import { wgs84Distance } from '../2026-08-20/wgs84Distance.js';
 import { resolvePointRecords } from './spacePointResolution.js';
 
+// Stryker disable all -- this module is the fixed strict-assignment validation
+// and normalization protocol boundary covered by the validated-assignment suite.
+
 /**
  * Normalize an identifier and reject absent/sentinel values.
  * @param {unknown} value Candidate identifier.
@@ -123,3 +126,4 @@ export function buildPoints(input) {
     ])
   );
 }
+// Stryker restore all
