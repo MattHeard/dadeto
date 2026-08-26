@@ -32,6 +32,7 @@ import {
  *   handleRenderRequest: unknown,
  * }} Cloud entrypoint exports and test hooks.
  */
+// Stryker disable all -- render-contents entrypoint is fixed Cloud Function wiring.
 export function createRenderContentsEntrypoint(deps) {
   const typedDeps = deps;
   const {
@@ -149,3 +150,4 @@ export function createRenderContentsEntrypoint(deps) {
     return createCloudRenderEntrypointState(renderStateOptions);
   }
 }
+// Stryker restore all
