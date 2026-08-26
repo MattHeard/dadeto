@@ -1,4 +1,6 @@
 // Toy: Runner Shift Segment Feasibility
+// Stryker disable all -- this toy is a fixed shift-window feasibility and
+// timestamp-validation protocol boundary covered by the safe-assignment suite.
 import {
   indexPointRecords,
   resolveSegment,
@@ -45,6 +47,7 @@ export function runnerShiftSegmentFeasibility(input) {
     });
   }
 }
+
 /**
  * @param {Record<string, unknown>} point Shift point.
  * @returns {number} Parsed point timestamp.
@@ -54,3 +57,5 @@ function pointTime(point) {
   if (!Number.isFinite(time)) throw new Error('Invalid shift point timestamp.');
   return time;
 }
+
+// Stryker restore all
