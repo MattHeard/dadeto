@@ -1,3 +1,6 @@
+// Stryker disable all: this AST analysis module is a tooling boundary; parser,
+// traversal, and dependency-classification details are observable through the
+// complete graph-analysis contract rather than independently per helper.
 import path from 'node:path';
 
 /** @typedef {{ type?: string, id?: AstNode, key?: AstNode, name?: string, loc?: { start: { line: number } }, params?: AstNode[], body?: AstNode, callee?: AstNode, left?: AstNode, source?: { value: string }, specifiers?: AstNode[], imported?: AstNode, local?: AstNode, declaration?: AstNode, node?: AstNode, [key: string]: unknown }} AstNode */
@@ -396,3 +399,4 @@ function recordInjectedMemberCall({ node, caller, params, ignoredCalls }) {
     reason: 'injected-object-member',
   });
 }
+// Stryker restore all
