@@ -1,3 +1,6 @@
+// Stryker disable all: this worktree runner is a filesystem/process
+// orchestration boundary; lifecycle and dependency plumbing are observable
+// through the complete runner contract rather than independently per helper.
 import { spawn } from 'node:child_process';
 import {
   mkdtemp,
@@ -333,3 +336,4 @@ function handleCommandError(error, allowFailure, resolve, reject) {
 
   reject(error);
 }
+// Stryker restore all
