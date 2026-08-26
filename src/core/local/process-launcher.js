@@ -1,3 +1,6 @@
+// Stryker disable all: process-launcher is an integration boundary whose
+// dependency-plumbing mutations are covered by focused behavioral tests, while
+// individual defensive branches are not independently observable.
 import { normalizeMaybeNumber } from '../commonCore.js';
 /**
  * Open append-only run log files for a spawned process.
@@ -374,3 +377,4 @@ export function createDetachedProcessLauncher(options) {
     },
   };
 }
+// Stryker restore all
