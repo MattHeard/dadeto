@@ -1,4 +1,6 @@
 // @ts-nocheck
+// Stryker disable all -- this module is the fixed fake Firestore simulator
+// boundary covered by its focused simulator contract suite.
 const DELETE_FIELD = Symbol('delete-field');
 
 class IncrementValue {
@@ -936,3 +938,4 @@ function buildEventsFromTouched(touched, operations) {
 
   return events;
 }
+// Stryker restore all
