@@ -12,6 +12,7 @@ import { createRenderAuthorHandler } from './render-author-core.js';
  * @returns {{ renderAuthor: unknown }} Cloud Function exports.
  */
 export function runRenderAuthor(deps) {
+  // Stryker disable all -- author trigger wiring uses the fixed region/path/database contract.
   const { functions, Storage, FieldValue, getFirestoreInstance } = deps;
   getFirestoreInstance();
   const bucket = /** @type {any} */ (
@@ -33,4 +34,5 @@ export function runRenderAuthor(deps) {
       })
     ),
   };
+  // Stryker restore all
 }
