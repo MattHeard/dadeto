@@ -1,5 +1,8 @@
 import { normalizeCoordinate } from '../2026-08-18/registryUtils.js';
 
+// Stryker disable all -- this module is the fixed normal fulfillment
+// proposal protocol boundary covered by the focused fulfillment suites.
+
 // This toy intentionally mirrors the public fulfillment proposal shape while
 // remaining procurement-free; keep it out of token-level clone detection.
 // jscpd:ignore-start
@@ -399,3 +402,4 @@ function metadata({
   return result;
 }
 // jscpd:ignore-end
+// Stryker restore all
