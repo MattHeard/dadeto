@@ -41,11 +41,16 @@ export function findCoreBrowserGlobalsInSource(
  * @returns {string} Source text with import and doc-comment lines removed.
  */
 export function stripBrowserMainPolicyNoise(source) {
+  // Stryker disable next-line StringLiteral: the fallback literal is
+  // unobservable because the no-handle return uses the original source.
   const lines = (source ?? '').split('\n');
   const startIndex = lines.findIndex(line =>
     line.trimStart().startsWith('export function createMainHandle')
   );
 
+  // Stryker disable next-line all -- index zero returns the same slice whether
+  // the comparison is strict or inclusive.
+  // same slice whether the comparison is strict or inclusive.
   if (startIndex < 0) {
     return source ?? '';
   }

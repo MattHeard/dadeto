@@ -8,6 +8,8 @@ import {
   findCoreMathRandomViolations,
 } from '../../../src/core/scripts/check-depcruise.js';
 import { createBrowserGlobalReferenceFinder } from '../../../src/core/local/check-depcruise-scope.js';
+import { findCoreBrowserGlobalsInSource } from '../../../src/core/scripts/check-depcruise-browser.js';
+import { stripBrowserMainPolicyNoise } from '../../../src/core/scripts/check-depcruise-browser.js';
 
 /**
  * Build a file-like dirent stub.
@@ -76,6 +78,30 @@ function createWriter() {
     },
   };
 }
+
+describe('check-depcruise browser helpers', () => {
+  test('filters scope references to allowed browser globals', () => {
+    expect(
+      findCoreBrowserGlobalsInSource(
+        'window localStorage document',
+        createScopeAnalysisDeps(),
+        ['window', 'document']
+      )
+    ).toEqual(['window', 'document']);
+  });
+
+  test('strips browser-main noise when the handle starts at line zero', () => {
+    expect(
+      stripBrowserMainPolicyNoise('export function createMainHandle() {}\n')
+    ).toBe('export function createMainHandle() {}\n');
+    expect(stripBrowserMainPolicyNoise(null)).toBe('');
+    expect(
+      stripBrowserMainPolicyNoise(
+        'noise\n  export function createMainHandle() {}'
+      )
+    ).toBe('  export function createMainHandle() {}');
+  });
+});
 
 describe('findCoreMathRandomViolations', () => {
   test('finds direct Math.random usage while ignoring comments and strings', () => {
