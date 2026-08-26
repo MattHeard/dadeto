@@ -31,6 +31,35 @@ describe('notion codex backoff helpers', () => {
       })
     ).toBe(2);
     expect(
+      getNextIdleBackoffExponent({
+        previousExponent: 1.5,
+        initialExponent: 0,
+        maxExponent: 5,
+      })
+    ).toBe(0);
+    expect(
+      getNextIdleBackoffExponent({
+        previousExponent: '1.5',
+        initialExponent: 0,
+        maxExponent: 5,
+      })
+    ).toBe(0);
+    expect(
+      getNextIdleBackoffExponent({
+        previousExponent: undefined,
+        initialExponent: -1,
+        maxExponent: 5,
+      })
+    ).toBe(-1);
+    expect(
+      getBinaryBackoffDelayMs({
+        exponent: 0,
+        baseDelayMs: 1000,
+        initialExponent: 2,
+        maxExponent: 5,
+      })
+    ).toBe(4000);
+    expect(
       getBinaryBackoffDelayMs({
         exponent: 3,
         baseDelayMs: 1000,

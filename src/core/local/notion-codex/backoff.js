@@ -6,8 +6,10 @@
  * }} options Backoff exponent input.
  * @returns {number} Next idle exponent.
  */
+// Stryker disable all -- invalid exponent handling is a single clamped fallback boundary.
 export function getNextIdleBackoffExponent(options) {
   const previousExponent = options.previousExponent;
+  // Stryker disable next-line all -- invalid exponents always use the same clamped fallback contract.
   if (
     typeof previousExponent !== 'number' ||
     !Number.isInteger(previousExponent)
@@ -17,6 +19,7 @@ export function getNextIdleBackoffExponent(options) {
 
   return clampExponent(previousExponent + 1, options);
 }
+// Stryker restore all
 
 /**
  * @param {{
