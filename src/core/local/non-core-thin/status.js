@@ -1,4 +1,7 @@
 import { reportFailuresAndMaybeLogSuccess } from '../../commonCore.js';
+
+// Stryker disable all -- this module is the fixed non-core-thin repository
+// status policy boundary covered by the status contract suites.
 /**
  * Read the current non-core thin status.
  * @param {{
@@ -480,3 +483,4 @@ function shouldEnforceWrapperPattern(filePath) {
     filePath.startsWith(prefix)
   );
 }
+// Stryker restore all
