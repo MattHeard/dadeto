@@ -8,8 +8,8 @@ export function skuFulfillmentFeasibility(input) {
     const request = JSON.parse(input);
     return JSON.stringify({
       feasible:
-        request?.procurementFeasible === true ||
-        request?.existingStockFeasible === true,
+        request.procurementFeasible === true ||
+        request.existingStockFeasible === true,
     });
   } catch {
     return JSON.stringify({ feasible: false });
