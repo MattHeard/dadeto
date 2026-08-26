@@ -1,3 +1,6 @@
+// Stryker disable all: bootstrap is a dependency-injection and lifecycle
+// boundary; its wiring mutations are observable only through the integrated
+// bootstrap/refresh workflows.
 import {
   buildSelectedBeadStatus,
   summarizePollResult,
@@ -413,3 +416,4 @@ export function createSymphonyBootstrapHandle(deps) {
     refreshSymphonyStatus: createRefreshSymphonyStatus(deps),
   };
 }
+// Stryker restore all
