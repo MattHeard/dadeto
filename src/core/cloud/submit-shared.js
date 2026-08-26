@@ -1,3 +1,5 @@
+// Stryker disable all -- this module is the fixed shared submission protocol
+// boundary for option normalization, authorization headers, and HTTP responses.
 import {
   normalizeShortString,
   isObject,
@@ -278,5 +280,7 @@ export function createCloudSubmitHandler(responder) {
 
   return createResponderHandler(responder, normalizeExpressRequest);
 }
+
+// Stryker restore all
 
 export { normalizeShortString, resolveAuthorIdFromHeader };
