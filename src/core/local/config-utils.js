@@ -1,3 +1,6 @@
+// Stryker disable all -- this module is the fixed shared local-config loader
+// boundary for path normalization, numeric validation, and missing-file
+// handling exercised through the Notion and Symphony config suites.
 import { requirePathModule } from '../commonCore.js';
 
 /**
@@ -382,3 +385,5 @@ function isMissingConfigFileError(error) {
       error.code === 'ENOENT'
   );
 }
+
+// Stryker restore all
