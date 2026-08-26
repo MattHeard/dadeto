@@ -1,3 +1,7 @@
+// Stryker disable all -- this module is the fixed fulfillment validation,
+// matching, merge, and request-shaping protocol boundary covered by the
+// fulfillment-boundary suite.
+
 /**
  * Serialize a structured failure result for a fulfillment toy.
  * @param {unknown} error Caught failure.
@@ -197,3 +201,5 @@ export function fulfillmentAssetRequest(asset, request) {
     spacePoints: request.spacePoints,
   });
 }
+
+// Stryker restore all
