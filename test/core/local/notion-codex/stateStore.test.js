@@ -22,7 +22,7 @@ describe('notion codex state store core', () => {
       eventLog: Array.from({ length: 30 }, (_, i) => i),
     });
 
-    expect(mkdirImpl).toHaveBeenCalled();
+    expect(mkdirImpl).toHaveBeenCalledWith('/tmp', { recursive: true });
     expect(writeFileImpl).toHaveBeenCalledWith(
       '/tmp/state.json',
       expect.stringContaining('"eventLog"'),
@@ -72,15 +72,16 @@ describe('notion codex state store core', () => {
   });
 
   test('keeps object activeRun values and normalizes parsed read state', async () => {
+    const readFileImpl = jest.fn(async () =>
+      JSON.stringify({
+        activeRun: { id: 'run-1' },
+        eventLog: [{ ok: true }],
+      })
+    );
     const store = createNotionCodexStateStore({
       statePath: '/tmp/state.json',
       pathModule: path,
-      readFileImpl: jest.fn(async () =>
-        JSON.stringify({
-          activeRun: { id: 'run-1' },
-          eventLog: [{ ok: true }],
-        })
-      ),
+      readFileImpl,
     });
 
     await expect(store.readState()).resolves.toEqual(
@@ -89,6 +90,7 @@ describe('notion codex state store core', () => {
         eventLog: [{ ok: true }],
       })
     );
+    expect(readFileImpl).toHaveBeenCalledWith('/tmp/state.json', 'utf8');
   });
 
   test('normalizes optional scalar fields when types are invalid', () => {
