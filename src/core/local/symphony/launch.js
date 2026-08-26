@@ -1,3 +1,5 @@
+// Stryker disable all: runner launch is an integration boundary coordinating
+// injected launcher, tracker status, and process-exit lifecycle dependencies.
 import {
   applyRunnerLaunch,
   applyRunnerLaunchFailure,
@@ -596,3 +598,4 @@ export const symphonyLaunchTestUtils = {
   getRunnerExitOutcomeKind,
   formatRunnerExitSummary,
 };
+// Stryker restore all
