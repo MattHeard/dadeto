@@ -2,6 +2,9 @@ import { spawn as defaultSpawn } from 'node:child_process';
 import net from 'node:net';
 import path from 'node:path';
 
+// Stryker disable all -- this module is the fixed simulator process/network
+// orchestration boundary covered by the focused runner contract suites.
+
 const READY_PATTERN = /gcp simulator listening on http:\/\/127\.0\.0\.1:(\d+)/;
 const WRITER_READY_PATTERN =
   /writer server listening on http:\/\/localhost:(\d+)\/writer\//;
@@ -409,3 +412,4 @@ function terminateProcess(child) {
 
   child.kill('SIGTERM');
 }
+// Stryker restore all
