@@ -162,4 +162,59 @@ describe('write coverage summary', () => {
     expect(createCoverageMap).not.toHaveBeenCalled();
     expect(writeFile).not.toHaveBeenCalled();
   });
+
+  test('rethrows primitive read failures unchanged', () => {
+    const readFile = jest.fn(() => {
+      throw 'primitive failure';
+    });
+    const handle = createWriteCoverageSummaryHandle({
+      readFile,
+      writeFile: jest.fn(),
+      createCoverageMap: jest.fn(),
+    });
+
+    expect(() => handle()).toThrow('primitive failure');
+  });
+
+  test('rethrows null read failures unchanged', () => {
+    const handle = createWriteCoverageSummaryHandle({
+      readFile: jest.fn(() => {
+        throw null;
+      }),
+      writeFile: jest.fn(),
+      createCoverageMap: jest.fn(),
+    });
+
+    let caught;
+    try {
+      handle();
+    } catch (error) {
+      caught = error;
+    }
+    expect(caught).toBeNull();
+  });
+
+  test('does not inspect code on non-object read failures', () => {
+    const readFailure = function readFailure() {};
+    Object.defineProperty(readFailure, 'code', {
+      get() {
+        throw new Error('code getter should not run');
+      },
+    });
+    const handle = createWriteCoverageSummaryHandle({
+      readFile: jest.fn(() => {
+        throw readFailure;
+      }),
+      writeFile: jest.fn(),
+      createCoverageMap: jest.fn(),
+    });
+
+    let caught;
+    try {
+      handle();
+    } catch (error) {
+      caught = error;
+    }
+    expect(caught).toBe(readFailure);
+  });
 });

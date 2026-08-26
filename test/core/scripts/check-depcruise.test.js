@@ -828,6 +828,7 @@ describe('createBrowserGlobalReferenceFinder', () => {
               through: [
                 { identifier: { name: 'crypto' } },
                 {},
+                { identifier: {} },
                 { identifier: { name: 42 } },
               ],
             },
