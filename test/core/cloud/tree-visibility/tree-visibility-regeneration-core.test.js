@@ -12,18 +12,24 @@ test('regenerates only dirty variants and continues after failures', async () =>
     .mockResolvedValueOnce(undefined)
     .mockRejectedValueOnce(new Error('nope'));
   const consoleError = jest.fn();
+  const where = jest.fn(() => ({ get: async () => ({ docs: [first, second] }) }));
+  const collectionGroup = jest.fn(() => ({ where }));
   const result = await regenerateDirtyTreeWeightVariants({
     db: {
-      collectionGroup: () => ({
-        where: () => ({ get: async () => ({ docs: [first, second] }) }),
-      }),
+      collectionGroup,
     },
     renderVariant,
     consoleError,
   });
   expect(result).toEqual({ processed: 1, failed: 1 });
+  expect(collectionGroup).toHaveBeenCalledWith('variants');
+  expect(where).toHaveBeenCalledWith('targetTreeWeightsDirty', '==', true);
   expect(renderVariant).toHaveBeenCalledTimes(2);
-  expect(consoleError).toHaveBeenCalled();
+  expect(consoleError).toHaveBeenCalledWith(
+    'tree-weight regeneration failed',
+    'b',
+    expect.any(Error)
+  );
 });
 
 test('uses the default error logger and handles an empty dirty snapshot', async () => {
@@ -52,6 +58,27 @@ test('uses the default error logger and handles an empty dirty snapshot', async 
   ).resolves.toEqual({ processed: 0, failed: 1 });
 });
 
+test('passes an undefined path when a failed variant has no reference', async () => {
+  const consoleError = jest.fn();
+  await expect(
+    regenerateDirtyTreeWeightVariants({
+      db: {
+        collectionGroup: () => ({
+          where: () => ({ get: async () => ({ docs: [{}] }) }),
+        }),
+      },
+      renderVariant: jest.fn().mockRejectedValue(new Error('broken')),
+      consoleError,
+    })
+  ).resolves.toEqual({ processed: 0, failed: 1 });
+
+  expect(consoleError).toHaveBeenCalledWith(
+    'tree-weight regeneration failed',
+    undefined,
+    expect.any(Error)
+  );
+});
+
 test('migration calculates sums bottom-up and is rerunnable', async () => {
   const leaf = { data: { visibility: 0.5 } };
   const root = { data: { visibility: 0.8 } };
@@ -68,7 +95,7 @@ test('migration calculates sums bottom-up and is rerunnable', async () => {
     },
     writeVariant: async (variant, data) => writes.push([variant, data]),
   };
-  await migrateTreeVisibilitySums(options);
+  await expect(migrateTreeVisibilitySums(options)).resolves.toBe(2);
   expect(writes).toEqual([
     [leaf, { treeVisibilitySum: 0.5 }],
     [root, { treeVisibilitySum: 1.3, targetTreeWeightsDirty: true }],
@@ -77,14 +104,14 @@ test('migration calculates sums bottom-up and is rerunnable', async () => {
 
 test('migration defaults visibility when a variant has no data', async () => {
   const writes = [];
-  await migrateTreeVisibilitySums({
+  await expect(migrateTreeVisibilitySums({
     stories: [{ id: 'story' }],
     readChildren: async node => {
       if (node.id === 'story') return [{ data: null }];
       return [];
     },
     writeVariant: async (variant, data) => writes.push([variant, data]),
-  });
+  })).resolves.toBe(1);
 
   expect(writes).toEqual([[{ data: null }, { treeVisibilitySum: 1 }]]);
 });
