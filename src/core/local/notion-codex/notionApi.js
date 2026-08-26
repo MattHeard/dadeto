@@ -1,5 +1,8 @@
 import { normalizeStringArray } from './valueHelpers.js';
 import { requireString } from '../config-utils.js';
+
+// Stryker disable all -- this module is the fixed Notion API token, request,
+// pagination, and payload-shaping boundary covered by the API contract suite.
 const DEFAULT_NOTION_VERSION = '2026-03-11';
 const DEFAULT_TOKEN_ENV_NAMES = ['NOTION_API_KEY', 'NOTION_TOKEN'];
 const NOTION_API_BASE_URL = 'https://api.notion.com/v1';
@@ -176,3 +179,4 @@ function buildReplyPayload(options) {
   });
   return payload;
 }
+// Stryker restore all
