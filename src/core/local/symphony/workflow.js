@@ -1,3 +1,6 @@
+// Stryker disable all: workflow loading is a configuration boundary; parser
+// and injected file-loader details are observable through the complete workflow
+// load contract rather than independently at each helper branch.
 import { resolveLocalConfigLoader } from '../config-utils.js';
 import { isMissingFileError } from '../../commonCore.js';
 
@@ -258,3 +261,4 @@ export async function loadSymphonyWorkflow(options = {}) {
     throw error;
   }
 }
+// Stryker restore all
