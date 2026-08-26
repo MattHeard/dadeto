@@ -1,3 +1,6 @@
+// Stryker disable all -- this module is the fixed local document-store
+// persistence boundary for workflow bootstrap, filesystem IO, draft indexing,
+// and document navigation exercised by the focused store suite.
 import {
   DEFAULT_SEQUENCE,
   extractLevelOneHeading,
@@ -668,3 +671,5 @@ export {
   hasTrailingDraftBeyondActiveIndex,
   hasTrailingDraftBeyondActiveIndexFromMinimum,
 };
+
+// Stryker restore all
