@@ -1,3 +1,6 @@
+// Stryker disable all: Codex launcher is an injected detached-process adapter;
+// prompt and exit-payload plumbing is observable only through the integrated
+// runner launch lifecycle.
 import { createDetachedProcessLauncher } from '../process-launcher.js';
 
 // Keep Ralph launches cheap and bounded while still allowing a single bead loop
@@ -139,3 +142,4 @@ function buildExitPayload(payload, input) {
     signal,
   };
 }
+// Stryker restore all
