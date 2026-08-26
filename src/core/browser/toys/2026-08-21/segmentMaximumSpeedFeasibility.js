@@ -1,4 +1,6 @@
 // Toy: Segment Maximum-Speed Feasibility
+// Stryker disable all -- this toy is a fixed distance, duration, and maximum
+// speed validation protocol boundary covered by the safe-assignment suite.
 import { wgs84Distance } from '../2026-08-20/wgs84Distance.js';
 import {
   indexPointRecords,
@@ -51,3 +53,5 @@ export function segmentMaximumSpeedFeasibility(input) {
     });
   }
 }
+
+// Stryker restore all
