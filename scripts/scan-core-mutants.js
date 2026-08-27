@@ -153,8 +153,8 @@ async function writeSummary(state, files, summaryPath, fsModule) {
     `${JSON.stringify(
       {
         total: files.length,
-        completed: terminal.length,
-        pending: files.length - terminal.length,
+        completed: terminal.filter(record => record.status === 'success').length,
+        pending: files.length - terminal.filter(record => record.status === 'success').length,
         failed: terminal.filter(record => record.status === 'failed').length,
         timedOut: terminal.filter(record => record.status === 'timed_out')
           .length,
