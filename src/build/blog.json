@@ -5,72 +5,223 @@
       "title": "Exact Request Text to SKU Lookup",
       "publicationDate": "2026-08-27",
       "release": "public",
-      "content": ["Map exactly the supported football request text to the POC football SKU."],
-      "toy": {"modulePath": "/core/browser/toys/2026-08-27/exactRequestTextToSkuLookup.js", "functionName": "exactRequestTextToSkuLookup", "defaultInputMethod": "textarea", "defaultOutputMethod": "textarea"},
-      "tags": ["toy", "search", "sku", "lookup", "json"]
+      "content": [
+        {
+          "type": "manual",
+          "id": "EXAC1-manual",
+          "title": "User manual",
+          "markdown": "# EXAC1 — Exact Request Text to SKU Lookup\n\n## What this toy does\n\nMaps exactly `football` to the POC football SKU.\n\n## Input\n\nSubmit `{ \"requestText\": \"football\" }`.\n\n### Example\n\n### Schema\n\n```json\n{\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"type\": \"object\",\n  \"properties\": { \"requestText\": { \"type\": \"string\" } }\n}\n```\n\n## Output\n\nReturns a deterministic match and SKU identifier, or a no-match result.\n\n### Example\n\n```json\n{\"matched\":true,\"skuId\":\"FOOTBALL\"}\n```\n\n## Behavior\n\nMatching is exact and performs no fuzzy normalization or persistence."
+        },
+        "Map exactly the supported football request text to the POC football SKU."
+      ],
+      "toy": {
+        "modulePath": "/core/browser/toys/2026-08-27/exactRequestTextToSkuLookup.js",
+        "functionName": "exactRequestTextToSkuLookup",
+        "defaultInputMethod": "textarea",
+        "defaultOutputMethod": "textarea"
+      },
+      "tags": [
+        "toy",
+        "search",
+        "sku",
+        "lookup",
+        "json"
+      ]
     },
     {
       "key": "SEGM3",
       "title": "Segment Contained Within Window Predicate",
       "publicationDate": "2026-08-27",
       "release": "public",
-      "content": ["Check whether an interval is fully contained within an availability window."],
-      "toy": {"modulePath": "/core/browser/toys/2026-08-27/segmentContainedWithinWindowPredicate.js", "functionName": "segmentContainedWithinWindowPredicate", "defaultInputMethod": "textarea", "defaultOutputMethod": "textarea"},
-      "tags": ["toy", "time", "window", "feasibility", "json"]
+      "content": [
+        {
+          "type": "manual",
+          "id": "SEGM3-manual",
+          "title": "User manual",
+          "markdown": "# SEGM3 — Segment Contained Within Window Predicate\n\n## What this toy does\n\nChecks whether a complete interval fits within an availability window.\n\n## Input\n\nSubmit four ISO timestamp strings: segment start/end and window start/end.\n\n### Example\n\n### Schema\n\n```json\n{\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"type\": \"object\",\n  \"properties\": {\n    \"segmentStartTimestamp\": { \"type\": \"string\" },\n    \"segmentEndTimestamp\": { \"type\": \"string\" },\n    \"windowStartTimestamp\": { \"type\": \"string\" },\n    \"windowEndTimestamp\": { \"type\": \"string\" }\n  }\n}\n```\n\n## Output\n\nReturns `{ \"feasible\": true }` or false.\n\n### Example\n\n```json\n{\"feasible\":true}\n```\n\n## Behavior\n\nBoth boundaries are inclusive; malformed or reversed intervals fail."
+        },
+        "Check whether an interval is fully contained within an availability window."
+      ],
+      "toy": {
+        "modulePath": "/core/browser/toys/2026-08-27/segmentContainedWithinWindowPredicate.js",
+        "functionName": "segmentContainedWithinWindowPredicate",
+        "defaultInputMethod": "textarea",
+        "defaultOutputMethod": "textarea"
+      },
+      "tags": [
+        "toy",
+        "time",
+        "window",
+        "feasibility",
+        "json"
+      ]
     },
     {
       "key": "LATE2",
       "title": "Latest Fixed-Duration Segment Within Bounds",
       "publicationDate": "2026-08-27",
       "release": "public",
-      "content": ["Place a fixed-duration interval as late as possible within temporal bounds."],
-      "toy": {"modulePath": "/core/browser/toys/2026-08-27/latestFixedDurationSegmentWithinBounds.js", "functionName": "latestFixedDurationSegmentWithinBounds", "defaultInputMethod": "textarea", "defaultOutputMethod": "textarea"},
-      "tags": ["toy", "time", "placement", "json"]
+      "content": [
+        {
+          "type": "manual",
+          "id": "LATE2-manual",
+          "title": "User manual",
+          "markdown": "# LATE2 — Latest Fixed-Duration Segment Within Bounds\n\n## What this toy does\n\nPlaces a fixed-duration interval as late as possible within an earliest start and latest end.\n\n## Input\n\nSubmit durationSeconds and two ISO timestamp bounds.\n\n### Example\n\n### Schema\n\n```json\n{\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"type\": \"object\",\n  \"properties\": {\n    \"durationSeconds\": { \"type\": \"number\" },\n    \"earliestStartTimestamp\": { \"type\": \"string\" },\n    \"latestEndTimestamp\": { \"type\": \"string\" }\n  }\n}\n```\n\n## Output\n\nReturns feasible start/end timestamps or a no-placement result.\n\n### Example\n\n```json\n{\"feasible\":true,\"startTimestamp\":\"2026-08-27T10:30:00.000Z\",\"endTimestamp\":\"2026-08-27T11:00:00.000Z\"}\n```\n\n## Behavior\n\nDuration is never shortened and invalid values are rejected."
+        },
+        "Place a fixed-duration interval as late as possible within temporal bounds."
+      ],
+      "toy": {
+        "modulePath": "/core/browser/toys/2026-08-27/latestFixedDurationSegmentWithinBounds.js",
+        "functionName": "latestFixedDurationSegmentWithinBounds",
+        "defaultInputMethod": "textarea",
+        "defaultOutputMethod": "textarea"
+      },
+      "tags": [
+        "toy",
+        "time",
+        "placement",
+        "json"
+      ]
     },
     {
       "key": "DELI2",
       "title": "Delivery Outbound Runner Feasibility",
       "publicationDate": "2026-08-27",
       "release": "public",
-      "content": ["Propose a fixed-duration delivery interval and test runner schedule and commitment coverage."],
-      "toy": {"modulePath": "/core/browser/toys/2026-08-27/deliveryOutboundRunnerFeasibility.js", "functionName": "deliveryOutboundRunnerFeasibility", "defaultInputMethod": "textarea", "defaultOutputMethod": "textarea"},
-      "tags": ["toy", "runner", "delivery", "feasibility", "json"]
+      "content": [
+        {
+          "type": "manual",
+          "id": "DELI2-manual",
+          "title": "User manual",
+          "markdown": "# DELI2 — Delivery Outbound Runner Feasibility\n\n## What this toy does\n\nPlaces a fixed-duration delivery ending at the requested delivery timestamp and checks runner coverage.\n\n## Input\n\nSubmit deliveryPoint, deliveryDurationSeconds, runnerSchedule, and runnerCommitments.\n\n### Example\n\n### Schema\n\n```json\n{\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"type\": \"object\",\n  \"properties\": {\n    \"deliveryPoint\": { \"type\": \"object\" },\n    \"deliveryDurationSeconds\": { \"type\": \"number\" },\n    \"runnerSchedule\": { \"type\": \"array\" },\n    \"runnerCommitments\": { \"type\": \"array\" }\n  }\n}\n```\n\n## Output\n\nReturns the ephemeral candidate interval and feasibility.\n\n### Example\n\n```json\n{\"feasible\":true,\"startTimestamp\":\"2026-08-27T18:15:00.000Z\",\"endTimestamp\":\"2026-08-27T19:00:00.000Z\"}\n```\n\n## Behavior\n\nSchedule containment is inclusive and overlapping commitments block the candidate."
+        },
+        "Propose a fixed-duration delivery interval and test runner schedule and commitment coverage."
+      ],
+      "toy": {
+        "modulePath": "/core/browser/toys/2026-08-27/deliveryOutboundRunnerFeasibility.js",
+        "functionName": "deliveryOutboundRunnerFeasibility",
+        "defaultInputMethod": "textarea",
+        "defaultOutputMethod": "textarea"
+      },
+      "tags": [
+        "toy",
+        "runner",
+        "delivery",
+        "feasibility",
+        "json"
+      ]
     },
     {
       "key": "PROC3",
       "title": "Procurement Segment Feasibility",
       "publicationDate": "2026-08-27",
       "release": "public",
-      "content": ["Place and validate the opaque fixed-duration procurement interval before delivery."],
-      "toy": {"modulePath": "/core/browser/toys/2026-08-27/procurementSegmentFeasibility.js", "functionName": "procurementSegmentFeasibility", "defaultInputMethod": "textarea", "defaultOutputMethod": "textarea"},
-      "tags": ["toy", "procurement", "runner", "feasibility", "json"]
+      "content": [
+        {
+          "type": "manual",
+          "id": "PROC3-manual",
+          "title": "User manual",
+          "markdown": "# PROC3 — Procurement Segment Feasibility\n\n## What this toy does\n\nPlaces the fixed procurement interval as late as possible before delivery outbound.\n\n## Input\n\nSubmit procurement duration, now, delivery start, supplier availability, runner schedule, and commitments.\n\n### Example\n\n### Schema\n\n```json\n{\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"type\": \"object\",\n  \"properties\": {\n    \"procurementDurationSeconds\": { \"type\": \"number\" },\n    \"nowTimestamp\": { \"type\": \"string\" },\n    \"deliveryOutboundStartTimestamp\": { \"type\": \"string\" },\n    \"supplierAvailability\": { \"type\": \"object\" },\n    \"runnerSchedule\": { \"type\": \"array\" },\n    \"runnerCommitments\": { \"type\": \"array\" }\n  }\n}\n```\n\n## Output\n\nReturns an ephemeral procurement interval and feasibility.\n\n### Example\n\n```json\n{\"feasible\":true,\"startTimestamp\":\"2026-08-27T16:30:00.000Z\",\"endTimestamp\":\"2026-08-27T17:00:00.000Z\"}\n```\n\n## Behavior\n\nThe interval must fit supplier hours, frozen now, the runner schedule, and commitments."
+        },
+        "Place and validate the opaque fixed-duration procurement interval before delivery."
+      ],
+      "toy": {
+        "modulePath": "/core/browser/toys/2026-08-27/procurementSegmentFeasibility.js",
+        "functionName": "procurementSegmentFeasibility",
+        "defaultInputMethod": "textarea",
+        "defaultOutputMethod": "textarea"
+      },
+      "tags": [
+        "toy",
+        "procurement",
+        "runner",
+        "feasibility",
+        "json"
+      ]
     },
     {
       "key": "PICK2",
       "title": "Pickup Return Runner Feasibility",
       "publicationDate": "2026-08-27",
       "release": "public",
-      "content": ["Propose a fixed-duration pickup return and test runner coverage."],
-      "toy": {"modulePath": "/core/browser/toys/2026-08-27/pickupReturnRunnerFeasibility.js", "functionName": "pickupReturnRunnerFeasibility", "defaultInputMethod": "textarea", "defaultOutputMethod": "textarea"},
-      "tags": ["toy", "runner", "pickup", "feasibility", "json"]
+      "content": [
+        {
+          "type": "manual",
+          "id": "PICK2-manual",
+          "title": "User manual",
+          "markdown": "# PICK2 — Pickup Return Runner Feasibility\n\n## What this toy does\n\nPlaces a fixed-duration pickup return starting at the requested pickup timestamp.\n\n## Input\n\nSubmit pickupPoint, pickupDurationSeconds, runnerSchedule, and runnerCommitments.\n\n### Example\n\n### Schema\n\n```json\n{\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"type\": \"object\",\n  \"properties\": {\n    \"pickupPoint\": { \"type\": \"object\" },\n    \"pickupDurationSeconds\": { \"type\": \"number\" },\n    \"runnerSchedule\": { \"type\": \"array\" },\n    \"runnerCommitments\": { \"type\": \"array\" }\n  }\n}\n```\n\n## Output\n\nReturns the ephemeral candidate interval and feasibility.\n\n### Example\n\n```json\n{\"feasible\":true,\"startTimestamp\":\"2026-08-27T20:00:00.000Z\",\"endTimestamp\":\"2026-08-27T20:45:00.000Z\"}\n```\n\n## Behavior\n\nThe complete return interval must fit the runner schedule and avoid commitments."
+        },
+        "Propose a fixed-duration pickup return and test runner coverage."
+      ],
+      "toy": {
+        "modulePath": "/core/browser/toys/2026-08-27/pickupReturnRunnerFeasibility.js",
+        "functionName": "pickupReturnRunnerFeasibility",
+        "defaultInputMethod": "textarea",
+        "defaultOutputMethod": "textarea"
+      },
+      "tags": [
+        "toy",
+        "runner",
+        "pickup",
+        "feasibility",
+        "json"
+      ]
     },
     {
       "key": "PROC4",
       "title": "Procurement-Backed Fulfillment Feasibility Composition",
       "publicationDate": "2026-08-27",
       "release": "public",
-      "content": ["Serially compose delivery, procurement, and pickup feasibility guards for the POC."],
-      "toy": {"modulePath": "/core/browser/toys/2026-08-27/procurementBackedFulfillmentFeasibilityComposition.js", "functionName": "procurementBackedFulfillmentFeasibilityComposition", "defaultInputMethod": "textarea", "defaultOutputMethod": "textarea"},
-      "tags": ["toy", "procurement", "fulfillment", "composition", "json"]
+      "content": [
+        {
+          "type": "manual",
+          "id": "PROC4-manual",
+          "title": "User manual",
+          "markdown": "# PROC4 — Procurement-Backed Fulfillment Feasibility Composition\n\n## What this toy does\n\nSerially checks delivery outbound, procurement, and pickup return for the POC.\n\n## Input\n\nSubmit possession points, durations, supplier availability, frozen now, runner schedule, and commitments.\n\n### Example\n\n### Schema\n\n```json\n{\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"type\": \"object\",\n  \"properties\": {\n    \"deliveryPoint\": { \"type\": \"object\" },\n    \"pickupPoint\": { \"type\": \"object\" },\n    \"durations\": { \"type\": \"object\" },\n    \"supplierAvailability\": { \"type\": \"object\" },\n    \"runnerSchedule\": { \"type\": \"array\" },\n    \"runnerCommitments\": { \"type\": \"array\" },\n    \"nowTimestamp\": { \"type\": \"string\" }\n  }\n}\n```\n\n## Output\n\nReturns feasible only when all three blocking guards pass.\n\n### Example\n\n```json\n{\"feasible\":true}\n```\n\n## Behavior\n\nThis is read-only and calculates no price, offer, assignment, or reservation."
+        },
+        "Serially compose delivery, procurement, and pickup feasibility guards for the POC."
+      ],
+      "toy": {
+        "modulePath": "/core/browser/toys/2026-08-27/procurementBackedFulfillmentFeasibilityComposition.js",
+        "functionName": "procurementBackedFulfillmentFeasibilityComposition",
+        "defaultInputMethod": "textarea",
+        "defaultOutputMethod": "textarea"
+      },
+      "tags": [
+        "toy",
+        "procurement",
+        "fulfillment",
+        "composition",
+        "json"
+      ]
     },
     {
       "key": "OBJE2",
       "title": "Search Request to SKU Result Wrapper",
       "publicationDate": "2026-08-27",
       "release": "public",
-      "content": ["Return the supported football SKU only when the procurement-backed search feasibility chain succeeds."],
-      "toy": {"modulePath": "/core/browser/toys/2026-08-27/searchRequestToSkuResultWrapper.js", "functionName": "searchRequestToSkuResultWrapper", "defaultInputMethod": "textarea", "defaultOutputMethod": "textarea"},
-      "tags": ["toy", "search", "sku", "fulfillment", "json"]
+      "content": [
+        {
+          "type": "manual",
+          "id": "OBJE2-manual",
+          "title": "User manual",
+          "markdown": "# OBJE2 — Search Request to SKU Result Wrapper\n\n## What this toy does\n\nConverts the supported search request into either one football SKU result or an empty result list.\n\n## Input\n\nSubmit requestText, deliveryPoint, pickupPoint, and the injected feasibility inputs.\n\n### Example\n\n### Schema\n\n```json\n{\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"type\": \"object\",\n  \"properties\": {\n    \"requestText\": { \"type\": \"string\" },\n    \"deliveryPoint\": { \"type\": \"object\" },\n    \"pickupPoint\": { \"type\": \"object\" }\n  }\n}\n```\n\n## Output\n\nReturns `{ \"valid\": true, \"results\": [] }` or one SKU result.\n\n### Example\n\n```json\n{\"valid\":true,\"results\":[{\"skuId\":\"FOOTBALL\"}]}\n```\n\n## Behavior\n\nUnsupported text short-circuits; feasible search is read-only and contains no price or offer."
+        },
+        "Return the supported football SKU only when the procurement-backed search feasibility chain succeeds."
+      ],
+      "toy": {
+        "modulePath": "/core/browser/toys/2026-08-27/searchRequestToSkuResultWrapper.js",
+        "functionName": "searchRequestToSkuResultWrapper",
+        "defaultInputMethod": "textarea",
+        "defaultOutputMethod": "textarea"
+      },
+      "tags": [
+        "toy",
+        "search",
+        "sku",
+        "fulfillment",
+        "json"
+      ]
     },
     {
       "key": "EXIS2",
