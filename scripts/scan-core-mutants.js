@@ -168,6 +168,30 @@ async function writeSummary(state, files, summaryPath, fsModule) {
 }
 
 /**
+ * Find tests that reference a source file, falling back to the full suite.
+ * @param {string} rootDir Repository root.
+ * @param {string} file Relative source path.
+ * @param {{ readFile: Function, readdir: Function }} fsModule Filesystem APIs.
+ * @returns {Promise<string[]>} Relative test paths.
+ */
+async function findRelatedTests(rootDir, file, fsModule) {
+  const tests = [];
+  const visit = async directory => {
+    for (const entry of await fsModule.readdir(directory, { withFileTypes: true })) {
+      const fullPath = path.join(directory, entry.name);
+      if (entry.isDirectory()) await visit(fullPath);
+      else if (/\.test\.[cm]?js$/.test(entry.name)) {
+        const source = await fsModule.readFile(fullPath, 'utf8');
+        if (source.includes(file) || source.includes(path.basename(file)))
+          tests.push(path.relative(rootDir, fullPath).replaceAll(path.sep, '/'));
+      }
+    }
+  };
+  await visit(path.join(rootDir, 'test'));
+  return tests;
+}
+
+/**
  * Run the resumable scan.
  * @param {{ rootDir?: string, timeoutMs?: number, fsModule?: object, spawnImpl?: Function, runCommand?: Function }} options Scan options.
  * @returns {Promise<object>} Scan summary.
@@ -243,7 +267,17 @@ export async function scanCoreMutants(options = {}) {
         args: ['run', 'mutant:worktree', '--', file],
         cwd: rootDir,
         timeoutMs,
-        env: { ...baseEnv, STRYKER_REUSE_WORKTREE_PATH: worktreePath },
+        env: {
+          ...baseEnv,
+          STRYKER_REUSE_WORKTREE_PATH: worktreePath,
+          ...(options.findTests
+            ? {
+                STRYKER_TEST_FILES: JSON.stringify(
+                  await findRelatedTests(rootDir, file, fsModule)
+                ),
+              }
+            : {}),
+        },
       });
       const record = {
         type: 'result',
