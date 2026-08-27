@@ -19,3 +19,13 @@ A mutant can remove a guard, alter a nullish fallback, or change a state-transit
 ## Operational reference
 
 The focused coverage command and remaining branch clusters are tracked in `notes/joycon-mapper-coverage.md` and `notes/agents/2026-03-31-joycon-mapper-remaining-coverage.md`.
+
+## Current scan evidence
+
+On 2026-08-27, the baseline focused run passed 123 tests across the three
+Joy-Con mapper test files. With `STRYKER_CONCURRENCY=4`,
+`STRYKER_TIMEOUT_MS=10000`, and those same focused files, the first eight
+executable mutants all timed out. This confirms that the mapper can induce a
+crash or non-terminating test path under mutation; these results must remain
+separate from ordinary survivors and should be investigated by mutant id and
+input shape before changing production guards.
