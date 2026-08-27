@@ -206,12 +206,14 @@ function buildStrykerConfig(mutateTargetDir) {
   const concurrency = Number(process.env.STRYKER_CONCURRENCY || 1);
   const testFiles = process.env.STRYKER_TEST_FILES;
   const testFilesLine = testFiles ? `  testFiles: ${testFiles},\n` : '';
+  const timeoutMs = Number(process.env.STRYKER_TIMEOUT_MS || 10_000);
   return `import baseConfig from './stryker.config.mjs';
 
 export default {
   ...baseConfig,
 ${mutateLine}  // Keep mutation runs resource-bounded in the worktree.
 ${testFilesLine}  
+  timeoutMS: ${Number.isInteger(timeoutMs) && timeoutMs > 0 ? timeoutMs : 10_000},
   concurrency: ${Number.isInteger(concurrency) && concurrency > 0 ? concurrency : 1},
 };
 `;

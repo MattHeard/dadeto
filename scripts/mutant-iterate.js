@@ -12,6 +12,7 @@ import { scanCoreMutants } from './scan-core-mutants.js';
  */
 export async function runMutantIteration() {
   process.env.STRYKER_CONCURRENCY ||= '4';
+  process.env.STRYKER_TIMEOUT_MS ||= '30000';
   const timeoutMs = Number(
     process.env.CORE_MUTANT_TIMEOUT_MS || 60 * 60 * 1000
   );
