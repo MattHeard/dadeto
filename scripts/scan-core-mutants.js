@@ -167,8 +167,12 @@ async function writeSummary(state, files, summaryPath, fsModule) {
     `${JSON.stringify(
       {
         total: files.length,
-        completed: terminal.filter(record => record.status === 'success').length,
-        pending: files.length - terminal.filter(record => record.status === 'success').length,
+        completed: terminal.filter(record =>
+          record.status === 'success' || record.status === 'timed_out'
+        ).length,
+        pending: files.length - terminal.filter(record =>
+          record.status === 'success' || record.status === 'timed_out'
+        ).length,
         failed: terminal.filter(record => record.status === 'failed').length,
         timedOut: terminal.filter(record => record.status === 'timed_out')
           .length,
@@ -270,7 +274,7 @@ export async function scanCoreMutants(options = {}) {
   try {
     for (const absolutePath of files) {
       const file = path.relative(rootDir, absolutePath);
-      if (state.get(file)?.status === 'success') continue;
+      if (['success', 'timed_out'].includes(state.get(file)?.status)) continue;
       const startedAt = new Date().toISOString();
       const startedAtMs = Date.now();
       await appendRecord(
