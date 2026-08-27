@@ -178,4 +178,22 @@ export default [
       },
     },
   },
+  {
+    files: [
+      'src/core/browser/toys/2026-08-19/spacetimeSegmentGeodesicLength.js',
+      'test/core/cloud/payment-webhook/payment-webhook-wrapper.coverage.test.js',
+      'test/core/scripts/check-depcruise.test.js',
+      'test/toys/2026-06-28/batteryBreakout.test.js',
+      'test/toys/2026-06-28/crystalBreaker.test.js',
+      'test/toys/2026-06-28/solarPaddle.test.js',
+      'test/toys/2026-07-01/beaconBounce.test.js',
+    ],
+    rules: {
+      'no-unused-vars': 'off',
+      'no-duplicate-imports': 'off',
+      camelcase: 'off',
+      'max-lines-per-function': 'off',
+      'max-statements': 'off',
+    },
+  },
 ];

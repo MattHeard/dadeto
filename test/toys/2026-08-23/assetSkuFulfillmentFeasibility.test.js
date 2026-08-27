@@ -133,4 +133,10 @@ describe('SKUF1 SKU fulfillment feasibility', () => {
       feasible: false,
     });
   });
+
+  test('returns false for malformed input', () => {
+    expect(JSON.parse(skuFulfillmentFeasibility('{'))).toEqual({
+      feasible: false,
+    });
+  });
 });

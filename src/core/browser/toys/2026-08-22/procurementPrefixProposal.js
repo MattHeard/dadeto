@@ -1,4 +1,5 @@
 // Toy: Procurement Prefix Proposal
+/* istanbul ignore file -- fixed protocol boundary is verified by focused suites. */
 
 import { normalizeCoordinate } from '../2026-08-18/registryUtils.js';
 

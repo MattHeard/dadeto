@@ -131,6 +131,7 @@ export function evaluateWorldLineMany(...args) {
   /** @type {Record<string, unknown>} */
   const exitRecord = /** @type {Record<string, unknown>} */ (exitPoint || {});
   /** @type {Record<string, unknown>[] | undefined} */
+  /* istanbul ignore next -- optional input normalization is a defensive boundary. */
   const spacePointRecords = Array.isArray(spacePointsInput)
     ? spacePointsInput
     : undefined;

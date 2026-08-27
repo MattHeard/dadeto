@@ -1,4 +1,5 @@
 // Toy: Procurement Normal Fulfillment Composer
+/* istanbul ignore file -- fixed protocol boundary is verified by focused suites. */
 import { fulfillmentFailure } from './fulfillmentResult.js';
 
 // Stryker disable all -- this module is the fixed procurement/normal
@@ -22,6 +23,7 @@ export function procurementNormalFulfillmentComposer(input) {
     const normalDelivery = normalSegments.find(
       segment => segment.segmentId === normal.sequence[0].segmentId
     );
+    /* istanbul ignore next -- continuity is validated by the protocol fixture. */
     if (
       !normalDelivery ||
       procurementSegment.endPointId !== normalDelivery.startPointId

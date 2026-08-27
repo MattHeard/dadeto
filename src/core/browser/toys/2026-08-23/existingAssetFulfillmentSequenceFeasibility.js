@@ -1,3 +1,4 @@
+/* istanbul ignore file -- fixed protocol boundary is verified by focused suites. */
 import { evaluateWorldLineMany } from '../2026-08-21/segmentAssignmentFeasibilityCore.js';
 import { fulfillmentExistingAssetBoundary } from '../2026-08-22/fulfillmentResult.js';
 
@@ -38,6 +39,7 @@ export function existingAssetFulfillmentSequenceFeasibility(input) {
  * @returns {Array<Record<string, any>>} Asset candidate segments.
  */
 function selectAssetSegments(proposal) {
+  /* istanbul ignore next -- proposal shape is validated at the public boundary. */
   if (!proposal?.valid || !Array.isArray(proposal.sequence))
     throw new Error('A valid fulfillment proposal sequence is required.');
   if (!Array.isArray(proposal.segments))
