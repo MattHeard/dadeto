@@ -109,15 +109,11 @@ function escapeMarker(marker) {
 
 /**
  * Check whether text is absent or whitespace-only.
- * @param {unknown} value - Candidate text.
+ * @param {string} value - Candidate text.
  * @returns {boolean} Whether the value is empty text.
  */
 function isEmptyText(value) {
-  return (
-    value === null ||
-    value === undefined ||
-    (typeof value === 'string' && value.trim() === '')
-  );
+  return value.trim() === '';
 }
 
 /**
