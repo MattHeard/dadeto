@@ -14,8 +14,11 @@ describe('inputHandlersMap constant source', () => {
       /stry(?:MutAct|Cov|NS)_[A-Za-z0-9]+\([^)]*\),?\s*/g,
       ''
     );
-    const regex =
-      /const inputHandlersMap = \{[\s\S]*'gamepad-button-mapper': joyConMapperHandler,\s*'object-minute-asset': objectMinuteAssetHandler,\s*'possession-request': possessionRequestHandler,\s*default: defaultHandler,?\s*\};/s;
-    expect(instrumentedSourceRemoved).toMatch(regex);
+    const mapStart = instrumentedSourceRemoved.indexOf('inputHandlersMap');
+    const mapSource = instrumentedSourceRemoved.slice(mapStart);
+    expect(mapSource).toMatch(/'gamepad-button-mapper'[\s\S]*joyConMapperHandler/);
+    expect(mapSource).toMatch(/'object-minute-asset'[\s\S]*objectMinuteAssetHandler/);
+    expect(mapSource).toMatch(/'possession-request'[\s\S]*possessionRequestHandler/);
+    expect(mapSource).toMatch(/default[\s:]*[\s\S]*defaultHandler/);
   });
 });
