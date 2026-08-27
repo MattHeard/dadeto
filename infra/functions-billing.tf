@@ -41,9 +41,9 @@ resource "google_cloudfunctions2_function" "billing" {
 }
 
 resource "google_cloud_run_service_iam_member" "billing_public" {
-  location = google_cloudfunctions2_function.billing.location
-  service  = google_cloudfunctions2_function.billing.name
-  role     = "roles/run.invoker"
-  member   = local.all_users_member
+  location   = google_cloudfunctions2_function.billing.location
+  service    = google_cloudfunctions2_function.billing.name
+  role       = "roles/run.invoker"
+  member     = local.all_users_member
   depends_on = [google_cloudfunctions2_function.billing]
 }
