@@ -33,6 +33,7 @@ describe('moderate pure helper contracts', () => {
     expect(shouldRetryLoad(new Error('HTTP 404: missing'), false)).toBe(true);
     expect(shouldRetryLoad(new Error('HTTP 404: missing'), true)).toBe(false);
     expect(shouldRetryLoad(new Error('HTTP 500'), false)).toBe(false);
+    expect(shouldRetryLoad({ message: 404 }, false)).toBe(false);
     expect(shouldRetryLoad(null, false)).toBe(false);
   });
 
@@ -146,6 +147,9 @@ describe('moderate pure helper contracts', () => {
     expect(
       pageContent.appendChild.mock.calls.map(([element]) => element.textContent)
     ).toEqual(['Title', 'By Author', 'Body']);
+    expect(
+      pageContent.appendChild.mock.calls.map(([element]) => element.tag)
+    ).toEqual(['h3', 'p', 'p']);
     expect(elements.get('approveBtn').disabled).toBe(false);
     expect(elements.get('rejectBtn').disabled).toBe(false);
   });
