@@ -109,6 +109,9 @@ describe('moderate pure helper contracts', () => {
       { content: 'B' },
     ]);
     expect(created).toHaveLength(1);
+    expect(documentObj.createElement).toHaveBeenNthCalledWith(1, 'ol');
+    expect(documentObj.createElement).toHaveBeenNthCalledWith(2, 'li');
+    expect(documentObj.createElement).toHaveBeenNthCalledWith(3, 'li');
     expect(created[0].tag).toBe('ol');
     expect(created[0].appendChild).toHaveBeenCalledTimes(2);
     expect(created[0].appendChild.mock.calls[0][0].textContent).toBe('A (3)');
@@ -169,6 +172,30 @@ describe('moderate pure helper contracts', () => {
     enableModerationButtons();
     expect(typeof approve.onclick).toBe('function');
     expect(typeof reject.onclick).toBe('function');
+
+    const missingRejectDocument = {
+      getElementById: id => (id === 'approveBtn' ? approve : null),
+      createElement: tag => ({ tag, textContent: '', appendChild: jest.fn() }),
+    };
+    createModerateHandle({
+      documentObj: missingRejectDocument,
+      fetchFn: jest.fn(),
+      sessionStorageObj: {},
+      globalObject: {},
+    });
+    approve.disabled = true;
+    enableModerationButtons();
+    expect(approve.disabled).toBe(true);
+  });
+
+  it('does not render when the variant container is missing', () => {
+    createModerateHandle({
+      documentObj: { getElementById: () => null, createElement: jest.fn() },
+      fetchFn: jest.fn(),
+      sessionStorageObj: {},
+      globalObject: {},
+    });
+    renderVariant({ title: 'ignored', content: 'ignored' });
   });
 
   it('fetches JSON and preserves successful response metadata', async () => {
