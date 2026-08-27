@@ -74,6 +74,9 @@ export async function readFileReport(reportPath, file, fsModule) {
   const matchingFiles = Object.entries(report.files ?? {})
     .filter(([key]) => key === file || key.endsWith(`/${file}`))
     .map(([, value]) => value);
+  if (matchingFiles.length === 0 && Object.keys(report.files ?? {}).length === 0) {
+    return { mutantCount: 0, survivingMutants: 0 };
+  }
   if (matchingFiles.length !== 1) {
     throw new Error(`Mutation report did not uniquely identify ${file}`);
   }
