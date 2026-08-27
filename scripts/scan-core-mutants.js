@@ -39,7 +39,7 @@ export async function enumerateMutationTargets(directory, fsModule) {
 export async function readLatestState(statePath, fsModule) {
   try {
     const text = await fsModule.readFile(statePath, 'utf8');
-    return new Map(
+    const state = new Map(
       text
         .trim()
         .split('\n')
@@ -47,6 +47,16 @@ export async function readLatestState(statePath, fsModule) {
         .map(line => JSON.parse(line))
         .map(record => [record.file, record])
     );
+    for (const [file, record] of state) {
+      if (record.status !== 'success' || !record.reportPath) continue;
+      try {
+        const counts = await readFileReport(record.reportPath, file, fsModule);
+        state.set(file, { ...record, ...counts });
+      } catch {
+        // Preserve the checkpoint if its historical report is unavailable.
+      }
+    }
+    return state;
   } catch {
     return new Map();
   }
