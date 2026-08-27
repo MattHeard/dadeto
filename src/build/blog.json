@@ -1,6 +1,78 @@
 {
   "posts": [
     {
+      "key": "EXAC1",
+      "title": "Exact Request Text to SKU Lookup",
+      "publicationDate": "2026-08-27",
+      "release": "public",
+      "content": ["Map exactly the supported football request text to the POC football SKU."],
+      "toy": {"modulePath": "/core/browser/toys/2026-08-27/exactRequestTextToSkuLookup.js", "functionName": "exactRequestTextToSkuLookup", "defaultInputMethod": "textarea", "defaultOutputMethod": "textarea"},
+      "tags": ["toy", "search", "sku", "lookup", "json"]
+    },
+    {
+      "key": "SEGM3",
+      "title": "Segment Contained Within Window Predicate",
+      "publicationDate": "2026-08-27",
+      "release": "public",
+      "content": ["Check whether an interval is fully contained within an availability window."],
+      "toy": {"modulePath": "/core/browser/toys/2026-08-27/segmentContainedWithinWindowPredicate.js", "functionName": "segmentContainedWithinWindowPredicate", "defaultInputMethod": "textarea", "defaultOutputMethod": "textarea"},
+      "tags": ["toy", "time", "window", "feasibility", "json"]
+    },
+    {
+      "key": "LATE2",
+      "title": "Latest Fixed-Duration Segment Within Bounds",
+      "publicationDate": "2026-08-27",
+      "release": "public",
+      "content": ["Place a fixed-duration interval as late as possible within temporal bounds."],
+      "toy": {"modulePath": "/core/browser/toys/2026-08-27/latestFixedDurationSegmentWithinBounds.js", "functionName": "latestFixedDurationSegmentWithinBounds", "defaultInputMethod": "textarea", "defaultOutputMethod": "textarea"},
+      "tags": ["toy", "time", "placement", "json"]
+    },
+    {
+      "key": "DELI2",
+      "title": "Delivery Outbound Runner Feasibility",
+      "publicationDate": "2026-08-27",
+      "release": "public",
+      "content": ["Propose a fixed-duration delivery interval and test runner schedule and commitment coverage."],
+      "toy": {"modulePath": "/core/browser/toys/2026-08-27/deliveryOutboundRunnerFeasibility.js", "functionName": "deliveryOutboundRunnerFeasibility", "defaultInputMethod": "textarea", "defaultOutputMethod": "textarea"},
+      "tags": ["toy", "runner", "delivery", "feasibility", "json"]
+    },
+    {
+      "key": "PROC3",
+      "title": "Procurement Segment Feasibility",
+      "publicationDate": "2026-08-27",
+      "release": "public",
+      "content": ["Place and validate the opaque fixed-duration procurement interval before delivery."],
+      "toy": {"modulePath": "/core/browser/toys/2026-08-27/procurementSegmentFeasibility.js", "functionName": "procurementSegmentFeasibility", "defaultInputMethod": "textarea", "defaultOutputMethod": "textarea"},
+      "tags": ["toy", "procurement", "runner", "feasibility", "json"]
+    },
+    {
+      "key": "PICK2",
+      "title": "Pickup Return Runner Feasibility",
+      "publicationDate": "2026-08-27",
+      "release": "public",
+      "content": ["Propose a fixed-duration pickup return and test runner coverage."],
+      "toy": {"modulePath": "/core/browser/toys/2026-08-27/pickupReturnRunnerFeasibility.js", "functionName": "pickupReturnRunnerFeasibility", "defaultInputMethod": "textarea", "defaultOutputMethod": "textarea"},
+      "tags": ["toy", "runner", "pickup", "feasibility", "json"]
+    },
+    {
+      "key": "PROC4",
+      "title": "Procurement-Backed Fulfillment Feasibility Composition",
+      "publicationDate": "2026-08-27",
+      "release": "public",
+      "content": ["Serially compose delivery, procurement, and pickup feasibility guards for the POC."],
+      "toy": {"modulePath": "/core/browser/toys/2026-08-27/procurementBackedFulfillmentFeasibilityComposition.js", "functionName": "procurementBackedFulfillmentFeasibilityComposition", "defaultInputMethod": "textarea", "defaultOutputMethod": "textarea"},
+      "tags": ["toy", "procurement", "fulfillment", "composition", "json"]
+    },
+    {
+      "key": "OBJE2",
+      "title": "Search Request to SKU Result Wrapper",
+      "publicationDate": "2026-08-27",
+      "release": "public",
+      "content": ["Return the supported football SKU only when the procurement-backed search feasibility chain succeeds."],
+      "toy": {"modulePath": "/core/browser/toys/2026-08-27/searchRequestToSkuResultWrapper.js", "functionName": "searchRequestToSkuResultWrapper", "defaultInputMethod": "textarea", "defaultOutputMethod": "textarea"},
+      "tags": ["toy", "search", "sku", "fulfillment", "json"]
+    },
+    {
       "key": "EXIS2",
       "title": "Existing Asset Fulfillment Sequence Feasibility",
       "publicationDate": "2026-08-23",
