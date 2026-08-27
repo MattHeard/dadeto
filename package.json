@@ -28,6 +28,7 @@
     "mutant:all": "node --experimental-vm-modules ./node_modules/.bin/stryker run",
     "mutant:worktree": "node src/local/run-stryker-worktree.js",
     "mutant:find": "node src/local/find-surviving-mutant.js",
+    "mutant:iterate": "node scripts/mutant-iterate.js",
     "sonar-issues": "src/local/get-sonar-issues.sh",
     "lint": "npx eslint src/core test --cache --cache-location reports/lint/.eslintcache --fix --max-warnings=0 --no-color --format=stylish -o reports/lint/lint.txt && cat reports/lint/lint.txt",
     "copy": "node src/build/copy.js",

@@ -300,7 +300,7 @@ export async function scanCoreMutants(options = {}) {
   return JSON.parse(await fsModule.readFile(summaryPath, 'utf8'));
 }
 
-if (import.meta.url === pathToFileURL(process.argv[1]).href) {
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   const timeoutMs = Number(
     process.env.CORE_MUTANT_TIMEOUT_MS || DEFAULT_TIMEOUT_MS
   );
