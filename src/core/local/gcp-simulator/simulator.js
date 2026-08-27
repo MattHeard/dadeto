@@ -33,6 +33,7 @@ import {
   createResolveApiKeyUuid,
   createPaymentWebhookHandler,
 } from '../../payment-webhook-core.js';
+import { createSearchHttpHandler } from '../../../cloud/object-minute-rental-search/search-http.js';
 
 const DEFAULT_STORY_TITLE = 'E2E moderation fixture story';
 const DEFAULT_FIRST_CONTENT =
@@ -410,6 +411,16 @@ async function buildSimulatorState(/** @type {unknown} */ config) {
         });
     },
   });
+  const searchHttp = createSearchHttpHandler({
+    db,
+    env: {
+      SEARCH_RUNNER_SCHEDULE_JSON:
+        '[{"startTimestamp":"2026-01-01T00:00:00Z","endTimestamp":"2030-01-01T00:00:00Z"}]',
+    },
+    clock: () => new Date('2026-01-01T15:00:00Z'),
+  });
+  const objectMinuteRentalSearch = request =>
+    runSearchHttp(searchHttp, request);
   const testUtils = createSimulatorTestUtils({
     snapshotHelpers,
     lookupHelpers,
@@ -442,6 +453,7 @@ async function buildSimulatorState(/** @type {unknown} */ config) {
     fieldValue,
     submitNewStory,
     getApiKeyCreditV2,
+    objectMinuteRentalSearch,
     generateStatsCore,
     renderContents,
     renderVariant,
@@ -462,6 +474,7 @@ async function buildSimulatorState(/** @type {unknown} */ config) {
       fieldValue,
       renderContents,
       generateStatsCore,
+      objectMinuteRentalSearch,
     }),
   });
 }
@@ -974,7 +987,30 @@ function createRoutes(/** @type {unknown} */ deps) {
       handleTriggerRenderContents(deps, request),
     markVariantDirty: request => handleMarkVariantDirty(deps, request),
     generateStats: request => handleGenerateStats(deps, request),
+    objectMinuteRentalSearch: request => deps.objectMinuteRentalSearch(request),
   };
+}
+
+/**
+ * Invoke the Express-shaped search handler using the simulator route contract.
+ * @param {(request: unknown, response: object) => Promise<void>} handler Search handler.
+ * @param {unknown} request Simulator request.
+ * @returns {Promise<{status: number, body: unknown}>} Route response.
+ */
+async function runSearchHttp(handler, request) {
+  let status = 200;
+  let body;
+  const res = {
+    json(value) {
+      body = value;
+    },
+    status(code) {
+      status = code;
+      return res;
+    },
+  };
+  await handler(request, res);
+  return { status, body };
 }
 
 /**

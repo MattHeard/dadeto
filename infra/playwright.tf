@@ -266,6 +266,11 @@ resource "google_cloud_run_v2_job" "playwright" {
         }
 
         env {
+          name  = "OBJECT_MINUTE_RENTAL_SEARCH_URL"
+          value = google_cloudfunctions2_function.object_minute_rental_search.service_config[0].uri
+        }
+
+        env {
           name  = "REPORT_BUCKET"
           value = local.reports_bucket_name
         }

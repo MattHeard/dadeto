@@ -6,6 +6,46 @@ data "local_file" "firestore_rules" {
 
 locals {
   manage_firestore_indexes = var.database_id != "(default)"
+  object_minute_rental_collections = toset([
+    "space_points",
+    "spacetime_points",
+    "segments",
+    "runner_assignments",
+    "assets",
+    "asset_assignments",
+    "offers",
+    "rental_agreements",
+  ])
+}
+
+# Firestore collections are materialized by their first document. These
+# immutable schema markers reserve the canonical collection names for the POC;
+# the search function only reads runner_assignments, segments, and
+# spacetime_points and never writes search state.
+resource "google_firestore_document" "object_minute_rental_collection_schema" {
+  for_each    = local.object_minute_rental_collections
+  project     = var.project_id
+  database    = var.database_id
+  collection  = each.value
+  document_id = "__schema__"
+  fields      = jsonencode({ schemaVersion = { integerValue = "1" } })
+
+  depends_on = [google_firestore_database.database]
+}
+
+resource "google_firestore_index" "runner_assignments_by_person" {
+  count       = local.manage_firestore_indexes ? 1 : 0
+  project     = var.project_id
+  database    = var.database_id
+  collection  = "runner_assignments"
+  query_scope = "COLLECTION"
+
+  fields {
+    field_path = "personId"
+    order      = "ASCENDING"
+  }
+
+  depends_on = [google_firestore_database.database]
 }
 
 resource "google_firebaserules_ruleset" "firestore" {

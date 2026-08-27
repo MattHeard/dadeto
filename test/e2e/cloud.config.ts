@@ -38,6 +38,7 @@ export default defineConfig({
     '**/dendrite-fixture.spec.ts',
     '**/new-story.spec.ts',
     '**/payment-webhook.spec.ts',
+    '**/search-function.spec.ts',
   ],
   projects: [
     {

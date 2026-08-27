@@ -1026,6 +1026,7 @@ function createCopyCloudDirectoryPlan(planValues) {
     'submit-moderation-rating',
     'submit-new-page',
     'submit-new-story',
+    'object-minute-rental-search',
   ];
   const typedFunctionDirectories = /** @type {string[]} */ (
     functionDirectories

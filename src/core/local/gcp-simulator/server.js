@@ -81,6 +81,10 @@ const SIMULATOR_ROUTES = [
   createPostRoute('/__sim/mark-variant-dirty', 'markVariantDirty'),
   createPostRoute('/__sim/generate-stats', 'generateStats', false),
   createPostRoute('/__sim/payment-webhook', 'paymentWebhook'),
+  createPostRoute(
+    '/__sim/object-minute-rental-search',
+    'objectMinuteRentalSearch'
+  ),
 ];
 
 export const handle = startServer;

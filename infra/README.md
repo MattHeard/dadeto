@@ -54,6 +54,14 @@ functions, a Google Cloud Monitoring email notification channel, and an alert
 policy that pages on the first matching error. Supply the alert recipient from
 the GitHub Actions secret `PRODUCTION_ALERT_EMAIL` via the prod workflow.
 
+The test-environment `object-minute-rental-search` Cloud Function is a
+stateless, read-only adapter around the object-minute rental search core. It
+accepts search text plus a possession context and reads runner commitments from
+the canonical `runner_assignments`, `segments`, and `spacetime_points`
+collections. Terraform materializes the wider append-only POC collection set
+with schema marker documents; the search function never writes search results,
+assignments, or reservations.
+
 ## Cloud Function sources
 
 Run `npm run build:cloud` before applying Terraform so that the generated Cloud Function directories under `infra/cloud-functions/` and the supporting admin scripts in `infra/*.js` are present. The CI workflows run this command automatically before Terraform steps.
