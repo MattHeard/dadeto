@@ -174,13 +174,15 @@ async function writeSummary(state, files, summaryPath, fsModule) {
  * @param {{ readFile: Function, readdir: Function }} fsModule Filesystem APIs.
  * @returns {Promise<string[]>} Relative test paths.
  */
-async function findRelatedTests(rootDir, file, fsModule) {
+export async function findRelatedTests(rootDir, file, fsModule) {
   const tests = [];
+  const allTests = [];
   const visit = async directory => {
     for (const entry of await fsModule.readdir(directory, { withFileTypes: true })) {
       const fullPath = path.join(directory, entry.name);
       if (entry.isDirectory()) await visit(fullPath);
       else if (/\.test\.[cm]?js$/.test(entry.name)) {
+        allTests.push(path.relative(rootDir, fullPath).replaceAll(path.sep, '/'));
         const source = await fsModule.readFile(fullPath, 'utf8');
         if (source.includes(file) || source.includes(path.basename(file)))
           tests.push(path.relative(rootDir, fullPath).replaceAll(path.sep, '/'));
@@ -188,7 +190,7 @@ async function findRelatedTests(rootDir, file, fsModule) {
     }
   };
   await visit(path.join(rootDir, 'test'));
-  return tests;
+  return tests.length > 0 ? tests.sort() : allTests.sort();
 }
 
 /**
