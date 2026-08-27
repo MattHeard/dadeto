@@ -70,8 +70,9 @@ export async function readFileReport(reportPath, file, fsModule) {
   const mutants = Object.values(matchingFiles[0].mutants ?? {});
   return {
     mutantCount: mutants.length,
-    survivingMutants: mutants.filter(mutant => mutant.status === 'Survived')
-      .length,
+    survivingMutants: mutants.filter(
+      mutant => mutant.status === 'Survived' && mutant.static !== true
+    ).length,
   };
 }
 
