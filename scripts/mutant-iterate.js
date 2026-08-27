@@ -10,6 +10,7 @@ import { scanCoreMutants } from './scan-core-mutants.js';
  * @returns {Promise<void>} Resolves after the sweep completes.
  */
 export async function runMutantIteration() {
+  process.env.STRYKER_CONCURRENCY ||= '4';
   const timeoutMs = Number(
     process.env.CORE_MUTANT_TIMEOUT_MS || 60 * 60 * 1000
   );

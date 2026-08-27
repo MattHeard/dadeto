@@ -203,12 +203,13 @@ function buildStrykerConfig(mutateTargetDir) {
   if (mutateTargetDir) {
     mutateLine = `  mutate: [${JSON.stringify(mutateTargetDir)}],\n`;
   }
+  const concurrency = Number(process.env.STRYKER_CONCURRENCY || 1);
   return `import baseConfig from './stryker.config.mjs';
 
 export default {
   ...baseConfig,
 ${mutateLine}  // Keep mutation runs resource-bounded in the worktree.
-  concurrency: 1,
+  concurrency: ${Number.isInteger(concurrency) && concurrency > 0 ? concurrency : 1},
 };
 `;
 }
