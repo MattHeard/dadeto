@@ -27,23 +27,8 @@ resource "google_firestore_document" "object_minute_rental_collection_schema" {
   project     = var.project_id
   database    = var.database_id
   collection  = each.value
-  document_id = "__schema__"
+  document_id = "schema"
   fields      = jsonencode({ schemaVersion = { integerValue = "1" } })
-
-  depends_on = [google_firestore_database.database]
-}
-
-resource "google_firestore_index" "runner_assignments_by_person" {
-  count       = local.manage_firestore_indexes ? 1 : 0
-  project     = var.project_id
-  database    = var.database_id
-  collection  = "runner_assignments"
-  query_scope = "COLLECTION"
-
-  fields {
-    field_path = "personId"
-    order      = "ASCENDING"
-  }
 
   depends_on = [google_firestore_database.database]
 }
