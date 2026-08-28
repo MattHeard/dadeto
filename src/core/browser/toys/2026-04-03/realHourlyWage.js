@@ -30,7 +30,10 @@ const VALIDATION_ERROR = 'Invalid real hourly wage input';
  * @returns {boolean} True when the value is valid.
  */
 function isValidRealHourlyWageNumber(value) {
-  return Number.isFinite(value) && value >= 0;
+  return (
+    Number.isFinite(/** @type {number} */ (value)) &&
+    /** @type {number} */ (value) >= 0
+  );
 }
 
 /**

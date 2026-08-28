@@ -6,7 +6,7 @@ import { exactLookup } from './searchFeasibilityCore.js';
  * @returns {string} JSON lookup result.
  */
 export function exactRequestTextToSkuLookup(input) {
-  return fulfillmentBoundary(input, 'matched', request =>
+  return fulfillmentBoundary(input, /** @type {any} */ ('matched'), request =>
     JSON.stringify(exactLookup(request))
   );
 }

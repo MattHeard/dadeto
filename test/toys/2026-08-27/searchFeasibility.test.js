@@ -56,7 +56,9 @@ describe('SEGM3 and LATE2 temporal primitives', () => {
         windowEndTimestamp: '2026-08-27T11:00Z',
       })
     ).toEqual({ feasible: true });
-    expect(JSON.parse(segmentContainedWithinWindowPredicate('{'))).toMatchObject({
+    expect(
+      JSON.parse(segmentContainedWithinWindowPredicate('{'))
+    ).toMatchObject({
       feasible: false,
       reason: expect.any(String),
       error: expect.any(String),
@@ -72,7 +74,9 @@ describe('SEGM3 and LATE2 temporal primitives', () => {
       startTimestamp: '2026-08-27T10:30:00.000Z',
       endTimestamp: '2026-08-27T11:00:00.000Z',
     });
-    expect(JSON.parse(latestFixedDurationSegmentWithinBounds('{'))).toMatchObject({
+    expect(
+      JSON.parse(latestFixedDurationSegmentWithinBounds('{'))
+    ).toMatchObject({
       feasible: false,
       reason: expect.any(String),
       error: expect.any(String),

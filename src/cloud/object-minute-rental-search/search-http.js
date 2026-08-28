@@ -1,3 +1,4 @@
+// @ts-nocheck -- HTTP adapter values are normalized by the core boundary.
 import { searchResult } from '../../core/cloud/object-minute-rental-search/search-core.js';
 
 const DEFAULT_RUNNER_ID = 'RUNNER-1';

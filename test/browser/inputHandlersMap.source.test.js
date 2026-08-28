@@ -16,9 +16,15 @@ describe('inputHandlersMap constant source', () => {
     );
     const mapStart = instrumentedSourceRemoved.indexOf('inputHandlersMap');
     const mapSource = instrumentedSourceRemoved.slice(mapStart);
-    expect(mapSource).toMatch(/'gamepad-button-mapper'[\s\S]*joyConMapperHandler/);
-    expect(mapSource).toMatch(/'object-minute-asset'[\s\S]*objectMinuteAssetHandler/);
-    expect(mapSource).toMatch(/'possession-request'[\s\S]*possessionRequestHandler/);
+    expect(mapSource).toMatch(
+      /'gamepad-button-mapper'[\s\S]*joyConMapperHandler/
+    );
+    expect(mapSource).toMatch(
+      /'object-minute-asset'[\s\S]*objectMinuteAssetHandler/
+    );
+    expect(mapSource).toMatch(
+      /'possession-request'[\s\S]*possessionRequestHandler/
+    );
     expect(mapSource).toMatch(/default[\s:]*[\s\S]*defaultHandler/);
   });
 });

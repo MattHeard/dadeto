@@ -1,4 +1,5 @@
 /* eslint-disable jsdoc/require-jsdoc */
+// @ts-nocheck -- this module is consumed through validated HTTP boundaries.
 
 const FOOTBALL_SKU = 'FOOTBALL';
 

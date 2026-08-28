@@ -100,7 +100,7 @@ function readExistingList(storageFn) {
  * @returns {unknown} Value or undefined.
  */
 function getValueByKey(data, key) {
-  return data[key];
+  return /** @type {Record<string, unknown>} */ (data)[key];
 }
 
 /**
