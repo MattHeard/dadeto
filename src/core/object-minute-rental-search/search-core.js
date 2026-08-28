@@ -198,16 +198,16 @@ function overlap(start, end, otherStart, otherEnd) {
 
 function windowStart(window) {
   return (
-    window?.startTimestamp ||
-    window?.clockInTimestamp ||
+    window.startTimestamp ||
+    window.clockInTimestamp ||
     window?.clockInPoint?.timestamp
   );
 }
 
 function windowEnd(window) {
   return (
-    window?.endTimestamp ||
-    window?.clockOutTimestamp ||
+    window.endTimestamp ||
+    window.clockOutTimestamp ||
     window?.clockOutPoint?.timestamp
   );
 }

@@ -77,6 +77,14 @@ describe('object minute rental search core', () => {
     expect(contained('bad', '2026-08-27T11:00Z', 'bad', 'bad')).toBe(false);
     expect(
       contained(
+        'bad',
+        '2026-08-27T11:00Z',
+        '2026-08-27T09:00Z',
+        '2026-08-27T12:00Z'
+      )
+    ).toBe(false);
+    expect(
+      contained(
         '2026-08-27T10:00Z',
         '2026-08-27T10:00Z',
         '2026-08-27T10:00Z',
