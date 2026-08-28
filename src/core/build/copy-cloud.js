@@ -1512,13 +1512,7 @@ function createCopyCloudSourcePaths(planValues) {
 
   const functionCoreBuildCopies = functionDirectories.map(name => ({
     source: join(srcCoreDir, 'build', 'process-utils.js'),
-    target: join(
-      infraFunctionsDir,
-      name,
-      'core',
-      'build',
-      'process-utils.js'
-    ),
+    target: join(infraFunctionsDir, name, 'core', 'build', 'process-utils.js'),
   }));
 
   /**
