@@ -89,19 +89,7 @@ function normalizeRequest(body, env, clock) {
  * @returns {string} ISO timestamp or fallback value.
  */
 function dailyWindow(value, timestamp, fallback) {
-  const isClockValue =
-    typeof value === 'string' &&
-    value.length === 5 &&
-    value[2] === ':' &&
-    value[0] >= '0' &&
-    value[0] <= '9' &&
-    value[1] >= '0' &&
-    value[1] <= '9' &&
-    value[3] >= '0' &&
-    value[3] <= '9' &&
-    value[4] >= '0' &&
-    value[4] <= '9';
-  if (!isClockValue) return value || fallback;
+  if (!/^\d{2}:\d{2}$/.test(value)) return value || fallback;
   const date = String(timestamp).slice(0, 10);
   return `${date}T${value}:00Z`;
 }
