@@ -17,7 +17,12 @@ export async function runMutantIteration() {
     process.env.CORE_MUTANT_TIMEOUT_MS || 60 * 60 * 1000
   );
   const rootDir = path.resolve(process.env.DADETO_MUTANT_ROOT || '.');
-  const summary = await scanCoreMutants({ rootDir, timeoutMs, findTests: true });
+  const summary = await scanCoreMutants({
+    rootDir,
+    timeoutMs,
+    findTests: true,
+    refreshSurvivors: true,
+  });
   console.log(
     `Mutant iteration complete: ${summary.completed}/${summary.total} files, ` +
       `${summary.pending} pending, ${summary.survivors} with survivors, ` +

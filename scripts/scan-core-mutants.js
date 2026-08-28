@@ -284,7 +284,13 @@ export async function scanCoreMutants(options = {}) {
   try {
     for (const absolutePath of files) {
       const file = path.relative(rootDir, absolutePath);
-      if (['success', 'timed_out'].includes(state.get(file)?.status)) continue;
+      const previous = state.get(file);
+      const refreshSurvivor =
+        options.refreshSurvivors &&
+        previous?.status === 'success' &&
+        previous.survivingMutants > 0;
+      if (['success', 'timed_out'].includes(previous?.status) && !refreshSurvivor)
+        continue;
       const startedAt = new Date().toISOString();
       const startedAtMs = Date.now();
       await appendRecord(
