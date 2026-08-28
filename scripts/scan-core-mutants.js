@@ -1,4 +1,4 @@
-import { appendFile, mkdir, readFile, writeFile } from 'node:fs/promises';
+import { appendFile, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { pathToFileURL } from 'node:url';
 import path from 'node:path';
 import { spawn } from 'node:child_process';
@@ -222,6 +222,7 @@ export async function scanCoreMutants(options = {}) {
   const fsModule = options.fsModule || {
     appendFile,
     mkdir,
+    rm,
     readFile,
     writeFile,
     readdir: (directory, options) =>
@@ -232,6 +233,7 @@ export async function scanCoreMutants(options = {}) {
     (args => runBoundedCommand({ ...args, spawnImpl: options.spawnImpl }));
   const reportRoot = path.join(rootDir, 'reports', 'mutation');
   const worktreePath = path.join(rootDir, '.worktrees', 'core-mutant-scan');
+  const lockPath = path.join(reportRoot, '.core-file-scan.lock');
   const statePath = path.join(reportRoot, 'core-file-scan.jsonl');
   const summaryPath = path.join(reportRoot, 'core-file-scan-summary.json');
   const survivorListPath = path.join(
@@ -240,6 +242,14 @@ export async function scanCoreMutants(options = {}) {
   );
   await fsModule.mkdir(reportRoot, { recursive: true });
   await fsModule.mkdir(path.dirname(worktreePath), { recursive: true });
+  try {
+    await fsModule.mkdir(lockPath);
+  } catch (error) {
+    if (error.code === 'EEXIST') {
+      throw new Error(`Mutation scan already running for ${rootDir}`);
+    }
+    throw error;
+  }
   const state = await readLatestState(statePath, fsModule);
   const files = await enumerateMutationTargets(
     path.join(rootDir, 'src', 'core'),
@@ -349,6 +359,7 @@ export async function scanCoreMutants(options = {}) {
       timeoutMs,
       env: baseEnv,
     });
+    await fsModule.rm(lockPath, { recursive: true, force: true });
   }
   await writeSummary(state, files, summaryPath, fsModule);
   return JSON.parse(await fsModule.readFile(summaryPath, 'utf8'));

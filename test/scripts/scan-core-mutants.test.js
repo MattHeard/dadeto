@@ -88,7 +88,7 @@ describe('scanCoreMutants', () => {
     await fs.rm(rootDir, { recursive: true, force: true });
   });
 
-  test('records timeout results and retries them on the next run', async () => {
+  test('records timeout results as terminal on the next run', async () => {
     const rootDir = await fs.mkdtemp(
       path.join(os.tmpdir(), 'dadeto-core-scan-')
     );
@@ -120,7 +120,7 @@ describe('scanCoreMutants', () => {
       timeoutMs: 1000,
       runCommand,
     });
-    expect(second).toMatchObject({ completed: 1, timedOut: 0, failed: 0 });
+    expect(second).toMatchObject({ completed: 1, timedOut: 1, failed: 0 });
     await fs.rm(rootDir, { recursive: true, force: true });
   });
 });
