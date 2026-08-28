@@ -39,6 +39,10 @@ describe('EXAC1 exact request text to SKU lookup', () => {
     expect(
       json(exactRequestTextToSkuLookup, { requestText: 'Football' })
     ).toEqual({ matched: false, skuId: null });
+    expect(JSON.parse(exactRequestTextToSkuLookup('{'))).toMatchObject({
+      matched: false,
+      error: expect.any(String),
+    });
   });
 });
 
@@ -67,6 +71,11 @@ describe('SEGM3 and LATE2 temporal primitives', () => {
       feasible: true,
       startTimestamp: '2026-08-27T10:30:00.000Z',
       endTimestamp: '2026-08-27T11:00:00.000Z',
+    });
+    expect(JSON.parse(latestFixedDurationSegmentWithinBounds('{'))).toMatchObject({
+      feasible: false,
+      reason: expect.any(String),
+      error: expect.any(String),
     });
   });
 });
@@ -100,6 +109,11 @@ describe('DELI2, PROC3, and PICK2 runner feasibility', () => {
       feasible: true,
       startTimestamp: '2026-08-27T16:30:00.000Z',
     });
+    expect(JSON.parse(procurementSegmentFeasibility('{'))).toMatchObject({
+      feasible: false,
+      reason: expect.any(String),
+      error: expect.any(String),
+    });
     expect(
       json(pickupReturnRunnerFeasibility, {
         pickupPoint: base.pickupPoint,
@@ -110,6 +124,11 @@ describe('DELI2, PROC3, and PICK2 runner feasibility', () => {
     ).toMatchObject({
       feasible: true,
       endTimestamp: '2026-08-27T20:45:00.000Z',
+    });
+    expect(JSON.parse(pickupReturnRunnerFeasibility('{'))).toMatchObject({
+      feasible: false,
+      reason: expect.any(String),
+      error: expect.any(String),
     });
   });
 
