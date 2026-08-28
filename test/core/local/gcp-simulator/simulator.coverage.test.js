@@ -32,7 +32,8 @@ describe('gcp simulator coverage paths', () => {
       status: 400,
       body: {
         valid: false,
-        reason: 'A possession context with start and end timestamps is required.',
+        reason:
+          'A possession context with start and end timestamps is required.',
       },
     });
     await expect(
