@@ -33,7 +33,7 @@ import {
   createResolveApiKeyUuid,
   createPaymentWebhookHandler,
 } from '../../payment-webhook-core.js';
-import { createSearchHttpHandler } from '../../../cloud/object-minute-rental-search/search-http.js';
+import { createSearchHttpHandler } from '../../object-minute-rental-search/search-http.js';
 
 const DEFAULT_STORY_TITLE = 'E2E moderation fixture story';
 const DEFAULT_FIRST_CONTENT =
