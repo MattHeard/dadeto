@@ -74,6 +74,67 @@ describe('object minute rental search core', () => {
         base.pickupPoint.timestamp
       )
     ).toBe(false);
+    expect(contained('bad', '2026-08-27T11:00Z', 'bad', 'bad')).toBe(false);
+    expect(
+      contained(
+        '2026-08-27T10:00Z',
+        '2026-08-27T10:00Z',
+        '2026-08-27T10:00Z',
+        '2026-08-27T10:00Z'
+      )
+    ).toBe(true);
+    expect(
+      latestPlacement(3600, '2026-08-27T18:00Z', '2026-08-27T19:00Z')
+    ).toMatchObject({ feasible: true });
+    expect(
+      runnerInterval(
+        {
+          startTimestamp: '2026-08-27T10:00Z',
+          endTimestamp: '2026-08-27T11:00Z',
+        },
+        [
+          {
+            startTimestamp: '2026-08-27T00:00Z',
+            endTimestamp: '2026-08-27T01:00Z',
+          },
+          {
+            startTimestamp: '2026-08-27T09:00Z',
+            endTimestamp: '2026-08-27T12:00Z',
+          },
+        ],
+        []
+      )
+    ).toEqual({ feasible: true });
+    expect(
+      runnerInterval(
+        {
+          startTimestamp: '2026-08-27T10:00Z',
+          endTimestamp: '2026-08-27T11:00Z',
+        },
+        [
+          {
+            clockInTimestamp: '2026-08-27T09:00Z',
+            clockOutTimestamp: '2026-08-27T12:00Z',
+          },
+        ],
+        []
+      )
+    ).toEqual({ feasible: true });
+    expect(
+      runnerInterval(
+        {
+          startTimestamp: '2026-08-27T10:00Z',
+          endTimestamp: '2026-08-27T11:00Z',
+        },
+        [
+          {
+            clockInPoint: { timestamp: '2026-08-27T09:00Z' },
+            clockOutPoint: { timestamp: '2026-08-27T12:00Z' },
+          },
+        ],
+        []
+      )
+    ).toEqual({ feasible: true });
   });
 
   test('covers delivery, procurement, pickup, runner overlap, composition, and search', () => {
