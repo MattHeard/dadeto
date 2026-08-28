@@ -617,9 +617,7 @@ describe('object minute rental HTTP adapter', () => {
               exists: true,
               data: () => ({
                 timestamp:
-                  id === 'start'
-                    ? '2026-08-27T15:00Z'
-                    : '2026-08-27T15:30Z',
+                  id === 'start' ? '2026-08-27T15:00Z' : '2026-08-27T15:30Z',
               }),
             }),
           }),
@@ -635,7 +633,11 @@ describe('object minute rental HTTP adapter', () => {
       results: [{ skuId: 'FOOTBALL' }],
     });
     await createSearchHttpHandler({
-      db: { collection: () => { throw 'database failure'; } },
+      db: {
+        collection: () => {
+          throw 'database failure';
+        },
+      },
       clock: () => new Date('2026-08-27T15:00Z'),
     })({ body: base }, { json, status: () => ({ json }) });
     expect(json).toHaveBeenLastCalledWith({

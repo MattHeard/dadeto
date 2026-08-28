@@ -26,6 +26,15 @@ describe('gcp simulator coverage paths', () => {
       status: 200,
       body: { ok: true },
     });
+    await expect(
+      simulator.routes.objectMinuteRentalSearch({ body: {} })
+    ).resolves.toEqual({
+      status: 400,
+      body: {
+        valid: false,
+        reason: 'A possession context with start and end timestamps is required.',
+      },
+    });
   });
 
   it('creates the delete sentinel used by the variant-write trigger', async () => {
