@@ -114,6 +114,22 @@ describe('object minute rental search core', () => {
       )
     ).toEqual({ feasible: true });
     expect(
+      contained(
+        '2026-08-27T10:00Z',
+        '2026-08-27T11:00Z',
+        'bad',
+        '2026-08-27T12:00Z'
+      )
+    ).toBe(false);
+    expect(
+      contained(
+        '2026-08-27T10:00Z',
+        '2026-08-27T11:00Z',
+        '2026-08-27T09:00Z',
+        'bad'
+      )
+    ).toBe(false);
+    expect(
       runnerInterval(
         {
           startTimestamp: '2026-08-27T10:00Z',
@@ -143,6 +159,29 @@ describe('object minute rental search core', () => {
         []
       )
     ).toEqual({ feasible: true });
+  });
+
+  test('rejects windows missing both boundary representations', () => {
+    expect(
+      runnerInterval(
+        {
+          startTimestamp: '2026-08-27T10:00Z',
+          endTimestamp: '2026-08-27T11:00Z',
+        },
+        [{ startTimestamp: '2026-08-27T09:00Z' }],
+        []
+      )
+    ).toEqual({ feasible: false, reason: 'outside-shift' });
+    expect(
+      runnerInterval(
+        {
+          startTimestamp: '2026-08-27T10:00Z',
+          endTimestamp: '2026-08-27T11:00Z',
+        },
+        [{ endTimestamp: '2026-08-27T12:00Z' }],
+        []
+      )
+    ).toEqual({ feasible: false, reason: 'outside-shift' });
   });
 
   test('covers delivery, procurement, pickup, runner overlap, composition, and search', () => {
@@ -257,6 +296,14 @@ describe('object minute rental search core', () => {
     expect(
       latestPlacement(7200, '2026-08-27T19:00Z', base.pickupPoint.timestamp)
     ).toEqual({ feasible: false, reason: 'no-placement' });
+    expect(
+      delivery({
+        deliveryDurationSeconds: 2700,
+        deliveryPoint: { timestamp: '2026-08-27T19:00Z' },
+        runnerSchedule: schedule,
+        runnerCommitments: [],
+      })
+    ).toMatchObject({ feasible: true });
     expect(
       runnerInterval(
         {
