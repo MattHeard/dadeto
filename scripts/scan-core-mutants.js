@@ -260,6 +260,9 @@ export async function scanCoreMutants(options = {}) {
     path.join(rootDir, 'src', 'core'),
     fsModule
   );
+  const mutationFiles = files.map(file =>
+    path.relative(rootDir, file).replaceAll(path.sep, '/')
+  );
   const baseEnv = { ...process.env, BEADS_NO_DAEMON: '1' };
   await run({
     command: 'git',
@@ -359,8 +362,8 @@ export async function scanCoreMutants(options = {}) {
       }
       await appendRecord(statePath, record, fsModule);
       state.set(file, record);
-      await writeSurvivorList(state, survivorListPath, files, fsModule);
-      await writeSummary(state, files, summaryPath, fsModule);
+      await writeSurvivorList(state, survivorListPath, mutationFiles, fsModule);
+      await writeSummary(state, mutationFiles, summaryPath, fsModule);
     }
   } finally {
     await run({
@@ -372,7 +375,7 @@ export async function scanCoreMutants(options = {}) {
     });
     await fsModule.rm(lockPath, { recursive: true, force: true });
   }
-  await writeSummary(state, files, summaryPath, fsModule);
+  await writeSummary(state, mutationFiles, summaryPath, fsModule);
   return JSON.parse(await fsModule.readFile(summaryPath, 'utf8'));
 }
 
