@@ -556,6 +556,16 @@ describe('object minute rental HTTP adapter', () => {
       'A possession context with start and end timestamps is required.',
       { requestText: 'football' }
     );
+    await invoke(
+      { db: {}, clock: () => new Date('2026-08-27T15:00Z') },
+      'A possession context with start and end timestamps is required.',
+      { requestText: 'football', pickupPoint: base.pickupPoint }
+    );
+    await invoke(
+      { db: {}, clock: () => new Date('2026-08-27T15:00Z') },
+      'A possession context with start and end timestamps is required.',
+      { requestText: 'football', deliveryPoint: base.deliveryPoint }
+    );
   });
 
   test('preserves non-format supplier values and accepts zero durations', async () => {
