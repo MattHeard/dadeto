@@ -21,7 +21,6 @@ export function normalizeCatalogSnapshot(documentId, input) {
  * @returns {Array<object>} Normalized operation rows.
  */
 function normalizeOperations(operations) {
-  if (Array.isArray(operations)) return operations;
   return Object.entries(operations ?? {}).map(([id, value]) => ({
     id,
     ...value,
