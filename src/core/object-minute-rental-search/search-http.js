@@ -40,7 +40,7 @@ export function createSearchHttpHandler({
  * @param {() => Date} clock Current-time provider.
  * @returns {object} Normalized search request.
  */
-function normalizeRequest(body, env, clock) {
+export function normalizeRequest(body, env, clock) {
   if (!body || typeof body !== 'object')
     throw new Error('A JSON search request is required.');
   const possession = body.possessionContext;
@@ -88,7 +88,7 @@ function normalizeRequest(body, env, clock) {
  * @param {string} fallback Fallback window value.
  * @returns {string} ISO timestamp or fallback value.
  */
-function dailyWindow(value, timestamp, fallback) {
+export function dailyWindow(value, timestamp, fallback) {
   if (!/^\d{2}:\d{2}$/.test(value)) return value || fallback;
   const date = String(timestamp).slice(0, 10);
   return `${date}T${value}:00Z`;

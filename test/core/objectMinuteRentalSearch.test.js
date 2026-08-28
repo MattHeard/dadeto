@@ -11,7 +11,11 @@ import {
   runnerInterval,
   searchResult,
 } from '../../src/core/object-minute-rental-search/search-core.js';
-import { createSearchHttpHandler } from '../../src/core/object-minute-rental-search/search-http.js';
+import {
+  createSearchHttpHandler,
+  dailyWindow,
+  normalizeRequest,
+} from '../../src/core/object-minute-rental-search/search-http.js';
 // Reuse the established wrapper-level assertions so the direct core mutation
 // run observes every externally visible feasibility branch as well.
 import '../toys/2026-08-27/searchFeasibility.test.js';
@@ -654,5 +658,22 @@ describe('object minute rental HTTP adapter', () => {
       valid: true,
       results: [{ skuId: 'FOOTBALL' }],
     });
+    expect(dailyWindow('16:00', '2026-08-27T15:00Z', 'fallback')).toBe(
+      '2026-08-27T16:00:00Z'
+    );
+    expect(dailyWindow('16:00x', '2026-08-27T15:00Z', 'fallback')).toBe(
+      '16:00x'
+    );
+    expect(dailyWindow('x16:00', '2026-08-27T15:00Z', 'fallback')).toBe(
+      'x16:00'
+    );
+    expect(dailyWindow('', '2026-08-27T15:00Z', 'fallback')).toBe('fallback');
+    expect(
+      normalizeRequest(
+        base,
+        { SEARCH_SUPPLIER_START: undefined },
+        () => new Date('2026-08-27T15:00Z')
+      ).supplierAvailability.startTimestamp
+    ).toBe('2026-08-27T07:00:00Z');
   });
 });
