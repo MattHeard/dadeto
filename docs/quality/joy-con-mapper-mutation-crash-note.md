@@ -29,3 +29,12 @@ executable mutants all timed out. This confirms that the mapper can induce a
 crash or non-terminating test path under mutation; these results must remain
 separate from ordinary survivors and should be investigated by mutant id and
 input shape before changing production guards.
+
+## Resolved malformed-report crash
+
+The concrete crash boundary was an input-report callback whose event had no
+`data` payload. Both the report logger and decoder previously dereferenced
+`event.data.buffer`, so a malformed WebHID event threw before the mapper could
+update its safe empty state. `readHidReportBytes` now treats a missing buffer as
+an empty report. The listener-level regression test verifies that invoking the
+callback with `{}` does not throw and produces `{ buttons: [], axes: [] }`.

@@ -441,7 +441,7 @@ function sameNumberArray(left, right) {
  *   Normalized snapshot used by the capture loop.
  */
 function snapshotHidInputReport(event) {
-  const bytes = Array.from(new Uint8Array(event.data.buffer));
+  const bytes = readHidReportBytes(event);
   const isStandardJoyConReport = isStandardJoyConReportBytes(event, bytes);
   const buttonBytes = readJoyConButtonBytes(bytes, isStandardJoyConReport);
   const hatByte = readJoyConHatByte(bytes, isStandardJoyConReport);
@@ -450,6 +450,17 @@ function snapshotHidInputReport(event) {
     buttons: snapshotHidButtons(buttonBytes),
     axes: readJoyConAxes(hatByte),
   };
+}
+
+/**
+ * Extract raw bytes from a WebHID report without trusting the event shape.
+ * @param {HidInputReportEventLike | null | undefined} event
+ *   Input report event supplied by the browser.
+ * @returns {number[]}
+ *   Report bytes, or an empty list for an incomplete event.
+ */
+function readHidReportBytes(event) {
+  return Array.from(new Uint8Array(event?.data?.buffer ?? new ArrayBuffer(0)));
 }
 
 /**
@@ -528,7 +539,7 @@ function readJoyConAxes(hatByte) {
  *   Writes a concise debug line.
  */
 function logHidReportEvent(device, event) {
-  const bytes = Array.from(new Uint8Array(event.data.buffer));
+  const bytes = readHidReportBytes(event);
   console.log('[joyConMapper:webhid]', 'report', {
     productName: device.productName,
     vendorId: device.vendorId,
@@ -2170,6 +2181,7 @@ export const joyConMapperTestOnly = {
   updateHidSnapshot,
   sameHidSnapshot,
   snapshotHidInputReport,
+  readHidReportBytes,
   readJoyConButtonBytes,
   readJoyConHatByte,
   resolveHatXAxis,

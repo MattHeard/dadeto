@@ -24,6 +24,7 @@ const {
   sameButtonSnapshot,
   sameNumberArray,
   snapshotHidInputReport,
+  readHidReportBytes,
   readJoyConButtonBytes,
   readJoyConHatByte,
   resolveHatXAxis,
@@ -914,6 +915,25 @@ describe('joyConMapper granted-device opening', () => {
     );
   });
 
+  it('ignores an incomplete input report without throwing', () => {
+    const addEventListener = jest.fn();
+    const device = { addEventListener, productName: 'Joy-Con' };
+    const state = {
+      hidSnapshot: null,
+      hidPendingSnapshot: null,
+      hidPendingSnapshotCount: 0,
+    };
+    const logSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
+
+    attachHidDeviceListener(state, [], device);
+    const handler = addEventListener.mock.calls[0][1];
+
+    expect(() => handler({})).not.toThrow();
+    expect(state.hidPendingSnapshot).toEqual({ buttons: [], axes: [] });
+    expect(readHidReportBytes(undefined)).toEqual([]);
+    logSpy.mockRestore();
+  });
+
   it('cleans up safely when a device lacks removeEventListener', () => {
     const addEventListener = jest.fn();
     const device = { addEventListener };
@@ -1040,6 +1060,7 @@ describe('joyConMapper HID report snapshots', () => {
     expect(
       snapshotHidInputReport({ data: { buffer: new Uint8Array().buffer } })
     ).toEqual({ buttons: [], axes: [] });
+    expect(snapshotHidInputReport({})).toEqual({ buttons: [], axes: [] });
   });
 
   it('requires the standard report id and minimum report length', () => {
