@@ -429,4 +429,25 @@ describe('object minute rental HTTP adapter', () => {
       { requestText: 'football' }
     );
   });
+
+  test('preserves non-format supplier values and accepts zero durations', async () => {
+    const emptyDb = {
+      collection: () => ({
+        where: () => ({ get: async () => ({}) }),
+      }),
+    };
+    const json = jest.fn();
+    const handler = createSearchHttpHandler({
+      db: emptyDb,
+      env: {
+        SEARCH_SUPPLIER_START: '16:00x',
+        SEARCH_DELIVERY_OUTBOUND_SECONDS: '0',
+        SEARCH_PROCUREMENT_SECONDS: '0',
+        SEARCH_PICKUP_RETURN_SECONDS: '0',
+      },
+      clock: () => new Date('2026-08-27T15:00Z'),
+    });
+    await handler({ body: base }, { json, status: () => ({ json }) });
+    expect(json).toHaveBeenCalledWith({ valid: true, results: [] });
+  });
 });
