@@ -3,7 +3,7 @@ import path from 'path';
 import { beforeAll, describe, test, expect } from '@jest/globals';
 import { rewriteRelativeImports } from '../../helpers/resolveRelativeImports.js';
 
-let isEmptyText;
+let isInvalidText;
 
 beforeAll(async () => {
   const filePath = path.join(
@@ -12,19 +12,19 @@ beforeAll(async () => {
   );
   let src = fs.readFileSync(filePath, 'utf8');
   src = rewriteRelativeImports(src, filePath);
-  src += '\nexport { isEmptyText };';
-  ({ isEmptyText } = await import(
+  src += '\nexport { isInvalidText };';
+  ({ isInvalidText } = await import(
     `data:text/javascript,${encodeURIComponent(src)}`
   ));
 });
 
-describe('isEmptyText', () => {
+describe('isInvalidText', () => {
   test.each([
     [undefined, true],
     [null, true],
-    ['   ', true],
+    ['   ', false],
     ['content', false],
   ])('given %p returns %p', (input, expected) => {
-    expect(isEmptyText(input)).toBe(expected);
+    expect(isInvalidText(input)).toBe(expected);
   });
 });
