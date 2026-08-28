@@ -521,6 +521,12 @@ describe('object minute rental HTTP adapter', () => {
       valid: false,
       reason: 'A JSON search request is required.',
     });
+    json.mockClear();
+    await handler({ body: undefined }, { json, status });
+    expect(json).toHaveBeenCalledWith({
+      valid: false,
+      reason: 'A JSON search request is required.',
+    });
   });
 
   test('rejects invalid clock, duration, schedule, and possession input', async () => {
@@ -571,5 +577,45 @@ describe('object minute rental HTTP adapter', () => {
     });
     await handler({ body: base }, { json, status: () => ({ json }) });
     expect(json).toHaveBeenCalledWith({ valid: true, results: [] });
+  });
+
+  test('distinguishes a strict daily supplier window from a suffix value', async () => {
+    const emptyDb = {
+      collection: () => ({
+        where: () => ({ get: async () => ({ docs: [] }) }),
+      }),
+    };
+    const body = {
+      ...base,
+      deliveryPoint: { timestamp: '2026-08-27T16:00Z' },
+      pickupPoint: { timestamp: '2026-08-27T16:00Z' },
+    };
+    const json = jest.fn();
+    await createSearchHttpHandler({
+      db: emptyDb,
+      env: {
+        SEARCH_SUPPLIER_START: '16:00x',
+        SEARCH_DELIVERY_OUTBOUND_SECONDS: '0',
+        SEARCH_PROCUREMENT_SECONDS: '0',
+        SEARCH_PICKUP_RETURN_SECONDS: '0',
+      },
+      clock: () => new Date('2026-08-27T15:00Z'),
+    })({ body }, { json, status: () => ({ json }) });
+    expect(json).toHaveBeenCalledWith({ valid: true, results: [] });
+    json.mockClear();
+    await createSearchHttpHandler({
+      db: emptyDb,
+      env: {
+        SEARCH_SUPPLIER_START: '16:00',
+        SEARCH_DELIVERY_OUTBOUND_SECONDS: '0',
+        SEARCH_PROCUREMENT_SECONDS: '0',
+        SEARCH_PICKUP_RETURN_SECONDS: '0',
+      },
+      clock: () => new Date('2026-08-27T15:00Z'),
+    })({ body }, { json, status: () => ({ json }) });
+    expect(json).toHaveBeenCalledWith({
+      valid: true,
+      results: [{ skuId: 'FOOTBALL' }],
+    });
   });
 });
