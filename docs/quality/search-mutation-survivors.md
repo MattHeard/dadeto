@@ -9,10 +9,10 @@ module still has survivors and therefore keeps the mutation goal open.
 
 - `src/core/object-minute-rental-search/search-core.js`: 0 survivors in the
   latest run.
-- `src/core/object-minute-rental-search/search-http.js`: 8 survivors.
+- `src/core/object-minute-rental-search/search-http.js`: 7 survivors.
   They are concentrated in request/body boundary handling, runner-id and
   supplier defaults, timestamp-format validation, commitment-list handling,
-  and non-negative configuration validation (lines 44, 70, 92, and 107).
+  and non-negative configuration validation (lines 70, 92, and 107).
 
 The remaining HTTP survivors are not classified as static mutants. The next
 remediation loop should
