@@ -18,7 +18,7 @@ const TERTIARY_COLOR = '#4338ca';
  * @returns {string} JSON graph payload for the graph presenter.
  */
 export function gdpSectorProjection(input, env) {
-  const getRandomNumber = env.get?.('getRandomNumber') || (() => 0.5);
+  const getRandomNumber = env.get?.('getRandomNumber');
   const request = parseRequest(input);
   let rows = publicHistoricalRows;
   if (request.rows !== undefined) {
@@ -45,7 +45,7 @@ export function gdpSectorProjection(input, env) {
       { lineColor: TERTIARY_COLOR, points: points.tertiary },
     ],
   };
-  getRandomNumber();
+  getRandomNumber?.();
   return JSON.stringify(payload);
 }
 
