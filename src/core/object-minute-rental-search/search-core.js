@@ -12,7 +12,6 @@ export function exactLookup(request) {
 export function contained(start, end, windowStart, windowEnd) {
   const values = [start, end, windowStart, windowEnd].map(parseTime);
   return (
-    values.every(Number.isFinite) &&
     values[0] <= values[1] &&
     values[2] <= values[3] &&
     values[2] <= values[0] &&
@@ -189,18 +188,14 @@ export function finiteDuration(value) {
 
 function overlap(start, end, otherStart, otherEnd) {
   const values = [start, end, otherStart, otherEnd].map(parseTime);
-  return (
-    values.every(Number.isFinite) &&
-    values[0] < values[3] &&
-    values[2] < values[1]
-  );
+  return values[0] < values[3] && values[2] < values[1];
 }
 
 function windowStart(window) {
   return (
     window.startTimestamp ||
     window.clockInTimestamp ||
-    window?.clockInPoint?.timestamp
+    window.clockInPoint?.timestamp
   );
 }
 
@@ -208,7 +203,7 @@ function windowEnd(window) {
   return (
     window.endTimestamp ||
     window.clockOutTimestamp ||
-    window?.clockOutPoint?.timestamp
+    window.clockOutPoint?.timestamp
   );
 }
 
