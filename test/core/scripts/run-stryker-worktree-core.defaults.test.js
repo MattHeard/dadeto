@@ -51,7 +51,7 @@ describe('createRunStrykerWorktreeHandle defaults', () => {
   });
 
   test('uses default dependencies when options are omitted', async () => {
-    const handle = createRunStrykerWorktreeHandle();
+    const handle = createRunStrykerWorktreeHandle({ processModule: { env: {} } });
 
     await handle();
 
