@@ -154,6 +154,13 @@ describe('PROC3 composition and OBJE2 search wrapper', () => {
     expect(
       json(procurementBackedFulfillmentFeasibilityComposition, base)
     ).toMatchObject({ feasible: true });
+    expect(
+      JSON.parse(procurementBackedFulfillmentFeasibilityComposition('{'))
+    ).toMatchObject({
+      feasible: false,
+      reason: expect.any(String),
+      error: expect.any(String),
+    });
     expect(json(searchRequestToSkuResultWrapper, base)).toEqual({
       valid: true,
       results: [{ skuId: 'FOOTBALL' }],
