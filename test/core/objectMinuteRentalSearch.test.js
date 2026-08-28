@@ -558,6 +558,40 @@ describe('object minute rental HTTP adapter', () => {
       valid: true,
       results: [{ skuId: 'FOOTBALL' }],
     });
+    const onePointDb = {
+      collection: name => {
+        if (name === 'runner_assignments')
+          return {
+            where: () => ({
+              get: async () => ({
+                docs: [{ data: () => ({ segmentId: 'segment-1' }) }],
+              }),
+            }),
+          };
+        if (name === 'segments')
+          return {
+            doc: () => ({
+              get: async () => ({
+                exists: true,
+                data: () => ({ startPointId: 'start', endPointId: 'end' }),
+              }),
+            }),
+          };
+        return {
+          doc: id => ({
+            get: async () => ({ exists: id === 'start' }),
+          }),
+        };
+      },
+    };
+    await createSearchHttpHandler({
+      db: onePointDb,
+      clock: () => new Date('2026-08-27T15:00Z'),
+    })({ body: base }, { json, status: () => ({ json }) });
+    expect(json).toHaveBeenLastCalledWith({
+      valid: true,
+      results: [{ skuId: 'FOOTBALL' }],
+    });
   });
 
   test('returns a 400 response for malformed requests', async () => {
