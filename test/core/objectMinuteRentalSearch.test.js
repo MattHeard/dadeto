@@ -360,10 +360,10 @@ describe('object minute rental search core', () => {
 
 describe('object minute rental HTTP adapter', () => {
   test('normalizes a request and reads persisted commitments', async () => {
+    const where = jest.fn(() => ({ get: async () => ({ docs: [] }) }));
     const db = {
       collection: jest.fn(name => {
-        if (name === 'runner_assignments')
-          return { where: () => ({ get: async () => ({ docs: [] }) }) };
+        if (name === 'runner_assignments') return { where };
         return { doc: () => ({ get: async () => ({ exists: false }) }) };
       }),
     };
@@ -377,6 +377,13 @@ describe('object minute rental HTTP adapter', () => {
       valid: true,
       results: [{ skuId: 'FOOTBALL' }],
     });
+    expect(where).toHaveBeenCalledWith('personId', '==', 'RUNNER-1');
+    await createSearchHttpHandler({
+      db,
+      env: { SEARCH_RUNNER_ID: 'RUNNER-9' },
+      clock: () => new Date('2026-08-27T15:00Z'),
+    })({ body: base }, { json, status: () => ({ json }) });
+    expect(where).toHaveBeenLastCalledWith('personId', '==', 'RUNNER-9');
   });
 
   test('returns a 400 response for malformed requests', async () => {

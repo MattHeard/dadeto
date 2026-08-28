@@ -19,7 +19,7 @@ export function createSearchHttpHandler({
 }) {
   return async (req, res) => {
     try {
-      const request = normalizeRequest(req?.body, env, clock);
+      const request = normalizeRequest(req.body, env, clock);
       const commitments = await readRunnerCommitments(
         db,
         env.SEARCH_RUNNER_ID ?? DEFAULT_RUNNER_ID
