@@ -4,7 +4,7 @@
 const FOOTBALL_SKU = 'FOOTBALL';
 
 export function exactLookup(request) {
-  return request?.requestText === 'football'
+  return request.requestText === 'football'
     ? { matched: true, skuId: FOOTBALL_SKU }
     : { matched: false, skuId: null };
 }
@@ -58,11 +58,11 @@ export function runnerInterval(interval, schedule, commitments) {
 
 export function delivery(request) {
   const candidate = latestPlacement(
-    request?.deliveryDurationSeconds,
-    request?.earliestStartTimestamp ||
-      request?.nowTimestamp ||
+    request.deliveryDurationSeconds,
+    request.earliestStartTimestamp ||
+      request.nowTimestamp ||
       '1970-01-01T00:00:00Z',
-    pointTimestamp(request?.deliveryPoint)
+    pointTimestamp(request.deliveryPoint)
   );
   if (!candidate.feasible) return candidate;
   return {
@@ -76,14 +76,14 @@ export function delivery(request) {
 }
 
 export function procurement(request) {
-  if (!finiteDuration(request?.procurementDurationSeconds))
+  if (!finiteDuration(request.procurementDurationSeconds))
     return { feasible: false, reason: 'invalid-duration' };
-  const deliveryStart = parseTime(request?.deliveryOutboundStartTimestamp);
-  const supplier = request?.supplierAvailability;
+  const deliveryStart = parseTime(request.deliveryOutboundStartTimestamp);
+  const supplier = request.supplierAvailability;
   const supplierEnd = parseTime(windowEnd(supplier));
   const candidate = latestPlacement(
     request.procurementDurationSeconds,
-    request?.nowTimestamp,
+    request.nowTimestamp,
     iso(Math.min(deliveryStart, supplierEnd))
   );
   if (!candidate.feasible) return candidate;
@@ -107,9 +107,9 @@ export function procurement(request) {
 }
 
 export function pickup(request) {
-  if (!finiteDuration(request?.pickupDurationSeconds))
+  if (!finiteDuration(request.pickupDurationSeconds))
     return { feasible: false, reason: 'invalid-duration' };
-  const start = pointTimestamp(request?.pickupPoint);
+  const start = pointTimestamp(request.pickupPoint);
   const startTime = parseTime(start);
   const end = startTime + request.pickupDurationSeconds * 1000;
   if (!Number.isFinite(startTime))
@@ -127,21 +127,21 @@ export function pickup(request) {
 
 export function composed(request) {
   const deliveryResult = delivery({
-    deliveryPoint: request?.deliveryPoint,
-    deliveryDurationSeconds: request?.durations?.deliveryOutboundSeconds,
-    earliestStartTimestamp: request?.nowTimestamp,
-    runnerSchedule: request?.runnerSchedule,
-    runnerCommitments: request?.runnerCommitments,
+    deliveryPoint: request.deliveryPoint,
+    deliveryDurationSeconds: request.durations.deliveryOutboundSeconds,
+    earliestStartTimestamp: request.nowTimestamp,
+    runnerSchedule: request.runnerSchedule,
+    runnerCommitments: request.runnerCommitments,
   });
   if (!deliveryResult.feasible)
     return { feasible: false, reason: `delivery:${deliveryResult.reason}` };
   const procurementResult = procurement({
-    procurementDurationSeconds: request?.durations?.procurementSeconds,
-    nowTimestamp: request?.nowTimestamp,
+    procurementDurationSeconds: request.durations.procurementSeconds,
+    nowTimestamp: request.nowTimestamp,
     deliveryOutboundStartTimestamp: deliveryResult.startTimestamp,
-    supplierAvailability: request?.supplierAvailability,
-    runnerSchedule: request?.runnerSchedule,
-    runnerCommitments: request?.runnerCommitments,
+    supplierAvailability: request.supplierAvailability,
+    runnerSchedule: request.runnerSchedule,
+    runnerCommitments: request.runnerCommitments,
   });
   if (!procurementResult.feasible)
     return {
@@ -149,10 +149,10 @@ export function composed(request) {
       reason: `procurement:${procurementResult.reason}`,
     };
   const pickupResult = pickup({
-    pickupPoint: request?.pickupPoint,
-    pickupDurationSeconds: request?.durations?.pickupReturnSeconds,
-    runnerSchedule: request?.runnerSchedule,
-    runnerCommitments: request?.runnerCommitments,
+    pickupPoint: request.pickupPoint,
+    pickupDurationSeconds: request.durations.pickupReturnSeconds,
+    runnerSchedule: request.runnerSchedule,
+    runnerCommitments: request.runnerCommitments,
   });
   if (!pickupResult.feasible)
     return { feasible: false, reason: `pickup:${pickupResult.reason}` };
@@ -184,7 +184,7 @@ export function pointTimestamp(point) {
 }
 
 export function finiteDuration(value) {
-  return typeof value === 'number' && Number.isFinite(value) && value >= 0;
+  return Number.isFinite(value) && value >= 0;
 }
 
 function overlap(start, end, otherStart, otherEnd) {
