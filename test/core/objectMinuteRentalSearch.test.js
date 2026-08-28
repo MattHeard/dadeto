@@ -506,6 +506,58 @@ describe('object minute rental HTTP adapter', () => {
       clock: () => new Date('2026-08-27T15:00Z'),
     })({ body: base }, { json, status: () => ({ json }) });
     expect(where).toHaveBeenLastCalledWith('personId', '==', 'RUNNER-9');
+
+    const partialDb = {
+      collection: name => {
+        if (name === 'runner_assignments')
+          return {
+            where: () => ({
+              get: async () => ({
+                docs: [{ data: () => ({ segmentId: 'missing' }) }],
+              }),
+            }),
+          };
+        return { doc: () => ({ get: async () => ({ exists: false }) }) };
+      },
+    };
+    await createSearchHttpHandler({
+      db: partialDb,
+      clock: () => new Date('2026-08-27T15:00Z'),
+    })({ body: base }, { json, status: () => ({ json }) });
+    expect(json).toHaveBeenLastCalledWith({
+      valid: true,
+      results: [{ skuId: 'FOOTBALL' }],
+    });
+    const incompletePointsDb = {
+      collection: name => {
+        if (name === 'runner_assignments')
+          return {
+            where: () => ({
+              get: async () => ({
+                docs: [{ data: () => ({ segmentId: 'segment-1' }) }],
+              }),
+            }),
+          };
+        if (name === 'segments')
+          return {
+            doc: () => ({
+              get: async () => ({
+                exists: true,
+                data: () => ({ startPointId: 'start', endPointId: 'end' }),
+              }),
+            }),
+          };
+        return { doc: () => ({ get: async () => ({ exists: false }) }) };
+      },
+    };
+    await createSearchHttpHandler({
+      db: incompletePointsDb,
+      clock: () => new Date('2026-08-27T15:00Z'),
+    })({ body: base }, { json, status: () => ({ json }) });
+    expect(json).toHaveBeenLastCalledWith({
+      valid: true,
+      results: [{ skuId: 'FOOTBALL' }],
+    });
   });
 
   test('returns a 400 response for malformed requests', async () => {
