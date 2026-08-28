@@ -60,4 +60,12 @@ describe('gcp-test workflow report handling', () => {
     expect(source).toContain('Terraform Destroy');
     expect(source).toContain('Cleanup test static prefix');
   });
+
+  it('ignores the current scheduled run when checking the latest prior run', () => {
+    const source = readFileSync('.github/workflows/gcp-test.yml', 'utf8');
+
+    expect(source).toContain(
+      'const latest = data.workflow_runs.find(\n              run => run.id !== context.runId,\n            );'
+    );
+  });
 });

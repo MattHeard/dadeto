@@ -39,7 +39,12 @@ jobs:
               per_page: 1,
             });
 
-            const latest = data.workflow_runs[0];
+            // The current scheduled run may already be visible in the API. Do
+            // not compare the run with itself or the nightly check can skip
+            // before provisioning its test environment.
+            const latest = data.workflow_runs.find(
+              run => run.id !== context.runId,
+            );
             if (!latest) {
               core.setOutput('should_run', 'true');
               core.notice(`No previous gcp-test runs found on ${branch}; continuing.`);
