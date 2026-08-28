@@ -83,9 +83,7 @@ function getCountValue(counts, moderatorId) {
  * @returns {Array<unknown>} Array of parsed entries or an empty array.
  */
 function parseRatings(value) {
-  return arrayOrEmpty(
-    parseJsonOrFallback(/** @type {string} */ (value), [])
-  );
+  return arrayOrEmpty(parseJsonOrFallback(/** @type {string} */ (value), []));
 }
 
 /**

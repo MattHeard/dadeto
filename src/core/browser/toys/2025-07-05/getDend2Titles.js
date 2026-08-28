@@ -21,8 +21,10 @@ function resolveTran1Stories(data) {
  * @returns {object[] | undefined} Resolved stories array or undefined.
  */
 function resolveTran1StoriesWithFallback(data) {
-  return resolveTran1Stories(data) ??
-    /** @type {{stories?: object[]}} */ (data.temporary.DEND2).stories;
+  return (
+    resolveTran1Stories(data) ??
+    /** @type {{stories?: object[]}} */ (data.temporary.DEND2).stories
+  );
 }
 
 /**

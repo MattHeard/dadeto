@@ -26,16 +26,20 @@ export function createSearchHttpHandler({
       );
       res.json(searchResult({ ...request, runnerCommitments: commitments }));
     } catch (error) {
-      res
-        .status(400)
-        .json({
-          valid: false,
-          reason: error instanceof Error ? error.message : String(error),
-        });
+      res.status(400).json({
+        valid: false,
+        reason: error instanceof Error ? error.message : String(error),
+      });
     }
   };
 }
 
+/**
+ * @param {unknown} body Request body.
+ * @param {Record<string, string|undefined>} env Environment values.
+ * @param {() => Date} clock Current-time provider.
+ * @returns {object} Normalized search request.
+ */
 function normalizeRequest(body, env, clock) {
   if (!body || typeof body !== 'object')
     throw new Error('A JSON search request is required.');
@@ -78,12 +82,23 @@ function normalizeRequest(body, env, clock) {
   };
 }
 
+/**
+ * @param {string} value Window value.
+ * @param {string} timestamp Reference timestamp.
+ * @param {string} fallback Fallback window value.
+ * @returns {string} ISO timestamp or fallback value.
+ */
 function dailyWindow(value, timestamp, fallback) {
   if (!/^\d{2}:\d{2}$/.test(value)) return value || fallback;
   const date = String(timestamp).slice(0, 10);
   return `${date}T${value}:00Z`;
 }
 
+/**
+ * @param {{collection: (name: string) => unknown}} db Firestore-like database.
+ * @param {string} runnerId Runner identifier.
+ * @returns {Promise<object[]>} Runner commitment intervals.
+ */
 async function readRunnerCommitments(db, runnerId) {
   const snapshot = await db
     .collection('runner_assignments')
@@ -109,6 +124,11 @@ async function readRunnerCommitments(db, runnerId) {
   return commitments;
 }
 
+/**
+ * @param {string|undefined} value Environment value.
+ * @param {number} fallback Default number.
+ * @returns {number} Non-negative duration value.
+ */
 function numberEnv(value, fallback) {
   const number = Number(value ?? fallback);
   if (!Number.isFinite(number) || number < 0)
@@ -116,6 +136,10 @@ function numberEnv(value, fallback) {
   return number;
 }
 
+/**
+ * @param {string|undefined} value Serialized schedule.
+ * @returns {object[]} Parsed schedule entries.
+ */
 function parseSchedule(value) {
   const schedule = JSON.parse(
     value ??
