@@ -149,14 +149,14 @@ function createGraphPlotPayloadResult(payload, points) {
 /**
  * Convert JSON graph input into the final graph plot payload.
  * @param {string} inputString JSON graph options.
- * @param {(max: number) => number} getRandomNumber - Random-number source.
+ * @param {((max: number) => number) | undefined} getRandomNumber - Optional random-number source.
  * @returns {{type:'graph-plot', width:number, height:number, background:string, axesColor:string, gridColor:string, lineColor:string, xMin:number, xMax:number, yMin:number, yMax:number, points:Array<{x:number,y:number}>, series?: { lineColor?: string, points?: { x:number, y:number }[] }[]}} Canvas payload.
  */
 export function buildGraphPlotFromJson(inputString, getRandomNumber) {
   const parsed =
     parseGraphPlot(inputString) || createGraphPlotFallbackPayload();
   const normalized = normalizeGraphPlotPayload(parsed);
-  getRandomNumber(1);
+  getRandomNumber?.(1);
   return buildGraphPlotPayload(normalized);
 }
 

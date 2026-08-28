@@ -7,6 +7,6 @@ import { buildGraphPlotFromJson } from '../../graphPlotCore.js';
  * @returns {string} JSON graph payload for the canvas presenter.
  */
 export function graphPlot(input, env) {
-  const getRandomNumber = env.get?.('getRandomNumber') || (() => 0.5);
+  const getRandomNumber = env.get?.('getRandomNumber');
   return JSON.stringify(buildGraphPlotFromJson(input, getRandomNumber));
 }
