@@ -455,6 +455,16 @@ describe('object minute rental search core', () => {
       })
     ).toMatchObject({ feasible: true });
     expect(
+      delivery({
+        deliveryDurationSeconds: 0,
+        earliestStartTimestamp: '2026-08-27T16:00Z',
+        nowTimestamp: '2026-08-27T15:00Z',
+        deliveryPoint: { timestamp: '2026-08-27T15:00Z' },
+        runnerSchedule: schedule,
+        runnerCommitments: [],
+      })
+    ).toEqual({ feasible: false, reason: 'no-placement' });
+    expect(
       procurement({
         procurementDurationSeconds: 21600,
         nowTimestamp: '2026-08-27T08:00Z',
