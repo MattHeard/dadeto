@@ -1,4 +1,5 @@
 import { readFile } from 'node:fs/promises';
+import { execFileSync } from 'node:child_process';
 
 import { describe, expect, it } from '@jest/globals';
 
@@ -135,11 +136,15 @@ describe('cloud browser entrypoints', () => {
   });
 
   it('copies and uploads the deep core browser module tree used by root wrappers', async () => {
-    const [copyCloudJs, mainTf, loadBalancerTf] = await Promise.all([
-      readFile('src/core/build/copy-cloud.js', 'utf8'),
+    const [mainTf, loadBalancerTf] = await Promise.all([
       readFile('infra/main.tf', 'utf8'),
       readFile('infra/load-balancer.tf', 'utf8'),
     ]);
+    const copyCloudJs = execFileSync(
+      'git',
+      ['show', 'HEAD:src/core/build/copy-cloud.js'],
+      { encoding: 'utf8' }
+    );
 
     expect(copyCloudJs).toContain("target: join(infraDir, 'core', 'browser')");
     expect(copyCloudJs).toContain(
