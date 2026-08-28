@@ -12,10 +12,7 @@ export function exactLookup(request) {
 export function contained(start, end, windowStart, windowEnd) {
   const values = [start, end, windowStart, windowEnd].map(parseTime);
   return (
-    values[0] <= values[1] &&
-    values[2] <= values[3] &&
-    values[2] <= values[0] &&
-    values[1] <= values[3]
+    values[0] <= values[1] && values[2] <= values[0] && values[1] <= values[3]
   );
 }
 

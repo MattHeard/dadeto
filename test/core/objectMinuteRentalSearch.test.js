@@ -176,6 +176,21 @@ describe('object minute rental search core', () => {
       )
     ).toEqual({ feasible: true });
     expect(
+      runnerInterval(
+        {
+          startTimestamp: '2026-08-27T16:00Z',
+          endTimestamp: '2026-08-27T17:00Z',
+        },
+        schedule,
+        [
+          {
+            startTimestamp: '2026-08-27T15:00Z',
+            endTimestamp: '2026-08-27T16:00Z',
+          },
+        ]
+      )
+    ).toEqual({ feasible: true });
+    expect(
       contained(
         '2026-08-27T10:00Z',
         '2026-08-27T11:00Z',
