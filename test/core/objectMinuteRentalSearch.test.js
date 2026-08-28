@@ -96,6 +96,18 @@ describe('object minute rental search core', () => {
     expect(pickup({ pickupDurationSeconds: 1 })).toEqual({ feasible: false, reason: 'invalid-pickup-time' });
     expect(runnerInterval(null, [], [])).toEqual({ feasible: false, reason: 'invalid-runner-input' });
     expect(composed({ ...base, durations: { ...base.durations, deliveryOutboundSeconds: -1 } })).toEqual({ feasible: false, reason: 'delivery:invalid-duration' });
+    expect(contained('2026-08-27T12:00Z', '2026-08-27T11:00Z', base.nowTimestamp, base.pickupPoint.timestamp)).toBe(false);
+    expect(contained(base.nowTimestamp, base.pickupPoint.timestamp, '2026-08-27T21:00Z', '2026-08-27T20:00Z')).toBe(false);
+    expect(contained('2026-08-27T08:00Z', '2026-08-27T18:00Z', base.nowTimestamp, base.pickupPoint.timestamp)).toBe(false);
+    expect(latestPlacement(1800, 'bad', base.pickupPoint.timestamp)).toEqual({ feasible: false, reason: 'no-placement' });
+    expect(latestPlacement(1800, base.nowTimestamp, 'bad')).toEqual({ feasible: false, reason: 'no-placement' });
+    expect(latestPlacement(3600, '2026-08-27T19:00Z', base.pickupPoint.timestamp)).toEqual({ feasible: false, reason: 'no-placement' });
+    expect(runnerInterval({ startTimestamp: '2026-08-27T22:00Z', endTimestamp: '2026-08-27T23:00Z' }, schedule, [])).toEqual({ feasible: false, reason: 'outside-shift' });
+    expect(delivery({ deliveryDurationSeconds: 1, deliveryPoint: base.deliveryPoint, runnerSchedule: schedule, runnerCommitments: [] })).toEqual({ feasible: false, reason: 'no-placement' });
+    expect(procurement({ procurementDurationSeconds: 1800, nowTimestamp: base.nowTimestamp, deliveryOutboundStartTimestamp: '2026-08-27T18:15Z', supplierAvailability: { startTimestamp: '2026-08-27T07:00Z', endTimestamp: '2026-08-27T08:00Z' }, runnerSchedule: schedule, runnerCommitments: [] })).toEqual({ feasible: false, reason: 'no-placement' });
+    expect(pickup({ pickupDurationSeconds: 3600, pickupPoint: { timestamp: 'bad' }, runnerSchedule: schedule, runnerCommitments: [] })).toEqual({ feasible: false, reason: 'invalid-pickup-time' });
+    expect(composed({ ...base, durations: { ...base.durations, procurementSeconds: -1 } })).toEqual({ feasible: false, reason: 'procurement:invalid-duration' });
+    expect(composed({ ...base, durations: { ...base.durations, pickupReturnSeconds: -1 } })).toEqual({ feasible: false, reason: 'pickup:invalid-duration' });
   });
 });
 
@@ -120,5 +132,20 @@ describe('object minute rental HTTP adapter', () => {
     await handler({ body: null }, { json, status });
     expect(status).toHaveBeenCalledWith(400);
     expect(json).toHaveBeenCalledWith({ valid: false, reason: expect.any(String) });
+  });
+
+  test('rejects invalid clock, duration, schedule, and possession input', async () => {
+    const json = jest.fn();
+    const status = jest.fn(() => ({ json }));
+    const invoke = async (options, body = base) => {
+      json.mockClear();
+      status.mockClear();
+      await createSearchHttpHandler(options)({ body }, { json, status });
+      expect(status).toHaveBeenCalledWith(400);
+    };
+    await invoke({ db: {}, clock: () => new Date('invalid') });
+    await invoke({ db: {}, env: { SEARCH_DELIVERY_OUTBOUND_SECONDS: '-1' } });
+    await invoke({ db: {}, env: { SEARCH_RUNNER_SCHEDULE_JSON: '{}' } });
+    await invoke({ db: {}, clock: () => new Date('2026-08-27T15:00Z') }, { requestText: 'football' });
   });
 });
