@@ -92,6 +92,30 @@ describe('object minute rental search core', () => {
       )
     ).toBe(true);
     expect(
+      contained(
+        '2026-08-27T11:00Z',
+        '2026-08-27T10:00Z',
+        '2026-08-27T09:00Z',
+        '2026-08-27T12:00Z'
+      )
+    ).toBe(false);
+    expect(
+      contained(
+        '2026-08-27T10:00Z',
+        '2026-08-27T11:00Z',
+        '2026-08-27T12:00Z',
+        '2026-08-27T09:00Z'
+      )
+    ).toBe(false);
+    expect(
+      contained(
+        '2026-08-27T10:00Z',
+        '2026-08-27T13:00Z',
+        '2026-08-27T09:00Z',
+        '2026-08-27T12:00Z'
+      )
+    ).toBe(false);
+    expect(
       latestPlacement(3600, '2026-08-27T18:00Z', '2026-08-27T19:00Z')
     ).toMatchObject({ feasible: true });
     expect(
@@ -111,6 +135,36 @@ describe('object minute rental search core', () => {
           },
         ],
         []
+      )
+    ).toEqual({ feasible: true });
+    expect(
+      runnerInterval(
+        {
+          startTimestamp: '2026-08-27T16:00Z',
+          endTimestamp: '2026-08-27T17:00Z',
+        },
+        schedule,
+        [
+          {
+            startTimestamp: '2026-08-27T16:30Z',
+            endTimestamp: '2026-08-27T16:45Z',
+          },
+        ]
+      )
+    ).toEqual({ feasible: false, reason: 'runner-commitment-overlap' });
+    expect(
+      runnerInterval(
+        {
+          startTimestamp: '2026-08-27T16:00Z',
+          endTimestamp: '2026-08-27T17:00Z',
+        },
+        schedule,
+        [
+          {
+            startTimestamp: '2026-08-27T17:00Z',
+            endTimestamp: '2026-08-27T18:00Z',
+          },
+        ]
       )
     ).toEqual({ feasible: true });
     expect(
