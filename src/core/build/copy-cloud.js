@@ -72,6 +72,7 @@ function createIndividualFileCopiesPart1(planValues) {
     firebaseFunctionsCopies,
     functionCoreBrowserCopies,
     functionCoreLocalCopies,
+    functionCoreBuildCopies,
   } = planValues;
   return [
     {
@@ -121,6 +122,7 @@ function createIndividualFileCopiesPart1(planValues) {
     ...firebaseFunctionsCopies,
     ...functionCoreBrowserCopies,
     ...functionCoreLocalCopies,
+    ...functionCoreBuildCopies,
     {
       source: cloudCoreSource,
       target: join(infraFunctionsDir, 'cloud-core.js'),
@@ -1330,6 +1332,7 @@ function createCopyCloudSourcePaths(planValues) {
     join,
     srcCloudDir,
     srcCoreCloudDir,
+    srcCoreDir,
     infraFunctionsDir,
     functionDirectories,
   } = planValues;
@@ -1507,6 +1510,17 @@ function createCopyCloudSourcePaths(planValues) {
       }))
   );
 
+  const functionCoreBuildCopies = functionDirectories.map(name => ({
+    source: join(srcCoreDir, 'build', 'process-utils.js'),
+    target: join(
+      infraFunctionsDir,
+      name,
+      'core',
+      'build',
+      'process-utils.js'
+    ),
+  }));
+
   /**
    * Map the shared utility filename to its infra destination filename.
    * @param {string} file Shared utility filename.
@@ -1545,6 +1559,7 @@ function createCopyCloudSourcePaths(planValues) {
     sharedUtilityFiles,
     sharedUtilityCopies,
     preservedSharedUtilityCopies,
+    functionCoreBuildCopies,
   };
 }
 
@@ -1672,10 +1687,12 @@ function createCopyCloudPlan(deps) {
     functionSpecificCommonCoreCopies,
     sharedUtilityCopies,
     preservedSharedUtilityCopies,
+    functionCoreBuildCopies,
   } = createCopyCloudSourcePaths({
     join,
     srcCloudDir,
     srcCoreCloudDir,
+    srcCoreDir,
     infraFunctionsDir,
     infraDir,
     functionDirectories,
@@ -1703,6 +1720,7 @@ function createCopyCloudPlan(deps) {
     expressAppSource,
     functionCoreBrowserCopies,
     functionCoreLocalCopies,
+    functionCoreBuildCopies,
     commonCoreCopies,
     preservedCommonCoreCopies,
     paymentWebhookCoreCopy,
