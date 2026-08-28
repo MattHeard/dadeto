@@ -29,6 +29,12 @@ describe('billing catalog seed core', () => {
     expect(
       normalizeCatalogSnapshot('initial', {
         ...snapshot,
+        operations: [{ id: 'invoke', costEurMicros: 1 }],
+      }).operations
+    ).toEqual({ invoke: { id: 'invoke', costEurMicros: 1 } });
+    expect(
+      normalizeCatalogSnapshot('initial', {
+        ...snapshot,
         operations: { invoke: { costEurMicros: 1 } },
       }).operations
     ).toEqual({ invoke: { id: 'invoke', costEurMicros: 1 } });
