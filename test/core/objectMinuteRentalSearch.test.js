@@ -50,64 +50,195 @@ describe('object minute rental search core', () => {
     expect(finiteDuration(0)).toBe(true);
     expect(finiteDuration(-1)).toBe(false);
     expect(finiteDuration('1')).toBe(false);
-    expect(latestPlacement(1800, base.nowTimestamp, base.pickupPoint.timestamp)).toMatchObject({
+    expect(
+      latestPlacement(1800, base.nowTimestamp, base.pickupPoint.timestamp)
+    ).toMatchObject({
       feasible: true,
       startTimestamp: '2026-08-27T19:30:00.000Z',
     });
-    expect(contained(...['2026-08-27T10:00Z', '2026-08-27T11:00Z', '2026-08-27T09:00Z', '2026-08-27T12:00Z'])).toBe(true);
-    expect(contained('bad', '2026-08-27T11:00Z', base.nowTimestamp, base.pickupPoint.timestamp)).toBe(false);
+    expect(
+      contained(
+        ...[
+          '2026-08-27T10:00Z',
+          '2026-08-27T11:00Z',
+          '2026-08-27T09:00Z',
+          '2026-08-27T12:00Z',
+        ]
+      )
+    ).toBe(true);
+    expect(
+      contained(
+        'bad',
+        '2026-08-27T11:00Z',
+        base.nowTimestamp,
+        base.pickupPoint.timestamp
+      )
+    ).toBe(false);
   });
 
   test('covers delivery, procurement, pickup, runner overlap, composition, and search', () => {
-    expect(delivery({
-      deliveryDurationSeconds: 2700,
-      deliveryPoint: base.deliveryPoint,
-      nowTimestamp: base.nowTimestamp,
-      runnerSchedule: schedule,
-      runnerCommitments: [],
-    })).toMatchObject({ feasible: true });
-    expect(procurement({
-      procurementDurationSeconds: 1800,
-      nowTimestamp: base.nowTimestamp,
-      deliveryOutboundStartTimestamp: '2026-08-27T18:15Z',
-      supplierAvailability: base.supplierAvailability,
-      runnerSchedule: schedule,
-      runnerCommitments: [],
-    })).toMatchObject({ feasible: true });
-    expect(pickup({
-      pickupDurationSeconds: 2700,
-      pickupPoint: base.pickupPoint,
-      runnerSchedule: schedule,
-      runnerCommitments: [],
-    })).toMatchObject({ feasible: true });
-    expect(runnerInterval(
-      { startTimestamp: '2026-08-27T18:00Z', endTimestamp: '2026-08-27T18:30Z' },
-      schedule,
-      [{ startTimestamp: '2026-08-27T18:15Z', endTimestamp: '2026-08-27T18:20Z' }]
-    )).toEqual({ feasible: false, reason: 'runner-commitment-overlap' });
+    expect(
+      delivery({
+        deliveryDurationSeconds: 2700,
+        deliveryPoint: base.deliveryPoint,
+        nowTimestamp: base.nowTimestamp,
+        runnerSchedule: schedule,
+        runnerCommitments: [],
+      })
+    ).toMatchObject({ feasible: true });
+    expect(
+      procurement({
+        procurementDurationSeconds: 1800,
+        nowTimestamp: base.nowTimestamp,
+        deliveryOutboundStartTimestamp: '2026-08-27T18:15Z',
+        supplierAvailability: base.supplierAvailability,
+        runnerSchedule: schedule,
+        runnerCommitments: [],
+      })
+    ).toMatchObject({ feasible: true });
+    expect(
+      pickup({
+        pickupDurationSeconds: 2700,
+        pickupPoint: base.pickupPoint,
+        runnerSchedule: schedule,
+        runnerCommitments: [],
+      })
+    ).toMatchObject({ feasible: true });
+    expect(
+      runnerInterval(
+        {
+          startTimestamp: '2026-08-27T18:00Z',
+          endTimestamp: '2026-08-27T18:30Z',
+        },
+        schedule,
+        [
+          {
+            startTimestamp: '2026-08-27T18:15Z',
+            endTimestamp: '2026-08-27T18:20Z',
+          },
+        ]
+      )
+    ).toEqual({ feasible: false, reason: 'runner-commitment-overlap' });
     expect(composed(base)).toMatchObject({ feasible: true });
-    expect(searchResult(base)).toEqual({ valid: true, results: [{ skuId: 'FOOTBALL' }] });
-    expect(searchResult({ ...base, requestText: 'rugby' })).toEqual({ valid: true, results: [] });
+    expect(searchResult(base)).toEqual({
+      valid: true,
+      results: [{ skuId: 'FOOTBALL' }],
+    });
+    expect(searchResult({ ...base, requestText: 'rugby' })).toEqual({
+      valid: true,
+      results: [],
+    });
   });
 
   test('reports invalid and unavailable requests', () => {
-    expect(delivery({})).toEqual({ feasible: false, reason: 'invalid-duration' });
-    expect(procurement({ procurementDurationSeconds: -1 })).toEqual({ feasible: false, reason: 'invalid-duration' });
-    expect(pickup({ pickupDurationSeconds: 1 })).toEqual({ feasible: false, reason: 'invalid-pickup-time' });
-    expect(runnerInterval(null, [], [])).toEqual({ feasible: false, reason: 'invalid-runner-input' });
-    expect(composed({ ...base, durations: { ...base.durations, deliveryOutboundSeconds: -1 } })).toEqual({ feasible: false, reason: 'delivery:invalid-duration' });
-    expect(contained('2026-08-27T12:00Z', '2026-08-27T11:00Z', base.nowTimestamp, base.pickupPoint.timestamp)).toBe(false);
-    expect(contained(base.nowTimestamp, base.pickupPoint.timestamp, '2026-08-27T21:00Z', '2026-08-27T20:00Z')).toBe(false);
-    expect(contained('2026-08-27T08:00Z', '2026-08-27T18:00Z', base.nowTimestamp, base.pickupPoint.timestamp)).toBe(false);
-    expect(latestPlacement(1800, 'bad', base.pickupPoint.timestamp)).toEqual({ feasible: false, reason: 'no-placement' });
-    expect(latestPlacement(1800, base.nowTimestamp, 'bad')).toEqual({ feasible: false, reason: 'no-placement' });
-    expect(latestPlacement(7200, '2026-08-27T19:00Z', base.pickupPoint.timestamp)).toEqual({ feasible: false, reason: 'no-placement' });
-    expect(runnerInterval({ startTimestamp: '2026-08-27T22:00Z', endTimestamp: '2026-08-27T23:00Z' }, schedule, [])).toEqual({ feasible: false, reason: 'outside-shift' });
-    expect(delivery({ deliveryDurationSeconds: 1, deliveryPoint: { timestamp: 'bad' }, runnerSchedule: schedule, runnerCommitments: [] })).toEqual({ feasible: false, reason: 'no-placement' });
-    expect(procurement({ procurementDurationSeconds: 1800, nowTimestamp: base.nowTimestamp, deliveryOutboundStartTimestamp: '2026-08-27T18:15Z', supplierAvailability: { startTimestamp: '2026-08-27T07:00Z', endTimestamp: '2026-08-27T08:00Z' }, runnerSchedule: schedule, runnerCommitments: [] })).toEqual({ feasible: false, reason: 'no-placement' });
-    expect(pickup({ pickupDurationSeconds: 3600, pickupPoint: { timestamp: 'bad' }, runnerSchedule: schedule, runnerCommitments: [] })).toEqual({ feasible: false, reason: 'invalid-pickup-time' });
-    expect(composed({ ...base, durations: { ...base.durations, procurementSeconds: -1 } })).toEqual({ feasible: false, reason: 'procurement:invalid-duration' });
-    expect(composed({ ...base, durations: { ...base.durations, pickupReturnSeconds: -1 } })).toEqual({ feasible: false, reason: 'pickup:invalid-duration' });
+    expect(delivery({})).toEqual({
+      feasible: false,
+      reason: 'invalid-duration',
+    });
+    expect(procurement({ procurementDurationSeconds: -1 })).toEqual({
+      feasible: false,
+      reason: 'invalid-duration',
+    });
+    expect(pickup({ pickupDurationSeconds: 1 })).toEqual({
+      feasible: false,
+      reason: 'invalid-pickup-time',
+    });
+    expect(runnerInterval(null, [], [])).toEqual({
+      feasible: false,
+      reason: 'invalid-runner-input',
+    });
+    expect(
+      composed({
+        ...base,
+        durations: { ...base.durations, deliveryOutboundSeconds: -1 },
+      })
+    ).toEqual({ feasible: false, reason: 'delivery:invalid-duration' });
+    expect(
+      contained(
+        '2026-08-27T12:00Z',
+        '2026-08-27T11:00Z',
+        base.nowTimestamp,
+        base.pickupPoint.timestamp
+      )
+    ).toBe(false);
+    expect(
+      contained(
+        base.nowTimestamp,
+        base.pickupPoint.timestamp,
+        '2026-08-27T21:00Z',
+        '2026-08-27T20:00Z'
+      )
+    ).toBe(false);
+    expect(
+      contained(
+        '2026-08-27T08:00Z',
+        '2026-08-27T18:00Z',
+        base.nowTimestamp,
+        base.pickupPoint.timestamp
+      )
+    ).toBe(false);
+    expect(latestPlacement(1800, 'bad', base.pickupPoint.timestamp)).toEqual({
+      feasible: false,
+      reason: 'no-placement',
+    });
+    expect(latestPlacement(1800, base.nowTimestamp, 'bad')).toEqual({
+      feasible: false,
+      reason: 'no-placement',
+    });
+    expect(
+      latestPlacement(7200, '2026-08-27T19:00Z', base.pickupPoint.timestamp)
+    ).toEqual({ feasible: false, reason: 'no-placement' });
+    expect(
+      runnerInterval(
+        {
+          startTimestamp: '2026-08-27T22:00Z',
+          endTimestamp: '2026-08-27T23:00Z',
+        },
+        schedule,
+        []
+      )
+    ).toEqual({ feasible: false, reason: 'outside-shift' });
+    expect(
+      delivery({
+        deliveryDurationSeconds: 1,
+        deliveryPoint: { timestamp: 'bad' },
+        runnerSchedule: schedule,
+        runnerCommitments: [],
+      })
+    ).toEqual({ feasible: false, reason: 'no-placement' });
+    expect(
+      procurement({
+        procurementDurationSeconds: 1800,
+        nowTimestamp: base.nowTimestamp,
+        deliveryOutboundStartTimestamp: '2026-08-27T18:15Z',
+        supplierAvailability: {
+          startTimestamp: '2026-08-27T07:00Z',
+          endTimestamp: '2026-08-27T08:00Z',
+        },
+        runnerSchedule: schedule,
+        runnerCommitments: [],
+      })
+    ).toEqual({ feasible: false, reason: 'no-placement' });
+    expect(
+      pickup({
+        pickupDurationSeconds: 3600,
+        pickupPoint: { timestamp: 'bad' },
+        runnerSchedule: schedule,
+        runnerCommitments: [],
+      })
+    ).toEqual({ feasible: false, reason: 'invalid-pickup-time' });
+    expect(
+      composed({
+        ...base,
+        durations: { ...base.durations, procurementSeconds: -1 },
+      })
+    ).toEqual({ feasible: false, reason: 'procurement:invalid-duration' });
+    expect(
+      composed({
+        ...base,
+        durations: { ...base.durations, pickupReturnSeconds: -1 },
+      })
+    ).toEqual({ feasible: false, reason: 'pickup:invalid-duration' });
   });
 });
 
@@ -115,23 +246,36 @@ describe('object minute rental HTTP adapter', () => {
   test('normalizes a request and reads persisted commitments', async () => {
     const db = {
       collection: jest.fn(name => {
-        if (name === 'runner_assignments') return { where: () => ({ get: async () => ({ docs: [] }) }) };
+        if (name === 'runner_assignments')
+          return { where: () => ({ get: async () => ({ docs: [] }) }) };
         return { doc: () => ({ get: async () => ({ exists: false }) }) };
       }),
     };
     const json = jest.fn();
-    const handler = createSearchHttpHandler({ db, clock: () => new Date('2026-08-27T15:00Z') });
+    const handler = createSearchHttpHandler({
+      db,
+      clock: () => new Date('2026-08-27T15:00Z'),
+    });
     await handler({ body: base }, { json, status: () => ({ json }) });
-    expect(json).toHaveBeenCalledWith({ valid: true, results: [{ skuId: 'FOOTBALL' }] });
+    expect(json).toHaveBeenCalledWith({
+      valid: true,
+      results: [{ skuId: 'FOOTBALL' }],
+    });
   });
 
   test('returns a 400 response for malformed requests', async () => {
     const json = jest.fn();
     const status = jest.fn(() => ({ json }));
-    const handler = createSearchHttpHandler({ db: {}, clock: () => new Date('2026-08-27T15:00Z') });
+    const handler = createSearchHttpHandler({
+      db: {},
+      clock: () => new Date('2026-08-27T15:00Z'),
+    });
     await handler({ body: null }, { json, status });
     expect(status).toHaveBeenCalledWith(400);
-    expect(json).toHaveBeenCalledWith({ valid: false, reason: expect.any(String) });
+    expect(json).toHaveBeenCalledWith({
+      valid: false,
+      reason: expect.any(String),
+    });
   });
 
   test('rejects invalid clock, duration, schedule, and possession input', async () => {
@@ -146,6 +290,9 @@ describe('object minute rental HTTP adapter', () => {
     await invoke({ db: {}, clock: () => new Date('invalid') });
     await invoke({ db: {}, env: { SEARCH_DELIVERY_OUTBOUND_SECONDS: '-1' } });
     await invoke({ db: {}, env: { SEARCH_RUNNER_SCHEDULE_JSON: '{}' } });
-    await invoke({ db: {}, clock: () => new Date('2026-08-27T15:00Z') }, { requestText: 'football' });
+    await invoke(
+      { db: {}, clock: () => new Date('2026-08-27T15:00Z') },
+      { requestText: 'football' }
+    );
   });
 });

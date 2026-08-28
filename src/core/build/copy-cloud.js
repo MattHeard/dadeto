@@ -1107,13 +1107,7 @@ function createCopyCloudDirectoryPlan(planValues) {
 
   const functionCoreBrowserCopies = typedFunctionDirectories.map(name => ({
     source: join(srcCoreBrowserDir, 'validation.js'),
-    target: join(
-      infraFunctionsDir,
-      name,
-      'core',
-      'browser',
-      'validation.js'
-    ),
+    target: join(infraFunctionsDir, name, 'core', 'browser', 'validation.js'),
   }));
 
   const browserFileCopies = sharedBrowserFiles.map(name => ({
