@@ -8,7 +8,7 @@ open.
 
 ## Current survivors
 
-- `src/core/object-minute-rental-search/search-core.js`: 24 survivors.
+- `src/core/object-minute-rental-search/search-core.js`: 21 survivors.
   They are concentrated in the inclusive containment and overlap predicates,
   delivery fallback selection, candidate-feasibility guards, and clock-in /
   clock-out fallback selection (lines 15, 16, 17, 62, 64, 89, 91, 193-195,
