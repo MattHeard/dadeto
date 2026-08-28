@@ -70,6 +70,8 @@ function createIndividualFileCopiesPart1(planValues) {
     submitNewPageCoreSource,
     submitNewPageHelpersSource,
     firebaseFunctionsCopies,
+    functionCoreBrowserCopies,
+    functionCoreLocalCopies,
   } = planValues;
   return [
     {
@@ -117,6 +119,8 @@ function createIndividualFileCopiesPart1(planValues) {
       target: join(infraFunctionsDir, 'errors', 'core', 'error-reporting.js'),
     },
     ...firebaseFunctionsCopies,
+    ...functionCoreBrowserCopies,
+    ...functionCoreLocalCopies,
     {
       source: cloudCoreSource,
       target: join(infraFunctionsDir, 'cloud-core.js'),
@@ -1101,6 +1105,11 @@ function createCopyCloudDirectoryPlan(planValues) {
     },
   ];
 
+  const functionCoreBrowserCopies = typedFunctionDirectories.map(name => ({
+    source: srcCoreBrowserDir,
+    target: join(infraFunctionsDir, name, 'core', 'browser'),
+  }));
+
   const browserFileCopies = sharedBrowserFiles.map(name => ({
     source: join(browserDir, name),
     target: join(infraDir, name),
@@ -1111,6 +1120,7 @@ function createCopyCloudDirectoryPlan(planValues) {
     preservedCloudTreeCopies,
     coreRealtimeCopies,
     coreBrowserCopies,
+    functionCoreBrowserCopies,
     browserFileCopies,
   };
 }
@@ -1173,10 +1183,22 @@ function createCopyCloudSourceCopies(planValues) {
   const errorReportingSource = join(srcCoreDir, 'error-reporting.js');
   const paymentWebhookCoreSource = join(srcCoreDir, 'payment-webhook-core.js');
   const expressAppSource = join(srcCoreDir, 'express-app.js');
+  const expressAppDepsSource = join(srcCoreDir, 'local', 'express-app-deps.js');
 
   const commonCoreCopies = functionDirectories.map(name => ({
     source: commonCoreSource,
     target: join(infraFunctionsDir, name, 'commonCore.js'),
+  }));
+
+  const functionCoreLocalCopies = functionDirectories.map(name => ({
+    source: expressAppDepsSource,
+    target: join(
+      infraFunctionsDir,
+      name,
+      'core',
+      'local',
+      'express-app-deps.js'
+    ),
   }));
 
   const preservedCommonCoreCopies = functionDirectories.map(name => ({
@@ -1278,6 +1300,7 @@ function createCopyCloudSourceCopies(planValues) {
     errorReportingSource,
     paymentWebhookCoreSource,
     expressAppSource,
+    functionCoreLocalCopies,
     commonCoreCopies,
     preservedCommonCoreCopies,
     paymentWebhookCoreCopy,
@@ -1575,6 +1598,7 @@ function createCopyCloudPlan(deps) {
     preservedCloudTreeCopies,
     coreRealtimeCopies,
     coreBrowserCopies,
+    functionCoreBrowserCopies,
     browserFileCopies,
   } = createCopyCloudDirectoryPlan({
     join,
@@ -1596,6 +1620,7 @@ function createCopyCloudPlan(deps) {
     commonCoreSource,
     errorReportingSource,
     expressAppSource,
+    functionCoreLocalCopies,
     commonCoreCopies,
     preservedCommonCoreCopies,
     paymentWebhookCoreCopy,
@@ -1676,6 +1701,8 @@ function createCopyCloudPlan(deps) {
     commonCoreSource,
     errorReportingSource,
     expressAppSource,
+    functionCoreBrowserCopies,
+    functionCoreLocalCopies,
     commonCoreCopies,
     preservedCommonCoreCopies,
     paymentWebhookCoreCopy,
@@ -1728,6 +1755,7 @@ function createCopyCloudPlan(deps) {
     preservedCloudTreeCopies,
     coreRealtimeCopies,
     coreBrowserCopies,
+    functionCoreBrowserCopies,
     individualFileCopies,
     processNewStoryCoreFile,
     generateStatsVerifyAdminFile,
