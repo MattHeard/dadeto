@@ -27,4 +27,25 @@ describe('createCopyCloudHandle', () => {
     expect(written.length).toBeGreaterThan(0);
     expect(logger.info).toHaveBeenCalled();
   });
+
+  test('uses console logging when no logger is injected', async () => {
+    const log = jest.spyOn(console, 'log').mockImplementation(() => {});
+    try {
+      await createCopyCloudHandle({
+        fileURLToPathFn: () => '/repo/src/core/build/copy-cloud.js',
+        dirnameFn: path.dirname,
+        pathModule: path.posix,
+        fsPromisesModule: {
+          readdir: async () => [],
+          mkdir: async () => undefined,
+          copyFile: async () => {},
+          readFile: async () => '../cloud-core.js',
+          writeFile: async () => {},
+        },
+      });
+      expect(log).toHaveBeenCalled();
+    } finally {
+      log.mockRestore();
+    }
+  });
 });
