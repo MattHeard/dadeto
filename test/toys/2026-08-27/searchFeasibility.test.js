@@ -52,6 +52,11 @@ describe('SEGM3 and LATE2 temporal primitives', () => {
         windowEndTimestamp: '2026-08-27T11:00Z',
       })
     ).toEqual({ feasible: true });
+    expect(JSON.parse(segmentContainedWithinWindowPredicate('{'))).toMatchObject({
+      feasible: false,
+      reason: expect.any(String),
+      error: expect.any(String),
+    });
     expect(
       json(latestFixedDurationSegmentWithinBounds, {
         durationSeconds: 1800,
@@ -133,6 +138,11 @@ describe('PROC3 composition and OBJE2 search wrapper', () => {
     expect(json(searchRequestToSkuResultWrapper, base)).toEqual({
       valid: true,
       results: [{ skuId: 'FOOTBALL' }],
+    });
+    expect(JSON.parse(searchRequestToSkuResultWrapper('{'))).toMatchObject({
+      valid: false,
+      reason: expect.any(String),
+      error: expect.any(String),
     });
   });
 
