@@ -621,6 +621,18 @@ describe('object minute rental HTTP adapter', () => {
     await createSearchHttpHandler({
       db: emptyDb,
       env: {
+        SEARCH_SUPPLIER_START: 'x16:00',
+        SEARCH_DELIVERY_OUTBOUND_SECONDS: '0',
+        SEARCH_PROCUREMENT_SECONDS: '0',
+        SEARCH_PICKUP_RETURN_SECONDS: '0',
+      },
+      clock: () => new Date('2026-08-27T15:00Z'),
+    })({ body }, { json, status: () => ({ json }) });
+    expect(json).toHaveBeenCalledWith({ valid: true, results: [] });
+    json.mockClear();
+    await createSearchHttpHandler({
+      db: emptyDb,
+      env: {
         SEARCH_SUPPLIER_START: '16:00',
         SEARCH_DELIVERY_OUTBOUND_SECONDS: '0',
         SEARCH_PROCUREMENT_SECONDS: '0',

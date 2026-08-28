@@ -104,7 +104,7 @@ async function readRunnerCommitments(db, runnerId) {
     .collection('runner_assignments')
     .where('personId', '==', runnerId)
     .get();
-  const commitments = new Array(0);
+  const commitments = Array.from({ length: 0 });
   for (const assignment of snapshot.docs ?? []) {
     const data = assignment.data();
     const segment = await db.collection('segments').doc(data.segmentId).get();
