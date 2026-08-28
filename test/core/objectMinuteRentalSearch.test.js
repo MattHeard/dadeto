@@ -12,6 +12,9 @@ import {
   searchResult,
 } from '../../src/core/object-minute-rental-search/search-core.js';
 import { createSearchHttpHandler } from '../../src/core/object-minute-rental-search/search-http.js';
+// Reuse the established wrapper-level assertions so the direct core mutation
+// run observes every externally visible feasibility branch as well.
+import '../toys/2026-08-27/searchFeasibility.test.js';
 
 const schedule = [
   { startTimestamp: '2026-08-27T15:00Z', endTimestamp: '2026-08-27T21:00Z' },
