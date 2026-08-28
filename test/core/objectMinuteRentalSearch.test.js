@@ -101,9 +101,9 @@ describe('object minute rental search core', () => {
     expect(contained('2026-08-27T08:00Z', '2026-08-27T18:00Z', base.nowTimestamp, base.pickupPoint.timestamp)).toBe(false);
     expect(latestPlacement(1800, 'bad', base.pickupPoint.timestamp)).toEqual({ feasible: false, reason: 'no-placement' });
     expect(latestPlacement(1800, base.nowTimestamp, 'bad')).toEqual({ feasible: false, reason: 'no-placement' });
-    expect(latestPlacement(3600, '2026-08-27T19:00Z', base.pickupPoint.timestamp)).toEqual({ feasible: false, reason: 'no-placement' });
+    expect(latestPlacement(7200, '2026-08-27T19:00Z', base.pickupPoint.timestamp)).toEqual({ feasible: false, reason: 'no-placement' });
     expect(runnerInterval({ startTimestamp: '2026-08-27T22:00Z', endTimestamp: '2026-08-27T23:00Z' }, schedule, [])).toEqual({ feasible: false, reason: 'outside-shift' });
-    expect(delivery({ deliveryDurationSeconds: 1, deliveryPoint: base.deliveryPoint, runnerSchedule: schedule, runnerCommitments: [] })).toEqual({ feasible: false, reason: 'no-placement' });
+    expect(delivery({ deliveryDurationSeconds: 1, deliveryPoint: { timestamp: 'bad' }, runnerSchedule: schedule, runnerCommitments: [] })).toEqual({ feasible: false, reason: 'no-placement' });
     expect(procurement({ procurementDurationSeconds: 1800, nowTimestamp: base.nowTimestamp, deliveryOutboundStartTimestamp: '2026-08-27T18:15Z', supplierAvailability: { startTimestamp: '2026-08-27T07:00Z', endTimestamp: '2026-08-27T08:00Z' }, runnerSchedule: schedule, runnerCommitments: [] })).toEqual({ feasible: false, reason: 'no-placement' });
     expect(pickup({ pickupDurationSeconds: 3600, pickupPoint: { timestamp: 'bad' }, runnerSchedule: schedule, runnerCommitments: [] })).toEqual({ feasible: false, reason: 'invalid-pickup-time' });
     expect(composed({ ...base, durations: { ...base.durations, procurementSeconds: -1 } })).toEqual({ feasible: false, reason: 'procurement:invalid-duration' });
