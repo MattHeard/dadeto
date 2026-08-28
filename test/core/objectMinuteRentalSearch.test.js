@@ -274,24 +274,35 @@ describe('object minute rental HTTP adapter', () => {
     expect(status).toHaveBeenCalledWith(400);
     expect(json).toHaveBeenCalledWith({
       valid: false,
-      reason: expect.any(String),
+      reason: 'A JSON search request is required.',
     });
   });
 
   test('rejects invalid clock, duration, schedule, and possession input', async () => {
     const json = jest.fn();
     const status = jest.fn(() => ({ json }));
-    const invoke = async (options, body = base) => {
+    const invoke = async (options, reason, body = base) => {
       json.mockClear();
       status.mockClear();
       await createSearchHttpHandler(options)({ body }, { json, status });
       expect(status).toHaveBeenCalledWith(400);
+      expect(json).toHaveBeenCalledWith({ valid: false, reason });
     };
-    await invoke({ db: {}, clock: () => new Date('invalid') });
-    await invoke({ db: {}, env: { SEARCH_DELIVERY_OUTBOUND_SECONDS: '-1' } });
-    await invoke({ db: {}, env: { SEARCH_RUNNER_SCHEDULE_JSON: '{}' } });
+    await invoke(
+      { db: {}, clock: () => new Date('invalid') },
+      'The clock returned an invalid time.'
+    );
+    await invoke(
+      { db: {}, env: { SEARCH_DELIVERY_OUTBOUND_SECONDS: '-1' } },
+      'Invalid search duration configuration.'
+    );
+    await invoke(
+      { db: {}, env: { SEARCH_RUNNER_SCHEDULE_JSON: '{}' } },
+      'Invalid runner schedule configuration.'
+    );
     await invoke(
       { db: {}, clock: () => new Date('2026-08-27T15:00Z') },
+      'A possession context with start and end timestamps is required.',
       { requestText: 'football' }
     );
   });
