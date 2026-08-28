@@ -566,6 +566,11 @@ describe('object minute rental HTTP adapter', () => {
       'A possession context with start and end timestamps is required.',
       { requestText: 'football', deliveryPoint: base.deliveryPoint }
     );
+    await invoke(
+      { db: {}, clock: () => new Date('2026-08-27T15:00Z') },
+      'A JSON search request is required.',
+      'not-an-object'
+    );
   });
 
   test('preserves non-format supplier values and accepts zero durations', async () => {
@@ -623,6 +628,16 @@ describe('object minute rental HTTP adapter', () => {
       },
       clock: () => new Date('2026-08-27T15:00Z'),
     })({ body }, { json, status: () => ({ json }) });
+    expect(json).toHaveBeenCalledWith({
+      valid: true,
+      results: [{ skuId: 'FOOTBALL' }],
+    });
+    json.mockClear();
+    await createSearchHttpHandler({
+      db: emptyDb,
+      env: { SEARCH_SUPPLIER_START: undefined },
+      clock: () => new Date('2026-08-27T15:00Z'),
+    })({ body: base }, { json, status: () => ({ json }) });
     expect(json).toHaveBeenCalledWith({
       valid: true,
       results: [{ skuId: 'FOOTBALL' }],
