@@ -142,10 +142,12 @@ async function appendRecord(statePath, record, fsModule) {
   await fsModule.appendFile(statePath, `${JSON.stringify(record)}\n`);
 }
 
-async function writeSurvivorList(state, survivorListPath, fsModule) {
+async function writeSurvivorList(state, survivorListPath, files, fsModule) {
+  const currentFiles = new Set(files);
   const survivors = [...state.values()]
     .filter(
       record =>
+        currentFiles.has(record.file) &&
         record.status === 'success' &&
         Number.isInteger(record.survivingMutants) &&
         record.survivingMutants > 0
@@ -161,7 +163,10 @@ async function writeSurvivorList(state, survivorListPath, fsModule) {
 }
 
 async function writeSummary(state, files, summaryPath, fsModule) {
-  const terminal = [...state.values()].filter(record => record.status);
+  const currentFiles = new Set(files);
+  const terminal = [...state.values()].filter(
+    record => currentFiles.has(record.file) && record.status
+  );
   await fsModule.writeFile(
     summaryPath,
     `${JSON.stringify(
@@ -354,7 +359,7 @@ export async function scanCoreMutants(options = {}) {
       }
       await appendRecord(statePath, record, fsModule);
       state.set(file, record);
-      await writeSurvivorList(state, survivorListPath, fsModule);
+      await writeSurvivorList(state, survivorListPath, files, fsModule);
       await writeSummary(state, files, summaryPath, fsModule);
     }
   } finally {
