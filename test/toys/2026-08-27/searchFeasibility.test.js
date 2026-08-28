@@ -77,6 +77,11 @@ describe('DELI2, PROC3, and PICK2 runner feasibility', () => {
       feasible: true,
       startTimestamp: '2026-08-27T18:15:00.000Z',
     });
+    expect(JSON.parse(deliveryOutboundRunnerFeasibility('{'))).toMatchObject({
+      feasible: false,
+      reason: expect.any(String),
+      error: expect.any(String),
+    });
     expect(
       json(procurementSegmentFeasibility, {
         procurementDurationSeconds: 1800,
