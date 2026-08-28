@@ -432,6 +432,41 @@ describe('object minute rental search core', () => {
         durations: { ...base.durations, pickupReturnSeconds: -1 },
       })
     ).toEqual({ feasible: false, reason: 'pickup:invalid-duration' });
+    expect(
+      delivery({
+        deliveryDurationSeconds: 0,
+        nowTimestamp: '2026-08-27T15:00Z',
+        deliveryPoint: { timestamp: '2026-08-27T15:00Z' },
+        runnerSchedule: schedule,
+        runnerCommitments: [],
+      })
+    ).toMatchObject({ feasible: true });
+    expect(
+      delivery({
+        deliveryDurationSeconds: 0,
+        deliveryPoint: { timestamp: '1970-01-01T00:00:00Z' },
+        runnerSchedule: [
+          {
+            startTimestamp: '1970-01-01T00:00:00Z',
+            endTimestamp: '1970-01-01T01:00:00Z',
+          },
+        ],
+        runnerCommitments: [],
+      })
+    ).toMatchObject({ feasible: true });
+    expect(
+      procurement({
+        procurementDurationSeconds: 21600,
+        nowTimestamp: '2026-08-27T08:00Z',
+        deliveryOutboundStartTimestamp: '2026-08-27T15:00Z',
+        supplierAvailability: {
+          startTimestamp: '2026-08-27T09:00Z',
+          endTimestamp: '2026-08-27T14:00Z',
+        },
+        runnerSchedule: schedule,
+        runnerCommitments: [],
+      })
+    ).toEqual({ feasible: false, reason: 'outside-supplier-window' });
   });
 });
 
