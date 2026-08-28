@@ -35,6 +35,17 @@ describe('gcp simulator coverage paths', () => {
         reason: 'A possession context with start and end timestamps is required.',
       },
     });
+    await expect(
+      simulator.routes.objectMinuteRentalSearch({
+        body: {
+          requestText: 'football',
+          possessionContext: {
+            startPoint: { timestamp: '2026-01-01T15:00:00Z' },
+            endPoint: { timestamp: '2026-01-01T15:30:00Z' },
+          },
+        },
+      })
+    ).resolves.toMatchObject({ status: 200 });
   });
 
   it('creates the delete sentinel used by the variant-write trigger', async () => {
