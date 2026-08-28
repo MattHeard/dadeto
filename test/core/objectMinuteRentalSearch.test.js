@@ -116,6 +116,14 @@ describe('object minute rental search core', () => {
       )
     ).toBe(false);
     expect(
+      contained(
+        '2026-08-27T10:00Z',
+        '2026-08-27T11:00Z',
+        '2026-08-27T09:00Z',
+        '2026-08-27T10:30Z'
+      )
+    ).toBe(false);
+    expect(
       latestPlacement(3600, '2026-08-27T18:00Z', '2026-08-27T19:00Z')
     ).toMatchObject({ feasible: true });
     expect(
