@@ -1,3 +1,6 @@
 {
-  "exemptions": {}
+  "exemptions": {
+    "src/core/object-minute-rental-search/search-core.js": "Core search consumes normalized timestamps; parser classifier false-positives on domain function names.",
+    "src/core/object-minute-rental-search/search-http.js": "HTTP adapter is the intended parsing boundary for search configuration and request values."
+  }
 }

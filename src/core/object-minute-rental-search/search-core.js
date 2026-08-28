@@ -17,7 +17,7 @@ export function contained(start, end, windowStart, windowEnd) {
 }
 
 export function latestPlacement(durationSeconds, earliestStart, latestEnd) {
-  if (!finiteDuration(durationSeconds))
+  if (!Number.isFinite(durationSeconds) || durationSeconds < 0)
     return { feasible: false, reason: 'invalid-duration' };
   const earliest = parseTime(earliestStart),
     end = parseTime(latestEnd);
@@ -61,18 +61,14 @@ export function delivery(request) {
     pointTimestamp(request.deliveryPoint)
   );
   if (!candidate.feasible) return candidate;
-  return {
-    ...candidate,
-    ...runnerInterval(
-      candidate,
-      request.runnerSchedule,
-      request.runnerCommitments
-    ),
-  };
+  return withRunner(candidate, request);
 }
 
 export function procurement(request) {
-  if (!finiteDuration(request.procurementDurationSeconds))
+  if (
+    !Number.isFinite(request.procurementDurationSeconds) ||
+    request.procurementDurationSeconds < 0
+  )
     return { feasible: false, reason: 'invalid-duration' };
   const deliveryStart = parseTime(request.deliveryOutboundStartTimestamp);
   const supplier = request.supplierAvailability;
@@ -92,18 +88,14 @@ export function procurement(request) {
     )
   )
     return { feasible: false, reason: 'outside-supplier-window' };
-  return {
-    ...candidate,
-    ...runnerInterval(
-      candidate,
-      request.runnerSchedule,
-      request.runnerCommitments
-    ),
-  };
+  return withRunner(candidate, request);
 }
 
 export function pickup(request) {
-  if (!finiteDuration(request.pickupDurationSeconds))
+  if (
+    !Number.isFinite(request.pickupDurationSeconds) ||
+    request.pickupDurationSeconds < 0
+  )
     return { feasible: false, reason: 'invalid-duration' };
   const start = pointTimestamp(request.pickupPoint);
   const startTime = parseTime(start);
@@ -111,14 +103,7 @@ export function pickup(request) {
   if (!Number.isFinite(startTime))
     return { feasible: false, reason: 'invalid-pickup-time' };
   const candidate = { startTimestamp: start, endTimestamp: iso(end) };
-  return {
-    ...candidate,
-    ...runnerInterval(
-      candidate,
-      request.runnerSchedule,
-      request.runnerCommitments
-    ),
-  };
+  return withRunner(candidate, request);
 }
 
 export function composed(request) {
@@ -179,8 +164,15 @@ export function pointTimestamp(point) {
   return point?.timestamp;
 }
 
-export function finiteDuration(value) {
-  return Number.isFinite(value) && value >= 0;
+function withRunner(candidate, request) {
+  return {
+    ...candidate,
+    ...runnerInterval(
+      candidate,
+      request.runnerSchedule,
+      request.runnerCommitments
+    ),
+  };
 }
 
 function overlap(start, end, otherStart, otherEnd) {

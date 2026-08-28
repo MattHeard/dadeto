@@ -4,7 +4,6 @@ import {
   contained,
   delivery,
   exactLookup,
-  finiteDuration,
   latestPlacement,
   pickup,
   procurement,
@@ -51,9 +50,6 @@ describe('object minute rental search core', () => {
       matched: false,
       skuId: null,
     });
-    expect(finiteDuration(0)).toBe(true);
-    expect(finiteDuration(-1)).toBe(false);
-    expect(finiteDuration('1')).toBe(false);
     expect(
       latestPlacement(1800, base.nowTimestamp, base.pickupPoint.timestamp)
     ).toMatchObject({
