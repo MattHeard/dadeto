@@ -81,4 +81,47 @@ describe('createRunStrykerWorktreeHandle defaults', () => {
       })
     );
   });
+
+  test('writes configured test files, timeout, and concurrency', async () => {
+    const previous = {
+      testFiles: process.env.STRYKER_TEST_FILES,
+      timeout: process.env.STRYKER_TIMEOUT_MS,
+      concurrency: process.env.STRYKER_CONCURRENCY,
+    };
+    process.env.STRYKER_TEST_FILES = "['test/example.test.js']";
+    process.env.STRYKER_TIMEOUT_MS = '5000';
+    process.env.STRYKER_CONCURRENCY = '2';
+
+    try {
+      const handle = createRunStrykerWorktreeHandle({
+        processModule: { env: {} },
+      });
+      await handle();
+      process.env.STRYKER_TIMEOUT_MS = 'invalid';
+      process.env.STRYKER_CONCURRENCY = '0';
+      await handle();
+    } finally {
+      for (const [key, value] of Object.entries({
+        STRYKER_TEST_FILES: previous.testFiles,
+        STRYKER_TIMEOUT_MS: previous.timeout,
+        STRYKER_CONCURRENCY: previous.concurrency,
+      })) {
+        if (value === undefined) delete process.env[key];
+        else process.env[key] = value;
+      }
+    }
+
+    expect(fsModule.writeFile).toHaveBeenCalledWith(
+      expect.any(String),
+      expect.stringContaining("testFiles: ['test/example.test.js']")
+    );
+    expect(fsModule.writeFile).toHaveBeenCalledWith(
+      expect.any(String),
+      expect.stringContaining('timeoutMS: 5000')
+    );
+    expect(fsModule.writeFile).toHaveBeenCalledWith(
+      expect.any(String),
+      expect.stringContaining('concurrency: 2')
+    );
+  });
 });

@@ -592,6 +592,63 @@ describe('object minute rental HTTP adapter', () => {
       valid: true,
       results: [{ skuId: 'FOOTBALL' }],
     });
+    const completeDb = {
+      collection: name => {
+        if (name === 'runner_assignments')
+          return {
+            where: () => ({
+              get: async () => ({
+                docs: [{ data: () => ({ segmentId: 'segment-1' }) }],
+              }),
+            }),
+          };
+        if (name === 'segments')
+          return {
+            doc: () => ({
+              get: async () => ({
+                exists: true,
+                data: () => ({ startPointId: 'start', endPointId: 'end' }),
+              }),
+            }),
+          };
+        return {
+          doc: id => ({
+            get: async () => ({
+              exists: true,
+              data: () => ({
+                timestamp:
+                  id === 'start'
+                    ? '2026-08-27T15:00Z'
+                    : '2026-08-27T15:30Z',
+              }),
+            }),
+          }),
+        };
+      },
+    };
+    await createSearchHttpHandler({
+      db: completeDb,
+      clock: () => new Date('2026-08-27T15:00Z'),
+    })({ body: base }, { json, status: () => ({ json }) });
+    expect(json).toHaveBeenLastCalledWith({
+      valid: true,
+      results: [{ skuId: 'FOOTBALL' }],
+    });
+    await createSearchHttpHandler({
+      db: { collection: () => { throw 'database failure'; } },
+      clock: () => new Date('2026-08-27T15:00Z'),
+    })({ body: base }, { json, status: () => ({ json }) });
+    expect(json).toHaveBeenLastCalledWith({
+      valid: false,
+      reason: 'database failure',
+    });
+    expect(
+      normalizeRequest(
+        { ...base, requestText: undefined, searchText: 'football' },
+        {},
+        () => new Date('2026-08-27T15:00Z')
+      ).requestText
+    ).toBe('football');
   });
 
   test('returns a 400 response for malformed requests', async () => {
