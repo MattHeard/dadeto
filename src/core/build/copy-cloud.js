@@ -70,7 +70,6 @@ function createIndividualFileCopiesPart1(planValues) {
     submitNewPageCoreSource,
     submitNewPageHelpersSource,
     firebaseFunctionsCopies,
-    functionCoreBrowserCopies,
     functionCoreLocalCopies,
     functionCoreBuildCopies,
   } = planValues;
@@ -120,7 +119,6 @@ function createIndividualFileCopiesPart1(planValues) {
       target: join(infraFunctionsDir, 'errors', 'core', 'error-reporting.js'),
     },
     ...firebaseFunctionsCopies,
-    ...functionCoreBrowserCopies,
     ...functionCoreLocalCopies,
     ...functionCoreBuildCopies,
     {
@@ -1004,6 +1002,7 @@ function createCopyCloudDirectoryPlan(planValues) {
     srcCloudDir,
     infraFunctionsDir,
     srcCoreCloudDir,
+    srcCoreBuildDir,
     srcCoreRealtimeDir,
     srcCoreBrowserDir,
     browserDir,
@@ -1066,6 +1065,16 @@ function createCopyCloudDirectoryPlan(planValues) {
       source: join(srcCoreCloudDir, name),
       target: join(infraFunctionsDir, name, 'core', 'cloud', name),
     })),
+    ...typedFunctionDirectories.flatMap(name => [
+      {
+        source: srcCoreBrowserDir,
+        target: join(infraFunctionsDir, name, 'core', 'browser'),
+      },
+      {
+        source: srcCoreBuildDir,
+        target: join(infraFunctionsDir, name, 'core', 'build'),
+      },
+    ]),
   ];
 
   const sharedBrowserFiles = [
@@ -1107,11 +1116,6 @@ function createCopyCloudDirectoryPlan(planValues) {
     },
   ];
 
-  const functionCoreBrowserCopies = typedFunctionDirectories.map(name => ({
-    source: join(srcCoreBrowserDir, 'validation.js'),
-    target: join(infraFunctionsDir, name, 'core', 'browser', 'validation.js'),
-  }));
-
   const browserFileCopies = sharedBrowserFiles.map(name => ({
     source: join(browserDir, name),
     target: join(infraDir, name),
@@ -1122,7 +1126,6 @@ function createCopyCloudDirectoryPlan(planValues) {
     preservedCloudTreeCopies,
     coreRealtimeCopies,
     coreBrowserCopies,
-    functionCoreBrowserCopies,
     browserFileCopies,
   };
 }
@@ -1584,7 +1587,8 @@ function createCopyCloudPlan(deps) {
   const srcCloudDir = resolve(srcDir, 'cloud');
   const infraFunctionsDir = resolve(infraDir, 'cloud-functions');
   const srcCoreDir = resolve(srcDir, 'core');
-  const srcCoreCloudDir = resolve(srcCoreDir, 'cloud');
+    const srcCoreCloudDir = resolve(srcCoreDir, 'cloud');
+  const srcCoreBuildDir = resolve(srcCoreDir, 'build');
   const srcCoreRealtimeDir = resolve(srcCoreDir, 'realtime');
   const srcCoreBrowserDir = resolve(srcCoreDir, 'browser');
   const srcCoreBrowserModerationDir = resolve(srcCoreBrowserDir, 'moderation');
@@ -1607,7 +1611,6 @@ function createCopyCloudPlan(deps) {
     preservedCloudTreeCopies,
     coreRealtimeCopies,
     coreBrowserCopies,
-    functionCoreBrowserCopies,
     browserFileCopies,
   } = createCopyCloudDirectoryPlan({
     join,
@@ -1615,6 +1618,7 @@ function createCopyCloudPlan(deps) {
     srcCloudDir,
     infraFunctionsDir,
     srcCoreCloudDir,
+    srcCoreBuildDir,
     srcCoreRealtimeDir,
     srcCoreBrowserDir,
     browserDir,
@@ -1712,7 +1716,6 @@ function createCopyCloudPlan(deps) {
     commonCoreSource,
     errorReportingSource,
     expressAppSource,
-    functionCoreBrowserCopies,
     functionCoreLocalCopies,
     functionCoreBuildCopies,
     commonCoreCopies,
@@ -1767,7 +1770,6 @@ function createCopyCloudPlan(deps) {
     preservedCloudTreeCopies,
     coreRealtimeCopies,
     coreBrowserCopies,
-    functionCoreBrowserCopies,
     individualFileCopies,
     processNewStoryCoreFile,
     generateStatsVerifyAdminFile,
