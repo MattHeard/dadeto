@@ -1587,7 +1587,7 @@ function createCopyCloudPlan(deps) {
   const srcCloudDir = resolve(srcDir, 'cloud');
   const infraFunctionsDir = resolve(infraDir, 'cloud-functions');
   const srcCoreDir = resolve(srcDir, 'core');
-    const srcCoreCloudDir = resolve(srcCoreDir, 'cloud');
+  const srcCoreCloudDir = resolve(srcCoreDir, 'cloud');
   const srcCoreBuildDir = resolve(srcCoreDir, 'build');
   const srcCoreRealtimeDir = resolve(srcCoreDir, 'realtime');
   const srcCoreBrowserDir = resolve(srcCoreDir, 'browser');
