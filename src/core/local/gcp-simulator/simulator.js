@@ -34,6 +34,7 @@ import {
   createPaymentWebhookHandler,
 } from '../../payment-webhook-core.js';
 import { createSearchHttpHandler } from '../../object-minute-rental-search/search-http.js';
+import { createBrowserRunnerCommitmentsRepository } from '../../object-minute-rental-search/browser-runner-commitments-repository.js';
 
 const DEFAULT_STORY_TITLE = 'E2E moderation fixture story';
 const DEFAULT_FIRST_CONTENT =
@@ -412,7 +413,7 @@ async function buildSimulatorState(/** @type {unknown} */ config) {
     },
   });
   const searchHttp = createSearchHttpHandler({
-    db,
+    runnerCommitmentsRepository: createBrowserRunnerCommitmentsRepository(),
     env: {
       SEARCH_RUNNER_SCHEDULE_JSON:
         '[{"startTimestamp":"2026-01-01T00:00:00Z","endTimestamp":"2030-01-01T00:00:00Z"}]',

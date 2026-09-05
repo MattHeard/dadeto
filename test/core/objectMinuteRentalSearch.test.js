@@ -39,6 +39,7 @@ const base = {
   runnerCommitments: [],
   nowTimestamp: '2026-08-27T15:00Z',
 };
+const emptyRepository = { listForRunner: async () => [] };
 
 describe('object minute rental search core', () => {
   test('covers lookup, duration, placement, and containment primitives', () => {
@@ -482,16 +483,10 @@ describe('object minute rental search core', () => {
 
 describe('object minute rental HTTP adapter', () => {
   test('normalizes a request and reads persisted commitments', async () => {
-    const where = jest.fn(() => ({ get: async () => ({ docs: [] }) }));
-    const db = {
-      collection: jest.fn(name => {
-        if (name === 'runner_assignments') return { where };
-        return { doc: () => ({ get: async () => ({ exists: false }) }) };
-      }),
-    };
+    const listForRunner = jest.fn(async () => []);
     const json = jest.fn();
     const handler = createSearchHttpHandler({
-      db,
+      runnerCommitmentsRepository: { listForRunner },
       clock: () => new Date('2026-08-27T15:00Z'),
     });
     await handler({ body: base }, { json, status: () => ({ json }) });
@@ -499,145 +494,16 @@ describe('object minute rental HTTP adapter', () => {
       valid: true,
       results: [{ skuId: 'FOOTBALL' }],
     });
-    expect(where).toHaveBeenCalledWith('personId', '==', 'RUNNER-1');
+    expect(listForRunner).toHaveBeenCalledWith({ runnerId: 'RUNNER-1' });
     await createSearchHttpHandler({
-      db,
+      runnerCommitmentsRepository: { listForRunner },
       env: { SEARCH_RUNNER_ID: 'RUNNER-9' },
       clock: () => new Date('2026-08-27T15:00Z'),
     })({ body: base }, { json, status: () => ({ json }) });
-    expect(where).toHaveBeenLastCalledWith('personId', '==', 'RUNNER-9');
-
-    const partialDb = {
-      collection: name => {
-        if (name === 'runner_assignments')
-          return {
-            where: () => ({
-              get: async () => ({
-                docs: [{ data: () => ({ segmentId: 'missing' }) }],
-              }),
-            }),
-          };
-        return { doc: () => ({ get: async () => ({ exists: false }) }) };
-      },
-    };
+    expect(listForRunner).toHaveBeenLastCalledWith({ runnerId: 'RUNNER-9' });
+    listForRunner.mockRejectedValueOnce(new Error('database failure'));
     await createSearchHttpHandler({
-      db: partialDb,
-      clock: () => new Date('2026-08-27T15:00Z'),
-    })({ body: base }, { json, status: () => ({ json }) });
-    expect(json).toHaveBeenLastCalledWith({
-      valid: true,
-      results: [{ skuId: 'FOOTBALL' }],
-    });
-    const incompletePointsDb = {
-      collection: name => {
-        if (name === 'runner_assignments')
-          return {
-            where: () => ({
-              get: async () => ({
-                docs: [{ data: () => ({ segmentId: 'segment-1' }) }],
-              }),
-            }),
-          };
-        if (name === 'segments')
-          return {
-            doc: () => ({
-              get: async () => ({
-                exists: true,
-                data: () => ({ startPointId: 'start', endPointId: 'end' }),
-              }),
-            }),
-          };
-        return { doc: () => ({ get: async () => ({ exists: false }) }) };
-      },
-    };
-    await createSearchHttpHandler({
-      db: incompletePointsDb,
-      clock: () => new Date('2026-08-27T15:00Z'),
-    })({ body: base }, { json, status: () => ({ json }) });
-    expect(json).toHaveBeenLastCalledWith({
-      valid: true,
-      results: [{ skuId: 'FOOTBALL' }],
-    });
-    const onePointDb = {
-      collection: name => {
-        if (name === 'runner_assignments')
-          return {
-            where: () => ({
-              get: async () => ({
-                docs: [{ data: () => ({ segmentId: 'segment-1' }) }],
-              }),
-            }),
-          };
-        if (name === 'segments')
-          return {
-            doc: () => ({
-              get: async () => ({
-                exists: true,
-                data: () => ({ startPointId: 'start', endPointId: 'end' }),
-              }),
-            }),
-          };
-        return {
-          doc: id => ({
-            get: async () => ({ exists: id === 'start' }),
-          }),
-        };
-      },
-    };
-    await createSearchHttpHandler({
-      db: onePointDb,
-      clock: () => new Date('2026-08-27T15:00Z'),
-    })({ body: base }, { json, status: () => ({ json }) });
-    expect(json).toHaveBeenLastCalledWith({
-      valid: true,
-      results: [{ skuId: 'FOOTBALL' }],
-    });
-    const completeDb = {
-      collection: name => {
-        if (name === 'runner_assignments')
-          return {
-            where: () => ({
-              get: async () => ({
-                docs: [{ data: () => ({ segmentId: 'segment-1' }) }],
-              }),
-            }),
-          };
-        if (name === 'segments')
-          return {
-            doc: () => ({
-              get: async () => ({
-                exists: true,
-                data: () => ({ startPointId: 'start', endPointId: 'end' }),
-              }),
-            }),
-          };
-        return {
-          doc: id => ({
-            get: async () => ({
-              exists: true,
-              data: () => ({
-                timestamp:
-                  id === 'start' ? '2026-08-27T15:00Z' : '2026-08-27T15:30Z',
-              }),
-            }),
-          }),
-        };
-      },
-    };
-    await createSearchHttpHandler({
-      db: completeDb,
-      clock: () => new Date('2026-08-27T15:00Z'),
-    })({ body: base }, { json, status: () => ({ json }) });
-    expect(json).toHaveBeenLastCalledWith({
-      valid: true,
-      results: [{ skuId: 'FOOTBALL' }],
-    });
-    await createSearchHttpHandler({
-      db: {
-        collection: () => {
-          throw 'database failure';
-        },
-      },
+      runnerCommitmentsRepository: { listForRunner },
       clock: () => new Date('2026-08-27T15:00Z'),
     })({ body: base }, { json, status: () => ({ json }) });
     expect(json).toHaveBeenLastCalledWith({
@@ -657,7 +523,7 @@ describe('object minute rental HTTP adapter', () => {
     const json = jest.fn();
     const status = jest.fn(() => ({ json }));
     const handler = createSearchHttpHandler({
-      db: {},
+      runnerCommitmentsRepository: emptyRepository,
       clock: () => new Date('2026-08-27T15:00Z'),
     });
     await handler({ body: null }, { json, status });
@@ -685,48 +551,64 @@ describe('object minute rental HTTP adapter', () => {
       expect(json).toHaveBeenCalledWith({ valid: false, reason });
     };
     await invoke(
-      { db: {}, clock: () => new Date('invalid') },
+      {
+        runnerCommitmentsRepository: emptyRepository,
+        clock: () => new Date('invalid'),
+      },
       'The clock returned an invalid time.'
     );
     await invoke(
-      { db: {}, env: { SEARCH_DELIVERY_OUTBOUND_SECONDS: '-1' } },
+      {
+        runnerCommitmentsRepository: emptyRepository,
+        env: { SEARCH_DELIVERY_OUTBOUND_SECONDS: '-1' },
+      },
       'Invalid search duration configuration.'
     );
     await invoke(
-      { db: {}, env: { SEARCH_RUNNER_SCHEDULE_JSON: '{}' } },
+      {
+        runnerCommitmentsRepository: emptyRepository,
+        env: { SEARCH_RUNNER_SCHEDULE_JSON: '{}' },
+      },
       'Invalid runner schedule configuration.'
     );
     await invoke(
-      { db: {}, clock: () => new Date('2026-08-27T15:00Z') },
+      {
+        runnerCommitmentsRepository: emptyRepository,
+        clock: () => new Date('2026-08-27T15:00Z'),
+      },
       'A possession context with start and end timestamps is required.',
       { requestText: 'football' }
     );
     await invoke(
-      { db: {}, clock: () => new Date('2026-08-27T15:00Z') },
+      {
+        runnerCommitmentsRepository: emptyRepository,
+        clock: () => new Date('2026-08-27T15:00Z'),
+      },
       'A possession context with start and end timestamps is required.',
       { requestText: 'football', pickupPoint: base.pickupPoint }
     );
     await invoke(
-      { db: {}, clock: () => new Date('2026-08-27T15:00Z') },
+      {
+        runnerCommitmentsRepository: emptyRepository,
+        clock: () => new Date('2026-08-27T15:00Z'),
+      },
       'A possession context with start and end timestamps is required.',
       { requestText: 'football', deliveryPoint: base.deliveryPoint }
     );
     await invoke(
-      { db: {}, clock: () => new Date('2026-08-27T15:00Z') },
+      {
+        runnerCommitmentsRepository: emptyRepository,
+        clock: () => new Date('2026-08-27T15:00Z'),
+      },
       'A JSON search request is required.',
       'not-an-object'
     );
   });
 
   test('preserves non-format supplier values and accepts zero durations', async () => {
-    const emptyDb = {
-      collection: () => ({
-        where: () => ({ get: async () => ({}) }),
-      }),
-    };
     const json = jest.fn();
     const handler = createSearchHttpHandler({
-      db: emptyDb,
+      runnerCommitmentsRepository: emptyRepository,
       env: {
         SEARCH_SUPPLIER_START: '16:00x',
         SEARCH_DELIVERY_OUTBOUND_SECONDS: '0',
@@ -740,11 +622,6 @@ describe('object minute rental HTTP adapter', () => {
   });
 
   test('distinguishes a strict daily supplier window from a suffix value', async () => {
-    const emptyDb = {
-      collection: () => ({
-        where: () => ({ get: async () => ({ docs: [] }) }),
-      }),
-    };
     const body = {
       ...base,
       deliveryPoint: { timestamp: '2026-08-27T16:00Z' },
@@ -752,7 +629,7 @@ describe('object minute rental HTTP adapter', () => {
     };
     const json = jest.fn();
     await createSearchHttpHandler({
-      db: emptyDb,
+      runnerCommitmentsRepository: emptyRepository,
       env: {
         SEARCH_SUPPLIER_START: '16:00x',
         SEARCH_DELIVERY_OUTBOUND_SECONDS: '0',
@@ -764,7 +641,7 @@ describe('object minute rental HTTP adapter', () => {
     expect(json).toHaveBeenCalledWith({ valid: true, results: [] });
     json.mockClear();
     await createSearchHttpHandler({
-      db: emptyDb,
+      runnerCommitmentsRepository: emptyRepository,
       env: {
         SEARCH_SUPPLIER_START: 'x16:00',
         SEARCH_DELIVERY_OUTBOUND_SECONDS: '0',
@@ -776,7 +653,7 @@ describe('object minute rental HTTP adapter', () => {
     expect(json).toHaveBeenCalledWith({ valid: true, results: [] });
     json.mockClear();
     await createSearchHttpHandler({
-      db: emptyDb,
+      runnerCommitmentsRepository: emptyRepository,
       env: {
         SEARCH_SUPPLIER_START: '16:00',
         SEARCH_DELIVERY_OUTBOUND_SECONDS: '0',
@@ -791,7 +668,7 @@ describe('object minute rental HTTP adapter', () => {
     });
     json.mockClear();
     await createSearchHttpHandler({
-      db: emptyDb,
+      runnerCommitmentsRepository: emptyRepository,
       env: { SEARCH_SUPPLIER_START: undefined },
       clock: () => new Date('2026-08-27T15:00Z'),
     })({ body: base }, { json, status: () => ({ json }) });

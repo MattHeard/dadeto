@@ -1,5 +1,5 @@
 // @ts-nocheck -- HTTP adapter values are normalized by the core boundary.
-import { searchResult } from './search-core.js';
+import { createObjectMinuteRentalSearch } from './search-application.js';
 
 const DEFAULT_RUNNER_ID = 'RUNNER-1';
 const DEFAULT_SUPPLIER = {
@@ -9,22 +9,22 @@ const DEFAULT_SUPPLIER = {
 
 /**
  * Create the stateless search HTTP adapter.
- * @param {{db: {collection: (name: string) => unknown}, env?: Record<string, string|undefined>, clock?: () => Date}} options Dependencies.
+ * @param {{runnerCommitmentsRepository: object, env?: Record<string, string|undefined>, clock?: () => Date}} options Dependencies.
  * @returns {(req: {body?: unknown}, res: {status: (code: number) => {json: (body: unknown) => void}, json: (body: unknown) => void}) => Promise<void>} HTTP handler.
  */
 export function createSearchHttpHandler({
-  db,
+  runnerCommitmentsRepository,
   env = process.env,
   clock = () => new Date(),
 }) {
+  const search = createObjectMinuteRentalSearch({
+    runnerCommitmentsRepository,
+    runnerId: env.SEARCH_RUNNER_ID ?? DEFAULT_RUNNER_ID,
+  });
   return async (req, res) => {
     try {
       const request = normalizeRequest(req.body, env, clock);
-      const commitments = await readRunnerCommitments(
-        db,
-        env.SEARCH_RUNNER_ID ?? DEFAULT_RUNNER_ID
-      );
-      res.json(searchResult({ ...request, runnerCommitments: commitments }));
+      res.json(await search(request));
     } catch (error) {
       res.status(400).json({
         valid: false,
@@ -92,36 +92,6 @@ export function dailyWindow(value, timestamp, fallback) {
   if (!/^\d{2}:\d{2}$/.test(value)) return value || fallback;
   const date = String(timestamp).slice(0, 10);
   return `${date}T${value}:00Z`;
-}
-
-/**
- * @param {{collection: (name: string) => unknown}} db Firestore-like database.
- * @param {string} runnerId Runner identifier.
- * @returns {Promise<object[]>} Runner commitment intervals.
- */
-async function readRunnerCommitments(db, runnerId) {
-  const snapshot = await db
-    .collection('runner_assignments')
-    .where('personId', '==', runnerId)
-    .get();
-  const commitments = Array.from(new Set());
-  for (const assignment of snapshot.docs ?? []) {
-    const data = assignment.data();
-    const segment = await db.collection('segments').doc(data.segmentId).get();
-    if (!segment.exists) continue;
-    const segmentData = segment.data();
-    const [startPoint, endPoint] = await Promise.all([
-      db.collection('spacetime_points').doc(segmentData.startPointId).get(),
-      db.collection('spacetime_points').doc(segmentData.endPointId).get(),
-    ]);
-    if (startPoint.exists && endPoint.exists) {
-      commitments.push({
-        startTimestamp: startPoint.data().timestamp,
-        endTimestamp: endPoint.data().timestamp,
-      });
-    }
-  }
-  return commitments;
 }
 
 /**
