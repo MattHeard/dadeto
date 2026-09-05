@@ -70,6 +70,14 @@ locals {
     stripe_webhook    = "dadeto-stripe-webhook-secret-${local.runtime_secret_environment}"
     openai_api_key    = "dadeto-openai-api-key-prod"
   }
+  test_runtime_secret_names = {
+    stripe_secret_key = local.runtime_secret_names.stripe_secret_key
+    stripe_webhook    = local.runtime_secret_names.stripe_webhook
+  }
+  managed_runtime_secret_names = merge(
+    local.manage_project_level_resources ? local.runtime_secret_names : {},
+    local.playwright_enabled ? local.test_runtime_secret_names : {},
+  )
   terraform_networking_roles = {
     terraform_security_admin = "roles/compute.securityAdmin"
     terraform_network_admin  = "roles/compute.networkAdmin"
@@ -444,7 +452,7 @@ resource "google_project_service" "project_level" {
 }
 
 resource "google_secret_manager_secret" "runtime" {
-  for_each = local.manage_project_level_resources ? local.runtime_secret_names : {}
+  for_each = local.managed_runtime_secret_names
 
   project   = var.project_id
   secret_id = each.value
@@ -468,6 +476,15 @@ resource "google_secret_manager_secret_iam_member" "runtime_accessor" {
     google_secret_manager_secret.runtime,
     google_service_account.cloud_function_runtime,
   ]
+}
+
+resource "google_secret_manager_secret_version" "test_runtime" {
+  for_each = local.playwright_enabled ? local.test_runtime_secret_names : {}
+
+  secret      = google_secret_manager_secret.runtime[each.key].id
+  secret_data = "dadeto-gcp-test-placeholder"
+
+  depends_on = [google_secret_manager_secret.runtime]
 }
 
 resource "google_firestore_database" "database" {
