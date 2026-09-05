@@ -6,7 +6,7 @@ describe('generator mutants', () => {
     const html = generateBlogOuter({ posts: [] });
     expect(html.includes('Stryker was here!')).toBe(false);
     expect(html).toContain(
-      '</div></div></div><script type="module" src="browser/main.js" defer></script></body>'
+      '</div></div></div><script type="module" src="browser/main.js" defer></script><script type="module" src="browser/webmcp.js" defer></script></body>'
     );
   });
 });
