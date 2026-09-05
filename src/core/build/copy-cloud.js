@@ -1108,6 +1108,17 @@ function createCopyCloudDirectoryPlan(planValues) {
         'realtime'
       ),
     },
+    {
+      source: srcCoreCloudDir,
+      target: join(
+        infraFunctionsDir,
+        'realtime-call',
+        'cloud',
+        'realtime-call',
+        'core',
+        'cloud'
+      ),
+    },
   ];
 
   const objectMinuteRentalSearchCoreCopy = {
