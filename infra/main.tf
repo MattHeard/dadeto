@@ -457,14 +457,17 @@ resource "google_secret_manager_secret" "runtime" {
 }
 
 resource "google_secret_manager_secret_iam_member" "runtime_accessor" {
-  for_each = local.manage_project_level_resources ? local.runtime_secret_names : {}
+  for_each = local.runtime_secret_names
 
   project   = var.project_id
-  secret_id = google_secret_manager_secret.runtime[each.key].secret_id
+  secret_id = each.value
   role      = "roles/secretmanager.secretAccessor"
   member    = local.cloud_function_runtime_service_account_member
 
-  depends_on = [google_service_account.cloud_function_runtime]
+  depends_on = [
+    google_secret_manager_secret.runtime,
+    google_service_account.cloud_function_runtime,
+  ]
 }
 
 resource "google_firestore_database" "database" {
