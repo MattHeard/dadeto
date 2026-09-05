@@ -1,6 +1,8 @@
 {
   "exemptions": {
     "src/core/object-minute-rental-search/search-core.js": "Core search consumes normalized timestamps; parser classifier false-positives on domain function names.",
-    "src/core/object-minute-rental-search/search-http.js": "HTTP adapter is the intended parsing boundary for search configuration and request values."
+    "src/core/object-minute-rental-search/search-http.js": "HTTP adapter is the intended parsing boundary for search configuration and request values.",
+    "src/core/object-minute-rental-search/runner-commitments.js": "Runner commitment projection consumes already-resolved persistence records; identifier and timestamp normalization is its domain boundary.",
+    "src/core/object-minute-rental-search/browser-runner-commitments-repository.js": "Browser repository adapts in-memory persistence records into the shared commitment projection contract."
   }
 }

@@ -1,8 +1,11 @@
 import { projectRunnerCommitments } from './runner-commitments.js';
 
+/** @typedef {{segmentId?: unknown}} SegmentRecord */
+/** @typedef {{pointId?: unknown}} PointRecord */
+
 /**
  * Create a browser/in-memory runner commitments repository.
- * @param {{runnerAssignments?: unknown[], segments?: unknown[], spacetimePoints?: unknown[]}} [records] Resolved records.
+ * @param {{runnerAssignments?: object[], segments?: SegmentRecord[], spacetimePoints?: PointRecord[]}} [records] Resolved records.
  * @returns {{listForRunner: (options: {runnerId: string}) => Promise<Array<{startTimestamp: string, endTimestamp: string}>>}} Repository capability.
  */
 export function createBrowserRunnerCommitmentsRepository({

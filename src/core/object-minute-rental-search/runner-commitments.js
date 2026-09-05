@@ -1,6 +1,10 @@
+/** @typedef {{personId?: unknown, segmentId?: unknown}} Assignment */
+/** @typedef {{startPointId?: unknown, endPointId?: unknown}} Segment */
+/** @typedef {{timestamp?: unknown}} Point */
+
 /**
  * Build a fail-closed runner commitment projection from resolved records.
- * @param {{runnerId: unknown, assignments: unknown[], assumeMatching?: boolean, resolveSegment: (segmentId: string) => unknown|Promise<unknown>, resolvePoint: (pointId: string) => unknown|Promise<unknown>}} options Projection inputs.
+ * @param {{runnerId: unknown, assignments: Assignment[], assumeMatching?: boolean, resolveSegment: (segmentId: string) => Segment|unknown|Promise<Segment|unknown>, resolvePoint: (pointId: string) => Point|unknown|Promise<Point|unknown>}} options Projection inputs.
  * @returns {Promise<Array<{startTimestamp: string, endTimestamp: string}>>} Commitment intervals.
  */
 export async function projectRunnerCommitments({
@@ -23,16 +27,19 @@ export async function projectRunnerCommitments({
     const segment = await resolveSegment(segmentId);
     if (!segment || typeof segment !== 'object')
       throw new Error('missing-segment');
-    const startPointId = usableId(segment.startPointId);
-    const endPointId = usableId(segment.endPointId);
+    const resolvedSegment = /** @type {Segment} */ (segment);
+    const startPointId = usableId(resolvedSegment.startPointId);
+    const endPointId = usableId(resolvedSegment.endPointId);
     if (!startPointId) throw new Error('missing-start-point-id');
     if (!endPointId) throw new Error('missing-end-point-id');
     const [startPoint, endPoint] = await Promise.all([
       resolvePoint(startPointId),
       resolvePoint(endPointId),
     ]);
-    const startTimestamp = usableTimestamp(startPoint?.timestamp);
-    const endTimestamp = usableTimestamp(endPoint?.timestamp);
+    const resolvedStartPoint = /** @type {Point|null} */ (startPoint);
+    const resolvedEndPoint = /** @type {Point|null} */ (endPoint);
+    const startTimestamp = usableTimestamp(resolvedStartPoint?.timestamp);
+    const endTimestamp = usableTimestamp(resolvedEndPoint?.timestamp);
     if (!startTimestamp) throw new Error('invalid-start-timestamp');
     if (!endTimestamp) throw new Error('invalid-end-timestamp');
     if (Date.parse(endTimestamp) < Date.parse(startTimestamp))

@@ -15,6 +15,7 @@ import {
   dailyWindow,
   normalizeRequest,
 } from '../../src/core/object-minute-rental-search/search-http.js';
+import { createObjectMinuteRentalSearch } from '../../src/core/object-minute-rental-search/search-application.js';
 // Reuse the established wrapper-level assertions so the direct core mutation
 // run observes every externally visible feasibility branch as well.
 import '../toys/2026-08-27/searchFeasibility.test.js';
@@ -603,6 +604,33 @@ describe('object minute rental HTTP adapter', () => {
       'A JSON search request is required.',
       'not-an-object'
     );
+  });
+
+  test('uses the default runner when no runner id is configured', async () => {
+    const listForRunner = jest.fn(async () => []);
+    const search = createObjectMinuteRentalSearch({
+      runnerCommitmentsRepository: { listForRunner },
+    });
+    await search(base);
+    expect(listForRunner).toHaveBeenCalledWith({ runnerId: 'RUNNER-1' });
+  });
+
+  test('reports non-Error HTTP failures as strings', async () => {
+    const handler = createSearchHttpHandler({
+      runnerCommitmentsRepository: {
+        listForRunner: async () => {
+          throw 'storage-failure';
+        },
+      },
+    });
+    const json = jest.fn();
+    const status = jest.fn(() => ({ json }));
+    await handler({ body: base }, { json, status });
+    expect(status).toHaveBeenCalledWith(400);
+    expect(json).toHaveBeenCalledWith({
+      valid: false,
+      reason: 'storage-failure',
+    });
   });
 
   test('preserves non-format supplier values and accepts zero durations', async () => {

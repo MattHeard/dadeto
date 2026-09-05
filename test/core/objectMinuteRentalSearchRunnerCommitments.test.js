@@ -2,6 +2,7 @@ import { describe, expect, test, jest } from '@jest/globals';
 import { createBrowserRunnerCommitmentsRepository } from '../../src/core/object-minute-rental-search/browser-runner-commitments-repository.js';
 import { createObjectMinuteRentalSearch } from '../../src/core/object-minute-rental-search/search-application.js';
 import { createFirestoreRunnerCommitmentsRepository } from '../../src/cloud/object-minute-rental-search/runner-commitments-repository.js';
+import { projectRunnerCommitments } from '../../src/core/object-minute-rental-search/runner-commitments.js';
 
 const assignment = { personId: 'RUNNER-1', segmentId: 'SEGMENT-1' };
 const segment = {
@@ -15,6 +16,92 @@ const points = [
 ];
 
 describe('runner commitments repositories', () => {
+  test('rejects invalid projection inputs and incomplete records', async () => {
+    await expect(
+      projectRunnerCommitments({ assignments: null })
+    ).rejects.toThrow('invalid-assignments');
+    await expect(
+      projectRunnerCommitments({
+        runnerId: 'RUNNER-1',
+        assignments: [{ personId: 'OTHER', segmentId: 'SEGMENT-1' }],
+        assumeMatching: true,
+        resolveSegment: async () => segment,
+        resolvePoint: async pointId =>
+          points.find(point => point.pointId === pointId),
+      })
+    ).rejects.toThrow('invalid-person-id');
+    await expect(
+      projectRunnerCommitments({
+        runnerId: 'RUNNER-1',
+        assignments: [{ personId: 'RUNNER-1', segmentId: '' }],
+        resolveSegment: async () => segment,
+        resolvePoint: async () => points[0],
+      })
+    ).rejects.toThrow('missing-segment-id');
+    await expect(
+      projectRunnerCommitments({
+        runnerId: 'RUNNER-1',
+        assignments: [{ personId: 'RUNNER-1', segmentId: 'SEGMENT-1' }],
+        resolveSegment: async () => null,
+        resolvePoint: async () => points[0],
+      })
+    ).rejects.toThrow('missing-segment');
+  });
+
+  test('rejects missing segment and point identifiers', async () => {
+    await expect(
+      projectRunnerCommitments({
+        runnerId: 'RUNNER-1',
+        assignments: [assignment],
+        resolveSegment: async () => ({ endPointId: 'POINT-2' }),
+        resolvePoint: async () => points[0],
+      })
+    ).rejects.toThrow('missing-start-point-id');
+    await expect(
+      projectRunnerCommitments({
+        runnerId: 'RUNNER-1',
+        assignments: [assignment],
+        resolveSegment: async () => ({ startPointId: 'POINT-1' }),
+        resolvePoint: async () => points[0],
+      })
+    ).rejects.toThrow('missing-end-point-id');
+    await expect(
+      projectRunnerCommitments({
+        runnerId: 'RUNNER-1',
+        assignments: [assignment],
+        resolveSegment: async () => segment,
+        resolvePoint: async pointId =>
+          pointId === 'POINT-1' ? { timestamp: 'not-a-time' } : points[1],
+      })
+    ).rejects.toThrow('invalid-start-timestamp');
+  });
+
+  test('sorts intervals by end time when starts are equal', async () => {
+    await expect(
+      projectRunnerCommitments({
+        runnerId: 'RUNNER-1',
+        assignments: [assignment, { ...assignment, segmentId: 'SEGMENT-2' }],
+        resolveSegment: async segmentId => ({
+          startPointId: 'POINT-1',
+          endPointId: segmentId === 'SEGMENT-1' ? 'POINT-2' : 'POINT-3',
+        }),
+        resolvePoint: async pointId =>
+          pointId === 'POINT-3'
+            ? { timestamp: '2026-08-27T15:45Z' }
+            : points.find(point => point.pointId === pointId),
+      })
+    ).resolves.toEqual([
+      {
+        startTimestamp: '2026-08-27T15:00Z',
+        endTimestamp: '2026-08-27T15:30Z',
+      },
+      {
+        startTimestamp: '2026-08-27T15:00Z',
+        endTimestamp: '2026-08-27T15:45Z',
+      },
+    ]);
+  });
+
   test('projects valid browser records and ignores other runners', async () => {
     const repository = createBrowserRunnerCommitmentsRepository({
       runnerAssignments: [assignment, { ...assignment, personId: 'OTHER' }],
