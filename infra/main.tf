@@ -175,6 +175,11 @@ locals {
       source       = "${path.module}/googleAuth.js"
       content_type = "application/javascript"
     }
+    dendrite_webmcp_js = {
+      name         = "webmcp.js"
+      source       = "${path.module}/browser/webmcp.js"
+      content_type = "application/javascript"
+    }
     dendrite_authed_fetch_js = {
       name         = "authedFetch.js"
       source       = "${path.module}/authedFetch.js"
