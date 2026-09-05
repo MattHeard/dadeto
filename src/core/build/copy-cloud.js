@@ -1004,6 +1004,7 @@ function createCopyCloudDirectoryPlan(planValues) {
     srcCoreCloudDir,
     srcCoreBuildDir,
     srcCoreRealtimeDir,
+    srcCoreObjectMinuteRentalSearchDir,
     srcCoreBrowserDir,
     browserDir,
   } = planValues;
@@ -1109,6 +1110,16 @@ function createCopyCloudDirectoryPlan(planValues) {
     },
   ];
 
+  const objectMinuteRentalSearchCoreCopy = {
+    source: srcCoreObjectMinuteRentalSearchDir,
+    target: join(
+      infraFunctionsDir,
+      'object-minute-rental-search',
+      'core',
+      'object-minute-rental-search'
+    ),
+  };
+
   const coreBrowserCopies = [
     {
       source: srcCoreBrowserDir,
@@ -1125,6 +1136,7 @@ function createCopyCloudDirectoryPlan(planValues) {
     directoryCopies,
     preservedCloudTreeCopies,
     coreRealtimeCopies,
+    objectMinuteRentalSearchCoreCopy,
     coreBrowserCopies,
     browserFileCopies,
   };
@@ -1590,6 +1602,10 @@ function createCopyCloudPlan(deps) {
   const srcCoreCloudDir = resolve(srcCoreDir, 'cloud');
   const srcCoreBuildDir = resolve(srcCoreDir, 'build');
   const srcCoreRealtimeDir = resolve(srcCoreDir, 'realtime');
+  const srcCoreObjectMinuteRentalSearchDir = resolve(
+    srcCoreDir,
+    'object-minute-rental-search'
+  );
   const srcCoreBrowserDir = resolve(srcCoreDir, 'browser');
   const srcCoreBrowserModerationDir = resolve(srcCoreBrowserDir, 'moderation');
   const browserDir = resolve(srcDir, 'browser');
@@ -1610,6 +1626,7 @@ function createCopyCloudPlan(deps) {
     directoryCopies,
     preservedCloudTreeCopies,
     coreRealtimeCopies,
+    objectMinuteRentalSearchCoreCopy,
     coreBrowserCopies,
     browserFileCopies,
   } = createCopyCloudDirectoryPlan({
@@ -1620,6 +1637,7 @@ function createCopyCloudPlan(deps) {
     srcCoreCloudDir,
     srcCoreBuildDir,
     srcCoreRealtimeDir,
+    srcCoreObjectMinuteRentalSearchDir,
     srcCoreBrowserDir,
     browserDir,
   });
@@ -1769,6 +1787,7 @@ function createCopyCloudPlan(deps) {
     directoryCopies,
     preservedCloudTreeCopies,
     coreRealtimeCopies,
+    objectMinuteRentalSearchCoreCopy,
     coreBrowserCopies,
     individualFileCopies,
     processNewStoryCoreFile,
