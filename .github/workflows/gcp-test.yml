@@ -481,7 +481,7 @@ jobs:
         if: always()
         run: |
           set -euo pipefail
-          FUNCTION_FILTER='resource.type="cloud_function" AND resource.labels.function_name=~"^'"${ENVIRONMENT}"'-"'
+          FUNCTION_FILTER='(resource.type="cloud_function" AND resource.labels.function_name=~"^'"${ENVIRONMENT}"'-") OR (resource.type="cloud_run_revision" AND resource.labels.service_name=~"^'"${ENVIRONMENT}"'-")'
           gcloud logging read "$FUNCTION_FILTER" \
             --limit=5000 \
             --format=json > /tmp/run-cloud-function-logs.json || true
