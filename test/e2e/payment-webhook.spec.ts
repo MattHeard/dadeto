@@ -27,9 +27,15 @@ function buildApiUrl(path: string) {
 }
 
 async function postPaymentEvent(request, event) {
-  return request.post(getWebhookBaseUrl(), {
+  const response = await request.post(getWebhookBaseUrl(), {
     data: event,
   });
+  if (response.status() >= 500) {
+    console.log(
+      `payment-webhook ${response.status()} response: ${await response.text()}`
+    );
+  }
+  return response;
 }
 
 test('applies checkout credits, replays duplicates, and deducts refunds', async ({
