@@ -79,7 +79,13 @@ export function createPaymentWebhookIndexHandler({
   });
 
   return async function handle(req, res) {
-    const response = await handlePaymentWebhookRequest(handleRequest, req);
+    let response;
+    try {
+      response = await handlePaymentWebhookRequest(handleRequest, req);
+    } catch (error) {
+      console.error('payment webhook request failed', error);
+      throw error;
+    }
     return sendPaymentWebhookResponse(/** @type {any} */ (res), response);
   };
 }
