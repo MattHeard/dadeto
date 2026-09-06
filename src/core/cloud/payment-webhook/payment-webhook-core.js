@@ -68,7 +68,8 @@ export function createPaymentWebhookIndexHandler({
           apiKeyUuid: uuid,
           type: event.type,
           status,
-          purchaseId: readMetadata(event.data?.object ?? {}).purchase_id,
+          purchaseId:
+            readMetadata(event.data?.object ?? {}).purchase_id ?? null,
           createdAt: new Date(createdAtMs),
         },
         { merge: true }
