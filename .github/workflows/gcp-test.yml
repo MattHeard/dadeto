@@ -231,7 +231,7 @@ jobs:
           )
           for secret in "${!secret_keys[@]}"; do
             if gcloud secrets describe "$secret" --project="$GOOGLE_PROJECT" >/dev/null 2>&1; then
-              terraform import -input=false \
+              terraform import -input=false -lock-timeout=5m \
                 "google_secret_manager_secret.runtime[\"${secret_keys[$secret]}\"]" \
                 "projects/${GOOGLE_PROJECT}/secrets/${secret}"
             fi
