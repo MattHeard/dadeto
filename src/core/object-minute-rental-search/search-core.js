@@ -9,6 +9,23 @@ export function exactLookup(request) {
     : { matched: false, skuId: null };
 }
 
+/**
+ * Validate the temporal coherence of a normalized possession interval.
+ * @param {{startPoint?: {timestamp?: string}, endPoint?: {timestamp?: string}}} context Normalized possession points.
+ * @returns {{valid: true} | {valid: false, reason: string}} Validation result.
+ */
+export function validatePossessionContextTime({ startPoint, endPoint } = {}) {
+  const start = parseTime(startPoint?.timestamp);
+  if (!Number.isFinite(start))
+    return { valid: false, reason: 'invalid-possession-start-time' };
+  const end = parseTime(endPoint?.timestamp);
+  if (!Number.isFinite(end))
+    return { valid: false, reason: 'invalid-possession-end-time' };
+  if (end < start)
+    return { valid: false, reason: 'possession-end-before-start' };
+  return { valid: true };
+}
+
 export function contained(start, end, windowStart, windowEnd) {
   const values = [start, end, windowStart, windowEnd].map(parseTime);
   return (

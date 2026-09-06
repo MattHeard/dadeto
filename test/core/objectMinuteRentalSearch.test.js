@@ -9,6 +9,7 @@ import {
   procurement,
   runnerInterval,
   searchResult,
+  validatePossessionContextTime,
 } from '../../src/core/object-minute-rental-search/search-core.js';
 import {
   createSearchHttpHandler,
@@ -41,6 +42,58 @@ const base = {
   nowTimestamp: '2026-08-27T15:00Z',
 };
 const emptyRepository = { listForRunner: async () => [] };
+
+describe('possession context temporal validity', () => {
+  test.each([
+    [
+      'positive duration',
+      '2026-08-27T19:00Z',
+      '2026-08-27T20:00Z',
+      { valid: true },
+    ],
+    [
+      'zero duration',
+      '2026-08-27T19:00Z',
+      '2026-08-27T19:00Z',
+      { valid: true },
+    ],
+    [
+      'reversed interval',
+      '2026-08-27T20:00Z',
+      '2026-08-27T19:00Z',
+      { valid: false, reason: 'possession-end-before-start' },
+    ],
+    [
+      'invalid start',
+      'not-a-time',
+      '2026-08-27T20:00Z',
+      { valid: false, reason: 'invalid-possession-start-time' },
+    ],
+    [
+      'invalid end',
+      '2026-08-27T19:00Z',
+      'not-a-time',
+      { valid: false, reason: 'invalid-possession-end-time' },
+    ],
+  ])(
+    'validates possession context time: %s',
+    (_label, start, end, expected) => {
+      expect(
+        validatePossessionContextTime({
+          startPoint: { timestamp: start },
+          endPoint: { timestamp: end },
+        })
+      ).toEqual(expected);
+    }
+  );
+
+  test('rejects a missing possession context', () => {
+    expect(validatePossessionContextTime()).toEqual({
+      valid: false,
+      reason: 'invalid-possession-start-time',
+    });
+  });
+});
 
 describe('object minute rental search core', () => {
   test('covers lookup, duration, placement, and containment primitives', () => {
@@ -539,6 +592,34 @@ describe('object minute rental HTTP adapter', () => {
       valid: false,
       reason: 'A JSON search request is required.',
     });
+  });
+
+  test('rejects temporally invalid possession before reading commitments', async () => {
+    const listForRunner = jest.fn(async () => []);
+    const json = jest.fn();
+    const status = jest.fn(() => ({ json }));
+    const handler = createSearchHttpHandler({
+      runnerCommitmentsRepository: { listForRunner },
+      clock: () => new Date('2026-08-27T15:00Z'),
+    });
+
+    await handler(
+      {
+        body: {
+          ...base,
+          deliveryPoint: { timestamp: '2026-08-27T20:00Z' },
+          pickupPoint: { timestamp: '2026-08-27T19:00Z' },
+        },
+      },
+      { json, status }
+    );
+
+    expect(status).toHaveBeenCalledWith(400);
+    expect(json).toHaveBeenCalledWith({
+      valid: false,
+      reason: 'possession-end-before-start',
+    });
+    expect(listForRunner).not.toHaveBeenCalled();
   });
 
   test('rejects invalid clock, duration, schedule, and possession input', async () => {
