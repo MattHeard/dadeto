@@ -181,7 +181,9 @@ export function parseStripePaymentWebhookEvent(request, env, constructEvent) {
   const rawBody = /** @type {{ rawBody?: string|Buffer }|null|undefined} */ (
     request
   )?.rawBody;
-  const payload = resolveStripePayload(rawBody);
+  const payload =
+    resolveStripePayload(rawBody) ||
+    (isEphemeralTestEnvironment(env) ? resolveFixturePayload(request) : '');
   if (!secret) throw new TypeError('Missing Stripe webhook secret');
   if (!payload) throw new TypeError('Missing Stripe webhook payload');
   const signature = extractHeader(request, 'stripe-signature');
@@ -216,6 +218,17 @@ function isEphemeralTestEnvironment(env) {
  */
 function parsePaymentWebhookPayload(payload) {
   return validateVerifiedStripeEvent(JSON.parse(payload.toString()));
+}
+
+/**
+ * Serialize a parsed request body for an unsigned ephemeral fixture.
+ * @param {unknown} request Incoming request.
+ * @returns {string} Serialized body or an empty string.
+ */
+function resolveFixturePayload(request) {
+  const body = /** @type {{ body?: unknown }|null|undefined} */ (request)?.body;
+  if (!body || typeof body !== 'object') return '';
+  return JSON.stringify(body);
 }
 
 /**
