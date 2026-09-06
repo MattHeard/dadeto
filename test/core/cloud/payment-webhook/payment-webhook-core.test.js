@@ -545,6 +545,25 @@ describe('payment webhook cloud wrapper', () => {
     );
   });
 
+  it('accepts unsigned fixture events only in ephemeral test environments', () => {
+    const event = {
+      id: 'evt_unsigned_fixture',
+      type: 'payment_intent.succeeded',
+      data: { object: { metadata: { [creditAmountKey]: '3' } } },
+    };
+
+    expect(
+      parseStripePaymentWebhookEvent(
+        { rawBody: JSON.stringify(event) },
+        {
+          STRIPE_WEBHOOK_SECRET: 'secret',
+          DENDRITE_ENVIRONMENT: 't-e2e-1234',
+        },
+        jest.fn()
+      )
+    ).toMatchObject({ id: 'evt_unsigned_fixture' });
+  });
+
   it('fails closed for missing secret, raw body, and signature', () => {
     expect(() => parseStripePaymentWebhookEvent({}, {}, jest.fn())).toThrow(
       'Missing Stripe webhook secret'

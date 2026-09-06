@@ -114,6 +114,7 @@ jobs:
         run: |
           npm ci
           npm run build:cloud
+          npm run copy:dendrite
 
       - name: Set up Google Cloud auth
         uses: google-github-actions/auth@v2
