@@ -162,6 +162,7 @@ describe('service-area feasibility', () => {
 
   test.each([
     ['invalid-delivery-location', { latitude: 'bad' }, base.pickupPoint],
+    ['invalid-delivery-location', { latitude: Infinity }, base.pickupPoint],
     ['invalid-pickup-location', base.deliveryPoint, { longitude: 181 }],
   ])(
     'rejects malformed request coordinates with %s',
@@ -173,6 +174,74 @@ describe('service-area feasibility', () => {
           serviceArea: SOPHIE_CHARLOTTE_SERVICE_AREA,
         })
       ).toEqual({ valid: false, reason });
+    }
+  );
+
+  test.each([null, '', '   ', undefined])(
+    'rejects blank delivery latitude as invalid-delivery-location: %p',
+    latitude => {
+      expect(
+        evaluateServiceAreaFeasibility({
+          deliveryPoint: { ...base.deliveryPoint, latitude },
+          pickupPoint: base.pickupPoint,
+          serviceArea: SOPHIE_CHARLOTTE_SERVICE_AREA,
+        })
+      ).toEqual({ valid: false, reason: 'invalid-delivery-location' });
+    }
+  );
+
+  test.each([null, '', '   ', undefined])(
+    'rejects blank pickup longitude as invalid-pickup-location: %p',
+    longitude => {
+      expect(
+        evaluateServiceAreaFeasibility({
+          deliveryPoint: base.deliveryPoint,
+          pickupPoint: { ...base.pickupPoint, longitude },
+          serviceArea: SOPHIE_CHARLOTTE_SERVICE_AREA,
+        })
+      ).toEqual({ valid: false, reason: 'invalid-pickup-location' });
+    }
+  );
+
+  test('accepts numeric strings and preserves zero values', () => {
+    expect(
+      evaluateServiceAreaFeasibility({
+        deliveryPoint: { latitude: '0', longitude: '0' },
+        pickupPoint: { latitude: '0', longitude: '0' },
+        serviceArea: {
+          center: { latitude: '0', longitude: '0' },
+          radiusMeters: '0',
+        },
+      })
+    ).toEqual({ valid: true, feasible: true });
+  });
+
+  test.each([null, '', '   ', undefined])(
+    'rejects blank service-area radius as invalid-service-area: %p',
+    radiusMeters => {
+      expect(
+        evaluateServiceAreaFeasibility({
+          deliveryPoint: base.deliveryPoint,
+          pickupPoint: base.pickupPoint,
+          serviceArea: { center: base.deliveryPoint, radiusMeters },
+        })
+      ).toEqual({ valid: false, reason: 'invalid-service-area' });
+    }
+  );
+
+  test.each([null, '', '   ', undefined])(
+    'rejects blank service-area center latitude as invalid-service-area: %p',
+    latitude => {
+      expect(
+        evaluateServiceAreaFeasibility({
+          deliveryPoint: base.deliveryPoint,
+          pickupPoint: base.pickupPoint,
+          serviceArea: {
+            center: { latitude, longitude: base.deliveryPoint.longitude },
+            radiusMeters: 0,
+          },
+        })
+      ).toEqual({ valid: false, reason: 'invalid-service-area' });
     }
   );
 

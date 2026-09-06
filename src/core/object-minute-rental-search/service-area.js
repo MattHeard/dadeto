@@ -13,7 +13,7 @@ export const SOPHIE_CHARLOTTE_SERVICE_AREA = Object.freeze({
 export function pointInsideWgs84Circle({ point, circle } = {}) {
   const pointCoordinates = coordinates(point);
   const centerCoordinates = coordinates(circle?.center);
-  const radius = Number(circle?.radiusMeters);
+  const radius = normalizeNumber(circle?.radiusMeters);
   if (
     !pointCoordinates ||
     !centerCoordinates ||
@@ -62,8 +62,8 @@ export function evaluateServiceAreaFeasibility({
  */
 function validCircle(circle) {
   return coordinates(circle?.center) &&
-    Number.isFinite(Number(circle?.radiusMeters)) &&
-    Number(circle?.radiusMeters) >= 0
+    Number.isFinite(normalizeNumber(circle?.radiusMeters)) &&
+    normalizeNumber(circle?.radiusMeters) >= 0
     ? true
     : false;
 }
@@ -75,8 +75,8 @@ function validCircle(circle) {
  */
 function coordinates(point) {
   if (!point) return null;
-  const latitude = Number(point.latitude);
-  const longitude = Number(point.longitude);
+  const latitude = normalizeNumber(point.latitude);
+  const longitude = normalizeNumber(point.longitude);
   return Number.isFinite(latitude) &&
     latitude >= -90 &&
     latitude <= 90 &&
@@ -85,4 +85,16 @@ function coordinates(point) {
     longitude <= 180
     ? { latitude, longitude }
     : null;
+}
+
+/**
+ * Convert an allowed numeric input without turning absent or blank values into zero.
+ * @param {unknown} value Candidate numeric input.
+ * @returns {number} Finite number or NaN for an absent, blank, or invalid input.
+ */
+function normalizeNumber(value) {
+  if (typeof value === 'number') return Number.isFinite(value) ? value : NaN;
+  if (typeof value !== 'string' || value.trim() === '') return NaN;
+  const number = Number(value);
+  return Number.isFinite(number) ? number : NaN;
 }
