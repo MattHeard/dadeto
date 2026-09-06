@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Object-minute rental search</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="search-card">
+      <h1>Object-minute rental search</h1>
+      <p>Times use this device's local timezone. This proof of concept supports football.</p>
+      <form id="rental-search-form" data-search-endpoint="/__sim/object-minute-rental-search">
+        <label>Product <select name="product"><option value="football">football</option></select></label>
+        <fieldset><legend>Delivery</legend>
+          <label>Latitude <input name="deliveryLatitude" required /></label>
+          <label>Longitude <input name="deliveryLongitude" required /></label>
+          <label>Date and time <input name="deliveryTime" type="datetime-local" required /></label>
+        </fieldset>
+        <fieldset><legend>Pickup</legend>
+          <label>Latitude <input name="pickupLatitude" required /></label>
+          <label>Longitude <input name="pickupLongitude" required /></label>
+          <label>Date and time <input name="pickupTime" type="datetime-local" required /></label>
+        </fieldset>
+        <button type="submit">Search</button>
+      </form>
+      <div id="search-status" role="status" aria-live="polite"></div>
+    </main>
+    <script type="module" src="search.js"></script>
+  </body>
+</html>

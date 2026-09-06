@@ -697,6 +697,72 @@ describe('object minute rental search core', () => {
 });
 
 describe('object minute rental HTTP adapter', () => {
+  test('handles allowed CORS preflight without reading search dependencies', async () => {
+    const listForRunner = jest.fn();
+    const json = jest.fn();
+    const setHeader = jest.fn();
+    const status = jest.fn(() => ({ json }));
+    await createSearchHttpHandler({
+      runnerCommitmentsRepository: { listForRunner },
+      env: { SEARCH_ALLOWED_ORIGINS: 'https://mattheard.net' },
+    })(
+      { method: 'OPTIONS', headers: { origin: 'https://mattheard.net' } },
+      {
+        setHeader,
+        status,
+        json,
+      }
+    );
+    expect(status).toHaveBeenCalledWith(204);
+    expect(listForRunner).not.toHaveBeenCalled();
+    expect(setHeader).toHaveBeenCalledWith(
+      'Access-Control-Allow-Origin',
+      'https://mattheard.net'
+    );
+  });
+
+  test('rejects unsupported methods before reading search dependencies', async () => {
+    const listForRunner = jest.fn();
+    const json = jest.fn();
+    const status = jest.fn(() => ({ json }));
+    await createSearchHttpHandler({
+      runnerCommitmentsRepository: { listForRunner },
+    })({ method: 'GET', headers: {} }, { status, json });
+    expect(status).toHaveBeenCalledWith(405);
+    expect(listForRunner).not.toHaveBeenCalled();
+  });
+
+  test('loads an injected runner schedule provider per request', async () => {
+    const json = jest.fn();
+    const getSchedule = jest.fn(async () => schedule);
+    await createSearchHttpHandler({
+      runnerCommitmentsRepository: emptyRepository,
+      runnerScheduleProvider: { getSchedule },
+      env: { SEARCH_RUNNER_ID: 'RUNNER-7' },
+      clock: () => new Date('2026-08-27T15:00Z'),
+    })(
+      { method: 'POST', headers: {}, body: base },
+      { json, status: () => ({ json }) }
+    );
+    expect(getSchedule).toHaveBeenCalledWith({ runnerId: 'RUNNER-7' });
+    expect(json).toHaveBeenCalledWith({
+      valid: true,
+      results: [{ skuId: 'FOOTBALL' }],
+    });
+  });
+
+  test('uses default runner id and fallback on invalid timezone input', async () => {
+    const getSchedule = jest.fn(async () => schedule);
+    await createSearchHttpHandler({
+      runnerCommitmentsRepository: emptyRepository,
+      runnerScheduleProvider: { getSchedule },
+      clock: () => new Date('2026-08-27T15:00Z'),
+    })({ method: 'POST', headers: {}, body: base }, { json: jest.fn(), status: () => ({ json: jest.fn() }) });
+    expect(getSchedule).toHaveBeenCalledWith({ runnerId: 'RUNNER-1' });
+    expect(dailyWindow('07:00', 'not-a-date', 'fallback', 'UTC')).toBe('fallback');
+    expect(dailyWindow('', 'not-a-date', 'fallback', 'UTC')).toBe('fallback');
+  });
+
   test('normalizes a request and reads persisted commitments', async () => {
     const listForRunner = jest.fn(async () => []);
     const json = jest.fn();
@@ -1021,6 +1087,15 @@ describe('object minute rental HTTP adapter', () => {
     expect(dailyWindow('16:00', '2026-08-27T15:00Z', 'fallback')).toBe(
       '2026-08-27T16:00:00Z'
     );
+    expect(
+      dailyWindow('07:00', '2026-01-15T12:00Z', 'fallback', 'Europe/Berlin')
+    ).toBe('2026-01-15T06:00:00Z');
+    expect(
+      dailyWindow('07:00', '2026-07-15T12:00Z', 'fallback', 'Europe/Berlin')
+    ).toBe('2026-07-15T05:00:00Z');
+    expect(
+      dailyWindow('07:00', '2026-07-15T12:00Z', 'fallback', 'Not/A-Timezone')
+    ).toBe('07:00');
     expect(dailyWindow('16:00x', '2026-08-27T15:00Z', 'fallback')).toBe(
       '16:00x'
     );

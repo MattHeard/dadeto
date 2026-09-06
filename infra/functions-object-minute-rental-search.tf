@@ -4,6 +4,28 @@ data "archive_file" "object_minute_rental_search_src" {
   output_path = "${path.module}/build/object-minute-rental-search.zip"
 }
 
+resource "google_storage_bucket" "object_minute_rental_schedule" {
+  name     = "${var.environment}-object-minute-rental-schedules"
+  location = var.region
+}
+
+resource "google_storage_bucket_object" "object_minute_rental_schedule" {
+  name         = "runner-schedule.json"
+  bucket       = google_storage_bucket.object_minute_rental_schedule.name
+  source       = "${path.module}/object-minute-rental-schedule.json"
+  content_type = "application/json"
+
+  lifecycle {
+    ignore_changes = [source, content]
+  }
+}
+
+resource "google_storage_bucket_iam_member" "object_minute_rental_schedule_reader" {
+  bucket = google_storage_bucket.object_minute_rental_schedule.name
+  role   = local.storage_object_viewer_role
+  member = local.cloud_function_runtime_service_account_member
+}
+
 resource "google_storage_bucket_object" "object_minute_rental_search_zip" {
   name   = "${var.environment}-object-minute-rental-search-${data.archive_file.object_minute_rental_search_src.output_sha256}.zip"
   bucket = google_storage_bucket.gcf_source_bucket.name
@@ -37,7 +59,10 @@ resource "google_cloudfunctions2_function" "object_minute_rental_search" {
       SEARCH_SUPPLIER_START            = "07:00"
       SEARCH_SUPPLIER_END              = "17:00"
       SEARCH_RUNNER_ID                 = "RUNNER-1"
-      SEARCH_RUNNER_SCHEDULE_JSON      = "[{\"startTimestamp\":\"2026-01-01T00:00:00Z\",\"endTimestamp\":\"2030-01-01T00:00:00Z\"}]"
+      SEARCH_SCHEDULE_BUCKET           = google_storage_bucket.object_minute_rental_schedule.name
+      SEARCH_SCHEDULE_OBJECT           = google_storage_bucket_object.object_minute_rental_schedule.name
+      SEARCH_SUPPLIER_TIME_ZONE        = "Europe/Berlin"
+      SEARCH_ALLOWED_ORIGINS           = "https://mattheard.net"
     })
   }
 

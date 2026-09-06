@@ -7,6 +7,7 @@ const DEFAULT_SUPPLIER = {
   startTimestamp: '2026-01-01T07:00:00Z',
   endTimestamp: '2026-01-01T17:00:00Z',
 };
+const DEFAULT_SUPPLIER_TIME_ZONE = 'UTC';
 
 /**
  * Create the stateless search HTTP adapter.
@@ -18,6 +19,11 @@ export function createSearchHttpHandler({
   env = process.env,
   clock = () => new Date(),
   serviceArea = SOPHIE_CHARLOTTE_SERVICE_AREA,
+  runnerScheduleProvider,
+  allowedOrigins = String(env.SEARCH_ALLOWED_ORIGINS ?? '')
+    .split(',')
+    .map(origin => origin.trim())
+    .filter(Boolean),
 }) {
   const search = createObjectMinuteRentalSearch({
     runnerCommitmentsRepository,
@@ -25,8 +31,28 @@ export function createSearchHttpHandler({
     serviceArea,
   });
   return async (req, res) => {
+    const origin = req?.headers?.origin;
+    if (origin && allowedOrigins.includes(origin)) {
+      res.setHeader?.('Access-Control-Allow-Origin', origin);
+      res.setHeader?.('Vary', 'Origin');
+      res.setHeader?.('Access-Control-Allow-Methods', 'POST, OPTIONS');
+      res.setHeader?.('Access-Control-Allow-Headers', 'Content-Type');
+    }
+    if (req?.method === 'OPTIONS') {
+      res.status(204).json({});
+      return;
+    }
+    if (req?.method && req.method !== 'POST') {
+      res.status(405).json({ valid: false, reason: 'Method not allowed.' });
+      return;
+    }
     try {
       const request = normalizeRequest(req.body, env, clock);
+      request.runnerSchedule = runnerScheduleProvider
+        ? await runnerScheduleProvider.getSchedule({
+            runnerId: env.SEARCH_RUNNER_ID ?? DEFAULT_RUNNER_ID,
+          })
+        : parseSchedule(env.SEARCH_RUNNER_SCHEDULE_JSON);
       res.json(await search(request));
     } catch (error) {
       res.status(400).json({
@@ -72,15 +98,17 @@ export function normalizeRequest(body, env, clock) {
       startTimestamp: dailyWindow(
         env.SEARCH_SUPPLIER_START ?? '07:00',
         deliveryPoint.timestamp,
-        DEFAULT_SUPPLIER.startTimestamp
+        DEFAULT_SUPPLIER.startTimestamp,
+        env.SEARCH_SUPPLIER_TIME_ZONE ?? DEFAULT_SUPPLIER_TIME_ZONE
       ),
       endTimestamp: dailyWindow(
         env.SEARCH_SUPPLIER_END ?? '17:00',
         deliveryPoint.timestamp,
-        DEFAULT_SUPPLIER.endTimestamp
+        DEFAULT_SUPPLIER.endTimestamp,
+        env.SEARCH_SUPPLIER_TIME_ZONE ?? DEFAULT_SUPPLIER_TIME_ZONE
       ),
     },
-    runnerSchedule: parseSchedule(env.SEARCH_RUNNER_SCHEDULE_JSON),
+    runnerSchedule: [],
     nowTimestamp: now.toISOString(),
   };
 }
@@ -89,14 +117,81 @@ export function normalizeRequest(body, env, clock) {
  * @param {string} value Window value.
  * @param {string} timestamp Reference timestamp.
  * @param {string} fallback Fallback window value.
+ * @param {string} timeZone IANA timezone used for local wall-clock conversion.
  * @returns {string} ISO timestamp or fallback value.
  */
-export function dailyWindow(value, timestamp, fallback) {
-  if (!/^\d{2}:\d{2}$/.test(value)) return value || fallback;
-  const date = String(timestamp).slice(0, 10);
-  return `${date}T${value}:00Z`;
+export function dailyWindow(
+  value,
+  timestamp,
+  fallback,
+  timeZone = DEFAULT_SUPPLIER_TIME_ZONE
+) {
+  if (!/^\d{2}:[0-5]\d$/.test(value)) return value || fallback;
+  try {
+    return zonedLocalTimeToUtc(timestamp, value, timeZone);
+  } catch {
+    return fallback;
+  }
 }
 
+/**
+ * Convert a local wall-clock time in an IANA timezone to an ISO UTC timestamp.
+ * @param {string} timestamp Reference instant used to derive the local date.
+ * @param {string} localTime Local HH:MM value.
+ * @param {string} timeZone IANA timezone.
+ * @returns {string} ISO UTC timestamp.
+ */
+function zonedLocalTimeToUtc(timestamp, localTime, timeZone) {
+  const instant = new Date(timestamp);
+  if (!Number.isFinite(instant.getTime()))
+    throw new Error('Invalid timestamp.');
+  const dateParts = formatParts(instant, timeZone, {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  });
+  const guess = Date.UTC(
+    Number(dateParts.year),
+    Number(dateParts.month) - 1,
+    Number(dateParts.day),
+    Number(localTime.slice(0, 2)),
+    Number(localTime.slice(3, 5))
+  );
+  const represented = formatParts(new Date(guess), timeZone, {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    hourCycle: 'h23',
+  });
+  const representedUtc = Date.UTC(
+    Number(represented.year),
+    Number(represented.month) - 1,
+    Number(represented.day),
+    Number(represented.hour),
+    Number(represented.minute)
+  );
+  return new Date(guess - (representedUtc - guess))
+    .toISOString()
+    .replace('.000Z', 'Z');
+}
+
+/**
+ * Format an instant into named timezone parts.
+ * @param {Date} date Instant to format.
+ * @param {string} timeZone IANA timezone.
+ * @param {object} options Intl date-time options.
+ * @returns {Record<string, string>} Named formatted parts.
+ */
+function formatParts(date, timeZone, options) {
+  return new Intl.DateTimeFormat('en-US', { timeZone, ...options })
+    .formatToParts(date)
+    .reduce((parts, part) => {
+      if (part.type !== 'literal') parts[part.type] = part.value;
+      return parts;
+    }, {});
+}
 /**
  * @param {string|undefined} value Environment value.
  * @param {number} fallback Default number.
@@ -118,7 +213,14 @@ function parseSchedule(value) {
     value ??
       '[{"startTimestamp":"2026-01-01T00:00:00Z","endTimestamp":"2030-01-01T00:00:00Z"}]'
   );
-  if (!Array.isArray(schedule))
+  if (
+    !Array.isArray(schedule) ||
+    schedule.some(window => {
+      const start = Date.parse(window?.startTimestamp);
+      const end = Date.parse(window?.endTimestamp);
+      return !Number.isFinite(start) || !Number.isFinite(end) || end < start;
+    })
+  )
     throw new Error('Invalid runner schedule configuration.');
   return schedule;
 }
