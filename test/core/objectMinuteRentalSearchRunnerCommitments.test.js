@@ -3,6 +3,7 @@ import { createBrowserRunnerCommitmentsRepository } from '../../src/core/object-
 import { createObjectMinuteRentalSearch } from '../../src/core/object-minute-rental-search/search-application.js';
 import { createFirestoreRunnerCommitmentsRepository } from '../../src/cloud/object-minute-rental-search/runner-commitments-repository.js';
 import { projectRunnerCommitments } from '../../src/core/object-minute-rental-search/runner-commitments.js';
+import { SOPHIE_CHARLOTTE_SERVICE_AREA } from '../../src/core/object-minute-rental-search/service-area.js';
 
 const assignment = { personId: 'RUNNER-1', segmentId: 'SEGMENT-1' };
 const segment = {
@@ -194,12 +195,21 @@ describe('runner commitments repositories', () => {
     const search = createObjectMinuteRentalSearch({
       runnerCommitmentsRepository: { listForRunner },
       runnerId: 'RUNNER-9',
+      serviceArea: SOPHIE_CHARLOTTE_SERVICE_AREA,
     });
     await expect(
       search({
         requestText: 'football',
-        deliveryPoint: { timestamp: '2026-08-27T19:00Z' },
-        pickupPoint: { timestamp: '2026-08-27T20:00Z' },
+        deliveryPoint: {
+          timestamp: '2026-08-27T19:00Z',
+          latitude: 52.510833,
+          longitude: 13.296667,
+        },
+        pickupPoint: {
+          timestamp: '2026-08-27T20:00Z',
+          latitude: 52.510833,
+          longitude: 13.296667,
+        },
         durations: {
           deliveryOutboundSeconds: 2700,
           procurementSeconds: 1800,

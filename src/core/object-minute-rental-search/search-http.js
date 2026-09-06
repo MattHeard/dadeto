@@ -1,5 +1,6 @@
 // @ts-nocheck -- HTTP adapter values are normalized by the core boundary.
 import { createObjectMinuteRentalSearch } from './search-application.js';
+import { SOPHIE_CHARLOTTE_SERVICE_AREA } from './service-area.js';
 
 const DEFAULT_RUNNER_ID = 'RUNNER-1';
 const DEFAULT_SUPPLIER = {
@@ -16,10 +17,12 @@ export function createSearchHttpHandler({
   runnerCommitmentsRepository,
   env = process.env,
   clock = () => new Date(),
+  serviceArea = SOPHIE_CHARLOTTE_SERVICE_AREA,
 }) {
   const search = createObjectMinuteRentalSearch({
     runnerCommitmentsRepository,
     runnerId: env.SEARCH_RUNNER_ID ?? DEFAULT_RUNNER_ID,
+    serviceArea,
   });
   return async (req, res) => {
     try {

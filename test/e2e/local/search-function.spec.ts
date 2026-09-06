@@ -14,8 +14,15 @@ test('local object-minute rental search returns the football SKU', async ({
           startPoint: {
             pointId: 'DELIVERY',
             timestamp: '2026-01-01T19:00:00Z',
+            latitude: 52.510833,
+            longitude: 13.296667,
           },
-          endPoint: { pointId: 'PICKUP', timestamp: '2026-01-01T20:00:00Z' },
+          endPoint: {
+            pointId: 'PICKUP',
+            timestamp: '2026-01-01T20:00:00Z',
+            latitude: 52.510833,
+            longitude: 13.296667,
+          },
         },
       },
     }

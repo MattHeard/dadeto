@@ -41,8 +41,16 @@ describe('gcp simulator coverage paths', () => {
         body: {
           requestText: 'football',
           possessionContext: {
-            startPoint: { timestamp: '2026-01-01T15:00:00Z' },
-            endPoint: { timestamp: '2026-01-01T15:30:00Z' },
+            startPoint: {
+              timestamp: '2026-01-01T15:00:00Z',
+              latitude: 52.510833,
+              longitude: 13.296667,
+            },
+            endPoint: {
+              timestamp: '2026-01-01T15:30:00Z',
+              latitude: 52.510833,
+              longitude: 13.296667,
+            },
           },
         },
       })

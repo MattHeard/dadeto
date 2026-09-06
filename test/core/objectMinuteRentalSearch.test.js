@@ -17,6 +17,11 @@ import {
   normalizeRequest,
 } from '../../src/core/object-minute-rental-search/search-http.js';
 import { createObjectMinuteRentalSearch } from '../../src/core/object-minute-rental-search/search-application.js';
+import {
+  evaluateServiceAreaFeasibility,
+  pointInsideWgs84Circle,
+  SOPHIE_CHARLOTTE_SERVICE_AREA,
+} from '../../src/core/object-minute-rental-search/service-area.js';
 // Reuse the established wrapper-level assertions so the direct core mutation
 // run observes every externally visible feasibility branch as well.
 import '../toys/2026-08-27/searchFeasibility.test.js';
@@ -26,8 +31,16 @@ const schedule = [
 ];
 const base = {
   requestText: 'football',
-  deliveryPoint: { timestamp: '2026-08-27T19:00Z' },
-  pickupPoint: { timestamp: '2026-08-27T20:00Z' },
+  deliveryPoint: {
+    timestamp: '2026-08-27T19:00Z',
+    latitude: 52.510833,
+    longitude: 13.296667,
+  },
+  pickupPoint: {
+    timestamp: '2026-08-27T20:00Z',
+    latitude: 52.510833,
+    longitude: 13.296667,
+  },
   durations: {
     deliveryOutboundSeconds: 2700,
     procurementSeconds: 1800,
@@ -92,6 +105,85 @@ describe('possession context temporal validity', () => {
       valid: false,
       reason: 'invalid-possession-start-time',
     });
+  });
+});
+
+describe('service-area feasibility', () => {
+  test('rejects missing primitive inputs', () => {
+    expect(pointInsideWgs84Circle()).toBe(false);
+    expect(
+      pointInsideWgs84Circle({
+        point: base.deliveryPoint,
+        circle: { center: base.deliveryPoint, radiusMeters: -1 },
+      })
+    ).toBe(false);
+    expect(evaluateServiceAreaFeasibility()).toEqual({
+      valid: false,
+      reason: 'invalid-service-area',
+    });
+  });
+
+  test('accepts two points inside the configured circle', () => {
+    expect(
+      evaluateServiceAreaFeasibility({
+        deliveryPoint: base.deliveryPoint,
+        pickupPoint: base.pickupPoint,
+        serviceArea: SOPHIE_CHARLOTTE_SERVICE_AREA,
+      })
+    ).toEqual({ valid: true, feasible: true });
+  });
+
+  test.each([
+    ['delivery', { latitude: 52.6, longitude: 13.296667 }, base.pickupPoint],
+    ['pickup', base.deliveryPoint, { latitude: 52.6, longitude: 13.296667 }],
+  ])(
+    'rejects a valid %s point outside the circle',
+    (_name, deliveryPoint, pickupPoint) => {
+      expect(
+        evaluateServiceAreaFeasibility({
+          deliveryPoint,
+          pickupPoint,
+          serviceArea: SOPHIE_CHARLOTTE_SERVICE_AREA,
+        })
+      ).toEqual({ valid: true, feasible: false });
+    }
+  );
+
+  test('includes a point exactly on a zero-radius boundary', () => {
+    const point = { latitude: 52.510833, longitude: 13.296667 };
+    expect(
+      evaluateServiceAreaFeasibility({
+        deliveryPoint: point,
+        pickupPoint: point,
+        serviceArea: { center: point, radiusMeters: 0 },
+      })
+    ).toEqual({ valid: true, feasible: true });
+  });
+
+  test.each([
+    ['invalid-delivery-location', { latitude: 'bad' }, base.pickupPoint],
+    ['invalid-pickup-location', base.deliveryPoint, { longitude: 181 }],
+  ])(
+    'rejects malformed request coordinates with %s',
+    (reason, deliveryPoint, pickupPoint) => {
+      expect(
+        evaluateServiceAreaFeasibility({
+          deliveryPoint,
+          pickupPoint,
+          serviceArea: SOPHIE_CHARLOTTE_SERVICE_AREA,
+        })
+      ).toEqual({ valid: false, reason });
+    }
+  );
+
+  test('fails closed for malformed service-area configuration', () => {
+    expect(
+      evaluateServiceAreaFeasibility({
+        deliveryPoint: base.deliveryPoint,
+        pickupPoint: base.pickupPoint,
+        serviceArea: { center: base.deliveryPoint, radiusMeters: -1 },
+      })
+    ).toEqual({ valid: false, reason: 'invalid-service-area' });
   });
 });
 
@@ -622,6 +714,71 @@ describe('object minute rental HTTP adapter', () => {
     expect(listForRunner).not.toHaveBeenCalled();
   });
 
+  test('returns an empty successful search and skips commitments for out-of-area points', async () => {
+    const listForRunner = jest.fn(async () => []);
+    const json = jest.fn();
+    const handler = createSearchHttpHandler({
+      runnerCommitmentsRepository: { listForRunner },
+      clock: () => new Date('2026-08-27T15:00Z'),
+    });
+    await handler(
+      {
+        body: {
+          ...base,
+          deliveryPoint: { ...base.deliveryPoint, latitude: 52.6 },
+        },
+      },
+      { json, status: () => ({ json }) }
+    );
+    expect(json).toHaveBeenCalledWith({ valid: true, results: [] });
+    expect(listForRunner).not.toHaveBeenCalled();
+  });
+
+  test('rejects malformed spatial input before commitments', async () => {
+    const listForRunner = jest.fn(async () => []);
+    const json = jest.fn();
+    const status = jest.fn(() => ({ json }));
+    await createSearchHttpHandler({
+      runnerCommitmentsRepository: { listForRunner },
+      clock: () => new Date('2026-08-27T15:00Z'),
+    })(
+      {
+        body: { ...base, pickupPoint: { ...base.pickupPoint, longitude: 181 } },
+      },
+      { json, status }
+    );
+    expect(status).toHaveBeenCalledWith(400);
+    expect(json).toHaveBeenCalledWith({
+      valid: false,
+      reason: 'invalid-pickup-location',
+    });
+    expect(listForRunner).not.toHaveBeenCalled();
+  });
+
+  test('preserves temporal error precedence over spatial errors', async () => {
+    const listForRunner = jest.fn(async () => []);
+    const json = jest.fn();
+    const status = jest.fn(() => ({ json }));
+    await createSearchHttpHandler({
+      runnerCommitmentsRepository: { listForRunner },
+      clock: () => new Date('2026-08-27T15:00Z'),
+    })(
+      {
+        body: {
+          ...base,
+          deliveryPoint: { ...base.deliveryPoint, latitude: 52.6 },
+          pickupPoint: { ...base.pickupPoint, timestamp: '2026-08-27T18:00Z' },
+        },
+      },
+      { json, status }
+    );
+    expect(json).toHaveBeenCalledWith({
+      valid: false,
+      reason: 'possession-end-before-start',
+    });
+    expect(listForRunner).not.toHaveBeenCalled();
+  });
+
   test('rejects invalid clock, duration, schedule, and possession input', async () => {
     const json = jest.fn();
     const status = jest.fn(() => ({ json }));
@@ -691,6 +848,7 @@ describe('object minute rental HTTP adapter', () => {
     const listForRunner = jest.fn(async () => []);
     const search = createObjectMinuteRentalSearch({
       runnerCommitmentsRepository: { listForRunner },
+      serviceArea: SOPHIE_CHARLOTTE_SERVICE_AREA,
     });
     await search(base);
     expect(listForRunner).toHaveBeenCalledWith({ runnerId: 'RUNNER-1' });
@@ -733,8 +891,14 @@ describe('object minute rental HTTP adapter', () => {
   test('distinguishes a strict daily supplier window from a suffix value', async () => {
     const body = {
       ...base,
-      deliveryPoint: { timestamp: '2026-08-27T16:00Z' },
-      pickupPoint: { timestamp: '2026-08-27T16:00Z' },
+      deliveryPoint: {
+        ...base.deliveryPoint,
+        timestamp: '2026-08-27T16:00Z',
+      },
+      pickupPoint: {
+        ...base.pickupPoint,
+        timestamp: '2026-08-27T16:00Z',
+      },
     };
     const json = jest.fn();
     await createSearchHttpHandler({
