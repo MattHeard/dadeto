@@ -222,6 +222,21 @@ jobs:
         id: terraform_init
         run: terraform init -reconfigure -backend-config="prefix=terraform/test/${{ github.run_id }}-${ENVIRONMENT}"
 
+      - name: Import pre-existing test runtime secrets
+        run: |
+          set -euo pipefail
+          declare -A secret_keys=(
+            [dadeto-stripe-secret-key-test]=stripe_secret_key
+            [dadeto-stripe-webhook-secret-test]=stripe_webhook
+          )
+          for secret in "${!secret_keys[@]}"; do
+            if gcloud secrets describe "$secret" --project="$GOOGLE_PROJECT" >/dev/null 2>&1; then
+              terraform import -input=false \
+                "google_secret_manager_secret.runtime[\"${secret_keys[$secret]}\"]" \
+                "projects/${GOOGLE_PROJECT}/secrets/${secret}"
+            fi
+          done
+
       - name: Terraform Fmt (diff + report)
         id: tffmt
         continue-on-error: true
