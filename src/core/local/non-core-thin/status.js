@@ -165,9 +165,11 @@ function buildNonCoreThinStatus(config, files, options) {
     .map(filePath => ({ filePath, lines: countLines(filePath, options) }))
     .filter(({ filePath }) => !exemptedFiles.has(filePath))
     .filter(({ lines }) => lines > maxLines);
-  const patternViolations = files.flatMap(filePath =>
-    getWrapperPatternViolations(filePath, maxLines, options)
-  );
+  const patternViolations = files
+    .filter(filePath => !exemptedFiles.has(filePath))
+    .flatMap(filePath =>
+      getWrapperPatternViolations(filePath, maxLines, options)
+    );
 
   return {
     isClean:

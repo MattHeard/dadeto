@@ -1,0 +1,6 @@
+{
+  "maxLines": 50,
+  "exemptions": {
+    "src/browser/webmcp.js": "Browser entrypoint intentionally owns WebMCP registration, catalog loading, and lazy toy execution."
+  }
+}
