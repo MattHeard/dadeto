@@ -37,6 +37,13 @@ import { createSearchHttpHandler } from '../../object-minute-rental-search/searc
 import { createBrowserRunnerCommitmentsRepository } from '../../object-minute-rental-search/browser-runner-commitments-repository.js';
 import { SOPHIE_CHARLOTTE_SERVICE_AREA } from '../../object-minute-rental-search/service-area.js';
 
+const LOCAL_RUNNER_SCHEDULE = [
+  {
+    startTimestamp: '2026-01-01T00:00:00Z',
+    endTimestamp: '2030-01-01T00:00:00Z',
+  },
+];
+
 const DEFAULT_STORY_TITLE = 'E2E moderation fixture story';
 const DEFAULT_FIRST_CONTENT =
   'The first seeded page invites the reader forward.';
@@ -118,6 +125,7 @@ function createSimulatorConfig(baseUrl, bucketName, projectId) {
     generateStatsUrl: `${baseUrl}/__sim/generate-stats`,
     paymentWebhookUrl: `${baseUrl}/__sim/payment-webhook`,
     getAuthorUuidUrl: `${baseUrl}/__sim/get-author-uuid-v2`,
+    objectMinuteRentalSearchUrl: `${baseUrl}/__sim/object-minute-rental-search`,
     bucketName,
     projectId,
   };
@@ -416,10 +424,7 @@ async function buildSimulatorState(/** @type {unknown} */ config) {
   const searchHttp = createSearchHttpHandler({
     runnerCommitmentsRepository: createBrowserRunnerCommitmentsRepository(),
     serviceArea: SOPHIE_CHARLOTTE_SERVICE_AREA,
-    env: {
-      SEARCH_RUNNER_SCHEDULE_JSON:
-        '[{"startTimestamp":"2026-01-01T00:00:00Z","endTimestamp":"2030-01-01T00:00:00Z"}]',
-    },
+    runnerScheduleProvider: { getSchedule: async () => LOCAL_RUNNER_SCHEDULE },
     clock: () => new Date('2026-01-01T15:00:00Z'),
   });
   const objectMinuteRentalSearch = request =>

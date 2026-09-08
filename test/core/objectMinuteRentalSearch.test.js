@@ -719,6 +719,33 @@ describe('object minute rental HTTP adapter', () => {
       'Access-Control-Allow-Origin',
       'https://mattheard.net'
     );
+    expect(setHeader).toHaveBeenCalledWith('Vary', 'Origin');
+    expect(setHeader).toHaveBeenCalledWith(
+      'Access-Control-Allow-Headers',
+      'Content-Type'
+    );
+  });
+
+  test('does not grant CORS access or invoke search for a disallowed preflight', async () => {
+    const listForRunner = jest.fn();
+    const setHeader = jest.fn();
+    const json = jest.fn();
+    await createSearchHttpHandler({
+      runnerCommitmentsRepository: { listForRunner },
+      env: { SEARCH_ALLOWED_ORIGINS: 'https://mattheard.net' },
+    })(
+      { method: 'OPTIONS', headers: { origin: 'https://other.example' } },
+      {
+        setHeader,
+        status: () => ({ json }),
+        json,
+      }
+    );
+    expect(setHeader).not.toHaveBeenCalledWith(
+      'Access-Control-Allow-Origin',
+      'https://other.example'
+    );
+    expect(listForRunner).not.toHaveBeenCalled();
   });
 
   test('rejects unsupported methods before reading search dependencies', async () => {
@@ -757,9 +784,14 @@ describe('object minute rental HTTP adapter', () => {
       runnerCommitmentsRepository: emptyRepository,
       runnerScheduleProvider: { getSchedule },
       clock: () => new Date('2026-08-27T15:00Z'),
-    })({ method: 'POST', headers: {}, body: base }, { json: jest.fn(), status: () => ({ json: jest.fn() }) });
+    })(
+      { method: 'POST', headers: {}, body: base },
+      { json: jest.fn(), status: () => ({ json: jest.fn() }) }
+    );
     expect(getSchedule).toHaveBeenCalledWith({ runnerId: 'RUNNER-1' });
-    expect(dailyWindow('07:00', 'not-a-date', 'fallback', 'UTC')).toBe('fallback');
+    expect(dailyWindow('07:00', 'not-a-date', 'fallback', 'UTC')).toBe(
+      'fallback'
+    );
     expect(dailyWindow('', 'not-a-date', 'fallback', 'UTC')).toBe('fallback');
   });
 

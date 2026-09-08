@@ -1,6 +1,7 @@
 {
   "maxLines": 50,
   "exemptions": {
-    "src/browser/webmcp.js": "Browser entrypoint intentionally owns WebMCP registration, catalog loading, and lazy toy execution."
+    "src/browser/webmcp.js": "Browser entrypoint intentionally owns WebMCP registration, catalog loading, and lazy toy execution.",
+    "src/content/pages/object-minute-rental-search/search.js": "Static page entrypoint intentionally owns form serialization, endpoint resolution, result rendering, and submission lifecycle."
   }
 }

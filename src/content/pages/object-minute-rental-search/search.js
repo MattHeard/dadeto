@@ -1,6 +1,10 @@
 const form = document.querySelector('#rental-search-form');
 const status = document.querySelector('#search-status');
 const button = form.querySelector('button[type="submit"]');
+const searchEndpointPromise = fetch('/config.json')
+  .then(response => response.json())
+  .then(config => config.objectMinuteRentalSearchUrl || form.dataset.searchEndpoint)
+  .catch(() => form.dataset.searchEndpoint);
 export function buildSearchRequest(values) {
   return {
     searchText: values.product,
@@ -33,16 +37,21 @@ form.addEventListener('submit', async event => {
   button.disabled = true;
   status.textContent = 'Searching…';
   try {
-    const response = await fetch(form.dataset.searchEndpoint, {
+    const response = await fetch(await searchEndpointPromise, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(buildSearchRequest(Object.fromEntries(new FormData(form)))),
+      body: JSON.stringify(
+        buildSearchRequest(Object.fromEntries(new FormData(form)))
+      ),
     });
     const result = await response.json();
-    if (!response.ok) throw new Error(result.reason ?? `HTTP ${response.status}`);
+    if (!response.ok)
+      throw new Error(result.reason ?? `HTTP ${response.status}`);
     renderSearchState(result);
   } catch (error) {
-    status.textContent = `Search error: ${error instanceof Error ? error.message : String(error)}`;
+    status.textContent = `Search error: ${
+      error instanceof Error ? error.message : String(error)
+    }`;
   } finally {
     button.disabled = false;
   }
