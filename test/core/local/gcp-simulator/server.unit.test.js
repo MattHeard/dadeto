@@ -84,6 +84,17 @@ describe('gcp simulator server without a listener', () => {
     for (const fn of middleware.filter(value => typeof value === 'function')) {
       fn(request, makeResponse(), jest.fn());
     }
+    const preflightResponse = makeResponse();
+    const preflightRequest = {
+      ...request,
+      method: 'OPTIONS',
+      path: '/__sim/object-minute-rental-search',
+    };
+    for (const fn of middleware.filter(value => typeof value === 'function')) {
+      fn(preflightRequest, preflightResponse, jest.fn());
+    }
+    expect(preflightResponse.status).toHaveBeenCalledWith(204);
+    expect(preflightResponse.end).toHaveBeenCalled();
     for (const route of routeHandlers) {
       await route.handler(request, makeResponse(), jest.fn());
     }

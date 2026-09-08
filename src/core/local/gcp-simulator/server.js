@@ -102,6 +102,19 @@ async function startServer(deps) {
   const app = createJsonExpressApp(createJsonExpressAppDeps(express));
   app.use((_req, res, next) => {
     res.set('Access-Control-Allow-Origin', '*');
+    res.set('Access-Control-Allow-Methods', 'POST, OPTIONS');
+    res.set('Access-Control-Allow-Headers', 'Content-Type');
+    next();
+  });
+
+  app.use((req, res, next) => {
+    if (
+      req.method === 'OPTIONS' &&
+      req.path === '/__sim/object-minute-rental-search'
+    ) {
+      res.status(204).end();
+      return;
+    }
     next();
   });
 
