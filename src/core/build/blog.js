@@ -18,6 +18,11 @@ export const sharedDirectoryPairs = [
     publicRelativePath: 'core/browser',
   },
   { key: 'Core', relativePath: 'core', publicRelativePath: 'core' },
+  {
+    key: 'ContentBlogData',
+    relativePath: 'content/blog-data',
+    publicRelativePath: 'content/blog-data',
+  },
 ];
 
 /**

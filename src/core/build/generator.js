@@ -10,6 +10,7 @@ import {
   join,
   attrName,
 } from './html.js';
+import { renderStaticJsonlTable } from './staticJsonlTable.js';
 
 /**
  * Wrap a string or array of strings in paragraph tags.
@@ -730,6 +731,7 @@ function renderBodyEntry(entry, isFirstText, post) {
       throw new TypeError('Links body entry must contain a non-empty array');
     return renderLinksEntry(entry);
   }
+  if (entry.type === 'table') return renderStaticJsonlTable(entry);
   throw new Error(
     `Unknown post body entry type: ${entry.type}; renderer is not a function`
   );

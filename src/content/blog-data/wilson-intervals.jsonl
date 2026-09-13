@@ -1,0 +1,3 @@
+{"sampleSize":10,"successRate":0.5,"predictedLowerBound":0.25,"actualLowerBound":0.237}
+{"sampleSize":10,"successRate":0.7,"predictedLowerBound":0.4,"actualLowerBound":0.397}
+{"sampleSize":20,"successRate":0.5,"predictedLowerBound":0.32,"actualLowerBound":0.299}
