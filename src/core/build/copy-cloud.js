@@ -999,6 +999,7 @@ function createCopyCloudDirectoryPlan(planValues) {
   const {
     join,
     infraDir,
+    srcCoreDir,
     srcCloudDir,
     infraFunctionsDir,
     srcCoreCloudDir,
@@ -1131,6 +1132,16 @@ function createCopyCloudDirectoryPlan(planValues) {
     ),
   };
 
+  const objectMinuteRentalSearchWgs84Copy = {
+    source: join(srcCoreDir, 'wgs84.js'),
+    target: join(
+      infraFunctionsDir,
+      'object-minute-rental-search',
+      'core',
+      'wgs84.js'
+    ),
+  };
+
   const coreBrowserCopies = [
     {
       source: srcCoreBrowserDir,
@@ -1148,6 +1159,7 @@ function createCopyCloudDirectoryPlan(planValues) {
     preservedCloudTreeCopies,
     coreRealtimeCopies,
     objectMinuteRentalSearchCoreCopy,
+    objectMinuteRentalSearchWgs84Copy,
     coreBrowserCopies,
     browserFileCopies,
   };
@@ -1638,11 +1650,13 @@ function createCopyCloudPlan(deps) {
     preservedCloudTreeCopies,
     coreRealtimeCopies,
     objectMinuteRentalSearchCoreCopy,
+    objectMinuteRentalSearchWgs84Copy,
     coreBrowserCopies,
     browserFileCopies,
   } = createCopyCloudDirectoryPlan({
     join,
     infraDir,
+    srcCoreDir,
     srcCloudDir,
     infraFunctionsDir,
     srcCoreCloudDir,
@@ -1787,6 +1801,7 @@ function createCopyCloudPlan(deps) {
     sharedUtilityCopies,
     preservedSharedUtilityCopies,
   });
+  individualFileCopies.push(objectMinuteRentalSearchWgs84Copy);
 
   return {
     projectRoot,

@@ -5,10 +5,11 @@ import { createCopyCloudHandle } from '../../../src/core/build/copy-cloud.js';
 describe('createCopyCloudHandle', () => {
   test('runs the injected cloud copy workflow', async () => {
     const writes = [];
+    const copies = [];
     const fsPromises = {
       readdir: async () => [],
       mkdir: async () => undefined,
-      copyFile: async () => undefined,
+      copyFile: async (source, target) => copies.push({ source, target }),
       readFile: async () => '../cloud-core.js',
       writeFile: async (filePath, content) =>
         writes.push({ filePath, content }),
@@ -24,6 +25,11 @@ describe('createCopyCloudHandle', () => {
     });
 
     expect(writes.length).toBeGreaterThan(20);
+    expect(copies).toContainEqual({
+      source: '/repo/src/core/wgs84.js',
+      target:
+        '/repo/infra/cloud-functions/object-minute-rental-search/core/wgs84.js',
+    });
     expect(logger.info).toHaveBeenCalledWith(
       expect.stringContaining('Rewrote')
     );
