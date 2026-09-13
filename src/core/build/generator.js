@@ -514,23 +514,56 @@ function getContentArray(post) {
 }
 
 /**
- * Determine if a content index corresponds to the first item.
- * @param {number} index - Index within the content array.
- * @returns {boolean} True if first item.
+ * Normalize a post's visible body into one ordered sequence.
+ * @param {object} post - Blog post.
+ * @returns {Array<object>} Ordered body entries.
  */
-function isFirstContentItem(index) {
-  return index === 0;
-}
+function normalizePostBody(post) {
+  const content = getContentArray(post);
+  if (!Array.isArray(content)) {
+    throw new TypeError('Post content must be an array');
+  }
 
-/**
- * Create a content section item with index awareness.
- * @param {string|object} text - Content item.
- * @param {number} index - Index in the content array.
- * @returns {string} Section HTML for the content item.
- */
-function createContentItemWithIndex(text, index) {
-  const isFirst = isFirstContentItem(index);
-  return createContentSectionItem(text, isFirst);
+  const legacyEntries = [];
+  if (post.illustration)
+    legacyEntries.push({ type: 'illustration', content: post.illustration });
+  if (post.audio) legacyEntries.push({ type: 'audio', content: post.audio });
+  if (post.youtube)
+    legacyEntries.push({ type: 'video', content: post.youtube });
+  const entries = content.map(item =>
+    typeof item === 'object' && item !== null
+      ? item
+      : normalizeContentItem(item)
+  );
+  const body = [...legacyEntries, ...entries];
+  if (isNonEmptyArray(post.relatedLinks)) {
+    const relatedLinks = post.relatedLinks;
+    if (isNonEmptyArray(relatedLinks)) {
+      body.push({ type: 'links', content: relatedLinks });
+    }
+  }
+
+  const toyMarkers = body.filter(entry => entry.type === 'toy');
+  if (toyMarkers.length > 1) {
+    throw new Error('A post may contain at most one toy marker');
+  }
+  if (toyMarkers.length > 0 && !hasToy(post)) {
+    throw new Error('A toy marker requires a configured post toy');
+  }
+  if (hasToy(post) && toyMarkers.length === 0) {
+    const linksIndex = body.findIndex(entry => entry.type === 'links');
+    body.splice(linksIndex === -1 ? body.length : linksIndex, 0, {
+      type: 'toy',
+    });
+  }
+  body.forEach(entry => {
+    if (!entry || typeof entry !== 'object' || typeof entry.type !== 'string') {
+      throw new TypeError(
+        'Every post body entry must have a type; renderer is not a function'
+      );
+    }
+  });
+  return body;
 }
 
 /**
@@ -670,13 +703,51 @@ function createContentSectionItem(content, isFirst) {
 }
 
 /**
+ * Render one normalized ordered body entry.
+ * @param {object} entry - Normalized body entry.
+ * @param {boolean} isFirstText - Whether this is the first text-like entry.
+ * @param {object} post - Blog post.
+ * @returns {string} Rendered HTML.
+ */
+function renderBodyEntry(entry, isFirstText, post) {
+  if (
+    entry.type === 'text' ||
+    entry.type === 'quote' ||
+    entry.type === 'manual'
+  ) {
+    return createContentSectionItem(entry, isFirstText);
+  }
+  if (entry.type === 'toy') return generateToyUISection(post);
+  if (
+    entry.type === 'illustration' ||
+    entry.type === 'audio' ||
+    entry.type === 'video'
+  ) {
+    return renderMediaEntry(entry, post);
+  }
+  if (entry.type === 'links') {
+    if (!isNonEmptyArray(entry.content))
+      throw new TypeError('Links body entry must contain a non-empty array');
+    return renderLinksEntry(entry);
+  }
+  throw new Error(
+    `Unknown post body entry type: ${entry.type}; renderer is not a function`
+  );
+}
+
+/**
  * Generate the HTML sections for all content items in a post.
  * @param {object} post - The blog post.
  * @returns {string} HTML for the content sections.
  */
 function generateContentSections(post) {
-  const contentArray = getContentArray(post);
-  const contentItems = contentArray.map(createContentItemWithIndex);
+  let hasContent = false;
+  const contentItems = normalizePostBody(post).map(entry => {
+    const isContentEntry = ['text', 'quote', 'manual'].includes(entry.type);
+    const isFirstContent = isContentEntry && !hasContent;
+    if (isContentEntry) hasContent = true;
+    return renderBodyEntry(entry, isFirstContent, post);
+  });
   return join(contentItems);
 }
 
@@ -750,7 +821,6 @@ function hasTags(post) {
 const MEDIA_SECTIONS_CONFIG = [
   {
     label: 'illus',
-    condition: post => post.illustration,
     content: post => {
       const { fileName, fileType, altText } = post.illustration;
       const src = `${fileName || post.publicationDate}.${fileType}`;
@@ -760,7 +830,6 @@ const MEDIA_SECTIONS_CONFIG = [
   },
   {
     label: 'audio',
-    condition: post => post.audio,
     content: post => {
       const audioSrc = `${post.publicationDate}.${post.audio.fileType}`;
       return `<audio class="${CLASS.VALUE}" controls><source src="${audioSrc}"></audio>`;
@@ -770,7 +839,6 @@ const MEDIA_SECTIONS_CONFIG = [
   },
   {
     label: 'video',
-    condition: post => post.youtube,
     content: post => {
       const { id, timestamp, title } = post.youtube;
       return `<p class="${
@@ -789,18 +857,29 @@ const MEDIA_SECTIONS_CONFIG = [
  * @param {object} post - The blog post data.
  * @returns {string} The HTML markup for media sections.
  */
-function generateMediaSections(post) {
-  return MEDIA_SECTIONS_CONFIG.map(section => {
-    if (section.condition(post)) {
-      return createLabeledSection({
-        label: section.label,
-        valueHTML: section.content(post),
-        wrapValueDiv: section.wrapValueDiv !== false,
-        keyExtraClasses: section.keyExtraClasses,
-      });
-    }
-    return '';
-  }).join('');
+/**
+ * Render one normalized media entry.
+ * @param {object} entry - Normalized media entry.
+ * @param {object} post - Blog post.
+ * @returns {string} Rendered media section HTML.
+ */
+function renderMediaEntry(entry, post) {
+  const labels = { illustration: 'illus', audio: 'audio', video: 'video' };
+  const section = MEDIA_SECTIONS_CONFIG.find(
+    item => item.label === labels[entry.type]
+  );
+  const mediaPost = {
+    ...post,
+    ...(entry.type === 'illustration' ? { illustration: entry.content } : {}),
+    ...(entry.type === 'audio' ? { audio: entry.content } : {}),
+    ...(entry.type === 'video' ? { youtube: entry.content } : {}),
+  };
+  return createLabeledSection({
+    label: section.label,
+    valueHTML: section.content(mediaPost),
+    wrapValueDiv: section.wrapValueDiv !== false,
+    keyExtraClasses: section.keyExtraClasses,
+  });
 }
 
 /**
@@ -810,17 +889,6 @@ function generateMediaSections(post) {
  */
 function isNonEmptyArray(value) {
   return Array.isArray(value) && value.length > 0;
-}
-
-/**
- * Check if post has related links
- * @param {object} post - The blog post
- * @returns {boolean} - True if post has related links
- */
-function hasRelatedLinks(post) {
-  // Stryker disable next-line all -- the array predicate is the observable
-  // contract; mutations of the redundant undefined guard are equivalent.
-  return post.relatedLinks !== undefined && isNonEmptyArray(post.relatedLinks);
 }
 
 /**
@@ -958,15 +1026,17 @@ function formatRelatedLink(link) {
  * @param {object} post - The blog post
  * @returns {string} - HTML for the related links section
  */
-function generateRelatedLinksSection(post) {
-  if (!hasRelatedLinks(post)) {
-    return '';
-  }
-  const linksList = post.relatedLinks
-    .map(link => formatRelatedLink(link))
-    .join('');
-  const valueContent = `<ul class="related-links">${linksList}</ul>`;
-  return createLabeledSection({ label: 'links', valueHTML: valueContent });
+/**
+ * Render one normalized related-links entry.
+ * @param {object} entry - Normalized links entry.
+ * @returns {string} Rendered links section HTML.
+ */
+function renderLinksEntry(entry) {
+  const linksList = entry.content.map(link => formatRelatedLink(link)).join('');
+  return createLabeledSection({
+    label: 'links',
+    valueHTML: `<ul class="related-links">${linksList}</ul>`,
+  });
 }
 
 /**
@@ -1151,15 +1221,6 @@ const TOY_UI_SECTIONS_CONFIG = [
 ];
 
 /**
- * Determine if a toy section should be skipped.
- * @param {object} post - The blog post.
- * @returns {boolean} True if the post has no toy.
- */
-function shouldSkipToy(post) {
-  return !hasToy(post);
-}
-
-/**
  * Retrieve the configured default input method for a post.
  * @param {object} post - The blog post.
  * @returns {string} Method name.
@@ -1185,9 +1246,6 @@ export function getDefaultOutputMethod(post) {
  * @returns {string} HTML for the toy UI components.
  */
 function generateToyUISection(post) {
-  if (shouldSkipToy(post)) {
-    return '';
-  }
   const defaultMethods = {
     input: getDefaultInputMethod(post),
     output: getDefaultOutputMethod(post),
@@ -1218,19 +1276,9 @@ function generateToyScriptSection(post) {
  */
 function getArticleSections(post) {
   const headerSection = generateHeaderSection(post);
-  const mediaSection = generateMediaSections(post);
   const contentSection = generateContentSections(post);
-  const toyUISection = generateToyUISection(post);
-  const relatedLinksSection = generateRelatedLinksSection(post);
   const toyScriptSection = generateToyScriptSection(post);
-  return [
-    headerSection,
-    mediaSection,
-    contentSection,
-    toyUISection,
-    relatedLinksSection,
-    toyScriptSection,
-  ];
+  return [headerSection, contentSection, toyScriptSection];
 }
 
 /**
