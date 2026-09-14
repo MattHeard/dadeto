@@ -208,6 +208,7 @@ function createConfigRoute() {
       generateStatsUrl: `${apiBaseUrl}/__sim/generate-stats`,
       paymentWebhookUrl: `${apiBaseUrl}/__sim/payment-webhook`,
       getAuthorUuidUrl: `${apiBaseUrl}/__sim/get-author-uuid-v2`,
+      objectMinuteRentalSearchUrl: `${apiBaseUrl}/__sim/object-minute-rental-search`,
     });
   };
 }

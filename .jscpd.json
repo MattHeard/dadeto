@@ -36,7 +36,8 @@
     "**/local/check-depcruise-scope.js",
     "**/scripts/check-depcruise.js",
     "**/browser/google-auth-cache.js",
-    "**/cloud/auth-helpers.js"
+    "**/cloud/auth-helpers.js",
+    "**/object-minute-rental-search/search-http.js"
   ],
   "reporters": ["html", "json"],
   "output": "reports/duplication"

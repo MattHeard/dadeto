@@ -180,6 +180,10 @@ describe('payment webhook cloud wrapper', () => {
     expect(response.status).toHaveBeenCalledWith(200);
     expect(response.json).toHaveBeenCalledWith({ request });
 
+    const requestError = new Error('request failed');
+    mockDomainHandler.mockRejectedValueOnce(requestError);
+    await expect(handle(request, response)).rejects.toBe(requestError);
+
     const captured = mockCreatePaymentWebhookHandler.mock.calls[0][0];
     await expect(
       captured.resolveApiKeyUuid({

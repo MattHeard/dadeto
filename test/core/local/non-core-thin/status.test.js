@@ -97,6 +97,21 @@ describe('non-core thin status', () => {
 });
 
 describe('non-core thin status data paths', () => {
+  test('uses default config when the exemption file cannot be read', () => {
+    expect(
+      getNonCoreThinStatus({
+        fsModule: {
+          readFileSync: () => {
+            throw new Error('missing');
+          },
+          readdirSync: () => [],
+        },
+        pathModule: path,
+        repoRoot: '/repo',
+      })
+    ).toMatchObject({ maxLines: 50, exemptionCount: 0 });
+  });
+
   test('builds a clean status and reports stale exemptions when data says so', () => {
     expect(
       nonCoreThinStatusTestOnly.buildNonCoreThinStatus(

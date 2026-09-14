@@ -111,11 +111,8 @@ export function parseStaticJsonlTable(entry, options = {}) {
 
 /** Escape text for an HTML attribute. */
 function escapeAttribute(value) {
-  return String(value)
-    .replace(/&/g, '&amp;')
-    .replace(/"/g, '&quot;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;');
+  const entities = { '&': '&amp;', '"': '&quot;', '<': '&lt;', '>': '&gt;' };
+  return String(value).replace(/[&"<>]/g, character => entities[character]);
 }
 /** Escape text for an HTML text node. */
 function escapeText(value) {

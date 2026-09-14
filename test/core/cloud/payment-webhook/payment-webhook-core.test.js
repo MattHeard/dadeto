@@ -573,6 +573,17 @@ describe('payment webhook cloud wrapper', () => {
         jest.fn()
       )
     ).toMatchObject({ id: 'evt_unsigned_fixture' });
+
+    expect(() =>
+      parseStripePaymentWebhookEvent(
+        { body: 'not-an-object' },
+        {
+          STRIPE_WEBHOOK_SECRET: 'secret',
+          DENDRITE_ENVIRONMENT: 't-e2e-1234',
+        },
+        jest.fn()
+      )
+    ).toThrow('Missing Stripe webhook payload');
   });
 
   it('fails closed for missing secret, raw body, and signature', () => {
