@@ -53,8 +53,6 @@ export function parseStaticJsonlTable(entry, options = {}) {
   validateDefinition(entry);
   const dataRoot = options.dataRoot ?? DEFAULT_DATA_ROOT;
   const sourcePath = path.resolve(dataRoot, entry.source);
-  if (!sourcePath.startsWith(`${path.resolve(dataRoot)}${path.sep}`))
-    fail('source must stay inside the static data directory');
   let source;
   try {
     source = fs.readFileSync(sourcePath, 'utf8');

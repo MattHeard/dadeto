@@ -109,4 +109,58 @@ describe('static JSONL tables', () => {
       )
     ).toThrow('non-empty array');
   });
+
+  test.each([
+    [null, 'entry must be an object'],
+    [{}, 'non-empty string'],
+    [{ source: 'rows.jsonl' }, 'non-empty array'],
+    [{ source: 'rows.jsonl', columns: [''] }, 'non-empty strings'],
+    [{ source: 'rows.jsonl', columns: ['a', 'a'] }, 'unique'],
+    [{ source: '/tmp/rows.jsonl', columns: ['a'] }, 'stay inside'],
+  ])('rejects invalid definition %j', (entry, message) => {
+    expect(() =>
+      parseStaticJsonlTable(entry, { dataRoot: fixture([]) })
+    ).toThrow(message);
+  });
+
+  test('sorts string columns in both directions and rejects non-object rows', () => {
+    const root = fixture([
+      '{"name":"z"}',
+      '{"name":"a"}',
+      '{"name":"m"}',
+      '{"name":"m"}',
+    ]);
+    expect(
+      parseStaticJsonlTable(
+        { source: 'rows.jsonl', columns: ['name'] },
+        { dataRoot: root }
+      ).rows.map(row => row.values.name)
+    ).toEqual(['a', 'm', 'm', 'z']);
+    const invalidRoot = fixture(['[]']);
+    expect(() =>
+      parseStaticJsonlTable(
+        { source: 'rows.jsonl', columns: ['name'] },
+        { dataRoot: invalidRoot }
+      )
+    ).toThrow('JSON object');
+  });
+
+  test('uses default options for the authored data root', () => {
+    expect(
+      parseStaticJsonlTable({
+        source: 'wilson-intervals.jsonl',
+        columns: ['sampleSize', 'successRate'],
+      }).rows.length
+    ).toBeGreaterThan(0);
+  });
+
+  test('escapes special characters in column labels', () => {
+    const root = fixture(['{"a&b":"<value>"}']);
+    expect(
+      renderStaticJsonlTable(
+        { source: 'rows.jsonl', columns: ['a&b'] },
+        { dataRoot: root }
+      )
+    ).toContain('data-static-table-sort="a&amp;b"');
+  });
 });
