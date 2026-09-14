@@ -273,6 +273,7 @@ function getSimulatorPromise() {
     );
   }
 
+  // Resolve the simulator promise through this adapter boundary.
   return /** @type {Promise<LocalGcpSimulator>} */ (simulatorPromise);
 }
 

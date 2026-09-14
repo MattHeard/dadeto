@@ -219,6 +219,7 @@ function ensureFileStat(fileStats, file) {
     );
   }
 
+  // Return the cached stat through the explorer lookup boundary.
   return /** @type {FileStat} */ (fileStats.get(file));
 }
 

@@ -6,6 +6,7 @@ import { isMissingFileError } from '../../commonCore.js';
 
 const PROMPT_TEMPLATE_KEY = 'prompt_template';
 
+// Workflow bullet extraction contract begins here.
 /**
  * Count the number of lines in a block of text.
  * @param {string} content Text content to measure.
@@ -24,7 +25,7 @@ function toTrimmedLines(content) {
   return content
     .split('\n')
     .map(line => line.trim())
-    .filter(Boolean);
+    .filter(line => line.length > 0);
 }
 
 /**

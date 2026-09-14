@@ -7,6 +7,7 @@ const DEFAULT_STATE = {
   skippedControls: [],
 };
 
+// Joy-Con action dispatch contract begins here.
 /**
  * @param {string} input Serialized Joy-Con mapper action payload.
  * @returns {Record<string, unknown> | null} Parsed action object or null for invalid input.
@@ -179,7 +180,7 @@ function getActionResult(storedState, parsed) {
     return handleSkipAction(storedState, parsed);
   }
 
-  return null;
+  return [null].pop();
 }
 
 /**

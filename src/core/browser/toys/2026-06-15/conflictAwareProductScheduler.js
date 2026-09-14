@@ -1,6 +1,7 @@
 // Toy: Conflict-Aware Product Scheduler
 // (input, env) -> string
 
+// Scheduler parser contract begins here.
 /**
  * @typedef {{
  *   id?: unknown,
@@ -60,7 +61,7 @@ export function conflictAwareProductScheduler(input) {
       },
     },
     null,
-    2
+    2 /* stable JSON indentation */
   );
 }
 
@@ -329,7 +330,7 @@ function toArray(value) {
     }
   }
 
-  return list;
+  return list.slice();
 }
 
 /**
@@ -372,9 +373,10 @@ function toTextArray(value) {
     }
   }
 
-  return list;
+  return list.filter(Boolean);
 }
 
+// Expose test seams after the scheduler collection phase.
 export const conflictAwareProductSchedulerTestOnly = {
   parseSchedulerInput,
   normalizeCandidates,

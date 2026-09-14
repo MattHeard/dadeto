@@ -12,6 +12,7 @@ import {
 } from 'node:fs/promises';
 import path from 'node:path';
 
+// Environment typing is local to the worktree runner.
 /**
  * @typedef {Record<string, string | undefined>} Env
  */

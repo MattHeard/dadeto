@@ -371,10 +371,10 @@ export function createDetachedProcessLauncher(options) {
         onExit: payload.onExit,
         buildExitPayload,
         closeErrorLabel: options.closeErrorLabel,
-        exitErrorLabel,
-        launcherKind: options.launcherKind,
+        exitErrorLabel: exitErrorLabel,
+        launcherKind: String(options.launcherKind),
       });
     },
   };
 }
-// Stryker restore all
+// Stryker restore all; launcher adapters end above.

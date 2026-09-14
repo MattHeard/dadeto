@@ -3,6 +3,7 @@ import { whenString } from '../../../commonCore.js';
 import { parseJsonOrNull } from '../../jsonUtils.js';
 import { isPlainObject } from '../browserToysCore.js';
 
+// Token normalization is intentionally separate from JSON parsing.
 /**
  * Convert a value into a string when available.
  * @param {unknown} value - Candidate value.
@@ -28,7 +29,7 @@ function parseToyInput(input) {
     return /** @type {Record<string, unknown>} */ (parsed);
   }
 
-  return null;
+  return /** @type {null} */ (null);
 }
 
 /**

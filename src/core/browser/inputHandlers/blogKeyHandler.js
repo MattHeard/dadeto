@@ -20,6 +20,7 @@ const TITLE_PLACEHOLDER = 'Blog post title';
 const EXISTING_KEYS_LABEL = 'existingKeys (one per line)';
 const EXISTING_KEYS_PLACEHOLDER = 'GERM1\nTEXT1\nSTAR1';
 
+// Blog-key mutation contract begins after token cleanup.
 /**
  * Extract the title string from a parsed object, defaulting to empty string.
  * @param {object} parsed - Parsed input object.
@@ -58,7 +59,7 @@ function parseLines(value) {
   return String(value ?? EMPTY_TEXT)
     .split(LINE_BREAK)
     .map(s => s.trim())
-    .filter(Boolean);
+    .filter(value => Boolean(value));
 }
 
 /**

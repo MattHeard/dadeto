@@ -1,6 +1,8 @@
 import { mkdir, readFile, stat, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
+// Storage uses the asynchronous filesystem adapter.
+
 export class FakeStorage {
   /**
    * @param {{ rootDir: string }} options Storage root options.

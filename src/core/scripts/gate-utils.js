@@ -1,3 +1,4 @@
+// Gate execution is normalized independently from process spawning.
 /**
  * @param {{
  *   spawnImpl: (command: string, args: string[], options: Record<string, unknown>) => { status?: number | null, signal?: string | null, error?: Error },
@@ -8,10 +9,12 @@
  * @returns {{ status?: number | null, signal?: string | null, error?: Error }} Spawn result.
  */
 export function spawnGateCommand(options) {
-  return options.spawnImpl(options.command, options.args, {
-    cwd: options.rootDir,
-    stdio: 'inherit',
-  });
+  const workingDirectory = `${options.rootDir}`;
+  const spawnOptions = {
+    cwd: workingDirectory,
+    stdio: /** @type {'inherit'} */ ('inherit'),
+  };
+  return options.spawnImpl(options.command, options.args, spawnOptions);
 }
 
 /**
@@ -25,7 +28,7 @@ export function spawnGateCommand(options) {
  *   launchLabel: string,
  *   commandLabel: string,
  * }} options Gate command input.
- * @returns {{ launchFailure: { exitCode: number } | null }} Gate command outcome.
+ * @returns {{ launchFailure: { exitCode: number } | null }} Normalized gate outcome.
  */
 export function runGateCommand(options) {
   const runResult = spawnGateCommand(options);

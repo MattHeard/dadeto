@@ -9,10 +9,12 @@ const READY_PATTERN = /gcp simulator listening on http:\/\/127\.0\.0\.1:(\d+)/;
 const WRITER_READY_PATTERN =
   /writer server listening on http:\/\/localhost:(\d+)\/writer\//;
 
+// Playwright process inputs are normalized at this boundary.
 /**
  * @typedef {{ [key: string]: string | undefined }} EnvMap
  */
 
+// Child-process invocation options are documented separately.
 /**
  * @typedef {{
  *   playwrightCommand?: string,
@@ -148,13 +150,13 @@ function waitForExit(child) {
   return new Promise((resolve, reject) => {
     child.once('error', reject);
     child.once('exit', (code, signal) => {
-      resolve({ code, signal });
+      resolve(Object.assign({}, { code, signal }));
     });
   });
 }
 
 /**
- * @param {EnvMap | undefined} env Extra environment variables.
+ * @param {EnvMap | undefined} env Extra environment variables for simulator startup.
  * @returns {EnvMap} Simulator environment.
  */
 function createSimulatorEnv(env) {
@@ -275,13 +277,16 @@ function spawnPlaywright(input) {
 
   return spawnImpl(playwrightCommand, playwrightArgs, {
     cwd: repoRoot,
-    env: {
-      ...simulatorEnv,
-      API_BASE_URL: apiBaseUrl ?? baseUrl,
-      PLAYWRIGHT_BASE_URL: baseUrl,
-      PAYMENT_WEBHOOK_URL: `${apiBaseUrl ?? baseUrl}/__sim/payment-webhook`,
-    },
-    stdio: 'inherit',
+    env: Object.assign(
+      {},
+      {
+        ...simulatorEnv,
+        API_BASE_URL: apiBaseUrl ?? baseUrl,
+        PLAYWRIGHT_BASE_URL: baseUrl,
+        PAYMENT_WEBHOOK_URL: `${apiBaseUrl ?? baseUrl}/__sim/payment-webhook`,
+      }
+    ),
+    stdio: /** @type {'inherit'} */ ('inherit'),
   });
 }
 
@@ -294,11 +299,12 @@ function spawnPlaywright(input) {
  *   cwd: string,
  *   env: EnvMap,
  * }} input Spawn inputs.
- * @returns {import('node:child_process').ChildProcess} Spawned process.
+ * @returns {import('node:child_process').ChildProcess} Spawned Playwright process.
  */
 function spawnNodeProcess(input) {
+  const workingDirectory = `${input.cwd}`;
   return input.spawnImpl(input.command, input.args, {
-    cwd: input.cwd,
+    cwd: workingDirectory,
     env: input.env,
     stdio: ['ignore', 'pipe', 'pipe'],
   });

@@ -72,8 +72,8 @@ export function createCopyDirectories(baseDirectories, sharedDirectoryEntries) {
 
   return {
     projectRoot,
-    srcDir,
-    publicDir,
+    srcDir: srcDir,
+    publicDir: `${publicDir}`,
     ...sharedEntries,
   };
 }
@@ -94,11 +94,16 @@ export function createStaticSiteCopyDirectories({
   srcDir,
   publicDir,
 }) {
-  const sharedDirectoryEntries = createSharedDirectoryEntries({
-    path: { join: pathDeps.join },
-    srcDir,
-    publicDir,
-  });
+  const sharedDirectoryEntries = createSharedDirectoryEntries(
+    Object.assign(
+      {},
+      {
+        path: { join: pathDeps.join },
+        srcDir,
+        publicDir,
+      }
+    )
+  );
 
   return {
     ...createCopyDirectories(
@@ -386,6 +391,7 @@ export function createCopyCore({
     publicDir,
   });
 
+  // Path formatting is scoped to blog generation.
   /**
    * Format a path for display relative to the project root.
    * @param {string} targetPath - Absolute path to format.

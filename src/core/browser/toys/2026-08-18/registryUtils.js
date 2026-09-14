@@ -1,5 +1,6 @@
 // Shared helpers for deterministic registry toys.
 
+// Registry serializer contract begins here.
 /**
  * Keep only successfully normalized records.
  * @template T

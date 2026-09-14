@@ -2,6 +2,7 @@ import { insertBeforeNextSibling } from './browserInputHandlersCore.js';
 
 /** @typedef {import('../domHelpers.js').DOMHelpers} DomHelpers */
 
+// Special-input adapters expose only the shared DOM contract.
 /**
  * @typedef {{
  *   selector: string;
@@ -90,11 +91,12 @@ export function createSpecialInputEnsurer(options) {
   return {
     existingSpecialInput,
     ensure(createSpecialInput) {
-      return ensureSpecialInput({
+      const dependencies = {
         ...sharedInput,
-        existingSpecialInput,
-        createSpecialInput,
-      });
+        existingSpecialInput: existingSpecialInput,
+        createSpecialInput: createSpecialInput,
+      };
+      return ensureSpecialInput(dependencies);
     },
   };
 }
