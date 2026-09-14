@@ -91,23 +91,15 @@ export function createFakeFirestore(
     }
 
     __getCollectionDocuments(/** @type {unknown} */ collectionSegments) {
-      return collectDocuments(state, path => {
-        const segments = splitPath(path);
-        return (
-          segments.length === collectionSegments.length + 1 &&
-          matchesPrefix(segments, collectionSegments)
-        );
-      });
+      return collectDocuments(state, path =>
+        isCollectionDocumentPath(path, collectionSegments)
+      );
     }
 
     __getCollectionGroupDocuments(/** @type {unknown} */ collectionId) {
-      return collectDocuments(state, path => {
-        const segments = splitPath(path);
-        return (
-          segments.length % 2 === 0 &&
-          containsCollectionId(segments, collectionId)
-        );
-      });
+      return collectDocuments(state, path =>
+        isCollectionGroupDocumentPath(path, collectionId)
+      );
     }
 
     __resolveDocumentSnapshot(/** @type {unknown} */ path) {
@@ -199,6 +191,21 @@ function collectDocuments(state, matchesPath) {
     }
   }
   return docs;
+}
+
+function isCollectionDocumentPath(path, collectionSegments) {
+  const segments = splitPath(path);
+  return (
+    segments.length === collectionSegments.length + 1 &&
+    matchesPrefix(segments, collectionSegments)
+  );
+}
+
+function isCollectionGroupDocumentPath(path, collectionId) {
+  const segments = splitPath(path);
+  return (
+    segments.length % 2 === 0 && containsCollectionId(segments, collectionId)
+  );
 }
 
 /**
@@ -865,11 +872,7 @@ function cloneDocument(value) {
     return mapArrayValues(value, cloneDocument);
   }
 
-  if (isPlainObject(value)) {
-    return mapObjectValues(value, cloneDocument);
-  }
-
-  return value;
+  return isPlainObject(value) ? mapObjectValues(value, cloneDocument) : value;
 }
 
 /**

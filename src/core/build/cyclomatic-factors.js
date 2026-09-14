@@ -139,7 +139,7 @@ function getIdentifierName(node) {
  * @returns {string} Candidate name or anonymous marker.
  */
 function fallbackFunctionName(name) {
-  return name ?? '<anonymous>';
+  return name == null ? '<anonymous>' : name;
 }
 
 /**
@@ -265,15 +265,11 @@ function formatSnippetForDescription(snippet) {
  * @returns {string | null} Node source snippet, or null when unavailable.
  */
 function getNodeSnippet(node, source) {
-  if (
-    source &&
+  return source &&
     typeof node.start === 'number' &&
     typeof node.end === 'number'
-  ) {
-    return source.slice(node.start, node.end);
-  }
-
-  return null;
+    ? source.slice(node.start, node.end)
+    : null;
 }
 
 // Stryker restore all

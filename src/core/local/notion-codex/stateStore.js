@@ -74,11 +74,7 @@ function isMissingStateError(error) {
  * @returns {string | null} Error code or null.
  */
 function readErrorCode(error) {
-  if (isObjectLike(error)) {
-    return asNullableString(error.code);
-  }
-
-  return null;
+  return isObjectLike(error) ? asNullableString(error.code) : null;
 }
 
 /**

@@ -281,11 +281,7 @@ function ensureEnvelopeCanBePersisted(envelope) {
  * @returns {Record<string, unknown> | unknown[]} Container root.
  */
 function getContainerRoot(root) {
-  if (isContainer(root)) {
-    return deepClone(root);
-  }
-
-  return {};
+  return isContainer(root) ? deepClone(root) : {};
 }
 
 /**

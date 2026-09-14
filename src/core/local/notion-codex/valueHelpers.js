@@ -23,11 +23,7 @@ export function asNullableString(value) {
  * @returns {Record<string, unknown>} Source object or empty object.
  */
 export function toSourceObject(value) {
-  if (isObjectLike(value)) {
-    return value;
-  }
-
-  return {};
+  return isObjectLike(value) ? value : {};
 }
 
 /**

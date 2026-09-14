@@ -28,12 +28,13 @@ const ANSI_RESET = '\u001b[0m';
  * @param {TerminalSize} terminalSize Terminal size information.
  * @returns {number} Non-negative column count.
  */
-function getTerminalColumns(terminalSize = {}) {
-  if (typeof terminalSize.columns === 'number') {
-    return Math.max(0, terminalSize.columns);
-  }
+function getTerminalDimension(terminalSize, dimension) {
+  const value = terminalSize?.[dimension];
+  return typeof value === 'number' ? Math.max(0, value) : 0;
+}
 
-  return 0;
+function getTerminalColumns(terminalSize = {}) {
+  return getTerminalDimension(terminalSize, 'columns');
 }
 
 /**
@@ -42,11 +43,7 @@ function getTerminalColumns(terminalSize = {}) {
  * @returns {number} Non-negative row count.
  */
 function getTerminalRows(terminalSize = {}) {
-  if (typeof terminalSize.rows === 'number') {
-    return Math.max(0, terminalSize.rows);
-  }
-
-  return 0;
+  return getTerminalDimension(terminalSize, 'rows');
 }
 
 /**

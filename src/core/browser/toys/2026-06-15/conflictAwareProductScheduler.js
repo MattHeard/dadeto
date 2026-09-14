@@ -1,6 +1,8 @@
 // Toy: Conflict-Aware Product Scheduler
 // (input, env) -> string
 
+import { isObject as isSchedulerRecord } from '../../common.js';
+
 // Scheduler parser contract begins here.
 /**
  * @typedef {{
@@ -74,7 +76,7 @@ function parseSchedulerInput(input) {
   try {
     const parsed = JSON.parse(input);
     // Stryker disable next-line ConditionalExpression,BlockStatement -- all non-record JSON values share the empty scheduler contract.
-    if (!isRecord(parsed)) {
+    if (!isSchedulerRecord(parsed)) {
       return { candidates: [], activeWork: [] };
     }
 
@@ -107,7 +109,7 @@ function normalizeCandidates(candidates) {
 function normalizeCandidate(candidate, index) {
   /** @type {Record<string, unknown>} */
   let record = {};
-  if (isRecord(candidate)) {
+  if (isSchedulerRecord(candidate)) {
     record = candidate;
   }
   const id = toText(record.id) || `candidate-${index + 1}`;
@@ -159,7 +161,7 @@ function normalizeActiveWorkItem(item) {
   /** @type {Record<string, unknown>} */
   let record = {};
   // Stryker disable next-line ConditionalExpression -- malformed active-work values normalize to the same empty record.
-  if (isRecord(item)) {
+  if (isSchedulerRecord(item)) {
     record = item;
   }
 
@@ -338,12 +340,6 @@ function toArray(value) {
  * @param {unknown} value Candidate value.
  * @returns {value is Record<string, unknown>} True when the value is a non-array object.
  */
-function isRecord(value) {
-  // Stryker disable all -- null, array, and primitive rejection is a defensive input boundary.
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
-  // Stryker restore all
-}
-
 /**
  * Normalize a parsed value into text.
  * @param {unknown} value Candidate text value.
@@ -363,17 +359,9 @@ function toText(value) {
  * @returns {string[]} String array or empty list.
  */
 function toTextArray(value) {
-  /** @type {string[]} */
-  const list = [];
-  if (Array.isArray(value)) {
-    for (const item of value) {
-      if (typeof item === 'string') {
-        list.push(item);
-      }
-    }
-  }
-
-  return list.filter(Boolean);
+  return Array.isArray(value)
+    ? value.filter(item => typeof item === 'string').filter(Boolean)
+    : [];
 }
 
 // Expose test seams after the scheduler collection phase.
@@ -390,7 +378,7 @@ export const conflictAwareProductSchedulerTestOnly = {
   countOverlap,
   toNumber,
   toArray,
-  isRecord,
+  isRecord: isSchedulerRecord,
   toText,
   toTextArray,
 };

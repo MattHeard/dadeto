@@ -108,11 +108,7 @@ function pickPrimaryStories(stories, fallback) {
  * @returns {DendriteStoryResult[]} Story array.
  */
 function readStoryArray(stories) {
-  if (Array.isArray(stories)) {
-    return stories;
-  }
-
-  return [];
+  return Array.isArray(stories) ? stories : [];
 }
 
 /**

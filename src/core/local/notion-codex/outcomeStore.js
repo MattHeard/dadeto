@@ -63,13 +63,19 @@ export function createNotionCodexOutcomeStore(options) {
 
     async writeOutcome(runId, outcome) {
       await mkdirImpl(options.outcomeDir, { recursive: true });
-      await writeFileImpl(
-        getOutcomePath(options.outcomeDir, runId, options.pathModule),
-        JSON.stringify(normalizeNotionCodexOutcome(outcome), null, 2),
-        'utf8'
+      const outcomePath = getOutcomePath(
+        options.outcomeDir,
+        runId,
+        options.pathModule
       );
+      const serializedOutcome = serializeOutcome(outcome);
+      await writeFileImpl(outcomePath, serializedOutcome, 'utf8');
     },
   };
+}
+
+function serializeOutcome(outcome) {
+  return JSON.stringify(normalizeNotionCodexOutcome(outcome), null, 2);
 }
 
 /**

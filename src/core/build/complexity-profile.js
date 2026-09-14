@@ -104,19 +104,20 @@ function createBuildComplexityProfile(analyzer) {
       threshold,
       lineRange,
       methods,
-      summary: {
-        methodCount: methods.length,
-        warningCount: methods.filter(method => method.excess > 0).length,
-        peakCyclomatic: methods.reduce(
-          (peak, method) => Math.max(peak, method.cyclomatic),
-          0
-        ),
-        totalExcess: methods.reduce(
-          (total, method) => total + method.excess,
-          0
-        ),
-      },
+      summary: buildProfileSummary(methods),
     };
+  };
+}
+
+function buildProfileSummary(methods) {
+  return {
+    methodCount: methods.length,
+    warningCount: methods.filter(method => method.excess > 0).length,
+    peakCyclomatic: methods.reduce(
+      (peak, method) => Math.max(peak, method.cyclomatic),
+      0
+    ),
+    totalExcess: methods.reduce((total, method) => total + method.excess, 0),
   };
 }
 

@@ -153,6 +153,10 @@ function stepBoard(base, framesPerTick) {
     };
   }
 
+  return createAdvancedBoard(base, framesPerTick);
+}
+
+function createAdvancedBoard(base, framesPerTick) {
   return {
     ...base,
     framesPerTick,

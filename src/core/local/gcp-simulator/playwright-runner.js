@@ -149,10 +149,12 @@ function createOnceSettler(onFirstSettle) {
 function waitForExit(child) {
   return new Promise((resolve, reject) => {
     child.once('error', reject);
-    child.once('exit', (code, signal) => {
-      resolve(Object.assign({}, { code, signal }));
-    });
+    child.once('exit', createExitResolver(resolve));
   });
+}
+
+function createExitResolver(resolve) {
+  return (code, signal) => resolve({ code, signal });
 }
 
 /**
@@ -238,15 +240,19 @@ function reserveFreePort() {
     server.listen(0, '127.0.0.1', () => {
       const address = server.address();
       server.close(() => {
-        if (address && typeof address === 'object') {
-          resolve(address.port);
-          return;
-        }
-
-        reject(new Error('Unable to reserve a writer port'));
+        resolveReservedPort(address, resolve, reject);
       });
     });
   });
+}
+
+function resolveReservedPort(address, resolve, reject) {
+  const hasPort = address && typeof address === 'object';
+  if (!hasPort) {
+    reject(new Error('Unable to reserve a writer port'));
+    return;
+  }
+  resolve(address.port);
 }
 
 /**

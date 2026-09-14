@@ -27,14 +27,18 @@ export function createPublicBillingOffersHandler(deps) {
               },
               snapshot
             );
-            return {
-              packageId: quote.packageId,
-              currency: 'usd',
-              amountUsdMinor: quote.amountUsdMinor,
-              credits: quote.credits,
-            };
+            return toPublicOffer(quote);
           }),
       },
     };
+  };
+}
+
+function toPublicOffer(quote) {
+  return {
+    packageId: quote.packageId,
+    currency: 'usd',
+    amountUsdMinor: quote.amountUsdMinor,
+    credits: quote.credits,
   };
 }

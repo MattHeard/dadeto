@@ -24,11 +24,9 @@ function canonicalizeValue(value) {
   }
 
   // Stryker disable next-line ConditionalExpression -- scalar values are an intentional no-op boundary.
-  if (isPlainObject(value)) {
-    return canonicalizeObject(/** @type {Record<string, unknown>} */ (value));
-  }
-
-  return value;
+  return isPlainObject(value)
+    ? canonicalizeObject(/** @type {Record<string, unknown>} */ (value))
+    : value;
 }
 
 /**

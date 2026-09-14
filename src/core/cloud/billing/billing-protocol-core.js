@@ -1,24 +1,26 @@
 const PARTIALLY_REFUNDED = 'partially_refunded';
 const NEEDS_RECOVERY = 'needs_recovery';
 
+const freezeTransitions = transitions => Object.freeze(transitions);
+
 /** @type {Record<string, string[]>} */
 // @ts-expect-error -- frozen transition tables are intentionally readonly at runtime.
 const PURCHASE_TRANSITIONS = Object.freeze({
-  pending: Object.freeze(['paid', 'expired']),
-  paid: Object.freeze(['partially_refunded', 'refunded']),
-  [PARTIALLY_REFUNDED]: Object.freeze(['refunded']),
-  refunded: Object.freeze([]),
-  expired: Object.freeze([]),
+  pending: freezeTransitions(['paid', 'expired']),
+  paid: freezeTransitions(['partially_refunded', 'refunded']),
+  [PARTIALLY_REFUNDED]: freezeTransitions(['refunded']),
+  refunded: freezeTransitions([]),
+  expired: freezeTransitions([]),
 });
 
 /** @type {Record<string, string[]>} */
 // @ts-expect-error -- frozen transition tables are intentionally readonly at runtime.
 const OPERATION_TRANSITIONS = Object.freeze({
-  quoted: Object.freeze(['reserved']),
-  reserved: Object.freeze(['settled', 'released', 'needs_recovery']),
-  [NEEDS_RECOVERY]: Object.freeze(['settled', 'released']),
-  settled: Object.freeze([]),
-  released: Object.freeze([]),
+  quoted: freezeTransitions(['reserved']),
+  reserved: freezeTransitions(['settled', 'released', 'needs_recovery']),
+  [NEEDS_RECOVERY]: freezeTransitions(['settled', 'released']),
+  settled: freezeTransitions([]),
+  released: freezeTransitions([]),
 });
 
 /**

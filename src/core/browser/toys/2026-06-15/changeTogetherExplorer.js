@@ -1,6 +1,8 @@
 // Toy: Change Together Explorer
 // (input, env) -> string
 
+import { isObject as isRecord } from '../../common.js';
+
 /**
  * @typedef {{
  *   id?: unknown,
@@ -81,16 +83,15 @@ export function changeTogetherExplorer(input) {
  * @returns {ChangeSet[]} Normalized change-set records.
  */
 function normalizeChangeSets(changeSets) {
-  if (!Array.isArray(changeSets)) {
-    return [];
-  }
+  return Array.isArray(changeSets) ? normalizeChangeSetList(changeSets) : [];
+}
 
+function normalizeChangeSetList(changeSets) {
   /** @type {ChangeSet[]} */
   const normalized = [];
   for (const [index, changeSet] of changeSets.entries()) {
     normalized.push(normalizeChangeSet(changeSet, index));
   }
-
   return normalized;
 }
 
@@ -313,15 +314,6 @@ function pairKey(left, right) {
  * @param {unknown} value Candidate value.
  * @returns {value is Record<string, unknown>} True for non-array objects.
  */
-function isRecord(value) {
-  switch (typeof value) {
-    case 'object':
-      return value !== null && !Array.isArray(value);
-    default:
-      return false;
-  }
-}
-
 /**
  * Normalize a parsed value into text.
  * @param {unknown} value Candidate text value.

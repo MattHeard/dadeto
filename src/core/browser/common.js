@@ -26,11 +26,7 @@ export function isObject(val) {
  * @returns {string} Result of the transform when applied, or the fallback otherwise.
  */
 export function withFallback(condition, transform, fallback = '') {
-  if (condition) {
-    return transform();
-  }
-
-  return fallback;
+  return condition ? transform() : fallback;
 }
 
 /**
@@ -56,11 +52,7 @@ export function buildWhen(condition, builder) {
  */
 export function normalizePositiveInteger(value, fallback) {
   const next = Number(value);
-  if (Number.isFinite(next) && next > 0) {
-    return Math.round(next);
-  }
-
-  return fallback;
+  return Number.isFinite(next) && next > 0 ? Math.round(next) : fallback;
 }
 
 export { guardThen } from './browser-core.js';

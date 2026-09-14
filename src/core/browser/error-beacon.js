@@ -76,14 +76,12 @@ function serializeObjectValue(value) {
  * @returns {string} Stack string or empty string.
  */
 function toStack(value) {
-  if (value && typeof value === 'object') {
-    const candidate = /** @type {{ stack?: unknown }} */ (value);
-    if (typeof candidate.stack === 'string') {
-      return candidate.stack;
-    }
+  if (typeof value !== 'object' || value === null) {
+    return '';
   }
 
-  return '';
+  const candidate = /** @type {{ stack?: unknown }} */ (value);
+  return typeof candidate?.stack === 'string' ? candidate.stack : '';
 }
 
 /**

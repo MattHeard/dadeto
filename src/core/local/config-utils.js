@@ -34,11 +34,14 @@ export function normalizeOptionalString(value) {
  */
 export function requireString(value, name) {
   const normalized = normalizeOptionalString(value);
-  if (!normalized) {
+  return assertRequiredString(normalized, name);
+}
+
+function assertRequiredString(value, name) {
+  if (!value) {
     throw new Error(`${name} is required.`);
   }
-
-  return normalized;
+  return value;
 }
 
 /**

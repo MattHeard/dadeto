@@ -44,11 +44,7 @@ function parseJsonOrNull(input) {
  * @returns {number} Finite numeric option or fallback.
  */
 function numberOr(value, fallback) {
-  if (Number.isFinite(value)) {
-    return Number(value);
-  }
-
-  return fallback;
+  return Number.isFinite(value) ? Number(value) : fallback;
 }
 
 /**

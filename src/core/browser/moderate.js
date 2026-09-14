@@ -232,15 +232,17 @@ async function retryLoadVariant() {
  * Register the click handler for the sign-out button.
  */
 function wireSignOut() {
-  moderateDocument.querySelectorAll('#signoutLink').forEach(link => {
-    link.addEventListener('click', async e => {
-      e.preventDefault();
-      await signOut();
-      resetModerationUi();
-      toggleApproveReject(true);
-      moderateDocument.body.classList.remove('authed');
-    });
-  });
+  const signOutLinks = moderateDocument.querySelectorAll('#signoutLink');
+  signOutLinks.forEach(link => link.addEventListener('click', handleSignOut));
+}
+
+async function handleSignOut(e) {
+  e.preventDefault();
+  await signOut();
+  resetModerationUi();
+  const body = moderateDocument.body;
+  body.classList.remove('authed');
+  toggleApproveReject(true);
 }
 
 /**

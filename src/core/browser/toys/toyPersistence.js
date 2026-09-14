@@ -70,11 +70,13 @@ export function parseObjectRecord(value) {
     return null;
   }
 
-  if (value && typeof value === 'object' && !Array.isArray(value)) {
-    return /** @type {Record<string, unknown>} */ (value);
-  }
+  return asObjectRecord(value);
+}
 
-  return null;
+function asObjectRecord(value) {
+  return value && typeof value === 'object' && !Array.isArray(value)
+    ? /** @type {Record<string, unknown>} */ (value)
+    : null;
 }
 
 /**

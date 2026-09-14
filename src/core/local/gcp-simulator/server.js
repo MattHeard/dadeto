@@ -151,16 +151,18 @@ async function startServer(deps) {
   app.use(express.static(simulator.publicDir));
 
   return new Promise(resolve => {
-    const server = app.listen(port, () => {
-      const address = server.address();
-      let actualPort = port;
-      if (address && typeof address === 'object') {
-        actualPort = address.port;
-      }
-      console.log(`gcp simulator listening on http://127.0.0.1:${actualPort}`);
-      resolve(server);
-    });
+    const server = app.listen(port, () =>
+      resolveListeningServer(server, port, resolve)
+    );
   });
+}
+
+function resolveListeningServer(server, fallbackPort, resolve) {
+  const address = server.address();
+  const actualPort =
+    address && typeof address === 'object' ? address.port : fallbackPort;
+  console.log(`gcp simulator listening on http://127.0.0.1:${actualPort}`);
+  resolve(server);
 }
 
 /**

@@ -124,7 +124,13 @@ export function getOpeningTagParts(name, attributes) {
   if (attributes) {
     return [tagOpen(), name, space(), attributes, tagClose()];
   }
-  return [tagOpen(), name, tagClose()];
+  return getTagParts(name);
+}
+
+function getTagParts(name, closing = false) {
+  return closing
+    ? [tagOpen(), slash(), name, tagClose()]
+    : [tagOpen(), name, tagClose()];
 }
 
 /**
@@ -144,7 +150,7 @@ export function createOpeningTag(tagName, attributes = '') {
  * @returns {Array<string>} Array of tag parts.
  */
 export function getClosingTagParts(name) {
-  return [tagOpen(), slash(), name, tagClose()];
+  return getTagParts(name, true);
 }
 
 /**

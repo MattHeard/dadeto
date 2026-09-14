@@ -676,10 +676,9 @@ export function deepMerge(target, source) {
  */
 export function parseExistingKeys(parsed) {
   const candidate = /** @type {Record<string, unknown>} */ (parsed);
-  if (Array.isArray(candidate.existingKeys)) {
-    return /** @type {string[]} */ (candidate.existingKeys);
-  }
-  return [];
+  return Array.isArray(candidate.existingKeys)
+    ? /** @type {string[]} */ (candidate.existingKeys)
+    : [];
 }
 
 /**

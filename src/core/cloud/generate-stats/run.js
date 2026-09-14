@@ -170,13 +170,10 @@ export function runGenerateStats(deps) {
       urlencoded: appDeps.urlencoded,
     })
   );
-  app.use(
-    cors(
-      createCorsOptions(
-        createCorsOriginHandler(isOriginAllowed, allowedOrigins)
-      )
-    )
+  const corsOptions = createCorsOptions(
+    createCorsOriginHandler(isOriginAllowed, allowedOrigins)
   );
+  app.use(cors(corsOptions));
 
   const generateStats = createRegionOnRequest(functions, app);
   app.post('/', handleRequest);

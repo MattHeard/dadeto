@@ -1,7 +1,7 @@
 import { deepClone } from './browser-core.js';
 import { isNonNullObject } from '../commonCore.js';
 import { guardThen } from './common.js';
-import { createLocalStorageLens } from './localStorageLens.js';
+import * as localStorageLens from './localStorageLens.js';
 
 /**
  * Returns a Base64 encoding function using the provided helpers.
@@ -581,7 +581,7 @@ function getPermanentLens(permanentLens, storage, logError) {
  */
 function createLensFromStorage(storage, logError) {
   return /** @type {import('./storageLens.js').StorageLens<BlogStateRecord>} */ (
-    createLocalStorageLens({ storage, logError })
+    localStorageLens.createLocalStorageLens({ storage, logError })
   );
 }
 

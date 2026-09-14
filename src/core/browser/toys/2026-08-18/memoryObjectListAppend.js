@@ -27,11 +27,15 @@ export function memoryObjectListAppend(input, env) {
       object: request.object,
     });
   } catch (error) {
-    return JSON.stringify({
-      appended: false,
-      error: error instanceof Error ? error.message : String(error),
-    });
+    return formatAppendFailure(error);
   }
+}
+
+function formatAppendFailure(error) {
+  return JSON.stringify({
+    appended: false,
+    error: error instanceof Error ? error.message : String(error),
+  });
 }
 
 /**

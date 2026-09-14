@@ -124,12 +124,20 @@ async function handleCheckoutCompleted(billing, metadata, event) {
   // Stryker disable next-line all -- verified Stripe event shape is normalized
   // by the purchase metadata gate; optional chaining is defensive compatibility.
   if (event.data?.object?.payment_status !== 'paid') return null;
+  return markPaidPurchase(
+    billing,
+    metadata,
+    event.id,
+    // Stryker disable next-line all -- empty payment-intent fallback is fixed.
+    String(event.data?.object?.payment_intent ?? '')
+  );
+}
+
+function markPaidPurchase(billing, metadata, eventId, stripePaymentIntentId) {
   return billing.markPurchasePaid({
     purchaseId: metadata.purchase_id,
-    eventId: event.id,
-    // Stryker disable next-line all -- empty payment-intent fallback is the
-    // fixed public billing protocol representation.
-    stripePaymentIntentId: String(event.data?.object?.payment_intent ?? ''),
+    eventId,
+    stripePaymentIntentId,
   });
 }
 
@@ -140,11 +148,7 @@ async function handleCheckoutCompleted(billing, metadata, event) {
  * @returns {Promise<import('../../payment-webhook-core.js').PaymentWebhookResponse>} Response.
  */
 async function handlePaymentIntentSucceeded(billing, metadata, event) {
-  return billing.markPurchasePaid({
-    purchaseId: metadata.purchase_id,
-    eventId: event.id,
-    stripePaymentIntentId: event.id,
-  });
+  return markPaidPurchase(billing, metadata, event.id, event.id);
 }
 
 /**

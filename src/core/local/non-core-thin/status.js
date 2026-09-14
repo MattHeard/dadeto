@@ -384,16 +384,14 @@ function getWrapperPatternViolationsForSource(filePath, source, maxLines = 0) {
     ];
   }
 
-  if (!exportsHandle(source) && !invokesHandle(source)) {
-    return [
-      {
-        filePath,
-        reason: 'expected the declared `handle` to be exported or invoked',
-      },
-    ];
-  }
-
-  return [];
+  return !exportsHandle(source) && !invokesHandle(source)
+    ? [
+        {
+          filePath,
+          reason: 'expected the declared `handle` to be exported or invoked',
+        },
+      ]
+    : [];
 }
 
 /**
