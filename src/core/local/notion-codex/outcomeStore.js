@@ -74,6 +74,11 @@ export function createNotionCodexOutcomeStore(options) {
   };
 }
 
+/**
+ * Serialize a normalized outcome.
+ * @param {Record<string, unknown>} outcome Outcome payload.
+ * @returns {string} Serialized outcome.
+ */
 function serializeOutcome(outcome) {
   return JSON.stringify(normalizeNotionCodexOutcome(outcome), null, 2);
 }

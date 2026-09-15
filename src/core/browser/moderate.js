@@ -236,6 +236,11 @@ function wireSignOut() {
   signOutLinks.forEach(link => link.addEventListener('click', handleSignOut));
 }
 
+/**
+ * Handle sign-out link activation.
+ * @param {Event} e Click event.
+ * @returns {Promise<void>} Resolves after sign-out completes.
+ */
 async function handleSignOut(e) {
   e.preventDefault();
   await signOut();

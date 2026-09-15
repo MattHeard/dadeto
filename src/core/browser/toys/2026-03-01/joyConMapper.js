@@ -180,7 +180,8 @@ function getActionResult(storedState, parsed) {
     return handleSkipAction(storedState, parsed);
   }
 
-  return [null].pop();
+  const unsupportedAction = null;
+  return unsupportedAction;
 }
 
 /**

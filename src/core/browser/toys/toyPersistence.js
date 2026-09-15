@@ -73,6 +73,11 @@ export function parseObjectRecord(value) {
   return asObjectRecord(value);
 }
 
+/**
+ * Coerce a value to an object record.
+ * @param {unknown} value Failure value.
+ * @returns {Record<string, unknown> | null} Object record or null.
+ */
 function asObjectRecord(value) {
   return value && typeof value === 'object' && !Array.isArray(value)
     ? /** @type {Record<string, unknown>} */ (value)

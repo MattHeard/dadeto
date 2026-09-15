@@ -133,6 +133,14 @@ async function handleCheckoutCompleted(billing, metadata, event) {
   );
 }
 
+/**
+ * Mark a purchase as paid.
+ * @param {ReturnType<typeof createBillingRuntime>} billing Billing service.
+ * @param {Record<string, string>} metadata Stripe metadata.
+ * @param {string} eventId Stripe event id.
+ * @param {string} stripePaymentIntentId Stripe payment intent id.
+ * @returns {Promise<import('../../payment-webhook-core.js').PaymentWebhookResponse>} Payment update result.
+ */
 function markPaidPurchase(billing, metadata, eventId, stripePaymentIntentId) {
   return billing.markPurchasePaid({
     purchaseId: metadata.purchase_id,

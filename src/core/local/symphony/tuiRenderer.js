@@ -26,6 +26,7 @@ const ANSI_RESET = '\u001b[0m';
 /**
  * Get the visible column count from a terminal size-like object.
  * @param {TerminalSize} terminalSize Terminal size information.
+ * @param {'columns' | 'rows'} dimension Dimension name.
  * @returns {number} Non-negative column count.
  */
 function getTerminalDimension(terminalSize, dimension) {
@@ -33,6 +34,11 @@ function getTerminalDimension(terminalSize, dimension) {
   return typeof value === 'number' ? Math.max(0, value) : 0;
 }
 
+/**
+ * Get terminal column count.
+ * @param {TerminalSize} [terminalSize] Terminal size information.
+ * @returns {number} Column count.
+ */
 function getTerminalColumns(terminalSize = {}) {
   return getTerminalDimension(terminalSize, 'columns');
 }

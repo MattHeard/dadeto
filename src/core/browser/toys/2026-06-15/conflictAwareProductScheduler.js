@@ -110,7 +110,7 @@ function normalizeCandidate(candidate, index) {
   /** @type {Record<string, unknown>} */
   let record = {};
   if (isSchedulerRecord(candidate)) {
-    record = candidate;
+    record = /** @type {Record<string, unknown>} */ (candidate);
   }
   const id = toText(record.id) || `candidate-${index + 1}`;
   const title = toText(record.title) || id;
@@ -162,7 +162,7 @@ function normalizeActiveWorkItem(item) {
   let record = {};
   // Stryker disable next-line ConditionalExpression -- malformed active-work values normalize to the same empty record.
   if (isSchedulerRecord(item)) {
-    record = item;
+    record = /** @type {Record<string, unknown>} */ (item);
   }
 
   return {

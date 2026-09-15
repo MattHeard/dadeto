@@ -31,6 +31,11 @@ export function memoryObjectListAppend(input, env) {
   }
 }
 
+/**
+ * Format an append failure.
+ * @param {unknown} error Failure value.
+ * @returns {string} Serialized failure result.
+ */
 function formatAppendFailure(error) {
   return JSON.stringify({
     appended: false,

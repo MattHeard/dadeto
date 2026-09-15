@@ -156,6 +156,12 @@ function stepBoard(base, framesPerTick) {
   return createAdvancedBoard(base, framesPerTick);
 }
 
+/**
+ * Advance the board by one tick.
+ * @param {LifeState} base Current board state.
+ * @param {number} framesPerTick Frames per tick.
+ * @returns {LifeState} Advanced board state.
+ */
 function createAdvancedBoard(base, framesPerTick) {
   return {
     ...base,

@@ -193,6 +193,12 @@ function collectDocuments(state, matchesPath) {
   return docs;
 }
 
+/**
+ * Check whether a path identifies a collection document.
+ * @param {string} path Document path.
+ * @param {string[]} collectionSegments Collection path segments.
+ * @returns {boolean} Whether the path matches.
+ */
 function isCollectionDocumentPath(path, collectionSegments) {
   const segments = splitPath(path);
   return (
@@ -201,6 +207,12 @@ function isCollectionDocumentPath(path, collectionSegments) {
   );
 }
 
+/**
+ * Check whether a path identifies a collection-group document.
+ * @param {string} path Document path.
+ * @param {string} collectionId Collection id.
+ * @returns {boolean} Whether the path matches.
+ */
 function isCollectionGroupDocumentPath(path, collectionId) {
   const segments = splitPath(path);
   return (

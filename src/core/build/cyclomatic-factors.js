@@ -139,7 +139,7 @@ function getIdentifierName(node) {
  * @returns {string} Candidate name or anonymous marker.
  */
 function fallbackFunctionName(name) {
-  return name == null ? '<anonymous>' : name;
+  return name === null || name === undefined ? '<anonymous>' : name;
 }
 
 /**

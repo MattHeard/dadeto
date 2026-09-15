@@ -37,6 +37,12 @@ export function requireString(value, name) {
   return assertRequiredString(normalized, name);
 }
 
+/**
+ * Assert a required string is present.
+ * @param {string | null} value Candidate value.
+ * @param {string} name Value name.
+ * @returns {string} Required value.
+ */
 function assertRequiredString(value, name) {
   if (!value) {
     throw new Error(`${name} is required.`);

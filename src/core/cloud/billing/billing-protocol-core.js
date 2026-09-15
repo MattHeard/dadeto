@@ -1,10 +1,14 @@
 const PARTIALLY_REFUNDED = 'partially_refunded';
 const NEEDS_RECOVERY = 'needs_recovery';
 
+/**
+ * Freeze a transition list.
+ * @param {string[]} transitions Transition values.
+ * @returns {readonly string[]} Frozen transitions.
+ */
 const freezeTransitions = transitions => Object.freeze(transitions);
 
-/** @type {Record<string, string[]>} */
-// @ts-expect-error -- frozen transition tables are intentionally readonly at runtime.
+/** @type {Record<string, readonly string[]>} */
 const PURCHASE_TRANSITIONS = Object.freeze({
   pending: freezeTransitions(['paid', 'expired']),
   paid: freezeTransitions(['partially_refunded', 'refunded']),
@@ -13,8 +17,7 @@ const PURCHASE_TRANSITIONS = Object.freeze({
   expired: freezeTransitions([]),
 });
 
-/** @type {Record<string, string[]>} */
-// @ts-expect-error -- frozen transition tables are intentionally readonly at runtime.
+/** @type {Record<string, readonly string[]>} */
 const OPERATION_TRANSITIONS = Object.freeze({
   quoted: freezeTransitions(['reserved']),
   reserved: freezeTransitions(['settled', 'released', 'needs_recovery']),
@@ -44,7 +47,7 @@ export function canTransitionOperation(from, to) {
 }
 
 /**
- * @param {Record<string, string[]>} transitions Transition map.
+ * @param {Record<string, readonly string[]>} transitions Transition map.
  * @param {string} from Current state.
  * @param {string} to Next state.
  * @returns {boolean} Whether the transition is valid.

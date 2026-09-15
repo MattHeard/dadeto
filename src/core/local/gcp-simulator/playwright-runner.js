@@ -153,6 +153,11 @@ function waitForExit(child) {
   });
 }
 
+/**
+ * Build a child-process exit resolver.
+ * @param {(result: { code: number | null, signal: string | null }) => void} resolve Result resolver.
+ * @returns {(code: number | null, signal: string | null) => void} Exit callback.
+ */
 function createExitResolver(resolve) {
   return (code, signal) => resolve({ code, signal });
 }
@@ -246,6 +251,13 @@ function reserveFreePort() {
   });
 }
 
+/**
+ * Resolve a reserved port from a server address.
+ * @param {import('node:net').AddressInfo | string | null} address Server address.
+ * @param {(port: number) => void} resolve Port resolver.
+ * @param {(error: Error) => void} reject Error resolver.
+ * @returns {void}
+ */
 function resolveReservedPort(address, resolve, reject) {
   const hasPort = address && typeof address === 'object';
   if (!hasPort) {

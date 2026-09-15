@@ -109,6 +109,11 @@ function createBuildComplexityProfile(analyzer) {
   };
 }
 
+/**
+ * Build aggregate complexity summary values.
+ * @param {MethodProfile[]} methods Profile rows.
+ * @returns {Record<string, number>} Summary metrics.
+ */
 function buildProfileSummary(methods) {
   return {
     methodCount: methods.length,

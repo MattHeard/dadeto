@@ -127,6 +127,12 @@ export function getOpeningTagParts(name, attributes) {
   return getTagParts(name);
 }
 
+/**
+ * Build the parts of an HTML tag.
+ * @param {string} name Tag name.
+ * @param {boolean} [closing] Whether to build a closing tag.
+ * @returns {string[]} Tag parts.
+ */
 function getTagParts(name, closing = false) {
   return closing
     ? [tagOpen(), slash(), name, tagClose()]

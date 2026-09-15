@@ -34,6 +34,11 @@ export function createPublicBillingOffersHandler(deps) {
   };
 }
 
+/**
+ * Convert a quote to the public offer shape.
+ * @param {{ packageId: string, amountUsdMinor: number, credits: number }} quote Credit package quote.
+ * @returns {{ packageId: string, currency: string, amountUsdMinor: number, credits: number }} Public offer.
+ */
 function toPublicOffer(quote) {
   return {
     packageId: quote.packageId,

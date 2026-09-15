@@ -86,6 +86,11 @@ function normalizeChangeSets(changeSets) {
   return Array.isArray(changeSets) ? normalizeChangeSetList(changeSets) : [];
 }
 
+/**
+ * Normalize a list of change-set records.
+ * @param {unknown[]} changeSets Raw change-set records.
+ * @returns {ChangeSet[]} Normalized change-set records.
+ */
 function normalizeChangeSetList(changeSets) {
   /** @type {ChangeSet[]} */
   const normalized = [];
@@ -105,7 +110,7 @@ function normalizeChangeSet(changeSet, index) {
   /** @type {Record<string, unknown>} */
   let record = {};
   if (isRecord(changeSet)) {
-    record = changeSet;
+    record = /** @type {Record<string, unknown>} */ (changeSet);
   }
 
   return {

@@ -157,6 +157,13 @@ async function startServer(deps) {
   });
 }
 
+/**
+ * Resolve and report the listening server.
+ * @param {import('node:http').Server} server Listening server.
+ * @param {number} fallbackPort Fallback port.
+ * @param {(server: import('node:http').Server) => void} resolve Server resolver.
+ * @returns {void}
+ */
 function resolveListeningServer(server, fallbackPort, resolve) {
   const address = server.address();
   const actualPort =
