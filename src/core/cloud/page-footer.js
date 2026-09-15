@@ -1,7 +1,8 @@
 /**
- *
- * @param html
- * @param generatedAt
+ * Add a human-friendly generation timestamp to a complete HTML document.
+ * @param {string} html Complete HTML document.
+ * @param {Date} [generatedAt] Generation time.
+ * @returns {string} HTML with a timestamp footer.
  */
 export function withPageFooter(html, generatedAt = new Date()) {
   const timestamp = generatedAt.toLocaleString('en-GB', {

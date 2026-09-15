@@ -372,7 +372,7 @@ export function createDetachedProcessLauncher(options) {
         buildExitPayload,
         closeErrorLabel: options.closeErrorLabel,
         exitErrorLabel: exitErrorLabel,
-        launcherKind: String(options.launcherKind),
+        launcherKind: options.launcherKind ?? 'codex',
       });
     },
   };
