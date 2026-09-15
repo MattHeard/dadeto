@@ -14,6 +14,7 @@ import {
   sendOkResponse,
 } from '../cloud-core.js';
 import { renderHtmlTemplate } from '../html-template.js';
+import { withPageFooter } from '../page-footer.js';
 import { runWithFailureAndThen } from '../response-utils.js';
 export { isDuplicateAppError };
 
@@ -136,22 +137,24 @@ export function buildHtml(...args) {
     </main>`;
   // Stryker disable next-line all -- stats rendering uses the fixed template
   // asset and HTML payload contract.
-  return renderHtmlTemplate(new URL('./stats-page.html', import.meta.url), {
-    head: STATS_PAGE_HEAD,
-    header: SITE_HEADER_HTML,
-    main,
-    scripts: [
-      GOOGLE_CLIENT_SCRIPT,
-      D3_SCRIPT,
-      D3_SANKEY_SCRIPT,
-      GOOGLE_AUTH_MODULE_SCRIPT,
-      buildTopStoriesScript(JSON.stringify(resolvedTopStories)),
-      MENU_SCRIPT,
-    ].join(
-      // Stryker disable next-line all -- fixed script bundle delimiter.
-      '\n'
-    ),
-  });
+  return withPageFooter(
+    renderHtmlTemplate(new URL('./stats-page.html', import.meta.url), {
+      head: STATS_PAGE_HEAD,
+      header: SITE_HEADER_HTML,
+      main,
+      scripts: [
+        GOOGLE_CLIENT_SCRIPT,
+        D3_SCRIPT,
+        D3_SANKEY_SCRIPT,
+        GOOGLE_AUTH_MODULE_SCRIPT,
+        buildTopStoriesScript(JSON.stringify(resolvedTopStories)),
+        MENU_SCRIPT,
+      ].join(
+        // Stryker disable next-line all -- fixed script bundle delimiter.
+        '\n'
+      ),
+    })
+  );
 }
 
 const DEFAULT_URL_MAP = 'prod-dendrite-url-map';

@@ -1,4 +1,5 @@
 import { renderHtmlTemplate } from '../html-template.js';
+import { withPageFooter } from '../page-footer.js';
 
 /** @typedef {{ collectionGroup?: (name: string) => { where: (field: string, operator: string, value: unknown) => unknown }; collection?: (name: string) => { doc: (id: string) => { get: () => Promise<unknown> } } }} AuthorDatabase */
 
@@ -18,11 +19,13 @@ export function renderAuthorPage(author, variants = [], moderatorReputation) {
   const authorName = author.name ?? author.authorName ?? '';
   return {
     path: `a/${author.uuid}.html`,
-    html: renderHtmlTemplate(new URL('./author-page.html', import.meta.url), {
-      authorName: escapeHtml(authorName),
-      moderatorReputation: renderModeratorReputation(moderatorReputation),
-      variants: renderVariants(variants),
-    }),
+    html: withPageFooter(
+      renderHtmlTemplate(new URL('./author-page.html', import.meta.url), {
+        authorName: escapeHtml(authorName),
+        moderatorReputation: renderModeratorReputation(moderatorReputation),
+        variants: renderVariants(variants),
+      })
+    ),
   };
 }
 // Stryker restore all

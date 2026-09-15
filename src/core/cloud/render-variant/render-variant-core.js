@@ -9,6 +9,7 @@ import {
   prefixStaticObjectPath,
 } from '../cloud-core.js';
 import { renderHtmlTemplate } from '../html-template.js';
+import { withPageFooter } from '../page-footer.js';
 import { assertFunction } from '../../commonCore.js';
 import {
   addTreeVisibilityDelta,
@@ -897,10 +898,12 @@ export function buildHtml(buildHtmlInput) {
   const mainContent = buildMainContent(resolvedParams);
   const headElement = buildHeadElement(headTitle);
   const bodyElement = buildBodyElement(mainContent);
-  return renderHtmlTemplate(new URL('./variant-page.html', import.meta.url), {
-    headElement,
-    bodyElement,
-  });
+  return withPageFooter(
+    renderHtmlTemplate(new URL('./variant-page.html', import.meta.url), {
+      headElement,
+      bodyElement,
+    })
+  );
 }
 
 /**
@@ -1042,9 +1045,11 @@ export function buildAltsHtml(pageNumber, variants) {
       })();
     </script>
   </body>`;
-  return renderHtmlTemplate(new URL('./alts-page.html', import.meta.url), {
-    bodyContent,
-  });
+  return withPageFooter(
+    renderHtmlTemplate(new URL('./alts-page.html', import.meta.url), {
+      bodyContent,
+    })
+  );
 }
 /**
  *

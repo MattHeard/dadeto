@@ -13,6 +13,7 @@ import {
   sendOkResponse,
 } from '../cloud-core.js';
 import { renderHtmlTemplate } from '../html-template.js';
+import { withPageFooter } from '../page-footer.js';
 import { assertFunction } from '../../commonCore.js';
 export {
   DEFAULT_BUCKET_NAME,
@@ -247,17 +248,19 @@ const MENU_TOGGLE_SCRIPT = `    <script type="module" src="./contentsMenuToggle.
  * @returns {string} Page HTML string.
  */
 export const PAGE_HTML = list =>
-  renderHtmlTemplate(new URL('./contents-page.html', import.meta.url), {
-    head: HEAD_HTML,
-    header: HEADER_HTML,
-    mobileMenu: MOBILE_MENU_HTML,
-    main: MAIN_HTML(list),
-    scripts: [
-      GOOGLE_AUTH_CLIENT_SCRIPT,
-      GOOGLE_AUTH_MODULE_SCRIPT,
-      MENU_TOGGLE_SCRIPT,
-    ].join('\n'),
-  });
+  withPageFooter(
+    renderHtmlTemplate(new URL('./contents-page.html', import.meta.url), {
+      head: HEAD_HTML,
+      header: HEADER_HTML,
+      mobileMenu: MOBILE_MENU_HTML,
+      main: MAIN_HTML(list),
+      scripts: [
+        GOOGLE_AUTH_CLIENT_SCRIPT,
+        GOOGLE_AUTH_MODULE_SCRIPT,
+        MENU_TOGGLE_SCRIPT,
+      ].join('\n'),
+    })
+  );
 
 /**
  * Build an HTML document for the provided story summaries.
