@@ -15,4 +15,10 @@ describe('Dendrite mobile layout', () => {
       /#topStories svg\s*{[^}]*max-width:\s*100%;[^}]*height:\s*auto;/s
     );
   });
+
+  test('aligns generated page metadata with the main content column', () => {
+    expect(css).toMatch(
+      /\.page-footer\s*{[^}]*max-width:\s*72ch;[^}]*margin:\s*0 auto;[^}]*padding:\s*var\(--s4\);/s
+    );
+  });
 });

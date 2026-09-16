@@ -213,6 +213,13 @@ main {
   margin: 0 auto;
 }
 
+/* Keep generated-page metadata aligned with the main content column. */
+.page-footer {
+  max-width: 72ch;
+  margin: 0 auto;
+  padding: var(--s4);
+}
+
 .moderation-card {
   margin: var(--s4) 0;
   padding: var(--s4);

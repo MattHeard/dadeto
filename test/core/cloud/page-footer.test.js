@@ -7,6 +7,7 @@ describe('withPageFooter', () => {
       new Date('2026-09-15T12:34:00Z')
     );
 
+    expect(html).toContain('<footer class="page-footer">');
     expect(html).toContain('Page last updated at 15 Sept 2026, 12:34 UTC');
     expect(html.indexOf('Page last updated')).toBeLessThan(
       html.indexOf('</body>')

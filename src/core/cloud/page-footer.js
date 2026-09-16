@@ -16,6 +16,6 @@ export function withPageFooter(html, generatedAt = new Date()) {
   });
   return html.replace(
     '</body>',
-    `    <footer><small>Page last updated at ${timestamp}</small></footer>\n  </body>`
+    `    <footer class="page-footer"><small>Page last updated at ${timestamp}</small></footer>\n  </body>`
   );
 }
