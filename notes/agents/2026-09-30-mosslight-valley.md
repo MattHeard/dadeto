@@ -1,6 +1,7 @@
-# Mosslight Valley RPG foundation
+# Mosslight Valley: The Sleeping Valley
 
-- Unexpected hurdle: Dadeto's public toy contract is synchronous and recreated on each submission, so a full game cannot rely on hidden module globals for continuity.
-- Diagnosis: existing stateful toys already solve this through serialized local persistence and deterministic frame payloads.
-- Chosen fix: put the game in browser-core modules with an explicit runtime, save adapter, and canvas frame output; the toy adapter composes those pieces per call.
-- Next-time guidance: add the dedicated full-screen presenter before expanding content volume, then keep it backed by the same simulation and renderer contracts.
+- Unexpected hurdle: mobile taps lasted less than the runtime's 125 ms fixed step, so movement buttons looked responsive but occasionally did nothing; later, repository-wide branch coverage exposed untested edges in unrelated modules as well as the new game.
+- Diagnosis: reproduce with local Playwright phone emulation, inspect saved world state after a tap, compare pointer lifetime with runtime accumulator behavior, and use the full `npm run check` report to identify uncovered branches.
+- Chosen fix: latch touch/keyboard edges until a simulation step consumes them, release held pointers on cancellation/focus loss, map touch interaction into dialogue/battle confirmation, and add behavior tests until all four repository coverage metrics reached 100% without ignore pragmas. Dependency audit also required compatible transitive version overrides.
+- Evidence: `npm run check` passed all 10 checks; `reports/coverage/coverage-summary.json` reports 100% lines, statements, functions, and branches with zero skipped; focused phone/desktop Playwright passed 2 tests (the two other-project cases skip by design); `npm run build` and `git diff --check` passed.
+- Next-time guidance: test one-tap movement and a full touch-only dialogue choice in a real mobile browser context; keep the phone layout within safe areas and frame scaling pixelated. The chapter and page share one deterministic runtime; cloud saves remain out of scope.

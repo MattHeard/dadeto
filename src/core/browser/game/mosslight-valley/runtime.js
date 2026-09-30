@@ -1,38 +1,118 @@
-// @ts-nocheck -- runtime game state is intentionally data-driven.
-/* eslint-disable jsdoc/require-returns -- compact game-state contracts are documented at module boundaries. */
+// @ts-nocheck -- runtime adapters are injected at the browser boundary.
 import { CONTENT } from './content.js';
 import { createAudioAdapter } from './audio.js';
-import { createInputState, actionsFromInput, consumePressed } from './input.js';
-import { createSimulation, stepGame } from './simulation.js';
+import { createSimulation, stepGame, finishChapter } from './simulation.js';
 import { createSaveAdapter } from './save.js';
 import { toFramePayload } from './renderer.js';
+import { questJournal } from './quests.js';
 
-/** Compose the game modules into a step-based runtime. */
-/** @param {Map} env Runtime environment. @returns {object} Game runtime. */
-export function createMosslightRuntime(env = new Map()) {
-  const save = createSaveAdapter(env);
-  const audio = createAudioAdapter(env);
-  let state = save.load() || createSimulation(CONTENT);
-  let input = createInputState();
+/**
+ * Compose episode systems behind one lifecycle and deterministic step API.
+ * @param {unknown} options - The options argument.
+ * @returns {unknown} The computed result.
+ */
+export function createMosslightRuntime(options = {}) {
+  const opts = options instanceof Map ? { env: options } : options;
+  const content = opts.content || CONTENT;
+  const env = opts.env || new Map();
+  const save = opts.save || createSaveAdapter(env);
+  const audio = opts.audio || createAudioAdapter(env);
+  const renderer = opts.renderer || toFramePayload;
+  let activeSlot = opts.slot ?? 0;
+  let state = save.load?.(activeSlot) || createSimulation(content);
+  let running = false;
+  let accumulator = 0;
+  const fixedStep = 125;
   return {
-    getState: () => state,
-    setInput: next => {
-      input = next;
+    start() {
+      running = true;
+      return renderer(state);
     },
-    step: () => {
-      state = stepGame(state, actionsFromInput(input), CONTENT);
-      state.effects.forEach(audio.play);
-      save.save(state);
-      input = consumePressed(input);
-      return toFramePayload(state);
+    pause() {
+      running = false;
+      audio.stop?.();
+      return renderer(state);
     },
-    save: () => save.save(state),
-    exportSave: () => save.export(state),
-    importSave: raw => {
-      const next = save.import(raw);
-      if (next) state = next;
+    resume() {
+      running = true;
+      return renderer(state);
+    },
+    step(deltaMs = 125, actions = []) {
+      if (!running) return renderer(state);
+      accumulator += Math.max(0, Math.min(deltaMs, 500));
+      while (accumulator >= fixedStep) {
+        const previousToast = state.toast;
+        const hadWellOpen = state.world.flags.wellOpen;
+        state = stepGame(state, actions, content, fixedStep);
+        accumulator -= fixedStep;
+        if (state.toast && state.toast !== previousToast) {
+          const cue =
+            !hadWellOpen && state.world.flags.wellOpen
+              ? 'quest-cue'
+              : state.mode === 'battle'
+                ? 'battle-hit'
+                : state.toast.includes('turnip') || state.toast.includes('fish')
+                  ? 'item-pickup'
+                  : 'story-cue';
+          audio.play?.(cue);
+        }
+        if (state.world.flags.ending && !state.ending)
+          state = finishChapter(state, state.world.flags.ending, content);
+        if (state.mode === 'journal')
+          state = { ...state, journal: questJournal(state, content) };
+        save.save?.(state, activeSlot);
+      }
+      return renderer(state);
+    },
+    dispatch(command) {
+      const actions =
+        typeof command === 'string' ? [command] : command?.actions || [];
+      state = stepGame(state, actions, content);
+      if (state.world.flags.ending && !state.ending)
+        state = finishChapter(state, state.world.flags.ending, content);
+      save.save?.(state, activeSlot);
+      return renderer(state);
+    },
+    getSnapshot() {
       return state;
     },
-    frame: () => toFramePayload(state),
+    getState() {
+      return state;
+    },
+    getJournal() {
+      return questJournal(state, content);
+    },
+    save() {
+      save.save?.(state, activeSlot);
+      return state;
+    },
+    listSaves() {
+      return save.list?.() || [];
+    },
+    loadSlot(slot) {
+      activeSlot = Number(slot);
+      state = save.load?.(slot) || createSimulation(content);
+      return renderer(state);
+    },
+    exportSave() {
+      return save.export(state, activeSlot);
+    },
+    importSave(raw) {
+      const parsed = save.import(raw);
+      if (!parsed) throw new Error('Invalid Mosslight Valley save data.');
+      state = parsed.state;
+      activeSlot = parsed.slot ?? activeSlot;
+      return renderer(state);
+    },
+    getSlot() {
+      return activeSlot;
+    },
+    frame() {
+      return renderer(state);
+    },
+    setState(next) {
+      state = next;
+      return renderer(state);
+    },
   };
 }

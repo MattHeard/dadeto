@@ -1,0 +1,468 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;700&family=Fraunces:opsz,wght@9..144,600;9..144,700&display=swap');
+
+:root {
+  color-scheme: dark;
+  --ink: #edf0dd;
+  --muted: #9eafa6;
+  --moss: #a9c58d;
+  --line: #35484a;
+  --panel: #20383f;
+  --deep: #142a33;
+}
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: radial-gradient(ellipse at 50% 0, #28464a 0, var(--deep) 70%);
+  color: var(--ink);
+  font-family: 'DM Sans', sans-serif;
+}
+.game-shell {
+  max-width: 1120px;
+  margin: auto;
+  padding: 28px 34px 22px;
+}
+.masthead {
+  display: grid;
+  grid-template-columns: 1fr 2fr 1fr;
+  align-items: center;
+  border-bottom: 1px solid var(--line);
+  padding: 0 0 22px;
+}
+.wordmark {
+  font:
+    500 12px 'DM Mono',
+    monospace;
+  letter-spacing: 0.16em;
+  color: var(--moss);
+  text-decoration: none;
+}
+.wordmark span {
+  display: block;
+  color: var(--muted);
+  font-size: 9px;
+  margin-top: 4px;
+}
+.title-lockup {
+  text-align: center;
+}
+.title-lockup p,
+.eyebrow,
+.chapter-tag,
+.screen-caption,
+footer,
+.control-card b {
+  font:
+    10px 'DM Mono',
+    monospace;
+  letter-spacing: 0.11em;
+}
+.title-lockup p {
+  color: #c8ae82;
+  margin: 0 0 4px;
+}
+.title-lockup h1 {
+  font:
+    700 clamp(28px, 4vw, 42px) Fraunces,
+    serif;
+  letter-spacing: -0.04em;
+  margin: 0;
+}
+.title-lockup > span {
+  font:
+    italic 15px Fraunces,
+    serif;
+  color: var(--moss);
+}
+.chapter-tag {
+  justify-self: end;
+  color: var(--muted);
+  font-size: 9px;
+}
+.chapter-tag i,
+footer i {
+  color: #d9b77c;
+  font-style: normal;
+}
+.play-layout {
+  display: grid;
+  grid-template-columns: minmax(400px, 1.05fr) minmax(340px, 0.95fr);
+  gap: 36px;
+  align-items: center;
+  padding: 38px 0;
+}
+.screen-frame {
+  padding: 17px;
+  background: linear-gradient(145deg, #52625a, #293f42 38%, #1c323b);
+  border: 1px solid #688077;
+  border-radius: 18px;
+  box-shadow:
+    0 22px 55px #08191db0,
+    inset 0 1px #c1d1a833;
+}
+.screen-glow {
+  padding: 14px;
+  background: #101c20;
+  border-radius: 8px;
+  box-shadow: inset 0 0 0 1px #59716a;
+}
+.screen-glow canvas {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 160/144;
+  image-rendering: pixelated;
+  background: #183d40;
+  border: 1px solid #304c47;
+}
+.screen-caption {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 13px 3px 0;
+  color: #b3c2aa;
+  font-size: 8px;
+}
+.screen-caption span:last-child {
+  color: #e0d0a0;
+}
+.side-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 17px;
+}
+.chapter-copy {
+  padding: 0 2px 4px;
+}
+.eyebrow {
+  color: #d7bd88;
+  font-size: 9px;
+}
+.chapter-copy h2 {
+  font:
+    600 25px/1.16 Fraunces,
+    serif;
+  max-width: 420px;
+  margin: 10px 0;
+  color: #f0efd9;
+}
+.chapter-copy > p:last-child {
+  font-size: 13px;
+  line-height: 1.6;
+  color: #b1c0b7;
+  max-width: 440px;
+}
+.control-card {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px 10px;
+  padding: 16px;
+  background: #1d343b;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+}
+.control-card > div {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+.keycap {
+  display: inline-grid;
+  place-items: center;
+  min-width: 49px;
+  height: 26px;
+  padding: 0 6px;
+  border: 1px solid #71867a;
+  border-bottom-width: 3px;
+  border-radius: 5px;
+  background: #33494a;
+  color: #f1e7c9;
+  font:
+    9px 'DM Mono',
+    monospace;
+}
+.control-card b {
+  font-size: 8px;
+  color: #c0cec2;
+  letter-spacing: 0.06em;
+}
+.touch-pad {
+  display: none;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 2px;
+}
+.dpad {
+  display: grid;
+  grid-template-columns: repeat(3, 42px);
+  grid-template-rows: repeat(2, 38px);
+  gap: 3px;
+}
+.dpad button {
+  grid-row: 1;
+}
+.dpad button:first-child {
+  grid-column: 2;
+}
+.dpad button:nth-child(2) {
+  grid-column: 1;
+  grid-row: 2;
+}
+.dpad button:nth-child(3) {
+  grid-column: 2;
+  grid-row: 2;
+}
+.dpad button:nth-child(4) {
+  grid-column: 3;
+  grid-row: 2;
+}
+.touch-actions {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 6px;
+}
+.touch-pad button,
+.utility-actions button {
+  font:
+    10px 'DM Mono',
+    monospace;
+  letter-spacing: 0.04em;
+  color: #e6eddb;
+  background: #29444a;
+  border: 1px solid #5b716d;
+  border-radius: 6px;
+  padding: 10px;
+  touch-action: none;
+}
+.slot-picker {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: #c4d0c7;
+  font:
+    9px 'DM Mono',
+    monospace;
+}
+.slot-picker select {
+  min-height: 36px;
+  padding: 5px 8px;
+  color: #e6eddb;
+  background: #29444a;
+  border: 1px solid #5b716d;
+  border-radius: 6px;
+}
+.touch-pad button:active,
+.utility-actions button:active {
+  background: #567260;
+}
+.utility-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+.utility-actions button {
+  padding: 8px 11px;
+  font-size: 9px;
+  background: transparent;
+  color: #c4d0c7;
+}
+footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  padding-top: 17px;
+  border-top: 1px solid var(--line);
+  color: #899d95;
+  font-size: 8px;
+  letter-spacing: 0.07em;
+}
+@media (max-width: 850px) {
+  .game-shell {
+    padding: 20px;
+  }
+  .play-layout {
+    grid-template-columns: minmax(300px, 1fr) minmax(285px, 0.85fr);
+    gap: 22px;
+    padding: 28px 0;
+  }
+  .masthead {
+    grid-template-columns: 1fr 2fr;
+  }
+  .chapter-tag {
+    display: none;
+  }
+}
+@media (max-width: 650px) {
+  .game-shell {
+    padding: 16px;
+  }
+  .masthead {
+    display: block;
+    padding-bottom: 15px;
+  }
+  .wordmark {
+    display: none;
+  }
+  .title-lockup {
+    text-align: left;
+  }
+  .title-lockup h1 {
+    font-size: 34px;
+  }
+  .play-layout {
+    grid-template-columns: 1fr;
+    gap: 18px;
+    padding: 20px 0;
+  }
+  .screen-frame {
+    max-width: 500px;
+    margin: auto;
+    width: 100%;
+    padding: 12px;
+  }
+  .screen-glow {
+    padding: 8px;
+  }
+  .side-panel {
+    gap: 12px;
+  }
+  .chapter-copy h2 {
+    font-size: 22px;
+  }
+  .control-card {
+    display: none;
+  }
+  .touch-pad {
+    display: flex;
+  }
+  .utility-actions {
+    justify-content: center;
+  }
+  footer {
+    font-size: 7px;
+  }
+}
+
+/* Phone-first controls: safe areas, stable dynamic viewport, generous thumb targets. */
+:root {
+  color-scheme: dark;
+}
+html {
+  min-height: 100%;
+  background: var(--deep);
+  overscroll-behavior: none;
+}
+body {
+  min-height: 100vh;
+  min-height: 100dvh;
+  overscroll-behavior: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.game-shell {
+  padding-left: max(16px, env(safe-area-inset-left));
+  padding-right: max(16px, env(safe-area-inset-right));
+  padding-bottom: max(16px, env(safe-area-inset-bottom));
+}
+.screen-glow canvas {
+  touch-action: none;
+}
+@media (max-width: 650px) {
+  .game-shell {
+    padding-top: max(12px, env(safe-area-inset-top));
+  }
+  .touch-pad {
+    gap: 14px;
+    min-height: 138px;
+  }
+  .dpad {
+    grid-template-columns: repeat(3, 52px);
+    grid-template-rows: repeat(2, 48px);
+    gap: 4px;
+  }
+  .touch-actions {
+    gap: 8px;
+  }
+  .touch-pad button {
+    min-width: 56px;
+    min-height: 48px;
+    padding: 12px 10px;
+    font-size: 11px;
+  }
+  .dpad button {
+    min-width: 52px;
+    min-height: 48px;
+  }
+  .utility-actions button {
+    min-height: 42px;
+    padding: 10px 13px;
+    font-size: 10px;
+  }
+  .screen-caption {
+    font-size: 7px;
+  }
+  .chapter-copy > p:last-child {
+    font-size: 12px;
+  }
+  .play-layout {
+    padding-top: 14px;
+    padding-bottom: 12px;
+  }
+}
+@media (max-height: 700px) and (orientation: landscape) {
+  .game-shell {
+    max-width: 100%;
+    padding: 10px max(18px, env(safe-area-inset-left));
+  }
+  .masthead {
+    padding-bottom: 8px;
+  }
+  .title-lockup p,
+  .chapter-tag,
+  footer {
+    display: none;
+  }
+  .title-lockup h1 {
+    font-size: 26px;
+  }
+  .play-layout {
+    grid-template-columns: minmax(280px, 1fr) minmax(270px, 0.8fr);
+    gap: 18px;
+    padding: 10px 0;
+  }
+  .screen-frame {
+    max-height: calc(100dvh - 65px);
+    max-width: calc((100dvh - 65px) * 1.18);
+    padding: 8px;
+  }
+  .screen-glow {
+    padding: 5px;
+  }
+  .side-panel {
+    gap: 8px;
+  }
+  .chapter-copy h2 {
+    font-size: 19px;
+  }
+  .chapter-copy > p:last-child {
+    margin: 5px 0;
+    font-size: 11px;
+  }
+  .touch-pad {
+    min-height: 104px;
+    padding: 0;
+  }
+  .dpad {
+    grid-template-columns: repeat(3, 42px);
+    grid-template-rows: repeat(2, 38px);
+  }
+  .touch-pad button {
+    min-height: 40px;
+    min-width: 46px;
+    padding: 7px;
+  }
+  .utility-actions button {
+    min-height: 36px;
+  }
+}
