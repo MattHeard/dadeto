@@ -220,11 +220,10 @@ function countClones(report) {
   }
 
   const total = getDuplicationStatistics(report).total;
-  if (total && typeof total.clones === 'number') {
-    return total.clones;
+  if (!total || typeof total.clones !== 'number') {
+    return 0;
   }
-
-  return 0;
+  return total.clones;
 }
 
 /**

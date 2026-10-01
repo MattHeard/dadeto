@@ -166,13 +166,14 @@ async function handlePaymentIntentSucceeded(billing, metadata, event) {
  * @returns {Promise<import('../../payment-webhook-core.js').PaymentWebhookResponse>} Response.
  */
 async function handleChargeRefunded(billing, metadata, event) {
+  const pricingSnapshotId = metadata.pricing_snapshot_id ?? '';
   return billing.applyRefundEvent({
     purchaseId: metadata.purchase_id,
     eventId: event.id,
     // Stryker disable next-line all -- zero refund fallback is the fixed public
     // billing protocol representation.
     refundedUsdMinor: Number(event.data?.object?.amount_refunded ?? 0),
-    pricingSnapshotId: metadata.pricing_snapshot_id ?? '',
+    pricingSnapshotId,
   });
 }
 

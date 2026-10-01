@@ -210,11 +210,10 @@ function buildSimulatorRequest(req, route) {
     get: getRequestHeader(req),
   };
 
-  if (route.includeBody) {
-    return { ...request, body: req.body };
+  if (!route.includeBody) {
+    return request;
   }
-
-  return request;
+  return { ...request, body: req.body };
 }
 
 /**
@@ -274,11 +273,12 @@ function shouldRedirectSubmitStory(req, result) {
  */
 function getSimulatorPromise() {
   if (!simulatorPromise) {
+    const options = {
+      baseUrl: `http://127.0.0.1:${port}`,
+      publicDir: defaultPublicDir,
+    };
     simulatorPromise = /** @type {Promise<LocalGcpSimulator>} */ (
-      createLocalGcpSimulator({
-        baseUrl: `http://127.0.0.1:${port}`,
-        publicDir: defaultPublicDir,
-      })
+      createLocalGcpSimulator(options)
     );
   }
 

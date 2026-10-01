@@ -206,6 +206,10 @@ function buildNormalizedGameState(candidate, getRandomNumber) {
  * @returns {HiLoKeyboardState} Safe keyboard state.
  */
 export function normalizeKeyboardState(value) {
+  /**
+   * @param {Record<string, unknown>} candidate Stored keyboard fields.
+   * @returns {HiLoKeyboardState} Normalized keyboard state.
+   */
   const normalizeActiveKey = candidate => ({
     activeKey: readActiveKey(candidate.activeKey),
   });

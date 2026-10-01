@@ -41,8 +41,8 @@ function createSymphonyStatusHandlerFactory(deps) {
    * @param {SymphonyOptions} options Route options.
    * @returns {SymphonyHandler} Express route handler.
    */
-  return function createSymphonyStatusHandler(options) {
-    return createAsyncRouteHandler(async res => {
+  return options =>
+    createAsyncRouteHandler(async res => {
       const storedStatus = await options.statusStore.readStatus();
       const baseStatus = storedStatus ?? options.initialStatus;
       const reconciledStatus = await reconcileOrphanedRun(
@@ -52,7 +52,6 @@ function createSymphonyStatusHandlerFactory(deps) {
       );
       res.json(reconciledStatus);
     });
-  };
 }
 
 /**

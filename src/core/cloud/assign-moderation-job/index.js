@@ -145,7 +145,16 @@ export function createAssignModerationJobEntrypoint(deps) {
     if (firebaseInitialization.hasBeenInitialized()) {
       return;
     }
+    initializeFirebaseApp(initFn);
+    firebaseInitialization.markInitialized();
+  }
 
+  /**
+   * Initialize Firebase while tolerating the SDK's duplicate-app signal.
+   * @param {() => unknown} initFn Firebase initializer.
+   * @returns {void} Nothing.
+   */
+  function initializeFirebaseApp(initFn) {
     try {
       initFn();
     } catch (error) {
@@ -153,8 +162,6 @@ export function createAssignModerationJobEntrypoint(deps) {
         throw error;
       }
     }
-
-    firebaseInitialization.markInitialized();
   }
 
   ensureFirebaseApp();

@@ -162,11 +162,10 @@ function getFunctionNameFromParent(parent) {
     return getIdentifierName(parent.key);
   }
 
-  if (parent.type === 'ExportDefaultDeclaration') {
-    return 'default export function';
+  if (parent.type !== 'ExportDefaultDeclaration') {
+    return null;
   }
-
-  return null;
+  return 'default export function';
 }
 
 /**
@@ -235,11 +234,10 @@ function collapseSnippet(snippet) {
     return null;
   }
 
-  if (normalized.length > 120) {
-    return `${normalized.slice(0, 120)}...`;
+  if (normalized.length <= 120) {
+    return normalized;
   }
-
-  return normalized;
+  return `${normalized.slice(0, 120)}...`;
 }
 
 /**

@@ -35,24 +35,21 @@ export function parseCanvasDoodle(inputString) {
  * @returns {{width:number,height:number,shapes:Array<Record<string, unknown>>}} Fallback payload.
  */
 export function createCanvasDoodleFallbackPayload() {
-  return {
-    width: CANVAS_WIDTH,
-    height: CANVAS_HEIGHT,
-    shapes: [
-      { type: 'rect', x: 20, y: 20, width: 280, height: 140, fill: '#fde68a' },
-      { type: 'circle', x: 90, y: 90, radius: 34, fill: '#60a5fa' },
-      { type: 'circle', x: 220, y: 90, radius: 34, fill: '#f472b6' },
-      {
-        type: 'line',
-        x1: 80,
-        y1: 130,
-        x2: 240,
-        y2: 130,
-        stroke: '#111827',
-        lineWidth: 6,
-      },
-    ],
-  };
+  const shapes = [
+    { type: 'rect', x: 20, y: 20, width: 280, height: 140, fill: '#fde68a' },
+    { type: 'circle', x: 90, y: 90, radius: 34, fill: '#60a5fa' },
+    { type: 'circle', x: 220, y: 90, radius: 34, fill: '#f472b6' },
+    {
+      type: 'line',
+      x1: 80,
+      y1: 130,
+      x2: 240,
+      y2: 130,
+      stroke: '#111827',
+      lineWidth: 6,
+    },
+  ];
+  return { width: CANVAS_WIDTH, height: CANVAS_HEIGHT, shapes };
 }
 
 /**

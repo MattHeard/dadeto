@@ -187,11 +187,10 @@ export function deepClone(value) {
  */
 export function getFirstErrorMessage(checks, candidate) {
   const found = checks.find(([predicate]) => predicate(candidate));
-  if (found) {
-    return found[1];
+  if (!found) {
+    return '';
   }
-
-  return '';
+  return found[1];
 }
 
 /**

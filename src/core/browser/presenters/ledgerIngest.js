@@ -602,10 +602,7 @@ function formatDisplayValue(value) {
  */
 function getDisplayText(value) {
   const text = String(value);
-  if (text === 'undefined' || text === 'null' || text === '') {
-    return '—';
-  }
-
+  if (['undefined', 'null', ''].includes(text)) return '—';
   return text;
 }
 

@@ -134,15 +134,14 @@ function buildMobileControlsFormContext(options) {
     dom.setTextContent(controlButton, control.label);
     controlButton.setAttribute('aria-pressed', 'false');
     dom.appendChild(controls, controlButton);
-    cleanupFns.push(
-      ...wireButton({
-        dom,
-        button: controlButton,
-        textInput,
-        autoSubmitCheckbox,
-        key: control.key,
-      })
-    );
+    const buttonCleanup = wireButton({
+      dom,
+      button: controlButton,
+      textInput,
+      autoSubmitCheckbox,
+      key: control.key,
+    });
+    cleanupFns.push(...buttonCleanup);
   }
 
   cleanupFns.push(() => dom.removeChild(form, controls));

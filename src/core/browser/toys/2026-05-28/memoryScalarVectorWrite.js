@@ -381,11 +381,10 @@ function createMemoryWriteRequest(memoryLocation, path, value, error) {
     path,
     value,
   };
-  if (error) {
-    return addRequestError(request, error);
+  if (!error) {
+    return request;
   }
-
-  return request;
+  return addRequestError(request, error);
 }
 
 /**

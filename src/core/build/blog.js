@@ -530,26 +530,29 @@ export function createCopyCore({
    * @returns {Array<[string, string, string, string]>} Static content plan tuples.
    */
   function buildStaticContentTreePlans(dirs) {
-    return [
+    const sources = [
       [
         dirs.srcBrowserAssetsDir,
-        dirs.publicDir,
         'Browser assets copied successfully!',
         'browser/assets directory not found',
       ],
       [
         dirs.srcContentBlogMediaDir,
-        dirs.publicDir,
         'Blog media copied successfully!',
         'content/blog-media directory not found',
       ],
       [
         dirs.srcContentPagesDir,
-        dirs.publicDir,
         'Content pages copied successfully!',
         'content/pages directory not found',
       ],
     ];
+    return sources.map(([source, success, missing]) => [
+      source,
+      dirs.publicDir,
+      success,
+      missing,
+    ]);
   }
 
   /**

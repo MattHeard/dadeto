@@ -301,9 +301,10 @@ async function runCommand(options) {
           return;
         }
 
-        reject(
-          new Error(`${command} ${args.join(' ')} exited with code ${code}`)
+        const error = new Error(
+          `${command} ${args.join(' ')} exited with code ${code}`
         );
+        reject(error);
       });
     }
   );

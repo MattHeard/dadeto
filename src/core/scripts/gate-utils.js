@@ -69,11 +69,10 @@ export function handleSpawnFailure(
     );
   }
 
-  if (runResult.status !== 0) {
-    return { exitCode: normalizeExitCode(runResult.status) };
+  if (runResult.status === 0) {
+    return null;
   }
-
-  return null;
+  return { exitCode: normalizeExitCode(runResult.status) };
 }
 
 /**

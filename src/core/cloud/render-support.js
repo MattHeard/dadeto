@@ -150,20 +150,19 @@ export function createCloudRenderInstanceDeps(options) {
  */
 export function createCloudRenderInstanceBuilder(options) {
   return function buildRenderInstance(state) {
-    return options.createRenderer(
-      createCloudRenderInstanceDeps({
-        db: state.db,
-        storage: state.storage,
-        dynamicFetch: state.dynamicFetch,
-        crypto: options.crypto,
-        projectId: state.projectId,
-        urlMapName: state.urlMapName,
-        cdnHost: state.cdnHost,
-        bucketName: state.bucketName,
-        objectPrefix: state.objectPrefix,
-        consoleError: options.consoleError,
-      })
-    );
+    const dependencies = createCloudRenderInstanceDeps({
+      db: state.db,
+      storage: state.storage,
+      dynamicFetch: state.dynamicFetch,
+      crypto: options.crypto,
+      projectId: state.projectId,
+      urlMapName: state.urlMapName,
+      cdnHost: state.cdnHost,
+      bucketName: state.bucketName,
+      objectPrefix: state.objectPrefix,
+      consoleError: options.consoleError,
+    });
+    return options.createRenderer(dependencies);
   };
 }
 

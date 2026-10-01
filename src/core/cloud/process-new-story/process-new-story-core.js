@@ -228,18 +228,25 @@ function queueVariantOptions({
   getServerTimestamp,
 }) {
   // Stryker disable all -- option creation uses the fixed Firestore payload protocol.
+  /**
+   * Queue one story option in the shared write batch.
+   * @param {string} text Option content.
+   * @param {number} position Option ordering.
+   * @returns {void} Nothing.
+   */
+  const queueOption = (text, position) => {
+    const optionRef = variantRef.collection('options').doc(randomUUID());
+
+    batch.set(optionRef, {
+      content: text,
+      createdAt: getServerTimestamp(),
+      position,
+    });
+  };
   forEachMappedEntries(
     normalizeOptions(submission.options),
     text => text,
-    (text, position) => {
-      const optionRef = variantRef.collection('options').doc(randomUUID());
-
-      batch.set(optionRef, {
-        content: text,
-        createdAt: getServerTimestamp(),
-        position,
-      });
-    }
+    queueOption
   );
 }
 // Stryker restore all

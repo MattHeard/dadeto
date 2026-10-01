@@ -69,9 +69,8 @@ export function resolveNotionApiToken(options = {}) {
     }
   }
 
-  throw new Error(
-    `Missing Notion API token. Set one of: ${tokenEnvNames.join(', ')}.`
-  );
+  const requiredNames = tokenEnvNames.join(', ');
+  throw new Error(`Missing Notion API token. Set one of: ${requiredNames}.`);
 }
 
 /**

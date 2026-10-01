@@ -18,12 +18,9 @@ const AUTO_SUBMIT_CHECKBOX_SELECTOR = '.auto-submit-checkbox';
 
 /**
  * Serialize an event payload for the hidden text input.
- * @param {Record<string, unknown>} payload - Structured event payload to store.
- * @returns {string} JSON-encoded event payload.
+ * @type {(payload: Record<string, unknown>) => string}
  */
-export function serializePayload(payload) {
-  return JSON.stringify(payload);
-}
+export const serializePayload = JSON.stringify;
 
 /**
  * Dispatch a change event on the given checkbox.
@@ -114,21 +111,22 @@ export function syncToyPayload(input, payload) {
  * @returns {{ form: HTMLElement, button: HTMLButtonElement, cleanupFns: CleanupFn[] }} Shared nodes and cleanup stack.
  */
 export function buildCaptureForm({ dom, container, textInput, formClass }) {
+  const shell = withManagedFormShell(
+    { dom, container, textInput },
+    ({ form, disposers }) => {
+      dom.setClassName(form, formClass);
+
+      const button = /** @type {HTMLButtonElement} */ (
+        dom.createElement('button')
+      );
+      dom.setType(button, 'button');
+      dom.appendChild(form, button);
+
+      return { form, button, cleanupFns: disposers };
+    }
+  );
   return /** @type {{ form: HTMLElement, button: HTMLButtonElement, cleanupFns: CleanupFn[] }} */ (
-    withManagedFormShell(
-      { dom, container, textInput },
-      ({ form, disposers }) => {
-        dom.setClassName(form, formClass);
-
-        const button = /** @type {HTMLButtonElement} */ (
-          dom.createElement('button')
-        );
-        dom.setType(button, 'button');
-        dom.appendChild(form, button);
-
-        return { form, button, cleanupFns: disposers };
-      }
-    )
+    shell
   );
 }
 

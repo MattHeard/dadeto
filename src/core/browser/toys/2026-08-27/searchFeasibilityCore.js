@@ -13,7 +13,7 @@ export * from '../../../object-minute-rental-search/search-core.js';
  * @param {(request: Record<string, unknown>) => unknown} evaluate Feasibility evaluator.
  * @returns {(input: string) => string} JSON toy adapter.
  */
-export function createFeasibilityToy(evaluate) {
+function createFeasibilityToy(evaluate) {
   return input =>
     fulfillmentBoundary(input, 'feasible', request =>
       JSON.stringify(evaluate(request))

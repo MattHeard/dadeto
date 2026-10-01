@@ -11,11 +11,7 @@ export function isObjectLike(value) {
  * @returns {string | null} String or null.
  */
 export function asNullableString(value) {
-  if (typeof value !== 'string') {
-    return null;
-  }
-
-  return value;
+  return whenString(value, candidate => candidate);
 }
 
 /**
@@ -46,3 +42,4 @@ export function asStringWithFallback(value, fallback) {
  * @returns {string[]} Normalized string array.
  */
 export { normalizeStringArray } from '../config-utils.js';
+import { whenString } from '../../commonCore.js';

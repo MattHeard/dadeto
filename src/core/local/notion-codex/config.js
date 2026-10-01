@@ -112,12 +112,19 @@ export function normalizeNotionCodexConfig(
   const launcher = objectOrEmpty(source.launcher);
   const defaultNotion = DEFAULT_NOTION_CODEX_CONFIG.notion;
 
-  return normalizeConfigWithResolvedPaths({
+  const resolvedOptions = {
     config: source,
     repoRoot,
     configPath,
     pathModule,
     pathFields: fields,
+    /**
+     * Build the normalized poller configuration from resolved paths.
+     * @param {Record<string, string>} paths Resolved paths.
+     * @param {Record<string, unknown>} currentSource Source configuration.
+     * @param {string} currentConfigPath Configuration file path.
+     * @returns {ReturnType<typeof normalizeNotionCodexConfig>} Normalized configuration fields.
+     */
     build: (paths, currentSource, currentConfigPath) => ({
       configPath: currentConfigPath,
       notion: {
@@ -186,7 +193,8 @@ export function normalizeNotionCodexConfig(
       outcomeDir: paths.outcomeDir,
       statePath: paths.statePath,
     }),
-  });
+  };
+  return normalizeConfigWithResolvedPaths(resolvedOptions);
 }
 
 /**

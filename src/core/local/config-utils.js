@@ -333,11 +333,10 @@ export function normalizeStringArray(value, fallback) {
     .map(item => item.trim())
     .filter(Boolean);
 
-  if (normalized.length === 0) {
-    return [...fallback];
+  if (normalized.length > 0) {
+    return normalized;
   }
-
-  return normalized;
+  return [...fallback];
 }
 
 /**

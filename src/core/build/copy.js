@@ -319,15 +319,11 @@ export function createCopyToInfraCore({
     if (setCopiedFileTimestamp) {
       await setCopiedFileTimestamp(target);
     }
-    messageLogger.info(
-      buildCopyLogMessage({
-        formatPathForLog,
-        sourceDestination: {
-          source,
-          destination: target,
-        },
-      })
-    );
+    const message = buildCopyLogMessage({
+      formatPathForLog,
+      sourceDestination: { source, destination: target },
+    });
+    messageLogger.info(message);
   }
 
   /**
