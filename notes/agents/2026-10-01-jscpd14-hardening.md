@@ -72,3 +72,13 @@ bypass that contract. Removed the canonicalizer's unreachable private guard
 instead of manufacturing an impossible public input. Focused pricing and
 fulfillment suites pass 14 tests; strict lint for all three changed files passes.
 The aggregate check is still pending and the owning bead remains open.
+
+Canonical composition regressions now cover missing warehouse join points,
+conflicting coordinates and records, unresolved locations, and normal-proposal
+validation after successful spatial resolution. The canonical-composition and
+depcruise suites pass 41 tests (`/tmp/dadeto-canonical-boundaries.log`), and strict
+lint passes (`/tmp/dadeto-boundaries-lint.log`). The duplicate depcruise import
+was consolidated. An isolated single-suite coverage run remains below 100%
+because other fulfillment suites cover the preexisting malformed-input paths;
+do not mistake that narrow run for aggregate evidence. The live aggregate run
+is `/tmp/dadeto-keypad-check.log`; keep source stable until collection completes.

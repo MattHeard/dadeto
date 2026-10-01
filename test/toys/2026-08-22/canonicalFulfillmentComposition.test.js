@@ -72,6 +72,63 @@ function normalProposal() {
 }
 
 describe('canonical fulfillment composition', () => {
+  test('propagates normal proposal validation after spatial resolution', () => {
+    const result = JSON.parse(
+      canonicalNormalFulfillmentSequenceProposal(
+        JSON.stringify({ ...normalRequest, configuration: {} })
+      )
+    );
+    expect(result.valid).toBe(false);
+    expect(result.error).toBeTruthy();
+  });
+
+  test('rejects broken continuity, conflicting records and unresolved spaces', () => {
+    const point = { pointId: 'join', spacePointId: 'warehouse' };
+    const space = { spacePointId: 'warehouse', latitude: 0, longitude: 0 };
+    const procurement = {
+      valid: true,
+      points: [point],
+      spacePoints: [space],
+      segments: [{ segmentId: 'procure', endPointId: 'join' }],
+      sequence: [],
+    };
+    const normal = {
+      valid: true,
+      points: [point],
+      spacePoints: [space],
+      segments: [{ segmentId: 'deliver', startPointId: 'join' }],
+      sequence: [{ segmentId: 'deliver' }],
+    };
+    const variants = [
+      { ...normal, points: [] },
+      { ...normal, points: [{ ...point, spacePointId: 'other' }] },
+      { ...normal, spacePoints: [{ ...space, latitude: 1 }] },
+      { ...normal, points: [{ ...point, timestamp: 'different' }] },
+      {
+        ...normal,
+        points: [point, { pointId: 'orphan', spacePointId: 'missing' }],
+      },
+    ];
+    for (const normalProposal of variants) {
+      const result = JSON.parse(
+        procurementNormalFulfillmentComposer(
+          JSON.stringify({ procurementProposal: procurement, normalProposal })
+        )
+      );
+      expect(result.valid).toBe(false);
+      expect(result.error).toBeTruthy();
+    }
+    expect(
+      JSON.parse(
+        procurementNormalFulfillmentComposer(
+          JSON.stringify({
+            procurementProposal: { ...procurement, points: [] },
+            normalProposal: normal,
+          })
+        )
+      )
+    ).toMatchObject({ valid: false });
+  });
   test('canonical normal proposal is self-contained and deduplicates space points', () => {
     const input = {
       ...normalRequest,

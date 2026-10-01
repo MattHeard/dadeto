@@ -8,8 +8,10 @@ import {
   findCoreMathRandomViolations,
 } from '../../../src/core/scripts/check-depcruise.js';
 import { createBrowserGlobalReferenceFinder } from '../../../src/core/local/check-depcruise-scope.js';
-import { findCoreBrowserGlobalsInSource } from '../../../src/core/scripts/check-depcruise-browser.js';
-import { stripBrowserMainPolicyNoise } from '../../../src/core/scripts/check-depcruise-browser.js';
+import {
+  findCoreBrowserGlobalsInSource,
+  stripBrowserMainPolicyNoise,
+} from '../../../src/core/scripts/check-depcruise-browser.js';
 
 /**
  * Build a file-like dirent stub.
