@@ -90,26 +90,25 @@ function terrainShapes(frame) {
     for (let x = 0; x < 14; x++) {
       const wx = x + frame.camera.x;
       const wy = y + frame.camera.y;
-      if (wx < map.width && wy < map.height) {
-        const blocked = map.blocked.includes(`${wx},${wy}`);
-        for (const rect of generateBackgroundTile({
-          x: wx,
-          y: wy,
-          palette: frame.palette,
-          region: map.palette,
-          blocked,
-        })) {
-          const left = x * 12 + rect.x;
-          if (left >= 160) continue;
-          shapes.push({
-            type: 'rect',
-            x: left,
-            y: y * 12 + rect.y,
-            width: Math.min(rect.width, 160 - left),
-            height: rect.height,
-            fill: rect.fill,
-          });
-        }
+      if (wx >= map.width || wy >= map.height) continue;
+      const blocked = map.blocked.includes(`${wx},${wy}`);
+      for (const rect of generateBackgroundTile({
+        x: wx,
+        y: wy,
+        palette: frame.palette,
+        region: map.palette,
+        blocked,
+      })) {
+        const left = x * 12 + rect.x;
+        if (left >= 160) continue;
+        shapes.push({
+          type: 'rect',
+          x: left,
+          y: y * 12 + rect.y,
+          width: Math.min(rect.width, 160 - left),
+          height: rect.height,
+          fill: rect.fill,
+        });
       }
     }
   return shapes;
