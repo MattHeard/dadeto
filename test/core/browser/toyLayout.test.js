@@ -2,8 +2,20 @@ import { expect, test } from '@jest/globals';
 import { JSDOM } from 'jsdom';
 import { dom } from '../../../src/core/browser/document.js';
 import { toggleToyLayout } from '../../../src/core/browser/toys.js';
+import {
+  createToyLayout,
+  swapToySections,
+} from '../../../src/core/browser/toyLayout.js';
+import {
+  createToyLayoutView,
+  renderToyLayout,
+} from '../../../src/core/browser/presenters/toyLayout.js';
 
-test('swaps existing input/output pairs and keeps controls, metadata and state intact', () => {
+/**
+ * Create real section nodes for testing retained DOM projection.
+ * @returns {HTMLElement} Toy article fixture.
+ */
+function createFixture() {
   const document = new JSDOM(`<article class="entry">
     <div class="key">text</div><div class="value">Description</div>
     <div class="key">in</div><div class="value"><select class="input"></select><input value="kept"></div>
@@ -11,7 +23,43 @@ test('swaps existing input/output pairs and keeps controls, metadata and state i
     <div class="key">out</div><div class="value"><select class="output"></select><canvas></canvas></div>
     <div class="key">tags</div><div class="value">Footer</div>
   </article>`).window.document;
-  const article = document.querySelector('article');
+  return document.querySelector('article');
+}
+
+test('logical section swaps return new state and leave previous order unchanged', () => {
+  const initial = createToyLayout();
+  const swapped = swapToySections(initial);
+  expect(initial.order).toEqual(['input', 'output']);
+  expect(swapped.order).toEqual(['output', 'input']);
+  expect(swapped).not.toBe(initial);
+  expect(swapped.order).not.toBe(initial.order);
+  expect(swapToySections(swapped)).toEqual(initial);
+});
+
+test('DOM projection follows logical order regardless of stale view state', () => {
+  const article = createFixture();
+  const button = article.querySelector('.toy-swap-toggle');
+  const view = createToyLayoutView(article, button, dom);
+  const initial = createToyLayout();
+  const original = Array.from(article.children);
+  article.classList.add('toy-output-first');
+  button.setAttribute('aria-pressed', 'true');
+  article.insertBefore(view.sections.output[0], article.firstElementChild);
+  renderToyLayout(initial, view, dom);
+  expect(Array.from(article.children)).toEqual(original);
+  expect(button.getAttribute('aria-pressed')).toBe('false');
+  const swapped = swapToySections(initial);
+  renderToyLayout(swapped, view, dom);
+  const projected = Array.from(article.children);
+  renderToyLayout(swapped, view, dom);
+  expect(Array.from(article.children)).toEqual(projected);
+  expect(projected.slice(2, 4)).toEqual(view.sections.output);
+  expect(projected.slice(4, 8)).toEqual(view.sections.input);
+  expect(button.getAttribute('aria-pressed')).toBe('true');
+});
+
+test('swaps existing input/output pairs and keeps controls, metadata and state intact', () => {
+  const article = createFixture();
   const swap = article.querySelector('.toy-swap-toggle');
   const input = article.querySelector('input');
   const canvas = article.querySelector('canvas');

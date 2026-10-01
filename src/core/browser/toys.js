@@ -18,6 +18,11 @@ import {
 import { createCanvasDoodleElement } from './presenters/canvasDoodle.js';
 import { createGraphPlotElement } from './presenters/graphPlot.js';
 import { createParagraphElement } from './presenters/paragraph.js';
+import { createToyLayout, swapToySections } from './toyLayout.js';
+import {
+  createToyLayoutView,
+  renderToyLayout,
+} from './presenters/toyLayout.js';
 import { createLedgerIngestReportElement } from './presenters/ledgerIngest.js';
 import { createRealHourlyWageReportElement } from './presenters/realHourlyWage.js';
 import { createPrefixedLoggers } from './document.js';
@@ -439,28 +444,24 @@ export function toggleToyLayout(button, dom) {
   toggleToyFocusMode(button, dom);
 }
 
+/** Logical state and retained view bindings for each toy article. */
+const toyLayouts = new WeakMap();
+
 /**
- * Move the existing output pair above input or below its controls again.
- * @param {HTMLElement} button - Swap button kept below the input pair.
+ * Update logical section order and project it into the retained view.
+ * @param {HTMLElement} button - Swap button.
  * @param {object} dom - DOM helpers.
  */
 function toggleToyInputOutput(button, dom) {
   const article = button.closest('article.entry');
   if (!article) return;
-  const input = dom.querySelector(article, 'select.input').closest('.value');
-  const output = dom.querySelector(article, 'select.output').closest('.value');
-  const outputKey = output.previousElementSibling;
-  const swapped = !dom.hasClass(article, 'toy-output-first');
-  let reference = button.closest('.value').nextSibling;
-  if (swapped) {
-    reference = input.previousElementSibling;
-    dom.addClass(article, 'toy-output-first');
-  } else {
-    dom.removeClass(article, 'toy-output-first');
-  }
-  dom.insertBefore(article, outputKey, reference);
-  dom.insertBefore(article, output, reference);
-  button.setAttribute('aria-pressed', String(swapped));
+  const current = toyLayouts.get(article) || {
+    layout: createToyLayout(),
+    view: createToyLayoutView(article, button, dom),
+  };
+  const layout = swapToySections(current.layout);
+  toyLayouts.set(article, { layout, view: current.view });
+  renderToyLayout(layout, current.view, dom);
 }
 
 /**
