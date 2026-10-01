@@ -427,6 +427,43 @@ export function toggleToyFocusMode(button, dom) {
 }
 
 /**
+ * Dispatch a toy layout button without submitting or recreating its controls.
+ * @param {HTMLElement} button - Layout button.
+ * @param {object} dom - DOM helpers.
+ */
+export function toggleToyLayout(button, dom) {
+  if (dom.hasClass(button, 'toy-swap-toggle')) {
+    toggleToyInputOutput(button, dom);
+    return;
+  }
+  toggleToyFocusMode(button, dom);
+}
+
+/**
+ * Move the existing output pair above input or below its controls again.
+ * @param {HTMLElement} button - Swap button kept below the input pair.
+ * @param {object} dom - DOM helpers.
+ */
+function toggleToyInputOutput(button, dom) {
+  const article = button.closest('article.entry');
+  if (!article) return;
+  const input = dom.querySelector(article, 'select.input').closest('.value');
+  const output = dom.querySelector(article, 'select.output').closest('.value');
+  const outputKey = output.previousElementSibling;
+  const swapped = !dom.hasClass(article, 'toy-output-first');
+  let reference = button.closest('.value').nextSibling;
+  if (swapped) {
+    reference = input.previousElementSibling;
+    dom.addClass(article, 'toy-output-first');
+  } else {
+    dom.removeClass(article, 'toy-output-first');
+  }
+  dom.insertBefore(article, outputKey, reference);
+  dom.insertBefore(article, output, reference);
+  button.setAttribute('aria-pressed', String(swapped));
+}
+
+/**
  * Checks if there is output for a given post id.
  * @param {object} output - Output mapping.
  * @param {string} postId - Post id to check.

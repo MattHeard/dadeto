@@ -54,7 +54,7 @@ jest.unstable_mockModule('../../../src/core/browser/toys.js', () => ({
   },
   createInputDropdownHandler: () => jest.fn(),
   handleDropdownChange: jest.fn(),
-  toggleToyFocusMode: mockToggleToyFocusMode,
+  toggleToyLayout: mockToggleToyFocusMode,
   getComponentInitializer: jest.fn(),
   makeCreateIntersectionObserver: (_dom, env) => {
     observedEnv = env;
@@ -158,7 +158,7 @@ describe('browser main initialization', () => {
     globalThis.Element = class Element {};
     const target = new Element();
     target.closest = selector => {
-      expect(selector).toBe('.toy-focus-toggle');
+      expect(selector).toBe('.toy-focus-toggle, .toy-swap-toggle');
       return {};
     };
     const documentObj = {
@@ -286,7 +286,7 @@ describe('browser main initialization', () => {
     expect(mockToggleToyFocusMode).toHaveBeenCalledWith({}, expect.any(Object));
     const noButtonTarget = new Element();
     noButtonTarget.closest = selector => {
-      expect(selector).toBe('.toy-focus-toggle');
+      expect(selector).toBe('.toy-focus-toggle, .toy-swap-toggle');
       return null;
     };
     documentClick({ target: noButtonTarget, preventDefault: jest.fn() });

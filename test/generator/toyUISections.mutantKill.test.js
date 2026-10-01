@@ -25,7 +25,8 @@ describe('TOY_UI_SECTIONS exact markup', () => {
     const inSection =
       '<option value="mobile-controls">mobile-controls</option><option value="mosslight-keypad">mosslight-keypad</option><option value="gamepad-capture">gamepad-capture</option>';
     const buttonSection =
-      '<div class="key"></div><div class="value"><button type="button" class="toy-focus-toggle">Focus mode</button>' +
+      '<div class="key"></div><div class="value"><button type="button" class="toy-swap-toggle" aria-pressed="false">Swap input/output</button>' +
+      '<button type="button" class="toy-focus-toggle">Focus mode</button>' +
       '<button type="submit" disabled>Submit</button>' +
       '<label class="auto-submit-label"><input type="checkbox" class="auto-submit-checkbox" /> Auto</label></div>';
     expect(html).toContain(inSection);

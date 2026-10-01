@@ -1211,6 +1211,7 @@ const TOY_UI_SECTIONS_CONFIG = [
   {
     label: '',
     content: () =>
+      '<button type="button" class="toy-swap-toggle" aria-pressed="false">Swap input/output</button>' +
       '<button type="button" class="toy-focus-toggle">Focus mode</button>' +
       '<button type="submit" disabled>Submit</button>' +
       '<label class="auto-submit-label">' +

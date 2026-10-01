@@ -1,5 +1,31 @@
 import { expect, test } from '@playwright/test';
 
+test('all toys offer input/output swapping and the game remains playable after swapping', async ({ page }) => {
+  await page.goto('/');
+  await expect(page.locator('.toy-swap-toggle')).toHaveCount(
+    await page.locator('article select.input').count()
+  );
+  const toy = page.locator('#MOSS1');
+  const swap = toy.getByRole('button', { name: 'Swap input/output' });
+  const keypad = toy.locator('.mosslight-keypad');
+  await keypad.getByRole('button', { name: 'Right' }).click();
+  const input = toy.locator('select.input');
+  const output = toy.locator('select.output');
+  await swap.click();
+  await expect(swap).toHaveAttribute('aria-pressed', 'true');
+  const outputTop = (await output.boundingBox())!.y;
+  expect(outputTop).toBeLessThan((await input.boundingBox())!.y);
+  await keypad.getByRole('button', { name: 'Right' }).click();
+  await expect.poll(() => page.evaluate(() => {
+    const data = JSON.parse(localStorage.getItem('permanentData') || '{}');
+    const save = data['mosslight-valley-saves-v2']?.slots?.['0'];
+    return save ? JSON.parse(save).state.world.player.x : null;
+  })).toBe(8);
+  await swap.click();
+  await expect(swap).toHaveAttribute('aria-pressed', 'false');
+  expect((await output.boundingBox())!.y).toBeGreaterThan((await swap.boundingBox())!.y);
+});
+
 test('phone layout fits the viewport and thumb input advances the shared save', async ({
   page,
   isMobile,

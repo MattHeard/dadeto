@@ -9,7 +9,7 @@ import {
   createOutputDropdownHandler,
   createInputDropdownHandler,
   handleDropdownChange,
-  toggleToyFocusMode,
+  toggleToyLayout,
   getComponentInitializer,
   makeCreateIntersectionObserver,
   initializeVisibleComponents,
@@ -222,12 +222,12 @@ export function createMainHandle({
         if (!(target instanceof Element)) {
           return;
         }
-        const button = target.closest('.toy-focus-toggle');
+        const button = target.closest('.toy-focus-toggle, .toy-swap-toggle');
         if (!button) {
           return;
         }
         event.preventDefault();
-        toggleToyFocusMode(button, dom);
+        toggleToyLayout(button, dom);
       });
     });
 
