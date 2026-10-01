@@ -1,12 +1,12 @@
 import { normalizeCoordinate } from '../2026-08-18/registryUtils.js';
-import { fulfillmentFailure } from './fulfillmentResult.js';
-
-// Stryker disable all -- this module is the fixed procurement-backed
-// fulfillment proposal protocol boundary covered by the focused suites.
+import {
+  fulfillmentFailure,
+  fulfillmentPoint as point,
+  fulfillmentSegment as segment,
+  fulfillmentMinuteAligned as isMinuteTimestamp,
+} from './fulfillmentResult.js';
 
 // Toy: Procurement-Backed Fulfillment Sequence Proposal
-
-const MINUTE_MS = 60_000;
 
 /**
  * Propose a procurement-backed fulfillment sequence without persisting it.
@@ -257,41 +257,6 @@ function validCoordinate(value, minimum, maximum) {
 }
 
 /**
- * Check the repository's minute timestamp precision.
- * @param {number} value Epoch milliseconds.
- * @returns {boolean} Whether minute aligned.
- */
-function isMinuteTimestamp(value) {
-  return Number.isFinite(value) && value % MINUTE_MS === 0;
-}
-
-/**
- * Create a referenced spacetime point.
- * @param {string} pointId Point ID.
- * @param {string} spacePointId Space-point ID.
- * @param {number} timestamp Epoch milliseconds.
- * @returns {object} Point record.
- */
-function point(pointId, spacePointId, timestamp) {
-  return {
-    pointId,
-    spacePointId,
-    timestamp: `${new Date(timestamp).toISOString().slice(0, 16)}Z`,
-  };
-}
-
-/**
- * Create a segment reference.
- * @param {string} segmentId Segment ID.
- * @param {string} startPointId Start point ID.
- * @param {string} endPointId End point ID.
- * @returns {object} Segment record.
- */
-function segment(segmentId, startPointId, endPointId) {
-  return { segmentId, startPointId, endPointId };
-}
-
-/**
  * Create operation metadata.
  * @param {{operationName: string, segmentId: string, baseDurationSeconds: number, bufferSeconds: number, allocatedDurationSeconds: number}} value Operation values.
  * @returns {object} Operation record.
@@ -311,4 +276,3 @@ function operation({
     allocatedDurationSeconds,
   };
 }
-// Stryker restore all

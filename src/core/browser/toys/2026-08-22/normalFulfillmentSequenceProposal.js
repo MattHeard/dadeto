@@ -1,9 +1,12 @@
 import { normalizeCoordinate } from '../2026-08-18/registryUtils.js';
-import { fulfillmentNonblankString as nonblank } from './fulfillmentResult.js';
+import {
+  fulfillmentNonblankString as nonblank,
+  fulfillmentMinuteAligned as minuteAligned,
+  fulfillmentPoint as warehousePoint,
+  fulfillmentSegment as makeSegment,
+} from './fulfillmentResult.js';
 
 // Toy: Normal Fulfillment Sequence Proposal
-
-const MINUTE_MS = 60_000;
 
 /**
  * Propose a normal fulfillment sequence around an existing possession segment.
@@ -321,38 +324,6 @@ function coordinate(value, min, max) {
  */
 function allocated(base, buffer) {
   return base + buffer;
-}
-
-/**
- * @param {number} timestamp Epoch milliseconds.
- * @returns {boolean} Whether minute aligned.
- */
-function minuteAligned(timestamp) {
-  return Number.isFinite(timestamp) && timestamp % MINUTE_MS === 0;
-}
-
-/**
- * @param {string} pointId Point ID.
- * @param {string} spacePointId Space point ID.
- * @param {number} timestamp Epoch milliseconds.
- * @returns {object} Point.
- */
-function warehousePoint(pointId, spacePointId, timestamp) {
-  return {
-    pointId,
-    spacePointId,
-    timestamp: `${new Date(timestamp).toISOString().slice(0, 16)}Z`,
-  };
-}
-
-/**
- * @param {string} segmentId Segment ID.
- * @param {string} startPointId Start point ID.
- * @param {string} endPointId End point ID.
- * @returns {object} Segment.
- */
-function makeSegment(segmentId, startPointId, endPointId) {
-  return { segmentId, startPointId, endPointId };
 }
 
 /**

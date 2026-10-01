@@ -59,6 +59,32 @@ export function fulfillmentMinuteAligned(value) {
 }
 
 /**
+ * Create a referenced point at the proposal's minute precision.
+ * @param {string} pointId Point identifier.
+ * @param {string} spacePointId Spatial identifier.
+ * @param {number} timestamp Epoch milliseconds.
+ * @returns {{pointId: string, spacePointId: string, timestamp: string}} Point record.
+ */
+export function fulfillmentPoint(pointId, spacePointId, timestamp) {
+  return {
+    pointId,
+    spacePointId,
+    timestamp: `${new Date(timestamp).toISOString().slice(0, 16)}Z`,
+  };
+}
+
+/**
+ * Create a segment referencing existing endpoints.
+ * @param {string} segmentId Segment identifier.
+ * @param {string} startPointId Start identifier.
+ * @param {string} endPointId End identifier.
+ * @returns {{segmentId: string, startPointId: string, endPointId: string}} Segment record.
+ */
+export function fulfillmentSegment(segmentId, startPointId, endPointId) {
+  return { segmentId, startPointId, endPointId };
+}
+
+/**
  * @param {Record<string, any>} request Request containing requestedSku/assets.
  * @param {(asset: Record<string, any>) => string} evaluate Asset evaluator.
  * @returns {string} Feasibility JSON.
