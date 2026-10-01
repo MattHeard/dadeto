@@ -123,6 +123,18 @@ test('wraps whitespace, empty prose and oversized words without losing text', ()
   expect(rows.every(row => row.length <= 28)).toBe(true);
 });
 
+test('renders an empty ending and a restored dialogue with no choice list', () => {
+  const state = createSimulation(CONTENT);
+  const frame = toFramePayload({
+    ...state,
+    ending: { text: '' },
+    dialogue: { lines: [{ text: 'Restored conversation.' }], index: 0 },
+  });
+  const context = makeContext();
+  drawGameFrame(context, frame);
+  expect(context.fillText).toHaveBeenCalledWith('A/Z continue', 8, 94);
+});
+
 test('keeps every authored dialogue and selected choice inside the same panel in both modes', () => {
   const initial = createSimulation(CONTENT);
   for (const nodes of Object.values(CONTENT.dialogue))
