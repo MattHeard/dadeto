@@ -2,6 +2,17 @@ import { describe, test, expect } from '@jest/globals';
 import { styles } from '../../src/build/styles.js';
 
 describe('styles constant', () => {
+  test('makes the handheld keypad full-width with side-by-side controls', () => {
+    const css = styles();
+    expect(css).toMatch(/\.mosslight-keypad-form\s*\{\s*width: 100%;/);
+    expect(css).toMatch(
+      /\.mosslight-keypad-form > \.mosslight-keypad\s*\{\s*display: grid;/
+    );
+    expect(css).toContain('grid-template-areas: "dpad face" "system system"');
+    expect(css).toContain('grid-area: dpad');
+    expect(css).toContain('grid-area: face');
+    expect(css).toContain('grid-area: system');
+  });
   test('includes TUI-styled form controls', () => {
     const css = styles();
     expect(typeof css).toBe('string');

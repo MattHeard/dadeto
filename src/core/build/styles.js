@@ -605,12 +605,20 @@ const STYLES = String.raw`
     touch-action: manipulation;
   }
 
-  .mosslight-keypad {
-    display: flex;
-    flex-wrap: wrap;
+  .mosslight-keypad-form {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .mosslight-keypad-form > .mosslight-keypad {
+    display: grid;
+    grid-template-columns: auto auto;
+    grid-template-areas: "dpad face" "system system";
     align-items: center;
     justify-content: space-between;
     gap: 12px;
+    box-sizing: border-box;
+    width: 100%;
     max-width: 100%;
     padding: 14px;
     border: 1px solid #566d68;
@@ -620,6 +628,7 @@ const STYLES = String.raw`
   }
 
   .mosslight-keypad-dpad {
+    grid-area: dpad;
     display: grid;
     grid-template: repeat(2, 48px) / repeat(3, 48px);
     gap: 4px;
@@ -651,6 +660,7 @@ const STYLES = String.raw`
   .mosslight-keypad-dpad .right { grid-area: 2 / 3; }
 
   .mosslight-keypad-face {
+    grid-area: face;
     display: flex;
     align-items: center;
     gap: 12px;
@@ -669,6 +679,7 @@ const STYLES = String.raw`
   .mosslight-keypad-face .b { transform: translateY(-7px); }
 
   .mosslight-keypad-system {
+    grid-area: system;
     display: flex;
     gap: 8px;
     flex-basis: 100%;
@@ -684,7 +695,7 @@ const STYLES = String.raw`
   }
 
   @media (max-width: 480px) {
-    .mosslight-keypad {
+    .mosslight-keypad-form > .mosslight-keypad {
       gap: 8px;
       padding: 10px 8px;
     }
