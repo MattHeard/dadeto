@@ -17,6 +17,18 @@ const points = [
 ];
 
 describe('runner commitments repositories', () => {
+  test('defaults absent in-memory collections to an empty repository', async () => {
+    await expect(
+      createBrowserRunnerCommitmentsRepository().listForRunner({
+        runnerId: 'RUNNER-1',
+      })
+    ).resolves.toEqual([]);
+    await expect(
+      createBrowserRunnerCommitmentsRepository({}).listForRunner({
+        runnerId: 'RUNNER-1',
+      })
+    ).resolves.toEqual([]);
+  });
   test('rejects invalid projection inputs and incomplete records', async () => {
     await expect(
       projectRunnerCommitments({ assignments: null })
