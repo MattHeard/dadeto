@@ -126,9 +126,10 @@ export function dailyWindow(
   fallback,
   timeZone = DEFAULT_SUPPLIER_TIME_ZONE
 ) {
-  if (!/^\d{2}:[0-5]\d$/.test(value)) return value || fallback;
+  const localTime = parseLocalTime(value);
+  if (!localTime) return value || fallback;
   try {
-    return zonedLocalTimeToUtc(timestamp, value, timeZone);
+    return zonedLocalTimeToUtc(timestamp, localTime, timeZone);
   } catch (error) {
     if (error instanceof RangeError) return value;
     return fallback;
@@ -136,9 +137,19 @@ export function dailyWindow(
 }
 
 /**
+ * Parse a daily wall-clock time into its numeric components.
+ * @param {string} value Candidate HH:MM time.
+ * @returns {{hour: number, minute: number}|null} Parsed time or null.
+ */
+function parseLocalTime(value) {
+  const match = /^(\d{2}):([0-5]\d)$/.exec(value);
+  return match ? { hour: Number(match[1]), minute: Number(match[2]) } : null;
+}
+
+/**
  * Convert a local wall-clock time in an IANA timezone to an ISO UTC timestamp.
  * @param {string} timestamp Reference instant used to derive the local date.
- * @param {string} localTime Local HH:MM value.
+ * @param {{hour: number, minute: number}} localTime Parsed local time.
  * @param {string} timeZone IANA timezone.
  * @returns {string} ISO UTC timestamp.
  */
@@ -155,8 +166,8 @@ function zonedLocalTimeToUtc(timestamp, localTime, timeZone) {
     Number(dateParts.year),
     Number(dateParts.month) - 1,
     Number(dateParts.day),
-    Number(localTime.slice(0, 2)),
-    Number(localTime.slice(3, 5))
+    localTime.hour,
+    localTime.minute
   );
   const represented = formatParts(new Date(guess), timeZone, {
     year: 'numeric',

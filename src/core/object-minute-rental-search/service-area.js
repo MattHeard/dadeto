@@ -11,6 +11,16 @@ export const SOPHIE_CHARLOTTE_SERVICE_AREA = Object.freeze({
  * @returns {boolean} Whether the point is inside the circle.
  */
 export function pointInsideWgs84Circle({ point, circle } = {}) {
+  return parseCircleContainment(point, circle).inside;
+}
+
+/**
+ * Parse circle geometry and compute inclusive containment together.
+ * @param {{latitude?: unknown, longitude?: unknown}|undefined} point Candidate point.
+ * @param {{center?: {latitude?: unknown, longitude?: unknown}, radiusMeters?: unknown}|undefined} circle Candidate circle.
+ * @returns {{valid: boolean, inside: boolean}} Parsed containment result.
+ */
+function parseCircleContainment(point, circle) {
   const pointCoordinates = coordinates(point);
   const centerCoordinates = coordinates(circle?.center);
   const radius = normalizeNumber(circle?.radiusMeters);
@@ -20,15 +30,17 @@ export function pointInsideWgs84Circle({ point, circle } = {}) {
     !Number.isFinite(radius) ||
     radius < 0
   )
-    return false;
-  return (
-    wgs84Distance(
-      centerCoordinates.latitude,
-      centerCoordinates.longitude,
-      pointCoordinates.latitude,
-      pointCoordinates.longitude
-    ) <= radius
-  );
+    return { valid: false, inside: false };
+  return {
+    valid: true,
+    inside:
+      wgs84Distance(
+        centerCoordinates.latitude,
+        centerCoordinates.longitude,
+        pointCoordinates.latitude,
+        pointCoordinates.longitude
+      ) <= radius,
+  };
 }
 
 /**
