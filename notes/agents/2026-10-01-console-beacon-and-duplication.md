@@ -20,9 +20,11 @@ Moving callbacks out of context exposed implicit-any parameters. Explicit callba
 - `npm run duplication`: zero clones at minTokens 15; `reports/duplication/jscpd-report.json`.
 - `npm run tsdoc:check`: passed after preserving callback contracts.
 - `npm run build`: passed; `/tmp/dadeto-build-15.log`.
-- Local phone/desktop Playwright: `/tmp/dadeto-playwright-15.log`.
+- Local phone/desktop Playwright: 7 passed, 3 intentional device-specific skips; `/tmp/dadeto-playwright-15.log`.
 
-The first aggregate run passed every gate except the newly stricter duplication gate. Final aggregate acceptance is retained separately in the owning beads and this note once it completes. Source checkpoints were pushed frequently as requested.
+The first aggregate run passed every gate except the newly stricter duplication gate. Final `npm run check` exited 0: the test gate passed and the terminal summary reported all 10 remaining gates passed, zero failures (`/tmp/dadeto-check-final-15.log`). `reports/coverage/coverage-summary.json` records exactly 100% statements, branches, functions, and lines. Both owning beads were closed after this acceptance evidence. Source checkpoints were pushed frequently as requested.
+
+Production deploy run `36888171701` succeeded, and a live fetch of `https://mattheard.net/core/browser/main.js` confirmed the original bound console sink is in use. GitHub Check workflows for the final checkpoints were still running at local acceptance; their completion is not implied by the local result.
 
 ## Next-time guidance
 
