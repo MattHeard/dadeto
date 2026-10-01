@@ -22,6 +22,28 @@ import { existingAssetFulfillmentFeasibility } from '../../../src/core/browser/t
 import { existingAssetFulfillmentSequenceFeasibility } from '../../../src/core/browser/toys/2026-08-23/existingAssetFulfillmentSequenceFeasibility.js';
 
 describe('fulfillment boundary helpers', () => {
+  test('allows absent optional proposal collections and existing segments', () => {
+    const request = {
+      asset: {
+        assetId: 'a',
+        stockInPoint: { pointId: 'stock', spacePointId: 'warehouse' },
+      },
+      spacePoints: [{ spacePointId: 'warehouse', latitude: 0, longitude: 0 }],
+      proposal: {},
+    };
+    expect(
+      JSON.parse(
+        fulfillmentExistingAssetBoundary(
+          JSON.stringify(request),
+          () => [],
+          context => ({
+            feasible: true,
+            existing: context.existing,
+          })
+        )
+      )
+    ).toEqual({ feasible: true, existing: [] });
+  });
   test('covers scalar predicates and failure serialization', () => {
     expect(fulfillmentNonblank(undefined)).toBe(false);
     expect(fulfillmentNonblank('  ')).toBe(false);
@@ -106,6 +128,9 @@ describe('segment timing and world-line boundaries', () => {
 
   test('returns structured failures for empty and invalid candidates', () => {
     const entry = { pointId: 'a', timestamp: '2026-08-24T10:00:00Z' };
+    expect(
+      evaluateWorldLineMany([], [], [], entry, undefined, null)
+    ).toMatchObject({ reason: 'missing-candidate-segments' });
     expect(evaluateWorldLineMany([], [], [], entry)).toMatchObject({
       reason: 'missing-candidate-segments',
     });
@@ -138,6 +163,48 @@ describe('segment timing and world-line boundaries', () => {
 });
 
 describe('fulfillment toy validation boundaries', () => {
+  test('rejects incomplete asset operations and missing segment references', () => {
+    const asset = { assetId: 'a', stockInPoint: { pointId: 'stock' } };
+    const proposals = [
+      { valid: false },
+      { valid: true, segments: [] },
+      { valid: true, segments: [], sequence: [] },
+      {
+        valid: true,
+        segments: [],
+        sequence: [{ operation: 'delivery-outbound', segmentId: 'missing' }],
+      },
+    ];
+    for (const proposal of proposals) {
+      for (const calculate of [
+        existingAssetFulfillmentFeasibility,
+        existingAssetFulfillmentSequenceFeasibility,
+      ]) {
+        expect(
+          JSON.parse(calculate(JSON.stringify({ asset, proposal })))
+        ).toMatchObject({ feasible: false });
+      }
+    }
+  });
+
+  test('rejects procurement starts outside the warehouse', () => {
+    expect(
+      JSON.parse(
+        procurementPrefixProposal(
+          JSON.stringify({
+            deliveryOutboundStartPoint: {
+              pointId: 'delivery',
+              spacePointId: 'elsewhere',
+            },
+            warehouse: { spacePointId: 'warehouse' },
+          })
+        )
+      )
+    ).toMatchObject({
+      valid: false,
+      error: 'Delivery start point must reference the warehouse.',
+    });
+  });
   test('serializes invalid requests without suppressing validation branches', () => {
     for (const calculate of [
       canonicalNormalFulfillmentSequenceProposal,

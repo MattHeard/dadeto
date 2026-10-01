@@ -23,6 +23,11 @@ describe('pricing core', () => {
       'value'
     );
     expect(() => pricingTestUtils.positiveInteger(0, 'value')).toThrow('value');
+    for (const invalid of [1.5, NaN, Infinity, Number.MAX_SAFE_INTEGER + 1]) {
+      expect(() => pricingTestUtils.positiveInteger(invalid, 'value')).toThrow(
+        'value'
+      );
+    }
   });
   it('quotes packages from the snapshot using downward rounding', () => {
     expect(calculatePackageCredits(1_000, snapshot)).toBe(9_200_000);

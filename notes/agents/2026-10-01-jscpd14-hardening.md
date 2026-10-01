@@ -64,3 +64,11 @@ row/payload/DOM contracts added. Evidence: /tmp/dadeto-jscpd14-table.log and
 /tmp/dadeto-jscpd14-types.log. Remaining coverage gaps are in canonicalizer,
 assignment feasibility, canonical/procurement fulfillment, feasibility wrappers,
 and pricing. The goal remains active until all gates are green without masking.
+
+The next coverage slice adds pricing fractional/unsafe-number rejection and
+fulfillment optional-collection and invalid-operation regressions. A stock-in
+point must resolve through the space-point registry; inline coordinates do not
+bypass that contract. Removed the canonicalizer's unreachable private guard
+instead of manufacturing an impossible public input. Focused pricing and
+fulfillment suites pass 14 tests; strict lint for all three changed files passes.
+The aggregate check is still pending and the owning bead remains open.
