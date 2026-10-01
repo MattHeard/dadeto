@@ -1059,275 +1059,11 @@ describe('beaconBounce wall and reset behavior', () => {
 
 describe('beaconBounce reset rendering', () => {
   it('covers reset handling, beacon link rendering, and reset state cleanup', () => {
-    const state = {
-      status: 'running',
-      score: 9,
-      lives: 2,
-      lastActivatedBeaconId: 'beacon-1',
-      beacons: [
-        {
-          id: 'beacon-1',
-          x: 20,
-          y: 20,
-          radius: 8,
-          active: true,
-          required: true,
-          hitCount: 1,
-        },
-      ],
-      links: [{ from: 'beacon-1', to: 'missing', active: true }],
-      orb: { x: 20, y: 20, vx: 1, vy: 1, radius: 4, stuckToPaddle: false },
-      paddle: { x: 0, y: 0, width: 10, height: 4, speed: 2 },
-      width: 120,
-      height: 80,
-    };
-    applyGameplayInput(state, {
-      actions: {
-        moveLeft: false,
-        moveRight: false,
-        launchPressed: false,
-        pausePressed: false,
-        resetPressed: true,
-      },
-      previousActions: {
-        moveLeft: false,
-        moveRight: false,
-        launchPressed: false,
-        pausePressed: false,
-        resetPressed: false,
-      },
-    });
-    expect(state.status).toBe('ready');
-    expect(state.score).toBe(0);
-    expect(state.beacons[0].active).toBe(false);
-    expect(state.links).toHaveLength(0);
-
-    state.status = 'running';
-    state.orb = { x: 20, y: 20, vx: 1, vy: 1, radius: 4, stuckToPaddle: false };
-    resolveBeacons(state);
-    expect(state.score).toBe(10);
-    expect(state.links).toHaveLength(0);
-
-    state.lastActivatedBeaconId = 'beacon-1';
-    state.beacons[0].active = true;
-    state.orb = { x: 20, y: 20, vx: 1, vy: 1, radius: 4, stuckToPaddle: false };
-    state.beacons.push({
-      id: 'beacon-2',
-      x: 24,
-      y: 24,
-      radius: 8,
-      active: false,
-      required: true,
-      hitCount: 0,
-    });
-    state.orb.x = 24;
-    state.orb.y = 24;
-    resolveBeacons(state);
-    expect(state.links.some(link => link.from === 'beacon-1')).toBe(true);
-
-    const canvas = toCanvasPayload({
-      width: 120,
-      height: 80,
-      links: [{ from: 'beacon-1', to: 'beacon-2', active: true }],
-      beacons: [
-        {
-          id: 'beacon-1',
-          x: 10,
-          y: 10,
-          radius: 8,
-          active: true,
-          required: true,
-          hitCount: 1,
-        },
-        {
-          id: 'beacon-2',
-          x: 20,
-          y: 20,
-          radius: 8,
-          active: true,
-          required: true,
-          hitCount: 1,
-        },
-      ],
-      paddle: { x: 0, y: 0, width: 10, height: 4, speed: 2 },
-      orb: { x: 0, y: 0, vx: 0, vy: 0, radius: 4, stuckToPaddle: false },
-      score: 0,
-      lives: 1,
-      status: 'running',
-    });
-    expect(canvas.shapes.some(shape => shape.type === 'line')).toBe(true);
-
-    const wallState = {
-      orb: { x: 1, y: 1, vx: -2, vy: -2, radius: 4 },
-      width: 120,
-      height: 80,
-    };
-    resolveWalls(wallState);
-    expect(wallState.orb.vx).toBeGreaterThanOrEqual(0);
-    expect(wallState.orb.vy).toBeGreaterThanOrEqual(0);
-
-    const rightWall = {
-      orb: { x: 119, y: 40, vx: 2, vy: 2, radius: 4 },
-      width: 120,
-      height: 80,
-    };
-    resolveWalls(rightWall);
-    expect(rightWall.orb.x).toBe(116);
-    expect(rightWall.orb.vx).toBe(-2);
-
-    const clearWalls = {
-      orb: { x: 40, y: 40, vx: 2, vy: 2, radius: 4 },
-      width: 120,
-      height: 80,
-    };
-    resolveWalls(clearWalls);
-    expect(clearWalls.orb).toEqual({ x: 40, y: 40, vx: 2, vy: 2, radius: 4 });
-
-    const exactWalls = {
-      orb: { x: 4, y: 22, vx: -2, vy: -2, radius: 4 },
-      width: 120,
-      height: 80,
-    };
-    resolveWalls(exactWalls);
-    expect(exactWalls.orb).toMatchObject({ x: 4, y: 22, vx: 2, vy: 2 });
-
-    const exactRightWall = {
-      orb: { x: 116, y: 40, vx: 2, vy: 2, radius: 4 },
-      width: 120,
-      height: 80,
-    };
-    resolveWalls(exactRightWall);
-    expect(exactRightWall.orb).toMatchObject({ x: 116, vx: -2 });
-
-    const alreadyActive = {
-      orb: { x: 20, y: 20, vx: -1, vy: -1, radius: 4, stuckToPaddle: false },
-      score: 10,
-      lastActivatedBeaconId: 'beacon-1',
-      beacons: [
-        {
-          id: 'beacon-1',
-          x: 20,
-          y: 20,
-          radius: 8,
-          active: true,
-          required: true,
-          hitCount: 1,
-        },
-      ],
-      links: [],
-    };
-    resolveBeacons(alreadyActive);
-    expect(alreadyActive.score).toBe(10);
-    expect(alreadyActive.beacons[0].hitCount).toBe(2);
-    expect(alreadyActive.links).toEqual([]);
-
-    const upperLeftBeacon = {
-      orb: { x: 20, y: 20, vx: 2, vy: 3, radius: 4, stuckToPaddle: false },
-      score: 0,
-      lastActivatedBeaconId: null,
-      beacons: [
-        {
-          id: 'upper-left',
-          x: 24,
-          y: 24,
-          radius: 8,
-          active: false,
-          required: true,
-          hitCount: 0,
-        },
-      ],
-      links: [],
-    };
-    resolveBeacons(upperLeftBeacon);
-    expect(upperLeftBeacon.orb).toMatchObject({ vx: -2, vy: -3 });
-    expect(upperLeftBeacon.beacons[0]).toMatchObject({
-      active: true,
-      hitCount: 1,
-    });
-
-    const exactBeaconTouch = {
-      orb: { x: 20, y: 20, vx: 1, vy: 1, radius: 4, stuckToPaddle: false },
-      score: 0,
-      lastActivatedBeaconId: null,
-      beacons: [
-        {
-          id: 'exact',
-          x: 32,
-          y: 20,
-          radius: 8,
-          active: false,
-          required: true,
-          hitCount: 0,
-        },
-      ],
-      links: [],
-    };
-    resolveBeacons(exactBeaconTouch);
-    expect(exactBeaconTouch.beacons[0].active).toBe(true);
-
-    const outsideBeacon = {
-      ...exactBeaconTouch,
-      orb: { ...exactBeaconTouch.orb },
-      beacons: [
-        { ...exactBeaconTouch.beacons[0], active: false, hitCount: 0, x: 32.1 },
-      ],
-    };
-    resolveBeacons(outsideBeacon);
-    expect(outsideBeacon.beacons[0].active).toBe(false);
-
-    const horizontalAligned = {
-      orb: { x: 20, y: 20, vx: 1, vy: 1, radius: 4, stuckToPaddle: false },
-      score: 0,
-      lastActivatedBeaconId: null,
-      beacons: [
-        {
-          id: 'horizontal',
-          x: 24,
-          y: 20,
-          radius: 8,
-          active: false,
-          required: true,
-          hitCount: 0,
-        },
-      ],
-      links: [],
-    };
-    resolveBeacons(horizontalAligned);
-    expect(horizontalAligned.orb).toMatchObject({ vx: -1, vy: 1 });
-
-    const verticalAligned = {
-      orb: { x: 20, y: 20, vx: 1, vy: 1, radius: 4, stuckToPaddle: false },
-      score: 0,
-      lastActivatedBeaconId: null,
-      beacons: [
-        {
-          id: 'vertical',
-          x: 20,
-          y: 24,
-          radius: 8,
-          active: false,
-          required: true,
-          hitCount: 0,
-        },
-      ],
-      links: [],
-    };
-    resolveBeacons(verticalAligned);
-    expect(verticalAligned.orb).toMatchObject({ vx: 1, vy: -1 });
-
-    const missedPaddle = {
-      paddle: { x: 10, y: 30, width: 40, height: 6, speed: 4 },
-      orb: { x: 80, y: 34, vx: 1, vy: 3, radius: 4, stuckToPaddle: false },
-    };
-    resolvePaddle(missedPaddle);
-    expect(missedPaddle.orb).toEqual({
-      x: 80,
-      y: 34,
-      vx: 1,
-      vy: 3,
-      radius: 4,
-      stuckToPaddle: false,
-    });
+    const context = {};
+    runScenario1061Part0(context);
+    runScenario1061Part1(context);
+    runScenario1061Part2(context);
+    runScenario1061Part3(context);
   });
 });
 
@@ -1410,701 +1146,20 @@ describe('beaconBounce stuck orb and helpers', () => {
   });
 
   it('covers helper branches for input normalization and fallback building', () => {
-    expect(buildResetFallback(null)).toBeUndefined();
-    expect(
-      buildResetFallback({ width: 1, height: 2, lives: 3, layoutSeed: 4 })
-    ).toEqual({
-      width: 1,
-      height: 2,
-      lives: 3,
-      layoutSeed: 4,
-    });
-
-    expect(normalizeKeyboard({ a: true }, { type: 'keyup', key: 'A' }).a).toBe(
-      false
-    );
-    expect(normalizeKeyboard(undefined, { type: 'keydown', key: 'd' }).d).toBe(
-      true
-    );
-    expect(normalizeKeyboard(undefined, { type: 'keydown', key: 1 })).toEqual(
-      {}
-    );
-    expect(normalizeKeyboard(undefined, { type: 'keyup', key: 1 })).toEqual({});
-    expect(normalizeKeyboard(undefined, null)).toEqual({});
-    expect(normalizeGamepad({ buttons: [1, 0], axes: ['2', null] })).toEqual({
-      buttons: [true, false],
-      axes: [2, 0],
-    });
-    expect(createActionFlags()).toEqual({
-      moveLeft: false,
-      moveRight: false,
-      launchPressed: false,
-      pausePressed: false,
-      resetPressed: false,
-    });
-    expect(normalizeGamepad({ buttons: [true], axes: [0] }).buttons[0]).toBe(
-      true
-    );
-    expect(normalizeGamepad(undefined)).toEqual({ buttons: [], axes: [] });
-    expect(normalizeControlState(undefined, { paused: true })).toEqual({
-      paused: true,
-      speedMultiplier: 1,
-      stepCount: 0,
-    });
-    expect(normalizeControlState(undefined, null)).toEqual({
-      paused: false,
-      speedMultiplier: 1,
-      stepCount: 0,
-    });
-    expect(createInitialInputState()).toEqual({
-      keyboard: {},
-      gamepad: { buttons: [], axes: [] },
-      actions: createActionFlags(),
-      previousActions: createActionFlags(),
-      control: { paused: false, speedMultiplier: 1, stepCount: 0 },
-    });
-
-    const previousInput = {
-      keyboard: { p: true },
-      actions: {
-        moveLeft: false,
-        moveRight: false,
-        launchPressed: false,
-        pausePressed: false,
-        resetPressed: false,
-      },
-      control: { paused: false, speedMultiplier: 2, stepCount: 0 },
-    };
-    const pausedControl = updateInputState(previousInput, {
-      pause: true,
-      speedMultiplier: 3,
-      stepCount: 2,
-    });
-    expect(pausedControl.control).toEqual({
-      paused: true,
-      speedMultiplier: 3,
-      stepCount: 2,
-    });
-
-    const resumedControl = updateInputState(previousInput, {
-      resume: true,
-      speed: 4,
-      steps: 5,
-    });
-    expect(resumedControl.control).toEqual({
-      paused: false,
-      speedMultiplier: 4,
-      stepCount: 5,
-    });
-    expect(
-      updateInputState(
-        { control: { paused: true, speedMultiplier: 1, stepCount: 0 } },
-        { resume: true }
-      ).control.paused
-    ).toBe(false);
-    expect(updateInputState(undefined, { speed: 4, step: 3 }).control).toEqual({
-      paused: false,
-      speedMultiplier: 4,
-      stepCount: 3,
-    });
-    expect(buildNextState(null, { speed: 5 }).simulationSpeed).toBe(5);
-    expect(updateInputState(undefined, null).control).toEqual({
-      paused: false,
-      speedMultiplier: 1,
-      stepCount: 0,
-    });
-    expect(
-      updateInputState(undefined, { speed: -4, step: -2 }).control
-    ).toEqual({
-      paused: false,
-      speedMultiplier: 1,
-      stepCount: 0,
-    });
-    expect(
-      updateInputState(undefined, { speedMultiplier: 0.4, stepCount: 1.6 })
-        .control
-    ).toEqual({
-      paused: false,
-      speedMultiplier: 1,
-      stepCount: 2,
-    });
-    expect(
-      updateInputState(
-        { control: { paused: true, speedMultiplier: 3, stepCount: 4 } },
-        {
-          paused: null,
-          speedMultiplier: null,
-          stepCount: null,
-          pause: false,
-          resume: false,
-        }
-      ).control
-    ).toEqual({ paused: true, speedMultiplier: 3, stepCount: 0 });
-
-    const derivedActions = updateInputState(undefined, {
-      buttons: [
-        true,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        true,
-      ],
-      axes: [-1],
-    });
-    expect(derivedActions.actions).toEqual({
-      moveLeft: true,
-      moveRight: false,
-      launchPressed: true,
-      pausePressed: false,
-      resetPressed: false,
-    });
-
-    expect(
-      updateInputState(undefined, {
-        type: 'keydown',
-        key: 'd',
-        buttons: Array.from({ length: 16 }, (_, index) => index === 15),
-        axes: [1],
-      }).actions
-    ).toMatchObject({ moveRight: true });
-    expect(
-      updateInputState(undefined, {
-        type: 'keydown',
-        key: 'p',
-        buttons: Array.from({ length: 10 }, (_, index) => index === 9),
-        axes: [0],
-      }).actions.pausePressed
-    ).toBe(true);
-    expect(
-      updateInputState(undefined, {
-        buttons: Array.from({ length: 15 }, (_, index) => index === 14),
-        axes: [0],
-      }).actions.moveLeft
-    ).toBe(true);
-    expect(updateInputState(undefined, { axes: [-0.4] }).actions.moveLeft).toBe(
-      false
-    );
-    expect(
-      updateInputState(undefined, { axes: [-0.41] }).actions.moveLeft
-    ).toBe(true);
-    expect(updateInputState(undefined, { axes: [0.4] }).actions.moveRight).toBe(
-      false
-    );
-    expect(
-      updateInputState(undefined, { axes: [0.41] }).actions.moveRight
-    ).toBe(true);
-    expect(
-      updateInputState(undefined, {
-        type: 'keydown',
-        key: 'r',
-        buttons: [false, true],
-        axes: [0],
-      }).actions.resetPressed
-    ).toBe(true);
-
-    const heldPause = {
-      status: 'running',
-      paused: false,
-      width: 120,
-      paddle: { x: 20, y: 30, width: 40, height: 6, speed: 4 },
-      beacons: [],
-      links: [],
-      orb: { x: 0, y: 0, vx: 0, vy: 0, radius: 4, stuckToPaddle: true },
-      initialLives: 3,
-    };
-    applyGameplayInput(heldPause, {
-      actions: {
-        pausePressed: true,
-        moveLeft: false,
-        moveRight: false,
-        launchPressed: false,
-        resetPressed: false,
-      },
-      previousActions: {
-        pausePressed: true,
-        moveLeft: false,
-        moveRight: false,
-        launchPressed: false,
-        resetPressed: false,
-      },
-    });
-    expect(heldPause.paused).toBe(false);
-
-    const wonLocked = {
-      status: 'won',
-      paused: false,
-      width: 120,
-      paddle: { x: 20, y: 30, width: 40, height: 6, speed: 4 },
-      beacons: [],
-      links: [],
-      orb: { x: 0, y: 0, vx: 0, vy: 0, radius: 4, stuckToPaddle: true },
-      initialLives: 3,
-    };
-    applyGameplayInput(wonLocked, {
-      actions: {
-        pausePressed: false,
-        moveLeft: true,
-        moveRight: false,
-        launchPressed: false,
-        resetPressed: false,
-      },
-      previousActions: createActionFlags(),
-    });
-    expect(wonLocked.paddle.x).toBe(20);
-
-    const wonLaunchLocked = {
-      ...wonLocked,
-      orb: { ...wonLocked.orb, stuckToPaddle: true },
-    };
-    applyGameplayInput(wonLaunchLocked, {
-      actions: { ...createActionFlags(), launchPressed: true },
-      previousActions: createActionFlags(),
-    });
-    expect(wonLaunchLocked.status).toBe('won');
-    expect(wonLaunchLocked.orb.stuckToPaddle).toBe(true);
-
-    const lostLocked = {
-      ...wonLocked,
-      status: 'lost',
-      paddle: { ...wonLocked.paddle },
-    };
-    applyGameplayInput(lostLocked, {
-      actions: { ...createActionFlags(), moveLeft: true },
-      previousActions: createActionFlags(),
-    });
-    expect(lostLocked.paddle.x).toBe(wonLocked.paddle.x);
-
-    const clamped = {
-      status: 'running',
-      paused: false,
-      width: 100,
-      paddle: { x: 90, y: 30, width: 40, height: 6, speed: 20 },
-      beacons: [],
-      links: [],
-      orb: { x: 0, y: 0, vx: 0, vy: 0, radius: 4, stuckToPaddle: true },
-      initialLives: 3,
-    };
-    applyGameplayInput(clamped, {
-      actions: { ...createActionFlags(), moveRight: true },
-      previousActions: createActionFlags(),
-    });
-    expect(clamped.paddle.x).toBe(60);
-
-    const relaunchFromLost = {
-      status: 'lost',
-      paused: false,
-      width: 120,
-      paddle: { x: 20, y: 30, width: 40, height: 6, speed: 4 },
-      beacons: [
-        {
-          id: 'beacon-1',
-          x: 16,
-          y: 16,
-          radius: 8,
-          active: false,
-          required: true,
-          hitCount: 0,
-        },
-      ],
-      links: [],
-      orb: { x: 0, y: 0, vx: 0, vy: 0, radius: 4, stuckToPaddle: true },
-      initialLives: 3,
-      lives: 0,
-    };
-    applyGameplayInput(relaunchFromLost, {
-      actions: {
-        pausePressed: false,
-        moveLeft: false,
-        moveRight: false,
-        launchPressed: true,
-        resetPressed: false,
-      },
-      previousActions: createActionFlags(),
-    });
-    expect(relaunchFromLost.lives).toBe(1);
-    expect(relaunchFromLost.status).toBe('running');
-
-    const relaunchNegative = {
-      ...relaunchFromLost,
-      status: 'lost',
-      lives: -1,
-      orb: { ...relaunchFromLost.orb, stuckToPaddle: true },
-    };
-    applyGameplayInput(relaunchNegative, {
-      actions: { ...createActionFlags(), launchPressed: true },
-      previousActions: createActionFlags(),
-    });
-    expect(relaunchNegative.lives).toBe(1);
-
-    const relaunchWithLives = { ...relaunchFromLost, status: 'lost', lives: 2 };
-    applyGameplayInput(relaunchWithLives, {
-      actions: { ...createActionFlags(), launchPressed: true },
-      previousActions: createActionFlags(),
-    });
-    expect(relaunchWithLives.lives).toBe(2);
-
-    const resetState = {
-      status: 'running',
-      paused: true,
-      score: 25,
-      lives: 1,
-      initialLives: 4,
-      simulationSpeed: 3,
-      lastActivatedBeaconId: 'beacon-1',
-      width: 120,
-      paddle: { x: 20, y: 30, width: 40, height: 6, speed: 4 },
-      beacons: [{ active: true, hitCount: 2 }],
-      links: [{ from: 'beacon-1', to: 'beacon-2', active: true }],
-      orb: { stuckToPaddle: false },
-    };
-    applyGameplayInput(resetState, {
-      actions: { ...createActionFlags(), resetPressed: true },
-      previousActions: createActionFlags(),
-    });
-    expect(resetState).toMatchObject({
-      status: 'ready',
-      paused: false,
-      score: 0,
-      lives: 4,
-      simulationSpeed: 1,
-      lastActivatedBeaconId: null,
-    });
-    expect(resetState.beacons[0]).toEqual({ active: false, hitCount: 0 });
-    expect(resetState.links).toEqual([]);
-    expect(resetState.orb.stuckToPaddle).toBe(true);
+    const context = {};
+    runScenario1412Part0(context);
+    runScenario1412Part1(context);
+    runScenario1412Part2(context);
+    runScenario1412Part3(context);
   });
 });
 
 describe('beaconBounce physics and rendering', () => {
   it('covers paddle bounce and beacon render branches', () => {
-    const paddleState = {
-      paddle: { x: 10, y: 30, width: 40, height: 6, speed: 4 },
-      orb: { x: 16, y: 34, vx: -1, vy: 3, radius: 4, stuckToPaddle: false },
-    };
-    resolvePaddle(paddleState);
-    expect(paddleState.orb.vy).toBeLessThan(0);
-    expect(paddleState.orb.y).toBe(25);
-    expect(paddleState.orb.vx).toBeGreaterThanOrEqual(-3);
-    expect(paddleState.orb.vx).toBeLessThanOrEqual(3);
-
-    const centeredPaddle = {
-      paddle: { x: 10, y: 30, width: 40, height: 6, speed: 4 },
-      orb: { x: 30, y: 34, vx: 0, vy: 3, radius: 4, stuckToPaddle: false },
-    };
-    resolvePaddle(centeredPaddle);
-    expect(centeredPaddle.orb.vx).toBe(1);
-
-    const rightPaddle = {
-      paddle: { x: 10, y: 30, width: 20, height: 6, speed: 4 },
-      orb: { x: 34, y: 34, vx: 0, vy: 3, radius: 4, stuckToPaddle: false },
-    };
-    resolvePaddle(rightPaddle);
-    expect(rightPaddle.orb.vx).toBe(3);
-
-    const leftClampedPaddle = {
-      paddle: { x: 10, y: 30, width: 20, height: 6, speed: 4 },
-      orb: { x: 6, y: 34, vx: 0, vy: 3, radius: 4, stuckToPaddle: false },
-    };
-    resolvePaddle(leftClampedPaddle);
-    expect(leftClampedPaddle.orb.vx).toBe(-3);
-
-    const upwardOrb = {
-      paddle: { x: 10, y: 30, width: 40, height: 6, speed: 4 },
-      orb: { x: 30, y: 34, vx: 0, vy: -3, radius: 4, stuckToPaddle: false },
-    };
-    resolvePaddle(upwardOrb);
-    expect(upwardOrb.orb).toMatchObject({ vx: 0, vy: -3, y: 34 });
-
-    const leftEdgePaddle = {
-      paddle: { x: 10, y: 30, width: 40, height: 6, speed: 4 },
-      orb: { x: 6, y: 34, vx: 0, vy: 3, radius: 4, stuckToPaddle: false },
-    };
-    resolvePaddle(leftEdgePaddle);
-    expect(leftEdgePaddle.orb.vy).toBe(-3);
-
-    const outsidePaddle = {
-      paddle: { x: 10, y: 30, width: 40, height: 6, speed: 4 },
-      orb: { x: 5, y: 34, vx: 0, vy: 3, radius: 4, stuckToPaddle: false },
-    };
-    resolvePaddle(outsidePaddle);
-    expect(outsidePaddle.orb.vy).toBe(3);
-
-    const topEdgePaddle = {
-      paddle: { x: 30, y: 30, width: 40, height: 6, speed: 4 },
-      orb: { x: 50, y: 26, vx: 0, vy: 3, radius: 4, stuckToPaddle: false },
-    };
-    resolvePaddle(topEdgePaddle);
-    expect(topEdgePaddle.orb).toMatchObject({ y: 25, vy: -3 });
-
-    const lowerEdgePaddle = {
-      paddle: { x: 30, y: 30, width: 40, height: 6, speed: 4 },
-      orb: { x: 50, y: 35, vx: 0, vy: 3, radius: 4, stuckToPaddle: false },
-    };
-    resolvePaddle(lowerEdgePaddle);
-    expect(lowerEdgePaddle.orb.vy).toBe(-3);
-
-    const belowPaddle = {
-      paddle: { x: 30, y: 30, width: 40, height: 6, speed: 4 },
-      orb: { x: 50, y: 36, vx: 0, vy: 3, radius: 4, stuckToPaddle: false },
-    };
-    resolvePaddle(belowPaddle);
-    expect(belowPaddle.orb.vy).toBe(3);
-
-    const stationaryOrb = {
-      paddle: { x: 30, y: 30, width: 40, height: 6, speed: 4 },
-      orb: { x: 50, y: 32, vx: 0, vy: 0, radius: 4, stuckToPaddle: false },
-    };
-    resolvePaddle(stationaryOrb);
-    expect(stationaryOrb.orb.vy).toBe(0);
-    expect(Object.is(stationaryOrb.orb.vy, 0)).toBe(true);
-    expect(stationaryOrb.orb.y).toBe(32);
-
-    const offsetPaddle = {
-      paddle: { x: 10, y: 30, width: 30, height: 6, speed: 4 },
-      orb: { x: 30, y: 34, vx: 0, vy: 3, radius: 4, stuckToPaddle: false },
-    };
-    resolvePaddle(offsetPaddle);
-    expect(offsetPaddle.orb.vx).toBeCloseTo(0.7333333333, 10);
-
-    const beaconState = {
-      orb: { x: 20, y: 20, vx: 1, vy: 1, radius: 4, stuckToPaddle: false },
-      score: 0,
-      lastActivatedBeaconId: null,
-      beacons: [
-        {
-          id: 'beacon-1',
-          x: 20,
-          y: 20,
-          radius: 8,
-          active: false,
-          required: false,
-          hitCount: 0,
-        },
-      ],
-      links: [],
-    };
-    resolveBeacons(beaconState);
-    expect(beaconState.score).toBe(10);
-    expect(beaconState.beacons[0]).toMatchObject({
-      active: true,
-      hitCount: 1,
-    });
-    expect(beaconState.links).toHaveLength(0);
-
-    const beaconLinkedState = {
-      orb: { x: 24, y: 24, vx: -1, vy: -1, radius: 4, stuckToPaddle: false },
-      score: 0,
-      lastActivatedBeaconId: 'beacon-0',
-      beacons: [
-        {
-          id: 'beacon-1',
-          x: 24,
-          y: 24,
-          radius: 8,
-          active: false,
-          required: true,
-          hitCount: 0,
-        },
-      ],
-      links: [],
-    };
-    resolveBeacons(beaconLinkedState);
-    expect(beaconLinkedState.links).toHaveLength(1);
-    expect(beaconLinkedState.links[0]).toEqual({
-      from: 'beacon-0',
-      to: 'beacon-1',
-      active: true,
-    });
-
-    const canvas = toCanvasPayload({
-      width: 120,
-      height: 80,
-      links: [
-        { from: 'beacon-1', to: 'beacon-2', active: true },
-        { from: 'missing', to: 'missing-2', active: true },
-      ],
-      beacons: [
-        {
-          id: 'beacon-1',
-          x: 10,
-          y: 10,
-          radius: 8,
-          active: true,
-          required: false,
-          hitCount: 1,
-        },
-        {
-          id: 'beacon-2',
-          x: 20,
-          y: 20,
-          radius: 8,
-          active: true,
-          required: false,
-          hitCount: 1,
-        },
-      ],
-      paddle: { x: 0, y: 0, width: 10, height: 4, speed: 2 },
-      orb: { x: 0, y: 0, vx: 0, vy: 0, radius: 4, stuckToPaddle: false },
-      score: 0,
-      lives: 1,
-      status: 'running',
-    });
-    expect(canvas.shapes.some(shape => shape.stroke === '#335')).toBe(true);
-    expect(canvas.shapes.some(shape => shape.type === 'line')).toBe(true);
-    expect(canvas.shapes).toEqual([
-      expect.objectContaining({
-        type: 'rect',
-        x: 0,
-        y: 0,
-        width: 120,
-        height: 80,
-        fill: '#09111d',
-      }),
-      expect.objectContaining({
-        type: 'line',
-        x1: 10,
-        y1: 10,
-        x2: 20,
-        y2: 20,
-        stroke: '#49d8ff',
-        lineWidth: 1,
-      }),
-      expect.objectContaining({
-        type: 'circle',
-        x: 10,
-        y: 10,
-        radius: 8,
-        fill: '#6ee7ff',
-        stroke: '#335',
-      }),
-      expect.objectContaining({
-        type: 'circle',
-        x: 20,
-        y: 20,
-        radius: 8,
-        fill: '#6ee7ff',
-        stroke: '#335',
-      }),
-      expect.objectContaining({
-        type: 'rect',
-        x: 0,
-        y: 0,
-        width: 10,
-        height: 4,
-        fill: '#d7f3ff',
-      }),
-      expect.objectContaining({
-        type: 'circle',
-        x: 0,
-        y: 0,
-        radius: 4,
-        fill: '#f8fafc',
-      }),
-      expect.objectContaining({
-        type: 'text',
-        x: 8,
-        y: 14,
-        text: 'Score 0 Lives 1 RUNNING',
-        fill: '#dbeafe',
-        font: '11px monospace',
-        align: 'left',
-        baseline: 'alphabetic',
-      }),
-    ]);
-
-    const filteredCanvas = toCanvasPayload({
-      width: 120,
-      height: 80,
-      links: [{ from: 'missing', to: 'beacon-2', active: true }],
-      beacons: [
-        {
-          id: 'beacon-1',
-          x: 10,
-          y: 10,
-          radius: 8,
-          active: true,
-          required: false,
-          hitCount: 1,
-        },
-      ],
-      paddle: { x: 0, y: 0, width: 10, height: 4, speed: 2 },
-      orb: { x: 0, y: 0, vx: 0, vy: 0, radius: 4, stuckToPaddle: false },
-      score: 0,
-      lives: 1,
-      status: 'running',
-    });
-    expect(filteredCanvas.shapes.some(shape => shape.type === 'line')).toBe(
-      false
-    );
-
-    const oneMissingEndpoint = toCanvasPayload({
-      width: 120,
-      height: 80,
-      links: [
-        { from: 'missing', to: 'beacon-1', active: true },
-        { from: 'beacon-1', to: 'missing', active: true },
-      ],
-      beacons: [
-        {
-          id: 'beacon-1',
-          x: 10,
-          y: 10,
-          radius: 8,
-          active: false,
-          required: true,
-          hitCount: 0,
-        },
-      ],
-      paddle: { x: 0, y: 0, width: 10, height: 4, speed: 2 },
-      orb: { x: 0, y: 0, vx: 0, vy: 0, radius: 4, stuckToPaddle: false },
-      score: 0,
-      lives: 1,
-      status: 'ready',
-    });
-    expect(oneMissingEndpoint.shapes.some(shape => shape.type === 'line')).toBe(
-      false
-    );
-
-    const inactiveRequiredCanvas = toCanvasPayload({
-      width: 120,
-      height: 80,
-      links: [],
-      beacons: [
-        {
-          id: 'required',
-          x: 12,
-          y: 18,
-          radius: 8,
-          active: false,
-          required: true,
-          hitCount: 0,
-        },
-      ],
-      paddle: { x: 0, y: 0, width: 10, height: 4, speed: 2 },
-      orb: { x: 0, y: 0, vx: 0, vy: 0, radius: 4, stuckToPaddle: false },
-      score: 0,
-      lives: 1,
-      status: 'ready',
-    });
-    expect(inactiveRequiredCanvas.shapes).toContainEqual(
-      expect.objectContaining({
-        type: 'circle',
-        x: 12,
-        y: 18,
-        fill: '#1e3a5f',
-        stroke: '#bff3ff',
-      })
-    );
+    const context = {};
+    runScenario1789Part0(context);
+    runScenario1789Part1(context);
+    runScenario1789Part2(context);
   });
 
   it('falls back cleanly on malformed input', () => {
@@ -2113,3 +1168,1031 @@ describe('beaconBounce physics and rendering', () => {
     expect(payload.shapes.some(shape => shape.type === 'text')).toBe(true);
   });
 });
+
+/**
+ * Execute sequential fixture scenario 1.
+ * @param {Record<string, any>} context Shared fixture state.
+ * @returns {void} Assertions and fixture mutations are retained.
+ */
+function runScenario1061Part0(context) {
+  context.state = {
+    status: 'running',
+    score: 9,
+    lives: 2,
+    lastActivatedBeaconId: 'beacon-1',
+    beacons: [
+      {
+        id: 'beacon-1',
+        x: 20,
+        y: 20,
+        radius: 8,
+        active: true,
+        required: true,
+        hitCount: 1,
+      },
+    ],
+    links: [{ from: 'beacon-1', to: 'missing', active: true }],
+    orb: { x: 20, y: 20, vx: 1, vy: 1, radius: 4, stuckToPaddle: false },
+    paddle: { x: 0, y: 0, width: 10, height: 4, speed: 2 },
+    width: 120,
+    height: 80,
+  };
+  applyGameplayInput(context.state, {
+    actions: {
+      moveLeft: false,
+      moveRight: false,
+      launchPressed: false,
+      pausePressed: false,
+      resetPressed: true,
+    },
+    previousActions: {
+      moveLeft: false,
+      moveRight: false,
+      launchPressed: false,
+      pausePressed: false,
+      resetPressed: false,
+    },
+  });
+  expect(context.state.status).toBe('ready');
+  expect(context.state.score).toBe(0);
+  expect(context.state.beacons[0].active).toBe(false);
+  expect(context.state.links).toHaveLength(0);
+  context.state.status = 'running';
+  context.state.orb = {
+    x: 20,
+    y: 20,
+    vx: 1,
+    vy: 1,
+    radius: 4,
+    stuckToPaddle: false,
+  };
+  resolveBeacons(context.state);
+  expect(context.state.score).toBe(10);
+  expect(context.state.links).toHaveLength(0);
+  context.state.lastActivatedBeaconId = 'beacon-1';
+  context.state.beacons[0].active = true;
+  context.state.orb = {
+    x: 20,
+    y: 20,
+    vx: 1,
+    vy: 1,
+    radius: 4,
+    stuckToPaddle: false,
+  };
+  context.state.beacons.push({
+    id: 'beacon-2',
+    x: 24,
+    y: 24,
+    radius: 8,
+    active: false,
+    required: true,
+    hitCount: 0,
+  });
+  context.state.orb.x = 24;
+  context.state.orb.y = 24;
+  resolveBeacons(context.state);
+  expect(context.state.links.some(link => link.from === 'beacon-1')).toBe(true);
+  context.canvas = toCanvasPayload({
+    width: 120,
+    height: 80,
+    links: [{ from: 'beacon-1', to: 'beacon-2', active: true }],
+    beacons: [
+      {
+        id: 'beacon-1',
+        x: 10,
+        y: 10,
+        radius: 8,
+        active: true,
+        required: true,
+        hitCount: 1,
+      },
+      {
+        id: 'beacon-2',
+        x: 20,
+        y: 20,
+        radius: 8,
+        active: true,
+        required: true,
+        hitCount: 1,
+      },
+    ],
+    paddle: { x: 0, y: 0, width: 10, height: 4, speed: 2 },
+    orb: { x: 0, y: 0, vx: 0, vy: 0, radius: 4, stuckToPaddle: false },
+    score: 0,
+    lives: 1,
+    status: 'running',
+  });
+}
+
+/**
+ * Execute sequential fixture scenario 2.
+ * @param {Record<string, any>} context Shared fixture state.
+ * @returns {void} Assertions and fixture mutations are retained.
+ */
+function runScenario1061Part1(context) {
+  expect(context.canvas.shapes.some(shape => shape.type === 'line')).toBe(true);
+  context.wallState = {
+    orb: { x: 1, y: 1, vx: -2, vy: -2, radius: 4 },
+    width: 120,
+    height: 80,
+  };
+  resolveWalls(context.wallState);
+  expect(context.wallState.orb.vx).toBeGreaterThanOrEqual(0);
+  expect(context.wallState.orb.vy).toBeGreaterThanOrEqual(0);
+  context.rightWall = {
+    orb: { x: 119, y: 40, vx: 2, vy: 2, radius: 4 },
+    width: 120,
+    height: 80,
+  };
+  resolveWalls(context.rightWall);
+  expect(context.rightWall.orb.x).toBe(116);
+  expect(context.rightWall.orb.vx).toBe(-2);
+  context.clearWalls = {
+    orb: { x: 40, y: 40, vx: 2, vy: 2, radius: 4 },
+    width: 120,
+    height: 80,
+  };
+  resolveWalls(context.clearWalls);
+  expect(context.clearWalls.orb).toEqual({
+    x: 40,
+    y: 40,
+    vx: 2,
+    vy: 2,
+    radius: 4,
+  });
+  context.exactWalls = {
+    orb: { x: 4, y: 22, vx: -2, vy: -2, radius: 4 },
+    width: 120,
+    height: 80,
+  };
+  resolveWalls(context.exactWalls);
+  expect(context.exactWalls.orb).toMatchObject({ x: 4, y: 22, vx: 2, vy: 2 });
+  context.exactRightWall = {
+    orb: { x: 116, y: 40, vx: 2, vy: 2, radius: 4 },
+    width: 120,
+    height: 80,
+  };
+  resolveWalls(context.exactRightWall);
+  expect(context.exactRightWall.orb).toMatchObject({ x: 116, vx: -2 });
+  context.alreadyActive = {
+    orb: { x: 20, y: 20, vx: -1, vy: -1, radius: 4, stuckToPaddle: false },
+    score: 10,
+    lastActivatedBeaconId: 'beacon-1',
+    beacons: [
+      {
+        id: 'beacon-1',
+        x: 20,
+        y: 20,
+        radius: 8,
+        active: true,
+        required: true,
+        hitCount: 1,
+      },
+    ],
+    links: [],
+  };
+  resolveBeacons(context.alreadyActive);
+}
+
+/**
+ * Execute sequential fixture scenario 3.
+ * @param {Record<string, any>} context Shared fixture state.
+ * @returns {void} Assertions and fixture mutations are retained.
+ */
+function runScenario1061Part2(context) {
+  expect(context.alreadyActive.score).toBe(10);
+  expect(context.alreadyActive.beacons[0].hitCount).toBe(2);
+  expect(context.alreadyActive.links).toEqual([]);
+  context.upperLeftBeacon = {
+    orb: { x: 20, y: 20, vx: 2, vy: 3, radius: 4, stuckToPaddle: false },
+    score: 0,
+    lastActivatedBeaconId: null,
+    beacons: [
+      {
+        id: 'upper-left',
+        x: 24,
+        y: 24,
+        radius: 8,
+        active: false,
+        required: true,
+        hitCount: 0,
+      },
+    ],
+    links: [],
+  };
+  resolveBeacons(context.upperLeftBeacon);
+  expect(context.upperLeftBeacon.orb).toMatchObject({ vx: -2, vy: -3 });
+  expect(context.upperLeftBeacon.beacons[0]).toMatchObject({
+    active: true,
+    hitCount: 1,
+  });
+  context.exactBeaconTouch = {
+    orb: { x: 20, y: 20, vx: 1, vy: 1, radius: 4, stuckToPaddle: false },
+    score: 0,
+    lastActivatedBeaconId: null,
+    beacons: [
+      {
+        id: 'exact',
+        x: 32,
+        y: 20,
+        radius: 8,
+        active: false,
+        required: true,
+        hitCount: 0,
+      },
+    ],
+    links: [],
+  };
+  resolveBeacons(context.exactBeaconTouch);
+  expect(context.exactBeaconTouch.beacons[0].active).toBe(true);
+  context.outsideBeacon = {
+    ...context.exactBeaconTouch,
+    orb: { ...context.exactBeaconTouch.orb },
+    beacons: [
+      {
+        ...context.exactBeaconTouch.beacons[0],
+        active: false,
+        hitCount: 0,
+        x: 32.1,
+      },
+    ],
+  };
+  resolveBeacons(context.outsideBeacon);
+  expect(context.outsideBeacon.beacons[0].active).toBe(false);
+  context.horizontalAligned = {
+    orb: { x: 20, y: 20, vx: 1, vy: 1, radius: 4, stuckToPaddle: false },
+    score: 0,
+    lastActivatedBeaconId: null,
+    beacons: [
+      {
+        id: 'horizontal',
+        x: 24,
+        y: 20,
+        radius: 8,
+        active: false,
+        required: true,
+        hitCount: 0,
+      },
+    ],
+    links: [],
+  };
+  resolveBeacons(context.horizontalAligned);
+  expect(context.horizontalAligned.orb).toMatchObject({ vx: -1, vy: 1 });
+  context.verticalAligned = {
+    orb: { x: 20, y: 20, vx: 1, vy: 1, radius: 4, stuckToPaddle: false },
+    score: 0,
+    lastActivatedBeaconId: null,
+    beacons: [
+      {
+        id: 'vertical',
+        x: 20,
+        y: 24,
+        radius: 8,
+        active: false,
+        required: true,
+        hitCount: 0,
+      },
+    ],
+    links: [],
+  };
+  resolveBeacons(context.verticalAligned);
+  expect(context.verticalAligned.orb).toMatchObject({ vx: 1, vy: -1 });
+  context.missedPaddle = {
+    paddle: { x: 10, y: 30, width: 40, height: 6, speed: 4 },
+    orb: { x: 80, y: 34, vx: 1, vy: 3, radius: 4, stuckToPaddle: false },
+  };
+}
+
+/**
+ * Execute sequential fixture scenario 4.
+ * @param {Record<string, any>} context Shared fixture state.
+ * @returns {void} Assertions and fixture mutations are retained.
+ */
+function runScenario1061Part3(context) {
+  resolvePaddle(context.missedPaddle);
+  expect(context.missedPaddle.orb).toEqual({
+    x: 80,
+    y: 34,
+    vx: 1,
+    vy: 3,
+    radius: 4,
+    stuckToPaddle: false,
+  });
+}
+
+/**
+ * Execute sequential fixture scenario 1.
+ * @param {Record<string, any>} context Shared fixture state.
+ * @returns {void} Assertions and fixture mutations are retained.
+ */
+function runScenario1412Part0(context) {
+  expect(buildResetFallback(null)).toBeUndefined();
+  expect(
+    buildResetFallback({ width: 1, height: 2, lives: 3, layoutSeed: 4 })
+  ).toEqual({
+    width: 1,
+    height: 2,
+    lives: 3,
+    layoutSeed: 4,
+  });
+  expect(normalizeKeyboard({ a: true }, { type: 'keyup', key: 'A' }).a).toBe(
+    false
+  );
+  expect(normalizeKeyboard(undefined, { type: 'keydown', key: 'd' }).d).toBe(
+    true
+  );
+  expect(normalizeKeyboard(undefined, { type: 'keydown', key: 1 })).toEqual({});
+  expect(normalizeKeyboard(undefined, { type: 'keyup', key: 1 })).toEqual({});
+  expect(normalizeKeyboard(undefined, null)).toEqual({});
+  expect(normalizeGamepad({ buttons: [1, 0], axes: ['2', null] })).toEqual({
+    buttons: [true, false],
+    axes: [2, 0],
+  });
+  expect(createActionFlags()).toEqual({
+    moveLeft: false,
+    moveRight: false,
+    launchPressed: false,
+    pausePressed: false,
+    resetPressed: false,
+  });
+  expect(normalizeGamepad({ buttons: [true], axes: [0] }).buttons[0]).toBe(
+    true
+  );
+  expect(normalizeGamepad(undefined)).toEqual({ buttons: [], axes: [] });
+  expect(normalizeControlState(undefined, { paused: true })).toEqual({
+    paused: true,
+    speedMultiplier: 1,
+    stepCount: 0,
+  });
+  expect(normalizeControlState(undefined, null)).toEqual({
+    paused: false,
+    speedMultiplier: 1,
+    stepCount: 0,
+  });
+  expect(createInitialInputState()).toEqual({
+    keyboard: {},
+    gamepad: { buttons: [], axes: [] },
+    actions: createActionFlags(),
+    previousActions: createActionFlags(),
+    control: { paused: false, speedMultiplier: 1, stepCount: 0 },
+  });
+  context.previousInput = {
+    keyboard: { p: true },
+    actions: {
+      moveLeft: false,
+      moveRight: false,
+      launchPressed: false,
+      pausePressed: false,
+      resetPressed: false,
+    },
+    control: { paused: false, speedMultiplier: 2, stepCount: 0 },
+  };
+  context.pausedControl = updateInputState(context.previousInput, {
+    pause: true,
+    speedMultiplier: 3,
+    stepCount: 2,
+  });
+  expect(context.pausedControl.control).toEqual({
+    paused: true,
+    speedMultiplier: 3,
+    stepCount: 2,
+  });
+  context.resumedControl = updateInputState(context.previousInput, {
+    resume: true,
+    speed: 4,
+    steps: 5,
+  });
+  expect(context.resumedControl.control).toEqual({
+    paused: false,
+    speedMultiplier: 4,
+    stepCount: 5,
+  });
+  expect(
+    updateInputState(
+      { control: { paused: true, speedMultiplier: 1, stepCount: 0 } },
+      { resume: true }
+    ).control.paused
+  ).toBe(false);
+}
+
+/**
+ * Execute sequential fixture scenario 2.
+ * @param {Record<string, any>} context Shared fixture state.
+ * @returns {void} Assertions and fixture mutations are retained.
+ */
+function runScenario1412Part1(context) {
+  expect(updateInputState(undefined, { speed: 4, step: 3 }).control).toEqual({
+    paused: false,
+    speedMultiplier: 4,
+    stepCount: 3,
+  });
+  expect(buildNextState(null, { speed: 5 }).simulationSpeed).toBe(5);
+  expect(updateInputState(undefined, null).control).toEqual({
+    paused: false,
+    speedMultiplier: 1,
+    stepCount: 0,
+  });
+  expect(updateInputState(undefined, { speed: -4, step: -2 }).control).toEqual({
+    paused: false,
+    speedMultiplier: 1,
+    stepCount: 0,
+  });
+  expect(
+    updateInputState(undefined, { speedMultiplier: 0.4, stepCount: 1.6 })
+      .control
+  ).toEqual({
+    paused: false,
+    speedMultiplier: 1,
+    stepCount: 2,
+  });
+  expect(
+    updateInputState(
+      { control: { paused: true, speedMultiplier: 3, stepCount: 4 } },
+      {
+        paused: null,
+        speedMultiplier: null,
+        stepCount: null,
+        pause: false,
+        resume: false,
+      }
+    ).control
+  ).toEqual({ paused: true, speedMultiplier: 3, stepCount: 0 });
+  context.derivedActions = updateInputState(undefined, {
+    buttons: [
+      true,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      true,
+    ],
+    axes: [-1],
+  });
+  expect(context.derivedActions.actions).toEqual({
+    moveLeft: true,
+    moveRight: false,
+    launchPressed: true,
+    pausePressed: false,
+    resetPressed: false,
+  });
+  expect(
+    updateInputState(undefined, {
+      type: 'keydown',
+      key: 'd',
+      buttons: Array.from({ length: 16 }, (_, index) => index === 15),
+      axes: [1],
+    }).actions
+  ).toMatchObject({ moveRight: true });
+  expect(
+    updateInputState(undefined, {
+      type: 'keydown',
+      key: 'p',
+      buttons: Array.from({ length: 10 }, (_, index) => index === 9),
+      axes: [0],
+    }).actions.pausePressed
+  ).toBe(true);
+  expect(
+    updateInputState(undefined, {
+      buttons: Array.from({ length: 15 }, (_, index) => index === 14),
+      axes: [0],
+    }).actions.moveLeft
+  ).toBe(true);
+  expect(updateInputState(undefined, { axes: [-0.4] }).actions.moveLeft).toBe(
+    false
+  );
+  expect(updateInputState(undefined, { axes: [-0.41] }).actions.moveLeft).toBe(
+    true
+  );
+  expect(updateInputState(undefined, { axes: [0.4] }).actions.moveRight).toBe(
+    false
+  );
+  expect(updateInputState(undefined, { axes: [0.41] }).actions.moveRight).toBe(
+    true
+  );
+  expect(
+    updateInputState(undefined, {
+      type: 'keydown',
+      key: 'r',
+      buttons: [false, true],
+      axes: [0],
+    }).actions.resetPressed
+  ).toBe(true);
+  context.heldPause = {
+    status: 'running',
+    paused: false,
+    width: 120,
+    paddle: { x: 20, y: 30, width: 40, height: 6, speed: 4 },
+    beacons: [],
+    links: [],
+    orb: { x: 0, y: 0, vx: 0, vy: 0, radius: 4, stuckToPaddle: true },
+    initialLives: 3,
+  };
+  applyGameplayInput(context.heldPause, {
+    actions: {
+      pausePressed: true,
+      moveLeft: false,
+      moveRight: false,
+      launchPressed: false,
+      resetPressed: false,
+    },
+    previousActions: {
+      pausePressed: true,
+      moveLeft: false,
+      moveRight: false,
+      launchPressed: false,
+      resetPressed: false,
+    },
+  });
+  expect(context.heldPause.paused).toBe(false);
+  context.wonLocked = {
+    status: 'won',
+    paused: false,
+    width: 120,
+    paddle: { x: 20, y: 30, width: 40, height: 6, speed: 4 },
+    beacons: [],
+    links: [],
+    orb: { x: 0, y: 0, vx: 0, vy: 0, radius: 4, stuckToPaddle: true },
+    initialLives: 3,
+  };
+}
+
+/**
+ * Execute sequential fixture scenario 3.
+ * @param {Record<string, any>} context Shared fixture state.
+ * @returns {void} Assertions and fixture mutations are retained.
+ */
+function runScenario1412Part2(context) {
+  applyGameplayInput(context.wonLocked, {
+    actions: {
+      pausePressed: false,
+      moveLeft: true,
+      moveRight: false,
+      launchPressed: false,
+      resetPressed: false,
+    },
+    previousActions: createActionFlags(),
+  });
+  expect(context.wonLocked.paddle.x).toBe(20);
+  context.wonLaunchLocked = {
+    ...context.wonLocked,
+    orb: { ...context.wonLocked.orb, stuckToPaddle: true },
+  };
+  applyGameplayInput(context.wonLaunchLocked, {
+    actions: { ...createActionFlags(), launchPressed: true },
+    previousActions: createActionFlags(),
+  });
+  expect(context.wonLaunchLocked.status).toBe('won');
+  expect(context.wonLaunchLocked.orb.stuckToPaddle).toBe(true);
+  context.lostLocked = {
+    ...context.wonLocked,
+    status: 'lost',
+    paddle: { ...context.wonLocked.paddle },
+  };
+  applyGameplayInput(context.lostLocked, {
+    actions: { ...createActionFlags(), moveLeft: true },
+    previousActions: createActionFlags(),
+  });
+  expect(context.lostLocked.paddle.x).toBe(context.wonLocked.paddle.x);
+  context.clamped = {
+    status: 'running',
+    paused: false,
+    width: 100,
+    paddle: { x: 90, y: 30, width: 40, height: 6, speed: 20 },
+    beacons: [],
+    links: [],
+    orb: { x: 0, y: 0, vx: 0, vy: 0, radius: 4, stuckToPaddle: true },
+    initialLives: 3,
+  };
+  applyGameplayInput(context.clamped, {
+    actions: { ...createActionFlags(), moveRight: true },
+    previousActions: createActionFlags(),
+  });
+  expect(context.clamped.paddle.x).toBe(60);
+  context.relaunchFromLost = {
+    status: 'lost',
+    paused: false,
+    width: 120,
+    paddle: { x: 20, y: 30, width: 40, height: 6, speed: 4 },
+    beacons: [
+      {
+        id: 'beacon-1',
+        x: 16,
+        y: 16,
+        radius: 8,
+        active: false,
+        required: true,
+        hitCount: 0,
+      },
+    ],
+    links: [],
+    orb: { x: 0, y: 0, vx: 0, vy: 0, radius: 4, stuckToPaddle: true },
+    initialLives: 3,
+    lives: 0,
+  };
+  applyGameplayInput(context.relaunchFromLost, {
+    actions: {
+      pausePressed: false,
+      moveLeft: false,
+      moveRight: false,
+      launchPressed: true,
+      resetPressed: false,
+    },
+    previousActions: createActionFlags(),
+  });
+  expect(context.relaunchFromLost.lives).toBe(1);
+  expect(context.relaunchFromLost.status).toBe('running');
+  context.relaunchNegative = {
+    ...context.relaunchFromLost,
+    status: 'lost',
+    lives: -1,
+    orb: { ...context.relaunchFromLost.orb, stuckToPaddle: true },
+  };
+  applyGameplayInput(context.relaunchNegative, {
+    actions: { ...createActionFlags(), launchPressed: true },
+    previousActions: createActionFlags(),
+  });
+  expect(context.relaunchNegative.lives).toBe(1);
+  context.relaunchWithLives = {
+    ...context.relaunchFromLost,
+    status: 'lost',
+    lives: 2,
+  };
+}
+
+/**
+ * Execute sequential fixture scenario 4.
+ * @param {Record<string, any>} context Shared fixture state.
+ * @returns {void} Assertions and fixture mutations are retained.
+ */
+function runScenario1412Part3(context) {
+  applyGameplayInput(context.relaunchWithLives, {
+    actions: { ...createActionFlags(), launchPressed: true },
+    previousActions: createActionFlags(),
+  });
+  expect(context.relaunchWithLives.lives).toBe(2);
+  context.resetState = {
+    status: 'running',
+    paused: true,
+    score: 25,
+    lives: 1,
+    initialLives: 4,
+    simulationSpeed: 3,
+    lastActivatedBeaconId: 'beacon-1',
+    width: 120,
+    paddle: { x: 20, y: 30, width: 40, height: 6, speed: 4 },
+    beacons: [{ active: true, hitCount: 2 }],
+    links: [{ from: 'beacon-1', to: 'beacon-2', active: true }],
+    orb: { stuckToPaddle: false },
+  };
+  applyGameplayInput(context.resetState, {
+    actions: { ...createActionFlags(), resetPressed: true },
+    previousActions: createActionFlags(),
+  });
+  expect(context.resetState).toMatchObject({
+    status: 'ready',
+    paused: false,
+    score: 0,
+    lives: 4,
+    simulationSpeed: 1,
+    lastActivatedBeaconId: null,
+  });
+  expect(context.resetState.beacons[0]).toEqual({ active: false, hitCount: 0 });
+  expect(context.resetState.links).toEqual([]);
+  expect(context.resetState.orb.stuckToPaddle).toBe(true);
+}
+
+/**
+ * Execute sequential fixture scenario 1.
+ * @param {Record<string, any>} context Shared fixture state.
+ * @returns {void} Assertions and fixture mutations are retained.
+ */
+function runScenario1789Part0(context) {
+  context.paddleState = {
+    paddle: { x: 10, y: 30, width: 40, height: 6, speed: 4 },
+    orb: { x: 16, y: 34, vx: -1, vy: 3, radius: 4, stuckToPaddle: false },
+  };
+  resolvePaddle(context.paddleState);
+  expect(context.paddleState.orb.vy).toBeLessThan(0);
+  expect(context.paddleState.orb.y).toBe(25);
+  expect(context.paddleState.orb.vx).toBeGreaterThanOrEqual(-3);
+  expect(context.paddleState.orb.vx).toBeLessThanOrEqual(3);
+  context.centeredPaddle = {
+    paddle: { x: 10, y: 30, width: 40, height: 6, speed: 4 },
+    orb: { x: 30, y: 34, vx: 0, vy: 3, radius: 4, stuckToPaddle: false },
+  };
+  resolvePaddle(context.centeredPaddle);
+  expect(context.centeredPaddle.orb.vx).toBe(1);
+  context.rightPaddle = {
+    paddle: { x: 10, y: 30, width: 20, height: 6, speed: 4 },
+    orb: { x: 34, y: 34, vx: 0, vy: 3, radius: 4, stuckToPaddle: false },
+  };
+  resolvePaddle(context.rightPaddle);
+  expect(context.rightPaddle.orb.vx).toBe(3);
+  context.leftClampedPaddle = {
+    paddle: { x: 10, y: 30, width: 20, height: 6, speed: 4 },
+    orb: { x: 6, y: 34, vx: 0, vy: 3, radius: 4, stuckToPaddle: false },
+  };
+  resolvePaddle(context.leftClampedPaddle);
+  expect(context.leftClampedPaddle.orb.vx).toBe(-3);
+  context.upwardOrb = {
+    paddle: { x: 10, y: 30, width: 40, height: 6, speed: 4 },
+    orb: { x: 30, y: 34, vx: 0, vy: -3, radius: 4, stuckToPaddle: false },
+  };
+  resolvePaddle(context.upwardOrb);
+  expect(context.upwardOrb.orb).toMatchObject({ vx: 0, vy: -3, y: 34 });
+  context.leftEdgePaddle = {
+    paddle: { x: 10, y: 30, width: 40, height: 6, speed: 4 },
+    orb: { x: 6, y: 34, vx: 0, vy: 3, radius: 4, stuckToPaddle: false },
+  };
+  resolvePaddle(context.leftEdgePaddle);
+}
+
+/**
+ * Execute sequential fixture scenario 2.
+ * @param {Record<string, any>} context Shared fixture state.
+ * @returns {void} Assertions and fixture mutations are retained.
+ */
+function runScenario1789Part1(context) {
+  expect(context.leftEdgePaddle.orb.vy).toBe(-3);
+  context.outsidePaddle = {
+    paddle: { x: 10, y: 30, width: 40, height: 6, speed: 4 },
+    orb: { x: 5, y: 34, vx: 0, vy: 3, radius: 4, stuckToPaddle: false },
+  };
+  resolvePaddle(context.outsidePaddle);
+  expect(context.outsidePaddle.orb.vy).toBe(3);
+  context.topEdgePaddle = {
+    paddle: { x: 30, y: 30, width: 40, height: 6, speed: 4 },
+    orb: { x: 50, y: 26, vx: 0, vy: 3, radius: 4, stuckToPaddle: false },
+  };
+  resolvePaddle(context.topEdgePaddle);
+  expect(context.topEdgePaddle.orb).toMatchObject({ y: 25, vy: -3 });
+  context.lowerEdgePaddle = {
+    paddle: { x: 30, y: 30, width: 40, height: 6, speed: 4 },
+    orb: { x: 50, y: 35, vx: 0, vy: 3, radius: 4, stuckToPaddle: false },
+  };
+  resolvePaddle(context.lowerEdgePaddle);
+  expect(context.lowerEdgePaddle.orb.vy).toBe(-3);
+  context.belowPaddle = {
+    paddle: { x: 30, y: 30, width: 40, height: 6, speed: 4 },
+    orb: { x: 50, y: 36, vx: 0, vy: 3, radius: 4, stuckToPaddle: false },
+  };
+  resolvePaddle(context.belowPaddle);
+  expect(context.belowPaddle.orb.vy).toBe(3);
+  context.stationaryOrb = {
+    paddle: { x: 30, y: 30, width: 40, height: 6, speed: 4 },
+    orb: { x: 50, y: 32, vx: 0, vy: 0, radius: 4, stuckToPaddle: false },
+  };
+  resolvePaddle(context.stationaryOrb);
+  expect(context.stationaryOrb.orb.vy).toBe(0);
+  expect(Object.is(context.stationaryOrb.orb.vy, 0)).toBe(true);
+  expect(context.stationaryOrb.orb.y).toBe(32);
+  context.offsetPaddle = {
+    paddle: { x: 10, y: 30, width: 30, height: 6, speed: 4 },
+    orb: { x: 30, y: 34, vx: 0, vy: 3, radius: 4, stuckToPaddle: false },
+  };
+  resolvePaddle(context.offsetPaddle);
+}
+
+/**
+ * Execute sequential fixture scenario 3.
+ * @param {Record<string, any>} context Shared fixture state.
+ * @returns {void} Assertions and fixture mutations are retained.
+ */
+function runScenario1789Part2(context) {
+  expect(context.offsetPaddle.orb.vx).toBeCloseTo(0.7333333333, 10);
+  context.beaconState = {
+    orb: { x: 20, y: 20, vx: 1, vy: 1, radius: 4, stuckToPaddle: false },
+    score: 0,
+    lastActivatedBeaconId: null,
+    beacons: [
+      {
+        id: 'beacon-1',
+        x: 20,
+        y: 20,
+        radius: 8,
+        active: false,
+        required: false,
+        hitCount: 0,
+      },
+    ],
+    links: [],
+  };
+  resolveBeacons(context.beaconState);
+  expect(context.beaconState.score).toBe(10);
+  expect(context.beaconState.beacons[0]).toMatchObject({
+    active: true,
+    hitCount: 1,
+  });
+  expect(context.beaconState.links).toHaveLength(0);
+  context.beaconLinkedState = {
+    orb: { x: 24, y: 24, vx: -1, vy: -1, radius: 4, stuckToPaddle: false },
+    score: 0,
+    lastActivatedBeaconId: 'beacon-0',
+    beacons: [
+      {
+        id: 'beacon-1',
+        x: 24,
+        y: 24,
+        radius: 8,
+        active: false,
+        required: true,
+        hitCount: 0,
+      },
+    ],
+    links: [],
+  };
+  resolveBeacons(context.beaconLinkedState);
+  expect(context.beaconLinkedState.links).toHaveLength(1);
+  expect(context.beaconLinkedState.links[0]).toEqual({
+    from: 'beacon-0',
+    to: 'beacon-1',
+    active: true,
+  });
+  context.canvas = toCanvasPayload({
+    width: 120,
+    height: 80,
+    links: [
+      { from: 'beacon-1', to: 'beacon-2', active: true },
+      { from: 'missing', to: 'missing-2', active: true },
+    ],
+    beacons: [
+      {
+        id: 'beacon-1',
+        x: 10,
+        y: 10,
+        radius: 8,
+        active: true,
+        required: false,
+        hitCount: 1,
+      },
+      {
+        id: 'beacon-2',
+        x: 20,
+        y: 20,
+        radius: 8,
+        active: true,
+        required: false,
+        hitCount: 1,
+      },
+    ],
+    paddle: { x: 0, y: 0, width: 10, height: 4, speed: 2 },
+    orb: { x: 0, y: 0, vx: 0, vy: 0, radius: 4, stuckToPaddle: false },
+    score: 0,
+    lives: 1,
+    status: 'running',
+  });
+  expect(context.canvas.shapes.some(shape => shape.stroke === '#335')).toBe(
+    true
+  );
+  expect(context.canvas.shapes.some(shape => shape.type === 'line')).toBe(true);
+  expect(context.canvas.shapes).toEqual([
+    expect.objectContaining({
+      type: 'rect',
+      x: 0,
+      y: 0,
+      width: 120,
+      height: 80,
+      fill: '#09111d',
+    }),
+    expect.objectContaining({
+      type: 'line',
+      x1: 10,
+      y1: 10,
+      x2: 20,
+      y2: 20,
+      stroke: '#49d8ff',
+      lineWidth: 1,
+    }),
+    expect.objectContaining({
+      type: 'circle',
+      x: 10,
+      y: 10,
+      radius: 8,
+      fill: '#6ee7ff',
+      stroke: '#335',
+    }),
+    expect.objectContaining({
+      type: 'circle',
+      x: 20,
+      y: 20,
+      radius: 8,
+      fill: '#6ee7ff',
+      stroke: '#335',
+    }),
+    expect.objectContaining({
+      type: 'rect',
+      x: 0,
+      y: 0,
+      width: 10,
+      height: 4,
+      fill: '#d7f3ff',
+    }),
+    expect.objectContaining({
+      type: 'circle',
+      x: 0,
+      y: 0,
+      radius: 4,
+      fill: '#f8fafc',
+    }),
+    expect.objectContaining({
+      type: 'text',
+      x: 8,
+      y: 14,
+      text: 'Score 0 Lives 1 RUNNING',
+      fill: '#dbeafe',
+      font: '11px monospace',
+      align: 'left',
+      baseline: 'alphabetic',
+    }),
+  ]);
+  context.filteredCanvas = toCanvasPayload({
+    width: 120,
+    height: 80,
+    links: [{ from: 'missing', to: 'beacon-2', active: true }],
+    beacons: [
+      {
+        id: 'beacon-1',
+        x: 10,
+        y: 10,
+        radius: 8,
+        active: true,
+        required: false,
+        hitCount: 1,
+      },
+    ],
+    paddle: { x: 0, y: 0, width: 10, height: 4, speed: 2 },
+    orb: { x: 0, y: 0, vx: 0, vy: 0, radius: 4, stuckToPaddle: false },
+    score: 0,
+    lives: 1,
+    status: 'running',
+  });
+  expect(
+    context.filteredCanvas.shapes.some(shape => shape.type === 'line')
+  ).toBe(false);
+  context.oneMissingEndpoint = toCanvasPayload({
+    width: 120,
+    height: 80,
+    links: [
+      { from: 'missing', to: 'beacon-1', active: true },
+      { from: 'beacon-1', to: 'missing', active: true },
+    ],
+    beacons: [
+      {
+        id: 'beacon-1',
+        x: 10,
+        y: 10,
+        radius: 8,
+        active: false,
+        required: true,
+        hitCount: 0,
+      },
+    ],
+    paddle: { x: 0, y: 0, width: 10, height: 4, speed: 2 },
+    orb: { x: 0, y: 0, vx: 0, vy: 0, radius: 4, stuckToPaddle: false },
+    score: 0,
+    lives: 1,
+    status: 'ready',
+  });
+  expect(
+    context.oneMissingEndpoint.shapes.some(shape => shape.type === 'line')
+  ).toBe(false);
+  context.inactiveRequiredCanvas = toCanvasPayload({
+    width: 120,
+    height: 80,
+    links: [],
+    beacons: [
+      {
+        id: 'required',
+        x: 12,
+        y: 18,
+        radius: 8,
+        active: false,
+        required: true,
+        hitCount: 0,
+      },
+    ],
+    paddle: { x: 0, y: 0, width: 10, height: 4, speed: 2 },
+    orb: { x: 0, y: 0, vx: 0, vy: 0, radius: 4, stuckToPaddle: false },
+    score: 0,
+    lives: 1,
+    status: 'ready',
+  });
+  expect(context.inactiveRequiredCanvas.shapes).toContainEqual(
+    expect.objectContaining({
+      type: 'circle',
+      x: 12,
+      y: 18,
+      fill: '#1e3a5f',
+      stroke: '#bff3ff',
+    })
+  );
+}

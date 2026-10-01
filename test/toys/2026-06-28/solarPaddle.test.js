@@ -7,412 +7,21 @@ import {
   solarPaddleTestOnly as h,
 } from '../../../src/core/browser/toys/2026-06-28/solarPaddle.js';
 
-describe('solarPaddle helper contracts', () => {
+describe('solarPaddle scenarios 1', () => {
   it('covers parsing, normalization, layout, and input boundaries', () => {
-    expect(h.parseInput('')).toBeNull();
-    expect(h.parseInput('   ')).toBeNull();
-    expect(h.parseInput(null)).toBeNull();
-    expect(h.parseInput({})).toBeNull();
-    expect(h.parseInput('null')).toBeNull();
-    expect(h.parseInput('{"width":240}')).toEqual({ width: 240 });
-    expect(h.parseObjectRecord('[]')).toBeNull();
-    expect(h.parseObjectRecord('{"ready":true}')).toEqual({ ready: true });
-    expect(h.normalizeStatus('running')).toBe('running');
-    expect(h.normalizeStatus('bad')).toBe('ready');
-    expect(h.normalizeSeedWidth({}, null, h.createSeedDefaults())).toBe(360);
-    expect(
-      h.normalizeSeedHeight({ height: 160 }, null, h.createSeedDefaults())
-    ).toBe(160);
-    expect(
-      h.normalizeSeedLives({ lives: 2 }, null, h.createSeedDefaults())
-    ).toBe(2);
-    expect(
-      h.normalizeSeedLayout({ layoutSeed: 3 }, null, h.createSeedDefaults())
-    ).toBe(3);
-    expect(h.normalizeGamepadButtons([true, 0])).toEqual([true, false]);
-    expect(h.normalizeGamepadAxes([1, 'bad'])).toEqual([1, 0]);
-    expect(
-      h.normalizeActions({
-        left: true,
-        right: false,
-        launch: true,
-        pause: false,
-        reset: true,
-      })
-    ).toMatchObject({ left: true, launch: true, reset: true });
-    expect(
-      h.normalizeActions({
-        left: false,
-        right: true,
-        launch: false,
-        pause: false,
-        reset: false,
-      }).right
-    ).toBe(true);
-    expect(
-      h.normalizeActions({
-        left: false,
-        right: false,
-        launch: false,
-        pause: false,
-        reset: false,
-      })
-    ).toEqual({
-      left: false,
-      right: false,
-      launch: false,
-      pause: false,
-      reset: false,
-    });
-    expect(
-      h.normalizeEdgeActions({
-        left: true,
-        right: false,
-        launchPressed: true,
-        pausePressed: false,
-        resetPressed: true,
-      })
-    ).toEqual({
-      left: true,
-      right: false,
-      launchPressed: true,
-      pausePressed: false,
-      resetPressed: true,
-    });
-    expect(
-      h.normalizeEdgeActions({
-        left: false,
-        right: true,
-        launchPressed: false,
-        pausePressed: true,
-        resetPressed: false,
-      })
-    ).toMatchObject({ right: true, pausePressed: true });
-    expect(h.normalizeInputState(null)).toMatchObject({
-      keyboard: {},
-      gamepad: { buttons: [], axes: [] },
-    });
-    expect(h.updateInputState(undefined, {})).toMatchObject({
-      keyboard: {},
-      gamepad: { buttons: [], axes: [] },
-      actions: {
-        left: false,
-        right: false,
-        launch: false,
-        pause: false,
-        reset: false,
-      },
-    });
-    const seedOptions = h.createSeedOptions();
-    expect(h.createState(seedOptions)).toMatchObject({
-      version: 1,
-      width: 360,
-      height: 240,
-      frame: 0,
-      status: 'ready',
-      lives: 3,
-      paddle: { width: 52, height: 7 },
-      orb: { radius: 4, stuckToPaddle: true },
-    });
-    expect(h.normalizeState({ version: 0 })).toBeNull();
-    expect(h.normalizeState('bad')).toBeNull();
-    expect(h.normalizeState([1])).toBeNull();
-    expect(
-      h.normalizeState(
-        Object.assign([], { version: 1, width: 200, height: 140 })
-      )
-    ).toBeNull();
-    expect(h.normalizeBooleanRecord('bad')).toEqual({});
-    expect(h.normalizeGamepadState('bad')).toEqual({ buttons: [], axes: [] });
-    expect(h.normalizeGamepadState([1])).toEqual({ buttons: [], axes: [] });
-    expect(
-      h.normalizeGamepadState(Object.assign([], { buttons: [true], axes: [1] }))
-    ).toEqual({ buttons: [], axes: [] });
-    expect(h.normalizeActions([])).toEqual({
-      left: false,
-      right: false,
-      launch: false,
-      pause: false,
-      reset: false,
-    });
-    expect(h.normalizeActions([true])).toEqual({
-      left: false,
-      right: false,
-      launch: false,
-      pause: false,
-      reset: false,
-    });
-    expect(h.normalizeActions(Object.assign([], { left: true }))).toEqual({
-      left: false,
-      right: false,
-      launch: false,
-      pause: false,
-      reset: false,
-    });
-    expect(h.normalizeEdgeActions([])).toEqual({
-      left: false,
-      right: false,
-      launchPressed: false,
-      pausePressed: false,
-      resetPressed: false,
-    });
-    expect(h.normalizeEdgeActions([true])).toEqual({
-      left: false,
-      right: false,
-      launchPressed: false,
-      pausePressed: false,
-      resetPressed: false,
-    });
-    expect(h.normalizeEdgeActions(Object.assign([], { left: true }))).toEqual({
-      left: false,
-      right: false,
-      launchPressed: false,
-      pausePressed: false,
-      resetPressed: false,
-    });
-    expect(h.normalizePaddle([1], 140)).toEqual(
-      h.createState(h.createSeedOptions()).paddle
-    );
-    expect(
-      h.normalizePaddle(
-        Object.assign([], { x: 12, y: 20, width: 30, height: 5, speed: 2 }),
-        140
-      )
-    ).toEqual(h.createState(h.createSeedOptions()).paddle);
-    expect(h.normalizeOrb([1])).toEqual(
-      h.createState(h.createSeedOptions()).orb
-    );
-    expect(
-      h.normalizeOrb(
-        Object.assign([], {
-          x: 12,
-          y: 20,
-          vx: 1,
-          vy: -2,
-          radius: 3,
-          stuckToPaddle: false,
-        })
-      )
-    ).toEqual(h.createState(h.createSeedOptions()).orb);
-    expect(h.normalizePaddle([], 200)).toMatchObject({ width: 52, height: 7 });
-    expect(h.normalizeOrb([])).toMatchObject({
-      radius: 4,
-      stuckToPaddle: true,
-    });
-    expect(h.normalizeState({ version: 1 })).toMatchObject({
-      version: 1,
-      width: 360,
-      height: 240,
-      status: 'ready',
-      lives: 3,
-    });
-    expect(h.normalizePanels(240, 160, 2)).toHaveLength(12);
-    expect(h.normalizePanelsFromState([])).toHaveLength(12);
-    expect(h.getPanelColumnOffset(0)).toBe(0);
-    expect(h.getPanelRowOffset(1)).toBe(2);
-    expect(
-      h.shufflePositions(
-        [
-          { x: 1, y: 1 },
-          { x: 2, y: 2 },
-        ],
-        3
-      )
-    ).toHaveLength(2);
-    expect(h.clamp(-1, 0, 10)).toBe(0);
-    expect(h.clamp(11, 0, 10)).toBe(10);
-    expect(h.clamp(5, 0, 10)).toBe(5);
-    expect(
-      h.normalizePaddle({ x: 12, y: 40, width: 60, height: 8, speed: 5 }, 160)
-    ).toEqual({ x: 12, y: 40, width: 60, height: 8, speed: 5 });
-    expect(
-      h.normalizeOrb({
-        x: 10,
-        y: 12,
-        vx: 2,
-        vy: -3,
-        radius: 5,
-        stuckToPaddle: true,
-      })
-    ).toMatchObject({
-      x: 10,
-      y: 12,
-      vx: 2,
-      vy: -3,
-      radius: 5,
-      stuckToPaddle: true,
-    });
-    expect(h.normalizeNonNegativeInteger(-1, 7)).toBe(7);
-    expect(h.normalizeNonNegativeInteger(2.6, 7)).toBe(3);
-    expect(h.normalizeNumber(0, 4)).toBe(4);
-    expect(h.normalizeNumber(2.5, 4)).toBe(2.5);
-    const keyboard = {
-      ArrowLeft: true,
-      a: true,
-      A: true,
-      ArrowRight: true,
-      d: true,
-      D: true,
-      Space: true,
-      ' ': true,
-      Button0: true,
-      p: true,
-      P: true,
-      Button9: true,
-      r: true,
-      R: true,
-      Button8: true,
-    };
-    const gamepad = { buttons: Array(10).fill(true), axes: [-1, 1] };
-    expect(h.isLeftActionPressed(keyboard, gamepad)).toBe(true);
-    expect(h.isRightActionPressed(keyboard, gamepad)).toBe(true);
-    expect(h.isLaunchActionPressed(keyboard, gamepad)).toBe(true);
-    expect(h.isPauseActionPressed(keyboard, gamepad)).toBe(true);
-    expect(h.isResetActionPressed(keyboard, gamepad)).toBe(true);
-    expect(h.isAxisLeft(-0.5)).toBe(true);
-    expect(h.isAxisRight(0.5)).toBe(true);
-    expect(
-      h.createEdgeActions(
-        { left: true, right: false, launch: true, pause: false, reset: true },
-        { left: false, right: false, launch: false, pause: false, reset: false }
-      )
-    ).toEqual({
-      left: true,
-      right: false,
-      launchPressed: true,
-      pausePressed: false,
-      resetPressed: true,
-    });
+    const context = {};
+    runScenario11Part0();
+    runScenario11Part1(context);
+    runScenario11Part2();
+    runScenario11Part3(context);
   });
-
   it('covers input transitions, physics boundaries, and rendering helpers', () => {
-    const keyboard = {};
-    h.applyKeyboardInput({ type: 'keydown', key: 'ArrowLeft' }, keyboard);
-    expect(keyboard.ArrowLeft).toBe(true);
-    h.applyKeyboardInput({ type: 'keyup', key: 'ArrowLeft' }, keyboard);
-    expect(keyboard.ArrowLeft).toBe(false);
-    const gamepad = { buttons: [], axes: [] };
-    h.applyGamepadInput(
-      { buttons: [true], axes: ['bad'], buttonIndex: 2, pressed: true },
-      gamepad
-    );
-    expect(gamepad).toEqual({ buttons: [true, undefined, true], axes: [0] });
-    expect(
-      h.createActionsFromState({}, { buttons: [true], axes: [] }).actions.launch
-    ).toBe(true);
-    expect(h.normalizeBooleanRecord({ a: true, b: 1 })).toEqual({
-      a: true,
-      b: false,
-    });
-    expect(h.getPanelId('custom', 2)).toBe('custom');
-    expect(h.getPanelId(null, 2)).toBe('p3');
-    expect(
-      h.normalizePanelFromState(
-        { id: 'x', x: 4, y: 5, width: 20, height: 10, charge: true },
-        0
-      )
-    ).toEqual({ id: 'x', x: 4, y: 5, width: 20, height: 10, charge: true });
-    expect(h.buildPanelPositions(240, 160, 28, 10)).toHaveLength(15);
-    expect(h.isAxisLeft(-0.1)).toBe(false);
-    expect(h.isAxisRight(0.1)).toBe(false);
-    expect(h.isAxisLeft(-0.25)).toBe(false);
-    expect(h.isAxisRight(0.25)).toBe(false);
-    expect(h.isAxisLeft(-0.401)).toBe(true);
-    expect(h.isAxisRight(0.401)).toBe(true);
-
-    const state = h.createState(h.createSeedOptions());
-    state.status = 'ready';
-    h.applyGameplayInput(state, {
-      actions: {
-        left: false,
-        right: false,
-        launch: true,
-        pause: false,
-        reset: false,
-      },
-      edgeActions: {
-        left: false,
-        right: false,
-        launchPressed: true,
-        pausePressed: false,
-        resetPressed: false,
-      },
-    });
-    expect(state.status).toBe('running');
-    expect(state.orb.stuckToPaddle).toBe(false);
-    state.status = 'running';
-    h.applyGameplayInput(state, {
-      actions: {
-        left: false,
-        right: false,
-        launch: false,
-        pause: true,
-        reset: false,
-      },
-      edgeActions: {
-        left: false,
-        right: false,
-        launchPressed: false,
-        pausePressed: true,
-        resetPressed: false,
-      },
-    });
-    expect(state.status).toBe('paused');
-    h.movePaddle(state, { left: true, right: false });
-    expect(state.paddle.x).toBeGreaterThanOrEqual(0);
-    state.paddle.x = 100;
-    h.movePaddle(state, { left: false, right: true });
-    expect(state.paddle.x).toBe(104);
-    h.stickOrbToPaddle(state);
-    expect(state.orb.y).toBe(state.paddle.y - state.orb.radius - 1);
-    state.orb.x = 1;
-    state.orb.y = 1;
-    state.orb.vx = -2;
-    state.orb.vy = -2;
-    h.resolveWalls(state);
-    expect(state.orb.vx).toBe(2);
-    expect(state.orb.vy).toBe(2);
-    expect(
-      h.getPanelCollisionAxis(
-        { x: 14, y: 15, radius: 4 },
-        { x: 0, y: 0, width: 28, height: 10 }
-      )
-    ).toBe('y');
-    expect(
-      h.circleIntersectsPanel(
-        { x: 5, y: 5, radius: 2 },
-        { x: 0, y: 0, width: 10, height: 10 }
-      )
-    ).toBe(true);
-    expect(
-      h.circleIntersectsPanel(
-        { x: 30, y: 30, radius: 2 },
-        { x: 0, y: 0, width: 10, height: 10 }
-      )
-    ).toBe(false);
-    const panel = { x: 0, y: 0, width: 20, height: 10, charge: false };
-    state.panels = [panel];
-    state.orb = { x: 10, y: 5, vx: 1, vy: -1, radius: 3, stuckToPaddle: false };
-    state.score = 0;
-    h.resolvePanels(state);
-    expect(panel.charge).toBe(true);
-    expect(state.score).toBe(1);
-    state.panels = [{ ...panel, charge: true }];
-    h.resolveWinLoss(state);
-    expect(state.status).toBe('won');
-    state.lives = 1;
-    state.orb.y = state.height + 10;
-    state.status = 'running';
-    h.resolveBottom(state);
-    expect(state.status).toBe('lost');
-    expect(h.getPanelFill(true)).not.toBe(h.getPanelFill(false));
-    expect(h.getOrbFill('lost')).not.toBe(h.getOrbFill('running'));
-    expect(h.toCanvasPayload(state).shapes).toHaveLength(6);
-    const persist = jest.fn();
-    h.persistState(persist, state);
-    expect(persist).toHaveBeenCalledWith({ SOLA1: state });
+    const context = {};
+    runScenario288Part0(context);
+    runScenario288Part1(context);
+    runScenario288Part2(context);
+    runScenario288Part3(context);
   });
-
   it('covers seed fallback, merge, reset, and persistence boundaries', () => {
     const defaults = h.createSeedDefaults();
     const fallback = { width: 200, height: 140, layoutSeed: 9, lives: 2 };
@@ -451,217 +60,15 @@ describe('solarPaddle helper contracts', () => {
     expect(h.readPersistedState(() => ({ SOLA1: seed }))).toMatchObject(seed);
     expect(h.readPersistedState(null)).toBeNull();
   });
-
   it('locks exact defaults and invalid-input handling', () => {
-    expect(h.getStorageAccessor(null)).toBeNull();
-    expect(h.getStorageAccessor(new Map())).toBeNull();
-    expect(h.parseInput('{}')).toEqual({});
-    expect(h.parseInput('{bad')).toBeNull();
-    expect(h.parseObjectRecord('1')).toBeNull();
-    expect(h.normalizeBooleanRecord([])).toEqual({});
-    expect(h.normalizeGamepadState([])).toEqual({ buttons: [], axes: [] });
-    expect(h.normalizeGamepadButtons(null)).toEqual([]);
-    expect(h.normalizeGamepadAxes(null)).toEqual([]);
-    expect(h.normalizeActions([])).toEqual({
-      left: false,
-      right: false,
-      launch: false,
-      pause: false,
-      reset: false,
-    });
-    expect(h.normalizeEdgeActions([])).toEqual({
-      left: false,
-      right: false,
-      launchPressed: false,
-      pausePressed: false,
-      resetPressed: false,
-    });
-    expect(h.createInitialInputState()).toEqual({
-      keyboard: {},
-      gamepad: { buttons: [], axes: [] },
-      actions: {
-        left: false,
-        right: false,
-        launch: false,
-        pause: false,
-        reset: false,
-      },
-      edgeActions: {
-        left: false,
-        right: false,
-        launchPressed: false,
-        pausePressed: false,
-        resetPressed: false,
-      },
-      previousActions: {
-        left: false,
-        right: false,
-        launch: false,
-        pause: false,
-        reset: false,
-      },
-    });
-    expect(h.normalizePanelFromState({}, 0)).toEqual({
-      id: 'p1',
-      x: 0,
-      y: 0,
-      width: 20,
-      height: 10,
-      charge: false,
-    });
-    expect(h.normalizePanelsFromState([null])).toEqual([]);
-    expect(h.getPanelColumnOffset(1)).toBe(6);
-    expect(h.getPanelRowOffset(1)).toBe(2);
-    expect(h.normalizeNumber('bad', 7)).toBe(7);
-    expect(h.normalizeNonNegativeInteger(0, 7)).toBe(0);
-    expect(h.normalizePaddle(null, 100)).toMatchObject({
-      width: 52,
-      height: 7,
-      speed: 4,
-    });
-    expect(h.normalizeOrb(null)).toMatchObject({
-      radius: 4,
-      vx: 1,
-      vy: -2,
-      stuckToPaddle: true,
-    });
-    expect(h.isLeftActionPressed({}, { buttons: [], axes: [] })).toBe(false);
-    expect(h.isRightActionPressed({}, { buttons: [], axes: [] })).toBe(false);
-    expect(h.isLaunchActionPressed({}, { buttons: [], axes: [] })).toBe(false);
-    expect(h.isPauseActionPressed({}, { buttons: [], axes: [] })).toBe(false);
-    expect(h.isResetActionPressed({}, { buttons: [], axes: [] })).toBe(false);
-    expect(h.isAxisLeft(-0.4)).toBe(false);
-    expect(h.isAxisLeft(-0.41)).toBe(true);
-    expect(h.isAxisRight(0.4)).toBe(false);
-    expect(h.isAxisRight(0.41)).toBe(true);
-    expect(
-      h.normalizePanelFromState(
-        { id: 4, x: 0, y: 0, width: -1, height: 0, charge: 1 },
-        2
-      )
-    ).toEqual({ id: 'p3', x: 0, y: 0, width: 20, height: 10, charge: false });
-    expect(
-      h.normalizePaddle({ x: -1, y: -1, width: -1, height: 0, speed: -1 }, 4)
-    ).toEqual({ x: 180, y: 0, width: 52, height: 7, speed: 4 });
-    expect(
-      h.normalizeOrb({
-        x: 0,
-        y: 0,
-        vx: 0,
-        vy: 0,
-        radius: 0,
-        stuckToPaddle: false,
-      })
-    ).toEqual({ x: 180, y: 0, vx: 1, vy: -2, radius: 4, stuckToPaddle: false });
-    expect(
-      h.normalizePanelsFromState([false, 1, 'panel', { x: 1, y: 2 }])
-    ).toHaveLength(1);
-    for (const invalid of [
-      undefined,
-      null,
-      0,
-      '',
-      [],
-      {},
-      'READY',
-      'running ',
-    ]) {
-      expect(h.normalizeStatus(invalid)).toBe('ready');
-    }
-    expect(
-      h.normalizeGamepadState({
-        buttons: [true, false, 1],
-        axes: [0, -1, 'bad'],
-      })
-    ).toEqual({ buttons: [true, false, false], axes: [0, -1, 0] });
-    expect(h.normalizeGamepadState({ buttons: {}, axes: {} })).toEqual({
-      buttons: [],
-      axes: [],
-    });
-    expect(
-      h.normalizeActions({
-        left: 1,
-        right: 'true',
-        launch: null,
-        pause: {},
-        reset: [],
-      })
-    ).toEqual({
-      left: false,
-      right: false,
-      launch: false,
-      pause: false,
-      reset: false,
-    });
+    runScenario455Part0();
+    runScenario455Part1();
   });
-
   it('covers collision axes, pause toggles, and payload geometry', () => {
-    const state = h.createState(h.createSeedOptions());
-    state.status = 'paused';
-    h.applyGameplayInput(state, {
-      actions: {
-        left: false,
-        right: false,
-        launch: false,
-        pause: true,
-        reset: false,
-      },
-      edgeActions: {
-        left: false,
-        right: false,
-        launchPressed: false,
-        pausePressed: true,
-        resetPressed: false,
-      },
-    });
-    expect(state.status).toBe('running');
-    h.movePaddle(state, { left: true, right: false });
-    h.movePaddle(state, { left: false, right: true });
-    expect(state.paddle.x).toBeGreaterThanOrEqual(0);
-    state.orb.stuckToPaddle = false;
-    state.orb.x = 1;
-    state.orb.y = 50;
-    state.orb.vx = -1;
-    state.orb.vy = 1;
-    h.stepSimulation(state);
-    expect(state.orb.x).toBeGreaterThanOrEqual(state.orb.radius);
-    state.orb.x = state.paddle.x + state.paddle.width / 2;
-    state.orb.y = state.paddle.y - 1;
-    state.orb.vy = 2;
-    resolvePaddle(state);
-    expect(state.orb.vy).toBeLessThan(0);
-    const orb = { x: 5, y: 5, vx: 2, vy: 3, radius: 2, stuckToPaddle: false };
-    const panel = { x: 0, y: 0, width: 10, height: 10, charge: false };
-    reflectOrbVelocityFromPanel(orb, 'x');
-    expect(orb.vx).toBe(-2);
-    reflectOrbVelocityFromPanel(orb, 'y');
-    expect(orb.vy).toBe(-3);
-    separateOrbFromPanel(orb, panel, 'x');
-    expect(orb.x).not.toBe(5);
-    separateOrbFromPanel(orb, panel, 'y');
-    expect(orb.y).not.toBe(5);
-    state.lives = 2;
-    state.status = 'running';
-    state.orb.y = state.height + 1;
-    h.resolveBottom(state);
-    expect(state.lives).toBe(1);
-    expect(state.status).toBe('ready');
-    expect(state.orb.stuckToPaddle).toBe(true);
-    const payload = h.toCanvasPayload(state);
-    expect(payload.width).toBe(state.width);
-    expect(payload.shapes[0]).toMatchObject({
-      type: 'rect',
-      x: 0,
-      y: 0,
-      fill: '#0b1220',
-    });
-    expect(payload.shapes.at(-1)).toMatchObject({
-      type: 'rect',
-      x: 18,
-      height: 4,
-    });
+    const context = {};
+    runScenario598Part0(context);
+    runScenario598Part1(context);
   });
-
   it('distinguishes every keyboard and gamepad action source', () => {
     const emptyPad = { buttons: [], axes: [0] };
     for (const key of ['ArrowLeft', 'a', 'A']) {
@@ -707,7 +114,6 @@ describe('solarPaddle helper contracts', () => {
       )
     ).toBe(true);
   });
-
   it('locks panel normalization and score-bar rendering boundaries', () => {
     const normalized = h.normalizePanelsFromState([
       { id: 'charged', x: 2, y: 3, width: 30, height: 11, charge: true },
@@ -753,7 +159,9 @@ describe('solarPaddle helper contracts', () => {
         .fill
     ).toBe('#f87171');
   });
+});
 
+describe('solarPaddle scenarios 2', () => {
   it('locks deterministic panel coordinates and seeded ordering', () => {
     const positions = h.buildPanelPositions(240, 160, 28, 10);
     expect(positions).toHaveLength(15);
@@ -846,7 +254,6 @@ describe('solarPaddle helper contracts', () => {
       { id: 'p3-4', x: 103, y: 48, width: 28, height: 10, charge: false },
     ]);
   });
-
   it('covers physics edge branches and panel-hit ordering', () => {
     const state = h.createState(h.createSeedOptions());
     state.orb.stuckToPaddle = false;
@@ -883,7 +290,6 @@ describe('solarPaddle helper contracts', () => {
     h.resolveWinLoss(state);
     expect(state.status).toBe('lost');
   });
-
   it('covers input persistence, release, and reset transitions', () => {
     const initial = h.createInitialInputState();
     const held = h.updateInputState(initial, {
@@ -939,99 +345,16 @@ describe('solarPaddle helper contracts', () => {
     expect(repeated.edgeActions.left).toBe(false);
     expect(repeated.previousActions.left).toBe(true);
   });
-
   it('distinguishes paddle and panel collision conditions', () => {
-    const state = h.createState(h.createSeedOptions());
-    state.orb = {
-      x: -20,
-      y: state.paddle.y,
-      vx: 1,
-      vy: 2,
-      radius: 3,
-      stuckToPaddle: false,
-    };
-    resolvePaddle(state);
-    expect(state.orb.vy).toBe(2);
-    expect(state.orb.x).toBe(-20);
-    expect(state.orb.y).toBe(state.paddle.y);
-    expect(state.orb.vx).toBe(1);
-    state.orb.x = state.paddle.x + state.paddle.width + state.orb.radius + 0.1;
-    state.orb.y = state.paddle.y - 1;
-    resolvePaddle(state);
-    expect(state.orb.y).toBe(state.paddle.y - 1);
-    expect(state.orb.vy).toBe(2);
-    state.orb.x = state.paddle.x + state.paddle.width / 2;
-    state.orb.y = state.paddle.y - 20;
-    resolvePaddle(state);
-    expect(state.orb.vy).toBe(2);
-    state.orb.y = state.paddle.y - 1;
-    state.orb.vy = -2;
-    resolvePaddle(state);
-    expect(state.orb.vy).toBe(-2);
-    state.orb.x = state.paddle.x + state.paddle.width / 2;
-    state.orb.y = state.paddle.y - state.orb.radius + 1;
-    state.orb.vy = 0;
-    resolvePaddle(state);
-    expect(state.orb.vy).toBe(0);
-    state.orb.y = state.paddle.y - state.orb.radius - 0.1;
-    state.orb.vy = 2;
-    resolvePaddle(state);
-    expect(state.orb.vy).toBe(2);
-    state.orb.y =
-      state.paddle.y + state.paddle.height + 6 - state.orb.radius + 0.1;
-    resolvePaddle(state);
-    expect(state.orb.vy).toBe(2);
-    state.orb.y = state.paddle.y - state.orb.radius;
-    resolvePaddle(state);
-    expect(state.orb.y).toBe(state.paddle.y - state.orb.radius - 1);
-    state.orb.y = state.paddle.y + state.paddle.height + 6 - state.orb.radius;
-    state.orb.vy = 2;
-    resolvePaddle(state);
-    expect(state.orb.y).toBe(state.paddle.y - state.orb.radius - 1);
-    state.orb.vy = 2;
-    state.orb.y = state.paddle.y - 1;
-    state.orb.x = state.paddle.x;
-    resolvePaddle(state);
-    expect(state.orb.vy).toBeLessThan(0);
-    expect(state.orb.vx).toBe(-1);
-    state.orb.x = state.paddle.x + state.paddle.width / 2;
-    state.orb.y = state.paddle.y - 1;
-    state.orb.vy = 2;
-    state.orb.vx = 0;
-    resolvePaddle(state);
-    expect(state.orb.vx).toBe(1);
-    state.orb.x = state.paddle.x + state.paddle.width;
-    state.orb.y = state.paddle.y - 1;
-    state.orb.vy = 2;
-    state.orb.vx = 0;
-    resolvePaddle(state);
-    expect(state.orb.vx).toBe(2);
-    expect(
-      h.getPanelCollisionAxis(
-        { x: -3, y: 5, radius: 3 },
-        { x: 0, y: 0, width: 20, height: 10 }
-      )
-    ).toBe('x');
-    expect(
-      h.getPanelCollisionAxis(
-        { x: 10, y: -3, radius: 3 },
-        { x: 0, y: 0, width: 20, height: 10 }
-      )
-    ).toBe('y');
-    expect(
-      h.getPanelCollisionAxis(
-        { x: 15, y: 5, radius: 3 },
-        { x: 0, y: 0, width: 20, height: 10 }
-      )
-    ).toBe('y');
-    const orb = { x: 10, y: 5, vx: 1, vy: 1, radius: 2, stuckToPaddle: false };
-    const panel = { x: 0, y: 0, width: 20, height: 10 };
-    separateOrbFromPanel(orb, panel, 'x');
-    expect(orb.x).toBe(22.5);
-    separateOrbFromPanel(orb, panel, 'y');
-    expect(orb.y).toBe(12.5);
+    const context = {};
+    runScenario943Part0(context);
+    runScenario943Part1(context);
+    runScenario943Part2(context);
+    runScenario943Part3(context);
   });
+});
 
+describe('solarPaddle scenarios 3', () => {
   it('covers persisted-state status and shape validation', () => {
     for (const status of ['ready', 'running', 'paused', 'won', 'lost']) {
       expect(h.normalizeStatus(status)).toBe(status);
@@ -1067,7 +390,6 @@ describe('solarPaddle helper contracts', () => {
     expect(h.readPersistedState(() => ({ SOLA1: null }))).toBeNull();
     expect(h.readPersistedState(() => null)).toBeNull();
   });
-
   it('covers custom seed dimensions and motion parameters', () => {
     const seed = h.createSeedState(
       {
@@ -1126,7 +448,6 @@ describe('solarPaddle helper contracts', () => {
       orbSpeedY: -2,
     });
   });
-
   it('locks reset seed increments and exact state geometry', () => {
     const resetFromThree = h.createResetSeedState(
       {},
@@ -1155,7 +476,6 @@ describe('solarPaddle helper contracts', () => {
     expect(state.orb.y).toBe(-5);
     expect(state.orb.stuckToPaddle).toBe(true);
   });
-
   it('distinguishes parser and storage accessor input forms', () => {
     expect(h.parseObjectRecord('true')).toBeNull();
     expect(h.parseObjectRecord('false')).toBeNull();
@@ -1176,7 +496,6 @@ describe('solarPaddle helper contracts', () => {
     expect(h.parseInput(42)).toBeNull();
     expect(h.parseInput('  ')).toBeNull();
   });
-
   it('covers no-op input events and exact edge-action projection', () => {
     const keyboard = { held: true };
     h.applyKeyboardInput(null, keyboard);
@@ -1230,82 +549,15 @@ describe('solarPaddle helper contracts', () => {
       resetPressed: false,
     });
   });
-
   it('covers gameplay status transitions and stuck-orb behavior', () => {
-    const state = h.createState(h.createSeedOptions());
-    const noInput = {
-      actions: {
-        left: false,
-        right: false,
-        launch: false,
-        pause: false,
-        reset: false,
-      },
-      edgeActions: {
-        left: false,
-        right: false,
-        launchPressed: false,
-        pausePressed: false,
-        resetPressed: false,
-      },
-    };
-    h.applyGameplayInput(state, noInput);
-    expect(state.status).toBe('ready');
-    expect(state.orb.x).toBe(
-      state.paddle.x + Math.round(state.paddle.width / 2)
-    );
-    state.orb.x = 0;
-    state.orb.y = 0;
-    h.applyGameplayInput(state, noInput);
-    expect(state.orb.x).toBe(
-      state.paddle.x + Math.round(state.paddle.width / 2)
-    );
-    expect(state.orb.y).toBe(state.paddle.y - state.orb.radius - 1);
-    state.status = 'running';
-    state.orb.stuckToPaddle = false;
-    const before = { x: state.orb.x, y: state.orb.y };
-    h.stepSimulation(state);
-    expect(state.orb.x).not.toBe(before.x);
-    expect(state.orb.y).not.toBe(before.y);
-    state.panels = [];
-    state.orb = { x: 10, y: 20, vx: 2, vy: 3, radius: 2, stuckToPaddle: false };
-    h.stepSimulation(state);
-    expect(state.orb).toMatchObject({ x: 12, y: 23 });
-    state.orb.stuckToPaddle = true;
-    const stuck = { x: state.orb.x, y: state.orb.y };
-    h.stepSimulation(state);
-    expect(state.orb).toMatchObject(stuck);
-    state.status = 'paused';
-    h.applyGameplayInput(state, {
-      actions: noInput.actions,
-      edgeActions: { ...noInput.edgeActions, pausePressed: true },
-    });
-    expect(state.status).toBe('running');
-    state.status = 'running';
-    h.applyGameplayInput(state, {
-      actions: noInput.actions,
-      edgeActions: { ...noInput.edgeActions, pausePressed: true },
-    });
-    expect(state.status).toBe('paused');
-    state.status = 'ready';
-    h.applyGameplayInput(state, {
-      actions: noInput.actions,
-      edgeActions: { ...noInput.edgeActions, pausePressed: true },
-    });
-    expect(state.status).toBe('ready');
-    state.status = 'running';
-    state.orb.stuckToPaddle = true;
-    h.applyGameplayInput(state, {
-      actions: noInput.actions,
-      edgeActions: { ...noInput.edgeActions, launchPressed: true },
-    });
-    expect(state.status).toBe('running');
-    expect(state.orb.stuckToPaddle).toBe(true);
-    state.status = 'paused';
-    h.applyGameplayInput(state, noInput);
-    expect(state.status).toBe('paused');
+    const context = {};
+    runScenario1234Part0(context);
+    runScenario1234Part1(context);
+    runScenario1234Part2(context);
   });
+});
 
+describe('solarPaddle scenarios 4', () => {
   it('locks exact canvas payload geometry and rounding', () => {
     const state = h.createState({
       width: 100,
@@ -1338,86 +590,11 @@ describe('solarPaddle helper contracts', () => {
       ],
     });
   });
-
   it('covers panel clamps and circle/bottom boundary inclusivity', () => {
-    const small = h.buildPanelPositions(80, 80, 28, 10);
-    expect(small).toHaveLength(15);
-    expect(
-      new Set(small.map(position => `${position.x},${position.y}`))
-    ).toEqual(new Set(['24,10']));
-    expect(
-      h.circleIntersectsPanel(
-        { x: -2, y: 5, radius: 2 },
-        { x: 0, y: 0, width: 10, height: 10 }
-      )
-    ).toBe(true);
-    expect(
-      h.circleIntersectsPanel(
-        { x: -3, y: 5, radius: 2 },
-        { x: 0, y: 0, width: 10, height: 10 }
-      )
-    ).toBe(false);
-    expect(
-      h.circleIntersectsPanel(
-        { x: -1, y: -1, radius: Math.sqrt(2) },
-        { x: 0, y: 0, width: 10, height: 10 }
-      )
-    ).toBe(true);
-    expect(
-      h.circleIntersectsPanel(
-        { x: -1, y: -1, radius: 1.4 },
-        { x: 0, y: 0, width: 10, height: 10 }
-      )
-    ).toBe(false);
-    const state = h.createState(h.createSeedOptions());
-    state.orb.y = state.height - state.orb.radius;
-    state.lives = 2;
-    h.resolveBottom(state);
-    expect(state.lives).toBe(2);
-    state.orb.y = state.height - state.orb.radius + 0.1;
-    h.resolveBottom(state);
-    expect(state.lives).toBe(1);
-    state.orb.x = state.width - 1;
-    state.orb.vx = 3;
-    h.resolveWalls(state);
-    expect(state.orb.vx).toBe(-3);
-    state.orb.x = 1;
-    state.orb.vx = 3;
-    h.resolveWalls(state);
-    expect(state.orb.vx).toBe(3);
-    state.orb.x = state.orb.radius;
-    state.orb.vx = -3;
-    h.resolveWalls(state);
-    expect(state.orb.vx).toBe(3);
-    state.orb.x = state.width - state.orb.radius;
-    state.orb.vx = 3;
-    h.resolveWalls(state);
-    expect(state.orb.vx).toBe(-3);
-    state.orb.y = state.orb.radius;
-    state.orb.vy = -3;
-    h.resolveWalls(state);
-    expect(state.orb.vy).toBe(3);
-    const edgePaddle = h.createState(h.createSeedOptions());
-    edgePaddle.orb.x = edgePaddle.paddle.x - edgePaddle.orb.radius;
-    edgePaddle.orb.y = edgePaddle.paddle.y - edgePaddle.orb.radius + 1;
-    edgePaddle.orb.vy = 2;
-    resolvePaddle(edgePaddle);
-    expect(edgePaddle.orb.vy).toBeLessThan(0);
-    edgePaddle.orb.x =
-      edgePaddle.paddle.x + edgePaddle.paddle.width + edgePaddle.orb.radius;
-    edgePaddle.orb.y =
-      edgePaddle.paddle.y +
-      edgePaddle.paddle.height +
-      6 -
-      edgePaddle.orb.radius;
-    edgePaddle.orb.vy = 2;
-    resolvePaddle(edgePaddle);
-    expect(edgePaddle.orb.vy).toBeLessThan(0);
-    edgePaddle.orb.x = edgePaddle.paddle.x + edgePaddle.paddle.width / 2;
-    edgePaddle.orb.y = edgePaddle.paddle.y - edgePaddle.orb.radius;
-    edgePaddle.orb.vy = 2;
-    resolvePaddle(edgePaddle);
-    expect(edgePaddle.orb.vy).toBe(-2);
+    const context = {};
+    runScenario1342Part0(context);
+    runScenario1342Part1(context);
+    runScenario1342Part2(context);
   });
 });
 
@@ -3259,3 +2436,1046 @@ describe('solarPaddle final outcome branches', () => {
     expect(lostStorage.current.SOLA1.status).toBe('lost');
   });
 });
+
+/**
+ * Execute sequential fixture scenario 1.
+ * @returns {void} Assertions and fixture mutations are retained.
+ */
+function runScenario11Part0() {
+  expect(h.parseInput('')).toBeNull();
+  expect(h.parseInput('   ')).toBeNull();
+  expect(h.parseInput(null)).toBeNull();
+  expect(h.parseInput({})).toBeNull();
+  expect(h.parseInput('null')).toBeNull();
+  expect(h.parseInput('{"width":240}')).toEqual({ width: 240 });
+  expect(h.parseObjectRecord('[]')).toBeNull();
+  expect(h.parseObjectRecord('{"ready":true}')).toEqual({ ready: true });
+  expect(h.normalizeStatus('running')).toBe('running');
+  expect(h.normalizeStatus('bad')).toBe('ready');
+  expect(h.normalizeSeedWidth({}, null, h.createSeedDefaults())).toBe(360);
+  expect(
+    h.normalizeSeedHeight({ height: 160 }, null, h.createSeedDefaults())
+  ).toBe(160);
+  expect(h.normalizeSeedLives({ lives: 2 }, null, h.createSeedDefaults())).toBe(
+    2
+  );
+  expect(
+    h.normalizeSeedLayout({ layoutSeed: 3 }, null, h.createSeedDefaults())
+  ).toBe(3);
+  expect(h.normalizeGamepadButtons([true, 0])).toEqual([true, false]);
+  expect(h.normalizeGamepadAxes([1, 'bad'])).toEqual([1, 0]);
+  expect(
+    h.normalizeActions({
+      left: true,
+      right: false,
+      launch: true,
+      pause: false,
+      reset: true,
+    })
+  ).toMatchObject({ left: true, launch: true, reset: true });
+  expect(
+    h.normalizeActions({
+      left: false,
+      right: true,
+      launch: false,
+      pause: false,
+      reset: false,
+    }).right
+  ).toBe(true);
+  expect(
+    h.normalizeActions({
+      left: false,
+      right: false,
+      launch: false,
+      pause: false,
+      reset: false,
+    })
+  ).toEqual({
+    left: false,
+    right: false,
+    launch: false,
+    pause: false,
+    reset: false,
+  });
+  expect(
+    h.normalizeEdgeActions({
+      left: true,
+      right: false,
+      launchPressed: true,
+      pausePressed: false,
+      resetPressed: true,
+    })
+  ).toEqual({
+    left: true,
+    right: false,
+    launchPressed: true,
+    pausePressed: false,
+    resetPressed: true,
+  });
+}
+
+/**
+ * Execute sequential fixture scenario 2.
+ * @param {Record<string, any>} context Shared fixture state.
+ * @returns {void} Assertions and fixture mutations are retained.
+ */
+function runScenario11Part1(context) {
+  expect(
+    h.normalizeEdgeActions({
+      left: false,
+      right: true,
+      launchPressed: false,
+      pausePressed: true,
+      resetPressed: false,
+    })
+  ).toMatchObject({ right: true, pausePressed: true });
+  expect(h.normalizeInputState(null)).toMatchObject({
+    keyboard: {},
+    gamepad: { buttons: [], axes: [] },
+  });
+  expect(h.updateInputState(undefined, {})).toMatchObject({
+    keyboard: {},
+    gamepad: { buttons: [], axes: [] },
+    actions: {
+      left: false,
+      right: false,
+      launch: false,
+      pause: false,
+      reset: false,
+    },
+  });
+  context.seedOptions = h.createSeedOptions();
+  expect(h.createState(context.seedOptions)).toMatchObject({
+    version: 1,
+    width: 360,
+    height: 240,
+    frame: 0,
+    status: 'ready',
+    lives: 3,
+    paddle: { width: 52, height: 7 },
+    orb: { radius: 4, stuckToPaddle: true },
+  });
+  expect(h.normalizeState({ version: 0 })).toBeNull();
+  expect(h.normalizeState('bad')).toBeNull();
+  expect(h.normalizeState([1])).toBeNull();
+  expect(
+    h.normalizeState(Object.assign([], { version: 1, width: 200, height: 140 }))
+  ).toBeNull();
+  expect(h.normalizeBooleanRecord('bad')).toEqual({});
+  expect(h.normalizeGamepadState('bad')).toEqual({ buttons: [], axes: [] });
+  expect(h.normalizeGamepadState([1])).toEqual({ buttons: [], axes: [] });
+  expect(
+    h.normalizeGamepadState(Object.assign([], { buttons: [true], axes: [1] }))
+  ).toEqual({ buttons: [], axes: [] });
+  expect(h.normalizeActions([])).toEqual({
+    left: false,
+    right: false,
+    launch: false,
+    pause: false,
+    reset: false,
+  });
+  expect(h.normalizeActions([true])).toEqual({
+    left: false,
+    right: false,
+    launch: false,
+    pause: false,
+    reset: false,
+  });
+  expect(h.normalizeActions(Object.assign([], { left: true }))).toEqual({
+    left: false,
+    right: false,
+    launch: false,
+    pause: false,
+    reset: false,
+  });
+  expect(h.normalizeEdgeActions([])).toEqual({
+    left: false,
+    right: false,
+    launchPressed: false,
+    pausePressed: false,
+    resetPressed: false,
+  });
+  expect(h.normalizeEdgeActions([true])).toEqual({
+    left: false,
+    right: false,
+    launchPressed: false,
+    pausePressed: false,
+    resetPressed: false,
+  });
+  expect(h.normalizeEdgeActions(Object.assign([], { left: true }))).toEqual({
+    left: false,
+    right: false,
+    launchPressed: false,
+    pausePressed: false,
+    resetPressed: false,
+  });
+  expect(h.normalizePaddle([1], 140)).toEqual(
+    h.createState(h.createSeedOptions()).paddle
+  );
+}
+
+/**
+ * Execute sequential fixture scenario 3.
+ * @returns {void} Assertions and fixture mutations are retained.
+ */
+function runScenario11Part2() {
+  expect(
+    h.normalizePaddle(
+      Object.assign([], { x: 12, y: 20, width: 30, height: 5, speed: 2 }),
+      140
+    )
+  ).toEqual(h.createState(h.createSeedOptions()).paddle);
+  expect(h.normalizeOrb([1])).toEqual(h.createState(h.createSeedOptions()).orb);
+  expect(
+    h.normalizeOrb(
+      Object.assign([], {
+        x: 12,
+        y: 20,
+        vx: 1,
+        vy: -2,
+        radius: 3,
+        stuckToPaddle: false,
+      })
+    )
+  ).toEqual(h.createState(h.createSeedOptions()).orb);
+  expect(h.normalizePaddle([], 200)).toMatchObject({ width: 52, height: 7 });
+  expect(h.normalizeOrb([])).toMatchObject({
+    radius: 4,
+    stuckToPaddle: true,
+  });
+  expect(h.normalizeState({ version: 1 })).toMatchObject({
+    version: 1,
+    width: 360,
+    height: 240,
+    status: 'ready',
+    lives: 3,
+  });
+  expect(h.normalizePanels(240, 160, 2)).toHaveLength(12);
+  expect(h.normalizePanelsFromState([])).toHaveLength(12);
+  expect(h.getPanelColumnOffset(0)).toBe(0);
+  expect(h.getPanelRowOffset(1)).toBe(2);
+  expect(
+    h.shufflePositions(
+      [
+        { x: 1, y: 1 },
+        { x: 2, y: 2 },
+      ],
+      3
+    )
+  ).toHaveLength(2);
+  expect(h.clamp(-1, 0, 10)).toBe(0);
+  expect(h.clamp(11, 0, 10)).toBe(10);
+  expect(h.clamp(5, 0, 10)).toBe(5);
+  expect(
+    h.normalizePaddle({ x: 12, y: 40, width: 60, height: 8, speed: 5 }, 160)
+  ).toEqual({ x: 12, y: 40, width: 60, height: 8, speed: 5 });
+  expect(
+    h.normalizeOrb({
+      x: 10,
+      y: 12,
+      vx: 2,
+      vy: -3,
+      radius: 5,
+      stuckToPaddle: true,
+    })
+  ).toMatchObject({
+    x: 10,
+    y: 12,
+    vx: 2,
+    vy: -3,
+    radius: 5,
+    stuckToPaddle: true,
+  });
+  expect(h.normalizeNonNegativeInteger(-1, 7)).toBe(7);
+  expect(h.normalizeNonNegativeInteger(2.6, 7)).toBe(3);
+  expect(h.normalizeNumber(0, 4)).toBe(4);
+  expect(h.normalizeNumber(2.5, 4)).toBe(2.5);
+}
+
+/**
+ * Execute sequential fixture scenario 4.
+ * @param {Record<string, any>} context Shared fixture state.
+ * @returns {void} Assertions and fixture mutations are retained.
+ */
+function runScenario11Part3(context) {
+  context.keyboard = {
+    ArrowLeft: true,
+    a: true,
+    A: true,
+    ArrowRight: true,
+    d: true,
+    D: true,
+    Space: true,
+    ' ': true,
+    Button0: true,
+    p: true,
+    P: true,
+    Button9: true,
+    r: true,
+    R: true,
+    Button8: true,
+  };
+  context.gamepad = { buttons: Array(10).fill(true), axes: [-1, 1] };
+  expect(h.isLeftActionPressed(context.keyboard, context.gamepad)).toBe(true);
+  expect(h.isRightActionPressed(context.keyboard, context.gamepad)).toBe(true);
+  expect(h.isLaunchActionPressed(context.keyboard, context.gamepad)).toBe(true);
+  expect(h.isPauseActionPressed(context.keyboard, context.gamepad)).toBe(true);
+  expect(h.isResetActionPressed(context.keyboard, context.gamepad)).toBe(true);
+  expect(h.isAxisLeft(-0.5)).toBe(true);
+  expect(h.isAxisRight(0.5)).toBe(true);
+  expect(
+    h.createEdgeActions(
+      { left: true, right: false, launch: true, pause: false, reset: true },
+      { left: false, right: false, launch: false, pause: false, reset: false }
+    )
+  ).toEqual({
+    left: true,
+    right: false,
+    launchPressed: true,
+    pausePressed: false,
+    resetPressed: true,
+  });
+}
+
+/**
+ * Execute sequential fixture scenario 1.
+ * @param {Record<string, any>} context Shared fixture state.
+ * @returns {void} Assertions and fixture mutations are retained.
+ */
+function runScenario288Part0(context) {
+  context.keyboard = {};
+  h.applyKeyboardInput({ type: 'keydown', key: 'ArrowLeft' }, context.keyboard);
+  expect(context.keyboard.ArrowLeft).toBe(true);
+  h.applyKeyboardInput({ type: 'keyup', key: 'ArrowLeft' }, context.keyboard);
+  expect(context.keyboard.ArrowLeft).toBe(false);
+  context.gamepad = { buttons: [], axes: [] };
+  h.applyGamepadInput(
+    { buttons: [true], axes: ['bad'], buttonIndex: 2, pressed: true },
+    context.gamepad
+  );
+  expect(context.gamepad).toEqual({
+    buttons: [true, undefined, true],
+    axes: [0],
+  });
+  expect(
+    h.createActionsFromState({}, { buttons: [true], axes: [] }).actions.launch
+  ).toBe(true);
+  expect(h.normalizeBooleanRecord({ a: true, b: 1 })).toEqual({
+    a: true,
+    b: false,
+  });
+  expect(h.getPanelId('custom', 2)).toBe('custom');
+  expect(h.getPanelId(null, 2)).toBe('p3');
+  expect(
+    h.normalizePanelFromState(
+      { id: 'x', x: 4, y: 5, width: 20, height: 10, charge: true },
+      0
+    )
+  ).toEqual({ id: 'x', x: 4, y: 5, width: 20, height: 10, charge: true });
+  expect(h.buildPanelPositions(240, 160, 28, 10)).toHaveLength(15);
+  expect(h.isAxisLeft(-0.1)).toBe(false);
+  expect(h.isAxisRight(0.1)).toBe(false);
+  expect(h.isAxisLeft(-0.25)).toBe(false);
+  expect(h.isAxisRight(0.25)).toBe(false);
+  expect(h.isAxisLeft(-0.401)).toBe(true);
+  expect(h.isAxisRight(0.401)).toBe(true);
+}
+
+/**
+ * Execute sequential fixture scenario 2.
+ * @param {Record<string, any>} context Shared fixture state.
+ * @returns {void} Assertions and fixture mutations are retained.
+ */
+function runScenario288Part1(context) {
+  context.state = h.createState(h.createSeedOptions());
+  context.state.status = 'ready';
+  h.applyGameplayInput(context.state, {
+    actions: {
+      left: false,
+      right: false,
+      launch: true,
+      pause: false,
+      reset: false,
+    },
+    edgeActions: {
+      left: false,
+      right: false,
+      launchPressed: true,
+      pausePressed: false,
+      resetPressed: false,
+    },
+  });
+  expect(context.state.status).toBe('running');
+  expect(context.state.orb.stuckToPaddle).toBe(false);
+  context.state.status = 'running';
+  h.applyGameplayInput(context.state, {
+    actions: {
+      left: false,
+      right: false,
+      launch: false,
+      pause: true,
+      reset: false,
+    },
+    edgeActions: {
+      left: false,
+      right: false,
+      launchPressed: false,
+      pausePressed: true,
+      resetPressed: false,
+    },
+  });
+  expect(context.state.status).toBe('paused');
+  h.movePaddle(context.state, { left: true, right: false });
+  expect(context.state.paddle.x).toBeGreaterThanOrEqual(0);
+  context.state.paddle.x = 100;
+  h.movePaddle(context.state, { left: false, right: true });
+  expect(context.state.paddle.x).toBe(104);
+  h.stickOrbToPaddle(context.state);
+  expect(context.state.orb.y).toBe(
+    context.state.paddle.y - context.state.orb.radius - 1
+  );
+  context.state.orb.x = 1;
+  context.state.orb.y = 1;
+  context.state.orb.vx = -2;
+  context.state.orb.vy = -2;
+  h.resolveWalls(context.state);
+}
+
+/**
+ * Execute sequential fixture scenario 3.
+ * @param {Record<string, any>} context Shared fixture state.
+ * @returns {void} Assertions and fixture mutations are retained.
+ */
+function runScenario288Part2(context) {
+  expect(context.state.orb.vx).toBe(2);
+  expect(context.state.orb.vy).toBe(2);
+  expect(
+    h.getPanelCollisionAxis(
+      { x: 14, y: 15, radius: 4 },
+      { x: 0, y: 0, width: 28, height: 10 }
+    )
+  ).toBe('y');
+  expect(
+    h.circleIntersectsPanel(
+      { x: 5, y: 5, radius: 2 },
+      { x: 0, y: 0, width: 10, height: 10 }
+    )
+  ).toBe(true);
+  expect(
+    h.circleIntersectsPanel(
+      { x: 30, y: 30, radius: 2 },
+      { x: 0, y: 0, width: 10, height: 10 }
+    )
+  ).toBe(false);
+  context.panel = { x: 0, y: 0, width: 20, height: 10, charge: false };
+  context.state.panels = [context.panel];
+  context.state.orb = {
+    x: 10,
+    y: 5,
+    vx: 1,
+    vy: -1,
+    radius: 3,
+    stuckToPaddle: false,
+  };
+  context.state.score = 0;
+  h.resolvePanels(context.state);
+  expect(context.panel.charge).toBe(true);
+  expect(context.state.score).toBe(1);
+  context.state.panels = [{ ...context.panel, charge: true }];
+  h.resolveWinLoss(context.state);
+  expect(context.state.status).toBe('won');
+  context.state.lives = 1;
+  context.state.orb.y = context.state.height + 10;
+  context.state.status = 'running';
+  h.resolveBottom(context.state);
+  expect(context.state.status).toBe('lost');
+}
+
+/**
+ * Execute sequential fixture scenario 4.
+ * @param {Record<string, any>} context Shared fixture state.
+ * @returns {void} Assertions and fixture mutations are retained.
+ */
+function runScenario288Part3(context) {
+  expect(h.getPanelFill(true)).not.toBe(h.getPanelFill(false));
+  expect(h.getOrbFill('lost')).not.toBe(h.getOrbFill('running'));
+  expect(h.toCanvasPayload(context.state).shapes).toHaveLength(6);
+  context.persist = jest.fn();
+  h.persistState(context.persist, context.state);
+  expect(context.persist).toHaveBeenCalledWith({ SOLA1: context.state });
+}
+
+/**
+ * Execute sequential fixture scenario 1.
+ * @returns {void} Assertions and fixture mutations are retained.
+ */
+function runScenario455Part0() {
+  expect(h.getStorageAccessor(null)).toBeNull();
+  expect(h.getStorageAccessor(new Map())).toBeNull();
+  expect(h.parseInput('{}')).toEqual({});
+  expect(h.parseInput('{bad')).toBeNull();
+  expect(h.parseObjectRecord('1')).toBeNull();
+  expect(h.normalizeBooleanRecord([])).toEqual({});
+  expect(h.normalizeGamepadState([])).toEqual({ buttons: [], axes: [] });
+  expect(h.normalizeGamepadButtons(null)).toEqual([]);
+  expect(h.normalizeGamepadAxes(null)).toEqual([]);
+  expect(h.normalizeActions([])).toEqual({
+    left: false,
+    right: false,
+    launch: false,
+    pause: false,
+    reset: false,
+  });
+  expect(h.normalizeEdgeActions([])).toEqual({
+    left: false,
+    right: false,
+    launchPressed: false,
+    pausePressed: false,
+    resetPressed: false,
+  });
+  expect(h.createInitialInputState()).toEqual({
+    keyboard: {},
+    gamepad: { buttons: [], axes: [] },
+    actions: {
+      left: false,
+      right: false,
+      launch: false,
+      pause: false,
+      reset: false,
+    },
+    edgeActions: {
+      left: false,
+      right: false,
+      launchPressed: false,
+      pausePressed: false,
+      resetPressed: false,
+    },
+    previousActions: {
+      left: false,
+      right: false,
+      launch: false,
+      pause: false,
+      reset: false,
+    },
+  });
+  expect(h.normalizePanelFromState({}, 0)).toEqual({
+    id: 'p1',
+    x: 0,
+    y: 0,
+    width: 20,
+    height: 10,
+    charge: false,
+  });
+  expect(h.normalizePanelsFromState([null])).toEqual([]);
+  expect(h.getPanelColumnOffset(1)).toBe(6);
+  expect(h.getPanelRowOffset(1)).toBe(2);
+  expect(h.normalizeNumber('bad', 7)).toBe(7);
+  expect(h.normalizeNonNegativeInteger(0, 7)).toBe(0);
+  expect(h.normalizePaddle(null, 100)).toMatchObject({
+    width: 52,
+    height: 7,
+    speed: 4,
+  });
+  expect(h.normalizeOrb(null)).toMatchObject({
+    radius: 4,
+    vx: 1,
+    vy: -2,
+    stuckToPaddle: true,
+  });
+}
+
+/**
+ * Execute sequential fixture scenario 2.
+ * @returns {void} Assertions and fixture mutations are retained.
+ */
+function runScenario455Part1() {
+  expect(h.isLeftActionPressed({}, { buttons: [], axes: [] })).toBe(false);
+  expect(h.isRightActionPressed({}, { buttons: [], axes: [] })).toBe(false);
+  expect(h.isLaunchActionPressed({}, { buttons: [], axes: [] })).toBe(false);
+  expect(h.isPauseActionPressed({}, { buttons: [], axes: [] })).toBe(false);
+  expect(h.isResetActionPressed({}, { buttons: [], axes: [] })).toBe(false);
+  expect(h.isAxisLeft(-0.4)).toBe(false);
+  expect(h.isAxisLeft(-0.41)).toBe(true);
+  expect(h.isAxisRight(0.4)).toBe(false);
+  expect(h.isAxisRight(0.41)).toBe(true);
+  expect(
+    h.normalizePanelFromState(
+      { id: 4, x: 0, y: 0, width: -1, height: 0, charge: 1 },
+      2
+    )
+  ).toEqual({ id: 'p3', x: 0, y: 0, width: 20, height: 10, charge: false });
+  expect(
+    h.normalizePaddle({ x: -1, y: -1, width: -1, height: 0, speed: -1 }, 4)
+  ).toEqual({ x: 180, y: 0, width: 52, height: 7, speed: 4 });
+  expect(
+    h.normalizeOrb({
+      x: 0,
+      y: 0,
+      vx: 0,
+      vy: 0,
+      radius: 0,
+      stuckToPaddle: false,
+    })
+  ).toEqual({ x: 180, y: 0, vx: 1, vy: -2, radius: 4, stuckToPaddle: false });
+  expect(
+    h.normalizePanelsFromState([false, 1, 'panel', { x: 1, y: 2 }])
+  ).toHaveLength(1);
+  for (const invalid of [undefined, null, 0, '', [], {}, 'READY', 'running ']) {
+    expect(h.normalizeStatus(invalid)).toBe('ready');
+  }
+  expect(
+    h.normalizeGamepadState({
+      buttons: [true, false, 1],
+      axes: [0, -1, 'bad'],
+    })
+  ).toEqual({ buttons: [true, false, false], axes: [0, -1, 0] });
+  expect(h.normalizeGamepadState({ buttons: {}, axes: {} })).toEqual({
+    buttons: [],
+    axes: [],
+  });
+  expect(
+    h.normalizeActions({
+      left: 1,
+      right: 'true',
+      launch: null,
+      pause: {},
+      reset: [],
+    })
+  ).toEqual({
+    left: false,
+    right: false,
+    launch: false,
+    pause: false,
+    reset: false,
+  });
+}
+
+/**
+ * Execute sequential fixture scenario 1.
+ * @param {Record<string, any>} context Shared fixture state.
+ * @returns {void} Assertions and fixture mutations are retained.
+ */
+function runScenario598Part0(context) {
+  context.state = h.createState(h.createSeedOptions());
+  context.state.status = 'paused';
+  h.applyGameplayInput(context.state, {
+    actions: {
+      left: false,
+      right: false,
+      launch: false,
+      pause: true,
+      reset: false,
+    },
+    edgeActions: {
+      left: false,
+      right: false,
+      launchPressed: false,
+      pausePressed: true,
+      resetPressed: false,
+    },
+  });
+  expect(context.state.status).toBe('running');
+  h.movePaddle(context.state, { left: true, right: false });
+  h.movePaddle(context.state, { left: false, right: true });
+  expect(context.state.paddle.x).toBeGreaterThanOrEqual(0);
+  context.state.orb.stuckToPaddle = false;
+  context.state.orb.x = 1;
+  context.state.orb.y = 50;
+  context.state.orb.vx = -1;
+  context.state.orb.vy = 1;
+  h.stepSimulation(context.state);
+  expect(context.state.orb.x).toBeGreaterThanOrEqual(context.state.orb.radius);
+  context.state.orb.x = context.state.paddle.x + context.state.paddle.width / 2;
+  context.state.orb.y = context.state.paddle.y - 1;
+  context.state.orb.vy = 2;
+  resolvePaddle(context.state);
+  expect(context.state.orb.vy).toBeLessThan(0);
+  context.orb = { x: 5, y: 5, vx: 2, vy: 3, radius: 2, stuckToPaddle: false };
+}
+
+/**
+ * Execute sequential fixture scenario 2.
+ * @param {Record<string, any>} context Shared fixture state.
+ * @returns {void} Assertions and fixture mutations are retained.
+ */
+function runScenario598Part1(context) {
+  context.panel = { x: 0, y: 0, width: 10, height: 10, charge: false };
+  reflectOrbVelocityFromPanel(context.orb, 'x');
+  expect(context.orb.vx).toBe(-2);
+  reflectOrbVelocityFromPanel(context.orb, 'y');
+  expect(context.orb.vy).toBe(-3);
+  separateOrbFromPanel(context.orb, context.panel, 'x');
+  expect(context.orb.x).not.toBe(5);
+  separateOrbFromPanel(context.orb, context.panel, 'y');
+  expect(context.orb.y).not.toBe(5);
+  context.state.lives = 2;
+  context.state.status = 'running';
+  context.state.orb.y = context.state.height + 1;
+  h.resolveBottom(context.state);
+  expect(context.state.lives).toBe(1);
+  expect(context.state.status).toBe('ready');
+  expect(context.state.orb.stuckToPaddle).toBe(true);
+  context.payload = h.toCanvasPayload(context.state);
+  expect(context.payload.width).toBe(context.state.width);
+  expect(context.payload.shapes[0]).toMatchObject({
+    type: 'rect',
+    x: 0,
+    y: 0,
+    fill: '#0b1220',
+  });
+  expect(context.payload.shapes.at(-1)).toMatchObject({
+    type: 'rect',
+    x: 18,
+    height: 4,
+  });
+}
+
+/**
+ * Execute sequential fixture scenario 1.
+ * @param {Record<string, any>} context Shared fixture state.
+ * @returns {void} Assertions and fixture mutations are retained.
+ */
+function runScenario943Part0(context) {
+  context.state = h.createState(h.createSeedOptions());
+  context.state.orb = {
+    x: -20,
+    y: context.state.paddle.y,
+    vx: 1,
+    vy: 2,
+    radius: 3,
+    stuckToPaddle: false,
+  };
+  resolvePaddle(context.state);
+  expect(context.state.orb.vy).toBe(2);
+  expect(context.state.orb.x).toBe(-20);
+  expect(context.state.orb.y).toBe(context.state.paddle.y);
+  expect(context.state.orb.vx).toBe(1);
+  context.state.orb.x =
+    context.state.paddle.x +
+    context.state.paddle.width +
+    context.state.orb.radius +
+    0.1;
+  context.state.orb.y = context.state.paddle.y - 1;
+  resolvePaddle(context.state);
+  expect(context.state.orb.y).toBe(context.state.paddle.y - 1);
+  expect(context.state.orb.vy).toBe(2);
+  context.state.orb.x = context.state.paddle.x + context.state.paddle.width / 2;
+  context.state.orb.y = context.state.paddle.y - 20;
+  resolvePaddle(context.state);
+  expect(context.state.orb.vy).toBe(2);
+  context.state.orb.y = context.state.paddle.y - 1;
+  context.state.orb.vy = -2;
+  resolvePaddle(context.state);
+  expect(context.state.orb.vy).toBe(-2);
+}
+
+/**
+ * Execute sequential fixture scenario 2.
+ * @param {Record<string, any>} context Shared fixture state.
+ * @returns {void} Assertions and fixture mutations are retained.
+ */
+function runScenario943Part1(context) {
+  context.state.orb.x = context.state.paddle.x + context.state.paddle.width / 2;
+  context.state.orb.y = context.state.paddle.y - context.state.orb.radius + 1;
+  context.state.orb.vy = 0;
+  resolvePaddle(context.state);
+  expect(context.state.orb.vy).toBe(0);
+  context.state.orb.y = context.state.paddle.y - context.state.orb.radius - 0.1;
+  context.state.orb.vy = 2;
+  resolvePaddle(context.state);
+  expect(context.state.orb.vy).toBe(2);
+  context.state.orb.y =
+    context.state.paddle.y +
+    context.state.paddle.height +
+    6 -
+    context.state.orb.radius +
+    0.1;
+  resolvePaddle(context.state);
+  expect(context.state.orb.vy).toBe(2);
+  context.state.orb.y = context.state.paddle.y - context.state.orb.radius;
+  resolvePaddle(context.state);
+  expect(context.state.orb.y).toBe(
+    context.state.paddle.y - context.state.orb.radius - 1
+  );
+  context.state.orb.y =
+    context.state.paddle.y +
+    context.state.paddle.height +
+    6 -
+    context.state.orb.radius;
+  context.state.orb.vy = 2;
+  resolvePaddle(context.state);
+  expect(context.state.orb.y).toBe(
+    context.state.paddle.y - context.state.orb.radius - 1
+  );
+  context.state.orb.vy = 2;
+}
+
+/**
+ * Execute sequential fixture scenario 3.
+ * @param {Record<string, any>} context Shared fixture state.
+ * @returns {void} Assertions and fixture mutations are retained.
+ */
+function runScenario943Part2(context) {
+  context.state.orb.y = context.state.paddle.y - 1;
+  context.state.orb.x = context.state.paddle.x;
+  resolvePaddle(context.state);
+  expect(context.state.orb.vy).toBeLessThan(0);
+  expect(context.state.orb.vx).toBe(-1);
+  context.state.orb.x = context.state.paddle.x + context.state.paddle.width / 2;
+  context.state.orb.y = context.state.paddle.y - 1;
+  context.state.orb.vy = 2;
+  context.state.orb.vx = 0;
+  resolvePaddle(context.state);
+  expect(context.state.orb.vx).toBe(1);
+  context.state.orb.x = context.state.paddle.x + context.state.paddle.width;
+  context.state.orb.y = context.state.paddle.y - 1;
+  context.state.orb.vy = 2;
+  context.state.orb.vx = 0;
+  resolvePaddle(context.state);
+  expect(context.state.orb.vx).toBe(2);
+  expect(
+    h.getPanelCollisionAxis(
+      { x: -3, y: 5, radius: 3 },
+      { x: 0, y: 0, width: 20, height: 10 }
+    )
+  ).toBe('x');
+  expect(
+    h.getPanelCollisionAxis(
+      { x: 10, y: -3, radius: 3 },
+      { x: 0, y: 0, width: 20, height: 10 }
+    )
+  ).toBe('y');
+  expect(
+    h.getPanelCollisionAxis(
+      { x: 15, y: 5, radius: 3 },
+      { x: 0, y: 0, width: 20, height: 10 }
+    )
+  ).toBe('y');
+}
+
+/**
+ * Execute sequential fixture scenario 4.
+ * @param {Record<string, any>} context Shared fixture state.
+ * @returns {void} Assertions and fixture mutations are retained.
+ */
+function runScenario943Part3(context) {
+  context.orb = { x: 10, y: 5, vx: 1, vy: 1, radius: 2, stuckToPaddle: false };
+  context.panel = { x: 0, y: 0, width: 20, height: 10 };
+  separateOrbFromPanel(context.orb, context.panel, 'x');
+  expect(context.orb.x).toBe(22.5);
+  separateOrbFromPanel(context.orb, context.panel, 'y');
+  expect(context.orb.y).toBe(12.5);
+}
+
+/**
+ * Execute sequential fixture scenario 1.
+ * @param {Record<string, any>} context Shared fixture state.
+ * @returns {void} Assertions and fixture mutations are retained.
+ */
+function runScenario1234Part0(context) {
+  context.state = h.createState(h.createSeedOptions());
+  context.noInput = {
+    actions: {
+      left: false,
+      right: false,
+      launch: false,
+      pause: false,
+      reset: false,
+    },
+    edgeActions: {
+      left: false,
+      right: false,
+      launchPressed: false,
+      pausePressed: false,
+      resetPressed: false,
+    },
+  };
+  h.applyGameplayInput(context.state, context.noInput);
+  expect(context.state.status).toBe('ready');
+  expect(context.state.orb.x).toBe(
+    context.state.paddle.x + Math.round(context.state.paddle.width / 2)
+  );
+  context.state.orb.x = 0;
+  context.state.orb.y = 0;
+  h.applyGameplayInput(context.state, context.noInput);
+  expect(context.state.orb.x).toBe(
+    context.state.paddle.x + Math.round(context.state.paddle.width / 2)
+  );
+  expect(context.state.orb.y).toBe(
+    context.state.paddle.y - context.state.orb.radius - 1
+  );
+  context.state.status = 'running';
+  context.state.orb.stuckToPaddle = false;
+  context.before = { x: context.state.orb.x, y: context.state.orb.y };
+  h.stepSimulation(context.state);
+  expect(context.state.orb.x).not.toBe(context.before.x);
+  expect(context.state.orb.y).not.toBe(context.before.y);
+  context.state.panels = [];
+  context.state.orb = {
+    x: 10,
+    y: 20,
+    vx: 2,
+    vy: 3,
+    radius: 2,
+    stuckToPaddle: false,
+  };
+  h.stepSimulation(context.state);
+  expect(context.state.orb).toMatchObject({ x: 12, y: 23 });
+}
+
+/**
+ * Execute sequential fixture scenario 2.
+ * @param {Record<string, any>} context Shared fixture state.
+ * @returns {void} Assertions and fixture mutations are retained.
+ */
+function runScenario1234Part1(context) {
+  context.state.orb.stuckToPaddle = true;
+  context.stuck = { x: context.state.orb.x, y: context.state.orb.y };
+  h.stepSimulation(context.state);
+  expect(context.state.orb).toMatchObject(context.stuck);
+  context.state.status = 'paused';
+  h.applyGameplayInput(context.state, {
+    actions: context.noInput.actions,
+    edgeActions: { ...context.noInput.edgeActions, pausePressed: true },
+  });
+  expect(context.state.status).toBe('running');
+  context.state.status = 'running';
+  h.applyGameplayInput(context.state, {
+    actions: context.noInput.actions,
+    edgeActions: { ...context.noInput.edgeActions, pausePressed: true },
+  });
+  expect(context.state.status).toBe('paused');
+  context.state.status = 'ready';
+  h.applyGameplayInput(context.state, {
+    actions: context.noInput.actions,
+    edgeActions: { ...context.noInput.edgeActions, pausePressed: true },
+  });
+  expect(context.state.status).toBe('ready');
+  context.state.status = 'running';
+  context.state.orb.stuckToPaddle = true;
+  h.applyGameplayInput(context.state, {
+    actions: context.noInput.actions,
+    edgeActions: { ...context.noInput.edgeActions, launchPressed: true },
+  });
+  expect(context.state.status).toBe('running');
+  expect(context.state.orb.stuckToPaddle).toBe(true);
+  context.state.status = 'paused';
+  h.applyGameplayInput(context.state, context.noInput);
+}
+
+/**
+ * Execute sequential fixture scenario 3.
+ * @param {Record<string, any>} context Shared fixture state.
+ * @returns {void} Assertions and fixture mutations are retained.
+ */
+function runScenario1234Part2(context) {
+  expect(context.state.status).toBe('paused');
+}
+
+/**
+ * Execute sequential fixture scenario 1.
+ * @param {Record<string, any>} context Shared fixture state.
+ * @returns {void} Assertions and fixture mutations are retained.
+ */
+function runScenario1342Part0(context) {
+  context.small = h.buildPanelPositions(80, 80, 28, 10);
+  expect(context.small).toHaveLength(15);
+  expect(
+    new Set(context.small.map(position => `${position.x},${position.y}`))
+  ).toEqual(new Set(['24,10']));
+  expect(
+    h.circleIntersectsPanel(
+      { x: -2, y: 5, radius: 2 },
+      { x: 0, y: 0, width: 10, height: 10 }
+    )
+  ).toBe(true);
+  expect(
+    h.circleIntersectsPanel(
+      { x: -3, y: 5, radius: 2 },
+      { x: 0, y: 0, width: 10, height: 10 }
+    )
+  ).toBe(false);
+  expect(
+    h.circleIntersectsPanel(
+      { x: -1, y: -1, radius: Math.sqrt(2) },
+      { x: 0, y: 0, width: 10, height: 10 }
+    )
+  ).toBe(true);
+  expect(
+    h.circleIntersectsPanel(
+      { x: -1, y: -1, radius: 1.4 },
+      { x: 0, y: 0, width: 10, height: 10 }
+    )
+  ).toBe(false);
+  context.state = h.createState(h.createSeedOptions());
+  context.state.orb.y = context.state.height - context.state.orb.radius;
+  context.state.lives = 2;
+  h.resolveBottom(context.state);
+  expect(context.state.lives).toBe(2);
+  context.state.orb.y = context.state.height - context.state.orb.radius + 0.1;
+  h.resolveBottom(context.state);
+  expect(context.state.lives).toBe(1);
+  context.state.orb.x = context.state.width - 1;
+  context.state.orb.vx = 3;
+  h.resolveWalls(context.state);
+  expect(context.state.orb.vx).toBe(-3);
+  context.state.orb.x = 1;
+}
+
+/**
+ * Execute sequential fixture scenario 2.
+ * @param {Record<string, any>} context Shared fixture state.
+ * @returns {void} Assertions and fixture mutations are retained.
+ */
+function runScenario1342Part1(context) {
+  context.state.orb.vx = 3;
+  h.resolveWalls(context.state);
+  expect(context.state.orb.vx).toBe(3);
+  context.state.orb.x = context.state.orb.radius;
+  context.state.orb.vx = -3;
+  h.resolveWalls(context.state);
+  expect(context.state.orb.vx).toBe(3);
+  context.state.orb.x = context.state.width - context.state.orb.radius;
+  context.state.orb.vx = 3;
+  h.resolveWalls(context.state);
+  expect(context.state.orb.vx).toBe(-3);
+  context.state.orb.y = context.state.orb.radius;
+  context.state.orb.vy = -3;
+  h.resolveWalls(context.state);
+  expect(context.state.orb.vy).toBe(3);
+  context.edgePaddle = h.createState(h.createSeedOptions());
+  context.edgePaddle.orb.x =
+    context.edgePaddle.paddle.x - context.edgePaddle.orb.radius;
+  context.edgePaddle.orb.y =
+    context.edgePaddle.paddle.y - context.edgePaddle.orb.radius + 1;
+  context.edgePaddle.orb.vy = 2;
+  resolvePaddle(context.edgePaddle);
+}
+
+/**
+ * Execute sequential fixture scenario 3.
+ * @param {Record<string, any>} context Shared fixture state.
+ * @returns {void} Assertions and fixture mutations are retained.
+ */
+function runScenario1342Part2(context) {
+  expect(context.edgePaddle.orb.vy).toBeLessThan(0);
+  context.edgePaddle.orb.x =
+    context.edgePaddle.paddle.x +
+    context.edgePaddle.paddle.width +
+    context.edgePaddle.orb.radius;
+  context.edgePaddle.orb.y =
+    context.edgePaddle.paddle.y +
+    context.edgePaddle.paddle.height +
+    6 -
+    context.edgePaddle.orb.radius;
+  context.edgePaddle.orb.vy = 2;
+  resolvePaddle(context.edgePaddle);
+  expect(context.edgePaddle.orb.vy).toBeLessThan(0);
+  context.edgePaddle.orb.x =
+    context.edgePaddle.paddle.x + context.edgePaddle.paddle.width / 2;
+  context.edgePaddle.orb.y =
+    context.edgePaddle.paddle.y - context.edgePaddle.orb.radius;
+  context.edgePaddle.orb.vy = 2;
+  resolvePaddle(context.edgePaddle);
+  expect(context.edgePaddle.orb.vy).toBe(-2);
+}

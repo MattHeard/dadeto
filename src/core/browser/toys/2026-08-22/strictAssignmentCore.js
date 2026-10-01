@@ -7,7 +7,6 @@ import {
 import { wgs84Distance } from '../2026-08-20/wgs84Distance.js';
 import { resolvePointRecords } from './spacePointResolution.js';
 
-
 /**
  * Normalize an identifier and reject absent/sentinel values.
  * @param {unknown} value Candidate identifier.
