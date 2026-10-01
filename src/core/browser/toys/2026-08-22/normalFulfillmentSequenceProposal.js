@@ -5,6 +5,7 @@ import {
   fulfillmentPoint as warehousePoint,
   fulfillmentSegment as makeSegment,
   fulfillmentNumberWithin as coordinate,
+  fulfillmentPossessionContext,
 } from './fulfillmentResult.js';
 
 // Toy: Normal Fulfillment Sequence Proposal
@@ -212,21 +213,8 @@ export function normalFulfillmentSequenceProposal(input) {
  * @returns {any} Validated values.
  */
 function validate(request) {
-  const context = request?.possessionContext;
-  const segment = context?.segment;
-  const startPoint = context?.startPoint;
-  const endPoint = context?.endPoint;
-  if (!segment || !startPoint || !endPoint)
-    throw new Error(
-      'A possession segment and both endpoint points are required.'
-    );
-  if (
-    segment.startPointId !== startPoint.pointId ||
-    segment.endPointId !== endPoint.pointId
-  )
-    throw new Error(
-      'Possession segment endpoint references must match its points.'
-    );
+  const { segment, startPoint, endPoint } =
+    fulfillmentPossessionContext(request);
   if (!referencedPoint(startPoint) || !referencedPoint(endPoint))
     throw new Error('Possession points must reference space points.');
   const start = Date.parse(startPoint.timestamp);

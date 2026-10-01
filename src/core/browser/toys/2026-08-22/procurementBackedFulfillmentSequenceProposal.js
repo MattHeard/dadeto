@@ -5,6 +5,7 @@ import {
   fulfillmentSegment as segment,
   fulfillmentMinuteAligned as isMinuteTimestamp,
   fulfillmentNumberWithin as validCoordinate,
+  fulfillmentPossessionContext,
 } from './fulfillmentResult.js';
 
 // Toy: Procurement-Backed Fulfillment Sequence Proposal
@@ -160,21 +161,8 @@ export function procurementBackedFulfillmentSequenceProposal(input) {
  * @returns {any} Validated request.
  */
 function validateRequest(request) {
-  const context = request?.possessionContext;
-  const segment = context?.segment;
-  const startPoint = context?.startPoint;
-  const endPoint = context?.endPoint;
-  if (!segment || !startPoint || !endPoint)
-    throw new Error(
-      'A possession segment and both endpoint points are required.'
-    );
-  if (
-    segment.startPointId !== startPoint.pointId ||
-    segment.endPointId !== endPoint.pointId
-  )
-    throw new Error(
-      'Possession segment endpoint references must match its points.'
-    );
+  const { segment, startPoint, endPoint } =
+    fulfillmentPossessionContext(request);
   const start = Date.parse(startPoint.timestamp);
   const end = Date.parse(endPoint.timestamp);
   if (!Number.isFinite(start) || !Number.isFinite(end) || end < start)

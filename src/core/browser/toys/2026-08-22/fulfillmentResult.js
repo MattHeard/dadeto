@@ -101,6 +101,30 @@ export function fulfillmentSegment(segmentId, startPointId, endPointId) {
 }
 
 /**
+ * Resolve required possession endpoints and their segment reference contract.
+ * @param {Record<string, any>} request Proposal request.
+ * @returns {{segment: Record<string, any>, startPoint: Record<string, any>, endPoint: Record<string, any>}} Complete possession context.
+ */
+export function fulfillmentPossessionContext(request) {
+  const context = request?.possessionContext;
+  const segment = context?.segment;
+  const startPoint = context?.startPoint;
+  const endPoint = context?.endPoint;
+  if (!segment || !startPoint || !endPoint)
+    throw new Error(
+      'A possession segment and both endpoint points are required.'
+    );
+  if (
+    segment.startPointId !== startPoint.pointId ||
+    segment.endPointId !== endPoint.pointId
+  )
+    throw new Error(
+      'Possession segment endpoint references must match its points.'
+    );
+  return { segment, startPoint, endPoint };
+}
+
+/**
  * @param {Record<string, any>} request Request containing requestedSku/assets.
  * @param {(asset: Record<string, any>) => string} evaluate Asset evaluator.
  * @returns {string} Feasibility JSON.
