@@ -1,7 +1,7 @@
 # Mosslight virtual keypad
 
-- Unexpected hurdle: the full repository check exposed two generated-HTML tests whose expected input-method lists lagged behind the current generator.
-- Diagnosis: the registered keypad correctly appeared in generated forms; only the complete-page expectations were stale.
-- Fix: added the `mosslight-keypad` input handler, one-tap keyboard event mapping, responsive handheld styling, game default, and focused unit/mobile browser coverage; updated generated-HTML expectations.
-- Evidence: full `npm run check` passed all 10 gates with 100% coverage and zero skipped lines; local Mosslight Playwright passed 3 tests with 3 expected project skips; build and `git diff --check` passed.
-- Next-time guidance: when introducing a Dadeto input method, search for complete generated HTML assertions and update both phone and desktop E2E expectations before the aggregate check.
+- Unexpected hurdle: the full repository check exposed four generated-HTML tests whose expected input-method lists lagged behind the current generator; repeated checks also filled the 2 GB `/tmp` filesystem with Jest transforms.
+- Diagnosis: the keypad correctly appeared in generated forms; only exact HTML expectations were stale. `/tmp/jest_rs` was generated cache data, and the repo already documents redirecting Jest cache/temp files into `.tmp`.
+- Fix: added the `mosslight-keypad` input handler, one-tap keyboard event mapping, responsive handheld styling, game default, and focused unit/mobile browser coverage; updated all complete-HTML expectations to verify the ordered keypad options. Cleared only `/tmp/jest_rs` contents and used `JEST_CACHE_DIRECTORY` plus `TMPDIR` under the workspace.
+- Evidence: `DADETO_COVERAGE_SHARD_SIZE=40 JEST_CACHE_DIRECTORY=/home/matt/dadeto/.tmp/jest_rs TMPDIR=/home/matt/dadeto/.tmp npm run check` exited 0; all 10 gates passed; coverage was 100% for lines, statements, functions, and branches with zero skipped lines. Local Mosslight Playwright passed 3 tests with 3 expected project skips; build and `git diff --check` passed.
+- Next-time guidance: when introducing a Dadeto input method, search for complete generated HTML assertions and update them alongside the phone and desktop E2E tests. Run aggregate coverage with workspace-local cache/temp paths to avoid filling `/tmp`.
