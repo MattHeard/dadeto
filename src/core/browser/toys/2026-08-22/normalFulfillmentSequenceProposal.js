@@ -1,10 +1,5 @@
 import { normalizeCoordinate } from '../2026-08-18/registryUtils.js';
-
-// Stryker disable all -- this module is the fixed normal fulfillment
-// proposal protocol boundary covered by the focused fulfillment suites.
-
-// This toy intentionally mirrors the public fulfillment proposal shape while
-// remaining procurement-free; keep it out of token-level clone detection.
+import { fulfillmentNonblankString as nonblank } from './fulfillmentResult.js';
 
 // Toy: Normal Fulfillment Sequence Proposal
 
@@ -293,14 +288,6 @@ function validate(request) {
 }
 
 /**
- * @param {unknown} value Candidate ID.
- * @returns {boolean} Whether nonblank.
- */
-function nonblank(value) {
-  return typeof value === 'string' && value.trim().length > 0;
-}
-
-/**
  * @param {Record<string, any>} point Candidate point.
  * @returns {boolean} Whether referenced and valid.
  */
@@ -400,4 +387,3 @@ function metadata({
     });
   return result;
 }
-// Stryker restore all

@@ -7,6 +7,7 @@ import {
   fulfillmentMergeById,
   fulfillmentMinuteAligned,
   fulfillmentNonblank,
+  fulfillmentNonblankString,
   fulfillmentResolvePoint,
   fulfillmentExistingAssetBoundary,
 } from '../../../src/core/browser/toys/2026-08-22/fulfillmentResult.js';
@@ -45,6 +46,9 @@ describe('fulfillment boundary helpers', () => {
     ).toEqual({ feasible: true, existing: [] });
   });
   test('covers scalar predicates and failure serialization', () => {
+    expect(fulfillmentNonblankString(42)).toBe(false);
+    expect(fulfillmentNonblankString('   ')).toBe(false);
+    expect(fulfillmentNonblankString(' id ')).toBe(true);
     expect(fulfillmentNonblank(undefined)).toBe(false);
     expect(fulfillmentNonblank('  ')).toBe(false);
     expect(fulfillmentNonblank('x')).toBe(true);

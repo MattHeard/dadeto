@@ -1,7 +1,3 @@
-// Stryker disable all -- this module is the fixed fulfillment validation,
-// matching, merge, and request-shaping protocol boundary covered by the
-// fulfillment-boundary suite.
-
 /**
  * Serialize a structured failure result for a fulfillment toy.
  * @param {unknown} error Caught failure.
@@ -35,6 +31,15 @@ export function fulfillmentBoundary(input, key, calculate) {
  */
 export function fulfillmentNonblank(value) {
   return value !== undefined && value !== null && String(value).trim() !== '';
+}
+
+/**
+ * Require nonblank text without coercing identifiers from other scalar types.
+ * @param {unknown} value Candidate identifier.
+ * @returns {boolean} Whether the value is nonblank text.
+ */
+export function fulfillmentNonblankString(value) {
+  return typeof value === 'string' && value.trim().length > 0;
 }
 
 /**
@@ -201,5 +206,3 @@ export function fulfillmentAssetRequest(asset, request) {
     spacePoints: request.spacePoints,
   });
 }
-
-// Stryker restore all

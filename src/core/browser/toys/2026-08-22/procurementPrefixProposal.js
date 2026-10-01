@@ -4,6 +4,7 @@ import { normalizeCoordinate } from '../2026-08-18/registryUtils.js';
 import {
   fulfillmentFiniteNonNegative as finiteNonNegative,
   fulfillmentMinuteAligned as minuteAligned,
+  fulfillmentNonblankString as nonblank,
 } from './fulfillmentResult.js';
 
 /**
@@ -95,14 +96,6 @@ export function procurementPrefixProposal(input) {
   } catch (error) {
     return JSON.stringify({ valid: false, error: error.message });
   }
-}
-
-/**
- * @param {unknown} value Candidate text.
- * @returns {boolean} Whether the value is nonblank text.
- */
-function nonblank(value) {
-  return typeof value === 'string' && value.trim().length > 0;
 }
 
 /**
