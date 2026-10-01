@@ -45,6 +45,20 @@ const globalState = {
   temporary: {}, // Holds data managed by toys like setTemporary
 };
 
+const consoleErrorSinks = new WeakMap();
+
+/**
+ * Retain the native console sink across repeated browser initialization.
+ * @param {{ error: (...args: unknown[]) => void }} consoleObj Browser console.
+ * @returns {(...args: unknown[]) => void} Bound original error logger.
+ */
+function getConsoleErrorSink(consoleObj) {
+  if (!consoleErrorSinks.has(consoleObj)) {
+    consoleErrorSinks.set(consoleObj, consoleObj.error.bind(consoleObj));
+  }
+  return consoleErrorSinks.get(consoleObj);
+}
+
 /**
  * @module main
  * @description Main entry point for the application
@@ -78,7 +92,7 @@ export function createMainHandle({
       getUrl: () => windowObj.location?.href ?? '',
       getUserAgent: () => windowObj.navigator?.userAgent ?? '',
       getNow: () => Date.now(),
-      logError: dom.logError,
+      logError: getConsoleErrorSink(windowObj.console),
     });
     windowObj.console.error = errorHandlers.logError;
     const loggers = {
