@@ -9,6 +9,30 @@ import {
   resolveInterval,
 } from '../../../src/core/browser/toys/2026-08-20/assetCustodianSegmentAssignmentPredicate.js';
 
+describe('assignment normalization compatibility', () => {
+  test('rejects falsy identifiers and non-record inputs consistently', () => {
+    for (const normalize of [
+      normalizeAsset,
+      normalizePerson,
+      normalizeProposed,
+    ]) {
+      for (const value of [undefined, null, false, 0, '', []]) {
+        expect(normalize(value)).toBeNull();
+      }
+      for (const identifier of [undefined, null, false, 0, '', '   ']) {
+        expect(
+          normalize({
+            assetId: identifier,
+            personId: identifier,
+            segmentId: identifier,
+            custodianPersonId: identifier,
+          })
+        ).toBeNull();
+      }
+    }
+  });
+});
+
 const payload = (assetAssignments, personAssignments, proposedAssignment) =>
   JSON.stringify({
     points: [
