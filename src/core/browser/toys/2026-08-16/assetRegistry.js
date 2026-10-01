@@ -2,6 +2,7 @@
 // (input, env) -> string
 
 import { parseObjectRecord, trimmedStringOrEmpty } from '../../validation.js';
+import { formatToyResult } from '../formatToyError.js';
 
 /** @typedef {{assetId: string, sku: string, name: string, storageLocation: string, condition: string, availability: string, owner: string, resetRequired: boolean, notes?: string}} Asset */
 
@@ -15,7 +16,7 @@ export function assetRegistry(input) {
   const assets = getAssets(parsed);
 
   assets.sort((left, right) => left.assetId.localeCompare(right.assetId));
-  return JSON.stringify({ assets, summary: summarize(assets) }, null, 2);
+  return formatToyResult({ assets, summary: summarize(assets) });
 }
 
 /**

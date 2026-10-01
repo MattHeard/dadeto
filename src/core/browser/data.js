@@ -698,29 +698,26 @@ export function createBlogDataController(createDependencies) {
      * @param {BlogStateRecord} state - Current blog state that will be updated.
      * @returns {Promise<unknown>} Resolves once the fetch and cache operations complete.
      */
-    fetchAndCacheBlogData(state) {
-      return /** @type {(state: BlogStateRecord) => Promise<unknown>} */ (
+    fetchAndCacheBlogData:
+      /** @type {(state: BlogStateRecord) => Promise<unknown>} */ (
         createDependencyMethod(getDependencies, fetchAndCacheBlogData)
-      )(state);
-    },
+      ),
     /**
      * @param {BlogStateRecord} state - Application state used to build the data view.
      * @returns {Record<string, unknown>} Sanitized copy of the current state.
      */
-    getData(state) {
-      return /** @type {(state: BlogStateRecord) => Record<string, unknown>} */ (
+    getData:
+      /** @type {(state: BlogStateRecord) => Record<string, unknown>} */ (
         createDependencyMethod(getDependencies, getData)
-      )(state);
-    },
+      ),
     /**
      * @param {TemporaryStateBundle} state - Incoming temporary payload and the target state.
      * @returns {void} No value is returned; the state is modified in place.
      */
-    setLocalTemporaryData(state) {
-      return /** @type {(state: TemporaryStateBundle) => void} */ (
+    setLocalTemporaryData:
+      /** @type {(state: TemporaryStateBundle) => void} */ (
         createDependencyMethod(getDependencies, setLocalTemporaryData)
-      )(state);
-    },
+      ),
     /**
      * @param {Record<string, unknown>} desired - Desired permanent values to persist.
      * @returns {object} Merged permanent state after persistence.

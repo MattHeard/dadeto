@@ -1,7 +1,7 @@
 // Stryker disable all -- this module is the fixed shared local-config loader
 // boundary for path normalization, numeric validation, and missing-file
 // handling exercised through the Notion and Symphony config suites.
-import { requirePathModule } from '../commonCore.js';
+import { requirePathModule, trimmedStringOrEmpty } from '../commonCore.js';
 
 /**
  * @param {unknown} value Candidate string.
@@ -10,11 +10,7 @@ import { requirePathModule } from '../commonCore.js';
  * @returns {string | T} Normalized string or fallback.
  */
 export function normalizeString(value, fallback) {
-  if (typeof value !== 'string' || !value.trim()) {
-    return fallback;
-  }
-
-  return value.trim();
+  return trimmedStringOrEmpty(value) || fallback;
 }
 
 /**

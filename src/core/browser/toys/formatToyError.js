@@ -4,7 +4,7 @@
  * @returns {string} Pretty-printed JSON error payload.
  */
 export function formatToyError(message) {
-  return JSON.stringify({ valid: false, error: message }, null, 2);
+  return formatToyResult({ valid: false, error: message });
 }
 
 /**
@@ -13,5 +13,13 @@ export function formatToyError(message) {
  * @returns {string} Pretty-printed JSON error payload.
  */
 export function formatToyConversionError(message) {
-  return JSON.stringify({ error: message }, null, 2);
+  return formatToyResult({ error: message });
+}
+/**
+ * Serialize a structured toy result with consistent readable indentation.
+ * @param {Record<string, unknown>} payload Toy result.
+ * @returns {string} Pretty-printed JSON.
+ */
+export function formatToyResult(payload) {
+  return JSON.stringify(payload, null, 2);
 }

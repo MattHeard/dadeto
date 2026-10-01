@@ -2,6 +2,7 @@
 // (input, env) -> string
 
 import { parseObjectRecord } from '../../validation.js';
+import { formatToyResult } from '../formatToyError.js';
 
 /**
  * Normalize and validate the customer context for an object-minute rental.
@@ -15,10 +16,10 @@ export function possessionRequest(input) {
   const request = normalizeRequest(parsed, errors);
 
   if (errors.length > 0) {
-    return JSON.stringify({ valid: false, errors }, null, 2);
+    return formatToyResult({ valid: false, errors });
   }
 
-  return JSON.stringify({ valid: true, request }, null, 2);
+  return formatToyResult({ valid: true, request });
 }
 
 /**
