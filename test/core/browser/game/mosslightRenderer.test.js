@@ -4,6 +4,7 @@ import { createSimulation } from '../../../../src/core/browser/game/mosslight-va
 import {
   drawGameFrame,
   toFramePayload,
+  wrapDialogueText,
 } from '../../../../src/core/browser/game/mosslight-valley/renderer.js';
 import { startBattle } from '../../../../src/core/browser/game/mosslight-valley/combat.js';
 import { openDialogue } from '../../../../src/core/browser/game/mosslight-valley/dialogue.js';
@@ -106,8 +107,64 @@ test('draws terrain, objects, weather and both dialogue layouts', () => {
     dialogue: { actorId: 'mira', lines: [], index: 0, choices: [] },
   };
   drawGameFrame(context, toFramePayload(state));
-  expect(context.strokeRect).toHaveBeenCalled();
+  expect(
+    context.rectangles.some(rect => rect.x === 3 && rect.width === 154)
+  ).toBe(true);
 });
+
+test('wraps whitespace, empty prose and oversized words without losing text', () => {
+  expect(wrapDialogueText('')).toEqual(['']);
+  expect(wrapDialogueText('  bells\n for\t doors  ')).toEqual([
+    'bells for doors',
+  ]);
+  const word = 'x'.repeat(70);
+  const rows = wrapDialogueText(word);
+  expect(rows.join('')).toBe(word);
+  expect(rows.every(row => row.length <= 28)).toBe(true);
+});
+
+test('keeps every authored dialogue and selected choice inside the same panel in both modes', () => {
+  const initial = createSimulation(CONTENT);
+  for (const nodes of Object.values(CONTENT.dialogue))
+    for (const lines of Object.values(nodes))
+      for (const line of lines) {
+        const selections = Array.from(
+          { length: Math.max(1, line.choices?.length || 0) },
+          (_, selected) => selected
+        );
+        for (const selected of selections)
+          assertDialogueLayout(initial, line, selected);
+      }
+  assertDialogueLayout(initial, { text: '', choices: undefined }, 0);
+});
+
+/**
+ * Verify identical dialogue rows and bounds in the payload and direct canvas.
+ * @param {object} initial Starting simulation.
+ * @param {object} line Authored line.
+ * @param {number} selected Highlighted choice.
+ */
+function assertDialogueLayout(initial, line, selected) {
+  const state = openDialogue(initial, 'test', [line]);
+  state.dialogue.selected = selected;
+  const frame = toFramePayload(state);
+  const rows = frame.shapes.filter(
+    shape => shape.type === 'text' && shape.x === 8
+  );
+  const border = frame.shapes.find(
+    shape => shape.x === 3 && shape.width === 154
+  );
+  expect(border.y).toBeGreaterThanOrEqual(0);
+  expect(border.y + border.height).toBe(106);
+  expect(
+    rows.every(row => row.text.length <= 28 && row.y > border.y && row.y < 106)
+  ).toBe(true);
+  const context = makeContext();
+  drawGameFrame(context, frame);
+  expect(context.fillText.mock.calls.filter(([, x]) => x === 8)).toEqual(
+    rows.map(row => [row.text, row.x, row.y])
+  );
+}
 
 test('draws battle, journal and ending overlays through the shared renderer', () => {
   let state = startBattle(createSimulation(CONTENT), CONTENT.creatures[0]);

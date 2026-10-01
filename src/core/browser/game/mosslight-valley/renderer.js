@@ -104,17 +104,7 @@ function toCanvasShapes(frame) {
     )
   );
   if (frame.dialogue) {
-    shapes.push(
-      { type: 'rect', x: 4, y: 68, width: 152, height: 38, fill: '#182f36' },
-      {
-        type: 'text',
-        x: 8,
-        y: 82,
-        text: frame.dialogue.lines[frame.dialogue.index]?.text || '',
-        fill: '#e9d88d',
-        font: '8px monospace',
-      }
-    );
+    shapes.push(...dialogueShapes(frame.dialogue, '#182f36', '#e9d88d'));
   }
   return shapes;
 }
@@ -258,21 +248,77 @@ function drawActor(options) {
  * @param {unknown} light - The light argument.
  */
 function drawDialogue(ctx, frame, dark, light) {
-  ctx.fillStyle = dark;
-  ctx.fillRect(3, 69, 154, 36);
-  ctx.strokeStyle = light;
-  ctx.strokeRect(4, 70, 152, 34);
-  ctx.fillStyle = light;
-  ctx.font = '8px monospace';
-  const text = frame.dialogue.lines[frame.dialogue.index]?.text || '';
-  wrapText({ ctx, text, x: 8, y: 82, maxWidth: 142, lineHeight: 10 });
-  if (frame.dialogue.choices.length)
-    ctx.fillText(
-      `› ${frame.dialogue.choices[frame.dialogue.selected || 0].label}`,
-      8,
-      99
+  for (const shape of dialogueShapes(frame.dialogue, dark, light)) {
+    ctx.fillStyle = shape.fill;
+    if (shape.type === 'rect')
+      ctx.fillRect(shape.x, shape.y, shape.width, shape.height);
+    else {
+      ctx.font = shape.font;
+      ctx.fillText(shape.text, shape.x, shape.y);
+    }
+  }
+}
+
+/**
+ * Wrap pixel-font prose into conservative 140px-wide rows, including long words.
+ * @param {string} text Authored dialogue text.
+ * @returns {string[]} Rows fitting the shared 8px monospace font.
+ */
+export function wrapDialogueText(text) {
+  const words = text
+    .split(/\s+/)
+    .flatMap(word => word.match(/.{1,28}/gu) || []);
+  const rows = [''];
+  for (const word of words) {
+    const index = rows.length - 1;
+    const trial = [rows[index], word].filter(Boolean).join(' ');
+    if (trial.length > 28) rows.push(word);
+    else rows[index] = trial;
+  }
+  return rows;
+}
+
+/**
+ * Lay out a bordered dialogue panel above the HUD for both presenters.
+ * @param {object} dialogue Current conversation and highlighted choice.
+ * @param {string} dark Panel background.
+ * @param {string} light Border and text color.
+ * @returns {object[]} Canvas shapes with identical text and spacing in both modes.
+ */
+function dialogueShapes(dialogue, dark, light) {
+  const rows = wrapDialogueText(dialogue.lines[dialogue.index]?.text || '');
+  const choices = dialogue.choices || [];
+  if (choices.length) {
+    const selected = dialogue.selected || 0;
+    rows.push('');
+    rows.push(
+      ...wrapDialogueText(
+        `${selected + 1}/${choices.length} › ${choices[selected].label}`
+      )
     );
-  else ctx.fillText('Z  continue', 116, 100);
+  }
+  rows.push(choices.length ? '↑↓ choose · A/Z confirm' : 'A/Z continue');
+  const height = rows.length * 10 + 14;
+  const top = 106 - height;
+  return [
+    { type: 'rect', x: 3, y: top, width: 154, height, fill: light },
+    {
+      type: 'rect',
+      x: 4,
+      y: top + 1,
+      width: 152,
+      height: height - 2,
+      fill: dark,
+    },
+    ...rows.map((text, index) => ({
+      type: 'text',
+      x: 8,
+      y: top + 12 + index * 10,
+      text,
+      fill: light,
+      font: '8px monospace',
+    })),
+  ];
 }
 /**
  *
