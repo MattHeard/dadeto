@@ -1802,6 +1802,18 @@ function createCopyCloudPlan(deps) {
     preservedSharedUtilityCopies,
   });
   individualFileCopies.push(objectMinuteRentalSearchWgs84Copy);
+  for (const filename of ['index.js', 'wgs84.js']) {
+    individualFileCopies.push({
+      source: join(projectRoot, 'src', 'core', 'wgs84', filename),
+      target: join(
+        infraFunctionsDir,
+        'object-minute-rental-search',
+        'core',
+        'wgs84',
+        filename
+      ),
+    });
+  }
 
   return {
     projectRoot,

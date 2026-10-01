@@ -28,6 +28,31 @@ function runClassifier(source) {
 }
 
 describe('classify-functions CLI', () => {
+  it('separates numeric solver control flow from input rejection', () => {
+    const { output } = runClassifier(`
+      function solve(x) {
+        for (let iteration = 0; iteration < 100; iteration++) {
+          if (x === 0) return 0;
+          if (Math.abs(x) < 0.001) break;
+          if (iteration === 99) return fallback(x);
+          x /= 2;
+        }
+        return x;
+      }
+      function rejectNegative(x) {
+        if (x < 0) throw new Error('negative');
+        return x;
+      }
+      function positive(x) { return x > 0; }
+      function checked(x) { if (x < 0) return false; return true; }
+    `);
+    expect(output.functions.find(fn => fn.name === 'solve').labels).toEqual([]);
+    for (const name of ['rejectNegative', 'positive', 'checked']) {
+      expect(output.functions.find(fn => fn.name === name).labels).toEqual([
+        'validator',
+      ]);
+    }
+  });
   it('classifies parser and validator functions and keeps nested functions separate', () => {
     const { output } = runClassifier(`
 export function parseUser(input) {

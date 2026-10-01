@@ -238,7 +238,7 @@ function isValidatorSignal(node) {
   if (node.type === 'CallExpression' && isIncludesCheck(node)) return true;
   if (node.type === 'CallExpression' && isArrayIsArrayCall(node)) return true;
   if (node.type === 'CallExpression' && isBooleanCall(node)) return true;
-  if (node.type === 'BinaryExpression' && isComparison(node) && !isWithinConditionalTest(node)) return true;
+  if (node.type === 'BinaryExpression' && isComparison(node) && !isWithinConditionalTest(node) && !isNumericControlComparison(node)) return true;
   if (node.type === 'ThrowStatement') return true;
   return false;
 }
@@ -283,6 +283,35 @@ function isBooleanCall(node) {
 
 function isComparison(node) {
   return ['==', '===', '!=', '!==', '>', '>=', '<', '<='].includes(node.operator);
+}
+
+function isNumericControlComparison(node) {
+  const comparison = node;
+  let current = node;
+  while (current.__parent) {
+    const parent = current.__parent;
+    if (parent.type === 'ForStatement' && parent.test === current) return true;
+    if (parent.type === 'ForStatement' && parent.init?.type === 'VariableDeclaration' &&
+        parent.init.declarations.some(declaration =>
+          declaration.id.type === 'Identifier' &&
+          ((comparison.left.type === 'Identifier' && comparison.left.name === declaration.id.name) ||
+           (comparison.right.type === 'Identifier' && comparison.right.name === declaration.id.name)))) return true;
+    if (parent.type === 'IfStatement' && parent.test === current) {
+      let numericExit = false;
+      let rejection = false;
+      walkNode(parent.consequent, branch => {
+        if (branch.type === 'BreakStatement' ||
+            (branch.type === 'ReturnStatement' && branch.argument?.type === 'NumericLiteral')) numericExit = true;
+        if (branch.type === 'ThrowStatement' ||
+            (branch.type === 'ReturnStatement' && branch.argument?.type === 'BooleanLiteral')) rejection = true;
+      });
+      if (rejection) return false;
+      if (numericExit) return true;
+    }
+    if (FUNCTION_TYPES.has(parent.type)) return false;
+    current = parent;
+  }
+  return false;
 }
 
 function isNullishComparison(node) {

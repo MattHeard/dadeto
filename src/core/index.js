@@ -1,7 +1,3 @@
-// Stryker disable all -- this module is the fixed shared core utility and
-// filesystem-adapter boundary; its declarative forwarding branches are
-// exercised through consumers and adapter smoke coverage.
-
 /**
  * UID for the admin user with elevated access.
  */
@@ -1096,8 +1092,6 @@ import {
   shouldIgnoreClosedChild,
   writeStableFileTimestamp,
 } from './build/process-utils.js';
-
-// Stryker restore all
 
 export {
   arrayOrEmpty,

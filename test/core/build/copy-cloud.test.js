@@ -30,6 +30,12 @@ describe('createCopyCloudHandle', () => {
       target:
         '/repo/infra/cloud-functions/object-minute-rental-search/core/wgs84.js',
     });
+    for (const filename of ['index.js', 'wgs84.js']) {
+      expect(copies).toContainEqual({
+        source: `/repo/src/core/wgs84/${filename}`,
+        target: `/repo/infra/cloud-functions/object-minute-rental-search/core/wgs84/${filename}`,
+      });
+    }
     expect(logger.info).toHaveBeenCalledWith(
       expect.stringContaining('Rewrote')
     );

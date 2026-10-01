@@ -5,6 +5,9 @@ import {
 } from '../../../src/core/browser/toys/2026-08-20/wgs84Distance.js';
 
 describe('wgs84Distance', () => {
+  test('normalizes numeric strings at the public boundary', () => {
+    expect(wgs84Distance('0', '0', '0', '1')).toBe(wgs84Distance(0, 0, 0, 1));
+  });
   test.each([
     [[0, 0, 0, 0], 0],
     [[0, 0, 0, 1], 111319.4907932264],
