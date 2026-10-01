@@ -6,6 +6,7 @@ import {
   fulfillmentMinuteAligned as isMinuteTimestamp,
   fulfillmentNumberWithin as validCoordinate,
   fulfillmentPossessionContext,
+  fulfillmentDistinctIds,
 } from './fulfillmentResult.js';
 
 // Toy: Procurement-Backed Fulfillment Sequence Proposal
@@ -208,17 +209,11 @@ function validateRequest(request) {
     )
   )
     throw new Error('All generated IDs are required.');
-  const allIds = [
-    ...requiredPointIds,
-    ...requiredSegmentIds,
-    segment.segmentId,
-    startPoint.pointId,
-    endPoint.pointId,
-  ];
-  if (new Set(allIds).size !== allIds.length)
-    throw new Error(
-      'Generated IDs must be unique and distinct from possession IDs.'
-    );
+  fulfillmentDistinctIds([...requiredPointIds, ...requiredSegmentIds], {
+    segment,
+    startPoint,
+    endPoint,
+  });
   if (!Object.values(pointIds).length || !Object.values(segmentIds).length)
     throw new Error('Generated point and segment IDs are required.');
   return {

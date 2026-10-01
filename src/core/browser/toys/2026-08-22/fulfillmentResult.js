@@ -125,6 +125,26 @@ export function fulfillmentPossessionContext(request) {
 }
 
 /**
+ * Reject generated identifiers colliding with each other or possession records.
+ * @param {unknown[]} generated Generated identifiers.
+ * @param {{segment: Record<string, any>, startPoint: Record<string, any>, endPoint: Record<string, any>}} context Existing possession records.
+ * @returns {void} Throws on an identifier collision.
+ */
+export function fulfillmentDistinctIds(generated, context) {
+  const ids = [
+    ...generated,
+    context.segment.segmentId,
+    context.startPoint.pointId,
+    context.endPoint.pointId,
+  ];
+  if (new Set(ids).size !== ids.length) {
+    throw new Error(
+      'Generated IDs must be unique and distinct from possession IDs.'
+    );
+  }
+}
+
+/**
  * @param {Record<string, any>} request Request containing requestedSku/assets.
  * @param {(asset: Record<string, any>) => string} evaluate Asset evaluator.
  * @returns {string} Feasibility JSON.

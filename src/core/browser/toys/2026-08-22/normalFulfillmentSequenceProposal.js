@@ -6,6 +6,7 @@ import {
   fulfillmentSegment as makeSegment,
   fulfillmentNumberWithin as coordinate,
   fulfillmentPossessionContext,
+  fulfillmentDistinctIds,
 } from './fulfillmentResult.js';
 
 // Toy: Normal Fulfillment Sequence Proposal
@@ -260,16 +261,7 @@ function validate(request) {
   ];
   if (generated.length !== 12 || generated.some(id => !nonblank(id)))
     throw new Error('All generated point and segment IDs are required.');
-  const allIds = [
-    ...generated,
-    segment.segmentId,
-    startPoint.pointId,
-    endPoint.pointId,
-  ];
-  if (new Set(allIds).size !== allIds.length)
-    throw new Error(
-      'Generated IDs must be unique and distinct from possession IDs.'
-    );
+  fulfillmentDistinctIds(generated, { segment, startPoint, endPoint });
   return {
     context: { segment, startPoint, endPoint },
     warehouse,
