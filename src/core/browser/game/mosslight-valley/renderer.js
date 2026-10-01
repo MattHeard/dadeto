@@ -1,10 +1,10 @@
 // @ts-nocheck -- render state is a plain JSON payload consumed by both views.
 import { cameraFor } from './world.js';
 const PALETTES = {
-  village: ['#182f36', '#416a53', '#93ad68', '#e9d88d'],
-  shore: ['#182f36', '#397c83', '#81b8a4', '#e5d39c'],
-  orchard: ['#253b32', '#59734b', '#a1aa62', '#e7cf86'],
-  hollow: ['#1c203c', '#454b75', '#9595b7', '#d7d0a0'],
+  village: ['#182f36', '#315744', '#bfd77c', '#e9d88d'],
+  shore: ['#182f36', '#246774', '#b9e2ce', '#e5d39c'],
+  orchard: ['#253b32', '#465c38', '#cbd889', '#e7cf86'],
+  hollow: ['#1c203c', '#3e4670', '#c1c0e2', '#d7d0a0'],
 };
 /**
  * Build the same pixel-art frame payload for page and embedded renderer.

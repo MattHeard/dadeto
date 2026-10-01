@@ -113,3 +113,31 @@ test('draws battle, journal and ending overlays through the shared renderer', ()
   drawGameFrame(context, toFramePayload(state));
   expect(context.fillText).toHaveBeenCalledWith('THE VALLEY WAKES', 18, 39);
 });
+
+test('keeps walkable terrain tile colors at a visible contrast', () => {
+  const state = createSimulation(CONTENT);
+  for (const map of Object.values(CONTENT.maps)) {
+    const frame = toFramePayload({
+      ...state,
+      world: { ...state.world, map },
+    });
+    const [foreground, background] = frame.palette.slice(1, 3);
+    const luminance = color => {
+      const channels = color
+        .slice(1)
+        .match(/../g)
+        .map(channel => parseInt(channel, 16) / 255)
+        .map(channel =>
+          channel <= 0.04045
+            ? channel / 12.92
+            : ((channel + 0.055) / 1.055) ** 2.4
+        );
+      return 0.2126 * channels[0] + 0.7152 * channels[1] + 0.0722 * channels[2];
+    };
+    const values = [luminance(foreground), luminance(background)].sort(
+      (left, right) => right - left
+    );
+    const contrast = (values[0] + 0.05) / (values[1] + 0.05);
+    expect(contrast).toBeGreaterThanOrEqual(3);
+  }
+});
