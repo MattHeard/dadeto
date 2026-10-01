@@ -33,5 +33,20 @@ test('gives blocked ground its own stable stone treatment', () => {
   });
 
   expect(tile[0].fill).toBe(palette[0]);
-  expect(tile).toHaveLength(3);
+  expect(tile.length).toBeGreaterThan(3);
+});
+
+test('keeps walkable terrain continuous and puts variation in pixel-art details', () => {
+  const regions = ['village', 'shore', 'orchard', 'hollow'];
+  for (const region of regions) {
+    const tiles = Array.from({ length: 12 }, (_, x) =>
+      generateBackgroundTile({ x, y: 6, palette, region })
+    );
+
+    expect(tiles.every(tile => tile[0].fill === palette[1])).toBe(true);
+    expect(tiles.every(tile => tile.length > 2)).toBe(true);
+    expect(
+      new Set(tiles.map(tile => JSON.stringify(tile.slice(1)))).size
+    ).toBeGreaterThan(1);
+  }
 });

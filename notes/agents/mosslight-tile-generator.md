@@ -1,6 +1,6 @@
 # Mosslight background tile generator
 
-- **Unexpected hurdle:** The two renderer outputs represent the same rectangles with slightly different record shapes (`type: rect` exists only in the embedded payload).
-- **Diagnosis:** The parity test compared presenter metadata rather than the shared geometry/color that the canvas actually paints.
-- **Fix:** Generate deterministic, coordinate-seeded region motifs in one pure module, use its rectangles in both renderers, and normalize test records to geometry/color before comparing.
-- **Next time:** Keep art generation pure and stable in world coordinates; test the visual primitives shared across presenters instead of adapter-specific metadata.
+- **Unexpected hurdle:** The first generator still produced the old checkerboard impression because it sometimes used the highlight color as the entire walkable tile fill; its micro-details were too subtle to change the overall read.
+- **Diagnosis:** Compared the tile generator and screenshot palette: the `seed % 5` full-tile highlight was the dominant alternating visual, not a missing renderer connection.
+- **Fix:** Keep walkable ground on the region's ground color and reserve light/glimmer/shadow for layered, region-specific pixel accents. Add a regression proving continuous tile bases and varied bounded detail geometry.
+- **Next time:** Validate the visual hierarchy at the target handheld scale: small detail cannot overcome a high-contrast base pattern. Keep both presenters on the shared generator and test the same geometry they paint.

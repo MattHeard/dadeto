@@ -19,11 +19,9 @@ export function generateBackgroundTile(options) {
     light: palette[2],
     glimmer: palette[3],
   };
-  const baseColor = blocked
-    ? colors.shadow
-    : seed % 5 === 0
-      ? colors.light
-      : colors.ground;
+  // Keep the terrain bed continuous. Large alternating fills read as a
+  // checkerboard at handheld scale; the regional accents below provide texture.
+  const baseColor = blocked ? colors.shadow : colors.ground;
   const details = backgroundInstructions(seed, region, blocked);
 
   return [
@@ -48,53 +46,59 @@ export function generateBackgroundTile(options) {
 function backgroundInstructions(seed, region, blocked) {
   if (blocked)
     return [
-      instruction([1 + (seed % 3), 2, 6, 1, 'ground']),
+      instruction([1 + (seed % 3), 2 + (seed % 2), 5, 1, 'ground']),
+      instruction([2 + (seed % 2), 3 + (seed % 2), 3, 1, 'shadow']),
       instruction([7 + (seed % 2), 7 + (seed % 3), 3, 1, 'light']),
+      ...optionalInstruction(seed % 3 === 0, [9, 3, 1, 1, 'glimmer']),
     ];
 
   switch (region) {
     case 'shore': {
       const x = 1 + (seed % 4);
-      const y = 2 + (seed % 6);
+      const y = 1 + (seed % 7);
       return [
         instruction([x, y, 4 + (seed % 3), 1, 'light']),
-        instruction([x + 2, y + 1, 2, 1, 'ground']),
+        instruction([x + 2, y + 1, 2, 1, 'shadow']),
+        instruction([x + 1, y + 2, 3, 1, 'ground']),
         ...optionalInstruction(seed % 2 === 0, [
-          8,
           8 - (seed % 3),
-          2,
+          9,
+          1,
           1,
           'glimmer',
         ]),
       ];
     }
     case 'orchard': {
-      const x = 2 + (seed % 4);
-      const y = 2 + (seed % 3);
+      const x = 1 + (seed % 5);
+      const y = 1 + (seed % 4);
       return [
         instruction([x, y, 2, 2, 'light']),
         instruction([x + 2, y + 1, 2, 2, 'light']),
         instruction([x + 1, y + 3, 2, 1, 'shadow']),
-        ...optionalInstruction(seed % 3 === 1, [x + 3, y + 2, 1, 1, 'glimmer']),
+        instruction([x + 3, y + 2, 1, 2, 'shadow']),
+        ...optionalInstruction(seed % 3 === 1, [x + 2, y + 2, 1, 1, 'glimmer']),
       ];
     }
     case 'hollow': {
-      const x = 3 + (seed % 4);
-      const y = 2 + (seed % 4);
+      const x = 2 + (seed % 5);
+      const y = 1 + (seed % 5);
       return [
-        instruction([x, y, 1, 4, 'light']),
+        instruction([x, y, 1, 5, 'light']),
         instruction([x, y + 3, 4, 1, 'light']),
         instruction([x + 3, y + 1, 1, 2, 'shadow']),
+        instruction([x + 1, y + 1, 2, 1, 'ground']),
         ...optionalInstruction(seed % 3 === 0, [x + 1, y + 1, 1, 1, 'glimmer']),
       ];
     }
     default: {
-      const x = 2 + (seed % 7);
-      const y = 3 + (seed % 4);
+      const x = 1 + (seed % 8);
+      const y = 2 + (seed % 5);
       return [
-        instruction([x, y, 1, 3, 'light']),
+        instruction([x, y, 1, 3 + (seed % 2), 'light']),
         instruction([x + (seed % 2 ? 1 : -1), y + 1, 1, 2, 'light']),
-        ...optionalInstruction(seed % 3 === 0, [x + 2, y + 3, 1, 1, 'glimmer']),
+        instruction([x + 2, y + 2, 1, 2, 'shadow']),
+        ...optionalInstruction(seed % 3 === 0, [x + 2, y + 3, 2, 1, 'glimmer']),
         ...optionalInstruction(seed % 4 === 0, [2, 9, 2, 1, 'shadow']),
       ];
     }
