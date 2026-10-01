@@ -501,6 +501,18 @@ const STYLES = String.raw`
     margin-right: 1ch;
   }
 
+  .canvas-doodle-output {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .canvas-doodle-output > canvas {
+    display: block;
+    width: 100%;
+    height: auto;
+    image-rendering: pixelated;
+  }
+
   .select-wrapper {
     position: relative;
     display: inline-block;
