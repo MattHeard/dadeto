@@ -10,7 +10,7 @@ export function actorAt(world, x, y) {
   return (
     world.npcs.find(
       actor => actor.map === world.mapId && actor.x === x && actor.y === y
-    ) || null
+    ) ?? null
   );
 }
 /**

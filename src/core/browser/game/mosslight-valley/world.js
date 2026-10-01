@@ -28,7 +28,7 @@ export function findExit(map, x, y, flags) {
     map.exits.find(
       exit =>
         exit.x === x && exit.y === y && (!exit.requires || flags[exit.requires])
-    ) || null
+    ) ?? null
   );
 }
 /**

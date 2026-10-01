@@ -5,6 +5,12 @@ const CANVAS_WIDTH = 320;
 const CANVAS_HEIGHT = 180;
 const BACKGROUND = '#f8f6f2';
 const FOREGROUND = '#1f2937';
+const SHAPE_RENDERERS = new Map([
+  ['rect', drawRect],
+  ['circle', drawCircle],
+  ['line', drawLine],
+  ['text', drawText],
+]);
 
 /**
  * Parse canvas doodle JSON input.
@@ -137,21 +143,8 @@ export function drawCanvasDoodle(context, canvas, payload) {
  * @returns {void}
  */
 function drawShape(context, shape) {
-  if (shape.type === 'rect') {
-    drawRect(context, shape);
-    return;
-  }
-  if (shape.type === 'circle') {
-    drawCircle(context, shape);
-    return;
-  }
-  if (shape.type === 'line') {
-    drawLine(context, shape);
-    return;
-  }
-  if (shape.type === 'text') {
-    drawText(context, shape);
-  }
+  const render = SHAPE_RENDERERS.get(/** @type {string} */ (shape.type));
+  if (render) render(context, shape);
 }
 
 /**

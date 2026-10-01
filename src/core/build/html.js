@@ -146,8 +146,7 @@ function getTagParts(name, closing = false) {
  * @returns {string} The opening HTML tag.
  */
 export function createOpeningTag(tagName, attributes = '') {
-  const tagParts = getOpeningTagParts(tagName, attributes);
-  return join(tagParts);
+  return join(getOpeningTagParts(tagName, attributes));
 }
 
 /**
