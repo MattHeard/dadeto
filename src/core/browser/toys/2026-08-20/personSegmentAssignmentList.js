@@ -1,7 +1,6 @@
 // @ts-nocheck
 // Toy: Person Segment Assignment List
 // (input, env) -> string
-// jscpd:ignore-start
 
 import { memoryObjectListAppend } from '../2026-08-18/memoryObjectListAppend.js';
 
@@ -14,7 +13,10 @@ import { memoryObjectListAppend } from '../2026-08-18/memoryObjectListAppend.js'
 export function personSegmentAssignmentList(input, env) {
   try {
     const request = parseRequest(input);
-    return memoryObjectListAppend(JSON.stringify({ ...request, object: request.assignment }), env);
+    return memoryObjectListAppend(
+      JSON.stringify({ ...request, object: request.assignment }),
+      env
+    );
   } catch (error) {
     return JSON.stringify({
       appended: false,
@@ -50,7 +52,5 @@ function parseRequest(input) {
     throw new Error('Unsupported memory location.');
   return { memoryLocation, path, assignment: { personId, segmentId } };
 }
-
-// jscpd:ignore-end
 
 export { parseRequest };

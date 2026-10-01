@@ -7,8 +7,6 @@ import {
 import { wgs84Distance } from '../2026-08-20/wgs84Distance.js';
 import { resolvePointRecords } from './spacePointResolution.js';
 
-// Stryker disable all -- this module is the fixed strict-assignment validation
-// and normalization protocol boundary covered by the validated-assignment suite.
 
 /**
  * Normalize an identifier and reject absent/sentinel values.
@@ -21,6 +19,38 @@ export function normalizeAssignmentId(value) {
   return normalized && !['undefined', 'null'].includes(normalized.toLowerCase())
     ? normalized
     : null;
+}
+
+/**
+ * Report a rejected single assignment with the common public contract.
+ * @param {unknown} reason Rejection reason.
+ * @returns {string} Serialized rejection.
+ */
+export function formatAssignmentFailure(reason) {
+  return JSON.stringify({ appended: false, feasible: false, reason });
+}
+
+/**
+ * Find the first shift that fully covers the candidate interval.
+ * @param {Array<Record<string, any>>} shifts Available shifts.
+ * @param {{startTime: number, endTime: number}} candidate Resolved interval.
+ * @returns {Record<string, any> | undefined} Covering shift, if present.
+ */
+export function findCoveringShift(shifts, candidate) {
+  return shifts.find(
+    shift =>
+      candidate.startTime >= Date.parse(shift.clockInPoint?.timestamp) &&
+      candidate.endTime <= Date.parse(shift.clockOutPoint?.timestamp)
+  );
+}
+
+/**
+ * Normalize thrown values without losing their message.
+ * @param {unknown} error Thrown value.
+ * @returns {string} Public failure reason.
+ */
+export function assignmentErrorReason(error) {
+  return error instanceof Error ? error.message : String(error);
 }
 
 /**
@@ -126,4 +156,3 @@ export function buildPoints(input) {
     ])
   );
 }
-// Stryker restore all

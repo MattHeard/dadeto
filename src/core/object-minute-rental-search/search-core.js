@@ -1,8 +1,11 @@
-/* eslint-disable jsdoc/require-jsdoc */
 // @ts-nocheck -- this module is consumed through validated HTTP boundaries.
 
 const FOOTBALL_SKU = 'FOOTBALL';
 
+/**
+ *
+ * @param request
+ */
 export function exactLookup(request) {
   return request.requestText === 'football'
     ? { matched: true, skuId: FOOTBALL_SKU }
@@ -26,6 +29,13 @@ export function validatePossessionContextTime({ startPoint, endPoint } = {}) {
   return { valid: true };
 }
 
+/**
+ *
+ * @param start
+ * @param end
+ * @param windowStart
+ * @param windowEnd
+ */
 export function contained(start, end, windowStart, windowEnd) {
   const values = [start, end, windowStart, windowEnd].map(parseTime);
   return (
@@ -33,6 +43,12 @@ export function contained(start, end, windowStart, windowEnd) {
   );
 }
 
+/**
+ *
+ * @param durationSeconds
+ * @param earliestStart
+ * @param latestEnd
+ */
 export function latestPlacement(durationSeconds, earliestStart, latestEnd) {
   if (!Number.isFinite(durationSeconds) || durationSeconds < 0)
     return { feasible: false, reason: 'invalid-duration' };
@@ -44,6 +60,12 @@ export function latestPlacement(durationSeconds, earliestStart, latestEnd) {
   return { feasible: true, startTimestamp: iso(start), endTimestamp: iso(end) };
 }
 
+/**
+ *
+ * @param interval
+ * @param schedule
+ * @param commitments
+ */
 export function runnerInterval(interval, schedule, commitments) {
   if (!interval || !Array.isArray(schedule) || !Array.isArray(commitments))
     return { feasible: false, reason: 'invalid-runner-input' };
@@ -69,6 +91,10 @@ export function runnerInterval(interval, schedule, commitments) {
     : { feasible: true };
 }
 
+/**
+ *
+ * @param request
+ */
 export function delivery(request) {
   const candidate = latestPlacement(
     request.deliveryDurationSeconds,
@@ -81,6 +107,10 @@ export function delivery(request) {
   return withRunner(candidate, request);
 }
 
+/**
+ *
+ * @param request
+ */
 export function procurement(request) {
   if (
     !Number.isFinite(request.procurementDurationSeconds) ||
@@ -108,6 +138,10 @@ export function procurement(request) {
   return withRunner(candidate, request);
 }
 
+/**
+ *
+ * @param request
+ */
 export function pickup(request) {
   if (
     !Number.isFinite(request.pickupDurationSeconds) ||
@@ -123,6 +157,10 @@ export function pickup(request) {
   return withRunner(candidate, request);
 }
 
+/**
+ *
+ * @param request
+ */
 export function composed(request) {
   const deliveryResult = delivery({
     deliveryPoint: request.deliveryPoint,
@@ -162,6 +200,10 @@ export function composed(request) {
   };
 }
 
+/**
+ *
+ * @param request
+ */
 export function searchResult(request) {
   const lookup = exactLookup(request);
   if (!lookup.matched) return { valid: true, results: [] };
@@ -172,15 +214,28 @@ export function searchResult(request) {
   };
 }
 
+/**
+ *
+ * @param value
+ */
 export function parseTime(value) {
   const time = Date.parse(String(value));
   return Number.isFinite(time) ? time : NaN;
 }
 
+/**
+ *
+ * @param point
+ */
 export function pointTimestamp(point) {
   return point?.timestamp;
 }
 
+/**
+ *
+ * @param candidate
+ * @param request
+ */
 function withRunner(candidate, request) {
   return {
     ...candidate,
@@ -192,11 +247,22 @@ function withRunner(candidate, request) {
   };
 }
 
+/**
+ *
+ * @param start
+ * @param end
+ * @param otherStart
+ * @param otherEnd
+ */
 function overlap(start, end, otherStart, otherEnd) {
   const values = [start, end, otherStart, otherEnd].map(parseTime);
   return values[0] < values[3] && values[2] < values[1];
 }
 
+/**
+ *
+ * @param window
+ */
 function windowStart(window) {
   return (
     window.startTimestamp ||
@@ -205,6 +271,10 @@ function windowStart(window) {
   );
 }
 
+/**
+ *
+ * @param window
+ */
 function windowEnd(window) {
   return (
     window.endTimestamp ||
@@ -213,6 +283,10 @@ function windowEnd(window) {
   );
 }
 
+/**
+ *
+ * @param time
+ */
 function iso(time) {
   return new Date(time).toISOString();
 }

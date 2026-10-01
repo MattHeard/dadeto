@@ -1,10 +1,8 @@
 // Shared WGS84 inverse distance helper for environment-neutral core consumers.
-// jscpd:ignore-start — extracted geodesic implementation shared by existing toys.
 const A = 6378137;
 const F = 1 / 298.257223563;
 const B = (1 - F) * A;
 
-// jscpd:ignore-start
 /**
  * Convert degrees to radians.
  * @param {number} degrees Degrees.
@@ -104,7 +102,5 @@ export function spherical(lat1, lon1, lat2, lon2) {
     Math.cos(rad(lat1)) * Math.cos(rad(lat2)) * Math.sin(dl / 2) ** 2;
   return A * 2 * Math.atan2(Math.sqrt(h), Math.sqrt(1 - h));
 }
-// jscpd:ignore-end
 
 export const wgs84Distance = calculateWgs84SurfaceDistance;
-// jscpd:ignore-end

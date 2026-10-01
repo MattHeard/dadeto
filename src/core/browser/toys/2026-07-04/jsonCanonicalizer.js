@@ -36,7 +36,6 @@ function canonicalizeValue(value) {
  */
 function canonicalizeObject(value) {
   // Stryker disable next-line all -- canonicalizeObject is only called for records; this guard terminates defensive mutated calls.
-  /* istanbul ignore next -- defensive helper boundary is unreachable by contract. */
   if (value === null || typeof value !== 'object') return value;
   return Object.keys(value)
     .sort()

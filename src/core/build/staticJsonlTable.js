@@ -1,17 +1,22 @@
 // @ts-nocheck -- JSONL rows are intentionally narrowed at runtime by validation.
-/* eslint-disable jsdoc/require-param, jsdoc/require-returns */
 import fs from 'node:fs';
 import path from 'node:path';
 
 const DEFAULT_DATA_ROOT = path.resolve(process.cwd(), 'src/content/blog-data');
 const SUPPORTED_TYPES = new Set(['number', 'string']);
 
-/** Throw a consistent table validation error. */
+/**
+ * Throw a consistent table validation error.
+ * @param message
+ */
 function fail(message) {
   throw new TypeError(`Invalid static JSONL table: ${message}`);
 }
 
-/** Validate the table content descriptor. */
+/**
+ * Validate the table content descriptor.
+ * @param entry
+ */
 function validateDefinition(entry) {
   if (!entry || typeof entry !== 'object') fail('entry must be an object');
   if (typeof entry.source !== 'string' || !entry.source.trim())
@@ -29,13 +34,24 @@ function validateDefinition(entry) {
     fail('source must stay inside the static data directory');
 }
 
-/** Compare two values using their validated logical type. */
+/**
+ * Compare two values using their validated logical type.
+ * @param left
+ * @param right
+ * @param type
+ */
 function compareValues(left, right, type) {
   if (type === 'number') return left - right;
   return left < right ? -1 : left > right ? 1 : 0;
 }
 
-/** Compare rows using all declared columns and stable source order. */
+/**
+ * Compare rows using all declared columns and stable source order.
+ * @param left
+ * @param right
+ * @param columns
+ * @param types
+ */
 function compareRows(left, right, columns, types) {
   for (const column of columns) {
     const comparison = compareValues(
@@ -48,7 +64,11 @@ function compareRows(left, right, columns, types) {
   return left.index - right.index;
 }
 
-/** Read, validate, project, and initially sort a JSONL table. */
+/**
+ * Read, validate, project, and initially sort a JSONL table.
+ * @param entry
+ * @param options
+ */
 export function parseStaticJsonlTable(entry, options = {}) {
   validateDefinition(entry);
   const dataRoot = options.dataRoot ?? DEFAULT_DATA_ROOT;
@@ -107,12 +127,18 @@ export function parseStaticJsonlTable(entry, options = {}) {
   return { columns: entry.columns, collapsed: entry.collapsed === true, rows };
 }
 
-/** Escape text for an HTML attribute. */
+/**
+ * Escape text for an HTML attribute.
+ * @param value
+ */
 function escapeAttribute(value) {
   const entities = { '&': '&amp;', '"': '&quot;', '<': '&lt;', '>': '&gt;' };
   return String(value).replace(/[&"<>]/g, character => entities[character]);
 }
-/** Escape text for an HTML text node. */
+/**
+ * Escape text for an HTML text node.
+ * @param value
+ */
 function escapeText(value) {
   return String(value)
     .replace(/&/g, '&amp;')
@@ -120,7 +146,11 @@ function escapeText(value) {
     .replace(/>/g, '&gt;');
 }
 
-/** Render a validated JSONL table as self-contained static HTML. */
+/**
+ * Render a validated JSONL table as self-contained static HTML.
+ * @param entry
+ * @param options
+ */
 export function renderStaticJsonlTable(entry, options = {}) {
   const table = parseStaticJsonlTable(entry, options);
   const payload = JSON.stringify(table).replace(/</g, '\\u003c');

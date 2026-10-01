@@ -1,7 +1,6 @@
 // @ts-nocheck
 // Toy: Asset Custodian Segment Assignment List
 // (input, env) -> string
-// jscpd:ignore-start
 
 import { memoryObjectListAppend } from '../2026-08-18/memoryObjectListAppend.js';
 
@@ -14,7 +13,10 @@ import { memoryObjectListAppend } from '../2026-08-18/memoryObjectListAppend.js'
 export function assetCustodianSegmentAssignmentList(input, env) {
   try {
     const request = parseRequest(input);
-    return memoryObjectListAppend(JSON.stringify({ ...request, object: request.assignment }), env);
+    return memoryObjectListAppend(
+      JSON.stringify({ ...request, object: request.assignment }),
+      env
+    );
   } catch (error) {
     return JSON.stringify({
       appended: false,
@@ -57,7 +59,5 @@ function parseRequest(input) {
     assignment: { assetId, segmentId, custodianPersonId },
   };
 }
-
-// jscpd:ignore-end
 
 export { parseRequest };

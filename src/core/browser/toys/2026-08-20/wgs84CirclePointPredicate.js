@@ -13,7 +13,7 @@ export function wgs84CirclePointPredicate(input) {
   try {
     // Stryker disable next-line all -- empty input has the same false predicate contract as malformed JSON.
     parsed = JSON.parse(input || '{}');
-  // Stryker disable all -- malformed JSON always maps to false.
+    // Stryker disable all -- malformed JSON always maps to false.
   } catch {
     // Stryker disable next-line all -- malformed JSON always maps to false.
     parsed = {};

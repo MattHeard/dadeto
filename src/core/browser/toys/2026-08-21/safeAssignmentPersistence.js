@@ -1,8 +1,23 @@
 // Shared atomic append helper for safe assignment writers.
-// Stryker disable all -- this module is the fixed atomic memory-write
-// protocol boundary covered by the safe-assignment suite.
 import { deepClone } from '../../browser-core.js';
 import { requireEnvHelper } from '../browserToysCore.js';
+
+/**
+ * Append one assignment through the same atomic persistence boundary.
+ * @param {{memoryLocation?: string, path?: string}} request Persistence options.
+ * @param {Record<string, unknown>} object Assignment record.
+ * @param {string} defaultPath Default collection path.
+ * @param {import('../browserToysCore.js').ToyEnv} env Storage helpers.
+ * @returns {number} Updated collection length.
+ */
+export function appendOneAssignment(request, object, defaultPath, env) {
+  const commit = appendAtomically(
+    request.memoryLocation || 'temporary',
+    [{ path: request.path || defaultPath, object }],
+    env
+  );
+  return commit.lengths[0];
+}
 
 /**
  * Append multiple records in one memory-root write.
@@ -39,5 +54,3 @@ export function appendAtomically(location, writes, env) {
   else requireEnvHelper(env, 'setLocalTemporaryData')(root);
   return { lengths };
 }
-
-// Stryker restore all

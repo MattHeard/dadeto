@@ -1,13 +1,13 @@
 // Toy: Validated Runner Segment Assignment
-// jscpd:ignore-start
-// Stryker disable all -- this module is the fixed validated runner assignment
-// protocol boundary covered by the validated-assignment suite.
 import {
   evaluateRunnerWorldLine,
   normalizeAssignmentId,
   resolveSpeed,
+  assignmentErrorReason,
+  formatAssignmentFailure,
+  findCoveringShift,
 } from './strictAssignmentCore.js';
-import { appendAtomically } from '../2026-08-21/safeAssignmentPersistence.js';
+import { appendOneAssignment } from '../2026-08-21/safeAssignmentPersistence.js';
 
 /**
  * @param {string} input JSON runner assignment request.
@@ -19,69 +19,31 @@ export function validatedRunnerSegmentAssignment(input, env) {
     const x = JSON.parse(input || '{}'),
       personId = normalizeAssignmentId(x.personId),
       segmentId = normalizeAssignmentId(x.candidateSegment?.segmentId);
-    if (!personId)
-      return JSON.stringify({
-        appended: false,
-        feasible: false,
-        reason: 'invalid-person-id',
-      });
-    if (!segmentId)
-      return JSON.stringify({
-        appended: false,
-        feasible: false,
-        reason: 'invalid-segment-id',
-      });
+    if (!personId) return formatAssignmentFailure('invalid-person-id');
+    if (!segmentId) return formatAssignmentFailure('invalid-segment-id');
     const speed = resolveSpeed(x);
     const candidate = speed.candidate;
     /** @type {Array<Record<string, any>>} */
     const shifts = x.shifts || [];
-    const matching = shifts.find(
-      shift =>
-        candidate.startTime >= Date.parse(shift.clockInPoint?.timestamp) &&
-        candidate.endTime <= Date.parse(shift.clockOutPoint?.timestamp)
-    );
-    if (!matching)
-      return JSON.stringify({
-        appended: false,
-        feasible: false,
-        reason: 'outside-shift',
-      });
+    const matching = findCoveringShift(shifts, candidate);
+    if (!matching) return formatAssignmentFailure('outside-shift');
     if (speed.requiredSpeed > speed.maximumSpeed)
-      return JSON.stringify({
-        appended: false,
-        feasible: false,
-        reason: 'excessive-speed',
-      });
+      return formatAssignmentFailure('excessive-speed');
     const result = evaluateRunnerWorldLine(x, matching);
-    if (!result.feasible)
-      return JSON.stringify({
-        appended: false,
-        feasible: false,
-        reason: result.reason,
-      });
-    const commit = appendAtomically(
-      x.memoryLocation || 'temporary',
-      [
-        {
-          path: x.path || 'personSegmentAssignments',
-          object: { personId, segmentId },
-        },
-      ],
+    if (!result.feasible) return formatAssignmentFailure(result.reason);
+    const length = appendOneAssignment(
+      x,
+      { personId, segmentId },
+      'personSegmentAssignments',
       env
     );
     return JSON.stringify({
       appended: true,
       feasible: true,
-      length: commit.lengths[0],
+      length,
       shiftId: matching.shiftId,
     });
   } catch (error) {
-    return JSON.stringify({
-      appended: false,
-      feasible: false,
-      reason: error instanceof Error ? error.message : String(error),
-    });
+    return formatAssignmentFailure(assignmentErrorReason(error));
   }
 }
-// jscpd:ignore-end
-// Stryker restore all

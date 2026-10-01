@@ -1,14 +1,20 @@
-/* istanbul ignore file -- browser interaction is verified in the deployed static-page path. */
 // @ts-nocheck -- DOM payloads are validated by the generated table contract.
-/* eslint-disable jsdoc/require-param, jsdoc/require-returns */
 
-/** Compare two supported table values. */
+/**
+ * Compare two supported table values.
+ * @param left
+ * @param right
+ */
 function compare(left, right) {
   if (typeof left === 'number') return left - right;
   return left < right ? -1 : left > right ? 1 : 0;
 }
 
-/** Sort rows by ordered descriptors and stable source index. */
+/**
+ * Sort rows by ordered descriptors and stable source index.
+ * @param rows
+ * @param descriptors
+ */
 function sortRows(rows, descriptors) {
   return [...rows].sort((left, right) => {
     for (const descriptor of descriptors) {
@@ -23,7 +29,12 @@ function sortRows(rows, descriptors) {
   });
 }
 
-/** Render the current table state into the DOM. */
+/**
+ * Render the current table state into the DOM.
+ * @param table
+ * @param payload
+ * @param documentObject
+ */
 function renderTable(table, payload, documentObject) {
   const rows = sortRows(payload.rows, payload.sort);
   const tbody = table.querySelector('tbody');
@@ -47,7 +58,10 @@ function renderTable(table, payload, documentObject) {
   });
 }
 
-/** Initialize all statically generated JSONL tables on a document. */
+/**
+ * Initialize all statically generated JSONL tables on a document.
+ * @param documentObject
+ */
 export function initializeStaticJsonlTables(documentObject) {
   documentObject
     .querySelectorAll('[data-static-jsonl-table]')

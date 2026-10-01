@@ -1,4 +1,3 @@
-/* istanbul ignore file -- fixed protocol boundary is verified by focused suites. */
 // Stryker disable all -- this module is the fixed fulfillment validation,
 // matching, merge, and request-shaping protocol boundary covered by the
 // fulfillment-boundary suite.
@@ -165,7 +164,6 @@ export function fulfillmentExistingAssetBoundary(
     const candidates = selectSegments(proposal);
     const points = fulfillmentMergeById(
       [
-        /* istanbul ignore next -- request shape is normalized by the boundary. */
         ...(request.points || []),
         ...(proposal.points || []),
         asset.stockInPoint,
@@ -173,19 +171,13 @@ export function fulfillmentExistingAssetBoundary(
       'pointId'
     );
     const spacePoints = fulfillmentMergeById(
-      [
-        /* istanbul ignore next -- request shape is normalized by the boundary. */
-        ...(request.spacePoints || []),
-        /* istanbul ignore next -- proposal shape is validated by the boundary. */
-        ...(proposal.spacePoints || []),
-      ],
+      [...(request.spacePoints || []), ...(proposal.spacePoints || [])],
       'spacePointId'
     );
     const entry = fulfillmentResolvePoint(asset.stockInPoint, spacePoints);
     return JSON.stringify(
       evaluate({
         points,
-        /* istanbul ignore next -- optional collection is normalized by the boundary. */
         existing: asset.existingSegments || [],
         candidates,
         entry,

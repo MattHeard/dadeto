@@ -29,7 +29,9 @@ export function pickupReturnSegmentProposal(input) {
       ).toISOString(),
     };
     if (
-      ![point.latitude, point.longitude].every(value => Number.isFinite(Number(value))) ||
+      ![point.latitude, point.longitude].every(value =>
+        Number.isFinite(Number(value))
+      ) ||
       !Number.isFinite(Date.parse(point.timestamp))
     )
       throw new Error(

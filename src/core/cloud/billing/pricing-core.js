@@ -1,4 +1,3 @@
-/* istanbul ignore file -- fixed pricing validation boundary is tested directly. */
 const SCALE = 1_000_000;
 
 /**
@@ -26,7 +25,6 @@ function positiveInteger(value, name) {
   if (!Number.isSafeInteger(value)) {
     throw new TypeError(`${name} must be a positive safe integer`);
   }
-  /* istanbul ignore next -- fixed-point inputs are validated at the public boundary. */
   if (value <= 0) {
     throw new TypeError(`${name} must be a positive safe integer`);
   }

@@ -1,13 +1,12 @@
 // Toy: Validated Asset Custodian Segment Assignment
-// jscpd:ignore-start
-// Stryker disable all -- this module is the fixed validated asset/custodian
-// assignment protocol boundary covered by the validated-assignment suite.
 import { evaluateWorldLine } from '../2026-08-21/segmentAssignmentFeasibilityCore.js';
 import { appendAtomically } from '../2026-08-21/safeAssignmentPersistence.js';
 import {
   normalizeAssignmentId,
   resolveSpeed,
   evaluateRunnerWorldLine,
+  assignmentErrorReason,
+  findCoveringShift,
 } from './strictAssignmentCore.js';
 
 /**
@@ -51,11 +50,7 @@ export function validatedAssetCustodianSegmentAssignment(input, env) {
     const candidate = speed.candidate;
     /** @type {Array<Record<string, any>>} */
     const shifts = x.shifts || [];
-    const matching = shifts.find(
-      shift =>
-        candidate.startTime >= Date.parse(shift.clockInPoint?.timestamp) &&
-        candidate.endTime <= Date.parse(shift.clockOutPoint?.timestamp)
-    );
+    const matching = findCoveringShift(shifts, candidate);
     if (!matching)
       return JSON.stringify({
         committed: false,
@@ -88,9 +83,7 @@ export function validatedAssetCustodianSegmentAssignment(input, env) {
   } catch (error) {
     return JSON.stringify({
       committed: false,
-      reason: error instanceof Error ? error.message : String(error),
+      reason: assignmentErrorReason(error),
     });
   }
 }
-// jscpd:ignore-end
-// Stryker restore all

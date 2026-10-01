@@ -1,6 +1,8 @@
+import { resolveInterval, overlaps } from './assignmentIntervals.js';
+export { resolveInterval, overlaps } from './assignmentIntervals.js';
+
 // Toy: Person Segment Assignment Predicate
 // (input, env) -> string
-// jscpd:ignore-start
 
 /**
  * Decide whether a person-to-segment assignment can be appended.
@@ -45,12 +47,19 @@ export function personSegmentAssignmentPredicate(input) {
 export function parseRequest(input) {
   const request = JSON.parse(input);
   // Stryker disable all -- defensive plain-object type boundary.
-  if (!request || typeof request !== 'object' || Object.getPrototypeOf(request) !== Object.prototype)
+  if (
+    !request ||
+    typeof request !== 'object' ||
+    Object.getPrototypeOf(request) !== Object.prototype
+  )
     throw new Error('points, segments, and assignments arrays are required.');
   // Stryker restore all
-  if (!Array.isArray(request.points)) throw new Error('points array is required.');
-  if (!Array.isArray(request.segments)) throw new Error('segments array is required.');
-  if (!Array.isArray(request.assignments)) throw new Error('assignments array is required.');
+  if (!Array.isArray(request.points))
+    throw new Error('points array is required.');
+  if (!Array.isArray(request.segments))
+    throw new Error('segments array is required.');
+  if (!Array.isArray(request.assignments))
+    throw new Error('assignments array is required.');
   const proposedAssignment = normalizeAssignment(request.proposedAssignment);
   if (!proposedAssignment)
     throw new Error('A proposed assignment is required.');
@@ -76,42 +85,3 @@ export function normalizeAssignment(value) {
   const segmentId = String(assignment.segmentId || '').trim();
   return personId && segmentId ? { personId, segmentId } : null;
 }
-
-/**
- * @param {Map<string, Record<string, unknown>>} segments Segment records.
- * @param {Map<string, Record<string, unknown>>} points Point records.
- * @param {string} segmentId Segment identifier.
- * @returns {{startTime: number, endTime: number}} Temporal interval.
- */
-export function resolveInterval(segments, points, segmentId) {
-  const segment = segments.get(segmentId);
-  if (!segment) throw new Error(`Unknown segment: ${segmentId}`);
-  const start = points.get(String(segment.startPointId));
-  const end = points.get(String(segment.endPointId));
-  if (!start || !end)
-    throw new Error(`Segment ${segmentId} references an unknown point.`);
-  const startTime = Date.parse(String(start.timestamp));
-  const endTime = Date.parse(String(end.timestamp));
-  if (
-    !Number.isFinite(startTime) ||
-    !Number.isFinite(endTime) ||
-    endTime < startTime
-  )
-    throw new Error(
-      `Segment ${segmentId} must have an ordered valid time interval.`
-    );
-  return { startTime, endTime };
-}
-
-/**
- * @param {{startTime: number, endTime: number}} first First interval.
- * @param {{startTime: number, endTime: number}} second Second interval.
- * @returns {boolean} Whether intervals overlap.
- */
-export function overlaps(first, second) {
-  return (
-    Math.max(first.startTime, second.startTime) <
-    Math.min(first.endTime, second.endTime)
-  );
-}
-// jscpd:ignore-end

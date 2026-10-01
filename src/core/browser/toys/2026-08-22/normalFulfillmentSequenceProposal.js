@@ -5,7 +5,6 @@ import { normalizeCoordinate } from '../2026-08-18/registryUtils.js';
 
 // This toy intentionally mirrors the public fulfillment proposal shape while
 // remaining procurement-free; keep it out of token-level clone detection.
-// jscpd:ignore-start
 
 // Toy: Normal Fulfillment Sequence Proposal
 
@@ -401,5 +400,4 @@ function metadata({
     });
   return result;
 }
-// jscpd:ignore-end
 // Stryker restore all

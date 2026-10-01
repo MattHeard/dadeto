@@ -1,6 +1,5 @@
 // Toy: Spacetime Segment Geodesic Length
 // (input, env) -> string
-// jscpd:ignore-start
 import { resolvePointRecords } from '../2026-08-22/spacePointResolution.js';
 
 const SEMI_MAJOR_AXIS = 6378137;
@@ -192,4 +191,3 @@ function sphericalFallback(
  */
 const radians = degrees => (degrees * Math.PI) / 180;
 export { vincentyDistance };
-// jscpd:ignore-end

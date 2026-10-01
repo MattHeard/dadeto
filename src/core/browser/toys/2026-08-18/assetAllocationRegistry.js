@@ -10,7 +10,6 @@ import { buildRegistry } from './registryUtils.js';
  * @param {string} input JSON payload with `allocations`.
  * @returns {string} Deterministic allocation registry.
  */
-// jscpd:ignore-start — thin exported wiring differs only by registry policy.
 export const assetAllocationRegistry = input =>
   buildRegistry(input, {
     collectionKey: 'allocations',
@@ -20,7 +19,6 @@ export const assetAllocationRegistry = input =>
     sortKey: allocation =>
       `${allocation.possessionContextId}:${allocation.assetId}`,
   });
-// jscpd:ignore-end
 
 /**
  * @param {unknown} value Candidate allocation.

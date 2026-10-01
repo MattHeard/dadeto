@@ -1,5 +1,4 @@
 // Toy: Canonical Normal Fulfillment Sequence Proposal
-/* istanbul ignore file -- fixed protocol boundary is verified by focused suites. */
 // Stryker disable all -- this toy is a fixed canonicalization and fulfillment
 // composition protocol boundary covered by the canonical fulfillment suites.
 
@@ -38,7 +37,6 @@ export function canonicalNormalFulfillmentSequenceProposal(input) {
       normalFulfillmentSequenceProposal(JSON.stringify(normalInput))
     );
     if (!proposal.valid) throw new Error(proposal.error);
-    /* istanbul ignore next -- proposal output is guaranteed by its boundary contract. */
     const allSpacePoints = canonicalSpacePoints([
       ...spacePoints,
       ...proposal.spacePoints,

@@ -1,6 +1,5 @@
 // Toy: Asset Segment Assignment List
 // (input, env) -> string
-// jscpd:ignore-start
 
 import { memoryObjectListAppend } from '../2026-08-18/memoryObjectListAppend.js';
 
@@ -33,10 +32,13 @@ export function assetSegmentAssignmentList(input, env) {
  * @param {string} input JSON request.
  * @returns {{memoryLocation?: string, path: string, assignment: {assetId: string, segmentId: string}}} Parsed request.
  */
-// jscpd:ignore-start — request parsing intentionally mirrors MEMO4's JSON boundary.
 function parseRequest(input) {
   const request = JSON.parse(input);
-  if (request === null || typeof request !== 'object' || Array.isArray(request)) {
+  if (
+    request === null ||
+    typeof request !== 'object' ||
+    Array.isArray(request)
+  ) {
     throw new Error('Input must be a JSON object.');
   }
   const source = request.assignment;
@@ -56,7 +58,5 @@ function parseRequest(input) {
     assignment: { assetId, segmentId },
   };
 }
-// jscpd:ignore-end
 
 export { parseRequest };
-// jscpd:ignore-end

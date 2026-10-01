@@ -1,10 +1,11 @@
 // Toy: Validated Asset Segment Assignment
-// jscpd:ignore-start
-// Stryker disable all -- this module is the fixed validated asset assignment
-// protocol boundary covered by the validated-assignment suite.
 import { evaluateWorldLine } from '../2026-08-21/segmentAssignmentFeasibilityCore.js';
-import { appendAtomically } from '../2026-08-21/safeAssignmentPersistence.js';
-import { normalizeAssignmentId } from './strictAssignmentCore.js';
+import { appendOneAssignment } from '../2026-08-21/safeAssignmentPersistence.js';
+import {
+  normalizeAssignmentId,
+  assignmentErrorReason,
+  formatAssignmentFailure,
+} from './strictAssignmentCore.js';
 
 /**
  * @param {string} input JSON asset assignment request.
@@ -16,18 +17,8 @@ export function validatedAssetSegmentAssignment(input, env) {
     const x = JSON.parse(input || '{}'),
       assetId = normalizeAssignmentId(x.assetId),
       segmentId = normalizeAssignmentId(x.candidateSegment?.segmentId);
-    if (!assetId)
-      return JSON.stringify({
-        appended: false,
-        feasible: false,
-        reason: 'invalid-asset-id',
-      });
-    if (!segmentId)
-      return JSON.stringify({
-        appended: false,
-        feasible: false,
-        reason: 'invalid-segment-id',
-      });
+    if (!assetId) return formatAssignmentFailure('invalid-asset-id');
+    if (!segmentId) return formatAssignmentFailure('invalid-segment-id');
     const result = evaluateWorldLine(
       x.points || [],
       x.existingSegments || [],
@@ -35,35 +26,20 @@ export function validatedAssetSegmentAssignment(input, env) {
       x.stockInPoint,
       x.stockOutPoint
     );
-    if (!result.feasible)
-      return JSON.stringify({
-        appended: false,
-        feasible: false,
-        reason: result.reason,
-      });
-    const commit = appendAtomically(
-      x.memoryLocation || 'temporary',
-      [
-        {
-          path: x.path || 'assetSegmentAssignments',
-          object: { assetId, segmentId },
-        },
-      ],
+    if (!result.feasible) return formatAssignmentFailure(result.reason);
+    const length = appendOneAssignment(
+      x,
+      { assetId, segmentId },
+      'assetSegmentAssignments',
       env
     );
     return JSON.stringify({
       appended: true,
       feasible: true,
-      length: commit.lengths[0],
+      length,
       object: { assetId, segmentId },
     });
   } catch (error) {
-    return JSON.stringify({
-      appended: false,
-      feasible: false,
-      reason: error instanceof Error ? error.message : String(error),
-    });
+    return formatAssignmentFailure(assignmentErrorReason(error));
   }
 }
-// jscpd:ignore-end
-// Stryker restore all

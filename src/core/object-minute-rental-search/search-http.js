@@ -120,7 +120,6 @@ export function normalizeRequest(body, env, clock) {
  * @param {string} timeZone IANA timezone used for local wall-clock conversion.
  * @returns {string} ISO timestamp or fallback value.
  */
-// jscpd:ignore-start -- defensive try/catch boundary intentionally matches toy fallback helpers.
 export function dailyWindow(
   value,
   timestamp,
@@ -135,7 +134,6 @@ export function dailyWindow(
     return fallback;
   }
 }
-// jscpd:ignore-end
 
 /**
  * Convert a local wall-clock time in an IANA timezone to an ISO UTC timestamp.

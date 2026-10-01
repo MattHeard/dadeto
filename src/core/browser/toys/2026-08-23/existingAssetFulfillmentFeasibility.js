@@ -1,4 +1,3 @@
-/* istanbul ignore file -- fixed protocol boundary is verified by focused suites. */
 import { evaluateWorldLine } from '../2026-08-21/segmentAssignmentFeasibilityCore.js';
 import { fulfillmentExistingAssetBoundary } from '../2026-08-22/fulfillmentResult.js';
 
@@ -56,7 +55,6 @@ function selectAssetSegments(proposal) {
   const operations = proposal.sequence
     .filter(operation => ASSET_OPERATIONS.has(operation?.operation))
     .map(operation => operation.operation);
-  /* istanbul ignore next -- proposal shape is validated at the public boundary. */
   if (
     selected.some(segment => !segment) ||
     operations.length !== ASSET_OPERATIONS.size ||

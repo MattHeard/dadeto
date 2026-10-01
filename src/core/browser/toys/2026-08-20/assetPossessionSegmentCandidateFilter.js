@@ -6,8 +6,7 @@ export function assetPossessionSegmentCandidateFilter(input) {
   try {
     const x = JSON.parse(input);
     // Stryker disable all -- empty collection defaults are defensive malformed-input boundaries.
-    const
-      points = new Map((x.points || []).map(p => [p.pointId, p])),
+    const points = new Map((x.points || []).map(p => [p.pointId, p])),
       segments = new Map((x.segments || []).map(s => [s.segmentId, s]));
     const target = resolve(segments, points, x.possessionSegmentId),
       assignments = Array.isArray(x.existingAssetAssignments)
@@ -36,6 +35,10 @@ export function assetPossessionSegmentCandidateFilter(input) {
   }
 }
 
+/**
+ *
+ * @param value
+ */
 export function normalizeSku(value) {
   return String(value).trim();
 }
