@@ -6,7 +6,7 @@ Explore the opening of an original handheld-style RPG chapter. Walk the village,
 
 ## Input
 
-The Dadeto keyboard-capture toy accepts a JSON action list or one normalized keyboard event. The full-screen page additionally supports gamepad and touch buttons.
+The embedded Dadeto toy opens with a virtual keypad: use the directional pad to walk, A to talk/confirm, B to cancel or guard, SELECT to wait, and START to open the journal. Each tap advances one shared simulation step. Keyboard capture remains available as an alternate Dadeto input method. The dedicated game page also supports keyboard, gamepad, and the same handheld-style touch controls.
 
 ### Example
 
@@ -47,4 +47,4 @@ Returns a 160×144 pixel-art frame payload rendered by Dadeto's canvas presenter
 
 ## Behavior
 
-Movement, conversations, flags, maps, and frame output are deterministic. The embedded scene is replayable; the full page stores progress in local save slots and supports save import/export. Controls: arrows/WASD move, Z/Enter or E talk and confirm, F farm, Q fish, T wait, R rest, J journal, C guard, and V skill. On phones, use the on-screen controls. Sound is optional.
+Movement, conversations, flags, maps, and frame output are deterministic. The embedded scene is replayable; the full page stores progress in local save slots and supports save import/export. Controls: arrows/WASD move, Z/Enter or E talk and confirm, F farm, Q fish, T wait, R rest, J journal, C guard, and V skill. Full-page phones use the on-screen D-pad, A/B, SELECT/START, and farming, fishing, and skill actions. Sound is optional.

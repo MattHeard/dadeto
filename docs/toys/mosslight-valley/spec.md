@@ -4,7 +4,7 @@
 
 - Toy name: Mosslight Valley: The Sleeping Valley
 - Owner: Dadeto
-- Last updated: 2026-09-30
+- Last updated: 2026-10-01
 
 ## Problem Statement
 
@@ -22,7 +22,7 @@
 ## Actors and Interfaces
 
 - Primary actor(s): player, valley residents, creatures.
-- Inputs: keyboard-capture action events, gamepad, touch controls, save import.
+- Inputs: embedded virtual keypad (D-pad, A/B, SELECT/START), alternate keyboard capture, dedicated-page keyboard/gamepad/touch controls, and save import.
 - Outputs: 160×144 canvas frame, local save slots, exportable JSON.
 
 ## Assumptions and Constraints

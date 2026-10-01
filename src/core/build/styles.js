@@ -593,6 +593,111 @@ const STYLES = String.raw`
     touch-action: manipulation;
   }
 
+  .mosslight-keypad {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    max-width: 100%;
+    padding: 14px;
+    border: 1px solid #566d68;
+    border-radius: 16px;
+    background: linear-gradient(145deg, #253b40, #152930);
+    box-shadow: inset 0 1px #d4e5c51c, 0 8px 18px #080e1166;
+  }
+
+  .mosslight-keypad-dpad {
+    display: grid;
+    grid-template: repeat(2, 48px) / repeat(3, 48px);
+    gap: 4px;
+  }
+
+  .mosslight-keypad-button {
+    min-width: 44px;
+    min-height: 44px;
+    border: 1px solid #728680;
+    border-radius: 9px;
+    color: #eef0dc;
+    background: linear-gradient(145deg, #40575a, #263d42);
+    box-shadow: inset 0 1px #ffffff20, 0 3px #0c1c22;
+    font: 700 15px 'DM Mono', monospace;
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+    touch-action: manipulation;
+  }
+
+  .mosslight-keypad-button:active {
+    transform: translateY(2px);
+    box-shadow: inset 0 1px #ffffff20, 0 1px #0c1c22;
+  }
+
+  .mosslight-keypad-dpad .up { grid-area: 1 / 2; }
+  .mosslight-keypad-dpad .left { grid-area: 2 / 1; }
+  .mosslight-keypad-dpad .down { grid-area: 2 / 2; }
+  .mosslight-keypad-dpad .right { grid-area: 2 / 3; }
+
+  .mosslight-keypad-face {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    transform: rotate(-18deg);
+  }
+
+  .mosslight-keypad-face .mosslight-keypad-button {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    border-color: #d3948e;
+    background: linear-gradient(145deg, #a65564, #713e50);
+    font-size: 19px;
+  }
+
+  .mosslight-keypad-face .b { transform: translateY(-7px); }
+
+  .mosslight-keypad-system {
+    display: flex;
+    gap: 8px;
+    flex-basis: 100%;
+    justify-content: center;
+  }
+
+  .mosslight-keypad-system .mosslight-keypad-button {
+    min-width: 56px;
+    min-height: 30px;
+    padding: 4px 8px;
+    border-radius: 999px;
+    font-size: 8px;
+  }
+
+  @media (max-width: 480px) {
+    .mosslight-keypad {
+      gap: 8px;
+      padding: 10px 8px;
+    }
+
+    .mosslight-keypad-dpad {
+      grid-template: repeat(2, 44px) / repeat(3, 44px);
+      gap: 2px;
+    }
+
+    .mosslight-keypad-face { gap: 6px; }
+    .mosslight-keypad-face .mosslight-keypad-button {
+      width: 48px;
+      height: 48px;
+      min-width: 48px;
+      min-height: 48px;
+    }
+
+    .mosslight-keypad-system { gap: 4px; }
+    .mosslight-keypad-system .mosslight-keypad-button {
+      min-width: 48px;
+      padding: 3px 5px;
+      font-size: 7px;
+    }
+  }
+
   .realtime-voice-status {
     color: var(--terminal-success);
     font-weight: bold;

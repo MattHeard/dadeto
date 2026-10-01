@@ -493,11 +493,20 @@ resource "google_secret_manager_secret_version" "test_runtime" {
 }
 
 resource "google_firestore_database" "database" {
-  count       = var.database_id == "(default)" ? (local.manage_project_level_resources && var.create_default_firestore_database ? 1 : 0) : 1
+  count = var.database_id == "(default)" ? (
+    local.manage_project_level_resources && var.create_default_firestore_database ? 1 : 0
+  ) : 1
+
   project     = var.project_id
   name        = var.database_id
   location_id = var.region
   type        = "FIRESTORE_NATIVE"
+
+  # Terraform otherwise abandons these on destroy, leaking test databases
+  # until the project's 100-database Firestore limit blocks future gcp-test runs.
+  # Never let a test teardown delete the shared default database.
+  deletion_policy = var.database_id == "(default)" || !local.playwright_enabled ? "ABANDON" : "DELETE"
+
   depends_on = [
     google_project_service.firestore,
   ]

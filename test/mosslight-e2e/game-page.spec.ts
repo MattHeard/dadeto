@@ -11,6 +11,10 @@ test('phone layout fits the viewport and thumb input advances the shared save', 
   ).toBeVisible();
   await expect(page.locator('#game-screen')).toBeVisible();
   await expect(page.locator('[data-action="right"]')).toBeVisible();
+  await expect(
+    page.getByRole('button', { name: 'A button: talk or confirm' })
+  ).toBeVisible();
+  await expect(page.getByRole('button', { name: 'B button: guard' })).toBeVisible();
 
   const dimensionsBefore = await page.evaluate(() => ({
     viewport: document.documentElement.clientWidth,
@@ -47,6 +51,38 @@ test('phone layout fits the viewport and thumb input advances the shared save', 
   await expect(page.locator('#game-status')).toContainText('Paused');
   await page.getByRole('button', { name: 'Resume' }).tap();
   await expect(page.locator('#game-status')).not.toContainText('Paused');
+});
+
+test('embedded opening preview defaults to the virtual keypad on phones', async ({
+  page,
+  isMobile,
+}) => {
+  test.skip(!isMobile, 'The embedded keypad is specifically the phone input.');
+  await page.goto('/');
+  const toy = page.locator('#MOSS1');
+  await toy.scrollIntoViewIfNeeded();
+  await expect(toy.locator('select.input')).toHaveValue('mosslight-keypad');
+  const keypad = toy.locator('.mosslight-keypad');
+  await expect(keypad).toBeVisible();
+  await expect(keypad.getByRole('button', { name: 'A · talk or confirm' })).toBeVisible();
+  await expect(keypad.getByRole('button', { name: 'B · cancel' })).toBeVisible();
+
+  await keypad.getByRole('button', { name: 'Right' }).tap();
+  await expect
+    .poll(async () =>
+      page.evaluate(() => {
+        const permanent = JSON.parse(localStorage.getItem('permanentData') || '{}');
+        const serialized = permanent['mosslight-valley-saves-v2']?.slots?.['0'];
+        return serialized ? JSON.parse(serialized).state.world.player.x : null;
+      })
+    )
+    .toBe(7);
+  const inputWidth = await keypad.evaluate(element =>
+    Math.ceil(element.getBoundingClientRect().right)
+  );
+  expect(inputWidth).toBeLessThanOrEqual(
+    await page.evaluate(() => document.documentElement.clientWidth)
+  );
 });
 
 test('desktop page renders its handheld screen and accepts keyboard input', async ({

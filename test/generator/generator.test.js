@@ -98,10 +98,15 @@ describe('Blog Generator', () => {
 
     const html = generateBlog({ blog, header, footer }, wrapHtml);
     expect(html).toBe(
-      expectedHtml.replace(
-        '<option value="gamepad-button-mapper">gamepad-button-mapper</option>',
-        '<option value="gamepad-button-mapper">gamepad-button-mapper</option><option value="object-minute-asset">object-minute-asset</option><option value="possession-request">possession-request</option>'
-      )
+      expectedHtml
+        .replace(
+          '<option value="mobile-controls">mobile-controls</option><option value="gamepad-capture">',
+          '<option value="mobile-controls">mobile-controls</option><option value="mosslight-keypad">mosslight-keypad</option><option value="gamepad-capture">'
+        )
+        .replace(
+          '<option value="gamepad-button-mapper">gamepad-button-mapper</option>',
+          '<option value="gamepad-button-mapper">gamepad-button-mapper</option><option value="object-minute-asset">object-minute-asset</option><option value="possession-request">possession-request</option>'
+        )
     );
   });
 });
@@ -381,10 +386,15 @@ describe('Blog Generator optional media', () => {
 
     const html = generateBlog({ blog, header, footer }, wrapHtml);
     const expectedHtml = `<html><body><article class="entry" id="LINK1"><div class="key full-width">▄▄▄▄▄▄▄▄▄▄</div><div class="value full-width">▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄</div><div class="key article-title">LINK1</div><div class="value"><h2><a href="#LINK1">Post with Related Links</a></h2></div><div class="key">pubAt</div><p class="value metadata">2 Mar 2024</p><div class="key">in</div><div class="value"><span class="select-wrapper"><select class="input"><option value="text">text</option><option value="textarea">textarea</option><option value="life-seed">life-seed</option><option value="file">file</option><option value="number">number</option><option value="real-hourly-wage">real-hourly-wage</option><option value="kv">kv</option><option value="blog-key">blog-key</option><option value="dendrite-story">dendrite-story</option><option value="dendrite-page">dendrite-page</option><option value="moderator-ratings">moderator-ratings</option><option value="keyboard-capture">keyboard-capture</option><option value="mobile-controls">mobile-controls</option><option value="gamepad-capture">gamepad-capture</option><option value="gamepad-button-mapper">gamepad-button-mapper</option></select></span><input type="text" disabled></div><div class="key"></div><div class="value"><button type="button" class="toy-focus-toggle">Focus mode</button><button type="submit" disabled>Submit</button><label class="auto-submit-label"><input type="checkbox" class="auto-submit-checkbox" /> Auto</label></div><div class="key">out</div><div class="value"><span class="select-wrapper"><select class="output"><option value="text">text</option><option value="pre">pre</option><option value="copy-to-clipboard">copy-to-clipboard</option><option value="canvas-2d">canvas-2d</option><option value="graph-2d">graph-2d</option><option value="ledger-ingest">ledger-ingest</option><option value="real-hourly-wage">real-hourly-wage</option><option value="joycon-mapping">joycon-mapping</option><option value="realtime-voice">realtime-voice</option><option value="tic-tac-toe">tic-tac-toe</option><option value="battleship-solitaire-fleet">battleship-solitaire-fleet</option><option value="battleship-solitaire-clues-presenter">battleship-solitaire-clues-presenter</option></select></span><div class="output warning"><p>This toy requires Javascript to run.</p></div></div><div class="key">links</div><div class="value"><ul class="related-links"><li><a href="https://example.com/article" target="_blank" rel="noopener">"Example Article"</a> by John Doe, Example Blog</li><li><a href="https://example.org/book" target="_blank" rel="noopener"><em>_Programming Guide_</em></a> by Jane Smith, Tech Publishing</li></ul></div><script type="module">window.addComponent('LINK1', './toys/2024-03-02/counter.js', 'counter');</script></article><article class="entry" id="TOY01"><div class="key full-width">▄▄▄▄▄▄▄▄▄▄</div><div class="value full-width">▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄</div><div class="key article-title">TOY01</div><div class="value"><h2><a href="#TOY01">Post with Toy</a></h2></div><div class="key">pubAt</div><p class="value metadata">1 Mar 2024</p><div class="key">in</div><div class="value"><span class="select-wrapper"><select class="input"><option value="text">text</option><option value="textarea">textarea</option><option value="life-seed">life-seed</option><option value="file">file</option><option value="number">number</option><option value="real-hourly-wage">real-hourly-wage</option><option value="kv">kv</option><option value="blog-key">blog-key</option><option value="dendrite-story">dendrite-story</option><option value="dendrite-page">dendrite-page</option><option value="moderator-ratings">moderator-ratings</option><option value="keyboard-capture">keyboard-capture</option><option value="mobile-controls">mobile-controls</option><option value="gamepad-capture">gamepad-capture</option><option value="gamepad-button-mapper">gamepad-button-mapper</option></select></span><input type="text" disabled></div><div class="key"></div><div class="value"><button type="button" class="toy-focus-toggle">Focus mode</button><button type="submit" disabled>Submit</button><label class="auto-submit-label"><input type="checkbox" class="auto-submit-checkbox" /> Auto</label></div><div class="key">out</div><div class="value"><span class="select-wrapper"><select class="output"><option value="text">text</option><option value="pre">pre</option><option value="copy-to-clipboard">copy-to-clipboard</option><option value="canvas-2d">canvas-2d</option><option value="graph-2d">graph-2d</option><option value="ledger-ingest">ledger-ingest</option><option value="real-hourly-wage">real-hourly-wage</option><option value="joycon-mapping">joycon-mapping</option><option value="realtime-voice">realtime-voice</option><option value="tic-tac-toe">tic-tac-toe</option><option value="battleship-solitaire-fleet">battleship-solitaire-fleet</option><option value="battleship-solitaire-clues-presenter">battleship-solitaire-clues-presenter</option></select></span><div class="output warning"><p>This toy requires Javascript to run.</p></div></div><script type="module">window.addComponent('TOY01', './toys/2024-03-01/calculator.js', 'calculator');</script></article></body></html>`;
-    const expectedWithCurrentInputOptions = expectedHtml.replaceAll(
-      '<option value="gamepad-button-mapper">gamepad-button-mapper</option>',
-      '<option value="gamepad-button-mapper">gamepad-button-mapper</option><option value="object-minute-asset">object-minute-asset</option><option value="possession-request">possession-request</option>'
-    );
+    const expectedWithCurrentInputOptions = expectedHtml
+      .replaceAll(
+        '<option value="mobile-controls">mobile-controls</option><option value="gamepad-capture">',
+        '<option value="mobile-controls">mobile-controls</option><option value="mosslight-keypad">mosslight-keypad</option><option value="gamepad-capture">'
+      )
+      .replaceAll(
+        '<option value="gamepad-button-mapper">gamepad-button-mapper</option>',
+        '<option value="gamepad-button-mapper">gamepad-button-mapper</option><option value="object-minute-asset">object-minute-asset</option><option value="possession-request">possession-request</option>'
+      );
     expect(html).toBe(expectedWithCurrentInputOptions);
   });
 

@@ -41,6 +41,14 @@ describe('gcp-test workflow report handling', () => {
     );
   });
 
+  it('deletes only named Playwright databases during Terraform teardown', () => {
+    const source = readFileSync('infra/main.tf', 'utf8');
+
+    expect(source).toContain(
+      'deletion_policy = var.database_id == "(default)" || !local.playwright_enabled ? "ABANDON" : "DELETE"'
+    );
+  });
+
   it('runs teardown in a separate always-on cleanup job', () => {
     const source = readFileSync('.github/workflows/gcp-test.yml', 'utf8');
 

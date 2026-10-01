@@ -34,6 +34,7 @@ describe('toys additional coverage', () => {
         'moderator-ratings',
         'keyboard-capture',
         'mobile-controls',
+        'mosslight-keypad',
         'gamepad-capture',
         'gamepad-button-mapper',
         'object-minute-asset',

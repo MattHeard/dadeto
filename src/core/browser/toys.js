@@ -8,6 +8,7 @@ import { numberHandler } from './inputHandlers/number.js';
 import { moderatorRatingsHandler } from './inputHandlers/moderatorRatings.js';
 import { keyboardCaptureHandler } from './inputHandlers/keyboardCapture.js';
 import { mobileControlsHandler } from './inputHandlers/mobileControls.js';
+import { mosslightKeypadHandler } from './inputHandlers/mosslightKeypad.js';
 import { gamepadCaptureHandler } from './inputHandlers/gamepadCapture.js';
 import { joyConMapperHandler } from './inputHandlers/joyConMapper.js';
 import {
@@ -276,6 +277,7 @@ const inputHandlersMap = {
   'moderator-ratings': moderatorRatingsHandler,
   'keyboard-capture': keyboardCaptureHandler,
   'mobile-controls': mobileControlsHandler,
+  'mosslight-keypad': mosslightKeypadHandler,
   'gamepad-capture': gamepadCaptureHandler,
   'gamepad-button-mapper': joyConMapperHandler,
   'object-minute-asset': objectMinuteAssetHandler,

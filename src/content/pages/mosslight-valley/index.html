@@ -70,13 +70,19 @@
               ><button data-action="right" aria-label="Move right">▶</button>
             </div>
             <div class="touch-actions">
-              <button data-action="interact">TALK</button
-              ><button data-action="farm">FARM</button
-              ><button data-action="fish">FISH</button
-              ><button data-action="journal">JOURNAL</button
-              ><button data-action="wait">WAIT</button
-              ><button data-action="special">SKILL</button
-              ><button data-action="guard">GUARD</button>
+              <div class="face-buttons" aria-label="A and B buttons">
+                <button data-action="guard" aria-label="B button: guard">B</button>
+                <button data-action="interact" aria-label="A button: talk or confirm">A</button>
+              </div>
+              <div class="system-buttons">
+                <button data-action="wait" aria-label="Select: wait">SELECT</button>
+                <button data-action="journal" aria-label="Start: open journal">START</button>
+              </div>
+              <div class="extra-buttons">
+                <button data-action="farm">FARM</button
+                ><button data-action="fish">FISH</button
+                ><button data-action="special">SKILL</button>
+              </div>
             </div>
           </div>
           <nav class="utility-actions" aria-label="Game actions">

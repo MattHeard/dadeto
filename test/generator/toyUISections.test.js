@@ -47,6 +47,28 @@ describe('TOY_UI_SECTIONS integration', () => {
     expect(html).toContain('<option value="number" selected>number</option>');
   });
 
+  test('generateBlog offers and selects the Mosslight virtual keypad', () => {
+    const blog = {
+      posts: [
+        {
+          key: 'MOSS1',
+          title: 'Mosslight Valley',
+          publicationDate: '2026-09-30',
+          content: ['x'],
+          toy: {
+            modulePath: './game/mosslightValley.js',
+            functionName: 'mosslightValley',
+            defaultInputMethod: 'mosslight-keypad',
+          },
+        },
+      ],
+    };
+    const html = generateBlog({ blog, header, footer }, wrapHtml);
+    expect(html).toContain(
+      '<option value="mosslight-keypad" selected>mosslight-keypad</option>'
+    );
+  });
+
   test('generateBlog selects configured default output method', () => {
     const blog = {
       posts: [

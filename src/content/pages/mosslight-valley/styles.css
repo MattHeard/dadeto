@@ -192,7 +192,12 @@ footer i {
   display: none;
   align-items: center;
   justify-content: space-between;
-  padding: 8px 2px;
+  gap: 14px;
+  padding: 12px;
+  background: linear-gradient(145deg, #263c41, #182b32);
+  border: 1px solid #49605d;
+  border-radius: 16px;
+  box-shadow: inset 0 1px #a4bea322, 0 8px 18px #08191d66;
 }
 .dpad {
   display: grid;
@@ -218,9 +223,62 @@ footer i {
   grid-column: 3;
   grid-row: 2;
 }
+.dpad button {
+  min-width: 46px;
+  min-height: 44px;
+  background: linear-gradient(145deg, #3a5155, #243a40);
+  border-color: #748783;
+  box-shadow: inset 0 1px #ffffff17, 0 3px #101e24;
+  font-size: 16px;
+}
+.dpad button:nth-child(2) {
+  border-radius: 9px 3px 3px 9px;
+}
+.dpad button:nth-child(3) {
+  border-radius: 3px 3px 9px 9px;
+}
+.dpad button:nth-child(4) {
+  border-radius: 3px 9px 9px 3px;
+}
 .touch-actions {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  justify-items: end;
+  gap: 10px;
+}
+.face-buttons {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  transform: rotate(-18deg);
+}
+.face-buttons button {
+  width: 54px;
+  height: 54px;
+  border-radius: 50% !important;
+  color: #f3e8d2 !important;
+  background: linear-gradient(145deg, #a45562, #713d50) !important;
+  border-color: #d3938f !important;
+  box-shadow: inset 0 2px #ffffff26, 0 4px #111f25;
+  font-weight: 700 !important;
+}
+.face-buttons button:last-child {
+  background: linear-gradient(145deg, #bc7180, #8c4b60) !important;
+}
+.system-buttons {
+  display: flex;
+  gap: 9px;
+}
+.system-buttons button {
+  min-width: 58px;
+  min-height: 30px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 8px;
+  transform: rotate(-12deg);
+}
+.extra-buttons {
+  display: flex;
+  justify-content: end;
   gap: 6px;
 }
 .touch-pad button,
@@ -374,15 +432,16 @@ body {
   }
   .touch-pad {
     gap: 14px;
-    min-height: 138px;
+    min-height: 164px;
+    padding: 12px 8px;
   }
   .dpad {
-    grid-template-columns: repeat(3, 52px);
-    grid-template-rows: repeat(2, 48px);
+    grid-template-columns: repeat(3, 44px);
+    grid-template-rows: repeat(2, 44px);
     gap: 4px;
   }
   .touch-actions {
-    gap: 8px;
+    gap: 10px;
   }
   .touch-pad button {
     min-width: 56px;
@@ -391,8 +450,19 @@ body {
     font-size: 11px;
   }
   .dpad button {
-    min-width: 52px;
-    min-height: 48px;
+    min-width: 44px;
+    min-height: 46px;
+  }
+  .face-buttons button {
+    width: 54px;
+    height: 54px;
+    min-width: 54px;
+    min-height: 54px;
+  }
+  .extra-buttons button {
+    min-width: 44px;
+    padding: 8px 7px;
+    font-size: 9px;
   }
   .utility-actions button {
     min-height: 42px;
