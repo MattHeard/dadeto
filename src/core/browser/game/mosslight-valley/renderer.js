@@ -1,5 +1,6 @@
 // @ts-nocheck -- render state is a plain JSON payload consumed by both views.
 import { cameraFor } from './world.js';
+import { generateBackgroundTile } from './tileGenerator.js';
 const PALETTES = {
   village: ['#182f36', '#315744', '#bfd77c', '#e9d88d'],
   shore: ['#182f36', '#246774', '#b9e2ce', '#e5d39c'],
@@ -51,17 +52,24 @@ function toCanvasShapes(frame) {
     for (let x = 0; x < 12; x++) {
       const wx = x + frame.camera.x;
       const wy = y + frame.camera.y;
-      if (wx < map.width && wy < map.height)
-        shapes.push({
-          type: 'rect',
-          x: x * 12,
-          y: y * 12,
-          width: 12,
-          height: 12,
-          fill: map.blocked.includes(`${wx},${wy}`)
-            ? frame.palette[0]
-            : frame.palette[((wx + wy) % 3) + 1],
-        });
+      if (wx < map.width && wy < map.height) {
+        const blocked = map.blocked.includes(`${wx},${wy}`);
+        for (const rect of generateBackgroundTile({
+          x: wx,
+          y: wy,
+          palette: frame.palette,
+          region: map.palette,
+          blocked,
+        }))
+          shapes.push({
+            type: 'rect',
+            x: x * 12 + rect.x,
+            y: y * 12 + rect.y,
+            width: rect.width,
+            height: rect.height,
+            fill: rect.fill,
+          });
+      }
     }
   shapes.push({
     type: 'rect',
@@ -127,7 +135,7 @@ function frameText(text, y, fill, font = '8px monospace') {
  * @param {unknown} frame - The frame argument.
  */
 export function drawGameFrame(context, frame) {
-  const [p0, p1, p2, p3] = frame.palette;
+  const [p0, , p2, p3] = frame.palette;
   context.imageSmoothingEnabled = false;
   context.fillStyle = p0;
   context.fillRect(0, 0, 160, 144);
@@ -139,13 +147,20 @@ export function drawGameFrame(context, frame) {
         y = sy + frame.camera.y;
       if (x >= map.width || y >= map.height) continue;
       const blocked = map.blocked.includes(`${x},${y}`);
-      context.fillStyle = blocked ? p1 : (x + y) % 4 === 0 ? p2 : p1;
-      context.fillRect(sx * tile, sy * tile, tile, tile);
-      context.fillStyle = blocked ? p0 : p2;
-      context.fillRect(sx * tile + 2, sy * tile + 4, 2, 2);
-      if (!blocked && (x * y + frame.tick) % 13 === 0) {
-        context.fillStyle = p3;
-        context.fillRect(sx * tile + 8, sy * tile + 2, 2, 2);
+      for (const rect of generateBackgroundTile({
+        x,
+        y,
+        palette: frame.palette,
+        region: map.palette,
+        blocked,
+      })) {
+        context.fillStyle = rect.fill;
+        context.fillRect(
+          sx * tile + rect.x,
+          sy * tile + rect.y,
+          rect.width,
+          rect.height
+        );
       }
     }
   for (const object of map.objects || []) {

@@ -24,6 +24,7 @@
 - Primary actor(s): player, valley residents, creatures.
 - Inputs: embedded virtual keypad (D-pad, A/B, SELECT/START), alternate keyboard capture, dedicated-page keyboard/gamepad/touch controls, and save import.
 - Outputs: 160×144 canvas frame, local save slots, exportable JSON.
+- Terrain art: a deterministic tile generator creates region-specific pixel details from map coordinates; both renderers consume the same generated rectangles so tile patterns remain stable and visually identical.
 
 ## Assumptions and Constraints
 

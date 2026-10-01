@@ -9,12 +9,18 @@ import { startBattle } from '../../../../src/core/browser/game/mosslight-valley/
 import { openDialogue } from '../../../../src/core/browser/game/mosslight-valley/dialogue.js';
 import { selectEnding } from '../../../../src/core/browser/game/mosslight-valley/quests.js';
 
-const makeContext = () => ({
-  measureText: text => ({ width: text.length * 8 }),
-  fillRect: jest.fn(),
-  fillText: jest.fn(),
-  strokeRect: jest.fn(),
-});
+const makeContext = () => {
+  const rectangles = [];
+  return {
+    rectangles,
+    measureText: text => ({ width: text.length * 8 }),
+    fillRect: jest.fn(function (x, y, width, height) {
+      rectangles.push({ x, y, width, height, fill: this.fillStyle });
+    }),
+    fillText: jest.fn(),
+    strokeRect: jest.fn(),
+  };
+};
 
 test('draws terrain, objects, weather and both dialogue layouts', () => {
   let state = createSimulation(CONTENT);
@@ -140,4 +146,19 @@ test('keeps walkable terrain tile colors at a visible contrast', () => {
     const contrast = (values[0] + 0.05) / (values[1] + 0.05);
     expect(contrast).toBeGreaterThanOrEqual(3);
   }
+});
+
+test('uses identical generated terrain rectangles in both render paths', () => {
+  const frame = toFramePayload(createSimulation(CONTENT));
+  const firstActor = frame.shapes.findIndex(
+    shape => shape.width === 6 && shape.height === 9
+  );
+  const terrain = frame.shapes
+    .slice(0, firstActor)
+    .map(({ x, y, width, height, fill }) => ({ x, y, width, height, fill }));
+  const context = makeContext();
+
+  drawGameFrame(context, frame);
+
+  expect(context.rectangles.slice(1, terrain.length + 1)).toEqual(terrain);
 });
