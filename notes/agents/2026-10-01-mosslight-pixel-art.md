@@ -22,4 +22,24 @@ Keep normal canvas text as the default; bitmap rendering is explicit opt-in.
 
 Initial focused tests: 12 passed, font/sprites/renderer coverage 100% across all
 four metrics (.tmp/pixel-focused-coverage/coverage-summary.json). Detailed final
-acceptance results will be added after the aggregate and browser gates complete.
+acceptance: TMPDIR=/home/matt/dadeto/.tmp npm run check exited 0, npm test and
+all ten static gates passed (/tmp/dadeto-pixel-check-final.log). Repository
+statements, branches, functions and lines all reached 100%
+(reports/coverage/coverage-summary.json). npm run build passed
+(/tmp/dadeto-pixel-build.log). Local Playwright with
+test/mosslight.playwright.config.ts --workers=1 passed 15 tests, with three
+intentional device skips (/tmp/dadeto-pixel-playwright-final.log). Phone and
+desktop screenshots were generated; phone embedded screenshot was inspected
+at /tmp/dadeto-dialogue-phone-embedded.png. Duplication: zero clones.
+
+The first browser assertion assumed the first pixel of A was lit; bitmap A
+has an inset top row, so test the prompt's actual lit row instead. A concurrent
+first run also hit a focus/pause timing failure and was interrupted with signal
+143; the separate browser and aggregate reruns completed successfully. Add
+Record dictionary annotations for glyph and sprite palette lookups to satisfy
+the strict JSDoc type gate. Sprite rows are slash-delimited strings to keep
+authored art legible without duplicated array fragments in the clone scanner.
+
+Source checkpoint f68d0968c1 deployed through successful Netlify run
+36928742865. Live renderer and pixelFont.js were fetched and confirmed to use
+bitmap text and shared spriteShapes.
