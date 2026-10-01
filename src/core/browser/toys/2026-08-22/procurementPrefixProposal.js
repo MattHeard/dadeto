@@ -1,11 +1,10 @@
 // Toy: Procurement Prefix Proposal
 
 import { normalizeCoordinate } from '../2026-08-18/registryUtils.js';
-
-// Stryker disable all -- this module is the fixed procurement-prefix
-// fulfillment protocol boundary covered by the focused suites.
-
-const MINUTE_MS = 60_000;
+import {
+  fulfillmentFiniteNonNegative as finiteNonNegative,
+  fulfillmentMinuteAligned as minuteAligned,
+} from './fulfillmentResult.js';
 
 /**
  * Propose only the procurement and stock-in prefix before delivery outbound.
@@ -123,26 +122,9 @@ function coordinate(value, minimum, maximum) {
 }
 
 /**
- * @param {unknown} value Candidate duration.
- * @returns {boolean} Whether the value is finite and non-negative.
- */
-function finiteNonNegative(value) {
-  return typeof value === 'number' && Number.isFinite(value) && value >= 0;
-}
-
-/**
- * @param {number} value Epoch milliseconds.
- * @returns {boolean} Whether the timestamp is minute-aligned.
- */
-function minuteAligned(value) {
-  return Number.isFinite(value) && value % MINUTE_MS === 0;
-}
-
-/**
  * @param {number} value Epoch milliseconds.
  * @returns {string} ISO minute timestamp.
  */
 function timestamp(value) {
   return `${new Date(value).toISOString().slice(0, 16)}Z`;
 }
-// Stryker restore all
