@@ -4,6 +4,7 @@ import {
   fulfillmentFailure,
   fulfillmentFindMatchingAsset,
   fulfillmentFiniteNonNegative,
+  fulfillmentNumberWithin,
   fulfillmentMergeById,
   fulfillmentMinuteAligned,
   fulfillmentNonblank,
@@ -46,6 +47,11 @@ describe('fulfillment boundary helpers', () => {
     ).toEqual({ feasible: true, existing: [] });
   });
   test('covers scalar predicates and failure serialization', () => {
+    for (const value of ['0', NaN, Infinity, -91, 91]) {
+      expect(fulfillmentNumberWithin(value, -90, 90)).toBe(false);
+    }
+    expect(fulfillmentNumberWithin(-90, -90, 90)).toBe(true);
+    expect(fulfillmentNumberWithin(90, -90, 90)).toBe(true);
     expect(fulfillmentNonblankString(42)).toBe(false);
     expect(fulfillmentNonblankString('   ')).toBe(false);
     expect(fulfillmentNonblankString(' id ')).toBe(true);

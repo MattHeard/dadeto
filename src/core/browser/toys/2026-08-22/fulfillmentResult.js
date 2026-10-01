@@ -51,6 +51,22 @@ export function fulfillmentFiniteNonNegative(value) {
 }
 
 /**
+ * Require a finite numeric coordinate within inclusive bounds.
+ * @param {unknown} value Candidate number.
+ * @param {number} minimum Inclusive lower bound.
+ * @param {number} maximum Inclusive upper bound.
+ * @returns {boolean} Whether the numeric value is in range.
+ */
+export function fulfillmentNumberWithin(value, minimum, maximum) {
+  return (
+    typeof value === 'number' &&
+    Number.isFinite(value) &&
+    value >= minimum &&
+    value <= maximum
+  );
+}
+
+/**
  * @param {number} value Epoch milliseconds.
  * @returns {boolean} Minute-aligned timestamp.
  */

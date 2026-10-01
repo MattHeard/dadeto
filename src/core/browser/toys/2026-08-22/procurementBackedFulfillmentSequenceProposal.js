@@ -4,6 +4,7 @@ import {
   fulfillmentPoint as point,
   fulfillmentSegment as segment,
   fulfillmentMinuteAligned as isMinuteTimestamp,
+  fulfillmentNumberWithin as validCoordinate,
 } from './fulfillmentResult.js';
 
 // Toy: Procurement-Backed Fulfillment Sequence Proposal
@@ -239,21 +240,6 @@ function validateRequest(request) {
     configuration,
     ids,
   };
-}
-/**
- * Validate a WGS84 coordinate.
- * @param {unknown} value Candidate coordinate.
- * @param {number} minimum Lower bound.
- * @param {number} maximum Upper bound.
- * @returns {boolean} Whether valid.
- */
-function validCoordinate(value, minimum, maximum) {
-  return (
-    typeof value === 'number' &&
-    Number.isFinite(value) &&
-    value >= minimum &&
-    value <= maximum
-  );
 }
 
 /**

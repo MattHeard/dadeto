@@ -4,6 +4,7 @@ import {
   fulfillmentMinuteAligned as minuteAligned,
   fulfillmentPoint as warehousePoint,
   fulfillmentSegment as makeSegment,
+  fulfillmentNumberWithin as coordinate,
 } from './fulfillmentResult.js';
 
 // Toy: Normal Fulfillment Sequence Proposal
@@ -299,21 +300,6 @@ function referencedPoint(point) {
     nonblank(point.pointId) &&
     nonblank(point.spacePointId) &&
     typeof point.timestamp === 'string'
-  );
-}
-
-/**
- * @param {unknown} value Coordinate.
- * @param {number} min Lower bound.
- * @param {number} max Upper bound.
- * @returns {boolean} Whether valid.
- */
-function coordinate(value, min, max) {
-  return (
-    typeof value === 'number' &&
-    Number.isFinite(value) &&
-    value >= min &&
-    value <= max
   );
 }
 
