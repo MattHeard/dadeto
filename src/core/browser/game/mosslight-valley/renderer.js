@@ -1,6 +1,8 @@
 // @ts-nocheck -- render state is a plain JSON payload consumed by both views.
 import { cameraFor } from './world.js';
 import { generateBackgroundTile } from './tileGenerator.js';
+import { spriteShapes } from './sprites.js';
+import { drawPixelText } from '../../pixelFont.js';
 const PALETTES = {
   village: ['#182f36', '#315744', '#bfd77c', '#e9d88d'],
   shore: ['#182f36', '#246774', '#b9e2ce', '#e5d39c'],
@@ -47,23 +49,7 @@ export function toFramePayload(state) {
  */
 function toCanvasShapes(frame) {
   const shapes = terrainShapes(frame);
-  shapes.push({
-    type: 'rect',
-    x: (frame.player.x - frame.camera.x) * 12 + 3,
-    y: (frame.player.y - frame.camera.y) * 12 + 2,
-    width: 6,
-    height: 9,
-    fill: '#e57d53',
-  });
-  for (const npc of frame.npcs)
-    shapes.push({
-      type: 'rect',
-      x: (npc.x - frame.camera.x) * 12 + 3,
-      y: (npc.y - frame.camera.y) * 12 + 3,
-      width: 6,
-      height: 7,
-      fill: '#eee19a',
-    });
+  shapes.push(...foregroundShapes(frame));
   shapes.push(...hudShapes(frame));
   if (frame.dialogue)
     shapes.push(...dialogueShapes(frame.dialogue, '#182f36', '#e9d88d'));
@@ -119,7 +105,7 @@ function terrainShapes(frame) {
  * @returns {string} Bounded label.
  */
 function fitHudText(text) {
-  return text.length > 35 ? `${text.slice(0, 34)}…` : text;
+  return text.length > 30 ? `${text.slice(0, 29)}…` : text;
 }
 /**
  * Share compact location, objective and two message rows between presenters.
@@ -127,7 +113,7 @@ function fitHudText(text) {
  * @returns {object[]} HUD shapes.
  */
 function hudShapes(frame) {
-  const rows = wrapDialogueText(frame.toast || 'Move · interact · listen', 35);
+  const rows = wrapDialogueText(frame.toast || 'Move · interact · listen', 30);
   return [
     { type: 'rect', x: 0, y: 108, width: 160, height: 36, fill: '#141c2c' },
     frameText(
@@ -155,7 +141,7 @@ function hudShapes(frame) {
  * @returns {object} Canvas presenter text shape.
  */
 function frameText(text, y, fill, font = '7px monospace') {
-  return { type: 'text', x: 4, y, text, fill, font };
+  return { type: 'text', x: 4, y, text, fill, font, bitmap: true };
 }
 /**
  * Draw tile art, actors, weather, menu and story UI into a 160×144 canvas.
@@ -166,32 +152,7 @@ export function drawGameFrame(context, frame) {
   const [p0, , , p3] = frame.palette;
   context.imageSmoothingEnabled = false;
   drawShapes(context, terrainShapes(frame));
-  const map = frame.world.map;
-  const tile = 12;
-  for (const object of map.objects || []) {
-    const sx = (object.x - frame.camera.x) * tile;
-    const sy = (object.y - frame.camera.y) * tile;
-    if (sx < -tile || sy < -tile || sx >= 160 || sy >= 108) continue;
-    drawObject({ ctx: context, object, x: sx, y: sy, dark: p0, light: p3 });
-  }
-  for (const npc of frame.npcs) {
-    drawActor({
-      ctx: context,
-      x: (npc.x - frame.camera.x) * tile,
-      y: (npc.y - frame.camera.y) * tile,
-      dark: p0,
-      shirt: p3,
-      tick: frame.tick + npc.x,
-    });
-  }
-  drawActor({
-    ctx: context,
-    x: (frame.player.x - frame.camera.x) * tile,
-    y: (frame.player.y - frame.camera.y) * tile,
-    dark: p0,
-    shirt: '#e57d53',
-    tick: frame.tick,
-  });
+  drawShapes(context, foregroundShapes(frame));
   if (frame.world.weather === 'rain' || frame.world.weather === 'dream') {
     context.fillStyle = frame.world.weather === 'dream' ? '#e7d6ff' : '#b8d6df';
     for (let i = 0; i < 12; i++) {
@@ -206,38 +167,18 @@ export function drawGameFrame(context, frame) {
   if (frame.ending) drawEnding(context, frame, p0, p3);
 }
 /**
- *
- * @param {object} options - Canvas context and prop placement details.
+ * Share foreground artwork and depth ordering between game views.
+ * @param {object} frame Game frame.
+ * @returns {object[]} Foreground pixel shapes.
  */
-function drawObject(options) {
-  const { ctx, object, x, y, dark, light } = options;
-  ctx.fillStyle =
-    object.kind === 'well'
-      ? '#426d87'
-      : object.kind === 'farm'
-        ? '#795c44'
-        : object.kind === 'fishing'
-          ? '#eee19a'
-          : light;
-  ctx.fillRect(x + 3, y + 3, 6, 6);
-  ctx.fillStyle = dark;
-  ctx.fillRect(x + 5, y + 5, 2, 2);
-}
-/**
- *
- * @param {object} options - Canvas context and animated actor details.
- */
-function drawActor(options) {
-  const { ctx, x, y, dark, shirt, tick } = options;
-  ctx.fillStyle = dark;
-  ctx.fillRect(x + 3, y + 2, 6, 9);
-  ctx.fillStyle = shirt;
-  ctx.fillRect(x + 3, y + 5, 6, 5);
-  ctx.fillStyle = '#f4d4a1';
-  ctx.fillRect(x + 4, y + 1, 4, 4);
-  ctx.fillStyle = dark;
-  ctx.fillRect(x + 4, y + 10 + (Math.floor(tick / 8) % 2), 2, 2);
-  ctx.fillRect(x + 7, y + 10 - (Math.floor(tick / 8) % 2), 2, 2);
+function foregroundShapes(frame) {
+  return [
+    ...(frame.world.map.objects || []),
+    ...frame.npcs,
+    { ...frame.player, id: 'player' },
+  ]
+    .sort((a, b) => a.y - b.y)
+    .flatMap(actor => spriteShapes(actor, frame.camera, frame.tick));
 }
 /**
  *
@@ -261,7 +202,7 @@ function drawShapes(ctx, shapes) {
       ctx.fillRect(shape.x, shape.y, shape.width, shape.height);
     else {
       ctx.font = shape.font;
-      ctx.fillText(shape.text, shape.x, shape.y);
+      drawPixelText(ctx, shape.text, shape.x, shape.y);
     }
   }
 }
@@ -325,6 +266,7 @@ function dialogueShapes(dialogue, dark, light) {
       text,
       fill: light,
       font: '8px monospace',
+      bitmap: true,
     })),
   ];
 }
@@ -342,10 +284,10 @@ function drawBattle(ctx, frame, dark, light) {
   ctx.strokeRect(6, 7, 148, 92);
   ctx.fillStyle = light;
   ctx.font = '10px monospace';
-  ctx.fillText(frame.battle.name, 12, 21);
-  ctx.fillText(`HP ${frame.battle.hp}/${frame.battle.maxHp}`, 12, 34);
-  ctx.fillText('Mossmurmur reads your posture.', 12, 57);
-  ctx.fillText('Z strike  X sing  C guard', 12, 83);
+  drawPixelText(ctx, frame.battle.name, 12, 21);
+  drawPixelText(ctx, `HP ${frame.battle.hp}/${frame.battle.maxHp}`, 12, 34);
+  drawPixelText(ctx, 'Your posture is being read.', 12, 57);
+  drawPixelText(ctx, 'Z strike  X sing  C guard', 12, 83);
 }
 /**
  *
@@ -361,11 +303,21 @@ function drawJournal(ctx, frame, dark, light) {
   ctx.strokeRect(6, 6, 148, 96);
   ctx.fillStyle = light;
   ctx.font = '9px monospace';
-  ctx.fillText('FIELD JOURNAL', 12, 19);
-  ctx.fillText(`Memories ${frame.world.flags.memoryCount || 0}/3`, 12, 35);
-  ctx.fillText(`Items ${Object.keys(frame.inventory).length}`, 12, 48);
-  ctx.fillText(`Bond: Mira ${frame.world.relationships.mira || 0}`, 12, 61);
-  ctx.fillText('X or Z to close', 12, 87);
+  drawPixelText(ctx, 'FIELD JOURNAL', 12, 19);
+  drawPixelText(
+    ctx,
+    `Memories ${frame.world.flags.memoryCount || 0}/3`,
+    12,
+    35
+  );
+  drawPixelText(ctx, `Items ${Object.keys(frame.inventory).length}`, 12, 48);
+  drawPixelText(
+    ctx,
+    `Bond: Mira ${frame.world.relationships.mira || 0}`,
+    12,
+    61
+  );
+  drawPixelText(ctx, 'X or Z to close', 12, 87);
 }
 /**
  *
@@ -381,7 +333,7 @@ function drawEnding(ctx, frame, dark, light) {
   ctx.strokeRect(5, 21, 150, 74);
   ctx.fillStyle = light;
   ctx.font = '9px monospace';
-  ctx.fillText('THE VALLEY WAKES', 18, 39);
+  drawPixelText(ctx, 'THE VALLEY WAKES', 18, 39);
   wrapText({
     ctx,
     text: frame.ending.text,
@@ -401,11 +353,11 @@ function wrapText(options) {
   let line = '';
   for (const word of text.split(' ')) {
     const trial = line ? `${line} ${word}` : word;
-    if (ctx.measureText(trial).width > maxWidth && line) {
-      ctx.fillText(line, x, y);
+    if (trial.length * 5 > maxWidth && line) {
+      drawPixelText(ctx, line, x, y);
       line = word;
       y += lineHeight;
     } else line = trial;
   }
-  if (line) ctx.fillText(line, x, y);
+  if (line) drawPixelText(ctx, line, x, y);
 }

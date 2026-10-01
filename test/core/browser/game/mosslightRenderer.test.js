@@ -9,6 +9,8 @@ import {
 import { startBattle } from '../../../../src/core/browser/game/mosslight-valley/combat.js';
 import { openDialogue } from '../../../../src/core/browser/game/mosslight-valley/dialogue.js';
 import { selectEnding } from '../../../../src/core/browser/game/mosslight-valley/quests.js';
+import { drawPixelText } from '../../../../src/core/browser/pixelFont.js';
+import { drawCanvasDoodle } from '../../../../src/core/browser/canvasDoodleCore.js';
 
 const makeContext = () => {
   const rectangles = [];
@@ -132,7 +134,10 @@ test('renders an empty ending and a restored dialogue with no choice list', () =
   });
   const context = makeContext();
   drawGameFrame(context, frame);
-  expect(context.fillText).toHaveBeenCalledWith('A/Z continue', 8, 94);
+  expect(context.fillText).not.toHaveBeenCalled();
+  expect(
+    frame.shapes.some(shape => shape.text === 'A/Z continue' && shape.bitmap)
+  ).toBe(true);
 });
 
 test('keeps every authored dialogue and selected choice inside the same panel in both modes', () => {
@@ -173,8 +178,13 @@ function assertDialogueLayout(initial, line, selected) {
   ).toBe(true);
   const context = makeContext();
   drawGameFrame(context, frame);
-  expect(context.fillText.mock.calls.filter(([, x]) => x === 8)).toEqual(
-    rows.map(row => [row.text, row.x, row.y])
+  const expected = makeContext();
+  for (const row of rows) {
+    expected.fillStyle = row.fill;
+    drawPixelText(expected, row.text, row.x, row.y);
+  }
+  expect(context.rectangles.slice(-expected.rectangles.length)).toEqual(
+    expected.rectangles
   );
 }
 
@@ -186,7 +196,10 @@ test('draws battle, journal and ending overlays through the shared renderer', ()
   drawGameFrame(context, toFramePayload(state));
   state = selectEnding(state, 'gentle', CONTENT);
   drawGameFrame(context, toFramePayload(state));
-  expect(context.fillText).toHaveBeenCalledWith('THE VALLEY WAKES', 18, 39);
+  expect(context.fillText).not.toHaveBeenCalled();
+  expect(context.rectangles.some(rect => rect.x === 18 && rect.y === 33)).toBe(
+    true
+  );
 });
 
 test('keeps walkable terrain tile colors at a visible contrast', () => {
@@ -219,9 +232,7 @@ test('keeps walkable terrain tile colors at a visible contrast', () => {
 
 test('uses identical generated terrain rectangles in both render paths', () => {
   const frame = toFramePayload(createSimulation(CONTENT));
-  const firstActor = frame.shapes.findIndex(
-    shape => shape.width === 6 && shape.height === 9
-  );
+  const firstActor = frame.shapes.findIndex(shape => shape.type === 'text');
   const terrain = frame.shapes
     .slice(0, firstActor)
     .map(({ x, y, width, height, fill }) => ({ x, y, width, height, fill }));
@@ -244,12 +255,15 @@ test('fills the right edge and keeps the player visible at authored map boundari
           player: { ...initial.world.player, x, y: map.height - 1 },
         },
       });
-      const actor = frame.shapes.findIndex(
-        shape => shape.width === 6 && shape.height === 9
+      const terrain = frame.shapes.filter(
+        shape => shape.type === 'rect' && shape.width > 1
       );
-      const terrain = frame.shapes.slice(1, actor);
       expect(terrain.every(shape => shape.x + shape.width <= 160)).toBe(true);
-      expect(frame.shapes[actor].x + 6).toBeLessThanOrEqual(160);
+      expect(
+        frame.shapes
+          .filter(shape => shape.width === 1)
+          .every(shape => shape.x < 160)
+      ).toBe(true);
       if (x === 0)
         expect(terrain.some(shape => shape.x + shape.width === 160)).toBe(true);
       expect(frame.shapes[0]).toMatchObject({ width: 160, height: 144 });
@@ -277,14 +291,14 @@ test('shares bounded HUD rows and explicitly marks oversized labels and messages
     );
     expect(rows.map(row => row.y)).toEqual([115, 124, 133, 142]);
     expect(
-      rows.every(row => row.text.length <= 35 && row.font === '7px monospace')
+      rows.every(row => row.text.length <= 30 && row.bitmap === true)
     ).toBe(true);
     expect(rows[0].text.endsWith('…')).toBe(true);
     if (toast.length > 70) expect(rows[3].text.endsWith('…')).toBe(true);
     const context = makeContext();
     drawGameFrame(context, frame);
-    expect(context.fillText.mock.calls).toEqual(
-      rows.map(row => [row.text, row.x, row.y])
-    );
+    const embedded = makeContext();
+    drawCanvasDoodle(embedded, { width: 160, height: 144 }, frame);
+    expect(context.rectangles).toEqual(embedded.rectangles.slice(1));
   }
 });

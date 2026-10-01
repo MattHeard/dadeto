@@ -1,4 +1,5 @@
 import * as plotShared from './plotShared.js';
+import { drawPixelText } from './pixelFont.js';
 
 const CANVAS_WIDTH = 320;
 const CANVAS_HEIGHT = 180;
@@ -209,6 +210,10 @@ function drawText(context, shape) {
   const x = plotShared.numberOr(shape.x, 0);
   const y = plotShared.numberOr(shape.y, 0);
   context.fillStyle = plotShared.stringOr(shape.fill, FOREGROUND);
+  if (shape.bitmap === true) {
+    drawPixelText(context, plotShared.stringOr(shape.text, ''), x, y);
+    return;
+  }
   context.font = plotShared.stringOr(shape.font, '12px monospace');
   context.textAlign = /** @type {CanvasRenderingContext2D['textAlign']} */ (
     plotShared.stringOr(shape.align, 'left')
