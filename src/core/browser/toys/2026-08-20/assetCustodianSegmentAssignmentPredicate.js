@@ -91,15 +91,7 @@ export function parseRequest(input) {
  * @returns {{assetId: string, segmentId: string}|null} Normalized assignment.
  */
 export function normalizeAsset(value) {
-  // Stryker disable all -- defensive malformed-record boundary.
-  if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
-  // Stryker restore all
-  const record = /** @type {Record<string, unknown>} */ (value);
-  // Stryker disable all -- scalar identifier coercion boundary.
-  const assetId = String(record.assetId || '').trim();
-  const segmentId = String(record.segmentId || '').trim();
-  // Stryker restore all
-  return assetId && segmentId ? { assetId, segmentId } : null;
+  return normalizeAssignmentFields(value, ['assetId', 'segmentId']);
 }
 
 /**
@@ -108,15 +100,7 @@ export function normalizeAsset(value) {
  * @returns {{personId: string, segmentId: string}|null} Normalized assignment.
  */
 export function normalizePerson(value) {
-  // Stryker disable all -- defensive malformed-record boundary.
-  if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
-  // Stryker restore all
-  const record = /** @type {Record<string, unknown>} */ (value);
-  // Stryker disable all -- scalar identifier coercion boundary.
-  const personId = String(record.personId || '').trim();
-  const segmentId = String(record.segmentId || '').trim();
-  // Stryker restore all
-  return personId && segmentId ? { personId, segmentId } : null;
+  return normalizeAssignmentFields(value, ['personId', 'segmentId']);
 }
 
 /**
@@ -125,16 +109,25 @@ export function normalizePerson(value) {
  * @returns {{assetId: string, segmentId: string, custodianPersonId: string}|null} Normalized proposed assignment.
  */
 export function normalizeProposed(value) {
-  // Stryker disable all -- defensive malformed-record boundary.
+  return normalizeAssignmentFields(value, [
+    'assetId',
+    'segmentId',
+    'custodianPersonId',
+  ]);
+}
+
+/**
+ * Normalize required assignment identifiers using the existing falsy fallback.
+ * @template {string} K
+ * @param {unknown} value Candidate assignment record.
+ * @param {K[]} keys Required identifier keys.
+ * @returns {Record<K, string>|null} Complete identifiers or null.
+ */
+function normalizeAssignmentFields(value, keys) {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
-  // Stryker restore all
   const record = /** @type {Record<string, unknown>} */ (value);
-  // Stryker disable all -- scalar identifier coercion boundary.
-  const assetId = String(record.assetId || '').trim();
-  const segmentId = String(record.segmentId || '').trim();
-  const custodianPersonId = String(record.custodianPersonId || '').trim();
-  // Stryker restore all
-  return assetId && segmentId && custodianPersonId
-    ? { assetId, segmentId, custodianPersonId }
-    : null;
+  const normalized = /** @type {Record<K, string>} */ (
+    Object.fromEntries(keys.map(key => [key, String(record[key] || '').trim()]))
+  );
+  return Object.values(normalized).every(Boolean) ? normalized : null;
 }
