@@ -1,6 +1,9 @@
 // @ts-nocheck
 // Toy: Asset Possession Segment Candidate Filter
-import { overlaps as overlap } from './assignmentIntervals.js';
+import {
+  overlaps as overlap,
+  isOrderedInterval,
+} from './assignmentIntervals.js';
 export { overlaps as overlap } from './assignmentIntervals.js';
 
 /**
@@ -64,11 +67,7 @@ export function resolve(segments, points, id) {
   if (!a || !b) throw new Error('Unknown point.');
   const startTime = Date.parse(a.timestamp),
     endTime = Date.parse(b.timestamp);
-  if (
-    !Number.isFinite(startTime) ||
-    !Number.isFinite(endTime) ||
-    endTime < startTime
-  )
+  if (!isOrderedInterval(startTime, endTime))
     throw new Error('Invalid interval.');
   return { startTime, endTime };
 }

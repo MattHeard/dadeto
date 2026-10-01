@@ -2,6 +2,7 @@
 // Stryker disable all -- this module is the fixed segment-resolution and
 // world-line feasibility protocol boundary covered by the safe-assignment suite.
 import { resolvePointRecords } from '../2026-08-22/spacePointResolution.js';
+import { isOrderedInterval } from '../2026-08-20/assignmentIntervals.js';
 
 /**
  * Resolve a segment's endpoint records and timestamps.
@@ -29,11 +30,7 @@ export function resolveSegmentTiming(
   const endTimestamp = String(end.timestamp);
   const startTime = Date.parse(startTimestamp);
   const endTime = Date.parse(endTimestamp);
-  if (
-    !Number.isFinite(startTime) ||
-    !Number.isFinite(endTime) ||
-    endTime < startTime
-  )
+  if (!isOrderedInterval(startTime, endTime))
     throw new Error(
       `Segment ${segmentId} must have an ordered valid ${intervalLabel}.`
     );

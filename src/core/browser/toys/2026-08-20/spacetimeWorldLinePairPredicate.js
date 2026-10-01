@@ -1,6 +1,7 @@
 // Toy: Spacetime World-Line Pair Predicate
 import { formatToyError } from '../formatToyError.js';
 import { resolvePointRecords } from '../2026-08-22/spacePointResolution.js';
+import { isOrderedInterval } from './assignmentIntervals.js';
 
 /**
  * Determine whether two spacetime segments are non-overlapping and connected.
@@ -60,11 +61,7 @@ function interval(segments, points, id) {
   if (!start || !end) throw new Error('Segment references an unknown point.');
   const startTime = Date.parse(String(start.timestamp)),
     endTime = Date.parse(String(end.timestamp));
-  if (
-    !Number.isFinite(startTime) ||
-    !Number.isFinite(endTime) ||
-    endTime < startTime
-  )
+  if (!isOrderedInterval(startTime, endTime))
     throw new Error('Segment must have an ordered valid UTC interval.');
   return {
     startTime,

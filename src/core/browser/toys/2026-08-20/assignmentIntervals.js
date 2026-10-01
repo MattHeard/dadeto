@@ -13,16 +13,26 @@ export function resolveInterval(segments, points, segmentId) {
     throw new Error(`Segment ${segmentId} references an unknown point.`);
   const startTime = Date.parse(String(start.timestamp));
   const endTime = Date.parse(String(end.timestamp));
-  if (
-    !Number.isFinite(startTime) ||
-    !Number.isFinite(endTime) ||
-    endTime < startTime
-  ) {
+  if (!isOrderedInterval(startTime, endTime)) {
     throw new Error(
       `Segment ${segmentId} must have an ordered valid time interval.`
     );
   }
   return { startTime, endTime };
+}
+
+/**
+ * Check parsed interval endpoints without changing their caller's error contract.
+ * @param {number} startTime Start epoch milliseconds.
+ * @param {number} endTime End epoch milliseconds.
+ * @returns {boolean} Whether both endpoints are finite and ordered.
+ */
+export function isOrderedInterval(startTime, endTime) {
+  return (
+    Number.isFinite(startTime) &&
+    Number.isFinite(endTime) &&
+    endTime >= startTime
+  );
 }
 
 /**
