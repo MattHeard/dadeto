@@ -14,7 +14,7 @@ const PALETTES = {
  */
 export function toFramePayload(state) {
   const palette = PALETTES[state.world.map.palette] || PALETTES.village;
-  const camera = cameraFor(state.world, 12, 9);
+  const camera = cameraFor(state.world, 13, 9);
   const frame = {
     type: 'mosslight-valley',
     width: 160,
@@ -46,31 +46,7 @@ export function toFramePayload(state) {
  * @returns {unknown} The computed result.
  */
 function toCanvasShapes(frame) {
-  const shapes = [];
-  const map = frame.world.map;
-  for (let y = 0; y < 9; y++)
-    for (let x = 0; x < 12; x++) {
-      const wx = x + frame.camera.x;
-      const wy = y + frame.camera.y;
-      if (wx < map.width && wy < map.height) {
-        const blocked = map.blocked.includes(`${wx},${wy}`);
-        for (const rect of generateBackgroundTile({
-          x: wx,
-          y: wy,
-          palette: frame.palette,
-          region: map.palette,
-          blocked,
-        }))
-          shapes.push({
-            type: 'rect',
-            x: x * 12 + rect.x,
-            y: y * 12 + rect.y,
-            width: rect.width,
-            height: rect.height,
-            fill: rect.fill,
-          });
-      }
-    }
+  const shapes = terrainShapes(frame);
   shapes.push({
     type: 'rect',
     x: (frame.player.x - frame.camera.x) * 12 + 3,
@@ -88,25 +64,88 @@ function toCanvasShapes(frame) {
       height: 7,
       fill: '#eee19a',
     });
-  shapes.push(
+  shapes.push(...hudShapes(frame));
+  if (frame.dialogue)
+    shapes.push(...dialogueShapes(frame.dialogue, '#182f36', '#e9d88d'));
+  return shapes;
+}
+/**
+ * Fill the viewport, clipping the partial rightmost tile.
+ * @param {object} frame Shared game frame.
+ * @returns {object[]} Opaque terrain shapes.
+ */
+function terrainShapes(frame) {
+  const shapes = [
+    {
+      type: 'rect',
+      fill: frame.palette[0],
+      x: 0,
+      y: 0,
+      width: 160,
+      height: 144,
+    },
+  ];
+  const map = frame.world.map;
+  for (let y = 0; y < 9; y++)
+    for (let x = 0; x < 14; x++) {
+      const wx = x + frame.camera.x;
+      const wy = y + frame.camera.y;
+      if (wx < map.width && wy < map.height) {
+        const blocked = map.blocked.includes(`${wx},${wy}`);
+        for (const rect of generateBackgroundTile({
+          x: wx,
+          y: wy,
+          palette: frame.palette,
+          region: map.palette,
+          blocked,
+        })) {
+          const left = x * 12 + rect.x;
+          if (left >= 160) continue;
+          shapes.push({
+            type: 'rect',
+            x: left,
+            y: y * 12 + rect.y,
+            width: Math.min(rect.width, 160 - left),
+            height: rect.height,
+            fill: rect.fill,
+          });
+        }
+      }
+    }
+  return shapes;
+}
+/**
+ * Fit a single HUD row with an explicit overflow marker.
+ * @param {string} text HUD prose.
+ * @returns {string} Bounded label.
+ */
+function fitHudText(text) {
+  return text.length > 35 ? `${text.slice(0, 34)}…` : text;
+}
+/**
+ * Share compact location, objective and two message rows between presenters.
+ * @param {object} frame Shared game frame.
+ * @returns {object[]} HUD shapes.
+ */
+function hudShapes(frame) {
+  const rows = wrapDialogueText(frame.toast || 'Move · interact · listen', 35);
+  return [
     { type: 'rect', x: 0, y: 108, width: 160, height: 36, fill: '#141c2c' },
     frameText(
-      `${map.name} D${frame.world.day} ${Math.floor(frame.world.time)}:00`,
-      119,
+      fitHudText(
+        `${frame.world.map.name} D${frame.world.day} ${Math.floor(frame.world.time).toString().padStart(2, '0')}:00`
+      ),
+      115,
       '#e9d88d'
     ),
-    frameText(`MEMORY ${frame.world.flags.memoryCount || 0}/3`, 132, '#e8e1c0'),
     frameText(
-      frame.toast || 'Move · interact · listen',
-      142,
-      '#93ad68',
-      '7px monospace'
-    )
-  );
-  if (frame.dialogue) {
-    shapes.push(...dialogueShapes(frame.dialogue, '#182f36', '#e9d88d'));
-  }
-  return shapes;
+      fitHudText(`♥ ${frame.world.flags.memoryCount || 0}/3 · ${frame.quest}`),
+      124,
+      '#e8e1c0'
+    ),
+    frameText(rows[0], 133, '#93ad68'),
+    frameText(fitHudText(rows.slice(1).join(' ')), 142, '#93ad68'),
+  ];
 }
 /**
  * Create one HUD text shape with the shared left gutter.
@@ -116,7 +155,7 @@ function toCanvasShapes(frame) {
  * @param {string} font - Canvas font declaration.
  * @returns {object} Canvas presenter text shape.
  */
-function frameText(text, y, fill, font = '8px monospace') {
+function frameText(text, y, fill, font = '7px monospace') {
   return { type: 'text', x: 4, y, text, fill, font };
 }
 /**
@@ -125,38 +164,15 @@ function frameText(text, y, fill, font = '8px monospace') {
  * @param {unknown} frame - The frame argument.
  */
 export function drawGameFrame(context, frame) {
-  const [p0, , p2, p3] = frame.palette;
+  const [p0, , , p3] = frame.palette;
   context.imageSmoothingEnabled = false;
-  context.fillStyle = p0;
-  context.fillRect(0, 0, 160, 144);
+  drawShapes(context, terrainShapes(frame));
   const map = frame.world.map;
   const tile = 12;
-  for (let sy = 0; sy < 9; sy++)
-    for (let sx = 0; sx < 12; sx++) {
-      const x = sx + frame.camera.x,
-        y = sy + frame.camera.y;
-      if (x >= map.width || y >= map.height) continue;
-      const blocked = map.blocked.includes(`${x},${y}`);
-      for (const rect of generateBackgroundTile({
-        x,
-        y,
-        palette: frame.palette,
-        region: map.palette,
-        blocked,
-      })) {
-        context.fillStyle = rect.fill;
-        context.fillRect(
-          sx * tile + rect.x,
-          sy * tile + rect.y,
-          rect.width,
-          rect.height
-        );
-      }
-    }
   for (const object of map.objects || []) {
     const sx = (object.x - frame.camera.x) * tile;
     const sy = (object.y - frame.camera.y) * tile;
-    if (sx < -tile || sy < -tile || sx >= 144 || sy >= 108) continue;
+    if (sx < -tile || sy < -tile || sx >= 160 || sy >= 108) continue;
     drawObject({ ctx: context, object, x: sx, y: sy, dark: p0, light: p3 });
   }
   for (const npc of frame.npcs) {
@@ -180,27 +196,11 @@ export function drawGameFrame(context, frame) {
   if (frame.world.weather === 'rain' || frame.world.weather === 'dream') {
     context.fillStyle = frame.world.weather === 'dream' ? '#e7d6ff' : '#b8d6df';
     for (let i = 0; i < 12; i++) {
-      const x = (i * 29 + frame.tick * 2) % 144;
+      const x = (i * 29 + frame.tick * 2) % 160;
       context.fillRect(x, (i * 17 + frame.tick * 3) % 108, 1, 4);
     }
   }
-  context.fillStyle = '#141c2c';
-  context.fillRect(0, 108, 160, 36);
-  context.fillStyle = p3;
-  context.font = '8px monospace';
-  context.fillText(
-    `${map.name}  D${frame.world.day} ${Math.floor(frame.world.time).toString().padStart(2, '0')}:00`,
-    5,
-    119
-  );
-  context.fillStyle = '#e8e1c0';
-  context.fillText(
-    `HEART ${frame.world.flags.memoryCount || 0}/3  ${frame.quest}`,
-    5,
-    130
-  );
-  context.fillStyle = p2;
-  context.fillText(frame.toast || 'ARROWS move  Z talk  X menu', 5, 140);
+  drawShapes(context, hudShapes(frame));
   if (frame.dialogue) drawDialogue(context, frame, p0, p3);
   if (frame.battle) drawBattle(context, frame, p0, p3);
   if (frame.mode === 'journal') drawJournal(context, frame, p0, p3);
@@ -248,7 +248,15 @@ function drawActor(options) {
  * @param {unknown} light - The light argument.
  */
 function drawDialogue(ctx, frame, dark, light) {
-  for (const shape of dialogueShapes(frame.dialogue, dark, light)) {
+  drawShapes(ctx, dialogueShapes(frame.dialogue, dark, light));
+}
+/**
+ * Paint the shared rectangle and text contract.
+ * @param {object} ctx Canvas context.
+ * @param {object[]} shapes Renderable shapes.
+ */
+function drawShapes(ctx, shapes) {
+  for (const shape of shapes) {
     ctx.fillStyle = shape.fill;
     if (shape.type === 'rect')
       ctx.fillRect(shape.x, shape.y, shape.width, shape.height);
@@ -262,17 +270,18 @@ function drawDialogue(ctx, frame, dark, light) {
 /**
  * Wrap pixel-font prose into conservative 140px-wide rows, including long words.
  * @param {string} text Authored dialogue text.
+ * @param {number} [columns] Maximum characters per row.
  * @returns {string[]} Rows fitting the shared 8px monospace font.
  */
-export function wrapDialogueText(text) {
+export function wrapDialogueText(text, columns = 28) {
   const words = text
     .split(/\s+/)
-    .flatMap(word => word.match(/.{1,28}/gu) || []);
+    .flatMap(word => word.match(new RegExp(`.{1,${columns}}`, 'gu')) || []);
   const rows = [''];
   for (const word of words) {
     const index = rows.length - 1;
     const trial = [rows[index], word].filter(Boolean).join(' ');
-    if (trial.length > 28) rows.push(word);
+    if (trial.length > columns) rows.push(word);
     else rows[index] = trial;
   }
   return rows;

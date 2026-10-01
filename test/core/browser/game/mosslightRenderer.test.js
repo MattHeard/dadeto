@@ -229,5 +229,62 @@ test('uses identical generated terrain rectangles in both render paths', () => {
 
   drawGameFrame(context, frame);
 
-  expect(context.rectangles.slice(1, terrain.length + 1)).toEqual(terrain);
+  expect(context.rectangles.slice(0, terrain.length)).toEqual(terrain);
+});
+
+test('fills the right edge and keeps the player visible at authored map boundaries', () => {
+  const initial = createSimulation(CONTENT);
+  for (const map of Object.values(CONTENT.maps)) {
+    for (const x of [0, map.width - 1]) {
+      const frame = toFramePayload({
+        ...initial,
+        world: {
+          ...initial.world,
+          map,
+          player: { ...initial.world.player, x, y: map.height - 1 },
+        },
+      });
+      const actor = frame.shapes.findIndex(
+        shape => shape.width === 6 && shape.height === 9
+      );
+      const terrain = frame.shapes.slice(1, actor);
+      expect(terrain.every(shape => shape.x + shape.width <= 160)).toBe(true);
+      expect(frame.shapes[actor].x + 6).toBeLessThanOrEqual(160);
+      if (x === 0)
+        expect(terrain.some(shape => shape.x + shape.width === 160)).toBe(true);
+      expect(frame.shapes[0]).toMatchObject({ width: 160, height: 144 });
+    }
+  }
+});
+
+test('shares bounded HUD rows and explicitly marks oversized labels and messages', () => {
+  const initial = createSimulation(CONTENT);
+  for (const toast of [
+    '',
+    'Water the plot, then let one day pass.',
+    'x'.repeat(180),
+  ]) {
+    const frame = toFramePayload({
+      ...initial,
+      toast,
+      world: {
+        ...initial.world,
+        map: { ...initial.world.map, name: 'Long location '.repeat(8) },
+      },
+    });
+    const rows = frame.shapes.filter(
+      shape => shape.type === 'text' && shape.x === 4
+    );
+    expect(rows.map(row => row.y)).toEqual([115, 124, 133, 142]);
+    expect(
+      rows.every(row => row.text.length <= 35 && row.font === '7px monospace')
+    ).toBe(true);
+    expect(rows[0].text.endsWith('…')).toBe(true);
+    if (toast.length > 70) expect(rows[3].text.endsWith('…')).toBe(true);
+    const context = makeContext();
+    drawGameFrame(context, frame);
+    expect(context.fillText.mock.calls).toEqual(
+      rows.map(row => [row.text, row.x, row.y])
+    );
+  }
 });
