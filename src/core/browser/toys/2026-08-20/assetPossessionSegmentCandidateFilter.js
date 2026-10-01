@@ -1,5 +1,7 @@
 // @ts-nocheck
 // Toy: Asset Possession Segment Candidate Filter
+import { overlaps as overlap } from './assignmentIntervals.js';
+export { overlaps as overlap } from './assignmentIntervals.js';
 
 /**
  * Filter available assets for a possession interval.
@@ -69,13 +71,4 @@ export function resolve(segments, points, id) {
   )
     throw new Error('Invalid interval.');
   return { startTime, endTime };
-}
-/**
- * Compare half-open temporal intervals.
- * @param {{startTime: number, endTime: number}} a First interval.
- * @param {{startTime: number, endTime: number}} b Second interval.
- * @returns {boolean} Whether the intervals overlap.
- */
-export function overlap(a, b) {
-  return Math.max(a.startTime, b.startTime) < Math.min(a.endTime, b.endTime);
 }
