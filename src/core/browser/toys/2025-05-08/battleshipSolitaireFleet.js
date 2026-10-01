@@ -370,11 +370,7 @@ function collectCandidatesForDirection(direction, context) {
  * @returns {Candidate[]} Collected candidates.
  */
 function collectMappedCandidates(items, collectCandidate) {
-  const candidates = /** @type {Candidate[]} */ ([]);
-  for (const item of items) {
-    appendCandidates(candidates, collectCandidate(item));
-  }
-  return candidates;
+  return items.flatMap(collectCandidate);
 }
 
 /**
@@ -672,11 +668,10 @@ function convertShipsToArray(cfg) {
  * @returns {number} Parsed number.
  */
 function parseDimension(value) {
-  if (typeof value === 'string') {
-    return Number.parseInt(value, 10);
+  if (typeof value !== 'string') {
+    return value;
   }
-
-  return value;
+  return Number.parseInt(value, 10);
 }
 
 /**

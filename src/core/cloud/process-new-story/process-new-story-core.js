@@ -115,11 +115,7 @@ function resolveAuthorRef(db, authorId) {
  */
 function normalizeIdentifier(value) {
   const normalizedIdentifier = trimmedStringOrEmpty(value);
-  if (normalizedIdentifier.length > 0) {
-    return normalizedIdentifier;
-  }
-
-  return null;
+  return normalizedIdentifier || null;
 }
 
 /**

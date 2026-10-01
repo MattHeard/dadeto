@@ -100,11 +100,10 @@ function getMemberExpressionName(node) {
     propertyName = `[${propertyName ?? 'expr'}]`;
   }
 
-  if (objectName && propertyName) {
-    return `${objectName}.${propertyName}`;
+  if (!objectName || !propertyName) {
+    return null;
   }
-
-  return null;
+  return `${objectName}.${propertyName}`;
 }
 
 /**
@@ -126,11 +125,10 @@ function getIdentifierName(node) {
   }
 
   const readName = IDENTIFIER_NAME_READERS[node.type];
-  if (readName) {
-    return readName(node);
+  if (!readName) {
+    return null;
   }
-
-  return null;
+  return readName(node);
 }
 
 /**
@@ -251,11 +249,10 @@ function collapseSnippet(snippet) {
  */
 function formatSnippetForDescription(snippet) {
   const collapsed = collapseSnippet(snippet);
-  if (collapsed) {
-    return ` (${collapsed})`;
+  if (!collapsed) {
+    return '';
   }
-
-  return '';
+  return ` (${collapsed})`;
 }
 
 /**

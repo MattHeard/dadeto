@@ -279,11 +279,10 @@ function resolveVariantHelpers(firebase) {
  * @returns {T} Helper.
  */
 function chooseHelper(override, fallback) {
-  if (typeof override === 'function') {
-    return override;
+  if (typeof override !== 'function') {
+    return fallback;
   }
-
-  return fallback;
+  return override;
 }
 
 /**

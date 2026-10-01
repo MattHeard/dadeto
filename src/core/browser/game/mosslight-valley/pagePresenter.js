@@ -143,13 +143,19 @@ export function startMosslightPage(options) {
     touch.clear();
   }
   /**
+   * Clear held touch buttons and pending taps when focus is lost.
+   */
+  function resetTouch() {
+    releaseTouch();
+    touchPulse.clear();
+  }
+  /**
    *
    */
   function onVisibility() {
     if (documentObj.hidden) {
       runtime.pause();
-      releaseTouch();
-      touchPulse.clear();
+      resetTouch();
     } else {
       runtime.resume();
       lastTime = 0;
@@ -162,15 +168,13 @@ export function startMosslightPage(options) {
     if (!documentObj.hidden) {
       keys.held.clear();
       keys.pressed.clear();
-      releaseTouch();
-      touchPulse.clear();
+      resetTouch();
       return;
     }
     runtime.pause();
     keys.held.clear();
     keys.pressed.clear();
-    releaseTouch();
-    touchPulse.clear();
+    resetTouch();
   }
   /**
    *

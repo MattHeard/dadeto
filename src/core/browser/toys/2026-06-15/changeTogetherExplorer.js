@@ -92,12 +92,7 @@ function normalizeChangeSets(changeSets) {
  * @returns {ChangeSet[]} Normalized change-set records.
  */
 function normalizeChangeSetList(changeSets) {
-  /** @type {ChangeSet[]} */
-  const normalized = [];
-  for (const [index, changeSet] of changeSets.entries()) {
-    normalized.push(normalizeChangeSet(changeSet, index));
-  }
-  return normalized;
+  return Array.from(changeSets, normalizeChangeSet);
 }
 
 /**
@@ -216,13 +211,8 @@ function ensurePairStat(pairStats, key, left, right) {
  */
 function ensureFileStat(fileStats, file) {
   if (!fileStats.has(file)) {
-    fileStats.set(
-      file,
-      /** @type {FileStat} */ ({
-        touchCount: 0,
-        partners: new Set(),
-      })
-    );
+    const stat = { touchCount: 0, partners: new Set() };
+    fileStats.set(file, stat);
   }
 
   // Return the cached stat through the explorer lookup boundary.

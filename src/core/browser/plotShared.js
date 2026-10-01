@@ -34,11 +34,10 @@ export function stringOr(value, fallback) {
  * @returns {T} Normalized value.
  */
 function valueOrFallback(candidate, fallback, isValid) {
-  if (isValid(candidate)) {
-    return /** @type {T} */ (candidate);
+  if (!isValid(candidate)) {
+    return fallback;
   }
-
-  return fallback;
+  return /** @type {T} */ (candidate);
 }
 
 /**

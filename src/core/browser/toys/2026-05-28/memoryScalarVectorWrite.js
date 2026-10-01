@@ -382,7 +382,7 @@ function createMemoryWriteRequest(memoryLocation, path, value, error) {
     value,
   };
   if (error) {
-    request.error = error;
+    return addRequestError(request, error);
   }
 
   return request;
@@ -480,11 +480,10 @@ function callOptionalEnvHelper(env, helperName) {
  */
 function getOptionalEnvHelper(env, helperName) {
   const helper = env.get(helperName);
-  if (typeof helper === 'function') {
-    return helper;
+  if (typeof helper !== 'function') {
+    return null;
   }
-
-  return null;
+  return helper;
 }
 
 /**

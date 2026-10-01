@@ -206,10 +206,15 @@ function buildNormalizedGameState(candidate, getRandomNumber) {
  * @returns {HiLoKeyboardState} Safe keyboard state.
  */
 export function normalizeKeyboardState(value) {
+  const normalizeActiveKey = candidate => ({
+    activeKey: readActiveKey(candidate.activeKey),
+  });
   return /** @type {HiLoKeyboardState} */ (
-    normalizeObjectOrFallback(value, createInitialKeyboardState, candidate => ({
-      activeKey: readActiveKey(candidate.activeKey),
-    }))
+    normalizeObjectOrFallback(
+      value,
+      createInitialKeyboardState,
+      normalizeActiveKey
+    )
   );
 }
 
@@ -439,11 +444,7 @@ function applyGuessWhenReady(inputEvent, state, getRandomNumber) {
  * @returns {string | null} Guess key when the event carries one.
  */
 function getGuessKey(inputEvent) {
-  if (typeof inputEvent.key === 'string') {
-    return inputEvent.key;
-  }
-
-  return null;
+  return whenString(inputEvent.key, value => value);
 }
 
 /**

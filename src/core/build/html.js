@@ -165,8 +165,7 @@ export function getClosingTagParts(name) {
  * @returns {string} The closing HTML tag.
  */
 export function createClosingTag(tagName) {
-  const tagParts = getClosingTagParts(tagName);
-  return join(tagParts);
+  return join(getClosingTagParts(tagName));
 }
 
 /**

@@ -165,12 +165,8 @@ function buildProjectionSeries(rows, forecast) {
     ),
   };
 
-  /** @type {{ x: number, y: number }[]} */
-  const primary = [];
-  /** @type {{ x: number, y: number }[]} */
-  const secondary = [];
-  /** @type {{ x: number, y: number }[]} */
-  const tertiary = [];
+  /** @type {{ primary: { x: number, y: number }[], secondary: { x: number, y: number }[], tertiary: { x: number, y: number }[] }} */
+  const series = { primary: [], secondary: [], tertiary: [] };
 
   const years = Array.from(
     { length: forecast.outputEndYear - INPUT_START_YEAR + 1 },
@@ -181,10 +177,10 @@ function buildProjectionSeries(rows, forecast) {
     const data =
       source ||
       createProjectedRow(year, lastKnown, projectionTargets, forecast);
-    appendSeriesPoints({ primary, secondary, tertiary }, year, data);
+    appendSeriesPoints(series, year, data);
   }
 
-  return { primary, secondary, tertiary };
+  return series;
 }
 
 /**

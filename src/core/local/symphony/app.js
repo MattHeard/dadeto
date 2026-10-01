@@ -196,11 +196,10 @@ function hasWritableStatusStore(statusStore) {
  * @returns {number | null} Process id, or null when unavailable.
  */
 function getActiveRunPid(activeRun) {
-  if (typeof activeRun.pid === 'number') {
-    return activeRun.pid;
+  if (typeof activeRun.pid !== 'number') {
+    return null;
   }
-
-  return null;
+  return activeRun.pid;
 }
 
 /**
@@ -210,11 +209,10 @@ function getActiveRunPid(activeRun) {
  * @returns {string | null} String value, or null.
  */
 function getOptionalString(source, key) {
-  if (typeof source[key] === 'string') {
-    return source[key];
+  if (typeof source[key] !== 'string') {
+    return null;
   }
-
-  return null;
+  return source[key];
 }
 
 /**
@@ -289,12 +287,7 @@ export function getActiveRunBeadId(status) {
     return activeRunBeadId;
   }
 
-  const currentBeadId = getOptionalString(status, 'currentBeadId');
-  if (currentBeadId) {
-    return currentBeadId;
-  }
-
-  return null;
+  return getOptionalString(status, 'currentBeadId') || null;
 }
 
 /**

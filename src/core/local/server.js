@@ -303,11 +303,10 @@ function formatRequestLog(req, res, durationMs) {
  * @returns {number} Move direction.
  */
 export function getMoveDirection(/** @type {unknown} */ body) {
-  if (body?.direction === 'left') {
-    return -1;
+  if (body?.direction !== 'left') {
+    return 1;
   }
-
-  return 1;
+  return -1;
 }
 
 /**
@@ -316,11 +315,10 @@ export function getMoveDirection(/** @type {unknown} */ body) {
  * @returns {number} Next index.
  */
 export function getNextIndex(/** @type {unknown} */ body) {
-  if (Number.isInteger(body?.activeIndex)) {
-    return body.activeIndex;
+  if (!Number.isInteger(body?.activeIndex)) {
+    return 1;
   }
-
-  return 1;
+  return body.activeIndex;
 }
 
 /**
@@ -329,11 +327,10 @@ export function getNextIndex(/** @type {unknown} */ body) {
  * @returns {string} Document content.
  */
 export function getDocumentContent(/** @type {unknown} */ body) {
-  if (typeof body?.content === 'string') {
-    return body.content;
+  if (typeof body?.content !== 'string') {
+    return '';
   }
-
-  return '';
+  return body.content;
 }
 
 /**
