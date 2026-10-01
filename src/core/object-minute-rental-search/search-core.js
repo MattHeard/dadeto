@@ -4,7 +4,8 @@ const FOOTBALL_SKU = 'FOOTBALL';
 
 /**
  *
- * @param request
+ * @param {{requestText?: string}} request Exact product request.
+ * @returns {{matched: boolean, skuId: string|null}} Product match.
  */
 export function exactLookup(request) {
   return request.requestText === 'football'
@@ -31,10 +32,11 @@ export function validatePossessionContextTime({ startPoint, endPoint } = {}) {
 
 /**
  *
- * @param start
- * @param end
- * @param windowStart
- * @param windowEnd
+ * @param {unknown} start Candidate start.
+ * @param {unknown} end Candidate end.
+ * @param {unknown} windowStart Available start.
+ * @param {unknown} windowEnd Available end.
+ * @returns {boolean} Whether the interval fits inclusively.
  */
 export function contained(start, end, windowStart, windowEnd) {
   const values = [start, end, windowStart, windowEnd].map(parseTime);
@@ -45,9 +47,10 @@ export function contained(start, end, windowStart, windowEnd) {
 
 /**
  *
- * @param durationSeconds
- * @param earliestStart
- * @param latestEnd
+ * @param {number} durationSeconds Required duration.
+ * @param {unknown} earliestStart Earliest allowed instant.
+ * @param {unknown} latestEnd Latest allowed instant.
+ * @returns {{feasible: boolean, reason?: string, startTimestamp?: string, endTimestamp?: string}} Placement result.
  */
 export function latestPlacement(durationSeconds, earliestStart, latestEnd) {
   if (!Number.isFinite(durationSeconds) || durationSeconds < 0)
@@ -62,9 +65,10 @@ export function latestPlacement(durationSeconds, earliestStart, latestEnd) {
 
 /**
  *
- * @param interval
- * @param schedule
- * @param commitments
+ * @param {{startTimestamp: string, endTimestamp: string}} interval Candidate interval.
+ * @param {Array<Record<string, unknown>>} schedule Shift windows.
+ * @param {Array<Record<string, unknown>>} commitments Occupied windows.
+ * @returns {{feasible: boolean, reason?: string}} Runner feasibility.
  */
 export function runnerInterval(interval, schedule, commitments) {
   if (!interval || !Array.isArray(schedule) || !Array.isArray(commitments))
@@ -93,7 +97,8 @@ export function runnerInterval(interval, schedule, commitments) {
 
 /**
  *
- * @param request
+ * @param {Record<string, unknown>} request Delivery timing and runner context.
+ * @returns {Record<string, unknown>} Delivery feasibility and placement.
  */
 export function delivery(request) {
   const candidate = latestPlacement(
@@ -109,7 +114,8 @@ export function delivery(request) {
 
 /**
  *
- * @param request
+ * @param {Record<string, unknown>} request Procurement timing and supplier context.
+ * @returns {Record<string, unknown>} Procurement feasibility and placement.
  */
 export function procurement(request) {
   if (
@@ -140,7 +146,8 @@ export function procurement(request) {
 
 /**
  *
- * @param request
+ * @param {Record<string, unknown>} request Pickup timing and runner context.
+ * @returns {Record<string, unknown>} Pickup feasibility and placement.
  */
 export function pickup(request) {
   if (
@@ -159,7 +166,8 @@ export function pickup(request) {
 
 /**
  *
- * @param request
+ * @param {Record<string, unknown>} request Complete fulfillment context.
+ * @returns {Record<string, unknown>} Combined feasibility and placements.
  */
 export function composed(request) {
   const deliveryResult = delivery({
@@ -202,7 +210,8 @@ export function composed(request) {
 
 /**
  *
- * @param request
+ * @param {Record<string, unknown>} request Product and fulfillment context.
+ * @returns {{valid: boolean, results: Array<{skuId: string|null}>}} Available SKU results.
  */
 export function searchResult(request) {
   const lookup = exactLookup(request);
@@ -216,7 +225,8 @@ export function searchResult(request) {
 
 /**
  *
- * @param value
+ * @param {unknown} value Candidate timestamp.
+ * @returns {number} Epoch milliseconds or NaN.
  */
 export function parseTime(value) {
   const time = Date.parse(String(value));
@@ -225,7 +235,8 @@ export function parseTime(value) {
 
 /**
  *
- * @param point
+ * @param {{timestamp?: string}|undefined} point Optional spacetime point.
+ * @returns {string|undefined} Point timestamp.
  */
 export function pointTimestamp(point) {
   return point?.timestamp;
@@ -233,8 +244,9 @@ export function pointTimestamp(point) {
 
 /**
  *
- * @param candidate
- * @param request
+ * @param {{startTimestamp: string, endTimestamp: string}} candidate Candidate placement.
+ * @param {Record<string, unknown>} request Runner context.
+ * @returns {Record<string, unknown>} Placement with runner feasibility.
  */
 function withRunner(candidate, request) {
   return {
@@ -249,10 +261,11 @@ function withRunner(candidate, request) {
 
 /**
  *
- * @param start
- * @param end
- * @param otherStart
- * @param otherEnd
+ * @param {unknown} start First interval start.
+ * @param {unknown} end First interval end.
+ * @param {unknown} otherStart Second interval start.
+ * @param {unknown} otherEnd Second interval end.
+ * @returns {boolean} Whether the half-open intervals overlap.
  */
 function overlap(start, end, otherStart, otherEnd) {
   const values = [start, end, otherStart, otherEnd].map(parseTime);
@@ -261,7 +274,8 @@ function overlap(start, end, otherStart, otherEnd) {
 
 /**
  *
- * @param window
+ * @param {Record<string, unknown>} window Shift or commitment window.
+ * @returns {unknown} Start timestamp in the supported window shape.
  */
 function windowStart(window) {
   return (
@@ -273,7 +287,8 @@ function windowStart(window) {
 
 /**
  *
- * @param window
+ * @param {Record<string, unknown>} window Shift or commitment window.
+ * @returns {unknown} End timestamp in the supported window shape.
  */
 function windowEnd(window) {
   return (
@@ -285,7 +300,8 @@ function windowEnd(window) {
 
 /**
  *
- * @param time
+ * @param {number} time Epoch milliseconds.
+ * @returns {string} UTC ISO timestamp.
  */
 function iso(time) {
   return new Date(time).toISOString();

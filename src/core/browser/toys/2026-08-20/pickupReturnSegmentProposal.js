@@ -1,6 +1,10 @@
 // Toy: Pickup Return Segment Proposal
 
-/** @param {string} input JSON with possessionEndPoint, destination, travelDurationSeconds, endPointId, segmentId. @returns {string} Proposed point and segment. */
+/**
+ * Propose a return pickup segment.
+ * @param {string} input JSON with possessionEndPoint, destination, travelDurationSeconds, endPointId, segmentId.
+ * @returns {string} Proposed point and segment.
+ */
 export function pickupReturnSegmentProposal(input) {
   try {
     const x = JSON.parse(input),

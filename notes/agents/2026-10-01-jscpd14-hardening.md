@@ -82,3 +82,12 @@ was consolidated. An isolated single-suite coverage run remains below 100%
 because other fulfillment suites cover the preexisting malformed-input paths;
 do not mistake that narrow run for aggregate evidence. The live aggregate run
 is `/tmp/dadeto-keypad-check.log`; keep source stable until collection completes.
+
+The aggregate run finished exit 1: test phase passed and the coverage summary
+is exactly 100% for lines, statements, functions and branches. Static gates
+failed 4/10: lint, duplication (210 clones), core-parse and non-core-thin.
+Missing contracts in dated fulfillment toys, the build table and rental search
+were documented; the unused geodesic iteration binding became a bounded counter.
+`npm run lint` now passes (`/tmp/dadeto-contract-lint.log`), `npm run tsdoc:check`
+passes (`/tmp/dadeto-contract-types.log`), and five focused suites pass 81 tests
+(`/tmp/dadeto-contract-tests.log`). No rule changes or exemptions were added.

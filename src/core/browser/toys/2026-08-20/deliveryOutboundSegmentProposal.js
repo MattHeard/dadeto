@@ -1,6 +1,10 @@
 // Toy: Delivery Outbound Segment Proposal
 
-/** @param {string} input JSON with possessionStartPoint, origin, travelDurationSeconds, startPointId, segmentId. @returns {string} Proposed point and segment. */
+/**
+ * Propose an outbound delivery segment.
+ * @param {string} input JSON with possessionStartPoint, origin, travelDurationSeconds, startPointId, segmentId.
+ * @returns {string} Proposed point and segment.
+ */
 export function deliveryOutboundSegmentProposal(input) {
   try {
     const x = JSON.parse(input),

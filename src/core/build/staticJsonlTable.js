@@ -7,7 +7,8 @@ const SUPPORTED_TYPES = new Set(['number', 'string']);
 
 /**
  * Throw a consistent table validation error.
- * @param message
+ * @param {string} message Validation failure.
+ * @returns {never} Always throws.
  */
 function fail(message) {
   throw new TypeError(`Invalid static JSONL table: ${message}`);
@@ -15,7 +16,8 @@ function fail(message) {
 
 /**
  * Validate the table content descriptor.
- * @param entry
+ * @param {{source: string, columns: string[], collapsed?: boolean}} entry Table descriptor.
+ * @returns {void} Throws for an invalid definition.
  */
 function validateDefinition(entry) {
   if (!entry || typeof entry !== 'object') fail('entry must be an object');
@@ -36,9 +38,10 @@ function validateDefinition(entry) {
 
 /**
  * Compare two values using their validated logical type.
- * @param left
- * @param right
- * @param type
+ * @param {string|number} left First cell.
+ * @param {string|number} right Second cell.
+ * @param {string} type Validated logical type.
+ * @returns {number} Sort comparison.
  */
 function compareValues(left, right, type) {
   if (type === 'number') return left - right;
@@ -47,10 +50,11 @@ function compareValues(left, right, type) {
 
 /**
  * Compare rows using all declared columns and stable source order.
- * @param left
- * @param right
- * @param columns
- * @param types
+ * @param {{index: number, values: Record<string, string|number>}} left First row.
+ * @param {{index: number, values: Record<string, string|number>}} right Second row.
+ * @param {string[]} columns Ordered columns.
+ * @param {Record<string, string>} types Column types.
+ * @returns {number} Stable sort comparison.
  */
 function compareRows(left, right, columns, types) {
   for (const column of columns) {
@@ -66,8 +70,9 @@ function compareRows(left, right, columns, types) {
 
 /**
  * Read, validate, project, and initially sort a JSONL table.
- * @param entry
- * @param options
+ * @param {{source: string, columns: string[], collapsed?: boolean}} entry Table descriptor.
+ * @param {{dataRoot?: string}} options Source directory override.
+ * @returns {{columns: string[], collapsed: boolean, rows: Array<{index: number, values: Record<string, string|number>}>}} Parsed table.
  */
 export function parseStaticJsonlTable(entry, options = {}) {
   validateDefinition(entry);
@@ -129,7 +134,8 @@ export function parseStaticJsonlTable(entry, options = {}) {
 
 /**
  * Escape text for an HTML attribute.
- * @param value
+ * @param {unknown} value Attribute value.
+ * @returns {string} Escaped attribute.
  */
 function escapeAttribute(value) {
   const entities = { '&': '&amp;', '"': '&quot;', '<': '&lt;', '>': '&gt;' };
@@ -137,7 +143,8 @@ function escapeAttribute(value) {
 }
 /**
  * Escape text for an HTML text node.
- * @param value
+ * @param {unknown} value Text value.
+ * @returns {string} Escaped text.
  */
 function escapeText(value) {
   return String(value)
@@ -148,8 +155,9 @@ function escapeText(value) {
 
 /**
  * Render a validated JSONL table as self-contained static HTML.
- * @param entry
- * @param options
+ * @param {{source: string, columns: string[], collapsed?: boolean}} entry Table descriptor.
+ * @param {{dataRoot?: string}} options Source directory override.
+ * @returns {string} Self-contained table HTML.
  */
 export function renderStaticJsonlTable(entry, options = {}) {
   const table = parseStaticJsonlTable(entry, options);

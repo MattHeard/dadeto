@@ -1,7 +1,11 @@
 // @ts-nocheck
 // Toy: Asset Possession Segment Candidate Filter
 
-/** @param {string} input JSON with assets, points, segments, assignments, requestedSku, possessionSegmentId. @returns {string} Ordered candidate IDs. */
+/**
+ * Filter available assets for a possession interval.
+ * @param {string} input JSON with assets, points, segments, assignments, requestedSku, possessionSegmentId.
+ * @returns {string} Ordered candidate IDs.
+ */
 export function assetPossessionSegmentCandidateFilter(input) {
   try {
     const x = JSON.parse(input);
@@ -36,17 +40,19 @@ export function assetPossessionSegmentCandidateFilter(input) {
 }
 
 /**
- *
- * @param value
+ * Normalize an SKU for exact comparisons.
+ * @param {unknown} value Candidate SKU.
+ * @returns {string} Trimmed SKU.
  */
 export function normalizeSku(value) {
   return String(value).trim();
 }
 /**
- *
- * @param segments
- * @param points
- * @param id
+ * Resolve a segment to its temporal interval.
+ * @param {Map<string, {startPointId: string, endPointId: string}>} segments Segment registry.
+ * @param {Map<string, {timestamp: string}>} points Point registry.
+ * @param {string} id Segment identifier.
+ * @returns {{startTime: number, endTime: number}} Resolved interval.
  */
 export function resolve(segments, points, id) {
   const s = segments.get(id);
@@ -65,9 +71,10 @@ export function resolve(segments, points, id) {
   return { startTime, endTime };
 }
 /**
- *
- * @param a
- * @param b
+ * Compare half-open temporal intervals.
+ * @param {{startTime: number, endTime: number}} a First interval.
+ * @param {{startTime: number, endTime: number}} b Second interval.
+ * @returns {boolean} Whether the intervals overlap.
  */
 export function overlap(a, b) {
   return Math.max(a.startTime, b.startTime) < Math.min(a.endTime, b.endTime);
