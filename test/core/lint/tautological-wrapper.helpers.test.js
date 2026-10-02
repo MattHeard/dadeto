@@ -174,6 +174,21 @@ describe('tautological-wrapper helper coverage', () => {
 });
 
 describe('tautological-wrapper helper names', () => {
+  test('keeps computed import members distinct from direct named members', () => {
+    const imports = new Set(['api']);
+    const member = {
+      type: 'MemberExpression',
+      object: { type: 'Identifier', name: 'api' },
+      property: { type: 'Identifier', name: 'forward' },
+      computed: false,
+    };
+    expect(helpers.isImportedCallee(member, imports)).toBe(true);
+    expect(helpers.getCalleeName(member)).toBe('forward');
+    expect(
+      helpers.isImportedCallee({ ...member, computed: true }, imports)
+    ).toBe(false);
+    expect(helpers.getCalleeName({ ...member, computed: true })).toBeNull();
+  });
   test('reads function and callee names from every supported shape', () => {
     expect(
       helpers.getDeclaredFunctionName({

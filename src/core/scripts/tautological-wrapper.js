@@ -1,5 +1,3 @@
-// Stryker disable all: this ESLint AST rule is a tooling boundary; traversal
-// and diagnostic predicates are observable through the complete rule contract.
 const EXEMPTION_MARKER = 'tautological-wrapper: allow';
 
 /**
@@ -151,19 +149,12 @@ function getSingleReturnExpression(statements) {
  * @returns {boolean} True when the callee is an imported symbol or method.
  */
 function isImportedCallee(callee, importNames) {
-  if (callee.type === 'Identifier') {
-    return importNames.has(callee.name);
-  }
-
-  if (
-    callee.type === 'MemberExpression' &&
-    !callee.computed &&
-    callee.object.type === 'Identifier'
-  ) {
-    return importNames.has(callee.object.name);
-  }
-
-  return false;
+  const binding =
+    callee.type === 'MemberExpression' && !callee.computed
+      ? callee.object
+      : callee;
+  const name = getIdentifierName(binding);
+  return name !== null && importNames.has(name);
 }
 
 /**
@@ -173,17 +164,12 @@ function isImportedCallee(callee, importNames) {
  * @returns {boolean} True when the arguments are forwarded unchanged.
  */
 function doArgumentsMatchParameters(params, args) {
-  if (params.length !== args.length) {
-    return false;
-  }
-
-  for (let index = 0; index < params.length; index += 1) {
-    if (!isForwardedParameter(params[index], args[index])) {
-      return false;
-    }
-  }
-
-  return true;
+  return (
+    params.length === args.length &&
+    Array.from(params).every((param, index) =>
+      isForwardedParameter(param, args[index])
+    )
+  );
 }
 
 /**
@@ -254,15 +240,10 @@ function getFunctionName(node) {
  * @returns {string | null} Function name when declared directly.
  */
 function getDeclaredFunctionName(node) {
-  if (
-    (node.type === 'FunctionDeclaration' ||
-      node.type === 'FunctionExpression') &&
-    node.id
-  ) {
-    return node.id.name;
-  }
-
-  return null;
+  return node.type === 'FunctionDeclaration' ||
+    node.type === 'FunctionExpression'
+    ? getIdentifierName(node.id)
+    : null;
 }
 
 /**
@@ -273,21 +254,10 @@ function getDeclaredFunctionName(node) {
 function getAssignedFunctionName(node) {
   const parent = node.parent;
 
-  if (
-    parent?.type === 'VariableDeclarator' &&
-    parent.id.type === 'Identifier'
-  ) {
-    return parent.id.name;
-  }
-
-  if (
-    parent?.type === 'AssignmentExpression' &&
-    parent.left.type === 'Identifier'
-  ) {
-    return parent.left.name;
-  }
-
-  return null;
+  const declared = parent?.type === 'VariableDeclarator' ? parent.id : null;
+  const assigned =
+    parent?.type === 'AssignmentExpression' ? parent.left : declared;
+  return getIdentifierName(assigned);
 }
 
 /**
@@ -298,11 +268,9 @@ function getAssignedFunctionName(node) {
 function getPropertyFunctionName(node) {
   const parent = node.parent;
 
-  if (parent?.type !== 'Property' || parent.computed) {
-    return null;
-  }
-
-  return getPropertyKeyName(parent.key);
+  return parent?.type === 'Property' && !parent.computed
+    ? getPropertyKeyName(parent.key)
+    : null;
 }
 
 /**
@@ -311,15 +279,19 @@ function getPropertyFunctionName(node) {
  * @returns {string | null} Property name when available.
  */
 function getPropertyKeyName(key) {
-  if (key.type === 'Identifier') {
-    return key.name;
-  }
-
   if (key.type === 'Literal' && typeof key.value === 'string') {
     return key.value;
   }
+  return getIdentifierName(key);
+}
 
-  return null;
+/**
+ * Read an identifier name without admitting destructuring or other AST nodes.
+ * @param {import('estree').Node | null | undefined} node Candidate name node.
+ * @returns {string | null} Identifier name when present.
+ */
+function getIdentifierName(node) {
+  return node?.type === 'Identifier' ? node.name : null;
 }
 
 /**
@@ -328,24 +300,9 @@ function getPropertyKeyName(key) {
  * @returns {string | null} Callee name when available.
  */
 function getCalleeName(callee) {
-  if (callee.type === 'Identifier') {
-    return callee.name;
-  }
-
-  if (callee.type === 'MemberExpression' && !callee.computed) {
-    if (callee.property.type === 'Identifier') {
-      return callee.property.name;
-    }
-
-    if (
-      callee.property.type === 'Literal' &&
-      typeof callee.property.value === 'string'
-    ) {
-      return callee.property.value;
-    }
-  }
-
-  return null;
+  return callee.type === 'MemberExpression' && !callee.computed
+    ? getPropertyKeyName(callee.property)
+    : getIdentifierName(callee);
 }
 
 /**
@@ -428,4 +385,3 @@ export const tautologicalWrapperTestOnly = {
 };
 
 export default tautologicalWrapperRule;
-// Stryker restore all
