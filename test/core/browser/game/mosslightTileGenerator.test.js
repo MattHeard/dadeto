@@ -32,7 +32,7 @@ test('gives blocked ground its own stable stone treatment', () => {
     blocked: true,
   });
 
-  expect(tile[0].fill).toBe(palette[0]);
+  expect(tile[0].fill).toBe(palette[1]);
   expect(tile.length).toBeGreaterThan(3);
 });
 

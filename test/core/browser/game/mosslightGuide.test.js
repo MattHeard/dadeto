@@ -100,5 +100,7 @@ test('the village noticeboard opens persistent readable pages', () => {
   let state = stepGame(initial, ['interact']);
   expect(state.dialogue.actorId).toBe('guide');
   state = stepGame(state, []);
-  expect(state.dialogue.lines[0].text).toContain('sleeping creature');
+  expect(
+    state.dialogue.lines.some(line => line.text.includes('sleeping creature'))
+  ).toBe(true);
 });

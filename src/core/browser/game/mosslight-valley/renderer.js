@@ -2,6 +2,7 @@
 import { cameraFor } from './world.js';
 import { generateBackgroundTile } from './tileGenerator.js';
 import { spriteShapes } from './sprites.js';
+import { crossingPixels } from './scenery.js';
 import { drawPixelText } from '../../pixelFont.js';
 const PALETTES = {
   village: ['#182f36', '#315744', '#bfd77c', '#e9d88d'],
@@ -62,14 +63,7 @@ function toCanvasShapes(frame) {
  */
 function terrainShapes(frame) {
   const shapes = [
-    {
-      type: 'rect',
-      fill: frame.palette[0],
-      x: 0,
-      y: 0,
-      width: 160,
-      height: 144,
-    },
+    frameRectangle({ x: 0, y: 0, width: 160, height: 144 }, frame.palette[0]),
   ];
   const map = frame.world.map;
   for (let y = 0; y < 9; y++)
@@ -84,6 +78,7 @@ function terrainShapes(frame) {
         palette: frame.palette,
         region: map.palette,
         blocked,
+        roof: !map.blocked.includes(`${wx},${wy - 1}`),
       })) {
         const left = x * 12 + rect.x;
         if (left >= 160) continue;
@@ -97,7 +92,70 @@ function terrainShapes(frame) {
         });
       }
     }
+  shapes.push(...crossingShapes(frame));
   return shapes;
+}
+/**
+ * Draw named crossings in both renderers, including the story-locked Hollow gate.
+ * @param {object} frame Shared game frame.
+ * @returns {object[]} Pixel shapes and destination sign labels.
+ */
+function crossingShapes(frame) {
+  const map = frame.world.map;
+  return (map.exits || []).flatMap(exit => {
+    const x = (exit.x - frame.camera.x) * 12;
+    const y = (exit.y - frame.camera.y) * 12;
+    if (x < 0 || x >= 160 || y < 0 || y >= 108) return [];
+    const direction =
+      exit.x === 0
+        ? 'left'
+        : exit.x === map.width - 1
+          ? 'right'
+          : exit.y === 0
+            ? 'up'
+            : 'down';
+    const locked = Boolean(exit.requires && !frame.world.flags[exit.requires]);
+    const art = crossingPixels({
+      direction,
+      gateway: exit.map === 'hollow',
+      locked,
+      palette: frame.palette,
+    });
+    const label = `${exit.map.toUpperCase()}${locked ? ' SEALED' : ''}`;
+    const width = label.length * 5 + 4;
+    const left = Math.floor(
+      Math.max(0, Math.min(160 - width, x - width / 2 + 6))
+    );
+    const top = Math.max(0, Math.min(96, y - 12));
+    const pixels = art.map(pixel => ({
+      ...pixel,
+      type: 'rect',
+      x: pixel.x + x,
+      y: pixel.y + y,
+    }));
+    pixels.push(
+      frameRectangle({ x: left, y: top, width, height: 10 }, frame.palette[0]),
+      {
+        type: 'text',
+        x: left + 2,
+        y: top + 8,
+        text: label,
+        fill: frame.palette[3],
+        font: '7px monospace',
+        bitmap: true,
+      }
+    );
+    return pixels;
+  });
+}
+/**
+ * Construct the shared opaque background contract for scenery and HUD panels.
+ * @param {object} bounds Logical-screen rectangle bounds.
+ * @param {string} fill Palette color.
+ * @returns {object} Renderable rectangle.
+ */
+function frameRectangle(bounds, fill) {
+  return { type: 'rect', ...bounds, fill };
 }
 /**
  * Fit a single HUD row with an explicit overflow marker.
@@ -115,7 +173,7 @@ function fitHudText(text) {
 function hudShapes(frame) {
   const rows = wrapDialogueText(frame.toast || 'Move · interact · listen', 30);
   return [
-    { type: 'rect', x: 0, y: 108, width: 160, height: 36, fill: '#141c2c' },
+    frameRectangle({ x: 0, y: 108, width: 160, height: 36 }, '#141c2c'),
     frameText(
       fitHudText(
         `${frame.world.map.name} D${frame.world.day} ${Math.floor(frame.world.time).toString().padStart(2, '0')}:00`

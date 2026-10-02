@@ -1,9 +1,10 @@
+import { obstaclePixels } from './scenery.js';
 const TILE_SIZE = 12;
 
 /** @typedef {'shadow' | 'ground' | 'light' | 'glimmer'} PaletteColor */
 /** @typedef {[number, number, number, number, PaletteColor]} PixelInstruction */
 /** @typedef {{x: number, y: number, width: number, height: number, fill: string}} PixelRect */
-/** @typedef {{x: number, y: number, palette: [string, string, string, string], region: string, blocked?: boolean}} TileOptions */
+/** @typedef {{x: number, y: number, palette: [string, string, string, string], region: string, blocked?: boolean, roof?:boolean}} TileOptions */
 
 /**
  * Generate a deterministic pixel-art tile from its map coordinate and region.
@@ -11,7 +12,7 @@ const TILE_SIZE = 12;
  * @returns {PixelRect[]} Pixel rectangles.
  */
 export function generateBackgroundTile(options) {
-  const { x, y, palette, region, blocked = false } = options;
+  const { x, y, palette, region, blocked = false, roof = false } = options;
   const seed = Math.abs((x * 17 + y * 31 + x * y * 7) % 12);
   const colors = {
     shadow: palette[0],
@@ -21,8 +22,13 @@ export function generateBackgroundTile(options) {
   };
   // Keep the terrain bed continuous. Large alternating fills read as a
   // checkerboard at handheld scale; the regional accents below provide texture.
-  const baseColor = blocked ? colors.shadow : colors.ground;
-  const details = backgroundInstructions(seed, region, blocked);
+  const baseColor = colors.ground;
+  const details = backgroundInstructions(seed, region);
+  if (blocked)
+    return [
+      { x: 0, y: 0, width: TILE_SIZE, height: TILE_SIZE, fill: baseColor },
+      ...obstaclePixels({ region, roof, palette }),
+    ];
 
   return [
     { x: 0, y: 0, width: TILE_SIZE, height: TILE_SIZE, fill: baseColor },
@@ -40,18 +46,9 @@ export function generateBackgroundTile(options) {
  * Describe region texture as compact local rectangles referencing palette roles.
  * @param {number} seed - Stable seed derived from world coordinates.
  * @param {string} region - Map palette key selecting the local terrain motif.
- * @param {boolean} blocked - Whether this tile is a wall or obstacle.
  * @returns {PixelInstruction[]} Small texture rectangles in local tile space.
  */
-function backgroundInstructions(seed, region, blocked) {
-  if (blocked)
-    return [
-      instruction([1 + (seed % 3), 2 + (seed % 2), 5, 1, 'ground']),
-      instruction([2 + (seed % 2), 3 + (seed % 2), 3, 1, 'shadow']),
-      instruction([7 + (seed % 2), 7 + (seed % 3), 3, 1, 'light']),
-      ...optionalInstruction(seed % 3 === 0, [9, 3, 1, 1, 'glimmer']),
-    ];
-
+function backgroundInstructions(seed, region) {
   switch (region) {
     case 'shore': {
       const x = 1 + (seed % 4);

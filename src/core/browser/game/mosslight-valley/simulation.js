@@ -32,7 +32,7 @@ export function createSimulation(content = CONTENT) {
     tick: 0,
     moveCooldown: 0,
     lastActions: [],
-    toast: 'Aster arrives. START/J: story and help.',
+    toast: 'First: listen at the well. START/J: story and help.',
   };
 }
 /**
@@ -167,10 +167,19 @@ export function stepGame(
 function openGuide(state, content) {
   return openDialogue({ ...state, mode: 'journal' }, 'guide', [
     {
-      text: 'You are Aster. This valley is a sleeping creature. Its dreams borrow our memories.',
+      text: 'You are Aster. A letter in your own handwriting brought you here. You never wrote it.',
     },
     {
-      text: 'Begin at the village well. Talk to neighbors. Your choices decide how the valley wakes.',
+      text: 'Mosslight is a sleeping creature. Its dreams borrow our memories. A bell below the well knows your name.',
+    },
+    {
+      text: 'First: walk to the well basket northeast of you. Face it and press A. Ask Mira what she remembers.',
+    },
+    {
+      text: 'Explore at your own pace. Gather borrowed memories and decide how the valley wakes.',
+    },
+    {
+      text: 'Each area scrolls as you walk. Follow arrow trails to its edge to cross into the named next area.',
     },
     {
       text: 'D-pad: move. A/Z: talk, use objects, continue. Face an object before pressing A.',
