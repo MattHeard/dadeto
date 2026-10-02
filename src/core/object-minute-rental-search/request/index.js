@@ -1,3 +1,61 @@
+const FOOTBALL_SKU = 'FOOTBALL';
+
+/**
+ *
+ * @param {{requestText?: string}} request Exact product request.
+ * @returns {{matched: boolean, skuId: string|null}} Product match.
+ */
+export function exactLookup(request) {
+  return request.requestText === 'football'
+    ? { matched: true, skuId: FOOTBALL_SKU }
+    : { matched: false, skuId: null };
+}
+
+/**
+ * Validate the temporal coherence of a normalized possession interval.
+ * @param {{startPoint?: {timestamp?: string}, endPoint?: {timestamp?: string}}} context Normalized possession points.
+ * @returns {{valid: true} | {valid: false, reason: string}} Validation result.
+ */
+export function validatePossessionContextTime({ startPoint, endPoint } = {}) {
+  const start = parseTime(startPoint?.timestamp);
+  if (!Number.isFinite(start))
+    return { valid: false, reason: 'invalid-possession-start-time' };
+  const end = parseTime(endPoint?.timestamp);
+  if (!Number.isFinite(end))
+    return { valid: false, reason: 'invalid-possession-end-time' };
+  if (end < start)
+    return { valid: false, reason: 'possession-end-before-start' };
+  return { valid: true };
+}
+
+/**
+ *
+ * @param {unknown} start Candidate start.
+ * @param {unknown} end Candidate end.
+ * @param {unknown} windowStart Available start.
+ * @param {unknown} windowEnd Available end.
+ * @returns {boolean} Whether the interval fits inclusively.
+ */
+export function contained(start, end, windowStart, windowEnd) {
+  const values = [start, end, windowStart, windowEnd].map(parseTime);
+  return (
+    values[0] <= values[1] && values[2] <= values[0] && values[1] <= values[3]
+  );
+}
+
+/**
+ *
+ * @param {unknown} start First interval start.
+ * @param {unknown} end First interval end.
+ * @param {unknown} otherStart Second interval start.
+ * @param {unknown} otherEnd Second interval end.
+ * @returns {boolean} Whether the half-open intervals overlap.
+ */
+export function overlap(start, end, otherStart, otherEnd) {
+  const values = [start, end, otherStart, otherEnd].map(parseTime);
+  return values[0] < values[3] && values[2] < values[1];
+}
+
 const DEFAULT_SUPPLIER = {
   startTimestamp: '2026-01-01T07:00:00Z',
   endTimestamp: '2026-01-01T17:00:00Z',
