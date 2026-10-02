@@ -5,7 +5,7 @@ import {
   resolveSpeed,
   strictAssignmentBoundary,
   formatAssignmentFailure,
-  findCoveringShift,
+  findAssignmentShift,
 } from './strictAssignmentCore.js';
 
 /**
@@ -20,10 +20,7 @@ export function validatedRunnerSegmentAssignment(input, env) {
     if (!personId) return formatAssignmentFailure('invalid-person-id');
     if (!segmentId) return formatAssignmentFailure('invalid-segment-id');
     const speed = resolveSpeed(x);
-    const candidate = speed.candidate;
-    /** @type {Array<Record<string, any>>} */
-    const shifts = x.shifts || [];
-    const matching = findCoveringShift(shifts, candidate);
+    const matching = findAssignmentShift(x, speed.candidate);
     if (!matching) return formatAssignmentFailure('outside-shift');
     if (speed.requiredSpeed > speed.maximumSpeed)
       return formatAssignmentFailure('excessive-speed');

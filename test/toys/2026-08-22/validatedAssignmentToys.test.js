@@ -72,6 +72,25 @@ function fixture(setter) {
 }
 
 describe('validated superseding assignment toys', () => {
+  test('single and atomic writers retain their distinct rejection precedence', () => {
+    const request = JSON.stringify({
+      ...base,
+      personId: 'P1',
+      assetId: 'A1',
+      custodianPersonId: 'P1',
+      shifts: [],
+      maximumSpeed: 0,
+    });
+    const cases = [
+      [validatedRunnerSegmentAssignment, 'outside-shift'],
+      [validatedAssetCustodianSegmentAssignment, 'runner:excessive-speed'],
+    ];
+    cases.forEach(([write, reason]) => {
+      const value = fixture();
+      expect(JSON.parse(write(request, value.env)).reason).toBe(reason);
+      expect(value.state.temporary).toEqual({});
+    });
+  });
   test('empty and structurally incomplete requests fail safely', () => {
     expect(
       JSON.parse(

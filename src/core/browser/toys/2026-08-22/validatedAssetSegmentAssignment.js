@@ -1,9 +1,9 @@
 // Toy: Validated Asset Segment Assignment
-import { evaluateWorldLine } from '../2026-08-21/segmentAssignmentFeasibilityCore.js';
 import {
   normalizeAssignmentId,
   strictAssignmentBoundary,
   formatAssignmentFailure,
+  evaluateStockWorldLine,
 } from './strictAssignmentCore.js';
 
 /**
@@ -17,12 +17,10 @@ export function validatedAssetSegmentAssignment(input, env) {
       segmentId = normalizeAssignmentId(x.candidateSegment?.segmentId);
     if (!assetId) return formatAssignmentFailure('invalid-asset-id');
     if (!segmentId) return formatAssignmentFailure('invalid-segment-id');
-    const result = evaluateWorldLine(
+    const result = evaluateStockWorldLine(
+      x,
       x.points || [],
-      x.existingSegments || [],
-      x.candidateSegment,
-      x.stockInPoint,
-      x.stockOutPoint
+      x.existingSegments
     );
     return {
       feasibility: result,

@@ -86,6 +86,33 @@ export function findCoveringShift(shifts, candidate) {
 }
 
 /**
+ * Resolve an assignment's optional shift list before interval matching.
+ * @param {Record<string, any>} request Assignment request.
+ * @param {{startTime: number, endTime: number}} candidate Resolved interval.
+ * @returns {Record<string, any> | undefined} First covering shift.
+ */
+export function findAssignmentShift(request, candidate) {
+  return findCoveringShift(request.shifts || [], candidate);
+}
+
+/**
+ * Evaluate an asset between its authored stock boundaries.
+ * @param {Record<string, any>} request Assignment request.
+ * @param {unknown} points Caller-selected point records.
+ * @param {unknown} existingSegments Caller-selected asset history.
+ * @returns {{feasible: boolean, reason?: string}} Asset feasibility.
+ */
+export function evaluateStockWorldLine(request, points, existingSegments) {
+  return evaluateWorldLine(
+    points,
+    existingSegments || [],
+    request.candidateSegment,
+    request.stockInPoint,
+    request.stockOutPoint
+  );
+}
+
+/**
  * Normalize thrown values without losing their message.
  * @param {unknown} error Thrown value.
  * @returns {string} Public failure reason.

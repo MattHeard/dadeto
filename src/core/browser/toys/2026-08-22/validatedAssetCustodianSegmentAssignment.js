@@ -1,5 +1,4 @@
 // Toy: Validated Asset Custodian Segment Assignment
-import { evaluateWorldLine } from '../2026-08-21/segmentAssignmentFeasibilityCore.js';
 import {
   commitAssetCustodianAssignment,
   formatCommitFailure,
@@ -9,7 +8,8 @@ import {
   resolveSpeed,
   evaluateRunnerWorldLine,
   assignmentErrorReason,
-  findCoveringShift,
+  findAssignmentShift,
+  evaluateStockWorldLine,
 } from './strictAssignmentCore.js';
 
 /**
@@ -29,18 +29,9 @@ export function validatedAssetCustodianSegmentAssignment(input, env) {
     const speed = resolveSpeed(x);
     if (speed.requiredSpeed > speed.maximumSpeed)
       return formatCommitFailure('runner:excessive-speed');
-    const asset = evaluateWorldLine(
-      x.points,
-      x.existingAssetSegments || [],
-      x.candidateSegment,
-      x.stockInPoint,
-      x.stockOutPoint
-    );
+    const asset = evaluateStockWorldLine(x, x.points, x.existingAssetSegments);
     if (!asset.feasible) return formatCommitFailure(`asset:${asset.reason}`);
-    const candidate = speed.candidate;
-    /** @type {Array<Record<string, any>>} */
-    const shifts = x.shifts || [];
-    const matching = findCoveringShift(shifts, candidate);
+    const matching = findAssignmentShift(x, speed.candidate);
     if (!matching) return formatCommitFailure('runner:outside-shift');
     const runner = evaluateRunnerWorldLine(
       { ...x, existingSegments: x.existingPersonSegments || [] },
