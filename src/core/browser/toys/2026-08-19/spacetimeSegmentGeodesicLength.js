@@ -1,6 +1,9 @@
 // Toy: Spacetime Segment Geodesic Length
 // (input, env) -> string
-import { resolvePointRecords } from '../2026-08-22/spacePointResolution.js';
+import {
+  parseSegmentMeasurementInput,
+  measureSpacetimeSegment,
+} from './spacetimeInput.js';
 
 const SEMI_MAJOR_AXIS = 6378137;
 const FLATTENING = 1 / 298.257223563;
@@ -12,54 +15,27 @@ const SEMI_MINOR_AXIS = (1 - FLATTENING) * SEMI_MAJOR_AXIS;
  * @returns {string} Object containing string value and unit fields.
  */
 export function spacetimeSegmentGeodesicLength(input) {
-  try {
-    const { points, segment } = parseInput(input);
-    const byId = new Map(points.map(point => [point.pointId, point]));
-    const start = byId.get(segment.startPointId);
-    const end = byId.get(segment.endPointId);
-    if (!start || !end) throw new Error('Segment references an unknown point.');
-    const distance = vincentyDistance(
-      start.latitude,
-      start.longitude,
-      end.latitude,
-      end.longitude
-    );
-    return JSON.stringify({ value: distance.toFixed(2), unit: 'meters' });
-  } catch (error) {
-    return JSON.stringify({
-      valid: false,
-      error: error.message,
-    });
-  }
+  return measureSpacetimeSegment(
+    input,
+    parseSegmentMeasurementInput,
+    distanceMeters,
+    'meters'
+  );
 }
 
 /**
- *
- * @param input
+ * Format ellipsoid surface length with the existing two-decimal precision.
+ * @param {Record<string, any>} start Start point.
+ * @param {Record<string, any>} end End point.
+ * @returns {string} Distance in meters.
  */
-/**
- * Parse the point and segment payload.
- * @param {string} input Raw JSON input.
- * @returns {{points: Array<{pointId: string, latitude: number, longitude: number}>, segment: {startPointId: string, endPointId: string}}} Parsed payload.
- */
-function parseInput(input) {
-  const parsed = JSON.parse(input);
-  if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
-    throw new Error('Input must be a JSON object.');
-  }
-  if (!Array.isArray(parsed.points) || !parsed.segment) {
-    throw new Error('points and segment are required.');
-  }
-  return {
-    points:
-      /** @type {Array<{pointId: string, latitude: number, longitude: number}>} */ (
-        // Stryker disable next-line all -- absent optional space-point data is an empty collection boundary.
-        resolvePointRecords(parsed.points, parsed.spacePoints || [])
-      ),
-    segment: /** @type {{startPointId: string, endPointId: string}} */ (
-      parsed.segment
-    ),
-  };
+function distanceMeters(start, end) {
+  return vincentyDistance(
+    start.latitude,
+    start.longitude,
+    end.latitude,
+    end.longitude
+  ).toFixed(2);
 }
 
 /**

@@ -1,7 +1,8 @@
-// Toy: Spacetime Segment Duration
-// (input, env) -> string
-import { resolvePointRecords } from '../2026-08-22/spacePointResolution.js';
-import { isJsonObject } from './spacetimeInput.js';
+import {
+  isJsonObject,
+  parseSegmentMeasurementInput,
+  measureSpacetimeSegment,
+} from './spacetimeInput.js';
 
 /**
  * Calculate UTC duration for a SPAC2 segment.
@@ -9,53 +10,37 @@ import { isJsonObject } from './spacetimeInput.js';
  * @returns {string} Object containing string value and unit fields.
  */
 export function spacetimeSegmentDuration(input) {
-  try {
-    const { points, segment } = parseInput(input);
-    const byId = new Map(points.map(point => [point.pointId, point]));
-    const start = byId.get(segment.startPointId);
-    const end = byId.get(segment.endPointId);
-    if (!start || !end) throw new Error('Segment references an unknown point.');
-    const startTime = Date.parse(start.timestamp);
-    const endTime = Date.parse(end.timestamp);
-    if (
-      !Number.isFinite(startTime) ||
-      !Number.isFinite(endTime) ||
-      endTime < startTime
-    ) {
-      throw new Error('Segment must have an ordered valid UTC interval.');
-    }
-    return JSON.stringify({
-      value: String((endTime - startTime) / 1000),
-      unit: 'seconds',
-    });
-  } catch (error) {
-    return JSON.stringify({
-      valid: false,
-      error: error.message,
-    });
-  }
+  return measureSpacetimeSegment(input, parseInput, durationSeconds, 'seconds');
 }
 
 /**
+ * Format a valid ordered UTC interval in seconds.
+ * @param {Record<string, any>} start Start point.
+ * @param {Record<string, any>} end End point.
+ * @returns {string} Duration in seconds.
+ */
+function durationSeconds(start, end) {
+  const startTime = Date.parse(start.timestamp);
+  const endTime = Date.parse(end.timestamp);
+  if (
+    !Number.isFinite(startTime) ||
+    !Number.isFinite(endTime) ||
+    endTime < startTime
+  ) {
+    throw new Error('Segment must have an ordered valid UTC interval.');
+  }
+  return String((endTime - startTime) / 1000);
+}
+
+/**
+ * Parse the duration request with its legacy empty-input policy.
  * @param {string} input Raw JSON input.
  * @returns {{points: Array<{pointId: string, timestamp: string}>, segment: {startPointId: string, endPointId: string}}} Parsed payload.
  */
 function parseInput(input) {
-  const parsed = JSON.parse(input || '{}');
-  if (!isJsonObject(parsed)) {
-    throw new Error('Input must be a JSON object.');
-  }
-  if (!Array.isArray(parsed.points) || !parsed.segment) {
-    throw new Error('points and segment are required.');
-  }
-  return {
-    points: /** @type {Array<{pointId: string, timestamp: string}>} */ (
-      resolvePointRecords(parsed.points, parsed.spacePoints || [])
-    ),
-    segment: /** @type {{startPointId: string, endPointId: string}} */ (
-      parsed.segment
-    ),
-  };
+  return /** @type {{points: Array<{pointId: string, timestamp: string}>, segment: {startPointId: string, endPointId: string}}} */ (
+    parseSegmentMeasurementInput(input || '{}')
+  );
 }
 
 export { isJsonObject, parseInput };
