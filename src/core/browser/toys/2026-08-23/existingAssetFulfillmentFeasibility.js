@@ -1,16 +1,8 @@
 import { evaluateWorldLine } from '../2026-08-21/segmentAssignmentFeasibilityCore.js';
 import { fulfillmentExistingAssetBoundary } from '../2026-08-22/fulfillmentResult.js';
+import { ASSET_OPERATIONS as operationOrder } from './assetOperations.js';
 
-// Stryker disable all -- this module is the fixed existing-asset fulfillment
-// feasibility protocol boundary covered by the focused fulfillment suites.
-
-const ASSET_OPERATIONS = new Set([
-  'delivery-outbound',
-  'possession',
-  'pickup-return',
-  'inspection',
-  'cleaning',
-]);
+const ASSET_OPERATIONS = new Set(operationOrder);
 
 /**
  * Test whether one asset can follow the asset-relevant part of a proposal.
@@ -65,5 +57,3 @@ function selectAssetSegments(proposal) {
     );
   return selected;
 }
-
-// Stryker restore all

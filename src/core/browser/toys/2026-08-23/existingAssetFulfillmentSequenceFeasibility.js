@@ -1,16 +1,6 @@
 import { evaluateWorldLineMany } from '../2026-08-21/segmentAssignmentFeasibilityCore.js';
 import { fulfillmentExistingAssetBoundary } from '../2026-08-22/fulfillmentResult.js';
-
-// Stryker disable all -- this module is the fixed multi-segment existing-asset
-// fulfillment feasibility protocol boundary covered by focused suites.
-
-const ASSET_OPERATIONS = [
-  'delivery-outbound',
-  'possession',
-  'pickup-return',
-  'inspection',
-  'cleaning',
-];
+import { ASSET_OPERATIONS } from './assetOperations.js';
 
 /**
  * Test whether an asset can follow the complete asset-relevant proposal.
@@ -60,4 +50,3 @@ function selectAssetSegments(proposal) {
     throw new Error('Asset operations must reference distinct segments.');
   return operations;
 }
-// Stryker restore all
