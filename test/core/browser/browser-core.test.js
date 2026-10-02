@@ -1,4 +1,6 @@
 import { describe, expect, test, jest } from '@jest/globals';
+import * as browserUtilities from '../../../src/core/browser/browserUtilities.js';
+import * as browserComposition from '../../../src/core/browser/browser-core.js';
 import {
   applyCleanupHandlers,
   applyBaseCleanupHandlers,
@@ -39,6 +41,11 @@ import {
 } from '../../../src/core/browser/inputValueStore.js';
 
 describe('browser-core helpers', () => {
+  test('preserves utility identities through the browser composition facade', () => {
+    Object.entries(browserUtilities).forEach(([name, helper]) => {
+      expect(browserComposition[name]).toBe(helper);
+    });
+  });
   test('creates prefixed loggers and no-op loggers', () => {
     const logger = jest.fn();
     const prefixed = createPrefixedLogger(logger, 'pfx');

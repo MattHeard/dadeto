@@ -1,4 +1,4 @@
-import * as browserCore from '../browser-core.js';
+import * as browserCore from '../browserUtilities.js';
 import { removeExistingSpecialInput } from './browserInputHandlersCore.js';
 
 /** @typedef {import('../browser-core.js').DOMEventListener} DOMEventListener */
