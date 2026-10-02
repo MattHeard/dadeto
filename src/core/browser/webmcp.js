@@ -1,4 +1,9 @@
 const MAX_OUTPUT_CHARACTERS = 1500;
+/** Shared schema and annotation for read-only tools with no arguments. */
+export const READ_ONLY_TOOL = Object.freeze({
+  inputSchema: { type: 'object', properties: {}, additionalProperties: false },
+  annotations: { readOnlyHint: true },
+});
 const NON_RUNNABLE_PATH_PARTS = [
   'storage',
   'ledger',
@@ -68,7 +73,7 @@ function boundedOutput(output) {
  * @param {unknown} value Tool result.
  * @returns {{content: Array<{type: string, text: string}>}} Tool content.
  */
-function resultContent(value) {
+export function resultContent(value) {
   return { content: [{ type: 'text', text: JSON.stringify(value) }] };
 }
 
@@ -206,12 +211,7 @@ export function createWebMcpHandle({
       name: 'list_toys',
       description:
         'List the public Matt Heard toys and whether each supports text execution.',
-      inputSchema: {
-        type: 'object',
-        properties: {},
-        additionalProperties: false,
-      },
-      annotations: { readOnlyHint: true },
+      ...READ_ONLY_TOOL,
       execute: async () => resultContent({ toys: await listToys() }),
     });
     context.registerTool({

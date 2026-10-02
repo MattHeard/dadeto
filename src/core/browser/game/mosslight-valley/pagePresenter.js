@@ -2,6 +2,7 @@
 import { createMosslightRuntime } from './runtime.js';
 import { updateInput, gamepadActions } from './input.js';
 import { drawGameFrame } from './renderer.js';
+import { registerMosslightTools } from './webmcp.js';
 
 /**
  * Mount the shared RPG in a responsive page and return its lifecycle disposer.
@@ -184,6 +185,11 @@ export function startMosslightPage(options) {
     lastTime = 0;
   }
   bindTouchControls(documentObj, touch, touchPulse);
+  const disposeAgentTools = registerMosslightTools({
+    modelContext: documentObj.modelContext,
+    runtime,
+    redraw: draw,
+  });
   windowObj.addEventListener('pointerup', releaseTouch);
   windowObj.addEventListener('pointercancel', releaseTouch);
   bindUtilityControls({
@@ -193,7 +199,9 @@ export function startMosslightPage(options) {
     status,
     draw,
     onResume: () => {
+      runtime.resume();
       lastTime = 0;
+      draw();
     },
   });
   documentObj.addEventListener('keydown', onKeyDown);
@@ -205,6 +213,7 @@ export function startMosslightPage(options) {
   frameId = requestFrame(loop);
   return () => {
     disposed = true;
+    disposeAgentTools();
     if (frameId !== null) cancelFrame(frameId);
     runtime.pause();
     documentObj.removeEventListener('keydown', onKeyDown);
