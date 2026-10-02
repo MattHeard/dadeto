@@ -430,7 +430,29 @@ body {
   .game-shell {
     padding-top: max(12px, env(safe-area-inset-top));
   }
+  .masthead {
+    padding-bottom: 8px;
+  }
+  .title-lockup p {
+    display: none;
+  }
+  .title-lockup h1 {
+    font-size: 26px;
+  }
+  .title-lockup > span {
+    font-size: 12px;
+  }
+  .screen-frame {
+    max-width: min(100%, max(160px, calc((100svh - 340px - env(safe-area-inset-top) - env(safe-area-inset-bottom)) * 160 / 144)));
+  }
+  .chapter-copy {
+    order: 2;
+  }
+  .utility-actions {
+    order: 1;
+  }
   .touch-pad {
+    order: 0;
     gap: 14px;
     min-height: 164px;
     padding: 12px 8px;
@@ -503,7 +525,7 @@ body {
   }
   .screen-frame {
     max-height: calc(100dvh - 65px);
-    max-width: calc((100dvh - 65px) * 1.18);
+    max-width: calc((100dvh - 135px) * 160 / 144);
     padding: 8px;
   }
   .screen-glow {
@@ -511,6 +533,18 @@ body {
   }
   .side-panel {
     gap: 8px;
+  }
+  .chapter-copy {
+    order: 2;
+  }
+  .utility-actions {
+    order: 1;
+  }
+  .control-card {
+    display: none;
+  }
+  .play-layout {
+    align-items: start;
   }
   .chapter-copy h2 {
     font-size: 19px;
@@ -520,6 +554,8 @@ body {
     font-size: 11px;
   }
   .touch-pad {
+    display: flex;
+    order: 0;
     min-height: 104px;
     padding: 0;
   }
@@ -534,5 +570,22 @@ body {
   }
   .utility-actions button {
     min-height: 36px;
+  }
+}
+@media (max-width: 350px) {
+  .touch-pad {
+    gap: 4px;
+    padding: 12px 0;
+  }
+  .system-buttons button {
+    font-size: 9px;
+    padding: 8px 6px;
+  }
+  .extra-buttons {
+    gap: 4px;
+  }
+  .extra-buttons button {
+    font-size: 8px;
+    padding: 6px 4px;
   }
 }
