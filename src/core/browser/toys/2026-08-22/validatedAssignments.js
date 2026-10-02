@@ -18,10 +18,7 @@ import {
  * @param {Parameters<typeof strictAssignmentBoundary>[3]} [reject] Rejection serializer.
  * @returns {(input: string, env: import('../browserToysCore.js').ToyEnv) => string} Public assignment adapter.
  */
-function createValidatedAssignment(
-  calculate,
-  reject = formatAssignmentFailure
-) {
+function createValidatedAssignment(calculate, reject) {
   return (input, env) =>
     strictAssignmentBoundary(
       input,
