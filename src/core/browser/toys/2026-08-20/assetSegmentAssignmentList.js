@@ -2,6 +2,7 @@
 // (input, env) -> string
 
 import { appendReferenceList } from '../2026-08-18/memoryObjectListAppend.js';
+import { parseReferenceAssignment } from './assignmentRequests.js';
 
 /**
  * Append an asset-to-segment reference to a persisted list.
@@ -18,30 +19,12 @@ export function assetSegmentAssignmentList(input, env) {
  * @returns {{memoryLocation?: string, path: string, assignment: {assetId: string, segmentId: string}}} Parsed request.
  */
 function parseRequest(input) {
-  const request = JSON.parse(input);
-  if (
-    request === null ||
-    typeof request !== 'object' ||
-    Array.isArray(request)
-  ) {
-    throw new Error('Input must be a JSON object.');
-  }
-  const source = request.assignment;
-  if (source === null || typeof source !== 'object' || Array.isArray(source)) {
-    throw new Error('An assignment object is required.');
-  }
-  const assetId = String(source.assetId || '').trim();
-  const segmentId = String(source.segmentId || '').trim();
-  if (!assetId || !segmentId) {
-    throw new Error('An assignment requires assetId and segmentId.');
-  }
-  const path = String(request.path || '').trim();
-  if (!path) throw new Error('A path is required.');
-  return {
-    memoryLocation: request.memoryLocation,
-    path,
-    assignment: { assetId, segmentId },
-  };
+  const { request, path, assignment } = parseReferenceAssignment(
+    input,
+    ['assetId', 'segmentId'],
+    'An assignment requires assetId and segmentId.'
+  );
+  return { memoryLocation: request.memoryLocation, path, assignment };
 }
 
 export { parseRequest };

@@ -1,4 +1,5 @@
 import { canAppendAssignment } from './assignmentIntervals.js';
+import { buildAssignmentPredicateRequest } from './assignmentRequests.js';
 export { resolveInterval, overlaps } from './assignmentIntervals.js';
 
 // Toy: Person Segment Assignment Predicate
@@ -37,15 +38,7 @@ export function parseRequest(input) {
     throw new Error('segments array is required.');
   if (!Array.isArray(request.assignments))
     throw new Error('assignments array is required.');
-  const proposedAssignment = normalizeAssignment(request.proposedAssignment);
-  if (!proposedAssignment)
-    throw new Error('A proposed assignment is required.');
-  return {
-    points: request.points,
-    segments: request.segments,
-    assignments: request.assignments.map(normalizeAssignment).filter(Boolean),
-    proposedAssignment,
-  };
+  return buildAssignmentPredicateRequest(request, normalizeAssignment);
 }
 
 /**

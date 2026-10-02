@@ -2,6 +2,10 @@
 // (input, env) -> string
 
 import { appendReferenceList } from '../2026-08-18/memoryObjectListAppend.js';
+import {
+  parseReferenceAssignment,
+  referenceMemoryLocation,
+} from './assignmentRequests.js';
 
 /**
  * Append an asset, segment, and custodian reference to a persisted list.
@@ -19,33 +23,12 @@ export function assetCustodianSegmentAssignmentList(input, env) {
  * @returns {{memoryLocation: string, path: string, assignment: {assetId: string, segmentId: string, custodianPersonId: string}}} Parsed request.
  */
 function parseRequest(input) {
-  const request = JSON.parse(input);
-  if (request === null || typeof request !== 'object' || Array.isArray(request))
-    throw new Error('Input must be a JSON object.');
-  const assignment = request.assignment;
-  if (
-    assignment === null ||
-    typeof assignment !== 'object' ||
-    Array.isArray(assignment)
-  )
-    throw new Error('An assignment object is required.');
-  const assetId = String(assignment.assetId || '').trim();
-  const segmentId = String(assignment.segmentId || '').trim();
-  const custodianPersonId = String(assignment.custodianPersonId || '').trim();
-  const path = String(request.path || '').trim();
-  const memoryLocation = String(request.memoryLocation || 'temporary');
-  if (!assetId || !segmentId || !custodianPersonId)
-    throw new Error(
-      'An assignment requires assetId, segmentId, and custodianPersonId.'
-    );
-  if (!path) throw new Error('A path is required.');
-  if (!['temporary', 'permanent', 'envelope'].includes(memoryLocation))
-    throw new Error('Unsupported memory location.');
-  return {
-    memoryLocation,
-    path,
-    assignment: { assetId, segmentId, custodianPersonId },
-  };
+  const { request, path, assignment } = parseReferenceAssignment(
+    input,
+    ['assetId', 'segmentId', 'custodianPersonId'],
+    'An assignment requires assetId, segmentId, and custodianPersonId.'
+  );
+  return { memoryLocation: referenceMemoryLocation(request), path, assignment };
 }
 
 export { parseRequest };

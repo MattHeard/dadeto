@@ -2,6 +2,10 @@
 // (input, env) -> string
 
 import { appendReferenceList } from '../2026-08-18/memoryObjectListAppend.js';
+import {
+  parseReferenceAssignment,
+  referenceMemoryLocation,
+} from './assignmentRequests.js';
 
 /**
  * Append a person-to-segment reference to a persisted list.
@@ -19,26 +23,12 @@ export function personSegmentAssignmentList(input, env) {
  * @returns {{memoryLocation: string, path: string, assignment: {personId: string, segmentId: string}}} Parsed request.
  */
 function parseRequest(input) {
-  const request = JSON.parse(input);
-  if (request === null || typeof request !== 'object' || Array.isArray(request))
-    throw new Error('Input must be a JSON object.');
-  const assignment = request.assignment;
-  if (
-    assignment === null ||
-    typeof assignment !== 'object' ||
-    Array.isArray(assignment)
-  )
-    throw new Error('An assignment object is required.');
-  const personId = String(assignment.personId || '').trim();
-  const segmentId = String(assignment.segmentId || '').trim();
-  const path = String(request.path || '').trim();
-  const memoryLocation = String(request.memoryLocation || 'temporary');
-  if (!personId || !segmentId)
-    throw new Error('An assignment requires personId and segmentId.');
-  if (!path) throw new Error('A path is required.');
-  if (!['temporary', 'permanent', 'envelope'].includes(memoryLocation))
-    throw new Error('Unsupported memory location.');
-  return { memoryLocation, path, assignment: { personId, segmentId } };
+  const { request, path, assignment } = parseReferenceAssignment(
+    input,
+    ['personId', 'segmentId'],
+    'An assignment requires personId and segmentId.'
+  );
+  return { memoryLocation: referenceMemoryLocation(request), path, assignment };
 }
 
 export { parseRequest };
