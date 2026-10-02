@@ -1,6 +1,6 @@
 // Toy: Spacetime World Line
 // (input, env) -> string
-import { formatToyError } from '../formatToyError.js';
+import { formatToyError, formatToyResult } from '../formatToyError.js';
 import { isJsonObject } from './spacetimeInput.js';
 
 /**
@@ -41,15 +41,11 @@ export function spacetimeWorldLine(input) {
     }
     if (pointId !== request.endPointId || used.size !== request.segments.length)
       throw new Error('World line contains unused or disconnected segments.');
-    return JSON.stringify(
-      {
-        startPointId: request.startPointId,
-        endPointId: request.endPointId,
-        segments: ordered,
-      },
-      null,
-      2
-    );
+    return formatToyResult({
+      startPointId: request.startPointId,
+      endPointId: request.endPointId,
+      segments: ordered,
+    });
   } catch (error) {
     return formatToyError(error.message);
   }

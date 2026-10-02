@@ -1,6 +1,7 @@
 // Toy: Spacetime Segment Temporal Relation
 // (input, env) -> string
 import { resolvePointRecords } from '../2026-08-22/spacePointResolution.js';
+import { formatToyResult, formatToyError } from '../formatToyError.js';
 import { isJsonObject, normalizeSegmentId } from './spacetimeInput.js';
 import { resolveSegmentTiming } from '../2026-08-21/segmentAssignmentFeasibilityCore.js';
 
@@ -19,26 +20,15 @@ export function spacetimeSegmentTemporalRelation(input) {
     const left = resolveInterval(segments, points, request.firstSegmentId);
     const right = resolveInterval(segments, points, request.secondSegmentId);
     const relation = classify(left, right);
-    return JSON.stringify(
-      {
-        firstSegmentId: request.firstSegmentId,
-        secondSegmentId: request.secondSegmentId,
-        relation,
-        firstInterval: left,
-        secondInterval: right,
-      },
-      null,
-      2
-    );
+    return formatToyResult({
+      firstSegmentId: request.firstSegmentId,
+      secondSegmentId: request.secondSegmentId,
+      relation,
+      firstInterval: left,
+      secondInterval: right,
+    });
   } catch (error) {
-    return JSON.stringify(
-      {
-        valid: false,
-        error: error.message,
-      },
-      null,
-      2
-    );
+    return formatToyError(error.message);
   }
 }
 
