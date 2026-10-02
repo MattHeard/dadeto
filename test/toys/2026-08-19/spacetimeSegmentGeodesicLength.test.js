@@ -4,6 +4,18 @@ import {
   vincentyDistance,
 } from '../../../src/core/browser/toys/2026-08-19/spacetimeSegmentGeodesicLength.js';
 
+test.each([
+  [0, 30, 0, -150],
+  [0, -150, 0, 30],
+])(
+  'antipodal fallback reuses angular differences across the date line',
+  (latitude1, longitude1, latitude2, longitude2) => {
+    expect(vincentyDistance(latitude1, longitude1, latitude2, longitude2)).toBe(
+      6378137 * Math.PI
+    );
+  }
+);
+
 describe('spacetimeSegmentGeodesicLength', () => {
   test('retains high-precision Vincenty intermediate results', () => {
     expect(vincentyDistance(10, 20, 11, 21)).toBeCloseTo(155602.9891846868, 8);

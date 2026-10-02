@@ -107,12 +107,12 @@ function vincentyDistance(
     }
   }
   if (!converged)
-    return sphericalFallback(
-      firstLatitude,
-      firstLongitude,
-      secondLatitude,
-      secondLongitude
-    );
+    return sphericalFallback({
+      phi1,
+      phi2,
+      deltaPhi: radians(secondLatitude - firstLatitude),
+      deltaLambda: longitudeDifference,
+    });
   const uSquared =
     (cosSquaredAlpha * (SEMI_MAJOR_AXIS ** 2 - SEMI_MINOR_AXIS ** 2)) /
     SEMI_MINOR_AXIS ** 2;
@@ -138,22 +138,10 @@ function vincentyDistance(
 
 /**
  * Calculate a spherical fallback distance for non-convergent ellipsoid cases.
- * @param {number} firstLatitude First latitude.
- * @param {number} firstLongitude First longitude.
- * @param {number} secondLatitude Second latitude.
- * @param {number} secondLongitude Second longitude.
+ * @param {{phi1: number, phi2: number, deltaPhi: number, deltaLambda: number}} angles Previously resolved angular coordinates and differences.
  * @returns {number} Approximate distance in meters.
  */
-function sphericalFallback(
-  firstLatitude,
-  firstLongitude,
-  secondLatitude,
-  secondLongitude
-) {
-  const phi1 = radians(firstLatitude);
-  const phi2 = radians(secondLatitude);
-  const deltaPhi = radians(secondLatitude - firstLatitude);
-  const deltaLambda = radians(secondLongitude - firstLongitude);
+function sphericalFallback({ phi1, phi2, deltaPhi, deltaLambda }) {
   const a =
     Math.sin(deltaPhi / 2) ** 2 +
     Math.cos(phi1) * Math.cos(phi2) * Math.sin(deltaLambda / 2) ** 2;
