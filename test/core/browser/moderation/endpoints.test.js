@@ -8,6 +8,63 @@ import {
   createGetModerationEndpointsFromStaticConfig,
 } from '../../../../src/core/browser/moderation/endpoints.js';
 
+test.each(['loader', 'mapping'])(
+  'the endpoint boundary reports synchronous %s failure once',
+  async phase => {
+    const failure = new Error('configuration failed');
+    const logger = { error: jest.fn() };
+    const loader = () => {
+      if (phase === 'loader') throw failure;
+      return Promise.resolve(
+        Object.defineProperty({}, 'getModerationVariantUrl', {
+          enumerable: true,
+          get() {
+            throw failure;
+          },
+        })
+      );
+    };
+    const endpoints = await createModerationEndpointsPromise(loader, {
+      logger,
+    });
+    expect(endpoints).toEqual(DEFAULT_MODERATION_ENDPOINTS);
+    expect(endpoints).not.toBe(DEFAULT_MODERATION_ENDPOINTS);
+    expect(logger.error).toHaveBeenCalledTimes(1);
+    expect(logger.error).toHaveBeenCalledWith(
+      'Failed to load moderation endpoints, falling back to defaults.',
+      failure
+    );
+  }
+);
+
+test('a failing error reporter rejects rather than concealing its failure', async () => {
+  const reportFailure = new Error('reporter failed');
+  await expect(
+    createModerationEndpointsPromise(
+      () => Promise.reject(new Error('load failed')),
+      {
+        logger: {
+          error() {
+            throw reportFailure;
+          },
+        },
+      }
+    )
+  ).rejects.toBe(reportFailure);
+});
+
+test('explicit undefined overrides remain distinct from missing config keys', () => {
+  expect(
+    mapConfigToModerationEndpoints(
+      { getModerationVariantUrl: undefined },
+      DEFAULT_MODERATION_ENDPOINTS
+    )
+  ).toEqual({
+    ...DEFAULT_MODERATION_ENDPOINTS,
+    getModerationVariantUrl: undefined,
+  });
+});
+
 describe('mapConfigToModerationEndpoints', () => {
   it('keeps the production endpoint constants exact', () => {
     expect(DEFAULT_MODERATION_ENDPOINTS).toEqual({
