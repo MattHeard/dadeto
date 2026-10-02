@@ -45,6 +45,21 @@ export function fulfillmentProposalFailure(error) {
 }
 
 /**
+ * Execute a proposal with its legacy valid/error serialization contract.
+ * @param {string} input Serialized proposal request.
+ * @param {(request: Record<string, any>) => string} calculate Proposal builder.
+ * @returns {string} Serialized proposal or original failure envelope.
+ */
+export function fulfillmentProposalBoundary(input, calculate) {
+  return fulfillmentBoundary(
+    input,
+    'valid',
+    calculate,
+    fulfillmentProposalFailure
+  );
+}
+
+/**
  * Serialize the common fulfillment sequence while retaining caller-owned fields.
  * @param {Record<string, any>} spacePoint Warehouse spatial record.
  * @param {{points: Record<string, any>[], segments: Record<string, any>[], sequence: Record<string, any>[]}} records Authored sequence records.
