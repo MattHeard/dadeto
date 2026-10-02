@@ -592,7 +592,8 @@ test('simulation hotkeys advance farm, clock, journal, and branching dialogue', 
   expect(stepGame(state).tick).toBe(1);
   state = stepGame(state, ['journal']);
   expect(state.mode).toBe('journal');
-  state = stepGame({ ...state, mode: 'world' }, ['rest']);
+  state = stepGame(state, ['cancel']);
+  state = stepGame(state, ['rest']);
   expect(state.world.day).toBe(2);
   expect(state.world.time).toBeCloseTo(6.9, 2);
   state = {

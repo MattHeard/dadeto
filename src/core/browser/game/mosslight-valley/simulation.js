@@ -8,7 +8,7 @@ import {
   moveDialogueChoice,
 } from './dialogue.js';
 import { movePlayer, createWorld, advanceClock } from './world.js';
-import { recordEvent, selectEnding } from './quests.js';
+import { recordEvent, selectEnding, questJournal } from './quests.js';
 import { farmAction, fishAction, craftItem } from './activities.js';
 import { startBattle, battleAction } from './combat.js';
 
@@ -32,7 +32,7 @@ export function createSimulation(content = CONTENT) {
     tick: 0,
     moveCooldown: 0,
     lastActions: [],
-    toast: 'The valley is humming in its sleep.',
+    toast: 'Aster arrives. START/J: story and help.',
   };
 }
 /**
@@ -52,14 +52,17 @@ export function stepGame(
   let next = {
     ...state,
     tick: state.tick + 1,
-    toast: '',
     moveCooldown: Math.max(0, state.moveCooldown - deltaMs),
   };
   const pressed = actions.filter(action => !state.lastActions.includes(action));
   const direction = ['up', 'down', 'left', 'right'].find(action =>
     actions.includes(action)
   );
-  if (
+  if (pressed.includes('journal') || pressed.includes('menu')) {
+    next = openGuide(next, content);
+  } else if (next.mode === 'journal' && pressed.includes('cancel')) {
+    next = { ...next, mode: next.battle ? 'battle' : 'world', dialogue: null };
+  } else if (
     next.mode === 'battle' &&
     ['confirm', 'interact', 'special', 'guard', 'cancel'].some(action =>
       pressed.includes(action)
@@ -108,7 +111,6 @@ export function stepGame(
       };
       next.world.npcs = scheduleActors(content.npcs, next.world);
     }
-    if (pressed.includes('journal')) next = { ...next, mode: 'journal' };
     if (pressed.includes('wait')) {
       next = {
         ...next,
@@ -144,7 +146,45 @@ export function stepGame(
       'The heart door recognizes the village in your voice.'
     );
   next.lastActions = [...actions];
+  if (
+    state.dialogue?.actorId === 'guide' &&
+    next.mode === 'journal' &&
+    !next.dialogue
+  )
+    next.mode = next.battle ? 'battle' : 'world';
   return next;
+}
+
+/**
+ * Present story, controls and live objectives in both game presenters.
+ * @param {object} state Current simulation.
+ * @param {object} content Authored chapter.
+ * @returns {object} A paged, player-dismissed guide.
+ */
+function openGuide(state, content) {
+  return openDialogue({ ...state, mode: 'journal' }, 'guide', [
+    {
+      text: 'You are Aster. This valley is a sleeping creature. Its dreams borrow our memories.',
+    },
+    {
+      text: 'Begin at the village well. Talk to neighbors. Your choices decide how the valley wakes.',
+    },
+    {
+      text: 'D-pad: move. A/Z: talk, use objects, continue. Face an object before pressing A.',
+    },
+    {
+      text: 'START/J: this guide. B/X: close guide. SELECT/T: wait one hour. Choices: up/down, then A.',
+    },
+    {
+      text: 'Use A at soil to plant or water. Wait a day for growth. Fish at the shore at dusk.',
+    },
+    {
+      text: 'In battle: A attacks, B sings. C guards; V uses a skill. Tea heals you.',
+    },
+    ...questJournal(state, content).map(quest => ({
+      text: `${quest.status}: ${quest.title}`,
+    })),
+  ]);
 }
 /**
  *
@@ -170,12 +210,7 @@ function interact(state, content) {
       toast: 'Something vast turns over beneath the village.',
     };
   }
-  if (object.kind === 'noticeboard')
-    return {
-      ...state,
-      mode: 'journal',
-      toast: 'A list of rumors, chores, and one unusually specific warning.',
-    };
+  if (object.kind === 'noticeboard') return openGuide(state, content);
   if (object.kind === 'farm') return farmAction(state, content);
   if (object.kind === 'fishing') return fishAction(state, content);
   if (object.kind === 'rest')
