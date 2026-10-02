@@ -1,37 +1,9 @@
 import { createDetachedProcessLauncher } from '../process-launcher.js';
 
 /**
- * @param {{
- *   command: string,
- *   args?: string[],
- *   cwd?: string,
- *   logDir?: string,
- *   logDirSuffix?: string,
- *   pathModule: { join: (first: string, ...parts: string[]) => string },
- *   resolveArgs?: (payload: { repoRoot: string, runId: string, prompt: string, onExit?: (options: { runId: string, exitCode: number | null, signal: string | null }) => unknown }) => string[],
- *   mkdirImpl?: import('node:fs/promises').mkdir,
- *   openImpl?: import('node:fs/promises').open,
- *   spawnImpl?: import('node:child_process').spawn,
- * }} options Launcher dependencies.
- * @returns {{
- *   launch: (payload: {
- *     repoRoot: string,
- *     runId: string,
- *     prompt: string,
- *     onExit?: (options: {
- *       runId: string,
- *       exitCode: number | null,
- *       signal: string | null
- *     }) => unknown
- *   }) => Promise<{
- *     launcherKind: string,
- *     command: string,
- *     args: string[],
- *     pid: number | null,
- *     stdoutPath: string,
- *     stderrPath: string
- *   }>
- * }} Local Codex launcher for Notion poll runs.
+ * Compose Notion's lifecycle policy with the shared detached-process launcher.
+ * @param {{command: string} & Partial<Parameters<typeof createDetachedProcessLauncher>[0]>} options Launcher dependencies.
+ * @returns {ReturnType<typeof createDetachedProcessLauncher>} Notion process lifecycle.
  */
 export function createNotionCodexLauncherCore(options) {
   return createDetachedProcessLauncher(
@@ -40,7 +12,7 @@ export function createNotionCodexLauncherCore(options) {
       logDirSuffix: 'notion-codex',
       closeErrorLabel: 'Failed to close Notion Codex run log handle:',
       exitErrorLabel: buildExitErrorLabel,
-      resolveArgs: payload => buildResolveArgs(options, payload),
+      resolveArgs: undefined,
     })
   );
 }
@@ -51,16 +23,4 @@ export function createNotionCodexLauncherCore(options) {
  */
 function buildExitErrorLabel(payload) {
   return `Failed to handle Notion Codex exit for ${payload.runId}:`;
-}
-
-/**
- * @param {{ args?: string[] }} options Launcher options.
- * @param {Record<string, unknown>} payload Launcher payload.
- * @returns {string[]} Command arguments.
- */
-function buildResolveArgs(options, payload) {
-  return /** @type {string[]} */ ([
-    ...(options.args ?? []),
-    String(payload.prompt ?? ''),
-  ]);
 }

@@ -3,6 +3,33 @@ import path from 'node:path';
 import { createNotionCodexLauncherCore } from '../../src/core/local/notion-codex/launcher.js';
 import { createNotionCodexLauncher } from '../../src/local/notion-codex/launcher.js';
 
+test('Notion uses the shared default prompt conversion rather than caller resolveArgs', async () => {
+  const resolveArgs = jest.fn(() => ['unexpected']);
+  const spawnImpl = jest.fn(() => ({ once() {}, unref() {} }));
+  const options = {
+    command: 'codex',
+    args: ['exec'],
+    pathModule: path,
+    resolveArgs,
+    mkdirImpl: async () => {},
+    openImpl: async () => ({ fd: 1 }),
+    spawnImpl,
+  };
+  const launcher = createNotionCodexLauncherCore(options);
+  for (const prompt of [undefined, null, 42, 'hello']) {
+    await launcher.launch({
+      repoRoot: '/tmp/repo',
+      runId: 'prompt-policy',
+      prompt,
+    });
+    expect(spawnImpl.mock.calls.at(-1)[1]).toEqual([
+      'exec',
+      String(prompt ?? ''),
+    ]);
+  }
+  expect(resolveArgs).not.toHaveBeenCalled();
+});
+
 describe('local notion codex launcher', () => {
   test('uses built-in launcher defaults when custom dependencies are omitted', () => {
     const launcher = createNotionCodexLauncherCore({
