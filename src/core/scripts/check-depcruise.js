@@ -1,6 +1,3 @@
-// Stryker disable all: dependency-cruiser is a subprocess-driven validation
-// gate; scope-analysis, filesystem, and reporting plumbing are observable only
-// through the complete gate invocation contract.
 import * as gateUtils from './gate-utils.js';
 import * as commonCore from '../commonCore.js';
 import {
@@ -29,61 +26,51 @@ const DEFAULT_SCOPE_ANALYSIS_DEPS = {
   },
 };
 /**
+ * @typedef {Pick<DepcruiseGateDeps, 'readFileSync'|'readdirSync'|'rootDir'|'sourceRoot'|'pathModule'>} CoreFileScanDeps
+ * @typedef {Omit<CoreFileScanDeps, 'readdirSync'> & {scopeAnalysisDeps?: DepcruiseGateDeps['scopeAnalysisDeps']}} CoreBrowserMainDeps
+ */
+/**
  * @typedef {{
+ *   spawnImpl: (command: string, args: string[], options: Record<string, unknown>) => { status?: number | null, signal?: string | null, error?: Error },
  *   readFileSync: (filePath: string, encoding: 'utf8') => string,
  *   readdirSync: (dirPath: string, options: { withFileTypes: true }) => Array<{ isDirectory: () => boolean, isFile: () => boolean, name: string }>,
+ *   stdout: { write: (text: string) => void },
+ *   stderr: { write: (text: string) => void },
  *   rootDir: string,
  *   sourceRoot: string,
+ *   configPath: string,
  *   pathModule: {
  *     join: (...segments: string[]) => string,
  *     resolve: (...segments: string[]) => string,
  *     relative: (from: string, to: string) => string,
  *     sep: string,
  *   },
- * }} CoreFileScanDeps
- * @typedef {{
- *   readFileSync: (filePath: string, encoding: 'utf8') => string,
- *   rootDir: string,
- *   sourceRoot: string,
- *   pathModule: {
- *     join: (...segments: string[]) => string,
- *     resolve: (...segments: string[]) => string,
- *     relative: (from: string, to: string) => string,
- *     sep: string,
- *   },
- *   scopeAnalysisDeps?: {
+ *   scopeAnalysisDeps: {
  *     parseSourceForScopeAnalysis: (source: string) => unknown,
  *     analyzeScope: (ast: unknown) => { scopes: Array<{ through: Array<{ identifier?: { name?: string } }> }> },
  *   },
- * }} CoreBrowserMainDeps
+ * }} DepcruiseGateDeps
+ * @typedef {CoreBrowserMainDeps & Pick<CoreFileScanDeps, 'readdirSync'>} CoreBrowserScanDeps
  */
 const MATH_RANDOM_NEEDLE = ['Math', 'random'].join('.');
 const CORE_GLOBALS = ['localStorage', 'window', 'document'];
+/** @type {Partial<Record<string, {width: number, state: string}>>} */
+const CODE_BOUNDARIES = {
+  '//': { width: 2, state: 'line-comment' },
+  '/*': { width: 2, state: 'block-comment' },
+  "'": { width: 1, state: 'single-quote' },
+  '"': { width: 1, state: 'double-quote' },
+  '`': { width: 1, state: 'template' },
+};
 
 /** @typedef {{ filePath: string, occurrences: number }} MathRandomViolation */
 /** @typedef {{ filePath: string, globals: string[] }} BrowserGlobalViolation */
 /** @typedef {MathRandomViolation | BrowserGlobalViolation} Violation */
 
 /**
- * Create the command handler that runs dependency-cruiser and enforces the
- * core injected-random policy.
- * @param {{
- *   spawnImpl?: (command: string, args: string[], options: Record<string, unknown>) => { status?: number | null, signal?: string | null, error?: Error },
- *   readFileSync?: (filePath: string, encoding: 'utf8') => string,
- *   readdirSync?: (dirPath: string, options: { withFileTypes: true }) => Array<{ isDirectory: () => boolean, isFile: () => boolean, name: string }>,
- *   stdout?: { write: (text: string) => void },
- *   stderr?: { write: (text: string) => void },
- *   rootDir?: string,
- *   sourceRoot?: string,
- *   configPath?: string,
- *   pathModule?: {
- *     join: (...segments: string[]) => string,
- *     resolve: (...segments: string[]) => string,
- *     relative: (from: string, to: string) => string,
- *     sep: string,
- *   },
- * }} [options] Gate dependencies.
- * @returns {() => { exitCode: number, violations: number }} Dependency gate handler.
+ * Create the dependency and injected-random gate.
+ * @param {Partial<DepcruiseGateDeps>} [options] Optional gate dependencies.
+ * @returns {() => {exitCode: number, violations: number}} Gate handler.
  */
 export function createCheckDepcruiseHandle(options = {}) {
   return createDepcruiseGateHandle(
@@ -108,7 +95,7 @@ export function findCoreMathRandomViolations(
 }
 
 /**
- * @param {CoreBrowserMainDeps & { readdirSync: (dirPath: string, options: { withFileTypes: true }) => Array<{ isDirectory: () => boolean, isFile: () => boolean, name: string }> }} deps Filesystem dependencies.
+ * @param {CoreBrowserScanDeps} deps Filesystem dependencies.
  * @returns {Array<{ filePath: string, globals: string[] }>} Files that directly use browser globals.
  */
 export function findCoreGlobalViolations(deps) {
@@ -119,7 +106,7 @@ export function findCoreGlobalViolations(deps) {
 }
 
 /**
- * @param {CoreBrowserMainDeps & { readdirSync: (dirPath: string, options: { withFileTypes: true }) => Array<{ isDirectory: () => boolean, isFile: () => boolean, name: string }> }} deps Filesystem dependencies.
+ * @param {CoreBrowserScanDeps} deps Filesystem dependencies.
  * @returns {Array<{ filePath: string, globals: string[] }>} Files that directly use browser globals.
  */
 export function findCoreBrowserMainGlobalViolations(deps) {
@@ -168,47 +155,9 @@ export const checkDepcruiseTestUtils = {
 };
 
 /**
- * Normalize the gate dependencies with default repository paths.
- * @param {{
- *   spawnImpl?: (command: string, args: string[], options: Record<string, unknown>) => { status?: number | null, signal?: string | null, error?: Error },
- *   readFileSync?: (filePath: string, encoding: 'utf8') => string,
- *   readdirSync?: (dirPath: string, options: { withFileTypes: true }) => Array<{ isDirectory: () => boolean, isFile: () => boolean, name: string }>,
- *   stdout?: { write: (text: string) => void },
- *   stderr?: { write: (text: string) => void },
- *   rootDir?: string,
- *   sourceRoot?: string,
- *   configPath?: string,
- *   pathModule?: {
- *     join: (...segments: string[]) => string,
- *     resolve: (...segments: string[]) => string,
- *     relative: (from: string, to: string) => string,
- *     sep: string,
- *   },
- *   scopeAnalysisDeps?: {
- *     parseSourceForScopeAnalysis: (source: string) => unknown,
- *     analyzeScope: (ast: unknown) => { scopes: Array<{ through: Array<{ identifier?: { name?: string } }> }> },
- *   },
- * }} [options] Optional dependencies.
- * @returns {{
- *   spawnImpl: (command: string, args: string[], options: Record<string, unknown>) => { status?: number | null, signal?: string | null, error?: Error },
- *   readFileSync: (filePath: string, encoding: 'utf8') => string,
- *   readdirSync: (dirPath: string, options: { withFileTypes: true }) => Array<{ isDirectory: () => boolean, isFile: () => boolean, name: string }>,
- *   stdout: { write: (text: string) => void },
- *   stderr: { write: (text: string) => void },
- *   rootDir: string,
- *   sourceRoot: string,
- *   configPath: string,
- *   pathModule: {
- *     join: (...segments: string[]) => string,
- *     resolve: (...segments: string[]) => string,
- *     relative: (from: string, to: string) => string,
- *     sep: string,
- *   },
- *   scopeAnalysisDeps: {
- *     parseSourceForScopeAnalysis: (source: string) => unknown,
- *     analyzeScope: (ast: unknown) => { scopes: Array<{ through: Array<{ identifier?: { name?: string } }> }> },
- *   },
- * }} Normalized dependencies.
+ * Normalize injected dependencies and repository paths.
+ * @param {Partial<DepcruiseGateDeps>} [options] Optional dependencies.
+ * @returns {DepcruiseGateDeps} Normalized gate dependencies.
  */
 function normalizeCheckDepcruiseOptions(options = {}) {
   return {
@@ -238,28 +187,9 @@ function normalizeCheckDepcruiseOptions(options = {}) {
 }
 
 /**
- * Build the gate handler from normalized dependencies.
- * @param {{
- *   spawnImpl: (command: string, args: string[], options: Record<string, unknown>) => { status?: number | null, signal?: string | null, error?: Error },
- *   readFileSync: (filePath: string, encoding: 'utf8') => string,
- *   readdirSync: (dirPath: string, options: { withFileTypes: true }) => Array<{ isDirectory: () => boolean, isFile: () => boolean, name: string }>,
- *   stdout: { write: (text: string) => void },
- *   stderr: { write: (text: string) => void },
- *   rootDir: string,
- *   sourceRoot: string,
- *   configPath: string,
- *   pathModule: {
- *     join: (...segments: string[]) => string,
- *     resolve: (...segments: string[]) => string,
- *     relative: (from: string, to: string) => string,
- *     sep: string,
- *   },
- *   scopeAnalysisDeps: {
- *     parseSourceForScopeAnalysis: (source: string) => unknown,
- *     analyzeScope: (ast: unknown) => { scopes: Array<{ through: Array<{ identifier?: { name?: string } }> }> },
- *   },
- * }} deps Normalized dependencies.
- * @returns {() => { exitCode: number, violations: number }} Gate handler.
+ * Build the handler from normalized dependencies.
+ * @param {DepcruiseGateDeps} deps Normalized dependencies.
+ * @returns {() => {exitCode: number, violations: number}} Gate handler.
  */
 function createDepcruiseGateHandle(deps) {
   return function handleDepcruiseGate() {
@@ -269,27 +199,8 @@ function createDepcruiseGateHandle(deps) {
 
 /**
  * Execute dependency-cruiser and the core random policy scan.
- * @param {{
- *   spawnImpl: (command: string, args: string[], options: Record<string, unknown>) => { status?: number | null, signal?: string | null, error?: Error },
- *   readFileSync: (filePath: string, encoding: 'utf8') => string,
- *   readdirSync: (dirPath: string, options: { withFileTypes: true }) => Array<{ isDirectory: () => boolean, isFile: () => boolean, name: string }>,
- *   stdout: { write: (text: string) => void },
- *   stderr: { write: (text: string) => void },
- *   rootDir: string,
- *   sourceRoot: string,
- *   configPath: string,
- *   pathModule: {
- *     join: (...segments: string[]) => string,
- *     resolve: (...segments: string[]) => string,
- *     relative: (from: string, to: string) => string,
- *     sep: string,
- *   },
- *   scopeAnalysisDeps: {
- *     parseSourceForScopeAnalysis: (source: string) => unknown,
- *     analyzeScope: (ast: unknown) => { scopes: Array<{ through: Array<{ identifier?: { name?: string } }> }> },
- *   },
- * }} deps Gate dependencies.
- * @returns {{ exitCode: number, violations: number }} Gate outcome.
+ * @param {DepcruiseGateDeps} deps Gate dependencies.
+ * @returns {{exitCode: number, violations: number}} Gate result.
  */
 function executeDepcruiseGate({
   spawnImpl,
@@ -580,33 +491,13 @@ function countMathRandomOccurrences(source) {
  * @returns {boolean} True when the browser global appears at the current index.
  */
 function isBrowserGlobalAtIndex(source, index, identifier) {
-  if (identifier === 'window' || identifier === 'document') {
-    return (
-      hasGlobalPropertyAccessAtIndex(source, index, identifier) ||
-      hasBareGlobalUsageAtIndex(source, index, identifier)
-    );
-  }
-
   if (identifier === 'fetch') {
     return hasFetchUsageAtIndex(source, index);
   }
-
-  if (identifier === 'localStorage') {
-    return hasBareGlobalUsageAtIndex(source, index, identifier);
-  }
-
-  return false;
-}
-
-/**
- * Determine whether a browser global is used as a property access.
- * @param {string} source Source text.
- * @param {number} index Current index.
- * @param {string} identifier Browser global to match.
- * @returns {boolean} True when the source uses the global as a property access.
- */
-function hasGlobalPropertyAccessAtIndex(source, index, identifier) {
-  return hasDelimitedIdentifierAtIndex(source, index, identifier, '.');
+  return (
+    CORE_GLOBALS.includes(identifier) &&
+    hasBareGlobalUsageAtIndex(source, index, identifier)
+  );
 }
 
 /**
@@ -707,7 +598,7 @@ function createZeroCountScanResult(nextIndex, nextState, count = 0) {
  * @param {string} source Source text.
  * @param {number} index Current index.
  * @param {string} identifier Identifier to match.
- * @param {string | RegExp | ((character: string | undefined) => boolean)} upperBoundaryTest Boundary test.
+ * @param {RegExp | ((character: string | undefined) => boolean)} upperBoundaryTest Boundary test.
  * @returns {boolean} True when the identifier is present with valid boundaries.
  */
 function hasDelimitedIdentifierAtIndex(
@@ -727,14 +618,10 @@ function hasDelimitedIdentifierAtIndex(
     return false;
   }
 
-  let hasUpperBoundary = false;
-  if (typeof upperBoundaryTest === 'function') {
-    hasUpperBoundary = upperBoundaryTest(nextCharacter);
-  } else if (upperBoundaryTest instanceof RegExp) {
-    hasUpperBoundary = upperBoundaryTest.test(nextCharacter ?? '');
-  } else {
-    hasUpperBoundary = nextCharacter === upperBoundaryTest;
-  }
+  const hasUpperBoundary =
+    upperBoundaryTest instanceof RegExp
+      ? upperBoundaryTest.test(nextCharacter ?? '')
+      : upperBoundaryTest(nextCharacter);
 
   return hasLowerBoundary && hasUpperBoundary;
 }
@@ -746,30 +633,12 @@ function hasDelimitedIdentifierAtIndex(
  * @returns {{ count: number, nextIndex: number, nextState: string } | null} Scan result when a boundary is found.
  */
 function scanCodeForCommentOrString(source, index) {
-  const current = source[index];
-  const next = source[index + 1];
-
-  if (current === '/' && next === '/') {
-    return createZeroCountScanResult(index + 2, 'line-comment');
-  }
-
-  if (current === '/' && next === '*') {
-    return createZeroCountScanResult(index + 2, 'block-comment');
-  }
-
-  if (current === "'") {
-    return createZeroCountScanResult(index + 1, 'single-quote');
-  }
-
-  if (current === '"') {
-    return createZeroCountScanResult(index + 1, 'double-quote');
-  }
-
-  if (current === '`') {
-    return createZeroCountScanResult(index + 1, 'template');
-  }
-
-  return null;
+  const boundary =
+    CODE_BOUNDARIES[source.slice(index, index + 2)] ||
+    CODE_BOUNDARIES[source[index]];
+  return boundary
+    ? createZeroCountScanResult(index + boundary.width, boundary.state)
+    : null;
 }
 
 /**
@@ -848,4 +717,3 @@ function isBoundary(character) {
 
   return !/[A-Za-z0-9_$]/u.test(character);
 }
-// Stryker restore all

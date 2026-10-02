@@ -13,6 +13,24 @@ import {
   stripBrowserMainPolicyNoise,
 } from '../../../src/core/scripts/check-depcruise-browser.js';
 
+test.each([
+  ['window.document', 0, 'window', true],
+  ['(document)', 1, 'document', true],
+  ['localStorage', 0, 'localStorage', true],
+  ['mywindow.document', 2, 'window', false],
+  ['windowName', 0, 'window', false],
+  ['window:', 0, 'window', false],
+  ['fetch', 0, 'fetch', false],
+  ['fetch(', 0, 'fetch', true],
+])(
+  'lexical policy preserves boundaries in %s',
+  (source, index, identifier, expected) => {
+    expect(
+      checkDepcruiseTestUtils.isBrowserGlobalAtIndex(source, index, identifier)
+    ).toBe(expected);
+  }
+);
+
 /**
  * Build a file-like dirent stub.
  * @param {string} name Entry name.
