@@ -2,6 +2,7 @@ import { expect, test } from '@jest/globals';
 import { segmentMaximumSpeedFeasibility } from '../../../src/core/browser/toys/2026-08-21/segmentMaximumSpeedFeasibility.js';
 import { resolveSpeed } from '../../../src/core/browser/toys/2026-08-22/strictAssignmentCore.js';
 import { assignAssetAndCustodianToSegmentIfFeasible } from '../../../src/core/browser/toys/2026-08-21/assignAssetAndCustodianToSegmentIfFeasible.js';
+import { validatedAssetCustodianSegmentAssignment } from '../../../src/core/browser/toys/2026-08-22/validatedAssetCustodianSegmentAssignment.js';
 
 /**
  * Build a two-point candidate with a controlled distance and duration.
@@ -103,3 +104,58 @@ test('legacy combined assignments retain their different zero-duration policy', 
   );
   expect(result.committed).toBe(true);
 });
+
+test.each([
+  [assignAssetAndCustodianToSegmentIfFeasible, true],
+  [assignAssetAndCustodianToSegmentIfFeasible, false],
+  [validatedAssetCustodianSegmentAssignment, true],
+  [validatedAssetCustodianSegmentAssignment, false],
+])(
+  'combined writer %p commits both collections atomically (custom paths: %p)',
+  (writer, customPaths) => {
+    const base = request(3600, 0.001);
+    let stored;
+    let writes = 0;
+    const env = new Map([
+      ['getData', () => ({ unrelated: true })],
+      [
+        'setLocalTemporaryData',
+        next => {
+          stored = next;
+          writes++;
+        },
+      ],
+    ]);
+    const result = JSON.parse(
+      writer(
+        JSON.stringify({
+          ...base,
+          assetId: 17,
+          custodianPersonId: 23,
+          assetPath: customPaths ? 'assets' : undefined,
+          personPath: customPaths ? 'runners' : undefined,
+          maximumSpeedKilometersPerHour: 1000,
+          stockInPoint: base.points[0],
+          stockOutPoint: base.points[1],
+          shifts: [
+            { clockInPoint: base.points[0], clockOutPoint: base.points[1] },
+          ],
+        }),
+        env
+      )
+    );
+    expect(result).toEqual({ committed: true, lengths: [1, 1] });
+    expect(writes).toBe(1);
+    expect(stored).toEqual({
+      unrelated: true,
+      temporary: {
+        [customPaths ? 'assets' : 'assetSegmentAssignments']: [
+          { assetId: '17', segmentId: 'AB' },
+        ],
+        [customPaths ? 'runners' : 'personSegmentAssignments']: [
+          { personId: '23', segmentId: 'AB' },
+        ],
+      },
+    });
+  }
+);

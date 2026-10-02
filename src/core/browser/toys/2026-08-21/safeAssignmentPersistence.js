@@ -3,6 +3,41 @@ import { deepClone } from '../../browser-core.js';
 import { requireEnvHelper } from '../browserToysCore.js';
 
 /**
+ * Serialize a rejected atomic assignment without touching persistence.
+ * @param {unknown} reason Caller-selected rejection reason.
+ * @returns {string} Serialized rejection result.
+ */
+export function formatCommitFailure(reason) {
+  return JSON.stringify({ committed: false, reason });
+}
+
+/**
+ * Commit the asset and custodian records together, after caller-specific checks.
+ * @param {{memoryLocation?: string, assetPath?: string, personPath?: string}} request Persistence options.
+ * @param {{assetId: string, personId: string, segmentId: string}} ids Caller-normalized identifiers.
+ * @param {import('../browserToysCore.js').ToyEnv} env Storage helpers.
+ * @returns {string} Serialized atomic commit result.
+ */
+export function commitAssetCustodianAssignment(request, ids, env) {
+  const { assetId, personId, segmentId } = ids;
+  const commit = appendAtomically(
+    request.memoryLocation || 'temporary',
+    [
+      {
+        path: request.assetPath || 'assetSegmentAssignments',
+        object: { assetId, segmentId },
+      },
+      {
+        path: request.personPath || 'personSegmentAssignments',
+        object: { personId, segmentId },
+      },
+    ],
+    env
+  );
+  return JSON.stringify({ committed: true, lengths: commit.lengths });
+}
+
+/**
  * Append one assignment through the same atomic persistence boundary.
  * @param {{memoryLocation?: string, path?: string}} request Persistence options.
  * @param {Record<string, unknown>} object Assignment record.

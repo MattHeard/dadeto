@@ -1,6 +1,9 @@
 // Toy: Validated Asset Custodian Segment Assignment
 import { evaluateWorldLine } from '../2026-08-21/segmentAssignmentFeasibilityCore.js';
-import { appendAtomically } from '../2026-08-21/safeAssignmentPersistence.js';
+import {
+  commitAssetCustodianAssignment,
+  formatCommitFailure,
+} from '../2026-08-21/safeAssignmentPersistence.js';
 import {
   normalizeAssignmentId,
   resolveSpeed,
@@ -20,21 +23,12 @@ export function validatedAssetCustodianSegmentAssignment(input, env) {
       assetId = normalizeAssignmentId(x.assetId),
       personId = normalizeAssignmentId(x.custodianPersonId),
       segmentId = normalizeAssignmentId(x.candidateSegment?.segmentId);
-    if (!assetId)
-      return JSON.stringify({ committed: false, reason: 'invalid-asset-id' });
-    if (!personId)
-      return JSON.stringify({
-        committed: false,
-        reason: 'invalid-custodian-person-id',
-      });
-    if (!segmentId)
-      return JSON.stringify({ committed: false, reason: 'invalid-segment-id' });
+    if (!assetId) return formatCommitFailure('invalid-asset-id');
+    if (!personId) return formatCommitFailure('invalid-custodian-person-id');
+    if (!segmentId) return formatCommitFailure('invalid-segment-id');
     const speed = resolveSpeed(x);
     if (speed.requiredSpeed > speed.maximumSpeed)
-      return JSON.stringify({
-        committed: false,
-        reason: 'runner:excessive-speed',
-      });
+      return formatCommitFailure('runner:excessive-speed');
     const asset = evaluateWorldLine(
       x.points,
       x.existingAssetSegments || [],
@@ -42,48 +36,23 @@ export function validatedAssetCustodianSegmentAssignment(input, env) {
       x.stockInPoint,
       x.stockOutPoint
     );
-    if (!asset.feasible)
-      return JSON.stringify({
-        committed: false,
-        reason: `asset:${asset.reason}`,
-      });
+    if (!asset.feasible) return formatCommitFailure(`asset:${asset.reason}`);
     const candidate = speed.candidate;
     /** @type {Array<Record<string, any>>} */
     const shifts = x.shifts || [];
     const matching = findCoveringShift(shifts, candidate);
-    if (!matching)
-      return JSON.stringify({
-        committed: false,
-        reason: 'runner:outside-shift',
-      });
+    if (!matching) return formatCommitFailure('runner:outside-shift');
     const runner = evaluateRunnerWorldLine(
       { ...x, existingSegments: x.existingPersonSegments || [] },
       matching
     );
-    if (!runner.feasible)
-      return JSON.stringify({
-        committed: false,
-        reason: `runner:${runner.reason}`,
-      });
-    const commit = appendAtomically(
-      x.memoryLocation || 'temporary',
-      [
-        {
-          path: x.assetPath || 'assetSegmentAssignments',
-          object: { assetId, segmentId },
-        },
-        {
-          path: x.personPath || 'personSegmentAssignments',
-          object: { personId, segmentId },
-        },
-      ],
+    if (!runner.feasible) return formatCommitFailure(`runner:${runner.reason}`);
+    return commitAssetCustodianAssignment(
+      x,
+      { assetId, personId, segmentId },
       env
     );
-    return JSON.stringify({ committed: true, lengths: commit.lengths });
   } catch (error) {
-    return JSON.stringify({
-      committed: false,
-      reason: assignmentErrorReason(error),
-    });
+    return formatCommitFailure(assignmentErrorReason(error));
   }
 }

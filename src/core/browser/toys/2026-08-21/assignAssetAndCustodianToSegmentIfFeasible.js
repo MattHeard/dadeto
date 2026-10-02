@@ -4,7 +4,10 @@ import {
   resolveSegment,
   measureSegmentMotion,
 } from './segmentAssignmentFeasibilityCore.js';
-import { appendAtomically } from './safeAssignmentPersistence.js';
+import {
+  commitAssetCustodianAssignment,
+  formatCommitFailure,
+} from './safeAssignmentPersistence.js';
 
 /**
  * @param {string} input JSON combined assignment request.
@@ -39,8 +42,7 @@ export function assignAssetAndCustodianToSegmentIfFeasible(input, env) {
         candidate.startTime >= Date.parse(shift.clockInPoint.timestamp) &&
         candidate.endTime <= Date.parse(shift.clockOutPoint.timestamp)
     );
-    if (!matching)
-      return JSON.stringify({ committed: false, reason: 'outside-shift' });
+    if (!matching) return formatCommitFailure('outside-shift');
     const assetResult = evaluateWorldLine(
       x.points,
       x.existingAssetSegments || [],
@@ -50,10 +52,7 @@ export function assignAssetAndCustodianToSegmentIfFeasible(input, env) {
       x.spacePoints || []
     );
     if (!assetResult.feasible)
-      return JSON.stringify({
-        committed: false,
-        reason: `asset:${assetResult.reason}`,
-      });
+      return formatCommitFailure(`asset:${assetResult.reason}`);
     const runnerResult = evaluateWorldLine(
       x.points,
       x.existingPersonSegments || [],
@@ -63,39 +62,21 @@ export function assignAssetAndCustodianToSegmentIfFeasible(input, env) {
       x.spacePoints || []
     );
     if (!runnerResult.feasible)
-      return JSON.stringify({
-        committed: false,
-        reason: `runner:${runnerResult.reason}`,
-      });
+      return formatCommitFailure(`runner:${runnerResult.reason}`);
     const maximum = Number(x.maximumSpeedKilometersPerHour);
     const { requiredSpeed: required } = measureSegmentMotion(candidate, 0);
     if (!Number.isFinite(maximum) || required > maximum)
-      return JSON.stringify({ committed: false, reason: 'excessive-speed' });
-    const commit = appendAtomically(
-      x.memoryLocation || 'temporary',
-      [
-        {
-          path: x.assetPath || 'assetSegmentAssignments',
-          object: {
-            assetId: String(x.assetId),
-            segmentId: String(x.candidateSegment.segmentId),
-          },
-        },
-        {
-          path: x.personPath || 'personSegmentAssignments',
-          object: {
-            personId: String(x.custodianPersonId),
-            segmentId: String(x.candidateSegment.segmentId),
-          },
-        },
-      ],
+      return formatCommitFailure('excessive-speed');
+    return commitAssetCustodianAssignment(
+      x,
+      {
+        assetId: String(x.assetId),
+        personId: String(x.custodianPersonId),
+        segmentId: String(x.candidateSegment.segmentId),
+      },
       env
     );
-    return JSON.stringify({ committed: true, lengths: commit.lengths });
   } catch (error) {
-    return JSON.stringify({
-      committed: false,
-      reason: error.message,
-    });
+    return formatCommitFailure(error.message);
   }
 }
