@@ -94,11 +94,12 @@ export function createMosslightRuntime(options = {}) {
       state = save.load?.(slot) || createSimulation(content);
       return renderer(state);
     },
-    resetSave() {
+    resetSave(resetId) {
+      if (resetId && save.hasReset?.(resetId)) return renderer(state);
       state = createSimulation(content);
       accumulator = 0;
       audio.stop?.();
-      save.save?.(state, activeSlot);
+      save.save?.(state, activeSlot, resetId);
       return renderer(state);
     },
     exportSave() {

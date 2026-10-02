@@ -110,7 +110,11 @@ function bindResetSave(dom, form, input) {
   dom.setClassName(button, 'mosslight-reset-save');
   dom.addEventListener(button, 'click', () => {
     if (!dom.globalThis.confirm(resetSavePrompt())) return;
-    syncToyPayload(input, { reset: true, confirmed: true });
+    syncToyPayload(input, {
+      reset: true,
+      confirmed: true,
+      resetId: dom.globalThis.crypto.randomUUID(),
+    });
   });
   dom.appendChild(form, button);
 }

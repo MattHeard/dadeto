@@ -17,10 +17,14 @@ export function mosslightValley(input, env) {
   } catch {
     parsed = {};
   }
-  if (parsed?.reset === true)
+  if (parsed?.reset === true) {
+    const resetId = typeof parsed.resetId === 'string' ? parsed.resetId : '';
     return JSON.stringify(
-      parsed.confirmed === true ? runtime.resetSave() : runtime.frame()
+      parsed.confirmed === true && resetId
+        ? runtime.resetSave(resetId)
+        : runtime.frame()
     );
+  }
   if (parsed?.save) runtime.importSave(parsed.save);
   let actions = Array.isArray(parsed?.actions) ? parsed.actions : [];
   if (parsed?.type && parsed?.key) {

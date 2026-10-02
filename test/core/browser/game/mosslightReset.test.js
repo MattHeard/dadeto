@@ -90,9 +90,9 @@ test('reset honors injected content, clears fractional timing and preserves paus
   expect(runtime.isRunning()).toBe(false);
   runtime.step(500, ['right']);
   expect(runtime.getState()).toEqual(createSimulation(content));
-  expect(createMosslightRuntime({ audio: {}, save: {} }).resetSave().type).toBe(
-    'mosslight-valley'
-  );
+  expect(
+    createMosslightRuntime({ audio: {}, save: {} }).resetSave('custom').type
+  ).toBe('mosslight-valley');
 });
 
 test('embedded reset requires explicit confirmation and does not also run supplied actions', () => {
@@ -102,7 +102,12 @@ test('embedded reset requires explicit confirmation and does not also run suppli
   for (const confirmed of [undefined, false, 'true']) {
     const frame = JSON.parse(
       mosslightValley(
-        JSON.stringify({ reset: true, confirmed, actions: ['right'] }),
+        JSON.stringify({
+          reset: true,
+          confirmed,
+          resetId: 'test-reset',
+          actions: ['right'],
+        }),
         env
       )
     );
@@ -114,6 +119,7 @@ test('embedded reset requires explicit confirmation and does not also run suppli
       JSON.stringify({
         reset: true,
         confirmed: true,
+        resetId: 'test-reset',
         actions: ['right'],
         save: serializeSave(createSimulation()),
       }),
@@ -133,4 +139,39 @@ test('reset prompt identifies the slot, warns about erasing progress and recomme
   expect(resetSavePrompt(2)).toContain('slot 03');
   expect(resetSavePrompt()).toContain('Other slots are safe');
   expect(resetSavePrompt()).toContain('Export your save first');
+});
+
+test('a confirmed embedded reset is one-shot across polling, new confirmations and reloads', () => {
+  const { data, env } = storageFixture();
+  const request = JSON.stringify({
+    reset: true,
+    confirmed: true,
+    resetId: 'once',
+  });
+  mosslightValley(request, env);
+  const runtime = createMosslightRuntime({ env });
+  runtime.dispatch('right');
+  const progress = JSON.stringify(data);
+  expect(JSON.parse(mosslightValley(request, env)).player.x).toBe(7);
+  expect(JSON.stringify(data)).toBe(progress);
+  mosslightValley(
+    JSON.stringify({ reset: true, confirmed: true, resetId: 'twice' }),
+    env
+  );
+  const continued = createMosslightRuntime({ env });
+  continued.dispatch('right');
+  const afterSecond = JSON.stringify(data);
+  expect(JSON.parse(mosslightValley(request, env)).player.x).toBe(7);
+  expect(JSON.stringify(data)).toBe(afterSecond);
+  expect(Object.keys(data['mosslight-valley-saves-v2'].resetReceipts)).toEqual([
+    'once',
+    'twice',
+  ]);
+  for (const resetId of [undefined, '', 7]) {
+    mosslightValley(
+      JSON.stringify({ reset: true, confirmed: true, resetId }),
+      env
+    );
+    expect(JSON.stringify(data)).toBe(afterSecond);
+  }
 });

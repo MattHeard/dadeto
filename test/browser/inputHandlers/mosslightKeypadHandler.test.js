@@ -64,7 +64,10 @@ describe('mosslightKeypadHandler', () => {
     const textInput = { value: 'unchanged' };
     const checkbox = { checked: false, dispatchEvent: jest.fn() };
     const dom = makeDom(checkbox, textInput, []);
-    dom.globalThis = { confirm: jest.fn(() => false) };
+    dom.globalThis = {
+      confirm: jest.fn(() => false),
+      crypto: { randomUUID: jest.fn(() => 'confirmed-reset') },
+    };
     const container = { _children: [] };
     mosslightKeypadHandler(dom, container, textInput);
     const button = container._children[0]._children[2];
@@ -80,6 +83,7 @@ describe('mosslightKeypadHandler', () => {
     expect(JSON.parse(readStoredOrElementValue(textInput))).toEqual({
       reset: true,
       confirmed: true,
+      resetId: 'confirmed-reset',
     });
     expect(checkbox.checked).toBe(true);
   });

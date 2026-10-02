@@ -105,11 +105,16 @@ export function createSaveAdapter(env) {
         .map(Number)
         .sort(),
     load: (slot = 0) => parseSave(loadAll().slots?.[slot])?.state || null,
-    save: (state, slot = 0) => {
+    hasReset: id => Object.hasOwn(loadAll().resetReceipts || {}, id),
+    save: (state, slot = 0, resetId) => {
       const current = loadAll();
+      const receipt = resetId
+        ? { resetReceipts: { ...current.resetReceipts, [resetId]: true } }
+        : {};
       storage?.({
         [KEY]: {
           ...current,
+          ...receipt,
           slots: { ...current.slots, [slot]: serializeSave(state, slot) },
         },
       });

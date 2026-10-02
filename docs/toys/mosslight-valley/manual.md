@@ -24,7 +24,10 @@ The embedded Dadeto toy opens with a virtual keypad: use the directional pad to 
     "actions": { "type": "array", "items": { "type": "string" } },
     "type": { "type": "string", "enum": ["keydown", "keyup"] },
     "key": { "type": "string" },
-    "save": { "type": "string" }
+    "save": { "type": "string" },
+    "reset": { "type": "boolean" },
+    "confirmed": { "type": "boolean" },
+    "resetId": { "type": "string", "minLength": 1 }
   }
 }
 ```
@@ -85,4 +88,4 @@ On the standalone page, select the save slot you want to erase and press **Reset
 
 Confirming immediately overwrites only that slot with a brand-new adventure: memories, relationships, inventory, crops, dialogue, battles and endings are reset. Other slots and other toys' data are preserved. An exported backup can restore the old adventure; without one, the overwritten progress cannot be recovered. Resetting a paused standalone game leaves it paused; press Resume when ready.
 
-The shared runtime exposes `runtime.resetSave()`. A synchronous embedded request must explicitly include both `reset: true` and `confirmed: true`; an unconfirmed reset does not advance or erase the game.
+The shared runtime exposes `runtime.resetSave()`. A synchronous embedded request must explicitly include `reset: true`, `confirmed: true`, and a fresh nonempty `resetId`. The keypad generates this identifier after confirmation. Consumed reset identifiers are recorded separately from adventure state, so repeated polling, reloads or old commands cannot erase later progress. Unconfirmed or unidentified resets do not advance or erase the game.

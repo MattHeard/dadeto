@@ -88,6 +88,25 @@ test('embedded reset requires consent, preserves other slots and continues a fre
   await expect.poll(async () => JSON.parse((await readSaves(page))['mosslight-valley-saves-v2'].slots['0']).state.tick).toBe(0);
   await expectFresh(page, '0');
   expect((await readSaves(page))['mosslight-valley-saves-v2'].slots['1']).toBe(before['mosslight-valley-saves-v2'].slots['1']);
+  const retainedReset = await toy.locator('input[type="text"]').first().inputValue();
+  await page.evaluate(async payload => {
+    const { setInputValue } = await import('/core/browser/inputValueStore.js');
+    const { serializeSave } = await import('/core/browser/game/mosslight-valley/save.js');
+    const data = JSON.parse(localStorage.getItem('permanentData') || '{}');
+    const state = JSON.parse(data['mosslight-valley-saves-v2'].slots['0']).state;
+    state.world.player.x = 7;
+    data['mosslight-valley-saves-v2'].slots['0'] = serializeSave(state);
+    const input = document.querySelector('#MOSS1 input[type="text"]') as HTMLInputElement;
+    input.value = payload;
+    setInputValue(input, payload);
+    localStorage.setItem('permanentData', JSON.stringify(data));
+  }, retainedReset);
+  await toy.getByRole('button', { name: 'Submit', exact: true }).click();
+  await expect.poll(async () => JSON.parse((await readSaves(page))['mosslight-valley-saves-v2'].slots['0']).state.world.player.x).toBe(7);
+  page.once('dialog', dialog => dialog.accept());
+  await reset.click();
+  await expect.poll(async () => JSON.parse((await readSaves(page))['mosslight-valley-saves-v2'].slots['0']).state.world.player.x).toBe(6);
+  expect(Object.keys((await readSaves(page))['mosslight-valley-saves-v2'].resetReceipts)).toHaveLength(2);
   await page.reload();
   await toy.getByRole('button', { name: 'Right', exact: true }).click();
   await expect.poll(async () => JSON.parse((await readSaves(page))['mosslight-valley-saves-v2'].slots['0']).state.world.player.x).toBe(7);
