@@ -2,6 +2,8 @@ import { expect, test } from '@playwright/test';
 
 test('restored Field Journal consumes world actions and X closes it', async ({ page }) => {
   await page.goto('/mosslight-valley/');
+  await page.getByRole('button', { name: 'Pause', exact: true }).click();
+  await expect(page.locator('#game-status')).toContainText('Paused');
   await page.evaluate(async () => {
     const { createSimulation } = await import('/core/browser/game/mosslight-valley/simulation.js');
     const { serializeSave } = await import('/core/browser/game/mosslight-valley/save.js');
@@ -16,7 +18,7 @@ test('restored Field Journal consumes world actions and X closes it', async ({ p
     const data = JSON.parse(localStorage.getItem('permanentData') || '{}');
     return JSON.parse(data['mosslight-valley-saves-v2'].slots['0']).state;
   });
-  await page.waitForTimeout(300);
+  await expect.poll(async () => (await read()).mode).toBe('journal');
   const before = await read();
   await page.keyboard.down('q');
   await page.waitForTimeout(300);

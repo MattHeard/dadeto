@@ -10,6 +10,8 @@ test('marked area crossings work on the actual game page and the Hollow gate sta
     { map: 'orchard', exit: 1, unlocked: false, target: 'hollow', key: 'ArrowRight' },
     { map: 'hollow', exit: 0, unlocked: false, target: 'village', key: 'ArrowDown' },
   ]) {
+    await page.getByRole('button', { name: 'Pause', exact: true }).click();
+    await expect(page.locator('#game-status')).toContainText('Paused');
     await page.evaluate(async sample => {
       const base = '/core/browser/game/mosslight-valley/';
       const { CONTENT } = await import(`${base}content.js`);
