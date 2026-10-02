@@ -1,5 +1,8 @@
 import { get } from '../2025-03-29/get.js';
-import { requireEnvHelper } from '../browserToysCore.js';
+import {
+  requireEnvHelper,
+  isPlainPrototypeObject as isPlainObject,
+} from '../browserToysCore.js';
 import {
   trimmedStringOrEmpty,
   isNonNullObject as isObjectLike,
@@ -503,15 +506,6 @@ function buildMemoryVectorError(
     vector: [],
     error,
   };
-}
-
-/**
- * Determine whether a value is a plain object.
- * @param {unknown} value Candidate value.
- * @returns {value is Record<string, unknown>} True when the value is a plain object.
- */
-function isPlainObject(value) {
-  return Boolean(value) && Object.getPrototypeOf(value) === Object.prototype;
 }
 
 /**

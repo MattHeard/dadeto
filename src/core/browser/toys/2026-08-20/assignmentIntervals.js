@@ -1,3 +1,5 @@
+import { tryOr } from '../../../commonCore.js';
+
 /**
  * @param {Map<string, Record<string, unknown>>} segments Segment records.
  * @param {Map<string, Record<string, unknown>>} points Point records.
@@ -59,6 +61,22 @@ export function canAppendAssignment(request, ownerKey) {
     ownerKey,
     request.proposedAssignment[ownerKey],
     createAssignmentContext(request)
+  );
+}
+
+/**
+ * Serialize owner availability while retaining the toys' false-on-error boundary.
+ * @param {string} input Serialized assignment request.
+ * @param {(input: string) => Parameters<typeof canAppendAssignment>[0]} parse Caller-specific parser.
+ * @param {string} ownerKey Owner field.
+ * @returns {string} JSON boolean, including false for malformed input.
+ */
+export function assignmentPredicateBoundary(input, parse, ownerKey) {
+  return /** @type {string} */ (
+    tryOr(
+      () => JSON.stringify(canAppendAssignment(parse(input), ownerKey)),
+      () => 'false'
+    )
   );
 }
 

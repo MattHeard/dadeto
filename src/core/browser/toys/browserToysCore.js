@@ -107,6 +107,19 @@ export function isPlainObject(value) {
 }
 
 /**
+ * Check a record's direct prototype without trusting a constructor field.
+ * @param {unknown} value Candidate record.
+ * @returns {value is Record<string, unknown>} Whether its prototype is Object.prototype.
+ */
+export function isPlainPrototypeObject(value) {
+  return (
+    Boolean(value) &&
+    typeof value === 'object' &&
+    Object.getPrototypeOf(value) === Object.prototype
+  );
+}
+
+/**
  * Return the candidate as a record when the predicate accepts it.
  * @template T
  * @param {unknown} value Candidate value.

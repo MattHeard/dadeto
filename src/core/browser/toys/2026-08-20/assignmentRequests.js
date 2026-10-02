@@ -1,3 +1,10 @@
+import {
+  assignmentPredicateBoundary,
+  resolveInterval,
+  overlaps,
+} from './assignmentIntervals.js';
+import { isPlainPrototypeObject as isPlainAssignmentRecord } from '../browserToysCore.js';
+
 /**
  * Parse a reference-list request without selecting its memory-location policy.
  * @template {string} K
@@ -53,5 +60,81 @@ export function buildAssignmentPredicateRequest(request, normalize) {
       return assignment ? [assignment] : [];
     }),
     proposedAssignment,
+  };
+}
+
+/**
+ * Normalize the owner and segment identifiers after caller-specific shape checks.
+ * @template {string} K
+ * @param {Record<string, unknown>} assignment Accepted reference record.
+ * @param {K} ownerKey Owner identifier field.
+ * @returns {(Record<K, string> & {segmentId: string}) | null} Trimmed reference or null.
+ */
+export function normalizeOwnerAssignment(assignment, ownerKey) {
+  const ownerId = String(assignment[ownerKey] || '').trim();
+  const segmentId = String(assignment.segmentId || '').trim();
+  return ownerId && segmentId
+    ? /** @type {Record<K, string> & {segmentId: string}} */ ({
+        [ownerKey]: ownerId,
+        segmentId,
+      })
+    : null;
+}
+
+/**
+ * Compose a predicate API with explicit reference and diagnostic policies.
+ * @template {string} K
+ * @param {{ownerKey: K, strictReferences: boolean, requestError: string, collectionErrors: Record<string, string>}} policy Caller-specific contract.
+ * @returns {{parseRequest: (input: string) => {points: Array<{pointId: string, timestamp: string}>, segments: Array<{segmentId: string, startPointId: string, endPointId: string}>, assignments: (Record<K, string> & {segmentId: string})[], proposedAssignment: Record<K, string> & {segmentId: string}}, normalizeAssignment: (value: unknown) => (Record<K, string> & {segmentId: string}) | null, evaluate: (input: string) => string, resolveInterval: typeof resolveInterval, overlaps: typeof overlaps}} Configured public helpers.
+ */
+export function createAssignmentPredicate(policy) {
+  /**
+   * Normalize a reference with the configured shape policy.
+   * @param {unknown} value Candidate reference.
+   * @returns {(Record<K, string> & {segmentId: string}) | null} Accepted reference.
+   */
+  function normalizeAssignment(value) {
+    const accepted = policy.strictReferences
+      ? isPlainAssignmentRecord(value)
+      : Boolean(value) && typeof value === 'object' && !Array.isArray(value);
+    if (!accepted) return null;
+    return normalizeOwnerAssignment(
+      /** @type {Record<string, unknown>} */ (value),
+      policy.ownerKey
+    );
+  }
+  /**
+   * Parse and validate collections before normalizing references.
+   * @param {string} input Serialized request.
+   * @returns {ReturnType<ReturnType<typeof createAssignmentPredicate<K>>['parseRequest']>} Predicate request.
+   */
+  function parseRequest(input) {
+    const request = JSON.parse(input);
+    if (!isPlainAssignmentRecord(request)) throw new Error(policy.requestError);
+    for (const field of ['points', 'segments', 'assignments']) {
+      if (!Array.isArray(request[field])) {
+        throw new Error(policy.collectionErrors[field]);
+      }
+    }
+    const collections =
+      /** @type {Parameters<typeof buildAssignmentPredicateRequest>[0]} */ (
+        request
+      );
+    return buildAssignmentPredicateRequest(collections, normalizeAssignment);
+  }
+  /**
+   * Evaluate a request using the configured owner field.
+   * @param {string} input Serialized request.
+   * @returns {string} JSON boolean.
+   */
+  function evaluate(input) {
+    return assignmentPredicateBoundary(input, parseRequest, policy.ownerKey);
+  }
+  return {
+    parseRequest,
+    normalizeAssignment,
+    evaluate,
+    resolveInterval,
+    overlaps,
   };
 }
