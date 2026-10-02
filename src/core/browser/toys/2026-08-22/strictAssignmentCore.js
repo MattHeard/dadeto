@@ -13,9 +13,15 @@ import { appendOneAssignment } from '../2026-08-21/safeAssignmentPersistence.js'
  * @param {string} input JSON request.
  * @param {import('../browserToysCore.js').ToyEnv} env Storage helpers.
  * @param {(request: Record<string, any>) => string | {request: {memoryLocation?: string, path?: string}, assignment: Record<string, unknown>, path: string, metadata: Record<string, unknown>, feasibility: {feasible: boolean, reason?: unknown}}} calculate Assignment evaluator.
+ * @param {(reason: string) => string} [reject] Caller-specific failure serializer.
  * @returns {string} Serialized assignment result.
  */
-export function strictAssignmentBoundary(input, env, calculate) {
+export function strictAssignmentBoundary(
+  input,
+  env,
+  calculate,
+  reject = formatAssignmentFailure
+) {
   try {
     const result = calculate(JSON.parse(input || '{}'));
     if (typeof result === 'string') {
@@ -23,7 +29,7 @@ export function strictAssignmentBoundary(input, env, calculate) {
     }
     return appendValidatedAssignment(result, env);
   } catch (error) {
-    return formatAssignmentFailure(assignmentErrorReason(error));
+    return reject(assignmentErrorReason(error));
   }
 }
 

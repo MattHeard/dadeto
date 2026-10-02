@@ -139,21 +139,12 @@ export function resolveSegment(segments, points, segmentId) {
  * @returns {{feasible: boolean, reason?: string}} Feasibility result.
  */
 export function evaluateWorldLine(...args) {
-  const [
-    pointsInput,
-    existingSegments,
-    candidateSegment,
-    entryPoint,
-    exitPoint,
-    spacePointsInput = [],
-  ] = args;
+  const [pointsInput, existingSegments, candidateSegment, ...bounds] = args;
   return evaluateWorldLineMany(
     pointsInput,
     existingSegments,
     [candidateSegment],
-    entryPoint,
-    exitPoint,
-    spacePointsInput
+    ...bounds
   );
 }
 
