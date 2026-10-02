@@ -1,10 +1,9 @@
 // Toy: Segment Maximum-Speed Feasibility
-// Stryker disable all -- this toy is a fixed distance, duration, and maximum
-// speed validation protocol boundary covered by the safe-assignment suite.
 import { wgs84Distance } from '../2026-08-20/wgs84Distance.js';
 import {
   indexPointRecords,
   resolveSegment,
+  requiredSegmentSpeed,
 } from './segmentAssignmentFeasibilityCore.js';
 import { resolvePointRecords } from '../2026-08-22/spacePointResolution.js';
 
@@ -30,12 +29,7 @@ export function segmentMaximumSpeedFeasibility(input) {
       Number(candidate.end.longitude)
     );
     const durationSeconds = (candidate.endTime - candidate.startTime) / 1000;
-    const requiredSpeed =
-      durationSeconds === 0
-        ? distanceMeters === 0
-          ? 0
-          : Infinity
-        : distanceMeters / 1000 / (durationSeconds / 3600);
+    const requiredSpeed = requiredSegmentSpeed(distanceMeters, durationSeconds);
     const maximumSpeed = Number(x.maximumSpeed);
     if (!Number.isFinite(maximumSpeed) || maximumSpeed < 0)
       throw new Error('maximumSpeed must be a non-negative number.');
@@ -53,5 +47,3 @@ export function segmentMaximumSpeedFeasibility(input) {
     });
   }
 }
-
-// Stryker restore all

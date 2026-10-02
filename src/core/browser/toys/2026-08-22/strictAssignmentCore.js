@@ -3,6 +3,7 @@
 import {
   evaluateWorldLine,
   resolveSegment,
+  requiredSegmentSpeed,
 } from '../2026-08-21/segmentAssignmentFeasibilityCore.js';
 import { wgs84Distance } from '../2026-08-20/wgs84Distance.js';
 import { resolvePointRecords } from './spacePointResolution.js';
@@ -151,12 +152,7 @@ export function resolveSpeed(input) {
     Number(candidate.end.longitude)
   );
   const duration = (candidate.endTime - candidate.startTime) / 1000;
-  const requiredSpeed =
-    duration === 0
-      ? distance === 0
-        ? 0
-        : Infinity
-      : distance / 1000 / (duration / 3600);
+  const requiredSpeed = requiredSegmentSpeed(distance, duration);
   const maximumSpeed = normalizeMaximumSpeed(input.maximumSpeed);
   if (maximumSpeed === null) throw new Error('invalid-maximum-speed');
   return { candidate, requiredSpeed, maximumSpeed };

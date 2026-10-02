@@ -1,10 +1,9 @@
 // Toy: Assign Runner to Segment if Feasible
-// Stryker disable all -- this toy is a fixed shift-validation, feasibility,
-// persistence, and response protocol boundary covered by the safe-assignment suite.
 import {
   indexPointRecords,
   evaluateWorldLine,
   resolveSegment,
+  requiredSegmentSpeed,
 } from './segmentAssignmentFeasibilityCore.js';
 import { appendAtomically } from './safeAssignmentPersistence.js';
 import { wgs84Distance } from '../2026-08-20/wgs84Distance.js';
@@ -46,12 +45,7 @@ export function assignRunnerToSegmentIfFeasible(input, env) {
       Number(candidate.end.latitude),
       Number(candidate.end.longitude)
     );
-    const required =
-      duration === 0
-        ? distance === 0
-          ? 0
-          : Infinity
-        : distance / 1000 / (duration / 3600);
+    const required = requiredSegmentSpeed(distance, duration);
     if (required > Number(x.maximumSpeedKilometersPerHour))
       return JSON.stringify({
         appended: false,
@@ -99,5 +93,3 @@ export function assignRunnerToSegmentIfFeasible(input, env) {
     });
   }
 }
-
-// Stryker restore all

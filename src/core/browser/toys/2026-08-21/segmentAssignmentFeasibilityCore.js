@@ -1,8 +1,24 @@
 // Shared pure feasibility helpers for safe segment assignment toys.
-// Stryker disable all -- this module is the fixed segment-resolution and
-// world-line feasibility protocol boundary covered by the safe-assignment suite.
 import { resolvePointRecords } from '../2026-08-22/spacePointResolution.js';
 import { isOrderedInterval } from '../2026-08-20/assignmentIntervals.js';
+
+/**
+ * Calculate segment speed in kilometres per hour without changing legacy policy.
+ * @param {number} distanceMeters Segment distance.
+ * @param {number} durationSeconds Segment duration.
+ * @param {number} [movingAtZero] Moving-segment speed for zero time; legacy combined assignments explicitly use zero.
+ * @returns {number} Required speed.
+ */
+export function requiredSegmentSpeed(
+  distanceMeters,
+  durationSeconds,
+  movingAtZero = Infinity
+) {
+  if (durationSeconds === 0) {
+    return distanceMeters === 0 ? 0 : movingAtZero;
+  }
+  return distanceMeters / 1000 / (durationSeconds / 3600);
+}
 
 /**
  * Resolve a segment's endpoint records and timestamps.
@@ -258,5 +274,3 @@ export function overlaps(first, second) {
     Math.min(first.endTime, second.endTime)
   );
 }
-
-// Stryker restore all

@@ -1,9 +1,8 @@
 // Toy: Assign Asset and Custodian to Segment if Feasible
-// Stryker disable all -- this toy is a fixed assignment-validation and
-// persistence protocol boundary covered by the safe-assignment suite.
 import {
   evaluateWorldLine,
   resolveSegment,
+  requiredSegmentSpeed,
 } from './segmentAssignmentFeasibilityCore.js';
 import { appendAtomically } from './safeAssignmentPersistence.js';
 import { wgs84Distance } from '../2026-08-20/wgs84Distance.js';
@@ -77,7 +76,7 @@ export function assignAssetAndCustodianToSegmentIfFeasible(input, env) {
         Number(candidate.end.latitude),
         Number(candidate.end.longitude)
       ),
-      required = duration === 0 ? 0 : distance / 1000 / (duration / 3600);
+      required = requiredSegmentSpeed(distance, duration, 0);
     if (!Number.isFinite(maximum) || required > maximum)
       return JSON.stringify({ committed: false, reason: 'excessive-speed' });
     const commit = appendAtomically(
@@ -108,5 +107,3 @@ export function assignAssetAndCustodianToSegmentIfFeasible(input, env) {
     });
   }
 }
-
-// Stryker restore all
