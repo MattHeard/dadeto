@@ -5,17 +5,6 @@
  */
 
 /**
- * Compare two supported table values.
- * @param {string | number} left First field value.
- * @param {string | number} right Second field value.
- * @returns {number} Ordering of the two values.
- */
-function compare(left, right) {
-  if (typeof left === 'number') return left - Number(right);
-  return left < right ? -1 : left > right ? 1 : 0;
-}
-
-/**
  * Sort rows by ordered descriptors and stable source index.
  * @param {TableRow[]} rows Indexed data records.
  * @param {SortDescriptor[]} descriptors Ordered sort priorities.
@@ -24,9 +13,10 @@ function compare(left, right) {
 function sortRows(rows, descriptors) {
   return [...rows].sort((left, right) => {
     for (const descriptor of descriptors) {
-      const result = compare(
+      const result = compareTableValues(
         left.values[descriptor.column],
-        right.values[descriptor.column]
+        right.values[descriptor.column],
+        typeof left.values[descriptor.column]
       );
       if (result !== 0)
         return descriptor.direction === 'desc' ? -result : result;
@@ -110,3 +100,4 @@ export function initializeStaticJsonlTables(documentObject) {
       renderTable(element, payload, documentObject);
     });
 }
+import { compareTableValues } from '../tableCore.js';

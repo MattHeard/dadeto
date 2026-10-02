@@ -1,6 +1,7 @@
 // @ts-nocheck -- JSONL rows are intentionally narrowed at runtime by validation.
 import fs from 'node:fs';
 import path from 'node:path';
+import { compareTableValues as compareValues } from '../tableCore.js';
 
 const DEFAULT_DATA_ROOT = path.resolve(process.cwd(), 'src/content/blog-data');
 const SUPPORTED_TYPES = new Set(['number', 'string']);
@@ -34,18 +35,6 @@ function validateDefinition(entry) {
     entry.source.split(/[\\/]/).includes('..')
   )
     fail('source must stay inside the static data directory');
-}
-
-/**
- * Compare two values using their validated logical type.
- * @param {string|number} left First cell.
- * @param {string|number} right Second cell.
- * @param {string} type Validated logical type.
- * @returns {number} Sort comparison.
- */
-function compareValues(left, right, type) {
-  if (type === 'number') return left - right;
-  return left < right ? -1 : left > right ? 1 : 0;
 }
 
 /**
