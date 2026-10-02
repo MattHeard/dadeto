@@ -1,8 +1,7 @@
-// @ts-nocheck
 // Toy: Person Segment Assignment List
 // (input, env) -> string
 
-import { memoryObjectListAppend } from '../2026-08-18/memoryObjectListAppend.js';
+import { appendReferenceList } from '../2026-08-18/memoryObjectListAppend.js';
 
 /**
  * Append a person-to-segment reference to a persisted list.
@@ -11,18 +10,7 @@ import { memoryObjectListAppend } from '../2026-08-18/memoryObjectListAppend.js'
  * @returns {string} Structured append result.
  */
 export function personSegmentAssignmentList(input, env) {
-  try {
-    const request = parseRequest(input);
-    return memoryObjectListAppend(
-      JSON.stringify({ ...request, object: request.assignment }),
-      env
-    );
-  } catch (error) {
-    return JSON.stringify({
-      appended: false,
-      error: error.message,
-    });
-  }
+  return appendReferenceList(input, env, parseRequest);
 }
 
 /**

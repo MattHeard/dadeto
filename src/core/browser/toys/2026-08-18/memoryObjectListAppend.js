@@ -7,6 +7,25 @@ import { requireEnvHelper } from '../browserToysCore.js';
 const LOCATIONS = ['temporary', 'permanent', 'envelope'];
 
 /**
+ * Append a caller-normalized reference while retaining parser failure messages.
+ * @param {string} input Serialized reference request.
+ * @param {import('../browserToysCore.js').ToyEnv} env Storage helpers.
+ * @param {(input: string) => {memoryLocation?: string, path: string, assignment: Record<string, unknown>}} parse Parser for the particular reference type.
+ * @returns {string} Structured append result.
+ */
+export function appendReferenceList(input, env, parse) {
+  try {
+    const request = parse(input);
+    return memoryObjectListAppend(
+      JSON.stringify({ ...request, object: request.assignment }),
+      env
+    );
+  } catch (error) {
+    return JSON.stringify({ appended: false, error: error.message });
+  }
+}
+
+/**
  * Append one JSON object to a list in temporary, permanent, or envelope memory.
  * @param {string} input JSON request containing memoryLocation, path, and object.
  * @param {import('../browserToysCore.js').ToyEnv} env Storage helpers.
@@ -50,9 +69,7 @@ function formatAppendFailure(error) {
  */
 function parseRequest(input) {
   const request = JSON.parse(input);
-  // Stryker disable next-line all -- malformed request type boundaries share the same structured error contract.
   if (!request || typeof request !== 'object' || Array.isArray(request)) {
-    // Stryker disable next-line all -- this fixed validation error is the public malformed-request contract.
     throw new Error('Input must be a JSON object.');
   }
   const memoryLocation = String(request.memoryLocation || 'temporary');
@@ -81,7 +98,6 @@ function readRoot(memoryLocation, env) {
     return deepClone(requireEnvHelper(env, 'getLocalPermanentData')() || {});
   }
   const envelope = getEnvelope(env);
-  // Stryker disable next-line all -- envelope selection is a fixed storage-location boundary.
   return memoryLocation === 'envelope' ? envelope : (envelope.temporary ||= {});
 }
 
