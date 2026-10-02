@@ -1,23 +1,30 @@
 // Shared pure feasibility helpers for safe segment assignment toys.
 import { resolvePointRecords } from '../2026-08-22/spacePointResolution.js';
 import { isOrderedInterval } from '../2026-08-20/assignmentIntervals.js';
+export { overlaps } from '../2026-08-20/assignmentIntervals.js';
+import { wgs84Distance } from '../2026-08-20/wgs84Distance.js';
 
 /**
  * Calculate segment speed in kilometres per hour without changing legacy policy.
- * @param {number} distanceMeters Segment distance.
- * @param {number} durationSeconds Segment duration.
+ * @param {ReturnType<typeof resolveSegment>} candidate Resolved segment endpoints and timing.
  * @param {number} [movingAtZero] Moving-segment speed for zero time; legacy combined assignments explicitly use zero.
- * @returns {number} Required speed.
+ * @returns {{distanceMeters: number, durationSeconds: number, requiredSpeed: number}} Segment motion measurements.
  */
-export function requiredSegmentSpeed(
-  distanceMeters,
-  durationSeconds,
-  movingAtZero = Infinity
-) {
-  if (durationSeconds === 0) {
-    return distanceMeters === 0 ? 0 : movingAtZero;
-  }
-  return distanceMeters / 1000 / (durationSeconds / 3600);
+export function measureSegmentMotion(candidate, movingAtZero = Infinity) {
+  const distanceMeters = wgs84Distance(
+    Number(candidate.start.latitude),
+    Number(candidate.start.longitude),
+    Number(candidate.end.latitude),
+    Number(candidate.end.longitude)
+  );
+  const durationSeconds = (candidate.endTime - candidate.startTime) / 1000;
+  const requiredSpeed =
+    durationSeconds === 0
+      ? distanceMeters === 0
+        ? 0
+        : movingAtZero
+      : distanceMeters / 1000 / (durationSeconds / 3600);
+  return { distanceMeters, durationSeconds, requiredSpeed };
 }
 
 /**
@@ -260,17 +267,5 @@ function sameLocation(first, second) {
 export function containedBy(interval, shift) {
   return (
     interval.startTime >= shift.startTime && interval.endTime <= shift.endTime
-  );
-}
-
-/**
- * @param {{startTime: number, endTime: number}} first First interval.
- * @param {{startTime: number, endTime: number}} second Second interval.
- * @returns {boolean} Whether positive-duration overlap exists.
- */
-export function overlaps(first, second) {
-  return (
-    Math.max(first.startTime, second.startTime) <
-    Math.min(first.endTime, second.endTime)
   );
 }

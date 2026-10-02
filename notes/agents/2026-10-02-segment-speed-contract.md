@@ -14,3 +14,14 @@ fulfillmentBoundaries.coverage to exercise evaluateWorldLineMany.
 
 Evidence: .tmp/segment-speed-tests.log, .tmp/segment-speed-lint.log,
 .tmp/segment-speed-types.log and .tmp/segment-speed-duplication.log.
+
+Follow-up: measureSegmentMotion now owns distance, duration and required speed;
+four callers no longer repeat geographic coordinate conversion. This passed 49
+tests with exact 100% coverage in five modules but left the clone count at 193.
+The exact report exposed an identical overlaps implementation in
+assignmentIntervals.js. Feasibility now imports and compatibility-reexports
+that helper rather than duplicating it: strict minTokens 14 reports 192 clones.
+Evidence: .tmp/segment-motion-tests-final.log,
+.tmp/segment-motion-overlap-duplication.log and
+.tmp/segment-motion-check-static.log. None of these proves a fully green gate;
+the canonical duplication goal remains open.

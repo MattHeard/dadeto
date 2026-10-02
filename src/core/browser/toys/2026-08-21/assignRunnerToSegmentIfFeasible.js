@@ -3,10 +3,9 @@ import {
   indexPointRecords,
   evaluateWorldLine,
   resolveSegment,
-  requiredSegmentSpeed,
+  measureSegmentMotion,
 } from './segmentAssignmentFeasibilityCore.js';
 import { appendAtomically } from './safeAssignmentPersistence.js';
-import { wgs84Distance } from '../2026-08-20/wgs84Distance.js';
 
 /**
  * @param {string} input JSON runner assignment request.
@@ -38,14 +37,7 @@ export function assignRunnerToSegmentIfFeasible(input, env) {
         feasible: false,
         reason: 'outside-shift',
       });
-    const duration = (candidate.endTime - candidate.startTime) / 1000;
-    const distance = wgs84Distance(
-      Number(candidate.start.latitude),
-      Number(candidate.start.longitude),
-      Number(candidate.end.latitude),
-      Number(candidate.end.longitude)
-    );
-    const required = requiredSegmentSpeed(distance, duration);
+    const { requiredSpeed: required } = measureSegmentMotion(candidate);
     if (required > Number(x.maximumSpeedKilometersPerHour))
       return JSON.stringify({
         appended: false,

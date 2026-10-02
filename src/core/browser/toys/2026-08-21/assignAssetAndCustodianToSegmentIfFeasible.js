@@ -2,10 +2,9 @@
 import {
   evaluateWorldLine,
   resolveSegment,
-  requiredSegmentSpeed,
+  measureSegmentMotion,
 } from './segmentAssignmentFeasibilityCore.js';
 import { appendAtomically } from './safeAssignmentPersistence.js';
-import { wgs84Distance } from '../2026-08-20/wgs84Distance.js';
 
 /**
  * @param {string} input JSON combined assignment request.
@@ -68,15 +67,8 @@ export function assignAssetAndCustodianToSegmentIfFeasible(input, env) {
         committed: false,
         reason: `runner:${runnerResult.reason}`,
       });
-    const maximum = Number(x.maximumSpeedKilometersPerHour),
-      duration = (candidate.endTime - candidate.startTime) / 1000,
-      distance = wgs84Distance(
-        Number(candidate.start.latitude),
-        Number(candidate.start.longitude),
-        Number(candidate.end.latitude),
-        Number(candidate.end.longitude)
-      ),
-      required = requiredSegmentSpeed(distance, duration, 0);
+    const maximum = Number(x.maximumSpeedKilometersPerHour);
+    const { requiredSpeed: required } = measureSegmentMotion(candidate, 0);
     if (!Number.isFinite(maximum) || required > maximum)
       return JSON.stringify({ committed: false, reason: 'excessive-speed' });
     const commit = appendAtomically(

@@ -1,9 +1,8 @@
 // Toy: Segment Maximum-Speed Feasibility
-import { wgs84Distance } from '../2026-08-20/wgs84Distance.js';
 import {
   indexPointRecords,
   resolveSegment,
-  requiredSegmentSpeed,
+  measureSegmentMotion,
 } from './segmentAssignmentFeasibilityCore.js';
 import { resolvePointRecords } from '../2026-08-22/spacePointResolution.js';
 
@@ -22,14 +21,8 @@ export function segmentMaximumSpeedFeasibility(input) {
       points,
       x.candidateSegment?.segmentId
     );
-    const distanceMeters = wgs84Distance(
-      Number(candidate.start.latitude),
-      Number(candidate.start.longitude),
-      Number(candidate.end.latitude),
-      Number(candidate.end.longitude)
-    );
-    const durationSeconds = (candidate.endTime - candidate.startTime) / 1000;
-    const requiredSpeed = requiredSegmentSpeed(distanceMeters, durationSeconds);
+    const { distanceMeters, durationSeconds, requiredSpeed } =
+      measureSegmentMotion(candidate);
     const maximumSpeed = Number(x.maximumSpeed);
     if (!Number.isFinite(maximumSpeed) || maximumSpeed < 0)
       throw new Error('maximumSpeed must be a non-negative number.');
