@@ -1,8 +1,9 @@
 // Toy: Assign Asset to Segment if Feasible
-// Stryker disable all -- this toy is a fixed feasibility, persistence, and
-// response protocol boundary covered by the safe-assignment suite.
 import { evaluateWorldLine } from './segmentAssignmentFeasibilityCore.js';
-import { appendAtomically } from './safeAssignmentPersistence.js';
+import {
+  appendValidatedAssignment,
+  formatAssignmentFailure,
+} from '../2026-08-22/strictAssignmentCore.js';
 
 /**
  * @param {string} input JSON asset assignment request.
@@ -20,38 +21,26 @@ export function assignAssetToSegmentIfFeasible(input, env) {
         x.stockOutPoint,
         x.spacePoints || []
       );
-    if (!result.feasible)
-      return JSON.stringify({
-        appended: false,
-        feasible: false,
-        reason: result.reason,
-      });
-    const commit = appendAtomically(
-      x.memoryLocation || 'temporary',
-      [
-        {
-          path: x.path || 'assetSegmentAssignments',
+    if (!result.feasible) return formatAssignmentFailure(result.reason);
+    return appendValidatedAssignment(
+      {
+        request: x,
+        assignment: {
+          assetId: String(x.assetId || ''),
+          segmentId: String(x.candidateSegment.segmentId),
+        },
+        path: 'assetSegmentAssignments',
+        metadata: {
           object: {
-            assetId: String(x.assetId || ''),
-            segmentId: String(x.candidateSegment.segmentId),
+            assetId: x.assetId,
+            segmentId: x.candidateSegment.segmentId,
           },
         },
-      ],
+        feasibility: result,
+      },
       env
     );
-    return JSON.stringify({
-      appended: true,
-      feasible: true,
-      length: commit.lengths[0],
-      object: { assetId: x.assetId, segmentId: x.candidateSegment.segmentId },
-    });
   } catch (error) {
-    return JSON.stringify({
-      appended: false,
-      feasible: false,
-      reason: error.message,
-    });
+    return formatAssignmentFailure(error.message);
   }
 }
-
-// Stryker restore all

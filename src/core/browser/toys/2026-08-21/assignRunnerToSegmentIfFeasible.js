@@ -5,7 +5,10 @@ import {
   resolveSegment,
   measureSegmentMotion,
 } from './segmentAssignmentFeasibilityCore.js';
-import { appendAtomically } from './safeAssignmentPersistence.js';
+import {
+  appendValidatedAssignment,
+  formatAssignmentFailure,
+} from '../2026-08-22/strictAssignmentCore.js';
 
 /**
  * @param {string} input JSON runner assignment request.
@@ -31,19 +34,10 @@ export function assignRunnerToSegmentIfFeasible(input, env) {
         candidate.startTime >= Date.parse(shift.clockInPoint.timestamp) &&
         candidate.endTime <= Date.parse(shift.clockOutPoint.timestamp)
     );
-    if (!matching)
-      return JSON.stringify({
-        appended: false,
-        feasible: false,
-        reason: 'outside-shift',
-      });
+    if (!matching) return formatAssignmentFailure('outside-shift');
     const { requiredSpeed: required } = measureSegmentMotion(candidate);
     if (required > Number(x.maximumSpeedKilometersPerHour))
-      return JSON.stringify({
-        appended: false,
-        feasible: false,
-        reason: 'excessive-speed',
-      });
+      return formatAssignmentFailure('excessive-speed');
     const result = evaluateWorldLine(
       x.points,
       x.existingSegments || [],
@@ -52,36 +46,21 @@ export function assignRunnerToSegmentIfFeasible(input, env) {
       matching.clockOutPoint,
       x.spacePoints || []
     );
-    if (!result.feasible)
-      return JSON.stringify({
-        appended: false,
-        feasible: false,
-        reason: result.reason,
-      });
-    const commit = appendAtomically(
-      x.memoryLocation || 'temporary',
-      [
-        {
-          path: x.path || 'personSegmentAssignments',
-          object: {
-            personId: String(x.personId || ''),
-            segmentId: String(x.candidateSegment.segmentId),
-          },
+    if (!result.feasible) return formatAssignmentFailure(result.reason);
+    return appendValidatedAssignment(
+      {
+        request: x,
+        assignment: {
+          personId: String(x.personId || ''),
+          segmentId: String(x.candidateSegment.segmentId),
         },
-      ],
+        path: 'personSegmentAssignments',
+        metadata: { shiftId: matching.shiftId },
+        feasibility: result,
+      },
       env
     );
-    return JSON.stringify({
-      appended: true,
-      feasible: true,
-      length: commit.lengths[0],
-      shiftId: matching.shiftId,
-    });
   } catch (error) {
-    return JSON.stringify({
-      appended: false,
-      feasible: false,
-      reason: error.message,
-    });
+    return formatAssignmentFailure(error.message);
   }
 }
