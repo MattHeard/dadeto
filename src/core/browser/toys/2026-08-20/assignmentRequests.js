@@ -4,6 +4,41 @@ import {
   overlaps,
 } from './assignmentIntervals.js';
 import { isPlainPrototypeObject as isPlainAssignmentRecord } from '../browserToysCore.js';
+import { appendReferenceList } from '../2026-08-18/memoryObjectListAppend.js';
+
+/**
+ * Compose reference parsing and persistence with an explicit memory policy.
+ * @template {string} K
+ * @param {{keys: K[], missingMessage: string, resolveMemoryLocation?: (request: Record<string, any>) => string | undefined}} policy Reference contract.
+ * @returns {{parseRequest: (input: string) => {memoryLocation: string | undefined, path: string, assignment: Record<K, string>}, append: (input: string, env: import('../browserToysCore.js').ToyEnv) => string}} Public list operations.
+ */
+export function createReferenceAssignmentList(policy) {
+  const resolveMemoryLocation =
+    policy.resolveMemoryLocation || (request => request.memoryLocation);
+  /**
+   * Parse the reference before resolving its storage policy.
+   * @param {string} input JSON request.
+   * @returns {{memoryLocation: string | undefined, path: string, assignment: Record<K, string>}} Normalized list request.
+   */
+  function parseRequest(input) {
+    const { request, path, assignment } = parseReferenceAssignment(
+      input,
+      policy.keys,
+      policy.missingMessage
+    );
+    return { memoryLocation: resolveMemoryLocation(request), path, assignment };
+  }
+  /**
+   * Append a parsed reference using the existing atomic storage boundary.
+   * @param {string} input JSON request.
+   * @param {import('../browserToysCore.js').ToyEnv} env Storage helpers.
+   * @returns {string} Structured append result.
+   */
+  function append(input, env) {
+    return appendReferenceList(input, env, parseRequest);
+  }
+  return { parseRequest, append };
+}
 
 /**
  * Parse a reference-list request without selecting its memory-location policy.
