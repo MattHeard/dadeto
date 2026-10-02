@@ -1,6 +1,17 @@
 import { durationMilliseconds } from '../timing.js';
 
 /**
+ * Parse finite non-negative numeric seconds into placement milliseconds.
+ * @param {unknown} seconds Candidate duration.
+ * @returns {number | null} Milliseconds, or null for malformed seconds.
+ */
+export function parseDurationMilliseconds(seconds) {
+  if (typeof seconds !== 'number' || !Number.isFinite(seconds) || seconds < 0)
+    return null;
+  return durationMilliseconds(seconds);
+}
+
+/**
  * Serialize an epoch instant at the request/response boundary.
  * @param {number} time Epoch milliseconds.
  * @returns {string} UTC ISO timestamp.
@@ -17,12 +28,31 @@ export function timestampFromEpoch(time) {
  * @returns {{feasible: boolean, reason?: string, startTimestamp?: string, endTimestamp?: string}} Placement response.
  */
 export function latestPlacement(durationSeconds, earliestStart, latestEnd) {
-  if (!Number.isFinite(durationSeconds) || durationSeconds < 0) {
+  return latestPlacementFromMilliseconds(
+    parseDurationMilliseconds(durationSeconds),
+    earliestStart,
+    latestEnd
+  );
+}
+
+/**
+ * Place an already parsed duration at the latest available endpoint.
+ * @param {number | null} durationMs Parsed milliseconds or malformed-input sentinel.
+ * @param {unknown} earliestStart Earliest allowed instant.
+ * @param {unknown} latestEnd Latest allowed instant.
+ * @returns {{feasible: boolean, reason?: string, startTimestamp?: string, endTimestamp?: string}} Placement response.
+ */
+export function latestPlacementFromMilliseconds(
+  durationMs,
+  earliestStart,
+  latestEnd
+) {
+  if (durationMs === null) {
     return { feasible: false, reason: 'invalid-duration' };
   }
   const earliest = parseTime(earliestStart);
   const end = parseTime(latestEnd);
-  const start = end - durationMilliseconds(durationSeconds);
+  const start = end - durationMs;
   if (!Number.isFinite(earliest) || !Number.isFinite(end) || start < earliest) {
     return { feasible: false, reason: 'no-placement' };
   }
@@ -80,6 +110,24 @@ export function withRunner(candidate, request) {
       request.runnerCommitments
     ),
   };
+}
+
+/**
+ * Apply placement and external constraints before consulting runner availability.
+ * @param {{feasible: boolean, reason?: string, startTimestamp?: string, endTimestamp?: string}} candidate Placement result.
+ * @param {Record<string, unknown>} request Runner context.
+ * @param {string | null} [constraintReason] Caller-specific placement rejection.
+ * @returns {Record<string, unknown>} Original placement failure or runner result.
+ */
+export function withPlacementRunner(
+  candidate,
+  request,
+  constraintReason = null
+) {
+  if (!candidate.feasible) return candidate;
+  return constraintReason === null
+    ? withRunner(candidate, request)
+    : { feasible: false, reason: constraintReason };
 }
 
 /**

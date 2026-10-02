@@ -3,12 +3,13 @@ import {
   exactLookup,
   contained,
   latestPlacement,
-  withRunner,
+  latestPlacementFromMilliseconds,
+  parseDurationMilliseconds,
+  withPlacementRunner,
   windowStart,
   windowEnd,
   timestampFromEpoch as iso,
 } from '../request/index.js';
-import { durationMilliseconds } from '../timing.js';
 /**
  *
  * @param {Record<string, any>} request Delivery timing and runner context.
@@ -22,8 +23,7 @@ export function delivery(request) {
       '1970-01-01T00:00:00Z',
     pointTimestamp(request.deliveryPoint)
   );
-  if (!candidate.feasible) return candidate;
-  return withRunner(candidate, request);
+  return withPlacementRunner(candidate, request);
 }
 
 /**
@@ -32,30 +32,30 @@ export function delivery(request) {
  * @returns {Record<string, any>} Procurement feasibility and placement.
  */
 export function procurement(request) {
-  if (
-    !Number.isFinite(request.procurementDurationSeconds) ||
-    request.procurementDurationSeconds < 0
-  )
+  const durationMs = parseDurationMilliseconds(
+    request.procurementDurationSeconds
+  );
+  if (durationMs === null)
     return { feasible: false, reason: 'invalid-duration' };
   const deliveryStart = parseTime(request.deliveryOutboundStartTimestamp);
   const supplier = request.supplierAvailability;
   const supplierEnd = parseTime(windowEnd(supplier));
-  const candidate = latestPlacement(
-    request.procurementDurationSeconds,
+  const candidate = latestPlacementFromMilliseconds(
+    durationMs,
     request.nowTimestamp,
     iso(Math.min(deliveryStart, supplierEnd))
   );
-  if (!candidate.feasible) return candidate;
-  if (
+  const constraintReason =
+    candidate.feasible &&
     !contained(
       candidate.startTimestamp,
       candidate.endTimestamp,
       windowStart(supplier),
       windowEnd(supplier)
     )
-  )
-    return { feasible: false, reason: 'outside-supplier-window' };
-  return withRunner(candidate, request);
+      ? 'outside-supplier-window'
+      : null;
+  return withPlacementRunner(candidate, request, constraintReason);
 }
 
 /**
@@ -64,18 +64,20 @@ export function procurement(request) {
  * @returns {Record<string, any>} Pickup feasibility and placement.
  */
 export function pickup(request) {
-  if (
-    !Number.isFinite(request.pickupDurationSeconds) ||
-    request.pickupDurationSeconds < 0
-  )
+  const durationMs = parseDurationMilliseconds(request.pickupDurationSeconds);
+  if (durationMs === null)
     return { feasible: false, reason: 'invalid-duration' };
   const start = pointTimestamp(request.pickupPoint);
   const startTime = parseTime(start);
-  const end = startTime + durationMilliseconds(request.pickupDurationSeconds);
+  const end = startTime + durationMs;
   if (!Number.isFinite(startTime))
     return { feasible: false, reason: 'invalid-pickup-time' };
-  const candidate = { startTimestamp: start, endTimestamp: iso(end) };
-  return withRunner(candidate, request);
+  const candidate = {
+    startTimestamp: start,
+    endTimestamp: iso(end),
+    feasible: true,
+  };
+  return withPlacementRunner(candidate, request);
 }
 
 /**

@@ -38,7 +38,8 @@ export function createInputState() {
  * @returns {object} Updated input state.
  */
 export function updateInput(state, event) {
-  const action = KEYS[event?.key];
+  const key = event?.key;
+  const action = KEYS[key] || KEYS[key?.toLowerCase()];
   if (!action) return state;
   const next = copyInputState(state);
   if (event.type === 'keydown') {

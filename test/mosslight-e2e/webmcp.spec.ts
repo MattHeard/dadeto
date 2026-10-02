@@ -7,7 +7,12 @@ test('an agent plays the visible game through WebMCP and restores its save', asy
     Object.defineProperty(document, 'modelContext', {
       configurable: true,
       value: {
-        registerTool: (tool: any) => { tools[tool.name] = tool; },
+        registerTool: (tool: any, options?: object) => {
+          if (options !== undefined && (options === null || typeof options !== 'object')) {
+            throw new TypeError('Invalid registerTool options value');
+          }
+          tools[tool.name] = tool;
+        },
         unregisterTool: (name: string) => { delete tools[name]; },
       },
     });

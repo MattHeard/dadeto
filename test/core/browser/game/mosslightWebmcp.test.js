@@ -10,9 +10,15 @@ import { registerMosslightTools } from '../../../../src/core/browser/game/mossli
 function setup(removable = true) {
   const runtime = createMosslightRuntime();
   runtime.start();
+  expect(runtime.isRunning()).toBe(true);
   const tools = new Map();
   const modelContext = {
-    registerTool: jest.fn(tool => tools.set(tool.name, tool)),
+    registerTool: jest.fn((tool, options) => {
+      if (options !== undefined && typeof options !== 'object') {
+        throw new TypeError('Invalid registerTool options value');
+      }
+      tools.set(tool.name, tool);
+    }),
   };
   if (removable) {
     modelContext.unregisterTool = jest.fn();

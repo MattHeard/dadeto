@@ -110,6 +110,9 @@ export function createMosslightRuntime(options = {}) {
     frame() {
       return renderer(state);
     },
+    isRunning() {
+      return running;
+    },
     setState(next) {
       state = next;
       return renderer(state);

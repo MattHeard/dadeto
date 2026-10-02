@@ -87,6 +87,9 @@ export function stepGame(
         next = chooseDialogue(next, next.dialogue.selected || 0);
     } else if (pressed.includes('confirm') || pressed.includes('interact'))
       next = advanceDialogue(next);
+  } else if (next.mode === 'journal') {
+    if (pressed.includes('confirm') || pressed.includes('interact'))
+      next = { ...next, mode: next.battle ? 'battle' : 'world' };
   } else {
     if (direction && next.moveCooldown === 0) {
       next = {
@@ -193,7 +196,6 @@ function openGuide(state, content) {
  * @returns {unknown} The computed result.
  */
 function interact(state, content) {
-  if (state.mode === 'journal') return { ...state, mode: 'world' };
   const { actor, object } = targetInFront(state);
   if (actor) {
     const node = content.dialogue[actor.id]?.[

@@ -85,7 +85,10 @@ export function startMosslightPage(options) {
   function draw() {
     drawGameFrame(context, runtime.frame());
     const world = runtime.getSnapshot().world;
-    status.textContent = `${world.map.name} · Day ${world.day} · ${Math.floor(world.time)}:00`;
+    const clock = `${world.map.name} · Day ${world.day} · ${Math.floor(world.time)}:00`;
+    status.textContent = runtime.isRunning()
+      ? clock
+      : `${clock} · Paused · resume when ready.`;
   }
   /**
    *

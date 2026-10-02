@@ -47,6 +47,7 @@ export function registerMosslightTools({ modelContext, runtime, redraw }) {
   if (!modelContext?.registerTool) {
     return () => {};
   }
+  const registerTool = modelContext.registerTool.bind(modelContext);
   let disposed = false;
 
   /**
@@ -157,7 +158,7 @@ export function registerMosslightTools({ modelContext, runtime, redraw }) {
       },
     },
   ];
-  definitions.forEach(modelContext.registerTool.bind(modelContext));
+  definitions.forEach(tool => registerTool(tool));
   return () => {
     if (disposed) {
       return;

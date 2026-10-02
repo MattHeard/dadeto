@@ -234,8 +234,11 @@ async function exerciseSaveControls(page) {
   page.selectors['#save-slot'].value = '2';
   page.selectors['#save-slot'].emit('change');
   page.selectors['#pause-game'].click();
+  page.callbacks[0](500);
   expect(page.selectors['#game-status'].textContent).toContain('Paused');
   page.selectors['#resume-game'].click();
+  page.callbacks[0](650);
+  expect(page.selectors['#game-status'].textContent).not.toContain('Paused');
   page.documentObj.documentElement.requestFullscreen = () =>
     Promise.reject(new Error('fullscreen unsupported'));
   page.selectors['#fullscreen-game'].click();

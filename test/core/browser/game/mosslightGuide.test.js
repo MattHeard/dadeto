@@ -3,6 +3,38 @@ import {
   stepGame,
 } from '../../../../src/core/browser/game/mosslight-valley/simulation.js';
 import { toFramePayload } from '../../../../src/core/browser/game/mosslight-valley/renderer.js';
+import {
+  createInputState,
+  updateInput,
+} from '../../../../src/core/browser/game/mosslight-valley/input.js';
+
+test('uppercase X dismisses a journal through keyboard normalization', () => {
+  const input = updateInput(createInputState(), { type: 'keydown', key: 'X' });
+  expect(
+    stepGame({ ...createSimulation(), mode: 'journal' }, [...input.held]).mode
+  ).toBe('world');
+  expect(updateInput(createInputState(), {}).held.size).toBe(0);
+  expect(updateInput(createInputState(), undefined).held.size).toBe(0);
+});
+
+test.each(['confirm', 'interact'])(
+  'restored journal closes with %s and restores combat',
+  action => {
+    for (const battle of [null, {}]) {
+      const state = { ...createSimulation(), mode: 'journal', battle };
+      expect(stepGame(state, [action]).mode).toBe(battle ? 'battle' : 'world');
+    }
+  }
+);
+
+test('a restored journal without guide dialogue blocks world actions', () => {
+  const state = { ...createSimulation(), mode: 'journal' };
+  const next = stepGame(state, ['fish', 'right', 'rest', 'farm', 'wait']);
+  expect(next.world).toEqual(state.world);
+  expect(next.toast).toBe(state.toast);
+  expect(next.mode).toBe('journal');
+  expect(stepGame(next, ['cancel']).mode).toBe('world');
+});
 
 test('object feedback survives key release and idle frames', () => {
   let state = stepGame(createSimulation(), ['interact']);
