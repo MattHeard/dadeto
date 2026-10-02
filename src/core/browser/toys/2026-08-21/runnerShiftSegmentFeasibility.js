@@ -3,6 +3,7 @@ import {
   indexPointRecords,
   resolveCandidateSegment,
   containedBy,
+  legacyFeasibilityBoundary,
 } from './segmentAssignmentFeasibilityCore.js';
 
 /**
@@ -10,36 +11,37 @@ import {
  * @returns {string} Structured feasibility result.
  */
 export function runnerShiftSegmentFeasibility(input) {
-  try {
-    const x = JSON.parse(input || '{}'),
-      points = indexPointRecords(x.points || []);
-    const candidate = resolveCandidateSegment(x.candidateSegment, points);
-    for (const [index, shift] of /** @type {Array<Record<string, unknown>>} */ (
-      x.shifts || []
-    ).entries()) {
-      const clockIn = pointTime(
-          /** @type {Record<string, unknown>} */ (shift.clockInPoint)
-        ),
-        clockOut = pointTime(
-          /** @type {Record<string, unknown>} */ (shift.clockOutPoint)
-        );
-      if (
-        clockOut >= clockIn &&
-        containedBy(candidate, { startTime: clockIn, endTime: clockOut })
-      )
-        return JSON.stringify({
-          feasible: true,
-          shiftIndex: index,
-          shiftId: shift.shiftId,
-        });
-    }
-    return JSON.stringify({ feasible: false, reason: 'outside-shift' });
-  } catch (error) {
-    return JSON.stringify({
-      feasible: false,
-      reason: error.message,
-    });
+  return legacyFeasibilityBoundary(input, calculateShiftCoverage);
+}
+
+/**
+ * Select the first valid shift containing the candidate interval.
+ * @param {Record<string, any>} x Parsed shift request.
+ * @returns {string} Coverage result with the original shift identity.
+ */
+function calculateShiftCoverage(x) {
+  const points = indexPointRecords(x.points || []);
+  const candidate = resolveCandidateSegment(x.candidateSegment, points);
+  for (const [index, shift] of /** @type {Array<Record<string, unknown>>} */ (
+    x.shifts || []
+  ).entries()) {
+    const clockIn = pointTime(
+        /** @type {Record<string, unknown>} */ (shift.clockInPoint)
+      ),
+      clockOut = pointTime(
+        /** @type {Record<string, unknown>} */ (shift.clockOutPoint)
+      );
+    if (
+      clockOut >= clockIn &&
+      containedBy(candidate, { startTime: clockIn, endTime: clockOut })
+    )
+      return JSON.stringify({
+        feasible: true,
+        shiftIndex: index,
+        shiftId: shift.shiftId,
+      });
   }
+  return JSON.stringify({ feasible: false, reason: 'outside-shift' });
 }
 
 /**

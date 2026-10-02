@@ -295,3 +295,16 @@ export function containedBy(interval, shift) {
     interval.startTime >= shift.startTime && interval.endTime <= shift.endTime
   );
 }
+/**
+ * Parse a legacy feasibility request with its message-only rejection contract.
+ * @param {string} input JSON input with the original empty-object fallback.
+ * @param {(request: Record<string, any>) => string} calculate Feasibility strategy.
+ * @returns {string} Serialized feasibility outcome.
+ */
+export function legacyFeasibilityBoundary(input, calculate) {
+  try {
+    return calculate(JSON.parse(input || '{}'));
+  } catch (error) {
+    return JSON.stringify({ feasible: false, reason: error.message });
+  }
+}

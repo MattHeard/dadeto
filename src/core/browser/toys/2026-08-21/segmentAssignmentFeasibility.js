@@ -1,31 +1,31 @@
 // Toy: Segment Assignment Feasibility
-// Stryker disable all -- this toy is a fixed JSON feasibility-wrapper boundary
-// covered by the safe-assignment suite.
-import { evaluateWorldLine } from './segmentAssignmentFeasibilityCore.js';
+import {
+  evaluateWorldLine,
+  legacyFeasibilityBoundary,
+} from './segmentAssignmentFeasibilityCore.js';
 
 /**
  * @param {string} input JSON with points, existingSegments, candidateSegment, entryPoint, and optional exitPoint.
  * @returns {string} Structured feasibility result.
  */
 export function segmentAssignmentFeasibility(input) {
-  try {
-    const x = JSON.parse(input || '{}');
-    return JSON.stringify(
-      evaluateWorldLine(
-        x.points || [],
-        x.existingSegments || [],
-        x.candidateSegment,
-        x.entryPoint,
-        x.exitPoint,
-        x.spacePoints || []
-      )
-    );
-  } catch (error) {
-    return JSON.stringify({
-      feasible: false,
-      reason: error.message,
-    });
-  }
+  return legacyFeasibilityBoundary(input, calculateWorldLine);
 }
 
-// Stryker restore all
+/**
+ * Evaluate the world line with legacy optional-collection defaults.
+ * @param {Record<string, any>} x Parsed request.
+ * @returns {string} Serialized world-line outcome.
+ */
+function calculateWorldLine(x) {
+  return JSON.stringify(
+    evaluateWorldLine(
+      x.points || [],
+      x.existingSegments || [],
+      x.candidateSegment,
+      x.entryPoint,
+      x.exitPoint,
+      x.spacePoints || []
+    )
+  );
+}
