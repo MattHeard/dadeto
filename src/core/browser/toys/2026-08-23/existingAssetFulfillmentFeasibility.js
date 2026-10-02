@@ -1,5 +1,5 @@
 import { evaluateWorldLine } from '../2026-08-21/segmentAssignmentFeasibilityCore.js';
-import { fulfillmentExistingAssetBoundary } from '../2026-08-22/fulfillmentResult.js';
+import { fulfillmentAssetWorldLineBoundary } from '../2026-08-22/fulfillmentResult.js';
 import { ASSET_OPERATIONS as operationOrder } from './assetOperations.js';
 
 const ASSET_OPERATIONS = new Set(operationOrder);
@@ -10,18 +10,11 @@ const ASSET_OPERATIONS = new Set(operationOrder);
  * @returns {string} JSON feasibility result.
  */
 export function existingAssetFulfillmentFeasibility(input) {
-  return fulfillmentExistingAssetBoundary(
+  return fulfillmentAssetWorldLineBoundary(
     input,
-    proposal => selectAssetSegments(proposal),
-    ({ points, existing, candidates, entry, spacePoints }) =>
-      evaluateWorldLine(
-        points,
-        existing,
-        candidates[0],
-        entry,
-        undefined,
-        spacePoints
-      )
+    selectAssetSegments,
+    evaluateWorldLine,
+    candidates => candidates[0]
   );
 }
 
@@ -36,17 +29,14 @@ function selectAssetSegments(proposal) {
     throw new Error('A valid fulfillment proposal is required.');
   if (!Array.isArray(proposal.sequence))
     throw new Error('The fulfillment proposal sequence is required.');
-  const selected = proposal.sequence
-    .filter(operation => ASSET_OPERATIONS.has(operation?.operation))
-    .map(operation => {
-      const segments = /** @type {Array<any>} */ (proposal.segments);
-      return segments.find(
-        segment => segment.segmentId === operation.segmentId
-      );
-    });
-  const operations = proposal.sequence
-    .filter(operation => ASSET_OPERATIONS.has(operation?.operation))
-    .map(operation => operation.operation);
+  const selectedOperations = proposal.sequence.filter(operation =>
+    ASSET_OPERATIONS.has(operation?.operation)
+  );
+  const selected = selectedOperations.map(operation => {
+    const segments = /** @type {Array<any>} */ (proposal.segments);
+    return segments.find(segment => segment.segmentId === operation.segmentId);
+  });
+  const operations = selectedOperations.map(operation => operation.operation);
   if (
     selected.some(segment => !segment) ||
     operations.length !== ASSET_OPERATIONS.size ||

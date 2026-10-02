@@ -1,5 +1,5 @@
 import { evaluateWorldLineMany } from '../2026-08-21/segmentAssignmentFeasibilityCore.js';
-import { fulfillmentExistingAssetBoundary } from '../2026-08-22/fulfillmentResult.js';
+import { fulfillmentAssetWorldLineBoundary } from '../2026-08-22/fulfillmentResult.js';
 import { ASSET_OPERATIONS } from './assetOperations.js';
 
 /**
@@ -8,18 +8,10 @@ import { ASSET_OPERATIONS } from './assetOperations.js';
  * @returns {string} JSON feasibility result.
  */
 export function existingAssetFulfillmentSequenceFeasibility(input) {
-  return fulfillmentExistingAssetBoundary(
+  return fulfillmentAssetWorldLineBoundary(
     input,
-    proposal => selectAssetSegments(proposal),
-    ({ points, existing, candidates, entry, spacePoints }) =>
-      evaluateWorldLineMany(
-        points,
-        existing,
-        candidates,
-        entry,
-        undefined,
-        spacePoints
-      )
+    selectAssetSegments,
+    evaluateWorldLineMany
   );
 }
 

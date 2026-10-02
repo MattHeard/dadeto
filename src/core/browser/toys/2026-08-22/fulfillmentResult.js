@@ -292,3 +292,29 @@ export function fulfillmentAssetRequest(asset, request) {
     spacePoints: request.spacePoints,
   });
 }
+
+/**
+ * Adapt prepared asset context to the shared world-line evaluator signature.
+ * @param {string} input JSON request.
+ * @param {(proposal: Record<string, any>) => Array<Record<string, any>>} selectSegments Authored operation selection.
+ * @param {(...args: any[]) => Record<string, any>} evaluate Single or sequence world-line evaluator.
+ * @param {(candidates: Array<Record<string, any>>) => any} [selectCandidates] Evaluator-specific candidate projection.
+ * @returns {string} Feasibility JSON using the existing boundary contract.
+ */
+export function fulfillmentAssetWorldLineBoundary(
+  input,
+  selectSegments,
+  evaluate,
+  selectCandidates = candidates => candidates
+) {
+  return fulfillmentExistingAssetBoundary(input, selectSegments, context =>
+    evaluate(
+      context.points,
+      context.existing,
+      selectCandidates(context.candidates),
+      context.entry,
+      undefined,
+      context.spacePoints
+    )
+  );
+}
