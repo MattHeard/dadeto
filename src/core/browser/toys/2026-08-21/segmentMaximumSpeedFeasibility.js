@@ -1,7 +1,7 @@
 // Toy: Segment Maximum-Speed Feasibility
 import {
   indexPointRecords,
-  resolveSegment,
+  resolveCandidateSegment,
   measureSegmentMotion,
 } from './segmentAssignmentFeasibilityCore.js';
 import { resolvePointRecords } from '../2026-08-22/spacePointResolution.js';
@@ -16,11 +16,7 @@ export function segmentMaximumSpeedFeasibility(input) {
       points = indexPointRecords(
         resolvePointRecords(x.points || [], x.spacePoints || [])
       );
-    const candidate = resolveSegment(
-      new Map([[String(x.candidateSegment?.segmentId), x.candidateSegment]]),
-      points,
-      x.candidateSegment?.segmentId
-    );
+    const candidate = resolveCandidateSegment(x.candidateSegment, points);
     const { distanceMeters, durationSeconds, requiredSpeed } =
       measureSegmentMotion(candidate);
     const maximumSpeed = Number(x.maximumSpeed);

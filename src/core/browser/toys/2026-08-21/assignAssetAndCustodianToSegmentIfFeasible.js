@@ -1,7 +1,8 @@
 // Toy: Assign Asset and Custodian to Segment if Feasible
 import {
+  indexPointRecords,
   evaluateWorldLine,
-  resolveSegment,
+  resolveCandidateSegment,
   measureSegmentMotion,
 } from './segmentAssignmentFeasibilityCore.js';
 import {
@@ -17,20 +18,8 @@ import {
 export function assignAssetAndCustodianToSegmentIfFeasible(input, env) {
   try {
     const x = JSON.parse(input),
-      points = new Map(
-        /** @type {Array<Record<string, unknown>>} */ (x.points || []).map(
-          /**
-           * @param {Record<string, unknown>} point Point record.
-           * @returns {[string, Record<string, unknown>]} Point map entry.
-           */
-          point => [String(point.pointId), point]
-        )
-      );
-    const candidate = resolveSegment(
-      new Map([[String(x.candidateSegment?.segmentId), x.candidateSegment]]),
-      points,
-      x.candidateSegment?.segmentId
-    );
+      points = indexPointRecords(x.points || []);
+    const candidate = resolveCandidateSegment(x.candidateSegment, points);
     const matching = /** @type {Array<Record<string, any>>} */ (
       x.shifts || []
     ).find(

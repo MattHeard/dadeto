@@ -29,7 +29,7 @@ export function measureSegmentMotion(candidate, movingAtZero = Infinity) {
 
 /**
  * Resolve a segment's endpoint records and timestamps.
- * @param {Map<string, Record<string, unknown>>} segments Segment records.
+ * @param {Map<string, Record<string, unknown> | undefined>} segments Segment records.
  * @param {Map<string, Record<string, unknown>>} points Point records.
  * @param {string} segmentId Segment identifier.
  * @param {string} intervalLabel Error message interval label.
@@ -79,8 +79,22 @@ export function indexPointRecords(points) {
 }
 
 /**
+ * Resolve one request candidate without changing its legacy ID lookup policy.
+ * @param {Record<string, unknown> | undefined} candidate Candidate segment record.
+ * @param {Map<string, Record<string, unknown>>} points Prepared point index.
+ * @returns {ReturnType<typeof resolveSegment>} Resolved candidate.
+ */
+export function resolveCandidateSegment(candidate, points) {
+  return resolveSegment(
+    new Map([[String(candidate?.segmentId), candidate]]),
+    points,
+    /** @type {string} */ (candidate?.segmentId)
+  );
+}
+
+/**
  * Resolve and validate a segment.
- * @param {Map<string, Record<string, unknown>>} segments Segment records.
+ * @param {Map<string, Record<string, unknown> | undefined>} segments Segment records.
  * @param {Map<string, Record<string, unknown>>} points Point records.
  * @param {string} segmentId Segment ID.
  * @returns {{segmentId: string, startPointId: string, endPointId: string, startTime: number, endTime: number, start: Record<string, unknown>, end: Record<string, unknown>}} Resolved segment.

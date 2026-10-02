@@ -76,6 +76,28 @@ test('zero-time moving segments require infinity and reject finite limits', () =
   });
 });
 
+test.each([
+  [undefined, 'Unknown segment: undefined'],
+  [
+    { segmentId: 17, startPointId: 'A', endPointId: 'B' },
+    'Unknown segment: 17',
+  ],
+])(
+  'legacy speed lookup preserves candidate %p rejection',
+  (candidateSegment, reason) => {
+    expect(
+      JSON.parse(
+        segmentMaximumSpeedFeasibility(
+          JSON.stringify({
+            ...request(3600, 0.001),
+            candidateSegment,
+          })
+        )
+      )
+    ).toEqual({ feasible: false, reason });
+  }
+);
+
 test('legacy combined assignments retain their different zero-duration policy', () => {
   const input = request(0, 0.001);
   const env = new Map([
