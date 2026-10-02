@@ -1,3 +1,4 @@
+import { legacyAssignmentBoundary } from './safeAssignmentPersistence.js';
 // Toy: Assign Asset to Segment if Feasible
 import { evaluateWorldLine } from './segmentAssignmentFeasibilityCore.js';
 import {
@@ -11,9 +12,11 @@ import {
  * @returns {string} Append result.
  */
 export function assignAssetToSegmentIfFeasible(input, env) {
-  try {
-    const x = JSON.parse(input),
-      result = evaluateWorldLine(
+  return legacyAssignmentBoundary(
+    input,
+    env,
+    x => {
+      const result = evaluateWorldLine(
         x.points || [],
         x.existingSegments || [],
         x.candidateSegment,
@@ -21,26 +24,26 @@ export function assignAssetToSegmentIfFeasible(input, env) {
         x.stockOutPoint,
         x.spacePoints || []
       );
-    if (!result.feasible) return formatAssignmentFailure(result.reason);
-    return appendValidatedAssignment(
-      {
-        request: x,
-        assignment: {
-          assetId: String(x.assetId || ''),
-          segmentId: String(x.candidateSegment.segmentId),
-        },
-        path: 'assetSegmentAssignments',
-        metadata: {
-          object: {
-            assetId: x.assetId,
-            segmentId: x.candidateSegment.segmentId,
+      if (!result.feasible) return formatAssignmentFailure(result.reason);
+      return appendValidatedAssignment(
+        {
+          request: x,
+          assignment: {
+            assetId: String(x.assetId || ''),
+            segmentId: String(x.candidateSegment.segmentId),
           },
+          path: 'assetSegmentAssignments',
+          metadata: {
+            object: {
+              assetId: x.assetId,
+              segmentId: x.candidateSegment.segmentId,
+            },
+          },
+          feasibility: result,
         },
-        feasibility: result,
-      },
-      env
-    );
-  } catch (error) {
-    return formatAssignmentFailure(error.message);
-  }
+        env
+      );
+    },
+    formatAssignmentFailure
+  );
 }

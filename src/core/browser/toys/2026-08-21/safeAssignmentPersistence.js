@@ -3,6 +3,22 @@ import { deepClone } from '../../browser-core.js';
 import { requireEnvHelper } from '../browserToysCore.js';
 
 /**
+ * Run a legacy assignment writer with its original JSON and error-message boundary.
+ * @param {string} input Serialized request (no empty-input fallback).
+ * @param {import('../browserToysCore.js').ToyEnv} env Storage helpers.
+ * @param {(request: Record<string, any>, env: import('../browserToysCore.js').ToyEnv) => string} write Validated writer.
+ * @param {(reason: unknown) => string} reject Caller-specific rejection envelope.
+ * @returns {string} Serialized write or rejection result.
+ */
+export function legacyAssignmentBoundary(input, env, write, reject) {
+  try {
+    return write(JSON.parse(input), env);
+  } catch (error) {
+    return reject(error.message);
+  }
+}
+
+/**
  * Serialize a rejected atomic assignment without touching persistence.
  * @param {unknown} reason Caller-selected rejection reason.
  * @returns {string} Serialized rejection result.

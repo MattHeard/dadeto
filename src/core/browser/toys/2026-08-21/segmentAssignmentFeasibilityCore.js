@@ -93,6 +93,27 @@ export function resolveCandidateSegment(candidate, points) {
 }
 
 /**
+ * Resolve a legacy runner candidate and its first covering authored shift.
+ * @param {Record<string, any>} request Legacy assignment request.
+ * @returns {{candidate: ReturnType<typeof resolveCandidateSegment>, matching: Record<string, any> | undefined}} Candidate and matching shift.
+ */
+export function resolveLegacyRunnerShift(request) {
+  const candidate = resolveCandidateSegment(
+    request.candidateSegment,
+    indexPointRecords(request.points || [])
+  );
+  const shifts = /** @type {Array<Record<string, any>>} */ (
+    request.shifts || []
+  );
+  const matching = shifts.find(
+    shift =>
+      candidate.startTime >= Date.parse(shift.clockInPoint.timestamp) &&
+      candidate.endTime <= Date.parse(shift.clockOutPoint.timestamp)
+  );
+  return { candidate, matching };
+}
+
+/**
  * Resolve and validate a segment.
  * @param {Map<string, Record<string, unknown> | undefined>} segments Segment records.
  * @param {Map<string, Record<string, unknown>>} points Point records.
