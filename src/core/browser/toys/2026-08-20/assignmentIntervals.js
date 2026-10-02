@@ -47,3 +47,32 @@ export function overlaps(first, second) {
     Math.min(first.endTime, second.endTime)
   );
 }
+/**
+ * Test a proposed assignment against existing intervals for the same owner.
+ * @param {{points: Array<{pointId: string, timestamp: string}>, segments: Array<{segmentId: string, startPointId: string, endPointId: string}>, assignments: Array<{segmentId: string, [key: string]: unknown}>, proposedAssignment: {segmentId: string, [key: string]: unknown}}} request Caller-normalized request.
+ * @param {string} ownerKey Assignment owner field.
+ * @returns {boolean} Whether the proposed interval avoids overlap.
+ */
+export function canAppendAssignment(request, ownerKey) {
+  const points = new Map(request.points.map(point => [point.pointId, point]));
+  const segments = new Map(
+    request.segments.map(segment => [segment.segmentId, segment])
+  );
+  const proposed = resolveInterval(
+    segments,
+    points,
+    request.proposedAssignment.segmentId
+  );
+  return request.assignments
+    .filter(
+      assignment =>
+        assignment[ownerKey] === request.proposedAssignment[ownerKey]
+    )
+    .every(
+      assignment =>
+        !overlaps(
+          resolveInterval(segments, points, assignment.segmentId),
+          proposed
+        )
+    );
+}

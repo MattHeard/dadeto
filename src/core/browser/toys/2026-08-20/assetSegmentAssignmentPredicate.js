@@ -1,4 +1,4 @@
-import { resolveInterval, overlaps } from './assignmentIntervals.js';
+import { canAppendAssignment } from './assignmentIntervals.js';
 export { resolveInterval, overlaps } from './assignmentIntervals.js';
 
 // Toy: Asset Segment Assignment Predicate
@@ -12,28 +12,7 @@ export { resolveInterval, overlaps } from './assignmentIntervals.js';
 export function assetSegmentAssignmentPredicate(input) {
   try {
     const request = parseRequest(input);
-    const points = new Map(request.points.map(point => [point.pointId, point]));
-    const segments = new Map(
-      request.segments.map(segment => [segment.segmentId, segment])
-    );
-    const proposed = resolveInterval(
-      segments,
-      points,
-      request.proposedAssignment.segmentId
-    );
-    const canAppend = request.assignments
-      .filter(
-        assignment => assignment.assetId === request.proposedAssignment.assetId
-      )
-      .every(assignment => {
-        const existing = resolveInterval(
-          segments,
-          points,
-          assignment.segmentId
-        );
-        return !overlaps(existing, proposed);
-      });
-    return JSON.stringify(canAppend);
+    return JSON.stringify(canAppendAssignment(request, 'assetId'));
   } catch {
     return 'false';
   }
@@ -45,7 +24,6 @@ export function assetSegmentAssignmentPredicate(input) {
  */
 export function parseRequest(input) {
   const request = JSON.parse(input);
-  // Stryker disable all -- plain-object prototype guard is a defensive type boundary.
   if (
     !request ||
     typeof request !== 'object' ||
@@ -53,7 +31,6 @@ export function parseRequest(input) {
   ) {
     throw new Error('Input must be a JSON object.');
   }
-  // Stryker restore all
   if (
     !Array.isArray(request.points) ||
     !Array.isArray(request.segments) ||
@@ -77,14 +54,12 @@ export function parseRequest(input) {
  * @returns {{assetId: string, segmentId: string}|null} Normalized assignment.
  */
 export function normalizeAssignment(value) {
-  // Stryker disable all -- plain-object prototype guard is a defensive type boundary.
   if (
     !value ||
     typeof value !== 'object' ||
     Object.getPrototypeOf(value) !== Object.prototype
   )
     return null;
-  // Stryker restore all
   const assignment = /** @type {Record<string, unknown>} */ (value);
   const assetId = String(assignment.assetId || '').trim();
   const segmentId = String(assignment.segmentId || '').trim();

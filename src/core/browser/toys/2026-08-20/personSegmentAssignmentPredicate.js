@@ -1,4 +1,4 @@
-import { resolveInterval, overlaps } from './assignmentIntervals.js';
+import { canAppendAssignment } from './assignmentIntervals.js';
 export { resolveInterval, overlaps } from './assignmentIntervals.js';
 
 // Toy: Person Segment Assignment Predicate
@@ -12,28 +12,7 @@ export { resolveInterval, overlaps } from './assignmentIntervals.js';
 export function personSegmentAssignmentPredicate(input) {
   try {
     const request = parseRequest(input);
-    const points = new Map(request.points.map(point => [point.pointId, point]));
-    const segments = new Map(
-      request.segments.map(segment => [segment.segmentId, segment])
-    );
-    const proposed = resolveInterval(
-      segments,
-      points,
-      request.proposedAssignment.segmentId
-    );
-    const canAppend = request.assignments
-      .filter(
-        assignment =>
-          assignment.personId === request.proposedAssignment.personId
-      )
-      .every(
-        assignment =>
-          !overlaps(
-            resolveInterval(segments, points, assignment.segmentId),
-            proposed
-          )
-      );
-    return JSON.stringify(canAppend);
+    return JSON.stringify(canAppendAssignment(request, 'personId'));
   } catch {
     return 'false';
   }
@@ -46,14 +25,12 @@ export function personSegmentAssignmentPredicate(input) {
  */
 export function parseRequest(input) {
   const request = JSON.parse(input);
-  // Stryker disable all -- defensive plain-object type boundary.
   if (
     !request ||
     typeof request !== 'object' ||
     Object.getPrototypeOf(request) !== Object.prototype
   )
     throw new Error('points, segments, and assignments arrays are required.');
-  // Stryker restore all
   if (!Array.isArray(request.points))
     throw new Error('points array is required.');
   if (!Array.isArray(request.segments))
@@ -77,9 +54,7 @@ export function parseRequest(input) {
  * @returns {{personId: string, segmentId: string}|null} Normalized assignment.
  */
 export function normalizeAssignment(value) {
-  // Stryker disable all -- defensive malformed-input type boundary.
   if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
-  // Stryker restore all
   const assignment = /** @type {Record<string, unknown>} */ (value);
   const personId = String(assignment.personId || '').trim();
   const segmentId = String(assignment.segmentId || '').trim();
