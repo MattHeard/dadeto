@@ -1,3 +1,113 @@
+import { durationMilliseconds } from '../timing.js';
+
+/**
+ * Serialize an epoch instant at the request/response boundary.
+ * @param {number} time Epoch milliseconds.
+ * @returns {string} UTC ISO timestamp.
+ */
+export function timestampFromEpoch(time) {
+  return new Date(time).toISOString();
+}
+
+/**
+ * Interpret a serialized availability window and return its latest placement.
+ * @param {number} durationSeconds Required duration.
+ * @param {unknown} earliestStart Earliest allowed instant.
+ * @param {unknown} latestEnd Latest allowed instant.
+ * @returns {{feasible: boolean, reason?: string, startTimestamp?: string, endTimestamp?: string}} Placement response.
+ */
+export function latestPlacement(durationSeconds, earliestStart, latestEnd) {
+  if (!Number.isFinite(durationSeconds) || durationSeconds < 0) {
+    return { feasible: false, reason: 'invalid-duration' };
+  }
+  const earliest = parseTime(earliestStart);
+  const end = parseTime(latestEnd);
+  const start = end - durationMilliseconds(durationSeconds);
+  if (!Number.isFinite(earliest) || !Number.isFinite(end) || start < earliest) {
+    return { feasible: false, reason: 'no-placement' };
+  }
+  return {
+    feasible: true,
+    startTimestamp: timestampFromEpoch(start),
+    endTimestamp: timestampFromEpoch(end),
+  };
+}
+
+/**
+ *
+ * @param {{startTimestamp: string, endTimestamp: string}} interval Candidate interval.
+ * @param {unknown} schedule Shift windows.
+ * @param {unknown} commitments Occupied windows.
+ * @returns {{feasible: boolean, reason?: string}} Runner feasibility.
+ */
+export function runnerInterval(interval, schedule, commitments) {
+  if (!interval || !Array.isArray(schedule) || !Array.isArray(commitments))
+    return { feasible: false, reason: 'invalid-runner-input' };
+  const fits = schedule.some(window =>
+    contained(
+      interval.startTimestamp,
+      interval.endTimestamp,
+      windowStart(window),
+      windowEnd(window)
+    )
+  );
+  if (!fits) return { feasible: false, reason: 'outside-shift' };
+  const blocked = commitments.some(commitment =>
+    overlap(
+      interval.startTimestamp,
+      interval.endTimestamp,
+      windowStart(commitment),
+      windowEnd(commitment)
+    )
+  );
+  return blocked
+    ? { feasible: false, reason: 'runner-commitment-overlap' }
+    : { feasible: true };
+}
+
+/**
+ *
+ * @param {{startTimestamp: string, endTimestamp: string}} candidate Candidate placement.
+ * @param {Record<string, unknown>} request Runner context.
+ * @returns {Record<string, unknown>} Placement with runner feasibility.
+ */
+export function withRunner(candidate, request) {
+  return {
+    ...candidate,
+    ...runnerInterval(
+      candidate,
+      request.runnerSchedule,
+      request.runnerCommitments
+    ),
+  };
+}
+
+/**
+ *
+ * @param {Record<string, any>} window Shift or commitment window.
+ * @returns {unknown} Start timestamp in the supported window shape.
+ */
+export function windowStart(window) {
+  return (
+    window.startTimestamp ||
+    window.clockInTimestamp ||
+    window.clockInPoint?.timestamp
+  );
+}
+
+/**
+ *
+ * @param {Record<string, any>} window Shift or commitment window.
+ * @returns {unknown} End timestamp in the supported window shape.
+ */
+export function windowEnd(window) {
+  return (
+    window.endTimestamp ||
+    window.clockOutTimestamp ||
+    window.clockOutPoint?.timestamp
+  );
+}
+
 const FOOTBALL_SKU = 'FOOTBALL';
 
 /**

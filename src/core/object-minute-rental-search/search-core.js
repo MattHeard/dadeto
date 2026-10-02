@@ -1,61 +1,23 @@
 // @ts-nocheck -- this module is consumed through validated HTTP boundaries.
-import { parseTime, exactLookup, contained, overlap } from './request/index.js';
+import {
+  parseTime,
+  exactLookup,
+  contained,
+  latestPlacement,
+  withRunner,
+  windowStart,
+  windowEnd,
+  timestampFromEpoch as iso,
+} from './request/index.js';
+import { durationMilliseconds } from './timing.js';
 export {
   parseTime,
   exactLookup,
   contained,
   validatePossessionContextTime,
+  latestPlacement,
+  runnerInterval,
 } from './request/index.js';
-
-/**
- *
- * @param {number} durationSeconds Required duration.
- * @param {unknown} earliestStart Earliest allowed instant.
- * @param {unknown} latestEnd Latest allowed instant.
- * @returns {{feasible: boolean, reason?: string, startTimestamp?: string, endTimestamp?: string}} Placement result.
- */
-export function latestPlacement(durationSeconds, earliestStart, latestEnd) {
-  if (!Number.isFinite(durationSeconds) || durationSeconds < 0)
-    return { feasible: false, reason: 'invalid-duration' };
-  const earliest = parseTime(earliestStart),
-    end = parseTime(latestEnd);
-  const start = end - durationSeconds * 1000;
-  if (!Number.isFinite(earliest) || !Number.isFinite(end) || start < earliest)
-    return { feasible: false, reason: 'no-placement' };
-  return { feasible: true, startTimestamp: iso(start), endTimestamp: iso(end) };
-}
-
-/**
- *
- * @param {{startTimestamp: string, endTimestamp: string}} interval Candidate interval.
- * @param {Array<Record<string, unknown>>} schedule Shift windows.
- * @param {Array<Record<string, unknown>>} commitments Occupied windows.
- * @returns {{feasible: boolean, reason?: string}} Runner feasibility.
- */
-export function runnerInterval(interval, schedule, commitments) {
-  if (!interval || !Array.isArray(schedule) || !Array.isArray(commitments))
-    return { feasible: false, reason: 'invalid-runner-input' };
-  const fits = schedule.some(window =>
-    contained(
-      interval.startTimestamp,
-      interval.endTimestamp,
-      windowStart(window),
-      windowEnd(window)
-    )
-  );
-  if (!fits) return { feasible: false, reason: 'outside-shift' };
-  const blocked = commitments.some(commitment =>
-    overlap(
-      interval.startTimestamp,
-      interval.endTimestamp,
-      windowStart(commitment),
-      windowEnd(commitment)
-    )
-  );
-  return blocked
-    ? { feasible: false, reason: 'runner-commitment-overlap' }
-    : { feasible: true };
-}
 
 /**
  *
@@ -119,7 +81,7 @@ export function pickup(request) {
     return { feasible: false, reason: 'invalid-duration' };
   const start = pointTimestamp(request.pickupPoint);
   const startTime = parseTime(start);
-  const end = startTime + request.pickupDurationSeconds * 1000;
+  const end = startTime + durationMilliseconds(request.pickupDurationSeconds);
   if (!Number.isFinite(startTime))
     return { feasible: false, reason: 'invalid-pickup-time' };
   const candidate = { startTimestamp: start, endTimestamp: iso(end) };
@@ -192,56 +154,4 @@ export function searchResult(request) {
  */
 export function pointTimestamp(point) {
   return point?.timestamp;
-}
-
-/**
- *
- * @param {{startTimestamp: string, endTimestamp: string}} candidate Candidate placement.
- * @param {Record<string, unknown>} request Runner context.
- * @returns {Record<string, unknown>} Placement with runner feasibility.
- */
-function withRunner(candidate, request) {
-  return {
-    ...candidate,
-    ...runnerInterval(
-      candidate,
-      request.runnerSchedule,
-      request.runnerCommitments
-    ),
-  };
-}
-
-/**
- *
- * @param {Record<string, unknown>} window Shift or commitment window.
- * @returns {unknown} Start timestamp in the supported window shape.
- */
-function windowStart(window) {
-  return (
-    window.startTimestamp ||
-    window.clockInTimestamp ||
-    window.clockInPoint?.timestamp
-  );
-}
-
-/**
- *
- * @param {Record<string, unknown>} window Shift or commitment window.
- * @returns {unknown} End timestamp in the supported window shape.
- */
-function windowEnd(window) {
-  return (
-    window.endTimestamp ||
-    window.clockOutTimestamp ||
-    window.clockOutPoint?.timestamp
-  );
-}
-
-/**
- *
- * @param {number} time Epoch milliseconds.
- * @returns {string} UTC ISO timestamp.
- */
-function iso(time) {
-  return new Date(time).toISOString();
 }
