@@ -17,3 +17,17 @@ Regression entry points: `test/core/browser/manual.test.js`,
 `test/mosslight-e2e/manual.spec.ts` (phone and desktop request timing/retry).
 Sandboxed local browsers require permission to bind port 4173; use repo-local
 TMPDIR when the system temporary filesystem is full.
+
+## Verified evidence
+
+- Focused Jest: 16 tests passed; both new modules have 100% coverage on all
+  metrics (`.tmp/manual-unit-final.log`, `.tmp/manual-coverage`).
+- Local Playwright: four phone/desktop tests passed
+  (`.tmp/manual-browser-final.log`).
+- Build and manual validation passed with 75 published Markdown assets. Compact
+  manifest size fell from 372597 to 180664 bytes; content order is unchanged.
+- Full check (`.tmp/manual-check-final.log`): tests and aggregate coverage passed
+  at 100% across all metrics; nine static gates passed. Duplication alone failed
+  with the unchanged 138-clone baseline, tracked by `dadeto-aaou`.
+- Feature commit `6d5a80a6e4` deployed successfully in production workflow
+  `37037193282`; the live Markdown asset and loader were verified over HTTP.
