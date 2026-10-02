@@ -5,6 +5,16 @@ const DEFAULT_SUPPLIER = {
 const DEFAULT_SUPPLIER_TIME_ZONE = 'UTC';
 
 /**
+ * Parse a candidate timestamp without changing invalid-input NaN semantics.
+ * @param {unknown} value Candidate timestamp.
+ * @returns {number} Epoch milliseconds or NaN.
+ */
+export function parseTime(value) {
+  const time = Date.parse(String(value));
+  return Number.isFinite(time) ? time : NaN;
+}
+
+/**
  * @param {unknown} body Request body.
  * @param {Record<string, string|undefined>} env Environment values.
  * @param {() => Date} clock Current-time provider.

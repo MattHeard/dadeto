@@ -1,4 +1,6 @@
 // @ts-nocheck -- this module is consumed through validated HTTP boundaries.
+import { parseTime } from './request/index.js';
+export { parseTime } from './request/index.js';
 
 const FOOTBALL_SKU = 'FOOTBALL';
 
@@ -221,16 +223,6 @@ export function searchResult(request) {
     valid: true,
     results: result.feasible ? [{ skuId: lookup.skuId }] : [],
   };
-}
-
-/**
- *
- * @param {unknown} value Candidate timestamp.
- * @returns {number} Epoch milliseconds or NaN.
- */
-export function parseTime(value) {
-  const time = Date.parse(String(value));
-  return Number.isFinite(time) ? time : NaN;
 }
 
 /**
