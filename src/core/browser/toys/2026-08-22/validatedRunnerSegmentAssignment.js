@@ -3,11 +3,10 @@ import {
   evaluateRunnerWorldLine,
   normalizeAssignmentId,
   resolveSpeed,
-  assignmentErrorReason,
+  strictAssignmentBoundary,
   formatAssignmentFailure,
   findCoveringShift,
 } from './strictAssignmentCore.js';
-import { appendOneAssignment } from '../2026-08-21/safeAssignmentPersistence.js';
 
 /**
  * @param {string} input JSON runner assignment request.
@@ -15,9 +14,8 @@ import { appendOneAssignment } from '../2026-08-21/safeAssignmentPersistence.js'
  * @returns {string} Strict append result.
  */
 export function validatedRunnerSegmentAssignment(input, env) {
-  try {
-    const x = JSON.parse(input || '{}'),
-      personId = normalizeAssignmentId(x.personId),
+  return strictAssignmentBoundary(input, env, x => {
+    const personId = normalizeAssignmentId(x.personId),
       segmentId = normalizeAssignmentId(x.candidateSegment?.segmentId);
     if (!personId) return formatAssignmentFailure('invalid-person-id');
     if (!segmentId) return formatAssignmentFailure('invalid-segment-id');
@@ -30,20 +28,12 @@ export function validatedRunnerSegmentAssignment(input, env) {
     if (speed.requiredSpeed > speed.maximumSpeed)
       return formatAssignmentFailure('excessive-speed');
     const result = evaluateRunnerWorldLine(x, matching);
-    if (!result.feasible) return formatAssignmentFailure(result.reason);
-    const length = appendOneAssignment(
-      x,
-      { personId, segmentId },
-      'personSegmentAssignments',
-      env
-    );
-    return JSON.stringify({
-      appended: true,
-      feasible: true,
-      length,
-      shiftId: matching.shiftId,
-    });
-  } catch (error) {
-    return formatAssignmentFailure(assignmentErrorReason(error));
-  }
+    return {
+      feasibility: result,
+      request: x,
+      assignment: { personId, segmentId },
+      path: 'personSegmentAssignments',
+      metadata: { shiftId: matching.shiftId },
+    };
+  });
 }

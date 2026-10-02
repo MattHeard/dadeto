@@ -6,6 +6,48 @@ import {
 } from '../2026-08-21/segmentAssignmentFeasibilityCore.js';
 import { wgs84Distance } from '../2026-08-20/wgs84Distance.js';
 import { resolvePointRecords } from './spacePointResolution.js';
+import { appendOneAssignment } from '../2026-08-21/safeAssignmentPersistence.js';
+
+/**
+ * Parse a strict assignment request and preserve its shared rejection envelope.
+ * @param {string} input JSON request.
+ * @param {import('../browserToysCore.js').ToyEnv} env Storage helpers.
+ * @param {(request: Record<string, any>) => string | {request: {memoryLocation?: string, path?: string}, assignment: Record<string, unknown>, path: string, metadata: Record<string, unknown>, feasibility: {feasible: boolean, reason?: unknown}}} calculate Assignment evaluator.
+ * @returns {string} Serialized assignment result.
+ */
+export function strictAssignmentBoundary(input, env, calculate) {
+  try {
+    const result = calculate(JSON.parse(input || '{}'));
+    if (typeof result === 'string') {
+      return result;
+    }
+    return appendValidatedAssignment(result, env);
+  } catch (error) {
+    return formatAssignmentFailure(assignmentErrorReason(error));
+  }
+}
+
+/**
+ * Persist a feasible assignment and serialize its common successful result.
+ * @param {{request: {memoryLocation?: string, path?: string}, assignment: Record<string, unknown>, path: string, metadata: Record<string, unknown>, feasibility: {feasible: boolean, reason?: unknown}}} options Assignment persistence and toy-specific response metadata.
+ * @param {import('../browserToysCore.js').ToyEnv} env Storage helpers.
+ * @returns {string} Strict append result.
+ */
+export function appendValidatedAssignment(
+  { request, assignment, path, metadata, feasibility },
+  env
+) {
+  if (!feasibility.feasible) {
+    return formatAssignmentFailure(feasibility.reason);
+  }
+  const length = appendOneAssignment(request, assignment, path, env);
+  return JSON.stringify({
+    appended: true,
+    feasible: true,
+    length,
+    ...metadata,
+  });
+}
 
 /**
  * Normalize an identifier and reject absent/sentinel values.
