@@ -1,5 +1,6 @@
 import {
-  fulfillmentFailure,
+  fulfillmentBoundary,
+  fulfillmentSequenceResponse,
   fulfillmentPoint as point,
   fulfillmentSegment as segment,
   fulfillmentMinuteAligned as isMinuteTimestamp,
@@ -18,8 +19,7 @@ import {
  * @returns {string} Deterministic proposal or structured failure.
  */
 export function procurementBackedFulfillmentSequenceProposal(input) {
-  try {
-    const request = JSON.parse(input);
+  return fulfillmentBoundary(input, 'valid', request => {
     const value = validateRequest(request);
     const { context, warehouse, travel, configuration, ids } = value;
     const possessionStart = Date.parse(context.startPoint.timestamp);
@@ -133,16 +133,12 @@ export function procurementBackedFulfillmentSequenceProposal(input) {
         allocatedDurationSeconds: cleaningAllocated,
       }),
     ];
-    return JSON.stringify({
-      spacePoints: [warehouseSpacePoint],
-      points,
-      segments,
-      sequence,
-      possessionContext: { segmentId: context.segment.segmentId },
-    });
-  } catch (error) {
-    return fulfillmentFailure(error);
-  }
+    return fulfillmentSequenceResponse(
+      warehouseSpacePoint,
+      { points, segments, sequence },
+      context.segment.segmentId
+    );
+  });
 }
 
 // Procurement-backed proposals finish at the serialization boundary.

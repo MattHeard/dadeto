@@ -16,14 +16,57 @@ export function fulfillmentFailure(error, key = 'valid') {
  * @param {string} input JSON request.
  * @param {'valid'|'feasible'} key Result validity key.
  * @param {(request: Record<string, any>) => string} calculate Calculation.
+ * @param {(error: unknown, key: 'valid'|'feasible') => string} [serializeFailure] Caller-specific failure envelope.
  * @returns {string} JSON result.
  */
-export function fulfillmentBoundary(input, key, calculate) {
+export function fulfillmentBoundary(
+  input,
+  key,
+  calculate,
+  serializeFailure = fulfillmentFailure
+) {
   try {
     return calculate(JSON.parse(input));
   } catch (error) {
-    return fulfillmentFailure(error, key);
+    return serializeFailure(error, key);
   }
+}
+
+/**
+ * Preserve the original proposal-only error envelope without normalizing thrown values.
+ * @param {unknown} error Original thrown value.
+ * @returns {string} Legacy valid/error JSON response.
+ */
+export function fulfillmentProposalFailure(error) {
+  return JSON.stringify({
+    valid: false,
+    error: /** @type {{message?: unknown}} */ (error).message,
+  });
+}
+
+/**
+ * Serialize the common fulfillment sequence while retaining caller-owned fields.
+ * @param {Record<string, any>} spacePoint Warehouse spatial record.
+ * @param {{points: Record<string, any>[], segments: Record<string, any>[], sequence: Record<string, any>[]}} records Authored sequence records.
+ * @param {string} segmentId Existing possession segment identity.
+ * @param {Record<string, any>} [fields] Caller-specific leading result fields.
+ * @returns {string} Complete sequence response JSON.
+ */
+export function fulfillmentSequenceResponse(
+  spacePoint,
+  records,
+  segmentId,
+  fields = {}
+) {
+  const { points, segments, sequence } = records;
+  return JSON.stringify({
+    ...fields,
+    spacePoints: [spacePoint],
+    points,
+    segments,
+    sequence,
+    possessionContext: { segmentId },
+  });
 }
 
 /**

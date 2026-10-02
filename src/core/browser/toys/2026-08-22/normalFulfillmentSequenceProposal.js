@@ -1,4 +1,7 @@
 import {
+  fulfillmentBoundary,
+  fulfillmentProposalFailure,
+  fulfillmentSequenceResponse,
   fulfillmentNonblankString as nonblank,
   fulfillmentMinuteAligned as minuteAligned,
   fulfillmentPoint as warehousePoint,
@@ -18,180 +21,182 @@ import {
  * @returns {string} Deterministic proposal or structured failure.
  */
 export function normalFulfillmentSequenceProposal(input) {
-  try {
-    const { context, warehouse, travel, configuration, ids } = validate(
-      JSON.parse(input)
-    );
-    const start = Date.parse(context.startPoint.timestamp);
-    const end = Date.parse(context.endPoint.timestamp);
-    const deliveryOutbound = allocated(
-      travel.deliveryOutboundSeconds,
-      configuration.deliveryOutboundBufferSeconds
-    );
-    const deliveryReturn = allocated(
-      travel.deliveryReturnSeconds,
-      configuration.deliveryReturnBufferSeconds
-    );
-    const pickupOutbound = allocated(
-      travel.pickupOutboundSeconds,
-      configuration.pickupOutboundBufferSeconds
-    );
-    const pickupReturn = allocated(
-      travel.pickupReturnSeconds,
-      configuration.pickupReturnBufferSeconds
-    );
-    const inspection = allocated(
-      configuration.inspectionDurationSeconds,
-      configuration.inspectionBufferSeconds
-    );
-    const cleaning = allocated(
-      configuration.cleaningDurationSeconds,
-      configuration.cleaningBufferSeconds
-    );
-    /** @type {Record<string, number>} */
-    const times = {
-      deliveryOutboundStart: start - deliveryOutbound * 1000,
-      deliveryReturnEnd: start + deliveryReturn * 1000,
-      pickupOutboundStart: end - pickupOutbound * 1000,
-      pickupReturnEnd: end + pickupReturn * 1000,
-    };
-    times.inspectionComplete = times.pickupReturnEnd + inspection * 1000;
-    times.cleaningComplete = times.inspectionComplete + cleaning * 1000;
-    if (Object.values(times).some(time => !minuteAligned(time)))
-      throw new Error('All resulting timestamps must align to whole minutes.');
+  return fulfillmentBoundary(
+    input,
+    'valid',
+    request => {
+      const { context, warehouse, travel, configuration, ids } =
+        validate(request);
+      const start = Date.parse(context.startPoint.timestamp);
+      const end = Date.parse(context.endPoint.timestamp);
+      const deliveryOutbound = allocated(
+        travel.deliveryOutboundSeconds,
+        configuration.deliveryOutboundBufferSeconds
+      );
+      const deliveryReturn = allocated(
+        travel.deliveryReturnSeconds,
+        configuration.deliveryReturnBufferSeconds
+      );
+      const pickupOutbound = allocated(
+        travel.pickupOutboundSeconds,
+        configuration.pickupOutboundBufferSeconds
+      );
+      const pickupReturn = allocated(
+        travel.pickupReturnSeconds,
+        configuration.pickupReturnBufferSeconds
+      );
+      const inspection = allocated(
+        configuration.inspectionDurationSeconds,
+        configuration.inspectionBufferSeconds
+      );
+      const cleaning = allocated(
+        configuration.cleaningDurationSeconds,
+        configuration.cleaningBufferSeconds
+      );
+      /** @type {Record<string, number>} */
+      const times = {
+        deliveryOutboundStart: start - deliveryOutbound * 1000,
+        deliveryReturnEnd: start + deliveryReturn * 1000,
+        pickupOutboundStart: end - pickupOutbound * 1000,
+        pickupReturnEnd: end + pickupReturn * 1000,
+      };
+      times.inspectionComplete = times.pickupReturnEnd + inspection * 1000;
+      times.cleaningComplete = times.inspectionComplete + cleaning * 1000;
+      if (Object.values(times).some(time => !minuteAligned(time)))
+        throw new Error(
+          'All resulting timestamps must align to whole minutes.'
+        );
 
-    const points = [
-      warehousePoint(
-        ids.points.deliveryOutboundStart,
-        warehouse.spacePointId,
-        times.deliveryOutboundStart
-      ),
-      warehousePoint(
-        ids.points.deliveryReturnEnd,
-        warehouse.spacePointId,
-        times.deliveryReturnEnd
-      ),
-      warehousePoint(
-        ids.points.pickupOutboundStart,
-        warehouse.spacePointId,
-        times.pickupOutboundStart
-      ),
-      warehousePoint(
-        ids.points.pickupReturnEnd,
-        warehouse.spacePointId,
-        times.pickupReturnEnd
-      ),
-      warehousePoint(
-        ids.points.inspectionComplete,
-        warehouse.spacePointId,
-        times.inspectionComplete
-      ),
-      warehousePoint(
-        ids.points.cleaningComplete,
-        warehouse.spacePointId,
-        times.cleaningComplete
-      ),
-      context.startPoint,
-      context.endPoint,
-    ];
-    const segments = [
-      makeSegment(
-        ids.segments.deliveryOutbound,
-        ids.points.deliveryOutboundStart,
-        context.startPoint.pointId
-      ),
-      makeSegment(
-        ids.segments.deliveryReturn,
-        context.startPoint.pointId,
-        ids.points.deliveryReturnEnd
-      ),
-      context.segment,
-      makeSegment(
-        ids.segments.pickupOutbound,
-        ids.points.pickupOutboundStart,
-        context.endPoint.pointId
-      ),
-      makeSegment(
-        ids.segments.pickupReturn,
-        context.endPoint.pointId,
-        ids.points.pickupReturnEnd
-      ),
-      ...fulfillmentRecoverySegments(ids, ids.points.pickupReturnEnd),
-    ];
-    const sequence = [
-      metadata({
-        operationName: 'delivery-outbound',
-        segmentId: ids.segments.deliveryOutbound,
-        requiresAsset: true,
-        requiresRunner: true,
-        runnerCustody: true,
-        baseDurationSeconds: travel.deliveryOutboundSeconds,
-        bufferSeconds: configuration.deliveryOutboundBufferSeconds,
-      }),
-      metadata({
-        operationName: 'delivery-return',
-        segmentId: ids.segments.deliveryReturn,
-        requiresAsset: false,
-        requiresRunner: true,
-        runnerCustody: false,
-        baseDurationSeconds: travel.deliveryReturnSeconds,
-        bufferSeconds: configuration.deliveryReturnBufferSeconds,
-      }),
-      metadata({
-        operationName: 'possession',
-        segmentId: context.segment.segmentId,
-        requiresAsset: true,
-        requiresRunner: false,
-        runnerCustody: false,
-      }),
-      metadata({
-        operationName: 'pickup-outbound',
-        segmentId: ids.segments.pickupOutbound,
-        requiresAsset: false,
-        requiresRunner: true,
-        runnerCustody: false,
-        baseDurationSeconds: travel.pickupOutboundSeconds,
-        bufferSeconds: configuration.pickupOutboundBufferSeconds,
-      }),
-      metadata({
-        operationName: 'pickup-return',
-        segmentId: ids.segments.pickupReturn,
-        requiresAsset: true,
-        requiresRunner: true,
-        runnerCustody: true,
-        baseDurationSeconds: travel.pickupReturnSeconds,
-        bufferSeconds: configuration.pickupReturnBufferSeconds,
-      }),
-      metadata({
-        operationName: 'inspection',
-        segmentId: ids.segments.inspection,
-        requiresAsset: true,
-        requiresRunner: true,
-        runnerCustody: true,
-        baseDurationSeconds: configuration.inspectionDurationSeconds,
-        bufferSeconds: configuration.inspectionBufferSeconds,
-      }),
-      metadata({
-        operationName: 'cleaning',
-        segmentId: ids.segments.cleaning,
-        requiresAsset: true,
-        requiresRunner: true,
-        runnerCustody: true,
-        baseDurationSeconds: configuration.cleaningDurationSeconds,
-        bufferSeconds: configuration.cleaningBufferSeconds,
-      }),
-    ];
-    return JSON.stringify({
-      valid: true,
-      spacePoints: [fulfillmentWarehouseSpacePoint(warehouse)],
-      points,
-      segments,
-      sequence,
-      possessionContext: { segmentId: context.segment.segmentId },
-    });
-  } catch (error) {
-    return JSON.stringify({ valid: false, error: error.message });
-  }
+      const points = [
+        warehousePoint(
+          ids.points.deliveryOutboundStart,
+          warehouse.spacePointId,
+          times.deliveryOutboundStart
+        ),
+        warehousePoint(
+          ids.points.deliveryReturnEnd,
+          warehouse.spacePointId,
+          times.deliveryReturnEnd
+        ),
+        warehousePoint(
+          ids.points.pickupOutboundStart,
+          warehouse.spacePointId,
+          times.pickupOutboundStart
+        ),
+        warehousePoint(
+          ids.points.pickupReturnEnd,
+          warehouse.spacePointId,
+          times.pickupReturnEnd
+        ),
+        warehousePoint(
+          ids.points.inspectionComplete,
+          warehouse.spacePointId,
+          times.inspectionComplete
+        ),
+        warehousePoint(
+          ids.points.cleaningComplete,
+          warehouse.spacePointId,
+          times.cleaningComplete
+        ),
+        context.startPoint,
+        context.endPoint,
+      ];
+      const segments = [
+        makeSegment(
+          ids.segments.deliveryOutbound,
+          ids.points.deliveryOutboundStart,
+          context.startPoint.pointId
+        ),
+        makeSegment(
+          ids.segments.deliveryReturn,
+          context.startPoint.pointId,
+          ids.points.deliveryReturnEnd
+        ),
+        context.segment,
+        makeSegment(
+          ids.segments.pickupOutbound,
+          ids.points.pickupOutboundStart,
+          context.endPoint.pointId
+        ),
+        makeSegment(
+          ids.segments.pickupReturn,
+          context.endPoint.pointId,
+          ids.points.pickupReturnEnd
+        ),
+        ...fulfillmentRecoverySegments(ids, ids.points.pickupReturnEnd),
+      ];
+      const sequence = [
+        metadata({
+          operationName: 'delivery-outbound',
+          segmentId: ids.segments.deliveryOutbound,
+          requiresAsset: true,
+          requiresRunner: true,
+          runnerCustody: true,
+          baseDurationSeconds: travel.deliveryOutboundSeconds,
+          bufferSeconds: configuration.deliveryOutboundBufferSeconds,
+        }),
+        metadata({
+          operationName: 'delivery-return',
+          segmentId: ids.segments.deliveryReturn,
+          requiresAsset: false,
+          requiresRunner: true,
+          runnerCustody: false,
+          baseDurationSeconds: travel.deliveryReturnSeconds,
+          bufferSeconds: configuration.deliveryReturnBufferSeconds,
+        }),
+        metadata({
+          operationName: 'possession',
+          segmentId: context.segment.segmentId,
+          requiresAsset: true,
+          requiresRunner: false,
+          runnerCustody: false,
+        }),
+        metadata({
+          operationName: 'pickup-outbound',
+          segmentId: ids.segments.pickupOutbound,
+          requiresAsset: false,
+          requiresRunner: true,
+          runnerCustody: false,
+          baseDurationSeconds: travel.pickupOutboundSeconds,
+          bufferSeconds: configuration.pickupOutboundBufferSeconds,
+        }),
+        metadata({
+          operationName: 'pickup-return',
+          segmentId: ids.segments.pickupReturn,
+          requiresAsset: true,
+          requiresRunner: true,
+          runnerCustody: true,
+          baseDurationSeconds: travel.pickupReturnSeconds,
+          bufferSeconds: configuration.pickupReturnBufferSeconds,
+        }),
+        metadata({
+          operationName: 'inspection',
+          segmentId: ids.segments.inspection,
+          requiresAsset: true,
+          requiresRunner: true,
+          runnerCustody: true,
+          baseDurationSeconds: configuration.inspectionDurationSeconds,
+          bufferSeconds: configuration.inspectionBufferSeconds,
+        }),
+        metadata({
+          operationName: 'cleaning',
+          segmentId: ids.segments.cleaning,
+          requiresAsset: true,
+          requiresRunner: true,
+          runnerCustody: true,
+          baseDurationSeconds: configuration.cleaningDurationSeconds,
+          bufferSeconds: configuration.cleaningBufferSeconds,
+        }),
+      ];
+      return fulfillmentSequenceResponse(
+        fulfillmentWarehouseSpacePoint(warehouse),
+        { points, segments, sequence },
+        context.segment.segmentId,
+        { valid: true }
+      );
+    },
+    fulfillmentProposalFailure
+  );
 }
 
 /**
