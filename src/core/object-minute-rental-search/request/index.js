@@ -35,7 +35,7 @@ export function latestPlacement(durationSeconds, earliestStart, latestEnd) {
 
 /**
  *
- * @param {{startTimestamp: string, endTimestamp: string}} interval Candidate interval.
+ * @param {{startTimestamp?: unknown, endTimestamp?: unknown}} interval Candidate interval.
  * @param {unknown} schedule Shift windows.
  * @param {unknown} commitments Occupied windows.
  * @returns {{feasible: boolean, reason?: string}} Runner feasibility.
@@ -67,7 +67,7 @@ export function runnerInterval(interval, schedule, commitments) {
 
 /**
  *
- * @param {{startTimestamp: string, endTimestamp: string}} candidate Candidate placement.
+ * @param {{startTimestamp?: unknown, endTimestamp?: unknown}} candidate Candidate placement.
  * @param {Record<string, unknown>} request Runner context.
  * @returns {Record<string, unknown>} Placement with runner feasibility.
  */
