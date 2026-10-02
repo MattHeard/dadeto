@@ -1,9 +1,7 @@
 // Shared compatibility resolver for legacy inline and referenced space points.
 
-import { normalizeCoordinate } from '../2026-08-18/registryUtils.js';
-
-// Stryker disable all -- this module is the fixed legacy/reference coordinate
-// compatibility boundary covered by the space-point compatibility suite.
+import { normalizeSpatialCoordinates } from '../2026-08-18/registryUtils.js';
+export { normalizeSpatialCoordinates };
 
 /**
  * Resolve spacetime-point coordinate references while preserving legacy points.
@@ -49,20 +47,12 @@ export function resolvePoint(point, spacePoints, requireCoordinates = false) {
       Number(point.longitude) !== Number(reference.longitude))
   )
     throw new Error(`Point ${point.pointId} conflicts with its space point.`);
-  const latitude = normalizeCoordinate(
-      reference ? reference.latitude : point.latitude,
-      -90,
-      90
-    ),
-    longitude = normalizeCoordinate(
-      reference ? reference.longitude : point.longitude,
-      -180,
-      180
-    );
+  const { latitude, longitude } = normalizeSpatialCoordinates(
+    reference || point
+  );
   if ((hasLatitude || reference) && (latitude === null || longitude === null))
     throw new Error(`Point ${point.pointId} has invalid coordinates.`);
   if (reference && !hasLatitude) return { ...point, latitude, longitude };
   if (hasLatitude) return { ...point, latitude, longitude };
   return point;
 }
-// Stryker restore all

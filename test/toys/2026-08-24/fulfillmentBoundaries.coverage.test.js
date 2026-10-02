@@ -11,6 +11,7 @@ import {
   fulfillmentNonblankString,
   fulfillmentResolvePoint,
   fulfillmentExistingAssetBoundary,
+  fulfillmentSkuBoundary,
 } from '../../../src/core/browser/toys/2026-08-22/fulfillmentResult.js';
 import {
   evaluateWorldLineMany,
@@ -24,6 +25,28 @@ import { existingAssetFulfillmentFeasibility } from '../../../src/core/browser/t
 import { existingAssetFulfillmentSequenceFeasibility } from '../../../src/core/browser/toys/2026-08-23/existingAssetFulfillmentSequenceFeasibility.js';
 
 describe('fulfillment boundary helpers', () => {
+  test('retains direct asset/request evaluation without a serialization strategy', () => {
+    const request = {
+      requestedSku: 'lamp',
+      assets: [
+        { assetId: 'b', sku: 'lamp' },
+        { assetId: 'a', sku: 'lamp' },
+      ],
+    };
+    const calls = [];
+    const result = fulfillmentSkuBoundary(
+      JSON.stringify(request),
+      (asset, original) => {
+        calls.push([asset.assetId, original]);
+        return JSON.stringify({ feasible: asset.assetId === 'b' });
+      }
+    );
+    expect(result).toBe('{"feasible":true}');
+    expect(calls).toEqual([
+      ['a', request],
+      ['b', request],
+    ]);
+  });
   test('allows absent optional proposal collections and existing segments', () => {
     const request = {
       asset: {

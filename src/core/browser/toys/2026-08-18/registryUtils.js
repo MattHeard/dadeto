@@ -35,18 +35,14 @@ export function normalizeCoordinateRecord(
   idKey,
   allowMissingCoordinates = false
 ) {
-  // Stryker disable next-line all -- malformed coordinate records share the null contract.
   if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
   const point = /** @type {Record<string, unknown>} */ (value);
   const id = trimmedStringOrEmpty(point[idKey]);
-  const latitude = normalizeCoordinate(point.latitude, -90, 90);
-  const longitude = normalizeCoordinate(point.longitude, -180, 180);
-  // Stryker disable all -- coordinate completeness and identifier validity share one normalization boundary.
+  const { latitude, longitude } = normalizeSpatialCoordinates(point);
   return id &&
     ((latitude !== null && longitude !== null) || allowMissingCoordinates)
     ? { id, latitude, longitude }
     : null;
-  // Stryker restore all
 }
 
 /**
@@ -108,4 +104,15 @@ export function buildRegistry(input, options) {
     : [];
   sortByStableKey(values, sortKey);
   return serializeRegistry(collectionKey, values, countKey);
+}
+/**
+ * Normalize a WGS84 latitude/longitude pair using the registry bounds policy.
+ * @param {Record<string, unknown>} point Coordinate-bearing spatial record.
+ * @returns {{latitude: string | null, longitude: string | null}} Canonical spatial coordinates.
+ */
+export function normalizeSpatialCoordinates(point) {
+  return {
+    latitude: normalizeCoordinate(point.latitude, -90, 90),
+    longitude: normalizeCoordinate(point.longitude, -180, 180),
+  };
 }

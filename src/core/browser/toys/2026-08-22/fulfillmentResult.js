@@ -1,4 +1,4 @@
-import { normalizeCoordinate } from '../2026-08-18/registryUtils.js';
+import { normalizeSpatialCoordinates } from './spacePointResolution.js';
 
 /**
  * Serialize a structured failure result for a fulfillment toy.
@@ -193,8 +193,7 @@ export function fulfillmentWarehouseSpacePoint(
 ) {
   return {
     spacePointId,
-    latitude: normalizeCoordinate(warehouse.latitude, -90, 90),
-    longitude: normalizeCoordinate(warehouse.longitude, -180, 180),
+    ...normalizeSpatialCoordinates(warehouse),
   };
 }
 
@@ -286,12 +285,17 @@ export function fulfillmentFindMatchingAsset(request, evaluate) {
 
 /**
  * @param {string} input JSON request.
- * @param {(asset: Record<string, any>, request: Record<string, any>) => string} evaluate Asset evaluator.
+ * @param {(...args: any[]) => string} evaluate Asset evaluator.
+ * @param {(asset: Record<string, any>, request: Record<string, any>) => string} [serializeRequest] Optional serialized asset input strategy.
  * @returns {string} Feasibility JSON.
  */
-export function fulfillmentSkuBoundary(input, evaluate) {
+export function fulfillmentSkuBoundary(input, evaluate, serializeRequest) {
   return fulfillmentBoundary(input, 'feasible', request =>
-    fulfillmentFindMatchingAsset(request, asset => evaluate(asset, request))
+    fulfillmentFindMatchingAsset(request, asset =>
+      serializeRequest
+        ? evaluate(serializeRequest(asset, request))
+        : evaluate(asset, request)
+    )
   );
 }
 
@@ -302,9 +306,7 @@ export function fulfillmentSkuBoundary(input, evaluate) {
  * @returns {string} Feasibility JSON.
  */
 export function fulfillmentSkuAssetBoundary(input, evaluate) {
-  return fulfillmentSkuBoundary(input, (asset, request) =>
-    evaluate(fulfillmentAssetRequest(asset, request))
-  );
+  return fulfillmentSkuBoundary(input, evaluate, fulfillmentAssetRequest);
 }
 
 /**
