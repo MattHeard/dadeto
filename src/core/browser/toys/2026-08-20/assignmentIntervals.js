@@ -54,6 +54,20 @@ export function overlaps(first, second) {
  * @returns {boolean} Whether the proposed interval avoids overlap.
  */
 export function canAppendAssignment(request, ownerKey) {
+  return ownerIsFree(
+    request.assignments,
+    ownerKey,
+    request.proposedAssignment[ownerKey],
+    createAssignmentContext(request)
+  );
+}
+
+/**
+ * Prepare shared point/segment indexes and the proposed interval once.
+ * @param {Pick<Parameters<typeof canAppendAssignment>[0], 'points' | 'segments' | 'proposedAssignment'>} request Normalized interval request.
+ * @returns {{points: Map<string, Record<string, unknown>>, segments: Map<string, Record<string, unknown>>, proposed: {startTime: number, endTime: number}}} Interval evaluation context.
+ */
+export function createAssignmentContext(request) {
   const points = new Map(request.points.map(point => [point.pointId, point]));
   const segments = new Map(
     request.segments.map(segment => [segment.segmentId, segment])
@@ -63,11 +77,21 @@ export function canAppendAssignment(request, ownerKey) {
     points,
     request.proposedAssignment.segmentId
   );
-  return request.assignments
-    .filter(
-      assignment =>
-        assignment[ownerKey] === request.proposedAssignment[ownerKey]
-    )
+  return { points, segments, proposed };
+}
+
+/**
+ * Check one owner's existing assignments against a prepared proposed interval.
+ * @param {Array<{segmentId: string, [key: string]: unknown}>} assignments Existing assignments.
+ * @param {string} ownerKey Owner identifier field.
+ * @param {unknown} ownerId Proposed owner identifier.
+ * @param {ReturnType<typeof createAssignmentContext>} context Prepared interval indexes.
+ * @returns {boolean} Whether this owner has no overlapping interval.
+ */
+export function ownerIsFree(assignments, ownerKey, ownerId, context) {
+  const { points, segments, proposed } = context;
+  return assignments
+    .filter(assignment => assignment[ownerKey] === ownerId)
     .every(
       assignment =>
         !overlaps(

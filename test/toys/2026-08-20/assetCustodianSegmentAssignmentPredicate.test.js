@@ -53,6 +53,25 @@ const payload = (assetAssignments, personAssignments, proposedAssignment) =>
   });
 
 describe('assetCustodianSegmentAssignmentPredicate', () => {
+  test.each([
+    [false, false, 'true'],
+    [true, false, 'false'],
+    [false, true, 'false'],
+    [true, true, 'false'],
+  ])(
+    'checks both owner conflicts (%p, %p)',
+    (assetBusy, custodianBusy, expected) => {
+      expect(
+        assetCustodianSegmentAssignmentPredicate(
+          payload(
+            assetBusy ? [{ assetId: 'A1', segmentId: 'S1' }] : [],
+            custodianBusy ? [{ personId: 'C1', segmentId: 'S1' }] : [],
+            { assetId: 'A1', custodianPersonId: 'C1', segmentId: 'S3' }
+          )
+        )
+      ).toBe(expected);
+    }
+  );
   test('rejects overlap for the asset', () =>
     expect(
       assetCustodianSegmentAssignmentPredicate(

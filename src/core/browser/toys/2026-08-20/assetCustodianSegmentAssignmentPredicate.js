@@ -1,4 +1,4 @@
-import { resolveInterval, overlaps } from './assignmentIntervals.js';
+import { createAssignmentContext, ownerIsFree } from './assignmentIntervals.js';
 export { resolveInterval, overlaps } from './assignmentIntervals.js';
 
 // Toy: Asset Custodian Segment Assignment Predicate
@@ -12,38 +12,19 @@ export { resolveInterval, overlaps } from './assignmentIntervals.js';
 export function assetCustodianSegmentAssignmentPredicate(input) {
   try {
     const request = parseRequest(input);
-    const points = new Map(request.points.map(point => [point.pointId, point]));
-    const segments = new Map(
-      request.segments.map(segment => [segment.segmentId, segment])
+    const context = createAssignmentContext(request);
+    const assetFree = ownerIsFree(
+      request.assetAssignments,
+      'assetId',
+      request.proposedAssignment.assetId,
+      context
     );
-    const proposed = resolveInterval(
-      segments,
-      points,
-      request.proposedAssignment.segmentId
+    const custodianFree = ownerIsFree(
+      request.personAssignments,
+      'personId',
+      request.proposedAssignment.custodianPersonId,
+      context
     );
-    const assetFree = request.assetAssignments
-      .filter(
-        assignment => assignment.assetId === request.proposedAssignment.assetId
-      )
-      .every(
-        assignment =>
-          !overlaps(
-            resolveInterval(segments, points, assignment.segmentId),
-            proposed
-          )
-      );
-    const custodianFree = request.personAssignments
-      .filter(
-        assignment =>
-          assignment.personId === request.proposedAssignment.custodianPersonId
-      )
-      .every(
-        assignment =>
-          !overlaps(
-            resolveInterval(segments, points, assignment.segmentId),
-            proposed
-          )
-      );
     return JSON.stringify(assetFree && custodianFree);
   } catch {
     return 'false';
@@ -56,7 +37,6 @@ export function assetCustodianSegmentAssignmentPredicate(input) {
  */
 export function parseRequest(input) {
   const request = JSON.parse(input);
-  // Stryker disable all -- defensive request type boundary.
   if (!request || typeof request !== 'object' || Array.isArray(request))
     throw new Error('Input must be a JSON object.');
   if (
@@ -68,7 +48,6 @@ export function parseRequest(input) {
     throw new Error(
       'points, segments, assetAssignments, and personAssignments arrays are required.'
     );
-  // Stryker restore all
   const proposedAssignment = normalizeProposed(request.proposedAssignment);
   if (!proposedAssignment)
     throw new Error('A complete proposed assignment is required.');
