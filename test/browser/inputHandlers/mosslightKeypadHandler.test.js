@@ -60,6 +60,29 @@ function makeDom(autoSubmitCheckbox, textInput, animationFrames) {
 }
 
 describe('mosslightKeypadHandler', () => {
+  it('requires confirmation before submitting an embedded reset', () => {
+    const textInput = { value: 'unchanged' };
+    const checkbox = { checked: false, dispatchEvent: jest.fn() };
+    const dom = makeDom(checkbox, textInput, []);
+    dom.globalThis = { confirm: jest.fn(() => false) };
+    const container = { _children: [] };
+    mosslightKeypadHandler(dom, container, textInput);
+    const button = container._children[0]._children[2];
+    expect(button.textContent).toBe('Reset game');
+    button._listeners.click();
+    expect(textInput.value).toBe('unchanged');
+    expect(checkbox.checked).toBe(false);
+    expect(dom.globalThis.confirm).toHaveBeenCalledWith(
+      expect.stringContaining('slot 01')
+    );
+    dom.globalThis.confirm.mockReturnValue(true);
+    button._listeners.click();
+    expect(JSON.parse(readStoredOrElementValue(textInput))).toEqual({
+      reset: true,
+      confirmed: true,
+    });
+    expect(checkbox.checked).toBe(true);
+  });
   it('renders handheld controls and sends normalized actions to the toy', () => {
     const autoSubmitCheckbox = {
       checked: false,

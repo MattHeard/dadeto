@@ -61,6 +61,7 @@ function pageOptions() {
     '#save-slot': slot,
     '#import-game': importInput,
     '#save-game': new FakeElement(),
+    '#reset-game': new FakeElement(),
     '#export-game': new FakeElement(),
     '#import-button': new FakeElement(),
     '#pause-game': new FakeElement(),
@@ -116,6 +117,7 @@ function pageOptions() {
   }
   const windowObj = new FakeTarget();
   windowObj.document = documentObj;
+  windowObj.confirm = jest.fn(() => false);
   windowObj.localStorage = {
     getItem: key => storage.get(key) || null,
     setItem: (key, value) => {
@@ -171,6 +173,45 @@ function seedSave(page, state) {
     })
   );
 }
+
+test('page reset confirmation cancels safely, clears held input and preserves the paused current slot', async () => {
+  const page = pageOptions();
+  const state = createSimulation();
+  state.world.flags.memoryCount = 3;
+  seedSave(page, state);
+  const dispose = startMosslightPage(page.options);
+  const before = page.storage.get('permanentData');
+  await page.selectors['#reset-game'].emit('click');
+  expect(page.storage.get('permanentData')).toBe(before);
+  expect(page.windowObj.confirm).toHaveBeenCalledWith(
+    expect.stringContaining('slot 01')
+  );
+  page.windowObj.confirm.mockReturnValue(true);
+  await page.selectors['#pause-game'].emit('click');
+  await page.documentObj.emit('keydown', {
+    key: 'ArrowRight',
+    preventDefault() {},
+  });
+  await page.touchButtons[0].emit('pointerdown', {
+    preventDefault() {},
+    pointerId: 1,
+  });
+  await page.selectors['#reset-game'].emit('click');
+  const saved = JSON.parse(page.storage.get('permanentData'));
+  expect(JSON.parse(saved['mosslight-valley-saves-v2'].slots[0]).state).toEqual(
+    createSimulation()
+  );
+  expect(page.selectors['#game-status'].textContent).toContain('Paused');
+  await page.selectors['#resume-game'].emit('click');
+  page.callbacks[0](10);
+  page.callbacks[0](160);
+  const resumed = JSON.parse(page.storage.get('permanentData'));
+  expect(
+    JSON.parse(resumed['mosslight-valley-saves-v2'].slots[0]).state.world.player
+      .x
+  ).toBe(6);
+  dispose();
+});
 
 /**
  * Exercise pointer, keyboard, focus, and visibility events.

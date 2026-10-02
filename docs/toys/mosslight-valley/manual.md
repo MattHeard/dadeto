@@ -78,3 +78,11 @@ Returns a 160×144 pixel-art frame payload rendered by Dadeto's canvas presenter
 ## Behavior
 
 Movement, conversations, flags, maps, and frame output are deterministic. The embedded scene is replayable; the full page stores progress in local save slots and supports save import/export. Controls: arrows/WASD move, Z/Enter or E talk and confirm, F farm, Q fish, T wait, R rest, J journal, C guard, and V skill. Full-page phones use the on-screen D-pad, A/B, SELECT/START, and farming, fishing, and skill actions. Sound is optional.
+
+## Start over
+
+On the standalone page, select the save slot you want to erase and press **Reset save**. The embedded virtual keypad has a separate **Reset game** button below it; that preview uses slot 01. Both ask for confirmation and recommend exporting first. Cancel leaves your progress intact.
+
+Confirming immediately overwrites only that slot with a brand-new adventure: memories, relationships, inventory, crops, dialogue, battles and endings are reset. Other slots and other toys' data are preserved. An exported backup can restore the old adventure; without one, the overwritten progress cannot be recovered. Resetting a paused standalone game leaves it paused; press Resume when ready.
+
+The shared runtime exposes `runtime.resetSave()`. A synchronous embedded request must explicitly include both `reset: true` and `confirmed: true`; an unconfirmed reset does not advance or erase the game.

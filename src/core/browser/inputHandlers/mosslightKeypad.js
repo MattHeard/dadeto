@@ -1,4 +1,5 @@
 import { createCaptureForm, syncToyPayload } from './captureFormShared.js';
+import { resetSavePrompt } from '../game/mosslight-valley/save.js';
 
 const FORM_CLASS = 'mosslight-keypad-form';
 const GROUPS = [
@@ -87,6 +88,29 @@ export function mosslightKeypadHandler(dom, container, textInput) {
         }
       }
       cleanupFns.push(() => dom.removeChild(form, keypad));
+      bindResetSave(dom, form, {
+        dom,
+        textInput: gameInput,
+        autoSubmitCheckbox,
+      });
     },
   });
+}
+/**
+ * Offer a confirmed restart without mixing destructive actions into the D-pad.
+ * @param {import('../domHelpers.js').DOMHelpers} dom Injected browser facade.
+ * @param {HTMLElement} form Capture form below the handheld keypad.
+ * @param {{dom:import('../domHelpers.js').DOMHelpers,textInput:HTMLInputElement,autoSubmitCheckbox:HTMLInputElement|null}} input Toy input wiring.
+ * @returns {void}
+ */
+function bindResetSave(dom, form, input) {
+  const button = /** @type {HTMLButtonElement} */ (dom.createElement('button'));
+  dom.setType(button, 'button');
+  dom.setTextContent(button, 'Reset game');
+  dom.setClassName(button, 'mosslight-reset-save');
+  dom.addEventListener(button, 'click', () => {
+    if (!dom.globalThis.confirm(resetSavePrompt())) return;
+    syncToyPayload(input, { reset: true, confirmed: true });
+  });
+  dom.appendChild(form, button);
 }

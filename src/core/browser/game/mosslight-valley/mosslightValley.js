@@ -17,6 +17,10 @@ export function mosslightValley(input, env) {
   } catch {
     parsed = {};
   }
+  if (parsed?.reset === true)
+    return JSON.stringify(
+      parsed.confirmed === true ? runtime.resetSave() : runtime.frame()
+    );
   if (parsed?.save) runtime.importSave(parsed.save);
   let actions = Array.isArray(parsed?.actions) ? parsed.actions : [];
   if (parsed?.type && parsed?.key) {

@@ -3,6 +3,7 @@ import { createMosslightRuntime } from './runtime.js';
 import { updateInput, gamepadActions } from './input.js';
 import { drawGameFrame } from './renderer.js';
 import { registerMosslightTools } from './webmcp.js';
+import { resetSavePrompt } from './save.js';
 
 /**
  * Mount the shared RPG in a responsive page and return its lifecycle disposer.
@@ -201,6 +202,12 @@ export function startMosslightPage(options) {
     runtime,
     status,
     draw,
+    onReset: () => {
+      keys.held.clear();
+      keys.pressed.clear();
+      resetTouch();
+      lastTime = 0;
+    },
     onResume: () => {
       runtime.resume();
       lastTime = 0;
@@ -278,7 +285,8 @@ function bindTouchControls(documentObj, touch, touchPulse) {
  * @param {object} options - Page elements and game runtime dependencies.
  */
 function bindUtilityControls(options) {
-  const { documentObj, windowObj, runtime, status, draw, onResume } = options;
+  const { documentObj, windowObj, runtime, status, draw, onResume, onReset } =
+    options;
   const listen = (selector, event, handler) =>
     documentObj.querySelector(selector).addEventListener(event, handler);
   const slotPicker = documentObj.querySelector('#save-slot');
@@ -291,6 +299,12 @@ function bindUtilityControls(options) {
     runtime.save();
     status.textContent = 'Saved on this device.';
   });
+  listen('#reset-game', 'click', () => {
+    if (!windowObj.confirm(resetSavePrompt(runtime.getSlot()))) return;
+    runtime.resetSave();
+    onReset();
+    draw();
+  });
   listen('#export-game', 'click', () =>
     download(runtime.exportSave(), 'mosslight-valley-save.json', windowObj)
   );
@@ -301,6 +315,7 @@ function bindUtilityControls(options) {
     if (!file) return;
     try {
       runtime.importSave(await file.text());
+      slotPicker.value = String(runtime.getSlot());
       draw();
     } catch {
       status.textContent = 'That save could not be read.';

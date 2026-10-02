@@ -2,6 +2,15 @@
 import { parseJsonOrNull } from '../../validation.js';
 const KEY = 'mosslight-valley-saves-v2';
 /**
+ * Explain exactly which local slot will be overwritten before a reset.
+ * @param {number} slot Zero-based save slot.
+ * @returns {string} Confirmation warning shared by both presenters.
+ */
+export function resetSavePrompt(slot = 0) {
+  const label = String(Number(slot) + 1).padStart(2, '0');
+  return `Reset save slot ${label} and start a new game? All progress in this slot will be erased. Other slots are safe. Export your save first if you want to keep a backup.`;
+}
+/**
  * Serialize one game state with a version and slot identity.
  * @param {unknown} state - The state argument.
  * @param {unknown} slot - The slot argument.
