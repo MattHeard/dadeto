@@ -79,13 +79,13 @@ if (manuals.length !== toyDirectories.length) {
   fail('blog manifest', `expected ${toyDirectories.length} manuals, found ${manuals.length}`);
 }
 
-const filesystemManuals = toyDirectories.map(toy =>
-  fs.readFileSync(path.join(toysRoot, toy, 'manual.md'), 'utf8').trimEnd()
-);
-for (const markdown of filesystemManuals) {
-  if (!manuals.some(manual => manual.markdown?.trimEnd() === markdown)) {
-    fail('blog manifest', 'does not contain a filesystem manual verbatim');
+for (const toy of toyDirectories) {
+  if (manuals.filter(manual => manual.src === `/manuals/${toy}.md`).length !== 1) {
+    fail('blog manifest', `must reference ${toy} exactly once`);
   }
+}
+if (manuals.some(manual => 'markdown' in manual || 'content' in manual)) {
+  fail('blog manifest', 'manual prose must remain in separate source files');
 }
 
 console.log(`Validated ${toyDirectories.length} toy manuals.`);

@@ -16,22 +16,26 @@ for (const name of fs.readdirSync(root)) {
   const manualTitle = titleMatch?.[1]?.replace(/ Spec$/, '');
   const existing = blog.posts.find(candidate =>
     (candidate.content ?? []).some(item => item?.type === 'manual' &&
-      item.markdown?.match(/^# (?:Toy Spec: )?(.+)$/m)?.[1]?.replace(/ Spec$/, '') === manualTitle)
+      (item.src === `/manuals/${name}.md` || item.markdown?.match(/^# (?:Toy Spec: )?(.+)$/m)?.[1]?.replace(/ Spec$/, '') === manualTitle))
   );
   const post = codeMatch
     ? blog.posts.find(candidate => candidate.key === codeMatch[1])
     : blog.posts.find(candidate => candidate.title === manualTitle) ?? existing;
   if (!post) throw new Error(`${name}: no matching blog post`);
-  manuals.push({ code: post.key, markdown });
+  manuals.push({ code: post.key, src: `/manuals/${name}.md` });
 }
 
-for (const post of blog.posts) {
-  post.content = (post.content ?? []).filter(item => item?.type !== 'manual');
-}
-for (const { code, markdown } of manuals) {
+for (const { code, src } of manuals) {
   const post = blog.posts.find(candidate => candidate.key === code);
   if (!post) throw new Error(`No blog post for ${code}`);
-  post.content.push({ type: 'manual', id: `${code}-manual`, title: 'User manual', markdown });
+  const existing = post.content.find(item => item?.type === 'manual');
+  if (existing) {
+    delete existing.markdown;
+    delete existing.content;
+    existing.src = src;
+  } else {
+    post.content.push({ type: 'manual', id: `${code}-manual`, title: 'User manual', src });
+  }
 }
 
 fs.writeFileSync(blogPath, `${JSON.stringify(blog, null, 2)}\n`);

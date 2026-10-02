@@ -382,7 +382,7 @@ function createPageFooter() {
  */
 function createManualToggleScript(manualId) {
   const manualIdLiteral = JSON.stringify(manualId);
-  return `<script type="module">const manual=document.getElementById(${manualIdLiteral});if(manual){const body=manual.querySelector('.manual-body');const toggle=manual.querySelector('[data-manual-toggle]');if(body&&toggle){const setOpen=open=>{body.hidden=!open;toggle.textContent=open?'hide':'show';toggle.setAttribute('aria-expanded',String(open));};setOpen(false);toggle.addEventListener('click',event=>{event.preventDefault();setOpen(body.hidden);});}}</script>`;
+  return `<script type="module">import { initializeManual } from '/core/browser/manual.js';const manual=document.getElementById(${manualIdLiteral});if(manual){initializeManual(manual,globalThis.fetch.bind(globalThis));}</script>`;
 }
 
 /**
@@ -666,6 +666,9 @@ function createManualBlock(manual) {
   title = escapeHtml(title);
   const toggleButton = `<button type="button" class="manual-link" data-manual-toggle aria-controls="${bodyId}" aria-expanded="false">show</button>`;
   const manualScript = createManualToggleScript(manualId);
+  if (typeof manual.src === 'string') {
+    return `<div class="manual" id="${escapedManualId}" data-manual-src="${escapeHtml(manual.src)}"><p class="manual-toggle">${title} <span class="manual-toggle-menu">(${toggleButton})</span></p><pre class="manual-body manual-markdown" id="${bodyId}" aria-live="polite" hidden></pre>${manualScript}</div>`;
+  }
   if (typeof manual.markdown === 'string') {
     const markdown = escapeHtml(manual.markdown);
     return `<div class="manual" id="${escapedManualId}"><p class="manual-toggle">${title} <span class="manual-toggle-menu">(${toggleButton})</span></p><pre class="manual-body manual-markdown" id="${bodyId}" hidden>${markdown}</pre>${manualScript}</div>`;

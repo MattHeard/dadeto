@@ -6,6 +6,28 @@ const footer = '</body>';
 const wrapHtml = c => c;
 
 describe('content renderers mapping', () => {
+  test('renders referenced manuals without embedding their prose', () => {
+    const html = generateBlog(
+      {
+        blog: {
+          posts: [
+            {
+              key: 'REF1',
+              title: 'Reference',
+              publicationDate: '2024-01-01',
+              content: [{ type: 'manual', src: '/manuals/example.md' }],
+            },
+          ],
+        },
+        header,
+        footer,
+      },
+      wrapHtml
+    );
+    expect(html).toContain('data-manual-src="/manuals/example.md"');
+    expect(html).toContain('aria-live="polite" hidden></pre>');
+    expect(html).toContain('import { initializeManual }');
+  });
   test('generateBlog renders text and quote content', () => {
     const blog = {
       posts: [

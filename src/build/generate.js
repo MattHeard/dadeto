@@ -9,11 +9,13 @@ import prettier from 'prettier';
 
 import { generateBlogOuter } from './generator.js';
 import { createWriteFormattedHtml } from '../core/build/buildCore.js';
+import { publishManuals } from '../core/build/manuals.js';
 
 const require = createRequire(import.meta.url);
 
 // Construct a sample blog object
 const blog = require('./blog.json');
+publishManuals(blog, fs);
 
 const writeFormattedHtml = createWriteFormattedHtml({
   generateHtml: generateBlogOuter,
