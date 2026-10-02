@@ -1,12 +1,12 @@
 import { deepClone } from '../../browser-core.js';
+import { requireEnvHelper } from '../browserToysCore.js';
 import {
   formatThrownError,
   getPathCandidate,
   normalizeMemoryLocation,
   normalizeMemoryPath,
+  SUPPORTED_MEMORY_LOCATIONS,
 } from './memoryVector.js';
-
-const SUPPORTED_WRITE_LOCATIONS = ['temporary', 'permanent', 'envelope'];
 
 /** @typedef {{ memoryLocation: string, path: string, value: unknown }} MemoryWriteRequest */
 /** @typedef {MemoryWriteRequest & { error?: string }} ParsedMemoryWriteRequest */
@@ -99,7 +99,7 @@ function writeTemporaryMemory(request, env) {
     getContainerRoot(envelope.temporary),
     request
   );
-  getRequiredEnvHelper(env, 'setLocalTemporaryData')(envelope);
+  requireEnvHelper(env, 'setLocalTemporaryData')(envelope);
 }
 
 /**
@@ -110,7 +110,7 @@ function writeTemporaryMemory(request, env) {
 function writePermanentMemory(request, env) {
   const permanent = readPermanentForWriting(env);
   const updated = writePathValue(permanent, request);
-  getRequiredEnvHelper(env, 'setLocalPermanentData')(updated);
+  requireEnvHelper(env, 'setLocalPermanentData')(updated);
 }
 
 /**
@@ -122,7 +122,7 @@ function writeEnvelopeMemory(request, env) {
   const envelope = readEnvelopeForWriting(env);
   const updated = writePathValue(envelope, request);
   ensureEnvelopeCanBePersisted(updated);
-  getRequiredEnvHelper(env, 'setLocalTemporaryData')(updated);
+  requireEnvHelper(env, 'setLocalTemporaryData')(updated);
 }
 
 /**
@@ -434,7 +434,7 @@ function buildMemoryWriteError(request, error) {
 function buildUnsupportedLocationError(request) {
   return buildMemoryWriteError(
     request,
-    `Unsupported memoryLocation "${request.memoryLocation}". Supported locations: ${SUPPORTED_WRITE_LOCATIONS.join(', ')}.`
+    `Unsupported memoryLocation "${request.memoryLocation}". Supported locations: ${SUPPORTED_MEMORY_LOCATIONS.join(', ')}.`
   );
 }
 
@@ -482,21 +482,6 @@ function getOptionalEnvHelper(env, helperName) {
   if (typeof helper !== 'function') {
     return null;
   }
-  return helper;
-}
-
-/**
- * Get a required environment helper.
- * @param {import('../browserToysCore.js').ToyEnv} env Environment helpers.
- * @param {string} helperName Helper name.
- * @returns {(...args: unknown[]) => unknown} Helper function.
- */
-function getRequiredEnvHelper(env, helperName) {
-  const helper = getOptionalEnvHelper(env, helperName);
-  if (!helper) {
-    throw new Error(`Missing toy helper "${helperName}"`);
-  }
-
   return helper;
 }
 

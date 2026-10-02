@@ -3,8 +3,7 @@
 
 import { deepClone } from '../../browser-core.js';
 import { requireEnvHelper } from '../browserToysCore.js';
-
-const LOCATIONS = ['temporary', 'permanent', 'envelope'];
+import { SUPPORTED_MEMORY_LOCATIONS } from '../2026-05-28/memoryVector.js';
 
 /**
  * Append a caller-normalized reference while retaining parser failure messages.
@@ -74,7 +73,7 @@ function parseRequest(input) {
   }
   const memoryLocation = String(request.memoryLocation || 'temporary');
   const path = String(request.path || '').trim();
-  if (!LOCATIONS.includes(memoryLocation))
+  if (!SUPPORTED_MEMORY_LOCATIONS.includes(memoryLocation))
     throw new Error('Unsupported memory location.');
   if (!path) throw new Error('A path is required.');
   if (

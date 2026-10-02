@@ -1,10 +1,18 @@
 import { get } from '../2025-03-29/get.js';
 import { requireEnvHelper } from '../browserToysCore.js';
-import { trimmedStringOrEmpty } from '../../../commonCore.js';
+import {
+  trimmedStringOrEmpty,
+  isNonNullObject as isObjectLike,
+  objectOrEmpty as getTemporaryRoot,
+} from '../../../commonCore.js';
 /** @typedef {import('../browserToysCore.js').ToyEnv} ToyEnv */
 
 const DEFAULT_MEMORY_LOCATION = 'temporary';
-const SUPPORTED_MEMORY_LOCATIONS = ['temporary', 'permanent', 'envelope'];
+export const SUPPORTED_MEMORY_LOCATIONS = [
+  'temporary',
+  'permanent',
+  'envelope',
+];
 
 /**
  * Read a memory location and project the selected value as a vector.
@@ -29,11 +37,9 @@ export function memoryVector(input, env) {
  */
 function parseMemoryVectorRequest(input) {
   const trimmed = trimmedStringOrEmpty(input);
-  // Stryker disable all -- empty-input default boundary.
   if (trimmed.length === 0) {
     return createMemoryVectorRequest(DEFAULT_MEMORY_LOCATION, '');
   }
-  // Stryker restore all
 
   return parseNonEmptyMemoryVectorRequest(trimmed);
 }
@@ -155,11 +161,7 @@ function buildMemoryVectorResponseWithFallback(request, env, options = {}) {
   try {
     return buildMemoryVectorResponse(request, env, options);
   } catch (error) {
-    return buildMemoryVectorError(
-      request,
-      formatThrownError(error),
-      request.memoryLocation
-    );
+    return buildMemoryVectorError(request, formatThrownError(error));
   }
 }
 
@@ -235,8 +237,7 @@ function buildMemoryVectorResponseFromRoot(request, root, options = {}) {
   if (root === undefined) {
     return buildMemoryVectorError(
       request,
-      'Error: Memory root lookup returned no value.',
-      request.memoryLocation
+      'Error: Memory root lookup returned no value.'
     );
   }
 
@@ -320,8 +321,7 @@ function buildResolvedMemoryVectorResponseFromValue(
   if (value === undefined) {
     return buildMemoryVectorError(
       request,
-      'Error: Memory path resolution returned no value.',
-      request.memoryLocation
+      'Error: Memory path resolution returned no value.'
     );
   }
 
@@ -360,7 +360,7 @@ function buildResolvedMemoryVectorError(request, error, options = {}) {
  * @returns {{ memoryLocation: string, path: string, found: boolean, vector: never[], error: string }} Hard error payload.
  */
 function defaultResolvePathError(request, error) {
-  return buildMemoryVectorError(request, error, request.memoryLocation);
+  return buildMemoryVectorError(request, error);
 }
 
 /**
@@ -444,9 +444,7 @@ function resolveMemoryPath(root, path) {
     /** @type {ToyEnv} */ (new Map([['getData', () => root]]))
   );
   if (!isStringValue(resolved)) {
-    // Stryker disable all -- preserves non-string lookup values in the response shape.
     return { value: resolved };
-    // Stryker restore all
   }
   return resolveStringMemoryPath(resolved);
 }
@@ -508,15 +506,6 @@ function buildMemoryVectorError(
 }
 
 /**
- * Determine whether the value is an object-like data container.
- * @param {unknown} value Candidate value.
- * @returns {boolean} True when the value can act as a memory root.
- */
-function isObjectLike(value) {
-  return Boolean(value) && typeof value === 'object';
-}
-
-/**
  * Determine whether a value is a plain object.
  * @param {unknown} value Candidate value.
  * @returns {value is Record<string, unknown>} True when the value is a plain object.
@@ -572,19 +561,6 @@ function isStringValue(value) {
  */
 function isMemoryPathError(value) {
   return value.startsWith('Error:') || value.startsWith('Error during');
-}
-
-/**
- * Return the temporary root bucket when available.
- * @param {object | unknown[] | undefined} temporary Temporary bucket candidate.
- * @returns {object | unknown[]} Valid temporary root or an empty object.
- */
-function getTemporaryRoot(temporary) {
-  if (isObjectLike(temporary)) {
-    return /** @type {object | unknown[]} */ (temporary);
-  }
-
-  return {};
 }
 
 /**
