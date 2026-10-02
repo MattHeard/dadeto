@@ -1,11 +1,9 @@
 // Toy: Canonical Normal Fulfillment Sequence Proposal
-// Stryker disable all -- this toy is a fixed canonicalization and fulfillment
-// composition protocol boundary covered by the canonical fulfillment suites.
 
 import { normalizeCoordinateRecord } from '../2026-08-18/registryUtils.js';
 import { resolvePointRecords } from './spacePointResolution.js';
 import { normalFulfillmentSequenceProposal } from './normalFulfillmentSequenceProposal.js';
-import { fulfillmentFailure } from './fulfillmentResult.js';
+import { fulfillmentBoundary } from './fulfillmentResult.js';
 
 /**
  * Build a normal fulfillment proposal with a self-contained canonical spatial context.
@@ -13,38 +11,42 @@ import { fulfillmentFailure } from './fulfillmentResult.js';
  * @returns {string} Deterministic proposal or structured failure.
  */
 export function canonicalNormalFulfillmentSequenceProposal(input) {
-  try {
-    const request = JSON.parse(input);
-    const spacePoints = canonicalSpacePoints(request.spacePoints);
-    const context = request.possessionContext;
-    if (!context?.startPoint || !context?.endPoint)
-      throw new Error('A possession context with both points is required.');
-    resolvePointRecords(
-      [context.startPoint, context.endPoint],
-      spacePoints,
-      true
-    );
-    const warehouse = canonicalSpacePoint(request.warehouse);
-    const normalInput = {
-      ...request,
-      warehouse: {
-        ...warehouse,
-        latitude: Number(warehouse.latitude),
-        longitude: Number(warehouse.longitude),
-      },
-    };
-    const proposal = JSON.parse(
-      normalFulfillmentSequenceProposal(JSON.stringify(normalInput))
-    );
-    if (!proposal.valid) throw new Error(proposal.error);
-    const allSpacePoints = canonicalSpacePoints([
-      ...spacePoints,
-      ...proposal.spacePoints,
-    ]);
-    return JSON.stringify({ ...proposal, spacePoints: allSpacePoints });
-  } catch (error) {
-    return fulfillmentFailure(error);
-  }
+  return fulfillmentBoundary(input, 'valid', buildCanonicalProposal);
+}
+
+/**
+ * Canonicalize spatial context and build the complete normal proposal.
+ * @param {Record<string, any>} request Parsed canonical proposal request.
+ * @returns {string} Proposal with self-contained canonical spatial records.
+ */
+function buildCanonicalProposal(request) {
+  const spacePoints = canonicalSpacePoints(request.spacePoints);
+  const context = request.possessionContext;
+  if (!context?.startPoint || !context?.endPoint)
+    throw new Error('A possession context with both points is required.');
+  resolvePointRecords(
+    [context.startPoint, context.endPoint],
+    spacePoints,
+    true
+  );
+  const warehouse = canonicalSpacePoint(request.warehouse);
+  const normalInput = {
+    ...request,
+    warehouse: {
+      ...warehouse,
+      latitude: Number(warehouse.latitude),
+      longitude: Number(warehouse.longitude),
+    },
+  };
+  const proposal = JSON.parse(
+    normalFulfillmentSequenceProposal(JSON.stringify(normalInput))
+  );
+  if (!proposal.valid) throw new Error(proposal.error);
+  const allSpacePoints = canonicalSpacePoints([
+    ...spacePoints,
+    ...proposal.spacePoints,
+  ]);
+  return JSON.stringify({ ...proposal, spacePoints: allSpacePoints });
 }
 
 // Canonicalization owns the spatial normalization boundary.
@@ -86,5 +88,3 @@ function canonicalSpacePoint(value) {
     longitude: String(record.longitude),
   };
 }
-
-// Stryker restore all

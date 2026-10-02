@@ -1,8 +1,5 @@
 // Toy: Procurement Normal Fulfillment Composer
-import { fulfillmentFailure } from './fulfillmentResult.js';
-
-// Stryker disable all -- this module is the fixed procurement/normal
-// fulfillment composition protocol boundary covered by the focused suites.
+import { fulfillmentBoundary } from './fulfillmentResult.js';
 
 /**
  * Prepend a valid procurement prefix to a valid normal proposal.
@@ -10,62 +7,63 @@ import { fulfillmentFailure } from './fulfillmentResult.js';
  * @returns {string} Deterministic composed proposal or structured failure.
  */
 export function procurementNormalFulfillmentComposer(input) {
-  try {
-    const request = JSON.parse(input);
-    const procurement = validProposal(
-      request.procurementProposal,
-      'procurement'
+  return fulfillmentBoundary(input, 'valid', composeValidatedProposals);
+}
+
+/**
+ * Validate continuity and merge procurement and normal proposal records.
+ * @param {Record<string, any>} request Parsed composition request.
+ * @returns {string} Deterministic composed sequence JSON.
+ */
+function composeValidatedProposals(request) {
+  const procurement = validProposal(request.procurementProposal, 'procurement');
+  const normal = validProposal(request.normalProposal, 'normal');
+  const procurementSegment = procurement.segments[0];
+  const normalSegments = /** @type {Array<any>} */ (normal.segments);
+  const normalDelivery = normalSegments.find(
+    segment => segment.segmentId === normal.sequence[0].segmentId
+  );
+  if (
+    !normalDelivery ||
+    procurementSegment.endPointId !== normalDelivery.startPointId
+  )
+    throw new Error('Procurement must end at normal delivery start.');
+  const procurementPoint = findPoint(
+    procurement,
+    procurementSegment.endPointId
+  );
+  const normalPoint = findPoint(normal, normalDelivery.startPointId);
+  if (
+    !procurementPoint ||
+    !normalPoint ||
+    procurementPoint.spacePointId !== normalPoint.spacePointId
+  )
+    throw new Error(
+      'Procurement and normal delivery must share the warehouse point.'
     );
-    const normal = validProposal(request.normalProposal, 'normal');
-    const procurementSegment = procurement.segments[0];
-    const normalSegments = /** @type {Array<any>} */ (normal.segments);
-    const normalDelivery = normalSegments.find(
-      segment => segment.segmentId === normal.sequence[0].segmentId
-    );
-    if (
-      !normalDelivery ||
-      procurementSegment.endPointId !== normalDelivery.startPointId
-    )
-      throw new Error('Procurement must end at normal delivery start.');
-    const procurementPoint = findPoint(
-      procurement,
-      procurementSegment.endPointId
-    );
-    const normalPoint = findPoint(normal, normalDelivery.startPointId);
-    if (
-      !procurementPoint ||
-      !normalPoint ||
-      procurementPoint.spacePointId !== normalPoint.spacePointId
-    )
-      throw new Error(
-        'Procurement and normal delivery must share the warehouse point.'
-      );
-    const spacePoints = mergeSpacePoints(
-      procurement.spacePoints,
-      normal.spacePoints
-    );
-    const points = mergeById(procurement.points, normal.points, 'pointId');
-    const segments = mergeById(
-      procurement.segments,
-      normal.segments,
-      'segmentId'
-    );
-    const sequence = [...procurement.sequence, ...normal.sequence];
-    ensureResolvable(points, spacePoints);
-    return JSON.stringify({
-      valid: true,
-      spacePoints: spacePoints.sort((a, b) =>
-        a.spacePointId.localeCompare(b.spacePointId)
-      ),
-      points,
-      segments,
-      sequence,
-      possessionContext: normal.possessionContext,
-      stockInPointId: procurement.stockInPointId,
-    });
-  } catch (error) {
-    return fulfillmentFailure(error);
-  }
+  const spacePoints = mergeSpacePoints(
+    procurement.spacePoints,
+    normal.spacePoints
+  );
+  const points = mergeById(procurement.points, normal.points, 'pointId');
+  const segments = mergeById(
+    procurement.segments,
+    normal.segments,
+    'segmentId'
+  );
+  const sequence = [...procurement.sequence, ...normal.sequence];
+  ensureResolvable(points, spacePoints);
+  return JSON.stringify({
+    valid: true,
+    spacePoints: spacePoints.sort((a, b) =>
+      a.spacePointId.localeCompare(b.spacePointId)
+    ),
+    points,
+    segments,
+    sequence,
+    possessionContext: normal.possessionContext,
+    stockInPointId: procurement.stockInPointId,
+  });
 }
 
 // Composition validates cross-proposal continuity before helper declarations.
@@ -170,4 +168,3 @@ function ensureResolvable(points, spacePoints) {
   if (points.some(point => !ids.has(point.spacePointId)))
     throw new Error('Composed proposal has an unresolved space point.');
 }
-// Stryker restore all
