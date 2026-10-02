@@ -1,11 +1,12 @@
-import { normalizeCoordinate } from '../2026-08-18/registryUtils.js';
 import {
   fulfillmentFailure,
   fulfillmentPoint as point,
   fulfillmentSegment as segment,
   fulfillmentMinuteAligned as isMinuteTimestamp,
   fulfillmentNumberWithin as validCoordinate,
-  fulfillmentPossessionContext,
+  fulfillmentConfiguredProposal,
+  fulfillmentWarehouseSpacePoint,
+  fulfillmentRecoverySegments,
   fulfillmentDistinctIds,
 } from './fulfillmentResult.js';
 
@@ -50,11 +51,10 @@ export function procurementBackedFulfillmentSequenceProposal(input) {
     if (timestamps.some(timestamp => !isMinuteTimestamp(timestamp)))
       throw new Error('All resulting timestamps must align to whole minutes.');
 
-    const warehouseSpacePoint = {
-      spacePointId: ids.warehouseSpacePointId,
-      latitude: normalizeCoordinate(warehouse.latitude, -90, 90),
-      longitude: normalizeCoordinate(warehouse.longitude, -180, 180),
-    };
+    const warehouseSpacePoint = fulfillmentWarehouseSpacePoint(
+      warehouse,
+      ids.warehouseSpacePointId
+    );
     const points = [
       point(
         ids.points.procurementStart,
@@ -93,16 +93,7 @@ export function procurementBackedFulfillmentSequenceProposal(input) {
         context.endPoint.pointId,
         ids.points.pickupReturn
       ),
-      segment(
-        ids.segments.inspection,
-        ids.points.pickupReturn,
-        ids.points.inspectionComplete
-      ),
-      segment(
-        ids.segments.cleaning,
-        ids.points.inspectionComplete,
-        ids.points.cleaningComplete
-      ),
+      ...fulfillmentRecoverySegments(ids, ids.points.pickupReturn),
     ];
     const sequence = [
       operation({
@@ -162,21 +153,24 @@ export function procurementBackedFulfillmentSequenceProposal(input) {
  * @returns {any} Validated request.
  */
 function validateRequest(request) {
-  const { segment, startPoint, endPoint } =
-    fulfillmentPossessionContext(request);
+  const prepared = fulfillmentConfiguredProposal(request);
+  const {
+    context: { segment, startPoint, endPoint },
+    warehouse,
+    travel,
+    configuration,
+    ids,
+  } = prepared;
   const start = Date.parse(startPoint.timestamp);
   const end = Date.parse(endPoint.timestamp);
   if (!Number.isFinite(start) || !Number.isFinite(end) || end < start)
     throw new Error('Possession timestamps must be valid and ordered.');
-  const warehouse = request.warehouse;
   if (
     !warehouse ||
     !validCoordinate(warehouse.latitude, -90, 90) ||
     !validCoordinate(warehouse.longitude, -180, 180)
   )
     throw new Error('Valid warehouse coordinates are required.');
-  const travel = request.travelDurations;
-  const configuration = request.configuration;
   const durationValues = [
     travel?.deliveryOutboundSeconds,
     travel?.pickupReturnSeconds,
@@ -195,7 +189,6 @@ function validateRequest(request) {
     if (!Number.isFinite(value) || value < 0)
       throw new Error('Durations must be finite and non-negative.');
   });
-  const ids = request.generatedIds;
   const pointIds = ids?.points;
   const segmentIds = ids?.segments;
   const requiredPointIds = [
@@ -216,13 +209,7 @@ function validateRequest(request) {
   });
   if (!Object.values(pointIds).length || !Object.values(segmentIds).length)
     throw new Error('Generated point and segment IDs are required.');
-  return {
-    context: { segment, startPoint, endPoint },
-    warehouse,
-    travel,
-    configuration,
-    ids,
-  };
+  return prepared;
 }
 
 /**

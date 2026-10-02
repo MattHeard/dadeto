@@ -1,3 +1,5 @@
+import { normalizeCoordinate } from '../2026-08-18/registryUtils.js';
+
 /**
  * Serialize a structured failure result for a fulfillment toy.
  * @param {unknown} error Caught failure.
@@ -98,6 +100,59 @@ export function fulfillmentPoint(pointId, spacePointId, timestamp) {
  */
 export function fulfillmentSegment(segmentId, startPointId, endPointId) {
   return { segmentId, startPointId, endPointId };
+}
+
+/**
+ * Build the inspection/cleaning tail shared by both fulfillment plans.
+ * @param {{points: Record<string, string>, segments: Record<string, string>}} ids Generated identifiers.
+ * @param {string} pickupReturnPointId Warehouse arrival point.
+ * @returns {Array<{segmentId: string, startPointId: string, endPointId: string}>} Ordered recovery segments.
+ */
+export function fulfillmentRecoverySegments(ids, pickupReturnPointId) {
+  return [
+    fulfillmentSegment(
+      ids.segments.inspection,
+      pickupReturnPointId,
+      ids.points.inspectionComplete
+    ),
+    fulfillmentSegment(
+      ids.segments.cleaning,
+      ids.points.inspectionComplete,
+      ids.points.cleaningComplete
+    ),
+  ];
+}
+
+/**
+ * Normalize warehouse coordinates while preserving caller-selected spatial IDs.
+ * @param {Record<string, any>} warehouse Warehouse record.
+ * @param {string} [spacePointId] Spatial identifier override.
+ * @returns {{spacePointId: string, latitude: unknown, longitude: unknown}} Warehouse space point.
+ */
+export function fulfillmentWarehouseSpacePoint(
+  warehouse,
+  spacePointId = warehouse.spacePointId
+) {
+  return {
+    spacePointId,
+    latitude: normalizeCoordinate(warehouse.latitude, -90, 90),
+    longitude: normalizeCoordinate(warehouse.longitude, -180, 180),
+  };
+}
+
+/**
+ * Prepare the common configuration after resolving possession references.
+ * @param {Record<string, any>} request Proposal request.
+ * @returns {{context: ReturnType<typeof fulfillmentPossessionContext>, warehouse: Record<string, any>, travel: Record<string, any>, configuration: Record<string, any>, ids: Record<string, any>}} Proposal configuration and context.
+ */
+export function fulfillmentConfiguredProposal(request) {
+  return {
+    context: fulfillmentPossessionContext(request),
+    warehouse: request.warehouse,
+    travel: request.travelDurations,
+    configuration: request.configuration,
+    ids: request.generatedIds,
+  };
 }
 
 /**
