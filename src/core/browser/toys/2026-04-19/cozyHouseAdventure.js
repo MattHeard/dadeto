@@ -77,6 +77,25 @@ const BUILD_REQUIREMENTS = {
 
 const REQUIRED_STAGES = ['foundation', 'materials', 'roof', 'garden'];
 
+const INTRO_LINES = [
+  '> A gentle rain taps the porch while your tiny-house project waits in the yard.',
+  "> Type 'build' when you're ready to start laying out your cozy home.",
+];
+const YARD_LINES = [
+  '> Next tasks: foundation / materials / roof / garden.',
+  '> What would you like to do?',
+];
+
+/**
+ * Render a dynamic heading followed by authored narrative lines.
+ * @param {string} heading Player-specific heading.
+ * @param {string[]} lines Authored body lines.
+ * @returns {string} Newline-separated prompt.
+ */
+function renderNarrative(heading, lines) {
+  return [heading, ...lines].join('\n');
+}
+
 /**
  * Create a transition payload from explicit state lists.
  * @param {CozyTransition} transition Transition payload values.
@@ -174,11 +193,7 @@ function getTemporaryState(temporary) {
  * @returns {string} Introductory narrative.
  */
 function introMessage(name) {
-  return [
-    `> Welcome home, ${name}.`,
-    '> A gentle rain taps the porch while your tiny-house project waits in the yard.',
-    "> Type 'build' when you're ready to start laying out your cozy home.",
-  ].join('\n');
+  return renderNarrative(`> Welcome home, ${name}.`, INTRO_LINES);
 }
 
 /**
@@ -187,11 +202,10 @@ function introMessage(name) {
  * @returns {string} Hub prompt text.
  */
 function yardMessage(time) {
-  return [
+  return renderNarrative(
     `> ${time} — You stand in the yard with tea in hand and a warm checklist.`,
-    '> Next tasks: foundation / materials / roof / garden.',
-    '> What would you like to do?',
-  ].join('\n');
+    YARD_LINES
+  );
 }
 
 /**

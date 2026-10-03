@@ -5,6 +5,25 @@ import {
 } from '../../../src/core/browser/toys/2026-04-19/cozyHouseAdventure.js';
 
 describe('cozyHouseAdventure', () => {
+  test('authored narrative renders dynamic headings once without accumulating lines', () => {
+    let reads = 0;
+    const heading = {
+      toString: () => {
+        reads += 1;
+        return 'Rowan\nRain';
+      },
+    };
+    expect(cozyHouseAdventureTestOnly.introMessage(heading)).toBe(
+      "> Welcome home, Rowan\nRain.\n> A gentle rain taps the porch while your tiny-house project waits in the yard.\n> Type 'build' when you're ready to start laying out your cozy home."
+    );
+    expect(reads).toBe(1);
+    expect(cozyHouseAdventureTestOnly.yardMessage('')).toBe(
+      '>  — You stand in the yard with tea in hand and a warm checklist.\n> Next tasks: foundation / materials / roof / garden.\n> What would you like to do?'
+    );
+    expect(cozyHouseAdventureTestOnly.introMessage('A')).toBe(
+      cozyHouseAdventureTestOnly.introMessage('A')
+    );
+  });
   test('context transitions keep list identity and deterministic field order', () => {
     const inventory = ['tea thermos'];
     const progress = ['roof'];
