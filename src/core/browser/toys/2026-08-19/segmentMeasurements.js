@@ -1,0 +1,198 @@
+// Duration and geodesic measurements with their original parser policies.
+import {
+  isJsonObject,
+  parseSegmentMeasurementInput,
+  measureSpacetimeSegment,
+} from './spacetimeInput.js';
+
+/**
+ * Calculate UTC duration for a SPAC2 segment.
+ * @param {string} input JSON payload containing points and a segment.
+ * @returns {string} Object containing string value and unit fields.
+ */
+export function spacetimeSegmentDuration(input) {
+  return measureSpacetimeSegment(input, parseInput, durationSeconds, 'seconds');
+}
+
+/**
+ * Format a valid ordered UTC interval in seconds.
+ * @param {Record<string, any>} start Start point.
+ * @param {Record<string, any>} end End point.
+ * @returns {string} Duration in seconds.
+ */
+function durationSeconds(start, end) {
+  const startTime = Date.parse(start.timestamp);
+  const endTime = Date.parse(end.timestamp);
+  if (
+    !Number.isFinite(startTime) ||
+    !Number.isFinite(endTime) ||
+    endTime < startTime
+  ) {
+    throw new Error('Segment must have an ordered valid UTC interval.');
+  }
+  return String((endTime - startTime) / 1000);
+}
+
+/**
+ * Parse the duration request with its legacy empty-input policy.
+ * @param {string} input Raw JSON input.
+ * @returns {{points: Array<{pointId: string, timestamp: string}>, segment: {startPointId: string, endPointId: string}}} Parsed payload.
+ */
+function parseInput(input) {
+  return /** @type {{points: Array<{pointId: string, timestamp: string}>, segment: {startPointId: string, endPointId: string}}} */ (
+    parseSegmentMeasurementInput(input || '{}')
+  );
+}
+
+export { isJsonObject, parseInput };
+
+const SEMI_MAJOR_AXIS = 6378137;
+const FLATTENING = 1 / 298.257223563;
+const SEMI_MINOR_AXIS = (1 - FLATTENING) * SEMI_MAJOR_AXIS;
+
+/**
+ * Calculate WGS84 surface length for a SPAC2 segment.
+ * @param {string} input JSON payload containing points and a segment.
+ * @returns {string} Object containing string value and unit fields.
+ */
+export function spacetimeSegmentGeodesicLength(input) {
+  return measureSpacetimeSegment(
+    input,
+    parseSegmentMeasurementInput,
+    distanceMeters,
+    'meters'
+  );
+}
+
+/**
+ * Format ellipsoid surface length with the existing two-decimal precision.
+ * @param {Record<string, any>} start Start point.
+ * @param {Record<string, any>} end End point.
+ * @returns {string} Distance in meters.
+ */
+function distanceMeters(start, end) {
+  return vincentyDistance(
+    start.latitude,
+    start.longitude,
+    end.latitude,
+    end.longitude
+  ).toFixed(2);
+}
+
+/**
+ * Calculate inverse geodesic distance on the WGS84 ellipsoid.
+ * @param {number} firstLatitude First latitude.
+ * @param {number} firstLongitude First longitude.
+ * @param {number} secondLatitude Second latitude.
+ * @param {number} secondLongitude Second longitude.
+ * @returns {number} Distance in meters.
+ */
+function vincentyDistance(
+  firstLatitude,
+  firstLongitude,
+  secondLatitude,
+  secondLongitude
+) {
+  const phi1 = radians(firstLatitude);
+  const phi2 = radians(secondLatitude);
+  const reduced1 = Math.atan((1 - FLATTENING) * Math.tan(phi1));
+  const reduced2 = Math.atan((1 - FLATTENING) * Math.tan(phi2));
+  const sinReduced1 = Math.sin(reduced1);
+  const cosReduced1 = Math.cos(reduced1);
+  const sinReduced2 = Math.sin(reduced2);
+  const cosReduced2 = Math.cos(reduced2);
+  const longitudeDifference = radians(secondLongitude - firstLongitude);
+  let lambda = longitudeDifference;
+  let previousLambda;
+  let sinSigma = 0,
+    cosSigma = 1,
+    sigma = 0,
+    sinAlpha = 0,
+    cosSquaredAlpha = 1,
+    cosTwoSigmaM = 0;
+  let converged = false;
+  for (let iteration = 0; iteration < 100; iteration++) {
+    const sinLambda = Math.sin(lambda);
+    const cosLambda = Math.cos(lambda);
+    sinSigma = Math.sqrt(
+      (cosReduced2 * sinLambda) ** 2 +
+        (cosReduced1 * sinReduced2 - sinReduced1 * cosReduced2 * cosLambda) ** 2
+    );
+    cosSigma =
+      sinReduced1 * sinReduced2 + cosReduced1 * cosReduced2 * cosLambda;
+    sigma = Math.atan2(sinSigma, cosSigma);
+    sinAlpha = (cosReduced1 * cosReduced2 * sinLambda) / sinSigma;
+    cosSquaredAlpha = 1 - sinAlpha ** 2;
+    cosTwoSigmaM =
+      cosSquaredAlpha === 0
+        ? 0
+        : cosSigma - (2 * sinReduced1 * sinReduced2) / cosSquaredAlpha;
+    const coefficient =
+      (FLATTENING / 16) *
+      cosSquaredAlpha *
+      (4 + FLATTENING * (4 - 3 * cosSquaredAlpha));
+    previousLambda = lambda;
+    lambda =
+      longitudeDifference +
+      (1 - coefficient) *
+        FLATTENING *
+        sinAlpha *
+        (sigma +
+          coefficient *
+            sinSigma *
+            (cosTwoSigmaM +
+              coefficient * cosSigma * (-1 + 2 * cosTwoSigmaM ** 2)));
+    if (Math.abs(lambda - previousLambda) <= 1e-12) {
+      converged = true;
+      break;
+    }
+  }
+  if (!converged)
+    return sphericalFallback({
+      phi1,
+      phi2,
+      deltaPhi: radians(secondLatitude - firstLatitude),
+      deltaLambda: longitudeDifference,
+    });
+  const uSquared =
+    (cosSquaredAlpha * (SEMI_MAJOR_AXIS ** 2 - SEMI_MINOR_AXIS ** 2)) /
+    SEMI_MINOR_AXIS ** 2;
+  const coefficientA =
+    1 +
+    (uSquared / 16384) *
+      (4096 + uSquared * (-768 + uSquared * (320 - 175 * uSquared)));
+  const coefficientB =
+    (uSquared / 1024) *
+    (256 + uSquared * (-128 + uSquared * (74 - 47 * uSquared)));
+  const deltaSigma =
+    coefficientB *
+    sinSigma *
+    (cosSigma -
+      (coefficientB / 4) *
+        (cosSigma * (-1 + 2 * cosTwoSigmaM ** 2) -
+          (coefficientB / 6) *
+            cosTwoSigmaM *
+            (-3 + 4 * sinSigma ** 2) *
+            (-3 + 4 * cosTwoSigmaM ** 2)));
+  return SEMI_MINOR_AXIS * coefficientA * (sigma - deltaSigma);
+}
+
+/**
+ * Calculate a spherical fallback distance for non-convergent ellipsoid cases.
+ * @param {{phi1: number, phi2: number, deltaPhi: number, deltaLambda: number}} angles Previously resolved angular coordinates and differences.
+ * @returns {number} Approximate distance in meters.
+ */
+function sphericalFallback({ phi1, phi2, deltaPhi, deltaLambda }) {
+  const a =
+    Math.sin(deltaPhi / 2) ** 2 +
+    Math.cos(phi1) * Math.cos(phi2) * Math.sin(deltaLambda / 2) ** 2;
+  return SEMI_MAJOR_AXIS * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+/**
+ * Convert degrees to radians.
+ * @param {number} degrees Degrees.
+ * @returns {number} Radians.
+ */
+const radians = degrees => (degrees * Math.PI) / 180;
+export { vincentyDistance };
