@@ -417,18 +417,24 @@ function getScoredMoves(board, nextPlayer, moves) {
  * @returns {ScoredMove} Best scored move.
  */
 function getBestScoredMove(scoredMoves) {
-  return scoredMoves.reduce(
-    (best, current) => {
-      if (current.moveScore > best.moveScore) {
-        return current;
-      }
-      return best;
-    },
-    /** @type {ScoredMove} */ ({
-      moveScore: -Infinity,
-      move: { row: 0, column: 0 },
-    })
-  );
+  const fallback = /** @type {ScoredMove} */ ({
+    moveScore: -Infinity,
+    move: { row: 0, column: 0 },
+  });
+  return scoredMoves.reduce(selectHigherScoredMove, fallback);
+}
+
+/**
+ * Retain the first best move unless a later score is strictly higher.
+ * @param {ScoredMove} best Best move so far.
+ * @param {ScoredMove} current Next candidate.
+ * @returns {ScoredMove} Original candidate or best move reference.
+ */
+function selectHigherScoredMove(best, current) {
+  if (current.moveScore > best.moveScore) {
+    return current;
+  }
+  return best;
 }
 
 /**

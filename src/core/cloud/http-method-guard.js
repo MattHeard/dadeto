@@ -56,12 +56,13 @@ export function whenPostMethod({ method, onValid, onInvalid, options }) {
  * @returns {T} Callback result for the valid or invalid request path.
  */
 export function whenPostRequest({ request, onValid, onInvalid, options }) {
-  return whenPostMethod({
+  const callbacks = {
     method: request.method,
     onValid,
     onInvalid,
     options,
-  });
+  };
+  return whenPostMethod(callbacks);
 }
 
 /**
@@ -75,12 +76,17 @@ export function whenPostRequest({ request, onValid, onInvalid, options }) {
  * @returns {Promise<T | { status: number, body: string }>} Callback result for the valid or invalid request path.
  */
 export function whenPostRequestAsync({ request, onValid, options }) {
-  const methodError = validatePostMethod(request.method, undefined, options);
-  if (methodError) {
-    return Promise.resolve(methodError);
-  }
-
-  return Promise.resolve(onValid());
+  const callbacks = {
+    request,
+    onValid:
+      /** @type {() => Promise<T> | T | { status: number, body: string }} */ (
+        onValid
+      ),
+    onInvalid: (/** @type {{ status: number, body: string }} */ response) =>
+      response,
+    options,
+  };
+  return Promise.resolve(whenPostRequest(callbacks));
 }
 
 /**

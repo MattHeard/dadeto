@@ -801,20 +801,35 @@ describe('object minute rental HTTP adapter', () => {
   test('loads an injected runner schedule provider per request', async () => {
     const json = jest.fn();
     const getSchedule = jest.fn(async () => schedule);
-    await createSearchHttpHandler({
+    const env = { SEARCH_RUNNER_ID: 'RUNNER-7' };
+    const handler = createSearchHttpHandler({
       runnerCommitmentsRepository: emptyRepository,
       runnerScheduleProvider: { getSchedule },
-      env: { SEARCH_RUNNER_ID: 'RUNNER-7' },
+      env,
       clock: () => new Date('2026-08-27T15:00Z'),
-    })(
-      { method: 'POST', headers: {}, body: base },
-      { json, status: () => ({ json }) }
-    );
+    });
+    expect(getSchedule).not.toHaveBeenCalled();
+    await expect(
+      handler(
+        { method: 'POST', headers: {}, body: base },
+        { json, status: () => ({ json }) }
+      )
+    ).resolves.toBeUndefined();
     expect(getSchedule).toHaveBeenCalledWith({ runnerId: 'RUNNER-7' });
     expect(json).toHaveBeenCalledWith({
       valid: true,
       results: [{ skuId: 'FOOTBALL' }],
     });
+    env.SEARCH_RUNNER_ID = 'RUNNER-9';
+    await handler(
+      { method: 'POST', headers: {}, body: base },
+      { json, status: () => ({ json }) }
+    );
+    expect(getSchedule.mock.calls).toEqual([
+      [{ runnerId: 'RUNNER-7' }],
+      [{ runnerId: 'RUNNER-9' }],
+    ]);
+    expect(json).toHaveBeenCalledTimes(2);
   });
 
   test('uses default runner id and fallback on invalid timezone input', async () => {

@@ -126,4 +126,37 @@ describe('http method guard', () => {
 
     expect(onValid).not.toHaveBeenCalled();
   });
+
+  test('reads the method once and preserves immediate callback throws in the async adapter', () => {
+    const events = [];
+    const failure = new Error('callback failure');
+    const request = {
+      get method() {
+        events.push('method');
+        return 'POST';
+      },
+    };
+    expect(() =>
+      whenPostRequestAsync({
+        request,
+        onValid: () => {
+          events.push('callback');
+          throw failure;
+        },
+      })
+    ).toThrow(failure);
+    expect(events).toEqual(['method', 'callback']);
+  });
+
+  test('shares non-string POST overrides with synchronous request guarding', async () => {
+    const onValid = jest.fn(() => 'accepted');
+    await expect(
+      whenPostRequestAsync({
+        request: { method: 0 },
+        onValid,
+        options: { treatNonStringAsPost: true },
+      })
+    ).resolves.toBe('accepted');
+    expect(onValid).toHaveBeenCalledTimes(1);
+  });
 });

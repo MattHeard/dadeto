@@ -1,7 +1,7 @@
 // @ts-nocheck -- HTTP adapter values are normalized by the core boundary.
 import { createObjectMinuteRentalSearch } from './search-application.js';
 import { SOPHIE_CHARLOTTE_SERVICE_AREA } from './service-area.js';
-import { normalizeRequest, parseSchedule } from './request/index.js';
+import { executeSearchHttpRequest } from './request/index.js';
 export { normalizeRequest, dailyWindow } from './request/index.js';
 
 const DEFAULT_RUNNER_ID = 'RUNNER-1';
@@ -27,35 +27,12 @@ export function createSearchHttpHandler({
     runnerId: env.SEARCH_RUNNER_ID ?? DEFAULT_RUNNER_ID,
     serviceArea,
   });
-  return async (req, res) => {
-    const origin = req?.headers?.origin;
-    if (origin && allowedOrigins.includes(origin)) {
-      res.setHeader?.('Access-Control-Allow-Origin', origin);
-      res.setHeader?.('Vary', 'Origin');
-      res.setHeader?.('Access-Control-Allow-Methods', 'POST, OPTIONS');
-      res.setHeader?.('Access-Control-Allow-Headers', 'Content-Type');
-    }
-    if (req?.method === 'OPTIONS') {
-      res.status(204).json({});
-      return;
-    }
-    if (req?.method && req.method !== 'POST') {
-      res.status(405).json({ valid: false, reason: 'Method not allowed.' });
-      return;
-    }
-    try {
-      const request = normalizeRequest(req.body, env, clock);
-      request.runnerSchedule = runnerScheduleProvider
-        ? await runnerScheduleProvider.getSchedule({
-            runnerId: env.SEARCH_RUNNER_ID ?? DEFAULT_RUNNER_ID,
-          })
-        : parseSchedule(env.SEARCH_RUNNER_SCHEDULE_JSON);
-      res.json(await search(request));
-    } catch (error) {
-      res.status(400).json({
-        valid: false,
-        reason: error instanceof Error ? error.message : String(error),
-      });
-    }
-  };
+  return executeSearchHttpRequest.bind(null, {
+    search,
+    env,
+    clock,
+    runnerScheduleProvider,
+    allowedOrigins,
+    defaultRunnerId: DEFAULT_RUNNER_ID,
+  });
 }

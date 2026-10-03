@@ -4,6 +4,24 @@ import {
   ticTacToeTestOnly,
 } from '../../../src/core/browser/toys/2025-04-06/ticTacToe.js';
 
+test('retains the first tied best move and creates fresh fallback coordinates', () => {
+  const first = { moveScore: 4, move: { row: 1, column: 0 } };
+  const tied = { moveScore: 4, move: { row: 0, column: 1 } };
+  const lower = { moveScore: 2, move: { row: 2, column: 2 } };
+  expect(ticTacToeTestOnly.getBestScoredMove([first, tied, lower])).toBe(first);
+  const empty = ticTacToeTestOnly.getBestScoredMove([]);
+  empty.move.column = 2;
+  expect(ticTacToeTestOnly.getBestScoredMove([])).toEqual({
+    moveScore: -Infinity,
+    move: { row: 0, column: 0 },
+  });
+  expect(
+    ticTacToeTestOnly.getBestScoredMove([
+      { moveScore: -Infinity, move: { row: 2, column: 2 } },
+    ]).move
+  ).toEqual({ row: 0, column: 0 });
+});
+
 if (
   ticTacToeTestOnly.getOpponent('X') !== 'O' ||
   ticTacToeTestOnly.getOpponent('O') !== 'X'

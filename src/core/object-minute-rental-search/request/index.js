@@ -1,6 +1,56 @@
 import { durationMilliseconds } from '../timing.js';
 
 /**
+ * Execute HTTP request interpretation at the search request boundary.
+ * @param {{ search: (request: ReturnType<typeof normalizeRequest>) => Promise<object>, env: Record<string, string | undefined>, clock: () => Date, runnerScheduleProvider?: { getSchedule: (input: { runnerId: string }) => Promise<object[]> }, allowedOrigins: string[], defaultRunnerId: string }} context Search application and live request dependencies.
+ * @param {{ body?: unknown, method?: string, headers?: { origin?: string } }} req HTTP request.
+ * @param {{ json: (body: unknown) => void, status: (code: number) => { json: (body: unknown) => void }, setHeader?: (name: string, value: string) => void }} res HTTP response.
+ * @returns {Promise<void>} Completion after response delivery.
+ */
+export async function executeSearchHttpRequest(context, req, res) {
+  const search = context.search;
+  const origin = req?.headers?.origin;
+  if (origin && context.allowedOrigins.includes(origin)) {
+    res.setHeader?.('Access-Control-Allow-Origin', origin);
+    res.setHeader?.('Vary', 'Origin');
+    res.setHeader?.('Access-Control-Allow-Methods', 'POST, OPTIONS');
+    res.setHeader?.('Access-Control-Allow-Headers', 'Content-Type');
+  }
+  if (req?.method === 'OPTIONS') {
+    res.status(204).json({});
+    return;
+  }
+  if (req?.method && req.method !== 'POST') {
+    res.status(405).json({ valid: false, reason: 'Method not allowed.' });
+    return;
+  }
+  try {
+    const request = normalizeRequest(req.body, context.env, context.clock);
+    request.runnerSchedule = context.runnerScheduleProvider
+      ? await context.runnerScheduleProvider.getSchedule({
+          runnerId: context.env.SEARCH_RUNNER_ID ?? context.defaultRunnerId,
+        })
+      : parseSchedule(context.env.SEARCH_RUNNER_SCHEDULE_JSON);
+    res.json(await search(request));
+  } catch (error) {
+    sendSearchHttpFailure(res, error);
+  }
+}
+
+/**
+ * Serialize a search boundary failure to the existing bad-request protocol.
+ * @param {{ status: (code: number) => { json: (body: unknown) => void } }} res HTTP response.
+ * @param {unknown} error Request or search failure.
+ * @returns {void}
+ */
+function sendSearchHttpFailure(res, error) {
+  res.status(400).json({
+    valid: false,
+    reason: error instanceof Error ? error.message : String(error),
+  });
+}
+
+/**
  * Parse finite non-negative numeric seconds into placement milliseconds.
  * @param {unknown} seconds Candidate duration.
  * @returns {number | null} Milliseconds, or null for malformed seconds.
