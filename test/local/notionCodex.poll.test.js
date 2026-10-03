@@ -124,6 +124,12 @@ describe('local notion codex poll runner', () => {
 describe('local notion codex active run handling', () => {
   test('skips launching when an active run is still alive', async () => {
     const writes = [];
+    const activeRun = { runId: 'existing-run', pid: 777 };
+    let reads = 0;
+    const initialState = {
+      get activeRun() { reads++; return activeRun; },
+      eventLog: [],
+    };
     const result = await runNotionCodexPoll({
       config,
       repoRoot: '/tmp/repo',
@@ -131,13 +137,7 @@ describe('local notion codex active run handling', () => {
       isProcessAliveImpl: () => true,
       stateStore: {
         async readState() {
-          return {
-            activeRun: {
-              runId: 'existing-run',
-              pid: 777,
-            },
-            eventLog: [],
-          };
+          return initialState;
         },
         async writeState(state) {
           writes.push(state);
@@ -150,6 +150,8 @@ describe('local notion codex active run handling', () => {
       },
     });
 
+    expect(reads).toBe(5);
+    expect(result.state).toBe(initialState);
     expect(result).toMatchObject({
       launched: false,
       skipped: true,
@@ -689,6 +691,41 @@ describe('local notion codex backoff recovery', () => {
 });
 
 describe('local notion codex process edge cases', () => {
+  test.each(['', '  exact run id  ', undefined, false])(
+    'identifier projection preserves selected getter value %p',
+    selected => {
+      let reads = 0;
+      const run = {
+        get runId() {
+          reads++;
+          return reads === 1 ? 'guard value' : selected;
+        },
+      };
+      expect(getActiveRunId(run)).toBe(selected);
+      expect(reads).toBe(2);
+    }
+  );
+
+  test('identifier projection preserves selected getter errors', () => {
+    const error = new Error('selected getter failed');
+    let reads = 0;
+    const run = {
+      get runId() {
+        reads++;
+        if (reads === 2) throw error;
+        return 'guard value';
+      },
+    };
+    let caught;
+    try {
+      getActiveRunId(run);
+    } catch (failure) {
+      caught = failure;
+    }
+    expect(caught).toBe(error);
+    expect(reads).toBe(2);
+  });
+
   test('returns null when the active run id is missing', () => {
     expect(getActiveRunId(null)).toBeNull();
     expect(getActiveRunId({})).toBeNull();

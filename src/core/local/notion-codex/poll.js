@@ -4,6 +4,7 @@ import {
   getNextIdleBackoffExponent,
   getNextPollAfterIso,
 } from './backoff.js';
+import { whenOrNull } from '../../commonCore.js';
 
 // Stryker disable all -- this module is the fixed Notion Codex polling,
 // backoff, launch, and outcome orchestration boundary covered by the poll suite.
@@ -379,13 +380,16 @@ function isProcessAlive(pid) {
  * @returns {string | null} Run identifier.
  */
 export function getActiveRunId(activeRun) {
-  if (activeRun && typeof activeRun === 'object') {
-    if (typeof activeRun.runId === 'string') {
-      return activeRun.runId;
-    }
-  }
-
-  return null;
+  return /** @type {string | null} */ (
+    whenOrNull(
+      Boolean(
+        activeRun &&
+          typeof activeRun === 'object' &&
+          typeof activeRun.runId === 'string'
+      ),
+      () => /** @type {NotionCodexPollActiveRun} */ (activeRun).runId
+    )
+  );
 }
 
 /**
@@ -439,11 +443,12 @@ function createRunEvent(options, type, extra = {}) {
  * @returns {NotionCodexPollActiveRun | null} Active run object or null.
  */
 function getActiveRun(state) {
-  if (state.activeRun && typeof state.activeRun === 'object') {
-    return state.activeRun;
-  }
-
-  return null;
+  return /** @type {NotionCodexPollActiveRun | null} */ (
+    whenOrNull(
+      Boolean(state.activeRun && typeof state.activeRun === 'object'),
+      () => state.activeRun
+    )
+  );
 }
 
 /**
