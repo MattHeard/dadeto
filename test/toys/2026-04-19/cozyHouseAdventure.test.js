@@ -5,6 +5,19 @@ import {
 } from '../../../src/core/browser/toys/2026-04-19/cozyHouseAdventure.js';
 
 describe('cozyHouseAdventure', () => {
+  test('saved lists retain truthy identity and create independent falsy fallbacks', () => {
+    const { getStoredList } = cozyHouseAdventureTestOnly;
+    for (const value of [[], ['roof'], 'legacy list', { legacy: true }]) {
+      expect(getStoredList(value)).toBe(value);
+    }
+    for (const value of [undefined, null, false, 0, '', NaN]) {
+      const first = getStoredList(value);
+      expect(first).toEqual([]);
+      expect(getStoredList(value)).not.toBe(first);
+    }
+    expect(getStoredList.name).toBe('getStoredList');
+  });
+
   test('bonus text preserves the strict random threshold and non-finite behavior', () => {
     const { getBonusText } = cozyHouseAdventureTestOnly;
     for (const value of [0, 0.8, NaN, -Infinity])

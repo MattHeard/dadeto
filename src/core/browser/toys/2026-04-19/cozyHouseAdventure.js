@@ -396,11 +396,13 @@ function getPlayerState(scoped) {
  * @returns {string[]} Normalized array value.
  */
 function getStoredList(items) {
-  if (!items) {
-    return [];
-  }
-
-  return items;
+  return /** @type {string[]} */ (
+    when(
+      Boolean(items),
+      () => items,
+      () => []
+    )
+  );
 }
 
 /**
@@ -572,4 +574,5 @@ export const cozyHouseAdventureTestOnly = {
   runAdventure,
 };
 import { withFallback } from '../../common.js';
+import { when } from '../../../commonCore.js';
 import { createTemporaryToyEnvelope } from '../browserToysCore.js';
