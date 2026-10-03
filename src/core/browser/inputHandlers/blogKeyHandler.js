@@ -1,4 +1,5 @@
 import * as browserCore from '../browser-core.js';
+import { whenOrDefault } from '../../commonCore.js';
 import {
   finalizeManagedForm,
   syncHiddenInput,
@@ -27,12 +28,12 @@ const EXISTING_KEYS_PLACEHOLDER = 'GERM1\nTEXT1\nSTAR1';
  * @returns {string} Title string or empty string.
  */
 function parseTitle(parsed) {
-  if (typeof (/** @type {{ title?: unknown }} */ (parsed).title) === 'string') {
-    return /** @type {string} */ (
-      /** @type {{ title: string }} */ (parsed).title
-    );
-  }
-  return '';
+  return whenOrDefault(
+    typeof (/** @type {{ title?: unknown }} */ (parsed).title) === 'string',
+    () =>
+      /** @type {string} */ (/** @type {{ title: string }} */ (parsed).title),
+    ''
+  );
 }
 
 /**
