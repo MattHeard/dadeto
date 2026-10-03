@@ -45,7 +45,7 @@ export function findExit(map, x, y, flags) {
  * @param {unknown} world - The world argument.
  * @param {unknown} direction - The direction argument.
  * @param {unknown} content - The content argument.
- * @returns {unknown} The computed result.
+ * @returns {Record<string, any>} Updated world state.
  */
 export function movePlayer(world, direction, content) {
   const delta = { up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0] }[
@@ -81,7 +81,7 @@ export function movePlayer(world, direction, content) {
 /**
  * Create initial world and story clock.
  * @param {unknown} content - The content argument.
- * @returns {unknown} The computed result.
+ * @returns {Record<string, any>} Starting world state.
  */
 export function createWorld(content) {
   return {

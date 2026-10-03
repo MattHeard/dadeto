@@ -16,7 +16,7 @@ export function actorAt(world, x, y) {
 /**
  * Find the character or object the player faces.
  * @param {unknown} state - The state argument.
- * @returns {unknown} The computed result.
+ * @returns {Record<string, any>} Facing actor and object candidates.
  */
 export function targetInFront(state) {
   const { x, y, facing } = state.world.player;

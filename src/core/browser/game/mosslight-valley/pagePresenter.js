@@ -46,7 +46,8 @@ export function startMosslightPage(options) {
     ['setLocalPermanentData', setPermanent],
     ['playAudioCue', cue => playCue(cue)],
   ]);
-  const runtime = createMosslightRuntime({
+  const runtimeFactory = options.createRuntime || createMosslightRuntime;
+  const runtime = runtimeFactory({
     env,
     onControllerCommand: command => {
       const selector = {
@@ -205,7 +206,8 @@ export function startMosslightPage(options) {
     lastTime = 0;
   }
   bindTouchControls(documentObj, touch, touchPulse, () => runtime.resume());
-  const disposeAgentTools = registerMosslightTools({
+  const registerTools = options.registerTools || registerMosslightTools;
+  const disposeAgentTools = registerTools({
     modelContext: documentObj.modelContext,
     runtime,
     redraw: draw,
@@ -213,11 +215,11 @@ export function startMosslightPage(options) {
   windowObj.addEventListener('pointerup', releaseTouch);
   windowObj.addEventListener('pointercancel', releaseTouch);
   bindUtilityControls({
-    documentObj,
-    windowObj,
+    browser: { documentObj, windowObj },
     runtime,
     status,
     draw,
+    saveFilename: options.saveFilename || 'mosslight-valley-save.json',
     onReset: () => {
       keys.held.clear();
       keys.pressed.clear();
@@ -303,8 +305,9 @@ function bindTouchControls(documentObj, touch, touchPulse, resume) {
  * @param {object} options - Page elements and game runtime dependencies.
  */
 function bindUtilityControls(options) {
-  const { documentObj, windowObj, runtime, status, draw, onResume, onReset } =
+  const { browser, runtime, status, draw, onResume, onReset, saveFilename } =
     options;
+  const { documentObj, windowObj } = browser;
   const listen = (selector, event, handler) =>
     documentObj.querySelector(selector).addEventListener(event, handler);
   const slotPicker = documentObj.querySelector('#save-slot');
@@ -324,7 +327,7 @@ function bindUtilityControls(options) {
     draw();
   });
   listen('#export-game', 'click', () =>
-    download(runtime.exportSave(), 'mosslight-valley-save.json', windowObj)
+    download(runtime.exportSave(), saveFilename, windowObj)
   );
   const importInput = documentObj.querySelector('#import-game');
   listen('#import-button', 'click', () => importInput.click());

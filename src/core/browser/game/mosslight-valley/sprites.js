@@ -61,17 +61,19 @@ const COLOURS = {
 
 /**
  * Build original outlined actor or prop art for either presenter.
- * @param {{id?: string, kind?: string, x: number, y: number, facing?: string}} actor Actor or map prop.
+ * @param {{id?: string, kind?: string, x: number, y: number, facing?: string, art?: string[], colours?: string[]}} actor Actor or map prop.
  * @param {{x: number, y: number}} camera Viewport origin in tiles.
  * @param {number} tick Deterministic animation clock.
  * @returns {Array<{type: string,x: number,y: number,width: number,height: number,fill: string}>} Pixel shapes.
  */
 export function spriteShapes(actor, camera, tick) {
   const identity = actor.id || 'player';
-  const art = actor.kind
-    ? PROPS[actor.kind] || PROPS.memory
-    : ACTORS[identity] || ACTORS.player;
-  const colours = COLOURS[identity] || COLOURS.player;
+  const art =
+    actor.art ||
+    (actor.kind
+      ? PROPS[actor.kind] || PROPS.memory
+      : ACTORS[identity] || ACTORS.player);
+  const colours = actor.colours || COLOURS[identity] || COLOURS.player;
   /** @type {Record<string, string>} */
   const palette = {
     k: '#172c34',

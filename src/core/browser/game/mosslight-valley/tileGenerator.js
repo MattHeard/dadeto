@@ -50,6 +50,14 @@ export function generateBackgroundTile(options) {
  */
 function backgroundInstructions(seed, region) {
   switch (region) {
+    case 'lab':
+      return [
+        instruction([0, 11, 12, 1, 'shadow']),
+        instruction([11, 0, 1, 12, 'shadow']),
+        instruction([2, 2, 7, 1, 'ground']),
+        ...optionalInstruction(seed % 4 === 0, [1, 10, 3, 1, 'light']),
+        ...optionalInstruction(seed === 3, [9, 3, 1, 1, 'glimmer']),
+      ];
     case 'shore': {
       const x = 1 + (seed % 4);
       const y = 1 + (seed % 7);

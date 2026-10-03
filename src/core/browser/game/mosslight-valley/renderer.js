@@ -17,7 +17,10 @@ const PALETTES = {
  * @returns {unknown} The computed result.
  */
 export function toFramePayload(state) {
-  const palette = PALETTES[state.world.map.palette] || PALETTES.village;
+  const palette =
+    state.presentation?.palette ||
+    PALETTES[state.world.map.palette] ||
+    PALETTES.village;
   const camera = cameraFor(state.world, 13, 9);
   const frame = {
     type: 'mosslight-valley',
@@ -42,6 +45,7 @@ export function toFramePayload(state) {
     toast: state.toast,
     ending: state.ending,
     tick: state.tick,
+    presentation: state.presentation,
   };
   frame.shapes = toCanvasShapes(frame);
   return frame;
@@ -186,7 +190,10 @@ function hudShapes(frame) {
       '#e9d88d'
     ),
     frameText(
-      fitHudText(`♥ ${frame.world.flags.memoryCount || 0}/3 · ${frame.quest}`),
+      fitHudText(
+        frame.presentation?.status ||
+          `♥ ${frame.world.flags.memoryCount || 0}/3 · ${frame.quest}`
+      ),
       124,
       '#e8e1c0'
     ),
@@ -255,7 +262,9 @@ function controllerShapes(frame) {
   ];
   return textPanel(
     background,
-    menuLines(frame).map(text => text.slice(0, 30)),
+    (frame.presentation?.menuRows || menuLines(frame)).map(text =>
+      text.slice(0, 30)
+    ),
     { x: 6, y: 13, fill: '#e9d88d', font: '7px monospace' }
   );
 }

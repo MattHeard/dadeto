@@ -34,14 +34,20 @@ function actionBatch(request) {
 
 /**
  * Register agent play against the exact runtime displayed by the game page.
- * @param {{modelContext?: {registerTool?: (tool: Record<string, any>) => void, unregisterTool?: (name: string) => void}, runtime: {getSnapshot: () => unknown, getJournal: () => unknown, pause: () => unknown, dispatch: (command: {actions: string[]}) => unknown, exportSave: () => string, importSave: (raw: string) => unknown, save: () => unknown}, redraw: () => void}} options Live game adapters.
+ * @param {{modelContext?: {registerTool?: (tool: Record<string, any>) => void, unregisterTool?: (name: string) => void}, runtime: {getSnapshot: () => unknown, getJournal: () => unknown, pause: () => unknown, dispatch: (command: {actions: string[]}) => unknown, exportSave: () => string, importSave: (raw: string) => unknown, save: () => unknown}, redraw: () => void, profile?: {prefix: string, title: string}}} options Live game adapters.
  * @returns {() => void} Tool lifecycle disposer.
  */
-export function registerMosslightTools({ modelContext, runtime, redraw }) {
+export function registerMosslightTools({
+  modelContext,
+  runtime,
+  redraw,
+  profile,
+}) {
   if (!modelContext?.registerTool) {
     return () => {};
   }
   const registerTool = modelContext.registerTool.bind(modelContext);
+  const prefix = profile?.prefix || 'mosslight';
   let disposed = false;
 
   /**
@@ -65,7 +71,7 @@ export function registerMosslightTools({ modelContext, runtime, redraw }) {
       journal: runtime.getJournal(),
       actions: ACTIONS,
       instructions:
-        'Actions are separate button presses in order. Movement uses grid coordinates. Use up/down then confirm for dialogue choices; confirm attacks, special uses a skill, guard defends. Agent actions pause automatic ticking; use the page Resume button to return to human play.',
+        'Actions are separate button presses in order. Use directions to walk or select, A to confirm, B to go back or use its assigned shortcut, X for menus or close, Y to assign B. Agent actions pause automatic ticking; a physical controller press returns to human play.',
     });
   }
 
@@ -80,14 +86,14 @@ export function registerMosslightTools({ modelContext, runtime, redraw }) {
 
   const definitions = [
     {
-      name: 'mosslight_observe',
+      name: `${prefix}_observe`,
       description:
         'Read the live Mosslight Valley game: map and collision grid, player and NPC positions, dialogue choices, quests, inventory, combat and supported actions.',
       ...READ_ONLY_TOOL,
       execute: observe,
     },
     {
-      name: 'mosslight_act',
+      name: `${prefix}_act`,
       description:
         'Play the visible Mosslight Valley game with 1–32 sequential button presses. Uses normal collision, dialogue, farming, fishing, combat and story rules; pauses automatic ticking for deterministic agent turns.',
       inputSchema: {
@@ -115,7 +121,7 @@ export function registerMosslightTools({ modelContext, runtime, redraw }) {
       },
     },
     {
-      name: 'mosslight_export_save',
+      name: `${prefix}_export_save`,
       description:
         'Export the visible game in its versioned portable save format without changing it.',
       ...READ_ONLY_TOOL,
@@ -125,7 +131,7 @@ export function registerMosslightTools({ modelContext, runtime, redraw }) {
       },
     },
     {
-      name: 'mosslight_import_save',
+      name: `${prefix}_import_save`,
       description:
         'Restore the visible game from a portable Mosslight save. Replaces current progress; export first if you want to keep it.',
       inputSchema: {
@@ -152,7 +158,16 @@ export function registerMosslightTools({ modelContext, runtime, redraw }) {
       },
     },
   ];
-  definitions.forEach(tool => registerTool(tool));
+  definitions.forEach(tool =>
+    registerTool(
+      profile
+        ? {
+            ...tool,
+            description: `${profile.title}: ${tool.name}. Operates on the visible game state using up/down/left/right/a/b/x/y.`,
+          }
+        : tool
+    )
+  );
   return () => {
     if (disposed) {
       return;

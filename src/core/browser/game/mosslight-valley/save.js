@@ -14,11 +14,12 @@ export function resetSavePrompt(slot = 0) {
  * Serialize one game state with a version and slot identity.
  * @param {unknown} state - The state argument.
  * @param {unknown} slot - The slot argument.
+ * @param {string} game Save envelope game identity.
  * @returns {unknown} The computed result.
  */
-export function serializeSave(state, slot = 0) {
+export function serializeSave(state, slot = 0, game = 'mosslight-valley') {
   return JSON.stringify({
-    game: 'mosslight-valley',
+    game,
     version: 2,
     slot,
     savedAt: new Date(0).toISOString(),
@@ -28,18 +29,22 @@ export function serializeSave(state, slot = 0) {
 /**
  * Parse current or migrate the original v1 single-save envelope.
  * @param {unknown} raw - The raw argument.
+ * @param {object} profile Optional episode identity and state contract.
  * @returns {unknown} The computed result.
  */
-export function parseSave(raw) {
+export function parseSave(raw, profile = {}) {
   const parsed = parseJsonOrNull(raw);
   if (!parsed || typeof parsed !== 'object') return null;
   if (
-    parsed.game === 'mosslight-valley' &&
+    parsed.game === (profile.game || 'mosslight-valley') &&
     parsed.version === 2 &&
-    isValidState(parsed.state)
+    isValidState(parsed.state) &&
+    (!profile.validate || profile.validate(parsed.state))
   )
-    return parsed;
-  if (parsed.version === 1 && isValidState(parsed.state))
+    return profile.restore
+      ? { ...parsed, state: profile.restore(parsed.state) }
+      : parsed;
+  if (!profile.game && parsed.version === 1 && isValidState(parsed.state))
     return {
       game: 'mosslight-valley',
       version: 2,
@@ -91,12 +96,14 @@ function migrateV1(state) {
 /**
  * Bind local multi-slot storage to Dadeto's persistent data helper.
  * @param {unknown} env - The env argument.
+ * @param {object} profile Optional independent storage and save identity.
  * @returns {unknown} The computed result.
  */
-export function createSaveAdapter(env) {
+export function createSaveAdapter(env, profile = {}) {
+  const key = profile.key || KEY;
   const storage = env?.get?.('setLocalPermanentData');
   const loadAll = () => {
-    const value = storage?.({})?.[KEY];
+    const value = storage?.({})?.[key];
     return value && typeof value === 'object' ? value : { slots: {} };
   };
   return {
@@ -108,7 +115,8 @@ export function createSaveAdapter(env) {
       const slot = loadAll().activeSlot;
       return Number.isInteger(slot) && slot >= 0 && slot <= 2 ? slot : 0;
     },
-    load: (slot = 0) => parseSave(loadAll().slots?.[slot])?.state || null,
+    load: (slot = 0) =>
+      parseSave(loadAll().slots?.[slot], profile)?.state || null,
     hasReset: id => Object.hasOwn(loadAll().resetReceipts || {}, id),
     save: (state, slot = 0, resetId) => {
       const current = loadAll();
@@ -116,15 +124,18 @@ export function createSaveAdapter(env) {
         ? { resetReceipts: { ...current.resetReceipts, [resetId]: true } }
         : {};
       storage?.({
-        [KEY]: {
+        [key]: {
           ...current,
           activeSlot: slot,
           ...receipt,
-          slots: { ...current.slots, [slot]: serializeSave(state, slot) },
+          slots: {
+            ...current.slots,
+            [slot]: serializeSave(state, slot, profile.game),
+          },
         },
       });
     },
-    export: (state, slot = 0) => serializeSave(state, slot),
-    import: parseSave,
+    export: (state, slot = 0) => serializeSave(state, slot, profile.game),
+    import: raw => parseSave(raw, profile),
   };
 }

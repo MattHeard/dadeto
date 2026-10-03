@@ -6,10 +6,15 @@ import { actionsFromInput, createInputState, updateInput } from './input.js';
  * Run one synchronous embedded-game step and return a serialized frame payload.
  * @param {string} input - Serialized action or save input.
  * @param {Map} env - Runtime environment and local persistence adapter.
+ * @param {Function} runtimeFactory Shared engine factory for this episode.
  * @returns {string} A serialized render frame.
  */
-export function mosslightValley(input, env) {
-  const runtime = createMosslightRuntime(env);
+export function mosslightValley(
+  input,
+  env,
+  runtimeFactory = createMosslightRuntime
+) {
+  const runtime = runtimeFactory(env);
   runtime.start();
   let parsed = null;
   try {

@@ -11,6 +11,33 @@ const QUICK_ACTIONS = [
 ];
 
 /**
+ * Wrap directional selection across a controller list for any episode.
+ * @param {number} selected Current row index.
+ * @param {string[]} pressed Edge-triggered buttons.
+ * @param {number} count Available rows.
+ * @returns {number} Wrapped selection.
+ */
+export function controllerSelection(selected, pressed, count) {
+  const delta =
+    pressed.includes('down') || pressed.includes('right')
+      ? 1
+      : pressed.includes('up') || pressed.includes('left')
+        ? -1
+        : 0;
+  return (selected + delta + count) % count;
+}
+
+/**
+ * Replace a menu's highlighted row without discarding suspended story state.
+ * @param {Record<string, any>} state Simulation state.
+ * @param {number} selected Highlighted row.
+ * @returns {Record<string, any>} State with an updated menu selection.
+ */
+export function withControllerSelection(state, selected) {
+  return { ...state, menu: { ...state.menu, selected } };
+}
+
+/**
  * List every operation available on the current controller menu page.
  * @param {Record<string, any>} state Simulation state.
  * @returns {Array<{label: string, command: string}>} Selectable rows.
@@ -94,15 +121,8 @@ export function controllerMenu(state, pressed) {
   if (pressed.includes('b') || pressed.includes('y'))
     return openMenuPage(state, pressed.includes('y') ? 'assign' : 'main');
   const entries = menuEntries(state);
-  const delta =
-    pressed.includes('down') || pressed.includes('right')
-      ? 1
-      : pressed.includes('up') || pressed.includes('left')
-        ? -1
-        : 0;
-  const selected =
-    ((state.menu.selected || 0) + delta + entries.length) % entries.length;
-  const next = { ...state, menu: { ...state.menu, selected } };
+  const next = withControllerSelection(state, controllerSelection(state.menu.selected || 0, pressed, entries.length));
+  const selected = next.menu.selected;
   if (!pressed.includes('a')) return { state: next, handled: true };
   const command = entries[selected].command;
   if (command.startsWith('page:'))

@@ -4,7 +4,7 @@
  * @param {unknown} state - The state argument.
  * @param {unknown} actorId - The actorId argument.
  * @param {unknown} node - The node argument.
- * @returns {unknown} The computed result.
+ * @returns {Record<string, any>} State with a conversation attached.
  */
 export function openDialogue(state, actorId, node) {
   const lines = Array.isArray(node) ? node : node;
@@ -16,7 +16,7 @@ export function openDialogue(state, actorId, node) {
 /**
  * Advance a line, present its choices, or close the conversation.
  * @param {unknown} state - The state argument.
- * @returns {unknown} The computed result.
+ * @returns {Record<string, any>} State after continuing the conversation.
  */
 export function advanceDialogue(state) {
   if (!state.dialogue) return state;

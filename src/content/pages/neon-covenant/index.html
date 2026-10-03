@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover"
+    />
+    <meta name="theme-color" content="#101526" />
+    <meta
+      name="description"
+      content="Run a frontier AI lab through conversations and terminals in a cyberpunk handheld management RPG."
+    />
+    <title>Neon Covenant — Frontier Lab</title>
+    <link rel="stylesheet" href="/neon-covenant/styles.css" />
+  </head>
+  <body>
+    <main class="game-shell">
+      <header class="masthead">
+        <a class="wordmark" href="/">DADETO <span>AFTER HOURS</span></a>
+        <div class="title-lockup">
+          <p>A CONVERSATIONAL MANAGEMENT RPG</p>
+          <h1>Neon Covenant</h1>
+          <span>Frontier Lab</span>
+        </div>
+        <p class="chapter-tag">28 SHIFTS <i>✦</i> KEEP THE KEYS</p>
+      </header>
+      <section class="play-layout" aria-label="Neon Covenant game">
+        <div class="screen-frame">
+          <div class="screen-glow">
+            <canvas
+              id="game-screen"
+              width="160"
+              height="144"
+              aria-label="Neon Covenant game screen"
+            ></canvas>
+          </div>
+          <div class="screen-caption">
+            <span>LAB DISPLAY · 160 × 144</span
+            ><span id="game-status" aria-live="polite"
+              >Connecting to the lab…</span
+            >
+          </div>
+        </div>
+        <aside class="side-panel">
+          <div class="chapter-copy">
+            <p class="eyebrow">THE CITY IS WATCHING</p>
+            <h2>A useful model. A solvent lab. A promise you can keep.</h2>
+            <p>
+              Walk the lab. Talk to staff. Negotiate contracts. Train, evaluate,
+              and deploy. Only ending a shift advances costs and research.
+            </p>
+            <p><a href="/manuals/neon-covenant.md">Director's handbook</a></p>
+          </div>
+          <div class="control-card">
+            <div><span class="keycap">↑ ↓ ← →</span><b>WALK · CHOOSE</b></div>
+            <div><span class="keycap">A</span><b>TALK · CONFIRM</b></div>
+            <div><span class="keycap">B</span><b>SHORTCUT · BACK</b></div>
+            <div><span class="keycap">X</span><b>MENU · CLOSE</b></div>
+            <div><span class="keycap">Y</span><b>ASSIGN B</b></div>
+          </div>
+          <div class="touch-pad" aria-label="Touch controls">
+            <div class="dpad">
+              <button data-action="up" aria-label="Move up">▲</button
+              ><button data-action="left" aria-label="Move left">◀</button
+              ><button data-action="down" aria-label="Move down">▼</button
+              ><button data-action="right" aria-label="Move right">▶</button>
+            </div>
+            <div class="touch-actions">
+              <div class="face-buttons" aria-label="A and B buttons">
+                <button data-action="b" aria-label="B button: shortcut or back">
+                  B</button
+                ><button data-action="a" aria-label="A button: talk or confirm">
+                  A
+                </button>
+              </div>
+              <div class="system-buttons">
+                <button data-action="x" aria-label="X button: menu or close">
+                  X</button
+                ><button data-action="y" aria-label="Y button: assign B">
+                  Y
+                </button>
+              </div>
+            </div>
+          </div>
+          <nav class="utility-actions" aria-label="Game actions" hidden>
+            <label class="slot-picker"
+              >SAVE SLOT
+              <select id="save-slot" aria-label="Save slot">
+                <option value="0">01</option>
+                <option value="1">02</option>
+                <option value="2">03</option>
+              </select></label
+            >
+            <button id="save-game">Save</button
+            ><button id="export-game">Export</button
+            ><button id="import-button">Import</button
+            ><input
+              id="import-game"
+              type="file"
+              accept="application/json,.json"
+              hidden
+            /><button id="pause-game">Pause</button
+            ><button id="resume-game">Resume</button
+            ><button id="fullscreen-game">Fullscreen</button
+            ><button id="reset-game">Reset save</button>
+          </nav>
+        </aside>
+      </section>
+      <footer>
+        <span
+          >Original fiction. Models are simulated, never connected to real
+          training services.</span
+        ><span>PEOPLE BEFORE BENCHMARKS <i>✦</i></span>
+      </footer>
+    </main>
+    <script type="module" src="/neon-covenant/game.js"></script>
+  </body>
+</html>
