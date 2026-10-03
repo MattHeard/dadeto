@@ -51,6 +51,24 @@ function createDeps(overrides = {}) {
 }
 
 describe('core Symphony bootstrap handle', () => {
+  test('optional store reads preserve getter count, receiver and rejection identity', async () => {
+    const store = { writeStatus: jest.fn() };
+    const rejection = { source: 'status store' };
+    const read = jest.fn(function () {
+      expect(this).toBe(store);
+      return Promise.reject(rejection);
+    });
+    const getter = jest.fn(() => read);
+    Object.defineProperty(store, 'readStatus', { get: getter });
+    const handle = createSymphonyBootstrapHandle(createDeps());
+    await expect(
+      handle.refreshSymphonyStatus({ statusStore: store })
+    ).rejects.toBe(rejection);
+    expect(getter).toHaveBeenCalledTimes(2);
+    expect(read).toHaveBeenCalledTimes(1);
+    expect(store.writeStatus).not.toHaveBeenCalled();
+  });
+
   test('uses a custom status store factory while bootstrapping', async () => {
     const store = {
       writeStatus: jest.fn().mockResolvedValue(undefined),

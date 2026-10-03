@@ -6,7 +6,7 @@ import {
   summarizePollResult,
   summarizeTrackerSelection,
 } from '../symphony.js';
-import { when } from '../../commonCore.js';
+import { when, whenOrNull } from '../../commonCore.js';
 
 /** @typedef {any} SymphonyBootstrapValue Runtime-shaped Symphony value. */
 
@@ -73,11 +73,10 @@ function createRefreshSymphonyStatus(deps) {
  * @returns {Promise<SymphonyBootstrapValue>} Previous status.
  */
 async function readPreviousStatus(statusStore) {
-  if (statusStore && typeof statusStore.readStatus === 'function') {
-    return statusStore.readStatus();
-  }
-
-  return null;
+  return whenOrNull(
+    statusStore && typeof statusStore.readStatus === 'function',
+    () => statusStore.readStatus()
+  );
 }
 
 /**
