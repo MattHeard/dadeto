@@ -4,6 +4,7 @@ import { runToyFailureBoundary } from './formatToyError.js';
 import { isObjectRecord } from '../validation.js';
 export { runToyFailureBoundary };
 export { isObject } from '../common.js';
+export { isPlainPrototypeObject } from '../validation.js';
 
 /**
  * @typedef {( ...args: unknown[]) => unknown} EnvHelperFunc
@@ -167,19 +168,6 @@ export function isPlainObject(value) {
   const objectValue = /** @type {Record<string, unknown>} */ (value);
   if (!isNonNullObject(objectValue)) return false;
   return objectValue.constructor === Object;
-}
-
-/**
- * Check a record's direct prototype without trusting a constructor field.
- * @param {unknown} value Candidate record.
- * @returns {value is Record<string, unknown>} Whether its prototype is Object.prototype.
- */
-export function isPlainPrototypeObject(value) {
-  return (
-    Boolean(value) &&
-    typeof value === 'object' &&
-    Object.getPrototypeOf(value) === Object.prototype
-  );
 }
 
 /**

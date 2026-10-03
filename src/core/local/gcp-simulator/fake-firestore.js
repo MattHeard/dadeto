@@ -1,6 +1,7 @@
 // @ts-nocheck
 // Stryker disable all -- this module is the fixed fake Firestore simulator
 // boundary covered by its focused simulator contract suite.
+import { isPlainPrototypeObject } from '../../commonCore.js';
 const DELETE_FIELD = Symbol('delete-field');
 
 class IncrementValue {
@@ -921,7 +922,7 @@ function isPlainObject(value) {
     value !== null &&
     typeof value === 'object' &&
     !Array.isArray(value) &&
-    Object.getPrototypeOf(value) === Object.prototype
+    isPlainPrototypeObject(value)
   );
 }
 

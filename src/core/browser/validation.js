@@ -1,4 +1,17 @@
 /**
+ * Check a record's direct prototype without trusting a constructor field.
+ * @param {unknown} value Candidate record.
+ * @returns {value is Record<string, unknown>} Whether its prototype is Object.prototype.
+ */
+export function isPlainPrototypeObject(value) {
+  return (
+    Boolean(value) &&
+    typeof value === 'object' &&
+    Object.getPrototypeOf(value) === Object.prototype
+  );
+}
+
+/**
  * Check whether a value is a non-empty string.
  * @param {unknown} value Candidate value.
  * @returns {boolean} Whether the value is a non-empty string.

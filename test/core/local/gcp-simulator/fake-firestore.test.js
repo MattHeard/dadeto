@@ -6,6 +6,25 @@ import {
 } from '../../../../src/core/local/gcp-simulator/fake-firestore.js';
 
 describe('fake firestore', () => {
+  it('keeps array rejection distinct from plain-prototype record acceptance', () => {
+    const array = Object.setPrototypeOf([], Object.prototype);
+    array.value = 'array field';
+    expect(
+      fakeFirestoreTestUtils.getFieldValue(array, 'value')
+    ).toBeUndefined();
+    expect(
+      fakeFirestoreTestUtils.getFieldValue(
+        { constructor: null, value: 'record field' },
+        'value'
+      )
+    ).toBe('record field');
+    const nullRecord = Object.assign(Object.create(null), {
+      value: 'null prototype',
+    });
+    expect(
+      fakeFirestoreTestUtils.getFieldValue(nullRecord, 'value')
+    ).toBeUndefined();
+  });
   it('supports writes, snapshots, nested patches, and helper state access', async () => {
     const now = new Date('2026-06-07T00:00:00.000Z');
     const fieldValue = createFakeFieldValue(() => now);

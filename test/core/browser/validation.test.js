@@ -1,5 +1,6 @@
 import { describe, expect, jest, test } from '@jest/globals';
 import * as validation from '../../../src/core/browser/validation.js';
+import { isPlainPrototypeObject as toyPrototypePolicy } from '../../../src/core/browser/toys/browserToysCore.js';
 import {
   isJsonObject,
   normalizeSegmentId,
@@ -7,6 +8,10 @@ import {
 import { normalizeUtcMinute } from '../../../src/core/browser/toys/2026-08-19/spacetimePointRegistry.js';
 
 describe('browser validation helpers', () => {
+  test('direct-prototype policy retains the toy compatibility export', () => {
+    expect(toyPrototypePolicy).toBe(validation.isPlainPrototypeObject);
+    expect(toyPrototypePolicy.name).toBe('isPlainPrototypeObject');
+  });
   test('object records preserve permissive prototypes and reject primitives and arrays', () => {
     for (const value of [
       {},
