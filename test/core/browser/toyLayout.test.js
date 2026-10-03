@@ -36,6 +36,35 @@ test('logical section swaps return new state and leave previous order unchanged'
   expect(swapToySections(swapped)).toEqual(initial);
 });
 
+test('binds the stable boundary before grouping retained section nodes', () => {
+  const article = createFixture();
+  const button = article.querySelector('.toy-swap-toggle');
+  const output = article.querySelector('select.output').closest('.value');
+  const boundary = output.nextSibling;
+  const input = article.querySelector('select.input').closest('.value');
+  const inputKey = input.previousElementSibling;
+  const reads = [];
+  Object.defineProperty(output, 'nextSibling', {
+    get() {
+      reads.push('boundary');
+      return boundary;
+    },
+  });
+  Object.defineProperty(input, 'previousElementSibling', {
+    get() {
+      reads.push('input');
+      return inputKey;
+    },
+  });
+  const view = createToyLayoutView(article, button, dom);
+  expect(reads).toEqual(['boundary', 'input']);
+  expect(view.boundary).toBe(boundary);
+  expect(view.sections.input.slice(0, 2)).toEqual([inputKey, input]);
+  expect(view.sections.input).toHaveLength(4);
+  expect(view.sections.input[3]).toBe(button.parentElement);
+  expect(view.sections.output[1]).toBe(output);
+});
+
 test('DOM projection follows logical order regardless of stale view state', () => {
   const article = createFixture();
   const button = article.querySelector('.toy-swap-toggle');

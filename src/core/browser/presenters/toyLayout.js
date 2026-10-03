@@ -17,10 +17,21 @@ export function createToyLayoutView(article, button, dom) {
     parent: article,
     boundary: output.nextSibling,
     button,
-    sections: {
-      input: [...sectionNodes(input), ...sectionNodes(controls)],
-      output: sectionNodes(output),
-    },
+    sections: groupSectionNodes(input, output, controls),
+  };
+}
+
+/**
+ * Keep the input controls in the input group while retaining existing nodes.
+ * @param {HTMLElement} input Input value.
+ * @param {HTMLElement} output Output value.
+ * @param {HTMLElement} controls Input controls value.
+ * @returns {Record<string, HTMLElement[]>} Logical section groups.
+ */
+function groupSectionNodes(input, output, controls) {
+  return {
+    input: [...sectionNodes(input), ...sectionNodes(controls)],
+    output: sectionNodes(output),
   };
 }
 
