@@ -4,6 +4,32 @@ import {
   parseDurationMilliseconds,
   latestPlacement,
 } from '../../src/core/object-minute-rental-search/request/index.js';
+import { pickup } from '../../src/core/object-minute-rental-search/fulfillment/index.js';
+
+test.each([
+  [-1, 'invalid-duration', []],
+  [1, 'invalid-pickup-time', ['point']],
+])(
+  'pickup rejection %s preserves order and never probes runners',
+  (duration, reason, expectedReads) => {
+    const reads = [];
+    const request = {
+      pickupDurationSeconds: duration,
+      get pickupPoint() {
+        reads.push('point');
+        return { timestamp: 'invalid' };
+      },
+      get runnerSchedule() {
+        throw new Error('must not inspect unavailable placement runners');
+      },
+      get runnerCommitments() {
+        throw new Error('must not inspect unavailable placement commitments');
+      },
+    };
+    expect(pickup(request)).toEqual({ feasible: false, reason });
+    expect(reads).toEqual(expectedReads);
+  }
+);
 
 test('finite duration overflow retains no-placement rather than invalid-duration', () => {
   expect(parseDurationMilliseconds(Number.MAX_VALUE)).toBe(Infinity);

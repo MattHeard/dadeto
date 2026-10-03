@@ -64,6 +64,15 @@ export function procurement(request) {
  * @returns {Record<string, any>} Pickup feasibility and placement.
  */
 export function pickup(request) {
+  return withPlacementRunner(createPickupCandidate(request), request);
+}
+
+/**
+ * Calculate pickup placement independently of runner availability.
+ * @param {Record<string, any>} request Pickup duration and point.
+ * @returns {{feasible: boolean, reason?: string, startTimestamp?: string, endTimestamp?: string}} Pickup placement or its original rejection.
+ */
+function createPickupCandidate(request) {
   const durationMs = parseDurationMilliseconds(request.pickupDurationSeconds);
   if (durationMs === null)
     return { feasible: false, reason: 'invalid-duration' };
@@ -72,12 +81,11 @@ export function pickup(request) {
   const end = startTime + durationMs;
   if (!Number.isFinite(startTime))
     return { feasible: false, reason: 'invalid-pickup-time' };
-  const candidate = {
+  return {
     startTimestamp: start,
     endTimestamp: iso(end),
     feasible: true,
   };
-  return withPlacementRunner(candidate, request);
 }
 
 /**
