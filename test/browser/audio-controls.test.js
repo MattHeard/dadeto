@@ -589,7 +589,7 @@ describe('setupAudio control wiring', () => {
     });
   });
 
-  it('wires up event listeners and button hrefs correctly', () => {
+  it('creates anchor controls with correct links and event listeners', () => {
     // When
     setupAudio(dom, setTextContent);
 
@@ -630,20 +630,6 @@ describe('setupAudio control wiring', () => {
       'timeupdate',
       expect.any(Function)
     );
-  });
-
-  it('creates play, pause and stop buttons as anchor elements', () => {
-    // When
-    setupAudio(dom, setTextContent);
-
-    // Then
-    const playButton = createdElements.find(el => el.textContent === 'PLAY');
-    const pauseButton = createdElements.find(el => el.textContent === 'PAUSE');
-    const stopButton = createdElements.find(el => el.textContent === 'STOP');
-
-    expect(playButton.tagName).toBe('a');
-    expect(pauseButton.tagName).toBe('a');
-    expect(stopButton.tagName).toBe('a');
   });
 
   it('calls createElement with "a" for each control button', () => {

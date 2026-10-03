@@ -518,15 +518,6 @@ describe('makeCreateIntersectionObserver', () => {
     );
   });
 
-  it('calls importModule when entry is intersecting', () => {
-    // --- GIVEN ---
-    createObserver(article, modulePath, functionName);
-    // --- WHEN ---
-    intersectionCallback([entry], observer);
-    // --- THEN ---
-    expect(dom.importModule).toHaveBeenCalled();
-  });
-
   // Regression test for a Stryker survivor that removed module info
   it('passes module info to importModule when entry is intersecting', () => {
     // --- GIVEN ---

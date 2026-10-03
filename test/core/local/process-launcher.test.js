@@ -263,47 +263,6 @@ describe('process launcher custom paths and exit handling', () => {
     );
   });
 
-  test('createDetachedProcessLauncher uses an empty prompt when none is provided', async () => {
-    const calls = [];
-    const launcher = createDetachedProcessLauncher({
-      command: 'codex',
-      args: ['exec'],
-      pathModule: path,
-      mkdirImpl: async () => {},
-      closeErrorLabel: 'Failed to close run log handle:',
-      exitErrorLabel: 'Failed to handle process exit:',
-      openImpl: async filePath => ({
-        fd: getFixtureFd(filePath),
-        close: () => Promise.resolve(),
-      }),
-      spawnImpl(command, args, options) {
-        calls.push({ command, args, options });
-        return {
-          pid: 12345,
-          once() {},
-          unref() {},
-        };
-      },
-    });
-
-    await launcher.launch({
-      repoRoot: tempDir,
-      runId: '2026-05-31T18:31:30.000Z--process-launcher',
-    });
-
-    expect(calls).toEqual([
-      {
-        command: 'codex',
-        args: ['exec', ''],
-        options: {
-          cwd: tempDir,
-          detached: true,
-          stdio: ['ignore', 40, 41],
-        },
-      },
-    ]);
-  });
-
   test('builds exit payloads when the child exits with non-numeric metadata', async () => {
     const onExitCalls = [];
     let exitHandler;

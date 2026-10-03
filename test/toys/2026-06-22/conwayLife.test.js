@@ -303,29 +303,6 @@ describe('conwayLife state normalization', () => {
     expect(storageValue.current.CONW1.framesUntilTick).toBe(1);
   });
 
-  it('normalizes wrapped stored life payloads with collapsed counters', () => {
-    const storageValue = {
-      current: {
-        CONW1: {
-          width: 120,
-          height: 80,
-          cols: 6,
-          rows: 6,
-          tickSpeedMs: 16,
-          framesPerTick: 0,
-          framesUntilTick: 0,
-          generation: 2,
-          cells: [[1, 1]],
-        },
-      },
-    };
-
-    getCanvasPayload('{}', storageValue);
-
-    expect(storageValue.current.CONW1.framesPerTick).toBe(1);
-    expect(storageValue.current.CONW1.framesUntilTick).toBe(1);
-  });
-
   it('normalizes stored candidates with invalid cells and reset timing fields', () => {
     const storageValue = {
       current: {

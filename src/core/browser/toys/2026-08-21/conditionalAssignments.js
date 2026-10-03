@@ -1,4 +1,8 @@
-import { legacyAssignmentBoundary } from './safeAssignmentPersistence.js';
+import {
+  legacyAssignmentBoundary,
+  commitAssetCustodianAssignment,
+  formatCommitFailure,
+} from './safeAssignmentPersistence.js';
 import {
   resolveLegacyRunnerShift,
   evaluateWorldLine,
@@ -12,11 +16,11 @@ import {
 /**
  * Bind assignment calculations to the legacy parse and rejection boundary.
  * @param {(request: Record<string, any>, env: import('../browserToysCore.js').ToyEnv) => string} write Assignment strategy.
+ * @param {(reason: unknown) => string} [reject] Caller-specific failure serializer.
  * @returns {(input: string, env: import('../browserToysCore.js').ToyEnv) => string} JSON assignment toy.
  */
-function createConditionalAssignment(write) {
-  return (input, env) =>
-    legacyAssignmentBoundary(input, env, write, formatAssignmentFailure);
+function createConditionalAssignment(write, reject = formatAssignmentFailure) {
+  return (input, env) => legacyAssignmentBoundary(input, env, write, reject);
 }
 
 /** Asset assignment using stock-bound world-line validation. */
@@ -25,6 +29,9 @@ export const assignAssetToSegmentIfFeasible =
 /** Runner assignment validating its shift and maximum speed before persistence. */
 export const assignRunnerToSegmentIfFeasible =
   createConditionalAssignment(writeRunner);
+/** Compound assignment retaining committed failures and atomic persistence. */
+export const assignAssetAndCustodianToSegmentIfFeasible =
+  createConditionalAssignment(writeAssetCustodian, formatCommitFailure);
 
 /**
  * Reject infeasible requests before constructing and appending their record.
@@ -119,4 +126,53 @@ function writeRunner(x, env) {
     path: 'personSegmentAssignments',
     metadata: () => ({ shiftId: matching.shiftId }),
   });
+}
+
+/**
+ * Validate both world lines before atomically persisting a legacy compound assignment.
+ * @param {Record<string, any>} x Parsed combined assignment request.
+ * @param {import('../browserToysCore.js').ToyEnv} env Storage helpers.
+ * @returns {string} Original atomic commit or committed-failure envelope.
+ */
+function writeAssetCustodian(x, env) {
+  const { candidate, matching } = resolveLegacyRunnerShift(x);
+  if (!matching) return formatCommitFailure('outside-shift');
+  const assetResult = evaluateWorldLine(
+    x.points,
+    x.existingAssetSegments || [],
+    x.candidateSegment,
+    x.stockInPoint,
+    x.stockOutPoint,
+    x.spacePoints || []
+  );
+  if (!assetResult.feasible)
+    return formatCommitFailure(`asset:${assetResult.reason}`);
+  const runnerResult = evaluateWorldLine(
+    x.points,
+    x.existingPersonSegments || [],
+    x.candidateSegment,
+    matching.clockInPoint,
+    matching.clockOutPoint,
+    x.spacePoints || []
+  );
+  if (!runnerResult.feasible)
+    return formatCommitFailure(`runner:${runnerResult.reason}`);
+  const maximum = Number(x.maximumSpeedKilometersPerHour);
+  const { requiredSpeed: required } = measureSegmentMotion(candidate, 0);
+  if (!Number.isFinite(maximum) || required > maximum)
+    return formatCommitFailure('excessive-speed');
+  return commitAssetCustodianAssignment(x, legacyCompoundIdentity(x), env);
+}
+
+/**
+ * Preserve legacy compound identifier coercion before the atomic commit.
+ * @param {Record<string, any>} request Combined assignment request.
+ * @returns {{assetId: string, personId: string, segmentId: string}} Commit identities.
+ */
+function legacyCompoundIdentity(request) {
+  return {
+    assetId: String(request.assetId),
+    personId: String(request.custodianPersonId),
+    segmentId: String(request.candidateSegment.segmentId),
+  };
 }

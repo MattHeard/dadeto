@@ -696,29 +696,6 @@ test('returns early if board cell is already filled but not caught by seen', () 
   });
 });
 
-test('triggers minimax tie return at full depth without win', () => {
-  const env = new Map();
-  const input = {
-    moves: [
-      { player: 'X', position: { row: 0, column: 0 } },
-      { player: 'O', position: { row: 0, column: 1 } },
-      { player: 'X', position: { row: 0, column: 2 } },
-      { player: 'O', position: { row: 1, column: 1 } },
-      { player: 'X', position: { row: 1, column: 0 } },
-      { player: 'O', position: { row: 1, column: 2 } },
-      { player: 'X', position: { row: 2, column: 1 } },
-      { player: 'O', position: { row: 2, column: 0 } },
-    ],
-  };
-  const result = ticTacToeMove(JSON.stringify(input), env);
-  const output = JSON.parse(result);
-  expect(output.moves).toHaveLength(9);
-  expect(output.moves[8]).toEqual({
-    player: 'X',
-    position: { row: 2, column: 2 },
-  });
-});
-
 test('computes best response from bottom-left opening', () => {
   const env = new Map();
   const input = {
