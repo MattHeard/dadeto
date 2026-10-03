@@ -334,22 +334,79 @@ describe('local notion codex active run handling', () => {
 });
 
 describe('local notion codex idle backoff', () => {
+  test.each(['getter', 'method'])(
+    'preserves selected outcome %s errors before writing or launching',
+    async failureSource => {
+      const failure = new Error('outcome unavailable');
+      let reads = 0;
+      const writes = [];
+      const launches = [];
+      const outcomeStore = {
+        get readOutcome() {
+          reads++;
+          if (reads === 2 && failureSource === 'getter') {
+            throw failure;
+          }
+          return async function (runId) {
+            expect(this).toBe(outcomeStore);
+            expect(runId).toBe('failed-outcome-run');
+            throw failure;
+          };
+        },
+      };
+      await expect(
+        runNotionCodexPoll({
+          config,
+          repoRoot: '/tmp/repo',
+          now: new Date('2026-04-30T07:48:00.000Z'),
+          isProcessAliveImpl: () => false,
+          outcomeStore,
+          stateStore: {
+            async readState() {
+              return {
+                activeRun: { runId: 'failed-outcome-run', pid: 780 },
+                eventLog: [],
+              };
+            },
+            async writeState(state) {
+              writes.push(state);
+            },
+          },
+          launcher: {
+            async launch(payload) {
+              launches.push(payload);
+            },
+          },
+        })
+      ).rejects.toBe(failure);
+      expect(reads).toBe(2);
+      expect(writes).toEqual([]);
+      expect(launches).toEqual([]);
+    }
+  );
+
   test('backs off after an idle completed run outcome', async () => {
     const writes = [];
-    const result = await runNotionCodexPoll({
-      config,
-      repoRoot: '/tmp/repo',
-      now: new Date('2026-04-30T07:48:00.000Z'),
-      isProcessAliveImpl: () => false,
-      outcomeStore: {
-        async readOutcome(runId) {
+    let reads = 0;
+    const outcomeStore = {
+      get readOutcome() {
+        reads++;
+        return async function (runId) {
+          expect(this).toBe(outcomeStore);
           expect(runId).toBe('idle-run');
           return {
             outcome: 'idle',
             summary: 'No Symphony backlog task found.',
           };
-        },
+        };
       },
+    };
+    const result = await runNotionCodexPoll({
+      config,
+      repoRoot: '/tmp/repo',
+      now: new Date('2026-04-30T07:48:00.000Z'),
+      isProcessAliveImpl: () => false,
+      outcomeStore,
       stateStore: {
         async readState() {
           return {
@@ -371,6 +428,7 @@ describe('local notion codex idle backoff', () => {
       },
     });
 
+    expect(reads).toBe(2);
     expect(result).toMatchObject({
       launched: false,
       skipped: true,

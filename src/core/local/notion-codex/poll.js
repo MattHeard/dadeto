@@ -250,15 +250,17 @@ async function reconcileActiveRun(options) {
  * @returns {Promise<NotionCodexRunOutcome | null>} Outcome record.
  */
 async function readRunOutcome(outcomeStore, runId) {
-  if (
-    !outcomeStore ||
-    typeof outcomeStore.readOutcome !== 'function' ||
-    !runId
-  ) {
-    return null;
-  }
-
-  return outcomeStore.readOutcome(runId);
+  return /** @type {Promise<NotionCodexRunOutcome | null> | null} */ (
+    whenOrNull(
+      Boolean(
+        outcomeStore && typeof outcomeStore.readOutcome === 'function' && runId
+      ),
+      () =>
+        /** @type {Required<NonNullable<typeof outcomeStore>>} */ (
+          outcomeStore
+        ).readOutcome(/** @type {string} */ (runId))
+    )
+  );
 }
 
 /**
