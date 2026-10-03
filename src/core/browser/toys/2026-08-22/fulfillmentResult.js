@@ -1,4 +1,6 @@
 import { normalizeSpatialCoordinates } from './spacePointResolution.js';
+import { createSegmentRecord as fulfillmentSegment } from '../2026-08-18/registryUtils.js';
+export { fulfillmentSegment };
 import { formatToyError } from '../formatToyError.js';
 
 /**
@@ -154,17 +156,6 @@ export function fulfillmentPoint(pointId, spacePointId, timestamp) {
     spacePointId,
     timestamp: `${new Date(timestamp).toISOString().slice(0, 16)}Z`,
   };
-}
-
-/**
- * Create a segment referencing existing endpoints.
- * @param {string} segmentId Segment identifier.
- * @param {string} startPointId Start identifier.
- * @param {string} endPointId End identifier.
- * @returns {{segmentId: string, startPointId: string, endPointId: string}} Segment record.
- */
-export function fulfillmentSegment(segmentId, startPointId, endPointId) {
-  return { segmentId, startPointId, endPointId };
 }
 
 /**

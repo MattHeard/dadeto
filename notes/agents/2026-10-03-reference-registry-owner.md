@@ -1,0 +1,7 @@
+# Reference registry owner
+
+Configured spacetime-segment and possession-context registries now live in the existing registry utility module. Public paths retain their exports, including `normalizeSegment`. Segment normalization still rejects arrays and functions; possession-context normalization retains its original permissive property-reading policy. Removed the possession facade's type-check bypass and the touched coordinate coercion suppression rather than carrying them into the shared owner.
+
+The first move passed all tests but exposed segment construction matching the fulfillment constructor, leaving duplication unchanged at 109. Registry utilities now own `createSegmentRecord`; normalization uses it and fulfillment retains its public `fulfillmentSegment` alias. The record keeps property order and uncoerced identifiers. This follows the existing dependency direction (fulfillment already reaches registry utilities via space-point resolution); no cycle was introduced.
+
+Evidence: `.tmp/reference-registry-constructor-final-tests.log` records 1,217 passing tests / 134 suites with exact 100% coverage across all four metrics for registry utilities and fulfillment results. `.tmp/reference-registry-constructor-final-static.log` records nine passing gates with duplication alone failing at 108 clones, down from 109. Parent goal remains active, with no threshold relaxation or new ignores.

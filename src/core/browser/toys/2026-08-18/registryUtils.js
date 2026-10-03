@@ -53,7 +53,6 @@ export function normalizeCoordinateRecord(
  * @returns {string|null} Canonical decimal coordinate or null when invalid.
  */
 export function normalizeCoordinate(value, minimum, maximum) {
-  // Stryker disable next-line all -- numeric/string coercion is an intentional normalization boundary.
   const number = typeof value === 'number' ? value : Number(value);
   if (
     (typeof value !== 'number' && typeof value !== 'string') ||
@@ -115,4 +114,72 @@ export function normalizeSpatialCoordinates(point) {
     latitude: normalizeCoordinate(point.latitude, -90, 90),
     longitude: normalizeCoordinate(point.longitude, -180, 180),
   };
+}
+
+/**
+ * Normalize ordered segments that reference SPAC1 points.
+ * @param {string} input JSON payload containing `segments`.
+ * @returns {string} Deterministic spacetime-segment registry.
+ */
+export const spacetimeSegmentRegistry = input =>
+  buildRegistry(input, {
+    collectionKey: 'segments',
+    countKey: 'segmentCount',
+    sourceKey: 'segments',
+    normalize: normalizeSegment,
+    sortKey: segment => segment.segmentId,
+  });
+
+/**
+ * @param {unknown} value Candidate segment.
+ * @returns {{segmentId: string, startPointId: string, endPointId: string}|null} Normalized segment.
+ */
+export function normalizeSegment(value) {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
+  const segment = /** @type {Record<string, unknown>} */ (value);
+  const segmentId = trimmedStringOrEmpty(segment.segmentId);
+  const startPointId = trimmedStringOrEmpty(segment.startPointId);
+  const endPointId = trimmedStringOrEmpty(segment.endPointId);
+  if (!segmentId || !startPointId || !endPointId) return null;
+  return createSegmentRecord(segmentId, startPointId, endPointId);
+}
+
+/**
+ * Construct an ordered segment without coercing its caller-owned identifiers.
+ * @param {string} segmentId Segment identifier.
+ * @param {string} startPointId Starting point identifier.
+ * @param {string} endPointId Ending point identifier.
+ * @returns {{segmentId: string, startPointId: string, endPointId: string}} Segment record.
+ */
+export function createSegmentRecord(segmentId, startPointId, endPointId) {
+  return { segmentId, startPointId, endPointId };
+}
+
+/**
+ * Build a normalized possession-context registry.
+ * @param {string} input JSON payload containing possessionContexts.
+ * @returns {string} Deterministic registry.
+ */
+export const possessionContextRegistry = input =>
+  buildRegistry(input, {
+    collectionKey: 'possessionContexts',
+    countKey: 'possessionContextCount',
+    sourceKey: 'possessionContexts',
+    normalize: normalizePossessionContext,
+    sortKey: context => context.possessionContextId,
+  });
+
+/**
+ * Normalize one possession context.
+ * @param {unknown} value Candidate record.
+ * @returns {{possessionContextId: string, sku: string, segmentId: string}|null} Normalized record or null.
+ */
+function normalizePossessionContext(value) {
+  const x = /** @type {Record<string, unknown>} */ (value || {});
+  const possessionContextId = trimmedStringOrEmpty(x.possessionContextId),
+    sku = trimmedStringOrEmpty(x.sku),
+    segmentId = trimmedStringOrEmpty(x.segmentId);
+  return possessionContextId && sku && segmentId
+    ? { possessionContextId, sku, segmentId }
+    : null;
 }
