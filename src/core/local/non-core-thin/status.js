@@ -1,5 +1,7 @@
 import { reportFailuresAndMaybeLogSuccess } from '../../commonCore.js';
 
+const EXPORTED_HANDLE_DECLARATION = /\bexport\s+const\s+handle\s*=/u;
+
 // Stryker disable all -- this module is the fixed non-core-thin repository
 // status policy boundary covered by the status contract suites.
 /**
@@ -413,7 +415,7 @@ function declaresHandle(source) {
   return matchesAnyPattern(source, [
     /\bconst\s+handle\s*=\s*[A-Za-z_$][\w$]*\s*\(/u,
     /\bconst\s+\{[^}]*\bhandle\b[^}]*\}\s*=\s*[A-Za-z_$][\w$]*\s*\(/u,
-    /\bexport\s+const\s+handle\s*=/u,
+    EXPORTED_HANDLE_DECLARATION,
   ]);
 }
 
@@ -423,10 +425,10 @@ function declaresHandle(source) {
  * @returns {boolean} True when the handle is exported.
  */
 function exportsHandle(source) {
-  return matchesAnyPattern(source, [
-    /\bexport\s*\{[^}]*\bhandle\b[^}]*\}/u,
-    /\bexport\s+const\s+handle\s*=/u,
-  ]);
+  return (
+    /\bexport\s*\{[^}]*\bhandle\b[^}]*\}/u.test(source) ||
+    EXPORTED_HANDLE_DECLARATION.test(source)
+  );
 }
 
 /**

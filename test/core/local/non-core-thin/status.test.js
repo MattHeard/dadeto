@@ -303,6 +303,38 @@ describe('non-core thin status reporting paths', () => {
     ]);
   });
 
+  test.each([
+    'export const handle = createExampleHandle();',
+    'export\nconst\thandle\n= createExampleHandle();',
+  ])('accepts direct exported handle declarations repeatedly: %s', source => {
+    for (let attempt = 0; attempt < 3; attempt++) {
+      expect(
+        nonCoreThinStatusTestOnly.getWrapperPatternViolationsForSource(
+          'src/cloud/example/index.js',
+          source
+        )
+      ).toEqual([]);
+    }
+  });
+
+  test.each(['handleExtra', '_handle', 'Handle'])(
+    'rejects exported handle lookalikes: %s',
+    name => {
+      expect(
+        nonCoreThinStatusTestOnly.getWrapperPatternViolationsForSource(
+          'src/cloud/example/index.js',
+          `export const ${name} = createExampleHandle();`
+        )
+      ).toEqual([
+        {
+          filePath: 'src/cloud/example/index.js',
+          reason:
+            'expected `const handle = coreFactory(...)` in this non-core wrapper',
+        },
+      ]);
+    }
+  );
+
   test('accepts wrapper files that export or invoke handle', () => {
     expect(
       nonCoreThinStatusTestOnly.getWrapperPatternViolationsForSource(
