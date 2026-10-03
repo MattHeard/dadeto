@@ -1,7 +1,31 @@
 import { describe, expect, jest, test } from '@jest/globals';
 import * as validation from '../../../src/core/browser/validation.js';
+import { normalizeSegmentId } from '../../../src/core/browser/toys/2026-08-19/spacetimeInput.js';
 
 describe('browser validation helpers', () => {
+  test('coercive trimming shares the segment-ID alias and preserves nullish and non-string behavior', () => {
+    expect(normalizeSegmentId).toBe(validation.normalizeTrimmedString);
+    for (const [value, expected] of [
+      [null, ''],
+      [undefined, ''],
+      ['  id  ', 'id'],
+      [0, '0'],
+      [false, 'false'],
+      [Symbol('id'), 'Symbol(id)'],
+    ]) {
+      expect(validation.normalizeTrimmedString(value)).toBe(expected);
+    }
+    const toString = jest.fn(() => '  object-id  ');
+    expect(normalizeSegmentId({ toString })).toBe('object-id');
+    expect(toString).toHaveBeenCalledTimes(1);
+    expect(() =>
+      normalizeSegmentId({
+        toString() {
+          throw new Error('coercion failed');
+        },
+      })
+    ).toThrow('coercion failed');
+  });
   test('covers primitive predicates and normalization', () => {
     expect(validation.isValidString('x')).toBe(true);
     expect(validation.isValidString('')).toBe(false);

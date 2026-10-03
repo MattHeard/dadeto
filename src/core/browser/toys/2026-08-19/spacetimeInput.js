@@ -1,6 +1,7 @@
 // Shared input predicates for the spacetime toys.
 import { resolvePointRecords } from '../2026-08-22/spacePointResolution.js';
 import { runToyCalculation } from '../formatToyError.js';
+export { normalizeTrimmedString as normalizeSegmentId } from '../../validation.js';
 
 /**
  * Determine whether a value is a non-array object.
@@ -9,15 +10,6 @@ import { runToyCalculation } from '../formatToyError.js';
  */
 export function isJsonObject(value) {
   return value !== null && typeof value === 'object' && !Array.isArray(value);
-}
-
-/**
- * Normalize a segment identifier supplied by a request.
- * @param {unknown} value - Candidate identifier.
- * @returns {string} Normalized identifier.
- */
-export function normalizeSegmentId(value) {
-  return String(value ?? '').trim();
 }
 
 /**

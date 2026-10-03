@@ -1,6 +1,7 @@
 import { isBlankStringValue, whenOrNull } from '../../../browser-core.js';
 import { createDefaultLedgerIngestDedupePolicy } from './ledgerIngestShared.js';
 import { formatToyConversionError } from '../../formatToyError.js';
+import { normalizeTrimmedString as normalizeCsvTextCandidate } from '../../../validation.js';
 
 /**
  * Ledger Ingest CSV Converter Toy
@@ -383,16 +384,8 @@ function formatCsvDateMatch(match) {
  * @returns {string} Dot-decimal amount string or empty string.
  */
 function normalizeCsvAmount(value) {
-  const candidate = normalizeCsvAmountCandidate(value);
+  const candidate = normalizeCsvTextCandidate(value);
   return formatCsvAmountCandidate(parseCsvAmountCandidate(candidate));
-}
-
-/**
- * @param {string|undefined} value Raw CSV amount.
- * @returns {string} Trimmed candidate amount string.
- */
-function normalizeCsvAmountCandidate(value) {
-  return normalizeCsvTextCandidate(value);
 }
 
 /**
@@ -447,24 +440,7 @@ function buildCsvRecordId(accountIban, rowNumber) {
  * @returns {string} Stable record prefix.
  */
 function getCsvRecordPrefix(accountIban) {
-  return normalizeCsvRecordPrefixCandidate(accountIban) || 'ledger-ingest';
-}
-
-/**
- * @param {string} accountIban Source account identifier.
- * @returns {string} Trimmed record prefix candidate.
- */
-function normalizeCsvRecordPrefixCandidate(accountIban) {
-  return normalizeCsvTextCandidate(accountIban);
-}
-
-/**
- * Normalize a CSV text candidate into a trimmed string.
- * @param {unknown} value Candidate value.
- * @returns {string} Trimmed string candidate.
- */
-function normalizeCsvTextCandidate(value) {
-  return String(value ?? '').trim();
+  return normalizeCsvTextCandidate(accountIban) || 'ledger-ingest';
 }
 
 /**

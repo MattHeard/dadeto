@@ -88,6 +88,15 @@ export function normalizeNonStringValue(value) {
 }
 
 /**
+ * Coerce a candidate to text and trim it, retaining an empty nullish fallback.
+ * @param {unknown} value Candidate text, number, or coercible value.
+ * @returns {string} Coerced and trimmed string.
+ */
+export function normalizeTrimmedString(value) {
+  return normalizeNonStringValue(value).trim();
+}
+
+/**
  * Check whether a value is a non-empty trimmed string.
  * @param {unknown} value Candidate value.
  * @returns {value is string} Whether the value is a non-empty string.
