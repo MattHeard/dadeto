@@ -589,3 +589,4 @@ body {
     padding: 6px 4px;
   }
 }
+ .utility-actions[hidden] { display: none; }

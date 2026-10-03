@@ -56,11 +56,10 @@
           </div>
           <div class="control-card">
             <div><span class="keycap">↑ ↓ ← →</span><b>WALK</b></div>
-            <div><span class="keycap">Z / ENTER</span><b>TALK · CHOOSE</b></div>
-            <div><span class="keycap">F</span><b>FARM</b></div>
-            <div><span class="keycap">Q</span><b>FISH</b></div>
-            <div><span class="keycap">J</span><b>JOURNAL</b></div>
-            <div><span class="keycap">R</span><b>REST</b></div>
+            <div><span class="keycap">A</span><b>TALK · CHOOSE</b></div>
+            <div><span class="keycap">B</span><b>ASSIGNED ACTION · BACK</b></div>
+            <div><span class="keycap">X</span><b>MENU · CLOSE</b></div>
+            <div><span class="keycap">Y</span><b>ASSIGN B</b></div>
           </div>
           <div class="touch-pad" aria-label="Touch controls">
             <div class="dpad">
@@ -71,21 +70,16 @@
             </div>
             <div class="touch-actions">
               <div class="face-buttons" aria-label="A and B buttons">
-                <button data-action="guard" aria-label="B button: guard">B</button>
-                <button data-action="interact" aria-label="A button: talk or confirm">A</button>
+                <button data-action="b" aria-label="B button: assigned action or back">B</button>
+                <button data-action="a" aria-label="A button: talk or confirm">A</button>
               </div>
               <div class="system-buttons">
-                <button data-action="wait" aria-label="Select: wait">SELECT</button>
-                <button data-action="journal" aria-label="Start: open journal">START</button>
-              </div>
-              <div class="extra-buttons">
-                <button data-action="farm">FARM</button
-                ><button data-action="fish">FISH</button
-                ><button data-action="special">SKILL</button>
+                <button data-action="x" aria-label="X button: menu or close">X</button>
+                <button data-action="y" aria-label="Y button: assign B">Y</button>
               </div>
             </div>
           </div>
-          <nav class="utility-actions" aria-label="Game actions">
+          <nav class="utility-actions" aria-label="Game actions" hidden>
             <label class="slot-picker"
               >SAVE SLOT
               <select id="save-slot" aria-label="Save slot">

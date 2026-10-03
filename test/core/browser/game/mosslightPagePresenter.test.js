@@ -39,6 +39,44 @@ class FakeElement extends FakeTarget {
   }
 }
 
+test('gamepad face buttons resume agent pauses only while the page is visible', () => {
+  const page = pageOptions();
+  page.options.navigatorObj.getGamepads = () => [
+    { buttons: [{ pressed: true }] },
+  ];
+  const stop = startMosslightPage(page.options);
+  page.selectors['#pause-game'].click();
+  page.documentObj.hidden = true;
+  page.callbacks[0](0);
+  expect(page.selectors['#game-status'].textContent).toContain('Paused');
+  page.documentObj.hidden = false;
+  page.callbacks[0](150);
+  expect(page.selectors['#game-status'].textContent).not.toContain('Paused');
+  stop();
+});
+
+test.each(['export', 'import', 'fullscreen', 'unknown'])(
+  'controller save utility %s reaches its browser adapter',
+  command => {
+    const page = pageOptions();
+    const selector = {
+      export: '#export-game',
+      import: '#import-button',
+      fullscreen: '#fullscreen-game',
+    }[command];
+    const clicked = selector
+      ? jest.spyOn(page.selectors[selector], 'click')
+      : null;
+    seedSave(page, { ...createSimulation(), controllerCommand: command });
+    const stop = startMosslightPage(page.options);
+    page.callbacks[0](0);
+    page.callbacks[0](16);
+    page.callbacks[0](150);
+    if (clicked) expect(clicked).toHaveBeenCalledTimes(1);
+    stop();
+  }
+);
+
 /**
  *
  * @returns {object} Browser dependencies and observable fake elements.
@@ -201,7 +239,7 @@ test('page reset confirmation cancels safely, clears held input and preserves th
   expect(JSON.parse(saved['mosslight-valley-saves-v2'].slots[0]).state).toEqual(
     createSimulation()
   );
-  expect(page.selectors['#game-status'].textContent).toContain('Paused');
+  expect(page.selectors['#game-status'].textContent).not.toContain('Paused');
   await page.selectors['#resume-game'].emit('click');
   page.callbacks[0](10);
   page.callbacks[0](160);
@@ -330,10 +368,10 @@ test('page audio reacts to a quest reveal and a battle turn', () => {
   });
   const stopQuestPage = startMosslightPage(questPage.options);
   questPage.callbacks[0](0);
-  questPage.documentObj.emit('keydown', { key: 'e', preventDefault() {} });
+  questPage.documentObj.emit('keydown', { key: 'a', preventDefault() {} });
   questPage.callbacks[0](16);
   questPage.callbacks[0](150);
-  questPage.documentObj.emit('keydown', { key: 'e', preventDefault() {} });
+  questPage.documentObj.emit('keydown', { key: 'a', preventDefault() {} });
   expect(questPage.audioFrequencies).toContain(660);
   stopQuestPage();
 
@@ -347,7 +385,7 @@ test('page audio reacts to a quest reveal and a battle turn', () => {
   );
   const stopBattlePage = startMosslightPage(battlePage.options);
   battlePage.callbacks[0](0);
-  battlePage.documentObj.emit('keydown', { key: 'v', preventDefault() {} });
+  battlePage.documentObj.emit('keydown', { key: 'b', preventDefault() {} });
   battlePage.callbacks[0](16);
   battlePage.callbacks[0](150);
   expect(battlePage.audioFrequencies).toContain(180);

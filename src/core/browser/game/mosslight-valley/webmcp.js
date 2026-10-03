@@ -5,16 +5,10 @@ const ACTIONS = Object.freeze([
   'down',
   'left',
   'right',
-  'confirm',
-  'cancel',
-  'interact',
-  'special',
-  'guard',
-  'farm',
-  'fish',
-  'rest',
-  'journal',
-  'wait',
+  'a',
+  'b',
+  'x',
+  'y',
 ]);
 
 /**

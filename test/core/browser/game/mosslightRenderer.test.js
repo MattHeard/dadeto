@@ -136,7 +136,9 @@ test('renders an empty ending and a restored dialogue with no choice list', () =
   drawGameFrame(context, frame);
   expect(context.fillText).not.toHaveBeenCalled();
   expect(
-    frame.shapes.some(shape => shape.text === 'A/Z continue' && shape.bitmap)
+    frame.shapes.some(
+      shape => shape.text === 'A continue · B close' && shape.bitmap
+    )
   ).toBe(true);
 });
 

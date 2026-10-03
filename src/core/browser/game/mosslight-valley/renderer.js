@@ -4,6 +4,7 @@ import { generateBackgroundTile } from './tileGenerator.js';
 import { spriteShapes } from './sprites.js';
 import { crossingPixels } from './scenery.js';
 import { drawPixelText } from '../../pixelFont.js';
+import { menuLines } from './controls.js';
 const PALETTES = {
   village: ['#182f36', '#315744', '#bfd77c', '#e9d88d'],
   shore: ['#182f36', '#246774', '#b9e2ce', '#e5d39c'],
@@ -33,6 +34,8 @@ export function toFramePayload(state) {
     mode: state.mode,
     journal: state.journal,
     inventory: state.inventory,
+    menu: state.menu,
+    quickAction: state.quickAction || 'fish',
     quest: state.world.flags.gardenShared
       ? 'The Borrowed Memory'
       : 'A Noise Under the Well',
@@ -52,7 +55,8 @@ function toCanvasShapes(frame) {
   const shapes = terrainShapes(frame);
   shapes.push(...foregroundShapes(frame));
   shapes.push(...hudShapes(frame));
-  if (frame.dialogue)
+  if (frame.menu) shapes.push(...controllerShapes(frame));
+  else if (frame.dialogue)
     shapes.push(...dialogueShapes(frame.dialogue, '#182f36', '#e9d88d'));
   return shapes;
 }
@@ -219,9 +223,10 @@ export function drawGameFrame(context, frame) {
     }
   }
   drawShapes(context, hudShapes(frame));
-  if (frame.dialogue) drawDialogue(context, frame, p0, p3);
-  if (frame.battle) drawBattle(context, frame, p0, p3);
-  if (frame.mode === 'journal') drawJournal(context, frame, p0, p3);
+  if (frame.menu) drawShapes(context, controllerShapes(frame));
+  else if (frame.dialogue) drawDialogue(context, frame, p0, p3);
+  else if (frame.mode === 'journal') drawJournal(context, frame, p0, p3);
+  else if (frame.battle) drawBattle(context, frame, p0, p3);
   if (frame.ending) drawEnding(context, frame, p0, p3);
 }
 /**
@@ -237,6 +242,37 @@ function foregroundShapes(frame) {
   ]
     .sort((a, b) => a.y - b.y)
     .flatMap(actor => spriteShapes(actor, frame.camera, frame.tick));
+}
+
+/**
+ * Present the controller menu identically in standalone and embedded canvases.
+ * @param {object} frame Shared frame snapshot.
+ * @returns {object[]} Opaque bounded menu shapes.
+ */
+function controllerShapes(frame) {
+  const background = [
+    frameRectangle({ x: 3, y: 3, width: 154, height: 104 }, '#182f36'),
+  ];
+  return textPanel(
+    background,
+    menuLines(frame).map(text => text.slice(0, 30)),
+    { x: 6, y: 13, fill: '#e9d88d', font: '7px monospace' }
+  );
+}
+
+/**
+ * Compose opaque UI panels and their pixel-font rows for both presenters.
+ * @param {object[]} background Panel background shapes.
+ * @param {string[]} rows Visible text rows.
+ * @param {{x: number, y: number, fill: string, font: string}} style Text placement and palette.
+ * @returns {object[]} Shared panel shapes.
+ */
+function textPanel(background, rows, { x, y, fill, font }) {
+  const text = rows.map((row, index) => ({
+    ...frameText(row, y + index * 10, fill, font),
+    x,
+  }));
+  return background.concat(text);
 }
 /**
  *
@@ -304,10 +340,10 @@ function dialogueShapes(dialogue, dark, light) {
       )
     );
   }
-  rows.push(choices.length ? '↑↓ choose · A/Z confirm' : 'A/Z continue');
+  rows.push(choices.length ? '↑↓ choose · A confirm' : 'A continue · B close');
   const height = rows.length * 10 + 14;
   const top = 106 - height;
-  return [
+  const background = [
     { type: 'rect', x: 3, y: top, width: 154, height, fill: light },
     {
       type: 'rect',
@@ -317,16 +353,13 @@ function dialogueShapes(dialogue, dark, light) {
       height: height - 2,
       fill: dark,
     },
-    ...rows.map((text, index) => ({
-      type: 'text',
-      x: 8,
-      y: top + 12 + index * 10,
-      text,
-      fill: light,
-      font: '8px monospace',
-      bitmap: true,
-    })),
   ];
+  return textPanel(background, rows, {
+    x: 8,
+    y: top + 12,
+    fill: light,
+    font: '8px monospace',
+  });
 }
 /**
  *
@@ -345,7 +378,7 @@ function drawBattle(ctx, frame, dark, light) {
   drawPixelText(ctx, frame.battle.name, 12, 21);
   drawPixelText(ctx, `HP ${frame.battle.hp}/${frame.battle.maxHp}`, 12, 34);
   drawPixelText(ctx, 'Your posture is being read.', 12, 57);
-  drawPixelText(ctx, 'Z strike  X sing  C guard', 12, 83);
+  drawPixelText(ctx, 'A attack  X actions  Y bind', 12, 83);
 }
 /**
  *
@@ -375,7 +408,7 @@ function drawJournal(ctx, frame, dark, light) {
     12,
     61
   );
-  drawPixelText(ctx, 'X or Z to close', 12, 87);
+  drawPixelText(ctx, 'A / B / X close', 12, 87);
 }
 /**
  *

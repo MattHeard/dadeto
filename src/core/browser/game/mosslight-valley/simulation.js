@@ -11,6 +11,7 @@ import { movePlayer, createWorld, advanceClock } from './world.js';
 import { recordEvent, selectEnding, questJournal } from './quests.js';
 import { farmAction, fishAction, craftItem } from './activities.js';
 import { startBattle, battleAction } from './combat.js';
+import { controllerMenu } from './controls.js';
 
 /**
  * Create the complete starting state for a new save.
@@ -32,7 +33,10 @@ export function createSimulation(content = CONTENT) {
     tick: 0,
     moveCooldown: 0,
     lastActions: [],
-    toast: 'First: listen at the well. START/J: story and help.',
+    quickAction: 'fish',
+    menu: null,
+    controllerCommand: null,
+    toast: 'First: listen at the well. A: use. X: menu. Y: assign B.',
   };
 }
 /**
@@ -54,7 +58,26 @@ export function stepGame(
     tick: state.tick + 1,
     moveCooldown: Math.max(0, state.moveCooldown - deltaMs),
   };
-  const pressed = actions.filter(action => !state.lastActions.includes(action));
+  const rawActions = actions;
+  const rawPressed = actions.filter(
+    action => !state.lastActions.includes(action)
+  );
+  const control = controllerMenu(next, rawPressed);
+  next = control.state;
+  if (control.handled) return { ...next, lastActions: [...rawActions] };
+  const translate = action =>
+    action === 'a'
+      ? 'confirm'
+      : action === 'b'
+        ? next.dialogue || next.mode === 'journal'
+          ? 'cancel'
+          : next.battle &&
+              !['guard', 'sing', 'remember', 'tea'].includes(next.quickAction)
+            ? 'sing'
+            : next.quickAction || 'fish'
+        : action;
+  actions = control.action ? [control.action] : actions.map(translate);
+  const pressed = control.action ? [control.action] : rawPressed.map(translate);
   const direction = ['up', 'down', 'left', 'right'].find(action =>
     actions.includes(action)
   );
@@ -64,21 +87,41 @@ export function stepGame(
     next = { ...next, mode: next.battle ? 'battle' : 'world', dialogue: null };
   } else if (
     next.mode === 'battle' &&
-    ['confirm', 'interact', 'special', 'guard', 'cancel'].some(action =>
-      pressed.includes(action)
-    )
+    [
+      'confirm',
+      'interact',
+      'special',
+      'guard',
+      'cancel',
+      'strike',
+      'sing',
+      'remember',
+      'tea',
+    ].some(action => pressed.includes(action))
   )
     next = battleAction(
       next,
-      actions.includes('guard')
-        ? 'guard'
-        : actions.includes('special') || actions.includes('cancel')
-          ? 'sing'
-          : 'strike',
+      actions.includes('tea')
+        ? 'herb'
+        : actions.includes('remember')
+          ? 'remember'
+          : actions.includes('guard')
+            ? 'guard'
+            : actions.includes('special') ||
+                actions.includes('cancel') ||
+                actions.includes('sing')
+              ? 'sing'
+              : 'strike',
       content
     );
   else if (next.dialogue) {
-    if (next.dialogue.choices.length) {
+    if (pressed.includes('cancel'))
+      next = {
+        ...next,
+        dialogue: null,
+        mode: next.battle ? 'battle' : 'world',
+      };
+    else if (next.dialogue.choices.length) {
       if (pressed.includes('down') || pressed.includes('right'))
         next = moveDialogueChoice(next, 1);
       if (pressed.includes('up') || pressed.includes('left'))
@@ -105,6 +148,22 @@ export function stepGame(
     if (pressed.includes('farm') && targetInFront(next).object?.kind === 'farm')
       next = farmAction(next, content);
     if (pressed.includes('fish')) next = fishAction(next, content);
+    if (pressed.includes('craft'))
+      next = craftItem(next, {
+        ingredients: [['dreamFragment', 2]],
+        output: 'reedFlute',
+      });
+    if (pressed.includes('tea'))
+      next = {
+        ...next,
+        toast: next.inventory.hearthTea
+          ? 'Warm tea steadies your dreams.'
+          : 'No tea left.',
+        inventory: {
+          ...next.inventory,
+          hearthTea: Math.max(0, (next.inventory.hearthTea || 0) - 1),
+        },
+      };
     if (pressed.includes('rest')) {
       next = {
         ...next,
@@ -148,7 +207,7 @@ export function stepGame(
       'heartOpen',
       'The heart door recognizes the village in your voice.'
     );
-  next.lastActions = [...actions];
+  next.lastActions = [...rawActions];
   if (
     state.dialogue?.actorId === 'guide' &&
     next.mode === 'journal' &&
@@ -182,16 +241,16 @@ function openGuide(state, content) {
       text: 'Each area scrolls as you walk. Follow arrow trails to its edge to cross into the named next area.',
     },
     {
-      text: 'D-pad: move. A/Z: talk, use objects, continue. Face an object before pressing A.',
+      text: 'D-pad: move. A: talk, use objects, continue. Face an object before pressing A.',
     },
     {
-      text: 'START/J: this guide. B/X: close guide. SELECT/T: wait one hour. Choices: up/down, then A.',
+      text: 'X: menu or close. Y: assign B. Up/down: choose an action; A: confirm. B: back in menus.',
     },
     {
       text: 'Use A at soil to plant or water. Wait a day for growth. Fish at the shore at dusk.',
     },
     {
-      text: 'In battle: A attacks, B sings. C guards; V uses a skill. Tea heals you.',
+      text: 'In battle: A attacks. X opens Actions for singing, guarding, remembering or tea. Y assigns your B shortcut.',
     },
     ...questJournal(state, content).map(quest => ({
       text: `${quest.status}: ${quest.title}`,

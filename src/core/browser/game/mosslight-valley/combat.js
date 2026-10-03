@@ -32,6 +32,16 @@ export function startBattle(state, creature) {
 export function battleAction(state, action, content) {
   const battle = state.battle;
   if (!battle) return state;
+  if (action === 'herb' && !state.inventory.hearthTea)
+    return { ...state, toast: 'No tea left.' };
+  if (action === 'herb')
+    state = {
+      ...state,
+      inventory: {
+        ...state.inventory,
+        hearthTea: state.inventory.hearthTea - 1,
+      },
+    };
   const enemy = content.creatures.find(item => item.id === battle.creatureId);
   let damage =
     action === 'sing' && enemy.weakness === 'song'
@@ -43,7 +53,8 @@ export function battleAction(state, action, content) {
           : 4;
   if (action === 'guard') damage = 0;
   const hp = Math.max(0, battle.hp - damage);
-  let playerHp = battle.playerHp;
+  let playerHp =
+    action === 'herb' ? Math.min(18, battle.playerHp + 8) : battle.playerHp;
   if (hp > 0 && action !== 'guard')
     playerHp = Math.max(1, playerHp - enemy.power);
   const turn = battle.turn + 1;

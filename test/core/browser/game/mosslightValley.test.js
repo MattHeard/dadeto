@@ -205,10 +205,10 @@ test('battle rewards and runtime pause/resume are deterministic', () => {
 });
 
 test('keyboard edges, released keys and gamepad controls normalize consistently', () => {
-  const down = updateInput(createInputState(), { type: 'keydown', key: 'z' });
-  expect(actionsFromInput(down)).toEqual(['confirm']);
+  const down = updateInput(createInputState(), { type: 'keydown', key: 'a' });
+  expect(actionsFromInput(down)).toEqual(['a']);
   expect(consumePressed(down).pressed.size).toBe(0);
-  expect(updateInput(down, { type: 'keyup', key: 'z' }).held.size).toBe(0);
+  expect(updateInput(down, { type: 'keyup', key: 'a' }).held.size).toBe(0);
   expect(updateInput(down, { type: 'keydown', key: 'unknown' })).toBe(down);
   expect(gamepadActions([])).toEqual([]);
   expect(gamepadActions()).toEqual([]);
@@ -231,15 +231,7 @@ test('keyboard edges, released keys and gamepad controls normalize consistently'
         ],
       },
     ])
-  ).toEqual([
-    'down',
-    'left',
-    'confirm',
-    'interact',
-    'guard',
-    'special',
-    'journal',
-  ]);
+  ).toEqual(['down', 'left', 'a', 'b', 'x']);
   expect(gamepadActions([null, { buttons: [], axes: [] }])).toEqual([]);
   expect(
     gamepadActions([

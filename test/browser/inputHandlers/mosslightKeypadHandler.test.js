@@ -113,7 +113,7 @@ describe('mosslightKeypadHandler', () => {
       keypad._children
         .flatMap(group => group._children)
         .map(button => button.textContent)
-    ).toEqual(['▲', '◀', '▼', '▶', 'B', 'A', 'SELECT', 'START']);
+    ).toEqual(['▲', '◀', '▼', '▶', 'B', 'A', 'X', 'Y']);
 
     const rightButton = keypad._children[0]._children[3];
     rightButton._listeners.click();
@@ -130,12 +130,12 @@ describe('mosslightKeypadHandler', () => {
     aButton._listeners.click();
     expect(JSON.parse(readStoredOrElementValue(textInput))).toEqual({
       type: 'keydown',
-      key: 'z',
+      key: 'a',
     });
     animationFrames.shift()();
     expect(JSON.parse(readStoredOrElementValue(textInput))).toEqual({
       type: 'keyup',
-      key: 'z',
+      key: 'a',
     });
     expect(autoSubmitCheckbox.checked).toBe(true);
     expect(autoSubmitCheckbox.dispatchEvent).toHaveBeenCalled();

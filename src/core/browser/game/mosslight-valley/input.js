@@ -1,27 +1,13 @@
 // @ts-nocheck -- runtime game state is intentionally data-driven.
 const KEYS = Object.freeze({
   ArrowUp: 'up',
-  w: 'up',
   ArrowDown: 'down',
-  s: 'down',
   ArrowLeft: 'left',
-  a: 'left',
   ArrowRight: 'right',
-  d: 'right',
-  Enter: 'confirm',
-  ' ': 'confirm',
-  Escape: 'cancel',
-  m: 'menu',
-  z: 'confirm',
-  x: 'cancel',
-  c: 'guard',
-  e: 'interact',
-  f: 'farm',
-  q: 'fish',
-  r: 'rest',
-  j: 'journal',
-  v: 'special',
-  t: 'wait',
+  a: 'a',
+  b: 'b',
+  x: 'x',
+  y: 'y',
 });
 
 /**
@@ -90,9 +76,9 @@ export function gamepadActions(gamepads = []) {
   if (buttons[13]?.pressed || (axes[1] || 0) > 0.55) actions.push('down');
   if (buttons[14]?.pressed || (axes[0] || 0) < -0.55) actions.push('left');
   if (buttons[15]?.pressed || (axes[0] || 0) > 0.55) actions.push('right');
-  if (buttons[0]?.pressed) actions.push('confirm', 'interact');
-  if (buttons[1]?.pressed) actions.push('guard');
-  if (buttons[2]?.pressed) actions.push('special');
-  if (buttons[9]?.pressed) actions.push('journal');
+  if (buttons[0]?.pressed) actions.push('a');
+  if (buttons[1]?.pressed) actions.push('b');
+  if (buttons[2]?.pressed) actions.push('x');
+  if (buttons[3]?.pressed) actions.push('y');
   return actions;
 }

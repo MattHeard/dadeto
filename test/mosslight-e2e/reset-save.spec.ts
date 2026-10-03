@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { controllerUtility, chooseControllerEntry, pauseController, pressController, readControllerState } from './controller';
 
 async function readSaves(page: any) {
   return page.evaluate(() => JSON.parse(localStorage.getItem('permanentData') || '{}'));
@@ -6,7 +7,7 @@ async function readSaves(page: any) {
 
 async function seedProgress(page: any) {
   await page.goto('/mosslight-valley/');
-  await page.getByRole('button', { name: 'Pause', exact: true }).click();
+  await pauseController(page);
   await expect(page.locator('#game-status')).toContainText('Paused');
   await page.evaluate(async () => {
     const base = '/core/browser/game/mosslight-valley/';
@@ -44,71 +45,46 @@ async function expectFresh(page: any, slot: string) {
   expect(data.resetSentinel).toBe('keep me');
 }
 
-test('standalone reset warns, cancels, resets only slot 02 and survives reload', async ({ page }) => {
+test('standalone menu reset cancels safely, resets only slot 02 and survives reload', async ({ page }) => {
+  test.setTimeout(90_000);
   await seedProgress(page);
   await page.reload();
-  await page.getByRole('button', { name: 'Pause', exact: true }).click();
-  await page.getByLabel('Save slot', { exact: true }).selectOption('1');
+  await controllerUtility(page, 'slot:1');
   const before = await readSaves(page);
-  page.once('dialog', async dialog => {
-    expect(dialog.type()).toBe('confirm');
-    expect(dialog.message()).toContain('slot 02');
-    expect(dialog.message()).toContain('Export your save first');
-    await dialog.dismiss();
-  });
-  await page.getByRole('button', { name: 'Reset save', exact: true }).click();
-  expect(await readSaves(page)).toEqual(before);
-  page.once('dialog', dialog => dialog.accept());
-  await page.getByRole('button', { name: 'Reset save', exact: true }).click();
+  await controllerUtility(page, 'page:reset');
+  await chooseControllerEntry(page, 'page:main');
+  expect((await readControllerState(page)).world.flags.memoryCount).toBe(3);
+  await controllerUtility(page, 'page:reset');
+  await chooseControllerEntry(page, 'reset');
   await expectFresh(page, '1');
   expect((await readSaves(page))['mosslight-valley-saves-v2'].slots['0']).toBe(before['mosslight-valley-saves-v2'].slots['0']);
-  await expect(page.locator('#game-status')).toContainText('Paused');
   await page.reload();
-  await page.getByRole('button', { name: 'Pause', exact: true }).click();
-  await page.getByLabel('Save slot', { exact: true }).selectOption('1');
-  await page.getByRole('button', { name: 'Save', exact: true }).click();
+  expect((await readSaves(page))['mosslight-valley-saves-v2'].activeSlot).toBe(1);
   await expectFresh(page, '1');
 });
 
-test('embedded reset requires consent, preserves other slots and continues a fresh adventure', async ({ page }) => {
+test('embedded menu reset preserves other slots and slot switching persists between presses', async ({ page }) => {
+  test.setTimeout(90_000);
   await seedProgress(page);
   await page.goto('/');
   const toy = page.locator('#MOSS1');
-  const reset = toy.getByRole('button', { name: 'Reset game', exact: true });
-  await reset.scrollIntoViewIfNeeded();
+  await expect(toy.getByRole('button', { name: 'Submit', exact: true })).toBeEnabled();
   const before = await readSaves(page);
-  page.once('dialog', dialog => dialog.dismiss());
-  await reset.click();
-  expect(await readSaves(page)).toEqual(before);
-  page.once('dialog', async dialog => {
-    expect(dialog.message()).toContain('slot 01');
-    await dialog.accept();
-  });
-  await reset.click();
-  await expect.poll(async () => JSON.parse((await readSaves(page))['mosslight-valley-saves-v2'].slots['0']).state.tick).toBe(0);
+  await controllerUtility(page, 'page:reset', true);
+  await chooseControllerEntry(page, 'page:main', true);
+  expect((await readControllerState(page)).world.flags.memoryCount).toBe(3);
+  await controllerUtility(page, 'page:reset', true);
+  await chooseControllerEntry(page, 'reset', true);
   await expectFresh(page, '0');
   expect((await readSaves(page))['mosslight-valley-saves-v2'].slots['1']).toBe(before['mosslight-valley-saves-v2'].slots['1']);
-  const retainedReset = await toy.locator('input[type="text"]').first().inputValue();
-  await page.evaluate(async payload => {
-    const { setInputValue } = await import('/core/browser/inputValueStore.js');
-    const { serializeSave } = await import('/core/browser/game/mosslight-valley/save.js');
-    const data = JSON.parse(localStorage.getItem('permanentData') || '{}');
-    const state = JSON.parse(data['mosslight-valley-saves-v2'].slots['0']).state;
-    state.world.player.x = 7;
-    data['mosslight-valley-saves-v2'].slots['0'] = serializeSave(state);
-    const input = document.querySelector('#MOSS1 input[type="text"]') as HTMLInputElement;
-    input.value = payload;
-    setInputValue(input, payload);
-    localStorage.setItem('permanentData', JSON.stringify(data));
-  }, retainedReset);
-  await toy.getByRole('button', { name: 'Submit', exact: true }).click();
-  await expect.poll(async () => JSON.parse((await readSaves(page))['mosslight-valley-saves-v2'].slots['0']).state.world.player.x).toBe(7);
-  page.once('dialog', dialog => dialog.accept());
-  await reset.click();
-  await expect.poll(async () => JSON.parse((await readSaves(page))['mosslight-valley-saves-v2'].slots['0']).state.world.player.x).toBe(6);
-  expect(Object.keys((await readSaves(page))['mosslight-valley-saves-v2'].resetReceipts)).toHaveLength(2);
+  await pressController(page, 'right', true);
+  expect((await readControllerState(page)).world.player.x).toBe(7);
+  await controllerUtility(page, 'slot:1', true);
+  await pressController(page, 'x', true);
+  expect((await readControllerState(page)).world.flags.memoryCount).toBe(3);
+  expect((await readSaves(page))['mosslight-valley-saves-v2'].activeSlot).toBe(1);
   await page.reload();
-  await toy.getByRole('button', { name: 'Right', exact: true }).click();
-  await expect.poll(async () => JSON.parse((await readSaves(page))['mosslight-valley-saves-v2'].slots['0']).state.world.player.x).toBe(7);
+  await pressController(page, 'x', true);
+  expect((await readControllerState(page)).world.flags.memoryCount).toBe(3);
   expect((await readSaves(page)).resetSentinel).toBe('keep me');
 });

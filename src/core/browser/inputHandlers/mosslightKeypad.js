@@ -15,15 +15,20 @@ const GROUPS = [
   {
     className: 'mosslight-keypad-face',
     controls: [
-      { label: 'B', key: 'x', name: 'B · cancel', position: 'b' },
-      { label: 'A', key: 'z', name: 'A · talk or confirm', position: 'a' },
+      {
+        label: 'B',
+        key: 'b',
+        name: 'B · assigned action or back',
+        position: 'b',
+      },
+      { label: 'A', key: 'a', name: 'A · talk or confirm', position: 'a' },
     ],
   },
   {
     className: 'mosslight-keypad-system',
     controls: [
-      { label: 'SELECT', key: 't', name: 'Select · wait', position: 'select' },
-      { label: 'START', key: 'j', name: 'Start · journal', position: 'start' },
+      { label: 'X', key: 'x', name: 'X · menu or close', position: 'x' },
+      { label: 'Y', key: 'y', name: 'Y · assign B', position: 'y' },
     ],
   },
 ];
@@ -108,6 +113,7 @@ function bindResetSave(dom, form, input) {
   dom.setType(button, 'button');
   dom.setTextContent(button, 'Reset game');
   dom.setClassName(button, 'mosslight-reset-save');
+  button.setAttribute('hidden', 'hidden');
   dom.addEventListener(button, 'click', () => {
     if (!dom.globalThis.confirm(resetSavePrompt())) return;
     syncToyPayload(input, {

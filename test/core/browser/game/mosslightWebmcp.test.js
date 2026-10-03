@@ -57,7 +57,16 @@ test('observe exposes readable map, actor, dialogue, journal and action state wi
   );
   expect(observation.state.world.npcs.length).toBeGreaterThan(0);
   expect(observation.journal).toEqual(runtime.getJournal());
-  expect(observation.actions).toContain('confirm');
+  expect(observation.actions).toEqual([
+    'up',
+    'down',
+    'left',
+    'right',
+    'a',
+    'b',
+    'x',
+    'y',
+  ]);
   expect(runtime.exportSave()).toBe(before);
   expect([...tools.keys()]).toEqual([
     'mosslight_observe',
@@ -71,20 +80,13 @@ test('batched repeated presses use live simulation, pause the clock and redraw',
   const { runtime, tools, redraw } = setup();
   const expected = createMosslightRuntime();
   expected.start();
-  for (const action of [
-    'right',
-    'right',
-    'up',
-    'interact',
-    'confirm',
-    'confirm',
-  ]) {
+  for (const action of ['right', 'right', 'up', 'a', 'a', 'a']) {
     expected.dispatch({ actions: [] });
     expected.dispatch({ actions: [action] });
   }
   const actual = decode(
     tools.get('mosslight_act').execute({
-      actions: ['right', 'right', 'up', 'interact', 'confirm', 'confirm'],
+      actions: ['right', 'right', 'up', 'a', 'a', 'a'],
     })
   );
   expect(actual.state).toEqual(expected.getSnapshot());
@@ -118,7 +120,7 @@ test.each([
 test('maximum batch length is accepted and export/import round trips visible state', () => {
   const { runtime, tools, redraw } = setup();
   const saved = decode(tools.get('mosslight_export_save').execute()).save;
-  tools.get('mosslight_act').execute({ actions: Array(32).fill('wait') });
+  tools.get('mosslight_act').execute({ actions: Array(32).fill('x') });
   expect(runtime.getSnapshot().tick).toBe(64);
   expect(runtime.exportSave()).not.toBe(saved);
   const restored = decode(

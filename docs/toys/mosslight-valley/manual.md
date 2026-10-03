@@ -6,7 +6,9 @@ Explore the opening of an original handheld-style RPG chapter. Walk the village,
 
 ## Input
 
-The embedded Dadeto toy opens with a virtual keypad: use the directional pad to walk, A to talk/confirm, B to cancel or guard, SELECT to wait, and START to open the journal. Each tap advances one shared simulation step. Keyboard capture remains available as an alternate Dadeto input method. The dedicated game page also supports keyboard, gamepad, and the same handheld-style touch controls.
+Use only directions and A/B/X/Y on keyboard, gamepad or either virtual keypad. A talks, uses objects and confirms. X opens the menu or closes an overlay. Y opens the B assignment list: choose with directions, then A to assign. B performs that shortcut in the world and goes back in menus/dialogue. Its default is fishing (singing in battle). No START, SELECT or extra keys are needed or recognized.
+
+X → Actions exposes farming, fishing, crafting, tea, waiting and resting; in battle it offers attack, song, guard, memory and tea. X also opens the journal, story/help, inventory, pause and save options. Use directions to select and A to enter; B goes back and X closes. Save options include all three slots, export/import and a two-step reset confirmation. Assignments are saved with progress.
 
 ### Example
 
@@ -42,7 +44,7 @@ navigate to the dedicated page for direct play.
 - `mosslight_observe({})` returns full structured game state, including the map's
   blocked cells and exits, player/NPC coordinates, dialogue and choices, battle
   state, inventory, relationships, flags, journal, and supported actions.
-- `mosslight_act({"actions":["right","up","interact"]})` submits 1–32 sequential
+- `mosslight_act({"actions":["right","up","a"]})` submits 1–32 sequential
   button presses. Each press uses the normal simulation, including collision and
   story rules, and receives a release tick before the next press. Repeated actions
   therefore work for dialogue, farming, and combat. Read the returned state before
@@ -51,13 +53,13 @@ navigate to the dedicated page for direct play.
 - `mosslight_import_save({"save":"..."})` replaces current progress with a valid
   exported save, persists it locally, and redraws. Export first to retain progress.
 
-Use `up`/`down` and `confirm` for dialogue choices. In battle, `confirm` attacks,
-`special` uses a skill, and `guard` defends. `farm`, `fish`, `rest`, `wait`, and
-`journal` use the same rules as keyboard and touch controls. Invalid batches and
+Agent play uses only `up`, `down`, `left`, `right`, `a`, `b`, `x`, and `y`, just
+like physical controls. Use `x` then directions and `a` for all actions and
+menus; `y`, directions and `a` assign the `b` shortcut. Invalid batches and
 imports leave game progress unchanged.
 
 Agent actions and successful imports pause automatic ticking, so observing the
-game does not consume turns. The page's **Resume** button returns control to human
+game does not consume turns. A controller button returns control to human
 play. Read-only observations and exports do not change the game. Tools are removed
 on page teardown when supported, and stale callbacks reject even in browsers
 without tool unregistration. Browsers without WebMCP keep normal gameplay.
@@ -80,12 +82,12 @@ Returns a 160×144 pixel-art frame payload rendered by Dadeto's canvas presenter
 
 ## Behavior
 
-Movement, conversations, flags, maps, and frame output are deterministic. The embedded scene is replayable; the full page stores progress in local save slots and supports save import/export. Controls: arrows/WASD move, Z/Enter or E talk and confirm, F farm, Q fish, T wait, R rest, J journal, C guard, and V skill. Full-page phones use the on-screen D-pad, A/B, SELECT/START, and farming, fishing, and skill actions. Sound is optional.
+Movement, conversations, flags, maps, and frame output are deterministic. The embedded scene is replayable; the full page stores progress in local save slots and supports save import/export. Controls: arrows move, A talks/confirms, B uses an assigned action or goes back, X opens/closes menus, and Y assigns B. All gameplay actions are available through these menus. Sound is optional.
 
 ## Start over
 
-On the standalone page, select the save slot you want to erase and press **Reset save**. The embedded virtual keypad has a separate **Reset game** button below it; that preview uses slot 01. Both ask for confirmation and recommend exporting first. Cancel leaves your progress intact.
+Open X → Save options on either keypad. Choose the slot, then Reset current slot. The confirmation defaults to Keep my progress. Choose Erase this slot and press A only when you are sure; B or X cancels. Export first if you want a backup.
 
-Confirming immediately overwrites only that slot with a brand-new adventure: memories, relationships, inventory, crops, dialogue, battles and endings are reset. Other slots and other toys' data are preserved. An exported backup can restore the old adventure; without one, the overwritten progress cannot be recovered. Resetting a paused standalone game leaves it paused; press Resume when ready.
+Confirming immediately overwrites only that slot with a brand-new adventure: memories, relationships, inventory, crops, dialogue, battles, endings and B assignment are reset. Other slots and other toys' data are preserved. An exported backup can restore the old adventure; without one, overwritten progress cannot be recovered.
 
 The shared runtime exposes `runtime.resetSave()`. A synchronous embedded request must explicitly include `reset: true`, `confirmed: true`, and a fresh nonempty `resetId`. The keypad generates this identifier after confirmation. Consumed reset identifiers are recorded separately from adventure state, so repeated polling, reloads or old commands cannot erase later progress. Unconfirmed or unidentified resets do not advance or erase the game.

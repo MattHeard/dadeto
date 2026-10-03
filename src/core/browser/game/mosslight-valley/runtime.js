@@ -18,11 +18,33 @@ export function createMosslightRuntime(options = {}) {
   const save = opts.save || createSaveAdapter(env);
   const audio = opts.audio || createAudioAdapter(env);
   const renderer = opts.renderer || toFramePayload;
-  let activeSlot = opts.slot ?? 0;
+  let activeSlot = opts.slot ?? save.getActiveSlot?.() ?? 0;
   let state = save.load?.(activeSlot) || createSimulation(content);
   let running = false;
   let accumulator = 0;
   const fixedStep = 125;
+  /**
+   * Resolve menu save commands without duplicating presenter rules.
+   * @returns {void}
+   */
+  function applyControllerCommand() {
+    const command = state.controllerCommand;
+    if (!command) return;
+    const lastActions = state.lastActions;
+    state = { ...state, controllerCommand: null };
+    if (command === 'reset')
+      state = { ...createSimulation(content), lastActions };
+    else if (command.startsWith('slot:')) {
+      activeSlot = Number(command.slice(5));
+      state = {
+        ...(save.load?.(activeSlot) || createSimulation(content)),
+        lastActions,
+        menu: null,
+      };
+    } else if (command === 'save')
+      state = { ...state, toast: 'Saved on this device.' };
+    else opts.onControllerCommand?.(command);
+  }
   return {
     start() {
       running = true;
@@ -39,11 +61,18 @@ export function createMosslightRuntime(options = {}) {
     },
     step(deltaMs = 125, actions = []) {
       if (!running) return renderer(state);
+      if (
+        state.menu?.page === 'paused' &&
+        actions.length === 0 &&
+        state.lastActions.length === 0
+      )
+        return renderer(state);
       accumulator += Math.max(0, Math.min(deltaMs, 500));
       while (accumulator >= fixedStep) {
         const previousToast = state.toast;
         const hadWellOpen = state.world.flags.wellOpen;
         state = stepGame(state, actions, content, fixedStep);
+        applyControllerCommand();
         accumulator -= fixedStep;
         if (state.toast && state.toast !== previousToast) {
           const cue =
@@ -58,7 +87,7 @@ export function createMosslightRuntime(options = {}) {
         }
         if (state.world.flags.ending && !state.ending)
           state = finishChapter(state, state.world.flags.ending, content);
-        if (state.mode === 'journal')
+        if (state.mode === 'journal' || state.menu?.page === 'journal')
           state = { ...state, journal: questJournal(state, content) };
         save.save?.(state, activeSlot);
       }
@@ -68,6 +97,9 @@ export function createMosslightRuntime(options = {}) {
       const actions =
         typeof command === 'string' ? [command] : command?.actions || [];
       state = stepGame(state, actions, content);
+      applyControllerCommand();
+      if (state.menu?.page === 'journal')
+        state = { ...state, journal: questJournal(state, content) };
       if (state.world.flags.ending && !state.ending)
         state = finishChapter(state, state.world.flags.ending, content);
       save.save?.(state, activeSlot);

@@ -22,11 +22,11 @@
 ## Actors and Interfaces
 
 - Primary actor(s): player, valley residents, creatures.
-- Inputs: embedded virtual keypad (D-pad, A/B, SELECT/START), alternate keyboard capture, dedicated-page keyboard/gamepad/touch controls, and save import.
+- Inputs: directions and A/B/X/Y only on both virtual keypads, keyboard and gamepad. X opens menus, Y assigns B, and A confirms; B is a saved shortcut and goes back in overlays. All gameplay and save actions are available through menus.
 - Outputs: 160×144 canvas frame, local save slots, exportable JSON.
 - Terrain art: a deterministic tile generator keeps walkable ground continuous within each region. `scenery.js` supplies outlined, palette-indexed roofs and timber windows, fruit trees, shoreline rocks and carved dungeon stone; the renderer detects roof rows from collision neighbors. Both presenters consume the same generated rectangles.
-- Navigation: connected outdoor areas scroll internally; these are not fixed-screen rooms. Directional arrows and destination labels mark edge crossings. The Hollow arch visibly distinguishes a sealed story gate from an open crossing. The Start guide explains this model.
-- Introduction: the persistent opening HUD gives the first task (listen at the well). Start opens player-paced story, controls and objective pages, introducing Aster's unwritten letter and the valley's borrowed memories without interrupting exploration or replacing a saved scene.
+- Navigation: connected outdoor areas scroll internally; these are not fixed-screen rooms. Directional arrows and destination labels mark edge crossings. The Hollow arch visibly distinguishes a sealed story gate from an open crossing. X → Story and help explains this model.
+- Introduction: the persistent opening HUD gives the first task (listen at the well). X → Story and help opens player-paced story, controls and objective pages, introducing Aster's unwritten letter and the valley's borrowed memories. Only the visible overlay handles input.
 
 ## Assumptions and Constraints
 

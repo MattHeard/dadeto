@@ -46,7 +46,17 @@ export function startMosslightPage(options) {
     ['setLocalPermanentData', setPermanent],
     ['playAudioCue', cue => playCue(cue)],
   ]);
-  const runtime = createMosslightRuntime({ env });
+  const runtime = createMosslightRuntime({
+    env,
+    onControllerCommand: command => {
+      const selector = {
+        export: '#export-game',
+        import: '#import-button',
+        fullscreen: '#fullscreen-game',
+      }[command];
+      if (selector) documentObj.querySelector(selector).click();
+    },
+  });
   runtime.start();
 
   /**
@@ -84,12 +94,14 @@ export function startMosslightPage(options) {
    *
    */
   function draw() {
+    documentObj.querySelector('#save-slot').value = String(runtime.getSlot());
     drawGameFrame(context, runtime.frame());
     const world = runtime.getSnapshot().world;
     const clock = `${world.map.name} · Day ${world.day} · ${Math.floor(world.time)}:00`;
-    status.textContent = runtime.isRunning()
-      ? clock
-      : `${clock} · Paused · resume when ready.`;
+    status.textContent =
+      runtime.isRunning() && runtime.getSnapshot().menu?.page !== 'paused'
+        ? clock
+        : `${clock} · Paused · resume when ready.`;
   }
   /**
    *
@@ -112,7 +124,10 @@ export function startMosslightPage(options) {
     if (disposed) return;
     const delta = lastTime ? time - lastTime : 16;
     const previousTick = runtime.getSnapshot().tick;
-    runtime.step(delta, actions());
+    const frameActions = actions();
+    if (frameActions.length && !documentObj.hidden && !runtime.isRunning())
+      runtime.resume();
+    runtime.step(delta, frameActions);
     lastTime = time;
     if (runtime.getSnapshot().tick > previousTick) {
       keys.pressed.clear();
@@ -129,6 +144,7 @@ export function startMosslightPage(options) {
     const next = updateInput(keys, { type: 'keydown', key: event.key });
     keys.held = next.held;
     keys.pressed = next.pressed;
+    if (keys.held.size && !runtime.isRunning()) runtime.resume();
     if (keys.held.size) event.preventDefault();
     if (!audioContext) playCue('wake');
   }
@@ -188,7 +204,7 @@ export function startMosslightPage(options) {
     runtime.resume();
     lastTime = 0;
   }
-  bindTouchControls(documentObj, touch, touchPulse);
+  bindTouchControls(documentObj, touch, touchPulse, () => runtime.resume());
   const disposeAgentTools = registerMosslightTools({
     modelContext: documentObj.modelContext,
     runtime,
@@ -258,12 +274,14 @@ function download(value, name, windowObj) {
  * @param {object} documentObj - Page document containing action buttons.
  * @param {Set<string>} touch - Held pointer actions.
  * @param {Set<string>} touchPulse - One-tick pointer actions.
+ * @param {Function} resume Resume a paused agent session from a physical press.
  */
-function bindTouchControls(documentObj, touch, touchPulse) {
+function bindTouchControls(documentObj, touch, touchPulse, resume) {
   for (const button of documentObj.querySelectorAll('[data-action]')) {
     const action = button.dataset.action;
     button.addEventListener('pointerdown', event => {
       event.preventDefault();
+      resume();
       touch.add(action);
       touchPulse.add(action);
       try {

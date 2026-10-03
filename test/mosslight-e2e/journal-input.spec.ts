@@ -1,8 +1,9 @@
 import { expect, test } from '@playwright/test';
+import { pauseController } from './controller';
 
 test('restored Field Journal consumes world actions and X closes it', async ({ page }) => {
   await page.goto('/mosslight-valley/');
-  await page.getByRole('button', { name: 'Pause', exact: true }).click();
+  await pauseController(page);
   await expect(page.locator('#game-status')).toContainText('Paused');
   await page.evaluate(async () => {
     const { createSimulation } = await import('/core/browser/game/mosslight-valley/simulation.js');

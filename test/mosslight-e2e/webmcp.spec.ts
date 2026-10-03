@@ -33,7 +33,7 @@ test('an agent plays the visible game through WebMCP and restores its save', asy
     const restored = read(tools.mosslight_import_save.execute({ save })).state;
     const local = JSON.parse(localStorage.getItem('permanentData') || '{}');
     const story = read(tools.mosslight_act.execute({
-      actions: ['left', 'up', 'interact', 'confirm', 'confirm'],
+      actions: ['left', 'up', 'a', 'a', 'a'],
     })).state;
     return { before, after, refused, save, afterInvalid, restored,
       story, persisted: local['mosslight-valley-saves-v2'].slots['0'] };
@@ -50,6 +50,8 @@ test('an agent plays the visible game through WebMCP and restores its save', asy
   await page.waitForTimeout(300);
   const pausedTick = await page.evaluate(() => JSON.parse((window as any).mosslightAgentTools.mosslight_observe.execute().content[0].text).state.tick);
   expect(pausedTick).toBe(result.story.tick);
-  await page.getByRole('button', { name: 'Resume', exact: true }).click();
+  await page.keyboard.down('a');
+  await page.waitForTimeout(150);
+  await page.keyboard.up('a');
   await expect.poll(() => page.evaluate(() => JSON.parse((window as any).mosslightAgentTools.mosslight_observe.execute().content[0].text).state.tick)).toBeGreaterThan(pausedTick);
 });

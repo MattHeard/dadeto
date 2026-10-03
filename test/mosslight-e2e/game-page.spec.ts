@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { controllerUtility, pauseController, pressController } from './controller';
 
 test('all toys offer input/output swapping and the game remains playable after swapping', async ({ page }) => {
   await page.goto('/');
@@ -40,7 +41,7 @@ test('phone layout fits the viewport and thumb input advances the shared save', 
   await expect(
     page.getByRole('button', { name: 'A button: talk or confirm' })
   ).toBeVisible();
-  await expect(page.getByRole('button', { name: 'B button: guard' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'B button: assigned action or back' })).toBeVisible();
 
   const dimensionsBefore = await page.evaluate(() => ({
     viewport: document.documentElement.clientWidth,
@@ -52,7 +53,7 @@ test('phone layout fits the viewport and thumb input advances the shared save', 
 
   await page.locator('[data-action="right"]').tap();
   await page.waitForTimeout(300);
-  await page.getByRole('button', { name: 'Save', exact: true }).tap();
+  await controllerUtility(page, 'save');
   const saved = await page.evaluate(() =>
     JSON.parse(localStorage.getItem('permanentData') || '{}')
   );
@@ -61,10 +62,10 @@ test('phone layout fits the viewport and thumb input advances the shared save', 
   await page.locator('[data-action="up"]').tap();
   await page.waitForTimeout(180);
   for (let index = 0; index < 3; index += 1) {
-    await page.locator('[data-action="interact"]').tap();
+    await page.locator('[data-action="a"]').tap();
     await page.waitForTimeout(180);
   }
-  await page.getByRole('button', { name: 'Save', exact: true }).tap();
+  await controllerUtility(page, 'save');
   const storySave = await page.evaluate(() =>
     JSON.parse(localStorage.getItem('permanentData') || '{}')
   );
@@ -73,9 +74,9 @@ test('phone layout fits the viewport and thumb input advances the shared save', 
   ).state;
   expect(story.world.flags.miraTrust).toBe(1);
   expect(story.world.relationships.mira).toBe(1);
-  await page.getByRole('button', { name: 'Pause' }).tap();
+  await pauseController(page);
   await expect(page.locator('#game-status')).toContainText('Paused');
-  await page.getByRole('button', { name: 'Resume' }).tap();
+  await pressController(page, 'x');
   await expect(page.locator('#game-status')).not.toContainText('Paused');
 });
 
@@ -91,7 +92,7 @@ test('embedded opening preview defaults to the virtual keypad on phones', async 
   const keypad = toy.locator('.mosslight-keypad');
   await expect(keypad).toBeVisible();
   await expect(keypad.getByRole('button', { name: 'A · talk or confirm' })).toBeVisible();
-  await expect(keypad.getByRole('button', { name: 'B · cancel' })).toBeVisible();
+  await expect(keypad.getByRole('button', { name: 'B · assigned action or back' })).toBeVisible();
 
   await keypad.getByRole('button', { name: 'Right' }).tap();
   await expect
@@ -122,7 +123,7 @@ test('desktop page renders its handheld screen and accepts keyboard input', asyn
   await page.waitForTimeout(250);
   await page.keyboard.up('ArrowRight');
   await page.waitForTimeout(150);
-  await page.getByRole('button', { name: 'Save', exact: true }).click();
+  await controllerUtility(page, 'save');
   const saved = await page.evaluate(() =>
     JSON.parse(localStorage.getItem('permanentData') || '{}')
   );
