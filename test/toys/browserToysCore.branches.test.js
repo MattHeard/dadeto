@@ -106,6 +106,9 @@ describe('browser toy value helpers', () => {
 
 describe('runToy helpers', () => {
   test('runToyWithFallback returns the handler result or fallback', () => {
+    expect(
+      runToyWithFallback('input', () => undefined, 'fallback')
+    ).toBeUndefined();
     expect(runToyWithFallback('input', value => value.toUpperCase())).toBe(
       'INPUT'
     );

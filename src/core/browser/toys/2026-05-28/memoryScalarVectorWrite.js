@@ -1,7 +1,7 @@
 import { deepClone } from '../../browser-core.js';
 import { requireEnvHelper } from '../browserToysCore.js';
 import {
-  formatThrownError,
+  runMemoryRequest,
   getPathCandidate,
   normalizeMemoryLocation,
   normalizeMemoryPath,
@@ -80,12 +80,14 @@ function writeMemoryValue(request, env) {
  * @returns {{ memoryLocation: string, path: string, written: boolean, value?: unknown, error?: string }} Write result.
  */
 function runWriteAction(request, action) {
-  try {
-    action();
-    return buildMemoryWriteSuccess(request);
-  } catch (error) {
-    return buildMemoryWriteError(request, formatThrownError(error));
-  }
+  return runMemoryRequest(
+    request,
+    () => {
+      action();
+      return buildMemoryWriteSuccess(request);
+    },
+    buildMemoryWriteError
+  );
 }
 
 /**

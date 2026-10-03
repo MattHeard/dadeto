@@ -62,10 +62,10 @@ export function createToyMessageBoundary(rejection, messageKey, indentation) {
 
 /**
  * Retain a calculation result or delegate the original thrown value to its formatter.
- * @template T
- * @param {() => T} calculate Synchronous toy operation.
- * @param {(error: unknown) => T} reject Caller-owned failure presentation policy.
- * @returns {T} Success or formatted failure; formatter errors still escape.
+ * @template S, F
+ * @param {() => S} calculate Synchronous toy operation.
+ * @param {(error: unknown) => F} reject Caller-owned failure presentation policy.
+ * @returns {S | F} Success or formatted failure; formatter errors still escape.
  */
 export function runToyFailureBoundary(calculate, reject) {
   try {

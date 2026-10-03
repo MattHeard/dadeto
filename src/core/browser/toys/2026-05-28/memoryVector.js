@@ -1,6 +1,7 @@
 import { get } from '../2025-03-29/get.js';
 import {
   requireEnvHelper,
+  runToyFailureBoundary,
   isPlainPrototypeObject as isPlainObject,
 } from '../browserToysCore.js';
 import {
@@ -161,11 +162,25 @@ function buildUnsupportedMemoryLocationResult(memoryLocation) {
  * @returns {{ memoryLocation: string, path: string, found: boolean, vector: unknown[], error?: string }} Structured response.
  */
 function buildMemoryVectorResponseWithFallback(request, env, options = {}) {
-  try {
-    return buildMemoryVectorResponse(request, env, options);
-  } catch (error) {
-    return buildMemoryVectorError(request, formatThrownError(error));
-  }
+  return runMemoryRequest(
+    request,
+    () => buildMemoryVectorResponse(request, env, options),
+    buildMemoryVectorError
+  );
+}
+
+/**
+ * Keep a memory operation's result or build its contextual error response.
+ * @template R, S, F
+ * @param {R} request Original normalized read or write request.
+ * @param {() => S} calculate Memory operation, with caller-owned success construction.
+ * @param {(request: R, error: string) => F} reject Caller-specific error response builder.
+ * @returns {S | F} Result or contextual failure, preserving thrown-value formatting.
+ */
+export function runMemoryRequest(request, calculate, reject) {
+  return runToyFailureBoundary(calculate, error =>
+    reject(request, formatThrownError(error))
+  );
 }
 
 /**

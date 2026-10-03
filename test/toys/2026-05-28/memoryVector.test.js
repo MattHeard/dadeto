@@ -7,9 +7,37 @@ import {
   buildResolvedMemoryVectorResponseFromValue,
   memoryVector,
   memoryVectorTestOnly,
+  runMemoryRequest,
 } from '../../../src/core/browser/toys/2026-05-28/memoryVector.js';
 
 describe('memoryVector', () => {
+  test('memory boundaries retain falsy success and pass original context with formatted failures', () => {
+    const request = { memoryLocation: 'temporary', path: 'bucket' };
+    const rejected = [];
+    expect(
+      runMemoryRequest(
+        request,
+        () => 0,
+        () => {
+          throw new Error('unexpected rejection');
+        }
+      )
+    ).toBe(0);
+    const result = runMemoryRequest(
+      request,
+      () => {
+        throw 'denied';
+      },
+      (context, message) => {
+        rejected.push(context);
+        return { failed: message };
+      }
+    );
+    expect(result).toEqual({ failed: 'denied' });
+    expect(rejected).toEqual([request]);
+    expect(rejected[0]).toBe(request);
+  });
+
   test('defaults to temporary storage with a blank input string', () => {
     const env = new Map([
       [

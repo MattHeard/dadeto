@@ -1,5 +1,7 @@
 import { deepClone, safeParseJson, valueOr } from '../browser-core.js';
 import { isNonNullObject, isValidString } from '../../commonCore.js';
+import { runToyFailureBoundary } from './formatToyError.js';
+export { runToyFailureBoundary };
 
 /**
  * @typedef {( ...args: unknown[]) => unknown} EnvHelperFunc
@@ -74,11 +76,10 @@ export function parseJsonOrFallback(json, fallback = null) {
  * @returns {string} Result string or the fallback on failure.
  */
 export function runToyWithFallback(input, handler, fallback) {
-  try {
-    return handler(input);
-  } catch {
-    return fallback;
-  }
+  return runToyFailureBoundary(
+    () => handler(input),
+    () => fallback
+  );
 }
 
 /**
