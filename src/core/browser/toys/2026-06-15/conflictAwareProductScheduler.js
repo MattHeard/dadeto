@@ -291,14 +291,7 @@ function compareRankedCandidates(left, right) {
  * @returns {number} Overlap count.
  */
 function countOverlap(values, lookup) {
-  let count = 0;
-  for (const value of new Set(values)) {
-    if (lookup.has(value)) {
-      count++;
-    }
-  }
-
-  return count;
+  return [...new Set(values)].filter(value => lookup.has(value)).length;
 }
 
 /**

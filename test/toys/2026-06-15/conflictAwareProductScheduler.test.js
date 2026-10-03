@@ -4,6 +4,43 @@ import {
   conflictAwareProductSchedulerTestOnly,
 } from '../../../src/core/browser/toys/2026-06-15/conflictAwareProductScheduler.js';
 
+test('overlap counts unique values in order with receiver and truthy membership results', () => {
+  const { countOverlap } = conflictAwareProductSchedulerTestOnly;
+  const seen = [];
+  let getterReads = 0;
+  const lookup = {
+    get has() {
+      getterReads++;
+      return function (value) {
+        expect(this).toBe(lookup);
+        seen.push(value);
+        return value === 'b' ? 0 : 'member';
+      };
+    },
+  };
+  expect(countOverlap(['a', 'a', 'b', 'c', 'b'], lookup)).toBe(2);
+  expect(seen).toEqual(['a', 'b', 'c']);
+  expect(getterReads).toBe(3);
+  expect(countOverlap([], lookup)).toBe(0);
+  expect(getterReads).toBe(3);
+  expect(countOverlap([NaN, NaN, 0, -0], new Set([NaN, 0]))).toBe(2);
+});
+
+test('overlap stops on membership failure without changing its identity', () => {
+  const failure = new Error('membership failed');
+  const seen = [];
+  expect(() =>
+    conflictAwareProductSchedulerTestOnly.countOverlap(['a', 'b', 'c'], {
+      has(value) {
+        seen.push(value);
+        if (value === 'b') throw failure;
+        return true;
+      },
+    })
+  ).toThrow(failure);
+  expect(seen).toEqual(['a', 'b']);
+});
+
 test('scheduler text preserves literal whitespace without coercing non-strings', () => {
   const { toText } = conflictAwareProductSchedulerTestOnly;
   for (const text of ['', ' ', '\n\t', '  roof  '])
