@@ -149,12 +149,21 @@ function readEventType(candidate) {
  */
 function normalizeScore(value) {
   return /** @type {HiLoScore} */ (
-    normalizeObjectOrFallback(value, createInitialScore, candidate => ({
-      correct: toScoreNumber(candidate.correct),
-      incorrect: toScoreNumber(candidate.incorrect),
-      total: toScoreNumber(candidate.total),
-    }))
+    normalizeObjectOrFallback(value, createInitialScore, projectScoreCounts)
   );
+}
+
+/**
+ * Project each stored count independently, retaining its original read order.
+ * @param {Record<string, unknown>} candidate Stored score record.
+ * @returns {HiLoScore} Normalized score counts.
+ */
+function projectScoreCounts(candidate) {
+  return {
+    correct: toScoreNumber(candidate.correct),
+    incorrect: toScoreNumber(candidate.incorrect),
+    total: toScoreNumber(candidate.total),
+  };
 }
 
 /**

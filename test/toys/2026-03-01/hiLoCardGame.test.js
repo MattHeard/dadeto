@@ -233,6 +233,31 @@ describe('formatCard', () => {
 });
 
 describe('normalizeGameState', () => {
+  it('projects score fields independently in their stored read order', () => {
+    const reads = [];
+    const score = {
+      get correct() {
+        reads.push('correct');
+        return 3;
+      },
+      get incorrect() {
+        reads.push('incorrect');
+        return -2;
+      },
+      get total() {
+        reads.push('total');
+        return Infinity;
+      },
+    };
+    const normalized = normalizeGameState({ currentCard: 7, score }, () => 0);
+    expect(normalized.score).toEqual({
+      correct: 3,
+      incorrect: -2,
+      total: Infinity,
+    });
+    expect(reads).toEqual(['correct', 'incorrect', 'total']);
+  });
+
   it('accepts the highest playable card rank', () => {
     expect(
       normalizeGameState(
