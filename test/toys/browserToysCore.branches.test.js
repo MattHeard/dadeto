@@ -11,6 +11,7 @@ import {
   uniqueByKey,
   parseJsonOrFallback,
   isPlainObject,
+  isPlainPrototypeObject,
   toRecordOrNull,
   createOptions,
   cloneTemporaryDend2Data,
@@ -24,6 +25,23 @@ import {
   persistDendritePage,
   persistDendriteStory,
 } from '../../src/core/browser/toys/browserToysCore.js';
+
+test.each([
+  [undefined, false],
+  [null, false],
+  [false, false],
+  [0, false],
+  ['', false],
+  [42, false],
+  [() => {}, false],
+  [[], false],
+  [new Date(0), false],
+  [Object.create(null), false],
+  [{}, true],
+  [{ constructor: null }, true],
+])('prototype record policy accepts %p as %p', (value, expected) => {
+  expect(isPlainPrototypeObject(value)).toBe(expected);
+});
 
 test('keyed uniqueness retains first identity and order while projecting every entry', () => {
   const values = [{ id: 'b' }, { id: 'a' }, { id: 'b' }];
@@ -157,9 +175,21 @@ describe('getEnvHelpers', () => {
 });
 
 describe('ensureDend2', () => {
+  test('JSON fallback defaults to null and preserves valid parsed values', () => {
+    expect(parseJsonOrFallback('invalid JSON')).toBeNull();
+    expect(parseJsonOrFallback('null')).toBeNull();
+    expect(parseJsonOrFallback('{"items":[]}')).toEqual({ items: [] });
+  });
   test('returns early when TRAN1 already contains a valid structure', () => {
     const tran1 = { stories: [], pages: [], options: [] };
-    const data = { temporary: { TRAN1: tran1 } };
+    const data = {
+      temporary: {
+        TRAN1: tran1,
+        get DEND2() {
+          throw new Error('valid primary data must not read legacy storage');
+        },
+      },
+    };
     ensureDend2(data);
     expect(data.temporary.TRAN1).toBe(tran1);
   });
@@ -169,6 +199,7 @@ describe('ensureDend2', () => {
     const migrated = { temporary: { DEND2: legacy } };
     ensureDend2(migrated);
     expect(migrated.temporary.TRAN1).toBe(legacy);
+    expect(migrated.temporary.TRAN1.stories).toBe(legacy.stories);
     const invalid = { temporary: { TRAN1: { stories: [] } } };
     ensureDend2(invalid);
     expect(invalid.temporary.TRAN1).toEqual({

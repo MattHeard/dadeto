@@ -280,24 +280,12 @@ function isValidDend2Structure(obj) {
 }
 
 /**
- * Try to get a valid DEND2 structure from a candidate source.
- * @param {unknown} candidate - Candidate DEND2 structure.
- * @returns {unknown | null} Valid structure or null.
- */
-function getValidDend2OrNull(candidate) {
-  if (isValidDend2Structure(candidate)) {
-    return candidate;
-  }
-  return null;
-}
-
-/**
  * Extract TRAN1 from temporary storage.
  * @param {TempStorage | undefined} temporary Temporary storage.
  * @returns {unknown | null} Valid TRAN1 or null.
  */
 function extractValidTran1(temporary) {
-  return getValidDend2OrNull(temporary?.TRAN1);
+  return toRecordOrNull(temporary?.TRAN1, isValidDend2Structure);
 }
 
 /**
@@ -306,7 +294,7 @@ function extractValidTran1(temporary) {
  * @returns {unknown | null} Valid DEND2 or null.
  */
 function extractValidDend2(temporary) {
-  return getValidDend2OrNull(temporary?.DEND2);
+  return toRecordOrNull(temporary?.DEND2, isValidDend2Structure);
 }
 
 /**
