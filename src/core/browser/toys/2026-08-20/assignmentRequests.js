@@ -1,10 +1,128 @@
 import {
   assignmentPredicateBoundary,
+  createAssignmentContext,
+  ownerIsFree,
   resolveInterval,
   overlaps,
 } from './assignmentIntervals.js';
 import { isPlainPrototypeObject as isPlainAssignmentRecord } from '../browserToysCore.js';
 import { appendReferenceList } from '../2026-08-18/memoryObjectListAppend.js';
+
+/**
+ * Decide whether an asset and its custodian can be assigned to a segment.
+ * @param {string} input JSON payload containing points, segments, assignments, and proposedAssignment.
+ * @returns {string} JSON boolean result.
+ */
+export function assetCustodianSegmentAssignmentPredicate(input) {
+  try {
+    const request = parseRequest(input);
+    const context = createAssignmentContext(request);
+    const assetFree = ownerIsFree(
+      request.assetAssignments,
+      'assetId',
+      request.proposedAssignment.assetId,
+      context
+    );
+    const custodianFree = ownerIsFree(
+      request.personAssignments,
+      'personId',
+      request.proposedAssignment.custodianPersonId,
+      context
+    );
+    return JSON.stringify(assetFree && custodianFree);
+  } catch {
+    return 'false';
+  }
+}
+
+/**
+ * @param {string} input JSON request.
+ * @returns {{points: Array<{pointId: string, timestamp: string}>, segments: Array<{segmentId: string, startPointId: string, endPointId: string}>, assetAssignments: Array<{assetId: string, segmentId: string}>, personAssignments: Array<{personId: string, segmentId: string}>, proposedAssignment: {assetId: string, segmentId: string, custodianPersonId: string}}} Parsed request.
+ */
+function parseRequest(input) {
+  const request = JSON.parse(input);
+  if (!request || typeof request !== 'object' || Array.isArray(request))
+    throw new Error('Input must be a JSON object.');
+  if (
+    !Array.isArray(request.points) ||
+    !Array.isArray(request.segments) ||
+    !Array.isArray(request.assetAssignments) ||
+    !Array.isArray(request.personAssignments)
+  )
+    throw new Error(
+      'points, segments, assetAssignments, and personAssignments arrays are required.'
+    );
+  return preparePredicateRequest(
+    request,
+    normalizeProposed,
+    'A complete proposed assignment is required.',
+    normalizeCustodianCollections
+  );
+}
+
+/**
+ * Normalize the paired asset and person collections without changing their order.
+ * @param {Record<string, any>} request Custodian request.
+ * @returns {{assetAssignments: Array<{assetId: string, segmentId: string}>, personAssignments: Array<{personId: string, segmentId: string}>}} Accepted collections.
+ */
+function normalizeCustodianCollections(request) {
+  const assetAssignments = request.assetAssignments
+    .map(normalizeAsset)
+    .filter(Boolean);
+  const personAssignments = request.personAssignments
+    .map(normalizePerson)
+    .filter(Boolean);
+  return { assetAssignments, personAssignments };
+}
+
+/**
+ * Normalize an asset assignment.
+ * @param {unknown} value Candidate asset assignment.
+ * @returns {{assetId: string, segmentId: string}|null} Normalized assignment.
+ */
+export function normalizeAsset(value) {
+  return normalizeAssignmentFields(value, ['assetId', 'segmentId']);
+}
+
+/**
+ * Normalize a person assignment.
+ * @param {unknown} value Candidate person assignment.
+ * @returns {{personId: string, segmentId: string}|null} Normalized assignment.
+ */
+export function normalizePerson(value) {
+  return normalizeAssignmentFields(value, ['personId', 'segmentId']);
+}
+
+/**
+ * Normalize a proposed assignment.
+ * @param {unknown} value Candidate proposed assignment.
+ * @returns {{assetId: string, segmentId: string, custodianPersonId: string}|null} Normalized proposed assignment.
+ */
+export function normalizeProposed(value) {
+  return normalizeAssignmentFields(value, [
+    'assetId',
+    'segmentId',
+    'custodianPersonId',
+  ]);
+}
+
+/**
+ * Normalize required assignment identifiers using the existing falsy fallback.
+ * @template {string} K
+ * @param {unknown} value Candidate assignment record.
+ * @param {K[]} keys Required identifier keys.
+ * @returns {Record<K, string>|null} Complete identifiers or null.
+ */
+function normalizeAssignmentFields(value, keys) {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
+  const record = /** @type {Record<string, unknown>} */ (value);
+  const normalized = /** @type {Record<K, string>} */ (
+    Object.fromEntries(keys.map(key => [key, String(record[key] || '').trim()]))
+  );
+  return Object.values(normalized).every(Boolean) ? normalized : null;
+}
+
+export { parseRequest as parseCustodianRequest };
 
 /**
  * Compose reference parsing and persistence with an explicit memory policy.
@@ -84,18 +202,51 @@ export function referenceMemoryLocation(request) {
  * @returns {{points: Array<{pointId: string, timestamp: string}>, segments: Array<{segmentId: string, startPointId: string, endPointId: string}>, assignments: T[], proposedAssignment: T}} Predicate request.
  */
 export function buildAssignmentPredicateRequest(request, normalize) {
+  return preparePredicateRequest(
+    request,
+    normalize,
+    'A proposed assignment is required.',
+    source => normalizeSingleCollections(source, normalize)
+  );
+}
+
+/**
+ * Normalize one owner's collection using the supplied reference policy.
+ * @template T
+ * @param {{assignments: unknown[]}} request Assignment collection.
+ * @param {(value: unknown) => T | null} normalize Reference normalizer.
+ * @returns {{assignments: T[]}} Accepted references.
+ */
+function normalizeSingleCollections(request, normalize) {
+  const assignments = request.assignments.flatMap(value => {
+    const assignment = normalize(value);
+    return assignment ? [assignment] : [];
+  });
+  return { assignments };
+}
+
+/**
+ * Validate the proposal before composing graph references and collections.
+ * @template {{points: any, segments: any, proposedAssignment: unknown}} R
+ * @template C, A
+ * @param {R} request Validated caller request.
+ * @param {(value: unknown) => A | null} normalize Proposal normalizer.
+ * @param {string} missingMessage Caller-specific proposal error.
+ * @param {(request: R) => C} normalizeCollections Collection policy.
+ * @returns {{points: R['points'], segments: R['segments'], proposedAssignment: A} & C} Predicate request.
+ */
+function preparePredicateRequest(
+  request,
+  normalize,
+  missingMessage,
+  normalizeCollections
+) {
   const proposedAssignment = normalize(request.proposedAssignment);
-  if (!proposedAssignment)
-    throw new Error('A proposed assignment is required.');
-  return {
-    points: request.points,
-    segments: request.segments,
-    assignments: request.assignments.flatMap(value => {
-      const assignment = normalize(value);
-      return assignment ? [assignment] : [];
-    }),
-    proposedAssignment,
-  };
+  if (!proposedAssignment) throw new Error(missingMessage);
+  const points = request.points;
+  const segments = request.segments;
+  const collections = normalizeCollections(request);
+  return { points, segments, ...collections, proposedAssignment };
 }
 
 /**

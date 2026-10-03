@@ -5,6 +5,38 @@ import {
 } from '../../../src/core/browser/toys/browserToysCore.js';
 import { normalizeAssignment as normalizeAsset } from '../../../src/core/browser/toys/2026-08-20/assetSegmentAssignmentPredicate.js';
 import { normalizeAssignment as normalizePerson } from '../../../src/core/browser/toys/2026-08-20/personSegmentAssignmentPredicate.js';
+import { buildAssignmentPredicateRequest } from '../../../src/core/browser/toys/2026-08-20/assignmentRequests.js';
+
+test('proposal rejection precedes graph and collection reads', () => {
+  const reads = [];
+  const request = {
+    proposedAssignment: {},
+    get points() {
+      reads.push('points');
+      return [];
+    },
+    get segments() {
+      reads.push('segments');
+      return [];
+    },
+    get assignments() {
+      reads.push('assignments');
+      return [];
+    },
+  };
+  expect(() => buildAssignmentPredicateRequest(request, () => null)).toThrow(
+    'A proposed assignment is required.'
+  );
+  expect(reads).toEqual([]);
+  const accepted = { segmentId: 'S1' };
+  expect(buildAssignmentPredicateRequest(request, () => accepted)).toEqual({
+    points: [],
+    segments: [],
+    assignments: [],
+    proposedAssignment: accepted,
+  });
+  expect(reads).toEqual(['points', 'segments', 'assignments']);
+});
 
 test.each([null, { inherited: true }])(
   'retains distinct reference prototype policies for %p',
