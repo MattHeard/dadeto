@@ -8,6 +8,36 @@ import {
 } from '../../../../src/core/cloud/report-for-moderation/report-for-moderation-core.js';
 
 describe('createReportForModerationHandler', () => {
+  it('resolves both identities before rejecting the variant without touching storage', async () => {
+    const reads = [];
+    const addModerationReport = jest.fn();
+    const getServerTimestamp = jest.fn();
+    const hasModerationReport = jest.fn();
+    const handler = createReportForModerationHandler({
+      addModerationReport,
+      getServerTimestamp,
+      hasModerationReport,
+    });
+    const body = {
+      get variant() {
+        reads.push('variant');
+        return '';
+      },
+      get reporterIdentity() {
+        reads.push('reporter');
+        return 'reader';
+      },
+    };
+    await expect(handler({ method: 'POST', body })).resolves.toEqual({
+      status: 400,
+      body: 'Missing or invalid variant',
+    });
+    expect(reads).toEqual(['variant', 'reporter']);
+    expect(addModerationReport).not.toHaveBeenCalled();
+    expect(getServerTimestamp).not.toHaveBeenCalled();
+    expect(hasModerationReport).not.toHaveBeenCalled();
+  });
+
   it('creates a moderation report when the request is valid', async () => {
     const addModerationReport = jest.fn().mockResolvedValue(undefined);
     const getServerTimestamp = jest.fn().mockReturnValue('timestamp');

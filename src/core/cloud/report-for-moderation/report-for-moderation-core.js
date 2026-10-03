@@ -70,17 +70,11 @@ function processReportSubmission(
       const reporterIdentity = resolveReporterIdentity(body);
 
       if (!variant) {
-        return {
-          status: 400,
-          body: 'Missing or invalid variant',
-        };
+        return missingReportField('variant');
       }
 
       if (!reporterIdentity) {
-        return {
-          status: 400,
-          body: 'Missing or invalid reporter identity',
-        };
+        return missingReportField('reporter identity');
       }
 
       if (
@@ -104,6 +98,15 @@ function processReportSubmission(
       };
     },
   });
+}
+
+/**
+ * Construct the shared rejection envelope without changing which field wins.
+ * @param {'variant' | 'reporter identity'} field Missing report field.
+ * @returns {{status: number, body: string}} Invalid-report response.
+ */
+function missingReportField(field) {
+  return { status: 400, body: `Missing or invalid ${field}` };
 }
 
 /**
