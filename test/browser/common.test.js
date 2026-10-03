@@ -7,6 +7,26 @@ import {
 } from '../../src/core/browser/common.js';
 
 describe('browser/common', () => {
+  it('conditional builders retain falsy successes, laziness and thrown identity', () => {
+    for (const value of [0, false, '', undefined, null, { original: true }]) {
+      const builder = jest.fn(() => value);
+      expect(buildWhen(false, builder)).toBeNull();
+      expect(builder).not.toHaveBeenCalled();
+      expect(buildWhen(true, builder)).toBe(value);
+      expect(builder).toHaveBeenCalledTimes(1);
+    }
+    const failure = { original: true };
+    let caught;
+    try {
+      buildWhen(true, () => {
+        throw failure;
+      });
+    } catch (error) {
+      caught = error;
+    }
+    expect(caught).toBe(failure);
+    expect(buildWhen.name).toBe('buildWhen');
+  });
   it('recognizes ordinary objects and rejects nullish or array values', () => {
     expect(isObject({})).toBe(true);
     expect(isObject(null)).toBe(false);

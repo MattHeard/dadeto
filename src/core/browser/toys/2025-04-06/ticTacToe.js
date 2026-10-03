@@ -1,5 +1,5 @@
 import { parseJsonOrFallback } from '../browserToysCore.js';
-import { whenOrNull } from '../../../commonCore.js';
+import { buildWhen } from '../../common.js';
 
 /**
  * @typedef {'X' | 'O'} TicTacToePlayer
@@ -599,7 +599,7 @@ function shouldEvaluateTerminal(isWinPlayer, isWinOpponent) {
  * @returns {number | null} Minimax score when the state is terminal, otherwise null so higher recursion can continue.
  */
 function evaluateTerminalState(isWinPlayer, isWinOpponent, depth) {
-  return whenOrNull(shouldEvaluateTerminal(isWinPlayer, isWinOpponent), () =>
+  return buildWhen(shouldEvaluateTerminal(isWinPlayer, isWinOpponent), () =>
     getTerminalScore(isWinPlayer, depth)
   );
 }

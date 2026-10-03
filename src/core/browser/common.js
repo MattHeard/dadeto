@@ -1,4 +1,5 @@
 // Shared utility functions for browser code.
+import { whenOrNull } from '../commonCore.js';
 
 /**
  * Check that the value is an object, excluding `null` and arrays.
@@ -37,11 +38,7 @@ export function withFallback(condition, transform, fallback = '') {
  * @template T
  */
 export function buildWhen(condition, builder) {
-  if (!condition) {
-    return null;
-  }
-
-  return builder();
+  return whenOrNull(condition, builder);
 }
 
 /**
