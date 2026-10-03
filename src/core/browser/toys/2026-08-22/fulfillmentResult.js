@@ -58,6 +58,15 @@ export function fulfillmentProposalBoundary(input, calculate) {
 }
 
 /**
+ * Bind a parsed proposal calculation to the shared valid-result JSON boundary.
+ * @param {(request: Record<string, any>) => string} calculate Proposal strategy.
+ * @returns {(input: string) => string} Synchronous fulfillment toy.
+ */
+export function createFulfillmentToy(calculate) {
+  return input => fulfillmentBoundary(input, 'valid', calculate);
+}
+
+/**
  * Serialize the common fulfillment sequence while retaining caller-owned fields.
  * @param {Record<string, any>} spacePoint Warehouse spatial record.
  * @param {{points: Record<string, any>[], segments: Record<string, any>[], sequence: Record<string, any>[]}} records Authored sequence records.
