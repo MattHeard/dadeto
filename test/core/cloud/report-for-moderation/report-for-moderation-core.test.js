@@ -8,6 +8,62 @@ import {
 } from '../../../../src/core/cloud/report-for-moderation/report-for-moderation-core.js';
 
 describe('createReportForModerationHandler', () => {
+  it('reads current dependencies in order on each call, before method guarding', async () => {
+    const reads = [];
+    const first = jest.fn();
+    const second = jest.fn();
+    let persist = first;
+    const dependencies = {
+      get addModerationReport() {
+        reads.push('add');
+        return persist;
+      },
+      get hasModerationReport() {
+        reads.push('duplicate');
+        return undefined;
+      },
+      get getServerTimestamp() {
+        reads.push('timestamp');
+        return () => 'ts';
+      },
+    };
+    const handler = createReportForModerationHandler(dependencies);
+    expect(reads).toEqual(['add', 'timestamp']);
+    reads.length = 0;
+    await expect(handler()).resolves.toEqual({
+      status: 405,
+      body: 'POST only',
+    });
+    expect(reads).toEqual(['add', 'duplicate', 'timestamp']);
+    reads.length = 0;
+    persist = second;
+    await expect(
+      handler({ method: 'POST', body: { variant: 'v', reporterId: 'r' } })
+    ).resolves.toEqual({ status: 201, body: {} });
+    expect(reads).toEqual(['add', 'duplicate', 'timestamp']);
+    expect(first).not.toHaveBeenCalled();
+    expect(second).toHaveBeenCalledWith({
+      variant: 'v',
+      reporterIdentity: 'r',
+      createdAt: 'ts',
+    });
+  });
+
+  it('propagates dependency getter errors synchronously before method guarding', () => {
+    const failure = new Error('unavailable dependency');
+    let broken = false;
+    const dependencies = {
+      get addModerationReport() {
+        if (broken) throw failure;
+        return () => {};
+      },
+      getServerTimestamp: () => 'ts',
+    };
+    const handler = createReportForModerationHandler(dependencies);
+    broken = true;
+    expect(() => handler({ method: 'GET' })).toThrow(failure);
+  });
+
   it('validates dependencies before returning the handler', () => {
     expect(() =>
       createReportForModerationHandler({

@@ -46,31 +46,22 @@ export function createReportForModerationHandler(dependencies) {
   assertFunction(dependencies.addModerationReport, 'addModerationReport');
   assertFunction(dependencies.getServerTimestamp, 'getServerTimestamp');
 
-  return function reportForModerationHandler(request = {}) {
-    return processReportSubmission({
-      request,
-      addModerationReport: dependencies.addModerationReport,
-      hasModerationReport: dependencies.hasModerationReport,
-      getServerTimestamp: dependencies.getServerTimestamp,
-    });
-  };
+  return processReportSubmission.bind(null, dependencies);
 }
 
 /**
  * Process the moderation report request when the HTTP method is validated.
  * @param {object} root0 Dependencies required for processing.
- * @param {{ method?: string, body?: ReportRequestBody | null }} root0.request Incoming request details.
  * @param {(report: ModerationReportRecord) => Promise<void> | void} root0.addModerationReport Storage helper.
  * @param {((reporterIdentity: string, variant: string) => Promise<boolean> | boolean) | undefined} [root0.hasModerationReport] Storage helper for duplicate detection.
  * @param {() => unknown} root0.getServerTimestamp Timestamp generator.
+ * @param {{ method?: string, body?: ReportRequestBody | null }} [request] Incoming request details.
  * @returns {Promise<{ status: number, body: string | Record<string, unknown> }>} Promise resolved with the HTTP response.
  */
-function processReportSubmission({
-  request,
-  addModerationReport,
-  hasModerationReport,
-  getServerTimestamp,
-}) {
+function processReportSubmission(
+  { addModerationReport, hasModerationReport, getServerTimestamp },
+  request = {}
+) {
   return whenPostRequestAsync({
     request,
     onValid: async () => {
