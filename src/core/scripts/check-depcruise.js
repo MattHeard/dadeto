@@ -73,10 +73,8 @@ const CODE_BOUNDARIES = {
  * @returns {() => {exitCode: number, violations: number}} Gate handler.
  */
 export function createCheckDepcruiseHandle(options = {}) {
-  return executeDepcruiseGate.bind(
-    null,
-    normalizeCheckDepcruiseOptions(options)
-  );
+  const dependencies = normalizeCheckDepcruiseOptions(options);
+  return executeDepcruiseGate.bind(null, dependencies);
 }
 
 /**
@@ -89,8 +87,18 @@ export function findCoreMathRandomViolations(
   return findCoreViolationsWithScanner(
     deps,
     countMathRandomOccurrences,
-    (filePath, occurrences) => ({ filePath, occurrences })
+    createMathRandomViolation
   );
+}
+
+/**
+ * Project a counted random-source occurrence into the gate's violation format.
+ * @param {string} filePath Repository-relative source path.
+ * @param {number} occurrences Count reported by the source scanner.
+ * @returns {MathRandomViolation} A fresh violation record.
+ */
+function createMathRandomViolation(filePath, occurrences) {
+  return { filePath, occurrences };
 }
 
 /**
@@ -98,10 +106,11 @@ export function findCoreMathRandomViolations(
  * @returns {Array<{ filePath: string, globals: string[] }>} Files that directly use browser globals.
  */
 export function findCoreGlobalViolations(deps) {
-  return collectCoreBrowserGlobalViolations({
+  const browserScan = {
     ...deps,
     scopeAnalysisDeps: deps.scopeAnalysisDeps ?? DEFAULT_SCOPE_ANALYSIS_DEPS,
-  });
+  };
+  return collectCoreBrowserGlobalViolations(browserScan);
 }
 
 /**

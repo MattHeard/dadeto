@@ -44,10 +44,9 @@ export async function executeSearchHttpRequest(context, req, res) {
  * @returns {void}
  */
 function sendSearchHttpFailure(res, error) {
-  res.status(400).json({
-    valid: false,
-    reason: error instanceof Error ? error.message : String(error),
-  });
+  const response = res.status(400);
+  const reason = error instanceof Error ? error.message : String(error);
+  response.json({ valid: false, reason });
 }
 
 /**

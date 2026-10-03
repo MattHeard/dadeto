@@ -1074,23 +1074,36 @@ describe('object minute rental HTTP adapter', () => {
     await search(base);
     expect(listForRunner).toHaveBeenCalledWith({ runnerId: 'RUNNER-1' });
   });
+});
 
+describe('object minute rental HTTP failure and environment serialization', () => {
   test('reports non-Error HTTP failures as strings', async () => {
+    const events = [];
+    const failure = {
+      toString() {
+        events.push('stringify');
+        return 'storage-failure';
+      },
+    };
     const handler = createSearchHttpHandler({
       runnerCommitmentsRepository: {
         listForRunner: async () => {
-          throw 'storage-failure';
+          throw failure;
         },
       },
     });
-    const json = jest.fn();
-    const status = jest.fn(() => ({ json }));
+    const json = jest.fn(() => events.push('json'));
+    const status = jest.fn(() => {
+      events.push('status');
+      return { json };
+    });
     await handler({ body: base }, { json, status });
     expect(status).toHaveBeenCalledWith(400);
     expect(json).toHaveBeenCalledWith({
       valid: false,
       reason: 'storage-failure',
     });
+    expect(events).toEqual(['status', 'stringify', 'json']);
   });
 
   test('preserves non-format supplier values and accepts zero durations', async () => {

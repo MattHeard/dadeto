@@ -180,18 +180,25 @@ describe('findCoreMathRandomViolations', () => {
     );
     const readdirSync = jest.fn(() => [createDirentFile('double.js')]);
 
-    const violations = findCoreMathRandomViolations({
+    const dependencies = {
       readFileSync,
       readdirSync,
       rootDir: '/repo',
       sourceRoot: 'src/core',
       pathModule: path,
       scopeAnalysisDeps: createScopeAnalysisDeps(),
-    });
+    };
+    const violations = findCoreMathRandomViolations(dependencies);
 
     expect(violations).toEqual([
       { filePath: 'src/core/double.js', occurrences: 2 },
     ]);
+    violations[0].occurrences = 99;
+    const rescanned = findCoreMathRandomViolations(dependencies);
+    expect(rescanned).toEqual([
+      { filePath: 'src/core/double.js', occurrences: 2 },
+    ]);
+    expect(rescanned[0]).not.toBe(violations[0]);
   });
 
   test('scanQuotedString closes quoted strings and respects escapes', () => {
