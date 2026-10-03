@@ -283,16 +283,13 @@ function getPreservedEventLog(previousStatus) {
  * @returns {string | null} Bead id.
  */
 function getStatusCurrentBeadId(status) {
-  if (
+  return whenOrNull(
     status &&
-    typeof status === 'object' &&
-    typeof status.currentBeadId === 'string' &&
-    status.currentBeadId
-  ) {
-    return status.currentBeadId;
-  }
-
-  return null;
+      typeof status === 'object' &&
+      typeof status.currentBeadId === 'string' &&
+      status.currentBeadId,
+    () => status.currentBeadId
+  );
 }
 
 /**

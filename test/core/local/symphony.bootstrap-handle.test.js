@@ -308,6 +308,10 @@ describe('core Symphony bootstrap handle', () => {
         .mockReturnValueOnce(second);
       const outcome = { outcome: 'blocked', detail: { source: 'previous' } };
       const readOutcome = jest.fn(() => outcome);
+      const readBeadId = jest.fn(() => 'dadeto-running');
+      Object.defineProperty(previousStatus, 'currentBeadId', {
+        get: readBeadId,
+      });
       Object.defineProperty(previousStatus, 'latestEvidence', {
         get: evidence,
       });
@@ -334,6 +338,7 @@ describe('core Symphony bootstrap handle', () => {
       );
       expect(evidence).toHaveBeenCalledTimes(2);
       expect(readOutcome).toHaveBeenCalledTimes(3);
+      expect(readBeadId).toHaveBeenCalledTimes(4);
       expect(snapshot.status.lastOutcome).not.toBe(outcome);
       expect(snapshot.status.lastOutcome.detail).toBe(outcome.detail);
     }
