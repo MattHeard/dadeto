@@ -2,6 +2,7 @@
 // traversal, and dependency-classification details are observable through the
 // complete graph-analysis contract rather than independently per helper.
 import path from 'node:path';
+import { isNonNullObject, whenOrNull } from '../commonCore.js';
 
 /** @typedef {{ type?: string, id?: AstNode, key?: AstNode, name?: string, loc?: { start: { line: number } }, params?: AstNode[], body?: AstNode, callee?: AstNode, left?: AstNode, source?: { value: string }, specifiers?: AstNode[], imported?: AstNode, local?: AstNode, declaration?: AstNode, node?: AstNode, [key: string]: unknown }} AstNode */
 /** @typedef {(node: AstNode, parent: AstNode | null) => void} AstVisitor */
@@ -30,11 +31,12 @@ function isFunction(node) {
  * @returns {void}
  */
 function walk(node, visit, parent = null) {
-  if (!node || typeof node !== 'object') return;
-  visit(node, parent);
-  for (const [key, value] of Object.entries(node)) {
+  if (!isNonNullObject(node)) return;
+  const astNode = /** @type {AstNode} */ (node);
+  visit(astNode, parent);
+  for (const [key, value] of Object.entries(astNode)) {
     if (isMetadataKey(key)) continue;
-    walkValue(value, visit, node);
+    walkValue(value, visit, astNode);
   }
 }
 
@@ -126,8 +128,9 @@ function isObjectPropertyParent(parent) {
  * @returns {string|null} Binding name or null.
  */
 function bindingName(node) {
-  if (node?.type === 'Identifier') return node.name ?? null;
-  return null;
+  return /** @type {string | null} */ (
+    whenOrNull(node?.type === 'Identifier', () => node.name ?? null)
+  );
 }
 
 /**

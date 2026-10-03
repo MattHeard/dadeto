@@ -2,6 +2,39 @@ import { parse } from '@babel/parser';
 import { buildFunctionDependencyGraph } from '../../../src/core/scripts/function-dependency-graph-core.js';
 
 describe('buildFunctionDependencyGraph', () => {
+  test('retains identifier and default parameter bindings without guessing destructured names', () => {
+    const graph = buildFunctionDependencyGraph({
+      files: [
+        {
+          path: 'bindings.js',
+          source:
+            'function caller(direct, fallback = () => {}, { ignored }) { direct(); fallback(); ignored(); }',
+        },
+      ],
+      parse,
+    });
+    expect(graph.ignoredCalls).toEqual(
+      expect.arrayContaining([
+        {
+          caller: 'bindings.js#caller',
+          callee: 'direct',
+          reason: 'injected-parameter',
+        },
+        {
+          caller: 'bindings.js#caller',
+          callee: 'fallback',
+          reason: 'injected-parameter',
+        },
+      ])
+    );
+    expect(
+      graph.ignoredCalls.some(
+        call =>
+          call.callee === 'ignored' && call.reason === 'injected-parameter'
+      )
+    ).toBe(false);
+  });
+
   test('resolves a local call when the file has no import bindings', () => {
     const graph = buildFunctionDependencyGraph({
       files: [
