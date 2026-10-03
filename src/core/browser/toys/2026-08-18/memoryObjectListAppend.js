@@ -3,7 +3,10 @@
 
 import { deepClone } from '../../browser-core.js';
 import { requireEnvHelper } from '../browserToysCore.js';
-import { SUPPORTED_MEMORY_LOCATIONS } from '../2026-05-28/memoryVector.js';
+import {
+  SUPPORTED_MEMORY_LOCATIONS,
+  writeTemporaryMemoryRoot,
+} from '../2026-05-28/memoryVector.js';
 import {
   createToyMessageBoundary,
   runToyFailureBoundary,
@@ -140,8 +143,7 @@ function writeRoot(memoryLocation, root, env) {
     return;
   }
   const envelope = getEnvelope(env);
-  envelope.temporary = root;
-  requireEnvHelper(env, 'setLocalTemporaryData')(envelope);
+  writeTemporaryMemoryRoot(env, envelope, root);
 }
 
 /**

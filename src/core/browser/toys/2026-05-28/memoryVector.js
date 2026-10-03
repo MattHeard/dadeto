@@ -19,6 +19,18 @@ export const SUPPORTED_MEMORY_LOCATIONS = [
 ];
 
 /**
+ * Replace the temporary root and persist the existing envelope.
+ * @param {ToyEnv} env Storage helpers.
+ * @param {Record<string, unknown>} envelope Writable caller-owned envelope.
+ * @param {unknown} root Replacement temporary root.
+ * @returns {void}
+ */
+export function writeTemporaryMemoryRoot(env, envelope, root) {
+  envelope.temporary = root;
+  requireEnvHelper(env, 'setLocalTemporaryData')(envelope);
+}
+
+/**
  * Read a memory location and project the selected value as a vector.
  * Scalars become singleton vectors and arrays preserve their shape.
  * @param {string} input JSON config or a plain dot-path string.

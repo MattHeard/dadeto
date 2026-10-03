@@ -8,9 +8,35 @@ import {
   memoryVector,
   memoryVectorTestOnly,
   runMemoryRequest,
+  writeTemporaryMemoryRoot,
 } from '../../../src/core/browser/toys/2026-05-28/memoryVector.js';
 
 describe('memoryVector', () => {
+  test('temporary persistence replaces the root before resolving the setter and preserves envelope identity', () => {
+    const sibling = { retained: true };
+    const envelope = { temporary: { old: true }, permanent: sibling };
+    const root = { next: [1, 2] };
+    const events = [];
+    const setter = value => {
+      events.push('set');
+      expect(value).toBe(envelope);
+      expect(value.temporary).toBe(root);
+      expect(value.permanent).toBe(sibling);
+    };
+    const env = {
+      get: key => {
+        events.push(key);
+        expect(envelope.temporary).toBe(root);
+        return setter;
+      },
+    };
+    expect(writeTemporaryMemoryRoot(env, envelope, root)).toBeUndefined();
+    expect(events).toEqual(['setLocalTemporaryData', 'set']);
+    expect(() => writeTemporaryMemoryRoot(new Map(), envelope, null)).toThrow(
+      'Missing toy helper "setLocalTemporaryData"'
+    );
+    expect(envelope.temporary).toBeNull();
+  });
   test('memory boundaries retain falsy success and pass original context with formatted failures', () => {
     const request = { memoryLocation: 'temporary', path: 'bucket' };
     const rejected = [];

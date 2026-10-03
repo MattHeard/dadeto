@@ -3,6 +3,7 @@ import { isObjectRecord } from '../../validation.js';
 import { getOptionalEnvHelper, requireEnvHelper } from '../browserToysCore.js';
 import {
   runMemoryRequest,
+  writeTemporaryMemoryRoot,
   getPathCandidate,
   normalizeMemoryLocation,
   normalizeMemoryPath,
@@ -98,11 +99,11 @@ function runWriteAction(request, action) {
  */
 function writeTemporaryMemory(request, env) {
   const envelope = readEnvelopeForWriting(env);
-  envelope.temporary = writePathValue(
-    getContainerRoot(envelope.temporary),
-    request
+  writeTemporaryMemoryRoot(
+    env,
+    envelope,
+    writePathValue(getContainerRoot(envelope.temporary), request)
   );
-  requireEnvHelper(env, 'setLocalTemporaryData')(envelope);
 }
 
 /**
