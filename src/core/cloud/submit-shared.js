@@ -201,11 +201,12 @@ const responderHandlers = {
 
 /**
  * Map the result payload type to the correct responder key.
- * @param {boolean} isUndefined Whether the responder returned `undefined`.
- * @returns {'undefined' | 'default'} Key that selects the correct handler.
+ * @param {unknown} body Responder payload.
+ * @returns {'object' | 'undefined' | 'default'} Key that selects the correct handler.
  */
-function responderKeyByType(isUndefined) {
-  if (isUndefined) {
+function responderKeyByType(body) {
+  if (isObject(body)) return 'object';
+  if (body === undefined) {
     return 'undefined';
   }
   return 'default';
@@ -219,37 +220,12 @@ function responderKeyByType(isUndefined) {
  * @returns {void} Response is written directly.
  */
 export function sendResponderResult(res, status, body) {
-  if (isObject(body)) {
-    return handleObjectResponderResult(res, status, body);
-  }
-
-  return sendNonObjectResponderResult(res, status, body);
-}
-
-/**
- * Send an object responder result or fall back to the default string path.
- * @param {NativeHttpResponse} res - Response instance used to send data.
- * @param {number} status - HTTP status code emitted to the client.
- * @param {unknown} body - Original response body.
- * @returns {void} Response is written directly.
- */
-function handleObjectResponderResult(res, status, body) {
-  const objectBody = /** @type {Record<string, unknown>} */ (body);
-  // `sendResponderResult` only reaches this helper after `isObject(body)` passes.
-  // Keep the cast local so the object response path stays explicit.
-  responderHandlers.object(res, status, objectBody);
-}
-
-/**
- * Send a non-object responder result using the resolved primitive handler.
- * @param {NativeHttpResponse} res - Response instance used to send data.
- * @param {number} status - HTTP status code emitted to the client.
- * @param {unknown} body - Primitive or undefined response body.
- * @returns {void} Response is written directly.
- */
-function sendNonObjectResponderResult(res, status, body) {
-  const handlerKey = responderKeyByType(body === undefined);
-  responderHandlers[handlerKey](res, status, body);
+  const handlerKey = responderKeyByType(body);
+  responderHandlers[handlerKey](
+    res,
+    status,
+    /** @type {Record<string, unknown>} */ (body)
+  );
 }
 
 /**

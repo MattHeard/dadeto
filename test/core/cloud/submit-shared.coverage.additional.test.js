@@ -12,6 +12,29 @@ const responseForJson = () => {
 };
 
 describe('submit-shared coverage paths', () => {
+  test.each([false, 0, '', null])(
+    'keeps primitive %p on the send path with bound receivers',
+    body => {
+      const calls = [];
+      const channel = {
+        send(value) {
+          expect(this).toBe(channel);
+          calls.push(value);
+          return 'ignored transport return';
+        },
+      };
+      const response = {
+        status(value) {
+          expect(this).toBe(response);
+          expect(value).toBe(202);
+          return channel;
+        },
+      };
+      expect(sendResponderResult(response, 202, body)).toBeUndefined();
+      expect(calls).toEqual([body]);
+    }
+  );
+
   test('sends object results as JSON', () => {
     const { response, status, json } = responseForJson();
     const body = { accepted: true };
