@@ -1,6 +1,7 @@
 import { createDb } from './create-db.js';
 import { assertFunction, isValidString } from '../../commonCore.js';
 import { validatePostMethod } from '../http-method-guard.js';
+import { sendResponseBody } from '../response-utils.js';
 
 const METHOD_NOT_ALLOWED_RESPONSE = { status: 405, body: 'Method Not Allowed' };
 const MISSING_UUID_RESPONSE = { status: 400, body: 'Missing UUID' };
@@ -250,14 +251,9 @@ function sendApiKeyCreditResponse({ status, body }, res) {
     res.set('Allow', 'POST');
   }
 
-  // Stryker disable all -- HTTP response serialization uses the fixed object/array split.
-  if (body && typeof body === 'object' && !Array.isArray(body)) {
-    res.status(status).json(body);
-    return;
-  }
-  // Stryker restore all
-
-  res.status(status).send(body);
+  const method =
+    body && typeof body === 'object' && !Array.isArray(body) ? 'json' : 'send';
+  sendResponseBody(res, status, body, method);
 }
 
 /**

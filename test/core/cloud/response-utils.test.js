@@ -2,9 +2,45 @@ import { describe, expect, test, jest } from '@jest/globals';
 import {
   runWithFailure,
   runWithFailureAndThen,
+  sendResponseBody,
 } from '../../../src/core/cloud/response-utils.js';
 
 describe('response-utils', () => {
+  test('sends the identical body with status-first method binding and a void result', () => {
+    const body = ['unchanged', { value: 1 }];
+    const calls = [];
+    const target = {
+      send(value) {
+        expect(this).toBe(target);
+        calls.push(['send', value]);
+        return 'discarded response return';
+      },
+      json(value) {
+        expect(this).toBe(target);
+        calls.push(['json', value]);
+        return 'discarded JSON return';
+      },
+    };
+    const response = {
+      status(code) {
+        expect(this).toBe(response);
+        calls.push(['status', code]);
+        return target;
+      },
+    };
+    expect(sendResponseBody(response, 418, body)).toBeUndefined();
+    expect(calls).toEqual([
+      ['status', 418],
+      ['send', body],
+    ]);
+    expect(calls[1][1]).toBe(body);
+    expect(sendResponseBody(response, 200, body, 'json')).toBeUndefined();
+    expect(calls.slice(2)).toEqual([
+      ['status', 200],
+      ['json', body],
+    ]);
+    expect(calls[3][1]).toBe(body);
+  });
   test('returns the resolved value when the action succeeds', async () => {
     const action = jest.fn().mockResolvedValue('ok');
     const onFailure = jest.fn();

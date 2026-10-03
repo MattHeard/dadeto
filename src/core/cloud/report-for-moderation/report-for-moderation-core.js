@@ -4,6 +4,7 @@ import {
   createCorsOptions as buildCorsOptions,
 } from '../cloud-core.js';
 import { whenPostRequestAsync } from '../http-method-guard.js';
+import { sendResponseBody as sendResponse } from '../response-utils.js';
 
 /**
  * @typedef {object} ReportRequestBody
@@ -229,17 +230,6 @@ function isCorsOriginAllowed(origin, allowedOrigins) {
 export function createCorsOptions({ allowedOrigins, methods = ['POST'] }) {
   const origin = createCorsOriginValidator(allowedOrigins);
   return buildCorsOptions(origin, methods);
-}
-
-/**
- * Emit a simple string response with the provided status code.
- * @param {{ status: (code: number) => { send: (body: string) => void } }} res - Express-like response object.
- * @param {number} status - HTTP status code to send.
- * @param {string} body - String body to send in the response.
- * @returns {void}
- */
-function sendResponse(res, status, body) {
-  res.status(status).send(body);
 }
 
 /**
