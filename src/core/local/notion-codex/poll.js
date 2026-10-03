@@ -4,7 +4,7 @@ import {
   getNextIdleBackoffExponent,
   getNextPollAfterIso,
 } from './backoff.js';
-import { whenOrNull } from '../../commonCore.js';
+import { arrayOrEmpty, whenOrNull } from '../../commonCore.js';
 
 // Stryker disable all -- this module is the fixed Notion Codex polling,
 // backoff, launch, and outcome orchestration boundary covered by the poll suite.
@@ -401,7 +401,9 @@ export function getActiveRunId(activeRun) {
  * @returns {NotionCodexPollState} Updated state.
  */
 function appendEvent(state, event) {
-  const previousEvents = getPreviousEvents(state.eventLog);
+  const previousEvents = /** @type {Array<Record<string, unknown>>} */ (
+    arrayOrEmpty(state.eventLog)
+  );
   return {
     ...state,
     eventLog: [...previousEvents, event].slice(-20),
@@ -586,16 +588,4 @@ function createInactiveRunState(
   };
 }
 
-/**
- * Read the previous event log entries.
- * @param {unknown} eventLog Event log value.
- * @returns {Array<Record<string, unknown>>} Event entries.
- */
-function getPreviousEvents(eventLog) {
-  if (Array.isArray(eventLog)) {
-    return /** @type {Array<Record<string, unknown>>} */ (eventLog);
-  }
-
-  return [];
-}
 // Stryker restore all

@@ -297,40 +297,59 @@ describe('local notion codex active run handling', () => {
     ]);
   });
 
-  test('records a launched run with a null pid when the launcher omits one', async () => {
-    const writes = [];
-    const result = await runNotionCodexPoll({
-      config,
-      repoRoot: '/tmp/repo',
-      now: new Date('2026-04-30T07:47:30.000Z'),
-      stateStore: {
-        async readState() {
-          return {
-            activeRun: null,
-            eventLog: 'not-an-array',
-          };
+  test.each([
+    undefined,
+    null,
+    'not-an-array',
+    { length: 1 },
+    [],
+    [{ type: 'earlier', details: { source: 'history' } }],
+  ])(
+    'records a launched run with a null pid and event history %p',
+    async previousEvents => {
+      const writes = [];
+      const earlier = Array.isArray(previousEvents) ? [...previousEvents] : [];
+      const result = await runNotionCodexPoll({
+        config,
+        repoRoot: '/tmp/repo',
+        now: new Date('2026-04-30T07:47:30.000Z'),
+        stateStore: {
+          async readState() {
+            return {
+              activeRun: null,
+              eventLog: previousEvents,
+            };
+          },
+          async writeState(state) {
+            writes.push(state);
+          },
         },
-        async writeState(state) {
-          writes.push(state);
+        launcher: {
+          async launch() {
+            return {};
+          },
         },
-      },
-      launcher: {
-        async launch() {
-          return {};
-        },
-      },
-    });
+      });
 
-    expect(result.launched).toBe(true);
-    expect(writes[0].eventLog).toEqual([
-      {
-        at: '2026-04-30T07:47:30.000Z',
-        type: 'launched',
-        runId: '2026-04-30T07:47:30.000Z--notion-codex',
-        pid: null,
-      },
-    ]);
-  });
+      expect(result.launched).toBe(true);
+      expect(writes[0].eventLog).toEqual([
+        ...earlier,
+        {
+          at: '2026-04-30T07:47:30.000Z',
+          type: 'launched',
+          runId: '2026-04-30T07:47:30.000Z--notion-codex',
+          pid: null,
+        },
+      ]);
+      earlier.forEach((event, index) => {
+        expect(writes[0].eventLog[index]).toBe(event);
+      });
+      if (Array.isArray(previousEvents)) {
+        expect(previousEvents).toEqual(earlier);
+        expect(writes[0].eventLog).not.toBe(previousEvents);
+      }
+    }
+  );
 });
 
 describe('local notion codex idle backoff', () => {
