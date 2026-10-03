@@ -131,6 +131,22 @@ describe('jsonParseErrorExplainer', () => {
     });
   });
 
+  test('prefers character positions over reported line and column coordinates', () => {
+    expect(
+      extractLocation(
+        new SyntaxError('position 4; line 99 column 88'),
+        'a\nbcd'
+      )
+    ).toEqual({ index: 4, line: 2, column: 3 });
+    expect(
+      extractLocation(new SyntaxError('location unavailable'), 'a\nbcd')
+    ).toEqual({
+      index: null,
+      line: null,
+      column: null,
+    });
+  });
+
   test('uses the default message when JSON.parse throws a non-error value', () => {
     const originalParse = JSON.parse;
     JSON.parse = () => {

@@ -52,20 +52,13 @@ export function extractLocation(error, input) {
   }
 
   const lineColumnMatch = message.match(/line\s+(\d+)\s+column\s+(\d+)/i);
-  if (lineColumnMatch) {
-    const line = Number(lineColumnMatch[1]);
-    const column = Number(lineColumnMatch[2]);
-    return {
-      index: null,
-      line,
-      column,
-    };
-  }
-
+  const [line, column] = lineColumnMatch
+    ? lineColumnMatch.slice(1).map(Number)
+    : [null, null];
   return {
     index: null,
-    line: null,
-    column: null,
+    line,
+    column,
   };
 }
 
