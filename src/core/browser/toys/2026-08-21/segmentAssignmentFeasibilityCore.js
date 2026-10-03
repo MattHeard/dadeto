@@ -308,3 +308,109 @@ export function legacyFeasibilityBoundary(input, calculate) {
     return JSON.stringify({ feasible: false, reason: error.message });
   }
 }
+
+/**
+ * @param {string} input JSON with points, candidateSegment, and shifts.
+ * @returns {string} Structured feasibility result.
+ */
+export function runnerShiftSegmentFeasibility(input) {
+  return legacyFeasibilityBoundary(input, calculateShiftCoverage);
+}
+
+/**
+ * Select the first valid shift containing the candidate interval.
+ * @param {Record<string, any>} x Parsed shift request.
+ * @returns {string} Coverage result with the original shift identity.
+ */
+function calculateShiftCoverage(x) {
+  const points = indexPointRecords(x.points || []);
+  const candidate = resolveCandidateSegment(x.candidateSegment, points);
+  for (const [index, shift] of /** @type {Array<Record<string, unknown>>} */ (
+    x.shifts || []
+  ).entries()) {
+    const clockIn = pointTime(
+        /** @type {Record<string, unknown>} */ (shift.clockInPoint)
+      ),
+      clockOut = pointTime(
+        /** @type {Record<string, unknown>} */ (shift.clockOutPoint)
+      );
+    if (
+      clockOut >= clockIn &&
+      containedBy(candidate, { startTime: clockIn, endTime: clockOut })
+    )
+      return JSON.stringify({
+        feasible: true,
+        shiftIndex: index,
+        shiftId: shift.shiftId,
+      });
+  }
+  return JSON.stringify({ feasible: false, reason: 'outside-shift' });
+}
+
+/**
+ * @param {Record<string, unknown>} point Shift point.
+ * @returns {number} Parsed point timestamp.
+ */
+function pointTime(point) {
+  const time = Date.parse(String(point?.timestamp));
+  if (!Number.isFinite(time)) throw new Error('Invalid shift point timestamp.');
+  return time;
+}
+
+/**
+ * @param {string} input JSON with points, existingSegments, candidateSegment, entryPoint, and optional exitPoint.
+ * @returns {string} Structured feasibility result.
+ */
+export function segmentAssignmentFeasibility(input) {
+  return legacyFeasibilityBoundary(input, calculateWorldLine);
+}
+
+/**
+ * Evaluate the world line with legacy optional-collection defaults.
+ * @param {Record<string, any>} x Parsed request.
+ * @returns {string} Serialized world-line outcome.
+ */
+function calculateWorldLine(x) {
+  return JSON.stringify(
+    evaluateWorldLine(
+      x.points || [],
+      x.existingSegments || [],
+      x.candidateSegment,
+      x.entryPoint,
+      x.exitPoint,
+      x.spacePoints || []
+    )
+  );
+}
+
+/**
+ * @param {string} input JSON with points, candidateSegment, maximumSpeed, and speedUnit.
+ * @returns {string} Structured feasibility result.
+ */
+export function segmentMaximumSpeedFeasibility(input) {
+  return legacyFeasibilityBoundary(input, calculateMaximumSpeed);
+}
+
+/**
+ * Resolve the candidate motion and compare it to the caller's speed limit.
+ * @param {Record<string, any>} x Parsed speed request.
+ * @returns {string} Detailed speed and feasibility response.
+ */
+function calculateMaximumSpeed(x) {
+  const points = indexPointRecords(
+    resolvePointRecords(x.points || [], x.spacePoints || [])
+  );
+  const candidate = resolveCandidateSegment(x.candidateSegment, points);
+  const { distanceMeters, durationSeconds, requiredSpeed } =
+    measureSegmentMotion(candidate);
+  const maximumSpeed = Number(x.maximumSpeed);
+  if (!Number.isFinite(maximumSpeed) || maximumSpeed < 0)
+    throw new Error('maximumSpeed must be a non-negative number.');
+  return JSON.stringify({
+    feasible: requiredSpeed <= maximumSpeed,
+    distanceMeters,
+    durationSeconds,
+    requiredSpeedKilometersPerHour: requiredSpeed,
+    maximumSpeedKilometersPerHour: maximumSpeed,
+  });
+}
