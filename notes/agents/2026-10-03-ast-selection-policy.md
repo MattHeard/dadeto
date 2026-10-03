@@ -16,3 +16,10 @@ Evidence: `.tmp/ast-binding-tests.log`, seven tests, exact 100% analyzer coverag
 and other checks pass after guarded narrowing. `.tmp/ast-binding-build.log` passes.
 Frozen full acceptance: `.tmp/clone-goal-56-full-check.log`. Detection settings
 and ignores unchanged; aaou remains open until zero and terminal full green.
+
+Terminal full `npm run check` exited 1: test suite passed and the outer summary
+has ten checks with duplication its sole failure (56 clones). Exact aggregate
+coverage in `reports/coverage/coverage-summary.json`: lines 20349/20349,
+statements 21198/21198, functions 7055/7055, branches 10222/10222. This continuation
+reduced 62 to 56 in six pushed refactors. Start the next loop from the refreshed
+JSON report; the overall goal remains active and dadeto-aaou must not be closed.
