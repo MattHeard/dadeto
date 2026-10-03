@@ -6,6 +6,7 @@ import {
 } from './assignmentIntervals.js';
 export { overlaps as overlap } from './assignmentIntervals.js';
 import { runToyArrayCalculation } from '../formatToyError.js';
+import { uniqueByKey } from '../browserToysCore.js';
 
 /**
  * Filter available assets for a possession interval.
@@ -42,7 +43,7 @@ function collectCandidateIds(input) {
         )
     )
     .map(asset => String(asset.assetId));
-  return [...new Set(ids)].sort((a, b) => a.localeCompare(b));
+  return uniqueByKey(ids, id => id).sort((a, b) => a.localeCompare(b));
 }
 
 /**

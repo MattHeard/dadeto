@@ -6,6 +6,7 @@ import {
   readPersistedState,
 } from '../toyPersistence.js';
 import { normalizePositiveInteger } from '../../common.js';
+import { uniqueByKey } from '../browserToysCore.js';
 
 // Conway Life state is shaped separately from the other toy payloads.
 /**
@@ -257,17 +258,7 @@ function wrapCoordinate(value, size) {
  * @returns {LifeCell[]} Deduplicated cell list.
  */
 function dedupeCells(cells) {
-  const seen = new Set();
-  const next = [];
-  for (const cell of cells) {
-    const key = `${cell.x}:${cell.y}`;
-    if (seen.has(key)) {
-      continue;
-    }
-    seen.add(key);
-    next.push(cell);
-  }
-  return next;
+  return uniqueByKey(cells, cell => `${cell.x}:${cell.y}`);
 }
 
 /**

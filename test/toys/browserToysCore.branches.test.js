@@ -8,6 +8,7 @@ import {
   getOptionalEnvHelper,
   parseToyRecord,
   createTemporaryToyEnvelope,
+  uniqueByKey,
   parseJsonOrFallback,
   isPlainObject,
   toRecordOrNull,
@@ -23,6 +24,22 @@ import {
   persistDendritePage,
   persistDendriteStory,
 } from '../../src/core/browser/toys/browserToysCore.js';
+
+test('keyed uniqueness retains first identity and order while projecting every entry', () => {
+  const values = [{ id: 'b' }, { id: 'a' }, { id: 'b' }];
+  const keyFor = jest.fn(value => value.id);
+  const result = uniqueByKey(values, keyFor);
+  expect(result).toEqual([values[0], values[1]]);
+  expect(result[0]).toBe(values[0]);
+  expect(result[1]).toBe(values[1]);
+  expect(keyFor.mock.calls).toEqual(values.map(value => [value]));
+  expect(uniqueByKey([], value => value)).toEqual([]);
+  expect(uniqueByKey([NaN, NaN, 0, -0], value => value)).toEqual([NaN, 0]);
+  const sparse = new Array(2);
+  const project = jest.fn(value => value);
+  expect(uniqueByKey(sparse, project)).toEqual([undefined]);
+  expect(project).toHaveBeenCalledTimes(2);
+});
 
 test('temporary toy envelopes retain the exact state under an own storage key', () => {
   const state = { inventory: ['tea'], progress: [] };

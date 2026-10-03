@@ -57,6 +57,22 @@ export function createTemporaryToyEnvelope(key, state) {
 }
 
 /**
+ * Retain the first value for each key in encounter order.
+ * @template T, K
+ * @param {Iterable<T>} values Values to inspect.
+ * @param {(value: T) => K} keyFor Key projection.
+ * @returns {T[]} Original first values in encounter order.
+ */
+export function uniqueByKey(values, keyFor) {
+  const firstByKey = new Map();
+  for (const value of values) {
+    const key = keyFor(value);
+    if (!firstByKey.has(key)) firstByKey.set(key, value);
+  }
+  return Array.from(firstByKey.values());
+}
+
+/**
  * Parse and normalize a JSON record, falling back for unusable requests.
  * @template T
  * @template {string} K
