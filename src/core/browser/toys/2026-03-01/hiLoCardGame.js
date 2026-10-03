@@ -335,11 +335,21 @@ function applyGuess(gameState, guessKey, getRandomNumber) {
 function buildGuessedGameState(gameState, nextCard, correct) {
   return {
     currentCard: nextCard,
-    score: {
-      correct: gameState.score.correct + Number(correct),
-      incorrect: gameState.score.incorrect + Number(!correct),
-      total: gameState.score.total + 1,
-    },
+    score: advanceGuessedScore(gameState, correct),
+  };
+}
+
+/**
+ * Advance score counters without changing the stored game state.
+ * @param {HiLoGameState} gameState Current game state.
+ * @param {boolean} correct Whether the guess was correct.
+ * @returns {HiLoScore} Updated score counters.
+ */
+function advanceGuessedScore(gameState, correct) {
+  return {
+    correct: gameState.score.correct + Number(correct),
+    incorrect: gameState.score.incorrect + Number(!correct),
+    total: gameState.score.total + 1,
   };
 }
 

@@ -231,4 +231,23 @@ describe('changeTogetherExplorer', () => {
       new Set(['a.js', 'b.js'])
     );
   });
+
+  test('preserves pair traversal order and counts repeated supporting ids once', () => {
+    const changeSets = [
+      { id: 'same', files: ['c.js', 'a.js', 'b.js'] },
+      { id: 'same', files: ['c.js', 'a.js'] },
+    ];
+    const stats = changeTogetherExplorerTestOnly.buildCoChangeStats(changeSets);
+    expect([...stats.pairStats.keys()]).toEqual([
+      'a.js\u0000c.js',
+      'b.js\u0000c.js',
+      'a.js\u0000b.js',
+    ]);
+    const firstPair = stats.pairStats.get('a.js\u0000c.js');
+    expect(firstPair.coChangeCount).toBe(2);
+    expect(firstPair.supportingChangeSetIds).toEqual(new Set(['same']));
+    expect([...stats.fileStats.get('c.js').partners]).toEqual(['a.js', 'b.js']);
+    expect(stats.fileStats.get('c.js').touchCount).toBe(2);
+    expect(changeSets[0].files).toEqual(['c.js', 'a.js', 'b.js']);
+  });
 });

@@ -5,6 +5,24 @@ import {
 } from '../../../src/browser/presenters/realtimeVoicePrototype.js';
 import { createRealtimeVoicePrototypeElement as createCoreElement } from '../../../src/core/browser/presenters/realtimeVoicePrototype.js';
 
+test('relay error selection preserves accepted property read order', () => {
+  const reads = [];
+  const parse = jest.spyOn(JSON, 'parse').mockReturnValue({
+    get error() {
+      reads.push('error');
+      return reads.length === 1 ? 'accepted string' : '  current detail  ';
+    },
+  });
+  try {
+    expect(
+      realtimeVoicePrototypePresenterTestOnly.getJsonErrorDetail('{}')
+    ).toBe('current detail');
+    expect(reads).toEqual(['error', 'error']);
+  } finally {
+    parse.mockRestore();
+  }
+});
+
 /**
  * Exercise endpoint and DOM helper branches for a control set.
  * @param {Record<string, Function>} helpers Presenter test helpers.

@@ -1,4 +1,4 @@
-import { stringOr } from '../../commonCore.js';
+import { stringOr, whenOrDefault } from '../../commonCore.js';
 const STATUS = {
   DISCONNECTED: 'disconnected',
   CONNECTING: 'connecting',
@@ -399,16 +399,11 @@ function getJsonErrorDetail(responseText) {
   }
   // Stryker restore all
 
-  if (parsed === null) {
-    return '';
-  }
-
-  if (typeof parsed.error !== 'string') {
-    return '';
-  }
-
-  const trimmedError = parsed.error.trim();
-  return trimmedError;
+  return whenOrDefault(
+    parsed !== null && typeof parsed.error === 'string',
+    () => parsed.error.trim(),
+    ''
+  );
 }
 
 /**

@@ -38,14 +38,25 @@ export function executeCopyDendriteWorkflow({
     if (!fs.existsSync(source)) return;
     fs.mkdirSync(destination, { recursive: true });
     for (const entry of fs.readdirSync(source, { withFileTypes: true })) {
-      const srcPath = path.join(source, entry.name);
-      const destPath = path.join(destination, entry.name);
-      if (entry.isDirectory()) {
-        copyTree(srcPath, destPath);
-      } else {
-        fs.copyFileSync(srcPath, destPath);
-      }
+      copyTreeEntry(entry, source, destination);
     }
+  }
+
+  /**
+   * Dispatch one filesystem entry while preserving depth-first copy order.
+   * @param {{ name: string, isDirectory: () => boolean }} entry Filesystem entry.
+   * @param {string} source Source parent directory.
+   * @param {string} destination Destination parent directory.
+   * @returns {void}
+   */
+  function copyTreeEntry(entry, source, destination) {
+    const srcPath = path.join(source, entry.name);
+    const destPath = path.join(destination, entry.name);
+    if (entry.isDirectory()) {
+      copyTree(srcPath, destPath);
+      return;
+    }
+    fs.copyFileSync(srcPath, destPath);
   }
 
   console.log('Copying files for dendritestories.co.nz deployment...');

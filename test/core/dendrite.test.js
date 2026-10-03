@@ -43,7 +43,13 @@ describe('executeCopyDendriteWorkflow', () => {
     const files = new Map([
       ['root/src/browser', [{ name: 'index.js', directory: false }]],
       ['root/src/browser/nested', [{ name: 'app.js', directory: false }]],
-      ['root/src/core', [{ name: 'nested', directory: true }]],
+      [
+        'root/src/core',
+        [
+          { name: 'nested', directory: true },
+          { name: 'sibling.js', directory: false },
+        ],
+      ],
       ['root/src/core/nested', [{ name: 'core.js', directory: false }]],
     ]);
     const fs = {
@@ -86,6 +92,10 @@ describe('executeCopyDendriteWorkflow', () => {
       {
         source: 'root/src/core/nested/core.js',
         destination: 'root/infra/core/nested/core.js',
+      },
+      {
+        source: 'root/src/core/sibling.js',
+        destination: 'root/infra/core/sibling.js',
       },
     ]);
     expect(logs).toEqual([

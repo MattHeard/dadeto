@@ -156,21 +156,33 @@ function buildCoChangeStats(changeSets) {
     for (const file of changeSet.files) {
       ensureFileStat(fileStats, file).touchCount += 1;
     }
-    for (const [leftIndex, left] of changeSet.files.entries()) {
-      for (const right of changeSet.files.slice(leftIndex + 1)) {
-        const key = pairKey(left, right);
-        const pairStat = ensurePairStat(pairStats, key, left, right);
+    for (const [left, right] of coChangePairs(changeSet.files)) {
+      const key = pairKey(left, right);
+      const pairStat = ensurePairStat(pairStats, key, left, right);
 
-        pairStat.coChangeCount += 1;
-        pairStat.supportingChangeSetIds.add(changeSet.id);
+      pairStat.coChangeCount += 1;
+      pairStat.supportingChangeSetIds.add(changeSet.id);
 
-        ensureFileStat(fileStats, left).partners.add(right);
-        ensureFileStat(fileStats, right).partners.add(left);
-      }
+      ensureFileStat(fileStats, left).partners.add(right);
+      ensureFileStat(fileStats, right).partners.add(left);
     }
   }
 
   return { pairStats, fileStats };
+}
+
+/**
+ * Enumerate each ordered-by-position file pair lazily within a change set.
+ * @param {string[]} files Files in their stored traversal order.
+ * @yields {[string, string]} Left and right file pair.
+ * @returns {Iterable<[string, string]>} File pairs.
+ */
+function* coChangePairs(files) {
+  for (const [leftIndex, left] of files.entries()) {
+    for (const right of files.slice(leftIndex + 1)) {
+      yield [left, right];
+    }
+  }
 }
 
 /**

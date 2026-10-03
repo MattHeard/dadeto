@@ -139,6 +139,58 @@ describe('applyHiLoEvent', () => {
     expect(result.gameState).toEqual(initial);
   });
 
+  it('advances score counters in order without caching a changing score getter', () => {
+    const reads = [];
+    const counters = [
+      {
+        get correct() {
+          reads.push('correct');
+          return 4;
+        },
+      },
+      {
+        get incorrect() {
+          reads.push('incorrect');
+          return 2;
+        },
+      },
+      {
+        get total() {
+          reads.push('total');
+          return 6;
+        },
+      },
+    ];
+    let index = 0;
+    const gameState = {
+      currentCard: 4,
+      get score() {
+        reads.push('score');
+        return counters[index++];
+      },
+    };
+    const result = applyHiLoEvent(
+      { type: 'keydown', key: 'ArrowUp' },
+      { gameState, keyboardState: createInitialKeyboardState() },
+      () => 0.75
+    );
+    expect(reads).toEqual([
+      'score',
+      'correct',
+      'score',
+      'incorrect',
+      'score',
+      'total',
+    ]);
+    expect(result.gameState.score).toEqual({
+      correct: 5,
+      incorrect: 2,
+      total: 7,
+    });
+    expect(gameState.currentCard).toBe(4);
+    expect(result.gameState).not.toBe(gameState);
+  });
+
   it('ignores non-guess keydown events', () => {
     const initial = {
       currentCard: 6,
