@@ -32,6 +32,23 @@ const {
   chooseAndMarkCandidate,
 } = battleshipSolitaireFleetTestOnly;
 
+test('inactive coordinate axes preserve identity without coercing the offset', () => {
+  const coordinate = {
+    valueOf() {
+      throw new Error('inactive coordinate');
+    },
+  };
+  const offset = {
+    valueOf() {
+      throw new Error('inactive offset');
+    },
+  };
+  expect(getSx('V', coordinate, offset)).toBe(coordinate);
+  expect(getSy('H', coordinate, offset)).toBe(coordinate);
+  expect(getSx('H', '2', 3)).toBe('23');
+  expect(getSy('V', '2', 3)).toBe('23');
+});
+
 describe('neighbours mutants', () => {
   test('checks both coordinate axes independently', () => {
     expect(isCoordNonNegative({ x: 0, y: 0 })).toBe(true);

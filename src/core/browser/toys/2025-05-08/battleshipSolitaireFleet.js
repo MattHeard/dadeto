@@ -13,6 +13,7 @@
  */
 
 import { whenNotNullish, whenOrNull } from '../../browser-core.js';
+import { whenOrDefault } from '../../../commonCore.js';
 
 /**
  * @typedef {{ x: number, y: number }} Coord
@@ -144,10 +145,7 @@ const makeSegHasNoOccupiedNeighbour = (cfg, occupied) => seg =>
  * @returns {number} Updated coordinate.
  */
 function adjustCoordinate({ dir, value, delta, axis }) {
-  if (dir === axis) {
-    return value + delta;
-  }
-  return value;
+  return whenOrDefault(dir === axis, () => value + delta, value);
 }
 
 /**
