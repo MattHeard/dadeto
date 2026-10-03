@@ -1,4 +1,5 @@
 import { functionOrFallback } from './browser-core.js';
+import { whenOrDefault } from '../commonCore.js';
 
 /**
  * @typedef {object} StaticConfigResponse
@@ -74,11 +75,14 @@ function resolveStaticConfigStatus(response) {
  * @returns {StaticConfigResponse['status'] | 'unknown'} Status code or `'unknown'`.
  */
 function getStatusFromResponse(response) {
-  if (response.status === undefined) {
-    return 'unknown';
-  }
-
-  return response.status;
+  return whenOrDefault(
+    response.status !== undefined,
+    () =>
+      /** @type {StaticConfigResponse['status'] | 'unknown'} */ (
+        response.status
+      ),
+    'unknown'
+  );
 }
 
 /**

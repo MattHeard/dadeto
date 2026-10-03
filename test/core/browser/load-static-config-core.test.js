@@ -5,6 +5,24 @@ import {
 } from '../../../src/core/browser/load-static-config-core.js';
 
 describe('parseStaticConfigResponse', () => {
+  it.each([null, 0, undefined])(
+    'preserves selected status getter result %p',
+    async selected => {
+      let reads = 0;
+      const response = {
+        ok: false,
+        get status() {
+          reads += 1;
+          return reads === 1 ? 503 : selected;
+        },
+      };
+      await expect(parseStaticConfigResponse(response)).rejects.toThrow(
+        `Failed to load static config: ${selected}`
+      );
+      expect(reads).toBe(2);
+    }
+  );
+
   it('parses successful responses', async () => {
     const json = jest.fn().mockResolvedValue({ feature: true });
 
