@@ -307,14 +307,15 @@ function buildNumericField(options) {
     syncHiddenInput(dom, textInput, data);
   };
 
-  wireLabelledField({
+  const fieldBinding = {
     dom,
     form: section,
     input,
     labelText,
     handler: handleInput,
     disposers,
-  });
+  };
+  wireLabelledField(fieldBinding);
 }
 
 /**

@@ -108,16 +108,17 @@ function createCellsField({ dom, form, data, textInput, disposers }) {
   dom.setClassName(textarea, 'toy-textarea');
   dom.setPlaceholder(textarea, '11,7\n12,7\n13,7');
   dom.setValue(textarea, data.cells.map(cell => cell.join(',')).join('\n'));
+  const updateCells = () => {
+    data.cells = parseCells(dom.getValue(textarea), data.cells);
+    syncTextInput(textInput, data);
+  };
   wireLabelledField({
     dom,
     form,
     input: textarea,
     labelText: 'Live cells, one x,y per line',
     disposers,
-    handler: () => {
-      data.cells = parseCells(dom.getValue(textarea), data.cells);
-      syncTextInput(textInput, data);
-    },
+    handler: updateCells,
   });
 }
 
@@ -170,7 +171,7 @@ function createCheckboxField({
  * @returns {void}
  */
 function createResetField({ dom, form, data, textInput, disposers }) {
-  const checkbox = createCheckboxField({
+  const resetBinding = {
     dom,
     form,
     labelText: 'Reset from seed',
@@ -184,7 +185,8 @@ function createResetField({ dom, form, data, textInput, disposers }) {
       syncTextInput(textInput, data);
     },
     disposers,
-  });
+  };
+  const checkbox = createCheckboxField(resetBinding);
 }
 
 /**

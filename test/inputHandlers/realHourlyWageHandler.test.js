@@ -120,6 +120,23 @@ describe('realHourlyWageHandler', () => {
       true
     );
     expect(createdElements.some(element => element.tag === 'input')).toBe(true);
+    for (const input of createdElements.filter(
+      element => element.tag === 'input'
+    )) {
+      const listenerIndex = dom.addEventListener.mock.calls.findIndex(
+        ([element, event]) => element === input && event === 'input'
+      );
+      const listenerOrder =
+        dom.addEventListener.mock.invocationCallOrder[listenerIndex];
+      for (const configure of [dom.setType, dom.setPlaceholder, dom.setValue]) {
+        const configurationIndex = configure.mock.calls.findIndex(
+          ([element]) => element === input
+        );
+        expect(
+          configure.mock.invocationCallOrder[configurationIndex]
+        ).toBeLessThan(listenerOrder);
+      }
+    }
   });
 
   test('renders the expected REAL1 labels and placeholders', () => {
