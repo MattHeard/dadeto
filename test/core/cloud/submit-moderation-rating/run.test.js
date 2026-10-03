@@ -57,6 +57,15 @@ describe('runSubmitModerationRating', () => {
     );
     expect(getAuth).toHaveBeenCalled();
     expect(getEnvironmentVariables).toHaveBeenCalled();
+    expect(ensureFirebaseApp.mock.invocationCallOrder[0]).toBeLessThan(
+      getAuth.mock.invocationCallOrder[0]
+    );
+    expect(getAuth.mock.invocationCallOrder[0]).toBeLessThan(
+      getEnvironmentVariables.mock.invocationCallOrder[0]
+    );
+    expect(expressApp.post.mock.invocationCallOrder[0]).toBeLessThan(
+      onRequest.mock.invocationCallOrder[0]
+    );
     expect(result).toEqual(
       expect.objectContaining({
         submitModerationRating: { app: expressApp },

@@ -32,13 +32,13 @@ export function runSubmitModerationRating(deps) {
     FieldValue: deps.FieldValue,
     crypto: deps.crypto,
   });
-  const handleSubmitModerationRating = createHandleSubmitModerationRating(
+  const responder = createSubmitModerationRatingResponder(dependencies);
+  const httpResponder =
     /** @type {(request: unknown) => Promise<{ status: number, body?: unknown }>} */ (
-      /** @type {unknown} */ (
-        createSubmitModerationRatingResponder(dependencies)
-      )
-    )
-  );
+      /** @type {unknown} */ (responder)
+    );
+  const handleSubmitModerationRating =
+    createHandleSubmitModerationRating(httpResponder);
 
   const moderationRoute = {
     method: 'post',

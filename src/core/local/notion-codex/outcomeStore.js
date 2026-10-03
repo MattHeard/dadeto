@@ -1,5 +1,6 @@
 // Stryker disable all -- this module is the fixed Notion Codex outcome
 // normalization and persistence boundary covered by the outcome-store suite.
+import { isMissingFileError } from '../../commonCore.js';
 
 /**
  * Normalize a candidate outcome payload.
@@ -40,38 +41,63 @@ export function normalizeNotionCodexOutcome(value) {
  * }} Outcome store.
  */
 export function createNotionCodexOutcomeStore(options) {
-  const mkdirImpl = options.mkdirImpl;
-  const readFileImpl = options.readFileImpl;
-  const writeFileImpl = options.writeFileImpl;
-
-  return {
-    async readOutcome(runId) {
-      try {
-        const rawOutcome = await readFileImpl(
-          getOutcomePath(options.outcomeDir, runId, options.pathModule),
-          'utf8'
-        );
-        return normalizeNotionCodexOutcome(JSON.parse(rawOutcome));
-      } catch (error) {
-        if (error && typeof error === 'object' && error.code === 'ENOENT') {
-          return null;
-        }
-
-        throw error;
-      }
-    },
-
-    async writeOutcome(runId, outcome) {
-      await mkdirImpl(options.outcomeDir, { recursive: true });
-      const outcomePath = getOutcomePath(
-        options.outcomeDir,
-        runId,
-        options.pathModule
-      );
-      const serializedOutcome = serializeOutcome(outcome);
-      await writeFileImpl(outcomePath, serializedOutcome, 'utf8');
-    },
+  const context = {
+    options,
+    mkdirImpl: options.mkdirImpl,
+    readFileImpl: options.readFileImpl,
+    writeFileImpl: options.writeFileImpl,
   };
+  const readOutcome = readStoredOutcome.bind(null, context);
+  const writeOutcome = writeStoredOutcome.bind(null, context);
+  return { readOutcome, writeOutcome };
+}
+
+/**
+ * Read and normalize one persisted outcome using the captured file reader.
+ * @param {{options: Parameters<typeof createNotionCodexOutcomeStore>[0]} & Pick<Parameters<typeof createNotionCodexOutcomeStore>[0], 'mkdirImpl'|'readFileImpl'|'writeFileImpl'>} context Captured file operations and live path dependencies.
+ * @param {string} runId Run identifier.
+ * @returns {Promise<{outcome: string, summary: string} | null>} Normalized outcome or missing record.
+ */
+async function readStoredOutcome(context, runId) {
+  const { options, readFileImpl } = context;
+  try {
+    const rawOutcome = await readFileImpl(
+      getOutcomePath(options.outcomeDir, runId, options.pathModule),
+      'utf8'
+    );
+    return normalizeNotionCodexOutcome(JSON.parse(rawOutcome));
+  } catch (error) {
+    return recoverMissingOutcome(error);
+  }
+}
+
+/**
+ * Recover only an absent outcome, preserving other failures unchanged.
+ * @param {unknown} error Read or normalization failure.
+ * @returns {null} Missing outcome marker.
+ */
+function recoverMissingOutcome(error) {
+  if (!isMissingFileError(error)) throw error;
+  return null;
+}
+
+/**
+ * Persist an outcome after ensuring its current directory exists.
+ * @param {{options: Parameters<typeof createNotionCodexOutcomeStore>[0]} & Pick<Parameters<typeof createNotionCodexOutcomeStore>[0], 'mkdirImpl'|'readFileImpl'|'writeFileImpl'>} context Captured file operations and live path dependencies.
+ * @param {string} runId Run identifier.
+ * @param {Record<string, unknown>} outcome Outcome payload.
+ * @returns {Promise<void>} Completion after persistence.
+ */
+async function writeStoredOutcome(context, runId, outcome) {
+  const { options, mkdirImpl, writeFileImpl } = context;
+  await mkdirImpl(options.outcomeDir, { recursive: true });
+  const outcomePath = getOutcomePath(
+    options.outcomeDir,
+    runId,
+    options.pathModule
+  );
+  const serializedOutcome = serializeOutcome(outcome);
+  await writeFileImpl(outcomePath, serializedOutcome, 'utf8');
 }
 
 /**

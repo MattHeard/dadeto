@@ -5,6 +5,50 @@ import {
 import path from 'node:path';
 
 describe('core local notion codex outcome store', () => {
+  test('captures file operations but keeps path dependencies live across calls', async () => {
+    const events = [];
+    const options = {
+      outcomeDir: '/tmp/first',
+      pathModule: path,
+      async mkdirImpl(directory) {
+        events.push(['mkdir', directory]);
+        options.outcomeDir = '/tmp/after-mkdir';
+      },
+      async readFileImpl(filename) {
+        events.push(['read', filename]);
+        return '{}';
+      },
+      async writeFileImpl(filename, contents) {
+        events.push(['write', filename, contents]);
+      },
+    };
+    const store = createNotionCodexOutcomeStore(options);
+    const replacement = async () => {
+      throw new Error('replacement must not be used');
+    };
+    options.mkdirImpl = replacement;
+    options.readFileImpl = replacement;
+    options.writeFileImpl = replacement;
+    options.outcomeDir = '/tmp/current';
+    const first = await store.readOutcome('run:one');
+    first.summary = 'changed';
+    await expect(store.readOutcome('run:one')).resolves.toEqual({
+      outcome: 'unknown',
+      summary: '',
+    });
+    await store.writeOutcome('run:two', { summary: 'saved' });
+    expect(events).toEqual([
+      ['read', '/tmp/current/run-one.json'],
+      ['read', '/tmp/current/run-one.json'],
+      ['mkdir', '/tmp/current'],
+      [
+        'write',
+        '/tmp/after-mkdir/run-two.json',
+        JSON.stringify({ outcome: 'unknown', summary: 'saved' }, null, 2),
+      ],
+    ]);
+  });
+
   test('normalizes missing fields from non-object input', () => {
     expect(normalizeNotionCodexOutcome(null)).toEqual({
       outcome: 'unknown',
