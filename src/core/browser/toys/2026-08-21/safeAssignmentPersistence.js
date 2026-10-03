@@ -24,7 +24,17 @@ export function legacyAssignmentBoundary(input, env, write, reject) {
  * @returns {string} Serialized rejection result.
  */
 export function formatCommitFailure(reason) {
-  return JSON.stringify({ committed: false, reason });
+  return formatRejectedAssignment(reason, { committed: false });
+}
+
+/**
+ * Serialize caller-owned rejection flags with an unchanged optional reason.
+ * @param {unknown} reason Original reason, without coercion.
+ * @param {Record<string, boolean>} fields Leading rejection flags in caller order.
+ * @returns {string} Compact rejection JSON.
+ */
+export function formatRejectedAssignment(reason, fields) {
+  return JSON.stringify({ ...fields, reason });
 }
 
 /**

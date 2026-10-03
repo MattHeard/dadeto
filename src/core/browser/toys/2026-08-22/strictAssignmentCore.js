@@ -6,7 +6,10 @@ import {
   measureSegmentMotion,
 } from '../2026-08-21/segmentAssignmentFeasibilityCore.js';
 import { resolvePointRecords } from './spacePointResolution.js';
-import { appendOneAssignment } from '../2026-08-21/safeAssignmentPersistence.js';
+import {
+  appendOneAssignment,
+  formatRejectedAssignment,
+} from '../2026-08-21/safeAssignmentPersistence.js';
 
 /**
  * Parse a strict assignment request and preserve its shared rejection envelope.
@@ -74,7 +77,7 @@ export function normalizeAssignmentId(value) {
  * @returns {string} Serialized rejection.
  */
 export function formatAssignmentFailure(reason) {
-  return JSON.stringify({ appended: false, feasible: false, reason });
+  return formatRejectedAssignment(reason, { appended: false, feasible: false });
 }
 
 /**

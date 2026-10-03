@@ -1,10 +1,32 @@
 import { jest } from '@jest/globals';
-import { strictAssignmentBoundary } from '../../../src/core/browser/toys/2026-08-22/strictAssignmentCore.js';
+import {
+  strictAssignmentBoundary,
+  formatAssignmentFailure,
+} from '../../../src/core/browser/toys/2026-08-22/strictAssignmentCore.js';
 import { formatCommitFailure } from '../../../src/core/browser/toys/2026-08-21/safeAssignmentPersistence.js';
 import {
   evaluateWorldLine,
   evaluateWorldLineMany,
 } from '../../../src/core/browser/toys/2026-08-21/segmentAssignmentFeasibilityCore.js';
+
+test('public rejection formatters preserve compact field order and uncoerced reasons', () => {
+  for (const reason of [
+    'failure',
+    null,
+    undefined,
+    0,
+    { nested: ['reason'] },
+  ]) {
+    expect(formatCommitFailure(reason)).toBe(
+      JSON.stringify({ committed: false, reason })
+    );
+    expect(formatAssignmentFailure(reason)).toBe(
+      JSON.stringify({ appended: false, feasible: false, reason })
+    );
+  }
+  expect(() => formatCommitFailure(1n)).toThrow(TypeError);
+  expect(() => formatAssignmentFailure(1n)).toThrow(TypeError);
+});
 
 test.each([new Error('failure'), 'failure', null])(
   'atomic failure serializer receives the normalized reason for %p',
