@@ -127,6 +127,54 @@ const createDb = (variantRef, moderatorData = {}) => ({
 });
 
 describe('createUpdateVariantVisibilityHandler', () => {
+  it.each([123, undefined])(
+    'rejects invalid variant %p before reading other fields',
+    async variantId => {
+      const db = { doc: jest.fn(), collection: jest.fn() };
+      const handler = createUpdateVariantVisibilityHandler({ db });
+      const data = {
+        variantId,
+        get moderatorId() {
+          throw new Error('invalid variant must not read moderator');
+        },
+        get isApproved() {
+          throw new Error('invalid variant must not read approval');
+        },
+      };
+      await expect(handler(createSnapshot(data))).resolves.toBeNull();
+      expect(db.doc).not.toHaveBeenCalled();
+    }
+  );
+
+  it('retains selected payload getter order and repeated identifier reads', async () => {
+    const reads = [];
+    const db = { doc: jest.fn(), collection: jest.fn() };
+    const handler = createUpdateVariantVisibilityHandler({ db });
+    const data = {
+      get variantId() {
+        reads.push('variant');
+        return 'v';
+      },
+      get moderatorId() {
+        reads.push('moderator');
+        return 'm';
+      },
+      get isApproved() {
+        reads.push('approval');
+        return undefined;
+      },
+    };
+    await expect(handler(createSnapshot(data))).resolves.toBeNull();
+    expect(reads).toEqual([
+      'variant',
+      'moderator',
+      'approval',
+      'moderator',
+      'variant',
+    ]);
+    expect(db.doc).not.toHaveBeenCalled();
+  });
+
   it('throws when db is missing', () => {
     expect(() => createUpdateVariantVisibilityHandler({ db: null })).toThrow(
       new TypeError('db must expose a doc helper')

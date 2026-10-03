@@ -347,25 +347,21 @@ function validateApproval(isApproved) {
  * @returns {VariantUpdatePayload | null} Sanitized payload for processing.
  */
 function getValidVariantUpdatePayload(data) {
-  if (
-    typeof data.variantId !== 'string' ||
-    typeof data.moderatorId !== 'string'
-  ) {
-    return null;
-  }
-
-  const approval = data.isApproved;
-  return buildVariantUpdatePayload(data.moderatorId, data.variantId, approval);
+  return when(
+    typeof data.variantId === 'string' && typeof data.moderatorId === 'string',
+    () => buildVariantUpdatePayload(data)
+  );
 }
 
 /**
  * Build the final payload when approval status is valid.
- * @param {string} moderatorId Moderator identifier.
- * @param {string} variantId Variant identifier.
- * @param {unknown} isApproved Approval flag.
+ * @param {Record<string, unknown>} data Identifier-checked trigger payload.
  * @returns {VariantUpdatePayload | null} Payload for processing.
  */
-function buildVariantUpdatePayload(moderatorId, variantId, isApproved) {
+function buildVariantUpdatePayload(data) {
+  const isApproved = data.isApproved;
+  const moderatorId = data.moderatorId;
+  const variantId = data.variantId;
   return /** @type {VariantUpdatePayload | null} */ (
     when(validateApproval(isApproved), () => ({
       moderatorId,
