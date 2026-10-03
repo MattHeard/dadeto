@@ -1,7 +1,10 @@
 // Toy: Conflict-Aware Product Scheduler
 // (input, env) -> string
 
-import { isObject as isSchedulerRecord } from '../../common.js';
+import {
+  isObject as isSchedulerRecord,
+  parseToyRecord,
+} from '../browserToysCore.js';
 
 // Scheduler parser contract begins here.
 /**
@@ -73,20 +76,14 @@ export function conflictAwareProductScheduler(input) {
  * @returns {{ candidates: unknown[], activeWork: unknown[] }} Parsed scheduler payload.
  */
 function parseSchedulerInput(input) {
-  try {
-    const parsed = JSON.parse(input);
-    // Stryker disable next-line ConditionalExpression,BlockStatement -- all non-record JSON values share the empty scheduler contract.
-    if (!isSchedulerRecord(parsed)) {
-      return { candidates: [], activeWork: [] };
-    }
-
-    return {
+  return parseToyRecord(
+    input,
+    parsed => ({
       candidates: toArray(parsed.candidates),
       activeWork: toArray(parsed.activeWork),
-    };
-  } catch {
-    return { candidates: [], activeWork: [] };
-  }
+    }),
+    ['candidates', 'activeWork']
+  );
 }
 
 /**

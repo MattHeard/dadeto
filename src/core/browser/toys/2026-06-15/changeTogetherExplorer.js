@@ -1,7 +1,7 @@
 // Toy: Change Together Explorer
 // (input, env) -> string
 
-import { isObject as isRecord } from '../../common.js';
+import { isObject as isRecord, parseToyRecord } from '../browserToysCore.js';
 
 /**
  * @typedef {{
@@ -138,18 +138,9 @@ function normalizeFileList(files) {
  * @returns {ChangeTogetherInput} Parsed payload or an empty change-set list.
  */
 function parseChangeTogetherInput(input) {
-  try {
-    const parsed = JSON.parse(input);
-    if (!isRecord(parsed)) {
-      return { changeSets: [] };
-    }
-
-    return {
-      changeSets: parsed.changeSets,
-    };
-  } catch {
-    return { changeSets: [] };
-  }
+  return parseToyRecord(input, parsed => ({ changeSets: parsed.changeSets }), [
+    'changeSets',
+  ]);
 }
 
 /**

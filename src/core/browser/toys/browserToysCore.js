@@ -1,7 +1,9 @@
 import { deepClone, safeParseJson, valueOr } from '../browser-core.js';
 import { isNonNullObject, isValidString } from '../../commonCore.js';
 import { runToyFailureBoundary } from './formatToyError.js';
+import { isObjectRecord } from '../validation.js';
 export { runToyFailureBoundary };
+export { isObject } from '../common.js';
 
 /**
  * @typedef {( ...args: unknown[]) => unknown} EnvHelperFunc
@@ -41,6 +43,28 @@ export function requireEnvHelper(env, key) {
 export function getOptionalEnvHelper(env, key) {
   const candidate = env.get(key);
   return typeof candidate === 'function' ? candidate : null;
+}
+
+/**
+ * Parse and normalize a JSON record, falling back for unusable requests.
+ * @template T
+ * @template {string} K
+ * @param {string} input Serialized request.
+ * @param {(record: Record<string, unknown>) => T} normalize Record normalization policy.
+ * @param {K[]} emptyFields Field names receiving fresh empty arrays on failure.
+ * @returns {T | Record<K, unknown[]>} Normalized request or fallback.
+ */
+export function parseToyRecord(input, normalize, emptyFields) {
+  const fallback = () =>
+    /** @type {Record<K, unknown[]>} */ (
+      Object.fromEntries(
+        emptyFields.map(key => [key, /** @type {unknown[]} */ ([])])
+      )
+    );
+  return runToyFailureBoundary(() => {
+    const record = JSON.parse(input);
+    return isObjectRecord(record) ? normalize(record) : fallback();
+  }, fallback);
 }
 
 /**

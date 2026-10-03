@@ -6,6 +6,7 @@ import {
   runToyWithParsedJson,
   requireEnvHelper,
   getOptionalEnvHelper,
+  parseToyRecord,
   parseJsonOrFallback,
   isPlainObject,
   toRecordOrNull,
@@ -48,6 +49,53 @@ describe('optional environment lookup', () => {
     };
     expect(() => getOptionalEnvHelper(env, 'read')).toThrow(failure);
     expect(() => requireEnvHelper(env, 'read')).toThrow(failure);
+  });
+});
+
+describe('record request boundary', () => {
+  test('property getter failures produce fresh schema fallbacks', () => {
+    const record = Object.defineProperty({}, 'items', {
+      get() {
+        throw new Error('denied');
+      },
+    });
+    const parse = jest.spyOn(JSON, 'parse').mockReturnValue(record);
+    try {
+      expect(parseToyRecord('{}', value => value.items, ['items'])).toEqual({
+        items: [],
+      });
+    } finally {
+      parse.mockRestore();
+    }
+  });
+  test('normalizes only records and builds fresh fallback values', () => {
+    const normalize = jest.fn(record => ({ items: record.items }));
+    const fallback = ['items'];
+    expect(parseToyRecord('{"items":[1]}', normalize, fallback)).toEqual({
+      items: [1],
+    });
+    for (const input of ['{', 'null', '[]', '0', 'false', '"text"']) {
+      const first = parseToyRecord(input, normalize, fallback);
+      const second = parseToyRecord(input, normalize, fallback);
+      expect(first).toEqual({ items: [] });
+      expect(second.items).not.toBe(first.items);
+    }
+    expect(normalize).toHaveBeenCalledTimes(1);
+    expect(parseToyRecord('{}', normalize, fallback)).toEqual({
+      items: undefined,
+    });
+  });
+  test('keeps normalization and property access inside the failure boundary', () => {
+    const fallback = ['failed'];
+    expect(
+      parseToyRecord(
+        '{}',
+        () => {
+          throw new Error('bad record');
+        },
+        fallback
+      )
+    ).toEqual({ failed: [] });
   });
 });
 
