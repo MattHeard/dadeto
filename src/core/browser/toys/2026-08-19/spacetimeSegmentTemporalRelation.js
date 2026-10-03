@@ -1,9 +1,10 @@
 // Toy: Spacetime Segment Temporal Relation
 // (input, env) -> string
 import { resolvePointRecords } from '../2026-08-22/spacePointResolution.js';
-import { formatToyResult, runToyCalculation } from '../formatToyError.js';
+import { runToyRequest } from '../formatToyError.js';
 import { isJsonObject, normalizeSegmentId } from './spacetimeInput.js';
 import { resolveSegmentTiming } from '../2026-08-21/segmentAssignmentFeasibilityCore.js';
+import { createIntervalIndexes } from '../2026-08-20/assignmentIntervals.js';
 
 /**
  * Classify the temporal relation between two SPAC2 segments.
@@ -11,23 +12,26 @@ import { resolveSegmentTiming } from '../2026-08-21/segmentAssignmentFeasibility
  * @returns {string} Relation result.
  */
 export function spacetimeSegmentTemporalRelation(input) {
-  return runToyCalculation(() => {
-    const request = parseRequest(input);
-    const points = new Map(request.points.map(point => [point.pointId, point]));
-    const segments = new Map(
-      request.segments.map(segment => [segment.segmentId, segment])
-    );
-    const left = resolveInterval(segments, points, request.firstSegmentId);
-    const right = resolveInterval(segments, points, request.secondSegmentId);
-    const relation = classify(left, right);
-    return formatToyResult({
-      firstSegmentId: request.firstSegmentId,
-      secondSegmentId: request.secondSegmentId,
-      relation,
-      firstInterval: left,
-      secondInterval: right,
-    });
-  });
+  return runToyRequest(input, parseRequest, calculateTemporalRelation);
+}
+
+/**
+ * Resolve the supplied intervals and classify their temporal relation.
+ * @param {ReturnType<typeof parseRequest>} request Validated point and segment records.
+ * @returns {Record<string, unknown>} Relation and both resolved intervals.
+ */
+function calculateTemporalRelation(request) {
+  const { points, segments } = createIntervalIndexes(request);
+  const left = resolveInterval(segments, points, request.firstSegmentId);
+  const right = resolveInterval(segments, points, request.secondSegmentId);
+  const relation = classify(left, right);
+  return {
+    firstSegmentId: request.firstSegmentId,
+    secondSegmentId: request.secondSegmentId,
+    relation,
+    firstInterval: left,
+    secondInterval: right,
+  };
 }
 
 /**

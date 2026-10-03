@@ -86,16 +86,26 @@ export function assignmentPredicateBoundary(input, parse, ownerKey) {
  * @returns {{points: Map<string, Record<string, unknown>>, segments: Map<string, Record<string, unknown>>, proposed: {startTime: number, endTime: number}}} Interval evaluation context.
  */
 export function createAssignmentContext(request) {
+  const indexes = createIntervalIndexes(request);
+  const proposed = resolveInterval(
+    indexes.segments,
+    indexes.points,
+    request.proposedAssignment.segmentId
+  );
+  return { ...indexes, proposed };
+}
+
+/**
+ * Prepare point and segment lookup maps without coercing keys or cloning records.
+ * @param {Pick<Parameters<typeof canAppendAssignment>[0], 'points' | 'segments'>} request Normalized interval records.
+ * @returns {{points: Map<string, Record<string, unknown>>, segments: Map<string, Record<string, unknown>>}} Point-first indexes with later duplicate IDs winning.
+ */
+export function createIntervalIndexes(request) {
   const points = new Map(request.points.map(point => [point.pointId, point]));
   const segments = new Map(
     request.segments.map(segment => [segment.segmentId, segment])
   );
-  const proposed = resolveInterval(
-    segments,
-    points,
-    request.proposedAssignment.segmentId
-  );
-  return { points, segments, proposed };
+  return { points, segments };
 }
 
 /**

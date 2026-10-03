@@ -3,9 +3,61 @@ import {
   formatToyError,
   formatToyConversionError,
   runToyCalculation,
+  runToyRequest,
 } from '../../../../src/core/browser/toys/formatToyError.js';
 
 describe('toy error formatting', () => {
+  test('request pipelines parse once, calculate the same object and format the result', () => {
+    const events = [];
+    const request = { value: 7 };
+    const result = runToyRequest(
+      'original input',
+      input => {
+        events.push(['parse', input]);
+        return request;
+      },
+      parsed => {
+        expect(parsed).toBe(request);
+        events.push(['calculate', parsed.value]);
+        return { doubled: parsed.value * 2 };
+      }
+    );
+    expect(events).toEqual([
+      ['parse', 'original input'],
+      ['calculate', 7],
+    ]);
+    expect(result).toBe('{\n  "doubled": 14\n}');
+  });
+
+  test.each(['parse', 'calculate', 'serialize'])(
+    'request pipelines retain %s errors and do not run later stages',
+    stage => {
+      const events = [];
+      const visit = name => {
+        events.push(name);
+        if (name === stage) throw new Error(`${stage} failed`);
+      };
+      const result = runToyRequest(
+        'request',
+        () => {
+          visit('parse');
+          return {};
+        },
+        () => {
+          visit('calculate');
+          return { toJSON: () => visit('serialize') };
+        }
+      );
+      expect(events).toEqual(
+        ['parse', 'calculate', 'serialize'].slice(
+          0,
+          ['parse', 'calculate', 'serialize'].indexOf(stage) + 1
+        )
+      );
+      expect(result).toBe(formatToyError(`${stage} failed`));
+    }
+  );
+
   test('calculation boundaries preserve success and the original failure message and indentation', () => {
     expect(runToyCalculation(() => 'unchanged')).toBe('unchanged');
     expect(

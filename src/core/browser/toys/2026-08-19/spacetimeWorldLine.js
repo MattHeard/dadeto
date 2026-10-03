@@ -1,6 +1,6 @@
 // Toy: Spacetime World Line
 // (input, env) -> string
-import { runToyCalculation, formatToyResult } from '../formatToyError.js';
+import { runToyRequest } from '../formatToyError.js';
 import { isJsonObject } from './spacetimeInput.js';
 
 /**
@@ -9,44 +9,50 @@ import { isJsonObject } from './spacetimeInput.js';
  * @returns {string} Ordered world line or a structured validation error.
  */
 export function spacetimeWorldLine(input) {
-  return runToyCalculation(() => {
-    const request = parseInput(input);
-    const byStart = new Map();
-    request.segments.forEach(segment => {
-      if (!segment.segmentId || !segment.startPointId || !segment.endPointId) {
-        throw new Error(
-          'Every segment requires segmentId, startPointId, and endPointId.'
-        );
-      }
-      if (byStart.has(segment.startPointId)) {
-        throw new Error('World line contains branching segments.');
-      }
-      byStart.set(segment.startPointId, segment);
-    });
-    const ordered = [];
-    const used = new Set();
-    let pointId = request.startPointId;
-    let iterations = 0;
-    while (
-      pointId !== request.endPointId &&
-      iterations++ >= 0 &&
-      iterations <= request.segments.length
-    ) {
-      const segment = byStart.get(pointId);
-      if (!segment || used.has(segment.segmentId))
-        throw new Error('Segments do not form a complete world line.');
-      used.add(segment.segmentId);
-      ordered.push(segment);
-      pointId = segment.endPointId;
+  return runToyRequest(input, parseInput, orderWorldLine);
+}
+
+/**
+ * Assemble validated segments without owning serialization or error presentation.
+ * @param {ReturnType<typeof parseInput>} request World-line endpoints and segments.
+ * @returns {Record<string, unknown>} Contiguous ordered world line.
+ */
+function orderWorldLine(request) {
+  const byStart = new Map();
+  request.segments.forEach(segment => {
+    if (!segment.segmentId || !segment.startPointId || !segment.endPointId) {
+      throw new Error(
+        'Every segment requires segmentId, startPointId, and endPointId.'
+      );
     }
-    if (pointId !== request.endPointId || used.size !== request.segments.length)
-      throw new Error('World line contains unused or disconnected segments.');
-    return formatToyResult({
-      startPointId: request.startPointId,
-      endPointId: request.endPointId,
-      segments: ordered,
-    });
+    if (byStart.has(segment.startPointId)) {
+      throw new Error('World line contains branching segments.');
+    }
+    byStart.set(segment.startPointId, segment);
   });
+  const ordered = [];
+  const used = new Set();
+  let pointId = request.startPointId;
+  let iterations = 0;
+  while (
+    pointId !== request.endPointId &&
+    iterations++ >= 0 &&
+    iterations <= request.segments.length
+  ) {
+    const segment = byStart.get(pointId);
+    if (!segment || used.has(segment.segmentId))
+      throw new Error('Segments do not form a complete world line.');
+    used.add(segment.segmentId);
+    ordered.push(segment);
+    pointId = segment.endPointId;
+  }
+  if (pointId !== request.endPointId || used.size !== request.segments.length)
+    throw new Error('World line contains unused or disconnected segments.');
+  return {
+    startPointId: request.startPointId,
+    endPointId: request.endPointId,
+    segments: ordered,
+  };
 }
 
 /**

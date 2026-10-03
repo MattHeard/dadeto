@@ -42,3 +42,15 @@ export function runToyCalculation(calculate, indentation) {
     );
   }
 }
+
+/**
+ * Parse, calculate and serialize a request within the common toy error boundary.
+ * @template T
+ * @param {string} input Original serialized request.
+ * @param {(input: string) => T} parse Caller-specific parsing and validation policy.
+ * @param {(request: T) => Record<string, unknown>} calculate Structured domain calculation.
+ * @returns {string} Readable result or the original validation failure message.
+ */
+export function runToyRequest(input, parse, calculate) {
+  return runToyCalculation(() => formatToyResult(calculate(parse(input))));
+}
