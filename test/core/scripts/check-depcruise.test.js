@@ -349,6 +349,19 @@ describe('findCoreGlobalViolations', () => {
 });
 
 describe('createCheckDepcruiseHandle', () => {
+  test('normalizes dependencies once and executes the captured command on repeated calls', () => {
+    const spawnImpl = jest.fn(() => ({ status: 0, signal: null }));
+    const options = { spawnImpl, pathModule: path };
+    const handle = createCheckDepcruiseHandle(options);
+    options.spawnImpl = () => {
+      throw new Error('must not re-read creation options');
+    };
+    expect(handle()).toEqual({ exitCode: 0, violations: 0 });
+    expect(handle()).toEqual({ exitCode: 0, violations: 0 });
+    expect(spawnImpl).toHaveBeenCalledTimes(2);
+    expect(spawnImpl.mock.calls[0]).toEqual(spawnImpl.mock.calls[1]);
+  });
+
   test('can be created without explicit options', () => {
     const handle = createCheckDepcruiseHandle({ pathModule: path });
 

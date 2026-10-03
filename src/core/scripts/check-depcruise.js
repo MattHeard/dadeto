@@ -73,10 +73,9 @@ const CODE_BOUNDARIES = {
  * @returns {() => {exitCode: number, violations: number}} Gate handler.
  */
 export function createCheckDepcruiseHandle(options = {}) {
-  return createDepcruiseGateHandle(
-    /** @type {Parameters<typeof createDepcruiseGateHandle>[0]} */ (
-      normalizeCheckDepcruiseOptions(options)
-    )
+  return executeDepcruiseGate.bind(
+    null,
+    normalizeCheckDepcruiseOptions(options)
   );
 }
 
@@ -183,17 +182,6 @@ function normalizeCheckDepcruiseOptions(options = {}) {
         requirePathModule(options.pathModule)
       ),
     scopeAnalysisDeps: options.scopeAnalysisDeps ?? DEFAULT_SCOPE_ANALYSIS_DEPS,
-  };
-}
-
-/**
- * Build the handler from normalized dependencies.
- * @param {DepcruiseGateDeps} deps Normalized dependencies.
- * @returns {() => {exitCode: number, violations: number}} Gate handler.
- */
-function createDepcruiseGateHandle(deps) {
-  return function handleDepcruiseGate() {
-    return executeDepcruiseGate(deps);
   };
 }
 
