@@ -3,7 +3,7 @@
 // gate invocation contract rather than independently at each helper branch.
 import { execFileSync } from 'node:child_process';
 import { reportFailuresAndMaybeLogSuccess } from '../commonCore.js';
-import { useDefaultValue } from './gate-utils.js';
+import { useDefaultValue, walkJavaScriptFiles } from './gate-utils.js';
 import { readExemptions } from './read-exemptions.js';
 import { pathToFileURL } from 'node:url';
 
@@ -118,17 +118,12 @@ function listJsFiles(rootDir, sourceRoot, deps) {
  * @returns {string[]} Repo-relative JavaScript files discovered under the directory.
  */
 function walk(dirPath, deps) {
-  const entries = deps.fsModule.readdirSync(dirPath, { withFileTypes: true });
-  return entries.flatMap(entry => {
-    const fullPath = deps.pathModule.join(dirPath, entry.name);
-    if (entry.isDirectory()) {
-      return walk(fullPath, deps);
-    }
-    if (entry.isFile() && entry.name.endsWith('.js')) {
-      return [deps.pathModule.relative(deps.rootDir, fullPath)];
-    }
-    return [];
-  });
+  return walkJavaScriptFiles(
+    dirPath,
+    (dir, options) => deps.fsModule.readdirSync(dir, options),
+    deps.pathModule,
+    fullPath => deps.pathModule.relative(deps.rootDir, fullPath)
+  );
 }
 
 /**

@@ -7,7 +7,57 @@ import {
   normalizeExitCode,
   useDefaultValue,
   pluralizeCount,
+  walkJavaScriptFiles,
 } from '../../../src/core/scripts/gate-utils.js';
+
+test('JavaScript traversal retains depth-first order, receiver and leaf-only projection', () => {
+  const reads = [];
+  const entry = (name, directory, file) => ({
+    name,
+    isDirectory: () => directory,
+    isFile: () => {
+      if (directory) throw new Error('directories must not probe file status');
+      return file;
+    },
+  });
+  const tree = {
+    root: [
+      entry('a.js', false, true),
+      entry('nested', true, true),
+      entry('b.js', false, true),
+      entry('skip.txt', false, true),
+      entry('socket.js', false, false),
+    ],
+    'root/nested': [entry('child.js', false, true)],
+  };
+  const paths = {
+    join(first, name) {
+      expect(this).toBe(paths);
+      return `${first}/${name}`;
+    },
+  };
+  const read = (dir, options) => {
+    reads.push(dir);
+    expect(options).toEqual({ withFileTypes: true });
+    return tree[dir];
+  };
+  const project = jest.fn(value => value.replace('root/', ''));
+  expect(walkJavaScriptFiles('root', read, paths, project)).toEqual([
+    'a.js',
+    'nested/child.js',
+    'b.js',
+  ]);
+  expect(reads).toEqual(['root', 'root/nested']);
+  expect(project.mock.calls).toEqual([
+    ['root/a.js'],
+    ['root/nested/child.js'],
+    ['root/b.js'],
+  ]);
+  expect(walkJavaScriptFiles('empty', () => [], paths)).toEqual([]);
+  expect(walkJavaScriptFiles('root/nested', read, paths)).toEqual([
+    'root/nested/child.js',
+  ]);
+});
 
 /**
  * Create a simple writable capture for gate output.

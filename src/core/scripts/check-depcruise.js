@@ -269,30 +269,6 @@ function executeDepcruiseGate({
 }
 
 /**
- * Read JavaScript files recursively from a directory.
- * @param {string} dirPath Directory to scan.
- * @param {(dirPath: string, options: { withFileTypes: true }) => Array<{ isDirectory: () => boolean, isFile: () => boolean, name: string }>} readdirSync Directory reader.
- * @param {{ join: (first: string, ...parts: string[]) => string }} pathModule Path helper.
- * @returns {string[]} Absolute JavaScript file paths.
- */
-function listJsFiles(dirPath, readdirSync, pathModule) {
-  const entries = readdirSync(dirPath, { withFileTypes: true });
-
-  return entries.flatMap(entry => {
-    const entryPath = pathModule.join(dirPath, entry.name);
-    if (entry.isDirectory()) {
-      return listJsFiles(entryPath, readdirSync, pathModule);
-    }
-
-    if (entry.isFile() && entry.name.endsWith('.js')) {
-      return [entryPath];
-    }
-
-    return [];
-  });
-}
-
-/**
  * Scan each JavaScript file in a directory tree for violations.
  * @param {{
  *   readFileSync: (filePath: string, encoding: 'utf8') => string,
@@ -320,8 +296,9 @@ function collectJsViolations({
   createViolation,
 }) {
   const sourceRootPath = pathModule.resolve(rootDir, sourceRoot);
-  return listJsFiles(sourceRootPath, readdirSync, pathModule).flatMap(
-    filePath => {
+  return gateUtils
+    .walkJavaScriptFiles(sourceRootPath, readdirSync, pathModule)
+    .flatMap(filePath => {
       const scanResult = scanSource(readFileSync(filePath, 'utf8'));
 
       if (isEmptyScanResult(scanResult)) {
@@ -334,8 +311,7 @@ function collectJsViolations({
           scanResult
         ),
       ];
-    }
-  );
+    });
 }
 
 /**
@@ -354,20 +330,22 @@ function collectCoreBrowserGlobalViolations(deps) {
   /** @type {Array<{ filePath: string, globals: string[] }>} */
   const globalsViolations = [];
 
-  listJsFiles(sourceRootPath, readdirSync, pathModule).forEach(filePath => {
-    const globals = findCoreBrowserGlobalsInSource(
-      readFileSync(filePath, 'utf8'),
-      scopeAnalysisDeps,
-      CORE_GLOBALS
-    );
+  gateUtils
+    .walkJavaScriptFiles(sourceRootPath, readdirSync, pathModule)
+    .forEach(filePath => {
+      const globals = findCoreBrowserGlobalsInSource(
+        readFileSync(filePath, 'utf8'),
+        scopeAnalysisDeps,
+        CORE_GLOBALS
+      );
 
-    if (globals.length > 0) {
-      globalsViolations.push({
-        filePath: toRepoRelativePath(rootDir, filePath, pathModule),
-        globals,
-      });
-    }
-  });
+      if (globals.length > 0) {
+        globalsViolations.push({
+          filePath: toRepoRelativePath(rootDir, filePath, pathModule),
+          globals,
+        });
+      }
+    });
 
   return globalsViolations;
 }

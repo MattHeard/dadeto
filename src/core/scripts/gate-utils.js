@@ -1,3 +1,34 @@
+/**
+ * Visit JavaScript leaves in depth-first directory order, with caller-owned path projection.
+ * @param {string} dirPath Directory to scan.
+ * @param {(dir: string, options: {withFileTypes: true}) => Array<{name: string, isDirectory: () => boolean, isFile: () => boolean}>} readEntries Injected directory reader.
+ * @param {{join: (first: string, ...parts: string[]) => string}} pathModule Path adapter whose method receiver is retained.
+ * @param {(path: string) => string} [projectPath] Leaf path projection.
+ * @returns {string[]} JavaScript leaf paths in original traversal order.
+ */
+export function walkJavaScriptFiles(
+  dirPath,
+  readEntries,
+  pathModule,
+  projectPath = value => value
+) {
+  return readEntries(dirPath, { withFileTypes: true }).flatMap(entry => {
+    const entryPath = pathModule.join(dirPath, entry.name);
+    if (entry.isDirectory()) {
+      return walkJavaScriptFiles(
+        entryPath,
+        readEntries,
+        pathModule,
+        projectPath
+      );
+    }
+    if (entry.isFile() && entry.name.endsWith('.js')) {
+      return [projectPath(entryPath)];
+    }
+    return [];
+  });
+}
+
 // Gate execution is normalized independently from process spawning.
 /**
  * @param {{
