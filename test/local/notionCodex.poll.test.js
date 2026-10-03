@@ -127,7 +127,10 @@ describe('local notion codex active run handling', () => {
     const activeRun = { runId: 'existing-run', pid: 777 };
     let reads = 0;
     const initialState = {
-      get activeRun() { reads++; return activeRun; },
+      get activeRun() {
+        reads++;
+        return activeRun;
+      },
       eventLog: [],
     };
     const result = await runNotionCodexPoll({
