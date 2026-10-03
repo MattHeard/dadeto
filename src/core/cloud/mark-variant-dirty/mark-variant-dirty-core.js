@@ -242,11 +242,11 @@ export async function findVariantRef({
  * @returns {Promise<import('firebase-admin/firestore').DocumentReference | null>} Variant ref or null.
  */
 function resolveVariantRefFromPage(helpers, pageRef, variantName) {
-  if (!pageRef) {
-    return Promise.resolve(null);
-  }
-
-  return findVariantRefFromPage(helpers, pageRef, variantName);
+  return Promise.resolve(
+    commonCore.when(Boolean(pageRef), () =>
+      findVariantRefFromPage(helpers, pageRef, variantName)
+    )
+  );
 }
 
 /**
