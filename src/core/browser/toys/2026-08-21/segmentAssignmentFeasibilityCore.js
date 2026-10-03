@@ -3,6 +3,13 @@ import { resolvePointRecords } from '../2026-08-22/spacePointResolution.js';
 import { isOrderedInterval } from '../2026-08-20/assignmentIntervals.js';
 export { overlaps } from '../2026-08-20/assignmentIntervals.js';
 import { wgs84Distance } from '../2026-08-20/wgs84Distance.js';
+import { createToyMessageBoundary } from '../formatToyError.js';
+
+const runFeasibilityCalculation = createToyMessageBoundary(
+  { feasible: false },
+  'reason',
+  0
+);
 
 /**
  * Calculate segment speed in kilometres per hour without changing legacy policy.
@@ -302,11 +309,7 @@ export function containedBy(interval, shift) {
  * @returns {string} Serialized feasibility outcome.
  */
 export function legacyFeasibilityBoundary(input, calculate) {
-  try {
-    return calculate(JSON.parse(input || '{}'));
-  } catch (error) {
-    return JSON.stringify({ feasible: false, reason: error.message });
-  }
+  return runFeasibilityCalculation(() => calculate(JSON.parse(input || '{}')));
 }
 
 /**

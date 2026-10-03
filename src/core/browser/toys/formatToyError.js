@@ -33,13 +33,45 @@ export function formatToyResult(payload, indentation = 2) {
  * @returns {string} Original result or caller-formatted validation failure.
  */
 export function runToyCalculation(calculate, indentation) {
+  return createToyMessageBoundary(
+    { valid: false },
+    'error',
+    indentation
+  )(calculate);
+}
+
+/**
+ * Bind a reusable message-only rejection policy for a family of calculations.
+ * @param {Record<string, unknown>} rejection Caller-specific failure flags.
+ * @param {string} messageKey Field holding the original thrown value's message.
+ * @param {number} [indentation] Rejection indentation; omitted means readable JSON.
+ * @returns {(calculate: () => string) => string} Boundary retaining success or caller-shaped failure without message coercion.
+ */
+export function createToyMessageBoundary(rejection, messageKey, indentation) {
+  return calculate =>
+    runToyFailureBoundary(calculate, error =>
+      formatToyResult(
+        {
+          ...rejection,
+          [messageKey]: /** @type {{message?: unknown}} */ (error).message,
+        },
+        indentation
+      )
+    );
+}
+
+/**
+ * Retain a calculation result or delegate the original thrown value to its formatter.
+ * @template T
+ * @param {() => T} calculate Synchronous toy operation.
+ * @param {(error: unknown) => T} reject Caller-owned failure presentation policy.
+ * @returns {T} Success or formatted failure; formatter errors still escape.
+ */
+export function runToyFailureBoundary(calculate, reject) {
   try {
     return calculate();
   } catch (error) {
-    return formatToyError(
-      /** @type {{message?: unknown}} */ (error).message,
-      indentation
-    );
+    return reject(error);
   }
 }
 

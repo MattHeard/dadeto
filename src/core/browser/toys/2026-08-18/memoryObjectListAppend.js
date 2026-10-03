@@ -4,6 +4,16 @@
 import { deepClone } from '../../browser-core.js';
 import { requireEnvHelper } from '../browserToysCore.js';
 import { SUPPORTED_MEMORY_LOCATIONS } from '../2026-05-28/memoryVector.js';
+import {
+  createToyMessageBoundary,
+  runToyFailureBoundary,
+} from '../formatToyError.js';
+
+const runAppendReference = createToyMessageBoundary(
+  { appended: false },
+  'error',
+  0
+);
 
 /**
  * Append a caller-normalized reference while retaining parser failure messages.
@@ -13,15 +23,13 @@ import { SUPPORTED_MEMORY_LOCATIONS } from '../2026-05-28/memoryVector.js';
  * @returns {string} Structured append result.
  */
 export function appendReferenceList(input, env, parse) {
-  try {
+  return runAppendReference(() => {
     const request = parse(input);
     return memoryObjectListAppend(
       JSON.stringify({ ...request, object: request.assignment }),
       env
     );
-  } catch (error) {
-    return JSON.stringify({ appended: false, error: error.message });
-  }
+  });
 }
 
 /**
@@ -31,7 +39,7 @@ export function appendReferenceList(input, env, parse) {
  * @returns {string} Structured append result.
  */
 export function memoryObjectListAppend(input, env) {
-  try {
+  return runToyFailureBoundary(() => {
     const request = parseRequest(input);
     const root = readRoot(request.memoryLocation, env);
     const list = readList(root, request.path);
@@ -44,9 +52,7 @@ export function memoryObjectListAppend(input, env) {
       length: list.length,
       object: request.object,
     });
-  } catch (error) {
-    return formatAppendFailure(error);
-  }
+  }, formatAppendFailure);
 }
 
 /**

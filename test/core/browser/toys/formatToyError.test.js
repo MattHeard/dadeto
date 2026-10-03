@@ -4,9 +4,35 @@ import {
   formatToyConversionError,
   runToyCalculation,
   runToyRequest,
+  runToyFailureBoundary,
 } from '../../../../src/core/browser/toys/formatToyError.js';
 
 describe('toy error formatting', () => {
+  test('failure executors retain success identity and deliver the original thrown value once', () => {
+    const value = { original: true };
+    expect(
+      runToyFailureBoundary(
+        () => value,
+        () => {
+          throw new Error('unexpected rejection');
+        }
+      )
+    ).toBe(value);
+    const failures = [];
+    expect(
+      runToyFailureBoundary(
+        () => {
+          throw null;
+        },
+        error => {
+          failures.push(error);
+          return value;
+        }
+      )
+    ).toBe(value);
+    expect(failures).toEqual([null]);
+  });
+
   test('request pipelines parse once, calculate the same object and format the result', () => {
     const events = [];
     const request = { value: 7 };
