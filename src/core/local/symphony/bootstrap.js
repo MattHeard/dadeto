@@ -242,22 +242,14 @@ async function buildSymphonyStatusSnapshot(options, deps) {
  * @returns {SymphonyBootstrapValue} Failed launch attempt copy.
  */
 function getPreservedFailedLaunchAttempt(previousStatus) {
-  if (
-    !previousStatus ||
-    typeof previousStatus !== 'object' ||
-    !previousStatus.lastLaunchAttempt ||
-    typeof previousStatus.lastLaunchAttempt !== 'object'
-  ) {
-    return null;
-  }
-
-  if (previousStatus.lastLaunchAttempt.outcome !== 'failed') {
-    return null;
-  }
-
-  return {
-    ...previousStatus.lastLaunchAttempt,
-  };
+  return whenOrNull(
+    previousStatus &&
+      typeof previousStatus === 'object' &&
+      previousStatus.lastLaunchAttempt &&
+      typeof previousStatus.lastLaunchAttempt === 'object' &&
+      previousStatus.lastLaunchAttempt.outcome === 'failed',
+    () => ({ ...previousStatus.lastLaunchAttempt })
+  );
 }
 
 /**

@@ -110,14 +110,19 @@ describe('core Symphony bootstrap handle', () => {
   });
 
   test('refresh handles stores without read support and preserves failed launches', async () => {
+    const attempt = {
+      outcome: 'failed',
+      summary: 'Codex launch failed.',
+      details: { source: 'launcher' },
+    };
+    const readAttempt = jest.fn(() => attempt);
     const previousStatus = {
       state: 'idle',
       eventLog: ['older event'],
-      lastLaunchAttempt: {
-        outcome: 'failed',
-        summary: 'Codex launch failed.',
-      },
     };
+    Object.defineProperty(previousStatus, 'lastLaunchAttempt', {
+      get: readAttempt,
+    });
     const statusStore = {
       writeStatus: jest.fn().mockResolvedValue(undefined),
     };
@@ -159,10 +164,10 @@ describe('core Symphony bootstrap handle', () => {
     });
 
     expect(snapshot.status.eventLog).toEqual(['older event']);
-    expect(snapshot.status.lastLaunchAttempt).toEqual({
-      outcome: 'failed',
-      summary: 'Codex launch failed.',
-    });
+    expect(readAttempt).toHaveBeenCalledTimes(4);
+    expect(snapshot.status.lastLaunchAttempt).toEqual(attempt);
+    expect(snapshot.status.lastLaunchAttempt).not.toBe(attempt);
+    expect(snapshot.status.lastLaunchAttempt.details).toBe(attempt.details);
     expect(noReadSnapshot.status.eventLog).toEqual([]);
     expect(statusStore.writeStatus).toHaveBeenCalledWith(
       expect.objectContaining({
