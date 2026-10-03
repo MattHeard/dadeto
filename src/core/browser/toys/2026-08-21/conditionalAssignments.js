@@ -98,10 +98,19 @@ function writeAsset(x, env) {
   return commitConditional(x, env, result, {
     field: 'assetId',
     path: 'assetSegmentAssignments',
-    metadata: () => ({
-      object: { assetId: x.assetId, segmentId: x.candidateSegment.segmentId },
-    }),
+    metadata: buildAssetMetadata.bind(null, x),
   });
+}
+
+/**
+ * Materialize raw asset identity only after feasibility has been accepted.
+ * @param {Record<string, any>} request Asset assignment request.
+ * @returns {{object: {assetId: unknown, segmentId: unknown}}} Uncoerced identity metadata.
+ */
+function buildAssetMetadata(request) {
+  const assetId = request.assetId;
+  const segmentId = request.candidateSegment.segmentId;
+  return { object: { assetId, segmentId } };
 }
 /**
  * Calculate and append a single runner assignment.

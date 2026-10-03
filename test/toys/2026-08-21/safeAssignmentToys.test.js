@@ -216,6 +216,20 @@ test('maximum-speed feasibility handles exact, excessive, and zero-duration case
   ).toBe(false);
 });
 
+test('asset metadata preserves raw identity while persisted identity is normalized', () => {
+  const value = env();
+  const response = JSON.parse(
+    assignAssetToSegmentIfFeasible(
+      request({ assetId: 17, stockInPoint: points[0] }),
+      value.env
+    )
+  );
+  expect(response.object).toEqual({ assetId: 17, segmentId: 'AB' });
+  expect(value.state.temporary.assetSegmentAssignments).toEqual([
+    { assetId: '17', segmentId: 'AB' },
+  ]);
+});
+
 test('asset and runner writers append only after feasibility', () => {
   const asset = env();
   expect(
