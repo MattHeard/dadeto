@@ -414,11 +414,7 @@ function toExitCode(code, signal) {
     return code;
   }
 
-  if (signal) {
-    return 1;
-  }
-
-  return 0;
+  return Number(Boolean(signal));
 }
 
 /**

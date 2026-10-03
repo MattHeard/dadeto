@@ -341,7 +341,13 @@ describe('local playwright runner configuration', () => {
 });
 
 describe('local playwright runner process outcomes', () => {
-  it('treats a null exit code and null signal as a clean exit', async () => {
+  it.each([
+    [null, null, 0],
+    [null, '', 0],
+    [null, 'SIGTERM', 1],
+    [0, 'SIGTERM', 0],
+    [7, 'SIGTERM', 7],
+  ])('maps code %p and signal %p to status %p', async (code, signal, exitCode) => {
     const simulator = new FakeChildProcess();
     const writer = new FakeChildProcess();
     const playwright = new FakeChildProcess();
@@ -374,12 +380,12 @@ describe('local playwright runner process outcomes', () => {
       Buffer.from('writer server listening on http://localhost:4322/writer/\n')
     );
     await flushEventLoop();
-    playwright.emit('exit', null, null);
+    playwright.emit('exit', code, signal);
 
     await expect(runPromise).resolves.toEqual({
       baseUrl: 'http://127.0.0.1:4322',
-      exitCode: 0,
-      signal: null,
+      exitCode,
+      signal,
     });
 
     expect(spawnCalls).toHaveLength(3);
