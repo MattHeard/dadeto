@@ -16,7 +16,7 @@ describe('billing protocol', () => {
         {
           pending: ['paid', 'expired'],
           paid: ['partially_refunded', 'refunded'],
-          partially_refunded: ['refunded'],
+          ['partially_refunded']: ['refunded'],
           refunded: [],
           expired: [],
         },
@@ -26,7 +26,7 @@ describe('billing protocol', () => {
         {
           quoted: ['reserved'],
           reserved: ['settled', 'released', 'needs_recovery'],
-          needs_recovery: ['settled', 'released'],
+          ['needs_recovery']: ['settled', 'released'],
           settled: [],
           released: [],
         },
