@@ -121,7 +121,10 @@ export function controllerMenu(state, pressed) {
   if (pressed.includes('b') || pressed.includes('y'))
     return openMenuPage(state, pressed.includes('y') ? 'assign' : 'main');
   const entries = menuEntries(state);
-  const next = withControllerSelection(state, controllerSelection(state.menu.selected || 0, pressed, entries.length));
+  const next = withControllerSelection(
+    state,
+    controllerSelection(state.menu.selected || 0, pressed, entries.length)
+  );
   const selected = next.menu.selected;
   if (!pressed.includes('a')) return { state: next, handled: true };
   const command = entries[selected].command;

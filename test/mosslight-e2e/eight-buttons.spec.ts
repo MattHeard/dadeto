@@ -67,6 +67,7 @@ test('real handheld taps assign B and journal closes without hidden dialogue foc
 test('embedded keypad uses the same eight-button assignment rules', async ({ page }) => {
   await page.goto('/');
   const toy = page.locator('#MOSS1');
+  await toy.scrollIntoViewIfNeeded();
   await expect(toy.getByRole('button', { name: 'Submit', exact: true })).toBeEnabled();
   const press = async (key: string) => {
     await toy.locator(`button[data-key="${key}"]`).click();

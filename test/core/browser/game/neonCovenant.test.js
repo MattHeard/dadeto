@@ -580,21 +580,60 @@ test('save contract rejects partial or nonnumeric ledgers before replacement', (
   expect(
     validLabSave({ ...noOverlay, menu: { page: 'main', selected: 0 } })
   ).toBe(true);
-  const conversation = press({ ...noOverlay, world: { ...noOverlay.world, mapId: 'clinic', map: LAB_CONTENT.maps.clinic, player: { ...noOverlay.world.player, x: 4, y: 5 } } }, 'a');
+  const conversation = press(
+    {
+      ...noOverlay,
+      world: {
+        ...noOverlay.world,
+        mapId: 'clinic',
+        map: LAB_CONTENT.maps.clinic,
+        player: { ...noOverlay.world.player, x: 4, y: 5 },
+      },
+    },
+    'a'
+  );
   expect(validLabSave(conversation)).toBe(true);
   const moreInvalid = [
-    s => { s.world.flags.ending = 'gentle'; },
-    s => { s.world.player.x = -1; }, s => { s.world.player.x = 13; },
-    s => { s.world.player.y = -1; }, s => { s.world.player.y = 9; },
-    s => { s.world.player.facing = 'missing'; },
-    s => { s.lab.decisions = -1; }, s => { s.lab.decisions = 7; },
-    s => { s.menu = { page: 'main', selected: -1 }; },
-    s => { s.dialogue.lines = [null]; },
-    s => { s.dialogue.choices = [null]; },
-    s => { s.dialogue.choices = [{ label: 'Bad order', command: 'focus:missing' }]; },
+    s => {
+      s.world.flags.ending = 'gentle';
+    },
+    s => {
+      s.world.player.x = -1;
+    },
+    s => {
+      s.world.player.x = 13;
+    },
+    s => {
+      s.world.player.y = -1;
+    },
+    s => {
+      s.world.player.y = 9;
+    },
+    s => {
+      s.world.player.facing = 'missing';
+    },
+    s => {
+      s.lab.decisions = -1;
+    },
+    s => {
+      s.lab.decisions = 7;
+    },
+    s => {
+      s.menu = { page: 'main', selected: -1 };
+    },
+    s => {
+      s.dialogue.lines = [null];
+    },
+    s => {
+      s.dialogue.choices = [null];
+    },
+    s => {
+      s.dialogue.choices = [{ label: 'Bad order', command: 'focus:missing' }];
+    },
   ];
   for (const corrupt of moreInvalid) {
-    const state = structuredClone(conversation); corrupt(state);
+    const state = structuredClone(conversation);
+    corrupt(state);
     expect(validLabSave(state)).toBe(false);
   }
   const envelope = JSON.parse(runtime.exportSave());
@@ -602,7 +641,12 @@ test('save contract rejects partial or nonnumeric ledgers before replacement', (
   envelope.state.presentation = { palette: null, menuRows: ['spoofed'] };
   runtime.importSave(JSON.stringify(envelope));
   expect(runtime.getSnapshot().world.map).toEqual(LAB_CONTENT.maps.office);
-  expect(runtime.frame().palette).toEqual(['#111426', '#243344', '#52a7bc', '#f482ca']);
+  expect(runtime.frame().palette).toEqual([
+    '#111426',
+    '#243344',
+    '#52a7bc',
+    '#f482ca',
+  ]);
 });
 
 test('standalone page registers independent live agent tools, draws and disposes shared lifecycle', () => {

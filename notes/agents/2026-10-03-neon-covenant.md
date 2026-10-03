@@ -31,3 +31,12 @@ is `.tmp/neon-check.log`; broader shared-presenter browser acceptance is
 Next time, use `neon_observe`/`neon_act` against the actual page for deterministic
 playthroughs. Do not treat a local build or push as evidence of a production deploy.
 The pre-existing zero-clone goal remains independently owned by dadeto-aaou.
+
+Terminal acceptance: all 20 expanded phone/desktop Playwright tests pass. Full
+`npm run check` exits 1 solely for the unchanged 73-clone duplication backlog;
+the test phase and all other evaluators pass. Global exact coverage is
+20,365/20,365 lines, 21,215/21,215 statements, 7,046/7,046 functions and
+10,250/10,250 branches. Production Netlify run 37131825242 succeeds, and
+`https://mattheard.net/neon-covenant/` and its management module respond correctly.
+Transient failure-context files from the first browser run were removed; their
+history remains recoverable in Git. Successful browser artifacts live in `.tmp`.

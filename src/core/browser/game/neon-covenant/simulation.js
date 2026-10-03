@@ -4,7 +4,10 @@ import { openDialogue, advanceDialogue } from '../mosslight-valley/dialogue.js';
 import { createLab, manageLab, endShift } from './management.js';
 import { labEntries, labMenuRows } from './controls.js';
 import { LAB_CONTENT } from './content.js';
-import { controllerSelection, withControllerSelection } from '../mosslight-valley/controls.js';
+import {
+  controllerSelection,
+  withControllerSelection,
+} from '../mosslight-valley/controls.js';
 import { toFramePayload } from '../mosslight-valley/renderer.js';
 
 /**
@@ -151,8 +154,13 @@ function stepMenu(state, pressed) {
   if (pressed.includes('y'))
     return { ...state, menu: { page: 'assign', selected: 0 } };
   const entries = labEntries(state);
-  const next = withControllerSelection(state, controllerSelection(state.menu.selected, pressed, entries.length));
-  return pressed.includes('a') ? menuCommand(next, entries[next.menu.selected][1]) : next;
+  const next = withControllerSelection(
+    state,
+    controllerSelection(state.menu.selected, pressed, entries.length)
+  );
+  return pressed.includes('a')
+    ? menuCommand(next, entries[next.menu.selected][1])
+    : next;
 }
 
 /**

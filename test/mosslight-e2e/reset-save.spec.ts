@@ -68,6 +68,7 @@ test('embedded menu reset preserves other slots and slot switching persists betw
   await seedProgress(page);
   await page.goto('/');
   const toy = page.locator('#MOSS1');
+  await toy.scrollIntoViewIfNeeded();
   await expect(toy.getByRole('button', { name: 'Submit', exact: true })).toBeEnabled();
   const before = await readSaves(page);
   await controllerUtility(page, 'page:reset', true);
