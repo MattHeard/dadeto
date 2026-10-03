@@ -156,6 +156,7 @@ describe('local notion codex active run handling', () => {
       reason: 'active-run',
       runId: 'existing-run',
     });
+    expect(result.state.activeRun).toEqual({ runId: 'existing-run', pid: 777 });
     expect(writes).toEqual([]);
   });
 
@@ -270,6 +271,7 @@ describe('local notion codex active run handling', () => {
     expect(result.launched).toBe(true);
     expect(launchPayloads).toHaveLength(1);
     expect(writes).toHaveLength(1);
+    expect(result.state).toBe(writes[0]);
     expect(writes[0].activeRun).toMatchObject({
       runId: '2026-04-30T07:47:00.000Z--notion-codex',
       pid: 779,

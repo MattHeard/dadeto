@@ -109,24 +109,20 @@ export async function runNotionCodexPoll(options) {
 
   if (state.activeRun) {
     const runId = getActiveRunId(state.activeRun);
-    return {
-      launched: false,
+    return createPollResult(state, {
       skipped: true,
       reason: 'active-run',
       runId,
-      state,
-    };
+    });
   }
 
   if (shouldDelayForBackoff(state, now)) {
     await options.stateStore.writeState(state);
-    return {
-      launched: false,
+    return createPollResult(state, {
       skipped: true,
       reason: 'idle-backoff',
       nextDelayMs: getRemainingDelayMs(state.nextPollAfter, now),
-      state,
-    };
+    });
   }
 
   const runId = `${nowIso}--notion-codex`;
@@ -138,13 +134,11 @@ export async function runNotionCodexPoll(options) {
   });
 
   if (options.dryRun) {
-    return {
-      launched: false,
+    return createPollResult(state, {
       dryRun: true,
       runId,
       prompt,
-      state,
-    };
+    });
   }
 
   const launchResult = await options.launcher.launch({
@@ -177,13 +171,22 @@ export async function runNotionCodexPoll(options) {
 
   await options.stateStore.writeState(nextState);
 
-  return {
+  return createPollResult(nextState, {
     launched: true,
     runId,
     prompt,
     launchResult,
-    state: nextState,
-  };
+  });
+}
+
+/**
+ * Build the shared poll envelope while retaining each outcome's details.
+ * @param {NotionCodexPollState} state Reconciled or persisted state for this outcome.
+ * @param {Record<string, unknown>} details Launch, skip or dry-run result fields.
+ * @returns {Record<string, unknown>} Poll outcome with its authoritative state.
+ */
+function createPollResult(state, details) {
+  return { launched: false, ...details, state };
 }
 
 /**
