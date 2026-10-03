@@ -24,3 +24,13 @@ Hurdle: broader toy-only coverage collection differed from isolated measurement
 coverage despite passing behavior tests. Do not claim global coverage from either
 subset. Preserve both logs and use the next full aggregate for authoritative
 merged global evidence. The goal remains open in dadeto-aaou.
+
+## Terminal aggregate evidence
+
+At pushed `5ea6fae742`, ran
+`TMPDIR=/home/matt/dadeto/.tmp DADETO_COVERAGE_SHARD_SIZE=40 npm run check`.
+`.tmp/segment-owners-full-check.log` records exit1 and outer failed1/10:
+duplication only, 102 clones. All other nine gates passed, including nine browser
+tests (8.9 seconds). Merged coverage proves exact counts: lines19978/19978,
+statements20787/20787, functions6922/6922, branches9784/9784. No subset coverage
+claim is needed for global correctness at this checkpoint.
