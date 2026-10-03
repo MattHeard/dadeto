@@ -6,6 +6,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
   assertFunction,
+  clampNumber,
   resolveOrNull,
   createAsyncFsAdapters,
   createFsAdapters,
@@ -56,6 +57,24 @@ import {
 } from '../../src/core/browser/browser-core.js';
 
 describe('commonCore helpers', () => {
+  test('clamps using caller bounds while preserving NaN, zero and single coercion', () => {
+    for (const [value, minimum, maximum, expected] of [
+      [-5, 0, 1, 0],
+      [0.5, 0, 1, 0.5],
+      [2, 0, 1, 1],
+      [120, 0, 100, 100],
+      [-Infinity, 0, 100, 0],
+      [Infinity, 0, 100, 100],
+      [NaN, 0, 100, NaN],
+      [-0, 0, 100, 0],
+      [-0, -1, 1, -0],
+    ]) {
+      expect(clampNumber(value, minimum, maximum)).toBe(expected);
+    }
+    const valueOf = jest.fn(() => 0.75);
+    expect(clampNumber({ valueOf }, 0, 1)).toBe(0.75);
+    expect(valueOf).toHaveBeenCalledTimes(1);
+  });
   test('promise absence boundary preserves values and normalizes rejected operations', async () => {
     const value = { result: 'kept' };
     await expect(resolveOrNull(Promise.resolve(value))).resolves.toBe(value);

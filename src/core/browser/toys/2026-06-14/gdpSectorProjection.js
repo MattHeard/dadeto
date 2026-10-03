@@ -1,4 +1,5 @@
 import { publicHistoricalRows } from './gdpSectorProjection.publicRows.js';
+import { clampNumber } from '../../../commonCore.js';
 
 const INPUT_START_YEAR = 2000;
 const DEFAULT_INPUT_END_YEAR = 2024;
@@ -288,7 +289,7 @@ function lerp(start, end, ratio) {
  * @returns {number} Clamped share.
  */
 function clampShare(value) {
-  return Math.min(100, Math.max(0, value));
+  return clampNumber(value, 0, 100);
 }
 
 /**

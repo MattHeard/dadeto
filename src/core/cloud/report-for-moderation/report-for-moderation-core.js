@@ -1,4 +1,8 @@
-import { assertFunction, trimmedStringOrEmpty } from '../../commonCore.js';
+import {
+  assertFunction,
+  trimmedStringOrEmpty,
+  clampNumber,
+} from '../../commonCore.js';
 import {
   createCorsOriginHandler,
   createCorsOptions as buildCorsOptions,
@@ -193,7 +197,7 @@ function clamp01(value) {
     return 0;
   }
 
-  return Math.min(1, Math.max(0, value));
+  return clampNumber(value, 0, 1);
 }
 
 /**
