@@ -52,3 +52,9 @@ detection timestamps. The old CLI is only a temporary characterization tool,
 not an installed project dependency or an audit exemption.
 The clone-removal goal remains open until the report reaches zero and the full
 aggregate exits successfully with exact global coverage.
+
+Terminal full aggregate at `5249720ddb` also passed all unit tests and nine
+browser tests. Exact global totals: 19,975 lines, 20,779 statements, 6,908
+functions, and 9,799 branches all covered. The wrapper exited 1 solely for
+duplication (121 clones); all nine other gates passed.
+Artifact: `.tmp/safe-clone-scanner-full-check.log`.

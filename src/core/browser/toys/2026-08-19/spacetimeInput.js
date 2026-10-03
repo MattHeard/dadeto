@@ -1,5 +1,6 @@
 // Shared input predicates for the spacetime toys.
 import { resolvePointRecords } from '../2026-08-22/spacePointResolution.js';
+import { runToyCalculation } from '../formatToyError.js';
 
 /**
  * Determine whether a value is a non-array object.
@@ -45,14 +46,12 @@ export function parseSegmentMeasurementInput(input) {
  * @returns {string} Serialized value/unit or original error message.
  */
 export function measureSpacetimeSegment(input, parse, measure, unit) {
-  try {
+  return runToyCalculation(() => {
     const { points, segment } = parse(input);
     const byId = new Map(points.map(point => [point.pointId, point]));
     const start = byId.get(segment.startPointId);
     const end = byId.get(segment.endPointId);
     if (!start || !end) throw new Error('Segment references an unknown point.');
     return JSON.stringify({ value: measure(start, end), unit });
-  } catch (error) {
-    return JSON.stringify({ valid: false, error: error.message });
-  }
+  }, 0);
 }

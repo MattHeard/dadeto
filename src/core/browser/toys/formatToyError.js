@@ -25,3 +25,20 @@ export function formatToyConversionError(message) {
 export function formatToyResult(payload, indentation = 2) {
   return JSON.stringify(payload, null, indentation);
 }
+
+/**
+ * Keep a calculation's success output and serialize its original failure message.
+ * @param {() => string} calculate Synchronous toy calculation.
+ * @param {number} [indentation] Failure indentation; omitted means readable JSON.
+ * @returns {string} Original result or caller-formatted validation failure.
+ */
+export function runToyCalculation(calculate, indentation) {
+  try {
+    return calculate();
+  } catch (error) {
+    return formatToyError(
+      /** @type {{message?: unknown}} */ (error).message,
+      indentation
+    );
+  }
+}

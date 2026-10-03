@@ -1,6 +1,6 @@
 // Toy: Spacetime World Line
 // (input, env) -> string
-import { formatToyError, formatToyResult } from '../formatToyError.js';
+import { runToyCalculation, formatToyResult } from '../formatToyError.js';
 import { isJsonObject } from './spacetimeInput.js';
 
 /**
@@ -9,7 +9,7 @@ import { isJsonObject } from './spacetimeInput.js';
  * @returns {string} Ordered world line or a structured validation error.
  */
 export function spacetimeWorldLine(input) {
-  try {
+  return runToyCalculation(() => {
     const request = parseInput(input);
     const byStart = new Map();
     request.segments.forEach(segment => {
@@ -46,9 +46,7 @@ export function spacetimeWorldLine(input) {
       endPointId: request.endPointId,
       segments: ordered,
     });
-  } catch (error) {
-    return formatToyError(error.message);
-  }
+  });
 }
 
 /**

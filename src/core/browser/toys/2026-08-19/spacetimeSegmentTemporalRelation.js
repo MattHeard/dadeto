@@ -1,7 +1,7 @@
 // Toy: Spacetime Segment Temporal Relation
 // (input, env) -> string
 import { resolvePointRecords } from '../2026-08-22/spacePointResolution.js';
-import { formatToyResult, formatToyError } from '../formatToyError.js';
+import { formatToyResult, runToyCalculation } from '../formatToyError.js';
 import { isJsonObject, normalizeSegmentId } from './spacetimeInput.js';
 import { resolveSegmentTiming } from '../2026-08-21/segmentAssignmentFeasibilityCore.js';
 
@@ -11,7 +11,7 @@ import { resolveSegmentTiming } from '../2026-08-21/segmentAssignmentFeasibility
  * @returns {string} Relation result.
  */
 export function spacetimeSegmentTemporalRelation(input) {
-  try {
+  return runToyCalculation(() => {
     const request = parseRequest(input);
     const points = new Map(request.points.map(point => [point.pointId, point]));
     const segments = new Map(
@@ -27,9 +27,7 @@ export function spacetimeSegmentTemporalRelation(input) {
       firstInterval: left,
       secondInterval: right,
     });
-  } catch (error) {
-    return formatToyError(error.message);
-  }
+  });
 }
 
 /**

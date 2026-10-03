@@ -1,3 +1,5 @@
+import { runToyCalculation } from '../formatToyError.js';
+
 const DIRECTIONS = {
   delivery: {
     anchor: 'possessionStartPoint',
@@ -20,7 +22,7 @@ const DIRECTIONS = {
  * @returns {string} Serialized point and directed segment, or failure.
  */
 export function travelSegmentProposal(input, direction) {
-  try {
+  return runToyCalculation(() => {
     const request = JSON.parse(input);
     const configuration = DIRECTIONS[direction];
     const anchor = request[configuration.anchor];
@@ -50,9 +52,7 @@ export function travelSegmentProposal(input, direction) {
         endPointId: endpoints[1],
       },
     });
-  } catch (error) {
-    return JSON.stringify({ valid: false, error: error.message });
-  }
+  }, 0);
 }
 
 /**
