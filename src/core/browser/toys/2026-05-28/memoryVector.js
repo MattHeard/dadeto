@@ -1,4 +1,5 @@
 import { get } from '../2025-03-29/get.js';
+import { buildWhen } from '../../common.js';
 import {
   requireEnvHelper,
   runToyFailureBoundary,
@@ -451,15 +452,13 @@ function readValidatedEnvelopeRoot(env, selectRoot) {
 function readValidatedSourceRoot(env, helperName, selectRoot) {
   const getter = requireEnvHelper(env, helperName);
   const source = getter();
-  if (!isObjectLike(source)) {
-    return {
+  return (
+    buildWhen(isObjectLike(source), () => ({
+      root: selectRoot(/** @type {object | unknown[]} */ (source)),
+    })) ?? {
       error: `Error: '${helperName}' did not return a valid object or array.`,
-    };
-  }
-
-  return {
-    root: selectRoot(/** @type {object | unknown[]} */ (source)),
-  };
+    }
+  );
 }
 
 /**

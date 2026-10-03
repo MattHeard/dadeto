@@ -12,6 +12,42 @@ import {
 } from '../../../src/core/browser/toys/2026-05-28/memoryVector.js';
 
 describe('memoryVector', () => {
+  test('root readers get the source once and preserve lazy projection identity and errors', () => {
+    const events = [];
+    const root = { items: [] };
+    const source = {
+      get temporary() {
+        events.push('project');
+        return root;
+      },
+    };
+    const env = new Map([
+      [
+        'getData',
+        () => {
+          events.push('get');
+          return source;
+        },
+      ],
+    ]);
+    expect(memoryVectorTestOnly.readTemporaryMemoryRoot(env).root).toBe(root);
+    expect(events).toEqual(['get', 'project']);
+    const failure = new Error('projection denied');
+    env.set('getData', () =>
+      Object.defineProperty({}, 'temporary', {
+        get() {
+          throw failure;
+        },
+      })
+    );
+    expect(() => memoryVectorTestOnly.readTemporaryMemoryRoot(env)).toThrow(
+      failure
+    );
+    env.set('getData', () => null);
+    expect(memoryVectorTestOnly.readTemporaryMemoryRoot(env)).toEqual({
+      error: "Error: 'getData' did not return a valid object or array.",
+    });
+  });
   test('temporary persistence replaces the root before resolving the setter and preserves envelope identity', () => {
     const sibling = { retained: true };
     const envelope = { temporary: { old: true }, permanent: sibling };
