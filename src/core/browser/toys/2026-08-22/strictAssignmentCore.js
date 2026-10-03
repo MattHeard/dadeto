@@ -5,7 +5,10 @@ import {
   resolveSegment,
   measureSegmentMotion,
 } from '../2026-08-21/segmentAssignmentFeasibilityCore.js';
-import { resolvePointRecords } from './spacePointResolution.js';
+import {
+  resolvePointRecords,
+  indexPointRecords,
+} from './spacePointResolution.js';
 import {
   appendOneAssignment,
   formatRejectedAssignment,
@@ -214,10 +217,7 @@ export function evaluateRunnerWorldLine(input, shift) {
  * @returns {Map<string, Record<string, unknown>>} Point map.
  */
 export function buildPoints(input) {
-  return new Map(
-    readAssignmentRecords(input, 'points').map(point => [
-      String(point.pointId),
-      point,
-    ])
+  return indexPointRecords(readAssignmentRecords(input, 'points'), point =>
+    String(point.pointId)
   );
 }

@@ -4,6 +4,30 @@ import { normalizeSpatialCoordinates } from '../2026-08-18/registryUtils.js';
 export { normalizeSpatialCoordinates };
 
 /**
+ * Index resolved points by their original IDs, with later duplicates winning.
+ * @param {Array<Record<string, unknown>>} points Spacetime points.
+ * @param {Array<Record<string, unknown>>} spacePoints Atemporal space points.
+ * @returns {Map<unknown, Record<string, unknown>>} Coordinate-bearing point index.
+ */
+export function indexResolvedPoints(points, spacePoints) {
+  return indexPointRecords(
+    resolvePointRecords(points, spacePoints),
+    point => point.pointId
+  );
+}
+
+/**
+ * Index points with a caller-selected ID policy; later duplicates win.
+ * @template K
+ * @param {Array<Record<string, unknown>>} points Point records.
+ * @param {(point: Record<string, unknown>) => K} key Point key policy.
+ * @returns {Map<K, Record<string, unknown>>} Point lookup.
+ */
+export function indexPointRecords(points, key) {
+  return new Map(points.map(point => [key(point), point]));
+}
+
+/**
  * Resolve spacetime-point coordinate references while preserving legacy points.
  * @param {Array<Record<string, unknown>>} points Spacetime points.
  * @param {Array<Record<string, unknown>>} spacePoints Atemporal space points.

@@ -5,6 +5,7 @@ import { spacetimeSegmentGeodesicLength } from '../../../src/core/browser/toys/2
 import { constantSpeedGeodesicTravelDuration } from '../../../src/core/browser/toys/2026-08-20/constantSpeedGeodesicTravelDuration.js';
 import { wgs84CirclePointPredicate } from '../../../src/core/browser/toys/2026-08-20/wgs84CirclePointPredicate.js';
 import {
+  indexResolvedPoints,
   resolvePoint,
   resolvePointRecords,
 } from '../../../src/core/browser/toys/2026-08-22/spacePointResolution.js';
@@ -19,6 +20,20 @@ const point = {
 };
 
 describe('atemporal space-point compatibility', () => {
+  test('resolved indexes retain original keys and the final duplicate record', () => {
+    const first = { pointId: 1 };
+    const final = { pointId: 1, timestamp: 'later' };
+    const textKey = { pointId: '1' };
+    const indexed = indexResolvedPoints([first, final, textKey], undefined);
+    expect([...indexed.keys()]).toEqual([1, '1']);
+    expect(indexed.get(1)).toBe(final);
+    expect(indexed.get('1')).toBe(textKey);
+    expect(indexResolvedPoints([], [])).toEqual(new Map());
+    expect(() => indexResolvedPoints([point], [])).toThrow(
+      'Unknown space point'
+    );
+  });
+
   test('rejects malformed registry points and resolves all reference boundaries', () => {
     expect(
       JSON.parse(
