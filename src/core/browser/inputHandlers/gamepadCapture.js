@@ -376,22 +376,25 @@ function getPreviousButtons(previousSnapshot) {
  * @param {HandlerOptions} handlerOptions - Shared handler dependencies.
  * @returns {Record<string, unknown> | null} Button event payload when a button changed.
  */
-function getButtonPayload(gamepad, previousSnapshot, handlerOptions) {
-  return buildChangedPayload({
-    gamepad,
-    previousSnapshot,
-    type: 'button',
-    handlerOptions,
-    findChangedIndex: findChangedButtonIndex,
-    buildFields: changedIndex => {
-      const button = gamepad.buttons[changedIndex];
-      return {
-        buttonIndex: changedIndex,
-        pressed: button.pressed,
-        value: button.value,
-      };
-    },
-  });
+const getButtonPayload = createChangedPayloadReader(
+  'button',
+  findChangedButtonIndex,
+  projectButtonFields
+);
+
+/**
+ * Project the current fields for a changed button.
+ * @param {Gamepad} gamepad Browser gamepad.
+ * @param {number} changedIndex First changed button index.
+ * @returns {Record<string, unknown>} Button event fields.
+ */
+function projectButtonFields(gamepad, changedIndex) {
+  const button = gamepad.buttons[changedIndex];
+  return {
+    buttonIndex: changedIndex,
+    pressed: button.pressed,
+    value: button.value,
+  };
 }
 
 /**
@@ -437,17 +440,61 @@ function getPreviousAxes(previousSnapshot) {
  * @param {HandlerOptions} handlerOptions - Shared handler dependencies.
  * @returns {Record<string, unknown> | null} Axis event payload when an axis changed.
  */
-function getAxisPayload(gamepad, previousSnapshot, handlerOptions) {
+const getAxisPayload = createChangedPayloadReader(
+  'axis',
+  findChangedAxisIndex,
+  projectAxisFields
+);
+
+/**
+ * Project the normalized fields for a changed axis.
+ * @param {Gamepad} gamepad Browser gamepad.
+ * @param {number} changedIndex First changed axis index.
+ * @returns {Record<string, unknown>} Axis event fields.
+ */
+function projectAxisFields(gamepad, changedIndex) {
+  return {
+    axisIndex: changedIndex,
+    value: normalizeAxisValue(gamepad.axes[changedIndex]),
+  };
+}
+
+/**
+ * Bind change detection and field projection to the shared payload reader.
+ * @param {string} type Event type.
+ * @param {(gamepad: Gamepad, previousSnapshot: GamepadSnapshot | undefined) => number} findChangedIndex Change detector.
+ * @param {(gamepad: Gamepad, changedIndex: number) => Record<string, unknown>} projectFields Field projector.
+ * @returns {(gamepad: Gamepad, previousSnapshot: GamepadSnapshot | undefined, handlerOptions: HandlerOptions) => Record<string, unknown> | null} Payload reader.
+ */
+function createChangedPayloadReader(type, findChangedIndex, projectFields) {
+  return readChangedGamepadPayload.bind(null, {
+    type,
+    findChangedIndex,
+    projectFields,
+  });
+}
+
+/**
+ * Read a changed payload using its bound detector and projector.
+ * @param {{ type: string, findChangedIndex: (gamepad: Gamepad, previousSnapshot: GamepadSnapshot | undefined) => number, projectFields: (gamepad: Gamepad, changedIndex: number) => Record<string, unknown> }} reader Reader policy.
+ * @param {Gamepad} gamepad Browser gamepad.
+ * @param {GamepadSnapshot | undefined} previousSnapshot Previous snapshot.
+ * @param {HandlerOptions} handlerOptions Handler dependencies.
+ * @returns {Record<string, unknown> | null} Changed payload or null.
+ */
+function readChangedGamepadPayload(
+  reader,
+  gamepad,
+  previousSnapshot,
+  handlerOptions
+) {
   return buildChangedPayload({
     gamepad,
     previousSnapshot,
-    type: 'axis',
+    type: reader.type,
     handlerOptions,
-    findChangedIndex: findChangedAxisIndex,
-    buildFields: changedIndex => ({
-      axisIndex: changedIndex,
-      value: normalizeAxisValue(gamepad.axes[changedIndex]),
-    }),
+    findChangedIndex: reader.findChangedIndex,
+    buildFields: reader.projectFields.bind(null, gamepad),
   });
 }
 

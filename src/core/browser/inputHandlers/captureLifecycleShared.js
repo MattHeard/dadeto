@@ -47,15 +47,25 @@ export function updateCaptureButtonLabel(options) {
  *   Capture-button update function.
  */
 export function createCaptureButtonUpdater(captureLabel, releaseLabel) {
-  return (dom, button, isCapturing) => {
-    updateCaptureButtonLabel({
-      dom,
-      button,
-      isCapturing,
-      captureLabel,
-      releaseLabel,
-    });
-  };
+  return updatePresetCaptureButton.bind(null, { captureLabel, releaseLabel });
+}
+
+/**
+ * Apply a bound label preset using the current call's DOM facade and button.
+ * @param {{ captureLabel: string, releaseLabel: string }} preset Bound labels.
+ * @param {DOMHelpers} dom Current DOM facade.
+ * @param {HTMLButtonElement} button Current capture button.
+ * @param {boolean} isCapturing Current capture state.
+ * @returns {void}
+ */
+function updatePresetCaptureButton(preset, dom, button, isCapturing) {
+  updateCaptureButtonLabel({
+    dom,
+    button,
+    isCapturing,
+    captureLabel: preset.captureLabel,
+    releaseLabel: preset.releaseLabel,
+  });
 }
 
 /**

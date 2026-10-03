@@ -18,6 +18,14 @@ describe('captureLifecycleShared remaining paths', () => {
 
     expect(dom.setTextContent).toHaveBeenNthCalledWith(1, button, 'Start');
     expect(dom.setTextContent).toHaveBeenNthCalledWith(2, button, 'Stop');
+    const alternateDom = { setTextContent: jest.fn(() => 'ignored return') };
+    const alternateButton = {};
+    expect(update(alternateDom, alternateButton, false)).toBeUndefined();
+    expect(alternateDom.setTextContent).toHaveBeenCalledWith(
+      alternateButton,
+      'Start'
+    );
+    expect(alternateDom.setTextContent.mock.contexts[0]).toBe(alternateDom);
   });
 
   it('creates the gamepad and keyboard label updaters', () => {

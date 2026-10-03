@@ -741,7 +741,7 @@ describe('initial gamepad polling', () => {
     const textInput = { value: '' };
     const globals = createGlobalListenerRegistry();
     const frames = [];
-    const gamepads = [createGamepad()];
+    const gamepads = [createGamepad({ axes: [0.5, 0.75] })];
     const previousAdd = globalThis.addEventListener;
     const previousRemove = globalThis.removeEventListener;
     const previousRequestAnimationFrame = globalThis.requestAnimationFrame;
@@ -776,6 +776,14 @@ describe('initial gamepad polling', () => {
         pressed: false,
         value: 0,
       });
+      expect(
+        JSON.parse(readStoredOrElementValue(textInput)).axisIndex
+      ).toBeUndefined();
+      const submissions = autoSubmitCheckbox.dispatchEvent.mock.calls.length;
+      frames.shift()();
+      expect(autoSubmitCheckbox.dispatchEvent).toHaveBeenCalledTimes(
+        submissions
+      );
     } finally {
       globalThis.addEventListener = previousAdd;
       globalThis.removeEventListener = previousRemove;
@@ -800,7 +808,7 @@ describe('initial axis polling', () => {
     const gamepads = [
       createGamepad({
         buttons: [],
-        axes: [0.5, 0],
+        axes: [0.5, 0.75],
       }),
     ];
     const previousAdd = globalThis.addEventListener;
