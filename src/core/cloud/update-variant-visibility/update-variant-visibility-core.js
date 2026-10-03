@@ -459,7 +459,7 @@ async function applyVariantUpdate(db, payload, renderContents) {
     payload.moderatorId
   );
   const variantData = getValidVariantSnapshotData(variantSnap);
-  const pageRef = getPageRefFromVariantRef(variantRef);
+  const pageRef = getParentDocumentRef(variantRef);
   const rootPageRef = await getRootPageRef(pageRef);
   const wasVisible = hasVisibleState(variantData, 0.5);
   await processVariantUpdate(
@@ -468,7 +468,7 @@ async function applyVariantUpdate(db, payload, renderContents) {
     payload.isApproved,
     moderatorReputation
   );
-  const nextVisibility = calculateNextVisibilityForPayload(
+  const nextVisibility = calculateNextVisibility(
     variantData,
     payload.isApproved,
     moderatorReputation
@@ -512,32 +512,13 @@ async function getRootPageRef(pageRef) {
     return null;
   }
 
-  const storyRef = getStoryRefFromPageRef(pageRef);
+  const storyRef = getParentDocumentRef(pageRef);
   if (!storyRef) {
     return null;
   }
 
   const storySnap = await storyRef.get();
   return storySnap?.data?.()?.rootPage ?? null;
-}
-
-/**
- * Calculate the next visibility for a validated payload.
- * @param {Record<string, unknown> | null | undefined} variantData Variant data.
- * @param {boolean} isApproved Whether the rating is approved.
- * @param {number} moderatorReputation Moderator reputation score.
- * @returns {number} Next visibility score.
- */
-function calculateNextVisibilityForPayload(
-  variantData,
-  isApproved,
-  moderatorReputation
-) {
-  return calculateNextVisibility(
-    variantData ?? {},
-    isApproved,
-    moderatorReputation
-  );
 }
 
 /**
@@ -636,19 +617,12 @@ async function republishContentsIfNeeded(deps) {
 }
 
 /**
- * @param {import('firebase-admin/firestore').DocumentReference} variantRef Variant reference.
- * @returns {import('firebase-admin/firestore').DocumentReference | null} Page reference or null.
+ * Resolve the enclosing document through a document's parent collection.
+ * @param {import('firebase-admin/firestore').DocumentReference} reference Child document reference.
+ * @returns {import('firebase-admin/firestore').DocumentReference | null} Parent document or null.
  */
-function getPageRefFromVariantRef(variantRef) {
-  return variantRef?.parent?.parent ?? null;
-}
-
-/**
- * @param {import('firebase-admin/firestore').DocumentReference} pageRef Page reference.
- * @returns {import('firebase-admin/firestore').DocumentReference | null} Story reference or null.
- */
-function getStoryRefFromPageRef(pageRef) {
-  return pageRef?.parent?.parent ?? null;
+function getParentDocumentRef(reference) {
+  return reference?.parent?.parent ?? null;
 }
 
 /**
