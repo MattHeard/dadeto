@@ -98,6 +98,22 @@ describe('createDocumentStoreCore', () => {
     );
   });
 
+  test('rejects malformed workflow JSON without bootstrapping or overwriting it', async () => {
+    const raw = '{"steps":';
+    const read = jest.fn().mockResolvedValue(raw);
+    const write = jest.fn();
+    const createDirectory = jest.fn();
+    const store = createDocumentStoreCore(
+      createDeps({ readFile: read, writeFile: write, mkdir: createDirectory }),
+      { workflowPath, workflowDir, legacyDocumentPath }
+    );
+
+    await expect(store.loadWorkflow()).rejects.toBeInstanceOf(SyntaxError);
+    expect(read.mock.calls).toEqual([[workflowPath, 'utf8']]);
+    expect(write).not.toHaveBeenCalled();
+    expect(createDirectory).not.toHaveBeenCalled();
+  });
+
   test('resolves the default local document store paths from injected deps', () => {
     const deps = createDeps();
 

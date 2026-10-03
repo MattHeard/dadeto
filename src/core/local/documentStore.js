@@ -200,21 +200,29 @@ function resolveLegacyDocumentPath(deps, options) {
  * @returns {Promise<string>} File contents or empty string.
  */
 async function readText(deps, filePath) {
+  return readOptionalFile(deps, filePath, text => text, '');
+}
+
+/**
+ * Read and decode a UTF-8 file using the store's missing-file policy.
+ * @template T
+ * @param {{ readFile: (path: string, encoding: string) => Promise<string> }} deps Filesystem reader.
+ * @param {string} filePath Requested file.
+ * @param {(text: string) => T} decode Content decoder, evaluated inside the error boundary.
+ * @param {T} missingValue Result used only when the file is absent.
+ * @returns {Promise<T>} Decoded content or the caller's missing-file value.
+ */
+async function readOptionalFile(deps, filePath, decode, missingValue) {
   try {
-    return await deps.readFile(filePath, 'utf8');
+    return decode(await deps.readFile(filePath, 'utf8'));
   } catch (error) {
     if (isMissingFileError(error)) {
-      return '';
+      return missingValue;
     }
     throw error;
   }
 }
 
-/**
- * Check whether a filesystem error is an ENOENT.
- * @param {unknown} error Error to inspect.
- * @returns {boolean} True when the file is missing.
- */
 /**
  * Write the normalized workflow to disk.
  * @param {ReturnType<typeof createDocumentStoreState>} state Store state.
@@ -260,15 +268,12 @@ async function ensureWorkflow(state) {
  * @returns {Promise<{ steps: Array<{ id: string, title: string }>, activeIndex: number, heading: string } | null>} Workflow or null.
  */
 async function readStoredWorkflow(state) {
-  try {
-    const rawWorkflow = await state.deps.readFile(state.workflowPath, 'utf8');
-    return normalizeWorkflow(JSON.parse(rawWorkflow));
-  } catch (error) {
-    if (isMissingFileError(error)) {
-      return null;
-    }
-    throw error;
-  }
+  return readOptionalFile(
+    state.deps,
+    state.workflowPath,
+    rawWorkflow => normalizeWorkflow(JSON.parse(rawWorkflow)),
+    null
+  );
 }
 
 /**
@@ -461,8 +466,7 @@ async function serializeWorkflow(state, workflow) {
  * }>} Workflow response.
  */
 async function loadWorkflow(state) {
-  const workflow = await ensureWorkflow(state);
-  return persistAndSerializeWorkflow(state, workflow);
+  return updateStoredWorkflow(state, workflow => workflow);
 }
 
 /**
@@ -513,16 +517,12 @@ async function saveDocument(state, documentId, content) {
  * }>} Updated workflow response.
  */
 async function moveActiveIndex(state, direction) {
-  const workflow = await ensureWorkflow(state);
-  if (shouldAppendDraft(state, workflow, direction)) {
-    appendDraftStep(state, workflow);
-  }
-
-  return setWorkflowActiveIndex(
-    state,
-    workflow,
-    workflow.activeIndex + direction
-  );
+  return updateStoredWorkflow(state, workflow => {
+    if (shouldAppendDraft(state, workflow, direction)) {
+      appendDraftStep(state, workflow);
+    }
+    return selectWorkflowIndex(workflow, workflow.activeIndex + direction);
+  });
 }
 
 /**
@@ -537,15 +537,26 @@ async function moveActiveIndex(state, direction) {
  * }>} Updated workflow response.
  */
 async function setActiveIndex(state, nextIndex) {
-  const workflow = await ensureWorkflow(state);
-  return setWorkflowActiveIndex(state, workflow, nextIndex);
+  return updateStoredWorkflow(state, workflow =>
+    selectWorkflowIndex(workflow, nextIndex)
+  );
 }
 
 /**
- * Set and persist a workflow's active index.
- * @param {ReturnType<typeof createDocumentStoreState>} state Store state.
+ * Apply a cursor selection before the workflow is persisted.
  * @param {{ steps: Array<{ id: string, title: string }>, activeIndex: number, heading: string }} workflow Workflow to persist.
  * @param {number} nextIndex Desired active index.
+ * @returns {Awaited<ReturnType<typeof ensureWorkflow>>} Workflow with a bounded cursor.
+ */
+function selectWorkflowIndex(workflow, nextIndex) {
+  workflow.activeIndex = clampIndex(nextIndex, workflow.steps.length);
+  return workflow;
+}
+
+/**
+ * Load, transform, persist and serialize one workflow operation.
+ * @param {ReturnType<typeof createDocumentStoreState>} state Store state.
+ * @param {(workflow: Awaited<ReturnType<typeof ensureWorkflow>>) => Awaited<ReturnType<typeof ensureWorkflow>>} transform Operation applied before persistence.
  * @returns {Promise<{
  *   workflowPath: string,
  *   activeIndex: number,
@@ -553,9 +564,9 @@ async function setActiveIndex(state, nextIndex) {
  *   documents: Array<{ id: string, title: string, path: string, content: string }>,
  * }>} Updated workflow response.
  */
-async function setWorkflowActiveIndex(state, workflow, nextIndex) {
-  workflow.activeIndex = clampIndex(nextIndex, workflow.steps.length);
-  return persistAndSerializeWorkflow(state, workflow);
+async function updateStoredWorkflow(state, transform) {
+  const workflow = await ensureWorkflow(state);
+  return persistAndSerializeWorkflow(state, transform(workflow));
 }
 
 /**
