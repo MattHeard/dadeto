@@ -1,0 +1,9 @@
+# Ordered fulfillment validation
+
+Normal and procurement-backed sequences share one `fulfillmentSequences.js` owner and one configured preparation pipeline. Ordered checks retain each proposal's distinct point-reference, timestamp precision, warehouse identity, duration, and generated-ID rules. Shared timestamp and coordinate checks accept the original error policy. Original public paths re-export unchanged function names.
+
+Captured 282 pre-refactor outputs from valid fixtures, malformed input, field mutations and competing faults. `.tmp/fulfillment-validation-final-comparison.log` proves exact serialized outputs match after the refactor. Ten durable tests in the existing proposal suites assert first-failure precedence and original envelopes. Newly separated warehouse-identity rejection initially lacked coverage; these cases restore it. A precise post-validation result annotation restores generated-ID typing without runtime checks or suppressions.
+
+Final focused evidence: `.tmp/ordered-fulfillment-sequences-final-tests.log`, 1,227 tests / 134 suites pass, both shared modules exactly 100% across statements, branches, functions and lines. `.tmp/ordered-fulfillment-sequences-final-static.log` passes nine gates; duplication alone fails at 105 clones, down from 107. The shared file remains under the scanner's existing 1,000-line source limit. No thresholds, exclusions or ignore pragmas changed.
+
+Prior full aggregate at `00eff747ae`: `.tmp/http-registry-clamp-full-check.log`, exit 1 solely for duplication at 107 clones. All unit shards and nine browser tests passed (9.0 seconds); all nine other gates passed. Exact global coverage: lines 19,972/19,972; statements 20,778/20,778; functions 6,910/6,910; branches 9,791/9,791. That global proof predates this extraction; the parent goal remains active.

@@ -57,6 +57,64 @@ const request = {
 };
 
 describe('NORM1 normal fulfillment sequence proposal', () => {
+  test.each([
+    [
+      {
+        possessionContext: {
+          ...request.possessionContext,
+          startPoint: {
+            ...request.possessionContext.startPoint,
+            spacePointId: '',
+          },
+        },
+        warehouse: null,
+      },
+      'Possession points must reference space points.',
+    ],
+    [
+      {
+        possessionContext: {
+          ...request.possessionContext,
+          startPoint: {
+            ...request.possessionContext.startPoint,
+            timestamp: 'invalid',
+          },
+        },
+        warehouse: null,
+      },
+      'Possession timestamps must be valid, ordered, and minute aligned.',
+    ],
+    [
+      { warehouse: null, configuration: null, generatedIds: null },
+      'A valid warehouse space point is required.',
+    ],
+    [
+      {
+        warehouse: { ...request.warehouse, spacePointId: '' },
+        configuration: null,
+      },
+      'A valid warehouse space point is required.',
+    ],
+    [
+      { configuration: null, generatedIds: null },
+      'All durations and buffers must be finite and non-negative.',
+    ],
+    [
+      { generatedIds: null },
+      'All generated point and segment IDs are required.',
+    ],
+  ])(
+    'retains the first normal validation failure for competing defects %#',
+    (change, message) => {
+      expect(
+        JSON.parse(
+          normalFulfillmentSequenceProposal(
+            JSON.stringify({ ...request, ...change })
+          )
+        )
+      ).toEqual({ valid: false, error: message });
+    }
+  );
   test('constructs seven operations and preserves possession data', () => {
     const result = JSON.parse(
       normalFulfillmentSequenceProposal(JSON.stringify(request))

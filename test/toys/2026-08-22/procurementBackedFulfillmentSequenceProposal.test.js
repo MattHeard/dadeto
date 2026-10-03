@@ -49,6 +49,41 @@ const request = {
 };
 
 describe('PROC1 procurement-backed fulfillment sequence proposal', () => {
+  test.each([
+    [
+      {
+        possessionContext: {
+          ...request.possessionContext,
+          startPoint: {
+            ...request.possessionContext.startPoint,
+            timestamp: 'invalid',
+          },
+        },
+        warehouse: null,
+      },
+      'Possession timestamps must be valid and ordered.',
+    ],
+    [
+      { warehouse: null, configuration: null, generatedIds: null },
+      'Valid warehouse coordinates are required.',
+    ],
+    [
+      { configuration: null, generatedIds: null },
+      'Durations must be finite and non-negative.',
+    ],
+    [{ generatedIds: null }, 'All generated IDs are required.'],
+  ])(
+    'retains the first procurement validation failure for competing defects %#',
+    (change, message) => {
+      expect(
+        JSON.parse(
+          procurementBackedFulfillmentSequenceProposal(
+            JSON.stringify({ ...request, ...change })
+          )
+        )
+      ).toEqual({ valid: false, reason: message, error: message });
+    }
+  );
   test('constructs a deterministic sequence with shared touching identities', () => {
     const result = JSON.parse(
       procurementBackedFulfillmentSequenceProposal(JSON.stringify(request))
