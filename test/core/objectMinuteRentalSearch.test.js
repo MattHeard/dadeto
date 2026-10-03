@@ -26,6 +26,45 @@ import {
 // run observes every externally visible feasibility branch as well.
 import '../toys/2026-08-27/searchFeasibility.test.js';
 
+test('service-area coordinate construction preserves inclusive bounds and read order', () => {
+  const reads = [];
+  const point = {
+    get latitude() {
+      reads.push('point.latitude');
+      return ' 90 ';
+    },
+    get longitude() {
+      reads.push('point.longitude');
+      return 180;
+    },
+  };
+  const center = {
+    get latitude() {
+      reads.push('center.latitude');
+      return 90;
+    },
+    get longitude() {
+      reads.push('center.longitude');
+      return '180';
+    },
+  };
+  expect(
+    pointInsideWgs84Circle({ point, circle: { center, radiusMeters: 0 } })
+  ).toBe(true);
+  expect(reads).toEqual([
+    'point.latitude',
+    'point.longitude',
+    'center.latitude',
+    'center.longitude',
+  ]);
+  expect(
+    pointInsideWgs84Circle({
+      point: { latitude: 90.0001, longitude: 180 },
+      circle: { center: { latitude: 90, longitude: 180 }, radiusMeters: 0 },
+    })
+  ).toBe(false);
+});
+
 const schedule = [
   { startTimestamp: '2026-08-27T15:00Z', endTimestamp: '2026-08-27T21:00Z' },
 ];

@@ -412,7 +412,15 @@ describe('runSubmitNewStory fallback logging', () => {
     expect(fallbackSet).toHaveBeenCalledTimes(2);
   });
 
-  it('logs null request headers when raw header strings are empty', async () => {
+  it.each([
+    ['', null],
+    [[], null],
+    [[''], null],
+    [[42, 'ignored'], null],
+    [[['nested']], null],
+    [['  exact text  ', 'ignored'], '  exact text  '],
+    ['   ', '   '],
+  ])('logs raw header candidate %p as %p', async (candidate, expected) => {
     const fallbackSet = jest.fn().mockResolvedValue();
     const fallbackDoc = jest.fn(() => ({ set: fallbackSet }));
     const fallbackCollection = jest.fn(() => ({ doc: fallbackDoc }));
@@ -451,22 +459,22 @@ describe('runSubmitNewStory fallback logging', () => {
         },
         get: null,
         headers: {
-          origin: '',
-          referer: [''],
-          'content-type': '',
+          origin: candidate,
+          referer: candidate,
+          'content-type': candidate,
         },
       },
       response
     );
 
     expect(consoleInfoSpy).toHaveBeenCalledWith(
-      expect.stringContaining('"origin":null')
+      expect.stringContaining(`"origin":${JSON.stringify(expected)}`)
     );
     expect(consoleInfoSpy).toHaveBeenCalledWith(
-      expect.stringContaining('"referer":null')
+      expect.stringContaining(`"referer":${JSON.stringify(expected)}`)
     );
     expect(consoleInfoSpy).toHaveBeenCalledWith(
-      expect.stringContaining('"contentType":null')
+      expect.stringContaining(`"contentType":${JSON.stringify(expected)}`)
     );
   });
 });

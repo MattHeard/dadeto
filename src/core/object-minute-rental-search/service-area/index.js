@@ -1,4 +1,5 @@
 import { wgs84Distance } from '../../wgs84.js';
+import { whenOrNull } from '../../commonCore.js';
 
 export const SOPHIE_CHARLOTTE_SERVICE_AREA = Object.freeze({
   center: Object.freeze({ latitude: 52.510833, longitude: 13.296667 }),
@@ -89,14 +90,15 @@ function coordinates(point) {
   if (!point) return null;
   const latitude = normalizeNumber(point.latitude);
   const longitude = normalizeNumber(point.longitude);
-  return Number.isFinite(latitude) &&
-    latitude >= -90 &&
-    latitude <= 90 &&
-    Number.isFinite(longitude) &&
-    longitude >= -180 &&
-    longitude <= 180
-    ? { latitude, longitude }
-    : null;
+  return whenOrNull(
+    Number.isFinite(latitude) &&
+      latitude >= -90 &&
+      latitude <= 90 &&
+      Number.isFinite(longitude) &&
+      longitude >= -180 &&
+      longitude <= 180,
+    () => ({ latitude, longitude })
+  );
 }
 
 /**

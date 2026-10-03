@@ -12,7 +12,7 @@ import {
 } from '../submit-shared.js';
 import { createFirebaseAppContext } from '../firebase-app-manager.js';
 import { createCloudHttpEndpoint } from '../http-endpoint-bootstrap.js';
-import { whenOrNull } from '../../commonCore.js';
+import { stringOrNull } from '../../commonCore.js';
 
 /**
  * Set up and export the submit-new-story cloud function.
@@ -150,19 +150,17 @@ function readRequestHeaderFromHeaders(headers, headerName) {
   }
 
   const currentHeaders = /** @type {Record<string, unknown>} */ (headers);
-  return whenOrNull(true, () => {
-    const lowerHeaderName = headerName.toLowerCase();
-    const candidates = [headerName, lowerHeaderName];
+  const lowerHeaderName = headerName.toLowerCase();
+  const candidates = [headerName, lowerHeaderName];
 
-    for (const candidate of candidates) {
-      const value = readRequestHeaderCandidate(currentHeaders[candidate]);
-      if (value !== null) {
-        return value;
-      }
+  for (const candidate of candidates) {
+    const value = readRequestHeaderCandidate(currentHeaders[candidate]);
+    if (value !== null) {
+      return value;
     }
+  }
 
-    return null;
-  });
+  return null;
 }
 
 /**
@@ -171,21 +169,11 @@ function readRequestHeaderFromHeaders(headers, headerName) {
  * @returns {string | null} Normalized header value.
  */
 function readRequestHeaderCandidate(raw) {
-  if (typeof raw === 'string') {
-    if (raw.length > 0) {
-      return raw;
-    }
-    return null;
-  }
-
+  let candidate = raw;
   if (Array.isArray(raw) && raw.length > 0) {
-    const [first] = raw;
-    if (typeof first === 'string' && first.length > 0) {
-      return first;
-    }
+    [candidate] = raw;
   }
-
-  return null;
+  return stringOrNull(candidate) || null;
 }
 
 /**

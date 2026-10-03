@@ -4,6 +4,17 @@
 export const ADMIN_UID = 'qcYSrXTaj1MZUoFsAloBwT86GNM2';
 
 /**
+ * Clamp a numeric value without imposing a caller-specific finite-value policy.
+ * @param {number} value Value to clamp.
+ * @param {number} minimum Inclusive lower bound.
+ * @param {number} maximum Inclusive upper bound.
+ * @returns {number} Clamped value, retaining Math's NaN and coercion behavior.
+ */
+export function clampNumber(value, minimum, maximum) {
+  return Math.min(maximum, Math.max(minimum, value));
+}
+
+/**
  * Preserve a promise's result and represent asynchronous failure as absence.
  * @template T
  * @param {Promise<T>} pending Already-started operation.
