@@ -58,7 +58,24 @@ describe('gcp simulator server without a listener', () => {
       publicDir: '/tmp/public',
     };
 
-    const server = await handle({ express, simulator });
+    const listeningServer = { address: () => ({ port: 4321 }) };
+    let notifyListening;
+    app.listen.mockImplementationOnce((_port, callback) => {
+      notifyListening = callback;
+      return listeningServer;
+    });
+    const starting = handle({ express, simulator });
+    let settled = false;
+    void starting.then(() => {
+      settled = true;
+    });
+    await Promise.resolve();
+    await Promise.resolve();
+    expect(app.listen).toHaveBeenCalledTimes(1);
+    expect(settled).toBe(false);
+    notifyListening();
+    const server = await starting;
+    expect(server).toBe(listeningServer);
     expect(server.address()).toEqual({ port: 4321 });
     expect(routeHandlers.length).toBeGreaterThan(10);
 

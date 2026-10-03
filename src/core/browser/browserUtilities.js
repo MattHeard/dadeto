@@ -386,12 +386,13 @@ export function applyBaseCleanupHandlers({
   dom,
   extraHandlers = [],
 }) {
-  applyCleanupHandlers({
+  const cleanupPlan = {
     container,
     dom,
     baseHandlers: BASE_CONTAINER_HANDLERS,
     extraHandlers,
-  });
+  };
+  applyCleanupHandlers(cleanupPlan);
 }
 
 /**

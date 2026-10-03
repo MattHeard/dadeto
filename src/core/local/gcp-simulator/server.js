@@ -150,11 +150,19 @@ async function startServer(deps) {
   );
   app.use(express.static(simulator.publicDir));
 
-  return new Promise(resolve => {
-    const server = app.listen(port, () =>
-      resolveListeningServer(server, port, resolve)
-    );
-  });
+  return new Promise(resolve => beginListening(app, resolve));
+}
+
+/**
+ * Initiate listening after route setup and resolve only from the ready callback.
+ * @param {ReturnType<typeof createJsonExpressApp>} app Configured application.
+ * @param {(server: import('node:http').Server) => void} resolve Server resolver.
+ * @returns {void}
+ */
+function beginListening(app, resolve) {
+  const server = app.listen(port, () =>
+    resolveListeningServer(server, port, resolve)
+  );
 }
 
 /**

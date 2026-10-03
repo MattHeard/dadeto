@@ -237,8 +237,21 @@ describe('browser-core cleanup branches', () => {
     expect(dom.hide).toHaveBeenCalledWith(textInput);
     expect(cleanup).toHaveBeenCalled();
 
-    applyBaseCleanupHandlers({ container: {}, dom, extraHandlers: [cleanup] });
-    expect(cleanup).toHaveBeenCalled();
+    cleanup.mockClear();
+    dom.querySelector.mockClear();
+    const container = {};
+    applyBaseCleanupHandlers({
+      container,
+      dom,
+      extraHandlers: [cleanup, cleanup],
+    });
+    expect(cleanup.mock.calls).toEqual([
+      [container, dom],
+      [container, dom],
+    ]);
+    expect(cleanup.mock.invocationCallOrder[1]).toBeLessThan(
+      dom.querySelector.mock.invocationCallOrder[0]
+    );
     defaultHandler(dom, {}, textInput);
   });
 
