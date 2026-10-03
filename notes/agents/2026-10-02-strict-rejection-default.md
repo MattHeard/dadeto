@@ -17,3 +17,11 @@ validatedAssignments both have exact 100% statements/branches/functions/lines
 passes nine gates and fails only duplication at 122
 (`.tmp/strict-default-static.log`). New full aggregate verification is still
 required. Include reused dependency modules in focused coverage after extracts.
+
+Terminal replacement verification on 2026-10-03 at `4fd78389a9`:
+`TMPDIR=/home/matt/dadeto/.tmp DADETO_COVERAGE_SHARD_SIZE=40 npm run check`
+finished with the nested test stage passing, including all nine browser tests.
+`reports/coverage/coverage-summary.json` confirms exact 100%: 19,927 lines,
+20,726 statements, 6,889 functions, and 9,786 branches all covered.
+The outer ten-gate summary fails only duplication (122 clones); the goal is
+not complete. Full log: `.tmp/strict-default-checkpoint-full.log`.
