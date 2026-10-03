@@ -410,16 +410,14 @@ function getStoredList(items) {
  * @returns {void}
  */
 function persistTransition(context, result) {
-  context.setLocalTemporaryData({
-    temporary: {
-      [COZY_KEY]: {
-        name: context.name,
-        state: result.state,
-        inventory: result.inventory,
-        progress: result.progress,
-      },
-    },
-  });
+  context.setLocalTemporaryData(
+    createTemporaryToyEnvelope(COZY_KEY, {
+      name: context.name,
+      state: result.state,
+      inventory: result.inventory,
+      progress: result.progress,
+    })
+  );
 }
 
 /**
@@ -574,3 +572,4 @@ export const cozyHouseAdventureTestOnly = {
   runAdventure,
 };
 import { withFallback } from '../../common.js';
+import { createTemporaryToyEnvelope } from '../browserToysCore.js';

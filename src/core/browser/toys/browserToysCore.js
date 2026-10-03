@@ -46,6 +46,17 @@ export function getOptionalEnvHelper(env, key) {
 }
 
 /**
+ * Package one toy's state in a temporary-storage envelope.
+ * @template T
+ * @param {string} key Toy storage key.
+ * @param {T} state Caller-owned state value.
+ * @returns {{temporary: Record<string, T>}} Temporary toy envelope.
+ */
+export function createTemporaryToyEnvelope(key, state) {
+  return { temporary: { [key]: state } };
+}
+
+/**
  * Parse and normalize a JSON record, falling back for unusable requests.
  * @template T
  * @template {string} K

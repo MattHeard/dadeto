@@ -1,3 +1,5 @@
+import { createTemporaryToyEnvelope } from '../browserToysCore.js';
+
 /**
  * Adventure state identifiers used by handlers.
  * @typedef {'intro'|'hub'|'hacker:door'|'transport:platform'|'transport:trade'|'alley:stealth'} AdventureState
@@ -437,16 +439,14 @@ function processAdventureStep(context, setTemporaryData) {
   const updatedInventory = getUpdatedInventory(result, context.nextInventory);
   const updatedVisited = getUpdatedVisited(result, context.nextVisited);
 
-  setTemporaryData({
-    temporary: {
-      CYBE1: {
-        name: context.name,
-        state: nextState,
-        inventory: updatedInventory,
-        visited: [...updatedVisited],
-      },
-    },
-  });
+  setTemporaryData(
+    createTemporaryToyEnvelope('CYBE1', {
+      name: context.name,
+      state: nextState,
+      inventory: updatedInventory,
+      visited: [...updatedVisited],
+    })
+  );
 
   return output;
 }
@@ -514,7 +514,7 @@ function runAdventure(input, env) {
   const nextVisited = new Set(visited);
 
   if (!scoped.name) {
-    setTemporaryData({ temporary: { CYBE1: { name } } });
+    setTemporaryData(createTemporaryToyEnvelope('CYBE1', { name }));
     return `> Welcome, ${name}. Your story begins now.\n> Type 'start' to continue.`;
   }
 

@@ -7,6 +7,7 @@ import {
   requireEnvHelper,
   getOptionalEnvHelper,
   parseToyRecord,
+  createTemporaryToyEnvelope,
   parseJsonOrFallback,
   isPlainObject,
   toRecordOrNull,
@@ -22,6 +23,19 @@ import {
   persistDendritePage,
   persistDendriteStory,
 } from '../../src/core/browser/toys/browserToysCore.js';
+
+test('temporary toy envelopes retain the exact state under an own storage key', () => {
+  const state = { inventory: ['tea'], progress: [] };
+  for (const key of ['COZY1', 'CYBE1', '__proto__']) {
+    const envelope = createTemporaryToyEnvelope(key, state);
+    expect(Object.keys(envelope)).toEqual(['temporary']);
+    expect(Object.keys(envelope.temporary)).toEqual([key]);
+    expect(Object.hasOwn(envelope.temporary, key)).toBe(true);
+    expect(envelope.temporary[key]).toBe(state);
+    expect(Object.getPrototypeOf(envelope.temporary)).toBe(Object.prototype);
+    expect(createTemporaryToyEnvelope(key, state)).not.toBe(envelope);
+  }
+});
 
 describe('optional environment lookup', () => {
   test('keeps callable identity and performs a single lookup without invoking it', () => {
