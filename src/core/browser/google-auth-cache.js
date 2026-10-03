@@ -1,4 +1,4 @@
-import { resolveOrNull } from '../commonCore.js';
+import { resolveOrNull, whenOrNull } from '../commonCore.js';
 
 const AUTHOR_UUID_STORAGE_KEY = 'author_uuid';
 
@@ -44,18 +44,29 @@ export async function fetchAuthorUuidFromApi(fetchFn, url, token) {
   return resolveOrNull(
     fetchFn(url, {
       headers: { Authorization: `Bearer ${token}` },
-    }).then(response => {
-      if (!response.ok) {
-        return null;
-      }
+    }).then(readAuthorUuidResponse)
+  );
+}
 
-      return response.json().then(payload => {
-        if (payload && typeof payload.uuid === 'string' && payload.uuid) {
-          return payload.uuid;
-        }
-        return null;
-      });
-    })
+/**
+ * Decode successful responses only, preserving the response method receiver.
+ * @param {{ok: boolean, json: () => Promise<Record<string, unknown>>}} response API response.
+ * @returns {Promise<string | null> | null} Selected UUID or unsuccessful response.
+ */
+function readAuthorUuidResponse(response) {
+  if (!response.ok) return null;
+  return response.json().then(selectAuthorUuid);
+}
+
+/**
+ * Retain the API's nonempty string selection and lazy property reads.
+ * @param {Record<string, unknown>} payload Decoded API payload.
+ * @returns {string | null} Author identifier.
+ */
+function selectAuthorUuid(payload) {
+  return whenOrNull(
+    Boolean(payload && typeof payload.uuid === 'string' && payload.uuid),
+    () => /** @type {string} */ (payload.uuid)
   );
 }
 

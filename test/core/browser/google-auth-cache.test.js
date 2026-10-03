@@ -29,6 +29,27 @@ function createStorage() {
 }
 
 describe('google-auth-cache', () => {
+  it('retains JSON receiver and three lazy UUID reads for an accepted payload', async () => {
+    let reads = 0;
+    const payload = {
+      get uuid() {
+        reads += 1;
+        return ['initial', 'present', 'returned'][reads - 1];
+      },
+    };
+    const response = {
+      ok: true,
+      json() {
+        expect(this).toBe(response);
+        return Promise.resolve(payload);
+      },
+    };
+    await expect(
+      fetchAuthorUuidFromApi(async () => response, '/author', 'token')
+    ).resolves.toBe('returned');
+    expect(reads).toBe(3);
+  });
+
   it('normalizes asynchronous JSON failures without swallowing synchronous fetch throws', async () => {
     await expect(
       fetchAuthorUuidFromApi(
