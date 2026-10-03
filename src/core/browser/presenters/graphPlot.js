@@ -1,5 +1,6 @@
 import { buildGraphPlotFromJson } from '../graphPlotCore.js';
 import { createPresenterRoot } from './browserPresentersCore.js';
+import { strokeSegments, strokeOpenPaths } from '../plotShared.js';
 
 const ROOT_CLASS = 'graph-plot-output';
 const getStableRandomNumber = Number.prototype.valueOf.bind(0.5);
@@ -101,13 +102,21 @@ function drawAxes(context, canvas, payload) {
   context.strokeStyle = payload.axesColor;
   context.lineWidth = 2;
   context.beginPath();
+  strokeSegments(context, axisSegments(canvas, payload));
+}
+
+/**
+ * Project each axis only when its preceding segment has been appended.
+ * @param {HTMLCanvasElement} canvas Canvas node.
+ * @param {{xMin:number,xMax:number,yMin:number,yMax:number}} payload Plot bounds.
+ * @yields {[number, number, number, number]} Independent axis endpoints.
+ * @returns {Iterable<[number, number, number, number]>} Axis segments.
+ */
+function* axisSegments(canvas, payload) {
   const xAxis = toCanvasY(canvas, payload, 0);
-  context.moveTo(0, xAxis);
-  context.lineTo(canvas.width, xAxis);
+  yield [0, xAxis, canvas.width, xAxis];
   const yAxis = toCanvasX(canvas, payload, 0);
-  context.moveTo(yAxis, 0);
-  context.lineTo(yAxis, canvas.height);
-  context.stroke();
+  yield [yAxis, 0, yAxis, canvas.height];
 }
 
 /**
@@ -162,18 +171,23 @@ function drawSeriesLine(context, canvas, payload, series) {
  */
 function drawSeriesPath(context, canvas, payload, points) {
   context.beginPath();
-  let started = false;
+  strokeOpenPaths(context, [projectSeriesPoints(canvas, payload, points)]);
+}
+
+/**
+ * Project series points lazily, preserving drawing between projections.
+ * @param {HTMLCanvasElement} canvas Canvas node.
+ * @param {{xMin:number,xMax:number,yMin:number,yMax:number}} payload Plot bounds.
+ * @param {Array<{x:number,y:number}>} points Input series.
+ * @yields {[number, number]} One projected point.
+ * @returns {Iterable<[number, number]>} Canvas points.
+ */
+function* projectSeriesPoints(canvas, payload, points) {
   for (const point of points) {
     const x = toCanvasX(canvas, payload, point.x);
     const y = toCanvasY(canvas, payload, point.y);
-    if (!started) {
-      context.moveTo(x, y);
-      started = true;
-      continue;
-    }
-    context.lineTo(x, y);
+    yield [x, y];
   }
-  context.stroke();
 }
 
 /**

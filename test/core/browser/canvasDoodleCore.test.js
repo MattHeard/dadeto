@@ -158,6 +158,18 @@ describe('canvasDoodleCore', () => {
     expect(context.textAlign).toBe('left');
     expect(context.textBaseline).toBe('alphabetic');
 
+    const bitmapCalls = context.fillRect.mock.calls.length;
+    const nativeTextCalls = context.fillText.mock.calls.length;
+    drawCanvasDoodle(context, canvas, {
+      shapes: [{ type: 'text', bitmap: true, text: 'A' }],
+    });
+    expect(context.fillRect.mock.calls.length).toBeGreaterThan(bitmapCalls + 1);
+    expect(context.fillText).toHaveBeenCalledTimes(nativeTextCalls);
+    drawCanvasDoodle(context, canvas, {
+      shapes: [{ type: 'text', bitmap: true }],
+    });
+    expect(context.fillText).toHaveBeenCalledTimes(nativeTextCalls);
+
     const callsBeforeUnknown = context.fillRect.mock.calls.length;
     const textCallsBeforeUnknown = context.fillText.mock.calls.length;
     drawCanvasDoodle(context, canvas, { shapes: [{ type: 'unknown' }] });
