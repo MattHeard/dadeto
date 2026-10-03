@@ -6,6 +6,7 @@ import {
   summarizePollResult,
   summarizeTrackerSelection,
 } from '../symphony.js';
+import { when } from '../../commonCore.js';
 
 /** @typedef {any} SymphonyBootstrapValue Runtime-shaped Symphony value. */
 
@@ -335,11 +336,13 @@ function shouldPreserveRunningStatus(previousStatus, status) {
  * @returns {string | undefined} String value.
  */
 function preserveStringField(preferred, fallback, key) {
-  if (typeof preferred[key] === 'string') {
-    return preferred[key];
-  }
-
-  return fallback[key];
+  return /** @type {string | undefined} */ (
+    when(
+      typeof preferred[key] === 'string',
+      () => preferred[key],
+      () => fallback[key]
+    )
+  );
 }
 
 /**
@@ -350,11 +353,11 @@ function preserveStringField(preferred, fallback, key) {
  * @returns {SymphonyBootstrapValue} Object field copy.
  */
 function preserveObjectField(preferred, fallback, key) {
-  if (preferred[key] && typeof preferred[key] === 'object') {
-    return { ...preferred[key] };
-  }
-
-  return fallback[key];
+  return when(
+    preferred[key] && typeof preferred[key] === 'object',
+    () => ({ ...preferred[key] }),
+    () => fallback[key]
+  );
 }
 
 /**

@@ -236,66 +236,88 @@ describe('core Symphony bootstrap handle', () => {
     expect(snapshot.status.lastOutcome).toBeUndefined();
   });
 
-  test('preserves running status with previous optional fields', async () => {
-    const deps = createDeps({
-      createBdTracker: () => ({
-        pollReadyBeads: async () => ({
-          command: 'bd ready --sort priority',
-          readyBeads: [
-            {
+  test.each([
+    ['Previous evidence', 'Previous evidence'],
+    ['', undefined],
+  ])(
+    'preserves running optional fields with lazy reads (%p, %p)',
+    async (first, second) => {
+      const deps = createDeps({
+        createBdTracker: () => ({
+          pollReadyBeads: async () => ({
+            command: 'bd ready --sort priority',
+            readyBeads: [
+              {
+                id: 'dadeto-running',
+                title: 'Running bead',
+                priority: '● P1',
+              },
+            ],
+            queueSummary: ['dadeto-running (● P1) Running bead'],
+            selectedBead: {
               id: 'dadeto-running',
               title: 'Running bead',
               priority: '● P1',
             },
-          ],
-          queueSummary: ['dadeto-running (● P1) Running bead'],
-          selectedBead: {
-            id: 'dadeto-running',
-            title: 'Running bead',
-            priority: '● P1',
-          },
+          }),
         }),
-      }),
-      loadSymphonyWorkflow: async () => ({
-        exists: true,
-      }),
-    });
-    const handle = createSymphonyBootstrapHandle(deps);
-    const previousStatus = {
-      startedAt: '2026-03-14T09:00:00.000Z',
-      state: 'running',
-      currentBeadId: 'dadeto-running',
-      currentBeadTitle: 'Previous title',
-      currentBeadPriority: '● P0',
-      latestEvidence: 'Previous evidence',
-      operatorRecommendation: 'Previous recommendation',
-      activeRun: {
-        runId: 'runner-optional',
-      },
-      lastLaunchAttempt: {
-        outcome: 'failed',
-      },
-      lastOutcome: {
-        outcome: 'blocked',
-      },
-    };
-    const snapshot = await handle.refreshSymphonyStatus({
-      statusStore: {
-        readStatus: async () => previousStatus,
-        writeStatus: jest.fn(),
-      },
-    });
-
-    expect(snapshot.status).toEqual(
-      expect.objectContaining({
+        loadSymphonyWorkflow: async () => ({
+          exists: true,
+        }),
+      });
+      const handle = createSymphonyBootstrapHandle(deps);
+      const previousStatus = {
         startedAt: '2026-03-14T09:00:00.000Z',
+        state: 'running',
+        currentBeadId: 'dadeto-running',
         currentBeadTitle: 'Previous title',
         currentBeadPriority: '● P0',
         latestEvidence: 'Previous evidence',
         operatorRecommendation: 'Previous recommendation',
-        lastLaunchAttempt: { outcome: 'failed' },
-        lastOutcome: { outcome: 'blocked' },
-      })
-    );
-  });
+        activeRun: {
+          runId: 'runner-optional',
+        },
+        lastLaunchAttempt: {
+          outcome: 'failed',
+        },
+        lastOutcome: {
+          outcome: 'blocked',
+        },
+      };
+      const evidence = jest
+        .fn()
+        .mockReturnValueOnce(first)
+        .mockReturnValueOnce(second);
+      const outcome = { outcome: 'blocked', detail: { source: 'previous' } };
+      const readOutcome = jest.fn(() => outcome);
+      Object.defineProperty(previousStatus, 'latestEvidence', {
+        get: evidence,
+      });
+      Object.defineProperty(previousStatus, 'lastOutcome', {
+        get: readOutcome,
+      });
+      const snapshot = await handle.refreshSymphonyStatus({
+        statusStore: {
+          readStatus: async () => previousStatus,
+          writeStatus: jest.fn(),
+        },
+      });
+
+      expect(snapshot.status).toEqual(
+        expect.objectContaining({
+          startedAt: '2026-03-14T09:00:00.000Z',
+          currentBeadTitle: 'Previous title',
+          currentBeadPriority: '● P0',
+          latestEvidence: second,
+          operatorRecommendation: 'Previous recommendation',
+          lastLaunchAttempt: { outcome: 'failed' },
+          lastOutcome: outcome,
+        })
+      );
+      expect(evidence).toHaveBeenCalledTimes(2);
+      expect(readOutcome).toHaveBeenCalledTimes(3);
+      expect(snapshot.status.lastOutcome).not.toBe(outcome);
+      expect(snapshot.status.lastOutcome.detail).toBe(outcome.detail);
+    }
+  );
 });
