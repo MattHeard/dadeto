@@ -16,3 +16,10 @@ failure reduced 63 to 62, unchanged minTokens14 and ignores. Both builds pass:
 `.tmp/reporter-identity-build.log`, `.tmp/reporter-identity-cloud-build.log`.
 Final full acceptance: `.tmp/clone-goal-62-full-check.log`. aaou stays open until
 zero clones and a completely green repository check.
+
+Terminal full check exited 1, with duplication as the sole failing outer check
+(10 total). Test execution passed. Exact aggregate coverage from
+`reports/coverage/coverage-summary.json`: lines 20351/20351, statements
+21201/21201, functions 7054/7054, branches 10230/10230. The continuation reduced
+68 to 62 without changing detection settings. Route the next loop from the fresh
+`reports/duplication/jscpd-report.json`; do not close aaou on this partial result.
