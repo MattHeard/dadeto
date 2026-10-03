@@ -101,6 +101,17 @@ function getContextLists(context) {
 }
 
 /**
+ * Build saved state while retaining the runtime's list references.
+ * @param {CozyRuntimeContext} context Runtime context.
+ * @param {CozyState} state Next story state.
+ * @returns {{state: CozyState, inventory: string[], progress: string[]}} State to persist or present.
+ */
+function createContextState(context, state) {
+  const lists = getContextLists(context);
+  return { state, ...lists };
+}
+
+/**
  * Create a transition that preserves the current context lists.
  * @param {CozyRuntimeContext} context Runtime context.
  * @param {string} output Player-facing response text.
@@ -108,12 +119,9 @@ function getContextLists(context) {
  * @returns {CozyTransition} Transition payload.
  */
 function createContextTransition(context, output, state) {
-  const lists = getContextLists(context);
-
   return createTransitionFromLists({
     output,
-    state,
-    ...lists,
+    ...createContextState(context, state),
   });
 }
 
@@ -407,12 +415,7 @@ function persistTransition(context, result) {
  * @returns {void}
  */
 function persistContextState(context, state) {
-  const lists = getContextLists(context);
-
-  persistTransition(context, {
-    state,
-    ...lists,
-  });
+  persistTransition(context, createContextState(context, state));
 }
 
 /**

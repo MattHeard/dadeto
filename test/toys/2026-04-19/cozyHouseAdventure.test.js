@@ -5,6 +5,33 @@ import {
 } from '../../../src/core/browser/toys/2026-04-19/cozyHouseAdventure.js';
 
 describe('cozyHouseAdventure', () => {
+  test('context transitions keep list identity and deterministic field order', () => {
+    const inventory = ['tea thermos'];
+    const progress = ['roof'];
+    const reads = [];
+    const context = {
+      lowerInput: 'foundation',
+      get inventory() {
+        reads.push('inventory');
+        return inventory;
+      },
+      get progress() {
+        reads.push('progress');
+        return progress;
+      },
+    };
+    const result = cozyHouseAdventureTestOnly.getStateHandler('yard')(context);
+    expect(result.state).toBe('foundation');
+    expect(result.inventory).toBe(inventory);
+    expect(result.progress).toBe(progress);
+    expect(Object.keys(result)).toEqual([
+      'output',
+      'state',
+      'inventory',
+      'progress',
+    ]);
+    expect(reads).toEqual(['inventory', 'progress']);
+  });
   it('covers dependency, state, and narrative helper contracts', () => {
     const getData = () => ({ ok: true });
     expect(
