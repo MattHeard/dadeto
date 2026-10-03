@@ -122,23 +122,10 @@ function processReportSubmission({
  */
 function resolveReporterIdentity(body) {
   return (
-    resolveReporterIdentityField(body?.reporterIdentity) ||
-    resolveReporterIdentityField(body?.reporterId) ||
-    resolveReporterIdentityField(body?.anonymousReporterId)
+    trimmedStringOrEmpty(body?.reporterIdentity) ||
+    trimmedStringOrEmpty(body?.reporterId) ||
+    trimmedStringOrEmpty(body?.anonymousReporterId)
   );
-}
-
-/**
- * Normalize a reporter identity field.
- * @param {unknown} value Candidate identity value.
- * @returns {string} Trimmed reporter identity or an empty string.
- */
-function resolveReporterIdentityField(value) {
-  if (typeof value === 'string') {
-    return value.trim();
-  }
-
-  return '';
 }
 
 /**

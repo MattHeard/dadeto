@@ -43,26 +43,60 @@ describe('createReportForModerationHandler', () => {
     expect(addModerationReport).not.toHaveBeenCalled();
   });
 
-  it('persists the report and returns 201 when variant is valid', async () => {
-    const addModerationReport = jest.fn().mockResolvedValue(undefined);
-    const getServerTimestamp = jest.fn(() => 'ts');
-    const handler = createReportForModerationHandler({
-      addModerationReport,
-      getServerTimestamp,
-    });
+  it.each([
+    () => ({
+      reporterIdentity: ' anon-1 ',
+      get reporterId() {
+        throw new Error('must not read alternate identity');
+      },
+    }),
+    () => ({
+      reporterIdentity: '\t ',
+      reporterId: ' anon-1 ',
+      get anonymousReporterId() {
+        throw new Error('must not read anonymous identity');
+      },
+    }),
+    () => ({
+      reporterIdentity: 12,
+      reporterId: null,
+      anonymousReporterId: ' anon-1 ',
+    }),
+    () => ({
+      reporterIdentity: {
+        toString() {
+          throw new Error('must not coerce identity');
+        },
+      },
+      anonymousReporterId: '\n anon-1 \t',
+    }),
+  ])(
+    'persists a valid report with lazy identity precedence: %#',
+    async makeIdentity => {
+      const identity = makeIdentity();
+      const addModerationReport = jest.fn().mockResolvedValue(undefined);
+      const getServerTimestamp = jest.fn(() => 'ts');
+      const handler = createReportForModerationHandler({
+        addModerationReport,
+        getServerTimestamp,
+      });
 
-    const response = await handler({
-      method: 'POST',
-      body: { variant: ' slug ', reporterIdentity: ' anon-1 ' },
-    });
+      const response = await handler({
+        method: 'POST',
+        body: Object.defineProperties(
+          { variant: ' slug ' },
+          Object.getOwnPropertyDescriptors(identity)
+        ),
+      });
 
-    expect(addModerationReport).toHaveBeenCalledWith({
-      variant: 'slug',
-      reporterIdentity: 'anon-1',
-      createdAt: 'ts',
-    });
-    expect(response).toEqual({ status: 201, body: {} });
-  });
+      expect(addModerationReport).toHaveBeenCalledWith({
+        variant: 'slug',
+        reporterIdentity: 'anon-1',
+        createdAt: 'ts',
+      });
+      expect(response).toEqual({ status: 201, body: {} });
+    }
+  );
 
   it('rejects duplicate reports from the same reporter', async () => {
     const addModerationReport = jest.fn();
