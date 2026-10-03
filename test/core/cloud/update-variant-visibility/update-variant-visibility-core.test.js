@@ -20,6 +20,19 @@ describe('normalizeVariantPath', () => {
 });
 
 describe('calculateUpdatedVisibility', () => {
+  it('retains legacy addition coercion rather than multiplying the rating by one', () => {
+    expect(
+      calculateUpdatedVisibility(
+        {
+          visibility: 2,
+          moderationRatingCount: 1,
+          moderatorReputationSum: 3,
+        },
+        '4'
+      )
+    ).toBe(32);
+  });
+
   it('computes the weighted average with incoming rating', () => {
     const result = calculateUpdatedVisibility(
       {

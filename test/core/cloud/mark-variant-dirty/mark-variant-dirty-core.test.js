@@ -239,24 +239,27 @@ describe('refFromSnap', () => {
 });
 
 describe('findVariantRef', () => {
-  it.each([null, undefined, false, 0, ''])('skips variant lookup for falsey page %p', async pageRef => {
-    const findVariantsSnap = jest.fn();
-    const refFromSnap = jest.fn();
-    await expect(
-      findVariantRef({
-        database: {},
-        pageNumber: 1,
-        variantName: 'beta',
-        firebase: {
-          findPageRef: async () => pageRef,
-          findVariantsSnap,
-          refFromSnap,
-        },
-      })
-    ).resolves.toBeNull();
-    expect(findVariantsSnap).not.toHaveBeenCalled();
-    expect(refFromSnap).not.toHaveBeenCalled();
-  });
+  it.each([null, undefined, false, 0, ''])(
+    'skips variant lookup for falsey page %p',
+    async pageRef => {
+      const findVariantsSnap = jest.fn();
+      const refFromSnap = jest.fn();
+      await expect(
+        findVariantRef({
+          database: {},
+          pageNumber: 1,
+          variantName: 'beta',
+          firebase: {
+            findPageRef: async () => pageRef,
+            findVariantsSnap,
+            refFromSnap,
+          },
+        })
+      ).resolves.toBeNull();
+      expect(findVariantsSnap).not.toHaveBeenCalled();
+      expect(refFromSnap).not.toHaveBeenCalled();
+    }
+  );
 
   it('propagates variant lookup rejection unchanged', async () => {
     const failure = new Error('lookup failed');
@@ -267,7 +270,9 @@ describe('findVariantRef', () => {
         variantName: 'beta',
         firebase: {
           findPageRef: async () => ({}),
-          findVariantsSnap: async () => { throw failure; },
+          findVariantsSnap: async () => {
+            throw failure;
+          },
         },
       })
     ).rejects.toBe(failure);

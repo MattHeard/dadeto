@@ -118,10 +118,12 @@ export function calculateUpdatedVisibility(variantData, newRating) {
   const currentCount = getSafeNumber(variantData, 'moderationRatingCount');
   const currentReputationSum = getModeratorReputationSum(variantData);
 
-  const numerator = currentVisibility * currentReputationSum + newRating;
-  const denominator = currentCount + 1;
-
-  return safeDivide(numerator, denominator);
+  return calculateVisibilityRatio(
+    currentVisibility,
+    currentReputationSum,
+    newRating,
+    currentCount + 1
+  );
 }
 
 /**
@@ -211,11 +213,29 @@ function calculateWeightedVisibility(
   const currentVisibility = getSafeNumber(variantData, 'visibility');
   const currentReputationSum = getModeratorReputationSum(variantData);
   const weight = normalizeModeratorReputation(moderatorReputation);
-  const numerator =
-    currentVisibility * currentReputationSum + newRating * weight;
-  const denominator = currentReputationSum + weight;
+  return calculateVisibilityRatio(
+    currentVisibility,
+    currentReputationSum,
+    newRating * weight,
+    currentReputationSum + weight
+  );
+}
 
-  return safeDivide(numerator, denominator);
+/**
+ * Apply shared visibility arithmetic without changing contribution policy.
+ * @param {number} visibility Previous visibility.
+ * @param {number} reputation Previous reputation sum.
+ * @param {number} contribution Caller-selected rating contribution.
+ * @param {number} denominator Caller-selected normalization denominator.
+ * @returns {number} Normalized visibility score.
+ */
+function calculateVisibilityRatio(
+  visibility,
+  reputation,
+  contribution,
+  denominator
+) {
+  return safeDivide(visibility * reputation + contribution, denominator);
 }
 
 /**
