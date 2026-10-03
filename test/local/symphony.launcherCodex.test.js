@@ -1,6 +1,44 @@
+import path from 'node:path';
 import { createCodexRalphLauncher } from '../../src/local/symphony/launcherCodex.js';
+import { createCodexRalphLauncher as createCoreLauncher } from '../../src/core/local/symphony/launcherCodex.js';
 
 describe('local symphony codex launcher', () => {
+  test('rebuilds each launch from the current bound options even when called detached', async () => {
+    const commands = [];
+    const opened = [];
+    const options = {
+      command: 'first-codex',
+      args: ['exec'],
+      pathModule: path,
+      mkdirImpl: async () => undefined,
+      openImpl: async filePath => {
+        opened.push(filePath);
+        return { fd: opened.length, close: async () => undefined };
+      },
+      spawnImpl(command) {
+        commands.push(command);
+        return { pid: commands.length, unref() {} };
+      },
+    };
+    const { launchRunner } = createCoreLauncher(options);
+    const first = await launchRunner({
+      repoRoot: '/repo',
+      beadId: 'one',
+      runId: 'run-one',
+    });
+    options.command = 'second-codex';
+    const second = await launchRunner({
+      repoRoot: '/repo',
+      beadId: 'two',
+      runId: 'run-two',
+    });
+    expect(commands).toEqual(['first-codex', 'second-codex']);
+    expect(opened).toHaveLength(4);
+    expect(first.pid).toBe(1);
+    expect(second.pid).toBe(2);
+    expect(first.stdoutPath).not.toBe(second.stdoutPath);
+  });
+
   test('spawns a detached codex exec session with append-only run logs', async () => {
     /** @type {Array<{ command: string, args: string[], options: Record<string, unknown> }>} */
     const calls = [];

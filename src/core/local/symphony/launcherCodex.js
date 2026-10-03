@@ -53,34 +53,42 @@ export const DEFAULT_CODEX_RALPH_ARGS = [...DEFAULT_CODEX_ARGS];
  */
 export function createCodexRalphLauncher(options) {
   return {
-    async launchRunner(payload) {
-      return createDetachedProcessLauncher(
-        /** @type {Parameters<typeof createDetachedProcessLauncher>[0]} */ (
-          /** @type {unknown} */ ({
-            ...options,
-            logDirSuffix: 'symphony',
-            closeErrorLabel: 'Failed to close run log handle:',
-            exitErrorLabel: buildExitErrorLabel,
-            resolveArgs:
-              /** @type {(payload: Record<string, unknown>) => string[]} */ (
-                payload =>
-                  buildResolveArgs(
-                    options,
-                    /** @type {{ beadId: string, beadTitle?: string | null, runId: string }} */ (
-                      payload
-                    )
-                  )
-              ),
-            buildExitPayload,
-          })
-        )
-      ).launch(
-        /** @type {Parameters<ReturnType<typeof createDetachedProcessLauncher>['launch']>[0]} */ (
-          /** @type {unknown} */ (payload)
-        )
-      );
-    },
+    launchRunner: launchCodexRunner.bind(null, options),
   };
+}
+
+/**
+ * Build a fresh detached launcher for each run using the current options.
+ * @param {Parameters<typeof createCodexRalphLauncher>[0]} options Launcher options reference.
+ * @param {Parameters<ReturnType<typeof createCodexRalphLauncher>['launchRunner']>[0]} payload Run payload.
+ * @returns {ReturnType<ReturnType<typeof createCodexRalphLauncher>['launchRunner']>} Launch completion.
+ */
+async function launchCodexRunner(options, payload) {
+  const launchPayload =
+    /** @type {Parameters<ReturnType<typeof createDetachedProcessLauncher>['launch']>[0]} */ (
+      /** @type {unknown} */ (payload)
+    );
+  return createDetachedProcessLauncher(
+    /** @type {Parameters<typeof createDetachedProcessLauncher>[0]} */ (
+      /** @type {unknown} */ ({
+        ...options,
+        logDirSuffix: 'symphony',
+        closeErrorLabel: 'Failed to close run log handle:',
+        exitErrorLabel: buildExitErrorLabel,
+        resolveArgs:
+          /** @type {(payload: Record<string, unknown>) => string[]} */ (
+            payload =>
+              buildResolveArgs(
+                options,
+                /** @type {{ beadId: string, beadTitle?: string | null, runId: string }} */ (
+                  payload
+                )
+              )
+          ),
+        buildExitPayload,
+      })
+    )
+  ).launch(launchPayload);
 }
 
 /**
