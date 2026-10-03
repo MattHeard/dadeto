@@ -25,6 +25,34 @@ export const sharedDirectoryPairs = [
   },
 ];
 
+const DIRECTORY_TREE_DEFINITIONS = {
+  browser: [
+    {
+      sourceKey: 'srcBrowserDir',
+      destinationKey: 'publicBrowserDir',
+      suffix: '',
+      success: 'Browser files copied successfully!',
+      missing: 'browser directory not found',
+    },
+    {
+      sourceKey: 'srcCoreBrowserDir',
+      destinationKey: 'publicCoreBrowserDir',
+      suffix: '',
+      success: 'Core browser files copied successfully!',
+      missing: 'core/browser directory not found',
+    },
+  ],
+  constants: [
+    {
+      sourceKey: 'srcCoreDir',
+      destinationKey: 'publicCoreDir',
+      suffix: 'constants',
+      success: 'Core constants copied successfully!',
+      missing: 'core/constants directory not found',
+    },
+  ],
+};
+
 /**
  * Build the directory entry tuples used to configure shared copy locations.
  * @param {{
@@ -489,6 +517,18 @@ export function createCopyCore({
   }
 
   /**
+   * Bind a directory plan builder to the shared recursive copy workflow.
+   * @param {(dirs: Record<string, string>) => Array<[string, string, string, string]>} buildEntries Directory plan builder.
+   * @returns {(dirs: Record<string, string>, context: Parameters<typeof copyPlannedDirectoryTreesFromTuples>[1]) => void} Directory tree copier.
+   */
+  function createDirectoryTreeCopier(buildEntries) {
+    return function copyDirectoryTrees(dirs, context) {
+      const entries = buildEntries(dirs);
+      copyPlannedDirectoryTreesFromTuples(entries, context);
+    };
+  }
+
+  /**
    * Build directory copy plans from a compact tuple form.
    * @param {Array<[string, string, string, string]>} entries Directory plan tuples.
    * @returns {Array<{ src: string, dest: string, successMessage: string, missingMessage: string }>} Copy plans.
@@ -503,25 +543,41 @@ export function createCopyCore({
   }
 
   /**
-   * Build the directory copy plans for browser trees.
-   * @param {Record<string, string>} dirs Directory map.
-   * @returns {Array<[string, string, string, string]>} Browser tree plan tuples.
+   * Bind declarative tree definitions to the recursive copy workflow.
+   * @param {Parameters<typeof buildConfiguredDirectoryTreePlans>[1]} definitions Named tree definitions.
+   * @returns {ReturnType<typeof createDirectoryTreeCopier>} Configured copier.
    */
-  function buildBrowserTreePlans(dirs) {
-    return [
-      [
-        dirs.srcBrowserDir,
-        dirs.publicBrowserDir,
-        'Browser files copied successfully!',
-        'browser directory not found',
-      ],
-      [
-        dirs.srcCoreBrowserDir,
-        dirs.publicCoreBrowserDir,
-        'Core browser files copied successfully!',
-        'core/browser directory not found',
-      ],
-    ];
+  function createConfiguredDirectoryTreeCopier(definitions) {
+    return createDirectoryTreeCopier(dirs =>
+      buildConfiguredDirectoryTreePlans(dirs, definitions)
+    );
+  }
+
+  /**
+   * Materialize directory paths and messages from named tree definitions.
+   * @param {Record<string, string>} dirs Directory map.
+   * @param {Array<{ sourceKey: string, destinationKey: string, suffix: string, success: string, missing: string }>} definitions Named tree definitions.
+   * @returns {Array<[string, string, string, string]>} Directory copy tuples.
+   */
+  function buildConfiguredDirectoryTreePlans(dirs, definitions) {
+    return definitions.map(
+      ({ sourceKey, destinationKey, suffix, success, missing }) => [
+        resolveTreeDirectory(dirs[sourceKey], suffix),
+        resolveTreeDirectory(dirs[destinationKey], suffix),
+        success,
+        missing,
+      ]
+    );
+  }
+
+  /**
+   * Resolve an optional child directory without changing root paths.
+   * @param {string} directory Configured directory.
+   * @param {string} suffix Optional child directory.
+   * @returns {string} Source or destination directory.
+   */
+  function resolveTreeDirectory(directory, suffix) {
+    return suffix ? join(directory, suffix) : directory;
   }
 
   /**
@@ -571,9 +627,9 @@ export function createCopyCore({
    * }} context File system adapters, logger, and bound copier.
    * @returns {void}
    */
-  function copyBrowserTrees(dirs, context) {
-    copyPlannedDirectoryTreesFromTuples(buildBrowserTreePlans(dirs), context);
-  }
+  const copyBrowserTrees = createConfiguredDirectoryTreeCopier(
+    DIRECTORY_TREE_DEFINITIONS.browser
+  );
 
   /**
    * Copy root-level JavaScript modules from src/core into public/core.
@@ -643,20 +699,9 @@ export function createCopyCore({
    * }} context File system adapters, logger, and bound copier.
    * @returns {void}
    */
-  function copyCoreConstants(dirs, context) {
-    const constantsDir = join(dirs.srcCoreDir, 'constants');
-    copyDirectoryTreeIfExists(
-      {
-        src: constantsDir,
-        dest: join(dirs.publicCoreDir, 'constants'),
-        successMessage: 'Core constants copied successfully!',
-        missingMessage: `Warning: core/constants directory not found at ${formatPathForLog(
-          constantsDir
-        )}`,
-      },
-      context
-    );
-  }
+  const copyCoreConstants = createConfiguredDirectoryTreeCopier(
+    DIRECTORY_TREE_DEFINITIONS.constants
+  );
 
   /**
    * Copy generated static content trees into the public root.
@@ -674,12 +719,9 @@ export function createCopyCore({
    * }} context File system adapters, logger, and bound copier.
    * @returns {void}
    */
-  function copyStaticContentTrees(dirs, context) {
-    copyPlannedDirectoryTreesFromTuples(
-      buildStaticContentTreePlans(dirs),
-      context
-    );
-  }
+  const copyStaticContentTrees = createDirectoryTreeCopier(
+    buildStaticContentTreePlans
+  );
 
   /**
    * Resolve the filesystem adapter bundle used by the copy workflow.

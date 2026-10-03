@@ -842,6 +842,43 @@ describe('createCopyCore copy workflows', () => {
       );
     });
 
+    it('copies nested constants with the caller-provided file copier', () => {
+      const source = posix.join(directories.srcCoreDir, 'constants');
+      const destination = posix.join(directories.publicCoreDir, 'constants');
+      const io = {
+        directoryExists: jest.fn(target => target === source),
+        createDirectory: jest.fn(),
+        copyFile: jest.fn(),
+        readDirEntries: jest.fn(target =>
+          target === source
+            ? [createDirectoryEntry('nested')]
+            : [createFileEntry('palette.js')]
+        ),
+      };
+      const logger = { info: jest.fn(), warn: jest.fn() };
+      const copyFile = jest.fn();
+
+      expect(
+        core.copyCoreConstants(directories, {
+          io,
+          messageLogger: logger,
+          copyFile,
+        })
+      ).toBeUndefined();
+
+      expect(copyFile.mock.calls).toEqual([
+        [
+          posix.join(source, 'nested/palette.js'),
+          posix.join(destination, 'nested/palette.js'),
+        ],
+      ]);
+      expect(io.copyFile).not.toHaveBeenCalled();
+      expect(logger.info).toHaveBeenCalledWith(
+        'Core constants copied successfully!'
+      );
+      expect(logger.warn).not.toHaveBeenCalled();
+    });
+
     it('copies directory trees when they exist', () => {
       const io = {
         directoryExists: jest
