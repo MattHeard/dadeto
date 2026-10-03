@@ -63,9 +63,7 @@ function createSymphonyLaunchHandler(options) {
   return createAsyncRouteHandler(async res => {
     const launchImpl = options.launchSelectedRunnerLoop;
     if (!launchImpl || typeof options.statusStore.writeStatus !== 'function') {
-      res.status(501).json({
-        error: 'Symphony launch trigger is not configured.',
-      });
+      sendMissingTrigger(res, 'launch');
       return;
     }
 
@@ -97,9 +95,7 @@ function createSymphonyRefreshHandlerFactory(deps) {
         !options.statusStore ||
         typeof options.statusStore.writeStatus !== 'function'
       ) {
-        res.status(501).json({
-          error: 'Symphony refresh trigger is not configured.',
-        });
+        sendMissingTrigger(res, 'refresh');
         return;
       }
 
@@ -122,6 +118,18 @@ function createSymphonyRefreshHandlerFactory(deps) {
       });
     });
   };
+}
+
+/**
+ * Send the common unavailable-trigger response without leaking transport returns.
+ * @param {SymphonyResponse} response Operator response.
+ * @param {'launch' | 'refresh'} trigger Unconfigured trigger name.
+ * @returns {void}
+ */
+function sendMissingTrigger(response, trigger) {
+  response.status(501).json({
+    error: `Symphony ${trigger} trigger is not configured.`,
+  });
 }
 
 /**

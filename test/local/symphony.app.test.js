@@ -312,13 +312,13 @@ describe('local symphony app launch handlers', () => {
   });
 
   test('reports a missing writable store even when a launcher is provided', async () => {
+    const readStatus = jest.fn();
+    const launch = jest.fn();
     const handler = createSymphonyLaunchHandler({
       initialStatus: { state: 'ready' },
-      launchSelectedRunnerLoop: jest.fn(),
+      launchSelectedRunnerLoop: launch,
       statusStore: {
-        async readStatus() {
-          return null;
-        },
+        readStatus,
       },
     });
     const response = createResponseDouble();
@@ -331,6 +331,8 @@ describe('local symphony app launch handlers', () => {
     expect(response.jsonValue).toEqual({
       error: 'Symphony launch trigger is not configured.',
     });
+    expect(readStatus).not.toHaveBeenCalled();
+    expect(launch).not.toHaveBeenCalled();
   });
 
   test('launch handler forwards launch errors to next', async () => {
