@@ -36,6 +36,12 @@ The first complete run had one Auto-checkbox setup race; the embedded keypad
 already enables Auto on a real press, so the harness waits for Submit readiness
 instead of clicking a checkbox during asynchronous toy initialization.
 
-Aggregate acceptance is recorded separately in bead dadeto-7l1o when its
-running evaluator terminates. Remaining global clone work belongs to
-dadeto-aaou; focused coverage is not global gate evidence.
+Aggregate acceptance: `TMPDIR=/home/matt/dadeto/.tmp
+DADETO_COVERAGE_SHARD_SIZE=40 npm run check` terminated exit 1 with only
+duplication failing (100 clones); its other nine aggregate gates passed.
+Evidence: .tmp/mosslight-eight-full-check.log includes terminal check-summary,
+successful npm test, and nine repository browser tests passing in 8.2s.
+reports/coverage/coverage-summary.json proves exact global 100% coverage:
+lines 20091/20091, statements 20910/20910, functions 6944/6944,
+branches 9953/9953. Remaining global clone work belongs to dadeto-aaou;
+the aggregate goal is not complete. Implementation pushed as f842baae05.
