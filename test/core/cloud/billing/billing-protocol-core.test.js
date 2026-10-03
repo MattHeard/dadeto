@@ -9,11 +9,37 @@ import {
 import { reconcileBillingIdentity } from '../../../../src/core/cloud/billing/reconciliation-core.js';
 
 describe('billing protocol', () => {
-  it('rejects unknown and terminal transitions', () => {
-    expect(canTransitionPurchase('unknown', 'paid')).toBe(false);
-    expect(canTransitionPurchase('refunded', 'paid')).toBe(false);
-    expect(canTransitionOperation('unknown', 'reserved')).toBe(false);
-    expect(canTransitionOperation('settled', 'released')).toBe(false);
+  it('preserves every allowed and rejected edge, including terminal and unknown states', () => {
+    const graphs = [
+      [
+        canTransitionPurchase,
+        {
+          pending: ['paid', 'expired'],
+          paid: ['partially_refunded', 'refunded'],
+          partially_refunded: ['refunded'],
+          refunded: [],
+          expired: [],
+        },
+      ],
+      [
+        canTransitionOperation,
+        {
+          quoted: ['reserved'],
+          reserved: ['settled', 'released', 'needs_recovery'],
+          needs_recovery: ['settled', 'released'],
+          settled: [],
+          released: [],
+        },
+      ],
+    ];
+    for (const [allows, graph] of graphs) {
+      const states = [...Object.keys(graph), 'unknown'];
+      for (const from of states) {
+        for (const to of states) {
+          expect(allows(from, to)).toBe(graph[from]?.includes(to) ?? false);
+        }
+      }
+    }
   });
 
   it('allows payment and refund progression but forbids paid expiry', () => {

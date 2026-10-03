@@ -2,29 +2,43 @@ const PARTIALLY_REFUNDED = 'partially_refunded';
 const NEEDS_RECOVERY = 'needs_recovery';
 
 /**
- * Freeze a transition list.
- * @param {string[]} transitions Transition values.
- * @returns {readonly string[]} Frozen transitions.
+ * Build an immutable transition graph with explicit terminal states.
+ * @param {Record<string, string[]>} active Allowed outgoing transitions.
+ * @param {string[]} terminal States with no outgoing transitions.
+ * @returns {Readonly<Record<string, readonly string[]>>} Frozen transition graph.
  */
-const freezeTransitions = transitions => Object.freeze(transitions);
+function createTransitionTable(active, terminal) {
+  const complete = { ...active };
+  for (const state of terminal) complete[state] = [];
+  return Object.freeze(
+    Object.fromEntries(
+      Object.entries(complete).map(([state, next]) => [
+        state,
+        Object.freeze(next),
+      ])
+    )
+  );
+}
 
 /** @type {Record<string, readonly string[]>} */
-const PURCHASE_TRANSITIONS = Object.freeze({
-  pending: freezeTransitions(['paid', 'expired']),
-  paid: freezeTransitions(['partially_refunded', 'refunded']),
-  [PARTIALLY_REFUNDED]: freezeTransitions(['refunded']),
-  refunded: freezeTransitions([]),
-  expired: freezeTransitions([]),
-});
+const PURCHASE_TRANSITIONS = createTransitionTable(
+  {
+    pending: ['paid', 'expired'],
+    paid: ['partially_refunded', 'refunded'],
+    [PARTIALLY_REFUNDED]: ['refunded'],
+  },
+  ['refunded', 'expired']
+);
 
 /** @type {Record<string, readonly string[]>} */
-const OPERATION_TRANSITIONS = Object.freeze({
-  quoted: freezeTransitions(['reserved']),
-  reserved: freezeTransitions(['settled', 'released', 'needs_recovery']),
-  [NEEDS_RECOVERY]: freezeTransitions(['settled', 'released']),
-  settled: freezeTransitions([]),
-  released: freezeTransitions([]),
-});
+const OPERATION_TRANSITIONS = createTransitionTable(
+  {
+    quoted: ['reserved'],
+    reserved: ['settled', 'released', 'needs_recovery'],
+    [NEEDS_RECOVERY]: ['settled', 'released'],
+  },
+  ['settled', 'released']
+);
 
 /**
  * Check whether a purchase transition is permitted.
