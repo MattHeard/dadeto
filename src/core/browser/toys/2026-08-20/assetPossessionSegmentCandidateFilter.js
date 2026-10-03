@@ -5,6 +5,7 @@ import {
   isOrderedInterval,
 } from './assignmentIntervals.js';
 export { overlaps as overlap } from './assignmentIntervals.js';
+import { runToyArrayCalculation } from '../formatToyError.js';
 
 /**
  * Filter available assets for a possession interval.
@@ -12,36 +13,36 @@ export { overlaps as overlap } from './assignmentIntervals.js';
  * @returns {string} Ordered candidate IDs.
  */
 export function assetPossessionSegmentCandidateFilter(input) {
-  try {
-    const x = JSON.parse(input);
-    // Stryker disable all -- empty collection defaults are defensive malformed-input boundaries.
-    const points = new Map((x.points || []).map(p => [p.pointId, p])),
-      segments = new Map((x.segments || []).map(s => [s.segmentId, s]));
-    const target = resolve(segments, points, x.possessionSegmentId),
-      assignments = Array.isArray(x.existingAssetAssignments)
-        ? x.existingAssetAssignments
-        : x.assetAssignments || [];
-    // Stryker restore all
-    // Stryker disable all -- empty asset fallback is a defensive malformed-input boundary.
-    const ids = (x.assets || [])
-      .filter(
-        asset =>
-          asset &&
-          normalizeSku(asset.sku) === normalizeSku(x.requestedSku) &&
-          asset.assetId &&
-          !assignments.some(
-            a =>
-              a?.assetId === asset.assetId &&
-              overlap(resolve(segments, points, a.segmentId), target)
-          )
-      )
-      .map(asset => String(asset.assetId));
-    // Stryker restore all
-    // Stryker disable next-line all -- de-duplication and lexical ordering are fixed output contracts.
-    return JSON.stringify([...new Set(ids)].sort((a, b) => a.localeCompare(b)));
-  } catch {
-    return JSON.stringify([]);
-  }
+  return runToyArrayCalculation(() => collectCandidateIds(input));
+}
+
+/**
+ * Calculate eligible candidate identifiers before serialization.
+ * @param {string} input JSON request.
+ * @returns {string[]} Ordered unique candidate identifiers.
+ */
+function collectCandidateIds(input) {
+  const x = JSON.parse(input);
+  const points = new Map((x.points || []).map(p => [p.pointId, p])),
+    segments = new Map((x.segments || []).map(s => [s.segmentId, s]));
+  const target = resolve(segments, points, x.possessionSegmentId),
+    assignments = Array.isArray(x.existingAssetAssignments)
+      ? x.existingAssetAssignments
+      : x.assetAssignments || [];
+  const ids = (x.assets || [])
+    .filter(
+      asset =>
+        asset &&
+        normalizeSku(asset.sku) === normalizeSku(x.requestedSku) &&
+        asset.assetId &&
+        !assignments.some(
+          a =>
+            a?.assetId === asset.assetId &&
+            overlap(resolve(segments, points, a.segmentId), target)
+        )
+    )
+    .map(asset => String(asset.assetId));
+  return [...new Set(ids)].sort((a, b) => a.localeCompare(b));
 }
 
 /**

@@ -3,6 +3,7 @@
 
 import { arrayOrEmpty } from '../../../commonCore.js';
 import { tryOr } from '../../common.js';
+import { runToyArrayCalculation } from '../formatToyError.js';
 
 /** @typedef {{ temporary: { TRAN1?: { stories?: object[] }, DEND2?: { stories?: object[] } } }} ToyState */
 
@@ -67,11 +68,7 @@ function collectTitles(stories) {
  * @returns {string} JSON string of story titles.
  */
 export function getDend2Titles(input, env) {
-  try {
-    return JSON.stringify(gatherTitles(env));
-  } catch {
-    return JSON.stringify([]);
-  }
+  return runToyArrayCalculation(() => gatherTitles(env));
 }
 
 /**

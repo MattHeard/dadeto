@@ -86,3 +86,14 @@ export function runToyFailureBoundary(calculate, reject) {
 export function runToyRequest(input, parse, calculate) {
   return runToyCalculation(() => formatToyResult(calculate(parse(input))));
 }
+/**
+ * Serialize a calculated array, representing failures as an empty array.
+ * @param {() => unknown[]} calculate Array calculation.
+ * @returns {string} Serialized result or empty-array fallback.
+ */
+export function runToyArrayCalculation(calculate) {
+  return runToyFailureBoundary(
+    () => JSON.stringify(calculate()),
+    () => JSON.stringify([])
+  );
+}

@@ -1,13 +1,42 @@
-import { describe, expect, test } from '@jest/globals';
+import { describe, expect, jest, test } from '@jest/globals';
 import {
   formatToyError,
   formatToyConversionError,
   runToyCalculation,
   runToyRequest,
   runToyFailureBoundary,
+  runToyArrayCalculation,
 } from '../../../../src/core/browser/toys/formatToyError.js';
 
 describe('toy error formatting', () => {
+  test('array boundaries serialize success and calculator failures without changing input arrays', () => {
+    const values = [0, false, null, { id: 'first' }];
+    expect(runToyArrayCalculation(() => values)).toBe(
+      '[0,false,null,{"id":"first"}]'
+    );
+    expect(values).toEqual([0, false, null, { id: 'first' }]);
+    expect(
+      runToyArrayCalculation(() => {
+        throw 'denied';
+      })
+    ).toBe('[]');
+  });
+  test('array boundaries catch success serialization failures but let fallback serialization failures escape', () => {
+    const stringify = jest.spyOn(JSON, 'stringify');
+    try {
+      stringify.mockImplementationOnce(() => {
+        throw new Error('bad result');
+      });
+      expect(runToyArrayCalculation(() => [1])).toBe('[]');
+      expect(stringify.mock.calls).toEqual([[[1]], [[]]]);
+      stringify.mockImplementation(() => {
+        throw new Error('bad formatter');
+      });
+      expect(() => runToyArrayCalculation(() => [1])).toThrow('bad formatter');
+    } finally {
+      stringify.mockRestore();
+    }
+  });
   test('failure executors retain success identity and deliver the original thrown value once', () => {
     const value = { original: true };
     expect(
