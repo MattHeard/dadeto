@@ -122,8 +122,8 @@ function executeDuplicationGate({
 }) {
   const { launchFailure } = runGateCommand({
     spawnImpl,
-    command: 'jscpd',
-    args: ['--config', configPath],
+    command: 'node',
+    args: ['src/scripts/run-clone-scanner.js', configPath],
     rootDir,
     stderr,
     launchLabel: getDuplicationGateLabel(),
