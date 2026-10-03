@@ -1,4 +1,5 @@
 import { normalizeSpatialCoordinates } from './spacePointResolution.js';
+import { formatToyError } from '../formatToyError.js';
 
 /**
  * Serialize a structured failure result for a fulfillment toy.
@@ -38,10 +39,7 @@ export function fulfillmentBoundary(
  * @returns {string} Legacy valid/error JSON response.
  */
 export function fulfillmentProposalFailure(error) {
-  return JSON.stringify({
-    valid: false,
-    error: /** @type {{message?: unknown}} */ (error).message,
-  });
+  return formatToyError(/** @type {{message?: unknown}} */ (error).message, 0);
 }
 
 /**

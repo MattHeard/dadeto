@@ -4,6 +4,16 @@
 export const ADMIN_UID = 'qcYSrXTaj1MZUoFsAloBwT86GNM2';
 
 /**
+ * Preserve a promise's result and represent asynchronous failure as absence.
+ * @template T
+ * @param {Promise<T>} pending Already-started operation.
+ * @returns {Promise<T | null>} Result or null after rejection.
+ */
+export function resolveOrNull(pending) {
+  return pending.catch(() => null);
+}
+
+/**
  * Return a dependency with its injected callable type preserved.
  * @template T
  * @param {T | undefined} dependency Dependency to return.

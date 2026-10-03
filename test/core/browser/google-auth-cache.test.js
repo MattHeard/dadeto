@@ -29,6 +29,29 @@ function createStorage() {
 }
 
 describe('google-auth-cache', () => {
+  it('normalizes asynchronous JSON failures without swallowing synchronous fetch throws', async () => {
+    await expect(
+      fetchAuthorUuidFromApi(
+        async () => ({
+          ok: true,
+          json: async () => {
+            throw new Error('invalid JSON');
+          },
+        }),
+        '/author',
+        'token'
+      )
+    ).resolves.toBeNull();
+    await expect(
+      fetchAuthorUuidFromApi(
+        () => {
+          throw new Error('synchronous fetch');
+        },
+        '/author',
+        'token'
+      )
+    ).rejects.toThrow('synchronous fetch');
+  });
   it('stores and clears the cached author uuid', () => {
     const storage = createStorage();
     setCachedAuthorUuid(storage, 'author-1');

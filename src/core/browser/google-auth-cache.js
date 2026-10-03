@@ -1,3 +1,5 @@
+import { resolveOrNull } from '../commonCore.js';
+
 const AUTHOR_UUID_STORAGE_KEY = 'author_uuid';
 
 /**
@@ -39,10 +41,10 @@ export async function fetchAuthorUuidFromApi(fetchFn, url, token) {
     return null;
   }
 
-  return fetchFn(url, {
-    headers: { Authorization: `Bearer ${token}` },
-  })
-    .then(response => {
+  return resolveOrNull(
+    fetchFn(url, {
+      headers: { Authorization: `Bearer ${token}` },
+    }).then(response => {
       if (!response.ok) {
         return null;
       }
@@ -54,7 +56,7 @@ export async function fetchAuthorUuidFromApi(fetchFn, url, token) {
         return null;
       });
     })
-    .catch(() => null);
+  );
 }
 
 /**

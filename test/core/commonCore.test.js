@@ -6,6 +6,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
   assertFunction,
+  resolveOrNull,
   createAsyncFsAdapters,
   createFsAdapters,
   createFsHandle,
@@ -55,6 +56,16 @@ import {
 } from '../../src/core/browser/browser-core.js';
 
 describe('commonCore helpers', () => {
+  test('promise absence boundary preserves values and normalizes rejected operations', async () => {
+    const value = { result: 'kept' };
+    await expect(resolveOrNull(Promise.resolve(value))).resolves.toBe(value);
+    await expect(
+      resolveOrNull(Promise.resolve(undefined))
+    ).resolves.toBeUndefined();
+    await expect(
+      resolveOrNull(Promise.reject(new Error('failed')))
+    ).resolves.toBeNull();
+  });
   test('base validators and normalizers behave as expected', () => {
     expect(isValidString('hello')).toBe(true);
     expect(isValidString('')).toBe(false);

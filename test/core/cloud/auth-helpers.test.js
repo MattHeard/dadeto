@@ -5,6 +5,22 @@ import {
 } from '../../../src/core/cloud/auth-helpers.js';
 
 describe('auth-helpers', () => {
+  test('normalizes mapper rejection but preserves synchronous verifier throws', async () => {
+    await expect(
+      verifyTokenSafe(
+        'token',
+        async () => ({ uid: 'user' }),
+        () => {
+          throw new Error('mapper failed');
+        }
+      )
+    ).resolves.toBeNull();
+    expect(() =>
+      verifyTokenSafe('token', () => {
+        throw new Error('synchronous verifier');
+      })
+    ).toThrow('synchronous verifier');
+  });
   test('verifies tokens and maps decoded payloads', async () => {
     const verifyIdToken = jest.fn().mockResolvedValue({ uid: 'user-1' });
 
