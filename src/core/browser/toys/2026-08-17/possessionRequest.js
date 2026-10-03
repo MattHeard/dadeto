@@ -1,7 +1,7 @@
 // Toy: Possession Request
 // (input, env) -> string
 
-import { parseObjectRecord } from '../../validation.js';
+import { parseObjectRecord, normalizeUtcMinute } from '../../validation.js';
 import { formatToyResult } from '../formatToyError.js';
 
 /**
@@ -101,13 +101,12 @@ function normalizeCoordinate(value, name, bounds, errors) {
  * @returns {string|null} Normalized timestamp or null when invalid.
  */
 function normalizeTime(value, name, errors) {
-  const source = text(value);
-  const match = /^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2})Z$/.exec(source);
-  if (!match || Number.isNaN(Date.parse(`${match[1]}:00Z`))) {
+  const timestamp = normalizeUtcMinute(value);
+  if (timestamp === null) {
     errors.push(`${name} must be a valid UTC minute like 2026-08-21T18:00Z`);
     return null;
   }
-  return `${match[1]}Z`;
+  return timestamp;
 }
 
 /**

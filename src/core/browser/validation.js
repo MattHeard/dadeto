@@ -172,6 +172,18 @@ export function trimmedStringOrEmpty(value) {
 }
 
 /**
+ * Normalize a string-only UTC minute using the existing Date.parse validity policy.
+ * @param {unknown} value Candidate timestamp.
+ * @returns {string|null} Trimmed UTC minute or null when invalid.
+ */
+export function normalizeUtcMinute(value) {
+  const source = trimmedStringOrEmpty(value);
+  const match = /^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2})Z$/.exec(source);
+  if (!match || Number.isNaN(Date.parse(`${match[1]}:00Z`))) return null;
+  return `${match[1]}Z`;
+}
+
+/**
  * Check whether a value is not a string.
  * @param {unknown} value Candidate value.
  * @returns {boolean} Whether value is not a string.

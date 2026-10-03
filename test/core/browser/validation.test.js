@@ -1,8 +1,28 @@
 import { describe, expect, jest, test } from '@jest/globals';
 import * as validation from '../../../src/core/browser/validation.js';
 import { normalizeSegmentId } from '../../../src/core/browser/toys/2026-08-19/spacetimeInput.js';
+import { normalizeUtcMinute } from '../../../src/core/browser/toys/2026-08-19/spacetimePointRegistry.js';
 
 describe('browser validation helpers', () => {
+  test('UTC-minute normalization shares its compatibility export and original parsing policy', () => {
+    expect(normalizeUtcMinute).toBe(validation.normalizeUtcMinute);
+    expect(normalizeUtcMinute(' 2026-08-21T09:05Z ')).toBe('2026-08-21T09:05Z');
+    expect(normalizeUtcMinute('2026-02-30T09:05Z')).toBe('2026-02-30T09:05Z');
+    for (const value of [
+      null,
+      undefined,
+      0,
+      false,
+      '2026-13-21T09:05Z',
+      '2026-08-21T09:05:00Z',
+      '2026-08-21T09:05+00:00',
+    ]) {
+      expect(normalizeUtcMinute(value)).toBeNull();
+    }
+    const toString = jest.fn(() => '2026-08-21T09:05Z');
+    expect(normalizeUtcMinute({ toString })).toBeNull();
+    expect(toString).not.toHaveBeenCalled();
+  });
   test('coercive trimming shares the segment-ID alias and preserves nullish and non-string behavior', () => {
     expect(normalizeSegmentId).toBe(validation.normalizeTrimmedString);
     for (const [value, expected] of [
