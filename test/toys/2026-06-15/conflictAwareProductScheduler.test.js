@@ -3,6 +3,33 @@ import {
   conflictAwareProductScheduler,
   conflictAwareProductSchedulerTestOnly,
 } from '../../../src/core/browser/toys/2026-06-15/conflictAwareProductScheduler.js';
+
+test('scheduler text preserves literal whitespace without coercing non-strings', () => {
+  const { toText } = conflictAwareProductSchedulerTestOnly;
+  for (const text of ['', ' ', '\n\t', '  roof  '])
+    expect(toText(text)).toBe(text);
+  let reads = 0;
+  const object = {
+    get toString() {
+      reads += 1;
+      throw new Error('no coercion');
+    },
+  };
+  for (const value of [
+    null,
+    undefined,
+    0,
+    false,
+    [],
+    object,
+    new String('roof'),
+    Symbol('roof'),
+  ]) {
+    expect(toText(value)).toBe('');
+  }
+  expect(reads).toBe(0);
+  expect(toText.name).toBe('toText');
+});
 import {
   DEFAULTS_FIXTURE,
   INVALID_JSON_INPUT,

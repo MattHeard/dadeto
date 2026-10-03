@@ -1,5 +1,6 @@
 // Toy: Conflict-Aware Product Scheduler
 // (input, env) -> string
+import { stringOrNull } from '../../../commonCore.js';
 
 import {
   isObject as isSchedulerRecord,
@@ -343,11 +344,7 @@ function toArray(value) {
  * @returns {string} String or empty string.
  */
 function toText(value) {
-  if (typeof value === 'string') {
-    return value;
-  }
-
-  return '';
+  return stringOrNull(value) ?? '';
 }
 
 /**
