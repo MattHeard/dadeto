@@ -1,4 +1,5 @@
 import { deepClone } from '../../browser-core.js';
+import { isObjectRecord } from '../../validation.js';
 import { requireEnvHelper } from '../browserToysCore.js';
 import {
   runMemoryRequest,
@@ -514,15 +515,6 @@ function isScalar(value) {
  */
 function isContainer(value) {
   return Array.isArray(value) || isObjectRecord(value);
-}
-
-/**
- * Determine whether a value is a non-array object record.
- * @param {unknown} value Candidate value.
- * @returns {value is Record<string, unknown>} True when non-null object record.
- */
-function isObjectRecord(value) {
-  return typeof value === 'object' && Boolean(value) && !Array.isArray(value);
 }
 
 /**

@@ -1,4 +1,5 @@
 // Shared input predicates for the spacetime toys.
+import { isObjectRecord } from '../../validation.js';
 import { resolvePointRecords } from '../2026-08-22/spacePointResolution.js';
 import { runToyCalculation } from '../formatToyError.js';
 export { normalizeTrimmedString as normalizeSegmentId } from '../../validation.js';
@@ -9,7 +10,7 @@ export { normalizeTrimmedString as normalizeSegmentId } from '../../validation.j
  * @returns {boolean} Whether the value is a JSON object.
  */
 export function isJsonObject(value) {
-  return value !== null && typeof value === 'object' && !Array.isArray(value);
+  return isObjectRecord(value);
 }
 
 /**

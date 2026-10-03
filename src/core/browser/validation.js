@@ -202,6 +202,15 @@ export function isNotArrayValue(value) {
 }
 
 /**
+ * Recognize object records without restricting their prototype.
+ * @param {unknown} value Candidate value.
+ * @returns {value is Record<string, unknown>} Whether the value is a non-array object.
+ */
+export function isObjectRecord(value) {
+  return isNonNullObject(value) && isNotArrayValue(value);
+}
+
+/**
  * Check whether a value is a finite number.
  * @param {unknown} value Candidate numeric value.
  * @returns {boolean} Whether value is finite numeric.

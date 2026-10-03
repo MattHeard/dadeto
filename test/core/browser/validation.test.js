@@ -1,9 +1,42 @@
 import { describe, expect, jest, test } from '@jest/globals';
 import * as validation from '../../../src/core/browser/validation.js';
-import { normalizeSegmentId } from '../../../src/core/browser/toys/2026-08-19/spacetimeInput.js';
+import {
+  isJsonObject,
+  normalizeSegmentId,
+} from '../../../src/core/browser/toys/2026-08-19/spacetimeInput.js';
 import { normalizeUtcMinute } from '../../../src/core/browser/toys/2026-08-19/spacetimePointRegistry.js';
 
 describe('browser validation helpers', () => {
+  test('object records preserve permissive prototypes and reject primitives and arrays', () => {
+    for (const value of [
+      {},
+      new Date(),
+      Object.create(null),
+      new (class Record {})(),
+    ]) {
+      expect(validation.isObjectRecord(value)).toBe(true);
+      expect(isJsonObject(value)).toBe(true);
+    }
+    for (const value of [
+      null,
+      undefined,
+      [],
+      0,
+      false,
+      '',
+      Symbol('record'),
+      1n,
+      () => {},
+    ]) {
+      expect(validation.isObjectRecord(value)).toBe(false);
+      expect(isJsonObject(value)).toBe(false);
+    }
+    expect(isJsonObject.name).toBe('isJsonObject');
+    const revoked = Proxy.revocable({}, {});
+    revoked.revoke();
+    expect(() => validation.isObjectRecord(revoked.proxy)).toThrow(TypeError);
+    expect(() => isJsonObject(revoked.proxy)).toThrow(TypeError);
+  });
   test('UTC-minute normalization shares its compatibility export and original parsing policy', () => {
     expect(normalizeUtcMinute).toBe(validation.normalizeUtcMinute);
     expect(normalizeUtcMinute(' 2026-08-21T09:05Z ')).toBe('2026-08-21T09:05Z');
