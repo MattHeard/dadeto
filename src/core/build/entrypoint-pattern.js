@@ -22,20 +22,35 @@ export function createBuildEntrypointPatternHandle({
   output,
   setExitCode,
 }) {
-  return () => {
-    const entrypoints = readJson(CONFIG_PATH).entrypoints;
-    const failures = getBuildEntrypointPatternFailures({
-      entrypoints,
-      readSource,
-    });
+  return checkBuildEntrypoints.bind(
+    null,
+    readJson,
+    readSource,
+    output,
+    setExitCode
+  );
+}
 
-    reportFailuresAndMaybeLogSuccess({
-      failures,
-      output,
-      setExitCode,
-      successMessage: `Checked ${entrypoints.length} build entrypoints for the object-passing pattern.`,
-    });
-  };
+/**
+ * Evaluate and report the current configured build entrypoints.
+ * @param {(filePath: string) => { entrypoints: string[] }} readJson Configuration reader.
+ * @param {(filePath: string) => string} readSource Source reader.
+ * @param {{ error: (line: string) => void, log: (line: string) => void }} output Gate output.
+ * @param {(exitCode: number) => void} setExitCode Exit status setter.
+ * @returns {void}
+ */
+function checkBuildEntrypoints(readJson, readSource, output, setExitCode) {
+  const entrypoints = readJson(CONFIG_PATH).entrypoints;
+  const failures = getBuildEntrypointPatternFailures({
+    entrypoints,
+    readSource,
+  });
+  reportFailuresAndMaybeLogSuccess({
+    failures,
+    output,
+    setExitCode,
+    successMessage: `Checked ${entrypoints.length} build entrypoints for the object-passing pattern.`,
+  });
 }
 
 /**

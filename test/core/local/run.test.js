@@ -6,7 +6,7 @@ import {
 
 describe('core local run', () => {
   test('runs server with host and handles permission errors', () => {
-    const listen = jest.fn((_port, _host, cb) => cb());
+    const listen = jest.fn();
     const on = jest.fn((event, handler) => {
       if (event === 'error') {
         handler({ code: 'EACCES' });
@@ -48,6 +48,9 @@ describe('core local run', () => {
       env: { WRITER_HOST: ' 0.0.0.0 ' },
     });
     expect(listen).toHaveBeenCalledWith(4321, '0.0.0.0', expect.any(Function));
+    expect(log).not.toHaveBeenCalled();
+    expect(listen.mock.contexts[0]).toEqual({ listen, on });
+    listen.mock.calls[0][2]();
     expect(log).toHaveBeenCalledWith(
       'writer server listening on http://example/writer/'
     );

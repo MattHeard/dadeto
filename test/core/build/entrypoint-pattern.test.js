@@ -60,6 +60,39 @@ describe('build entrypoint pattern', () => {
     expect(exitCodes).toEqual([]);
   });
 
+  test('reads current configuration on every invocation without caching the result', () => {
+    const logs = [];
+    const reads = [];
+    let entrypoints = ['src/build/first.js'];
+    const handle = createBuildEntrypointPatternHandle({
+      readJson: filePath => {
+        reads.push(filePath);
+        return { entrypoints };
+      },
+      readSource: filePath => {
+        reads.push(filePath);
+        return VALID_SOURCE;
+      },
+      output: { error: () => {}, log: line => logs.push(line) },
+      setExitCode: () => {},
+    });
+    expect(reads).toEqual([]);
+    expect(handle()).toBeUndefined();
+    entrypoints = ['src/build/second.js', 'src/build/third.js'];
+    expect(handle()).toBeUndefined();
+    expect(reads).toEqual([
+      'src/build/entrypoint-patterns.json',
+      'src/build/first.js',
+      'src/build/entrypoint-patterns.json',
+      'src/build/second.js',
+      'src/build/third.js',
+    ]);
+    expect(logs).toEqual([
+      'Checked 1 build entrypoints for the object-passing pattern.',
+      'Checked 2 build entrypoints for the object-passing pattern.',
+    ]);
+  });
+
   test('creates a failing command handle', () => {
     const logs = [];
     const errors = [];

@@ -167,8 +167,39 @@ describe('core local server routes', () => {
     };
 
     createLocalAppCore(deps);
-    await handlers['get /config.json']({}, response, jest.fn());
-    await handlers['get /seed.json']({}, response, jest.fn());
+    const originalApiBaseUrl = process.env.API_BASE_URL;
+    response.json.mockReturnValue(response);
+    try {
+      process.env.API_BASE_URL = 'https://first.invalid';
+      expect(handlers['get /config.json']({}, response)).toBeUndefined();
+      const firstConfig = response.json.mock.calls.at(-1)[0];
+      process.env.API_BASE_URL = 'https://second.invalid';
+      expect(handlers['get /config.json']({}, response)).toBeUndefined();
+      const secondConfig = response.json.mock.calls.at(-1)[0];
+      expect(firstConfig.submitNewStoryUrl).toBe(
+        'https://first.invalid/__sim/submit-new-story'
+      );
+      expect(secondConfig.submitNewStoryUrl).toBe(
+        'https://second.invalid/__sim/submit-new-story'
+      );
+      expect(secondConfig).not.toBe(firstConfig);
+      delete process.env.API_BASE_URL;
+      handlers['get /config.json']({}, response);
+      expect(response.json.mock.calls.at(-1)[0].submitNewStoryUrl).toBe(
+        '/__sim/submit-new-story'
+      );
+    } finally {
+      if (originalApiBaseUrl === undefined) delete process.env.API_BASE_URL;
+      else process.env.API_BASE_URL = originalApiBaseUrl;
+    }
+    expect(handlers['get /seed.json']({}, response)).toBeUndefined();
+    const firstSeed = response.json.mock.calls.at(-1)[0];
+    firstSeed.story.optionText = 'mutated by consumer';
+    handlers['get /seed.json']({}, response);
+    const secondSeed = response.json.mock.calls.at(-1)[0];
+    expect(secondSeed.story.optionText).toBe('Continue to the second page');
+    expect(secondSeed.story).not.toBe(firstSeed.story);
+    expect(response.json.mock.contexts.at(-1)).toBe(response);
     await handlers['get /admin.html']({}, response, jest.fn());
     await handlers['get /manual.html']({}, response, jest.fn());
     await handlers['get /mod.html']({}, response, jest.fn());

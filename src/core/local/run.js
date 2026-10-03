@@ -103,20 +103,16 @@ function getRequestLogger(env, deps, log) {
  */
 function startServer({ server, host, port, env, deps, log }) {
   const writerUrl = deps.getWriterUrl(port, env);
-  if (host) {
-    server.listen(port, host, () => {
-      log(`writer server listening on ${writerUrl}`);
-      log(`non-core-thin dashboard: http://${host}:${port}/non-core-thin`);
-    });
-    return;
-  }
-
-  server.listen(port, () => {
+  const onListening = () => {
     log(`writer server listening on ${writerUrl}`);
     log(
-      'non-core-thin dashboard: set WRITER_HOST=0.0.0.0 to reach /non-core-thin from the LAN'
+      host
+        ? `non-core-thin dashboard: http://${host}:${port}/non-core-thin`
+        : 'non-core-thin dashboard: set WRITER_HOST=0.0.0.0 to reach /non-core-thin from the LAN'
     );
-  });
+  };
+  const listenArgs = host ? [port, host, onListening] : [port, onListening];
+  server.listen(...listenArgs);
 }
 
 /**

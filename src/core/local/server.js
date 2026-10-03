@@ -195,21 +195,27 @@ function createModerationPage() {
  * @returns {(req: unknown, res: { json: (body: unknown) => void }) => void} Express handler.
  */
 function createConfigRoute() {
-  return (_req, res) => {
-    const apiBaseUrl = process.env.API_BASE_URL ?? '';
-    res.json({
-      submitNewStoryUrl: `${apiBaseUrl}/__sim/submit-new-story`,
-      submitNewPageUrl: `${apiBaseUrl}/__sim/submit-new-page`,
-      getModerationVariantUrl: `${apiBaseUrl}/__sim/get-moderation-variant`,
-      assignModerationJobUrl: `${apiBaseUrl}/__sim/assign-moderation-job`,
-      submitModerationRatingUrl: `${apiBaseUrl}/__sim/submit-moderation-rating`,
-      triggerRenderContentsUrl: `${apiBaseUrl}/__sim/trigger-render-contents`,
-      markVariantDirtyUrl: `${apiBaseUrl}/__sim/mark-variant-dirty`,
-      generateStatsUrl: `${apiBaseUrl}/__sim/generate-stats`,
-      paymentWebhookUrl: `${apiBaseUrl}/__sim/payment-webhook`,
-      getAuthorUuidUrl: `${apiBaseUrl}/__sim/get-author-uuid-v2`,
-      objectMinuteRentalSearchUrl: `${apiBaseUrl}/__sim/object-minute-rental-search`,
-    });
+  return createJsonPayloadRoute(buildEndpointConfig);
+}
+
+/**
+ * Build simulator endpoint configuration from the current environment.
+ * @returns {Record<string, string>} Endpoint URLs.
+ */
+function buildEndpointConfig() {
+  const apiBaseUrl = process.env.API_BASE_URL ?? '';
+  return {
+    submitNewStoryUrl: `${apiBaseUrl}/__sim/submit-new-story`,
+    submitNewPageUrl: `${apiBaseUrl}/__sim/submit-new-page`,
+    getModerationVariantUrl: `${apiBaseUrl}/__sim/get-moderation-variant`,
+    assignModerationJobUrl: `${apiBaseUrl}/__sim/assign-moderation-job`,
+    submitModerationRatingUrl: `${apiBaseUrl}/__sim/submit-moderation-rating`,
+    triggerRenderContentsUrl: `${apiBaseUrl}/__sim/trigger-render-contents`,
+    markVariantDirtyUrl: `${apiBaseUrl}/__sim/mark-variant-dirty`,
+    generateStatsUrl: `${apiBaseUrl}/__sim/generate-stats`,
+    paymentWebhookUrl: `${apiBaseUrl}/__sim/payment-webhook`,
+    getAuthorUuidUrl: `${apiBaseUrl}/__sim/get-author-uuid-v2`,
+    objectMinuteRentalSearchUrl: `${apiBaseUrl}/__sim/object-minute-rental-search`,
   };
 }
 
@@ -218,25 +224,42 @@ function createConfigRoute() {
  * @returns {(req: unknown, res: { json: (body: unknown) => void }) => void} Express handler.
  */
 function createSeedRoute() {
+  return createJsonPayloadRoute(buildSeedPayload);
+}
+
+/**
+ * Bind a fresh-payload builder to a synchronous JSON response route.
+ * @param {() => unknown} buildPayload Payload builder evaluated per request.
+ * @returns {(req: unknown, res: { json: (body: unknown) => void }) => void} Express handler.
+ */
+function createJsonPayloadRoute(buildPayload) {
   return (_req, res) => {
-    res.json({
-      idToken: 'local-admin-token',
-      storyTitle: 'E2E moderation fixture story',
-      moderation: {
-        firstContent: 'The first seeded page invites the reader forward.',
-        secondContent: 'The second seeded page closes the loop.',
-      },
-      story: {
-        firstPagePath: '/p/1a.html',
-        secondPagePath: '/p/2a.html',
-        optionText: 'Continue to the second page',
-      },
-      expectedStatsAfterModeration: {
-        storyCount: 1,
-        pageCount: 2,
-        unmoderatedPageCount: 1,
-      },
-    });
+    res.json(buildPayload());
+  };
+}
+
+/**
+ * Create a fresh nested simulator fixture for each seed request.
+ * @returns {object} Seed fixture.
+ */
+function buildSeedPayload() {
+  return {
+    idToken: 'local-admin-token',
+    storyTitle: 'E2E moderation fixture story',
+    moderation: {
+      firstContent: 'The first seeded page invites the reader forward.',
+      secondContent: 'The second seeded page closes the loop.',
+    },
+    story: {
+      firstPagePath: '/p/1a.html',
+      secondPagePath: '/p/2a.html',
+      optionText: 'Continue to the second page',
+    },
+    expectedStatsAfterModeration: {
+      storyCount: 1,
+      pageCount: 2,
+      unmoderatedPageCount: 1,
+    },
   };
 }
 
