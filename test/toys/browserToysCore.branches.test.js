@@ -5,6 +5,7 @@ import {
   runToyWithFallback,
   runToyWithParsedJson,
   requireEnvHelper,
+  getOptionalEnvHelper,
   parseJsonOrFallback,
   isPlainObject,
   toRecordOrNull,
@@ -20,6 +21,35 @@ import {
   persistDendritePage,
   persistDendriteStory,
 } from '../../src/core/browser/toys/browserToysCore.js';
+
+describe('optional environment lookup', () => {
+  test('keeps callable identity and performs a single lookup without invoking it', () => {
+    const helper = jest.fn();
+    const env = { get: jest.fn(() => helper) };
+    expect(getOptionalEnvHelper(env, 'read')).toBe(helper);
+    expect(env.get.mock.calls).toEqual([['read']]);
+    expect(helper).not.toHaveBeenCalled();
+  });
+  test('returns null for non-callable entries and preserves required error text', () => {
+    for (const value of [undefined, null, false, 0, '', {}, []]) {
+      const env = new Map([['read', value]]);
+      expect(getOptionalEnvHelper(env, 'read')).toBeNull();
+      expect(() => requireEnvHelper(env, 'read')).toThrow(
+        'Missing toy helper "read"'
+      );
+    }
+  });
+  test('does not swallow accessor errors in either lookup policy', () => {
+    const failure = new Error('access denied');
+    const env = {
+      get: () => {
+        throw failure;
+      },
+    };
+    expect(() => getOptionalEnvHelper(env, 'read')).toThrow(failure);
+    expect(() => requireEnvHelper(env, 'read')).toThrow(failure);
+  });
+});
 
 describe('getEnvHelpers', () => {
   test('throws when a required helper is missing from env', () => {

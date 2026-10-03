@@ -1,6 +1,6 @@
 import { deepClone } from '../../browser-core.js';
 import { isObjectRecord } from '../../validation.js';
-import { requireEnvHelper } from '../browserToysCore.js';
+import { getOptionalEnvHelper, requireEnvHelper } from '../browserToysCore.js';
 import {
   runMemoryRequest,
   getPathCandidate,
@@ -472,20 +472,6 @@ function callOptionalEnvHelper(env, helperName) {
   }
 
   return helper();
-}
-
-/**
- * Get an optional environment helper.
- * @param {import('../browserToysCore.js').ToyEnv} env Environment helpers.
- * @param {string} helperName Helper name.
- * @returns {((...args: unknown[]) => unknown) | null} Helper function or null.
- */
-function getOptionalEnvHelper(env, helperName) {
-  const helper = env.get(helperName);
-  if (typeof helper !== 'function') {
-    return null;
-  }
-  return helper;
 }
 
 /**

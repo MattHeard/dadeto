@@ -25,11 +25,22 @@ export { runToyFailureBoundary };
  * @returns {EnvHelperFunc} - Registered helper for the given key.
  */
 export function requireEnvHelper(env, key) {
-  const helper = env.get(key);
-  if (typeof helper !== 'function') {
+  const helper = getOptionalEnvHelper(env, key);
+  if (!helper) {
     throw new Error(`Missing toy helper "${key}"`);
   }
   return helper;
+}
+
+/**
+ * Look up a callable environment helper without requiring its presence.
+ * @param {ToyEnv} env Environment helper map.
+ * @param {string} key Helper name.
+ * @returns {EnvHelperFunc | null} Callable helper or null.
+ */
+export function getOptionalEnvHelper(env, key) {
+  const candidate = env.get(key);
+  return typeof candidate === 'function' ? candidate : null;
 }
 
 /**
