@@ -27,6 +27,18 @@ const payload = (firstSegmentId, secondSegmentId) =>
   });
 
 describe('spacetimeSegmentTemporalRelation', () => {
+  test('short circuits reverse boundary reads after a directed match', () => {
+    const first = {
+      endTime: 10,
+      endPointId: 'B',
+      get startTime() {
+        throw new Error('reverse direction must not be read');
+      },
+    };
+    const second = { startTime: 10, startPointId: 'B' };
+    expect(sharesBoundaryPoint(first, second)).toBe(true);
+  });
+
   test('classifies shared endpoint as touching', () => {
     expect(
       JSON.parse(spacetimeSegmentTemporalRelation(payload('AB', 'BC'))).relation

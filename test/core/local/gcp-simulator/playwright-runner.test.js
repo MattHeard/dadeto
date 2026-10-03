@@ -347,49 +347,54 @@ describe('local playwright runner process outcomes', () => {
     [null, 'SIGTERM', 1],
     [0, 'SIGTERM', 0],
     [7, 'SIGTERM', 7],
-  ])('maps code %p and signal %p to status %p', async (code, signal, exitCode) => {
-    const simulator = new FakeChildProcess();
-    const writer = new FakeChildProcess();
-    const playwright = new FakeChildProcess();
-    const spawnCalls = [];
-    const spawnImpl = jest.fn((command, args, options) => {
-      spawnCalls.push({ command, args, options });
-      if (spawnCalls.length === 1) {
-        return simulator;
-      }
+  ])(
+    'maps code %p and signal %p to status %p',
+    async (code, signal, exitCode) => {
+      const simulator = new FakeChildProcess();
+      const writer = new FakeChildProcess();
+      const playwright = new FakeChildProcess();
+      const spawnCalls = [];
+      const spawnImpl = jest.fn((command, args, options) => {
+        spawnCalls.push({ command, args, options });
+        if (spawnCalls.length === 1) {
+          return simulator;
+        }
 
-      if (spawnCalls.length === 2) {
-        return writer;
-      }
+        if (spawnCalls.length === 2) {
+          return writer;
+        }
 
-      return playwright;
-    });
+        return playwright;
+      });
 
-    const runPromise = runLocalPlaywright({
-      repoRoot: '/repo',
-      spawnImpl,
-    });
+      const runPromise = runLocalPlaywright({
+        repoRoot: '/repo',
+        spawnImpl,
+      });
 
-    simulator.stdout.emit(
-      'data',
-      Buffer.from('gcp simulator listening on http://127.0.0.1:4321\n')
-    );
-    await flushEventLoop();
-    writer.stdout.emit(
-      'data',
-      Buffer.from('writer server listening on http://localhost:4322/writer/\n')
-    );
-    await flushEventLoop();
-    playwright.emit('exit', code, signal);
+      simulator.stdout.emit(
+        'data',
+        Buffer.from('gcp simulator listening on http://127.0.0.1:4321\n')
+      );
+      await flushEventLoop();
+      writer.stdout.emit(
+        'data',
+        Buffer.from(
+          'writer server listening on http://localhost:4322/writer/\n'
+        )
+      );
+      await flushEventLoop();
+      playwright.emit('exit', code, signal);
 
-    await expect(runPromise).resolves.toEqual({
-      baseUrl: 'http://127.0.0.1:4322',
-      exitCode,
-      signal,
-    });
+      await expect(runPromise).resolves.toEqual({
+        baseUrl: 'http://127.0.0.1:4322',
+        exitCode,
+        signal,
+      });
 
-    expect(spawnCalls).toHaveLength(3);
-  });
+      expect(spawnCalls).toHaveLength(3);
+    }
+  );
 
   it('rejects if the simulator errors before it is ready', async () => {
     const child = new FakeChildProcess();

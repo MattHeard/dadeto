@@ -111,11 +111,19 @@ function classify(first, second) {
  * @returns {boolean} Whether the shared boundary point is identical.
  */
 function sharesBoundaryPoint(first, second) {
+  return endsAtStart(first, second) || endsAtStart(second, first);
+}
+
+/**
+ * Match one directed endpoint without conflating time with point identity.
+ * @param {{endTime: number, endPointId: string}} ending Interval ending boundary.
+ * @param {{startTime: number, startPointId: string}} starting Interval starting boundary.
+ * @returns {boolean} Whether the directed boundary matches.
+ */
+function endsAtStart(ending, starting) {
   return (
-    (first.endTime === second.startTime &&
-      first.endPointId === second.startPointId) ||
-    (second.endTime === first.startTime &&
-      second.endPointId === first.startPointId)
+    ending.endTime === starting.startTime &&
+    ending.endPointId === starting.startPointId
   );
 }
 
