@@ -487,11 +487,10 @@ function getStateHandler(state) {
  * @returns {string} Flavor suffix text.
  */
 function getBonusText(randomValue) {
-  if (randomValue > 0.8) {
-    return '\n> A robin lands nearby and approves of your craftsmanship.';
-  }
-
-  return '';
+  return withFallback(
+    randomValue > 0.8,
+    () => '\n> A robin lands nearby and approves of your craftsmanship.'
+  );
 }
 
 /**
@@ -574,3 +573,4 @@ export const cozyHouseAdventureTestOnly = {
   createRuntimeContext,
   runAdventure,
 };
+import { withFallback } from '../../common.js';

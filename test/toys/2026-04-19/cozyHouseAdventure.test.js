@@ -5,6 +5,17 @@ import {
 } from '../../../src/core/browser/toys/2026-04-19/cozyHouseAdventure.js';
 
 describe('cozyHouseAdventure', () => {
+  test('bonus text preserves the strict random threshold and non-finite behavior', () => {
+    const { getBonusText } = cozyHouseAdventureTestOnly;
+    for (const value of [0, 0.8, NaN, -Infinity])
+      expect(getBonusText(value)).toBe('');
+    for (const value of [0.800001, 1, Infinity]) {
+      expect(getBonusText(value)).toBe(
+        '\n> A robin lands nearby and approves of your craftsmanship.'
+      );
+    }
+    expect(getBonusText.name).toBe('getBonusText');
+  });
   test('authored narrative renders dynamic headings once without accumulating lines', () => {
     let reads = 0;
     const heading = {
