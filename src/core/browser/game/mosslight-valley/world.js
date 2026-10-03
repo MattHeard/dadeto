@@ -1,5 +1,15 @@
 // @ts-nocheck -- world data is content-authored and covered by runtime tests.
 /**
+ * Find the first eligible world entry, with null representing absence.
+ * @template T
+ * @param {T[]} entries Ordered entries.
+ * @param {(entry: T, index: number, entries: T[]) => unknown} eligible Entry eligibility policy.
+ * @returns {T | null} Original matching entry or null.
+ */
+export function findWorldEntry(entries, eligible) {
+  return entries.find(eligible) ?? null;
+}
+/**
  * Whether a tile is outside the map or explicitly blocked.
  * @param {unknown} map - The map argument.
  * @param {unknown} x - The x argument.
@@ -24,11 +34,10 @@ export function isBlocked(map, x, y) {
  * @returns {unknown} The computed result.
  */
 export function findExit(map, x, y, flags) {
-  return (
-    map.exits.find(
-      exit =>
-        exit.x === x && exit.y === y && (!exit.requires || flags[exit.requires])
-    ) ?? null
+  return findWorldEntry(
+    map.exits,
+    exit =>
+      exit.x === x && exit.y === y && (!exit.requires || flags[exit.requires])
   );
 }
 /**

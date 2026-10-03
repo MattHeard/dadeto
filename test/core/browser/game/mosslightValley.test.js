@@ -26,6 +26,7 @@ import {
   advanceClock,
   isBlocked,
   findExit,
+  findWorldEntry,
 } from '../../../../src/core/browser/game/mosslight-valley/world.js';
 import {
   scheduleActors,
@@ -59,6 +60,42 @@ import {
 import { createAudioAdapter } from '../../../../src/core/browser/game/mosslight-valley/audio.js';
 
 /** Verify the core movement and frame contract. */
+test('world entry lookup preserves order, identity, callback arguments and null absence', () => {
+  const entries = [{ id: 'first' }, { id: 'second' }, { id: 'third' }];
+  const seen = [];
+  expect(
+    findWorldEntry(entries, (entry, index, source) => {
+      expect(source).toBe(entries);
+      seen.push([entry.id, index]);
+      return index === 1;
+    })
+  ).toBe(entries[1]);
+  expect(seen).toEqual([
+    ['first', 0],
+    ['second', 1],
+  ]);
+  expect(findWorldEntry([], () => true)).toBeNull();
+  expect(findWorldEntry([undefined], () => true)).toBeNull();
+  expect(findWorldEntry([null], () => true)).toBeNull();
+  const world = {
+    mapId: 'village',
+    npcs: [
+      { map: 'shore', x: 2, y: 3 },
+      { map: 'village', x: 2, y: 3 },
+      { map: 'village', x: 2, y: 3 },
+    ],
+  };
+  expect(actorAt(world, 2, 3)).toBe(world.npcs[1]);
+  const map = {
+    exits: [
+      { x: 2, y: 3, requires: 'awake' },
+      { x: 2, y: 3 },
+    ],
+  };
+  expect(findExit(map, 2, 3, {})).toBe(map.exits[1]);
+  expect(findExit(map, 2, 3, { awake: true })).toBe(map.exits[0]);
+});
+
 test('moves, interacts, and renders a handheld frame', () => {
   let state = createSimulation(CONTENT);
   state = stepGame(state, ['right', 'right'], CONTENT);

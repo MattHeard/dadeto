@@ -1,4 +1,5 @@
 // @ts-nocheck -- actor contracts are supplied by episode content.
+import { findWorldEntry } from './world.js';
 /**
  * Find an active NPC at a map coordinate.
  * @param {unknown} world - The world argument.
@@ -7,10 +8,9 @@
  * @returns {unknown} The computed result.
  */
 export function actorAt(world, x, y) {
-  return (
-    world.npcs.find(
-      actor => actor.map === world.mapId && actor.x === x && actor.y === y
-    ) ?? null
+  return findWorldEntry(
+    world.npcs,
+    actor => actor.map === world.mapId && actor.x === x && actor.y === y
   );
 }
 /**
