@@ -142,7 +142,7 @@ test.each([
   ['rest', 'morale', 93],
   ['audit', 'trust', 50],
   ['repay', 'debt', 100],
-  ['hire:safety', 'hired', 5],
+  ['hire:tess', 'hired', 5],
 ])(
   'management operation %s commits one point and preserves its source ledger',
   (command, field, expected) => {
@@ -184,7 +184,7 @@ test('failed orders, repeated agreements and exhausted points do not consume mon
   const promised = manageLab(campaign(), 'promise:ada');
   expect(promised.lab.morale).toBe(81);
   expect(manageLab(promised, 'promise:ada').lab).toEqual(promised.lab);
-  expect(manageLab(campaign(), 'team:service').lab.teams).toEqual({
+  expect(manageLab(campaign(), 'assign:ada:service').lab.teams).toEqual({
     research: 1,
     safety: 1,
     service: 2,

@@ -16,6 +16,75 @@ async function tap(page: Page, button: string, embedded = false) {
   await page.waitForTimeout(280);
 }
 
+async function selectPersonnelRow(page: Page, command: string) {
+  const selection = await page.evaluate(async command => {
+    const saves = JSON.parse(localStorage.getItem('permanentData') || '{}')['neon-covenant-saves-v2'];
+    const state = JSON.parse(saves.slots[saves.activeSlot ?? 0]).state;
+    const { labEntries } = await import('/core/browser/game/neon-covenant/controls.js');
+    return { current: state.menu.selected, target: labEntries(state).findIndex((row: string[]) => row[1] === command) };
+  }, command);
+  expect(selection.target).toBeGreaterThanOrEqual(0);
+  for (let index = selection.current; index < selection.target; index++) await tap(page, 'down');
+  await tap(page, 'a');
+}
+
+test('named staff are assignable and their readable concerns own controller input', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', error => errors.push(error.message));
+  await page.goto('/neon-covenant/');
+  await expect.poll(async () => (await labState(page))?.lab?.rulesVersion).toBe(1);
+  await tap(page, 'b');
+  await tap(page, 'x');
+  await selectPersonnelRow(page, 'page:recruitment');
+  await selectPersonnelRow(page, 'page:employee:jun');
+  await selectPersonnelRow(page, 'assign:jun:safety');
+  expect((await labState(page)).lab.teams).toEqual({ research: 1, safety: 2, service: 1 });
+  expect((await labState(page)).lab.decisions).toBe(5);
+  await tap(page, 'x');
+  await selectPersonnelRow(page, 'page:recruitment');
+  await selectPersonnelRow(page, 'page:employee:ada');
+  await selectPersonnelRow(page, 'thoughts:ada');
+  const state = await labState(page);
+  expect(state.dialogue.actorId).toBe('ada');
+  expect(state.dialogue.lines[0].text).toContain('clinical reliability');
+  await tap(page, 'a');
+  expect((await labState(page)).dialogue).toBeNull();
+  expect((await labState(page)).lab.decisions).toBe(5);
+  expect((await labState(page)).world.day).toBe(1);
+  expect(errors).toEqual([]);
+  await page.screenshot({ path: `.tmp/neon-personnel-${test.info().project.name}.png` });
+});
+
+test('legacy mobile and desktop saves migrate losslessly and preserve a resettable backup', async ({ page }) => {
+  await page.goto('/neon-covenant/');
+  const original = await page.evaluate(async () => {
+    const { createNeonState } = await import('/core/browser/game/neon-covenant/simulation.js');
+    const state = createNeonState();
+    delete state.lab.rulesVersion;
+    delete state.lab.employees;
+    Object.assign(state.lab, { cash: 137, debt: 94, hired: 6, teams: { research: 0, safety: 0, service: 6 }, promises: ['ada'] });
+    state.world.day = 8;
+    state.dialogue = null;
+    const raw = JSON.stringify({ game: 'neon-covenant', version: 2, slot: 2, state });
+    return raw;
+  });
+  await page.addInitScript(raw => localStorage.setItem('permanentData', JSON.stringify({ 'neon-covenant-saves-v2': { slots: { 2: raw }, activeSlot: 2 } })), original);
+  await page.reload();
+  await expect.poll(async () => (await labState(page))?.lab?.rulesVersion).toBe(1);
+  const state = await labState(page);
+  expect(state.lab.cash).toBe(137);
+  expect(state.lab.debt).toBe(94);
+  expect(state.lab.employees).toHaveLength(6);
+  expect(state.world.day).toBe(8);
+  expect(await page.evaluate(() => JSON.parse(localStorage.getItem('permanentData')!)['neon-covenant-saves-v2'].migrationBackups[2])).toBe(original);
+  await tap(page, 'x');
+  await selectPersonnelRow(page, 'page:saves');
+  await selectPersonnelRow(page, 'page:reset');
+  await selectPersonnelRow(page, 'reset');
+  await expect.poll(async () => (await labState(page))?.lab?.cash).toBe(180);
+  expect(await page.evaluate(() => JSON.parse(localStorage.getItem('permanentData')!)['neon-covenant-saves-v2'].migrationBackups[2])).toBeUndefined();
+});
+
 test('phone and desktop have readable first-run intro, modal controls and an explicit shift clock', async ({ page }) => {
   const errors: string[] = [];
   page.on('pageerror', error => errors.push(error.message));
@@ -57,8 +126,9 @@ test('phone and desktop have readable first-run intro, modal controls and an exp
 });
 
 test('embedded keypad and lazy manual use the independent lab campaign', async ({ page }) => {
-  await page.goto('/');
+  await page.goto('/', { waitUntil: 'domcontentloaded' });
   const toy = page.locator('#NEON1');
+  await toy.scrollIntoViewIfNeeded();
   await expect(toy.getByRole('button', { name: 'Submit', exact: true })).toBeEnabled();
   await tap(page, 'b', true);
   await expect.poll(async () => (await labState(page))?.dialogue).toBeNull();

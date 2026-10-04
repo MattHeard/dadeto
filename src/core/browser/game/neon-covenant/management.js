@@ -1,5 +1,10 @@
 import { LAB_CONTENT } from './content.js';
 import { clampNumber } from '../../../index.js';
+import {
+  createPersonnel,
+  personnelOrder,
+  settlePersonnel,
+} from './personnel.js';
 
 /**
  * Clamp a public lab metric to its meaningful range.
@@ -16,6 +21,8 @@ function metric(value) {
  */
 export function createLab() {
   return {
+    rulesVersion: 1,
+    employees: createPersonnel(),
     cash: 180,
     debt: 120,
     compute: 8,
@@ -101,6 +108,7 @@ function purchase(lab, cost, apply) {
  */
 function operate(lab, command) {
   const [kind, value] = command.split(':');
+  if (kind === 'assign' || kind === 'hire') return personnelOrder(lab, command);
   if (kind === 'focus') {
     lab.focus = value;
     return `Research focus: ${LAB_CONTENT.projects[value].name}.`;
@@ -110,20 +118,8 @@ function operate(lab, command) {
     return `${kind} policy: ${value}.`;
   }
   if (kind === 'team') {
-    const donor = Object.keys(lab.teams).find(
-      role => role !== value && lab.teams[role] > 0
-    );
-    if (!donor) return 'No staff available to reassign.';
-    lab.teams[donor]--;
-    lab.teams[value]++;
-    return `One ${donor} specialist reassigned to ${value}.`;
+    return 'No staff moved. Choose a named colleague at the staff console.';
   }
-  if (kind === 'hire')
-    return purchase(lab, 18, () => {
-      lab.hired++;
-      lab.teams[value]++;
-      return 'Specialist hired. Payroll increases 3k/shift.';
-    });
   if (command === 'racks')
     return purchase(lab, 30, () => {
       lab.racks++;
@@ -138,6 +134,8 @@ function operate(lab, command) {
   if (command === 'rest')
     return purchase(lab, 8, () => {
       lab.morale = metric(lab.morale + 18);
+      for (const person of lab.employees)
+        person.fatigue = Math.max(0, person.fatigue - 20);
       return 'Protected recovery time. Morale +18.';
     });
   if (command === 'audit')
@@ -314,6 +312,7 @@ export function endShift(state) {
   if (lab.promises.includes('mae') && lab.deployed.includes('atlas'))
     lab.trust = metric(lab.trust + 2);
   lab.cash = Math.round(lab.cash + revenue - f.payroll - f.power);
+  settlePersonnel(lab);
   lab.decisions = 6;
   lab.report = report;
   lab.history = [

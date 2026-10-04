@@ -4,6 +4,7 @@ import { mosslightValley } from '../mosslight-valley/mosslightValley.js';
 import { startMosslightPage } from '../mosslight-valley/pagePresenter.js';
 import { registerMosslightTools } from '../mosslight-valley/webmcp.js';
 import { LAB_CONTENT } from './content.js';
+import { migratePersonnel, validPersonnel } from './personnel.js';
 import {
   createNeonState,
   stepNeon,
@@ -20,6 +21,7 @@ export function validLabSave(state) {
   const lab = state.lab;
   return Boolean(
     lab &&
+      validPersonnel(lab) &&
       LAB_CONTENT.maps[state.world.mapId] &&
       Array.isArray(state.world.npcs) &&
       Array.isArray(state.lastActions) &&
@@ -111,6 +113,7 @@ export function createNeonRuntime(options = {}) {
     key: 'neon-covenant-saves-v2',
     game: 'neon-covenant',
     validate: validLabSave,
+    migrate: migratePersonnel,
     restore: restoreLabState,
   });
   return /** @type {Record<string, any>} */ (

@@ -1,5 +1,6 @@
 import { LAB_CONTENT } from './content.js';
 import { forecast } from './management.js';
+import { PERSONNEL } from './personnel.js';
 
 /**
  * Build selectable rows from the current terminal or handheld menu.
@@ -32,10 +33,41 @@ export function labEntries(state) {
     ];
   if (page === 'contracts') return named(LAB_CONTENT.contracts, 'contract');
   if (page === 'recruitment')
-    return ['research', 'safety', 'service'].flatMap(role => [
-      [`Move staff to ${role}`, `team:${role}`],
-      [`Hire ${role} / 18k`, `hire:${role}`],
-    ]);
+    return [
+      ...state.lab.employees.map(
+        (/** @type {Record<string, any>} */ person) => [
+          `${person.name} / ${person.role}`,
+          `page:employee:${person.id}`,
+        ]
+      ),
+      ['Recruit candidates', 'page:candidates'],
+      ['Employee inbox', 'page:inbox'],
+    ];
+  if (page.startsWith('employee:'))
+    return ['research', 'safety', 'service']
+      .map(role => [`Assign to ${role}`, `assign:${page.slice(9)}:${role}`])
+      .concat([['Listen to concerns', `thoughts:${page.slice(9)}`]]);
+  if (page === 'candidates')
+    return Object.entries(PERSONNEL)
+      .filter(
+        ([id]) =>
+          !['ada', 'jun', 'sable', 'ion'].includes(id) &&
+          !state.lab.employees.some(
+            (/** @type {Record<string, any>} */ person) => person.id === id
+          )
+      )
+      .map(([id, person]) => [
+        `${person.name} / ${person.role} / 18k`,
+        `hire:${id}`,
+      ])
+      .concat([['Staff console', 'page:recruitment']]);
+  if (page === 'inbox')
+    return state.lab.employees.map(
+      (/** @type {Record<string, any>} */ person) => [
+        person.name,
+        `page:employee:${person.id}`,
+      ]
+    );
   if (page === 'evaluation')
     return [
       ['Evaluate checkpoint / 6k', 'evaluate'],
@@ -87,6 +119,7 @@ export function labEntries(state) {
     ['Ledger / end shift', 'page:ledger'],
     ['Lab dashboard', 'page:dashboard'],
     ['Research console', 'page:research'],
+    ['People and recruitment', 'page:recruitment'],
     ['Shift report', 'page:report'],
     ['Story and controls', 'guide'],
     ['Assign B', 'page:assign'],
@@ -106,8 +139,16 @@ export function labMenuRows(state) {
   if (!state.menu) return [];
   const lab = state.lab;
   const f = forecast(lab);
-  const info =
-    state.menu.page === 'dashboard'
+  const person = lab.employees.find(
+    (/** @type {Record<string, any>} */ entry) =>
+      `employee:${entry.id}` === state.menu.page
+  );
+  const info = person
+    ? [
+        `${person.name}: ${person.specialty}`,
+        `FATIGUE ${person.fatigue} MORALE ${person.morale}`,
+      ]
+    : state.menu.page === 'dashboard'
       ? [
           `CASH ${lab.cash}k DEBT ${lab.debt}k`,
           `TRUST ${lab.trust} MORALE ${lab.morale}`,

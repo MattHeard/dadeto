@@ -4,6 +4,7 @@ import { openDialogue, advanceDialogue } from '../mosslight-valley/dialogue.js';
 import { createLab, manageLab, endShift } from './management.js';
 import { labEntries, labMenuRows } from './controls.js';
 import { LAB_CONTENT } from './content.js';
+import { employeeThoughts } from './personnel.js';
 import {
   controllerSelection,
   withControllerSelection,
@@ -76,6 +77,17 @@ export function createNeonState(content = LAB_CONTENT) {
  */
 function menuCommand(state, command) {
   const next = { ...state, menu: null };
+  if (command.startsWith('thoughts:')) {
+    const person = state.lab.employees.find(
+      (/** @type {Record<string, any>} */ entry) =>
+        entry.id === command.slice(9)
+    );
+    return openDialogue(
+      next,
+      person.id,
+      employeeThoughts(state.lab, person).map(text => ({ text }))
+    );
+  }
   if (command.startsWith('page:'))
     return { ...next, menu: { page: command.slice(5), selected: 0 } };
   if (command.startsWith('bind:'))
@@ -221,7 +233,7 @@ export function stepNeon(
     if (actor)
       next = openDialogue(next, actor.id, [
         {
-          text: content.staffStories[actor.id],
+          text: staffConversation(state.lab, actor, content),
           choices: [
             {
               label: 'Make a commitment / 1 AP',
@@ -243,6 +255,22 @@ export function stepNeon(
     }
   }
   return present({ ...next, lastActions: buttons });
+}
+
+/**
+ * Tie a colleague's authored story to actionable current working conditions.
+ * @param {Record<string, any>} lab Current ledger.
+ * @param {Record<string, any>} actor Person being addressed.
+ * @param {Record<string, any>} content Authored stories.
+ * @returns {string} Story and contextual concern.
+ */
+function staffConversation(lab, actor, content) {
+  const person = lab.employees.find(
+    (/** @type {Record<string, any>} */ entry) => entry.id === actor.id
+  );
+  const story = content.staffStories[actor.id];
+  if (!person) return story;
+  return `${story} ${employeeThoughts(lab, person)[0]}`;
 }
 
 /**

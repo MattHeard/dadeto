@@ -35,8 +35,10 @@ export function createMosslightRuntime(options = {}) {
     if (!command) return;
     const lastActions = state.lastActions;
     state = { ...state, controllerCommand: null };
-    if (command === 'reset') state = { ...createState(content), lastActions };
-    else if (command.startsWith('slot:')) {
+    if (command === 'reset') {
+      state = { ...createState(content), lastActions };
+      save.save?.(state, activeSlot, undefined, true);
+    } else if (command.startsWith('slot:')) {
       activeSlot = Number(command.slice(5));
       state = {
         ...(save.load?.(activeSlot) || createState(content)),
@@ -133,7 +135,7 @@ export function createMosslightRuntime(options = {}) {
       state = createState(content);
       accumulator = 0;
       audio.stop?.();
-      save.save?.(state, activeSlot, resetId);
+      save.save?.(state, activeSlot, resetId, true);
       return renderer(state);
     },
     exportSave() {

@@ -36,6 +36,18 @@ export function parseSave(raw, profile = {}) {
   const parsed = parseJsonOrNull(raw);
   if (!parsed || typeof parsed !== 'object') return null;
   if (
+    parsed.game === profile.game &&
+    parsed.version === 2 &&
+    isValidState(parsed.state) &&
+    profile.migrate
+  ) {
+    const state = profile.migrate(parsed.state);
+    if (state !== parsed.state) {
+      parsed.state = state;
+      parsed.originalSave = raw;
+    }
+  }
+  if (
     parsed.game === (profile.game || 'mosslight-valley') &&
     parsed.version === 2 &&
     isValidState(parsed.state) &&
@@ -106,6 +118,21 @@ export function createSaveAdapter(env, profile = {}) {
     const value = storage?.({})?.[key];
     return value && typeof value === 'object' ? value : { slots: {} };
   };
+  const read = raw => {
+    const parsed = parseSave(raw, profile);
+    if (parsed?.originalSave) {
+      const current = loadAll();
+      const backups = current.migrationBackups || {};
+      if (!Object.hasOwn(backups, parsed.slot))
+        storage?.({
+          [key]: {
+            ...current,
+            migrationBackups: { ...backups, [parsed.slot]: raw },
+          },
+        });
+    }
+    return parsed;
+  };
   return {
     list: () =>
       Object.keys(loadAll().slots || {})
@@ -115,19 +142,21 @@ export function createSaveAdapter(env, profile = {}) {
       const slot = loadAll().activeSlot;
       return Number.isInteger(slot) && slot >= 0 && slot <= 2 ? slot : 0;
     },
-    load: (slot = 0) =>
-      parseSave(loadAll().slots?.[slot], profile)?.state || null,
+    load: (slot = 0) => read(loadAll().slots?.[slot])?.state || null,
     hasReset: id => Object.hasOwn(loadAll().resetReceipts || {}, id),
-    save: (state, slot = 0, resetId) => {
+    save: (state, slot = 0, resetId, reset = false) => {
       const current = loadAll();
       const receipt = resetId
         ? { resetReceipts: { ...current.resetReceipts, [resetId]: true } }
         : {};
+      const migrationBackups = { ...current.migrationBackups };
+      if (reset) delete migrationBackups[slot];
       storage?.({
         [key]: {
           ...current,
           activeSlot: slot,
           ...receipt,
+          ...(current.migrationBackups ? { migrationBackups } : {}),
           slots: {
             ...current.slots,
             [slot]: serializeSave(state, slot, profile.game),
@@ -136,6 +165,6 @@ export function createSaveAdapter(env, profile = {}) {
       });
     },
     export: (state, slot = 0) => serializeSave(state, slot, profile.game),
-    import: raw => parseSave(raw, profile),
+    import: read,
   };
 }

@@ -18,7 +18,7 @@ const coverageRoot = process.env.DADETO_COVERAGE_DIR ?? path.join(os.tmpdir(), `
 const shardRoot = path.join(coverageRoot, 'shards');
 const storeRoot = path.join(coverageRoot, 'files');
 const finalDir = path.resolve(ROOT, 'reports/coverage');
-const SAFE_WORKER_HEAP_MB = 256;
+const SAFE_WORKER_HEAP_MB = 512;
 
 const testFiles = requestedTestFiles() ?? listTestFiles();
 const sourceFiles = listSourceFiles();

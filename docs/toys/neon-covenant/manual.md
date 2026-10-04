@@ -60,6 +60,10 @@ Clinic, Transit and Helios offer advances with delivery deadlines (shifts 12, 18
 
 ### People, incidents and resolutions
 
+X → People and recruitment opens the staff console. Select Ada, Jun, Sable or Ion before assigning a new role; nobody is moved behind your back. Their specialty stays with them. Recruit candidates offers Tess (data rights), Rafi (efficient models), Nell (clinic support), Bao (agent permissions), Kit (hardware recovery) and Ora (community review). Each hire costs 18k and adds 3k per shift to payroll.
+
+Choose Listen to concerns in a person's menu to read their current working conditions. Listening and exploring are free. Balanced work adds three fatigue per shift, sprint work adds ten, protected work removes eight, and team recovery removes twenty. Concerns about cooling, unlicensed data, missing evaluators and overloaded support disappear when you address their causes.
+
 Recovery costs 8k and raises morale. An open audit costs 12k, reduces risk and scrutiny and raises trust. Safety staffing reduces risk every shift. At risk 60 or scrutiny 80, incidents cost 20k and public trust. Staff promises have consequences: Ion expects safe cooling, Ada rejects Helios attribution, Sable supports an open register, Mae expects clinic participation.
 
 Bankruptcy ends immediately. After shift 28, cash must cover unpaid debt to avoid acquisition. Multiple incidents or low trust produce a gilded cage; two releases, trust 65 and Mae's covenant produce city co-ownership. Otherwise a solvent released lab stays independent, or an unreleased lab survives quietly. Six resolutions are possible.
@@ -71,5 +75,7 @@ Read the introduction with A, or close with B. A opens the ledger ahead. Visit t
 ### Saves and agents
 
 X → Save options includes three independent local slots, export/import, and a two-step reset. Export before erasing a campaign. Lab saves cannot replace Mosslight saves. Browser storage may be unavailable; export is the portable backup.
+
+Older campaigns automatically gain named employees matching their existing staffing and payroll. Your cash, debt, research, contracts, promises, shift and completed resolution stay unchanged. An exact original save is kept locally under `neon-covenant-saves-v2.migrationBackups[slot]`; later upgrades do not overwrite it. Resetting that slot erases both its progress and its migration backup, but leaves other slots alone.
 
 On browsers exposing WebMCP, the standalone page registers `neon_observe`, `neon_act`, `neon_export_save`, and `neon_import_save`. Actions are sequential presses of the same eight buttons; agent play pauses automatic ticking. No tool bypasses management costs or release checks.
