@@ -6,6 +6,11 @@ import {
 } from './incidents.js';
 import { clampNumber } from '../../../index.js';
 import {
+  createEvaluations,
+  evaluationOrder,
+  evaluationComplete,
+} from './evaluation.js';
+import {
   createPrograms,
   researchEffects,
   hostingCost,
@@ -33,7 +38,9 @@ function metric(value) {
  */
 export function createLab() {
   const lab = {
-    rulesVersion: 3,
+    rulesVersion: 4,
+    evaluations: createEvaluations(),
+    testingBudget: 6,
     incidentChains: createIncidentChains(),
     incidentGrace: 0,
     lastIncidentCost: 0,
@@ -129,6 +136,7 @@ function purchase(lab, cost, apply) {
  */
 function operate(lab, command) {
   const [kind, value] = command.split(':');
+  if (kind === 'test') return evaluationOrder(lab, command);
   if (kind === 'configure') return configureResearch(lab, command);
   if (kind === 'incident') return intervene(lab, value);
   if (kind === 'assign' || kind === 'hire') return personnelOrder(lab, command);
@@ -183,21 +191,14 @@ function operate(lab, command) {
     return `${deal.name}: ${deal.advance}k advance. Deliver by shift ${deal.deadline}.`;
   }
   if (command === 'evaluate') {
-    if (!lab.teams.safety) return 'Assign a safety specialist first.';
-    if (!lab.research[lab.focus])
-      return 'No checkpoint exists. End a research shift first.';
-    return purchase(lab, 6, () => {
-      lab.evaluated[lab.focus] = lab.research[lab.focus];
-      lab.risk = metric(lab.risk - lab.teams.safety * 6);
-      return 'Checkpoint evaluated. New training invalidates this sign-off.';
-    });
+    return 'Sable: choose representative probes at the evaluation console. No blanket sign-off is available.';
   }
   if (command === 'deploy') {
     if (lab.deployed.includes(lab.focus))
       return 'This model is already deployed.';
     if (lab.research[lab.focus] < LAB_CONTENT.projects[lab.focus].target)
       return 'Training target not reached.';
-    if (lab.evaluated[lab.focus] < lab.research[lab.focus] || lab.risk > 35)
+    if (!evaluationComplete(lab, lab.focus) || lab.risk > 35)
       return 'Release blocked: evaluate latest checkpoint and reduce risk to 35.';
     lab.deployed.push(lab.focus);
     lab.trust = metric(lab.trust + LAB_CONTENT.projects[lab.focus].trust);
@@ -334,6 +335,7 @@ export function endShift(state) {
   lab.cash = Math.round(lab.cash + revenue - f.payroll - f.power - f.hosting);
   settlePersonnel(lab);
   lab.decisions = 6;
+  lab.testingBudget = 6;
   lab.report = report;
   lab.history = [
     ...lab.history,

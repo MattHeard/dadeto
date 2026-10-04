@@ -214,7 +214,7 @@ test('actual controller previews own input and cost no attention, money or time'
     ...forecastMenu,
     menu: { page: 'comparisons', selected: 4 },
   };
-  expect(labMenuRows(scrolled).join(' ')).toContain('> Back to forecast');
+  expect(labMenuRows(scrolled).join(' ')).toContain('› Back to forecast');
   expect(choose(forecastMenu, 'forecast', 'page:ledger').menu.page).toBe(
     'ledger'
   );

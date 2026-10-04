@@ -14,6 +14,7 @@ import {
   compareOrder,
 } from './forecast.js';
 import { researchOptions, researchPages } from './research.js';
+import { evaluationPages } from './evaluation.js';
 import { orientationOrder, orientationStage } from './orientation.js';
 import {
   controllerSelection,
@@ -88,6 +89,19 @@ export function createNeonState(content = LAB_CONTENT) {
  */
 function menuCommand(state, command) {
   const next = { ...state, menu: null };
+  if (command.startsWith('case:'))
+    return openDialogue(
+      next,
+      'sable',
+      readableLabPages(evaluationPages(state.lab, command.slice(5)))
+    );
+  if (command.startsWith('test:')) {
+    const tested = manageLab(next, command);
+    return {
+      ...tested,
+      menu: { page: `testcase:${command.split(':')[2]}`, selected: 0 },
+    };
+  }
   if (command === 'program-story')
     return openDialogue(
       next,

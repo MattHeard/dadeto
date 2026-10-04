@@ -163,7 +163,7 @@ test('failed orders, repeated agreements and exhausted points do not consume mon
   expect(
     manageLab(
       campaign({ teams: { research: 4, safety: 0, service: 0 } }),
-      'evaluate'
+      'test:probe:rights'
     ).toast
   ).toContain('safety specialist');
   expect(
@@ -202,7 +202,8 @@ test('latest checkpoint evaluation and safety threshold gate deployment', () => 
   for (let shift = 0; shift < 6; shift++) state = endShift(state);
   expect(state.lab.research.atlas).toBe(38);
   expect(manageLab(state, 'deploy').toast).toContain('evaluate');
-  state = manageLab(state, 'evaluate');
+  for (const id of ['reliability', 'rights', 'oversight'])
+    state = manageLab(state, `test:probe:${id}`);
   expect(state.lab.evaluated.atlas).toBe(38);
   expect(
     manageLab({ ...state, lab: { ...state.lab, risk: 36 } }, 'deploy').toast
@@ -211,7 +212,7 @@ test('latest checkpoint evaluation and safety threshold gate deployment', () => 
   expect(state.lab.deployed).toEqual(['atlas']);
   expect(manageLab(state, 'deploy').lab).toEqual(state.lab);
   expect(forecast(state.lab).income).toBe(16);
-  const partial = manageLab(endShift(campaign()), 'evaluate');
+  const partial = manageLab(endShift(campaign()), 'test:probe:reliability');
   const trained = endShift(partial);
   expect(trained.lab.evaluated.atlas).toBeLessThan(trained.lab.research.atlas);
 });
@@ -232,14 +233,14 @@ test('shifts account for payroll, power, deadlines, commitments and remediation'
   expect(missed.lab.expired).toEqual(['clinic']);
   expect(missed.lab.cash).toBe(75);
   expect(endShift(missed).lab.report.join(' ')).not.toContain('clawback');
-  const delivered = endShift(
-    campaign({
-      contracts: ['clinic'],
-      deployed: ['atlas'],
-      research: { atlas: 38, ghost: 0, lumen: 0 },
-      evaluated: { atlas: 38, ghost: 0, lumen: 0 },
-    })
-  );
+  let release = campaign({
+    contracts: ['clinic'],
+    deployed: ['atlas'],
+    research: { atlas: 38, ghost: 0, lumen: 0 },
+  });
+  for (const id of ['reliability', 'rights', 'oversight'])
+    release = manageLab(release, `test:probe:${id}`);
+  const delivered = endShift(release);
   expect(delivered.lab.fulfilled).toEqual(['clinic']);
   expect(endShift(delivered).lab.cash).toBeGreaterThan(delivered.lab.cash);
   const hot = endShift(

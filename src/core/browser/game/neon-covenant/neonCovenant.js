@@ -7,6 +7,8 @@ import { LAB_CONTENT } from './content.js';
 import { migratePersonnel, validPersonnel } from './personnel.js';
 import { validIncidentChains } from './incidents.js';
 import { migratePrograms, validPrograms, researchOptions } from './research.js';
+import { migrateEvaluations, validEvaluations } from './evaluation.js';
+import { EVALUATION_CASES } from './evaluationContent.js';
 import {
   createNeonState,
   stepNeon,
@@ -24,8 +26,9 @@ export function validLabSave(state) {
   return Boolean(
     lab &&
       validPersonnel(lab) &&
-      lab.rulesVersion === 3 &&
+      lab.rulesVersion === 4 &&
       validPrograms(lab) &&
+      validEvaluations(lab) &&
       validIncidentChains(lab) &&
       Object.values(lab.incidentChains).every(
         chain => chain.warnedAt <= state.world.day
@@ -112,6 +115,11 @@ export function validLabSave(state) {
           ))) &&
       (!state.menu ||
         (typeof state.menu.page === 'string' &&
+          (!state.menu.page.startsWith('testcase:') ||
+            Object.hasOwn(
+              EVALUATION_CASES[lab.focus],
+              state.menu.page.slice(9)
+            )) &&
           Number.isInteger(state.menu.selected) &&
           state.menu.selected >= 0))
   );
@@ -145,7 +153,7 @@ export function createNeonRuntime(options = {}) {
     game: 'neon-covenant',
     validate: validLabSave,
     migrate: (/** @type {Record<string, any>} */ state) =>
-      migratePrograms(migratePersonnel(state)),
+      migrateEvaluations(migratePrograms(migratePersonnel(state))),
     restore: restoreLabState,
   });
   return /** @type {Record<string, any>} */ (

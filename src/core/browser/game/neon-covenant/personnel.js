@@ -126,7 +126,7 @@ export function employeeThoughts(lab, person) {
  * @returns {boolean} Whether all roster accounting agrees.
  */
 export function validPersonnel(lab) {
-  if (![1, 2, 3].includes(lab.rulesVersion) || !Array.isArray(lab.employees))
+  if (![1, 2, 3, 4].includes(lab.rulesVersion) || !Array.isArray(lab.employees))
     return false;
   if (!lab.employees.every(validEmployee)) return false;
   const ids = lab.employees.map(person => person.id);

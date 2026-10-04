@@ -24,6 +24,7 @@ import {
 } from '../../../../src/core/browser/game/neon-covenant/neonCovenant.js';
 import { labEntries } from '../../../../src/core/browser/game/neon-covenant/controls.js';
 import { migratePrograms } from '../../../../src/core/browser/game/neon-covenant/research.js';
+import { migrateEvaluations } from '../../../../src/core/browser/game/neon-covenant/evaluation.js';
 import { serializeSave } from '../../../../src/core/browser/game/mosslight-valley/save.js';
 
 /**
@@ -86,8 +87,10 @@ test('interventions cost money and attention while triage cannot hide a persiste
   expect(state.lab.decisions).toBe(5);
   expect(state.lab.cooling).toBe(5);
   expect(manageLab(state, 'incident:heat').lab).toEqual(state.lab);
+  const pending = structuredClone(state.lab);
   state = manageLab(state, 'incident:evaluation');
-  expect(state.lab.evaluated).toEqual(state.lab.research);
+  expect(state.lab).toEqual(pending);
+  expect(state.toast).toContain('cannot grant release evidence');
   state = manageLab(state, 'incident:rights');
   expect(state.lab.data).toBe('licensed');
   state = manageLab(state, 'incident:support');
@@ -138,11 +141,11 @@ test('migration protects two settlements without rerolling or changing historica
   delete old.lab.incidentGrace;
   delete old.lab.lastIncidentCost;
   old.lab.incidents = 7;
-  const migrated = migratePrograms(migratePersonnel(old));
+  const migrated = migrateEvaluations(migratePrograms(migratePersonnel(old)));
   expect(migrated.lab).toMatchObject({
     cash: 800,
     incidents: 7,
-    rulesVersion: 3,
+    rulesVersion: 4,
     incidentGrace: 2,
   });
   expect(validLabSave(migrated)).toBe(true);

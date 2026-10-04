@@ -88,7 +88,9 @@ export const LAB_CONTENT = {
       owner: 'sable',
       trigger:
         'Research has no evaluator, or a deployed checkpoint lacks current evidence.',
-      response: 'Review all current checkpoints',
+      response: 'Complete three representative probes',
+      responseDetail:
+        'Inspect Sable for free. Each outstanding probe is 2k; findings require 2k investigation, 4k repair and a 2k retest.',
       responseCost: 6,
       cost: 24,
       trustLoss: 12,

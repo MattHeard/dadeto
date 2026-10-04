@@ -4,6 +4,49 @@ import { PERSONNEL } from './personnel.js';
 import { forecastShift, labReportLines } from './forecast.js';
 import { orientationEntries, orientationRows } from './orientation.js';
 import { researchOptions } from './research.js';
+import { EVALUATION_CASES } from './evaluationContent.js';
+import { evaluationStatus } from './evaluation.js';
+
+/**
+ * Render the selected window consistently across bounded handheld menus.
+ * @param {Record<string, any>} state Open menu state.
+ * @returns {string[]} Three visible choices, including the selected marker.
+ */
+function selectionRows(state) {
+  const start = Math.max(0, state.menu.selected - 2);
+  return labEntries(state)
+    .slice(start, start + 3)
+    .map(
+      ([label], index) =>
+        `${start + index === state.menu.selected ? '›' : ' '} ${label}`
+    );
+}
+
+/**
+ * Route evidence work to Sable while pricing the actual paid interventions.
+ * @param {string} prefix Preview or commit operation prefix.
+ * @returns {string[][]} Authored incident-navigation rows.
+ */
+function incidentRows(prefix) {
+  return Object.entries(LAB_CONTENT.incidents).map(([id, definition]) =>
+    incidentRow(prefix, id, definition)
+  );
+}
+
+/**
+ * Describe a single recovery action without inventing blanket release evidence.
+ * @param {string} prefix Preview or commit instruction.
+ * @param {string} id Authored incident.
+ * @param {Record<string, any>} definition Disclosed costs and response.
+ * @returns {string[]} Price label and operation.
+ */
+function incidentRow(prefix, id, definition) {
+  if (id === 'evaluation') return ['Sable / inspect test cases', 'page:tests'];
+  return [
+    `${definition.name} / ${definition.responseCost}k`,
+    `${prefix}:${id}`,
+  ];
+}
 
 /**
  * Build selectable rows from the current terminal or handheld menu.
@@ -12,6 +55,20 @@ import { researchOptions } from './research.js';
  */
 export function labEntries(state) {
   const page = state.menu.page;
+  if (page === 'tests')
+    return Object.entries(EVALUATION_CASES[state.lab.focus])
+      .map(([id, test]) => [test.name, `page:testcase:${id}`])
+      .concat([['Back to research', 'page:research']]);
+  if (page.startsWith('testcase:')) {
+    const id = page.slice(9);
+    return [
+      ['Read case and evidence', `case:${id}`],
+      ['Run probe / 2k / 2 TC', `test:probe:${id}`],
+      ['Investigate / 2k / 1 TC', `test:investigate:${id}`],
+      ['Fix / 4k / 3 TC', `test:fix:${id}`],
+      ['Other cases', 'page:tests'],
+    ];
+  }
   if (page === 'orientation') return orientationEntries(state);
   if (page === 'program')
     return [
@@ -32,22 +89,14 @@ export function labEntries(state) {
       .concat([['Back to program', 'page:program']]);
   }
   if (page === 'incidents')
-    return Object.entries(LAB_CONTENT.incidents)
-      .map(([id, definition]) => [
-        `${definition.name} / ${definition.responseCost}k`,
-        `preview:incident:${id}`,
-      ])
-      .concat([
-        ['Commit a response', 'page:responses'],
-        ['Back', 'page:main'],
-      ]);
+    return incidentRows('preview:incident').concat([
+      ['Commit a response', 'page:responses'],
+      ['Back', 'page:main'],
+    ]);
   if (page === 'responses')
-    return Object.entries(LAB_CONTENT.incidents)
-      .map(([id, definition]) => [
-        `${definition.name} / ${definition.responseCost}k`,
-        `incident:${id}`,
-      ])
-      .concat([['Inspect costs first', 'page:incidents']]);
+    return incidentRows('incident').concat([
+      ['Inspect costs first', 'page:incidents'],
+    ]);
   const named = (
     /** @type {Record<string, any>} */ records,
     /** @type {string} */ prefix
@@ -59,7 +108,7 @@ export function labEntries(state) {
   if (page === 'research')
     return [
       ...named(LAB_CONTENT.projects, 'focus'),
-      ['Evaluate checkpoint / 6k', 'evaluate'],
+      ['Sable / test cases', 'page:tests'],
       ['Deploy evaluated model', 'deploy'],
       ['Configure program', 'page:program'],
     ];
@@ -124,7 +173,7 @@ export function labEntries(state) {
     );
   if (page === 'evaluation')
     return [
-      ['Evaluate checkpoint / 6k', 'evaluate'],
+      ['Sable / test cases', 'page:tests'],
       ['Publish audit / 12k', 'audit'],
       ['Deploy evaluated model', 'deploy'],
       ['Licensed data', 'data:licensed'],
@@ -197,18 +246,25 @@ export function labMenuRows(state) {
   if (state.menu.page === 'orientation') return orientationRows(state);
   const lab = state.lab;
   const f = forecast(lab);
+  if (state.menu.page === 'tests' || state.menu.page.startsWith('testcase:')) {
+    const context =
+      state.menu.page === 'tests'
+        ? `PROGRAM ${lab.focus.toUpperCase()} / ${lab.research[lab.focus]}`
+        : `${state.menu.page.slice(9).toUpperCase()}: ${evaluationStatus(lab, lab.focus, state.menu.page.slice(9))}`;
+    return [
+      'SABLE / EVALUATION',
+      `TEST ${lab.testingBudget}/6 / ATTENTION ${lab.decisions}`,
+      context,
+      ...selectionRows(state),
+      'A CHOOSE B BACK X CLOSE',
+    ];
+  }
   if (state.menu.page === 'program' || state.menu.page.startsWith('setting:')) {
-    const start = Math.max(0, state.menu.selected - 2);
     return [
       `${lab.focus.toUpperCase()} / PROGRAM`,
       `TRAINING ${lab.research[lab.focus]}/${LAB_CONTENT.projects[lab.focus].target}`,
       `MILESTONE: ${lab.programs[lab.focus].milestones.at(-1) || 'not yet'}`,
-      ...labEntries(state)
-        .slice(start, start + 3)
-        .map(
-          ([label], index) =>
-            `${start + index === state.menu.selected ? '>' : ' '} ${label}`
-        ),
+      ...selectionRows(state),
       'A INSPECT B BACK X CLOSE',
     ];
   }
@@ -225,7 +281,7 @@ export function labMenuRows(state) {
         )
         .map(
           ([label], index) =>
-            `${index + Math.max(0, state.menu.selected - 2) === state.menu.selected ? '>' : ' '} ${label}`
+            `${index + Math.max(0, state.menu.selected - 2) === state.menu.selected ? '›' : ' '} ${label}`
         ),
       'A READ / B BACK / X CLOSE',
     ];
@@ -267,7 +323,7 @@ export function labMenuRows(state) {
     ...entries
       .slice(start, start + available)
       .map(
-        ([label], index) => `${index + start === selected ? '>' : ' '} ${label}`
+        ([label], index) => `${index + start === selected ? '›' : ' '} ${label}`
       ),
     'A CHOOSE / B BACK / X CLOSE',
   ];

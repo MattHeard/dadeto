@@ -1,4 +1,5 @@
 import { LAB_CONTENT } from './content.js';
+import { evaluationComplete } from './evaluation.js';
 const INCIDENTS = LAB_CONTENT.incidents;
 
 /**
@@ -65,7 +66,7 @@ function causes(lab, flow) {
     evaluation:
       (flow.progress > 0 && !lab.teams.safety) ||
       lab.deployed.some(
-        (/** @type {string} */ id) => lab.evaluated[id] < lab.research[id]
+        (/** @type {string} */ id) => !evaluationComplete(lab, id)
       ),
     rights:
       lab.data === 'scraped' &&
@@ -130,7 +131,7 @@ export function settleIncidents(lab, flow, day, report) {
       );
     } else if (chain.stage !== 'clear') {
       report.push(
-        `${definition.name}: ${chain.stage}. ${definition.trigger} Response: ${definition.responseCost}k. Unresolved incidents are not charged again.`
+        `${definition.name}: ${chain.stage}. ${definition.trigger} Response: ${definition.responseDetail || `${definition.responseCost}k`}. Unresolved incidents are not charged again.`
       );
     }
   }
@@ -153,11 +154,12 @@ export function intervene(lab, id) {
     return 'No pending response. Inspect the incident register.';
   if (id === 'evaluation' && !lab.teams.safety)
     return 'Assign an evaluator before checkpoint review.';
+  if (id === 'evaluation')
+    return 'Sable: complete representative probes at the evaluation console. Incident triage cannot grant release evidence.';
   if (lab.cash < definition.responseCost)
     return `Need ${definition.responseCost}k credits. Response rejected.`;
   lab.cash -= definition.responseCost;
   if (id === 'heat') lab.cooling += 4;
-  if (id === 'evaluation') lab.evaluated = { ...lab.research };
   if (id === 'rights') lab.data = 'licensed';
   if (id === 'support') {
     lab.morale = Math.min(100, lab.morale + 6);
@@ -182,6 +184,6 @@ export function incidentThoughts(lab, employeeId) {
     )
     .map(
       ([id, definition]) =>
-        `${definition.name}: ${lab.incidentChains[id].stage}. ${definition.trigger} ${definition.response}: ${definition.responseCost}k. Fix the cause, not just the warning light.`
+        `${definition.name}: ${lab.incidentChains[id].stage}. ${definition.trigger} ${definition.response}: ${definition.responseDetail || `${definition.responseCost}k`}. Fix the cause, not just the warning light.`
     );
 }
