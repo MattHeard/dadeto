@@ -861,8 +861,16 @@ describe('local notion codex process edge cases', () => {
 
   test('propagates unexpected process state errors', async () => {
     const originalKill = process.kill;
+    const failure = new Error('boom');
+    let codeReads = 0;
+    Object.defineProperty(failure, 'code', {
+      get() {
+        codeReads += 1;
+        return 'OTHER';
+      },
+    });
     process.kill = () => {
-      throw new Error('boom');
+      throw failure;
     };
 
     try {
@@ -889,7 +897,8 @@ describe('local notion codex process edge cases', () => {
             },
           },
         })
-      ).rejects.toThrow('boom');
+      ).rejects.toBe(failure);
+      expect(codeReads).toBe(2);
     } finally {
       process.kill = originalKill;
     }

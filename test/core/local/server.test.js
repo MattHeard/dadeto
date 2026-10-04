@@ -354,6 +354,10 @@ describe('core local server writer helpers', () => {
   });
 
   test('covers request logging and helper fallbacks', () => {
+    const clock = jest
+      .spyOn(Date, 'now')
+      .mockReturnValueOnce(100)
+      .mockReturnValueOnce(125);
     const requestLogger = jest.fn();
     const middleware = createRequestLogger(requestLogger);
     const finish = jest.fn();
@@ -366,10 +370,11 @@ describe('core local server writer helpers', () => {
 
     middleware(req, res, next);
     finish();
+    clock.mockRestore();
 
     expect(next).toHaveBeenCalled();
     expect(requestLogger).toHaveBeenCalledWith(
-      expect.stringContaining('writer request GET /fallback 204')
+      'writer request GET /fallback 204 25ms unknown-remote'
     );
     expect(getMoveDirection({})).toBe(1);
     expect(getMoveDirection(null)).toBe(1);

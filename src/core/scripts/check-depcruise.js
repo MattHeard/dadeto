@@ -103,19 +103,20 @@ function createMathRandomViolation(filePath, occurrences) {
 
 /**
  * @param {CoreBrowserScanDeps} deps Filesystem dependencies.
- * @returns {Array<{ filePath: string, globals: string[] }>} Files that directly use browser globals.
+ * @returns {BrowserGlobalViolation[]} Files that directly use browser globals.
  */
 export function findCoreGlobalViolations(deps) {
   const browserScan = {
     ...deps,
     scopeAnalysisDeps: deps.scopeAnalysisDeps ?? DEFAULT_SCOPE_ANALYSIS_DEPS,
   };
-  return collectCoreBrowserGlobalViolations(browserScan);
+  const violations = collectCoreBrowserGlobalViolations(browserScan);
+  return violations;
 }
 
 /**
  * @param {CoreBrowserScanDeps} deps Filesystem dependencies.
- * @returns {Array<{ filePath: string, globals: string[] }>} Files that directly use browser globals.
+ * @returns {BrowserGlobalViolation[]} Files that directly use browser globals.
  */
 export function findCoreBrowserMainGlobalViolations(deps) {
   const {

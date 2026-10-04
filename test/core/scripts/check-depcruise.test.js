@@ -310,21 +310,29 @@ describe('findCoreGlobalViolations', () => {
       return [];
     });
 
-    expect(
-      findCoreGlobalViolations({
-        readFileSync,
-        readdirSync,
-        rootDir: '/repo',
-        sourceRoot: 'src/core',
-        pathModule: path,
-        scopeAnalysisDeps: createScopeAnalysisDeps(),
-      })
-    ).toEqual([
+    const dependencies = Object.freeze({
+      readFileSync,
+      readdirSync,
+      rootDir: '/repo',
+      sourceRoot: 'src/core',
+      pathModule: path,
+      scopeAnalysisDeps: createScopeAnalysisDeps(),
+    });
+    const violations = findCoreGlobalViolations(dependencies);
+    expect(violations).toEqual([
       {
         filePath: 'src/core/match.js',
         globals: ['localStorage', 'window', 'document'],
       },
     ]);
+    violations[0].globals.push('mutated');
+    const rescanned = findCoreGlobalViolations(dependencies);
+    expect(rescanned[0].globals).toEqual([
+      'localStorage',
+      'window',
+      'document',
+    ]);
+    expect(rescanned[0]).not.toBe(violations[0]);
   });
 
   test('uses the default scope analysis dependencies when browser-global scans omit them', () => {

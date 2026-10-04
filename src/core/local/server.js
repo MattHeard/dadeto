@@ -310,14 +310,15 @@ export function createRequestLogger(requestLogger) {
  * @returns {string} Writer request log line.
  */
 function formatRequestLog(req, res, durationMs) {
-  return [
+  const requestFields = [
     'writer request',
     req.method,
     req.originalUrl ?? req.url,
     res.statusCode,
     `${durationMs}ms`,
     req.ip ?? req.socket?.remoteAddress ?? 'unknown-remote',
-  ].join(' ');
+  ];
+  return requestFields.join(' ');
 }
 
 /**

@@ -363,17 +363,22 @@ function isProcessAlive(pid) {
     process.kill(pid, 0);
     return true;
   } catch (error) {
-    if (error && typeof error === 'object') {
-      if (error.code === 'ESRCH') {
-        return false;
-      }
-      if (error.code === 'EPERM') {
-        return true;
-      }
-    }
-
-    throw error;
+    return recoverProcessProbe(error);
   }
+}
+
+/**
+ * Interpret known liveness failures, propagating other values unchanged.
+ * @param {unknown} error Process probe failure.
+ * @returns {boolean} Whether the known failure implies a live process.
+ */
+function recoverProcessProbe(error) {
+  if (error && typeof error === 'object') {
+    const failure = /** @type {{code?: unknown}} */ (error);
+    if (failure.code === 'ESRCH') return false;
+    if (failure.code === 'EPERM') return true;
+  }
+  throw error;
 }
 
 /**
