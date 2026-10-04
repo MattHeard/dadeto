@@ -355,6 +355,22 @@ test('page tolerates unavailable audio, malformed preferences, and absent frame 
   expect(page.options.cancelFrame).not.toHaveBeenCalled();
 });
 
+test('injected episode audio owns keyboard, touch and teardown without legacy beeps', () => {
+  const page = pageOptions();
+  const audio = { unlock: jest.fn(), dispose: jest.fn(), stop: jest.fn() };
+  const dispose = startMosslightPage({ ...page.options, audio });
+  page.documentObj.emit('keydown', { key: 'a', preventDefault() {} });
+  page.touchButtons[0].emit('pointerdown', {
+    pointerId: 9,
+    preventDefault() {},
+  });
+  expect(audio.unlock).toHaveBeenCalledTimes(2);
+  expect(page.audioFrequencies).toEqual([]);
+  dispose();
+  expect(audio.stop).toHaveBeenCalled();
+  expect(audio.dispose).toHaveBeenCalledTimes(1);
+});
+
 test('page audio reacts to a quest reveal and a battle turn', () => {
   const questPage = pageOptions();
   const newGame = createSimulation(CONTENT);

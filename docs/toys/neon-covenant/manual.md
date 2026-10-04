@@ -50,6 +50,15 @@ Release between separate presses in raw toy input (`{"actions":[]}` or a keyup).
 
 ## Output
 
+### Music and sound
+
+The original handheld-style soundtrack starts after you press a game button.
+It uses pulse melodies, triangle bass and noise percussion, with distinct sounds
+for choices, purchases, rejected orders, room changes and settled shifts. Hidden
+tabs and pauses are silent. To mute or restore all audio, press X, press up twice
+from the first menu row to **Sound**, then press A. This is free and saved locally.
+If your phone blocks audio, press another game button; playing never requires it.
+
 A pixelated 160×144 shared canvas frame, with readable introduction, room, director, colleagues, consoles, economic HUD, menus and conversations. The standalone page continuously animates the same simulation and saves locally.
 
 ### Example

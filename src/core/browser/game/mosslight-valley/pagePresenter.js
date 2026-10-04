@@ -49,6 +49,7 @@ export function startMosslightPage(options) {
   const runtimeFactory = options.createRuntime || createMosslightRuntime;
   const runtime = runtimeFactory({
     env,
+    audio: options.audio,
     onControllerCommand: command => {
       const selector = {
         export: '#export-game',
@@ -147,7 +148,8 @@ export function startMosslightPage(options) {
     keys.pressed = next.pressed;
     if (keys.held.size && !runtime.isRunning()) runtime.resume();
     if (keys.held.size) event.preventDefault();
-    if (!audioContext) playCue('wake');
+    if (options.audio) options.audio.unlock();
+    else if (!audioContext) playCue('wake');
   }
   /**
    *
@@ -205,7 +207,10 @@ export function startMosslightPage(options) {
     runtime.resume();
     lastTime = 0;
   }
-  bindTouchControls(documentObj, touch, touchPulse, () => runtime.resume());
+  bindTouchControls(documentObj, touch, touchPulse, () => {
+    options.audio?.unlock();
+    runtime.resume();
+  });
   const registerTools = options.registerTools || registerMosslightTools;
   const disposeAgentTools = registerTools({
     modelContext: documentObj.modelContext,
@@ -252,6 +257,7 @@ export function startMosslightPage(options) {
     windowObj.removeEventListener('pointerup', releaseTouch);
     windowObj.removeEventListener('pointercancel', releaseTouch);
     audioContext?.close?.();
+    options.audio?.dispose();
   };
 }
 

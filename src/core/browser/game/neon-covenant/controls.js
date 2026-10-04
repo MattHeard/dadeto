@@ -291,6 +291,10 @@ export function labEntries(state) {
     ['Pause', 'page:paused'],
     ['Fullscreen', 'fullscreen'],
     ['Return to lab', 'close'],
+    [
+      state.audioMuted ? 'Sound: OFF / enable' : 'Sound: ON / mute',
+      'audio-toggle',
+    ],
     ['First-shift guide', 'page:orientation'],
   ];
 }

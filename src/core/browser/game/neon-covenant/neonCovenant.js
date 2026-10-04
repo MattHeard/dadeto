@@ -14,6 +14,7 @@ import { DEPLOYMENT_PROFILES } from './operationsContent.js';
 import { labReportLines, readableLabPages } from './forecast.js';
 import { migrateRelationships, validRelationships } from './relationships.js';
 import { RELATIONSHIP_CONTENT } from './relationshipContent.js';
+import { neonAudio } from './audio.js';
 import {
   createNeonState,
   stepNeon,
@@ -30,6 +31,8 @@ export function validLabSave(state) {
   const lab = state.lab;
   return Boolean(
     lab &&
+      (state.audioMuted === undefined ||
+        typeof state.audioMuted === 'boolean') &&
       validPersonnel(lab) &&
       lab.rulesVersion === 6 &&
       validRelationships(lab, state.world.day) &&
@@ -159,6 +162,7 @@ function validResearchChoice(lab, command) {
  */
 export function createNeonRuntime(options = {}) {
   const opts = options instanceof Map ? { env: options } : options;
+  const audio = opts.audio || neonAudio();
   const save = createSaveAdapter(opts.env, {
     key: 'neon-covenant-saves-v2',
     game: 'neon-covenant',
@@ -171,15 +175,29 @@ export function createNeonRuntime(options = {}) {
       ),
     restore: restoreLabState,
   });
-  return /** @type {Record<string, any>} */ (
+  const runtime = /** @type {Record<string, any>} */ (
     createMosslightRuntime({
       ...opts,
+      audio,
       content: LAB_CONTENT,
-      systems: { create: createNeonState, step: stepNeon, journal: labJournal },
+      systems: {
+        create: createNeonState,
+        step: (
+          /** @type {Record<string, any>} */ state,
+          /** @type {string[]} */ actions
+        ) => {
+          const next = stepNeon(state, actions);
+          audio.observe?.(state, next);
+          return next;
+        },
+        journal: labJournal,
+      },
       save,
       renderer: renderNeon,
     })
   );
+  audio.observe?.(runtime.getSnapshot(), runtime.getSnapshot());
+  return runtime;
 }
 
 /**
@@ -246,6 +264,7 @@ export function neonCovenant(input, env) {
 export function startNeonPage(options) {
   return startMosslightPage({
     ...options,
+    audio: neonAudio(options.windowObj),
     createRuntime: createNeonRuntime,
     saveFilename: 'neon-covenant-save.json',
     registerTools: (

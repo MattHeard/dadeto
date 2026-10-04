@@ -34,6 +34,28 @@ Credits represent thousands. Only ending a shift settles the economy. Held butto
 
 Mosslight runtime, world, actors, dialogue, renderer, pixel sprites, input, audio, save and page presenter. No external simulation services.
 
+## Original handheld audio
+
+`soundtrack.js` authors a 110 BPM, 32-step original phrase and four-voice
+arrangement: two square/pulse voices, triangle bass and deterministic noise
+percussion. Room transposition changes the mood without affecting campaign
+randomness. It also classifies actual state transitions into menu, conversation,
+purchase, rejection, room and settled-shift effects.
+
+`audio.js` owns the optional Web Audio boundary, short envelopes, bounded
+audio-clock lookahead and finished-node disconnection. One WeakMap session per
+browser survives synchronous embedded runtime recreation. Only a physical
+Neon gesture creates its context. Hidden tabs, pause and mute stop timers and
+silence queued notes; disposal removes listeners and closes the context.
+Unavailable or denied browser audio never prevents play. There are no downloads,
+external music assets or simulation-clock dependencies.
+
+The X menu's Sound row toggles music and effects together, without money,
+attention or time costs. Optional boolean `audioMuted` persists in the existing
+save envelope; older saves default to audible after a gesture. Malformed values
+are rejected. The presenter injects this adapter for Neon only; Mosslight keeps
+its existing cue behavior.
+
 ## Operating deployment contract (rules 5)
 
 `operationsContent.js` owns authored full audiences, initial adoption, per-shift growth, inference/support demand and maintenance prices. `operations.js` owns independent `deployments[project]` records (`adoption`, `maintenance`, `backlog`), deterministic capacity allocation, invoices, settlement changes, paid canonical orders and migration. `deploymentForecast(lab, training)` allocates the smaller of compute/cooling after active training to inference and four support units per service employee to requests. Both shortages are proportional across released programs. Completed training uses zero training capacity. Configuration scales inference as well as training demand; recurring hosting bills remain separate.

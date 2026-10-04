@@ -92,6 +92,14 @@ export function createNeonState(content = LAB_CONTENT) {
  */
 function menuCommand(state, command) {
   const next = { ...state, menu: null };
+  if (command === 'audio-toggle')
+    return {
+      ...state,
+      audioMuted: !state.audioMuted,
+      toast: state.audioMuted
+        ? 'Music and sound on.'
+        : 'Music and sound muted.',
+    };
   if (command.startsWith('arc-story:'))
     return openDialogue(
       next,
