@@ -722,35 +722,39 @@ export function createBlogDataController(createDependencies) {
      * @param {Record<string, unknown>} desired - Desired permanent values to persist.
      * @returns {object} Merged permanent state after persistence.
      */
-    setLocalPermanentData(desired) {
-      return /** @type {(desired: Record<string, unknown>) => object} */ (
-        createDependencyMethod(
-          getDependencies,
-          (
-            nextDesired,
-            /** @type {NormalizedBlogDataDependencies} */ dependencies
-          ) =>
-            setLocalPermanentDataCore(
-              nextDesired,
-              dependencies.loggers,
-              dependencies.permanentLens
-            )
-        )
-      )(desired);
-    },
-    getLocalPermanentData() {
-      return /** @type {() => object} */ (
-        createDependencyMethod(
-          getDependencies,
-          /**
-           * @param {NormalizedBlogDataDependencies} dependencies Dependencies.
-           * @returns {object} Current permanent state.
-           */
-          dependencies => readLocalPermanentData(dependencies.permanentLens)
-        )
-      )();
-    },
+    setLocalPermanentData: writeControllerPermanentData.bind(
+      null,
+      getDependencies
+    ),
+    getLocalPermanentData: readControllerPermanentData.bind(
+      null,
+      getDependencies
+    ),
   };
+}
+
+/**
+ * Read permanent state from the controller's currently resolved lens.
+ * @param {() => NormalizedBlogDataDependencies} getDependencies Lazy controller dependency accessor.
+ * @returns {object} Current permanent state.
+ */
+function readControllerPermanentData(getDependencies) {
+  return readLocalPermanentData(getDependencies().permanentLens);
+}
+
+/**
+ * Merge and persist permanent values using resolved controller dependencies.
+ * @param {() => NormalizedBlogDataDependencies} getDependencies Lazy controller dependency accessor.
+ * @param {Record<string, unknown>} desired Desired permanent values.
+ * @returns {object} Persisted merged state.
+ */
+function writeControllerPermanentData(getDependencies, desired) {
+  const dependencies = getDependencies();
+  return setLocalPermanentDataCore(
+    desired,
+    dependencies.loggers,
+    dependencies.permanentLens
+  );
 }
 
 /**

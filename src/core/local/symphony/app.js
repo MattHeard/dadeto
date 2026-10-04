@@ -16,19 +16,23 @@ const REQUESTED_AT_FIELD = 'requested_at';
  * @returns {SymphonyHandler} Express route handler.
  */
 function createAsyncRouteHandler(operation) {
-  /**
-   * @param {unknown} _req Request.
-   * @param {SymphonyResponse} res Response.
-   * @param {(error?: unknown) => void} next Error callback.
-   * @returns {Promise<void>} Completion promise.
-   */
-  return async (_req, res, next) => {
-    try {
-      await operation(res);
-    } catch (error) {
-      next(error);
-    }
-  };
+  return executeAsyncRoute.bind(null, operation);
+}
+
+/**
+ * Execute one route operation, forwarding its failure unchanged to Express.
+ * @param {(res: SymphonyResponse) => Promise<void>} operation Route operation.
+ * @param {unknown} _req Request.
+ * @param {SymphonyResponse} res Response.
+ * @param {(error?: unknown) => void} next Error callback.
+ * @returns {Promise<void>} Completion promise.
+ */
+async function executeAsyncRoute(operation, _req, res, next) {
+  try {
+    await operation(res);
+  } catch (error) {
+    next(error);
+  }
 }
 
 /**

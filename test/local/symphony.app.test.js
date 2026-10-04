@@ -352,7 +352,6 @@ describe('local symphony app launch handlers', () => {
       },
     });
     const next = jest.fn();
-
     await handler({}, createResponseDouble(), next);
 
     expect(next).toHaveBeenCalledWith(error);
@@ -536,9 +535,12 @@ describe('local symphony app status edge cases', () => {
     const response = createResponseDouble();
     const next = jest.fn();
 
-    await handler({}, response, next);
+    const json = jest.spyOn(response, 'json');
+    await expect(handler({}, response, next)).resolves.toBeUndefined();
 
     expect(next).toHaveBeenCalledWith(error);
+    expect(next).toHaveBeenCalledTimes(1);
+    expect(json).not.toHaveBeenCalled();
   });
 
   test('status handler leaves unreconcilable active runs alone', async () => {

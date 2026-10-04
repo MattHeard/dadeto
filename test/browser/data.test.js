@@ -388,20 +388,29 @@ describe('createBlogDataController', () => {
       get: jest.fn(() => null),
       set: jest.fn(),
     };
-    const controller = createBlogDataController(() => ({
+    const factory = jest.fn(() => ({
       fetch: jest.fn(),
       loggers: { logInfo: jest.fn(), logError: jest.fn() },
       permanentLens,
     }));
+    const controller = createBlogDataController(factory);
+    expect(factory).not.toHaveBeenCalled();
+    expect(controller.getLocalPermanentData.length).toBe(0);
+    expect(controller.setLocalPermanentData.length).toBe(1);
 
-    expect(controller.getLocalPermanentData()).toEqual({});
+    expect(controller.getLocalPermanentData('ignored')).toEqual({});
     expect(permanentLens.get).toHaveBeenCalledWith('permanentData');
-    expect(controller.setLocalPermanentData({ enabled: true })).toEqual({
+    expect(
+      controller.setLocalPermanentData({ enabled: true }, 'ignored')
+    ).toEqual({
       enabled: true,
     });
     expect(permanentLens.set).toHaveBeenCalledWith('permanentData', {
       enabled: true,
     });
+    permanentLens.get.mockReturnValue({ later: true });
+    expect(controller.getLocalPermanentData()).toEqual({ later: true });
+    expect(factory).toHaveBeenCalledTimes(1);
   });
 });
 
