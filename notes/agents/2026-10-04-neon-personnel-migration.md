@@ -17,3 +17,14 @@ Next bounded slice remains the playable clinic/cooling introduction and determin
 The aggregate gate failed at the first serial coverage shard with a V8 heap abort at both shard sizes 40 and 20. The hard-coded 256 MB worker limit was insufficient for the analyzer/browser workload. Raise that bounded serial limit to 512 MB (host approximately 2.3 GB available at diagnosis), retain shard isolation and every exact coverage threshold. Track this environment/evaluator evidence in existing dadeto-zflf as well as dadeto-88mh. A final static-only summary is not success if the preceding test-phase summary failed; inspect both and the command exit code.
 
 Publication preflight found Netlify's production workflow still pinned Node 20 while `scripts/check-node-version.js` rejects every version below 22. Align that workflow with Node 22 before pushing a source checkpoint; otherwise the source-triggered build cannot publish this game. The local build already succeeds on the supported Node runtime.
+
+## Terminal checkpoint evidence
+
+- `TMPDIR=/home/matt/dadeto/.tmp/neon-runtime DADETO_COVERAGE_SHARD_SIZE=40 npm run check` exited 0 after the worker-limit correction: `.tmp/neon-personnel-full-check-512.log`. Both summaries pass: test 1/1 and remaining gates 10/10. All 21 unit shards and nine aggregate browser cases pass.
+- `reports/coverage/coverage-summary.json`: lines 20461/20461, statements 21331/21331, functions 7113/7113, branches 10296/10296, all exactly 100%, no skipped source coverage.
+- Strict duplication remains zero; no threshold, exemption or ignore changes. Final source-specific artifact: `.tmp/neon-personnel-final-duplication.log`.
+- Focused shared-game acceptance passes 162 tests with 100% on affected modules: `.tmp/neon-checkpoint-tests.log` and `.tmp/neon-checkpoint-coverage/coverage-final.json`.
+- Neon local phone/desktop Playwright passes all ten journeys: `.tmp/neon-personnel-browser-final.log`. Expanded shared-game browser acceptance passes 19 with three existing device-inapplicable skips: `.tmp/neon-shared-browser-regressions.log`.
+- Site and cloud packaging pass: `.tmp/neon-personnel-build-final.log` and `.tmp/neon-personnel-cloud-build.log`.
+
+Implementation commit: `5241970456`. Publication was not verified: the documented GitHub App key path is absent on this host. The user indicated the home directory, but bounded filename checks including hidden folders did not find it. Request the exact key path, never the key contents; do not silently substitute the available MattHeard OAuth/SSH identity. The four-release goal and dadeto-88mh remain active. Do not present this personnel checkpoint as a completed release or published game.
