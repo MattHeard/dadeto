@@ -56,13 +56,30 @@ export function toFramePayload(state) {
  * @returns {unknown} The computed result.
  */
 function toCanvasShapes(frame) {
-  const shapes = terrainShapes(frame);
-  shapes.push(...foregroundShapes(frame));
+  const layers = worldLayers(frame);
+  const shapes = [...layers.scenery, ...layers.signs];
   shapes.push(...hudShapes(frame));
   if (frame.menu) shapes.push(...controllerShapes(frame));
   else if (frame.dialogue)
     shapes.push(...dialogueShapes(frame.dialogue, '#182f36', '#e9d88d'));
   return shapes;
+}
+
+/**
+ * Keep world depth and navigation annotations identical across both presenters.
+ * @param {object} frame Shared game frame.
+ * @returns {{scenery: object[], signs: object[]}} Paintable world layers.
+ */
+function worldLayers(frame) {
+  const crossings = crossingShapes(frame);
+  return {
+    scenery: [
+      ...terrainShapes(frame),
+      ...crossings.tiles,
+      ...foregroundShapes(frame),
+    ],
+    signs: crossings.signs,
+  };
 }
 /**
  * Fill the viewport, clipping the partial rightmost tile.
@@ -100,20 +117,21 @@ function terrainShapes(frame) {
         });
       }
     }
-  shapes.push(...crossingShapes(frame));
   return shapes;
 }
 /**
  * Draw named crossings in both renderers, including the story-locked Hollow gate.
  * @param {object} frame Shared game frame.
- * @returns {object[]} Pixel shapes and destination sign labels.
+ * @returns {{tiles: object[], signs: object[]}} World art and foreground destination annotations.
  */
 function crossingShapes(frame) {
   const map = frame.world.map;
-  return (map.exits || []).flatMap(exit => {
+  const tiles = [];
+  const signs = [];
+  for (const exit of map.exits || []) {
     const x = (exit.x - frame.camera.x) * 12;
     const y = (exit.y - frame.camera.y) * 12;
-    if (x < 0 || x >= 160 || y < 0 || y >= 108) return [];
+    if (x < 0 || x >= 160 || y < 0 || y >= 108) continue;
     const direction =
       exit.x === 0
         ? 'left'
@@ -141,7 +159,8 @@ function crossingShapes(frame) {
       x: pixel.x + x,
       y: pixel.y + y,
     }));
-    pixels.push(
+    tiles.push(...pixels);
+    signs.push(
       frameRectangle({ x: left, y: top, width, height: 10 }, frame.palette[0]),
       {
         type: 'text',
@@ -153,8 +172,8 @@ function crossingShapes(frame) {
         bitmap: true,
       }
     );
-    return pixels;
-  });
+  }
+  return { tiles, signs };
 }
 /**
  * Construct the shared opaque background contract for scenery and HUD panels.
@@ -220,8 +239,8 @@ function frameText(text, y, fill, font = '7px monospace') {
 export function drawGameFrame(context, frame) {
   const [p0, , , p3] = frame.palette;
   context.imageSmoothingEnabled = false;
-  drawShapes(context, terrainShapes(frame));
-  drawShapes(context, foregroundShapes(frame));
+  const layers = worldLayers(frame);
+  drawShapes(context, layers.scenery);
   if (frame.world.weather === 'rain' || frame.world.weather === 'dream') {
     context.fillStyle = frame.world.weather === 'dream' ? '#e7d6ff' : '#b8d6df';
     for (let i = 0; i < 12; i++) {
@@ -229,6 +248,7 @@ export function drawGameFrame(context, frame) {
       context.fillRect(x, (i * 17 + frame.tick * 3) % 108, 1, 4);
     }
   }
+  drawShapes(context, layers.signs);
   drawShapes(context, hudShapes(frame));
   if (frame.menu) drawShapes(context, controllerShapes(frame));
   else if (frame.dialogue) drawDialogue(context, frame, p0, p3);

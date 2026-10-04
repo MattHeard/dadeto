@@ -9,6 +9,11 @@ import {
 } from '../../../../src/core/browser/game/mosslight-valley/simulation.js';
 import { toFramePayload } from '../../../../src/core/browser/game/mosslight-valley/renderer.js';
 import { movePlayer } from '../../../../src/core/browser/game/mosslight-valley/world.js';
+import {
+  createNeonState,
+  renderNeon,
+} from '../../../../src/core/browser/game/neon-covenant/simulation.js';
+import { LAB_CONTENT } from '../../../../src/core/browser/game/neon-covenant/content.js';
 
 const palette = ['#182f36', '#315744', '#bfd77c', '#e9d88d'];
 
@@ -109,6 +114,40 @@ test('every crossing has a destination sign and still follows its original story
       }
       expect(movePlayer(state.world, direction, CONTENT).mapId).toBe(exit.map);
     }
+});
+
+test('Neon destination signs cover overlapping equipment but stay below controller overlays', () => {
+  const state = createNeonState();
+  state.dialogue = null;
+  state.world.mapId = 'compute';
+  state.world.map = LAB_CONTENT.maps.compute;
+  const frame = renderNeon(state);
+  const labelIndex = frame.shapes.findIndex(
+    shape => shape.text === 'EVALUATION'
+  );
+  const label = frame.shapes[labelIndex];
+  const overlaps = shape =>
+    shape.type === 'rect' &&
+    shape.x < label.x + 50 &&
+    shape.x + shape.width > label.x &&
+    shape.y < label.y &&
+    shape.y + shape.height > label.y - 6;
+  expect(
+    frame.shapes.slice(0, labelIndex - 1).filter(overlaps).length
+  ).toBeGreaterThan(0);
+  expect(frame.shapes.slice(labelIndex + 1).filter(overlaps)).toEqual([]);
+  expect(frame.shapes[labelIndex - 1]).toEqual({
+    type: 'rect',
+    x: label.x - 2,
+    y: label.y - 8,
+    width: 54,
+    height: 10,
+    fill: frame.palette[0],
+  });
+  const menu = renderNeon({ ...state, menu: { page: 'main', selected: 0 } });
+  expect(
+    menu.shapes.findIndex(shape => shape.text === 'EVALUATION')
+  ).toBeLessThan(menu.shapes.findIndex(shape => shape.width === 154));
 });
 
 test('opening HUD gives a first task and Start explains the mystery and scrolling crossings', () => {

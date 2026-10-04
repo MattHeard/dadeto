@@ -30,7 +30,7 @@ for (const game of ['mosslight-valley', 'neon-covenant']) {
         );
         if (testInfo.project.name === 'phone') await control.tap();
         else if (embedded) await control.click();
-        else await page.keyboard.press(key, { delay: 150 });
+        else await page.keyboard.press(key, { delay: 60 });
         await page.waitForTimeout(280);
       };
       const checkArrow = async () => {
@@ -105,6 +105,36 @@ for (const game of ['mosslight-valley', 'neon-covenant']) {
         await press('up');
         await press('right');
         await press('right');
+        const coveredPixels = await page.evaluate(
+          async ({ embedded, toy }) => {
+            const { drawPixelText } = await import(
+              '/core/browser/pixelFont.js'
+            );
+            const canvas = document.querySelector<HTMLCanvasElement>(
+              embedded ? `#${toy} canvas` : '#game-screen'
+            )!;
+            const expected = document.createElement('canvas');
+            expected.width = 54;
+            expected.height = 10;
+            const context = expected.getContext('2d')!;
+            context.fillStyle = '#111426';
+            context.fillRect(0, 0, 54, 10);
+            context.fillStyle = '#f482ca';
+            drawPixelText(context, 'EVALUATION', 2, 8);
+            const actual = canvas
+              .getContext('2d')!
+              .getImageData(106, 36, 54, 10).data;
+            const wanted = context.getImageData(0, 0, 54, 10).data;
+            return Array.from(actual).flatMap((value, index) =>
+              value === wanted[index] ? [] : [index]
+            );
+          },
+          { embedded, toy }
+        );
+        expect(coveredPixels).toEqual([]);
+        await page.screenshot({
+          path: `.tmp/exit-label-${embedded ? 'embedded' : 'standalone'}-${testInfo.project.name}.png`,
+        });
         await press('a');
         const readConversation = () =>
           page.evaluate(async () => {
