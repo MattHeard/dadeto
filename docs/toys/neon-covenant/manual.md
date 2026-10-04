@@ -58,6 +58,14 @@ Atlas requires 38 progress and earns 16k/shift; Ghost requires 64 and earns 29k;
 
 Clinic, Transit and Helios offer advances with delivery deadlines (shifts 12, 18 and 10). Missed contracts claw back half the advance and lose trust. Delivered contracts add recurring income. Helios pays well but damages public trust and conflicts with Ada's commitment.
 
+### Inspect a shift before committing
+
+Ledger → Inspect next shift shows exact closing cash and research gain. Read shift forecast explains payroll, power, risk, trust, each employee's next-shift fatigue, and pending contract deadlines. These pages are free: they do not buy anything, use attention, or advance the clock.
+
+Compare possible orders previews compute, cooling, protected shifts, or moving Jun to service. The comparison includes the order's cash and attention cost, the changed research yield, and closing cash after those costs. If cooling is the constraint, buying more racks alone will not help; if there is no researcher, hardware alone cannot start training. A rejected or unchanged order is explicitly identified. To actually commit a change, return to the appropriate terminal or staff console.
+
+Forecasts include missed-deadline clawbacks and current incident remediation, not just routine payroll. A delivered contract begins earning its daily revenue on the following settlement. Near a training target, both the forecast and shift report show the actual remaining gain, not a fictional full shift of progress. Completed campaigns remain unchanged when previewed. A continues readable forecast pages; B closes them, and X opens the lab menu.
+
 ### People, incidents and resolutions
 
 X → People and recruitment opens the staff console. Select Ada, Jun, Sable or Ion before assigning a new role; nobody is moved behind your back. Their specialty stays with them. Recruit candidates offers Tess (data rights), Rafi (efficient models), Nell (clinic support), Bao (agent permissions), Kit (hardware recovery) and Ora (community review). Each hire costs 18k and adds 3k per shift to payroll.

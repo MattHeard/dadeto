@@ -5,6 +5,7 @@ import { createLab, manageLab, endShift } from './management.js';
 import { labEntries, labMenuRows } from './controls.js';
 import { LAB_CONTENT } from './content.js';
 import { employeeThoughts } from './personnel.js';
+import { forecastShift, forecastPages, comparisonPages } from './forecast.js';
 import {
   controllerSelection,
   withControllerSelection,
@@ -30,6 +31,7 @@ function present(state) {
     palette: ['#111426', '#243344', '#52a7bc', '#f482ca'],
     status: `${state.lab.cash}k RISK ${state.lab.risk} AP ${state.lab.decisions}`,
     menuRows: labMenuRows(state),
+    forecast: forecastShift(state),
   };
   return { ...state, presentation };
 }
@@ -77,6 +79,14 @@ export function createNeonState(content = LAB_CONTENT) {
  */
 function menuCommand(state, command) {
   const next = { ...state, menu: null };
+  if (command === 'preview-shift')
+    return openDialogue(next, 'forecast', forecastPages(state));
+  if (command.startsWith('preview:'))
+    return openDialogue(
+      next,
+      'forecast',
+      comparisonPages(state, command.slice(8))
+    );
   if (command.startsWith('thoughts:')) {
     const person = state.lab.employees.find(
       (/** @type {Record<string, any>} */ entry) =>

@@ -1,6 +1,7 @@
 import { LAB_CONTENT } from './content.js';
 import { forecast } from './management.js';
 import { PERSONNEL } from './personnel.js';
+import { forecastShift } from './forecast.js';
 
 /**
  * Build selectable rows from the current terminal or handheld menu.
@@ -22,6 +23,20 @@ export function labEntries(state) {
       ...named(LAB_CONTENT.projects, 'focus'),
       ['Evaluate checkpoint / 6k', 'evaluate'],
       ['Deploy evaluated model', 'deploy'],
+    ];
+  if (page === 'forecast')
+    return [
+      ['Read shift forecast', 'preview-shift'],
+      ['Compare possible orders', 'page:comparisons'],
+      ['Back to ledger', 'page:ledger'],
+    ];
+  if (page === 'comparisons')
+    return [
+      ['Compute / 30k', 'preview:racks'],
+      ['Cooling / 20k', 'preview:cooling'],
+      ['Protected shifts', 'preview:policy:careful'],
+      ['Move Jun to service', 'preview:assign:jun:service'],
+      ['Back to forecast', 'page:forecast'],
     ];
   if (page === 'infrastructure' || page === 'rack')
     return [
@@ -114,6 +129,7 @@ export function labEntries(state) {
       ['End shift / settle costs', 'shift'],
       ['Repay debt / up to 20k', 'repay'],
       ['Shift report', 'page:report'],
+      ['Inspect next shift', 'page:forecast'],
     ];
   return [
     ['Ledger / end shift', 'page:ledger'],
@@ -139,6 +155,24 @@ export function labMenuRows(state) {
   if (!state.menu) return [];
   const lab = state.lab;
   const f = forecast(lab);
+  if (state.menu.page === 'forecast' || state.menu.page === 'comparisons') {
+    const projected = forecastShift(state);
+    return [
+      state.menu.page.toUpperCase(),
+      `CLOSE ${projected.closingCash}k / +${projected.researchGain} RESEARCH`,
+      `LIMIT: ${projected.bottleneck.kind.toUpperCase()}`,
+      ...labEntries(state)
+        .slice(
+          Math.max(0, state.menu.selected - 2),
+          Math.max(0, state.menu.selected - 2) + 3
+        )
+        .map(
+          ([label], index) =>
+            `${index + Math.max(0, state.menu.selected - 2) === state.menu.selected ? '>' : ' '} ${label}`
+        ),
+      'A READ / B BACK / X CLOSE',
+    ];
+  }
   const person = lab.employees.find(
     (/** @type {Record<string, any>} */ entry) =>
       `employee:${entry.id}` === state.menu.page

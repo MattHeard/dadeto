@@ -30,6 +30,12 @@ Credits represent thousands. Only ending a shift settles the economy. Held butto
 
 Mosslight runtime, world, actors, dialogue, renderer, pixel sprites, input, audio, save and page presenter. No external simulation services.
 
+## Explanatory forecast contract
+
+`forecast.js` projects the same `endShift` settlement used by the game, on cloned mutable ledger state. `forecastShift(state)` returns exact closing cash, bounded research gain, morale/risk/trust, employee fatigue, deadline exposure and the dominant constraint. It consumes no money, attention or time. `compareOrder(state, command)` applies the real order to a clone before projecting its settlement, so rejected orders and all costs remain consistent with gameplay.
+
+Forecast and comparison prose is split using the renderer's `wrapDialogueText` into at most six text rows per dialogue node. Menus show two context rows and three selectable rows. Both presenters receive the same `presentation.forecast`; WebMCP controller actions inspect these screens without bypassing actual costs. Legacy progress above the authored target is never reduced by another settlement; near-target reports use the actual gain.
+
 ## Named personnel and save contract
 
 `personnel.js` owns authored employees and candidates, roster/team accounting, contextual thoughts, explicit assignments, fatigue settlement and legacy roster reconstruction. The inherited payroll is Ada and Jun in research, Sable in safety, and Ion in service, each at 3k per shift. Mae remains the external clinic partner. Six candidates cost 18k to hire and add 3k recurring payroll. Rejected and unchanged orders cost no attention.

@@ -247,10 +247,11 @@ export function endShift(state) {
   const lab = structuredClone(state.lab);
   const f = forecast(lab);
   const project = LAB_CONTENT.projects[lab.focus];
-  lab.research[lab.focus] = Math.min(
-    project.target,
-    lab.research[lab.focus] + f.progress
+  f.progress = Math.min(
+    f.progress,
+    Math.max(0, project.target - lab.research[lab.focus])
   );
+  lab.research[lab.focus] += f.progress;
   const heat = Math.max(0, f.demand - lab.cooling);
   const stress =
     lab.policy === 'sprint' ? 10 : lab.policy === 'careful' ? -3 : 3;

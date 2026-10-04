@@ -1,5 +1,10 @@
 import { expect, test, Page } from '@playwright/test';
 
+test.beforeEach(async ({ page }) => {
+  await page.route('https://fonts.googleapis.com/**', route => route.abort());
+  await page.route('https://fonts.gstatic.com/**', route => route.abort());
+});
+
 async function labState(page: Page) {
   return page.evaluate(() => {
     const saves = JSON.parse(localStorage.getItem('permanentData') || '{}')['neon-covenant-saves-v2'];
@@ -16,7 +21,7 @@ async function tap(page: Page, button: string, embedded = false) {
   await page.waitForTimeout(280);
 }
 
-async function selectPersonnelRow(page: Page, command: string) {
+async function selectPersonnelRow(page: Page, command: string, embedded = false) {
   const selection = await page.evaluate(async command => {
     const saves = JSON.parse(localStorage.getItem('permanentData') || '{}')['neon-covenant-saves-v2'];
     const state = JSON.parse(saves.slots[saves.activeSlot ?? 0]).state;
@@ -24,8 +29,72 @@ async function selectPersonnelRow(page: Page, command: string) {
     return { current: state.menu.selected, target: labEntries(state).findIndex((row: string[]) => row[1] === command) };
   }, command);
   expect(selection.target).toBeGreaterThanOrEqual(0);
-  for (let index = selection.current; index < selection.target; index++) await tap(page, 'down');
-  await tap(page, 'a');
+  for (let index = selection.current; index < selection.target; index++) await tap(page, 'down', embedded);
+  await tap(page, 'a', embedded);
+}
+
+async function openForecast(page: Page, embedded: boolean) {
+  await page.goto(embedded ? '/' : '/neon-covenant/', { waitUntil: 'domcontentloaded' });
+  if (embedded) {
+    const toy = page.locator('#NEON1');
+    await toy.scrollIntoViewIfNeeded();
+    await expect(toy.getByRole('button', { name: 'Submit', exact: true })).toBeEnabled();
+  }
+  await tap(page, 'b', embedded);
+  await expect.poll(async () => (await labState(page))?.lab?.rulesVersion).toBe(1);
+  await tap(page, 'a', embedded);
+  await selectPersonnelRow(page, 'page:forecast', embedded);
+  return labState(page);
+}
+
+for (const embedded of [false, true]) {
+  test(`forecast previews are free, readable and exact in ${embedded ? 'embedded' : 'standalone'} mode`, async ({ page }) => {
+    const errors: string[] = [];
+    page.on('pageerror', error => errors.push(error.message));
+    const opening = await openForecast(page, embedded);
+    const projected = opening.presentation.forecast;
+    expect(projected.closingCash).toBe(169);
+    expect(projected.bottleneck.kind).toBe('demand');
+    await selectPersonnelRow(page, 'preview-shift', embedded);
+    let state = await labState(page);
+    expect(state.dialogue.actorId).toBe('forecast');
+    expect(state.dialogue.lines.map((line: any) => line.text).join(' ')).toContain('Closing cash 169k');
+    expect(state.lab).toEqual(opening.lab);
+    expect(state.world.day).toBe(opening.world.day);
+    expect(await page.evaluate(async () => {
+      const saves = JSON.parse(localStorage.getItem('permanentData')!)['neon-covenant-saves-v2'];
+      const state = JSON.parse(saves.slots[saves.activeSlot ?? 0]).state;
+      const { wrapDialogueText } = await import('/core/browser/game/mosslight-valley/renderer.js');
+      return state.dialogue.lines.every((line: any) => wrapDialogueText(line.text).length <= 6);
+    })).toBe(true);
+    await page.screenshot({ path: `.tmp/neon-forecast-${embedded ? 'embedded' : 'standalone'}-${test.info().project.name}.png` });
+    await tap(page, 'b', embedded);
+    await tap(page, 'a', embedded);
+    await tap(page, 'a', embedded);
+    state = await labState(page);
+    expect(state.lab.cash).toBe(projected.closingCash);
+    expect(state.lab.research.atlas).toBe(projected.checkpoint);
+    expect(state.lab.employees.map((person: any) => person.fatigue)).toEqual(projected.employees.map((person: any) => person.fatigue));
+    expect(state.world.day).toBe(2);
+    expect(errors).toEqual([]);
+  });
+
+  test(`order comparisons do not spend cash or attention in ${embedded ? 'embedded' : 'standalone'} mode`, async ({ page }) => {
+    const errors: string[] = [];
+    page.on('pageerror', error => errors.push(error.message));
+    const opening = await openForecast(page, embedded);
+    await selectPersonnelRow(page, 'page:comparisons', embedded);
+    await selectPersonnelRow(page, 'preview:racks', embedded);
+    const state = await labState(page);
+    const text = state.dialogue.lines.map((line: any) => line.text).join(' ');
+    expect(text).toContain('PREVIEW ONLY');
+    expect(text).toContain('Cost 30k and 1 attention');
+    expect(text).toContain('Research gain changes from 7 to 7');
+    expect(text).toContain('Closing cash changes from 169k to 139k');
+    expect(state.lab).toEqual(opening.lab);
+    expect(state.world.day).toBe(1);
+    expect(errors).toEqual([]);
+  });
 }
 
 test('named staff are assignable and their readable concerns own controller input', async ({ page }) => {
