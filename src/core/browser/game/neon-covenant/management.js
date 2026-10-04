@@ -1,4 +1,9 @@
 import { LAB_CONTENT } from './content.js';
+import {
+  createIncidentChains,
+  settleIncidents,
+  intervene,
+} from './incidents.js';
 import { clampNumber } from '../../../index.js';
 import {
   createPersonnel,
@@ -21,7 +26,10 @@ function metric(value) {
  */
 export function createLab() {
   return {
-    rulesVersion: 1,
+    rulesVersion: 2,
+    incidentChains: createIncidentChains(),
+    incidentGrace: 0,
+    lastIncidentCost: 0,
     employees: createPersonnel(),
     firstShiftGuide: 0,
     cash: 180,
@@ -109,6 +117,7 @@ function purchase(lab, cost, apply) {
  */
 function operate(lab, command) {
   const [kind, value] = command.split(':');
+  if (kind === 'incident') return intervene(lab, value);
   if (kind === 'assign' || kind === 'hire') return personnelOrder(lab, command);
   if (kind === 'focus') {
     lab.focus = value;
@@ -295,14 +304,7 @@ export function endShift(state) {
       report.push(`${contract.name}: missed. Advance clawback.`);
     }
   }
-  if (lab.risk >= 60 || lab.scrutiny >= 80) {
-    lab.incidents++;
-    revenue -= 20;
-    lab.trust = metric(lab.trust - 12);
-    lab.risk = metric(lab.risk - 20);
-    lab.scrutiny = metric(lab.scrutiny - 15);
-    report.push('Incident: 20k remediation; trust -12.');
-  }
+  revenue -= settleIncidents(lab, f, state.world.day, report);
   if (lab.promises.includes('ion') && heat > 0) {
     lab.morale = metric(lab.morale - 8);
     report.push('Ion: you promised safe cooling.');

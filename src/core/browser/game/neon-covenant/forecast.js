@@ -91,7 +91,8 @@ export function forecastShift(state) {
     closingMorale: change.morale,
     closingRisk: change.risk,
     closingTrust: change.trust,
-    incidentCost: (change.incidents - lab.incidents) * 20,
+    incidentCost: lab.outcome ? 0 : change.lastIncidentCost,
+    incidentChains: change.incidentChains,
     payroll: flow.payroll,
     power: flow.power,
     income: flow.service + flow.income,
@@ -156,6 +157,11 @@ export function forecastPages(state) {
       text: `${person.name}: projected fatigue ${person.fatigue}, morale ${person.morale}. Protected shifts and recovery reduce fatigue. Talk to this colleague about current concerns.`,
     })),
     ...f.deadlines.map(deadlinePage),
+    ...Object.entries(f.incidentChains)
+      .filter(([, chain]) => chain.stage !== 'clear')
+      .map(([id, chain]) => ({
+        text: `${LAB_CONTENT.incidents[id].name}: ${chain.stage}. ${LAB_CONTENT.incidents[id].trigger} Response: ${LAB_CONTENT.incidents[id].responseCost}k. Assign staff or repair the cause. A full warning settlement precedes escalation; unresolved incidents are charged only once.`,
+      })),
   ];
   if (f.outcome)
     pages.push({
@@ -171,7 +177,7 @@ export function forecastPages(state) {
  */
 function incidentWarning(f) {
   if (f.incidentCost)
-    return `Warning: this shift incurs ${f.incidentCost}k incident remediation. Reduce risk or scrutiny before settling.`;
+    return `Warning: this shift incurs ${f.incidentCost}k incident remediation. Repair the warned causes before settling.`;
   return 'No incident remediation is charged by this settlement.';
 }
 

@@ -53,6 +53,45 @@ function room(name, exits, objects) {
 
 /** @type {Record<string, any>} Immutable chapter content; economic units are thousands of credits. */
 export const LAB_CONTENT = {
+  incidents: {
+    heat: {
+      name: 'Overheating',
+      owner: 'ion',
+      trigger: 'Active training demand exceeds cooling.',
+      response: 'Install four cooling units',
+      responseCost: 20,
+      cost: 20,
+      trustLoss: 8,
+    },
+    evaluation: {
+      name: 'Evaluation gap',
+      owner: 'sable',
+      trigger:
+        'Research has no evaluator, or a deployed checkpoint lacks current evidence.',
+      response: 'Review all current checkpoints',
+      responseCost: 6,
+      cost: 24,
+      trustLoss: 12,
+    },
+    rights: {
+      name: 'Data rights',
+      owner: 'ada',
+      trigger: 'Scraped data is in use after research begins.',
+      response: 'Replace data and pay licensing',
+      responseCost: 12,
+      cost: 16,
+      trustLoss: 10,
+    },
+    support: {
+      name: 'Support overload',
+      owner: 'ion',
+      trigger: 'Deployed models outnumber service staff.',
+      response: 'Fund triage and recovery',
+      responseCost: 8,
+      cost: 12,
+      trustLoss: 6,
+    },
+  },
   start: { map: 'office', x: 6, y: 5, facing: 'up', name: 'Director' },
   maps: {
     office: room(

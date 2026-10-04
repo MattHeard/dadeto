@@ -153,7 +153,7 @@ test('comparisons expose order costs and reject hardware that cannot fix cooling
 test('all warnings, deadline exposure and epilogues remain inside readable dialogue bounds', () => {
   const samples = [
     fixture(),
-    fixture({ risk: 80, scrutiny: 90 }),
+    endShift(fixture({ cooling: 1, policy: 'sprint' })),
     fixture({ contracts: ['clinic'] }, 12),
     fixture({ contracts: ['clinic'], deployed: ['atlas'] }, 12),
     fixture({ contracts: ['clinic'] }, 8),

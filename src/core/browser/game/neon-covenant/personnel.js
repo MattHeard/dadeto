@@ -1,3 +1,5 @@
+import { createIncidentChains, incidentThoughts } from './incidents.js';
+
 /** @type {Record<string, any>} Authored employees and recruit candidates. */
 export const PERSONNEL = {
   ada: {
@@ -90,7 +92,7 @@ export function personnelTeams(employees) {
  * @returns {string[]} Current employee thoughts.
  */
 export function employeeThoughts(lab, person) {
-  const concerns = [];
+  const concerns = incidentThoughts(lab, person.id);
   if (person.fatigue >= 40)
     concerns.push(
       'I need recovery time. Protect a shift or arrange team rest.'
@@ -124,7 +126,8 @@ export function employeeThoughts(lab, person) {
  * @returns {boolean} Whether all roster accounting agrees.
  */
 export function validPersonnel(lab) {
-  if (lab.rulesVersion !== 1 || !Array.isArray(lab.employees)) return false;
+  if (![1, 2].includes(lab.rulesVersion) || !Array.isArray(lab.employees))
+    return false;
   if (!lab.employees.every(validEmployee)) return false;
   const ids = lab.employees.map(person => person.id);
   if (new Set(ids).size !== ids.length) return false;
@@ -208,6 +211,21 @@ function legacyColleague(index, morale) {
  */
 export function migratePersonnel(state) {
   const lab = state.lab;
+  if (lab?.rulesVersion === 1 && validPersonnel(lab))
+    return {
+      ...state,
+      lab: {
+        ...lab,
+        rulesVersion: 2,
+        incidentChains: createIncidentChains(),
+        lastIncidentCost: 0,
+        incidentGrace: 2,
+        introductionComplete: true,
+        remoteAdministration: true,
+      },
+      toast:
+        'Incident rules upgraded. Ledger preserved; two protected settlements. Original slot backed up.',
+    };
   if (!lab || Object.hasOwn(lab, 'rulesVersion')) return state;
   if (
     !lab.teams ||
@@ -226,7 +244,9 @@ export function migratePersonnel(state) {
     return state;
   const migrated = {
     ...lab,
-    rulesVersion: 1,
+    rulesVersion: 2,
+    incidentChains: createIncidentChains(),
+    lastIncidentCost: 0,
     employees: legacyPersonnel(lab),
     introductionComplete: true,
     remoteAdministration: true,

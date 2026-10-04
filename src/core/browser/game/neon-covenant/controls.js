@@ -12,6 +12,23 @@ import { orientationEntries, orientationRows } from './orientation.js';
 export function labEntries(state) {
   const page = state.menu.page;
   if (page === 'orientation') return orientationEntries(state);
+  if (page === 'incidents')
+    return Object.entries(LAB_CONTENT.incidents)
+      .map(([id, definition]) => [
+        `${definition.name} / ${definition.responseCost}k`,
+        `preview:incident:${id}`,
+      ])
+      .concat([
+        ['Commit a response', 'page:responses'],
+        ['Back', 'page:main'],
+      ]);
+  if (page === 'responses')
+    return Object.entries(LAB_CONTENT.incidents)
+      .map(([id, definition]) => [
+        `${definition.name} / ${definition.responseCost}k`,
+        `incident:${id}`,
+      ])
+      .concat([['Inspect costs first', 'page:incidents']]);
   const named = (
     /** @type {Record<string, any>} */ records,
     /** @type {string} */ prefix
@@ -136,6 +153,7 @@ export function labEntries(state) {
   return [
     ['Ledger / end shift', 'page:ledger'],
     ['Lab dashboard', 'page:dashboard'],
+    ['Incident register', 'page:incidents'],
     ['Research console', 'page:research'],
     ['People and recruitment', 'page:recruitment'],
     ['Shift report', 'page:report'],

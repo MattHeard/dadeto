@@ -232,7 +232,12 @@ test('shifts account for payroll, power, deadlines, commitments and remediation'
   expect(missed.lab.cash).toBe(75);
   expect(endShift(missed).lab.report.join(' ')).not.toContain('clawback');
   const delivered = endShift(
-    campaign({ contracts: ['clinic'], deployed: ['atlas'] })
+    campaign({
+      contracts: ['clinic'],
+      deployed: ['atlas'],
+      research: { atlas: 38, ghost: 0, lumen: 0 },
+      evaluated: { atlas: 38, ghost: 0, lumen: 0 },
+    })
   );
   expect(delivered.lab.fulfilled).toEqual(['clinic']);
   expect(endShift(delivered).lab.cash).toBeGreaterThan(delivered.lab.cash);
@@ -249,10 +254,10 @@ test('shifts account for payroll, power, deadlines, commitments and remediation'
       deployed: ['atlas'],
     })
   );
-  expect(hot.lab.incidents).toBe(1);
+  expect(hot.lab.incidents).toBe(0);
   expect(hot.lab.report.join(' ')).toContain('Ion:');
   expect(hot.lab.report.join(' ')).toContain('Ada refuses');
-  expect(hot.lab.scrutiny).toBe(76);
+  expect(hot.lab.scrutiny).toBe(91);
   expect(
     endShift(
       campaign({

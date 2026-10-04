@@ -5,6 +5,7 @@ import { startMosslightPage } from '../mosslight-valley/pagePresenter.js';
 import { registerMosslightTools } from '../mosslight-valley/webmcp.js';
 import { LAB_CONTENT } from './content.js';
 import { migratePersonnel, validPersonnel } from './personnel.js';
+import { validIncidentChains } from './incidents.js';
 import {
   createNeonState,
   stepNeon,
@@ -22,6 +23,11 @@ export function validLabSave(state) {
   return Boolean(
     lab &&
       validPersonnel(lab) &&
+      lab.rulesVersion === 2 &&
+      validIncidentChains(lab) &&
+      Object.values(lab.incidentChains).every(
+        chain => chain.warnedAt <= state.world.day
+      ) &&
       (lab.firstShiftGuide === undefined ||
         (Number.isInteger(lab.firstShiftGuide) &&
           lab.firstShiftGuide >= 0 &&
