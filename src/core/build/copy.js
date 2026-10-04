@@ -1,8 +1,4 @@
-import {
-  buildCopyLogMessage,
-  formatPathRelativeToProject,
-  runMappedEntries,
-} from '../commonCore.js';
+import * as copySupport from '../commonCore.js';
 
 export const DEFAULT_COPYABLE_EXTENSIONS = ['.js', '.json', '.html'];
 
@@ -116,6 +112,10 @@ export function createCopyToInfraCore({
 }) {
   const { join, dirname, relative, extname } = pathDeps;
   const extensionSet = new Set(copyableExtensions);
+  const formatProjectPath = copySupport.formatPathRelativeToProject.bind(
+    null,
+    projectRoot
+  );
 
   /**
    * Format a path relative to the project root for log output.
@@ -123,7 +123,7 @@ export function createCopyToInfraCore({
    * @returns {string} Relative path or the original when outside the project.
    */
   function formatPathForLog(targetPath) {
-    return formatPathRelativeToProject(projectRoot, targetPath, relative);
+    return formatProjectPath(targetPath, relative);
   }
 
   /**
@@ -274,7 +274,7 @@ export function createCopyToInfraCore({
    * @returns {Promise<void>} Resolves when all files are copied.
    */
   async function copyIndividualFiles(copies, io, messageLogger) {
-    await runMappedEntries(
+    await copySupport.runMappedEntries(
       copies,
       ({ source, target }) => ({ source, target, io, messageLogger }),
       copyIndividualFile
@@ -310,7 +310,7 @@ export function createCopyToInfraCore({
    */
   async function copyFiles({ files, sourceDir, targetDir, io, messageLogger }) {
     await io.ensureDirectory(targetDir);
-    await runMappedEntries(
+    await copySupport.runMappedEntries(
       files,
       name => ({ io, sourceDir, targetDir, name, messageLogger }),
       copyFileToTarget
@@ -329,7 +329,7 @@ export function createCopyToInfraCore({
     if (setCopiedFileTimestamp) {
       await setCopiedFileTimestamp(target);
     }
-    const message = buildCopyLogMessage({
+    const message = copySupport.buildCopyLogMessage({
       formatPathForLog,
       sourceDestination: { source, destination: target },
     });

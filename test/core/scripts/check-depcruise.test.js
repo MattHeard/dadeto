@@ -518,20 +518,49 @@ describe('createCheckDepcruiseHandle browser-main policy', () => {
         '}',
       ].join('\n')
     );
-    expect(
-      findCoreBrowserMainGlobalViolations({
-        readFileSync,
-        rootDir: '/repo',
-        sourceRoot: 'src/core',
-        pathModule: path,
-        scopeAnalysisDeps: createScopeAnalysisDeps(),
-      })
-    ).toEqual([
+    const dependencies = Object.freeze({
+      readFileSync,
+      rootDir: '/repo',
+      sourceRoot: 'src/custom-core',
+      pathModule: path,
+      scopeAnalysisDeps: createScopeAnalysisDeps(),
+    });
+    const violations = findCoreBrowserMainGlobalViolations(dependencies);
+    expect(violations).toEqual([
       {
-        filePath: 'src/core/browser/main.js',
+        filePath: 'src/custom-core/browser/main.js',
         globals: ['localStorage', 'window', 'document'],
       },
     ]);
+    expect(readFileSync).toHaveBeenCalledWith(
+      '/repo/src/custom-core/browser/main.js',
+      'utf8'
+    );
+    violations[0].globals.push('mutated');
+    const rescanned = findCoreBrowserMainGlobalViolations(dependencies);
+    expect(rescanned[0].globals).toEqual([
+      'localStorage',
+      'window',
+      'document',
+    ]);
+    expect(rescanned[0]).not.toBe(violations[0]);
+  });
+
+  test('preserves browser-main file reader failures unchanged', () => {
+    const failure = new Error('cannot read browser entrypoint');
+    let caught;
+    try {
+      findCoreBrowserMainGlobalViolations({
+        readFileSync() {
+          throw failure;
+        },
+        rootDir: '/repo',
+        pathModule: path,
+      });
+    } catch (error) {
+      caught = error;
+    }
+    expect(caught).toBe(failure);
   });
 
   test('returns no browser-main violations when the entry is clean', () => {

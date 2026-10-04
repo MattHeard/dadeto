@@ -15,6 +15,27 @@ const core = createCopyToInfraCore({ projectRoot, path: posix });
 
 describe('createCopyToInfraCore', () => {
   describe('formatPathForLog', () => {
+    it('captures the injected relative operation without calling it at creation', () => {
+      const relative = jest.fn(posix.relative);
+      const pathDependencies = { ...posix, relative };
+      const helpers = createCopyToInfraCore({
+        projectRoot,
+        path: pathDependencies,
+      });
+      expect(relative).not.toHaveBeenCalled();
+      pathDependencies.relative = () => {
+        throw new Error('replacement');
+      };
+      expect(helpers.formatPathForLog('/project/nested/file.js')).toBe(
+        'nested/file.js'
+      );
+      expect(relative).toHaveBeenCalledTimes(1);
+      expect(relative).toHaveBeenCalledWith(
+        projectRoot,
+        '/project/nested/file.js'
+      );
+    });
+
     it("returns '.' for the project root", () => {
       expect(core.formatPathForLog(projectRoot)).toBe('.');
     });

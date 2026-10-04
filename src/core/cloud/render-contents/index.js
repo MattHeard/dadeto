@@ -13,11 +13,7 @@ import {
   resolveStaticBucketName,
   resolveStaticObjectPrefix,
 } from './render-contents-core.js';
-import {
-  createCloudRenderInstanceBuilder,
-  createMemoizedLoader,
-  createCloudRenderEntrypointState,
-} from '../render-support.js';
+import * as renderSupport from '../render-support.js';
 
 /**
  * Build the render-contents entrypoint from injected dependencies.
@@ -54,10 +50,10 @@ export function createRenderContentsEntrypoint(deps) {
   } = createRenderContentsEntrypointState();
   const auth = getAuth();
 
-  const resolveFetchTopStoryIds = createMemoizedLoader(() =>
+  const resolveFetchTopStoryIds = renderSupport.createMemoizedLoader(() =>
     createFetchTopStoryIds(db)
   );
-  const resolveFetchStoryInfo = createMemoizedLoader(() =>
+  const resolveFetchStoryInfo = renderSupport.createMemoizedLoader(() =>
     createFetchStoryInfo(db)
   );
 
@@ -141,13 +137,14 @@ export function createRenderContentsEntrypoint(deps) {
       entrypointKind: 'contents',
       defaultBucketName: DEFAULT_BUCKET_NAME,
     };
-    renderStateOptions.buildRender = createCloudRenderInstanceBuilder({
-      createRenderer: createRenderContents,
-      crypto,
-      consoleError: (...args) => console.error(...args),
-    });
+    renderStateOptions.buildRender =
+      renderSupport.createCloudRenderInstanceBuilder({
+        createRenderer: createRenderContents,
+        crypto,
+        consoleError: (...args) => console.error(...args),
+      });
     renderStateOptions.entrypointKind = 'contents';
-    return createCloudRenderEntrypointState(renderStateOptions);
+    return renderSupport.createCloudRenderEntrypointState(renderStateOptions);
   }
 }
 // Stryker restore all

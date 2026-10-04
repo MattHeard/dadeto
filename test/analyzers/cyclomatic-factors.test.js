@@ -1,5 +1,6 @@
 import escomplex from 'typhonjs-escomplex';
 import { createCyclomaticFactorsHandle } from '../../src/core/build/cyclomatic-factors.js';
+import { PARSER_OPTIONS } from '../../src/core/build/parser-options.js';
 
 const { describeCyclomaticFactors } = createCyclomaticFactorsHandle({
   parser: escomplex,
@@ -10,6 +11,29 @@ const { describeCyclomaticFactors } = createCyclomaticFactorsHandle({
 });
 
 describe('Cyclomatic factors analyzer', () => {
+  it('passes the shared parser policy unchanged on every analysis', () => {
+    const calls = [];
+    const handle = createCyclomaticFactorsHandle({
+      parser: {
+        parse(code, options) {
+          calls.push({ code, options });
+          return { type: 'Program', body: [] };
+        },
+      },
+      readInput: async () => '',
+      stdout: { write() {} },
+    });
+    for (const code of ['const first = 1;', 'const second = 2;']) {
+      expect(handle.describeCyclomaticFactors(code)).toEqual([]);
+    }
+    expect(calls.map(call => call.code)).toEqual([
+      'const first = 1;',
+      'const second = 2;',
+    ]);
+    expect(calls).toHaveLength(2);
+    for (const call of calls) expect(call.options).toBe(PARSER_OPTIONS);
+  });
+
   it('extracts branching hints for functions', () => {
     const code = `function summarize(items) {
   for (let index = 0; index < items.length; index += 1) {

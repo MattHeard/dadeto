@@ -1,13 +1,13 @@
-import { createDetachedProcessLauncher } from '../process-launcher.js';
+import * as processLauncher from '../process-launcher.js';
 
 /**
  * Compose Notion's lifecycle policy with the shared detached-process launcher.
- * @param {{command: string} & Partial<Parameters<typeof createDetachedProcessLauncher>[0]>} options Launcher dependencies.
- * @returns {ReturnType<typeof createDetachedProcessLauncher>} Notion process lifecycle.
+ * @param {{command: string} & Partial<Parameters<typeof processLauncher.createDetachedProcessLauncher>[0]>} options Launcher dependencies.
+ * @returns {ReturnType<typeof processLauncher.createDetachedProcessLauncher>} Notion process lifecycle.
  */
 export function createNotionCodexLauncherCore(options) {
-  return createDetachedProcessLauncher(
-    /** @type {Parameters<typeof createDetachedProcessLauncher>[0]} */ ({
+  return processLauncher.createDetachedProcessLauncher(
+    /** @type {Parameters<typeof processLauncher.createDetachedProcessLauncher>[0]} */ ({
       ...options,
       logDirSuffix: 'notion-codex',
       closeErrorLabel: 'Failed to close Notion Codex run log handle:',

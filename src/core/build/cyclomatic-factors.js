@@ -1,4 +1,4 @@
-import { PARSER_OPTIONS } from './parser-options.js';
+import * as parserPolicy from './parser-options.js';
 
 /**
  * @typedef {{ start?: { line?: number }, end?: { line?: number } }} SourceLocation
@@ -385,7 +385,7 @@ function createDescribeCyclomaticFactors(parser) {
       throw new TypeError('code must be a string');
     }
 
-    const ast = parser.parse(code, PARSER_OPTIONS);
+    const ast = parser.parse(code, parserPolicy.PARSER_OPTIONS);
     /** @type {TraversalState} */
     const state = {
       // Stryker disable next-line all -- traversal state initialization.

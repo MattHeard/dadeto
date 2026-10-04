@@ -6,7 +6,7 @@ import { createNotionCodexLauncher } from '../../src/local/notion-codex/launcher
 test('Notion uses the shared default prompt conversion rather than caller resolveArgs', async () => {
   const resolveArgs = jest.fn(() => ['unexpected']);
   const spawnImpl = jest.fn(() => ({ once() {}, unref() {} }));
-  const options = {
+  const options = Object.freeze({
     command: 'codex',
     args: ['exec'],
     pathModule: path,
@@ -14,7 +14,7 @@ test('Notion uses the shared default prompt conversion rather than caller resolv
     mkdirImpl: async () => {},
     openImpl: async () => ({ fd: 1 }),
     spawnImpl,
-  };
+  });
   const launcher = createNotionCodexLauncherCore(options);
   for (const prompt of [undefined, null, 42, 'hello']) {
     await launcher.launch({

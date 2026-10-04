@@ -1,6 +1,6 @@
 // Stryker disable all -- this module is the fixed Notion Codex outcome
 // normalization and persistence boundary covered by the outcome-store suite.
-import { isMissingFileError } from '../../commonCore.js';
+import * as outcomeSupport from '../../commonCore.js';
 
 /**
  * Normalize a candidate outcome payload.
@@ -77,7 +77,7 @@ async function readStoredOutcome(context, runId) {
  * @returns {null} Missing outcome marker.
  */
 function recoverMissingOutcome(error) {
-  if (!isMissingFileError(error)) throw error;
+  if (!outcomeSupport.isMissingFileError(error)) throw error;
   return null;
 }
 

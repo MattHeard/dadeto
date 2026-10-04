@@ -16,6 +16,41 @@ import { createBrowserGlobalReferenceFinder } from '../local/check-depcruise-sco
  *   },
  * }} BrowserScanDeps
  */
+
+/**
+ * Read and scan the special browser-main boundary, excluding its wiring preamble.
+ * @param {Pick<BrowserScanDeps, 'sourceRoot'|'scopeAnalysisDeps'> & {allowedGlobals: string[]}} policy Default scan policy supplied by the gate.
+ * @param {Omit<BrowserScanDeps, 'sourceRoot'|'scopeAnalysisDeps'> & Partial<Pick<BrowserScanDeps, 'sourceRoot'|'scopeAnalysisDeps'>>} deps File and scope dependencies.
+ * @returns {Array<{filePath: string, globals: string[]}>} Fresh violations for the browser entrypoint.
+ */
+export function scanBrowserMainPolicy(policy, deps) {
+  const {
+    readFileSync,
+    rootDir,
+    sourceRoot = policy.sourceRoot,
+    pathModule,
+    scopeAnalysisDeps = policy.scopeAnalysisDeps,
+  } = deps;
+  const filePath = pathModule.resolve(
+    rootDir,
+    sourceRoot,
+    ['browser', 'main.js'].join('/')
+  );
+  const globals = findCoreBrowserGlobalsInSource(
+    stripBrowserMainPolicyNoise(readFileSync(filePath, 'utf8')),
+    scopeAnalysisDeps,
+    policy.allowedGlobals
+  );
+  return globals.length === 0
+    ? []
+    : [
+        {
+          filePath: toRepoRelativePath(rootDir, filePath, pathModule),
+          globals,
+        },
+      ];
+}
+
 /**
  * Find browser globals in a source file.
  * @param {string} source Source text.

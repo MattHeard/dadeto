@@ -88,15 +88,16 @@ describe('core local notion codex outcome store', () => {
   });
 
   test('rethrows unexpected read errors', async () => {
+    const failure = new Error('boom');
     const store = createNotionCodexOutcomeStore({
       outcomeDir: '/tmp/outcomes',
       pathModule: path,
       async readFileImpl() {
-        throw new Error('boom');
+        throw failure;
       },
     });
 
-    await expect(store.readOutcome('run-123')).rejects.toThrow('boom');
+    await expect(store.readOutcome('run-123')).rejects.toBe(failure);
   });
 
   test('writes normalized outcome files with sanitized run ids', async () => {
