@@ -28,6 +28,7 @@ import {
   validRelationships,
   migrateRelationships,
 } from '../../../../src/core/browser/game/neon-covenant/relationships.js';
+import { migrateInfrastructure } from '../../../../src/core/browser/game/neon-covenant/infrastructure.js';
 import { RELATIONSHIP_CONTENT } from '../../../../src/core/browser/game/neon-covenant/relationshipContent.js';
 import { createDeployments } from '../../../../src/core/browser/game/neon-covenant/operations.js';
 
@@ -248,10 +249,14 @@ test.each([
     delete old.lab.relationships;
     delete old.lab.commitmentPolicies;
     const original = structuredClone(old);
-    const upgraded = migrateRelationships(old);
+    const relationshipUpgrade = migrateRelationships(old);
     expect(old).toEqual(original);
-    expect(upgraded.lab).toMatchObject({ ...old.lab, rulesVersion: 6 });
-    expect(upgraded.lab.rulesVersion).toBe(6);
+    expect(relationshipUpgrade.lab).toMatchObject({
+      ...old.lab,
+      rulesVersion: 6,
+    });
+    const upgraded = migrateInfrastructure(relationshipUpgrade);
+    expect(upgraded.lab.rulesVersion).toBe(7);
     expect(upgraded.lab.relationships.ada).toMatchObject({
       stage: 'active',
       score: 17,
@@ -261,7 +266,7 @@ test.each([
     });
     expect(upgraded.lab.relationships.mae.stage).toBe('active');
     expect(validLabSave(upgraded)).toBe(true);
-    expect(migrateRelationships(upgraded)).toBe(upgraded);
+    expect(migrateInfrastructure(upgraded)).toBe(upgraded);
     const runtime = createNeonRuntime();
     runtime.importSave(
       JSON.stringify({ game: 'neon-covenant', version: 2, state: old })

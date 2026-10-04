@@ -18,6 +18,7 @@ import {
   migratePersonnel,
   employeeThoughts,
 } from '../../../../src/core/browser/game/neon-covenant/personnel.js';
+import { migrateInfrastructure } from '../../../../src/core/browser/game/neon-covenant/infrastructure.js';
 import {
   validLabSave,
   createNeonRuntime,
@@ -147,15 +148,17 @@ test('migration protects two settlements without rerolling or changing historica
   delete old.lab.incidentGrace;
   delete old.lab.lastIncidentCost;
   old.lab.incidents = 7;
-  const migrated = migrateRelationships(
-    migrateDeployments(
-      migrateEvaluations(migratePrograms(migratePersonnel(old)))
+  const migrated = migrateInfrastructure(
+    migrateRelationships(
+      migrateDeployments(
+        migrateEvaluations(migratePrograms(migratePersonnel(old)))
+      )
     )
   );
   expect(migrated.lab).toMatchObject({
     cash: 800,
     incidents: 7,
-    rulesVersion: 6,
+    rulesVersion: 7,
     incidentGrace: 2,
   });
   expect(validLabSave(migrated)).toBe(true);

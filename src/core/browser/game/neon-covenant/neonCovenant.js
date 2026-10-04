@@ -13,6 +13,11 @@ import { migrateDeployments, validDeployments } from './operations.js';
 import { DEPLOYMENT_PROFILES } from './operationsContent.js';
 import { labReportLines, readableLabPages } from './forecast.js';
 import { migrateRelationships, validRelationships } from './relationships.js';
+import {
+  INFRASTRUCTURE,
+  migrateInfrastructure,
+  validInfrastructure,
+} from './infrastructure.js';
 import { RELATIONSHIP_CONTENT } from './relationshipContent.js';
 import { neonAudio } from './audio.js';
 import {
@@ -34,7 +39,8 @@ export function validLabSave(state) {
       (state.audioMuted === undefined ||
         typeof state.audioMuted === 'boolean') &&
       validPersonnel(lab) &&
-      lab.rulesVersion === 6 &&
+      lab.rulesVersion === 7 &&
+      validInfrastructure(lab) &&
       validRelationships(lab, state.world.day) &&
       validPrograms(lab) &&
       validEvaluations(lab) &&
@@ -118,6 +124,7 @@ export function validLabSave(state) {
               (!choice.command ||
                 choice.command === 'page:orientation' ||
                 validResearchChoice(lab, choice.command) ||
+                validInfrastructureChoice(choice.command) ||
                 LAB_CONTENT.npcs.some(
                   (/** @type {Record<string, any>} */ actor) =>
                     choice.command === `promise:${actor.id}`
@@ -156,6 +163,19 @@ function validResearchChoice(lab, command) {
 }
 
 /**
+ * Accept only authored infrastructure choices in a portable dialogue.
+ * @param {string} command Candidate equipment order.
+ * @returns {boolean} Whether the choice names trusted equipment.
+ */
+function validInfrastructureChoice(command) {
+  return (
+    typeof command === 'string' &&
+    command.startsWith('infra:') &&
+    Object.hasOwn(INFRASTRUCTURE, command.slice('infra:'.length))
+  );
+}
+
+/**
  * Compose lab rules with the same fixed-step engine and independent save slots.
  * @param {Record<string, any> | Map<string, any>} options Browser adapters or toy environment.
  * @returns {Record<string, any>} Shared runtime interface.
@@ -168,9 +188,11 @@ export function createNeonRuntime(options = {}) {
     game: 'neon-covenant',
     validate: validLabSave,
     migrate: (/** @type {Record<string, any>} */ state) =>
-      migrateRelationships(
-        migrateDeployments(
-          migrateEvaluations(migratePrograms(migratePersonnel(state)))
+      migrateInfrastructure(
+        migrateRelationships(
+          migrateDeployments(
+            migrateEvaluations(migratePrograms(migratePersonnel(state)))
+          )
         )
       ),
     restore: restoreLabState,

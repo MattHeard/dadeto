@@ -71,11 +71,13 @@ A pixelated 160×144 shared canvas frame, with readable introduction, room, dire
 
 Only **Ledger → End shift** advances research, costs and deadlines. Exploration has no economic timer. Each shift grants six decision points. Failed orders consume neither money nor points. Changing research, staffing, policy or data costs one point. Orders also show credit costs. View the dashboard for workforce, risk, morale and compute demand versus throughput.
 
-Office: ledger, debt repayment and shift report. Compute Vault: racks, cooling and shift policy. Evaluation Suite: research focus, evaluate latest checkpoint, deployment and data policy. Staff Commons: recruiting and reassignment. Night Clinic: contracts and community commitments. Each room has marked exits. Facing a lit computer and pressing A opens its menu; facing a colleague opens a conversation.
+Office: ledger, debt repayment and shift report. Compute Vault: racks, cooling, Ion's infrastructure alternatives and shift policy. Evaluation Suite: research focus, evaluate latest checkpoint, deployment and data policy. Staff Commons: recruiting and reassignment. Night Clinic: contracts and community commitments. Each room has marked exits. Facing a lit computer and pressing A opens its menu; facing a colleague opens a conversation.
 
 ### Research and money
 
 Research uses the smaller of demand, installed compute and cooling capacity. Morale and careful/sprint policy affect productivity. Scraped data trains faster but accumulates scrutiny and risk. Payroll is 3k per employee per shift; active compute costs power. Service staff earn 4k per shift. Racks add four compute for 30k; cooling adds four capacity for 20k. Hiring costs 18k and adds payroll permanently.
+
+At Ion's infrastructure terminal you can inspect before installing five alternatives. Refurbished racks cost 18k and add two compute (up to two installs), trading reliability for a lower price. A specialized accelerator costs 36k, adds four compute, saves 2k power and costs 3k per shift in support. Leased compute costs 8k plus 6k each shift and carries provider-outage risk. Backup power costs 16k, saves 2k power each shift and improves reliability. Heat recovery costs 22k, adds three cooling capacity and improves reliability. Each accepted order costs one attention; its confirmation shows the projected shift cash. Leases and accelerator support remain visible in forecasts and settlement reports. Installation is handled through Ion's console, not a construction view.
 
 Atlas requires 38 progress and can earn up to 16k/shift; Ghost requires 64 and can earn up to 29k; Lumen requires 48 and can earn up to 21k. Release requires completed training, passing representative evidence and risk at most 35. Those amounts are maximum invoices, not guaranteed income.
 

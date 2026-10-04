@@ -24,6 +24,7 @@ import {
   endShift,
 } from '../../../../src/core/browser/game/neon-covenant/management.js';
 import { createPrograms } from '../../../../src/core/browser/game/neon-covenant/research.js';
+import { migrateInfrastructure } from '../../../../src/core/browser/game/neon-covenant/infrastructure.js';
 import { migrateEvaluations } from '../../../../src/core/browser/game/neon-covenant/evaluation.js';
 import { migrateRelationships } from '../../../../src/core/browser/game/neon-covenant/relationships.js';
 import {
@@ -324,7 +325,9 @@ test.each([{ cash: 5, debt: 200 }, { outcome: 'independent', cash: 240 }, {}])(
       backlog: 0,
     });
     expect(deployments.ghost.adoption).toBe(0);
-    expect(validLabSave(migrateRelationships(migrated))).toBe(true);
+    expect(
+      validLabSave(migrateInfrastructure(migrateRelationships(migrated)))
+    ).toBe(true);
     expect(old).toEqual(original);
     expect(migrateDeployments(migrated)).toBe(migrated);
     const runtime = createNeonRuntime();

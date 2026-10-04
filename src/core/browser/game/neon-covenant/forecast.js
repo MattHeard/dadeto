@@ -101,6 +101,7 @@ export function forecastShift(state) {
     payroll: flow.payroll,
     power: flow.power,
     hosting: hostingCost(lab),
+    infrastructure: flow.infrastructure,
     income: flow.service + flow.income,
     demand: flow.demand,
     throughput: flow.throughput,
@@ -153,7 +154,7 @@ export function forecastPages(state) {
   const f = forecastShift(state);
   const pages = [
     {
-      text: `SHIFT ${f.shift} FORECAST. Closing cash ${f.closingCash}k (${f.cashChange}k change). Income ${f.income}k, payroll ${f.payroll}k, power ${f.power}k, hosting ${f.hosting}k. Reading this forecast costs no attention and never ends a shift.`,
+      text: `SHIFT ${f.shift} FORECAST. Closing cash ${f.closingCash}k (${f.cashChange}k change). Income ${f.income}k, payroll ${f.payroll}k, power ${f.power}k, hosting ${f.hosting}k, infrastructure ${f.infrastructure}k. Reading this forecast costs no attention and never ends a shift.`,
     },
     {
       text: `Research +${f.researchGain}, checkpoint ${f.checkpoint}/${f.target}. Throughput ${f.throughput}/${f.demand}. Constraint: ${f.bottleneck.kind}. ${f.bottleneck.advice}`,
@@ -225,7 +226,7 @@ export function comparisonPages(state, command) {
         text: `NO ORDER COMMITTED. ${plan.message} Cash, attention and shift are unchanged.`,
       },
     ]);
-  return readableLabPages([
+  const pages = readableLabPages([
     {
       text: `PREVIEW ONLY: ${plan.message} Cost ${plan.cost}k and ${plan.attention} attention if committed. Nothing has been purchased or changed.`,
     },
@@ -233,9 +234,10 @@ export function comparisonPages(state, command) {
       text: `Research gain changes from ${plan.before.researchGain} to ${plan.after.researchGain}. Closing cash changes from ${plan.before.closingCash}k to ${plan.after.closingCash}k, including the order's cost. ${plan.after.bottleneck.advice}`,
     },
     {
-      text: 'A continues; B returns to the lab. Use the relevant terminal or staff console to commit the order. Only Ledger: End shift advances the economy.',
+      text: 'A continues; B returns. This is preview only: a separate confirmation is required before purchase. Only Ledger: End shift advances the economy.',
     },
   ]);
+  return pages;
 }
 
 /**

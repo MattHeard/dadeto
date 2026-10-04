@@ -18,6 +18,7 @@ import { evaluationPages } from './evaluation.js';
 import { deploymentPages } from './operations.js';
 import { relationshipPages, relationshipScene } from './relationships.js';
 import { RELATIONSHIP_CONTENT } from './relationshipContent.js';
+import { INFRASTRUCTURE } from './infrastructure.js';
 import { orientationOrder, orientationStage } from './orientation.js';
 import {
   controllerSelection,
@@ -47,6 +48,35 @@ function present(state) {
     forecast: forecastShift(state),
   };
   return { ...state, presentation };
+}
+
+/**
+ * Preview and confirm a trusted equipment installation with Ion.
+ * @param {Record<string, any>} state Current campaign before the order.
+ * @param {Record<string, any>} next Closed-menu presentation state.
+ * @param {string} command Selected authored infrastructure choice.
+ * @returns {Record<string, any>} Readable preview or confirmation dialogue.
+ */
+function infrastructureChoice(state, next, command) {
+  const id = command.slice('infra-choice:'.length);
+  const option = INFRASTRUCTURE[id];
+  const order = `infra:${id}`;
+  const plan = compareOrder(state, order);
+  return openDialogue(next, 'ion', [
+    ...readableLabPages([{ text: option.detail }]),
+    ...comparisonPages(state, order),
+    {
+      text: plan.accepted
+        ? `Install ${option.name}? This costs ${option.cost}k and one attention. It does not settle the shift.`
+        : 'No order is available. The current equipment and ledger remain unchanged.',
+      choices: plan.accepted
+        ? [
+            { label: `Install ${option.name}`, command: order },
+            { label: 'Keep current equipment' },
+          ]
+        : [{ label: 'Return to lab' }],
+    },
+  ]);
 }
 
 /**
@@ -175,6 +205,8 @@ function menuCommand(state, command) {
       },
     ]);
   }
+  if (command.startsWith('infra-choice:'))
+    return infrastructureChoice(state, next, command);
   if (command.startsWith('lesson:')) return lessonCommand(next, command);
   if (command === 'preview-shift')
     return openDialogue(next, 'forecast', forecastPages(state));

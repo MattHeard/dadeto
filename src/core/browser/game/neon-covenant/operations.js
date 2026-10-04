@@ -3,6 +3,7 @@ import { researchEffects, validPrograms } from './research.js';
 import { validEvaluations } from './evaluation.js';
 import { DEPLOYMENT_PROFILES, OPERATING_RULES } from './operationsContent.js';
 import { clampNumber } from '../../../index.js';
+import { infrastructureEffects } from './infrastructure.js';
 
 /**
  * Reconstruct existing releases without inventing lost users or past bills.
@@ -116,7 +117,7 @@ export function deploymentForecast(lab, training = 0) {
     supportCapacity > 0 ? supplied(supportCapacity, supportDemand) : 0;
   const projects = demand.map((/** @type {Record<string, any>} */ row) => {
     const reliability = Math.floor(
-      100 *
+      Math.max(0, Math.min(100, 100 + infrastructureEffects(lab).reliability)) *
         Math.min(
           inferenceRatio,
           supportRatio,

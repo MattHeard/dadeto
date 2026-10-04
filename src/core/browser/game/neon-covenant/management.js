@@ -1,5 +1,10 @@
 import { LAB_CONTENT } from './content.js';
 import {
+  createInfrastructure,
+  infrastructureEffects,
+  infrastructureOrder,
+} from './infrastructure.js';
+import {
   createIncidentChains,
   settleIncidents,
   intervene,
@@ -53,7 +58,7 @@ function metric(value) {
  */
 export function createLab() {
   const lab = {
-    rulesVersion: 6,
+    rulesVersion: 7,
     evaluations: createEvaluations(),
     testingBudget: 6,
     incidentChains: createIncidentChains(),
@@ -66,6 +71,7 @@ export function createLab() {
     compute: 8,
     cooling: 4,
     racks: 1,
+    infrastructure: createInfrastructure(),
     morale: 75,
     trust: 45,
     scrutiny: 15,
@@ -126,7 +132,12 @@ export function forecast(lab) {
     throughput,
     progress,
     payroll: lab.hired * 3,
-    power: Math.ceil((throughput + operations.inferenceUsed) / 2),
+    power: Math.max(
+      0,
+      Math.ceil((throughput + operations.inferenceUsed) / 2) +
+        infrastructureEffects(lab).power
+    ),
+    infrastructure: infrastructureEffects(lab).recurring,
     hosting: hostingCost(lab),
     service: operations.consulting,
     income: operations.income,
@@ -166,6 +177,7 @@ function operate(lab, command, day) {
   if (kind === 'test') return evaluationOrder(lab, command);
   if (kind === 'configure') return configureResearch(lab, command);
   if (kind === 'incident') return intervene(lab, value);
+  if (kind === 'infra') return infrastructureOrder(lab, value);
   if (kind === 'assign' || kind === 'hire') return personnelOrder(lab, command);
   if (kind === 'focus') {
     lab.focus = value;
@@ -315,7 +327,7 @@ export function endShift(state) {
   lab.scrutiny = metric(lab.scrutiny + (lab.data === 'scraped' ? 8 : 1));
   const report = [
     `Research +${f.progress}; ${lab.research[lab.focus]}/${project.target}.`,
-    `Income ${f.income + f.service}k; payroll ${f.payroll}k; power ${f.power}k; hosting ${f.hosting}k.`,
+    `Income ${f.income + f.service}k; payroll ${f.payroll}k; power ${f.power}k; hosting ${f.hosting}k; infrastructure ${f.infrastructure}k.`,
   ];
   settleResearch(lab, report);
   let revenue = f.income + f.service;
@@ -343,7 +355,9 @@ export function endShift(state) {
   revenue -= settleIncidents(lab, f, state.world.day, report);
   settleDeployments(lab, f.operations, report);
   settleRelationships(lab, f, state.world.day, report);
-  lab.cash = Math.round(lab.cash + revenue - f.payroll - f.power - f.hosting);
+  lab.cash = Math.round(
+    lab.cash + revenue - f.payroll - f.power - f.hosting - f.infrastructure
+  );
   settlePersonnel(lab);
   lab.decisions = 6;
   lab.testingBudget = 6;

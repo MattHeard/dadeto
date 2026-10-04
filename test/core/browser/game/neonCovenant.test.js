@@ -120,6 +120,7 @@ test('forecast makes compute, heat, morale, policy, data and income legible', ()
     progress: 7,
     payroll: 12,
     power: 3,
+    infrastructure: 0,
     hosting: 0,
     service: 4,
     income: 0,
@@ -694,6 +695,15 @@ test('save contract rejects partial or nonnumeric ledgers before replacement', (
       s.lab.evaluated = null;
     },
     s => {
+      delete s.lab.infrastructure;
+    },
+    s => {
+      s.lab.infrastructure.leased = 2;
+    },
+    s => {
+      s.lab.infrastructure.unknown = 0;
+    },
+    s => {
       s.lab.deployed = null;
     },
     s => {
@@ -707,6 +717,12 @@ test('save contract rejects partial or nonnumeric ledgers before replacement', (
     },
     s => {
       s.dialogue.choices = null;
+    },
+    s => {
+      s.dialogue = {
+        lines: [{ text: 'A choice' }],
+        choices: [{ label: 'Forged', command: 'infra:unknown' }],
+      };
     },
     s => {
       s.menu = { page: 42, selected: 0 };

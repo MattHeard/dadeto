@@ -46,7 +46,7 @@ async function openForecast(page: Page, embedded: boolean) {
     await expect(toy.getByRole('button', { name: 'Submit', exact: true })).toBeEnabled();
   }
   await tap(page, 'b', embedded);
-  await expect.poll(async () => (await labState(page))?.lab?.rulesVersion).toBe(6);
+  await expect.poll(async () => (await labState(page))?.lab?.rulesVersion).toBe(7);
   await tap(page, 'a', embedded);
   await selectPersonnelRow(page, 'page:forecast', embedded);
   return labState(page);
@@ -59,7 +59,7 @@ async function openSableCases(page: Page, embedded: boolean) {
     await expect(page.locator('#NEON1').getByRole('button', { name: 'Submit', exact: true })).toBeEnabled();
   }
   await tap(page, 'b', embedded);
-  await expect.poll(async () => (await labState(page))?.lab?.rulesVersion).toBe(6);
+  await expect.poll(async () => (await labState(page))?.lab?.rulesVersion).toBe(7);
   await tap(page, 'a', embedded);
   await selectPersonnelRow(page, 'shift', embedded);
   await tap(page, 'b', embedded);
@@ -70,6 +70,50 @@ async function openSableCases(page: Page, embedded: boolean) {
 }
 
 for (const embedded of [false, true]) {
+  test("Ion infrastructure preview and confirmation " + (embedded ? "embedded" : "standalone"), async ({ page }) => {
+    await page.goto(embedded ? '/' : '/neon-covenant/', { waitUntil: 'domcontentloaded' });
+    if (embedded) {
+      const toy = page.locator('#NEON1');
+      await toy.scrollIntoViewIfNeeded();
+      await expect(toy.getByRole('button', { name: 'Submit', exact: true })).toBeEnabled();
+    }
+    await tap(page, 'b', embedded);
+    await expect.poll(async () => (await labState(page))?.lab?.rulesVersion).toBe(7);
+    await tap(page, 'x', embedded);
+    await selectPersonnelRow(page, 'page:infrastructure', embedded);
+    await selectPersonnelRow(page, 'infra-choice:leased', embedded);
+    const preview = await labState(page);
+    expect(preview.dialogue.actorId).toBe('ion');
+    expect(preview.lab.infrastructure.leased).toBe(0);
+    expect(preview.lab.cash).toBe(180);
+    expect(preview.lab.decisions).toBe(6);
+    for (let pageIndex = 0; pageIndex < 12 && !preview.dialogue.choices.length; pageIndex++) {
+      await tap(page, 'a', embedded);
+      Object.assign(preview, await labState(page));
+    }
+    expect(preview.dialogue.choices[0].command).toBe('infra:leased');
+    await tap(page, 'a', embedded);
+    const installed = await labState(page);
+    expect(installed.lab.infrastructure.leased).toBe(1);
+    expect(installed.lab.compute).toBe(12);
+    expect(installed.lab.cash).toBe(172);
+    expect(installed.lab.decisions).toBe(5);
+    expect(installed.world.day).toBe(1);
+    expect(installed.presentation.forecast.closingCash).toBe(
+      172 + installed.presentation.forecast.income - 12 -
+        installed.presentation.forecast.power - installed.presentation.forecast.hosting -
+        installed.presentation.forecast.infrastructure
+    );
+    const pixels = await page.evaluate(
+      selector => document.querySelector<HTMLCanvasElement>(selector)!.toDataURL('image/png'),
+      embedded ? '#NEON1 canvas' : '#game-screen'
+    );
+    await writeFile(
+      `.tmp/neon-infrastructure-${embedded ? 'embedded' : 'standalone'}-${test.info().project.name}.png`,
+      Buffer.from(pixels.split(',')[1], 'base64')
+    );
+  });
+
   test(`earned authorship protections have real costs in ${embedded ? 'embedded' : 'standalone'} mode`, async ({ page }) => {
     await page.goto('/neon-covenant/');
     const raw = await page.evaluate(async () => {
@@ -141,7 +185,7 @@ for (const embedded of [false, true]) {
     await selectPersonnelRow(page, 'page:relationships', embedded);
     await selectPersonnelRow(page, 'page:relationship:ada', embedded);
     const original = await labState(page);
-    expect(original.lab.rulesVersion).toBe(6);
+    expect(original.lab.rulesVersion).toBe(7);
     await selectPersonnelRow(page, 'promise:ada', embedded);
     const accepted = await labState(page);
     expect(accepted.lab.relationships.ada.stage).toBe('active');
@@ -336,7 +380,7 @@ test('named staff are assignable and their readable concerns own controller inpu
   const errors: string[] = [];
   page.on('pageerror', error => errors.push(error.message));
   await page.goto('/neon-covenant/');
-  await expect.poll(async () => (await labState(page))?.lab?.rulesVersion).toBe(6);
+  await expect.poll(async () => (await labState(page))?.lab?.rulesVersion).toBe(7);
   await tap(page, 'b');
   await tap(page, 'x');
   await selectPersonnelRow(page, 'page:recruitment');
@@ -479,7 +523,7 @@ test('legacy mobile and desktop saves migrate losslessly and preserve a resettab
   });
   await page.addInitScript(raw => localStorage.setItem('permanentData', JSON.stringify({ 'neon-covenant-saves-v2': { slots: { 2: raw }, activeSlot: 2 } })), original);
   await page.reload();
-  await expect.poll(async () => (await labState(page))?.lab?.rulesVersion).toBe(6);
+  await expect.poll(async () => (await labState(page))?.lab?.rulesVersion).toBe(7);
   const state = await labState(page);
   expect(state.lab.cash).toBe(137);
   expect(state.lab.debt).toBe(94);
@@ -694,7 +738,7 @@ test(`a ${profile} director can deliver Atlas and finish independently through r
     const serialized = JSON.stringify({ game: 'neon-covenant', version: 2, slot: 0, state: historical });
     await page.evaluate(serialized => (window as any).labTools.get('neon_import_save').execute({ save: serialized }), serialized);
     state = JSON.parse(await page.evaluate(() => (window as any).labTools.get('neon_observe').execute().content[0].text)).state;
-    expect(state.lab.rulesVersion).toBe(6);
+    expect(state.lab.rulesVersion).toBe(7);
     expect(state.lab.incidentGrace).toBe(2);
     for (const field of ['cash', 'debt', 'research', 'evaluated', 'deployed', 'contracts', 'incidents', 'employees']) {
       expect(state.lab[field]).toEqual(historical.lab[field]);

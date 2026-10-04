@@ -52,8 +52,37 @@ skipped entries, and zero clones at unchanged minTokens 14
 `.tmp/neon-relationship-full-check-final.exit`). Site generation and cloud packaging
 passed (`.tmp/neon-relationship-build-final.log`,
 `.tmp/neon-relationship-cloud-build.log`). Hosted publication must be verified
-separately in `dadeto-88mh`; infrastructure, negotiated contracts, stakeholders and
-the later releases remain unfinished.
+separately in `dadeto-88mh`; negotiated contracts, stakeholders and the later
+releases remain unfinished. Release 2 infrastructure is now implemented in rules 7;
+record its focused and aggregate evidence below when verified.
+
+### Alternative infrastructure (rules 7)
+
+Verify Ion's five bounded infrastructure orders through the computer menu and
+explicit confirmation. All prices, capacity changes, power savings, recurring
+costs and service-reliability effects must be authored and previewable. Rejected
+and duplicate orders preserve cash and attention. Forecast and actual settlement
+must match including accelerator support and leased-compute invoices. Rules-six
+migration must preserve the prior ledger while initializing empty alternatives;
+malformed rules-seven equipment and forged dialogue commands must reject without
+replacing the active save. Focused rule tests: `node scripts/run-jest.js --runInBand --coverage --collectCoverageFrom='src/core/browser/game/neon-covenant/infrastructure.js' --coverageDirectory=.tmp/neon-infrastructure-coverage test/core/browser/game/neonInfrastructure.test.js`; Playwright command: `npx playwright test --config test/mosslight.playwright.config.ts test/mosslight-e2e/neon-covenant.spec.ts --grep "Ion infrastructure preview and confirmation" --workers=1`.
+
+Focused checkpoint evidence: all 11 Neon Jest suites pass (190/190) and all 20
+Neon modules are exactly 100% in statements, branches, functions and lines
+(`.tmp/neon-infrastructure-coverage`). The dedicated local Playwright slice
+passes 4/4 across standalone/embedded and phone/desktop and saves the actual game
+canvas as `.tmp/neon-infrastructure-{standalone,embedded}-{phone,desktop}.png`.
+Build, cloud packaging, JSDoc type-check, focused ESLint, manual validation (76
+toys), and the unchanged strict clone threshold (0 clones) pass. Repository-wide
+`npm run check` exited zero: 21 coverage shards, 9 aggregate browsers, test summary
+1/1, static summary 10/10, exact global coverage with no skips (lines 21318/21318,
+statements 22263/22263, functions 7318/7318, branches 11102/11102), and npm audit
+reported zero vulnerabilities. Logs: `.tmp/neon-infrastructure-full-check.log`,
+`.tmp/neon-infrastructure-build.log`, and
+`.tmp/neon-infrastructure-cloud-build.log`; aggregate coverage is
+`reports/coverage/coverage-summary.json`. Pushing this checkpoint is still needed
+to trigger and verify the hosted deployment; Release 2 contracts and stakeholders
+and Releases 3–4 remain open.
 
 ### Operating services (rules 5)
 

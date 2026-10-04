@@ -10,6 +10,7 @@ import { orientationEntries, orientationRows } from './orientation.js';
 import { researchOptions } from './research.js';
 import { EVALUATION_CASES } from './evaluationContent.js';
 import { evaluationStatus } from './evaluation.js';
+import { INFRASTRUCTURE, infrastructureEffects } from './infrastructure.js';
 import { DEPLOYMENT_PROFILES, OPERATING_RULES } from './operationsContent.js';
 
 /**
@@ -187,6 +188,10 @@ export function labEntries(state) {
     return [
       ['Add compute / 30k', 'racks'],
       ['Add cooling / 20k', 'cooling'],
+      ...Object.entries(INFRASTRUCTURE).map(([id, option]) => [
+        `${option.name} / ${option.cost}k`,
+        `infra-choice:${id}`,
+      ]),
       ['Balanced shifts', 'policy:balanced'],
       ['Protected shifts', 'policy:careful'],
       ['Sprint / burnout risk', 'policy:sprint'],
@@ -284,6 +289,7 @@ export function labEntries(state) {
     ['Deployment operations', 'page:operations'],
     ['People and recruitment', 'page:recruitment'],
     ['Relationships and promises', 'page:relationships'],
+    ['Ion / infrastructure', 'page:infrastructure'],
     ['Shift report', 'page:report'],
     ['Story and controls', 'guide'],
     ['Assign B', 'page:assign'],
@@ -402,10 +408,16 @@ export function labMenuRows(state) {
             (state.menu.reportPage || 0) * 3,
             (state.menu.reportPage || 0) * 3 + 3
           )
-        : [
-            `${lab.cash}k / ${lab.decisions} DECISIONS`,
-            `RISK ${lab.risk} / TRUST ${lab.trust}`,
-          ];
+        : state.menu.page === 'infrastructure'
+          ? [
+              `COMPUTE ${lab.compute} COOLING ${lab.cooling}`,
+              `EQUIPMENT ${f.infrastructure}k / SHIFT`,
+              `RELIABILITY ${Math.max(0, Math.min(100, 100 + infrastructureEffects(lab).reliability))}%`,
+            ]
+          : [
+              `${lab.cash}k / ${lab.decisions} DECISIONS`,
+              `RISK ${lab.risk} / TRUST ${lab.trust}`,
+            ];
   const entries = labEntries(state);
   const selected = state.menu.selected;
   const available = Math.max(1, 7 - info.length);
