@@ -219,13 +219,16 @@ describe('createCopyToInfraCore copy helpers', () => {
     });
 
     it('copies explicit file pairs and ensures targets exist', async () => {
+      const ready = [];
       const io = {
-        ensureDirectory: jest.fn().mockResolvedValue(undefined),
+        ensureDirectory: jest.fn(
+          () => new Promise(resolve => ready.push(resolve))
+        ),
         copyFile: jest.fn().mockResolvedValue(undefined),
       };
       const logger = { info: jest.fn() };
 
-      await core.copyIndividualFiles(
+      const completion = core.copyIndividualFiles(
         [
           {
             source: posix.join(projectRoot, 'src/index.js'),
@@ -239,6 +242,10 @@ describe('createCopyToInfraCore copy helpers', () => {
         io,
         logger
       );
+      expect(ready).toHaveLength(2);
+      expect(io.copyFile).not.toHaveBeenCalled();
+      ready.forEach(resolve => resolve());
+      await expect(completion).resolves.toBeUndefined();
 
       expect(io.ensureDirectory).toHaveBeenNthCalledWith(
         1,

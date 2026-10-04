@@ -421,6 +421,7 @@ describe('runSubmitNewStory fallback logging', () => {
     [['  exact text  ', 'ignored'], '  exact text  '],
     ['   ', '   '],
   ])('logs raw header candidate %p as %p', async (candidate, expected) => {
+    const readOrigin = jest.fn(() => candidate);
     const fallbackSet = jest.fn().mockResolvedValue();
     const fallbackDoc = jest.fn(() => ({ set: fallbackSet }));
     const fallbackCollection = jest.fn(() => ({ doc: fallbackDoc }));
@@ -459,7 +460,9 @@ describe('runSubmitNewStory fallback logging', () => {
         },
         get: null,
         headers: {
-          origin: candidate,
+          get origin() {
+            return readOrigin();
+          },
           referer: candidate,
           'content-type': candidate,
         },
@@ -470,6 +473,7 @@ describe('runSubmitNewStory fallback logging', () => {
     expect(consoleInfoSpy).toHaveBeenCalledWith(
       expect.stringContaining(`"origin":${JSON.stringify(expected)}`)
     );
+    expect(readOrigin).toHaveBeenCalledTimes(1 + Number(expected === null));
     expect(consoleInfoSpy).toHaveBeenCalledWith(
       expect.stringContaining(`"referer":${JSON.stringify(expected)}`)
     );

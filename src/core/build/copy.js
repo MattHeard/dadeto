@@ -274,17 +274,27 @@ export function createCopyToInfraCore({
    * @returns {Promise<void>} Resolves when all files are copied.
    */
   async function copyIndividualFiles(copies, io, messageLogger) {
-    await Promise.all(
-      copies.map(async ({ source, target }) => {
-        await io.ensureDirectory(dirname(target));
-        await copyAndLogFile({
-          copyFile: io.copyFile,
-          source,
-          target,
-          messageLogger,
-        });
-      })
+    await runMappedEntries(
+      copies,
+      ({ source, target }) => ({ source, target, io, messageLogger }),
+      copyIndividualFile
     );
+  }
+
+  /**
+   * Prepare one destination directory, then copy and report its file.
+   * @param {{source: string, target: string, io: {ensureDirectory: (target: string) => Promise<void>, copyFile: (source: string, destination: string) => Promise<void>}, messageLogger: CopyMessageLogger}} task Individual copy dependencies.
+   * @returns {Promise<void>} Completion after directory creation, copying and logging.
+   */
+  async function copyIndividualFile({ source, target, io, messageLogger }) {
+    await io.ensureDirectory(dirname(target));
+    const copyRequest = {
+      copyFile: io.copyFile,
+      source,
+      target,
+      messageLogger,
+    };
+    await copyAndLogFile(copyRequest);
   }
 
   /**

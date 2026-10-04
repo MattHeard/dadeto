@@ -153,14 +153,11 @@ function readRequestHeaderFromHeaders(headers, headerName) {
   const lowerHeaderName = headerName.toLowerCase();
   const candidates = [headerName, lowerHeaderName];
 
-  for (const candidate of candidates) {
-    const value = readRequestHeaderCandidate(currentHeaders[candidate]);
-    if (value !== null) {
-      return value;
-    }
-  }
-
-  return null;
+  return candidates.reduce(
+    (value, candidate) =>
+      value ?? readRequestHeaderCandidate(currentHeaders[candidate]),
+    /** @type {string | null} */ (null)
+  );
 }
 
 /**
