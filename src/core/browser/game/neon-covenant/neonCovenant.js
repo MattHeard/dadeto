@@ -6,6 +6,7 @@ import { registerMosslightTools } from '../mosslight-valley/webmcp.js';
 import { LAB_CONTENT } from './content.js';
 import { migratePersonnel, validPersonnel } from './personnel.js';
 import { validIncidentChains } from './incidents.js';
+import { migratePrograms, validPrograms, researchOptions } from './research.js';
 import {
   createNeonState,
   stepNeon,
@@ -23,7 +24,8 @@ export function validLabSave(state) {
   return Boolean(
     lab &&
       validPersonnel(lab) &&
-      lab.rulesVersion === 2 &&
+      lab.rulesVersion === 3 &&
+      validPrograms(lab) &&
       validIncidentChains(lab) &&
       Object.values(lab.incidentChains).every(
         chain => chain.warnedAt <= state.world.day
@@ -65,6 +67,7 @@ export function validLabSave(state) {
       lab.decisions <= 6 &&
       ['balanced', 'careful', 'sprint'].includes(lab.policy) &&
       ['licensed', 'scraped'].includes(lab.data) &&
+      typeof lab.focus === 'string' &&
       Object.hasOwn(LAB_CONTENT.projects, lab.focus) &&
       ['research', 'safety', 'service'].every(
         role => Number.isInteger(lab.teams?.[role]) && lab.teams[role] >= 0
@@ -101,6 +104,7 @@ export function validLabSave(state) {
               typeof choice?.label === 'string' &&
               (!choice.command ||
                 choice.command === 'page:orientation' ||
+                validResearchChoice(lab, choice.command) ||
                 LAB_CONTENT.npcs.some(
                   (/** @type {Record<string, any>} */ actor) =>
                     choice.command === `promise:${actor.id}`
@@ -110,6 +114,22 @@ export function validLabSave(state) {
         (typeof state.menu.page === 'string' &&
           Number.isInteger(state.menu.selected) &&
           state.menu.selected >= 0))
+  );
+}
+
+/**
+ * Accept only authored setting confirmations in a portable dialogue.
+ * @param {Record<string, any>} lab Saved research focus.
+ * @param {string} command Candidate choice operation.
+ * @returns {boolean} Whether the operation uses a bounded program setting.
+ */
+function validResearchChoice(lab, command) {
+  if (typeof command !== 'string' || !command.startsWith('configure:'))
+    return false;
+  const parts = command.split(':');
+  return (
+    parts.length === 3 &&
+    Object.hasOwn(researchOptions(lab.focus, parts[1]), parts[2])
   );
 }
 
@@ -124,7 +144,8 @@ export function createNeonRuntime(options = {}) {
     key: 'neon-covenant-saves-v2',
     game: 'neon-covenant',
     validate: validLabSave,
-    migrate: migratePersonnel,
+    migrate: (/** @type {Record<string, any>} */ state) =>
+      migratePrograms(migratePersonnel(state)),
     restore: restoreLabState,
   });
   return /** @type {Record<string, any>} */ (

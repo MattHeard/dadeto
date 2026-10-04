@@ -111,6 +111,7 @@ test('forecast makes compute, heat, morale, policy, data and income legible', ()
     progress: 7,
     payroll: 12,
     power: 3,
+    hosting: 0,
     service: 4,
     income: 0,
   });
@@ -419,7 +420,7 @@ test('eight-button menus expose assignment, reports, saves, reset and page utili
   absent.world.player.facing = 'left';
   expect(press(absent, 'a').toast).toContain('Face a person');
   expect(labMenuRows(campaign())).toEqual([]);
-  expect(labJournal(campaign())).toHaveLength(4);
+  expect(labJournal(campaign())).toHaveLength(7);
 });
 
 test.each([
@@ -534,6 +535,9 @@ test('save contract rejects partial or nonnumeric ledgers before replacement', (
     },
     s => {
       s.lab.focus = 'missing';
+    },
+    s => {
+      s.lab.focus = 42;
     },
     s => {
       s.lab.teams = null;

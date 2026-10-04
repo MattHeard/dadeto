@@ -6,6 +6,13 @@ import {
 } from './incidents.js';
 import { clampNumber } from '../../../index.js';
 import {
+  createPrograms,
+  researchEffects,
+  hostingCost,
+  configureResearch,
+  settleResearch,
+} from './research.js';
+import {
   createPersonnel,
   personnelOrder,
   settlePersonnel,
@@ -25,8 +32,8 @@ function metric(value) {
  * @returns {Record<string, any>} Initial ledger.
  */
 export function createLab() {
-  return {
-    rulesVersion: 2,
+  const lab = {
+    rulesVersion: 3,
     incidentChains: createIncidentChains(),
     incidentGrace: 0,
     lastIncidentCost: 0,
@@ -59,6 +66,7 @@ export function createLab() {
     history: [],
     outcome: null,
   };
+  return { ...lab, programs: createPrograms(lab) };
 }
 
 /**
@@ -68,14 +76,17 @@ export function createLab() {
  */
 export function forecast(lab) {
   const project = LAB_CONTENT.projects[lab.focus];
+  const effects = researchEffects(lab);
   const power = lab.policy === 'sprint' ? 2 : 1;
-  const demand = lab.teams.research * project.compute * power;
+  const demand = Math.ceil(
+    lab.teams.research * project.compute * power * effects.compute
+  );
   const available = Math.min(lab.compute, lab.cooling);
   const throughput = Math.min(demand, available);
   const pace = lab.policy === 'careful' ? 0.8 : 1;
   const quality = lab.data === 'scraped' ? 1.3 : 1;
   const progress = Math.floor(
-    throughput * pace * quality * (0.5 + lab.morale / 100)
+    throughput * pace * quality * effects.pace * (0.5 + lab.morale / 100)
   );
   const deployed = /** @type {string[]} */ (lab.deployed);
   const contracts = /** @type {string[]} */ (lab.contracts);
@@ -91,6 +102,7 @@ export function forecast(lab) {
     progress,
     payroll: lab.hired * 3,
     power: Math.ceil(throughput / 2),
+    hosting: hostingCost(lab),
     service: lab.teams.service * 4,
     income,
   };
@@ -117,6 +129,7 @@ function purchase(lab, cost, apply) {
  */
 function operate(lab, command) {
   const [kind, value] = command.split(':');
+  if (kind === 'configure') return configureResearch(lab, command);
   if (kind === 'incident') return intervene(lab, value);
   if (kind === 'assign' || kind === 'hire') return personnelOrder(lab, command);
   if (kind === 'focus') {
@@ -268,7 +281,9 @@ export function endShift(state) {
   lab.morale = metric(lab.morale - stress - heat);
   lab.risk = metric(
     lab.risk +
-      (f.progress ? project.hazard : 0) +
+      (f.progress
+        ? Math.max(0, project.hazard + researchEffects(lab).hazard)
+        : 0) +
       (lab.data === 'scraped' ? 8 : 0) +
       heat -
       lab.teams.safety * 3
@@ -280,8 +295,9 @@ export function endShift(state) {
   );
   const report = [
     `Research +${f.progress}; ${lab.research[lab.focus]}/${project.target}.`,
-    `Income ${f.income + f.service}k; payroll ${f.payroll}k; power ${f.power}k.`,
+    `Income ${f.income + f.service}k; payroll ${f.payroll}k; power ${f.power}k; hosting ${f.hosting}k.`,
   ];
+  settleResearch(lab, report);
   let revenue = f.income + f.service;
   for (const id of lab.contracts) {
     const contract = LAB_CONTENT.contracts[id];
@@ -315,7 +331,7 @@ export function endShift(state) {
   }
   if (lab.promises.includes('mae') && lab.deployed.includes('atlas'))
     lab.trust = metric(lab.trust + 2);
-  lab.cash = Math.round(lab.cash + revenue - f.payroll - f.power);
+  lab.cash = Math.round(lab.cash + revenue - f.payroll - f.power - f.hosting);
   settlePersonnel(lab);
   lab.decisions = 6;
   lab.report = report;

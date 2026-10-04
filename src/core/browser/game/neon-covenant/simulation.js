@@ -10,7 +10,10 @@ import {
   forecastPages,
   comparisonPages,
   labReportLines,
+  readableLabPages,
+  compareOrder,
 } from './forecast.js';
+import { researchOptions, researchPages } from './research.js';
 import { orientationOrder, orientationStage } from './orientation.js';
 import {
   controllerSelection,
@@ -85,6 +88,33 @@ export function createNeonState(content = LAB_CONTENT) {
  */
 function menuCommand(state, command) {
   const next = { ...state, menu: null };
+  if (command === 'program-story')
+    return openDialogue(
+      next,
+      'research',
+      readableLabPages(researchPages(state.lab))
+    );
+  if (command.startsWith('setting:')) {
+    const [, axis, value] = command.split(':');
+    const option = researchOptions(state.lab.focus, axis)[value];
+    const commit = `configure:${axis}:${value}`;
+    const plan = compareOrder(state, commit);
+    return openDialogue(next, 'research', [
+      ...readableLabPages([{ text: option.detail }]),
+      ...comparisonPages(state, commit),
+      {
+        text: plan.accepted
+          ? `Apply ${option.name}? ${plan.cost}k, ${plan.attention} attention. Only this program's evaluation is invalidated. No shift ends.`
+          : 'No order is available. The current settings, credits and attention remain unchanged.',
+        choices: plan.accepted
+          ? [
+              { label: 'Apply setting', command: commit },
+              { label: 'Keep current settings' },
+            ]
+          : [{ label: 'Return to lab' }],
+      },
+    ]);
+  }
   if (command.startsWith('lesson:')) return lessonCommand(next, command);
   if (command === 'preview-shift')
     return openDialogue(next, 'forecast', forecastPages(state));
@@ -335,6 +365,10 @@ export function labJournal(state) {
       title: 'Deliver useful models',
       status: `${state.lab.deployed.length}/3 deployed`,
     },
+    ...Object.entries(state.lab.programs).map(([id, program]) => ({
+      title: LAB_CONTENT.projects[id].name,
+      status: `${state.lab.research[id]}/${LAB_CONTENT.projects[id].target}: ${program.milestones.join(', ') || 'research not started'}`,
+    })),
     { title: 'Debt deadline / shift 28', status: `${state.lab.debt}k owed` },
     { title: 'Earn a city covenant', status: `Trust ${state.lab.trust}/65` },
   ];

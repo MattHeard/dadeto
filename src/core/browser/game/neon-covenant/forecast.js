@@ -1,6 +1,7 @@
 import { LAB_CONTENT } from './content.js';
 import { endShift, forecast, manageLab } from './management.js';
 import { wrapDialogueText } from '../mosslight-valley/renderer.js';
+import { hostingCost } from './research.js';
 
 /**
  * Explain the constraint that a director can actually change before settlement.
@@ -95,6 +96,7 @@ export function forecastShift(state) {
     incidentChains: change.incidentChains,
     payroll: flow.payroll,
     power: flow.power,
+    hosting: hostingCost(lab),
     income: flow.service + flow.income,
     demand: flow.demand,
     throughput: flow.throughput,
@@ -145,7 +147,7 @@ export function forecastPages(state) {
   const f = forecastShift(state);
   const pages = [
     {
-      text: `SHIFT ${f.shift} FORECAST. Closing cash ${f.closingCash}k (${f.cashChange}k change). Income ${f.income}k, payroll ${f.payroll}k, power ${f.power}k. Reading this forecast costs no attention and never ends a shift.`,
+      text: `SHIFT ${f.shift} FORECAST. Closing cash ${f.closingCash}k (${f.cashChange}k change). Income ${f.income}k, payroll ${f.payroll}k, power ${f.power}k, hosting ${f.hosting}k. Reading this forecast costs no attention and never ends a shift.`,
     },
     {
       text: `Research +${f.researchGain}, checkpoint ${f.checkpoint}/${f.target}. Throughput ${f.throughput}/${f.demand}. Constraint: ${f.bottleneck.kind}. ${f.bottleneck.advice}`,
@@ -167,7 +169,7 @@ export function forecastPages(state) {
     pages.push({
       text: `Campaign resolution at this settlement: ${f.outcome}. This is a preview only. Return to the ledger if you intend to commit it.`,
     });
-  return readablePages(pages);
+  return readableLabPages(pages);
 }
 
 /**
@@ -209,12 +211,12 @@ function deadlinePage(deal) {
 export function comparisonPages(state, command) {
   const plan = compareOrder(state, command);
   if (!plan.accepted)
-    return readablePages([
+    return readableLabPages([
       {
         text: `NO ORDER COMMITTED. ${plan.message} Cash, attention and shift are unchanged.`,
       },
     ]);
-  return readablePages([
+  return readableLabPages([
     {
       text: `PREVIEW ONLY: ${plan.message} Cost ${plan.cost}k and ${plan.attention} attention if committed. Nothing has been purchased or changed.`,
     },
@@ -241,7 +243,7 @@ export function labReportLines(report) {
  * @param {{text: string}[]} nodes Unbounded authored paragraphs.
  * @returns {{text: string}[]} Complete six-row dialogue nodes.
  */
-function readablePages(nodes) {
+export function readableLabPages(nodes) {
   return nodes.flatMap(node => {
     const rows = labReportLines([node.text]);
     const pages = [];

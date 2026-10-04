@@ -51,6 +51,26 @@ function room(name, exits, objects) {
   };
 }
 
+/**
+ * Author an option with shared baseline effects and explicit departures.
+ * @param {string} name Handheld label.
+ * @param {Record<string, number>} effects Non-default operating effects.
+ * @param {string} detail Disclosed tradeoffs.
+ * @returns {Record<string, any>} Complete immutable setting definition.
+ */
+function setting(name, effects, detail) {
+  return {
+    name,
+    compute: 1,
+    pace: 1,
+    hazard: 0,
+    fee: 0,
+    cost: 6,
+    ...effects,
+    detail,
+  };
+}
+
 /** @type {Record<string, any>} Immutable chapter content; economic units are thousands of credits. */
 export const LAB_CONTENT = {
   incidents: {
@@ -171,6 +191,26 @@ export const LAB_CONTENT = {
   projects: {
     atlas: {
       name: 'Atlas / clinic triage',
+      identity:
+        'Clinical reliability: a recommendation, never a verdict on who deserves care.',
+      milestones: { prototype: 6, pilot: 20, release: 38 },
+      specialties: {
+        triage: setting(
+          'Clinic triage',
+          {},
+          'General clinic triage. Baseline pace and risk.'
+        ),
+        bedside: setting(
+          'Bedside support',
+          { pace: 0.9, hazard: -2 },
+          'Conservative bedside advice: 90% research pace, training hazard -2.'
+        ),
+        emergency: setting(
+          'Emergency routing',
+          { pace: 1.15, hazard: 3 },
+          'Urgent routing: 115% pace, hazard +3. Speed is not clinical certainty.'
+        ),
+      },
       target: 38,
       compute: 3,
       hazard: 2,
@@ -179,6 +219,26 @@ export const LAB_CONTENT = {
     },
     ghost: {
       name: 'Ghost / autonomous agents',
+      identity:
+        'Autonomous permissions: decide which doors an agent may open, not just how clever it is.',
+      milestones: { prototype: 12, pilot: 32, release: 64 },
+      specialties: {
+        assistant: setting(
+          'Audited assistant',
+          {},
+          'Audited task assistance. Baseline pace and risk; external actions need approval.'
+        ),
+        maintenance: setting(
+          'Bounded maintenance',
+          { pace: 1.1, hazard: -2 },
+          'Bounded maintenance tasks: 110% pace, hazard -2. No open-ended mission authority.'
+        ),
+        autonomous: setting(
+          'Open autonomy',
+          { pace: 1.2, hazard: 4 },
+          'Open-ended planning: 120% pace, hazard +4. More permission needs more scrutiny.'
+        ),
+      },
       target: 64,
       compute: 5,
       hazard: 6,
@@ -187,11 +247,84 @@ export const LAB_CONTENT = {
     },
     lumen: {
       name: 'Lumen / public interpreter',
+      identity:
+        'Community coverage: a language counts only when its speakers can actually use the service.',
+      milestones: { prototype: 8, pilot: 24, release: 48 },
+      specialties: {
+        civic: setting(
+          'Civic interpretation',
+          {},
+          'Public-service interpretation. Baseline pace and risk.'
+        ),
+        dialects: setting(
+          'Neighborhood dialects',
+          { pace: 0.85, hazard: -1 },
+          'Neighborhood language coverage: 85% pace, hazard -1. Listening takes time.'
+        ),
+        commerce: setting(
+          'Trade translation',
+          { pace: 1.2, hazard: 2 },
+          'Narrow commercial translation: 120% pace, hazard +2. A receipt is not a clinic conversation.'
+        ),
+      },
       target: 48,
       compute: 4,
       hazard: 3,
       revenue: 21,
       trust: 12,
+    },
+  },
+  researchSettings: {
+    size: {
+      standard: setting(
+        'Standard',
+        {},
+        'Standard model: baseline compute demand, pace and hazard.'
+      ),
+      compact: setting(
+        'Compact',
+        { compute: 0.75, pace: 1.1, hazard: -1 },
+        'Compact model: 75% compute demand, 110% throughput yield, hazard -1. Smaller demand can mean less total progress.'
+      ),
+      frontier: setting(
+        'Frontier scale',
+        { compute: 1.5, pace: 0.9, hazard: 2, cost: 18 },
+        'Frontier scale: 150% demand, 90% throughput yield, hazard +2. Extra scale is useless without cooling.'
+      ),
+    },
+    hosting: {
+      local: setting(
+        'Local racks',
+        {},
+        'Local training uses your racks. No recurring hosting fee.'
+      ),
+      district: setting(
+        'District pool',
+        { compute: 0.5, pace: 2, hazard: 2, fee: 6, cost: 10 },
+        'Simulated district hosting halves local demand and doubles its yield; 6k each shift, hazard +2 for remote custody.'
+      ),
+      edge: setting(
+        'Edge appliances',
+        { compute: 0.5, pace: 1.2, hazard: -1, fee: 2, cost: 8 },
+        'Edge appliances: half local demand, 120% yield, hazard -1; 2k each shift. Cooler, but generally slower.'
+      ),
+    },
+    oversight: {
+      assisted: setting(
+        'Assisted review',
+        {},
+        'Assisted review keeps a human approval boundary. Baseline pace and hazard.'
+      ),
+      human: setting(
+        'Human-led',
+        { pace: 0.85, hazard: -2 },
+        'Human-led operation: 85% pace, hazard -2. Automation proposes; people decide.'
+      ),
+      autonomous: setting(
+        'Autonomous',
+        { pace: 1.2, hazard: 3, cost: 8 },
+        'Autonomous operation: 120% pace, hazard +3. Fast work can create expensive mistakes.'
+      ),
     },
   },
   contracts: {

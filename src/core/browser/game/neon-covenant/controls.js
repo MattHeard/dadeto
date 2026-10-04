@@ -3,6 +3,7 @@ import { forecast } from './management.js';
 import { PERSONNEL } from './personnel.js';
 import { forecastShift, labReportLines } from './forecast.js';
 import { orientationEntries, orientationRows } from './orientation.js';
+import { researchOptions } from './research.js';
 
 /**
  * Build selectable rows from the current terminal or handheld menu.
@@ -12,6 +13,24 @@ import { orientationEntries, orientationRows } from './orientation.js';
 export function labEntries(state) {
   const page = state.menu.page;
   if (page === 'orientation') return orientationEntries(state);
+  if (page === 'program')
+    return [
+      ['Program and milestones', 'program-story'],
+      ...['size', 'hosting', 'specialization', 'oversight'].map(axis => [
+        axis,
+        `page:setting:${axis}`,
+      ]),
+      ['Back to research', 'page:research'],
+    ];
+  if (page.startsWith('setting:')) {
+    const axis = page.slice(8);
+    return Object.entries(researchOptions(state.lab.focus, axis))
+      .map(([value, option]) => [
+        `${option.name} / ${state.lab.programs[state.lab.focus].settings[axis] === value ? 'active' : `${option.cost}k`}`,
+        `setting:${axis}:${value}`,
+      ])
+      .concat([['Back to program', 'page:program']]);
+  }
   if (page === 'incidents')
     return Object.entries(LAB_CONTENT.incidents)
       .map(([id, definition]) => [
@@ -42,6 +61,7 @@ export function labEntries(state) {
       ...named(LAB_CONTENT.projects, 'focus'),
       ['Evaluate checkpoint / 6k', 'evaluate'],
       ['Deploy evaluated model', 'deploy'],
+      ['Configure program', 'page:program'],
     ];
   if (page === 'forecast')
     return [
@@ -177,6 +197,21 @@ export function labMenuRows(state) {
   if (state.menu.page === 'orientation') return orientationRows(state);
   const lab = state.lab;
   const f = forecast(lab);
+  if (state.menu.page === 'program' || state.menu.page.startsWith('setting:')) {
+    const start = Math.max(0, state.menu.selected - 2);
+    return [
+      `${lab.focus.toUpperCase()} / PROGRAM`,
+      `TRAINING ${lab.research[lab.focus]}/${LAB_CONTENT.projects[lab.focus].target}`,
+      `MILESTONE: ${lab.programs[lab.focus].milestones.at(-1) || 'not yet'}`,
+      ...labEntries(state)
+        .slice(start, start + 3)
+        .map(
+          ([label], index) =>
+            `${start + index === state.menu.selected ? '>' : ' '} ${label}`
+        ),
+      'A INSPECT B BACK X CLOSE',
+    ];
+  }
   if (state.menu.page === 'forecast' || state.menu.page === 'comparisons') {
     const projected = forecastShift(state);
     return [

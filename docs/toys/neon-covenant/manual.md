@@ -66,6 +66,16 @@ Atlas requires 38 progress and earns 16k/shift; Ghost requires 64 and earns 29k;
 
 Clinic, Transit and Helios offer advances with delivery deadlines (shifts 12, 18 and 10). Missed contracts claw back half the advance and lose trust. Delivered contracts add recurring income. Helios pays well but damages public trust and conflicts with Ada's commitment.
 
+### Programs, settings and milestones
+
+Research console → Configure program exposes size, hosting, specialization and oversight. A on a setting first opens a free, cancellable forecast comparison. Read its tradeoffs and closing cash, then explicitly choose **Apply setting**. Active or rejected settings offer no paid confirmation. A successful change costs its displayed credits and one attention, and invalidates only that program's evaluation; it neither trains nor ends a shift.
+
+Atlas asks about clinical reliability, Ghost about the boundaries of autonomous permission, and Lumen about community language coverage. Their prototype/pilot/release-ready training milestones are respectively **6/20/38**, **12/32/64**, and **8/24/48**. Reports announce newly crossed milestones once; the journal and program screen retain them. A milestone does not deploy a model or bypass evaluation.
+
+Compact size reduces demand to 75% and raises yield per throughput to 110%; frontier size needs 150% demand at 90% yield and adds two training hazard. Human-led oversight uses 85% pace and reduces hazard by two; autonomous oversight uses 120% pace and adds three. Specializations have their own disclosed pace and hazard tradeoffs: bedside versus emergency Atlas, bounded maintenance versus open-autonomy Ghost, and neighborhood dialects versus trade-focused Lumen.
+
+District hosting halves local demand and doubles yield, but adds two hazard and **6k every shift**. Edge appliances halve local demand with 120% yield, reduce hazard by one, and cost **2k every shift**. These are simulated arrangements, not external AI services. Hosting bills persist for every configured program even after changing research focus; switch that program back to local racks to stop its recurring bill. Power and hosting are separate lines in the exact forecast and settlement report.
+
 ### Inspect a shift before committing
 
 Ledger → Inspect next shift shows exact closing cash and research gain. Read shift forecast explains payroll, power, risk, trust, each employee's next-shift fatigue, and pending contract deadlines. These pages are free: they do not buy anything, use attention, or advance the clock.

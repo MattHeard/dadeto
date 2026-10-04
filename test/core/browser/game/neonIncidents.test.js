@@ -23,6 +23,7 @@ import {
   createNeonRuntime,
 } from '../../../../src/core/browser/game/neon-covenant/neonCovenant.js';
 import { labEntries } from '../../../../src/core/browser/game/neon-covenant/controls.js';
+import { migratePrograms } from '../../../../src/core/browser/game/neon-covenant/research.js';
 import { serializeSave } from '../../../../src/core/browser/game/mosslight-valley/save.js';
 
 /**
@@ -137,11 +138,11 @@ test('migration protects two settlements without rerolling or changing historica
   delete old.lab.incidentGrace;
   delete old.lab.lastIncidentCost;
   old.lab.incidents = 7;
-  const migrated = migratePersonnel(old);
+  const migrated = migratePrograms(migratePersonnel(old));
   expect(migrated.lab).toMatchObject({
     cash: 800,
     incidents: 7,
-    rulesVersion: 2,
+    rulesVersion: 3,
     incidentGrace: 2,
   });
   expect(validLabSave(migrated)).toBe(true);
