@@ -16,6 +16,8 @@ import {
 import { researchOptions, researchPages } from './research.js';
 import { evaluationPages } from './evaluation.js';
 import { deploymentPages } from './operations.js';
+import { relationshipPages, relationshipScene } from './relationships.js';
+import { RELATIONSHIP_CONTENT } from './relationshipContent.js';
 import { orientationOrder, orientationStage } from './orientation.js';
 import {
   controllerSelection,
@@ -90,6 +92,26 @@ export function createNeonState(content = LAB_CONTENT) {
  */
 function menuCommand(state, command) {
   const next = { ...state, menu: null };
+  if (command.startsWith('arc-story:'))
+    return openDialogue(
+      next,
+      command.slice(10),
+      readableLabPages(
+        relationshipPages(state.lab, command.slice(10), forecast(state.lab)),
+        4
+      )
+    );
+  if (command.startsWith('arc:')) {
+    const changed = manageLab(next, command);
+    const [, kind, id] = command.split(':');
+    return {
+      ...changed,
+      menu: {
+        page: `relationship:${kind === 'consult' ? 'mae' : id}`,
+        selected: 0,
+      },
+    };
+  }
   if (command === 'operations-story')
     return openDialogue(
       next,
@@ -387,8 +409,9 @@ function staffConversation(lab, actor, content) {
     (/** @type {Record<string, any>} */ entry) => entry.id === actor.id
   );
   const story = content.staffStories[actor.id];
-  if (!person) return story;
-  return `${story} ${employeeThoughts(lab, person)[0]}`;
+  const remembered = relationshipScene(lab, actor.id);
+  if (!person) return `${story} ${remembered}`;
+  return `${story} ${employeeThoughts(lab, person)[0]} ${remembered}`;
 }
 
 /**
@@ -408,6 +431,10 @@ export function labJournal(state) {
       status: `${state.lab.research[id]}/${LAB_CONTENT.projects[id].target}: ${program.milestones.join(', ') || 'research not started'}`,
     })),
     { title: 'Debt deadline / shift 28', status: `${state.lab.debt}k owed` },
+    ...Object.entries(state.lab.relationships).map(([id, record]) => ({
+      title: `${RELATIONSHIP_CONTENT[id].name} / ${record.stage}`,
+      status: `Bond ${record.score}; proof ${record.streak}/2; fulfilled ${record.fulfillments}; disagreed ${record.disagreements}; breaches ${record.breaches}; repairs ${record.repairs}`,
+    })),
     { title: 'Earn a city covenant', status: `Trust ${state.lab.trust}/65` },
   ];
 }

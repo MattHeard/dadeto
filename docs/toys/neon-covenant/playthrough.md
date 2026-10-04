@@ -2,6 +2,29 @@
 
 These routes use only directions/A/B/X/Y. Reading, walking and inspecting never advance a shift. For all routes, select Ledger → End shift explicitly; the report appears afterward. B returns a report to the main menu, while X closes it. B closes a conversation; X then opens a fresh menu. Do not accidentally press X after B has already returned a report to the main menu.
 
+## Earn Ada's trust without banning Helios
+
+From a new campaign, close the introduction with B and open X → Relationships
+and promises → Ada. Read her story and terms; B closes the inspection without
+spending credits, attention or time. Reopen her menu and accept the one-attention
+promise. Settle two actual shifts with licensed data. Ada earns bond 8 and one
+fulfillment, not an instant reward from signing.
+
+Return to Ada and negotiate the 8k authorship/human-veto addendum (one attention).
+Helios's actual advance and deadline still apply. Keep Ghost human-approved and
+data licensed; Ada's commitment can coexist with that agreement. Changing Ghost
+to autonomous oversight warns on the next shift and breaches on a later unsafe
+shift. Restore assisted/human oversight, then pay 5k plus one attention for repair;
+two future qualifying shifts repair trust without erasing the breach. Repeated
+inspection, unchanged protections, or unaffordable repair spends nothing.
+
+The rules-six relationship regression uses ordinary eight-button menus in both
+presenters to prove free story reading, paid acceptance, two settled proof shifts,
+earned protection and save/reload persistence. Pure tests additionally prove real
+Mae service/consent, Ion capacity and Sable current evidence, warning, breach,
+disagreement and repair. The remaining Release 2 systems still require their own
+complete controller routes and campaign balancing.
+
 ## Independent local clinic model
 
 From a new save, close or read the introduction. Open X → First-shift guide, decline the clinic advance for this route, then buy the 20k cooling repair. Exit the guide. Keep Atlas, standard size, local hosting, clinic-triage specialization and assisted oversight. Keep Ada and Jun researching, Sable evaluating and Ion in service.

@@ -1,3 +1,7 @@
+import {
+  RELATIONSHIP_CONTENT,
+  RELATIONSHIP_RULES,
+} from './relationshipContent.js';
 import { LAB_CONTENT } from './content.js';
 import { forecast } from './management.js';
 import { PERSONNEL } from './personnel.js';
@@ -56,6 +60,37 @@ function incidentRow(prefix, id, definition) {
  */
 export function labEntries(state) {
   const page = state.menu.page;
+  if (page === 'relationships')
+    return Object.entries(RELATIONSHIP_CONTENT)
+      .map(([id, person]) => [person.name, `page:relationship:${id}`])
+      .concat([['Back to lab', 'page:main']]);
+  if (page.startsWith('relationship:')) {
+    const id = page.slice(13);
+    const person = RELATIONSHIP_CONTENT[id];
+    const rows = [
+      ['Read story and terms', `arc-story:${id}`],
+      ['Accept promise / 1 AP', `promise:${id}`],
+      ['Disagree / 1 AP', `arc:disagree:${id}`],
+      [`Repair / ${person.repairCost}k / 1 AP`, `arc:repair:${id}`],
+    ];
+    if (id === 'ada')
+      rows.push([
+        `Protect authors / ${RELATIONSHIP_RULES.attributionCost}k`,
+        'arc:protect:ada',
+      ]);
+    if (id === 'ion') rows.push(['Inspect operating limits', 'page:forecast']);
+    if (id === 'sable')
+      rows.push(
+        ['Publish register / 12k', 'audit'],
+        ['Review test evidence', 'page:tests']
+      );
+    if (id === 'mae')
+      rows.push(
+        ['Review Atlas / 1 AP', 'arc:consult:atlas'],
+        ['Review Lumen / 1 AP', 'arc:consult:lumen']
+      );
+    return rows.concat([['Other relationships', 'page:relationships']]);
+  }
   if (page === 'operations')
     return [
       ['Read clients and invoices', 'operations-story'],
@@ -248,6 +283,7 @@ export function labEntries(state) {
     ['Research console', 'page:research'],
     ['Deployment operations', 'page:operations'],
     ['People and recruitment', 'page:recruitment'],
+    ['Relationships and promises', 'page:relationships'],
     ['Shift report', 'page:report'],
     ['Story and controls', 'guide'],
     ['Assign B', 'page:assign'],
@@ -269,6 +305,24 @@ export function labMenuRows(state) {
   if (state.menu.page === 'orientation') return orientationRows(state);
   const lab = state.lab;
   const f = forecast(lab);
+  if (
+    state.menu.page === 'relationships' ||
+    state.menu.page.startsWith('relationship:')
+  ) {
+    const id = state.menu.page.slice(13);
+    const record = lab.relationships[id];
+    return choicePanel(state, [
+      record
+        ? `${RELATIONSHIP_CONTENT[id].name.toUpperCase()} / ${record.stage}`
+        : 'PEOPLE AND PROMISES',
+      record
+        ? `BOND ${record.score} PROOF ${record.streak}/2`
+        : 'ACCEPTANCE IS NOT PROOF',
+      record
+        ? `BREACH ${record.breaches} REPAIR ${record.repairs}`
+        : `ATTENTION ${lab.decisions} CASH ${lab.cash}k`,
+    ]);
+  }
   if (
     state.menu.page === 'operations' ||
     state.menu.page.startsWith('deployment:')

@@ -29,7 +29,13 @@ Directions walk and select. A talks, advances text and confirms. B closes conver
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "type": "object",
   "properties": {
-    "actions": { "type": "array", "items": { "type": "string", "enum": ["up", "down", "left", "right", "a", "b", "x", "y"] } },
+    "actions": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": ["up", "down", "left", "right", "a", "b", "x", "y"]
+      }
+    },
     "type": { "type": "string", "enum": ["keydown", "keyup"] },
     "key": { "type": "string" },
     "save": { "type": "string" },
@@ -86,7 +92,7 @@ A finding requires **Investigate (2k, one capacity, one attention)**, then **Fix
 
 Further training stales calibration evidence, not unrelated completed consent and oversight work. A configuration or data change stales only cases whose displayed inputs changed. Rerun those cases; other programs keep their records. A patched test must also be investigated again if its relevant inputs change. Release requires all three current cases to pass. Historical sign-offs in older saves are reconstructed without changing cash, progress, incidents, contracts or existing deployments; new work follows these rules.
 
-Clinic, Transit and Helios offer advances with delivery deadlines (shifts 12, 18 and 10). Missed contracts claw back half the advance and lose trust. Delivered contracts increase maximum recurring invoices, subject to adoption and reliability. Helios pays well but damages public trust and conflicts with Ada's commitment.
+Clinic, Transit and Helios offer advances with delivery deadlines (shifts 12, 18 and 10). Missed contracts claw back half the advance and lose trust. Delivered contracts increase maximum recurring invoices, subject to adoption and reliability. Helios pays well but damages public trust. Its default terms conflict with Ada's commitment; earned authorship protections and human-approved Ghost operation provide a negotiated alternative.
 
 ### Programs, settings and milestones
 
@@ -114,7 +120,23 @@ Choose Listen to concerns in a person's menu to read their current working condi
 
 Recovery costs 8k and raises morale. An open audit costs 12k, reduces risk and scrutiny and raises trust. Safety staffing reduces risk every shift. Incidents now have actual causes, not generic threshold fines. X → Incident register previews responses without spending; Commit a response shows the price again before A commits it. Overheating means active training demand exceeds cooling (20k repair, 20k incident); missing evaluators or stale deployed evidence trigger evaluation gaps (complete Sable's representative probes, 24k incident); using scraped data after research begins triggers rights complaints (12k licensing, 16k incident); releases outnumbering service staff overload support (8k triage, 12k incident). Triage buys a warning interval but does not replace staff or evidence. Each cause warns for at least one settlement before charging. An unresolved episode is charged once, not every shift. Fix the cause; one safe settlement enters recovery, another clears it. Ion, Sable and Ada discuss their own warnings and recovery. Migrated saves without causal records get two protected settlements, with historical incident counts unchanged.
 
-Staff promises have consequences: Ion expects safe cooling, Ada rejects Helios attribution, Sable supports an open register, Mae expects clinic participation.
+X → Relationships and promises opens Ada, Ion, Sable and Mae's stories and terms.
+Reading is free. Accepting a commitment costs one attention but earns no instant
+morale or trust. Two actual qualifying shifts earn fulfillment once. Unsafe work
+first warns, then breaches on a later settlement; an unresolved breach is charged
+once. Disagreement is recorded separately and does not cancel an existing promise.
+Fix the real cause before negotiating repair (Ada 5k, Ion 6k, Sable 4k, Mae 3k,
+plus one attention), then demonstrate two safe shifts. A repair retains its history.
+
+Ada wants licensed work and visible authors. Earn her trust through two honest
+shifts to unlock the 8k authorship/human-veto addendum: Helios can then coexist
+with her promise if Ghost still requires human approval. Ion needs safe training
+heat, enough live inference and healthy equipment. Sable needs the paid Audit
+register, an evaluator and current evidence for every released program. Mae must
+review each released Atlas/Lumen's actual data, specialization and oversight;
+serve each at 20% adoption and 70% reliability. Changes to reviewed terms need a
+new conversation; hosting or size alone do not. No public release means her promise
+is pending, not betrayed. City co-ownership needs real Mae fulfillment or repair.
 
 Bankruptcy ends immediately. After shift 28, cash must cover unpaid debt to avoid acquisition. Multiple incidents or low trust produce a gilded cage; two releases, trust 65 and Mae's covenant produce city co-ownership. Otherwise a solvent released lab stays independent, or an unreleased lab survives quietly. Six resolutions are possible.
 

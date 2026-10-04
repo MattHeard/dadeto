@@ -8,6 +8,53 @@ Build must generate `/neon-covenant/`, the lazy manual and NEON1 blog registrati
 
 ## Evidence Collection
 
+### Personal commitments (rules 6)
+
+Prove distinct paid acceptance, disagreement, demonstrated fulfillment, warning,
+one-time breach and cause-corrected repair with retained history. Earn Ada's trust
+before priced Helios protections; do not alter inherited advances or deadlines.
+Use actual training/inference/maintenance for Ion, disclosed Audit and current
+representative evidence for Sable, and reviewed relevant terms plus real reliable
+public service for Mae. Unreleased community work stays pending. Current malformed
+records and invented consent must reject atomically; rules-five migration retains
+finances, evidence, original slot backup, historical incidents and completed endings.
+
+Controller inspection is free, paginated and cancellable. Browser acceptance splits
+inspection, new-game earned fulfillment/save persistence, and actual paid protection
+into independent cases under the unchanged 30-second timeout, in both presenters on
+phone and desktop. The protection fixture is earned with ordinary eight-button
+simulation menu navigation and two real settlements, never injected cash, research,
+proof or time. Unit tests additionally exercise every current personal callback.
+
+Focused source is `test/core/browser/game/neonRelationships.test.js`; controller
+checks are in `test/mosslight-e2e/neon-covenant.spec.ts`. Evidence paths include
+`.tmp/neon-relationship-coverage-final.log`, `.tmp/neon-relationship-all-coverage.log`,
+`.tmp/neon-relationship-browser-bounded.log`, `.tmp/neon-relationship-duplication-final.log`
+and the corresponding `reports/neon-relationship-*` coverage artifacts. Full aggregate,
+campaign regressions, builds and production confirmation must follow before publishing.
+
+Terminal local evidence: **163/163** focused tests across nine suites, with all
+sixteen Neon modules exactly 100% in every metric
+(`.tmp/neon-relationship-focused-release-final.log`,
+`reports/neon-relationship-all-coverage`). The release browser run passed 82/84;
+its only failures were embedded PNG capture racing canvas replacement. Synchronous
+current-canvas capture fixed that artifact path; the targeted rerun passed 4/4,
+covering all **84 distinct** release cases without changed deadlines or retries
+(`.tmp/neon-relationship-browser-release.log`,
+`.tmp/neon-relationship-policy-browser-final.log`). Gameplay assertions remained
+unchanged. New, migrated and district-hosted 28-shift routes and Mosslight
+dialogue/journal/menu regressions all passed.
+
+Final `npm run check` exited 0: test summary 1/1, static summary 10/10, 21 unit
+coverage shards, nine aggregate browsers, all four global metrics 100% with no
+skipped entries, and zero clones at unchanged minTokens 14
+(`.tmp/neon-relationship-full-check-final.log`,
+`.tmp/neon-relationship-full-check-final.exit`). Site generation and cloud packaging
+passed (`.tmp/neon-relationship-build-final.log`,
+`.tmp/neon-relationship-cloud-build.log`). Hosted publication must be verified
+separately in `dadeto-88mh`; infrastructure, negotiated contracts, stakeholders and
+the later releases remain unfinished.
+
 ### Operating services (rules 5)
 
 Pure tests must prove proportional inference/support allocation, adoption-dependent invoices, completed-training capacity release, predictable queues/wear, costed maintenance/triage, fulfillment service thresholds, causal support warnings and exact preview/settlement equivalence. Cover all three service profiles, zero-user/zero-capacity cases, unchanged/invalid/poor/exhausted orders, lossless distressed/completed migration, malformed-import atomicity and deterministic export/import. Every new/migrated/district 28-shift controller route must pay maintenance and finish solvent without injected money, progress or time.

@@ -12,6 +12,8 @@ import { EVALUATION_CASES } from './evaluationContent.js';
 import { migrateDeployments, validDeployments } from './operations.js';
 import { DEPLOYMENT_PROFILES } from './operationsContent.js';
 import { labReportLines, readableLabPages } from './forecast.js';
+import { migrateRelationships, validRelationships } from './relationships.js';
+import { RELATIONSHIP_CONTENT } from './relationshipContent.js';
 import {
   createNeonState,
   stepNeon,
@@ -29,7 +31,8 @@ export function validLabSave(state) {
   return Boolean(
     lab &&
       validPersonnel(lab) &&
-      lab.rulesVersion === 5 &&
+      lab.rulesVersion === 6 &&
+      validRelationships(lab, state.world.day) &&
       validPrograms(lab) &&
       validEvaluations(lab) &&
       validDeployments(lab) &&
@@ -125,6 +128,8 @@ export function validLabSave(state) {
               state.menu.page.slice(9)
             )) &&
           Number.isInteger(state.menu.selected) &&
+          (!state.menu.page.startsWith('relationship:') ||
+            Object.hasOwn(RELATIONSHIP_CONTENT, state.menu.page.slice(13))) &&
           (!state.menu.page.startsWith('deployment:') ||
             Object.hasOwn(DEPLOYMENT_PROFILES, state.menu.page.slice(11))) &&
           state.menu.selected >= 0))
@@ -159,8 +164,10 @@ export function createNeonRuntime(options = {}) {
     game: 'neon-covenant',
     validate: validLabSave,
     migrate: (/** @type {Record<string, any>} */ state) =>
-      migrateDeployments(
-        migrateEvaluations(migratePrograms(migratePersonnel(state)))
+      migrateRelationships(
+        migrateDeployments(
+          migrateEvaluations(migratePrograms(migratePersonnel(state)))
+        )
       ),
     restore: restoreLabState,
   });

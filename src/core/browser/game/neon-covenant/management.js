@@ -6,6 +6,13 @@ import {
 } from './incidents.js';
 import { clampNumber } from '../../../index.js';
 import {
+  createRelationships,
+  createCommitmentPolicies,
+  relationshipOrder,
+  settleRelationships,
+  relationshipBonds,
+} from './relationships.js';
+import {
   createDeployments,
   launchDeployment,
   deploymentForecast,
@@ -46,7 +53,7 @@ function metric(value) {
  */
 export function createLab() {
   const lab = {
-    rulesVersion: 5,
+    rulesVersion: 6,
     evaluations: createEvaluations(),
     testingBudget: 6,
     incidentChains: createIncidentChains(),
@@ -85,6 +92,8 @@ export function createLab() {
     ...lab,
     programs: createPrograms(lab),
     deployments: createDeployments(lab),
+    relationships: createRelationships(lab),
+    commitmentPolicies: createCommitmentPolicies(),
   };
 }
 
@@ -146,10 +155,13 @@ function purchase(lab, cost, apply) {
  * Execute one specific management instruction.
  * @param {Record<string, any>} lab Mutable cloned ledger.
  * @param {string} command Authored operation.
+ * @param {number} day Current campaign shift.
  * @returns {string} Outcome message.
  */
-function operate(lab, command) {
+function operate(lab, command, day) {
   const [kind, value] = command.split(':');
+  if (kind === 'promise' || kind === 'arc')
+    return relationshipOrder(lab, command, day, forecast(lab));
   if (kind === 'service') return deploymentOrder(lab, command);
   if (kind === 'test') return evaluationOrder(lab, command);
   if (kind === 'configure') return configureResearch(lab, command);
@@ -189,6 +201,7 @@ function operate(lab, command) {
       lab.risk = metric(lab.risk - 18);
       lab.scrutiny = metric(lab.scrutiny - 12);
       lab.trust = metric(lab.trust + 5);
+      lab.commitmentPolicies.register = true;
       return 'Published incident register. Risk -18, trust +5.';
     });
   if (command === 'repay')
@@ -220,13 +233,6 @@ function operate(lab, command) {
     lab.trust = metric(lab.trust + LAB_CONTENT.projects[lab.focus].trust);
     return 'Model deployed with its first users. Next invoice depends on adoption, capacity and maintenance. X: deployment operations.';
   }
-  if (kind === 'promise') {
-    if (lab.promises.includes(value))
-      return 'Your commitment is already recorded.';
-    lab.promises.push(value);
-    lab.morale = metric(lab.morale + 6);
-    return 'Commitment recorded. Your team will remember.';
-  }
   return 'Unknown lab operation.';
 }
 
@@ -245,14 +251,15 @@ export function manageLab(state, command) {
       toast: 'No decision points remain. End shift at the ledger.',
     };
   const lab = structuredClone(state.lab);
-  const message = operate(lab, command);
-  if (JSON.stringify(lab) !== JSON.stringify(state.lab)) lab.decisions--;
-  const world = command.startsWith('promise:')
+  const message = operate(lab, command, state.world.day);
+  const changed = JSON.stringify(lab) !== JSON.stringify(state.lab);
+  if (changed) lab.decisions--;
+  const world = changed
     ? {
         ...state.world,
         relationships: {
           ...state.world.relationships,
-          [command.slice(8)]: lab.morale,
+          ...relationshipBonds(lab),
         },
       }
     : state.world;
@@ -271,7 +278,7 @@ export function labEnding(lab) {
   if (
     lab.deployed.length >= 2 &&
     lab.trust >= 65 &&
-    lab.promises.includes('mae')
+    ['fulfilled', 'repaired'].includes(lab.relationships.mae.stage)
   )
     return 'city-covenant';
   return lab.deployed.length ? 'independent' : 'quiet-lab';
@@ -305,11 +312,7 @@ export function endShift(state) {
       heat -
       lab.teams.safety * 3
   );
-  lab.scrutiny = metric(
-    lab.scrutiny +
-      (lab.data === 'scraped' ? 8 : 1) -
-      (lab.promises.includes('sable') ? 2 : 0)
-  );
+  lab.scrutiny = metric(lab.scrutiny + (lab.data === 'scraped' ? 8 : 1));
   const report = [
     `Research +${f.progress}; ${lab.research[lab.focus]}/${project.target}.`,
     `Income ${f.income + f.service}k; payroll ${f.payroll}k; power ${f.power}k; hosting ${f.hosting}k.`,
@@ -339,16 +342,7 @@ export function endShift(state) {
   }
   revenue -= settleIncidents(lab, f, state.world.day, report);
   settleDeployments(lab, f.operations, report);
-  if (lab.promises.includes('ion') && heat > 0) {
-    lab.morale = metric(lab.morale - 8);
-    report.push('Ion: you promised safe cooling.');
-  }
-  if (lab.promises.includes('ada') && lab.contracts.includes('helios')) {
-    lab.morale = metric(lab.morale - 6);
-    report.push('Ada refuses Helios attribution terms.');
-  }
-  if (lab.promises.includes('mae') && lab.deployed.includes('atlas'))
-    lab.trust = metric(lab.trust + 2);
+  settleRelationships(lab, f, state.world.day, report);
   lab.cash = Math.round(lab.cash + revenue - f.payroll - f.power - f.hosting);
   settlePersonnel(lab);
   lab.decisions = 6;
@@ -367,7 +361,14 @@ export function endShift(state) {
   return {
     ...state,
     lab,
-    world: { ...state.world, day: state.world.day + 1 },
+    world: {
+      ...state.world,
+      day: state.world.day + 1,
+      relationships: {
+        ...state.world.relationships,
+        ...relationshipBonds(lab),
+      },
+    },
     toast: report[0],
   };
 }

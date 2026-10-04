@@ -1,5 +1,6 @@
 import { jest } from '@jest/globals';
 import { createDeployments } from '../../../../src/core/browser/game/neon-covenant/operations.js';
+import { createRelationships } from '../../../../src/core/browser/game/neon-covenant/relationships.js';
 import { JSDOM } from 'jsdom';
 import { readFileSync } from 'node:fs';
 import {
@@ -44,6 +45,7 @@ import { generateBlogKey } from '../../../../src/core/browser/toys/2026-02-21/ge
 function campaign(overrides = {}) {
   const lab = { ...createLab(), cooling: 8, ...overrides };
   lab.deployments = createDeployments(lab);
+  lab.relationships = overrides.relationships || createRelationships(lab);
   return {
     ...createNeonState(),
     dialogue: null,
@@ -209,7 +211,8 @@ test('failed orders, repeated agreements and exhausted points do not consume mon
   expect(signed.lab.cash).toBe(208);
   expect(manageLab(signed, 'contract:clinic').lab).toEqual(signed.lab);
   const promised = manageLab(campaign(), 'promise:ada');
-  expect(promised.lab.morale).toBe(81);
+  expect(promised.lab.morale).toBe(75);
+  expect(promised.lab.relationships.ada.fulfillments).toBe(0);
   expect(manageLab(promised, 'promise:ada').lab).toEqual(promised.lab);
   expect(manageLab(campaign(), 'assign:ada:service').lab.teams).toEqual({
     research: 1,
@@ -285,8 +288,8 @@ test('shifts account for payroll, power, deadlines, commitments and remediation'
   );
   expect(hot.lab.incidents).toBe(0);
   expect(hot.lab.report.join(' ')).toContain('Ion:');
-  expect(hot.lab.report.join(' ')).toContain('Ada refuses');
-  expect(hot.lab.scrutiny).toBe(91);
+  expect(hot.lab.report.join(' ')).toContain('Ada: commitment warning');
+  expect(hot.lab.scrutiny).toBe(93);
   expect(
     endShift(
       campaign({
@@ -306,7 +309,19 @@ test.each([
   [{ cash: 200, trust: 24 }, 'gilded-cage'],
   [{ cash: 200, incidents: 3 }, 'gilded-cage'],
   [
-    { cash: 200, deployed: ['atlas', 'lumen'], trust: 70, promises: ['mae'] },
+    {
+      cash: 200,
+      deployed: ['atlas', 'lumen'],
+      trust: 70,
+      relationships: {
+        ...createLab().relationships,
+        mae: {
+          ...createLab().relationships.mae,
+          stage: 'fulfilled',
+          fulfillments: 1,
+        },
+      },
+    },
     'city-covenant',
   ],
   [{ cash: 200, deployed: ['atlas'] }, 'independent'],
@@ -479,7 +494,7 @@ test('eight-button menus expose assignment, reports, saves, reset and page utili
   absent.world.player.facing = 'left';
   expect(press(absent, 'a').toast).toContain('Face a person');
   expect(labMenuRows(campaign())).toEqual([]);
-  expect(labJournal(campaign())).toHaveLength(7);
+  expect(labJournal(campaign())).toHaveLength(11);
 });
 
 test.each([
@@ -500,8 +515,28 @@ test.each([
       deployed: ['atlas', 'lumen'],
       trust: 80,
       promises: ['mae'],
+      relationships: {
+        ...createLab().relationships,
+        mae: {
+          ...createLab().relationships.mae,
+          stage: 'fulfilled',
+          fulfillments: 1,
+        },
+      },
     });
   let state = campaign(overrides);
+  if (outcome === 'city-covenant') {
+    state.lab.compute = 32;
+    state.lab.cooling = 32;
+    state = manageLab(
+      manageLab(state, 'assign:ada:service'),
+      'assign:jun:service'
+    );
+    state = manageLab(
+      manageLab(state, 'arc:consult:atlas'),
+      'arc:consult:lumen'
+    );
+  }
   state.world.day = 28;
   state = choose(choose(press(state, 'x'), 'page:ledger'), 'shift');
   expect(state.lab.outcome).toBe(outcome);

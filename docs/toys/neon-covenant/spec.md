@@ -42,9 +42,46 @@ Mosslight runtime, world, actors, dialogue, renderer, pixel sprites, input, audi
 
 Reliability is the smallest of inference coverage, support coverage and condition/60, capped at 100%. If either capacity is absent reliability is zero even for a cohort with no current users. A reliability of at least 70% grows adoption by `floor(authoredGrowth * reliability / 100)`; otherwise adoption loses ten points. Bound adoption to 0–100, backlog to 0–30, condition to 0–100. Support demand includes `ceil(backlog / 4)`; settled backlog adds incoming requests and subtracts served work. Condition loses `2 + ceil(inferenceDemand / 2)` each settlement. Maintain restores condition for the authored 6/10/8k; triage costs 4k and clears up to twelve tickets. Both accepted orders consume one attention and never advance time; rejected orders change neither ledger nor attention. Triage cannot remove an ongoing staffing shortage. Actual support demand drives the existing warning/intervention/incident/recovery chain.
 
-Save envelope version 2, identity, tool names, storage key and controller alphabet remain unchanged. Current Neon rules version is **5**, superseding the historical rules-4 migration description below. The migration pipeline reconstructs named people, programs, evidence, then operating records before validation. Existing released programs gain full adoption, fresh condition and no backlog without changing inherited balances, progress, deadlines, advances, incidents, evidence, employees, historical endings or shift. Future settlements use new service rules. Current corrupt operating records and unknown saved deployment menus are rejected atomically. The first original per-slot backup survives multiple upgrades until explicit reset.
+Save envelope version 2, identity, tool names, storage key and controller alphabet remain unchanged. Operating records were introduced in rules **5**; current rules **6** additionally reconstruct personal commitments as described below. The migration pipeline reconstructs named people, programs, evidence, operating records, then commitments before validation. Existing released programs gain full adoption, fresh condition and no backlog without changing inherited balances, progress, deadlines, advances, incidents, evidence, employees, historical endings or shift. Future settlements use new service rules. Current corrupt operating records and unknown saved deployment menus are rejected atomically. The first original per-slot backup survives multiple upgrades until explicit reset.
 
 ## Explanatory forecast contract
+
+### Personal commitments (rules 6)
+
+`relationshipContent.js` contains Ada, Ion, Sable and Mae's authored scenes,
+conditions and prices. `relationships.js` owns persistent scores, stages,
+fulfillment/disagreement/breach/repair counters, proof streaks and a bounded
+chronological event history. Current rules version is 6; rules-five saves gain
+active inherited promises, not fictional proof or breaches. Migration leaves
+finances, employees, research, evidence, deployments, contract advances,
+historical incidents and completed endings unchanged. The original slot backup
+survives. Invalid current imports are rejected before replacing the campaign.
+
+Acceptance costs one attention, but grants no bond or morale. Two qualifying
+settlements fulfill a commitment once (+8 bond, +2 morale). An unsafe settlement
+warns without a penalty; a subsequent unsafe settlement breaches once (-12 bond,
+-4 morale). Disagreement uses one attention, at most once per shift, is recorded
+separately and does not cancel commitments. Repair requires fixing the actual
+cause, one attention, the authored 5/6/4/3k price and two future qualifying shifts.
+It grants +6 bond without erasing breach history. A relapse pauses repair without
+another breach charge. Correcting a cause alone does not negotiate restitution.
+
+Ada requires licensed data. Earned bond 8 unlocks an 8k enforceable authorship and
+human-veto addendum permitting Helios while Ghost retains human approval; the
+advance and deadline are unchanged. Ion requires safe cooling, inference capacity
+and at least 60% operating condition, with actual work rather than idle proof.
+Sable requires paid Audit disclosure, an evaluator and current representative
+evidence for released programs. Mae reviews every released Atlas/Lumen's data,
+specialization and oversight; each must actually deliver at least 20% adoption
+and 70% reliability. Hosting and size changes do not invalidate community consent.
+Without a public release her promise is pending, not breached. City co-ownership
+requires demonstrated or repaired Mae fulfillment, not merely accepting a promise.
+
+X → Relationships and promises exposes free four-row-paginated story/terms and
+explicit priced actions with three visible choices. Ordinary conversations show
+the same current personal scene; the agent journal reports actual history.
+All orders pass through the existing money/attention rules and both presenters
+share simulation and save state. Reading never advances a shift.
 
 `forecast.js` projects the same `endShift` settlement used by the game, on cloned mutable ledger state. `forecastShift(state)` returns exact closing cash, bounded research gain, morale/risk/trust, employee fatigue, deadline exposure and the dominant constraint. It consumes no money, attention or time. `compareOrder(state, command)` applies the real order to a clone before projecting its settlement, so rejected orders and all costs remain consistent with gameplay.
 
