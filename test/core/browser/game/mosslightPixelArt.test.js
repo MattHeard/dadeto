@@ -39,6 +39,20 @@ test('service percentages render a real bitmap symbol rather than the unknown-ch
   expect(context.fillRect.mock.calls).not.toEqual(unknown.fillRect.mock.calls);
 });
 
+test.each(['>', '›'])(
+  'menu marker %s renders a right-pointing chevron instead of a fallback',
+  marker => {
+    const context = { fillRect: jest.fn() };
+    drawPixelText(context, marker, 0, 6);
+    expect(context.fillRect.mock.calls).toEqual([
+      [1, 1, 1, 1],
+      [2, 2, 1, 1],
+      [2, 3, 1, 1],
+      [1, 4, 1, 1],
+    ]);
+  }
+);
+
 test('original cast sprites are distinct, outlined and animate deterministically', () => {
   const camera = { x: 0, y: 0 };
   const ids = ['player', 'mira', 'uncle-vale', 'juniper', 'pip', 'moth'];

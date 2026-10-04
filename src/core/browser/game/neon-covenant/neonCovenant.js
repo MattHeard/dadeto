@@ -11,6 +11,7 @@ import { migrateEvaluations, validEvaluations } from './evaluation.js';
 import { EVALUATION_CASES } from './evaluationContent.js';
 import { migrateDeployments, validDeployments } from './operations.js';
 import { DEPLOYMENT_PROFILES } from './operationsContent.js';
+import { labReportLines, readableLabPages } from './forecast.js';
 import {
   createNeonState,
   stepNeon,
@@ -191,7 +192,33 @@ function restoreLabState(state) {
       facing: state.world.player.facing,
     },
   };
-  return { ...state, world };
+  return { ...state, world, dialogue: restoreStaffDialogue(state.dialogue) };
+}
+
+/**
+ * Repair an already-open older staff conversation without replaying decisions.
+ * @param {Record<string, any> | null} dialogue Saved conversation.
+ * @returns {Record<string, any> | null} Complete prose and choices in bounded pages.
+ */
+function restoreStaffDialogue(dialogue) {
+  if (
+    !dialogue ||
+    !LAB_CONTENT.npcs.some(
+      (/** @type {Record<string, any>} */ actor) =>
+        actor.id === dialogue.actorId
+    ) ||
+    !dialogue.lines.some(
+      (/** @type {Record<string, any>} */ line) =>
+        labReportLines([line.text]).length > 4
+    )
+  )
+    return dialogue;
+  const index = readableLabPages(
+    dialogue.lines.slice(0, dialogue.index),
+    4
+  ).length;
+  const lines = readableLabPages(dialogue.lines, 4);
+  return { ...dialogue, lines, index, choices: lines[index].choices || [] };
 }
 
 /**

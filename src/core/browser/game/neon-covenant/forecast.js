@@ -249,15 +249,18 @@ export function labReportLines(report) {
 
 /**
  * Paginate measured text shared by forecasts and settlement explanations.
- * @param {{text: string}[]} nodes Unbounded authored paragraphs.
- * @returns {{text: string}[]} Complete six-row dialogue nodes.
+ * @param {{text: string, choices?: Record<string, any>[]}[]} nodes Unbounded authored paragraphs.
+ * @param {number} [rowLimit] Rows per page, reserving space for choice controls when needed.
+ * @returns {{text: string, choices?: Record<string, any>[]}[]} Complete bounded dialogue nodes.
  */
-export function readableLabPages(nodes) {
+export function readableLabPages(nodes, rowLimit = 6) {
   return nodes.flatMap(node => {
     const rows = labReportLines([node.text]);
-    const pages = [];
-    for (let start = 0; start < rows.length; start += 6)
-      pages.push({ text: rows.slice(start, start + 6).join(' ') });
+    const pages =
+      /** @type {{text: string, choices?: Record<string, any>[]}[]} */ ([]);
+    for (let start = 0; start < rows.length; start += rowLimit)
+      pages.push({ text: rows.slice(start, start + rowLimit).join(' ') });
+    if (node.choices) pages[pages.length - 1].choices = node.choices;
     return pages;
   });
 }

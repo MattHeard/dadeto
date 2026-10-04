@@ -344,20 +344,24 @@ export function stepNeon(
     next.menu = { page: state.quickAction, selected: 0 };
   else if (pressed.includes('a')) {
     const { actor, object } = targetInFront(next);
-    if (actor)
-      next = openDialogue(next, actor.id, [
-        {
-          text: staffConversation(state.lab, actor, content),
-          choices: [
-            {
-              label: 'Make a commitment / 1 AP',
-              command: `promise:${actor.id}`,
-            },
-            { label: 'Listen without promising' },
-          ],
-        },
-      ]);
-    else if (object) next.menu = { page: object.id, selected: 0 };
+    if (actor) {
+      const lines = readableLabPages(
+        [
+          {
+            text: staffConversation(state.lab, actor, content),
+            choices: [
+              {
+                label: 'Make a commitment / 1 AP',
+                command: `promise:${actor.id}`,
+              },
+              { label: 'Listen without promising' },
+            ],
+          },
+        ],
+        4
+      );
+      next = openDialogue(next, actor.id, lines);
+    } else if (object) next.menu = { page: object.id, selected: 0 };
     else next.toast = 'Face a person or lit terminal. X: lab menu.';
   } else {
     const direction = ['up', 'down', 'left', 'right'].find(button =>

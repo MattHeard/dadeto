@@ -17,6 +17,7 @@ import {
   createNeonState,
   stepNeon,
   labJournal,
+  renderNeon,
 } from '../../../../src/core/browser/game/neon-covenant/simulation.js';
 import {
   labEntries,
@@ -29,7 +30,10 @@ import {
   validLabSave,
 } from '../../../../src/core/browser/game/neon-covenant/neonCovenant.js';
 import { createMosslightRuntime } from '../../../../src/core/browser/game/mosslight-valley/runtime.js';
-import { drawGameFrame } from '../../../../src/core/browser/game/mosslight-valley/renderer.js';
+import {
+  drawGameFrame,
+  wrapDialogueText,
+} from '../../../../src/core/browser/game/mosslight-valley/renderer.js';
 import { generateBlogKey } from '../../../../src/core/browser/toys/2026-02-21/generateBlogKey.js';
 
 /**
@@ -385,6 +389,37 @@ test('staff conversations persist promises and let the director decline', () => 
     };
     state = press(state, 'a');
     expect(state.dialogue.actorId).toBe(actor.id);
+    expect(state.dialogue.lines.map(line => line.text).join(' ')).toContain(
+      LAB_CONTENT.staffStories[actor.id]
+    );
+    const before = structuredClone(state.lab);
+    for (let index = 0; index < state.dialogue.lines.length; index++) {
+      expect(wrapDialogueText(state.dialogue.lines[index].text)).toHaveLength(
+        Math.min(4, wrapDialogueText(state.dialogue.lines[index].text).length)
+      );
+      const page = {
+        ...state,
+        dialogue: {
+          ...state.dialogue,
+          index,
+          choices: state.dialogue.lines[index].choices || [],
+        },
+      };
+      for (const selected of [0, 1]) {
+        page.dialogue.selected = selected;
+        const frame = renderNeon(page);
+        const border = frame.shapes.find(shape => shape.width === 154);
+        expect(border.y).toBeGreaterThanOrEqual(0);
+        expect(border.y + border.height).toBe(106);
+        expect(
+          frame.shapes
+            .filter(shape => shape.type === 'text' && shape.x === 8)
+            .every(shape => shape.y >= 6 && shape.y < 106)
+        ).toBe(true);
+      }
+    }
+    while (!state.dialogue.choices.length) state = press(state, 'a');
+    expect(state.lab).toEqual(before);
     const declined = press(press(state, 'down'), 'a');
     expect(declined.lab.promises).toEqual([]);
     const wrapped = press(state, 'up');
@@ -471,6 +506,54 @@ test.each([
   state = choose(choose(press(state, 'x'), 'page:ledger'), 'shift');
   expect(state.lab.outcome).toBe(outcome);
   expect(state.dialogue.lines[1].text.length).toBeGreaterThan(40);
+});
+
+test('an already-open legacy staff conversation restores complete pages without replaying costs', () => {
+  const runtime = createNeonRuntime();
+  runtime.start();
+  const saved = JSON.parse(runtime.exportSave());
+  const text = `${LAB_CONTENT.staffStories.ion} ${'Thermal engineering needs room to breathe. '.repeat(5)}`;
+  const choices = [
+    { label: 'Make a commitment / 1 AP', command: 'promise:ion' },
+    { label: 'Listen without promising' },
+  ];
+  saved.state.dialogue = {
+    actorId: 'ion',
+    lines: [{ text: 'Already read.' }, { text, choices }],
+    index: 1,
+    selected: 1,
+    choices,
+  };
+  const lab = structuredClone(saved.state.lab);
+  runtime.importSave(JSON.stringify(saved));
+  let restored = runtime.getSnapshot();
+  expect(restored.dialogue.index).toBe(1);
+  expect(
+    restored.dialogue.lines
+      .slice(1)
+      .map(line => line.text)
+      .join(' ')
+  ).toBe(text.trim());
+  expect(restored.dialogue.choices).toEqual([]);
+  while (!restored.dialogue.choices.length) {
+    runtime.dispatch({ actions: [] });
+    runtime.dispatch('a');
+    restored = runtime.getSnapshot();
+    expect(restored.lab).toEqual(lab);
+    const border = renderNeon(restored).shapes.find(
+      shape => shape.width === 154
+    );
+    expect(border.y).toBeGreaterThanOrEqual(0);
+  }
+  expect(restored.dialogue.selected).toBe(1);
+  expect(restored.dialogue.choices).toEqual(choices);
+  const exported = runtime.exportSave();
+  runtime.importSave(exported);
+  expect(runtime.exportSave()).toBe(exported);
+  runtime.dispatch({ actions: [] });
+  runtime.dispatch('a');
+  expect(runtime.getSnapshot().dialogue).toBeNull();
+  expect(runtime.getSnapshot().lab).toEqual(lab);
 });
 
 test('lab saves are isolated from Mosslight and embedded key events use identical rules', () => {
