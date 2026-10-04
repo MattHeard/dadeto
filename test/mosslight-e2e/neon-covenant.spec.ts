@@ -45,7 +45,7 @@ async function openForecast(page: Page, embedded: boolean) {
     await expect(toy.getByRole('button', { name: 'Submit', exact: true })).toBeEnabled();
   }
   await tap(page, 'b', embedded);
-  await expect.poll(async () => (await labState(page))?.lab?.rulesVersion).toBe(4);
+  await expect.poll(async () => (await labState(page))?.lab?.rulesVersion).toBe(5);
   await tap(page, 'a', embedded);
   await selectPersonnelRow(page, 'page:forecast', embedded);
   return labState(page);
@@ -58,7 +58,7 @@ async function openSableCases(page: Page, embedded: boolean) {
     await expect(page.locator('#NEON1').getByRole('button', { name: 'Submit', exact: true })).toBeEnabled();
   }
   await tap(page, 'b', embedded);
-  await expect.poll(async () => (await labState(page))?.lab?.rulesVersion).toBe(4);
+  await expect.poll(async () => (await labState(page))?.lab?.rulesVersion).toBe(5);
   await tap(page, 'a', embedded);
   await selectPersonnelRow(page, 'shift', embedded);
   await tap(page, 'b', embedded);
@@ -239,7 +239,7 @@ test('named staff are assignable and their readable concerns own controller inpu
   const errors: string[] = [];
   page.on('pageerror', error => errors.push(error.message));
   await page.goto('/neon-covenant/');
-  await expect.poll(async () => (await labState(page))?.lab?.rulesVersion).toBe(4);
+  await expect.poll(async () => (await labState(page))?.lab?.rulesVersion).toBe(5);
   await tap(page, 'b');
   await tap(page, 'x');
   await selectPersonnelRow(page, 'page:recruitment');
@@ -382,7 +382,7 @@ test('legacy mobile and desktop saves migrate losslessly and preserve a resettab
   });
   await page.addInitScript(raw => localStorage.setItem('permanentData', JSON.stringify({ 'neon-covenant-saves-v2': { slots: { 2: raw }, activeSlot: 2 } })), original);
   await page.reload();
-  await expect.poll(async () => (await labState(page))?.lab?.rulesVersion).toBe(4);
+  await expect.poll(async () => (await labState(page))?.lab?.rulesVersion).toBe(5);
   const state = await labState(page);
   expect(state.lab.cash).toBe(137);
   expect(state.lab.debt).toBe(94);
@@ -454,6 +454,83 @@ test('embedded keypad and lazy manual use the independent lab campaign', async (
   await expect.poll(async () => (await labState(page))?.world.day).toBe(2);
 });
 
+for (const embedded of [false, true]) {
+test(`operating clients and paid maintenance work through the ${embedded ? 'embedded' : 'standalone'} keypad`, async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', error => errors.push(error.message));
+  await page.goto('/neon-covenant/');
+  const serialized = await page.evaluate(async () => {
+    const { createNeonState, stepNeon } = await import('/core/browser/game/neon-covenant/simulation.js');
+    const { labEntries } = await import('/core/browser/game/neon-covenant/controls.js');
+    const press = (state: any, button: string) => stepNeon(stepNeon(state, []), [button]);
+    const choose = (state: any, command: string) => {
+      const index = labEntries(state).findIndex((entry: string[]) => entry[1] === command);
+      if (index < 0) throw Error(`Missing controller command ${command}`);
+      while (state.menu.selected !== index) state = press(state, 'down');
+      return press(state, 'a');
+    };
+    let state = choose(press(press(createNeonState(), 'b'), 'x'), 'page:orientation');
+    state = choose(choose(state, 'lesson:decline'), 'lesson:cooling');
+    state = press(state, 'x');
+    for (let shift = 0; shift < 6; shift++) {
+      state = choose(press(state, 'x'), 'page:ledger');
+      state = press(choose(state, 'shift'), 'x');
+    }
+    state = choose(choose(press(state, 'x'), 'page:research'), 'page:tests');
+    for (const id of ['reliability', 'rights', 'oversight']) {
+      state = choose(state, `page:testcase:${id}`);
+      state = choose(choose(state, `test:probe:${id}`), 'page:tests');
+    }
+    state = choose(choose(press(state, 'b'), 'page:research'), 'deploy');
+    for (let shift = 0; shift < 10; shift++) {
+      state = choose(press(state, 'x'), 'page:ledger');
+      state = press(choose(state, 'shift'), 'x');
+    }
+    return JSON.stringify({ game: 'neon-covenant', version: 2, slot: 0, state: stepNeon(state, []) });
+  });
+  await page.addInitScript(serialized => {
+    localStorage.setItem('permanentData', JSON.stringify({
+      'neon-covenant-saves-v2': { activeSlot: 0, slots: [serialized] },
+    }));
+  }, serialized);
+  await page.goto(embedded ? '/' : '/neon-covenant/');
+  if (embedded) {
+    await page.locator('#NEON1').scrollIntoViewIfNeeded();
+    await expect(page.locator('#NEON1').getByRole('button', { name: 'Submit', exact: true })).toBeEnabled();
+  }
+  await tap(page, 'x', embedded);
+  await selectPersonnelRow(page, 'page:operations', embedded);
+  await selectPersonnelRow(page, 'page:deployment:atlas', embedded);
+  const before = await labState(page);
+  expect(before.lab.deployments.atlas).toEqual({ adoption: 100, maintenance: 63, backlog: 0 });
+  await selectPersonnelRow(page, 'operations-story', embedded);
+  expect((await labState(page)).lab).toEqual(before.lab);
+  await tap(page, 'b', embedded);
+  await tap(page, 'x', embedded);
+  await selectPersonnelRow(page, 'page:operations', embedded);
+  await selectPersonnelRow(page, 'page:deployment:atlas', embedded);
+  await selectPersonnelRow(page, 'service:maintain:atlas', embedded);
+  const maintained = await labState(page);
+  expect(maintained.lab.cash).toBe(before.lab.cash - 6);
+  expect(maintained.lab.decisions).toBe(before.lab.decisions - 1);
+  expect(maintained.lab.deployments.atlas.maintenance).toBe(100);
+  expect(maintained.world.day).toBe(before.world.day);
+  await selectPersonnelRow(page, 'service:triage:atlas', embedded);
+  expect((await labState(page)).lab).toEqual(maintained.lab);
+  const rows = await page.evaluate(async () => {
+    const { labMenuRows } = await import('/core/browser/game/neon-covenant/controls.js');
+    const storage = JSON.parse(localStorage.getItem('permanentData')!);
+    const saves = storage['neon-covenant-saves-v2'];
+    return labMenuRows(JSON.parse(saves.slots[saves.activeSlot ?? 0]).state);
+  });
+  expect(rows).toHaveLength(7);
+  expect(rows.every((row: string) => row.length <= 30)).toBe(true);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  await page.screenshot({ path: `.tmp/neon-operations-${embedded ? 'embedded' : 'standalone'}-${test.info().project.name}.png` });
+  expect(errors).toEqual([]);
+});
+}
+
 for (const profile of ['new-save', 'mid-campaign migrated', 'district-hosted']) {
 test(`a ${profile} director can deliver Atlas and finish independently through real controller menus`, async ({ page }) => {
   const migrated = profile === 'mid-campaign migrated';
@@ -511,6 +588,7 @@ test(`a ${profile} director can deliver Atlas and finish independently through r
     const historical = structuredClone(state);
     historical.lab.rulesVersion = 1;
     delete historical.lab.programs;
+    delete historical.lab.deployments;
     delete historical.lab.evaluations;
     delete historical.lab.testingBudget;
     delete historical.lab.incidentChains;
@@ -519,7 +597,7 @@ test(`a ${profile} director can deliver Atlas and finish independently through r
     const serialized = JSON.stringify({ game: 'neon-covenant', version: 2, slot: 0, state: historical });
     await page.evaluate(serialized => (window as any).labTools.get('neon_import_save').execute({ save: serialized }), serialized);
     state = JSON.parse(await page.evaluate(() => (window as any).labTools.get('neon_observe').execute().content[0].text)).state;
-    expect(state.lab.rulesVersion).toBe(4);
+    expect(state.lab.rulesVersion).toBe(5);
     expect(state.lab.incidentGrace).toBe(2);
     for (const field of ['cash', 'debt', 'research', 'evaluated', 'deployed', 'contracts', 'incidents', 'employees']) {
       expect(state.lab[field]).toEqual(historical.lab[field]);
@@ -527,17 +605,26 @@ test(`a ${profile} director can deliver Atlas and finish independently through r
     expect(state.world.day).toBe(historical.world.day);
   }
   for (let shift = 6; shift < 28; shift++) {
-    await act(['x']); await choose('page:ledger'); state = await choose('shift');
+    await act(['x']);
+    if (state.lab.deployments.atlas.maintenance <= 64) {
+      await choose('page:operations'); await choose('page:deployment:atlas');
+      const before = state.lab.cash;
+      state = await choose('service:maintain:atlas');
+      expect(state.lab.cash).toBe(before - 6);
+      expect(state.lab.deployments.atlas.maintenance).toBe(100);
+      await act(['b']);
+    }
+    await choose('page:ledger'); state = await choose('shift');
     if (!state.lab.outcome) await act(['x']);
   }
   expect(state.lab.outcome).toBe('independent');
   expect(state.lab.cash).toBeGreaterThanOrEqual(state.lab.debt);
   expect(state.dialogue.actorId).toBe('resolution');
   expect(errors).toEqual([]);
-  if (!district) expect(state.lab.cash).toBe(198);
+  if (!district) expect(state.lab.cash).toBe(migrated ? 164 : 135);
   if (district) {
     expect(state.lab.fulfilled).toEqual(['clinic']);
-    expect(state.lab.cash).toBe(243);
+    expect(state.lab.cash).toBe(175);
     expect(state.lab.incidents).toBe(0);
     expect(state.lab.programs.atlas.milestones).toEqual(['prototype', 'pilot', 'release']);
   }

@@ -71,7 +71,7 @@ function causes(lab, flow) {
     rights:
       lab.data === 'scraped' &&
       Object.values(lab.research).some(progress => progress > 0),
-    support: lab.deployed.length > lab.teams.service,
+    support: flow.supportDemand > flow.supportCapacity,
   };
 }
 

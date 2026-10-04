@@ -21,6 +21,24 @@ test('bitmap glyphs use only solid integer pixels, fixed advance and visible fal
   expect(blank.fillRect).not.toHaveBeenCalled();
 });
 
+test('service percentages render a real bitmap symbol rather than the unknown-character fallback', () => {
+  const context = { fillRect: jest.fn() };
+  drawPixelText(context, '%', 0, 6);
+  expect(context.fillRect.mock.calls).toEqual([
+    [0, 0, 1, 1],
+    [3, 0, 1, 1],
+    [3, 1, 1, 1],
+    [2, 2, 1, 1],
+    [1, 3, 1, 1],
+    [0, 4, 1, 1],
+    [0, 5, 1, 1],
+    [3, 5, 1, 1],
+  ]);
+  const unknown = { fillRect: jest.fn() };
+  drawPixelText(unknown, '?', 0, 6);
+  expect(context.fillRect.mock.calls).not.toEqual(unknown.fillRect.mock.calls);
+});
+
 test('original cast sprites are distinct, outlined and animate deterministically', () => {
   const camera = { x: 0, y: 0 };
   const ids = ['player', 'mira', 'uncle-vale', 'juniper', 'pip', 'moth'];

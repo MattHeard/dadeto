@@ -1,4 +1,5 @@
 import { EVALUATION_CASES } from '../../../../src/core/browser/game/neon-covenant/evaluationContent.js';
+import { migrateDeployments } from '../../../../src/core/browser/game/neon-covenant/operations.js';
 import {
   createEvaluations,
   evaluationStatus,
@@ -145,7 +146,7 @@ test('rules3 slot migration retains the exact original backup until reset withou
     ['setLocalPermanentData', update => (root = { ...root, ...update })],
   ]);
   const runtime = createNeonRuntime(env);
-  expect(runtime.getSnapshot().lab.rulesVersion).toBe(4);
+  expect(runtime.getSnapshot().lab.rulesVersion).toBe(5);
   expect(root[key].migrationBackups[1]).toBe(raw);
   runtime.save();
   runtime.importSave(raw);
@@ -319,7 +320,7 @@ test.each([{ cash: 5, debt: 190 }, { cash: 260, outcome: 'independent' }, {}])(
     expect(evaluations.ghost.rights).toBeNull();
     expect(evaluationComplete(upgraded.lab, 'atlas')).toBe(true);
     expect(evaluationComplete(upgraded.lab, 'ghost')).toBe(false);
-    expect(validLabSave(upgraded)).toBe(true);
+    expect(validLabSave(migrateDeployments(upgraded))).toBe(true);
     expect(old).toEqual(original);
     expect(migrateEvaluations(upgraded)).toBe(upgraded);
     const runtime = createNeonRuntime();

@@ -6,10 +6,14 @@ import { hostingCost } from './research.js';
 /**
  * Explain the constraint that a director can actually change before settlement.
  * @param {Record<string, any>} lab Current lab.
- * @param {Record<string, number>} flow Operating capacity.
+ * @param {Record<string, any>} flow Operating capacity and per-client invoices.
  * @returns {Record<string, string>} Dominant constraint and actionable advice.
  */
 function bottleneck(lab, flow) {
+  const constrained = flow.operations.projects.find(
+    (/** @type {Record<string, any>} */ row) => row.bottleneck.kind !== 'none'
+  );
+  if (constrained) return constrained.bottleneck;
   if (lab.research[lab.focus] >= LAB_CONTENT.projects[lab.focus].target)
     return {
       kind: 'checkpoint',
@@ -112,6 +116,8 @@ export function forecastShift(state) {
     ),
     report: change.report,
     outcome: change.outcome,
+    operations: flow.operations,
+    deployments: change.deployments,
   };
 }
 
@@ -159,6 +165,9 @@ export function forecastPages(state) {
       text: `${person.name}: projected fatigue ${person.fatigue}, morale ${person.morale}. Protected shifts and recovery reduce fatigue. Talk to this colleague about current concerns.`,
     })),
     ...f.deadlines.map(deadlinePage),
+    ...f.operations.projects.map((/** @type {Record<string, any>} */ row) => ({
+      text: `${LAB_CONTENT.projects[row.id].name}: ${row.users} users, adoption ${row.adoption}%, reliability ${row.reliability}%. Invoice ${row.revenue}k of ${row.maximumRevenue}k contracted maximum. ${row.bottleneck.advice}`,
+    })),
     ...Object.entries(f.incidentChains)
       .filter(([, chain]) => chain.stage !== 'clear')
       .map(([id, chain]) => ({
@@ -198,7 +207,7 @@ function deadlinePage(deal) {
       text: `${deal.name}: deadline expires this shift. Clawback ${deal.clawback}k and trust loss are included in closing cash and trust.`,
     };
   return {
-    text: `${deal.name}: ${deal.shiftsRemaining} shifts until its deadline. Missing it costs ${deal.clawback}k and trust. Completion of training alone is not delivery; evaluate and release the required model.`,
+    text: `${deal.name}: ${deal.shiftsRemaining} shifts until its deadline. Missing it costs ${deal.clawback}k and trust. Evaluate and release the required model, then serve at least 20% adoption at 70% reliability. Training alone is not delivery.`,
   };
 }
 

@@ -6,6 +6,14 @@ import {
 } from './incidents.js';
 import { clampNumber } from '../../../index.js';
 import {
+  createDeployments,
+  launchDeployment,
+  deploymentForecast,
+  deploymentDelivers,
+  settleDeployments,
+  deploymentOrder,
+} from './operations.js';
+import {
   createEvaluations,
   evaluationOrder,
   evaluationComplete,
@@ -38,7 +46,7 @@ function metric(value) {
  */
 export function createLab() {
   const lab = {
-    rulesVersion: 4,
+    rulesVersion: 5,
     evaluations: createEvaluations(),
     testingBudget: 6,
     incidentChains: createIncidentChains(),
@@ -73,21 +81,28 @@ export function createLab() {
     history: [],
     outcome: null,
   };
-  return { ...lab, programs: createPrograms(lab) };
+  return {
+    ...lab,
+    programs: createPrograms(lab),
+    deployments: createDeployments(lab),
+  };
 }
 
 /**
  * Compute transparent shift costs and bottlenecks.
  * @param {Record<string, any>} lab Current ledger.
- * @returns {Record<string, number>} Shift operating forecast.
+ * @returns {Record<string, any>} Shift operating forecast.
  */
 export function forecast(lab) {
   const project = LAB_CONTENT.projects[lab.focus];
   const effects = researchEffects(lab);
   const power = lab.policy === 'sprint' ? 2 : 1;
-  const demand = Math.ceil(
-    lab.teams.research * project.compute * power * effects.compute
-  );
+  const demand =
+    lab.research[lab.focus] >= project.target
+      ? 0
+      : Math.ceil(
+          lab.teams.research * project.compute * power * effects.compute
+        );
   const available = Math.min(lab.compute, lab.cooling);
   const throughput = Math.min(demand, available);
   const pace = lab.policy === 'careful' ? 0.8 : 1;
@@ -95,23 +110,22 @@ export function forecast(lab) {
   const progress = Math.floor(
     throughput * pace * quality * effects.pace * (0.5 + lab.morale / 100)
   );
-  const deployed = /** @type {string[]} */ (lab.deployed);
-  const contracts = /** @type {string[]} */ (lab.contracts);
-  const income =
-    deployed.reduce((sum, id) => sum + LAB_CONTENT.projects[id].revenue, 0) +
-    contracts
-      .filter(id => lab.fulfilled.includes(id))
-      .reduce((sum, id) => sum + LAB_CONTENT.contracts[id].daily, 0);
+  const operations = deploymentForecast(lab, throughput);
   return {
     demand,
     available,
     throughput,
     progress,
     payroll: lab.hired * 3,
-    power: Math.ceil(throughput / 2),
+    power: Math.ceil((throughput + operations.inferenceUsed) / 2),
     hosting: hostingCost(lab),
-    service: lab.teams.service * 4,
-    income,
+    service: operations.consulting,
+    income: operations.income,
+    operations,
+    inferenceDemand: operations.inferenceDemand,
+    inferenceAvailable: operations.inferenceAvailable,
+    supportDemand: operations.supportDemand,
+    supportCapacity: operations.supportCapacity,
   };
 }
 
@@ -136,6 +150,7 @@ function purchase(lab, cost, apply) {
  */
 function operate(lab, command) {
   const [kind, value] = command.split(':');
+  if (kind === 'service') return deploymentOrder(lab, command);
   if (kind === 'test') return evaluationOrder(lab, command);
   if (kind === 'configure') return configureResearch(lab, command);
   if (kind === 'incident') return intervene(lab, value);
@@ -201,8 +216,9 @@ function operate(lab, command) {
     if (!evaluationComplete(lab, lab.focus) || lab.risk > 35)
       return 'Release blocked: evaluate latest checkpoint and reduce risk to 35.';
     lab.deployed.push(lab.focus);
+    launchDeployment(lab, lab.focus);
     lab.trust = metric(lab.trust + LAB_CONTENT.projects[lab.focus].trust);
-    return 'Model deployed. Recurring revenue starts next shift.';
+    return 'Model deployed with its first users. Next invoice depends on adoption, capacity and maintenance. X: deployment operations.';
   }
   if (kind === 'promise') {
     if (lab.promises.includes(value))
@@ -303,7 +319,7 @@ export function endShift(state) {
   for (const id of lab.contracts) {
     const contract = LAB_CONTENT.contracts[id];
     if (
-      lab.deployed.includes(contract.project) &&
+      deploymentDelivers(f.operations, contract.project) &&
       !lab.expired.includes(id) &&
       !lab.fulfilled.includes(id)
     ) {
@@ -322,6 +338,7 @@ export function endShift(state) {
     }
   }
   revenue -= settleIncidents(lab, f, state.world.day, report);
+  settleDeployments(lab, f.operations, report);
   if (lab.promises.includes('ion') && heat > 0) {
     lab.morale = metric(lab.morale - 8);
     report.push('Ion: you promised safe cooling.');

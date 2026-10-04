@@ -8,7 +8,7 @@ Manage a frontier AI lab by walking its rooms, talking to staff and operating co
 
 Mae needs Atlas for the night clinic, while Ion reports a failed cooling bank. A new campaign has 180k cash, 120k debt, eight compute units and only four functioning cooling units. Choose **Plan the first shift** at the end of the introduction, or open X and select **First-shift guide** later. You can leave it to walk and talk at any time.
 
-The guide lets you inspect Mae's actual terms before accepting: a 28k advance, Atlas released by shift 12, a 14k clawback if missed, and 7k per shift after delivery. You may decline. Repairing cooling costs 20k and one decision point, restoring capacity to eight. Keeping the broken bank saves that money but starts with five research progress per shift instead of seven. These are real campaign orders, not free demonstration bonuses.
+The guide lets you inspect Mae's actual terms before accepting: a 28k advance, Atlas serving at least 20% adoption at 70% reliability by shift 12, and a 14k clawback if missed. The contract adds up to 7k per shift after delivery, scaled by actual adoption and reliability. You may decline. Repairing cooling costs 20k and one decision point, restoring capacity to eight. Keeping the broken bank saves that money but starts with five research progress per shift instead of seven. These are real campaign orders, not free demonstration bonuses.
 
 Inspect Ada and Jun in research, Sable in safety and Ion in service. Listening, reading forecasts and keeping existing assignments are free; actual reassignments consume attention. Review the closing forecast, then choose **End shift / settle costs** explicitly. Walking and inspecting never settle payroll. Training is not deployment: the ordinary training target, latest-checkpoint evaluation and safety requirements still apply. Existing saves keep their saved cooling capacity and are not forced to repeat the new guide.
 
@@ -62,7 +62,19 @@ Office: ledger, debt repayment and shift report. Compute Vault: racks, cooling a
 
 Research uses the smaller of demand, installed compute and cooling capacity. Morale and careful/sprint policy affect productivity. Scraped data trains faster but accumulates scrutiny and risk. Payroll is 3k per employee per shift; active compute costs power. Service staff earn 4k per shift. Racks add four compute for 30k; cooling adds four capacity for 20k. Hiring costs 18k and adds payroll permanently.
 
-Atlas requires 38 progress and earns 16k/shift; Ghost requires 64 and earns 29k; Lumen requires 48 and earns 21k. Release requires completed training, passing representative evidence and risk at most 35. Deployed models generate recurring revenue.
+Atlas requires 38 progress and can earn up to 16k/shift; Ghost requires 64 and can earn up to 29k; Lumen requires 48 and can earn up to 21k. Release requires completed training, passing representative evidence and risk at most 35. Those amounts are maximum invoices, not guaranteed income.
+
+### Operating your deployments
+
+Open X → **Deployment operations**. Ion explains users, invoices and the limiting capacity; each model's submenu offers inspection, maintenance and queue triage. Reading is free. Actual maintenance and triage each consume one attention, charge their displayed price, and never advance time.
+
+Atlas starts at 20% adoption, Ghost at 15%, Lumen at 25%. Their full audiences are 200, 80 and 400 users. Healthy, reliably served deployments grow adoption each settlement by up to 20, 15 and 25 percentage points respectively. Reliability below 70% instead loses ten percentage points. Income is the contracted maximum multiplied by adoption and reliability, rounded down. A first Atlas invoice is 3k, not 16k. The forecast shows each model's exact next invoice and why it falls short.
+
+Training gets first use of the smaller of compute and cooling. Finished research uses no training capacity. Remaining capacity serves inference; at full adoption Atlas needs three units, Ghost five, Lumen four, scaled by size and hosting. All deployments share shortages proportionally. Each service employee handles four support units; full audiences require two, four and three. Outstanding tickets add workload. Unused support time earns consulting income, so serving users also reduces consulting capacity. More hardware cannot clear a staffing queue.
+
+Reliability is limited by inference, support and equipment condition. Condition below 60% reduces reliability; every active service accrues disclosed wear. Maintain Atlas for 6k, Ghost for 10k or Lumen for 8k to restore 100% condition. Triage costs 4k and clears up to twelve queued tickets, but does not replace an adequate service team. Unneeded, unaffordable and invalid orders cost nothing. Contracts require at least 20% adoption and 70% reliability to deliver; their later invoices follow the same service limits.
+
+Old saves retain exact balances, progress, releases, evidence, contracts and histories. Existing released models migrate with full adoption and fresh equipment, without invented past bills. Future settlements follow current service rules. Export/import preserves adoption, wear and queues; loading does not reroll them.
 
 ### Sable's tactical evaluation
 
@@ -74,7 +86,7 @@ A finding requires **Investigate (2k, one capacity, one attention)**, then **Fix
 
 Further training stales calibration evidence, not unrelated completed consent and oversight work. A configuration or data change stales only cases whose displayed inputs changed. Rerun those cases; other programs keep their records. A patched test must also be investigated again if its relevant inputs change. Release requires all three current cases to pass. Historical sign-offs in older saves are reconstructed without changing cash, progress, incidents, contracts or existing deployments; new work follows these rules.
 
-Clinic, Transit and Helios offer advances with delivery deadlines (shifts 12, 18 and 10). Missed contracts claw back half the advance and lose trust. Delivered contracts add recurring income. Helios pays well but damages public trust and conflicts with Ada's commitment.
+Clinic, Transit and Helios offer advances with delivery deadlines (shifts 12, 18 and 10). Missed contracts claw back half the advance and lose trust. Delivered contracts increase maximum recurring invoices, subject to adoption and reliability. Helios pays well but damages public trust and conflicts with Ada's commitment.
 
 ### Programs, settings and milestones
 

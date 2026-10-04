@@ -107,7 +107,8 @@ export const LAB_CONTENT = {
     support: {
       name: 'Support overload',
       owner: 'ion',
-      trigger: 'Deployed models outnumber service staff.',
+      trigger:
+        'Live-user support and queued tickets exceed service-staff capacity.',
       response: 'Fund triage and recovery',
       responseCost: 8,
       cost: 12,

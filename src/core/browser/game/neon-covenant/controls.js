@@ -6,6 +6,7 @@ import { orientationEntries, orientationRows } from './orientation.js';
 import { researchOptions } from './research.js';
 import { EVALUATION_CASES } from './evaluationContent.js';
 import { evaluationStatus } from './evaluation.js';
+import { DEPLOYMENT_PROFILES, OPERATING_RULES } from './operationsContent.js';
 
 /**
  * Render the selected window consistently across bounded handheld menus.
@@ -55,6 +56,27 @@ function incidentRow(prefix, id, definition) {
  */
 export function labEntries(state) {
   const page = state.menu.page;
+  if (page === 'operations')
+    return [
+      ['Read clients and invoices', 'operations-story'],
+      ...Object.keys(DEPLOYMENT_PROFILES).map(id => [
+        id,
+        `page:deployment:${id}`,
+      ]),
+      ['Back to lab', 'page:main'],
+    ];
+  if (page.startsWith('deployment:')) {
+    const id = page.slice(11);
+    return [
+      ['Inspect clients and costs', 'operations-story'],
+      [
+        `Maintain / ${DEPLOYMENT_PROFILES[id].maintenanceCost}k`,
+        `service:maintain:${id}`,
+      ],
+      [`Triage queue / ${OPERATING_RULES.triageCost}k`, `service:triage:${id}`],
+      ['Other deployments', 'page:operations'],
+    ];
+  }
   if (page === 'tests')
     return Object.entries(EVALUATION_CASES[state.lab.focus])
       .map(([id, test]) => [test.name, `page:testcase:${id}`])
@@ -224,6 +246,7 @@ export function labEntries(state) {
     ['Lab dashboard', 'page:dashboard'],
     ['Incident register', 'page:incidents'],
     ['Research console', 'page:research'],
+    ['Deployment operations', 'page:operations'],
     ['People and recruitment', 'page:recruitment'],
     ['Shift report', 'page:report'],
     ['Story and controls', 'guide'],
@@ -246,18 +269,30 @@ export function labMenuRows(state) {
   if (state.menu.page === 'orientation') return orientationRows(state);
   const lab = state.lab;
   const f = forecast(lab);
+  if (
+    state.menu.page === 'operations' ||
+    state.menu.page.startsWith('deployment:')
+  ) {
+    const id = state.menu.page.slice(11);
+    const service = lab.deployments[id];
+    return choicePanel(state, [
+      service ? `${id.toUpperCase()} / SERVICE` : 'LIVE DEPLOYMENTS',
+      `INFERENCE ${f.inferenceDemand}/${f.inferenceAvailable} SUPPORT ${f.supportDemand}/${f.supportCapacity}`,
+      service
+        ? `ADOPT ${service.adoption}% HEALTH ${service.maintenance}% Q${service.backlog}`
+        : `INVOICE ${f.income}k CONSULT ${f.service}k`,
+    ]);
+  }
   if (state.menu.page === 'tests' || state.menu.page.startsWith('testcase:')) {
     const context =
       state.menu.page === 'tests'
         ? `PROGRAM ${lab.focus.toUpperCase()} / ${lab.research[lab.focus]}`
         : `${state.menu.page.slice(9).toUpperCase()}: ${evaluationStatus(lab, lab.focus, state.menu.page.slice(9))}`;
-    return [
+    return choicePanel(state, [
       'SABLE / EVALUATION',
       `TEST ${lab.testingBudget}/6 / ATTENTION ${lab.decisions}`,
       context,
-      ...selectionRows(state),
-      'A CHOOSE B BACK X CLOSE',
-    ];
+    ]);
   }
   if (state.menu.page === 'program' || state.menu.page.startsWith('setting:')) {
     return [
@@ -327,4 +362,14 @@ export function labMenuRows(state) {
       ),
     'A CHOOSE / B BACK / X CLOSE',
   ];
+}
+
+/**
+ * Compose a management panel with one shared selection window and footer.
+ * @param {Record<string, any>} state Menu owner.
+ * @param {string[]} context Title and two explanatory rows.
+ * @returns {string[]} Seven handheld rows.
+ */
+function choicePanel(state, context) {
+  return [...context, ...selectionRows(state), 'A CHOOSE B BACK X CLOSE'];
 }

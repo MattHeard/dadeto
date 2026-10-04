@@ -3,6 +3,7 @@ import {
   stepNeon,
   renderNeon,
 } from '../../../../src/core/browser/game/neon-covenant/simulation.js';
+import { createDeployments } from '../../../../src/core/browser/game/neon-covenant/operations.js';
 import {
   endShift,
   manageLab,
@@ -28,10 +29,12 @@ import { createNeonRuntime } from '../../../../src/core/browser/game/neon-covena
  */
 function fixture(overrides = {}, day = 1) {
   const state = createNeonState();
+  const lab = { ...state.lab, cooling: 8, ...overrides };
+  lab.deployments = createDeployments(lab);
   return {
     ...state,
     dialogue: null,
-    lab: { ...state.lab, cooling: 8, ...overrides },
+    lab,
     world: { ...state.world, day },
   };
 }
@@ -155,7 +158,14 @@ test('all warnings, deadline exposure and epilogues remain inside readable dialo
     fixture(),
     endShift(fixture({ cooling: 1, policy: 'sprint' })),
     fixture({ contracts: ['clinic'] }, 12),
-    fixture({ contracts: ['clinic'], deployed: ['atlas'] }, 12),
+    fixture(
+      {
+        contracts: ['clinic'],
+        deployed: ['atlas'],
+        research: { atlas: 38, ghost: 0, lumen: 0 },
+      },
+      12
+    ),
     fixture({ contracts: ['clinic'] }, 8),
     fixture({ cash: 1 }),
     fixture({ contracts: ['clinic'], expired: ['clinic'] }, 13),

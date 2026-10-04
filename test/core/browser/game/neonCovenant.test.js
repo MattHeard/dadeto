@@ -1,4 +1,5 @@
 import { jest } from '@jest/globals';
+import { createDeployments } from '../../../../src/core/browser/game/neon-covenant/operations.js';
 import { JSDOM } from 'jsdom';
 import { readFileSync } from 'node:fs';
 import {
@@ -37,10 +38,12 @@ import { generateBlogKey } from '../../../../src/core/browser/toys/2026-02-21/ge
  * @returns {object} Campaign fixture.
  */
 function campaign(overrides = {}) {
+  const lab = { ...createLab(), cooling: 8, ...overrides };
+  lab.deployments = createDeployments(lab);
   return {
     ...createNeonState(),
     dialogue: null,
-    lab: { ...createLab(), cooling: 8, ...overrides },
+    lab,
   };
 }
 
@@ -114,6 +117,20 @@ test('forecast makes compute, heat, morale, policy, data and income legible', ()
     hosting: 0,
     service: 4,
     income: 0,
+    inferenceAvailable: 2,
+    inferenceDemand: 0,
+    supportCapacity: 4,
+    supportDemand: 0,
+    operations: {
+      consulting: 4,
+      income: 0,
+      inferenceAvailable: 2,
+      inferenceDemand: 0,
+      inferenceUsed: 0,
+      projects: [],
+      supportCapacity: 4,
+      supportDemand: 0,
+    },
   });
   const strained = {
     ...lab,
@@ -125,11 +142,16 @@ test('forecast makes compute, heat, morale, policy, data and income legible', ()
     contracts: ['clinic', 'transit'],
     fulfilled: ['clinic'],
   };
+  strained.deployments = createDeployments(strained);
   expect(forecast(strained)).toMatchObject({
     demand: 12,
     throughput: 4,
     progress: 3,
-    income: 23,
+    income: 0,
+  });
+  expect(forecast(strained).operations.projects[0]).toMatchObject({
+    maximumRevenue: 23,
+    reliability: 0,
   });
   expect(forecast({ ...lab, policy: 'careful' }).progress).toBe(6);
 });
@@ -211,7 +233,8 @@ test('latest checkpoint evaluation and safety threshold gate deployment', () => 
   state = manageLab(state, 'deploy');
   expect(state.lab.deployed).toEqual(['atlas']);
   expect(manageLab(state, 'deploy').lab).toEqual(state.lab);
-  expect(forecast(state.lab).income).toBe(16);
+  expect(forecast(state.lab).income).toBe(3);
+  expect(forecast(state.lab).operations.projects[0].maximumRevenue).toBe(16);
   const partial = manageLab(endShift(campaign()), 'test:probe:reliability');
   const trained = endShift(partial);
   expect(trained.lab.evaluated.atlas).toBeLessThan(trained.lab.research.atlas);

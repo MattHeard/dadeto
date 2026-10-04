@@ -22,6 +22,10 @@ import { labEntries } from '../../../../src/core/browser/game/neon-covenant/cont
 import { migratePrograms } from '../../../../src/core/browser/game/neon-covenant/research.js';
 import { migrateEvaluations } from '../../../../src/core/browser/game/neon-covenant/evaluation.js';
 import {
+  createDeployments,
+  migrateDeployments,
+} from '../../../../src/core/browser/game/neon-covenant/operations.js';
+import {
   createSaveAdapter,
   parseSave,
   serializeSave,
@@ -110,6 +114,7 @@ test('employee concerns are causal and clear when their causes are addressed', (
     teams: { research: 4, safety: 0, service: 0 },
     deployed: ['atlas'],
   };
+  troubled.deployments = createDeployments(troubled);
   const thoughts = employeeThoughts(troubled, { ...person, fatigue: 50 });
   expect(thoughts).toHaveLength(5);
   expect(thoughts.join(' ')).toMatch(
@@ -147,8 +152,11 @@ test.each([
   },
 ])('migration preserves the historical ledger %p', changes => {
   const state = legacy(changes);
+  delete state.lab.deployments;
   const before = structuredClone(state.lab);
-  const migrated = migrateEvaluations(migratePrograms(migratePersonnel(state)));
+  const migrated = migrateDeployments(
+    migrateEvaluations(migratePrograms(migratePersonnel(state)))
+  );
   expect(state.lab).toEqual(before);
   expect(migrated.lab).toMatchObject(before);
   expect(migrated.lab.employees).toHaveLength(before.hired);
@@ -159,7 +167,7 @@ test.each([
     )
   ).toBe(true);
   expect(migrated.lab).toMatchObject({
-    rulesVersion: 4,
+    rulesVersion: 5,
     introductionComplete: true,
     remoteAdministration: true,
     incidentGrace: 2,
@@ -196,7 +204,7 @@ test('invalid old and current rosters cannot be silently repaired on import', ()
   ]) {
     expect(validPersonnel({ ...good, employees })).toBe(false);
   }
-  expect(validPersonnel({ ...good, rulesVersion: 5 })).toBe(false);
+  expect(validPersonnel({ ...good, rulesVersion: 6 })).toBe(false);
   expect(validPersonnel({ ...good, hired: 9 })).toBe(false);
   expect(validPersonnel({ ...good, teams: null })).toBe(false);
   expect(
@@ -212,7 +220,7 @@ test('legacy slot migration keeps the first exact backup until explicit reset', 
     [key]: { slots: { 1: raw }, activeSlot: 1 },
   });
   const runtime = createNeonRuntime(store.env);
-  expect(runtime.getSnapshot().lab.rulesVersion).toBe(4);
+  expect(runtime.getSnapshot().lab.rulesVersion).toBe(5);
   expect(store.read()[key].migrationBackups[1]).toBe(raw);
   runtime.save();
   runtime.importSave(serializeSave(legacy({ cash: 160 }), 1, 'neon-covenant'));
@@ -243,7 +251,9 @@ test('migration runs before game validation and unchanged profiles retain their 
   const profile = {
     game: 'neon-covenant',
     migrate: state =>
-      migrateEvaluations(migratePrograms(migratePersonnel(state))),
+      migrateDeployments(
+        migrateEvaluations(migratePrograms(migratePersonnel(state)))
+      ),
     validate: validLabSave,
   };
   expect(parseSave(raw, profile).state.lab.employees).toHaveLength(4);
@@ -254,7 +264,7 @@ test('migration runs before game validation and unchanged profiles retain their 
   ).toBeUndefined();
   expect(
     createSaveAdapter(undefined, profile).import(raw).state.lab.rulesVersion
-  ).toBe(4);
+  ).toBe(5);
   expect(parseSave(raw)).toBeNull();
 });
 

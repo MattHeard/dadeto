@@ -1,7 +1,7 @@
 import { createWorld, movePlayer } from '../mosslight-valley/world.js';
 import { targetInFront } from '../mosslight-valley/actors.js';
 import { openDialogue, advanceDialogue } from '../mosslight-valley/dialogue.js';
-import { createLab, manageLab, endShift } from './management.js';
+import { createLab, manageLab, endShift, forecast } from './management.js';
 import { labEntries, labMenuRows } from './controls.js';
 import { LAB_CONTENT } from './content.js';
 import { employeeThoughts } from './personnel.js';
@@ -15,6 +15,7 @@ import {
 } from './forecast.js';
 import { researchOptions, researchPages } from './research.js';
 import { evaluationPages } from './evaluation.js';
+import { deploymentPages } from './operations.js';
 import { orientationOrder, orientationStage } from './orientation.js';
 import {
   controllerSelection,
@@ -89,6 +90,21 @@ export function createNeonState(content = LAB_CONTENT) {
  */
 function menuCommand(state, command) {
   const next = { ...state, menu: null };
+  if (command === 'operations-story')
+    return openDialogue(
+      next,
+      'ion',
+      readableLabPages(
+        deploymentPages(state.lab, forecast(state.lab).throughput)
+      )
+    );
+  if (command.startsWith('service:')) {
+    const serviced = manageLab(next, command);
+    return {
+      ...serviced,
+      menu: { page: `deployment:${command.split(':')[2]}`, selected: 0 },
+    };
+  }
   if (command.startsWith('case:'))
     return openDialogue(
       next,
@@ -198,14 +214,18 @@ function menuCommand(state, command) {
 function lessonCommand(state, command) {
   if (command === 'lesson:terms') {
     const deal = LAB_CONTENT.contracts.clinic;
-    return openDialogue(state, 'mae', [
-      {
-        text: `Mae: Atlas for the night clinic. ${deal.advance}k advance; release by shift ${deal.deadline}. Miss it: ${Math.ceil(deal.advance / 2)}k clawback.`,
-      },
-      {
-        text: `Delivered service pays ${deal.daily}k per shift. Training alone is not delivery: evaluate the latest checkpoint before release.`,
-      },
-    ]);
+    return openDialogue(
+      state,
+      'mae',
+      readableLabPages([
+        {
+          text: `Mae: Atlas for the night clinic. ${deal.advance}k advance; release by shift ${deal.deadline}. Miss it: ${Math.ceil(deal.advance / 2)}k clawback.`,
+        },
+        {
+          text: `Contract maximum: ${deal.daily}k per shift, scaled by adoption and reliability. Delivery needs 20% adoption and 70% reliability after evaluation and release.`,
+        },
+      ])
+    );
   }
   if (command === 'lesson:forecast') {
     const stage = orientationStage(state);

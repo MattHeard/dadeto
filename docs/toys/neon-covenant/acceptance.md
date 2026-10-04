@@ -8,6 +8,12 @@ Build must generate `/neon-covenant/`, the lazy manual and NEON1 blog registrati
 
 ## Evidence Collection
 
+### Operating services (rules 5)
+
+Pure tests must prove proportional inference/support allocation, adoption-dependent invoices, completed-training capacity release, predictable queues/wear, costed maintenance/triage, fulfillment service thresholds, causal support warnings and exact preview/settlement equivalence. Cover all three service profiles, zero-user/zero-capacity cases, unchanged/invalid/poor/exhausted orders, lossless distressed/completed migration, malformed-import atomicity and deterministic export/import. Every new/migrated/district 28-shift controller route must pay maintenance and finish solvent without injected money, progress or time.
+
+Actual phone and desktop controls must inspect clients freely and maintain services in both standalone and embedded presenters. The fixture is earned by normal eight-button engine operations, including release of its final held button before serialization. Reject browser errors, viewport overflow, clipped menu rows and spurious charges for empty queues. Capture `.tmp/neon-operations-{standalone,embedded}-{phone,desktop}.png`. Keep the unchanged 30-second timeout and zero retries.
+
 Logs: `.tmp/neon-tests.log`, `.tmp/neon-build.log`, `.tmp/neon-check.log`. Unit source: `test/core/browser/game/neonCovenant.test.js`. Browser regression: `test/mosslight-e2e/neon-covenant.spec.ts`.
 
 ## Pass/Fail Rules

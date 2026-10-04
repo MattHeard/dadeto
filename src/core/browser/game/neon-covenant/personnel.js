@@ -1,4 +1,5 @@
 import { createIncidentChains, incidentThoughts } from './incidents.js';
+import { deploymentForecast } from './operations.js';
 
 /** @type {Record<string, any>} Authored employees and recruit candidates. */
 export const PERSONNEL = {
@@ -109,7 +110,8 @@ export function employeeThoughts(lab, person) {
     concerns.push(
       'Nobody is evaluating our work. Assign someone to safety before release.'
     );
-  if (lab.deployed.length > lab.teams.service)
+  const services = deploymentForecast(lab);
+  if (services.supportDemand > services.supportCapacity)
     concerns.push(
       'Support is overloaded. Assign an operator before taking more users.'
     );
@@ -126,7 +128,10 @@ export function employeeThoughts(lab, person) {
  * @returns {boolean} Whether all roster accounting agrees.
  */
 export function validPersonnel(lab) {
-  if (![1, 2, 3, 4].includes(lab.rulesVersion) || !Array.isArray(lab.employees))
+  if (
+    ![1, 2, 3, 4, 5].includes(lab.rulesVersion) ||
+    !Array.isArray(lab.employees)
+  )
     return false;
   if (!lab.employees.every(validEmployee)) return false;
   const ids = lab.employees.map(person => person.id);
