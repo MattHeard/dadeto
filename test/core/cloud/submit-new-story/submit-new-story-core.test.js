@@ -1,3 +1,4 @@
+import { createAllowEffects } from '../../../../src/cloud/allow-effects.js';
 import { jest } from '@jest/globals';
 import {
   createCorsErrorHandler,
@@ -8,6 +9,8 @@ import {
   resolveAuthorId,
   getRequestBody,
 } from '../../../../src/core/cloud/submit-new-story/submit-new-story-core.js';
+
+const allowEffects = createAllowEffects();
 
 describe('createSubmitNewStoryResponder', () => {
   const createDependencies = ({
@@ -36,7 +39,7 @@ describe('createSubmitNewStoryResponder', () => {
   it('rejects non-POST requests', async () => {
     const responder = createSubmitNewStoryResponder(createDependencies());
 
-    await expect(responder({ method: 'GET' })).resolves.toEqual({
+    await expect(responder(allowEffects, { method: 'GET' })).resolves.toEqual({
       status: 405,
       body: 'POST only',
     });
@@ -45,7 +48,7 @@ describe('createSubmitNewStoryResponder', () => {
   it('rejects requests when method is not a string', async () => {
     const responder = createSubmitNewStoryResponder(createDependencies());
 
-    await expect(responder({ method: 123 })).resolves.toEqual({
+    await expect(responder(allowEffects, { method: 123 })).resolves.toEqual({
       status: 405,
       body: 'POST only',
     });
@@ -54,7 +57,7 @@ describe('createSubmitNewStoryResponder', () => {
   it('rejects when the request is missing', async () => {
     const responder = createSubmitNewStoryResponder(createDependencies());
 
-    await expect(responder(undefined)).resolves.toEqual({
+    await expect(responder(allowEffects, undefined)).resolves.toEqual({
       status: 405,
       body: 'POST only',
     });
@@ -67,7 +70,7 @@ describe('createSubmitNewStoryResponder', () => {
       createDependencies({ saveSubmission, randomUUID })
     );
 
-    const response = await responder({
+    const response = await responder(allowEffects, {
       method: 'POST',
       body: {
         title: '  My Story  ',
@@ -81,7 +84,7 @@ describe('createSubmitNewStoryResponder', () => {
       headers: { Authorization: 'Bearer token' },
     });
 
-    expect(saveSubmission).toHaveBeenCalledWith('story-77', {
+    expect(saveSubmission).toHaveBeenCalledWith(allowEffects, 'story-77', {
       title: 'My Story',
       content: 'Hello\nWorld',
       author: 'Author',
@@ -107,14 +110,14 @@ describe('createSubmitNewStoryResponder', () => {
       createDependencies({ saveSubmission })
     );
 
-    const response = await responder({
+    const response = await responder(allowEffects, {
       method: 'POST',
       body: { title: 'Story', content: 'Body', author: '   ' },
       headers: { Authorization: 'Bearer token' },
     });
 
     expect(response.body.author).toBe('???');
-    expect(saveSubmission.mock.calls[0][1].author).toBe('???');
+    expect(saveSubmission.mock.calls[0][2].author).toBe('???');
   });
 
   it('defaults missing title and author fields', async () => {
@@ -123,12 +126,13 @@ describe('createSubmitNewStoryResponder', () => {
       createDependencies({ saveSubmission })
     );
 
-    await responder({
+    await responder(allowEffects, {
       method: 'POST',
       body: { content: 'Body' },
     });
 
     expect(saveSubmission).toHaveBeenCalledWith(
+      allowEffects,
       expect.any(String),
       expect.objectContaining({ title: 'Untitled', author: '???' })
     );
@@ -141,7 +145,7 @@ describe('createSubmitNewStoryResponder', () => {
       createDependencies({ verifyIdToken, saveSubmission })
     );
 
-    await responder({
+    await responder(allowEffects, {
       method: 'POST',
       body: { title: 'Test', content: 'Body', author: 'X' },
       get: name => {
@@ -154,6 +158,7 @@ describe('createSubmitNewStoryResponder', () => {
     });
 
     expect(saveSubmission).toHaveBeenCalledWith(
+      allowEffects,
       expect.any(String),
       expect.objectContaining({ authorId: null })
     );
@@ -165,7 +170,7 @@ describe('createSubmitNewStoryResponder', () => {
       createDependencies({ saveSubmission })
     );
 
-    await responder({
+    await responder(allowEffects, {
       method: 'POST',
       body: { title: 'Test', content: 'Body', author: 'X' },
       get: null,
@@ -173,6 +178,7 @@ describe('createSubmitNewStoryResponder', () => {
     });
 
     expect(saveSubmission).toHaveBeenCalledWith(
+      allowEffects,
       expect.any(String),
       expect.objectContaining({ authorId: null })
     );
@@ -219,7 +225,7 @@ describe('createHandleSubmitNewStory', () => {
     const status = jest.fn().mockReturnValue({ json });
     const res = { status };
 
-    await handle({ method: 'POST', body: {} }, res);
+    await handle(allowEffects, { method: 'POST', body: {} }, res);
 
     expect(status).toHaveBeenCalledWith(201);
     expect(json).toHaveBeenCalledWith({ id: 'story-1' });
@@ -234,9 +240,9 @@ describe('createHandleSubmitNewStory', () => {
     const sendStatus = jest.fn();
     const res = { sendStatus };
 
-    await handle(null, res);
+    await handle(allowEffects, null, res);
 
-    expect(responder).toHaveBeenCalledWith({
+    expect(responder).toHaveBeenCalledWith(allowEffects, {
       method: undefined,
       body: undefined,
       get: undefined,
@@ -255,7 +261,7 @@ describe('createHandleSubmitNewStory', () => {
     const status = jest.fn().mockReturnValue({ send });
     const res = { status };
 
-    await handle({ method: 'POST', body: {} }, res);
+    await handle(allowEffects, { method: 'POST', body: {} }, res);
 
     expect(status).toHaveBeenCalledWith(500);
     expect(send).toHaveBeenCalledWith('error happened');
@@ -276,9 +282,9 @@ describe('createHandleSubmitNewStory', () => {
       headers: {},
     };
 
-    await handle(req, { status });
+    await handle(allowEffects, req, { status });
 
-    expect(responder).toHaveBeenCalledWith({
+    expect(responder).toHaveBeenCalledWith(allowEffects, {
       method: 'POST',
       body: {},
       get: undefined,
@@ -304,18 +310,22 @@ describe('createHandleSubmitNewStory', () => {
     const json = jest.fn();
     const status = jest.fn().mockReturnValue({ json });
 
-    await handle({ method: 'POST', body: {}, get, headers: {} }, { status });
+    await handle(
+      allowEffects,
+      { method: 'POST', body: {}, get, headers: {} },
+      { status }
+    );
 
-    expect(responder).toHaveBeenCalledWith({
+    expect(responder).toHaveBeenCalledWith(allowEffects, {
       method: 'POST',
       body: {},
       get: expect.any(Function),
       headers: {},
     });
-    expect(responder.mock.calls[0][0].get('Authorization')).toBe(
+    expect(responder.mock.calls[0][1].get('Authorization')).toBe(
       'Bearer token'
     );
-    expect(responder.mock.calls[0][0].get('authorization')).toBe(null);
+    expect(responder.mock.calls[0][1].get('authorization')).toBe(null);
     expect(status).toHaveBeenCalledWith(200);
     expect(json).toHaveBeenCalledWith({ ok: true });
   });
@@ -337,9 +347,9 @@ describe('createHandleSubmitNewStory', () => {
       },
     };
 
-    await handle(req, { status });
+    await handle(allowEffects, req, { status });
 
-    expect(responder.mock.calls[0][0].get('Authorization')).toBe(
+    expect(responder.mock.calls[0][1].get('Authorization')).toBe(
       'Bearer token'
     );
   });

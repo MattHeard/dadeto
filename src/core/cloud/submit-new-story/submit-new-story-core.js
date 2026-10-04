@@ -13,7 +13,7 @@ import {
 } from '../cloud-core.js';
 import { resolveAuthorIdFromHeader } from '../auth-helpers.js';
 import {
-  createCloudSubmitHandler,
+  sendResponderResult,
   collectSubmissionOptions,
   getAuthorizationHeader,
   getAuthorizationFromGetter,
@@ -23,8 +23,14 @@ import {
   trimmedStringOrNull,
   whenNotNullish,
   whenOrDefault,
+  assertFunction,
 } from '../../commonCore.js';
 import { createResponder } from '../responder-utils.js';
+import { normalizeExpressRequest } from '../request-normalization.js';
+/** @typedef {import('../../../../types/allow-effects').AllowEffects} AllowEffects */
+/** @typedef {import('../../../../types/native-http').NativeHttpRequest} NativeHttpRequest */
+/** @typedef {import('../../../../types/native-http').NativeHttpResponse} NativeHttpResponse */
+/** @typedef {(allowEffects: AllowEffects, request?: SubmitNewStoryRequest) => Promise<HttpResponse>} EffectResponder */
 
 /**
  * @typedef {object} SubmitNewStoryRequest
@@ -51,7 +57,7 @@ import { createResponder } from '../responder-utils.js';
 /**
  * @typedef {object} SubmitNewStoryDependencies
  * @property {(token: string) => Promise<{ uid?: string | undefined }>} verifyIdToken - Validates an identity token and returns decoded claims.
- * @property {(id: string, submission: SubmissionRecord) => Promise<void>} saveSubmission - Persists a submission under the provided identifier.
+ * @property {(allowEffects: AllowEffects, id: string, submission: SubmissionRecord) => Promise<void>} saveSubmission - Persists a submission with explicit command permission.
  * @property {() => string} randomUUID - Generates a unique identifier for a submission.
  * @property {() => unknown} getServerTimestamp - Supplies a server-side timestamp representation.
  */
@@ -216,10 +222,19 @@ export function createCorsErrorHandler(options) {
 
 /**
  * Adapt a domain responder into an Express request handler.
- * @param {(request: SubmitNewStoryRequest) => Promise<HttpResponse>} responder - Domain-specific request handler.
- * @returns {(req: SubmitNewStoryRequest, res: { status: (code: number) => { json: (payload: unknown) => void, send: (payload: unknown) => void, sendStatus: (code: number) => void } }) => Promise<void>} Express-compatible route handler.
+ * @param {EffectResponder} responder Domain-specific command handler.
+ * @returns {(allowEffects: AllowEffects, req: NativeHttpRequest | undefined, res: NativeHttpResponse) => Promise<void>} Explicitly effectful internal route.
  */
-export const createHandleSubmitNewStory = createCloudSubmitHandler;
+export function createHandleSubmitNewStory(responder) {
+  assertFunction(responder, 'responder');
+  return async function handleSubmitNewStory(allowEffects, req, res) {
+    const request = /** @type {SubmitNewStoryRequest} */ (
+      normalizeExpressRequest(req)
+    );
+    const { status, body } = await responder(allowEffects, request);
+    return sendResponderResult(res, status, body);
+  };
+}
 
 /**
  * Normalize title.
@@ -262,14 +277,15 @@ function isPostMethod(method) {
 
 /**
  * Save the submission.
+ * @param {AllowEffects} allowEffects Explicit command permission.
  * @param {SubmitNewStoryDependencies} deps Dependencies.
  * @param {string} id ID.
  * @param {NewStorySubmissionInput} data Data.
  * @returns {Promise<void>} Promise.
  */
-async function saveNewStory(deps, id, data) {
+async function saveNewStory(allowEffects, deps, id, data) {
   const { saveSubmission, getServerTimestamp } = deps;
-  await saveSubmission(id, {
+  await saveSubmission(allowEffects, id, {
     ...data,
     createdAt: getServerTimestamp(),
   });
@@ -296,18 +312,19 @@ export function getRequestBody(request) {
 
 /**
  * Process the submission request.
+ * @param {AllowEffects} allowEffects Explicit command permission.
  * @param {SubmitNewStoryDependencies} deps Dependencies.
  * @param {SubmitNewStoryRequest} request Request.
  * @returns {Promise<HttpResponse>} Response.
  */
-async function processSubmission(deps, request) {
+async function processSubmission(allowEffects, deps, request) {
   const { verifyIdToken, randomUUID } = deps;
   const body = getRequestBody(request);
   const data = normalizeSubmissionData(body);
   const authorId = await resolveAuthorId(request, verifyIdToken);
 
   const id = randomUUID();
-  await saveNewStory(deps, id, { ...data, authorId });
+  await saveNewStory(allowEffects, deps, id, { ...data, authorId });
 
   return createResponse(201, {
     id,
@@ -317,17 +334,16 @@ async function processSubmission(deps, request) {
 
 /**
  * Handle the incoming request and delegate to the submission processor.
+ * @param {AllowEffects} allowEffects Explicit command permission.
  * @param {SubmitNewStoryDependencies} deps Dependencies for the handler.
  * @param {SubmitNewStoryRequest | undefined} request Incoming request data.
  * @returns {Promise<HttpResponse>} Response returned to the caller.
  */
-function handleSubmitNewStoryRequest(deps, request) {
+function handleSubmitNewStoryRequest(allowEffects, deps, request) {
   const incomingRequest = request ?? {};
-  return runWhenPostMethod(
-    incomingRequest,
-    req => processSubmission(deps, req),
-    () => METHOD_NOT_ALLOWED_RESPONSE
-  );
+  if (!isPostMethod(getRequestMethod(incomingRequest.method)))
+    return Promise.resolve(METHOD_NOT_ALLOWED_RESPONSE);
+  return processSubmission(allowEffects, deps, incomingRequest);
 }
 
 /**
@@ -342,25 +358,9 @@ function getRequestMethod(method) {
 }
 
 /**
- * Run the success callback only when the request uses POST; otherwise invoke the failure path.
- * @param {SubmitNewStoryRequest} request Request to inspect.
- * @param {(req: SubmitNewStoryRequest) => Promise<HttpResponse>} onPost Callback executed for POST requests.
- * @param {() => HttpResponse} onFail Callback executed for non-POST requests.
- * @returns {Promise<HttpResponse>} Response from the chosen callback.
- */
-function runWhenPostMethod(request, onPost, onFail) {
-  const method = getRequestMethod(request.method);
-  if (isPostMethod(method)) {
-    return onPost(request);
-  }
-
-  return Promise.resolve(onFail());
-}
-
-/**
  * Construct the submit-new-story domain responder with the required dependencies.
  * @param {SubmitNewStoryDependencies} dependencies - Injectable services used by the responder.
- * @returns {(request?: SubmitNewStoryRequest) => Promise<HttpResponse>} Domain responder for new story submissions.
+ * @returns {(allowEffects: AllowEffects, request?: SubmitNewStoryRequest) => Promise<HttpResponse>} Explicitly effectful domain responder.
  */
 export function createSubmitNewStoryResponder(dependencies) {
   const responder = createResponder({
@@ -368,16 +368,18 @@ export function createSubmitNewStoryResponder(dependencies) {
     requiredFunctionNames: ['verifyIdToken', 'saveSubmission'],
     handlerFactory: deps => {
       return async function submitNewStoryResponder(
+        /** @type {AllowEffects} */ allowEffects,
         /** @type {SubmitNewStoryRequest | undefined} */ request
       ) {
         return handleSubmitNewStoryRequest(
+          allowEffects,
           /** @type {SubmitNewStoryDependencies} */ (deps),
           request
         );
       };
     },
   });
-  return /** @type {(request?: SubmitNewStoryRequest) => Promise<HttpResponse>} */ (
+  return /** @type {(allowEffects: AllowEffects, request?: SubmitNewStoryRequest) => Promise<HttpResponse>} */ (
     responder
   );
 }

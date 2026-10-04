@@ -1,3 +1,4 @@
+import { createEffectHttpBoundary } from '../../../../src/cloud/allow-effects.js';
 import { jest } from '@jest/globals';
 import { runSubmitNewStory } from '../../../../src/core/cloud/submit-new-story/run.js';
 
@@ -68,19 +69,22 @@ describe('runSubmitNewStory', () => {
   });
 
   it('wires the endpoint and returns exports', () => {
-    const result = runSubmitNewStory({
-      initializeApp: jest.fn(),
-      createFirebaseAppManager,
-      getFirestoreInstance,
-      getAuth,
-      express,
-      cors,
-      crypto,
-      FieldValue,
-      functions,
-      getEnvironmentVariables,
-      getAllowedOrigins,
-    });
+    const result = runSubmitNewStory(
+      {
+        initializeApp: jest.fn(),
+        createFirebaseAppManager,
+        getFirestoreInstance,
+        getAuth,
+        express,
+        cors,
+        crypto,
+        FieldValue,
+        functions,
+        getEnvironmentVariables,
+        getAllowedOrigins,
+      },
+      createEffectHttpBoundary
+    );
 
     expect(ensureFirebaseApp).toHaveBeenCalled();
     expect(getEnvironmentVariables).toHaveBeenCalled();
@@ -108,19 +112,22 @@ describe('runSubmitNewStory', () => {
   });
 
   it('wires the responder path for POST submissions', async () => {
-    const result = runSubmitNewStory({
-      initializeApp: jest.fn(),
-      createFirebaseAppManager,
-      getFirestoreInstance,
-      getAuth,
-      express,
-      cors,
-      crypto,
-      FieldValue,
-      functions,
-      getEnvironmentVariables,
-      getAllowedOrigins,
-    });
+    const result = runSubmitNewStory(
+      {
+        initializeApp: jest.fn(),
+        createFirebaseAppManager,
+        getFirestoreInstance,
+        getAuth,
+        express,
+        cors,
+        crypto,
+        FieldValue,
+        functions,
+        getEnvironmentVariables,
+        getAllowedOrigins,
+      },
+      createEffectHttpBoundary
+    );
 
     const response = {
       status: jest.fn(() => ({
@@ -153,19 +160,22 @@ describe('runSubmitNewStory', () => {
   });
 
   it('treats empty header values as missing', async () => {
-    const result = runSubmitNewStory({
-      initializeApp: jest.fn(),
-      createFirebaseAppManager,
-      getFirestoreInstance,
-      getAuth,
-      express,
-      cors,
-      crypto,
-      FieldValue,
-      functions,
-      getEnvironmentVariables,
-      getAllowedOrigins,
-    });
+    const result = runSubmitNewStory(
+      {
+        initializeApp: jest.fn(),
+        createFirebaseAppManager,
+        getFirestoreInstance,
+        getAuth,
+        express,
+        cors,
+        crypto,
+        FieldValue,
+        functions,
+        getEnvironmentVariables,
+        getAllowedOrigins,
+      },
+      createEffectHttpBoundary
+    );
 
     const response = {
       status: jest.fn(() => ({
@@ -202,19 +212,22 @@ describe('runSubmitNewStory', () => {
     const debugGetFirestoreInstance = jest.fn(() => ({
       collection: debugCollection,
     }));
-    const result = runSubmitNewStory({
-      initializeApp: jest.fn(),
-      createFirebaseAppManager,
-      getFirestoreInstance: debugGetFirestoreInstance,
-      getAuth,
-      express,
-      cors,
-      crypto,
-      FieldValue,
-      functions,
-      getEnvironmentVariables: jest.fn(() => debugEnvironmentVariables),
-      getAllowedOrigins: jest.fn(() => debugAllowedOrigins),
-    });
+    const result = runSubmitNewStory(
+      {
+        initializeApp: jest.fn(),
+        createFirebaseAppManager,
+        getFirestoreInstance: debugGetFirestoreInstance,
+        getAuth,
+        express,
+        cors,
+        crypto,
+        FieldValue,
+        functions,
+        getEnvironmentVariables: jest.fn(() => debugEnvironmentVariables),
+        getAllowedOrigins: jest.fn(() => debugAllowedOrigins),
+      },
+      createEffectHttpBoundary
+    );
 
     const response = {
       status: jest.fn(() => ({
@@ -296,19 +309,22 @@ describe('runSubmitNewStory fallback logging', () => {
         })),
       })),
     }));
-    const result = runSubmitNewStory({
-      initializeApp: jest.fn(),
-      createFirebaseAppManager,
-      getFirestoreInstance: fallbackGetFirestoreInstance,
-      getAuth,
-      express,
-      cors,
-      crypto,
-      FieldValue,
-      functions,
-      getEnvironmentVariables: jest.fn(() => debugEnvironmentVariables),
-      getAllowedOrigins: jest.fn(() => debugAllowedOrigins),
-    });
+    const result = runSubmitNewStory(
+      {
+        initializeApp: jest.fn(),
+        createFirebaseAppManager,
+        getFirestoreInstance: fallbackGetFirestoreInstance,
+        getAuth,
+        express,
+        cors,
+        crypto,
+        FieldValue,
+        functions,
+        getEnvironmentVariables: jest.fn(() => debugEnvironmentVariables),
+        getAllowedOrigins: jest.fn(() => debugAllowedOrigins),
+      },
+      createEffectHttpBoundary
+    );
 
     const response = {
       status: jest.fn(() => ({
@@ -339,19 +355,22 @@ describe('runSubmitNewStory fallback logging', () => {
     const fallbackGetFirestoreInstance = jest.fn(() => ({
       collection: fallbackCollection,
     }));
-    const result = runSubmitNewStory({
-      initializeApp: jest.fn(),
-      createFirebaseAppManager,
-      getFirestoreInstance: fallbackGetFirestoreInstance,
-      getAuth,
-      express,
-      cors,
-      crypto,
-      FieldValue,
-      functions,
-      getEnvironmentVariables: jest.fn(() => debugEnvironmentVariables),
-      getAllowedOrigins: jest.fn(() => debugAllowedOrigins),
-    });
+    const result = runSubmitNewStory(
+      {
+        initializeApp: jest.fn(),
+        createFirebaseAppManager,
+        getFirestoreInstance: fallbackGetFirestoreInstance,
+        getAuth,
+        express,
+        cors,
+        crypto,
+        FieldValue,
+        functions,
+        getEnvironmentVariables: jest.fn(() => debugEnvironmentVariables),
+        getAllowedOrigins: jest.fn(() => debugAllowedOrigins),
+      },
+      createEffectHttpBoundary
+    );
 
     const response = {
       status: jest.fn(() => ({
@@ -428,19 +447,22 @@ describe('runSubmitNewStory fallback logging', () => {
     const fallbackGetFirestoreInstance = jest.fn(() => ({
       collection: fallbackCollection,
     }));
-    const result = runSubmitNewStory({
-      initializeApp: jest.fn(),
-      createFirebaseAppManager,
-      getFirestoreInstance: fallbackGetFirestoreInstance,
-      getAuth,
-      express,
-      cors,
-      crypto,
-      FieldValue,
-      functions,
-      getEnvironmentVariables: jest.fn(() => debugEnvironmentVariables),
-      getAllowedOrigins: jest.fn(() => debugAllowedOrigins),
-    });
+    const result = runSubmitNewStory(
+      {
+        initializeApp: jest.fn(),
+        createFirebaseAppManager,
+        getFirestoreInstance: fallbackGetFirestoreInstance,
+        getAuth,
+        express,
+        cors,
+        crypto,
+        FieldValue,
+        functions,
+        getEnvironmentVariables: jest.fn(() => debugEnvironmentVariables),
+        getAllowedOrigins: jest.fn(() => debugAllowedOrigins),
+      },
+      createEffectHttpBoundary
+    );
 
     const response = {
       status: jest.fn(() => ({
@@ -507,19 +529,22 @@ describe('runSubmitNewStory error logging', () => {
     const rejectingGetFirestoreInstance = jest.fn(() => ({
       collection: rejectingCollection,
     }));
-    const result = runSubmitNewStory({
-      initializeApp: jest.fn(),
-      createFirebaseAppManager,
-      getFirestoreInstance: rejectingGetFirestoreInstance,
-      getAuth,
-      express,
-      cors,
-      crypto,
-      FieldValue,
-      functions,
-      getEnvironmentVariables: jest.fn(() => debugEnvironmentVariables),
-      getAllowedOrigins: jest.fn(() => debugAllowedOrigins),
-    });
+    const result = runSubmitNewStory(
+      {
+        initializeApp: jest.fn(),
+        createFirebaseAppManager,
+        getFirestoreInstance: rejectingGetFirestoreInstance,
+        getAuth,
+        express,
+        cors,
+        crypto,
+        FieldValue,
+        functions,
+        getEnvironmentVariables: jest.fn(() => debugEnvironmentVariables),
+        getAllowedOrigins: jest.fn(() => debugAllowedOrigins),
+      },
+      createEffectHttpBoundary
+    );
 
     const request = {
       method: 'POST',

@@ -844,6 +844,7 @@ function createIndividualFileCopiesPart41(planValues) {
  */
 function createIndividualFileCopiesPart42(planValues) {
   const {
+    srcCoreDir,
     join,
     infraDir,
     infraFunctionsDir,
@@ -865,6 +866,10 @@ function createIndividualFileCopiesPart42(planValues) {
     preservedSharedUtilityCopies,
   } = planValues;
   return [
+    {
+      source: join(srcCoreDir, '..', 'cloud', 'allow-effects.js'),
+      target: join(infraFunctionsDir, 'submit-new-story', 'allow-effects.js'),
+    },
     {
       source: cloudCoreSource,
       target: join(infraFunctionsDir, 'report-for-moderation', 'cloud-core.js'),
@@ -1743,6 +1748,7 @@ function createCopyCloudPlan(deps) {
     join,
     infraDir,
     srcCloudDir,
+    srcCoreDir,
     infraFunctionsDir,
     srcCoreBrowserDir,
     srcCoreBrowserModerationDir,
@@ -1994,6 +2000,7 @@ export async function createCopyCloudHandle(deps) {
     ['../allowed-origins.js', './allowed-origins.js'],
     ['../handler-utils.js', './handler-utils.js'],
     ['../submit-shared.js', './submit-shared.js'],
+    ['../allow-effects.js', './allow-effects.js'],
 
     // Cross-function rewrites
     [

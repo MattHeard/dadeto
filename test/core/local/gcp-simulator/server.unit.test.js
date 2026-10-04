@@ -1,5 +1,5 @@
 import { jest } from '@jest/globals';
-import { handle } from '../../../../src/core/local/gcp-simulator/server.js';
+import { handle } from '../../../../src/local/gcp-simulator/server.js';
 
 describe('gcp simulator server without a listener', () => {
   test('registers and executes simulator routes with injected dependencies', async () => {

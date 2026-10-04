@@ -1,6 +1,10 @@
 import ts from 'typescript';
 import { resolve } from 'node:path';
-import { createAllowEffects } from '../../src/runtime/allow-effects.js';
+import {
+  createAllowEffects,
+  createEffectHttpBoundary,
+} from '../../src/cloud/allow-effects.js';
+import { bindEffectResponder } from '../../src/local/allow-effects.js';
 
 /**
  * Compile an isolated checked-JavaScript caller against the real capability.
@@ -10,7 +14,7 @@ import { createAllowEffects } from '../../src/runtime/allow-effects.js';
 function compile(body) {
   const filename = resolve('test/allow-effects-fixture.js');
   const text = `
-    import { createAllowEffects } from '../src/runtime/allow-effects.js';
+    import { createAllowEffects } from '../src/cloud/allow-effects.js';
     /** @param {import('../types/allow-effects').AllowEffects} allowEffects */
     function command(allowEffects) { return allowEffects; }
     ${body}
@@ -57,6 +61,36 @@ test('the real boundary capability type-checks as the first command argument', (
       ts.flattenDiagnosticMessageText(finding.messageText, '\n')
     )
   ).toEqual([]);
+});
+
+test('HTTP adapters mint a fresh permission for each request and preserve public arguments', async () => {
+  const calls = [];
+  const handler = createEffectHttpBoundary(async (...args) => {
+    calls.push(args);
+  });
+  const req = { body: 'submission' };
+  const res = { status: 200 };
+  await handler(req, res);
+  await handler(req, res);
+  expect(calls.map(call => call.slice(1))).toEqual([
+    [req, res],
+    [req, res],
+  ]);
+  expect(calls[0][0]).not.toBe(calls[1][0]);
+  expect(calls.every(call => Object.isFrozen(call[0]))).toBe(true);
+});
+
+test('the local simulator boundary mints per command without changing its public request', async () => {
+  const tokens = [];
+  const route = bindEffectResponder(async (permission, request) => {
+    tokens.push(permission);
+    return request;
+  });
+  const request = { method: 'POST' };
+  expect(await route(request)).toBe(request);
+  expect(await route(request)).toBe(request);
+  expect(tokens[0]).not.toBe(tokens[1]);
+  expect(tokens.every(Object.isFrozen)).toBe(true);
 });
 
 test.each([

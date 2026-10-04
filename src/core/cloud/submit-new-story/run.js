@@ -13,6 +13,8 @@ import {
 import { createFirebaseAppContext } from '../firebase-app-manager.js';
 import { createCloudHttpEndpoint } from '../http-endpoint-bootstrap.js';
 import { stringOrNull } from '../../commonCore.js';
+/** @typedef {import('../../../../types/allow-effects').AllowEffects} AllowEffects */
+/** @typedef {import('./submit-new-story-core.js').EffectResponder} EffectResponder */
 
 /**
  * Set up and export the submit-new-story cloud function.
@@ -29,9 +31,10 @@ import { stringOrNull } from '../../commonCore.js';
  *   getEnvironmentVariables: typeof import('../../../../src/cloud/submit-new-story/submit-new-story-gcf.js').getEnvironmentVariables,
  *   getAllowedOrigins: typeof import('../../../../src/cloud/submit-new-story/cors-config.js').getAllowedOrigins,
  * }} deps Dependencies for wiring the endpoint.
+ * @param {(handler: (allowEffects: AllowEffects, req: any, res: any) => Promise<void>) => (req: any, res: any) => Promise<void>} bindHttpBoundary External per-request capability minting adapter.
  * @returns {{ submitNewStory: unknown, handleSubmitNewStory: (req: unknown, res: unknown) => Promise<void>, app: unknown }} Wired endpoint exports.
  */
-export function runSubmitNewStory(deps) {
+export function runSubmitNewStory(deps, bindHttpBoundary) {
   const { db, auth } =
     /** @type {{ db: { collection: (name: string) => { doc: (id: string) => { set: (data: unknown) => Promise<unknown> } } }, auth: { verifyIdToken: (token: string) => Promise<unknown> } }} */ (
       createFirebaseAppContext(deps, { includeApp: false })
@@ -54,19 +57,20 @@ export function runSubmitNewStory(deps) {
 
   const corsOptions = createCorsOptions({ allowedOrigins });
 
-  const submitNewStoryResponder = /** @type {any} */ (
-    createSubmitNewStoryResponder({
-      verifyIdToken: /** @type {any} */ (
-        (/** @type {string} */ token) => auth.verifyIdToken(token)
-      ),
-      saveSubmission: /** @type {any} */ (
-        (/** @type {string} */ id, /** @type {unknown} */ data) =>
-          db.collection('storyFormSubmissions').doc(id).set(data)
-      ),
-      randomUUID: () => deps.crypto.randomUUID(),
-      getServerTimestamp: () => deps.FieldValue.serverTimestamp(),
-    })
-  );
+  const submitNewStoryResponder = createSubmitNewStoryResponder({
+    verifyIdToken: /** @type {any} */ (
+      (/** @type {string} */ token) => auth.verifyIdToken(token)
+    ),
+    saveSubmission: async (
+      /** @type {AllowEffects} */ allowEffects,
+      /** @type {string} */ id,
+      /** @type {unknown} */ data
+    ) => {
+      await db.collection('storyFormSubmissions').doc(id).set(data);
+    },
+    randomUUID: () => deps.crypto.randomUUID(),
+    getServerTimestamp: () => deps.FieldValue.serverTimestamp(),
+  });
 
   let debuggedSubmitNewStoryResponder = submitNewStoryResponder;
   if (debugEnabled) {
@@ -75,10 +79,8 @@ export function runSubmitNewStory(deps) {
     );
   }
 
-  const handleSubmitNewStory = /** @type {any} */ (
-    createHandleSubmitNewStory(request =>
-      debuggedSubmitNewStoryResponder(request)
-    )
+  const handleSubmitNewStory = bindHttpBoundary(
+    createHandleSubmitNewStory(debuggedSubmitNewStoryResponder)
   );
 
   const endpointOptions = /** @type {any} */ ({
@@ -194,11 +196,11 @@ function serializeError(error) {
 
 /**
  * Emit temporary debug logs around submit-new-story request handling.
- * @param {(request?: unknown) => Promise<{ status: number, body?: unknown }>} responder Domain responder.
- * @returns {(request?: unknown) => Promise<{ status: number, body?: unknown }>} Wrapped responder.
+ * @param {EffectResponder} responder Domain responder.
+ * @returns {EffectResponder} Wrapped responder retaining explicit command permission.
  */
 function createDebugSubmitNewStoryResponder(responder) {
-  return async function debuggedSubmitNewStoryResponder(request) {
+  return async function debuggedSubmitNewStoryResponder(allowEffects, request) {
     const typedRequest =
       /** @type {{ method?: unknown, headers?: Record<string, unknown> | null | undefined, body?: Record<string, unknown> | null | undefined }} */ (
         request
@@ -218,7 +220,7 @@ function createDebugSubmitNewStoryResponder(responder) {
     );
 
     try {
-      const result = await responder(typedRequest);
+      const result = await responder(allowEffects, request);
       console.info(
         JSON.stringify({
           event: 'submit-new-story.debug.response',

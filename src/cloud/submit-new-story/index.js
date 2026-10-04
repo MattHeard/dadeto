@@ -12,6 +12,7 @@ import {
 } from './submit-new-story-gcf.js';
 import { getAllowedOrigins } from './cors-config.js';
 import { runSubmitNewStory } from '../../core/cloud/submit-new-story/run.js';
+import { createEffectHttpBoundary } from '../allow-effects.js';
 
 const environmentDependencies = {
   initializeApp,
@@ -27,6 +28,9 @@ const environmentDependencies = {
   getAllowedOrigins,
 };
 
-const { submitNewStory: handle } = runSubmitNewStory(environmentDependencies);
+const { submitNewStory: handle } = runSubmitNewStory(
+  environmentDependencies,
+  createEffectHttpBoundary
+);
 
 export { handle };

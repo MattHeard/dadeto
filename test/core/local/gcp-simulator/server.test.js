@@ -18,7 +18,7 @@ describe('gcp simulator server', () => {
   beforeAll(async () => {
     process.env.GCP_SIMULATOR_PORT = '0';
     const importedModule = await import(
-      '../../../../src/core/local/gcp-simulator/server.js'
+      '../../../../src/local/gcp-simulator/server.js'
     );
     serverModule = importedModule;
     server = await importedModule.handle({ express });

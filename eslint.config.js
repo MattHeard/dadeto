@@ -4,25 +4,82 @@ import jsdoc from 'eslint-plugin-jsdoc';
 import prettierPlugin from 'eslint-plugin-prettier';
 import eslintConfigPrettier from 'eslint-config-prettier/flat';
 import tautologicalWrapperRule from './src/core/lint/tautological-wrapper.js';
+import ts from 'typescript';
+import { createAllowEffectsRule } from './src/core/scripts/allow-effects.js';
+
+let capabilityProgramCache;
+
+/**
+ * Supply read-only compiler services at the external lint environment boundary.
+ * @param {string} filename Current lint target.
+ * @param {string} text Actual editor or rule-test source.
+ * @returns {import('typescript').Program} Checked JavaScript compiler program.
+ */
+export function capabilityProgramFor(filename, text) {
+  if (capabilityProgramCache?.filename === filename && capabilityProgramCache.text === text)
+    return capabilityProgramCache.program;
+  const options = { allowJs: true, checkJs: true, noEmit: true, types: [],
+    lib: ['lib.es2023.d.ts'], target: ts.ScriptTarget.ES2023,
+    module: ts.ModuleKind.ESNext, moduleResolution: ts.ModuleResolutionKind.Node10 };
+  const host = ts.createCompilerHost(options);
+  const getSourceFile = host.getSourceFile.bind(host);
+  host.getSourceFile = (name, version, ...rest) => name === filename
+    ? ts.createSourceFile(filename, text, version, true, ts.ScriptKind.JS)
+    : getSourceFile(name, version, ...rest);
+  const program = ts.createProgram([filename], options, host);
+  capabilityProgramCache = { filename, text, program };
+  return program;
+}
 
 const lintFiles = ['src/core/**/*.js', 'test/**/*.js'];
 const tautologicalWrapperFiles = ['src/**/*.js'];
 const repoLintPlugin = {
   rules: {
     'tautological-wrapper': tautologicalWrapperRule,
+    'allow-effects': createAllowEffectsRule(ts, capabilityProgramFor),
   },
 };
 
 export default [
   {
+    files: ['src/core/cloud/submit-new-story/**/*.js', 'src/core/local/gcp-simulator/simulator.js'],
+    plugins: { capability: repoLintPlugin },
+    rules: { 'capability/allow-effects': 'error' },
+  },
+  {
+    files: ['src/core/**/*.js'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              group: ['**/cloud/allow-effects.js', '**/local/allow-effects.js'],
+              message:
+                'Core may reference the AllowEffects type, but only external runtime boundaries may mint capabilities.',
+            },
+          ],
+        },
+      ],
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector: 'ImportExpression[source.value=/allow-effects\\.js$/]',
+          message: 'Core cannot dynamically import the capability factory.',
+        },
+        {
+          selector:
+            "CallExpression[callee.name='require'] > Literal[value=/allow-effects\\.js$/]",
+          message: 'Core cannot require the capability factory.',
+        },
+      ],
+    },
+  },
+  {
     linterOptions: { noInlineConfig: true },
   },
   {
-    ignores: [
-      'public/',
-      '.stryker-tmp/',
-      'reports/',
-    ],
+    ignores: ['public/', '.stryker-tmp/', 'reports/'],
   },
   {
     files: lintFiles,

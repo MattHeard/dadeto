@@ -1,5 +1,8 @@
+import { createAllowEffects } from '../../../../src/cloud/allow-effects.js';
 import { jest } from '@jest/globals';
 import { createSubmitNewStoryResponder } from '../../../../src/core/cloud/submit-new-story/submit-new-story-core.js';
+
+const allowEffects = createAllowEffects();
 
 describe('createSubmitNewStoryResponder branch coverage', () => {
   let verifyIdToken;
@@ -44,10 +47,11 @@ describe('createSubmitNewStoryResponder branch coverage', () => {
       },
     };
 
-    const result = await responder(request);
+    const result = await responder(allowEffects, request);
 
     expect(result.status).toBe(201);
     expect(saveSubmission).toHaveBeenCalledWith(
+      allowEffects,
       'test-uuid',
       expect.objectContaining({
         authorId: 'test-uid',
@@ -72,10 +76,11 @@ describe('createSubmitNewStoryResponder branch coverage', () => {
       },
     };
 
-    const result = await responder(request);
+    const result = await responder(allowEffects, request);
 
     expect(result.status).toBe(201);
     expect(saveSubmission).toHaveBeenCalledWith(
+      allowEffects,
       'test-uuid',
       expect.objectContaining({
         authorId: null,
@@ -107,10 +112,11 @@ describe('createSubmitNewStoryResponder branch coverage', () => {
       },
     };
 
-    const result = await responder(request);
+    const result = await responder(allowEffects, request);
 
     expect(result.status).toBe(201);
     expect(saveSubmission).toHaveBeenCalledWith(
+      allowEffects,
       'test-uuid',
       expect.objectContaining({
         authorId: null,
@@ -144,10 +150,11 @@ describe('createSubmitNewStoryResponder branch coverage', () => {
       },
     };
 
-    const result = await responder(request);
+    const result = await responder(allowEffects, request);
 
     expect(result.status).toBe(201);
     expect(saveSubmission).toHaveBeenCalledWith(
+      allowEffects,
       'test-uuid',
       expect.objectContaining({
         options: ['Option 1', 'Option 3'],
@@ -172,10 +179,11 @@ describe('createSubmitNewStoryResponder branch coverage', () => {
       },
     };
 
-    const result = await responder(request);
+    const result = await responder(allowEffects, request);
 
     expect(result.status).toBe(201);
     expect(saveSubmission).toHaveBeenCalledWith(
+      allowEffects,
       'test-uuid',
       expect.objectContaining({
         authorId: 'test-uid',
@@ -200,10 +208,11 @@ describe('createSubmitNewStoryResponder branch coverage', () => {
       },
     };
 
-    const result = await responder(request);
+    const result = await responder(allowEffects, request);
 
     expect(result.status).toBe(201);
     expect(saveSubmission).toHaveBeenCalledWith(
+      allowEffects,
       'test-uuid',
       expect.objectContaining({
         authorId: null,
@@ -254,10 +263,11 @@ describe('createSubmitNewStoryResponder branch coverage fallback paths', () => {
       },
     };
 
-    const result = await responder(request);
+    const result = await responder(allowEffects, request);
 
     expect(result.status).toBe(201);
     expect(saveSubmission).toHaveBeenCalledWith(
+      allowEffects,
       'test-uuid',
       expect.objectContaining({
         authorId: null,
@@ -274,10 +284,11 @@ describe('createSubmitNewStoryResponder branch coverage fallback paths', () => {
       get: null, // Simulate getter not being a function
     };
 
-    const result = await responder(request);
+    const result = await responder(allowEffects, request);
 
     expect(result.status).toBe(201);
     expect(saveSubmission).toHaveBeenCalledWith(
+      allowEffects,
       'test-uuid',
       expect.objectContaining({
         authorId: 'test-uid',
@@ -297,10 +308,11 @@ describe('createSubmitNewStoryResponder branch coverage fallback paths', () => {
       },
     };
 
-    const result = await responder(request);
+    const result = await responder(allowEffects, request);
 
     expect(result.status).toBe(201);
     expect(saveSubmission).toHaveBeenCalledWith(
+      allowEffects,
       'test-uuid',
       expect.objectContaining({
         authorId: 'test-uid',
@@ -326,10 +338,11 @@ describe('createSubmitNewStoryResponder branch coverage fallback paths', () => {
       },
     };
 
-    const result = await responder(request);
+    const result = await responder(allowEffects, request);
 
     expect(result.status).toBe(201);
     expect(saveSubmission).toHaveBeenCalledWith(
+      allowEffects,
       'test-uuid',
       expect.objectContaining({
         authorId: null,
@@ -356,10 +369,11 @@ describe('createSubmitNewStoryResponder branch coverage fallback paths', () => {
       },
     };
 
-    const result = await responder(request);
+    const result = await responder(allowEffects, request);
 
     expect(result.status).toBe(201);
     expect(saveSubmission).toHaveBeenCalledWith(
+      allowEffects,
       'test-uuid',
       expect.objectContaining({
         content: '',
@@ -386,10 +400,11 @@ describe('createSubmitNewStoryResponder branch coverage fallback paths', () => {
       },
     };
 
-    const result = await responder(request);
+    const result = await responder(allowEffects, request);
 
     expect(result.status).toBe(201);
     expect(saveSubmission).toHaveBeenCalledWith(
+      allowEffects,
       'test-uuid',
       expect.objectContaining({
         content: '12345',
@@ -416,10 +431,11 @@ describe('createSubmitNewStoryResponder branch coverage fallback paths', () => {
       },
     };
 
-    const result = await responder(request);
+    const result = await responder(allowEffects, request);
 
     expect(result.status).toBe(201);
     expect(saveSubmission).toHaveBeenCalledWith(
+      allowEffects,
       'test-uuid',
       expect.objectContaining({
         options: [],
@@ -447,10 +463,11 @@ describe('createSubmitNewStoryResponder branch coverage fallback paths', () => {
       },
     };
 
-    const result = await responder(request);
+    const result = await responder(allowEffects, request);
 
     expect(result.status).toBe(201);
     expect(saveSubmission).toHaveBeenCalledWith(
+      allowEffects,
       'test-uuid',
       expect.objectContaining({
         options: [],

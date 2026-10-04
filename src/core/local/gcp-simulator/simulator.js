@@ -732,8 +732,11 @@ function createSubmitNewStoryConfig(/** @type {unknown} */ options) {
   const { verifyIdToken, db } = options;
   return {
     verifyIdToken,
-    saveSubmission: (id, submission) =>
-      db.collection('storyFormSubmissions').doc(id).set(submission),
+    saveSubmission: (
+      /** @type {import('../../../../types/allow-effects').AllowEffects} */ permission,
+      id,
+      submission
+    ) => db.collection('storyFormSubmissions').doc(id).set(submission),
     randomUUID,
     getServerTimestamp: () => new Date(),
   };
@@ -982,7 +985,10 @@ function createGetSeedManifest(/** @type {unknown} */ bucketName) {
  */
 function createRoutes(/** @type {unknown} */ deps) {
   return {
-    submitNewStory: request => handleSubmitNewStory(deps, request),
+    submitNewStory: (
+      /** @type {import('../../../../types/allow-effects').AllowEffects} */ permission,
+      request
+    ) => handleSubmitNewStory(permission, deps, request),
     submitNewPage: request => handleSubmitNewPage(deps, request),
     getApiKeyCreditV2: request => handleGetApiKeyCreditV2(deps, request),
     getAuthorUuid: request => deps.getAuthorUuid(request),
@@ -1051,15 +1057,17 @@ export function resolvePaymentCreatedAt(/** @type {unknown} */ event) {
 
 /**
  * Run the submit-new-story route handler.
+ * @param {import('../../../../types/allow-effects').AllowEffects} permission Explicit command permission.
  * @param {{ submitNewStory: (...args: unknown[]) => unknown }} deps Route dependencies.
  * @param {unknown} request Incoming request object.
  * @returns {Promise<{ status: number, body?: unknown }>} Route response.
  */
 async function handleSubmitNewStory(
+  permission,
   /** @type {unknown} */ deps,
   /** @type {unknown} */ request
 ) {
-  const response = await deps.submitNewStory(request);
+  const response = await deps.submitNewStory(permission, request);
   return response;
 }
 

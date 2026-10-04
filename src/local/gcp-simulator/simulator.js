@@ -1,1 +1,14 @@
 export * from '../../core/local/gcp-simulator/simulator.js';
+import { createLocalGcpSimulator as createSimulator } from '../../core/local/gcp-simulator/simulator.js';
+import { bindEffectResponder } from '../allow-effects.js';
+
+/**
+ * Keep local public routes compatible while minting at the environment boundary.
+ * @param {Parameters<typeof createSimulator>[0]} [options] Simulator configuration.
+ * @returns {Promise<any>} Externally bound simulator.
+ */
+export async function createLocalGcpSimulator(options) {
+  const simulator = /** @type {any} */ (await createSimulator(options));
+  simulator.routes.submitNewStory = bindEffectResponder(simulator.routes.submitNewStory);
+  return simulator;
+}

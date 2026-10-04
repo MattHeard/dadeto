@@ -4,7 +4,6 @@ import {
   createJsonExpressApp,
   createJsonExpressAppDeps,
 } from '../../express-app.js';
-import { createLocalGcpSimulator } from './simulator.js';
 
 // Stryker disable all -- this module is the fixed simulator HTTP/server
 // boundary covered by the server unit and integration contract suites.
@@ -91,13 +90,13 @@ export const handle = startServer;
 
 /**
  * Start the local simulator server.
- * @param {{ express: Parameters<typeof createJsonExpressAppDeps>[0], simulator?: Promise<LocalGcpSimulator> }} deps Runtime dependencies.
+ * @param {{ express: Parameters<typeof createJsonExpressAppDeps>[0], simulator?: Promise<LocalGcpSimulator>, createSimulator: (options: object) => Promise<object> }} deps Runtime dependencies.
  * @returns {Promise<import('node:http').Server>} Server instance.
  */
 async function startServer(deps) {
   const express = deps.express;
   const simulator = /** @type {LocalGcpSimulator} */ (
-    await (deps.simulator ?? getSimulatorPromise())
+    await (deps.simulator ?? getSimulatorPromise(deps.createSimulator))
   );
   const app = createJsonExpressApp(createJsonExpressAppDeps(express));
   app.use((_req, res, next) => {
@@ -277,16 +276,17 @@ function shouldRedirectSubmitStory(req, result) {
 
 /**
  * Lazily create the simulator so module import stays cheap.
+ * @param {(options: object) => Promise<object>} createSimulator External route-binding constructor.
  * @returns {Promise<LocalGcpSimulator>} Simulator instance.
  */
-function getSimulatorPromise() {
+function getSimulatorPromise(createSimulator) {
   if (!simulatorPromise) {
     const options = {
       baseUrl: `http://127.0.0.1:${port}`,
       publicDir: defaultPublicDir,
     };
     simulatorPromise = /** @type {Promise<LocalGcpSimulator>} */ (
-      createLocalGcpSimulator(options)
+      createSimulator(options)
     );
   }
 
