@@ -380,4 +380,3 @@ describe('spacetimeSegmentTemporalRelation', () => {
     ).toBe('disjoint');
   });
 });
-/* eslint max-lines-per-function: off */

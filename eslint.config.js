@@ -15,6 +15,9 @@ const repoLintPlugin = {
 
 export default [
   {
+    linterOptions: { noInlineConfig: true },
+  },
+  {
     ignores: [
       'public/',
       '.stryker-tmp/',
@@ -127,6 +130,13 @@ export default [
       // Add other project-specific rules here if needed
       'no-unreachable-loop': 'warn',
     },
+  },
+  {
+    files: [
+      'src/core/browser/presenters/battleshipSolitaireClues.js',
+      'src/core/browser/toys/2025-03-29/get.js',
+    ],
+    rules: { complexity: ['warn', 4] },
   },
   {
     files: tautologicalWrapperFiles,

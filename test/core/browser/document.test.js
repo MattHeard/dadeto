@@ -160,9 +160,8 @@ describe('document facade', () => {
     expect(handle.getUuid()).toBe('uuid');
   });
 
-  it('delegates state, metadata, and module helpers', async () => {
-    const { element, globalThisObj, windowObj, handle } =
-      createDocumentFixture();
+  it('delegates state and element helpers', () => {
+    const { element, handle } = createDocumentFixture();
     const callback = jest.fn();
     const event = {
       currentTarget: 'current',
@@ -206,6 +205,13 @@ describe('document facade', () => {
     expect(element.type).toBe('text');
     handle.setPlaceholder(element, 'placeholder');
     expect(element.placeholder).toBe('placeholder');
+  });
+
+  it('delegates metadata, observers, and module helpers', async () => {
+    const { element, globalThisObj, windowObj, handle } =
+      createDocumentFixture();
+    const callback = jest.fn();
+    expect(handle.hasNextSiblingClass(element, 'x')).toBe(true);
     handle.setDataAttribute(element, 'key', 'value');
     expect(handle.getDataAttribute(element, 'key')).toBe('value');
     handle.setTextContent(element, 'content');
@@ -287,4 +293,3 @@ describe('document facade', () => {
     ).toBe(true);
   });
 });
-/* eslint max-statements: off */

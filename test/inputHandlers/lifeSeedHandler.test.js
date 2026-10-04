@@ -391,4 +391,3 @@ describe('lifeSeedHandler', () => {
     );
   });
 });
-/* eslint max-lines-per-function: off, max-statements: off */

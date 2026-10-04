@@ -7,7 +7,6 @@ describe('battleshipSolitaireClues presenter', () => {
   });
 });
 
-/* global describe, expect, it */
 /**
  * Unit‑tests for createBattleshipCluesBoardElement presenter
  * Aim: 100 % branch coverage

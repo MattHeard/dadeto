@@ -248,6 +248,9 @@ describe('gamepad capture pure helpers', () => {
     const storedState = { snapshots: { 0: { axes: [1] } } };
     gamepadCaptureTestOnly.removeSnapshot(storedState, gamepad);
     expect(storedState.snapshots).toEqual({});
+  });
+
+  it('preserves connected and disconnected lifecycle scheduling', () => {
     const lifecycleGamepad = createGamepad({ connected: false });
     const lifecycleState = {
       capturing: true,
@@ -1109,4 +1112,3 @@ describe('escape handling', () => {
     }
   });
 });
-/* eslint max-lines-per-function: off, max-statements: off */

@@ -506,6 +506,11 @@ describe('createLedgerIngestReportElement storage and fallback states', () => {
     ).toBeUndefined();
     expect(helpers.getSummaryNumberValue(3)).toBe(3);
     expect(helpers.getSummaryNumberValue('3')).toBe(0);
+  });
+
+  test('covers transaction cells and interactive table rendering', () => {
+    const helpers = ledgerIngestReportTestOnly;
+    const dom = createMockDom();
 
     const transaction = {
       transactionId: 'tx',
@@ -541,6 +546,23 @@ describe('createLedgerIngestReportElement storage and fallback states', () => {
     click(activeLink);
     expect(clicked).toBe(true);
     expect(state.collapsedColumns).toHaveLength(10);
+  });
+
+  test('covers table header toggles, body rows, and JSON sections', () => {
+    const helpers = ledgerIngestReportTestOnly;
+    const dom = createMockDom();
+    const transaction = {
+      transactionId: 'tx',
+      postedDate: '2026-01-01',
+      amount: 4,
+      currency: 'USD',
+      description: 'desc',
+      dedupeKey: 'key',
+      source: 'bank',
+      rawIndex: 0,
+      metadata: { rawRecord: { id: 'raw' } },
+    };
+    const state = { collapsedColumns: Array(10).fill(false) };
 
     let rerenders = 0;
     const expandedHeader = helpers.createTableHeaderCell(
@@ -605,4 +627,3 @@ describe('createLedgerIngestReportElement storage and fallback states', () => {
     );
   });
 });
-/* eslint max-lines-per-function: off, max-statements: off */

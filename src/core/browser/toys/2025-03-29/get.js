@@ -8,8 +8,6 @@ import { whenOrNull } from '../../../commonCore.js';
  * @property {string|null} error - Error message when traversal fails.
  */
 
-/* eslint complexity: ["warn", 4] */
-
 /**
  * Determine whether the supplied value represents an error string.
  * @param {unknown} value - Value to inspect.

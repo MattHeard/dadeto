@@ -104,7 +104,9 @@ describe('dated toy boundary matrix', () => {
       )
     ).toBe('false');
   });
+});
 
+describe('dated toy valid registries and intervals', () => {
   test('covers valid registry and interval boundaries', () => {
     const points = [
       {
@@ -498,48 +500,61 @@ describe('dated toy boundary matrix', () => {
       )
     ).toBe('false');
     const invalidTimePoints = [{ ...points[0], timestamp: 'bad' }, points[1]];
-    expect(
-      assetSegmentAssignmentPredicate(
-        JSON.stringify({
-          points: invalidTimePoints,
-          segments: [{ segmentId: 'bad', startPointId: 'A', endPointId: 'B' }],
-          assignments: [],
-          proposedAssignment: { assetId: 'asset', segmentId: 'bad' },
-        })
-      )
-    ).toBe('false');
-    expect(
-      personSegmentAssignmentPredicate(
-        JSON.stringify({
-          points: invalidTimePoints,
-          segments: [{ segmentId: 'bad', startPointId: 'A', endPointId: 'B' }],
-          assignments: [],
-          proposedAssignment: { personId: 'person', segmentId: 'bad' },
-        })
-      )
-    ).toBe('false');
-    expect(
-      spacetimeSegmentTemporalRelation(
-        JSON.stringify({
-          points,
-          segments: missingPointSegment,
-          firstSegmentId: 'bad',
-          secondSegmentId: 'bad',
-        })
-      )
-    ).toContain('unknown point');
-    expect(
-      spacetimeWorldLinePairPredicate(
-        JSON.stringify({
-          points,
-          segments: missingPointSegment,
-          firstSegmentId: 'bad',
-          secondSegmentId: 'bad',
-        })
-      )
-    ).toContain('unknown point');
+    /**
+     * Check malformed timestamps and unknown points against the same registry.
+     * @returns {void} Assertions preserve invalid registry coverage.
+     */
+    function assertInvalidRegistryBoundaries() {
+      expect(
+        assetSegmentAssignmentPredicate(
+          JSON.stringify({
+            points: invalidTimePoints,
+            segments: [
+              { segmentId: 'bad', startPointId: 'A', endPointId: 'B' },
+            ],
+            assignments: [],
+            proposedAssignment: { assetId: 'asset', segmentId: 'bad' },
+          })
+        )
+      ).toBe('false');
+      expect(
+        personSegmentAssignmentPredicate(
+          JSON.stringify({
+            points: invalidTimePoints,
+            segments: [
+              { segmentId: 'bad', startPointId: 'A', endPointId: 'B' },
+            ],
+            assignments: [],
+            proposedAssignment: { personId: 'person', segmentId: 'bad' },
+          })
+        )
+      ).toBe('false');
+      expect(
+        spacetimeSegmentTemporalRelation(
+          JSON.stringify({
+            points,
+            segments: missingPointSegment,
+            firstSegmentId: 'bad',
+            secondSegmentId: 'bad',
+          })
+        )
+      ).toContain('unknown point');
+      expect(
+        spacetimeWorldLinePairPredicate(
+          JSON.stringify({
+            points,
+            segments: missingPointSegment,
+            firstSegmentId: 'bad',
+            secondSegmentId: 'bad',
+          })
+        )
+      ).toContain('unknown point');
+    }
+    assertInvalidRegistryBoundaries();
   });
+});
 
+describe('dated toy rejected and boundary inputs', () => {
   test('exercises rejected record branches in dated collection toys', () => {
     const points = [
       {
@@ -756,4 +771,3 @@ describe('dated toy boundary matrix', () => {
     }
   });
 });
-/* eslint max-lines-per-function: off, max-statements: off */

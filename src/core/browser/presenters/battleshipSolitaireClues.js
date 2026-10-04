@@ -88,7 +88,6 @@ const VALIDATION_CHECKS = [
   o => hasValidClueArrays(o) && getClueArrays(o).some(isEmpty),
 ];
 
-/* eslint complexity: ["warn", 4] */
 /**
  * Return a validation error message for the clue object if any rule fails.
  * @param {BattleshipClueCandidate | unknown} obj - Parsed clue candidate that may still require the correct clue arrays.

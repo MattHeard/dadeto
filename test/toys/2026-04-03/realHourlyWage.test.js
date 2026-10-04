@@ -258,4 +258,3 @@ describe('realHourlyWage', () => {
     }
   );
 });
-/* eslint max-lines-per-function: off */

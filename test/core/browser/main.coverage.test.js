@@ -131,7 +131,6 @@ const { createMainHandle } = await import('../../../src/core/browser/main.js');
 
 describe('browser main initialization', () => {
   // This single integration fixture intentionally exercises all initialization branches.
-  // eslint-disable-next-line max-statements
   it('covers initialization and interactive branches', () => {
     const handlers = new Map();
     const article = {};
@@ -178,90 +177,97 @@ describe('browser main initialization', () => {
       fetchFn: jest.fn(),
       storageObj: null,
     })();
-    expect(mockCreateErrorBeaconReporter).toHaveBeenCalledWith(
-      expect.any(Function),
-      'https://europe-west1-irien-465710.cloudfunctions.net/prod-errors'
-    );
-    expect(observedEnv).toEqual(
-      expect.objectContaining({
-        globalState: expect.any(Object),
-        createEnv: expect.any(Function),
-        error: expect.any(Function),
-        fetch: expect.any(Function),
-      })
-    );
-    expect([...observedEnv.createEnv().keys()]).toEqual([
-      'getRandomNumber',
-      'getCurrentTime',
-      'getUuid',
-      'getData',
-      'setLocalTemporaryData',
-      'setLocalPermanentData',
-      'getLocalPermanentData',
-      'encodeBase64',
-      'memoryLens',
-      'permanentLens',
-    ]);
-    expect(observedBeaconHandlers.getUrl()).toBe('https://example.test/');
-    expect(observedBeaconHandlers.getUserAgent()).toBe('test-agent');
-    expect(observedBeaconHandlers.getNow()).toEqual(expect.any(Number));
-    expect(observedBlogDeps).toEqual(
-      expect.objectContaining({
-        fetch: expect.any(Function),
-        loggers: expect.any(Object),
-        storage: null,
-        memoryLens: expect.any(Map),
-        permanentLens: expect.any(Map),
-      })
-    );
-    expect(Object.keys(observedBlogDeps.loggers)).toEqual([
-      'logInfo',
-      'logError',
-      'logWarning',
-    ]);
-    expect(observedEnv.globalState).toEqual(
-      expect.objectContaining({
-        blog: null,
-        blogStatus: 'idle',
-        blogError: null,
-        blogFetchPromise: null,
-        temporary: {},
-      })
-    );
-    expect(observedInitOptions).toEqual(
-      expect.objectContaining({
-        win: windowObj,
-        logInfo: expect.any(Function),
-        logWarning: expect.any(Function),
-        getElement: expect.any(Function),
-        hasNoInteractiveComponents: expect.any(Function),
-        getInteractiveComponents: expect.any(Function),
-        getInteractiveComponentCount: expect.any(Function),
-        getComponentInitializer: expect.any(Function),
-      })
-    );
-    expect(Object.keys(observedInitOptions)).toEqual([
-      'win',
-      'logInfo',
-      'logWarning',
-      'getElement',
-      'hasNoInteractiveComponents',
-      'getInteractiveComponents',
-      'getInteractiveComponentCount',
-      'getComponentInitializer',
-    ]);
-    expect(observedPermanentOptions.storage).toBeNull();
-    expect(observedPermanentOptions.logError).toEqual(expect.any(Function));
-    const env = observedEnv.createEnv();
-    expect(env.get('getData')()).toBe('data');
-    expect(env.get('setLocalTemporaryData')('next')).toBe('temporary');
-    expect(env.get('setLocalPermanentData')('saved')).toBe('permanent');
-    expect(env.get('getLocalPermanentData')()).toBe('stored');
-    expect(mockSetTemporary).toHaveBeenCalledWith({
-      desired: 'next',
-      current: expect.any(Object),
-    });
-    expect(mockSetPermanent).toHaveBeenCalledWith('saved');
+    /**
+     * Verify dependency wiring and environment operations before user events.
+     * @returns {void} Assertions fail on an incorrect initialization contract.
+     */
+    function assertInitializationState() {
+      expect(mockCreateErrorBeaconReporter).toHaveBeenCalledWith(
+        expect.any(Function),
+        'https://europe-west1-irien-465710.cloudfunctions.net/prod-errors'
+      );
+      expect(observedEnv).toEqual(
+        expect.objectContaining({
+          globalState: expect.any(Object),
+          createEnv: expect.any(Function),
+          error: expect.any(Function),
+          fetch: expect.any(Function),
+        })
+      );
+      expect([...observedEnv.createEnv().keys()]).toEqual([
+        'getRandomNumber',
+        'getCurrentTime',
+        'getUuid',
+        'getData',
+        'setLocalTemporaryData',
+        'setLocalPermanentData',
+        'getLocalPermanentData',
+        'encodeBase64',
+        'memoryLens',
+        'permanentLens',
+      ]);
+      expect(observedBeaconHandlers.getUrl()).toBe('https://example.test/');
+      expect(observedBeaconHandlers.getUserAgent()).toBe('test-agent');
+      expect(observedBeaconHandlers.getNow()).toEqual(expect.any(Number));
+      expect(observedBlogDeps).toEqual(
+        expect.objectContaining({
+          fetch: expect.any(Function),
+          loggers: expect.any(Object),
+          storage: null,
+          memoryLens: expect.any(Map),
+          permanentLens: expect.any(Map),
+        })
+      );
+      expect(Object.keys(observedBlogDeps.loggers)).toEqual([
+        'logInfo',
+        'logError',
+        'logWarning',
+      ]);
+      expect(observedEnv.globalState).toEqual(
+        expect.objectContaining({
+          blog: null,
+          blogStatus: 'idle',
+          blogError: null,
+          blogFetchPromise: null,
+          temporary: {},
+        })
+      );
+      expect(observedInitOptions).toEqual(
+        expect.objectContaining({
+          win: windowObj,
+          logInfo: expect.any(Function),
+          logWarning: expect.any(Function),
+          getElement: expect.any(Function),
+          hasNoInteractiveComponents: expect.any(Function),
+          getInteractiveComponents: expect.any(Function),
+          getInteractiveComponentCount: expect.any(Function),
+          getComponentInitializer: expect.any(Function),
+        })
+      );
+      expect(Object.keys(observedInitOptions)).toEqual([
+        'win',
+        'logInfo',
+        'logWarning',
+        'getElement',
+        'hasNoInteractiveComponents',
+        'getInteractiveComponents',
+        'getInteractiveComponentCount',
+        'getComponentInitializer',
+      ]);
+      expect(observedPermanentOptions.storage).toBeNull();
+      expect(observedPermanentOptions.logError).toEqual(expect.any(Function));
+      const env = observedEnv.createEnv();
+      expect(env.get('getData')()).toBe('data');
+      expect(env.get('setLocalTemporaryData')('next')).toBe('temporary');
+      expect(env.get('setLocalPermanentData')('saved')).toBe('permanent');
+      expect(env.get('getLocalPermanentData')()).toBe('stored');
+      expect(mockSetTemporary).toHaveBeenCalledWith({
+        desired: 'next',
+        current: expect.any(Object),
+      });
+      expect(mockSetPermanent).toHaveBeenCalledWith('saved');
+    }
+    assertInitializationState();
     buttons.forEach(button =>
       handlers.get(button.dataset.filter)({ preventDefault: jest.fn() })
     );

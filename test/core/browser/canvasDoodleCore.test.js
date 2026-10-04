@@ -137,12 +137,19 @@ describe('canvasDoodleCore', () => {
     expect(context.moveTo).toHaveBeenLastCalledWith(0, 0);
     expect(context.lineTo).toHaveBeenLastCalledWith(0, 0);
     expect(context.fillText).toHaveBeenLastCalledWith('', 0, 0);
-    expect(context._fillStyle).toBe('#1f2937');
-    expect(context._strokeStyle).toBe('#1f2937');
-    expect(context._lineWidth).toBe(2);
-    expect(context.font).toBe('12px monospace');
-    expect(context.textAlign).toBe('left');
-    expect(context.textBaseline).toBe('alphabetic');
+    /**
+     * Verify all fallback style values after drawing default shapes.
+     * @returns {void} Assertions retain the default rendering contract.
+     */
+    function assertDefaultStyles() {
+      expect(context._fillStyle).toBe('#1f2937');
+      expect(context._strokeStyle).toBe('#1f2937');
+      expect(context._lineWidth).toBe(2);
+      expect(context.font).toBe('12px monospace');
+      expect(context.textAlign).toBe('left');
+      expect(context.textBaseline).toBe('alphabetic');
+    }
+    assertDefaultStyles();
 
     drawCanvasDoodle(context, canvas, { shapes: [{ type: 'rect' }] });
     expect(context._fillStyle).toBe('#cbd5e1');
@@ -181,4 +188,3 @@ describe('canvasDoodleCore', () => {
     expect(context.arc).toHaveBeenCalledTimes(3);
   });
 });
-/* eslint max-statements: off */

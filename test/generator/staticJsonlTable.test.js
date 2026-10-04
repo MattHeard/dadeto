@@ -1,4 +1,3 @@
-/* eslint-disable jsdoc/require-param, jsdoc/require-returns */
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -8,7 +7,11 @@ import {
   renderStaticJsonlTable,
 } from '../../src/core/build/staticJsonlTable.js';
 
-/** Create an isolated JSONL fixture directory. */
+/**
+ * Create an isolated JSONL fixture directory.
+ * @param {string[]} lines Serialized fixture rows.
+ * @returns {string} Absolute directory containing the fixture file.
+ */
 function fixture(lines) {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'dadeto-table-'));
   fs.writeFileSync(path.join(root, 'rows.jsonl'), lines.join('\n'));
