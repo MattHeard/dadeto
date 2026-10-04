@@ -6,6 +6,10 @@ Toy: NEON1 — Neon Covenant: Frontier Lab. Owner: dadeto-srg7. Updated 2026-10-
 
 Living Frontier Lab expansion owner: dadeto-88mh. The approved four-release expansion keeps this game identity, storage key, controller alphabet and 28-shift campaign. Release 1 begins with named staffing and lossless migration; clinic/cooling introduction, forecasts and causal incident chains are required before that release is complete.
 
+### Playable first-shift contract
+
+Fresh ledgers start at eight compute and four cooling, with the optional controller curriculum saved as `firstShiftGuide` (integer 0–4). The curriculum offers real clinic acceptance or decline, real 20k cooling repair or decline, named staff inspection, the shared settlement forecast, and explicit settlement. It owns ordinary menus and dialogues rather than running a separate tutorial economy. The main menu and final introduction choice both open it. Settlement completes the curriculum by advancing the actual day; older ledgers without the field are treated as already introduced. Import rejects malformed lesson indices without changing live state. Existing saved capacity, balances, deadlines and release requirements remain authoritative.
+
 ## Problem Statement
 
 Run a frontier AI lab through conversations and terminals rather than overhead construction. Keep useful research, payroll, power, safety, contracts and staff commitments in tension.

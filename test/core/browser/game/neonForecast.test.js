@@ -31,7 +31,7 @@ function fixture(overrides = {}, day = 1) {
   return {
     ...state,
     dialogue: null,
-    lab: { ...state.lab, ...overrides },
+    lab: { ...state.lab, cooling: 8, ...overrides },
     world: { ...state.world, day },
   };
 }

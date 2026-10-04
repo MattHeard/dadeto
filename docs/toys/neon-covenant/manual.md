@@ -4,6 +4,14 @@
 
 Manage a frontier AI lab by walking its rooms, talking to staff and operating computers. You have 28 shifts to keep the lab solvent, deliver useful models and escape acquisition by Helios. The standalone game is at [/neon-covenant/](/neon-covenant/); this embedded toy uses the same rules and separate lab saves.
 
+## Your first shift
+
+Mae needs Atlas for the night clinic, while Ion reports a failed cooling bank. A new campaign has 180k cash, 120k debt, eight compute units and only four functioning cooling units. Choose **Plan the first shift** at the end of the introduction, or open X and select **First-shift guide** later. You can leave it to walk and talk at any time.
+
+The guide lets you inspect Mae's actual terms before accepting: a 28k advance, Atlas released by shift 12, a 14k clawback if missed, and 7k per shift after delivery. You may decline. Repairing cooling costs 20k and one decision point, restoring capacity to eight. Keeping the broken bank saves that money but starts with five research progress per shift instead of seven. These are real campaign orders, not free demonstration bonuses.
+
+Inspect Ada and Jun in research, Sable in safety and Ion in service. Listening, reading forecasts and keeping existing assignments are free; actual reassignments consume attention. Review the closing forecast, then choose **End shift / settle costs** explicitly. Walking and inspecting never settle payroll. Training is not deployment: the ordinary training target, latest-checkpoint evaluation and safety requirements still apply. Existing saves keep their saved cooling capacity and are not forced to repeat the new guide.
+
 ## Input
 
 Directions walk and select. A talks, advances text and confirms. B closes conversations, goes back in menus, or opens its assigned shortcut. X opens/closes the lab menu; Y assigns B. Keyboard, gamepad and both virtual keypads use only these eight inputs.
@@ -78,7 +86,7 @@ Bankruptcy ends immediately. After shift 28, cash must cover unpaid debt to avoi
 
 ### Suggested opening
 
-Read the introduction with A, or close with B. A opens the ledger ahead. Visit the clinic to sign its contract, meet Mae and commit to community participation. Keep Atlas selected and balanced policy. End research shifts, evaluate after Atlas reaches 38, then deploy before shift 12. Use its revenue to finance Lumen and repay debt. Check risk, cooling and morale before every shift. Explore colleagues' promises before signing Helios.
+Read the introduction with A, or close with B. Choose its first-shift guide to inspect the clinic deal and compare the cooling repair. Repairing gives a quicker Atlas route; declining requires more research shifts. A opens the ledger ahead. Visit the clinic to sign its contract, meet Mae and commit to community participation. Keep Atlas selected and balanced policy. End research shifts, evaluate after Atlas reaches 38, then deploy before shift 12. Use its revenue to finance Lumen and repay debt. Check risk, cooling and morale before every shift. Explore colleagues' promises before signing Helios.
 
 ### Saves and agents
 

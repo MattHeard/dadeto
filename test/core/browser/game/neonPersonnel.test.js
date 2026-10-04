@@ -92,7 +92,7 @@ test('named staffing preserves payroll and requires an explicit donor', () => {
 });
 
 test('employee concerns are causal and clear when their causes are addressed', () => {
-  const lab = createLab();
+  const lab = { ...createLab(), cooling: 8 };
   const person = lab.employees[0];
   expect(employeeThoughts(lab, person).join(' ')).toContain('room to breathe');
   const troubled = {
@@ -280,7 +280,9 @@ test('the real eight-button menus expose individual roles and all six candidates
   };
   const before = state.lab.decisions;
   state = stepNeon(state, ['a']);
-  expect(state.dialogue.lines[0].text).toContain('clinical reliability');
+  expect(state.dialogue.lines[0].text).toContain(
+    'Cooling cannot serve every rack'
+  );
   expect(state.lab.decisions).toBe(before);
   expect(state.menu).toBeNull();
 });

@@ -222,13 +222,22 @@ export function comparisonPages(state, command) {
 }
 
 /**
- * Fit prose into six wrapped rows with room for the shared controller footer.
- * @param {{text: string}[]} nodes Complete explanatory paragraphs.
- * @returns {{text: string}[]} Consecutive pages with no clipped words.
+ * Measure report prose once for forecasts and settlement pagination.
+ * @param {string[]} report Complete explanatory paragraphs.
+ * @returns {string[]} Consecutive bounded rows with no clipped words.
+ */
+export function labReportLines(report) {
+  return report.flatMap(text => wrapDialogueText(text, 28));
+}
+
+/**
+ * Paginate measured text shared by forecasts and settlement explanations.
+ * @param {{text: string}[]} nodes Unbounded authored paragraphs.
+ * @returns {{text: string}[]} Complete six-row dialogue nodes.
  */
 function readablePages(nodes) {
   return nodes.flatMap(node => {
-    const rows = wrapDialogueText(node.text);
+    const rows = labReportLines([node.text]);
     const pages = [];
     for (let start = 0; start < rows.length; start += 6)
       pages.push({ text: rows.slice(start, start + 6).join(' ') });

@@ -199,10 +199,17 @@ export const LAB_CONTENT = {
       text: 'Build useful models without breaking your team. Walk to people and terminals. A talks. X opens the lab menu.',
     },
     {
-      text: 'First: read the ledger ahead. Choose a contract at the clinic, then set research in the evaluation suite.',
+      text: 'Mae needs Atlas for the night clinic. Ion reports a failed cooling bank: eight compute units, only four cooling.',
+    },
+    {
+      text: 'Repairs cost 20k. Declining means slower research, not failure. The first-shift guide lets you compare and choose real orders.',
     },
     {
       text: 'Only END SHIFT advances payroll and research. Each shift has six decision points. Y binds a shortcut to B.',
+      choices: [
+        { label: 'Plan the first shift', command: 'page:orientation' },
+        { label: 'Explore freely' },
+      ],
     },
   ],
 };

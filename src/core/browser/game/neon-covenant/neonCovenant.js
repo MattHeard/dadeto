@@ -22,6 +22,10 @@ export function validLabSave(state) {
   return Boolean(
     lab &&
       validPersonnel(lab) &&
+      (lab.firstShiftGuide === undefined ||
+        (Number.isInteger(lab.firstShiftGuide) &&
+          lab.firstShiftGuide >= 0 &&
+          lab.firstShiftGuide <= 4)) &&
       LAB_CONTENT.maps[state.world.mapId] &&
       Array.isArray(state.world.npcs) &&
       Array.isArray(state.lastActions) &&
@@ -90,6 +94,7 @@ export function validLabSave(state) {
             (/** @type {Record<string, any>} */ choice) =>
               typeof choice?.label === 'string' &&
               (!choice.command ||
+                choice.command === 'page:orientation' ||
                 LAB_CONTENT.npcs.some(
                   (/** @type {Record<string, any>} */ actor) =>
                     choice.command === `promise:${actor.id}`

@@ -5,7 +5,13 @@ import { createLab, manageLab, endShift } from './management.js';
 import { labEntries, labMenuRows } from './controls.js';
 import { LAB_CONTENT } from './content.js';
 import { employeeThoughts } from './personnel.js';
-import { forecastShift, forecastPages, comparisonPages } from './forecast.js';
+import {
+  forecastShift,
+  forecastPages,
+  comparisonPages,
+  labReportLines,
+} from './forecast.js';
+import { orientationOrder, orientationStage } from './orientation.js';
 import {
   controllerSelection,
   withControllerSelection,
@@ -79,6 +85,7 @@ export function createNeonState(content = LAB_CONTENT) {
  */
 function menuCommand(state, command) {
   const next = { ...state, menu: null };
+  if (command.startsWith('lesson:')) return lessonCommand(next, command);
   if (command === 'preview-shift')
     return openDialogue(next, 'forecast', forecastPages(state));
   if (command.startsWith('preview:'))
@@ -114,7 +121,7 @@ function menuCommand(state, command) {
         ...state.menu,
         reportPage:
           ((state.menu.reportPage || 0) + 1) %
-          Math.ceil(state.lab.report.length / 3),
+          Math.ceil(labReportLines(state.lab.report).length / 3),
       },
     };
   if (command === 'guide')
@@ -136,6 +143,39 @@ function menuCommand(state, command) {
   )
     return { ...next, controllerCommand: command };
   return manageLab(next, command);
+}
+
+/**
+ * Inspect or execute the first-shift lesson with ordinary modal ownership.
+ * @param {Record<string, any>} state Campaign with a closed menu.
+ * @param {string} command Selected lesson operation.
+ * @returns {Record<string, any>} Actual campaign, never a tutorial sandbox.
+ */
+function lessonCommand(state, command) {
+  if (command === 'lesson:terms') {
+    const deal = LAB_CONTENT.contracts.clinic;
+    return openDialogue(state, 'mae', [
+      {
+        text: `Mae: Atlas for the night clinic. ${deal.advance}k advance; release by shift ${deal.deadline}. Miss it: ${Math.ceil(deal.advance / 2)}k clawback.`,
+      },
+      {
+        text: `Delivered service pays ${deal.daily}k per shift. Training alone is not delivery: evaluate the latest checkpoint before release.`,
+      },
+    ]);
+  }
+  if (command === 'lesson:forecast') {
+    const stage = orientationStage(state);
+    const next =
+      stage === 3
+        ? { ...state, lab: { ...state.lab, firstShiftGuide: 4 } }
+        : state;
+    return openDialogue(
+      next,
+      'forecast',
+      stage === 1 ? comparisonPages(state, 'cooling') : forecastPages(state)
+    );
+  }
+  return orientationOrder(state, command);
 }
 
 /**
@@ -202,7 +242,7 @@ function stepConversation(state, pressed) {
   const next = { ...state, dialogue: { ...state.dialogue, selected } };
   if (!pressed.includes('a')) return next;
   return choices[selected].command
-    ? manageLab({ ...next, dialogue: null }, choices[selected].command)
+    ? menuCommand({ ...next, dialogue: null }, choices[selected].command)
     : { ...next, dialogue: null };
 }
 

@@ -23,10 +23,11 @@ export function createLab() {
   return {
     rulesVersion: 1,
     employees: createPersonnel(),
+    firstShiftGuide: 0,
     cash: 180,
     debt: 120,
     compute: 8,
-    cooling: 8,
+    cooling: 4,
     racks: 1,
     morale: 75,
     trust: 45,

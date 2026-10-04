@@ -48,17 +48,59 @@ async function openForecast(page: Page, embedded: boolean) {
 }
 
 for (const embedded of [false, true]) {
+  for (const repair of [false, true]) {
+    test(`first shift cooling ${repair ? 'repair' : 'decline'} uses real rules in ${embedded ? 'embedded' : 'standalone'} mode`, async ({ page }) => {
+      const errors: string[] = [];
+      page.on('pageerror', error => errors.push(error.message));
+      await page.goto(embedded ? '/' : '/neon-covenant/', { waitUntil: 'domcontentloaded' });
+      if (embedded) {
+        await page.locator('#NEON1').scrollIntoViewIfNeeded();
+        await expect(page.locator('#NEON1').getByRole('button', { name: 'Submit', exact: true })).toBeEnabled();
+      }
+      await tap(page, 'b', embedded);
+      await tap(page, 'x', embedded);
+      await tap(page, 'up', embedded);
+      await tap(page, 'a', embedded);
+      expect((await labState(page)).menu.page).toBe('orientation');
+      await tap(page, 'a', embedded);
+      expect((await labState(page)).lab.cash).toBe(208);
+      if (!repair) await tap(page, 'down', embedded);
+      await tap(page, 'a', embedded);
+      let state = await labState(page);
+      expect(state.lab.cooling).toBe(repair ? 8 : 4);
+      expect(state.lab.decisions).toBe(repair ? 4 : 5);
+      await selectPersonnelRow(page, 'lesson:decline', embedded);
+      await tap(page, 'a', embedded);
+      state = await labState(page);
+      expect(state.dialogue.actorId).toBe('forecast');
+      expect(state.lab.firstShiftGuide).toBe(4);
+      const projected = state.presentation.forecast;
+      expect(state.world.day).toBe(1);
+      await tap(page, 'b', embedded);
+      await tap(page, 'x', embedded);
+      await tap(page, 'up', embedded);
+      await tap(page, 'a', embedded);
+      await tap(page, 'a', embedded);
+      state = await labState(page);
+      expect(state.world.day).toBe(2);
+      expect(state.lab.cash).toBe(projected.closingCash);
+      expect(state.lab.research.atlas).toBe(repair ? 7 : 5);
+      expect(state.lab.deployed).toEqual([]);
+      expect(errors).toEqual([]);
+      await page.screenshot({ path: `.tmp/neon-first-shift-${repair ? 'repair' : 'decline'}-${embedded ? 'embedded' : 'standalone'}-${test.info().project.name}.png` });
+    });
+  }
   test(`forecast previews are free, readable and exact in ${embedded ? 'embedded' : 'standalone'} mode`, async ({ page }) => {
     const errors: string[] = [];
     page.on('pageerror', error => errors.push(error.message));
     const opening = await openForecast(page, embedded);
     const projected = opening.presentation.forecast;
-    expect(projected.closingCash).toBe(169);
-    expect(projected.bottleneck.kind).toBe('demand');
+    expect(projected.closingCash).toBe(170);
+    expect(projected.bottleneck.kind).toBe('cooling');
     await selectPersonnelRow(page, 'preview-shift', embedded);
     let state = await labState(page);
     expect(state.dialogue.actorId).toBe('forecast');
-    expect(state.dialogue.lines.map((line: any) => line.text).join(' ')).toContain('Closing cash 169k');
+    expect(state.dialogue.lines.map((line: any) => line.text).join(' ')).toContain('Closing cash 170k');
     expect(state.lab).toEqual(opening.lab);
     expect(state.world.day).toBe(opening.world.day);
     expect(await page.evaluate(async () => {
@@ -89,8 +131,8 @@ for (const embedded of [false, true]) {
     const text = state.dialogue.lines.map((line: any) => line.text).join(' ');
     expect(text).toContain('PREVIEW ONLY');
     expect(text).toContain('Cost 30k and 1 attention');
-    expect(text).toContain('Research gain changes from 7 to 7');
-    expect(text).toContain('Closing cash changes from 169k to 139k');
+    expect(text).toContain('Research gain changes from 5 to 5');
+    expect(text).toContain('Closing cash changes from 170k to 140k');
     expect(state.lab).toEqual(opening.lab);
     expect(state.world.day).toBe(1);
     expect(errors).toEqual([]);
@@ -115,7 +157,7 @@ test('named staff are assignable and their readable concerns own controller inpu
   await selectPersonnelRow(page, 'thoughts:ada');
   const state = await labState(page);
   expect(state.dialogue.actorId).toBe('ada');
-  expect(state.dialogue.lines[0].text).toContain('clinical reliability');
+  expect(state.dialogue.lines[0].text).toContain('Cooling cannot serve every rack');
   await tap(page, 'a');
   expect((await labState(page)).dialogue).toBeNull();
   expect((await labState(page)).lab.decisions).toBe(5);
@@ -176,7 +218,7 @@ test('phone and desktop have readable first-run intro, modal controls and an exp
   expect((await labState(page)).world.day).toBe(1);
   await tap(page, 'a');
   expect((await labState(page)).world.day).toBe(2);
-  expect((await labState(page)).lab.cash).toBe(169);
+  expect((await labState(page)).lab.cash).toBe(170);
   await tap(page, 'x');
   await tap(page, 'y');
   await tap(page, 'down');
@@ -232,6 +274,11 @@ test('a new-save director can deliver Atlas and finish independently through rea
     return act([...steps, 'a']);
   };
   await act(['b']);
+  await act(['x']);
+  await choose('page:orientation');
+  await choose('lesson:decline');
+  await choose('lesson:cooling');
+  await act(['x']);
   for (let shift = 0; shift < 6; shift++) {
     await act(['x']); await choose('page:ledger'); await choose('shift'); await act(['x']);
   }

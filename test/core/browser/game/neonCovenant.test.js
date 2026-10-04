@@ -40,7 +40,7 @@ function campaign(overrides = {}) {
   return {
     ...createNeonState(),
     dialogue: null,
-    lab: { ...createLab(), ...overrides },
+    lab: { ...createLab(), cooling: 8, ...overrides },
   };
 }
 
@@ -103,7 +103,7 @@ test('NEON1 comes from the canonical blog key generator and links both presenter
 });
 
 test('forecast makes compute, heat, morale, policy, data and income legible', () => {
-  const lab = createLab();
+  const lab = { ...createLab(), cooling: 8 };
   expect(forecast(lab)).toEqual({
     demand: 6,
     available: 8,

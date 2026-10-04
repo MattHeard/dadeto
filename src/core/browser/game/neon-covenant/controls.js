@@ -1,7 +1,8 @@
 import { LAB_CONTENT } from './content.js';
 import { forecast } from './management.js';
 import { PERSONNEL } from './personnel.js';
-import { forecastShift } from './forecast.js';
+import { forecastShift, labReportLines } from './forecast.js';
+import { orientationEntries, orientationRows } from './orientation.js';
 
 /**
  * Build selectable rows from the current terminal or handheld menu.
@@ -10,6 +11,7 @@ import { forecastShift } from './forecast.js';
  */
 export function labEntries(state) {
   const page = state.menu.page;
+  if (page === 'orientation') return orientationEntries(state);
   const named = (
     /** @type {Record<string, any>} */ records,
     /** @type {string} */ prefix
@@ -143,6 +145,7 @@ export function labEntries(state) {
     ['Pause', 'page:paused'],
     ['Fullscreen', 'fullscreen'],
     ['Return to lab', 'close'],
+    ['First-shift guide', 'page:orientation'],
   ];
 }
 
@@ -153,6 +156,7 @@ export function labEntries(state) {
  */
 export function labMenuRows(state) {
   if (!state.menu) return [];
+  if (state.menu.page === 'orientation') return orientationRows(state);
   const lab = state.lab;
   const f = forecast(lab);
   if (state.menu.page === 'forecast' || state.menu.page === 'comparisons') {
@@ -192,7 +196,7 @@ export function labMenuRows(state) {
           `PROGRESS +${f.progress}/SHIFT`,
         ]
       : state.menu.page === 'report' || state.menu.page === 'archive'
-        ? lab.report.slice(
+        ? labReportLines(lab.report).slice(
             (state.menu.reportPage || 0) * 3,
             (state.menu.reportPage || 0) * 3 + 3
           )
