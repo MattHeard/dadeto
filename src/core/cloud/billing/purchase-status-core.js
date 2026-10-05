@@ -1,7 +1,6 @@
-// @ts-nocheck -- authentication and persistence are injected boundaries.
 /**
  * Create an authenticated, read-only purchase status handler.
- * @param {{ verifyIdToken: (token: string) => Promise<{ uid?: string }>, getPurchaseByCheckoutSession: (id: string) => Promise<Record<string, unknown>|null>, getBalance: (uuid: string) => Promise<number|null> }} deps Status dependencies.
+ * @param {{ verifyIdToken: (token: string) => Promise<{ uid?: string }>, getPurchaseByCheckoutSession: (id: string) => Promise<(Record<string, unknown> & {uid?: string, status?: string, purchaseId?: string, packageId?: string, creditsIssued?: number, apiKeyUuid: string})|null>, getBalance: (uuid: string) => Promise<number|null> }} deps Status dependencies.
  * @returns {(request: { sessionId?: unknown, authorization?: unknown }) => Promise<{ status: number, body: object }>} Status handler.
  */
 export function createPurchaseStatusHandler(deps) {
@@ -20,6 +19,7 @@ export function createPurchaseStatusHandler(deps) {
     const purchase = await deps.getPurchaseByCheckoutSession(request.sessionId);
     if (!purchase || purchase.uid !== claims.uid)
       return { status: 404, body: { error: 'purchase_not_found' } };
+    /** @type {Record<string, unknown>} */
     const body = {
       status: purchase.status,
       purchaseId: purchase.purchaseId,
