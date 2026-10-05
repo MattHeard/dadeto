@@ -1,9 +1,8 @@
-// @ts-nocheck -- billing persistence is injected at the cloud boundary.
 import { quoteCreditPackage } from './pricing-core.js';
 
 /**
  * Create the public package-offer handler.
- * @param {{ listActivePackages: () => Promise<Array<{ packageId: string, active: boolean, amountUsdMinor: number }>>, getCurrentPricingSnapshot: () => Promise<object|null> }} deps Billing read boundary.
+ * @param {{ listActivePackages: () => Promise<Array<{ packageId: string, active: boolean, amountUsdMinor: number }>>, getCurrentPricingSnapshot: () => Promise<{snapshotId: string, effectiveAt: string, eurPerUsdMicros: number, creditEurMicros: number, markupBps: number, operations: Record<string, {id: string, costEurMicros: number}>}|null> }} deps Billing read boundary.
  * @returns {() => Promise<{ status: number, body: object }>} HTTP-shaped handler.
  */
 export function createPublicBillingOffersHandler(deps) {
