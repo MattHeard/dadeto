@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
   createBackgroundShape,
   createRectShape,
@@ -30,9 +29,18 @@ const DEFAULT_ORB_SPEED_Y = -2.4;
 const DEFAULT_LIVES = 3;
 const HUD_HEIGHT = 24;
 
+/** @typedef {Record<string, unknown>} CrystalInput */
+/** @typedef {{ moveLeft: boolean, moveRight: boolean, launchPressed: boolean, pausePressed: boolean, resetPressed: boolean }} CrystalActions */
+/** @typedef {{ keyboard: Record<string, boolean>, gamepad: { buttons: boolean[], axes: number[] }, actions: CrystalActions, previousActions: CrystalActions }} CrystalInputState */
+/** @typedef {{ x: number, y: number, width: number, height: number, speed: number }} CrystalPaddle */
+/** @typedef {{ x: number, y: number, vx: number, vy: number, radius: number, stuckToPaddle: boolean }} CrystalOrb */
+/** @typedef {{ id: string, x: number, y: number, width: number, height: number, hp: number, maxHp: number, fracture: number, state: 'whole' | 'fractured' | 'shattered' }} CrystalBrick */
+/** @typedef {{ version: 1, width: number, height: number, frame: number, status: 'ready' | 'running' | 'paused' | 'won' | 'lost', score: number, lives: number, combo: number, input: CrystalInputState, paddle: CrystalPaddle, orb: CrystalOrb, crystals: CrystalBrick[] }} CrystalState */
+/** @typedef {{ width?: number, height?: number, lives?: number }} CrystalSeedFallback */
+
 /**
  * @param {unknown} value Candidate record.
- * @returns {boolean} Whether the value is a record.
+ * @returns {value is Record<string, unknown>} Whether the value is a record.
  */
 function isRecord(value) {
   return value !== null && typeof value === 'object' && !Array.isArray(value);
@@ -40,8 +48,8 @@ function isRecord(value) {
 
 /**
  * Runs the crystal breaker toy.
- * @param {unknown} input - input value
- * @param {unknown} env - env value
+ * @param {string} input - input value
+ * @param {{ get?: (name: string) => unknown }} env - env value
  * @returns {string} - result
  */
 export function crystalBreaker(input, env) {
@@ -55,18 +63,21 @@ export function crystalBreaker(input, env) {
 
 /**
  * Builds the next persisted state.
- * @param {ReturnType<typeof normalizeState>|null} persisted - persisted value
- * @param {object} input - input value
- * @returns {ReturnType<typeof createSeedState>} - result
+ * @param {CrystalState|null} persisted - persisted value
+ * @param {CrystalInput|null} input - input value
+ * @returns {CrystalState} - result
  */
 function buildNextState(persisted, input) {
-  const seed = createSeedState(input, persisted);
+  const seed = createSeedState(input ?? {}, persisted);
   const base = persisted || seed;
   const shouldReset = input?.reset === true || !persisted;
   const merged = buildMergedState(shouldReset, base, seed);
-  const inputState = updateInputState(base.input, input);
+  const inputState = updateInputState(base.input, input ?? {});
   if (resetPressed(inputState)) {
-    const resetState = createSeedState(input, buildResetFallback(persisted));
+    const resetState = createSeedState(
+      input ?? {},
+      buildResetFallback(persisted)
+    );
     resetState.input = inputState;
     return resetState;
   }
@@ -81,9 +92,9 @@ function buildNextState(persisted, input) {
 /**
  * Builds the merged state for the current step.
  * @param {boolean} shouldReset - shouldReset value
- * @param {ReturnType<typeof createSeedState>} base - base value
- * @param {ReturnType<typeof createSeedState>} seed - seed value
- * @returns {ReturnType<typeof createSeedState>} - result
+ * @param {CrystalState} base - base value
+ * @param {CrystalState} seed - seed value
+ * @returns {CrystalState} - result
  */
 function buildMergedState(shouldReset, base, seed) {
   if (shouldReset) {
@@ -94,8 +105,8 @@ function buildMergedState(shouldReset, base, seed) {
 
 /**
  * Builds the fallback values for a reset.
- * @param {ReturnType<typeof normalizeState>|null} persisted - persisted value
- * @returns {object|undefined} - result
+ * @param {CrystalState|null} persisted - persisted value
+ * @returns {CrystalSeedFallback|undefined} - result
  */
 function buildResetFallback(persisted) {
   if (!persisted) {
@@ -110,9 +121,9 @@ function buildResetFallback(persisted) {
 
 /**
  * Merges a fresh seed into an existing state.
- * @param {ReturnType<typeof createSeedState>} base - base value
- * @param {ReturnType<typeof createSeedState>} seed - seed value
- * @returns {ReturnType<typeof createSeedState>} - result
+ * @param {CrystalState} base - base value
+ * @param {CrystalState} seed - seed value
+ * @returns {CrystalState} - result
  */
 function mergeSeedAndState(base, seed) {
   return {
@@ -130,18 +141,19 @@ function mergeSeedAndState(base, seed) {
 
 /**
  * Creates a seeded game state from input and fallback values.
- * @param {object} input - input value
- * @param {object|null} fallback - fallback value
- * @returns {ReturnType<typeof createSeedState>} - result
+ * @param {CrystalInput|null} input - input value
+ * @param {CrystalSeedFallback|null|undefined} fallback - fallback value
+ * @returns {CrystalState} - result
  */
 function createSeedState(input, fallback) {
-  const width = normalizeSeedWidth(input, fallback);
-  const height = normalizeSeedHeight(input, fallback);
-  const paddleWidth = normalizeSeedPaddleWidth(input);
-  const paddleHeight = normalizeSeedPaddleHeight(input);
-  const paddleSpeed = normalizeSeedPaddleSpeed(input);
-  const orbRadius = normalizeSeedOrbRadius(input);
-  const layoutSeed = normalizeSeedLayoutSeed(input);
+  const values = input ?? {};
+  const width = normalizeSeedWidth(values, fallback);
+  const height = normalizeSeedHeight(values, fallback);
+  const paddleWidth = normalizeSeedPaddleWidth(values);
+  const paddleHeight = normalizeSeedPaddleHeight(values);
+  const paddleSpeed = normalizeSeedPaddleSpeed(values);
+  const orbRadius = normalizeSeedOrbRadius(values);
+  const layoutSeed = normalizeSeedLayoutSeed(values);
   return {
     version: 1,
     width,
@@ -149,7 +161,7 @@ function createSeedState(input, fallback) {
     frame: 0,
     status: 'ready',
     score: 0,
-    lives: normalizeSeedLives(input, fallback),
+    lives: normalizeSeedLives(values, fallback),
     combo: 0,
     input: createInitialInputState(),
     paddle: {
@@ -173,8 +185,8 @@ function createSeedState(input, fallback) {
 
 /**
  * Normalize seed width.
- * @param {object} input - input value
- * @param {object|null} fallback - fallback value
+ * @param {CrystalInput|null} input - input value
+ * @param {CrystalSeedFallback|null|undefined} fallback - fallback value
  * @returns {number} - result
  */
 function normalizeSeedWidth(input, fallback) {
@@ -186,8 +198,8 @@ function normalizeSeedWidth(input, fallback) {
 
 /**
  * Normalize seed height.
- * @param {object} input - input value
- * @param {object|null} fallback - fallback value
+ * @param {CrystalInput|null} input - input value
+ * @param {CrystalSeedFallback|null|undefined} fallback - fallback value
  * @returns {number} - result
  */
 function normalizeSeedHeight(input, fallback) {
@@ -199,8 +211,8 @@ function normalizeSeedHeight(input, fallback) {
 
 /**
  * Normalize seed lives.
- * @param {object} input - input value
- * @param {object|null} fallback - fallback value
+ * @param {CrystalInput|null} input - input value
+ * @param {CrystalSeedFallback|null|undefined} fallback - fallback value
  * @returns {number} - result
  */
 function normalizeSeedLives(input, fallback) {
@@ -212,7 +224,7 @@ function normalizeSeedLives(input, fallback) {
 
 /**
  * Normalize seed paddle width.
- * @param {object} input - input value
+ * @param {CrystalInput|null} input - input value
  * @returns {number} - result
  */
 function normalizeSeedPaddleWidth(input) {
@@ -221,7 +233,7 @@ function normalizeSeedPaddleWidth(input) {
 
 /**
  * Normalize seed paddle height.
- * @param {object} input - input value
+ * @param {CrystalInput} input - input value
  * @returns {number} - result
  */
 function normalizeSeedPaddleHeight(input) {
@@ -230,7 +242,7 @@ function normalizeSeedPaddleHeight(input) {
 
 /**
  * Normalize seed paddle speed.
- * @param {object} input - input value
+ * @param {CrystalInput} input - input value
  * @returns {number} - result
  */
 function normalizeSeedPaddleSpeed(input) {
@@ -239,7 +251,7 @@ function normalizeSeedPaddleSpeed(input) {
 
 /**
  * Normalize seed orb radius.
- * @param {object} input - input value
+ * @param {CrystalInput} input - input value
  * @returns {number} - result
  */
 function normalizeSeedOrbRadius(input) {
@@ -248,7 +260,7 @@ function normalizeSeedOrbRadius(input) {
 
 /**
  * Normalize seed layout seed.
- * @param {object} input - input value
+ * @param {CrystalInput} input - input value
  * @returns {number} - result
  */
 function normalizeSeedLayoutSeed(input) {
@@ -257,7 +269,7 @@ function normalizeSeedLayoutSeed(input) {
 
 /**
  * Creates the default input state.
- * @returns {object} - result
+ * @returns {CrystalInputState} - result
  */
 function createInitialInputState() {
   return {
@@ -290,7 +302,7 @@ function createHudTextShape(x, text) {
 /**
  * Normalizes persisted state.
  * @param {unknown} value - value value
- * @returns {ReturnType<typeof createSeedState>|null} - result
+ * @returns {CrystalState|null} - result
  */
 function normalizeState(value) {
   if (!isRecord(value) || value.version !== 1) return null;
@@ -314,27 +326,35 @@ function normalizeState(value) {
 /**
  * Normalizes the input state payload.
  * @param {unknown} value - value value
- * @returns {object} - result
+ * @returns {CrystalInputState} - result
  */
 function normalizeInputState(value) {
-  const gamepad = normalizeGamepadState(value?.gamepad);
+  const gamepad = normalizeGamepadState(
+    isRecord(value) ? value.gamepad : undefined
+  );
   return {
-    keyboard: normalizeBooleanRecord(value?.keyboard),
+    keyboard: normalizeBooleanRecord(
+      isRecord(value) ? value.keyboard : undefined
+    ),
     gamepad,
-    actions: normalizeActions(value?.actions),
-    previousActions: normalizeActions(value?.previousActions),
+    actions: normalizeActions(isRecord(value) ? value.actions : undefined),
+    previousActions: normalizeActions(
+      isRecord(value) ? value.previousActions : undefined
+    ),
   };
 }
 
 /**
  * Normalizes gamepad values.
  * @param {unknown} value - value value
- * @returns {object} - result
+ * @returns {{ buttons: boolean[], axes: number[] }} - result
  */
 function normalizeGamepadState(value) {
   return {
-    buttons: normalizeGamepadButtons(value?.buttons),
-    axes: normalizeGamepadAxes(value?.axes),
+    buttons: normalizeGamepadButtons(
+      isRecord(value) ? value.buttons : undefined
+    ),
+    axes: normalizeGamepadAxes(isRecord(value) ? value.axes : undefined),
   };
 }
 
@@ -377,7 +397,7 @@ function normalizeBooleanRecord(value) {
 /**
  * Normalizes action flags.
  * @param {unknown} value - value value
- * @returns {object} - result
+ * @returns {CrystalActions} - result
  */
 function normalizeActions(value) {
   if (!isRecord(value)) {
@@ -395,7 +415,7 @@ function normalizeActions(value) {
 
 /**
  * Creates a blank action flag set.
- * @returns {object} - result
+ * @returns {CrystalActions} - result
  */
 function createActionFlags() {
   return {
@@ -409,7 +429,7 @@ function createActionFlags() {
 
 /**
  * Returns whether reset was pressed on this frame.
- * @param {object} inputState - inputState value
+ * @param {CrystalInputState} inputState - inputState value
  * @returns {boolean} - result
  */
 function resetPressed(inputState) {
@@ -421,7 +441,7 @@ function resetPressed(inputState) {
 /**
  * Normalizes the paddle state.
  * @param {unknown} value - value value
- * @returns {object} - result
+ * @returns {CrystalPaddle} - result
  */
 function normalizePaddle(value) {
   if (!isRecord(value)) {
@@ -445,7 +465,7 @@ function normalizePaddle(value) {
 /**
  * Normalizes the orb state.
  * @param {unknown} value - value value
- * @returns {object} - result
+ * @returns {CrystalOrb} - result
  */
 function normalizeOrb(value) {
   if (!isRecord(value)) {
@@ -473,13 +493,14 @@ function normalizeOrb(value) {
  * @param {number} width - width value
  * @param {number} height - height value
  * @param {number} layoutSeed - layoutSeed value
- * @returns {Array<object>} - result
+ * @returns {CrystalBrick[]} - result
  */
 function normalizeCrystals(width, height, layoutSeed) {
   const top = 40;
   const left = 28 + (layoutSeed % 3) * 4;
   const cols = 5;
   const rows = 3;
+  /** @type {CrystalBrick[]} */
   const result = [];
   let id = 1;
   for (const row of Array.from({ length: rows }, (_, index) => index)) {
@@ -528,7 +549,7 @@ function getCrystalRowOffset(row) {
 /**
  * Normalizes persisted crystals.
  * @param {unknown} value - value value
- * @returns {Array<object>} - result
+ * @returns {CrystalBrick[]} - result
  */
 function normalizeCrystalsFromState(value) {
   if (!Array.isArray(value))
@@ -540,13 +561,14 @@ function normalizeCrystalsFromState(value) {
  * Normalize a persisted crystal entry.
  * @param {unknown} crystal - crystal value
  * @param {number} index - index value
- * @returns {object} - result
+ * @returns {CrystalBrick} - result
  */
 function normalizeCrystalFromState(crystal, index) {
+  const record = isRecord(crystal) ? crystal : {};
   return {
-    ...normalizeCrystalPositionAndSize(crystal, index),
-    ...normalizeCrystalStats(crystal),
-    state: normalizeCrystalState(crystal?.state),
+    ...normalizeCrystalPositionAndSize(record, index),
+    ...normalizeCrystalStats(record),
+    state: normalizeCrystalState(record.state),
   };
 }
 
@@ -554,28 +576,30 @@ function normalizeCrystalFromState(crystal, index) {
  * Normalize crystal position and size.
  * @param {unknown} crystal - crystal value
  * @param {number} index - index value
- * @returns {object} - result
+ * @returns {Pick<CrystalBrick, 'id' | 'x' | 'y' | 'width' | 'height'>} - result
  */
 function normalizeCrystalPositionAndSize(crystal, index) {
+  const record = isRecord(crystal) ? crystal : {};
   return {
-    id: getCrystalId(crystal?.id, index),
-    x: Number(crystal?.x) || 0,
-    y: Number(crystal?.y) || 0,
-    width: normalizePositiveInteger(crystal?.width, 24),
-    height: normalizePositiveInteger(crystal?.height, 14),
+    id: getCrystalId(record.id, index),
+    x: Number(record.x) || 0,
+    y: Number(record.y) || 0,
+    width: normalizePositiveInteger(record.width, 24),
+    height: normalizePositiveInteger(record.height, 14),
   };
 }
 
 /**
  * Normalize crystal stats.
  * @param {unknown} crystal - crystal value
- * @returns {object} - result
+ * @returns {Pick<CrystalBrick, 'hp' | 'maxHp' | 'fracture'>} - result
  */
 function normalizeCrystalStats(crystal) {
+  const record = isRecord(crystal) ? crystal : {};
   return {
-    hp: normalizePositiveInteger(crystal?.hp, 1),
-    maxHp: normalizePositiveInteger(crystal?.maxHp, 1),
-    fracture: normalizePositiveInteger(crystal?.fracture, 0),
+    hp: normalizePositiveInteger(record.hp, 1),
+    maxHp: normalizePositiveInteger(record.maxHp, 1),
+    fracture: normalizePositiveInteger(record.fracture, 0),
   };
 }
 
@@ -595,7 +619,7 @@ function getCrystalId(value, index) {
 /**
  * Normalize a crystal state.
  * @param {unknown} value - value value
- * @returns {string} - result
+ * @returns {CrystalBrick['state']} - result
  */
 function normalizeCrystalState(value) {
   switch (value) {
@@ -609,12 +633,12 @@ function normalizeCrystalState(value) {
 
 /**
  * Normalize the incoming input event into keyboard and action state.
- * @param {object} input - input value
- * @param {object} previous - previous value
- * @returns {object} - result
+ * @param {CrystalInput} input - input value
+ * @param {CrystalInputState} previous - previous value
+ * @returns {{ keyboard: Record<string, boolean>, actions: CrystalActions }} - result
  */
 function parseActions(input, previous) {
-  const normalizedKey = normalizeKeyName(input?.key);
+  const normalizedKey = normalizeKeyName(input.key);
   const keyboard = buildNextKeyboardState(
     input,
     previous.keyboard,
@@ -628,16 +652,16 @@ function parseActions(input, previous) {
 
 /**
  * Build the next keyboard state from an input event.
- * @param {object} input - input value
- * @param {object} previousKeyboard - previous keyboard value
+ * @param {CrystalInput} input - input value
+ * @param {Record<string, boolean>} previousKeyboard - previous keyboard value
  * @param {string} normalizedKey - normalized key value
- * @returns {object} - result
+ * @returns {Record<string, boolean>} - result
  */
 function buildNextKeyboardState(input, previousKeyboard, normalizedKey) {
   let keys = null;
-  if (input?.type === 'keydown') {
+  if (input.type === 'keydown') {
     keys = { [normalizedKey]: true };
-  } else if (input?.type === 'keyup') {
+  } else if (input.type === 'keyup') {
     keys = { [normalizedKey]: false };
   }
   return { ...previousKeyboard, ...(keys || {}) };
@@ -645,20 +669,20 @@ function buildNextKeyboardState(input, previousKeyboard, normalizedKey) {
 
 /**
  * Build the next action state from keyboard state.
- * @param {object} input - input value
- * @param {object} keyboard - keyboard value
+ * @param {CrystalInput} input - input value
+ * @param {Record<string, boolean>} keyboard - keyboard value
  * @param {string} normalizedKey - normalized key value
- * @returns {object} - result
+ * @returns {CrystalActions} - result
  */
 function buildActionState(input, keyboard, normalizedKey) {
   return {
     moveLeft: isMoveLeftPressed(keyboard),
     moveRight: isMoveRightPressed(keyboard),
     launchPressed:
-      input?.type === 'keydown' &&
+      input.type === 'keydown' &&
       (normalizedKey === 'space' || normalizedKey === ' '),
-    pausePressed: input?.type === 'keydown' && normalizedKey === 'p',
-    resetPressed: input?.type === 'keydown' && normalizedKey === 'r',
+    pausePressed: input.type === 'keydown' && normalizedKey === 'p',
+    resetPressed: input.type === 'keydown' && normalizedKey === 'r',
   };
 }
 
@@ -688,9 +712,9 @@ function isMoveRightPressed(keyboard) {
 
 /**
  * Updates the input state from the latest event.
- * @param {object} previous - previous value
- * @param {object} input - input value
- * @returns {object} - result
+ * @param {CrystalInputState} previous - previous value
+ * @param {CrystalInput} input - input value
+ * @returns {CrystalInputState} - result
  */
 function updateInputState(previous, input) {
   const nextActions = parseActions(input, previous);
@@ -704,9 +728,9 @@ function updateInputState(previous, input) {
 
 /**
  * Parses keyboard and action state from an event.
- * @param {object} input - input value
- * @param {object} previous - previous value
- * @returns {object} - result
+ * @param {CrystalInput} input - input value
+ * @param {CrystalInputState} previous - previous value
+ * @returns {Record<string, unknown>} - result
  */
 /**
  * Normalizes a keyboard key name.
@@ -721,8 +745,8 @@ function normalizeKeyName(key) {
 
 /**
  * Applies player input to the current state.
- * @param {object} state - state value
- * @param {object} inputState - inputState value
+ * @param {CrystalState} state - state value
+ * @param {CrystalInputState} inputState - inputState value
  * @returns {void} - result
  */
 function applyGameplayInput(state, inputState) {
@@ -736,8 +760,8 @@ function applyGameplayInput(state, inputState) {
 
 /**
  * Apply pause input transitions.
- * @param {object} state - state value
- * @param {object} inputState - inputState value
+ * @param {CrystalState} state - state value
+ * @param {CrystalInputState} inputState - inputState value
  */
 function applyPauseInput(state, inputState) {
   if (
@@ -757,8 +781,8 @@ function applyPauseInput(state, inputState) {
 
 /**
  * Apply launch input transitions.
- * @param {object} state - state value
- * @param {object} inputState - inputState value
+ * @param {CrystalState} state - state value
+ * @param {CrystalInputState} inputState - inputState value
  */
 function applyLaunchInput(state, inputState) {
   if (
@@ -776,8 +800,8 @@ function applyLaunchInput(state, inputState) {
 
 /**
  * Apply horizontal paddle motion.
- * @param {object} state - state value
- * @param {object} inputState - inputState value
+ * @param {CrystalState} state - state value
+ * @param {CrystalInputState} inputState - inputState value
  */
 function applyPaddleMotion(state, inputState) {
   if (inputState.actions.moveLeft) {
@@ -794,7 +818,7 @@ function applyPaddleMotion(state, inputState) {
 
 /**
  * Stick the orb to the paddle.
- * @param {object} state Current state.
+ * @param {CrystalState} state Current state.
  */
 function stickOrbToPaddle(state) {
   state.orb.x = state.paddle.x + Math.round(state.paddle.width / 2);
@@ -803,7 +827,7 @@ function stickOrbToPaddle(state) {
 
 /**
  * Advances the simulation by one frame.
- * @param {object} state - state value
+ * @param {CrystalState} state - state value
  * @returns {void} - result
  */
 function stepSimulation(state) {
@@ -819,7 +843,7 @@ function stepSimulation(state) {
 
 /**
  * Advance the orb position.
- * @param {object} state - state value
+ * @param {CrystalState} state - state value
  */
 function advanceOrb(state) {
   state.orb.x += state.orb.vx;
@@ -828,7 +852,7 @@ function advanceOrb(state) {
 
 /**
  * Resolve orb wall collisions.
- * @param {object} state - state value
+ * @param {CrystalState} state - state value
  */
 function resolveOrbWalls(state) {
   if (
@@ -844,7 +868,7 @@ function resolveOrbWalls(state) {
 
 /**
  * Resolve orb paddle collisions.
- * @param {object} state - state value
+ * @param {CrystalState} state - state value
  */
 function resolveOrbPaddle(state) {
   if (!orbHitsPaddle(state.orb, state.paddle)) {
@@ -857,7 +881,7 @@ function resolveOrbPaddle(state) {
 
 /**
  * Calculate the paddle bounce adjustment.
- * @param {object} state - state value
+ * @param {CrystalState} state - state value
  * @returns {number} - result
  */
 function calculatePaddleBounce(state) {
@@ -866,7 +890,7 @@ function calculatePaddleBounce(state) {
 
 /**
  * Resolve orb crystal collisions.
- * @param {object} state - state value
+ * @param {CrystalState} state - state value
  */
 function resolveOrbCrystals(state) {
   for (const crystal of state.crystals) {
@@ -893,7 +917,7 @@ function resolveOrbCrystals(state) {
 
 /**
  * Resolve orb loss.
- * @param {object} state - state value
+ * @param {CrystalState} state - state value
  */
 function resolveOrbLoss(state) {
   if (state.orb.y - state.orb.radius > state.height) {
@@ -903,7 +927,7 @@ function resolveOrbLoss(state) {
 
 /**
  * Check whether a crystal is shattered.
- * @param {object} crystal - crystal value
+ * @param {CrystalBrick} crystal - crystal value
  * @returns {boolean} - result
  */
 function isCrystalShattered(crystal) {
@@ -912,8 +936,8 @@ function isCrystalShattered(crystal) {
 
 /**
  * Checks whether the orb overlaps the paddle.
- * @param {object} orb - orb value
- * @param {object} paddle - paddle value
+ * @param {CrystalOrb} orb - orb value
+ * @param {CrystalPaddle} paddle - paddle value
  * @returns {boolean} - result
  */
 function orbHitsPaddle(orb, paddle) {
@@ -928,8 +952,8 @@ function orbHitsPaddle(orb, paddle) {
 
 /**
  * Checks whether the orb overlaps a crystal.
- * @param {object} orb - orb value
- * @param {object} crystal - crystal value
+ * @param {CrystalOrb} orb - orb value
+ * @param {CrystalBrick} crystal - crystal value
  * @returns {boolean} - result
  */
 function orbHitsCrystal(orb, crystal) {
@@ -943,8 +967,8 @@ function orbHitsCrystal(orb, crystal) {
 
 /**
  * Converts game state into canvas payload data.
- * @param {object} state - state value
- * @returns {object} - result
+ * @param {CrystalState} state - state value
+ * @returns {Record<string, unknown>} - result
  */
 function toCanvasPayload(state) {
   const activeCrystals = state.crystals.filter(
@@ -998,7 +1022,7 @@ function toCanvasPayload(state) {
 /**
  * Normalizes the persisted status string.
  * @param {unknown} value - value value
- * @returns {string} - result
+ * @returns {CrystalState['status']} - result
  */
 function normalizeStatus(value) {
   switch (value) {
@@ -1029,7 +1053,7 @@ export function getCrystalFill(state) {
 
 /**
  * Resets the orb after a missed shot.
- * @param {object} state - state value
+ * @param {CrystalState} state - state value
  */
 export function resetOrbAfterLoss(state) {
   state.lives = Math.max(0, state.lives - 1);
@@ -1045,7 +1069,7 @@ export function resetOrbAfterLoss(state) {
 /**
  * Get the status after a loss.
  * @param {number} lives - lives value
- * @returns {string} - result
+ * @returns {CrystalState['status']} - result
  */
 function getLossStatus(lives) {
   if (lives === 0) {
