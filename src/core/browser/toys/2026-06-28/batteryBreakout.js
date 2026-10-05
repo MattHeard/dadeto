@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { parseJsonOrNull } from '../../../commonCore.js';
 import { normalizePositiveInteger } from '../../common.js';
 
@@ -23,18 +22,27 @@ const EDGE_THRESHOLD = 0.4;
 
 /**
  * @typedef {{ moveLeft: boolean, moveRight: boolean, launchPressed: boolean, pausePressed: boolean, resetPressed: boolean }} BatteryActions
+ * @typedef {{ actions: BatteryActions }} BatteryDerivedActions
  * @typedef {{ keyboard: Record<string, boolean>, gamepad: BatteryGamepadState, actions: BatteryActions, previousActions: BatteryActions }} BatteryInputState
  * @typedef {{ buttons: boolean[], axes: number[] }} BatteryGamepadState
  * @typedef {{ id: string, x: number, y: number, width: number, height: number, charge: number, targetCharge: number, maxCharge: number, overchargeCooldown: number, state: 'empty' | 'charging' | 'stable' | 'overcharged' }} BatteryCell
  * @typedef {{ x: number, y: number, vx: number, vy: number, radius: number, stuckToPaddle: boolean }} BatteryOrb
- * @typedef {{ version: 1, width: number, height: number, frame: number, status: 'ready' | 'running' | 'paused' | 'won' | 'lost', score: number, lives: number, faults: number, input: BatteryInputState, paddle: { x: number, y: number, width: number, height: number, speed: number }, orb: BatteryOrb, cells: BatteryCell[] }} BatteryState
+ * @typedef {{ version: 1, width: number, height: number, layoutSeed: number, frame: number, status: 'ready' | 'running' | 'paused' | 'won' | 'lost', score: number, lives: number, faults: number, input: BatteryInputState, paddle: { x: number, y: number, width: number, height: number, speed: number }, orb: BatteryOrb, cells: BatteryCell[] }} BatteryState
+ * @typedef {Record<string, unknown>} BatteryInput
+ * @typedef {{ width?: number, height?: number, layoutSeed?: number, lives?: number }} BatterySeedFallback
+ * @typedef {{ width: number, height: number, paddleWidth: number, paddleHeight: number, paddleSpeed: number, orbRadius: number, orbSpeedX: number, orbSpeedY: number, layoutSeed: number, lives: number, faults: number, cells: BatteryCell[] }} BatterySeedOptions
+ * @typedef {{ x: number, y: number }} BatteryCellPosition
+ * @typedef {(data: Record<string, unknown>) => Record<string, unknown> | undefined} BatteryStorageAccessor
+ * @typedef {{ get?: (name: string) => unknown }} BatteryEnvironment
+ * @typedef {{ charge: number, targetCharge: number, maxCharge: number, overchargeCooldown: number }} BatteryCellMetrics
+ * @typedef {BatteryCellMetrics & { value: unknown }} BatteryCellStateOptions
  */
 
 /**
  * Battery Breakout.
- * @param {unknown} input Parameter.
- * @param {unknown} env Parameter.
- * @returns {unknown} Return value.
+ * @param {string} input Parameter.
+ * @param {BatteryEnvironment | null | undefined} env Parameter.
+ * @returns {string} Serialized canvas payload.
  */
 export function batteryBreakout(input, env) {
   const storage = getStorageAccessor(env);
@@ -47,22 +55,22 @@ export function batteryBreakout(input, env) {
 
 /**
  * Get Storage Accessor.
- * @param {unknown} env Parameter.
- * @returns {unknown} Return value.
+ * @param {BatteryEnvironment | null | undefined} env Parameter.
+ * @returns {BatteryStorageAccessor | null} Result.
  */
 function getStorageAccessor(env) {
   if (!env || typeof env.get !== 'function') return null;
   const setter = env.get('setLocalPermanentData');
   if (typeof setter === 'function') {
-    return setter;
+    return /** @type {BatteryStorageAccessor} */ (setter);
   }
   return null;
 }
 
 /**
  * Read Persisted State.
- * @param {unknown} storage Parameter.
- * @returns {unknown} Return value.
+ * @param {BatteryStorageAccessor | null} storage Parameter.
+ * @returns {BatteryState | null} Result.
  */
 function readPersistedState(storage) {
   if (!storage) return null;
@@ -74,7 +82,7 @@ function readPersistedState(storage) {
 /**
  * Parse Input.
  * @param {unknown} input Parameter.
- * @returns {unknown} Return value.
+ * @returns {BatteryInput | null} Result.
  */
 function parseInput(input) {
   return parseObjectRecord(input);
@@ -83,19 +91,20 @@ function parseInput(input) {
 /**
  * Parse Object Record.
  * @param {unknown} value Parameter.
- * @returns {unknown} Return value.
+ * @returns {BatteryInput | null} Result.
  */
 function parseObjectRecord(value) {
+  if (typeof value !== 'string') return null;
   const parsed = parseJsonOrNull(value);
   if (typeof parsed === 'object' && !Array.isArray(parsed)) {
-    return parsed;
+    return /** @type {Record<string, unknown>} */ (parsed);
   }
   return null;
 }
 
 /**
  * @param {unknown} value Candidate record.
- * @returns {boolean} Whether the value is a record.
+ * @returns {value is Record<string, unknown>} Whether the value is a record.
  */
 function isRecord(value) {
   return value !== null && typeof value === 'object' && !Array.isArray(value);
@@ -103,9 +112,9 @@ function isRecord(value) {
 
 /**
  * Build Next State.
- * @param {unknown} persisted Parameter.
- * @param {unknown} input Parameter.
- * @returns {unknown} Return value.
+ * @param {BatteryState | null} persisted Parameter.
+ * @param {BatteryInput | null} input Parameter.
+ * @returns {BatteryState} Result.
  */
 export function buildNextState(persisted, input) {
   const seed = createSeedState(input, persisted);
@@ -126,9 +135,9 @@ export function buildNextState(persisted, input) {
 /**
  * Build the merged state for the current step.
  * @param {boolean} shouldReset Whether the state should reset.
- * @param {unknown} base Base state.
- * @param {unknown} seed Seed state.
- * @returns {unknown} Merged state.
+ * @param {BatteryState} base Base state.
+ * @param {BatteryState} seed Seed state.
+ * @returns {BatteryState} Result.
  */
 function buildMergedState(shouldReset, base, seed) {
   if (shouldReset) {
@@ -139,10 +148,10 @@ function buildMergedState(shouldReset, base, seed) {
 
 /**
  * Build a reset state if reset was newly pressed.
- * @param {unknown} persisted Persisted state.
- * @param {unknown} input Input state.
- * @param {unknown} inputState Derived input state.
- * @returns {unknown} Reset state or null.
+ * @param {BatteryState | null} persisted Persisted state.
+ * @param {BatteryInput | null} input Input state.
+ * @param {BatteryInputState} inputState Derived input state.
+ * @returns {BatteryState | null} Result.
  */
 function maybeBuildResetState(persisted, input, inputState) {
   if (
@@ -164,8 +173,8 @@ function maybeBuildResetState(persisted, input, inputState) {
 
 /**
  * Build reset seed fallback values.
- * @param {unknown} persisted Persisted state.
- * @returns {unknown} Reset seed fallback values.
+ * @param {BatteryState | null} persisted Persisted state.
+ * @returns {BatterySeedFallback | undefined} Result.
  */
 function buildResetSeedFallback(persisted) {
   if (!persisted) {
@@ -180,9 +189,9 @@ function buildResetSeedFallback(persisted) {
 
 /**
  * Merge Seed And State.
- * @param {unknown} base Parameter.
- * @param {unknown} seed Parameter.
- * @returns {unknown} Return value.
+ * @param {BatteryState} base Parameter.
+ * @param {BatteryState} seed Parameter.
+ * @returns {BatteryState} Result.
  */
 function mergeSeedAndState(base, seed) {
   return {
@@ -200,12 +209,12 @@ function mergeSeedAndState(base, seed) {
 
 /**
  * Create Seed State.
- * @param {unknown} input Parameter.
- * @param {unknown} fallback Parameter.
- * @returns {unknown} Return value.
+ * @param {BatteryInput | null} input Parameter.
+ * @param {BatterySeedFallback | null | undefined} fallback Parameter.
+ * @returns {BatteryState} Result.
  */
 function createSeedState(input, fallback) {
-  const seed = normalizeSeedValues(input, fallback);
+  const seed = normalizeSeedValues(input ?? {}, fallback);
   return createState({
     width: seed.width,
     height: seed.height,
@@ -224,8 +233,8 @@ function createSeedState(input, fallback) {
 
 /**
  * Normalize seed values for battery breakout.
- * @param {unknown} input Input values.
- * @param {unknown} fallback Fallback values.
+ * @param {BatteryInput} input Input values.
+ * @param {BatterySeedFallback | null | undefined} fallback Fallback values.
  * @returns {{
  *   width: number,
  *   height: number,
@@ -242,7 +251,7 @@ function createSeedState(input, fallback) {
  */
 function normalizeSeedValues(input, fallback) {
   const dimensions = normalizeSeedDimensions(input, fallback);
-  const gameplay = normalizeSeedGameplay(input, fallback);
+  const gameplay = normalizeSeedGameplay(input);
   const orb = normalizeSeedOrb(input);
   return {
     ...dimensions,
@@ -253,8 +262,8 @@ function normalizeSeedValues(input, fallback) {
 
 /**
  * Normalize seed dimensions.
- * @param {unknown} input Input values.
- * @param {unknown} fallback Fallback values.
+ * @param {BatteryInput} input Input values.
+ * @param {BatterySeedFallback | null | undefined} fallback Fallback values.
  * @returns {{ width: number, height: number, layoutSeed: number, lives: number }} Normalized dimensions.
  */
 function normalizeSeedDimensions(input, fallback) {
@@ -268,8 +277,8 @@ function normalizeSeedDimensions(input, fallback) {
 
 /**
  * Normalize seed width.
- * @param {unknown} input Input values.
- * @param {unknown} fallback Fallback values.
+ * @param {BatteryInput} input Input values.
+ * @param {BatterySeedFallback | null | undefined} fallback Fallback values.
  * @returns {number} Normalized width.
  */
 function normalizeSeedWidth(input, fallback) {
@@ -281,8 +290,8 @@ function normalizeSeedWidth(input, fallback) {
 
 /**
  * Normalize seed height.
- * @param {unknown} input Input values.
- * @param {unknown} fallback Fallback values.
+ * @param {BatteryInput} input Input values.
+ * @param {BatterySeedFallback | null | undefined} fallback Fallback values.
  * @returns {number} Normalized height.
  */
 function normalizeSeedHeight(input, fallback) {
@@ -294,8 +303,8 @@ function normalizeSeedHeight(input, fallback) {
 
 /**
  * Normalize seed layout seed.
- * @param {unknown} input Input values.
- * @param {unknown} fallback Fallback values.
+ * @param {BatteryInput} input Input values.
+ * @param {BatterySeedFallback | null | undefined} fallback Fallback values.
  * @returns {number} Normalized layout seed.
  */
 function normalizeSeedLayoutSeed(input, fallback) {
@@ -304,8 +313,8 @@ function normalizeSeedLayoutSeed(input, fallback) {
 
 /**
  * Normalize seed lives.
- * @param {unknown} input Input values.
- * @param {unknown} fallback Fallback values.
+ * @param {BatteryInput} input Input values.
+ * @param {BatterySeedFallback | null | undefined} fallback Fallback values.
  * @returns {number} Normalized lives.
  */
 function normalizeSeedLives(input, fallback) {
@@ -317,7 +326,7 @@ function normalizeSeedLives(input, fallback) {
 
 /**
  * Normalize seed gameplay fields.
- * @param {unknown} input Input values.
+ * @param {BatteryInput} input Input values.
  * @returns {{ paddleWidth: number, paddleHeight: number, paddleSpeed: number, faults: number }} Normalized gameplay fields.
  */
 function normalizeSeedGameplay(input) {
@@ -340,7 +349,7 @@ function normalizeSeedGameplay(input) {
 
 /**
  * Normalize seed orb fields.
- * @param {unknown} input Input values.
+ * @param {BatteryInput} input Input values.
  * @returns {{ orbRadius: number, orbSpeedX: number, orbSpeedY: number }} Normalized orb fields.
  */
 function normalizeSeedOrb(input) {
@@ -353,8 +362,8 @@ function normalizeSeedOrb(input) {
 
 /**
  * Create State.
- * @param {unknown} options Parameter.
- * @returns {unknown} Return value.
+ * @param {BatterySeedOptions} options Parameter.
+ * @returns {BatteryState} Result.
  */
 function createState(options) {
   const paddleY = Math.max(
@@ -365,6 +374,7 @@ function createState(options) {
     version: 1,
     width: options.width,
     height: options.height,
+    layoutSeed: options.layoutSeed,
     frame: 0,
     status: 'ready',
     score: 0,
@@ -392,7 +402,7 @@ function createState(options) {
 
 /**
  * Create Initial Input State.
- * @returns {unknown} Return value.
+ * @returns {BatteryInputState} Result.
  */
 function createInitialInputState() {
   return {
@@ -418,7 +428,7 @@ function createInitialInputState() {
 /**
  * Normalize State.
  * @param {unknown} value Parameter.
- * @returns {unknown} Return value.
+ * @returns {BatteryState | null} Result.
  */
 function normalizeState(value) {
   if (!isRecord(value) || value.version !== 1) return null;
@@ -434,7 +444,10 @@ function normalizeState(value) {
     faults: normalizePositiveInteger(candidate.faults, 0),
     layoutSeed: normalizePositiveInteger(candidate.layoutSeed, 1),
     input: normalizeInputState(candidate.input),
-    paddle: normalizePaddle(candidate.paddle, candidate.height),
+    paddle: normalizePaddle(
+      candidate.paddle,
+      typeof candidate.height === 'number' ? candidate.height : DEFAULT_HEIGHT
+    ),
     orb: normalizeOrb(candidate.orb),
     cells: normalizeCellsFromState(candidate.cells),
   };
@@ -443,12 +456,12 @@ function normalizeState(value) {
 /**
  * Normalize Status.
  * @param {unknown} value Parameter.
- * @returns {unknown} Return value.
+ * @returns {BatteryState['status']} Result.
  */
 function normalizeStatus(value) {
   const validStatuses = new Set('ready,running,paused,won,lost'.split(','));
-  if (validStatuses.has(value)) {
-    return value;
+  if (typeof value === 'string' && validStatuses.has(value)) {
+    return /** @type {BatteryState['status']} */ (value);
   }
   return 'ready';
 }
@@ -456,21 +469,22 @@ function normalizeStatus(value) {
 /**
  * Normalize Input State.
  * @param {unknown} value Parameter.
- * @returns {unknown} Return value.
+ * @returns {BatteryInputState} Result.
  */
 function normalizeInputState(value) {
+  const record = isRecord(value) ? value : {};
   return {
-    keyboard: normalizeBooleanRecord(value?.keyboard),
-    gamepad: normalizeGamepadState(value?.gamepad),
-    actions: normalizeActions(value?.actions),
-    previousActions: normalizeActions(value?.previousActions),
+    keyboard: normalizeBooleanRecord(record.keyboard),
+    gamepad: normalizeGamepadState(record.gamepad),
+    actions: normalizeActions(record.actions),
+    previousActions: normalizeActions(record.previousActions),
   };
 }
 
 /**
  * Normalize Boolean Record.
  * @param {unknown} value Parameter.
- * @returns {unknown} Return value.
+ * @returns {Record<string, boolean>} Result.
  */
 function normalizeBooleanRecord(value) {
   if (!isRecord(value)) return {};
@@ -482,7 +496,7 @@ function normalizeBooleanRecord(value) {
 /**
  * Normalize Gamepad State.
  * @param {unknown} value Parameter.
- * @returns {unknown} Return value.
+ * @returns {BatteryGamepadState} Result.
  */
 function normalizeGamepadState(value) {
   if (!isRecord(value)) {
@@ -521,7 +535,7 @@ function normalizeGamepadAxes(value) {
 /**
  * Normalize Actions.
  * @param {unknown} value Parameter.
- * @returns {unknown} Return value.
+ * @returns {BatteryActions} Result.
  */
 function normalizeActions(value) {
   if (!isRecord(value)) {
@@ -545,15 +559,21 @@ function normalizeActions(value) {
 /**
  * Normalize Paddle.
  * @param {unknown} value Parameter.
- * @param {unknown} height Parameter.
- * @returns {unknown} Return value.
+ * @param {number} height Parameter.
+ * @returns {BatteryState['paddle']} Result.
  */
 function normalizePaddle(value, height) {
   if (!isRecord(value)) return createState(createSeedOptions()).paddle;
   const seed = createSeedOptions();
   return {
     x: normalizeNonNegativeInteger(value.x, seed.width / 2),
-    y: Math.max(0, normalizePositiveInteger(value.y, height - PADDLE_Y_OFFSET)),
+    y: Math.max(
+      0,
+      normalizePositiveInteger(
+        value.y,
+        (typeof height === 'number' ? height : DEFAULT_HEIGHT) - PADDLE_Y_OFFSET
+      )
+    ),
     width: normalizePositiveInteger(value.width, DEFAULT_PADDLE_WIDTH),
     height: normalizePositiveInteger(value.height, DEFAULT_PADDLE_HEIGHT),
     speed: normalizePositiveInteger(value.speed, DEFAULT_PADDLE_SPEED),
@@ -563,8 +583,8 @@ function normalizePaddle(value, height) {
 /**
  * Normalize Non Negative Integer.
  * @param {unknown} value Parameter.
- * @param {unknown} fallback Parameter.
- * @returns {unknown} Return value.
+ * @param {number} fallback Parameter.
+ * @returns {number} Rounded non-negative integer.
  */
 function normalizeNonNegativeInteger(value, fallback) {
   const next = Number(value);
@@ -577,7 +597,7 @@ function normalizeNonNegativeInteger(value, fallback) {
 /**
  * Normalize Orb.
  * @param {unknown} value Parameter.
- * @returns {unknown} Return value.
+ * @returns {BatteryOrb} Result.
  */
 function normalizeOrb(value) {
   if (!isRecord(value)) {
@@ -596,8 +616,8 @@ function normalizeOrb(value) {
 /**
  * Normalize Number.
  * @param {unknown} value Parameter.
- * @param {unknown} fallback Parameter.
- * @returns {unknown} Return value.
+ * @param {number} fallback Parameter.
+ * @returns {number} Finite non-zero number.
  */
 function normalizeNumber(value, fallback) {
   const next = Number(value);
@@ -609,7 +629,7 @@ function normalizeNumber(value, fallback) {
 
 /**
  * Create Seed Options.
- * @returns {unknown} Return value.
+ * @returns {BatterySeedOptions} Result.
  */
 function createSeedOptions() {
   return {
@@ -631,7 +651,7 @@ function createSeedOptions() {
 /**
  * Normalize Cells From State.
  * @param {unknown} value Parameter.
- * @returns {unknown} Return value.
+ * @returns {BatteryCell[]} Result.
  */
 function normalizeCellsFromState(value) {
   if (!Array.isArray(value) || value.length === 0)
@@ -700,8 +720,11 @@ function getCellId(value, index) {
 function normalizeCellState(options) {
   const { value, charge, targetCharge, maxCharge, overchargeCooldown } =
     options;
-  if (['empty', 'charging', 'stable', 'overcharged'].includes(value)) {
-    return value;
+  if (
+    typeof value === 'string' &&
+    ['empty', 'charging', 'stable', 'overcharged'].includes(value)
+  ) {
+    return /** @type {BatteryCell['state']} */ (value);
   }
   if (normalizePositiveInteger(overchargeCooldown, 0) > 0) {
     return 'overcharged';
@@ -720,10 +743,10 @@ function normalizeCellState(options) {
 
 /**
  * Normalize Cells.
- * @param {unknown} width Parameter.
- * @param {unknown} height Parameter.
- * @param {unknown} seed Parameter.
- * @returns {unknown} Return value.
+ * @param {number} width Parameter.
+ * @param {number} height Parameter.
+ * @param {number} seed Parameter.
+ * @returns {BatteryCell[]} Result.
  */
 function normalizeCells(width, height, seed = 1) {
   const cellWidth = 28;
@@ -733,6 +756,7 @@ function normalizeCells(width, height, seed = 1) {
     seed
   );
   const counts = [2, 4, 3];
+  /** @type {BatteryCell[]} */
   const cells = [];
   let index = 0;
   counts.forEach((count, rowIndex) => {
@@ -757,11 +781,11 @@ function normalizeCells(width, height, seed = 1) {
 
 /**
  * Build Cell Positions.
- * @param {unknown} width Parameter.
- * @param {unknown} height Parameter.
- * @param {unknown} cellWidth Parameter.
- * @param {unknown} cellHeight Parameter.
- * @returns {unknown} Return value.
+ * @param {number} width Parameter.
+ * @param {number} height Parameter.
+ * @param {number} cellWidth Parameter.
+ * @param {number} cellHeight Parameter.
+ * @returns {BatteryCellPosition[]} Result.
  */
 function buildCellPositions(width, height, cellWidth, cellHeight) {
   const yPositions = [CELL_TOP, CELL_TOP + 18, CELL_TOP + 36];
@@ -823,9 +847,9 @@ function getCellRowOffset(colIndex) {
 
 /**
  * Shuffle Positions.
- * @param {unknown} positions Parameter.
- * @param {unknown} seed Parameter.
- * @returns {unknown} Return value.
+ * @param {BatteryCellPosition[]} positions Parameter.
+ * @param {number} seed Parameter.
+ * @returns {BatteryCellPosition[]} Result.
  */
 export function shufflePositions(positions, seed) {
   const items = positions.slice();
@@ -844,9 +868,9 @@ export function shufflePositions(positions, seed) {
 
 /**
  * Update Input State.
- * @param {unknown} previous Parameter.
- * @param {unknown} input Parameter.
- * @returns {unknown} Return value.
+ * @param {BatteryInputState} previous Parameter.
+ * @param {BatteryInput | null} input Parameter.
+ * @returns {BatteryInputState} Result.
  */
 export function updateInputState(previous, input) {
   const nextKeyboard = { ...(previous?.keyboard || {}) };
@@ -863,10 +887,10 @@ export function updateInputState(previous, input) {
 
 /**
  * Derive Actions.
- * @param {unknown} input Parameter.
- * @param {unknown} keyboard Parameter.
- * @param {unknown} gamepad Parameter.
- * @returns {unknown} Return value.
+ * @param {BatteryInput | null} input Parameter.
+ * @param {Record<string, boolean>} keyboard Parameter.
+ * @param {BatteryGamepadState} gamepad Parameter.
+ * @returns {BatteryDerivedActions} Result.
  */
 function deriveActions(input, keyboard, gamepad) {
   applyKeyboardInput(input, keyboard);
@@ -876,11 +900,11 @@ function deriveActions(input, keyboard, gamepad) {
 
 /**
  * Apply keyboard input to the tracked keyboard state.
- * @param {unknown} input Input event.
+ * @param {BatteryInput | null} input Input event.
  * @param {Record<string, boolean>} keyboard Keyboard state.
  */
 function applyKeyboardInput(input, keyboard) {
-  if (typeof input?.key !== 'string') return;
+  if (!input || typeof input.key !== 'string') return;
   if (input.type === 'keydown') {
     keyboard[input.key] = true;
   }
@@ -891,10 +915,11 @@ function applyKeyboardInput(input, keyboard) {
 
 /**
  * Apply gamepad input to the tracked gamepad state.
- * @param {unknown} input Input event.
+ * @param {BatteryInput | null} input Input event.
  * @param {{ buttons: boolean[], axes: number[] }} gamepad Gamepad state.
  */
 function applyGamepadInput(input, gamepad) {
+  if (!input) return;
   if (Array.isArray(input?.buttons)) {
     gamepad.buttons = input.buttons.map(next => next === true);
   }
@@ -903,14 +928,14 @@ function applyGamepadInput(input, gamepad) {
   }
   const buttonIndex = input?.buttonIndex;
   if (!Number.isInteger(buttonIndex)) return;
-  gamepad.buttons[buttonIndex] = input.pressed === true;
+  gamepad.buttons[/** @type {number} */ (buttonIndex)] = input.pressed === true;
 }
 
 /**
  * Create Actions From State.
- * @param {unknown} keyboard Parameter.
- * @param {unknown} gamepad Parameter.
- * @returns {unknown} Return value.
+ * @param {Record<string, boolean>} keyboard Parameter.
+ * @param {BatteryGamepadState} gamepad Parameter.
+ * @returns {BatteryDerivedActions} Result.
  */
 function createActionsFromState(keyboard, gamepad) {
   return {
@@ -993,7 +1018,7 @@ function isResetPressed(keyboard, gamepad) {
 /**
  * Is Axis Left.
  * @param {unknown} value Parameter.
- * @returns {unknown} Return value.
+ * @returns {boolean} Result.
  */
 function isAxisLeft(value) {
   return Number(value) < -EDGE_THRESHOLD;
@@ -1001,7 +1026,7 @@ function isAxisLeft(value) {
 /**
  * Is Axis Right.
  * @param {unknown} value Parameter.
- * @returns {unknown} Return value.
+ * @returns {boolean} Result.
  */
 function isAxisRight(value) {
   return Number(value) > EDGE_THRESHOLD;
@@ -1009,8 +1034,8 @@ function isAxisRight(value) {
 
 /**
  * Apply Gameplay Input.
- * @param {unknown} state Parameter.
- * @param {unknown} inputState Parameter.
+ * @param {BatteryState} state Parameter.
+ * @param {BatteryInputState} inputState Parameter.
  */
 export function applyGameplayInput(state, inputState) {
   movePaddle(state, inputState.actions);
@@ -1021,8 +1046,8 @@ export function applyGameplayInput(state, inputState) {
 
 /**
  * Handle launch input transitions.
- * @param {unknown} state Game state.
- * @param {unknown} inputState Input state.
+ * @param {BatteryState} state Game state.
+ * @param {BatteryInputState} inputState Input state.
  */
 function handleLaunchInput(state, inputState) {
   if (
@@ -1037,8 +1062,8 @@ function handleLaunchInput(state, inputState) {
 
 /**
  * Handle pause input transitions.
- * @param {unknown} state Game state.
- * @param {unknown} inputState Input state.
+ * @param {BatteryState} state Game state.
+ * @param {BatteryInputState} inputState Input state.
  */
 function handlePauseInput(state, inputState) {
   if (
@@ -1058,8 +1083,8 @@ function handlePauseInput(state, inputState) {
 
 /**
  * Move Paddle.
- * @param {unknown} state Parameter.
- * @param {unknown} actions Parameter.
+ * @param {BatteryState} state Parameter.
+ * @param {BatteryActions} actions Parameter.
  */
 export function movePaddle(state, actions) {
   const delta = Number(actions.moveRight) - Number(actions.moveLeft);
@@ -1074,7 +1099,7 @@ export function movePaddle(state, actions) {
 
 /**
  * Step Simulation.
- * @param {unknown} state Parameter.
+ * @param {BatteryState} state Parameter.
  */
 export function stepSimulation(state) {
   if (state.orb.stuckToPaddle) return;
@@ -1094,7 +1119,7 @@ export function stepSimulation(state) {
 
 /**
  * Stick Orb To Paddle.
- * @param {unknown} state Parameter.
+ * @param {BatteryState} state Parameter.
  */
 function stickOrbToPaddle(state) {
   state.orb.x = state.paddle.x + Math.round(state.paddle.width / 2);
@@ -1103,7 +1128,7 @@ function stickOrbToPaddle(state) {
 
 /**
  * Resolve Walls.
- * @param {unknown} state Parameter.
+ * @param {BatteryState} state Parameter.
  */
 function resolveWalls(state) {
   if (state.orb.x - state.orb.radius <= 0) {
@@ -1122,7 +1147,7 @@ function resolveWalls(state) {
 
 /**
  * Resolve Paddle.
- * @param {unknown} state Parameter.
+ * @param {BatteryState} state Parameter.
  */
 export function resolvePaddle(state) {
   const paddle = state.paddle;
@@ -1144,8 +1169,8 @@ export function resolvePaddle(state) {
 
 /**
  * Resolve Cells.
- * @param {unknown} state Parameter.
- * @param {unknown} hitCells Parameter.
+ * @param {BatteryState} state Parameter.
+ * @param {Set<string>} hitCells Parameter.
  */
 export function resolveCells(state, hitCells) {
   for (const cell of state.cells) {
@@ -1163,8 +1188,8 @@ export function resolveCells(state, hitCells) {
 
 /**
  * Apply a resolved cell hit.
- * @param {unknown} state Game state.
- * @param {unknown} cell Cell state.
+ * @param {BatteryState} state Game state.
+ * @param {BatteryCell} cell Cell state.
  */
 function applyCellHit(state, cell) {
   if (cell.state === 'overcharged') {
@@ -1178,8 +1203,8 @@ function applyCellHit(state, cell) {
 
 /**
  * Update a cell after it has been charged.
- * @param {unknown} state Game state.
- * @param {unknown} cell Cell state.
+ * @param {BatteryState} state Game state.
+ * @param {BatteryCell} cell Cell state.
  */
 function updateCellStateAfterCharge(state, cell) {
   if (cell.charge > cell.maxCharge) {
@@ -1200,7 +1225,7 @@ function updateCellStateAfterCharge(state, cell) {
 
 /**
  * Advance Cell Cooldowns.
- * @param {unknown} state Parameter.
+ * @param {BatteryState} state Parameter.
  */
 export function advanceCellCooldowns(state) {
   for (const cell of state.cells) {
@@ -1216,8 +1241,8 @@ export function advanceCellCooldowns(state) {
 
 /**
  * Reflect Orb.
- * @param {unknown} state Parameter.
- * @param {unknown} cell Parameter.
+ * @param {BatteryState} state Parameter.
+ * @param {BatteryCell} cell Parameter.
  */
 export function reflectOrb(state, cell) {
   const orb = state.orb;
@@ -1238,9 +1263,9 @@ export function reflectOrb(state, cell) {
 
 /**
  * Circle Intersects Cell.
- * @param {unknown} orb Parameter.
- * @param {unknown} cell Parameter.
- * @returns {unknown} Return value.
+ * @param {BatteryOrb} orb Parameter.
+ * @param {BatteryCell} cell Parameter.
+ * @returns {boolean} Result.
  */
 function circleIntersectsCell(orb, cell) {
   const closestX = clamp(orb.x, cell.x, cell.x + cell.width);
@@ -1252,7 +1277,7 @@ function circleIntersectsCell(orb, cell) {
 
 /**
  * Resolve Bottom.
- * @param {unknown} state Parameter.
+ * @param {BatteryState} state Parameter.
  */
 function resolveBottom(state) {
   if (state.orb.y + state.orb.radius <= state.height) return;
@@ -1266,7 +1291,7 @@ function resolveBottom(state) {
 
 /**
  * Resolve Win Loss.
- * @param {unknown} state Parameter.
+ * @param {BatteryState} state Parameter.
  */
 function resolveWinLoss(state) {
   if (state.faults > DEFAULT_MAX_FAULTS || state.lives <= 0) {
@@ -1278,7 +1303,7 @@ function resolveWinLoss(state) {
 
 /**
  * Reset Orb To Paddle.
- * @param {unknown} state Parameter.
+ * @param {BatteryState} state Parameter.
  */
 function resetOrbToPaddle(state) {
   state.status = 'ready';
@@ -1290,10 +1315,10 @@ function resetOrbToPaddle(state) {
 
 /**
  * Clamp.
- * @param {unknown} value Parameter.
- * @param {unknown} min Parameter.
- * @param {unknown} max Parameter.
- * @returns {unknown} Return value.
+ * @param {number} value Parameter.
+ * @param {number} min Parameter.
+ * @param {number} max Parameter.
+ * @returns {number} Result.
  */
 function clamp(value, min, max) {
   return Math.min(max, Math.max(min, value));
@@ -1301,7 +1326,7 @@ function clamp(value, min, max) {
 
 /**
  * To Canvas Payload.
- * @param {unknown} state Parameter.
+ * @param {BatteryState} state Parameter.
  * @returns {unknown} Return value.
  */
 function toCanvasPayload(state) {
@@ -1435,8 +1460,8 @@ function getCellChargeFill(state) {
 
 /**
  * Persist State.
- * @param {unknown} storage Parameter.
- * @param {unknown} state Parameter.
+ * @param {BatteryStorageAccessor | null} storage Parameter.
+ * @param {BatteryState} state Parameter.
  */
 function persistState(storage, state) {
   storage?.({ [STORAGE_KEY]: state });
