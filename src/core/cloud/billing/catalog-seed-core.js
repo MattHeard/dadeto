@@ -1,4 +1,3 @@
-// @ts-nocheck -- seed persistence is an injected Firestore boundary.
 import { createPricingSnapshot, quoteCreditPackage } from './pricing-core.js';
 
 /**
@@ -12,19 +11,30 @@ export function normalizeCatalogSnapshot(documentId, input) {
     throw new TypeError('Pricing snapshot document ID must match snapshotId');
   }
   const operations = normalizeOperations(input.operations);
-  return createPricingSnapshot({ ...input, operations });
+  return createPricingSnapshot(
+    /** @type {Parameters<typeof createPricingSnapshot>[0]} */ ({
+      ...input,
+      operations,
+    })
+  );
 }
 
 /**
  * Normalize operation definitions from either supported catalog shape.
  * @param {unknown} operations Operation definitions.
- * @returns {Array<object>} Normalized operation rows.
+ * @returns {Array<{id: string, costEurMicros: number}>} Normalized operation rows.
  */
 function normalizeOperations(operations) {
-  return Object.entries(operations ?? {}).map(([id, value]) => ({
-    id,
-    ...value,
-  }));
+  return Object.entries(
+    /** @type {Record<string, unknown>} */ (operations ?? {})
+  ).map(([id, value]) => {
+    if (!value || typeof value !== 'object')
+      throw new TypeError('Pricing operation must be an object');
+    const operation = /** @type {Record<string, unknown>} */ (value);
+    if (typeof operation.costEurMicros !== 'number')
+      throw new TypeError('Pricing operation costEurMicros must be a number');
+    return { ...operation, id, costEurMicros: operation.costEurMicros };
+  });
 }
 
 /**
@@ -49,7 +59,7 @@ export async function seedBillingCatalog(store, catalog) {
 
 /**
  * Seed one package and update the result counters.
- * @param {object} store Catalog persistence boundary.
+ * @param {{getPackage: (id: string) => Promise<Record<string, unknown>|null>, setPackage: (id: string, value: Record<string, unknown>) => Promise<void>}} store Catalog persistence boundary.
  * @param {string} id Package identifier.
  * @param {Record<string, unknown>} data Package data.
  * @param {Record<string, number>} result Mutable seed counters.
@@ -58,7 +68,11 @@ export async function seedBillingCatalog(store, catalog) {
 async function seedPackage(store, id, data, result) {
   if (typeof data.active !== 'boolean')
     throw new TypeError('Package active must be boolean');
-  if (!Number.isSafeInteger(data.amountUsdMinor) || data.amountUsdMinor <= 0)
+  if (
+    typeof data.amountUsdMinor !== 'number' ||
+    !Number.isSafeInteger(data.amountUsdMinor) ||
+    data.amountUsdMinor <= 0
+  )
     throw new TypeError('Package amountUsdMinor must be positive');
   const existing = await store.getPackage(id);
   if (!existing) result.packagesCreated += 1;
@@ -69,7 +83,7 @@ async function seedPackage(store, id, data, result) {
 
 /**
  * Seed one pricing snapshot and update the result counters.
- * @param {object} store Catalog persistence boundary.
+ * @param {{getSnapshot: (id: string) => Promise<Record<string, unknown>|null>, createSnapshot: (id: string, value: Record<string, unknown>) => Promise<void>}} store Catalog persistence boundary.
  * @param {string} id Snapshot identifier.
  * @param {Record<string, unknown>} data Snapshot data.
  * @param {Record<string, number>} result Mutable seed counters.
