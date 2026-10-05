@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { parseJsonOrNull } from '../../../commonCore.js';
 import { normalizePositiveInteger } from '../../common.js';
 
@@ -32,18 +31,24 @@ const EDGE_THRESHOLD = 0.4;
  *   status: 'ready' | 'running' | 'paused' | 'won' | 'lost',
  *   score: number,
  *   lives: number,
+ *   layoutSeed: number,
  *   input: PaddleInputState,
  *   paddle: { x: number, y: number, width: number, height: number, speed: number },
  *   orb: PaddleOrb,
  *   panels: PaddlePanel[],
  * }} PaddleState
+ * @typedef {Record<string, unknown>} PaddleInputRecord
+ * @typedef {{ width?: number; height?: number; lives?: number; layoutSeed?: number }} PaddleSeedFallback
+ * @typedef {{ width: number; height: number; paddleWidth: number; paddleHeight: number; paddleSpeed: number; orbRadius: number; orbSpeedX: number; orbSpeedY: number; layoutSeed: number; lives: number; panels: PaddlePanel[] }} PaddleSeedOptions
+ * @typedef {{ get: (name: string) => unknown }} PaddleEnvironment
+ * @typedef {(data: Record<string, unknown>) => Record<string, unknown> | undefined} PaddleStorageSetter
  */
 
 /**
  * Solar Paddle.
- * @param {unknown} input Parameter.
- * @param {unknown} env Parameter.
- * @returns {unknown} Return value.
+ * @param {unknown} input Input payload.
+ * @param {PaddleEnvironment | null | undefined} env Host environment.
+ * @returns {string} Serialized canvas payload.
  */
 export function solarPaddle(input, env) {
   const storage = getStorageAccessor(env);
@@ -56,8 +61,8 @@ export function solarPaddle(input, env) {
 
 /**
  * Get Storage Accessor.
- * @param {unknown} env Parameter.
- * @returns {unknown} Return value.
+ * @param {PaddleEnvironment | null | undefined} env Host environment.
+ * @returns {PaddleStorageSetter | null} Storage write helper, when provided.
  */
 function getStorageAccessor(env) {
   if (!env || typeof env.get !== 'function') {
@@ -66,15 +71,15 @@ function getStorageAccessor(env) {
 
   const setter = env.get('setLocalPermanentData');
   if (typeof setter === 'function') {
-    return setter;
+    return /** @type {PaddleStorageSetter} */ (setter);
   }
   return null;
 }
 
 /**
  * Read the persisted paddle state from storage.
- * @param {unknown} storage Storage accessor.
- * @returns {unknown} Normalized persisted state or null.
+ * @param {PaddleStorageSetter | null} storage Storage accessor.
+ * @returns {PaddleState | null} Normalized persisted state or null.
  */
 function readPersistedState(storage) {
   if (!storage) {
@@ -88,7 +93,7 @@ function readPersistedState(storage) {
 /**
  * Parse an input payload string into a record.
  * @param {unknown} input Input payload.
- * @returns {unknown} Parsed record or null.
+ * @returns {PaddleInputRecord | null} Parsed record or null.
  */
 function parseInput(input) {
   return parseObjectRecord(input);
@@ -97,9 +102,12 @@ function parseInput(input) {
 /**
  * Parse an object-like JSON value.
  * @param {unknown} value Raw JSON input.
- * @returns {unknown} Parsed record or null.
+ * @returns {PaddleInputRecord | null} Parsed record or null.
  */
 function parseObjectRecord(value) {
+  if (typeof value !== 'string') {
+    return null;
+  }
   const parsed = parseJsonOrNull(value);
   if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
     return /** @type {Record<string, unknown>} */ (parsed);
@@ -110,12 +118,12 @@ function parseObjectRecord(value) {
 
 /**
  * Build the next simulation state.
- * @param {unknown} persisted Persisted state.
- * @param {unknown} input Parsed input.
- * @returns {unknown} Next state.
+ * @param {PaddleState | null} persisted Persisted state.
+ * @param {PaddleInputRecord | null} input Parsed input.
+ * @returns {PaddleState} Next state.
  */
 function buildNextState(persisted, input) {
-  const seed = createSeedState(input, persisted);
+  const seed = createSeedState(input, persisted ?? undefined);
   const base = persisted || seed;
   const shouldReset = input?.reset === true || !persisted;
   const merged = buildMergedState(shouldReset, base, seed);
@@ -166,9 +174,9 @@ function finalizeNextState(merged, frame, inputState) {
 
 /**
  * Build the reset seed state after a reset press.
- * @param {unknown} input Parsed input.
+ * @param {PaddleInputRecord | null} input Parsed input.
  * @param {PaddleState | null} persisted Persisted state.
- * @returns {unknown} Reset seed state.
+ * @returns {PaddleState} Reset seed state.
  */
 function createResetSeedState(input, persisted) {
   const layoutSeed = (persisted?.layoutSeed ?? 0) + 1;
@@ -181,7 +189,7 @@ function createResetSeedState(input, persisted) {
 /**
  * Build reset fallback values.
  * @param {PaddleState | null} persisted Persisted state.
- * @returns {object|undefined} Fallback values.
+ * @returns {PaddleSeedFallback | undefined} Fallback values.
  */
 function buildResetFallback(persisted) {
   if (!persisted) {
@@ -197,9 +205,9 @@ function buildResetFallback(persisted) {
 
 /**
  * Merge seed values into an existing state.
- * @param {unknown} base Existing state.
- * @param {unknown} seed Seed state.
- * @returns {unknown} Merged state.
+ * @param {PaddleState} base Existing state.
+ * @param {PaddleState} seed Seed state.
+ * @returns {PaddleState} Merged state.
  */
 function mergeSeedAndState(base, seed) {
   return {
@@ -220,9 +228,9 @@ function mergeSeedAndState(base, seed) {
 
 /**
  * Create a new seed state from input and fallback values.
- * @param {unknown} input Input values.
- * @param {unknown} fallback Fallback values.
- * @returns {unknown} Seed state.
+ * @param {PaddleInputRecord | null} input Input values.
+ * @param {PaddleSeedFallback | undefined} fallback Fallback values.
+ * @returns {PaddleState} Seed state.
  */
 function createSeedState(input, fallback) {
   const defaults = createSeedDefaults();
@@ -244,8 +252,8 @@ function createSeedState(input, fallback) {
 
 /**
  * Normalize seed values from input and fallback state.
- * @param {unknown} input Input values.
- * @param {unknown} fallback Fallback values.
+ * @param {PaddleInputRecord | null} input Input values.
+ * @param {PaddleSeedFallback | undefined} fallback Fallback values.
  * @param {ReturnType<typeof createSeedDefaults>} defaults Seed defaults.
  * @returns {{
  *   width: number,
@@ -286,8 +294,8 @@ function normalizeSeedValues(input, fallback, defaults) {
 
 /**
  * Normalize the seed width.
- * @param {unknown} input Input values.
- * @param {unknown} fallback Fallback values.
+ * @param {PaddleInputRecord | null} input Input values.
+ * @param {PaddleSeedFallback | undefined} fallback Fallback values.
  * @param {ReturnType<typeof createSeedDefaults>} defaults Seed defaults.
  * @returns {number} Normalized width.
  */
@@ -297,8 +305,8 @@ function normalizeSeedWidth(input, fallback, defaults) {
 
 /**
  * Normalize the seed height.
- * @param {unknown} input Input values.
- * @param {unknown} fallback Fallback values.
+ * @param {PaddleInputRecord | null} input Input values.
+ * @param {PaddleSeedFallback | undefined} fallback Fallback values.
  * @param {ReturnType<typeof createSeedDefaults>} defaults Seed defaults.
  * @returns {number} Normalized height.
  */
@@ -308,8 +316,8 @@ function normalizeSeedHeight(input, fallback, defaults) {
 
 /**
  * Normalize the seed layout key.
- * @param {unknown} input Input values.
- * @param {unknown} fallback Fallback values.
+ * @param {PaddleInputRecord | null} input Input values.
+ * @param {PaddleSeedFallback | undefined} fallback Fallback values.
  * @param {ReturnType<typeof createSeedDefaults>} defaults Seed defaults.
  * @returns {number} Normalized layout seed.
  */
@@ -322,8 +330,8 @@ function normalizeSeedLayout(input, fallback, defaults) {
 
 /**
  * Normalize the seed lives count.
- * @param {unknown} input Input values.
- * @param {unknown} fallback Fallback values.
+ * @param {PaddleInputRecord | null} input Input values.
+ * @param {PaddleSeedFallback | undefined} fallback Fallback values.
  * @param {ReturnType<typeof createSeedDefaults>} defaults Seed defaults.
  * @returns {number} Normalized lives count.
  */
@@ -334,16 +342,16 @@ function normalizeSeedLives(input, fallback, defaults) {
 /**
  * Build seed defaults and fallback resolvers.
  * @returns {{
- *   width: (fallback: unknown) => number,
- *   height: (fallback: unknown) => number,
+ *   width: (fallback: PaddleSeedFallback | undefined) => number,
+ *   height: (fallback: PaddleSeedFallback | undefined) => number,
  *   paddleWidth: number,
  *   paddleHeight: number,
  *   paddleSpeed: number,
  *   orbRadius: number,
  *   orbSpeedX: number,
  *   orbSpeedY: number,
- *   layoutSeed: (fallback: unknown) => number,
- *   lives: (fallback: unknown) => number,
+ *   layoutSeed: (fallback: PaddleSeedFallback | undefined) => number,
+ *   lives: (fallback: PaddleSeedFallback | undefined) => number,
  * }} Seed defaults.
  */
 function createSeedDefaults() {
@@ -363,8 +371,8 @@ function createSeedDefaults() {
 
 /**
  * Create an initial runtime state object.
- * @param {unknown} options State options.
- * @returns {unknown} New state.
+ * @param {PaddleSeedOptions} options State options.
+ * @returns {PaddleState} New state.
  */
 function createState(options) {
   const paddleY = Math.max(
@@ -379,6 +387,7 @@ function createState(options) {
     status: 'ready',
     score: 0,
     lives: options.lives,
+    layoutSeed: options.layoutSeed,
     input: createInitialInputState(),
     paddle: {
       x: Math.round((options.width - options.paddleWidth) / 2),
@@ -456,7 +465,10 @@ function normalizeState(value) {
     lives: normalizePositiveInteger(candidate.lives, DEFAULT_LIVES),
     layoutSeed: normalizePositiveInteger(candidate.layoutSeed, 1),
     input: normalizeInputState(candidate.input),
-    paddle: normalizePaddle(candidate.paddle, candidate.height),
+    paddle: normalizePaddle(
+      candidate.paddle,
+      typeof candidate.height === 'number' ? candidate.height : DEFAULT_HEIGHT
+    ),
     orb: normalizeOrb(candidate.orb),
     panels: normalizePanelsFromState(candidate.panels),
   };
@@ -468,7 +480,10 @@ function normalizeState(value) {
  * @returns {PaddleState['status']} Normalized status.
  */
 function normalizeStatus(value) {
-  if (['ready', 'running', 'paused', 'won', 'lost'].includes(value)) {
+  if (
+    typeof value === 'string' &&
+    ['ready', 'running', 'paused', 'won', 'lost'].includes(value)
+  ) {
     return /** @type {PaddleState['status']} */ (value);
   }
   return 'ready';
@@ -480,12 +495,16 @@ function normalizeStatus(value) {
  * @returns {PaddleInputState} Normalized input state.
  */
 function normalizeInputState(value) {
+  const record =
+    value !== null && typeof value === 'object' && !Array.isArray(value)
+      ? /** @type {Record<string, unknown>} */ (value)
+      : {};
   return {
-    keyboard: normalizeBooleanRecord(value?.keyboard),
-    gamepad: normalizeGamepadState(value?.gamepad),
-    actions: normalizeActions(value?.actions),
-    edgeActions: normalizeEdgeActions(value?.edgeActions),
-    previousActions: normalizeActions(value?.previousActions),
+    keyboard: normalizeBooleanRecord(record.keyboard),
+    gamepad: normalizeGamepadState(record.gamepad),
+    actions: normalizeActions(record.actions),
+    edgeActions: normalizeEdgeActions(record.edgeActions),
+    previousActions: normalizeActions(record.previousActions),
   };
 }
 
@@ -675,16 +694,7 @@ function normalizeNumber(value, fallback) {
 
 /**
  * Provide the default seed options.
- * @returns {{
- *   width: number,
- *   height: number,
- *   paddleWidth: number,
- *   paddleHeight: number,
- *   paddleSpeed: number,
- *   orbRadius: number,
- *   orbSpeedX: number,
- *   orbSpeedY: number,
- * }} Default seed options.
+ * @returns {PaddleSeedOptions} Default seed options.
  */
 function createSeedOptions() {
   return {
@@ -763,6 +773,7 @@ function normalizePanels(width, height, seed = 1) {
     seed
   );
   const counts = [3, 5, 4];
+  /** @type {PaddlePanel[]} */
   const rows = [];
   let index = 0;
   counts.forEach((count, rowIndex) => {
@@ -871,7 +882,7 @@ function shufflePositions(positions, seed) {
 /**
  * Update the input state from new input.
  * @param {PaddleInputState | undefined} previous Previous input state.
- * @param {unknown} input Incoming input.
+ * @param {PaddleInputRecord | null} input Incoming input.
  * @returns {PaddleInputState} Updated input state.
  */
 function updateInputState(previous, input) {
@@ -906,7 +917,7 @@ function createEdgeActions(actions, previousActions) {
 
 /**
  * Derive actions from keyboard and gamepad state.
- * @param {unknown} input Incoming input.
+ * @param {PaddleInputRecord | null} input Incoming input.
  * @param {Record<string, boolean>} keyboard Keyboard state.
  * @param {PaddleGamepadState} gamepad Gamepad state.
  * @returns {{ actions: PaddleActions, edgeActions: PaddleEdgeActions }} Derived actions.
@@ -919,7 +930,7 @@ function deriveActions(input, keyboard, gamepad) {
 
 /**
  * Apply keyboard-specific input events.
- * @param {unknown} input Incoming input.
+ * @param {PaddleInputRecord | null} input Incoming input.
  * @param {Record<string, boolean>} keyboard Keyboard state.
  * @returns {void}
  */
@@ -934,7 +945,7 @@ function applyKeyboardInput(input, keyboard) {
 
 /**
  * Apply gamepad-specific input events.
- * @param {unknown} input Incoming input.
+ * @param {PaddleInputRecord | null} input Incoming input.
  * @param {PaddleGamepadState} gamepad Gamepad state.
  * @returns {void}
  */
@@ -1404,7 +1415,7 @@ function getOrbFill(status) {
 
 /**
  * Persist the current state.
- * @param {unknown} storage Storage accessor.
+ * @param {PaddleStorageSetter | null} storage Storage accessor.
  * @param {PaddleState} state Current state.
  * @returns {void}
  */
