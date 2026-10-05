@@ -1,4 +1,3 @@
-// @ts-nocheck -- browser objects are injected by the static-page entrypoint.
 import { createMosslightRuntime } from './runtime.js';
 import { updateInput, gamepadActions } from './input.js';
 import { drawGameFrame } from './renderer.js';
@@ -7,8 +6,8 @@ import { resetSavePrompt } from './save.js';
 
 /**
  * Mount the shared RPG in a responsive page and return its lifecycle disposer.
- * @param {object} options - Injected browser APIs and animation-frame functions.
- * @returns {Function} A function that stops the page game loop and listeners.
+ * @param {any} options Injected browser APIs and animation-frame functions.
+ * @returns {() => void} Function that stops the page game loop and listeners.
  */
 export function startMosslightPage(options) {
   const { documentObj, windowObj, navigatorObj, requestFrame, cancelFrame } =
@@ -19,9 +18,11 @@ export function startMosslightPage(options) {
   const keys = { held: new Set(), pressed: new Set() };
   const touch = new Set();
   const touchPulse = new Set();
+  /** @type {number | null} */
   let frameId = null;
   let lastTime = 0;
   let disposed = false;
+  /** @type {any} */
   let audioContext = null;
   const permanent = () => {
     try {
@@ -32,7 +33,7 @@ export function startMosslightPage(options) {
       return {};
     }
   };
-  const setPermanent = update => {
+  const setPermanent = (/** @type {Record<string, any>} */ update) => {
     const next = { ...permanent(), ...update };
     try {
       windowObj.localStorage.setItem('permanentData', JSON.stringify(next));
@@ -42,20 +43,30 @@ export function startMosslightPage(options) {
     }
     return next;
   };
-  const env = new Map([
-    ['setLocalPermanentData', setPermanent],
-    ['playAudioCue', cue => playCue(cue)],
-  ]);
+  const env = /** @type {Map<string, (...args: any[]) => any>} */ (
+    new Map([
+      [
+        'setLocalPermanentData',
+        /** @type {(...args: any[]) => any} */ (setPermanent),
+      ],
+      [
+        'playAudioCue',
+        /** @type {(...args: any[]) => any} */ (
+          (/** @type {string} */ cue) => playCue(cue)
+        ),
+      ],
+    ])
+  );
   const runtimeFactory = options.createRuntime || createMosslightRuntime;
   const runtime = runtimeFactory({
     env,
     audio: options.audio,
-    onControllerCommand: command => {
-      const selector = {
+    onControllerCommand: (/** @type {string} */ command) => {
+      const selector = /** @type {Record<string, string>} */ ({
         export: '#export-game',
         import: '#import-button',
         fullscreen: '#fullscreen-game',
-      }[command];
+      })[command];
       if (selector) documentObj.querySelector(selector).click();
     },
   });
@@ -63,7 +74,7 @@ export function startMosslightPage(options) {
 
   /**
    *
-   * @param {unknown} cue - The cue argument.
+   * @param {string} cue Audio cue identifier.
    */
   function playCue(cue) {
     try {
@@ -107,7 +118,7 @@ export function startMosslightPage(options) {
   }
   /**
    *
-   * @returns {unknown} The computed result.
+   * @returns {string[]} Current keyboard, touch, and gamepad actions.
    */
   function actions() {
     return [
@@ -120,7 +131,7 @@ export function startMosslightPage(options) {
   }
   /**
    *
-   * @param {unknown} time - The time argument.
+   * @param {number} time Animation frame timestamp.
    */
   function loop(time) {
     if (disposed) return;
@@ -140,7 +151,7 @@ export function startMosslightPage(options) {
   }
   /**
    *
-   * @param {unknown} event - The event argument.
+   * @param {{key: string, preventDefault: () => void}} event Keyboard event.
    */
   function onKeyDown(event) {
     const next = updateInput(keys, { type: 'keydown', key: event.key });
@@ -153,7 +164,7 @@ export function startMosslightPage(options) {
   }
   /**
    *
-   * @param {unknown} event - The event argument.
+   * @param {{key: string}} event Keyboard event.
    */
   function onKeyUp(event) {
     const next = updateInput(keys, { type: 'keyup', key: event.key });
@@ -263,9 +274,9 @@ export function startMosslightPage(options) {
 
 /**
  *
- * @param {unknown} value - The value argument.
- * @param {unknown} name - The name argument.
- * @param {unknown} windowObj - The windowObj argument.
+ * @param {string} value Serialized save data.
+ * @param {string} name Download filename.
+ * @param {any} windowObj Browser window adapter.
  */
 function download(value, name, windowObj) {
   const blob = new windowObj.Blob([value], { type: 'application/json' });
@@ -279,25 +290,30 @@ function download(value, name, windowObj) {
 
 /**
  * Bind pointer controls so taps and holds both reach the fixed-step game loop.
- * @param {object} documentObj - Page document containing action buttons.
+ * @param {any} documentObj Page document containing action buttons.
  * @param {Set<string>} touch - Held pointer actions.
  * @param {Set<string>} touchPulse - One-tick pointer actions.
- * @param {Function} resume Resume a paused agent session from a physical press.
+ * @param {() => void} resume Resume a paused agent session from a physical press.
  */
 function bindTouchControls(documentObj, touch, touchPulse, resume) {
   for (const button of documentObj.querySelectorAll('[data-action]')) {
     const action = button.dataset.action;
-    button.addEventListener('pointerdown', event => {
-      event.preventDefault();
-      resume();
-      touch.add(action);
-      touchPulse.add(action);
-      try {
-        button.setPointerCapture?.(event.pointerId);
-      } catch {
-        /* Older mobile browsers may not support capture. */
+    button.addEventListener(
+      'pointerdown',
+      (
+        /** @type {{preventDefault: () => void, pointerId: number}} */ event
+      ) => {
+        event.preventDefault();
+        resume();
+        touch.add(action);
+        touchPulse.add(action);
+        try {
+          button.setPointerCapture?.(event.pointerId);
+        } catch {
+          /* Older mobile browsers may not support capture. */
+        }
       }
-    });
+    );
     const release = () => touch.delete(action);
     button.addEventListener('pointerup', release);
     button.addEventListener('pointercancel', release);
@@ -308,14 +324,17 @@ function bindTouchControls(documentObj, touch, touchPulse, resume) {
 
 /**
  * Connect save slots and page utility actions to the shared runtime.
- * @param {object} options - Page elements and game runtime dependencies.
+ * @param {any} options Page elements and game runtime dependencies.
  */
 function bindUtilityControls(options) {
   const { browser, runtime, status, draw, onResume, onReset, saveFilename } =
     options;
   const { documentObj, windowObj } = browser;
-  const listen = (selector, event, handler) =>
-    documentObj.querySelector(selector).addEventListener(event, handler);
+  const listen = (
+    /** @type {string} */ selector,
+    /** @type {string} */ event,
+    /** @type {(event: any) => void} */ handler
+  ) => documentObj.querySelector(selector).addEventListener(event, handler);
   const slotPicker = documentObj.querySelector('#save-slot');
   slotPicker.value = String(runtime.getSlot());
   slotPicker.addEventListener('change', () => {
