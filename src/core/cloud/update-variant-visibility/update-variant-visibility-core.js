@@ -1,10 +1,9 @@
-// @ts-nocheck
 // Stryker disable all -- this module is the fixed update-variant-visibility
 // cloud-handler boundary for Firestore validation, rating aggregation, admin
 // locking, and conditional republishing; residual branches are protocol guards.
 
 import { getNumericValueOrZero } from '../cloud-core.js';
-import { objectOrEmpty, when, ADMIN_UID } from '../../commonCore.js';
+import { objectOrEmpty, ADMIN_UID } from '../../commonCore.js';
 import { createFirestoreHandle } from '../firestore-handle.js';
 
 /**
@@ -367,28 +366,33 @@ function validateApproval(isApproved) {
  * @returns {VariantUpdatePayload | null} Sanitized payload for processing.
  */
 function getValidVariantUpdatePayload(data) {
-  return when(
-    typeof data.variantId === 'string' && typeof data.moderatorId === 'string',
-    () => buildVariantUpdatePayload(data)
-  );
+  if (
+    typeof data.variantId !== 'string' ||
+    typeof data.moderatorId !== 'string'
+  )
+    return null;
+  return buildVariantUpdatePayload({
+    ...data,
+    variantId: data.variantId,
+    moderatorId: data.moderatorId,
+  });
 }
 
 /**
  * Build the final payload when approval status is valid.
- * @param {Record<string, unknown>} data Identifier-checked trigger payload.
+ * @param {Record<string, unknown> & {variantId: string, moderatorId: string}} data Identifier-checked trigger payload.
  * @returns {VariantUpdatePayload | null} Payload for processing.
  */
 function buildVariantUpdatePayload(data) {
   const isApproved = data.isApproved;
   const moderatorId = data.moderatorId;
   const variantId = data.variantId;
-  return /** @type {VariantUpdatePayload | null} */ (
-    when(validateApproval(isApproved), () => ({
-      moderatorId,
-      variantId,
-      isApproved: /** @type {boolean} */ (isApproved),
-    }))
-  );
+  if (!validateApproval(isApproved)) return null;
+  return {
+    moderatorId,
+    variantId,
+    isApproved: /** @type {boolean} */ (isApproved),
+  };
 }
 
 /**
@@ -459,7 +463,7 @@ async function executeVariantUpdate(db, snapshot, renderContents) {
 /**
  * Apply the visibility update using the validated payload.
  * @param {import('firebase-admin/firestore').Firestore} db Firestore client.
- * @param {{ variantId: string; isApproved: boolean; moderatorId?: string }} payload Validated inputs.
+ * @param {{ variantId: string; isApproved: boolean; moderatorId: string }} payload Validated inputs.
  * @param {(context?: object) => Promise<unknown> | undefined} [renderContents] Optional content renderer.
  * @returns {Promise<null>} Resolves after the update runs.
  */
@@ -534,7 +538,9 @@ async function getRootPageRef(pageRef) {
   }
 
   const storySnap = await storyRef.get();
-  return storySnap?.data?.()?.rootPage ?? null;
+  return /** @type {import('firebase-admin/firestore').DocumentReference|null} */ (
+    /** @type {unknown} */ (storySnap?.data?.()?.rootPage ?? null)
+  );
 }
 
 /**
@@ -638,7 +644,12 @@ async function republishContentsIfNeeded(deps) {
  * @returns {import('firebase-admin/firestore').DocumentReference | null} Parent document or null.
  */
 function getParentDocumentRef(reference) {
-  return reference?.parent?.parent ?? null;
+  const referenceWithParents = /** @type {{parent?: {parent?: unknown}}} */ (
+    /** @type {unknown} */ (reference)
+  );
+  return /** @type {import('firebase-admin/firestore').DocumentReference|null} */ (
+    referenceWithParents?.parent?.parent ?? null
+  );
 }
 
 /**
