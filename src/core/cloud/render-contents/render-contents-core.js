@@ -1,5 +1,3 @@
-// @ts-nocheck -- render pipeline accepts structural storage, Firestore, and HTTP doubles.
-
 // Stryker disable all -- this module is the fixed render/invalidation protocol
 // boundary; its injected collaborators and HTML contract are verified by the
 // focused core, branch, common, and entrypoint suites.
@@ -47,13 +45,31 @@ const DEFAULT_PAGE_SIZE = 100;
  */
 
 /**
+ * @typedef {object} StorySnapshot
+ * @property {boolean} exists Whether the Firestore document exists.
+ * @property {() => Record<string, unknown>} data Snapshot data accessor.
+ */
+
+/**
+ * @typedef {object} StoryDocumentReference
+ * @property {() => Promise<StorySnapshot>} get Fetch the referenced document.
+ * @property {(name: string) => {get: () => Promise<{docs: Array<{data: () => Record<string, unknown>}>}>}} [collection] Fetch a nested collection.
+ */
+
+/**
+ * @typedef {object} StoryCollectionReference
+ * @property {(field: string, direction: 'asc'|'desc') => {limit: (count: number) => {get: () => Promise<{docs: Array<{id: string}>}>}}} orderBy Query story stats.
+ * @property {(id: string) => StoryDocumentReference} doc Read a story or page document.
+ */
+
+/**
  * @typedef {object} DbInstance
- * @property {(...args: unknown[]) => unknown} collection Firestore collection accessor.
+ * @property {(name: string) => StoryCollectionReference} collection Firestore collection accessor.
  */
 
 /**
  * @typedef {object} StorageInstance
- * @property {(...args: unknown[]) => unknown} bucket Cloud storage bucket accessor.
+ * @property {(name: string) => BucketFileAccessor} bucket Cloud storage bucket accessor.
  */
 
 /**
@@ -75,7 +91,7 @@ const DEFAULT_PAGE_SIZE = 100;
 
 /**
  * Ensure the provided Firestore-like instance exposes the expected helpers.
- * @param {{ collection: (...args: unknown[]) => unknown }} db Firestore-like instance to validate.
+ * @param {DbInstance} db Firestore-like instance to validate.
  * @returns {void}
  */
 function assertDb(db) {
@@ -96,7 +112,7 @@ function ensureDbValue(db) {
 
 /**
  * Assert the provided database exposes a collection helper.
- * @param {{ collection?: (...args: unknown[]) => unknown }} db Firestore-like instance to inspect.
+ * @param {{ collection?: (name: string) => StoryCollectionReference }} db Firestore-like instance to inspect.
  * @returns {void}
  */
 function ensureCollectionHelper(db) {
@@ -107,7 +123,7 @@ function ensureCollectionHelper(db) {
 
 /**
  * Ensure the provided Storage-like instance exposes the expected helpers.
- * @param {{ bucket: (...args: unknown[]) => unknown }} storage Storage-like instance to validate.
+ * @param {{ bucket: (name: string) => BucketFileAccessor }} storage Storage-like instance to validate.
  * @returns {void}
  */
 function assertStorage(storage) {
@@ -128,7 +144,7 @@ function ensureStorageValue(storage) {
 
 /**
  * Assert the provided storage exposes a bucket helper.
- * @param {{ bucket?: (...args: unknown[]) => unknown }} storage Storage-like instance to inspect.
+ * @param {{ bucket?: (name: string) => BucketFileAccessor }} storage Storage-like instance to inspect.
  * @returns {void}
  */
 function ensureBucketHelper(storage) {
@@ -281,7 +297,7 @@ export function buildHtml(items) {
 
 /**
  * Create a helper that retrieves the most popular story ids.
- * @param {{ collection: (...args: unknown[]) => unknown }} db Firestore-like instance.
+ * @param {DbInstance} db Firestore-like instance.
  * @returns {() => Promise<string[]>} Function that loads the top story ids.
  */
 export function createFetchTopStoryIds(db) {
@@ -307,7 +323,7 @@ export function createFetchTopStoryIds(db) {
 
 /**
  * Create a helper that resolves story metadata for rendering.
- * @param {{ collection: (...args: unknown[]) => unknown }} db Firestore-like instance.
+ * @param {DbInstance} db Firestore-like instance.
  * @returns {(storyId: string) => Promise<{title: string, pageNumber: number|null}|null>} Story loader.
  */
 export function createFetchStoryInfo(db) {
@@ -348,7 +364,7 @@ async function resolveStoryInfoFromStory(story) {
 
 /**
  * Resolve story information once the root page return value arrives.
- * @param {{ get: () => Promise<{ exists: boolean, data: () => Record<string, unknown> }>, collection?: (name: string) => { get: () => Promise<{ docs: Array<{ data: () => Record<string, unknown> }> }> } }} rootRef Document reference for the root page.
+ * @param {StoryDocumentReference} rootRef Document reference for the root page.
  * @param {Record<string, unknown>} story Firestore story document data.
  * @returns {Promise<StoryInfo | null>} Story metadata or null when the page snapshot is missing.
  */
@@ -453,16 +469,16 @@ function extractPageNumber(page) {
 /**
  * Determine if story data exposes a root page reference.
  * @param {Record<string, unknown>} story Story document data.
- * @returns {boolean} True when the story includes a root page reference.
+ * @returns {story is Record<string, unknown> & {rootPage: StoryDocumentReference}} True when the story includes a root page reference.
  */
 function hasStoryRootPage(story) {
-  return Boolean(story?.rootPage);
+  return isObject(story.rootPage) && typeof story.rootPage.get === 'function';
 }
 
 /**
  * Check whether the story exposes a title string.
  * @param {Record<string, unknown>} story Story document data.
- * @returns {boolean} True when the title is a string.
+ * @returns {story is Record<string, unknown> & {title: string}} True when the title is a string.
  */
 function hasTitle(story) {
   return typeof story?.title === 'string';
@@ -471,7 +487,7 @@ function hasTitle(story) {
 /**
  * Check whether the page data provides a numeric page number.
  * @param {Record<string, unknown>} page Page document data.
- * @returns {boolean} True when the page number is numeric.
+ * @returns {page is Record<string, unknown> & {number: number}} True when the page number is numeric.
  */
 function hasPageNumber(page) {
   return typeof page?.number === 'number';
@@ -509,8 +525,12 @@ export function createInvalidatePaths({
 
   return createPathInvalidationRunner({
     fetchFn,
-    bindEffectBoundary,
-    effectFetchFn,
+    bindEffectBoundary: /** @type {RenderOptions['bindEffectBoundary']} */ (
+      bindEffectBoundary
+    ),
+    effectFetchFn: /** @type {RenderOptions['effectFetchFn']} */ (
+      effectFetchFn
+    ),
     randomUUID,
     consoleError,
     config,
@@ -680,8 +700,11 @@ function ensureResponseOk(response, label) {
  * @returns {Promise<string>} Resolved token string.
  */
 async function extractAccessToken(response) {
-  const { access_token: accessToken } = await response.json();
-  return accessToken;
+  const token = await response.json();
+  if (!isObject(token) || typeof token.access_token !== 'string') {
+    throw new TypeError('metadata token response must contain access_token');
+  }
+  return token.access_token;
 }
 
 /**
@@ -854,8 +877,12 @@ function normalizeRenderContentsOptions(
       /** @type {(input: string, init?: object) => Promise<FetchResponse>} */ (
         fetchFn
       ),
-    bindEffectBoundary,
-    effectFetchFn,
+    bindEffectBoundary: /** @type {RenderOptions['bindEffectBoundary']} */ (
+      bindEffectBoundary
+    ),
+    effectFetchFn: /** @type {RenderOptions['effectFetchFn']} */ (
+      effectFetchFn
+    ),
     randomUUID: /** @type {() => string} */ (randomUUID),
     projectId,
     urlMapName,
@@ -935,7 +962,9 @@ function instantiateRenderContents(deps) {
   } = deps;
 
   const bucket = createPrefixedBucket(
-    /** @type {StorageInstance} */ (storage).bucket(bucketName),
+    /** @type {StorageInstance} */ (storage).bucket(
+      /** @type {string} */ (bucketName)
+    ),
     /** @type {string} */ (objectPrefix)
   );
   const invalidatePaths = createInvalidatePaths({
@@ -1039,14 +1068,15 @@ function createRenderContentsHandler(config) {
 
 /**
  * Resolve an asynchronous fetcher from the provided override or cached factory.
+ * @template {(...args: never[]) => unknown} Fetcher
  * @param {{
- *   provided?: (...args: unknown[]) => unknown,
- *   cache?: (...args: unknown[]) => unknown,
- *   setCache: (fn: (...args: unknown[]) => unknown) => void,
- *   factory: (db: { collection: (...args: unknown[]) => unknown }) => (...args: unknown[]) => unknown,
- *   db?: { collection: (...args: unknown[]) => unknown }
+ *   provided?: Fetcher,
+ *   cache?: Fetcher,
+ *   setCache: (fn: Fetcher) => void,
+ *   factory: (db: DbInstance) => Fetcher,
+ *   db?: DbInstance
  * }} options Fetcher resolution inputs.
- * @returns {(...args: unknown[]) => unknown} Fetch implementation to use.
+ * @returns {Fetcher} Fetch implementation to use.
  */
 function resolveFetcher({ provided, cache, setCache, factory, db: database }) {
   if (typeof provided === 'function') {
@@ -1058,13 +1088,14 @@ function resolveFetcher({ provided, cache, setCache, factory, db: database }) {
 
 /**
  * Return the cached fetcher or create a new one via the factory helper.
+ * @template {(...args: never[]) => unknown} Fetcher
  * @param {{
- *   cache?: (...args: unknown[]) => unknown,
- *   database?: { collection: (...args: unknown[]) => unknown },
- *   factory: (db: { collection: (...args: unknown[]) => unknown }) => (...args: unknown[]) => unknown,
- *   setCache: (fn: (...args: unknown[]) => unknown) => void
+ *   cache?: Fetcher,
+ *   database?: DbInstance,
+ *   factory: (db: DbInstance) => Fetcher,
+ *   setCache: (fn: Fetcher) => void
  * }} options Fetcher lookup inputs.
- * @returns {(...args: unknown[]) => unknown} Fetch implementation.
+ * @returns {Fetcher} Fetch implementation.
  */
 function getOrCreateFetcher({ cache, database, factory, setCache }) {
   if (cache) {
@@ -1165,9 +1196,10 @@ function buildPageSaveOptions(pageNumber, maxPages) {
 /**
  * Create a cached fetcher when none is provided.
  * @param {DbInstance | undefined} database Firestore-like instance used by the factory.
- * @param {(db: DbInstance) => (...args: unknown[]) => unknown} factory Factory that produces the fetcher.
- * @param {(fn: (...args: unknown[]) => unknown) => void} setCache Setter for caching the created fetcher.
- * @returns {(...args: unknown[]) => unknown} Newly created fetch implementation.
+ * @template {(...args: never[]) => unknown} Fetcher
+ * @param {(db: DbInstance) => Fetcher} factory Factory that produces the fetcher.
+ * @param {(fn: Fetcher) => void} setCache Setter for caching the created fetcher.
+ * @returns {Fetcher} Newly created fetch implementation.
  */
 function createFetcherFromDatabase(database, factory, setCache) {
   assertDb(/** @type {DbInstance} */ (database));
@@ -1672,7 +1704,7 @@ function hasNonEmptyString(input) {
 /**
  * Build a render-request handler bound to the shared authorization extractor.
  * @param {object} root0 Handler dependencies.
- * @param {(req: { method: string }, res: { status: (...args: unknown[]) => unknown, send: (...args: unknown[]) => unknown }) => boolean} root0.validateRequest Pre-flight validator.
+ * @param {(req: NativeHttpRequest, res: NativeHttpResponse) => boolean} root0.validateRequest Pre-flight validator.
  * @param {(token: string) => Promise<{ uid?: string }>} root0.verifyIdToken Firebase token verifier.
  * @param {string} root0.adminUid UID allowed to trigger rendering.
  * @param {() => Promise<void>} root0.render Rendering function.
