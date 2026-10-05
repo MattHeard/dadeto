@@ -1,4 +1,3 @@
-// @ts-nocheck -- this module deliberately accepts Firebase/HTTP test doubles at its boundaries.
 import {
   buildPageByNumberQuery,
   buildVariantByNameQuery,
@@ -242,11 +241,8 @@ export async function findVariantRef({
  * @returns {Promise<import('firebase-admin/firestore').DocumentReference | null>} Variant ref or null.
  */
 function resolveVariantRefFromPage(helpers, pageRef, variantName) {
-  return Promise.resolve(
-    commonCore.when(Boolean(pageRef), () =>
-      findVariantRefFromPage(helpers, pageRef, variantName)
-    )
-  );
+  if (!pageRef) return Promise.resolve(null);
+  return findVariantRefFromPage(helpers, pageRef, variantName);
 }
 
 /**
@@ -320,7 +316,9 @@ export async function markAuthorDirtyImpl(authorId, deps) {
     .get();
   const author = snapshot.docs[0];
   if (!author) return false;
-  const authorRef = /** @type {{ ref: MarkVariantDirtyValue }} */ (author).ref;
+  const authorRef = /** @type {{ ref: MarkVariantDirtyValue }} */ (
+    /** @type {unknown} */ (author)
+  ).ref;
   await authorRef.update({ dirty: false });
   await authorRef.update({ dirty: true });
   return true;
@@ -346,7 +344,7 @@ export async function markVariantDirtyImpl(pageNumber, variantName, deps) {
 
 /**
  * Apply the update helper when a reference exists.
- * @param {((...args: unknown[]) => unknown) | undefined} updateVariantDirtyFn Update override.
+ * @param {((variantRef: import('firebase-admin/firestore').DocumentReference) => Promise<void>) | undefined} updateVariantDirtyFn Update override.
  * @param {import('firebase-admin/firestore').DocumentReference | null} variantRef Candidate ref.
  * @returns {Promise<boolean>} True when the update ran.
  */
@@ -379,13 +377,13 @@ async function resolveVariantReference(deps, pageNumber, variantName) {
 
 /**
  * Apply update function with fallback.
- * @param {((...args: unknown[]) => unknown) | undefined} updateVariantDirtyFn Update override.
+ * @param {((variantRef: import('firebase-admin/firestore').DocumentReference) => Promise<void>) | undefined} updateVariantDirtyFn Update override.
  * @param {import('firebase-admin/firestore').DocumentReference} variantRef Variant ref.
  * @returns {Promise<void>} Promise.
  */
 function applyUpdateFn(updateVariantDirtyFn, variantRef) {
   const updateFn = updateVariantDirtyFn ?? updateVariantDirty;
-  return updateFn(variantRef);
+  return Promise.resolve(updateFn(variantRef)).then(() => undefined);
 }
 
 /**
@@ -574,13 +572,17 @@ export function parseMarkVariantRequestBody(body) {
 /**
  * Validate and extract configuration from options.
  * @param {HandleRequestOptions | undefined} optionsTyped - Typed options.
- * @returns {{verifyAdmin: (...args: unknown[]) => unknown, markVariantDirty: (...args: unknown[]) => unknown, markAuthorDirty?: (...args: unknown[]) => unknown}} Validated configuration.
+ * @returns {Pick<HandlerDependencies, 'verifyAdmin' | 'markVariantDirty' | 'markAuthorDirty'>} Validated configuration.
  */
 function extractValidatedConfig(optionsTyped) {
   const { verifyAdmin, markVariantDirty, markAuthorDirty } = optionsTyped ?? {};
   commonCore.assertFunction(verifyAdmin, 'verifyAdmin');
   commonCore.assertFunction(markVariantDirty, 'markVariantDirty');
-  return { verifyAdmin, markVariantDirty, markAuthorDirty };
+  return /** @type {Pick<HandlerDependencies, 'verifyAdmin' | 'markVariantDirty' | 'markAuthorDirty'>} */ ({
+    verifyAdmin,
+    markVariantDirty,
+    markAuthorDirty,
+  });
 }
 
 export const markVariantDirtyTestUtils = {
@@ -612,7 +614,7 @@ function castMarkVariantDirtyFn(fn) {
 /**
  * Extract validated admin and core functions.
  * @param {HandleRequestOptions | undefined} optionsTyped - Configuration object.
- * @returns {{verifyAdmin: (...args: unknown[]) => unknown, markVariantDirty: (...args: unknown[]) => unknown, markAuthorDirty?: (...args: unknown[]) => unknown}} Extracted functions.
+ * @returns {Pick<HandlerDependencies, 'verifyAdmin' | 'markVariantDirty' | 'markAuthorDirty'>} Extracted functions.
  */
 function extractCoreHandlers(optionsTyped) {
   return extractValidatedConfig(optionsTyped);
@@ -623,7 +625,7 @@ function extractCoreHandlers(optionsTyped) {
  * @param {unknown} verifyAdmin - Admin verification function.
  * @param {unknown} markVariantDirty - Dirty marking function.
  * @param {((id: string) => Promise<boolean>) | undefined} markAuthorDirty - Author marking function.
- * @returns {{verifyAdmin: (...args: unknown[]) => unknown, markVariantDirty: (...args: unknown[]) => unknown, markAuthorDirty?: (...args: unknown[]) => unknown}} Cast functions.
+ * @returns {Pick<HandlerDependencies, 'verifyAdmin' | 'markVariantDirty' | 'markAuthorDirty'>} Cast functions.
  */
 function castCoreFunctions(
   verifyAdmin,
@@ -640,7 +642,7 @@ function castCoreFunctions(
 /**
  * Resolve the request body parser.
  * @param {HandleRequestOptions | undefined} optionsTyped - Configuration object.
- * @returns {(...args: unknown[]) => unknown} The request parser.
+ * @returns {HandlerDependencies['parseRequestBody']} The request parser.
  */
 function resolveRequestParser(optionsTyped) {
   if (!optionsTyped) {
@@ -666,7 +668,7 @@ function resolveHttpMethod(optionsTyped) {
 /**
  * Resolve parser and method from options.
  * @param {HandleRequestOptions | undefined} optionsTyped - Configuration object.
- * @returns {{parseRequestBody: (...args: unknown[]) => unknown, allowedMethod: string}} Parser and method.
+ * @returns {Pick<HandlerDependencies, 'parseRequestBody' | 'allowedMethod'>} Parser and method.
  */
 function resolveParserAndMethod(optionsTyped) {
   return {
@@ -681,7 +683,7 @@ function resolveParserAndMethod(optionsTyped) {
  * @param {unknown} markVariantDirty - Dirty marking function.
  * @param {((id: string) => Promise<boolean>) | undefined} markAuthorDirty Author marking function.
  * @param {HandleRequestOptions | undefined} optionsTyped - Configuration object.
- * @returns {{verifyAdmin: (...args: unknown[]) => unknown, markVariantDirty: (...args: unknown[]) => unknown, parseRequestBody: (...args: unknown[]) => unknown, allowedMethod: string}} Resolved handler config.
+ * @returns {HandlerDependencies} Resolved handler config.
  */
 function resolveCastHandlerFunctions(
   verifyAdmin,
@@ -701,7 +703,7 @@ function resolveCastHandlerFunctions(
 /**
  * Extract and resolve handler configuration.
  * @param {HandleRequestOptions | undefined} optionsTyped - Configuration object.
- * @returns {{verifyAdmin: (...args: unknown[]) => unknown, markVariantDirty: (...args: unknown[]) => unknown, parseRequestBody: (...args: unknown[]) => unknown, allowedMethod: string}} Resolved handler config.
+ * @returns {HandlerDependencies} Resolved handler config.
  */
 function extractHandlerConfig(optionsTyped) {
   const { verifyAdmin, markVariantDirty, markAuthorDirty } =
@@ -855,7 +857,7 @@ function enforceMethodOrThrow(req, res, allowedMethod) {
 
 /**
  * Ensure authorization or throw sentinel.
- * @param {(...args: unknown[]) => unknown} verifyAdminFn Verify fn.
+ * @param {HandleRequestOptions['verifyAdmin']} verifyAdminFn Verify fn.
  * @param {NativeHttpRequest} req Req.
  * @param {NativeHttpResponse} res Res.
  * @returns {Promise<void>} Promise.
@@ -879,13 +881,14 @@ function parseRequestOrThrow(req, res, parseRequestBody) {
 
 /**
  * Return the value when truthy or throw the request-handled sentinel.
- * @param {unknown} value Candidate value.
- * @returns {unknown} The input value when truthy.
+ * @template T
+ * @param {T} value Candidate value.
+ * @returns {NonNullable<T>} The input value when truthy.
  */
 function throwRequestHandledIfFalsy(value) {
   if (!value) {
     throw REQUEST_HANDLED;
   }
 
-  return value;
+  return /** @type {NonNullable<T>} */ (value);
 }
