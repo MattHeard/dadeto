@@ -15,6 +15,31 @@ const RESOLUTIONS = [
   ['quiet-lab', 'keeps the keys without a new outside owner'],
 ] as const;
 
+const SCENARIO_LAUNCHES = [
+  {
+    id: 'autonomyPilot',
+    objective: 'Ghost pilot 32; pass all three current probes by shift 10.',
+    starts: (state: Record<string, any>) => {
+      expect(state.lab.focus).toBe('ghost');
+      expect(state.lab.cash).toBe(120);
+      expect(state.lab.research.ghost).toBe(24);
+      expect(state.lab.programs.ghost.settings.specialization).toBe(
+        'maintenance'
+      );
+    },
+  },
+  {
+    id: 'brownoutRecovery',
+    objective:
+      'Clear the heat warning, avoid an incident, and stay solvent by shift 12.',
+    starts: (state: Record<string, any>) => {
+      expect(state.lab.cash).toBe(80);
+      expect(state.lab.incidentChains.heat.stage).toBe('warning');
+      expect(state.lab.incidentChains.heat.warnedAt).toBe(1);
+    },
+  },
+] as const;
+
 function endingSave(outcome: (typeof RESOLUTIONS)[number][0]) {
   let state = createNeonState();
   const lab = state.lab;
@@ -108,6 +133,51 @@ for (const embedded of [false, true]) {
     expect(await labSaveIsValid(page)).toBe(true);
     expect(errors).toEqual([]);
   });
+}
+
+for (const embedded of [false, true]) {
+  for (const scenario of SCENARIO_LAUNCHES) {
+    test(`${scenario.id} starts from its disclosed controller menu in ${embedded ? 'embedded' : 'standalone'} play`, async ({
+      page,
+    }) => {
+      const errors: string[] = [];
+      page.on('pageerror', error => errors.push(error.message));
+      await page.goto(embedded ? '/' : '/neon-covenant/', {
+        waitUntil: 'domcontentloaded',
+      });
+      if (embedded) {
+        const toy = page.locator('#NEON1');
+        await toy.scrollIntoViewIfNeeded();
+        await expect(
+          toy.getByRole('button', { name: 'Submit', exact: true })
+        ).toBeEnabled();
+        await tap(page, 'x', true, true);
+      } else {
+        await expect.poll(() => labState(page)).toBeTruthy();
+        await tap(page, 'x');
+      }
+      await selectPersonnelRow(page, 'page:scenarios', embedded);
+      await selectPersonnelRow(page, `scenario:brief:${scenario.id}`, embedded);
+      const briefing = await labState(page);
+      expect(briefing.dialogue.choices[0].label).toBe(
+        'Replace this slot and begin'
+      );
+      expect(briefing.lab.scenario).toBeUndefined();
+      await tap(page, 'a', embedded, embedded);
+
+      const started = await labState(page);
+      expect(started.world.day).toBe(1);
+      expect(started.lab.scenario).toMatchObject({
+        id: scenario.id,
+        status: 'active',
+        settled: 0,
+        objective: scenario.objective,
+      });
+      scenario.starts(started);
+      expect(await labSaveIsValid(page)).toBe(true);
+      expect(errors).toEqual([]);
+    });
+  }
 }
 
 for (const embedded of [false, true]) {
