@@ -1,4 +1,3 @@
-// @ts-nocheck -- Firebase trigger and test-double contracts are intentionally structural here.
 /** @typedef {import('../../../../types/native-http').NativeHttpRequest} NativeHttpRequest */
 /** @typedef {import('../../../../types/native-http').NativeHttpResponse} NativeHttpResponse */
 /** @typedef {import('../../../../types/native-http').NativeExpressApp} NativeExpressApp */
@@ -705,7 +704,7 @@ function snapshotIsEmpty(snapshot) {
 
 /**
  * Select the primary variant document from a query snapshot when it exists.
- * @param {VariantSnapshot | undefined} snapshot Query snapshot containing candidate documents.
+ * @param {VariantCandidate | VariantSnapshot | undefined} snapshot Query snapshot containing candidate documents.
  * @returns {SelectVariantDocResult} Selected document when present or an error message when missing.
  */
 export function selectVariantDoc(snapshot) {
@@ -812,7 +811,7 @@ export function createReputationScopedVariantsQuery(database, reputation) {
 /**
  * Create a query runner that fetches all moderation candidates for a moderator.
  * @param {import('firebase-admin/firestore').Firestore} database Firestore database instance.
- * @returns {(...args: unknown[]) => unknown} Query runner bound to the provided database.
+ * @returns {(uid: string) => Promise<VariantCandidate[]>} Query runner bound to the provided database.
  */
 export function createRunVariantQuery(database) {
   // Stryker disable all -- Firestore collection-group validation is an injected
@@ -848,7 +847,9 @@ export function createRunVariantQuery(database) {
       .filter(
         variantDoc =>
           !alreadyModerated.has(
-            /** @type {{ ref: { path: string } }} */ (variantDoc).ref.path
+            /** @type {{ ref: { path: string } }} */ (
+              /** @type {unknown} */ (variantDoc)
+            ).ref.path
           )
       )
       .map(variantDoc => ({ variantDoc }));
@@ -858,15 +859,15 @@ export function createRunVariantQuery(database) {
 
 /**
  * Build a factory that produces Firestore-backed moderation candidate fetchers.
- * @param {unknown} createRunVariantQueryFn Adapter factory that accepts a database instance and returns a query executor.
- * @returns {(...args: unknown[]) => unknown} Factory producing candidate fetchers bound to a Firestore database.
+ * @param {(database: import('firebase-admin/firestore').Firestore) => (descriptor: ReturnType<typeof buildVariantQueryPlan>[number]) => Promise<VariantSnapshot>} createRunVariantQueryFn Adapter factory that accepts a database instance and returns a query executor.
+ * @returns {(database: import('firebase-admin/firestore').Firestore) => (randomValue: number) => Promise<VariantSnapshot>} Factory producing snapshot fetchers bound to a Firestore database.
  */
 export function createFetchVariantSnapshotFromDbFactory(
   createRunVariantQueryFn
 ) {
   /**
    * @param {import('firebase-admin/firestore').Firestore} database Firestore database instance.
-   * @returns {(...args: unknown[]) => unknown} Query executor bound to the database.
+   * @returns {(randomValue: number) => Promise<VariantSnapshot>} Snapshot fetcher bound to the database.
    */
   return function createFetchVariantSnapshotFromDb(database) {
     const runVariantQuery = createRunVariantQueryFn(database);
@@ -911,8 +912,8 @@ export function buildVariantQueryPlan(randomValue) {
 
 /**
  * Create a Firestore-agnostic variant snapshot fetcher.
- * @param {{ runQuery: (...args: unknown[]) => unknown }} deps Adapter that executes a single query descriptor.
- * @returns {(...args: unknown[]) => unknown} Function resolving with the first snapshot containing results.
+ * @param {{ runQuery: (descriptor: ReturnType<typeof buildVariantQueryPlan>[number]) => Promise<VariantSnapshot> }} deps Adapter that executes a single query descriptor.
+ * @returns {(randomValue: number) => Promise<VariantSnapshot>} Function resolving with the first snapshot containing results.
  */
 export function createVariantSnapshotFetcher({ runQuery }) {
   /**
@@ -1096,9 +1097,9 @@ export function createHandleAssignModerationJobCore(assignModerationWorkflow) {
 /**
  * @typedef {object} AssignModerationWorkflowDeps
  * @property {(context: { req: NativeHttpRequest }) => Promise<{ error?: GuardError, context?: GuardContext }>} runGuards - Guard runner that validates the incoming request.
- * @property {(...args: unknown[]) => unknown} [fetchVariantSnapshots] - Resolver that fetches moderation candidates for the caller.
+ * @property {(uid: string) => Promise<VariantCandidate[]>} [fetchVariantSnapshots] - Resolver that fetches moderation candidates for the caller.
  * @property {(randomValue: number) => Promise<VariantSnapshot>} [fetchVariantSnapshot] - Legacy resolver that fetches a single snapshot.
- * @property {(...args: unknown[]) => unknown} selectVariantDoc - Selector that extracts the chosen variant document from a snapshot.
+ * @property {typeof selectVariantDoc} selectVariantDoc - Selector that extracts the chosen variant document from a snapshot.
  * @property {(uid: string) => import('firebase-admin/firestore').DocumentReference} createModeratorRef - Factory that returns the moderator document reference for persisting assignments.
  * @property {() => unknown} now - Clock function that returns the timestamp persisted with the assignment.
  * @property {() => number} random - RNG used to seed variant selection.
@@ -1158,7 +1159,7 @@ export function createAssignModerationWorkflow({
  * Resolve a single snapshot using the legacy selection path.
  * @param {{
  *   fetchVariantSnapshot?: (randomValue: number) => Promise<VariantSnapshot>,
- *   selectVariantDoc: (...args: unknown[]) => unknown,
+ *   selectVariantDoc: typeof selectVariantDoc,
  *   random: () => number,
  * }} deps Legacy resolver dependencies.
  * @returns {Promise<VariantDocSnapshot>} Selected variant document.
@@ -1328,8 +1329,8 @@ function resolveUserRecord(context) {
 
 /**
  * @typedef {object} ResolveVariantDocDeps
- * @property {(...args: unknown[]) => unknown} fetchVariantSnapshots Function that loads moderation candidates for the caller.
- * @property {(...args: unknown[]) => unknown} selectVariantDoc Selector that extracts the variant document or an error message from the snapshot.
+ * @property {(uid: string) => Promise<VariantCandidate[]>} fetchVariantSnapshots Function that loads moderation candidates for the caller.
+ * @property {typeof selectVariantDoc} selectVariantDoc Selector that extracts the variant document or an error message from the snapshot.
  * @property {string} uid Moderator UID.
  * @property {() => number} random Random number generator used to pick a variant candidate.
  */
@@ -1351,7 +1352,11 @@ async function resolveVariantDoc({
     variantSnapshots,
     random
   );
-  const candidateVariantDoc = selectVariantDoc(chosenCandidate);
+  const candidateVariantDoc = selectVariantDoc(
+    /** @type {VariantSnapshot | undefined} */ (
+      /** @type {unknown} */ (chosenCandidate)
+    )
+  );
 
   const { errorMessage, variantDoc } = candidateVariantDoc;
 
@@ -1518,13 +1523,15 @@ async function persistAssignment(deps, data) {
   const { userRecord, variantDoc } = data;
   const moderatorRef = createModeratorRef(userRecord.uid);
   const createdAt = now();
-  await /** @type {{ set: (data: object) => Promise<unknown> }} */ (
-    moderatorRef
+  await /** @type {{ set(data: object, options: { merge: boolean }): Promise<unknown> }} */ (
+    /** @type {unknown} */ (moderatorRef)
   ).set(
     // Stryker disable next-line all -- persisted assignment shape is the stable
     // Firestore merge contract.
     {
-      variant: /** @type {{ ref: unknown }} */ (variantDoc).ref,
+      variant: /** @type {{ ref: unknown }} */ (
+        /** @type {unknown} */ (variantDoc)
+      ).ref,
       createdAt,
     },
     // Stryker disable next-line all -- assignment persistence always merges.
@@ -1552,14 +1559,14 @@ function isResponse(value) {
   if (!isValidObject(value)) {
     return false;
   }
-  const obj = /** @type {{ message?: unknown }} */ (value);
+  const obj = /** @type {{ message?: unknown, status?: unknown }} */ (value);
   return typeof obj.status === 'number';
 }
 
 /**
  * Create the Express handler that assigns moderation jobs using Firestore.
  * @param {{
- *   createRunVariantQuery: (...args: unknown[]) => unknown,
+ *   createRunVariantQuery: (database: import('firebase-admin/firestore').Firestore) => (uid: string) => Promise<VariantCandidate[]>,
  *   auth: import('firebase-admin/auth').Auth,
  *   db: import('firebase-admin/firestore').Firestore,
  *   now: () => unknown,
@@ -1593,7 +1600,7 @@ export function createHandleAssignModerationJob({
 /**
  * Register the assign moderation job route on the provided Express app.
  * @param {{ db: import('firebase-admin/firestore').Firestore, auth: import('firebase-admin/auth').Auth, app: NativeExpressApp }} firebaseResources - Firebase resources used to serve the moderation endpoint.
- * @param {unknown} createRunVariantQuery - Factory that produces query executors bound to a Firestore database.
+ * @param {(database: import('firebase-admin/firestore').Firestore) => (uid: string) => Promise<VariantCandidate[]>} createRunVariantQuery - Factory that produces query executors bound to a Firestore database.
  * @param {() => unknown} now - Timestamp provider for persisted assignments.
  * @param {() => number} random Random number generator.
  * @returns {(req: NativeHttpRequest, res: NativeHttpResponse) => Promise<void>} Registered moderation handler.
