@@ -1,4 +1,3 @@
-// @ts-nocheck
 // Stryker disable all -- this module is the fixed local GCP simulator
 // lifecycle and route orchestration boundary covered by focused suites.
 import { mkdtemp, rm } from 'node:fs/promises';
@@ -56,6 +55,22 @@ const FIRST_VARIANT_NAME = 'a';
 const SECOND_VARIANT_NAME = 'a';
 const LOCAL_ID_TOKEN = 'local-admin-token';
 
+/** @typedef {ReturnType<typeof createFakeFirestore>} SimulatorDb */
+/** @typedef {{ body?: unknown, headers?: unknown, get?: (name: string) => string | null | undefined }} SimulatorRequest */
+/** @typedef {{ path: string, before?: unknown, after?: unknown }} CommittedRecord */
+/** @typedef {{ pathPattern: string, eventName: 'onCreate' | 'onWrite', handler: (...args: any[]) => any }} SimulatorTrigger */
+/** @typedef {{ doc: { ref: { path: string }, data?: () => unknown }, createdAt: number, rand: number, path: string }} ModerationCandidate */
+/**
+ * @typedef {object} SimulatorDocumentReference
+ * @property {() => Promise<{data: () => {number?: number, title?: string}, id: string}>} get Fetch the parent document.
+ * @property {{parent: SimulatorDocumentReference}} parent Reference to its containing collection.
+ */
+/**
+ * @typedef {object} SimulatorModerationVariantSnapshot
+ * @property {SimulatorDocumentReference & {collection: (name: string) => {get: () => Promise<{docs: Array<{data: () => {content?: string, position?: number, targetPage?: {path?: string}}}>}>}}} ref Firestore reference for the moderation variant.
+ * @property {() => {authorName?: string, author?: string, content?: string}} data Read the variant data.
+ */
+
 /**
  * Build the local GCP simulator used by Playwright and local tests.
  * @param {{
@@ -63,7 +78,7 @@ const LOCAL_ID_TOKEN = 'local-admin-token';
  *   bucketName?: string,
  *   projectId?: string,
  *   publicDir?: string,
- *   bindEffectBoundary: (handler: (permission: import('../../../../types/allow-effects').AllowEffects) => Promise<unknown>) => Promise<unknown>,
+ *   bindEffectBoundary?: (handler: (permission: import('../../../../types/allow-effects').AllowEffects) => Promise<unknown>) => Promise<unknown>,
  * }} [options] Simulator options.
  * @returns {Promise<object>} Simulator instance.
  */
@@ -92,12 +107,22 @@ export async function createLocalGcpSimulator(options = {}) {
  *   bucketName: string,
  *   projectId: string,
  *   publicDir: string,
- *   bindEffectBoundary: (handler: (permission: import('../../../../types/allow-effects').AllowEffects) => Promise<unknown>) => Promise<unknown>,
+ *   bindEffectBoundary?: (handler: (permission: import('../../../../types/allow-effects').AllowEffects) => Promise<unknown>) => Promise<unknown>,
  * }} config Simulator configuration.
  * @returns {Promise<object>} Simulator instance.
  */
 async function createLocalGcpSimulatorRuntime(config) {
   return buildSimulatorApi(await buildSimulatorState(config));
+}
+
+/**
+ * Require the simulator database after initialization.
+ * @param {{ db: SimulatorDb | null }} context Database context.
+ * @returns {SimulatorDb} Initialized simulator database.
+ */
+function requireSimulatorDb(context) {
+  if (!context.db) throw new Error('Simulator database is not initialized');
+  return context.db;
 }
 
 /**
@@ -115,6 +140,10 @@ async function createLocalGcpSimulatorRuntime(config) {
  *   markVariantDirtyUrl: string,
  *   generateStatsUrl: string,
  *   paymentWebhookUrl: string,
+ *   getAuthorUuidUrl: string,
+ *   objectMinuteRentalSearchUrl: string,
+ *   bucketName: string,
+ *   projectId: string,
  * }} Config object.
  */
 function createSimulatorConfig(baseUrl, bucketName, projectId) {
@@ -138,7 +167,7 @@ function createSimulatorConfig(baseUrl, bucketName, projectId) {
 /**
  * Create the seed manifest for the fixture story.
  * @param {string} bucketName Bucket name.
- * @returns {object} Seed manifest.
+ * @returns {{idToken: string, storyTitle: string, contentsPath: string, statsPath: string, moderation: {firstContent: string, secondContent: string}, story: {firstPagePath: string, secondPagePath: string, optionText: string}, expectedStatsAfterModeration: {storyCount: number, pageCount: number, unmoderatedPageCount: number}, environment: string, staticBucket: string}} Seed manifest.
  */
 function createSeedManifest(bucketName) {
   return {
@@ -200,8 +229,8 @@ function createStorage(storageRoot) {
 
 /**
  * Create the simulator Firestore instance.
- * @param {(...args: unknown[]) => unknown} onCommit Commit callback.
- * @returns {object} Fake Firestore instance.
+ * @param {(records: Array<{path: string, before?: unknown, after?: unknown}>) => Promise<void>|void} onCommit Commit callback.
+ * @returns {ReturnType<typeof createFakeFirestore>} Fake Firestore instance.
  */
 function createDb(onCommit) {
   return createFakeFirestore({ onCommit });
@@ -210,23 +239,23 @@ function createDb(onCommit) {
 /**
  * Create a dispatch function for committed Firestore writes.
  * @param {{
- *   triggerRegistry: Array<{ pathPattern: string, eventName: 'onCreate' | 'onWrite', handler: (snapshot: unknown, context: { params: Record<string, string> }) => Promise<void> }>,
+ *   triggerRegistry: SimulatorTrigger[],
  *   createSnapshots: (pathValue: string, before: unknown, after: unknown) => { before: unknown, after: unknown },
- *   shouldDispatchTrigger: (trigger: { pathPattern: string, eventName: 'onCreate' | 'onWrite' }, pathValue: string, isCreate: boolean, isWrite: boolean) => boolean,
- *   dispatchTrigger: (trigger: { eventName: 'onCreate' | 'onWrite', handler: (snapshot: unknown, context: { params: Record<string, string> }) => Promise<void> }, snapshots: { before: unknown, after: unknown }, context: { params: Record<string, string> }) => Promise<void>,
+ *   shouldDispatchTrigger: (trigger: Pick<SimulatorTrigger, 'pathPattern' | 'eventName'>, pathValue: string, isCreate: boolean, isWrite: boolean) => boolean,
+ *   dispatchTrigger: (trigger: Pick<SimulatorTrigger, 'eventName' | 'handler'>, snapshots: { before: unknown, after: unknown }, context: { params: Record<string, string> }) => Promise<void>,
  *   extractParams: (pathPattern: string, pathValue: string) => Record<string, string> | null,
  * }} deps Dispatch dependencies.
  * @returns {(records: Array<{ path: string, before?: unknown, after?: unknown }>) => Promise<void>} Dispatch function.
  */
 function createDispatchCommittedWrites(deps) {
-  return async (/** @type {unknown} */ records) => {
+  return async records => {
     for (const record of records) {
       const snapshots = deps.createSnapshots(
         record.path,
         record.before,
         record.after
       );
-      const isCreate = !record.before && record.after;
+      const isCreate = !record.before && Boolean(record.after);
       const isWrite = Boolean(record.before || record.after);
 
       for (const trigger of deps.triggerRegistry) {
@@ -237,7 +266,7 @@ function createDispatchCommittedWrites(deps) {
         }
 
         const context = {
-          params: deps.extractParams(trigger.pathPattern, record.path),
+          params: deps.extractParams(trigger.pathPattern, record.path) ?? {},
         };
         await deps.dispatchTrigger(trigger, snapshots, context);
       }
@@ -247,38 +276,34 @@ function createDispatchCommittedWrites(deps) {
 
 /**
  * Register a trigger handler for a Firestore path pattern.
- * @param {Array<{ pathPattern: string, eventName: 'onCreate' | 'onWrite', handler: (snapshot: unknown, context: { params: Record<string, string> }) => Promise<void> }>} triggerRegistry
+ * @param {SimulatorTrigger[]} triggerRegistry
  *   Trigger registry.
  * @param {string} pathPattern Firestore path pattern.
  * @param {'onCreate' | 'onWrite'} eventName Trigger event name.
- * @param {(snapshot: unknown, context: { params: Record<string, string> }) => Promise<void>} handler
+ * @param {SimulatorTrigger['handler']} handler
  *   Trigger handler.
  * @returns {void}
  */
-function registerTrigger(
-  /** @type {unknown} */ triggerRegistry,
-  /** @type {unknown} */ pathPattern,
-  /** @type {unknown} */ eventName,
-  /** @type {unknown} */ handler
-) {
+function registerTrigger(triggerRegistry, pathPattern, eventName, handler) {
   triggerRegistry.push({ pathPattern, eventName, handler });
 }
 
 /**
  * Register all trigger registrations grouped by event.
- * @param {Array<{ pathPattern: string, eventName: 'onCreate' | 'onWrite', handler: (snapshot: unknown, context: { params: Record<string, string> }) => Promise<void> }>} triggerRegistry
+ * @param {SimulatorTrigger[]} triggerRegistry
  *   Trigger registry.
- * @param {Record<string, Array<{ pathPattern: string, handler: (snapshot: unknown, context: { params: Record<string, string> }) => Promise<void> }>>} triggerRegistrationsByEvent
+ * @param {Record<string, Array<{ pathPattern: string, handler: SimulatorTrigger['handler'] }>>} triggerRegistrationsByEvent
  *   Trigger registrations grouped by event.
  * @returns {void}
  */
 function registerTriggerRegistrationsByEvent(
-  /** @type {unknown} */ triggerRegistry,
-  /** @type {unknown} */ triggerRegistrationsByEvent
+  triggerRegistry,
+  triggerRegistrationsByEvent
 ) {
-  for (const [eventName, registrations] of Object.entries(
-    triggerRegistrationsByEvent
+  for (const eventName of /** @type {Array<'onCreate'|'onWrite'>} */ (
+    Object.keys(triggerRegistrationsByEvent)
   )) {
+    const registrations = triggerRegistrationsByEvent[eventName];
     for (const registration of registrations) {
       registerTrigger(
         triggerRegistry,
@@ -295,7 +320,7 @@ function registerTriggerRegistrationsByEvent(
  * @param {object} state Simulator state.
  * @returns {object} Simulator instance.
  */
-function buildSimulatorApi(/** @type {unknown} */ state) {
+function buildSimulatorApi(state) {
   return state;
 }
 
@@ -306,15 +331,18 @@ function buildSimulatorApi(/** @type {unknown} */ state) {
  *   bucketName: string,
  *   projectId: string,
  *   publicDir: string,
+ *   bindEffectBoundary?: (handler: (permission: import('../../../../types/allow-effects').AllowEffects) => Promise<unknown>) => Promise<unknown>,
  * }} config Simulator configuration.
  * @returns {Promise<object>} Simulator state.
  */
-async function buildSimulatorState(/** @type {unknown} */ config) {
+async function buildSimulatorState(config) {
   const { baseUrl, bucketName, projectId, publicDir } = config;
   const storageRoot = await createStorageRoot();
   const storage = createStorage(storageRoot);
   const fieldValue = createFakeFieldValue();
+  /** @type {SimulatorTrigger[]} */
   const triggerRegistry = [];
+  /** @type {{ db: SimulatorDb | null }} */
   const dbContext = { db: null };
   const snapshotHelpers = createSnapshotHelpers(dbContext);
   const dispatchCommittedWrites = createDispatchCommittedWrites({
@@ -328,7 +356,9 @@ async function buildSimulatorState(/** @type {unknown} */ config) {
   dbContext.db = db;
   const fetchFn = createLocalFetchStub();
   const renderConfig = {
-    db,
+    db: /** @type {Parameters<typeof createRenderContents>[0]['db']} */ (
+      /** @type {unknown} */ (db)
+    ),
     storage,
     fetchFn,
     randomUUID,
@@ -336,16 +366,30 @@ async function buildSimulatorState(/** @type {unknown} */ config) {
     objectPrefix: '',
     projectId,
     bindEffectBoundary: config.bindEffectBoundary,
-    effectFetchFn: (permission, url, init) => fetchFn(url, init),
+    effectFetchFn: (
+      /** @type {import('../../../../types/allow-effects').AllowEffects} */ permission,
+      /** @type {string} */ url,
+      /** @type {object | undefined} */ init
+    ) => fetchFn(url, init),
   };
 
-  const renderContents = createRenderContents(renderConfig);
-  const renderVariant = createRenderVariant(renderConfig);
+  const renderContents = createRenderContents(
+    /** @type {Parameters<typeof createRenderContents>[0]} */ (
+      /** @type {unknown} */ (renderConfig)
+    )
+  );
+  const renderVariant = createRenderVariant(
+    /** @type {Parameters<typeof createRenderVariant>[0]} */ (
+      /** @type {unknown} */ (renderConfig)
+    )
+  );
 
   const handleVariantWrite = createHandleVariantWrite({
     renderVariant,
     getDeleteSentinel: createDeleteSentinelGetter(fieldValue),
-    db,
+    db: /** @type {Parameters<typeof createHandleVariantWrite>[0]['db']} */ (
+      /** @type {unknown} */ (db)
+    ),
   });
 
   const authVerifiers = createSimulatorAuthVerifiers();
@@ -358,7 +402,11 @@ async function buildSimulatorState(/** @type {unknown} */ config) {
     bucketName,
     verifyIdToken: authVerifiers.verifyStatsIdToken,
   });
-  const generateStatsCore = createGenerateStatsCore(generateStatsConfig);
+  const generateStatsCore = createGenerateStatsCore(
+    /** @type {Parameters<typeof createGenerateStatsCore>[0]} */ (
+      /** @type {unknown} */ (generateStatsConfig)
+    )
+  );
 
   const processWriteContext = {
     db,
@@ -366,8 +414,16 @@ async function buildSimulatorState(/** @type {unknown} */ config) {
     randomUUID,
     random: createRandomSource,
   };
-  const processNewStory = createProcessNewStoryHandler(processWriteContext);
-  const processNewPage = createProcessNewPageHandler(processWriteContext);
+  const processNewStory = createProcessNewStoryHandler(
+    /** @type {Parameters<typeof createProcessNewStoryHandler>[0]} */ (
+      /** @type {unknown} */ (processWriteContext)
+    )
+  );
+  const processNewPage = createProcessNewPageHandler(
+    /** @type {Parameters<typeof createProcessNewPageHandler>[0]} */ (
+      /** @type {unknown} */ (processWriteContext)
+    )
+  );
   const lookupHelpers = createLookupHelpers(db);
   const submitNewPageConfig = createSubmitNewPageConfig({
     verifyIdToken: authVerifiers.verifySubmitNewPageIdToken,
@@ -375,14 +431,22 @@ async function buildSimulatorState(/** @type {unknown} */ config) {
     findExistingOptionPath: lookupHelpers.findExistingOptionPath,
     findExistingPagePath: lookupHelpers.findExistingPagePath,
   });
-  const submitNewPage = createHandleSubmit(submitNewPageConfig);
+  const submitNewPage = createHandleSubmit(
+    /** @type {Parameters<typeof createHandleSubmit>[0]} */ (
+      /** @type {unknown} */ (submitNewPageConfig)
+    )
+  );
 
   const submitNewStoryConfig = createSubmitNewStoryConfig({
     verifyIdToken: authVerifiers.verifySubmitNewStoryIdToken,
     db,
   });
-  const submitNewStory = createSubmitNewStoryResponder(submitNewStoryConfig);
-  const getAuthorUuid = request =>
+  const submitNewStory = createSubmitNewStoryResponder(
+    /** @type {Parameters<typeof createSubmitNewStoryResponder>[0]} */ (
+      /** @type {unknown} */ (submitNewStoryConfig)
+    )
+  );
+  const getAuthorUuid = (/** @type {SimulatorRequest} */ request) =>
     handleGetAuthorUuid(
       {
         db,
@@ -391,10 +455,14 @@ async function buildSimulatorState(/** @type {unknown} */ config) {
       },
       request
     );
+  const simulatorCreditDb =
+    /** @type {Parameters<typeof createFetchCredit>[0]} */ (
+      /** @type {unknown} */ (db)
+    );
   const getApiKeyCreditV2 = createGetApiKeyCreditV2Handler({
-    fetchCredit: createFetchCredit(db),
-    fetchCreditEvents: createFetchCreditEvents(db),
-    applyCreditEvent: createApplyCreditEvent(db),
+    fetchCredit: createFetchCredit(simulatorCreditDb),
+    fetchCreditEvents: createFetchCreditEvents(simulatorCreditDb),
+    applyCreditEvent: createApplyCreditEvent(simulatorCreditDb),
     getUuid: extractUuid,
     logError: error => console.error(error),
   });
@@ -404,13 +472,13 @@ async function buildSimulatorState(/** @type {unknown} */ config) {
         .collection('payment-customers')
         .doc(customerId)
         .get();
-      const apiKeyUuid = snap.data()?.apiKeyUuid;
+      const apiKeyUuid = readRecord(snap.data()).apiKeyUuid;
       return resolvePaymentCustomerApiKeyUuid(apiKeyUuid);
     },
   });
   const paymentWebhook = createPaymentWebhookHandler({
-    fetchCredit: createFetchCredit(db),
-    applyCreditEvent: createApplyCreditEvent(db),
+    fetchCredit: createFetchCredit(simulatorCreditDb),
+    applyCreditEvent: createApplyCreditEvent(simulatorCreditDb),
     resolveApiKeyUuid,
     isDuplicateEvent: async eventId => {
       const snap = await db.collection('payment-events').doc(eventId).get();
@@ -433,7 +501,7 @@ async function buildSimulatorState(/** @type {unknown} */ config) {
     runnerScheduleProvider: { getSchedule: async () => LOCAL_RUNNER_SCHEDULE },
     clock: () => new Date('2026-01-01T15:00:00Z'),
   });
-  const objectMinuteRentalSearch = request =>
+  const objectMinuteRentalSearch = (/** @type {SimulatorRequest} */ request) =>
     runSearchHttp(searchHttp, request);
   const testUtils = createSimulatorTestUtils({
     snapshotHelpers,
@@ -495,10 +563,10 @@ async function buildSimulatorState(/** @type {unknown} */ config) {
 
 /**
  * Create trigger snapshot helpers bound to the simulator database context.
- * @param {{ db: ReturnType<typeof createDb> | null }} dbContext Database context.
+ * @param {{ db: SimulatorDb | null }} dbContext Database context.
  * @returns {{ createSnapshot: (pathValue: string, data: unknown) => unknown, createSnapshots: (pathValue: string, before: unknown, after: unknown) => { before: unknown, after: unknown } }} Snapshot helpers.
  */
-function createSnapshotHelpers(/** @type {unknown} */ dbContext) {
+function createSnapshotHelpers(dbContext) {
   return {
     createSnapshot: (pathValue, data) =>
       createSnapshot(dbContext, pathValue, data),
@@ -509,18 +577,13 @@ function createSnapshotHelpers(/** @type {unknown} */ dbContext) {
 
 /**
  * Build before/after snapshots for a write event.
- * @param {{ db: ReturnType<typeof createDb> | null }} dbContext Database context.
+ * @param {{ db: SimulatorDb | null }} dbContext Database context.
  * @param {string} pathValue Document path.
  * @param {unknown} before Previous document value.
  * @param {unknown} after Next document value.
  * @returns {{ before: unknown, after: unknown }} Snapshot pair.
  */
-function createSnapshots(
-  /** @type {unknown} */ dbContext,
-  /** @type {unknown} */ pathValue,
-  /** @type {unknown} */ before,
-  /** @type {unknown} */ after
-) {
+function createSnapshots(dbContext, pathValue, before, after) {
   return {
     before: createSnapshot(dbContext, pathValue, before),
     after: createSnapshot(dbContext, pathValue, after),
@@ -554,17 +617,13 @@ async function seedStaticFixture(storage, bucketName) {
 
 /**
  * Build a snapshot-like object for a path and payload.
- * @param {{ db: ReturnType<typeof createDb> | null }} dbContext Database context.
+ * @param {{ db: SimulatorDb | null }} dbContext Database context.
  * @param {string} pathValue Document path.
  * @param {unknown} data Document payload.
  * @returns {unknown} Snapshot object.
  */
-function createSnapshot(
-  /** @type {unknown} */ dbContext,
-  /** @type {unknown} */ pathValue,
-  /** @type {unknown} */ data
-) {
-  const { db } = dbContext;
+function createSnapshot(dbContext, pathValue, data) {
+  const db = requireSimulatorDb(dbContext);
 
   if (data === undefined) {
     const ref = db.doc(pathValue);
@@ -584,7 +643,7 @@ function createSnapshot(
  * @param {{ delete: () => unknown }} fieldValue Fake field value helper.
  * @returns {() => unknown} Delete sentinel getter.
  */
-function createDeleteSentinelGetter(/** @type {unknown} */ fieldValue) {
+function createDeleteSentinelGetter(fieldValue) {
   return () => fieldValue.delete();
 }
 
@@ -603,10 +662,10 @@ function createSimulatorAuthVerifiers() {
 
 /**
  * Create generate-stats dependencies for the simulator.
- * @param {{ db: unknown, storage: unknown, fetchFn: (...args: unknown[]) => unknown, projectId: string, baseUrl: string, bucketName: string, verifyIdToken: (...args: unknown[]) => unknown }} options Config dependencies.
+ * @param {{ db: unknown, storage: unknown, fetchFn: (...args: any[]) => any, projectId: string, baseUrl: string, bucketName: string, verifyIdToken: (...args: any[]) => any }} options Config dependencies.
  * @returns {object} Generate stats config.
  */
-function createGenerateStatsConfig(/** @type {unknown} */ options) {
+function createGenerateStatsConfig(options) {
   const {
     db,
     storage,
@@ -635,10 +694,10 @@ function createGenerateStatsConfig(/** @type {unknown} */ options) {
 
 /**
  * Create lookup helpers that query the fake Firestore graph.
- * @param {ReturnType<typeof createDb>} db Simulator database.
+ * @param {SimulatorDb} db Simulator database.
  * @returns {{ findExistingPagePath: (pageNumber: number) => Promise<string | null>, findExistingOptionPath: (option: unknown) => Promise<string | null> }} Lookup helpers.
  */
-function createLookupHelpers(/** @type {unknown} */ db) {
+function createLookupHelpers(db) {
   return {
     findExistingPagePath: pageNumber => findExistingPagePath(db, pageNumber),
     findExistingOptionPath: option => findExistingOptionPath(db, option),
@@ -647,14 +706,11 @@ function createLookupHelpers(/** @type {unknown} */ db) {
 
 /**
  * Find a page document path for a page number.
- * @param {ReturnType<typeof createDb>} db Simulator database.
+ * @param {SimulatorDb} db Simulator database.
  * @param {number} pageNumber Page number to look up.
  * @returns {Promise<string | null>} Matching page path or null.
  */
-async function findExistingPagePath(
-  /** @type {unknown} */ db,
-  /** @type {unknown} */ pageNumber
-) {
+async function findExistingPagePath(db, pageNumber) {
   const pageSnap = await db
     .collectionGroup('pages')
     .where('number', '==', pageNumber)
@@ -669,14 +725,11 @@ async function findExistingPagePath(
 
 /**
  * Find an option document path for a submission option.
- * @param {ReturnType<typeof createDb>} db Simulator database.
+ * @param {SimulatorDb} db Simulator database.
  * @param {unknown} option Option descriptor.
  * @returns {Promise<string | null>} Matching option path or null.
  */
-async function findExistingOptionPath(
-  /** @type {unknown} */ db,
-  /** @type {unknown} */ option
-) {
+async function findExistingOptionPath(db, option) {
   const typed = parseOptionLookup(option);
   if (!typed) {
     return null;
@@ -711,10 +764,10 @@ async function findExistingOptionPath(
 
 /**
  * Create submit-new-page dependencies for the simulator.
- * @param {{ verifyIdToken: (...args: unknown[]) => unknown, db: ReturnType<typeof createDb>, findExistingOptionPath: (...args: unknown[]) => unknown, findExistingPagePath: (...args: unknown[]) => unknown }} options Dependencies.
+ * @param {{ verifyIdToken: (token: string | undefined) => Promise<{uid: string | null, token?: string}>, db: SimulatorDb, findExistingOptionPath: (option: unknown) => Promise<string | null>, findExistingPagePath: (pageNumber: number) => Promise<string | null> }} options Dependencies.
  * @returns {object} Submit-new-page config.
  */
-function createSubmitNewPageConfig(/** @type {unknown} */ options) {
+function createSubmitNewPageConfig(options) {
   const { verifyIdToken, db, findExistingOptionPath, findExistingPagePath } =
     options;
   return {
@@ -722,29 +775,31 @@ function createSubmitNewPageConfig(/** @type {unknown} */ options) {
     randomUUID,
     saveSubmission: (
       /** @type {import('../../../../types/allow-effects').AllowEffects} */ permission,
-      id,
-      submission
+      /** @type {string} */ id,
+      /** @type {Record<string, unknown>} */ submission
     ) => db.collection('pageFormSubmissions').doc(id).set(submission),
     serverTimestamp: () => new Date(),
     parseIncomingOption,
-    findExistingOption: option => findExistingOptionPath(option),
-    findExistingPage: pageNumber => findExistingPagePath(pageNumber),
+    findExistingOption: (/** @type {unknown} */ option) =>
+      findExistingOptionPath(option),
+    findExistingPage: (/** @type {number} */ pageNumber) =>
+      findExistingPagePath(pageNumber),
   };
 }
 
 /**
  * Create submit-new-story dependencies for the simulator.
- * @param {{ verifyIdToken: (...args: unknown[]) => unknown, db: ReturnType<typeof createDb> }} options Dependencies.
+ * @param {{ verifyIdToken: (token: string | undefined) => Promise<{uid: string | null, token?: string}>, db: SimulatorDb }} options Dependencies.
  * @returns {object} Submit-new-story config.
  */
-function createSubmitNewStoryConfig(/** @type {unknown} */ options) {
+function createSubmitNewStoryConfig(options) {
   const { verifyIdToken, db } = options;
   return {
     verifyIdToken,
     saveSubmission: (
       /** @type {import('../../../../types/allow-effects').AllowEffects} */ permission,
-      id,
-      submission
+      /** @type {string} */ id,
+      /** @type {Record<string, unknown>} */ submission
     ) => db.collection('storyFormSubmissions').doc(id).set(submission),
     randomUUID,
     getServerTimestamp: () => new Date(),
@@ -753,10 +808,10 @@ function createSubmitNewStoryConfig(/** @type {unknown} */ options) {
 
 /**
  * Create test utilities exposed by the simulator.
- * @param {{ snapshotHelpers: ReturnType<typeof createSnapshotHelpers>, lookupHelpers: ReturnType<typeof createLookupHelpers>, authVerifiers: ReturnType<typeof createSimulatorAuthVerifiers>, fieldValue: object, db: object }} options Utility dependencies.
+ * @param {{ snapshotHelpers: ReturnType<typeof createSnapshotHelpers>, lookupHelpers: ReturnType<typeof createLookupHelpers>, authVerifiers: ReturnType<typeof createSimulatorAuthVerifiers>, fieldValue: ReturnType<typeof createFakeFieldValue>, db: SimulatorDb }} options Utility dependencies.
  * @returns {object} Test utility bag.
  */
-function createSimulatorTestUtils(/** @type {unknown} */ options) {
+function createSimulatorTestUtils(options) {
   const { snapshotHelpers, lookupHelpers, authVerifiers, fieldValue, db } =
     options;
   return {
@@ -769,8 +824,10 @@ function createSimulatorTestUtils(/** @type {unknown} */ options) {
     createSnapshot: snapshotHelpers.createSnapshot,
     createSnapshots: snapshotHelpers.createSnapshots,
     createDeleteSentinel: createDeleteSentinelGetter(fieldValue),
-    markVariantDirty: (request, overrideDb = null) =>
-      handleMarkVariantDirty({ db: overrideDb ?? db }, request),
+    markVariantDirty: (
+      /** @type {SimulatorRequest} */ request,
+      overrideDb = null
+    ) => handleMarkVariantDirty({ db: overrideDb ?? db }, request),
     createLocalFetchStub,
     createRandomSource,
     generateStatsVerifyIdToken: authVerifiers.verifyStatsIdToken,
@@ -781,10 +838,10 @@ function createSimulatorTestUtils(/** @type {unknown} */ options) {
 
 /**
  * Create trigger registrations for simulator-backed cloud handlers.
- * @param {{ processNewStory: (...args: unknown[]) => unknown, processNewPage: (...args: unknown[]) => unknown, renderContents: (...args: unknown[]) => unknown, renderVariant: (...args: unknown[]) => unknown, handleVariantWrite: (...args: unknown[]) => unknown }} handlers Trigger handlers.
- * @returns {Record<string, Array<{ pathPattern: string, handler: (...args: unknown[]) => unknown }>>} Registrations by event.
+ * @param {{ processNewStory: (...args: any[]) => any, processNewPage: (...args: any[]) => any, renderContents: (...args: any[]) => any, renderVariant: (...args: any[]) => any, handleVariantWrite: (...args: any[]) => any }} handlers Trigger handlers.
+ * @returns {Record<string, Array<{ pathPattern: string, handler: (...args: any[]) => any }>>} Registrations by event.
  */
-function createTriggerRegistrationsByEvent(/** @type {unknown} */ handlers) {
+function createTriggerRegistrationsByEvent(handlers) {
   const {
     processNewStory,
     processNewPage,
@@ -825,7 +882,7 @@ function createTriggerRegistrationsByEvent(/** @type {unknown} */ handlers) {
  * @param {ReturnType<typeof createDb>} db Simulator database.
  * @returns {() => Promise<void>} Fixture seeder.
  */
-function createSeedFixture(/** @type {unknown} */ db) {
+function createSeedFixture(db) {
   return async () => seedFixture(db);
 }
 
@@ -834,7 +891,7 @@ function createSeedFixture(/** @type {unknown} */ db) {
  * @param {ReturnType<typeof createDb>} db Simulator database.
  * @returns {Promise<void>} Nothing.
  */
-async function seedFixture(/** @type {unknown} */ db) {
+async function seedFixture(db) {
   const storyRef = db.collection('stories').doc(STORY_ID);
   const firstPageRef = storyRef
     .collection('pages')
@@ -905,10 +962,7 @@ async function seedFixture(/** @type {unknown} */ db) {
  * @param {string} pathValue Actual path.
  * @returns {boolean} Whether the pattern matches.
  */
-function matchesTrigger(
-  /** @type {unknown} */ pathPattern,
-  /** @type {unknown} */ pathValue
-) {
+function matchesTrigger(pathPattern, pathValue) {
   return Boolean(extractParams(pathPattern, pathValue));
 }
 
@@ -918,16 +972,14 @@ function matchesTrigger(
  * @param {string} pathValue Actual path.
  * @returns {Record<string, string> | null} Trigger params or null.
  */
-function extractParams(
-  /** @type {unknown} */ pathPattern,
-  /** @type {unknown} */ pathValue
-) {
+function extractParams(pathPattern, pathValue) {
   const patternSegments = split(pathPattern);
   const pathSegments = split(pathValue);
   if (patternSegments.length !== pathSegments.length) {
     return null;
   }
 
+  /** @type {Record<string, string>} */
   const params = {};
   for (let index = 0; index < patternSegments.length; index += 1) {
     const patternSegment = patternSegments[index];
@@ -950,7 +1002,7 @@ function extractParams(
  * @param {string} value Path string.
  * @returns {string[]} Path segments.
  */
-function split(/** @type {unknown} */ value) {
+function split(value) {
   return String(value).replace(/^\/+/, '').replace(/\/+$/, '').split('/');
 }
 
@@ -959,7 +1011,7 @@ function split(/** @type {unknown} */ value) {
  * @param {string} segment Path segment.
  * @returns {boolean} True when the segment is a parameter.
  */
-function isParam(/** @type {unknown} */ segment) {
+function isParam(segment) {
   return segment.startsWith('{') && segment.endsWith('}');
 }
 
@@ -970,11 +1022,7 @@ function isParam(/** @type {unknown} */ segment) {
  * @param {string} projectId Project id.
  * @returns {() => ReturnType<typeof createSimulatorConfig>} Config getter.
  */
-function createGetSimulatorConfig(
-  /** @type {unknown} */ baseUrl,
-  /** @type {unknown} */ bucketName,
-  /** @type {unknown} */ projectId
-) {
+function createGetSimulatorConfig(baseUrl, bucketName, projectId) {
   return () => createSimulatorConfig(baseUrl, bucketName, projectId);
 }
 
@@ -983,24 +1031,24 @@ function createGetSimulatorConfig(
  * @param {string} bucketName Bucket name.
  * @returns {() => ReturnType<typeof createSeedManifest>} Manifest getter.
  */
-function createGetSeedManifest(/** @type {unknown} */ bucketName) {
+function createGetSeedManifest(bucketName) {
   return () => createSeedManifest(bucketName);
 }
 
 /**
  * Build the simulator routes.
- * @param {{ submitNewStory: (...args: unknown[]) => unknown, submitNewPage: (...args: unknown[]) => unknown, getApiKeyCreditV2: (...args: unknown[]) => unknown, getAuthorUuid: (...args: unknown[]) => unknown, db: ReturnType<typeof createDb>, fieldValue: unknown, renderContents: (...args: unknown[]) => unknown, generateStatsCore: { generate: (...args: unknown[]) => unknown } }} deps Route dependencies.
- * @returns {Record<string, (request: unknown) => Promise<{ status: number, body?: unknown }>>} Route map.
+ * @param {{ submitNewStory: (...args: any[]) => any, submitNewPage: (...args: any[]) => any, getApiKeyCreditV2: (...args: any[]) => any, getAuthorUuid: (...args: any[]) => any, paymentWebhook: (...args: any[]) => any, objectMinuteRentalSearch: (request: SimulatorRequest) => Promise<{status: number, body: unknown}>, db: ReturnType<typeof createDb>, fieldValue: ReturnType<typeof createFakeFieldValue>, renderContents: (...args: any[]) => any, generateStatsCore: { generate: (...args: any[]) => any } }} deps Route dependencies.
+ * @returns {Record<string, (...args: any[]) => Promise<{ status: number, body?: unknown }>>} Route map.
  */
-function createRoutes(/** @type {unknown} */ deps) {
+function createRoutes(deps) {
   return {
     submitNewStory: (
       /** @type {import('../../../../types/allow-effects').AllowEffects} */ permission,
-      request
+      /** @type {SimulatorRequest} */ request
     ) => handleSubmitNewStory(permission, deps, request),
     submitNewPage: (
       /** @type {import('../../../../types/allow-effects').AllowEffects} */ permission,
-      request
+      /** @type {SimulatorRequest} */ request
     ) => handleSubmitNewPage(permission, deps, request),
     getApiKeyCreditV2: request => handleGetApiKeyCreditV2(deps, request),
     getAuthorUuid: request => deps.getAuthorUuid(request),
@@ -1009,28 +1057,27 @@ function createRoutes(/** @type {unknown} */ deps) {
     assignModerationJob: request => handleAssignModerationJob(deps, request),
     submitModerationRating: request =>
       handleSubmitModerationRating(deps, request),
-    triggerRenderContents: request =>
-      handleTriggerRenderContents(deps, request),
+    triggerRenderContents: () => handleTriggerRenderContents(deps),
     markVariantDirty: request => handleMarkVariantDirty(deps, request),
-    generateStats: request => handleGenerateStats(deps, request),
+    generateStats: () => handleGenerateStats(deps),
     objectMinuteRentalSearch: request => deps.objectMinuteRentalSearch(request),
   };
 }
 
 /**
  * Invoke the Express-shaped search handler using the simulator route contract.
- * @param {(request: unknown, response: object) => Promise<void>} handler Search handler.
- * @param {unknown} request Simulator request.
+ * @param {ReturnType<typeof createSearchHttpHandler>} handler Search handler.
+ * @param {SimulatorRequest} request Simulator request.
  * @returns {Promise<{status: number, body: unknown}>} Route response.
  */
 async function runSearchHttp(handler, request) {
   let status = 200;
   let body;
   const res = {
-    json(value) {
+    json(/** @type {unknown} */ value) {
       body = value;
     },
-    status(code) {
+    status(/** @type {number} */ code) {
       status = code;
       return res;
     },
@@ -1044,9 +1091,7 @@ async function runSearchHttp(handler, request) {
  * @param {unknown} apiKeyUuid Candidate UUID.
  * @returns {string | null} Normalized UUID.
  */
-export function resolvePaymentCustomerApiKeyUuid(
-  /** @type {unknown} */ apiKeyUuid
-) {
+export function resolvePaymentCustomerApiKeyUuid(apiKeyUuid) {
   if (typeof apiKeyUuid === 'string' && apiKeyUuid) {
     return apiKeyUuid;
   }
@@ -1059,7 +1104,7 @@ export function resolvePaymentCustomerApiKeyUuid(
  * @param {{ created?: number }} event Payment event.
  * @returns {Date} Created-at timestamp.
  */
-export function resolvePaymentCreatedAt(/** @type {unknown} */ event) {
+export function resolvePaymentCreatedAt(event) {
   if (typeof event.created === 'number' && Number.isFinite(event.created)) {
     return new Date(event.created * 1000);
   }
@@ -1070,15 +1115,11 @@ export function resolvePaymentCreatedAt(/** @type {unknown} */ event) {
 /**
  * Run the submit-new-story route handler.
  * @param {import('../../../../types/allow-effects').AllowEffects} permission Explicit command permission.
- * @param {{ submitNewStory: (...args: unknown[]) => unknown }} deps Route dependencies.
- * @param {unknown} request Incoming request object.
+ * @param {{ submitNewStory: (...args: any[]) => any }} deps Route dependencies.
+ * @param {SimulatorRequest} request Incoming request object.
  * @returns {Promise<{ status: number, body?: unknown }>} Route response.
  */
-async function handleSubmitNewStory(
-  permission,
-  /** @type {unknown} */ deps,
-  /** @type {unknown} */ request
-) {
+async function handleSubmitNewStory(permission, deps, request) {
   const response = await deps.submitNewStory(permission, request);
   return response;
 }
@@ -1086,34 +1127,27 @@ async function handleSubmitNewStory(
 /**
  * Run the submit-new-page route handler.
  * @param {import('../../../../types/allow-effects').AllowEffects} permission Explicit command permission.
- * @param {{ submitNewPage: (...args: unknown[]) => unknown }} deps Route dependencies.
- * @param {unknown} request Incoming request object.
+ * @param {{ submitNewPage: (...args: any[]) => any }} deps Route dependencies.
+ * @param {SimulatorRequest} request Incoming request object.
  * @returns {Promise<{ status: number, body?: unknown }>} Route response.
  */
-async function handleSubmitNewPage(
-  permission,
-  /** @type {unknown} */ deps,
-  /** @type {unknown} */ request
-) {
+async function handleSubmitNewPage(permission, deps, request) {
   return deps.submitNewPage(permission, request);
 }
 
 /**
  * Run the API key credit route handler.
- * @param {{ getApiKeyCreditV2: (...args: unknown[]) => unknown }} deps Route dependencies.
- * @param {unknown} request Incoming request object.
+ * @param {{ getApiKeyCreditV2: (...args: any[]) => any }} deps Route dependencies.
+ * @param {SimulatorRequest} request Incoming request object.
  * @returns {Promise<{ status: number, body?: unknown }>} Route response.
  */
-async function handleGetApiKeyCreditV2(
-  /** @type {unknown} */ deps,
-  /** @type {unknown} */ request
-) {
+async function handleGetApiKeyCreditV2(deps, request) {
   return deps.getApiKeyCreditV2(request);
 }
 
 /**
  * Extract the bearer token from a request.
- * @param {unknown} request Incoming request object.
+ * @param {SimulatorRequest} request Incoming request object.
  * @returns {string | null} Bearer token or null.
  */
 function extractBearerToken(request) {
@@ -1144,18 +1178,29 @@ function readAuthorUuid(data) {
 }
 
 /**
+ * Read unknown persisted data as a record.
+ * @param {unknown} data Candidate document data.
+ * @returns {Record<string, unknown>} Object data.
+ */
+function readRecord(data) {
+  return data && typeof data === 'object'
+    ? /** @type {Record<string, unknown>} */ (data)
+    : {};
+}
+
+/**
  * Read a uid from a decoded token payload.
  * @param {{ uid?: string | null }} decoded Decoded token payload.
  * @returns {string | null} Verified uid or null.
  */
 function readVerifiedUid(decoded) {
-  return decoded.uid;
+  return decoded.uid ?? null;
 }
 
 /**
  * Resolve or create the simulator author uuid.
  * @param {{ db: ReturnType<typeof createDb>, verifyIdToken: (token: string) => Promise<{ uid?: string | null }>, randomUUID: () => string }} deps Simulator dependencies.
- * @param {unknown} request Incoming request object.
+ * @param {SimulatorRequest} request Incoming request object.
  * @returns {Promise<{ status: number, body?: unknown }>} Route response.
  */
 async function resolveAuthorUuidInSimulator(deps, request) {
@@ -1166,10 +1211,11 @@ async function resolveAuthorUuidInSimulator(deps, request) {
 
   const decoded = await deps.verifyIdToken(bearer);
   const uid = readVerifiedUid(decoded);
+  if (!uid) return { status: 401, body: 'Invalid or expired token' };
 
   const authorRef = deps.db.collection('authors').doc(uid);
   const snap = await authorRef.get();
-  const cachedUuid = readAuthorUuid(snap.data());
+  const cachedUuid = readAuthorUuid(readRecord(snap.data()));
   if (cachedUuid) {
     return { status: 200, body: { uuid: cachedUuid } };
   }
@@ -1182,46 +1228,37 @@ async function resolveAuthorUuidInSimulator(deps, request) {
 /**
  * Run the author uuid route handler.
  * @param {{ db: ReturnType<typeof createDb>, verifyIdToken: (token: string) => Promise<{ uid?: string | null }>, randomUUID: () => string }} deps Route dependencies.
- * @param {unknown} request Incoming request object.
+ * @param {SimulatorRequest} request Incoming request object.
  * @returns {Promise<{ status: number, body?: unknown }>} Route response.
  */
-async function handleGetAuthorUuid(
-  /** @type {unknown} */ deps,
-  /** @type {unknown} */ request
-) {
+async function handleGetAuthorUuid(deps, request) {
   return resolveAuthorUuidInSimulator(deps, request);
 }
 
 /**
  * Run the payment webhook route handler.
- * @param {{ paymentWebhook: (...args: unknown[]) => unknown }} deps Route dependencies.
- * @param {unknown} request Incoming request object.
+ * @param {{ paymentWebhook: (...args: any[]) => any }} deps Route dependencies.
+ * @param {SimulatorRequest} request Incoming request object.
  * @returns {Promise<{ status: number, body?: unknown }>} Route response.
  */
-async function handlePaymentWebhook(
-  /** @type {unknown} */ deps,
-  /** @type {unknown} */ request
-) {
+async function handlePaymentWebhook(deps, request) {
   return deps.paymentWebhook(request);
 }
 
 /**
  * Run the get-moderation-variant route handler.
  * @param {{ db: ReturnType<typeof createDb> }} deps Route dependencies.
- * @param {unknown} request Incoming request object.
+ * @param {SimulatorRequest} request Incoming request object.
  * @returns {Promise<{ status: number, body?: unknown }>} Route response.
  */
-async function handleGetModerationVariant(
-  /** @type {unknown} */ deps,
-  /** @type {unknown} */ request
-) {
+async function handleGetModerationVariant(deps, request) {
   const uid = resolveUid(request);
   if (!uid) {
     return { status: 401, body: 'Invalid or expired token' };
   }
 
   const moderatorSnap = await deps.db.collection('moderators').doc(uid).get();
-  const variantPath = moderatorSnap.data()?.variant;
+  const variantPath = readRecord(moderatorSnap.data()).variant;
   if (typeof variantPath !== 'string' || !variantPath) {
     return { status: 404, body: 'Variant not found' };
   }
@@ -1231,26 +1268,29 @@ async function handleGetModerationVariant(
     return { status: 404, body: 'Variant not found' };
   }
 
-  return buildModerationVariantResponse(variantSnap);
+  return buildModerationVariantResponse(
+    /** @type {SimulatorModerationVariantSnapshot} */ (
+      /** @type {unknown} */ (variantSnap)
+    )
+  );
 }
 
 /**
  * Run the assign-moderation-job route handler.
  * @param {{ db: ReturnType<typeof createDb> }} deps Route dependencies.
- * @param {unknown} request Incoming request object.
+ * @param {SimulatorRequest} request Incoming request object.
  * @returns {Promise<{ status: number, body?: unknown }>} Route response.
  */
-async function handleAssignModerationJob(
-  /** @type {unknown} */ deps,
-  /** @type {unknown} */ request
-) {
+async function handleAssignModerationJob(deps, request) {
   const uid = resolveUid(request);
   if (!uid) {
     return { status: 401, body: 'Invalid or expired token' };
   }
 
   const current = await deps.db.collection('moderators').doc(uid).get();
-  const currentPath = current.data()?.variant;
+  const currentPathValue = readRecord(current.data()).variant;
+  const currentPath =
+    typeof currentPathValue === 'string' ? currentPathValue : undefined;
 
   const chosen = await pickNextModerationVariant(deps.db, currentPath);
 
@@ -1311,6 +1351,7 @@ async function pickNextModerationVariantFromCollectionGroup(db, currentPath) {
  */
 async function collectModerationVariantCandidates(db, currentPath) {
   const storiesSnap = await db.collection('stories').get();
+  /** @type {ModerationCandidate[]} */
   const candidates = [];
 
   for (const storyDoc of storiesSnap.docs) {
@@ -1333,9 +1374,9 @@ async function collectModerationVariantCandidates(db, currentPath) {
 
 /**
  * Add eligible variants from a page collection into the candidate list.
- * @param {Array<{ ref: { collection: (name: string) => { get: () => Promise<{ docs: Array<unknown> }> } } }>} pageDocs Page documents.
+ * @param {Array<{ ref: { collection: (name: string) => { get: () => Promise<{ docs: Array<{ref: {path: string}, data?: () => unknown}> }> } } }>} pageDocs Page documents.
  * @param {string | undefined} currentPath Current moderator assignment path.
- * @param {Array<{ doc: { ref: { path: string }, data?: () => unknown }, createdAt: number, rand: number, path: string }>} candidates Candidate list.
+ * @param {ModerationCandidate[]} candidates Candidate list.
  * @returns {Promise<void>} Resolves after the page variants are scanned.
  */
 async function collectPageVariantCandidates(pageDocs, currentPath, candidates) {
@@ -1360,7 +1401,7 @@ async function collectPageVariantCandidates(pageDocs, currentPath, candidates) {
  * @returns {{ doc: { ref: { path: string }, data?: () => unknown }, createdAt: number, rand: number, path: string } | null} Candidate or null.
  */
 function buildModerationVariantCandidate(variantDoc, currentPath) {
-  const data = variantDoc.data?.() ?? {};
+  const data = readRecord(variantDoc.data?.());
   if (!isEligibleModerationVariant(data, variantDoc.ref.path, currentPath)) {
     return null;
   }
@@ -1390,15 +1431,21 @@ function isEligibleModerationVariant(data, path, currentPath) {
 
 /**
  * Create a sortable moderation candidate entry.
- * @param {{ ref: { path: string } }} variantDoc Variant document.
+ * @param {{ ref: { path: string }, data?: () => unknown }} variantDoc Variant document.
  * @param {Record<string, unknown>} data Variant data.
  * @returns {{ doc: { ref: { path: string }, data?: () => unknown }, createdAt: number, rand: number, path: string }} Candidate entry.
  */
 function createModerationVariantCandidate(variantDoc, data) {
   return {
     doc: variantDoc,
-    createdAt: data.createdAt?.toMillis?.() ?? 0,
-    rand: data.rand ?? 0,
+    createdAt:
+      typeof data.createdAt === 'object' &&
+      data.createdAt !== null &&
+      'toMillis' in data.createdAt &&
+      typeof data.createdAt.toMillis === 'function'
+        ? data.createdAt.toMillis()
+        : 0,
+    rand: typeof data.rand === 'number' ? data.rand : 0,
     path: variantDoc.ref.path,
   };
 }
@@ -1406,25 +1453,26 @@ function createModerationVariantCandidate(variantDoc, data) {
 /**
  * Run the submit-moderation-rating route handler.
  * @param {{ db: ReturnType<typeof createDb>, fieldValue: { delete: () => unknown } }} deps Route dependencies.
- * @param {unknown} request Incoming request object.
+ * @param {SimulatorRequest} request Incoming request object.
  * @returns {Promise<{ status: number, body?: unknown }>} Route response.
  */
-async function handleSubmitModerationRating(
-  /** @type {unknown} */ deps,
-  /** @type {unknown} */ request
-) {
+async function handleSubmitModerationRating(deps, request) {
   const uid = resolveUid(request);
   if (!uid) {
     return { status: 401, body: 'Invalid or expired token' };
   }
 
-  const approval = parseApprovalFlag(request?.body);
+  const approval = parseApprovalFlag(
+    request?.body && typeof request.body === 'object'
+      ? /** @type {{isApproved?: unknown}} */ (request.body)
+      : undefined
+  );
   if (approval === null) {
     return { status: 400, body: 'Missing or invalid isApproved' };
   }
 
   const moderatorSnap = await deps.db.collection('moderators').doc(uid).get();
-  const variantPath = moderatorSnap.data()?.variant;
+  const variantPath = readRecord(moderatorSnap.data()).variant;
   if (typeof variantPath !== 'string' || !variantPath) {
     return { status: 404, body: 'Variant not found' };
   }
@@ -1432,7 +1480,7 @@ async function handleSubmitModerationRating(
   const variantRef = deps.db.doc(variantPath);
   const variantSnap = await variantRef.get();
   const { currentScore, currentCount } = resolveModerationTotals(
-    variantSnap.data()
+    readRecord(variantSnap.data())
   );
   let scoreDelta = -1;
   if (approval) {
@@ -1452,10 +1500,10 @@ async function handleSubmitModerationRating(
 
 /**
  * Re-run content rendering for all known stories.
- * @param {{ db: ReturnType<typeof createDb>, renderContents: (...args: unknown[]) => unknown }} deps Route dependencies.
+ * @param {{ db: ReturnType<typeof createDb>, renderContents: (...args: any[]) => any }} deps Route dependencies.
  * @returns {Promise<{ status: number, body?: unknown }>} Route response.
  */
-async function handleTriggerRenderContents(/** @type {unknown} */ deps) {
+async function handleTriggerRenderContents(deps) {
   const storiesSnap = await deps.db.collection('stories').get();
   for (const storyDoc of storiesSnap.docs) {
     await deps.renderContents(storyDoc, { params: { storyId: storyDoc.id } });
@@ -1466,14 +1514,11 @@ async function handleTriggerRenderContents(/** @type {unknown} */ deps) {
 /**
  * Run the mark-variant-dirty route handler.
  * @param {{ db: ReturnType<typeof createDb> }} deps Route dependencies.
- * @param {unknown} request Incoming request object.
+ * @param {SimulatorRequest} request Incoming request object.
  * @returns {Promise<{ status: number, body?: unknown }>} Route response.
  */
-async function handleMarkVariantDirty(
-  /** @type {unknown} */ deps,
-  /** @type {unknown} */ request
-) {
-  const body = request?.body || {};
+async function handleMarkVariantDirty(deps, request) {
+  const body = readRecord(request?.body);
   const pageNumber = Number(body.pageNumber);
   const variantName = String(body.variantName || '');
   if (!Number.isInteger(pageNumber) || !variantName) {
@@ -1504,20 +1549,20 @@ async function handleMarkVariantDirty(
 
 /**
  * Run stats generation for the seeded fixture.
- * @param {{ generateStatsCore: { generate: (...args: unknown[]) => unknown } }} deps Route dependencies.
+ * @param {{ generateStatsCore: { generate: (...args: any[]) => any } }} deps Route dependencies.
  * @returns {Promise<{ status: number, body?: unknown }>} Route response.
  */
-async function handleGenerateStats(/** @type {unknown} */ deps) {
+async function handleGenerateStats(deps) {
   await deps.generateStatsCore.generate();
   return { status: 200, body: { ok: true } };
 }
 
 /**
  * Resolve the authenticated user id from a request.
- * @param {unknown} request Incoming request object.
+ * @param {SimulatorRequest} request Incoming request object.
  * @returns {string | null} Authenticated user id or null.
  */
-function resolveUid(/** @type {unknown} */ request) {
+function resolveUid(request) {
   const header = getAuthorizationHeader(request);
   if (!header) {
     return null;
@@ -1528,22 +1573,26 @@ function resolveUid(/** @type {unknown} */ request) {
 
 /**
  * Create a local fetch stub for the simulator.
- * @returns {() => Promise<{ ok: boolean, status: number, json: () => Promise<{ access_token: string }>, text: () => Promise<string> }>} Fetch stub.
+ * @returns {(input: string, init?: object) => Promise<{ ok: boolean, status: number, json: () => Promise<{ access_token: string }>, text: () => Promise<string> }>} Fetch stub.
  */
 function createLocalFetchStub() {
-  return async () => ({
-    ok: true,
-    status: 200,
-    json: async () => {
-      const payload = {};
-      Object.defineProperty(payload, 'access_token', {
-        value: 'local-access-token',
-        enumerable: true,
-      });
-      return payload;
-    },
-    text: async () => '',
-  });
+  return async (input, init) => {
+    void input;
+    void init;
+    return {
+      ok: true,
+      status: 200,
+      json: async () => {
+        const payload = {};
+        Object.defineProperty(payload, 'access_token', {
+          value: 'local-access-token',
+          enumerable: true,
+        });
+        return payload;
+      },
+      text: async () => '',
+    };
+  };
 }
 
 /**
@@ -1564,10 +1613,7 @@ function createRandomSource() {
  * @param {boolean} includeToken Whether to include the token in the response.
  * @returns {{ uid: string | null, token?: string }} Auth result.
  */
-function createAuthResult(
-  /** @type {unknown} */ token,
-  /** @type {unknown} */ includeToken
-) {
+function createAuthResult(token, includeToken) {
   if (!token) {
     return { uid: null };
   }
@@ -1584,9 +1630,11 @@ function createAuthResult(
  * @param {{ collection: (name: string) => { get: () => Promise<{ docs: Array<{ data: () => { content?: string, position?: number, targetPage?: { path?: string } } }> }> } }} variantRef Variant reference.
  * @returns {Promise<Array<{ content: string | undefined, targetPageNumber: number | undefined }>>} Options.
  */
-async function loadModerationOptions(/** @type {unknown} */ variantRef) {
+async function loadModerationOptions(variantRef) {
   const optionsSnap = await variantRef.collection('options').get();
-  const getOptionPosition = option => option.data().position ?? 0;
+  const getOptionPosition = (
+    /** @type {{data: () => {position?: number}}} */ option
+  ) => option.data().position ?? 0;
   return optionsSnap.docs
     .slice()
     .sort((left, right) => getOptionPosition(left) - getOptionPosition(right))
@@ -1604,12 +1652,7 @@ async function loadModerationOptions(/** @type {unknown} */ variantRef) {
  * @param {boolean} isWrite Whether the record is a write event.
  * @returns {boolean} Whether the trigger should run.
  */
-function shouldDispatchTrigger(
-  /** @type {unknown} */ trigger,
-  /** @type {unknown} */ pathValue,
-  /** @type {unknown} */ isCreate,
-  /** @type {unknown} */ isWrite
-) {
+function shouldDispatchTrigger(trigger, pathValue, isCreate, isWrite) {
   if (!pathMatchesTrigger(trigger.pathPattern, pathValue)) {
     return false;
   }
@@ -1631,10 +1674,7 @@ function shouldDispatchTrigger(
  * @param {string} pathValue Actual path.
  * @returns {boolean} Whether the path matches.
  */
-function pathMatchesTrigger(
-  /** @type {unknown} */ pathPattern,
-  /** @type {unknown} */ pathValue
-) {
+function pathMatchesTrigger(pathPattern, pathValue) {
   const patternSegments = String(pathPattern)
     .replace(/^\/+/, '')
     .replace(/\/+$/, '')
@@ -1669,11 +1709,7 @@ function pathMatchesTrigger(
  * @param {{ params: Record<string, string> }} context Trigger context.
  * @returns {Promise<void>} Nothing.
  */
-async function dispatchTrigger(
-  /** @type {unknown} */ trigger,
-  /** @type {unknown} */ snapshots,
-  /** @type {unknown} */ context
-) {
+async function dispatchTrigger(trigger, snapshots, context) {
   if (trigger.eventName === 'onCreate') {
     await trigger.handler(snapshots.after, context);
     return;
@@ -1690,12 +1726,10 @@ async function dispatchTrigger(
 
 /**
  * Build the moderation-variant response.
- * @param {{ ref: { parent: { parent: { get: () => Promise<{ data: () => { title?: string }, id: string }> } }, collection: (name: string) => { get: () => Promise<{ docs: Array<{ data: () => { content?: string, position?: number, targetPage?: { path?: string } } }> }> } }, data: () => { authorName?: string, author?: string, content?: string } }} variantSnap Variant snapshot.
+ * @param {SimulatorModerationVariantSnapshot} variantSnap Variant snapshot.
  * @returns {Promise<{ status: number, body?: unknown }>} Route response.
  */
-async function buildModerationVariantResponse(
-  /** @type {unknown} */ variantSnap
-) {
+async function buildModerationVariantResponse(variantSnap) {
   const variantData = variantSnap.data();
   const pageRef = variantSnap.ref.parent.parent;
   const pageSnap = await pageRef.get();
@@ -1720,7 +1754,7 @@ async function buildModerationVariantResponse(
  * @param {unknown} option Option descriptor.
  * @returns {{ pageNumber: number, variantName: string, optionNumber: number } | null} Parsed option or null.
  */
-function parseOptionLookup(/** @type {unknown} */ option) {
+function parseOptionLookup(option) {
   if (!option || typeof option !== 'object') {
     return null;
   }
@@ -1740,9 +1774,9 @@ function parseOptionLookup(/** @type {unknown} */ option) {
   }
 
   return {
-    pageNumber: typed.pageNumber,
+    pageNumber: /** @type {number} */ (typed.pageNumber),
     variantName: typed.variantName,
-    optionNumber: typed.optionNumber,
+    optionNumber: /** @type {number} */ (typed.optionNumber),
   };
 }
 
@@ -1751,7 +1785,7 @@ function parseOptionLookup(/** @type {unknown} */ option) {
  * @param {{ isApproved?: unknown } | undefined} body Request body.
  * @returns {boolean | null} Approval flag or null when invalid.
  */
-function parseApprovalFlag(/** @type {unknown} */ body) {
+function parseApprovalFlag(body) {
   const rawApproved = body?.isApproved;
   if (
     rawApproved !== true &&
@@ -1770,7 +1804,7 @@ function parseApprovalFlag(/** @type {unknown} */ body) {
  * @param {{ moderatorReputationSum?: unknown, moderationRatingCount?: unknown } | undefined} data Variant data.
  * @returns {{ currentScore: number, currentCount: number }} Normalized totals.
  */
-function resolveModerationTotals(/** @type {unknown} */ data) {
+function resolveModerationTotals(data) {
   let currentScore = 0;
   if (typeof data?.moderatorReputationSum === 'number') {
     currentScore = data.moderatorReputationSum;

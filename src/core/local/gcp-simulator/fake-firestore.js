@@ -342,6 +342,10 @@ class FakeCollectionReference {
       direction
     );
   }
+
+  limit(/** @type {number} */ value) {
+    return createCollectionQuery(this.db, this.collectionSegments).limit(value);
+  }
 }
 
 class FakeDocumentReference {
@@ -368,7 +372,19 @@ class FakeDocumentReference {
     return this.db.__resolveDocumentSnapshot(this.path);
   }
 
-  async set(/** @type {unknown} */ data) {
+  async set(
+    /** @type {unknown} */ data,
+    /** @type {{ merge?: boolean }} */ options = {}
+  ) {
+    if (options.merge) {
+      const existing = await this.db.__getDocument(this.path);
+      const next = {
+        ...(isPlainPrototypeObject(existing) ? existing : {}),
+        ...(isPlainPrototypeObject(data) ? data : {}),
+      };
+      await this.db.__writeDocument(this.path, next, 'set');
+      return;
+    }
     await this.db.__writeDocument(this.path, cloneDocument(data), 'set');
   }
 
