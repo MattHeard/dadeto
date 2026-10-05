@@ -282,11 +282,48 @@ function controllerShapes(frame) {
   ];
   return textPanel(
     background,
-    (frame.presentation?.menuRows || menuLines(frame)).map(text =>
-      text.slice(0, 30)
-    ),
+    wrapMenuRows(frame.presentation?.menuRows || menuLines(frame)),
     { x: 6, y: 13, fill: '#e9d88d', font: '7px monospace' }
   );
+}
+
+/**
+ * Keep every handheld menu label inside the 150px text area without discarding
+ * its ending. The pixel font advances five pixels per character.
+ * @param {string[]} rows Authored controller rows.
+ * @param {number} [columns] Maximum pixel-font characters on a row.
+ * @returns {string[]} Wrapped rows ready for the fixed-width display.
+ */
+export function wrapMenuRows(rows, columns = 30) {
+  return rows.flatMap(row => wrapMenuRow(row, columns));
+}
+
+/**
+ * Wrap a menu row at word boundaries and split unusually long individual words.
+ * @param {string} row Menu label or instruction.
+ * @param {number} columns Maximum characters per rendered row.
+ * @returns {string[]} Complete, bounded text rows.
+ */
+function wrapMenuRow(row, columns) {
+  const words = row.split(/\s+/).filter(Boolean);
+  const lines = [];
+  let line = '';
+  for (const word of words) {
+    if (word.length > columns) {
+      if (line) lines.push(line);
+      line = '';
+      for (let offset = 0; offset < word.length; offset += columns)
+        lines.push(word.slice(offset, offset + columns));
+      continue;
+    }
+    const candidate = line ? `${line} ${word}` : word;
+    if (candidate.length > columns) {
+      lines.push(line);
+      line = word;
+    } else line = candidate;
+  }
+  if (line) lines.push(line);
+  return lines.length ? lines : [''];
 }
 
 /**

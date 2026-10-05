@@ -5,6 +5,7 @@ import {
   drawGameFrame,
   toFramePayload,
   wrapDialogueText,
+  wrapMenuRows,
 } from '../../../../src/core/browser/game/mosslight-valley/renderer.js';
 import { startBattle } from '../../../../src/core/browser/game/mosslight-valley/combat.js';
 import { openDialogue } from '../../../../src/core/browser/game/mosslight-valley/dialogue.js';
@@ -112,6 +113,54 @@ test('draws terrain, objects, weather and both dialogue layouts', () => {
   expect(
     context.rectangles.some(rect => rect.x === 3 && rect.width === 154)
   ).toBe(true);
+});
+
+test('wraps complete handheld menu labels into the pixel display width', () => {
+  const rows = wrapMenuRows([
+    '› Short scenarios / replace this slot',
+    'A CHOOSE / B BACK / X CLOSE',
+  ]);
+
+  expect(rows).toEqual([
+    '› Short scenarios / replace',
+    'this slot',
+    'A CHOOSE / B BACK / X CLOSE',
+  ]);
+  expect(rows.every(row => row.length <= 30)).toBe(true);
+  expect(rows.join(' ')).toContain('replace this slot');
+  expect(wrapMenuRows(['', `lead ${'x'.repeat(31)}`])).toEqual([
+    '',
+    'lead',
+    'x'.repeat(30),
+    'x',
+  ]);
+  expect(wrapMenuRows(['y'.repeat(31)])).toEqual(['y'.repeat(30), 'y']);
+});
+
+test('draws wrapped menu continuations inside the controller panel', () => {
+  const state = createSimulation(CONTENT);
+  const context = makeContext();
+  const frame = toFramePayload({
+    ...state,
+    menu: { page: 'main' },
+    presentation: {
+      menuRows: [
+        '› Short scenarios / replace this slot',
+        'A CHOOSE / B BACK / X CLOSE',
+      ],
+    },
+  });
+
+  drawGameFrame(context, frame);
+
+  const menuPixels = context.rectangles.filter(
+    pixel => pixel.fill === '#e9d88d' && pixel.y >= 7 && pixel.y < 40
+  );
+  const drawnRows = new Set(menuPixels.map(pixel => pixel.y));
+  for (let row = 7; row <= 32; row++)
+    if (row < 13 || (row >= 17 && row < 23) || row >= 27)
+      expect(drawnRows.has(row)).toBe(true);
+  expect(Math.max(...menuPixels.map(pixel => pixel.x))).toBeLessThan(156);
 });
 
 test('wraps whitespace, empty prose and oversized words without losing text', () => {
