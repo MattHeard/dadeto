@@ -184,3 +184,18 @@ LIFO edits, malformed import atomicity, save round trips and legacy rules-10
 migration. Settlement commits changes and removes inverses. Both standalone and
 embedded presenters must pass real eight-button phone and desktop journeys;
 Mosslight save behavior remains unchanged.
+
+## Playable scenarios
+
+The controller offers three authored short campaigns and discloses that starting
+one replaces only the selected save slot. Scenario objectives derive from the
+same settlement, research-milestone, incident, and evaluation rules as the main
+campaign; no scenario grants a scripted success. Verify clinic launch (Atlas
+pilot by shift 8), bounded autonomy (Ghost pilot plus current passing evidence
+for all three probes by shift 10), and brownout recovery (two safe settlements
+after the cooling repair by shift 12). Verify rejected/inspection input does not
+advance time, scenario state passes save validation, and the objective/result
+survives save/export/import. Successful routes are recorded in
+`neonScenarios.test.js` and the player manual. Standalone and embedded
+controller launches must also pass phone and desktop Playwright journeys that
+inspect the replacement warning, persistent objective, and unchanged shift.

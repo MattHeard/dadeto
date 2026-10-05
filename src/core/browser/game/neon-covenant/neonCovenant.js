@@ -28,6 +28,7 @@ import {
 import { migrateCampaignAct, validCampaignAct } from './campaign.js';
 import { migrateDistress, validDistress } from './distress.js';
 import { migratePlanning, validPlanning } from './planning.js';
+import { SCENARIOS, validScenario } from './scenarios.js';
 import {
   createNeonState,
   stepNeon,
@@ -57,6 +58,7 @@ export function validLabSave(state) {
       validEvaluations(lab) &&
       validDeployments(lab) &&
       validPlanning(lab) &&
+      validScenario(lab) &&
       validIncidentChains(lab) &&
       Object.values(lab.incidentChains).every(
         chain => chain.warnedAt <= state.world.day
@@ -140,6 +142,7 @@ export function validLabSave(state) {
                 validRescueChoice(lab, choice.command) ||
                 validContractChoice(lab, choice.command) ||
                 validDisclosureChoice(lab, choice.command) ||
+                validScenarioChoice(choice.command) ||
                 LAB_CONTENT.npcs.some(
                   (/** @type {Record<string, any>} */ actor) =>
                     choice.command === `promise:${actor.id}`
@@ -165,6 +168,22 @@ export function validLabSave(state) {
           (!state.menu.page.startsWith('contract:') ||
             Object.hasOwn(LAB_CONTENT.contracts, state.menu.page.slice(9))) &&
           state.menu.selected >= 0))
+  );
+}
+
+/**
+ * Restrict saved scenario menu choices to authored scenarios and transitions.
+ * @param {string} command Portable dialogue action.
+ * @returns {boolean} Whether the action can be produced by the scenario menu.
+ */
+function validScenarioChoice(command) {
+  if (typeof command !== 'string' || !command.startsWith('scenario:'))
+    return false;
+  const [, stage, id, ...extra] = command.split(':');
+  return (
+    extra.length === 0 &&
+    ['brief', 'start'].includes(stage) &&
+    Object.hasOwn(SCENARIOS, id)
   );
 }
 

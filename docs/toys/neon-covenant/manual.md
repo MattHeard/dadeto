@@ -185,3 +185,17 @@ Refunds return only those orders' costs and attention. Undo does not reverse
 other changes made in between. Ending a shift commits the draft and removes its
 undo history. Signed contracts, promises, relationship choices, and disclosed
 data are permanent; their confirmation screens say so before you decide.
+
+### Short scenarios
+
+X → **Short scenarios** offers three replayable campaigns. Starting one replaces
+only the currently selected save slot; the confirmation says so explicitly.
+Switch to an unused slot or export the current campaign first if you want to
+keep it. The eight-shift **Clinic launch** asks you to reach Atlas's pilot
+milestone and stay solvent. The ten-shift **Bounded autonomy** requires Ghost's
+pilot milestone plus current evidence from all three Sable probes; reassign both
+researchers before testing so the reliability probe does not go stale. The
+twelve-shift **Brownout recovery** asks you to repair cooling before settling,
+then complete two safe settlements to clear the thermal warning without an
+incident. Each objective is measured by the actual campaign rules, and the
+scenario result appears in the shift report.

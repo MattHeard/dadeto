@@ -18,6 +18,7 @@ import {
   availableChapterScenes,
   chapterSceneLabel,
 } from './campaign.js';
+import { SCENARIOS } from './scenarios.js';
 
 /**
  * Render the selected window consistently across bounded handheld menus.
@@ -146,6 +147,10 @@ function contractEntries(state, page) {
  */
 export function labEntries(state) {
   const page = state.menu.page;
+  if (page === 'scenarios')
+    return Object.entries(SCENARIOS)
+      .map(([id, scenario]) => [scenario.name, `scenario:brief:${id}`])
+      .concat([['Back to lab', 'page:main']]);
   if (page === 'planning')
     return [
       [`Undo latest / ${state.lab.planning.orders.length}`, 'plan:undo'],
@@ -379,6 +384,7 @@ export function labEntries(state) {
     ['Campaign / act briefing', 'page:campaign'],
     ['Ledger / end shift', 'page:ledger'],
     ['Planning Desk / undo drafts', 'page:planning'],
+    ['Short scenarios / replace this slot', 'page:scenarios'],
     ['Lab dashboard', 'page:dashboard'],
     ['Incident register', 'page:incidents'],
     ['Research console', 'page:research'],
@@ -410,7 +416,8 @@ export function labEntries(state) {
  */
 export function labMenuRows(state) {
   if (!state.menu) return [];
-  if (state.menu.page === 'orientation') return orientationRows(state);
+  if (['orientation', 'scenarios'].includes(state.menu.page))
+    return specialMenuRows(state);
   if (state.menu.page === 'campaign') {
     const act = actForShift(state.world.day);
     return choicePanel(state, [
@@ -552,6 +559,7 @@ export function labMenuRows(state) {
       ]
     : state.menu.page === 'dashboard'
       ? [
+          ...scenarioStatus(lab.scenario),
           `CASH ${lab.cash}k DEBT ${lab.debt}k`,
           `TRUST ${lab.trust} MORALE ${lab.morale}`,
           `WF${lab.stakeholderStanding.workforce} CL${lab.stakeholderStanding.clinic} TU${lab.stakeholderStanding.transit} RG${lab.stakeholderStanding.regulator} IV${lab.stakeholderStanding.investor}`,
@@ -589,6 +597,40 @@ export function labMenuRows(state) {
       ),
     'A CHOOSE / B BACK / X CLOSE',
   ];
+}
+
+/**
+ * Resolve menus whose rows are independent of the operating ledger.
+ * @param {Record<string, any>} state Campaign snapshot.
+ * @returns {string[]} Authored orientation or scenario panel.
+ */
+function specialMenuRows(state) {
+  if (state.menu.page === 'orientation') return orientationRows(state);
+  return scenarioMenuRows(state);
+}
+
+/**
+ * Build the compact list header for a selected scenario.
+ * @param {Record<string, any>} state Scenario menu state.
+ * @returns {string[]} Header and save-safety notice.
+ */
+function scenarioMenuRows(state) {
+  const scenario = Object.values(SCENARIOS)[state.menu.selected];
+  return choicePanel(state, [
+    'SHORT CAMPAIGNS / SAVE SLOTS',
+    scenario?.objective || 'Choose an authored scenario.',
+    'START REPLACES THIS SLOT',
+  ]);
+}
+
+/**
+ * Show current short-campaign progress only while a scenario is active or retained.
+ * @param {Record<string, any> | undefined} scenario Saved optional scenario.
+ * @returns {string[]} Compact status line, or no extra line for ordinary campaigns.
+ */
+function scenarioStatus(scenario) {
+  if (!scenario) return [];
+  return [`SCENARIO ${scenario.status.toUpperCase()} / ${scenario.settled}`];
 }
 
 /**

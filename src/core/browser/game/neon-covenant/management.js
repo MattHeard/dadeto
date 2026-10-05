@@ -52,6 +52,7 @@ import {
 import { createCampaignAct, advanceCampaignAct } from './campaign.js';
 import { createDistress, advanceDistress, rescueOrder } from './distress.js';
 import { createPlanning } from './planning.js';
+import { settleScenario } from './scenarios.js';
 
 /**
  * Clamp a public lab metric to its meaningful range.
@@ -414,7 +415,7 @@ export function endShift(state) {
   if (insolvency || state.world.day >= 28) lab.outcome = labEnding(lab);
   return {
     ...state,
-    lab,
+    lab: settleScenario(lab),
     world: {
       ...state.world,
       day: state.world.day + 1,

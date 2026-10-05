@@ -33,6 +33,7 @@ import {
   clearPlanningOrders,
   undoPlanningOrder,
 } from './planning.js';
+import { SCENARIOS, startScenario } from './scenarios.js';
 
 /**
  * Recompute derived UI after every load rather than trusting saved presentation.
@@ -270,6 +271,7 @@ function signContract(next, command) {
  * @returns {Record<string, any> | null} Dialogue, rejected story or no match.
  */
 function campaignStory(state, next, command) {
+  if (command.startsWith('scenario:')) return scenarioCommand(next, command);
   if (command === 'campaign-story:act') {
     const act = actForShift(state.world.day);
     return openDialogue(next, 'campaign', [
@@ -323,6 +325,42 @@ function navigationCommand(state, next, command) {
  */
 function openMenuPage(state, page) {
   return { ...state, menu: { page, selected: 0 } };
+}
+
+/**
+ * Confirm a new scenario only after disclosing which save slot will be replaced.
+ * @param {Record<string, any>} state Current campaign.
+ * @param {string} command Scenario menu operation.
+ * @returns {Record<string, any>} Confirmation dialogue or started scenario.
+ */
+function scenarioCommand(state, command) {
+  const [, stage, id] = command.split(':');
+  const definition = SCENARIOS[id];
+  if (!definition) return state;
+  if (stage === 'brief')
+    return openDialogue(state, 'campaign', [
+      {
+        text: `${definition.name}. ${definition.objective} ${definition.route} Starting this scenario replaces the currently selected save slot. Other slots are untouched; export this slot first if you want to keep it.`,
+        choices: [
+          {
+            label: 'Replace this slot and begin',
+            command: `scenario:start:${id}`,
+          },
+          { label: 'Keep my campaign' },
+        ],
+      },
+    ]);
+  if (stage !== 'start') return state;
+  const fresh = createNeonState();
+  const lab = startScenario(fresh.lab, id);
+  return openDialogue(
+    { ...fresh, lab, lastActions: state.lastActions },
+    'campaign',
+    [
+      { text: `${definition.name}. OBJECTIVE: ${definition.objective}` },
+      { text: `FIELD NOTES: ${definition.route} A: continue. B: close.` },
+    ]
+  );
 }
 
 /**

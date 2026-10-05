@@ -2,6 +2,47 @@ import { expect, test, Page } from '@playwright/test';
 import { writeFile } from 'node:fs/promises';
 
 for (const embedded of [false, true]) {
+  test(`scenario launch discloses slot replacement and saves its objective in ${embedded ? 'embedded' : 'standalone'} play`, async ({ page }) => {
+    const errors: string[] = [];
+    page.on('pageerror', error => errors.push(error.message));
+    await page.goto(embedded ? '/' : '/neon-covenant/', {
+      waitUntil: 'domcontentloaded',
+    });
+    if (embedded) {
+      const toy = page.locator('#NEON1');
+      await toy.scrollIntoViewIfNeeded();
+      await expect(
+        toy.getByRole('button', { name: 'Submit', exact: true })
+      ).toBeEnabled();
+    }
+    if (embedded) await tap(page, 'x', true, true);
+    else {
+      await expect.poll(() => labState(page)).toBeTruthy();
+      await tap(page, 'x');
+    }
+    await expect.poll(() => labState(page)).toBeTruthy();
+    await selectPersonnelRow(page, 'page:scenarios', embedded);
+    expect((await labState(page)).world.day).toBe(1);
+    await selectPersonnelRow(page, 'scenario:brief:clinicLaunch', embedded);
+    const briefing = await labState(page);
+    expect(briefing.dialogue.lines[0].text).toContain(
+      'currently selected save slot'
+    );
+    expect(briefing.dialogue.choices[0].label).toBe(
+      'Replace this slot and begin'
+    );
+    expect(briefing.lab.scenario).toBeUndefined();
+    await tap(page, 'a', embedded, embedded);
+    const started = await labState(page);
+    expect(started.lab.scenario.id).toBe('clinicLaunch');
+    expect(started.dialogue.lines[0].text).toContain('Atlas pilot 20');
+    expect(started.world.day).toBe(1);
+    expect(await labSaveIsValid(page)).toBe(true);
+    expect(errors).toEqual([]);
+  });
+}
+
+for (const embedded of [false, true]) {
   test(`emergency runway terms and settlement window work in ${embedded ? 'embedded' : 'standalone'} play`, async ({ page }) => {
     await page.goto(embedded ? '/' : '/neon-covenant/', { waitUntil: 'domcontentloaded' });
     const state = await page.evaluate(async () => {
