@@ -1,8 +1,76 @@
 import { expect, test, Page } from '@playwright/test';
 import { writeFile } from 'node:fs/promises';
+import { createCampaignAct } from '../../src/core/browser/game/neon-covenant/campaign.js';
+import { createDeployments } from '../../src/core/browser/game/neon-covenant/operations.js';
+import { createNeonState } from '../../src/core/browser/game/neon-covenant/simulation.js';
+import { manageLab } from '../../src/core/browser/game/neon-covenant/management.js';
+import { validLabSave } from '../../src/core/browser/game/neon-covenant/neonCovenant.js';
+
+const RESOLUTIONS = [
+  ['insolvent', 'creditors take control'],
+  ['acquired', 'Helios takes the keys'],
+  ['gilded-cage', 'restrictions earned by its record'],
+  ['city-covenant', 'clinic and transit union share ownership'],
+  ['independent', 'keeps the keys without a new outside owner'],
+  ['quiet-lab', 'keeps the keys without a new outside owner'],
+] as const;
+
+function endingSave(outcome: (typeof RESOLUTIONS)[number][0]) {
+  let state = createNeonState();
+  const lab = state.lab;
+  lab.cash = outcome === 'insolvent' ? -100 : 1000;
+  lab.debt = outcome === 'acquired' ? 2000 : 0;
+  lab.trust = outcome === 'gilded-cage' ? 10 : 50;
+  lab.deployed = ['independent', 'city-covenant'].includes(outcome)
+    ? outcome === 'city-covenant'
+      ? ['atlas', 'lumen']
+      : ['atlas']
+    : [];
+  lab.deployments = createDeployments(lab);
+  if (outcome === 'city-covenant') {
+    lab.cash = 1000;
+    lab.trust = 80;
+    lab.compute = 32;
+    lab.cooling = 32;
+    state = manageLab(state, 'assign:ada:service');
+    state = manageLab(state, 'assign:jun:service');
+    const mae = state.lab.relationships.mae;
+    state.lab.promises = ['mae'];
+    mae.stage = 'fulfilled';
+    mae.fulfillments = 1;
+    mae.streak = 1;
+    mae.events = [
+      { type: 'accepted', day: 26 },
+      { type: 'fulfilled', day: 27 },
+    ];
+    state.lab.commitmentPolicies.consultations = Object.fromEntries(
+      ['atlas', 'lumen'].map(id => [
+        id,
+        {
+          oversight: state.lab.programs[id].settings.oversight,
+          specialization: state.lab.programs[id].settings.specialization,
+          data: state.lab.data,
+        },
+      ])
+    );
+  }
+  state.world.day = 28;
+  state.lab.campaignAct = createCampaignAct(28);
+  state.dialogue = null;
+  state.menu = null;
+  return JSON.stringify({
+    game: 'neon-covenant',
+    version: 2,
+    slot: 0,
+    savedAt: '2026-10-05T00:00:00.000Z',
+    state,
+  });
+}
 
 for (const embedded of [false, true]) {
-  test(`scenario launch discloses slot replacement and saves its objective in ${embedded ? 'embedded' : 'standalone'} play`, async ({ page }) => {
+  test(`scenario launch discloses slot replacement and saves its objective in ${embedded ? 'embedded' : 'standalone'} play`, async ({
+    page,
+  }) => {
     const errors: string[] = [];
     page.on('pageerror', error => errors.push(error.message));
     await page.goto(embedded ? '/' : '/neon-covenant/', {
@@ -43,21 +111,37 @@ for (const embedded of [false, true]) {
 }
 
 for (const embedded of [false, true]) {
-  test(`emergency runway terms and settlement window work in ${embedded ? 'embedded' : 'standalone'} play`, async ({ page }) => {
-    await page.goto(embedded ? '/' : '/neon-covenant/', { waitUntil: 'domcontentloaded' });
+  test(`emergency runway terms and settlement window work in ${embedded ? 'embedded' : 'standalone'} play`, async ({
+    page,
+  }) => {
+    await page.goto(embedded ? '/' : '/neon-covenant/', {
+      waitUntil: 'domcontentloaded',
+    });
     const state = await page.evaluate(async () => {
-      const { createNeonState } = await import('/core/browser/game/neon-covenant/simulation.js');
+      const { createNeonState } = await import(
+        '/core/browser/game/neon-covenant/simulation.js'
+      );
       const campaign = createNeonState();
       campaign.dialogue = null;
       campaign.menu = null;
       campaign.world.day = 4;
       campaign.lab.cash = -20;
-      campaign.lab.distress = { status: 'open', openedShift: 4, shiftsRemaining: 2 };
+      campaign.lab.distress = {
+        status: 'open',
+        openedShift: 4,
+        shiftsRemaining: 2,
+      };
       const data = JSON.parse(localStorage.getItem('permanentData') || '{}');
       data['neon-covenant-saves-v2'] = {
         activeSlot: 0,
         slots: {
-          0: JSON.stringify({ game: 'neon-covenant', version: 2, slot: 0, savedAt: '1970-01-01T00:00:00.000Z', state: campaign }),
+          0: JSON.stringify({
+            game: 'neon-covenant',
+            version: 2,
+            slot: 0,
+            savedAt: '1970-01-01T00:00:00.000Z',
+            state: campaign,
+          }),
         },
       };
       localStorage.setItem('permanentData', JSON.stringify(data));
@@ -68,13 +152,20 @@ for (const embedded of [false, true]) {
     if (embedded) {
       const toy = page.locator('#NEON1');
       await toy.scrollIntoViewIfNeeded();
-      await expect(toy.getByRole('button', { name: 'Submit', exact: true })).toBeEnabled();
+      await expect(
+        toy.getByRole('button', { name: 'Submit', exact: true })
+      ).toBeEnabled();
     }
-    const inspect = async () => page.evaluate(async () => {
-      const data = JSON.parse(localStorage.getItem('permanentData') || '{}')['neon-covenant-saves-v2'];
-      return JSON.parse(data.slots[0]).state;
-    });
-    await expect.poll(async () => (await inspect()).lab.distress.status).toBe('open');
+    const inspect = async () =>
+      page.evaluate(async () => {
+        const data = JSON.parse(localStorage.getItem('permanentData') || '{}')[
+          'neon-covenant-saves-v2'
+        ];
+        return JSON.parse(data.slots[0]).state;
+      });
+    await expect
+      .poll(async () => (await inspect()).lab.distress.status)
+      .toBe('open');
     await tap(page, 'x', embedded, embedded);
     await selectPersonnelRow(page, 'page:distress', embedded);
     expect((await inspect()).menu.page).toBe('distress');
@@ -84,13 +175,71 @@ for (const embedded of [false, true]) {
       if (stateNow.dialogue?.choices?.length) break;
       await tap(page, 'a', embedded, embedded);
     }
-    expect((await inspect()).dialogue.choices[0].command).toBe('rescue:heliosBridge');
+    expect((await inspect()).dialogue.choices[0].command).toBe(
+      'rescue:heliosBridge'
+    );
     await tap(page, 'a', embedded, embedded);
-    expect((await inspect()).lab.rescueFinancing).toEqual({ id: 'heliosBridge', signedShift: 4 });
+    expect((await inspect()).lab.rescueFinancing).toEqual({
+      id: 'heliosBridge',
+      signedShift: 4,
+    });
     expect((await inspect()).lab.cash).toBe(40);
     expect((await inspect()).lab.debt).toBe(204);
     expect((await inspect()).menu.page).toBe('distress');
   });
+}
+
+for (const embedded of [false, true]) {
+  for (const [outcome, closing] of RESOLUTIONS) {
+    test(`${outcome} resolution is settled from the controller in ${embedded ? 'embedded' : 'standalone'} play`, async ({
+      page,
+    }) => {
+      const errors: string[] = [];
+      page.on('pageerror', error => errors.push(error.message));
+      const serialized = endingSave(outcome);
+      const saved = JSON.parse(serialized);
+      expect(validLabSave(saved.state)).toBe(true);
+      await page.addInitScript(value => {
+        localStorage.setItem(
+          'permanentData',
+          JSON.stringify({
+            'neon-covenant-saves-v2': { activeSlot: 0, slots: [value] },
+          })
+        );
+      }, serialized);
+      await page.goto(embedded ? '/' : '/neon-covenant/', {
+        waitUntil: 'domcontentloaded',
+      });
+      if (embedded) {
+        const toy = page.locator('#NEON1');
+        await toy.scrollIntoViewIfNeeded();
+        await expect(
+          toy.getByRole('button', { name: 'Submit', exact: true })
+        ).toBeEnabled();
+      }
+      await expect
+        .poll(async () => (await labState(page))?.world?.day)
+        .toBe(28);
+      await tap(page, 'x', embedded, embedded);
+      await selectPersonnelRow(page, 'page:ledger', embedded);
+      await selectPersonnelRow(page, 'shift', embedded);
+
+      const resolved = await labState(page);
+      expect(resolved.lab.outcome).toBe(outcome);
+      expect(resolved.dialogue.actorId).toBe('resolution');
+      expect(
+        resolved.dialogue.lines
+          .map((line: { text: string }) => line.text)
+          .join(' ')
+      ).toContain(closing);
+      expect(
+        await page.evaluate(
+          () => document.documentElement.scrollWidth <= window.innerWidth
+        )
+      ).toBe(true);
+      expect(errors).toEqual([]);
+    });
+  }
 }
 
 test.beforeEach(async ({ page }) => {
@@ -671,9 +820,9 @@ for (const embedded of [false, true]) {
         .poll(async () => (await labState(page))?.world?.day)
         .toBe(boundary - 1);
       await tap(page, 'b', embedded, true);
-      await expect.poll(async () => (await labState(page))?.menu?.page).toBe(
-        'ledger'
-      );
+      await expect
+        .poll(async () => (await labState(page))?.menu?.page)
+        .toBe('ledger');
       await selectPersonnelRow(page, 'shift', embedded);
       const settled = await labState(page);
       const expectedAct = {
