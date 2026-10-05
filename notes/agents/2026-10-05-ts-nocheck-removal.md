@@ -7,3 +7,4 @@
 - Follow-up slice: enabled checking for purchase status and added the persisted purchase fields consumed by the handler plus a flexible response body record. Project `tsdoc:check`, scoped ESLint, and `git diff --check` pass.
 - Follow-up slice: enabled checking for public billing offers and described the pricing snapshot fields required by `quoteCreditPackage`. Project `tsdoc:check`, scoped ESLint, and `git diff --check` pass.
 - Follow-up slice: enabled checking for the billing catalog seed, typed its store operations, narrowed package amount and operation data, and left snapshot validation at `createPricingSnapshot`. Project `tsdoc:check`, scoped ESLint, and `git diff --check` pass.
+- Follow-up slice: enabled checking for the object-minute search HTTP adapter and completed the repository, service area, schedule provider, and origin option contracts. Project `tsdoc:check`, scoped ESLint, and `git diff --check` pass.
