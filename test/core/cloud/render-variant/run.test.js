@@ -107,6 +107,8 @@ describe('runRenderVariant', () => {
       FieldValue,
       Storage,
       fetchFn: importedFetchFn,
+      bindEffectBoundary: handler => handler(Object.freeze({})),
+      effectFetchFn: jest.fn(),
       crypto,
       console: { error: consoleError },
     });
@@ -121,12 +123,20 @@ describe('runRenderVariant', () => {
     );
     expect(capturedWriteOptions.getDeleteSentinel()).toBe('delete-sentinel');
     expect(writeHandler).toHaveBeenCalledWith('change');
-    expect(capturedBuilderOptions.createRenderer).toBe(mockCreateRenderVariant);
+    const rendererDependencies = { fetchFn: importedFetchFn };
+    capturedBuilderOptions.createRenderer(rendererDependencies);
+    expect(mockCreateRenderVariant).toHaveBeenCalledWith(
+      expect.objectContaining({
+        ...rendererDependencies,
+        bindEffectBoundary: expect.any(Function),
+        effectFetchFn: expect.any(Function),
+      })
+    );
     capturedBuilderOptions.consoleError('builder failure');
     expect(consoleError).toHaveBeenCalledWith('builder failure');
     expect(mockCreateCloudRenderInstanceBuilder).toHaveBeenCalled();
     expect(mockCreateCloudRenderInstanceBuilder.mock.calls.at(-1)[0]).toEqual(
-      expect.objectContaining({ createRenderer: mockCreateRenderVariant })
+      expect.objectContaining({ createRenderer: expect.any(Function) })
     );
     expect(mockCreateCloudRenderEntrypointState.mock.calls.at(-1)[0]).toEqual(
       expect.objectContaining({

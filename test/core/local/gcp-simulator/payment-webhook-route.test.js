@@ -1,8 +1,8 @@
 import {
-  createLocalGcpSimulator,
   resolvePaymentCreatedAt,
   resolvePaymentCustomerApiKeyUuid,
 } from '../../../../src/core/local/gcp-simulator/simulator.js';
+import { createLocalGcpSimulator } from '../../../../src/local/gcp-simulator/simulator.js';
 import { describe, expect, it } from '@jest/globals';
 
 const clientReferenceIdKey = 'client_reference_id';

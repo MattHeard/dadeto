@@ -45,6 +45,7 @@ export default [
     files: [
       'src/core/cloud/submit-new-story/**/*.js',
       'src/core/cloud/submit-new-page/**/*.js',
+      'src/core/cloud/render-variant/effectFetch.js',
       'src/core/browser/presenters/realtimeVoicePrototype.js',
       'src/core/browser/admin-core.js',
       'src/core/browser/token-action.js',

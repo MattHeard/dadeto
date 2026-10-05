@@ -1,4 +1,5 @@
 import { jest } from '@jest/globals';
+import { createAllowEffects } from '../../../../src/cloud/allow-effects.js';
 import * as RenderVariantCore from '../../../../src/core/cloud/render-variant/render-variant-core.js';
 import {
   createInvalidatePaths,
@@ -7,7 +8,7 @@ import {
   resolveAuthorMetadata,
   buildParentRoute,
   resolveParentUrl,
-  createRenderVariant,
+  createRenderVariant as createRenderVariantCore,
   createHandleVariantWrite,
   VISIBILITY_THRESHOLD,
   DEFAULT_BUCKET_NAME,
@@ -27,17 +28,52 @@ import {
 
 const ACCESS_TOKEN_KEY = 'access_token';
 
+const createRenderVariant = dependencies =>
+  createRenderVariantCore({
+    ...dependencies,
+    bindEffectBoundary: handler => handler(createAllowEffects()),
+    effectFetchFn: (permission, url, init) => dependencies.fetchFn(url, init),
+  });
+
 describe('createInvalidatePaths', () => {
   it('returns early when paths are not provided', async () => {
     const fetchFn = jest.fn();
     const randomUUID = jest.fn(() => 'uuid');
     const invalidatePaths = createInvalidatePaths({
       fetchFn,
+      bindEffectBoundary: handler => handler(createAllowEffects()),
+      effectFetchFn: (permission, ...args) => fetchFn(...args),
       randomUUID,
     });
 
     await invalidatePaths(undefined);
     expect(fetchFn).not.toHaveBeenCalled();
+  });
+
+  it('mints a distinct permission per purge and leaves metadata reads unpermitted', async () => {
+    const fetchFn = jest.fn().mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ [ACCESS_TOKEN_KEY]: 'token' }),
+    });
+    const effectFetchFn = jest.fn(async () => ({ ok: true, status: 200 }));
+    const invalidatePaths = createInvalidatePaths({
+      fetchFn,
+      bindEffectBoundary: handler => handler(createAllowEffects()),
+      effectFetchFn,
+      randomUUID: jest.fn(() => 'uuid'),
+    });
+
+    await invalidatePaths(['/p/1a.html', '/p/2a.html']);
+
+    expect(fetchFn).toHaveBeenCalledTimes(1);
+    expect(fetchFn.mock.calls[0]).toHaveLength(2);
+    expect(effectFetchFn).toHaveBeenCalledTimes(2);
+    const [firstPermission, secondPermission] = effectFetchFn.mock.calls.map(
+      ([permission]) => permission
+    );
+    expect(Object.isFrozen(firstPermission)).toBe(true);
+    expect(Object.isFrozen(secondPermission)).toBe(true);
+    expect(firstPermission).not.toBe(secondPermission);
   });
 
   it('logs errors when the invalidation request rejects', async () => {
@@ -49,9 +85,14 @@ describe('createInvalidatePaths', () => {
         json: async () => ({ [ACCESS_TOKEN_KEY]: 'token' }),
       })
       .mockRejectedValueOnce(new Error('boom'));
+    const effectFetchFn = jest.fn((_permission, url, init) =>
+      fetchFn(url, init)
+    );
 
     const invalidatePaths = createInvalidatePaths({
       fetchFn,
+      bindEffectBoundary: handler => handler(createAllowEffects()),
+      effectFetchFn,
       randomUUID: jest.fn(() => 'uuid'),
       consoleError,
       projectId: 'proj',
@@ -66,6 +107,9 @@ describe('createInvalidatePaths', () => {
       'boom'
     );
     expect(fetchFn).toHaveBeenCalledTimes(2);
+    expect(fetchFn.mock.calls[0]).toHaveLength(2);
+    expect(effectFetchFn).toHaveBeenCalledTimes(1);
+    expect(Object.isFrozen(effectFetchFn.mock.calls[0][0])).toBe(true);
   });
 
   it('swallows invalidation errors when no logger is provided', async () => {
@@ -79,6 +123,8 @@ describe('createInvalidatePaths', () => {
 
     const invalidatePaths = createInvalidatePaths({
       fetchFn,
+      bindEffectBoundary: handler => handler(createAllowEffects()),
+      effectFetchFn: (permission, ...args) => fetchFn(...args),
       randomUUID: jest.fn(() => 'uuid'),
     });
 
@@ -99,6 +145,8 @@ describe('createInvalidatePaths', () => {
 
     const invalidatePaths = createInvalidatePaths({
       fetchFn,
+      bindEffectBoundary: handler => handler(createAllowEffects()),
+      effectFetchFn: (permission, ...args) => fetchFn(...args),
       randomUUID: jest.fn(() => 'uuid'),
       projectId: 'proj',
       urlMapName: 'map',
@@ -126,6 +174,8 @@ describe('createInvalidatePaths', () => {
 
     const invalidatePaths = createInvalidatePaths({
       fetchFn,
+      bindEffectBoundary: handler => handler(createAllowEffects()),
+      effectFetchFn: (permission, ...args) => fetchFn(...args),
       randomUUID: jest.fn(() => 'uuid'),
       consoleError,
     });
@@ -154,6 +204,8 @@ describe('createInvalidatePaths', () => {
 
     const invalidatePaths = createInvalidatePaths({
       fetchFn,
+      bindEffectBoundary: handler => handler(createAllowEffects()),
+      effectFetchFn: (permission, ...args) => fetchFn(...args),
       randomUUID: jest.fn(() => 'uuid'),
       projectId: 'proj',
       urlMapName: 'map',
@@ -184,6 +236,8 @@ describe('createInvalidatePaths', () => {
 
     const invalidatePaths = createInvalidatePaths({
       fetchFn,
+      bindEffectBoundary: handler => handler(createAllowEffects()),
+      effectFetchFn: (permission, ...args) => fetchFn(...args),
       randomUUID: jest.fn(() => 'uuid'),
       projectId: 'proj',
       urlMapName: 'map',
@@ -208,6 +262,8 @@ describe('createInvalidatePaths', () => {
 
     const invalidatePaths = createInvalidatePaths({
       fetchFn,
+      bindEffectBoundary: handler => handler(createAllowEffects()),
+      effectFetchFn: (permission, ...args) => fetchFn(...args),
       randomUUID: jest.fn(() => 'uuid'),
       projectId: '',
       urlMapName: 'map',
@@ -231,6 +287,8 @@ describe('createInvalidatePaths', () => {
 
     const invalidatePaths = createInvalidatePaths({
       fetchFn,
+      bindEffectBoundary: handler => handler(createAllowEffects()),
+      effectFetchFn: (permission, ...args) => fetchFn(...args),
       randomUUID: jest.fn(() => 'uuid'),
     });
 
@@ -1204,6 +1262,8 @@ describe('createRenderVariant', () => {
       db: { doc: jest.fn() },
       storage,
       fetchFn,
+      bindEffectBoundary: handler => handler(createAllowEffects()),
+      effectFetchFn: (permission, ...args) => fetchFn(...args),
       randomUUID,
       bucketName: 'custom-bucket',
     });

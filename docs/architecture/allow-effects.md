@@ -27,3 +27,7 @@ The compiler/boundary harness is `node scripts/run-jest.js --runInBand test/core
 The admin adapter now supplies `bindEffectBoundary` to admin core. It mints a fresh frozen, privately branded permission for each command. `FetchFn` requires that permission as its first argument, and the admin core rule covers `src/core/browser/admin-core.js` and `src/core/browser/token-action.js`.
 
 This classification is scoped to four injected-fetch POST commands: trigger render contents, generate stats, regenerate a page variant, and regenerate an author. Each command receives its permission at invocation and forwards it directly through the command call chain to the injected `fetchFn`. The general admin `fetchFn` still serves read requests elsewhere, so this migration does not classify every request or change those call sites. `test/core/browser/admin/effects.test.js` verifies the four URLs receive distinct boundary permissions. Existing admin tests use a test-only adapter to keep their URL-first fetch assertions focused on their original behavior.
+
+## Fourth extension: render-variant CDN invalidation (2026-10-05)
+
+The cloud render-variant adapter now supplies a command permission boundary and a dedicated `effectFetchFn` for CDN cache purge POSTs. The core invalidation flow mints one fresh permission per path purge and forwards it only to that adapter. The generic `fetchFn` remains responsible for the metadata service token GET and receives no capability. `render-contents` has a separate invalidation implementation and remains a distinct follow-up.

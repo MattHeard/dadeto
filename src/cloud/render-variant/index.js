@@ -8,6 +8,8 @@ import {
   fetchFn,
   crypto,
   getEnvironmentVariables,
+  bindEffectBoundary,
+  effectFetchFn,
 } from './render-variant-gcf.js';
 import { runRenderVariant } from '../../core/cloud/render-variant/run.js';
 import { createTreeVisibilityRegenerationHandles } from '../../core/cloud/tree-visibility/run.js';
@@ -17,6 +19,8 @@ const { renderVariant: handle, render } = runRenderVariant({
   createFirebaseAppManager,
   getFirestoreInstance,
   getEnvironmentVariables,
+  bindEffectBoundary,
+  effectFetchFn,
   functions,
   FieldValue,
   Storage,

@@ -26,6 +26,8 @@ import {
  *   FieldValue: typeof import('../../../cloud/render-variant/render-variant-gcf.js').FieldValue,
  *   Storage: typeof import('../../../cloud/render-variant/render-variant-gcf.js').Storage,
  *   fetchFn: typeof import('../../../cloud/render-variant/render-variant-gcf.js').fetchFn,
+ *   bindEffectBoundary: typeof import('../../../cloud/render-variant/render-variant-gcf.js').bindEffectBoundary,
+ *   effectFetchFn: typeof import('../../../cloud/render-variant/render-variant-gcf.js').effectFetchFn,
  *   crypto: typeof import('../../../cloud/render-variant/render-variant-gcf.js').crypto,
  *   console?: { error: (...args: unknown[]) => void },
  * }} deps Runtime dependencies supplied by the cloud wrapper.
@@ -42,6 +44,8 @@ export function runRenderVariant(deps) {
     FieldValue,
     Storage,
     fetchFn,
+    bindEffectBoundary,
+    effectFetchFn,
     crypto,
     console: consoleLike,
   } = typedDeps;
@@ -89,7 +93,12 @@ export function runRenderVariant(deps) {
     renderStateOptions.buildRender = /** @type {any} */ (
       createCloudRenderInstanceBuilder(
         /** @type {any} */ ({
-          createRenderer: createRenderVariant,
+          createRenderer: (/** @type {any} */ dependencies) =>
+            createRenderVariant({
+              ...dependencies,
+              bindEffectBoundary,
+              effectFetchFn,
+            }),
           crypto,
           consoleError: (/** @type {any[]} */ ...args) =>
             resolvedConsole.error(...args),

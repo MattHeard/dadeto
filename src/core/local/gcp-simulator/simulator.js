@@ -63,6 +63,7 @@ const LOCAL_ID_TOKEN = 'local-admin-token';
  *   bucketName?: string,
  *   projectId?: string,
  *   publicDir?: string,
+ *   bindEffectBoundary: (handler: (permission: import('../../../../types/allow-effects').AllowEffects) => Promise<unknown>) => Promise<unknown>,
  * }} [options] Simulator options.
  * @returns {Promise<object>} Simulator instance.
  */
@@ -72,6 +73,7 @@ export async function createLocalGcpSimulator(options = {}) {
     bucketName = 'local-static',
     projectId = 'local-project',
     publicDir = path.resolve('public'),
+    bindEffectBoundary,
   } = options;
 
   return createLocalGcpSimulatorRuntime({
@@ -79,6 +81,7 @@ export async function createLocalGcpSimulator(options = {}) {
     bucketName,
     projectId,
     publicDir,
+    bindEffectBoundary,
   });
 }
 
@@ -89,6 +92,7 @@ export async function createLocalGcpSimulator(options = {}) {
  *   bucketName: string,
  *   projectId: string,
  *   publicDir: string,
+ *   bindEffectBoundary: (handler: (permission: import('../../../../types/allow-effects').AllowEffects) => Promise<unknown>) => Promise<unknown>,
  * }} config Simulator configuration.
  * @returns {Promise<object>} Simulator instance.
  */
@@ -331,6 +335,8 @@ async function buildSimulatorState(/** @type {unknown} */ config) {
     bucketName,
     objectPrefix: '',
     projectId,
+    bindEffectBoundary: config.bindEffectBoundary,
+    effectFetchFn: (permission, url, init) => fetchFn(url, init),
   };
 
   const renderContents = createRenderContents(renderConfig);

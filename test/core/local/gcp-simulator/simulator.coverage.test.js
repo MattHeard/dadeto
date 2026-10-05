@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, jest } from '@jest/globals';
-import { createLocalGcpSimulator } from '../../../../src/core/local/gcp-simulator/simulator.js';
+import { createLocalGcpSimulator } from '../../../../src/local/gcp-simulator/simulator.js';
 
 let simulator;
 
