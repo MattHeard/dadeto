@@ -1,4 +1,3 @@
-// @ts-nocheck -- timers and network reads are injected browser boundaries.
 /**
  * Create a bounded read-only settlement observer.
  * @param {{ readStatus: () => Promise<{ status: string }>, wait: (ms: number) => Promise<void>, maxAttempts?: number }} deps Polling dependencies.

@@ -1,8 +1,9 @@
-// @ts-nocheck -- browser audio is injected so the simulation stays platform independent.
+/** @typedef {{play: (name: string) => void, stop: () => void, setEnabled: (value: boolean) => void, isEnabled: () => boolean}} AudioCueAdapter */
+
 /**
  * Create an optional cue player that degrades safely when audio is unavailable.
- * @param {unknown} env - The env argument.
- * @returns {object} A controllable audio cue adapter.
+ * @param {Map<string, (name: string) => void>} env Audio cue callbacks.
+ * @returns {AudioCueAdapter} A controllable audio cue adapter.
  */
 export function createAudioAdapter(env = new Map()) {
   const cue = env?.get?.('playAudioCue');
