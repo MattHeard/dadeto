@@ -1,9 +1,11 @@
-// @ts-nocheck -- quest state remains JSON-serializable for local saves.
+/** @typedef {{goal: string, requires: string[], [key: string]: unknown}} QuestDefinition */
+/** @typedef {{world: {flags: Record<string, any>}, journal?: string[], [key: string]: any}} QuestState */
+/** @typedef {{quests: Record<string, QuestDefinition>, endings: Record<string, string>}} QuestContent */
 /**
  * Build journal entries from authored quest data and current state.
- * @param {unknown} state - The state argument.
- * @param {unknown} content - The content argument.
- * @returns {unknown} The computed result.
+ * @param {QuestState} state Current game state.
+ * @param {QuestContent} content Authored quest and ending data.
+ * @returns {(QuestDefinition & {id: string, status: 'complete' | 'active' | 'rumor'})[]} Quest journal entries.
  */
 export function questJournal(state, content) {
   return Object.entries(content.quests).map(([id, quest]) => ({
@@ -18,10 +20,10 @@ export function questJournal(state, content) {
 }
 /**
  * Update quest progress flags after a world event.
- * @param {unknown} state - The state argument.
- * @param {unknown} event - The event argument.
- * @param {unknown} value - The value argument.
- * @returns {unknown} The computed result.
+ * @param {QuestState} state Current game state.
+ * @param {string} event Event flag to record.
+ * @param {boolean | number | string} [value] Value for the flag; defaults to true.
+ * @returns {QuestState} Updated game state.
  */
 export function recordEvent(state, event, value = true) {
   const flags = { ...state.world.flags, [event]: value };
@@ -36,19 +38,19 @@ export function recordEvent(state, event, value = true) {
 }
 /**
  * Determine whether a quest can be revealed.
- * @param {unknown} quest - The quest argument.
- * @param {unknown} flags - The flags argument.
- * @returns {unknown} The computed result.
+ * @param {Pick<QuestDefinition, 'requires'>} quest Quest requirement data.
+ * @param {Record<string, any>} flags Current story flags.
+ * @returns {boolean} Whether every prerequisite flag is set.
  */
 export function questAvailable(quest, flags) {
   return quest.requires.every(flag => Boolean(flags[flag]));
 }
 /**
  * Resolve chapter ending from a committed player choice.
- * @param {unknown} state - The state argument.
- * @param {unknown} choice - The choice argument.
- * @param {unknown} content - The content argument.
- * @returns {unknown} The computed result.
+ * @param {QuestState} state Current game state.
+ * @param {string} choice Ending choice identifier.
+ * @param {QuestContent} content Authored ending data.
+ * @returns {QuestState} State with the selected ending when it exists.
  */
 export function selectEnding(state, choice, content) {
   const ending = content.endings[choice];
