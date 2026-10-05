@@ -1,4 +1,3 @@
-// @ts-nocheck -- Firebase trigger and test-double contracts are intentionally structural here.
 /**
  * @typedef {object} SubmissionData
  * @property {string} [content] Page content.
@@ -20,6 +19,7 @@
  * @property {number | null} pageNumber The page number assigned, if available.
  * @property {boolean} preserveVariantDirty Whether a source variant dirty marker must be preserved.
  */
+/** @typedef {import('firebase-admin/firestore').DocumentSnapshot & {ref: import('firebase-admin/firestore').DocumentReference}} SnapshotWithReference */
 
 /**
  * @typedef {object} OptionData
@@ -258,7 +258,7 @@ export async function findAvailablePageNumber(db, random, depth) {
  * @returns {unknown} Parent reference or undefined.
  */
 function extractParentRef(ref) {
-  return ref?.parent;
+  return /** @type {{parent?: unknown} | null | undefined} */ (ref)?.parent;
 }
 
 /**
@@ -308,7 +308,7 @@ function extractStoryRefFromPageRef(pageRef) {
  * Extract references from an option document.
  * @param {import('firebase-admin/firestore').DocumentReference | null | undefined} optionRef
  *   Reference to the option document.
- * @returns {object} Object with variantRef, pageRef, and storyRef properties.
+ * @returns {StoryReferences} Object with variantRef, pageRef, and storyRef properties.
  */
 function resolveStoryRefFromOption(optionRef) {
   // Stryker disable all -- option reference traversal uses the fixed Firestore hierarchy.
@@ -326,7 +326,7 @@ function resolveStoryRefFromOption(optionRef) {
 
 /**
  * Confirm that an option target points to a page document reference.
- * @param {import('firebase-admin/firestore').DocumentReference | null | undefined} targetPage
+ * @param {unknown} targetPage
  *   Reference stored on the option document.
  * @returns {import('firebase-admin/firestore').DocumentReference | null}
  *   A page reference when valid, otherwise null.
@@ -345,12 +345,17 @@ function resolvePageFromTarget(targetPage) {
 
 /**
  * Confirm that the target page reference exposes the expected API.
- * @param {import('firebase-admin/firestore').DocumentReference | null | undefined} targetPage Candidate page reference.
+ * @param {unknown} targetPage Candidate page reference.
  * @returns {targetPage is import('firebase-admin/firestore').DocumentReference} True when the reference is valid.
  */
 function isPageReference(targetPage) {
   // Stryker disable all -- page references use the fixed get-method contract.
-  return Boolean(targetPage && typeof targetPage.get === 'function');
+  return Boolean(
+    targetPage &&
+      typeof targetPage === 'object' &&
+      'get' in targetPage &&
+      typeof targetPage.get === 'function'
+  );
 }
 // Stryker restore all
 
@@ -431,16 +436,13 @@ async function markProcessedIfMissing(optionSnap, snapshot) {
 
 /**
  * Extract and validate story reference from option.
- * @param {import('firebase-admin/firestore').DocumentSnapshot} optionSnap - Option snapshot.
- * @returns {{variantRef: unknown, storyRefCandidate: unknown} | null} References or null if story ref missing.
+ * @param {SnapshotWithReference} optionSnap Option snapshot with its document reference.
+ * @returns {{variantRef: import('firebase-admin/firestore').DocumentReference | null, storyRefCandidate: import('firebase-admin/firestore').DocumentReference | null} | null} References or null if story ref missing.
  */
 function extractAndValidateStoryRef(optionSnap) {
-  const { variantRef, storyRef: storyRefCandidate } =
-    /** @type {{ variantRef: unknown, storyRef: unknown }} */ (
-      resolveStoryRefFromOption(
-        /** @type {{ ref: unknown }} */ (optionSnap).ref
-      )
-    );
+  const { variantRef, storyRef: storyRefCandidate } = resolveStoryRefFromOption(
+    optionSnap.ref
+  );
 
   if (!storyRefCandidate) {
     return null;
@@ -451,9 +453,9 @@ function extractAndValidateStoryRef(optionSnap) {
 
 /**
  * Validate and extract references from option snapshot.
- * @param {import('firebase-admin/firestore').DocumentSnapshot} optionSnap - Option document snapshot.
+ * @param {SnapshotWithReference} optionSnap Option document snapshot.
  * @param {import('firebase-admin/firestore').DocumentSnapshot} snapshot - Submission snapshot.
- * @returns {Promise<{variantRef: unknown, storyRefCandidate: unknown} | null>} References or null if invalid.
+ * @returns {Promise<{variantRef: import('firebase-admin/firestore').DocumentReference | null, storyRefCandidate: import('firebase-admin/firestore').DocumentReference | null} | null>} References or null if invalid.
  */
 async function validateAndExtractOptionRefs(optionSnap, snapshot) {
   // Stryker disable all -- option validation uses the fixed processed/reference protocol.
@@ -468,8 +470,8 @@ async function validateAndExtractOptionRefs(optionSnap, snapshot) {
 
 /**
  * Return the extracted refs when present.
- * @param {{variantRef: unknown, storyRefCandidate: unknown} | null} refs - Extracted option refs.
- * @returns {{variantRef: unknown, storyRefCandidate: unknown} | null} Valid refs or null.
+ * @param {{variantRef: import('firebase-admin/firestore').DocumentReference | null, storyRefCandidate: import('firebase-admin/firestore').DocumentReference | null} | null} refs Extracted option refs.
+ * @returns {{variantRef: import('firebase-admin/firestore').DocumentReference | null, storyRefCandidate: import('firebase-admin/firestore').DocumentReference | null} | null} Valid refs or null.
  */
 function getValidIncomingOptionRefs(refs) {
   return refs;
@@ -478,14 +480,7 @@ function getValidIncomingOptionRefs(refs) {
 /**
  * Resolve page and story references when a submission targets an existing option.
  * Returns null when the submission should be marked as processed without further work.
- * @param {object} params Parameters required to resolve the context from an option submission.
- * @param {import('firebase-admin/firestore').Firestore} params.db Firestore instance used for lookups.
- * @param {string} params.incomingOptionFullName Full document path for the option that triggered the submission.
- * @param {import('firebase-admin/firestore').DocumentSnapshot} params.snapshot Submission snapshot from the trigger.
- * @param {import('firebase-admin/firestore').WriteBatch} params.batch Write batch used to queue updates.
- * @param {() => string} params.randomUUID UUID generator used to create new document identifiers.
- * @param {() => number} params.random Random number generator for variant metadata.
- * @param {() => unknown} params.getServerTimestamp Function that returns a Firestore server timestamp sentinel.
+ * @param {{db: import('firebase-admin/firestore').Firestore, incomingOptionFullName: string, snapshot: import('firebase-admin/firestore').DocumentSnapshot, batch: import('firebase-admin/firestore').WriteBatch, randomUUID: () => string, random: () => number, getServerTimestamp: () => unknown}} params Dependencies and trigger snapshot.
  * @returns {Promise<PageContext | null>} Resolved context or null when the submission is already processed.
  */
 async function resolveIncomingOptionContext({
@@ -498,8 +493,7 @@ async function resolveIncomingOptionContext({
   getServerTimestamp,
 }) {
   const optionRef = db.doc(incomingOptionFullName);
-  const optionSnap = await optionRef.get();
-  ensureOptionSnapshotRef(optionSnap, optionRef);
+  const optionSnap = ensureOptionSnapshotRef(await optionRef.get(), optionRef);
   const validRefs = await resolveIncomingOptionRefs(optionSnap, snapshot);
   if (!validRefs) {
     return null;
@@ -519,16 +513,7 @@ async function resolveIncomingOptionContext({
 
 /**
  * Build the incoming option context from resolved refs and option data.
- * @param {object} params - Context-building dependencies.
- * @param {{variantRef: unknown, storyRefCandidate: unknown}} params.validRefs - Validated variant and story refs.
- * @param {import('firebase-admin/firestore').DocumentSnapshot} params.optionSnap - Option document snapshot.
- * @param {import('firebase-admin/firestore').Firestore} params.db - Firestore instance used for lookups.
- * @param {import('firebase-admin/firestore').WriteBatch} params.batch - Write batch collecting updates.
- * @param {() => number} params.random - Random number generator for variant metadata.
- * @param {() => string} params.randomUUID - UUID generator for new document identifiers.
- * @param {import('firebase-admin/firestore').DocumentReference} params.optionRef - Option document reference.
- * @param {string} params.incomingOptionFullName - Full document path for the incoming option.
- * @param {() => unknown} params.getServerTimestamp - Function returning the server timestamp sentinel.
+ * @param {{validRefs: {variantRef: import('firebase-admin/firestore').DocumentReference | null, storyRefCandidate: import('firebase-admin/firestore').DocumentReference | null}, optionSnap: SnapshotWithReference, db: import('firebase-admin/firestore').Firestore, batch: import('firebase-admin/firestore').WriteBatch, random: () => number, randomUUID: () => string, optionRef: import('firebase-admin/firestore').DocumentReference, incomingOptionFullName: string, getServerTimestamp: () => unknown}} params Context-building dependencies.
  * @returns {Promise<PageContext | null>} Resolved page context or null.
  */
 async function buildIncomingOptionContext({
@@ -543,6 +528,7 @@ async function buildIncomingOptionContext({
   getServerTimestamp,
 }) {
   const { variantRef, storyRefCandidate } = validRefs;
+  if (!storyRefCandidate) return null;
   const optionData = optionSnap.data();
   const targetPage = resolveTargetPageFromOption(optionData);
   const storyRef =
@@ -569,9 +555,9 @@ async function buildIncomingOptionContext({
 
 /**
  * Resolve incoming option refs or return null when processing should stop.
- * @param {import('firebase-admin/firestore').DocumentSnapshot} optionSnap - Option document snapshot.
+ * @param {SnapshotWithReference} optionSnap Option document snapshot.
  * @param {import('firebase-admin/firestore').DocumentSnapshot} snapshot - Submission snapshot.
- * @returns {Promise<{variantRef: unknown, storyRefCandidate: unknown} | null>} Valid refs or null.
+ * @returns {Promise<{variantRef: import('firebase-admin/firestore').DocumentReference | null, storyRefCandidate: import('firebase-admin/firestore').DocumentReference | null} | null>} Valid refs or null.
  */
 async function resolveIncomingOptionRefs(optionSnap, snapshot) {
   // Stryker disable all -- incoming option traversal uses the fixed reference protocol.
@@ -599,21 +585,31 @@ function shouldSkipIncomingOptionRefs(refs) {
  * Ensure option snapshot exposes its reference.
  * @param {unknown} optionSnap - Option snapshot object to mutate.
  * @param {import('firebase-admin/firestore').DocumentReference} optionRef - Snapshot reference to assign when missing.
- * @returns {unknown} The mutated snapshot.
+ * @returns {SnapshotWithReference} The snapshot with its reference available.
  */
 function ensureOptionSnapshotRef(optionSnap, optionRef) {
   // Stryker disable all -- option snapshots use the fixed reference fallback.
-  const snapshotWithRef =
-    /** @type {{ ref?: import('firebase-admin/firestore').DocumentReference }} */ (
-      optionSnap
-    );
+  const snapshotWithRef = /** @type {SnapshotWithReference} */ (
+    /** @type {unknown} */ (optionSnap)
+  );
   if (!snapshotWithRef.ref) {
     snapshotWithRef.ref = optionRef;
   }
 
-  return optionSnap;
+  return snapshotWithRef;
 }
 // Stryker restore all
+
+/**
+ * Read the document reference attached to a Firestore snapshot.
+ * @param {import('firebase-admin/firestore').DocumentSnapshot} snapshot Firestore snapshot.
+ * @returns {import('firebase-admin/firestore').DocumentReference} Snapshot document reference.
+ */
+function getSnapshotReference(snapshot) {
+  return /** @type {{ref: import('firebase-admin/firestore').DocumentReference}} */ (
+    /** @type {unknown} */ (snapshot)
+  ).ref;
+}
 
 /**
  * Normalize the target page for an option submission.
@@ -622,7 +618,7 @@ function ensureOptionSnapshotRef(optionSnap, optionRef) {
  */
 function resolveTargetPageFromOption(optionData) {
   // Stryker disable all -- option target extraction uses the fixed optional-reference shape.
-  return resolvePageFromTarget(/** @type {unknown} */ (optionData?.targetPage));
+  return resolvePageFromTarget(optionData?.targetPage);
 }
 // Stryker restore all
 
@@ -708,7 +704,7 @@ function getSnapshotDataObj(snapshot) {
 // Stryker disable next-line all -- page data uses the fixed number field.
 function extractNumberFromData(data) {
   // Stryker disable all -- page data uses the fixed number field.
-  return data?.number;
+  return /** @type {{number?: number} | null | undefined} */ (data)?.number;
 }
 // Stryker restore all
 
@@ -749,9 +745,7 @@ function buildExistingPageContext(existingPageSnap, targetPage) {
     return null;
   }
 
-  const pageNumber = extractPageNumberFromSnapshot(
-    /** @type {unknown} */ (existingPageSnap)
-  );
+  const pageNumber = extractPageNumberFromSnapshot(existingPageSnap);
   return {
     pageDocRef: targetPage,
     pageNumber,
@@ -762,7 +756,7 @@ function buildExistingPageContext(existingPageSnap, targetPage) {
 /**
  * Confirm that a Firestore snapshot exists.
  * @param {import('firebase-admin/firestore').DocumentSnapshot | null | undefined} snapshot Snapshot candidate.
- * @returns {boolean} True when the snapshot is available.
+ * @returns {snapshot is import('firebase-admin/firestore').DocumentSnapshot} True when the snapshot is available.
  */
 function isSnapshotPresent(snapshot) {
   return Boolean(snapshot && snapshot.exists);
@@ -850,9 +844,11 @@ m the option.
  * @returns {import('firebase-admin/firestore').DocumentReference} Reference or empty.
  */
 function resolveStoryRefOrEmpty(storyRef) {
-  return (
-    storyRef ||
-    /** @type {import('firebase-admin/firestore').DocumentReference} */ ({})
+  return ensureDocumentReference(
+    /** @type {import('firebase-admin/firestore').DocumentReference | null | undefined} */ (
+      storyRef
+    ),
+    'storyRef.collection must be a function'
   );
 }
 
@@ -887,15 +883,11 @@ async function resolveDirectPageContext({ db, directPageNumber, snapshot }) {
     .get();
 
   if (pageSnap.empty) {
-    await /** @type {{ ref: { update: (data: object) => Promise<unknown> } }} */ (
-      snapshot
-    ).ref.update({
-      processed: true,
-    });
+    await getSnapshotReference(snapshot).update({ processed: true });
     return null;
   }
 
-  const pageDocRef = /** @type {{ ref: unknown }} */ (pageSnap.docs[0]).ref;
+  const pageDocRef = getSnapshotReference(pageSnap.docs[0]);
 
   return {
     pageDocRef,
@@ -1189,9 +1181,7 @@ function shouldSkipSubmission({ incomingOptionFullName, directPageNumber }) {
  * @returns {Promise<void>} Promise that resolves after the update completes.
  */
 async function markSubmissionProcessed(snapshot) {
-  await /** @type {{ ref: { update: (data: object) => Promise<unknown> } }} */ (
-    snapshot
-  ).ref.update({ processed: true });
+  await getSnapshotReference(snapshot).update({ processed: true });
 }
 
 /**
@@ -1380,7 +1370,7 @@ async function finalizeSubmission({
   // Stryker disable all -- submission finalization uses the fixed Firestore write protocol.
   await createVariantWithOptions({
     pageDocRef,
-    snapshotRef: /** @type {{ ref: unknown }} */ (snapshot).ref,
+    snapshotRef: getSnapshotReference(snapshot),
     batch,
     submission,
     randomUUID,
@@ -1399,7 +1389,7 @@ async function finalizeSubmission({
     queueVariantDirtyReset(batch, variantRef);
   }
 
-  batch.update(/** @type {{ ref: unknown }} */ (snapshot).ref, {
+  batch.update(getSnapshotReference(snapshot), {
     processed: true,
   });
   await ensureAuthorRecordExists({ db, batch, submission, randomUUID });
