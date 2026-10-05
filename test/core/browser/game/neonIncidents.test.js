@@ -22,6 +22,7 @@ import { migrateInfrastructure } from '../../../../src/core/browser/game/neon-co
 import { migrateContracts } from '../../../../src/core/browser/game/neon-covenant/contracts.js';
 import { migrateCampaignAct } from '../../../../src/core/browser/game/neon-covenant/campaign.js';
 import { migrateDistress } from '../../../../src/core/browser/game/neon-covenant/distress.js';
+import { migratePlanning } from '../../../../src/core/browser/game/neon-covenant/planning.js';
 import {
   validLabSave,
   createNeonRuntime,
@@ -166,7 +167,9 @@ test('migration protects two settlements without rerolling or changing historica
     rulesVersion: 8,
     incidentGrace: 2,
   });
-  const current = migrateDistress(migrateCampaignAct(migrated));
+  const current = migratePlanning(
+    migrateDistress(migrateCampaignAct(migrated))
+  );
   expect(validLabSave(current)).toBe(true);
   const one = endShift(current);
   const two = endShift(one);

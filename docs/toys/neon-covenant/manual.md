@@ -176,3 +176,12 @@ X → Save options includes three independent local slots, export/import, and a 
 Older campaigns automatically gain named employees matching their existing staffing and payroll. Your cash, debt, research, contracts, promises, shift and completed resolution stay unchanged. An exact original save is kept locally under `neon-covenant-saves-v2.migrationBackups[slot]`; later upgrades do not overwrite it. Resetting that slot erases both its progress and its migration backup, but leaves other slots alone.
 
 On browsers exposing WebMCP, the standalone page registers `neon_observe`, `neon_act`, `neon_export_save`, and `neon_import_save`. Actions are sequential presses of the same eight buttons; agent play pauses automatic ticking. No tool bypasses management costs or release checks.
+
+### Planning Desk and undo
+
+Before ending a shift, open X → Planning Desk to undo your latest assignment,
+program configuration, or equipment order, or clear all such draft orders.
+Refunds return only those orders' costs and attention. Undo does not reverse
+other changes made in between. Ending a shift commits the draft and removes its
+undo history. Signed contracts, promises, relationship choices, and disclosed
+data are permanent; their confirmation screens say so before you decide.

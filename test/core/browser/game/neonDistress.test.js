@@ -22,6 +22,7 @@ import {
 } from '../../../../src/core/browser/game/neon-covenant/controls.js';
 import { validLabSave } from '../../../../src/core/browser/game/neon-covenant/neonCovenant.js';
 import { migrateCampaignAct } from '../../../../src/core/browser/game/neon-covenant/campaign.js';
+import { migratePlanning } from '../../../../src/core/browser/game/neon-covenant/planning.js';
 
 /**
  * Build a lab with an active financial intervention window.
@@ -246,8 +247,8 @@ test('rules-nine migration preserves ledger history and creates an empty distres
   state.lab.cash = -18;
   state.lab.debt = 349;
   state.world.day = 17;
-  const migrated = migrateDistress(migrateCampaignAct(state));
-  expect(migrated.lab.rulesVersion).toBe(10);
+  const migrated = migratePlanning(migrateDistress(migrateCampaignAct(state)));
+  expect(migrated.lab.rulesVersion).toBe(11);
   expect(migrated.lab.distress).toEqual(createDistress());
   expect(migrated.lab.rescueFinancing).toBeNull();
   expect(migrated.lab.cash).toBe(-18);

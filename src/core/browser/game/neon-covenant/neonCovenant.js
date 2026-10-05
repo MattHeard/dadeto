@@ -27,6 +27,7 @@ import {
 } from './contracts.js';
 import { migrateCampaignAct, validCampaignAct } from './campaign.js';
 import { migrateDistress, validDistress } from './distress.js';
+import { migratePlanning, validPlanning } from './planning.js';
 import {
   createNeonState,
   stepNeon,
@@ -46,7 +47,7 @@ export function validLabSave(state) {
       (state.audioMuted === undefined ||
         typeof state.audioMuted === 'boolean') &&
       validPersonnel(lab) &&
-      lab.rulesVersion === 10 &&
+      lab.rulesVersion === 11 &&
       validDistress(lab, state.world.day) &&
       validCampaignAct(lab, state.world.day) &&
       validContractLedger(lab) &&
@@ -55,6 +56,7 @@ export function validLabSave(state) {
       validPrograms(lab) &&
       validEvaluations(lab) &&
       validDeployments(lab) &&
+      validPlanning(lab) &&
       validIncidentChains(lab) &&
       Object.values(lab.incidentChains).every(
         chain => chain.warnedAt <= state.world.day
@@ -137,6 +139,7 @@ export function validLabSave(state) {
                 validInfrastructureChoice(choice.command) ||
                 validRescueChoice(lab, choice.command) ||
                 validContractChoice(lab, choice.command) ||
+                validDisclosureChoice(lab, choice.command) ||
                 LAB_CONTENT.npcs.some(
                   (/** @type {Record<string, any>} */ actor) =>
                     choice.command === `promise:${actor.id}`
@@ -236,6 +239,16 @@ function validRescueChoice(lab, command) {
 }
 
 /**
+ * Accept only the visible, irreversible scraped-data disclosure confirmation.
+ * @param {Record<string, any>} lab Current management ledger.
+ * @param {string} command Candidate disclosure choice.
+ * @returns {boolean} Whether the authored choice is still available.
+ */
+function validDisclosureChoice(lab, command) {
+  return command === 'disclose:scraped' && lab.data === 'licensed';
+}
+
+/**
  * Compose lab rules with the same fixed-step engine and independent save slots.
  * @param {Record<string, any> | Map<string, any>} options Browser adapters or toy environment.
  * @returns {Record<string, any>} Shared runtime interface.
@@ -248,13 +261,15 @@ export function createNeonRuntime(options = {}) {
     game: 'neon-covenant',
     validate: validLabSave,
     migrate: (/** @type {Record<string, any>} */ state) =>
-      migrateDistress(
-        migrateCampaignAct(
-          migrateContracts(
-            migrateInfrastructure(
-              migrateRelationships(
-                migrateDeployments(
-                  migrateEvaluations(migratePrograms(migratePersonnel(state)))
+      migratePlanning(
+        migrateDistress(
+          migrateCampaignAct(
+            migrateContracts(
+              migrateInfrastructure(
+                migrateRelationships(
+                  migrateDeployments(
+                    migrateEvaluations(migratePrograms(migratePersonnel(state)))
+                  )
                 )
               )
             )

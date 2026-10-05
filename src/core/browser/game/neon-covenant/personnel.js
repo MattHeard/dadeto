@@ -129,7 +129,7 @@ export function employeeThoughts(lab, person) {
  */
 export function validPersonnel(lab) {
   if (
-    ![1, 2, 3, 4, 5, 6, 7, 8, 9, 10].includes(lab.rulesVersion) ||
+    ![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11].includes(lab.rulesVersion) ||
     !Array.isArray(lab.employees)
   )
     return false;

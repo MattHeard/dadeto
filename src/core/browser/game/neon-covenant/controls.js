@@ -96,7 +96,7 @@ function relationshipEntries(page) {
   const person = RELATIONSHIP_CONTENT[id];
   const rows = [
     ['Read story and terms', `arc-story:${id}`],
-    ['Accept promise / 1 AP', `promise:${id}`],
+    ['Accept permanent promise / 1 AP', `promise:${id}`],
     ['Disagree / 1 AP', `arc:disagree:${id}`],
     [`Repair / ${person.repairCost}k / 1 AP`, `arc:repair:${id}`],
   ];
@@ -146,6 +146,12 @@ function contractEntries(state, page) {
  */
 export function labEntries(state) {
   const page = state.menu.page;
+  if (page === 'planning')
+    return [
+      [`Undo latest / ${state.lab.planning.orders.length}`, 'plan:undo'],
+      [`Clear draft / ${state.lab.planning.orders.length}`, 'plan:clear'],
+      ['Back to lab', 'page:main'],
+    ];
   if (page === 'distress')
     return [
       ['Inspect Helios bridge note', 'rescue-offer:heliosBridge'],
@@ -356,7 +362,7 @@ export function labEntries(state) {
     ];
   if (page === 'ledger' || page === 'board')
     return [
-      ['End shift / settle costs', 'shift'],
+      ['End shift / permanent; clear draft', 'shift'],
       ['Repay debt / up to 20k', 'repay'],
       ['Shift report', 'page:report'],
       ['Inspect next shift', 'page:forecast'],
@@ -372,6 +378,7 @@ export function labEntries(state) {
       : []),
     ['Campaign / act briefing', 'page:campaign'],
     ['Ledger / end shift', 'page:ledger'],
+    ['Planning Desk / undo drafts', 'page:planning'],
     ['Lab dashboard', 'page:dashboard'],
     ['Incident register', 'page:incidents'],
     ['Research console', 'page:research'],
@@ -414,6 +421,18 @@ export function labMenuRows(state) {
   }
   const lab = state.lab;
   const f = forecast(lab);
+  if (state.menu.page === 'planning')
+    return choicePanel(state, [
+      `DRAFT ${lab.planning.orders.length}/6 / ASSIGN, PROGRAM, INFRA`,
+      'UNDO RETURNS PRICE AND 1 AP',
+      'SHIFT / CONTRACT / PROMISE / DATA ARE FINAL',
+    ]);
+  if (state.menu.page === 'ledger')
+    return choicePanel(state, [
+      `SHIFT ${state.world.day} / CASH ${lab.cash}k`,
+      'SETTLEMENT IS PERMANENT',
+      'ALL DRAFT UNDO EXPIRES',
+    ]);
   if (state.menu.page === 'distress')
     return choicePanel(state, [
       'EMERGENCY RUNWAY / INSOLVENCY PAUSED',
@@ -436,7 +455,7 @@ export function labMenuRows(state) {
         ? `BOND ${record.score} PROOF ${record.streak}/2`
         : 'ACCEPTANCE IS NOT PROOF',
       record
-        ? `BREACH ${record.breaches} REPAIR ${record.repairs}`
+        ? `BREACH ${record.breaches} REPAIR ${record.repairs} / PROMISES STICK`
         : `ATTENTION ${lab.decisions} CASH ${lab.cash}k`,
     ]);
   }

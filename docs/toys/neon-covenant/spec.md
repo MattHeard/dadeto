@@ -208,3 +208,22 @@ and ownership consequences are appended to the ending epilogue. Forged,
 repeated, unavailable or imported malformed offers cannot change the ledger.
 Rules-9 saves migrate to rules 10 with an empty episode and no invented
 financing, preserving cash, debt, shift, report and history.
+
+## Reversible planning desk (rules 11)
+
+`planning.js` stores a bounded six-entry inverse ledger for employee role
+assignments, per-program size/hosting/specialization/oversight configuration,
+and infrastructure installations. A valid accepted order consumes the same
+one attention point and authored price as ordinary management. Undo operates
+in LIFO order, refunds that order's authored price and one attention, and
+reverses only its targeted fields so later unrelated changes survive. Clear
+applies the same inverses newest-first. Settlement discards the ledger and
+commits the shift's changes. Promises, contracts, disclosures and settlement
+are explicitly irreversible and are never represented in the inverse stack.
+
+Imported ledgers are bounded and validated against current authored targets
+and projected state before undo or save acceptance. Rules-10 campaigns migrate
+to rules 11 with an empty ledger, preserving existing choices and finance.
+Malformed imports must leave the currently active campaign untouched. Tests
+cover all reversible order types, repeated settings, interleaved permanent
+actions, invalid orders, migration and save export/import equivalence.

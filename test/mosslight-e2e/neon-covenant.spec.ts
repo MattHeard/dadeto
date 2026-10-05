@@ -161,7 +161,7 @@ async function openForecast(page: Page, embedded: boolean) {
   await tap(page, 'b', embedded);
   await expect
     .poll(async () => (await labState(page))?.lab?.rulesVersion)
-    .toBe(10);
+    .toBe(11);
   await tap(page, 'a', embedded);
   await selectPersonnelRow(page, 'page:forecast', embedded);
   return labState(page);
@@ -182,7 +182,7 @@ async function openSableCases(page: Page, embedded: boolean) {
   await tap(page, 'b', embedded);
   await expect
     .poll(async () => (await labState(page))?.lab?.rulesVersion)
-    .toBe(10);
+    .toBe(11);
   await tap(page, 'a', embedded);
   await selectPersonnelRow(page, 'shift', embedded);
   await tap(page, 'b', embedded);
@@ -210,7 +210,7 @@ for (const embedded of [false, true]) {
       await tap(page, 'b', embedded);
       await expect
         .poll(async () => (await labState(page))?.lab?.rulesVersion)
-        .toBe(10);
+        .toBe(11);
       await tap(page, 'x', embedded);
       await selectPersonnelRow(page, 'page:infrastructure', embedded);
       await selectPersonnelRow(page, 'infra-choice:leased', embedded);
@@ -886,7 +886,7 @@ test('named staff are assignable and their readable concerns own controller inpu
   await page.goto('/neon-covenant/');
   await expect
     .poll(async () => (await labState(page))?.lab?.rulesVersion)
-    .toBe(10);
+    .toBe(11);
   await tap(page, 'b');
   await tap(page, 'x');
   await selectPersonnelRow(page, 'page:recruitment');
@@ -1098,7 +1098,7 @@ test('legacy mobile and desktop saves migrate losslessly and preserve a resettab
   await page.reload();
   await expect
     .poll(async () => (await labState(page))?.lab?.rulesVersion)
-    .toBe(10);
+    .toBe(11);
   const state = await labState(page);
   expect(state.lab.cash).toBe(137);
   expect(state.lab.debt).toBe(94);
@@ -1438,7 +1438,7 @@ for (const profile of [
               .text
         )
       ).state;
-      expect(state.lab.rulesVersion).toBe(10);
+      expect(state.lab.rulesVersion).toBe(11);
       expect(state.lab.incidentGrace).toBe(2);
       for (const field of [
         'cash',

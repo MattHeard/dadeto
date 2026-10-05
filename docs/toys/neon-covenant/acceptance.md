@@ -174,3 +174,13 @@ Rules-3 migration must reconstruct demonstrated current historical sign-offs wit
 Focused evidence: 128/128 tests, all twelve Neon modules exactly 100% (`.tmp/neon-evaluation-tests.log`, `.tmp/neon-evaluation-coverage`), scoped lint/types and strict zero clones (`.tmp/neon-evaluation-lint.log`, `.tmp/neon-evaluation-types.log`, `.tmp/neon-evaluation-duplication.log`). Final tactical/configuration browser slices pass 10/10 phone and 10/10 desktop (`.tmp/neon-evaluation-browser-targeted-phone.log`, `.tmp/neon-evaluation-browser-targeted-desktop.log`). These retain all assertions, no new retries/skips and unchanged deadlines; independent premature-patch rejection and paid-chain objectives are separate bounded cases. Complete campaign, aggregate, build and hosted publication evidence remains required before release.
 
 Terminal checkpoint evidence: remaining phone 17/17 and desktop 17/17 pass (`.tmp/neon-evaluation-browser-phone.log`, `.tmp/neon-evaluation-browser-desktop.log`), yielding **54 distinct explicit local browser cases**, including actual new/migrated/district-hosted 28-shift campaigns with three paid probes before deployment. Full `npm run check` exits 0 (`.tmp/neon-evaluation-full-check.log`): 21 unit batches, nine aggregate browsers, test summary 1/1 and static summary 10/10. Exact global coverage is lines 20852/20852, statements 21756/21756, functions 7219/7219, branches 10687/10687 with zero skipped entries, and unchanged strict clone count 0. Site/cloud packaging passes (`.tmp/neon-evaluation-final-build.log`, `.tmp/neon-evaluation-final-cloud-build.log`). Hosted publication must still be verified independently; the overall four-release goal stays open.
+
+## Reversible planning desk (rules 11)
+
+Acceptance requires the controller-accessible undo/clear flow to restore
+assignments, program options and installed infrastructure with exact authored
+refunds and attention, without changing interleaved permanent choices. Verify
+LIFO edits, malformed import atomicity, save round trips and legacy rules-10
+migration. Settlement commits changes and removes inverses. Both standalone and
+embedded presenters must pass real eight-button phone and desktop journeys;
+Mosslight save behavior remains unchanged.

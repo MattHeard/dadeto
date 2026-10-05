@@ -28,6 +28,11 @@ import {
 import { toFramePayload } from '../mosslight-valley/renderer.js';
 import { actForShift, availableChapterScenes } from './campaign.js';
 import { rescueConsequence } from './distress.js';
+import {
+  applyPlanningOrder,
+  clearPlanningOrders,
+  undoPlanningOrder,
+} from './planning.js';
 
 /**
  * Recompute derived UI after every load rather than trusting saved presentation.
@@ -216,7 +221,7 @@ function contractOfferDialogue(state, next, command) {
       text: `${deal.name}: ${offer.name}. Advance ${offer.advance}k; delivery deadline shift ${offer.deadline}; maximum invoice ${offer.daily}k per shift after delivery; service obligation costs ${offer.serviceCost}k per shift. ${offer.exclusive ? 'Exclusive: no other deal may be signed until this one is delivered or expires.' : 'Non-exclusive: other deals remain available.'}`,
     },
     {
-      text: `Attribution ${offer.attribution ? 'is contractually protected' : 'is not promised'}. Ghost oversight term: ${offer.oversight}. A release with incompatible oversight will not fulfill the deal before its deadline. Affected now: ${affected}. Accepting costs one attention and no shift time; the advance, obligations and standing changes are real.`,
+      text: `Attribution ${offer.attribution ? 'is contractually protected' : 'is not promised'}. Ghost oversight term: ${offer.oversight}. A release with incompatible oversight will not fulfill the deal before its deadline. Affected now: ${affected}. Signing is permanent and is not undone at the Planning Desk. It costs one attention and no shift time; the advance, obligations and standing changes are real.`,
       choices: [
         { label: 'Sign these terms', command: `contract:${id}:${packageId}` },
         { label: 'Return to offers', command: `page:contract:${id}` },
@@ -328,11 +333,13 @@ function openMenuPage(state, page) {
  */
 export function menuCommand(state, command) {
   const next = { ...state, menu: null };
-  const chapter = campaignStory(state, next, command);
+  if (command.startsWith('plan:')) return planningCommand(state, command);
+  const chapter =
+    campaignStory(state, next, command) ||
+    navigationCommand(state, next, command);
   if (chapter) return chapter;
-  const navigation = navigationCommand(state, next, command);
-  if (navigation) return navigation;
-  if (command === 'audio-toggle') return toggleAudio(state);
+  const boundary = irreversibleCommand(state, next, command);
+  if (boundary) return boundary;
   if (
     command.startsWith('arc-story:') ||
     command.startsWith('stakeholder-story:')
@@ -459,7 +466,49 @@ export function menuCommand(state, command) {
     command.startsWith('slot:')
   )
     return { ...next, controllerCommand: command };
-  return manageLab(next, command);
+  return applyPlanningOrder(next, command, manageLab);
+}
+
+/**
+ * Route the two Planning Desk inverse operations.
+ * @param {Record<string, any>} state Current campaign.
+ * @param {string} command Selected order.
+ * @returns {Record<string, any>} Updated campaign or invalid-order notice.
+ */
+function planningCommand(state, command) {
+  if (command === 'plan:undo') return undoPlanningOrder(state);
+  if (command === 'plan:clear') return clearPlanningOrders(state);
+  return {
+    ...state,
+    menu: null,
+    toast: 'Unknown Planning Desk order; nothing was changed.',
+  };
+}
+
+/**
+ * Handle audio and explicit permanent data choices.
+ * @param {Record<string, any>} state Current campaign.
+ * @param {Record<string, any>} next Campaign with the menu dismissed.
+ * @param {string} command Selected operation.
+ * @returns {Record<string, any> | null} Updated campaign or no match.
+ */
+function irreversibleCommand(state, next, command) {
+  if (command === 'audio-toggle') return toggleAudio(state);
+  if (command === 'data:scraped')
+    return openDialogue(next, 'rights', [
+      {
+        text: 'Using unlicensed records is a permanent disclosure and cannot be undone at the Planning Desk. It raises scrutiny and can trigger a data-rights incident. Choosing “Use scraped data” spends one attention; returning here without disclosure spends nothing.',
+        choices: [
+          {
+            label: 'Use scraped data / permanent',
+            command: 'disclose:scraped',
+          },
+          { label: 'Keep licensed data' },
+        ],
+      },
+    ]);
+  if (command === 'disclose:scraped') return manageLab(next, 'data:scraped');
+  return null;
 }
 
 /**
@@ -606,7 +655,7 @@ export function stepNeon(
       const lines = readableLabPages(
         [
           {
-            text: staffConversation(state.lab, actor, content),
+            text: `${staffConversation(state.lab, actor, content)} Promises and disagreements are permanent; the Planning Desk cannot undo them.`,
             choices: [
               {
                 label: 'Make a commitment / 1 AP',

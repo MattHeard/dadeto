@@ -32,6 +32,7 @@ import { migrateInfrastructure } from '../../../../src/core/browser/game/neon-co
 import { migrateContracts } from '../../../../src/core/browser/game/neon-covenant/contracts.js';
 import { migrateCampaignAct } from '../../../../src/core/browser/game/neon-covenant/campaign.js';
 import { migrateDistress } from '../../../../src/core/browser/game/neon-covenant/distress.js';
+import { migratePlanning } from '../../../../src/core/browser/game/neon-covenant/planning.js';
 import { RELATIONSHIP_CONTENT } from '../../../../src/core/browser/game/neon-covenant/relationshipContent.js';
 import { createDeployments } from '../../../../src/core/browser/game/neon-covenant/operations.js';
 
@@ -258,12 +259,14 @@ test.each([
       ...old.lab,
       rulesVersion: 6,
     });
-    const upgraded = migrateDistress(
-      migrateCampaignAct(
-        migrateContracts(migrateInfrastructure(relationshipUpgrade))
+    const upgraded = migratePlanning(
+      migrateDistress(
+        migrateCampaignAct(
+          migrateContracts(migrateInfrastructure(relationshipUpgrade))
+        )
       )
     );
-    expect(upgraded.lab.rulesVersion).toBe(10);
+    expect(upgraded.lab.rulesVersion).toBe(11);
     expect(upgraded.lab.relationships.ada).toMatchObject({
       stage: 'active',
       score: 17,

@@ -51,6 +51,7 @@ import {
 } from './contracts.js';
 import { createCampaignAct, advanceCampaignAct } from './campaign.js';
 import { createDistress, advanceDistress, rescueOrder } from './distress.js';
+import { createPlanning } from './planning.js';
 
 /**
  * Clamp a public lab metric to its meaningful range.
@@ -67,7 +68,8 @@ function metric(value) {
  */
 export function createLab() {
   const lab = {
-    rulesVersion: 10,
+    rulesVersion: 11,
+    planning: createPlanning(),
     distress: createDistress(),
     rescueFinancing: null,
     campaignAct: createCampaignAct(1),
@@ -332,6 +334,7 @@ function recordCampaignBoundary(lab, nextShift, report) {
 export function endShift(state) {
   if (state.lab.outcome) return state;
   const lab = structuredClone(state.lab);
+  lab.planning.orders = [];
   const f = forecast(lab);
   const project = LAB_CONTENT.projects[lab.focus];
   f.progress = Math.min(
