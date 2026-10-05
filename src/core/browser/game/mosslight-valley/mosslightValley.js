@@ -1,11 +1,10 @@
-// @ts-nocheck -- runtime game state is intentionally data-driven.
 import { createMosslightRuntime } from './runtime.js';
 import { actionsFromInput, createInputState, updateInput } from './input.js';
 
 /**
  * Run one synchronous embedded-game step and return a serialized frame payload.
  * @param {string} input - Serialized action or save input.
- * @param {Map} env - Runtime environment and local persistence adapter.
+ * @param {Map<string, unknown>} env Runtime environment and local persistence adapter.
  * @param {Function} runtimeFactory Shared engine factory for this episode.
  * @returns {string} A serialized render frame.
  */
