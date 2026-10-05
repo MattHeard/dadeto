@@ -1,6 +1,8 @@
-// @ts-nocheck -- save state is validated by normalization before runtime use.
 import { parseJsonOrNull } from '../../validation.js';
 const KEY = 'mosslight-valley-saves-v2';
+/** @typedef {Record<string, any>} SaveState */
+/** @typedef {{game?: string, key?: string, migrate?: (state: SaveState) => SaveState, validate?: (state: SaveState) => boolean, restore?: (state: SaveState) => SaveState}} SaveProfile */
+/** @typedef {Record<string, any> & {game: string, version: number, slot: number, savedAt: string, state: SaveState, originalSave?: unknown}} SaveEnvelope */
 /**
  * Explain exactly which local slot will be overwritten before a reset.
  * @param {number} slot Zero-based save slot.
@@ -12,10 +14,10 @@ export function resetSavePrompt(slot = 0) {
 }
 /**
  * Serialize one game state with a version and slot identity.
- * @param {unknown} state - The state argument.
- * @param {unknown} slot - The slot argument.
+ * @param {SaveState} state Game state to serialize.
+ * @param {number} slot Save slot index.
  * @param {string} game Save envelope game identity.
- * @returns {unknown} The computed result.
+ * @returns {string} Serialized save envelope.
  */
 export function serializeSave(state, slot = 0, game = 'mosslight-valley') {
   return JSON.stringify({
@@ -28,12 +30,15 @@ export function serializeSave(state, slot = 0, game = 'mosslight-valley') {
 }
 /**
  * Parse current or migrate the original v1 single-save envelope.
- * @param {unknown} raw - The raw argument.
- * @param {object} profile Optional episode identity and state contract.
- * @returns {unknown} The computed result.
+ * @param {unknown} raw Serialized save data.
+ * @param {SaveProfile} profile Optional episode identity and state contract.
+ * @returns {SaveEnvelope | null} Parsed and validated envelope.
  */
 export function parseSave(raw, profile = {}) {
-  const parsed = parseJsonOrNull(raw);
+  if (typeof raw !== 'string') return null;
+  const parsed = /** @type {Record<string, any> | null} */ (
+    parseJsonOrNull(raw)
+  );
   if (!parsed || typeof parsed !== 'object') return null;
   if (
     parsed.game === profile.game &&
@@ -53,9 +58,11 @@ export function parseSave(raw, profile = {}) {
     isValidState(parsed.state) &&
     (!profile.validate || profile.validate(parsed.state))
   )
-    return profile.restore
-      ? { ...parsed, state: profile.restore(parsed.state) }
-      : parsed;
+    return /** @type {SaveEnvelope} */ (
+      profile.restore
+        ? { ...parsed, state: profile.restore(parsed.state) }
+        : parsed
+    );
   if (!profile.game && parsed.version === 1 && isValidState(parsed.state))
     return {
       game: 'mosslight-valley',
@@ -68,23 +75,23 @@ export function parseSave(raw, profile = {}) {
 }
 /**
  *
- * @param {unknown} state - The state argument.
- * @returns {unknown} The computed result.
+ * @param {unknown} state Candidate save state.
+ * @returns {state is SaveState} Whether required world and inventory fields exist.
  */
 function isValidState(state) {
+  if (!state || typeof state !== 'object') return false;
+  const candidate = /** @type {Record<string, any>} */ (state);
   return Boolean(
-    state &&
-      typeof state === 'object' &&
-      state.world?.player &&
-      typeof state.world.mapId === 'string' &&
-      state.inventory &&
-      typeof state.inventory === 'object'
+    candidate.world?.player &&
+      typeof candidate.world.mapId === 'string' &&
+      candidate.inventory &&
+      typeof candidate.inventory === 'object'
   );
 }
 /**
  *
- * @param {unknown} state - The state argument.
- * @returns {unknown} The computed result.
+ * @param {SaveState} state Legacy version-one state.
+ * @returns {SaveState} Migrated current state.
  */
 function migrateV1(state) {
   const world = {
@@ -107,9 +114,9 @@ function migrateV1(state) {
 }
 /**
  * Bind local multi-slot storage to Dadeto's persistent data helper.
- * @param {unknown} env - The env argument.
- * @param {object} profile Optional independent storage and save identity.
- * @returns {unknown} The computed result.
+ * @param {Map<string, any>} env Runtime environment registry.
+ * @param {SaveProfile} profile Optional independent storage and save identity.
+ * @returns {Record<string, any>} Multi-slot save adapter.
  */
 export function createSaveAdapter(env, profile = {}) {
   const key = profile.key || KEY;
@@ -118,7 +125,7 @@ export function createSaveAdapter(env, profile = {}) {
     const value = storage?.({})?.[key];
     return value && typeof value === 'object' ? value : { slots: {} };
   };
-  const read = raw => {
+  const read = (/** @type {unknown} */ raw) => {
     const parsed = parseSave(raw, profile);
     if (parsed?.originalSave) {
       const current = loadAll();
@@ -143,8 +150,14 @@ export function createSaveAdapter(env, profile = {}) {
       return Number.isInteger(slot) && slot >= 0 && slot <= 2 ? slot : 0;
     },
     load: (slot = 0) => read(loadAll().slots?.[slot])?.state || null,
-    hasReset: id => Object.hasOwn(loadAll().resetReceipts || {}, id),
-    save: (state, slot = 0, resetId, reset = false) => {
+    hasReset: (/** @type {string} */ id) =>
+      Object.hasOwn(loadAll().resetReceipts || {}, id),
+    save: (
+      /** @type {SaveState} */ state,
+      /** @type {number} */ slot = 0,
+      /** @type {string | undefined} */ resetId,
+      /** @type {boolean} */ reset = false
+    ) => {
       const current = loadAll();
       const receipt = resetId
         ? { resetReceipts: { ...current.resetReceipts, [resetId]: true } }
@@ -164,7 +177,8 @@ export function createSaveAdapter(env, profile = {}) {
         },
       });
     },
-    export: (state, slot = 0) => serializeSave(state, slot, profile.game),
+    export: (/** @type {SaveState} */ state, /** @type {number} */ slot = 0) =>
+      serializeSave(state, slot, profile.game),
     import: read,
   };
 }
