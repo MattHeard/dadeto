@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, jest } from '@jest/globals';
 import { createLocalGcpSimulator } from '../../../../src/local/gcp-simulator/simulator.js';
+import { createLocalGcpSimulator as createCoreSimulator } from '../../../../src/core/local/gcp-simulator/simulator.js';
 
 let simulator;
 
@@ -11,6 +12,12 @@ afterEach(async () => {
 });
 
 describe('gcp simulator coverage paths', () => {
+  it('requires an external effects boundary when called without options', async () => {
+    await expect(createCoreSimulator()).rejects.toThrow(
+      'bindEffectBoundary must be a function'
+    );
+  });
+
   it('exposes the seed manifest and runs the rendering routes', async () => {
     simulator = await createLocalGcpSimulator({ baseUrl: 'http://simulator' });
 

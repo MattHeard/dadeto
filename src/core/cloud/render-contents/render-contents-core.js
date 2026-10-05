@@ -15,6 +15,7 @@ import {
 import { renderHtmlTemplate } from '../html-template.js';
 import { withPageFooter } from '../page-footer.js';
 import { assertFunction } from '../../commonCore.js';
+import { sendEffectFetch } from '../effectFetch.js';
 export {
   DEFAULT_BUCKET_NAME,
   productionOrigins,
@@ -23,6 +24,7 @@ export {
 };
 /** @typedef {import('../../../../types/native-http').NativeHttpRequest} NativeHttpRequest */
 /** @typedef {import('../../../../types/native-http').NativeHttpResponse} NativeHttpResponse */
+/** @typedef {import('../../../../types/allow-effects').AllowEffects} AllowEffects */
 const DEFAULT_PAGE_SIZE = 100;
 
 /**
@@ -59,6 +61,8 @@ const DEFAULT_PAGE_SIZE = 100;
  * @property {DbInstance} [db] Firestore-like instance used for lookup helpers.
  * @property {StorageInstance} [storage] Cloud storage-like instance.
  * @property {(input: string, init?: object) => Promise<FetchResponse>} fetchFn Fetch implementation.
+ * @property {(handler: (permission: AllowEffects) => Promise<unknown>) => Promise<unknown>} bindEffectBoundary External effect permission boundary.
+ * @property {(permission: AllowEffects, input: string, init?: object) => Promise<FetchResponse>} effectFetchFn Permission-aware invalidation transport.
  * @property {() => string} randomUUID UUID generator for cache invalidation.
  * @property {string} [projectId] Google Cloud project identifier.
  * @property {string} [urlMapName] Compute URL map identifier.
@@ -477,6 +481,8 @@ function hasPageNumber(page) {
  * Create a helper for invalidating cached CDN paths.
  * @param {object} root0 Options for the invalidation routine.
  * @param {(input: string, init?: object) => Promise<FetchResponse>} root0.fetchFn Fetch-like implementation.
+ * @param {(handler: (permission: AllowEffects) => Promise<unknown>) => Promise<unknown>} root0.bindEffectBoundary External effect permission boundary.
+ * @param {(permission: AllowEffects, input: string, init?: object) => Promise<FetchResponse>} root0.effectFetchFn Permission-aware invalidation transport.
  * @param {string} [root0.projectId] Google Cloud project identifier.
  * @param {string} [root0.urlMapName] Compute URL map used for invalidation.
  * @param {string} [root0.cdnHost] CDN host name to include with invalidations.
@@ -486,6 +492,8 @@ function hasPageNumber(page) {
  */
 export function createInvalidatePaths({
   fetchFn,
+  bindEffectBoundary,
+  effectFetchFn,
   projectId,
   urlMapName,
   cdnHost,
@@ -493,12 +501,16 @@ export function createInvalidatePaths({
   consoleError,
 }) {
   assertFunction(fetchFn, 'fetchFn');
+  assertFunction(bindEffectBoundary, 'bindEffectBoundary');
+  assertFunction(effectFetchFn, 'effectFetchFn');
   assertFunction(randomUUID, 'randomUUID');
 
   const config = buildInvalidationConfig({ projectId, urlMapName, cdnHost });
 
   return createPathInvalidationRunner({
     fetchFn,
+    bindEffectBoundary,
+    effectFetchFn,
     randomUUID,
     consoleError,
     config,
@@ -594,6 +606,8 @@ function resolveUrlMapName(urlMapName) {
  * Create the actual path invalidation routine.
  * @param {object} params Runner options.
  * @param {(input: string, init?: object) => Promise<FetchResponse>} params.fetchFn Fetch implementation.
+ * @param {(handler: (permission: AllowEffects) => Promise<unknown>) => Promise<unknown>} params.bindEffectBoundary External effect permission boundary.
+ * @param {(permission: AllowEffects, input: string, init?: object) => Promise<FetchResponse>} params.effectFetchFn Permission-aware invalidation transport.
  * @param {() => string} params.randomUUID UUID generator.
  * @param {((message: string, error?: unknown) => void) | undefined} [params.consoleError] Logger.
  * @param {{ host: string, url: string }} params.config Invalidation configuration.
@@ -601,6 +615,8 @@ function resolveUrlMapName(urlMapName) {
  */
 function createPathInvalidationRunner({
   fetchFn,
+  bindEffectBoundary,
+  effectFetchFn,
   randomUUID,
   consoleError,
   config,
@@ -614,15 +630,17 @@ function createPathInvalidationRunner({
 
     await Promise.all(
       paths.map(path =>
-        invalidatePathItem({
-          path,
-          token,
-          url: config.url,
-          host: config.host,
-          fetchFn,
-          randomUUID,
-          consoleError,
-        })
+        bindEffectBoundary(permission =>
+          invalidatePathItem(permission, {
+            path,
+            token,
+            url: config.url,
+            host: config.host,
+            effectFetchFn,
+            randomUUID,
+            consoleError,
+          })
+        )
       )
     );
   };
@@ -668,26 +686,22 @@ async function extractAccessToken(response) {
 
 /**
  * Send an invalidation request for a single path item.
+ * @param {AllowEffects} permission Permission for this cache purge request.
  * @param {object} options Invalidation helpers.
  * @param {string} options.path CDN path to invalidate.
  * @param {string} options.token OAuth bearer token.
  * @param {string} options.url Compute URL map invalidation endpoint.
  * @param {string} options.host CDN host name.
- * @param {(input: string, init?: object) => Promise<FetchResponse>} options.fetchFn Fetch implementation.
+ * @param {(permission: AllowEffects, input: string, init?: object) => Promise<FetchResponse>} options.effectFetchFn Permission-aware invalidation transport.
  * @param {() => string} options.randomUUID UUID generator for request IDs.
  * @param {((message: string, ...optionalParams: unknown[]) => void) | undefined} [options.consoleError] Error logger.
  * @returns {Promise<void>} Resolves when the invalidation request completes.
  */
-async function invalidatePathItem({
-  path,
-  token,
-  url,
-  host,
-  fetchFn,
-  randomUUID,
-  consoleError,
-}) {
-  return fetchFn(url, {
+async function invalidatePathItem(
+  permission,
+  { path, token, url, host, effectFetchFn, randomUUID, consoleError }
+) {
+  return sendEffectFetch(permission, effectFetchFn, url, {
     method: 'POST',
     headers: {
       Authorization: `Bearer ${token}`,
@@ -815,6 +829,8 @@ function normalizeRenderContentsOptions(
     db,
     storage,
     fetchFn,
+    bindEffectBoundary,
+    effectFetchFn,
     randomUUID,
     projectId,
     urlMapName,
@@ -827,6 +843,8 @@ function normalizeRenderContentsOptions(
 
   assertStorage(/** @type {StorageInstance} */ (storage));
   assertFunction(fetchFn, 'fetchFn');
+  assertFunction(bindEffectBoundary, 'bindEffectBoundary');
+  assertFunction(effectFetchFn, 'effectFetchFn');
   assertFunction(randomUUID, 'randomUUID');
 
   return {
@@ -836,6 +854,8 @@ function normalizeRenderContentsOptions(
       /** @type {(input: string, init?: object) => Promise<FetchResponse>} */ (
         fetchFn
       ),
+    bindEffectBoundary,
+    effectFetchFn,
     randomUUID: /** @type {() => string} */ (randomUUID),
     projectId,
     urlMapName,
@@ -902,6 +922,8 @@ function instantiateRenderContents(deps) {
     db,
     storage,
     fetchFn,
+    bindEffectBoundary,
+    effectFetchFn,
     randomUUID,
     projectId,
     urlMapName,
@@ -918,6 +940,8 @@ function instantiateRenderContents(deps) {
   );
   const invalidatePaths = createInvalidatePaths({
     fetchFn,
+    bindEffectBoundary,
+    effectFetchFn,
     projectId,
     urlMapName,
     cdnHost,

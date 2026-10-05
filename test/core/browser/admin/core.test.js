@@ -819,6 +819,30 @@ describe('executeTriggerRender', () => {
     expect(reportError).toHaveBeenCalledWith(expect.any(Error));
   });
 
+  it('uses the default reporter when a response fails without one injected', async () => {
+    const getAdminEndpoints = jest
+      .fn()
+      .mockResolvedValue({ triggerRenderContentsUrl: '/render' });
+    const fetch = jest.fn().mockResolvedValue({
+      ok: false,
+      status: 503,
+      statusText: 'Unavailable',
+      text: async () => 'temporarily unavailable',
+    });
+    const showMessage = jest.fn();
+
+    await executeTriggerRender({
+      getAdminEndpoints,
+      fetchFn: fetch,
+      token: 'token',
+      showMessage,
+    });
+
+    expect(showMessage).toHaveBeenCalledWith(
+      'Render failed: 503 Unavailable - temporarily unavailable'
+    );
+  });
+
   it('reports non-error throw values using their string form', async () => {
     const getAdminEndpoints = jest.fn().mockResolvedValue({});
     const fetch = jest.fn().mockRejectedValue('nope');

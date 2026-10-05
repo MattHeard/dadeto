@@ -7,6 +7,8 @@ import {
   getFirestoreInstance,
   ADMIN_UID,
   fetchFn,
+  bindEffectBoundary,
+  effectFetchFn,
   crypto,
   getEnvironmentVariables,
 } from './render-contents-gcf.js';
@@ -21,6 +23,8 @@ const entrypoint = createRenderContentsEntrypoint({
   getFirestoreInstance,
   ADMIN_UID,
   fetchFn,
+  bindEffectBoundary,
+  effectFetchFn,
   crypto,
   getEnvironmentVariables,
 });

@@ -142,6 +142,9 @@ describe('createRenderContentsEntrypoint', () => {
       getFirestoreInstance: jest.fn(() => db),
       ADMIN_UID: 'admin',
       fetchFn,
+      bindEffectBoundary: async handler =>
+        handler(Object.freeze({ test: true })),
+      effectFetchFn: (_permission, url, init) => fetchFn(url, init),
       crypto: { randomUUID: () => 'uuid' },
       getEnvironmentVariables: jest.fn(() => ({
         DENDRITE_ENVIRONMENT: 'dev',

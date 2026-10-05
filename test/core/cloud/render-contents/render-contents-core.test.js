@@ -3,8 +3,8 @@ import {
   buildHtml,
   createFetchTopStoryIds,
   createFetchStoryInfo,
-  createRenderContents,
-  createInvalidatePaths,
+  createRenderContents as createRenderContentsCore,
+  createInvalidatePaths as createInvalidatePathsCore,
   handleInvalidateError,
   getAllowedOrigins,
   createApplyCorsHeaders,
@@ -21,6 +21,49 @@ import {
 } from '../../../../src/core/cloud/render-contents/render-contents-core.js';
 
 const ACCESS_TOKEN_KEY = 'access_token';
+let nextPermissionId = 0;
+
+/**
+ * Mint one frozen test permission and invoke the effectful callback.
+ * @param {(permission: unknown) => Promise<unknown>} handler Effectful test callback.
+ * @returns {Promise<unknown>} Callback result.
+ */
+async function bindTestEffect(handler) {
+  return handler(Object.freeze({ testPermission: ++nextPermissionId }));
+}
+
+/**
+ * Add safe test defaults for explicit effect dependencies.
+ * @param {object} options Render dependencies.
+ * @returns {object} Dependencies with test-only permission and transport adapters.
+ */
+function withEffectDependencies(options = {}) {
+  return {
+    ...options,
+    bindEffectBoundary: options.bindEffectBoundary ?? bindTestEffect,
+    effectFetchFn:
+      options.effectFetchFn ??
+      ((_permission, url, init) => options.fetchFn(url, init)),
+  };
+}
+
+/**
+ * Build the renderer with test-only effect dependencies.
+ * @param {object} options Renderer dependencies.
+ * @returns {unknown} Render-contents handler.
+ */
+function createRenderContents(options = {}) {
+  return createRenderContentsCore(withEffectDependencies(options));
+}
+
+/**
+ * Build the invalidator with test-only effect dependencies.
+ * @param {object} options Invalidation dependencies.
+ * @returns {unknown} Path invalidation handler.
+ */
+function createInvalidatePaths(options) {
+  return createInvalidatePathsCore(withEffectDependencies(options));
+}
 
 describe('render contents console fallback', () => {
   it('returns a no-op when console.error is unavailable', () => {
@@ -304,7 +347,7 @@ describe('createRenderContents', () => {
   });
 
   it('throws when called without options', () => {
-    expect(() => createRenderContents()).toThrow(
+    expect(() => createRenderContentsCore()).toThrow(
       new TypeError('storage must provide a bucket helper')
     );
   });
@@ -791,6 +834,45 @@ describe('resolveHeaderValue', () => {
 });
 
 describe('createInvalidatePaths', () => {
+  it('requires a fresh permission for each CDN POST, not the metadata GET', async () => {
+    const fetchFn = jest.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ [ACCESS_TOKEN_KEY]: 'token' }),
+    });
+    const effectFetchFn = jest
+      .fn()
+      .mockResolvedValue({ ok: true, status: 200 });
+    const permissions = [];
+    const bindEffectBoundary = jest.fn(async handler => {
+      const permission = Object.freeze({ id: permissions.length });
+      permissions.push(permission);
+      return handler(permission);
+    });
+    const invalidatePaths = createInvalidatePaths({
+      fetchFn,
+      bindEffectBoundary,
+      effectFetchFn,
+      randomUUID: jest.fn(() => 'uuid'),
+    });
+
+    await invalidatePaths(['/one.html', '/two.html']);
+
+    expect(fetchFn).toHaveBeenCalledTimes(1);
+    expect(fetchFn).toHaveBeenCalledWith(
+      'http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/token',
+      { headers: { 'Metadata-Flavor': 'Google' } }
+    );
+    expect(bindEffectBoundary).toHaveBeenCalledTimes(2);
+    expect(effectFetchFn).toHaveBeenCalledTimes(2);
+    expect(effectFetchFn.mock.calls.map(([permission]) => permission)).toEqual(
+      permissions
+    );
+    expect(new Set(permissions).size).toBe(2);
+    permissions.forEach(permission =>
+      expect(Object.isFrozen(permission)).toBe(true)
+    );
+  });
+
   it('returns early when paths are missing or empty', async () => {
     const fetchFn = jest.fn();
     const randomUUID = jest.fn(() => 'uuid');

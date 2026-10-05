@@ -43,6 +43,10 @@ export function createRenderContentsEntrypoint(deps) {
     crypto,
     getEnvironmentVariables,
   } = typedDeps;
+  const effectDependencies = {
+    bindEffectBoundary: typedDeps.bindEffectBoundary,
+    effectFetchFn: typedDeps.effectFetchFn,
+  };
   const {
     db,
     environmentVariables,
@@ -132,6 +136,7 @@ export function createRenderContentsEntrypoint(deps) {
       Storage,
       getEnvironmentVariables,
       fetchFn,
+      ...effectDependencies,
       resolveBucketName: resolveStaticBucketName,
       resolveObjectPrefix: resolveStaticObjectPrefix,
       entrypointKind: 'contents',
@@ -139,7 +144,11 @@ export function createRenderContentsEntrypoint(deps) {
     };
     renderStateOptions.buildRender =
       renderSupport.createCloudRenderInstanceBuilder({
-        createRenderer: createRenderContents,
+        createRenderer: dependencies =>
+          createRenderContents({
+            ...dependencies,
+            ...effectDependencies,
+          }),
         crypto,
         consoleError: (...args) => console.error(...args),
       });

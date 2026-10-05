@@ -11,7 +11,7 @@ import {
 import { renderHtmlTemplate } from '../html-template.js';
 import { withPageFooter } from '../page-footer.js';
 import { assertFunction } from '../../commonCore.js';
-import { sendEffectFetch } from './effectFetch.js';
+import { sendEffectFetch } from '../effectFetch.js';
 /** @typedef {import('../../../types/allow-effects').AllowEffects} AllowEffects */
 import {
   addTreeVisibilityDelta,

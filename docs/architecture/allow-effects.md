@@ -31,3 +31,7 @@ This classification is scoped to four injected-fetch POST commands: trigger rend
 ## Fourth extension: render-variant CDN invalidation (2026-10-05)
 
 The cloud render-variant adapter now supplies a command permission boundary and a dedicated `effectFetchFn` for CDN cache purge POSTs. The core invalidation flow mints one fresh permission per path purge and forwards it only to that adapter. The generic `fetchFn` remains responsible for the metadata service token GET and receives no capability. `render-contents` has a separate invalidation implementation and remains a distinct follow-up.
+
+## Fifth extension: render-contents CDN invalidation (2026-10-05)
+
+The cloud render-contents adapter supplies the same boundary and dedicated transport for its separate CDN invalidation flow. Each purge POST receives a fresh permission. The metadata service token GET continues through ordinary `fetchFn` without a capability.

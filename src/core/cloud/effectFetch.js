@@ -1,4 +1,4 @@
-/** @typedef {import('../../../../types/allow-effects').AllowEffects} AllowEffects */
+/** @typedef {import('../../../types/allow-effects').AllowEffects} AllowEffects */
 
 /**
  * Send one explicitly permitted cache invalidation request.
