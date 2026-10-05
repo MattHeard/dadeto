@@ -1,16 +1,21 @@
-// @ts-nocheck
 // Stryker disable all -- this module is the fixed fake Firestore simulator
 // boundary covered by its focused simulator contract suite.
 import { isPlainPrototypeObject } from '../../commonCore.js';
 const DELETE_FIELD = Symbol('delete-field');
 
+/** @typedef {{ path: string, nextData?: unknown, mode: 'set'|'update'|'delete' }} FakeWriteOperation */
+/** @typedef {{ kind: 'collection'; collectionSegments: string[] } | { kind: 'collectionGroup'; collectionId: string }} FakeQuerySource */
+/** @typedef {{ type: 'where'; field: string; op: string; value: unknown } | { type: 'orderBy'; field: string; direction: 'asc'|'desc' } | { type: 'limit'; value: number }} FakeQueryClause */
+
 class IncrementValue {
+  /** @param {number} amount Increment amount. */
   constructor(amount) {
     this.amount = amount;
   }
 }
 
 class ServerTimestampValue {
+  /** @param {Date} value Timestamp value. */
   constructor(value) {
     this.value = value;
   }
@@ -30,7 +35,7 @@ export function createFakeFieldValue(now = () => new Date()) {
     serverTimestamp() {
       return new ServerTimestampValue(now());
     },
-    increment(/** @type {unknown} */ amount) {
+    increment(/** @type {number} */ amount) {
       return new IncrementValue(amount);
     },
     delete() {
@@ -41,29 +46,27 @@ export function createFakeFieldValue(now = () => new Date()) {
 
 /**
  * Create an in-memory Firestore-like database.
- * @param {object} [options] - Configuration.
- * @param {(records: Array<{path: string, before?: unknown, after?: unknown}>) => Promise<void>|void} [options.onCommit]
+ * @param {{ onCommit?: (records: Array<{path: string, before?: unknown, after?: unknown}>) => Promise<void>|void }} [options] - Configuration.
  *   Commit callback.
  * @returns {FakeFirestoreShim} Fake Firestore instance.
  */
-export function createFakeFirestore(
-  { onCommit } = /** @type {unknown} */ ({})
-) {
+export function createFakeFirestore({ onCommit } = {}) {
+  /** @type {Map<string, unknown>} */
   const state = new Map();
 
   class FakeFirestore {
-    collection(/** @type {unknown} */ name) {
+    collection(/** @type {string} */ name) {
       return new FakeCollectionReference(this, [name]);
     }
 
-    collectionGroup(/** @type {unknown} */ name) {
+    collectionGroup(/** @type {string} */ name) {
       return new FakeQuery(this, {
         kind: 'collectionGroup',
         collectionId: name,
       });
     }
 
-    doc(/** @type {unknown} */ path) {
+    doc(/** @type {string} */ path) {
       return new FakeDocumentReference(this, path);
     }
 
@@ -71,52 +74,54 @@ export function createFakeFirestore(
       return new FakeWriteBatch(this);
     }
 
-    runTransaction(/** @type {unknown} */ updateFunction) {
+    runTransaction(
+      /** @type {(transaction: FakeTransaction) => Promise<unknown>} */ updateFunction
+    ) {
       return runFakeTransaction(this, updateFunction);
     }
 
-    async __commitOperations(/** @type {unknown} */ operations) {
+    async __commitOperations(/** @type {FakeWriteOperation[]} */ operations) {
       return applyOperations(operations);
     }
 
-    async __getDocument(/** @type {unknown} */ path) {
+    async __getDocument(/** @type {string} */ path) {
       return cloneDocument(state.get(path));
     }
 
     async __writeDocument(
-      /** @type {unknown} */ path,
+      /** @type {string} */ path,
       /** @type {unknown} */ nextData,
-      mode = 'set'
+      /** @type {'set'|'update'|'delete'} */ mode = 'set'
     ) {
       return this.__commitOperations([{ path, nextData, mode }]);
     }
 
-    __getCollectionDocuments(/** @type {unknown} */ collectionSegments) {
+    __getCollectionDocuments(/** @type {string[]} */ collectionSegments) {
       return collectDocuments(state, path =>
         isCollectionDocumentPath(path, collectionSegments)
       );
     }
 
-    __getCollectionGroupDocuments(/** @type {unknown} */ collectionId) {
+    __getCollectionGroupDocuments(/** @type {string} */ collectionId) {
       return collectDocuments(state, path =>
         isCollectionGroupDocumentPath(path, collectionId)
       );
     }
 
-    __resolveDocumentSnapshot(/** @type {unknown} */ path) {
+    __resolveDocumentSnapshot(/** @type {string} */ path) {
       const data = state.get(path);
       return buildDocumentSnapshot(this, path, buildSnapshotData(data));
     }
 
-    __getPathData(/** @type {unknown} */ path) {
+    __getPathData(/** @type {string} */ path) {
       return state.get(path);
     }
 
-    __setPathData(/** @type {unknown} */ path, /** @type {unknown} */ data) {
+    __setPathData(/** @type {string} */ path, /** @type {unknown} */ data) {
       state.set(path, data);
     }
 
-    __deletePathData(/** @type {unknown} */ path) {
+    __deletePathData(/** @type {string} */ path) {
       state.delete(path);
     }
   }
@@ -127,7 +132,9 @@ export function createFakeFirestore(
    *   Operations to apply.
    * @returns {Promise<undefined>} Nothing.
    */
-  async function applyOperations(/** @type {unknown} */ operations) {
+  async function applyOperations(
+    /** @type {FakeWriteOperation[]} */ operations
+  ) {
     const touched = new Map();
     for (const operation of operations) {
       const before = cloneDocument(state.get(operation.path));
@@ -159,8 +166,8 @@ export function createFakeFirestore(
    * @returns {Promise<unknown>} Transaction callback result.
    */
   async function runFakeTransaction(
-    /** @type {unknown} */ db,
-    /** @type {unknown} */ updateFunction
+    /** @type {FakeFirestoreShim} */ db,
+    /** @type {(transaction: FakeTransaction) => Promise<unknown>} */ updateFunction
   ) {
     const transaction = new FakeTransaction(db);
     const result = await updateFunction(transaction);
@@ -223,7 +230,7 @@ function isCollectionGroupDocumentPath(path, collectionId) {
 
 /**
  * Build a query snapshot from matching documents.
- * @param {unknown} db Fake Firestore database.
+ * @param {FakeFirestoreShim} db Fake Firestore database.
  * @param {Array<{ path: string, data: unknown }>} docs Matching documents.
  * @returns {FakeQuerySnapshot} Query snapshot containing the documents.
  */
@@ -234,22 +241,23 @@ function buildQuerySnapshot(db, docs) {
 }
 
 class FakeWriteBatch {
-  constructor(/** @type {unknown} */ db) {
+  constructor(/** @type {FakeFirestoreShim} */ db) {
     this.db = db;
+    /** @type {FakeWriteOperation[]} */
     this.operations = [];
   }
 
-  set(/** @type {unknown} */ ref, /** @type {unknown} */ data) {
+  set(/** @type {{ path: string }} */ ref, /** @type {unknown} */ data) {
     queueWriteOperation(this.operations, ref, data, 'set');
     return this;
   }
 
-  update(/** @type {unknown} */ ref, /** @type {unknown} */ data) {
+  update(/** @type {{ path: string }} */ ref, /** @type {unknown} */ data) {
     queueWriteOperation(this.operations, ref, data, 'update');
     return this;
   }
 
-  delete(/** @type {unknown} */ ref) {
+  delete(/** @type {{ path: string }} */ ref) {
     queueWriteOperation(this.operations, ref, undefined, 'delete');
     return this;
   }
@@ -260,7 +268,7 @@ class FakeWriteBatch {
 }
 
 class FakeTransaction extends FakeWriteBatch {
-  async get(ref) {
+  async get(/** @type {{ get: () => Promise<unknown> }} */ ref) {
     return ref.get();
   }
 }
@@ -285,8 +293,8 @@ function queueWriteOperation(operations, ref, data, mode) {
 
 class FakeCollectionReference {
   constructor(
-    /** @type {unknown} */ db,
-    /** @type {unknown} */ collectionSegments
+    /** @type {FakeFirestoreShim} */ db,
+    /** @type {string[]} */ collectionSegments
   ) {
     this.db = db;
     this.collectionSegments = collectionSegments;
@@ -301,7 +309,7 @@ class FakeCollectionReference {
     }
   }
 
-  doc(/** @type {unknown} */ id) {
+  doc(/** @type {string} */ id) {
     return new FakeDocumentReference(this.db, [...this.collectionSegments, id]);
   }
 
@@ -317,8 +325,8 @@ class FakeCollectionReference {
   }
 
   where(
-    /** @type {unknown} */ fieldPath,
-    /** @type {unknown} */ operator,
+    /** @type {string} */ fieldPath,
+    /** @type {string} */ operator,
     /** @type {unknown} */ expectedValue
   ) {
     return createCollectionQuery(this.db, this.collectionSegments).where(
@@ -328,7 +336,7 @@ class FakeCollectionReference {
     );
   }
 
-  orderBy(/** @type {unknown} */ field, /** @type {unknown} */ direction) {
+  orderBy(/** @type {string} */ field, /** @type {'asc'|'desc'} */ direction) {
     return createCollectionQuery(this.db, this.collectionSegments).orderBy(
       field,
       direction
@@ -337,7 +345,10 @@ class FakeCollectionReference {
 }
 
 class FakeDocumentReference {
-  constructor(/** @type {unknown} */ db, /** @type {unknown} */ segments) {
+  constructor(
+    /** @type {FakeFirestoreShim} */ db,
+    /** @type {string[] | string} */ segments
+  ) {
     this.db = db;
     if (Array.isArray(segments)) {
       this.segments = segments;
@@ -349,7 +360,7 @@ class FakeDocumentReference {
     this.parent = new FakeCollectionReference(db, this.segments.slice(0, -1));
   }
 
-  collection(/** @type {unknown} */ name) {
+  collection(/** @type {string} */ name) {
     return new FakeCollectionReference(this.db, [...this.segments, name]);
   }
 
@@ -372,7 +383,7 @@ class FakeDocumentReference {
 
 /**
  * Create a collection query.
- * @param {unknown} db Fake Firestore database.
+ * @param {FakeFirestoreShim} db Fake Firestore database.
  * @param {string[]} collectionSegments Collection path segments.
  * @returns {FakeQuery} Collection query.
  */
@@ -382,9 +393,9 @@ function createCollectionQuery(db, collectionSegments) {
 
 class FakeQuery {
   constructor(
-    /** @type {unknown} */ db,
-    /** @type {unknown} */ source,
-    clauses = []
+    /** @type {FakeFirestoreShim} */ db,
+    /** @type {FakeQuerySource} */ source,
+    /** @type {FakeQueryClause[]} */ clauses = []
   ) {
     this.db = db;
     this.source = source;
@@ -392,8 +403,8 @@ class FakeQuery {
   }
 
   where(
-    /** @type {unknown} */ field,
-    /** @type {unknown} */ op,
+    /** @type {string} */ field,
+    /** @type {string} */ op,
     /** @type {unknown} */ value
   ) {
     return new FakeQuery(this.db, this.source, [
@@ -402,14 +413,17 @@ class FakeQuery {
     ]);
   }
 
-  orderBy(/** @type {unknown} */ field, direction = 'asc') {
+  orderBy(
+    /** @type {string} */ field,
+    /** @type {'asc'|'desc'} */ direction = 'asc'
+  ) {
     return new FakeQuery(this.db, this.source, [
       ...this.clauses,
       { type: 'orderBy', field, direction },
     ]);
   }
 
-  limit(/** @type {unknown} */ value) {
+  limit(/** @type {number} */ value) {
     return new FakeQuery(this.db, this.source, [
       ...this.clauses,
       { type: 'limit', value },
@@ -446,7 +460,7 @@ class FakeQuery {
     return this.db.__getCollectionGroupDocuments(this.source.collectionId);
   }
 
-  applyWhereClauses(docs) {
+  applyWhereClauses(/** @type {Array<{path: string, data: unknown}>} */ docs) {
     return this.clauses.reduce((acc, clause) => {
       if (clause.type !== 'where') {
         return acc;
@@ -458,7 +472,9 @@ class FakeQuery {
     }, docs);
   }
 
-  applyOrderByClauses(docs) {
+  applyOrderByClauses(
+    /** @type {Array<{path: string, data: unknown}>} */ docs
+  ) {
     const orderings = this.clauses.filter(clause => clause.type === 'orderBy');
     if (orderings.length === 0) {
       return docs;
@@ -471,7 +487,7 @@ class FakeQuery {
     return ordered;
   }
 
-  applyLimitClause(docs) {
+  applyLimitClause(/** @type {Array<{path: string, data: unknown}>} */ docs) {
     const limitClause = [...this.clauses]
       .reverse()
       .find(clause => clause.type === 'limit');
@@ -484,13 +500,13 @@ class FakeQuery {
 }
 
 class FakeQuerySnapshot {
-  constructor(docs) {
+  constructor(/** @type {FakeDocumentSnapshot[]} */ docs) {
     this.docs = docs;
     this.empty = docs.length === 0;
     this.size = docs.length;
   }
 
-  forEach(callback) {
+  forEach(/** @type {(doc: FakeDocumentSnapshot) => void} */ callback) {
     this.docs.forEach(callback);
   }
 }
@@ -508,7 +524,10 @@ function buildDocumentSnapshot(db, path, data) {
 }
 
 class FakeDocumentSnapshot {
-  constructor(ref, data) {
+  constructor(
+    /** @type {FakeDocumentReference} */ ref,
+    /** @type {unknown} */ data
+  ) {
     this.ref = ref;
     this.exists = data !== undefined;
     this.id = ref.id;
@@ -531,6 +550,7 @@ class FakeDocumentSnapshot {
  * @property {(name: string) => FakeQuery} collectionGroup Collection-group lookup.
  * @property {(path: string) => FakeDocumentReference} doc Document lookup.
  * @property {() => FakeWriteBatch} batch Batch writer factory.
+ * @property {(operations: FakeWriteOperation[]) => Promise<undefined>} __commitOperations Operation writer.
  * @property {(path: string, nextData: unknown, mode?: 'set'|'update'|'delete') => Promise<undefined>} __writeDocument Write helper.
  * @property {(path: string) => Promise<unknown>} __getDocument Read helper.
  * @property {(path: string) => FakeDocumentSnapshot} __resolveDocumentSnapshot Snapshot helper.
@@ -558,19 +578,26 @@ function resolveOperation(existing, operation) {
     return normalizeWrittenValue(operation.nextData);
   }
 
-  if (!existing) {
+  if (!isPlainObject(existing)) {
     throw new Error(`Cannot update missing document: ${operation.path}`);
   }
 
   const merged = cloneDocument(existing);
-  applyPatch(merged, operation.nextData ?? {});
+  if (!isPlainObject(merged)) {
+    throw new Error(`Cannot update non-object document: ${operation.path}`);
+  }
+  const patch = operation.nextData ?? {};
+  if (!isPlainObject(patch)) {
+    throw new Error(`Cannot apply non-object update: ${operation.path}`);
+  }
+  applyPatch(merged, patch);
   return merged;
 }
 
 /**
  * Apply a shallow patch object to a document target.
- * @param {object} target - Document object to mutate.
- * @param {object} patch - Patch payload.
+ * @param {Record<string, unknown>} target - Document object to mutate.
+ * @param {Record<string, unknown>} patch - Patch payload.
  * @returns {void}
  */
 function applyPatch(target, patch) {
@@ -581,7 +608,7 @@ function applyPatch(target, patch) {
 
 /**
  * Apply a single field patch.
- * @param {object} target - Document object to mutate.
+ * @param {Record<string, unknown>} target - Document object to mutate.
  * @param {string} key - Field path.
  * @param {unknown} value - Field value.
  * @returns {void}
@@ -595,10 +622,10 @@ function applyFieldPatch(target, key, value) {
 
   let cursor = target;
   for (const segment of segments) {
-    if (!isPlainObject(cursor[segment])) {
-      cursor[segment] = {};
-    }
-    cursor = cursor[segment];
+    const currentChild = cursor[segment];
+    const next = isPlainObject(currentChild) ? currentChild : {};
+    if (next !== currentChild) cursor[segment] = next;
+    cursor = next;
   }
 
   const current = cursor[last];
@@ -624,7 +651,7 @@ function resolveFieldValue(current, value) {
 /**
  * Normalize a written value into a clonable object tree.
  * @param {unknown} value - Value to normalize.
- * @param {unknown} current Current stored value.
+ * @param {unknown} [current] Current stored value.
  * @returns {unknown} Normalized value.
  */
 function normalizeWrittenValue(value, current) {
@@ -723,10 +750,12 @@ function compareValues(left, right) {
   if (nullComparison !== null) {
     return nullComparison;
   }
-  if (left < right) {
+  const comparableLeft = /** @type {string | number} */ (left);
+  const comparableRight = /** @type {string | number} */ (right);
+  if (comparableLeft < comparableRight) {
     return -1;
   }
-  if (left > right) {
+  if (comparableLeft > comparableRight) {
     return 1;
   }
   return 0;
@@ -782,6 +811,7 @@ function normalizeWrittenArray(value) {
  * @returns {Record<string, unknown>} Normalized object.
  */
 function normalizeWrittenObject(value) {
+  /** @type {Record<string, unknown>} */
   const output = {};
   for (const [key, nested] of Object.entries(value)) {
     const resolved = normalizeWrittenValue(nested);
@@ -803,13 +833,14 @@ function getFieldValue(data, field) {
     return undefined;
   }
 
-  return field.split('.').reduce((cursor, segment) => {
+  let cursor = /** @type {unknown} */ (data);
+  for (const segment of field.split('.')) {
     if (!isPlainObject(cursor)) {
       return undefined;
     }
-
-    return cursor[segment];
-  }, data);
+    cursor = cursor[segment];
+  }
+  return cursor;
 }
 
 /**
@@ -895,6 +926,7 @@ function cloneDocument(value) {
  * @returns {Record<string, unknown>} Mapped object.
  */
 function mapObjectValues(value, mapper) {
+  /** @type {Record<string, unknown>} */
   const output = {};
   for (const [key, nested] of Object.entries(value)) {
     output[key] = mapper(nested);
@@ -915,7 +947,7 @@ function mapArrayValues(value, mapper) {
 /**
  * Test whether a value is a plain object.
  * @param {unknown} value - Value to inspect.
- * @returns {boolean} True when value is a plain object.
+ * @returns {value is Record<string, unknown>} True when value is a plain object.
  */
 function isPlainObject(value) {
   return (
