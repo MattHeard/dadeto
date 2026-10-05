@@ -8,3 +8,4 @@
 - Follow-up slice: enabled checking for public billing offers and described the pricing snapshot fields required by `quoteCreditPackage`. Project `tsdoc:check`, scoped ESLint, and `git diff --check` pass.
 - Follow-up slice: enabled checking for the billing catalog seed, typed its store operations, narrowed package amount and operation data, and left snapshot validation at `createPricingSnapshot`. Project `tsdoc:check`, scoped ESLint, and `git diff --check` pass.
 - Follow-up slice: enabled checking for the object-minute search HTTP adapter and completed the repository, service area, schedule provider, and origin option contracts. Project `tsdoc:check`, scoped ESLint, and `git diff --check` pass.
+- Follow-up slice: enabled checking for the static JSONL table parser, typed projected rows and inferred column types, and made parsed JSON cell narrowing explicit after runtime validation. Project `tsdoc:check`, scoped ESLint, and `git diff --check` pass.

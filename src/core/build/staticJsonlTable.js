@@ -1,10 +1,11 @@
-// @ts-nocheck -- JSONL rows are intentionally narrowed at runtime by validation.
 import fs from 'node:fs';
 import path from 'node:path';
 import { compareTableValues as compareValues } from '../tableCore.js';
 
 const DEFAULT_DATA_ROOT = path.resolve(process.cwd(), 'src/content/blog-data');
 const SUPPORTED_TYPES = new Set(['number', 'string']);
+
+/** @typedef {{index: number, values: Record<string, string|number>}} StaticTableRow */
 
 /**
  * Throw a consistent table validation error.
@@ -42,7 +43,7 @@ function validateDefinition(entry) {
  * @param {{index: number, values: Record<string, string|number>}} left First row.
  * @param {{index: number, values: Record<string, string|number>}} right Second row.
  * @param {string[]} columns Ordered columns.
- * @param {Record<string, string>} types Column types.
+ * @param {Record<string, string|undefined>} types Column types.
  * @returns {number} Stable sort comparison.
  */
 function compareRows(left, right, columns, types) {
@@ -76,6 +77,7 @@ export function parseStaticJsonlTable(entry, options = {}) {
       { cause: error }
     );
   }
+  /** @type {StaticTableRow[]} */
   const rows = [];
   source.split(/\r?\n/).forEach((line, lineIndex) => {
     if (!line.trim()) return;
@@ -90,13 +92,16 @@ export function parseStaticJsonlTable(entry, options = {}) {
     }
     if (!value || typeof value !== 'object' || Array.isArray(value))
       fail(`line ${lineIndex + 1} must contain a JSON object`);
+    const record = /** @type {Record<string, unknown>} */ (value);
+    /** @type {Record<string, string|number>} */
     const projected = {};
     entry.columns.forEach(column => {
-      if (!Object.prototype.hasOwnProperty.call(value, column))
+      if (!Object.prototype.hasOwnProperty.call(record, column))
         fail(`line ${lineIndex + 1} is missing column ${column}`);
-      const cell = value[column];
+      const cell = record[column];
       if (
         !SUPPORTED_TYPES.has(typeof cell) ||
+        (typeof cell !== 'number' && typeof cell !== 'string') ||
         (typeof cell === 'number' && !Number.isFinite(cell))
       )
         fail(
@@ -106,6 +111,7 @@ export function parseStaticJsonlTable(entry, options = {}) {
     });
     rows.push({ index: rows.length, values: projected });
   });
+  /** @type {Record<string, string|undefined>} */
   const types = Object.fromEntries(
     entry.columns.map(column => [column, undefined])
   );
@@ -127,7 +133,12 @@ export function parseStaticJsonlTable(entry, options = {}) {
  * @returns {string} Escaped attribute.
  */
 function escapeAttribute(value) {
-  const entities = { '&': '&amp;', '"': '&quot;', '<': '&lt;', '>': '&gt;' };
+  const entities = /** @type {Record<string, string>} */ ({
+    '&': '&amp;',
+    '"': '&quot;',
+    '<': '&lt;',
+    '>': '&gt;',
+  });
   return String(value).replace(/[&"<>]/g, character => entities[character]);
 }
 /**
