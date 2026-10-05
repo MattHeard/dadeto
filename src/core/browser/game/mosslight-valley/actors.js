@@ -1,11 +1,14 @@
-// @ts-nocheck -- actor contracts are supplied by episode content.
 import { findWorldEntry } from './world.js';
+/** @typedef {{ id: string, map: string, x: number, y: number, schedule?: Record<string, [string, number, number]>, scheduleAfter?: Record<string, Record<string, [string, number, number]>> }} Actor */
+/** @typedef {{ width: number, height: number, objects?: {id?: string, x: number, y: number}[] }} ActorMap */
+/** @typedef {{x: number, y: number, facing: string}} ActorPlayer */
+/** @typedef {{ mapId: string, map: ActorMap, player: ActorPlayer, time: number, flags: Record<string, boolean>, npcs: Actor[] }} ActorWorld */
 /**
  * Find an active NPC at a map coordinate.
- * @param {unknown} world - The world argument.
- * @param {unknown} x - The x argument.
- * @param {unknown} y - The y argument.
- * @returns {unknown} The computed result.
+ * @param {ActorWorld} world World state.
+ * @param {number} x Map coordinate.
+ * @param {number} y Map coordinate.
+ * @returns {Actor | null} Actor at the coordinate, if any.
  */
 export function actorAt(world, x, y) {
   return findWorldEntry(
@@ -15,27 +18,28 @@ export function actorAt(world, x, y) {
 }
 /**
  * Find the character or object the player faces.
- * @param {unknown} state - The state argument.
- * @returns {Record<string, any>} Facing actor and object candidates.
+ * @param {Record<string, any>} state Game state containing world data.
+ * @returns {{actor: Actor | null, object: {id?: string, x: number, y: number} | null}} Facing candidates.
  */
 export function targetInFront(state) {
-  const { x, y, facing } = state.world.player;
+  const world = /** @type {ActorWorld} */ (state.world);
+  const { x, y, facing } = world.player;
   const d = { up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0] }[
     facing
   ] || [0, 0];
   return {
-    actor: actorAt(state.world, x + d[0], y + d[1]),
+    actor: actorAt(world, x + d[0], y + d[1]),
     object:
-      state.world.map.objects?.find(
+      world.map.objects?.find(
         item => item.x === x + d[0] && item.y === y + d[1]
       ) || null,
   };
 }
 /**
  * Select scheduled NPC location from time of day and story flags.
- * @param {unknown} npcs - The npcs argument.
- * @param {unknown} world - The world argument.
- * @returns {unknown} The computed result.
+ * @param {Actor[]} npcs Episode characters.
+ * @param {ActorWorld} world Current world state.
+ * @returns {Actor[]} Characters with scheduled locations applied.
  */
 export function scheduleActors(npcs, world) {
   const period =
@@ -52,9 +56,9 @@ export function scheduleActors(npcs, world) {
 }
 /**
  * Produce a deterministic sprite animation frame.
- * @param {unknown} actor - The actor argument.
- * @param {unknown} tick - The tick argument.
- * @returns {unknown} The computed result.
+ * @param {Actor} actor Character to animate.
+ * @param {number} tick Animation tick.
+ * @returns {Actor & {frame: number}} Character with its animation frame.
  */
 export function animateActor(actor, tick) {
   return { ...actor, frame: Math.floor(tick / 8) % 2 };
