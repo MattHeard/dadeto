@@ -1,4 +1,4 @@
-import { createRegenerateVariant } from '../../../../src/core/browser/admin-core.js';
+import { createRegenerateVariant } from '../adminEffectsFixture.js';
 
 describe('createRegenerateVariant', () => {
   let mockGoogleAuthModule;

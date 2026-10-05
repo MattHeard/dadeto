@@ -1,4 +1,4 @@
-import { createTriggerStats } from '../../../../src/core/browser/admin-core.js';
+import { createTriggerStats } from '../adminEffectsFixture.js';
 
 describe('createTriggerStats', () => {
   let mockGoogleAuthModule;

@@ -12,9 +12,6 @@ import {
   createAdminEndpointsPromise,
   createGetAdminEndpoints,
   createGetAdminEndpointsFromStaticConfig,
-  createTriggerRender,
-  createTriggerStats,
-  createRegenerateVariant,
   createShowMessage,
   createElementEventBinder,
   ensureSignOutAuth,
@@ -34,7 +31,6 @@ import {
   isDisableAutoSelectFunction,
   createSafeLogger,
   noopLoggerError,
-  initAdmin,
   handleCredentialSignIn,
   mapConfigToAdminEndpoints,
   isAdminWithDeps,
@@ -53,8 +49,6 @@ import {
   resolveLogger,
   resolveGetIdToken,
   validateGetIdToken,
-  executeTriggerRender,
-  postTriggerRenderContents,
   readResponseText,
   readTriggerRenderBody,
   renderErrorMessage,
@@ -77,6 +71,14 @@ import {
   getDefaultAdminEndpointsCopy,
   initializeGoogleSignIn,
 } from '../../../src/core/browser/admin-core.js';
+import {
+  createTriggerRender,
+  createTriggerStats,
+  createRegenerateVariant,
+  initAdmin,
+  executeTriggerRender,
+  postTriggerRenderContents,
+} from './adminEffectsFixture.js';
 
 describe('small admin-core predicates', () => {
   it('returns an independent copy of every default admin endpoint', () => {

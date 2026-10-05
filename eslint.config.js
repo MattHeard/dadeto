@@ -46,6 +46,8 @@ export default [
       'src/core/cloud/submit-new-story/**/*.js',
       'src/core/cloud/submit-new-page/**/*.js',
       'src/core/browser/presenters/realtimeVoicePrototype.js',
+      'src/core/browser/admin-core.js',
+      'src/core/browser/token-action.js',
       'src/core/local/gcp-simulator/simulator.js',
     ],
     plugins: { capability: repoLintPlugin },

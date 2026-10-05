@@ -5,20 +5,14 @@ import {
   createGetAdminEndpoints,
   createGetAdminEndpointsFromStaticConfig,
   createShowMessage,
-  createTriggerRender,
-  createTriggerStats,
-  createRegenerateVariant,
   createDisableAutoSelect,
-  initAdminApp,
   bindTriggerRenderClick,
   bindTriggerStatsClick,
   bindRegenerateVariantSubmit,
   createWireSignOut,
   getDefaultAdminEndpointsCopy,
   mapConfigToAdminEndpoints,
-  postTriggerRenderContents,
   announceTriggerRenderResult,
-  executeTriggerRender,
   createInitGoogleSignIn,
   getStatusParagraph,
   getAdminContent,
@@ -27,9 +21,17 @@ import {
   getCurrentUser,
   updateAuthControlsDisplay,
   createCheckAccess,
-  initAdmin,
 } from '../../../../src/core/browser/admin-core.js';
-import { createAdminTokenAction } from '../../../../src/core/browser/token-action.js';
+import {
+  createTriggerRender,
+  createTriggerStats,
+  createRegenerateVariant,
+  initAdminApp,
+  initAdmin,
+  createAdminTokenAction,
+  postTriggerRenderContents,
+  executeTriggerRender,
+} from '../adminEffectsFixture.js';
 
 const createConfig = overrides => ({
   triggerRenderContentsUrl: 'https://example.com/render',

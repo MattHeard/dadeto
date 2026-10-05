@@ -9,10 +9,8 @@ import {
   createQuerySelectorAll,
   createRemoveItem,
   createSessionStorageHandler,
-  createInitAdminAppHandle,
   createInitGoogleSignInHandlerFactory,
   createSignOutHandlerFactory,
-  initAdminApp,
   getCurrentUser,
   getStatusParagraph,
   hasRequiredGoogleIdentityMethods,
@@ -20,6 +18,10 @@ import {
   setupFirebase,
   updateAuthControlsDisplay,
 } from '../../../../src/core/browser/admin-core.js';
+import {
+  createInitAdminAppHandle,
+  initAdminApp,
+} from '../adminEffectsFixture.js';
 
 describe('admin-core additional coverage', () => {
   it('handles disable auto select regardless of helper availability', () => {

@@ -1,12 +1,8 @@
 import { createRealtimeVoicePrototypePresenterHandle } from '../../core/browser/presenters/realtimeVoicePrototype.js';
+import { bindEffectBoundary } from '../allow-effects.js';
 
 const handle = createRealtimeVoicePrototypePresenterHandle({
-  bindEffectBoundary: async handler => {
-    const permission = /** @type {import('../../../types/allow-effects').AllowEffects} */ (
-      /** @type {unknown} */ (Object.freeze({}))
-    );
-    return handler(permission);
-  },
+  bindEffectBoundary,
   fetchFn: (
     /** @type {import('../../../types/allow-effects').AllowEffects} */ permission,
     input,

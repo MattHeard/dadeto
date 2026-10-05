@@ -1,5 +1,7 @@
 import { ensureFunction } from './browser-core.js';
 
+/** @typedef {import('../../../types/allow-effects').AllowEffects} AllowEffects */
+
 /**
  * @typedef {object} GoogleAuthLike
  * @property {() => Promise<string> | string | null | undefined} getIdToken Returns a current Google ID token if one exists.
@@ -15,6 +17,7 @@ import { ensureFunction } from './browser-core.js';
 
 /**
  * @callback AdminTokenAction
+ * @param {AllowEffects} permission Permission for the command being executed.
  * @param {AdminTokenActionContext} context Action context when the token is available.
  * @returns {Promise<void>}
  */
@@ -28,6 +31,7 @@ import { ensureFunction } from './browser-core.js';
  * @property {GoogleAuthLike} googleAuth Google auth helper that yields the current ID token.
  * @property {() => Promise<object>} getAdminEndpointsFn Lazily loads the admin endpoints.
  * @property {import('./admin-core.js').FetchFn} fetchFn Fetch implementation for network requests.
+ * @property {(handler: (permission: AllowEffects) => Promise<void>) => Promise<void>} bindEffectBoundary Mints one permission per command at the runtime boundary.
  * @property {(text: string) => void} showMessage Renders validation feedback in the UI.
  * @property {string} missingTokenMessage Message displayed when the token is unavailable.
  * @property {AdminTokenAction} action Action to invoke once dependencies are validated.
@@ -78,11 +82,16 @@ function buildAdminTokenAction(options) {
       return;
     }
 
-    await options.action({
-      token,
-      getAdminEndpoints: options.getAdminEndpointsFn,
-      fetchFn: options.fetchFn,
-      showMessage: options.showMessage,
-    });
+    await options.bindEffectBoundary(permission =>
+      options.action(
+        permission,
+        Object.assign({
+          token,
+          getAdminEndpoints: options.getAdminEndpointsFn,
+          fetchFn: options.fetchFn,
+          showMessage: options.showMessage,
+        })
+      )
+    );
   };
 }

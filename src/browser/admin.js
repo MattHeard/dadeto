@@ -1,9 +1,6 @@
 import { loadStaticConfig } from './loadStaticConfig.js';
 import { createInitAdminAppHandle } from '../core/browser/admin-core.js';
-import {
-  createErrorBeaconHandlers,
-  createErrorBeaconSendBeaconReporter,
-} from '../core/browser/error-beacon.js';
+import { createErrorBeaconHandlers, createErrorBeaconSendBeaconReporter } from '../core/browser/error-beacon.js';
 import {
   getAuth,
   GoogleAuthProvider,
@@ -11,6 +8,7 @@ import {
   signInWithCredential,
 } from 'https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js';
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js';
+import { bindEffectBoundary } from './allow-effects.js';
 
 const errorBeaconUrlPromise = loadStaticConfig()
   .then(config => config.errorBeaconUrl || '')
@@ -44,6 +42,7 @@ const handle = createInitAdminAppHandle({
   globalThisObj: globalThis,
   documentObj: document,
   fetchObj: fetch,
+  bindEffectBoundary,
   reportError: errorBeaconHandlers.logError,
 });
 handle();

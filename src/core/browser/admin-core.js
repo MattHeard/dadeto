@@ -5,6 +5,8 @@ import {
   getIdToken as getCachedIdToken,
 } from '../browser/browser-core.js';
 
+/** @typedef {import('../../../types/allow-effects').AllowEffects} AllowEffects */
+
 /**
  * @typedef {object} FetchRequestOptions
  * @property {string} [method] - HTTP method to use for the request.
@@ -13,7 +15,7 @@ import {
  */
 
 /**
- * @typedef {(url: string | URL, init?: FetchRequestOptions) => Promise<Response>} FetchFn
+ * @typedef {(permission: AllowEffects, url: string | URL, init?: FetchRequestOptions) => Promise<Response>} FetchFn
  */
 
 /**
@@ -452,18 +454,20 @@ export function createGetAdminEndpointsFromStaticConfig(loadStaticConfigFn) {
 
 /**
  * Trigger the render contents endpoint using the provided dependencies.
+ * @param {AllowEffects} permission Permission for this render request.
  * @param {() => Promise<{ triggerRenderContentsUrl: string }>} getAdminEndpointsFn - Function resolving admin endpoints.
  * @param {FetchFn} fetchFn - Fetch-like function for network calls.
  * @param {string} token - ID token attached to the Authorization header.
  * @returns {Promise<Response>} Response from the render trigger request.
  */
 export async function postTriggerRenderContents(
+  /** @type {AllowEffects} */ permission,
   getAdminEndpointsFn,
   fetchFn,
   token
 ) {
   const { triggerRenderContentsUrl } = await getAdminEndpointsFn();
-  return fetchFn(triggerRenderContentsUrl, {
+  return fetchFn(permission, triggerRenderContentsUrl, {
     method: 'POST',
     headers: { Authorization: `Bearer ${token}` },
   });
@@ -652,47 +656,41 @@ export async function announceTriggerRenderResult(
 
 /**
  * Execute the trigger render flow and report outcomes.
+ * @param {AllowEffects} permission Explicit permission for this render command.
  * @param {ExecuteTriggerRenderOptions} options - Dependencies for the trigger render flow.
  * @returns {Promise<void>} Resolves after the trigger render flow finishes reporting.
  */
-export async function executeTriggerRender({
-  getAdminEndpoints,
-  fetchFn,
-  token,
-  showMessage,
-  reportError = () => {},
-}) {
-  return executeTriggerRenderCore({
+export async function executeTriggerRender(permission, options) {
+  const {
+    getAdminEndpoints,
+    fetchFn,
+    token,
+    showMessage,
+    reportError = () => {},
+  } = options;
+  return executeTriggerRenderCore(permission, {
     getAdminEndpoints,
     fetchFn,
     token,
     showMessage,
     reportError,
   }).catch(e => {
-    reportError(e);
+    options.reportError?.(e);
     showMessage(`Render failed: ${renderErrorMessage(e)}`);
   });
 }
 
 /**
  * Internal helper that drives the render call and reporting flow.
- * @param {{
- *   getAdminEndpoints: () => Promise<{ triggerRenderContentsUrl: string }>,
- *   fetchFn: FetchFn,
- *   token: string,
- *   showMessage: (text: string) => void,
- *   reportError?: (error: unknown) => void,
- * }} params - Dependencies required for executing the render flow.
+ * @param {AllowEffects} permission Explicit permission for the render request.
+ * @param {ExecuteTriggerRenderOptions} options Dependencies required for executing the render flow.
  * @returns {Promise<void>} Resolves when reporting the outcome completes.
  */
-async function executeTriggerRenderCore({
-  getAdminEndpoints,
-  fetchFn,
-  token,
-  showMessage,
-  reportError,
-}) {
+async function executeTriggerRenderCore(permission, options) {
+  const { getAdminEndpoints, fetchFn, token, showMessage, reportError } =
+    options;
   const res = await postTriggerRenderContents(
+    permission,
     getAdminEndpoints,
     fetchFn,
     token
@@ -720,6 +718,7 @@ export function renderErrorMessage(error) {
  *   googleAuth: { getIdToken: () => Promise<string> | string | null | undefined },
  *   getAdminEndpointsFn: () => Promise<{ triggerRenderContentsUrl: string }>,
  *   fetchFn: FetchFn,
+ *   bindEffectBoundary: (handler: (permission: AllowEffects) => Promise<void>) => Promise<void>,
  *   showMessage: (text: string) => void,
  *   reportError?: (error: unknown) => void,
  * }} options - Dependencies used during trigger render execution.
@@ -729,6 +728,7 @@ export function createTriggerRender({
   googleAuth,
   getAdminEndpointsFn,
   fetchFn,
+  bindEffectBoundary,
   showMessage,
   reportError = () => {},
 }) {
@@ -736,15 +736,14 @@ export function createTriggerRender({
     googleAuth,
     getAdminEndpointsFn,
     fetchFn,
+    bindEffectBoundary,
     showMessage,
     missingTokenMessage: 'Render failed: missing ID token',
-    action: ({
-      token,
-      getAdminEndpoints,
-      fetchFn: fetch,
-      showMessage: report,
-    }) =>
-      executeTriggerRender({
+    action: (
+      permission,
+      { token, getAdminEndpoints, fetchFn: fetch, showMessage: report }
+    ) =>
+      executeTriggerRender(permission, {
         getAdminEndpoints:
           /** @type {() => Promise<{ triggerRenderContentsUrl: string }>} */ (
             getAdminEndpoints
@@ -1540,6 +1539,7 @@ export function initializeGoogleSignIn(accountsId, options) {
  *   googleAuth: { getIdToken: () => Promise<string> | string | null | undefined },
  *   getAdminEndpointsFn: () => Promise<{ generateStatsUrl: string }>,
  *   fetchFn: FetchFn,
+ *   bindEffectBoundary: (handler: (permission: AllowEffects) => Promise<void>) => Promise<void>,
  *   showMessage: (text: string) => void,
  *   reportError?: (error: unknown) => void,
  * }} options - Dependencies used during stats generation.
@@ -1549,6 +1549,7 @@ export function createTriggerStats({
   googleAuth,
   getAdminEndpointsFn,
   fetchFn,
+  bindEffectBoundary,
   showMessage,
   reportError = () => {},
 }) {
@@ -1556,19 +1557,18 @@ export function createTriggerStats({
     googleAuth,
     getAdminEndpointsFn,
     fetchFn,
+    bindEffectBoundary,
     showMessage,
     missingTokenMessage: 'Stats generation failed',
-    action: async ({
-      token,
-      getAdminEndpoints,
-      fetchFn: fetch,
-      showMessage: report,
-    }) => {
+    action: async (
+      permission,
+      { token, getAdminEndpoints, fetchFn: fetch, showMessage: report }
+    ) => {
       try {
         const endpoints = /** @type {{ generateStatsUrl: string }} */ (
           await getAdminEndpoints()
         );
-        const response = await fetch(endpoints.generateStatsUrl, {
+        const response = await fetch(permission, endpoints.generateStatsUrl, {
           method: 'POST',
           headers: {
             Authorization: `Bearer ${token}`,
@@ -1605,6 +1605,7 @@ function assertStatsResponseOk(response) {
  *   showMessage: (text: string) => void,
  *   getAdminEndpointsFn: () => Promise<{ markVariantDirtyUrl: string }>,
  *   fetchFn: FetchFn,
+ *   bindEffectBoundary: (handler: (permission: AllowEffects) => Promise<void>) => Promise<void>,
  *   reportError?: (error: unknown) => void,
  * }} options - Dependencies for the regenerate workflow.
  * @returns {(event: Event) => Promise<void>} Function that triggers variant regeneration when invoked.
@@ -1642,6 +1643,7 @@ function ensureGoogleAuth(googleAuth) {
  *   showMessage: (text: string) => void,
  *   getAdminEndpointsFn: () => Promise<{ markVariantDirtyUrl: string }>,
  *   fetchFn: FetchFn,
+ *   bindEffectBoundary: (handler: (permission: AllowEffects) => Promise<void>) => Promise<void>,
  *   reportError?: (error: unknown) => void,
  * }} deps - Dependencies required for regenerating a variant.
  * @returns {void}
@@ -1652,12 +1654,14 @@ function validateRegenerateVariantDeps({
   showMessage,
   getAdminEndpointsFn,
   fetchFn,
+  bindEffectBoundary,
 }) {
   ensureGoogleAuth(googleAuth);
   requireDocumentLike(doc);
   requireFunction(showMessage, 'showMessage');
   requireFunction(getAdminEndpointsFn, 'getAdminEndpointsFn');
   requireFunction(fetchFn, 'fetchFn');
+  requireFunction(bindEffectBoundary, 'bindEffectBoundary');
 }
 
 /**
@@ -1668,6 +1672,7 @@ function validateRegenerateVariantDeps({
  *   showMessage: (text: string) => void,
  *   getAdminEndpointsFn: () => Promise<{ markVariantDirtyUrl: string }>,
  *   fetchFn: FetchFn,
+ *   bindEffectBoundary: (handler: (permission: AllowEffects) => Promise<void>) => Promise<void>,
  *   reportError?: (error: unknown) => void,
  * }} options - Dependencies needed to trigger regeneration.
  * @returns {(event: Event) => Promise<void>} Handler that reads the input, builds the payload, and submits the request.
@@ -1678,6 +1683,7 @@ function createRegenerateVariantHandler({
   showMessage,
   getAdminEndpointsFn,
   fetchFn,
+  bindEffectBoundary,
   reportError,
 }) {
   return async function regenerateVariant(event) {
@@ -1688,7 +1694,7 @@ function createRegenerateVariantHandler({
       showMessage,
       googleAuth
     );
-    await performRegenerationWhenReady(payload, {
+    await performRegenerationWhenReady(bindEffectBoundary, payload, {
       fetchFn,
       getAdminEndpointsFn,
       showMessage,
@@ -1793,6 +1799,7 @@ function preventDefaultEvent(event) {
 
 /**
  * Trigger regeneration once the payload is available.
+ * @param {(handler: (permission: AllowEffects) => Promise<void>) => Promise<void>} bindEffectBoundary Command permission boundary.
  * @param {{ token: string, pageVariant: { page: number, variant: string } } | null} payload - Payload with token and route data.
  * @param {{
  *   fetchFn: FetchFn,
@@ -1802,16 +1809,18 @@ function preventDefaultEvent(event) {
  * }} deps - Dependencies required to execute the regeneration request.
  * @returns {Promise<void>}
  */
-async function performRegenerationWhenReady(payload, deps) {
+async function performRegenerationWhenReady(bindEffectBoundary, payload, deps) {
   if (!payload) {
     return;
   }
 
-  await performRegeneration({
-    ...deps,
-    token: payload.token,
-    pageVariant: payload.pageVariant,
-  });
+  await bindEffectBoundary(permission =>
+    performRegeneration(permission, {
+      ...deps,
+      token: payload.token,
+      pageVariant: payload.pageVariant,
+    })
+  );
 }
 
 /**
@@ -1828,6 +1837,7 @@ function getPageVariantFromDoc(doc) {
 
 /**
  * Submit the regenerate variant request and report the result.
+ * @param {AllowEffects} permission Permission for this regeneration command.
  * @param {{
  *   fetchFn: FetchFn,
  *   getAdminEndpointsFn: () => Promise<{ markVariantDirtyUrl: string }>,
@@ -1838,16 +1848,17 @@ function getPageVariantFromDoc(doc) {
  * }} options - Dependencies and payload for the regeneration flow.
  * @returns {Promise<void>} Resolves once the request has been attempted.
  */
-async function performRegeneration({
-  fetchFn,
-  getAdminEndpointsFn,
-  token,
-  pageVariant,
-  showMessage,
-  reportError = () => {},
-}) {
+async function performRegeneration(permission, options) {
+  const {
+    fetchFn,
+    getAdminEndpointsFn,
+    token,
+    pageVariant,
+    showMessage,
+    reportError = () => {},
+  } = options;
   try {
-    await sendRegenerateVariantRequest({
+    await sendRegenerateVariantRequest(permission, {
       fetchFn,
       getAdminEndpointsFn,
       token,
@@ -1947,6 +1958,7 @@ async function ensureResponseOk(res) {
 
 /**
  * Submit a regenerate request to the admin endpoint.
+ * @param {AllowEffects} permission Permission for this regeneration request.
  * @param {{
  *   fetchFn: FetchFn,
  *   getAdminEndpointsFn: () => Promise<{ markVariantDirtyUrl: string }>,
@@ -1955,14 +1967,10 @@ async function ensureResponseOk(res) {
  * }} options - Dependencies and payload for the regenerate request.
  * @returns {Promise<void>}
  */
-async function sendRegenerateVariantRequest({
-  fetchFn,
-  getAdminEndpointsFn,
-  token,
-  pageVariant,
-}) {
+async function sendRegenerateVariantRequest(permission, options) {
+  const { fetchFn, getAdminEndpointsFn, token, pageVariant } = options;
   const { markVariantDirtyUrl } = await getAdminEndpointsFn();
-  const res = await fetchFn(markVariantDirtyUrl, {
+  const res = await fetchFn(permission, markVariantDirtyUrl, {
     method: 'POST',
     headers: {
       Authorization: `Bearer ${token}`,
@@ -2029,6 +2037,7 @@ function renderStatusParagraph(statusParagraph, text) {
  *   onAuthStateChangedFn: (auth: FirebaseAuthInstance | null | undefined, callback: () => void) => void,
  *   doc: Document,
  *   fetchFn: FetchFn,
+ *   bindEffectBoundary: (handler: (permission: AllowEffects) => Promise<void>) => Promise<void>,
  *   reportError?: (error: unknown) => void,
  * }} options - Dependencies required for admin initialization.
  * @returns {void}
@@ -2040,6 +2049,7 @@ export function initAdmin({
   onAuthStateChangedFn,
   doc,
   fetchFn,
+  bindEffectBoundary,
   reportError = () => {},
 }) {
   validateInitAdminDeps({
@@ -2048,6 +2058,7 @@ export function initAdmin({
     onAuthStateChangedFn,
     doc,
     fetchFn,
+    bindEffectBoundary,
   });
 
   const getAdminEndpoints =
@@ -2060,6 +2071,7 @@ export function initAdmin({
     googleAuth: googleAuthModule,
     getAdminEndpointsFn: getAdminEndpoints,
     fetchFn,
+    bindEffectBoundary,
     showMessage,
     reportError,
   });
@@ -2068,6 +2080,7 @@ export function initAdmin({
     googleAuth: googleAuthModule,
     getAdminEndpointsFn: getAdminEndpoints,
     fetchFn,
+    bindEffectBoundary,
     showMessage,
     reportError,
   });
@@ -2078,6 +2091,7 @@ export function initAdmin({
     showMessage,
     getAdminEndpointsFn: getAdminEndpoints,
     fetchFn,
+    bindEffectBoundary,
     reportError,
   });
 
@@ -2095,15 +2109,21 @@ export function initAdmin({
     if (!authorId || !token) return;
     try {
       const endpoints = await getAdminEndpoints();
-      const response = await fetchFn(endpoints.markVariantDirtyUrl, {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ authorId }),
+      await bindEffectBoundary(async permission => {
+        const response = await fetchFn(
+          permission,
+          endpoints.markVariantDirtyUrl,
+          {
+            method: 'POST',
+            headers: {
+              Authorization: `Bearer ${token}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ authorId }),
+          }
+        );
+        await ensureResponseOk(response);
       });
-      await ensureResponseOk(response);
       showMessage('Author regeneration triggered');
     } catch (error) {
       reportError(error);
@@ -2139,6 +2159,7 @@ export function initAdmin({
  *   ) => void,
  *   doc: Document,
  *   fetchFn: FetchFn,
+ *   bindEffectBoundary: (handler: (permission: AllowEffects) => Promise<void>) => Promise<void>,
  * }} deps - Core dependencies required to initialize the admin UI.
  * @returns {void}
  */
@@ -2148,6 +2169,7 @@ function validateInitAdminDeps({
   onAuthStateChangedFn,
   doc,
   fetchFn,
+  bindEffectBoundary,
 }) {
   if (!googleAuthModule) {
     throw new TypeError('googleAuthModule must be provided');
@@ -2156,6 +2178,7 @@ function validateInitAdminDeps({
   requireFunction(onAuthStateChangedFn, 'onAuthStateChangedFn');
   requireDocumentLike(doc);
   requireFunction(fetchFn, 'fetchFn');
+  requireFunction(bindEffectBoundary, 'bindEffectBoundary');
 }
 
 /**
@@ -2286,6 +2309,7 @@ export function setupFirebase(initApp) {
  * @param {typeof globalThis} deps.globalThisObj - Global scope used for Google APIs and DOM helpers.
  * @param {Document} deps.documentObj - Document object containing the admin UI.
  * @param {FetchFn} deps.fetchObj - Fetch-like function for HTTP requests.
+ * @param {(handler: (permission: AllowEffects) => Promise<void>) => Promise<void>} deps.bindEffectBoundary - Browser-owned command permission binder.
  * @param {(error: unknown) => void} [deps.reportError] - Optional reporter for admin fetch failures.
  * @param {(handlers: { initGoogleSignIn: (options?: GoogleSignInOptions) => void, signOut: () => Promise<void> }) => void} [deps.onHandlersReady] - Optional hook for tests to access memoized handlers.
  */
@@ -2301,6 +2325,7 @@ export function initAdminApp({
   globalThisObj,
   documentObj,
   fetchObj,
+  bindEffectBoundary,
   reportError = () => {},
   onHandlersReady = () => {},
 }) {
@@ -2375,6 +2400,7 @@ export function initAdminApp({
     onAuthStateChangedFn,
     doc: documentObj,
     fetchFn: fetchObj,
+    bindEffectBoundary,
     reportError,
   });
 }

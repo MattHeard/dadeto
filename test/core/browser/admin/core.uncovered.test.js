@@ -1,14 +1,16 @@
 import {
+  createGoogleAuthModule,
+  createInitGoogleSignInHandlerFactory,
+  announceTriggerRenderResult,
+} from '../../../../src/core/browser/admin-core.js';
+import {
   initAdmin,
   createTriggerStats,
   createRegenerateVariant,
   createTriggerRender,
-  createGoogleAuthModule,
-  createInitGoogleSignInHandlerFactory,
   initAdminApp,
-  announceTriggerRenderResult,
   createInitAdminAppHandle,
-} from '../../../../src/core/browser/admin-core.js';
+} from '../adminEffectsFixture.js';
 import { jest } from '@jest/globals';
 
 let mockGoogleAuthModule;
