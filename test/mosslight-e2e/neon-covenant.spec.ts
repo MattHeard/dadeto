@@ -5,6 +5,7 @@ import { createDeployments } from '../../src/core/browser/game/neon-covenant/ope
 import { createNeonState } from '../../src/core/browser/game/neon-covenant/simulation.js';
 import { manageLab } from '../../src/core/browser/game/neon-covenant/management.js';
 import { validLabSave } from '../../src/core/browser/game/neon-covenant/neonCovenant.js';
+import { NEON_CAMPAIGN_ROUTES } from '../helpers/neonCampaignRoutes.js';
 
 const RESOLUTIONS = [
   ['insolvent', 'creditors take control'],
@@ -39,6 +40,200 @@ const SCENARIO_LAUNCHES = [
     },
   },
 ] as const;
+
+for (const route of NEON_CAMPAIGN_ROUTES) {
+  test(`fresh ${route.name} strategy reaches its solvent ending through controller menus`, async ({
+    page,
+  }) => {
+    test.setTimeout(90_000);
+    const errors: string[] = [];
+    page.on('pageerror', error => errors.push(error.message));
+    await page.addInitScript(() => {
+      const tools = new Map();
+      (window as any).labTools = tools;
+      Object.defineProperty(document, 'modelContext', {
+        configurable: true,
+        value: {
+          registerTool: (tool: any) => tools.set(tool.name, tool),
+          unregisterTool: (name: string) => tools.delete(name),
+        },
+      });
+    });
+    await page.goto('/neon-covenant/');
+    await expect
+      .poll(() => page.evaluate(() => (window as any).labTools.has('neon_act')))
+      .toBe(true);
+    const observe = async () =>
+      page.evaluate(
+        () =>
+          JSON.parse(
+            (window as any).labTools.get('neon_observe').execute().content[0]
+              .text
+          ).state
+      );
+    const act = async (actions: string[]) =>
+      page.evaluate(
+        actions =>
+          JSON.parse(
+            (window as any).labTools.get('neon_act').execute({ actions })
+              .content[0].text
+          ).state,
+        actions
+      );
+    const choose = async (command: string) => {
+      const selection = await page.evaluate(async command => {
+        const state = JSON.parse(
+          (window as any).labTools.get('neon_observe').execute().content[0].text
+        ).state;
+        const { labEntries } = await import(
+          '/core/browser/game/neon-covenant/controls.js'
+        );
+        return {
+          current: state.menu.selected,
+          target: labEntries(state).findIndex(
+            (entry: string[]) => entry[1] === command
+          ),
+          count: labEntries(state).length,
+        };
+      }, command);
+      expect(selection.target, command).toBeGreaterThanOrEqual(0);
+      const forward =
+        (selection.target - selection.current + selection.count) %
+        selection.count;
+      const backward =
+        (selection.current - selection.target + selection.count) %
+        selection.count;
+      const distance = Math.min(forward, backward);
+      const direction = forward <= backward ? 'down' : 'up';
+      return act([...Array(distance).fill(direction), 'a']);
+    };
+    const openPage = async (name: string) => {
+      let state = await observe();
+      if (state.dialogue) state = await act(['b']);
+      if (state.menu?.page !== 'main') {
+        if (state.menu) await act(['x']);
+        await act(['x']);
+      }
+      await choose(`page:${name}`);
+    };
+    const chooseOnPage = async (name: string, command: string) => {
+      await openPage(name);
+      return choose(command);
+    };
+    const confirmReadableChoice = async () => {
+      let state = await observe();
+      for (
+        let pageIndex = 0;
+        pageIndex < 40 && !state.dialogue.choices.length;
+        pageIndex++
+      )
+        state = await act(['a']);
+      expect(state.dialogue.choices.length).toBeGreaterThan(0);
+      return act(['a']);
+    };
+    const executeOrder = async (command: string) => {
+      if (command === 'cooling') return chooseOnPage('infrastructure', command);
+      if (command.startsWith('focus:'))
+        return chooseOnPage('research', command);
+      if (command.startsWith('promise:')) {
+        const id = command.slice(8);
+        await chooseOnPage('relationships', `page:relationship:${id}`);
+        return choose(command);
+      }
+      if (command.startsWith('configure:')) {
+        const [, axis, value] = command.split(':');
+        await chooseOnPage('research', 'page:program');
+        await choose(`page:setting:${axis}`);
+        await choose(`setting:${axis}:${value}`);
+        return confirmReadableChoice();
+      }
+      if (command.startsWith('arc:consult:')) {
+        await chooseOnPage('relationships', 'page:relationship:mae');
+        return choose(command);
+      }
+      if (command.startsWith('contract:')) {
+        const [, partner, terms] = command.split(':');
+        await chooseOnPage('contracts', `page:contract:${partner}`);
+        await choose(`contract-offer:${partner}:${terms}`);
+        return confirmReadableChoice();
+      }
+      if (command.startsWith('test:probe:')) {
+        const id = command.slice(11);
+        await chooseOnPage('research', 'page:tests');
+        await choose(`page:testcase:${id}`);
+        const tested = await choose(command);
+        await choose('page:tests');
+        return tested;
+      }
+      if (command === 'deploy') return chooseOnPage('research', command);
+      if (command.startsWith('assign:')) {
+        const [, id, role] = command.split(':');
+        await chooseOnPage('recruitment', `page:employee:${id}`);
+        return choose(`assign:${id}:${role}`);
+      }
+      if (command.startsWith('service:maintain:')) {
+        const project = command.split(':')[2];
+        await chooseOnPage('operations', `page:deployment:${project}`);
+        return choose(command);
+      }
+      throw new Error(`No authored menu path for ${command}`);
+    };
+    const settleShift = async () => {
+      await chooseOnPage('ledger', 'shift');
+      const state = await observe();
+      if (!state.lab.outcome) await act(['x']);
+      return state;
+    };
+
+    await act(['b']);
+    await act(['x']);
+    await executeOrder('cooling');
+    await executeOrder(`focus:${route.project}`);
+    for (const order of route.orders) await executeOrder(order);
+    await executeOrder(route.contract);
+
+    let state = await observe();
+    let released = false;
+    for (let shift = 1; shift <= 28 && !state.lab.outcome; shift++) {
+      const target = { atlas: 38, ghost: 64, lumen: 48 }[route.project];
+      if (!released && state.lab.research[route.project] >= target) {
+        for (const probe of ['reliability', 'rights', 'oversight'])
+          await executeOrder(`test:probe:${probe}`);
+        state = await executeOrder('deploy');
+        released = state.lab.deployed.includes(route.project);
+      }
+      if (released && shift >= 12)
+        for (const employee of state.lab.employees.filter(
+          (person: Record<string, any>) => person.role === 'research'
+        ))
+          await executeOrder(`assign:${employee.id}:service`);
+      state = await observe();
+      if (released && state.lab.deployments[route.project].maintenance < 78)
+        state = await executeOrder(`service:maintain:${route.project}`);
+      state = await settleShift();
+    }
+
+    expect(state.world.day).toBe(29);
+    expect(state.lab.outcome).toBe('independent');
+    expect(state.lab.cash).toBeGreaterThan(state.lab.debt);
+    expect(state.lab.incidents).toBe(0);
+    expect(state.lab.deployed).toContain(route.project);
+    expect(state.lab.fulfilled).toContain(route.contract.split(':')[1]);
+    expect(state.lab.expired).toEqual([]);
+    expect(state.lab.stakeholderStanding[route.standing]).toBeGreaterThan(
+      route.minimumStanding
+    );
+    if (route.promise)
+      expect(state.lab.relationships[route.promise].stage).toBe('fulfilled');
+    expect(await labSaveIsValid(page)).toBe(true);
+    expect(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth <= innerWidth
+      )
+    ).toBe(true);
+    expect(errors).toEqual([]);
+  });
+}
 
 function endingSave(outcome: (typeof RESOLUTIONS)[number][0]) {
   let state = createNeonState();

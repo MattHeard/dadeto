@@ -1,0 +1,7 @@
+# Neon strategy routes through the controller
+
+- Unexpected hurdle: the campaign balance suite proved four solvent strategies with direct rule calls, while the browser campaign acceptance covered only Atlas. It did not prove the authored controller exposed playable routes for each philosophy.
+- Diagnosis: compared `test/core/browser/game/neonRouteBalance.test.js` strategy fixtures with standalone browser coverage; mapped actual `labEntries` and eight-button actions for every order, milestone and shift settlement.
+- Fix: shared the four authored route fixtures between the rules and Playwright suites. Added fresh-save standalone journeys through the registered `neon_act`/`neon_observe` interface for clinical, public cooperation, efficient service and ambitious autonomy. No balances or research were injected. Documented the acceptance contract.
+- Evidence: all four routes passed on phone and desktop (8/8 browser cases); focused route-balance Jest passed (5/5); `npm run check` passed, including exact 100% lines/statements/functions/branches (21761/21761, 22756/22756, 7419/7419, 11594/11594) and zero strict clones; cloud build completed successfully. Prettier and `git diff --check` passed.
+- Next time: route fixtures should be shared with actual controller/browser journeys from the first release. Inspect both in-world financial/research state and persisted ending evidence; do not rely solely on simulation helper calls for player-route claims.

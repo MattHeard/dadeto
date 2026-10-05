@@ -137,7 +137,7 @@ Focused rules suite: node scripts/run-jest.js --runInBand
 test/core/browser/game/neonContracts.test.js. Browser acceptance: npx playwright
 test --config test/mosslight.playwright.config.ts
 test/mosslight-e2e/neon-covenant.spec.ts --grep "contract packages are inspected"
---workers=1. Capture current-canvas artifacts under .tmp/neon-contracts-*.png.
+--workers=1. Capture current-canvas artifacts under .tmp/neon-contracts-\*.png.
 Full npm run check, strict duplicate scan, builds and migration/export regression
 remain required before checkpoint publication.
 
@@ -213,3 +213,12 @@ the actual deployed configurations, named staff and morale, strongest
 stakeholder, incident register, debt, and ownership/rescue terms. Keep audio
 available as optional chiptune music and synthesized effects, and verify the
 existing social-demo recording has a non-silent audio stream.
+
+The same four routes must also start from fresh saves in local browser tests and
+reach their endings through the registered `neon_act` eight-button interface.
+Every investment, promise, configuration, contract, probe, release, staffing
+change, maintenance order and shift settlement is selected from its authored
+controller menu; no balances, research, evaluation or date are injected. Run on
+phone and desktop, and verify the selected contract, strategy stakeholder,
+fulfilled promise where applicable, independent resolution, cash above debt,
+zero incidents, valid save and no browser errors or viewport overflow.
