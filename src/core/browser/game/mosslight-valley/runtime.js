@@ -1,4 +1,3 @@
-// @ts-nocheck -- runtime adapters are injected at the browser boundary.
 import { CONTENT } from './content.js';
 import { createAudioAdapter } from './audio.js';
 import { createSimulation, stepGame, finishChapter } from './simulation.js';
@@ -8,8 +7,8 @@ import { questJournal } from './quests.js';
 
 /**
  * Compose episode systems behind one lifecycle and deterministic step API.
- * @param {unknown} options - The options argument.
- * @returns {unknown} The computed result.
+ * @param {Record<string, any> | Map<string, any>} [options] Runtime dependencies and initial state.
+ * @returns {Record<string, any>} Runtime lifecycle and state API.
  */
 export function createMosslightRuntime(options = {}) {
   const opts = options instanceof Map ? { env: options } : options;
@@ -63,7 +62,10 @@ export function createMosslightRuntime(options = {}) {
       running = true;
       return renderer(state);
     },
-    step(deltaMs = 125, actions = []) {
+    step(
+      /** @type {number} */ deltaMs = 125,
+      /** @type {string[]} */ actions = []
+    ) {
       if (!running) return renderer(state);
       if (
         state.menu?.page === 'paused' &&
@@ -97,7 +99,7 @@ export function createMosslightRuntime(options = {}) {
       }
       return renderer(state);
     },
-    dispatch(command) {
+    dispatch(/** @type {string | {actions?: string[]}} */ command) {
       const actions =
         typeof command === 'string' ? [command] : command?.actions || [];
       state = stepState(state, actions, content);
@@ -125,12 +127,12 @@ export function createMosslightRuntime(options = {}) {
     listSaves() {
       return save.list?.() || [];
     },
-    loadSlot(slot) {
+    loadSlot(/** @type {number | string} */ slot) {
       activeSlot = Number(slot);
       state = save.load?.(slot) || createState(content);
       return renderer(state);
     },
-    resetSave(resetId) {
+    resetSave(/** @type {string | undefined} */ resetId) {
       if (resetId && save.hasReset?.(resetId)) return renderer(state);
       state = createState(content);
       accumulator = 0;
@@ -141,7 +143,7 @@ export function createMosslightRuntime(options = {}) {
     exportSave() {
       return save.export(state, activeSlot);
     },
-    importSave(raw) {
+    importSave(/** @type {string} */ raw) {
       const parsed = save.import(raw);
       if (!parsed) throw new Error('Invalid Mosslight Valley save data.');
       state = parsed.state;
@@ -157,7 +159,7 @@ export function createMosslightRuntime(options = {}) {
     isRunning() {
       return running;
     },
-    setState(next) {
+    setState(/** @type {Record<string, any>} */ next) {
       state = next;
       return renderer(state);
     },
