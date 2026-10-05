@@ -1,9 +1,9 @@
 import {
   isNonNullObject,
-  isValidString,
-  whenArray,
+  filteredArrayOrEmpty,
   objectOrEmpty,
 } from '../../../../commonCore.js';
+import { isValidString } from '../../../validation.js';
 
 export const DEFAULT_STORAGE_KEY = 'LEDG3';
 /**
@@ -104,9 +104,7 @@ export function createEmptyLedgerStorageState() {
  * @returns {string[]} Normalized merge-key order.
  */
 export function normalizeTransactionOrder(value) {
-  return /** @type {string[]} */ (
-    whenArray(value, arrayValue => arrayValue.filter(isValidString)) ?? []
-  );
+  return /** @type {string[]} */ (filteredArrayOrEmpty(value, isValidString));
 }
 
 /**

@@ -441,7 +441,11 @@ describe('createRenderContents', () => {
         ok: true,
         json: async () => ({ [ACCESS_TOKEN_KEY]: 't' }),
       })
-      .mockResolvedValue({ ok: true, status: 200, json: async () => ({}) });
+      .mockResolvedValue({
+        ok: true,
+        status: 200,
+        json: async () => ({ [ACCESS_TOKEN_KEY]: 't' }),
+      });
     const randomUUID = jest.fn().mockReturnValue('uuid');
 
     const renderContents = createRenderContents({

@@ -113,7 +113,7 @@ describe('checkout runtime adapters', () => {
     });
     expect(
       await deps.createBillingCustomer({ email: 'a@example.com' })
-    ).toEqual({ id: 'cus-new', options: { email: 'a@example.com' } });
+    ).toEqual({ stripeCustomerId: 'cus-new' });
     await deps.saveCustomerMappings('uid', 'cus-1', 'key-1');
     expect(db.collection).toHaveBeenCalledWith('billing-customers');
     expect(db.collection).toHaveBeenCalledWith('payment-customers');

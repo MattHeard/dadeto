@@ -6,7 +6,7 @@ import {
   trimmedStringOrNull,
   resolveMessageOrDefault,
   stringOrNull,
-  whenArray,
+  filteredArrayOrEmpty,
   whenString,
 } from '../commonCore.js';
 
@@ -618,12 +618,8 @@ function buildLaunchRecord(launch) {
  * @returns {string[]} Normalized launch args.
  */
 function getLaunchArgs(value) {
-  return (
-    whenArray(value, arrayValue =>
-      arrayValue.filter(
-        (/** @type {unknown} */ item) => typeof item === 'string'
-      )
-    ) ?? []
+  return /** @type {string[]} */ (
+    filteredArrayOrEmpty(value, item => typeof item === 'string')
   );
 }
 

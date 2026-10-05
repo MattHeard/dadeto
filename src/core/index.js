@@ -355,6 +355,16 @@ export function whenArray(value, fn) {
 }
 
 /**
+ * Filter an array candidate or return an empty array when the input is not an array.
+ * @param {unknown} value Candidate value.
+ * @param {(value: unknown) => boolean} predicate Item inclusion check.
+ * @returns {unknown[]} Matching values or an empty array.
+ */
+export function filteredArrayOrEmpty(value, predicate) {
+  return whenArray(value, values => values.filter(predicate)) ?? [];
+}
+
+/**
  * Run the provided callback when the condition passes.
  * @template T
  * @param {boolean} condition Gate determining whether to invoke the callback.

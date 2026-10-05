@@ -372,9 +372,9 @@ function getValidVariantUpdatePayload(data) {
   )
     return null;
   return buildVariantUpdatePayload({
-    ...data,
-    variantId: data.variantId,
+    isApproved: data.isApproved,
     moderatorId: data.moderatorId,
+    variantId: data.variantId,
   });
 }
 

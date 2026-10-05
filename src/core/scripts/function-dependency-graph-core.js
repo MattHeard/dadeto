@@ -2,7 +2,7 @@
 // traversal, and dependency-classification details are observable through the
 // complete graph-analysis contract rather than independently per helper.
 import path from 'node:path';
-import { isNonNullObject, whenOrNull } from '../commonCore.js';
+import { isNonNullObject } from '../commonCore.js';
 
 /** @typedef {{ type?: string, id?: AstNode, key?: AstNode, name?: string, loc?: { start: { line: number } }, params?: AstNode[], body?: AstNode, callee?: AstNode, left?: AstNode, source?: { value: string }, specifiers?: AstNode[], imported?: AstNode, local?: AstNode, declaration?: AstNode, node?: AstNode, [key: string]: unknown }} AstNode */
 /** @typedef {(node: AstNode, parent: AstNode | null) => void} AstVisitor */
@@ -128,9 +128,8 @@ function isObjectPropertyParent(parent) {
  * @returns {string|null} Binding name or null.
  */
 function bindingName(node) {
-  return /** @type {string | null} */ (
-    whenOrNull(node?.type === 'Identifier', () => node.name ?? null)
-  );
+  if (node?.type !== 'Identifier') return null;
+  return node.name ?? null;
 }
 
 /**

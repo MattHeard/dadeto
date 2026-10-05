@@ -95,7 +95,7 @@ async function resolveOwnedKey(db, uid) {
   const snap = await db.collection('api-key-ownership').doc(uid).get();
   const apiKeyUuid = snap.data()?.apiKeyUuid;
   if (typeof apiKeyUuid !== 'string') return null;
-  return { apiKeyUuid };
+  return Object.assign({}, { apiKeyUuid });
 }
 
 /**

@@ -3496,11 +3496,13 @@ export function createHandleVariantWrite({
   }) {
     await renderVariant(/** @type {VariantSnapshot} */ (change.after), context);
     const afterRef = /** @type {DocumentLike} */ (change.after).ref;
-    if (!afterRef || typeof afterRef.path !== 'string') return null;
-    const dirtyRef = db.doc(afterRef.path);
-    await dirtyRef.update({
-      dirty: getDeleteSentinel(),
-    });
+    if (!afterRef) return null;
+    const dirtyUpdate = { dirty: getDeleteSentinel() };
+    if (typeof afterRef.path !== 'string') {
+      await afterRef.update?.(dirtyUpdate);
+      return null;
+    }
+    await db.doc(afterRef.path).update(dirtyUpdate);
     return null;
   }
 

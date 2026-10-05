@@ -25,15 +25,22 @@ export function normalizeCatalogSnapshot(documentId, input) {
  * @returns {Array<{id: string, costEurMicros: number}>} Normalized operation rows.
  */
 function normalizeOperations(operations) {
-  return Object.entries(
-    /** @type {Record<string, unknown>} */ (operations ?? {})
-  ).map(([id, value]) => {
+  /** @type {Array<[string, unknown]>} */
+  const entries = Array.isArray(operations)
+    ? operations.map((value, index) => [String(index), value])
+    : Object.entries(/** @type {Record<string, unknown>} */ (operations ?? {}));
+  return entries.map(([id, value]) => {
     if (!value || typeof value !== 'object')
       throw new TypeError('Pricing operation must be an object');
     const operation = /** @type {Record<string, unknown>} */ (value);
     if (typeof operation.costEurMicros !== 'number')
       throw new TypeError('Pricing operation costEurMicros must be a number');
-    return { ...operation, id, costEurMicros: operation.costEurMicros };
+    const operationId = typeof operation.id === 'string' ? operation.id : id;
+    return {
+      ...operation,
+      id: operationId,
+      costEurMicros: operation.costEurMicros,
+    };
   });
 }
 

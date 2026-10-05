@@ -74,8 +74,10 @@ describe('processNewPageTestUtils', () => {
     expect(snap.ref).toBe(optionRef);
   });
 
-  test('resolveStoryRefOrEmpty returns fallback when undefined', () => {
-    expect(processNewPageTestUtils.resolveStoryRefOrEmpty(null)).toEqual({});
+  test('resolveStoryRefOrEmpty rejects an absent story reference', () => {
+    expect(() => processNewPageTestUtils.resolveStoryRefOrEmpty(null)).toThrow(
+      'storyRef.collection must be a function'
+    );
   });
 });
 test('ensureOptionSnapshotRef keeps existing ref when present', () => {

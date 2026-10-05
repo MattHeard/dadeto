@@ -408,38 +408,6 @@ async function resolveCustomer({
 }
 
 /**
- * Check that an owned key and billing origin are available.
- * @param {CheckoutDependencies['resolveApiKeyUuidForUid']} resolveApiKeyUuidForUid Key resolver.
- * @param {string | undefined} publicBillingOrigin Billing origin.
- * @param {string} uid User identifier.
- * @returns {Promise<{ apiKeyUuid: string } | CheckoutResponse>} Ownership or error.
- */
-// Stryker disable next-line all -- ownership resolution exposes fixed key and
-// configuration error responses.
-async function resolveCheckoutOwnership(
-  resolveApiKeyUuidForUid,
-  publicBillingOrigin,
-  uid
-) {
-  const ownership = await resolveApiKeyUuidForUid(uid);
-  const apiKeyUuid = ownership?.apiKeyUuid;
-  if (!apiKeyUuid)
-    return error(
-      403,
-      // Stryker disable next-line all -- fixed ownership error code.
-      'api_key_unavailable',
-      // Stryker disable next-line all -- fixed ownership validation message.
-      'No eligible API key is available.'
-    );
-  // Stryker disable next-line all -- missing billing origin has one fixed
-  // configuration response.
-  if (typeof publicBillingOrigin !== 'string' || !publicBillingOrigin)
-    // Stryker disable next-line all -- fixed billing configuration response.
-    return error(500, 'configuration_error', 'Billing is not configured.');
-  return { apiKeyUuid };
-}
-
-/**
  * Create and persist a Stripe checkout session.
  * @param {CheckoutDependencies} deps Checkout dependencies.
  * @param {{ key: string, packageId: string, uid: string }} input Validated request.
@@ -519,6 +487,38 @@ async function createCheckoutResult(
     logger.error?.('checkout session creation failed', { type: cause?.type });
     return stripeError(cause);
   }
+}
+
+/**
+ * Check that an owned key and billing origin are available.
+ * @param {CheckoutDependencies['resolveApiKeyUuidForUid']} resolveApiKeyUuidForUid Key resolver.
+ * @param {string | undefined} publicBillingOrigin Billing origin.
+ * @param {string} uid User identifier.
+ * @returns {Promise<{ apiKeyUuid: string } | CheckoutResponse>} Ownership or error.
+ */
+// Stryker disable next-line all -- ownership resolution exposes fixed key and
+// configuration error responses.
+async function resolveCheckoutOwnership(
+  resolveApiKeyUuidForUid,
+  publicBillingOrigin,
+  uid
+) {
+  const ownership = await resolveApiKeyUuidForUid(uid);
+  const apiKeyUuid = ownership?.apiKeyUuid;
+  if (!apiKeyUuid)
+    return error(
+      403,
+      // Stryker disable next-line all -- fixed ownership error code.
+      'api_key_unavailable',
+      // Stryker disable next-line all -- fixed ownership validation message.
+      'No eligible API key is available.'
+    );
+  // Stryker disable next-line all -- missing billing origin has one fixed
+  // configuration response.
+  if (typeof publicBillingOrigin !== 'string' || !publicBillingOrigin)
+    // Stryker disable next-line all -- fixed billing configuration response.
+    return error(500, 'configuration_error', 'Billing is not configured.');
+  return { apiKeyUuid };
 }
 
 /**

@@ -35,7 +35,7 @@ describe('solarPaddle scenarios 1', () => {
       width: 200,
       height: 140,
       lives: 2,
-      layoutSeed: undefined,
+      layoutSeed: 9,
     });
     expect(h.buildResetFallback(null)).toBeUndefined();
     const merged = h.mergeSeedAndState(
@@ -328,7 +328,8 @@ describe('solarPaddle scenarios 2', () => {
     const reset = h.buildNextState(seed, { type: 'keydown', key: 'r' });
     expect(reset.frame).toBe(0);
     expect(reset.status).toBe('ready');
-    expect(reset.panels).toEqual(seed.panels);
+    expect(reset.layoutSeed).toBe(seed.layoutSeed + 1);
+    expect(reset.panels).not.toEqual(seed.panels);
     const explicitReset = h.buildNextState(seed, { reset: true });
     expect(explicitReset.frame).toBe(1);
     expect(explicitReset.status).toBe('ready');

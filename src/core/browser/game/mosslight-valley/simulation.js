@@ -11,6 +11,7 @@ import { recordEvent, selectEnding, questJournal } from './quests.js';
 import { farmAction, fishAction, craftItem } from './activities.js';
 import { startBattle, battleAction } from './combat.js';
 import { controllerMenu } from './controls.js';
+import { advanceSimulationFrame } from '../simulationCore.js';
 
 /**
  * Create the complete starting state for a new save.
@@ -52,11 +53,7 @@ export function stepGame(
   content = CONTENT,
   deltaMs = 125
 ) {
-  let next = /** @type {any} */ ({
-    ...state,
-    tick: state.tick + 1,
-    moveCooldown: Math.max(0, state.moveCooldown - deltaMs),
-  });
+  let next = advanceSimulationFrame(state, deltaMs);
   const rawActions = actions;
   const rawPressed = actions.filter(
     action => !state.lastActions.includes(action)

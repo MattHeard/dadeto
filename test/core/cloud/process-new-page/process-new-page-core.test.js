@@ -85,7 +85,9 @@ describe('process new page defensive helpers', () => {
     expect(
       processNewPageTestUtils.ensureOptionSnapshotRef(snapshot, 'other')
     ).toBe(snapshot);
-    expect(processNewPageTestUtils.resolveStoryRefOrEmpty(null)).toEqual({});
+    expect(() => processNewPageTestUtils.resolveStoryRefOrEmpty(null)).toThrow(
+      'storyRef.collection must be a function'
+    );
     expect(
       processNewPageTestUtils.extractAndValidateStoryRef({ ref: null })
     ).toBeNull();

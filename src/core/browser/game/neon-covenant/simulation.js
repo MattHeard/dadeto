@@ -35,7 +35,7 @@ import {
   undoPlanningOrder,
 } from './planning.js';
 import { SCENARIOS, startScenario } from './scenarios.js';
-
+import { advanceSimulationFrame } from '../simulationCore.js';
 /**
  * Recompute derived UI after every load rather than trusting saved presentation.
  * @param {Record<string, any>} state Campaign snapshot.
@@ -680,11 +680,7 @@ export function stepNeon(
     ['up', 'down', 'left', 'right', 'a', 'b', 'x', 'y'].includes(action)
   );
   const pressed = buttons.filter(action => !state.lastActions.includes(action));
-  let next = /** @type {Record<string, any>} */ ({
-    ...state,
-    tick: state.tick + 1,
-    moveCooldown: Math.max(0, state.moveCooldown - deltaMs),
-  });
+  let next = advanceSimulationFrame(state, deltaMs);
   if (state.menu) next = stepMenu(next, pressed);
   else if (pressed.includes('x') || pressed.includes('y'))
     next.menu = {
