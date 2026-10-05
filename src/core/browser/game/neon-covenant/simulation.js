@@ -164,7 +164,7 @@ function peopleStoryCommand(state, next, command) {
  */
 export function createNeonState(content = LAB_CONTENT) {
   const world = {
-    ...createWorld(content),
+    ...createWorld(/** @type {Parameters<typeof createWorld>[0]} */ (content)),
     weather: 'indoor',
     npcs: content.npcs,
   };

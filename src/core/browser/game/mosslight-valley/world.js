@@ -1,4 +1,8 @@
-// @ts-nocheck -- world data is content-authored and covered by runtime tests.
+/** @typedef {{x: number, y: number, requires?: string, map: string, to: [number, number]}} MapExit */
+/** @typedef {{width: number, height: number, blocked: string[], exits: MapExit[]}} WorldMap */
+/** @typedef {{x: number, y: number, facing?: string}} WorldPlayer */
+/** @typedef {{mapId: string, map: WorldMap, player: WorldPlayer, time: number, day: number, flags: Record<string, any>, npcs?: {map: string, x: number, y: number}[], [key: string]: any}} WorldState */
+/** @typedef {Record<string, any> & {start: {map: string, x: number, y: number}, maps: Record<string, WorldMap>, npcs: {id: string}[]}} WorldContent */
 /**
  * Find the first eligible world entry, with null representing absence.
  * @template T
@@ -11,10 +15,10 @@ export function findWorldEntry(entries, eligible) {
 }
 /**
  * Whether a tile is outside the map or explicitly blocked.
- * @param {unknown} map - The map argument.
- * @param {unknown} x - The x argument.
- * @param {unknown} y - The y argument.
- * @returns {unknown} The computed result.
+ * @param {WorldMap} map Map geometry and blocked tiles.
+ * @param {number} x Horizontal tile coordinate.
+ * @param {number} y Vertical tile coordinate.
+ * @returns {boolean} Whether movement is blocked.
  */
 export function isBlocked(map, x, y) {
   return (
@@ -27,11 +31,11 @@ export function isBlocked(map, x, y) {
 }
 /**
  * Resolve map exits, including their story gates.
- * @param {unknown} map - The map argument.
- * @param {unknown} x - The x argument.
- * @param {unknown} y - The y argument.
- * @param {unknown} flags - The flags argument.
- * @returns {unknown} The computed result.
+ * @param {WorldMap} map Map exits.
+ * @param {number} x Horizontal tile coordinate.
+ * @param {number} y Vertical tile coordinate.
+ * @param {Record<string, any>} flags Current story flags.
+ * @returns {MapExit | null} Eligible exit at the coordinate.
  */
 export function findExit(map, x, y, flags) {
   return findWorldEntry(
@@ -42,10 +46,10 @@ export function findExit(map, x, y, flags) {
 }
 /**
  * Move in one grid direction and transition maps when crossing an exit.
- * @param {unknown} world - The world argument.
- * @param {unknown} direction - The direction argument.
- * @param {unknown} content - The content argument.
- * @returns {Record<string, any>} Updated world state.
+ * @param {WorldState} world Current world state.
+ * @param {string} direction Movement direction.
+ * @param {Record<string, any>} content Authored world maps and NPCs.
+ * @returns {WorldState} Updated world state.
  */
 export function movePlayer(world, direction, content) {
   const delta = { up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0] }[
@@ -80,8 +84,8 @@ export function movePlayer(world, direction, content) {
 }
 /**
  * Create initial world and story clock.
- * @param {unknown} content - The content argument.
- * @returns {Record<string, any>} Starting world state.
+ * @param {WorldContent} content Authored world data.
+ * @returns {WorldState} Starting world state.
  */
 export function createWorld(content) {
   return {
@@ -100,9 +104,9 @@ export function createWorld(content) {
 }
 /**
  * Advance time, day, weather and season using a stable episode calendar.
- * @param {unknown} world - The world argument.
- * @param {unknown} minutes - The minutes argument.
- * @returns {unknown} The computed result.
+ * @param {WorldState} world Current world state.
+ * @param {number} minutes Minutes to advance.
+ * @returns {WorldState} World state with its clock advanced.
  */
 export function advanceClock(world, minutes = 10) {
   const total = world.time + minutes / 60;
@@ -121,10 +125,10 @@ export function advanceClock(world, minutes = 10) {
 }
 /**
  * Tile-space camera that keeps a fixed handheld viewport centered on the player.
- * @param {unknown} world - The world argument.
- * @param {unknown} viewWidth - The viewWidth argument.
- * @param {unknown} viewHeight - The viewHeight argument.
- * @returns {unknown} The computed result.
+ * @param {WorldState} world Current world state.
+ * @param {number} viewWidth Viewport width in tiles.
+ * @param {number} viewHeight Viewport height in tiles.
+ * @returns {{x: number, y: number}} Camera origin in tile coordinates.
  */
 export function cameraFor(world, viewWidth = 13, viewHeight = 10) {
   return {
