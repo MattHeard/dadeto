@@ -1,4 +1,3 @@
-// @ts-nocheck
 // Toy: Asset Possession Segment Candidate Filter
 import {
   overlaps as overlap,
@@ -7,6 +6,12 @@ import {
 export { overlaps as overlap } from './assignmentIntervals.js';
 import { runToyArrayCalculation } from '../formatToyError.js';
 import { uniqueByKey } from '../browserToysCore.js';
+
+/** @typedef {{pointId: string, timestamp: string}} PossessionPoint */
+/** @typedef {{segmentId: string, startPointId: string, endPointId: string}} PossessionSegment */
+/** @typedef {{assetId: string, segmentId: string}} AssetAssignment */
+/** @typedef {{assetId: string, sku: string}} PossessedAsset */
+/** @typedef {{points?: PossessionPoint[], segments?: PossessionSegment[], existingAssetAssignments?: AssetAssignment[], assetAssignments?: AssetAssignment[], assets?: PossessedAsset[], requestedSku: string, possessionSegmentId: string}} PossessionCandidateRequest */
 
 /**
  * Filter available assets for a possession interval.
@@ -23,6 +28,7 @@ export function assetPossessionSegmentCandidateFilter(input) {
  * @returns {string[]} Ordered unique candidate identifiers.
  */
 function collectCandidateIds(input) {
+  /** @type {PossessionCandidateRequest} */
   const x = JSON.parse(input);
   const points = new Map((x.points || []).map(p => [p.pointId, p])),
     segments = new Map((x.segments || []).map(s => [s.segmentId, s]));

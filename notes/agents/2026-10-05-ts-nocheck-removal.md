@@ -1,0 +1,4 @@
+- Unexpected hurdle: the source already had JSDoc for the segment and interval helpers, but the request parser left its fields implicit because the file was globally unchecked.
+- Diagnosis path: removed the pragma and ran `npm run tsdoc:check`; TypeScript reported five implicit callback parameters in request collection/filtering.
+- Chosen fix: documented the JSON request and its point, segment, assignment, and asset shapes, then typed the parsed value at the input boundary. The targeted lint and project JSDoc check pass.
+- Next-time guidance: remove pragmas one small group at a time and use checker diagnostics to add boundary types; avoid papering over errors with new suppressions. Beads could not create the parent issue because the local Dolt lock remains held by another process.
