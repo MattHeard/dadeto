@@ -1,5 +1,3 @@
-// @ts-nocheck -- payment and Firebase collaborators are injected structural test doubles.
-
 import { calculatePackageCredits } from '../billing/pricing-core.js';
 
 const UUID =
@@ -65,7 +63,7 @@ function authorization(request) {
 /**
  * Convert a Stripe failure into an application error response.
  * @param {{ type?: string, code?: string } | undefined} cause Stripe failure.
- * @returns {{ status: number, body: { error: { code: string, message: string } } }} Error response.
+ * @returns {CheckoutResponse} Error response.
  */
 // Stryker disable next-line all -- Stripe failures map to fixed public error
 // responses defined by the payment-provider protocol.
@@ -243,6 +241,10 @@ async function validateCheckoutRequest(request, verifyIdToken) {
   if (typeof key !== 'string') return key;
   const bodyError = validateBody(request);
   if (bodyError) return bodyError;
+  const body =
+    /** @type {CheckoutRequest & {body: Record<string, unknown> & {packageId: string}}} */ (
+      request
+    ).body;
   let token;
   try {
     // Stryker disable next-line all -- bearer token extraction uses the fixed
@@ -259,7 +261,7 @@ async function validateCheckoutRequest(request, verifyIdToken) {
   // response.
   if (!token?.uid)
     return error(401, 'invalid_token', 'The authentication token is invalid.');
-  return { auth, key, packageId: request.body.packageId, uid: token.uid };
+  return { auth, key, packageId: body.packageId, uid: token.uid };
 }
 
 /**
@@ -387,7 +389,8 @@ async function resolveCustomer({
   apiKeyUuid,
 }) {
   let customer = await resolveBillingCustomer(uid);
-  if (customer?.stripeCustomerId) return customer;
+  const existingCustomerId = customer?.stripeCustomerId;
+  if (existingCustomerId) return { stripeCustomerId: existingCustomerId };
   // Stryker disable next-line all -- customer creation uses the fixed billing
   // metadata/idempotency payload.
   customer = await createBillingCustomer({
@@ -399,8 +402,9 @@ async function resolveCustomer({
   // Stryker disable next-line all -- incomplete customer creation has one
   // fixed internal error boundary.
   if (!customer.stripeCustomerId) throw new Error('Customer ID missing');
-  await saveCustomerMappings(uid, customer.stripeCustomerId, apiKeyUuid);
-  return customer;
+  const stripeCustomerId = customer.stripeCustomerId;
+  await saveCustomerMappings(uid, stripeCustomerId, apiKeyUuid);
+  return { stripeCustomerId };
 }
 
 /**
@@ -418,7 +422,8 @@ async function resolveCheckoutOwnership(
   uid
 ) {
   const ownership = await resolveApiKeyUuidForUid(uid);
-  if (!ownership?.apiKeyUuid)
+  const apiKeyUuid = ownership?.apiKeyUuid;
+  if (!apiKeyUuid)
     return error(
       403,
       // Stryker disable next-line all -- fixed ownership error code.
@@ -431,7 +436,7 @@ async function resolveCheckoutOwnership(
   if (typeof publicBillingOrigin !== 'string' || !publicBillingOrigin)
     // Stryker disable next-line all -- fixed billing configuration response.
     return error(500, 'configuration_error', 'Billing is not configured.');
-  return ownership;
+  return { apiKeyUuid };
 }
 
 /**
@@ -462,6 +467,8 @@ async function createCheckoutResult(
     // Stryker disable next-line all -- fixed no-op logger fallback.
     logger = { error() {} },
   } = deps;
+  if (typeof publicBillingOrigin !== 'string' || !publicBillingOrigin)
+    return error(500, 'configuration_error', 'Billing is not configured.');
   try {
     const customer = await resolveCustomer({
       resolveBillingCustomer,
@@ -518,7 +525,7 @@ async function createCheckoutResult(
  * Create the purchase record when persistence is configured.
  * @param {CheckoutDependencies['createPurchase']} createPurchase Purchase creator.
  * @param {object} input Purchase input.
- * @returns {Promise<object|null>} Purchase record.
+ * @returns {Promise<{purchaseId: string}|null>} Purchase record.
  */
 async function createPurchaseRecord(createPurchase, input) {
   if (!createPurchase) return null;
