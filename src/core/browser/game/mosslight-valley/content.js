@@ -1,13 +1,15 @@
-// @ts-nocheck -- episode data is validated by the content contract tests.
+/** @typedef {[string, number, number]} ScheduleLocation */
+/** @typedef {{morning: ScheduleLocation, afternoon: ScheduleLocation, evening: ScheduleLocation}} DailySchedule */
+/** @typedef {{label: string, set?: Record<string, string | number>, bond?: number}} AuthoredChoice */
 /**
  * Immutable authored content for The Sleeping Valley chapter.
  */
 /**
  * Build a daily schedule from authored morning, afternoon, and evening placements.
- * @param {Array} morning - Morning scene location.
- * @param {Array} afternoon - Afternoon scene location.
- * @param {Array} evening - Evening scene location.
- * @returns {object} The complete daily schedule.
+ * @param {ScheduleLocation} morning Morning scene location.
+ * @param {ScheduleLocation} afternoon Afternoon scene location.
+ * @param {ScheduleLocation} evening Evening scene location.
+ * @returns {DailySchedule} Complete daily schedule.
  */
 const routine = (morning, afternoon, evening) => ({
   morning,
@@ -17,8 +19,8 @@ const routine = (morning, afternoon, evening) => ({
 /**
  * Keep dialogue lines compact while retaining optional branching choices.
  * @param {string} text - The line spoken by the character.
- * @param {Array} choices - Optional player responses.
- * @returns {object} An authored dialogue line.
+ * @param {AuthoredChoice[]} [choices] Optional player responses.
+ * @returns {{text: string, choices?: AuthoredChoice[]}} Authored dialogue line.
  */
 const dialogueLine = (text, choices) =>
   choices ? { text, choices } : { text };
@@ -27,7 +29,7 @@ const dialogueLine = (text, choices) =>
  * @param {string} label - Choice displayed to the player.
  * @param {string} ending - Ending identifier to persist.
  * @param {string} trait - Valley-state trait key.
- * @returns {object} Authored ending choice.
+ * @returns {AuthoredChoice} Authored ending choice.
  */
 const resolution = (label, ending, trait) => ({
   label,
