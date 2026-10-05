@@ -34,6 +34,7 @@ import { createMosslightRuntime } from '../../../../src/core/browser/game/mossli
 import {
   drawGameFrame,
   wrapDialogueText,
+  wrapMenuRows,
 } from '../../../../src/core/browser/game/mosslight-valley/renderer.js';
 import { generateBlogKey } from '../../../../src/core/browser/toys/2026-02-21/generateBlogKey.js';
 
@@ -374,6 +375,28 @@ test('intro and modal menus own input, with no invisible conversation consuming 
   state = press(state, 'a');
   expect(state.menu.page).toBe('ledger');
   expect(choose(state, 'shift').world.day).toBe(2);
+});
+
+test('main menu keeps wrapped choices and the control hint inside the handheld panel', () => {
+  const state = {
+    ...campaign(),
+    menu: { page: 'main', selected: 3 },
+  };
+  const menuRows = labMenuRows(state);
+  const visibleRows = wrapMenuRows(menuRows);
+  const frame = renderNeon(state);
+  const textRows = frame.shapes.filter(
+    shape => shape.type === 'text' && shape.x === 6
+  );
+
+  expect(menuRows).toContain('› Short scenarios / replace this slot');
+  expect(visibleRows.join(' ')).toContain('replace this slot');
+  expect(
+    menuRows.filter(row => row.startsWith('›') || row.startsWith('  '))
+  ).toHaveLength(3);
+  expect(visibleRows).toContain('A CHOOSE / B BACK / X CLOSE');
+  expect(textRows.at(-1).y).toBeLessThan(107);
+  expect(textRows.every(shape => shape.y < 107)).toBe(true);
 });
 
 test('walking is collision-aware and costs nothing; all rooms are reachable', () => {

@@ -585,7 +585,7 @@ export function labMenuRows(state) {
             ];
   const entries = labEntries(state);
   const selected = state.menu.selected;
-  const available = Math.max(1, 7 - info.length);
+  const available = Math.min(3, Math.max(1, 7 - info.length));
   const start = Math.max(0, selected - available + 1);
   return [
     state.menu.page.toUpperCase(),
