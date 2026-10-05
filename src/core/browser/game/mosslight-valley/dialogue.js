@@ -1,10 +1,13 @@
-// @ts-nocheck -- dialogue content is data-authored.
+/** @typedef {Record<string, any> & {label?: string, set?: Record<string, boolean>, bond?: number}} DialogueChoice */
+/** @typedef {{text?: string, choices?: DialogueChoice[]}} DialogueLine */
+/** @typedef {{actorId: string, lines: DialogueLine[], index: number, choices: DialogueChoice[], selected?: number}} Dialogue */
+/** @typedef {Record<string, any> & {dialogue?: Dialogue | null}} DialogueState */
 /**
  * Start a dialogue node and preserve its choice list.
- * @param {unknown} state - The state argument.
- * @param {unknown} actorId - The actorId argument.
- * @param {unknown} node - The node argument.
- * @returns {Record<string, any>} State with a conversation attached.
+ * @param {DialogueState} state Current game state.
+ * @param {string} actorId Character or event identifier.
+ * @param {DialogueLine[]} node Authored dialogue lines.
+ * @returns {DialogueState} State with a conversation attached.
  */
 export function openDialogue(state, actorId, node) {
   const lines = Array.isArray(node) ? node : node;
@@ -15,8 +18,8 @@ export function openDialogue(state, actorId, node) {
 }
 /**
  * Advance a line, present its choices, or close the conversation.
- * @param {unknown} state - The state argument.
- * @returns {Record<string, any>} State after continuing the conversation.
+ * @param {DialogueState} state Current game state.
+ * @returns {DialogueState} State after continuing the conversation.
  */
 export function advanceDialogue(state) {
   if (!state.dialogue) return state;
@@ -33,9 +36,9 @@ export function advanceDialogue(state) {
 }
 /**
  * Commit one authored dialogue choice to persistent story state.
- * @param {unknown} state - The state argument.
- * @param {unknown} choice - The choice argument.
- * @returns {unknown} The computed result.
+ * @param {DialogueState & {world: {flags: Record<string, any>, relationships: Record<string, number>}}} state Current game state.
+ * @param {number} choice Choice index.
+ * @returns {DialogueState} State after applying the selected choice.
  */
 export function chooseDialogue(state, choice) {
   if (!state.dialogue?.choices?.[choice]) return state;
@@ -55,9 +58,9 @@ export function chooseDialogue(state, choice) {
 }
 /**
  * Move the highlighted story choice without committing it.
- * @param {unknown} state - The state argument.
- * @param {unknown} direction - The direction argument.
- * @returns {unknown} The computed result.
+ * @param {DialogueState} state Current game state.
+ * @param {number} direction Direction to move the selection.
+ * @returns {DialogueState} State with the selection updated.
  */
 export function moveDialogueChoice(state, direction) {
   if (!state.dialogue?.choices?.length) return state;
@@ -66,8 +69,8 @@ export function moveDialogueChoice(state, direction) {
 }
 /**
  * Return currently visible authored line.
- * @param {unknown} state - The state argument.
- * @returns {unknown} The computed result.
+ * @param {DialogueState} state Current game state.
+ * @returns {DialogueLine | null} Currently visible line, if any.
  */
 export function currentLine(state) {
   return state.dialogue?.lines[state.dialogue.index] || null;
