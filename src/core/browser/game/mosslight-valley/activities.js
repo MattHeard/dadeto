@@ -1,9 +1,14 @@
-// @ts-nocheck -- deterministic activities operate on serializable game state.
+/** @typedef {{crop: string | null, plantedDay: number | null, wateredDay: number | null}} FarmPlot */
+/** @typedef {Record<string, any> & {farm: FarmPlot, inventory: Record<string, number>, world: {day: number, season: string, mapId: string, weather: string, time: number}}} ActivityState */
+/** @typedef {{days: number, seasons: string[], item: string}} CropDefinition */
+/** @typedef {{weather: string[], hours: [number, number], item: string}} FishDefinition */
+/** @typedef {{crops: Record<string, CropDefinition>, fish: Record<string, FishDefinition>}} ActivityContent */
+/** @typedef {{ingredients: [string, number][], output: string}} Recipe */
 /**
  * Plant or water the active farm plot.
- * @param {unknown} state - The state argument.
- * @param {unknown} content - The content argument.
- * @returns {unknown} The computed result.
+ * @param {ActivityState} state Current game state.
+ * @param {ActivityContent} content Authored crop data.
+ * @returns {ActivityState} State after farming.
  */
 export function farmAction(state, content) {
   const plot = state.farm;
@@ -27,6 +32,7 @@ export function farmAction(state, content) {
   }
   const crop = content.crops[plot.crop];
   if (
+    plot.plantedDay !== null &&
     state.world.day - plot.plantedDay >= crop.days &&
     crop.seasons.includes(state.world.season)
   )
@@ -49,9 +55,9 @@ export function farmAction(state, content) {
 }
 /**
  * Cast at the shore; catch chance is deterministic from world conditions.
- * @param {unknown} state - The state argument.
- * @param {unknown} content - The content argument.
- * @returns {unknown} The computed result.
+ * @param {ActivityState} state Current game state.
+ * @param {ActivityContent} content Authored fish data.
+ * @returns {ActivityState} State after fishing.
  */
 export function fishAction(state, content) {
   if (state.world.mapId !== 'shore')
@@ -75,8 +81,8 @@ export function fishAction(state, content) {
 }
 /**
  * Advance crop growth and daily routines at dawn.
- * @param {unknown} state - The state argument.
- * @returns {unknown} The computed result.
+ * @param {ActivityState} state Current game state.
+ * @returns {ActivityState} State after dawn routines.
  */
 export function dawnActivities(state) {
   return {
@@ -87,9 +93,9 @@ export function dawnActivities(state) {
 }
 /**
  * Craft one story item when its ingredients are present.
- * @param {unknown} state - The state argument.
- * @param {unknown} recipe - The recipe argument.
- * @returns {unknown} The computed result.
+ * @param {ActivityState} state Current game state.
+ * @param {Recipe} recipe Authored recipe.
+ * @returns {ActivityState} State after crafting.
  */
 export function craftItem(state, recipe) {
   if (
