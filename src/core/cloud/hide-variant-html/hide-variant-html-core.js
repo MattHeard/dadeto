@@ -1,5 +1,3 @@
-// @ts-nocheck -- this module deliberately accepts Firebase/HTTP test doubles at its boundaries.
-
 import {
   DEFAULT_BUCKET_NAME,
   ensureFirebaseAppOnce,
@@ -45,7 +43,7 @@ export function normalizeRemoveVariantLoadResult(loadResult) {
  * @returns {{ page: unknown, variant: unknown | undefined }} Normalized placeholder.
  */
 function normalizeLoadResultValue(loadResult) {
-  if (typeof loadResult !== 'object') {
+  if (!loadResult || typeof loadResult !== 'object') {
     return { page: loadResult, variant: null };
   }
 
@@ -341,8 +339,8 @@ function isValidPath(path) {
 /**
  * Delete the rendered file only when the path is valid.
  * @param {unknown} path Candidate path string.
- * @param {() => Promise<unknown>} deleteFn Deletion action executed when the path passes validation.
- * @returns {Promise<unknown>} Promise resolved either immediately or after deletion.
+ * @param {() => Promise<void>} deleteFn Deletion action executed when the path passes validation.
+ * @returns {Promise<void>} Promise resolved either immediately or after deletion.
  */
 function deleteIfPathValid(path, deleteFn) {
   if (!isValidPath(path)) {
@@ -429,9 +427,11 @@ export function buildVariantPath({ page, variantData }) {
  * @param {{ number?: unknown }} page Page.
  * @returns {string} Page number segment.
  */
-function extractPageNumber(page) {
+function extractPageNumber(/** @type {unknown} */ page) {
   // Stryker disable all -- page snapshots use the fixed optional-number shape.
-  return formatPageNumber(page?.number);
+  return formatPageNumber(
+    /** @type {{number?: unknown} | null} */ (page)?.number
+  );
   // Stryker restore all
 }
 
@@ -440,9 +440,11 @@ function extractPageNumber(page) {
  * @param {{ name?: unknown }} variantData Variant data.
  * @returns {string} Variant name segment.
  */
-function extractVariantName(variantData) {
+function extractVariantName(/** @type {unknown} */ variantData) {
   // Stryker disable all -- variant payloads use the fixed optional-name shape.
-  return ensureString(variantData?.name);
+  return ensureString(
+    /** @type {{name?: unknown} | null} */ (variantData)?.name
+  );
   // Stryker restore all
 }
 
@@ -528,9 +530,13 @@ function hasParentRef(ref) {
  * @param {object | null | undefined} parent Parent reference.
  * @returns {boolean} True when parent has a parent property.
  */
-function hasGrandparentFromParent(parent) {
+function hasGrandparentFromParent(/** @type {unknown} */ parent) {
   // Stryker disable all -- Firestore reference chains use the fixed grandparent boundary.
-  return Boolean(parent && /** @type {{ parent?: unknown }} */ (parent).parent);
+  const candidate =
+    parent && typeof parent === 'object'
+      ? /** @type {Record<string, unknown>} */ (parent)
+      : null;
+  return Boolean(candidate?.parent);
   // Stryker restore all
 }
 
@@ -553,7 +559,7 @@ function hasValidGrandparentChain(ref) {
  */
 function extractGrandparentRef(ref) {
   if (!hasValidGrandparentChain(ref)) return null;
-  return /** @type {{ parent?: unknown }} */ (ref).parent.parent;
+  return /** @type {{ parent?: { parent?: unknown } }} */ (ref).parent?.parent;
 }
 
 /**
@@ -600,11 +606,13 @@ export const hideVariantHtmlTestUtils = {
 
 /**
  * Extract the visibility score from a Firestore snapshot.
- * @param {{ data?: () => unknown } | null | undefined} snapshot Firestore snapshot.
+ * @param {unknown} snapshot Firestore snapshot candidate.
  * @returns {number} Visibility value or zero when unavailable.
  */
-export function getVariantVisibility(snapshot) {
-  const data = getSnapshotData(snapshot);
+export function getVariantVisibility(/** @type {unknown} */ snapshot) {
+  const data = getSnapshotData(
+    /** @type {{data?: () => unknown} | null | undefined} */ (snapshot)
+  );
   return extractVisibility(data);
 }
 
@@ -626,7 +634,7 @@ function extractVisibility(data) {
  * @param {(snapshot: unknown) => Promise<null>} options.removeVariantHtmlForSnapshot Helper that removes rendered HTML for a snapshot.
  * @param {(snapshot: unknown) => number} [options.getVisibility] Function that extracts visibility from a snapshot.
  * @param {number} [options.visibilityThreshold] Threshold at which the HTML remains visible.
- * @returns {(change: { before: unknown, after: { exists: boolean } }) => Promise<null>} Firestore change handler.
+ * @returns {(change: { before: unknown, after: unknown }) => Promise<null>} Firestore change handler.
  */
 export function createHandleVariantVisibilityChange(options) {
   const dependencies = buildVariantVisibilityDependencies(options);
@@ -701,7 +709,11 @@ export function createHideVariantHtmlCore(deps) {
       documentPath: 'stories/{storyId}/pages/{pageId}/variants/{variantId}',
       handler: change =>
         Promise.resolve(
-          handleVariantVisibilityChange(/** @type {unknown} */ (change))
+          handleVariantVisibilityChange(
+            /** @type {Parameters<typeof handleVariantVisibilityChange>[0]} */ (
+              change
+            )
+          )
         ),
     }),
     handleVariantVisibilityChange,
@@ -709,7 +721,7 @@ export function createHideVariantHtmlCore(deps) {
 }
 
 /**
- * @param {{ pageRef?: { get?: () => Promise<{ exists?: boolean, data?: () => unknown }> } }} payload Loader payload.
+ * @param {RemoveVariantHtmlPayload} payload Loader payload.
  * @returns {Promise<{ page: unknown } | null>} Loaded page payload or null.
  */
 async function createLoadPageForVariant({ pageRef }) {
@@ -722,12 +734,17 @@ async function createLoadPageForVariant({ pageRef }) {
 
 /**
  * Determine whether a page reference can be loaded.
- * @param {{ get?: () => Promise<{ exists?: boolean, data?: () => unknown }> } | null | undefined} pageRef Reference candidate.
+ * @param {unknown} pageRef Reference candidate.
  * @returns {pageRef is { get: () => Promise<{ exists?: boolean, data?: () => unknown }> }} True when the reference can be loaded.
  */
 function hasLoadablePageRef(pageRef) {
   // Stryker disable all -- page loading uses the fixed Firestore get contract.
-  return Boolean(pageRef && typeof pageRef.get === 'function');
+  return Boolean(
+    pageRef &&
+      typeof pageRef === 'object' &&
+      'get' in pageRef &&
+      typeof pageRef.get === 'function'
+  );
   // Stryker restore all
 }
 
@@ -919,11 +936,11 @@ function assertVariantVisibilityDependencies(
 /**
  * Create a handler that responds to visibility transitions crossing the threshold.
  * @param {{
- *   removeVariantHtmlForSnapshot: (snapshot: import('firebase-admin/firestore').DocumentSnapshot | SnapshotLike) => Promise<null>,
- *   getVisibility: (snapshot: import('firebase-admin/firestore').DocumentSnapshot | SnapshotLike) => number,
+ *   removeVariantHtmlForSnapshot: (snapshot: unknown) => Promise<null>,
+ *   getVisibility: (snapshot: unknown) => number,
  *   visibilityThreshold: number,
  * }} params Transition dependencies.
- * @returns {(change: { before: import('firebase-admin/firestore').DocumentSnapshot | SnapshotLike, after: import('firebase-admin/firestore').DocumentSnapshot | SnapshotLike | { exists: boolean } }) => Promise<null>} Handler invoked when the snapshot visibility crosses the threshold.
+ * @returns {(change: { before: unknown, after: unknown }) => Promise<null>} Handler invoked when the snapshot visibility crosses the threshold.
  */
 function createVisibilityTransitionHandler(params) {
   const { removeVariantHtmlForSnapshot, getVisibility, visibilityThreshold } =
@@ -931,11 +948,7 @@ function createVisibilityTransitionHandler(params) {
 
   return async function visibilityTransition({ before, after }) {
     const beforeVisibility = getVisibility(before);
-    const afterVisibility = getVisibility(
-      /** @type {import('firebase-admin/firestore').DocumentSnapshot | SnapshotLike} */ (
-        after
-      )
-    );
+    const afterVisibility = getVisibility(after);
 
     if (
       shouldRemoveRenderedHtml(
@@ -944,11 +957,7 @@ function createVisibilityTransitionHandler(params) {
         visibilityThreshold
       )
     ) {
-      return removeVariantHtmlForSnapshot(
-        /** @type {import('firebase-admin/firestore').DocumentSnapshot | SnapshotLike} */ (
-          after
-        )
-      );
+      return removeVariantHtmlForSnapshot(after);
     }
 
     return null;
@@ -959,7 +968,7 @@ function createVisibilityTransitionHandler(params) {
  * Bind the delete path and transition handler into the Firestore trigger handler.
  * @param {(snapshot: unknown) => Promise<null>} removeVariantHtmlForSnapshot Rendered HTML remover.
  * @param {(params: { before: unknown, after: unknown }) => Promise<null>} visibilityTransition Visibility transition handler.
- * @returns {(change: { before: unknown, after: { exists: boolean } }) => Promise<null>} Firestore change handler.
+ * @returns {(change: { before: unknown, after: unknown }) => Promise<null>} Firestore change handler.
  */
 function createVisibilityChangeHandler(
   removeVariantHtmlForSnapshot,
@@ -979,11 +988,11 @@ function createVisibilityChangeHandler(
 
 /**
  * Determine whether the document after snapshot indicates deletion.
- * @param {{ exists?: boolean } | null | undefined} after After snapshot.
+ * @param {unknown} after After snapshot.
  * @returns {boolean} True when the document no longer exists.
  */
 function wasDocumentDeleted(after) {
-  return Boolean(after && !after.exists);
+  return Boolean(after && !(/** @type {{exists?: boolean}} */ (after).exists));
 }
 
 /**
