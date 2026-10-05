@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { runToy } from '../toyPersistence.js';
 import { normalizePositiveInteger } from '../../common.js';
 
@@ -21,13 +20,13 @@ const EDGE_THRESHOLD = 0.4;
  * @typedef {{ id: string, x: number, y: number, radius: number, active: boolean, required: boolean, hitCount: number }} Beacon
  * @typedef {{ from: string, to: string, active: boolean }} BeaconLink
  * @typedef {{ x: number, y: number, vx: number, vy: number, radius: number, stuckToPaddle: boolean }} BeaconOrb
- * @typedef {{ version: 1, width: number, height: number, frame: number, status: 'ready' | 'running' | 'paused' | 'won' | 'lost', score: number, lives: number, initialLives: number, input: BeaconInputState, paused: boolean, simulationSpeed: number, paddle: { x: number, y: number, width: number, height: number, speed: number }, orb: BeaconOrb, beacons: Beacon[], links: BeaconLink[], lastActivatedBeaconId: string | null }} BeaconState
+ * @typedef {{ version: 1, width: number, height: number, frame: number, status: 'ready' | 'running' | 'paused' | 'won' | 'lost', score: number, lives: number, initialLives: number, input: BeaconInputState, paused: boolean, simulationSpeed: number, paddle: { x: number, y: number, width: number, height: number, speed: number }, orb: BeaconOrb, beacons: Beacon[], links: BeaconLink[], lastActivatedBeaconId: string | null, layoutSeed?: number }} BeaconState
  */
 
 /**
  * Run the Beacon Bounce toy with persisted browser state.
- * @param {unknown} input - Toy input payload from the browser runtime.
- * @param {unknown} env - Runtime environment passed through by the toy host.
+ * @param {string} input Toy input payload from the browser runtime.
+ * @param {{get?: (key: string) => unknown}} env Runtime environment passed through by the toy host.
  * @returns {unknown} The toy runner result.
  */
 export function beaconBounce(input, env) {
@@ -42,13 +41,13 @@ export function beaconBounce(input, env) {
 /**
  * Build the next game state from persisted state and the latest input.
  * @param {BeaconState | null} persisted - Previously persisted state.
- * @param {unknown} input - Latest toy input payload.
+ * @param {Record<string, unknown>|null} input Latest toy input payload.
  * @returns {BeaconState} The next simulation state.
  */
 export function buildNextState(persisted, input) {
-  const seed = createSeedState(input, persisted);
+  const seed = createSeedState(input, persisted ?? undefined);
   const base = persisted || seed;
-  const shouldReset = input?.reset === true || !persisted;
+  const shouldReset = readInput(input, 'reset') === true || !persisted;
   let merged = seed;
   if (!shouldReset) merged = mergeSeedAndState(base, seed);
   const inputState = updateInputState(base.input, input);
@@ -70,7 +69,7 @@ export function buildNextState(persisted, input) {
  * Create a reset state when the reset action is newly pressed.
  * @param {BeaconInputState} inputState Current input state.
  * @param {BeaconState | null} persisted Previous persisted state.
- * @param {unknown} input Latest input payload.
+ * @param {Record<string, unknown>|null} input Latest input payload.
  * @returns {BeaconState | null} Reset state or null when no reset is requested.
  */
 function createResetState(inputState, persisted, input) {
@@ -80,7 +79,7 @@ function createResetState(inputState, persisted, input) {
   )
     return null;
   return createSeedState(
-    { ...input, layoutSeed: (persisted?.layoutSeed ?? 0) + 1 },
+    { ...(input ?? {}), layoutSeed: (persisted?.layoutSeed ?? 0) + 1 },
     buildResetFallback(persisted)
   );
 }
@@ -157,8 +156,8 @@ export function normalizeControlState(previous, input) {
  * @returns {unknown} Property value, or undefined.
  */
 function readInput(input, key) {
-  if (!input) return undefined;
-  return input[key];
+  if (!input || typeof input !== 'object') return undefined;
+  return /** @type {Record<string, unknown>} */ (input)[key];
 }
 
 /**
@@ -276,13 +275,13 @@ function createSeedState(input, fallback) {
 
 /**
  * Read a fallback property with a default.
- * @param {object | undefined} fallback Fallback object.
- * @param {string} key Property name.
- * @param {unknown} defaultValue Default value.
- * @returns {unknown} Fallback value.
+ * @param {Partial<BeaconState> | undefined} fallback Fallback state.
+ * @param {'width'|'height'|'lives'} key Property name.
+ * @param {number} defaultValue Default value.
+ * @returns {number} Fallback value.
  */
 function fallbackValue(fallback, key, defaultValue) {
-  return firstDefined(fallback?.[key], defaultValue);
+  return fallback?.[key] ?? defaultValue;
 }
 
 /**
@@ -360,10 +359,12 @@ function normalizeBeacons(width, height, seed) {
  */
 export function normalizeKeyboard(previous, input) {
   const keyboard = { ...(previous || {}) };
-  if (input?.type === 'keydown' && typeof input.key === 'string')
-    keyboard[input.key.toLowerCase()] = true;
-  if (input?.type === 'keyup' && typeof input.key === 'string')
-    keyboard[input.key.toLowerCase()] = false;
+  const type = readInput(input, 'type');
+  const key = readInput(input, 'key');
+  if (type === 'keydown' && typeof key === 'string')
+    keyboard[key.toLowerCase()] = true;
+  if (type === 'keyup' && typeof key === 'string')
+    keyboard[key.toLowerCase()] = false;
   return keyboard;
 }
 
@@ -384,7 +385,8 @@ export function normalizeGamepad(input) {
  * @returns {boolean[]} Normalized button values.
  */
 function normalizeButtons(input) {
-  if (Array.isArray(input?.buttons)) return input.buttons.map(Boolean);
+  const buttons = readInput(input, 'buttons');
+  if (Array.isArray(buttons)) return buttons.map(Boolean);
   return [];
 }
 
@@ -394,8 +396,8 @@ function normalizeButtons(input) {
  * @returns {number[]} Normalized axis values.
  */
 function normalizeAxes(input) {
-  if (Array.isArray(input?.axes))
-    return input.axes.map(value => Number(value) || 0);
+  const axes = readInput(input, 'axes');
+  if (Array.isArray(axes)) return axes.map(value => Number(value) || 0);
   return [];
 }
 
@@ -609,10 +611,10 @@ export function normalizeState(value) {
     !value ||
     typeof value !== 'object' ||
     Array.isArray(value) ||
-    value.version !== 1
+    /** @type {Record<string, unknown>} */ (value).version !== 1
   )
     return null;
-  return value;
+  return /** @type {BeaconState} */ (value);
 }
 
 /**
@@ -720,7 +722,7 @@ export function toCanvasPayload(state) {
             lineWidth: 1,
           };
         })
-        .filter(Boolean),
+        .filter(shape => shape !== null),
       ...state.beacons.map(beacon => ({
         type: 'circle',
         x: beacon.x,
