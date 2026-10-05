@@ -1,9 +1,12 @@
-// @ts-nocheck -- encounter state is owned by deterministic simulation.
+/** @typedef {{id: string, name: string, hp: number, power: number, weakness: string, intent: string[]}} CombatCreature */
+/** @typedef {{creatureId: string, name: string, hp: number, maxHp: number, playerHp: number, turn: number, intent: string, status: string | null, guarding: boolean}} BattleState */
+/** @typedef {Record<string, any> & {battle?: BattleState | null}} CombatState */
+/** @typedef {{creatures: CombatCreature[]}} CombatContent */
 /**
  * Start an authored encounter.
- * @param {unknown} state - The state argument.
- * @param {unknown} creature - The creature argument.
- * @returns {unknown} The computed result.
+ * @param {CombatState} state Current game state.
+ * @param {CombatCreature} creature Authored encounter creature.
+ * @returns {CombatState} State with a new battle.
  */
 export function startBattle(state, creature) {
   return {
@@ -24,14 +27,16 @@ export function startBattle(state, creature) {
 }
 /**
  * Resolve a player skill, enemy intent, status and reward in one turn.
- * @param {unknown} state - The state argument.
- * @param {unknown} action - The action argument.
- * @param {unknown} content - The content argument.
- * @returns {unknown} The computed result.
+ * @param {CombatState} state Current game state.
+ * @param {string} action Player battle action.
+ * @param {CombatContent} content Authored encounter data.
+ * @returns {CombatState} State after resolving the turn.
  */
 export function battleAction(state, action, content) {
   const battle = state.battle;
   if (!battle) return state;
+  const enemy = content.creatures.find(item => item.id === battle.creatureId);
+  if (!enemy) return state;
   if (action === 'herb' && !state.inventory.hearthTea)
     return { ...state, toast: 'No tea left.' };
   if (action === 'herb')
@@ -42,7 +47,6 @@ export function battleAction(state, action, content) {
         hearthTea: state.inventory.hearthTea - 1,
       },
     };
-  const enemy = content.creatures.find(item => item.id === battle.creatureId);
   let damage =
     action === 'sing' && enemy.weakness === 'song'
       ? 7
