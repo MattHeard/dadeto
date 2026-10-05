@@ -1,11 +1,10 @@
-// @ts-nocheck
 // Stryker disable all: local server route wiring is an integration boundary;
 // dependency-plumbing and defensive branch mutations are covered only through
 // end-to-end route behavior and are not independently observable.
 /**
  * Wire the local writer routes onto an app-like dependency.
  * @param {{
- *   app: unknown,
+ *   app: any,
  *   requestLoggerMiddleware?: (req: unknown, res: unknown, next: (error?: unknown) => void) => void,
  *   static: (path: string) => unknown,
  *   text: (options: { type: string[], limit: string }) => unknown,
@@ -30,8 +29,8 @@
  * @returns {{ app: unknown }} The wired app reference.
  */
 export function createLocalAppCore(deps) {
-  const app = /** @type {unknown} */ (deps.app);
-  const typedDeps = /** @type {unknown} */ (deps);
+  const app = deps.app;
+  const typedDeps = deps;
 
   if (typedDeps.requestLoggerMiddleware) {
     app.use(typedDeps.requestLoggerMiddleware);
@@ -49,19 +48,19 @@ export function createLocalAppCore(deps) {
   );
   app.post(
     '/api/writer/workflow/move',
-    handleAsyncRoute((/** @type {unknown} */ req) =>
+    handleAsyncRoute((/** @type {any} */ req) =>
       typedDeps.store.moveActiveIndex(typedDeps.getMoveDirection(req.body))
     )
   );
   app.post(
     '/api/writer/workflow/select',
-    handleAsyncRoute((/** @type {unknown} */ req) =>
+    handleAsyncRoute((/** @type {any} */ req) =>
       typedDeps.store.setActiveIndex(typedDeps.getNextIndex(req.body))
     )
   );
   app.put(
     '/api/writer/document/:documentId',
-    handleAsyncRoute((/** @type {unknown} */ req) =>
+    handleAsyncRoute((/** @type {any} */ req) =>
       typedDeps.store.saveDocument(
         req.params.documentId,
         typedDeps.getDocumentContent(req.body)
@@ -70,9 +69,7 @@ export function createLocalAppCore(deps) {
   );
   app.post(
     '/api/realtime/call',
-    handleAsyncRoute(
-      /** @type {unknown} */ (createRealtimeCallHandler(typedDeps))
-    )
+    handleAsyncRoute(createRealtimeCallHandler(typedDeps))
   );
   app.get('/config.json', createConfigRoute());
   app.get('/seed.json', createSeedRoute());
@@ -290,10 +287,10 @@ function createStatsPage() {
 /**
  * Create middleware that records completed writer requests.
  * @param {(message: string) => void} requestLogger Request logger destination.
- * @returns {(req: { method?: string, originalUrl?: string, url?: string, ip?: string, socket?: { remoteAddress?: string } }, res: { on: (event: string, handler: () => void) => void }, next: () => void) => void} Request logger middleware.
+ * @returns {(req: { method?: string, originalUrl?: string, url?: string, ip?: string, socket?: { remoteAddress?: string } }, res: { statusCode?: number, on: (event: string, handler: () => void) => void }, next: () => void) => void} Request logger middleware.
  */
 export function createRequestLogger(requestLogger) {
-  return (/** @type {unknown} */ req, /** @type {unknown} */ res, next) => {
+  return (req, res, next) => {
     const start = Date.now();
     res.on('finish', () => {
       requestLogger(formatRequestLog(req, res, Date.now() - start));
@@ -326,7 +323,7 @@ function formatRequestLog(req, res, durationMs) {
  * @param {{ direction?: string }} body Request body.
  * @returns {number} Move direction.
  */
-export function getMoveDirection(/** @type {unknown} */ body) {
+export function getMoveDirection(body) {
   if (body?.direction !== 'left') {
     return 1;
   }
@@ -338,11 +335,11 @@ export function getMoveDirection(/** @type {unknown} */ body) {
  * @param {{ activeIndex?: number }} body Request body.
  * @returns {number} Next index.
  */
-export function getNextIndex(/** @type {unknown} */ body) {
+export function getNextIndex(body) {
   if (!Number.isInteger(body?.activeIndex)) {
     return 1;
   }
-  return body.activeIndex;
+  return /** @type {number} */ (body.activeIndex);
 }
 
 /**
@@ -350,7 +347,7 @@ export function getNextIndex(/** @type {unknown} */ body) {
  * @param {{ content?: unknown }} body Request body.
  * @returns {string} Document content.
  */
-export function getDocumentContent(/** @type {unknown} */ body) {
+export function getDocumentContent(body) {
   if (typeof body?.content !== 'string') {
     return '';
   }
@@ -448,38 +445,35 @@ export function readWriterTlsOptions(env, readFile) {
  *   readFileSync: (filePath: string, encoding: 'utf8') => string,
  *   httpCreateServer: (app: unknown) => { listen: (...args: Array<unknown>) => void, on: (event: string, handler: (error: unknown) => void) => void },
  *   httpsCreateServer: (options: { key: string, cert: string }, app: unknown) => { listen: (...args: Array<unknown>) => void, on: (event: string, handler: (error: unknown) => void) => void },
- * }} [options] Server options.
+ * }} options Server options.
  * @returns {{ listen: (...args: Array<unknown>) => void, on: (event: string, handler: (error: unknown) => void) => void }} Node server.
  */
-export function createWriterServer(localApp, options = {}) {
-  const { env, readFileSync, httpCreateServer, httpsCreateServer } =
-    /** @type {unknown} */ (options);
-  const typedLocalApp = /** @type {unknown} */ (localApp);
+export function createWriterServer(localApp, options) {
+  const { env, readFileSync, httpCreateServer, httpsCreateServer } = options;
+  const typedLocalApp = localApp;
 
   if (isWriterHttpsEnabled(env)) {
-    return /** @type {unknown} */ (httpsCreateServer)(
-      readWriterTlsOptions(env, readFileSync),
+    return httpsCreateServer(
+      readWriterTlsOptions(env || {}, readFileSync),
       typedLocalApp
     );
   }
 
-  return /** @type {unknown} */ (httpCreateServer)(typedLocalApp);
+  return httpCreateServer(typedLocalApp);
 }
 
 /**
  * Wrap an async route handler and forward failures to next().
- * @param {(req: unknown, res: unknown, next: unknown) => Promise<void> | void} handler Route handler.
- * @returns {(req: unknown, res: unknown, next: (error: unknown) => void) => Promise<void>} Express route wrapper.
+ * @param {(req: any, res: any, next: any) => unknown} handler Route handler.
+ * @returns {(req: any, res: any, next: (error: unknown) => void) => Promise<unknown>} Express route wrapper.
  */
 function handleAsyncRoute(handler) {
   return async (
-    /** @type {unknown} */ req,
-    /** @type {unknown} */ res,
-    /** @type {unknown} */ next
+    /** @type {any} */ req,
+    /** @type {any} */ res,
+    /** @type {(error: unknown) => void} */ next
   ) => {
-    await Promise.resolve(
-      /** @type {unknown} */ (handler)(req, res, next)
-    ).catch(next);
+    await Promise.resolve(handler(req, res, next)).catch(next);
   };
 }
 
@@ -492,7 +486,7 @@ function handleAsyncRoute(handler) {
  * @returns {(req: { body?: unknown }, res: { set: (name: string, value: string) => void, type: (type: string) => { send: (body: string) => void } }) => Promise<void>} Realtime route handler.
  */
 function createRealtimeCallHandler(deps) {
-  return async (/** @type {unknown} */ req, /** @type {unknown} */ res) => {
+  return async (/** @type {any} */ req, /** @type {any} */ res) => {
     const { sdpAnswer, location } = await deps.exchangeRealtimeCallSdp(
       req.body ?? ''
     );
@@ -520,7 +514,7 @@ function setResponseLocation(res, location, shouldSetResponseLocation) {
  * @returns {(_req: unknown, res: { type: (type: string) => { send: (body: string) => void } }) => void} Dashboard route handler.
  */
 function createDashboardRouteHandler(deps) {
-  return (_req, /** @type {unknown} */ res) => {
+  return (_req, /** @type {any} */ res) => {
     res
       .type('html')
       .send(deps.renderNonCoreThinDashboard(deps.getNonCoreThinStatus()));
@@ -533,7 +527,7 @@ function createDashboardRouteHandler(deps) {
  * @returns {(_req: unknown, res: { json: (body: unknown) => void }) => void} Status route handler.
  */
 function createStatusRouteHandler(deps) {
-  return (_req, /** @type {unknown} */ res) => {
+  return (_req, /** @type {any} */ res) => {
     res.json(deps.getNonCoreThinStatus());
   };
 }
@@ -543,7 +537,7 @@ function createStatusRouteHandler(deps) {
  * @returns {(_req: unknown, res: { redirect: (location: string) => void }) => void} Redirect route handler.
  */
 function createRootRedirectHandler() {
-  return (_req, /** @type {unknown} */ res) => {
+  return (_req, /** @type {any} */ res) => {
     res.redirect('/writer/');
   };
 }
