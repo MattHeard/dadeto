@@ -7,7 +7,7 @@ import {
   buildVariantByNameQuery,
   buildPageByNumberQuery,
 } from '../cloud-core.js';
-import { when } from '../../commonCore.js';
+/** @typedef {import('../../../../types/allow-effects').AllowEffects} AllowEffects */
 import {
   normalizeShortString,
   resolveAuthorIdFromHeader,
@@ -341,12 +341,12 @@ export async function findExistingPage(db, pageNumber) {
  * }} SubmitNewPageInput
  * @typedef {SubmitNewPageInput & { createdAt: unknown }} SubmitNewPageRecord
  * @typedef {{
- *   saveSubmission: (id: string, submission: SubmitNewPageRecord) => Promise<void>;
+ *   saveSubmission: (allowEffects: AllowEffects, id: string, submission: SubmitNewPageRecord) => Promise<void>;
  *   serverTimestamp: () => unknown;
  * }} SubmitNewPageStorageDeps
  * @typedef {{
  *   verifyIdToken: (token: string) => Promise<{ uid: string }>;
- *   saveSubmission: (id: string, submission: SubmitNewPageRecord) => Promise<void>;
+ *   saveSubmission: (allowEffects: AllowEffects, id: string, submission: SubmitNewPageRecord) => Promise<void>;
  *   randomUUID: () => string;
  *   serverTimestamp: () => unknown;
  *   parseIncomingOption: (option: string) => unknown;
@@ -555,14 +555,15 @@ function collectOptions(body) {
 
 /**
  * Save the new page submission.
+ * @param {AllowEffects} allowEffects Explicit command permission.
  * @param {SubmitNewPageStorageDeps} deps Dependencies.
  * @param {string} id ID.
  * @param {SubmitNewPageInput} data Data.
  * @returns {Promise<void>} Promise.
  */
-async function saveNewPage(deps, id, data) {
+async function saveNewPage(allowEffects, deps, id, data) {
   const { saveSubmission, serverTimestamp } = deps;
-  await saveSubmission(id, {
+  await saveSubmission(allowEffects, id, {
     ...data,
     createdAt: serverTimestamp(),
   });
@@ -589,11 +590,12 @@ function createSubmissionData(context, authorId) {
 
 /**
  * Process valid submission.
+ * @param {AllowEffects} allowEffects Explicit command permission.
  * @param {SubmitNewPageHandlerDeps} deps Dependencies.
  * @param {SubmitNewPageContext} context Context.
  * @returns {Promise<{ status: number; body: SubmitNewPageData & { id: string } }>} Response.
  */
-async function processValidSubmission(deps, context) {
+async function processValidSubmission(allowEffects, deps, context) {
   const { verifyIdToken, randomUUID, saveSubmission, serverTimestamp } = deps;
   const { target, content, author, authHeader, options } = context;
 
@@ -607,6 +609,7 @@ async function processValidSubmission(deps, context) {
   Reflect.deleteProperty(persistedSubmissionData, 'authHeader');
 
   await saveNewPage(
+    allowEffects,
     { saveSubmission, serverTimestamp },
     id,
     /** @type {SubmitNewPageInput} */ (persistedSubmissionData)
@@ -629,6 +632,7 @@ function getTargetError(target) {
 
 /**
  * Resolve the final response once the target lookup has completed.
+ * @param {AllowEffects} allowEffects Explicit command permission.
  * @param {{
  *   deps: SubmitNewPageHandlerDeps,
  *   request: SubmitNewPageRequest,
@@ -640,24 +644,18 @@ function getTargetError(target) {
  * }} params Finalization inputs.
  * @returns {Promise<{ status: number; body: SubmitNewPageData & { id: string } }>|{ status: number; body: { error: string } }} Final response.
  */
-function finalizeSubmissionResponse(params) {
+function finalizeSubmissionResponse(allowEffects, params) {
   const { deps, body, target, content, author, authHeader } = params;
   const targetError = getTargetError(target);
+  if (targetError) return targetError;
   const successfulTarget = /** @type {SubmissionTargetSuccess} */ (target);
-  return /** @type {Promise<{ status: number; body: SubmitNewPageData & { id: string } }>|{ status: number; body: { error: string } }} */ (
-    when(
-      targetError !== null,
-      () => targetError,
-      () =>
-        processValidSubmission(deps, {
-          target: successfulTarget,
-          content,
-          author,
-          authHeader,
-          options: collectOptions(body),
-        })
-    )
-  );
+  return processValidSubmission(allowEffects, deps, {
+    target: successfulTarget,
+    content,
+    author,
+    authHeader,
+    options: collectOptions(body),
+  });
 }
 
 /**
@@ -672,7 +670,7 @@ function getBody(request) {
 /**
  * Create an HTTP handler that accepts interactive fiction submissions.
  * @param {SubmitNewPageHandlerDeps} deps Functions used to validate and persist the submission.
- * @returns {(request: SubmitNewPageRequest) => Promise<{ status: number, body: object }>}
+ * @returns {(allowEffects: AllowEffects, request: SubmitNewPageRequest) => Promise<{ status: number, body: object }>}
  * Submission handler returning HTTP-style responses.
  */
 export function createHandleSubmit(deps) {
@@ -681,10 +679,11 @@ export function createHandleSubmit(deps) {
 
   /**
    * Handle an incoming submission request.
+   * @param {AllowEffects} allowEffects Explicit command permission.
    * @param {SubmitNewPageRequest} request Request object.
    * @returns {Promise<{ status: number; body: SubmitNewPageData & { id: string } | { error: string } }>} Response object.
    */
-  return async function handleSubmit(request) {
+  const handleSubmit = async function handleSubmit(allowEffects, request) {
     const body = getBody(request);
     const { incomingOption, pageStr, content, author } =
       normalizeSubmissionBody(body);
@@ -696,7 +695,7 @@ export function createHandleSubmit(deps) {
       findExistingOption,
       findExistingPage,
     });
-    return finalizeSubmissionResponse({
+    return finalizeSubmissionResponse(allowEffects, {
       deps,
       request,
       body,
@@ -706,19 +705,24 @@ export function createHandleSubmit(deps) {
       authHeader: getAuthorizationHeader(request) || '',
     });
   };
+  return handleSubmit;
 }
 // Stryker restore all
 
 /**
  * Create the Express handler that bridges the core submission result to HTTP.
- * @param {(request: SubmitNewPageRequest) => Promise<{ status: number, body: object }>} handleSubmitCore Core submit handler.
+ * @param {(allowEffects: AllowEffects, request: SubmitNewPageRequest) => Promise<{ status: number, body: object }>} handleSubmitCore Core submit handler.
+ * @param {(handler: (allowEffects: AllowEffects, req: import('express').Request, res: import('express').Response) => Promise<void>) => (req: import('express').Request, res: import('express').Response) => Promise<void>} bindEffectBoundary External per-request permission binder.
  * @returns {(req: import('express').Request, res: import('express').Response) => Promise<void>} Express handler.
  */
-export function createSubmitNewPageRequestHandler(handleSubmitCore) {
-  return async function handleSubmit(req, res) {
-    const { status, body } = await handleSubmitCore(req);
+export function createSubmitNewPageRequestHandler(
+  handleSubmitCore,
+  bindEffectBoundary
+) {
+  return bindEffectBoundary(async (allowEffects, req, res) => {
+    const { status, body } = await handleSubmitCore(allowEffects, req);
     res.status(status).json(body);
-  };
+  });
 }
 
 /**

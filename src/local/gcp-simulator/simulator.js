@@ -10,5 +10,6 @@ import { bindEffectResponder } from '../allow-effects.js';
 export async function createLocalGcpSimulator(options) {
   const simulator = /** @type {any} */ (await createSimulator(options));
   simulator.routes.submitNewStory = bindEffectResponder(simulator.routes.submitNewStory);
+  simulator.routes.submitNewPage = bindEffectResponder(simulator.routes.submitNewPage);
   return simulator;
 }

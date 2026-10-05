@@ -42,7 +42,12 @@ const repoLintPlugin = {
 
 export default [
   {
-    files: ['src/core/cloud/submit-new-story/**/*.js', 'src/core/local/gcp-simulator/simulator.js'],
+    files: [
+      'src/core/cloud/submit-new-story/**/*.js',
+      'src/core/cloud/submit-new-page/**/*.js',
+      'src/core/browser/presenters/realtimeVoicePrototype.js',
+      'src/core/local/gcp-simulator/simulator.js',
+    ],
     plugins: { capability: repoLintPlugin },
     rules: { 'capability/allow-effects': 'error' },
   },

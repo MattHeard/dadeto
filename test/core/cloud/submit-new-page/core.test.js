@@ -1,4 +1,5 @@
 import { jest } from '@jest/globals';
+import { createEffectHttpBoundary } from '../../../../src/cloud/allow-effects.js';
 import {
   createHandleSubmit,
   createSubmitNewPageApp,
@@ -6,6 +7,24 @@ import {
 } from '../../../../src/core/cloud/submit-new-page/submit-new-page-core.js';
 
 const INCOMING_OPTION_KEY = 'incoming_option';
+const TEST_ALLOW_EFFECTS =
+  /** @type {import('../../../../types/allow-effects').AllowEffects} */ (
+    /** @type {unknown} */ (Object.freeze({}))
+  );
+
+/**
+ *
+ * @param deps
+ */
+/**
+ * Create an HTTP-shaped test handler with a fixture permission.
+ * @param {object} deps Submit-new-page handler dependencies.
+ * @returns {(request: object) => Promise<object>} Test request handler.
+ */
+function createTestSubmitHandler(deps) {
+  const submit = createHandleSubmit(deps);
+  return request => submit(TEST_ALLOW_EFFECTS, request);
+}
 
 /**
  * Create a mock request tailored for the submit-new-page handler.
@@ -38,7 +57,7 @@ const baseDeps = () => ({
 describe('createHandleSubmit', () => {
   it('saves a submission for a valid incoming option', async () => {
     const deps = baseDeps();
-    const handler = createHandleSubmit(deps);
+    const handler = createTestSubmitHandler(deps);
 
     const request = createRequest(
       {
@@ -69,21 +88,25 @@ describe('createHandleSubmit', () => {
     });
 
     expect(deps.verifyIdToken).toHaveBeenCalledWith('token-123');
-    expect(deps.saveSubmission).toHaveBeenCalledWith('uuid-1', {
-      incomingOptionFullName: 'Option :: 1',
-      pageNumber: null,
-      content: 'Line1\nLine2',
-      author: 'Alice',
-      authorId: 'user-1',
-      options: ['First', 'Second'],
-      createdAt: 'ts',
-    });
+    expect(deps.saveSubmission).toHaveBeenCalledWith(
+      TEST_ALLOW_EFFECTS,
+      'uuid-1',
+      {
+        incomingOptionFullName: 'Option :: 1',
+        pageNumber: null,
+        content: 'Line1\nLine2',
+        author: 'Alice',
+        authorId: 'user-1',
+        options: ['First', 'Second'],
+        createdAt: 'ts',
+      }
+    );
     expect(deps.serverTimestamp).toHaveBeenCalledTimes(1);
   });
 
   it('requires exactly one of incoming option or page', async () => {
     const deps = baseDeps();
-    const handler = createHandleSubmit(deps);
+    const handler = createTestSubmitHandler(deps);
 
     const result = await handler(
       createRequest({ [INCOMING_OPTION_KEY]: 'one', page: '2' })
@@ -101,7 +124,7 @@ describe('createHandleSubmit', () => {
   it('validates incoming options', async () => {
     const deps = baseDeps();
     deps.parseIncomingOption.mockReturnValue(null);
-    const handler = createHandleSubmit(deps);
+    const handler = createTestSubmitHandler(deps);
 
     const result = await handler(
       createRequest({ [INCOMING_OPTION_KEY]: 'bad' })
@@ -117,7 +140,7 @@ describe('createHandleSubmit', () => {
   it('rejects unknown incoming options', async () => {
     const deps = baseDeps();
     deps.findExistingOption.mockResolvedValue(null);
-    const handler = createHandleSubmit(deps);
+    const handler = createTestSubmitHandler(deps);
 
     const result = await handler(
       createRequest({ [INCOMING_OPTION_KEY]: 'missing' })
@@ -131,7 +154,7 @@ describe('createHandleSubmit', () => {
 
   it('accepts incoming options with repeated separators after normalization', async () => {
     const deps = baseDeps();
-    const handler = createHandleSubmit(deps);
+    const handler = createTestSubmitHandler(deps);
 
     const result = await handler(
       createRequest({ [INCOMING_OPTION_KEY]: '12--Alpha-34' })
@@ -155,7 +178,7 @@ describe('createHandleSubmit', () => {
 
   it('parses incoming options with mixed separators consistently', async () => {
     const deps = baseDeps();
-    const handler = createHandleSubmit(deps);
+    const handler = createTestSubmitHandler(deps);
 
     const result = await handler(
       createRequest({ [INCOMING_OPTION_KEY]: '12___Alpha--34' })
@@ -178,7 +201,7 @@ describe('createHandleSubmit', () => {
 describe('createHandleSubmit page and HTTP behavior', () => {
   it('validates page submissions', async () => {
     const deps = baseDeps();
-    const handler = createHandleSubmit(deps);
+    const handler = createTestSubmitHandler(deps);
 
     const invalidPage = await handler(createRequest({ page: 'not-a-number' }));
     expect(invalidPage).toEqual({
@@ -199,7 +222,7 @@ describe('createHandleSubmit page and HTTP behavior', () => {
     const deps = baseDeps();
     deps.verifyIdToken.mockRejectedValue(new Error('nope'));
     deps.findExistingPage.mockResolvedValue('/pages/10');
-    const handler = createHandleSubmit(deps);
+    const handler = createTestSubmitHandler(deps);
 
     const request = createRequest(
       {
@@ -226,22 +249,26 @@ describe('createHandleSubmit page and HTTP behavior', () => {
     });
 
     expect(deps.verifyIdToken).toHaveBeenCalledWith('bad-token');
-    expect(deps.saveSubmission).toHaveBeenCalledWith('uuid-1', {
-      incomingOptionFullName: null,
-      pageNumber: 10,
-      content: 'Hello',
-      author: 'Bob',
-      authorId: null,
-      options: [],
-      createdAt: 'ts',
-    });
+    expect(deps.saveSubmission).toHaveBeenCalledWith(
+      TEST_ALLOW_EFFECTS,
+      'uuid-1',
+      {
+        incomingOptionFullName: null,
+        pageNumber: 10,
+        content: 'Hello',
+        author: 'Bob',
+        authorId: null,
+        options: [],
+        createdAt: 'ts',
+      }
+    );
   });
 
   it('omits the author id when the token lacks a uid', async () => {
     const deps = baseDeps();
     deps.verifyIdToken.mockResolvedValue({});
     deps.findExistingPage.mockResolvedValue('/pages/7');
-    const handler = createHandleSubmit(deps);
+    const handler = createTestSubmitHandler(deps);
 
     const result = await handler(
       createRequest(
@@ -257,7 +284,7 @@ describe('createHandleSubmit page and HTTP behavior', () => {
   it('falls back to missing headers when request.get is unavailable', async () => {
     const deps = baseDeps();
     deps.findExistingPage.mockResolvedValue('/pages/5');
-    const handler = createHandleSubmit(deps);
+    const handler = createTestSubmitHandler(deps);
 
     const request = { body: { page: '5', content: 'Hi', author: 'Sam' } };
 
@@ -265,20 +292,24 @@ describe('createHandleSubmit page and HTTP behavior', () => {
 
     expect(result.status).toBe(201);
     expect(deps.verifyIdToken).not.toHaveBeenCalled();
-    expect(deps.saveSubmission).toHaveBeenCalledWith('uuid-1', {
-      incomingOptionFullName: null,
-      pageNumber: 5,
-      content: 'Hi',
-      author: 'Sam',
-      authorId: null,
-      options: [],
-      createdAt: 'ts',
-    });
+    expect(deps.saveSubmission).toHaveBeenCalledWith(
+      TEST_ALLOW_EFFECTS,
+      'uuid-1',
+      {
+        incomingOptionFullName: null,
+        pageNumber: 5,
+        content: 'Hi',
+        author: 'Sam',
+        authorId: null,
+        options: [],
+        createdAt: 'ts',
+      }
+    );
   });
 
   it('returns an error when no identifying fields are provided', async () => {
     const deps = baseDeps();
-    const handler = createHandleSubmit(deps);
+    const handler = createTestSubmitHandler(deps);
 
     const result = await handler({});
 
@@ -294,7 +325,7 @@ describe('createHandleSubmit page and HTTP behavior', () => {
   it('defaults the author to ??? when the client omits it', async () => {
     const deps = baseDeps();
     deps.findExistingPage.mockResolvedValue('/pages/7');
-    const handler = createHandleSubmit(deps);
+    const handler = createTestSubmitHandler(deps);
 
     const result = await handler(
       createRequest(
@@ -316,21 +347,25 @@ describe('createHandleSubmit page and HTTP behavior', () => {
       },
     });
 
-    expect(deps.saveSubmission).toHaveBeenCalledWith('uuid-1', {
-      incomingOptionFullName: null,
-      pageNumber: 7,
-      content: 'Story',
-      author: '???',
-      authorId: 'user-1',
-      options: [],
-      createdAt: 'ts',
-    });
+    expect(deps.saveSubmission).toHaveBeenCalledWith(
+      TEST_ALLOW_EFFECTS,
+      'uuid-1',
+      {
+        incomingOptionFullName: null,
+        pageNumber: 7,
+        content: 'Story',
+        author: '???',
+        authorId: 'user-1',
+        options: [],
+        createdAt: 'ts',
+      }
+    );
   });
 
   it('defaults an empty author to ???', async () => {
     const deps = baseDeps();
     deps.findExistingPage.mockResolvedValue('/pages/7');
-    const handler = createHandleSubmit(deps);
+    const handler = createTestSubmitHandler(deps);
 
     const result = await handler(
       createRequest(
@@ -352,11 +387,35 @@ describe('createHandleSubmit page and HTTP behavior', () => {
       json: jest.fn(),
     };
 
-    await createSubmitNewPageRequestHandler(handleSubmitCore)({}, res);
+    const handle = createSubmitNewPageRequestHandler(
+      handleSubmitCore,
+      createEffectHttpBoundary
+    );
+    const req = {};
+    await handle(req, res);
+    await handle(req, res);
 
-    expect(handleSubmitCore).toHaveBeenCalledWith({});
+    const firstPermission = handleSubmitCore.mock.calls[0][0];
+    const secondPermission = handleSubmitCore.mock.calls[1][0];
+    expect(firstPermission).not.toBe(secondPermission);
+    expect(Object.isFrozen(firstPermission)).toBe(true);
+    expect(handleSubmitCore).toHaveBeenNthCalledWith(1, firstPermission, req);
+    expect(handleSubmitCore).toHaveBeenNthCalledWith(2, secondPermission, req);
     expect(res.status).toHaveBeenCalledWith(202);
     expect(res.json).toHaveBeenCalledWith({ ok: true });
+  });
+
+  it('mints a fresh permission for each HTTP request and forwards it to persistence', async () => {
+    const deps = baseDeps();
+    const handler = createTestSubmitHandler(deps);
+    await handler(
+      createRequest({ page: '3', content: 'hello', author: 'Ada' })
+    );
+    expect(deps.saveSubmission).toHaveBeenCalledWith(
+      TEST_ALLOW_EFFECTS,
+      'uuid-1',
+      expect.objectContaining({ pageNumber: 3 })
+    );
   });
 
   it('builds an app that wires cors and request handlers', () => {

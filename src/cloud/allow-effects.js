@@ -20,3 +20,12 @@ export function createEffectHttpBoundary(handler) {
     await handler(createAllowEffects(), req, res);
   };
 }
+
+/**
+ * Adapt an effectful HTTP endpoint to a direct invocation boundary such as a scheduled or Firestore trigger.
+ * @param {(permission: import('../../types/allow-effects').AllowEffects, ...args: any[]) => Promise<any>} handler Internal effectful handler.
+ * @returns {(...args: any[]) => Promise<any>} Public runtime handler.
+ */
+export function createEffectInvocationBoundary(handler) {
+  return async (...args) => handler(createAllowEffects(), ...args);
+}

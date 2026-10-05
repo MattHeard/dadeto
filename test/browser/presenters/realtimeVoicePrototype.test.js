@@ -5,6 +5,33 @@ import {
 } from '../../../src/browser/presenters/realtimeVoicePrototype.js';
 import { createRealtimeVoicePrototypeElement as createCoreElement } from '../../../src/core/browser/presenters/realtimeVoicePrototype.js';
 
+const TEST_ALLOW_EFFECTS =
+  /** @type {import('../../../types/allow-effects').AllowEffects} */ (
+    /** @type {unknown} */ (Object.freeze({}))
+  );
+
+/**
+ *
+ * @param inputString
+ * @param dom
+ * @param fetchFn
+ */
+/**
+ * Create presenter controls with a fixture command permission.
+ * @param {string} inputString Serialized presenter configuration.
+ * @param {object} dom Test DOM adapter.
+ * @param {Function} fetchFn Test network function.
+ * @returns {HTMLElement} Created controls.
+ */
+function createTestCoreElement(inputString, dom, fetchFn) {
+  return createCoreElement(
+    inputString,
+    dom,
+    (_permission, ...args) => fetchFn(...args),
+    handler => handler(TEST_ALLOW_EFFECTS)
+  );
+}
+
 test('relay error selection preserves accepted property read order', () => {
   const reads = [];
   const parse = jest.spyOn(JSON, 'parse').mockReturnValue({
@@ -53,6 +80,7 @@ function exerciseControlBranches(helpers, controls, dom) {
   expect(controls.statusText.textContent).toBe('error');
   expect(controls.debugLog.children[0].textContent).toContain('bad endpoint');
   helpers.connectRealtimeVoice(
+    TEST_ALLOW_EFFECTS,
     {
       mediaStream: null,
       dataChannel: null,
@@ -60,8 +88,7 @@ function exerciseControlBranches(helpers, controls, dom) {
       muted: false,
     },
     controls,
-    dom,
-    jest.fn()
+    { dom, fetchFn: jest.fn() }
   );
   expect(controls.statusText.textContent).toBe('error');
 }
@@ -270,7 +297,12 @@ describe('realtimeVoicePrototypePresenterTestOnly', () => {
     }));
     const failedResponse = { ok: false, status: 418, text: async () => '' };
     await expect(
-      helpers.requestRealtimeAnswer('offer', '/answer', fetchFn)
+      helpers.requestRealtimeAnswer(
+        TEST_ALLOW_EFFECTS,
+        'offer',
+        '/answer',
+        (_permission, ...args) => fetchFn(...args)
+      )
     ).resolves.toBe('answer');
     expect(fetchFn).toHaveBeenCalledWith('/answer', {
       method: 'POST',
@@ -279,6 +311,7 @@ describe('realtimeVoicePrototypePresenterTestOnly', () => {
     });
     await expect(
       helpers.requestRealtimeAnswer(
+        TEST_ALLOW_EFFECTS,
         'offer',
         '/answer',
         async () => failedResponse
@@ -470,7 +503,7 @@ describe('realtime voice lifecycle', () => {
       ok: true,
       text: async () => 'answer',
     }));
-    const root = createCoreElement(JSON.stringify({}), dom, fetchFn);
+    const root = createTestCoreElement(JSON.stringify({}), dom, fetchFn);
     const buttons = root.children.filter(child => child.tagName === 'DIV')[0]
       .children;
     buttons[0].listeners.click();
@@ -511,7 +544,7 @@ describe('realtime voice lifecycle', () => {
 
   test('reports endpoint and relay failures without throwing from the click handler', async () => {
     const dom = createDom();
-    const root = createCoreElement(
+    const root = createTestCoreElement(
       JSON.stringify({ endpointError: 'Endpoint unavailable' }),
       dom,
       jest.fn()
@@ -524,7 +557,7 @@ describe('realtime voice lifecycle', () => {
       status: 400,
       text: async () => '{"error":"bad relay"}',
     }));
-    const failingRoot = createCoreElement(
+    const failingRoot = createTestCoreElement(
       JSON.stringify({}),
       dom,
       failingFetch
@@ -574,7 +607,7 @@ describe('realtime voice lifecycle', () => {
         'plain failure'
       )
     ).toContain('plain failure');
-    createCoreElement('not json', dom, failingFetch);
+    createTestCoreElement('not json', dom, failingFetch);
     globalThis.navigator = {
       mediaDevices: {
         getUserMedia: jest.fn(async () => {
@@ -582,7 +615,7 @@ describe('realtime voice lifecycle', () => {
         }),
       },
     };
-    const unknownRoot = createCoreElement('{}', dom, failingFetch);
+    const unknownRoot = createTestCoreElement('{}', dom, failingFetch);
     await unknownRoot.children
       .filter(child => child.tagName === 'DIV')[0]
       .children[0].listeners.click();

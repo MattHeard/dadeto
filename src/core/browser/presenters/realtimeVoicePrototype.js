@@ -1,4 +1,5 @@
 import { stringOr, whenOrDefault } from '../../commonCore.js';
+/** @typedef {import('../../../../types/allow-effects').AllowEffects} AllowEffects */
 const STATUS = {
   DISCONNECTED: 'disconnected',
   CONNECTING: 'connecting',
@@ -10,16 +11,24 @@ const STATUS = {
  * Create the Realtime Voice Prototype presenter element.
  * @param {string} inputString Serialized toy payload.
  * @param {object} dom DOM helper facade.
- * @param {typeof fetch} fetchFn Fetch implementation.
+ * @param {(permission: AllowEffects, input: Parameters<typeof fetch>[0], init?: Parameters<typeof fetch>[1]) => ReturnType<typeof fetch>} fetchFn Fetch implementation.
+ * @param {(handler: (permission: AllowEffects) => Promise<void>) => Promise<void>} bindEffectBoundary Per-session effect boundary.
  * @returns {HTMLElement} Realtime voice controls.
  */
-export function createRealtimeVoicePrototypeElement(inputString, dom, fetchFn) {
+export function createRealtimeVoicePrototypeElement(
+  inputString,
+  dom,
+  fetchFn,
+  bindEffectBoundary
+) {
   const config = parseConfig(inputString);
   const controls = createControls(dom, config);
   const state = createInitialState();
 
   controls.connectButton.addEventListener('click', () => {
-    connectRealtimeVoice(state, controls, dom, fetchFn);
+    bindEffectBoundary(allowEffects =>
+      connectRealtimeVoice(allowEffects, state, controls, { dom, fetchFn })
+    );
   });
   controls.disconnectButton.addEventListener('click', () => {
     disconnectRealtimeVoice(state, controls, 'Disconnected.', dom);
@@ -166,13 +175,14 @@ function appendButton(parent, label, dom) {
 
 /**
  * Connect browser microphone audio to OpenAI Realtime through the configured session server.
+ * @param {AllowEffects} allowEffects Permission for creating the external session.
  * @param {object} state Mutable connection state.
  * @param {object} controls Page controls.
- * @param {object} dom DOM helper facade.
- * @param {typeof fetch} fetchFn Fetch implementation.
+ * @param {{dom: object, fetchFn: (permission: AllowEffects, input: Parameters<typeof fetch>[0], init?: Parameters<typeof fetch>[1]) => ReturnType<typeof fetch>}} context DOM and fetch dependencies.
  * @returns {Promise<void>} Resolves when the SDP answer has been applied.
  */
-async function connectRealtimeVoice(state, controls, dom, fetchFn) {
+async function connectRealtimeVoice(allowEffects, state, controls, context) {
+  const { dom } = context;
   if (!hasUsableEndpoint(controls, dom)) {
     return;
   }
@@ -182,7 +192,7 @@ async function connectRealtimeVoice(state, controls, dom, fetchFn) {
   appendDebugLog(controls, 'Requesting microphone permission.', dom);
 
   try {
-    await startPeerConnection(state, controls, dom, fetchFn);
+    await startPeerConnection(allowEffects, state, controls, context);
     setStatus(controls, STATUS.LIVE, dom);
     appendDebugLog(controls, 'Realtime voice connection is live.', dom);
   } catch (error) {
@@ -215,13 +225,14 @@ function hasUsableEndpoint(controls, dom) {
 
 /**
  * Start the WebRTC peer connection and apply OpenAI's answer.
+ * @param {AllowEffects} allowEffects Permission for creating the external session.
  * @param {object} state Mutable connection state.
  * @param {object} controls Page controls.
- * @param {object} dom DOM helper facade.
- * @param {typeof fetch} fetchFn Fetch implementation.
+ * @param {{dom: object, fetchFn: (permission: AllowEffects, input: Parameters<typeof fetch>[0], init?: Parameters<typeof fetch>[1]) => ReturnType<typeof fetch>}} context DOM and fetch dependencies.
  * @returns {Promise<void>} Resolves after remote description is set.
  */
-async function startPeerConnection(state, controls, dom, fetchFn) {
+async function startPeerConnection(allowEffects, state, controls, context) {
+  const { dom, fetchFn } = context;
   const peerConnection = new RTCPeerConnection();
   state.peerConnection = peerConnection;
   wirePeerConnectionEvents(peerConnection, controls, dom);
@@ -243,6 +254,7 @@ async function startPeerConnection(state, controls, dom, fetchFn) {
   );
 
   const answerSdp = await requestRealtimeAnswer(
+    allowEffects,
     offer.sdp ?? '',
     controls.endpoint,
     fetchFn
@@ -332,13 +344,19 @@ function wirePeerConnectionEvents(peerConnection, controls, dom) {
 
 /**
  * Request an SDP answer from the configured API-key-holding server.
+ * @param {AllowEffects} allowEffects Permission for creating the external session.
  * @param {string} offerSdp Browser SDP offer.
  * @param {string} endpoint Local route or cloud URL.
- * @param {typeof fetch} fetchFn Fetch implementation.
+ * @param {(permission: AllowEffects, input: Parameters<typeof fetch>[0], init?: Parameters<typeof fetch>[1]) => ReturnType<typeof fetch>} fetchFn Fetch implementation.
  * @returns {Promise<string>} SDP answer.
  */
-async function requestRealtimeAnswer(offerSdp, endpoint, fetchFn) {
-  const response = await fetchFn(endpoint, {
+async function requestRealtimeAnswer(
+  allowEffects,
+  offerSdp,
+  endpoint,
+  fetchFn
+) {
+  const response = await fetchFn(allowEffects, endpoint, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/sdp',
@@ -565,13 +583,18 @@ export const realtimeVoicePrototypePresenterTestOnly = {
 
 /**
  * Create the browser wrapper handle for the realtime voice presenter.
- * @param {{ fetchFn: typeof fetch }} deps Presenter dependencies.
+ * @param {{ fetchFn: (permission: AllowEffects, input: Parameters<typeof fetch>[0], init?: Parameters<typeof fetch>[1]) => ReturnType<typeof fetch>, bindEffectBoundary: (handler: (permission: AllowEffects) => Promise<void>) => Promise<void> }} deps Presenter dependencies.
  * @returns {{ createRealtimeVoicePrototypeElement: typeof createRealtimeVoicePrototypeElement }}
  *   Presenter exports exposed through the non-core wrapper.
  */
 export function createRealtimeVoicePrototypePresenterHandle(deps) {
   return {
     createRealtimeVoicePrototypeElement: (inputString, dom) =>
-      createRealtimeVoicePrototypeElement(inputString, dom, deps.fetchFn),
+      createRealtimeVoicePrototypeElement(
+        inputString,
+        dom,
+        deps.fetchFn,
+        deps.bindEffectBoundary
+      ),
   };
 }

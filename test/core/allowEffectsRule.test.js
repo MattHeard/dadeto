@@ -7,6 +7,9 @@ import { createAllowEffectsRule } from '../../src/core/scripts/allow-effects.js'
 const filename = resolve(
   'src/core/cloud/submit-new-story/capability-fixture.js'
 );
+const submitPageFilename = resolve(
+  'src/core/cloud/submit-new-page/capability-fixture.js'
+);
 const prefix = `
 /** @typedef {import('../../../../types/allow-effects').AllowEffects} AllowEffects */
 /** @param {AllowEffects} permission @param {string} text */
@@ -137,6 +140,16 @@ test('core cannot import the local permission boundary either', async () => {
       message => message.ruleId === 'no-restricted-imports'
     )
   ).toBe(true);
+});
+
+test('submit-new-page effect callbacks require the owning permission', async () => {
+  const results = await new ESLint().lintText(
+    `/** @typedef {import('../../../../types/allow-effects').AllowEffects} AllowEffects */\n/** @param {(permission: AllowEffects, id: string) => void} save */\nfunction submit(save) { save('id'); }`,
+    { filePath: submitPageFilename }
+  );
+  expect(results[0].messages.map(message => message.messageId)).toContain(
+    'call'
+  );
 });
 
 test('missing compiler source fails closed rather than silently skipping ownership checks', () => {

@@ -714,8 +714,11 @@ function createSubmitNewPageConfig(/** @type {unknown} */ options) {
   return {
     verifyIdToken,
     randomUUID,
-    saveSubmission: (id, submission) =>
-      db.collection('pageFormSubmissions').doc(id).set(submission),
+    saveSubmission: (
+      /** @type {import('../../../../types/allow-effects').AllowEffects} */ permission,
+      id,
+      submission
+    ) => db.collection('pageFormSubmissions').doc(id).set(submission),
     serverTimestamp: () => new Date(),
     parseIncomingOption,
     findExistingOption: option => findExistingOptionPath(option),
@@ -989,7 +992,10 @@ function createRoutes(/** @type {unknown} */ deps) {
       /** @type {import('../../../../types/allow-effects').AllowEffects} */ permission,
       request
     ) => handleSubmitNewStory(permission, deps, request),
-    submitNewPage: request => handleSubmitNewPage(deps, request),
+    submitNewPage: (
+      /** @type {import('../../../../types/allow-effects').AllowEffects} */ permission,
+      request
+    ) => handleSubmitNewPage(permission, deps, request),
     getApiKeyCreditV2: request => handleGetApiKeyCreditV2(deps, request),
     getAuthorUuid: request => deps.getAuthorUuid(request),
     paymentWebhook: request => handlePaymentWebhook(deps, request),
@@ -1073,15 +1079,17 @@ async function handleSubmitNewStory(
 
 /**
  * Run the submit-new-page route handler.
+ * @param {import('../../../../types/allow-effects').AllowEffects} permission Explicit command permission.
  * @param {{ submitNewPage: (...args: unknown[]) => unknown }} deps Route dependencies.
  * @param {unknown} request Incoming request object.
  * @returns {Promise<{ status: number, body?: unknown }>} Route response.
  */
 async function handleSubmitNewPage(
+  permission,
   /** @type {unknown} */ deps,
   /** @type {unknown} */ request
 ) {
-  return deps.submitNewPage(request);
+  return deps.submitNewPage(permission, request);
 }
 
 /**

@@ -261,6 +261,10 @@ function createIndividualFileCopiesPart1(planValues) {
       target: join(infraFunctionsDir, 'submit-new-page', 'helpers.js'),
     },
     {
+      source: join(srcCloudDir, 'submit-new-page', 'runtime.js'),
+      target: join(infraFunctionsDir, 'submit-new-page', 'runtime.js'),
+    },
+    {
       source: cloudCoreSource,
       target: join(infraFunctionsDir, 'submit-new-page', 'cloud-core.js'),
     },
@@ -869,6 +873,10 @@ function createIndividualFileCopiesPart42(planValues) {
     {
       source: join(srcCoreDir, '..', 'cloud', 'allow-effects.js'),
       target: join(infraFunctionsDir, 'submit-new-story', 'allow-effects.js'),
+    },
+    {
+      source: join(srcCoreDir, '..', 'cloud', 'allow-effects.js'),
+      target: join(infraFunctionsDir, 'submit-new-page', 'allow-effects.js'),
     },
     {
       source: cloudCoreSource,

@@ -1,4 +1,3 @@
-import { initializeApp } from 'firebase-admin/app';
 import {
   functions,
   FieldValue,
@@ -12,36 +11,37 @@ import {
 } from './submit-new-page-gcf.js';
 import { getAllowedOrigins } from './cors-config.js';
 import {
-  createHandleSubmit,
   createSubmitNewPageApp,
   createSubmitNewPageRequestHandler,
 } from './submit-new-page-core.js';
+import { createEffectHttpBoundary } from '../allow-effects.js';
+import { createSubmitNewPageRuntime } from './runtime.js';
 import {
   parseIncomingOption,
   findExistingOption,
   findExistingPage,
 } from './helpers.js';
+import { initializeApp } from 'firebase-admin/app';
 
-const { ensureFirebaseApp } = createFirebaseAppManager(initializeApp);
-
-ensureFirebaseApp();
-const db = getFirestoreInstance();
-const auth = getAuth();
-const handleSubmitCore = createHandleSubmit({
-  verifyIdToken: token => auth.verifyIdToken(token),
-  saveSubmission: (id, data) =>
-    db.collection('pageFormSubmissions').doc(id).set(data),
-  randomUUID: () => crypto.randomUUID(),
-  serverTimestamp: () => FieldValue.serverTimestamp(),
+const handleSubmitCore = createSubmitNewPageRuntime({
+  createFirebaseAppManager,
+  initializeApp,
+  getFirestoreInstance,
+  getAuth,
+  crypto,
+  FieldValue,
   parseIncomingOption,
-  findExistingOption: parsed => findExistingOption(db, parsed),
-  findExistingPage: pageNumber => findExistingPage(db, pageNumber),
+  findExistingOption,
+  findExistingPage,
 });
 const app = createSubmitNewPageApp({
   express,
   cors,
   allowedOrigins: getAllowedOrigins(getEnvironmentVariables()),
-  handleSubmit: createSubmitNewPageRequestHandler(handleSubmitCore),
+  handleSubmit: createSubmitNewPageRequestHandler(
+    handleSubmitCore,
+    createEffectHttpBoundary
+  ),
 });
 
 export const handle = functions
