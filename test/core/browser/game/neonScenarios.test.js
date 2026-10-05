@@ -36,6 +36,23 @@ function scenarioState(id) {
   return { ...state, lab: startScenario(state.lab, id) };
 }
 
+/**
+ * Prove a completed scenario round-trips through the canonical save boundary.
+ * @param {Record<string, any>} state Finished campaign snapshot.
+ * @returns {void}
+ */
+function expectScenarioSaveRoundTrip(state) {
+  const expected = state.lab.scenario;
+  const runtime = createNeonRuntime(new Map());
+  runtime.setState(state);
+  const exported = runtime.exportSave();
+  runtime.setState(createNeonState());
+  runtime.importSave(exported);
+  expect(runtime.getSnapshot().lab.scenario).toEqual(expected);
+  expect(validLabSave(runtime.getSnapshot())).toBe(true);
+  expect(runtime.exportSave()).toBe(exported);
+}
+
 describe('Neon Covenant short scenarios', () => {
   test('controller offers three scenarios, discloses slot replacement, and starts only the confirmed choice', () => {
     const state = createNeonState();
@@ -101,6 +118,7 @@ describe('Neon Covenant short scenarios', () => {
     expect(settled.lab.cash).toBeGreaterThan(0);
     expect(settled.lab.scenario.status).toBe('success');
     expect(settled.lab.report.at(-1)).toContain('SCENARIO SUCCESS');
+    expectScenarioSaveRoundTrip(settled);
   });
 
   test('bounded autonomy route records current Ghost evidence without advancing its checkpoint', () => {
@@ -116,6 +134,7 @@ describe('Neon Covenant short scenarios', () => {
     expect(state.lab.research.ghost).toBe(state.lab.evaluated.ghost);
     expect(state.lab.scenario.status).toBe('success');
     expect(state.lab.cash).toBeGreaterThan(0);
+    expectScenarioSaveRoundTrip(state);
   });
 
   test('brownout recovery requires the cooling repair and two safe settlements', () => {
@@ -129,6 +148,7 @@ describe('Neon Covenant short scenarios', () => {
     expect(state.lab.incidentChains.heat.stage).toBe('clear');
     expect(state.lab.incidents).toBe(0);
     expect(state.lab.scenario.status).toBe('success');
+    expectScenarioSaveRoundTrip(state);
   });
 
   test('scenario definitions, unknown starts, invalid saves, and deadline failures are guarded', () => {
