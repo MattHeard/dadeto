@@ -28,6 +28,7 @@ import {
 import { toFramePayload } from '../mosslight-valley/renderer.js';
 import { actForShift, availableChapterScenes } from './campaign.js';
 import { rescueConsequence } from './distress.js';
+import { campaignEpilogue } from './epilogue.js';
 import {
   applyPlanningOrder,
   clearPlanningOrders,
@@ -607,7 +608,13 @@ function endingText(outcome, lab) {
     'quiet-lab':
       'The lab survives without a release. You protected your staff, but the city still waits. A quiet lab can begin again.',
   });
-  return [endings[outcome], rescueConsequence(lab)].filter(Boolean).join(' ');
+  return [
+    endings[outcome],
+    campaignEpilogue(outcome, lab),
+    rescueConsequence(lab),
+  ]
+    .filter(Boolean)
+    .join(' ');
 }
 
 /**

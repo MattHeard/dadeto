@@ -199,3 +199,21 @@ twelve-shift **Brownout recovery** asks you to repair cooling before settling,
 then complete two safe settlements to clear the thermal warning without an
 incident. Each objective is measured by the actual campaign rules, and the
 scenario result appears in the shift report.
+
+### Campaign philosophies and closing accounts
+
+The long campaign supports several solvent approaches. For clinical
+specialization, negotiate the clinic's community package, consult Mae on Atlas'
+actual licensed bedside settings, release it, and maintain its service. Public
+cooperation follows the same safeguards with Lumen's neighborhood dialects and
+the transit union. An efficient-services route can use Atlas' compact setting
+and balanced clinic terms, then move idle researchers into service after the
+release. A Ghost route can pursue bounded maintenance research under the
+Helios community package; its larger advance comes with a weaker trust position.
+These are tested routes, not required builds.
+
+At shift 28 the epilogue now reports the released models and their authored
+settings, employee roles and morale, the strongest stakeholder standing,
+recorded incidents, remaining debt, and the actual ownership terms. Reliable
+public services require ongoing maintenance: a release flag alone does not keep
+adoption, income or a community promise healthy.

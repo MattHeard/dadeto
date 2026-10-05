@@ -199,3 +199,17 @@ survives save/export/import. Successful routes are recorded in
 `neonScenarios.test.js` and the player manual. Standalone and embedded
 controller launches must also pass phone and desktop Playwright journeys that
 inspect the replacement warning, persistent objective, and unchanged shift.
+
+## Campaign route and ending balance
+
+Run four authored 28-shift routes using real management operations, current
+evaluation evidence, service maintenance, and settlements: licensed clinical
+Atlas, public Lumen/transit cooperation, compact efficient Atlas, and
+bounded-autonomy Ghost. Each must fulfill its selected contract, avoid expired
+terms and incidents, retain cash above debt, and resolve independently. Assert
+their cash/trust/stakeholder tradeoffs so one strategy does not dominate all
+others. Exercise all six resolutions and ensure the closing passage reflects
+the actual deployed configurations, named staff and morale, strongest
+stakeholder, incident register, debt, and ownership/rescue terms. Keep audio
+available as optional chiptune music and synthesized effects, and verify the
+existing social-demo recording has a non-silent audio stream.
