@@ -1,8 +1,8 @@
 import { findWorldEntry } from './world.js';
 /** @typedef {{ id: string, map: string, x: number, y: number, schedule?: Record<string, [string, number, number]>, scheduleAfter?: Record<string, Record<string, [string, number, number]>> }} Actor */
-/** @typedef {{ width: number, height: number, objects?: {id?: string, x: number, y: number}[] }} ActorMap */
+/** @typedef {{ width: number, height: number, objects?: {id?: string, kind?: string, creature?: string, x: number, y: number}[] }} ActorMap */
 /** @typedef {{x: number, y: number, facing: string}} ActorPlayer */
-/** @typedef {{ mapId: string, map: ActorMap, player: ActorPlayer, time: number, flags: Record<string, boolean>, npcs: Actor[] }} ActorWorld */
+/** @typedef {{ mapId: string, map: ActorMap, player: ActorPlayer, time: number, flags: Record<string, boolean>, npcs?: Actor[] }} ActorWorld */
 /**
  * Find an active NPC at a map coordinate.
  * @param {ActorWorld} world World state.
@@ -12,14 +12,14 @@ import { findWorldEntry } from './world.js';
  */
 export function actorAt(world, x, y) {
   return findWorldEntry(
-    world.npcs,
+    world.npcs || [],
     actor => actor.map === world.mapId && actor.x === x && actor.y === y
   );
 }
 /**
  * Find the character or object the player faces.
  * @param {Record<string, any>} state Game state containing world data.
- * @returns {{actor: Actor | null, object: {id?: string, x: number, y: number} | null}} Facing candidates.
+ * @returns {{actor: Actor | null, object: {id?: string, kind?: string, creature?: string, x: number, y: number} | null}} Facing candidates.
  */
 export function targetInFront(state) {
   const world = /** @type {ActorWorld} */ (state.world);

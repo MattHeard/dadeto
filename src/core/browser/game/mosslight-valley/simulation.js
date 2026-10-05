@@ -1,4 +1,3 @@
-// @ts-nocheck -- story state is serialized and validated at save boundaries.
 import { CONTENT } from './content.js';
 import { targetInFront, scheduleActors } from './actors.js';
 import {
@@ -15,8 +14,8 @@ import { controllerMenu } from './controls.js';
 
 /**
  * Create the complete starting state for a new save.
- * @param {unknown} content - The content argument.
- * @returns {unknown} The computed result.
+ * @param {any} content Authored chapter data passed from the runtime boundary.
+ * @returns {Record<string, any>} Initial simulation state.
  */
 export function createSimulation(content = CONTENT) {
   const world = createWorld(content);
@@ -41,11 +40,11 @@ export function createSimulation(content = CONTENT) {
 }
 /**
  * Advance one deterministic simulation frame from normalized actions.
- * @param {unknown} state - The state argument.
- * @param {unknown} actions - The actions argument.
- * @param {unknown} content - The content argument.
- * @param {unknown} deltaMs - The deltaMs argument.
- * @returns {unknown} The computed result.
+ * @param {any} state Normalized simulation state.
+ * @param {string[]} actions Input actions for this frame.
+ * @param {any} content Authored chapter data passed from the runtime boundary.
+ * @param {number} deltaMs Elapsed time in milliseconds.
+ * @returns {Record<string, any>} Updated simulation state.
  */
 export function stepGame(
   state,
@@ -53,11 +52,11 @@ export function stepGame(
   content = CONTENT,
   deltaMs = 125
 ) {
-  let next = {
+  let next = /** @type {any} */ ({
     ...state,
     tick: state.tick + 1,
     moveCooldown: Math.max(0, state.moveCooldown - deltaMs),
-  };
+  });
   const rawActions = actions;
   const rawPressed = actions.filter(
     action => !state.lastActions.includes(action)
@@ -65,7 +64,7 @@ export function stepGame(
   const control = controllerMenu(next, rawPressed);
   next = control.state;
   if (control.handled) return { ...next, lastActions: [...rawActions] };
-  const translate = action =>
+  const translate = (/** @type {string} */ action) =>
     action === 'a'
       ? 'confirm'
       : action === 'b'
@@ -219,9 +218,9 @@ export function stepGame(
 
 /**
  * Present story, controls and live objectives in both game presenters.
- * @param {object} state Current simulation.
- * @param {object} content Authored chapter.
- * @returns {object} A paged, player-dismissed guide.
+ * @param {any} state Normalized simulation state.
+ * @param {any} content Authored chapter data passed from the runtime boundary.
+ * @returns {Record<string, any>} A paged, player-dismissed guide.
  */
 function openGuide(state, content) {
   return openDialogue({ ...state, mode: 'journal' }, 'guide', [
@@ -259,9 +258,9 @@ function openGuide(state, content) {
 }
 /**
  *
- * @param {unknown} state - The state argument.
- * @param {unknown} content - The content argument.
- * @returns {unknown} The computed result.
+ * @param {any} state Normalized simulation state.
+ * @param {any} content Authored chapter data passed from the runtime boundary.
+ * @returns {Record<string, any>} State after interaction.
  */
 function interact(state, content) {
   const { actor, object } = targetInFront(state);
@@ -312,7 +311,10 @@ function interact(state, content) {
   if (object.kind === 'encounter')
     return startBattle(
       state,
-      content.creatures.find(creature => creature.id === object.creature)
+      content.creatures.find(
+        (/** @type {{id: string}} */ creature) =>
+          creature.id === object.creature
+      )
     );
   if (object.kind === 'crafting')
     return craftItem(state, {
@@ -324,10 +326,10 @@ function interact(state, content) {
 
 /**
  * Set a durable world flag and surface its story feedback.
- * @param {object} state - Current simulation state.
- * @param {string} flag - Story flag to set.
- * @param {string} toast - Player-facing feedback.
- * @returns {object} Updated simulation state.
+ * @param {any} state Normalized simulation state.
+ * @param {string} flag Story flag to set.
+ * @param {string} toast Player-facing feedback.
+ * @returns {Record<string, any>} Updated simulation state.
  */
 function announceFlag(state, flag, toast) {
   return {
@@ -338,10 +340,10 @@ function announceFlag(state, flag, toast) {
 }
 /**
  * Resolve authored ending choice.
- * @param {unknown} state - The state argument.
- * @param {unknown} choice - The choice argument.
- * @param {unknown} content - The content argument.
- * @returns {unknown} The computed result.
+ * @param {any} state Normalized simulation state.
+ * @param {string} choice Ending choice identifier.
+ * @param {any} content Authored chapter data passed from the runtime boundary.
+ * @returns {Record<string, any>} State with the ending applied.
  */
 export function finishChapter(state, choice, content = CONTENT) {
   return selectEnding(state, choice, content);

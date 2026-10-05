@@ -1,8 +1,8 @@
 /** @typedef {{x: number, y: number, requires?: string, map: string, to: [number, number]}} MapExit */
 /** @typedef {{width: number, height: number, blocked: string[], exits: MapExit[]}} WorldMap */
-/** @typedef {{x: number, y: number, facing?: string}} WorldPlayer */
-/** @typedef {{mapId: string, map: WorldMap, player: WorldPlayer, time: number, day: number, flags: Record<string, any>, npcs?: {map: string, x: number, y: number}[], [key: string]: any}} WorldState */
-/** @typedef {Record<string, any> & {start: {map: string, x: number, y: number}, maps: Record<string, WorldMap>, npcs: {id: string}[]}} WorldContent */
+/** @typedef {{x: number, y: number, facing: string}} WorldPlayer */
+/** @typedef {{mapId: string, map: WorldMap, player: WorldPlayer, time: number, day: number, flags: Record<string, any>, npcs?: {id: string, map: string, x: number, y: number}[], [key: string]: any}} WorldState */
+/** @typedef {Record<string, any> & {start: {map: string, x: number, y: number, facing: string}, maps: Record<string, WorldMap>, npcs: {id: string}[]}} WorldContent */
 /**
  * Find the first eligible world entry, with null representing absence.
  * @template T
