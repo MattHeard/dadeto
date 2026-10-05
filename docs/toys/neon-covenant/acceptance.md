@@ -247,5 +247,13 @@ statements 22756/22756, functions 7419/7419 and branches 11594/11594. Strict
 duplication reports zero clones. Evidence: `.tmp/neon-scenarios-full-check-final.log`
 and `reports/coverage/coverage-summary.json`. Site and cloud builds pass;
 terminal logs are `.tmp/neon-scenarios-build.log` and
-`.tmp/neon-scenarios-cloud-build.log`. Hosted release state is a separate
-deployment verification and is not implied by these local results.
+`.tmp/neon-scenarios-cloud-build.log`.
+
+Production publication is confirmed by successful Netlify workflow
+[37271704835](https://github.com/MattHeard/dadeto/actions/runs/37271704835) for
+the latest Neon runtime commit (`0859fd488d4850d7c89bd44547946a6179a6ed93`). A
+read-only check of the live `/core/browser/game/neon-covenant/management.js`
+returned `rulesVersion: 11`, `createPlanning()` and `createDistress()`; the live
+`scenarios.js` contains clinicLaunch, autonomyPilot, brownoutRecovery and
+`settleScenario`. Thus production serves the Release 4 runtime, not only a green
+build artifact.
