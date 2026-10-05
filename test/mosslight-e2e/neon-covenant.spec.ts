@@ -18,7 +18,24 @@ const RESOLUTIONS = [
 
 const SCENARIO_LAUNCHES = [
   {
+    id: 'clinicLaunch',
+    deadline: 8,
+    objective: 'Atlas pilot 20; cash stays positive by shift 8.',
+    starts: (state: Record<string, any>) => {
+      expect(state.lab.cash).toBe(100);
+      expect(state.lab.research.atlas).toBe(14);
+    },
+    finish: async (choose: (command: string) => Promise<any>, state: any) => {
+      await choose('page:ledger');
+      state = await choose('shift');
+      expect(state.lab.scenario.status).toBe('success');
+      expect(state.lab.research.atlas).toBeGreaterThanOrEqual(20);
+      expect(state.lab.cash).toBeGreaterThan(0);
+    },
+  },
+  {
     id: 'autonomyPilot',
+    deadline: 10,
     objective: 'Ghost pilot 32; pass all three current probes by shift 10.',
     starts: (state: Record<string, any>) => {
       expect(state.lab.focus).toBe('ghost');
@@ -28,15 +45,58 @@ const SCENARIO_LAUNCHES = [
         'maintenance'
       );
     },
+    finish: async (choose: (command: string) => Promise<any>, state: any) => {
+      await choose('page:ledger');
+      state = await choose('shift');
+      for (const id of ['ada', 'jun']) {
+        await choose('page:recruitment');
+        await choose(`page:employee:${id}`);
+        await choose(`assign:${id}:service`);
+      }
+      for (const [index, id] of [
+        'reliability',
+        'rights',
+        'oversight',
+      ].entries()) {
+        if (index === 0) {
+          await choose('page:research');
+          await choose('page:tests');
+        } else await choose('page:tests');
+        await choose(`page:testcase:${id}`);
+        state = await choose(`test:probe:${id}`);
+      }
+      expect(state.lab.scenario.status).toBe('active');
+      await choose('page:ledger');
+      state = await choose('shift');
+      expect(state.lab.scenario.status).toBe('success');
+      expect(state.lab.research.ghost).toBeGreaterThanOrEqual(32);
+      expect(state.lab.cash).toBeGreaterThan(0);
+      expect(state.lab.evaluated.ghost).toBe(state.lab.research.ghost);
+    },
   },
   {
     id: 'brownoutRecovery',
+    deadline: 12,
     objective:
       'Clear the heat warning, avoid an incident, and stay solvent by shift 12.',
     starts: (state: Record<string, any>) => {
       expect(state.lab.cash).toBe(80);
       expect(state.lab.incidentChains.heat.stage).toBe('warning');
       expect(state.lab.incidentChains.heat.warnedAt).toBe(1);
+    },
+    finish: async (choose: (command: string) => Promise<any>, state: any) => {
+      await choose('page:infrastructure');
+      await choose('cooling');
+      await choose('page:ledger');
+      state = await choose('shift');
+      expect(state.lab.scenario.status).toBe('active');
+      expect(state.lab.incidentChains.heat.stage).toBe('recovery');
+      await choose('page:ledger');
+      state = await choose('shift');
+      expect(state.lab.scenario.status).toBe('success');
+      expect(state.lab.incidents).toBe(0);
+      expect(state.lab.incidentChains.heat.stage).toBe('clear');
+      expect(state.lab.cash).toBeGreaterThan(0);
     },
   },
 ] as const;
@@ -332,9 +392,10 @@ for (const embedded of [false, true]) {
 
 for (const embedded of [false, true]) {
   for (const scenario of SCENARIO_LAUNCHES) {
-    test(`${scenario.id} starts from its disclosed controller menu in ${embedded ? 'embedded' : 'standalone'} play`, async ({
+    test(`${scenario.id} reaches its authored success through controller menus in ${embedded ? 'embedded' : 'standalone'} play`, async ({
       page,
     }) => {
+      test.setTimeout(90_000);
       const errors: string[] = [];
       page.on('pageerror', error => errors.push(error.message));
       await page.goto(embedded ? '/' : '/neon-covenant/', {
@@ -369,7 +430,49 @@ for (const embedded of [false, true]) {
         objective: scenario.objective,
       });
       scenario.starts(started);
+      if (started.dialogue) {
+        await tap(page, 'a', embedded, embedded);
+        await tap(page, 'a', embedded, embedded);
+      }
+      await scenario.finish(async command => {
+        let current = await labState(page);
+        for (let index = 0; index < 12 && current.dialogue; index++) {
+          await tap(page, 'a', embedded, embedded);
+          current = await labState(page);
+        }
+        if (!current.menu) {
+          await tap(page, 'x', embedded, embedded);
+          current = await labState(page);
+        }
+        const hasCommand = await page.evaluate(async command => {
+          const saved = JSON.parse(
+            localStorage.getItem('permanentData') || '{}'
+          )['neon-covenant-saves-v2'];
+          const state = JSON.parse(saved.slots[saved.activeSlot ?? 0]).state;
+          const { labEntries } = await import(
+            '/core/browser/game/neon-covenant/controls.js'
+          );
+          return labEntries(state).some(
+            (entry: string[]) => entry[1] === command
+          );
+        }, command);
+        if (!hasCommand && current.menu?.page !== 'main')
+          await tap(page, 'x', embedded, embedded);
+        await selectPersonnelRow(page, command, embedded);
+        return labState(page);
+      }, started);
+      const completed = await labState(page);
+      expect(completed.lab.scenario.status).toBe('success');
+      expect(completed.lab.scenario.settled).toBeLessThanOrEqual(
+        scenario.deadline
+      );
+      expect(completed.lab.cash).toBeGreaterThan(0);
       expect(await labSaveIsValid(page)).toBe(true);
+      expect(
+        await page.evaluate(
+          () => document.documentElement.scrollWidth <= innerWidth
+        )
+      ).toBe(true);
       expect(errors).toEqual([]);
     });
   }
@@ -574,6 +677,7 @@ async function selectPersonnelRow(
   command: string,
   embedded = false
 ) {
+  if (!(await labState(page)).menu) await tap(page, 'x', embedded, embedded);
   const selection = await page.evaluate(async command => {
     const saves = JSON.parse(localStorage.getItem('permanentData') || '{}')[
       'neon-covenant-saves-v2'

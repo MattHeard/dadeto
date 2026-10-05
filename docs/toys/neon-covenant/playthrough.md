@@ -49,8 +49,9 @@ The rules-six relationship regression uses ordinary eight-button menus in both
 presenters to prove free story reading, paid acceptance, two settled proof shifts,
 earned protection and save/reload persistence. Pure tests additionally prove real
 Mae service/consent, Ion capacity and Sable current evidence, warning, breach,
-disagreement and repair. The remaining Release 2 systems still require their own
-complete controller routes and campaign balancing.
+disagreement and repair. Later releases add negotiated stakeholder packages,
+operating deployments, campaign acts, distress rescue, reversible planning and
+short scenarios; see the current route evidence in [acceptance.md](acceptance.md).
 
 ## Independent local clinic model
 
@@ -90,7 +91,7 @@ exclusive attempts do not alter money or attention. Save and reload after
 signing to confirm the package and five standings persist.
 
 The negotiated-campaign acceptance is exercised in the standalone and embedded
-phone/desktop Playwright matrix. It captures .tmp/neon-contracts-*.png; pure
+phone/desktop Playwright matrix. It captures .tmp/neon-contracts-\*.png; pure
 tests cover deterministic score changes, terms-aware deadlines/invoices/service
 charges, invalid saves and rules-7 migration. Keep the original independent
 route above as the economy baseline; do not inject progress, trust or cash to

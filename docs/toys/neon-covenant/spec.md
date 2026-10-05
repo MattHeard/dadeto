@@ -4,7 +4,7 @@
 
 Toy: NEON1 — Neon Covenant: Frontier Lab. Owner: dadeto-srg7. Updated 2026-10-03.
 
-Living Frontier Lab expansion owner: dadeto-88mh. The approved four-release expansion keeps this game identity, storage key, controller alphabet and 28-shift campaign. Release 1 begins with named staffing and lossless migration; clinic/cooling introduction, forecasts and causal incident chains are required before that release is complete.
+Living Frontier Lab expansion owner: dadeto-88mh. The approved four-release expansion keeps this game identity, storage key, controller alphabet and 28-shift campaign. Releases 1–4 are implemented across Neon rules versions 1–11: the playable clinic/cooling introduction, deterministic forecasts, named employees and causal incident chains; research/evaluation/deployment/infrastructure/contracts/stakeholders; the four-act RPG, exploration, viable campaign philosophies and resolutions; plus reversible planning, short scenarios and distress recovery. Current release verification and hosted publication evidence are tracked in `acceptance.md`; do not treat the dated implementation history below as a completion claim.
 
 ### Playable first-shift contract
 
@@ -115,9 +115,9 @@ Forecast and comparison prose is split using the renderer's `wrapDialogueText` i
 
 The controller staff console selects a person before a destination team; it never silently selects a donor. Listening to concerns opens the shared paginated dialogue and is free. Thoughts derive from fatigue, cooling, data consent, evaluator availability and support capacity, so loading cannot reroll them. Protected shifts reduce fatigue by eight; balanced shifts add three and sprint shifts add ten. Team rest reduces each person's fatigue by twenty.
 
-Save envelope version 2 is unchanged. Neon `lab.rulesVersion: 4` adds representative evaluation records and per-shift testing capacity to per-program settings/milestones from version 3, causal records from version 2 and named personnel from version 1. The optional shared save-profile migration composes personnel/incident, program and evidence reconstruction before validation, without changing Mosslight profiles. Unversioned ledgers gain a roster matching their historical staffing; version-1/2 ledgers retain their exact employees. Cash, debt, progress, historical sign-offs, deployment, contract terms, promises, historical incidents, outcome and shift are untouched. Current historical sign-offs reconstruct passing evidence; outdated/absent sign-offs do not invent completed tests. Older rules without causal records receive two protected incident settlements. Current corrupt records are rejected, including contradictory incident charges, future warning dates, unauthored settings, invented milestones, malformed evidence and unknown saved test menus. The first exact serialized slot backup persists until explicit reset.
+Save envelope version 2 is unchanged. Current Neon saves use `lab.rulesVersion: 11`. Successive migrations add representative evaluation records and per-shift testing capacity, per-program settings/milestones, causal records and named personnel before the later contract, campaign, distress and planning ledgers. The optional shared save-profile migration composes these steps before validation, without changing Mosslight profiles. Historical finances, progress, contracts, promises, incidents, outcomes and shifts are preserved; current historical sign-offs reconstruct only demonstrated passing evidence. Older rules without causal records receive two protected incident settlements. Current corrupt records are rejected, including contradictory incident charges, future warning dates, unauthored settings, invented milestones, malformed evidence and unknown saved test menus. The first exact serialized slot backup persists until explicit reset.
 
-Authored incident definitions live in `content.js`; `incidents.js` owns cause detection, warning/intervention/incident/recovery transitions, one-charge-per-unresolved-episode accounting, paid responses and employee follow-ups. Settlement and forecast use the same pure functions. Responses consume one attention only when accepted; free comparisons expose exact costs and projected outcomes. Safe recovery requires two consecutive settlements; a relapse before recovery cannot incur another fine. Chapter-wide new/migrated playthroughs and all later releases remain required before the expansion is complete.
+Authored incident definitions live in `content.js`; `incidents.js` owns cause detection, warning/intervention/incident/recovery transitions, one-charge-per-unresolved-episode accounting, paid responses and employee follow-ups. Settlement and forecast use the same pure functions. Responses consume one attention only when accepted; free comparisons expose exact costs and projected outcomes. Safe recovery requires two consecutive settlements; a relapse before recovery cannot incur another fine. New, migrated and district-hosted campaign routes, six endings and later management systems are covered by the acceptance suites below; the historical release checkpoints retain their original scope and dates.
 
 The first successfully migrated serialized save is retained in the same storage root under `migrationBackups[slot]`. Later migrations never replace that backup. Invalid imports change neither the campaign nor its backup. Only an explicit reset clears that slot's backup, including resets without an idempotency receipt. Other slots and the Mosslight namespace are untouched.
 
@@ -186,9 +186,10 @@ is required. Rules-8 saves derive their current act from the unchanged saved
 shift without replaying a settlement or inventing previous act history, and
 retain the original serialized migration backup. Current saves reject an
 incorrect or extra-field act marker. Boundary tests cover 6/7, 13/14 and 21/22;
-controller playthroughs must verify the report, saved marker and briefing after
-reload in standalone and embedded modes. Release 4 and campaign-wide
-philosophy/ending balancing remain outstanding.
+controller playthroughs verify the report, saved marker and briefing after
+reload in standalone and embedded modes. Financial distress and reversible
+planning are implemented in rules versions 10–11; campaign philosophies and all
+six resolutions are exercised through authored routes and ending tests.
 
 ## Financial distress and rescue notes (rules 10)
 

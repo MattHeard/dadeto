@@ -2,6 +2,11 @@
 
 ## Machine-Checkable Criteria
 
+Checkpoint paragraphs below are chronological records of what remained open at
+their respective release dates; they are not the current release tracker. The
+latest implementation status and terminal evidence are recorded in the final
+section of this document.
+
 Focused Jest tests exercise economic accounting, safety gates, bottlenecks, bankruptcy, six outcome policies, deadline clawbacks, deterministic campaigns, all menu operations, isolated save slots, malformed imports, embedded input and shared presenter compatibility.
 
 ### Campaign acts (rules 9)
@@ -199,6 +204,10 @@ survives save/export/import. Successful routes are recorded in
 `neonScenarios.test.js` and the player manual. Standalone and embedded
 controller launches must also pass phone and desktop Playwright journeys that
 inspect the replacement warning, persistent objective, and unchanged shift.
+The current controller completion matrix additionally plays all three
+objectives to success through authored menus in standalone and embedded modes,
+on phone and desktop; it checks the persisted success state, deadline, positive
+cash, valid save, browser errors and viewport overflow.
 
 ## Campaign route and ending balance
 
@@ -222,3 +231,21 @@ controller menu; no balances, research, evaluation or date are injected. Run on
 phone and desktop, and verify the selected contract, strategy stakeholder,
 fulfilled promise where applicable, independent resolution, cash above debt,
 zero incidents, valid save and no browser errors or viewport overflow.
+
+## Current implementation checkpoint (2026-10-05)
+
+The short-campaign controller completion matrix passes **12/12** local browser
+cases: Clinic launch, Bounded autonomy and Brownout recovery each reach their
+actual saved success state through authored menu operations in standalone and
+embedded play on phone and desktop. Each finishes before its scenario deadline
+with positive cash, a valid save, no browser error and no horizontal overflow.
+Command and terminal output: `.tmp/neon-scenarios-browser-final.log`.
+
+The exact repository gate passes: `npm run check` reports 10/10 checks green,
+the 20 serial coverage shards pass, and global coverage is lines 21761/21761,
+statements 22756/22756, functions 7419/7419 and branches 11594/11594. Strict
+duplication reports zero clones. Evidence: `.tmp/neon-scenarios-full-check-final.log`
+and `reports/coverage/coverage-summary.json`. Site and cloud builds pass;
+terminal logs are `.tmp/neon-scenarios-build.log` and
+`.tmp/neon-scenarios-cloud-build.log`. Hosted release state is a separate
+deployment verification and is not implied by these local results.
