@@ -26,6 +26,7 @@ const UUID =
  * createPurchase?: (input: object) => Promise<{ purchaseId: string }>,
  * savePurchaseCheckout?: (purchaseId: string, session: object) => Promise<unknown>,
  * publicBillingOrigin?: string,
+ * stripeConfigured?: boolean,
  * resolveIdempotency?: (uid: string, key: string, packageId: string) => Promise<{ conflict?: boolean, session?: object } | null>,
  * saveIdempotency?: (uid: string, key: string, value: object) => Promise<unknown>,
  * logger?: { error?: (...args: unknown[]) => void }

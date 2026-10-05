@@ -1,12 +1,29 @@
-// @ts-nocheck -- payment and Firebase collaborators are injected structural test doubles.
 import { calculatePackageCredits } from '../billing/pricing-core.js';
 
-/** @typedef {any} CheckoutRuntimeValue Runtime-shaped Checkout value. */
+/**
+ * @typedef {object} CheckoutDatabase
+ * @property {(collection: string) => {doc: (id: string) => {get: () => Promise<{exists?: boolean, data: () => Record<string, unknown>}>, set: (value: Record<string, unknown>) => Promise<unknown>}}} collection Firestore collection accessor.
+ */
+
+/**
+ * @typedef {object} CheckoutBillingService
+ * @property {(packageId: string) => Promise<({active?: boolean, amountUsdMinor: number, stripePriceId?: string}&Record<string, unknown>)|null>} getPackage Read a credit package.
+ * @property {() => Promise<Parameters<typeof calculatePackageCredits>[1]|null>} getCurrentPricingSnapshot Read current pricing.
+ * @property {(input: object) => Promise<{purchaseId: string}>} createPurchase Create a purchase record.
+ * @property {(purchaseId: string, session: object) => Promise<unknown>} savePurchaseCheckout Save checkout metadata.
+ * @property {(purchaseId: string) => Promise<{packageId: string, checkoutSessionId?: string, checkoutUrl?: string, checkoutExpiresAt?: number}|null>} getPurchase Read a purchase record.
+ */
+
+/**
+ * @typedef {object} CheckoutStripeService
+ * @property {{create: (options: object) => Promise<{id: string}>}} customers Stripe customer API.
+ * @property {{sessions: {create: (options: object, requestOptions: object) => Promise<{id: string, url: string, expires_at: number}>}}} checkout Stripe checkout API.
+ */
 
 /**
  * Build the dynamic package resolver used by the deployed Checkout function.
- * @param {{ getPackage: (packageId: string) => Promise<CheckoutRuntimeValue|null>, getCurrentPricingSnapshot: () => Promise<CheckoutRuntimeValue|null> }} billing Billing accessors.
- * @returns {(packageId: string) => Promise<CheckoutRuntimeValue|null>} Resolver.
+ * @param {Pick<CheckoutBillingService, 'getPackage'|'getCurrentPricingSnapshot'>} billing Billing accessors.
+ * @returns {(packageId: string) => Promise<({active?: boolean, amountUsdMinor: number, stripePriceId?: string}&Record<string, unknown>&{pricingSnapshot?: Parameters<typeof calculatePackageCredits>[1], credits: number})|null>} Resolver.
  */
 export function createDynamicPackageResolver({
   getPackage,
@@ -34,8 +51,8 @@ export function createDynamicPackageResolver({
 
 /**
  * Build cloud dependency adapters for Checkout.
- * @param {{ db: CheckoutRuntimeValue, billing: CheckoutRuntimeValue, stripe: CheckoutRuntimeValue, verifyIdToken: (token: string) => Promise<CheckoutRuntimeValue>, publicBillingOrigin?: string, stripeConfigured?: boolean }} input Runtime dependencies.
- * @returns {CheckoutRuntimeValue} Checkout dependencies.
+ * @param {{ db: CheckoutDatabase, billing: CheckoutBillingService, stripe: CheckoutStripeService, verifyIdToken: (token: string) => Promise<{uid?: string}>, publicBillingOrigin?: string, stripeConfigured?: boolean }} input Runtime dependencies.
+ * @returns {Parameters<typeof import('./create-checkout-session-core.js').createCheckoutSessionHandler>[0]} Checkout dependencies.
  */
 export function createCheckoutSessionDependencies({
   db,
@@ -51,7 +68,9 @@ export function createCheckoutSessionDependencies({
     verifyIdToken,
     resolveApiKeyUuidForUid: uid => resolveOwnedKey(db, uid),
     resolveBillingCustomer: uid => resolveBillingCustomer(db, uid),
-    createBillingCustomer: options => stripe.customers.create(options),
+    createBillingCustomer: async options => ({
+      stripeCustomerId: (await stripe.customers.create(options)).id,
+    }),
     saveCustomerMappings: (uid, customerId, apiKeyUuid) =>
       saveCustomerMappings(db, uid, customerId, apiKeyUuid),
     getCreditPackage: createDynamicPackageResolver(billing),
@@ -68,9 +87,9 @@ export function createCheckoutSessionDependencies({
 }
 
 /**
- * @param {CheckoutRuntimeValue} db Firestore database.
+ * @param {CheckoutDatabase} db Firestore database.
  * @param {string} uid User identifier.
- * @returns {Promise<CheckoutRuntimeValue|null>} Key record.
+ * @returns {Promise<{apiKeyUuid: string}|null>} Key record.
  */
 async function resolveOwnedKey(db, uid) {
   const snap = await db.collection('api-key-ownership').doc(uid).get();
@@ -80,9 +99,9 @@ async function resolveOwnedKey(db, uid) {
 }
 
 /**
- * @param {CheckoutRuntimeValue} db Firestore database.
+ * @param {CheckoutDatabase} db Firestore database.
  * @param {string} uid User identifier.
- * @returns {Promise<CheckoutRuntimeValue|null>} Customer record.
+ * @returns {Promise<{stripeCustomerId?: string}|null>} Customer record.
  */
 async function resolveBillingCustomer(db, uid) {
   // Stryker disable next-line all -- billing customer records use the fixed
@@ -93,7 +112,7 @@ async function resolveBillingCustomer(db, uid) {
 }
 
 /**
- * @param {CheckoutRuntimeValue} db Firestore database.
+ * @param {CheckoutDatabase} db Firestore database.
  * @param {string} uid User identifier.
  * @param {string} customerId Stripe customer identifier.
  * @param {string} apiKeyUuid API key UUID.
@@ -116,11 +135,11 @@ async function saveCustomerMappings(db, uid, customerId, apiKeyUuid) {
 }
 
 /**
- * @param {CheckoutRuntimeValue} billing Billing service.
+ * @param {Pick<CheckoutBillingService, 'getPurchase'>} billing Billing service.
  * @param {string} uid User identifier.
  * @param {string} key Idempotency key.
  * @param {string} packageId Package identifier.
- * @returns {Promise<CheckoutRuntimeValue|null>} Existing result.
+ * @returns {Promise<{conflict?: boolean, session?: {checkoutSessionId: string, url: string, expiresAt?: number}}|null>} Existing result.
  */
 async function resolveIdempotency(billing, uid, key, packageId) {
   // Stryker disable next-line all -- idempotency lookup uses the fixed purchase
