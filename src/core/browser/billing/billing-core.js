@@ -1,11 +1,12 @@
-// @ts-nocheck -- browser dependency shapes are injected at the edge.
+/** @typedef {{packageId: string, currency: 'usd', amountUsdMinor: number, credits: number}} BillingOffer */
+
 /**
  * Normalize the public server-priced package response.
  * @param {unknown} value Server response.
  * @returns {Array<{ packageId: string, currency: string, amountUsdMinor: number, credits: number }>} Offers.
  */
 export function normalizeBillingOffers(value) {
-  if (!Array.isArray(value?.packages))
+  if (!isRecord(value) || !Array.isArray(value.packages))
     throw new TypeError('Invalid billing package response');
   return value.packages.map(normalizeBillingOffer);
 }
@@ -21,10 +22,13 @@ function normalizeBillingOffer(offer) {
   if (typeof packageId !== 'string')
     throw new TypeError('Invalid billing package');
   if (currency !== 'usd') throw new TypeError('Invalid billing package');
-  if (!Number.isSafeInteger(amountUsdMinor))
+  if (
+    typeof amountUsdMinor !== 'number' ||
+    !Number.isSafeInteger(amountUsdMinor)
+  )
     throw new TypeError('Invalid billing package');
   if (amountUsdMinor <= 0) throw new TypeError('Invalid billing package');
-  if (!Number.isSafeInteger(credits))
+  if (typeof credits !== 'number' || !Number.isSafeInteger(credits))
     throw new TypeError('Invalid billing package');
   if (credits <= 0) throw new TypeError('Invalid billing package');
   return { packageId, currency, amountUsdMinor, credits };
@@ -33,10 +37,19 @@ function normalizeBillingOffer(offer) {
 /**
  * Ensure an offer has an object shape before field validation.
  * @param {unknown} offer Candidate offer.
+ * @returns {asserts offer is Record<string, unknown>} Throws for non-record values.
  */
 function assertBillingOfferObject(offer) {
-  if (offer === null) throw new TypeError('Invalid billing package');
-  if (typeof offer !== 'object') throw new TypeError('Invalid billing package');
+  if (!isRecord(offer)) throw new TypeError('Invalid billing package');
+}
+
+/**
+ * Check for a non-array object from an untyped response boundary.
+ * @param {unknown} value Candidate value.
+ * @returns {value is Record<string, unknown>} Whether value is a record.
+ */
+function isRecord(value) {
+  return value !== null && typeof value === 'object' && !Array.isArray(value);
 }
 
 /**
@@ -45,11 +58,14 @@ function assertBillingOfferObject(offer) {
  * @returns {{ loadOffers: () => Promise<unknown>, startPurchase: (packageId: string) => Promise<unknown>, retry: () => Promise<unknown>, getAttemptId: () => string|null }} Controller.
  */
 export function createBillingController(deps) {
+  /** @type {string|null} */
   let selectedPackageId = null;
+  /** @type {string|null} */
   let attemptId = null;
   let inFlight = false;
   const loadOffers = async () =>
     normalizeBillingOffers(await deps.loadOffers());
+  /** @type {(packageId: string) => Promise<unknown>} */
   const startPurchase = async packageId => {
     if (inFlight) return { ignored: true };
     if (packageId !== selectedPackageId) {
@@ -61,7 +77,7 @@ export function createBillingController(deps) {
     try {
       const token = await getPurchaseToken(deps);
       const response = await deps.postCheckout(packageId, token, attemptId);
-      if (typeof response?.url !== 'string')
+      if (!isRecord(response) || typeof response.url !== 'string')
         throw new Error('Invalid checkout response');
       deps.navigate(response.url);
       return response;
