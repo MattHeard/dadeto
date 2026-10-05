@@ -3,6 +3,7 @@ import { targetInFront } from '../mosslight-valley/actors.js';
 import { openDialogue, advanceDialogue } from '../mosslight-valley/dialogue.js';
 import { createLab, manageLab, endShift, forecast } from './management.js';
 import { labEntries, labMenuRows } from './controls.js';
+import { availableContractPackages } from './contracts.js';
 import { LAB_CONTENT } from './content.js';
 import { employeeThoughts } from './personnel.js';
 import {
@@ -43,7 +44,7 @@ export function renderNeon(state) {
 function present(state) {
   const presentation = {
     palette: ['#111426', '#243344', '#52a7bc', '#f482ca'],
-    status: `${state.lab.cash}k RISK ${state.lab.risk} AP ${state.lab.decisions}`,
+    status: `WF${state.lab.stakeholderStanding.workforce} CL${state.lab.stakeholderStanding.clinic} TU${state.lab.stakeholderStanding.transit} RG${state.lab.stakeholderStanding.regulator} IV${state.lab.stakeholderStanding.investor}`,
     menuRows: labMenuRows(state),
     forecast: forecastShift(state),
   };
@@ -115,6 +116,78 @@ export function createNeonState(content = LAB_CONTENT) {
 }
 
 /**
+ * Inspect a visible agreement package before allowing its signature.
+ * @param {Record<string, any>} state Campaign snapshot.
+ * @param {Record<string, any>} next Closed-menu snapshot.
+ * @param {string} command Selected authored offer row.
+ * @returns {Record<string, any>} Rejection panel or terms dialogue.
+ */
+function contractOfferDialogue(state, next, command) {
+  const [, id, packageId] = command.split(':');
+  const deal = LAB_CONTENT.contracts[id];
+  const offer = deal?.packages[packageId];
+  if (
+    !offer ||
+    !availableContractPackages(state.lab, id).includes(packageId) ||
+    state.lab.contracts.includes(id)
+  )
+    return { ...state, menu: { page: `contract:${id}`, selected: 0 } };
+  const impacts = Object.entries(offer.impact)
+    .filter(([, value]) => value)
+    .map(
+      ([stakeholder, value]) =>
+        `${LAB_CONTENT.stakeholders[stakeholder].name} ${value > 0 ? '+' : ''}${value} at signing`
+    );
+  const affected = impacts.length
+    ? impacts.join('; ')
+    : 'No standing changes at signing';
+  const terms = [
+    {
+      text: `${deal.name}: ${offer.name}. Advance ${offer.advance}k; delivery deadline shift ${offer.deadline}; maximum invoice ${offer.daily}k per shift after delivery; service obligation costs ${offer.serviceCost}k per shift. ${offer.exclusive ? 'Exclusive: no other deal may be signed until this one is delivered or expires.' : 'Non-exclusive: other deals remain available.'}`,
+    },
+    {
+      text: `Attribution ${offer.attribution ? 'is contractually protected' : 'is not promised'}. Ghost oversight term: ${offer.oversight}. A release with incompatible oversight will not fulfill the deal before its deadline. Affected now: ${affected}. Accepting costs one attention and no shift time; the advance, obligations and standing changes are real.`,
+      choices: [
+        { label: 'Sign these terms', command: `contract:${id}:${packageId}` },
+        { label: 'Return to offers', command: `page:contract:${id}` },
+      ],
+    },
+  ];
+  return openDialogue(next, 'contract', terms);
+}
+
+/**
+ * Start an authored stakeholder conversation when its id exists.
+ * @param {Record<string, any>} state Campaign snapshot.
+ * @param {Record<string, any>} next Closed-menu snapshot.
+ * @param {string} id Stakeholder identifier.
+ * @returns {Record<string, any>} Conversation or unchanged state.
+ */
+function stakeholderDialogue(state, next, id) {
+  const group = LAB_CONTENT.stakeholders[id];
+  return group
+    ? openDialogue(next, `stakeholder-${id}`, [
+        {
+          text: `${group.name}, standing ${state.lab.stakeholderStanding[id]}/100. ${group.advice}`,
+        },
+      ])
+    : state;
+}
+
+/**
+ * Apply a confirmed package and return to that partner's offer list.
+ * @param {Record<string, any>} next Closed-menu snapshot.
+ * @param {string} command Confirmed signature command.
+ * @returns {Record<string, any>} Updated contract ledger and controller.
+ */
+function signContract(next, command) {
+  const result = manageLab(next, command);
+  return Object.assign(result, {
+    menu: { page: `contract:${command.split(':')[1]}`, selected: 0 },
+  });
+}
+
+/**
  * Execute a selected menu operation with explicit modal ownership.
  * @param {Record<string, any>} state Campaign snapshot.
  * @param {string} command Selected row operation.
@@ -139,6 +212,15 @@ function menuCommand(state, command) {
         4
       )
     );
+  if (command.startsWith('contract-offer:'))
+    return contractOfferDialogue(state, next, command);
+  if (command.startsWith('stakeholder-story:'))
+    return stakeholderDialogue(
+      state,
+      next,
+      command.slice('stakeholder-story:'.length)
+    );
+  if (command.startsWith('contract:')) return signContract(next, command);
   if (command.startsWith('arc:')) {
     const changed = manageLab(next, command);
     const [, kind, id] = command.split(':');
@@ -474,6 +556,10 @@ export function labJournal(state) {
     ...Object.entries(state.lab.relationships).map(([id, record]) => ({
       title: `${RELATIONSHIP_CONTENT[id].name} / ${record.stage}`,
       status: `Bond ${record.score}; proof ${record.streak}/2; fulfilled ${record.fulfillments}; disagreed ${record.disagreements}; breaches ${record.breaches}; repairs ${record.repairs}`,
+    })),
+    ...Object.entries(state.lab.stakeholderStanding).map(([id, score]) => ({
+      title: `${LAB_CONTENT.stakeholders[id].name} / standing`,
+      status: `${score}/100; watches ${LAB_CONTENT.stakeholders[id].concern}`,
     })),
     { title: 'Earn a city covenant', status: `Trust ${state.lab.trust}/65` },
   ];

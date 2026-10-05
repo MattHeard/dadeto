@@ -2,9 +2,10 @@ import { LAB_CONTENT } from './content.js';
 import { endShift, forecast, manageLab } from './management.js';
 import { wrapDialogueText } from '../mosslight-valley/renderer.js';
 import { hostingCost } from './research.js';
+import { contractTerms as forecastTerms } from './contracts.js';
 
 /**
- * Explain the constraint that a director can actually change before settlement.
+ * Translate current capacity into the actionable research limit.
  * @param {Record<string, any>} lab Current lab.
  * @param {Record<string, any>} flow Operating capacity and per-client invoices.
  * @returns {Record<string, string>} Dominant constraint and actionable advice.
@@ -65,11 +66,13 @@ function deadlines(state, next) {
     )
     .map((/** @type {string} */ id) => {
       const deal = LAB_CONTENT.contracts[id];
+      const terms = forecastTerms(state.lab, id);
       return {
         id,
         name: deal.name,
-        shiftsRemaining: Math.max(0, deal.deadline - state.world.day),
-        clawback: Math.ceil(deal.advance / 2),
+        package: terms.name,
+        shiftsRemaining: Math.max(0, terms.deadline - state.world.day),
+        clawback: Math.ceil(terms.advance / 2),
         delivery: next.lab.fulfilled.includes(id),
         missed: next.lab.expired.includes(id),
       };
@@ -102,6 +105,7 @@ export function forecastShift(state) {
     power: flow.power,
     hosting: hostingCost(lab),
     infrastructure: flow.infrastructure,
+    contractService: flow.contractService,
     income: flow.service + flow.income,
     demand: flow.demand,
     throughput: flow.throughput,
@@ -154,7 +158,7 @@ export function forecastPages(state) {
   const f = forecastShift(state);
   const pages = [
     {
-      text: `SHIFT ${f.shift} FORECAST. Closing cash ${f.closingCash}k (${f.cashChange}k change). Income ${f.income}k, payroll ${f.payroll}k, power ${f.power}k, hosting ${f.hosting}k, infrastructure ${f.infrastructure}k. Reading this forecast costs no attention and never ends a shift.`,
+      text: `SHIFT ${f.shift} FORECAST. Closing cash ${f.closingCash}k (${f.cashChange}k change). Income ${f.income}k, payroll ${f.payroll}k, power ${f.power}k, hosting ${f.hosting}k, infrastructure ${f.infrastructure}k, contract service ${f.contractService}k. Reading this forecast costs no attention and never ends a shift.`,
     },
     {
       text: `Research +${f.researchGain}, checkpoint ${f.checkpoint}/${f.target}. Throughput ${f.throughput}/${f.demand}. Constraint: ${f.bottleneck.kind}. ${f.bottleneck.advice}`,
@@ -208,7 +212,7 @@ function deadlinePage(deal) {
       text: `${deal.name}: deadline expires this shift. Clawback ${deal.clawback}k and trust loss are included in closing cash and trust.`,
     };
   return {
-    text: `${deal.name}: ${deal.shiftsRemaining} shifts until its deadline. Missing it costs ${deal.clawback}k and trust. Evaluate and release the required model, then serve at least 20% adoption at 70% reliability. Training alone is not delivery.`,
+    text: `${deal.name} / ${deal.package}: ${deal.shiftsRemaining} shifts until its deadline. Missing it costs ${deal.clawback}k and trust. Evaluate and release the required model with its signed oversight, then serve at least 20% adoption at 70% reliability. Training alone is not delivery.`,
   };
 }
 

@@ -64,7 +64,7 @@ its existing cue behavior.
 
 Reliability is the smallest of inference coverage, support coverage and condition/60, capped at 100%. If either capacity is absent reliability is zero even for a cohort with no current users. A reliability of at least 70% grows adoption by `floor(authoredGrowth * reliability / 100)`; otherwise adoption loses ten points. Bound adoption to 0–100, backlog to 0–30, condition to 0–100. Support demand includes `ceil(backlog / 4)`; settled backlog adds incoming requests and subtracts served work. Condition loses `2 + ceil(inferenceDemand / 2)` each settlement. Maintain restores condition for the authored 6/10/8k; triage costs 4k and clears up to twelve tickets. Both accepted orders consume one attention and never advance time; rejected orders change neither ledger nor attention. Triage cannot remove an ongoing staffing shortage. Actual support demand drives the existing warning/intervention/incident/recovery chain.
 
-Save envelope version 2, identity, tool names, storage key and controller alphabet remain unchanged. Operating records were introduced in rules **5**; current rules **6** additionally reconstruct personal commitments as described below. The migration pipeline reconstructs named people, programs, evidence, operating records, then commitments before validation. Existing released programs gain full adoption, fresh condition and no backlog without changing inherited balances, progress, deadlines, advances, incidents, evidence, employees, historical endings or shift. Future settlements use new service rules. Current corrupt operating records and unknown saved deployment menus are rejected atomically. The first original per-slot backup survives multiple upgrades until explicit reset.
+Save envelope version 2, identity, tool names, storage key and controller alphabet remain unchanged. Operating records were introduced in rules **5**; current rules **8** additionally reconstruct personal commitments, infrastructure choices, signed package terms and five stakeholder standings. Migration order is named people, programs, evidence, operating records, commitments, infrastructure, then negotiations, before current-save validation. Existing releases gain full adoption and fresh service condition without changing inherited balances, progress, deadlines, advances, incidents, evidence, employees, historical endings or shift. Rules-7 agreements map to their exact former fixed terms (balanced); paid advances are never replayed. The five new standings are inferred from current observable morale, risk, trust and runway without replaying stakeholder changes. Future settlements use new service rules. Current corrupt operating records, negotiation packages and unknown saved menus reject atomically. The first original per-slot backup survives multiple upgrades until explicit reset.
 
 ## Explanatory forecast contract
 
@@ -139,4 +139,32 @@ Controller cases expose free paginated scenario/cause/cost inspection, then sepa
 
 Rules version 7 adds Ion's authored infrastructure orders: refurbished compute, specialized accelerators, leased compute, backup power and heat recovery. Each has a distinct price/capacity/reliability/recurring effect. The computer preview includes the installation cost and deterministic closing-cash comparison; a separate confirmation commits the one-attention purchase. Settlement deducts lease and accelerator support charges and reports them separately. Rules-six campaigns gain empty installed-equipment counters while preserving compute, cooling, cash, debt, deadlines and historical outcomes; the save adapter retains its original serialized slot backup.
 
-These are the research configuration/milestone, tactical evaluation and infrastructure slices of Release 2, not its full completion. Negotiations and stakeholder systems remain required before Release 2 is complete.
+## Negotiable contracts and stakeholder standing (rules 8)
+
+Content authors three packages for each existing partner. The contract module
+validates and persists each signed package, exposes relationship-gated offers,
+applies one-time stakeholder effects, settles constituency scores and upgrades
+rules-7 ledgers. Each offer discloses its advance, deadline, post-delivery
+invoice cap, recurring service fee, exclusivity, attribution, Ghost oversight
+condition and named stakeholders before the confirmation choice. An exclusive
+deal blocks new signatures until delivery or expiry. Attribution safeguards
+become an enforceable lab policy; project delivery is held if negotiated Ghost
+oversight is not met. Operations, deadline forecasts and end-shift settlement
+read the signed package, not mutable offer UI data.
+
+Stakeholder standings separately track workforce, Night Clinic, Transit Union,
+regulator and investor at bounded integer scores. A package changes its named
+constituencies once when signed; later settlements respond deterministically to
+morale/incidents, community deliveries, licensed/disclosed safety and financial
+runway. Reading entries is free. Existing general trust and all six legacy
+ending rules are unchanged in this slice. Rules-7 migration assigns each already
+signed deal its original balanced terms, derives a new starting profile from
+current measurable state, and does not settle a shift or alter cash, debt,
+history, completed deals or other historical ledger fields.
+
+Release-2 controller coverage must exercise all three offers, package gating,
+exclusive rejection without charge, the public safeguards route, deadline and
+oversight fulfillment, forecasts including recurring service costs, migration
+of active/fulfilled/expired and distressed deals, corrupt-save atomicity and
+standings in both presenters. Releases 3–4 and campaign-wide philosophy/ending
+balancing remain outstanding.

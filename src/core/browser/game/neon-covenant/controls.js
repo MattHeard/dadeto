@@ -12,6 +12,7 @@ import { EVALUATION_CASES } from './evaluationContent.js';
 import { evaluationStatus } from './evaluation.js';
 import { INFRASTRUCTURE, infrastructureEffects } from './infrastructure.js';
 import { DEPLOYMENT_PROFILES, OPERATING_RULES } from './operationsContent.js';
+import { availableContractPackages, contractTerms } from './contracts.js';
 
 /**
  * Render the selected window consistently across bounded handheld menus.
@@ -55,6 +56,85 @@ function incidentRow(prefix, id, definition) {
 }
 
 /**
+ * List individual partner standings in the stakeholder controller.
+ * @param {Record<string, any>} state Campaign snapshot.
+ * @returns {string[][]} Authored groups and visible scores.
+ */
+function stakeholderEntries(state) {
+  return Object.entries(LAB_CONTENT.stakeholders)
+    .map(([id, entry]) => [
+      `${entry.name} / ${state.lab.stakeholderStanding[id]}`,
+      `page:stakeholder:${id}`,
+    ])
+    .concat([['Back to lab', 'page:main']]);
+}
+
+/**
+ * List actions available for one stakeholder profile.
+ * @param {string} page Stakeholder controller page.
+ * @returns {string[][]} Conversation and return actions.
+ */
+function stakeholderProfileEntries(page) {
+  return [
+    ['Hear their concerns', `stakeholder-story:${page.slice(12)}`],
+    ['All stakeholders', 'page:stakeholders'],
+  ];
+}
+
+/**
+ * List authored personal arcs and available relationship orders.
+ * @param {string} page Relationship profile controller page.
+ * @returns {string[][]} Story, promise and earned interaction actions.
+ */
+function relationshipEntries(page) {
+  const id = page.slice(13);
+  const person = RELATIONSHIP_CONTENT[id];
+  const rows = [
+    ['Read story and terms', `arc-story:${id}`],
+    ['Accept promise / 1 AP', `promise:${id}`],
+    ['Disagree / 1 AP', `arc:disagree:${id}`],
+    [`Repair / ${person.repairCost}k / 1 AP`, `arc:repair:${id}`],
+  ];
+  if (id === 'ada')
+    rows.push([
+      `Protect authors / ${RELATIONSHIP_RULES.attributionCost}k`,
+      'arc:protect:ada',
+    ]);
+  if (id === 'ion') rows.push(['Inspect operating limits', 'page:forecast']);
+  if (id === 'sable')
+    rows.push(
+      ['Publish register / 12k', 'audit'],
+      ['Review test evidence', 'page:tests']
+    );
+  if (id === 'mae')
+    rows.push(
+      ['Review Atlas / 1 AP', 'arc:consult:atlas'],
+      ['Review Lumen / 1 AP', 'arc:consult:lumen']
+    );
+  return rows.concat([['Other relationships', 'page:relationships']]);
+}
+
+/**
+ * List authored packages for a client agreement.
+ * @param {Record<string, any>} state Campaign snapshot.
+ * @param {string} page Contract controller page.
+ * @returns {string[][]} Available package offers and return action.
+ */
+function contractEntries(state, page) {
+  const id = page.slice(9);
+  const offers = state.lab.contracts.includes(id)
+    ? []
+    : availableContractPackages(state.lab, id).map(packageId => {
+        const offer = LAB_CONTENT.contracts[id].packages[packageId];
+        return [
+          `${offer.name} / +${offer.advance}k`,
+          `contract-offer:${id}:${packageId}`,
+        ];
+      });
+  return offers.concat([['All agreements', 'page:contracts']]);
+}
+
+/**
  * Build selectable rows from the current terminal or handheld menu.
  * @param {Record<string, any>} state Campaign snapshot.
  * @returns {string[][]} Labels and operations.
@@ -65,33 +145,9 @@ export function labEntries(state) {
     return Object.entries(RELATIONSHIP_CONTENT)
       .map(([id, person]) => [person.name, `page:relationship:${id}`])
       .concat([['Back to lab', 'page:main']]);
-  if (page.startsWith('relationship:')) {
-    const id = page.slice(13);
-    const person = RELATIONSHIP_CONTENT[id];
-    const rows = [
-      ['Read story and terms', `arc-story:${id}`],
-      ['Accept promise / 1 AP', `promise:${id}`],
-      ['Disagree / 1 AP', `arc:disagree:${id}`],
-      [`Repair / ${person.repairCost}k / 1 AP`, `arc:repair:${id}`],
-    ];
-    if (id === 'ada')
-      rows.push([
-        `Protect authors / ${RELATIONSHIP_RULES.attributionCost}k`,
-        'arc:protect:ada',
-      ]);
-    if (id === 'ion') rows.push(['Inspect operating limits', 'page:forecast']);
-    if (id === 'sable')
-      rows.push(
-        ['Publish register / 12k', 'audit'],
-        ['Review test evidence', 'page:tests']
-      );
-    if (id === 'mae')
-      rows.push(
-        ['Review Atlas / 1 AP', 'arc:consult:atlas'],
-        ['Review Lumen / 1 AP', 'arc:consult:lumen']
-      );
-    return rows.concat([['Other relationships', 'page:relationships']]);
-  }
+  if (page === 'stakeholders') return stakeholderEntries(state);
+  if (page.startsWith('stakeholder:')) return stakeholderProfileEntries(page);
+  if (page.startsWith('relationship:')) return relationshipEntries(page);
   if (page === 'operations')
     return [
       ['Read clients and invoices', 'operations-story'],
@@ -196,7 +252,11 @@ export function labEntries(state) {
       ['Protected shifts', 'policy:careful'],
       ['Sprint / burnout risk', 'policy:sprint'],
     ];
-  if (page === 'contracts') return named(LAB_CONTENT.contracts, 'contract');
+  if (page === 'contracts')
+    return Object.entries(LAB_CONTENT.contracts)
+      .map(([id, deal]) => [deal.name, `page:contract:${id}`])
+      .concat([['Stakeholder standings', 'page:stakeholders']]);
+  if (page.startsWith('contract:')) return contractEntries(state, page);
   if (page === 'recruitment')
     return [
       ...state.lab.employees.map(
@@ -287,6 +347,8 @@ export function labEntries(state) {
     ['Incident register', 'page:incidents'],
     ['Research console', 'page:research'],
     ['Deployment operations', 'page:operations'],
+    ['Contracts and partners', 'page:contracts'],
+    ['Stakeholder standings', 'page:stakeholders'],
     ['People and recruitment', 'page:recruitment'],
     ['Relationships and promises', 'page:relationships'],
     ['Ion / infrastructure', 'page:infrastructure'],
@@ -331,6 +393,36 @@ export function labMenuRows(state) {
       record
         ? `BREACH ${record.breaches} REPAIR ${record.repairs}`
         : `ATTENTION ${lab.decisions} CASH ${lab.cash}k`,
+    ]);
+  }
+  if (state.menu.page === 'stakeholders')
+    return choicePanel(state, [
+      'WHO THE LAB AFFECTS',
+      `WF ${lab.stakeholderStanding.workforce} CL ${lab.stakeholderStanding.clinic} TU ${lab.stakeholderStanding.transit}`,
+      `RG ${lab.stakeholderStanding.regulator} IV ${lab.stakeholderStanding.investor} / 100`,
+    ]);
+  if (state.menu.page.startsWith('stakeholder:')) {
+    const id = state.menu.page.slice(12);
+    const entry = LAB_CONTENT.stakeholders[id];
+    return choicePanel(state, [
+      entry.name.toUpperCase(),
+      `STANDING ${lab.stakeholderStanding[id]}/100`,
+      `WATCHES: ${entry.concern.toUpperCase()}`,
+    ]);
+  }
+  if (state.menu.page.startsWith('contract:')) {
+    const id = state.menu.page.slice(9);
+    const entry = LAB_CONTENT.contracts[id];
+    const signed = lab.contracts.includes(id);
+    const terms = contractTerms(lab, id);
+    return choicePanel(state, [
+      entry.name.toUpperCase(),
+      signed
+        ? `${terms.name.toUpperCase()} / DUE ${terms.deadline}`
+        : `PROJECT ${entry.project.toUpperCase()} / UNSIGNED`,
+      signed
+        ? `MAX ${terms.daily}k / SERVICE ${terms.serviceCost}k`
+        : `SELECT TERMS / ATTENTION ${lab.decisions}`,
     ]);
   }
   if (
@@ -398,6 +490,7 @@ export function labMenuRows(state) {
       ? [
           `CASH ${lab.cash}k DEBT ${lab.debt}k`,
           `TRUST ${lab.trust} MORALE ${lab.morale}`,
+          `WF${lab.stakeholderStanding.workforce} CL${lab.stakeholderStanding.clinic} TU${lab.stakeholderStanding.transit} RG${lab.stakeholderStanding.regulator} IV${lab.stakeholderStanding.investor}`,
           `RISK ${lab.risk} WATCH ${lab.scrutiny}`,
           `TEAM R${lab.teams.research} E${lab.teams.safety} S${lab.teams.service}`,
           `GPU ${f.throughput}/${f.demand} COOL ${lab.cooling}`,

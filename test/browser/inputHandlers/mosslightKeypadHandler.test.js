@@ -43,6 +43,7 @@ function makeDom(autoSubmitCheckbox, textInput, animationFrames) {
     }),
     removeEventListener: jest.fn(),
     requestAnimationFrame: jest.fn(callback => animationFrames.push(callback)),
+    setTimeout: jest.fn(callback => animationFrames.push(callback)),
     querySelector: jest.fn((_container, selector) =>
       selector === '.auto-submit-checkbox'
         ? autoSubmitCheckbox
@@ -121,6 +122,7 @@ describe('mosslightKeypadHandler', () => {
       type: 'keydown',
       key: 'ArrowRight',
     });
+    expect(dom.setTimeout).toHaveBeenLastCalledWith(expect.any(Function), 40);
     animationFrames.shift()();
     expect(JSON.parse(readStoredOrElementValue(textInput))).toEqual({
       type: 'keyup',
@@ -166,6 +168,7 @@ describe('mosslightKeypadHandler', () => {
       type: 'keydown',
       key: 'ArrowUp',
     });
+    expect(dom.setTimeout).toHaveBeenLastCalledWith(expect.any(Function), 40);
     animationFrames.shift()();
     expect(JSON.parse(readStoredOrElementValue(textInput))).toEqual({
       type: 'keyup',

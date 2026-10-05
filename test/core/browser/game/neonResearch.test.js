@@ -38,6 +38,7 @@ import { migrateEvaluations } from '../../../../src/core/browser/game/neon-coven
 import { migrateDeployments } from '../../../../src/core/browser/game/neon-covenant/operations.js';
 import { migrateRelationships } from '../../../../src/core/browser/game/neon-covenant/relationships.js';
 import { migrateInfrastructure } from '../../../../src/core/browser/game/neon-covenant/infrastructure.js';
+import { migrateContracts } from '../../../../src/core/browser/game/neon-covenant/contracts.js';
 
 /**
  * Submit a discrete real controller input and release.
@@ -297,7 +298,7 @@ test('rules-2 slot upgrades keep the exact first backup and isolate Mosslight sa
     ['setLocalPermanentData', update => (data = { ...data, ...update })],
   ]);
   const runtime = createNeonRuntime(env);
-  expect(runtime.getSnapshot().lab.rulesVersion).toBe(7);
+  expect(runtime.getSnapshot().lab.rulesVersion).toBe(8);
   expect(data[key].migrationBackups[2]).toBe(raw);
   state.lab.cash = 130;
   runtime.importSave(
@@ -343,8 +344,12 @@ test.each([
     ]);
     expect(
       validLabSave(
-        migrateInfrastructure(
-          migrateRelationships(migrateDeployments(migrateEvaluations(upgraded)))
+        migrateContracts(
+          migrateInfrastructure(
+            migrateRelationships(
+              migrateDeployments(migrateEvaluations(upgraded))
+            )
+          )
         )
       )
     ).toBe(true);
@@ -360,7 +365,13 @@ test.each([
     expect(runtime.exportSave()).toBe(serialized);
     expect(forecastShift(runtime.getSnapshot())).toEqual(
       forecastShift(
-        migrateRelationships(migrateDeployments(migrateEvaluations(upgraded)))
+        migrateContracts(
+          migrateInfrastructure(
+            migrateRelationships(
+              migrateDeployments(migrateEvaluations(upgraded))
+            )
+          )
+        )
       )
     );
   }

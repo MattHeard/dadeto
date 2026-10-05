@@ -42,6 +42,13 @@ import {
   personnelOrder,
   settlePersonnel,
 } from './personnel.js';
+import {
+  createContractLedger,
+  contractTerms,
+  contractOversightSatisfied,
+  negotiateContract,
+  settleStakeholders,
+} from './contracts.js';
 
 /**
  * Clamp a public lab metric to its meaningful range.
@@ -58,7 +65,7 @@ function metric(value) {
  */
 export function createLab() {
   const lab = {
-    rulesVersion: 7,
+    rulesVersion: 8,
     evaluations: createEvaluations(),
     testingBudget: 6,
     incidentChains: createIncidentChains(),
@@ -100,6 +107,7 @@ export function createLab() {
     deployments: createDeployments(lab),
     relationships: createRelationships(lab),
     commitmentPolicies: createCommitmentPolicies(),
+    ...createContractLedger(),
   };
 }
 
@@ -138,6 +146,13 @@ export function forecast(lab) {
         infrastructureEffects(lab).power
     ),
     infrastructure: infrastructureEffects(lab).recurring,
+    contractService: lab.contracts
+      .filter((/** @type {string} */ id) => !lab.expired.includes(id))
+      .reduce(
+        (/** @type {number} */ sum, /** @type {string} */ id) =>
+          sum + contractTerms(lab, id).serviceCost,
+        0
+      ),
     hosting: hostingCost(lab),
     service: operations.consulting,
     income: operations.income,
@@ -173,6 +188,8 @@ function operate(lab, command, day) {
   const [kind, value] = command.split(':');
   if (kind === 'promise' || kind === 'arc')
     return relationshipOrder(lab, command, day, forecast(lab));
+  if (kind === 'contract')
+    return negotiateContract(lab, value, command.split(':')[2] || 'balanced');
   if (kind === 'service') return deploymentOrder(lab, command);
   if (kind === 'test') return evaluationOrder(lab, command);
   if (kind === 'configure') return configureResearch(lab, command);
@@ -221,15 +238,6 @@ function operate(lab, command, day) {
       lab.debt = Math.max(0, lab.debt - 20);
       return `Debt remaining: ${lab.debt}k.`;
     });
-  if (kind === 'contract') {
-    if (lab.contracts.includes(value))
-      return 'This contract is already signed.';
-    const deal = LAB_CONTENT.contracts[value];
-    lab.contracts.push(value);
-    lab.cash += deal.advance;
-    lab.trust = metric(lab.trust + deal.trust);
-    return `${deal.name}: ${deal.advance}k advance. Deliver by shift ${deal.deadline}.`;
-  }
   if (command === 'evaluate') {
     return 'Sable: choose representative probes at the evaluation console. No blanket sign-off is available.';
   }
@@ -327,38 +335,44 @@ export function endShift(state) {
   lab.scrutiny = metric(lab.scrutiny + (lab.data === 'scraped' ? 8 : 1));
   const report = [
     `Research +${f.progress}; ${lab.research[lab.focus]}/${project.target}.`,
-    `Income ${f.income + f.service}k; payroll ${f.payroll}k; power ${f.power}k; hosting ${f.hosting}k; infrastructure ${f.infrastructure}k.`,
+    `Income ${f.income + f.service}k; payroll ${f.payroll}k; power ${f.power}k; hosting ${f.hosting}k; infrastructure ${f.infrastructure}k; contract service ${f.contractService}k.`,
   ];
   settleResearch(lab, report);
   let revenue = f.income + f.service;
   for (const id of lab.contracts) {
     const contract = LAB_CONTENT.contracts[id];
+    const terms = contractTerms(lab, id);
+    const expiredBeforeShift = lab.expired.includes(id);
     if (
       deploymentDelivers(f.operations, contract.project) &&
+      contractOversightSatisfied(lab, id) &&
       !lab.expired.includes(id) &&
       !lab.fulfilled.includes(id)
     ) {
       lab.fulfilled.push(id);
-      report.push(`${contract.name}: delivered.`);
+      report.push(`${contract.name} / ${terms.name}: delivered.`);
     }
     if (
-      state.world.day >= contract.deadline &&
+      state.world.day >= terms.deadline &&
       !lab.fulfilled.includes(id) &&
       !lab.expired.includes(id)
     ) {
       lab.expired.push(id);
-      revenue -= Math.ceil(contract.advance / 2);
+      revenue -= Math.ceil(terms.advance / 2);
       lab.trust = metric(lab.trust - 10);
       report.push(`${contract.name}: missed. Advance clawback.`);
     }
+    if (!expiredBeforeShift) revenue -= terms.serviceCost;
   }
-  revenue -= settleIncidents(lab, f, state.world.day, report);
+  const incidentCost = settleIncidents(lab, f, state.world.day, report);
+  revenue -= incidentCost;
   settleDeployments(lab, f.operations, report);
   settleRelationships(lab, f, state.world.day, report);
   lab.cash = Math.round(
     lab.cash + revenue - f.payroll - f.power - f.hosting - f.infrastructure
   );
   settlePersonnel(lab);
+  settleStakeholders(lab, incidentCost, f.operations);
   lab.decisions = 6;
   lab.testingBudget = 6;
   lab.report = report;

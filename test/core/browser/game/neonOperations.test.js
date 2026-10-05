@@ -25,6 +25,7 @@ import {
 } from '../../../../src/core/browser/game/neon-covenant/management.js';
 import { createPrograms } from '../../../../src/core/browser/game/neon-covenant/research.js';
 import { migrateInfrastructure } from '../../../../src/core/browser/game/neon-covenant/infrastructure.js';
+import { migrateContracts } from '../../../../src/core/browser/game/neon-covenant/contracts.js';
 import { migrateEvaluations } from '../../../../src/core/browser/game/neon-covenant/evaluation.js';
 import { migrateRelationships } from '../../../../src/core/browser/game/neon-covenant/relationships.js';
 import {
@@ -326,7 +327,9 @@ test.each([{ cash: 5, debt: 200 }, { outcome: 'independent', cash: 240 }, {}])(
     });
     expect(deployments.ghost.adoption).toBe(0);
     expect(
-      validLabSave(migrateInfrastructure(migrateRelationships(migrated)))
+      validLabSave(
+        migrateContracts(migrateInfrastructure(migrateRelationships(migrated)))
+      )
     ).toBe(true);
     expect(old).toEqual(original);
     expect(migrateDeployments(migrated)).toBe(migrated);

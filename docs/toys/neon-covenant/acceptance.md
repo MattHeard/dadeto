@@ -84,6 +84,36 @@ reported zero vulnerabilities. Logs: `.tmp/neon-infrastructure-full-check.log`,
 to trigger and verify the hosted deployment; Release 2 contracts and stakeholders
 and Releases 3–4 remain open.
 
+### Negotiable contracts and constituencies (rules 8)
+
+For each partner, navigate with the actual eight-button menus to inspect all
+currently available packages before signing. The preview must state advance,
+deadline, maximum post-delivery invoice, recurring service fee, exclusivity,
+attribution, Ghost oversight requirement and every affected constituency.
+Accepting changes the exact authored ledger and one attention, but never ends a
+shift. Inspection, cancellation, hidden/forged packages and exclusive-lock
+rejection preserve the ledger. Forecasted recurring obligations must equal
+actual shift settlement. Project delivery must respect the signed oversight
+condition and operating-service threshold.
+
+The stakeholder screen and journal independently report workforce, clinic,
+transit union, regulator and investor on bounded 0–100 scales. Tests cover
+one-time negotiated changes and deterministic morale, incident, delivery,
+licensing/disclosure, safety and runway feedback. Rules-7 migration reconstructs
+balanced terms for old signed deals and derives visible starting standings
+without changing their cash, debt, histories, fulfilled/expired deals or
+replaying advances. Corrupt package ids or stakeholder values reject import.
+Use Playwright on phone/desktop in standalone and embedded modes; reject browser
+errors, clipped rows and viewport overflow.
+
+Focused rules suite: node scripts/run-jest.js --runInBand
+test/core/browser/game/neonContracts.test.js. Browser acceptance: npx playwright
+test --config test/mosslight.playwright.config.ts
+test/mosslight-e2e/neon-covenant.spec.ts --grep "contract packages are inspected"
+--workers=1. Capture current-canvas artifacts under .tmp/neon-contracts-*.png.
+Full npm run check, strict duplicate scan, builds and migration/export regression
+remain required before checkpoint publication.
+
 ### Operating services (rules 5)
 
 Pure tests must prove proportional inference/support allocation, adoption-dependent invoices, completed-training capacity release, predictable queues/wear, costed maintenance/triage, fulfillment service thresholds, causal support warnings and exact preview/settlement equivalence. Cover all three service profiles, zero-user/zero-capacity cases, unchanged/invalid/poor/exhausted orders, lossless distressed/completed migration, malformed-import atomicity and deterministic export/import. Every new/migrated/district 28-shift controller route must pay maintenance and finish solvent without injected money, progress or time.

@@ -2,6 +2,7 @@ import { createCaptureForm, syncToyPayload } from './captureFormShared.js';
 import { resetSavePrompt } from '../game/mosslight-valley/save.js';
 
 const FORM_CLASS = 'mosslight-keypad-form';
+const KEY_RELEASE_DELAY_MS = 40;
 const GROUPS = [
   {
     className: 'mosslight-keypad-dpad',
@@ -85,8 +86,9 @@ export function mosslightKeypadHandler(dom, container, textInput) {
           dom.addEventListener(controlButton, 'click', () => {
             const input = { dom, textInput: gameInput, autoSubmitCheckbox };
             syncToyPayload(input, { type: 'keydown', key: control.key });
-            dom.requestAnimationFrame(() =>
-              syncToyPayload(input, { type: 'keyup', key: control.key })
+            dom.setTimeout(
+              () => syncToyPayload(input, { type: 'keyup', key: control.key }),
+              KEY_RELEASE_DELAY_MS
             );
           });
           dom.appendChild(groupElement, controlButton);

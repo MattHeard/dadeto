@@ -21,6 +21,11 @@ import {
 import { RELATIONSHIP_CONTENT } from './relationshipContent.js';
 import { neonAudio } from './audio.js';
 import {
+  availableContractPackages,
+  migrateContracts,
+  validContractLedger,
+} from './contracts.js';
+import {
   createNeonState,
   stepNeon,
   labJournal,
@@ -39,7 +44,8 @@ export function validLabSave(state) {
       (state.audioMuted === undefined ||
         typeof state.audioMuted === 'boolean') &&
       validPersonnel(lab) &&
-      lab.rulesVersion === 7 &&
+      lab.rulesVersion === 8 &&
+      validContractLedger(lab) &&
       validInfrastructure(lab) &&
       validRelationships(lab, state.world.day) &&
       validPrograms(lab) &&
@@ -125,6 +131,7 @@ export function validLabSave(state) {
                 choice.command === 'page:orientation' ||
                 validResearchChoice(lab, choice.command) ||
                 validInfrastructureChoice(choice.command) ||
+                validContractChoice(lab, choice.command) ||
                 LAB_CONTENT.npcs.some(
                   (/** @type {Record<string, any>} */ actor) =>
                     choice.command === `promise:${actor.id}`
@@ -142,7 +149,36 @@ export function validLabSave(state) {
             Object.hasOwn(RELATIONSHIP_CONTENT, state.menu.page.slice(13))) &&
           (!state.menu.page.startsWith('deployment:') ||
             Object.hasOwn(DEPLOYMENT_PROFILES, state.menu.page.slice(11))) &&
+          (!state.menu.page.startsWith('stakeholder:') ||
+            Object.hasOwn(
+              LAB_CONTENT.stakeholders,
+              state.menu.page.slice(12)
+            )) &&
+          (!state.menu.page.startsWith('contract:') ||
+            Object.hasOwn(LAB_CONTENT.contracts, state.menu.page.slice(9))) &&
           state.menu.selected >= 0))
+  );
+}
+
+/**
+ * Accept only visible authored contract confirmations in portable dialogue.
+ * @param {Record<string, any>} lab Current campaign ledger.
+ * @param {string} command Candidate commitment.
+ * @returns {boolean} Whether the package is authored and currently negotiable.
+ */
+function validContractChoice(lab, command) {
+  if (typeof command !== 'string') return false;
+  if (command.startsWith('page:contract:'))
+    return (
+      command.split(':').length === 3 &&
+      Object.hasOwn(LAB_CONTENT.contracts, command.slice(14))
+    );
+  if (!command.startsWith('contract:')) return false;
+  const [, id, packageId, ...extra] = command.split(':');
+  return (
+    extra.length === 0 &&
+    Object.hasOwn(LAB_CONTENT.contracts, id) &&
+    availableContractPackages(lab, id).includes(packageId)
   );
 }
 
@@ -188,10 +224,12 @@ export function createNeonRuntime(options = {}) {
     game: 'neon-covenant',
     validate: validLabSave,
     migrate: (/** @type {Record<string, any>} */ state) =>
-      migrateInfrastructure(
-        migrateRelationships(
-          migrateDeployments(
-            migrateEvaluations(migratePrograms(migratePersonnel(state)))
+      migrateContracts(
+        migrateInfrastructure(
+          migrateRelationships(
+            migrateDeployments(
+              migrateEvaluations(migratePrograms(migratePersonnel(state)))
+            )
           )
         )
       ),

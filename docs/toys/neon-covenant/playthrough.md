@@ -39,4 +39,32 @@ Accept Mae's actual 28k clinic advance in the first-shift guide, then decline th
 
 This arrangement keeps four cooling units, halves local training and inference demand and doubles yield per training throughput. Keep the other Atlas settings and staff assignments at their defaults. Settle six research shifts, run the three representative Atlas probes for 6k total, then deploy. Settle the remaining shifts, maintaining Atlas for 6k when condition reaches at most 64% (one order on this route). The clinic is delivered before its deadline; the recurring hosting fee remains on every shift's report. This route finishes independently at shift 28 with 175k cash, 120k debt, all three Atlas training milestones, and no incidents.
 
-These are rules-5 operating-deployment routes, not balance guarantees for later releases. Negotiated contracts and other Release 2 systems are still being implemented. Update both fixtures and this guide when those rules change; do not preserve an obsolete route by bypassing its new requirements.
+These are operating-deployment routes, not balance guarantees for later releases. The original Night Clinic balanced agreement keeps its historic advance, deadline and invoice cap, so the published balances remain a regression target.
+
+## Negotiate a protected clinic agreement
+
+From a new campaign, close the introduction, then X → Relationships and promises
+→ Mae → Accept promise. This is one attention and a real commitment, not instant
+trust or fulfillment. Reopen the menu and use X → Contracts and partners
+→ Night Clinic. Compare Balanced service with Community safeguards. Read the
+second offer page: it trades 8k of advance and 1k of maximum shift income for
+three more shifts, enforceable attribution, human-approved Ghost oversight,
+one thousand credits of service per shift and improved clinic/workforce/
+regulator standing. Accept only after reading the preview. The campaign remains
+on shift 1, the ledger records the community package, cash rises by the
+disclosed 20k, attention drops by one, and Ada's attribution policy becomes
+enforceable. X → Stakeholder standings shows the separate affected groups.
+
+Opening and canceling an offer changes nothing. Once investor standing reaches
+55, Priority access is available; signing it blocks other agreements until its
+own delivery or deadline. A held exclusive deal must be fulfilled with the
+required Ghost oversight or expire before another may be signed. Rejected
+exclusive attempts do not alter money or attention. Save and reload after
+signing to confirm the package and five standings persist.
+
+The negotiated-campaign acceptance is exercised in the standalone and embedded
+phone/desktop Playwright matrix. It captures .tmp/neon-contracts-*.png; pure
+tests cover deterministic score changes, terms-aware deadlines/invoices/service
+charges, invalid saves and rules-7 migration. Keep the original independent
+route above as the economy baseline; do not inject progress, trust or cash to
+make the new route pass.

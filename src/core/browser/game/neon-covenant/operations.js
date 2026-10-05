@@ -4,6 +4,7 @@ import { validEvaluations } from './evaluation.js';
 import { DEPLOYMENT_PROFILES, OPERATING_RULES } from './operationsContent.js';
 import { clampNumber } from '../../../index.js';
 import { infrastructureEffects } from './infrastructure.js';
+import { contractTerms as invoiceTerms } from './contracts.js';
 
 /**
  * Reconstruct existing releases without inventing lost users or past bills.
@@ -54,7 +55,7 @@ function demandFor(lab, id) {
     )
     .reduce(
       (/** @type {number} */ total, /** @type {string} */ key) =>
-        total + LAB_CONTENT.contracts[key].daily,
+        total + invoiceTerms(lab, key).daily,
       0
     );
   const baseSupport = Math.ceil(profile.support * fraction);

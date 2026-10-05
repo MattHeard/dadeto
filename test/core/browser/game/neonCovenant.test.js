@@ -121,6 +121,7 @@ test('forecast makes compute, heat, morale, policy, data and income legible', ()
     payroll: 12,
     power: 3,
     infrastructure: 0,
+    contractService: 0,
     hosting: 0,
     service: 4,
     income: 0,
@@ -495,7 +496,7 @@ test('eight-button menus expose assignment, reports, saves, reset and page utili
   absent.world.player.facing = 'left';
   expect(press(absent, 'a').toast).toContain('Face a person');
   expect(labMenuRows(campaign())).toEqual([]);
-  expect(labJournal(campaign())).toHaveLength(11);
+  expect(labJournal(campaign())).toHaveLength(16);
 });
 
 test.each([

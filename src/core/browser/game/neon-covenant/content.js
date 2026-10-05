@@ -71,6 +71,47 @@ function setting(name, effects, detail) {
   };
 }
 
+/**
+ * Build one complete offer from its authored commercial terms.
+ * @param {Record<string, any>} authored Partner-facing terms and clauses.
+ * @returns {Record<string, any>} Immutable-by-convention authored package.
+ */
+function contractOffer(authored) {
+  const { name, advance, deadline, daily, impact = {}, ...terms } = authored;
+  return {
+    name,
+    advance,
+    deadline,
+    daily,
+    exclusive: false,
+    attribution: false,
+    oversight: 'any',
+    serviceCost: 0,
+    ...terms,
+    impact: {
+      workforce: 0,
+      clinic: 0,
+      transit: 0,
+      regulator: 0,
+      investor: 0,
+      ...impact,
+    },
+  };
+}
+
+/**
+ * Keep historic default deal fields in sync with its balanced package.
+ * @param {string} name Partner or client identity.
+ * @param {string} project Required model.
+ * @param {number} trust Existing general-trust effect at signing.
+ * @param {Record<string, Record<string, any>>} packages Negotiated packages.
+ * @returns {Record<string, any>} Authored contract.
+ */
+function contract(name, project, trust, packages) {
+  const { advance, deadline, daily } = packages.balanced;
+  return { name, project, trust, advance, deadline, daily, packages };
+}
+
 /** @type {Record<string, any>} Immutable chapter content; economic units are thousands of credits. */
 export const LAB_CONTENT = {
   incidents: {
@@ -331,29 +372,150 @@ export const LAB_CONTENT = {
     },
   },
   contracts: {
+    clinic: contract('Night Clinic', 'atlas', 5, {
+      balanced: contractOffer({
+        name: 'Balanced service',
+        advance: 28,
+        deadline: 12,
+        daily: 7,
+      }),
+      community: contractOffer({
+        name: 'Community safeguards',
+        advance: 20,
+        deadline: 15,
+        daily: 6,
+        attribution: true,
+        oversight: 'human',
+        serviceCost: 1,
+        impact: { workforce: 3, clinic: 8, regulator: 4, investor: -3 },
+      }),
+      priority: contractOffer({
+        name: 'Priority access',
+        advance: 42,
+        deadline: 10,
+        daily: 9,
+        exclusive: true,
+        oversight: 'autonomous',
+        serviceCost: 4,
+        impact: { workforce: -5, clinic: -8, regulator: -8, investor: 8 },
+      }),
+    }),
+    transit: contract('Free Transit Union', 'lumen', 7, {
+      balanced: contractOffer({
+        name: 'Balanced service',
+        advance: 35,
+        deadline: 18,
+        daily: 9,
+      }),
+      community: contractOffer({
+        name: 'Union safeguards',
+        advance: 25,
+        deadline: 21,
+        daily: 8,
+        attribution: true,
+        oversight: 'human',
+        serviceCost: 1,
+        impact: { workforce: 4, transit: 9, regulator: 4, investor: -3 },
+      }),
+      priority: contractOffer({
+        name: 'Exclusive dispatch',
+        advance: 50,
+        deadline: 16,
+        daily: 12,
+        exclusive: true,
+        oversight: 'autonomous',
+        serviceCost: 4,
+        impact: { workforce: -5, transit: -9, regulator: -8, investor: 9 },
+      }),
+    }),
+    helios: contract('Helios surveillance', 'ghost', -18, {
+      balanced: contractOffer({
+        name: 'Balanced surveillance',
+        advance: 70,
+        deadline: 10,
+        daily: 15,
+        impact: {
+          workforce: -3,
+          clinic: -4,
+          transit: -2,
+          regulator: -7,
+          investor: 8,
+        },
+      }),
+      community: contractOffer({
+        name: 'Audited research',
+        advance: 52,
+        deadline: 13,
+        daily: 13,
+        attribution: true,
+        oversight: 'human',
+        serviceCost: 2,
+        impact: {
+          workforce: 4,
+          clinic: 3,
+          transit: 1,
+          regulator: 8,
+          investor: -2,
+        },
+      }),
+      priority: contractOffer({
+        name: 'Exclusive city feed',
+        advance: 92,
+        deadline: 8,
+        daily: 19,
+        exclusive: true,
+        oversight: 'autonomous',
+        serviceCost: 5,
+        impact: {
+          workforce: -8,
+          clinic: -8,
+          transit: -6,
+          regulator: -12,
+          investor: 12,
+        },
+      }),
+    }),
+  },
+  stakeholders: {
+    workforce: {
+      name: 'Workforce',
+      short: 'WF',
+      starting: 52,
+      concern: 'morale / safe shifts',
+      advice:
+        'The team watches fatigue, safe cooling, clear roles and whether incident costs keep landing on the people doing the work. Talk with staff, repair the real cause and protect time to recover.',
+    },
     clinic: {
       name: 'Night Clinic',
-      advance: 28,
-      daily: 7,
-      deadline: 12,
-      project: 'atlas',
-      trust: 5,
+      short: 'CL',
+      starting: 50,
+      concern: 'licensed care',
+      advice:
+        'The clinic needs licensed, human-reviewed care that works for people after the press release. Keep Atlas reliable, listen to Mae and honor the safeguards you signed.',
     },
     transit: {
-      name: 'Free Transit Union',
-      advance: 35,
-      daily: 9,
-      deadline: 18,
-      project: 'lumen',
-      trust: 7,
+      name: 'Transit Union',
+      short: 'TU',
+      starting: 48,
+      concern: 'reliable service',
+      advice:
+        'The union wants a public system that remains available on a bad night. Lumen needs representative language tests, enough service staff and maintained infrastructure.',
     },
-    helios: {
-      name: 'Helios surveillance',
-      advance: 70,
-      daily: 15,
-      deadline: 10,
-      project: 'ghost',
-      trust: -18,
+    regulator: {
+      name: 'Regulator',
+      short: 'RG',
+      starting: 50,
+      concern: 'rights / safety',
+      advice:
+        'The regulator tracks licensed data, published incident records, current evaluation evidence and risk. Training progress alone is not proof that a system is safe to release.',
+    },
+    investor: {
+      name: 'Investor',
+      short: 'IV',
+      starting: 45,
+      concern: 'cash runway',
+      advice:
+        'The investor watches cash against debt, delivered work and the cost of keeping promises. Advances buy runway, but a short deadline or recurring service obligation can consume it.',
     },
   },
   staffStories: {
