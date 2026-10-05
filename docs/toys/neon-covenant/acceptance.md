@@ -4,6 +4,19 @@
 
 Focused Jest tests exercise economic accounting, safety gates, bottlenecks, bankruptcy, six outcome policies, deadline clawbacks, deterministic campaigns, all menu operations, isolated save slots, malformed imports, embedded input and shared presenter compatibility.
 
+### Campaign acts (rules 9)
+
+Prove authored shift bands 1–6, 7–13, 14–21 and 22–28; settlement alone
+advances across 6/7, 13/14 and 21/22 and persists the derived act marker.
+Current-act briefings are free and readable; archive stories require earned
+prototype/deployment/fulfillment evidence, and forged scene commands fail
+closed. Migrate rules-8 saves using their original shift without settlement,
+preserve the original per-slot backup, and reject malformed current markers.
+Play every boundary through eight-button standalone and embedded controllers,
+including save/reload and the visible pressure report; include Mosslight
+regression and verify audio remains gesture-unlocked, toggleable and safe on
+pause/hidden tabs.
+
 Build must generate `/neon-covenant/`, the lazy manual and NEON1 blog registration. Full `npm run check` is required, with zero clones at the unchanged strict threshold and exact 100% coverage in every metric. No exemptions or ignore pragmas are allowed.
 
 ## Evidence Collection

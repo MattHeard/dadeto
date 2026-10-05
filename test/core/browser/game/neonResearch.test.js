@@ -38,6 +38,7 @@ import { migrateEvaluations } from '../../../../src/core/browser/game/neon-coven
 import { migrateDeployments } from '../../../../src/core/browser/game/neon-covenant/operations.js';
 import { migrateRelationships } from '../../../../src/core/browser/game/neon-covenant/relationships.js';
 import { migrateInfrastructure } from '../../../../src/core/browser/game/neon-covenant/infrastructure.js';
+import { migrateCampaignAct } from '../../../../src/core/browser/game/neon-covenant/campaign.js';
 import { migrateContracts } from '../../../../src/core/browser/game/neon-covenant/contracts.js';
 
 /**
@@ -298,7 +299,7 @@ test('rules-2 slot upgrades keep the exact first backup and isolate Mosslight sa
     ['setLocalPermanentData', update => (data = { ...data, ...update })],
   ]);
   const runtime = createNeonRuntime(env);
-  expect(runtime.getSnapshot().lab.rulesVersion).toBe(8);
+  expect(runtime.getSnapshot().lab.rulesVersion).toBe(9);
   expect(data[key].migrationBackups[2]).toBe(raw);
   state.lab.cash = 130;
   runtime.importSave(
@@ -344,10 +345,12 @@ test.each([
     ]);
     expect(
       validLabSave(
-        migrateContracts(
-          migrateInfrastructure(
-            migrateRelationships(
-              migrateDeployments(migrateEvaluations(upgraded))
+        migrateCampaignAct(
+          migrateContracts(
+            migrateInfrastructure(
+              migrateRelationships(
+                migrateDeployments(migrateEvaluations(upgraded))
+              )
             )
           )
         )
@@ -365,10 +368,12 @@ test.each([
     expect(runtime.exportSave()).toBe(serialized);
     expect(forecastShift(runtime.getSnapshot())).toEqual(
       forecastShift(
-        migrateContracts(
-          migrateInfrastructure(
-            migrateRelationships(
-              migrateDeployments(migrateEvaluations(upgraded))
+        migrateCampaignAct(
+          migrateContracts(
+            migrateInfrastructure(
+              migrateRelationships(
+                migrateDeployments(migrateEvaluations(upgraded))
+              )
             )
           )
         )

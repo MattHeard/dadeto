@@ -3,6 +3,7 @@ import { migrateDeployments } from '../../../../src/core/browser/game/neon-coven
 import { migrateRelationships } from '../../../../src/core/browser/game/neon-covenant/relationships.js';
 import { migrateInfrastructure } from '../../../../src/core/browser/game/neon-covenant/infrastructure.js';
 import { migrateContracts } from '../../../../src/core/browser/game/neon-covenant/contracts.js';
+import { migrateCampaignAct } from '../../../../src/core/browser/game/neon-covenant/campaign.js';
 import {
   createEvaluations,
   evaluationStatus,
@@ -149,7 +150,7 @@ test('rules3 slot migration retains the exact original backup until reset withou
     ['setLocalPermanentData', update => (root = { ...root, ...update })],
   ]);
   const runtime = createNeonRuntime(env);
-  expect(runtime.getSnapshot().lab.rulesVersion).toBe(8);
+  expect(runtime.getSnapshot().lab.rulesVersion).toBe(9);
   expect(root[key].migrationBackups[1]).toBe(raw);
   runtime.save();
   runtime.importSave(raw);
@@ -325,9 +326,11 @@ test.each([{ cash: 5, debt: 190 }, { cash: 260, outcome: 'independent' }, {}])(
     expect(evaluationComplete(upgraded.lab, 'ghost')).toBe(false);
     expect(
       validLabSave(
-        migrateContracts(
-          migrateInfrastructure(
-            migrateRelationships(migrateDeployments(upgraded))
+        migrateCampaignAct(
+          migrateContracts(
+            migrateInfrastructure(
+              migrateRelationships(migrateDeployments(upgraded))
+            )
           )
         )
       )

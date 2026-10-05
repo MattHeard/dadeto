@@ -64,7 +64,7 @@ its existing cue behavior.
 
 Reliability is the smallest of inference coverage, support coverage and condition/60, capped at 100%. If either capacity is absent reliability is zero even for a cohort with no current users. A reliability of at least 70% grows adoption by `floor(authoredGrowth * reliability / 100)`; otherwise adoption loses ten points. Bound adoption to 0–100, backlog to 0–30, condition to 0–100. Support demand includes `ceil(backlog / 4)`; settled backlog adds incoming requests and subtracts served work. Condition loses `2 + ceil(inferenceDemand / 2)` each settlement. Maintain restores condition for the authored 6/10/8k; triage costs 4k and clears up to twelve tickets. Both accepted orders consume one attention and never advance time; rejected orders change neither ledger nor attention. Triage cannot remove an ongoing staffing shortage. Actual support demand drives the existing warning/intervention/incident/recovery chain.
 
-Save envelope version 2, identity, tool names, storage key and controller alphabet remain unchanged. Operating records were introduced in rules **5**; current rules **8** additionally reconstruct personal commitments, infrastructure choices, signed package terms and five stakeholder standings. Migration order is named people, programs, evidence, operating records, commitments, infrastructure, then negotiations, before current-save validation. Existing releases gain full adoption and fresh service condition without changing inherited balances, progress, deadlines, advances, incidents, evidence, employees, historical endings or shift. Rules-7 agreements map to their exact former fixed terms (balanced); paid advances are never replayed. The five new standings are inferred from current observable morale, risk, trust and runway without replaying stakeholder changes. Future settlements use new service rules. Current corrupt operating records, negotiation packages and unknown saved menus reject atomically. The first original per-slot backup survives multiple upgrades until explicit reset.
+Save envelope version 2, identity, tool names, storage key and controller alphabet remain unchanged. Operating records were introduced in rules **5**; current rules **9** additionally reconstruct personal commitments, infrastructure choices, signed package terms, five stakeholder standings and the date-derived campaign act. Migration order is named people, programs, evidence, operating records, commitments, infrastructure, negotiations, then campaign act, before current-save validation. Existing releases gain full adoption and fresh service condition without changing inherited balances, progress, deadlines, advances, incidents, evidence, employees, historical endings or shift. Rules-7 agreements map to their exact former fixed terms (balanced); paid advances are never replayed. The five new standings are inferred from current observable morale, risk, trust and runway without replaying stakeholder changes. Future settlements use new service rules. Current corrupt operating records, negotiation packages, campaign markers and unknown saved menus reject atomically. The first original per-slot backup survives multiple upgrades until explicit reset.
 
 ## Explanatory forecast contract
 
@@ -166,5 +166,26 @@ Release-2 controller coverage must exercise all three offers, package gating,
 exclusive rejection without charge, the public safeguards route, deadline and
 oversight fulfillment, forecasts including recurring service costs, migration
 of active/fulfilled/expired and distressed deals, corrupt-save atomicity and
-standings in both presenters. Releases 3–4 and campaign-wide philosophy/ending
-balancing remain outstanding.
+standings in both presenters.
+
+## Four-act campaign clock (rules 9)
+
+`content.js` authors four chapter bands: survival (shifts 1–6), launch (7–13),
+expansion (14–21), and ownership (22–28). End-of-shift settlement alone moves
+the date, derives the next act from trusted content, saves its canonical id and
+entry shift, and appends that act's pressure to the actual settlement report.
+The campaign menu provides a free current-act briefing and earned archive
+scenes: Ada's prototype recollection follows a real prototype milestone, Mae's
+first-users scene follows an actual deployment, and the ownership register
+requires both an earned relationship fulfillment and shift 14. Scene unlocks
+depend on evidence, not calendar-only skips.
+
+Act boundaries change the story pressure and available callback, not research
+rules, staffing, finances or ending eligibility; no prescribed research route
+is required. Rules-8 saves derive their current act from the unchanged saved
+shift without replaying a settlement or inventing previous act history, and
+retain the original serialized migration backup. Current saves reject an
+incorrect or extra-field act marker. Boundary tests cover 6/7, 13/14 and 21/22;
+controller playthroughs must verify the report, saved marker and briefing after
+reload in standalone and embedded modes. Release 4 and campaign-wide
+philosophy/ending balancing remain outstanding.

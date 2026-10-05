@@ -26,6 +26,7 @@ import {
   withControllerSelection,
 } from '../mosslight-valley/controls.js';
 import { toFramePayload } from '../mosslight-valley/renderer.js';
+import { actForShift, availableChapterScenes } from './campaign.js';
 
 /**
  * Recompute derived UI after every load rather than trusting saved presentation.
@@ -188,21 +189,72 @@ function signContract(next, command) {
 }
 
 /**
+ * Resolve a current-act briefing or earned archive scene.
+ * @param {Record<string, any>} state Current campaign.
+ * @param {Record<string, any>} next Closed-menu campaign.
+ * @param {string} command Selected story operation.
+ * @returns {Record<string, any> | null} Dialogue, rejected story or no match.
+ */
+function campaignStory(state, next, command) {
+  if (command === 'campaign-story:act') {
+    const act = actForShift(state.world.day);
+    return openDialogue(next, 'campaign', [
+      { text: `${act.briefing} ${act.pressure}` },
+    ]);
+  }
+  if (!command.startsWith('campaign-story:')) return null;
+  const id = command.slice('campaign-story:'.length);
+  return availableChapterScenes(state.lab, state.world.day).includes(id)
+    ? openDialogue(next, 'campaign', [{ text: LAB_CONTENT.chapterScenes[id] }])
+    : state;
+}
+
+/**
+ * Toggle the campaign's persisted audio preference.
+ * @param {Record<string, any>} state Campaign snapshot.
+ * @returns {Record<string, any>} Updated preference and player feedback.
+ */
+function toggleAudio(state) {
+  return {
+    ...state,
+    audioMuted: !state.audioMuted,
+    toast: state.audioMuted ? 'Music and sound on.' : 'Music and sound muted.',
+  };
+}
+
+/**
+ * Handle controller-only navigation commands without touching campaign rules.
+ * @param {Record<string, any>} state Campaign snapshot.
+ * @param {Record<string, any>} next Snapshot with its menu dismissed.
+ * @param {string} command Selected navigation command.
+ * @returns {Record<string, any> | null} Updated state or no match.
+ */
+function navigationCommand(state, next, command) {
+  if (command.startsWith('page:'))
+    return { ...next, menu: { page: command.slice(5), selected: 0 } };
+  if (command.startsWith('bind:'))
+    return {
+      ...next,
+      quickAction: command.slice(5),
+      toast: `B: ${command.slice(5)}. Y: change shortcut.`,
+    };
+  if (command === 'close') return next;
+  return null;
+}
+
+/**
  * Execute a selected menu operation with explicit modal ownership.
  * @param {Record<string, any>} state Campaign snapshot.
  * @param {string} command Selected row operation.
  * @returns {Record<string, any>} Next state.
  */
-function menuCommand(state, command) {
+export function menuCommand(state, command) {
   const next = { ...state, menu: null };
-  if (command === 'audio-toggle')
-    return {
-      ...state,
-      audioMuted: !state.audioMuted,
-      toast: state.audioMuted
-        ? 'Music and sound on.'
-        : 'Music and sound muted.',
-    };
+  const chapter = campaignStory(state, next, command);
+  if (chapter) return chapter;
+  const navigation = navigationCommand(state, next, command);
+  if (navigation) return navigation;
+  if (command === 'audio-toggle') return toggleAudio(state);
   if (command.startsWith('arc-story:'))
     return openDialogue(
       next,
@@ -309,15 +361,6 @@ function menuCommand(state, command) {
       employeeThoughts(state.lab, person).map(text => ({ text }))
     );
   }
-  if (command.startsWith('page:'))
-    return { ...next, menu: { page: command.slice(5), selected: 0 } };
-  if (command.startsWith('bind:'))
-    return {
-      ...next,
-      quickAction: command.slice(5),
-      toast: `B: ${command.slice(5)}. Y: change shortcut.`,
-    };
-  if (command === 'close') return next;
   if (command === 'report-next')
     return {
       ...state,
@@ -560,6 +603,14 @@ export function labJournal(state) {
     ...Object.entries(state.lab.stakeholderStanding).map(([id, score]) => ({
       title: `${LAB_CONTENT.stakeholders[id].name} / standing`,
       status: `${score}/100; watches ${LAB_CONTENT.stakeholders[id].concern}`,
+    })),
+    {
+      title: `Act / ${actForShift(state.world.day).title}`,
+      status: `Shift ${state.world.day}: ${actForShift(state.world.day).pressure}`,
+    },
+    ...availableChapterScenes(state.lab, state.world.day).map(id => ({
+      title: `Archive / ${id}`,
+      status: LAB_CONTENT.chapterScenes[id],
     })),
     { title: 'Earn a city covenant', status: `Trust ${state.lab.trust}/65` },
   ];

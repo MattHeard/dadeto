@@ -496,7 +496,7 @@ test('eight-button menus expose assignment, reports, saves, reset and page utili
   absent.world.player.facing = 'left';
   expect(press(absent, 'a').toast).toContain('Face a person');
   expect(labMenuRows(campaign())).toEqual([]);
-  expect(labJournal(campaign())).toHaveLength(16);
+  expect(labJournal(campaign())).toHaveLength(17);
 });
 
 test.each([

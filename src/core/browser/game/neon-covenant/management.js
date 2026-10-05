@@ -49,6 +49,7 @@ import {
   negotiateContract,
   settleStakeholders,
 } from './contracts.js';
+import { createCampaignAct, advanceCampaignAct } from './campaign.js';
 
 /**
  * Clamp a public lab metric to its meaningful range.
@@ -65,7 +66,8 @@ function metric(value) {
  */
 export function createLab() {
   const lab = {
-    rulesVersion: 8,
+    rulesVersion: 9,
+    campaignAct: createCampaignAct(1),
     evaluations: createEvaluations(),
     testingBudget: 6,
     incidentChains: createIncidentChains(),
@@ -305,6 +307,20 @@ export function labEnding(lab) {
 }
 
 /**
+ * Record an authored chapter boundary in the settled report and ledger.
+ * @param {Record<string, any>} lab Settled lab ledger.
+ * @param {number} nextShift Shift opened by this settlement.
+ * @param {string[]} report Mutable settlement report.
+ * @returns {void} Applies only the new chapter marker and report row.
+ */
+function recordCampaignBoundary(lab, nextShift, report) {
+  const transition = advanceCampaignAct(lab, nextShift);
+  if (!transition.changed) return;
+  lab.campaignAct = transition.campaignAct;
+  report.push(`ACT ${transition.act.title}. ${transition.act.pressure}`);
+}
+
+/**
  * Settle one deterministic shift: bottlenecks, risks, contracts and runway.
  * @param {Record<string, any>} state Current campaign.
  * @returns {Record<string, any>} Next shift state.
@@ -385,6 +401,8 @@ export function endShift(state) {
       progress: f.progress,
     },
   ].slice(-28);
+  const nextShift = state.world.day + 1;
+  recordCampaignBoundary(lab, nextShift, report);
   if (lab.cash < 0 || state.world.day >= 28) lab.outcome = labEnding(lab);
   return {
     ...state,

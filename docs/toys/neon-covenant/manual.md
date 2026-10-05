@@ -12,9 +12,15 @@ The guide lets you inspect Mae's actual terms before accepting: a 28k advance, A
 
 Inspect Ada and Jun in research, Sable in safety and Ion in service. Listening, reading forecasts and keeping existing assignments are free; actual reassignments consume attention. Review the closing forecast, then choose **End shift / settle costs** explicitly. Walking and inspecting never settle payroll. Training is not deployment: the ordinary training target, latest-checkpoint evaluation and safety requirements still apply. Existing saves keep their saved cooling capacity and are not forced to repeat the new guide.
 
+## The four campaign acts
+
+The lab's story unfolds over four chapters: **Keep the Lights** (shifts 1–6), **First Public Use** (7–13), **The Neighborhood Heats Up** (14–21), and **Who Keeps the Keys?** (22–28). The campaign menu shows the current pressure and offers a free briefing. End a shift to cross a chapter boundary; the report explains the new pressure. Archive scenes appear when you actually prototype, deploy, or fulfill a commitment. They are callbacks, not mandatory research routes.
+
 ## Input
 
 Directions walk and select. A talks, advances text and confirms. B closes conversations, goes back in menus, or opens its assigned shortcut. X opens/closes the lab menu; Y assigns B. Keyboard, gamepad and both virtual keypads use only these eight inputs.
+
+Neon includes an original Game Boy Color-inspired chiptune score and short synthesized button, conversation, room, purchase, warning and shift cues. Browsers require a tap or key press before audio can start. Open the X menu and choose **Sound: ON / mute** to toggle music and effects together; the setting is saved with your campaign. Muting, pausing or hiding the page silences playback.
 
 ### Example
 

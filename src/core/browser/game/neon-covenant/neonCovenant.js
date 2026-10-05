@@ -25,6 +25,7 @@ import {
   migrateContracts,
   validContractLedger,
 } from './contracts.js';
+import { migrateCampaignAct, validCampaignAct } from './campaign.js';
 import {
   createNeonState,
   stepNeon,
@@ -44,7 +45,8 @@ export function validLabSave(state) {
       (state.audioMuted === undefined ||
         typeof state.audioMuted === 'boolean') &&
       validPersonnel(lab) &&
-      lab.rulesVersion === 8 &&
+      lab.rulesVersion === 9 &&
+      validCampaignAct(lab, state.world.day) &&
       validContractLedger(lab) &&
       validInfrastructure(lab) &&
       validRelationships(lab, state.world.day) &&
@@ -224,11 +226,13 @@ export function createNeonRuntime(options = {}) {
     game: 'neon-covenant',
     validate: validLabSave,
     migrate: (/** @type {Record<string, any>} */ state) =>
-      migrateContracts(
-        migrateInfrastructure(
-          migrateRelationships(
-            migrateDeployments(
-              migrateEvaluations(migratePrograms(migratePersonnel(state)))
+      migrateCampaignAct(
+        migrateContracts(
+          migrateInfrastructure(
+            migrateRelationships(
+              migrateDeployments(
+                migrateEvaluations(migratePrograms(migratePersonnel(state)))
+              )
             )
           )
         )

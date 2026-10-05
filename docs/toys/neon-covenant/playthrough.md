@@ -2,6 +2,20 @@
 
 These routes use only directions/A/B/X/Y. Reading, walking and inspecting never advance a shift. For all routes, select Ledger → End shift explicitly; the report appears afterward. B returns a report to the main menu, while X closes it. B closes a conversation; X then opens a fresh menu. Do not accidentally press X after B has already returned a report to the main menu.
 
+## Follow the four-act calendar
+
+The date is the story clock: survival runs through shift 6, launch through 13,
+expansion through 21, and ownership through 28. Use X → Campaign at any time to
+read the current act's briefing and pressure without advancing the calendar.
+The settlement report announces a boundary only after End shift is confirmed.
+At shift 6, settle once and confirm the shift-7 launch report; reload and reopen
+Campaign to verify the briefing persists. Repeat at shifts 13 and 21 to reach
+expansion and ownership. Each save's act id and original entry shift follow the
+current campaign date. On the archive board, Ada's scene requires a real
+prototype, Mae's requires a deployed service, and the ownership register
+requires both a fulfilled commitment and shift 14. A different research route
+can still reach the same calendar chapters.
+
 ## Earn Ada's trust without banning Helios
 
 From a new campaign, close the introduction with B and open X → Relationships

@@ -114,6 +114,56 @@ function contract(name, project, trust, packages) {
 
 /** @type {Record<string, any>} Immutable chapter content; economic units are thousands of credits. */
 export const LAB_CONTENT = {
+  acts: [
+    {
+      id: 'survival',
+      title: 'KEEP THE LIGHTS',
+      startShift: 1,
+      endShift: 6,
+      pressure:
+        'The clinic needs a safe prototype. Cooling, payroll and trust are already competing for the same runway.',
+      briefing:
+        'Mae has brought the clinic request herself. The old director left no handover, only a cooling invoice and a promise that the lab could still be useful.',
+    },
+    {
+      id: 'launch',
+      title: 'FIRST PUBLIC USE',
+      startShift: 7,
+      endShift: 13,
+      pressure:
+        'A trained model is not a service. Evaluation, adoption, reliability and a real partner deadline now matter together.',
+      briefing:
+        'The neighborhood has heard the racks restart. People are no longer asking what the lab might build; they are asking who gets to rely on it.',
+    },
+    {
+      id: 'expansion',
+      title: 'THE NEIGHBORHOOD HEATS UP',
+      startShift: 14,
+      endShift: 21,
+      pressure:
+        'Expansion multiplies inference, support queues and promises. More capacity helps only when the people and cooling can carry it.',
+      briefing:
+        'The first service has changed the room. New partners arrive with invoices, maintenance logs and different ideas of what progress should mean.',
+    },
+    {
+      id: 'ownership',
+      title: 'WHO KEEPS THE KEYS?',
+      startShift: 22,
+      endShift: 28,
+      pressure:
+        'The ownership vote is close. Debt, delivered work, stakeholder standing and promises will decide who keeps the lab.',
+      briefing:
+        'The board has set a final vote for shift 28. Helios has brought a check. Mae has brought the people who will live with the result.',
+    },
+  ],
+  chapterScenes: {
+    prototype:
+      'Ada pins the first useful checkpoint to the archive wall. It is not a verdict, she says; it is a reason to keep testing with the clinic in the room.',
+    users:
+      'Mae reads a note from the first people using the service. They noticed the quiet handoff more than the benchmark. Ion asks whether the support queue noticed too.',
+    sharedRecord:
+      'A retired researcher leaves the old ownership register open on the table. It records who could say no, who was paid, and whose name stayed attached to the work.',
+  },
   incidents: {
     heat: {
       name: 'Overheating',

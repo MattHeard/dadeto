@@ -13,6 +13,11 @@ import { evaluationStatus } from './evaluation.js';
 import { INFRASTRUCTURE, infrastructureEffects } from './infrastructure.js';
 import { DEPLOYMENT_PROFILES, OPERATING_RULES } from './operationsContent.js';
 import { availableContractPackages, contractTerms } from './contracts.js';
+import {
+  actForShift,
+  availableChapterScenes,
+  chapterSceneLabel,
+} from './campaign.js';
 
 /**
  * Render the selected window consistently across bounded handheld menus.
@@ -141,6 +146,15 @@ function contractEntries(state, page) {
  */
 export function labEntries(state) {
   const page = state.menu.page;
+  if (page === 'campaign')
+    return [
+      ['Current act briefing', 'campaign-story:act'],
+      ...availableChapterScenes(state.lab, state.world.day).map(id => [
+        chapterSceneLabel(id),
+        `campaign-story:${id}`,
+      ]),
+      ['Back to lab', 'page:main'],
+    ];
   if (page === 'relationships')
     return Object.entries(RELATIONSHIP_CONTENT)
       .map(([id, person]) => [person.name, `page:relationship:${id}`])
@@ -342,6 +356,7 @@ export function labEntries(state) {
       ['Inspect next shift', 'page:forecast'],
     ];
   return [
+    ['Campaign / act briefing', 'page:campaign'],
     ['Ledger / end shift', 'page:ledger'],
     ['Lab dashboard', 'page:dashboard'],
     ['Incident register', 'page:incidents'],
@@ -375,6 +390,14 @@ export function labEntries(state) {
 export function labMenuRows(state) {
   if (!state.menu) return [];
   if (state.menu.page === 'orientation') return orientationRows(state);
+  if (state.menu.page === 'campaign') {
+    const act = actForShift(state.world.day);
+    return choicePanel(state, [
+      `ACT / ${act.title}`,
+      `SHIFT ${state.world.day} / ${act.startShift}-${act.endShift}`,
+      act.pressure,
+    ]);
+  }
   const lab = state.lab;
   const f = forecast(lab);
   if (

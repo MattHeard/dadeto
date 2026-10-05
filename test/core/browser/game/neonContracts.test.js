@@ -27,6 +27,7 @@ import {
 } from '../../../../src/core/browser/game/neon-covenant/neonCovenant.js';
 import { createPrograms } from '../../../../src/core/browser/game/neon-covenant/research.js';
 import { forecastShift } from '../../../../src/core/browser/game/neon-covenant/forecast.js';
+import { migrateCampaignAct } from '../../../../src/core/browser/game/neon-covenant/campaign.js';
 
 /**
  * Make a convenient isolated lab campaign.
@@ -313,7 +314,7 @@ test('rules-seven migration preserves historic finances and outcomes without rep
     contractTerms: { clinic: 'balanced' },
   });
   expect(validContractLedger(migrated.lab)).toBe(true);
-  expect(validLabSave(migrated)).toBe(true);
+  expect(validLabSave(migrateCampaignAct(migrated))).toBe(true);
   expect(migrateContracts(migrated)).toBe(migrated);
   expect(migrateContracts({ lab: { rulesVersion: 6 } })).toEqual({
     lab: { rulesVersion: 6 },
