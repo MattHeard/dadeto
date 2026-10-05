@@ -1,4 +1,3 @@
-// @ts-nocheck -- billing uses injected Firestore transaction doubles at runtime boundaries.
 import { calculateOperationCredits } from './pricing-core.js';
 import { consumeCreditLots } from './credit-lots-core.js';
 import {
@@ -13,6 +12,20 @@ import {
 } from '../get-api-key-credit-v2/get-api-key-credit-v2-core.js';
 
 /** @typedef {any} BillingRuntimeValue Runtime-shaped billing value. */
+/** @typedef {Record<string, any>} BillingDocumentData Persisted Firestore document fields. */
+/** @typedef {BillingDocumentData & { purchaseId: string, issuedCredits: number, remainingCredits: number, createdAt: string, refundable: boolean }} BillingLotData */
+/** @typedef {BillingDocumentData & { purchaseId: string, issuedCredits: number, remainingCredits: number, createdAt: Date, refundable: boolean }} BillingPersistedLotData */
+/** @typedef {{ ref: BillingRuntimeValue, data: BillingLotData }} BillingLotCandidate */
+/** @typedef {{ snapshotId: string, effectiveAt: string, eurPerUsdMicros: number, creditEurMicros: number, markupBps: number, operations: Record<string, { id: string, costEurMicros: number }> }} BillingPricingSnapshot */
+/** @typedef {{ uuid: string, eventId: string, operationType: string, operationAttemptId: string }} BillingOperationIdentity */
+/** @typedef {BillingOperationIdentity & { pricingSnapshot: BillingPricingSnapshot, executedAt?: Date }} BillingOperationInput */
+/** @typedef {BillingOperationIdentity & { outcome: 'success' | 'ambiguous' | 'failure', reason?: string }} BillingResolutionInput */
+/** @typedef {{ db: BillingRuntimeValue, now: () => Date, transaction: BillingRuntimeValue, input: BillingOperationInput, amount: number, candidates: BillingLotCandidate[] }} BillingTransactionContext */
+/** @typedef {{ purchaseId?: string, apiKeyUuid: string, creditsIssued: number, pricingSnapshotId: string, createdAt?: Date, [key: string]: unknown }} BillingPurchaseInput */
+/** @typedef {{ purchaseId: string, eventId: string, stripePaymentIntentId?: string }} BillingPaymentInput */
+/** @typedef {{ purchaseId: string, eventId: string, refundedUsdMinor: number, pricingSnapshotId: string }} BillingRefundInput */
+/** @typedef {{ purchaseId: string, eventId: string }} BillingExpiryInput */
+/** @typedef {{ checkoutSessionId: string, url: string, expiresAt: Date }} BillingCheckoutSession */
 
 /**
  * @typedef {{ status: number, body: object }} BillingResponse
@@ -89,13 +102,28 @@ function readOperationIdentity(input) {
 
 /**
  * @param {{ exists?: boolean, data?: () => unknown }} snapshot Snapshot.
- * @returns {Record<string, unknown>} Snapshot data.
+ * @returns {BillingDocumentData} Snapshot data.
  */
 function readData(snapshot) {
   if (!snapshot.exists || typeof snapshot.data !== 'function') return {};
   const data = snapshot.data();
   if (!data || typeof data !== 'object') return {};
-  return /** @type {Record<string, unknown>} */ (data);
+  return /** @type {BillingDocumentData} */ (data);
+}
+
+/**
+ * Convert a persisted timestamp into the ISO string expected by credit-lot logic.
+ * @param {BillingDocumentData} data Persisted lot fields.
+ * @returns {BillingDocumentData} Normalized fields.
+ */
+function normalizeBillingLotData(data) {
+  const createdAt = data.createdAt;
+  return {
+    ...data,
+    ...(createdAt instanceof Date
+      ? { createdAt: createdAt.toISOString() }
+      : {}),
+  };
 }
 
 /**
@@ -115,18 +143,27 @@ async function readDocument(db, collectionName, id) {
  * Read available credit lots for an identity.
  * @param {BillingRuntimeValue} db Firestore database.
  * @param {string} uuid API key UUID.
- * @returns {Promise<Array<{ ref: object, data: object }>>} Available lots.
+ * @returns {Promise<BillingLotCandidate[]>} Available lots.
  */
 // Stryker disable all -- lot listing is a direct Firestore adapter projection;
 // positive-credit filtering is covered through the helper contract.
 async function listBillingLots(db, uuid) {
-  const snap = await creditRef(db, uuid)
+  const reference = /** @type {BillingRuntimeValue} */ (creditRef(db, uuid));
+  const snap = await reference
     .collection('lots')
     .orderBy('createdAt', 'asc')
     .get();
   return snap.docs
-    .map(doc => ({ ref: doc.ref, data: readData(doc) }))
-    .filter(lot => Number(lot.data.remainingCredits ?? 0) > 0);
+    .map((/** @type {BillingRuntimeValue} */ doc) => ({
+      ref: doc.ref,
+      data: /** @type {BillingLotData} */ (
+        normalizeBillingLotData(readData(doc))
+      ),
+    }))
+    .filter(
+      (/** @type {BillingLotCandidate} */ lot) =>
+        Number(lot.data.remainingCredits ?? 0) > 0
+    );
 }
 // Stryker restore all
 
@@ -134,8 +171,8 @@ async function listBillingLots(db, uuid) {
  * Run a billing operation inside a transaction.
  * @param {BillingRuntimeValue} db Firestore database.
  * @param {() => Date} now Clock.
- * @param {Record<string, unknown>} input Operation input.
- * @param {(input: object) => Promise<BillingResponse>} handler Transaction handler.
+ * @param {BillingOperationInput} input Operation input.
+ * @param {(input: BillingTransactionContext) => Promise<BillingResponse>} handler Transaction handler.
  * @returns {Promise<BillingResponse>} Transaction response.
  */
 async function runBillingOperationTransaction(db, now, input, handler) {
@@ -145,7 +182,7 @@ async function runBillingOperationTransaction(db, now, input, handler) {
     input.pricingSnapshot
   );
   const candidates = await listBillingLots(db, input.uuid);
-  return db.runTransaction(transaction =>
+  return db.runTransaction((/** @type {BillingRuntimeValue} */ transaction) =>
     handler({
       db,
       now,
@@ -172,7 +209,10 @@ async function readCurrentPricingSnapshot(db, now) {
     .get();
   // Stryker disable next-line all -- pricing snapshot timestamps are normalized
   // at the Firestore adapter boundary.
-  const current = snap.docs.find(doc => doc.data()?.effectiveAt <= cutoff);
+  const current = snap.docs.find(
+    (/** @type {BillingRuntimeValue} */ doc) =>
+      doc.data()?.effectiveAt <= cutoff
+  );
   if (!current) return null;
   return current.data();
 }
@@ -238,21 +278,25 @@ export function createBillingRuntime(db, runtime = {}) {
   const now = runtime.now ?? (() => new Date());
   // Stryker restore all
 
-  const getPricingSnapshot = snapshotId => readPricingSnapshot(db, snapshotId);
+  const getPricingSnapshot = (/** @type {string} */ snapshotId) =>
+    readPricingSnapshot(db, snapshotId);
 
   const getCurrentPricingSnapshot = () => readCurrentPricingSnapshot(db, now);
 
-  const getPackage = packageId => readBillingPackage(db, packageId);
+  const getPackage = (/** @type {string} */ packageId) =>
+    readBillingPackage(db, packageId);
 
-  const getPurchase = purchaseId => readBillingPurchase(db, purchaseId);
+  const getPurchase = (/** @type {string} */ purchaseId) =>
+    readBillingPurchase(db, purchaseId);
 
-  const getPurchaseByCheckoutSession = checkoutSessionId =>
-    findBillingPurchaseByCheckout(db, checkoutSessionId);
+  const getPurchaseByCheckoutSession = (
+    /** @type {string} */ checkoutSessionId
+  ) => findBillingPurchaseByCheckout(db, checkoutSessionId);
 
   /**
    * Save checkout details on a purchase.
    * @param {string} purchaseId Purchase identifier.
-   * @param {BillingRuntimeValue} session Checkout session.
+   * @param {BillingCheckoutSession} session Checkout session.
    * @returns {Promise<void>} Resolves after persistence.
    */
   async function savePurchaseCheckout(purchaseId, session) {
@@ -269,7 +313,7 @@ export function createBillingRuntime(db, runtime = {}) {
 
   /**
    * Create a pending purchase.
-   * @param {BillingRuntimeValue} input Purchase input.
+   * @param {BillingPurchaseInput} input Purchase input.
    * @returns {Promise<BillingRuntimeValue>} Created purchase.
    */
   async function createPurchase(input) {
@@ -288,116 +332,124 @@ export function createBillingRuntime(db, runtime = {}) {
 
   /**
    * Mark a purchase as paid.
-   * @param {BillingRuntimeValue} input Payment input.
+   * @param {BillingPaymentInput} input Payment input.
    * @returns {Promise<BillingResponse>} Payment response.
    */
   // Stryker disable all -- payment settlement is an adapter transaction whose
   // schema is verified by focused behavioral tests.
   async function markPurchasePaid(input) {
     const ref = purchaseRef(db, input.purchaseId);
-    return db.runTransaction(async transaction => {
-      const purchaseSnap = await transaction.get(ref);
-      if (!purchaseSnap.exists)
-        return { status: 404, body: { error: 'purchase_not_found' } };
-      const purchase = readData(purchaseSnap);
-      // Stryker disable next-line all -- paid/partially-refunded states share
-      // the documented idempotent duplicate response.
-      // Stryker disable all -- duplicate payment states have one documented response.
-      if (
-        purchase.status === 'paid' ||
-        purchase.status === 'partially_refunded'
-      ) {
-        return duplicatePurchaseResponse(input.purchaseId);
-      }
-      // Stryker restore all
-      try {
-        applyStateTransition({
-          kind: 'purchase',
-          state: purchase.status,
-          nextState: 'paid',
-        });
-      } catch {
-        return {
-          status: 200,
-          body: { quarantined: true, purchaseId: input.purchaseId },
-        };
-      }
-      const balance = await transaction.get(creditRef(db, purchase.apiKeyUuid));
-      const before = Number(readData(balance).credit ?? 0);
-      const after = before + purchase.creditsIssued;
-      const legacyReference = lotRef(db, purchase.apiKeyUuid, 'legacy');
-      const legacy = await transaction.get(legacyReference);
-      // Stryker disable next-line all -- legacy aggregate migration is a
-      // compatibility projection performed only when no legacy lot exists.
-      if (before > 0 && !legacy.exists)
-        transaction.set(legacyReference, createLegacyLot(before, now()));
-      // Stryker disable next-line all -- persisted lot schema is the billing
-      // adapter contract.
-      const lot = {
-        purchaseId: purchase.purchaseId,
-        issuedCredits: purchase.creditsIssued,
-        remainingCredits: purchase.creditsIssued,
-        createdAt: purchase.createdAt,
-        // Stryker disable next-line all -- lot persistence schema is an adapter contract.
-        refundable: true,
-        pricingSnapshotId: purchase.pricingSnapshotId,
-      };
-      transaction.set(
-        lotRef(db, purchase.apiKeyUuid, purchase.purchaseId),
-        lot
-      );
-      setCreditBalance(
-        transaction,
-        creditRef(db, purchase.apiKeyUuid),
-        after,
-        input.eventId
-      );
-      // Stryker disable next-line all -- persisted event schema is the billing
-      // adapter contract.
-      transaction.set(eventRef(db, purchase.apiKeyUuid, input.eventId), {
-        type: 'credit_added',
-        eventId: input.eventId,
-        amount: purchase.creditsIssued,
-        purchaseId: purchase.purchaseId,
-        pricingSnapshotId: purchase.pricingSnapshotId,
-        balanceBefore: before,
-        balanceAfter: after,
-        createdAt: now(),
-      });
-      transaction.set(
-        ledgerRef(db, purchase.apiKeyUuid, input.eventId),
-        createLedgerEvent({
-          eventId: input.eventId,
-          sourceEventId: input.eventId,
-          type: 'credits_issued',
-          amount: purchase.creditsIssued,
-          billingIdentityId: purchase.apiKeyUuid,
+    return db.runTransaction(
+      async (/** @type {BillingRuntimeValue} */ transaction) => {
+        const purchaseSnap = await transaction.get(ref);
+        if (!purchaseSnap.exists)
+          return { status: 404, body: { error: 'purchase_not_found' } };
+        const purchase = readData(purchaseSnap);
+        // Stryker disable next-line all -- paid/partially-refunded states share
+        // the documented idempotent duplicate response.
+        // Stryker disable all -- duplicate payment states have one documented response.
+        if (
+          purchase.status === 'paid' ||
+          purchase.status === 'partially_refunded'
+        ) {
+          return duplicatePurchaseResponse(input.purchaseId);
+        }
+        // Stryker restore all
+        try {
+          applyStateTransition({
+            kind: 'purchase',
+            state: purchase.status,
+            nextState: 'paid',
+          });
+        } catch {
+          return {
+            status: 200,
+            body: { quarantined: true, purchaseId: input.purchaseId },
+          };
+        }
+        const balance = await transaction.get(
+          creditRef(db, purchase.apiKeyUuid)
+        );
+        const before = Number(readData(balance).credit ?? 0);
+        const after = before + purchase.creditsIssued;
+        const legacyReference = lotRef(db, purchase.apiKeyUuid, 'legacy');
+        const legacy = await transaction.get(legacyReference);
+        // Stryker disable next-line all -- legacy aggregate migration is a
+        // compatibility projection performed only when no legacy lot exists.
+        if (before > 0 && !legacy.exists)
+          transaction.set(legacyReference, createLegacyLot(before, now()));
+        // Stryker disable next-line all -- persisted lot schema is the billing
+        // adapter contract.
+        const lot = /** @type {BillingPersistedLotData} */ ({
           purchaseId: purchase.purchaseId,
+          issuedCredits: purchase.creditsIssued,
+          remainingCredits: purchase.creditsIssued,
+          createdAt: purchase.createdAt,
+          // Stryker disable next-line all -- lot persistence schema is an adapter contract.
+          refundable: true,
+          pricingSnapshotId: purchase.pricingSnapshotId,
+        });
+        transaction.set(
+          lotRef(db, purchase.apiKeyUuid, purchase.purchaseId),
+          lot
+        );
+        setCreditBalance(
+          transaction,
+          creditRef(db, purchase.apiKeyUuid),
+          after,
+          input.eventId
+        );
+        // Stryker disable next-line all -- persisted event schema is the billing
+        // adapter contract.
+        transaction.set(eventRef(db, purchase.apiKeyUuid, input.eventId), {
+          type: 'credit_added',
+          eventId: input.eventId,
+          amount: purchase.creditsIssued,
+          purchaseId: purchase.purchaseId,
+          pricingSnapshotId: purchase.pricingSnapshotId,
           balanceBefore: before,
           balanceAfter: after,
-          pricingSnapshotId: purchase.pricingSnapshotId,
           createdAt: now(),
-        })
-      );
-      transaction.set(ref, {
-        ...purchase,
-        status: 'paid',
-        stripePaymentIntentId: input.stripePaymentIntentId,
-        paidAt: now(),
-      });
-      // Stryker disable next-line all -- response shape is the public billing
-      // protocol contract.
-      return {
-        // Stryker disable next-line all -- response shape is the public billing protocol.
-        status: 201,
-        body: { purchaseId: purchase.purchaseId, credit: after, applied: true },
-      };
-    });
+        });
+        transaction.set(
+          ledgerRef(db, purchase.apiKeyUuid, input.eventId),
+          createLedgerEvent({
+            eventId: input.eventId,
+            sourceEventId: input.eventId,
+            type: 'credits_issued',
+            amount: purchase.creditsIssued,
+            billingIdentityId: purchase.apiKeyUuid,
+            purchaseId: purchase.purchaseId,
+            balanceBefore: before,
+            balanceAfter: after,
+            pricingSnapshotId: purchase.pricingSnapshotId,
+            createdAt: now(),
+          })
+        );
+        transaction.set(ref, {
+          ...purchase,
+          status: 'paid',
+          stripePaymentIntentId: input.stripePaymentIntentId,
+          paidAt: now(),
+        });
+        // Stryker disable next-line all -- response shape is the public billing
+        // protocol contract.
+        return {
+          // Stryker disable next-line all -- response shape is the public billing protocol.
+          status: 201,
+          body: {
+            purchaseId: purchase.purchaseId,
+            credit: after,
+            applied: true,
+          },
+        };
+      }
+    );
   }
   // Stryker restore all
 
   /**
-   * @param {BillingRuntimeValue} input Charge input.
+   * @param {BillingOperationInput} input Charge input.
    * @returns {Promise<BillingResponse>} Charge response.
    */
   async function applyOperationCharge(input) {
@@ -411,7 +463,7 @@ export function createBillingRuntime(db, runtime = {}) {
 
   /**
    * Charge an operation using the current server-side pricing snapshot.
-   * @param {{ uuid: string, operationId: string, eventId: string, executedAt?: Date }} input Charge inputs.
+   * @param {Omit<BillingOperationInput, 'pricingSnapshot'>} input Charge inputs.
    * @returns {Promise<BillingResponse>} Charge response.
    */
   async function chargeOperation(input) {
@@ -423,7 +475,7 @@ export function createBillingRuntime(db, runtime = {}) {
 
   /**
    * Reserve credits for an operation.
-   * @param {Record<string, unknown>} input Operation input.
+   * @param {BillingOperationInput} input Operation input.
    * @returns {Promise<BillingResponse>} Reservation response.
    */
   async function reserveOperation(input) {
@@ -437,7 +489,7 @@ export function createBillingRuntime(db, runtime = {}) {
 
   /**
    * Resolve a previously reserved operation.
-   * @param {Record<string, unknown>} input Operation input.
+   * @param {BillingResolutionInput} input Operation input.
    * @returns {Promise<BillingResponse>} Resolution response.
    */
   async function resolveOperation(input) {
@@ -447,7 +499,7 @@ export function createBillingRuntime(db, runtime = {}) {
       input.uuid,
       identity.operationAttemptId
     );
-    return db.runTransaction(transaction =>
+    return db.runTransaction((/** @type {BillingRuntimeValue} */ transaction) =>
       resolveOperationTransaction({
         transaction,
         reference,
@@ -462,7 +514,7 @@ export function createBillingRuntime(db, runtime = {}) {
   /**
    * Reconcile all billing projections for an identity.
    * @param {string} uuid API key UUID.
-   * @returns {Promise<{ discrepancies: Array<object>, ok: boolean }>} Reconciliation report.
+   * @returns {Promise<{ discrepancies: BillingRuntimeValue[], ok: boolean }>} Reconciliation report.
    */
   async function reconcileIdentity(uuid) {
     const balanceSnapshot = await creditRef(db, uuid).get();
@@ -480,15 +532,21 @@ export function createBillingRuntime(db, runtime = {}) {
     // Firestore snapshots into the protocol helper.
     return reconcileBillingIdentity({
       aggregateBalance: Number(readData(balanceSnapshot).credit ?? 0),
-      lots: lotSnapshot.docs.map(doc => readData(doc)),
-      ledgerEvents: ledgerSnapshot.docs.map(doc => readData(doc)),
-      purchases: purchaseSnapshot.docs.map(doc => readData(doc)),
+      lots: lotSnapshot.docs.map((/** @type {BillingRuntimeValue} */ doc) =>
+        readData(doc)
+      ),
+      ledgerEvents: ledgerSnapshot.docs.map(
+        (/** @type {BillingRuntimeValue} */ doc) => readData(doc)
+      ),
+      purchases: purchaseSnapshot.docs.map(
+        (/** @type {BillingRuntimeValue} */ doc) => readData(doc)
+      ),
     });
   }
 
   /**
    * Apply a Stripe refund to a purchase.
-   * @param {BillingRuntimeValue} input Refund input.
+   * @param {BillingRefundInput} input Refund input.
    * @returns {Promise<BillingResponse>} Refund response.
    */
   async function applyRefundEvent(input) {
@@ -497,43 +555,45 @@ export function createBillingRuntime(db, runtime = {}) {
 
   /**
    * Mark a matching pending purchase expired exactly once.
-   * @param {{ purchaseId: string, eventId: string }} input Expiry event.
+   * @param {BillingExpiryInput} input Expiry event.
    * @returns {Promise<BillingResponse>} Expiry response.
    */
   async function markPurchaseExpired(input) {
-    return db.runTransaction(async transaction => {
-      const ref = purchaseRef(db, input.purchaseId);
-      const snapshot = await transaction.get(ref);
-      if (!snapshot.exists)
-        return { status: 404, body: { error: 'purchase_not_found' } };
-      const purchase = readData(snapshot);
-      if (purchase.status === 'expired')
-        return duplicatePurchaseResponse(input.purchaseId);
-      if (purchase.status !== 'pending')
+    return db.runTransaction(
+      async (/** @type {BillingRuntimeValue} */ transaction) => {
+        const ref = purchaseRef(db, input.purchaseId);
+        const snapshot = await transaction.get(ref);
+        if (!snapshot.exists)
+          return { status: 404, body: { error: 'purchase_not_found' } };
+        const purchase = readData(snapshot);
+        if (purchase.status === 'expired')
+          return duplicatePurchaseResponse(input.purchaseId);
+        if (purchase.status !== 'pending')
+          return {
+            status: 200,
+            body: {
+              ignored: true,
+              purchaseId: input.purchaseId,
+              status: purchase.status,
+            },
+          };
+        applyStateTransition({
+          kind: 'purchase',
+          state: purchase.status,
+          nextState: 'expired',
+        });
+        transaction.set(ref, {
+          ...purchase,
+          status: 'expired',
+          expiredEventId: input.eventId,
+          expiredAt: now(),
+        });
         return {
           status: 200,
-          body: {
-            ignored: true,
-            purchaseId: input.purchaseId,
-            status: purchase.status,
-          },
+          body: { purchaseId: input.purchaseId, status: 'expired' },
         };
-      applyStateTransition({
-        kind: 'purchase',
-        state: purchase.status,
-        nextState: 'expired',
-      });
-      transaction.set(ref, {
-        ...purchase,
-        status: 'expired',
-        expiredEventId: input.eventId,
-        expiredAt: now(),
-      });
-      return {
-        status: 200,
-        body: { purchaseId: input.purchaseId, status: 'expired' },
-      };
-    });
+      }
+    );
   }
 
   return {
@@ -552,7 +612,8 @@ export function createBillingRuntime(db, runtime = {}) {
     reconcileIdentity,
     applyRefundEvent,
     markPurchaseExpired,
-    ledgerRef: (uuid, eventId) => ledgerRef(db, uuid, eventId),
+    ledgerRef: (/** @type {string} */ uuid, /** @type {string} */ eventId) =>
+      ledgerRef(db, uuid, eventId),
   };
 }
 
@@ -578,7 +639,7 @@ export const billingRuntimeTestUtils = {
 
 /**
  * Resolve a reservation inside a Firestore transaction.
- * @param {{ transaction: BillingRuntimeValue, reference: BillingRuntimeValue, identity: { operationType: string, operationAttemptId: string }, input: Record<string, unknown>, db: BillingRuntimeValue, now: () => Date }} options Transaction inputs.
+ * @param {{ transaction: BillingRuntimeValue, reference: BillingRuntimeValue, identity: { operationType: string, operationAttemptId: string }, input: BillingResolutionInput, db: BillingRuntimeValue, now: () => Date }} options Transaction inputs.
  * @returns {Promise<BillingResponse>} Resolution response.
  */
 // Stryker disable all -- operation resolution persists a fixed protocol schema.
@@ -593,7 +654,10 @@ async function resolveOperationTransaction({
   const snapshot = await transaction.get(reference);
   if (!snapshot.exists)
     return { status: 404, body: { error: 'reservation_not_found' } };
-  const reservation = readData(snapshot);
+  const reservation =
+    /** @type {BillingOperationIdentity & BillingDocumentData} */ (
+      readData(snapshot)
+    );
   // Stryker disable next-line all -- reservation state guards preserve the
   // idempotent duplicate contract for terminal states.
   if (
@@ -639,7 +703,7 @@ async function resolveOperationTransaction({
  * Mark a reservation as settled.
  * @param {BillingRuntimeValue} transaction Firestore transaction.
  * @param {BillingRuntimeValue} reference Reservation reference.
- * @param {Record<string, unknown>} reservation Reservation data.
+ * @param {BillingOperationIdentity & BillingDocumentData} reservation Reservation data.
  * @param {() => Date} now Clock.
  * @returns {BillingResponse} Settlement response.
  */
@@ -659,7 +723,7 @@ function settleReservation(transaction, reference, reservation, now) {
 
 /**
  * Mark a reservation as requiring recovery.
- * @param {{ transaction: BillingRuntimeValue, reference: BillingRuntimeValue, reservation: Record<string, unknown>, input: Record<string, unknown> }} options Recovery inputs.
+ * @param {{ transaction: BillingRuntimeValue, reference: BillingRuntimeValue, reservation: BillingOperationIdentity & BillingDocumentData, input: BillingResolutionInput }} options Recovery inputs.
  * @returns {BillingResponse} Recovery response.
  */
 // Stryker disable all -- recovery persistence is a fixed protocol schema.
@@ -685,7 +749,7 @@ function markReservationNeedsRecovery({
 
 /**
  * Release a reservation and restore its allocated lots.
- * @param {{ transaction: BillingRuntimeValue, reference: BillingRuntimeValue, reservation: Record<string, unknown>, input: Record<string, unknown>, db: BillingRuntimeValue, now: () => Date }} options Release inputs.
+ * @param {{ transaction: BillingRuntimeValue, reference: BillingRuntimeValue, reservation: BillingOperationIdentity & BillingDocumentData, input: BillingResolutionInput, db: BillingRuntimeValue, now: () => Date }} options Release inputs.
  * @returns {Promise<BillingResponse>} Release response.
  */
 // Stryker disable all -- release persistence is a fixed protocol schema.
@@ -754,8 +818,8 @@ async function releaseReservation({
 
 /**
  * Read transaction lots and the projected balance.
- * @param {{ transaction: BillingRuntimeValue, candidates: Array<{ ref: object, data: object }>, db: BillingRuntimeValue, uuid: string, now: () => Date }} input Transaction and lot inputs.
- * @returns {Promise<{ lots: Array<{ ref: object, data: object }>, before: number }>} Lots and balance.
+ * @param {{ transaction: BillingRuntimeValue, candidates: BillingLotCandidate[], db: BillingRuntimeValue, uuid: string, now: () => Date }} input Transaction and lot inputs.
+ * @returns {Promise<{ lots: BillingLotCandidate[], before: number }>} Lots and balance.
  */
 async function readLotsAndBalance({ transaction, candidates, db, uuid, now }) {
   const lots = await readTransactionLots(transaction, candidates);
@@ -784,7 +848,7 @@ function setCreditBalance(transaction, reference, credit, eventId) {
 
 /**
  * Build the common operation status response.
- * @param {{ operationType: string, operationAttemptId: string }} reservation Operation identity.
+ * @param {BillingOperationIdentity} reservation Operation identity.
  * @param {string} status Operation status.
  * @returns {{ status: number, body: object }} Operation response.
  */
@@ -801,8 +865,8 @@ function operationStatusResponse(reservation, status) {
 
 /**
  * Allocate credits and update the balance projection in a transaction.
- * @param {{ transaction: object, candidates: Array<{ ref: object, data: object }>, db: object, uuid: string, now: () => Date, amount: number, eventId: string }} input Allocation input.
- * @returns {Promise<{ before: number, after: number, allocations: Array<object> } | null>} Allocation or null when insufficient.
+ * @param {{ transaction: BillingRuntimeValue, candidates: BillingLotCandidate[], db: BillingRuntimeValue, uuid: string, now: () => Date, amount: number, eventId: string }} input Allocation input.
+ * @returns {Promise<{ before: number, after: number, allocations: BillingRuntimeValue[] } | null>} Allocation or null when insufficient.
  */
 async function allocateCredits(input) {
   const { lots, before } = await readLotsAndBalance({
@@ -817,8 +881,9 @@ async function allocateCredits(input) {
   // enough aggregate balance before a charge can proceed.
   if (!consumed || before < input.amount) return null;
   const after = before - input.amount;
-  consumed.lots.forEach((lot, index) =>
-    input.transaction.set(lots[index].ref, lot)
+  consumed.lots.forEach(
+    (/** @type {BillingDocumentData} */ lot, /** @type {number} */ index) =>
+      input.transaction.set(lots[index].ref, lot)
   );
   input.transaction.set(creditRef(input.db, input.uuid), {
     credit: after,
@@ -829,7 +894,7 @@ async function allocateCredits(input) {
 
 /**
  * Reserve an operation inside a Firestore transaction.
- * @param {{ db: BillingRuntimeValue, now: () => Date, transaction: BillingRuntimeValue, input: Record<string, unknown>, amount: number, candidates: Array<{ ref: object, data: object }> }} input Transaction inputs.
+ * @param {{ db: BillingRuntimeValue, now: () => Date, transaction: BillingRuntimeValue, input: BillingOperationInput, amount: number, candidates: BillingLotCandidate[] }} input Transaction inputs.
  * @returns {Promise<BillingResponse>} Reservation response.
  */
 // Intentional protocol-boundary duplication: transaction ordering is operation-specific.
@@ -910,7 +975,7 @@ async function reserveOperationTransaction({
 
 /**
  * Apply an operation charge inside a Firestore transaction.
- * @param {{ db: object, now: () => Date, transaction: object, input: object, amount: number, candidates: Array<{ ref: object, data: object }> }} db Charge transaction input.
+ * @param {BillingTransactionContext} db Charge transaction input.
  * @returns {Promise<BillingResponse>} Charge response.
  */
 // Stryker disable all -- charge persistence is a fixed protocol schema.
@@ -984,28 +1049,35 @@ async function chargeOperationTransaction({
 /**
  * Read candidate lots through a transaction.
  * @param {BillingRuntimeValue} transaction Firestore transaction.
- * @param {Array<{ ref: object, data: object }>} candidates Candidate lots.
- * @returns {Promise<Array<{ ref: object, data: object }>>} Current lots.
+ * @param {BillingLotCandidate[]} candidates Candidate lots.
+ * @returns {Promise<BillingLotCandidate[]>} Current lots.
  */
 async function readTransactionLots(transaction, candidates) {
   const lots = [];
   for (const candidate of candidates) {
     const snap = await transaction.get(candidate.ref);
-    if (snap.exists) lots.push({ ref: candidate.ref, data: readData(snap) });
+    if (snap.exists) {
+      lots.push({
+        ref: candidate.ref,
+        data: /** @type {BillingLotData} */ (
+          normalizeBillingLotData(readData(snap))
+        ),
+      });
+    }
   }
   return lots;
 }
 
 /**
  * Consume lots, converting the expected shortage into a null result.
- * @param {Array<{ purchaseId: string, remainingCredits: number }>} lots Lots.
+ * @param {BillingLotCandidate[]} lots Lots.
  * @param {number} amount Credits to consume.
  * @returns {BillingRuntimeValue|null} Consumption result.
  */
 function consumeLotsOrNull(lots, amount) {
   try {
     return consumeCreditLots(
-      lots.map(lot => lot.data),
+      lots.map((/** @type {BillingLotCandidate} */ lot) => lot.data),
       amount
     );
   } catch (cause) {
@@ -1036,107 +1108,112 @@ function createLegacyLot(credits, createdAt) {
  * Apply a refund transaction.
  * @param {BillingRuntimeValue} db Firestore database.
  * @param {() => Date} now Clock callback.
- * @param {BillingRuntimeValue} input Refund input.
+ * @param {BillingRefundInput} input Refund input.
  * @returns {Promise<BillingResponse>} Refund response.
  */
 // Stryker disable all -- refund persistence is a fixed protocol schema.
 async function applyRefund(db, now, input) {
   const ref = purchaseRef(db, input.purchaseId);
-  return db.runTransaction(async transaction => {
-    const purchaseSnap = await transaction.get(ref);
-    if (!purchaseSnap.exists)
-      return { status: 404, body: { error: 'purchase_not_found' } };
-    const purchase = readData(purchaseSnap);
-    const lotReference = lotRef(db, purchase.apiKeyUuid, purchase.purchaseId);
-    const lotSnap = await transaction.get(lotReference);
-    const lot = readData(lotSnap);
-    const refundable = Number(lot.remainingCredits ?? 0);
-    if (refundable <= 0)
-      return {
-        status: 200,
-        body: { purchaseId: input.purchaseId, refunded: false },
-      };
-    const balanceReference = creditRef(db, purchase.apiKeyUuid);
-    const balanceSnap = await transaction.get(balanceReference);
-    const before = Number(readData(balanceSnap).credit ?? 0);
-    const after = before - refundable;
-    if (after < 0)
-      return { status: 409, body: { error: 'refund_balance_conflict' } };
-    const nextStatus = resolveRefundStatus(refundable, purchase.creditsIssued);
-    try {
-      applyStateTransition({
-        kind: 'purchase',
-        state: purchase.status,
-        nextState: nextStatus,
+  return db.runTransaction(
+    async (/** @type {BillingRuntimeValue} */ transaction) => {
+      const purchaseSnap = await transaction.get(ref);
+      if (!purchaseSnap.exists)
+        return { status: 404, body: { error: 'purchase_not_found' } };
+      const purchase = readData(purchaseSnap);
+      const lotReference = lotRef(db, purchase.apiKeyUuid, purchase.purchaseId);
+      const lotSnap = await transaction.get(lotReference);
+      const lot = readData(lotSnap);
+      const refundable = Number(lot.remainingCredits ?? 0);
+      if (refundable <= 0)
+        return {
+          status: 200,
+          body: { purchaseId: input.purchaseId, refunded: false },
+        };
+      const balanceReference = creditRef(db, purchase.apiKeyUuid);
+      const balanceSnap = await transaction.get(balanceReference);
+      const before = Number(readData(balanceSnap).credit ?? 0);
+      const after = before - refundable;
+      if (after < 0)
+        return { status: 409, body: { error: 'refund_balance_conflict' } };
+      const nextStatus = resolveRefundStatus(
+        refundable,
+        purchase.creditsIssued
+      );
+      try {
+        applyStateTransition({
+          kind: 'purchase',
+          state: purchase.status,
+          nextState: nextStatus,
+        });
+      } catch {
+        return {
+          status: 200,
+          body: { quarantined: true, purchaseId: input.purchaseId },
+        };
+      }
+      transaction.set(lotReference, {
+        ...lot,
+        remainingCredits: 0,
+        // Stryker disable next-line all -- refund persistence schema is an adapter contract.
+        refundable: false,
       });
-    } catch {
-      return {
-        status: 200,
-        body: { quarantined: true, purchaseId: input.purchaseId },
-      };
-    }
-    transaction.set(lotReference, {
-      ...lot,
-      remainingCredits: 0,
-      // Stryker disable next-line all -- refund persistence schema is an adapter contract.
-      refundable: false,
-    });
-    transaction.set(balanceReference, {
-      // Stryker disable next-line all -- balance persistence schema is an adapter contract.
-      credit: after,
-      lastEventId: input.eventId,
-    });
-    // Stryker disable next-line all -- persisted event schema is the billing
-    // adapter contract.
-    transaction.set(eventRef(db, purchase.apiKeyUuid, input.eventId), {
-      type: 'credit_deducted',
-      eventId: input.eventId,
-      amount: refundable,
-      purchaseId: input.purchaseId,
-      // Stryker disable next-line all -- refund event schema is an adapter contract.
-      reason: 'refund',
-      balanceBefore: before,
-      balanceAfter: after,
-      refundedUsdMinor: input.refundedUsdMinor,
-      pricingSnapshotId: input.pricingSnapshotId,
-      createdAt: now(),
-    });
-    transaction.set(
-      ledgerRef(db, purchase.apiKeyUuid, input.eventId),
-      createLedgerEvent({
+      transaction.set(balanceReference, {
+        // Stryker disable next-line all -- balance persistence schema is an adapter contract.
+        credit: after,
+        lastEventId: input.eventId,
+      });
+      // Stryker disable next-line all -- persisted event schema is the billing
+      // adapter contract.
+      transaction.set(eventRef(db, purchase.apiKeyUuid, input.eventId), {
+        type: 'credit_deducted',
         eventId: input.eventId,
-        sourceEventId: input.eventId,
-        type: 'credits_refunded',
-        // Stryker disable next-line all -- refund ledger schema is an adapter contract.
-        amount: -refundable,
-        billingIdentityId: purchase.apiKeyUuid,
-        purchaseId: purchase.purchaseId,
+        amount: refundable,
+        purchaseId: input.purchaseId,
+        // Stryker disable next-line all -- refund event schema is an adapter contract.
+        reason: 'refund',
         balanceBefore: before,
         balanceAfter: after,
-        // Stryker disable next-line all -- refund ledger schema is an adapter contract.
         refundedUsdMinor: input.refundedUsdMinor,
         pricingSnapshotId: input.pricingSnapshotId,
         createdAt: now(),
-      })
-    );
-    // Stryker disable next-line all -- persisted purchase schema is the
-    // billing adapter contract.
-    transaction.set(ref, {
-      ...purchase,
-      status: nextStatus,
-      creditsRemaining: 0,
-      refundedUsdMinor: input.refundedUsdMinor,
-    });
-    return {
-      status: 200,
-      body: {
-        purchaseId: input.purchaseId,
-        refunded: true,
-        // Stryker disable next-line all -- response shape is the public billing protocol.
-        creditsReversed: refundable,
-      },
-    };
-  });
+      });
+      transaction.set(
+        ledgerRef(db, purchase.apiKeyUuid, input.eventId),
+        createLedgerEvent({
+          eventId: input.eventId,
+          sourceEventId: input.eventId,
+          type: 'credits_refunded',
+          // Stryker disable next-line all -- refund ledger schema is an adapter contract.
+          amount: -refundable,
+          billingIdentityId: purchase.apiKeyUuid,
+          purchaseId: purchase.purchaseId,
+          balanceBefore: before,
+          balanceAfter: after,
+          // Stryker disable next-line all -- refund ledger schema is an adapter contract.
+          refundedUsdMinor: input.refundedUsdMinor,
+          pricingSnapshotId: input.pricingSnapshotId,
+          createdAt: now(),
+        })
+      );
+      // Stryker disable next-line all -- persisted purchase schema is the
+      // billing adapter contract.
+      transaction.set(ref, {
+        ...purchase,
+        status: nextStatus,
+        creditsRemaining: 0,
+        refundedUsdMinor: input.refundedUsdMinor,
+      });
+      return {
+        status: 200,
+        body: {
+          purchaseId: input.purchaseId,
+          refunded: true,
+          // Stryker disable next-line all -- response shape is the public billing protocol.
+          creditsReversed: refundable,
+        },
+      };
+    }
+  );
 }
 // Stryker restore all
 
