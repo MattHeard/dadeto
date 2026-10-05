@@ -1,5 +1,3 @@
-// @ts-nocheck -- render entrypoint wiring accepts injected cloud-service doubles.
-
 import {
   buildHtml,
   buildHandleRenderRequest,
@@ -14,10 +12,24 @@ import {
   resolveStaticObjectPrefix,
 } from './render-contents-core.js';
 import * as renderSupport from '../render-support.js';
+/** @typedef {import('../../../../types/allow-effects').AllowEffects} AllowEffects */
 
 /**
  * Build the render-contents entrypoint from injected dependencies.
- * @param {Record<string, unknown>} deps Runtime dependencies supplied by the cloud wrapper.
+ * @param {{
+ *   initializeApp: () => void,
+ *   functions: {region: (region: string) => {firestore: {document: (path: string) => {onCreate: (handler: (...args: never[]) => unknown) => unknown}}, https: {onRequest: (handler: (...args: never[]) => unknown) => unknown}}},
+ *   Storage: new () => NonNullable<Parameters<typeof createRenderContents>[0]['storage']>,
+ *   getAuth: () => {verifyIdToken: (token: string) => Promise<{uid?: string}>},
+ *   createFirebaseAppManager: (initializeApp: () => void) => {ensureFirebaseApp: () => void},
+ *   getFirestoreInstance: (options?: {environment: Record<string, string|undefined>}) => unknown,
+ *   ADMIN_UID: string,
+ *   fetchFn: typeof globalThis.fetch,
+ *   bindEffectBoundary: Parameters<typeof createRenderContents>[0]['bindEffectBoundary'],
+ *   effectFetchFn: Parameters<typeof createRenderContents>[0]['effectFetchFn'],
+ *   crypto: {randomUUID: () => string},
+ *   getEnvironmentVariables: () => Record<string, string|undefined>
+ * }} deps Runtime dependencies supplied by the cloud wrapper.
  * @returns {{
  *   handle: unknown,
  *   handleTrigger: unknown,
@@ -52,13 +64,18 @@ export function createRenderContentsEntrypoint(deps) {
     environmentVariables,
     render: resolveRender,
   } = createRenderContentsEntrypointState();
+  const typedDb = /** @type {Parameters<typeof createFetchTopStoryIds>[0]} */ (
+    db
+  );
+  const typedResolveRender =
+    /** @type {() => (...args: unknown[]) => unknown} */ (resolveRender);
   const auth = getAuth();
 
   const resolveFetchTopStoryIds = renderSupport.createMemoizedLoader(() =>
-    createFetchTopStoryIds(db)
+    createFetchTopStoryIds(typedDb)
   );
   const resolveFetchStoryInfo = renderSupport.createMemoizedLoader(() =>
-    createFetchStoryInfo(db)
+    createFetchStoryInfo(typedDb)
   );
 
   const allowedOrigins = getAllowedOrigins(environmentVariables);
@@ -69,7 +86,9 @@ export function createRenderContentsEntrypoint(deps) {
     validateRequest,
     verifyIdToken: token => auth.verifyIdToken(token),
     adminUid: ADMIN_UID,
-    render: () => render(),
+    render: async () => {
+      await render();
+    },
   });
 
   const handle = functions
@@ -87,9 +106,7 @@ export function createRenderContentsEntrypoint(deps) {
    * @returns {unknown} Render result from the shared core helper.
    */
   function render(...args) {
-    return /** @type {(...args: unknown[]) => unknown} */ (resolveRender())(
-      ...args
-    );
+    return typedResolveRender()(...args);
   }
 
   /**
@@ -126,7 +143,7 @@ export function createRenderContentsEntrypoint(deps) {
 
   /**
    * Assemble the shared render state for this entrypoint.
-   * @returns {unknown} Shared render state consumed by the cloud wrapper.
+   * @returns {ReturnType<typeof renderSupport.createCloudRenderEntrypointState>} Shared render state consumed by the cloud wrapper.
    */
   function createRenderContentsEntrypointState() {
     const renderStateOptions = {
@@ -142,18 +159,21 @@ export function createRenderContentsEntrypoint(deps) {
       entrypointKind: 'contents',
       defaultBucketName: DEFAULT_BUCKET_NAME,
     };
-    renderStateOptions.buildRender =
-      renderSupport.createCloudRenderInstanceBuilder({
-        createRenderer: dependencies =>
-          createRenderContents({
+    const buildRender = renderSupport.createCloudRenderInstanceBuilder({
+      createRenderer: dependencies =>
+        createRenderContents(
+          /** @type {Parameters<typeof createRenderContents>[0]} */ ({
             ...dependencies,
             ...effectDependencies,
-          }),
-        crypto,
-        consoleError: (...args) => console.error(...args),
-      });
-    renderStateOptions.entrypointKind = 'contents';
-    return renderSupport.createCloudRenderEntrypointState(renderStateOptions);
+          })
+        ),
+      crypto,
+      consoleError: (...args) => console.error(...args),
+    });
+    return renderSupport.createCloudRenderEntrypointState({
+      ...renderStateOptions,
+      buildRender,
+    });
   }
 }
 // Stryker restore all
