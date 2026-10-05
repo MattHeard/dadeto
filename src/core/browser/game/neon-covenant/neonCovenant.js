@@ -26,6 +26,7 @@ import {
   validContractLedger,
 } from './contracts.js';
 import { migrateCampaignAct, validCampaignAct } from './campaign.js';
+import { migrateDistress, validDistress } from './distress.js';
 import {
   createNeonState,
   stepNeon,
@@ -45,7 +46,8 @@ export function validLabSave(state) {
       (state.audioMuted === undefined ||
         typeof state.audioMuted === 'boolean') &&
       validPersonnel(lab) &&
-      lab.rulesVersion === 9 &&
+      lab.rulesVersion === 10 &&
+      validDistress(lab, state.world.day) &&
       validCampaignAct(lab, state.world.day) &&
       validContractLedger(lab) &&
       validInfrastructure(lab) &&
@@ -133,6 +135,7 @@ export function validLabSave(state) {
                 choice.command === 'page:orientation' ||
                 validResearchChoice(lab, choice.command) ||
                 validInfrastructureChoice(choice.command) ||
+                validRescueChoice(lab, choice.command) ||
                 validContractChoice(lab, choice.command) ||
                 LAB_CONTENT.npcs.some(
                   (/** @type {Record<string, any>} */ actor) =>
@@ -214,6 +217,25 @@ function validInfrastructureChoice(command) {
 }
 
 /**
+ * Accept only currently available authored distress financing in a dialogue.
+ * @param {Record<string, any>} lab Current campaign ledger.
+ * @param {string} command Candidate rescue confirmation.
+ * @returns {boolean} Whether the confirmation is available and canonical.
+ */
+function validRescueChoice(lab, command) {
+  if (command === 'page:distress') return lab.distress.status === 'open';
+  if (typeof command !== 'string' || !command.startsWith('rescue:'))
+    return false;
+  const parts = command.split(':');
+  return (
+    parts.length === 2 &&
+    lab.distress.status === 'open' &&
+    !lab.rescueFinancing &&
+    Object.hasOwn(LAB_CONTENT.rescueOffers, parts[1])
+  );
+}
+
+/**
  * Compose lab rules with the same fixed-step engine and independent save slots.
  * @param {Record<string, any> | Map<string, any>} options Browser adapters or toy environment.
  * @returns {Record<string, any>} Shared runtime interface.
@@ -226,12 +248,14 @@ export function createNeonRuntime(options = {}) {
     game: 'neon-covenant',
     validate: validLabSave,
     migrate: (/** @type {Record<string, any>} */ state) =>
-      migrateCampaignAct(
-        migrateContracts(
-          migrateInfrastructure(
-            migrateRelationships(
-              migrateDeployments(
-                migrateEvaluations(migratePrograms(migratePersonnel(state)))
+      migrateDistress(
+        migrateCampaignAct(
+          migrateContracts(
+            migrateInfrastructure(
+              migrateRelationships(
+                migrateDeployments(
+                  migrateEvaluations(migratePrograms(migratePersonnel(state)))
+                )
               )
             )
           )

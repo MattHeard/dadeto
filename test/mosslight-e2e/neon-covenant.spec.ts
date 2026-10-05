@@ -1,6 +1,57 @@
 import { expect, test, Page } from '@playwright/test';
 import { writeFile } from 'node:fs/promises';
 
+for (const embedded of [false, true]) {
+  test(`emergency runway terms and settlement window work in ${embedded ? 'embedded' : 'standalone'} play`, async ({ page }) => {
+    await page.goto(embedded ? '/' : '/neon-covenant/', { waitUntil: 'domcontentloaded' });
+    const state = await page.evaluate(async () => {
+      const { createNeonState } = await import('/core/browser/game/neon-covenant/simulation.js');
+      const campaign = createNeonState();
+      campaign.dialogue = null;
+      campaign.menu = null;
+      campaign.world.day = 4;
+      campaign.lab.cash = -20;
+      campaign.lab.distress = { status: 'open', openedShift: 4, shiftsRemaining: 2 };
+      const data = JSON.parse(localStorage.getItem('permanentData') || '{}');
+      data['neon-covenant-saves-v2'] = {
+        activeSlot: 0,
+        slots: {
+          0: JSON.stringify({ game: 'neon-covenant', version: 2, slot: 0, savedAt: '1970-01-01T00:00:00.000Z', state: campaign }),
+        },
+      };
+      localStorage.setItem('permanentData', JSON.stringify(data));
+      return true;
+    });
+    expect(state).toBe(true);
+    await page.reload({ waitUntil: 'domcontentloaded' });
+    if (embedded) {
+      const toy = page.locator('#NEON1');
+      await toy.scrollIntoViewIfNeeded();
+      await expect(toy.getByRole('button', { name: 'Submit', exact: true })).toBeEnabled();
+    }
+    const inspect = async () => page.evaluate(async () => {
+      const data = JSON.parse(localStorage.getItem('permanentData') || '{}')['neon-covenant-saves-v2'];
+      return JSON.parse(data.slots[0]).state;
+    });
+    await expect.poll(async () => (await inspect()).lab.distress.status).toBe('open');
+    await tap(page, 'x', embedded, embedded);
+    await selectPersonnelRow(page, 'page:distress', embedded);
+    expect((await inspect()).menu.page).toBe('distress');
+    await selectPersonnelRow(page, 'rescue-offer:heliosBridge', embedded);
+    for (let index = 0; index < 12; index++) {
+      const stateNow = await inspect();
+      if (stateNow.dialogue?.choices?.length) break;
+      await tap(page, 'a', embedded, embedded);
+    }
+    expect((await inspect()).dialogue.choices[0].command).toBe('rescue:heliosBridge');
+    await tap(page, 'a', embedded, embedded);
+    expect((await inspect()).lab.rescueFinancing).toEqual({ id: 'heliosBridge', signedShift: 4 });
+    expect((await inspect()).lab.cash).toBe(40);
+    expect((await inspect()).lab.debt).toBe(204);
+    expect((await inspect()).menu.page).toBe('distress');
+  });
+}
+
 test.beforeEach(async ({ page }) => {
   await page.route('https://fonts.googleapis.com/**', route => route.abort());
   await page.route('https://fonts.gstatic.com/**', route => route.abort());
@@ -110,7 +161,7 @@ async function openForecast(page: Page, embedded: boolean) {
   await tap(page, 'b', embedded);
   await expect
     .poll(async () => (await labState(page))?.lab?.rulesVersion)
-    .toBe(9);
+    .toBe(10);
   await tap(page, 'a', embedded);
   await selectPersonnelRow(page, 'page:forecast', embedded);
   return labState(page);
@@ -131,7 +182,7 @@ async function openSableCases(page: Page, embedded: boolean) {
   await tap(page, 'b', embedded);
   await expect
     .poll(async () => (await labState(page))?.lab?.rulesVersion)
-    .toBe(9);
+    .toBe(10);
   await tap(page, 'a', embedded);
   await selectPersonnelRow(page, 'shift', embedded);
   await tap(page, 'b', embedded);
@@ -159,7 +210,7 @@ for (const embedded of [false, true]) {
       await tap(page, 'b', embedded);
       await expect
         .poll(async () => (await labState(page))?.lab?.rulesVersion)
-        .toBe(9);
+        .toBe(10);
       await tap(page, 'x', embedded);
       await selectPersonnelRow(page, 'page:infrastructure', embedded);
       await selectPersonnelRow(page, 'infra-choice:leased', embedded);
@@ -415,7 +466,7 @@ for (const embedded of [false, true]) {
     await selectPersonnelRow(page, 'page:relationships', embedded);
     await selectPersonnelRow(page, 'page:relationship:ada', embedded);
     const original = await labState(page);
-    expect(original.lab.rulesVersion).toBe(9);
+    expect(original.lab.rulesVersion).toBe(10);
     await selectPersonnelRow(page, 'promise:ada', embedded);
     const accepted = await labState(page);
     expect(accepted.lab.relationships.ada.stage).toBe('active');
@@ -835,7 +886,7 @@ test('named staff are assignable and their readable concerns own controller inpu
   await page.goto('/neon-covenant/');
   await expect
     .poll(async () => (await labState(page))?.lab?.rulesVersion)
-    .toBe(9);
+    .toBe(10);
   await tap(page, 'b');
   await tap(page, 'x');
   await selectPersonnelRow(page, 'page:recruitment');
@@ -1047,7 +1098,7 @@ test('legacy mobile and desktop saves migrate losslessly and preserve a resettab
   await page.reload();
   await expect
     .poll(async () => (await labState(page))?.lab?.rulesVersion)
-    .toBe(9);
+    .toBe(10);
   const state = await labState(page);
   expect(state.lab.cash).toBe(137);
   expect(state.lab.debt).toBe(94);
@@ -1387,7 +1438,7 @@ for (const profile of [
               .text
         )
       ).state;
-      expect(state.lab.rulesVersion).toBe(9);
+      expect(state.lab.rulesVersion).toBe(10);
       expect(state.lab.incidentGrace).toBe(2);
       for (const field of [
         'cash',

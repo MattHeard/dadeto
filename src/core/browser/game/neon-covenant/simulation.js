@@ -27,6 +27,7 @@ import {
 } from '../mosslight-valley/controls.js';
 import { toFramePayload } from '../mosslight-valley/renderer.js';
 import { actForShift, availableChapterScenes } from './campaign.js';
+import { rescueConsequence } from './distress.js';
 
 /**
  * Recompute derived UI after every load rather than trusting saved presentation.
@@ -79,6 +80,74 @@ function infrastructureChoice(state, next, command) {
         : [{ label: 'Return to lab' }],
     },
   ]);
+}
+
+/**
+ * Disclose emergency-note consequences before the signed management action.
+ * @param {Record<string, any>} state Current campaign.
+ * @param {Record<string, any>} next State with its menu closed.
+ * @param {string} command Selected authored offer.
+ * @returns {Record<string, any>} Terms dialogue or unavailable-note message.
+ */
+function rescueOfferDialogue(state, next, command) {
+  const id = command.slice('rescue-offer:'.length);
+  const offer = LAB_CONTENT.rescueOffers[id];
+  const available =
+    offer && state.lab.distress.status === 'open' && !state.lab.rescueFinancing;
+  const pages = [
+    {
+      text: available
+        ? `${offer.name}: receive ${offer.advance}k now; add ${offer.repayment}k due at shift 28. ${offer.ownership} The signed note is permanent and consumes one attention.`
+        : 'This offer is unavailable: a distress window must be open, and only one rescue note may be signed.',
+    },
+    {
+      text: 'Compare both offers freely before choosing. Signing does not end the shift.',
+      choices: available
+        ? [
+            { label: `Sign ${offer.name}`, command: `rescue:${id}` },
+            { label: 'Return without signing', command: 'page:distress' },
+          ]
+        : [{ label: 'Return to lab', command: 'page:distress' }],
+    },
+  ];
+  return openDialogue(next, 'finance', pages);
+}
+
+/**
+ * Resolve an inspection or signature for authored rescue financing.
+ * @param {Record<string, any>} state Current campaign state.
+ * @param {Record<string, any>} next Campaign with its menu closed.
+ * @param {string} command Selected rescue operation.
+ * @returns {Record<string, any>} Preview dialogue or signed campaign.
+ */
+function rescueCommand(state, next, command) {
+  if (command.startsWith('rescue-offer:'))
+    return rescueOfferDialogue(state, next, command);
+  return openMenuPage(manageLab(next, command), 'distress');
+}
+
+/**
+ * Resolve a relationship or stakeholder scene from its shared controller row.
+ * @param {Record<string, any>} state Current campaign snapshot.
+ * @param {Record<string, any>} next Snapshot with the menu closed.
+ * @param {string} command Selected authored scene command.
+ * @returns {Record<string, any>} Story dialogue for the selected scene.
+ */
+function peopleStoryCommand(state, next, command) {
+  if (command.startsWith('arc-story:'))
+    return openDialogue(
+      next,
+      command.slice(10),
+      readableLabPages(
+        relationshipPages(state.lab, command.slice(10), forecast(state.lab)),
+        4
+      )
+    );
+  return stakeholderDialogue(
+    state,
+    next,
+    command.slice('stakeholder-story:'.length)
+  );
 }
 
 /**
@@ -230,8 +299,7 @@ function toggleAudio(state) {
  * @returns {Record<string, any> | null} Updated state or no match.
  */
 function navigationCommand(state, next, command) {
-  if (command.startsWith('page:'))
-    return { ...next, menu: { page: command.slice(5), selected: 0 } };
+  if (command.startsWith('page:')) return openMenuPage(next, command.slice(5));
   if (command.startsWith('bind:'))
     return {
       ...next,
@@ -240,6 +308,16 @@ function navigationCommand(state, next, command) {
     };
   if (command === 'close') return next;
   return null;
+}
+
+/**
+ * Open one authored controller page with its selection reset.
+ * @param {Record<string, any>} state Current campaign presentation.
+ * @param {string} page Authored menu page identifier.
+ * @returns {Record<string, any>} Campaign with that controller page open.
+ */
+function openMenuPage(state, page) {
+  return { ...state, menu: { page, selected: 0 } };
 }
 
 /**
@@ -255,23 +333,15 @@ export function menuCommand(state, command) {
   const navigation = navigationCommand(state, next, command);
   if (navigation) return navigation;
   if (command === 'audio-toggle') return toggleAudio(state);
-  if (command.startsWith('arc-story:'))
-    return openDialogue(
-      next,
-      command.slice(10),
-      readableLabPages(
-        relationshipPages(state.lab, command.slice(10), forecast(state.lab)),
-        4
-      )
-    );
+  if (
+    command.startsWith('arc-story:') ||
+    command.startsWith('stakeholder-story:')
+  )
+    return peopleStoryCommand(state, next, command);
   if (command.startsWith('contract-offer:'))
     return contractOfferDialogue(state, next, command);
-  if (command.startsWith('stakeholder-story:'))
-    return stakeholderDialogue(
-      state,
-      next,
-      command.slice('stakeholder-story:'.length)
-    );
+  if (command.startsWith('rescue-offer:') || command.startsWith('rescue:'))
+    return rescueCommand(state, next, command);
   if (command.startsWith('contract:')) return signContract(next, command);
   if (command.startsWith('arc:')) {
     const changed = manageLab(next, command);
@@ -380,7 +450,7 @@ export function menuCommand(state, command) {
         {
           text: `RESOLUTION: ${settled.lab.outcome.toUpperCase()}. Cash ${settled.lab.cash}k. Debt ${settled.lab.debt}k. Trust ${settled.lab.trust}.`,
         },
-        { text: endingText(settled.lab.outcome) },
+        { text: endingText(settled.lab.outcome, settled.lab) },
       ]);
     return { ...settled, menu: { page: 'report', selected: 0 } };
   }
@@ -432,9 +502,10 @@ function lessonCommand(state, command) {
 /**
  * Describe consequences of the management resolution.
  * @param {string} outcome Resolution identity.
+ * @param {Record<string, any>} lab Final campaign ledger.
  * @returns {string} Epilogue text.
  */
-function endingText(outcome) {
+function endingText(outcome, lab) {
   const endings = /** @type {Record<string, string>} */ ({
     insolvent:
       'The lights go out. Mae saves the clinic code. Your team scatters, but your mistakes remain in the open register.',
@@ -449,7 +520,7 @@ function endingText(outcome) {
     'quiet-lab':
       'The lab survives without a release. You protected your staff, but the city still waits. A quiet lab can begin again.',
   });
-  return endings[outcome];
+  return [endings[outcome], rescueConsequence(lab)].filter(Boolean).join(' ');
 }
 
 /**

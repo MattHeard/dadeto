@@ -114,6 +114,24 @@ function contract(name, project, trust, packages) {
 
 /** @type {Record<string, any>} Immutable chapter content; economic units are thousands of credits. */
 export const LAB_CONTENT = {
+  rescueOffers: {
+    heliosBridge: {
+      name: 'Helios bridge note',
+      advance: 60,
+      repayment: 84,
+      ownership:
+        'Helios receives 20% ownership at the shift-28 debt confrontation.',
+      standing: { investor: 6 },
+    },
+    clinicCovenant: {
+      name: 'Clinic cooperative note',
+      advance: 44,
+      repayment: 64,
+      ownership:
+        'The Night Clinic cooperative receives 25% ownership at the shift-28 debt confrontation.',
+      standing: { clinic: 10, investor: -5 },
+    },
+  },
   acts: [
     {
       id: 'survival',

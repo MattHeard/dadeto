@@ -50,6 +50,7 @@ import {
   settleStakeholders,
 } from './contracts.js';
 import { createCampaignAct, advanceCampaignAct } from './campaign.js';
+import { createDistress, advanceDistress, rescueOrder } from './distress.js';
 
 /**
  * Clamp a public lab metric to its meaningful range.
@@ -66,7 +67,9 @@ function metric(value) {
  */
 export function createLab() {
   const lab = {
-    rulesVersion: 9,
+    rulesVersion: 10,
+    distress: createDistress(),
+    rescueFinancing: null,
     campaignAct: createCampaignAct(1),
     evaluations: createEvaluations(),
     testingBudget: 6,
@@ -196,6 +199,7 @@ function operate(lab, command, day) {
   if (kind === 'test') return evaluationOrder(lab, command);
   if (kind === 'configure') return configureResearch(lab, command);
   if (kind === 'incident') return intervene(lab, value);
+  if (kind === 'rescue') return rescueOrder(lab, value, day);
   if (kind === 'infra') return infrastructureOrder(lab, value);
   if (kind === 'assign' || kind === 'hire') return personnelOrder(lab, command);
   if (kind === 'focus') {
@@ -403,7 +407,8 @@ export function endShift(state) {
   ].slice(-28);
   const nextShift = state.world.day + 1;
   recordCampaignBoundary(lab, nextShift, report);
-  if (lab.cash < 0 || state.world.day >= 28) lab.outcome = labEnding(lab);
+  const insolvency = advanceDistress(lab, nextShift, report);
+  if (insolvency || state.world.day >= 28) lab.outcome = labEnding(lab);
   return {
     ...state,
     lab,

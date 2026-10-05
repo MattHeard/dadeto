@@ -16,6 +16,10 @@ Inspect Ada and Jun in research, Sable in safety and Ion in service. Listening, 
 
 The lab's story unfolds over four chapters: **Keep the Lights** (shifts 1–6), **First Public Use** (7–13), **The Neighborhood Heats Up** (14–21), and **Who Keeps the Keys?** (22–28). The campaign menu shows the current pressure and offers a free briefing. End a shift to cross a chapter boundary; the report explains the new pressure. Archive scenes appear when you actually prototype, deploy, or fulfill a commitment. They are callbacks, not mandatory research routes.
 
+## When cash falls below zero
+
+The first negative-cash settlement opens a two-settlement rescue window instead of immediately ending the campaign. X → **Emergency runway** lets you inspect both notes before deciding. The Helios bridge advances 60k, adds 84k due at shift 28, and grants Helios 20% ownership at the debt confrontation. The Clinic cooperative advances 44k, adds 64k due at shift 28, and grants the cooperative 25% ownership; its clinic standing rises by 10 while investor standing falls by 5. Either note consumes one attention and can be signed only once per campaign. Settlement still advances normally. Restore positive cash before the window expires; otherwise insolvency follows its second negative settlement. The 28-shift debt confrontation remains final, so deficits first arising on shift 28 still reach that ending.
+
 ## Input
 
 Directions walk and select. A talks, advances text and confirms. B closes conversations, goes back in menus, or opens its assigned shortcut. X opens/closes the lab menu; Y assigns B. Keyboard, gamepad and both virtual keypads use only these eight inputs.

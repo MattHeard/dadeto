@@ -167,7 +167,7 @@ test('all warnings, deadline exposure and epilogues remain inside readable dialo
       12
     ),
     fixture({ contracts: ['clinic'] }, 8),
-    fixture({ cash: 1 }),
+    fixture({ cash: 1 }, 28),
     fixture({ contracts: ['clinic'], expired: ['clinic'] }, 13),
   ];
   const prose = samples

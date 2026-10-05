@@ -17,6 +17,20 @@ including save/reload and the visible pressure report; include Mosslight
 regression and verify audio remains gesture-unlocked, toggleable and safe on
 pause/hidden tabs.
 
+### Financial distress (rules 10)
+
+Prove that the first negative settlement opens two settlement opportunities,
+each continued negative settlement decrements once, positive closing cash marks
+recovery, and expiry ends in insolvency. The shift-28 debt confrontation remains
+the final campaign boundary. Through controller menus, inspect both rescue notes
+before signing: verify their distinct cash advances, debt due, ownership and
+stakeholder consequences; only one note may be signed and it consumes exactly
+one attention. Invalid, repeated and unavailable commands consume no resources.
+Rules-9 migration adds an empty distress episode without changing the old
+ledger; malformed imported episode/note records reject atomically. Exercise the
+shared management commands and save validation, and ensure ending text records
+the signed ownership consequence.
+
 Build must generate `/neon-covenant/`, the lazy manual and NEON1 blog registration. Full `npm run check` is required, with zero clones at the unchanged strict threshold and exact 100% coverage in every metric. No exemptions or ignore pragmas are allowed.
 
 ## Evidence Collection

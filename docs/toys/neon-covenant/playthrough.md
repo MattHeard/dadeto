@@ -16,6 +16,19 @@ prototype, Mae's requires a deployed service, and the ownership register
 requires both a fulfilled commitment and shift 14. A different research route
 can still reach the same calendar chapters.
 
+## Recover from a cash crisis
+
+Use a disposable campaign and create negative closing cash through real
+management costs. The settlement report should leave the campaign playable and
+open X → Emergency runway with two shifts remaining. Inspect both note previews
+without spending attention. Compare the 60k/84k Helios note and its 20% equity
+term against the 44k/64k clinic note and its 25% cooperative ownership and
+stakeholder effects. Sign at most one, confirm cash/debt/attention change without
+advancing the shift, and export/reload to verify the signed terms persist. Also
+decline both notes and settle while cash remains negative: the window counts down
+exactly once per settlement and insolvency follows expiry. Test positive-cash
+recovery and the shift-28 final debt confrontation separately.
+
 ## Earn Ada's trust without banning Helios
 
 From a new campaign, close the introduction with B and open X → Relationships

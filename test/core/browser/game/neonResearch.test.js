@@ -40,6 +40,7 @@ import { migrateRelationships } from '../../../../src/core/browser/game/neon-cov
 import { migrateInfrastructure } from '../../../../src/core/browser/game/neon-covenant/infrastructure.js';
 import { migrateCampaignAct } from '../../../../src/core/browser/game/neon-covenant/campaign.js';
 import { migrateContracts } from '../../../../src/core/browser/game/neon-covenant/contracts.js';
+import { migrateDistress } from '../../../../src/core/browser/game/neon-covenant/distress.js';
 
 /**
  * Submit a discrete real controller input and release.
@@ -299,7 +300,7 @@ test('rules-2 slot upgrades keep the exact first backup and isolate Mosslight sa
     ['setLocalPermanentData', update => (data = { ...data, ...update })],
   ]);
   const runtime = createNeonRuntime(env);
-  expect(runtime.getSnapshot().lab.rulesVersion).toBe(9);
+  expect(runtime.getSnapshot().lab.rulesVersion).toBe(10);
   expect(data[key].migrationBackups[2]).toBe(raw);
   state.lab.cash = 130;
   runtime.importSave(
@@ -345,11 +346,13 @@ test.each([
     ]);
     expect(
       validLabSave(
-        migrateCampaignAct(
-          migrateContracts(
-            migrateInfrastructure(
-              migrateRelationships(
-                migrateDeployments(migrateEvaluations(upgraded))
+        migrateDistress(
+          migrateCampaignAct(
+            migrateContracts(
+              migrateInfrastructure(
+                migrateRelationships(
+                  migrateDeployments(migrateEvaluations(upgraded))
+                )
               )
             )
           )
@@ -368,11 +371,13 @@ test.each([
     expect(runtime.exportSave()).toBe(serialized);
     expect(forecastShift(runtime.getSnapshot())).toEqual(
       forecastShift(
-        migrateCampaignAct(
-          migrateContracts(
-            migrateInfrastructure(
-              migrateRelationships(
-                migrateDeployments(migrateEvaluations(upgraded))
+        migrateDistress(
+          migrateCampaignAct(
+            migrateContracts(
+              migrateInfrastructure(
+                migrateRelationships(
+                  migrateDeployments(migrateEvaluations(upgraded))
+                )
               )
             )
           )

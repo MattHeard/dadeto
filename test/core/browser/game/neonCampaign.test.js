@@ -20,6 +20,7 @@ import {
   createNeonRuntime,
   validLabSave,
 } from '../../../../src/core/browser/game/neon-covenant/neonCovenant.js';
+import { migrateDistress } from '../../../../src/core/browser/game/neon-covenant/distress.js';
 import {
   labEntries,
   labMenuRows,
@@ -160,17 +161,19 @@ test('rules-eight migration derives the current act without rewriting the ledger
   source.lab.cash = 7;
   source.lab.debt = 311;
   source.world.day = 21;
-  const migrated = migrateCampaignAct(source);
-  expect(migrated.lab.rulesVersion).toBe(9);
-  expect(migrated.lab.campaignAct).toEqual({
+  const campaign = migrateCampaignAct(source);
+  expect(campaign.lab.rulesVersion).toBe(9);
+  expect(campaign.lab.campaignAct).toEqual({
     id: 'expansion',
     enteredShift: 14,
   });
-  expect(migrated.lab.cash).toBe(7);
-  expect(migrated.lab.debt).toBe(311);
-  expect(migrated.world.day).toBe(21);
+  expect(campaign.lab.cash).toBe(7);
+  expect(campaign.lab.debt).toBe(311);
+  expect(campaign.world.day).toBe(21);
+  const migrated = migrateDistress(campaign);
+  expect(migrated.lab.rulesVersion).toBe(10);
   expect(validLabSave(migrated)).toBe(true);
-  expect(migrateCampaignAct(migrated)).toBe(migrated);
+  expect(migrateDistress(migrated)).toBe(migrated);
 });
 
 test('invalid campaign markers and migration dates fail closed', () => {

@@ -189,3 +189,22 @@ incorrect or extra-field act marker. Boundary tests cover 6/7, 13/14 and 21/22;
 controller playthroughs must verify the report, saved marker and briefing after
 reload in standalone and embedded modes. Release 4 and campaign-wide
 philosophy/ending balancing remain outstanding.
+
+## Financial distress and rescue notes (rules 10)
+
+`distress.js` persists a clear/open/stabilized/expired runway episode and only
+the id and signing shift of an accepted rescue note. The first negative-cash
+settlement opens two subsequent settlement opportunities; continued negative
+cash decrements the window deterministically and insolvency follows its second
+negative settlement. Positive closing cash stabilizes the episode. The shift-28
+debt confrontation remains the campaign's final resolution boundary.
+
+`content.js` authors a Helios bridge (+60k cash, +84k repayment, 20% Helios
+ownership) and a Clinic cooperative note (+44k, +64k repayment, 25% cooperative
+ownership plus disclosed stakeholder changes). The handheld menu shows both
+offers only during an open episode. Reading terms is free; signing is one
+attention and once per campaign. Repayment is added to the existing debt ledger
+and ownership consequences are appended to the ending epilogue. Forged,
+repeated, unavailable or imported malformed offers cannot change the ledger.
+Rules-9 saves migrate to rules 10 with an empty episode and no invented
+financing, preserving cash, debt, shift, report and history.

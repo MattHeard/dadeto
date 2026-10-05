@@ -146,6 +146,12 @@ function contractEntries(state, page) {
  */
 export function labEntries(state) {
   const page = state.menu.page;
+  if (page === 'distress')
+    return [
+      ['Inspect Helios bridge note', 'rescue-offer:heliosBridge'],
+      ['Inspect clinic cooperative note', 'rescue-offer:clinicCovenant'],
+      ['Back to lab', 'page:main'],
+    ];
   if (page === 'campaign')
     return [
       ['Current act briefing', 'campaign-story:act'],
@@ -356,6 +362,14 @@ export function labEntries(state) {
       ['Inspect next shift', 'page:forecast'],
     ];
   return [
+    ...(state.lab.distress.status === 'open'
+      ? [
+          [
+            `Emergency runway / ${state.lab.distress.shiftsRemaining} shifts`,
+            'page:distress',
+          ],
+        ]
+      : []),
     ['Campaign / act briefing', 'page:campaign'],
     ['Ledger / end shift', 'page:ledger'],
     ['Lab dashboard', 'page:dashboard'],
@@ -400,6 +414,14 @@ export function labMenuRows(state) {
   }
   const lab = state.lab;
   const f = forecast(lab);
+  if (state.menu.page === 'distress')
+    return choicePanel(state, [
+      'EMERGENCY RUNWAY / INSOLVENCY PAUSED',
+      `${lab.distress.shiftsRemaining} SETTLEMENTS TO INTERVENE`,
+      lab.rescueFinancing
+        ? `NOTE SIGNED / ${lab.rescueFinancing.id.toUpperCase()}`
+        : 'COMPARE TWO NOTES / ONE MAY BE SIGNED',
+    ]);
   if (
     state.menu.page === 'relationships' ||
     state.menu.page.startsWith('relationship:')
