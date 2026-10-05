@@ -1,4 +1,6 @@
-// @ts-nocheck -- runtime game state is intentionally data-driven.
+/** @typedef {{held: Set<string>, pressed: Set<string>}} GameInputState */
+
+/** @type {Record<string, string>} */
 const KEYS = Object.freeze({
   ArrowUp: 'up',
   ArrowDown: 'down',
@@ -12,20 +14,21 @@ const KEYS = Object.freeze({
 
 /**
  * Create edge-triggered input state.
- * @returns {object} Empty input state.
+ * @returns {GameInputState} Empty input state.
  */
 export function createInputState() {
   return { held: new Set(), pressed: new Set() };
 }
 /**
  * Normalize a keyboard event into game actions.
- * @param {object} state - Current held and pressed actions.
- * @param {object} event - Browser key event.
- * @returns {object} Updated input state.
+ * @param {GameInputState} state Current held and pressed actions.
+ * @param {{key?: string, type?: string}} event Browser key event.
+ * @returns {GameInputState} Updated input state.
  */
 export function updateInput(state, event) {
   const key = event?.key;
-  const action = KEYS[key] || KEYS[key?.toLowerCase()];
+  const normalizedKey = typeof key === 'string' ? key : '';
+  const action = KEYS[normalizedKey] || KEYS[normalizedKey.toLowerCase()];
   if (!action) return state;
   const next = copyInputState(state);
   if (event.type === 'keydown') {
@@ -37,8 +40,8 @@ export function updateInput(state, event) {
 }
 /**
  * Clear one-frame actions while retaining held actions.
- * @param {object} state - Current input state.
- * @returns {object} Input state with pressed actions cleared.
+ * @param {GameInputState} state Current input state.
+ * @returns {GameInputState} Input state with pressed actions cleared.
  */
 export function consumePressed(state) {
   return { ...copyInputState(state), pressed: new Set() };
@@ -46,15 +49,15 @@ export function consumePressed(state) {
 
 /**
  * Copy both mutable action sets before an input-state transition.
- * @param {object} state - Input state to copy.
- * @returns {object} A detached input-state copy.
+ * @param {GameInputState} state Input state to copy.
+ * @returns {GameInputState} A detached input-state copy.
  */
 function copyInputState(state) {
   return { held: new Set(state.held), pressed: new Set(state.pressed) };
 }
 /**
  * Return the actions visible to the simulation.
- * @param {object} state - Current input state.
+ * @param {GameInputState} state Current input state.
  * @returns {string[]} Active actions.
  */
 export function actionsFromInput(state) {
@@ -63,7 +66,7 @@ export function actionsFromInput(state) {
 
 /**
  * Translate browser Gamepad API snapshots to stable game actions.
- * @param {unknown} gamepads - The gamepads input.
+ * @param {Array<{axes?: number[], buttons?: Array<{pressed: boolean}>}|null|undefined>} gamepads Gamepad snapshots.
  * @returns {string[]} Gamepad actions for the current frame.
  */
 export function gamepadActions(gamepads = []) {
