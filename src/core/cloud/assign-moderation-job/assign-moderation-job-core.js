@@ -48,8 +48,8 @@ export function resolveFirestoreEnvironment(
 
 /**
  * Check if ensure function is custom.
- * @param {((...args: unknown[]) => unknown) | undefined} ensureAppFn Ensure function.
- * @param {(...args: unknown[]) => unknown} defaultEnsureFn Default.
+ * @param {unknown} ensureAppFn Ensure function candidate.
+ * @param {unknown} defaultEnsureFn Default function.
  * @returns {boolean} True if custom.
  */
 function isCustomEnsureFunction(ensureAppFn, defaultEnsureFn) {
@@ -58,8 +58,8 @@ function isCustomEnsureFunction(ensureAppFn, defaultEnsureFn) {
 
 /**
  * Check if get firestore function is custom.
- * @param {((...args: unknown[]) => unknown) | undefined} getFirestoreFn Get function.
- * @param {(...args: unknown[]) => unknown} defaultGetFirestoreFn Default.
+ * @param {unknown} getFirestoreFn Get function candidate.
+ * @param {unknown} defaultGetFirestoreFn Default function.
  * @returns {boolean} True if custom.
  */
 function isCustomGetFirestoreFunction(getFirestoreFn, defaultGetFirestoreFn) {
@@ -69,9 +69,9 @@ function isCustomGetFirestoreFunction(getFirestoreFn, defaultGetFirestoreFn) {
 /**
  * Detect whether any Firebase dependency overrides have been provided.
  * @param {{
- *   options?: { ensureAppFn?: (...args: unknown[]) => unknown, getFirestoreFn?: (...args: unknown[]) => unknown },
- *   defaultEnsureFn: (...args: unknown[]) => unknown,
- *   defaultGetFirestoreFn: (...args: unknown[]) => unknown,
+ *   options?: { ensureAppFn?: unknown, getFirestoreFn?: unknown },
+ *   defaultEnsureFn: unknown,
+ *   defaultGetFirestoreFn: unknown,
  * }} deps Dependency bag containing overrides.
  * @returns {boolean} True when a dependency override exists.
  */
@@ -102,9 +102,9 @@ function hasProvidedEnvironment({ providedEnvironment }) {
 /**
  * Determine whether custom Firebase dependencies or a provided environment should be honored.
  * @param {{
- *   options?: { ensureAppFn?: (...args: unknown[]) => unknown, getFirestoreFn?: (...args: unknown[]) => unknown },
- *   defaultEnsureFn: (...args: unknown[]) => unknown,
- *   defaultGetFirestoreFn: (...args: unknown[]) => unknown,
+ *   options?: { ensureAppFn?: unknown, getFirestoreFn?: unknown },
+ *   defaultEnsureFn: unknown,
+ *   defaultGetFirestoreFn: unknown,
  *   providedEnvironment?: unknown,
  * }} deps Dependency bag containing overrides and helpers.
  * @returns {boolean} True when custom dependencies or provided environment supersede defaults.

@@ -1,4 +1,3 @@
-// @ts-nocheck -- Firebase trigger and test-double contracts are intentionally structural here.
 import {
   createAssignModerationJob,
   createFirebaseInitialization,
