@@ -1,4 +1,3 @@
-// @ts-nocheck
 // Stryker disable all -- this module is the fixed render/invalidation protocol
 // boundary; its injected Firestore, storage, HTTP, and HTML-template contracts
 // are covered by the focused core and trigger suites.
@@ -38,7 +37,7 @@ export function resolveVisibilityThreshold(visibilityThreshold) {
 
 /**
  * Update the changed variant and its incoming-option ancestors without rendering them.
- * @param {{change: unknown, db: FirestoreLike}} options Change and tenant database.
+ * @param {{change: FirestoreChange, db: FirestoreLike}} options Change and tenant database.
  * @returns {Promise<void>} Promise.
  */
 async function updateTreeVisibilityForVariantChange({ change, db }) {
@@ -55,9 +54,9 @@ async function updateTreeVisibilityForVariantChange({ change, db }) {
 
 /**
  * Prepare a visibility update from a Firestore change.
- * @param {{ after: unknown, before?: unknown }} change Firestore change object.
+ * @param {FirestoreChange} change Firestore change object.
  * @param {FirestoreLike} db Firestore client.
- * @returns {{ variantRef: unknown, afterData: Record<string, unknown>, current: number, delta: number }|null} Update data or null when no update is needed.
+ * @returns {{ variantRef: WritableVariantReference, afterData: Record<string, unknown>, current: number, delta: number }|null} Update data or null when no update is needed.
  */
 function prepareVisibilityUpdate(change, db) {
   const after = change.after;
@@ -65,6 +64,7 @@ function prepareVisibilityUpdate(change, db) {
   const beforeExists = Boolean(change.before?.exists);
   const beforeData = readBeforeVisibilityData(change, beforeExists);
   const variantRef = resolveTenantDocumentRef(after, db);
+  if (!isWritableVariantRef(variantRef)) return null;
   if (shouldSkipVisibilityUpdate(variantRef, beforeExists, afterData))
     return null;
   const previous = getPreviousVisibility(beforeExists, beforeData);
@@ -85,7 +85,7 @@ function isZeroVisibilityDelta(delta) {
 
 /**
  * Read the previous variant data when available.
- * @param {{ before?: unknown }} change Firestore change object.
+ * @param {FirestoreChange} change Firestore change object.
  * @param {boolean} beforeExists Whether a previous document exists.
  * @returns {Record<string, unknown>} Previous variant data.
  */
@@ -99,7 +99,7 @@ function readBeforeVisibilityData(change, beforeExists) {
  * @param {unknown} variantRef Candidate document reference.
  * @param {boolean} beforeExists Whether a previous document exists.
  * @param {Record<string, unknown>} afterData Current data.
- * @returns {boolean} Whether no update should be performed.
+ * @returns {boolean} Whether the update should be skipped.
  */
 function shouldSkipVisibilityUpdate(variantRef, beforeExists, afterData) {
   if (!isWritableVariantRef(variantRef)) return true;
@@ -109,11 +109,13 @@ function shouldSkipVisibilityUpdate(variantRef, beforeExists, afterData) {
 /**
  * Check whether a document reference supports the required reads and writes.
  * @param {unknown} ref Candidate document reference.
- * @returns {boolean} Whether the reference can be updated.
+ * @returns {ref is WritableVariantReference} Whether the reference can be updated.
  */
 function isWritableVariantRef(ref) {
-  return Boolean(
-    ref && typeof ref.get === 'function' && typeof ref.update === 'function'
+  return (
+    isObjectLike(ref) &&
+    typeof ref.get === 'function' &&
+    typeof ref.update === 'function'
   );
 }
 
@@ -134,7 +136,9 @@ function hasVisibilityFields(data) {
  */
 function getPreviousVisibility(beforeExists, beforeData) {
   if (!beforeExists) return 0;
-  return beforeData.treeVisibilitySum ?? resolveVariantVisibility(beforeData);
+  return typeof beforeData.treeVisibilitySum === 'number'
+    ? beforeData.treeVisibilitySum
+    : resolveVariantVisibility(beforeData);
 }
 
 /**
@@ -146,7 +150,7 @@ function getPreviousVisibility(beforeExists, beforeData) {
  */
 function getCurrentVisibility(afterData, beforeData, previous) {
   if (
-    afterData.treeVisibilitySum !== undefined &&
+    typeof afterData.treeVisibilitySum === 'number' &&
     afterData.treeVisibilitySum !== previous
   )
     return afterData.treeVisibilitySum;
@@ -158,7 +162,7 @@ function getCurrentVisibility(afterData, beforeData, previous) {
 
 /**
  * Propagate a visibility delta through incoming-option ancestors.
- * @param {{ ref: unknown, data: Record<string, unknown>, nextSum: number, delta: number, db: FirestoreLike }} input Propagation state.
+ * @param {{ ref: WritableVariantReference, data: Record<string, unknown>, nextSum: number, delta: number, db: FirestoreLike }} input Propagation state.
  * @returns {Promise<void>} Resolves after all reachable ancestors are updated.
  */
 async function propagateVisibilityDelta({
@@ -192,12 +196,14 @@ async function propagateVisibilityDelta({
  * Resolve the incoming-option parent variant reference.
  * @param {Record<string, unknown>} data Variant data.
  * @param {FirestoreLike} db Firestore client.
- * @returns {unknown|null} Parent variant reference.
+ * @returns {WritableVariantReference|null} Parent variant reference.
  */
 function resolveIncomingParentRef(data, db) {
-  if (!data.incomingOption || !db?.doc) return null;
+  if (typeof data.incomingOption !== 'string' || !db?.doc) return null;
   const optionRef = db.doc(data.incomingOption);
-  return getAncestorRef(optionRef, 2);
+  return /** @type {WritableVariantReference | null} */ (
+    getAncestorRef(optionRef, 2)
+  );
 }
 
 /**
@@ -206,9 +212,9 @@ function resolveIncomingParentRef(data, db) {
  * @returns {Record<string, unknown>} Snapshot data or an empty record.
  */
 function readSnapshotData(snapshot) {
-  const read = snapshot?.data;
-  if (typeof read !== 'function') return {};
-  return snapshot.data() ?? {};
+  if (!isObjectLike(snapshot) || typeof snapshot.data !== 'function') return {};
+  const data = snapshot.data();
+  return isObjectLike(data) ? data : {};
 }
 
 /**
@@ -217,16 +223,21 @@ function readSnapshotData(snapshot) {
  * @returns {number} Aggregate visibility.
  */
 function resolveStoredVisibilitySum(data) {
-  return data.treeVisibilitySum ?? resolveVariantVisibility(data);
+  return typeof data.treeVisibilitySum === 'number'
+    ? data.treeVisibilitySum
+    : resolveVariantVisibility(data);
 }
 
 /**
  * @typedef {(message?: unknown, ...optionalParams: unknown[]) => void} ConsoleError
- * @typedef {import('firebase-admin/firestore').DocumentReference<import('firebase-admin/firestore').DocumentData> & { parent?: DocumentReferenceData | null, set?: (data: unknown) => Promise<unknown> }} DocumentReferenceData
- * @typedef {import('firebase-admin/firestore').DocumentSnapshot<import('firebase-admin/firestore').DocumentData>} DocumentSnapshotData
- * @typedef {{ doc: (path: string) => DocumentReferenceData, collection: (path: string) => import('firebase-admin/firestore').CollectionReference, collectionGroup: (path: string) => { where: (...args: unknown[]) => unknown, get: (...args: unknown[]) => unknown } }} FirestoreLike
+ * @typedef {import('firebase-admin/firestore').DocumentReference<import('firebase-admin/firestore').DocumentData> & { parent?: CollectionReferenceData | null, set?: (data: unknown, options?: object) => Promise<unknown> }} DocumentReferenceData
+ * @typedef {import('firebase-admin/firestore').CollectionReference & { parent?: DocumentReferenceData | null, path: string }} CollectionReferenceData
+ * @typedef {import('firebase-admin/firestore').DocumentSnapshot<import('firebase-admin/firestore').DocumentData> & { ref: DocumentReferenceData }} DocumentSnapshotData
+ * @typedef {{ doc: (path: string) => DocumentReferenceData, collection: (path: string) => CollectionReferenceData, collectionGroup: (path: string) => CollectionReferenceData }} FirestoreLike
+ * @typedef {{ get: () => Promise<{ exists?: boolean, data?: () => Record<string, unknown> }>, update: (data: Record<string, unknown>) => Promise<unknown>, parent?: WritableVariantReference | null }} WritableVariantReference
  * @typedef {{ exists: () => Promise<[boolean]>, save: (content: string, options: object) => Promise<unknown> }} StorageFileLike
  * @typedef {{ file: (path: string) => StorageFileLike }} StorageBucketLike
+ * @typedef {{ bucket: (name?: string) => StorageBucketLike }} StorageLike
  * @typedef {object} AncestorReference
  * @property {(...args: unknown[]) => unknown} get Function to resolve the referenced ancestor.
  * @property {AncestorReference | null | undefined} [parent] Optional parent reference in the ancestor chain.
@@ -239,9 +250,9 @@ function resolveStoredVisibilitySum(data) {
  *   authorId?: string;
  *   authorName?: string;
  * }} VariantDocument
- * @typedef {import('firebase-admin/firestore').DocumentSnapshot<VariantDocument>} VariantSnapshot
+ * @typedef {import('firebase-admin/firestore').DocumentSnapshot<VariantDocument> & { ref: DocumentReferenceData }} VariantSnapshot
  * @typedef {{ number: number; incomingOption?: string }} PageDocument
- * @typedef {import('firebase-admin/firestore').DocumentSnapshot<PageDocument>} PageSnapshot
+ * @typedef {import('firebase-admin/firestore').DocumentSnapshot<PageDocument> & { ref: DocumentReferenceData }} PageSnapshot
  * @typedef {object} OptionDocument
  * @property {string} content Option body text stored in Firestore.
  * @property {number} position Floating-order index used when sorting options.
@@ -254,7 +265,7 @@ function resolveStoredVisibilitySum(data) {
  * @typedef {object} StoryMetadata
  * @property {DocumentReferenceData | undefined} [rootPage] Optional reference to the story's root page.
  * @typedef {StoryMetadata & { rootPage: DocumentReferenceData }} StoryDataWithRoot
- * @typedef {{ variant: { authorId?: string }; db: FirestoreLike; bucket: StorageBucketLike; consoleError?: ConsoleError }} AuthorLookupDeps
+ * @typedef {{ variant: { authorId?: string; author?: string; authorName?: string }; db: FirestoreLike; bucket?: StorageBucketLike; consoleError?: ConsoleError }} AuthorLookupDeps
  * @typedef {{ variant: { incomingOption?: string }; db: FirestoreLike; consoleError?: ConsoleError }} ParentResolutionDeps
  * @typedef {{
  *   snap: VariantSnapshot;
@@ -317,8 +328,8 @@ function resolveStoredVisibilitySum(data) {
  *   consoleError?: ConsoleError;
  * }} StoryMetadataDeps
  * @typedef {{ pageSnap: PageSnapshot; page: PageDocument; db: FirestoreLike; consoleError?: ConsoleError }} StoryMetadataLookupDeps
- * @typedef {{ exists: boolean; data: () => Record<string, unknown> }} DocumentLike
- * @typedef {{ get: () => Promise<DocumentLike> }} DocumentRefLike
+ * @typedef {{ exists: boolean; data: () => Record<string, unknown>; ref?: DocumentReferenceData }} DocumentLike
+ * @typedef {{ get: () => Promise<DocumentLike>; update?: (data: Record<string, unknown>) => Promise<unknown>; parent?: DocumentRefLike | null }} DocumentRefLike
  * @typedef {{ parentVariantRef: DocumentRefLike; parentPageRef: DocumentRefLike }} ParentReferencePair
  * @typedef {{ parentVariantSnap: DocumentLike; parentPageSnap: DocumentLike }} ParentSnapshotPair
  * @typedef {{
@@ -1066,7 +1077,7 @@ export function getVisibleVariants(docs) {
 
 /**
  * Map document to variant object.
- * @param {{ data: (...args: unknown[]) => unknown }} doc Document.
+ * @param {{ data: () => VariantDocumentData }} doc Document.
  * @returns {{ name: string, content: string }} Variant object.
  */
 function mapDocToVariant(doc) {
@@ -1105,7 +1116,7 @@ function buildVariantObject(data) {
 
 /**
  * Ensure a Firestore-like database instance exposes the required helpers.
- * @param {{doc: (...args: unknown[]) => unknown}} db - Database instance that should provide a `doc` helper.
+ * @param {FirestoreLike} db - Database instance that should provide a `doc` helper.
  * @throws {TypeError} When the provided database does not expose a `doc` function.
  */
 function assertDb(db) {
@@ -1117,7 +1128,7 @@ function assertDb(db) {
 
 /**
  * Check if db has doc helper.
- * @param {{ doc: (...args: unknown[]) => unknown }} db Database.
+ * @param {FirestoreLike} db Database.
  */
 function checkDbDocHelper(db) {
   if (typeof db.doc !== 'function') {
@@ -1127,7 +1138,7 @@ function checkDbDocHelper(db) {
 
 /**
  * Confirm the storage dependency can create bucket handles.
- * @param {{bucket: (...args: unknown[]) => unknown}} storage - Storage implementation expected to expose a `bucket` helper.
+ * @param {StorageLike} storage - Storage implementation expected to expose a `bucket` helper.
  * @throws {TypeError} When the provided storage does not expose a `bucket` function.
  */
 function assertStorage(storage) {
@@ -1139,7 +1150,7 @@ function assertStorage(storage) {
 
 /**
  * Check if storage has bucket helper.
- * @param {{ bucket: (...args: unknown[]) => unknown }} storage Storage.
+ * @param {StorageLike} storage Storage.
  */
 function checkStorageBucketHelper(storage) {
   if (typeof storage.bucket !== 'function') {
@@ -1602,6 +1613,7 @@ async function fetchTargetPageMetadata(
   consoleError
 ) {
   const rehydratedTargetPage = rebindTenantDocumentRef(targetPage, db);
+  if (!rehydratedTargetPage) return {};
   return /** @type {Promise<Omit<OptionMetadata, 'content' | 'position'>>} */ (
     rehydratedTargetPage
       .get()
@@ -1753,6 +1765,7 @@ function buildTargetMetadata(targetPageNumber, visible) {
  */
 async function loadOptions({ snap, db, visibilityThreshold, consoleError }) {
   const variantRef = resolveTenantDocumentRef(snap, db);
+  if (!variantRef) return [];
   const optionsSnap = await variantRef.collection('options').get();
   const optionsData = optionsSnap.docs.map(
     /**
@@ -1778,11 +1791,11 @@ async function loadOptions({ snap, db, visibilityThreshold, consoleError }) {
     optionsData.map(
       /**
        * @param {import('firebase-admin/firestore').DocumentData} data Document data.
-       * @returns {Promise<object>} Metadata.
+       * @returns {Promise<OptionMetadata>} Metadata.
        */
       data =>
         buildOptionMetadata({
-          data: /** @type {Record<string, unknown>} */ (data),
+          data: /** @type {OptionDocument} */ (/** @type {unknown} */ (data)),
           db,
           visibilityThreshold,
           consoleError: safeConsoleError,
@@ -1926,6 +1939,7 @@ function logRootPageError(error, consoleError) {
  */
 async function fetchRootPageUrl(storyData, db) {
   const rootPageRef = rebindTenantDocumentRef(storyData.rootPage, db);
+  if (!rootPageRef) return undefined;
   const rootPageSnap = await rootPageRef.get();
   if (!rootPageSnap.exists) {
     return undefined;
@@ -1983,7 +1997,8 @@ function extractPageNumber(snap) {
  * @returns {string | undefined} Variant name or undefined.
  */
 function getVariantNameOrUndefined(variantData) {
-  return variantData?.name;
+  if (!isObjectLike(variantData)) return undefined;
+  return typeof variantData.name === 'string' ? variantData.name : undefined;
 }
 
 /**
@@ -2044,7 +2059,7 @@ async function getFirstVariant(pageRef) {
 /**
  * Determine the owning story reference for the provided page snapshot.
  * @param {PageSnapshot} pageSnap Firestore snapshot describing a page document.
- * @returns {object|null} Story reference when available, otherwise null.
+ * @returns {DocumentReferenceData|null} Story reference when available, otherwise null.
  */
 function extractStoryRef(pageSnap) {
   const pageRef = getPageRef(pageSnap);
@@ -2054,17 +2069,19 @@ function extractStoryRef(pageSnap) {
 /**
  * Return the Firestore reference for a page snapshot.
  * @param {PageSnapshot | undefined | null} pageSnap Firestore page snapshot.
- * @returns {object | null} Document reference or null.
+ * @returns {DocumentReferenceData | null} Document reference or null.
  */
 function getPageRef(pageSnap) {
-  return /** @type {unknown} */ (readNullableProperty(pageSnap, 'ref'));
+  return /** @type {DocumentReferenceData | null} */ (
+    readNullableProperty(pageSnap, 'ref')
+  );
 }
 
 /**
  * Resolve the story reference for a page snapshot using the tenant database when available.
  * @param {PageSnapshot | undefined | null} pageSnap Firestore page snapshot.
  * @param {FirestoreLike | null | undefined} db Tenant Firestore client.
- * @returns {object | null} Story reference or null when missing.
+ * @returns {DocumentReferenceData | null} Story reference or null when missing.
  */
 function extractStoryRefFromTenantDb(pageSnap, db) {
   const pageRef = resolveTenantDocumentRef(pageSnap, db);
@@ -2077,9 +2094,9 @@ function extractStoryRefFromTenantDb(pageSnap, db) {
 
 /**
  * Rebind a document reference through the tenant database when possible.
- * @param {unknown} ref Firestore document reference.
+ * @param {DocumentReferenceData | null} ref Firestore document reference.
  * @param {FirestoreLike | null | undefined} db Tenant Firestore client.
- * @returns {unknown} Tenant-bound document reference or the original ref when rebinding is unavailable.
+ * @returns {DocumentReferenceData | null} Tenant-bound document reference or the original ref when rebinding is unavailable.
  */
 function rebindTenantDocumentRef(ref, db) {
   if (!ref) {
@@ -2096,7 +2113,7 @@ function rebindTenantDocumentRef(ref, db) {
 /**
  * Derive the story reference that owns a page.
  * @param {{ parent?: unknown } | null} pageRef Reference to the page document.
- * @returns {object | null} Story reference when available.
+ * @returns {DocumentReferenceData | null} Story reference when available.
  */
 function resolveStoryFromPageRef(pageRef) {
   const parent = getPageParent(pageRef);
@@ -2110,19 +2127,23 @@ function resolveStoryFromPageRef(pageRef) {
 /**
  * Access the parent reference from a page document.
  * @param {{ parent?: unknown } | null} pageRef Page reference.
- * @returns {object | null} Parent reference or null.
+ * @returns {DocumentReferenceData | null} Parent reference or null.
  */
 function getPageParent(pageRef) {
-  return /** @type {unknown} */ (readNullableProperty(pageRef, 'parent'));
+  return /** @type {DocumentReferenceData | null} */ (
+    readNullableProperty(pageRef, 'parent')
+  );
 }
 
 /**
  * Return the grandparent of a reference chain.
  * @param {{ parent?: unknown } | null} parent Reference whose parent is inspected.
- * @returns {object | null} Grandparent reference or null when missing.
+ * @returns {DocumentReferenceData | null} Grandparent reference or null when missing.
  */
 function getParentParent(parent) {
-  return /** @type {unknown} */ (readNullableProperty(parent, 'parent'));
+  return /** @type {DocumentReferenceData | null} */ (
+    readNullableProperty(parent, 'parent')
+  );
 }
 
 /**
@@ -2131,10 +2152,10 @@ function getParentParent(parent) {
  * @returns {string} Author name or fallback identifier.
  */
 function deriveAuthorName(variant) {
-  const candidate = [variant.authorName, variant.author].find(
-    value => typeof value === 'string' && value.length > 0
-  );
-  return candidate ?? '';
+  for (const value of [variant.authorName, variant.author]) {
+    if (typeof value === 'string' && value.length > 0) return value;
+  }
+  return '';
 }
 
 /**
@@ -2209,7 +2230,8 @@ function logAuthorLookupError(error, consoleError) {
 async function markAuthorDirty({ variant, db }) {
   const authorRef = resolveAuthorRef(db, variant.authorId);
   const authorSnap = await authorRef.get();
-  const { uuid } = authorSnap.data();
+  const uuid = authorSnap.data()?.uuid;
+  if (typeof uuid !== 'string') return undefined;
   await authorRef.update({ name: deriveAuthorName(variant), dirty: true });
   return `/a/${uuid}.html`;
 }
@@ -2366,7 +2388,7 @@ async function fetchParentSnapshots(parentVariantRef, parentPageRef) {
 /**
  * Validate route data.
  * @param {string} parentName Parent name.
- * @param {number} parentNumber Parent number.
+ * @param {number | undefined} parentNumber Parent number.
  * @returns {boolean} True if valid.
  */
 function isRouteDataValid(parentName, parentNumber) {
@@ -2382,8 +2404,9 @@ function isRouteDataValid(parentName, parentNumber) {
 function buildParentRoute(parentVariantSnap, parentPageSnap) {
   const parentData = parentVariantSnap.data();
   const pageData = parentPageSnap.data();
-  const parentName = parentData.name;
-  const parentNumber = pageData.number;
+  const parentName = typeof parentData.name === 'string' ? parentData.name : '';
+  const parentNumber =
+    typeof pageData.number === 'number' ? pageData.number : undefined;
 
   if (!isRouteDataValid(parentName, parentNumber)) {
     return null;
@@ -2523,8 +2546,8 @@ function resolveParentLookupPromise({ incomingOption, db, consoleError }) {
 /**
  * @typedef {object} RenderVariantDependencies
  * @property {FirestoreLike} db - Firestore-like database used to load related documents.
- * @property {StorageBucketLike} storage - Cloud storage helper capable of writing files.
- * @property {(url: string, init?: object) => Promise<unknown>} fetchFn - General fetch implementation used for metadata reads.
+ * @property {StorageLike} storage - Cloud storage helper capable of writing files.
+ * @property {(url: string, init?: object) => Promise<Response>} fetchFn - General fetch implementation used for metadata reads.
  * @property {(handler: (permission: AllowEffects) => Promise<unknown>) => Promise<unknown>} bindEffectBoundary Cloud-owned permission boundary.
  * @property {(permission: AllowEffects, url: string, init?: object) => Promise<Response>} effectFetchFn Fetch adapter for cache purge requests.
  * @property {() => string} randomUUID - UUID generator for request identifiers.
@@ -2540,7 +2563,7 @@ function resolveParentLookupPromise({ incomingOption, db, consoleError }) {
 /**
  * Create a renderer that materializes variant HTML and supporting metadata.
  * @param {RenderVariantDependencies} dependencies - External services and configuration values.
- * @returns {(snap: unknown, context?: unknown) => Promise<null>} Async renderer for variant snapshots.
+ * @returns {(snap: VariantSnapshot, context?: RenderContext) => Promise<null>} Async renderer for variant snapshots.
  */
 export function createRenderVariant(dependencies) {
   validateDependencies(dependencies);
@@ -2613,14 +2636,7 @@ function resolveRenderVariantVisibilityThreshold(value) {
 
 /**
  * Ensure the render pipeline dependencies expose the helpers it relies on.
- * @param {{
- *   db: { doc: (...args: unknown[]) => unknown },
- *   storage: { bucket: (...args: unknown[]) => unknown },
- *   fetchFn: (...args: unknown[]) => unknown,
- *   bindEffectBoundary: (handler: (permission: AllowEffects) => Promise<unknown>) => Promise<unknown>,
- *   effectFetchFn: (permission: AllowEffects, url: string, init?: object) => Promise<Response>,
- *   randomUUID: (...args: unknown[]) => unknown
- * }} dependencies - Required services for rendering.
+ * @param {RenderVariantDependencies} dependencies - Required services for rendering.
  * @returns {void}
  */
 function validateDependencies(dependencies) {
@@ -2653,7 +2669,7 @@ function validateDependencies(dependencies) {
 /**
  * Create render variant handler.
  * @param {RenderVariantDependencies} options Dependencies.
- * @returns {(snap: unknown, context?: unknown) => Promise<null>} Render function.
+ * @returns {(snap: VariantSnapshot, context?: RenderContext) => Promise<null>} Render function.
  */
 function createRenderVariantHandler({
   db,
@@ -2721,7 +2737,7 @@ function createRenderVariantHandler({
 
   return async function render(
     /** @type {VariantSnapshot} */ snap,
-    context = {}
+    /** @type {RenderContext | undefined} */ context = {}
   ) {
     return executeRenderWorkflow(
       { db, bucket, consoleError, visibilityThreshold, invalidatePaths },
@@ -2733,9 +2749,9 @@ function createRenderVariantHandler({
 
 /**
  * Prefix bucket file paths for tenant-scoped static output.
- * @param {{ file: (path: string) => unknown }} bucket Bucket-like object.
+ * @param {{ file: (path: string) => StorageFileLike }} bucket Bucket-like object.
  * @param {string} objectPrefix Normalized object prefix.
- * @returns {{ file: (path: string) => unknown }} Bucket-like object.
+ * @returns {StorageBucketLike} Bucket-like object.
  */
 function createPrefixedBucket(bucket, objectPrefix) {
   if (!objectPrefix) {
@@ -2782,7 +2798,7 @@ export function isSnapValid(snap) {
  * @returns {boolean} True if exists.
  */
 function checkSnapExists(snap) {
-  return snap?.exists !== false;
+  return !isObjectLike(snap) || snap.exists !== false;
 }
 
 /**
@@ -2794,7 +2810,7 @@ function checkSnapExists(snap) {
  * Get page snap from ref.
  * @param {unknown} snap Snap.
  * @param {FirestoreLike} db Tenant Firestore client.
- * @returns {Promise<unknown | undefined>} Page snap.
+ * @returns {Promise<PageSnapshot | undefined>} Page snap.
  */
 export async function getPageSnapFromRef(snap, db) {
   return getPageSnapFromTenantDb(snap, db);
@@ -2804,30 +2820,34 @@ export async function getPageSnapFromRef(snap, db) {
  * Get page snap from ref using a tenant-bound Firestore client when available.
  * @param {unknown} snap Snap.
  * @param {FirestoreLike | null | undefined} db Firestore helper used for rebinding refs.
- * @returns {Promise<unknown | undefined>} Page snap.
+ * @returns {Promise<PageSnapshot | undefined>} Page snap.
  */
 async function getPageSnapFromTenantDb(snap, db) {
   const variantRef = resolveTenantDocumentRef(snap, db);
   if (!variantRef || !getAncestorRef(variantRef, 2)) {
     return undefined;
   }
-  return resolveTenantPageRef(snap, db).get();
+  const pageRef = resolveTenantPageRef(snap, db);
+  if (!pageRef) return undefined;
+  return /** @type {PageSnapshot} */ (await pageRef.get());
 }
 
 /**
  * Extract the `ref` property from a snapshot when present.
  * @param {unknown} snap Candidate snapshot.
- * @returns {unknown} Snapshot ref when available; otherwise null.
+ * @returns {DocumentReferenceData | null} Snapshot ref when available; otherwise null.
  */
 function resolveSnapshotRef(snap) {
-  return readNullableProperty(snap, 'ref');
+  return /** @type {DocumentReferenceData | null} */ (
+    readNullableProperty(snap, 'ref')
+  );
 }
 
 /**
  * Resolve a Firestore document reference against the tenant database when possible.
  * @param {unknown} snap Candidate snapshot or document-like object.
  * @param {FirestoreLike | null | undefined} db Firestore helper used to rebind the ref.
- * @returns {unknown} Tenant-bound document reference or the original ref when rebinding is unavailable.
+ * @returns {DocumentReferenceData | null} Tenant-bound document reference or the original ref when rebinding is unavailable.
  */
 function resolveTenantDocumentRef(snap, db) {
   const ref = resolveSnapshotRef(snap);
@@ -2846,7 +2866,7 @@ function resolveTenantDocumentRef(snap, db) {
  * Resolve the parent page reference from a variant snapshot using the tenant db when available.
  * @param {unknown} snap Variant snapshot.
  * @param {FirestoreLike | null | undefined} db Firestore helper used to rebind the chain.
- * @returns {unknown} Tenant-bound page reference.
+ * @returns {DocumentReferenceData | null} Tenant-bound page reference.
  */
 function resolveTenantPageRef(snap, db) {
   const variantRef = resolveTenantDocumentRef(snap, db);
@@ -2856,18 +2876,19 @@ function resolveTenantPageRef(snap, db) {
 
 /**
  * Resolve the parent page reference from a variant document reference.
- * @param {unknown} variantRef Variant reference.
- * @returns {unknown} Tenant-bound page reference.
+ * @param {DocumentReferenceData | null} variantRef Variant reference.
+ * @returns {DocumentReferenceData | null} Tenant-bound page reference.
  */
 function resolveTenantPageRefFromVariantRef(variantRef) {
-  return variantRef.parent.parent;
+  if (!variantRef?.parent) return null;
+  return variantRef.parent.parent ?? null;
 }
 
 /**
  * Resolve a Firestore collection reference against the tenant database when possible.
- * @param {unknown} ref Candidate collection reference.
+ * @param {CollectionReferenceData | null} ref Candidate collection reference.
  * @param {FirestoreLike | null | undefined} db Firestore helper used to rebind the collection.
- * @returns {unknown} Tenant-bound collection reference or the original ref when rebinding is unavailable.
+ * @returns {CollectionReferenceData | null} Tenant-bound collection reference or the original ref when rebinding is unavailable.
  */
 function rebindTenantCollectionRef(ref, db) {
   if (!ref) {
@@ -2918,7 +2939,7 @@ function readNullableProperty(source, key) {
 
 /**
  * Normalize the provided source so it can be safely indexed.
- * @param {{ [key: string]: unknown } | null | undefined} source Candidate object.
+ * @param {unknown} source Candidate object.
  * @returns {{ [key: string]: unknown }} Safe object mapping.
  */
 function getNormalizedSource(source) {
@@ -2940,13 +2961,13 @@ function isObjectLike(value) {
 
 /**
  * Fetch the parent page snapshot for the renderer's variant.
- * @param {{ ref: { parent?: { parent?: { get: () => Promise<{ exists?: boolean, data: () => Record<string, unknown> }> } } } }} snap Variant snapshot.
+ * @param {VariantSnapshot} snap Variant snapshot.
  * @param {FirestoreLike} db Tenant Firestore client.
- * @returns {Promise<{ exists?: boolean, data: () => Record<string, unknown> } | null>} Page snapshot when available.
+ * @returns {Promise<PageSnapshot | null>} Page snapshot when available.
  */
 export async function fetchPageData(snap, db) {
   const pageSnap = await getPageSnapFromTenantDb(snap, db);
-  if (!isPageSnapValid(pageSnap)) {
+  if (!pageSnap || !isPageSnapValid(pageSnap)) {
     return null;
   }
   return pageSnap;
@@ -3110,10 +3131,10 @@ export function didHideLastVisibleVariant(change, data, visibilityThreshold) {
     return false;
   }
 
-  const beforeVisibility = /** @type {Record<string, unknown>} */ (
-    change.before
-  ).data().visibility;
-  const afterVisibility = data.visibility;
+  const beforeValue = change.before.data().visibility;
+  const beforeVisibility = typeof beforeValue === 'number' ? beforeValue : 0;
+  const afterVisibility =
+    typeof data.visibility === 'number' ? data.visibility : 0;
 
   return (
     beforeVisibility >= visibilityThreshold &&
@@ -3123,16 +3144,18 @@ export function didHideLastVisibleVariant(change, data, visibilityThreshold) {
 
 /**
  * Fetch and validate page.
- * @param {unknown} snap Snap.
+ * @param {VariantSnapshot} snap Snap.
  * @param {FirestoreLike} db Tenant Firestore client.
- * @returns {Promise<unknown>} Page data.
+ * @returns {Promise<{ pageSnap: PageSnapshot; page: PageDocument } | null>} Page data.
  */
 async function fetchAndValidatePage(snap, db) {
   const pageSnap = await fetchPageData(snap, db);
   if (!pageSnap) {
     return null;
   }
-  return { pageSnap, page: pageSnap.data() };
+  const page = pageSnap.data();
+  if (!page) return null;
+  return { pageSnap, page };
 }
 
 /**
@@ -3242,7 +3265,13 @@ async function saveVariantHtml({ bucket, filePath, html, openVariant }) {
 async function saveAltsHtml(deps) {
   const { snap, db, bucket, page } = deps;
   const variantRef = resolveTenantDocumentRef(snap, db);
+  if (!variantRef?.parent) {
+    throw new Error('Variant snapshot does not have a page parent reference');
+  }
   const variantsRef = rebindTenantCollectionRef(variantRef.parent, db);
+  if (!variantsRef) {
+    throw new Error('Variant parent collection could not be resolved');
+  }
   const variantsSnap = await variantsRef.get();
   const variants = getVisibleVariants(variantsSnap.docs);
   const altsHtml = buildAltsHtml(page.number, variants);
@@ -3431,10 +3460,10 @@ function buildReverseLinkDocId(record) {
 }
 
 /**
- * @typedef {{ before: DocumentLike; after: DocumentLike & { ref: { update: (...args: unknown[]) => unknown } }; }} FirestoreChange
+ * @typedef {{ before: DocumentLike; after: DocumentLike & { ref: DocumentRefLike & { update: (...args: unknown[]) => unknown } }; }} FirestoreChange
  * Build a change handler that renders visible variants and clears dirty markers.
  * @param {object} options - Dependencies for the change handler.
- * @param {(snap: unknown, context?: object) => Promise<null>} options.renderVariant - Renderer invoked when a variant should be materialized.
+ * @param {(snap: VariantSnapshot, context?: RenderContext) => Promise<null>} options.renderVariant - Renderer invoked when a variant should be materialized.
  * @param {FirestoreLike} options.db Tenant Firestore client.
  * @param {() => unknown} options.getDeleteSentinel - Function that produces the sentinel used to clear dirty flags.
  * @param {number} [options.visibilityThreshold] - Minimum visibility required before rendering.
@@ -3455,7 +3484,7 @@ export function createHandleVariantWrite({
    * @param {object} root0 Options.
    * @param {FirestoreChange} root0.change Firestore change.
    * @param {RenderContext | undefined} root0.context Event context.
-   * @param {(...args: unknown[]) => unknown} root0.renderVariant Render function.
+   * @param {(snap: VariantSnapshot, context?: RenderContext) => Promise<null>} root0.renderVariant Render function.
    * @param {() => unknown} root0.getDeleteSentinel Sentinel function.
    * @returns {Promise<null>} Null.
    */
@@ -3465,12 +3494,10 @@ export function createHandleVariantWrite({
     renderVariant,
     getDeleteSentinel,
   }) {
-    await renderVariant(/** @type {DocumentLike} */ (change.after), context);
+    await renderVariant(/** @type {VariantSnapshot} */ (change.after), context);
     const afterRef = /** @type {DocumentLike} */ (change.after).ref;
-    let dirtyRef = afterRef;
-    if (afterRef && typeof afterRef.path === 'string') {
-      dirtyRef = db.doc(afterRef.path);
-    }
+    if (!afterRef || typeof afterRef.path !== 'string') return null;
+    const dirtyRef = db.doc(afterRef.path);
     await dirtyRef.update({
       dirty: getDeleteSentinel(),
     });
@@ -3532,7 +3559,10 @@ export function createHandleVariantWrite({
    */
   async function handleCleanVariant(change, context, data) {
     if (shouldRenderVariant(change, data, visibilityThreshold)) {
-      return renderVariant(/** @type {DocumentLike} */ (change.after), context);
+      return renderVariant(
+        /** @type {VariantSnapshot} */ (change.after),
+        context
+      );
     }
     if (didHideLastVisibleVariant(change, data, visibilityThreshold)) {
       await republishInboundPagesForHiddenOnlyVariant(
@@ -3556,10 +3586,10 @@ export function createHandleVariantWrite({
       return true;
     }
 
-    const beforeVisibility = /** @type {Record<string, unknown>} */ (
-      change.before
-    ).data().visibility;
-    const afterVisibility = data.visibility;
+    const beforeValue = change.before.data().visibility;
+    const beforeVisibility = typeof beforeValue === 'number' ? beforeValue : 0;
+    const afterVisibility =
+      typeof data.visibility === 'number' ? data.visibility : 0;
 
     return didCrossVisibilityThreshold(
       beforeVisibility,
@@ -3579,7 +3609,7 @@ export function createHandleVariantWrite({
    * Republish inbound pages that point at a now-hidden-only page.
    * @param {FirestoreChange['after']} after Variant snapshot after the update.
    * @param {FirestoreLike} db Firestore client.
-   * @param {(snap: unknown, context?: object) => Promise<null>} renderVariantFn Renderer.
+   * @param {(snap: VariantSnapshot, context?: RenderContext) => Promise<null>} renderVariantFn Renderer.
    * @returns {Promise<void>} Promise.
    */
   async function republishInboundPagesForHiddenOnlyVariant(
@@ -3630,14 +3660,16 @@ function hasVisibleVariants(docs, visibilityThreshold) {
      */
     doc => {
       const data = /** @type {Record<string, unknown>} */ (doc.data());
-      return (data.visibility ?? 1) >= visibilityThreshold;
+      const visibility =
+        typeof data.visibility === 'number' ? data.visibility : 1;
+      return visibility >= visibilityThreshold;
     }
   );
 }
 
 /**
  * @param {FirestoreLike} db Firestore client.
- * @param {(snap: unknown, context?: object) => Promise<null>} renderVariantFn Renderer.
+ * @param {(snap: VariantSnapshot, context?: RenderContext) => Promise<null>} renderVariantFn Renderer.
  * @param {number} pageNumber Page number.
  * @returns {Promise<void>} Promise.
  */
@@ -3648,9 +3680,12 @@ async function republishInboundVariants(db, renderVariantFn, pageNumber) {
     if (!sourceSnap.exists) {
       continue;
     }
-    await renderVariantFn(sourceSnap, {
-      rewriteTargetPageNumbers: [pageNumber],
-    });
+    await renderVariantFn(
+      /** @type {VariantSnapshot} */ (/** @type {unknown} */ (sourceSnap)),
+      {
+        rewriteTargetPageNumbers: [pageNumber],
+      }
+    );
   }
 }
 
@@ -3684,8 +3719,10 @@ async function getInboundSourceFilePaths(db, pageNumber) {
  * @returns {string | undefined} Source file path.
  */
 function mapSourceFilePath(doc) {
-  return /** @type {{ sourceFilePath?: unknown }} */ (doc.data())
-    .sourceFilePath;
+  const sourceFilePath = /** @type {{ sourceFilePath?: unknown }} */ (
+    doc.data()
+  ).sourceFilePath;
+  return typeof sourceFilePath === 'string' ? sourceFilePath : undefined;
 }
 
 /**
