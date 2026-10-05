@@ -1,20 +1,22 @@
-// @ts-nocheck -- render state is a plain JSON payload consumed by both views.
 import { cameraFor } from './world.js';
 import { generateBackgroundTile } from './tileGenerator.js';
 import { spriteShapes } from './sprites.js';
 import { crossingPixels } from './scenery.js';
 import { drawPixelText } from '../../pixelFont.js';
 import { menuLines } from './controls.js';
+/** @type {Record<string, string[]>} */
 const PALETTES = {
   village: ['#182f36', '#315744', '#bfd77c', '#e9d88d'],
   shore: ['#182f36', '#246774', '#b9e2ce', '#e5d39c'],
   orchard: ['#253b32', '#465c38', '#cbd889', '#e7cf86'],
   hollow: ['#1c203c', '#3e4670', '#c1c0e2', '#d7d0a0'],
 };
+/** @typedef {Record<string, any>} CanvasShape */
+/** @typedef {Record<string, any>} CanvasFrame */
 /**
  * Build the same pixel-art frame payload for page and embedded renderer.
- * @param {unknown} state - The state argument.
- * @returns {unknown} The computed result.
+ * @param {any} state Normalized game state.
+ * @returns {CanvasFrame} Shared frame payload for both presenters.
  */
 export function toFramePayload(state) {
   const palette =
@@ -22,7 +24,7 @@ export function toFramePayload(state) {
     PALETTES[state.world.map.palette] ||
     PALETTES.village;
   const camera = cameraFor(state.world, 13, 9);
-  const frame = {
+  const frame = /** @type {CanvasFrame} */ ({
     type: 'mosslight-valley',
     width: 160,
     height: 144,
@@ -31,7 +33,9 @@ export function toFramePayload(state) {
     palette,
     world: state.world,
     player: state.world.player,
-    npcs: state.world.npcs.filter(npc => npc.map === state.world.mapId),
+    npcs: state.world.npcs.filter(
+      (/** @type {{map: string}} */ npc) => npc.map === state.world.mapId
+    ),
     dialogue: state.dialogue,
     battle: state.battle,
     mode: state.mode,
@@ -46,14 +50,14 @@ export function toFramePayload(state) {
     ending: state.ending,
     tick: state.tick,
     presentation: state.presentation,
-  };
+  });
   frame.shapes = toCanvasShapes(frame);
   return frame;
 }
 /**
  *
- * @param {unknown} frame - The frame argument.
- * @returns {unknown} The computed result.
+ * @param {CanvasFrame} frame Shared frame payload.
+ * @returns {CanvasShape[]} Renderable canvas shapes.
  */
 function toCanvasShapes(frame) {
   const layers = worldLayers(frame);
@@ -67,8 +71,8 @@ function toCanvasShapes(frame) {
 
 /**
  * Keep world depth and navigation annotations identical across both presenters.
- * @param {object} frame Shared game frame.
- * @returns {{scenery: object[], signs: object[]}} Paintable world layers.
+ * @param {CanvasFrame} frame Shared game frame.
+ * @returns {{scenery: CanvasShape[], signs: CanvasShape[]}} Paintable world layers.
  */
 function worldLayers(frame) {
   const crossings = crossingShapes(frame);
@@ -83,8 +87,8 @@ function worldLayers(frame) {
 }
 /**
  * Fill the viewport, clipping the partial rightmost tile.
- * @param {object} frame Shared game frame.
- * @returns {object[]} Opaque terrain shapes.
+ * @param {CanvasFrame} frame Shared game frame.
+ * @returns {CanvasShape[]} Opaque terrain shapes.
  */
 function terrainShapes(frame) {
   const shapes = [
@@ -121,8 +125,8 @@ function terrainShapes(frame) {
 }
 /**
  * Draw named crossings in both renderers, including the story-locked Hollow gate.
- * @param {object} frame Shared game frame.
- * @returns {{tiles: object[], signs: object[]}} World art and foreground destination annotations.
+ * @param {CanvasFrame} frame Shared game frame.
+ * @returns {{tiles: CanvasShape[], signs: CanvasShape[]}} World art and foreground destination annotations.
  */
 function crossingShapes(frame) {
   const map = frame.world.map;
@@ -177,9 +181,9 @@ function crossingShapes(frame) {
 }
 /**
  * Construct the shared opaque background contract for scenery and HUD panels.
- * @param {object} bounds Logical-screen rectangle bounds.
+ * @param {{x: number, y: number, width: number, height: number}} bounds Logical-screen rectangle bounds.
  * @param {string} fill Palette color.
- * @returns {object} Renderable rectangle.
+ * @returns {CanvasShape} Renderable rectangle.
  */
 function frameRectangle(bounds, fill) {
   return { type: 'rect', ...bounds, fill };
@@ -194,8 +198,8 @@ function fitHudText(text) {
 }
 /**
  * Share compact location, objective and two message rows between presenters.
- * @param {object} frame Shared game frame.
- * @returns {object[]} HUD shapes.
+ * @param {CanvasFrame} frame Shared game frame.
+ * @returns {CanvasShape[]} HUD shapes.
  */
 function hudShapes(frame) {
   const rows = wrapDialogueText(frame.toast || 'Move · interact · listen', 30);
@@ -226,15 +230,15 @@ function hudShapes(frame) {
  * @param {number} y - Logical-screen baseline coordinate.
  * @param {string} fill - Palette color.
  * @param {string} font - Canvas font declaration.
- * @returns {object} Canvas presenter text shape.
+ * @returns {CanvasShape} Canvas presenter text shape.
  */
 function frameText(text, y, fill, font = '7px monospace') {
   return { type: 'text', x: 4, y, text, fill, font, bitmap: true };
 }
 /**
  * Draw tile art, actors, weather, menu and story UI into a 160×144 canvas.
- * @param {unknown} context - The context argument.
- * @param {unknown} frame - The frame argument.
+ * @param {any} context Canvas rendering context.
+ * @param {CanvasFrame} frame Shared frame payload.
  */
 export function drawGameFrame(context, frame) {
   const [p0, , , p3] = frame.palette;
@@ -258,8 +262,8 @@ export function drawGameFrame(context, frame) {
 }
 /**
  * Share foreground artwork and depth ordering between game views.
- * @param {object} frame Game frame.
- * @returns {object[]} Foreground pixel shapes.
+ * @param {CanvasFrame} frame Game frame.
+ * @returns {CanvasShape[]} Foreground pixel shapes.
  */
 function foregroundShapes(frame) {
   return [
@@ -273,8 +277,8 @@ function foregroundShapes(frame) {
 
 /**
  * Present the controller menu identically in standalone and embedded canvases.
- * @param {object} frame Shared frame snapshot.
- * @returns {object[]} Opaque bounded menu shapes.
+ * @param {CanvasFrame} frame Shared frame snapshot.
+ * @returns {CanvasShape[]} Opaque bounded menu shapes.
  */
 function controllerShapes(frame) {
   const background = [
@@ -328,10 +332,10 @@ function wrapMenuRow(row, columns) {
 
 /**
  * Compose opaque UI panels and their pixel-font rows for both presenters.
- * @param {object[]} background Panel background shapes.
+ * @param {CanvasShape[]} background Panel background shapes.
  * @param {string[]} rows Visible text rows.
  * @param {{x: number, y: number, fill: string, font: string}} style Text placement and palette.
- * @returns {object[]} Shared panel shapes.
+ * @returns {CanvasShape[]} Shared panel shapes.
  */
 function textPanel(background, rows, { x, y, fill, font }) {
   const text = rows.map((row, index) => ({
@@ -342,18 +346,18 @@ function textPanel(background, rows, { x, y, fill, font }) {
 }
 /**
  *
- * @param {unknown} ctx - The ctx argument.
- * @param {unknown} frame - The frame argument.
- * @param {unknown} dark - The dark argument.
- * @param {unknown} light - The light argument.
+ * @param {any} ctx Canvas rendering context.
+ * @param {CanvasFrame} frame Shared frame payload.
+ * @param {string} dark Panel background.
+ * @param {string} light Panel text and border.
  */
 function drawDialogue(ctx, frame, dark, light) {
   drawShapes(ctx, dialogueShapes(frame.dialogue, dark, light));
 }
 /**
  * Paint the shared rectangle and text contract.
- * @param {object} ctx Canvas context.
- * @param {object[]} shapes Renderable shapes.
+ * @param {any} ctx Canvas context.
+ * @param {CanvasShape[]} shapes Renderable shapes.
  */
 function drawShapes(ctx, shapes) {
   for (const shape of shapes) {
@@ -389,10 +393,10 @@ export function wrapDialogueText(text, columns = 28) {
 
 /**
  * Lay out a bordered dialogue panel above the HUD for both presenters.
- * @param {object} dialogue Current conversation and highlighted choice.
+ * @param {CanvasFrame['dialogue']} dialogue Current conversation and highlighted choice.
  * @param {string} dark Panel background.
  * @param {string} light Border and text color.
- * @returns {object[]} Canvas shapes with identical text and spacing in both modes.
+ * @returns {CanvasShape[]} Canvas shapes with identical text and spacing in both modes.
  */
 function dialogueShapes(dialogue, dark, light) {
   const rows = wrapDialogueText(dialogue.lines[dialogue.index]?.text || '');
@@ -429,10 +433,10 @@ function dialogueShapes(dialogue, dark, light) {
 }
 /**
  *
- * @param {unknown} ctx - The ctx argument.
- * @param {unknown} frame - The frame argument.
- * @param {unknown} dark - The dark argument.
- * @param {unknown} light - The light argument.
+ * @param {any} ctx Canvas rendering context.
+ * @param {CanvasFrame} frame Shared frame payload.
+ * @param {string} dark Panel background.
+ * @param {string} light Panel text and border.
  */
 function drawBattle(ctx, frame, dark, light) {
   ctx.fillStyle = dark;
@@ -448,10 +452,10 @@ function drawBattle(ctx, frame, dark, light) {
 }
 /**
  *
- * @param {unknown} ctx - The ctx argument.
- * @param {unknown} frame - The frame argument.
- * @param {unknown} dark - The dark argument.
- * @param {unknown} light - The light argument.
+ * @param {any} ctx Canvas rendering context.
+ * @param {CanvasFrame} frame Shared frame payload.
+ * @param {string} dark Panel background.
+ * @param {string} light Panel text and border.
  */
 function drawJournal(ctx, frame, dark, light) {
   ctx.fillStyle = dark;
@@ -478,10 +482,10 @@ function drawJournal(ctx, frame, dark, light) {
 }
 /**
  *
- * @param {unknown} ctx - The ctx argument.
- * @param {unknown} frame - The frame argument.
- * @param {unknown} dark - The dark argument.
- * @param {unknown} light - The light argument.
+ * @param {any} ctx Canvas rendering context.
+ * @param {CanvasFrame} frame Shared frame payload.
+ * @param {string} dark Panel background.
+ * @param {string} light Panel text and border.
  */
 function drawEnding(ctx, frame, dark, light) {
   ctx.fillStyle = dark;
@@ -502,7 +506,7 @@ function drawEnding(ctx, frame, dark, light) {
 }
 /**
  *
- * @param {object} options - Canvas context and text layout details.
+ * @param {{ctx: any, text: string, x: number, y: number, maxWidth: number, lineHeight: number}} options Canvas context and text layout details.
  */
 function wrapText(options) {
   const { ctx, text, x, maxWidth, lineHeight } = options;
