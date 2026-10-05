@@ -1,4 +1,3 @@
-// @ts-nocheck
 // Stryker disable all: this module is the Symphony orchestration boundary;
 // its command, tracker, and runner dependency plumbing is observable only
 // through the integrated polling/launch lifecycle.
@@ -9,7 +8,6 @@ import {
   stringOrNull,
   whenArray,
   whenString,
-  whenTypeValue,
 } from '../commonCore.js';
 
 /**
@@ -39,9 +37,11 @@ function parseReadyLine(line) {
  * @returns {{ priority: string, id: string, title: string } | null} Parsed ready-line fields or null.
  */
 function getReadyLineGroups(line) {
-  return line.match(
-    /^\d+\.\s+\[(?<priority>.+?)\]\s+\[.+?\]\s+(?<id>[a-z0-9-]+):\s+(?<title>.+)$/i
-  )?.groups;
+  return /** @type {{priority: string, id: string, title: string} | null} */ (
+    line.match(
+      /^\d+\.\s+\[(?<priority>.+?)\]\s+\[.+?\]\s+(?<id>[a-z0-9-]+):\s+(?<title>.+)$/i
+    )?.groups ?? null
+  );
 }
 
 /**
@@ -207,18 +207,22 @@ function getTrackerSelectionSummaryHandler(selectionStateKey) {
   return TRACKER_SELECTION_SUMMARY_HANDLERS[selectionStateKey];
 }
 
-const TRACKER_SELECTION_SUMMARY_HANDLERS = {
-  blocked: () => getBlockedSelectionSummary(),
-  idle: input => getIdleSelectionSummary(input),
-  ready: input =>
-    getReadySelectionSummary({
-      ...input,
-      selectedBead:
-        /** @type {{ id: string, title: string, priority: string }} */ (
-          input.selectedBead
-        ),
-    }),
-};
+const TRACKER_SELECTION_SUMMARY_HANDLERS =
+  /** @type {Record<'blocked' | 'idle' | 'ready', (input: Parameters<typeof summarizeTrackerSelection>[0]) => ReturnType<typeof summarizeTrackerSelection>>} */ ({
+    blocked: () => getBlockedSelectionSummary(),
+    idle: (/** @type {{lastCommand: string}} */ input) =>
+      getIdleSelectionSummary(input),
+    ready: (
+      /** @type {Parameters<typeof summarizeTrackerSelection>[0]} */ input
+    ) =>
+      getReadySelectionSummary({
+        ...input,
+        selectedBead:
+          /** @type {{ id: string, title: string, priority: string }} */ (
+            input.selectedBead
+          ),
+      }),
+  });
 
 /**
  * @param {{
@@ -262,7 +266,7 @@ const MAX_EVENT_LOG_ENTRIES = 5;
  * @returns {Record<string, unknown>} Updated scheduler-visible status.
  */
 export function applyRunnerLaunch(status, launch) {
-  const updatedStatus = {
+  const updatedStatus = /** @type {Record<string, any>} */ ({
     ...status,
     state: 'running',
     currentBeadId: launch.beadId,
@@ -272,7 +276,7 @@ export function applyRunnerLaunch(status, launch) {
     operatorRecommendation: buildRunnerLaunchRecommendation(launch),
     activeRun: buildActiveRunStatus(launch),
     lastLaunchAttempt: buildSuccessfulLaunchAttempt(launch),
-  };
+  });
 
   return addSymphonyEvent(updatedStatus, buildBeadStartedEvent(launch));
 }
@@ -404,7 +408,7 @@ function buildBlockedOutcomeStatus(status, outcome) {
  * @returns {Record<string, unknown>} Updated status after applying the runner outcome.
  */
 function buildRunnerOutcomeStatus(status, outcome, options) {
-  const updatedStatus = {
+  const updatedStatus = /** @type {Record<string, any>} */ ({
     ...status,
     state: options.state,
     latestEvidence: buildRunnerOutcomeEvidence(
@@ -415,7 +419,7 @@ function buildRunnerOutcomeStatus(status, outcome, options) {
     queueEvidence: options.queueEvidence,
     lastOutcome: buildRunnerLastOutcome(outcome),
     activeRun: null,
-  };
+  });
 
   if (options.currentBeadState) {
     updatedStatus.currentBeadId = options.currentBeadState.currentBeadId;
@@ -614,7 +618,13 @@ function buildLaunchRecord(launch) {
  * @returns {string[]} Normalized launch args.
  */
 function getLaunchArgs(value) {
-  return whenArray(value, arrayValue => arrayValue.slice()) ?? [];
+  return (
+    whenArray(value, arrayValue =>
+      arrayValue.filter(
+        (/** @type {unknown} */ item) => typeof item === 'string'
+      )
+    ) ?? []
+  );
 }
 
 /**
@@ -622,7 +632,7 @@ function getLaunchArgs(value) {
  * @returns {number | null} Normalized launch pid.
  */
 function getLaunchPid(value) {
-  return whenTypeValue(value, 'number');
+  return typeof value === 'number' ? value : null;
 }
 
 /**
@@ -681,7 +691,7 @@ function buildRunnerEvidenceLine(prefix, outcome) {
  * @returns {number | null} Exit code when present.
  */
 function getOutcomeExitCode(outcome) {
-  return whenTypeValue(outcome.exitCode, 'number');
+  return typeof outcome.exitCode === 'number' ? outcome.exitCode : null;
 }
 
 /**
@@ -690,7 +700,7 @@ function getOutcomeExitCode(outcome) {
  * @returns {string | null} Signal when present.
  */
 function getOutcomeSignal(outcome) {
-  return whenTypeValue(outcome.signal, 'string');
+  return typeof outcome.signal === 'string' ? outcome.signal : null;
 }
 
 /**
@@ -830,6 +840,8 @@ function addSymphonyEvent(status, message) {
  * @returns {string[]} Existing event log entries.
  */
 function getEventLog(status) {
-  return arrayOrEmpty(status.eventLog);
+  return arrayOrEmpty(status.eventLog).filter(
+    (/** @type {unknown} */ entry) => typeof entry === 'string'
+  );
 }
 // Stryker restore all
