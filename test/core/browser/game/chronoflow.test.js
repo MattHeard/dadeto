@@ -15,6 +15,10 @@ import {
   toggleChronoflowChannel,
 } from '../../../../src/core/browser/game/chronoflow/runtime.js';
 import { startChronoflowPage } from '../../../../src/core/browser/game/chronoflow/pagePresenter.js';
+import {
+  ARCHIVE_ENTRY_SOLUTION,
+  replayChronoflowWitness,
+} from '../../../../src/core/browser/game/chronoflow/witness.js';
 
 /**
  * Sum the water in a fluid grid.
@@ -518,6 +522,39 @@ describe('Chronoflow Archive Entry runtime', () => {
     expect(advanceChronoflow(game, 60)).toBe(game);
     expect(openSluice(game)).toBe(game);
     expect(setChronoflowRoute(game, 'drain')).toBe(game);
+  });
+
+  it('stores a replayable level witness and distinguishes the decoy drain', () => {
+    const solution = replayChronoflowWitness();
+    const repeated = replayChronoflowWitness(ARCHIVE_ENTRY_SOLUTION);
+    let decoy = setChronoflowRoute(createChronoflowGame(), 'drain');
+    for (let batch = 0; batch < 30 && !decoy.completed; batch += 1) {
+      decoy = advanceChronoflow(decoy, 60);
+    }
+
+    expect(solution).toEqual(repeated);
+    expect(solution.completed).toBe(true);
+    expect(solution.fluid.volume[solution.targetCell]).toBeGreaterThanOrEqual(
+      solution.targetVolume
+    );
+    expect(solution.editsUsed).toBeLessThanOrEqual(solution.editBudget);
+    expect(
+      solution.fluid.volume.every(volume => volume >= 0 && volume <= 1)
+    ).toBe(true);
+    expect(decoy.completed).toBe(false);
+    expect(decoy.fluid.volume[decoy.targetCell]).toBe(0);
+  });
+
+  it('covers malformed and bounded witness command handling', () => {
+    expect(replayChronoflowWitness([{ type: 'unknown' }]).level).toBe(
+      'archive-entry'
+    );
+    expect(replayChronoflowWitness([{ type: 'advance', steps: 0 }])).toEqual(
+      createChronoflowGame()
+    );
+    expect(() =>
+      replayChronoflowWitness([{ type: 'advance', steps: 1, batches: 11 }])
+    ).toThrow(RangeError);
   });
 
   it('starts and advances timed play only inside a fresh high-tide window', () => {

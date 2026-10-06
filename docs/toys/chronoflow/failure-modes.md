@@ -46,6 +46,7 @@
 - Route-choice guardrail: the valve opens exactly one junction branch. The decoy route drains water and blocks the archive approach; resetting restores the initial decoy selection.
 - Timed-attempt guardrail: start and command gates require the full estimated epoch uncertainty interval to remain inside high tide. Boundary overlap, stale sync, or offline state pauses timed actions; untimed practice remains available.
 - Terrain-edit guardrail: only two authored wall cells are editable, source/target/gate/route cells are protected, every toggle consumes one of three edits, and reset reconstructs the original wall mask.
+- Authored solution witness: keep the Archive Entry command sequence in `chronoflow/witness.js`, not only in a test. Its replay must reach the target within capacity and edit limits; the decoy drain route is the negative control and must leave target volume at zero.
 
 - Date: 2026-10-06
 - Failure observed: clock-sample offset expectations were inconsistent with the measured request midpoint.

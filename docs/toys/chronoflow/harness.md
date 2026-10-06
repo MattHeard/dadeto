@@ -22,6 +22,7 @@
 - Cell-flow UI journeys inspect a solver velocity while water is moving, before the authored target settles; then they continue through objective completion and reset.
 - Save/restore regression reloads after channel edits, route selection, gate opening, and 60 solver ticks; restored state must match while clock sync is reacquired and timed controls stay disabled when sync fails.
 - Velocity-advection regression: `advectVelocityField` backtraces by velocity × fixed `dt`, bilinearly samples only fluid cells, preserves uniform fields, transports a feature under a carrier flow, and keeps solid cells at zero. Advection precedes pressure projection in `stepFluid`.
+- Archive Entry authored witness: `src/core/browser/game/chronoflow/witness.js` records route archive, carve cell 11, open the sluice, then issue five 60-step advances. Replay with `replayChronoflowWitness()`; it completes at solver tick 257 with target volume approximately 0.12035. The decoy route remains incomplete with target volume 0 after 1,800 ticks. These values are characterized by `chronoflow.test.js`; volume bounds and edit budget are checked.
 - Exit code:
   - `0`
 

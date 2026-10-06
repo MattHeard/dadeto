@@ -9,7 +9,7 @@
 - [x] Semi-Lagrangian velocity advection preserves uniform fields, transports a feature under its carrier flow, and excludes solid-cell values from interpolation.
 - [x] Versioned saves restore deterministic board/solver progress as practice, reject malformed or incompatible state, and never retain a clock estimate or timed credit.
 - [ ] Clock tests use injected server responses and monotonic samples; they verify offset, uncertainty, stale rejection, resync, sleep/resume, and offline practice without reading browser wall time.
-- [ ] Authored levels include a solution witness that reaches the target volume within edit/overflow limits.
+- [x] Archive Entry includes an executable deterministic command witness that reaches the target within edit/overflow limits; the decoy route does not fill the target.
 - [ ] The Archive Entry level's deterministic witness opens the sluice and reaches the 12% target without exceeding any cell capacity.
 - [ ] The junction valve selects between the archive route and decoy drain; the decoy loses water without filling the target.
 - [x] Players can reshape either marked stone cell into a channel within the three-edit budget, and reset restores both cells and the budget.
