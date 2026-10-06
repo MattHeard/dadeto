@@ -3,6 +3,9 @@ import { createSegmentRecord as fulfillmentSegment } from '../2026-08-18/registr
 export { fulfillmentSegment };
 import { formatToyError } from '../formatToyError.js';
 
+const FEASIBLE_ASSET_RESULT = JSON.stringify({ feasible: true });
+const INFEASIBLE_ASSET_RESULT = JSON.stringify({ feasible: false });
+
 /**
  * Serialize a structured failure result for a fulfillment toy.
  * @param {unknown} error Caught failure.
@@ -287,7 +290,7 @@ export function fulfillmentFindMatchingAsset(request, evaluate) {
  * @returns {string} Feasibility JSON.
  */
 function formatFulfillmentFeasibility(feasible) {
-  return JSON.stringify({ feasible });
+  return feasible ? FEASIBLE_ASSET_RESULT : INFEASIBLE_ASSET_RESULT;
 }
 
 /**

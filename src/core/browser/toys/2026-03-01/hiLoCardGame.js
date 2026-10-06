@@ -3,7 +3,6 @@ import {
   isNonNullObject,
   normalizeObjectOrFallback,
   whenTruthy,
-  whenString,
 } from '../../browser-core.js';
 import { parseJsonObject } from '../../jsonValueHelpers.js';
 import { toRecordOrNull } from '../browserToysCore.js';
@@ -139,7 +138,16 @@ function createInputEvent(eventType, candidate) {
  * @returns {string | null} Event type or null.
  */
 function readEventType(candidate) {
-  return whenString(candidate.type, value => value);
+  return getStringField(candidate.type);
+}
+
+/**
+ * Return a candidate string or null.
+ * @param {unknown} value Candidate value.
+ * @returns {string | null} String candidate or null.
+ */
+function getStringField(value) {
+  return getStringCandidate(value) ?? null;
 }
 
 /**
@@ -467,7 +475,7 @@ function applyGuessWhenReady(inputEvent, state, getRandomNumber) {
  * @returns {string | null} Guess key when the event carries one.
  */
 function getGuessKey(inputEvent) {
-  return whenString(inputEvent.key, value => value);
+  return getStringField(inputEvent.key);
 }
 
 /**
