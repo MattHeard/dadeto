@@ -32,6 +32,10 @@ describe('createCopyCloudHandle', () => {
       source: '/repo/src/cloud/allow-effects.js',
       target: '/repo/infra/cloud-functions/submit-new-page/allow-effects.js',
     });
+    expect(copied).toContainEqual({
+      source: '/repo/src/browser/allow-effects.js',
+      target: '/repo/infra/allow-effects.js',
+    });
     expect(
       written.some(({ contents }) => contents.includes('./allow-effects.js'))
     ).toBe(true);

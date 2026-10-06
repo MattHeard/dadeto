@@ -1094,6 +1094,7 @@ function createCopyCloudDirectoryPlan(planValues) {
   ];
 
   const sharedBrowserFiles = [
+    'allow-effects.js',
     'authedFetch.js',
     'document.js',
     'googleAuth.js',

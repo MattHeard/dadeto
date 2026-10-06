@@ -116,6 +116,7 @@ describe('cloud browser entrypoints', () => {
 
     for (const name of [
       'admin-core.js',
+      'allow-effects.js',
       'authedFetch.js',
       'document.js',
       'googleAuth.js',
@@ -127,6 +128,10 @@ describe('cloud browser entrypoints', () => {
     ]) {
       expect(mainTf).toMatch(new RegExp(`name\\s+= "${name}"`));
     }
+
+    expect(mainTf).toContain(
+      'source       = "${path.module}/allow-effects.js"'
+    );
   });
 
   it('uploads PWA assets at the root paths used by Dendrite HTML', async () => {
