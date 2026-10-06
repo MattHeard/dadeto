@@ -9,8 +9,9 @@
 - Environment-specific behavior: browser suspension, coarse mobile timer precision, touch event duplication, and floating-point drift across engines.
 - Solver instability: negative/over-capacity cells, pressure oscillation, unbounded velocity, or unexplained mass changes.
 - Invalid terrain editing: an unmarked/source/target/gate cell changes, edit budget is exceeded, or resetting preserves modified terrain.
-- Pressure projection failure: RMS divergence grows, pressure iterations vary by execution order, solid-wall-normal velocity appears, or the long closed-field replay drifts in volume or bounds.
+- Pressure projection failure: target-grid RMS divergence is reduced by less than 80%, pressure iterations vary by execution order, solid/outer-wall normal velocity appears, or the long closed-field replay drifts in volume or bounds.
 - Velocity advection failure: uniform flow changes during interpolation, a transported feature moves against its carrier field, solid-cell values influence a fluid sample, or clamped boundaries produce a non-finite velocity.
+- Settled-flow presentation: velocity readout tests inspect only after the fluid has stopped, so no cell remains marked as flowing; assert the live flow affordance during an intermediate fixed-step state and verify completion separately.
 
 ## Detection Signals
 
@@ -23,7 +24,7 @@
 1. Capture the exact command, simulation seed/state, ordered commands, clock sample timestamps, round-trip duration, and reported uncertainty.
 2. Reproduce with a fixed solver-step sequence and injected clock samples; keep browser timers and network outside core tests.
 3. Separate solver failure, clock adapter failure, presentation drift, and environment/network failure before changing code.
-4. For projection regressions, use the fixed 8×6 velocity field in `test/core/browser/game/chronoflow.test.js`; compare RMS divergence with the same face-average/solid-boundary convention and retain the 600-step replay before tuning iteration count.
+4. For projection regressions, use the deterministic 32×20 and 8×6 fields in `test/core/browser/game/chronoflow.test.js`; calculate divergence from outgoing/incoming right/down face velocities, retain the 80% target-grid threshold, and keep the 600-step replay before tuning iteration count.
 5. For advection regressions, isolate `advectVelocityField` from the pressure solve using its uniform, carrier-feature, and solid-mask examples before changing solver integration.
 4. Add a small regression test or harness fixture and update the owning bead with exact output and artifact paths.
 

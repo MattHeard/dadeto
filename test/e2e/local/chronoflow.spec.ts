@@ -22,16 +22,16 @@ test('plays Chronoflow and earns a timed record only on trusted high tide', asyn
   await page.locator('#route-valve').click();
   await page.getByRole('button', { name: 'Open sluice' }).click();
   const advance = page.getByRole('button', { name: 'Advance water · 60 steps' });
+  await advance.click();
+  const flowingCell = page.locator('.chronoflow-cell[data-flow-direction="down"]').first();
+  await expect(flowingCell).toBeVisible();
+  await flowingCell.click();
+  await expect(page.locator('#cell-readout')).toContainText('velocity');
   for (let batch = 0; batch < 30; batch += 1) {
     if ((await page.locator('#chronoflow-status').textContent())?.includes('Timed high-tide record')) break;
     await advance.click();
   }
   await expect(page.locator('#chronoflow-status')).toHaveText('Archive chamber primed. Timed high-tide record secured.');
-  await expect(
-    page.locator('.chronoflow-cell[data-flow-direction="down"]').first(),
-  ).toBeVisible();
-  await page.locator('.chronoflow-cell[data-flow-direction="down"]').first().click();
-  await expect(page.locator('#cell-readout')).toContainText('velocity');
 
   await page.getByRole('button', { name: 'Reset level' }).click();
   await expect(page.locator('#chronoflow-status')).toContainText('step 0');

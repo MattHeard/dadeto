@@ -1,6 +1,6 @@
 # Chronoflow pressure projection
 
 - Unexpected hurdle: the existing solver calls its head-driven flux “pressure,” but it had no pressure solve and could leave a divergent cell-centered velocity field.
-- Diagnosis: define divergence from the same averaged neighboring face velocities used by the finite-volume flow, omitting solid interfaces as impermeable boundaries; test a varied 2D field and the authored puzzle witnesses.
-- Chosen fix: add a deterministic 24-iteration Jacobi pressure solve and velocity-gradient projection. A 600-step 8×6 closed-field regression checks replay, bounds, volume, and RMS divergence.
-- Next-time guidance: projection improves the specified discrete divergence but does not yet implement semi-Lagrangian velocity advection. Add that as a separate measured loop, and revisit pressure iteration cost before scaling toward the spec’s 32×20 target.
+- Diagnosis: the original solve mixed averaged cell-centered divergence with a right/down face pressure gradient, so increasing iteration count could not converge. Adopt one consistent outgoing/incoming face-normal divergence with impermeable solid and outer faces.
+- Chosen fix: retain a deterministic 24-iteration Jacobi pressure solve and correct its divergence and wall-face operators. The 32×20 regression reduces RMS divergence by over 80%; a 600-step 8×6 closed-field regression checks replay, bounds, volume, and divergence.
+- Next-time guidance: warmed target-grid step timings were about 3.3–4.6 ms locally. Re-measure on constrained browsers before increasing grid size or pressure iteration count; the solver remains a puzzle-scale approximation.

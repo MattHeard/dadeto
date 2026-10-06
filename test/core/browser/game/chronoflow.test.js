@@ -190,6 +190,34 @@ describe('Chronoflow deterministic fluid core', () => {
     expect(stepFluid(state).state).toEqual(projected);
   });
 
+  it('projects a deterministic 32x20 field with at least 80% divergence reduction', () => {
+    const width = 32;
+    const height = 20;
+    const cellCount = width * height;
+    const state = createFluidState({
+      width,
+      height,
+      volume: Array(cellCount).fill(0.5),
+      velocityX: Array.from(
+        { length: cellCount },
+        (_, cell) => Math.sin(cell * 1.7) * 0.8
+      ),
+      velocityY: Array.from(
+        { length: cellCount },
+        (_, cell) => Math.cos(cell * 0.9) * 0.8
+      ),
+    });
+    const projected = stepFluid(state).state;
+    const before = rmsDivergence(state);
+    const after = rmsDivergence(projected);
+
+    expect(after).toBeLessThan(before * 0.2);
+    expect(totalVolume(projected)).toBeCloseTo(320, 10);
+    expect(projected.velocityX.every(value => Math.abs(value) <= 1)).toBe(true);
+    expect(projected.velocityY.every(value => Math.abs(value) <= 1)).toBe(true);
+    expect(stepFluid(state).state).toEqual(projected);
+  });
+
   it('keeps solid interfaces impermeable during pressure projection', () => {
     const state = createFluidState({
       width: 3,
@@ -298,7 +326,7 @@ describe('Chronoflow deterministic fluid core', () => {
     expect(totalVolume(result.state)).toBeCloseTo(1);
   });
 
-  it('drains available water and damps momentum in a single-cell basin', () => {
+  it('drains available water and closes velocity faces in a single-cell basin', () => {
     const state = createFluidState({
       width: 1,
       height: 1,
@@ -312,8 +340,8 @@ describe('Chronoflow deterministic fluid core', () => {
 
     expect(result.drained).toBe(0.2);
     expect(result.state.volume[0]).toBeCloseTo(0.4);
-    expect(result.state.velocityX[0]).toBeCloseTo(0.4);
-    expect(result.state.velocityY[0]).toBeCloseTo(-0.4);
+    expect(result.state.velocityX[0]).toBe(0);
+    expect(result.state.velocityY[0]).toBe(0);
   });
 
   it('validates dimensions, physical ranges, transfer requests, and step size', () => {
@@ -356,7 +384,7 @@ describe('Chronoflow deterministic fluid core', () => {
 });
 
 /**
- * Calculate the RMS divergence using the solver's cell-centered face average.
+ * Calculate RMS divergence from stored right/down face-normal velocities.
  * @param {import('../../../../src/core/browser/game/chronoflow/chronoflow.js').FluidState} state Grid state.
  * @returns {number} RMS discrete divergence.
  */
@@ -375,20 +403,18 @@ function fluidDivergence(state) {
     const x = cell % state.width;
     const y = Math.floor(cell / state.width);
     const left =
-      x > 0 && !state.solids[cell - 1]
-        ? (state.velocityX[cell - 1] + state.velocityX[cell]) / 2
-        : 0;
+      x > 0 && !state.solids[cell - 1] ? state.velocityX[cell - 1] : 0;
     const right =
       x + 1 < state.width && !state.solids[cell + 1]
-        ? (state.velocityX[cell] + state.velocityX[cell + 1]) / 2
+        ? state.velocityX[cell]
         : 0;
     const up =
       y > 0 && !state.solids[cell - state.width]
-        ? (state.velocityY[cell - state.width] + state.velocityY[cell]) / 2
+        ? state.velocityY[cell - state.width]
         : 0;
     const down =
       y + 1 < state.height && !state.solids[cell + state.width]
-        ? (state.velocityY[cell] + state.velocityY[cell + state.width]) / 2
+        ? state.velocityY[cell]
         : 0;
     return right - left + down - up;
   });
@@ -654,6 +680,10 @@ describe('Chronoflow page presenter', () => {
     expect(grid.children[13].getAttribute('aria-label')).toBe(
       'Sluice gate, open.'
     );
+    advanceButton.emit('click');
+    expect(
+      grid.children.some(cell => cell.dataset.flowDirection !== 'still')
+    ).toBe(true);
     for (
       let batch = 0;
       batch < 30 && !status.textContent.includes('complete');
@@ -664,9 +694,6 @@ describe('Chronoflow page presenter', () => {
     expect(status.textContent).toBe(
       'Archive chamber primed. Practice complete; no timed record.'
     );
-    expect(
-      grid.children.some(cell => cell.dataset.flowDirection !== 'still')
-    ).toBe(true);
     expect(advanceButton.disabled).toBe(true);
 
     resetButton.emit('click');

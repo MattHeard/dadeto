@@ -202,19 +202,50 @@ export function advectVelocityField(grid) {
 }
 
 /**
- * Copy velocity arrays while enforcing zero velocity in solid cells.
+ * Copy velocity arrays while enforcing zero velocity in solids and optional walls.
  * @param {{width: number, height: number, velocityX: number[], velocityY: number[], solids: boolean[]}} grid Velocity field.
+ * @param {boolean} [closeBoundaryFaces] Zero external and solid-adjacent faces.
  * @returns {{velocityX: number[], velocityY: number[]}} Mutable working arrays.
  */
-function createVelocityBuffers(grid) {
+function createVelocityBuffers(grid, closeBoundaryFaces = false) {
   return {
     velocityX: grid.velocityX.map((value, cell) =>
-      grid.solids[cell] ? 0 : value
+      isBlockedVelocity(grid, cell, 'x', closeBoundaryFaces) ? 0 : value
     ),
     velocityY: grid.velocityY.map((value, cell) =>
-      grid.solids[cell] ? 0 : value
+      isBlockedVelocity(grid, cell, 'y', closeBoundaryFaces) ? 0 : value
     ),
   };
+}
+
+/**
+ * Check whether a velocity sample belongs to a solid or a closed face.
+ * @param {{width: number, height: number, solids: boolean[]}} grid Grid geometry.
+ * @param {number} cell Velocity cell.
+ * @param {'x'|'y'} axis Face orientation.
+ * @param {boolean} closeBoundaryFaces Whether external faces are impermeable.
+ * @returns {boolean} Whether the velocity must be zero.
+ */
+function isBlockedVelocity(grid, cell, axis, closeBoundaryFaces) {
+  return (
+    grid.solids[cell] || (closeBoundaryFaces && isClosedFace(grid, cell, axis))
+  );
+}
+
+/**
+ * Determine whether a stored outgoing face touches a closed boundary.
+ * @param {{width: number, height: number, solids: boolean[]}} grid Grid geometry.
+ * @param {number} cell Face owner.
+ * @param {'x'|'y'} axis Face orientation.
+ * @returns {boolean} Whether the face is closed.
+ */
+function isClosedFace(grid, cell, axis) {
+  if (axis === 'x') {
+    const x = cell % grid.width;
+    return x + 1 === grid.width || grid.solids[cell + 1];
+  }
+  const y = Math.floor(cell / grid.width);
+  return y + 1 === grid.height || grid.solids[cell + grid.width];
 }
 
 /**
@@ -292,16 +323,10 @@ function projectVelocity(grid) {
         if (y + 1 < height && !solids[down]) neighbors.push(down);
         if (neighbors.length === 0) continue;
         const divergence =
-          (x + 1 < width && !solids[right]
-            ? (velocityX[cell] + velocityX[right]) / 2
-            : 0) -
-          (x > 0 && !solids[left]
-            ? (velocityX[left] + velocityX[cell]) / 2
-            : 0) +
-          (y + 1 < height && !solids[down]
-            ? (velocityY[cell] + velocityY[down]) / 2
-            : 0) -
-          (y > 0 && !solids[up] ? (velocityY[up] + velocityY[cell]) / 2 : 0);
+          (x + 1 < width && !solids[right] ? velocityX[cell] : 0) -
+          (x > 0 && !solids[left] ? velocityX[left] : 0) +
+          (y + 1 < height && !solids[down] ? velocityY[cell] : 0) -
+          (y > 0 && !solids[up] ? velocityY[up] : 0);
         nextPressure[cell] =
           (neighbors.reduce((sum, neighbor) => sum + pressure[neighbor], 0) -
             divergence) /
@@ -312,7 +337,7 @@ function projectVelocity(grid) {
   }
 
   const { velocityX: projectedX, velocityY: projectedY } =
-    createVelocityBuffers(grid);
+    createVelocityBuffers(grid, true);
   forEachFluidCell(grid, (cell, x, y) => {
     if (x + 1 < width && !solids[cell + 1]) {
       projectedX[cell] -= pressure[cell + 1] - pressure[cell];
