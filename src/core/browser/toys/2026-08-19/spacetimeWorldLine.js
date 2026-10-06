@@ -2,6 +2,7 @@
 // (input, env) -> string
 import { runToyRequest } from '../formatToyError.js';
 import { isJsonObject } from './spacetimeInput.js';
+import { normalizeSegment } from './spacetimeSegmentRegistry.js';
 
 /**
  * Assemble every supplied segment into one contiguous ordered world line.
@@ -66,7 +67,18 @@ function parseInput(input) {
   const endPointId = String(parsed.endPointId ?? '').trim();
   if (!Array.isArray(parsed.segments) || !startPointId || !endPointId)
     throw new Error('segments, startPointId, and endPointId are required.');
-  return { segments: parsed.segments, startPointId, endPointId };
+  return {
+    segments: parsed.segments.map(segment => {
+      const normalized = normalizeSegment(segment);
+      if (!normalized)
+        throw new Error(
+          'Every segment requires segmentId, startPointId, and endPointId.'
+        );
+      return normalized;
+    }),
+    startPointId,
+    endPointId,
+  };
 }
 
 export { isJsonObject, parseInput };

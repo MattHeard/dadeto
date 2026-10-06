@@ -114,7 +114,7 @@ describe('cloud browser entrypoints', () => {
   it('uploads the root browser modules imported by cloud HTML entrypoints', async () => {
     const [mainTf, adminJs] = await Promise.all([
       readFile('infra/main.tf', 'utf8'),
-      readFile('infra/admin.js', 'utf8'),
+      readFile('src/browser/admin.js', 'utf8'),
     ]);
 
     for (const name of [
