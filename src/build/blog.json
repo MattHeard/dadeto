@@ -1,6 +1,22 @@
 {
   "posts": [
     {
+      "key": "CHRO1",
+      "title": "Chronoflow: The Tidal Archive",
+      "publicationDate": "2026-10-06",
+      "release": "beta",
+      "content": [
+        "An in-development 2D water-routing puzzle about pressure, tide gates, and solving against a shared Internet clock.",
+        {
+          "type": "manual",
+          "id": "CHRO1-manual",
+          "title": "Design handbook",
+          "src": "/manuals/chronoflow.md"
+        }
+      ],
+      "tags": ["toy", "game", "puzzle", "fluid-simulation", "beta"]
+    },
+    {
       "key": "NEON1",
       "title": "Neon Covenant: Frontier Lab",
       "publicationDate": "2026-10-03",
