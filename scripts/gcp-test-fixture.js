@@ -256,6 +256,11 @@ async function renderSeededContents({
       json: async () => ({ access_token: 'gcp-test-fixture-token' }),
     }),
     bindEffectBoundary,
+    effectFetchFn: async () => ({
+      ok: true,
+      status: 200,
+      json: async () => ({}),
+    }),
     randomUUID,
   });
 

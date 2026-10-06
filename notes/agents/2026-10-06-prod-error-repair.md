@@ -27,6 +27,9 @@ production job repeatedly returned `UNAUTHENTICATED`.
 - The first deployment-gate run failed while seeding test content because the
   fixture did not inject the newly required `bindEffectBoundary`. Import the
   trusted boundary in `scripts/gcp-test-fixture.js` and pass it explicitly.
+  The corrected retry then exposed a second required dependency,
+  `effectFetchFn`; inject a no-op success transport so the fixture does not
+  issue real CDN invalidation requests.
 
 ## Evidence and next-time guidance
 
@@ -42,7 +45,9 @@ production job repeatedly returned `UNAUTHENTICATED`.
 - Fixture regression: `npx jest test/scripts/gcp-test-fixture.test.js
   --runInBand` passed (4 tests) after injecting the effect boundary. The first
   `gcp-test` attempt failed at seed setup for this missing dependency and
-  cleaned up its temporary infrastructure; rerun the full gate after this fix.
+  cleaned up its temporary infrastructure. Retry then confirmed that
+  `effectFetchFn` must also be injected; the fixture now supplies a no-op
+  success transport and the regression asserts both dependencies.
 - After publishing, verify the search dependency URL returns HTTP 200 and force
   one production stats scheduler execution; close the production beads only
   after both are confirmed.

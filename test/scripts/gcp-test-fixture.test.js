@@ -49,5 +49,6 @@ describe('gcp-test fixture seed contract', () => {
       "import { bindEffectBoundary } from '../src/browser/allow-effects.js';"
     );
     expect(source).toContain('    bindEffectBoundary,');
+    expect(source).toContain('    effectFetchFn: async () => ({');
   });
 });
