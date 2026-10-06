@@ -33,7 +33,9 @@ production job repeatedly returned `UNAUTHENTICATED`.
   render-variant fixture factory; inject both dependencies there as well.
 - Cloud Playwright exposed a missing static sibling module: root `admin.js`
   imports `allow-effects.js`, which must be copied into the Dendrite infra
-  bundle and uploaded to the static bucket.
+  bundle and uploaded to the static bucket. Once it loaded, the next run showed
+  admin passed raw `fetch` where the permission-aware contract expects
+  `(permission, url, init)`; wrap native fetch and consume the permission.
 
 ## Evidence and next-time guidance
 
@@ -57,7 +59,10 @@ production job repeatedly returned `UNAUTHENTICATED`.
   Playwright passed 10/11 tests; the stats admin scenario failed on
   `/allow-effects.js` returning 404. `copy-cloud.js` and `infra/main.tf` now
   copy/upload that root browser module, with copy-plan and Terraform regression
-  coverage. The gcp-test retry is required before production deploy.
+  coverage. The next retry loaded the module but exposed the raw-fetch argument
+  mismatch; `createEffectFetchFn` adapts permission-aware calls to native
+  `fetch(url, init)`, and the new unit regression covers that adapter. Another
+  gcp-test retry is required before production deploy.
 - After publishing, verify the search dependency URL returns HTTP 200 and force
   one production stats scheduler execution; close the production beads only
   after both are confirmed.

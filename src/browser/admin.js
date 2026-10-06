@@ -8,7 +8,7 @@ import {
   signInWithCredential,
 } from 'https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js';
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js';
-import { bindEffectBoundary } from './allow-effects.js';
+import { bindEffectBoundary, createEffectFetchFn } from './allow-effects.js';
 
 const errorBeaconUrlPromise = loadStaticConfig()
   .then(config => config.errorBeaconUrl || '')
@@ -41,7 +41,7 @@ const handle = createInitAdminAppHandle({
   consoleObj: console,
   globalThisObj: globalThis,
   documentObj: document,
-  fetchObj: fetch,
+  fetchObj: createEffectFetchFn((input, init) => fetch(input, init)),
   bindEffectBoundary,
   reportError: errorBeaconHandlers.logError,
 });

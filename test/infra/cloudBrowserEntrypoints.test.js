@@ -112,7 +112,10 @@ describe('cloud browser entrypoints', () => {
   });
 
   it('uploads the root browser modules imported by cloud HTML entrypoints', async () => {
-    const mainTf = await readFile('infra/main.tf', 'utf8');
+    const [mainTf, adminJs] = await Promise.all([
+      readFile('infra/main.tf', 'utf8'),
+      readFile('infra/admin.js', 'utf8'),
+    ]);
 
     for (const name of [
       'admin-core.js',
@@ -131,6 +134,9 @@ describe('cloud browser entrypoints', () => {
 
     expect(mainTf).toContain(
       'source       = "${path.module}/allow-effects.js"'
+    );
+    expect(adminJs).toContain(
+      'createEffectFetchFn((input, init) => fetch(input, init))'
     );
   });
 

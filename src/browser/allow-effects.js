@@ -11,3 +11,12 @@ export async function bindEffectBoundary(handler) {
   );
   await handler(permission);
 }
+
+/**
+ * Adapt native fetch to the permission-aware transport contract used by commands.
+ * @param {(input: RequestInfo | URL, init?: RequestInit) => Promise<Response>} fetchFn Native fetch implementation.
+ * @returns {(permission: import('../../types/allow-effects').AllowEffects, input: RequestInfo | URL, init?: RequestInit) => Promise<Response>} Permission-aware fetch transport.
+ */
+export function createEffectFetchFn(fetchFn) {
+  return (_permission, input, init) => fetchFn(input, init);
+}
