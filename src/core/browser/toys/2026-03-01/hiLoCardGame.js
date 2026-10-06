@@ -226,7 +226,7 @@ export function normalizeKeyboardState(value) {
   /**
    * @param {Record<string, unknown>} candidate Stored keyboard fields.
    * @returns {HiLoKeyboardState} Normalized keyboard state.
-  */
+   */
   const normalizeActiveKey = candidate => ({
     activeKey: getStringField(candidate.activeKey),
   });

@@ -14,10 +14,11 @@ import {
 /** @typedef {import('../browserToysCore.js').ToyEnv} ToyEnv */
 
 /** @typedef {{ memoryLocation: string, path: string, found: boolean, vector: unknown[], error?: string }} MemoryVectorResponse */
-/** @typedef {{
+/**
+ * @typedef {{
  *   projectToVector?: (value: unknown) => unknown[],
  *   resolvePathError?: (request: { memoryLocation: string, path: string }, error: string) => MemoryVectorResponse,
- * }} MemoryVectorOptions */
+  }} MemoryVectorOptions */
 
 const DEFAULT_MEMORY_LOCATION = 'temporary';
 export const SUPPORTED_MEMORY_LOCATIONS = [
@@ -236,11 +237,7 @@ function buildMemoryVectorResponseFromRootResult(
  * @param {(result: Lookup) => MemoryVectorResponse} onSuccess Success response builder.
  * @returns {MemoryVectorResponse} Structured response.
  */
-function buildMemoryVectorResponseFromLookupResult(
-  result,
-  onError,
-  onSuccess
-) {
+function buildMemoryVectorResponseFromLookupResult(result, onError, onSuccess) {
   if (result.error) {
     return onError(result.error);
   }
@@ -297,11 +294,7 @@ function buildResolvedMemoryVectorResponseFromPath(
     resolvedValue,
     error => buildResolvedMemoryVectorError(request, error, options),
     result =>
-      buildResolvedMemoryVectorResponseFromValue(
-        request,
-        result.value,
-        options
-      )
+      buildResolvedMemoryVectorResponseFromValue(request, result.value, options)
   );
 }
 
@@ -493,11 +486,15 @@ function buildMemoryVectorError(
   error,
   memoryLocation = request.memoryLocation
 ) {
-  return createMemoryResult(request, {
-    found: false,
-    vector: [],
-    error,
-  }, memoryLocation);
+  return createMemoryResult(
+    request,
+    {
+      found: false,
+      vector: [],
+      error,
+    },
+    memoryLocation
+  );
 }
 
 /**
