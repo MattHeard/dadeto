@@ -288,6 +288,12 @@ async function renderSeededStoryPages({
     bucketName: staticBucket,
     objectPrefix: staticObjectPrefix,
     fetchFn: async () => createFixtureFetchResponse(),
+    bindEffectBoundary,
+    effectFetchFn: async () => ({
+      ok: true,
+      status: 200,
+      json: async () => ({}),
+    }),
     randomUUID,
   });
 

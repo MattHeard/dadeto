@@ -29,7 +29,8 @@ production job repeatedly returned `UNAUTHENTICATED`.
   trusted boundary in `scripts/gcp-test-fixture.js` and pass it explicitly.
   The corrected retry then exposed a second required dependency,
   `effectFetchFn`; inject a no-op success transport so the fixture does not
-  issue real CDN invalidation requests.
+  issue real CDN invalidation requests. The same contract also applies to the
+  render-variant fixture factory; inject both dependencies there as well.
 
 ## Evidence and next-time guidance
 
@@ -47,7 +48,9 @@ production job repeatedly returned `UNAUTHENTICATED`.
   `gcp-test` attempt failed at seed setup for this missing dependency and
   cleaned up its temporary infrastructure. Retry then confirmed that
   `effectFetchFn` must also be injected; the fixture now supplies a no-op
-  success transport and the regression asserts both dependencies.
+  success transport for render-contents. A subsequent retry then exposed the
+  same missing boundary in render-variant; both fixture factories now receive
+  the boundary and no-op transport, and the regression asserts both.
 - After publishing, verify the search dependency URL returns HTTP 200 and force
   one production stats scheduler execution; close the production beads only
   after both are confirmed.
