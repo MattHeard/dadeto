@@ -153,11 +153,19 @@ export function stepFluid(state, options = {}) {
     );
   });
 
-  const projectedVelocity = projectVelocity({
+  const advectedVelocity = advectVelocityField({
     width: state.width,
     height: state.height,
     velocityX: advectedVelocityX,
     velocityY: advectedVelocityY,
+    solids: state.solids,
+    dt,
+  });
+  const projectedVelocity = projectVelocity({
+    width: state.width,
+    height: state.height,
+    velocityX: advectedVelocity.velocityX,
+    velocityY: advectedVelocity.velocityY,
     solids: state.solids,
   });
   return {
@@ -171,6 +179,91 @@ export function stepFluid(state, options = {}) {
     sourced,
     drained,
   };
+}
+
+/**
+ * Semi-Lagrangian backtrace and bilinear sample of the cell-centered field.
+ * @param {{width: number, height: number, velocityX: number[], velocityY: number[], solids: boolean[], dt: number}} grid Velocity field and fixed step.
+ * @returns {{velocityX: number[], velocityY: number[]}} Advected field.
+ */
+export function advectVelocityField(grid) {
+  const { velocityX, velocityY, dt } = grid;
+  const { velocityX: nextX, velocityY: nextY } = createVelocityBuffers(grid);
+  forEachFluidCell(grid, (cell, x, y) => {
+    const sourceX = x - velocityX[cell] * dt;
+    const sourceY = y - velocityY[cell] * dt;
+    nextX[cell] = sampleVelocity(velocityX, { x: sourceX, y: sourceY }, grid);
+    nextY[cell] = sampleVelocity(velocityY, { x: sourceX, y: sourceY }, grid);
+  });
+  return {
+    velocityX: nextX.map(clampVelocity),
+    velocityY: nextY.map(clampVelocity),
+  };
+}
+
+/**
+ * Copy velocity arrays while enforcing zero velocity in solid cells.
+ * @param {{width: number, height: number, velocityX: number[], velocityY: number[], solids: boolean[]}} grid Velocity field.
+ * @returns {{velocityX: number[], velocityY: number[]}} Mutable working arrays.
+ */
+function createVelocityBuffers(grid) {
+  return {
+    velocityX: grid.velocityX.map((value, cell) =>
+      grid.solids[cell] ? 0 : value
+    ),
+    velocityY: grid.velocityY.map((value, cell) =>
+      grid.solids[cell] ? 0 : value
+    ),
+  };
+}
+
+/**
+ * Visit fluid cells in stable row-major order.
+ * @param {{width: number, height: number, solids: boolean[]}} grid Grid geometry.
+ * @param {(cell: number, x: number, y: number) => void} visit Cell operation.
+ * @returns {void}
+ */
+function forEachFluidCell(grid, visit) {
+  for (let y = 0; y < grid.height; y += 1) {
+    for (let x = 0; x < grid.width; x += 1) {
+      const cell = y * grid.width + x;
+      if (!grid.solids[cell]) visit(cell, x, y);
+    }
+  }
+}
+
+/**
+ * Sample a scalar cell field by clamped bilinear interpolation, excluding solids.
+ * @param {number[]} field Cell values.
+ * @param {{x: number, y: number}} point Grid coordinate.
+ * @param {{width: number, height: number, solids: boolean[]}} grid Sampling grid.
+ * @returns {number} Interpolated value from available fluid cells.
+ */
+function sampleVelocity(field, point, grid) {
+  const { width, height, solids } = grid;
+  const { x, y } = point;
+  const sampleX = Math.min(width - 1, Math.max(0, x));
+  const sampleY = Math.min(height - 1, Math.max(0, y));
+  const left = Math.floor(sampleX);
+  const right = Math.min(width - 1, left + 1);
+  const top = Math.floor(sampleY);
+  const bottom = Math.min(height - 1, top + 1);
+  const fractionX = sampleX - left;
+  const fractionY = sampleY - top;
+  const samples = [
+    { cell: top * width + left, weight: (1 - fractionX) * (1 - fractionY) },
+    { cell: top * width + right, weight: fractionX * (1 - fractionY) },
+    { cell: bottom * width + left, weight: (1 - fractionX) * fractionY },
+    { cell: bottom * width + right, weight: fractionX * fractionY },
+  ];
+  let weightedValue = 0;
+  let totalWeight = 0;
+  for (const sample of samples) {
+    if (solids[sample.cell] || sample.weight === 0) continue;
+    weightedValue += field[sample.cell] * sample.weight;
+    totalWeight += sample.weight;
+  }
+  return weightedValue / totalWeight;
 }
 
 /**
@@ -218,26 +311,18 @@ function projectVelocity(grid) {
     pressure = nextPressure;
   }
 
-  const projectedX = [...velocityX];
-  const projectedY = [...velocityY];
-  for (let y = 0; y < height; y += 1) {
-    for (let x = 0; x < width; x += 1) {
-      const cell = y * width + x;
-      if (solids[cell]) {
-        projectedX[cell] = 0;
-        projectedY[cell] = 0;
-        continue;
-      }
-      if (x + 1 < width && !solids[cell + 1]) {
-        projectedX[cell] -= pressure[cell + 1] - pressure[cell];
-      }
-      if (y + 1 < height && !solids[cell + width]) {
-        projectedY[cell] -= pressure[cell + width] - pressure[cell];
-      }
-      projectedX[cell] = clampVelocity(projectedX[cell]);
-      projectedY[cell] = clampVelocity(projectedY[cell]);
+  const { velocityX: projectedX, velocityY: projectedY } =
+    createVelocityBuffers(grid);
+  forEachFluidCell(grid, (cell, x, y) => {
+    if (x + 1 < width && !solids[cell + 1]) {
+      projectedX[cell] -= pressure[cell + 1] - pressure[cell];
     }
-  }
+    if (y + 1 < height && !solids[cell + width]) {
+      projectedY[cell] -= pressure[cell + width] - pressure[cell];
+    }
+    projectedX[cell] = clampVelocity(projectedX[cell]);
+    projectedY[cell] = clampVelocity(projectedY[cell]);
+  });
   return { velocityX: projectedX, velocityY: projectedY };
 }
 

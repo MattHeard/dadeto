@@ -1,5 +1,6 @@
 import { describe, expect, it, jest } from '@jest/globals';
 import {
+  advectVelocityField,
   createFluidState,
   stepFluid,
 } from '../../../../src/core/browser/game/chronoflow/chronoflow.js';
@@ -61,6 +62,49 @@ class FakeElement {
 }
 
 describe('Chronoflow deterministic fluid core', () => {
+  it('advects a uniform velocity field without changing its value', () => {
+    const result = advectVelocityField({
+      width: 4,
+      height: 2,
+      velocityX: Array(8).fill(0.5),
+      velocityY: Array(8).fill(-0.25),
+      solids: Array(8).fill(false),
+      dt: 0.1,
+    });
+    expect(result.velocityX).toEqual(Array(8).fill(0.5));
+    expect(result.velocityY).toEqual(Array(8).fill(-0.25));
+  });
+
+  it('transports a localized velocity pattern in its travel direction', () => {
+    const result = advectVelocityField({
+      width: 5,
+      height: 1,
+      velocityX: Array(5).fill(0.5),
+      velocityY: [0, 1, 0, 0, 0],
+      solids: Array(5).fill(false),
+      dt: 0.1,
+    });
+    expect(result.velocityY[1]).toBeGreaterThan(result.velocityY[2]);
+    expect(result.velocityY[2]).toBeGreaterThan(0);
+    expect(result.velocityY.every(Number.isFinite)).toBe(true);
+    expect(result.velocityY.every(value => Math.abs(value) <= 1)).toBe(true);
+  });
+
+  it('never samples velocity from a solid cell', () => {
+    const result = advectVelocityField({
+      width: 3,
+      height: 1,
+      velocityX: [0, -1, 1],
+      velocityY: [0, 1, 0],
+      solids: [false, true, false],
+      dt: 0.1,
+    });
+    expect(result.velocityX[1]).toBe(0);
+    expect(result.velocityY[1]).toBe(0);
+    expect(result.velocityX[2]).toBe(1);
+    expect(result.velocityY[2]).toBe(0);
+  });
+
   it('creates independent bounded cell, velocity, and solid arrays', () => {
     const inputVolume = [0.5, 0.25];
     const state = createFluidState({

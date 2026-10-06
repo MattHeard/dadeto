@@ -19,6 +19,7 @@
   - `reports/coverage/coverage-summary.json`
   - the configured local Playwright report output.
 - Pressure projection regression: a fixed-order 24-iteration Jacobi solve must lower the existing cell-centered face divergence, preserve solid walls and volume, and replay a varied 8×6 closed field identically for 600 steps.
+- Velocity-advection regression: `advectVelocityField` backtraces by velocity × fixed `dt`, bilinearly samples only fluid cells, preserves uniform fields, transports a feature under a carrier flow, and keeps solid cells at zero. Advection precedes pressure projection in `stepFluid`.
 - Exit code:
   - `0`
 
