@@ -68,7 +68,7 @@ function parseInput(input) {
   if (!Array.isArray(parsed.segments) || !startPointId || !endPointId)
     throw new Error('segments, startPointId, and endPointId are required.');
   return {
-    segments: parsed.segments.map(segment => {
+    segments: parsed.segments.map((/** @type {unknown} */ segment) => {
       const normalized = normalizeSegment(segment);
       if (!normalized)
         throw new Error(
