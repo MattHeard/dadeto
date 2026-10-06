@@ -25,6 +25,18 @@
 ## Promoted from Real Failures
 
 - Date: 2026-10-06
+- Failure observed: an epoch sample and its offset estimate could disagree about the reference point within the request window.
+- Root cause: the adapter computed offset at the request midpoint but advanced the raw server sample from response completion without accounting for the half-round-trip between those points.
+- Fix implemented: advance from the midpoint anchor using half-round-trip uncertainty plus monotonic age, and measure the request through JSON body consumption.
+- Guardrail added: deterministic tests assert the sampled offset, uncertainty, and extrapolated epoch together.
+
+- Date: 2026-10-06
+- Failure observed: clock-sample offset expectations were inconsistent with the measured request midpoint.
+- Root cause: offset is `serverEpochMs - (requestStartMs + responseEndMs) / 2`; request latency must be accounted for exactly once.
+- Fix implemented: assert the midpoint-derived offset and half-round-trip uncertainty independently for direct samples and injected fetch samples.
+- Guardrail added: clock tests use explicit monotonic request brackets and avoid expected values derived from wall time.
+
+- Date: 2026-10-06
 - Failure observed: the first browser scenario waited on a generic `#status` element that the page does not define.
 - Root cause: the authored page uses `#chronoflow-status` to avoid a generic id and identify the live game status explicitly.
 - Fix implemented: point the browser acceptance at the actual status region and complete the sluice, win, and reset journey.

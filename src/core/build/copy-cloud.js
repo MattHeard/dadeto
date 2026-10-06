@@ -1023,6 +1023,7 @@ function createCopyCloudDirectoryPlan(planValues) {
     browserDir,
   } = planValues;
   const functionDirectories = [
+    'chronoflow-time',
     'assign-moderation-job',
     'generate-stats',
     'get-api-key-credit',
