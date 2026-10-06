@@ -50,7 +50,9 @@ The current output is a responsive water-depth board with direction markers deri
 
 Play the full first level at `/chronoflow/`. Select one of the dashed stone cells and carve a channel, route the junction to the archive, open the sluice, then advance water in fixed batches until the archive chamber fills to at least 12%. Reset restores the initial board and edit budget. A trusted synchronized high tide at the instant the chamber fills awards a timed record; all other cases complete as practice. The device clock never affects this prototype.
 
-The CHRO1 embedded toy is an untimed command-stream preview using the same solver. Submit a JSON object with a `commands` array; for example:
+The CHRO1 embedded toy uses the Mosslight virtual keypad and a pixelated 160×144 handheld screen. Move the cursor with the directional buttons, press A to carve or refill either marked cell, B to switch between the archive and drain routes, X to open the sluice, and Y to advance the water by 60 fixed simulation steps. Press R on a keyboard to reset. Progress persists locally; embedded play always remains untimed practice.
+
+For deterministic command replay, submit a JSON object with a `commands` array; for example:
 
 ```json
 {"commands":[{"type":"route","value":"archive"},{"type":"edit","cell":11},{"type":"open"},{"type":"advance","steps":60,"batches":5}]}

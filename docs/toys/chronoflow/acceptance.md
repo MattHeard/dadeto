@@ -21,6 +21,7 @@
 - [x] A timed attempt cannot start near a phase boundary where clock uncertainty could place the real tide outside high; controls pause when the trusted high window closes.
 - [x] Local Playwright can open the sluice, advance water to a win state, and reset to the initial board.
 - [x] The embedded toy and full-page runtime produce the same solver state from the same command stream; embedded replay remains untimed practice.
+- [x] CHRO1 uses the Mosslight keypad with a persistent, pixelated 160×144 practice screen; directional input selects cells and A/B/X/Y controls edit, route, open, and advance the puzzle.
 - [x] `npm run build` emits the Chronoflow page and its runtime assets.
 - [x] Local Playwright acceptance opens the page, routes water, verifies trusted high-tide credit, verifies unavailable/offline practice completion, and confirms reset.
 
