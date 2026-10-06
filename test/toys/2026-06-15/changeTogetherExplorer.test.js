@@ -158,8 +158,6 @@ describe('changeTogetherExplorer', () => {
     expect(changeTogetherExplorerTestOnly.isRecord([])).toBe(false);
     expect(changeTogetherExplorerTestOnly.isRecord(null)).toBe(false);
     expect(changeTogetherExplorerTestOnly.isRecord('text')).toBe(false);
-    expect(changeTogetherExplorerTestOnly.toText('x')).toBe('x');
-    expect(changeTogetherExplorerTestOnly.toText(3)).toBe('');
     expect(changeTogetherExplorerTestOnly.pairKey('z', 'a')).toBe('a\u0000z');
   });
 

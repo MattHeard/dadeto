@@ -2,6 +2,7 @@
 // (input, env) -> string
 
 import { isObject as isRecord, parseToyRecord } from '../browserToysCore.js';
+import { stringOrNull } from '../../../commonCore.js';
 
 /**
  * @typedef {{
@@ -109,7 +110,7 @@ function normalizeChangeSet(changeSet, index) {
   }
 
   return {
-    id: toText(record.id) || `change-set-${index + 1}`,
+    id: stringOrNull(record.id) || `change-set-${index + 1}`,
     files: normalizeFileList(record.files),
   };
 }
@@ -317,15 +318,6 @@ function pairKey(left, right) {
  * @param {unknown} value Candidate text value.
  * @returns {string} String or empty string.
  */
-function toText(value) {
-  let text = '';
-  if (typeof value === 'string') {
-    text = value;
-  }
-
-  return text;
-}
-
 export const changeTogetherExplorerTestOnly = {
   normalizeChangeSets,
   normalizeChangeSet,
@@ -340,5 +332,4 @@ export const changeTogetherExplorerTestOnly = {
   compareRankedFiles,
   pairKey,
   isRecord,
-  toText,
 };
