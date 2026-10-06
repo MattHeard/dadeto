@@ -1,7 +1,6 @@
 import { searchResult, validatePossessionContextTime } from './search-core.js';
 import { evaluateServiceAreaFeasibility } from './service-area.js';
-
-const DEFAULT_RUNNER_ID = 'RUNNER-1';
+import { DEFAULT_RUNNER_ID } from './search-config.js';
 
 /**
  * Create the storage-agnostic object-minute search application.

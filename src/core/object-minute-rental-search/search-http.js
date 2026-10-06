@@ -1,9 +1,8 @@
 import { createObjectMinuteRentalSearch } from './search-application.js';
 import { SOPHIE_CHARLOTTE_SERVICE_AREA } from './service-area.js';
 import { executeSearchHttpRequest } from './request/index.js';
+import { DEFAULT_RUNNER_ID } from './search-config.js';
 export { normalizeRequest, dailyWindow } from './request/index.js';
-
-const DEFAULT_RUNNER_ID = 'RUNNER-1';
 
 /**
  * Create the stateless search HTTP adapter.
