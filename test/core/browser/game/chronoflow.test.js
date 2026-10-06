@@ -534,6 +534,8 @@ describe('Chronoflow Archive Entry runtime', () => {
 
     expect(solution).toEqual(repeated);
     expect(solution.completed).toBe(true);
+    expect(solution.route).toBe('archive');
+    expect(solution.gateOpen).toBe(true);
     expect(solution.fluid.volume[solution.targetCell]).toBeGreaterThanOrEqual(
       solution.targetVolume
     );
@@ -541,7 +543,11 @@ describe('Chronoflow Archive Entry runtime', () => {
     expect(
       solution.fluid.volume.every(volume => volume >= 0 && volume <= 1)
     ).toBe(true);
+    expect(solution.fluid.solids[12]).toBe(false);
+    expect(solution.fluid.solids[13]).toBe(false);
     expect(decoy.completed).toBe(false);
+    expect(decoy.route).toBe('drain');
+    expect(totalVolume(decoy.fluid)).toBeLessThan(1);
     expect(decoy.fluid.volume[decoy.targetCell]).toBe(0);
   });
 

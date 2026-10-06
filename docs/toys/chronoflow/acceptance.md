@@ -10,8 +10,8 @@
 - [x] Versioned saves restore deterministic board/solver progress as practice, reject malformed or incompatible state, and never retain a clock estimate or timed credit.
 - [ ] Clock tests use injected server responses and monotonic samples; they verify offset, uncertainty, stale rejection, resync, sleep/resume, and offline practice without reading browser wall time.
 - [x] Archive Entry includes an executable deterministic command witness that reaches the target within edit/overflow limits; the decoy route does not fill the target.
-- [ ] The Archive Entry level's deterministic witness opens the sluice and reaches the 12% target without exceeding any cell capacity.
-- [ ] The junction valve selects between the archive route and decoy drain; the decoy loses water without filling the target.
+- [x] The Archive Entry level's deterministic witness selects the archive route, opens the sluice, reaches the 12% target, and keeps every cell within capacity.
+- [x] The junction valve selects between the archive route and decoy drain; the decoy accumulates drained water without filling the target.
 - [x] Players can reshape either marked stone cell into a channel within the three-edit budget, and reset restores both cells and the budget.
 - [ ] Selecting any cell reports solver-backed depth, hydraulic head, and velocity in an accessible readout.
 - [x] Time endpoint returns a positive server epoch with no-store/CORS headers, answers preflight, and rejects non-GET requests.
