@@ -248,7 +248,7 @@ function findClassifierViolations(deps, predicate) {
  * @returns {boolean} True when the function is validator-only.
  */
 function isValidatorOnlyFunction(fn) {
-  return fn.labels.includes('validator') && !fn.labels.includes('parser');
+  return fn.labels.includes('validator') && !isParserFunction(fn);
 }
 
 /**
