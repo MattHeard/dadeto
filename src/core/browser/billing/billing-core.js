@@ -1,3 +1,5 @@
+import { isObjectRecord } from '../validation.js';
+
 /** @typedef {{packageId: string, currency: 'usd', amountUsdMinor: number, credits: number}} BillingOffer */
 
 /**
@@ -6,7 +8,7 @@
  * @returns {Array<{ packageId: string, currency: string, amountUsdMinor: number, credits: number }>} Offers.
  */
 export function normalizeBillingOffers(value) {
-  if (!isRecord(value) || !Array.isArray(value.packages))
+  if (!isObjectRecord(value) || !Array.isArray(value.packages))
     throw new TypeError('Invalid billing package response');
   return value.packages.map(normalizeBillingOffer);
 }
@@ -40,16 +42,7 @@ function normalizeBillingOffer(offer) {
  * @returns {asserts offer is Record<string, unknown>} Throws for non-record values.
  */
 function assertBillingOfferObject(offer) {
-  if (!isRecord(offer)) throw new TypeError('Invalid billing package');
-}
-
-/**
- * Check for a non-array object from an untyped response boundary.
- * @param {unknown} value Candidate value.
- * @returns {value is Record<string, unknown>} Whether value is a record.
- */
-function isRecord(value) {
-  return value !== null && typeof value === 'object' && !Array.isArray(value);
+  if (!isObjectRecord(offer)) throw new TypeError('Invalid billing package');
 }
 
 /**
@@ -77,7 +70,7 @@ export function createBillingController(deps) {
     try {
       const token = await getPurchaseToken(deps);
       const response = await deps.postCheckout(packageId, token, attemptId);
-      if (!isRecord(response) || typeof response.url !== 'string')
+      if (!isObjectRecord(response) || typeof response.url !== 'string')
         throw new Error('Invalid checkout response');
       deps.navigate(response.url);
       return response;
