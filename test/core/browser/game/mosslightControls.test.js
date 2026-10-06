@@ -22,9 +22,36 @@ import {
   battleAction,
 } from '../../../../src/core/browser/game/mosslight-valley/combat.js';
 import { CONTENT } from '../../../../src/core/browser/game/mosslight-valley/content.js';
-import { createSaveAdapter } from '../../../../src/core/browser/game/mosslight-valley/save.js';
+import {
+  createSaveAdapter,
+  parseSave,
+} from '../../../../src/core/browser/game/mosslight-valley/save.js';
+import { actorAt } from '../../../../src/core/browser/game/mosslight-valley/actors.js';
 
 const tap = (state, action) => stepGame(stepGame(state, []), [action]);
+
+test('actor lookup tolerates a missing NPC list', () => {
+  expect(actorAt({ npcs: undefined, mapId: 'village' }, 1, 1)).toBeNull();
+});
+
+test('battle action leaves state unchanged when the enemy is absent', () => {
+  const state = { battle: { creatureId: 'missing' } };
+  expect(battleAction(state, 'strike', CONTENT)).toBe(state);
+});
+
+test('save parser rejects a version two envelope with a null state', () => {
+  expect(
+    parseSave(
+      JSON.stringify({
+        game: 'mosslight-valley',
+        version: 2,
+        slot: 0,
+        savedAt: new Date(0).toISOString(),
+        state: null,
+      })
+    )
+  ).toBeNull();
+});
 
 test('pause freezes idle ticks and autosaves but controller presses still close it', () => {
   const writes = [];

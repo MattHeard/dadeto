@@ -6,6 +6,38 @@ import {
 } from '../../../../src/core/local/gcp-simulator/fake-firestore.js';
 
 describe('fake firestore', () => {
+  it('rejects non-object update targets and patches', () => {
+    expect(() =>
+      fakeFirestoreTestUtils.resolveOperation(
+        { value: 1 },
+        { path: 'things/x', mode: 'update', nextData: [] }
+      )
+    ).toThrow('Cannot apply non-object update');
+    expect(() =>
+      fakeFirestoreTestUtils.resolveOperation(
+        { value: 1 },
+        { path: 'things/x', mode: 'update', nextData: {} }
+      )
+    ).not.toThrow();
+  });
+
+  it('returns non-plain write values unchanged', () => {
+    const date = new Date(0);
+    expect(fakeFirestoreTestUtils.normalizeWrittenValue(date)).toBe(date);
+  });
+
+  it('commits writes without an optional onCommit callback', async () => {
+    const db = createFakeFirestore();
+    await expect(db.doc('things/a').set({ value: 1 })).resolves.toBeUndefined();
+    await expect(db.__getDocument('things/a')).resolves.toEqual({ value: 1 });
+  });
+
+  it('ignores non-plain values in merge writes', async () => {
+    const db = createFakeFirestore();
+    db.__setPathData('things/merge', []);
+    await db.doc('things/merge').set([], { merge: true });
+    expect(await db.__getDocument('things/merge')).toEqual({});
+  });
   it('keeps array rejection distinct from plain-prototype record acceptance', () => {
     const array = Object.setPrototypeOf([], Object.prototype);
     array.value = 'array field';
@@ -134,6 +166,7 @@ describe('fake firestore queries and ordering', () => {
       .limit(3)
       .get();
     expect(ordered.docs.map(doc => doc.id)).toEqual(['b', 'c', 'a']);
+    expect((await db.collection('things').limit(2).get()).docs).toHaveLength(2);
     expect(
       (await db.collection('things').orderBy('rank').get()).docs
     ).toHaveLength(3);

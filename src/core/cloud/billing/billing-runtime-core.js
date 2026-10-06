@@ -635,6 +635,8 @@ export const billingRuntimeTestUtils = {
   listBillingLots,
   createLegacyLot,
   resolveRefundStatus,
+  markReservationNeedsRecovery,
+  consumeLotsOrNull,
 };
 
 /**

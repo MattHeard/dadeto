@@ -17,6 +17,7 @@ import {
   stepSimulation,
   toCanvasPayload,
   updateInputState,
+  beaconBounceTestOnly,
 } from '../../../src/core/browser/toys/2026-07-01/beaconBounce.js';
 
 /**
@@ -1536,6 +1537,11 @@ function runScenario1412Part0(context) {
     previousActions: createActionFlags(),
     control: { paused: false, speedMultiplier: 1, stepCount: 0 },
   });
+  const resetInput = createInitialInputState();
+  resetInput.actions.resetPressed = true;
+  expect(
+    beaconBounceTestOnly.createResetState(resetInput, null, null)
+  ).not.toBeNull();
   context.previousInput = {
     keyboard: { p: true },
     actions: {

@@ -7,6 +7,14 @@ import {
   processNewPageTestUtils,
 } from '../../../../src/core/cloud/process-new-page/process-new-page-core.js';
 
+test('incoming option context returns null when its story reference is absent', async () => {
+  await expect(
+    processNewPageTestUtils.buildIncomingOptionContext({
+      validRefs: { variantRef: null, storyRefCandidate: null },
+    })
+  ).resolves.toBeNull();
+});
+
 describe('incrementVariantName', () => {
   it('defaults to a when the input is invalid', () => {
     expect(incrementVariantName(undefined)).toBe('a');

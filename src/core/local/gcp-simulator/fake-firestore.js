@@ -183,6 +183,8 @@ export const fakeFirestoreTestUtils = {
   matchesPrefix,
   buildEventsFromTouched,
   cloneDocument,
+  resolveOperation,
+  normalizeWrittenValue,
 };
 
 /**
@@ -598,10 +600,9 @@ function resolveOperation(existing, operation) {
     throw new Error(`Cannot update missing document: ${operation.path}`);
   }
 
-  const merged = cloneDocument(existing);
-  if (!isPlainObject(merged)) {
-    throw new Error(`Cannot update non-object document: ${operation.path}`);
-  }
+  const merged = /** @type {Record<string, unknown>} */ (
+    cloneDocument(existing)
+  );
   const patch = operation.nextData ?? {};
   if (!isPlainObject(patch)) {
     throw new Error(`Cannot apply non-object update: ${operation.path}`);

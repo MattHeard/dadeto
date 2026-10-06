@@ -72,6 +72,27 @@ describe('crystalBreaker', () => {
     expect(hudTexts).toHaveLength(4);
     expect(Math.max(...hudTexts.map(shape => shape.x))).toBeLessThan(360);
   });
+
+  it('resets a running game on a newly pressed reset key', () => {
+    const persisted = h.createSeedState({ width: 240, height: 160 }, null);
+    persisted.input.actions.resetPressed = false;
+    persisted.score = 42;
+
+    expect(
+      h.buildNextState(persisted, { type: 'keydown', key: 'r' })
+    ).toMatchObject({
+      score: 0,
+      frame: 0,
+    });
+  });
+
+  it('resets with default dimensions when no state is persisted', () => {
+    expect(h.buildNextState(null, { reset: true })).toMatchObject({
+      width: 360,
+      height: 240,
+      frame: 1,
+    });
+  });
 });
 
 describe('crystalBreaker helper contracts', () => {
@@ -1576,6 +1597,28 @@ function runScenario78Part1() {
   expect(h.normalizeCrystalState('shattered')).toBe('shattered');
   expect(h.normalizeCrystalState('bad')).toBe('whole');
   expect(h.normalizeCrystalState('whole')).toBe('whole');
+  expect(h.normalizeCrystalPositionAndSize(null, 0)).toMatchObject({
+    x: 0,
+    y: 0,
+    width: 24,
+    height: 14,
+  });
+  expect(h.normalizeCrystalStats(null)).toEqual({
+    hp: 1,
+    maxHp: 1,
+    fracture: 0,
+  });
+  expect(h.createSeedState(null, null).width).toBeGreaterThan(0);
+  const seed = h.createSeedState({ width: 180, height: 140 }, null);
+  expect(h.buildNextState(seed, {}).frame).toBe(1);
+  expect(h.buildNextState(seed, null).frame).toBe(1);
+  expect(
+    h.buildNextState(seed, {
+      type: 'keydown',
+      key: 'r',
+      reset: true,
+    }).frame
+  ).toBe(0);
   expect(h.normalizeStatus('ready')).toBe('ready');
   expect(h.normalizeStatus('paused')).toBe('paused');
 }
@@ -1676,6 +1719,12 @@ function runScenario224Part0(context) {
     frame: 1,
     width: 180,
     height: 140,
+  });
+  expect(
+    context.h.buildNextState(context.state, { type: 'keydown', key: 'r' })
+  ).toMatchObject({
+    frame: 0,
+    status: 'ready',
   });
   context.dirtyState = {
     ...context.state,

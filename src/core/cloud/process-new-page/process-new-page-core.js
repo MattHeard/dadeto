@@ -1628,6 +1628,7 @@ export const processNewPageTestUtils = {
   ensureOptionSnapshotRef,
   resolveStoryRefOrEmpty,
   createPageContext,
+  buildIncomingOptionContext,
 };
 
 /**

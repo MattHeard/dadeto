@@ -635,3 +635,5 @@ export function createCheckoutSessionExpressHandle(deps) {
     res.status(result.status).json(result.body);
   };
 }
+
+export const createCheckoutSessionTestUtils = { createCheckoutResult };

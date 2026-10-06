@@ -2810,7 +2810,7 @@ describe('createHandleVariantWrite', () => {
     });
 
     const change = {
-      before: { exists: true, data: () => ({ visibility: 0 }) },
+      before: { exists: false, data: () => ({ visibility: 0 }) },
       after: {
         exists: true,
         data: () => ({ dirty: true, visibility: VISIBILITY_THRESHOLD }),
@@ -3138,7 +3138,7 @@ describe('createHandleVariantWrite fallback paths', () => {
     });
 
     const change = {
-      before: { exists: true, data: () => ({ visibility: 0 }) },
+      before: { exists: false, data: () => ({ visibility: 0 }) },
       after: {
         exists: true,
         data: () => ({ dirty: true, visibility: VISIBILITY_THRESHOLD }),
@@ -3152,6 +3152,23 @@ describe('createHandleVariantWrite fallback paths', () => {
     expect(dirtyUpdate).toHaveBeenCalledWith({
       dirty: 'sentinel',
     });
+  });
+
+  it('returns after rendering when the changed document has no reference', async () => {
+    const renderVariant = jest.fn().mockResolvedValue(null);
+    const handler = createHandleVariantWrite({
+      renderVariant,
+      getDeleteSentinel: () => 'sentinel',
+      db: { doc: jest.fn() },
+    });
+    await handler(
+      {
+        before: { exists: false, data: () => ({ visibility: 0 }) },
+        after: { exists: true, data: () => ({ dirty: true }), ref: null },
+      },
+      {}
+    );
+    expect(renderVariant).toHaveBeenCalled();
   });
 });
 
@@ -3170,6 +3187,15 @@ describe('getAncestorRef', () => {
 });
 
 describe('getPageSnapFromRef', () => {
+  it('returns no page ref when a valid variant chain has a falsy grandparent', () => {
+    expect(
+      RenderVariantCore.renderVariantCoreTestUtils.resolveTenantPageRef(
+        { ref: { parent: { parent: null } } },
+        null
+      )
+    ).toBeNull();
+  });
+
   it('resolves the nested page snapshot when parents exist', async () => {
     const pageSnap = { exists: true };
     const pageRef = { get: jest.fn().mockResolvedValue(pageSnap) };
@@ -3188,6 +3214,35 @@ describe('getPageSnapFromRef', () => {
     expect(result).toBe(pageSnap);
     expect(db.doc).toHaveBeenCalledWith('stories/1/pages/2/variants/3');
     expect(pageRef.get).toHaveBeenCalled();
+  });
+
+  it('returns undefined when tenant document rebinding loses the ancestor chain', async () => {
+    const tenantVariantRef = { path: 'stories/1/pages/2/variants/3' };
+    const db = { doc: jest.fn(() => tenantVariantRef) };
+
+    await expect(
+      getPageSnapFromRef({ ref: { path: 'stories/1/pages/2/variants/3' } }, db)
+    ).resolves.toBeUndefined();
+  });
+
+  it('returns undefined when the tenant page reference is missing after variant lookup', async () => {
+    const variantRef = { parent: { parent: {} } };
+    const db = {
+      doc: jest
+        .fn()
+        .mockReturnValueOnce(variantRef)
+        .mockReturnValueOnce({ parent: {} }),
+    };
+
+    await expect(
+      getPageSnapFromRef({ ref: { path: 'stories/1/pages/2/variants/3' } }, db)
+    ).resolves.toBeUndefined();
+  });
+
+  it('returns undefined when the tenant db cannot resolve document paths', async () => {
+    await expect(
+      getPageSnapFromRef({ ref: { path: 'stories/1/pages/2/variants/3' } }, {})
+    ).resolves.toBeUndefined();
   });
 
   it('rebounds the page reference through the tenant db before fetching', async () => {
@@ -3306,6 +3361,34 @@ describe('fetchPageData', () => {
     const result = await fetchPageData(snap, db);
 
     expect(result).toBeNull();
+  });
+
+  it('returns undefined when the variant reference has no page ancestor', async () => {
+    await expect(
+      getPageSnapFromRef(
+        { ref: { path: 'variants/a' } },
+        {
+          doc: () => ({ parent: null }),
+        }
+      )
+    ).resolves.toBeUndefined();
+  });
+
+  it('returns null when the tenant variant has no page reference', async () => {
+    const tenantVariantRef = { parent: {} };
+
+    await expect(
+      getPageSnapFromRef(
+        { ref: { path: 'stories/1/pages/2/variants/3' } },
+        { doc: () => tenantVariantRef }
+      )
+    ).resolves.toBeUndefined();
+  });
+
+  it('returns undefined when the tenant db cannot resolve a variant path', async () => {
+    await expect(
+      getPageSnapFromRef({ ref: { path: 'stories/1/pages/2/variants/3' } }, {})
+    ).resolves.toBeUndefined();
   });
 });
 

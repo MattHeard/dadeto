@@ -454,7 +454,10 @@ export function createWriterServer(localApp, options) {
 
   if (isWriterHttpsEnabled(env)) {
     return httpsCreateServer(
-      readWriterTlsOptions(env || {}, readFileSync),
+      readWriterTlsOptions(
+        /** @type {Record<string, string | undefined>} */ (env),
+        readFileSync
+      ),
       typedLocalApp
     );
   }

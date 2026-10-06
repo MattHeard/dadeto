@@ -84,6 +84,8 @@ function createResetState(inputState, persisted, input) {
   );
 }
 
+export const beaconBounceTestOnly = { createResetState };
+
 /**
  * Advance a running state by the requested number of frames.
  * @param {BeaconState} next Mutable next state.

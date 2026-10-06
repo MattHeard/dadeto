@@ -509,6 +509,7 @@ async function buildSimulatorState(config) {
     authVerifiers,
     fieldValue,
     db,
+    randomUUID,
   });
 
   await seedStaticFixture(storage, bucketName);
@@ -808,12 +809,18 @@ function createSubmitNewStoryConfig(options) {
 
 /**
  * Create test utilities exposed by the simulator.
- * @param {{ snapshotHelpers: ReturnType<typeof createSnapshotHelpers>, lookupHelpers: ReturnType<typeof createLookupHelpers>, authVerifiers: ReturnType<typeof createSimulatorAuthVerifiers>, fieldValue: ReturnType<typeof createFakeFieldValue>, db: SimulatorDb }} options Utility dependencies.
+ * @param {{ snapshotHelpers: ReturnType<typeof createSnapshotHelpers>, lookupHelpers: ReturnType<typeof createLookupHelpers>, authVerifiers: ReturnType<typeof createSimulatorAuthVerifiers>, fieldValue: ReturnType<typeof createFakeFieldValue>, db: SimulatorDb, randomUUID: () => string }} options Utility dependencies.
  * @returns {object} Test utility bag.
  */
 function createSimulatorTestUtils(options) {
-  const { snapshotHelpers, lookupHelpers, authVerifiers, fieldValue, db } =
-    options;
+  const {
+    snapshotHelpers,
+    lookupHelpers,
+    authVerifiers,
+    fieldValue,
+    db,
+    randomUUID,
+  } = options;
   return {
     resolveTargetPageNumber: getTargetPageNumber,
     extractParams,
@@ -833,6 +840,18 @@ function createSimulatorTestUtils(options) {
     generateStatsVerifyIdToken: authVerifiers.verifyStatsIdToken,
     submitNewPageVerifyIdToken: authVerifiers.verifySubmitNewPageIdToken,
     submitNewStoryVerifyIdToken: authVerifiers.verifySubmitNewStoryIdToken,
+    requireSimulatorDb,
+    readVerifiedUid,
+    resolveAuthorUuidInSimulator: (/** @type {SimulatorRequest} */ request) =>
+      resolveAuthorUuidInSimulator(
+        { verifyIdToken: async () => ({ uid: null }), db, randomUUID },
+        request
+      ),
+    assignModerationJob: (
+      /** @type {SimulatorRequest} */ request,
+      overrideDb = null
+    ) => handleAssignModerationJob({ db: overrideDb ?? db }, request),
+    createDispatchCommittedWrites,
   };
 }
 

@@ -1,5 +1,6 @@
 import { describe, expect, it, jest } from '@jest/globals';
 import {
+  createCheckoutSessionTestUtils,
   createCheckoutSessionExpressHandle,
   createCheckoutSessionHandler,
 } from '../../../../src/core/cloud/create-checkout-session/create-checkout-session-core.js';
@@ -15,6 +16,20 @@ const stripeField = {
   pricingSnapshotId: 'pricing_snapshot_id',
   purchaseId: 'purchase_id',
 };
+
+it('reports a missing public billing origin before checkout dependencies run', async () => {
+  await expect(
+    createCheckoutSessionTestUtils.createCheckoutResult(
+      {},
+      { key: 'k', packageId: 'p', uid: 'u' },
+      { credits: 1 },
+      'uuid'
+    )
+  ).resolves.toMatchObject({
+    status: 500,
+    body: { error: { code: 'configuration_error' } },
+  });
+});
 
 const request = (
   body = { packageId: 'credits-100' },

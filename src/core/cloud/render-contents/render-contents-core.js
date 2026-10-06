@@ -909,6 +909,7 @@ function getDefaultConsoleError() {
 
 export const renderContentsTestUtils = {
   getDefaultConsoleError,
+  extractAccessToken,
 };
 
 /**

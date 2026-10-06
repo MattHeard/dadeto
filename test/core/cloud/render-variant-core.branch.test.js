@@ -58,6 +58,14 @@ test('hasVisibleVariants checks for any visible snapshot', () => {
 
 test('covers option href and pending-path fallbacks', () => {
   const utils = renderVariantCoreTestUtils;
+  expect(utils.shouldSkipVisibilityUpdate({}, true, {})).toBe(true);
+  expect(utils.getVariantNameOrUndefined(null)).toBeUndefined();
+  expect(utils.resolveTenantPageRefFromVariantRef({})).toBeNull();
+  expect(
+    utils.resolveTenantPageRefFromVariantRef({ parent: { parent: null } })
+  ).toBeNull();
+  expect(utils.isPageSnapValid(null)).toBe(false);
+  expect(utils.mapSourceFilePath({ data: () => ({}) })).toBeUndefined();
   expect(utils.readSnapshotData()).toEqual({});
   expect(utils.readSnapshotData({ data: null })).toEqual({});
   expect(utils.readSnapshotData({ data: () => null })).toEqual({});
@@ -112,6 +120,42 @@ test('covers option href and pending-path fallbacks', () => {
     })
   ).toBe('v1');
   expect(utils.resolveVariantIdFromPath({ ref: {} })).toBeUndefined();
+});
+
+test('covers absent tenant references during metadata and page resolution', async () => {
+  const utils = renderVariantCoreTestUtils;
+  expect(await utils.fetchTargetPageMetadata(null, {}, 0.5)).toEqual({});
+  expect(await utils.loadOptions({ snap: {}, db: {} })).toEqual([]);
+  expect(await utils.fetchRootPageUrl({ rootPage: null }, {})).toBeUndefined();
+  expect(await utils.fetchAndValidatePage({}, {})).toBeNull();
+  await expect(
+    utils.saveAltsHtml({ snap: {}, db: {}, bucket: {}, page: {} })
+  ).rejects.toThrow('page parent reference');
+  await expect(
+    utils.saveAltsHtml({
+      snap: { ref: { parent: null } },
+      db: {},
+      bucket: {},
+      page: {},
+    })
+  ).rejects.toThrow('page parent reference');
+  await expect(
+    utils.saveAltsHtml({
+      snap: { ref: { parent: { path: 'stories/s/pages/1/variants' } } },
+      db: { collection: () => null },
+      bucket: {},
+      page: {},
+    })
+  ).rejects.toThrow('parent collection could not be resolved');
+  const pageRef = {
+    path: 'stories/s/pages/1',
+    get: async () => ({ exists: true, data: () => null }),
+  };
+  const variantRef = {
+    path: 'stories/s/pages/1/variants/a',
+    parent: { parent: pageRef },
+  };
+  expect(await utils.fetchAndValidatePage({ ref: variantRef }, {})).toBeNull();
 });
 
 test('covers tree visibility propagation fallbacks and parent updates', async () => {

@@ -29,6 +29,28 @@ function setup() {
 }
 
 describe('createBillingRuntime', () => {
+  it('uses the ambiguous fallback when persisting a reservation recovery marker', () => {
+    const set = jest.fn();
+    const response = billingRuntimeTestUtils.markReservationNeedsRecovery({
+      transaction: { set },
+      reference: {},
+      reservation: {
+        operationType: 'function.invoke',
+        operationAttemptId: 'attempt-1',
+      },
+      input: {},
+    });
+    expect(set.mock.calls[0][1].recoveryReason).toBe('ambiguous');
+    expect(response.status).toBe(200);
+  });
+
+  it('returns the insufficient-credit result for a lot consumption shortage', () => {
+    expect(billingRuntimeTestUtils.consumeLotsOrNull([], 1)).toBeNull();
+    expect(() => billingRuntimeTestUtils.consumeLotsOrNull([], 0)).toThrow(
+      'positive safe integer'
+    );
+  });
+
   it('normalizes operation identities, snapshots, lots, and refund status', async () => {
     expect(
       billingRuntimeTestUtils.readOperationIdentity({

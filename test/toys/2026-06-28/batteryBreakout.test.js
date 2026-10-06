@@ -2388,6 +2388,9 @@ function runScenario2131Part3(context) {
   expect(context.h.normalizePaddle([])).toEqual(
     expect.objectContaining({ width: 48, height: 6 })
   );
+  expect(context.h.normalizePaddle({ y: 4 })).toMatchObject({
+    y: expect.any(Number),
+  });
   context.paddleArray = [];
   context.paddleArray.x = 4;
   expect(context.h.normalizePaddle(context.paddleArray)).toEqual(

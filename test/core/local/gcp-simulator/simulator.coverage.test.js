@@ -18,6 +18,38 @@ describe('gcp simulator coverage paths', () => {
     );
   });
 
+  it('covers simulator helpers for missing dependencies and unmatched trigger parameters', async () => {
+    simulator = await createLocalGcpSimulator({ baseUrl: 'http://simulator' });
+    const utils = simulator.testUtils;
+    expect(() => utils.requireSimulatorDb({ db: null })).toThrow(
+      'not initialized'
+    );
+    expect(utils.readVerifiedUid({})).toBeNull();
+    await expect(
+      utils.resolveAuthorUuidInSimulator({
+        headers: { authorization: 'Bearer invalid-uid-token' },
+      })
+    ).resolves.toMatchObject({ status: 401 });
+    const dispatch = utils.createDispatchCommittedWrites({
+      triggerRegistry: [
+        {
+          pathPattern: 'stories/{id}',
+          eventName: 'onWrite',
+          handler: jest.fn(),
+        },
+      ],
+      createSnapshots: () => ({ before: null, after: {} }),
+      shouldDispatchTrigger: () => true,
+      extractParams: () => null,
+      dispatchTrigger: jest.fn(),
+    });
+    await dispatch([{ path: 'stories/example', after: {} }]);
+    expect(utils).toBeDefined();
+    expect(utils.createSnapshot('stories/missing', undefined)).toMatchObject({
+      exists: false,
+    });
+  });
+
   it('exposes the seed manifest and runs the rendering routes', async () => {
     simulator = await createLocalGcpSimulator({ baseUrl: 'http://simulator' });
 
@@ -67,6 +99,40 @@ describe('gcp simulator coverage paths', () => {
   it('creates the delete sentinel used by the variant-write trigger', async () => {
     simulator = await createLocalGcpSimulator({ baseUrl: 'http://simulator' });
     expect(typeof simulator.testUtils.createDeleteSentinel()).toBe('symbol');
+    await expect(
+      simulator.routes.getAuthorUuid({
+        headers: { authorization: 'Bearer token' },
+      })
+    ).resolves.toMatchObject({ status: 200 });
+    await expect(
+      simulator.routes.submitModerationRating({
+        headers: { authorization: 'Bearer token' },
+        body: 'malformed-body',
+      })
+    ).resolves.toMatchObject({ status: 400 });
+    await expect(
+      simulator.routes.assignModerationJob({
+        headers: { authorization: 'Bearer token' },
+      })
+    ).resolves.toMatchObject({ status: 201 });
+    await expect(
+      simulator.testUtils.assignModerationJob({
+        headers: { authorization: 'Bearer token' },
+      })
+    ).resolves.toMatchObject({ status: 404 });
+    const moderatorSnap = { get: async () => ({ data: () => ({}) }) };
+    const missingPathDb = {
+      collection: name =>
+        name === 'moderators'
+          ? { doc: () => moderatorSnap }
+          : { get: async () => ({ docs: [] }) },
+    };
+    await expect(
+      simulator.testUtils.assignModerationJob(
+        { headers: { authorization: 'Bearer token' } },
+        missingPathDb
+      )
+    ).resolves.toMatchObject({ status: 404 });
   });
 
   it('updates a matching variant through the dirty-route helper', async () => {

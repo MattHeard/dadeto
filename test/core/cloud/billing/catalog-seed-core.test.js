@@ -42,6 +42,18 @@ describe('billing catalog seed core', () => {
       normalizeCatalogSnapshot('initial', { ...snapshot, operations: null })
         .operations
     ).toEqual({});
+    expect(() =>
+      normalizeCatalogSnapshot('initial', {
+        ...snapshot,
+        operations: { invoke: null },
+      })
+    ).toThrow('Pricing operation must be an object');
+    expect(() =>
+      normalizeCatalogSnapshot('initial', {
+        ...snapshot,
+        operations: { invoke: {} },
+      })
+    ).toThrow('costEurMicros must be a number');
   });
 
   it('creates, updates packages, and makes identical snapshot reseeds no-ops', async () => {

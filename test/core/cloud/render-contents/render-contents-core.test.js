@@ -66,6 +66,13 @@ function createInvalidatePaths(options) {
 }
 
 describe('render contents console fallback', () => {
+  it('rejects an access-token response without a token', async () => {
+    await expect(
+      renderContentsTestUtils.extractAccessToken({
+        json: async () => ({}),
+      })
+    ).rejects.toThrow();
+  });
   it('returns a no-op when console.error is unavailable', () => {
     const originalError = console.error;
     console.error = undefined;

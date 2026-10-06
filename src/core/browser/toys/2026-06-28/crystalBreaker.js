@@ -74,10 +74,7 @@ function buildNextState(persisted, input) {
   const merged = buildMergedState(shouldReset, base, seed);
   const inputState = updateInputState(base.input, input ?? {});
   if (resetPressed(inputState)) {
-    const resetState = createSeedState(
-      input ?? {},
-      buildResetFallback(persisted)
-    );
+    const resetState = createSeedState(input, buildResetFallback(persisted));
     resetState.input = inputState;
     return resetState;
   }

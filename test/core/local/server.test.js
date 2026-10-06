@@ -272,6 +272,18 @@ describe('core local server routes', () => {
 });
 
 describe('core local server writer helpers', () => {
+  test('accepts an absent environment object for HTTP server creation', () => {
+    const app = {};
+    const server = {};
+    expect(
+      createWriterServer(app, {
+        env: undefined,
+        readFileSync: jest.fn(),
+        httpCreateServer: jest.fn(() => server),
+        httpsCreateServer: jest.fn(),
+      })
+    ).toBe(server);
+  });
   test('creates an http writer server by default', () => {
     const app = {};
     const server = {};
@@ -288,6 +300,24 @@ describe('core local server writer helpers', () => {
     ).toBe(server);
     expect(httpCreateServer).toHaveBeenCalledWith(app);
     expect(httpsCreateServer).not.toHaveBeenCalled();
+  });
+
+  test('reads HTTPS options from an environment with no prototype', () => {
+    const app = {};
+    const server = {};
+    const readFileSync = jest.fn(path => `${path} contents`);
+    expect(
+      createWriterServer(app, {
+        env: Object.assign(Object.create(null), {
+          WRITER_HTTPS: 'true',
+          WRITER_TLS_KEY: 'key',
+          WRITER_TLS_CERT: 'cert',
+        }),
+        readFileSync,
+        httpCreateServer: jest.fn(),
+        httpsCreateServer: jest.fn(() => server),
+      })
+    ).toBe(server);
   });
 
   test('requires injected writer server constructors', () => {

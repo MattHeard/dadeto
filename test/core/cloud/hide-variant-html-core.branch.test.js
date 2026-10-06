@@ -7,6 +7,9 @@ describe('hideVariantHtmlTestUtils', () => {
 
   test('hasValidGrandparentChain handles incomplete refs', () => {
     expect(hideVariantHtmlTestUtils.hasValidGrandparentChain(null)).toBe(false);
+    expect(
+      hideVariantHtmlTestUtils.hasValidGrandparentChain({ parent: 'invalid' })
+    ).toBe(false);
   });
 
   test('resolveParentPageRef returns null when chain invalid', () => {

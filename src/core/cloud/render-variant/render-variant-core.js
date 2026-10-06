@@ -2012,10 +2012,14 @@ function extractVariantName(variantData) {
 
 export const renderVariantCoreTestUtils = {
   extractVariantName,
+  shouldSkipVisibilityUpdate,
+  fetchTargetPageMetadata,
   updateTreeVisibilityForVariantChange,
   persistRenderPlan,
   gatherMetadata,
   loadOptions,
+  fetchRootPageUrl,
+  getVariantNameOrUndefined,
   hasVisibleVariants,
   resolveIncomingParentRef,
   readSnapshotData,
@@ -2028,6 +2032,12 @@ export const renderVariantCoreTestUtils = {
   rebindTenantCollectionRef,
   resolveStoryMetadata,
   resolveAuthorMetadata,
+  resolveTenantPageRefFromVariantRef,
+  resolveTenantPageRef,
+  isPageSnapValid,
+  fetchAndValidatePage,
+  saveAltsHtml,
+  mapSourceFilePath,
 };
 /**
  * Assemble root URL.
