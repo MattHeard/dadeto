@@ -33,7 +33,7 @@ The first level provides a junction valve to select the archive or a decoy drain
 
 ## Output
 
-The current output is a responsive water-depth board with an archive target, tide phase, and a clear clock-sync status. Future levels can add pixel-art scenery, pressure/volume readings, editable channels, and tide-driven simulation. A stale or unavailable clock denies timed credit while leaving the puzzle playable; the device's wall clock never grants a timed completion.
+The current output is a responsive water-depth board with direction markers derived from solver velocity, an archive target, tide phase, and a clear clock-sync status. Future levels can add pixel-art scenery, pressure/volume readings, editable channels, and tide-driven simulation. A stale or unavailable clock denies timed credit while leaving the puzzle playable; the device's wall clock never grants a timed completion.
 
 ### Example
 

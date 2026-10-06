@@ -22,6 +22,9 @@ test('plays Chronoflow and earns a timed record only on trusted high tide', asyn
     await advance.click();
   }
   await expect(page.locator('#chronoflow-status')).toHaveText('Archive chamber primed. Timed high-tide record secured.');
+  await expect(
+    page.locator('.chronoflow-cell[data-flow-direction="down"]').first(),
+  ).toBeVisible();
 
   await page.getByRole('button', { name: 'Reset level' }).click();
   await expect(page.locator('#chronoflow-status')).toContainText('step 0');

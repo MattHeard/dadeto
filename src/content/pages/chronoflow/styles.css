@@ -133,7 +133,39 @@ h1 {
   font-weight: 800;
   letter-spacing: 0.02em;
   text-shadow: 0 1px 3px #06202b;
-  transition: background-color 180ms ease, border-color 180ms ease;
+  transition: background 180ms ease, border-color 180ms ease;
+}
+
+.chronoflow-cell::after {
+  position: absolute;
+  top: 3px;
+  right: 6px;
+  content: attr(data-flow-glyph);
+  color: #c9fff4;
+  font-size: 1rem;
+  opacity: var(--flow-strength);
+  text-shadow: 0 1px 4px #052a35;
+  pointer-events: none;
+}
+
+.chronoflow-cell[data-flow-direction='right'],
+.chronoflow-cell[data-flow-direction='left'],
+.chronoflow-cell[data-flow-direction='up'],
+.chronoflow-cell[data-flow-direction='down'] {
+  animation: water-shimmer 900ms ease-in-out infinite alternate;
+}
+
+@keyframes water-shimmer {
+  to {
+    filter: brightness(1.13) saturate(1.08);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .chronoflow-cell {
+    animation: none !important;
+    transition: none;
+  }
 }
 
 .chronoflow-cell[data-solid='true'] {

@@ -12,6 +12,7 @@ import {
   sampleNetworkClock,
 } from './networkClock.js';
 import { getTidePhase } from './tide.js';
+import { getFlowVisual } from './flowVisual.js';
 
 const CLOCK_MAX_AGE_MS = 30000;
 const CLOCK_REFRESH_MS = 15000;
@@ -113,6 +114,10 @@ export function startChronoflowPage(options) {
     grid.replaceChildren(
       ...game.fluid.volume.map((volume, cell) => {
         const tile = documentObj.createElement('button');
+        const flow = getFlowVisual(
+          game.fluid.velocityX[cell],
+          game.fluid.velocityY[cell]
+        );
         const isGate = cell === 13;
         const isTarget = cell === game.targetCell;
         const isSource = cell === 1;
@@ -122,7 +127,10 @@ export function startChronoflowPage(options) {
         tile.dataset.solid = String(game.fluid.solids[cell]);
         tile.dataset.gate = String(isGate);
         tile.dataset.target = String(isTarget);
+        tile.dataset.flowDirection = flow.direction;
+        tile.dataset.flowGlyph = flow.glyph;
         tile.style.setProperty('--water-level', String(volume));
+        tile.style.setProperty('--flow-strength', String(flow.strength));
         tile.textContent = isSource
           ? 'SOURCE'
           : isGate
@@ -140,6 +148,7 @@ export function startChronoflowPage(options) {
             isGate,
             isSource,
             isTarget,
+            flowDirection: flow.direction,
             solid: game.fluid.solids[cell],
           })
         );
@@ -226,15 +235,35 @@ export function startChronoflowPage(options) {
 
 /**
  * Describe a board cell for screen readers.
- * @param {{cell: number, volume: number, isGate: boolean, isSource: boolean, isTarget: boolean, solid: boolean}} cellState Cell facts.
+ * @param {{cell: number, volume: number, isGate: boolean, isSource: boolean, isTarget: boolean, flowDirection: string, solid: boolean}} cellState Cell facts.
  * @returns {string} Accessible label.
  */
-function describeCell({ cell, volume, isGate, isSource, isTarget, solid }) {
+function describeCell({
+  cell,
+  volume,
+  isGate,
+  isSource,
+  isTarget,
+  flowDirection,
+  solid,
+}) {
   if (isSource) return 'Water source, full.';
   if (isGate) return solid ? 'Sluice gate, closed.' : 'Sluice gate, open.';
   if (isTarget)
-    return `Archive target, ${Math.round(volume * 100)} percent full.`;
-  return solid
+    return `Archive target, ${Math.round(volume * 100)} percent full; ${describeFlow(flowDirection)}.`;
+  const cellDescription = solid
     ? `Stone wall, cell ${cell + 1}.`
-    : `Channel, cell ${cell + 1}, ${Math.round(volume * 100)} percent full.`;
+    : `Channel, cell ${cell + 1}, ${Math.round(volume * 100)} percent full`;
+  return solid
+    ? cellDescription
+    : `${cellDescription}; ${describeFlow(flowDirection)}.`;
+}
+
+/**
+ * Describe visible solver motion for assistive technology.
+ * @param {string} direction Rendered flow direction.
+ * @returns {string} Spoken water motion.
+ */
+function describeFlow(direction) {
+  return direction === 'still' ? 'water still' : `water flowing ${direction}`;
 }

@@ -378,6 +378,9 @@ describe('Chronoflow page presenter', () => {
     expect(status.textContent).toBe(
       'Archive chamber primed. Practice complete; no timed record.'
     );
+    expect(
+      grid.children.some(cell => cell.dataset.flowDirection !== 'still')
+    ).toBe(true);
     expect(advanceButton.disabled).toBe(true);
 
     resetButton.emit('click');
