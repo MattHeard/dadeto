@@ -318,13 +318,19 @@ function safeStringifyValueAtPath(value, input) {
  * @returns {string} User-facing error message describing the failure.
  */
 function formatStringifyError(stringifyError, input) {
-  let message = 'unknown error';
-  if (stringifyError instanceof Error) {
-    message = stringifyError.message;
-  } else if (typeof stringifyError === 'string') {
-    message = stringifyError;
-  }
+  const message = errorMessageOrDefault(stringifyError);
   return `Error stringifying final value at path "${input}": ${message}`;
+}
+
+/**
+ * Convert a thrown value to its diagnostic message.
+ * @param {unknown} error Thrown value.
+ * @returns {string} Error message or unknown-error fallback.
+ */
+function errorMessageOrDefault(error) {
+  if (error instanceof Error) return error.message;
+  if (typeof error === 'string') return error;
+  return 'unknown error';
 }
 
 /**
@@ -401,12 +407,7 @@ function getDataWithCatch(getData, input) {
  * @returns {string} Formatted error string for diagnostics.
  */
 function describeGetDataError(error, input) {
-  let message = 'unknown error';
-  if (error instanceof Error) {
-    message = error.message;
-  } else if (typeof error === 'string') {
-    message = error;
-  }
+  const message = errorMessageOrDefault(error);
   return `Error during data retrieval or path traversal for "${input}": ${message}`;
 }
 
