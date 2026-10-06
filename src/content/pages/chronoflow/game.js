@@ -17,7 +17,7 @@ const dispose = startChronoflowPage({
   routeButton: document.querySelector('#route-valve'),
   editButton: document.querySelector('#edit-channel'),
   startTimedButton: document.querySelector('#start-timed'),
-  advanceButton: document.querySelector('#advance-water'),
+  keypadButtons: Array.from(document.querySelectorAll('.mosslight-keypad-button')),
   resetButton: document.querySelector('#reset-level'),
   fetchImpl: window.fetch.bind(window),
   monotonicNow: window.performance.now.bind(window.performance),

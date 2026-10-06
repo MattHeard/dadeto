@@ -3,10 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta
-      name="description"
-      content="Route water through the Tidal Archive in Chronoflow, a deterministic puzzle prototype."
-    />
+    <meta name="description" content="Route water through the Tidal Archive in Chronoflow, a deterministic puzzle game." />
     <title>Chronoflow — The Tidal Archive</title>
     <link rel="stylesheet" href="/chronoflow/styles.css" />
   </head>
@@ -20,67 +17,56 @@
       </header>
 
       <section class="game-layout" aria-label="Chronoflow water puzzle">
-        <div class="board-panel">
-          <div class="board-heading">
-            <h2>Archive entry</h2>
-            <span>5 × 4 channel grid</span>
+        <div class="handheld" aria-label="Chronoflow handheld console">
+          <div class="handheld-brand"><span>CHRO1</span><span>ARCHIVE ENTRY</span></div>
+          <div class="screen-bezel">
+            <div class="screen-heading"><span>THE TIDAL ARCHIVE</span><span>160 × 144</span></div>
+            <div class="screen">
+              <div id="chronoflow-grid" class="chronoflow-grid" role="group" aria-label="Water channel board"></div>
+              <p id="chronoflow-status" class="game-status" aria-live="polite"></p>
+            </div>
           </div>
-          <div
-            id="chronoflow-grid"
-            class="chronoflow-grid"
-            role="group"
-            aria-label="Water channel board"
-          ></div>
-          <p id="chronoflow-status" class="game-status" aria-live="polite"></p>
-          <p id="cell-readout" class="cell-readout" aria-live="polite"></p>
+          <div class="console-controls">
+            <div class="keypad mosslight-keypad" aria-label="Chronoflow controls">
+              <div class="mosslight-keypad-dpad" aria-label="Move selection">
+                <button class="mosslight-keypad-button up" type="button" data-key="ArrowUp" aria-label="Up">▲</button>
+                <button class="mosslight-keypad-button left" type="button" data-key="ArrowLeft" aria-label="Left">◀</button>
+                <button class="mosslight-keypad-button down" type="button" data-key="ArrowDown" aria-label="Down">▼</button>
+                <button class="mosslight-keypad-button right" type="button" data-key="ArrowRight" aria-label="Right">▶</button>
+              </div>
+              <div class="mosslight-keypad-face" aria-label="Puzzle actions">
+                <button class="mosslight-keypad-button b" type="button" data-key="b" aria-label="B · Switch route">B</button>
+                <button class="mosslight-keypad-button a" type="button" data-key="a" aria-label="A · Edit selected channel">A</button>
+              </div>
+              <div class="mosslight-keypad-system">
+                <button class="mosslight-keypad-button x" type="button" data-key="x" aria-label="X · Open sluice">X</button>
+                <button class="mosslight-keypad-button y" type="button" data-key="y" aria-label="Y · Advance water">Y</button>
+              </div>
+            </div>
+            <div class="system-controls">
+              <button id="start-timed" class="system-button" type="button" disabled>START · TIMED</button>
+              <button id="reset-level" class="system-button reset-button" type="button">RESET</button>
+            </div>
+          </div>
+          <p id="clock-status" class="clock-status" role="status"></p>
         </div>
 
-        <aside class="control-panel" aria-label="Puzzle controls">
+        <aside class="control-panel" aria-label="Puzzle guide">
           <p class="eyebrow">YOUR TASK</p>
           <h2>Wake the archive</h2>
-          <p>
-            Choose a route at the junction. Send the water to the archive
-            chamber to solve the puzzle, or watch the decoy channel drain away.
-            Carve one of the marked wall cells into a channel, open the sluice,
-            and advance until at least 12% reaches the archive. You have three
-            terrain edits per attempt.
-          </p>
+          <p>Route water through the channel grid, carve a marked wall cell, then open the sluice. Reach 12% at the archive chamber to complete the level. You have three terrain edits.</p>
+          <p id="cell-readout" class="cell-readout" aria-live="polite"></p>
           <div class="legend" aria-label="Board legend">
             <span><i class="legend-source"></i>Source</span>
             <span><i class="legend-channel"></i>Channel</span>
             <span><i class="legend-wall"></i>Stone</span>
-            <span><i class="legend-editable"></i>Editable stone</span>
+            <span><i class="legend-editable"></i>Editable</span>
             <span><i class="legend-target"></i>Archive</span>
           </div>
-          <button id="open-sluice" class="action-button primary" type="button">
-            Open sluice
-          </button>
-          <button id="route-valve" class="action-button" type="button">
-            Route valve to archive
-          </button>
-          <button id="edit-channel" class="action-button" type="button" disabled>
-            Select a marked cell to edit
-          </button>
-          <button id="start-timed" class="action-button" type="button" disabled>
-            Start timed attempt · high tide
-          </button>
-          <button id="advance-water" class="action-button" type="button">
-            Advance water · 60 steps
-          </button>
-          <button id="reset-level" class="reset-button" type="button">
-            Reset level
-          </button>
-          <p id="clock-status" class="clock-status" role="status"></p>
+          <p class="control-hint"><kbd>↑ ↓ ← →</kbd> select <kbd>A</kbd> edit <kbd>B</kbd> route <kbd>X</kbd> sluice <kbd>Y</kbd> flow</p>
+          <p class="clock-note">A fresh Internet clock awards a timed record only at high tide. Device time never sets the tide; when sync is unavailable, play continues as practice.</p>
         </aside>
       </section>
-
-      <footer>
-        <p>
-          A fresh Internet clock awards a timed record only when the archive
-          fills during high tide. Stale or unavailable sync keeps the puzzle
-          playable as practice; device time never sets the tide.
-        </p>
-      </footer>
     </main>
     <script type="module" src="/chronoflow/game.js"></script>
   </body>

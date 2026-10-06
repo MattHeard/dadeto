@@ -23,7 +23,7 @@ const CLOCK_REFRESH_MS = 15000;
 
 /**
  * Start the Chronoflow page using injected DOM elements.
- * @param {{documentObj: Document, grid: HTMLElement, status: HTMLElement, clockStatus: HTMLElement, inspectStatus?: HTMLElement, openButton: HTMLButtonElement, advanceButton: HTMLButtonElement, resetButton: HTMLButtonElement, routeButton?: HTMLButtonElement, editButton?: HTMLButtonElement, startTimedButton?: HTMLButtonElement, fetchImpl: typeof fetch, monotonicNow: () => number, saveStorage?: Storage, setIntervalImpl?: typeof setInterval, clearIntervalImpl?: typeof clearInterval}} options Page and injected clock/storage boundaries.
+ * @param {{documentObj: Document, grid: HTMLElement, status: HTMLElement, clockStatus: HTMLElement, inspectStatus?: HTMLElement, openButton?: HTMLButtonElement, advanceButton?: HTMLButtonElement, resetButton: HTMLButtonElement, routeButton?: HTMLButtonElement, editButton?: HTMLButtonElement, startTimedButton?: HTMLButtonElement, keypadButtons?: HTMLButtonElement[], fetchImpl: typeof fetch, monotonicNow: () => number, saveStorage?: Storage, setIntervalImpl?: typeof setInterval, clearIntervalImpl?: typeof clearInterval}} options Page and injected clock/storage boundaries.
  * @returns {() => void} Removes registered controls.
  */
 export function startChronoflowPage(options) {
@@ -39,12 +39,14 @@ export function startChronoflowPage(options) {
     routeButton,
     editButton,
     startTimedButton,
+    keypadButtons = [],
     fetchImpl,
     monotonicNow,
     saveStorage,
     setIntervalImpl = setInterval,
     clearIntervalImpl = clearInterval,
   } = options;
+  const keypad = Array.from(keypadButtons);
   const saveStore = createChronoflowSaveStore(saveStorage);
   let game = saveStore.load() ?? createChronoflowGame();
   let selectedCell = 1;
@@ -101,13 +103,19 @@ export function startChronoflowPage(options) {
       epochMs: reading.epochMs,
       uncertaintyMs: reading.uncertaintyMs ?? 0,
     });
-    openButton.disabled =
+    const cannotOpen =
       game.route !== 'archive' ||
       game.gateOpen ||
       game.completed ||
       (game.mode === 'timed' && !highTideWindow);
-    advanceButton.disabled =
+    if (openButton) openButton.disabled = cannotOpen;
+    const openKey = keypad.find(button => button.dataset.key === 'x');
+    if (openKey) openKey.disabled = cannotOpen;
+    const cannotAdvance =
       game.completed || (game.mode === 'timed' && !highTideWindow);
+    if (advanceButton) advanceButton.disabled = cannotAdvance;
+    const advanceKey = keypad.find(button => button.dataset.key === 'y');
+    if (advanceKey) advanceKey.disabled = cannotAdvance;
     if (startTimedButton) {
       startTimedButton.disabled =
         game.completed || game.mode === 'timed' || !highTideWindow;
@@ -321,6 +329,39 @@ export function startChronoflowPage(options) {
     game = resetChronoflow();
     render();
   };
+  /** @param {string} key Keyboard or keypad key. */
+  const handleKey = key => {
+    if (key === 'ArrowUp' && selectedCell >= 5) selectedCell -= 5;
+    else if (key === 'ArrowDown' && selectedCell < 15) selectedCell += 5;
+    else if (key === 'ArrowLeft' && selectedCell % 5 > 0) selectedCell -= 1;
+    else if (key === 'ArrowRight' && selectedCell % 5 < 4) selectedCell += 1;
+    else if (key.toLowerCase() === 'a') handleEdit();
+    else if (key.toLowerCase() === 'b') handleRoute();
+    else if (key.toLowerCase() === 'x') handleOpen();
+    else if (key.toLowerCase() === 'y') handleAdvance();
+    else if (key === 'Enter' || key.toLowerCase() === 's') handleStartTimed();
+    else if (key.toLowerCase() === 'r') handleReset();
+    else return;
+    render();
+  };
+  /** @param {MouseEvent} event Keypad click. */
+  const handleKeypadClick = event => {
+    const button = /** @type {HTMLButtonElement|null} */ (event.currentTarget);
+    const key = button?.dataset.key;
+    if (key) handleKey(key);
+  };
+  /** @param {KeyboardEvent} event Document keydown. */
+  const handleKeyboard = event => {
+    const target = /** @type {HTMLElement|null} */ (event.target);
+    if (target?.closest?.('input, textarea, select, [contenteditable="true"]'))
+      return;
+    if (
+      ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(event.key)
+    ) {
+      event.preventDefault();
+    }
+    handleKey(event.key);
+  };
   const handleVisibilityChange = () => {
     if (documentObj.visibilityState === 'hidden') {
       invalidateClockEstimate();
@@ -331,12 +372,14 @@ export function startChronoflowPage(options) {
   };
 
   documentObj.addEventListener?.('visibilitychange', handleVisibilityChange);
-  openButton.addEventListener('click', handleOpen);
+  openButton?.addEventListener('click', handleOpen);
   routeButton?.addEventListener('click', handleRoute);
   editButton?.addEventListener('click', handleEdit);
   startTimedButton?.addEventListener('click', handleStartTimed);
-  advanceButton.addEventListener('click', handleAdvance);
+  advanceButton?.addEventListener('click', handleAdvance);
   resetButton.addEventListener('click', handleReset);
+  keypad.forEach(button => button.addEventListener('click', handleKeypadClick));
+  documentObj.addEventListener?.('keydown', handleKeyboard);
   render();
   void synchronizeClock();
   const clockInterval = setIntervalImpl(() => {
@@ -361,12 +404,16 @@ export function startChronoflowPage(options) {
       'visibilitychange',
       handleVisibilityChange
     );
-    openButton.removeEventListener('click', handleOpen);
+    openButton?.removeEventListener('click', handleOpen);
     routeButton?.removeEventListener('click', handleRoute);
     editButton?.removeEventListener('click', handleEdit);
     startTimedButton?.removeEventListener('click', handleStartTimed);
-    advanceButton.removeEventListener('click', handleAdvance);
+    advanceButton?.removeEventListener('click', handleAdvance);
     resetButton.removeEventListener('click', handleReset);
+    keypad.forEach(button =>
+      button.removeEventListener('click', handleKeypadClick)
+    );
+    documentObj.removeEventListener?.('keydown', handleKeyboard);
   };
 }
 

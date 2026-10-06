@@ -48,7 +48,12 @@ class FakeElement {
   }
 
   emit(type) {
-    this.listeners.get(type)?.();
+    this.listeners.get(type)?.({
+      currentTarget: this,
+      target: this,
+      key: this.key,
+      preventDefault: () => {},
+    });
   }
 
   replaceChildren(...children) {
@@ -62,6 +67,27 @@ class FakeElement {
 
   getAttribute(name) {
     return this.attributes?.[name] ?? null;
+  }
+}
+
+/**
+ *
+ * @param keydown
+ * @param {...any} keys
+ */
+/**
+ * Dispatch keys through a fake document event handler.
+ * @param {(event: {key: string, target: {closest: () => null}, preventDefault: jest.Mock}) => void} keydown Keyboard listener.
+ * @param {string[]} keys Keys to dispatch.
+ * @returns {void} Nothing.
+ */
+function pressKeys(keydown, ...keys) {
+  for (const key of keys) {
+    keydown({
+      key,
+      target: { closest: () => null },
+      preventDefault: jest.fn(),
+    });
   }
 }
 
@@ -668,7 +694,9 @@ describe('Chronoflow Archive Entry runtime', () => {
 
 describe('Chronoflow page presenter', () => {
   it('renders accessible cells, handles controls, and disposes listeners', () => {
-    const documentObj = { createElement: () => new FakeElement() };
+    const documentObj = Object.assign(new FakeElement(), {
+      createElement: () => new FakeElement(),
+    });
     const grid = new FakeElement();
     const status = new FakeElement();
     const clockStatus = new FakeElement();
@@ -747,6 +775,7 @@ describe('Chronoflow page presenter', () => {
     expect(routeButton.listeners.has('click')).toBe(false);
     expect(advanceButton.listeners.has('click')).toBe(false);
     expect(resetButton.listeners.has('click')).toBe(false);
+    expect(documentObj.listeners.has('keydown')).toBe(false);
   });
 
   it('lets the player reshape a selected marked channel cell', () => {
@@ -754,7 +783,9 @@ describe('Chronoflow page presenter', () => {
     const editButton = new FakeElement();
     const routeButton = new FakeElement();
     const dispose = startChronoflowPage({
-      documentObj: { createElement: () => new FakeElement() },
+      documentObj: Object.assign(new FakeElement(), {
+        createElement: () => new FakeElement(),
+      }),
       grid,
       status: new FakeElement(),
       clockStatus: new FakeElement(),
@@ -785,6 +816,109 @@ describe('Chronoflow page presenter', () => {
     expect(editButton.textContent).toContain('2 edits left');
     dispose();
     expect(editButton.listeners.has('click')).toBe(false);
+  });
+
+  it('maps handheld keypad actions and keyboard keys to puzzle controls', () => {
+    const grid = new FakeElement();
+    const documentObj = Object.assign(new FakeElement(), {
+      createElement: () => new FakeElement(),
+    });
+    const keys = ['ArrowDown', 'ArrowRight', 'a', 'b', 'x', 'y', 'r'];
+    const keypadButtons = keys.map(key => {
+      const button = new FakeElement();
+      button.dataset.key = key;
+      return button;
+    });
+    const ignoredKeypadButton = new FakeElement();
+    keypadButtons.push(ignoredKeypadButton);
+    const resetButton = new FakeElement();
+    const dispose = startChronoflowPage({
+      documentObj,
+      grid,
+      status: new FakeElement(),
+      clockStatus: new FakeElement(),
+      resetButton,
+      keypadButtons,
+      fetchImpl: async () => ({ ok: false, status: 503 }),
+      monotonicNow: () => 0,
+      setIntervalImpl: () => 1,
+      clearIntervalImpl: () => {},
+    });
+
+    keypadButtons[0].emit('click');
+    keypadButtons[1].emit('click');
+    expect(grid.children[7].dataset.selected).toBe('true');
+    keypadButtons[2].emit('click');
+    expect(grid.children[7].dataset.solid).toBe('false');
+    keypadButtons[3].emit('click');
+    keypadButtons[4].emit('click');
+    expect(grid.children[13].getAttribute('aria-label')).toBe(
+      'Sluice gate, open.'
+    );
+    keypadButtons[5].emit('click');
+    expect(
+      grid.children.some(cell => cell.dataset.flowDirection !== 'still')
+    ).toBe(true);
+    keypadButtons[6].emit('click');
+    expect(grid.children[7].dataset.solid).toBe('true');
+    ignoredKeypadButton.emit('click');
+    dispose();
+  });
+
+  it('supports keyboard controls and ignores editable keyboard targets', () => {
+    const grid = new FakeElement();
+    const documentObj = Object.assign(new FakeElement(), {
+      createElement: () => new FakeElement(),
+    });
+    const dispose = startChronoflowPage({
+      documentObj,
+      grid,
+      status: new FakeElement(),
+      clockStatus: new FakeElement(),
+      resetButton: new FakeElement(),
+      fetchImpl: async () => ({ ok: false, status: 503 }),
+      monotonicNow: () => 0,
+      setIntervalImpl: () => 1,
+      clearIntervalImpl: () => {},
+    });
+    const keydown = documentObj.listeners.get('keydown');
+    const event = (...keys) => pressKeys(keydown, ...keys);
+    event('ArrowUp');
+    expect(grid.children[1].dataset.selected).toBe('true');
+    event('ArrowLeft');
+    expect(grid.children[0].dataset.selected).toBe('true');
+    event('ArrowDown', 'ArrowUp');
+    expect(grid.children[0].dataset.selected).toBe('true');
+    event('ArrowRight', 'ArrowRight', 'ArrowRight', 'ArrowRight');
+    expect(grid.children[4].dataset.selected).toBe('true');
+    event('ArrowRight', 'ArrowLeft');
+    expect(grid.children[3].dataset.selected).toBe('true');
+    event('ArrowDown', 'ArrowDown', 'ArrowDown');
+    expect(grid.children[18].dataset.selected).toBe('true');
+    event('ArrowDown');
+    expect(grid.children[18].dataset.selected).toBe('true');
+    event('ArrowUp', 'ArrowUp', 'ArrowUp');
+    expect(grid.children[3].dataset.selected).toBe('true');
+    event('ArrowLeft', 'ArrowLeft', 'ArrowLeft');
+    expect(grid.children[0].dataset.selected).toBe('true');
+    event('ArrowDown', 'ArrowDown', 'ArrowRight');
+    expect(grid.children[11].dataset.selected).toBe('true');
+    event('a');
+    expect(grid.children[11].dataset.solid).toBe('false');
+    event('b', 'x');
+    expect(grid.children[13].getAttribute('aria-label')).toBe(
+      'Sluice gate, open.'
+    );
+    event('y');
+    const preventDefault = jest.fn();
+    keydown({
+      key: 'ArrowRight',
+      target: { closest: () => ({}) },
+      preventDefault,
+    });
+    expect(preventDefault).not.toHaveBeenCalled();
+    event('Enter', 's', 'r', 'z');
+    dispose();
   });
 
   it('loads configured Internet time, reports the trusted tide, and clears refresh timer', async () => {

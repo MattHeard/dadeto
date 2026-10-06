@@ -4,7 +4,7 @@
       "key": "CHRO1",
       "title": "Chronoflow: The Tidal Archive",
       "publicationDate": "2026-10-06",
-      "release": "beta",
+      "release": "public",
       "content": [
         "An in-development 2D water-routing puzzle about pressure, sluice gates, and solving against a shared Internet clock. Play the untimed first level at /chronoflow/.",
         {
@@ -20,7 +20,7 @@
         "defaultInputMethod": "mosslight-keypad",
         "defaultOutputMethod": "canvas-2d"
       },
-      "tags": ["toy", "game", "puzzle", "fluid-simulation", "beta"]
+      "tags": ["toy", "game", "puzzle", "fluid-simulation"]
     },
     {
       "key": "NEON1",
