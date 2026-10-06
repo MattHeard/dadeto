@@ -232,15 +232,14 @@ function collectViolations(deps, analyses, externalUsageCounts) {
         externalUsageCounts.get(
           makeUsageKey(file.filePath, exportedFunction.exportName)
         ) ?? 0;
-      if (ownCalls > 0 && externalCalls === 0) {
-        violations.push({
-          filePath: deps.pathModule.relative(deps.rootDir, file.filePath),
-          line: exportedFunction.line,
-          column: exportedFunction.column,
-          exportName: exportedFunction.exportName,
-          ownCalls,
-        });
-      }
+      if (ownCalls <= 0 || externalCalls !== 0) continue;
+      violations.push({
+        filePath: deps.pathModule.relative(deps.rootDir, file.filePath),
+        line: exportedFunction.line,
+        column: exportedFunction.column,
+        exportName: exportedFunction.exportName,
+        ownCalls,
+      });
     }
   }
   return violations;

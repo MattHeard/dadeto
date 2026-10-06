@@ -25,7 +25,7 @@
 ## Promoted from Real Failures
 
 - Date: 2026-10-06
-- Failure observed: none yet; this document starts from predicted risks before gameplay code.
-- Root cause: not applicable.
-- Fix implemented: not applicable.
-- Guardrail added: deterministic state, time-source, offline, and volume invariants are acceptance requirements for upcoming milestones.
+- Failure observed: binary floating-point arithmetic represents a drained 0.6 - 0.2 as 0.39999999999999997; an exact equality assertion failed.
+- Root cause: solver volumes use JavaScript numbers and conservation is approximate to floating-point precision.
+- Fix implemented: compare measured volume with a small numeric tolerance; retain exact bounds and accounting invariants.
+- Guardrail added: incoming face flux is capacity-limited as well as donor-limited, and a full-column regression checks that a saturated receiver cannot silently lose mass.

@@ -3,14 +3,14 @@
 ## Local Run Instructions
 
 1. Install prerequisites: `npm install`.
-2. Prepare fixtures/config: after the playable milestone, run `npm run build` to emit the page and use an injected deterministic test level for automated checks.
-3. Run harness command: focused Jest suites for the fluid core and clock adapter; `npm run test:e2e:local` for the full page and unavailable-clock behavior.
+2. Prepare fixtures/config: use fixed grid arrays and explicit fixed-step options; tests never sample wall-clock time.
+3. Run harness command: `node --experimental-vm-modules ./node_modules/jest/bin/jest.js --runInBand test/core/browser/game/chronoflow.test.js`.
 
 ## Expected Observable Outputs
 
 - Terminal output should include:
-  - focused Jest suite summary with no failed tests and coverage maintained at 100% in the aggregate.
-  - local Playwright summary with the Chronoflow route, level completion, and offline practice scenarios passing.
+  - focused solver suite summary with no failed tests.
+  - after the later page/clock milestones, a local Playwright summary with the Chronoflow route, level completion, and offline practice scenarios passing.
 - Artifacts written to:
   - `reports/coverage/coverage-summary.json`
   - the configured local Playwright report output.

@@ -48,4 +48,4 @@ The planned output is a responsive pixel-art board with visible water depth and 
 
 ## Behavior
 
-The playable build is not available yet. The deterministic solver and page controls are upcoming milestones described in `spec.md`. Timed puzzle state will be derived from a fresh server-time sample plus monotonic elapsed duration. Offline play remains an untimed practice copy. See `acceptance.md` for the full playable-game completion bar and `harness.md` for planned verification.
+The deterministic fluid-core prototype is implemented and covered by focused tests; the playable page, puzzle controls, and trusted clock adapter are still upcoming milestones described in `spec.md`. Timed puzzle state will be derived from a fresh server-time sample plus monotonic elapsed duration. Offline play remains an untimed practice copy. See `acceptance.md` for the full playable-game completion bar and `harness.md` for current solver verification and planned page checks.
