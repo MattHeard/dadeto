@@ -387,9 +387,7 @@ export function normalizeGamepad(input) {
  * @returns {boolean[]} Normalized button values.
  */
 function normalizeButtons(input) {
-  const buttons = readInput(input, 'buttons');
-  if (Array.isArray(buttons)) return buttons.map(Boolean);
-  return [];
+  return mapInputArray(input, 'buttons', Boolean);
 }
 
 /**
@@ -398,8 +396,20 @@ function normalizeButtons(input) {
  * @returns {number[]} Normalized axis values.
  */
 function normalizeAxes(input) {
-  const axes = readInput(input, 'axes');
-  if (Array.isArray(axes)) return axes.map(value => Number(value) || 0);
+  return mapInputArray(input, 'axes', value => Number(value) || 0);
+}
+
+/**
+ * Map a gamepad input field when it contains an array.
+ * @template Result
+ * @param {unknown} input Latest input payload.
+ * @param {'buttons' | 'axes'} field Gamepad field to read.
+ * @param {(value: unknown) => Result} normalize Convert one field value.
+ * @returns {Result[]} Normalized values or an empty array.
+ */
+function mapInputArray(input, field, normalize) {
+  const values = readInput(input, field);
+  if (Array.isArray(values)) return values.map(normalize);
   return [];
 }
 
