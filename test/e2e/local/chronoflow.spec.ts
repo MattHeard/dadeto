@@ -59,6 +59,14 @@ test('keeps Chronoflow in untimed practice when Internet clock sync fails', asyn
   await expect(page.getByRole('button', { name: 'Open sluice' })).toBeEnabled();
   await page.getByRole('button', { name: 'Open sluice' }).click();
   const advance = page.getByRole('button', { name: 'Advance water · 60 steps' });
+  await advance.click();
+  await expect(page.locator('#chronoflow-status')).toContainText('step 60');
+  await page.reload();
+  await expect(page.locator('#clock-status')).toContainText('Internet tide unavailable');
+  await expect(page.locator('#chronoflow-status')).toContainText('step 60');
+  await expect(page.locator('.chronoflow-cell[data-cell="11"]')).toHaveAttribute('data-solid', 'false');
+  await expect(page.locator('.chronoflow-cell[data-cell="13"]')).toHaveAttribute('aria-label', 'Sluice gate, open.');
+  await expect(page.locator('#start-timed')).toBeDisabled();
   for (let batch = 0; batch < 30; batch += 1) {
     if ((await page.locator('#chronoflow-status').textContent())?.includes('complete')) break;
     await advance.click();

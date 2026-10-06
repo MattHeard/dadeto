@@ -20,6 +20,7 @@
   - the configured local Playwright report output.
 - Pressure projection regression: a fixed-order 24-iteration Jacobi solve uses stored right/down face-normal velocities, enforces zero normal flow at solid/outer walls, and lowers a varied 32×20 field divergence by at least 80%; an 8×6 closed field replays identically for 600 steps.
 - Cell-flow UI journeys inspect a solver velocity while water is moving, before the authored target settles; then they continue through objective completion and reset.
+- Save/restore regression reloads after channel edits, route selection, gate opening, and 60 solver ticks; restored state must match while clock sync is reacquired and timed controls stay disabled when sync fails.
 - Velocity-advection regression: `advectVelocityField` backtraces by velocity × fixed `dt`, bilinearly samples only fluid cells, preserves uniform fields, transports a feature under a carrier flow, and keeps solid cells at zero. Advection precedes pressure projection in `stepFluid`.
 - Exit code:
   - `0`

@@ -16,13 +16,14 @@ import {
 import { getTidePhase, isTideWindowOpen } from './tide.js';
 import { getFlowVisual } from './flowVisual.js';
 import { getCellReadout } from './cellReadout.js';
+import { createChronoflowSaveStore } from './save.js';
 
 const CLOCK_MAX_AGE_MS = 30000;
 const CLOCK_REFRESH_MS = 15000;
 
 /**
  * Start the Chronoflow page using injected DOM elements.
- * @param {{documentObj: Document, grid: HTMLElement, status: HTMLElement, clockStatus: HTMLElement, inspectStatus?: HTMLElement, openButton: HTMLButtonElement, advanceButton: HTMLButtonElement, resetButton: HTMLButtonElement, routeButton?: HTMLButtonElement, editButton?: HTMLButtonElement, startTimedButton?: HTMLButtonElement, fetchImpl: typeof fetch, monotonicNow: () => number, setIntervalImpl?: typeof setInterval, clearIntervalImpl?: typeof clearInterval}} options Page and clock boundaries.
+ * @param {{documentObj: Document, grid: HTMLElement, status: HTMLElement, clockStatus: HTMLElement, inspectStatus?: HTMLElement, openButton: HTMLButtonElement, advanceButton: HTMLButtonElement, resetButton: HTMLButtonElement, routeButton?: HTMLButtonElement, editButton?: HTMLButtonElement, startTimedButton?: HTMLButtonElement, fetchImpl: typeof fetch, monotonicNow: () => number, saveStorage?: Storage, setIntervalImpl?: typeof setInterval, clearIntervalImpl?: typeof clearInterval}} options Page and injected clock/storage boundaries.
  * @returns {() => void} Removes registered controls.
  */
 export function startChronoflowPage(options) {
@@ -40,10 +41,12 @@ export function startChronoflowPage(options) {
     startTimedButton,
     fetchImpl,
     monotonicNow,
+    saveStorage,
     setIntervalImpl = setInterval,
     clearIntervalImpl = clearInterval,
   } = options;
-  let game = createChronoflowGame();
+  const saveStore = createChronoflowSaveStore(saveStorage);
+  let game = saveStore.load() ?? createChronoflowGame();
   let selectedCell = 1;
   /** @type {ReturnType<typeof estimateNetworkClock>|null} */
   let clockEstimate = null;
@@ -247,6 +250,7 @@ export function startChronoflowPage(options) {
         : 'Archive chamber primed. Practice complete; no timed record.'
       : `${game.mode === 'timed' ? 'Timed attempt' : 'Practice'} · water ${Math.round(game.fluid.volume[game.targetCell] * 100)}% of 12% target · step ${game.fluid.tick}`;
     renderClock();
+    saveStore.save(game);
   };
 
   const handleOpen = () => {

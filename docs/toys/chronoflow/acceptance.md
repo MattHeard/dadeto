@@ -7,6 +7,7 @@
 - [ ] Solver tests verify bounded cell volume/velocity and mass accounting across closed boundaries, sources, drains, and overflow.
 - [x] The deterministic pressure projection reduces RMS divergence by at least 80% on the specified 32×20 field, preserves volume and velocity bounds, and enforces impermeable solid and outer faces.
 - [x] Semi-Lagrangian velocity advection preserves uniform fields, transports a feature under its carrier flow, and excludes solid-cell values from interpolation.
+- [x] Versioned saves restore deterministic board/solver progress as practice, reject malformed or incompatible state, and never retain a clock estimate or timed credit.
 - [ ] Clock tests use injected server responses and monotonic samples; they verify offset, uncertainty, stale rejection, resync, sleep/resume, and offline practice without reading browser wall time.
 - [ ] Authored levels include a solution witness that reaches the target volume within edit/overflow limits.
 - [ ] The Archive Entry level's deterministic witness opens the sluice and reaches the 12% target without exceeding any cell capacity.

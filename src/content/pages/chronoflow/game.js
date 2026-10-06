@@ -1,5 +1,12 @@
 import { startChronoflowPage } from '/core/browser/game/chronoflow/pagePresenter.js';
 
+let saveStorage;
+try {
+  saveStorage = window.localStorage;
+} catch {
+  saveStorage = null;
+}
+
 const dispose = startChronoflowPage({
   documentObj: document,
   grid: document.querySelector('#chronoflow-grid'),
@@ -14,6 +21,7 @@ const dispose = startChronoflowPage({
   resetButton: document.querySelector('#reset-level'),
   fetchImpl: window.fetch.bind(window),
   monotonicNow: window.performance.now.bind(window.performance),
+  saveStorage,
 });
 
 window.addEventListener('pagehide', dispose, { once: true });

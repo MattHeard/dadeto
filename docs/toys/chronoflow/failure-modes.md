@@ -12,6 +12,7 @@
 - Pressure projection failure: target-grid RMS divergence is reduced by less than 80%, pressure iterations vary by execution order, solid/outer-wall normal velocity appears, or the long closed-field replay drifts in volume or bounds.
 - Velocity advection failure: uniform flow changes during interpolation, a transported feature moves against its carrier field, solid-cell values influence a fluid sample, or clamped boundaries produce a non-finite velocity.
 - Settled-flow presentation: velocity readout tests inspect only after the fluid has stopped, so no cell remains marked as flowing; assert the live flow affordance during an intermediate fixed-step state and verify completion separately.
+- Save/restore failure: version mismatch or malformed arrays are accepted, fluid occupies solid geometry, puzzle progress changes across reload, or saved state restores timed credit without a fresh server-time sample.
 
 ## Detection Signals
 
