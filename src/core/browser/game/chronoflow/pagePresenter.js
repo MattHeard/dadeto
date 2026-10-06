@@ -4,6 +4,7 @@ import {
   finalizeChronoflowObjective,
   openSluice,
   resetChronoflow,
+  setChronoflowRoute,
 } from './runtime.js';
 import {
   estimateNetworkClock,
@@ -17,7 +18,7 @@ const CLOCK_REFRESH_MS = 15000;
 
 /**
  * Start the Chronoflow page using injected DOM elements.
- * @param {{documentObj: Document, grid: HTMLElement, status: HTMLElement, clockStatus: HTMLElement, openButton: HTMLButtonElement, advanceButton: HTMLButtonElement, resetButton: HTMLButtonElement, fetchImpl: typeof fetch, monotonicNow: () => number, setIntervalImpl?: typeof setInterval, clearIntervalImpl?: typeof clearInterval}} options Page and clock boundaries.
+ * @param {{documentObj: Document, grid: HTMLElement, status: HTMLElement, clockStatus: HTMLElement, openButton: HTMLButtonElement, advanceButton: HTMLButtonElement, resetButton: HTMLButtonElement, routeButton?: HTMLButtonElement, fetchImpl: typeof fetch, monotonicNow: () => number, setIntervalImpl?: typeof setInterval, clearIntervalImpl?: typeof clearInterval}} options Page and clock boundaries.
  * @returns {() => void} Removes registered controls.
  */
 export function startChronoflowPage(options) {
@@ -29,6 +30,7 @@ export function startChronoflowPage(options) {
     openButton,
     advanceButton,
     resetButton,
+    routeButton,
     fetchImpl,
     monotonicNow,
     setIntervalImpl = setInterval,
@@ -144,7 +146,21 @@ export function startChronoflowPage(options) {
         return tile;
       })
     );
-    openButton.disabled = game.gateOpen || game.completed;
+    if (routeButton) {
+      routeButton.disabled = game.completed;
+      routeButton.textContent =
+        game.route === 'drain'
+          ? 'Route valve to archive'
+          : 'Route valve to drain';
+      routeButton.setAttribute(
+        'aria-label',
+        game.route === 'drain'
+          ? 'Route valve to archive chamber'
+          : 'Route valve to decoy drain'
+      );
+    }
+    openButton.disabled =
+      game.route !== 'archive' || game.gateOpen || game.completed;
     advanceButton.disabled = game.completed;
     status.textContent = game.completed
       ? game.timedCredit
@@ -156,6 +172,13 @@ export function startChronoflowPage(options) {
 
   const handleOpen = () => {
     game = openSluice(game);
+    render();
+  };
+  const handleRoute = () => {
+    game = setChronoflowRoute(
+      game,
+      game.route === 'drain' ? 'archive' : 'drain'
+    );
     render();
   };
   const handleAdvance = () => {
@@ -172,6 +195,7 @@ export function startChronoflowPage(options) {
   };
 
   openButton.addEventListener('click', handleOpen);
+  routeButton?.addEventListener('click', handleRoute);
   advanceButton.addEventListener('click', handleAdvance);
   resetButton.addEventListener('click', handleReset);
   render();
@@ -194,6 +218,7 @@ export function startChronoflowPage(options) {
     disposed = true;
     clearIntervalImpl(clockInterval);
     openButton.removeEventListener('click', handleOpen);
+    routeButton?.removeEventListener('click', handleRoute);
     advanceButton.removeEventListener('click', handleAdvance);
     resetButton.removeEventListener('click', handleReset);
   };

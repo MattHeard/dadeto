@@ -36,6 +36,7 @@
 - Fix implemented: add `chronoflowTimeUrl` to `/config.json`, load it without caching, and show sync/stale/unavailable status plus a phase derived from the server sample.
 - Guardrail added: Playwright covers synchronized high-tide credit and unavailable endpoint practice; only the trusted high phase awards a record.
 - Timed-credit boundary: the target-fill transition snapshots the injected Internet clock once; only a synchronized reading in the configured high-tide phase grants a timed record. Stale/offline and non-high phases remain puzzle practice.
+- Route-choice guardrail: the valve opens exactly one junction branch. The decoy route drains water and blocks the archive approach; resetting restores the initial decoy selection.
 
 - Date: 2026-10-06
 - Failure observed: clock-sample offset expectations were inconsistent with the measured request midpoint.

@@ -6,6 +6,7 @@ const dispose = startChronoflowPage({
   status: document.querySelector('#chronoflow-status'),
   clockStatus: document.querySelector('#clock-status'),
   openButton: document.querySelector('#open-sluice'),
+  routeButton: document.querySelector('#route-valve'),
   advanceButton: document.querySelector('#advance-water'),
   resetButton: document.querySelector('#reset-level'),
   fetchImpl: window.fetch.bind(window),

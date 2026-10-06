@@ -24,7 +24,7 @@
 ## Actors and Interfaces
 
 - Primary actors: the player, the archive keeper Ilyra, and the tide mechanism called the Orrery.
-- Inputs: select/edit a cell, rotate a channel, toggle a gate, prime a pump, reset, pause, and inspect a cell. Equivalent keyboard, touch, gamepad, and embedded toy controls must call the same commands.
+- Inputs: choose the archive or decoy-drain branch at the junction, open a gate, advance, reset, pause, and inspect a cell. Equivalent keyboard, touch, gamepad, and embedded toy controls must call the same commands.
 - Outputs: a pixel-art 2D board, animated water surface and flow direction, pressure/volume readouts, current trusted tide phase and synchronization quality, level result, and portable save data.
 - Player loop: inspect the target route; observe current water and tide; make a small number of reversible edits; let fixed simulation steps run; use a tide window to deliver the required volume without overflowing the archive; inspect the result and unlock the next level.
 

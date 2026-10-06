@@ -9,6 +9,7 @@ import {
   finalizeChronoflowObjective,
   openSluice,
   resetChronoflow,
+  setChronoflowRoute,
 } from '../../../../src/core/browser/game/chronoflow/runtime.js';
 import { startChronoflowPage } from '../../../../src/core/browser/game/chronoflow/pagePresenter.js';
 
@@ -231,8 +232,20 @@ describe('Chronoflow Archive Entry runtime', () => {
     const initial = createChronoflowGame();
     const advancedWhileClosed = advanceChronoflow(initial, 120);
     expect(advancedWhileClosed.fluid.volume[19]).toBe(0);
+    expect(totalVolume(advancedWhileClosed.fluid)).toBeLessThan(1);
+    expect(initial.route).toBe('drain');
+    expect(openSluice(initial)).toBe(initial);
 
-    const opened = openSluice(advancedWhileClosed);
+    const archiveRoute = setChronoflowRoute(initial, 'archive');
+    expect(archiveRoute.route).toBe('archive');
+    expect(archiveRoute.fluid.solids[12]).toBe(false);
+    expect(archiveRoute.fluid.solids[16]).toBe(true);
+    expect(setChronoflowRoute(initial, 'other')).toBe(initial);
+    expect(setChronoflowRoute(archiveRoute, 'drain').fluid.solids[16]).toBe(
+      false
+    );
+
+    const opened = openSluice(archiveRoute);
     expect(opened.gateOpen).toBe(true);
     expect(opened.fluid.solids[13]).toBe(false);
     expect(advancedWhileClosed.fluid.solids[13]).toBe(true);
@@ -240,7 +253,9 @@ describe('Chronoflow Archive Entry runtime', () => {
   });
 
   it('replays the authored solution to the target and keeps completed state stable', () => {
-    let game = openSluice(createChronoflowGame());
+    let game = openSluice(
+      setChronoflowRoute(createChronoflowGame(), 'archive')
+    );
     for (let batch = 0; batch < 30 && !game.completed; batch += 1) {
       game = advanceChronoflow(game, 60);
     }
@@ -251,10 +266,13 @@ describe('Chronoflow Archive Entry runtime', () => {
     );
     expect(advanceChronoflow(game, 60)).toBe(game);
     expect(openSluice(game)).toBe(game);
+    expect(setChronoflowRoute(game, 'drain')).toBe(game);
   });
 
   it('awards timed completion only in the synchronized high-tide phase', () => {
-    let completed = openSluice(createChronoflowGame());
+    let completed = openSluice(
+      setChronoflowRoute(createChronoflowGame(), 'archive')
+    );
     for (let batch = 0; batch < 30 && !completed.completed; batch += 1) {
       completed = advanceChronoflow(completed, 60);
     }
@@ -294,6 +312,7 @@ describe('Chronoflow Archive Entry runtime', () => {
   it('resets puzzle state and validates fixed-step batch limits', () => {
     const reset = resetChronoflow();
     expect(reset.gateOpen).toBe(false);
+    expect(reset.route).toBe('drain');
     expect(reset.fluid.solids[13]).toBe(true);
     expect(reset.fluid.tick).toBe(0);
     expect(advanceChronoflow(reset, 0)).toBe(reset);
@@ -311,6 +330,7 @@ describe('Chronoflow page presenter', () => {
     const openButton = new FakeElement();
     const advanceButton = new FakeElement();
     const resetButton = new FakeElement();
+    const routeButton = new FakeElement();
     const fetchImpl = jest.fn(async () => ({ ok: false, status: 503 }));
 
     const dispose = startChronoflowPage({
@@ -321,6 +341,7 @@ describe('Chronoflow page presenter', () => {
       openButton,
       advanceButton,
       resetButton,
+      routeButton,
       fetchImpl,
       monotonicNow: () => 0,
       setIntervalImpl: () => 1,
@@ -332,6 +353,15 @@ describe('Chronoflow page presenter', () => {
       'Sluice gate, closed.'
     );
     expect(clockStatus.textContent).toMatch(/Untimed practice/);
+    expect(openButton.disabled).toBe(true);
+
+    routeButton.emit('click');
+    expect(routeButton.textContent).toBe('Route valve to drain');
+    expect(openButton.disabled).toBe(false);
+    routeButton.emit('click');
+    expect(routeButton.textContent).toBe('Route valve to archive');
+    expect(openButton.disabled).toBe(true);
+    routeButton.emit('click');
     expect(openButton.disabled).toBe(false);
 
     openButton.emit('click');
@@ -352,9 +382,10 @@ describe('Chronoflow page presenter', () => {
 
     resetButton.emit('click');
     expect(status.textContent).toContain('step 0');
-    expect(openButton.disabled).toBe(false);
+    expect(openButton.disabled).toBe(true);
     dispose();
     expect(openButton.listeners.has('click')).toBe(false);
+    expect(routeButton.listeners.has('click')).toBe(false);
     expect(advanceButton.listeners.has('click')).toBe(false);
     expect(resetButton.listeners.has('click')).toBe(false);
   });
@@ -367,6 +398,7 @@ describe('Chronoflow page presenter', () => {
     const openButton = new FakeElement();
     const advanceButton = new FakeElement();
     const resetButton = new FakeElement();
+    const routeButton = new FakeElement();
     let clockUnavailable = false;
     const fetchImpl = jest.fn(async endpoint => {
       if (endpoint === '/config.json') {
@@ -391,6 +423,7 @@ describe('Chronoflow page presenter', () => {
       openButton,
       advanceButton,
       resetButton,
+      routeButton,
       fetchImpl,
       monotonicNow: () => {
         monotonic += 100;
@@ -413,6 +446,8 @@ describe('Chronoflow page presenter', () => {
     expect(clockStatus.textContent).toContain('Internet tide synchronized');
     expect(clockStatus.textContent).toContain('Tide:');
     expect(typeof intervalHandler).toBe('function');
+    expect(routeButton.textContent).toBe('Route valve to archive');
+    routeButton.emit('click');
     openButton.emit('click');
     for (
       let batch = 0;

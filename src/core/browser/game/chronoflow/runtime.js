@@ -4,11 +4,15 @@ import { isTideWindowOpen } from './tide.js';
 const WIDTH = 5;
 const HEIGHT = 4;
 const GATE_CELL = 13;
+const ARCHIVE_BRANCH_CELL = 12;
+const DRAIN_BRANCH_CELLS = Object.freeze([16, 17]);
+const DRAIN_CELL = 17;
+const TARGET_APPROACH_CELL = 18;
 const TARGET_CELL = 19;
 const TARGET_VOLUME = 0.12;
 const PAGE_STEP_COUNT = 60;
 const ARCHIVE_WALLS = Object.freeze([
-  0, 2, 3, 4, 5, 7, 8, 9, 10, 13, 14, 15, 16, 17,
+  0, 2, 3, 4, 5, 7, 8, 9, 10, 12, 13, 14, 15, 16, 17, 18,
 ]);
 
 /**
@@ -16,6 +20,7 @@ const ARCHIVE_WALLS = Object.freeze([
  * @property {'archive-entry'} level Current authored level.
  * @property {import('./chronoflow.js').FluidState} fluid Fluid solver state.
  * @property {boolean} gateOpen Whether the archive sluice has been opened.
+ * @property {'archive'|'drain'} route Selected junction route.
  * @property {number} targetCell Target chamber cell index.
  * @property {number} targetVolume Required delivered water volume.
  * @property {boolean} completed Whether the level objective is met.
@@ -42,13 +47,29 @@ export function createChronoflowGame() {
       solids,
     }),
     gateOpen: false,
+    route: 'drain',
     targetCell: TARGET_CELL,
     targetVolume: TARGET_VOLUME,
     completed: false,
     timedCredit: false,
     mode: 'practice',
   };
-  return initialGame;
+  return setChronoflowRoute(initialGame, 'drain');
+}
+
+/**
+ * Set the junction to feed either the archive or the decoy drain.
+ * @param {ChronoflowGame} game Current game.
+ * @param {'archive'|'drain'} route Player-selected route.
+ * @returns {ChronoflowGame} Updated routing state.
+ */
+export function setChronoflowRoute(game, route) {
+  if (game.completed || (route !== 'archive' && route !== 'drain')) return game;
+  const solids = [...game.fluid.solids];
+  solids[ARCHIVE_BRANCH_CELL] = route !== 'archive';
+  for (const cell of DRAIN_BRANCH_CELLS) solids[cell] = route === 'archive';
+  solids[TARGET_APPROACH_CELL] = route === 'drain';
+  return withFluidSolids({ ...game, route }, solids);
 }
 
 /**
@@ -75,14 +96,20 @@ export function finalizeChronoflowObjective(game, clockReading) {
  * @returns {ChronoflowGame} Updated game or the original when already open/completed.
  */
 export function openSluice(game) {
-  if (game.gateOpen || game.completed) return game;
+  if (game.gateOpen || game.completed || game.route !== 'archive') return game;
   const solids = [...game.fluid.solids];
   solids[GATE_CELL] = false;
-  return {
-    ...game,
-    gateOpen: true,
-    fluid: { ...game.fluid, solids },
-  };
+  return withFluidSolids({ ...game, gateOpen: true }, solids);
+}
+
+/**
+ * Replace terrain while preserving the rest of the fluid state.
+ * @param {ChronoflowGame} game Current game state.
+ * @param {boolean[]} solids Updated solid-cell map.
+ * @returns {ChronoflowGame} Game with replaced terrain.
+ */
+function withFluidSolids(game, solids) {
+  return { ...game, fluid: { ...game.fluid, solids } };
 }
 
 /**
@@ -107,7 +134,9 @@ export function advanceChronoflow(game, steps = PAGE_STEP_COUNT) {
  */
 function advanceUntilTarget(game, steps) {
   if (steps === 0 || game.completed) return game;
-  const fluid = stepFluid(game.fluid).state;
+  const fluid = stepFluid(game.fluid, {
+    drains: game.route === 'drain' ? [{ cell: DRAIN_CELL, volume: 0.02 }] : [],
+  }).state;
   const completed = fluid.volume[TARGET_CELL] >= TARGET_VOLUME;
   return advanceUntilTarget(
     { ...game, fluid, completed },
