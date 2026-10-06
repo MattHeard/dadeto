@@ -1,11 +1,11 @@
 import { test, expect } from '@playwright/test';
 
-test('plays and resets the untimed Chronoflow Archive Entry level', async ({ page }) => {
+test('plays Chronoflow and earns a timed record only on trusted high tide', async ({ page }) => {
   await page.route('**/config.json', route =>
     route.fulfill({ json: { chronoflowTimeUrl: '/mock-clock' } }),
   );
   await page.route('**/mock-clock', route =>
-    route.fulfill({ json: { epochMs: 1_800_000_000_000 } }),
+    route.fulfill({ json: { epochMs: 1_800_000_030_000 } }),
   );
   await page.goto('/chronoflow/');
 
@@ -17,10 +17,10 @@ test('plays and resets the untimed Chronoflow Archive Entry level', async ({ pag
   await page.getByRole('button', { name: 'Open sluice' }).click();
   const advance = page.getByRole('button', { name: 'Advance water · 60 steps' });
   for (let batch = 0; batch < 30; batch += 1) {
-    if (await page.locator('#chronoflow-status').textContent() === 'Archive chamber primed. Level complete.') break;
+    if ((await page.locator('#chronoflow-status').textContent())?.includes('Timed high-tide record')) break;
     await advance.click();
   }
-  await expect(page.locator('#chronoflow-status')).toHaveText('Archive chamber primed. Level complete.');
+  await expect(page.locator('#chronoflow-status')).toHaveText('Archive chamber primed. Timed high-tide record secured.');
 
   await page.getByRole('button', { name: 'Reset level' }).click();
   await expect(page.locator('#chronoflow-status')).toContainText('step 0');

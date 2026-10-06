@@ -1,6 +1,7 @@
 import {
   advanceChronoflow,
   createChronoflowGame,
+  finalizeChronoflowObjective,
   openSluice,
   resetChronoflow,
 } from './runtime.js';
@@ -48,11 +49,7 @@ export function startChronoflowPage(options) {
         'Untimed practice · Connecting to the Internet tide clock…';
       return;
     }
-    const reading = readNetworkClock(
-      clockEstimate,
-      monotonicNow(),
-      CLOCK_MAX_AGE_MS
-    );
+    const reading = getClockReading();
     if (reading.status === 'stale') {
       clockStatus.textContent =
         'Untimed practice · Internet tide clock is stale. Timed play is disabled.';
@@ -60,6 +57,14 @@ export function startChronoflowPage(options) {
     }
     clockStatus.textContent = `Untimed practice · Internet tide synchronized (±${Math.ceil(reading.uncertaintyMs)} ms). Tide: ${getTidePhase(reading.epochMs)}.`;
   };
+
+  /**
+   * @returns {{status: 'synchronized', epochMs: number, uncertaintyMs: number}|{status: 'stale', epochMs: null, uncertaintyMs: null}} Current trusted time.
+   */
+  const getClockReading = () =>
+    clockEstimate
+      ? readNetworkClock(clockEstimate, monotonicNow(), CLOCK_MAX_AGE_MS)
+      : { status: 'stale', epochMs: null, uncertaintyMs: null };
 
   const synchronizeClock = async () => {
     if (syncing || disposed) return;
@@ -142,7 +147,9 @@ export function startChronoflowPage(options) {
     openButton.disabled = game.gateOpen || game.completed;
     advanceButton.disabled = game.completed;
     status.textContent = game.completed
-      ? 'Archive chamber primed. Level complete.'
+      ? game.timedCredit
+        ? 'Archive chamber primed. Timed high-tide record secured.'
+        : 'Archive chamber primed. Practice complete; no timed record.'
       : `Water: ${Math.round(game.fluid.volume[game.targetCell] * 100)}% of 12% target · step ${game.fluid.tick}`;
     renderClock();
   };
@@ -152,7 +159,11 @@ export function startChronoflowPage(options) {
     render();
   };
   const handleAdvance = () => {
+    const wasCompleted = game.completed;
     game = advanceChronoflow(game);
+    if (!wasCompleted && game.completed) {
+      game = finalizeChronoflowObjective(game, getClockReading());
+    }
     render();
   };
   const handleReset = () => {

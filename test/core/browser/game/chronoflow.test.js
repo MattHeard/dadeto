@@ -6,6 +6,7 @@ import {
 import {
   advanceChronoflow,
   createChronoflowGame,
+  finalizeChronoflowObjective,
   openSluice,
   resetChronoflow,
 } from '../../../../src/core/browser/game/chronoflow/runtime.js';
@@ -252,6 +253,44 @@ describe('Chronoflow Archive Entry runtime', () => {
     expect(openSluice(game)).toBe(game);
   });
 
+  it('awards timed completion only in the synchronized high-tide phase', () => {
+    let completed = openSluice(createChronoflowGame());
+    for (let batch = 0; batch < 30 && !completed.completed; batch += 1) {
+      completed = advanceChronoflow(completed, 60);
+    }
+
+    for (const [epochMs, expected] of [
+      [0, false],
+      [30000, true],
+      [60000, false],
+      [90000, false],
+    ]) {
+      expect(
+        finalizeChronoflowObjective(completed, {
+          status: 'synchronized',
+          epochMs,
+        }).timedCredit
+      ).toBe(expected);
+    }
+    expect(
+      finalizeChronoflowObjective(completed, {
+        status: 'stale',
+        epochMs: 30000,
+      }).timedCredit
+    ).toBe(false);
+    expect(
+      finalizeChronoflowObjective(completed, {
+        status: 'synchronized',
+        epochMs: null,
+      }).timedCredit
+    ).toBe(false);
+    expect(finalizeChronoflowObjective(completed, null).timedCredit).toBe(
+      false
+    );
+    const incomplete = createChronoflowGame();
+    expect(finalizeChronoflowObjective(incomplete, null)).toBe(incomplete);
+  });
+
   it('resets puzzle state and validates fixed-step batch limits', () => {
     const reset = resetChronoflow();
     expect(reset.gateOpen).toBe(false);
@@ -306,7 +345,9 @@ describe('Chronoflow page presenter', () => {
     ) {
       advanceButton.emit('click');
     }
-    expect(status.textContent).toBe('Archive chamber primed. Level complete.');
+    expect(status.textContent).toBe(
+      'Archive chamber primed. Practice complete; no timed record.'
+    );
     expect(advanceButton.disabled).toBe(true);
 
     resetButton.emit('click');
@@ -336,7 +377,7 @@ describe('Chronoflow page presenter', () => {
       }
       return clockUnavailable
         ? { ok: false, status: 503 }
-        : { ok: true, json: async () => ({ epochMs: 1_800_000_000_000 }) };
+        : { ok: true, json: async () => ({ epochMs: 1_800_000_030_000 }) };
     });
     let monotonic = 100;
     let intervalHandler;
@@ -372,6 +413,15 @@ describe('Chronoflow page presenter', () => {
     expect(clockStatus.textContent).toContain('Internet tide synchronized');
     expect(clockStatus.textContent).toContain('Tide:');
     expect(typeof intervalHandler).toBe('function');
+    openButton.emit('click');
+    for (
+      let batch = 0;
+      batch < 30 && !status.textContent.includes('complete');
+      batch += 1
+    ) {
+      advanceButton.emit('click');
+    }
+    expect(status.textContent).toContain('Timed high-tide record secured');
     intervalHandler();
     expect(clockStatus.textContent).toContain('Internet tide synchronized');
     clockUnavailable = true;

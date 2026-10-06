@@ -13,7 +13,7 @@
 
 - Terminal output should include:
   - focused solver suite summary with no failed tests.
-  - local Playwright summary with Chronoflow sluice opening, target delivery, untimed-practice label, and reset scenarios passing.
+  - local Playwright summary with Chronoflow sluice opening, trusted high-tide timed record, unavailable-clock practice, and reset scenarios passing.
 - Artifacts written to:
   - `reports/coverage/coverage-summary.json`
   - the configured local Playwright report output.
@@ -28,4 +28,4 @@
 
 ## Design-Loop Limitation
 
-The Archive Entry page remains untimed practice. It reads `chronoflowTimeUrl` from `/config.json`, displays synchronized tide phase from Internet epoch samples, and falls back to practice when configuration or clock sync fails. Timed completion remains disabled pending a separate gameplay rules loop.
+The Archive Entry puzzle can always be completed as practice. It reads `chronoflowTimeUrl` from `/config.json`, displays synchronized tide phase from Internet epoch samples, and grants a timed record only when the target fills during a fresh synchronized high tide. Configuration failure, stale sync, and every other phase deny timed credit without blocking puzzle completion.

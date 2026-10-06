@@ -34,7 +34,8 @@
 - Failure observed: the standalone trusted clock adapter had no deployed endpoint address available to the page.
 - Root cause: the Cloud Function URL existed only as Terraform output and was not included in the static runtime configuration read by browser pages.
 - Fix implemented: add `chronoflowTimeUrl` to `/config.json`, load it without caching, and show sync/stale/unavailable status plus a phase derived from the server sample.
-- Guardrail added: Playwright covers synchronized and unavailable endpoint responses while confirming the level remains untimed practice.
+- Guardrail added: Playwright covers synchronized high-tide credit and unavailable endpoint practice; only the trusted high phase awards a record.
+- Timed-credit boundary: the target-fill transition snapshots the injected Internet clock once; only a synchronized reading in the configured high-tide phase grants a timed record. Stale/offline and non-high phases remain puzzle practice.
 
 - Date: 2026-10-06
 - Failure observed: clock-sample offset expectations were inconsistent with the measured request midpoint.

@@ -11,11 +11,11 @@
 - [x] Time endpoint returns a positive server epoch with no-store/CORS headers, answers preflight, and rejects non-GET requests.
 - [x] Clock adapter derives offset and uncertainty from injected monotonic request samples, rejects invalid/slow responses, and expires to stale without reading browser wall time.
 - [ ] Page loads `chronoflowTimeUrl` from uncached static config and shows Internet tide phase only from the network clock estimate.
-- [ ] Local Playwright verifies synchronized tide display and the unavailable/offline practice fallback; the first level remains untimed in both cases.
+- [ ] Local Playwright verifies that synchronized high tide grants a timed record and unavailable/offline practice does not.
 - [ ] Local Playwright can open the sluice, advance water to a win state, and reset to the initial board.
 - [ ] The embedded toy and full-page adapter produce the same solver state from the same command stream.
 - [ ] `npm run build` emits the Chronoflow page and its runtime assets.
-- [ ] Local Playwright acceptance opens the page, edits a route, completes the untimed level, and shows the stale/offline practice state when the clock endpoint is unavailable.
+- [ ] Local Playwright acceptance opens the page, routes water, verifies trusted high-tide credit, verifies unavailable/offline practice completion, and confirms reset.
 
 ## Evidence Collection
 

@@ -1,4 +1,5 @@
 import { createFluidState, stepFluid } from './chronoflow.js';
+import { isTideWindowOpen } from './tide.js';
 
 const WIDTH = 5;
 const HEIGHT = 4;
@@ -18,6 +19,7 @@ const ARCHIVE_WALLS = Object.freeze([
  * @property {number} targetCell Target chamber cell index.
  * @property {number} targetVolume Required delivered water volume.
  * @property {boolean} completed Whether the level objective is met.
+ * @property {boolean} timedCredit Whether completion earned a trusted high-tide record.
  * @property {'practice'} mode Clockless practice mode for this milestone.
  */
 
@@ -30,7 +32,8 @@ export function createChronoflowGame() {
   const solids = Array.from({ length: WIDTH * HEIGHT }, (_, cell) =>
     ARCHIVE_WALLS.includes(cell)
   );
-  return {
+  /** @type {ChronoflowGame} */
+  const initialGame = {
     level: 'archive-entry',
     fluid: createFluidState({
       width: WIDTH,
@@ -42,7 +45,27 @@ export function createChronoflowGame() {
     targetCell: TARGET_CELL,
     targetVolume: TARGET_VOLUME,
     completed: false,
+    timedCredit: false,
     mode: 'practice',
+  };
+  return initialGame;
+}
+
+/**
+ * Award timed completion only when the objective is met during the trusted tide window.
+ * @param {ChronoflowGame} game Current level state.
+ * @param {{status: 'synchronized'|'stale', epochMs: number|null}|null} clockReading Injected Internet clock reading.
+ * @returns {ChronoflowGame} State with timed credit evaluated once at completion.
+ */
+export function finalizeChronoflowObjective(game, clockReading) {
+  if (!game.completed || game.timedCredit) return game;
+  const timedCredit = isTideWindowOpen({
+    clockStatus: clockReading?.status ?? 'offline',
+    epochMs: clockReading?.epochMs ?? null,
+  });
+  return {
+    ...game,
+    timedCredit,
   };
 }
 
