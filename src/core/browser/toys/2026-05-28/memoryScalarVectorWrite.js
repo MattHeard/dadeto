@@ -1,6 +1,7 @@
 import { deepClone } from '../../browser-core.js';
 import { isObjectRecord } from '../../validation.js';
 import { getOptionalEnvHelper, requireEnvHelper } from '../browserToysCore.js';
+import { createMemoryResult } from './memoryResult.js';
 import {
   runMemoryRequest,
   writeTemporaryMemoryRoot,
@@ -422,12 +423,10 @@ function buildMemoryWriteSuccess(request) {
  * @returns {{ memoryLocation: string, path: string, written: false, error: string }} Error response.
  */
 function buildMemoryWriteError(request, error) {
-  return {
-    memoryLocation: request.memoryLocation,
-    path: request.path,
+  return createMemoryResult(request, {
     written: false,
     error,
-  };
+  });
 }
 
 /**

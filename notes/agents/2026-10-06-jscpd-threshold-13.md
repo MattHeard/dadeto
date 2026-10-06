@@ -13,3 +13,4 @@
 
 - 2026-10-07 CSV converter: inlined the one-use line-break continuation into its delimiter callback, removing a function boundary with a repeated unchanged-index return. Focused CSV converter suite passes 8/8; the total remains 113 because the next fragment was exposed.
 - 2026-10-07 fulfillment result: centralized JSON serialization for true/false feasibility results in `formatFulfillmentFeasibility`, keeping the external JSON unchanged. New focused tests pass 2/2 and `npm run duplication` drops to 112 clones (1.40% duplicated lines).
+- 2026-10-07 memory result envelopes: introduced `memoryResult.js` to construct the common location/path fields for memory write and vector error responses, preserving field order and vector location overrides. Memory vector and scalar/vector write suites pass 41/41, TSDoc passes, and duplication falls from 112 to 111 clones (1.39% duplicated lines).

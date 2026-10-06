@@ -1,5 +1,6 @@
 import { get } from '../2025-03-29/get.js';
 import { buildWhen } from '../../common.js';
+import { createMemoryResult } from './memoryResult.js';
 import {
   requireEnvHelper,
   runToyFailureBoundary,
@@ -492,13 +493,11 @@ function buildMemoryVectorError(
   error,
   memoryLocation = request.memoryLocation
 ) {
-  return {
-    memoryLocation,
-    path: request.path,
+  return createMemoryResult(request, {
     found: false,
     vector: [],
     error,
-  };
+  }, memoryLocation);
 }
 
 /**
