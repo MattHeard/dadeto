@@ -12,6 +12,12 @@ import {
 } from '../../../commonCore.js';
 /** @typedef {import('../browserToysCore.js').ToyEnv} ToyEnv */
 
+/** @typedef {{ memoryLocation: string, path: string, found: boolean, vector: unknown[], error?: string }} MemoryVectorResponse */
+/** @typedef {{
+ *   projectToVector?: (value: unknown) => unknown[],
+ *   resolvePathError?: (request: { memoryLocation: string, path: string }, error: string) => MemoryVectorResponse,
+ * }} MemoryVectorOptions */
+
 const DEFAULT_MEMORY_LOCATION = 'temporary';
 export const SUPPORTED_MEMORY_LOCATIONS = [
   'temporary',
@@ -162,17 +168,8 @@ function buildUnsupportedMemoryLocationResult(memoryLocation) {
  * Try to build a vector response and fall back to an error payload when the runtime throws.
  * @param {{ memoryLocation: string, path: string }} request Normalized request.
  * @param {ToyEnv} env Environment helpers.
- * @param {{
- *   projectToVector?: (value: unknown) => unknown[],
- *   resolvePathError?: (request: { memoryLocation: string, path: string }, error: string) => {
- *     memoryLocation: string,
- *     path: string,
- *     found: boolean,
- *     vector: unknown[],
- *     error?: string,
- *   }
- * }} [options] Projection and error-handling overrides.
- * @returns {{ memoryLocation: string, path: string, found: boolean, vector: unknown[], error?: string }} Structured response.
+ * @param {MemoryVectorOptions} [options] Projection and error-handling overrides.
+ * @returns {MemoryVectorResponse} Structured response.
  */
 function buildMemoryVectorResponseWithFallback(request, env, options = {}) {
   return runMemoryRequest(
@@ -200,17 +197,8 @@ export function runMemoryRequest(request, calculate, reject) {
  * Build the structured vector payload after the input has been validated.
  * @param {{ memoryLocation: string, path: string }} request Normalized request.
  * @param {ToyEnv} env Environment helpers.
- * @param {{
- *   projectToVector?: (value: unknown) => unknown[],
- *   resolvePathError?: (request: { memoryLocation: string, path: string }, error: string) => {
- *     memoryLocation: string,
- *     path: string,
- *     found: boolean,
- *     vector: unknown[],
- *     error?: string,
- *   }
- * }} [options] Projection and error-handling overrides.
- * @returns {{ memoryLocation: string, path: string, found: boolean, vector: unknown[], error?: string }} Structured response.
+ * @param {MemoryVectorOptions} [options] Projection and error-handling overrides.
+ * @returns {MemoryVectorResponse} Structured response.
  */
 function buildMemoryVectorResponse(request, env, options = {}) {
   return buildMemoryVectorResponseFromRootResult(
@@ -224,45 +212,47 @@ function buildMemoryVectorResponse(request, env, options = {}) {
  * Resolve the root lookup result into either an error response or a path lookup.
  * @param {{ memoryLocation: string, path: string }} request Normalized request.
  * @param {{ root?: object | unknown[], error?: string }} rootResult Root lookup result.
- * @param {{
- *   projectToVector?: (value: unknown) => unknown[],
- *   resolvePathError?: (request: { memoryLocation: string, path: string }, error: string) => {
- *     memoryLocation: string,
- *     path: string,
- *     found: boolean,
- *     vector: unknown[],
- *     error?: string,
- *   }
- * }} [options] Projection and error-handling overrides.
- * @returns {{ memoryLocation: string, path: string, found: boolean, vector: unknown[], error?: string }} Structured response.
+ * @param {MemoryVectorOptions} [options] Projection and error-handling overrides.
+ * @returns {MemoryVectorResponse} Structured response.
  */
 function buildMemoryVectorResponseFromRootResult(
   request,
   rootResult,
   options = {}
 ) {
-  if (rootResult.error) {
-    return buildResolvedMemoryVectorError(request, rootResult.error, options);
+  return buildMemoryVectorResponseFromLookupResult(
+    rootResult,
+    error => buildResolvedMemoryVectorError(request, error, options),
+    result => buildMemoryVectorResponseFromRoot(request, result.root, options)
+  );
+}
+
+/**
+ * Resolve a lookup result through its matching error or success path.
+ * @template {{ error?: string }} Lookup
+ * @param {Lookup} result Lookup result.
+ * @param {(error: string) => MemoryVectorResponse} onError Error response builder.
+ * @param {(result: Lookup) => MemoryVectorResponse} onSuccess Success response builder.
+ * @returns {MemoryVectorResponse} Structured response.
+ */
+function buildMemoryVectorResponseFromLookupResult(
+  result,
+  onError,
+  onSuccess
+) {
+  if (result.error) {
+    return onError(result.error);
   }
 
-  return buildMemoryVectorResponseFromRoot(request, rootResult.root, options);
+  return onSuccess(result);
 }
 
 /**
  * Resolve the selected root into a path lookup or a root-missing error.
  * @param {{ memoryLocation: string, path: string }} request Normalized request.
  * @param {object | unknown[] | undefined} root Memory root to inspect.
- * @param {{
- *   projectToVector?: (value: unknown) => unknown[],
- *   resolvePathError?: (request: { memoryLocation: string, path: string }, error: string) => {
- *     memoryLocation: string,
- *     path: string,
- *     found: boolean,
- *     vector: unknown[],
- *     error?: string,
- *   }
- * }} [options] Projection and error-handling overrides.
- * @returns {{ memoryLocation: string, path: string, found: boolean, vector: unknown[], error?: string }} Structured response.
+ * @param {MemoryVectorOptions} [options] Projection and error-handling overrides.
+ * @returns {MemoryVectorResponse} Structured response.
  */
 function buildMemoryVectorResponseFromRoot(request, root, options = {}) {
   if (root === undefined) {
@@ -279,17 +269,8 @@ function buildMemoryVectorResponseFromRoot(request, root, options = {}) {
  * Build the structured vector payload once the memory root is available.
  * @param {{ memoryLocation: string, path: string }} request Normalized request.
  * @param {object | unknown[]} root Memory root to inspect.
- * @param {{
- *   projectToVector?: (value: unknown) => unknown[],
- *   resolvePathError?: (request: { memoryLocation: string, path: string }, error: string) => {
- *     memoryLocation: string,
- *     path: string,
- *     found: boolean,
- *     vector: unknown[],
- *     error?: string,
- *   }
- * }} [options] Projection and error-handling overrides.
- * @returns {{ memoryLocation: string, path: string, found: boolean, vector: unknown[], error?: string }} Structured response.
+ * @param {MemoryVectorOptions} [options] Projection and error-handling overrides.
+ * @returns {MemoryVectorResponse} Structured response.
  */
 function buildResolvedMemoryVectorResponse(request, root, options = {}) {
   return buildResolvedMemoryVectorResponseFromPath(
@@ -303,16 +284,7 @@ function buildResolvedMemoryVectorResponse(request, root, options = {}) {
  * Resolve the path lookup into either an error or a projected vector.
  * @param {{ memoryLocation: string, path: string }} request Normalized request.
  * @param {{ value?: unknown, error?: string }} resolvedValue Lookup result.
- * @param {{
- *   projectToVector?: (value: unknown) => unknown[],
- *   resolvePathError?: (request: { memoryLocation: string, path: string }, error: string) => {
- *     memoryLocation: string,
- *     path: string,
- *     found: boolean,
- *     vector: unknown[],
- *     error?: string,
- *   }
- * }} [options] Projection and error-handling overrides.
+ * @param {MemoryVectorOptions} [options] Projection and error-handling overrides.
  * @returns {{ memoryLocation: string, path: string, found: boolean, vector: unknown[], error?: string }} Structured response.
  */
 function buildResolvedMemoryVectorResponseFromPath(
@@ -320,18 +292,15 @@ function buildResolvedMemoryVectorResponseFromPath(
   resolvedValue,
   options = {}
 ) {
-  if (resolvedValue.error) {
-    return buildResolvedMemoryVectorError(
-      request,
-      resolvedValue.error,
-      options
-    );
-  }
-
-  return buildResolvedMemoryVectorResponseFromValue(
-    request,
-    resolvedValue.value,
-    options
+  return buildMemoryVectorResponseFromLookupResult(
+    resolvedValue,
+    error => buildResolvedMemoryVectorError(request, error, options),
+    result =>
+      buildResolvedMemoryVectorResponseFromValue(
+        request,
+        result.value,
+        options
+      )
   );
 }
 
@@ -339,10 +308,8 @@ function buildResolvedMemoryVectorResponseFromPath(
  * Project a resolved path value into the final response payload.
  * @param {{ memoryLocation: string, path: string }} request Normalized request.
  * @param {unknown} value Resolved path value.
- * @param {{
- *   projectToVector?: (value: unknown) => unknown[]
- * }} [options] Projection override.
- * @returns {{ memoryLocation: string, path: string, found: boolean, vector: unknown[], error?: string }} Structured response.
+ * @param {MemoryVectorOptions} [options] Projection override.
+ * @returns {MemoryVectorResponse} Structured response.
  */
 function buildResolvedMemoryVectorResponseFromValue(
   request,
