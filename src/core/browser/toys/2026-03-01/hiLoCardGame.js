@@ -226,9 +226,9 @@ export function normalizeKeyboardState(value) {
   /**
    * @param {Record<string, unknown>} candidate Stored keyboard fields.
    * @returns {HiLoKeyboardState} Normalized keyboard state.
-   */
+  */
   const normalizeActiveKey = candidate => ({
-    activeKey: readActiveKey(candidate.activeKey),
+    activeKey: getStringField(candidate.activeKey),
   });
   return /** @type {HiLoKeyboardState} */ (
     normalizeObjectOrFallback(
@@ -237,15 +237,6 @@ export function normalizeKeyboardState(value) {
       normalizeActiveKey
     )
   );
-}
-
-/**
- * Normalize a stored active key.
- * @param {unknown} value - Stored active key candidate.
- * @returns {string | null} Active key or null.
- */
-function readActiveKey(value) {
-  return getStringCandidate(value) ?? null;
 }
 
 /**
