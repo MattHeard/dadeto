@@ -36,7 +36,7 @@ export function estimateNetworkClock(sample) {
  * @param {{serverEpochMs: number, offsetMs: number, uncertaintyMs: number, sampledAtMonotonicMs: number}} estimate Prior server sample.
  * @param {number} monotonicNowMs Current performance-style monotonic value.
  * @param {number} [maxAgeMs] Maximum sample age.
- * @returns {{status: 'synchronized'|'stale', epochMs: number|null, uncertaintyMs: number|null}} Current trusted-time status.
+ * @returns {{status: 'synchronized', epochMs: number, uncertaintyMs: number}|{status: 'stale', epochMs: null, uncertaintyMs: null}} Current trusted-time status.
  */
 export function readNetworkClock(
   estimate,

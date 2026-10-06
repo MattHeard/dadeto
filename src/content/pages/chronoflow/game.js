@@ -8,6 +8,8 @@ const dispose = startChronoflowPage({
   openButton: document.querySelector('#open-sluice'),
   advanceButton: document.querySelector('#advance-water'),
   resetButton: document.querySelector('#reset-level'),
+  fetchImpl: window.fetch.bind(window),
+  monotonicNow: window.performance.now.bind(window.performance),
 });
 
 window.addEventListener('pagehide', dispose, { once: true });

@@ -1,4 +1,4 @@
-import { describe, expect, it } from '@jest/globals';
+import { describe, expect, it, jest } from '@jest/globals';
 import {
   createFluidState,
   stepFluid,
@@ -272,6 +272,7 @@ describe('Chronoflow page presenter', () => {
     const openButton = new FakeElement();
     const advanceButton = new FakeElement();
     const resetButton = new FakeElement();
+    const fetchImpl = jest.fn(async () => ({ ok: false, status: 503 }));
 
     const dispose = startChronoflowPage({
       documentObj,
@@ -281,6 +282,10 @@ describe('Chronoflow page presenter', () => {
       openButton,
       advanceButton,
       resetButton,
+      fetchImpl,
+      monotonicNow: () => 0,
+      setIntervalImpl: () => 1,
+      clearIntervalImpl: jest.fn(),
     });
 
     expect(grid.children).toHaveLength(20);
@@ -311,5 +316,185 @@ describe('Chronoflow page presenter', () => {
     expect(openButton.listeners.has('click')).toBe(false);
     expect(advanceButton.listeners.has('click')).toBe(false);
     expect(resetButton.listeners.has('click')).toBe(false);
+  });
+
+  it('loads configured Internet time, reports the trusted tide, and clears refresh timer', async () => {
+    const documentObj = { createElement: () => new FakeElement() };
+    const grid = new FakeElement();
+    const status = new FakeElement();
+    const clockStatus = new FakeElement();
+    const openButton = new FakeElement();
+    const advanceButton = new FakeElement();
+    const resetButton = new FakeElement();
+    let clockUnavailable = false;
+    const fetchImpl = jest.fn(async endpoint => {
+      if (endpoint === '/config.json') {
+        return {
+          ok: true,
+          json: async () => ({ chronoflowTimeUrl: '/trusted-time' }),
+        };
+      }
+      return clockUnavailable
+        ? { ok: false, status: 503 }
+        : { ok: true, json: async () => ({ epochMs: 1_800_000_000_000 }) };
+    });
+    let monotonic = 100;
+    let intervalHandler;
+    const clearIntervalImpl = jest.fn();
+
+    const dispose = startChronoflowPage({
+      documentObj,
+      grid,
+      status,
+      clockStatus,
+      openButton,
+      advanceButton,
+      resetButton,
+      fetchImpl,
+      monotonicNow: () => {
+        monotonic += 100;
+        return monotonic;
+      },
+      setIntervalImpl: handler => {
+        intervalHandler = handler;
+        return 7;
+      },
+      clearIntervalImpl,
+    });
+    await new Promise(resolve => setTimeout(resolve, 0));
+
+    expect(fetchImpl).toHaveBeenNthCalledWith(1, '/config.json', {
+      cache: 'no-store',
+    });
+    expect(fetchImpl).toHaveBeenNthCalledWith(2, '/trusted-time', {
+      cache: 'no-store',
+    });
+    expect(clockStatus.textContent).toContain('Internet tide synchronized');
+    expect(clockStatus.textContent).toContain('Tide:');
+    expect(typeof intervalHandler).toBe('function');
+    intervalHandler();
+    expect(clockStatus.textContent).toContain('Internet tide synchronized');
+    clockUnavailable = true;
+    monotonic = 40000;
+    intervalHandler();
+    expect(clockStatus.textContent).toContain('Internet tide clock is stale');
+    await new Promise(resolve => setTimeout(resolve, 0));
+    expect(clockStatus.textContent).toContain('Internet tide clock is stale');
+    dispose();
+    expect(clearIntervalImpl).toHaveBeenCalledWith(7);
+  });
+
+  it('keeps practice when config omits the configured clock endpoint', async () => {
+    const elements = Array.from({ length: 6 }, () => new FakeElement());
+    const [grid, status, clockStatus, openButton, advanceButton, resetButton] =
+      elements;
+    const fetchImpl = jest.fn(async () => ({
+      ok: true,
+      json: async () => ({}),
+    }));
+    const dispose = startChronoflowPage({
+      documentObj: { createElement: () => new FakeElement() },
+      grid,
+      status,
+      clockStatus,
+      openButton,
+      advanceButton,
+      resetButton,
+      fetchImpl,
+      monotonicNow: () => 0,
+      setIntervalImpl: () => 8,
+      clearIntervalImpl: () => {},
+    });
+    await new Promise(resolve => setTimeout(resolve, 0));
+    expect(clockStatus.textContent).toContain('Internet tide unavailable');
+    expect(fetchImpl).toHaveBeenCalledTimes(1);
+    dispose();
+  });
+
+  it('does not retry while a clock request is pending and stops after disposal', () => {
+    const elements = Array.from({ length: 6 }, () => new FakeElement());
+    const [grid, status, clockStatus, openButton, advanceButton, resetButton] =
+      elements;
+    const fetchImpl = jest.fn(() => new Promise(() => {}));
+    let monotonic = 0;
+    let intervalHandler;
+    const dispose = startChronoflowPage({
+      documentObj: { createElement: () => new FakeElement() },
+      grid,
+      status,
+      clockStatus,
+      openButton,
+      advanceButton,
+      resetButton,
+      fetchImpl,
+      monotonicNow: () => monotonic,
+      setIntervalImpl: handler => {
+        intervalHandler = handler;
+        return 9;
+      },
+      clearIntervalImpl: () => {},
+    });
+    monotonic = 16000;
+    intervalHandler();
+    expect(fetchImpl).toHaveBeenCalledTimes(1);
+    dispose();
+    intervalHandler();
+    expect(fetchImpl).toHaveBeenCalledTimes(1);
+  });
+
+  it('uses and clears the default interval adapters', () => {
+    const elements = Array.from({ length: 6 }, () => new FakeElement());
+    const [grid, status, clockStatus, openButton, advanceButton, resetButton] =
+      elements;
+    const dispose = startChronoflowPage({
+      documentObj: { createElement: () => new FakeElement() },
+      grid,
+      status,
+      clockStatus,
+      openButton,
+      advanceButton,
+      resetButton,
+      fetchImpl: async () => ({ ok: false, status: 503 }),
+      monotonicNow: () => 0,
+    });
+    dispose();
+  });
+
+  it('does not render a clock response after the page has been disposed', async () => {
+    let resolveConfig;
+    const fetchImpl = jest.fn(endpoint =>
+      endpoint === '/config.json'
+        ? new Promise(resolve => {
+            resolveConfig = resolve;
+          })
+        : Promise.resolve({
+            ok: true,
+            json: async () => ({ epochMs: 1_800_000_000_000 }),
+          })
+    );
+    const elements = Array.from({ length: 6 }, () => new FakeElement());
+    const [grid, status, clockStatus, openButton, advanceButton, resetButton] =
+      elements;
+    const dispose = startChronoflowPage({
+      documentObj: { createElement: () => new FakeElement() },
+      grid,
+      status,
+      clockStatus,
+      openButton,
+      advanceButton,
+      resetButton,
+      fetchImpl,
+      monotonicNow: () => 10,
+      setIntervalImpl: () => 10,
+      clearIntervalImpl: () => {},
+    });
+    dispose();
+    resolveConfig({
+      ok: true,
+      json: async () => ({ chronoflowTimeUrl: '/trusted-time' }),
+    });
+    await new Promise(resolve => setTimeout(resolve, 0));
+    expect(fetchImpl).toHaveBeenCalledTimes(2);
+    expect(clockStatus.textContent).toContain('Connecting');
   });
 });

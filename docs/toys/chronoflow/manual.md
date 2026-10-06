@@ -6,7 +6,7 @@ Chronoflow is a 2D water-routing puzzle. In the first playable level, route wate
 
 ## Input
 
-The first level provides buttons to open the sluice, advance 60 fixed fluid steps, and reset the level. The board is responsive and its cells expose water and terrain labels to assistive technology. Keyboard and touch users can operate the same buttons. More level-editing controls are planned.
+The first level provides buttons to open the sluice, advance 60 fixed fluid steps, and reset the level. The board is responsive and its cells expose water and terrain labels to assistive technology. Keyboard and touch users can operate the same buttons. The Internet tide status and phase are fetched from Dadeto's server-time endpoint; if configuration or sync fails, the page clearly remains untimed practice. This first level never grants timed completion.
 
 ### Example
 

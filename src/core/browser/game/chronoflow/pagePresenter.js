@@ -4,10 +4,19 @@ import {
   openSluice,
   resetChronoflow,
 } from './runtime.js';
+import {
+  estimateNetworkClock,
+  readNetworkClock,
+  sampleNetworkClock,
+} from './networkClock.js';
+import { getTidePhase } from './tide.js';
+
+const CLOCK_MAX_AGE_MS = 30000;
+const CLOCK_REFRESH_MS = 15000;
 
 /**
  * Start the Chronoflow page using injected DOM elements.
- * @param {{documentObj: Document, grid: HTMLElement, status: HTMLElement, clockStatus: HTMLElement, openButton: HTMLButtonElement, advanceButton: HTMLButtonElement, resetButton: HTMLButtonElement}} options Page DOM boundary.
+ * @param {{documentObj: Document, grid: HTMLElement, status: HTMLElement, clockStatus: HTMLElement, openButton: HTMLButtonElement, advanceButton: HTMLButtonElement, resetButton: HTMLButtonElement, fetchImpl: typeof fetch, monotonicNow: () => number, setIntervalImpl?: typeof setInterval, clearIntervalImpl?: typeof clearInterval}} options Page and clock boundaries.
  * @returns {() => void} Removes registered controls.
  */
 export function startChronoflowPage(options) {
@@ -19,8 +28,79 @@ export function startChronoflowPage(options) {
     openButton,
     advanceButton,
     resetButton,
+    fetchImpl,
+    monotonicNow,
+    setIntervalImpl = setInterval,
+    clearIntervalImpl = clearInterval,
   } = options;
   let game = createChronoflowGame();
+  /** @type {ReturnType<typeof estimateNetworkClock>|null} */
+  let clockEstimate = null;
+  /** @type {string|null} */
+  let timeEndpoint = null;
+  let disposed = false;
+  let syncing = false;
+  let lastSyncAttemptMs = monotonicNow();
+
+  const renderClock = () => {
+    if (!clockEstimate) {
+      clockStatus.textContent =
+        'Untimed practice · Connecting to the Internet tide clock…';
+      return;
+    }
+    const reading = readNetworkClock(
+      clockEstimate,
+      monotonicNow(),
+      CLOCK_MAX_AGE_MS
+    );
+    if (reading.status === 'stale') {
+      clockStatus.textContent =
+        'Untimed practice · Internet tide clock is stale. Timed play is disabled.';
+      return;
+    }
+    clockStatus.textContent = `Untimed practice · Internet tide synchronized (±${Math.ceil(reading.uncertaintyMs)} ms). Tide: ${getTidePhase(reading.epochMs)}.`;
+  };
+
+  const synchronizeClock = async () => {
+    if (syncing || disposed) return;
+    syncing = true;
+    lastSyncAttemptMs = monotonicNow();
+    try {
+      if (!timeEndpoint) {
+        const configResponse = await fetchImpl('/config.json', {
+          cache: 'no-store',
+        });
+        if (!configResponse.ok) {
+          throw new Error(
+            `Static config returned HTTP ${configResponse.status}.`
+          );
+        }
+        const config = await configResponse.json();
+        const configuredEndpoint = config?.chronoflowTimeUrl;
+        if (
+          typeof configuredEndpoint !== 'string' ||
+          configuredEndpoint.length === 0
+        ) {
+          throw new TypeError('Chronoflow time endpoint is not configured.');
+        }
+        timeEndpoint = configuredEndpoint;
+      }
+      clockEstimate = await sampleNetworkClock({
+        fetchImpl,
+        monotonicNow,
+        endpoint: timeEndpoint,
+      });
+      if (!disposed) renderClock();
+    } catch {
+      if (!disposed) {
+        clockStatus.textContent = clockEstimate
+          ? 'Untimed practice · Internet tide clock is stale. Timed play is disabled.'
+          : 'Untimed practice · Internet tide unavailable. Timed play is disabled.';
+      }
+    } finally {
+      syncing = false;
+    }
+  };
 
   const render = () => {
     grid.replaceChildren(
@@ -64,8 +144,7 @@ export function startChronoflowPage(options) {
     status.textContent = game.completed
       ? 'Archive chamber primed. Level complete.'
       : `Water: ${Math.round(game.fluid.volume[game.targetCell] * 100)}% of 12% target · step ${game.fluid.tick}`;
-    clockStatus.textContent =
-      'Untimed practice · Internet tide sync is coming in a later milestone.';
+    renderClock();
   };
 
   const handleOpen = () => {
@@ -85,8 +164,24 @@ export function startChronoflowPage(options) {
   advanceButton.addEventListener('click', handleAdvance);
   resetButton.addEventListener('click', handleReset);
   render();
+  void synchronizeClock();
+  const clockInterval = setIntervalImpl(() => {
+    renderClock();
+    const now = monotonicNow();
+    const reading = clockEstimate
+      ? readNetworkClock(clockEstimate, now, CLOCK_MAX_AGE_MS)
+      : { status: 'stale' };
+    if (
+      reading.status === 'stale' &&
+      now - lastSyncAttemptMs >= CLOCK_REFRESH_MS
+    ) {
+      void synchronizeClock();
+    }
+  }, 1000);
 
   return () => {
+    disposed = true;
+    clearIntervalImpl(clockInterval);
     openButton.removeEventListener('click', handleOpen);
     advanceButton.removeEventListener('click', handleAdvance);
     resetButton.removeEventListener('click', handleReset);
