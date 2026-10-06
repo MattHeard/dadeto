@@ -1,6 +1,6 @@
 // Toy: Conflict-Aware Product Scheduler
 // (input, env) -> string
-import { stringOrNull } from '../../../commonCore.js';
+import { ensureString } from '../../validation.js';
 
 import {
   isObject as isSchedulerRecord,
@@ -110,8 +110,8 @@ function normalizeCandidate(candidate, index) {
   if (isSchedulerRecord(candidate)) {
     record = /** @type {Record<string, unknown>} */ (candidate);
   }
-  const id = toText(record.id) || `candidate-${index + 1}`;
-  const title = toText(record.title) || id;
+  const id = ensureString(record.id) || `candidate-${index + 1}`;
+  const title = ensureString(record.title) || id;
 
   return {
     id,
@@ -332,15 +332,6 @@ function toArray(value) {
  * @returns {value is Record<string, unknown>} True when the value is a non-array object.
  */
 /**
- * Normalize a parsed value into text.
- * @param {unknown} value Candidate text value.
- * @returns {string} String or empty string.
- */
-function toText(value) {
-  return stringOrNull(value) ?? '';
-}
-
-/**
  * Normalize a parsed value into a string array.
  * @param {unknown} value Candidate string array.
  * @returns {string[]} String array or empty list.
@@ -366,6 +357,5 @@ export const conflictAwareProductSchedulerTestOnly = {
   toNumber,
   toArray,
   isRecord: isSchedulerRecord,
-  toText,
   toTextArray,
 };

@@ -41,32 +41,6 @@ test('overlap stops on membership failure without changing its identity', () => 
   expect(seen).toEqual(['a', 'b']);
 });
 
-test('scheduler text preserves literal whitespace without coercing non-strings', () => {
-  const { toText } = conflictAwareProductSchedulerTestOnly;
-  for (const text of ['', ' ', '\n\t', '  roof  '])
-    expect(toText(text)).toBe(text);
-  let reads = 0;
-  const object = {
-    get toString() {
-      reads += 1;
-      throw new Error('no coercion');
-    },
-  };
-  for (const value of [
-    null,
-    undefined,
-    0,
-    false,
-    [],
-    object,
-    new String('roof'),
-    Symbol('roof'),
-  ]) {
-    expect(toText(value)).toBe('');
-  }
-  expect(reads).toBe(0);
-  expect(toText.name).toBe('toText');
-});
 import {
   DEFAULTS_FIXTURE,
   INVALID_JSON_INPUT,
@@ -243,8 +217,6 @@ describe('conflictAwareProductScheduler helpers', () => {
     expect(conflictAwareProductSchedulerTestOnly.toNumber(2)).toBe(2);
     expect(conflictAwareProductSchedulerTestOnly.toNumber(Infinity)).toBe(0);
     expect(conflictAwareProductSchedulerTestOnly.toNumber('2')).toBe(0);
-    expect(conflictAwareProductSchedulerTestOnly.toText('x')).toBe('x');
-    expect(conflictAwareProductSchedulerTestOnly.toText(2)).toBe('');
     expect(conflictAwareProductSchedulerTestOnly.isRecord({})).toBe(true);
     expect(conflictAwareProductSchedulerTestOnly.isRecord([])).toBe(false);
     expect(
