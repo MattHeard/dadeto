@@ -14,6 +14,12 @@
           "src": "/manuals/chronoflow.md"
         }
       ],
+      "toy": {
+        "modulePath": "/core/browser/game/chronoflow/chronoflowToy.js",
+        "functionName": "chronoflowToy",
+        "defaultInputMethod": "text",
+        "defaultOutputMethod": "canvas-2d"
+      },
       "tags": ["toy", "game", "puzzle", "fluid-simulation", "beta"]
     },
     {

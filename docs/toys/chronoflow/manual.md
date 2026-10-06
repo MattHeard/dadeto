@@ -48,4 +48,12 @@ The current output is a responsive water-depth board with direction markers deri
 
 ## Behavior
 
-Play the first level at `/chronoflow/`. Select one of the dashed stone cells and carve a channel, route the junction to the archive, open the sluice, then advance water in fixed batches until the archive chamber fills to at least 12%. Reset restores the initial board and edit budget. A trusted synchronized high tide at the instant the chamber fills awards a timed record; all other cases complete as practice. The device clock never affects this prototype. See `acceptance.md` for the full playable-game completion bar and `harness.md` for verification.
+Play the full first level at `/chronoflow/`. Select one of the dashed stone cells and carve a channel, route the junction to the archive, open the sluice, then advance water in fixed batches until the archive chamber fills to at least 12%. Reset restores the initial board and edit budget. A trusted synchronized high tide at the instant the chamber fills awards a timed record; all other cases complete as practice. The device clock never affects this prototype.
+
+The CHRO1 embedded toy is an untimed command-stream preview using the same solver. Submit a JSON object with a `commands` array; for example:
+
+```json
+{"commands":[{"type":"route","value":"archive"},{"type":"edit","cell":11},{"type":"open"},{"type":"advance","steps":60,"batches":5}]}
+```
+
+It renders the resulting board and exposes its solver snapshot in the returned canvas payload. Embedded previews always remain practice and cannot award timed credit. See `acceptance.md` for the full playable-game completion bar and `harness.md` for verification.

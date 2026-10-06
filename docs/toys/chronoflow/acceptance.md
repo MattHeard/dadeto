@@ -20,7 +20,7 @@
 - [ ] Local Playwright verifies that synchronized high tide grants a timed record and unavailable/offline practice does not.
 - [ ] A timed attempt cannot start near a phase boundary where clock uncertainty could place the real tide outside high; controls pause when the trusted high window closes.
 - [ ] Local Playwright can open the sluice, advance water to a win state, and reset to the initial board.
-- [ ] The embedded toy and full-page adapter produce the same solver state from the same command stream.
+- [x] The embedded toy and full-page runtime produce the same solver state from the same command stream; embedded replay remains untimed practice.
 - [ ] `npm run build` emits the Chronoflow page and its runtime assets.
 - [ ] Local Playwright acceptance opens the page, routes water, verifies trusted high-tide credit, verifies unavailable/offline practice completion, and confirms reset.
 

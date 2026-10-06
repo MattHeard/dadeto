@@ -47,6 +47,7 @@
 - Timed-attempt guardrail: start and command gates require the full estimated epoch uncertainty interval to remain inside high tide. Boundary overlap, stale sync, or offline state pauses timed actions; untimed practice remains available.
 - Terrain-edit guardrail: only two authored wall cells are editable, source/target/gate/route cells are protected, every toggle consumes one of three edits, and reset reconstructs the original wall mask.
 - Authored solution witness: keep the Archive Entry command sequence in `chronoflow/witness.js`, not only in a test. Its replay must reach the target within capacity and edit limits; the decoy drain route is the negative control and must leave target volume at zero.
+- Embedded practice boundary: the CHRO1 toy accepts serialized command streams and never accepts a clock reading. Keep it practice-only with timed credit false; parity compares the solver state to direct page-runtime commands. Missing/malformed JSON returns a fresh board, and invalid bounded-batch commands are caught at the toy boundary.
 
 - Date: 2026-10-06
 - Failure observed: clock-sample offset expectations were inconsistent with the measured request midpoint.
