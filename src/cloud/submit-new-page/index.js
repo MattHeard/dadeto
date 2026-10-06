@@ -11,6 +11,7 @@ import {
 } from './submit-new-page-gcf.js';
 import { getAllowedOrigins } from './cors-config.js';
 import {
+  createHandleSubmit,
   createSubmitNewPageApp,
   createSubmitNewPageRequestHandler,
 } from './submit-new-page-core.js';
@@ -24,6 +25,7 @@ import {
 import { initializeApp } from 'firebase-admin/app';
 
 const handleSubmitCore = createSubmitNewPageRuntime({
+  createHandleSubmit,
   createFirebaseAppManager,
   initializeApp,
   getFirestoreInstance,
@@ -44,6 +46,4 @@ const app = createSubmitNewPageApp({
   ),
 });
 
-export const handle = functions
-  .region('europe-west1')
-  .https.onRequest(app);
+export const handle = functions.region('europe-west1').https.onRequest(app);

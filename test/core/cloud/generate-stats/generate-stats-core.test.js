@@ -249,7 +249,13 @@ const createFetchMock = ({
   return fetchFn;
 };
 
-const buildCoreForHandleRequest = ({ auth, storage, fetchFn, db } = {}) => {
+const buildCoreForHandleRequest = ({
+  auth,
+  storage,
+  fetchFn,
+  db,
+  verifySchedulerRequest,
+} = {}) => {
   const authInstance = auth || {
     verifyIdToken: jest.fn(() => Promise.resolve({ uid: ADMIN_UID })),
   };
@@ -267,6 +273,7 @@ const buildCoreForHandleRequest = ({ auth, storage, fetchFn, db } = {}) => {
     urlMap: 'test-url-map',
     cryptoModule: { randomUUID: jest.fn(() => 'uuid-123') },
     console: { error: consoleError },
+    verifySchedulerRequest,
   });
 
   return {
@@ -283,14 +290,14 @@ beforeEach(() => {
     method: 'POST',
     get: header => {
       if (header === 'X-Appengine-Cron') {
-        return mockReq.isCron;
+        return mockReq.cron;
       }
       if (header === 'Authorization') {
         return mockReq.authorization;
       }
       return undefined;
     },
-    isCron: undefined,
+    cron: undefined,
     authorization: undefined,
   };
   mockRes = {
@@ -318,58 +325,58 @@ it('should return 405 for non-POST requests', async () => {
   expect(mockRes.message).toBe('POST only');
 });
 
-it('should succeed if X-Appengine-Cron header is true', async () => {
-  const { coreInstance, fetchInstance } = buildCoreForHandleRequest();
-  mockReq.isCron = 'true';
+it('should succeed for a verified scheduler request', async () => {
+  const verifySchedulerRequest = jest.fn().mockResolvedValue(true);
+  const { coreInstance, fetchInstance, authInstance } =
+    buildCoreForHandleRequest({ verifySchedulerRequest });
   await coreInstance.handleRequest(mockReq, mockRes);
   expect(mockRes.statusCode).toBe(200);
   expect(mockRes.jsonResponse).toEqual({ ok: true });
   expect(fetchInstance).toHaveBeenCalledTimes(2);
+  expect(authInstance.verifyIdToken).not.toHaveBeenCalled();
+  expect(verifySchedulerRequest).toHaveBeenCalledWith(mockReq);
 });
 
-it('should return 401 if not cron and not authorized (missing token)', async () => {
+it('does not trust a caller-supplied cron header', async () => {
   const { coreInstance } = buildCoreForHandleRequest();
-  mockReq.isCron = 'false';
+  mockReq.cron = 'true';
   mockReq.authorization = undefined; // No authorization header
   await coreInstance.handleRequest(mockReq, mockRes);
   expect(mockRes.statusCode).toBe(401);
   expect(mockRes.message).toBe('Missing token');
 });
 
-it('should return 401 if not cron and not authorized (invalid token)', async () => {
+it('should return 401 for an invalid admin token', async () => {
   const auth = {
     verifyIdToken: jest.fn(() =>
       Promise.reject(new Error('Firebase ID token has invalid signature.'))
     ),
   };
   const { coreInstance } = buildCoreForHandleRequest({ auth });
-  mockReq.isCron = 'false';
   mockReq.authorization = 'Bearer invalid-token';
   await coreInstance.handleRequest(mockReq, mockRes);
   expect(mockRes.statusCode).toBe(401);
   expect(mockRes.message).toBe('Firebase ID token has invalid signature.');
 });
 
-it('should return 403 if not cron and user is not admin', async () => {
+it('should return 403 if the user is not an admin', async () => {
   const auth = {
     verifyIdToken: jest.fn(() => Promise.resolve({ uid: 'not-admin' })),
   };
   const { coreInstance } = buildCoreForHandleRequest({ auth });
-  mockReq.isCron = 'false';
   mockReq.authorization = 'Bearer valid-token';
   await coreInstance.handleRequest(mockReq, mockRes);
   expect(mockRes.statusCode).toBe(403);
   expect(mockRes.message).toBe('Forbidden');
 });
 
-it('should succeed if not cron and authorized admin', async () => {
+it('should succeed for an authorized admin', async () => {
   const auth = {
     verifyIdToken: jest.fn(() => Promise.resolve({ uid: ADMIN_UID })),
   };
   const { coreInstance, fetchInstance } = buildCoreForHandleRequest({
     auth,
   });
-  mockReq.isCron = 'false';
   mockReq.authorization = 'Bearer valid-token';
   await coreInstance.handleRequest(mockReq, mockRes);
   expect(mockRes.statusCode).toBe(200);
@@ -379,8 +386,10 @@ it('should succeed if not cron and authorized admin', async () => {
 
 it('should return 500 when generate rejects', async () => {
   const storage = createStorageMock({ failSave: true });
-  const { coreInstance } = buildCoreForHandleRequest({ storage });
-  mockReq.isCron = 'true';
+  const { coreInstance } = buildCoreForHandleRequest({
+    storage,
+    verifySchedulerRequest: async () => true,
+  });
   await coreInstance.handleRequest(mockReq, mockRes);
   expect(mockRes.statusCode).toBe(500);
   expect(mockRes.jsonResponse).toEqual({ error: 'Generation failed' });
@@ -391,8 +400,10 @@ it('returns the fallback message when generate throws without a message', async 
     failSave: true,
     errorValue: { reason: 'timeout' },
   });
-  const { coreInstance } = buildCoreForHandleRequest({ storage });
-  mockReq.isCron = 'true';
+  const { coreInstance } = buildCoreForHandleRequest({
+    storage,
+    verifySchedulerRequest: async () => true,
+  });
   await coreInstance.handleRequest(mockReq, mockRes);
   expect(mockRes.statusCode).toBe(500);
   expect(mockRes.jsonResponse).toEqual({ error: 'generate failed' });

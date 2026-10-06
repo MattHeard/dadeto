@@ -517,8 +517,12 @@ jobs:
         if: always() && steps.terraform_init.outcome == 'success'
         run: |
           set -euo pipefail
-          gcloud scheduler jobs delete "${ENVIRONMENT}-generate-stats-daily" \
-            --location="${REGION}" --quiet || true
+          SCHEDULER_JOB="${ENVIRONMENT}-generate-stats-daily"
+          SCHEDULER_JOBS="$(gcloud scheduler jobs list --location="${REGION}" --format="value(name)")"
+          if grep -Fq "/jobs/${SCHEDULER_JOB}" <<<"${SCHEDULER_JOBS}"; then
+            gcloud scheduler jobs delete "${SCHEDULER_JOB}" \
+              --location="${REGION}" --quiet
+          fi
           TEST_STATIC_BUCKET="${TF_VAR_test_static_site_bucket_name:-${GOOGLE_PROJECT}-${REGION}-dendrite-test-static}"
           gcloud storage rm --recursive "gs://${TEST_STATIC_BUCKET}/${ENVIRONMENT}/**" || true
 
@@ -610,7 +614,11 @@ jobs:
         if: always()
         run: |
           set -euo pipefail
-          gcloud scheduler jobs delete "${ENVIRONMENT}-generate-stats-daily" \
-            --location="${REGION}" --quiet || true
+          SCHEDULER_JOB="${ENVIRONMENT}-generate-stats-daily"
+          SCHEDULER_JOBS="$(gcloud scheduler jobs list --location="${REGION}" --format="value(name)")"
+          if grep -Fq "/jobs/${SCHEDULER_JOB}" <<<"${SCHEDULER_JOBS}"; then
+            gcloud scheduler jobs delete "${SCHEDULER_JOB}" \
+              --location="${REGION}" --quiet
+          fi
           TEST_STATIC_BUCKET="${TF_VAR_test_static_site_bucket_name:-${GOOGLE_PROJECT}-${REGION}-dendrite-test-static}"
           gcloud storage rm --recursive "gs://${TEST_STATIC_BUCKET}/${ENVIRONMENT}/**" || true

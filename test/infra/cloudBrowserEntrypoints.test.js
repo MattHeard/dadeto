@@ -1,5 +1,4 @@
 import { readFile } from 'node:fs/promises';
-import { execFileSync } from 'node:child_process';
 
 import { describe, expect, it } from '@jest/globals';
 
@@ -38,6 +37,36 @@ describe('cloud browser entrypoints', () => {
     expect(scheduler[0]).toContain(
       'audience              = google_cloudfunctions_function.render_tree_weights[0].https_trigger_url'
     );
+  });
+
+  it('authenticates the daily stats scheduler with a dedicated OIDC identity', async () => {
+    const mainTf = await readFile('infra/main.tf', 'utf8');
+    const scheduler = mainTf.match(
+      /resource "google_cloud_scheduler_job" "generate_stats_daily" {[\s\S]*?\n}\n/
+    );
+    const account = mainTf.match(
+      /resource "google_service_account" "generate_stats_scheduler" {[\s\S]*?\n}/
+    );
+    const verifier = mainTf.match(
+      /resource "google_cloudfunctions_function_iam_member" "generate_stats_scheduler_invoker" {[\s\S]*?\n}/
+    );
+
+    expect(account).not.toBeNull();
+    expect(scheduler).not.toBeNull();
+    expect(scheduler[0]).toContain('oidc_token {');
+    expect(scheduler[0]).toContain(
+      'service_account_email = google_service_account.generate_stats_scheduler[0].email'
+    );
+    expect(scheduler[0]).toContain(
+      'audience              = google_cloudfunctions_function.generate_stats.https_trigger_url'
+    );
+    expect(scheduler[0]).not.toContain('X-Appengine-Cron');
+    expect(verifier).not.toBeNull();
+    expect(verifier[0]).toContain(
+      'member         = "serviceAccount:${google_service_account.generate_stats_scheduler[0].email}"'
+    );
+    expect(mainTf).toContain('GENERATE_STATS_SCHEDULER_EMAIL');
+    expect(mainTf).toContain('GENERATE_STATS_SCHEDULER_AUDIENCE');
   });
 
   it('targets the exported cloud function handles used by src/cloud entrypoints', async () => {
@@ -140,11 +169,7 @@ describe('cloud browser entrypoints', () => {
       readFile('infra/main.tf', 'utf8'),
       readFile('infra/load-balancer.tf', 'utf8'),
     ]);
-    const copyCloudJs = execFileSync(
-      'git',
-      ['show', 'HEAD:src/core/build/copy-cloud.js'],
-      { encoding: 'utf8' }
-    );
+    const copyCloudJs = await readFile('src/core/build/copy-cloud.js', 'utf8');
 
     expect(copyCloudJs).toContain("target: join(infraDir, 'core', 'browser')");
     expect(copyCloudJs).toContain(

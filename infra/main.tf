@@ -1350,7 +1350,13 @@ resource "google_cloudfunctions_function" "generate_stats" {
   service_account_email        = local.cloud_function_runtime_service_account_email
   region                       = var.region
 
-  environment_variables = local.cloud_function_environment
+  environment_variables = merge(
+    local.cloud_function_environment,
+    var.environment == "prod" ? {
+      GENERATE_STATS_SCHEDULER_EMAIL    = google_service_account.generate_stats_scheduler[0].email
+      GENERATE_STATS_SCHEDULER_AUDIENCE = "https://${var.region}-${var.project_id}.cloudfunctions.net/${var.environment}-generate-stats"
+    } : {}
+  )
 
   depends_on = [
     google_project_service.project_level,
@@ -1393,6 +1399,29 @@ resource "google_cloudfunctions_function_iam_member" "generate_stats_invoker" {
   ]
 }
 
+resource "google_service_account" "generate_stats_scheduler" {
+  count        = var.environment == "prod" ? 1 : 0
+  account_id   = "generate-stats-job"
+  display_name = "Generate stats scheduler"
+}
+
+resource "google_service_account_iam_member" "terraform_can_use_generate_stats_scheduler" {
+  count              = var.environment == "prod" ? 1 : 0
+  service_account_id = google_service_account.generate_stats_scheduler[0].name
+  role               = "roles/iam.serviceAccountUser"
+  member             = local.terraform_service_account_member
+}
+
+resource "google_cloudfunctions_function_iam_member" "generate_stats_scheduler_invoker" {
+  count          = var.environment == "prod" ? 1 : 0
+  project        = var.project_id
+  region         = var.region
+  cloud_function = google_cloudfunctions_function.generate_stats.name
+  role           = local.cloud_functions_invoker_role
+  member         = "serviceAccount:${google_service_account.generate_stats_scheduler[0].email}"
+  depends_on     = [google_cloudfunctions_function.generate_stats]
+}
+
 resource "google_cloudfunctions_function_iam_member" "errors_invoker" {
   project        = var.project_id
   region         = var.region
@@ -1413,13 +1442,16 @@ resource "google_cloud_scheduler_job" "generate_stats_daily" {
   http_target {
     http_method = "POST"
     uri         = google_cloudfunctions_function.generate_stats.https_trigger_url
-    headers = {
-      "X-Appengine-Cron" = "true"
+    oidc_token {
+      service_account_email = google_service_account.generate_stats_scheduler[0].email
+      audience              = google_cloudfunctions_function.generate_stats.https_trigger_url
     }
   }
   depends_on = [
     google_project_service.project_level,
     google_cloudfunctions_function.generate_stats,
+    google_cloudfunctions_function_iam_member.generate_stats_scheduler_invoker,
+    google_service_account_iam_member.terraform_can_use_generate_stats_scheduler,
     google_project_iam_member.terraform_service_account_roles["terraform_cloudscheduler_admin"],
   ]
 }

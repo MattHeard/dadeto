@@ -17,6 +17,11 @@ export const sharedDirectoryPairs = [
     relativePath: 'core/browser',
     publicRelativePath: 'core/browser',
   },
+  {
+    key: 'CoreObjectMinuteRentalSearch',
+    relativePath: 'core/object-minute-rental-search',
+    publicRelativePath: 'core/object-minute-rental-search',
+  },
   { key: 'Core', relativePath: 'core', publicRelativePath: 'core' },
   {
     key: 'ContentBlogData',
@@ -40,6 +45,13 @@ const DIRECTORY_TREE_DEFINITIONS = {
       suffix: '',
       success: 'Core browser files copied successfully!',
       missing: 'core/browser directory not found',
+    },
+    {
+      sourceKey: 'srcCoreObjectMinuteRentalSearchDir',
+      destinationKey: 'publicCoreObjectMinuteRentalSearchDir',
+      suffix: '',
+      success: 'Core object-minute rental search files copied successfully!',
+      missing: 'core/object-minute-rental-search directory not found',
     },
   ],
   constants: [

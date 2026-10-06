@@ -123,6 +123,7 @@ export const getFirestoreInstance = (options = {}) => {
  *   fetchFn: typeof globalThis.fetch,
  *   env?: Record<string, string | undefined>,
  *   cryptoModule: { randomUUID: () => string },
+ *   verifySchedulerRequest?: (req: import('../../../../types/native-http').NativeHttpRequest) => Promise<boolean>,
  *   console?: { error: (...args: unknown[]) => void },
  *   functions: { region: (region: string) => { https: { onRequest: (app: unknown) => unknown } } },
  *   express: () => { use: (middleware: unknown) => void, post: (path: string, handler: unknown) => void },
@@ -204,6 +205,7 @@ function createRegionOnRequest(functions, app) {
  *   initializeApp: () => void,
  *   fetchFn: typeof globalThis.fetch,
  *   crypto: { randomUUID: () => string },
+ *   verifySchedulerRequest?: (req: import('../../../../types/native-http').NativeHttpRequest) => Promise<boolean>,
  * }} deps Runtime dependencies supplied by the cloud wrapper.
  * @returns {unknown} Generate-stats Cloud Function handle.
  */
@@ -216,6 +218,7 @@ export function createGenerateStatsHandle({
   getFirestore,
   getEnvironmentVariables,
   initializeApp,
+  verifySchedulerRequest,
   fetchFn,
   crypto,
 }) {
@@ -234,6 +237,7 @@ export function createGenerateStatsHandle({
     fetchFn,
     env: environment,
     cryptoModule: crypto,
+    verifySchedulerRequest,
     functions,
     express,
     cors,

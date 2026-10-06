@@ -344,6 +344,7 @@ function selectCdnHost(candidate) {
  *   urlMap?: string,
  *   cryptoModule: StatsCryptoModule,
  *   console?: StatsLogger,
+ *   verifySchedulerRequest?: (req: NativeHttpRequest) => Promise<boolean>,
  * }} deps Dependencies required by the workflow.
  * @returns {{
  *   getStoryCount: (dbRef?: import('firebase-admin/firestore').Firestore) => Promise<number>,
@@ -380,6 +381,7 @@ export function createGenerateStatsCore({
   urlMap,
   cryptoModule,
   console,
+  verifySchedulerRequest = async () => false,
 }) {
   const envRef = normalizeEnvObject(env);
   const project = getProjectFromEnv(envRef);
@@ -622,7 +624,12 @@ export function createGenerateStatsCore({
    * @returns {Promise<void>} Resolves when the request finishes.
    */
   async function handleAuthorizedRequest(req, res) {
-    const isAuthorized = await ensureAuthorizedRequest(req, res, verifyAdmin);
+    const isAuthorized = await ensureAuthorizedRequest(
+      req,
+      res,
+      verifyAdmin,
+      verifySchedulerRequest
+    );
     if (!isAuthorized) {
       return;
     }
@@ -1143,26 +1150,20 @@ function resolveErrorMessage(err, fallback) {
  * @param {NativeHttpRequest} req Req.
  * @param {NativeHttpResponse} res Res.
  * @param {(req: NativeHttpRequest, res: NativeHttpResponse) => Promise<boolean>} verifyAdmin Verify fn.
+ * @param {(req: NativeHttpRequest) => Promise<boolean>} verifySchedulerRequest Verify Cloud Scheduler OIDC request.
  * @returns {Promise<boolean>} Authorization result.
  */
-async function ensureAuthorizedRequest(req, res, verifyAdmin) {
-  if (isCronRequest(req)) {
+async function ensureAuthorizedRequest(
+  req,
+  res,
+  verifyAdmin,
+  verifySchedulerRequest
+) {
+  if (await verifySchedulerRequest(req)) {
     return true;
   }
 
   return verifyAdmin(req, res);
-}
-
-/**
- * Determine if request is cron.
- * @param {NativeHttpRequest} req Req.
- * @returns {boolean} True if cron.
- */
-// Stryker disable next-line all -- cron detection uses the fixed header/value
-// protocol.
-function isCronRequest(req) {
-  // Stryker disable next-line all -- cron detection uses fixed header/value.
-  return req.get?.('X-Appengine-Cron') === 'true';
 }
 
 /**

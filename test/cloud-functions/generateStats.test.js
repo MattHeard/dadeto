@@ -23,6 +23,9 @@ describe('cloud generate-stats entrypoint', () => {
     }));
     const fetchFn = jest.fn();
     const crypto = { randomUUID: jest.fn(() => 'uuid') };
+    const OAuth2Client = jest.fn(function OAuth2Client() {
+      this.verifyIdToken = jest.fn();
+    });
 
     await jest.unstable_mockModule(
       '../../src/cloud/generate-stats/firebase-functions.js',
@@ -45,6 +48,7 @@ describe('cloud generate-stats entrypoint', () => {
         fetchFn,
         crypto,
         initializeApp: jest.fn(),
+        OAuth2Client,
       })
     );
     await jest.unstable_mockModule(
@@ -65,10 +69,11 @@ describe('cloud generate-stats entrypoint', () => {
         functions,
         getAuth,
         getFirestore,
-        getEnvironmentVariables,
+        getEnvironmentVariables: expect.any(Function),
         initializeApp: expect.any(Function),
         fetchFn,
         crypto,
+        verifySchedulerRequest: expect.any(Function),
       })
     );
     expect(module.handle).toBe(handle);

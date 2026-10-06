@@ -49,6 +49,16 @@ describe('gcp-test workflow report handling', () => {
     );
   });
 
+  it('checks whether the temporary scheduler job exists before deleting it', () => {
+    const source = readFileSync('.github/workflows/gcp-test.yml', 'utf8');
+
+    expect(source.match(/gcloud scheduler jobs list/g)).toHaveLength(2);
+    expect(source.match(/gcloud scheduler jobs delete/g)).toHaveLength(2);
+    expect(source).toContain(
+      'if grep -Fq "/jobs/${SCHEDULER_JOB}" <<<"${SCHEDULER_JOBS}"; then'
+    );
+  });
+
   it('runs teardown in a separate always-on cleanup job', () => {
     const source = readFileSync('.github/workflows/gcp-test.yml', 'utf8');
 

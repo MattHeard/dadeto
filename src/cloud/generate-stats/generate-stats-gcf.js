@@ -7,4 +7,5 @@ export { default as cors } from 'cors';
 export { initializeApp } from 'firebase-admin/app';
 export { getAuth } from 'firebase-admin/auth';
 export { getFirestore } from 'firebase-admin/firestore';
+export { OAuth2Client } from 'google-auth-library';
 export * from './common-gcf.js';

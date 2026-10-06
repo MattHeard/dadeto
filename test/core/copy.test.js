@@ -31,6 +31,14 @@ const createDirectories = () => {
     publicCoreDir: posix.join(publicDir, 'core'),
     srcCoreBrowserDir: posix.join(srcDir, 'core/browser'),
     publicCoreBrowserDir: posix.join(publicDir, 'core/browser'),
+    srcCoreObjectMinuteRentalSearchDir: posix.join(
+      srcDir,
+      'core/object-minute-rental-search'
+    ),
+    publicCoreObjectMinuteRentalSearchDir: posix.join(
+      publicDir,
+      'core/object-minute-rental-search'
+    ),
   };
 };
 
@@ -73,6 +81,14 @@ describe('createSharedDirectoryEntries', () => {
     expect(entries).toContainEqual([
       'publicCoreBrowserDir',
       posix.join(publicDir, 'core/browser'),
+    ]);
+    expect(entries).toContainEqual([
+      'srcCoreObjectMinuteRentalSearchDir',
+      posix.join(srcDir, 'core/object-minute-rental-search'),
+    ]);
+    expect(entries).toContainEqual([
+      'publicCoreObjectMinuteRentalSearchDir',
+      posix.join(publicDir, 'core/object-minute-rental-search'),
     ]);
     expect(entries).toContainEqual(['srcCoreDir', posix.join(srcDir, 'core')]);
     expect(entries).toContainEqual([
@@ -757,6 +773,9 @@ describe('createCopyCore copy workflows', () => {
       expect(logger.warn.mock.calls).toEqual([
         ['Warning: browser directory not found at src/browser'],
         ['Warning: core/browser directory not found at src/core/browser'],
+        [
+          'Warning: core/object-minute-rental-search directory not found at src/core/object-minute-rental-search',
+        ],
         ['Warning: browser/assets directory not found at src/browser/assets'],
         [
           'Warning: content/blog-media directory not found at src/content/blog-media',
@@ -949,6 +968,12 @@ describe('createCopyCore copy workflows', () => {
       );
       expect(io.directoryExists).toHaveBeenCalledWith(
         directories.srcCoreBrowserDir
+      );
+      expect(io.directoryExists).toHaveBeenCalledWith(
+        directories.srcCoreObjectMinuteRentalSearchDir
+      );
+      expect(logger.info).toHaveBeenCalledWith(
+        'Core object-minute rental search files copied successfully!'
       );
       expect(logger.warn).not.toHaveBeenCalled();
     });
