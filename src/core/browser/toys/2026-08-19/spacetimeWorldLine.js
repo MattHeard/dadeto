@@ -2,7 +2,6 @@
 // (input, env) -> string
 import { runToyRequest } from '../formatToyError.js';
 import { isJsonObject } from './spacetimeInput.js';
-import { normalizeSegment } from './spacetimeSegmentRegistry.js';
 
 /**
  * Assemble every supplied segment into one contiguous ordered world line.
@@ -21,11 +20,6 @@ export function spacetimeWorldLine(input) {
 function orderWorldLine(request) {
   const byStart = new Map();
   request.segments.forEach(segment => {
-    if (!segment.segmentId || !segment.startPointId || !segment.endPointId) {
-      throw new Error(
-        'Every segment requires segmentId, startPointId, and endPointId.'
-      );
-    }
     if (byStart.has(segment.startPointId)) {
       throw new Error('World line contains branching segments.');
     }
@@ -68,17 +62,24 @@ function parseInput(input) {
   if (!Array.isArray(parsed.segments) || !startPointId || !endPointId)
     throw new Error('segments, startPointId, and endPointId are required.');
   return {
-    segments: parsed.segments.map((/** @type {unknown} */ segment) => {
-      const normalized = normalizeSegment(segment);
-      if (!normalized)
-        throw new Error(
-          'Every segment requires segmentId, startPointId, and endPointId.'
-        );
-      return normalized;
-    }),
+    segments: parsed.segments.map(validateSegmentFields),
     startPointId,
     endPointId,
   };
+}
+
+/**
+ * Validate a world-line segment while preserving its caller-owned identifiers.
+ * @param {unknown} candidate Candidate segment.
+ * @returns {Record<string, string>} The original segment record.
+ */
+function validateSegmentFields(candidate) {
+  const segment = /** @type {Record<string, string>} */ (candidate);
+  if (!segment.segmentId || !segment.startPointId || !segment.endPointId)
+    throw new Error(
+      'Every segment requires segmentId, startPointId, and endPointId.'
+    );
+  return segment;
 }
 
 export { isJsonObject, parseInput };
