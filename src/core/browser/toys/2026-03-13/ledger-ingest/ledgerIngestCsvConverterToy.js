@@ -175,30 +175,14 @@ function processCsvDelimiterCharacter(state, chars, index) {
       flushCsvCell(state);
       return index;
     }) ??
-    whenOrNull(shouldProcessCsvLineBreak(state, chars.char), () =>
-      processCsvLineBreakContinuation(state, chars, index)
-    )
+    whenOrNull(shouldProcessCsvLineBreak(state, chars.char), () => {
+      flushCsvRow(state);
+      if (shouldSkipCsvLineBreakTail(chars)) {
+        state.skipLineBreakTail = true;
+      }
+      return index;
+    })
   );
-}
-
-/**
- * @param {{ rows: string[][], row: string[], cell: string, inQuotes: boolean }} state CSV parse state.
- * @param {{ char: string, next: string | undefined }} chars Current and next character.
- * @param {number} index Current character index.
- * @returns {number} Updated index after the line break is handled.
- */
-/**
- * @param {{ rows: string[][], row: string[], cell: string, inQuotes: boolean, skipLineBreakTail: boolean }} state - CSV parse state.
- * @param {{ char: string, next: string | undefined }} chars - Current and next character.
- * @param {number} index - Character index.
- * @returns {number} Updated index.
- */
-function processCsvLineBreakContinuation(state, chars, index) {
-  flushCsvRow(state);
-  if (shouldSkipCsvLineBreakTail(chars)) {
-    state.skipLineBreakTail = true;
-  }
-  return index;
 }
 
 /**

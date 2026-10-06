@@ -276,9 +276,18 @@ export function fulfillmentFindMatchingAsset(request, evaluate) {
     );
   for (const asset of candidates) {
     if (JSON.parse(evaluate(asset)).feasible === true)
-      return JSON.stringify({ feasible: true });
+      return formatFulfillmentFeasibility(true);
   }
-  return JSON.stringify({ feasible: false });
+  return formatFulfillmentFeasibility(false);
+}
+
+/**
+ * Serialize an asset feasibility result.
+ * @param {boolean} feasible Whether an eligible asset passed evaluation.
+ * @returns {string} Feasibility JSON.
+ */
+function formatFulfillmentFeasibility(feasible) {
+  return JSON.stringify({ feasible });
 }
 
 /**
