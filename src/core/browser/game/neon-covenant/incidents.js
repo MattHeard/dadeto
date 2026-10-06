@@ -1,5 +1,6 @@
 import { LAB_CONTENT } from './content.js';
 import { evaluationComplete } from './evaluation.js';
+import { recordFromKeys } from './recordFromKeys.js';
 const INCIDENTS = LAB_CONTENT.incidents;
 
 /**
@@ -7,17 +8,12 @@ const INCIDENTS = LAB_CONTENT.incidents;
  * @returns {Record<string, any>} Initial causal chains.
  */
 export function createIncidentChains() {
-  return Object.fromEntries(
-    Object.keys(INCIDENTS).map(id => [
-      id,
-      {
-        stage: 'clear',
-        warnedAt: 0,
-        charged: false,
-        episodes: 0,
-      },
-    ])
-  );
+  return recordFromKeys(Object.keys(INCIDENTS), () => ({
+    stage: 'clear',
+    warnedAt: 0,
+    charged: false,
+    episodes: 0,
+  }));
 }
 
 /**

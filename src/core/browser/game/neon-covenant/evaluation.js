@@ -1,6 +1,7 @@
 import { LAB_CONTENT } from './content.js';
 import { EVALUATION_CASES } from './evaluationContent.js';
 import { researchOptions, validPrograms } from './research.js';
+import { recordFromKeys } from './recordFromKeys.js';
 
 /**
  * Capture only a probe's dependencies, retaining unrelated evidence after training.
@@ -30,7 +31,7 @@ export function createEvaluations() {
   return Object.fromEntries(
     Object.entries(EVALUATION_CASES).map(([project, cases]) => [
       project,
-      Object.fromEntries(Object.keys(cases).map(id => [id, null])),
+      recordFromKeys(Object.keys(cases), () => null),
     ])
   );
 }
