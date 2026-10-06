@@ -9,6 +9,7 @@
 - [ ] Authored levels include a solution witness that reaches the target volume within edit/overflow limits.
 - [ ] The Archive Entry level's deterministic witness opens the sluice and reaches the 12% target without exceeding any cell capacity.
 - [ ] The junction valve selects between the archive route and decoy drain; the decoy loses water without filling the target.
+- [ ] Selecting any cell reports solver-backed depth, hydraulic head, and velocity in an accessible readout.
 - [x] Time endpoint returns a positive server epoch with no-store/CORS headers, answers preflight, and rejects non-GET requests.
 - [x] Clock adapter derives offset and uncertainty from injected monotonic request samples, rejects invalid/slow responses, and expires to stale without reading browser wall time.
 - [ ] Page loads `chronoflowTimeUrl` from uncached static config and shows Internet tide phase only from the network clock estimate.

@@ -327,6 +327,7 @@ describe('Chronoflow page presenter', () => {
     const grid = new FakeElement();
     const status = new FakeElement();
     const clockStatus = new FakeElement();
+    const inspectStatus = new FakeElement();
     const openButton = new FakeElement();
     const advanceButton = new FakeElement();
     const resetButton = new FakeElement();
@@ -338,6 +339,7 @@ describe('Chronoflow page presenter', () => {
       grid,
       status,
       clockStatus,
+      inspectStatus,
       openButton,
       advanceButton,
       resetButton,
@@ -353,6 +355,13 @@ describe('Chronoflow page presenter', () => {
       'Sluice gate, closed.'
     );
     expect(clockStatus.textContent).toMatch(/Untimed practice/);
+    expect(inspectStatus.textContent).toContain(
+      'Cell 2 · channel · depth 100% · head 1.00'
+    );
+    expect(grid.children[1].getAttribute('aria-pressed')).toBe('true');
+    grid.children[2].emit('click');
+    expect(inspectStatus.textContent).toContain('Cell 3 · stone · depth 0%');
+    expect(grid.children[2].getAttribute('aria-pressed')).toBe('true');
     expect(openButton.disabled).toBe(true);
 
     routeButton.emit('click');

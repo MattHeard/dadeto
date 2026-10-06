@@ -13,13 +13,14 @@ import {
 } from './networkClock.js';
 import { getTidePhase } from './tide.js';
 import { getFlowVisual } from './flowVisual.js';
+import { getCellReadout } from './cellReadout.js';
 
 const CLOCK_MAX_AGE_MS = 30000;
 const CLOCK_REFRESH_MS = 15000;
 
 /**
  * Start the Chronoflow page using injected DOM elements.
- * @param {{documentObj: Document, grid: HTMLElement, status: HTMLElement, clockStatus: HTMLElement, openButton: HTMLButtonElement, advanceButton: HTMLButtonElement, resetButton: HTMLButtonElement, routeButton?: HTMLButtonElement, fetchImpl: typeof fetch, monotonicNow: () => number, setIntervalImpl?: typeof setInterval, clearIntervalImpl?: typeof clearInterval}} options Page and clock boundaries.
+ * @param {{documentObj: Document, grid: HTMLElement, status: HTMLElement, clockStatus: HTMLElement, inspectStatus?: HTMLElement, openButton: HTMLButtonElement, advanceButton: HTMLButtonElement, resetButton: HTMLButtonElement, routeButton?: HTMLButtonElement, fetchImpl: typeof fetch, monotonicNow: () => number, setIntervalImpl?: typeof setInterval, clearIntervalImpl?: typeof clearInterval}} options Page and clock boundaries.
  * @returns {() => void} Removes registered controls.
  */
 export function startChronoflowPage(options) {
@@ -28,6 +29,7 @@ export function startChronoflowPage(options) {
     grid,
     status,
     clockStatus,
+    inspectStatus,
     openButton,
     advanceButton,
     resetButton,
@@ -38,6 +40,7 @@ export function startChronoflowPage(options) {
     clearIntervalImpl = clearInterval,
   } = options;
   let game = createChronoflowGame();
+  let selectedCell = 1;
   /** @type {ReturnType<typeof estimateNetworkClock>|null} */
   let clockEstimate = null;
   /** @type {string|null} */
@@ -129,6 +132,7 @@ export function startChronoflowPage(options) {
         tile.dataset.target = String(isTarget);
         tile.dataset.flowDirection = flow.direction;
         tile.dataset.flowGlyph = flow.glyph;
+        tile.dataset.selected = String(cell === selectedCell);
         tile.style.setProperty('--water-level', String(volume));
         tile.style.setProperty('--flow-strength', String(flow.strength));
         tile.textContent = isSource
@@ -152,9 +156,19 @@ export function startChronoflowPage(options) {
             solid: game.fluid.solids[cell],
           })
         );
+        tile.setAttribute('aria-pressed', String(cell === selectedCell));
+        tile.addEventListener('click', () => {
+          selectedCell = cell;
+          render();
+        });
         return tile;
       })
     );
+    if (inspectStatus) {
+      const reading = getCellReadout(game.fluid, selectedCell);
+      const terrain = reading.solid ? 'stone' : 'channel';
+      inspectStatus.textContent = `Cell ${reading.cell} · ${terrain} · depth ${Math.round(reading.depth * 100)}% · head ${reading.hydraulicHead.toFixed(2)} · velocity ${reading.velocityX.toFixed(2)}, ${reading.velocityY.toFixed(2)}`;
+    }
     if (routeButton) {
       routeButton.disabled = game.completed;
       routeButton.textContent =

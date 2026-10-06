@@ -192,6 +192,20 @@ h1 {
   font-weight: 650;
 }
 
+.cell-readout {
+  min-height: 1.5em;
+  margin: 8px 2px 0;
+  color: #a7d8cd;
+  font-family: ui-monospace, monospace;
+  font-size: 0.78rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.chronoflow-cell[data-selected='true'] {
+  outline: 2px solid #f2d17e;
+  outline-offset: 1px;
+}
+
 .control-panel {
   padding: 22px;
 }

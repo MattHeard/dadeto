@@ -25,6 +25,8 @@ test('plays Chronoflow and earns a timed record only on trusted high tide', asyn
   await expect(
     page.locator('.chronoflow-cell[data-flow-direction="down"]').first(),
   ).toBeVisible();
+  await page.locator('.chronoflow-cell[data-flow-direction="down"]').first().click();
+  await expect(page.locator('#cell-readout')).toContainText('velocity');
 
   await page.getByRole('button', { name: 'Reset level' }).click();
   await expect(page.locator('#chronoflow-status')).toContainText('step 0');
