@@ -14,6 +14,7 @@
 - Terminal output should include:
   - focused solver suite summary with no failed tests.
   - local Playwright summary with Chronoflow route choice, sluice opening, trusted high-tide timed record, unavailable-clock practice, and reset scenarios passing.
+  - focused runtime/presenter coverage for the two editable channel sites, the edit cap, reversibility, and reset.
 - Artifacts written to:
   - `reports/coverage/coverage-summary.json`
   - the configured local Playwright report output.

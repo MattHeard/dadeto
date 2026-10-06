@@ -6,6 +6,7 @@ import {
   resetChronoflow,
   setChronoflowRoute,
   startTimedRun,
+  toggleChronoflowChannel,
 } from './runtime.js';
 import {
   estimateNetworkClock,
@@ -21,7 +22,7 @@ const CLOCK_REFRESH_MS = 15000;
 
 /**
  * Start the Chronoflow page using injected DOM elements.
- * @param {{documentObj: Document, grid: HTMLElement, status: HTMLElement, clockStatus: HTMLElement, inspectStatus?: HTMLElement, openButton: HTMLButtonElement, advanceButton: HTMLButtonElement, resetButton: HTMLButtonElement, routeButton?: HTMLButtonElement, startTimedButton?: HTMLButtonElement, fetchImpl: typeof fetch, monotonicNow: () => number, setIntervalImpl?: typeof setInterval, clearIntervalImpl?: typeof clearInterval}} options Page and clock boundaries.
+ * @param {{documentObj: Document, grid: HTMLElement, status: HTMLElement, clockStatus: HTMLElement, inspectStatus?: HTMLElement, openButton: HTMLButtonElement, advanceButton: HTMLButtonElement, resetButton: HTMLButtonElement, routeButton?: HTMLButtonElement, editButton?: HTMLButtonElement, startTimedButton?: HTMLButtonElement, fetchImpl: typeof fetch, monotonicNow: () => number, setIntervalImpl?: typeof setInterval, clearIntervalImpl?: typeof clearInterval}} options Page and clock boundaries.
  * @returns {() => void} Removes registered controls.
  */
 export function startChronoflowPage(options) {
@@ -35,6 +36,7 @@ export function startChronoflowPage(options) {
     advanceButton,
     resetButton,
     routeButton,
+    editButton,
     startTimedButton,
     fetchImpl,
     monotonicNow,
@@ -106,6 +108,20 @@ export function startChronoflowPage(options) {
           ? 'Timed high-tide attempt active'
           : 'Start timed attempt · high tide';
     }
+    if (editButton) {
+      const editable = game.editableCells.includes(selectedCell);
+      const verb = game.fluid.solids[selectedCell] ? 'Carve' : 'Fill';
+      editButton.textContent = editable
+        ? `${verb} channel at cell ${selectedCell + 1} · ${game.editBudget - game.editsUsed} edits left`
+        : 'Select a marked cell to edit';
+      editButton.disabled =
+        game.completed ||
+        !editable ||
+        game.editsUsed >= game.editBudget ||
+        (game.mode === 'timed' && !highTideWindow);
+      editButton.setAttribute('aria-label', editButton.textContent);
+    }
+    return highTideWindow;
   };
 
   const synchronizeClock = async () => {
@@ -153,6 +169,7 @@ export function startChronoflowPage(options) {
   };
 
   const render = () => {
+    updateTimedControls();
     grid.replaceChildren(
       ...game.fluid.volume.map((volume, cell) => {
         const tile = documentObj.createElement('button');
@@ -163,12 +180,14 @@ export function startChronoflowPage(options) {
         const isGate = cell === 13;
         const isTarget = cell === game.targetCell;
         const isSource = cell === 1;
+        const isEditable = game.editableCells.includes(cell);
         tile.type = 'button';
         tile.className = 'chronoflow-cell';
         tile.dataset.cell = String(cell);
         tile.dataset.solid = String(game.fluid.solids[cell]);
         tile.dataset.gate = String(isGate);
         tile.dataset.target = String(isTarget);
+        tile.dataset.editable = String(isEditable);
         tile.dataset.flowDirection = flow.direction;
         tile.dataset.flowGlyph = flow.glyph;
         tile.dataset.selected = String(cell === selectedCell);
@@ -193,6 +212,7 @@ export function startChronoflowPage(options) {
             isTarget,
             flowDirection: flow.direction,
             solid: game.fluid.solids[cell],
+            editable: isEditable,
           })
         );
         tile.setAttribute('aria-pressed', String(cell === selectedCell));
@@ -226,7 +246,6 @@ export function startChronoflowPage(options) {
         ? 'Archive chamber primed. Timed high-tide record secured.'
         : 'Archive chamber primed. Practice complete; no timed record.'
       : `${game.mode === 'timed' ? 'Timed attempt' : 'Practice'} · water ${Math.round(game.fluid.volume[game.targetCell] * 100)}% of 12% target · step ${game.fluid.tick}`;
-    updateTimedControls();
     renderClock();
   };
 
@@ -245,6 +264,10 @@ export function startChronoflowPage(options) {
     );
     render();
   };
+  const handleEdit = () => {
+    game = toggleChronoflowChannel(game, selectedCell, getClockReading());
+    render();
+  };
   const handleAdvance = () => {
     const wasCompleted = game.completed;
     game = advanceChronoflow(game, undefined, getClockReading());
@@ -260,6 +283,7 @@ export function startChronoflowPage(options) {
 
   openButton.addEventListener('click', handleOpen);
   routeButton?.addEventListener('click', handleRoute);
+  editButton?.addEventListener('click', handleEdit);
   startTimedButton?.addEventListener('click', handleStartTimed);
   advanceButton.addEventListener('click', handleAdvance);
   resetButton.addEventListener('click', handleReset);
@@ -285,6 +309,7 @@ export function startChronoflowPage(options) {
     clearIntervalImpl(clockInterval);
     openButton.removeEventListener('click', handleOpen);
     routeButton?.removeEventListener('click', handleRoute);
+    editButton?.removeEventListener('click', handleEdit);
     startTimedButton?.removeEventListener('click', handleStartTimed);
     advanceButton.removeEventListener('click', handleAdvance);
     resetButton.removeEventListener('click', handleReset);
@@ -293,7 +318,7 @@ export function startChronoflowPage(options) {
 
 /**
  * Describe a board cell for screen readers.
- * @param {{cell: number, volume: number, isGate: boolean, isSource: boolean, isTarget: boolean, flowDirection: string, solid: boolean}} cellState Cell facts.
+ * @param {{cell: number, volume: number, isGate: boolean, isSource: boolean, isTarget: boolean, flowDirection: string, solid: boolean, editable: boolean}} cellState Cell facts.
  * @returns {string} Accessible label.
  */
 function describeCell({
@@ -304,17 +329,20 @@ function describeCell({
   isTarget,
   flowDirection,
   solid,
+  editable,
 }) {
-  if (isSource) return 'Water source, full.';
-  if (isGate) return solid ? 'Sluice gate, closed.' : 'Sluice gate, open.';
-  if (isTarget)
-    return `Archive target, ${Math.round(volume * 100)} percent full; ${describeFlow(flowDirection)}.`;
-  const cellDescription = solid
-    ? `Stone wall, cell ${cell + 1}.`
-    : `Channel, cell ${cell + 1}, ${Math.round(volume * 100)} percent full`;
-  return solid
-    ? cellDescription
-    : `${cellDescription}; ${describeFlow(flowDirection)}.`;
+  const description = isSource
+    ? 'Water source, full.'
+    : isGate
+      ? solid
+        ? 'Sluice gate, closed.'
+        : 'Sluice gate, open.'
+      : isTarget
+        ? `Archive target, ${Math.round(volume * 100)} percent full; ${describeFlow(flowDirection)}.`
+        : solid
+          ? `Stone wall, cell ${cell + 1}.`
+          : `Channel, cell ${cell + 1}, ${Math.round(volume * 100)} percent full; ${describeFlow(flowDirection)}.`;
+  return editable ? `${description} Editable channel site.` : description;
 }
 
 /**

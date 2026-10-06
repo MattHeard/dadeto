@@ -8,6 +8,7 @@
 - Non-deterministic timing or ordering: solver reads wall time, commands apply between simulation steps, or fluid updates depend on render frame rate.
 - Environment-specific behavior: browser suspension, coarse mobile timer precision, touch event duplication, and floating-point drift across engines.
 - Solver instability: negative/over-capacity cells, pressure oscillation, unbounded velocity, or unexplained mass changes.
+- Invalid terrain editing: an unmarked/source/target/gate cell changes, edit budget is exceeded, or resetting preserves modified terrain.
 
 ## Detection Signals
 
@@ -38,6 +39,7 @@
 - Timed-credit boundary: the target-fill transition snapshots the injected Internet clock once; only a synchronized reading in the configured high-tide phase grants a timed record. Stale/offline and non-high phases remain puzzle practice.
 - Route-choice guardrail: the valve opens exactly one junction branch. The decoy route drains water and blocks the archive approach; resetting restores the initial decoy selection.
 - Timed-attempt guardrail: start and command gates require the full estimated epoch uncertainty interval to remain inside high tide. Boundary overlap, stale sync, or offline state pauses timed actions; untimed practice remains available.
+- Terrain-edit guardrail: only two authored wall cells are editable, source/target/gate/route cells are protected, every toggle consumes one of three edits, and reset reconstructs the original wall mask.
 
 - Date: 2026-10-06
 - Failure observed: clock-sample offset expectations were inconsistent with the measured request midpoint.

@@ -24,7 +24,7 @@
 ## Actors and Interfaces
 
 - Primary actors: the player, the archive keeper Ilyra, and the tide mechanism called the Orrery.
-- Inputs: choose the archive or decoy-drain branch at the junction, open a gate, advance, reset, pause, and inspect a cell. Equivalent keyboard, touch, gamepad, and embedded toy controls must call the same commands.
+- Inputs: choose the archive or decoy-drain branch at the junction, reshape authored channel cells within a level edit budget, open a gate, advance, reset, pause, and inspect a cell. Equivalent keyboard, touch, gamepad, and embedded toy controls must call the same commands.
 - Outputs: a pixel-art 2D board, animated water surface and flow direction, pressure/volume readouts, current trusted tide phase and synchronization quality, level result, and portable save data.
 - Player loop: inspect the target route; observe current water and tide; make a small number of reversible edits; let fixed simulation steps run; use a tide window to deliver the required volume without overflowing the archive; inspect the result and unlock the next level.
 
@@ -35,6 +35,7 @@
 - Each step preserves water mass except at declared sources, drains, evaporation rules, and overflow. A debug/test invariant compares total volume before and after each step. Fixed iteration order and numeric precision produce repeatable snapshots for a given initial state and command stream.
 - A level defines its grid, materials, source schedule, target region, required delivered volume, overflow limit, edit budget, tide schedule, and a known solution witness. Authored levels must include a deterministic solution replay; the solver itself does not promise arbitrary-level solvability.
 - A puzzle command changes the board only at a fixed simulation-step boundary. Tide phase is derived from synchronized server epoch time and level schedule. The simulation receives that phase as explicit input; it never asks for current time.
+- Archive Entry exposes two marked stone cells that can be opened or refilled with three edits per attempt. Opening either cell creates a valid route witness to the target; source, target, and sluice cells are protected from editing. Reset restores authored terrain and budget.
 - Rendering interpolates between adjacent simulation states only. It cannot mutate solver or puzzle state.
 
 ## Internet Clock and Resilience Contract

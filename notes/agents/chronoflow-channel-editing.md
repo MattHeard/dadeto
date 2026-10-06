@@ -1,0 +1,7 @@
+# Chronoflow editable channels
+
+- Unexpected hurdle: opening an authored channel shortcut created a small jscpd clone in the timed command gates after terrain edits were made high-tide-aware.
+- Diagnosis path: inspected the exact clone pair, then split the shared timed pause predicate from the cell, sluice, and advance validation paths.
+- Chosen fix: make cells 8 and 12 editable stone sites, require one toggle to open a valid archive route, cap each attempt at three terrain edits, permit a reverse toggle while budget remains, and restore terrain/budget on reset. Timed edits now use the same injected high-tide sample as sluice and advance commands. The presenter marks editable cells accessibly, updates edit availability during tide changes, and the page manual explains the mechanic.
+- Next-time guidance: add real pressure projection to the deterministic fluid solver next; current flow uses hydrostatic head and momentum-limited face fluxes but lacks an incompressibility projection. Preserve the two route witnesses and check them when solver equations change.
+- Evidence: focused Chronoflow Jest 22/22; focused local Playwright 2/2; `TMPDIR=/home/matt/dadeto/reports/tmp npm run check` terminal exit 0 and summary total=10 failed=0; exact coverage lines 22272/22272, statements 23305/23305, functions 7493/7493, branches 12159/12159; npm audit found 0 vulnerabilities; jscpd 0 clones; `git diff --check` passed.

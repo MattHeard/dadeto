@@ -16,6 +16,9 @@ test('plays Chronoflow and earns a timed record only on trusted high tide', asyn
 
   await page.locator('#start-timed').click();
   await expect(page.locator('#chronoflow-status')).toContainText('Timed attempt');
+  await page.locator('.chronoflow-cell[data-cell="7"]').click();
+  await page.getByRole('button', { name: /Carve channel at cell 8/ }).click();
+  await expect(page.locator('.chronoflow-cell[data-cell="7"]')).toHaveAttribute('data-solid', 'false');
   await page.locator('#route-valve').click();
   await page.getByRole('button', { name: 'Open sluice' }).click();
   const advance = page.getByRole('button', { name: 'Advance water · 60 steps' });
@@ -32,6 +35,7 @@ test('plays Chronoflow and earns a timed record only on trusted high tide', asyn
 
   await page.getByRole('button', { name: 'Reset level' }).click();
   await expect(page.locator('#chronoflow-status')).toContainText('step 0');
+  await expect(page.locator('.chronoflow-cell[data-cell="7"]')).toHaveAttribute('data-solid', 'true');
   await expect(page.getByRole('button', { name: 'Open sluice' })).toBeDisabled();
   await page.locator('#route-valve').click();
   await expect(page.getByRole('button', { name: 'Open sluice' })).toBeEnabled();
@@ -49,6 +53,8 @@ test('keeps Chronoflow in untimed practice when Internet clock sync fails', asyn
   await expect(page.locator('#clock-status')).toContainText('Internet tide unavailable');
   await expect(page.locator('#clock-status')).toContainText('Timed play is disabled');
   await expect(page.locator('#start-timed')).toBeDisabled();
+  await page.locator('.chronoflow-cell[data-cell="11"]').click();
+  await page.getByRole('button', { name: /Carve channel at cell 12/ }).click();
   await page.locator('#route-valve').click();
   await expect(page.getByRole('button', { name: 'Open sluice' })).toBeEnabled();
   await page.getByRole('button', { name: 'Open sluice' }).click();

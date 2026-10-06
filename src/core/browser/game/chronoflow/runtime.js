@@ -11,8 +11,10 @@ const TARGET_APPROACH_CELL = 18;
 const TARGET_CELL = 19;
 const TARGET_VOLUME = 0.12;
 const PAGE_STEP_COUNT = 60;
+const EDIT_BUDGET = 3;
+const EDITABLE_CELLS = Object.freeze([7, 11]);
 const ARCHIVE_WALLS = Object.freeze([
-  0, 2, 3, 4, 5, 7, 8, 9, 10, 12, 13, 14, 15, 16, 17, 18,
+  0, 2, 3, 4, 5, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18,
 ]);
 
 /** @typedef {{status: 'synchronized'|'stale', epochMs: number|null, uncertaintyMs?: number|null}|null} TrustedClockReading */
@@ -28,6 +30,9 @@ const ARCHIVE_WALLS = Object.freeze([
  * @property {boolean} completed Whether the level objective is met.
  * @property {boolean} timedCredit Whether completion earned a trusted high-tide record.
  * @property {'practice'|'timed'} mode Active puzzle mode.
+ * @property {number} editsUsed Terrain edits spent in this attempt.
+ * @property {number} editBudget Maximum terrain edits allowed.
+ * @property {readonly number[]} editableCells Authored cells that may be reshaped.
  */
 
 /**
@@ -55,8 +60,32 @@ export function createChronoflowGame() {
     completed: false,
     timedCredit: false,
     mode: 'practice',
+    editsUsed: 0,
+    editBudget: EDIT_BUDGET,
+    editableCells: EDITABLE_CELLS,
   };
   return setChronoflowRoute(initialGame, 'drain');
+}
+
+/**
+ * Toggle an authored channel cell between stone and open channel.
+ * @param {ChronoflowGame} game Current level state.
+ * @param {number} cell Zero-based board cell index.
+ * @param {TrustedClockReading} [clockReading] Trusted time required in timed mode.
+ * @returns {ChronoflowGame} Updated board or original when editing is disallowed.
+ */
+export function toggleChronoflowChannel(game, cell, clockReading = null) {
+  if (isTimedCommandPaused(game, clockReading)) return game;
+  if (
+    game.completed ||
+    !EDITABLE_CELLS.includes(cell) ||
+    game.editsUsed >= game.editBudget
+  ) {
+    return game;
+  }
+  const solids = [...game.fluid.solids];
+  solids[cell] = !solids[cell];
+  return withFluidSolids({ ...game, editsUsed: game.editsUsed + 1 }, solids);
 }
 
 /**
@@ -114,7 +143,7 @@ export function startTimedRun(game, clockReading) {
  */
 export function openSluice(game, clockReading = null) {
   if (game.gateOpen || game.completed || game.route !== 'archive') return game;
-  if (game.mode === 'timed' && !isTimedHighTide(clockReading)) return game;
+  if (isTimedCommandPaused(game, clockReading)) return game;
   const solids = [...game.fluid.solids];
   solids[GATE_CELL] = false;
   return withFluidSolids({ ...game, gateOpen: true }, solids);
@@ -145,11 +174,8 @@ export function advanceChronoflow(
   if (!Number.isSafeInteger(steps) || steps < 0 || steps > 600) {
     throw new RangeError('Advance steps must be a safe integer from 0 to 600.');
   }
-  if (
-    game.completed ||
-    steps === 0 ||
-    (game.mode === 'timed' && !isTimedHighTide(clockReading))
-  ) {
+  if (isTimedCommandPaused(game, clockReading)) return game;
+  if (game.completed || steps === 0) {
     return game;
   }
   return advanceUntilTarget(game, steps);
@@ -162,6 +188,16 @@ export function advanceChronoflow(
  */
 function isTimedHighTide(clockReading) {
   return isTideWindowOpen(toTideWindow(clockReading));
+}
+
+/**
+ * Check whether the trusted tide currently blocks timed state changes.
+ * @param {ChronoflowGame} game Current level state.
+ * @param {TrustedClockReading} clockReading Current trusted clock sample.
+ * @returns {boolean} Whether a timed command must pause.
+ */
+function isTimedCommandPaused(game, clockReading) {
+  return game.mode === 'timed' && !isTimedHighTide(clockReading);
 }
 
 /**

@@ -11,6 +11,7 @@ import {
   resetChronoflow,
   setChronoflowRoute,
   startTimedRun,
+  toggleChronoflowChannel,
 } from '../../../../src/core/browser/game/chronoflow/runtime.js';
 import { startChronoflowPage } from '../../../../src/core/browser/game/chronoflow/pagePresenter.js';
 
@@ -229,6 +230,62 @@ describe('Chronoflow deterministic fluid core', () => {
 });
 
 describe('Chronoflow Archive Entry runtime', () => {
+  it('lets the player reshape marked cells within a reversible edit budget', () => {
+    const initial = createChronoflowGame();
+    expect(initial.fluid.solids[7]).toBe(true);
+    expect(initial.fluid.solids[11]).toBe(true);
+    expect(initial.editBudget).toBe(3);
+    for (const cell of [1, 6, 13, 19, -1, 7.5]) {
+      expect(toggleChronoflowChannel(initial, cell)).toBe(initial);
+    }
+
+    const carved = toggleChronoflowChannel(initial, 7);
+    expect(carved.fluid.solids[7]).toBe(false);
+    expect(carved.editsUsed).toBe(1);
+    expect(initial.fluid.solids[7]).toBe(true);
+    const refilled = toggleChronoflowChannel(carved, 7);
+    expect(refilled.fluid.solids[7]).toBe(true);
+    expect(refilled.editsUsed).toBe(2);
+    const atBudget = toggleChronoflowChannel(refilled, 11);
+    expect(atBudget.editsUsed).toBe(3);
+    expect(toggleChronoflowChannel(atBudget, 7)).toBe(atBudget);
+    const timed = { ...initial, mode: 'timed' };
+    expect(
+      toggleChronoflowChannel(timed, 7, {
+        status: 'synchronized',
+        epochMs: 60000,
+      })
+    ).toBe(timed);
+    expect(
+      toggleChronoflowChannel(timed, 7, {
+        status: 'synchronized',
+        epochMs: 45000,
+        uncertaintyMs: 1000,
+      }).fluid.solids[7]
+    ).toBe(false);
+    expect(
+      toggleChronoflowChannel({ ...atBudget, completed: true }, 7)
+    ).toMatchObject({
+      completed: true,
+      editsUsed: 3,
+    });
+    expect(resetChronoflow()).toMatchObject({ editsUsed: 0, editBudget: 3 });
+  });
+
+  it('solves Archive Entry by carving either authored channel shortcut', () => {
+    for (const cell of [7, 11]) {
+      let game = toggleChronoflowChannel(createChronoflowGame(), cell);
+      game = openSluice(setChronoflowRoute(game, 'archive'));
+      for (let batch = 0; batch < 30 && !game.completed; batch += 1) {
+        game = advanceChronoflow(game, 60);
+      }
+      expect(game.completed).toBe(true);
+      expect(game.fluid.volume[game.targetCell]).toBeGreaterThanOrEqual(
+        game.targetVolume
+      );
+    }
+  });
+
   it('keeps the gate closed until the player opens it and does not mutate earlier state', () => {
     const initial = createChronoflowGame();
     const advancedWhileClosed = advanceChronoflow(initial, 120);
@@ -254,9 +311,11 @@ describe('Chronoflow Archive Entry runtime', () => {
   });
 
   it('replays the authored solution to the target and keeps completed state stable', () => {
-    let game = openSluice(
-      setChronoflowRoute(createChronoflowGame(), 'archive')
+    let game = toggleChronoflowChannel(
+      setChronoflowRoute(createChronoflowGame(), 'archive'),
+      11
     );
+    game = openSluice(game);
     for (let batch = 0; batch < 30 && !game.completed; batch += 1) {
       game = advanceChronoflow(game, 60);
     }
@@ -306,7 +365,10 @@ describe('Chronoflow Archive Entry runtime', () => {
 
   it('awards timed completion only in the synchronized high-tide phase', () => {
     let completed = openSluice(
-      setChronoflowRoute(createChronoflowGame(), 'archive')
+      toggleChronoflowChannel(
+        setChronoflowRoute(createChronoflowGame(), 'archive'),
+        11
+      )
     );
     for (let batch = 0; batch < 30 && !completed.completed; batch += 1) {
       completed = advanceChronoflow(completed, 60);
@@ -381,6 +443,7 @@ describe('Chronoflow page presenter', () => {
     const advanceButton = new FakeElement();
     const resetButton = new FakeElement();
     const routeButton = new FakeElement();
+    const editButton = new FakeElement();
     const startTimedButton = new FakeElement();
     const fetchImpl = jest.fn(async () => ({ ok: false, status: 503 }));
 
@@ -394,6 +457,7 @@ describe('Chronoflow page presenter', () => {
       advanceButton,
       resetButton,
       routeButton,
+      editButton,
       startTimedButton,
       fetchImpl,
       monotonicNow: () => 0,
@@ -415,13 +479,10 @@ describe('Chronoflow page presenter', () => {
     expect(grid.children[2].getAttribute('aria-pressed')).toBe('true');
     expect(openButton.disabled).toBe(true);
 
+    grid.children[11].emit('click');
+    editButton.emit('click');
     routeButton.emit('click');
     expect(routeButton.textContent).toBe('Route valve to drain');
-    expect(openButton.disabled).toBe(false);
-    routeButton.emit('click');
-    expect(routeButton.textContent).toBe('Route valve to archive');
-    expect(openButton.disabled).toBe(true);
-    routeButton.emit('click');
     expect(openButton.disabled).toBe(false);
 
     openButton.emit('click');
@@ -453,6 +514,44 @@ describe('Chronoflow page presenter', () => {
     expect(resetButton.listeners.has('click')).toBe(false);
   });
 
+  it('lets the player reshape a selected marked channel cell', () => {
+    const grid = new FakeElement();
+    const editButton = new FakeElement();
+    const routeButton = new FakeElement();
+    const dispose = startChronoflowPage({
+      documentObj: { createElement: () => new FakeElement() },
+      grid,
+      status: new FakeElement(),
+      clockStatus: new FakeElement(),
+      openButton: new FakeElement(),
+      advanceButton: new FakeElement(),
+      resetButton: new FakeElement(),
+      editButton,
+      routeButton,
+      fetchImpl: async () => ({ ok: false, status: 503 }),
+      monotonicNow: () => 0,
+      setIntervalImpl: () => 1,
+      clearIntervalImpl: () => {},
+    });
+
+    expect(grid.children[7].dataset.editable).toBe('true');
+    expect(grid.children[7].getAttribute('aria-label')).toContain(
+      'Editable channel site'
+    );
+    routeButton.emit('click');
+    expect(routeButton.textContent).toBe('Route valve to drain');
+    routeButton.emit('click');
+    expect(routeButton.textContent).toBe('Route valve to archive');
+    expect(editButton.disabled).toBe(true);
+    grid.children[7].emit('click');
+    expect(editButton.disabled).toBe(false);
+    editButton.emit('click');
+    expect(grid.children[7].dataset.solid).toBe('false');
+    expect(editButton.textContent).toContain('2 edits left');
+    dispose();
+    expect(editButton.listeners.has('click')).toBe(false);
+  });
+
   it('loads configured Internet time, reports the trusted tide, and clears refresh timer', async () => {
     const documentObj = { createElement: () => new FakeElement() };
     const grid = new FakeElement();
@@ -462,6 +561,7 @@ describe('Chronoflow page presenter', () => {
     const advanceButton = new FakeElement();
     const resetButton = new FakeElement();
     const routeButton = new FakeElement();
+    const editButton = new FakeElement();
     const startTimedButton = new FakeElement();
     let clockUnavailable = false;
     const fetchImpl = jest.fn(async endpoint => {
@@ -488,6 +588,7 @@ describe('Chronoflow page presenter', () => {
       advanceButton,
       resetButton,
       routeButton,
+      editButton,
       startTimedButton,
       fetchImpl,
       monotonicNow: () => {
@@ -513,6 +614,8 @@ describe('Chronoflow page presenter', () => {
     expect(typeof intervalHandler).toBe('function');
     expect(routeButton.textContent).toBe('Route valve to archive');
     expect(startTimedButton.disabled).toBe(false);
+    grid.children[11].emit('click');
+    editButton.emit('click');
     startTimedButton.emit('click');
     expect(status.textContent).toContain('Timed attempt');
     routeButton.emit('click');
@@ -549,6 +652,7 @@ describe('Chronoflow page presenter', () => {
       resetButton,
       startTimedButton,
     ] = elements;
+    const editButton = new FakeElement();
     let monotonic = 100;
     let intervalHandler;
     const fetchImpl = jest.fn(async endpoint =>
@@ -567,6 +671,7 @@ describe('Chronoflow page presenter', () => {
       openButton,
       advanceButton,
       resetButton,
+      editButton,
       startTimedButton,
       fetchImpl,
       monotonicNow: () => monotonic,
@@ -580,11 +685,16 @@ describe('Chronoflow page presenter', () => {
 
     startTimedButton.emit('click');
     expect(status.textContent).toContain('Timed attempt');
+    grid.children[7].emit('click');
+    expect(editButton.disabled).toBe(false);
+    editButton.emit('click');
+    expect(grid.children[7].dataset.solid).toBe('false');
     monotonic = 20_000;
     intervalHandler();
     expect(clockStatus.textContent).toContain('Timed attempt paused');
     expect(openButton.disabled).toBe(true);
     expect(advanceButton.disabled).toBe(true);
+    expect(editButton.disabled).toBe(true);
     dispose();
   });
 

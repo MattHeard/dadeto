@@ -41,12 +41,15 @@
           <p>
             Choose a route at the junction. Send the water to the archive
             chamber to solve the puzzle, or watch the decoy channel drain away.
-            Open the sluice and advance until at least 12% reaches the archive.
+            Carve one of the marked wall cells into a channel, open the sluice,
+            and advance until at least 12% reaches the archive. You have three
+            terrain edits per attempt.
           </p>
           <div class="legend" aria-label="Board legend">
             <span><i class="legend-source"></i>Source</span>
             <span><i class="legend-channel"></i>Channel</span>
             <span><i class="legend-wall"></i>Stone</span>
+            <span><i class="legend-editable"></i>Editable stone</span>
             <span><i class="legend-target"></i>Archive</span>
           </div>
           <button id="open-sluice" class="action-button primary" type="button">
@@ -54,6 +57,9 @@
           </button>
           <button id="route-valve" class="action-button" type="button">
             Route valve to archive
+          </button>
+          <button id="edit-channel" class="action-button" type="button" disabled>
+            Select a marked cell to edit
           </button>
           <button id="start-timed" class="action-button" type="button" disabled>
             Start timed attempt · high tide
