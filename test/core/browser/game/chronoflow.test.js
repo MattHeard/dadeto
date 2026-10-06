@@ -128,6 +128,88 @@ describe('Chronoflow deterministic fluid core', () => {
     expect(stepFluid(blockedVertical).state.volume).toEqual([1, 0]);
   });
 
+  it('projects a 2D velocity field toward lower discrete divergence', () => {
+    const state = createFluidState({
+      width: 3,
+      height: 3,
+      volume: Array(9).fill(0.5),
+      velocityX: [0, 0, 0, 0, 1, 0, 0, 0, 0],
+      velocityY: [0, 0, 0, 0, 1, 0, 0, 0, 0],
+    });
+    const projected = stepFluid(state).state;
+    const divergence = fluidDivergence(projected);
+    expect(rmsDivergence(projected)).toBeLessThan(rmsDivergence(state));
+    expect(divergence.every(Number.isFinite)).toBe(true);
+    expect(projected.velocityX.every(value => Math.abs(value) <= 1)).toBe(true);
+    expect(projected.velocityY.every(value => Math.abs(value) <= 1)).toBe(true);
+    expect(totalVolume(projected)).toBeCloseTo(totalVolume(state), 12);
+    expect(stepFluid(state).state).toEqual(projected);
+  });
+
+  it('keeps solid interfaces impermeable during pressure projection', () => {
+    const state = createFluidState({
+      width: 3,
+      height: 1,
+      volume: [0.5, 0, 0.5],
+      velocityX: [1, 1, 1],
+      solids: [false, true, false],
+    });
+    const projected = stepFluid(state).state;
+    expect(projected.velocityX[1]).toBe(0);
+    expect(projected.velocityY[1]).toBe(0);
+    expect(projected.volume).toEqual([0.5, 0, 0.5]);
+  });
+
+  it('stabilizes a varied closed field over repeated deterministic steps', () => {
+    let state = createFluidState({
+      width: 8,
+      height: 6,
+      volume: Array(48).fill(0.5),
+      velocityX: Array.from(
+        { length: 48 },
+        (_, cell) => Math.sin(cell * 1.7) * 0.8
+      ),
+      velocityY: Array.from(
+        { length: 48 },
+        (_, cell) => Math.cos(cell * 0.9) * 0.8
+      ),
+      solids: Array.from(
+        { length: 48 },
+        (_, cell) => cell === 19 || cell === 27
+      ),
+    });
+    const replay = createFluidState({
+      width: 8,
+      height: 6,
+      volume: Array(48).fill(0.5),
+      velocityX: Array.from(
+        { length: 48 },
+        (_, cell) => Math.sin(cell * 1.7) * 0.8
+      ),
+      velocityY: Array.from(
+        { length: 48 },
+        (_, cell) => Math.cos(cell * 0.9) * 0.8
+      ),
+      solids: Array.from(
+        { length: 48 },
+        (_, cell) => cell === 19 || cell === 27
+      ),
+    });
+    for (let tick = 0; tick < 600; tick += 1) {
+      state = stepFluid(state).state;
+    }
+    let replayed = replay;
+    for (let tick = 0; tick < 600; tick += 1) {
+      replayed = stepFluid(replayed).state;
+    }
+    expect(state).toEqual(replayed);
+    expect(rmsDivergence(state)).toBeLessThan(0.05);
+    expect(totalVolume(state)).toBeCloseTo(24, 10);
+    expect(state.volume.every(value => value >= 0 && value <= 1)).toBe(true);
+    expect(state.velocityX.every(value => Math.abs(value) <= 1)).toBe(true);
+    expect(state.velocityY.every(value => Math.abs(value) <= 1)).toBe(true);
+  });
+
   it('supports reverse momentum and limits a donor to its available volume', () => {
     const reverseFlow = createFluidState({
       width: 2,
@@ -228,6 +310,45 @@ describe('Chronoflow deterministic fluid core', () => {
     ).toThrow(RangeError);
   });
 });
+
+/**
+ * Calculate the RMS divergence using the solver's cell-centered face average.
+ * @param {import('../../../../src/core/browser/game/chronoflow/chronoflow.js').FluidState} state Grid state.
+ * @returns {number} RMS discrete divergence.
+ */
+function rmsDivergence(state) {
+  const divergence = fluidDivergence(state);
+  return Math.sqrt(divergence.reduce((sum, value) => sum + value * value, 0));
+}
+
+/**
+ * @param {import('../../../../src/core/browser/game/chronoflow/chronoflow.js').FluidState} state Grid state.
+ * @returns {number[]} Cell divergence with solid faces omitted.
+ */
+function fluidDivergence(state) {
+  return state.volume.map((_, cell) => {
+    if (state.solids[cell]) return 0;
+    const x = cell % state.width;
+    const y = Math.floor(cell / state.width);
+    const left =
+      x > 0 && !state.solids[cell - 1]
+        ? (state.velocityX[cell - 1] + state.velocityX[cell]) / 2
+        : 0;
+    const right =
+      x + 1 < state.width && !state.solids[cell + 1]
+        ? (state.velocityX[cell] + state.velocityX[cell + 1]) / 2
+        : 0;
+    const up =
+      y > 0 && !state.solids[cell - state.width]
+        ? (state.velocityY[cell - state.width] + state.velocityY[cell]) / 2
+        : 0;
+    const down =
+      y + 1 < state.height && !state.solids[cell + state.width]
+        ? (state.velocityY[cell] + state.velocityY[cell + state.width]) / 2
+        : 0;
+    return right - left + down - up;
+  });
+}
 
 describe('Chronoflow Archive Entry runtime', () => {
   it('lets the player reshape marked cells within a reversible edit budget', () => {

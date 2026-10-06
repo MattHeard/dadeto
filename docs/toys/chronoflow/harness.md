@@ -18,6 +18,7 @@
 - Artifacts written to:
   - `reports/coverage/coverage-summary.json`
   - the configured local Playwright report output.
+- Pressure projection regression: a fixed-order 24-iteration Jacobi solve must lower the existing cell-centered face divergence, preserve solid walls and volume, and replay a varied 8×6 closed field identically for 600 steps.
 - Exit code:
   - `0`
 

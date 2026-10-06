@@ -5,6 +5,7 @@ const PRESSURE_STRENGTH = 0.5;
 const INERTIA_STRENGTH = 0.12;
 const MOMENTUM_GAIN = 4;
 const GRAVITY = 0.15;
+const PRESSURE_ITERATIONS = 24;
 /** @type {Array<{dx: number, dy: number, axis: 'x'|'y', verticalHead: number}>} */
 const NEIGHBOR_DIRECTIONS = [
   { dx: 1, dy: 0, axis: 'x', verticalHead: 0 },
@@ -136,14 +137,14 @@ export function stepFluid(state, options = {}) {
     const next = cellVolume + delta[index];
     return Math.min(1, Math.max(0, next));
   });
-  const nextVelocityX = state.velocityX.map((velocity, index) =>
+  const advectedVelocityX = state.velocityX.map((velocity, index) =>
     nextVolume[index] === 0 || state.solids[index]
       ? 0
       : clampVelocity(
           velocity * (1 - state.viscosity) + momentumX[index] * MOMENTUM_GAIN
         )
   );
-  const nextVelocityY = state.velocityY.map((velocity, index) => {
+  const advectedVelocityY = state.velocityY.map((velocity, index) => {
     if (nextVolume[index] === 0 || state.solids[index]) return 0;
     return clampVelocity(
       velocity * (1 - state.viscosity) +
@@ -152,17 +153,92 @@ export function stepFluid(state, options = {}) {
     );
   });
 
+  const projectedVelocity = projectVelocity({
+    width: state.width,
+    height: state.height,
+    velocityX: advectedVelocityX,
+    velocityY: advectedVelocityY,
+    solids: state.solids,
+  });
   return {
     state: {
       ...state,
       tick: state.tick + 1,
       volume: nextVolume,
-      velocityX: nextVelocityX,
-      velocityY: nextVelocityY,
+      velocityX: projectedVelocity.velocityX,
+      velocityY: projectedVelocity.velocityY,
     },
     sourced,
     drained,
   };
+}
+
+/**
+ * Project the cell-centered velocity field toward zero discrete divergence.
+ * Fixed Jacobi iterations and neighbor order keep replay deterministic.
+ * @param {{width: number, height: number, velocityX: number[], velocityY: number[], solids: boolean[]}} grid Cell-centered velocity grid.
+ * @returns {{velocityX: number[], velocityY: number[]}} Projected velocities.
+ */
+function projectVelocity(grid) {
+  const { width, height, velocityX, velocityY, solids } = grid;
+  let pressure = Array(width * height).fill(0);
+  for (let iteration = 0; iteration < PRESSURE_ITERATIONS; iteration += 1) {
+    const nextPressure = [...pressure];
+    for (let y = 0; y < height; y += 1) {
+      for (let x = 0; x < width; x += 1) {
+        const cell = y * width + x;
+        if (solids[cell]) continue;
+        const left = cell - 1;
+        const right = cell + 1;
+        const up = cell - width;
+        const down = cell + width;
+        const neighbors = [];
+        if (x > 0 && !solids[left]) neighbors.push(left);
+        if (x + 1 < width && !solids[right]) neighbors.push(right);
+        if (y > 0 && !solids[up]) neighbors.push(up);
+        if (y + 1 < height && !solids[down]) neighbors.push(down);
+        if (neighbors.length === 0) continue;
+        const divergence =
+          (x + 1 < width && !solids[right]
+            ? (velocityX[cell] + velocityX[right]) / 2
+            : 0) -
+          (x > 0 && !solids[left]
+            ? (velocityX[left] + velocityX[cell]) / 2
+            : 0) +
+          (y + 1 < height && !solids[down]
+            ? (velocityY[cell] + velocityY[down]) / 2
+            : 0) -
+          (y > 0 && !solids[up] ? (velocityY[up] + velocityY[cell]) / 2 : 0);
+        nextPressure[cell] =
+          (neighbors.reduce((sum, neighbor) => sum + pressure[neighbor], 0) -
+            divergence) /
+          neighbors.length;
+      }
+    }
+    pressure = nextPressure;
+  }
+
+  const projectedX = [...velocityX];
+  const projectedY = [...velocityY];
+  for (let y = 0; y < height; y += 1) {
+    for (let x = 0; x < width; x += 1) {
+      const cell = y * width + x;
+      if (solids[cell]) {
+        projectedX[cell] = 0;
+        projectedY[cell] = 0;
+        continue;
+      }
+      if (x + 1 < width && !solids[cell + 1]) {
+        projectedX[cell] -= pressure[cell + 1] - pressure[cell];
+      }
+      if (y + 1 < height && !solids[cell + width]) {
+        projectedY[cell] -= pressure[cell + width] - pressure[cell];
+      }
+      projectedX[cell] = clampVelocity(projectedX[cell]);
+      projectedY[cell] = clampVelocity(projectedY[cell]);
+    }
+  }
+  return { velocityX: projectedX, velocityY: projectedY };
 }
 
 /**
