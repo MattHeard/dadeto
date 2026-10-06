@@ -135,6 +135,30 @@ describe('browser validation helpers', () => {
     expect(validation.trimmedStringOrEmpty(1)).toBe('');
   });
 
+  test('ensureString preserves literal text without coercing non-strings', () => {
+    let reads = 0;
+    const object = {
+      get toString() {
+        reads += 1;
+        throw new Error('no coercion');
+      },
+    };
+    expect(validation.ensureString('  roof  ')).toBe('  roof  ');
+    for (const value of [
+      null,
+      undefined,
+      0,
+      false,
+      [],
+      object,
+      new String('roof'),
+      Symbol('roof'),
+    ]) {
+      expect(validation.ensureString(value)).toBe('');
+    }
+    expect(reads).toBe(0);
+  });
+
   test('covers callable, conditional, filesystem, and reporting helpers', () => {
     expect(() => validation.assertFunction(() => {}, 'fn')).not.toThrow();
     expect(() => validation.assertFunction(null, 'fn')).toThrow(
