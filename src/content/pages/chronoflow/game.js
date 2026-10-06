@@ -1,0 +1,13 @@
+import { startChronoflowPage } from '/core/browser/game/chronoflow/pagePresenter.js';
+
+const dispose = startChronoflowPage({
+  documentObj: document,
+  grid: document.querySelector('#chronoflow-grid'),
+  status: document.querySelector('#chronoflow-status'),
+  clockStatus: document.querySelector('#clock-status'),
+  openButton: document.querySelector('#open-sluice'),
+  advanceButton: document.querySelector('#advance-water'),
+  resetButton: document.querySelector('#reset-level'),
+});
+
+window.addEventListener('pagehide', dispose, { once: true });

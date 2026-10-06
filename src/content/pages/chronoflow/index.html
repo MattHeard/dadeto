@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Route water through the Tidal Archive in Chronoflow, a deterministic puzzle prototype."
+    />
+    <title>Chronoflow — The Tidal Archive</title>
+    <link rel="stylesheet" href="/chronoflow/styles.css" />
+  </head>
+  <body>
+    <main class="chronoflow-shell">
+      <header class="game-header">
+        <a class="back-link" href="/">← Dadeto</a>
+        <p class="eyebrow">CHRO1 · FIRST LEVEL</p>
+        <h1>Chronoflow</h1>
+        <p class="subtitle">The Tidal Archive</p>
+      </header>
+
+      <section class="game-layout" aria-label="Chronoflow water puzzle">
+        <div class="board-panel">
+          <div class="board-heading">
+            <h2>Archive entry</h2>
+            <span>5 × 4 channel grid</span>
+          </div>
+          <div
+            id="chronoflow-grid"
+            class="chronoflow-grid"
+            role="group"
+            aria-label="Water channel board"
+          ></div>
+          <p id="chronoflow-status" class="game-status" aria-live="polite"></p>
+        </div>
+
+        <aside class="control-panel" aria-label="Puzzle controls">
+          <p class="eyebrow">YOUR TASK</p>
+          <h2>Wake the archive</h2>
+          <p>
+            Open the sluice, then advance the water until at least 12% reaches
+            the memory chamber. Follow the stone channel around the corner.
+          </p>
+          <div class="legend" aria-label="Board legend">
+            <span><i class="legend-source"></i>Source</span>
+            <span><i class="legend-channel"></i>Channel</span>
+            <span><i class="legend-wall"></i>Stone</span>
+            <span><i class="legend-target"></i>Archive</span>
+          </div>
+          <button id="open-sluice" class="action-button primary" type="button">
+            Open sluice
+          </button>
+          <button id="advance-water" class="action-button" type="button">
+            Advance water · 60 steps
+          </button>
+          <button id="reset-level" class="reset-button" type="button">
+            Reset level
+          </button>
+          <p id="clock-status" class="clock-status" role="status"></p>
+        </aside>
+      </section>
+
+      <footer>
+        <p>
+          Deterministic practice prototype. Tide timing and network clock sync
+          are still in development; device time does not affect this level.
+        </p>
+      </footer>
+    </main>
+    <script type="module" src="/chronoflow/game.js"></script>
+  </body>
+</html>

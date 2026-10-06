@@ -25,6 +25,12 @@
 ## Promoted from Real Failures
 
 - Date: 2026-10-06
+- Failure observed: the first browser scenario waited on a generic `#status` element that the page does not define.
+- Root cause: the authored page uses `#chronoflow-status` to avoid a generic id and identify the live game status explicitly.
+- Fix implemented: point the browser acceptance at the actual status region and complete the sluice, win, and reset journey.
+- Guardrail added: keep Playwright selectors aligned with the page's named controls and live status ids.
+
+- Date: 2026-10-06
 - Failure observed: binary floating-point arithmetic represents a drained 0.6 - 0.2 as 0.39999999999999997; an exact equality assertion failed.
 - Root cause: solver volumes use JavaScript numbers and conservation is approximate to floating-point precision.
 - Fix implemented: compare measured volume with a small numeric tolerance; retain exact bounds and accounting invariants.

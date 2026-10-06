@@ -3,6 +3,13 @@ import {
   createFluidState,
   stepFluid,
 } from '../../../../src/core/browser/game/chronoflow/chronoflow.js';
+import {
+  advanceChronoflow,
+  createChronoflowGame,
+  openSluice,
+  resetChronoflow,
+} from '../../../../src/core/browser/game/chronoflow/runtime.js';
+import { startChronoflowPage } from '../../../../src/core/browser/game/chronoflow/pagePresenter.js';
 
 /**
  * Sum the water in a fluid grid.
@@ -11,6 +18,42 @@ import {
  */
 function totalVolume(state) {
   return state.volume.reduce((total, amount) => total + amount, 0);
+}
+
+class FakeElement {
+  constructor() {
+    this.listeners = new Map();
+    this.dataset = {};
+    this.style = { setProperty: () => {} };
+    this.children = [];
+    this.textContent = '';
+    this.disabled = false;
+  }
+
+  addEventListener(type, listener) {
+    this.listeners.set(type, listener);
+  }
+
+  removeEventListener(type, listener) {
+    if (this.listeners.get(type) === listener) this.listeners.delete(type);
+  }
+
+  emit(type) {
+    this.listeners.get(type)?.();
+  }
+
+  replaceChildren(...children) {
+    this.children = children;
+  }
+
+  setAttribute(name, value) {
+    this.attributes ??= {};
+    this.attributes[name] = value;
+  }
+
+  getAttribute(name) {
+    return this.attributes?.[name] ?? null;
+  }
 }
 
 describe('Chronoflow deterministic fluid core', () => {
@@ -179,5 +222,94 @@ describe('Chronoflow deterministic fluid core', () => {
     expect(() =>
       stepFluid(state, { drains: [{ cell: 0, volume: 0 }] })
     ).toThrow(RangeError);
+  });
+});
+
+describe('Chronoflow Archive Entry runtime', () => {
+  it('keeps the gate closed until the player opens it and does not mutate earlier state', () => {
+    const initial = createChronoflowGame();
+    const advancedWhileClosed = advanceChronoflow(initial, 120);
+    expect(advancedWhileClosed.fluid.volume[19]).toBe(0);
+
+    const opened = openSluice(advancedWhileClosed);
+    expect(opened.gateOpen).toBe(true);
+    expect(opened.fluid.solids[13]).toBe(false);
+    expect(advancedWhileClosed.fluid.solids[13]).toBe(true);
+    expect(openSluice(opened)).toBe(opened);
+  });
+
+  it('replays the authored solution to the target and keeps completed state stable', () => {
+    let game = openSluice(createChronoflowGame());
+    for (let batch = 0; batch < 30 && !game.completed; batch += 1) {
+      game = advanceChronoflow(game, 60);
+    }
+
+    expect(game.completed).toBe(true);
+    expect(game.fluid.volume[game.targetCell]).toBeGreaterThanOrEqual(
+      game.targetVolume
+    );
+    expect(advanceChronoflow(game, 60)).toBe(game);
+    expect(openSluice(game)).toBe(game);
+  });
+
+  it('resets puzzle state and validates fixed-step batch limits', () => {
+    const reset = resetChronoflow();
+    expect(reset.gateOpen).toBe(false);
+    expect(reset.fluid.solids[13]).toBe(true);
+    expect(reset.fluid.tick).toBe(0);
+    expect(advanceChronoflow(reset, 0)).toBe(reset);
+    expect(() => advanceChronoflow(reset, -1)).toThrow(RangeError);
+    expect(() => advanceChronoflow(reset, 601)).toThrow(RangeError);
+  });
+});
+
+describe('Chronoflow page presenter', () => {
+  it('renders accessible cells, handles controls, and disposes listeners', () => {
+    const documentObj = { createElement: () => new FakeElement() };
+    const grid = new FakeElement();
+    const status = new FakeElement();
+    const clockStatus = new FakeElement();
+    const openButton = new FakeElement();
+    const advanceButton = new FakeElement();
+    const resetButton = new FakeElement();
+
+    const dispose = startChronoflowPage({
+      documentObj,
+      grid,
+      status,
+      clockStatus,
+      openButton,
+      advanceButton,
+      resetButton,
+    });
+
+    expect(grid.children).toHaveLength(20);
+    expect(grid.children[13].getAttribute('aria-label')).toBe(
+      'Sluice gate, closed.'
+    );
+    expect(clockStatus.textContent).toMatch(/Untimed practice/);
+    expect(openButton.disabled).toBe(false);
+
+    openButton.emit('click');
+    expect(grid.children[13].getAttribute('aria-label')).toBe(
+      'Sluice gate, open.'
+    );
+    for (
+      let batch = 0;
+      batch < 30 && !status.textContent.includes('complete');
+      batch += 1
+    ) {
+      advanceButton.emit('click');
+    }
+    expect(status.textContent).toBe('Archive chamber primed. Level complete.');
+    expect(advanceButton.disabled).toBe(true);
+
+    resetButton.emit('click');
+    expect(status.textContent).toContain('step 0');
+    expect(openButton.disabled).toBe(false);
+    dispose();
+    expect(openButton.listeners.has('click')).toBe(false);
+    expect(advanceButton.listeners.has('click')).toBe(false);
+    expect(resetButton.listeners.has('click')).toBe(false);
   });
 });

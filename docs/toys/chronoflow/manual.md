@@ -2,16 +2,16 @@
 
 ## What this toy does
 
-Chronoflow is an in-development 2D water-routing puzzle. Plan a route through the archive's channels and gates, then use the shared tide window to deliver water to a sealed memory chamber. Water should respond to pressure, gravity, inertia, and material resistance; the clock-sensitive puzzle phase will come from Dadeto's Internet time service. This handbook describes the design contract while the playable build is being implemented.
+Chronoflow is a 2D water-routing puzzle. In the first playable level, route water through the archive's channels and gate to a sealed memory chamber. The deterministic fluid model responds to pressure, gravity, inertia, and material resistance. Clock-sensitive puzzles will use Dadeto's Internet time service; this first level is untimed practice.
 
 ## Input
 
-The planned controls select a cell, rotate a channel, toggle a gate, prime a pump, inspect a cell, reset, and pause. Keyboard, touch, gamepad, and the embedded toy will issue the same commands. Exact key bindings will be added with the playable vertical slice.
+The first level provides buttons to open the sluice, advance 60 fixed fluid steps, and reset the level. The board is responsive and its cells expose water and terrain labels to assistive technology. Keyboard and touch users can operate the same buttons. More level-editing controls are planned.
 
 ### Example
 
 ```json
-{ "actions": ["select:3,4", "rotate-clockwise", "inspect"] }
+{ "actions": ["open-sluice", "advance-water", "reset-level"] }
 ```
 
 ### Schema
@@ -41,11 +41,11 @@ The planned output is a responsive pixel-art board with visible water depth and 
 {
   "type": "chronoflow",
   "level": "archive-entry",
-  "water": { "volume": 18.5, "targetVolume": 24, "overflow": false },
-  "tide": { "phase": "rising", "clockStatus": "synchronized" }
+  "water": { "volume": 12, "targetVolume": 12, "overflow": false },
+  "tide": { "phase": "practice", "clockStatus": "untimed" }
 }
 ```
 
 ## Behavior
 
-The deterministic fluid-core prototype is implemented and covered by focused tests; the playable page, puzzle controls, and trusted clock adapter are still upcoming milestones described in `spec.md`. Timed puzzle state will be derived from a fresh server-time sample plus monotonic elapsed duration. Offline play remains an untimed practice copy. See `acceptance.md` for the full playable-game completion bar and `harness.md` for current solver verification and planned page checks.
+Play the first level at `/chronoflow/`. Open the sluice, then advance water in fixed batches until the archive chamber fills to at least 12%. Reset restores the initial board. This level is explicitly untimed practice; tide timing and the trusted clock adapter remain upcoming milestones described in `spec.md`. The device clock never affects this prototype. See `acceptance.md` for the full playable-game completion bar and `harness.md` for verification.

@@ -4,13 +4,15 @@
 
 1. Install prerequisites: `npm install`.
 2. Prepare fixtures/config: use fixed grid arrays and explicit fixed-step options; tests never sample wall-clock time.
-3. Run harness command: `node --experimental-vm-modules ./node_modules/jest/bin/jest.js --runInBand test/core/browser/game/chronoflow.test.js`.
+3. Run focused solver, runtime, and presenter tests: `node --experimental-vm-modules ./node_modules/jest/bin/jest.js --runInBand test/core/browser/game/chronoflow.test.js`.
+4. Run the focused local page journey: `npm run test:e2e:local -- --grep Chronoflow`.
+5. Run the full local game journey: `npm run test:e2e:local`.
 
 ## Expected Observable Outputs
 
 - Terminal output should include:
   - focused solver suite summary with no failed tests.
-  - after the later page/clock milestones, a local Playwright summary with the Chronoflow route, level completion, and offline practice scenarios passing.
+  - local Playwright summary with Chronoflow sluice opening, target delivery, untimed-practice label, and reset scenarios passing.
 - Artifacts written to:
   - `reports/coverage/coverage-summary.json`
   - the configured local Playwright report output.
@@ -25,4 +27,4 @@
 
 ## Design-Loop Limitation
 
-No gameplay route or test command exists yet. Do not treat absent harness scripts as a failure for the design-only loop; the first implementation bead must add focused deterministic solver tests and update this file with executable commands.
+The current page is an untimed first-level slice. Timed play, editable channels, embedded-toy parity, and clock endpoint failure states remain separate acceptance work.

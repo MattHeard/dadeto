@@ -7,6 +7,9 @@
 - [ ] Solver tests verify bounded cell volume/velocity and mass accounting across closed boundaries, sources, drains, and overflow.
 - [ ] Clock tests use injected server responses and monotonic samples; they verify offset, uncertainty, stale rejection, resync, sleep/resume, and offline practice without reading browser wall time.
 - [ ] Authored levels include a solution witness that reaches the target volume within edit/overflow limits.
+- [ ] The Archive Entry level's deterministic witness opens the sluice and reaches the 12% target without exceeding any cell capacity.
+- [x] Local Playwright can open the sluice, advance water to a win state, and reset to the initial board.
+- [ ] Local Playwright can open the sluice, advance water to a win state, and reset to the initial board.
 - [ ] The embedded toy and full-page adapter produce the same solver state from the same command stream.
 - [ ] `npm run build` emits the Chronoflow page and its runtime assets.
 - [ ] Local Playwright acceptance opens the page, edits a route, completes the untimed level, and shows the stale/offline practice state when the clock endpoint is unavailable.
