@@ -15,6 +15,8 @@ const ARCHIVE_WALLS = Object.freeze([
   0, 2, 3, 4, 5, 7, 8, 9, 10, 12, 13, 14, 15, 16, 17, 18,
 ]);
 
+/** @typedef {{status: 'synchronized'|'stale', epochMs: number|null, uncertaintyMs?: number|null}|null} TrustedClockReading */
+
 /**
  * @typedef {object} ChronoflowGame
  * @property {'archive-entry'} level Current authored level.
@@ -25,7 +27,7 @@ const ARCHIVE_WALLS = Object.freeze([
  * @property {number} targetVolume Required delivered water volume.
  * @property {boolean} completed Whether the level objective is met.
  * @property {boolean} timedCredit Whether completion earned a trusted high-tide record.
- * @property {'practice'} mode Clockless practice mode for this milestone.
+ * @property {'practice'|'timed'} mode Active puzzle mode.
  */
 
 /**
@@ -75,15 +77,12 @@ export function setChronoflowRoute(game, route) {
 /**
  * Award timed completion only when the objective is met during the trusted tide window.
  * @param {ChronoflowGame} game Current level state.
- * @param {{status: 'synchronized'|'stale', epochMs: number|null}|null} clockReading Injected Internet clock reading.
+ * @param {TrustedClockReading} clockReading Injected Internet clock reading.
  * @returns {ChronoflowGame} State with timed credit evaluated once at completion.
  */
 export function finalizeChronoflowObjective(game, clockReading) {
   if (!game.completed || game.timedCredit) return game;
-  const timedCredit = isTideWindowOpen({
-    clockStatus: clockReading?.status ?? 'offline',
-    epochMs: clockReading?.epochMs ?? null,
-  });
+  const timedCredit = game.mode === 'timed' && isTimedHighTide(clockReading);
   return {
     ...game,
     timedCredit,
@@ -91,12 +90,31 @@ export function finalizeChronoflowObjective(game, clockReading) {
 }
 
 /**
+ * Start a timed attempt only when Internet time is securely inside high tide.
+ * @param {ChronoflowGame} game Current game state.
+ * @param {TrustedClockReading} clockReading Injected Internet clock reading.
+ * @returns {ChronoflowGame} Timed state or unchanged practice state.
+ */
+export function startTimedRun(game, clockReading) {
+  if (
+    game.completed ||
+    game.mode === 'timed' ||
+    !isTimedHighTide(clockReading)
+  ) {
+    return game;
+  }
+  return { ...game, mode: 'timed' };
+}
+
+/**
  * Open the only movable gate. The command does not advance simulation time.
  * @param {ChronoflowGame} game Current game.
- * @returns {ChronoflowGame} Updated game or the original when already open/completed.
+ * @param {TrustedClockReading} [clockReading] Trusted time required in timed mode.
+ * @returns {ChronoflowGame} Updated game or the original when not allowed.
  */
-export function openSluice(game) {
+export function openSluice(game, clockReading = null) {
   if (game.gateOpen || game.completed || game.route !== 'archive') return game;
+  if (game.mode === 'timed' && !isTimedHighTide(clockReading)) return game;
   const solids = [...game.fluid.solids];
   solids[GATE_CELL] = false;
   return withFluidSolids({ ...game, gateOpen: true }, solids);
@@ -116,14 +134,47 @@ function withFluidSolids(game, solids) {
  * Advance fixed simulation steps without reading any clock.
  * @param {ChronoflowGame} game Current game.
  * @param {number} [steps] Number of fixed steps to execute.
+ * @param {TrustedClockReading} [clockReading] Trusted time required in timed mode.
  * @returns {ChronoflowGame} Updated game.
  */
-export function advanceChronoflow(game, steps = PAGE_STEP_COUNT) {
+export function advanceChronoflow(
+  game,
+  steps = PAGE_STEP_COUNT,
+  clockReading = null
+) {
   if (!Number.isSafeInteger(steps) || steps < 0 || steps > 600) {
     throw new RangeError('Advance steps must be a safe integer from 0 to 600.');
   }
-  if (game.completed || steps === 0) return game;
+  if (
+    game.completed ||
+    steps === 0 ||
+    (game.mode === 'timed' && !isTimedHighTide(clockReading))
+  ) {
+    return game;
+  }
   return advanceUntilTarget(game, steps);
+}
+
+/**
+ * Check the fresh high-tide gate for timed gameplay commands.
+ * @param {TrustedClockReading} clockReading Trusted time reading.
+ * @returns {boolean} Whether timed commands may advance.
+ */
+function isTimedHighTide(clockReading) {
+  return isTideWindowOpen(toTideWindow(clockReading));
+}
+
+/**
+ * Normalize a nullable network reading to the tide-window interface.
+ * @param {TrustedClockReading} clockReading Trusted time reading.
+ * @returns {{clockStatus: 'synchronized'|'stale'|'offline', epochMs: number|null, uncertaintyMs: number}} Tide predicate input.
+ */
+function toTideWindow(clockReading) {
+  return {
+    clockStatus: clockReading?.status ?? 'offline',
+    epochMs: clockReading?.epochMs ?? null,
+    uncertaintyMs: clockReading?.uncertaintyMs ?? 0,
+  };
 }
 
 /**

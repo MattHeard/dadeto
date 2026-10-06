@@ -28,4 +28,4 @@
 
 ## Design-Loop Limitation
 
-The Archive Entry puzzle can always be completed as practice. It reads `chronoflowTimeUrl` from `/config.json`, displays synchronized tide phase from Internet epoch samples, and grants a timed record only when the target fills during a fresh synchronized high tide. Per-cell direction arrows, depth, normalized hydraulic head, and velocity are derived from deterministic solver snapshots. Configuration failure, stale sync, and every other phase deny timed credit without blocking puzzle completion.
+The Archive Entry puzzle can always be completed as practice. It reads `chronoflowTimeUrl` from `/config.json`, displays synchronized tide phase from Internet epoch samples, and offers a timed attempt only when the full uncertainty interval falls inside high tide. Timed sluice/advance actions pause if the trusted window closes; only a timed attempt completed in that window grants a record. Per-cell direction arrows, depth, normalized hydraulic head, and velocity are derived from deterministic solver snapshots. Configuration failure and stale sync deny timed play without blocking puzzle completion.

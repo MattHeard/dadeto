@@ -10,6 +10,7 @@ import {
   openSluice,
   resetChronoflow,
   setChronoflowRoute,
+  startTimedRun,
 } from '../../../../src/core/browser/game/chronoflow/runtime.js';
 import { startChronoflowPage } from '../../../../src/core/browser/game/chronoflow/pagePresenter.js';
 
@@ -269,6 +270,40 @@ describe('Chronoflow Archive Entry runtime', () => {
     expect(setChronoflowRoute(game, 'drain')).toBe(game);
   });
 
+  it('starts and advances timed play only inside a fresh high-tide window', () => {
+    const practice = createChronoflowGame();
+    const highTide = {
+      status: 'synchronized',
+      epochMs: 45000,
+      uncertaintyMs: 1000,
+    };
+    expect(startTimedRun(practice, null)).toBe(practice);
+    expect(startTimedRun(practice, { ...highTide, epochMs: 60000 })).toBe(
+      practice
+    );
+    expect(startTimedRun(practice, { ...highTide, uncertaintyMs: 15000 })).toBe(
+      practice
+    );
+    expect(startTimedRun(practice, { ...highTide, status: 'stale' })).toBe(
+      practice
+    );
+
+    const timed = startTimedRun(practice, highTide);
+    expect(timed.mode).toBe('timed');
+    expect(startTimedRun(timed, highTide)).toBe(timed);
+    const archiveRoute = setChronoflowRoute(timed, 'archive');
+    expect(openSluice(archiveRoute, { ...highTide, epochMs: 60000 })).toBe(
+      archiveRoute
+    );
+    const opened = openSluice(archiveRoute, highTide);
+    expect(opened.gateOpen).toBe(true);
+    expect(advanceChronoflow(opened, 1, { ...highTide, status: 'stale' })).toBe(
+      opened
+    );
+    expect(advanceChronoflow(opened, 1, highTide).fluid.tick).toBe(1);
+    expect(resetChronoflow().mode).toBe('practice');
+  });
+
   it('awards timed completion only in the synchronized high-tide phase', () => {
     let completed = openSluice(
       setChronoflowRoute(createChronoflowGame(), 'archive')
@@ -277,6 +312,20 @@ describe('Chronoflow Archive Entry runtime', () => {
       completed = advanceChronoflow(completed, 60);
     }
 
+    const timedCompletion = { ...completed, mode: 'timed' };
+    expect(
+      startTimedRun(completed, {
+        status: 'synchronized',
+        epochMs: 45000,
+        uncertaintyMs: 1000,
+      })
+    ).toBe(completed);
+    expect(
+      finalizeChronoflowObjective(completed, {
+        status: 'synchronized',
+        epochMs: 30000,
+      }).timedCredit
+    ).toBe(false);
     for (const [epochMs, expected] of [
       [0, false],
       [30000, true],
@@ -284,25 +333,25 @@ describe('Chronoflow Archive Entry runtime', () => {
       [90000, false],
     ]) {
       expect(
-        finalizeChronoflowObjective(completed, {
+        finalizeChronoflowObjective(timedCompletion, {
           status: 'synchronized',
           epochMs,
         }).timedCredit
       ).toBe(expected);
     }
     expect(
-      finalizeChronoflowObjective(completed, {
+      finalizeChronoflowObjective(timedCompletion, {
         status: 'stale',
         epochMs: 30000,
       }).timedCredit
     ).toBe(false);
     expect(
-      finalizeChronoflowObjective(completed, {
+      finalizeChronoflowObjective(timedCompletion, {
         status: 'synchronized',
         epochMs: null,
       }).timedCredit
     ).toBe(false);
-    expect(finalizeChronoflowObjective(completed, null).timedCredit).toBe(
+    expect(finalizeChronoflowObjective(timedCompletion, null).timedCredit).toBe(
       false
     );
     const incomplete = createChronoflowGame();
@@ -332,6 +381,7 @@ describe('Chronoflow page presenter', () => {
     const advanceButton = new FakeElement();
     const resetButton = new FakeElement();
     const routeButton = new FakeElement();
+    const startTimedButton = new FakeElement();
     const fetchImpl = jest.fn(async () => ({ ok: false, status: 503 }));
 
     const dispose = startChronoflowPage({
@@ -344,6 +394,7 @@ describe('Chronoflow page presenter', () => {
       advanceButton,
       resetButton,
       routeButton,
+      startTimedButton,
       fetchImpl,
       monotonicNow: () => 0,
       setIntervalImpl: () => 1,
@@ -411,6 +462,7 @@ describe('Chronoflow page presenter', () => {
     const advanceButton = new FakeElement();
     const resetButton = new FakeElement();
     const routeButton = new FakeElement();
+    const startTimedButton = new FakeElement();
     let clockUnavailable = false;
     const fetchImpl = jest.fn(async endpoint => {
       if (endpoint === '/config.json') {
@@ -421,7 +473,7 @@ describe('Chronoflow page presenter', () => {
       }
       return clockUnavailable
         ? { ok: false, status: 503 }
-        : { ok: true, json: async () => ({ epochMs: 1_800_000_030_000 }) };
+        : { ok: true, json: async () => ({ epochMs: 1_800_000_045_000 }) };
     });
     let monotonic = 100;
     let intervalHandler;
@@ -436,6 +488,7 @@ describe('Chronoflow page presenter', () => {
       advanceButton,
       resetButton,
       routeButton,
+      startTimedButton,
       fetchImpl,
       monotonicNow: () => {
         monotonic += 100;
@@ -459,6 +512,9 @@ describe('Chronoflow page presenter', () => {
     expect(clockStatus.textContent).toContain('Tide:');
     expect(typeof intervalHandler).toBe('function');
     expect(routeButton.textContent).toBe('Route valve to archive');
+    expect(startTimedButton.disabled).toBe(false);
+    startTimedButton.emit('click');
+    expect(status.textContent).toContain('Timed attempt');
     routeButton.emit('click');
     openButton.emit('click');
     for (
@@ -479,6 +535,57 @@ describe('Chronoflow page presenter', () => {
     expect(clockStatus.textContent).toContain('Internet tide clock is stale');
     dispose();
     expect(clearIntervalImpl).toHaveBeenCalledWith(7);
+    expect(startTimedButton.listeners.has('click')).toBe(false);
+  });
+
+  it('shows a timed attempt paused when trusted time leaves high tide', async () => {
+    const elements = Array.from({ length: 7 }, () => new FakeElement());
+    const [
+      grid,
+      status,
+      clockStatus,
+      openButton,
+      advanceButton,
+      resetButton,
+      startTimedButton,
+    ] = elements;
+    let monotonic = 100;
+    let intervalHandler;
+    const fetchImpl = jest.fn(async endpoint =>
+      endpoint === '/config.json'
+        ? {
+            ok: true,
+            json: async () => ({ chronoflowTimeUrl: '/trusted-time' }),
+          }
+        : { ok: true, json: async () => ({ epochMs: 1_800_000_045_000 }) }
+    );
+    const dispose = startChronoflowPage({
+      documentObj: { createElement: () => new FakeElement() },
+      grid,
+      status,
+      clockStatus,
+      openButton,
+      advanceButton,
+      resetButton,
+      startTimedButton,
+      fetchImpl,
+      monotonicNow: () => monotonic,
+      setIntervalImpl: handler => {
+        intervalHandler = handler;
+        return 11;
+      },
+      clearIntervalImpl: () => {},
+    });
+    await new Promise(resolve => setTimeout(resolve, 0));
+
+    startTimedButton.emit('click');
+    expect(status.textContent).toContain('Timed attempt');
+    monotonic = 20_000;
+    intervalHandler();
+    expect(clockStatus.textContent).toContain('Timed attempt paused');
+    expect(openButton.disabled).toBe(true);
+    expect(advanceButton.disabled).toBe(true);
+    dispose();
   });
 
   it('keeps practice when config omits the configured clock endpoint', async () => {

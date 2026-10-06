@@ -5,13 +5,14 @@ import {
   openSluice,
   resetChronoflow,
   setChronoflowRoute,
+  startTimedRun,
 } from './runtime.js';
 import {
   estimateNetworkClock,
   readNetworkClock,
   sampleNetworkClock,
 } from './networkClock.js';
-import { getTidePhase } from './tide.js';
+import { getTidePhase, isTideWindowOpen } from './tide.js';
 import { getFlowVisual } from './flowVisual.js';
 import { getCellReadout } from './cellReadout.js';
 
@@ -20,7 +21,7 @@ const CLOCK_REFRESH_MS = 15000;
 
 /**
  * Start the Chronoflow page using injected DOM elements.
- * @param {{documentObj: Document, grid: HTMLElement, status: HTMLElement, clockStatus: HTMLElement, inspectStatus?: HTMLElement, openButton: HTMLButtonElement, advanceButton: HTMLButtonElement, resetButton: HTMLButtonElement, routeButton?: HTMLButtonElement, fetchImpl: typeof fetch, monotonicNow: () => number, setIntervalImpl?: typeof setInterval, clearIntervalImpl?: typeof clearInterval}} options Page and clock boundaries.
+ * @param {{documentObj: Document, grid: HTMLElement, status: HTMLElement, clockStatus: HTMLElement, inspectStatus?: HTMLElement, openButton: HTMLButtonElement, advanceButton: HTMLButtonElement, resetButton: HTMLButtonElement, routeButton?: HTMLButtonElement, startTimedButton?: HTMLButtonElement, fetchImpl: typeof fetch, monotonicNow: () => number, setIntervalImpl?: typeof setInterval, clearIntervalImpl?: typeof clearInterval}} options Page and clock boundaries.
  * @returns {() => void} Removes registered controls.
  */
 export function startChronoflowPage(options) {
@@ -34,6 +35,7 @@ export function startChronoflowPage(options) {
     advanceButton,
     resetButton,
     routeButton,
+    startTimedButton,
     fetchImpl,
     monotonicNow,
     setIntervalImpl = setInterval,
@@ -50,18 +52,28 @@ export function startChronoflowPage(options) {
   let lastSyncAttemptMs = monotonicNow();
 
   const renderClock = () => {
+    const modeLabel =
+      game.mode === 'timed' ? 'Timed attempt' : 'Untimed practice';
     if (!clockEstimate) {
-      clockStatus.textContent =
-        'Untimed practice · Connecting to the Internet tide clock…';
+      clockStatus.textContent = `${modeLabel} · Connecting to the Internet tide clock…`;
       return;
     }
     const reading = getClockReading();
     if (reading.status === 'stale') {
-      clockStatus.textContent =
-        'Untimed practice · Internet tide clock is stale. Timed play is disabled.';
+      clockStatus.textContent = `${modeLabel} · Internet tide clock is stale. Timed play is disabled.`;
       return;
     }
-    clockStatus.textContent = `Untimed practice · Internet tide synchronized (±${Math.ceil(reading.uncertaintyMs)} ms). Tide: ${getTidePhase(reading.epochMs)}.`;
+    clockStatus.textContent = `${modeLabel} · Internet tide synchronized (±${Math.ceil(reading.uncertaintyMs)} ms). Tide: ${getTidePhase(reading.epochMs)}.`;
+    if (
+      game.mode === 'timed' &&
+      !isTideWindowOpen({
+        clockStatus: reading.status,
+        epochMs: reading.epochMs,
+        uncertaintyMs: reading.uncertaintyMs,
+      })
+    ) {
+      clockStatus.textContent = `Timed attempt paused · Tide: ${getTidePhase(reading.epochMs)}.`;
+    }
   };
 
   /**
@@ -71,6 +83,30 @@ export function startChronoflowPage(options) {
     clockEstimate
       ? readNetworkClock(clockEstimate, monotonicNow(), CLOCK_MAX_AGE_MS)
       : { status: 'stale', epochMs: null, uncertaintyMs: null };
+
+  const updateTimedControls = () => {
+    const reading = getClockReading();
+    const highTideWindow = isTideWindowOpen({
+      clockStatus: reading.status,
+      epochMs: reading.epochMs,
+      uncertaintyMs: reading.uncertaintyMs ?? 0,
+    });
+    openButton.disabled =
+      game.route !== 'archive' ||
+      game.gateOpen ||
+      game.completed ||
+      (game.mode === 'timed' && !highTideWindow);
+    advanceButton.disabled =
+      game.completed || (game.mode === 'timed' && !highTideWindow);
+    if (startTimedButton) {
+      startTimedButton.disabled =
+        game.completed || game.mode === 'timed' || !highTideWindow;
+      startTimedButton.textContent =
+        game.mode === 'timed'
+          ? 'Timed high-tide attempt active'
+          : 'Start timed attempt · high tide';
+    }
+  };
 
   const synchronizeClock = async () => {
     if (syncing || disposed) return;
@@ -101,11 +137,14 @@ export function startChronoflowPage(options) {
         monotonicNow,
         endpoint: timeEndpoint,
       });
-      if (!disposed) renderClock();
+      if (!disposed) {
+        updateTimedControls();
+        renderClock();
+      }
     } catch {
       if (!disposed) {
         clockStatus.textContent = clockEstimate
-          ? 'Untimed practice · Internet tide clock is stale. Timed play is disabled.'
+          ? 'Timed attempt paused · Internet tide clock is stale.'
           : 'Untimed practice · Internet tide unavailable. Timed play is disabled.';
       }
     } finally {
@@ -182,19 +221,21 @@ export function startChronoflowPage(options) {
           : 'Route valve to decoy drain'
       );
     }
-    openButton.disabled =
-      game.route !== 'archive' || game.gateOpen || game.completed;
-    advanceButton.disabled = game.completed;
     status.textContent = game.completed
       ? game.timedCredit
         ? 'Archive chamber primed. Timed high-tide record secured.'
         : 'Archive chamber primed. Practice complete; no timed record.'
-      : `Water: ${Math.round(game.fluid.volume[game.targetCell] * 100)}% of 12% target · step ${game.fluid.tick}`;
+      : `${game.mode === 'timed' ? 'Timed attempt' : 'Practice'} · water ${Math.round(game.fluid.volume[game.targetCell] * 100)}% of 12% target · step ${game.fluid.tick}`;
+    updateTimedControls();
     renderClock();
   };
 
   const handleOpen = () => {
-    game = openSluice(game);
+    game = openSluice(game, getClockReading());
+    render();
+  };
+  const handleStartTimed = () => {
+    game = startTimedRun(game, getClockReading());
     render();
   };
   const handleRoute = () => {
@@ -206,7 +247,7 @@ export function startChronoflowPage(options) {
   };
   const handleAdvance = () => {
     const wasCompleted = game.completed;
-    game = advanceChronoflow(game);
+    game = advanceChronoflow(game, undefined, getClockReading());
     if (!wasCompleted && game.completed) {
       game = finalizeChronoflowObjective(game, getClockReading());
     }
@@ -219,11 +260,13 @@ export function startChronoflowPage(options) {
 
   openButton.addEventListener('click', handleOpen);
   routeButton?.addEventListener('click', handleRoute);
+  startTimedButton?.addEventListener('click', handleStartTimed);
   advanceButton.addEventListener('click', handleAdvance);
   resetButton.addEventListener('click', handleReset);
   render();
   void synchronizeClock();
   const clockInterval = setIntervalImpl(() => {
+    updateTimedControls();
     renderClock();
     const now = monotonicNow();
     const reading = clockEstimate
@@ -242,6 +285,7 @@ export function startChronoflowPage(options) {
     clearIntervalImpl(clockInterval);
     openButton.removeEventListener('click', handleOpen);
     routeButton?.removeEventListener('click', handleRoute);
+    startTimedButton?.removeEventListener('click', handleStartTimed);
     advanceButton.removeEventListener('click', handleAdvance);
     resetButton.removeEventListener('click', handleReset);
   };

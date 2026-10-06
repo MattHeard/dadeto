@@ -5,7 +5,7 @@ test('plays Chronoflow and earns a timed record only on trusted high tide', asyn
     route.fulfill({ json: { chronoflowTimeUrl: '/mock-clock' } }),
   );
   await page.route('**/mock-clock', route =>
-    route.fulfill({ json: { epochMs: 1_800_000_030_000 } }),
+    route.fulfill({ json: { epochMs: 1_800_000_045_000 } }),
   );
   await page.goto('/chronoflow/');
 
@@ -14,6 +14,8 @@ test('plays Chronoflow and earns a timed record only on trusted high tide', asyn
   await expect(page.locator('#clock-status')).toContainText('Internet tide synchronized');
   await expect(page.locator('#clock-status')).toContainText('Tide:');
 
+  await page.locator('#start-timed').click();
+  await expect(page.locator('#chronoflow-status')).toContainText('Timed attempt');
   await page.locator('#route-valve').click();
   await page.getByRole('button', { name: 'Open sluice' }).click();
   const advance = page.getByRole('button', { name: 'Advance water · 60 steps' });
@@ -46,6 +48,7 @@ test('keeps Chronoflow in untimed practice when Internet clock sync fails', asyn
 
   await expect(page.locator('#clock-status')).toContainText('Internet tide unavailable');
   await expect(page.locator('#clock-status')).toContainText('Timed play is disabled');
+  await expect(page.locator('#start-timed')).toBeDisabled();
   await page.locator('#route-valve').click();
   await expect(page.getByRole('button', { name: 'Open sluice' })).toBeEnabled();
   await page.getByRole('button', { name: 'Open sluice' }).click();

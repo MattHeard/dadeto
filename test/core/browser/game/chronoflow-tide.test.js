@@ -41,4 +41,35 @@ describe('Chronoflow trusted tide phase', () => {
       })
     ).toBe(false);
   });
+
+  it('requires the full uncertainty interval to stay inside the tide phase', () => {
+    expect(
+      isTideWindowOpen({
+        clockStatus: 'synchronized',
+        epochMs: 32000,
+        uncertaintyMs: 2000,
+      })
+    ).toBe(true);
+    expect(
+      isTideWindowOpen({
+        clockStatus: 'synchronized',
+        epochMs: 31000,
+        uncertaintyMs: 2000,
+      })
+    ).toBe(false);
+    expect(
+      isTideWindowOpen({
+        clockStatus: 'synchronized',
+        epochMs: 45000,
+        uncertaintyMs: 15000,
+      })
+    ).toBe(false);
+    expect(
+      isTideWindowOpen({
+        clockStatus: 'synchronized',
+        epochMs: 45000,
+        uncertaintyMs: -1,
+      })
+    ).toBe(false);
+  });
 });

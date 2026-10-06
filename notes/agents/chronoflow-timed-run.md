@@ -1,0 +1,7 @@
+# Chronoflow timed high-tide runs
+
+- Unexpected hurdle: the first full check looked green in its nested summary but the outer shell exited 1, and exact coverage showed three missed pause-display paths in the presenter.
+- Diagnosis path: reran the aggregate with the workspace's required elevated child-process access, inspected `coverage-summary.json` and `coverage-final.json`, and traced the uncovered line to the timed/non-high-tide presenter branch.
+- Chosen fix: make timed attempts opt-in and gate start, sluice opening, simulation advancement, and record credit on a synchronized Internet clock whose uncertainty window stays inside high tide. Timed actions pause outside that window; practice remains available and unscored. Added a presenter test that advances only injected monotonic time into another tide phase.
+- Next-time guidance: when touching clock-driven UI, test both the runtime gate and the user-visible paused state; check exact coverage numerators because rounded percentages can conceal a missed branch. Keep reset in practice mode and never derive tide from browser wall time.
+- Evidence: `TMPDIR=/home/matt/dadeto/reports/tmp npm run check` terminal exit 0 and summary total=10 failed=0; 11 local E2E tests passed, including Chronoflow timed-high-tide and offline-practice cases; coverage lines 22252/22252, statements 23285/23285, functions 7490/7490, branches 12140/12140; `npm audit --audit-level=low` found 0 vulnerabilities; jscpd reported 0 clones; `git diff --check` passed.

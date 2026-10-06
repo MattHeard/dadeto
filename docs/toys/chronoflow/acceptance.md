@@ -14,6 +14,7 @@
 - [x] Clock adapter derives offset and uncertainty from injected monotonic request samples, rejects invalid/slow responses, and expires to stale without reading browser wall time.
 - [ ] Page loads `chronoflowTimeUrl` from uncached static config and shows Internet tide phase only from the network clock estimate.
 - [ ] Local Playwright verifies that synchronized high tide grants a timed record and unavailable/offline practice does not.
+- [ ] A timed attempt cannot start near a phase boundary where clock uncertainty could place the real tide outside high; controls pause when the trusted high window closes.
 - [ ] Local Playwright can open the sluice, advance water to a win state, and reset to the initial board.
 - [ ] The embedded toy and full-page adapter produce the same solver state from the same command stream.
 - [ ] `npm run build` emits the Chronoflow page and its runtime assets.
