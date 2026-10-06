@@ -4,6 +4,7 @@ import { randomUUID } from 'node:crypto';
 import { ADMIN_UID } from '../src/core/commonCore.js';
 import { createRenderContents } from '../src/core/cloud/render-contents/render-contents-core.js';
 import { createRenderVariant } from '../src/core/cloud/render-variant/render-variant-core.js';
+import { bindEffectBoundary } from '../src/browser/allow-effects.js';
 
 const runtimeDepsRequire = createRequire(
   new URL('../src/cloud/runtime-deps/package.json', import.meta.url)
@@ -254,6 +255,7 @@ async function renderSeededContents({
       status: 200,
       json: async () => ({ access_token: 'gcp-test-fixture-token' }),
     }),
+    bindEffectBoundary,
     randomUUID,
   });
 

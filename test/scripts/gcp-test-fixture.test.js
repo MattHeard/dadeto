@@ -41,4 +41,13 @@ describe('gcp-test fixture seed contract', () => {
     expect(source).toContain('client_email: credentials.client_email');
     expect(source).toContain('private_key: credentials.private_key');
   });
+
+  it('binds render side effects to the explicit allow-effects boundary', () => {
+    const source = readFileSync('scripts/gcp-test-fixture.js', 'utf8');
+
+    expect(source).toContain(
+      "import { bindEffectBoundary } from '../src/browser/allow-effects.js';"
+    );
+    expect(source).toContain('    bindEffectBoundary,');
+  });
 });

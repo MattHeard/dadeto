@@ -24,6 +24,9 @@ production job repeatedly returned `UNAUTHENTICATED`.
 - Test cleanup attempted to delete a scheduler job that Terraform had not
   created. List jobs first, delete the named job only when present, and allow
   listing/deletion errors to fail cleanup.
+- The first deployment-gate run failed while seeding test content because the
+  fixture did not inject the newly required `bindEffectBoundary`. Import the
+  trusted boundary in `scripts/gcp-test-fixture.js` and pass it explicitly.
 
 ## Evidence and next-time guidance
 
@@ -36,6 +39,10 @@ production job repeatedly returned `UNAUTHENTICATED`.
   E2E scenarios passed. Follow up on that separately.
 - Local Terraform validation is intentionally restricted to formatting; run
   Terraform plan/apply through the repository GitHub workflows.
+- Fixture regression: `npx jest test/scripts/gcp-test-fixture.test.js
+  --runInBand` passed (4 tests) after injecting the effect boundary. The first
+  `gcp-test` attempt failed at seed setup for this missing dependency and
+  cleaned up its temporary infrastructure; rerun the full gate after this fix.
 - After publishing, verify the search dependency URL returns HTTP 200 and force
   one production stats scheduler execution; close the production beads only
   after both are confirmed.
