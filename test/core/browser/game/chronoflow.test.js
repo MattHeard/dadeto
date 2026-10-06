@@ -820,6 +820,8 @@ describe('Chronoflow page presenter', () => {
 
   it('maps handheld keypad actions and keyboard keys to puzzle controls', () => {
     const grid = new FakeElement();
+    const displayContext = { fillStyle: '', fillRect: jest.fn() };
+    const displayCanvas = { getContext: () => displayContext };
     const documentObj = Object.assign(new FakeElement(), {
       createElement: () => new FakeElement(),
     });
@@ -835,6 +837,7 @@ describe('Chronoflow page presenter', () => {
     const dispose = startChronoflowPage({
       documentObj,
       grid,
+      displayCanvas,
       status: new FakeElement(),
       clockStatus: new FakeElement(),
       resetButton,
@@ -846,6 +849,8 @@ describe('Chronoflow page presenter', () => {
     });
 
     keypadButtons[0].emit('click');
+    expect(displayContext.imageSmoothingEnabled).toBe(false);
+    expect(displayContext.fillRect).toHaveBeenCalled();
     keypadButtons[1].emit('click');
     expect(grid.children[7].dataset.selected).toBe('true');
     keypadButtons[2].emit('click');

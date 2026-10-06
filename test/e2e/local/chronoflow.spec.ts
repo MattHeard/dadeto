@@ -10,6 +10,12 @@ test('plays Chronoflow and earns a timed record only on trusted high tide', asyn
   await expect(page.locator('#clock-status')).toContainText('Internet tide synchronized');
   await expect(page.locator('#clock-status')).toContainText('Tide:');
   await expect(page.locator('.handheld')).toBeVisible();
+  const display = page.locator('#chronoflow-display');
+  await expect(display).toHaveAttribute('width', '160');
+  await expect(display).toHaveAttribute('height', '144');
+  await expect(display).toHaveCSS('image-rendering', 'pixelated');
+  await expect(display).toHaveJSProperty('width', 160);
+  await expect(display).toHaveJSProperty('height', 144);
 
   await page.locator('#start-timed').click();
   await expect(page.locator('#chronoflow-status')).toContainText('Timed attempt');

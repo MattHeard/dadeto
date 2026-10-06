@@ -1,6 +1,6 @@
 # Chronoflow standalone handheld
 
-- Unexpected hurdle: the standalone page's controls lived in the page presenter, while the embedded toy used a separate keypad implementation.
-- Diagnosis: `/chronoflow/` had no Mosslight controls or directional selection despite CHRO1 already having its own handheld input surface.
-- Fix: retain the accessible DOM board, inject keypad buttons into the page presenter, and map the Mosslight D-pad/A/B/X/Y keys plus START and reset to existing runtime actions. Keep clock trust in the existing network-time adapter.
-- Next time: when adding a shared game input style, update both standalone and embedded entry points and their separate local journeys; verify the public release metadata is what the generated blog consumes.
+- Unexpected hurdle: the standalone screen displayed a 160:144 ratio label, but its HTML grid scaled smoothly and did not use the actual handheld renderer.
+- Diagnosis: CHRO1 already produced the correct 160×144 board shapes, while Mosslight's renderer kept its shape drawing private to the RPG page.
+- Fix: extract Mosslight's pixel shape drawing as `drawCanvasShapes()`, move the Chronoflow board shapes into one shared renderer module, and draw them to an intrinsic 160×144 standalone canvas. Keep aligned transparent DOM buttons for accessible selection and controls.
+- Next time: reuse the handheld shape contract and renderer for standalone and embedded presentations; assert intrinsic canvas dimensions and pixelated CSS in the browser journey.

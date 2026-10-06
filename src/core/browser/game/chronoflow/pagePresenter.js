@@ -17,19 +17,22 @@ import { getTidePhase, isTideWindowOpen } from './tide.js';
 import { getFlowVisual } from './flowVisual.js';
 import { getCellReadout } from './cellReadout.js';
 import { createChronoflowSaveStore } from './save.js';
+import { drawCanvasShapes } from '../mosslight-valley/renderer.js';
+import { renderChronoflowBoard } from './renderer.js';
 
 const CLOCK_MAX_AGE_MS = 30000;
 const CLOCK_REFRESH_MS = 15000;
 
 /**
  * Start the Chronoflow page using injected DOM elements.
- * @param {{documentObj: Document, grid: HTMLElement, status: HTMLElement, clockStatus: HTMLElement, inspectStatus?: HTMLElement, openButton?: HTMLButtonElement, advanceButton?: HTMLButtonElement, resetButton: HTMLButtonElement, routeButton?: HTMLButtonElement, editButton?: HTMLButtonElement, startTimedButton?: HTMLButtonElement, keypadButtons?: HTMLButtonElement[], fetchImpl: typeof fetch, monotonicNow: () => number, saveStorage?: Storage, setIntervalImpl?: typeof setInterval, clearIntervalImpl?: typeof clearInterval}} options Page and injected clock/storage boundaries.
+ * @param {{documentObj: Document, grid: HTMLElement, displayCanvas?: HTMLCanvasElement|null, status: HTMLElement, clockStatus: HTMLElement, inspectStatus?: HTMLElement, openButton?: HTMLButtonElement, advanceButton?: HTMLButtonElement, resetButton: HTMLButtonElement, routeButton?: HTMLButtonElement, editButton?: HTMLButtonElement, startTimedButton?: HTMLButtonElement, keypadButtons?: HTMLButtonElement[], fetchImpl: typeof fetch, monotonicNow: () => number, saveStorage?: Storage, setIntervalImpl?: typeof setInterval, clearIntervalImpl?: typeof clearInterval}} options Page and injected clock/storage boundaries.
  * @returns {() => void} Removes registered controls.
  */
 export function startChronoflowPage(options) {
   const {
     documentObj,
     grid,
+    displayCanvas,
     status,
     clockStatus,
     inspectStatus,
@@ -46,6 +49,7 @@ export function startChronoflowPage(options) {
     setIntervalImpl = setInterval,
     clearIntervalImpl = clearInterval,
   } = options;
+  const displayContext = displayCanvas?.getContext('2d') ?? null;
   const keypad = Array.from(keypadButtons);
   const saveStore = createChronoflowSaveStore(saveStorage);
   let game = saveStore.load() ?? createChronoflowGame();
@@ -271,6 +275,12 @@ export function startChronoflowPage(options) {
         return tile;
       })
     );
+    if (displayContext) {
+      drawCanvasShapes(
+        displayContext,
+        renderChronoflowBoard(game, selectedCell)
+      );
+    }
     if (inspectStatus) {
       const reading = getCellReadout(game.fluid, selectedCell);
       const terrain = reading.solid ? 'stone' : 'channel';

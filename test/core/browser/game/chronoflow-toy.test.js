@@ -8,6 +8,7 @@ import {
   toggleChronoflowChannel,
 } from '../../../../src/core/browser/game/chronoflow/runtime.js';
 import { ARCHIVE_ENTRY_SOLUTION } from '../../../../src/core/browser/game/chronoflow/witness.js';
+import { renderChronoflowBoard } from '../../../../src/core/browser/game/chronoflow/renderer.js';
 
 /**
  * Create a toy environment whose permanent-data adapter keeps saves between calls.
@@ -51,6 +52,7 @@ describe('Chronoflow embedded toy', () => {
       },
     });
     expect(payload.snapshot.fluid).toEqual(pageGame.fluid);
+    expect(payload.shapes).toEqual(renderChronoflowBoard(pageGame, 7));
     expect(payload.shapes[0]).toMatchObject({
       type: 'rect',
       width: 160,

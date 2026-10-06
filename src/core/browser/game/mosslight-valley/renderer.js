@@ -185,7 +185,7 @@ function crossingShapes(frame) {
  * @param {string} fill Palette color.
  * @returns {CanvasShape} Renderable rectangle.
  */
-function frameRectangle(bounds, fill) {
+export function frameRectangle(bounds, fill) {
   return { type: 'rect', ...bounds, fill };
 }
 /**
@@ -244,7 +244,7 @@ export function drawGameFrame(context, frame) {
   const [p0, , , p3] = frame.palette;
   context.imageSmoothingEnabled = false;
   const layers = worldLayers(frame);
-  drawShapes(context, layers.scenery);
+  drawCanvasShapes(context, layers.scenery);
   if (frame.world.weather === 'rain' || frame.world.weather === 'dream') {
     context.fillStyle = frame.world.weather === 'dream' ? '#e7d6ff' : '#b8d6df';
     for (let i = 0; i < 12; i++) {
@@ -252,9 +252,9 @@ export function drawGameFrame(context, frame) {
       context.fillRect(x, (i * 17 + frame.tick * 3) % 108, 1, 4);
     }
   }
-  drawShapes(context, layers.signs);
-  drawShapes(context, hudShapes(frame));
-  if (frame.menu) drawShapes(context, controllerShapes(frame));
+  drawCanvasShapes(context, layers.signs);
+  drawCanvasShapes(context, hudShapes(frame));
+  if (frame.menu) drawCanvasShapes(context, controllerShapes(frame));
   else if (frame.dialogue) drawDialogue(context, frame, p0, p3);
   else if (frame.mode === 'journal') drawJournal(context, frame, p0, p3);
   else if (frame.battle) drawBattle(context, frame, p0, p3);
@@ -352,14 +352,15 @@ function textPanel(background, rows, { x, y, fill, font }) {
  * @param {string} light Panel text and border.
  */
 function drawDialogue(ctx, frame, dark, light) {
-  drawShapes(ctx, dialogueShapes(frame.dialogue, dark, light));
+  drawCanvasShapes(ctx, dialogueShapes(frame.dialogue, dark, light));
 }
 /**
  * Paint the shared rectangle and text contract.
  * @param {any} ctx Canvas context.
  * @param {CanvasShape[]} shapes Renderable shapes.
  */
-function drawShapes(ctx, shapes) {
+export function drawCanvasShapes(ctx, shapes) {
+  ctx.imageSmoothingEnabled = false;
   for (const shape of shapes) {
     ctx.fillStyle = shape.fill;
     if (shape.type === 'rect')

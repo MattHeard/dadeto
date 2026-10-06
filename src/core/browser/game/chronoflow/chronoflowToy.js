@@ -1,24 +1,14 @@
-import { createBackgroundShape, runToy } from '../../toys/toyPersistence.js';
+import { runToy } from '../../toys/toyPersistence.js';
 import { parseObjectRecord } from '../../validation.js';
 import * as chronoflowRuntime from './runtime.js';
 import { restoreChronoflowSave, serializeChronoflowSave } from './save.js';
 import { replayChronoflowWitness } from './witness.js';
+import { renderChronoflowBoard } from './renderer.js';
 
 const WIDTH = 160;
 const HEIGHT = 144;
-const CELL_WIDTH = 29;
-const CELL_HEIGHT = 20;
-const CELL_GAP = 1;
-const BOARD_X = 5;
-const BOARD_Y = 23;
 const STORAGE_KEY = 'CHRO1';
-const COLORS = Object.freeze({
-  dark: '#182f36',
-  middle: '#315744',
-  light: '#bfd77c',
-  highlight: '#e9d88d',
-  water: '#246774',
-});
+const BACKGROUND = '#182f36';
 
 /**
  * Run the embedded Chronoflow handheld toy using the standard Mosslight keypad.
@@ -177,8 +167,8 @@ function serializeFrame(state) {
     width: WIDTH,
     height: HEIGHT,
     pixelated: true,
-    background: COLORS.dark,
-    shapes: renderBoard(state),
+    background: BACKGROUND,
+    shapes: renderChronoflowBoard(state.game, state.selectedCell),
     snapshot: {
       level: state.game.level,
       route: state.game.route,
@@ -193,126 +183,4 @@ function serializeFrame(state) {
   };
   const serialized = JSON.stringify(payload);
   return serialized;
-}
-
-/**
- * Create pixel artwork for the interactive 160x144 handheld puzzle display.
- * @param {{game: import('./runtime.js').ChronoflowGame, selectedCell: number}} state Current embedded state.
- * @returns {Array<Record<string, unknown>>} Canvas 2D shapes.
- */
-function renderBoard(state) {
-  const { game, selectedCell } = state;
-  const shapes = /** @type {Array<Record<string, unknown>>} */ ([
-    createBackgroundShape(WIDTH, HEIGHT, COLORS.dark),
-    { type: 'rect', x: 2, y: 2, width: 156, height: 140, fill: COLORS.middle },
-    { type: 'rect', x: 5, y: 5, width: 150, height: 13, fill: COLORS.dark },
-    bitmapText('CHRONOFLOW · ARCHIVE', 8, 14, COLORS.highlight),
-  ]);
-
-  for (let cell = 0; cell < game.fluid.volume.length; cell += 1) {
-    const x = BOARD_X + (cell % game.fluid.width) * (CELL_WIDTH + CELL_GAP);
-    const y =
-      BOARD_Y + Math.floor(cell / game.fluid.width) * (CELL_HEIGHT + CELL_GAP);
-    const baseFill = game.fluid.solids[cell] ? COLORS.middle : COLORS.light;
-    if (cell === selectedCell) {
-      shapes.push({
-        type: 'rect',
-        x,
-        y,
-        width: CELL_WIDTH,
-        height: CELL_HEIGHT,
-        fill: COLORS.highlight,
-      });
-    }
-    shapes.push({
-      type: 'rect',
-      x: x + (cell === selectedCell ? 1 : 0),
-      y: y + (cell === selectedCell ? 1 : 0),
-      width: CELL_WIDTH - (cell === selectedCell ? 2 : 0),
-      height: CELL_HEIGHT - (cell === selectedCell ? 2 : 0),
-      fill: baseFill,
-    });
-    addWaterShape(shapes, { game, cell, x, y });
-    addCellLabel(shapes, { game, cell, x, y });
-  }
-
-  const targetPercent = Math.round(game.fluid.volume[game.targetCell] * 100);
-  const status = game.completed
-    ? 'ARCHIVE PRIMED'
-    : `${game.route === 'archive' ? 'ARCHIVE' : 'DRAIN'} ${game.gateOpen ? 'OPEN' : 'GATE'} · ${targetPercent}%`;
-  shapes.push(
-    { type: 'rect', x: 5, y: 108, width: 150, height: 11, fill: COLORS.dark },
-    bitmapText(status, 8, 116, COLORS.light),
-    bitmapText(
-      `CELL ${String(selectedCell + 1).padStart(2, '0')} · ${game.editsUsed}/${game.editBudget} EDITS`,
-      6,
-      127,
-      COLORS.dark
-    ),
-    bitmapText('ARROWS MOVE · A EDIT · B ROUTE', 6, 135, COLORS.dark),
-    bitmapText('X OPEN · Y FLOW · R RESET', 6, 140, COLORS.dark)
-  );
-  return shapes;
-}
-
-/**
- * Draw the current water height within one grid cell.
- * @param {Array<Record<string, unknown>>} shapes Canvas shapes in draw order.
- * @param {{game: import('./runtime.js').ChronoflowGame, cell: number, x: number, y: number}} cellView Current cell view.
- * @returns {void}
- */
-function addWaterShape(shapes, cellView) {
-  const { game, cell, x, y } = cellView;
-  const volume = game.fluid.volume[cell];
-  if (volume <= 0) return;
-  const waterHeight = Math.max(2, Math.round((CELL_HEIGHT - 4) * volume));
-  shapes.push({
-    type: 'rect',
-    x: x + 2,
-    y: y + CELL_HEIGHT - 2 - waterHeight,
-    width: CELL_WIDTH - 4,
-    height: waterHeight,
-    fill: COLORS.water,
-  });
-}
-
-/**
- * Add a readable marker for the source, sluice, and archive target.
- * @param {Array<Record<string, unknown>>} shapes Canvas shapes in draw order.
- * @param {{game: import('./runtime.js').ChronoflowGame, cell: number, x: number, y: number}} cellView Current cell view.
- * @returns {void}
- */
-function addCellLabel(shapes, cellView) {
-  const { game, cell, x, y } = cellView;
-  const label =
-    cell === 1
-      ? 'S'
-      : cell === 13
-        ? game.gateOpen
-          ? 'O'
-          : 'G'
-        : cell === game.targetCell
-          ? `${Math.round(game.fluid.volume[cell] * 100)}`
-          : '';
-  if (!label) return;
-  shapes.push(
-    bitmapText(
-      label,
-      x + (cell === game.targetCell ? 5 : 11),
-      y + 13,
-      COLORS.dark
-    )
-  );
-}
-
-/**
- * Create a pixel-font label matching the Mosslight handheld canvas frame.
- * @param {string} text Text to draw.
- * @param {number} x Screen x coordinate.
- * @param {number} y Text baseline.
- * @param {string} fill LCD palette color.
- * @returns {Record<string, unknown>} Pixel-font canvas shape.
- */
-function bitmapText(text, x, y, fill) {
-  return { type: 'text', x, y, text, fill, bitmap: true };
 }

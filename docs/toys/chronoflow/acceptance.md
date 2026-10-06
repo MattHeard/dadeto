@@ -23,7 +23,7 @@
 - [x] The embedded toy and full-page runtime produce the same solver state from the same command stream; embedded replay remains untimed practice.
 - [x] CHRO1 uses the Mosslight keypad with a persistent, pixelated 160×144 practice screen; directional input selects cells and A/B/X/Y controls edit, route, open, and advance the puzzle.
 - [x] CHRO1 is published with public release metadata and no beta tag.
-- [x] The standalone `/chronoflow/` page uses the same handheld visual language and D-pad/A/B/X/Y mappings; START and RESET operate timed and reset actions.
+- [x] The standalone `/chronoflow/` page renders the shared board through Mosslight's renderer on an intrinsic 160×144 pixelated canvas, with aligned accessible cell buttons; D-pad/A/B/X/Y, START, and RESET remain operational.
 - [x] `npm run build` emits the Chronoflow page and its runtime assets.
 - [x] Local Playwright acceptance opens the page, routes water, verifies trusted high-tide credit, verifies unavailable/offline practice completion, and confirms reset.
 

@@ -10,6 +10,7 @@ try {
 const dispose = startChronoflowPage({
   documentObj: document,
   grid: document.querySelector('#chronoflow-grid'),
+  displayCanvas: document.querySelector('#chronoflow-display'),
   status: document.querySelector('#chronoflow-status'),
   clockStatus: document.querySelector('#clock-status'),
   inspectStatus: document.querySelector('#cell-readout'),

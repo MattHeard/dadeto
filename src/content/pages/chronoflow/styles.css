@@ -42,33 +42,22 @@ h1 { margin: 0; color: #7de8d7; font-size: clamp(1.4rem, 5vw, 2.1rem); letter-sp
   background: #141c1a;
   box-shadow: 0 0 0 1px #76bdac;
 }
-.chronoflow-grid { display: grid; width: 100%; height: 100%; grid-template-columns: repeat(5, minmax(0, 1fr)); grid-template-rows: repeat(4, minmax(0, 1fr)); gap: 2px; padding: 4px; background: #17201d; }
+.screen > canvas { display: block; width: 100%; height: 100%; image-rendering: pixelated; }
+.chronoflow-grid { position: absolute; top: 15.972%; left: 3.125%; z-index: 1; display: grid; width: 93.125%; height: 57.639%; grid-template-columns: repeat(5, minmax(0, 1fr)); grid-template-rows: repeat(4, minmax(0, 1fr)); column-gap: .625%; row-gap: 1.205%; padding: 0; background: transparent; }
 .chronoflow-cell {
   position: relative;
-  display: grid;
+  display: block;
   min-width: 0;
-  place-items: center;
   overflow: hidden;
-  border: 1px solid #52695e;
+  border: 0;
   border-radius: 0;
   padding: 0;
-  background: linear-gradient(to top, #46b9ad calc(var(--water-level) * 100%), transparent calc(var(--water-level) * 100%)), #526b5b;
-  color: #e4f8d8;
-  font-family: 'Courier New', monospace;
-  font-size: clamp(0.38rem, 1.3vw, 0.68rem);
-  font-weight: 900;
-  text-shadow: 1px 1px #10201e;
-  image-rendering: pixelated;
+  background: transparent;
+  color: transparent;
+  cursor: pointer;
 }
-.chronoflow-cell::after { position: absolute; top: 1px; right: 3px; content: attr(data-flow-glyph); color: #d7fff3; font: bold 0.72rem monospace; opacity: var(--flow-strength); pointer-events: none; }
-.chronoflow-cell[data-solid='true'] { border-color: #6f7060; background: repeating-linear-gradient(135deg, #424940 0 4px, #4d5144 4px 7px); color: #ced0b8; }
-.chronoflow-cell[data-editable='true'] { border-style: dashed; }
-.chronoflow-cell[data-gate='true'][data-solid='true'] { border-color: #c69b59; background: #795c38; color: #ffebb6; }
-.chronoflow-cell[data-target='true'] { box-shadow: inset 0 0 0 2px #a8e6a1; }
 .chronoflow-cell[data-selected='true'] { z-index: 1; outline: 2px solid #f5d773; outline-offset: -2px; }
-.chronoflow-cell[data-flow-direction='right'], .chronoflow-cell[data-flow-direction='left'], .chronoflow-cell[data-flow-direction='up'], .chronoflow-cell[data-flow-direction='down'] { animation: water-shimmer 900ms steps(2, end) infinite alternate; }
-@keyframes water-shimmer { to { filter: brightness(1.2); } }
-.game-status { position: absolute; right: 4px; bottom: 3px; left: 4px; margin: 0; padding: 3px 4px; background: #101a17e8; color: #b7ecd5; font: 9px/1.3 'Courier New', monospace; text-align: center; }
+.game-status { margin: 7px 0 0; padding: 4px; background: #101a17; color: #b7ecd5; font: 9px/1.3 'Courier New', monospace; text-align: center; }
 .console-controls { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 14px 3px 0; }
 .mosslight-keypad { position: relative; display: flex; align-items: center; justify-content: space-between; width: 100%; min-height: 112px; margin: 0; padding: 0; background: transparent; box-shadow: none; }
 .mosslight-keypad-dpad { display: grid; width: 106px; height: 92px; grid-template: repeat(3, 1fr) / repeat(3, 1fr); }
