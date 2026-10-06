@@ -27,6 +27,8 @@ test('plays Chronoflow and earns a timed record only on trusted high tide', asyn
   await expect(flowingCell).toBeVisible();
   await flowingCell.click();
   await expect(page.locator('#cell-readout')).toContainText('velocity');
+  await expect(page.locator('#cell-readout')).toContainText('depth');
+  await expect(page.locator('#cell-readout')).toContainText('head');
   for (let batch = 0; batch < 30; batch += 1) {
     if ((await page.locator('#chronoflow-status').textContent())?.includes('Timed high-tide record')) break;
     await advance.click();

@@ -13,6 +13,7 @@
 - Velocity advection failure: uniform flow changes during interpolation, a transported feature moves against its carrier field, solid-cell values influence a fluid sample, or clamped boundaries produce a non-finite velocity.
 - Settled-flow presentation: velocity readout tests inspect only after the fluid has stopped, so no cell remains marked as flowing; assert the live flow affordance during an intermediate fixed-step state and verify completion separately.
 - Save/restore failure: version mismatch or malformed arrays are accepted, fluid occupies solid geometry, puzzle progress changes across reload, or saved state restores timed credit without a fresh server-time sample.
+- Suspended-page clock reuse: browser timers pause while hidden, so a pre-suspension estimate could appear usable briefly after resume. Drop the estimate on every visibility transition, disable timed controls, discard requests crossing the transition, and resample the Internet clock when visible; failed resume sync remains paused.
 
 ## Detection Signals
 

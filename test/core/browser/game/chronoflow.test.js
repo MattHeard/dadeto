@@ -875,7 +875,152 @@ describe('Chronoflow page presenter', () => {
     expect(clearIntervalImpl).toHaveBeenCalledWith(7);
     expect(startTimedButton.listeners.has('click')).toBe(false);
   });
+});
 
+describe('Chronoflow page presenter visibility lifecycle', () => {
+  it('invalidates timed trust while hidden and resynchronizes on resume', async () => {
+    const listeners = new Map();
+    const documentObj = {
+      visibilityState: 'visible',
+      createElement: () => new FakeElement(),
+      addEventListener: (type, listener) => listeners.set(type, listener),
+      removeEventListener: (type, listener) => {
+        if (listeners.get(type) === listener) listeners.delete(type);
+      },
+    };
+    const startTimedButton = new FakeElement();
+    const advanceButton = new FakeElement();
+    const clockStatus = new FakeElement();
+    let clockUnavailable = false;
+    const fetchImpl = jest.fn(async endpoint =>
+      endpoint === '/config.json'
+        ? {
+            ok: true,
+            json: async () => ({ chronoflowTimeUrl: '/trusted-time' }),
+          }
+        : clockUnavailable
+          ? { ok: false, status: 503 }
+          : { ok: true, json: async () => ({ epochMs: 1_800_000_045_000 }) }
+    );
+    const dispose = startChronoflowPage({
+      documentObj,
+      grid: new FakeElement(),
+      status: new FakeElement(),
+      clockStatus,
+      openButton: new FakeElement(),
+      advanceButton,
+      resetButton: new FakeElement(),
+      startTimedButton,
+      fetchImpl,
+      monotonicNow: (() => {
+        let now = 100;
+        return () => (now += 100);
+      })(),
+      setIntervalImpl: () => 1,
+      clearIntervalImpl: () => {},
+    });
+    await new Promise(resolve => setTimeout(resolve, 0));
+
+    startTimedButton.emit('click');
+    expect(advanceButton.disabled).toBe(false);
+    documentObj.visibilityState = 'hidden';
+    listeners.get('visibilitychange')();
+    expect(advanceButton.disabled).toBe(true);
+    expect(startTimedButton.disabled).toBe(true);
+    expect(clockStatus.textContent).toContain('Timed attempt paused');
+
+    documentObj.visibilityState = 'visible';
+    listeners.get('visibilitychange')();
+    await new Promise(resolve => setTimeout(resolve, 0));
+    expect(fetchImpl).toHaveBeenCalledTimes(3);
+    expect(advanceButton.disabled).toBe(false);
+
+    documentObj.visibilityState = 'hidden';
+    listeners.get('visibilitychange')();
+    clockUnavailable = true;
+    documentObj.visibilityState = 'visible';
+    listeners.get('visibilitychange')();
+    await new Promise(resolve => setTimeout(resolve, 0));
+    expect(advanceButton.disabled).toBe(true);
+    expect(startTimedButton.disabled).toBe(true);
+    expect(clockStatus.textContent).toContain('Timed attempt paused');
+    expect(fetchImpl).toHaveBeenCalledTimes(4);
+    documentObj.visibilityState = 'prerender';
+    listeners.get('visibilitychange')();
+    expect(fetchImpl).toHaveBeenCalledTimes(4);
+    expect(documentObj.visibilityState).toBe('prerender');
+    dispose();
+    expect(listeners.has('visibilitychange')).toBe(false);
+  });
+
+  it('discards an in-flight hidden-page sample and resamples after resume', async () => {
+    const listeners = new Map();
+    const documentObj = {
+      visibilityState: 'visible',
+      createElement: () => new FakeElement(),
+      addEventListener: (type, listener) => listeners.set(type, listener),
+      removeEventListener: (type, listener) => {
+        if (listeners.get(type) === listener) listeners.delete(type);
+      },
+    };
+    let resolveFirstClock;
+    let clockRequests = 0;
+    const fetchImpl = jest.fn(endpoint => {
+      if (endpoint === '/config.json') {
+        return Promise.resolve({
+          ok: true,
+          json: async () => ({ chronoflowTimeUrl: '/trusted-time' }),
+        });
+      }
+      clockRequests += 1;
+      if (clockRequests === 1) {
+        return new Promise(resolve => {
+          resolveFirstClock = resolve;
+        });
+      }
+      return Promise.resolve({
+        ok: true,
+        json: async () => ({ epochMs: 1_800_000_045_000 }),
+      });
+    });
+    const startTimedButton = new FakeElement();
+    const dispose = startChronoflowPage({
+      documentObj,
+      grid: new FakeElement(),
+      status: new FakeElement(),
+      clockStatus: new FakeElement(),
+      openButton: new FakeElement(),
+      advanceButton: new FakeElement(),
+      resetButton: new FakeElement(),
+      startTimedButton,
+      fetchImpl,
+      monotonicNow: (() => {
+        let now = 100;
+        return () => (now += 100);
+      })(),
+      setIntervalImpl: () => 1,
+      clearIntervalImpl: () => {},
+    });
+    await new Promise(resolve => setTimeout(resolve, 0));
+
+    documentObj.visibilityState = 'hidden';
+    listeners.get('visibilitychange')();
+    documentObj.visibilityState = 'visible';
+    listeners.get('visibilitychange')();
+    resolveFirstClock({
+      ok: true,
+      json: async () => ({ epochMs: 1_800_000_045_000 }),
+    });
+    await new Promise(resolve => setTimeout(resolve, 0));
+    await new Promise(resolve => setTimeout(resolve, 0));
+
+    expect(clockRequests).toBe(2);
+    expect(startTimedButton.disabled).toBe(false);
+    dispose();
+  });
+});
+
+describe('Chronoflow page presenter timed lifecycle', () => {
   it('shows a timed attempt paused when trusted time leaves high tide', async () => {
     const elements = Array.from({ length: 7 }, () => new FakeElement());
     const [

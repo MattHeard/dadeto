@@ -54,13 +54,18 @@ export function startChronoflowPage(options) {
   let timeEndpoint = null;
   let disposed = false;
   let syncing = false;
+  let visibilityResyncRequested = false;
+  let visibilityRevision = 0;
   let lastSyncAttemptMs = monotonicNow();
 
   const renderClock = () => {
     const modeLabel =
       game.mode === 'timed' ? 'Timed attempt' : 'Untimed practice';
     if (!clockEstimate) {
-      clockStatus.textContent = `${modeLabel} · Connecting to the Internet tide clock…`;
+      clockStatus.textContent =
+        game.mode === 'timed'
+          ? 'Timed attempt paused · Internet tide clock is stale.'
+          : `${modeLabel} · Connecting to the Internet tide clock…`;
       return;
     }
     const reading = getClockReading();
@@ -127,9 +132,25 @@ export function startChronoflowPage(options) {
     return highTideWindow;
   };
 
+  const invalidateClockEstimate = () => {
+    visibilityRevision += 1;
+    clockEstimate = null;
+    updateTimedControls();
+    renderClock();
+  };
+
+  const requestVisibleResync = () => {
+    if (syncing) {
+      visibilityResyncRequested = true;
+      return;
+    }
+    void synchronizeClock();
+  };
+
   const synchronizeClock = async () => {
     if (syncing || disposed) return;
     syncing = true;
+    const requestVisibilityRevision = visibilityRevision;
     lastSyncAttemptMs = monotonicNow();
     try {
       if (!timeEndpoint) {
@@ -151,23 +172,39 @@ export function startChronoflowPage(options) {
         }
         timeEndpoint = configuredEndpoint;
       }
-      clockEstimate = await sampleNetworkClock({
+      const nextEstimate = await sampleNetworkClock({
         fetchImpl,
         monotonicNow,
         endpoint: timeEndpoint,
       });
+      if (
+        documentObj.visibilityState === 'hidden' ||
+        requestVisibilityRevision !== visibilityRevision
+      ) {
+        return;
+      }
+      clockEstimate = nextEstimate;
       if (!disposed) {
         updateTimedControls();
         renderClock();
       }
     } catch {
       if (!disposed) {
-        clockStatus.textContent = clockEstimate
-          ? 'Timed attempt paused · Internet tide clock is stale.'
-          : 'Untimed practice · Internet tide unavailable. Timed play is disabled.';
+        clockStatus.textContent =
+          game.mode === 'timed' || clockEstimate
+            ? 'Timed attempt paused · Internet tide clock is stale.'
+            : 'Untimed practice · Internet tide unavailable. Timed play is disabled.';
       }
     } finally {
       syncing = false;
+      if (
+        visibilityResyncRequested &&
+        documentObj.visibilityState === 'visible' &&
+        !disposed
+      ) {
+        visibilityResyncRequested = false;
+        requestVisibleResync();
+      }
     }
   };
 
@@ -284,7 +321,16 @@ export function startChronoflowPage(options) {
     game = resetChronoflow();
     render();
   };
+  const handleVisibilityChange = () => {
+    if (documentObj.visibilityState === 'hidden') {
+      invalidateClockEstimate();
+    } else if (documentObj.visibilityState === 'visible') {
+      invalidateClockEstimate();
+      requestVisibleResync();
+    }
+  };
 
+  documentObj.addEventListener?.('visibilitychange', handleVisibilityChange);
   openButton.addEventListener('click', handleOpen);
   routeButton?.addEventListener('click', handleRoute);
   editButton?.addEventListener('click', handleEdit);
@@ -311,6 +357,10 @@ export function startChronoflowPage(options) {
   return () => {
     disposed = true;
     clearIntervalImpl(clockInterval);
+    documentObj.removeEventListener?.(
+      'visibilitychange',
+      handleVisibilityChange
+    );
     openButton.removeEventListener('click', handleOpen);
     routeButton?.removeEventListener('click', handleRoute);
     editButton?.removeEventListener('click', handleEdit);
