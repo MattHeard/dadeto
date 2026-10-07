@@ -1,4 +1,4 @@
-import { parseJsonOrNull } from '../../commonCore.js';
+import { parseObjectRecord as parseRecord } from '../validation.js';
 
 /**
  * Resolve the persistence accessor from the toy environment.
@@ -52,25 +52,7 @@ export function parseInput(input) {
     return null;
   }
 
-  return parseObjectRecord(input);
-}
-
-/**
- * Parse raw JSON or a parsed object into a record.
- * @param {unknown} value Raw JSON or parsed payload.
- * @returns {Record<string, unknown> | null} Parsed object payload.
- */
-export function parseObjectRecord(value) {
-  if (typeof value === 'string') {
-    const parsed = parseJsonOrNull(value);
-    if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
-      return /** @type {Record<string, unknown>} */ (parsed);
-    }
-
-    return null;
-  }
-
-  return asObjectRecord(value);
+  return parseRecord(input);
 }
 
 /**
@@ -78,11 +60,7 @@ export function parseObjectRecord(value) {
  * @param {unknown} value Failure value.
  * @returns {Record<string, unknown> | null} Object record or null.
  */
-function asObjectRecord(value) {
-  return value && typeof value === 'object' && !Array.isArray(value)
-    ? /** @type {Record<string, unknown>} */ (value)
-    : null;
-}
+export { parseRecord as parseObjectRecord };
 
 /**
  * Persist the current state when storage is available.
