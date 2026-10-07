@@ -467,16 +467,7 @@ function findBestMove(board, nextPlayer, moves) {
  * @returns {Array<{ r: number, c: number }>} Coordinates for every empty board cell that future moves will consider.
  */
 function getEmptyCells(board) {
-  return board.reduce(
-    (cells, row, r) =>
-      row.reduce((acc, cell, c) => {
-        if (!cell) {
-          acc.push({ r, c });
-        }
-        return acc;
-      }, cells),
-    /** @type {Array<{ r: number, c: number }>} */ ([])
-  );
+  return mapEmptyCells(board, (r, c) => ({ r, c }));
 }
 
 /**
@@ -616,15 +607,27 @@ function evaluateTerminalState(isWinPlayer, isWinOpponent, depth) {
  * @returns {Array<[number, number]>} Coordinates of each empty cell so helpers can evaluate remaining play options.
  */
 function getAvailableMoves(board) {
+  return mapEmptyCells(
+    board,
+    (r, c) => /** @type {[number, number]} */ ([r, c])
+  );
+}
+
+/**
+ * Map empty board cells into a caller-selected move representation.
+ * @template T
+ * @param {TicTacToeBoardState['board']} board Board state.
+ * @param {(row: number, column: number) => T} createMove Move constructor.
+ * @returns {T[]} Moves for every empty cell in row-major order.
+ */
+function mapEmptyCells(board, createMove) {
   return board.reduce(
-    (moves, row, r) =>
+    (cells, row, r) =>
       row.reduce((acc, cell, c) => {
-        if (!cell) {
-          acc.push([r, c]);
-        }
+        if (!cell) acc.push(createMove(r, c));
         return acc;
-      }, moves),
-    /** @type {Array<[number, number]>} */ ([])
+      }, cells),
+    /** @type {T[]} */ ([])
   );
 }
 
