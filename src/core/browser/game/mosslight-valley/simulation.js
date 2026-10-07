@@ -11,7 +11,10 @@ import { recordEvent, selectEnding, questJournal } from './quests.js';
 import { farmAction, fishAction, craftItem } from './activities.js';
 import { startBattle, battleAction } from './combat.js';
 import { controllerMenu } from './controls.js';
-import { advanceSimulationFrame } from '../simulationCore.js';
+import {
+  advanceSimulationFrame,
+  createSimulationClockState,
+} from '../simulationCore.js';
 
 /**
  * Create the complete starting state for a new save.
@@ -29,10 +32,7 @@ export function createSimulation(content = CONTENT) {
     dialogue: null,
     battle: null,
     ending: null,
-    mode: 'world',
-    tick: 0,
-    moveCooldown: 0,
-    lastActions: [],
+    ...createSimulationClockState(),
     quickAction: 'fish',
     menu: null,
     controllerCommand: null,

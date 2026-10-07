@@ -71,14 +71,7 @@ export function battleAction(state, action, content) {
         ...state.inventory,
         dreamFragment: (state.inventory.dreamFragment || 0) + 1,
       },
-      world: {
-        ...state.world,
-        flags: {
-          ...state.world.flags,
-          battleWon: true,
-          memoryCount: (state.world.flags.memoryCount || 0) + 1,
-        },
-      },
+      world: recordBattleVictory(state.world),
       toast: `${enemy.name} leaves a dream fragment.`,
     };
   return {
@@ -93,5 +86,21 @@ export function battleAction(state, action, content) {
       guarding: action === 'guard',
     },
     toast: `${enemy.name}: ${enemy.intent[turn % enemy.intent.length]}.`,
+  };
+}
+
+/**
+ * Record a battle victory in world flags.
+ * @param {Record<string, any>} world Current world state.
+ * @returns {Record<string, any>} World with victory progress recorded.
+ */
+function recordBattleVictory(world) {
+  return {
+    ...world,
+    flags: {
+      ...world.flags,
+      battleWon: true,
+      memoryCount: (world.flags.memoryCount || 0) + 1,
+    },
   };
 }

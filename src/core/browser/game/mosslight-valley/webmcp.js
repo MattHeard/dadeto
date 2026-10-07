@@ -1,15 +1,5 @@
 import { resultContent as toolResult, READ_ONLY_TOOL } from '../../webmcp.js';
-
-const ACTIONS = Object.freeze([
-  'up',
-  'down',
-  'left',
-  'right',
-  'a',
-  'b',
-  'x',
-  'y',
-]);
+import { CONTROLLER_ACTIONS as ACTIONS } from '../controllerActions.js';
 
 /**
  * Validate the entire batch before changing the game or pausing its frame loop.

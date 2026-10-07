@@ -1,4 +1,5 @@
 import { createWorld, movePlayer } from '../mosslight-valley/world.js';
+import { CONTROLLER_ACTIONS } from '../controllerActions.js';
 import { targetInFront } from '../mosslight-valley/actors.js';
 import { openDialogue, advanceDialogue } from '../mosslight-valley/dialogue.js';
 import { createLab, manageLab, endShift, forecast } from './management.js';
@@ -35,7 +36,10 @@ import {
   undoPlanningOrder,
 } from './planning.js';
 import { SCENARIOS, startScenario } from './scenarios.js';
-import { advanceSimulationFrame } from '../simulationCore.js';
+import {
+  advanceSimulationFrame,
+  createSimulationClockState,
+} from '../simulationCore.js';
 /**
  * Recompute derived UI after every load rather than trusting saved presentation.
  * @param {Record<string, any>} state Campaign snapshot.
@@ -177,10 +181,7 @@ export function createNeonState(content = LAB_CONTENT) {
         journal: [],
         battle: null,
         ending: null,
-        mode: 'world',
-        tick: 0,
-        moveCooldown: 0,
-        lastActions: [],
+        ...createSimulationClockState(),
         quickAction: 'ledger',
         menu: null,
         controllerCommand: null,
@@ -684,9 +685,7 @@ export function stepNeon(
   content = LAB_CONTENT,
   deltaMs = 125
 ) {
-  const buttons = actions.filter(action =>
-    ['up', 'down', 'left', 'right', 'a', 'b', 'x', 'y'].includes(action)
-  );
+  const buttons = actions.filter(action => CONTROLLER_ACTIONS.includes(action));
   const pressed = buttons.filter(action => !state.lastActions.includes(action));
   let next = advanceSimulationFrame(state, deltaMs);
   if (state.menu) next = stepMenu(next, pressed);
