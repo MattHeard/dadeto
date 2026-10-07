@@ -122,21 +122,14 @@ function createNextState(options) {
     generation = 0;
   }
 
-  return composeLifeState(
-    createBaseStateFields({
-      width: base.width,
-      height: base.height,
-      cols: base.cols,
-      rows: base.rows,
-      tickSpeedMs: nextTickSpeedMs,
-      cells: startingCells,
-    }),
-    {
-      framesPerTick,
-      framesUntilTick: initialCountdown,
-      generation,
-    }
-  );
+  return createBaseStateFields({
+    ...base,
+    tickSpeedMs: nextTickSpeedMs,
+    framesPerTick,
+    framesUntilTick: initialCountdown,
+    generation,
+    cells: startingCells,
+  });
 }
 
 /**
