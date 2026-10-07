@@ -8,7 +8,12 @@ const B = (1 - F) * A;
  * @param {number} degrees Degrees.
  * @returns {number} Radians.
  */
-const rad = degrees => (degrees * Math.PI) / 180;
+/**
+ * Convert degrees to radians.
+ * @param {number} degrees Degrees.
+ * @returns {number} Radians.
+ */
+export const degreesToRadians = degrees => (degrees * Math.PI) / 180;
 
 /**
  * Calculate WGS84 ellipsoid surface distance.
@@ -24,15 +29,15 @@ export function calculateWgs84SurfaceDistance(
   latitude2,
   longitude2
 ) {
-  const p1 = rad(latitude1),
-    p2 = rad(latitude2),
+  const p1 = degreesToRadians(latitude1),
+    p2 = degreesToRadians(latitude2),
     u1 = Math.atan((1 - F) * Math.tan(p1)),
     u2 = Math.atan((1 - F) * Math.tan(p2));
   const su1 = Math.sin(u1),
     cu1 = Math.cos(u1),
     su2 = Math.sin(u2),
     cu2 = Math.cos(u2),
-    L = rad(longitude2 - longitude1);
+    L = degreesToRadians(longitude2 - longitude1);
   let lambda = L;
   let sigma = 0,
     sinSigma = 0,
@@ -94,10 +99,12 @@ export function calculateWgs84SurfaceDistance(
  * @returns {number} Distance in meters.
  */
 export function spherical(lat1, lon1, lat2, lon2) {
-  const dp = rad(lat2 - lat1),
-    dl = rad(lon2 - lon1);
+  const dp = degreesToRadians(lat2 - lat1),
+    dl = degreesToRadians(lon2 - lon1);
   const h =
     Math.sin(dp / 2) ** 2 +
-    Math.cos(rad(lat1)) * Math.cos(rad(lat2)) * Math.sin(dl / 2) ** 2;
+    Math.cos(degreesToRadians(lat1)) *
+      Math.cos(degreesToRadians(lat2)) *
+      Math.sin(dl / 2) ** 2;
   return A * 2 * Math.atan2(Math.sqrt(h), Math.sqrt(1 - h));
 }

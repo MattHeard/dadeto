@@ -4,6 +4,7 @@ import {
   parseSegmentMeasurementInput,
   measureSpacetimeSegment,
 } from './spacetimeInput.js';
+import { degreesToRadians as radians } from '../../../wgs84/wgs84.js';
 
 /**
  * Calculate UTC duration for a SPAC2 segment.
@@ -189,10 +190,4 @@ function sphericalFallback({ phi1, phi2, deltaPhi, deltaLambda }) {
   return SEMI_MAJOR_AXIS * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
-/**
- * Convert degrees to radians.
- * @param {number} degrees Degrees.
- * @returns {number} Radians.
- */
-const radians = degrees => (degrees * Math.PI) / 180;
 export { vincentyDistance };
