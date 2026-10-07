@@ -53,3 +53,7 @@ The build core's injected `writeFile` now requires an `AllowEffects` value. The 
 ## Ninth extension: coverage summary file writes
 
 The coverage-summary command requires `AllowEffects` on its injected `writeFile` callback and mints the permission only around the summary write. Reading coverage input and building the summary remain outside the effect boundary. The wrapper adapts the permission-aware callback to Node's native writer.
+
+## Tenth extension: clone report writes
+
+The clone scanner binds report publication as one local command and forwards its permission to the injected directory creator and each report writer. Source discovery and clone analysis remain outside that boundary.

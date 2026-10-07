@@ -1,5 +1,7 @@
 import { escapeHtml } from '../build/html.js';
 
+/** @typedef {import('../../../types/allow-effects').AllowEffects} AllowEffects */
+
 /**
  * @typedef {{path: string, content: string, format: string}} ScanSource
  * @typedef {{statistics: Record<string, any>, duplicates: Array<Record<string, any>>}} CloneReport
@@ -14,8 +16,9 @@ import { escapeHtml } from '../build/html.js';
  *   formatFor: (path: string, extensions: Record<string, string[]>) => string | undefined,
  *   createDetector: (options: Record<string, any>) => {detect: (path: string, content: string, format: string) => Promise<Array<Record<string, any>>>, on: (event: string, handler: (...args: any[]) => void) => unknown},
  *   createStatistics: () => {subscribe: () => Record<string, (...args: any[]) => void>, getStatistic: () => Record<string, any>},
- *   makeDirectory: (path: string) => void,
- *   writeFile: (path: string, content: string) => void,
+ *   makeDirectory: (permission: AllowEffects, path: string) => void,
+ *   writeFile: (permission: AllowEffects, path: string, content: string) => void,
+ *   bindEffectBoundary: import('../../../types/allow-effects').AllowEffectsBoundary,
  * }} ScanDependencies
  */
 
@@ -67,7 +70,7 @@ export function createCloneScanHandle(deps, configPath) {
       statistics: statistics.getStatistic(),
       duplicates: clones.map(clone => formatDetectedClone(clone, deps)),
     };
-    publishCloneReport(report, options.output, deps);
+    await publishCloneReport(report, options.output, deps);
     return report;
   };
 }
@@ -227,18 +230,34 @@ function formatCloneLocation(side) {
  * @param {CloneReport} report Exact detection result.
  * @param {string} output Report directory.
  * @param {ScanDependencies} deps Output adapters.
- * @returns {void}
+ * @returns {Promise<void>} Completion after report publication.
  */
-function publishCloneReport(report, output, deps) {
+async function publishCloneReport(report, output, deps) {
   const htmlDirectory = deps.joinPath(output, 'html');
-  deps.makeDirectory(htmlDirectory);
   const serialized = JSON.stringify(report, null, 2);
-  deps.writeFile(deps.joinPath(output, 'jscpd-report.json'), serialized);
-  deps.writeFile(deps.joinPath(htmlDirectory, 'jscpd-report.json'), serialized);
-  deps.writeFile(
-    deps.joinPath(htmlDirectory, 'index.html'),
-    renderCloneReport(report)
+  const files = /** @type {Array<[string, string]>} */ ([
+    [deps.joinPath(output, 'jscpd-report.json'), serialized],
+    [deps.joinPath(htmlDirectory, 'jscpd-report.json'), serialized],
+    [deps.joinPath(htmlDirectory, 'index.html'), renderCloneReport(report)],
+  ]);
+  await deps.bindEffectBoundary(permission =>
+    writeCloneReport(permission, htmlDirectory, files, deps)
   );
+}
+
+/**
+ * Perform report filesystem effects with the caller-owned permission.
+ * @param {AllowEffects} permission Explicit report-write permission.
+ * @param {string} htmlDirectory Report HTML directory.
+ * @param {Array<[string, string]>} files Report paths and contents.
+ * @param {ScanDependencies} deps Filesystem adapters.
+ * @returns {Promise<void>} Completion after synchronous report writes.
+ */
+async function writeCloneReport(permission, htmlDirectory, files, deps) {
+  deps.makeDirectory(permission, htmlDirectory);
+  for (const [path, content] of files) {
+    deps.writeFile(permission, path, content);
+  }
 }
 
 /**

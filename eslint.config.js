@@ -74,6 +74,7 @@ export default [
       'src/core/local/gcp-simulator/simulator.js',
       'src/core/build/buildCore.js',
       'src/core/scripts/write-coverage-summary.js',
+      'src/core/scripts/clone-scanner.js',
     ],
     plugins: { capability: repoLintPlugin },
     rules: { 'capability/allow-effects': 'error' },

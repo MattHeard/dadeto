@@ -3,6 +3,7 @@ import path from 'node:path';
 import { createHash } from 'node:crypto';
 import { createRequire } from 'node:module';
 import { createCloneScanHandle } from '../core/scripts/clone-scanner.js';
+import { bindEffectBoundary } from '../build/allow-effects.js';
 
 const require = createRequire(import.meta.url);
 const core = require('@jscpd/core');
@@ -22,8 +23,10 @@ const handle = createCloneScanHandle({
     ...options,
     hashFunction: value => createHash('md5').update(value).digest('hex'),
   }),
-  makeDirectory: target => fs.mkdirSync(target, { recursive: true }),
-  writeFile: fs.writeFileSync,
+  makeDirectory: (_permission, target) =>
+    fs.mkdirSync(target, { recursive: true }),
+  writeFile: (_permission, target, content) => fs.writeFileSync(target, content),
+  bindEffectBoundary,
 }, process.argv[2]);
 
 handle().then(report => {

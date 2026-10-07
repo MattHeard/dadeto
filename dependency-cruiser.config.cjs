@@ -85,7 +85,8 @@ module.exports = {
         path: '^src/scripts',
       },
       to: {
-        pathNot: '^src/(scripts|core)(?:/|$)|^node_modules(?:/|$)',
+        pathNot:
+          '^src/(scripts|core)(?:/|$)|^src/build/allow-effects\\.js$|^node_modules(?:/|$)',
       },
     },
     {

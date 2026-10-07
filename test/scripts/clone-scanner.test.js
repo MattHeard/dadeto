@@ -8,6 +8,7 @@ const core = require('@jscpd/core');
 const tokenizer = require('@jscpd/tokenizer');
 const SOURCE =
   'function duplicate() {\n  const value = {\n    left: 1,\n    right: 2,\n  };\n  return value;\n}\n';
+const permission = Object.freeze({ testPermission: true });
 
 /**
  * Build in-memory filesystem adapters around the pinned production detector.
@@ -31,6 +32,7 @@ function fixture() {
     ['fixture/long.js', '\n'.repeat(20)],
   ]);
   const writes = new Map();
+  const bindEffectBoundary = jest.fn(async handler => handler(permission));
   const deps = {
     readFile: jest.fn(target => files.get(target)),
     readDirectory: jest.fn(() =>
@@ -62,19 +64,23 @@ function fixture() {
         hashFunction: value => createHash('md5').update(value).digest('hex'),
       }),
     makeDirectory: jest.fn(),
-    writeFile: (target, content) => writes.set(target, content),
+    writeFile: jest.fn((_permission, target, content) =>
+      writes.set(target, content)
+    ),
+    bindEffectBoundary,
   };
   return {
     files,
     writes,
     deps,
+    bindEffectBoundary,
     run: () => createCloneScanHandle(deps, '.jscpd.json')(),
   };
 }
 
 describe('original clone engine with safe enumeration', () => {
   test('detects strict clones with exact legacy locations and filters before reading', async () => {
-    const { deps, writes, run } = fixture();
+    const { deps, writes, bindEffectBoundary, run } = fixture();
     const report = await run();
     expect(report.duplicates).toHaveLength(1);
     expect(report.statistics.total.clones).toBe(1);
@@ -88,7 +94,14 @@ describe('original clone engine with safe enumeration', () => {
     expect(deps.readFile).not.toHaveBeenCalledWith('fixture/unknown');
     expect(deps.readFile).not.toHaveBeenCalledWith('fixture/large.js');
     expect(deps.readFile).not.toHaveBeenCalledWith('fixture/directory');
-    expect(deps.makeDirectory).toHaveBeenCalledWith('report/html');
+    expect(deps.makeDirectory).toHaveBeenCalledWith(permission, 'report/html');
+    expect(bindEffectBoundary).toHaveBeenCalledTimes(1);
+    expect(deps.writeFile).toHaveBeenCalledTimes(3);
+    expect(
+      deps.writeFile.mock.calls.map(
+        ([receivedPermission]) => receivedPermission
+      )
+    ).toEqual([permission, permission, permission]);
     expect(JSON.parse(writes.get('report/jscpd-report.json'))).toEqual(report);
     expect(writes.get('report/html/jscpd-report.json')).toBe(
       writes.get('report/jscpd-report.json')
