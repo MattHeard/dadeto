@@ -128,31 +128,34 @@ export function createCopyDirectories(baseDirectories, sharedDirectoryEntries) {
  * }} options - Path helpers and base project directories.
  * @returns {Record<string, string>} Complete static-site copy directory map.
  */
-export function createStaticSiteCopyDirectories({
-  path: pathDeps,
-  projectRoot,
-  srcDir,
-  publicDir,
-}) {
+export function createStaticSiteCopyDirectories(options) {
   const sharedDirectoryEntries = createSharedDirectoryEntries(
     Object.assign(
       {},
       {
-        path: { join: pathDeps.join },
-        srcDir,
-        publicDir,
+        path: { join: options.path.join },
+        srcDir: options.srcDir,
+        publicDir: options.publicDir,
       }
     )
   );
 
   return {
     ...createCopyDirectories(
-      { projectRoot, srcDir, publicDir },
+      {
+        projectRoot: options.projectRoot,
+        srcDir: options.srcDir,
+        publicDir: options.publicDir,
+      },
       sharedDirectoryEntries
     ),
-    srcBrowserAssetsDir: pathDeps.join(srcDir, 'browser', 'assets'),
-    srcContentBlogMediaDir: pathDeps.join(srcDir, 'content', 'blog-media'),
-    srcContentPagesDir: pathDeps.join(srcDir, 'content', 'pages'),
+    srcBrowserAssetsDir: options.path.join(options.srcDir, 'browser', 'assets'),
+    srcContentBlogMediaDir: options.path.join(
+      options.srcDir,
+      'content',
+      'blog-media'
+    ),
+    srcContentPagesDir: options.path.join(options.srcDir, 'content', 'pages'),
   };
 }
 
@@ -846,28 +849,22 @@ export function createCopyCore({
  * }} options Blog copy context.
  * @returns {void}
  */
-function copyBlogJson({
-  directories: dirs,
-  copyFile,
-  io,
-  messageLogger,
-  join,
-  formatPathForLog,
-}) {
-  const buildDir = join(dirs.srcDir, 'build');
-  if (io.directoryExists(buildDir)) {
-    const source = join(buildDir, 'blog.json');
-    const destination = join(dirs.publicDir, 'blog.json');
-    const message = `Blog data copied from ${formatPathForLog(source)} to ${formatPathForLog(
+function copyBlogJson(options) {
+  const dirs = options.directories;
+  const buildDir = options.join(dirs.srcDir, 'build');
+  if (options.io.directoryExists(buildDir)) {
+    const source = options.join(buildDir, 'blog.json');
+    const destination = options.join(dirs.publicDir, 'blog.json');
+    const message = `Blog data copied from ${options.formatPathForLog(source)} to ${options.formatPathForLog(
       destination
     )}`;
 
-    copyFile(source, destination, message);
+    options.copyFile(source, destination, message);
     return;
   }
 
-  messageLogger.warn(
-    `Warning: build directory not found at ${formatPathForLog(buildDir)}`
+  options.messageLogger.warn(
+    `Warning: build directory not found at ${options.formatPathForLog(buildDir)}`
   );
 }
 
@@ -916,26 +913,20 @@ function copyFilePairs({ copyPairs, copyFile }) {
  * }} options File copy configuration.
  * @returns {void}
  */
-function copyFileWithDirectories({
-  io,
-  source,
-  destination,
-  messageLogger,
-  formatPathForLog,
-  ensureDirectoryExists,
-  dirname,
-  message,
-}) {
-  ensureDirectoryExists(io, dirname(destination));
-  io.copyFile(source, destination);
-  messageLogger.info(
+function copyFileWithDirectories(options) {
+  options.ensureDirectoryExists(
+    options.io,
+    options.dirname(options.destination)
+  );
+  options.io.copyFile(options.source, options.destination);
+  options.messageLogger.info(
     buildCopyLogMessage({
-      formatPathForLog,
+      formatPathForLog: options.formatPathForLog,
       sourceDestination: {
-        source,
-        destination,
+        source: options.source,
+        destination: options.destination,
       },
-      message,
+      message: options.message,
     })
   );
 }

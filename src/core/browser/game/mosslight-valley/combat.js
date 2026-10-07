@@ -1,3 +1,5 @@
+import { addInventoryItem } from './activities.js';
+
 /** @typedef {{id: string, name: string, hp: number, power: number, weakness: string, intent: string[]}} CombatCreature */
 /** @typedef {{creatureId: string, name: string, hp: number, maxHp: number, playerHp: number, turn: number, intent: string, status: string | null, guarding: boolean}} BattleState */
 /** @typedef {Record<string, any> & {battle?: BattleState | null}} CombatState */
@@ -67,10 +69,7 @@ export function battleAction(state, action, content) {
       ...state,
       battle: null,
       mode: 'world',
-      inventory: {
-        ...state.inventory,
-        dreamFragment: (state.inventory.dreamFragment || 0) + 1,
-      },
+      inventory: addInventoryItem(state.inventory, 'dreamFragment'),
       world: recordBattleVictory(state.world),
       toast: `${enemy.name} leaves a dream fragment.`,
     };

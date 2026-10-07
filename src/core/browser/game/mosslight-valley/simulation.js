@@ -8,7 +8,12 @@ import {
 } from './dialogue.js';
 import { movePlayer, createWorld, advanceClock } from './world.js';
 import { recordEvent, selectEnding, questJournal } from './quests.js';
-import { farmAction, fishAction, craftItem } from './activities.js';
+import {
+  farmAction,
+  fishAction,
+  craftItem,
+  addInventoryItem,
+} from './activities.js';
 import { startBattle, battleAction } from './combat.js';
 import { controllerMenu } from './controls.js';
 import {
@@ -291,10 +296,7 @@ function interact(state, content) {
               ...state.world,
               flags: { ...state.world.flags, [`memory_${object.id}`]: true },
             },
-            inventory: {
-              ...state.inventory,
-              dreamFragment: (state.inventory.dreamFragment || 0) + 1,
-            },
+            inventory: addInventoryItem(state.inventory, 'dreamFragment'),
           },
           'dreamFragment'
         );

@@ -4,6 +4,18 @@
 /** @typedef {{weather: string[], hours: [number, number], item: string}} FishDefinition */
 /** @typedef {{crops: Record<string, CropDefinition>, fish: Record<string, FishDefinition>}} ActivityContent */
 /** @typedef {{ingredients: [string, number][], output: string}} Recipe */
+
+/**
+ * Add an item quantity while preserving all current inventory entries.
+ * @param {Record<string, number>} inventory Current inventory.
+ * @param {string} item Item identifier.
+ * @param {number} [quantity] Quantity to add; defaults to one.
+ * @returns {Record<string, number>} Updated inventory.
+ */
+export function addInventoryItem(inventory, item, quantity = 1) {
+  return { ...inventory, [item]: (inventory[item] || 0) + quantity };
+}
+
 /**
  * Plant or water the active farm plot.
  * @param {ActivityState} state Current game state.
