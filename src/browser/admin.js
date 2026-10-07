@@ -1,10 +1,6 @@
 import { loadStaticConfig } from './loadStaticConfig.js';
 import { createInitAdminAppHandle } from '../core/browser/admin-core.js';
 import {
-  createErrorBeaconHandlers,
-  createErrorBeaconSendBeaconReporter,
-} from '../core/browser/error-beacon.js';
-import {
   getAuth,
   GoogleAuthProvider,
   onAuthStateChanged,
@@ -12,36 +8,17 @@ import {
 } from 'https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js';
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js';
 import { bindEffectBoundary, createEffectFetchFn } from './allow-effects.js';
+import {
+  createBrowserErrorBeaconHandlers,
+  createEffectSendBeaconReporter,
+} from './effect-adapters.js';
 
 const errorBeaconUrlPromise = loadStaticConfig()
   .then(config => config.errorBeaconUrl || '')
   .catch(() => '');
-const errorBeaconHandlers = createErrorBeaconHandlers({
-  reportBeacon: payload =>
-    errorBeaconUrlPromise.then(url => {
-      if (!url) {
-        return;
-      }
-
-      createErrorBeaconSendBeaconReporter(
-        bindEffectBoundary,
-        (permission, target, data) => {
-          void permission;
-          return (
-            globalThis.navigator?.sendBeacon?.call(
-              globalThis.navigator,
-              target,
-              data
-            ) ?? false
-          );
-        },
-        url
-      )(payload);
-    }),
-  getUrl: () => globalThis.location?.href ?? '',
-  getNow: () => Date.now(),
-  logError: console.error.bind(console),
-});
+const errorBeaconHandlers = createBrowserErrorBeaconHandlers(
+  createEffectSendBeaconReporter(errorBeaconUrlPromise, bindEffectBoundary)
+);
 
 const handle = createInitAdminAppHandle({
   loadStaticConfigFn: loadStaticConfig,

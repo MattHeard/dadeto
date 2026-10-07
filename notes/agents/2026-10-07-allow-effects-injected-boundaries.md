@@ -1,7 +1,7 @@
 # AllowEffects for injected side effects
 
-- Unexpected hurdle: the stats renderer mixes CDN invalidation with unrelated HTML generation and contains syntax the focused capability compiler mapping does not handle cleanly.
-- Diagnosis: enabling the rule for the whole large module produced a source-mapping failure at an unrelated `import.meta.url` expression.
-- Fix: extracted the invalidation POST into `cdn-invalidation.js`, where the permission is a direct parameter and the only transport is effect-specific.
-- Next time: extend `capability/allow-effects` over focused effect modules; inspect `copy:dendrite` output before staging because generated infra files can include unrelated stale-file synchronization.
-- Verification: targeted ESLint over the changed core modules passed after the extraction. `npm run check` has not been run in this loop.
+- Unexpected hurdle: the aggregate check exposed untested failure and fallback paths in the newly permission-bound effects, plus stale source assertions and a thin-module limit.
+- Diagnosis: focused tests identified missing effect dependencies in fixtures, a stale browser module expectation, and one uncovered `navigator.sendBeacon` fallback branch.
+- Fix: added permission-aware fixture adapters and coverage for checkout UUID failure, beacon permission rejection, moderation auth/HTTP failures, and missing sendBeacon; split browser effect adapters into a small helper module and kept the CDN POST isolated in `cdn-invalidation.js`.
+- Next time: extend `capability/allow-effects` over focused effect modules; inspect generated `infra/browser` copies and full coverage output before landing.
+- Verification: `npm run check` passed (10/10 gates; unit and local E2E included). Coverage artifacts: `reports/coverage/coverage-summary.json` (lines, statements, functions, and branches all 100%); duplication report: 0 clones. Focused regression suites passed during iteration.

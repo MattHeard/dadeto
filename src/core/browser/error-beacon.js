@@ -120,7 +120,7 @@ export function normalizeErrorPayload(input) {
 /**
  * Create a best-effort beacon sender.
  * @param {(handler: (permission: AllowEffects) => Promise<unknown>) => Promise<unknown>} bindEffectBoundary Permission boundary.
- * @param {(permission: AllowEffects, url: string, init?: Parameters<FetchFn>[1]) => Promise<unknown> | undefined} fetchFn Effect fetch function.
+ * @param {((permission: AllowEffects, url: string, init?: Parameters<FetchFn>[1]) => Promise<unknown>) | undefined} fetchFn Effect fetch function.
  * @param {string} endpointUrl Beacon endpoint.
  * @returns {BeaconReporter} Beacon reporter.
  */

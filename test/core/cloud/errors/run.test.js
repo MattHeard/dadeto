@@ -1,5 +1,13 @@
 import { jest } from '@jest/globals';
-import { createErrorBeaconRun } from '../../../../src/core/cloud/errors/run.js';
+import { createErrorBeaconRun as createErrorBeaconRunCore } from '../../../../src/core/cloud/errors/run.js';
+
+const permission = Object.freeze({});
+const createErrorBeaconRun = dependencies =>
+  createErrorBeaconRunCore({
+    ...dependencies,
+    bindEffectBoundary: handler => handler(permission),
+    effectFetchFn: (_permission, ...args) => dependencies.fetchFn(...args),
+  });
 
 const accessTokenKey = 'access_token';
 

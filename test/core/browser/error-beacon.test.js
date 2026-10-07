@@ -373,9 +373,12 @@ describe('createErrorBeaconHandlers', () => {
 });
 
 describe('createErrorBeaconReporter', () => {
+  const permission = Object.freeze({});
+  const bindEffectBoundary = handler => handler(permission);
+
   test('does not fetch when the endpoint is not configured', () => {
     const fetchFn = jest.fn();
-    const reporter = createErrorBeaconReporter(fetchFn, '');
+    const reporter = createErrorBeaconReporter(bindEffectBoundary, fetchFn, '');
 
     reporter({ message: 'ignored' });
 
@@ -383,35 +386,50 @@ describe('createErrorBeaconReporter', () => {
   });
 
   it('no-ops when fetch is unavailable', () => {
-    const reporter = createErrorBeaconReporter(undefined, '/prod-errors');
+    const reporter = createErrorBeaconReporter(
+      bindEffectBoundary,
+      undefined,
+      '/prod-errors'
+    );
     expect(() => reporter({ message: 'boom' })).not.toThrow();
   });
 
   it('posts JSON with credentials omitted when fetch exists', async () => {
     const fetchFn = jest.fn(() => Promise.resolve({ ok: true }));
-    const reporter = createErrorBeaconReporter(fetchFn, '/prod-errors');
+    const reporter = createErrorBeaconReporter(
+      bindEffectBoundary,
+      fetchFn,
+      '/prod-errors'
+    );
 
     reporter({ message: 'boom' });
 
     expect(fetchFn).toHaveBeenCalledTimes(1);
-    expect(fetchFn.mock.calls[0][0]).toBe('/prod-errors');
-    expect(fetchFn.mock.calls[0][1]).toMatchObject({
-      method: 'POST',
-      mode: 'cors',
-      credentials: 'omit',
-      keepalive: true,
-    });
-    expect(fetchFn.mock.calls[0][1].headers).toMatchObject({
+    expect(fetchFn).toHaveBeenCalledWith(
+      permission,
+      '/prod-errors',
+      expect.objectContaining({
+        method: 'POST',
+        mode: 'cors',
+        credentials: 'omit',
+        keepalive: true,
+      })
+    );
+    expect(fetchFn.mock.calls[0][2].headers).toMatchObject({
       'Content-Type': 'application/json',
     });
-    expect(fetchFn.mock.calls[0][1].body).toBe(
+    expect(fetchFn.mock.calls[0][2].body).toBe(
       JSON.stringify({ message: 'boom' })
     );
   });
 
   it('swallows beacon send rejections', async () => {
     const fetchFn = jest.fn(() => Promise.reject(new Error('send failed')));
-    const reporter = createErrorBeaconReporter(fetchFn, '/prod-errors');
+    const reporter = createErrorBeaconReporter(
+      bindEffectBoundary,
+      fetchFn,
+      '/prod-errors'
+    );
 
     reporter({ message: 'boom' });
     await Promise.resolve();
@@ -421,9 +439,13 @@ describe('createErrorBeaconReporter', () => {
 });
 
 describe('createErrorBeaconSendBeaconReporter', () => {
+  const permission = Object.freeze({});
+  const bindEffectBoundary = handler => handler(permission);
+
   it('sends JSON as a simple text body to avoid a CORS preflight', () => {
     const sendBeacon = jest.fn(() => true);
     const reporter = createErrorBeaconSendBeaconReporter(
+      bindEffectBoundary,
       sendBeacon,
       '/prod-errors'
     );
@@ -431,6 +453,7 @@ describe('createErrorBeaconSendBeaconReporter', () => {
     reporter({ message: 'boom' });
 
     expect(sendBeacon).toHaveBeenCalledWith(
+      permission,
       '/prod-errors',
       '{"message":"boom"}'
     );
@@ -438,10 +461,23 @@ describe('createErrorBeaconSendBeaconReporter', () => {
 
   it('no-ops when sendBeacon is unavailable', () => {
     const reporter = createErrorBeaconSendBeaconReporter(
+      bindEffectBoundary,
       undefined,
       '/prod-errors'
     );
 
     expect(() => reporter({ message: 'boom' })).not.toThrow();
+  });
+
+  it('swallows rejected sendBeacon permission boundaries', async () => {
+    const rejectedBoundary = () => Promise.reject(new Error('denied'));
+    const reporter = createErrorBeaconSendBeaconReporter(
+      rejectedBoundary,
+      jest.fn(),
+      '/prod-errors'
+    );
+
+    expect(() => reporter({ message: 'boom' })).not.toThrow();
+    await Promise.resolve();
   });
 });

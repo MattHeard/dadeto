@@ -74,14 +74,14 @@ function selectAuthorUuid(payload) {
 /**
  * Refresh and cache the author uuid for an already authenticated session.
  * @param {object} deps Refresh dependencies.
- * @param {StorageLike} [deps.storage] Storage containing the ID token.
+ * @param {StorageLike} deps.storage Storage containing the ID token.
  * @param {typeof fetch} deps.fetchFn Fetch helper.
  * @param {() => Promise<string>} deps.getAuthorUuidUrl Configured endpoint resolver.
  * @param {(handler: (permission: import('../../../types/allow-effects').AllowEffects) => Promise<unknown>) => Promise<unknown>} deps.bindEffectBoundary Permission boundary.
  * @returns {Promise<string | null>} Cached or refreshed uuid.
  */
 export async function refreshCachedAuthorUuid(deps) {
-  const { storage = sessionStorage, fetchFn, getAuthorUuidUrl } = deps;
+  const { storage, fetchFn, getAuthorUuidUrl } = deps;
   const token = storage.getItem('id_token');
   if (!token || getCachedAuthorUuid(storage)) {
     return getCachedAuthorUuid(storage);
@@ -98,12 +98,12 @@ export async function refreshCachedAuthorUuid(deps) {
 /**
  * Attach author-uuid caching behavior to an auth module.
  * @param {{ initGoogleSignIn: (options?: { onSignIn?: (token: string) => void | Promise<void> }) => void | Promise<void>, signOut: () => Promise<void> }} handle Auth module.
- * @param {{ storage?: StorageLike, fetchFn: typeof fetch, getAuthorUuidUrl: () => Promise<string>, isInternalOrigin: () => boolean, bindEffectBoundary: (handler: (permission: import('../../../types/allow-effects').AllowEffects) => Promise<unknown>) => Promise<unknown> }} deps Caching dependencies.
+ * @param {{ storage: StorageLike, fetchFn: typeof fetch, getAuthorUuidUrl: () => Promise<string>, isInternalOrigin: () => boolean, bindEffectBoundary: (handler: (permission: import('../../../types/allow-effects').AllowEffects) => Promise<unknown>) => Promise<unknown> }} deps Caching dependencies.
  * @returns {object} Wrapped auth module.
  */
 export function installAuthorUuidCaching(handle, deps) {
   const {
-    storage = sessionStorage,
+    storage,
     fetchFn,
     getAuthorUuidUrl,
     isInternalOrigin,

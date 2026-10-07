@@ -13,7 +13,7 @@ const publicBrowserGoogleAuthPath = fileURLToPath(
 
 describe('googleAuth', () => {
   beforeEach(async () => {
-    global.sessionStorage = {
+    global.sessionStorage ??= {
       store: {},
       getItem(key) {
         return this.store[key] || null;

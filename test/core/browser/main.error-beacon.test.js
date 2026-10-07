@@ -1,12 +1,19 @@
 /* @jest-environment jsdom */
 import { afterEach, expect, it, jest } from '@jest/globals';
-import { createMainHandle } from '../../../src/core/browser/main.js';
+import { createMainHandle as createMainHandleCore } from '../../../src/core/browser/main.js';
 import {
   createDocumentHandle,
   logError,
 } from '../../../src/core/browser/document.js';
 
 const originalConsoleError = console.error;
+const permission = Object.freeze({});
+const createMainHandle = dependencies =>
+  createMainHandleCore({
+    ...dependencies,
+    bindEffectBoundary: handler => handler(permission),
+    effectFetchFn: (_permission, ...args) => dependencies.fetchFn(...args),
+  });
 
 afterEach(() => {
   console.error = originalConsoleError;

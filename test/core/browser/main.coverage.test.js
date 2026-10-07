@@ -127,7 +127,16 @@ jest.unstable_mockModule(
   })
 );
 
-const { createMainHandle } = await import('../../../src/core/browser/main.js');
+const { createMainHandle: createMainHandleCore } = await import(
+  '../../../src/core/browser/main.js'
+);
+const permission = Object.freeze({});
+const createMainHandle = dependencies =>
+  createMainHandleCore({
+    ...dependencies,
+    bindEffectBoundary: handler => handler(permission),
+    effectFetchFn: (_permission, ...args) => dependencies.fetchFn(...args),
+  });
 
 describe('browser main initialization', () => {
   // This single integration fixture intentionally exercises all initialization branches.
@@ -183,6 +192,7 @@ describe('browser main initialization', () => {
      */
     function assertInitializationState() {
       expect(mockCreateErrorBeaconReporter).toHaveBeenCalledWith(
+        expect.any(Function),
         expect.any(Function),
         'https://europe-west1-irien-465710.cloudfunctions.net/prod-errors'
       );

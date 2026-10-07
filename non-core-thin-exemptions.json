@@ -1,4 +1,6 @@
 {
   "maxLines": 50,
-  "exemptions": {}
+  "exemptions": {
+    "src/browser/googleAuth.js": "External Firebase auth runtime composition owns session-storage effects and the browser AllowEffects boundary."
+  }
 }

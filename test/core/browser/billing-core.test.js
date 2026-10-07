@@ -20,11 +20,13 @@ const offer = {
  * @returns {{ deps: Record<string, unknown>, controller: object }} Fixture.
  */
 function setup(overrides = {}) {
+  const permission = Object.freeze({});
   const deps = {
     loadOffers: jest.fn(async () => ({ packages: [offer] })),
     getFreshToken: jest.fn(async () => 'token'),
     signIn: jest.fn(),
     createUuid: jest.fn(() => 'attempt-1'),
+    bindEffectBoundary: handler => handler(permission),
     postCheckout: jest.fn(async () => ({
       url: 'https://checkout.test/session',
     })),
@@ -84,11 +86,15 @@ describe('billing browser core', () => {
     });
     expect(deps.createUuid).toHaveBeenCalledTimes(1);
     expect(deps.postCheckout).toHaveBeenCalledWith(
+      expect.anything(),
       'usd-10',
       'token',
       'attempt-1'
     );
-    expect(deps.navigate).toHaveBeenCalledWith('https://checkout.test/session');
+    expect(deps.navigate).toHaveBeenCalledWith(
+      expect.anything(),
+      'https://checkout.test/session'
+    );
   });
   it('signs in when needed and retries with the same UUID', async () => {
     const token = jest
@@ -101,6 +107,7 @@ describe('billing browser core', () => {
     expect(deps.signIn).toHaveBeenCalledTimes(1);
     expect(deps.createUuid).toHaveBeenCalledTimes(1);
     expect(deps.postCheckout).toHaveBeenLastCalledWith(
+      expect.anything(),
       'usd-10',
       'fresh-token',
       'attempt-1'
@@ -174,5 +181,11 @@ describe('billing browser core', () => {
     await controller.startPurchase('usd-10');
     expect(createUuid).toHaveBeenCalledTimes(2);
     expect(controller.getAttemptId()).toBe('attempt-2');
+  });
+  it('rejects when the UUID provider cannot create a checkout attempt', async () => {
+    const { controller } = setup({ createUuid: jest.fn(() => null) });
+    await expect(controller.startPurchase('usd-10')).rejects.toThrow(
+      'Checkout attempt required'
+    );
   });
 });

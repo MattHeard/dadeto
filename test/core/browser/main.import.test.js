@@ -18,6 +18,6 @@ describe('core browser main import', () => {
     expect(source).toContain(
       'windowObj.console.error = errorHandlers.logError;'
     );
-    expect(source).toContain('windowObj.fetch?.bind(windowObj)');
+    expect(source).toContain('effectFetchFn,');
   });
 });

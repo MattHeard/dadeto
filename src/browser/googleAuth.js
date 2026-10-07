@@ -17,11 +17,8 @@ import {
 } from '../core/browser/google-auth-cache.js';
 import { getIdToken } from '../core/browser/browser-core.js';
 import { bindEffectBoundary } from './allow-effects.js';
-const effectStorage = {
-  getItem: key => sessionStorage.getItem(key),
-  setItem: (_permission, key, value) => sessionStorage.setItem(key, value),
-  removeItem: (_permission, key) => sessionStorage.removeItem(key),
-};
+import { createEffectStorage } from './effect-adapters.js';
+const effectStorage = createEffectStorage(sessionStorage);
 setupFirebase(initializeApp);
 const loadStaticConfig = createLoadStaticConfig({
   fetchFn: globalThis.fetch.bind(globalThis),
@@ -37,6 +34,7 @@ const handle = installAuthorUuidCaching(
     credentialFactory: signInWithCredential,
   }),
   {
+    storage: effectStorage,
     fetchFn: globalThis.fetch.bind(globalThis),
     bindEffectBoundary,
     getAuthorUuidUrl: () =>

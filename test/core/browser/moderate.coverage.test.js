@@ -75,14 +75,13 @@ jest.unstable_mockModule('../../../src/core/browser/admin-core.js', () => ({
   isAdminWithDeps: () => mockIsAdmin,
 }));
 jest.unstable_mockModule('../../../src/core/browser/error-beacon.js', () => ({
-  createErrorBeaconReporter: (callback, path) => {
+  createErrorBeaconSendBeaconReporter: (bind, sendBeacon, path) => {
     mockBeaconPath = path;
-    callback();
-    return jest.fn();
+    return payload =>
+      bind(permission => sendBeacon(permission, path, JSON.stringify(payload)));
   },
   createErrorBeaconHandlers: jest.fn(options => {
     mockBeaconOptions = options;
-    options.reportBeacon?.();
     options.getUrl();
     options.getUserAgent();
     options.getNow();
@@ -106,7 +105,7 @@ jest.unstable_mockModule(
 );
 
 const {
-  createModerateHandle,
+  createModerateHandle: createModerateHandleCore,
   authedFetch,
   startAnimation,
   assignJob,
@@ -117,6 +116,23 @@ const {
   getSignOutHandler,
   isAdmin,
 } = await import('../../../src/core/browser/moderate.js');
+
+const permission = Object.freeze({});
+const createModerateHandle = (dependencies = {}) =>
+  createModerateHandleCore({
+    ...dependencies,
+    bindEffectBoundary:
+      dependencies.bindEffectBoundary ?? (handler => handler(permission)),
+    effectFetchFn:
+      dependencies.effectFetchFn ??
+      (async (_permission, url, init) => {
+        if (url === '/submit') {
+          await mockAuthedFetch(url, init);
+          return { ok: true, status: 200, json: async () => ({}) };
+        }
+        return (dependencies.fetchFn ?? mockFetch)(url, init);
+      }),
+  });
 
 /** @returns {Document} Test document. */
 function makeDocument() {
@@ -286,7 +302,7 @@ function exerciseModerateAnimation() {
 // This coverage suite intentionally keeps related branch fixtures together.
 
 describe('moderate core', () => {
-  it('reads optional error-beacon location and user-agent values', () => {
+  it('reads optional error-beacon location and user-agent values', async () => {
     createModerateHandle({
       documentObj: mockDocument,
       fetchFn: mockFetch,
@@ -314,6 +330,8 @@ describe('moderate core', () => {
       sessionStorageObj: {},
       globalObject: {},
     });
+    mockBeaconOptions.reportBeacon({ message: 'missing sendBeacon' });
+    await Promise.resolve();
   });
   beforeEach(() => {
     mockConfig = { disableGoogleSignIn: true };
@@ -355,7 +373,9 @@ describe('moderate core', () => {
     expect(mockDocument.body.classList.add).not.toHaveBeenCalledWith('authed');
     expect(mockBeaconOptions.getUrl()).toBe('/moderate-test');
     expect(mockBeaconOptions.getUserAgent()).toBe('moderate-test');
-    expect(mockBeaconOptions.reportBeacon).toHaveBeenCalled();
+    mockBeaconOptions.reportBeacon({ message: 'test' });
+    await Promise.resolve();
+    expect(sendBeacon).toHaveBeenCalledWith('/errors', '{"message":"test"}');
     createModerateHandle({
       documentObj: mockDocument,
       fetchFn: mockFetch,
@@ -605,6 +625,28 @@ describe('moderate core', () => {
     );
   });
 
+  it('handles missing rating authentication and failed rating responses', async () => {
+    createModerateHandle({
+      documentObj: mockDocument,
+      fetchFn: mockFetch,
+      sessionStorageObj: {},
+      globalObject: {},
+    });
+    await submitRating(true);
+    expect(globalThis.alert).toHaveBeenCalled();
+
+    mockToken = 'token';
+    createModerateHandle({
+      documentObj: mockDocument,
+      fetchFn: mockFetch,
+      effectFetchFn: async () => ({ ok: false, status: 503 }),
+      sessionStorageObj: {},
+      globalObject: {},
+    });
+    await submitRating(false);
+    expect(globalThis.alert).toHaveBeenCalledTimes(2);
+  });
+
   it('initializes sign-in, renders, submits, retries, and signs out', async () => {
     mockConfig = { disableGoogleSignIn: false };
     const links = [{ addEventListener: jest.fn() }];
@@ -686,4 +728,8 @@ describe('moderate core', () => {
     );
     await exerciseModerateSubmissionFailures(links, approve, reject, handle);
   });
+});
+
+it('defaults the moderate handle dependency bundle', () => {
+  expect(() => createModerateHandleCore()).not.toThrow();
 });

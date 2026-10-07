@@ -69,13 +69,16 @@ export function createBillingController(deps) {
     inFlight = true;
     try {
       const token = await getPurchaseToken(deps);
+      const checkoutAttemptId = attemptId;
+      if (!checkoutAttemptId) throw new Error('Checkout attempt required');
       const response = await deps.bindEffectBoundary(permission =>
-        deps.postCheckout(permission, packageId, token, attemptId)
+        deps.postCheckout(permission, packageId, token, checkoutAttemptId)
       );
       if (!isObjectRecord(response) || typeof response.url !== 'string')
         throw new Error('Invalid checkout response');
+      const checkoutUrl = response.url;
       await deps.bindEffectBoundary(async permission => {
-        deps.navigate(permission, response.url);
+        deps.navigate(permission, checkoutUrl);
       });
       return response;
     } finally {

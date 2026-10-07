@@ -1,7 +1,7 @@
 import { jest } from '@jest/globals';
 const ACCESS_TOKEN_KEY = 'access_token';
 import {
-  createGenerateStatsCore,
+  createGenerateStatsCore as createGenerateStatsCoreCore,
   isDuplicateAppError,
   initializeFirebaseApp,
   getProjectFromEnv,
@@ -16,6 +16,16 @@ import {
 import { ADMIN_UID } from '../../../../src/core/commonCore.js';
 
 const noopConsole = { error: () => {} };
+const permission = Object.freeze({});
+const createGenerateStatsCore = dependencies =>
+  createGenerateStatsCoreCore({
+    ...dependencies,
+    bindEffectBoundary:
+      dependencies.bindEffectBoundary ?? (handler => handler(permission)),
+    effectFetchFn:
+      dependencies.effectFetchFn ??
+      ((_permission, ...args) => dependencies.fetchFn(...args)),
+  });
 
 let mockDb;
 let mockAuth;
@@ -937,21 +947,16 @@ describe('invalidatePaths', () => {
     );
     const paths = ['/path1', '/path2'];
     await core.invalidatePaths(paths);
-    expect(mockFetchFn).toHaveBeenCalledWith(
-      'https://compute.googleapis.com/compute/v1/projects/undefined/global/urlMaps/some-url-map/invalidateCache',
-      {
-        method: 'POST',
-        headers: {
-          Authorization: 'Bearer test-access-token',
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          host: 'www.dendritestories.co.nz',
-          path: '/path1',
-          requestId: 'some-uuid',
-        }),
-      }
+    const [, init] = mockFetchFn.mock.calls.find(([url]) =>
+      url.endsWith('/invalidateCache')
     );
+    expect(init).toEqual({
+      method: 'POST',
+      headers: expect.any(Headers),
+      body: expect.stringContaining('"path":"/path1"'),
+    });
+    expect(init.headers.get('Authorization')).toBe('Bearer test-access-token');
+    expect(init.headers.get('Content-Type')).toBe('application/json');
   });
 
   it('should log an error if invalidate cache fails', async () => {

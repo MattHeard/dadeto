@@ -1,8 +1,15 @@
 import { jest } from '@jest/globals';
-import { createGenerateStatsCore } from '../../../src/core/cloud/generate-stats/generate-stats-core.js';
+import { createGenerateStatsCore as createGenerateStatsCoreCore } from '../../../src/core/cloud/generate-stats/generate-stats-core.js';
 
 const noopConsole = { error: () => {} };
 const accessTokenKey = 'access_token';
+const permission = Object.freeze({});
+const createGenerateStatsCore = dependencies =>
+  createGenerateStatsCoreCore({
+    ...dependencies,
+    bindEffectBoundary: handler => handler(permission),
+    effectFetchFn: (_permission, ...args) => dependencies.fetchFn(...args),
+  });
 
 describe('generate stats helpers', () => {
   const baseDeps = {

@@ -19,20 +19,20 @@ export function sendInvalidateRequest(
   },
   path
 ) {
-  return effectFetchFn(
-    permission,
-    `https://compute.googleapis.com/compute/v1/projects/${project}/global/urlMaps/${resolvedUrlMap}/invalidateCache`,
-    {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        host: resolvedCdnHost,
-        path,
-        requestId: randomUUID(),
-      }),
-    }
-  );
+  const url = new URL(
+    `https://compute.googleapis.com/compute/v1/projects/${project}/global/urlMaps/${resolvedUrlMap}/invalidateCache`
+  ).href;
+  const headers = new Headers();
+  headers.set('Authorization', `Bearer ${token}`);
+  headers.set('Content-Type', 'application/json');
+  const requestBody = JSON.stringify({
+    host: resolvedCdnHost,
+    path,
+    requestId: randomUUID(),
+  });
+  return effectFetchFn(permission, url, {
+    headers,
+    method: 'POST',
+    body: requestBody,
+  });
 }

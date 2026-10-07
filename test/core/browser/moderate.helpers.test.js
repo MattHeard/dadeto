@@ -4,7 +4,7 @@ import {
   shouldRetryLoad,
   readErrorResponseBody,
   formatHttpErrorMessage,
-  createModerateHandle,
+  createModerateHandle as createModerateHandleCore,
   toggleApproveReject,
   appendOptionsList,
   renderVariant,
@@ -12,6 +12,14 @@ import {
   enableModerationButtons,
   fetchJson,
 } from '../../../src/core/browser/moderate.js';
+
+const permission = Object.freeze({});
+const createModerateHandle = dependencies =>
+  createModerateHandleCore({
+    ...dependencies,
+    bindEffectBoundary: handler => handler(permission),
+    effectFetchFn: (_permission, ...args) => dependencies.fetchFn(...args),
+  });
 
 describe('moderate pure helper contracts', () => {
   it('creates text elements with a safe empty fallback', () => {

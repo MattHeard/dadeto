@@ -7,6 +7,9 @@ import {
   setCachedAuthorUuid,
 } from '../../../src/core/browser/google-auth-cache.js';
 
+const permission = Object.freeze({});
+const bindEffectBoundary = handler => handler(permission);
+
 /**
  * @returns {{ store: Record<string, string>, getItem: (key: string) => string | null, setItem: (key: string, value: string) => void, removeItem: (key: string) => void }} Storage double.
  */
@@ -19,10 +22,13 @@ function createStorage() {
       }
       return null;
     },
-    setItem(key, value) {
+    setItem(permissionOrKey, keyOrValue, explicitValue) {
+      const key = explicitValue === undefined ? permissionOrKey : keyOrValue;
+      const value = explicitValue === undefined ? keyOrValue : explicitValue;
       this.store[key] = value;
     },
-    removeItem(key) {
+    removeItem(permissionOrKey, explicitKey) {
+      const key = explicitKey ?? permissionOrKey;
       delete this.store[key];
     },
   };
@@ -75,9 +81,9 @@ describe('google-auth-cache', () => {
   });
   it('stores and clears the cached author uuid', () => {
     const storage = createStorage();
-    setCachedAuthorUuid(storage, 'author-1');
+    setCachedAuthorUuid(permission, storage, 'author-1');
     expect(getCachedAuthorUuid(storage)).toBe('author-1');
-    setCachedAuthorUuid(storage, null);
+    setCachedAuthorUuid(permission, storage, null);
     expect(getCachedAuthorUuid(storage)).toBeNull();
   });
 
@@ -89,10 +95,14 @@ describe('google-auth-cache', () => {
     };
 
     expect(getCachedAuthorUuid(storage)).toBe('author-1');
-    setCachedAuthorUuid(storage, 'author-2');
-    expect(storage.setItem).toHaveBeenCalledWith('author_uuid', 'author-2');
-    setCachedAuthorUuid(storage, '');
-    expect(storage.removeItem).toHaveBeenCalledWith('author_uuid');
+    setCachedAuthorUuid(permission, storage, 'author-2');
+    expect(storage.setItem).toHaveBeenCalledWith(
+      permission,
+      'author_uuid',
+      'author-2'
+    );
+    setCachedAuthorUuid(permission, storage, '');
+    expect(storage.removeItem).toHaveBeenCalledWith(permission, 'author_uuid');
   });
 
   it('falls back to sessionStorage when no storage is provided', () => {
@@ -101,9 +111,9 @@ describe('google-auth-cache', () => {
     globalThis.sessionStorage = sessionStorage;
     try {
       expect(getCachedAuthorUuid()).toBeNull();
-      setCachedAuthorUuid(undefined, 'author-4');
+      setCachedAuthorUuid(permission, sessionStorage, 'author-4');
       expect(getCachedAuthorUuid()).toBe('author-4');
-      setCachedAuthorUuid(null, null);
+      setCachedAuthorUuid(permission, sessionStorage, null);
       expect(getCachedAuthorUuid()).toBeNull();
     } finally {
       globalThis.sessionStorage = previousSessionStorage;
@@ -161,6 +171,7 @@ describe('google-auth-cache', () => {
       refreshCachedAuthorUuid({
         storage,
         fetchFn,
+        bindEffectBoundary,
         getAuthorUuidUrl: jest.fn().mockResolvedValue('/author'),
       })
     ).resolves.toBe('author-refresh');
@@ -169,6 +180,7 @@ describe('google-auth-cache', () => {
       refreshCachedAuthorUuid({
         storage,
         fetchFn,
+        bindEffectBoundary,
         getAuthorUuidUrl: jest.fn(),
       })
     ).resolves.toBe('author-refresh');
@@ -178,7 +190,9 @@ describe('google-auth-cache', () => {
     try {
       await expect(
         refreshCachedAuthorUuid({
+          storage,
           fetchFn,
+          bindEffectBoundary,
           getAuthorUuidUrl: jest.fn(),
         })
       ).resolves.toBe('author-refresh');
@@ -192,6 +206,7 @@ describe('google-auth-cache', () => {
       refreshCachedAuthorUuid({
         storage,
         fetchFn,
+        bindEffectBoundary,
         getAuthorUuidUrl: jest.fn(),
       })
     ).resolves.toBeNull();
@@ -217,6 +232,7 @@ describe('google-auth-cache', () => {
         }),
         getAuthorUuidUrl: jest.fn().mockResolvedValue('/author'),
         isInternalOrigin: () => false,
+        bindEffectBoundary,
       }
     );
 
@@ -244,6 +260,7 @@ describe('google-auth-cache', () => {
         }),
         getAuthorUuidUrl: jest.fn().mockResolvedValue('/author'),
         isInternalOrigin: () => false,
+        bindEffectBoundary,
       }
     );
 
@@ -266,6 +283,7 @@ describe('google-auth-cache', () => {
         getAuthorUuidUrl: jest.fn(),
         storage: createStorage(),
         isInternalOrigin: () => true,
+        bindEffectBoundary,
       }
     );
 
@@ -274,7 +292,7 @@ describe('google-auth-cache', () => {
     expect(initGoogleSignIn).not.toHaveBeenCalled();
   });
 
-  it('uses sessionStorage when installing the wrapper without explicit storage', async () => {
+  it('clears permission-aware storage when signing out', async () => {
     const sessionStorage = createStorage();
     sessionStorage.setItem('author_uuid', 'author-session');
     const previousSessionStorage = globalThis.sessionStorage;
@@ -287,9 +305,11 @@ describe('google-auth-cache', () => {
           signOut,
         },
         {
+          storage: sessionStorage,
           fetchFn: jest.fn(),
           getAuthorUuidUrl: jest.fn(),
           isInternalOrigin: () => true,
+          bindEffectBoundary,
         }
       );
 

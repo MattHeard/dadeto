@@ -342,15 +342,15 @@ async function submitRatingWithPermission(permission, isApproved) {
     const { submitModerationRatingUrl } = await getModerationEndpoints();
     const token = getIdToken();
     if (!token) throw new Error('not signed in');
+    const headers = new Headers();
+    headers.set('Authorization', `Bearer ${token}`);
+    headers.set('Content-Type', 'application/json');
     const response = await moderateEffectFetchFn(
       permission,
       submitModerationRatingUrl,
       {
+        headers,
         method: 'POST',
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
         body: JSON.stringify({ isApproved }),
       }
     );

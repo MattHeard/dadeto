@@ -1,8 +1,4 @@
 import { createGoogleAuthStatusHandle } from '../core/browser/google-auth-status.js';
-import {
-  createErrorBeaconHandlers,
-  createErrorBeaconReporter,
-} from '../core/browser/error-beacon.js';
 import { loadStaticConfig } from './loadStaticConfig.js';
 import {
   getAuthorUuid,
@@ -12,36 +8,25 @@ import {
 } from './googleAuth.js';
 import { getIdToken } from '../core/browser/browser-core.js';
 import { isAdminWithDeps } from './admin-core.js';
-import { bindEffectBoundary, createEffectFetchFn } from './allow-effects.js';
-
+import { bindEffectBoundary } from './allow-effects.js';
+import {
+  createBrowserErrorBeaconHandlers,
+  createEffectFetchBeaconReporter,
+  installGlobalErrorBeaconListeners,
+} from './effect-adapters.js';
 const errorBeaconUrlPromise = loadStaticConfig()
   .then(config => config.errorBeaconUrl || '')
   .catch(() => '');
 
-const errorBeaconHandlers = createErrorBeaconHandlers({
-  reportBeacon: payload =>
-    errorBeaconUrlPromise.then(url => {
-      if (!url) {
-        return;
-      }
-
-      createErrorBeaconReporter(
-        bindEffectBoundary,
-        createEffectFetchFn((input, init) => globalThis.fetch(input, init)),
-        url
-      )(payload);
-    }),
-  getUrl: () => globalThis.location?.href ?? '',
-  getUserAgent: () => globalThis.navigator?.userAgent ?? '',
-  getNow: () => Date.now(),
-  logError: console.error.bind(console),
-});
-
-globalThis.addEventListener('error', errorBeaconHandlers.handleWindowError);
-globalThis.addEventListener(
-  'unhandledrejection',
-  errorBeaconHandlers.handleUnhandledRejection
+const errorBeaconHandlers = createBrowserErrorBeaconHandlers(
+  createEffectFetchBeaconReporter(
+    errorBeaconUrlPromise,
+    bindEffectBoundary,
+    (input, init) => globalThis.fetch(input, init)
+  ),
+  () => globalThis.navigator?.userAgent ?? ''
 );
+installGlobalErrorBeaconListeners(errorBeaconHandlers);
 
 const handle = createGoogleAuthStatusHandle({
   documentObj: document,
