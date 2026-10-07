@@ -5,6 +5,7 @@ import {
   wireLabelledField,
 } from './createDendriteHandler.js';
 import { prepareInputHandler } from './captureFormShared.js';
+import { createDefaultLifeSeed } from '../toys/conwayLifeCore.js';
 
 /** @typedef {import('../domHelpers.js').DOMHelpers} DOMHelpers */
 /** @typedef {{ width: number, height: number, cols: number, rows: number, tickSpeedMs: number, cells: number[][], reset?: boolean }} LifeSeedData */
@@ -24,13 +25,7 @@ function createDefaultData() {
     rows: 16,
     tickSpeedMs: 128,
     reset: false,
-    cells: [
-      [11, 7],
-      [12, 7],
-      [13, 7],
-      [13, 6],
-      [12, 5],
-    ],
+    cells: createDefaultLifeSeed(),
   };
 }
 

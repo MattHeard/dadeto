@@ -448,10 +448,7 @@ export function menuCommand(state, command) {
           ? `Apply ${option.name}? ${plan.cost}k, ${plan.attention} attention. Only this program's evaluation is invalidated. No shift ends.`
           : 'No order is available. The current settings, credits and attention remain unchanged.',
         choices: plan.accepted
-          ? [
-              { label: 'Apply setting', command: commit },
-              { label: 'Keep current settings' },
-            ]
+          ? applyOrDeferChoices('Apply setting', commit)
           : [returnToLabChoice()],
       },
     ]);
@@ -515,6 +512,16 @@ export function menuCommand(state, command) {
  */
 function returnToLabChoice() {
   return { label: 'Return to lab' };
+}
+
+/**
+ * Build the two choices for a change that can be applied or deferred.
+ * @param {string} applyLabel Label for applying the change.
+ * @param {string} command Command to apply the change.
+ * @returns {{ label: string, command?: string }[]} Fresh apply and defer choices.
+ */
+function applyOrDeferChoices(applyLabel, command) {
+  return [{ label: applyLabel, command }, { label: 'Keep current settings' }];
 }
 
 /**

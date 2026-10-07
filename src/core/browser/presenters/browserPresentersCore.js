@@ -37,6 +37,30 @@ export function createPresenterRoot(dom, className) {
 }
 
 /**
+ * Create a presenter root with a sized canvas and draw its payload when supported.
+ * @param {{ dom: DOMHelpers, rootClass: string, width: number, height: number, styles?: Partial<CSSStyleDeclaration>, draw: (context: CanvasRenderingContext2D, canvas: HTMLCanvasElement) => void }} options Canvas presenter configuration.
+ * @returns {HTMLElement} Root containing the rendered canvas.
+ */
+export function createCanvasPresenter({
+  dom,
+  rootClass,
+  width,
+  height,
+  styles,
+  draw,
+}) {
+  const root = createPresenterRoot(dom, rootClass);
+  const canvas = /** @type {HTMLCanvasElement} */ (dom.createElement('canvas'));
+  canvas.width = width;
+  canvas.height = height;
+  if (styles) Object.assign(canvas.style, styles);
+  dom.appendChild(root, canvas);
+  const context = canvas.getContext('2d');
+  if (context) draw(context, canvas);
+  return root;
+}
+
+/**
  * Create and append child elements in order, then return their parent.
  * @param {{ appendChild: (parent: HTMLElement, child: HTMLElement) => unknown }} dom DOM helper facade.
  * @param {HTMLElement} parent Child container.

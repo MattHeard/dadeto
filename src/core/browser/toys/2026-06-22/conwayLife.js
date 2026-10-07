@@ -7,6 +7,7 @@ import {
 } from '../toyPersistence.js';
 import { normalizePositiveInteger } from '../../common.js';
 import { uniqueByKey } from '../browserToysCore.js';
+import { createDefaultLifeSeed } from '../conwayLifeCore.js';
 
 // Conway Life state is shaped separately from the other toy payloads.
 /**
@@ -40,13 +41,7 @@ const DEFAULT_ROWS = 16;
 const DEFAULT_TICK_SPEED_MS = 128;
 const MIN_TICK_SPEED_MS = 16;
 const MAX_TICK_SPEED_MS = 2000;
-const DEFAULT_SEED = [
-  [11, 7],
-  [12, 7],
-  [13, 7],
-  [13, 6],
-  [12, 5],
-];
+const DEFAULT_SEED = createDefaultLifeSeed();
 
 /**
  * Step Conway's Game of Life while persisting board state in local storage.

@@ -3,7 +3,7 @@ import {
   drawCanvasDoodle,
   parseCanvasDoodle,
 } from '../canvasDoodleCore.js';
-import { createPresenterRoot } from './browserPresentersCore.js';
+import { createCanvasPresenter } from './browserPresentersCore.js';
 
 /** @typedef {import('../domHelpers.js').DOMHelpers} DOMHelpers */
 
@@ -20,16 +20,11 @@ const CANVAS_HEIGHT = 180;
 export function createCanvasDoodleElement(inputString, dom) {
   const payload =
     parseCanvasDoodle(inputString) || createCanvasDoodleFallbackPayload();
-  const root = createPresenterRoot(dom, ROOT_CLASS);
-  const canvas = /** @type {HTMLCanvasElement} */ (dom.createElement('canvas'));
-  canvas.width = payload.width || CANVAS_WIDTH;
-  canvas.height = payload.height || CANVAS_HEIGHT;
-  dom.appendChild(root, canvas);
-
-  const context = canvas.getContext('2d');
-  if (context) {
-    drawCanvasDoodle(context, canvas, payload);
-  }
-
-  return root;
+  return createCanvasPresenter({
+    dom,
+    rootClass: ROOT_CLASS,
+    width: payload.width || CANVAS_WIDTH,
+    height: payload.height || CANVAS_HEIGHT,
+    draw: (context, canvas) => drawCanvasDoodle(context, canvas, payload),
+  });
 }

@@ -1,5 +1,5 @@
 import { buildGraphPlotFromJson } from '../graphPlotCore.js';
-import { createPresenterRoot } from './browserPresentersCore.js';
+import { createCanvasPresenter } from './browserPresentersCore.js';
 import { strokeSegments, strokeOpenPaths } from '../plotShared.js';
 
 const ROOT_CLASS = 'graph-plot-output';
@@ -13,20 +13,19 @@ const getStableRandomNumber = Number.prototype.valueOf.bind(0.5);
  */
 export function createGraphPlotElement(inputString, dom) {
   const payload = buildGraphPlotFromJson(inputString, getStableRandomNumber);
-  const root = createPresenterRoot(dom, ROOT_CLASS);
-  const canvas = /** @type {HTMLCanvasElement} */ (dom.createElement('canvas'));
-  canvas.width = payload.width;
-  canvas.height = payload.height;
-  canvas.style.width = '100%';
-  canvas.style.maxWidth = '100%';
-  canvas.style.height = 'auto';
-  canvas.style.display = 'block';
-  dom.appendChild(root, canvas);
-  const context = canvas.getContext('2d');
-  if (context) {
-    drawGraphPlot(context, canvas, payload);
-  }
-  return root;
+  return createCanvasPresenter({
+    dom,
+    rootClass: ROOT_CLASS,
+    width: payload.width,
+    height: payload.height,
+    styles: {
+      width: '100%',
+      maxWidth: '100%',
+      height: 'auto',
+      display: 'block',
+    },
+    draw: (context, canvas) => drawGraphPlot(context, canvas, payload),
+  });
 }
 
 /**

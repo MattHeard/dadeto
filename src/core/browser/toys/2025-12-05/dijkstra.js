@@ -205,13 +205,8 @@ function enqueueNeighbors({
  * @param {{ current: { id: string, distance: number }, neighbor: string, ratings: Record<string, Record<string, boolean>>, bestDistance: number, ignoredPageId?: string }} payload - Neighbor context.
  * @returns {{ id: string, distance: number }|null} Neighbor entry or null when invalid.
  */
-function createNeighborEntry({
-  current,
-  neighbor,
-  ratings,
-  bestDistance,
-  ignoredPageId,
-}) {
+function createNeighborEntry(payload) {
+  const { current, neighbor, ratings, bestDistance, ignoredPageId } = payload;
   const weight = calculateEdgeWeight({
     moderatorA: current.id,
     moderatorB: neighbor,
