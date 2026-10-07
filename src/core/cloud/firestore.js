@@ -1,6 +1,6 @@
 import {
   resolveFirestoreDatabaseId,
-  createFirestoreInstance,
+  getFirestoreInstanceFromCache,
 } from './firestore-helpers.js';
 
 /**
@@ -28,8 +28,8 @@ export function createFirestoreModule(deps) {
   const { ensureFirebaseApp, resetFirebaseInitializationState } =
     typedDeps.createFirebaseAppManager(typedDeps.initializeApp);
 
-  /** @type {import('firebase-admin/firestore').Firestore | null} */
-  let cachedDb = null;
+  /** @type {{value: import('firebase-admin/firestore').Firestore | null}} */
+  const firestoreCache = { value: null };
 
   /**
    * Determine whether the current call should bypass the cached Firestore instance.
@@ -68,20 +68,18 @@ export function createFirestoreModule(deps) {
       environment = process.env,
     } = options;
 
-    ensureAppFn();
-    const databaseId = resolveFirestoreDatabaseId(environment);
-
-    if (
-      shouldBypassFirestoreCache({ ensureAppFn, getFirestoreFn, environment })
-    ) {
-      return createFirestoreInstance(getFirestoreFn, databaseId);
-    }
-
-    if (!cachedDb) {
-      cachedDb = createFirestoreInstance(getFirestoreFn, databaseId);
-    }
-
-    return cachedDb;
+    return getFirestoreInstanceFromCache({
+      cache: firestoreCache,
+      ensureAppFn,
+      getFirestoreFn,
+      environment,
+      shouldCache: () =>
+        !shouldBypassFirestoreCache({
+          ensureAppFn,
+          getFirestoreFn,
+          environment,
+        }),
+    });
   }
 
   /**
@@ -89,7 +87,7 @@ export function createFirestoreModule(deps) {
    * @returns {void}
    */
   function clearFirestoreInstanceCache() {
-    cachedDb = null;
+    firestoreCache.value = null;
     resetFirebaseInitializationState();
   }
 

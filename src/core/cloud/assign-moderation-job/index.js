@@ -9,7 +9,7 @@ import {
   shouldUseCustomFirestoreDependencies,
 } from './assign-moderation-job-core.js';
 import {
-  createFirestoreInstance,
+  getFirestoreInstanceFromCache,
   resolveFirestoreDatabaseId,
 } from '../firestore-helpers.js';
 import { resolveAllowedOrigins, isDuplicateAppError } from '../cloud-core.js';
@@ -71,8 +71,8 @@ export function createAssignModerationJobEntrypoint(deps) {
    * }} Shared Firestore helpers.
    */
   function createFirestoreInstanceHandlers(firebaseInitializationHandlers) {
-    /** @type {import('firebase-admin/firestore').Firestore | null} */
-    let cachedDb = null;
+    /** @type {{value: import('firebase-admin/firestore').Firestore | null}} */
+    const firestoreCache = { value: null };
 
     /**
      * Resolve the Firestore instance for this entrypoint.
@@ -97,27 +97,19 @@ export function createAssignModerationJobEntrypoint(deps) {
         typedDeps.getEnvironmentVariables
       );
 
-      ensureAppFn();
-
-      const databaseId = resolveFirestoreDatabaseId(
-        /** @type {Record<string, unknown>} */ (environment ?? {})
-      );
-      const useCustomDependencies = shouldUseCustomFirestoreDependencies({
-        options,
-        defaultEnsureFn: defaultEnsureFirebaseApp,
-        defaultGetFirestoreFn: typedDeps.getFirestore,
-        providedEnvironment,
+      return getFirestoreInstanceFromCache({
+        cache: firestoreCache,
+        ensureAppFn,
+        getFirestoreFn,
+        environment: /** @type {Record<string, unknown>} */ (environment ?? {}),
+        shouldCache: () =>
+          !shouldUseCustomFirestoreDependencies({
+            options,
+            defaultEnsureFn: defaultEnsureFirebaseApp,
+            defaultGetFirestoreFn: typedDeps.getFirestore,
+            providedEnvironment,
+          }),
       });
-
-      if (useCustomDependencies) {
-        return createFirestoreInstance(getFirestoreFn, databaseId);
-      }
-
-      if (!cachedDb) {
-        cachedDb = createFirestoreInstance(getFirestoreFn, databaseId);
-      }
-
-      return cachedDb;
     }
 
     /**
@@ -125,7 +117,7 @@ export function createAssignModerationJobEntrypoint(deps) {
      * @returns {void}
      */
     function clearFirestoreInstanceCache() {
-      cachedDb = null;
+      firestoreCache.value = null;
       firebaseInitializationHandlers.reset();
     }
 

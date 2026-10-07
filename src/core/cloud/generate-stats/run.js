@@ -7,8 +7,8 @@ import {
 import { createJsonExpressApp } from '../../express-app.js';
 import { getAllowedOrigins } from '../allowed-origins.js';
 import {
-  createFirestoreInstance,
   getFirestoreForDatabase,
+  getFirestoreInstanceFromCache,
   resolveFirestoreDatabaseId,
 } from '../firestore-helpers.js';
 import {
@@ -51,8 +51,8 @@ export const ensureFirebaseApp = createEnsureFirebaseApp();
  * @param {Record<string, string | undefined> | undefined} environmentVariables Runtime environment variables.
  * @returns {string[]} Allowed origins for the current environment.
  */
-/** @type {import('firebase-admin/firestore').Firestore | null} */
-let cachedDb = null;
+/** @type {{value: import('firebase-admin/firestore').Firestore | null}} */
+const firestoreCache = { value: null };
 
 /**
  * Determine whether the generate-stats Firestore call can reuse the cached instance.
@@ -97,21 +97,14 @@ export const getFirestoreInstance = (options = {}) => {
     throw new TypeError('getFirestoreFn must be a function');
   }
 
-  ensureAppFn();
-
-  const databaseId = resolveFirestoreDatabaseId(environment);
-  // Stryker disable next-line all -- injected dependencies and environments
-  // always use a fresh Firestore instance.
-  if (!shouldUseCachedFirestore({ ensureAppFn, getFirestoreFn, environment })) {
-    return createFirestoreInstance(getFirestoreFn, databaseId);
-  }
-
-  // Stryker disable next-line all -- the default instance is created once.
-  if (!cachedDb) {
-    cachedDb = createFirestoreInstance(getFirestoreFn, databaseId);
-  }
-
-  return cachedDb;
+  return getFirestoreInstanceFromCache({
+    cache: firestoreCache,
+    ensureAppFn,
+    getFirestoreFn,
+    environment,
+    shouldCache: () =>
+      shouldUseCachedFirestore({ ensureAppFn, getFirestoreFn, environment }),
+  });
 };
 
 /**

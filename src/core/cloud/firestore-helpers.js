@@ -74,3 +74,32 @@ export function createFirestoreInstance(getFirestoreFn, databaseId) {
     databaseId
   );
 }
+
+/**
+ * Resolve a Firestore instance while preserving caller-specific cache policy.
+ * @param {{
+ *   cache: {value: import('firebase-admin/firestore').Firestore | null},
+ *   ensureAppFn: () => void,
+ *   getFirestoreFn: (app?: import('firebase-admin/app').App, databaseId?: string) => import('firebase-admin/firestore').Firestore,
+ *   environment: Record<string, unknown>,
+ *   shouldCache: () => boolean,
+ * }} options Firestore dependencies and cache policy.
+ * @returns {import('firebase-admin/firestore').Firestore} Cached or newly created Firestore instance.
+ */
+export function getFirestoreInstanceFromCache({
+  cache,
+  ensureAppFn,
+  getFirestoreFn,
+  environment,
+  shouldCache,
+}) {
+  ensureAppFn();
+  const databaseId = resolveFirestoreDatabaseId(environment);
+  if (!shouldCache()) {
+    return createFirestoreInstance(getFirestoreFn, databaseId);
+  }
+  if (cache.value === null) {
+    cache.value = createFirestoreInstance(getFirestoreFn, databaseId);
+  }
+  return cache.value;
+}

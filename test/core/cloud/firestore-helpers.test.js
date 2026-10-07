@@ -1,6 +1,7 @@
 import { jest } from '@jest/globals';
 import {
   createFirestoreInstance,
+  getFirestoreInstanceFromCache,
   getFirestoreForDatabase,
   resolveFirestoreDatabaseId,
 } from '../../../src/core/cloud/firestore-helpers.js';
@@ -70,5 +71,49 @@ describe('firestore helpers', () => {
       'firestore'
     );
     expect(firestoreFactory).toHaveBeenCalledWith(undefined, 'created-db');
+  });
+
+  it('caches the default instance and creates fresh injected instances', () => {
+    const cache = { value: null };
+    const ensureAppFn = jest.fn();
+    const getFirestoreFn = jest.fn(() => ({ id: 'firestore' }));
+    const options = {
+      cache,
+      ensureAppFn,
+      getFirestoreFn,
+      environment: { DATABASE_ID: 'named-db' },
+      shouldCache: () => true,
+    };
+
+    const first = getFirestoreInstanceFromCache(options);
+    const second = getFirestoreInstanceFromCache(options);
+    const injected = getFirestoreInstanceFromCache({
+      ...options,
+      shouldCache: () => false,
+    });
+
+    expect(first).toBe(second);
+    expect(injected).not.toBe(first);
+    expect(getFirestoreFn).toHaveBeenCalledTimes(2);
+    expect(ensureAppFn).toHaveBeenCalledTimes(3);
+    expect(cache.value).toBe(first);
+  });
+
+  it('recreates the instance after the shared cache is cleared', () => {
+    const cache = { value: null };
+    const options = {
+      cache,
+      ensureAppFn: jest.fn(),
+      getFirestoreFn: jest.fn(() => ({})),
+      environment: { DATABASE_ID: 'named-db' },
+      shouldCache: () => true,
+    };
+
+    const first = getFirestoreInstanceFromCache(options);
+    cache.value = null;
+    const second = getFirestoreInstanceFromCache(options);
+
+    expect(second).not.toBe(first);
+    expect(options.getFirestoreFn).toHaveBeenCalledTimes(2);
   });
 });
