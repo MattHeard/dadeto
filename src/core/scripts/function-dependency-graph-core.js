@@ -331,28 +331,14 @@ function registerFunction({
  * @param {{ node: AstNode, caller: object, params: Set<string>, resolveTarget: Function, edges: Array<object>, ignoredCalls: Array<object> }} input Call inspection input.
  * @returns {void}
  */
-function inspectCallNode({
-  node,
-  caller,
-  params,
-  resolveTarget,
-  edges,
-  ignoredCalls,
-}) {
-  if (node.type !== 'CallExpression' || !node.callee) return;
-  const callee = node.callee;
+function inspectCallNode(input) {
+  if (input.node.type !== 'CallExpression' || !input.node.callee) return;
+  const callee = input.node.callee;
   if (callee.type === 'Identifier') {
-    recordIdentifierCall({
-      node,
-      caller,
-      params,
-      resolveTarget,
-      edges,
-      ignoredCalls,
-    });
+    recordIdentifierCall(input);
     return;
   }
-  recordInjectedMemberCall({ node, caller, params, ignoredCalls });
+  recordInjectedMemberCall(input);
 }
 
 /**
@@ -383,19 +369,19 @@ function recordIdentifierCall(input) {
 }
 
 /** @param {{ node: AstNode, caller: object, params: Set<string>, ignoredCalls: Array<object> }} input Call input. @returns {void} */
-function recordInjectedMemberCall({ node, caller, params, ignoredCalls }) {
-  const callee = /** @type {AstNode} */ (node.callee);
-  const typedCaller = /** @type {{ id: string }} */ (caller);
+function recordInjectedMemberCall(input) {
+  const callee = /** @type {AstNode} */ (input.node.callee);
+  const typedCaller = /** @type {{ id: string }} */ (input.caller);
   const memberObject = /** @type {AstNode | undefined} */ (callee.object);
   const objectName = /** @type {string} */ (memberObject?.name);
   if (
     callee.type !== 'MemberExpression' ||
     !memberObject ||
     memberObject.type !== 'Identifier' ||
-    !params.has(objectName)
+    !input.params.has(objectName)
   )
     return;
-  ignoredCalls.push({
+  input.ignoredCalls.push({
     caller: typedCaller.id,
     callee: `${objectName}.${/** @type {AstNode | undefined} */ (callee.property)?.name ?? '<computed>'}`,
     reason: 'injected-object-member',
