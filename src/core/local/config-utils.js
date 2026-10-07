@@ -1,7 +1,11 @@
 // Stryker disable all -- this module is the fixed shared local-config loader
 // boundary for path normalization, numeric validation, and missing-file
 // handling exercised through the Notion and Symphony config suites.
-import { requirePathModule, trimmedStringOrEmpty } from '../commonCore.js';
+import {
+  isMissingFileError,
+  requirePathModule,
+  trimmedStringOrEmpty,
+} from '../commonCore.js';
 
 /**
  * @param {unknown} value Candidate string.
@@ -368,26 +372,12 @@ export async function loadNormalizedLocalJsonConfig(options) {
       pathModule
     );
   } catch (error) {
-    if (!options.onMissing || !isMissingConfigFileError(error)) {
+    if (!options.onMissing || !isMissingFileError(error)) {
       throw error;
     }
 
     return options.onMissing(repoRoot, filePath, pathModule);
   }
-}
-
-/**
- * Determine whether a config read failed because the file is missing.
- * @param {unknown} error Error to inspect.
- * @returns {boolean} True when the error is an ENOENT config miss.
- */
-function isMissingConfigFileError(error) {
-  return Boolean(
-    error &&
-      typeof error === 'object' &&
-      'code' in error &&
-      error.code === 'ENOENT'
-  );
 }
 
 // Stryker restore all
