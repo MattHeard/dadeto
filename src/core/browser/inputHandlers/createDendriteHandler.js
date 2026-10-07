@@ -363,12 +363,8 @@ function createDisposeForm(dom, disposers) {
  * @param {{ dom: DOMHelpers, container: HTMLElement, textInput: HTMLInputElement, disposers: Disposer[] }} options - Form shell dependencies.
  * @returns {HTMLElement & { _dispose?: Disposer }} Inserted form shell.
  */
-export function createManagedFormShell({
-  dom,
-  container,
-  textInput,
-  disposers,
-}) {
+export function createManagedFormShell(options) {
+  const { dom, container, textInput, disposers } = options;
   const dendriteFormClassName = browserCore.DENDRITE_FORM_SELECTOR.slice(1);
   const form = /** @type {HTMLElement & { _dispose?: Disposer }} */ (
     dom.createElement('div')
@@ -382,18 +378,12 @@ export function createManagedFormShell({
 
 /**
  * Create a managed form shell with its cleanup stack.
- * @param {{ dom: DOMHelpers, container: HTMLElement, textInput: HTMLInputElement }} options - Form setup dependencies.
+ * @param {{ dom: DOMHelpers, container: HTMLElement, textInput: HTMLInputElement, disposers?: Disposer[] }} options - Form setup dependencies.
  * @returns {{ form: HTMLElement, disposers: Disposer[] }} Managed form shell and cleanup stack.
  */
-export function createManagedFormShellState({ dom, container, textInput }) {
-  /** @type {Disposer[]} */
-  const disposers = [];
-  const form = createManagedFormShell({
-    dom,
-    container,
-    textInput,
-    disposers,
-  });
+export function createManagedFormShellState(options) {
+  const disposers = options.disposers || /** @type {Disposer[]} */ ([]);
+  const form = createManagedFormShell({ ...options, disposers });
   return { form, disposers };
 }
 
@@ -407,13 +397,8 @@ export function createManagedFormShellState({ dom, container, textInput }) {
  * @param {(shell: { form: HTMLElement, disposers: Disposer[] }) => unknown} useShell Shell callback.
  * @returns {unknown} Result returned by the callback.
  */
-export function withManagedFormShell({ dom, container, textInput }, useShell) {
-  const shellState = createManagedFormShellState({
-    dom,
-    container,
-    textInput,
-  });
-  return useShell(shellState);
+export function withManagedFormShell(options, useShell) {
+  return useShell(createManagedFormShellState(options));
 }
 
 /**
@@ -500,7 +485,7 @@ export function runFormHandler({ dom, container, textInput, buildForm }) {
  */
 function createBuildForm(fields) {
   return function buildForm(dom, { container, textInput, data, disposers }) {
-    const form = createManagedFormShell({
+    const { form } = createManagedFormShellState({
       dom,
       container,
       textInput,
