@@ -4,6 +4,9 @@ import {
   createWriteCoverageSummaryHandle,
 } from '../../../src/core/scripts/write-coverage-summary.js';
 
+const permission = Object.freeze({ testPermission: true });
+const bindEffectBoundary = async handler => handler(permission);
+
 describe('write coverage summary', () => {
   test('builds a coverage summary from a coverage map', () => {
     expect(
@@ -24,7 +27,7 @@ describe('write coverage summary', () => {
     });
   });
 
-  test('creates a command handle that reads and writes the summary file', () => {
+  test('creates a command handle that reads and writes the summary file', async () => {
     const readFile = jest.fn(() =>
       JSON.stringify({
         statements: { total: 1 },
@@ -46,12 +49,13 @@ describe('write coverage summary', () => {
     const handle = createWriteCoverageSummaryHandle({
       readFile,
       writeFile,
+      bindEffectBoundary,
       createCoverageMap,
       coverageFinalPath: 'reports/coverage/coverage-final.json',
       coverageSummaryPath: 'reports/coverage/coverage-summary.json',
     });
 
-    handle();
+    await handle();
 
     expect(readFile).toHaveBeenCalledWith(
       'reports/coverage/coverage-final.json',
@@ -61,6 +65,7 @@ describe('write coverage summary', () => {
       statements: { total: 1 },
     });
     expect(writeFile).toHaveBeenCalledWith(
+      permission,
       'reports/coverage/coverage-summary.json',
       `${JSON.stringify(
         {
@@ -73,7 +78,7 @@ describe('write coverage summary', () => {
     );
   });
 
-  test('uses default coverage paths when none are provided', () => {
+  test('uses default coverage paths when none are provided', async () => {
     const readFile = jest.fn(() =>
       JSON.stringify({
         statements: { total: 1 },
@@ -95,16 +100,18 @@ describe('write coverage summary', () => {
     const handle = createWriteCoverageSummaryHandle({
       readFile,
       writeFile,
+      bindEffectBoundary,
       createCoverageMap,
     });
 
-    handle();
+    await handle();
 
     expect(readFile).toHaveBeenCalledWith(
       'reports/coverage/coverage-final.json',
       'utf8'
     );
     expect(writeFile).toHaveBeenCalledWith(
+      permission,
       'reports/coverage/coverage-summary.json',
       `${JSON.stringify(
         {

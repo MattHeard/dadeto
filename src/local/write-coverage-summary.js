@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import istanbulCoverage from 'istanbul-lib-coverage';
 import { createWriteCoverageSummaryHandle } from '../core/scripts/write-coverage-summary.js';
+import { bindEffectBoundary } from './allow-effects.js';
 
 const { createCoverageMap } = istanbulCoverage;
 
@@ -13,10 +14,12 @@ fs.mkdirSync(coverageDir, { recursive: true });
 
 const handle = createWriteCoverageSummaryHandle({
   readFile: fs.readFileSync,
-  writeFile: fs.writeFileSync,
+  writeFile: (_permission, filePath, contents) =>
+    fs.writeFileSync(filePath, contents),
+  bindEffectBoundary,
   createCoverageMap,
   coverageFinalPath,
   coverageSummaryPath,
 });
 
-handle();
+await handle();

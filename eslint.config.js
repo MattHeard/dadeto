@@ -73,6 +73,7 @@ export default [
       'src/core/cloud/generate-stats/cdn-invalidation.js',
       'src/core/local/gcp-simulator/simulator.js',
       'src/core/build/buildCore.js',
+      'src/core/scripts/write-coverage-summary.js',
     ],
     plugins: { capability: repoLintPlugin },
     rules: { 'capability/allow-effects': 'error' },

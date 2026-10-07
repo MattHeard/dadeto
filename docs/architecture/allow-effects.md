@@ -49,3 +49,7 @@ Chronoflow's `/config.json` and network-time requests, the OpenAI Realtime SDP e
 ## Eighth extension: generated HTML file writes
 
 The build core's injected `writeFile` now requires an `AllowEffects` value. The generated HTML command binds each formatted or fallback write through the boundary supplied by the build entrypoint. Formatting and logging remain outside the write callback; both write paths forward the permission directly to the injected filesystem adapter.
+
+## Ninth extension: coverage summary file writes
+
+The coverage-summary command requires `AllowEffects` on its injected `writeFile` callback and mints the permission only around the summary write. Reading coverage input and building the summary remain outside the effect boundary. The wrapper adapts the permission-aware callback to Node's native writer.
