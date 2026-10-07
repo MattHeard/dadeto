@@ -283,15 +283,7 @@ export function manageLab(state, command) {
   const message = operate(lab, command, state.world.day);
   const changed = JSON.stringify(lab) !== JSON.stringify(state.lab);
   if (changed) lab.decisions--;
-  const world = changed
-    ? {
-        ...state.world,
-        relationships: {
-          ...state.world.relationships,
-          ...relationshipBonds(lab),
-        },
-      }
-    : state.world;
+  const world = changed ? withRelationshipBonds(state.world, lab) : state.world;
   return { ...state, lab, toast: message, world };
 }
 
@@ -416,14 +408,25 @@ export function endShift(state) {
   return {
     ...state,
     lab: settleScenario(lab),
-    world: {
-      ...state.world,
-      day: state.world.day + 1,
-      relationships: {
-        ...state.world.relationships,
-        ...relationshipBonds(lab),
-      },
-    },
+    world: withRelationshipBonds(state.world, lab, state.world.day + 1),
     toast: report[0],
+  };
+}
+
+/**
+ * Refresh authored relationship values while preserving the rest of the world.
+ * @param {Record<string, any>} world Current campaign world.
+ * @param {Record<string, any>} lab Updated campaign ledger.
+ * @param {number} [day] Optional day to set during settlement.
+ * @returns {Record<string, any>} Updated world state.
+ */
+function withRelationshipBonds(world, lab, day = world.day) {
+  return {
+    ...world,
+    ...(day === undefined ? {} : { day }),
+    relationships: {
+      ...world.relationships,
+      ...relationshipBonds(lab),
+    },
   };
 }
