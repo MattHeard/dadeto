@@ -1,4 +1,5 @@
 import {
+  appendCreatedChildren,
   createParsedJsonPresenter,
   createSectionWithRows,
   createPresenterRoot,
@@ -349,11 +350,12 @@ function renderRealHourlyWageResult(parsed, dom) {
     })
   );
 
-  dom.appendChild(root, header);
-  dom.appendChild(root, createSummarySection(parsed, dom));
-  dom.appendChild(root, createHourSection(parsed, dom));
-  dom.appendChild(root, createExpenseSection(parsed, dom));
-  return root;
+  return appendCreatedChildren(dom, root, [
+    () => header,
+    () => createSummarySection(parsed, dom),
+    () => createHourSection(parsed, dom),
+    () => createExpenseSection(parsed, dom),
+  ]);
 }
 
 /**

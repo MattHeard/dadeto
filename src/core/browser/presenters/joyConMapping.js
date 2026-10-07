@@ -1,4 +1,5 @@
 import {
+  appendCreatedChildren,
   createPresenterRoot,
   createParsedJsonPresenter,
 } from './browserPresentersCore.js';
@@ -246,8 +247,11 @@ function renderJoyConMappingState(parsed, dom) {
     dom.appendChild(list, row);
   });
 
-  [title, summary, list].forEach(node => dom.appendChild(root, node));
-  return root;
+  return appendCreatedChildren(dom, root, [
+    () => title,
+    () => summary,
+    () => list,
+  ]);
 }
 
 /**

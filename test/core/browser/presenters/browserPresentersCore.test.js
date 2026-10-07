@@ -1,5 +1,6 @@
 import { describe, expect, jest, test } from '@jest/globals';
 import {
+  appendCreatedChildren,
   createParsedJsonPresenter,
   createParsedPresenterElement,
   createParagraphElement,
@@ -31,6 +32,31 @@ function createDom() {
 }
 
 describe('browserPresentersCore', () => {
+  test('appends child builders in order and returns the parent for empty input', () => {
+    const dom = createDom();
+    const parent = { tag: 'div', children: [] };
+    const first = { tag: 'span', children: [] };
+    const second = { tag: 'p', children: [] };
+    const events = [];
+
+    expect(
+      appendCreatedChildren(dom, parent, [
+        () => {
+          events.push('first');
+          return first;
+        },
+        () => {
+          events.push('second');
+          return second;
+        },
+      ])
+    ).toBe(parent);
+    expect(events).toEqual(['first', 'second']);
+    expect(parent.children).toEqual([first, second]);
+
+    expect(appendCreatedChildren(dom, parent, [])).toBe(parent);
+  });
+
   test('creates simple elements and section wrappers', () => {
     const dom = createDom();
     const pre = createPreFromContent('hello', dom);

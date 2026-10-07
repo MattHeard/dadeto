@@ -37,6 +37,20 @@ export function createPresenterRoot(dom, className) {
 }
 
 /**
+ * Create and append child elements in order, then return their parent.
+ * @param {{ appendChild: (parent: HTMLElement, child: HTMLElement) => unknown }} dom DOM helper facade.
+ * @param {HTMLElement} parent Child container.
+ * @param {Array<() => HTMLElement>} createChildren Child element builders.
+ * @returns {HTMLElement} Parent after all children have been appended.
+ */
+export function appendCreatedChildren(dom, parent, createChildren) {
+  for (const createChild of createChildren) {
+    dom.appendChild(parent, createChild());
+  }
+  return parent;
+}
+
+/**
  * Create a section element with a title heading.
  * @param {{ createElement: (tagName: string) => HTMLElement, setClassName: (element: HTMLElement, className: string) => void, appendChild: (parent: HTMLElement, child: HTMLElement) => void, setTextContent: (element: HTMLElement, text: string) => void }} dom DOM helpers.
  * @param {string} className Section class name.
