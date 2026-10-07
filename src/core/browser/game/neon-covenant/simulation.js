@@ -84,7 +84,7 @@ function infrastructureChoice(state, next, command) {
             { label: `Install ${option.name}`, command: order },
             { label: 'Keep current equipment' },
           ]
-        : [{ label: 'Return to lab' }],
+        : [returnToLabChoice()],
     },
   ]);
 }
@@ -451,7 +451,7 @@ export function menuCommand(state, command) {
               { label: 'Apply setting', command: commit },
               { label: 'Keep current settings' },
             ]
-          : [{ label: 'Return to lab' }],
+          : [returnToLabChoice()],
       },
     ]);
   }
@@ -506,6 +506,14 @@ export function menuCommand(state, command) {
   )
     return { ...next, controllerCommand: command };
   return applyPlanningOrder(next, command, manageLab);
+}
+
+/**
+ * Create the standard unavailable-action return choice.
+ * @returns {{label: string}} Fresh return-to-lab menu choice.
+ */
+function returnToLabChoice() {
+  return { label: 'Return to lab' };
 }
 
 /**
