@@ -123,6 +123,7 @@ describe('browser validation helpers', () => {
     expect(validation.getRecordOrNull({ a: 1 })).toEqual({ a: 1 });
     expect(validation.getRecordOrNull(null)).toBeNull();
     expect(validation.getRecordOrNull(0)).toBeNull();
+    expect(validation.getRecordOrNull([])).toBeNull();
     expect(validation.firstStringOrNull(' x ')).toBe('x');
     expect(validation.firstStringOrNull([' y '])).toBe('y');
     expect(validation.firstStringOrNull([''])).toBeNull();

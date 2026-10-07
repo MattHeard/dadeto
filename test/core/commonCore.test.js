@@ -112,6 +112,7 @@ describe('commonCore helpers', () => {
     expect(getStringCandidate(123)).toBeUndefined();
     expect(getRecordOrNull({ hello: 'world' })).toEqual({ hello: 'world' });
     expect(getRecordOrNull(null)).toBeNull();
+    expect(getRecordOrNull([])).toBeNull();
     expect(
       getDefinedStrings('alpha', null, 'beta', undefined, 'gamma')
     ).toEqual(['alpha', 'beta', 'gamma']);

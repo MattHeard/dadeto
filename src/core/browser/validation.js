@@ -134,11 +134,8 @@ export function normalizeMaybeNumber(value) {
  * @returns {Record<string, unknown> | null} Object value or null.
  */
 export function getRecordOrNull(value) {
-  // Stryker disable all -- defensive record type boundary.
-  if (value && typeof value === 'object')
-    return /** @type {Record<string, unknown>} */ (value);
-  // Stryker restore all
-  return null;
+  if (!isObjectRecord(value)) return null;
+  return value;
 }
 
 /**
