@@ -183,16 +183,28 @@ function boundedSource(source, options) {
  */
 function formatDetectedClone(clone, deps) {
   const first = clone.duplicationA;
+  const duplicatedTokens = first.end.position - first.start.position;
   return {
     format: clone.format,
     lines: first.end.line - first.start.line + 1,
-    fragment: deps
-      .readFile(first.sourceId)
-      .substring(first.range[0], first.range[1]),
-    tokens: 0,
+    fragment: readCloneSourceLines(first, deps.readFile(first.sourceId)),
+    tokens: duplicatedTokens,
     firstFile: formatCloneLocation(first),
     secondFile: formatCloneLocation(clone.duplicationB),
   };
+}
+
+/**
+ * Read the detector's one-based source-line span from the original file.
+ * @param {Record<string, any>} side Detector occurrence.
+ * @param {string} content Original source text.
+ * @returns {string} Exact source lines represented by the clone.
+ */
+function readCloneSourceLines(side, content) {
+  return content
+    .split('\n')
+    .slice(side.start.line - 1, side.end.line)
+    .join('\n');
 }
 
 /**

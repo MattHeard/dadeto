@@ -80,10 +80,10 @@ describe('original clone engine with safe enumeration', () => {
     expect(report.statistics.total.clones).toBe(1);
     expect(report.duplicates[0]).toMatchObject({
       format: 'javascript',
-      tokens: 0,
       firstFile: { name: 'fixture/a.js' },
       secondFile: { name: 'fixture/b.js' },
     });
+    expect(report.duplicates[0].tokens).toBeGreaterThanOrEqual(14);
     expect(report.duplicates[0].fragment).toContain('function duplicate()');
     expect(deps.readFile).not.toHaveBeenCalledWith('fixture/unknown');
     expect(deps.readFile).not.toHaveBeenCalledWith('fixture/large.js');
