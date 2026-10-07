@@ -32,6 +32,26 @@ export function resolveFirestoreDatabaseId(environment) {
 }
 
 /**
+ * Check whether Firestore dependencies match the process-default cache boundary.
+ * @param {{ ensureAppFn: () => void, getFirestoreFn: Function, environment: Record<string, unknown>, defaultEnsureAppFn: () => void, defaultGetFirestoreFn: Function, defaultEnvironment: Record<string, unknown> }} options Dependencies and their process defaults.
+ * @returns {boolean} True when it is safe to use the process cache.
+ */
+export function isDefaultFirestoreContext({
+  ensureAppFn,
+  getFirestoreFn,
+  environment,
+  defaultEnsureAppFn,
+  defaultGetFirestoreFn,
+  defaultEnvironment,
+}) {
+  return (
+    ensureAppFn === defaultEnsureAppFn &&
+    getFirestoreFn === defaultGetFirestoreFn &&
+    environment === defaultEnvironment
+  );
+}
+
+/**
  * Select the correct Firestore database given the parsed configuration.
  * @param {(
  *   app?: import('firebase-admin/app').App,

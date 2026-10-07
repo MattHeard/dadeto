@@ -1,6 +1,7 @@
 import {
   resolveFirestoreDatabaseId,
   getFirestoreInstanceFromCache,
+  isDefaultFirestoreContext,
 } from './firestore-helpers.js';
 
 /**
@@ -40,16 +41,13 @@ export function createFirestoreModule(deps) {
    * }} options Firestore resolution inputs.
    * @returns {boolean} True when the call should use a fresh Firestore instance.
    */
-  function shouldBypassFirestoreCache({
-    ensureAppFn,
-    getFirestoreFn,
-    environment,
-  }) {
-    return (
-      ensureAppFn !== ensureFirebaseApp ||
-      getFirestoreFn !== deps.getFirestore ||
-      environment !== process.env
-    );
+  function shouldBypassFirestoreCache(options) {
+    return !isDefaultFirestoreContext({
+      ...options,
+      defaultEnsureAppFn: ensureFirebaseApp,
+      defaultGetFirestoreFn: deps.getFirestore,
+      defaultEnvironment: process.env,
+    });
   }
 
   /**

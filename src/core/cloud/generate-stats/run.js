@@ -10,6 +10,7 @@ import {
   getFirestoreForDatabase,
   getFirestoreInstanceFromCache,
   resolveFirestoreDatabaseId,
+  isDefaultFirestoreContext,
 } from '../firestore-helpers.js';
 import {
   createCorsOptions,
@@ -65,16 +66,13 @@ const firestoreCache = { value: null };
  */
 // Stryker disable next-line all -- Firestore cache identity is a fixed
 // dependency/environment equality contract.
-function shouldUseCachedFirestore({
-  ensureAppFn,
-  getFirestoreFn,
-  environment,
-}) {
-  return (
-    ensureAppFn === ensureFirebaseApp &&
-    getFirestoreFn === getAdminFirestore &&
-    environment === process.env
-  );
+function shouldUseCachedFirestore(options) {
+  return isDefaultFirestoreContext({
+    ...options,
+    defaultEnsureAppFn: ensureFirebaseApp,
+    defaultGetFirestoreFn: getAdminFirestore,
+    defaultEnvironment: process.env,
+  });
 }
 
 /**
