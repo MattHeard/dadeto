@@ -432,28 +432,21 @@ export function startChronoflowPage(options) {
  * @param {{cell: number, volume: number, isGate: boolean, isSource: boolean, isTarget: boolean, flowDirection: string, solid: boolean, editable: boolean}} cellState Cell facts.
  * @returns {string} Accessible label.
  */
-function describeCell({
-  cell,
-  volume,
-  isGate,
-  isSource,
-  isTarget,
-  flowDirection,
-  solid,
-  editable,
-}) {
-  const description = isSource
+function describeCell(cellState) {
+  const description = cellState.isSource
     ? 'Water source, full.'
-    : isGate
-      ? solid
+    : cellState.isGate
+      ? cellState.solid
         ? 'Sluice gate, closed.'
         : 'Sluice gate, open.'
-      : isTarget
-        ? `Archive target, ${Math.round(volume * 100)} percent full; ${describeFlow(flowDirection)}.`
-        : solid
-          ? `Stone wall, cell ${cell + 1}.`
-          : `Channel, cell ${cell + 1}, ${Math.round(volume * 100)} percent full; ${describeFlow(flowDirection)}.`;
-  return editable ? `${description} Editable channel site.` : description;
+      : cellState.isTarget
+        ? `Archive target, ${Math.round(cellState.volume * 100)} percent full; ${describeFlow(cellState.flowDirection)}.`
+        : cellState.solid
+          ? `Stone wall, cell ${cellState.cell + 1}.`
+          : `Channel, cell ${cellState.cell + 1}, ${Math.round(cellState.volume * 100)} percent full; ${describeFlow(cellState.flowDirection)}.`;
+  return cellState.editable
+    ? `${description} Editable channel site.`
+    : description;
 }
 
 /**
