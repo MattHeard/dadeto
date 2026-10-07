@@ -393,29 +393,30 @@ async function resolveExisting(resolveIdempotency, uid, key, packageId) {
  */
 // Stryker disable next-line all -- billing customer resolution uses the fixed
 // metadata and persistence protocol.
-async function resolveCustomer({
-  resolveBillingCustomer,
-  createBillingCustomer,
-  saveCustomerMappings,
-  uid,
-  apiKeyUuid,
-}) {
-  let customer = await resolveBillingCustomer(uid);
+async function resolveCustomer(input) {
+  let customer = await input.resolveBillingCustomer(input.uid);
   const existingCustomerId = customer?.stripeCustomerId;
   if (existingCustomerId) return { stripeCustomerId: existingCustomerId };
   // Stryker disable next-line all -- customer creation uses the fixed billing
   // metadata/idempotency payload.
-  customer = await createBillingCustomer({
+  customer = await input.createBillingCustomer({
     // Stryker disable next-line all -- fixed customer metadata shape.
-    metadata: { ['firebase_uid']: uid, ['api_key_uuid']: apiKeyUuid },
+    metadata: {
+      ['firebase_uid']: input.uid,
+      ['api_key_uuid']: input.apiKeyUuid,
+    },
     // Stryker disable next-line all -- fixed customer idempotency key.
-    idempotencyKey: `billing-customer:${uid}`,
+    idempotencyKey: `billing-customer:${input.uid}`,
   });
   // Stryker disable next-line all -- incomplete customer creation has one
   // fixed internal error boundary.
   if (!customer.stripeCustomerId) throw new Error('Customer ID missing');
   const stripeCustomerId = customer.stripeCustomerId;
-  await saveCustomerMappings(uid, stripeCustomerId, apiKeyUuid);
+  await input.saveCustomerMappings(
+    input.uid,
+    stripeCustomerId,
+    input.apiKeyUuid
+  );
   return { stripeCustomerId };
 }
 
@@ -550,28 +551,23 @@ async function createPurchaseRecord(createPurchase, input) {
  */
 // Stryker disable next-line all -- persistence returns the fixed 201 result and
 // invokes optional persistence collaborators by their stable contract.
-async function persistCheckoutResult({
-  savePurchaseCheckout,
-  saveIdempotency,
-  uid,
-  key,
-  packageId,
-  purchase,
-  session,
-}) {
+async function persistCheckoutResult(input) {
   const result = {
-    checkoutSessionId: session.id,
-    url: session.url,
+    checkoutSessionId: input.session.id,
+    url: input.session.url,
     // Stryker disable next-line all -- Stripe seconds are converted to the
     // fixed ISO response field.
-    expiresAt: new Date(session.expires_at * 1000).toISOString(),
+    expiresAt: new Date(input.session.expires_at * 1000).toISOString(),
   };
   // Stryker disable next-line all -- optional purchase persistence is a fixed
   // collaborator boundary.
-  if (purchase?.purchaseId && savePurchaseCheckout)
-    await savePurchaseCheckout(purchase.purchaseId, result);
-  if (saveIdempotency)
-    await saveIdempotency(uid, key, { packageId, session: result });
+  if (input.purchase?.purchaseId && input.savePurchaseCheckout)
+    await input.savePurchaseCheckout(input.purchase.purchaseId, result);
+  if (input.saveIdempotency)
+    await input.saveIdempotency(input.uid, input.key, {
+      packageId: input.packageId,
+      session: result,
+    });
   return { status: 201, body: result };
 }
 

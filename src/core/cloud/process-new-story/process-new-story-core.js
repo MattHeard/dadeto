@@ -262,53 +262,44 @@ function queueVariantOptions(options) {
  * @param {FirestoreDocumentSnapshot | null | undefined} options.snapshot Original snapshot reference.
  * @returns {void}
  */
-function queueSubmissionWrites({
-  batch,
-  db,
-  refs,
-  submission,
-  pageNumber,
-  random,
-  randomUUID,
-  getServerTimestamp,
-  storyId,
-  snapshot,
-}) {
+function queueSubmissionWrites(options) {
   // Stryker disable all -- new-story writes use the fixed Firestore document protocol.
-  const { storyRef, pageRef, variantRef } = refs;
+  const { storyRef, pageRef, variantRef } = options.refs;
 
-  batch.set(storyRef, {
-    title: submission.title,
+  options.batch.set(storyRef, {
+    title: options.submission.title,
     rootPage: pageRef,
-    createdAt: getServerTimestamp(),
+    createdAt: options.getServerTimestamp(),
   });
 
-  batch.set(pageRef, {
-    number: pageNumber,
+  options.batch.set(pageRef, {
+    number: options.pageNumber,
     incomingOption: null,
-    createdAt: getServerTimestamp(),
+    createdAt: options.getServerTimestamp(),
   });
 
-  batch.set(variantRef, {
+  options.batch.set(variantRef, {
     name: 'a',
-    content: submission.content,
-    authorId: normalizeHeaderValue(submission.authorId),
-    authorName: submission.author,
+    content: options.submission.content,
+    authorId: normalizeHeaderValue(options.submission.authorId),
+    authorName: options.submission.author,
     moderatorReputationSum: 0,
-    rand: random(),
-    createdAt: getServerTimestamp(),
+    rand: options.random(),
+    createdAt: options.getServerTimestamp(),
   });
 
   queueVariantOptions({
-    batch,
-    submission,
+    batch: options.batch,
+    submission: options.submission,
     variantRef,
-    randomUUID,
-    getServerTimestamp,
+    randomUUID: options.randomUUID,
+    getServerTimestamp: options.getServerTimestamp,
   });
 
-  batch.set(db.doc(`storyStats/${storyId}`), { variantCount: 1 });
-  markSnapshotAsProcessed(batch, snapshot);
+  options.batch.set(options.db.doc(`storyStats/${options.storyId}`), {
+    variantCount: 1,
+  });
+  markSnapshotAsProcessed(options.batch, options.snapshot);
 }
 // Stryker restore all
 
