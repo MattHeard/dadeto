@@ -40,9 +40,10 @@ export function assetCustodianSegmentAssignmentPredicate(input) {
  * @returns {{points: Array<{pointId: string, timestamp: string}>, segments: Array<{segmentId: string, startPointId: string, endPointId: string}>, assetAssignments: Array<{assetId: string, segmentId: string}>, personAssignments: Array<{personId: string, segmentId: string}>, proposedAssignment: {assetId: string, segmentId: string, custodianPersonId: string}}} Parsed request.
  */
 function parseRequest(input) {
-  const request = JSON.parse(input);
-  if (!request || typeof request !== 'object' || Array.isArray(request))
+  const parsed = JSON.parse(input);
+  if (!isPlainAssignmentRecord(parsed))
     throw new Error('Input must be a JSON object.');
+  const request = /** @type {any} */ (parsed);
   if (
     !Array.isArray(request.points) ||
     !Array.isArray(request.segments) ||
