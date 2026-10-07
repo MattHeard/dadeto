@@ -7,6 +7,7 @@ import {
 import { isEscapeKeydown } from './escapeKey.js';
 
 /** @typedef {import('../domHelpers.js').DOMHelpers} KeyboardDOMHelpers */
+/** @typedef {ReturnType<typeof createCaptureLifecycleOptions> & {state: { capturing: boolean }}} KeyboardCaptureEventOptions */
 const KEYBOARD_FORM_CLASS = browserCore.KEYBOARD_CAPTURE_FORM_SELECTOR.slice(1);
 
 /**
@@ -20,13 +21,7 @@ const updateCaptureButton = createKeyboardCaptureButtonUpdater();
 
 /**
  * Build the global keyboard event handler.
- * @param {{
- *   dom: KeyboardDOMHelpers,
- *   button: HTMLButtonElement,
- *   textInput: HTMLInputElement,
- *   autoSubmitCheckbox: HTMLInputElement | null,
- *   state: { capturing: boolean },
- * }} options - Keyboard event dependencies.
+ * @param {KeyboardCaptureEventOptions} options Keyboard event dependencies.
  * @returns {(event: KeyboardEvent) => void} Shared keyboard handler.
  */
 function createKeyboardHandler(options) {
@@ -36,13 +31,7 @@ function createKeyboardHandler(options) {
 /**
  * Release capture on escape and update the toy input.
  * @param {KeyboardEvent} event - Keyboard event to inspect.
- * @param {{
- *   dom: KeyboardDOMHelpers,
- *   button: HTMLButtonElement,
- *   textInput: HTMLInputElement,
- *   autoSubmitCheckbox: HTMLInputElement | null,
- *   state: { capturing: boolean },
- * }} options - Escape handling dependencies.
+ * @param {KeyboardCaptureEventOptions} options Escape handling dependencies.
  * @returns {boolean} True when capture was released.
  */
 function releaseCaptureOnEscape(event, options) {
@@ -50,32 +39,15 @@ function releaseCaptureOnEscape(event, options) {
     return false;
   }
 
-  const { dom, button, textInput, autoSubmitCheckbox, state } = options;
-  state.capturing = false;
-  captureLifecycleDeps.emitCaptureState(
-    createCaptureLifecycleOptions({
-      dom,
-      button,
-      textInput,
-      autoSubmitCheckbox,
-      updateButtonLabel: updateCaptureButton,
-      emitPayload: captureLifecycleDeps.syncToyPayload,
-    }),
-    false
-  );
+  options.state.capturing = false;
+  captureLifecycleDeps.emitCaptureState(options, false);
   return true;
 }
 
 /**
  * Forward a captured keyboard event into the toy input.
  * @param {KeyboardEvent} event - Browser keyboard event.
- * @param {{
- *   dom: KeyboardDOMHelpers,
- *   button: HTMLButtonElement,
- *   textInput: HTMLInputElement,
- *   autoSubmitCheckbox: HTMLInputElement | null,
- *   state: { capturing: boolean },
- * }} options - Keyboard event dependencies.
+ * @param {KeyboardCaptureEventOptions} options Keyboard event dependencies.
  * @returns {void}
  */
 function handleKeyboardEvent(event, options) {
@@ -100,13 +72,7 @@ function preventKeyboardDefault(event) {
 /**
  * Handle the captured event after the active-capture guard has passed.
  * @param {KeyboardEvent} event - Browser keyboard event.
- * @param {{
- *   dom: KeyboardDOMHelpers,
- *   button: HTMLButtonElement,
- *   textInput: HTMLInputElement,
- *   autoSubmitCheckbox: HTMLInputElement | null,
- *   state: { capturing: boolean },
- * }} options - Keyboard event dependencies.
+ * @param {KeyboardCaptureEventOptions} options Keyboard event dependencies.
  * @returns {void}
  */
 function handleCapturedKeyboardEvent(event, options) {
@@ -162,24 +128,22 @@ const buildKeyboardCaptureFormContext = ({
     container,
     dom
   );
-  const handleToggle = captureLifecycleDeps.createCaptureLifecycleToggleHandler(
-    {
-      ...createCaptureLifecycleOptions({
-        dom,
-        button,
-        textInput,
-        autoSubmitCheckbox,
-        updateButtonLabel: updateCaptureButton,
-        emitPayload: captureLifecycleDeps.syncToyPayload,
-      }),
-      state,
-    }
-  );
-  const handleKeyboard = createKeyboardHandler({
+  const lifecycleOptions = createCaptureLifecycleOptions({
     dom,
     button,
     textInput,
     autoSubmitCheckbox,
+    updateButtonLabel: updateCaptureButton,
+    emitPayload: captureLifecycleDeps.syncToyPayload,
+  });
+  const handleToggle = captureLifecycleDeps.createCaptureLifecycleToggleHandler(
+    {
+      ...lifecycleOptions,
+      state,
+    }
+  );
+  const handleKeyboard = createKeyboardHandler({
+    ...lifecycleOptions,
     state,
   });
   /**
