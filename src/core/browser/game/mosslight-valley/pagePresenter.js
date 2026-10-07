@@ -185,6 +185,13 @@ export function startMosslightPage(options) {
     touchPulse.clear();
   }
   /**
+   * Resume the game clock from a fresh frame after focus returns.
+   */
+  function resumeAfterFocus() {
+    runtime.resume();
+    lastTime = 0;
+  }
+  /**
    *
    */
   function onVisibility() {
@@ -192,8 +199,7 @@ export function startMosslightPage(options) {
       runtime.pause();
       resetTouch();
     } else {
-      runtime.resume();
-      lastTime = 0;
+      resumeAfterFocus();
     }
   }
   /**
@@ -215,8 +221,7 @@ export function startMosslightPage(options) {
    *
    */
   function onFocus() {
-    runtime.resume();
-    lastTime = 0;
+    resumeAfterFocus();
   }
   bindTouchControls(documentObj, touch, touchPulse, () => {
     options.audio?.unlock();
