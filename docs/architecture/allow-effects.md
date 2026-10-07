@@ -45,3 +45,7 @@ Every `fetchFn` injected from browser, cloud, or local adapters into core requir
 ## Seventh extension: remaining injected fetch implementations
 
 Chronoflow's `/config.json` and network-time requests, the OpenAI Realtime SDP exchange, and Notion Codex comment posting use the same permission-first transport contract. Each core request is wrapped in a fresh boundary permission, while browser, cloud, and local adapters adapt native fetch at their runtime edges.
+
+## Eighth extension: generated HTML file writes
+
+The build core's injected `writeFile` now requires an `AllowEffects` value. The generated HTML command binds each formatted or fallback write through the boundary supplied by the build entrypoint. Formatting and logging remain outside the write callback; both write paths forward the permission directly to the injected filesystem adapter.

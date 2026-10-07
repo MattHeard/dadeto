@@ -10,6 +10,7 @@ import prettier from 'prettier';
 import { generateBlogOuter } from './generator.js';
 import { createWriteFormattedHtml } from '../core/build/buildCore.js';
 import { publishManuals } from '../core/build/manuals.js';
+import { bindEffectBoundary } from './allow-effects.js';
 
 const require = createRequire(import.meta.url);
 
@@ -21,7 +22,9 @@ const writeFormattedHtml = createWriteFormattedHtml({
   generateHtml: generateBlogOuter,
   resolveConfig: prettier.resolveConfig,
   formatHtml: prettier.format,
-  writeFile: fs.writeFileSync,
+  writeFile: (_permission, outputPath, contents, encoding) =>
+    fs.writeFileSync(outputPath, contents, encoding),
+  bindEffectBoundary,
   logInfo: console.log,
   logError: console.error,
 });

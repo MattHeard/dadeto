@@ -72,6 +72,7 @@ export default [
       'src/core/realtime/openaiRealtimeCalls.js',
       'src/core/cloud/generate-stats/cdn-invalidation.js',
       'src/core/local/gcp-simulator/simulator.js',
+      'src/core/build/buildCore.js',
     ],
     plugins: { capability: repoLintPlugin },
     rules: { 'capability/allow-effects': 'error' },

@@ -11,6 +11,9 @@ describe('createWriteFormattedHtml', () => {
         return `${html}-formatted(${options.parser})`;
       }),
       writeFile: jest.fn(),
+      bindEffectBoundary: jest.fn(async handler =>
+        handler({ testPermission: true })
+      ),
       logInfo: jest.fn(),
       logError: jest.fn(),
     };
@@ -35,6 +38,7 @@ describe('createWriteFormattedHtml', () => {
       parser: 'html',
     });
     expect(deps.writeFile).toHaveBeenCalledWith(
+      expect.objectContaining({ testPermission: true }),
       'public/index.html',
       '<html></html>-formatted(html)',
       'utf8'
@@ -65,6 +69,7 @@ describe('createWriteFormattedHtml', () => {
 
     expect(deps.resolveConfig).toHaveBeenCalledWith('./.prettierrc');
     expect(deps.writeFile).toHaveBeenCalledWith(
+      expect.objectContaining({ testPermission: true }),
       'public/index.html',
       '<html></html>',
       'utf8'
@@ -93,6 +98,7 @@ describe('createWriteFormattedHtml', () => {
       parser: 'html',
     });
     expect(deps.writeFile).toHaveBeenCalledWith(
+      expect.objectContaining({ testPermission: true }),
       'public/defaults.html',
       '<html></html>-formatted(html)',
       'utf8'
@@ -116,6 +122,7 @@ describe('createWriteFormattedHtml', () => {
 
     expect(deps.formatHtml).not.toHaveBeenCalled();
     expect(deps.writeFile).toHaveBeenCalledWith(
+      expect.objectContaining({ testPermission: true }),
       'public/fallback.html',
       '<html></html>',
       'utf8'
