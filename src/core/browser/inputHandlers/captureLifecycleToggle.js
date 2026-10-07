@@ -1,4 +1,7 @@
-import { emitCaptureState } from './captureLifecycleShared.js';
+import {
+  createCaptureLifecycleOptions,
+  emitCaptureState,
+} from './captureLifecycleShared.js';
 
 /** @typedef {import('../domHelpers.js').DOMHelpers} DOMHelpers */
 /**
@@ -41,17 +44,7 @@ export function createCaptureLifecycleToggleHandler(options) {
  * @param {boolean} capturing - Whether capture is active.
  */
 function emitCaptureLifecycleToggle(options, capturing) {
-  emitCaptureState(
-    {
-      dom: options.dom,
-      button: options.button,
-      textInput: options.textInput,
-      autoSubmitCheckbox: options.autoSubmitCheckbox,
-      updateButtonLabel: options.updateButtonLabel,
-      emitPayload: options.emitPayload,
-    },
-    capturing
-  );
+  emitCaptureState(createCaptureLifecycleOptions(options), capturing);
 
   notifyCaptureLifecycleToggle(options, capturing);
 }
