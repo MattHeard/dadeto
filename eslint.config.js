@@ -69,6 +69,7 @@ export default [
       'src/core/cloud/render-contents/index.js',
       'src/core/cloud/generate-stats/generate-stats-core.js',
       'src/core/local/notion-codex/notionApi.js',
+      'src/core/local/documentStore.js',
       'src/core/realtime/openaiRealtimeCalls.js',
       'src/core/cloud/generate-stats/cdn-invalidation.js',
       'src/core/local/gcp-simulator/simulator.js',

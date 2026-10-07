@@ -1,5 +1,6 @@
 import { mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
+import { bindEffectBoundary } from './allow-effects.js';
 import {
   createDocumentStoreCore,
   getDefaultLegacyDocumentPath,
@@ -28,10 +29,11 @@ export const LEGACY_DOCUMENT_PATH = getDefaultLegacyDocumentPath({
 export function createDocumentStore(options = {}) {
   return createDocumentStoreCore(
     {
-      mkdir,
+      mkdir: (_permission, ...args) => mkdir(...args),
       readFile,
-      rm,
-      writeFile,
+      rm: (_permission, ...args) => rm(...args),
+      writeFile: (_permission, ...args) => writeFile(...args),
+      bindEffectBoundary,
       path,
       cwd: () => process.cwd(),
     },

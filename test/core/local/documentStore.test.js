@@ -24,6 +24,8 @@ import {
   normalizeWorkflow,
 } from '../../../src/core/local/workflow.js';
 
+const TEST_PERMISSION = Object.freeze({});
+
 /**
  * Build a default injected dependency set for the core document store.
  * @param {object} [overrides] Optional dependency overrides.
@@ -31,10 +33,13 @@ import {
  */
 function createDeps(overrides = {}) {
   return {
-    mkdir,
+    mkdir: overrides.mkdir ?? ((_permission, ...args) => mkdir(...args)),
     readFile,
-    rm,
-    writeFile,
+    rm: overrides.rm ?? ((_permission, ...args) => rm(...args)),
+    writeFile:
+      overrides.writeFile ?? ((_permission, ...args) => writeFile(...args)),
+    bindEffectBoundary:
+      overrides.bindEffectBoundary ?? (handler => handler(TEST_PERMISSION)),
     path,
     cwd: () => process.cwd(),
     normalizeWorkflow,
@@ -65,6 +70,54 @@ describe('createDocumentStoreCore', () => {
 
   afterEach(async () => {
     await rm(tempDir, { recursive: true, force: true });
+  });
+
+  test('forwards one boundary permission to injected persistence effects', async () => {
+    const permission = Object.freeze({});
+    const bindEffectBoundary = jest.fn(handler => handler(permission));
+    const createDirectory = jest.fn(async () => {});
+    const removeFile = jest.fn(async () => {});
+    const persistFile = jest.fn(async () => {});
+    const storedWorkflow = JSON.stringify({
+      steps: DEFAULT_SEQUENCE,
+      activeIndex: 0,
+      heading: 'Thesis',
+    });
+    const store = createDocumentStoreCore(
+      createDeps({
+        bindEffectBoundary,
+        mkdir: createDirectory,
+        readFile: async filePath =>
+          filePath === workflowPath ? storedWorkflow : '',
+        rm: removeFile,
+        writeFile: persistFile,
+      }),
+      { workflowPath, workflowDir, legacyDocumentPath }
+    );
+
+    await store.saveDocument('thesis', '# Updated thesis');
+
+    expect(bindEffectBoundary).toHaveBeenCalledTimes(1);
+    expect(createDirectory).toHaveBeenCalledWith(
+      permission,
+      path.join(workflowDir, 'documents'),
+      {
+        recursive: true,
+      }
+    );
+    expect(persistFile).toHaveBeenCalledWith(
+      permission,
+      path.join(workflowDir, 'documents', 'thesis.md'),
+      '# Updated thesis',
+      'utf8'
+    );
+    expect(persistFile).toHaveBeenCalledWith(
+      permission,
+      workflowPath,
+      expect.any(String),
+      'utf8'
+    );
+    expect(removeFile).not.toHaveBeenCalled();
   });
 
   test('bootstraps from legacy markdown and persists the initial workflow', async () => {
@@ -492,7 +545,9 @@ describe('document store pruning and persistence', () => {
       ],
     };
 
-    await expect(pruneTrailingDrafts(state, workflow)).resolves.toBe(workflow);
+    await expect(
+      pruneTrailingDrafts(state, workflow, TEST_PERMISSION)
+    ).resolves.toBe(workflow);
   });
 
   test('canPruneTrailingDraft respects the default-sequence minimum before pruning sparse workflows', () => {
@@ -586,7 +641,9 @@ describe('document store pruning and persistence', () => {
     };
     workflow.steps.length = 5;
 
-    await expect(pruneTrailingDrafts(state, workflow)).resolves.toBe(workflow);
+    await expect(
+      pruneTrailingDrafts(state, workflow, TEST_PERMISSION)
+    ).resolves.toBe(workflow);
   });
 
   test('renumbers mismatched draft identifiers in sequence', () => {
@@ -759,9 +816,10 @@ describe('document store save lifecycle', () => {
       ],
     };
 
-    await pruneTrailingDrafts(state, workflow);
+    await pruneTrailingDrafts(state, workflow, TEST_PERMISSION);
     expect(state.deps.rm).toHaveBeenNthCalledWith(
       1,
+      TEST_PERMISSION,
       path.join(state.documentDir, 'draft-2.md'),
       { force: true }
     );

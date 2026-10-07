@@ -11,13 +11,17 @@ import {
 } from './workflow.js';
 import { isMissingFileError } from '../commonCore.js';
 
+/** @typedef {import('../../../types/allow-effects').AllowEffects} AllowEffects */
+/** @typedef {import('../../../types/allow-effects').AllowEffectsBoundary} AllowEffectsBoundary */
+
 /**
  * Create a document store using injected filesystem and workflow dependencies.
  * @param {{
- *   mkdir: (path: string, options: { recursive: boolean }) => Promise<void>,
+ *   mkdir: (permission: AllowEffects, path: string, options: { recursive: boolean }) => Promise<void>,
  *   readFile: (path: string, encoding: string) => Promise<string>,
- *   rm: (path: string, options: { force: boolean }) => Promise<void>,
- *   writeFile: (path: string, data: string, encoding: string) => Promise<void>,
+ *   rm: (permission: AllowEffects, path: string, options: { force: boolean }) => Promise<void>,
+ *   writeFile: (permission: AllowEffects, path: string, data: string, encoding: string) => Promise<void>,
+ *   bindEffectBoundary: AllowEffectsBoundary,
  *   path: {
  *     dirname: (input: string) => string,
  *     join: (...parts: string[]) => string,
@@ -63,11 +67,22 @@ export function createDocumentStoreCore(deps, options = {}) {
 
   return {
     workflowPath: state.workflowPath,
-    loadWorkflow: () => loadWorkflow(state),
+    loadWorkflow: () =>
+      state.deps.bindEffectBoundary(permission =>
+        loadWorkflow(state, permission)
+      ),
     saveDocument: (documentId, content) =>
-      saveDocument(state, documentId, content),
-    moveActiveIndex: direction => moveActiveIndex(state, direction),
-    setActiveIndex: nextIndex => setActiveIndex(state, nextIndex),
+      state.deps.bindEffectBoundary(permission =>
+        saveDocument(state, documentId, content, permission)
+      ),
+    moveActiveIndex: direction =>
+      state.deps.bindEffectBoundary(permission =>
+        moveActiveIndex(state, direction, permission)
+      ),
+    setActiveIndex: nextIndex =>
+      state.deps.bindEffectBoundary(permission =>
+        setActiveIndex(state, nextIndex, permission)
+      ),
   };
 }
 
@@ -116,10 +131,11 @@ export function getDefaultLegacyDocumentPath(deps) {
 /**
  * Build the store state from injected dependencies and options.
  * @param {{
- *   mkdir: (path: string, options: { recursive: boolean }) => Promise<void>,
+ *   mkdir: (permission: AllowEffects, path: string, options: { recursive: boolean }) => Promise<void>,
  *   readFile: (path: string, encoding: string) => Promise<string>,
- *   rm: (path: string, options: { force: boolean }) => Promise<void>,
- *   writeFile: (path: string, data: string, encoding: string) => Promise<void>,
+ *   rm: (permission: AllowEffects, path: string, options: { force: boolean }) => Promise<void>,
+ *   writeFile: (permission: AllowEffects, path: string, data: string, encoding: string) => Promise<void>,
+ *   bindEffectBoundary: AllowEffectsBoundary,
  *   path: {
  *     dirname: (input: string) => string,
  *     join: (...parts: string[]) => string,
@@ -139,10 +155,11 @@ export function getDefaultLegacyDocumentPath(deps) {
  *   legacyDocumentPath: string,
  *   now: () => Date,
  *   deps: {
- *     mkdir: (path: string, options: { recursive: boolean }) => Promise<void>,
+ *     mkdir: (permission: AllowEffects, path: string, options: { recursive: boolean }) => Promise<void>,
  *     readFile: (path: string, encoding: string) => Promise<string>,
- *     rm: (path: string, options: { force: boolean }) => Promise<void>,
- *     writeFile: (path: string, data: string, encoding: string) => Promise<void>,
+ *     rm: (permission: AllowEffects, path: string, options: { force: boolean }) => Promise<void>,
+ *     writeFile: (permission: AllowEffects, path: string, data: string, encoding: string) => Promise<void>,
+ *     bindEffectBoundary: AllowEffectsBoundary,
  *     path: { dirname: (input: string) => string, join: (...parts: string[]) => string },
  *     cwd: () => string,
  *     now?: () => Date,
@@ -227,11 +244,13 @@ async function readOptionalFile(deps, filePath, decode, missingValue) {
  * Write the normalized workflow to disk.
  * @param {ReturnType<typeof createDocumentStoreState>} state Store state.
  * @param {object} workflow Normalized workflow.
+ * @param {AllowEffects} permission Permission for workflow persistence.
  * @returns {Promise<void>} Nothing.
  */
-async function writeWorkflow(state, workflow) {
-  await state.deps.mkdir(state.workflowDir, { recursive: true });
+async function writeWorkflow(state, workflow, permission) {
+  await state.deps.mkdir(permission, state.workflowDir, { recursive: true });
   await state.deps.writeFile(
+    permission,
     state.workflowPath,
     JSON.stringify(workflow, null, 2),
     'utf8'
@@ -251,15 +270,16 @@ function getDocumentPath(state, step) {
 /**
  * Normalize or bootstrap a workflow.
  * @param {ReturnType<typeof createDocumentStoreState>} state Store state.
+ * @param {AllowEffects} permission Permission for bootstrap persistence.
  * @returns {Promise<{ steps: Array<{ id: string, title: string }>, activeIndex: number, heading: string }>} Workflow.
  */
-async function ensureWorkflow(state) {
+async function ensureWorkflow(state, permission) {
   const storedWorkflow = await readStoredWorkflow(state);
   if (storedWorkflow) {
     return storedWorkflow;
   }
 
-  return bootstrapWorkflow(state);
+  return bootstrapWorkflow(state, permission);
 }
 
 /**
@@ -279,18 +299,19 @@ async function readStoredWorkflow(state) {
 /**
  * Bootstrap the workflow from the legacy writer document.
  * @param {ReturnType<typeof createDocumentStoreState>} state Store state.
+ * @param {AllowEffects} permission Permission for bootstrap persistence.
  * @returns {Promise<{ steps: Array<{ id: string, title: string }>, activeIndex: number, heading: string }>} Normalized workflow.
  */
-async function bootstrapWorkflow(state) {
+async function bootstrapWorkflow(state, permission) {
   const legacyContent = await readText(state.deps, state.legacyDocumentPath);
   const workflow = normalizeWorkflow({
     steps: DEFAULT_SEQUENCE.map(step => ({ ...step })),
     heading: extractLevelOneHeading(legacyContent),
   });
 
-  await state.deps.mkdir(state.documentDir, { recursive: true });
-  await writeLegacyContent(state, workflow, legacyContent);
-  await writeWorkflow(state, workflow);
+  await state.deps.mkdir(permission, state.documentDir, { recursive: true });
+  await writeLegacyContent(state, workflow, legacyContent, permission);
+  await writeWorkflow(state, workflow, permission);
 
   return workflow;
 }
@@ -300,15 +321,17 @@ async function bootstrapWorkflow(state) {
  * @param {ReturnType<typeof createDocumentStoreState>} state Store state.
  * @param {{ steps: Array<{ id: string, title: string }> }} workflow Normalized workflow.
  * @param {string} legacyContent Legacy markdown content.
+ * @param {AllowEffects} permission Permission for the initial file write.
  * @returns {Promise<void>} Nothing.
  */
-async function writeLegacyContent(state, workflow, legacyContent) {
+async function writeLegacyContent(state, workflow, legacyContent, permission) {
   const firstStep = workflow.steps[0];
   if (!legacyContent || !firstStep) {
     return;
   }
 
   await state.deps.writeFile(
+    permission,
     getDocumentPath(state, firstStep),
     legacyContent,
     'utf8'
@@ -329,12 +352,13 @@ async function loadStepContent(state, step) {
  * Prune empty trailing drafts and renumber remaining drafts.
  * @param {ReturnType<typeof createDocumentStoreState>} state Store state.
  * @param {{ steps: Array<{ id: string, title: string }>, activeIndex: number }} workflow Workflow to mutate.
+ * @param {AllowEffects} permission Permission for workflow pruning writes.
  * @returns {Promise<void>} Nothing.
  */
-async function pruneWorkflow(state, workflow) {
-  await state.deps.mkdir(state.documentDir, { recursive: true });
+async function pruneWorkflow(state, workflow, permission) {
+  await state.deps.mkdir(permission, state.documentDir, { recursive: true });
 
-  const prunedWorkflow = await pruneTrailingDrafts(state, workflow);
+  const prunedWorkflow = await pruneTrailingDrafts(state, workflow, permission);
   renumberDraftSteps(state, prunedWorkflow);
   clampActiveIndex(prunedWorkflow);
 }
@@ -343,9 +367,10 @@ async function pruneWorkflow(state, workflow) {
  * Remove empty trailing drafts from the workflow.
  * @param {ReturnType<typeof createDocumentStoreState>} state Store state.
  * @param {{ steps: Array<{ id: string, title: string }>, activeIndex: number }} workflow Workflow to mutate.
+ * @param {AllowEffects} permission Permission for removing empty draft files.
  * @returns {Promise<{ steps: Array<{ id: string, title: string }>, activeIndex: number }>} Updated workflow.
  */
-export async function pruneTrailingDrafts(state, workflow) {
+export async function pruneTrailingDrafts(state, workflow, permission) {
   while (canPruneTrailingDraft(state, workflow)) {
     const lastStep = workflow.steps.at(-1);
     if (!lastStep) {
@@ -356,7 +381,9 @@ export async function pruneTrailingDrafts(state, workflow) {
       return workflow;
     }
 
-    await state.deps.rm(getDocumentPath(state, lastStep), { force: true });
+    await state.deps.rm(permission, getDocumentPath(state, lastStep), {
+      force: true,
+    });
     workflow.steps.pop();
   }
 
@@ -458,6 +485,7 @@ async function serializeWorkflow(state, workflow) {
 /**
  * Load the current workflow response.
  * @param {ReturnType<typeof createDocumentStoreState>} state Store state.
+ * @param {AllowEffects} permission Permission for bootstrap or prune writes.
  * @returns {Promise<{
  *   workflowPath: string,
  *   activeIndex: number,
@@ -465,8 +493,8 @@ async function serializeWorkflow(state, workflow) {
  *   documents: Array<{ id: string, title: string, path: string, content: string }>,
  * }>} Workflow response.
  */
-async function loadWorkflow(state) {
-  return updateStoredWorkflow(state, workflow => workflow);
+async function loadWorkflow(state, permission) {
+  return updateStoredWorkflow(state, workflow => workflow, permission);
 }
 
 /**
@@ -474,10 +502,11 @@ async function loadWorkflow(state) {
  * @param {ReturnType<typeof createDocumentStoreState>} state Store state.
  * @param {string} documentId Document identifier.
  * @param {string} content Document content.
+ * @param {AllowEffects} permission Permission for document and workflow writes.
  * @returns {Promise<{ bytes: number, savedAt: string, documentId: string, path: string }>} Save result.
  */
-async function saveDocument(state, documentId, content) {
-  const workflow = await ensureWorkflow(state);
+async function saveDocument(state, documentId, content, permission) {
+  const workflow = await ensureWorkflow(state, permission);
   const step = workflow.steps.find(candidate => candidate.id === documentId);
 
   if (!step) {
@@ -489,13 +518,20 @@ async function saveDocument(state, documentId, content) {
     workflow.heading = nextHeading;
   }
 
-  await state.deps.mkdir(state.documentDir, { recursive: true });
+  await state.deps.mkdir(permission, state.documentDir, { recursive: true });
   if (content.trim()) {
-    await state.deps.writeFile(getDocumentPath(state, step), content, 'utf8');
+    await state.deps.writeFile(
+      permission,
+      getDocumentPath(state, step),
+      content,
+      'utf8'
+    );
   } else {
-    await state.deps.rm(getDocumentPath(state, step), { force: true });
+    await state.deps.rm(permission, getDocumentPath(state, step), {
+      force: true,
+    });
   }
-  await persistWorkflow(state, workflow);
+  await persistWorkflow(state, workflow, permission);
 
   return {
     bytes: Buffer.byteLength(content, 'utf8'),
@@ -509,6 +545,7 @@ async function saveDocument(state, documentId, content) {
  * Move the active index and append a draft when moving past the end.
  * @param {ReturnType<typeof createDocumentStoreState>} state Store state.
  * @param {number} direction Movement direction.
+ * @param {AllowEffects} permission Permission for workflow updates.
  * @returns {Promise<{
  *   workflowPath: string,
  *   activeIndex: number,
@@ -516,19 +553,24 @@ async function saveDocument(state, documentId, content) {
  *   documents: Array<{ id: string, title: string, path: string, content: string }>,
  * }>} Updated workflow response.
  */
-async function moveActiveIndex(state, direction) {
-  return updateStoredWorkflow(state, workflow => {
-    if (shouldAppendDraft(state, workflow, direction)) {
-      appendDraftStep(state, workflow);
-    }
-    return selectWorkflowIndex(workflow, workflow.activeIndex + direction);
-  });
+async function moveActiveIndex(state, direction, permission) {
+  return updateStoredWorkflow(
+    state,
+    workflow => {
+      if (shouldAppendDraft(state, workflow, direction)) {
+        appendDraftStep(state, workflow);
+      }
+      return selectWorkflowIndex(workflow, workflow.activeIndex + direction);
+    },
+    permission
+  );
 }
 
 /**
  * Update the active index without appending a new draft.
  * @param {ReturnType<typeof createDocumentStoreState>} state Store state.
  * @param {number} nextIndex Desired active index.
+ * @param {AllowEffects} permission Permission for workflow updates.
  * @returns {Promise<{
  *   workflowPath: string,
  *   activeIndex: number,
@@ -536,9 +578,11 @@ async function moveActiveIndex(state, direction) {
  *   documents: Array<{ id: string, title: string, path: string, content: string }>,
  * }>} Updated workflow response.
  */
-async function setActiveIndex(state, nextIndex) {
-  return updateStoredWorkflow(state, workflow =>
-    selectWorkflowIndex(workflow, nextIndex)
+async function setActiveIndex(state, nextIndex, permission) {
+  return updateStoredWorkflow(
+    state,
+    workflow => selectWorkflowIndex(workflow, nextIndex),
+    permission
   );
 }
 
@@ -557,6 +601,7 @@ function selectWorkflowIndex(workflow, nextIndex) {
  * Load, transform, persist and serialize one workflow operation.
  * @param {ReturnType<typeof createDocumentStoreState>} state Store state.
  * @param {(workflow: Awaited<ReturnType<typeof ensureWorkflow>>) => Awaited<ReturnType<typeof ensureWorkflow>>} transform Operation applied before persistence.
+ * @param {AllowEffects} permission Permission for workflow persistence.
  * @returns {Promise<{
  *   workflowPath: string,
  *   activeIndex: number,
@@ -564,26 +609,28 @@ function selectWorkflowIndex(workflow, nextIndex) {
  *   documents: Array<{ id: string, title: string, path: string, content: string }>,
  * }>} Updated workflow response.
  */
-async function updateStoredWorkflow(state, transform) {
-  const workflow = await ensureWorkflow(state);
-  return persistAndSerializeWorkflow(state, transform(workflow));
+async function updateStoredWorkflow(state, transform, permission) {
+  const workflow = await ensureWorkflow(state, permission);
+  return persistAndSerializeWorkflow(state, transform(workflow), permission);
 }
 
 /**
  * Persist a workflow after pruning trailing drafts.
  * @param {ReturnType<typeof createDocumentStoreState>} state Store state.
  * @param {{ steps: Array<{ id: string, title: string }>, activeIndex: number, heading: string }} workflow Workflow to persist.
+ * @param {AllowEffects} permission Permission for persistence and pruning.
  * @returns {Promise<void>} Nothing.
  */
-async function persistWorkflow(state, workflow) {
-  await pruneWorkflow(state, workflow);
-  await writeWorkflow(state, workflow);
+async function persistWorkflow(state, workflow, permission) {
+  await pruneWorkflow(state, workflow, permission);
+  await writeWorkflow(state, workflow, permission);
 }
 
 /**
  * Persist a workflow and return the serialized snapshot.
  * @param {ReturnType<typeof createDocumentStoreState>} state Store state.
  * @param {{ steps: Array<{ id: string, title: string }>, activeIndex: number, heading: string }} workflow Workflow to persist.
+ * @param {AllowEffects} permission Permission for workflow persistence.
  * @returns {Promise<{
  *   workflowPath: string,
  *   activeIndex: number,
@@ -591,8 +638,8 @@ async function persistWorkflow(state, workflow) {
  *   documents: Array<{ id: string, title: string, path: string, content: string }>,
  * }>} Serialized workflow response.
  */
-async function persistAndSerializeWorkflow(state, workflow) {
-  await persistWorkflow(state, workflow);
+async function persistAndSerializeWorkflow(state, workflow, permission) {
+  await persistWorkflow(state, workflow, permission);
   return serializeWorkflow(state, workflow);
 }
 
