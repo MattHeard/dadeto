@@ -220,13 +220,7 @@ function createStoryReferences(db, { storyId, pageId, variantId }) {
  * @param {() => FieldValue} options.getServerTimestamp Function returning server timestamps.
  * @returns {void}
  */
-function queueVariantOptions({
-  batch,
-  submission,
-  variantRef,
-  randomUUID,
-  getServerTimestamp,
-}) {
+function queueVariantOptions(options) {
   // Stryker disable all -- option creation uses the fixed Firestore payload protocol.
   /**
    * Queue one story option in the shared write batch.
@@ -235,16 +229,18 @@ function queueVariantOptions({
    * @returns {void} Nothing.
    */
   const queueOption = (text, position) => {
-    const optionRef = variantRef.collection('options').doc(randomUUID());
+    const optionRef = options.variantRef
+      .collection('options')
+      .doc(options.randomUUID());
 
-    batch.set(optionRef, {
+    options.batch.set(optionRef, {
       content: text,
-      createdAt: getServerTimestamp(),
+      createdAt: options.getServerTimestamp(),
       position,
     });
   };
   forEachMappedEntries(
-    normalizeOptions(submission.options),
+    normalizeOptions(options.submission.options),
     text => text,
     queueOption
   );

@@ -227,30 +227,24 @@ function buildSimulatorRequest(req, route) {
  * Send a simulator route result to an Express response.
  * @param {Promise<{ status: number, body?: unknown }>} resultPromise Route result.
  * @param {import('express').Response} res Express response.
+ * @returns {Promise<import('express').Response>} Resolves with the written response.
  */
 async function sendRouteResponse(resultPromise, res) {
   const result = await resultPromise;
-  if (result.status >= 400) {
-    res.status(result.status);
+  const isError = result.status >= 400;
+  res.status(isError ? result.status : result.status || 200);
+  if (isError) {
     if (
       typeof result.body === 'string' ||
       Buffer.isBuffer(result.body) ||
       result.body instanceof Uint8Array
-    ) {
-      res.send(result.body);
-      return;
-    }
-    res.json(result.body);
-    return;
+    )
+      return res.send(result.body);
   }
 
-  res.status(result.status || 200);
-  if (result.body === undefined) {
-    res.end();
-    return;
-  }
+  if (!isError && result.body === undefined) return res.end();
 
-  res.json(result.body);
+  return res.json(result.body);
 }
 
 export { sendRouteResponse };
