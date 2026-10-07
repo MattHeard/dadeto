@@ -318,8 +318,11 @@ function safeStringifyValueAtPath(value, input) {
  * @returns {string} User-facing error message describing the failure.
  */
 function formatStringifyError(stringifyError, input) {
-  const message = errorMessageOrDefault(stringifyError);
-  return `Error stringifying final value at path "${input}": ${message}`;
+  return formatGetError(
+    'Error stringifying final value at path',
+    stringifyError,
+    input
+  );
 }
 
 /**
@@ -331,6 +334,17 @@ function errorMessageOrDefault(error) {
   if (error instanceof Error) return error.message;
   if (typeof error === 'string') return error;
   return 'unknown error';
+}
+
+/**
+ * Add the input path to a retrieval diagnostic.
+ * @param {string} context Error context before the path.
+ * @param {unknown} error Thrown value.
+ * @param {string} input Original path input.
+ * @returns {string} Contextual error message.
+ */
+function formatGetError(context, error, input) {
+  return `${context} "${input}": ${errorMessageOrDefault(error)}`;
 }
 
 /**
@@ -407,8 +421,11 @@ function getDataWithCatch(getData, input) {
  * @returns {string} Formatted error string for diagnostics.
  */
 function describeGetDataError(error, input) {
-  const message = errorMessageOrDefault(error);
-  return `Error during data retrieval or path traversal for "${input}": ${message}`;
+  return formatGetError(
+    'Error during data retrieval or path traversal for',
+    error,
+    input
+  );
 }
 
 /**
