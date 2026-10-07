@@ -37,15 +37,30 @@ export function createCloneScanHandle(deps, configPath) {
   return async () => {
     const options = readScanOptions(deps, configPath);
     const sources = collectScanSources(deps, options);
+    const sourceByPath = new Map(sources.map(source => [source.path, source]));
     const statistics = deps.createStatistics();
     const detector = deps.createDetector(options);
     Object.entries(statistics.subscribe()).forEach(([event, handler]) => {
-      detector.on(event, handler);
+      detector.on(
+        event,
+        event === 'CLONE_FOUND'
+          ? payload => {
+              if (hasValidCloneRanges(payload.clone, sourceByPath)) {
+                handler(payload);
+              }
+            }
+          : handler
+      );
     });
     const clones = [];
     for (const source of sources.toReversed()) {
+      const detected = await detector.detect(
+        source.path,
+        source.content,
+        source.format
+      );
       clones.push(
-        ...(await detector.detect(source.path, source.content, source.format))
+        ...detected.filter(clone => hasValidCloneRanges(clone, sourceByPath))
       );
     }
     const report = {
@@ -55,6 +70,34 @@ export function createCloneScanHandle(deps, configPath) {
     publishCloneReport(report, options.output, deps);
     return report;
   };
+}
+
+/**
+ * Reject detector results whose source ranges are missing, reversed, or out of bounds.
+ * @param {Record<string, any>} clone Detector clone.
+ * @param {Map<string, ScanSource>} sourceByPath Scanned source lookup.
+ * @returns {boolean} Whether both clone occurrences map to valid source ranges.
+ */
+function hasValidCloneRanges(clone, sourceByPath) {
+  if (!clone?.duplicationA || !clone?.duplicationB) return false;
+  return [clone.duplicationA, clone.duplicationB].every(side => {
+    const source = sourceByPath.get(side.sourceId);
+    const [start, end] = side.range ?? [];
+    return (
+      source !== undefined &&
+      Number.isInteger(start) &&
+      Number.isInteger(end) &&
+      start >= 0 &&
+      start <= end &&
+      end <= source.content.length &&
+      Number.isInteger(side.start?.line) &&
+      Number.isInteger(side.end?.line) &&
+      side.start.line <= side.end.line &&
+      Number.isInteger(side.start?.position) &&
+      Number.isInteger(side.end?.position) &&
+      side.start.position <= side.end.position
+    );
+  });
 }
 
 /**

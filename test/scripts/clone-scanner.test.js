@@ -104,6 +104,38 @@ describe('original clone engine with safe enumeration', () => {
     expect(report.statistics.total.sources).toBe(0);
   });
 
+  test('excludes detector clones with reversed source ranges', async () => {
+    const { deps, run } = fixture();
+    const clone = {
+      format: 'javascript',
+      duplicationA: {
+        sourceId: 'fixture/a.js',
+        start: { line: 1, position: 0 },
+        end: { line: 1, position: 10 },
+        range: [0, 10],
+      },
+      duplicationB: {
+        sourceId: 'fixture/b.js',
+        start: { line: 8, position: 80 },
+        end: { line: 2, position: 20 },
+        range: [80, 20],
+      },
+    };
+    const handlers = new Map();
+    deps.createDetector = () => ({
+      on: jest.fn((event, handler) => handlers.set(event, handler)),
+      detect: async () => {
+        handlers.get('CLONE_FOUND')?.({ clone });
+        return [clone];
+      },
+    });
+
+    const report = await run();
+
+    expect(report.duplicates).toEqual([]);
+    expect(report.statistics.total.clones).toBe(0);
+  });
+
   test('escapes code and filenames in the HTML report while leaving JSON untouched', async () => {
     const { deps, files, writes, run } = fixture();
     deps.readDirectory.mockReturnValue([
@@ -114,10 +146,8 @@ describe('original clone engine with safe enumeration', () => {
         isSymbolicLink: () => false,
       },
     ]);
-    files.set(
-      'fixture/<a>.js',
-      SOURCE.replace('duplicate()', 'duplicate() /* <script> */')
-    );
+    const source = SOURCE.replace('duplicate()', 'duplicate() /* <script> */');
+    files.set('fixture/<a>.js', source);
     deps.createDetector = () => ({
       on: jest.fn(),
       detect: async () => [
@@ -125,14 +155,15 @@ describe('original clone engine with safe enumeration', () => {
           format: 'javascript',
           duplicationA: {
             sourceId: 'fixture/<a>.js',
-            start: { line: 1 },
-            end: { line: 6 },
-            range: [0, 100],
+            start: { line: 1, position: 0 },
+            end: { line: 6, position: source.length },
+            range: [0, source.length],
           },
           duplicationB: {
             sourceId: 'fixture/<a>.js',
-            start: { line: 1 },
-            end: { line: 6 },
+            start: { line: 1, position: 0 },
+            end: { line: 6, position: source.length },
+            range: [0, source.length],
           },
         },
       ],
