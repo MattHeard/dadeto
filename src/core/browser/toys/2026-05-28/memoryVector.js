@@ -260,17 +260,6 @@ function buildMemoryVectorResponseFromRoot(request, root, options = {}) {
     );
   }
 
-  return buildResolvedMemoryVectorResponse(request, root, options);
-}
-
-/**
- * Build the structured vector payload once the memory root is available.
- * @param {{ memoryLocation: string, path: string }} request Normalized request.
- * @param {object | unknown[]} root Memory root to inspect.
- * @param {MemoryVectorOptions} [options] Projection and error-handling overrides.
- * @returns {MemoryVectorResponse} Structured response.
- */
-function buildResolvedMemoryVectorResponse(request, root, options = {}) {
   return buildResolvedMemoryVectorResponseFromPath(
     request,
     resolveMemoryPath(root, request.path),
@@ -578,7 +567,6 @@ export {
   buildMemoryVectorResponseFromRoot,
   buildMemoryVectorResponseFromRootResult,
   buildMemoryVectorResponseWithFallback,
-  buildResolvedMemoryVectorResponse,
   buildResolvedMemoryVectorResponseFromPath,
   buildResolvedMemoryVectorResponseFromValue,
   formatThrownError,

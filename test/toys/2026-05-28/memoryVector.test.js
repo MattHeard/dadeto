@@ -2,7 +2,6 @@ import { describe, expect, test } from '@jest/globals';
 import {
   buildMemoryVectorResponse,
   buildMemoryVectorResponseFromRootResult,
-  buildResolvedMemoryVectorResponse,
   buildResolvedMemoryVectorResponseFromPath,
   buildResolvedMemoryVectorResponseFromValue,
   memoryVector,
@@ -488,7 +487,7 @@ describe('memoryVector default helpers', () => {
     });
 
     expect(
-      buildResolvedMemoryVectorResponse(request, {
+      memoryVectorTestOnly.buildMemoryVectorResponseFromRoot(request, {
         profile: {
           bucket: 'sky',
         },
