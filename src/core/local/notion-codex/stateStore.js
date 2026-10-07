@@ -5,6 +5,9 @@ import {
   toSourceObject,
 } from './valueHelpers.js';
 
+/** @typedef {import('../../../../types/allow-effects').AllowEffects} AllowEffects */
+/** @typedef {import('../../../../types/allow-effects').AllowEffectsBoundary} AllowEffectsBoundary */
+
 /**
  * @param {unknown} value Candidate run object.
  * @returns {Record<string, unknown> | null} Active run object or null.
@@ -81,9 +84,10 @@ function readErrorCode(error) {
  * @param {{
  *   statePath: string,
  *   pathModule: { dirname: (input: string) => string },
- *   mkdirImpl: (dirPath: string, options: { recursive: boolean }) => Promise<void>,
+ *   mkdirImpl: (permission: AllowEffects, dirPath: string, options: { recursive: boolean }) => Promise<void>,
  *   readFileImpl: (filePath: string, encoding: 'utf8') => Promise<string>,
- *   writeFileImpl: (filePath: string, data: string, encoding: 'utf8') => Promise<void>
+ *   writeFileImpl: (permission: AllowEffects, filePath: string, data: string, encoding: 'utf8') => Promise<void>,
+ *   bindEffectBoundary: AllowEffectsBoundary
  * }} options Store dependencies.
  * @returns {{
  *   readState: () => Promise<Record<string, unknown>>,
@@ -104,10 +108,13 @@ export function createNotionCodexStateStore(options) {
     readStatePath,
     pathModule: options.pathModule,
   });
+  /** @type {(state: Record<string, unknown>) => Promise<void>} */
+  const bindWriteState = state =>
+    options.bindEffectBoundary(permission => writeState(permission, state));
 
   return {
     readState,
-    writeState,
+    writeState: bindWriteState,
   };
 }
 
@@ -115,14 +122,15 @@ export function createNotionCodexStateStore(options) {
  * @param {{
  *   statePath: string,
  *   pathModule: { dirname: (input: string) => string },
- *   mkdirImpl: (dirPath: string, options: { recursive: boolean }) => Promise<void>,
+ *   mkdirImpl: (permission: AllowEffects, dirPath: string, options: { recursive: boolean }) => Promise<void>,
  *   readFileImpl: (filePath: string, encoding: 'utf8') => Promise<string>,
- *   writeFileImpl: (filePath: string, data: string, encoding: 'utf8') => Promise<void>
+ *   writeFileImpl: (permission: AllowEffects, filePath: string, data: string, encoding: 'utf8') => Promise<void>,
+ *   bindEffectBoundary: AllowEffectsBoundary
  * }} options Store dependencies.
  * @returns {{
- *   mkdirImpl: (dirPath: string, options: { recursive: boolean }) => Promise<void>,
+ *   mkdirImpl: (permission: AllowEffects, dirPath: string, options: { recursive: boolean }) => Promise<void>,
  *   readFileImpl: (filePath: string, encoding: 'utf8') => Promise<string>,
- *   writeFileImpl: (filePath: string, data: string, encoding: 'utf8') => Promise<void>,
+ *   writeFileImpl: (permission: AllowEffects, filePath: string, data: string, encoding: 'utf8') => Promise<void>,
  *   pathModule: { dirname: (input: string) => string },
  *   readStatePath: string
  * }} Resolved store dependencies.
@@ -178,12 +186,12 @@ function readStateErrorFallback(error) {
 
 /**
  * @param {{
- *   mkdirImpl: (dirPath: string, options: { recursive: boolean }) => Promise<void>,
- *   writeFileImpl: (filePath: string, data: string, encoding: 'utf8') => Promise<void>,
+ *   mkdirImpl: (permission: AllowEffects, dirPath: string, options: { recursive: boolean }) => Promise<void>,
+ *   writeFileImpl: (permission: AllowEffects, filePath: string, data: string, encoding: 'utf8') => Promise<void>,
  *   pathModule: { dirname: (input: string) => string },
  *   readStatePath: string
  * }} options Write state dependencies.
- * @returns {(state: Record<string, unknown>) => Promise<void>} Writer for persisted state.
+ * @returns {(permission: AllowEffects, state: Record<string, unknown>) => Promise<void>} Writer for persisted state.
  */
 function createWriteState({
   mkdirImpl,
@@ -191,10 +199,12 @@ function createWriteState({
   readStatePath,
   pathModule,
 }) {
-  return async state => {
-    await mkdirImpl(pathModule.dirname(readStatePath), { recursive: true });
+  return async (permission, state) => {
+    await mkdirImpl(permission, pathModule.dirname(readStatePath), {
+      recursive: true,
+    });
     const normalizedState = normalizeNotionCodexState(state);
     const serializedState = JSON.stringify(normalizedState, null, 2);
-    await writeFileImpl(readStatePath, serializedState, 'utf8');
+    await writeFileImpl(permission, readStatePath, serializedState, 'utf8');
   };
 }

@@ -6,13 +6,18 @@ import {
   normalizeNotionCodexState,
 } from '../../../../src/core/local/notion-codex/stateStore.js';
 
+const TEST_PERMISSION = Object.freeze({});
+const bindEffectBoundary = handler => handler(TEST_PERMISSION);
+
 describe('notion codex state store core', () => {
   test('normalizes defaults and writes normalized state', async () => {
+    const effectBoundary = jest.fn(handler => handler(TEST_PERMISSION));
     const mkdirImpl = jest.fn(async () => {});
     const writeFileImpl = jest.fn(async () => {});
     const store = createNotionCodexStateStore({
       statePath: '/tmp/state.json',
       pathModule: path,
+      bindEffectBoundary: effectBoundary,
       readFileImpl: jest.fn(async () => '{}'),
       mkdirImpl,
       writeFileImpl,
@@ -22,8 +27,12 @@ describe('notion codex state store core', () => {
       eventLog: Array.from({ length: 30 }, (_, i) => i),
     });
 
-    expect(mkdirImpl).toHaveBeenCalledWith('/tmp', { recursive: true });
+    expect(effectBoundary).toHaveBeenCalledTimes(1);
+    expect(mkdirImpl).toHaveBeenCalledWith(TEST_PERMISSION, '/tmp', {
+      recursive: true,
+    });
     expect(writeFileImpl).toHaveBeenCalledWith(
+      TEST_PERMISSION,
       '/tmp/state.json',
       expect.stringContaining('"eventLog"'),
       'utf8'
@@ -81,6 +90,7 @@ describe('notion codex state store core', () => {
     const store = createNotionCodexStateStore({
       statePath: '/tmp/state.json',
       pathModule: path,
+      bindEffectBoundary,
       readFileImpl,
     });
 
@@ -119,6 +129,7 @@ describe('notion codex state store core', () => {
     const store = createNotionCodexStateStore({
       statePath: '/tmp/state.json',
       pathModule: path,
+      bindEffectBoundary,
       mkdirImpl: async () => {},
       readFileImpl: async () => '{}',
       writeFileImpl: async () => {},
@@ -132,6 +143,7 @@ describe('notion codex state store core', () => {
     const store = createNotionCodexStateStore({
       statePath: '/tmp/state.json',
       pathModule: path,
+      bindEffectBoundary,
       readFileImpl: jest.fn(async () => {
         throw notFound;
       }),
@@ -144,6 +156,7 @@ describe('notion codex state store core', () => {
     const badStore = createNotionCodexStateStore({
       statePath: '/tmp/state.json',
       pathModule: path,
+      bindEffectBoundary,
       readFileImpl: jest.fn(async () => {
         throw fatal;
       }),
@@ -155,6 +168,7 @@ describe('notion codex state store core', () => {
     const store = createNotionCodexStateStore({
       statePath: '/tmp/state.json',
       pathModule: path,
+      bindEffectBoundary,
       readFileImpl: jest.fn(async () => {
         throw null;
       }),
@@ -167,6 +181,7 @@ describe('notion codex state store core', () => {
     const store = createNotionCodexStateStore({
       statePath: '/tmp/state.json',
       pathModule: path,
+      bindEffectBoundary,
       readFileImpl: jest.fn(async () => {
         throw { code: 123 };
       }),

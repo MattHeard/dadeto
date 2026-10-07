@@ -61,3 +61,7 @@ The clone scanner binds report publication as one local command and forwards its
 ## Eleventh extension: document-store writes
 
 The local document store binds each public store command that can bootstrap, prune, or persist workflow state. One permission is threaded through those helpers to injected `mkdir`, `rm`, and `writeFile` callbacks. Injected file reads remain outside the permission boundary.
+
+## Twelfth extension: Notion Codex state and outcomes
+
+The Notion Codex state and outcome stores bind each write operation and forward its permission to the injected directory and file writers. Read operations remain permission-free; the local adapters discard the token only when delegating to Node's native filesystem functions.

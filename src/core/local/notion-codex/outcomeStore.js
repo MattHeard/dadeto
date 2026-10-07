@@ -2,6 +2,9 @@
 // normalization and persistence boundary covered by the outcome-store suite.
 import * as outcomeSupport from '../../commonCore.js';
 
+/** @typedef {import('../../../../types/allow-effects').AllowEffects} AllowEffects */
+/** @typedef {import('../../../../types/allow-effects').AllowEffectsBoundary} AllowEffectsBoundary */
+
 /**
  * Normalize a candidate outcome payload.
  * @param {unknown} value Candidate outcome payload.
@@ -31,9 +34,10 @@ export function normalizeNotionCodexOutcome(value) {
  * @param {{
  *   outcomeDir: string,
  *   pathModule: { join: (first: string, ...parts: string[]) => string },
- *   mkdirImpl: (dirPath: string, options: { recursive: boolean }) => Promise<void>,
+ *   mkdirImpl: (permission: AllowEffects, dirPath: string, options: { recursive: boolean }) => Promise<void>,
  *   readFileImpl: (filePath: string, encoding: 'utf8') => Promise<string>,
- *   writeFileImpl: (filePath: string, data: string, encoding: 'utf8') => Promise<void>
+ *   writeFileImpl: (permission: AllowEffects, filePath: string, data: string, encoding: 'utf8') => Promise<void>,
+ *   bindEffectBoundary: AllowEffectsBoundary
  * }} options Store dependencies.
  * @returns {{
  *   readOutcome: (runId: string) => Promise<{ outcome: string, summary: string } | null>,
@@ -48,7 +52,11 @@ export function createNotionCodexOutcomeStore(options) {
     writeFileImpl: options.writeFileImpl,
   };
   const readOutcome = readStoredOutcome.bind(null, context);
-  const writeOutcome = writeStoredOutcome.bind(null, context);
+  /** @type {(runId: string, outcome: Record<string, unknown>) => Promise<void>} */
+  const writeOutcome = (runId, outcome) =>
+    options.bindEffectBoundary(permission =>
+      writeStoredOutcome(permission, context, runId, outcome)
+    );
   return { readOutcome, writeOutcome };
 }
 
@@ -83,21 +91,22 @@ function recoverMissingOutcome(error) {
 
 /**
  * Persist an outcome after ensuring its current directory exists.
+ * @param {AllowEffects} permission Permission for outcome persistence.
  * @param {{options: Parameters<typeof createNotionCodexOutcomeStore>[0]} & Pick<Parameters<typeof createNotionCodexOutcomeStore>[0], 'mkdirImpl'|'readFileImpl'|'writeFileImpl'>} context Captured file operations and live path dependencies.
  * @param {string} runId Run identifier.
  * @param {Record<string, unknown>} outcome Outcome payload.
  * @returns {Promise<void>} Completion after persistence.
  */
-async function writeStoredOutcome(context, runId, outcome) {
+async function writeStoredOutcome(permission, context, runId, outcome) {
   const { options, mkdirImpl, writeFileImpl } = context;
-  await mkdirImpl(options.outcomeDir, { recursive: true });
+  await mkdirImpl(permission, options.outcomeDir, { recursive: true });
   const outcomePath = getOutcomePath(
     options.outcomeDir,
     runId,
     options.pathModule
   );
   const serializedOutcome = serializeOutcome(outcome);
-  await writeFileImpl(outcomePath, serializedOutcome, 'utf8');
+  await writeFileImpl(permission, outcomePath, serializedOutcome, 'utf8');
 }
 
 /**

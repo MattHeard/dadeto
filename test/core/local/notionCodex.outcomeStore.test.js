@@ -3,6 +3,10 @@ import {
   normalizeNotionCodexOutcome,
 } from '../../../src/core/local/notion-codex/outcomeStore.js';
 import path from 'node:path';
+import { jest } from '@jest/globals';
+
+const TEST_PERMISSION = Object.freeze({});
+const bindEffectBoundary = handler => handler(TEST_PERMISSION);
 
 describe('core local notion codex outcome store', () => {
   test('captures file operations but keeps path dependencies live across calls', async () => {
@@ -10,7 +14,8 @@ describe('core local notion codex outcome store', () => {
     const options = {
       outcomeDir: '/tmp/first',
       pathModule: path,
-      async mkdirImpl(directory) {
+      bindEffectBoundary,
+      async mkdirImpl(_permission, directory) {
         events.push(['mkdir', directory]);
         options.outcomeDir = '/tmp/after-mkdir';
       },
@@ -18,7 +23,7 @@ describe('core local notion codex outcome store', () => {
         events.push(['read', filename]);
         return '{}';
       },
-      async writeFileImpl(filename, contents) {
+      async writeFileImpl(_permission, filename, contents) {
         events.push(['write', filename, contents]);
       },
     };
@@ -60,6 +65,7 @@ describe('core local notion codex outcome store', () => {
     const store = createNotionCodexOutcomeStore({
       outcomeDir: '/tmp/outcomes',
       pathModule: path,
+      bindEffectBoundary,
       async readFileImpl() {
         const error = new Error('missing');
         error.code = 'ENOENT';
@@ -74,6 +80,7 @@ describe('core local notion codex outcome store', () => {
     const store = createNotionCodexOutcomeStore({
       outcomeDir: '/tmp/outcomes',
       pathModule: path,
+      bindEffectBoundary,
       async readFileImpl(pathValue, encoding) {
         expect(pathValue).toBe('/tmp/outcomes/run-123.json');
         expect(encoding).toBe('utf8');
@@ -92,6 +99,7 @@ describe('core local notion codex outcome store', () => {
     const store = createNotionCodexOutcomeStore({
       outcomeDir: '/tmp/outcomes',
       pathModule: path,
+      bindEffectBoundary,
       async readFileImpl() {
         throw failure;
       },
@@ -105,10 +113,11 @@ describe('core local notion codex outcome store', () => {
     const store = createNotionCodexOutcomeStore({
       outcomeDir: '/tmp/outcomes',
       pathModule: path,
-      async mkdirImpl(pathValue, options) {
+      bindEffectBoundary,
+      async mkdirImpl(_permission, pathValue, options) {
         writes.push({ type: 'mkdir', pathValue, options });
       },
-      async writeFileImpl(pathValue, content, encoding) {
+      async writeFileImpl(_permission, pathValue, content, encoding) {
         writes.push({ type: 'writeFile', pathValue, content, encoding });
       },
     });
@@ -138,5 +147,33 @@ describe('core local notion codex outcome store', () => {
         encoding: 'utf8',
       },
     ]);
+  });
+
+  test('forwards the boundary permission to both outcome write adapters', async () => {
+    const permission = Object.freeze({});
+    const boundary = jest.fn(handler => handler(permission));
+    const mkdirImpl = jest.fn(async () => {});
+    const writeFileImpl = jest.fn(async () => {});
+    const store = createNotionCodexOutcomeStore({
+      outcomeDir: '/tmp/outcomes',
+      pathModule: path,
+      bindEffectBoundary: boundary,
+      mkdirImpl,
+      readFileImpl: async () => '{}',
+      writeFileImpl,
+    });
+
+    await store.writeOutcome('run-123', { outcome: 'complete' });
+
+    expect(boundary).toHaveBeenCalledTimes(1);
+    expect(mkdirImpl).toHaveBeenCalledWith(permission, '/tmp/outcomes', {
+      recursive: true,
+    });
+    expect(writeFileImpl).toHaveBeenCalledWith(
+      permission,
+      '/tmp/outcomes/run-123.json',
+      expect.any(String),
+      'utf8'
+    );
   });
 });
