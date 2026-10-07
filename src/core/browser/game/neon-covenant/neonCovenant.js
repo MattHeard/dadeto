@@ -2,7 +2,7 @@ import { createMosslightRuntime } from '../mosslight-valley/runtime.js';
 import { createSaveAdapter } from '../mosslight-valley/save.js';
 import { mosslightValley } from '../mosslight-valley/mosslightValley.js';
 import { startMosslightPage } from '../mosslight-valley/pagePresenter.js';
-import { registerMosslightTools } from '../mosslight-valley/webmcp.js';
+import { registerMosslightTools as registerGameTools } from '../mosslight-valley/webmcp.js';
 import { LAB_CONTENT } from './content.js';
 import { migratePersonnel, validPersonnel } from './personnel.js';
 import { validIncidentChains } from './incidents.js';
@@ -390,9 +390,9 @@ export function startNeonPage(options) {
     createRuntime: createNeonRuntime,
     saveFilename: 'neon-covenant-save.json',
     registerTools: (
-      /** @type {Parameters<typeof registerMosslightTools>[0]} */ adapters
+      /** @type {Parameters<typeof registerGameTools>[0]} */ adapters
     ) =>
-      registerMosslightTools({
+      registerGameTools({
         ...adapters,
         profile: { prefix: 'neon', title: 'Neon Covenant' },
       }),

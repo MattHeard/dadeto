@@ -3,7 +3,6 @@ import { whenOrDefault } from '../../commonCore.js';
 import {
   finalizeManagedForm,
   applyMutationAndSyncHiddenInput,
-  syncHiddenInput,
   wireLabelledField,
   runFormHandler,
   withManagedFormShell,

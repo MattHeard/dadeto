@@ -130,12 +130,18 @@ export const ensureFileInput = (container, textInput, dom) => {
     textInput,
     dom,
     createSpecialInput: () => createBoundFileInput(dom, textInput),
-    configure: /** @param {HTMLInputElement} fileInput */ fileInput => {
-      dom.setClassName(fileInput, FILE_INPUT_SETTINGS.className);
-      fileInput.accept = FILE_INPUT_SETTINGS.accept;
-      revealAndEnable(fileInput, dom);
-      return fileInput;
-    },
+    configure:
+      /**
+       * Configure and activate the file input.
+       * @param {HTMLInputElement} fileInput Input to update.
+       * @returns {HTMLInputElement} Configured input.
+       */
+      fileInput => {
+        dom.setClassName(fileInput, FILE_INPUT_SETTINGS.className);
+        fileInput.accept = FILE_INPUT_SETTINGS.accept;
+        revealAndEnable(fileInput, dom);
+        return fileInput;
+      },
   });
 };
 

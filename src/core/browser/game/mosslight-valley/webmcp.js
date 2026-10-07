@@ -14,7 +14,8 @@ function actionBatch(request) {
   if (!Array.isArray(actions) || actions.length < 1 || actions.length > 32) {
     throw new TypeError('Provide between 1 and 32 actions.');
   }
-  if (!Array.from(actions).every(action => ACTIONS.includes(action))) {
+  const supportedActions = new Set(ACTIONS);
+  if (!Array.from(actions).every(action => supportedActions.has(action))) {
     throw new TypeError(
       'Unknown Mosslight action; use mosslight_observe for supported actions.'
     );

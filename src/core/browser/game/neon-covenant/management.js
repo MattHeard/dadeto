@@ -283,7 +283,9 @@ export function manageLab(state, command) {
   const message = operate(lab, command, state.world.day);
   const changed = JSON.stringify(lab) !== JSON.stringify(state.lab);
   if (changed) lab.decisions--;
-  const world = changed ? withRelationshipBonds(state.world, lab) : state.world;
+  const world = changed
+    ? withRelationshipBonds(state.world, lab, state.world.day)
+    : state.world;
   return { ...state, lab, toast: message, world };
 }
 
@@ -420,13 +422,13 @@ export function endShift(state) {
  * @param {number} [day] Optional day to set during settlement.
  * @returns {Record<string, any>} Updated world state.
  */
-function withRelationshipBonds(world, lab, day = world.day) {
+function withRelationshipBonds(world, lab, day) {
   return {
     ...world,
-    ...(day === undefined ? {} : { day }),
     relationships: {
       ...world.relationships,
       ...relationshipBonds(lab),
     },
+    day,
   };
 }

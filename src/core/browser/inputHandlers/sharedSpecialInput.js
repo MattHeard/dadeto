@@ -122,22 +122,6 @@ export function createOrReuseSpecialInput(options) {
 }
 
 /**
- * Resolve a special input by selector and create it when absent.
- * @param {{ selector: string, container: HTMLElement, textInput: HTMLInputElement, dom: DomHelpers, createSpecialInput: () => HTMLInputElement }} options Wiring dependencies.
- * @returns {HTMLInputElement} Existing or newly created input.
- */
-export function resolveSpecialInput(options) {
-  const { selector, createSpecialInput, ...sharedOptions } = options;
-  return /** @type {HTMLInputElement} */ (
-    createOrReuseSpecialInput({
-      ...sharedOptions,
-      selector,
-      createSpecialInput,
-    })
-  );
-}
-
-/**
  * Configure a special input after creating or reusing it.
  * @param {{ selector: string, container: HTMLElement, textInput: HTMLInputElement, dom: DomHelpers, createSpecialInput: () => HTMLElement, configure: (input: HTMLInputElement) => HTMLInputElement }} options Configuration and lookup dependencies.
  * @returns {HTMLInputElement} Configured input.
