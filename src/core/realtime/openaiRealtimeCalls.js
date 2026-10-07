@@ -12,6 +12,8 @@ import {
 export const OPENAI_REALTIME_CALLS_URL =
   'https://api.openai.com/v1/realtime/calls';
 
+/** @typedef {import('../../../types/allow-effects').AllowEffects} AllowEffects */
+
 /**
  * Resolve the API key used by the Realtime session server.
  * @param {Record<string, string | undefined>} env Environment variables.
@@ -50,22 +52,17 @@ export function buildRealtimeCallForm(sdpOffer, options = {}) {
 /**
  * Exchange a browser SDP offer for OpenAI's SDP answer without exposing the API key.
  * @param {string} sdpOffer Browser-generated SDP offer.
- * @param {{apiKey?: string, fetchImpl: typeof fetch, url?: string}} options
+ * @param {{apiKey?: string, fetchImpl: (permission: AllowEffects, ...args: Parameters<typeof globalThis.fetch>) => ReturnType<typeof globalThis.fetch>, bindEffectBoundary: import('../../../types/allow-effects').AllowEffectsBoundary, url?: string}} options
  *   Injectable dependencies for tests.
  * @returns {Promise<{sdpAnswer: string, location: string}>} SDP answer and optional call location.
  */
 export async function exchangeRealtimeCallSdp(sdpOffer, options) {
   const exchangeOptions = options ?? {};
-  const fetchImpl = exchangeOptions.fetchImpl ?? globalThis.fetch;
-  const response = await postRealtimeCall(
-    sdpOffer,
-    exchangeOptions,
-    requireOpenAiApiKey(
-      resolveApiKeyOption(exchangeOptions, () =>
-        resolveOpenAiApiKey(process.env)
-      )
-    ),
-    fetchImpl
+  const apiKey = requireOpenAiApiKey(
+    resolveApiKeyOption(exchangeOptions, () => resolveOpenAiApiKey(process.env))
+  );
+  const response = await exchangeOptions.bindEffectBoundary(permission =>
+    postRealtimeCall(sdpOffer, exchangeOptions, apiKey, permission)
   );
   return readRealtimeCallResponse(response);
 }
@@ -97,13 +94,14 @@ export async function exchangeRealtimeCallSdp(sdpOffer, options) {
 /**
  * Post the Realtime SDP form to OpenAI.
  * @param {string} sdpOffer Browser-generated SDP offer.
- * @param {{fetchImpl?: typeof fetch, url?: string}} options Exchange options.
+ * @param {{fetchImpl: (permission: AllowEffects, ...args: Parameters<typeof globalThis.fetch>) => ReturnType<typeof globalThis.fetch>, url?: string}} options Exchange options.
  * @param {string} apiKey OpenAI API key.
- * @param {typeof fetch} fetchImpl Fetch implementation.
+ * @param {AllowEffects} permission Permission for this request.
  * @returns {Promise<Response>} OpenAI response.
  */
-function postRealtimeCall(sdpOffer, options, apiKey, fetchImpl) {
-  return fetchImpl(
+function postRealtimeCall(sdpOffer, options, apiKey, permission) {
+  return options.fetchImpl(
+    permission,
     resolveRealtimeCallsUrl(options, OPENAI_REALTIME_CALLS_URL),
     {
       method: 'POST',

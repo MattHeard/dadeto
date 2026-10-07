@@ -1,8 +1,22 @@
+import { jest } from '@jest/globals';
 import {
-  appendNotionCodexReply,
+  appendNotionCodexReply as appendNotionCodexReplyCore,
   buildReplyRichText,
   resolveNotionApiToken,
 } from '../../src/local/notion-codex/notionApi.js';
+
+const permission = Object.freeze({});
+const appendNotionCodexReply = options => {
+  const fetchImpl = options.fetchImpl;
+  return appendNotionCodexReplyCore({
+    ...options,
+    fetchImpl:
+      typeof fetchImpl === 'function'
+        ? (_permission, ...args) => fetchImpl(...args)
+        : fetchImpl,
+    bindEffectBoundary: handler => handler(permission),
+  });
+};
 
 const pageIdKey = 'page_id';
 const richTextKey = 'rich_text';
@@ -146,6 +160,38 @@ describe('local notion codex api helper', () => {
       })
     ).rejects.toThrow(
       'A fetch implementation is required to call the Notion API.'
+    );
+  });
+
+  test('requires an effect boundary and forwards its permission to fetch', async () => {
+    await expect(
+      appendNotionCodexReplyCore({
+        pageId: 'page-123',
+        runId: 'run-123',
+        message: 'hello',
+        token: 'token-123',
+        fetchImpl: async () => ({ ok: true, text: async () => '{}' }),
+      })
+    ).rejects.toThrow(TypeError);
+
+    const fetchImpl = jest.fn(async () => ({
+      ok: true,
+      async text() {
+        return '{}';
+      },
+    }));
+    await appendNotionCodexReplyCore({
+      pageId: 'page-123',
+      runId: 'run-123',
+      message: 'hello',
+      token: 'token-123',
+      fetchImpl,
+      bindEffectBoundary: handler => handler(permission),
+    });
+    expect(fetchImpl).toHaveBeenCalledWith(
+      permission,
+      'https://api.notion.com/v1/comments',
+      expect.any(Object)
     );
   });
 

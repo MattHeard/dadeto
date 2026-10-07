@@ -20,6 +20,14 @@ import {
   replayChronoflowWitness,
 } from '../../../../src/core/browser/game/chronoflow/witness.js';
 
+const permission = Object.freeze({});
+const startPage = options =>
+  startChronoflowPage({
+    ...options,
+    fetchImpl: (_permission, ...args) => options.fetchImpl(...args),
+    bindEffectBoundary: handler => handler(permission),
+  });
+
 /**
  * Sum the water in a fluid grid.
  * @param {import('../../../../src/core/browser/game/chronoflow/chronoflow.js').FluidState} state Fluid grid.
@@ -709,7 +717,7 @@ describe('Chronoflow page presenter', () => {
     const startTimedButton = new FakeElement();
     const fetchImpl = jest.fn(async () => ({ ok: false, status: 503 }));
 
-    const dispose = startChronoflowPage({
+    const dispose = startPage({
       documentObj,
       grid,
       status,
@@ -782,7 +790,7 @@ describe('Chronoflow page presenter', () => {
     const grid = new FakeElement();
     const editButton = new FakeElement();
     const routeButton = new FakeElement();
-    const dispose = startChronoflowPage({
+    const dispose = startPage({
       documentObj: Object.assign(new FakeElement(), {
         createElement: () => new FakeElement(),
       }),
@@ -834,7 +842,7 @@ describe('Chronoflow page presenter', () => {
     const ignoredKeypadButton = new FakeElement();
     keypadButtons.push(ignoredKeypadButton);
     const resetButton = new FakeElement();
-    const dispose = startChronoflowPage({
+    const dispose = startPage({
       documentObj,
       grid,
       displayCanvas,
@@ -875,7 +883,7 @@ describe('Chronoflow page presenter', () => {
     const documentObj = Object.assign(new FakeElement(), {
       createElement: () => new FakeElement(),
     });
-    const dispose = startChronoflowPage({
+    const dispose = startPage({
       documentObj,
       grid,
       status: new FakeElement(),
@@ -953,7 +961,7 @@ describe('Chronoflow page presenter', () => {
     let intervalHandler;
     const clearIntervalImpl = jest.fn();
 
-    const dispose = startChronoflowPage({
+    const dispose = startPage({
       documentObj,
       grid,
       status,
@@ -1041,7 +1049,7 @@ describe('Chronoflow page presenter visibility lifecycle', () => {
           ? { ok: false, status: 503 }
           : { ok: true, json: async () => ({ epochMs: 1_800_000_045_000 }) }
     );
-    const dispose = startChronoflowPage({
+    const dispose = startPage({
       documentObj,
       grid: new FakeElement(),
       status: new FakeElement(),
@@ -1123,7 +1131,7 @@ describe('Chronoflow page presenter visibility lifecycle', () => {
       });
     });
     const startTimedButton = new FakeElement();
-    const dispose = startChronoflowPage({
+    const dispose = startPage({
       documentObj,
       grid: new FakeElement(),
       status: new FakeElement(),
@@ -1182,7 +1190,7 @@ describe('Chronoflow page presenter timed lifecycle', () => {
           }
         : { ok: true, json: async () => ({ epochMs: 1_800_000_045_000 }) }
     );
-    const dispose = startChronoflowPage({
+    const dispose = startPage({
       documentObj: { createElement: () => new FakeElement() },
       grid,
       status,
@@ -1225,7 +1233,7 @@ describe('Chronoflow page presenter timed lifecycle', () => {
       ok: true,
       json: async () => ({}),
     }));
-    const dispose = startChronoflowPage({
+    const dispose = startPage({
       documentObj: { createElement: () => new FakeElement() },
       grid,
       status,
@@ -1251,7 +1259,7 @@ describe('Chronoflow page presenter timed lifecycle', () => {
     const fetchImpl = jest.fn(() => new Promise(() => {}));
     let monotonic = 0;
     let intervalHandler;
-    const dispose = startChronoflowPage({
+    const dispose = startPage({
       documentObj: { createElement: () => new FakeElement() },
       grid,
       status,
@@ -1279,7 +1287,7 @@ describe('Chronoflow page presenter timed lifecycle', () => {
     const elements = Array.from({ length: 6 }, () => new FakeElement());
     const [grid, status, clockStatus, openButton, advanceButton, resetButton] =
       elements;
-    const dispose = startChronoflowPage({
+    const dispose = startPage({
       documentObj: { createElement: () => new FakeElement() },
       grid,
       status,
@@ -1308,7 +1316,7 @@ describe('Chronoflow page presenter timed lifecycle', () => {
     const elements = Array.from({ length: 6 }, () => new FakeElement());
     const [grid, status, clockStatus, openButton, advanceButton, resetButton] =
       elements;
-    const dispose = startChronoflowPage({
+    const dispose = startPage({
       documentObj: { createElement: () => new FakeElement() },
       grid,
       status,

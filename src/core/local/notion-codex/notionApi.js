@@ -15,7 +15,8 @@ const RICH_TEXT_CHUNK_SIZE = 1800;
  *   message: string,
  *   token: string,
  *   notionVersion?: string,
- *   fetchImpl: typeof globalThis.fetch
+ *   fetchImpl: (permission: import('../../../../types/allow-effects').AllowEffects, ...args: Parameters<typeof globalThis.fetch>) => ReturnType<typeof globalThis.fetch>,
+ *   bindEffectBoundary: import('../../../../types/allow-effects').AllowEffectsBoundary,
  * }} options Comment options.
  * @returns {Promise<unknown>} Notion API response payload.
  */
@@ -30,15 +31,17 @@ export async function appendNotionCodexReply(options) {
     );
   }
 
-  const response = await options.fetchImpl(`${NOTION_API_BASE_URL}/comments`, {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${token}`,
-      'Content-Type': 'application/json',
-      'Notion-Version': options.notionVersion ?? DEFAULT_NOTION_VERSION,
-    },
-    body: JSON.stringify(buildReplyPayload({ pageId, runId, message })),
-  });
+  const response = await options.bindEffectBoundary(permission =>
+    options.fetchImpl(permission, `${NOTION_API_BASE_URL}/comments`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+        'Notion-Version': options.notionVersion ?? DEFAULT_NOTION_VERSION,
+      },
+      body: JSON.stringify(buildReplyPayload({ pageId, runId, message })),
+    })
+  );
 
   const body = await readJsonResponse(response);
   if (!response.ok) {

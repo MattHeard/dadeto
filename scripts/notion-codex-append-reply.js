@@ -2,6 +2,10 @@
 import { readFile } from 'node:fs/promises';
 import process from 'node:process';
 import {
+  bindEffectBoundary,
+  createEffectFetchFn,
+} from '../src/local/allow-effects.js';
+import {
   appendNotionCodexReply,
   resolveNotionApiToken,
 } from '../src/local/notion-codex/notionApi.js';
@@ -23,6 +27,8 @@ const response = await appendNotionCodexReply({
   message,
   token: tokenResult.token,
   notionVersion: args.notionVersion,
+  bindEffectBoundary,
+  fetchImpl: createEffectFetchFn(globalThis.fetch.bind(globalThis)),
 });
 
 console.log(JSON.stringify({

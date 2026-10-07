@@ -1,6 +1,8 @@
 const MAX_ROUND_TRIP_MS = 5000;
 const DEFAULT_MAX_AGE_MS = 30000;
 
+/** @typedef {import('../../../../../types/allow-effects').AllowEffects} AllowEffects */
+
 /**
  * Estimate Internet epoch time from an authoritative response and monotonic samples.
  * @param {{serverEpochMs: number, requestStartMs: number, responseEndMs: number}} sample Clock sample.
@@ -67,16 +69,19 @@ export function readNetworkClock(
 
 /**
  * Request an authoritative epoch sample without reading browser wall time.
- * @param {{fetchImpl: typeof fetch, monotonicNow: () => number, endpoint?: string}} options Injected effects.
+ * @param {{fetchImpl: (permission: AllowEffects, ...args: Parameters<typeof globalThis.fetch>) => ReturnType<typeof globalThis.fetch>, bindEffectBoundary: import('../../../../../types/allow-effects').AllowEffectsBoundary, monotonicNow: () => number, endpoint?: string}} options Injected effects.
  * @returns {Promise<ReturnType<typeof estimateNetworkClock>>} Trusted clock estimate.
  */
 export async function sampleNetworkClock({
   fetchImpl,
+  bindEffectBoundary,
   monotonicNow,
   endpoint = '/api/time',
 }) {
   const requestStartMs = monotonicNow();
-  const response = await fetchImpl(endpoint, { cache: 'no-store' });
+  const response = await bindEffectBoundary(permission =>
+    fetchImpl(permission, endpoint, { cache: 'no-store' })
+  );
   if (!response.ok)
     throw new Error(`Clock endpoint returned HTTP ${response.status}.`);
   const payload = await response.json();

@@ -41,3 +41,7 @@ The cloud render-contents adapter supplies the same boundary and dedicated trans
 ## Sixth extension: all injected fetch functions
 
 Every `fetchFn` injected from browser, cloud, or local adapters into core requires an `AllowEffects` first argument. Core call sites obtain a fresh value through the injected `bindEffectBoundary`; runtime adapters adapt native fetch to the permission-aware signature. This applies to GET and other methods alike. Internal native fetch closures are outside the injected-function contract. The compiler and `capability/allow-effects` lint rule enforce the signature and direct forwarding.
+
+## Seventh extension: remaining injected fetch implementations
+
+Chronoflow's `/config.json` and network-time requests, the OpenAI Realtime SDP exchange, and Notion Codex comment posting use the same permission-first transport contract. Each core request is wrapped in a fresh boundary permission, while browser, cloud, and local adapters adapt native fetch at their runtime edges.

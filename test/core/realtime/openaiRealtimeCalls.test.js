@@ -2,9 +2,19 @@ import { jest } from '@jest/globals';
 import {
   OPENAI_REALTIME_CALLS_URL,
   buildRealtimeCallForm,
-  exchangeRealtimeCallSdp,
+  exchangeRealtimeCallSdp as exchangeRealtimeCallSdpCore,
   resolveOpenAiApiKey,
 } from '../../../src/core/realtime/openaiRealtimeCalls.js';
+
+const permission = Object.freeze({});
+const exchangeRealtimeCallSdp = (sdpOffer, options) => {
+  const fetchImpl = options?.fetchImpl ?? globalThis.fetch;
+  return exchangeRealtimeCallSdpCore(sdpOffer, {
+    ...(options ?? {}),
+    fetchImpl: (_permission, ...args) => fetchImpl(...args),
+    bindEffectBoundary: handler => handler(permission),
+  });
+};
 
 class FakeFormData {
   constructor() {
@@ -49,6 +59,47 @@ describe('openaiRealtimeCalls core', () => {
       sdpAnswer: 'answer-sdp',
       location: '/default-call',
     });
+  });
+
+  test('requires an injected permission-aware fetch and effect boundary', async () => {
+    delete process.env.OPENAI_API_KEY;
+    await expect(
+      exchangeRealtimeCallSdpCore('offer-sdp', null)
+    ).rejects.toThrow('OPENAI_API_KEY is required');
+    await expect(
+      exchangeRealtimeCallSdpCore('offer-sdp', { apiKey: 'key' })
+    ).rejects.toThrow(TypeError);
+    await expect(
+      exchangeRealtimeCallSdpCore('offer-sdp', {
+        apiKey: 'key',
+        fetchImpl: jest.fn(),
+      })
+    ).rejects.toThrow(TypeError);
+    await expect(
+      exchangeRealtimeCallSdpCore('offer-sdp', {
+        apiKey: 'key',
+        bindEffectBoundary: handler => handler(permission),
+      })
+    ).rejects.toThrow(TypeError);
+  });
+
+  test('forwards the boundary permission as the first fetch argument', async () => {
+    const fetchImpl = jest.fn(async () => ({
+      ok: true,
+      status: 200,
+      text: async () => 'answer-sdp',
+      headers: new Headers(),
+    }));
+    await exchangeRealtimeCallSdpCore('offer-sdp', {
+      apiKey: 'key',
+      fetchImpl,
+      bindEffectBoundary: handler => handler(permission),
+    });
+    expect(fetchImpl).toHaveBeenCalledWith(
+      permission,
+      OPENAI_REALTIME_CALLS_URL,
+      expect.any(Object)
+    );
   });
 
   test('builds a multipart form with a custom FormData constructor', () => {

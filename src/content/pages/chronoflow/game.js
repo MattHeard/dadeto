@@ -1,4 +1,8 @@
 import { startChronoflowPage } from '/core/browser/game/chronoflow/pagePresenter.js';
+import {
+  bindEffectBoundary,
+  createEffectFetchFn,
+} from '/browser/allow-effects.js';
 
 let saveStorage;
 try {
@@ -20,7 +24,8 @@ const dispose = startChronoflowPage({
   startTimedButton: document.querySelector('#start-timed'),
   keypadButtons: Array.from(document.querySelectorAll('.mosslight-keypad-button')),
   resetButton: document.querySelector('#reset-level'),
-  fetchImpl: window.fetch.bind(window),
+  fetchImpl: createEffectFetchFn(window.fetch.bind(window)),
+  bindEffectBoundary,
   monotonicNow: window.performance.now.bind(window.performance),
   saveStorage,
 });

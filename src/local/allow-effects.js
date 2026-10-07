@@ -13,6 +13,15 @@ export async function bindEffectBoundary(handler) {
 }
 
 /**
+ * Adapt native fetch to the permission-aware transport contract used by core.
+ * @param {(input: RequestInfo | URL, init?: RequestInit) => Promise<Response>} fetchFn Native fetch implementation.
+ * @returns {(permission: import('../../types/allow-effects').AllowEffects, input: RequestInfo | URL, init?: RequestInit) => Promise<Response>} Permission-aware fetch transport.
+ */
+export function createEffectFetchFn(fetchFn) {
+  return (_permission, input, init) => fetchFn(input, init);
+}
+
+/**
  * Bind an explicitly effectful simulator command at its external entry point.
  * @param {(permission: import('../../types/allow-effects').AllowEffects, request: any) => Promise<any>} responder Internal command.
  * @returns {(request: any) => Promise<any>} Public local route.

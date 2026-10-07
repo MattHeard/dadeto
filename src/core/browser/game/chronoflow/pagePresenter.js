@@ -25,7 +25,7 @@ const CLOCK_REFRESH_MS = 15000;
 
 /**
  * Start the Chronoflow page using injected DOM elements.
- * @param {{documentObj: Document, grid: HTMLElement, displayCanvas?: HTMLCanvasElement|null, status: HTMLElement, clockStatus: HTMLElement, inspectStatus?: HTMLElement, openButton?: HTMLButtonElement, advanceButton?: HTMLButtonElement, resetButton: HTMLButtonElement, routeButton?: HTMLButtonElement, editButton?: HTMLButtonElement, startTimedButton?: HTMLButtonElement, keypadButtons?: HTMLButtonElement[], fetchImpl: typeof fetch, monotonicNow: () => number, saveStorage?: Storage, setIntervalImpl?: typeof setInterval, clearIntervalImpl?: typeof clearInterval}} options Page and injected clock/storage boundaries.
+ * @param {{documentObj: Document, grid: HTMLElement, displayCanvas?: HTMLCanvasElement|null, status: HTMLElement, clockStatus: HTMLElement, inspectStatus?: HTMLElement, openButton?: HTMLButtonElement, advanceButton?: HTMLButtonElement, resetButton: HTMLButtonElement, routeButton?: HTMLButtonElement, editButton?: HTMLButtonElement, startTimedButton?: HTMLButtonElement, keypadButtons?: HTMLButtonElement[], fetchImpl: (permission: import('../../../../../types/allow-effects').AllowEffects, ...args: Parameters<typeof globalThis.fetch>) => ReturnType<typeof globalThis.fetch>, bindEffectBoundary: import('../../../../../types/allow-effects').AllowEffectsBoundary, monotonicNow: () => number, saveStorage?: Storage, setIntervalImpl?: typeof setInterval, clearIntervalImpl?: typeof clearInterval}} options Page and injected clock/storage boundaries.
  * @returns {() => void} Removes registered controls.
  */
 export function startChronoflowPage(options) {
@@ -44,6 +44,7 @@ export function startChronoflowPage(options) {
     startTimedButton,
     keypadButtons = [],
     fetchImpl,
+    bindEffectBoundary,
     monotonicNow,
     saveStorage,
     setIntervalImpl = setInterval,
@@ -166,9 +167,9 @@ export function startChronoflowPage(options) {
     lastSyncAttemptMs = monotonicNow();
     try {
       if (!timeEndpoint) {
-        const configResponse = await fetchImpl('/config.json', {
-          cache: 'no-store',
-        });
+        const configResponse = await bindEffectBoundary(permission =>
+          fetchImpl(permission, '/config.json', { cache: 'no-store' })
+        );
         if (!configResponse.ok) {
           throw new Error(
             `Static config returned HTTP ${configResponse.status}.`
@@ -186,6 +187,7 @@ export function startChronoflowPage(options) {
       }
       const nextEstimate = await sampleNetworkClock({
         fetchImpl,
+        bindEffectBoundary,
         monotonicNow,
         endpoint: timeEndpoint,
       });

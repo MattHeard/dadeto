@@ -5,6 +5,14 @@ import {
   sampleNetworkClock,
 } from '../../../../src/core/browser/game/chronoflow/networkClock.js';
 
+const permission = Object.freeze({});
+const sample = options =>
+  sampleNetworkClock({
+    ...options,
+    fetchImpl: (_permission, ...args) => options.fetchImpl(...args),
+    bindEffectBoundary: handler => handler(permission),
+  });
+
 describe('Chronoflow Internet clock adapter', () => {
   it('estimates server offset and uncertainty from a monotonic request bracket', () => {
     expect(
@@ -60,9 +68,7 @@ describe('Chronoflow Internet clock adapter', () => {
     }));
     const samples = [100, 200];
     const monotonicNow = jest.fn(() => samples.shift());
-    await expect(
-      sampleNetworkClock({ fetchImpl, monotonicNow })
-    ).resolves.toEqual({
+    await expect(sample({ fetchImpl, monotonicNow })).resolves.toEqual({
       serverEpochMs: 1_800_000_000_150,
       offsetMs: 1_800_000_000_000,
       uncertaintyMs: 50,
@@ -71,19 +77,38 @@ describe('Chronoflow Internet clock adapter', () => {
     expect(fetchImpl).toHaveBeenCalledWith('/api/time', { cache: 'no-store' });
   });
 
+  it('forwards a fresh boundary permission to the injected clock transport', async () => {
+    const fetchImpl = jest.fn(async () => ({
+      ok: true,
+      status: 200,
+      json: async () => ({ epochMs: 1_800_000_000_150 }),
+    }));
+    await sampleNetworkClock({
+      fetchImpl,
+      bindEffectBoundary: handler => handler(permission),
+      monotonicNow: (() => {
+        let now = 100;
+        return () => (now += 50);
+      })(),
+    });
+    expect(fetchImpl).toHaveBeenCalledWith(permission, '/api/time', {
+      cache: 'no-store',
+    });
+  });
+
   it('rejects failed, invalid-shape, and non-object endpoint responses', async () => {
     const monotonicNow = (() => {
       let now = 0;
       return () => (now += 1);
     })();
     await expect(
-      sampleNetworkClock({
+      sample({
         monotonicNow,
         fetchImpl: async () => ({ ok: false, status: 503 }),
       })
     ).rejects.toThrow('HTTP 503');
     await expect(
-      sampleNetworkClock({
+      sample({
         monotonicNow,
         fetchImpl: async () => ({
           ok: true,
@@ -93,7 +118,7 @@ describe('Chronoflow Internet clock adapter', () => {
       })
     ).rejects.toThrow(TypeError);
     await expect(
-      sampleNetworkClock({
+      sample({
         monotonicNow,
         fetchImpl: async () => ({
           ok: true,

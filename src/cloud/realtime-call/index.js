@@ -1,5 +1,6 @@
 import { onRequest, express, cors, getEnvironmentVariables } from './realtime-call-v2-gcf.js';
 import { getAllowedOrigins } from '../cors-config.js';
+import { createEffectInvocationBoundary } from '../allow-effects.js';
 import {
   exchangeRealtimeCallSdp as exchangeRealtimeCallSdpCore,
 } from './core/realtime/openaiRealtimeCalls.js';
@@ -7,7 +8,9 @@ import {
 const exchangeRealtimeCallSdp = (body, options = {}) =>
   exchangeRealtimeCallSdpCore(body, {
     ...options,
-    fetchImpl: options.fetchImpl ?? globalThis.fetch,
+    fetchImpl: (permission, ...args) =>
+      (options.fetchImpl ?? globalThis.fetch.bind(globalThis))(...args),
+    bindEffectBoundary: handler => createEffectInvocationBoundary(handler)(),
   });
 
 export function createRealtimeCallApp({ exchangeRealtimeCallSdp, allowedOrigins, expressImpl = express, corsImpl = cors }) {
