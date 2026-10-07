@@ -281,7 +281,9 @@ function handleEmptyInputInGet(
   input,
   /** @type {object | unknown[] | null} */ data
 ) {
-  return whenOrNull(input.trim() === '', () => JSON.stringify(data));
+  return whenOrNull(input.trim() === '', () =>
+    safeStringifyValueAtPath(data, input)
+  );
 }
 
 /**
