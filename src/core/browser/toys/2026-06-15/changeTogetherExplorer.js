@@ -125,12 +125,7 @@ function normalizeFileList(files) {
     return [];
   }
 
-  const list = Array.from(
-    new Set(files.filter(file => typeof file === 'string'))
-  );
-
-  list.sort((left, right) => left.localeCompare(right));
-  return list;
+  return sortedStrings(new Set(files.filter(file => typeof file === 'string')));
 }
 
 /**
@@ -229,9 +224,7 @@ function ensureFileStat(fileStats, file) {
  * @returns {RankedPair} Ranked pair recommendation.
  */
 function scorePair(stat) {
-  const supportingChangeSetIds = Array.from(stat.supportingChangeSetIds).sort(
-    (left, right) => left.localeCompare(right)
-  );
+  const supportingChangeSetIds = sortedStrings(stat.supportingChangeSetIds);
 
   return {
     files: stat.files,
@@ -248,9 +241,7 @@ function scorePair(stat) {
  * @returns {RankedFile} Ranked file recommendation.
  */
 function scoreFile(file, stat) {
-  const partnerFiles = Array.from(stat.partners).sort((left, right) =>
-    left.localeCompare(right)
-  );
+  const partnerFiles = sortedStrings(stat.partners);
 
   return {
     file,
@@ -259,6 +250,15 @@ function scoreFile(file, stat) {
     partnerFiles,
     reason: `appears in ${stat.touchCount} change sets and pairs with ${partnerFiles.length} files`,
   };
+}
+
+/**
+ * Return iterable string values in deterministic lexical order.
+ * @param {Iterable<string>} values Values to sort.
+ * @returns {string[]} Sorted values.
+ */
+function sortedStrings(values) {
+  return Array.from(values).sort((left, right) => left.localeCompare(right));
 }
 
 /**

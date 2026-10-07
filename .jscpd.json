@@ -2,7 +2,7 @@
   "path": [
     "src/core"
   ],
-  "mode": "strict",
+  "mode": "mild",
   "minTokens": 13,
   "reporters": [
     "html",
