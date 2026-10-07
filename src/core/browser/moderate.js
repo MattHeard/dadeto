@@ -324,12 +324,7 @@ export async function submitRating(isApproved) {
  * Reset the moderation page to its signed-out state.
  */
 export function resetModerationUi() {
-  moderateDocument
-    .querySelectorAll('#signoutWrap')
-    .forEach(el => (el.style.display = 'none'));
-  moderateDocument
-    .querySelectorAll('#signinButton')
-    .forEach(el => (el.style.display = ''));
+  setModerationAuthenticationControls(false);
   moderateDocument
     .querySelectorAll('.admin-link')
     .forEach(link => (link.style.display = 'none'));
@@ -338,6 +333,28 @@ export function resetModerationUi() {
     content.innerHTML = '';
     content.style.display = 'none';
   }
+}
+
+/**
+ * Set sign-in and sign-out control visibility for the current auth state.
+ * @param {boolean} authenticated Whether a user is signed in.
+ * @returns {void}
+ */
+function setModerationAuthenticationControls(authenticated) {
+  const controls = authenticated
+    ? [
+        ['#signinButton', 'none'],
+        ['#signoutWrap', ''],
+      ]
+    : [
+        ['#signoutWrap', 'none'],
+        ['#signinButton', ''],
+      ];
+  controls.forEach(([selector, display]) => {
+    moderateDocument
+      .querySelectorAll(selector)
+      .forEach(element => (element.style.display = display));
+  });
 }
 
 export const fetchJson = async (url, init) => {
@@ -411,12 +428,7 @@ export function createModerateHandle(deps = {}) {
 
   const handleAuthenticatedState = () => {
     moderateDocument.body.classList.add('authed');
-    moderateDocument
-      .querySelectorAll('#signinButton')
-      .forEach(el => (el.style.display = 'none'));
-    moderateDocument
-      .querySelectorAll('#signoutWrap')
-      .forEach(el => (el.style.display = ''));
+    setModerationAuthenticationControls(true);
     if (isAdmin()) {
       moderateDocument
         .querySelectorAll('.admin-link')
