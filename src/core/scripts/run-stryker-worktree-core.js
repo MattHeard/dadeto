@@ -2,14 +2,7 @@
 // orchestration boundary; lifecycle and dependency plumbing are observable
 // through the complete runner contract rather than independently per helper.
 import { spawn } from 'node:child_process';
-import {
-  mkdtemp,
-  rm,
-  cp,
-  mkdir,
-  writeFile,
-  appendFile,
-} from 'node:fs/promises';
+import * as fsPromises from 'node:fs/promises';
 import path from 'node:path';
 
 // Environment typing is local to the worktree runner.
@@ -22,12 +15,12 @@ import path from 'node:path';
  * @param {{
  *   processModule?: { env: Env },
  *   fsModule?: {
- *     mkdtemp: typeof mkdtemp,
- *     rm: typeof rm,
- *     cp: typeof cp,
- *     mkdir: typeof mkdir,
- *     writeFile: typeof writeFile,
- *     appendFile: typeof appendFile,
+ *     mkdtemp: typeof fsPromises.mkdtemp,
+ *     rm: typeof fsPromises.rm,
+ *     cp: typeof fsPromises.cp,
+ *     mkdir: typeof fsPromises.mkdir,
+ *     writeFile: typeof fsPromises.writeFile,
+ *     appendFile: typeof fsPromises.appendFile,
  *   },
  *   pathModule?: typeof path,
  *   spawnImpl?: typeof spawn,
@@ -38,14 +31,7 @@ import path from 'node:path';
  */
 export function createRunStrykerWorktreeHandle(options = {}) {
   const processModule = options.processModule || process;
-  const fsModule = options.fsModule || {
-    mkdtemp,
-    rm,
-    cp,
-    mkdir,
-    writeFile,
-    appendFile,
-  };
+  const fsModule = options.fsModule || fsPromises;
   const pathModule = options.pathModule || path;
   const spawnImpl = options.spawnImpl || spawn;
   const mainRoot = options.rootDir || pathModule.resolve('.');
@@ -71,6 +57,12 @@ export function createRunStrykerWorktreeHandle(options = {}) {
     const reportSource = pathModule.join(worktreePath, 'reports/mutation');
     const reportTarget = pathModule.join(mainRoot, 'reports/mutation');
     const machineLogPath = pathModule.join(reportTarget, 'worktree-run.jsonl');
+    const commandDependencies = {
+      fsModule,
+      machineLogPath,
+      spawnImpl,
+      baseEnv: processModule.env,
+    };
 
     await fsModule.mkdir(reportTarget, { recursive: true });
     await writeMachineLog(fsModule, machineLogPath, {
@@ -99,13 +91,7 @@ export function createRunStrykerWorktreeHandle(options = {}) {
       }
       for (const step of setupSteps) {
         await runLoggedCommandStep(
-          {
-            fsModule,
-            machineLogPath,
-            spawnImpl,
-            baseEnv: processModule.env,
-            extraEnv: noDaemonEnv,
-          },
+          { ...commandDependencies, extraEnv: noDaemonEnv },
           step
         );
       }
@@ -119,10 +105,7 @@ export function createRunStrykerWorktreeHandle(options = {}) {
       });
       await runLoggedCommandStep(
         {
-          fsModule,
-          machineLogPath,
-          spawnImpl,
-          baseEnv: processModule.env,
+          ...commandDependencies,
           extraEnv: {
             STRYKER_TEST_ENV: '1',
             ...noDaemonEnv,
@@ -223,7 +206,10 @@ ${testFilesLine}
 /**
  * Write the log entries and run a command with the shared env setup.
  * @param {{
- *   fsModule: { mkdir: typeof mkdir, appendFile: typeof appendFile },
+ *   fsModule: {
+ *     mkdir: typeof fsPromises.mkdir,
+ *     appendFile: typeof fsPromises.appendFile,
+ *   },
  *   machineLogPath: string,
  *   spawnImpl: typeof spawn,
  *   baseEnv: Env,
@@ -248,7 +234,7 @@ async function runLoggedCommandStep(context, step) {
 
 /**
  * Record a command lifecycle event.
- * @param {{ appendFile: typeof appendFile, mkdir: typeof mkdir }} fsModule Filesystem dependencies.
+ * @param {{ appendFile: typeof fsPromises.appendFile, mkdir: typeof fsPromises.mkdir }} fsModule Filesystem dependencies.
  * @param {string} machineLogPath Machine log path.
  * @param {string} type Lifecycle event type.
  * @param {{ command: string, args: string[], cwd: string }} step Command step.
@@ -313,8 +299,8 @@ async function runCommand(options) {
 /**
  * Append a machine-readable log entry that persists after teardown.
  * @param {{
- *   appendFile: typeof appendFile,
- *   mkdir: typeof mkdir,
+ *   appendFile: typeof fsPromises.appendFile,
+ *   mkdir: typeof fsPromises.mkdir,
  * }} fsModule Filesystem dependencies.
  * @param {string} logPath Destination log path.
  * @param {Record<string, unknown>} entry Log payload.
