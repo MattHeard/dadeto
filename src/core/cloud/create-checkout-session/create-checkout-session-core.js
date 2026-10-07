@@ -43,6 +43,18 @@ function error(status, code, message) {
 }
 
 /**
+ * Resolve billing origin or return its configuration error.
+ * @param {string | undefined} publicBillingOrigin Billing origin.
+ * @returns {string | CheckoutResponse} Configured origin or error response.
+ */
+function resolveBillingOrigin(publicBillingOrigin) {
+  if (typeof publicBillingOrigin === 'string' && publicBillingOrigin) {
+    return publicBillingOrigin;
+  }
+  return error(500, 'configuration_error', 'Billing is not configured.');
+}
+
+/**
  * Read the authorization header from a request.
  * @param {CheckoutRequest} request Incoming request.
  * @returns {string} Authorization header value, or an empty string.
@@ -435,8 +447,8 @@ async function createCheckoutResult(
     // Stryker disable next-line all -- fixed no-op logger fallback.
     logger = { error() {} },
   } = deps;
-  if (typeof publicBillingOrigin !== 'string' || !publicBillingOrigin)
-    return error(500, 'configuration_error', 'Billing is not configured.');
+  const billingOrigin = resolveBillingOrigin(publicBillingOrigin);
+  if (typeof billingOrigin !== 'string') return billingOrigin;
   try {
     const customer = await resolveCustomer({
       resolveBillingCustomer,
@@ -464,7 +476,7 @@ async function createCheckoutResult(
       packageId,
       apiKeyUuid,
       uid,
-      publicBillingOrigin,
+      publicBillingOrigin: billingOrigin,
       key,
       purchaseId: purchase?.purchaseId,
       creditPackage,
@@ -515,9 +527,8 @@ async function resolveCheckoutOwnership(
     );
   // Stryker disable next-line all -- missing billing origin has one fixed
   // configuration response.
-  if (typeof publicBillingOrigin !== 'string' || !publicBillingOrigin)
-    // Stryker disable next-line all -- fixed billing configuration response.
-    return error(500, 'configuration_error', 'Billing is not configured.');
+  const billingOrigin = resolveBillingOrigin(publicBillingOrigin);
+  if (typeof billingOrigin !== 'string') return billingOrigin;
   return { apiKeyUuid };
 }
 
