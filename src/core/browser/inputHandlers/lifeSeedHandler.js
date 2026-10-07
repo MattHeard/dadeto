@@ -6,6 +6,7 @@ import {
 } from './createDendriteHandler.js';
 import { prepareInputHandler } from './captureFormShared.js';
 import { createDefaultLifeSeed } from '../toys/conwayLifeCore.js';
+import { createNumberFieldInput } from './browserInputHandlersCore.js';
 
 /** @typedef {import('../domHelpers.js').DOMHelpers} DOMHelpers */
 /** @typedef {{ width: number, height: number, cols: number, rows: number, tickSpeedMs: number, cells: number[][], reset?: boolean }} LifeSeedData */
@@ -231,12 +232,7 @@ function buildForm({ dom, container, textInput }) {
 
       for (let index = 0; index < numberFieldOptions.length; index += 1) {
         const { key, label, placeholder, value } = numberFieldOptions[index];
-        const input = /** @type {HTMLInputElement} */ (
-          dom.createElement('input')
-        );
-        dom.setType(input, 'number');
-        dom.setValue(input, value);
-        dom.setPlaceholder(input, placeholder);
+        const input = createNumberFieldInput(dom, { value, placeholder });
         wireLabelledField({
           dom,
           form,

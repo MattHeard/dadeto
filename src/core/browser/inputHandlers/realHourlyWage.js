@@ -8,6 +8,7 @@ import {
 } from './createDendriteHandler.js';
 import { createSectionWithHeading } from '../presenters/browserPresentersCore.js';
 import { isNonNullObject, numberOrZero } from '../../commonCore.js';
+import { createNumberFieldInput } from './browserInputHandlersCore.js';
 
 /** @typedef {import('../domHelpers.js').DOMHelpers} DOMHelpers */
 /**
@@ -297,10 +298,10 @@ function buildNumericField(options) {
     textInput,
     disposers,
   } = options;
-  const input = /** @type {HTMLInputElement} */ (dom.createElement('input'));
-  dom.setType(input, 'number');
-  dom.setPlaceholder(input, placeholder);
-  dom.setValue(input, String(getFieldValue(data, path)));
+  const input = createNumberFieldInput(dom, {
+    placeholder,
+    value: String(getFieldValue(data, path)),
+  });
 
   const handleInput = () => {
     setFieldValue(data, path, dom.getValue(input));

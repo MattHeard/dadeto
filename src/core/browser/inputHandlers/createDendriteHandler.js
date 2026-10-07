@@ -319,30 +319,6 @@ function buildWrappedField(options) {
 }
 
 /**
- * Render a single field inside a form.
- * @param {{dom: DOMHelpers, form: HTMLElement, key: string, placeholder: string, data: DendriteData, textInput: HTMLInputElement, disposers: Disposer[]}} options - Field render options.
- * @returns {void}
- */
-function buildField({
-  dom,
-  form,
-  key,
-  placeholder,
-  data,
-  textInput,
-  disposers,
-}) {
-  const sharedArgs = getSharedFormArgs({ data, textInput, disposers });
-  buildWrappedField({
-    dom,
-    form,
-    key,
-    placeholder,
-    ...sharedArgs,
-  });
-}
-
-/**
  * Build a renderer for the field definitions list.
  * @param {{dom: DOMHelpers, form: HTMLElement, data: DendriteData, textInput: HTMLInputElement, disposers: Disposer[]}} options - Rendering helpers.
  * @returns {(field: [string, string]) => void} Renderer for each field tuple.
@@ -350,7 +326,7 @@ function buildField({
 function createFieldRenderer({ dom, form, data, textInput, disposers }) {
   const sharedArgs = getSharedFormArgs({ data, textInput, disposers });
   return function renderFieldForTuple([key, placeholder]) {
-    buildField({
+    buildWrappedField({
       dom,
       form,
       key,

@@ -4,6 +4,21 @@ import { setInputValue } from '../inputValueStore.js';
 /** @typedef {import('../inputValueStore.js').ElementWithValue} ElementWithValue */
 /** @typedef {import('../domHelpers.js').DOMHelpers} BrowserDom */
 /** @typedef {HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement} TextInputElement */
+
+/**
+ * Create and configure a numeric field shared by managed browser forms.
+ * @param {BrowserDom} dom DOM helper facade.
+ * @param {{ value: string | number, placeholder: string }} options Initial field content.
+ * @returns {HTMLInputElement} Configured numeric field.
+ */
+export function createNumberFieldInput(dom, { value, placeholder }) {
+  const input = /** @type {HTMLInputElement} */ (dom.createElement('input'));
+  dom.setType(input, 'number');
+  dom.setValue(input, value);
+  dom.setPlaceholder(input, placeholder);
+  return input;
+}
+
 /**
  * @typedef {{
  *   container: HTMLElement;

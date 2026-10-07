@@ -28,6 +28,18 @@ function getSharedSpecialInputContext(params) {
 }
 
 /**
+ * Find an existing special input using the shared DOM contract.
+ * @param {SharedSpecialInputParams} sharedInput Shared input wiring values.
+ * @returns {HTMLElement | null} Matching input when present.
+ */
+function findExistingSpecialInput(sharedInput) {
+  return sharedInput.dom.querySelector(
+    sharedInput.container,
+    sharedInput.selector
+  );
+}
+
+/**
  * Reuse a special input element when present; otherwise create and insert a new one.
  * @param {SharedSpecialInputParams & {
  *   specialInput?: HTMLElement | null | undefined;
@@ -63,8 +75,7 @@ export function ensureSpecialInput(options) {
   const { createSpecialInput, existingSpecialInput } = options;
   const sharedInput = getSharedSpecialInputContext(options);
   const specialInput =
-    existingSpecialInput ??
-    sharedInput.dom.querySelector(sharedInput.container, sharedInput.selector);
+    existingSpecialInput ?? findExistingSpecialInput(sharedInput);
 
   return reuseOrInsertSpecialInput({
     ...sharedInput,
@@ -83,10 +94,7 @@ export function ensureSpecialInput(options) {
  */
 export function createSpecialInputEnsurer(options) {
   const sharedInput = getSharedSpecialInputContext(options);
-  const existingSpecialInput = sharedInput.dom.querySelector(
-    sharedInput.container,
-    sharedInput.selector
-  );
+  const existingSpecialInput = findExistingSpecialInput(sharedInput);
 
   return {
     existingSpecialInput,
