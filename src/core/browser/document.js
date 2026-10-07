@@ -431,6 +431,16 @@ const importModule = (modulePath, onSuccess, onError) => {
   import(modulePath).then(onSuccess).catch(onError);
 };
 
+const frameAndTimerApis = {
+  requestAnimationFrame,
+  cancelAnimationFrame,
+  setInterval,
+  clearInterval,
+  setTimeout,
+  clearTimeout,
+  getGamepads,
+};
+
 /**
  * Centralized DOM manipulation utilities
  */
@@ -487,13 +497,7 @@ export const dom = /** @type {DOMHelpers} */ ({
   getTargetValue,
   setTargetValue,
   hasBetaParam,
-  requestAnimationFrame,
-  cancelAnimationFrame,
-  setInterval,
-  clearInterval,
-  setTimeout,
-  clearTimeout,
-  getGamepads,
+  ...frameAndTimerApis,
   get globalThis() {
     return getGlobalThisObj();
   },
@@ -563,13 +567,7 @@ export function createDocumentHandle(deps) {
     log,
     warn,
     logError,
-    requestAnimationFrame,
-    cancelAnimationFrame,
-    setInterval,
-    clearInterval,
-    setTimeout,
-    clearTimeout,
-    getGamepads,
+    ...frameAndTimerApis,
     getClasses,
     getRandomNumber,
     getCurrentTime,

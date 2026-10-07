@@ -3,7 +3,7 @@ import {
   buildManagedForm,
   finalizeManagedForm,
   runFormHandler,
-  syncHiddenInput,
+  applyMutationAndSyncHiddenInput,
   wireLabelledField,
 } from './createDendriteHandler.js';
 import { createSectionWithHeading } from '../presenters/browserPresentersCore.js';
@@ -303,10 +303,9 @@ function buildNumericField(options) {
     value: String(getFieldValue(data, path)),
   });
 
-  const handleInput = () => {
-    setFieldValue(data, path, dom.getValue(input));
-    syncHiddenInput(dom, textInput, data);
-  };
+  const updateData = () => setFieldValue(data, path, dom.getValue(input));
+  const handleInput = () =>
+    applyMutationAndSyncHiddenInput(dom, textInput, data, updateData);
 
   const fieldBinding = {
     dom,

@@ -1,6 +1,6 @@
 const DEFAULT_ROOT_DIR = '.';
-const DEFAULT_STDOUT = { write() {} };
-const DEFAULT_STDERR = { write() {} };
+export const DEFAULT_STDOUT = { write() {} };
+export const DEFAULT_STDERR = { write() {} };
 const DEFAULT_SPAWN_RESULT = { status: 0, signal: null };
 
 /**

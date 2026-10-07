@@ -10,20 +10,10 @@ const NO_PATH_DISTANCE = 1;
  * @param {{ moderatorId: string, adminId: string, ratings: Record<string, Record<string, boolean>>, ignoredPageId?: string }} payload - Graph context.
  * @returns {number} Shortest distance in the range [0, 1].
  */
-export function shortestDistanceToAdmin({
-  moderatorId,
-  adminId,
-  ratings,
-  ignoredPageId,
-}) {
+export function shortestDistanceToAdmin(payload) {
   return (
-    whenTruthy(areValidStrings(moderatorId, adminId), () =>
-      resolveDistance({
-        moderatorId,
-        adminId,
-        ratings,
-        ignoredPageId,
-      })
+    whenTruthy(areValidStrings(payload.moderatorId, payload.adminId), () =>
+      resolveDistance(payload)
     ) ?? NO_PATH_DISTANCE
   );
 }

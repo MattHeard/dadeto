@@ -128,6 +128,24 @@ export function syncHiddenInput(dom, textInput, data) {
 }
 
 /**
+ * Apply a form mutation and mirror the result into its hidden payload input.
+ * @param {DOMHelpers} dom DOM helper facade.
+ * @param {HTMLInputElement} textInput Hidden payload input.
+ * @param {Record<string, unknown>} data Mutable form data.
+ * @param {() => void} applyMutation Field update.
+ * @returns {void}
+ */
+export function applyMutationAndSyncHiddenInput(
+  dom,
+  textInput,
+  data,
+  applyMutation
+) {
+  applyMutation();
+  syncHiddenInput(dom, textInput, data);
+}
+
+/**
  * Sync a managed form's hidden payload and return the form.
  * @param {{
  *   dom: DOMHelpers,
@@ -190,10 +208,10 @@ function createExecuteSyncFn(textInput, serialised) {
  * @param {{dom: DOMHelpers, key: string, input: HTMLInputElement | HTMLTextAreaElement, textInput: HTMLInputElement, data: DendriteData}} options - Handler configuration.
  * @returns {() => void} Event handler that keeps the payload in sync.
  */
-function createFieldInputHandler({ dom, key, input, textInput, data }) {
+function createFieldInputHandler(options) {
   return () => {
-    data[key] = String(dom.getValue(input));
-    syncHiddenInput(dom, textInput, data);
+    options.data[options.key] = String(options.dom.getValue(options.input));
+    syncHiddenInput(options.dom, options.textInput, options.data);
   };
 }
 

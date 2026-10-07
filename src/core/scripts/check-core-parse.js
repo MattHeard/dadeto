@@ -301,20 +301,26 @@ function createGateRunner({ successMessage, findViolations, formatFailures }) {
     const deps = normalizeOptions(options);
     return function handle() {
       const violations = findViolations(deps);
-      if (
-        reportFailuresAndMaybeLogSuccess({
-          failures: formatFailures(violations),
-          output: deps.stdout,
-          setExitCode() {},
-          successMessage,
-        })
-      ) {
-        return { exitCode: 1, violations };
-      }
-
-      return { exitCode: 0, violations };
+      const failed = reportFailuresAndMaybeLogSuccess({
+        failures: formatFailures(violations),
+        output: deps.stdout,
+        setExitCode() {},
+        successMessage,
+      });
+      return createGateResult(failed ? 1 : 0, violations);
     };
   };
+}
+
+/**
+ * Build a core-parse gate result.
+ * @template T
+ * @param {number} exitCode Gate outcome code.
+ * @param {T[]} violations Reported violations.
+ * @returns {{ exitCode: number, violations: T[] }} Gate result.
+ */
+function createGateResult(exitCode, violations) {
+  return { exitCode, violations };
 }
 
 const createParseNotValidateHandle = createGateRunner({
@@ -359,11 +365,10 @@ export function createCheckCoreParseHandle(options = {}) {
       ...boundaryResult.violations,
     ];
 
-    if (validationResult.exitCode || boundaryResult.exitCode) {
-      return { exitCode: 1, violations };
-    }
-
-    return { exitCode: 0, violations };
+    return createGateResult(
+      validationResult.exitCode || boundaryResult.exitCode ? 1 : 0,
+      violations
+    );
   };
 }
 

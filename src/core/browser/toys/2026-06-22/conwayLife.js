@@ -167,21 +167,7 @@ function createAdvancedBoard(base, framesPerTick) {
  * @returns {LifeState} Normalized seed state.
  */
 function normalizeSeed(input) {
-  const width = normalizePositiveInteger(input?.width, DEFAULT_WIDTH);
-  const height = normalizePositiveInteger(input?.height, DEFAULT_HEIGHT);
-  const cols = normalizePositiveInteger(input?.cols, DEFAULT_COLS);
-  const rows = normalizePositiveInteger(input?.rows, DEFAULT_ROWS);
-  const tickSpeedMs = normalizeTickSpeedMs(input?.tickSpeedMs);
-  return createSeedLifeState(
-    createBaseStateFields({
-      width,
-      height,
-      cols,
-      rows,
-      tickSpeedMs,
-      cells: normalizeCells(input?.cells, cols, rows),
-    })
-  );
+  return createSeedLifeState(normalizeLifeFields(input || {}));
 }
 
 /**
@@ -418,14 +404,10 @@ function getStoredLifeCandidate(data) {
  * @returns {LifeState} Normalized stored state.
  */
 function normalizeStoredLifeCandidate(candidate) {
-  const width = normalizePositiveInteger(candidate.width, DEFAULT_WIDTH);
-  const height = normalizePositiveInteger(candidate.height, DEFAULT_HEIGHT);
-  const cols = normalizePositiveInteger(candidate.cols, DEFAULT_COLS);
-  const rows = normalizePositiveInteger(candidate.rows, DEFAULT_ROWS);
-  const tickSpeedMs = normalizeTickSpeedMs(candidate.tickSpeedMs);
+  const fields = normalizeLifeFields(candidate);
   const framesPerTickRaw = normalizePositiveInteger(
     candidate.framesPerTick,
-    Math.round(tickSpeedMs / 16)
+    Math.round(fields.tickSpeedMs / 16)
   );
   const framesPerTick = framesPerTickRaw;
   const framesUntilTickRaw = normalizePositiveInteger(
@@ -436,16 +418,32 @@ function normalizeStoredLifeCandidate(candidate) {
   const generation = normalizePositiveInteger(candidate.generation, 0);
 
   return createStoredLifeState({
+    ...fields,
+    framesPerTick,
+    framesUntilTick,
+    generation,
+  });
+}
+
+/**
+ * Normalize the common geometry, speed, and cell fields for a Life state.
+ * @param {Record<string, unknown>} candidate Raw seed or persisted fields.
+ * @returns {{ width: number, height: number, cols: number, rows: number, tickSpeedMs: number, cells: LifeCell[] }} Normalized shared fields.
+ */
+function normalizeLifeFields(candidate) {
+  const width = normalizePositiveInteger(candidate.width, DEFAULT_WIDTH);
+  const height = normalizePositiveInteger(candidate.height, DEFAULT_HEIGHT);
+  const cols = normalizePositiveInteger(candidate.cols, DEFAULT_COLS);
+  const rows = normalizePositiveInteger(candidate.rows, DEFAULT_ROWS);
+  const tickSpeedMs = normalizeTickSpeedMs(candidate.tickSpeedMs);
+  return {
     width,
     height,
     cols,
     rows,
     tickSpeedMs,
-    framesPerTick,
-    framesUntilTick,
-    generation,
     cells: normalizeCells(candidate.cells, cols, rows),
-  });
+  };
 }
 
 /**

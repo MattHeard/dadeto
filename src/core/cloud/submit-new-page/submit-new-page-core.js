@@ -508,22 +508,14 @@ function countSources(incomingOption, pageStr) {
  * @returns {Promise<SubmissionTargetResult>} Result.
  */
 async function resolveTargetBySource(deps) {
-  const {
-    incomingOption,
-    pageStr,
-    parseIncomingOption,
-    findExistingOption,
-    findExistingPage,
-  } = deps;
-
-  if (incomingOption !== '') {
+  if (deps.incomingOption !== '') {
     return resolveOptionTarget(
-      incomingOption,
-      parseIncomingOption,
-      findExistingOption
+      deps.incomingOption,
+      deps.parseIncomingOption,
+      deps.findExistingOption
     );
   }
-  return resolvePageTarget(pageStr, findExistingPage);
+  return resolvePageTarget(deps.pageStr, deps.findExistingPage);
 }
 
 /**

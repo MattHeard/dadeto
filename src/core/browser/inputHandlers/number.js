@@ -61,6 +61,26 @@ const maybeSetNumberInputValue = (dom, input, value) => {
 };
 
 /**
+ * Create a number input that mirrors edits to the hidden text field.
+ * @param {HTMLInputElement} textInput Hidden text input.
+ * @param {import('../domHelpers.js').DOMHelpers} dom DOM helper facade.
+ * @returns {HTMLInputElement} Configured number input.
+ */
+function createBoundNumberInput(textInput, dom) {
+  const inputValue = getInputValue(textInput);
+  /** @param {unknown} event Input event to sync. */
+  const updateTextInputValue = event => {
+    const targetValue = dom.getTargetValue(
+      /** @type {Event & { target: { value: string } }} */ (event)
+    );
+    dom.setValue(textInput, targetValue);
+    setInputValue(textInput, targetValue);
+  };
+
+  return createNumberInput(inputValue, updateTextInputValue, dom);
+}
+
+/**
  * Ensure the number input exists and is wired to the text input value.
  * @param {HTMLElement} container - Container element.
  * @param {HTMLInputElement} textInput - Hidden text input.
@@ -68,28 +88,16 @@ const maybeSetNumberInputValue = (dom, input, value) => {
  * @returns {HTMLInputElement} Number input element.
  */
 export const ensureNumberInput = (container, textInput, dom) => {
-  const ensuredInput = createOrReuseSpecialInput(
-    {
+  const ensuredInput = /** @type {HTMLInputElement} */ (
+    createOrReuseSpecialInput({
       selector: NUMBER_INPUT_SELECTOR,
       container,
       textInput,
       dom,
-    },
-    () => {
-      const inputValue = getInputValue(textInput);
-      /** @param {unknown} event - Input event to sync. */
-      const updateTextInputValue = event => {
-        const targetValue = dom.getTargetValue(
-          /** @type {Event & { target: { value: string } }} */ (event)
-        );
-        dom.setValue(textInput, targetValue);
-        setInputValue(textInput, targetValue);
-      };
-
-      return createNumberInput(inputValue, updateTextInputValue, dom);
-    }
+      createSpecialInput: () => createBoundNumberInput(textInput, dom),
+    })
   );
-  return /** @type {HTMLInputElement} */ (ensuredInput);
+  return ensuredInput;
 };
 
 /**

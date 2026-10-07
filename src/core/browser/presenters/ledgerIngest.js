@@ -379,10 +379,14 @@ function createTableHeaderCell(group, options) {
   if (group.collapsed) {
     dom.appendChild(
       headerCell,
-      createColumnToggleLink(dom, COLLAPSED_BUTTON_TEXT, () => {
-        expandColumnGroup(collapsedColumns, group.start, group.length);
-        rerender();
-      })
+      createColumnToggleLink(
+        dom,
+        COLLAPSED_BUTTON_TEXT,
+        rerenderAfterColumnUpdate(
+          () => expandColumnGroup(collapsedColumns, group.start, group.length),
+          rerender
+        )
+      )
     );
     return headerCell;
   }
@@ -397,12 +401,29 @@ function createTableHeaderCell(group, options) {
   );
   dom.appendChild(
     headerCell,
-    createColumnToggleLink(dom, EXPANDED_BUTTON_TEXT, () => {
-      collapseColumn(collapsedColumns, group.start);
-      rerender();
-    })
+    createColumnToggleLink(
+      dom,
+      EXPANDED_BUTTON_TEXT,
+      rerenderAfterColumnUpdate(
+        () => collapseColumn(collapsedColumns, group.start),
+        rerender
+      )
+    )
   );
   return headerCell;
+}
+
+/**
+ * Run a column state update and refresh the table.
+ * @param {() => void} update Column state update.
+ * @param {() => void} rerender Table render callback.
+ * @returns {() => void} Click handler.
+ */
+function rerenderAfterColumnUpdate(update, rerender) {
+  return () => {
+    update();
+    rerender();
+  };
 }
 
 /**

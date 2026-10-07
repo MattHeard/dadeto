@@ -158,6 +158,24 @@ export function pluralizeCount(count) {
 }
 
 /**
+ * Write a successful gate status line.
+ * @param {{ write: (text: string) => void }} output Gate output stream.
+ * @param {string} message Status message without its trailing newline.
+ * @returns {void}
+ */
+export function writeGateSuccess(output, message) {
+  output.write(`${message}\n`);
+}
+
+/**
+ * Create the common successful scan result.
+ * @returns {{ exitCode: 0, violations: 0 }} Successful gate result.
+ */
+export function createSuccessfulGateResult() {
+  return { exitCode: 0, violations: 0 };
+}
+
+/**
  * Build a standard gate handler around a command launcher and a result evaluator.
  * @param {{
  *   spawnImpl: (command: string, args: string[], options: Record<string, unknown>) => { status?: number | null, signal?: string | null, error?: Error },
@@ -172,43 +190,25 @@ export function pluralizeCount(count) {
  * }} options Gate execution inputs.
  * @returns {{ exitCode: number, count: number }} Gate execution outcome.
  */
-export function executeStandardGate({
-  spawnImpl,
-  command,
-  args,
-  rootDir,
-  stderr,
-  launchLabel,
-  commandLabel,
-  readResult,
-  onSuccess,
-}) {
-  const launchFailure = runGateCommand({
-    spawnImpl,
-    command,
-    args,
-    rootDir,
-    stderr,
-    launchLabel,
-    commandLabel,
-  }).launchFailure;
+export function executeStandardGate(options) {
+  const launchFailure = runGateCommand(options).launchFailure;
 
   if (launchFailure) {
     return { exitCode: launchFailure.exitCode, count: 0 };
   }
 
-  const result = readResult();
+  const result = options.readResult();
   if (!result) {
     return { exitCode: 1, count: 0 };
   }
 
   if (result.count > 0) {
     if (result.message) {
-      stderr.write(result.message);
+      options.stderr.write(result.message);
     }
     return { exitCode: result.exitCode, count: result.count };
   }
 
-  onSuccess();
+  options.onSuccess();
   return { exitCode: 0, count: 0 };
 }

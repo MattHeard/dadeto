@@ -1,5 +1,6 @@
 import { timingSafeEqual } from 'node:crypto';
 import { ensureString, isNonNullObject } from '../../commonCore.js';
+export { assertFunction as requireWebhookDependency } from '../../commonCore.js';
 
 /** @typedef {{ body?: unknown, rawBody?: unknown, headers?: Record<string, unknown> }} RequestLike */
 
@@ -172,16 +173,4 @@ export function buildCreditEvent(event, amount) {
   }
   return { type: 'credit_added', eventId: event.id, amount };
   // Stryker restore all
-}
-
-/**
- * Ensure a required dependency is callable.
- * @param {unknown} dependency Candidate dependency.
- * @param {string} name Dependency name.
- * @returns {void}
- */
-export function requireWebhookDependency(dependency, name) {
-  if (typeof dependency !== 'function') {
-    throw new TypeError(`${name} must be a function`);
-  }
 }

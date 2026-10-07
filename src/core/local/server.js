@@ -42,31 +42,7 @@ export function createLocalAppCore(deps) {
   app.use(typedDeps.json({ limit: '2mb' }));
   app.use('/writer', typedDeps.static(typedDeps.writerDir));
 
-  app.get(
-    '/api/writer/workflow',
-    handleAsyncRoute(typedDeps.store.loadWorkflow)
-  );
-  app.post(
-    '/api/writer/workflow/move',
-    handleAsyncRoute((/** @type {any} */ req) =>
-      typedDeps.store.moveActiveIndex(typedDeps.getMoveDirection(req.body))
-    )
-  );
-  app.post(
-    '/api/writer/workflow/select',
-    handleAsyncRoute((/** @type {any} */ req) =>
-      typedDeps.store.setActiveIndex(typedDeps.getNextIndex(req.body))
-    )
-  );
-  app.put(
-    '/api/writer/document/:documentId',
-    handleAsyncRoute((/** @type {any} */ req) =>
-      typedDeps.store.saveDocument(
-        req.params.documentId,
-        typedDeps.getDocumentContent(req.body)
-      )
-    )
-  );
+  registerWriterRoutes(app, typedDeps);
   app.post(
     '/api/realtime/call',
     handleAsyncRoute(createRealtimeCallHandler(typedDeps))
@@ -115,6 +91,40 @@ export function createLocalAppCore(deps) {
   app.use(typedDeps.static(typedDeps.publicDir));
 
   return { app };
+}
+
+/**
+ * Register routes for the local writer interface.
+ * @param {any} app Express-like application.
+ * @param {any} typedDeps Normalized server dependencies.
+ * @returns {void}
+ */
+function registerWriterRoutes(app, typedDeps) {
+  app.get(
+    '/api/writer/workflow',
+    handleAsyncRoute(typedDeps.store.loadWorkflow)
+  );
+  app.post(
+    '/api/writer/workflow/move',
+    handleAsyncRoute(req =>
+      typedDeps.store.moveActiveIndex(typedDeps.getMoveDirection(req.body))
+    )
+  );
+  app.post(
+    '/api/writer/workflow/select',
+    handleAsyncRoute(req =>
+      typedDeps.store.setActiveIndex(typedDeps.getNextIndex(req.body))
+    )
+  );
+  app.put(
+    '/api/writer/document/:documentId',
+    handleAsyncRoute(req =>
+      typedDeps.store.saveDocument(
+        req.params.documentId,
+        typedDeps.getDocumentContent(req.body)
+      )
+    )
+  );
 }
 
 /**

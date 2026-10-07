@@ -354,8 +354,16 @@ function parseJsonObject(input) {
   try {
     return requireParsedObject(JSON.parse(input));
   } catch {
-    return { ok: false, error: 'Input must be a JSON object write request.' };
+    return invalidWriteRequest();
   }
+}
+
+/**
+ * Build the shared invalid JSON-object write result.
+ * @returns {{ ok: false, error: string }} Invalid request result.
+ */
+function invalidWriteRequest() {
+  return { ok: false, error: 'Input must be a JSON object write request.' };
 }
 
 /**
@@ -368,7 +376,7 @@ function requireParsedObject(value) {
     return { ok: true, value };
   }
 
-  return { ok: false, error: 'Input must be a JSON object write request.' };
+  return invalidWriteRequest();
 }
 
 /**

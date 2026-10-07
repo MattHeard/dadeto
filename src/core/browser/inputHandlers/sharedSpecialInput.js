@@ -111,10 +111,42 @@ export function createSpecialInputEnsurer(options) {
 
 /**
  * Create or reuse a special input in a single step.
- * @param {SharedSpecialInputParams} options Shared input configuration.
- * @param {() => HTMLElement} createSpecialInput Factory for the special input.
+ * @param {{ selector: string, container: HTMLElement, textInput: HTMLInputElement, dom: DomHelpers, createSpecialInput: () => HTMLElement }} options Shared input configuration.
  * @returns {HTMLElement} Reused or newly created special input.
  */
-export function createOrReuseSpecialInput(options, createSpecialInput) {
-  return createSpecialInputEnsurer(options).ensure(createSpecialInput);
+export function createOrReuseSpecialInput(options) {
+  const { selector, createSpecialInput, ...sharedOptions } = options;
+  return createSpecialInputEnsurer({ ...sharedOptions, selector }).ensure(
+    createSpecialInput
+  );
+}
+
+/**
+ * Resolve a special input by selector and create it when absent.
+ * @param {{ selector: string, container: HTMLElement, textInput: HTMLInputElement, dom: DomHelpers, createSpecialInput: () => HTMLInputElement }} options Wiring dependencies.
+ * @returns {HTMLInputElement} Existing or newly created input.
+ */
+export function resolveSpecialInput(options) {
+  const { selector, createSpecialInput, ...sharedOptions } = options;
+  return /** @type {HTMLInputElement} */ (
+    createOrReuseSpecialInput({
+      ...sharedOptions,
+      selector,
+      createSpecialInput,
+    })
+  );
+}
+
+/**
+ * Configure a special input after creating or reusing it.
+ * @param {{ selector: string, container: HTMLElement, textInput: HTMLInputElement, dom: DomHelpers, createSpecialInput: () => HTMLElement, configure: (input: HTMLInputElement) => HTMLInputElement }} options Configuration and lookup dependencies.
+ * @returns {HTMLInputElement} Configured input.
+ */
+export function ensureConfiguredSpecialInput(options) {
+  const { selector, configure, ...sharedOptions } = options;
+  return configure(
+    /** @type {HTMLInputElement} */ (
+      createOrReuseSpecialInput({ ...sharedOptions, selector })
+    )
+  );
 }

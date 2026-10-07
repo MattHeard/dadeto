@@ -2,6 +2,7 @@ import { hideAndDisable } from '../browser-core.js';
 import { setInputValue } from '../inputValueStore.js';
 import {
   createInputDisposer,
+  removeExistingSpecialInput,
   setupInputEvents,
 } from './browserInputHandlersCore.js';
 import { parseObjectRecord } from '../validation.js';
@@ -143,13 +144,11 @@ function createForm(fields, container, textInput, dom) {
  * @returns {void}
  */
 function removeExisting(dom, container) {
-  const existing = dom.querySelector(container, FORM_SELECTOR);
-  if (existing) {
+  removeExistingSpecialInput(container, dom, FORM_SELECTOR, existing => {
     /** @type {HTMLElement & {_dispose?: () => void}} */ (
       existing
     )._dispose?.();
-    dom.removeChild(container, existing);
-  }
+  });
 }
 
 /**

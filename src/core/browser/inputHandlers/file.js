@@ -3,7 +3,7 @@ import {
   createInputDisposer,
   revealAndEnable,
 } from './browserInputHandlersCore.js';
-import { createOrReuseSpecialInput } from './sharedSpecialInput.js';
+import { ensureConfiguredSpecialInput } from './sharedSpecialInput.js';
 import { FILE_INPUT_SETTINGS } from './fileInputSettings.js';
 
 /** @typedef {import('../domHelpers.js').DOMHelpers} DOMHelpers */
@@ -102,6 +102,21 @@ function createFileChangeHandler({ dom, textInput }) {
 }
 
 /**
+ * Create and wire the file input for a hidden text field.
+ * @param {DOMHelpers} dom DOM helper utilities.
+ * @param {HTMLInputElement} textInput Hidden text input.
+ * @returns {HTMLInputElement} Configured file input.
+ */
+function createBoundFileInput(dom, textInput) {
+  const input = createFileInputElement(dom);
+  const handleChange = createFileChangeHandler({ dom, textInput });
+  dom.addEventListener(input, 'change', handleChange);
+  /** @type {HTMLInputElement & { _dispose?: () => void }} */ (input)._dispose =
+    createInputDisposer(dom, input, handleChange);
+  return input;
+}
+
+/**
  * Ensure the file input exists and is wired to the hidden text input.
  * @param {HTMLElement} container Container element.
  * @param {HTMLInputElement} textInput Hidden text input.
@@ -109,30 +124,19 @@ function createFileChangeHandler({ dom, textInput }) {
  * @returns {HTMLInputElement} File input element.
  */
 export const ensureFileInput = (container, textInput, dom) => {
-  const fileInput = /** @type {HTMLInputElement} */ (
-    createOrReuseSpecialInput(
-      {
-        selector: FILE_INPUT_SELECTOR,
-        container,
-        textInput,
-        dom,
-      },
-      () => {
-        const input = createFileInputElement(dom);
-        const handleChange = createFileChangeHandler({ dom, textInput });
-        dom.addEventListener(input, 'change', handleChange);
-        /** @type {HTMLInputElement & { _dispose?: () => void }} */ (
-          input
-        )._dispose = createInputDisposer(dom, input, handleChange);
-        return input;
-      }
-    )
-  );
-
-  dom.setClassName(fileInput, FILE_INPUT_SETTINGS.className);
-  fileInput.accept = FILE_INPUT_SETTINGS.accept;
-  revealAndEnable(fileInput, dom);
-  return fileInput;
+  return ensureConfiguredSpecialInput({
+    selector: FILE_INPUT_SELECTOR,
+    container,
+    textInput,
+    dom,
+    createSpecialInput: () => createBoundFileInput(dom, textInput),
+    configure: /** @param {HTMLInputElement} fileInput */ fileInput => {
+      dom.setClassName(fileInput, FILE_INPUT_SETTINGS.className);
+      fileInput.accept = FILE_INPUT_SETTINGS.accept;
+      revealAndEnable(fileInput, dom);
+      return fileInput;
+    },
+  });
 };
 
 /**

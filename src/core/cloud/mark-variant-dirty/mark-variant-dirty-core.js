@@ -517,8 +517,19 @@ async function markVariantAndRespond({ res, markFn, pageNumber, variantName }) {
  * @returns {void}
  */
 function respondToVariantResult(res, ok) {
+  respondToRecordResult(res, ok, 'Variant');
+}
+
+/**
+ * Send the standard not-found or success response for a mutation.
+ * @param {NativeHttpResponse} res Response object.
+ * @param {boolean} ok Mutation result.
+ * @param {string} recordName Entity name used in the not-found message.
+ * @returns {void}
+ */
+function respondToRecordResult(res, ok, recordName) {
   if (!ok) {
-    res.status(404).json({ error: 'Variant not found' });
+    res.status(404).json({ error: `${recordName} not found` });
     return;
   }
 
@@ -805,13 +816,7 @@ async function markAuthorAndRespond(res, markFn, authorId) {
   await runWithFailureAndThen(
     () => markFn(authorId),
     error => res.status(500).json({ error: resolveUpdateErrorMessage(error) }),
-    value => {
-      if (!value) {
-        res.status(404).json({ error: 'Author not found' });
-        return;
-      }
-      sendOkResponse(res);
-    }
+    value => respondToRecordResult(res, value, 'Author')
   );
   // Stryker restore all
 }

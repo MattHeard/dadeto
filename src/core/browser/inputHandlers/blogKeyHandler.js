@@ -2,6 +2,7 @@ import * as browserCore from '../browser-core.js';
 import { whenOrDefault } from '../../commonCore.js';
 import {
   finalizeManagedForm,
+  applyMutationAndSyncHiddenInput,
   syncHiddenInput,
   wireLabelledField,
   runFormHandler,
@@ -64,16 +65,6 @@ function parseLines(value) {
 }
 
 /**
- * Run a blog-key data mutation and resync the hidden payload.
- * @param {{ dom: DOMHelpers, textInput: HTMLInputElement, data: BlogKeyData, applyMutation: () => void }} options Update inputs.
- * @returns {void}
- */
-function updateBlogKeyData({ dom, textInput, data, applyMutation }) {
-  applyMutation();
-  syncHiddenInput(dom, textInput, data);
-}
-
-/**
  * Build and wire a blog-key field using the shared labelled-field flow.
  * @param {{
  *   dom: DOMHelpers,
@@ -105,7 +96,7 @@ function buildBlogKeyField(options) {
   configureElement(element);
   dom.setValue(element, initialValue);
   const onInput = () =>
-    updateBlogKeyData({ dom, textInput, data, applyMutation: updateData });
+    applyMutationAndSyncHiddenInput(dom, textInput, data, updateData);
   wireLabelledField({
     dom,
     form,

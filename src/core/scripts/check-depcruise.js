@@ -1,5 +1,6 @@
 import * as gateUtils from './gate-utils.js';
 import * as commonCore from '../commonCore.js';
+import { DEFAULT_STDOUT, DEFAULT_STDERR } from './gate-script-defaults.js';
 import {
   findCoreBrowserGlobalsInSource,
   scanBrowserMainPolicy,
@@ -11,8 +12,6 @@ const { requirePathModule } = commonCore;
 const DEFAULT_ROOT_DIR = '.';
 const DEFAULT_SOURCE_ROOT = 'src/core';
 const DEFAULT_CONFIG_PATH = 'dependency-cruiser.config.cjs';
-const DEFAULT_STDOUT = { write() {} };
-const DEFAULT_STDERR = { write() {} };
 const DEFAULT_SPAWN_RESULT = { status: 0, signal: null };
 const DEFAULT_SCOPE_ANALYSIS_DEPS = {
   /**
@@ -178,24 +177,13 @@ function normalizeCheckDepcruiseOptions(options = {}) {
  * @param {DepcruiseGateDeps} deps Gate dependencies.
  * @returns {{exitCode: number, violations: number}} Gate result.
  */
-function executeDepcruiseGate({
-  spawnImpl,
-  readFileSync,
-  readdirSync,
-  stdout,
-  stderr,
-  rootDir,
-  sourceRoot,
-  configPath,
-  pathModule,
-  scopeAnalysisDeps,
-}) {
+function executeDepcruiseGate(deps) {
   const { launchFailure } = gateUtils.runGateCommand({
-    spawnImpl,
+    spawnImpl: deps.spawnImpl,
     command: 'depcruise',
-    args: ['--config', configPath, 'src'],
-    rootDir,
-    stderr,
+    args: ['--config', deps.configPath, 'src'],
+    rootDir: deps.rootDir,
+    stderr: deps.stderr,
     launchLabel: 'Dependency-cruiser gate',
     commandLabel: 'depcruise',
   });
@@ -205,17 +193,11 @@ function executeDepcruiseGate({
   }
 
   /** @type {CoreFileScanDeps} */
-  const sharedScanDeps = {
-    readFileSync,
-    readdirSync,
-    rootDir,
-    sourceRoot,
-    pathModule,
-  };
+  const sharedScanDeps = deps;
   /** @type {CoreBrowserMainDeps & { readdirSync: (dirPath: string, options: { withFileTypes: true }) => Array<{ isDirectory: () => boolean, isFile: () => boolean, name: string }>, scopeAnalysisDeps: { parseSourceForScopeAnalysis: (source: string) => unknown, analyzeScope: (ast: unknown) => { scopes: Array<{ through: Array<{ identifier?: { name?: string } }> }> } } }} */
   const browserScanDeps = {
     ...sharedScanDeps,
-    scopeAnalysisDeps,
+    scopeAnalysisDeps: deps.scopeAnalysisDeps,
   };
 
   const violations = findCoreMathRandomViolations(sharedScanDeps);
@@ -224,7 +206,7 @@ function executeDepcruiseGate({
 
   if (browserGlobalViolations.length > 0) {
     reportViolations({
-      stderr,
+      stderr: deps.stderr,
       violations: browserGlobalViolations,
       countLabel: 'Dependency-cruiser core global policy',
       /**
@@ -239,7 +221,7 @@ function executeDepcruiseGate({
 
   if (violations.length > 0) {
     reportViolations({
-      stderr,
+      stderr: deps.stderr,
       violations,
       countLabel: 'Dependency-cruiser core policy',
       /**
@@ -252,8 +234,11 @@ function executeDepcruiseGate({
     return { exitCode: 1, violations: violations.length };
   }
 
-  stdout.write('Checked dependency-cruiser: no core global dependencies.\n');
-  return { exitCode: 0, violations: 0 };
+  gateUtils.writeGateSuccess(
+    deps.stdout,
+    'Checked dependency-cruiser: no core global dependencies.'
+  );
+  return gateUtils.createSuccessfulGateResult();
 }
 
 /**

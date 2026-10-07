@@ -2,6 +2,8 @@
 // validation gate; traversal and reporting plumbing are observable through the
 // complete gate contract rather than independently at each helper branch.
 import { readExemptions } from './read-exemptions.js';
+import { DEFAULT_STDOUT, DEFAULT_STDERR } from './gate-script-defaults.js';
+import * as gateUtils from './gate-utils.js';
 
 const DEFAULT_ROOT_DIR = '.';
 const DEFAULT_SOURCE_ROOT = 'src';
@@ -9,8 +11,6 @@ const DEFAULT_PARSE =
   /** @type {(source: string, options: { ecmaVersion: string, sourceType: string, loc: boolean, range: boolean }) => import('estree').Program} */ (
     () => ({ type: 'Program', body: [], sourceType: 'module' })
   );
-const DEFAULT_STDOUT = { write() {} };
-const DEFAULT_STDERR = { write() {} };
 
 /**
  * @typedef {{
@@ -65,10 +65,11 @@ export function createCheckOverexposedExportsHandle(options = {}) {
     const violations = findOverexposedExportViolations(deps);
 
     if (violations.length === 0) {
-      deps.stdout.write(
-        'Checked export locality: no over-exposed exports found.\n'
+      gateUtils.writeGateSuccess(
+        deps.stdout,
+        'Checked export locality: no over-exposed exports found.'
       );
-      return { exitCode: 0, violations: 0 };
+      return gateUtils.createSuccessfulGateResult();
     }
 
     for (const violation of violations) {
@@ -149,29 +150,21 @@ export function findOverexposedExportViolations(deps) {
  * @returns {OverexposedExportsDeps & { stdout: { write: (text: string) => void }, stderr: { write: (text: string) => void } }} Normalized deps.
  */
 function normalizeOptions(options) {
-  const readFileSync = withDefault(options.readFileSync, () => '');
-  const readdirSync = withDefault(options.readdirSync, () => []);
-  const stdout = withDefault(options.stdout, DEFAULT_STDOUT);
-  const stderr = withDefault(options.stderr, DEFAULT_STDERR);
-  const rootDir = withDefault(options.rootDir, DEFAULT_ROOT_DIR);
-  const sourceRoot = withDefault(options.sourceRoot, DEFAULT_SOURCE_ROOT);
-  const configPath = withDefault(
-    options.configPath,
-    'overexposed-exports-exemptions.json'
-  );
-  const parse = withDefault(options.parse, DEFAULT_PARSE);
-  const pathModule = withDefault(options.pathModule, createDefaultPathModule());
-
   return {
-    readFileSync,
-    readdirSync,
-    stdout,
-    stderr,
-    rootDir,
-    sourceRoot,
-    configPath,
-    parse,
-    pathModule,
+    readFileSync: withDefault(options.readFileSync, () => ''),
+    readdirSync: withDefault(options.readdirSync, () => []),
+    stdout: withDefault(options.stdout, DEFAULT_STDOUT),
+    stderr: withDefault(options.stderr, DEFAULT_STDERR),
+    rootDir: withDefault(options.rootDir, DEFAULT_ROOT_DIR),
+    sourceRoot: withDefault(options.sourceRoot, DEFAULT_SOURCE_ROOT),
+    configPath: withDefault(
+      options.configPath,
+      'overexposed-exports-exemptions.json'
+    ),
+    parse: withDefault(options.parse, DEFAULT_PARSE),
+    pathModule: /** @type {OverexposedExportsDeps['pathModule']} */ (
+      options.pathModule ?? createDefaultPathModule()
+    ),
   };
 }
 
@@ -184,6 +177,18 @@ function normalizeOptions(options) {
  */
 function withDefault(value, fallback) {
   return value ?? fallback;
+}
+
+/**
+ * @returns {OverexposedExportsDeps['pathModule']} Default path helpers.
+ */
+function createDefaultPathModule() {
+  return {
+    join: (...segments) => segments.join('/'),
+    resolve: (...segments) => segments.join('/'),
+    relative: (_from, to) => to,
+    sep: '/',
+  };
 }
 
 /**
@@ -243,18 +248,6 @@ function collectViolations(deps, analyses, externalUsageCounts) {
     }
   }
   return violations;
-}
-
-/**
- * @returns {OverexposedExportsDeps['pathModule']} Default path helpers.
- */
-function createDefaultPathModule() {
-  return {
-    join: (...segments) => segments.join('/'),
-    resolve: (...segments) => segments.join('/'),
-    relative: (_from, to) => to,
-    sep: '/',
-  };
 }
 
 /**

@@ -69,15 +69,13 @@ describe('sharedSpecialInput', () => {
     };
 
     expect(
-      createOrReuseSpecialInput(
-        {
-          selector: '.special',
-          container: {},
-          textInput: {},
-          dom,
-        },
-        () => ({})
-      )
+      createOrReuseSpecialInput({
+        selector: '.special',
+        container: {},
+        textInput: {},
+        dom,
+        createSpecialInput: () => ({}),
+      })
     ).toBe(existing);
   });
 });
