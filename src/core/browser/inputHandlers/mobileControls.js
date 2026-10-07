@@ -1,4 +1,5 @@
 import { createCaptureForm, syncToyPayload } from './captureFormShared.js';
+import { createNonSubmittingButton } from './browserInputHandlersCore.js';
 
 /** @typedef {import('../domHelpers.js').DOMHelpers} MobileControlsDOMHelpers */
 /** @typedef {() => void} CleanupFn */
@@ -127,10 +128,7 @@ function buildMobileControlsFormContext(options) {
   dom.appendChild(form, controls);
 
   for (const control of CONTROL_KEYS) {
-    const controlButton = /** @type {HTMLButtonElement} */ (
-      dom.createElement('button')
-    );
-    dom.setType(controlButton, 'button');
+    const controlButton = createNonSubmittingButton(dom);
     dom.setTextContent(controlButton, control.label);
     controlButton.setAttribute('aria-pressed', 'false');
     dom.appendChild(controls, controlButton);

@@ -1,4 +1,5 @@
 import { createCaptureForm, syncToyPayload } from './captureFormShared.js';
+import { createNonSubmittingButton } from './browserInputHandlersCore.js';
 import { resetSavePrompt } from '../game/mosslight-valley/save.js';
 
 const FORM_CLASS = 'mosslight-keypad-form';
@@ -72,10 +73,7 @@ export function mosslightKeypadHandler(dom, container, textInput) {
         dom.setClassName(groupElement, group.className);
         dom.appendChild(keypad, groupElement);
         for (const control of group.controls) {
-          const controlButton = /** @type {HTMLButtonElement} */ (
-            dom.createElement('button')
-          );
-          dom.setType(controlButton, 'button');
+          const controlButton = createNonSubmittingButton(dom);
           dom.setClassName(
             controlButton,
             `mosslight-keypad-button ${control.position}`

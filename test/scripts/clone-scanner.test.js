@@ -136,6 +136,37 @@ describe('original clone engine with safe enumeration', () => {
     expect(report.statistics.total.clones).toBe(0);
   });
 
+  test('excludes detector clones with missing occurrences or ranges', async () => {
+    const { deps, run } = fixture();
+    const validOccurrence = {
+      sourceId: 'fixture/a.js',
+      start: { line: 1, position: 0 },
+      end: { line: 1, position: 10 },
+      range: [0, 10],
+    };
+    const clones = [
+      { format: 'javascript', duplicationA: validOccurrence },
+      {
+        format: 'javascript',
+        duplicationA: { ...validOccurrence, range: undefined },
+        duplicationB: { ...validOccurrence, sourceId: 'fixture/b.js' },
+      },
+    ];
+    const handlers = new Map();
+    deps.createDetector = () => ({
+      on: jest.fn((event, handler) => handlers.set(event, handler)),
+      detect: async () => {
+        clones.forEach(clone => handlers.get('CLONE_FOUND')?.({ clone }));
+        return clones;
+      },
+    });
+
+    const report = await run();
+
+    expect(report.duplicates).toEqual([]);
+    expect(report.statistics.total.clones).toBe(0);
+  });
+
   test('escapes code and filenames in the HTML report while leaving JSON untouched', async () => {
     const { deps, files, writes, run } = fixture();
     deps.readDirectory.mockReturnValue([

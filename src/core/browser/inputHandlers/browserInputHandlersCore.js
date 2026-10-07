@@ -130,3 +130,14 @@ export function revealAndEnable(element, dom) {
   const actions = [dom.reveal, dom.enable];
   actions.forEach(action => action.call(dom, element));
 }
+
+/**
+ * Create a button with its native button type set explicitly.
+ * @param {BrowserDom} dom - DOM utilities.
+ * @returns {HTMLButtonElement} Button that will not submit its parent form.
+ */
+export function createNonSubmittingButton(dom) {
+  const button = /** @type {HTMLButtonElement} */ (dom.createElement('button'));
+  dom.setType(button, 'button');
+  return button;
+}
