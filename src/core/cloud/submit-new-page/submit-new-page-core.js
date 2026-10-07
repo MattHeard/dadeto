@@ -7,6 +7,7 @@ import {
   buildVariantByNameQuery,
   buildPageByNumberQuery,
 } from '../cloud-core.js';
+import { whenOrNull } from '../../commonCore.js';
 /** @typedef {import('../../../../types/allow-effects').AllowEffects} AllowEffects */
 import {
   normalizeShortString,
@@ -199,10 +200,7 @@ async function resolveVariantAndOption(pageRef, info) {
  */
 async function whenFound(resolver, fn) {
   const value = await resolver;
-  if (!value) {
-    return null;
-  }
-  return fn(value);
+  return whenOrNull(Boolean(value), () => fn(/** @type {Value} */ (value)));
 }
 
 /**
