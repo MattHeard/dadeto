@@ -13,6 +13,7 @@ import {
 } from './generate-stats-gcf.js';
 import { createGenerateStatsHandle } from '../../core/cloud/generate-stats/run.js';
 import { createSchedulerRequestVerifier } from '../../core/cloud/generate-stats/scheduler-auth.js';
+import { createEffectInvocationBoundary } from '../allow-effects.js';
 
 const environment = getEnvironmentVariables();
 const oidcClient = new OAuth2Client();
@@ -34,6 +35,8 @@ const handle = createGenerateStatsHandle({
   initializeApp,
   verifySchedulerRequest,
   fetchFn,
+  effectFetchFn: (permission, ...args) => fetchFn(...args),
+  bindEffectBoundary: handler => createEffectInvocationBoundary(handler)(),
   crypto,
 });
 

@@ -1,5 +1,7 @@
 import { sanitizeUrl } from '../error-reporting.js';
 
+/** @typedef {import('../../../types/allow-effects').AllowEffects} AllowEffects */
+
 /**
  * @typedef {(url: string, init?: { method?: string, headers?: Record<string, string>, body?: string, mode?: string, credentials?: string, keepalive?: boolean }) => Promise<unknown>} FetchFn
  * @typedef {() => string | undefined} StringGetter
@@ -117,42 +119,58 @@ export function normalizeErrorPayload(input) {
 
 /**
  * Create a best-effort beacon sender.
- * @param {FetchFn | undefined} fetchFn Fetch function.
+ * @param {(handler: (permission: AllowEffects) => Promise<unknown>) => Promise<unknown>} bindEffectBoundary Permission boundary.
+ * @param {(permission: AllowEffects, url: string, init?: Parameters<FetchFn>[1]) => Promise<unknown> | undefined} fetchFn Effect fetch function.
  * @param {string} endpointUrl Beacon endpoint.
  * @returns {BeaconReporter} Beacon reporter.
  */
-export function createErrorBeaconReporter(fetchFn, endpointUrl) {
+export function createErrorBeaconReporter(
+  bindEffectBoundary,
+  fetchFn,
+  endpointUrl
+) {
   return payload => {
     if (typeof fetchFn !== 'function' || !endpointUrl) {
       return;
     }
 
-    fetchFn(endpointUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(payload),
-      mode: 'cors',
-      credentials: 'omit',
-      keepalive: true,
-    }).catch(() => {});
+    Promise.resolve(
+      bindEffectBoundary(permission =>
+        fetchFn(permission, endpointUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(payload),
+          mode: 'cors',
+          credentials: 'omit',
+          keepalive: true,
+        })
+      )
+    ).catch(() => {});
   };
 }
 
 /**
  * Create a best-effort navigator.sendBeacon reporter.
- * @param {((url: string, data?: unknown) => boolean) | undefined} sendBeaconFn Beacon transport.
+ * @param {(handler: (permission: AllowEffects) => Promise<unknown>) => Promise<unknown>} bindEffectBoundary Permission boundary.
+ * @param {((permission: AllowEffects, url: string, data?: unknown) => boolean) | undefined} sendBeaconFn Beacon transport.
  * @param {string} endpointUrl Beacon endpoint.
  * @returns {BeaconReporter} Beacon reporter.
  */
-export function createErrorBeaconSendBeaconReporter(sendBeaconFn, endpointUrl) {
+export function createErrorBeaconSendBeaconReporter(
+  bindEffectBoundary,
+  sendBeaconFn,
+  endpointUrl
+) {
   return payload => {
     if (typeof sendBeaconFn !== 'function') {
       return;
     }
 
-    sendBeaconFn(endpointUrl, JSON.stringify(payload));
+    void bindEffectBoundary(async permission => {
+      sendBeaconFn(permission, endpointUrl, JSON.stringify(payload));
+    }).catch(() => {});
   };
 }
 

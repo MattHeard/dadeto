@@ -112,6 +112,8 @@ export const getFirestoreInstance = (options = {}) => {
  *   auth: unknown,
  *   storage: unknown,
  *   fetchFn: typeof globalThis.fetch,
+ *   effectFetchFn: (permission: import('../../../../types/allow-effects').AllowEffects, input: string, init?: object) => Promise<Response>,
+ *   bindEffectBoundary: (handler: (permission: import('../../../../types/allow-effects').AllowEffects) => Promise<Response>) => Promise<Response>,
  *   env?: Record<string, string | undefined>,
  *   cryptoModule: { randomUUID: () => string },
  *   verifySchedulerRequest?: (req: import('../../../../types/native-http').NativeHttpRequest) => Promise<boolean>,
@@ -195,6 +197,8 @@ function createRegionOnRequest(functions, app) {
  *   getEnvironmentVariables: () => Record<string, string | undefined>,
  *   initializeApp: () => void,
  *   fetchFn: typeof globalThis.fetch,
+ *   effectFetchFn: (permission: import('../../../../types/allow-effects').AllowEffects, input: string, init?: object) => Promise<Response>,
+ *   bindEffectBoundary: (handler: (permission: import('../../../../types/allow-effects').AllowEffects) => Promise<Response>) => Promise<Response>,
  *   crypto: { randomUUID: () => string },
  *   verifySchedulerRequest?: (req: import('../../../../types/native-http').NativeHttpRequest) => Promise<boolean>,
  * }} deps Runtime dependencies supplied by the cloud wrapper.
@@ -211,6 +215,8 @@ export function createGenerateStatsHandle({
   initializeApp,
   verifySchedulerRequest,
   fetchFn,
+  effectFetchFn,
+  bindEffectBoundary,
   crypto,
 }) {
   const ensureFirebaseApp = createEnsureFirebaseApp(initializeApp);
@@ -226,6 +232,8 @@ export function createGenerateStatsHandle({
     auth: getAuth(),
     storage: new Storage(),
     fetchFn,
+    effectFetchFn,
+    bindEffectBoundary,
     env: environment,
     cryptoModule: crypto,
     verifySchedulerRequest,

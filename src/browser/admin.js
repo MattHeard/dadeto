@@ -1,6 +1,9 @@
 import { loadStaticConfig } from './loadStaticConfig.js';
 import { createInitAdminAppHandle } from '../core/browser/admin-core.js';
-import { createErrorBeaconHandlers, createErrorBeaconSendBeaconReporter } from '../core/browser/error-beacon.js';
+import {
+  createErrorBeaconHandlers,
+  createErrorBeaconSendBeaconReporter,
+} from '../core/browser/error-beacon.js';
 import {
   getAuth,
   GoogleAuthProvider,
@@ -21,7 +24,17 @@ const errorBeaconHandlers = createErrorBeaconHandlers({
       }
 
       createErrorBeaconSendBeaconReporter(
-        globalThis.navigator?.sendBeacon?.bind(globalThis.navigator),
+        bindEffectBoundary,
+        (permission, target, data) => {
+          void permission;
+          return (
+            globalThis.navigator?.sendBeacon?.call(
+              globalThis.navigator,
+              target,
+              data
+            ) ?? false
+          );
+        },
         url
       )(payload);
     }),

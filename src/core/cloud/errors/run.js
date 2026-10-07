@@ -10,7 +10,7 @@ import { createErrorBeaconHandler } from './errors-core.js';
  * @typedef {{ use: (middleware: unknown) => void, post: (path: string, handler: unknown) => void }} ErrorBeaconApp
  * @typedef {{ debug?: (...args: unknown[]) => void, error?: (...args: unknown[]) => void }} ErrorBeaconConsole
  * @typedef {Function & { json: Function, text: Function }} ErrorBeaconExpress
- * @typedef {{ express: ErrorBeaconExpress, cors: Function, getEnvironmentVariables: Function, console?: ErrorBeaconConsole, fetchFn: typeof globalThis.fetch }} ErrorBeaconDeps
+ * @typedef {{ express: ErrorBeaconExpress, cors: Function, getEnvironmentVariables: Function, console?: ErrorBeaconConsole, fetchFn: typeof globalThis.fetch, bindEffectBoundary: (handler: (permission: import('../../../../types/allow-effects').AllowEffects) => Promise<unknown>) => Promise<unknown>, effectFetchFn: (permission: import('../../../../types/allow-effects').AllowEffects, input: string, init?: object) => Promise<Response> }} ErrorBeaconDeps
  */
 
 /**
@@ -60,18 +60,23 @@ export function createErrorBeaconRun(deps) {
     const accessToken = await fetchAccessToken(deps.fetchFn);
     // Stryker disable next-line all -- Error Reporting forwarding uses the
     // fixed endpoint/request protocol.
-    const response = await deps.fetchFn(
-      `https://clouderrorreporting.googleapis.com/v1beta1/projects/${projectId}/events:report`,
-      {
-        // Stryker disable next-line all -- fixed Error Reporting HTTP method.
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          // Stryker disable next-line all -- fixed JSON content type.
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(event),
-      }
+    const response = /** @type {Response} */ (
+      await deps.bindEffectBoundary(permission =>
+        deps.effectFetchFn(
+          permission,
+          `https://clouderrorreporting.googleapis.com/v1beta1/projects/${projectId}/events:report`,
+          {
+            // Stryker disable next-line all -- fixed Error Reporting HTTP method.
+            method: 'POST',
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+              // Stryker disable next-line all -- fixed JSON content type.
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(event),
+          }
+        )
+      )
     );
 
     if (!response.ok) {

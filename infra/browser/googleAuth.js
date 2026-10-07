@@ -13,16 +13,24 @@ import { createLoadStaticConfig } from '../core/browser/load-static-config-core.
 import {
   getCachedAuthorUuid,
   installAuthorUuidCaching,
-  setCachedAuthorUuid,
   refreshCachedAuthorUuid,
 } from '../core/browser/google-auth-cache.js';
 import { getIdToken } from '../core/browser/browser-core.js';
+import { bindEffectBoundary } from './allow-effects.js';
+const effectStorage = {
+  getItem: key => sessionStorage.getItem(key),
+  setItem: (_permission, key, value) => sessionStorage.setItem(key, value),
+  removeItem: (_permission, key) => sessionStorage.removeItem(key),
+};
 setupFirebase(initializeApp);
-const loadStaticConfig = createLoadStaticConfig({ fetchFn: globalThis.fetch.bind(globalThis), warn: console.warn.bind(console) });
+const loadStaticConfig = createLoadStaticConfig({
+  fetchFn: globalThis.fetch.bind(globalThis),
+  warn: console.warn.bind(console),
+});
 const handle = installAuthorUuidCaching(
   createGoogleAuthModule({
     getAuthFn: getAuth,
-    storage: sessionStorage,
+    storage: effectStorage,
     consoleObj: console,
     globalScope: globalThis,
     Provider: GoogleAuthProvider,
@@ -30,6 +38,7 @@ const handle = installAuthorUuidCaching(
   }),
   {
     fetchFn: globalThis.fetch.bind(globalThis),
+    bindEffectBoundary,
     getAuthorUuidUrl: () =>
       loadStaticConfig().then(config => config.getAuthorUuidUrl || ''),
     isInternalOrigin: () =>
@@ -37,13 +46,26 @@ const handle = installAuthorUuidCaching(
   }
 );
 
-function isInternalPlaywrightOrigin(globalScope) { const hostname = globalScope?.location?.hostname; return typeof hostname === 'string' && /^10\.132\.0\.\d+$/.test(hostname); } export { handle };
+function isInternalPlaywrightOrigin(globalScope) {
+  const hostname = globalScope?.location?.hostname;
+  return typeof hostname === 'string' && /^10\.132\.0\.\d+$/.test(hostname);
+}
+export { handle };
 export const initGoogleSignIn = async options => {
   if (isInternalPlaywrightOrigin(globalThis)) return;
   return handle.initGoogleSignIn(options);
 };
-export async function signOut() { await handle.signOut(); setCachedAuthorUuid(sessionStorage, null); }
+export async function signOut() {
+  await handle.signOut();
+}
 export const isAdmin = () => isAdminWithDeps(sessionStorage, JSON, atob);
 export const getAuthorUuid = () => getCachedAuthorUuid(sessionStorage);
-export const refreshAuthorUuid = () => refreshCachedAuthorUuid({ storage: sessionStorage, fetchFn: globalThis.fetch.bind(globalThis), getAuthorUuidUrl: () => loadStaticConfig().then(config => config.getAuthorUuidUrl || '') });
+export const refreshAuthorUuid = () =>
+  refreshCachedAuthorUuid({
+    storage: effectStorage,
+    fetchFn: globalThis.fetch.bind(globalThis),
+    bindEffectBoundary,
+    getAuthorUuidUrl: () =>
+      loadStaticConfig().then(config => config.getAuthorUuidUrl || ''),
+  });
 export { getIdToken };

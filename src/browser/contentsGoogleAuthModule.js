@@ -4,9 +4,15 @@ import {
   createErrorBeaconReporter,
 } from '../core/browser/error-beacon.js';
 import { loadStaticConfig } from './loadStaticConfig.js';
-import { getAuthorUuid, initGoogleSignIn, refreshAuthorUuid, signOut } from './googleAuth.js';
+import {
+  getAuthorUuid,
+  initGoogleSignIn,
+  refreshAuthorUuid,
+  signOut,
+} from './googleAuth.js';
 import { getIdToken } from '../core/browser/browser-core.js';
 import { isAdminWithDeps } from './admin-core.js';
+import { bindEffectBoundary, createEffectFetchFn } from './allow-effects.js';
 
 const errorBeaconUrlPromise = loadStaticConfig()
   .then(config => config.errorBeaconUrl || '')
@@ -20,7 +26,8 @@ const errorBeaconHandlers = createErrorBeaconHandlers({
       }
 
       createErrorBeaconReporter(
-        globalThis.fetch?.bind(globalThis),
+        bindEffectBoundary,
+        createEffectFetchFn((input, init) => globalThis.fetch(input, init)),
         url
       )(payload);
     }),
@@ -31,11 +38,22 @@ const errorBeaconHandlers = createErrorBeaconHandlers({
 });
 
 globalThis.addEventListener('error', errorBeaconHandlers.handleWindowError);
-globalThis.addEventListener('unhandledrejection', errorBeaconHandlers.handleUnhandledRejection);
+globalThis.addEventListener(
+  'unhandledrejection',
+  errorBeaconHandlers.handleUnhandledRejection
+);
 
 const handle = createGoogleAuthStatusHandle({
   documentObj: document,
-  initGoogleSignInFn: options => loadStaticConfig().then(config => config.disableGoogleSignIn !== true ? initGoogleSignIn({ ...options, reportError: errorBeaconHandlers.logError }) : undefined),
+  initGoogleSignInFn: options =>
+    loadStaticConfig().then(config =>
+      config.disableGoogleSignIn !== true
+        ? initGoogleSignIn({
+            ...options,
+            reportError: errorBeaconHandlers.logError,
+          })
+        : undefined
+    ),
   getAuthorUuidFn: getAuthorUuid,
   refreshAuthorUuidFn: refreshAuthorUuid,
   signOutFn: signOut,

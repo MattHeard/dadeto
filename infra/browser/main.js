@@ -1,184 +1,19 @@
-import { setupAudio } from './audio-controls.js';
-import { handleTagLinks } from './tags.js';
-import { createBlogDataController, getEncodeBase64 } from './data.js';
-import { loadStaticConfig } from './loadStaticConfig.js';
-import {
-  createOutputDropdownHandler,
-  createInputDropdownHandler,
-  handleDropdownChange,
-  getComponentInitializer,
-  makeCreateIntersectionObserver,
-  initializeVisibleComponents,
-  createDropdownInitializer,
-} from './toys.js';
+import './document.js';
+import { createMainHandle } from '../core/browser/main.js';
+import { initializeStaticJsonlTables } from '../core/browser/staticJsonlTable.js';
+import { bindEffectBoundary, createEffectFetchFn } from './allow-effects.js';
 
-import {
-  dom,
-  getElementById,
-  log,
-  warn,
-  getCurrentTime,
-  getRandomNumber,
-  getUuid,
-  hasNoInteractiveComponents,
-  getInteractiveComponentCount,
-  getInteractiveComponents,
-} from './document.js';
-import { revealBetaArticles } from './beta.js';
-import { createMemoryStorageLens } from '../core/browser/memoryStorageLens.js';
-import { createLocalStorageLens } from '../core/browser/localStorageLens.js';
-import {
-  createErrorBeaconHandlers,
-  createErrorBeaconReporter,
-} from '../core/browser/error-beacon.js';
+initializeStaticJsonlTables(document);
 
-const globalState = {
-  blog: null, // Holds the fetched blog data
-  blogStatus: 'idle', // 'idle', 'loading', 'loaded', 'error'
-  blogError: null, // Stores any error during fetch
-  blogFetchPromise: null, // Tracks the ongoing fetch promise
-  temporary: {}, // Holds data managed by toys like setTemporary
-};
-
-const errorBeaconUrlPromise = loadStaticConfig()
-  .then(config => config.errorBeaconUrl || '')
-  .catch(() => '');
-
-/**
- * @module main
- * @description Main entry point for the application
- */
-
-/**
- * Creates and returns a new environment map for dependency injection.
- * @returns {Map<string, Function>} Map of environment functions.
- */
-const loggers = { logInfo: log, logError: dom.logError, logWarning: warn };
-
-const memoryLens = createMemoryStorageLens();
-const permanentLens = createLocalStorageLens({
-  storage: localStorage,
-  logError: dom.logError,
+const handle = createMainHandle({
+  documentObj: document,
+  windowObj: window,
+  fetchFn: globalThis.fetch,
+  bindEffectBoundary,
+  effectFetchFn: createEffectFetchFn((input, init) =>
+    globalThis.fetch(input, init)
+  ),
+  storageObj: localStorage,
 });
 
-const createBlogDependencies = () => ({
-  fetch,
-  loggers,
-  storage: localStorage,
-  memoryLens,
-  permanentLens,
-});
-
-const {
-  fetchAndCacheBlogData: fetchBlogData,
-  getData: getBlogData,
-  setLocalTemporaryData: applyLocalTemporaryData,
-  setLocalPermanentData: applyLocalPermanentData,
-  getLocalPermanentData: fetchLocalPermanentData,
-} = createBlogDataController(createBlogDependencies);
-
-/**
- * Generates a fresh environment map.
- * @returns {Map<string, Function>} Dependency map.
- */
-function createEnv() {
-  return new Map([
-    ['getRandomNumber', getRandomNumber],
-    ['getCurrentTime', getCurrentTime],
-    ['getUuid', getUuid],
-    ['getData', () => getBlogData(globalState)],
-    [
-      'setLocalTemporaryData',
-      newData =>
-        applyLocalTemporaryData({ desired: newData, current: globalState }),
-    ],
-    ['setLocalPermanentData', newData => applyLocalPermanentData(newData)],
-    ['getLocalPermanentData', () => fetchLocalPermanentData()],
-    ['encodeBase64', getEncodeBase64(btoa, encodeURIComponent)],
-    ['memoryLens', memoryLens],
-    ['permanentLens', permanentLens],
-  ]);
-}
-
-const env = {
-  globalState,
-  createEnv,
-  error: dom.logError,
-  fetch,
-  loggers,
-  getUuid,
-};
-
-const errorBeaconHandlers = createErrorBeaconHandlers({
-  reportBeacon: payload =>
-    errorBeaconUrlPromise.then(url => {
-      if (!url) {
-        return;
-      }
-
-      createErrorBeaconReporter(
-        globalThis.fetch?.bind(globalThis),
-        url
-      )(payload);
-    }),
-  getUrl: () => globalThis.location?.href ?? '',
-  getUserAgent: () => globalThis.navigator?.userAgent ?? '',
-  getNow: () => Date.now(),
-  logError: dom.logError,
-});
-
-// --- Interactive Components ---
-
-initializeVisibleComponents(
-  {
-    win: window,
-    logInfo: log,
-    logWarning: warn,
-    getElement: getElementById,
-    hasNoInteractiveComponents,
-    getInteractiveComponents,
-    getInteractiveComponentCount,
-    getComponentInitializer,
-  },
-  makeCreateIntersectionObserver(dom, env)
-);
-
-// --- Tag Filtering ---
-
-handleTagLinks(dom);
-
-// --- Initial Data Fetch ---
-fetchBlogData(globalState);
-
-setupAudio(dom, dom.setTextContent);
-
-// --- Dropdown Initialization ---
-
-const getDataCallback = () => getBlogData(globalState);
-
-const onOutputDropdownChange = createOutputDropdownHandler(
-  handleDropdownChange,
-  getDataCallback,
-  dom
-);
-
-const onInputDropdownChange = createInputDropdownHandler(dom);
-
-const initializeDropdowns = createDropdownInitializer(
-  onOutputDropdownChange,
-  onInputDropdownChange,
-  dom
-);
-
-// Initialize dropdowns after DOM is fully loaded
-window.addEventListener('DOMContentLoaded', () => {
-  initializeDropdowns();
-
-  revealBetaArticles(dom);
-});
-
-window.addEventListener('error', errorBeaconHandlers.handleWindowError);
-window.addEventListener(
-  'unhandledrejection',
-  errorBeaconHandlers.handleUnhandledRejection
-);
+handle();

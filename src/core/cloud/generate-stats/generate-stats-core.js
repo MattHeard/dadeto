@@ -16,6 +16,7 @@ import {
 import { renderHtmlTemplate } from '../html-template.js';
 import { withPageFooter } from '../page-footer.js';
 import { runWithFailureAndThen } from '../response-utils.js';
+import { sendInvalidateRequest } from './cdn-invalidation.js';
 export { isDuplicateAppError };
 
 /** @typedef {import('../../../../types/native-http').NativeHttpRequest} NativeHttpRequest */
@@ -340,6 +341,8 @@ function selectCdnHost(candidate) {
  *   auth: import('firebase-admin/auth').Auth,
  *   storage: import('@google-cloud/storage').Storage,
  *   fetchFn: typeof globalThis.fetch,
+ *   effectFetchFn: (permission: import('../../../../types/allow-effects').AllowEffects, input: string, init?: object) => Promise<Response>,
+ *   bindEffectBoundary: (handler: (permission: import('../../../../types/allow-effects').AllowEffects) => Promise<Response>) => Promise<Response>,
  *   env?: EnvironmentMap | Record<string, string | undefined>,
  *   urlMap?: string,
  *   cryptoModule: StatsCryptoModule,
@@ -377,6 +380,8 @@ export function createGenerateStatsCore({
   auth,
   storage,
   fetchFn,
+  effectFetchFn,
+  bindEffectBoundary,
   env,
   urlMap,
   cryptoModule,
@@ -491,7 +496,8 @@ export function createGenerateStatsCore({
         paths,
         path => ({
           path,
-          fetchImpl,
+          effectFetchFn,
+          bindEffectBoundary,
           project,
           resolvedUrlMap,
           resolvedCdnHost,
@@ -993,17 +999,27 @@ function resolveFetchImpl(fetchFn) {
  * Invalidate a single CDN path.
  * @param {object} deps Deps.
  * @param {string} deps.path Path.
- * @param {typeof globalThis.fetch} deps.fetchImpl Fetch.
  * @param {string | undefined} deps.project Project.
  * @param {string} deps.resolvedUrlMap Url map.
  * @param {string} deps.resolvedCdnHost Host.
  * @param {() => string} deps.randomUUID UUID.
  * @param {StatsLogger} deps.logger Logger.
  * @param {string} deps.token Token.
+ * @param {(permission: import('../../../../types/allow-effects').AllowEffects, input: string, init?: object) => Promise<Response>} deps.effectFetchFn Permission-aware invalidation transport.
+ * @param {(handler: (permission: import('../../../../types/allow-effects').AllowEffects) => Promise<Response>) => Promise<Response>} deps.bindEffectBoundary Permission boundary.
  * @returns {Promise<void>} Promise.
  */
-async function invalidateSinglePath({ path, logger, ...sendDeps }) {
-  const request = Promise.resolve(sendInvalidateRequest(sendDeps, path));
+async function invalidateSinglePath({
+  path,
+  logger,
+  bindEffectBoundary,
+  ...sendDeps
+}) {
+  const request = Promise.resolve(
+    bindEffectBoundary(permission =>
+      sendInvalidateRequest(permission, sendDeps, path)
+    )
+  );
   await handleInvalidateResult(request, path, logger);
 }
 
@@ -1024,39 +1040,6 @@ function handleInvalidateResult(requestPromise, path, logger) {
     .catch(err => {
       logInvalidateError(logger, path, err);
     });
-}
-
-/**
- * Send invalidate request.
- * @param {object} deps Deps.
- * @param {typeof globalThis.fetch} deps.fetchImpl HTTP client.
- * @param {string | undefined} deps.project Google Cloud project name.
- * @param {string} deps.resolvedUrlMap CDN URL map.
- * @param {string} deps.resolvedCdnHost CDN host header.
- * @param {() => string} deps.randomUUID Request ID generator.
- * @param {string} deps.token Metadata access token.
- * @param {string} path CDN path to invalidate.
- * @returns {Promise<Response>} Response.
- */
-function sendInvalidateRequest(
-  { fetchImpl, project, resolvedUrlMap, resolvedCdnHost, randomUUID, token },
-  path
-) {
-  return fetchImpl(
-    `https://compute.googleapis.com/compute/v1/projects/${project}/global/urlMaps/${resolvedUrlMap}/invalidateCache`,
-    {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        host: resolvedCdnHost,
-        path,
-        requestId: randomUUID(),
-      }),
-    }
-  );
 }
 
 /**

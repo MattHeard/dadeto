@@ -3,11 +3,11 @@ import { resolveOrNull, whenOrNull } from '../commonCore.js';
 const AUTHOR_UUID_STORAGE_KEY = 'author_uuid';
 
 /**
- * @typedef {{ getItem: (key: string) => string | null, setItem: (key: string, value: string) => void, removeItem: (key: string) => void }} StorageLike
+ * @typedef {{ getItem: (key: string) => string | null, setItem: (permission: import('../../../types/allow-effects').AllowEffects, key: string, value: string) => void, removeItem: (permission: import('../../../types/allow-effects').AllowEffects, key: string) => void }} StorageLike
  */
 /**
  * Read the cached author uuid from storage.
- * @param {StorageLike} storage Cached storage.
+ * @param {Pick<StorageLike, 'getItem'>} storage Cached storage.
  * @returns {string | null} Cached uuid or null.
  */
 export function getCachedAuthorUuid(storage = sessionStorage) {
@@ -16,17 +16,18 @@ export function getCachedAuthorUuid(storage = sessionStorage) {
 
 /**
  * Persist the author uuid in storage.
+ * @param {import('../../../types/allow-effects').AllowEffects} permission Explicit cache-write permission.
  * @param {StorageLike} storage Cached storage.
  * @param {string | null} authorUuid Author uuid to cache.
  * @returns {void}
  */
-export function setCachedAuthorUuid(storage, authorUuid) {
-  const resolvedStorage = storage || sessionStorage;
+export function setCachedAuthorUuid(permission, storage, authorUuid) {
+  const resolvedStorage = storage;
   if (authorUuid) {
-    resolvedStorage.setItem(AUTHOR_UUID_STORAGE_KEY, authorUuid);
+    resolvedStorage.setItem(permission, AUTHOR_UUID_STORAGE_KEY, authorUuid);
     return;
   }
-  resolvedStorage.removeItem(AUTHOR_UUID_STORAGE_KEY);
+  resolvedStorage.removeItem(permission, AUTHOR_UUID_STORAGE_KEY);
 }
 
 /**
@@ -76,6 +77,7 @@ function selectAuthorUuid(payload) {
  * @param {StorageLike} [deps.storage] Storage containing the ID token.
  * @param {typeof fetch} deps.fetchFn Fetch helper.
  * @param {() => Promise<string>} deps.getAuthorUuidUrl Configured endpoint resolver.
+ * @param {(handler: (permission: import('../../../types/allow-effects').AllowEffects) => Promise<unknown>) => Promise<unknown>} deps.bindEffectBoundary Permission boundary.
  * @returns {Promise<string | null>} Cached or refreshed uuid.
  */
 export async function refreshCachedAuthorUuid(deps) {
@@ -87,14 +89,16 @@ export async function refreshCachedAuthorUuid(deps) {
   const uuid = await getAuthorUuidUrl().then(url =>
     fetchAuthorUuidFromApi(fetchFn, url, token)
   );
-  setCachedAuthorUuid(storage, uuid);
+  await deps.bindEffectBoundary(async permission => {
+    setCachedAuthorUuid(permission, storage, uuid);
+  });
   return uuid;
 }
 
 /**
  * Attach author-uuid caching behavior to an auth module.
  * @param {{ initGoogleSignIn: (options?: { onSignIn?: (token: string) => void | Promise<void> }) => void | Promise<void>, signOut: () => Promise<void> }} handle Auth module.
- * @param {{ storage?: StorageLike, fetchFn: typeof fetch, getAuthorUuidUrl: () => Promise<string>, isInternalOrigin: () => boolean }} deps Caching dependencies.
+ * @param {{ storage?: StorageLike, fetchFn: typeof fetch, getAuthorUuidUrl: () => Promise<string>, isInternalOrigin: () => boolean, bindEffectBoundary: (handler: (permission: import('../../../types/allow-effects').AllowEffects) => Promise<unknown>) => Promise<unknown> }} deps Caching dependencies.
  * @returns {object} Wrapped auth module.
  */
 export function installAuthorUuidCaching(handle, deps) {
@@ -103,11 +107,14 @@ export function installAuthorUuidCaching(handle, deps) {
     fetchFn,
     getAuthorUuidUrl,
     isInternalOrigin,
+    bindEffectBoundary,
   } = deps;
   const originalSignOut = handle.signOut;
   handle.signOut = async () => {
     await originalSignOut();
-    setCachedAuthorUuid(storage, null);
+    await bindEffectBoundary(async permission => {
+      setCachedAuthorUuid(permission, storage, null);
+    });
   };
 
   const originalInitGoogleSignIn = handle.initGoogleSignIn;
@@ -122,8 +129,10 @@ export function installAuthorUuidCaching(handle, deps) {
         const onSignIn = options?.onSignIn;
         return getAuthorUuidUrl()
           .then(url => fetchAuthorUuidFromApi(fetchFn, url, token))
-          .then(authorUuid => {
-            setCachedAuthorUuid(storage, authorUuid);
+          .then(async authorUuid => {
+            await bindEffectBoundary(async permission => {
+              setCachedAuthorUuid(permission, storage, authorUuid);
+            });
             if (typeof onSignIn === 'function') {
               return onSignIn(token);
             }

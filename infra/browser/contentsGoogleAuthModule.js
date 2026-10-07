@@ -4,21 +4,19 @@ import {
   createErrorBeaconReporter,
 } from '../core/browser/error-beacon.js';
 import { loadStaticConfig } from './loadStaticConfig.js';
-import { getAuthorUuid, initGoogleSignIn, refreshAuthorUuid, signOut } from './googleAuth.js';
+import {
+  getAuthorUuid,
+  initGoogleSignIn,
+  refreshAuthorUuid,
+  signOut,
+} from './googleAuth.js';
 import { getIdToken } from '../core/browser/browser-core.js';
 import { isAdminWithDeps } from './admin-core.js';
+import { bindEffectBoundary, createEffectFetchFn } from './allow-effects.js';
 
 const errorBeaconUrlPromise = loadStaticConfig()
   .then(config => config.errorBeaconUrl || '')
   .catch(() => '');
-
-const isAdmin = () => isAdminWithDeps(sessionStorage, JSON, atob);
-
-const signInButtons = document.querySelectorAll('#signinButton');
-const signOutWraps = document.querySelectorAll('#signoutWrap');
-const signOutLinks = document.querySelectorAll('#signoutLink');
-const adminLinks = document.querySelectorAll('.admin-link');
-const profileLinks = document.querySelectorAll('#profileLink');
 
 const errorBeaconHandlers = createErrorBeaconHandlers({
   reportBeacon: payload =>
@@ -28,7 +26,8 @@ const errorBeaconHandlers = createErrorBeaconHandlers({
       }
 
       createErrorBeaconReporter(
-        globalThis.fetch?.bind(globalThis),
+        bindEffectBoundary,
+        createEffectFetchFn((input, init) => globalThis.fetch(input, init)),
         url
       )(payload);
     }),
@@ -38,54 +37,28 @@ const errorBeaconHandlers = createErrorBeaconHandlers({
   logError: console.error.bind(console),
 });
 
-/**
- *
- */
-function showSignedIn() {
-  signInButtons.forEach(el => (el.style.display = 'none'));
-  signOutWraps.forEach(el => (el.style.display = ''));
-  if (isAdmin()) adminLinks.forEach(el => (el.style.display = ''));
-  const uuid = getAuthorUuid();
-  profileLinks.forEach(link => {
-    link.href = uuid ? `/a/${uuid}.html` : '#';
-    link.style.display = uuid ? '' : 'none';
-  });
-}
-
-/**
- *
- */
-function showSignedOut() {
-  signInButtons.forEach(el => (el.style.display = ''));
-  signOutWraps.forEach(el => (el.style.display = 'none'));
-  adminLinks.forEach(el => (el.style.display = 'none'));
-  profileLinks.forEach(link => { link.href = '#'; link.style.display = 'none'; });
-}
-
 globalThis.addEventListener('error', errorBeaconHandlers.handleWindowError);
 globalThis.addEventListener(
   'unhandledrejection',
   errorBeaconHandlers.handleUnhandledRejection
 );
 
-(async () => {
-  const config = await loadStaticConfig();
-  if (config.disableGoogleSignIn !== true) {
-    initGoogleSignIn({
-      onSignIn: showSignedIn,
-    });
-  }
-})();
-
-signOutLinks.forEach(link => {
-  link.addEventListener('click', async e => {
-    e.preventDefault();
-    await signOut();
-    showSignedOut();
-  });
+const handle = createGoogleAuthStatusHandle({
+  documentObj: document,
+  initGoogleSignInFn: options =>
+    loadStaticConfig().then(config =>
+      config.disableGoogleSignIn !== true
+        ? initGoogleSignIn({
+            ...options,
+            reportError: errorBeaconHandlers.logError,
+          })
+        : undefined
+    ),
+  getAuthorUuidFn: getAuthorUuid,
+  refreshAuthorUuidFn: refreshAuthorUuid,
+  signOutFn: signOut,
+  getIdTokenFn: getIdToken,
+  isAdminFn: () => isAdminWithDeps(sessionStorage, JSON, atob),
 });
 
-if (getIdToken()) {
-  showSignedIn();
-  refreshAuthorUuid().then(showSignedIn);
-}
+handle();

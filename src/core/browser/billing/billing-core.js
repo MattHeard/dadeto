@@ -47,7 +47,7 @@ function assertBillingOfferObject(offer) {
 
 /**
  * Create the deterministic billing purchase controller.
- * @param {{ loadOffers: () => Promise<unknown>, getFreshToken: () => Promise<string|null>, signIn: () => Promise<void>, createUuid: () => string, postCheckout: (packageId: string, token: string, attemptId: string) => Promise<unknown>, navigate: (url: string) => void }} deps Browser boundaries.
+ * @param {{ loadOffers: () => Promise<unknown>, getFreshToken: () => Promise<string|null>, signIn: () => Promise<void>, createUuid: () => string, bindEffectBoundary: (handler: (permission: import('../../../../types/allow-effects').AllowEffects) => Promise<unknown>) => Promise<unknown>, postCheckout: (permission: import('../../../../types/allow-effects').AllowEffects, packageId: string, token: string, attemptId: string) => Promise<unknown>, navigate: (permission: import('../../../../types/allow-effects').AllowEffects, url: string) => void }} deps Browser boundaries.
  * @returns {{ loadOffers: () => Promise<unknown>, startPurchase: (packageId: string) => Promise<unknown>, retry: () => Promise<unknown>, getAttemptId: () => string|null }} Controller.
  */
 export function createBillingController(deps) {
@@ -69,10 +69,14 @@ export function createBillingController(deps) {
     inFlight = true;
     try {
       const token = await getPurchaseToken(deps);
-      const response = await deps.postCheckout(packageId, token, attemptId);
+      const response = await deps.bindEffectBoundary(permission =>
+        deps.postCheckout(permission, packageId, token, attemptId)
+      );
       if (!isObjectRecord(response) || typeof response.url !== 'string')
         throw new Error('Invalid checkout response');
-      deps.navigate(response.url);
+      await deps.bindEffectBoundary(async permission => {
+        deps.navigate(permission, response.url);
+      });
       return response;
     } finally {
       inFlight = false;

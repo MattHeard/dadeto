@@ -1,5 +1,6 @@
 import { express, cors, getEnvironmentVariables } from './errors-gcf.js';
 import { createErrorBeaconRun } from '../../core/cloud/errors/run.js';
+import { createEffectInvocationBoundary } from '../allow-effects.js';
 
 const { handle } = createErrorBeaconRun({
   express,
@@ -7,6 +8,8 @@ const { handle } = createErrorBeaconRun({
   getEnvironmentVariables,
   console,
   fetchFn: (...args) => globalThis.fetch(...args),
+  bindEffectBoundary: handler => createEffectInvocationBoundary(handler)(),
+  effectFetchFn: (permission, ...args) => globalThis.fetch(...args),
 });
 
 export { handle };

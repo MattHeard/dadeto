@@ -70,6 +70,8 @@ function getConsoleErrorSink(consoleObj) {
  *   documentObj: object,
  *   windowObj: object,
  *   fetchFn: (...args: Array<unknown>) => Promise<unknown>,
+ *   bindEffectBoundary: (handler: (permission: import('../../../types/allow-effects').AllowEffects) => Promise<unknown>) => Promise<unknown>,
+ *   effectFetchFn: (permission: import('../../../types/allow-effects').AllowEffects, input: string, init?: object) => Promise<Response>,
  *   storageObj: object | null,
  * }} deps Browser dependencies.
  * @returns {() => void} Entry handle that performs browser initialization when invoked.
@@ -78,13 +80,16 @@ export function createMainHandle({
   documentObj,
   windowObj,
   fetchFn,
+  bindEffectBoundary,
+  effectFetchFn,
   storageObj,
 }) {
   return function handleMain() {
     const beaconEndpoint =
       'https://europe-west1-irien-465710.cloudfunctions.net/prod-errors';
     const beaconReporter = createErrorBeaconReporter(
-      windowObj.fetch?.bind(windowObj),
+      bindEffectBoundary,
+      effectFetchFn,
       beaconEndpoint
     );
     const errorHandlers = createErrorBeaconHandlers({

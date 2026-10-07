@@ -26,6 +26,10 @@ setupFirebase(initializeApp);
 let moderateDocument = null;
 /** @type {typeof fetch | null} */
 let moderateFetchFn = null;
+/** @type {((permission: import('../../../types/allow-effects').AllowEffects, input: string, init?: object) => Promise<Response>) | null} */
+let moderateEffectFetchFn = null;
+/** @type {((handler: (permission: import('../../../types/allow-effects').AllowEffects) => Promise<unknown>) => Promise<unknown>) | null} */
+let moderateBindEffectBoundary = null;
 /** @type {Storage | null} */
 let moderateSessionStorage = null;
 /** @type {typeof globalThis | null} */
@@ -75,11 +79,18 @@ const getModerationEndpoints = createGetModerationEndpointsFromStaticConfig(
 );
 
 const errorBeaconHandlers = errorBeacon.createErrorBeaconHandlers({
-  reportBeacon: errorBeacon.createErrorBeaconReporter(
-    () =>
-      moderateGlobalObject?.navigator?.sendBeacon?.bind(
-        moderateGlobalObject.navigator
-      ),
+  reportBeacon: errorBeacon.createErrorBeaconSendBeaconReporter(
+    handler => moderateBindEffectBoundary(handler),
+    (permission, url, data) => {
+      void permission;
+      return (
+        moderateGlobalObject?.navigator?.sendBeacon?.call(
+          moderateGlobalObject.navigator,
+          url,
+          data
+        ) ?? false
+      );
+    },
     '/errors'
   ),
   getUrl: () => {
@@ -253,8 +264,20 @@ async function handleSignOut(e) {
 /**
  * Ask the back-end for a new moderation job.
  * Resolves when the function returns 201 Created.
+ * @returns {Promise<unknown>} Boundary result.
  */
 export async function assignJob() {
+  return moderateBindEffectBoundary(permission =>
+    assignJobWithPermission(permission)
+  );
+}
+
+/**
+ * Ask the backend for a new moderation job under one permission.
+ * @param {import('../../../types/allow-effects').AllowEffects} permission Explicit command permission.
+ * @returns {Promise<void>} Resolves after the job is assigned.
+ */
+async function assignJobWithPermission(permission) {
   const token = getIdToken();
   if (!token) throw new Error('not signed in');
 
@@ -262,7 +285,7 @@ export async function assignJob() {
   body.set('id_token', token);
 
   const { assignModerationJobUrl } = await getModerationEndpoints();
-  const resp = await moderateFetchFn(assignModerationJobUrl, {
+  const resp = await moderateEffectFetchFn(permission, assignModerationJobUrl, {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     body,
@@ -295,8 +318,21 @@ export async function loadVariant(retried = false) {
 /**
  * Submit a moderation rating.
  * @param {boolean} isApproved Whether the page was approved.
+ * @returns {Promise<unknown>} Boundary result.
  */
 export async function submitRating(isApproved) {
+  return moderateBindEffectBoundary(permission =>
+    submitRatingWithPermission(permission, isApproved)
+  );
+}
+
+/**
+ * Submit a moderation rating under one permission.
+ * @param {import('../../../types/allow-effects').AllowEffects} permission Explicit command permission.
+ * @param {boolean} isApproved Whether the page was approved.
+ * @returns {Promise<void>} Resolves when rating flow completes.
+ */
+async function submitRatingWithPermission(permission, isApproved) {
   const approve = moderateDocument.getElementById('approveBtn');
   const reject = moderateDocument.getElementById('rejectBtn');
   if (approve) approve.disabled = true;
@@ -304,10 +340,22 @@ export async function submitRating(isApproved) {
   const stopSaving = startAnimation('saving', 'Saving');
   try {
     const { submitModerationRatingUrl } = await getModerationEndpoints();
-    await authedFetch(submitModerationRatingUrl, {
-      method: 'POST',
-      body: JSON.stringify({ isApproved }),
-    });
+    const token = getIdToken();
+    if (!token) throw new Error('not signed in');
+    const response = await moderateEffectFetchFn(
+      permission,
+      submitModerationRatingUrl,
+      {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ isApproved }),
+      }
+    );
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    await response.json();
     await assignJob();
     stopSaving();
     await loadVariant();
@@ -413,6 +461,8 @@ export const authedFetch = createAuthedFetch({ getIdToken, fetchJson });
  * @param {{
  *   documentObj: Document,
  *   fetchFn: typeof fetch,
+ *   effectFetchFn: (permission: import('../../../types/allow-effects').AllowEffects, input: string, init?: object) => Promise<Response>,
+ *   bindEffectBoundary: (handler: (permission: import('../../../types/allow-effects').AllowEffects) => Promise<unknown>) => Promise<unknown>,
  *   sessionStorageObj: Storage,
  *   globalObject: typeof globalThis,
  * }} deps Browser globals.
@@ -421,6 +471,8 @@ export const authedFetch = createAuthedFetch({ getIdToken, fetchJson });
 export function createModerateHandle(deps = {}) {
   moderateDocument = deps.documentObj;
   moderateFetchFn = deps.fetchFn;
+  moderateEffectFetchFn = deps.effectFetchFn;
+  moderateBindEffectBoundary = deps.bindEffectBoundary;
   moderateSessionStorage = deps.sessionStorageObj;
   moderateGlobalObject = deps.globalObject;
   initGoogleSignInHandler = undefined;
