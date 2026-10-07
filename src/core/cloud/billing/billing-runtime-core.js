@@ -268,7 +268,7 @@ async function findBillingPurchaseByCheckout(db, checkoutSessionId) {
 /**
  * Create Firestore-backed accessors for the billing domain.
  * @param {BillingRuntimeValue} db Firestore database.
- * @param {{ randomUUID?: () => string, now?: () => Date }} [runtime] Runtime helpers.
+ * @param {{ randomUUID?: () => string, now?: () => Date, billingEnabled?: boolean }} [runtime] Runtime helpers.
  * @returns {BillingRuntimeValue} Billing service.
  */
 export function createBillingRuntime(db, runtime = {}) {
@@ -276,6 +276,7 @@ export function createBillingRuntime(db, runtime = {}) {
   // compatibility behavior.
   const randomUUID = runtime.randomUUID ?? nodeRandomUUID;
   const now = runtime.now ?? (() => new Date());
+  const billingEnabled = runtime.billingEnabled === true;
   // Stryker restore all
 
   const getPricingSnapshot = (/** @type {string} */ snapshotId) =>
@@ -453,6 +454,7 @@ export function createBillingRuntime(db, runtime = {}) {
    * @returns {Promise<BillingResponse>} Charge response.
    */
   async function applyOperationCharge(input) {
+    if (!billingEnabled) return billingDisabledResponse();
     return runBillingOperationTransaction(
       db,
       now,
@@ -467,6 +469,7 @@ export function createBillingRuntime(db, runtime = {}) {
    * @returns {Promise<BillingResponse>} Charge response.
    */
   async function chargeOperation(input) {
+    if (!billingEnabled) return billingDisabledResponse();
     const pricingSnapshot = await getCurrentPricingSnapshot();
     if (!pricingSnapshot)
       return { status: 503, body: { error: 'pricing_unavailable' } };
@@ -479,6 +482,7 @@ export function createBillingRuntime(db, runtime = {}) {
    * @returns {Promise<BillingResponse>} Reservation response.
    */
   async function reserveOperation(input) {
+    if (!billingEnabled) return billingDisabledResponse();
     return runBillingOperationTransaction(
       db,
       now,
@@ -615,6 +619,15 @@ export function createBillingRuntime(db, runtime = {}) {
     ledgerRef: (/** @type {string} */ uuid, /** @type {string} */ eventId) =>
       ledgerRef(db, uuid, eventId),
   };
+}
+
+/**
+ * Return the stable response for attempts to start a billable operation while
+ * billing is disabled.
+ * @returns {BillingResponse} Disabled billing response.
+ */
+function billingDisabledResponse() {
+  return { status: 503, body: { error: 'billing_disabled' } };
 }
 
 /**

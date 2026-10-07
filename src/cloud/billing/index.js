@@ -4,12 +4,14 @@ import { createPublicBillingOffersHandler } from '../../core/cloud/billing/publi
 
 const db = new Firestore({ databaseId: process.env.DATABASE_ID });
 const billing = createBillingRuntime(db);
+const billingEnabled = process.env.BILLING_ENABLED === 'true';
 const handleOffers = createPublicBillingOffersHandler({
   listActivePackages: async () => {
     const snapshot = await db.collection('billing-packages').where('active', '==', true).get();
     return snapshot.docs.map(doc => ({ packageId: doc.id, ...doc.data() }));
   },
   getCurrentPricingSnapshot: billing.getCurrentPricingSnapshot,
+  billingEnabled,
 });
 
 export async function handle(req, res) {

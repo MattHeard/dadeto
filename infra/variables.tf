@@ -148,6 +148,12 @@ variable "database_id" {
   default     = "(default)"
 }
 
+variable "billing_enabled" {
+  description = "Whether new billing offers, checkouts, and operation charges are enabled"
+  type        = bool
+  default     = false
+}
+
 variable "create_default_firestore_database" {
   description = "Whether Terraform should attempt to create the default Firestore database when managing project-level resources"
   type        = bool

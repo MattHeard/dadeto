@@ -100,10 +100,12 @@ describe('checkout runtime adapters', () => {
       stripe,
       verifyIdToken,
       publicBillingOrigin: 'https://pay.example',
+      billingEnabled: true,
     });
 
     expect(deps.verifyIdToken).toBe(verifyIdToken);
     expect(deps.stripeConfigured).toBe(true);
+    expect(deps.billingEnabled).toBe(true);
     expect(await deps.verifyIdToken('token')).toBeUndefined();
     expect(await deps.resolveApiKeyUuidForUid('uid')).toEqual({
       apiKeyUuid: 'key-1',

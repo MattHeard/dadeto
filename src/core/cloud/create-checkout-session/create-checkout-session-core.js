@@ -25,6 +25,7 @@ const UUID =
  * savePurchaseCheckout?: (purchaseId: string, session: object) => Promise<unknown>,
  * publicBillingOrigin?: string,
  * stripeConfigured?: boolean,
+ * billingEnabled?: boolean,
  * resolveIdempotency?: (uid: string, key: string, packageId: string) => Promise<{ conflict?: boolean, session?: object } | null>,
  * saveIdempotency?: (uid: string, key: string, value: object) => Promise<unknown>,
  * logger?: { error?: (...args: unknown[]) => void }
@@ -584,8 +585,15 @@ export function createCheckoutSessionHandler(deps) {
     publicBillingOrigin,
     resolveIdempotency,
     stripeConfigured = true,
+    billingEnabled = false,
   } = deps;
   return async function handle(request = {}) {
+    if (!billingEnabled)
+      return error(
+        503,
+        'billing_disabled',
+        'Billing is not currently available.'
+      );
     if (!stripeConfigured)
       return error(
         503,

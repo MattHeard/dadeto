@@ -51,7 +51,7 @@ export function createDynamicPackageResolver({
 
 /**
  * Build cloud dependency adapters for Checkout.
- * @param {{ db: CheckoutDatabase, billing: CheckoutBillingService, stripe: CheckoutStripeService, verifyIdToken: (token: string) => Promise<{uid?: string}>, publicBillingOrigin?: string, stripeConfigured?: boolean }} input Runtime dependencies.
+ * @param {{ db: CheckoutDatabase, billing: CheckoutBillingService, stripe: CheckoutStripeService, verifyIdToken: (token: string) => Promise<{uid?: string}>, publicBillingOrigin?: string, stripeConfigured?: boolean, billingEnabled?: boolean }} input Runtime dependencies.
  * @returns {Parameters<typeof import('./create-checkout-session-core.js').createCheckoutSessionHandler>[0]} Checkout dependencies.
  */
 export function createCheckoutSessionDependencies({
@@ -61,6 +61,7 @@ export function createCheckoutSessionDependencies({
   verifyIdToken,
   publicBillingOrigin,
   stripeConfigured = true,
+  billingEnabled = false,
 }) {
   // Stryker disable next-line all -- runtime dependencies expose a fixed
   // adapter object shape.
@@ -83,6 +84,7 @@ export function createCheckoutSessionDependencies({
       stripe.checkout.sessions.create(options, requestOptions),
     publicBillingOrigin,
     stripeConfigured,
+    billingEnabled,
   };
 }
 

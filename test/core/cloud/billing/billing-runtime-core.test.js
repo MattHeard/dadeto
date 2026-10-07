@@ -24,11 +24,40 @@ function setup() {
   const billing = createBillingRuntime(db, {
     randomUUID: () => 'generated-id',
     now: () => new Date('2026-08-05T00:00:00.000Z'),
+    billingEnabled: true,
   });
   return { db, billing };
 }
 
 describe('createBillingRuntime', () => {
+  it('fails closed for new operation charges and reservations by default', async () => {
+    const db = createFakeFirestore();
+    const billing = createBillingRuntime(db);
+    const input = {
+      uuid: 'key-disabled',
+      operationType: 'function.invoke',
+      operationAttemptId: 'attempt-disabled',
+      eventId: 'event-disabled',
+      pricingSnapshot: snapshot,
+    };
+
+    await expect(billing.chargeOperation(input)).resolves.toEqual({
+      status: 503,
+      body: { error: 'billing_disabled' },
+    });
+    await expect(billing.reserveOperation(input)).resolves.toEqual({
+      status: 503,
+      body: { error: 'billing_disabled' },
+    });
+    await expect(billing.applyOperationCharge(input)).resolves.toEqual({
+      status: 503,
+      body: { error: 'billing_disabled' },
+    });
+    await expect(
+      db.collection('api-key-credit').doc('key-disabled').get()
+    ).resolves.toMatchObject({ exists: false });
+  });
+
   it('uses the ambiguous fallback when persisting a reservation recovery marker', () => {
     const set = jest.fn();
     const response = billingRuntimeTestUtils.markReservationNeedsRecovery({
@@ -670,7 +699,7 @@ describe('billing runtime reconciliation paths', () => {
         });
       },
     };
-    const billing = createBillingRuntime(db);
+    const billing = createBillingRuntime(db, { billingEnabled: true });
 
     await expect(
       billing.applyOperationCharge({
@@ -819,7 +848,7 @@ describe('billing runtime reconciliation paths', () => {
         });
       },
     };
-    const billing = createBillingRuntime(db);
+    const billing = createBillingRuntime(db, { billingEnabled: true });
 
     await expect(
       billing.applyOperationCharge({

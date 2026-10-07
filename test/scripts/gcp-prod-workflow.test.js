@@ -10,6 +10,9 @@ describe('gcp-prod workflow database selection', () => {
     expect(source).toContain(
       "TF_VAR_create_default_firestore_database: 'false'"
     );
+    expect(source).toContain(
+      "TF_VAR_billing_enabled: ${{ vars.PROD_BILLING_ENABLED || 'false' }}"
+    );
   });
 
   it('imports the production single-field index into Terraform state', () => {

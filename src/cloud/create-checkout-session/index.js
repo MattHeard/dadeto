@@ -7,7 +7,9 @@ import { createCheckoutSessionDependencies } from '../../core/cloud/create-check
 import { createCheckoutSessionExpressHandle } from '../../core/cloud/create-checkout-session/create-checkout-session-core.js';
 
 const db = createDb(Firestore, process.env);
-const billing = createBillingRuntime(db);
+const billing = createBillingRuntime(db, {
+  billingEnabled: process.env.BILLING_ENABLED === 'true',
+});
 const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
 const stripe = stripeSecretKey ? new Stripe(stripeSecretKey) : null;
 if (!stripe) {
@@ -22,6 +24,7 @@ const dependencies = createCheckoutSessionDependencies({
   verifyIdToken: token => getAuth().verifyIdToken(token),
   publicBillingOrigin: process.env.PUBLIC_BILLING_ORIGIN,
   stripeConfigured: Boolean(stripe),
+  billingEnabled: process.env.BILLING_ENABLED === 'true',
 });
 const handle = createCheckoutSessionExpressHandle(dependencies);
 

@@ -13,6 +13,7 @@ const snapshot = {
 describe('public billing offers', () => {
   it('returns active server-priced offers without pricing internals', async () => {
     const handle = createPublicBillingOffersHandler({
+      billingEnabled: true,
       listActivePackages: jest.fn(async () => [
         { packageId: 'usd-10', active: true, amountUsdMinor: 1000 },
         { packageId: 'disabled', active: false, amountUsdMinor: 1000 },
@@ -35,6 +36,7 @@ describe('public billing offers', () => {
   });
   it('fails explicitly when pricing is unavailable', async () => {
     const handle = createPublicBillingOffersHandler({
+      billingEnabled: true,
       listActivePackages: async () => [],
       getCurrentPricingSnapshot: async () => null,
     });
@@ -42,5 +44,21 @@ describe('public billing offers', () => {
       status: 503,
       body: { error: 'billing_pricing_unavailable' },
     });
+  });
+
+  it('hides offers without reading the catalog while billing is disabled', async () => {
+    const listActivePackages = jest.fn();
+    const getCurrentPricingSnapshot = jest.fn();
+    const handle = createPublicBillingOffersHandler({
+      listActivePackages,
+      getCurrentPricingSnapshot,
+    });
+
+    await expect(handle()).resolves.toEqual({
+      status: 200,
+      body: { packages: [] },
+    });
+    expect(listActivePackages).not.toHaveBeenCalled();
+    expect(getCurrentPricingSnapshot).not.toHaveBeenCalled();
   });
 });

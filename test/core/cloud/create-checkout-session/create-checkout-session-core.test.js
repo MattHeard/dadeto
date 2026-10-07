@@ -56,6 +56,7 @@ function setup(overrides = {}) {
     [stripeField.expiresAt]: 1785869100,
   });
   const dependencies = {
+    billingEnabled: true,
     verifyIdToken: jest.fn().mockResolvedValue({ uid: 'uid-1' }),
     resolveApiKeyUuidForUid: jest
       .fn()
@@ -88,6 +89,32 @@ function setup(overrides = {}) {
 }
 
 describe('createCheckoutSessionHandler', () => {
+  it('rejects checkout before authentication or side effects when billing is disabled', async () => {
+    const { handler, create, dependencies } = setup({ billingEnabled: false });
+
+    await expect(handler(request())).resolves.toEqual({
+      status: 503,
+      body: {
+        error: {
+          code: 'billing_disabled',
+          message: 'Billing is not currently available.',
+        },
+      },
+    });
+    expect(dependencies.verifyIdToken).not.toHaveBeenCalled();
+    expect(dependencies.getCreditPackage).not.toHaveBeenCalled();
+    expect(create).not.toHaveBeenCalled();
+  });
+
+  it('defaults checkout to disabled when the flag is absent', async () => {
+    const { handler } = setup({ billingEnabled: undefined });
+
+    await expect(handler(request())).resolves.toMatchObject({
+      status: 503,
+      body: { error: { code: 'billing_disabled' } },
+    });
+  });
+
   it('returns a runtime error when Stripe is not configured', async () => {
     const { handler, create } = setup({ stripeConfigured: false });
 

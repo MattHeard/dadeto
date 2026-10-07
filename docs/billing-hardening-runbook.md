@@ -4,7 +4,7 @@ This runbook applies to the Firestore billing runtime and its Stripe webhook bou
 
 ## Emergency controls
 
-1. Disable new checkouts by setting the checkout feature flag/configuration to false. Keep balance reads and reconciliation enabled.
+1. Disable new billing activity by setting the GitHub Actions repository variable `PROD_BILLING_ENABLED` to `false` (or removing it) and running the `gcp-prod` workflow. Terraform defaults `billing_enabled` to false and injects `BILLING_ENABLED=false` into cloud functions. The flag hides package offers, rejects checkout before side effects, and rejects new operation charges/reservations. Keep balance reads, purchase webhooks, refunds, existing reservation resolution, and reconciliation enabled so in-flight activity can complete.
 2. Disable spending for one billing identity by marking its API key suspended. The operation boundary must fail closed before reservation.
 3. Disable a package by setting its catalog `active` field to false. Existing purchases retain their immutable pricing snapshot.
 4. During provider or ledger uncertainty, use read-only mode: reject checkout and new reservations while allowing status reads and reconciliation.
@@ -42,3 +42,9 @@ Deploy the replacement Stripe webhook secret, verify test-mode delivery, then re
 ## Production gate
 
 Enable passive billing only after focused tests, cloud packaging, webhook test-mode verification, reconciliation review, IAM/secret review, and an independent adversarial review have all produced retained evidence.
+
+To enable new billing activity, set the GitHub Actions repository variable
+`PROD_BILLING_ENABLED` to the string `true` and run `gcp-prod`. If the variable is
+unset or has any other value, production remains disabled. Enabling this flag
+does not seed catalog data or configure prices; those remain separate, reviewed
+steps.

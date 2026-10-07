@@ -43,6 +43,7 @@ locals {
       DATABASE_ID          = var.database_id
       FIREBASE_CONFIG      = local.firebase_config_json
       DENDRITE_ENVIRONMENT = var.environment
+      BILLING_ENABLED      = tostring(var.billing_enabled)
       STATIC_BUCKET_NAME   = local.dendrite_static_bucket_name
       STATIC_OBJECT_PREFIX = local.static_object_prefix
       PUBLIC_BASE_PATH     = ""
