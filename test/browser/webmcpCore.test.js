@@ -66,6 +66,7 @@ function fixture({
   };
   const handle = createWebMcpHandle({
     fetchFn,
+    bindEffectBoundary: handler => handler(Object.freeze({})),
     importModule,
     documentObj,
     locationObj: withLocation ? locationObj : undefined,

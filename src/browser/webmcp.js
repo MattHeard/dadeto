@@ -1,7 +1,9 @@
 import { createWebMcpHandle } from "../core/browser/webmcp.js";
+import { bindEffectBoundary, createEffectFetchFn } from './allow-effects.js';
 
 const handle = createWebMcpHandle({
-  fetchFn: (...args) => fetch(...args),
+  fetchFn: createEffectFetchFn((...args) => fetch(...args)),
+  bindEffectBoundary,
   importModule: path => import(path),
   documentObj: globalThis.document,
   locationObj: globalThis.location,

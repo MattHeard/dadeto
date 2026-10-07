@@ -138,20 +138,28 @@ function getResponseBody(response) {
 
 /**
  * Create an authenticated fetch helper that injects the current ID token.
+ * @template T
  * @param {{
  *   getIdToken: () => (string|Promise<string|null>|null),
- *   fetchJson: (url: string, init: FetchOptions) => Promise<AuthedResponse|unknown>,
+ *   fetchJson: (permission: import('../../../../types/allow-effects').AllowEffects, url: string, init: FetchOptions) => Promise<AuthedResponse|unknown>,
+ *   bindEffectBoundary: <T>(handler: (permission: import('../../../../types/allow-effects').AllowEffects) => Promise<T>) => Promise<T>,
  * }} deps Dependencies for token lookup and network access.
  * @returns {(url: string, init?: FetchOptions) => Promise<unknown>} Fetch helper adding an Authorization header.
  */
-export const createAuthedFetch = ({ getIdToken, fetchJson }) => {
-  validateAuthedFetchDeps(getIdToken, fetchJson);
+export const createAuthedFetch = ({
+  getIdToken,
+  fetchJson,
+  bindEffectBoundary,
+}) => {
+  validateAuthedFetchDeps(getIdToken, fetchJson, bindEffectBoundary);
 
   return async (url, init = {}) => {
     const token = await requireToken(getIdToken);
     const { headers: originalHeaders, ...rest } = init;
     const headers = buildAuthedHeaders(originalHeaders, token);
-    const response = await fetchJson(url, { ...rest, headers });
+    const response = await bindEffectBoundary(permission =>
+      fetchJson(permission, url, { ...rest, headers })
+    );
     return handleAuthedResponse(response);
   };
 };
@@ -162,9 +170,16 @@ export const createAuthedFetch = ({ getIdToken, fetchJson }) => {
  * @param {unknown} fetchJson - Candidate fetch helper.
  * @returns {void}
  */
-function validateAuthedFetchDeps(getIdToken, fetchJson) {
+/**
+ * @param {unknown} getIdToken Token getter candidate.
+ * @param {unknown} fetchJson Permission-aware fetch candidate.
+ * @param {unknown} bindEffectBoundary Effect boundary candidate.
+ * @returns {void}
+ */
+function validateAuthedFetchDeps(getIdToken, fetchJson, bindEffectBoundary) {
   ensureFunction(getIdToken, 'getIdToken');
   ensureFunction(fetchJson, 'fetchJson');
+  ensureFunction(bindEffectBoundary, 'bindEffectBoundary');
 }
 
 /**

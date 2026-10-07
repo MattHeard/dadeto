@@ -25,6 +25,7 @@ describe('handleParsedResult', () => {
 
     env = {
       fetchFn,
+      bindEffectBoundary: handler => handler(Object.freeze({})),
       dom,
       errorFn,
     };
@@ -47,7 +48,10 @@ describe('handleParsedResult', () => {
 
     const result = handleParsedResult(parsed, env, options);
 
-    expect(env.fetchFn).toHaveBeenCalledWith('https://example.com');
+    expect(env.fetchFn).toHaveBeenCalledWith(
+      expect.anything(),
+      'https://example.com'
+    );
     expect(result).toBe(true);
   });
 

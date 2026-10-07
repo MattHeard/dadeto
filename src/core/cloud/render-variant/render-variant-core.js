@@ -1161,8 +1161,8 @@ function checkStorageBucketHelper(storage) {
 /**
  * Create invalidation function.
  * @param {object} root0 Dependencies.
- * @param {(input: string, init?: object) => Promise<Response>} root0.fetchFn Fetch function.
- * @param {(handler: (permission: AllowEffects) => Promise<unknown>) => Promise<unknown>} root0.bindEffectBoundary Cloud-owned permission boundary.
+ * @param {(permission: AllowEffects, input: string, init?: object) => Promise<Response>} root0.fetchFn Permission-aware fetch function.
+ * @param {import('../../../../types/allow-effects').AllowEffectsBoundary} root0.bindEffectBoundary Cloud-owned permission boundary.
  * @param {(permission: AllowEffects, url: string, init?: object) => Promise<Response>} root0.effectFetchFn Fetch adapter for cache purge requests.
  * @param {string} root0.projectId Project ID.
  * @param {string} root0.urlMapName URL map name.
@@ -1201,8 +1201,8 @@ export function createInvalidatePaths({
 /**
  * Build the CDN invalidation helper configured with the resolved dependencies.
  * @param {object} deps Invalidation dependencies.
- * @param {(input: string, init?: object) => Promise<Response>} deps.fetchFn Fetch implementation.
- * @param {(handler: (permission: AllowEffects) => Promise<unknown>) => Promise<unknown>} deps.bindEffectBoundary Cloud-owned permission boundary.
+ * @param {(permission: AllowEffects, input: string, init?: object) => Promise<Response>} deps.fetchFn Permission-aware fetch implementation.
+ * @param {import('../../../../types/allow-effects').AllowEffectsBoundary} deps.bindEffectBoundary Cloud-owned permission boundary.
  * @param {(permission: AllowEffects, url: string, init?: object) => Promise<Response>} deps.effectFetchFn Fetch adapter for cache purge requests.
  * @param {string | undefined} deps.projectId Optional GCP project identifier.
  * @param {string | undefined} deps.urlMapName URL map name used for the CDN.
@@ -1242,7 +1242,7 @@ function createInvalidatePathsImpl({
 
 /**
  * Create the CDN invalidation handler bound to a resolved URL and host.
- * @param {{ url: string, host: string, fetchFn: (input: string, init?: object) => Promise<Response>, bindEffectBoundary: (handler: (permission: AllowEffects) => Promise<unknown>) => Promise<unknown>, effectFetchFn: (permission: AllowEffects, url: string, init?: object) => Promise<Response>, randomUUID: () => string, consoleError?: (message: string, ...optionalParams: unknown[]) => void }} deps Handler dependencies.
+ * @param {{ url: string, host: string, fetchFn: (permission: AllowEffects, input: string, init?: object) => Promise<Response>, bindEffectBoundary: import('../../../../types/allow-effects').AllowEffectsBoundary, effectFetchFn: (permission: AllowEffects, url: string, init?: object) => Promise<Response>, randomUUID: () => string, consoleError?: (message: string, ...optionalParams: unknown[]) => void }} deps Handler dependencies.
  * @returns {(paths: string[]) => Promise<void>} Handler that invalidates each path.
  */
 function createInvalidateHandler({
@@ -1323,7 +1323,7 @@ function buildInvalidateUrl(projectId, urlMapName) {
 /**
  * Execute cache invalidations for the supplied paths.
  * @param {string[]} paths Paths to purge from the CDN cache.
- * @param {{url: string, host: string, fetchFn: (input: string, init?: object) => Promise<Response>, bindEffectBoundary: (handler: (permission: AllowEffects) => Promise<unknown>) => Promise<unknown>, effectFetchFn: (permission: AllowEffects, url: string, init?: object) => Promise<Response>, randomUUID: () => string, consoleError?: (message: string, ...optionalParams: unknown[]) => void}} options Invalidation dependencies.
+ * @param {{url: string, host: string, fetchFn: (permission: AllowEffects, input: string, init?: object) => Promise<Response>, bindEffectBoundary: import('../../../../types/allow-effects').AllowEffectsBoundary, effectFetchFn: (permission: AllowEffects, url: string, init?: object) => Promise<Response>, randomUUID: () => string, consoleError?: (message: string, ...optionalParams: unknown[]) => void}} options Invalidation dependencies.
  * @returns {Promise<void>} Resolves after every invalidation request completes.
  */
 async function executeInvalidation(paths, options) {
@@ -1336,7 +1336,9 @@ async function executeInvalidation(paths, options) {
     randomUUID,
     consoleError,
   } = options;
-  const token = await getAccessToken(fetchFn);
+  const token = await bindEffectBoundary(permission =>
+    getAccessToken(permission, fetchFn)
+  );
 
   await Promise.all(
     paths.map(path =>
@@ -1369,11 +1371,13 @@ function isValidPaths(paths) {
 
 /**
  * Acquire an access token for the CDN invalidation endpoint.
- * @param {(input: string, init?: object) => Promise<Response>} fetchFn Fetch implementation.
+ * @param {AllowEffects} permission Permission for the metadata request.
+ * @param {(permission: AllowEffects, input: string, init?: object) => Promise<Response>} fetchFn Fetch implementation.
  * @returns {Promise<string>} OAuth access token.
  */
-async function getAccessToken(fetchFn) {
+async function getAccessToken(permission, fetchFn) {
   const response = await fetchFn(
+    permission,
     'http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/token',
     { headers: { 'Metadata-Flavor': 'Google' } }
   );
@@ -2557,8 +2561,8 @@ function resolveParentLookupPromise({ incomingOption, db, consoleError }) {
  * @typedef {object} RenderVariantDependencies
  * @property {FirestoreLike} db - Firestore-like database used to load related documents.
  * @property {StorageLike} storage - Cloud storage helper capable of writing files.
- * @property {(url: string, init?: object) => Promise<Response>} fetchFn - General fetch implementation used for metadata reads.
- * @property {(handler: (permission: AllowEffects) => Promise<unknown>) => Promise<unknown>} bindEffectBoundary Cloud-owned permission boundary.
+ * @property {(permission: AllowEffects, url: string, init?: object) => Promise<Response>} fetchFn - Permission-aware fetch implementation.
+ * @property {import('../../../../types/allow-effects').AllowEffectsBoundary} bindEffectBoundary Cloud-owned permission boundary.
  * @property {(permission: AllowEffects, url: string, init?: object) => Promise<Response>} effectFetchFn Fetch adapter for cache purge requests.
  * @property {() => string} randomUUID - UUID generator for request identifiers.
  * @property {string} [projectId] - Google Cloud project identifier used for cache invalidation.

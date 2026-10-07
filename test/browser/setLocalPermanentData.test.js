@@ -135,6 +135,7 @@ describe('createBlogDataController', () => {
     const storage = { getItem: jest.fn().mockReturnValue('{"stored":true}') };
     const controller = createBlogDataController(() => ({
       fetch: jest.fn(),
+      bindEffectBoundary: handler => handler(Object.freeze({})),
       loggers: { logInfo, logError },
       storage,
     }));
@@ -149,6 +150,7 @@ describe('createBlogDataController', () => {
     const logInfo = jest.fn();
     const controller = createBlogDataController(() => ({
       fetch: jest.fn(),
+      bindEffectBoundary: handler => handler(Object.freeze({})),
       loggers: { logInfo, logError },
     }));
 
@@ -162,6 +164,7 @@ describe('createBlogDataController', () => {
     const storage = { getItem: jest.fn().mockReturnValue('nope') };
     const controller = createBlogDataController(() => ({
       fetch: jest.fn(),
+      bindEffectBoundary: handler => handler(Object.freeze({})),
       loggers: { logInfo, logError },
       storage,
     }));
@@ -183,6 +186,7 @@ describe('createBlogDataController', () => {
     };
     const controller = createBlogDataController(() => ({
       fetch: jest.fn(),
+      bindEffectBoundary: handler => handler(Object.freeze({})),
       loggers: { logInfo, logError },
       storage,
       permanentLens,

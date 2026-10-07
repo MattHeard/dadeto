@@ -10,7 +10,7 @@ import { createErrorBeaconHandler } from './errors-core.js';
  * @typedef {{ use: (middleware: unknown) => void, post: (path: string, handler: unknown) => void }} ErrorBeaconApp
  * @typedef {{ debug?: (...args: unknown[]) => void, error?: (...args: unknown[]) => void }} ErrorBeaconConsole
  * @typedef {Function & { json: Function, text: Function }} ErrorBeaconExpress
- * @typedef {{ express: ErrorBeaconExpress, cors: Function, getEnvironmentVariables: Function, console?: ErrorBeaconConsole, fetchFn: typeof globalThis.fetch, bindEffectBoundary: (handler: (permission: import('../../../../types/allow-effects').AllowEffects) => Promise<unknown>) => Promise<unknown>, effectFetchFn: (permission: import('../../../../types/allow-effects').AllowEffects, input: string, init?: object) => Promise<Response> }} ErrorBeaconDeps
+ * @typedef {{ express: ErrorBeaconExpress, cors: Function, getEnvironmentVariables: Function, console?: ErrorBeaconConsole, fetchFn: (permission: import('../../../../types/allow-effects').AllowEffects, input: string, init?: object) => Promise<Response>, bindEffectBoundary: import('../../../../types/allow-effects').AllowEffectsBoundary, effectFetchFn: (permission: import('../../../../types/allow-effects').AllowEffects, input: string, init?: object) => Promise<Response> }} ErrorBeaconDeps
  */
 
 /**
@@ -57,7 +57,9 @@ export function createErrorBeaconRun(deps) {
    * @returns {Promise<void>} Resolves when the report call completes.
    */
   async function reportEvent(event) {
-    const accessToken = await fetchAccessToken(deps.fetchFn);
+    const accessToken = await deps.bindEffectBoundary(permission =>
+      fetchAccessToken(permission, deps.fetchFn)
+    );
     // Stryker disable next-line all -- Error Reporting forwarding uses the
     // fixed endpoint/request protocol.
     const response = /** @type {Response} */ (
@@ -175,13 +177,15 @@ function resolveBuildVersion(environmentVariables) {
 
 /**
  * Fetch an ADC access token from metadata.
- * @param {typeof globalThis.fetch} fetchFn Fetch implementation.
+ * @param {import('../../../../types/allow-effects').AllowEffects} permission Permission for the metadata request.
+ * @param {(permission: import('../../../../types/allow-effects').AllowEffects, input: string, init?: object) => Promise<Response>} fetchFn Fetch implementation.
  * @returns {Promise<string>} Access token string.
  */
 // Stryker disable next-line all -- metadata token access uses the fixed ADC
 // endpoint and Google header contract.
-async function fetchAccessToken(fetchFn) {
+async function fetchAccessToken(permission, fetchFn) {
   const response = await fetchFn(
+    permission,
     // Stryker disable next-line all -- fixed metadata token endpoint.
     'http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/token',
     // Stryker disable next-line all -- fixed metadata request options object.

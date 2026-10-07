@@ -1,11 +1,12 @@
 /**
  * Create a fetch wrapper that uses the injected fetch implementation.
- * @param {typeof globalThis.fetch} fetchFn Fallback fetch implementation.
+ * @param {(permission: import('../../../types/allow-effects').AllowEffects, ...args: Parameters<typeof globalThis.fetch>) => ReturnType<typeof globalThis.fetch>} fetchFn Permission-aware fallback fetch implementation.
+ * @param {import('../../../types/allow-effects').AllowEffectsBoundary} bindEffectBoundary Runtime permission boundary.
  * @returns {(...args: Parameters<typeof globalThis.fetch>) => ReturnType<typeof globalThis.fetch>} Fetch wrapper.
  */
-export function createDynamicFetch(fetchFn) {
+export function createDynamicFetch(fetchFn, bindEffectBoundary) {
   return (...args) => {
-    return fetchFn.apply(globalThis, args);
+    return bindEffectBoundary(permission => fetchFn(permission, ...args));
   };
 }
 
@@ -30,12 +31,17 @@ export function createMemoizedLoader(factory) {
 
 /**
  * Create a shared render runtime with dynamic fetch and a memoized renderer.
- * @param {typeof globalThis.fetch} fetchFn Fallback fetch implementation.
+ * @param {(permission: import('../../../types/allow-effects').AllowEffects, ...args: Parameters<typeof globalThis.fetch>) => ReturnType<typeof globalThis.fetch>} fetchFn Permission-aware fallback fetch implementation.
+ * @param {import('../../../types/allow-effects').AllowEffectsBoundary} bindEffectBoundary Runtime permission boundary.
  * @param {(dynamicFetch: (...args: Parameters<typeof globalThis.fetch>) => ReturnType<typeof globalThis.fetch>) => unknown} buildInstance Renderer factory.
  * @returns {{ dynamicFetch: (...args: Parameters<typeof globalThis.fetch>) => ReturnType<typeof globalThis.fetch>, resolveInstance: () => unknown }} Render runtime helpers.
  */
-export function createRenderRuntime(fetchFn, buildInstance) {
-  const dynamicFetch = createDynamicFetch(fetchFn);
+export function createRenderRuntime(
+  fetchFn,
+  bindEffectBoundary,
+  buildInstance
+) {
+  const dynamicFetch = createDynamicFetch(fetchFn, bindEffectBoundary);
 
   return {
     dynamicFetch,
@@ -100,6 +106,7 @@ export function createCloudRenderContext(options) {
  * @param {{
  *   db: unknown,
  *   storage: unknown,
+ *   fetchFn: (permission: import('../../../types/allow-effects').AllowEffects, ...args: Parameters<typeof globalThis.fetch>) => ReturnType<typeof globalThis.fetch>,
  *   dynamicFetch: (...args: Parameters<typeof globalThis.fetch>) => ReturnType<typeof globalThis.fetch>,
  *   crypto: { randomUUID: () => string },
  *   projectId: string | undefined,
@@ -112,7 +119,7 @@ export function createCloudRenderContext(options) {
  * @returns {{
  *   db: unknown,
  *   storage: unknown,
- *   fetchFn: (...args: Parameters<typeof globalThis.fetch>) => ReturnType<typeof globalThis.fetch>,
+ *   fetchFn: (permission: import('../../../types/allow-effects').AllowEffects, ...args: Parameters<typeof globalThis.fetch>) => ReturnType<typeof globalThis.fetch>,
  *   randomUUID: () => string,
  *   projectId: string | undefined,
  *   urlMapName: string | undefined,
@@ -125,7 +132,6 @@ export function createCloudRenderContext(options) {
 export function createCloudRenderInstanceDeps(options) {
   return {
     ...options,
-    fetchFn: options.dynamicFetch,
     randomUUID: () => options.crypto.randomUUID(),
   };
 }
@@ -140,6 +146,7 @@ export function createCloudRenderInstanceDeps(options) {
  * @returns {(state: {
  *   db: unknown,
  *   storage: unknown,
+ *   fetchFn: (permission: import('../../../types/allow-effects').AllowEffects, ...args: Parameters<typeof globalThis.fetch>) => ReturnType<typeof globalThis.fetch>,
  *   dynamicFetch: (...args: Parameters<typeof globalThis.fetch>) => ReturnType<typeof globalThis.fetch>,
  *   projectId: string | undefined,
  *   urlMapName: string | undefined,
@@ -153,6 +160,7 @@ export function createCloudRenderInstanceBuilder(options) {
     const dependencies = createCloudRenderInstanceDeps({
       db: state.db,
       storage: state.storage,
+      fetchFn: state.fetchFn,
       dynamicFetch: state.dynamicFetch,
       crypto: options.crypto,
       projectId: state.projectId,
@@ -174,7 +182,8 @@ export function createCloudRenderInstanceBuilder(options) {
  *   getFirestoreInstance: (options: { environment: Record<string, string | undefined> }) => unknown,
  *   Storage: new () => unknown,
  *   getEnvironmentVariables: () => Record<string, string | undefined>,
- *   fetchFn: typeof globalThis.fetch,
+ *   fetchFn: (permission: import('../../../types/allow-effects').AllowEffects, ...args: Parameters<typeof globalThis.fetch>) => ReturnType<typeof globalThis.fetch>,
+ *   bindEffectBoundary: import('../../../types/allow-effects').AllowEffectsBoundary,
  *   resolveBucketName: (environmentVariables: Record<string, string | undefined>, defaultBucketName: string) => string,
  *   resolveObjectPrefix: (environmentVariables: Record<string, string | undefined>) => string,
  *   defaultBucketName: string,
@@ -182,6 +191,7 @@ export function createCloudRenderInstanceBuilder(options) {
  *   buildRender: (state: {
  *     db: unknown,
  *     storage: unknown,
+ *     fetchFn: (permission: import('../../../types/allow-effects').AllowEffects, ...args: Parameters<typeof globalThis.fetch>) => ReturnType<typeof globalThis.fetch>,
  *     dynamicFetch: (...args: Parameters<typeof globalThis.fetch>) => ReturnType<typeof globalThis.fetch>,
  *     environmentVariables: Record<string, string | undefined>,
  *     bucketName: string,
@@ -202,13 +212,15 @@ export function createCloudRenderInstanceBuilder(options) {
  *   getFirestoreInstance: () => unknown,
  *   Storage: new () => unknown,
  *   getEnvironmentVariables: () => Record<string, string | undefined>,
- *   fetchFn: typeof globalThis.fetch,
+ *   fetchFn: (permission: import('../../../types/allow-effects').AllowEffects, ...args: Parameters<typeof globalThis.fetch>) => ReturnType<typeof globalThis.fetch>,
+ *   bindEffectBoundary: import('../../../types/allow-effects').AllowEffectsBoundary,
  *   resolveBucketName: (environmentVariables: Record<string, string | undefined>, defaultBucketName: string) => string,
  *   resolveObjectPrefix: (environmentVariables: Record<string, string | undefined>) => string,
  *   defaultBucketName: string,
  *   buildRender: (state: {
  *     db: unknown,
  *     storage: unknown,
+ *     fetchFn: (permission: import('../../../types/allow-effects').AllowEffects, ...args: Parameters<typeof globalThis.fetch>) => ReturnType<typeof globalThis.fetch>,
  *     dynamicFetch: (...args: Parameters<typeof globalThis.fetch>) => ReturnType<typeof globalThis.fetch>,
  *     environmentVariables: Record<string, string | undefined>,
  *     bucketName: string,
@@ -227,6 +239,7 @@ export function createCloudRenderInstanceBuilder(options) {
  *   projectId: string | undefined,
  *   urlMapName: string | undefined,
  *   cdnHost: string | undefined,
+ *   fetchFn: (permission: import('../../../types/allow-effects').AllowEffects, ...args: Parameters<typeof globalThis.fetch>) => ReturnType<typeof globalThis.fetch>,
  *   dynamicFetch: (...args: Parameters<typeof globalThis.fetch>) => ReturnType<typeof globalThis.fetch>,
  *   render: () => unknown,
  * }} Full entrypoint state.
@@ -239,16 +252,21 @@ export function createCloudRenderEntrypointState(options) {
   ensureFirebaseApp();
 
   const context = createCloudRenderContext(options);
-  const dynamicFetch = createDynamicFetch(options.fetchFn);
+  const dynamicFetch = createDynamicFetch(
+    options.fetchFn,
+    options.bindEffectBoundary
+  );
   const render = createMemoizedLoader(() =>
     options.buildRender({
       ...context,
+      fetchFn: options.fetchFn,
       dynamicFetch,
     })
   );
 
   return {
     ...context,
+    fetchFn: options.fetchFn,
     dynamicFetch,
     render,
   };

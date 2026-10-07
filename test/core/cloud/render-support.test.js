@@ -11,12 +11,14 @@ import {
 
 describe('render support helpers', () => {
   test('createDynamicFetch delegates to the injected fetch implementation', async () => {
-    const fetchFn = jest.fn(async value => value);
+    const permission = Object.freeze({});
+    const fetchFn = jest.fn(async (_permission, value) => value);
+    const bindEffectBoundary = handler => handler(permission);
 
-    const dynamicFetch = createDynamicFetch(fetchFn);
+    const dynamicFetch = createDynamicFetch(fetchFn, bindEffectBoundary);
     await expect(dynamicFetch('fallback')).resolves.toBe('fallback');
 
-    expect(fetchFn).toHaveBeenCalledWith('fallback');
+    expect(fetchFn).toHaveBeenCalledWith(permission, 'fallback');
   });
 
   test('createMemoizedLoader only invokes the factory once', () => {
@@ -31,12 +33,18 @@ describe('render support helpers', () => {
   });
 
   test('createRenderRuntime memoizes the instance and delegates fetch calls', async () => {
-    const fetchFn = jest.fn(async value => `fallback:${value}`);
+    const permission = Object.freeze({});
+    const fetchFn = jest.fn(async (_permission, value) => `fallback:${value}`);
+    const bindEffectBoundary = handler => handler(permission);
     const buildInstance = jest.fn(dynamicFetch => ({
       dynamicFetch,
     }));
 
-    const runtime = createRenderRuntime(fetchFn, buildInstance);
+    const runtime = createRenderRuntime(
+      fetchFn,
+      bindEffectBoundary,
+      buildInstance
+    );
     await expect(runtime.dynamicFetch('value')).resolves.toBe('fallback:value');
 
     const first = runtime.resolveInstance();
@@ -77,10 +85,12 @@ describe('render support helpers', () => {
   test('builds renderer dependencies and forwards crypto and console hooks', () => {
     const crypto = { randomUUID: jest.fn(() => 'uuid') };
     const dynamicFetch = jest.fn();
+    const fetchFn = jest.fn();
     const consoleError = jest.fn();
     const deps = createCloudRenderInstanceDeps({
       db: { db: true },
       storage: { storage: true },
+      fetchFn,
       dynamicFetch,
       crypto,
       projectId: 'project',
@@ -90,7 +100,7 @@ describe('render support helpers', () => {
       objectPrefix: 'prefix',
       consoleError,
     });
-    expect(deps.fetchFn).toBe(dynamicFetch);
+    expect(deps.fetchFn).toBe(fetchFn);
     expect(deps.randomUUID()).toBe('uuid');
 
     const renderer = jest.fn(options => options);
@@ -102,6 +112,7 @@ describe('render support helpers', () => {
     const state = {
       db: {},
       storage: {},
+      fetchFn,
       dynamicFetch,
       projectId: undefined,
       urlMapName: undefined,
@@ -129,6 +140,7 @@ describe('render support helpers', () => {
       Storage: jest.fn(() => ({ storage: true })),
       getEnvironmentVariables,
       fetchFn: jest.fn(),
+      bindEffectBoundary: handler => handler(Object.freeze({})),
       resolveBucketName: jest.fn(() => 'bucket'),
       resolveObjectPrefix: jest.fn(() => 'prefix'),
       defaultBucketName: 'default',

@@ -24,7 +24,7 @@ setupFirebase(initializeApp);
 
 /** @type {Document | null} */
 let moderateDocument = null;
-/** @type {typeof fetch | null} */
+/** @type {((permission: import('../../../types/allow-effects').AllowEffects, input: Parameters<typeof fetch>[0], init?: Parameters<typeof fetch>[1]) => ReturnType<typeof fetch>) | null} */
 let moderateFetchFn = null;
 /** @type {((permission: import('../../../types/allow-effects').AllowEffects, input: string, init?: object) => Promise<Response>) | null} */
 let moderateEffectFetchFn = null;
@@ -36,7 +36,9 @@ let moderateSessionStorage = null;
 let moderateGlobalObject = null;
 
 const loadStaticConfig = createLoadStaticConfig({
-  fetchFn: (input, init) => moderateFetchFn(input, init),
+  fetchFn: (permission, input, init) =>
+    moderateFetchFn(permission, input, init),
+  bindEffectBoundary: handler => moderateBindEffectBoundary(handler),
   warn: (message, error) => console.warn(message, error),
 });
 
@@ -405,13 +407,20 @@ function setModerationAuthenticationControls(authenticated) {
   });
 }
 
-export const fetchJson = async (url, init) => {
-  const fetchImpl = moderateFetchFn ?? globalThis.fetch;
+/**
+ * Fetch moderation JSON through the injected permission-aware transport.
+ * @param {import('../../../types/allow-effects').AllowEffects} permission Request permission.
+ * @param {string} url Request URL.
+ * @param {object} [init] Fetch options.
+ * @returns {Promise<{ok: boolean, status: number, json: () => unknown}>} Parsed response envelope.
+ */
+export const fetchJson = async (permission, url, init) => {
+  const fetchImpl = moderateFetchFn;
   if (typeof fetchImpl !== 'function') {
     throw new Error('fetch is not available');
   }
 
-  const resp = await fetchImpl(url, init);
+  const resp = await fetchImpl(permission, url, init);
   if (!resp.ok) {
     const body = await readErrorResponseBody(resp);
     const error = new Error(formatHttpErrorMessage(resp.status, body));
@@ -454,13 +463,17 @@ export function formatHttpErrorMessage(status, body) {
   return `HTTP ${status}: ${snippet}`;
 }
 
-export const authedFetch = createAuthedFetch({ getIdToken, fetchJson });
+export const authedFetch = createAuthedFetch({
+  getIdToken,
+  fetchJson,
+  bindEffectBoundary: handler => moderateBindEffectBoundary(handler),
+});
 
 /**
  * Initialize the moderation page with injected browser globals.
  * @param {{
  *   documentObj: Document,
- *   fetchFn: typeof fetch,
+ *   fetchFn: (permission: import('../../../types/allow-effects').AllowEffects, input: Parameters<typeof fetch>[0], init?: Parameters<typeof fetch>[1]) => ReturnType<typeof fetch>,
  *   effectFetchFn: (permission: import('../../../types/allow-effects').AllowEffects, input: string, init?: object) => Promise<Response>,
  *   bindEffectBoundary: (handler: (permission: import('../../../types/allow-effects').AllowEffects) => Promise<unknown>) => Promise<unknown>,
  *   sessionStorageObj: Storage,

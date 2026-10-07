@@ -66,6 +66,7 @@ describe('fetchAndCacheBlogData', () => {
   let mockError;
   const createDependencies = () => ({
     fetch: mockFetch,
+    bindEffectBoundary: handler => handler(Object.freeze({})),
     loggers: {
       logInfo: mockLog,
       logError: mockError,
@@ -181,7 +182,7 @@ describe('fetchAndCacheBlogData', () => {
 
     await fetchAndCacheBlogData(state, createDependencies());
 
-    expect(mockFetch).toHaveBeenCalledWith('./blog.json');
+    expect(mockFetch).toHaveBeenCalledWith(expect.anything(), './blog.json');
     expect(mockLog).toHaveBeenCalledWith('Starting to fetch blog data...');
   });
 
@@ -214,6 +215,16 @@ describe('createBlogDataController', () => {
     );
   });
 
+  it('requires an effect boundary from controller dependencies', () => {
+    const controller = createBlogDataController(() => ({
+      fetch: jest.fn(),
+      loggers: { logInfo: jest.fn(), logError: jest.fn() },
+    }));
+    expect(() => controller.getData(createState())).toThrow(
+      'createBlogDataController requires bindEffectBoundary to be provided as a function.'
+    );
+  });
+
   it('memoizes dependency factory results and wires helpers together', async () => {
     const storage = {
       getItem: jest.fn(() => '{}'),
@@ -227,6 +238,7 @@ describe('createBlogDataController', () => {
     const logWarning = jest.fn();
     const factory = jest.fn(() => ({
       fetch: fetchFn,
+      bindEffectBoundary: handler => handler(Object.freeze({})),
       loggers: { logInfo, logError, logWarning },
       storage,
     }));
@@ -267,6 +279,7 @@ describe('createBlogDataController', () => {
       fetch: jest.fn(() =>
         Promise.resolve({ ok: true, json: () => Promise.resolve({}) })
       ),
+      bindEffectBoundary: handler => handler(Object.freeze({})),
       loggers: { logInfo: jest.fn(), logError: jest.fn() },
     });
 
@@ -282,6 +295,7 @@ describe('createBlogDataController', () => {
   it('normalizes a non-callable warning logger to a no-op', () => {
     const controller = createBlogDataController(() => ({
       fetch: jest.fn(),
+      bindEffectBoundary: handler => handler(Object.freeze({})),
       loggers: {
         logInfo: jest.fn(),
         logError: jest.fn(),
@@ -298,6 +312,7 @@ describe('createBlogDataController', () => {
     const logWarning = jest.fn();
     const controller = createBlogDataController(() => ({
       fetch: jest.fn(),
+      bindEffectBoundary: handler => handler(Object.freeze({})),
       loggers: { logInfo: jest.fn(), logError: jest.fn(), logWarning },
     }));
     const state = createState();
@@ -338,6 +353,7 @@ describe('createBlogDataController', () => {
       fetch: jest.fn(() =>
         Promise.resolve({ ok: true, json: () => Promise.resolve({}) })
       ),
+      bindEffectBoundary: handler => handler(Object.freeze({})),
       loggers: null,
     });
 
@@ -353,6 +369,7 @@ describe('createBlogDataController', () => {
       fetch: jest.fn(() =>
         Promise.resolve({ ok: true, json: () => Promise.resolve({}) })
       ),
+      bindEffectBoundary: handler => handler(Object.freeze({})),
       loggers: { logInfo: 'nope', logError: jest.fn() },
     });
 
@@ -367,6 +384,7 @@ describe('createBlogDataController', () => {
     const logError = jest.fn();
     const controller = createBlogDataController(() => ({
       fetch: jest.fn(),
+      bindEffectBoundary: handler => handler(Object.freeze({})),
       loggers: { logInfo: jest.fn(), logError },
     }));
 
@@ -390,6 +408,7 @@ describe('createBlogDataController', () => {
     };
     const factory = jest.fn(() => ({
       fetch: jest.fn(),
+      bindEffectBoundary: handler => handler(Object.freeze({})),
       loggers: { logInfo: jest.fn(), logError: jest.fn() },
       permanentLens,
     }));
@@ -456,6 +475,7 @@ describe('getData, setData, and getDeepStateCopy', () => {
   let fetchFn;
   const createDependencies = () => ({
     fetch: fetchFn,
+    bindEffectBoundary: handler => handler(Object.freeze({})),
     loggers: {
       logInfo: logFn,
       logError: errorFn,
@@ -508,6 +528,7 @@ describe('getData, setData, and getDeepStateCopy', () => {
     state.blogError = new Error('load failure');
     const dependencies = {
       fetch: jest.fn(),
+      bindEffectBoundary: handler => handler(Object.freeze({})),
       loggers: { logInfo: jest.fn(), logError: jest.fn() },
     };
 
@@ -782,6 +803,7 @@ describe('remaining getData helpers', () => {
   let fetchFn;
   const createDependencies = () => ({
     fetch: fetchFn,
+    bindEffectBoundary: handler => handler(Object.freeze({})),
     loggers: { logInfo: logFn, logError: errorFn, logWarning: warnFn },
   });
   beforeEach(() => {

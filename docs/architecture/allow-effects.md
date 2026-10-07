@@ -10,7 +10,7 @@ Successive real compiler diagnostics revealed the intermediate links: the save h
 
 All core code is forbidden from importing/re-exporting either cloud or local permission factories, including dynamic import and require. The type-aware `capability/allow-effects` rule covers the submission, render, browser admin/action, billing, moderation, beacon, auth-cache, cloud error-reporting, stats invalidation, and local simulator command modules. It checks actual private-symbol identity, including inferred aliases, unions and mapped types, rather than identifier spelling. A permission reference must belong to a direct parameter of the same invocation frame. Captures, storage, return values, minting calls and forged command arguments are rejected. Compiler source mismatches fail closed. Compiler program construction stays in the external lint configuration, not the core rule. The normal maximum of four parameters is restored.
 
-Browser billing checkout and navigation, moderation assignment and rating, browser error beacon fetch and `sendBeacon`, author UUID cache updates and sign-out cleanup, cloud Error Reporting writes, and generate-stats CDN invalidation each receive permissions from their external browser or cloud runtime boundary. Read-only fetches and storage reads retain their ordinary adapters. Effect transports are split from those general-purpose read dependencies so a token cannot authorize unrelated reads.
+Browser billing checkout and navigation, moderation assignment and rating, browser error beacon fetch and `sendBeacon`, author UUID cache updates and sign-out cleanup, cloud Error Reporting writes, and generate-stats CDN invalidation each receive permissions from their external browser or cloud runtime boundary. Every injected `fetchFn` in core is permission-aware, including GET requests: a request method does not prove that a request has no side effects. Native fetch closures that are internal to core are not injected fetch functions; external adapters convert native fetch into the permission-aware contract. Storage reads retain ordinary adapters.
 
 The local simulator is a second environment entry point. Its raw core submission route now takes a permission first; `src/local/allow-effects.js` binds a fresh permission per command when constructing the public simulator. Its public request-only route and the HTTP server remain compatible. Core server construction receives that externally bound simulator constructor rather than importing or invoking a minting factory. Cloud and local environment layering stays unchanged; each boundary owns its private runtime symbol but uses the same nominal type.
 
@@ -32,8 +32,12 @@ This classification is scoped to four injected-fetch POST commands: trigger rend
 
 ## Fourth extension: render-variant CDN invalidation (2026-10-05)
 
-The cloud render-variant adapter now supplies a command permission boundary and a dedicated `effectFetchFn` for CDN cache purge POSTs. The core invalidation flow mints one fresh permission per path purge and forwards it only to that adapter. The generic `fetchFn` remains responsible for the metadata service token GET and receives no capability. `render-contents` has a separate invalidation implementation and remains a distinct follow-up.
+The cloud render-variant adapter supplies a command permission boundary and a dedicated `effectFetchFn` for CDN cache purge POSTs. The core invalidation flow mints one fresh permission per path purge and forwards it only to that adapter. The generic injected `fetchFn`, including the metadata service token GET, is also permission-aware.
 
 ## Fifth extension: render-contents CDN invalidation (2026-10-05)
 
-The cloud render-contents adapter supplies the same boundary and dedicated transport for its separate CDN invalidation flow. Each purge POST receives a fresh permission. The metadata service token GET continues through ordinary `fetchFn` without a capability.
+The cloud render-contents adapter supplies the same boundary and dedicated transport for its separate CDN invalidation flow. Each purge POST receives a fresh permission. The metadata service token GET through injected `fetchFn` also receives a permission.
+
+## Sixth extension: all injected fetch functions
+
+Every `fetchFn` injected from browser, cloud, or local adapters into core requires an `AllowEffects` first argument. Core call sites obtain a fresh value through the injected `bindEffectBoundary`; runtime adapters adapt native fetch to the permission-aware signature. This applies to GET and other methods alike. Internal native fetch closures are outside the injected-function contract. The compiler and `capability/allow-effects` lint rule enforce the signature and direct forwarding.

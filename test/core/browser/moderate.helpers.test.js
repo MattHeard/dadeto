@@ -18,7 +18,11 @@ const createModerateHandle = dependencies =>
   createModerateHandleCore({
     ...dependencies,
     bindEffectBoundary: handler => handler(permission),
-    effectFetchFn: (_permission, ...args) => dependencies.fetchFn(...args),
+    fetchFn:
+      dependencies.fetchFn === undefined
+        ? undefined
+        : (permissionValue, ...args) =>
+            dependencies.fetchFn(permissionValue, ...args),
   });
 
 describe('moderate pure helper contracts', () => {
@@ -219,11 +223,13 @@ describe('moderate pure helper contracts', () => {
     createModerateHandle({
       documentObj: { createElement: () => ({}) },
       fetchFn,
+      bindEffectBoundary: handler => handler(Object.freeze({})),
       sessionStorageObj: {},
       globalObject: {},
     });
-    const response = await fetchJson('/ok', { method: 'POST' });
-    expect(fetchFn).toHaveBeenCalledWith('/ok', { method: 'POST' });
+    const permission = Object.freeze({});
+    const response = await fetchJson(permission, '/ok', { method: 'POST' });
+    expect(fetchFn).toHaveBeenCalledWith(permission, '/ok', { method: 'POST' });
     expect(response).toMatchObject({ ok: true, status: 201 });
     expect(response.json()).toEqual({ ok: true });
   });
@@ -231,6 +237,7 @@ describe('moderate pure helper contracts', () => {
   it('formats failed JSON requests with body, status, and response error details', async () => {
     createModerateHandle({
       documentObj: { createElement: () => ({}) },
+      bindEffectBoundary: handler => handler(Object.freeze({})),
       fetchFn: jest.fn().mockResolvedValue({
         ok: false,
         status: 503,
@@ -239,9 +246,11 @@ describe('moderate pure helper contracts', () => {
       sessionStorageObj: {},
       globalObject: {},
     });
-    await expect(fetchJson('/failed')).rejects.toMatchObject({
-      message: 'HTTP 503: unavailable',
-      status: 503,
-    });
+    await expect(fetchJson(Object.freeze({}), '/failed')).rejects.toMatchObject(
+      {
+        message: 'HTTP 503: unavailable',
+        status: 503,
+      }
+    );
   });
 });

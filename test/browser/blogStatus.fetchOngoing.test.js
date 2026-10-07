@@ -19,6 +19,7 @@ describe('BLOG_STATUS ongoing fetch detection', () => {
     const fetchFn = jest.fn(() => fetchPromise);
     const dependencies = {
       fetch: fetchFn,
+      bindEffectBoundary: handler => handler(Object.freeze({})),
       loggers: {
         logInfo: jest.fn(),
         logError: jest.fn(),

@@ -4,6 +4,8 @@ import {
   createLoadStaticConfig,
 } from '../../src/core/browser/load-static-config-core.js';
 
+const bindEffectBoundary = handler => handler(Object.freeze({}));
+
 describe('parseStaticConfigResponse', () => {
   it('resolves with parsed json when response is ok', async () => {
     const payload = { featureFlag: true };
@@ -51,7 +53,11 @@ describe('createLoadStaticConfig', () => {
     const fetchFn = jest.fn().mockResolvedValue({ ok: true, json });
     const warn = jest.fn();
 
-    const loadStaticConfig = createLoadStaticConfig({ fetchFn, warn });
+    const loadStaticConfig = createLoadStaticConfig({
+      fetchFn,
+      bindEffectBoundary,
+      warn,
+    });
 
     await expect(loadStaticConfig()).resolves.toEqual(payload);
     await expect(loadStaticConfig()).resolves.toEqual(payload);
@@ -64,7 +70,11 @@ describe('createLoadStaticConfig', () => {
     const fetchFn = jest.fn().mockRejectedValue(error);
     const warn = jest.fn();
 
-    const loadStaticConfig = createLoadStaticConfig({ fetchFn, warn });
+    const loadStaticConfig = createLoadStaticConfig({
+      fetchFn,
+      bindEffectBoundary,
+      warn,
+    });
 
     await expect(loadStaticConfig()).resolves.toEqual({});
     expect(fetchFn).toHaveBeenCalledTimes(1);
@@ -76,7 +86,10 @@ describe('createLoadStaticConfig', () => {
     const json = jest.fn().mockResolvedValue(payload);
     const fetchFn = jest.fn().mockResolvedValue({ ok: true, json });
 
-    const loadStaticConfig = createLoadStaticConfig({ fetchFn });
+    const loadStaticConfig = createLoadStaticConfig({
+      fetchFn,
+      bindEffectBoundary,
+    });
 
     await expect(loadStaticConfig()).resolves.toEqual(payload);
   });
@@ -88,6 +101,7 @@ describe('createLoadStaticConfig', () => {
 
     const loadStaticConfig = createLoadStaticConfig({
       fetchFn,
+      bindEffectBoundary,
       warn: 'not-a-function',
     });
 
@@ -98,7 +112,10 @@ describe('createLoadStaticConfig', () => {
     const error = new Error('broken');
     const fetchFn = jest.fn().mockRejectedValue(error);
 
-    const loadStaticConfig = createLoadStaticConfig({ fetchFn });
+    const loadStaticConfig = createLoadStaticConfig({
+      fetchFn,
+      bindEffectBoundary,
+    });
 
     await expect(loadStaticConfig()).resolves.toEqual({});
     expect(fetchFn).toHaveBeenCalledTimes(1);

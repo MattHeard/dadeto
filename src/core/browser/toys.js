@@ -648,7 +648,7 @@ function getEntryHandler(moduleInfo, moduleConfig) {
  * Creates a moduleConfig object from env and dom
  * @param {object} env - Environment including getUuid
  * @param {object} dom - DOM helpers
- * @returns {object} moduleConfig
+ * @returns {{globalState: object, createEnvFn: Function, errorFn: Function, fetchFn: (permission: import('../../../types/allow-effects').AllowEffects, url: string) => Promise<Response>, bindEffectBoundary: import('../../../types/allow-effects').AllowEffectsBoundary, loggers: object, dom: object, getUuid: Function}} moduleConfig
  */
 export function makeModuleConfig(env, dom) {
   return {
@@ -656,6 +656,7 @@ export function makeModuleConfig(env, dom) {
     createEnvFn: env.createEnv,
     errorFn: env.error,
     fetchFn: env.fetch,
+    bindEffectBoundary: env.bindEffectBoundary,
     loggers: env.loggers,
     dom,
     getUuid: env.getUuid,
@@ -763,7 +764,7 @@ export function getFetchErrorHandler(env, parent, presenterKey) {
 /**
  * Fetches a URL and displays the response body.
  * @param {string} url - The request URL.
- * @param {object} env - Environment containing fetchFn and dom helpers.
+ * @param {{fetchFn: (permission: import('../../../types/allow-effects').AllowEffects, url: string) => Promise<Response>, bindEffectBoundary: import('../../../types/allow-effects').AllowEffectsBoundary, dom: object}} env Environment dependencies.
  * @param {{parent: HTMLElement, presenterKey: string}} options - Display options.
  * @returns {void}
  */
@@ -772,7 +773,11 @@ export function handleRequestResponse(url, env, options) {
   const { fetchFn, dom } = env;
   const displayBody = makeDisplayBody(dom, parent, presenterKey);
   const handleFetchError = getFetchErrorHandler(env, parent, presenterKey);
-  fetchFn(url).then(getText).then(displayBody).catch(handleFetchError);
+  env
+    .bindEffectBoundary(permission => fetchFn(permission, url))
+    .then(getText)
+    .then(displayBody)
+    .catch(handleFetchError);
 }
 
 import { isObject } from './common.js';
@@ -1555,7 +1560,7 @@ function getInteractiveElements(dom, article, logWarning) {
  * Sets up event listeners and initial state.
  * @param {HTMLElement} article - The article element containing the toy.
  * @param {ToyCallback} processingFunction - The toy's core logic function.
- * @param {object} config - An object containing globalState, createEnvFn, errorFn, fetchFn, dom, getUuid, and loggers.
+ * @param {{globalState: object, createEnvFn: Function, errorFn: Function, fetchFn: (permission: import('../../../types/allow-effects').AllowEffects, url: string) => Promise<Response>, bindEffectBoundary: import('../../../types/allow-effects').AllowEffectsBoundary, dom: object, getUuid: Function, loggers: object}} config Configuration containing browser dependencies.
  * @returns {void}
  */
 export function initializeInteractiveComponent(
@@ -1564,7 +1569,15 @@ export function initializeInteractiveComponent(
   config
 ) {
   const logInfo = config.loggers.logInfo;
-  const { globalState, createEnvFn, errorFn, fetchFn, dom, getUuid } = config;
+  const {
+    globalState,
+    createEnvFn,
+    errorFn,
+    fetchFn,
+    bindEffectBoundary,
+    dom,
+    getUuid,
+  } = config;
   const logWarning = config.loggers.logWarning;
   logInfo('Initializing interactive component for article', article.id);
   const elements = getInteractiveElements(dom, article, logWarning);
@@ -1601,6 +1614,7 @@ export function initializeInteractiveComponent(
     createEnv: createEnvFn,
     errorFn,
     fetchFn,
+    bindEffectBoundary,
     dom,
     logInfo,
     getUuid,

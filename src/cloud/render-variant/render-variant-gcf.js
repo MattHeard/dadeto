@@ -1,5 +1,5 @@
 import functions from './firebase-functions.js';
-import { fetchFn } from './common-gcf.js';
+import { fetchFn as nativeFetchFn } from './common-gcf.js';
 import { createEffectInvocationBoundary } from '../allow-effects.js';
 
 export { functions };
@@ -7,7 +7,10 @@ export { FieldValue } from 'firebase-admin/firestore';
 export { Storage } from '@google-cloud/storage';
 export { createFirebaseAppManager } from './common-gcf.js';
 export { getFirestoreInstance } from './firestore.js';
-export { fetchFn, crypto, getEnvironmentVariables } from './common-gcf.js';
+export { crypto, getEnvironmentVariables } from './common-gcf.js';
+
+/** @type {(permission: import('../../../types/allow-effects').AllowEffects, url: string, init?: object) => Promise<Response>} */
+export const fetchFn = (_permission, url, init) => nativeFetchFn(url, init);
 
 /**
  * Bind a fresh permission to one render-variant command.
@@ -21,4 +24,4 @@ export const bindEffectBoundary = handler =>
  * Fetch adapter dedicated to cache invalidation POSTs.
  * @type {(permission: import('../../../types/allow-effects').AllowEffects, url: string, init?: object) => Promise<Response>}
  */
-export const effectFetchFn = (_permission, url, init) => fetchFn(url, init);
+export const effectFetchFn = (permission, url, init) => fetchFn(permission, url, init);

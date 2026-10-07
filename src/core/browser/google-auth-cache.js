@@ -32,18 +32,19 @@ export function setCachedAuthorUuid(permission, storage, authorUuid) {
 
 /**
  * Fetch the author uuid from the remote API.
- * @param {(input: string, init?: { headers?: Record<string, string> }) => Promise<{ ok: boolean, json: () => Promise<Record<string, unknown>> }>} fetchFn Fetch helper.
+ * @param {import('../../../types/allow-effects').AllowEffects} permission Permission for the API request.
+ * @param {(permission: import('../../../types/allow-effects').AllowEffects, input: string, init?: { headers?: Record<string, string> }) => Promise<{ ok: boolean, json: () => Promise<Record<string, unknown>> }>} fetchFn Fetch helper.
  * @param {string} url API url.
  * @param {string} token Bearer token.
  * @returns {Promise<string | null>} Author uuid or null.
  */
-export async function fetchAuthorUuidFromApi(fetchFn, url, token) {
+export async function fetchAuthorUuidFromApi(permission, fetchFn, url, token) {
   if (!url) {
     return null;
   }
 
   return resolveOrNull(
-    fetchFn(url, {
+    fetchFn(permission, url, {
       headers: { Authorization: `Bearer ${token}` },
     }).then(readAuthorUuidResponse)
   );
@@ -75,9 +76,9 @@ function selectAuthorUuid(payload) {
  * Refresh and cache the author uuid for an already authenticated session.
  * @param {object} deps Refresh dependencies.
  * @param {StorageLike} deps.storage Storage containing the ID token.
- * @param {typeof fetch} deps.fetchFn Fetch helper.
+ * @param {(permission: import('../../../types/allow-effects').AllowEffects, input: string, init?: object) => Promise<Response>} deps.fetchFn Fetch helper.
  * @param {() => Promise<string>} deps.getAuthorUuidUrl Configured endpoint resolver.
- * @param {(handler: (permission: import('../../../types/allow-effects').AllowEffects) => Promise<unknown>) => Promise<unknown>} deps.bindEffectBoundary Permission boundary.
+ * @param {import('../../../types/allow-effects').AllowEffectsBoundary} deps.bindEffectBoundary Permission boundary.
  * @returns {Promise<string | null>} Cached or refreshed uuid.
  */
 export async function refreshCachedAuthorUuid(deps) {
@@ -87,7 +88,9 @@ export async function refreshCachedAuthorUuid(deps) {
     return getCachedAuthorUuid(storage);
   }
   const uuid = await getAuthorUuidUrl().then(url =>
-    fetchAuthorUuidFromApi(fetchFn, url, token)
+    deps.bindEffectBoundary(permission =>
+      fetchAuthorUuidFromApi(permission, fetchFn, url, token)
+    )
   );
   await deps.bindEffectBoundary(async permission => {
     setCachedAuthorUuid(permission, storage, uuid);
@@ -98,7 +101,7 @@ export async function refreshCachedAuthorUuid(deps) {
 /**
  * Attach author-uuid caching behavior to an auth module.
  * @param {{ initGoogleSignIn: (options?: { onSignIn?: (token: string) => void | Promise<void> }) => void | Promise<void>, signOut: () => Promise<void> }} handle Auth module.
- * @param {{ storage: StorageLike, fetchFn: typeof fetch, getAuthorUuidUrl: () => Promise<string>, isInternalOrigin: () => boolean, bindEffectBoundary: (handler: (permission: import('../../../types/allow-effects').AllowEffects) => Promise<unknown>) => Promise<unknown> }} deps Caching dependencies.
+ * @param {{ storage: StorageLike, fetchFn: (permission: import('../../../types/allow-effects').AllowEffects, input: string, init?: object) => Promise<Response>, getAuthorUuidUrl: () => Promise<string>, isInternalOrigin: () => boolean, bindEffectBoundary: import('../../../types/allow-effects').AllowEffectsBoundary }} deps Caching dependencies.
  * @returns {object} Wrapped auth module.
  */
 export function installAuthorUuidCaching(handle, deps) {
@@ -128,7 +131,11 @@ export function installAuthorUuidCaching(handle, deps) {
       onSignIn(token) {
         const onSignIn = options?.onSignIn;
         return getAuthorUuidUrl()
-          .then(url => fetchAuthorUuidFromApi(fetchFn, url, token))
+          .then(url =>
+            bindEffectBoundary(permission =>
+              fetchAuthorUuidFromApi(permission, fetchFn, url, token)
+            )
+          )
           .then(async authorUuid => {
             await bindEffectBoundary(async permission => {
               setCachedAuthorUuid(permission, storage, authorUuid);

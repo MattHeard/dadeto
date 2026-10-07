@@ -340,7 +340,7 @@ function selectCdnHost(candidate) {
  *   db: import('firebase-admin/firestore').Firestore,
  *   auth: import('firebase-admin/auth').Auth,
  *   storage: import('@google-cloud/storage').Storage,
- *   fetchFn: typeof globalThis.fetch,
+ *   fetchFn: (permission: import('../../../../types/allow-effects').AllowEffects, ...args: Parameters<typeof globalThis.fetch>) => ReturnType<typeof globalThis.fetch>,
  *   effectFetchFn: (permission: import('../../../../types/allow-effects').AllowEffects, input: string, init?: object) => Promise<Response>,
  *   bindEffectBoundary: (handler: (permission: import('../../../../types/allow-effects').AllowEffects) => Promise<Response>) => Promise<Response>,
  *   env?: EnvironmentMap | Record<string, string | undefined>,
@@ -456,10 +456,12 @@ export function createGenerateStatsCore({
   // response/error protocol.
   async function getAccessTokenFromMetadata() {
     // Stryker disable next-line all -- metadata request options are fixed.
-    const response = await fetchImpl(metadataTokenUrl, {
-      // Stryker disable next-line all -- fixed metadata request headers.
-      headers: { 'Metadata-Flavor': 'Google' },
-    });
+    const response = await bindEffectBoundary(permission =>
+      fetchImpl(permission, metadataTokenUrl, {
+        // Stryker disable next-line all -- fixed metadata request headers.
+        headers: { 'Metadata-Flavor': 'Google' },
+      })
+    );
     assertMetadataResponseOk(response);
     const metadata = /** @type {{ access_token: unknown }} */ (
       await response.json()
@@ -988,11 +990,11 @@ function resolveCdnHost(envRef) {
 
 /**
  * Resolve the fetch implementation required for HTTP requests.
- * @param {typeof globalThis.fetch} fetchFn Fetch implementation.
- * @returns {typeof globalThis.fetch} Fetch implementation.
+ * @param {(permission: import('../../../../types/allow-effects').AllowEffects, ...args: Parameters<typeof globalThis.fetch>) => ReturnType<typeof globalThis.fetch>} fetchFn Permission-aware fetch implementation.
+ * @returns {(permission: import('../../../../types/allow-effects').AllowEffects, ...args: Parameters<typeof globalThis.fetch>) => ReturnType<typeof globalThis.fetch>} Fetch implementation.
  */
 function resolveFetchImpl(fetchFn) {
-  return /** @type {typeof globalThis.fetch} */ (fetchFn);
+  return fetchFn;
 }
 
 /**

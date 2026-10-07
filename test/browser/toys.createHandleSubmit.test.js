@@ -170,6 +170,7 @@ describe('createHandleSubmit', () => {
       createEnv: jest.fn(() => new Map()),
       errorFn: jest.fn(),
       fetchFn,
+      bindEffectBoundary: handler => handler(Object.freeze({})),
     };
     const elements = {
       inputElement: { value: '' },
@@ -184,7 +185,10 @@ describe('createHandleSubmit', () => {
     handler({});
 
     expect(stopDefault).toHaveBeenCalled();
-    expect(fetchFn).toHaveBeenCalledWith('https://example.com');
+    expect(fetchFn).toHaveBeenCalledWith(
+      expect.anything(),
+      'https://example.com'
+    );
   });
 
   it('returns undefined after handling submit', () => {

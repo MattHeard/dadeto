@@ -49,7 +49,8 @@ export function getEncodeBase64(btoa, encodeURIComponentFn) {
 
 /**
  * @typedef {object} BlogDataDependencies
- * @property {typeof fetch} fetch - Fetch implementation used to retrieve blog data.
+ * @property {(permission: import('../../../types/allow-effects').AllowEffects, input: string, init?: object) => Promise<Response>} fetch - Permission-aware fetch implementation used to retrieve blog data.
+ * @property {import('../../../types/allow-effects').AllowEffectsBoundary} bindEffectBoundary Runtime permission boundary.
  * @property {BlogDataLoggers} loggers - Logger bundle injected by the entry layer.
  * @property {Storage | null | undefined} [storage] - Optional storage implementation for permanent state.
  * @property {import('./storageLens.js').StorageLens<BlogStateRecord> | null} [permanentLens] - Optional lens for permanent storage.
@@ -57,7 +58,8 @@ export function getEncodeBase64(btoa, encodeURIComponentFn) {
 
 /**
  * @typedef {object} NormalizedBlogDataDependencies
- * @property {typeof fetch} fetch - Fetch implementation used to retrieve blog data.
+ * @property {(permission: import('../../../types/allow-effects').AllowEffects, input: string, init?: object) => Promise<Response>} fetch - Permission-aware fetch implementation used to retrieve blog data.
+ * @property {import('../../../types/allow-effects').AllowEffectsBoundary} bindEffectBoundary Runtime permission boundary.
  * @property {{
  *   logInfo: BlogLogFn,
  *   logError: BlogLogFn,
@@ -201,7 +203,7 @@ function ensureActiveFetchPromise(maybePromise) {
  * @returns {Promise<unknown>} Promise resolving when fetch completes.
  */
 export function fetchAndCacheBlogData(state, dependencies) {
-  const { fetch, loggers } = dependencies;
+  const { fetch, bindEffectBoundary, loggers } = dependencies;
   const { logInfo, logError } = loggers;
 
   // Prevent multiple simultaneous fetches
@@ -216,7 +218,9 @@ export function fetchAndCacheBlogData(state, dependencies) {
   state.blogStatus = BLOG_STATUS.LOADING;
   state.blogError = null;
 
-  const fetchPromise = fetch(blogUrl)
+  const fetchPromise = bindEffectBoundary(permission =>
+    fetch(permission, blogUrl)
+  )
     .then(response => {
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -528,9 +532,16 @@ function createWarningLogger(loggers) {
 function normalizeDependencies(bundle) {
   ensureBundleObject(bundle);
 
-  const { fetch: fetchImpl, loggers, storage, permanentLens } = bundle;
+  const {
+    fetch: fetchImpl,
+    bindEffectBoundary,
+    loggers,
+    storage,
+    permanentLens,
+  } = bundle;
 
   ensureFetchFunction(fetchImpl);
+  ensureEffectBoundary(bindEffectBoundary);
   ensureLoggersObject(loggers);
 
   const normalizedLoggers = createNormalizedLoggers(loggers);
@@ -543,10 +554,24 @@ function normalizeDependencies(bundle) {
 
   return {
     fetch: fetchImpl,
+    bindEffectBoundary,
     loggers: normalizedLoggers,
     storage: normalizedStorage,
     permanentLens: finalPermanentLens,
   };
+}
+
+/**
+ * Ensure the injected effect boundary is callable.
+ * @param {unknown} boundary Candidate runtime permission boundary.
+ * @returns {asserts boundary is import('../../../types/allow-effects').AllowEffectsBoundary} Validated boundary.
+ */
+function ensureEffectBoundary(boundary) {
+  if (typeof boundary !== 'function') {
+    throw new TypeError(
+      'createBlogDataController requires bindEffectBoundary to be provided as a function.'
+    );
+  }
 }
 
 /**

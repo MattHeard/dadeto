@@ -14,7 +14,7 @@ afterEach(async () => {
 describe('gcp simulator coverage paths', () => {
   it('requires an external effects boundary when called without options', async () => {
     await expect(createCoreSimulator()).rejects.toThrow(
-      'bindEffectBoundary must be a function'
+      'bindEffectBoundary must be provided'
     );
   });
 

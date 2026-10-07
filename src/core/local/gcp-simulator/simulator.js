@@ -78,7 +78,7 @@ const LOCAL_ID_TOKEN = 'local-admin-token';
  *   bucketName?: string,
  *   projectId?: string,
  *   publicDir?: string,
- *   bindEffectBoundary?: (handler: (permission: import('../../../../types/allow-effects').AllowEffects) => Promise<unknown>) => Promise<unknown>,
+ *   bindEffectBoundary?: import('../../../../types/allow-effects').AllowEffectsBoundary,
  * }} [options] Simulator options.
  * @returns {Promise<object>} Simulator instance.
  */
@@ -107,7 +107,7 @@ export async function createLocalGcpSimulator(options = {}) {
  *   bucketName: string,
  *   projectId: string,
  *   publicDir: string,
- *   bindEffectBoundary?: (handler: (permission: import('../../../../types/allow-effects').AllowEffects) => Promise<unknown>) => Promise<unknown>,
+ *   bindEffectBoundary?: import('../../../../types/allow-effects').AllowEffectsBoundary,
  * }} config Simulator configuration.
  * @returns {Promise<object>} Simulator instance.
  */
@@ -331,12 +331,19 @@ function buildSimulatorApi(state) {
  *   bucketName: string,
  *   projectId: string,
  *   publicDir: string,
- *   bindEffectBoundary?: (handler: (permission: import('../../../../types/allow-effects').AllowEffects) => Promise<unknown>) => Promise<unknown>,
+ *   bindEffectBoundary?: import('../../../../types/allow-effects').AllowEffectsBoundary,
  * }} config Simulator configuration.
  * @returns {Promise<object>} Simulator state.
  */
 async function buildSimulatorState(config) {
   const { baseUrl, bucketName, projectId, publicDir } = config;
+  if (typeof config.bindEffectBoundary !== 'function') {
+    throw new TypeError('bindEffectBoundary must be provided');
+  }
+  const bindEffectBoundary =
+    /** @type {import('../../../../types/allow-effects').AllowEffectsBoundary} */ (
+      config.bindEffectBoundary
+    );
   const storageRoot = await createStorageRoot();
   const storage = createStorage(storageRoot);
   const fieldValue = createFakeFieldValue();
@@ -354,7 +361,15 @@ async function buildSimulatorState(config) {
   });
   const db = createDb(dispatchCommittedWrites);
   dbContext.db = db;
-  const fetchFn = createLocalFetchStub();
+  const localFetch = createLocalFetchStub();
+  const fetchFn = (
+    /** @type {import('../../../../types/allow-effects').AllowEffects} */ permission,
+    /** @type {string} */ input,
+    /** @type {object | undefined} */ init
+  ) => {
+    void permission;
+    return localFetch(input, init);
+  };
   const renderConfig = {
     db: /** @type {Parameters<typeof createRenderContents>[0]['db']} */ (
       /** @type {unknown} */ (db)
@@ -365,12 +380,12 @@ async function buildSimulatorState(config) {
     bucketName,
     objectPrefix: '',
     projectId,
-    bindEffectBoundary: config.bindEffectBoundary,
+    bindEffectBoundary,
     effectFetchFn: (
       /** @type {import('../../../../types/allow-effects').AllowEffects} */ permission,
       /** @type {string} */ url,
       /** @type {object | undefined} */ init
-    ) => fetchFn(url, init),
+    ) => fetchFn(permission, url, init),
   };
 
   const renderContents = createRenderContents(
@@ -397,6 +412,7 @@ async function buildSimulatorState(config) {
     db,
     storage,
     fetchFn,
+    bindEffectBoundary,
     projectId,
     baseUrl,
     bucketName,
@@ -663,7 +679,7 @@ function createSimulatorAuthVerifiers() {
 
 /**
  * Create generate-stats dependencies for the simulator.
- * @param {{ db: unknown, storage: unknown, fetchFn: (...args: any[]) => any, projectId: string, baseUrl: string, bucketName: string, verifyIdToken: (...args: any[]) => any }} options Config dependencies.
+ * @param {{ db: unknown, storage: unknown, fetchFn: (permission: import('../../../../types/allow-effects').AllowEffects, ...args: any[]) => any, bindEffectBoundary: import('../../../../types/allow-effects').AllowEffectsBoundary, projectId: string, baseUrl: string, bucketName: string, verifyIdToken: (...args: any[]) => any }} options Config dependencies.
  * @returns {object} Generate stats config.
  */
 function createGenerateStatsConfig(options) {
@@ -671,6 +687,7 @@ function createGenerateStatsConfig(options) {
     db,
     storage,
     fetchFn,
+    bindEffectBoundary,
     projectId,
     baseUrl,
     bucketName,
@@ -681,6 +698,11 @@ function createGenerateStatsConfig(options) {
     auth: { verifyIdToken },
     storage,
     fetchFn,
+    effectFetchFn: (
+      /** @type {import('../../../../types/allow-effects').AllowEffects} */ permission,
+      /** @type {[string, object?]} */ ...args
+    ) => fetchFn(permission, ...args),
+    bindEffectBoundary,
     env: {
       GOOGLE_CLOUD_PROJECT: projectId,
       GCLOUD_PROJECT: projectId,

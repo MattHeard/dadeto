@@ -47,10 +47,15 @@ function searchMessage(result) {
 
 /**
  * Create an injectable rental page controller.
- * @param {{documentObj: Document, fetchFn: typeof fetch, readValues: (form: HTMLFormElement) => Record<string, string>}} deps Browser adapters.
+ * @param {{documentObj: Document, fetchFn: (permission: import('../../../types/allow-effects').AllowEffects, input: string, init?: object) => Promise<Response>, bindEffectBoundary: import('../../../types/allow-effects').AllowEffectsBoundary, readValues: (form: HTMLFormElement) => Record<string, string>}} deps Browser adapters.
  * @returns {{start: () => void, renderSearchState: (result: Record<string, any> | null | undefined) => void}} Page controller.
  */
-export function createRentalSearchHandle({ documentObj, fetchFn, readValues }) {
+export function createRentalSearchHandle({
+  documentObj,
+  fetchFn,
+  bindEffectBoundary,
+  readValues,
+}) {
   const form = /** @type {HTMLFormElement} */ (
     documentObj.querySelector('#rental-search-form')
   );
@@ -60,7 +65,9 @@ export function createRentalSearchHandle({ documentObj, fetchFn, readValues }) {
   const button = /** @type {HTMLButtonElement} */ (
     form.querySelector('button[type="submit"]')
   );
-  const endpoint = fetchFn('/config.json')
+  const endpoint = bindEffectBoundary(permission =>
+    fetchFn(permission, '/config.json')
+  )
     .then(response => response.json())
     .then(
       config =>
@@ -90,11 +97,14 @@ export function createRentalSearchHandle({ documentObj, fetchFn, readValues }) {
     button.disabled = true;
     status.textContent = 'Searching…';
     try {
-      const response = await fetchFn(/** @type {string} */ (await endpoint), {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(buildSearchRequest(readValues(form))),
-      });
+      const searchEndpoint = /** @type {string} */ (await endpoint);
+      const response = await bindEffectBoundary(permission =>
+        fetchFn(permission, searchEndpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(buildSearchRequest(readValues(form))),
+        })
+      );
       const result = await response.json();
       if (!response.ok) {
         throw new Error(result.reason ?? `HTTP ${response.status}`);

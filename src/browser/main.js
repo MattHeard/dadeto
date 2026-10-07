@@ -8,7 +8,7 @@ initializeStaticJsonlTables(document);
 const handle = createMainHandle({
   documentObj: document,
   windowObj: window,
-  fetchFn: globalThis.fetch,
+  fetchFn: createEffectFetchFn(globalThis.fetch.bind(globalThis)),
   bindEffectBoundary,
   effectFetchFn: createEffectFetchFn((input, init) =>
     globalThis.fetch(input, init)

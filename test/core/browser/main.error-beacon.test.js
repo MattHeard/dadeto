@@ -11,6 +11,7 @@ const permission = Object.freeze({});
 const createMainHandle = dependencies =>
   createMainHandleCore({
     ...dependencies,
+    fetchFn: (permission, ...args) => dependencies.fetchFn(...args),
     bindEffectBoundary: handler => handler(permission),
     effectFetchFn: (_permission, ...args) => dependencies.fetchFn(...args),
   });

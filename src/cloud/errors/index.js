@@ -7,7 +7,7 @@ const { handle } = createErrorBeaconRun({
   cors,
   getEnvironmentVariables,
   console,
-  fetchFn: (...args) => globalThis.fetch(...args),
+  fetchFn: (permission, ...args) => globalThis.fetch(...args),
   bindEffectBoundary: handler => createEffectInvocationBoundary(handler)(),
   effectFetchFn: (permission, ...args) => globalThis.fetch(...args),
 });

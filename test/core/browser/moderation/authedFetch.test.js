@@ -3,6 +3,9 @@ import { createAuthedFetch } from '../../../../src/core/browser/moderation/authe
 
 describe('createAuthedFetch', () => {
   let originalHeaders;
+  const permission = Object.freeze({});
+  const bindEffectBoundary = handler => handler(permission);
+  const create = deps => createAuthedFetch({ bindEffectBoundary, ...deps });
 
   beforeEach(() => {
     originalHeaders = global.Headers;
@@ -14,7 +17,7 @@ describe('createAuthedFetch', () => {
 
   it('throws when getIdToken is not a function', () => {
     expect(() =>
-      createAuthedFetch({
+      create({
         getIdToken: null,
         fetchJson: jest.fn(),
       })
@@ -23,7 +26,7 @@ describe('createAuthedFetch', () => {
 
   it('throws when fetchJson is not a function', () => {
     expect(() =>
-      createAuthedFetch({
+      create({
         getIdToken: jest.fn(),
         fetchJson: null,
       })
@@ -37,7 +40,7 @@ describe('createAuthedFetch', () => {
       status: 200,
       json: () => ({ ok: true }),
     });
-    const authedFetch = createAuthedFetch({ getIdToken, fetchJson });
+    const authedFetch = create({ getIdToken, fetchJson });
 
     const result = await authedFetch('https://example.com/api', {
       method: 'POST',
@@ -45,15 +48,19 @@ describe('createAuthedFetch', () => {
       body: 'payload',
     });
 
-    expect(fetchJson).toHaveBeenCalledWith('https://example.com/api', {
-      method: 'POST',
-      body: 'payload',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Test': '1',
-        Authorization: 'Bearer abc',
-      },
-    });
+    expect(fetchJson).toHaveBeenCalledWith(
+      permission,
+      'https://example.com/api',
+      {
+        method: 'POST',
+        body: 'payload',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Test': '1',
+          Authorization: 'Bearer abc',
+        },
+      }
+    );
     expect(result).toEqual({ ok: true });
   });
 
@@ -64,13 +71,13 @@ describe('createAuthedFetch', () => {
       status: 200,
       json: () => ({ done: true }),
     });
-    const authedFetch = createAuthedFetch({ getIdToken, fetchJson });
+    const authedFetch = create({ getIdToken, fetchJson });
 
     await authedFetch('https://example.com', {
       headers: { 'Content-Type': 'text/plain' },
     });
 
-    expect(fetchJson).toHaveBeenCalledWith('https://example.com', {
+    expect(fetchJson).toHaveBeenCalledWith(permission, 'https://example.com', {
       headers: {
         'Content-Type': 'text/plain',
         Authorization: 'Bearer override',
@@ -81,7 +88,7 @@ describe('createAuthedFetch', () => {
   it('throws when no token is available', async () => {
     const getIdToken = jest.fn().mockResolvedValue(null);
     const fetchJson = jest.fn();
-    const authedFetch = createAuthedFetch({ getIdToken, fetchJson });
+    const authedFetch = create({ getIdToken, fetchJson });
 
     await expect(authedFetch('https://example.com')).rejects.toThrow(
       'not signed in'
@@ -92,7 +99,7 @@ describe('createAuthedFetch', () => {
   it('propagates fetch errors', async () => {
     const getIdToken = jest.fn().mockResolvedValue('token');
     const fetchJson = jest.fn().mockRejectedValue(new Error('network down'));
-    const authedFetch = createAuthedFetch({ getIdToken, fetchJson });
+    const authedFetch = create({ getIdToken, fetchJson });
 
     await expect(authedFetch('https://example.com')).rejects.toThrow(
       'network down'
@@ -118,19 +125,23 @@ describe('createAuthedFetch', () => {
       status: 200,
       json: () => ({ ok: true }),
     });
-    const authedFetch = createAuthedFetch({ getIdToken, fetchJson });
+    const authedFetch = create({ getIdToken, fetchJson });
 
     const headers = new MockHeaders({ Accept: 'application/json' });
 
     await authedFetch('https://example.com/headers', { headers });
 
-    expect(fetchJson).toHaveBeenCalledWith('https://example.com/headers', {
-      headers: {
-        'Content-Type': 'application/json',
-        Accept: 'application/json',
-        Authorization: 'Bearer header-token',
-      },
-    });
+    expect(fetchJson).toHaveBeenCalledWith(
+      permission,
+      'https://example.com/headers',
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
+          Authorization: 'Bearer header-token',
+        },
+      }
+    );
   });
 
   it('handles environments where Headers is undefined', async () => {
@@ -142,13 +153,14 @@ describe('createAuthedFetch', () => {
       status: 200,
       json: () => ({ ok: true }),
     });
-    const authedFetch = createAuthedFetch({ getIdToken, fetchJson });
+    const authedFetch = create({ getIdToken, fetchJson });
 
     await authedFetch('https://example.com/missing-headers', {
       headers: { 'X-Test': 'ok' },
     });
 
     expect(fetchJson).toHaveBeenCalledWith(
+      permission,
       'https://example.com/missing-headers',
       expect.objectContaining({
         headers: {
@@ -164,7 +176,7 @@ describe('createAuthedFetch', () => {
     const getIdToken = jest.fn().mockResolvedValue('raw');
     const response = { ok: true, status: 204 };
     const fetchJson = jest.fn().mockResolvedValue(response);
-    const authedFetch = createAuthedFetch({ getIdToken, fetchJson });
+    const authedFetch = create({ getIdToken, fetchJson });
 
     const result = await authedFetch('https://example.com/raw');
 
@@ -175,7 +187,7 @@ describe('createAuthedFetch', () => {
     const getIdToken = jest.fn().mockResolvedValue('raw');
     const response = { payload: { done: true } };
     const fetchJson = jest.fn().mockResolvedValue(response);
-    const authedFetch = createAuthedFetch({ getIdToken, fetchJson });
+    const authedFetch = create({ getIdToken, fetchJson });
 
     const result = await authedFetch('https://example.com/no-ok');
 
@@ -185,7 +197,7 @@ describe('createAuthedFetch', () => {
   it('returns null responses untouched', async () => {
     const getIdToken = jest.fn().mockResolvedValue('raw');
     const fetchJson = jest.fn().mockResolvedValue(null);
-    const authedFetch = createAuthedFetch({ getIdToken, fetchJson });
+    const authedFetch = create({ getIdToken, fetchJson });
 
     await expect(authedFetch('https://example.com/raw')).resolves.toBeNull();
   });
@@ -193,7 +205,7 @@ describe('createAuthedFetch', () => {
   it('returns primitive responses untouched', async () => {
     const getIdToken = jest.fn().mockResolvedValue('raw');
     const fetchJson = jest.fn().mockResolvedValue('plain response');
-    const authedFetch = createAuthedFetch({ getIdToken, fetchJson });
+    const authedFetch = create({ getIdToken, fetchJson });
 
     await expect(authedFetch('https://example.com/raw')).resolves.toBe(
       'plain response'
@@ -207,7 +219,7 @@ describe('createAuthedFetch', () => {
       json: jest.fn().mockReturnValue({ shouldNotParse: true }),
     });
     const fetchJson = jest.fn().mockResolvedValue(response);
-    const authedFetch = createAuthedFetch({ getIdToken, fetchJson });
+    const authedFetch = create({ getIdToken, fetchJson });
 
     await expect(authedFetch('https://example.com/raw')).resolves.toBe(
       response
@@ -222,7 +234,7 @@ describe('createAuthedFetch', () => {
       status: 403,
       json: jest.fn(),
     });
-    const authedFetch = createAuthedFetch({ getIdToken, fetchJson });
+    const authedFetch = create({ getIdToken, fetchJson });
 
     await expect(authedFetch('https://example.com')).rejects.toMatchObject({
       message: 'HTTP 403',

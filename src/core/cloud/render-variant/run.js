@@ -86,6 +86,7 @@ export function runRenderVariant(deps) {
     renderStateOptions.Storage = Storage;
     renderStateOptions.getEnvironmentVariables = getEnvironmentVariables;
     renderStateOptions.fetchFn = fetchFn;
+    renderStateOptions.bindEffectBoundary = bindEffectBoundary;
     renderStateOptions.resolveBucketName = resolveStaticBucketName;
     renderStateOptions.resolveObjectPrefix = resolveStaticObjectPrefix;
     renderStateOptions.entrypointKind = 'variant';

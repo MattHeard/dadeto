@@ -4,6 +4,9 @@ import {
   parseStaticConfigResponse,
 } from '../../../src/core/browser/load-static-config-core.js';
 
+const permission = Object.freeze({});
+const bindEffectBoundary = handler => handler(permission);
+
 describe('parseStaticConfigResponse', () => {
   it.each([null, 0, undefined])(
     'preserves selected status getter result %p',
@@ -57,12 +60,18 @@ describe('createLoadStaticConfig', () => {
     );
   });
 
+  it('requires an effect boundary', () => {
+    expect(() =>
+      createLoadStaticConfig({ fetchFn: jest.fn(), bindEffectBoundary: null })
+    ).toThrow(new TypeError('bindEffectBoundary must be a function'));
+  });
+
   it('fetches config with no-store and memoizes the parsed payload', async () => {
     const fetchFn = jest.fn().mockResolvedValue({
       ok: true,
       json: jest.fn().mockResolvedValue({ mode: 'test' }),
     });
-    const load = createLoadStaticConfig({ fetchFn });
+    const load = createLoadStaticConfig({ fetchFn, bindEffectBoundary });
 
     const first = await load();
     const second = await load();
@@ -70,14 +79,16 @@ describe('createLoadStaticConfig', () => {
     expect(first).toEqual({ mode: 'test' });
     expect(second).toBe(first);
     expect(fetchFn).toHaveBeenCalledTimes(1);
-    expect(fetchFn).toHaveBeenCalledWith('/config.json', { cache: 'no-store' });
+    expect(fetchFn).toHaveBeenCalledWith(permission, '/config.json', {
+      cache: 'no-store',
+    });
   });
 
   it('warns and returns an empty object when fetching fails', async () => {
     const error = new Error('offline');
     const fetchFn = jest.fn().mockRejectedValue(error);
     const warn = jest.fn();
-    const load = createLoadStaticConfig({ fetchFn, warn });
+    const load = createLoadStaticConfig({ fetchFn, bindEffectBoundary, warn });
 
     await expect(load()).resolves.toEqual({});
     expect(warn).toHaveBeenCalledWith('Failed to load static config', error);
@@ -88,7 +99,7 @@ describe('createLoadStaticConfig', () => {
       ok: false,
       status: 500,
     });
-    const load = createLoadStaticConfig({ fetchFn });
+    const load = createLoadStaticConfig({ fetchFn, bindEffectBoundary });
 
     await expect(load()).resolves.toEqual({});
   });

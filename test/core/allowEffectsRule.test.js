@@ -190,3 +190,7 @@ test.each(['const longerName = 1;', 'function different() {}'])(
     ).toContain('compiler');
   }
 );
+
+test('ignores import.meta identifiers that have no compiler expression node', () => {
+  expect(findings('const meta = import.meta.url;')).toEqual([]);
+});

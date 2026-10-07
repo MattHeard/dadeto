@@ -40,6 +40,10 @@ async function bindTestEffect(handler) {
 function withEffectDependencies(options = {}) {
   return {
     ...options,
+    fetchFn:
+      typeof options.fetchFn === 'function'
+        ? (permission, ...args) => options.fetchFn(...args)
+        : options.fetchFn,
     bindEffectBoundary: options.bindEffectBoundary ?? bindTestEffect,
     effectFetchFn:
       options.effectFetchFn ??
@@ -845,7 +849,7 @@ describe('resolveHeaderValue', () => {
 });
 
 describe('createInvalidatePaths', () => {
-  it('requires a fresh permission for each CDN POST, not the metadata GET', async () => {
+  it('requires a permission for the metadata GET and each CDN POST', async () => {
     const fetchFn = jest.fn().mockResolvedValue({
       ok: true,
       json: async () => ({ [ACCESS_TOKEN_KEY]: 'token' }),
@@ -859,7 +863,7 @@ describe('createInvalidatePaths', () => {
       permissions.push(permission);
       return handler(permission);
     });
-    const invalidatePaths = createInvalidatePaths({
+    const invalidatePaths = createInvalidatePathsCore({
       fetchFn,
       bindEffectBoundary,
       effectFetchFn,
@@ -870,15 +874,16 @@ describe('createInvalidatePaths', () => {
 
     expect(fetchFn).toHaveBeenCalledTimes(1);
     expect(fetchFn).toHaveBeenCalledWith(
+      permissions[0],
       'http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/token',
       { headers: { 'Metadata-Flavor': 'Google' } }
     );
-    expect(bindEffectBoundary).toHaveBeenCalledTimes(2);
+    expect(bindEffectBoundary).toHaveBeenCalledTimes(3);
     expect(effectFetchFn).toHaveBeenCalledTimes(2);
     expect(effectFetchFn.mock.calls.map(([permission]) => permission)).toEqual(
-      permissions
+      permissions.slice(1)
     );
-    expect(new Set(permissions).size).toBe(2);
+    expect(new Set(permissions).size).toBe(3);
     permissions.forEach(permission =>
       expect(Object.isFrozen(permission)).toBe(true)
     );

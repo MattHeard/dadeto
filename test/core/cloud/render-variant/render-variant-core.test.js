@@ -31,6 +31,10 @@ const ACCESS_TOKEN_KEY = 'access_token';
 const createRenderVariant = dependencies =>
   createRenderVariantCore({
     ...dependencies,
+    fetchFn:
+      typeof dependencies.fetchFn === 'function'
+        ? (permission, ...args) => dependencies.fetchFn(...args)
+        : dependencies.fetchFn,
     bindEffectBoundary: handler => handler(createAllowEffects()),
     effectFetchFn: (permission, url, init) => dependencies.fetchFn(url, init),
   });
@@ -50,7 +54,7 @@ describe('createInvalidatePaths', () => {
     expect(fetchFn).not.toHaveBeenCalled();
   });
 
-  it('mints a distinct permission per purge and leaves metadata reads unpermitted', async () => {
+  it('mints a permission for metadata reads and each purge', async () => {
     const fetchFn = jest.fn().mockResolvedValueOnce({
       ok: true,
       json: async () => ({ [ACCESS_TOKEN_KEY]: 'token' }),
@@ -66,7 +70,8 @@ describe('createInvalidatePaths', () => {
     await invalidatePaths(['/p/1a.html', '/p/2a.html']);
 
     expect(fetchFn).toHaveBeenCalledTimes(1);
-    expect(fetchFn.mock.calls[0]).toHaveLength(2);
+    const [metadataPermission] = fetchFn.mock.calls[0];
+    expect(Object.isFrozen(metadataPermission)).toBe(true);
     expect(effectFetchFn).toHaveBeenCalledTimes(2);
     const [firstPermission, secondPermission] = effectFetchFn.mock.calls.map(
       ([permission]) => permission
@@ -107,7 +112,7 @@ describe('createInvalidatePaths', () => {
       'boom'
     );
     expect(fetchFn).toHaveBeenCalledTimes(2);
-    expect(fetchFn.mock.calls[0]).toHaveLength(2);
+    expect(Object.isFrozen(fetchFn.mock.calls[0][0])).toBe(true);
     expect(effectFetchFn).toHaveBeenCalledTimes(1);
     expect(Object.isFrozen(effectFetchFn.mock.calls[0][0])).toBe(true);
   });

@@ -4,7 +4,7 @@ import { bindEffectBoundary, createEffectFetchFn } from './allow-effects.js';
 
 const handle = createModerateHandle({
   documentObj: document,
-  fetchFn: (...args) => globalThis.fetch(...args),
+  fetchFn: createEffectFetchFn((...args) => globalThis.fetch(...args)),
   effectFetchFn: createEffectFetchFn((...args) => globalThis.fetch(...args)),
   bindEffectBoundary,
   sessionStorageObj: sessionStorage,

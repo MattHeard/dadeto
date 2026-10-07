@@ -34,7 +34,7 @@ const handle = createGenerateStatsHandle({
   getEnvironmentVariables: () => environment,
   initializeApp,
   verifySchedulerRequest,
-  fetchFn,
+  fetchFn: (permission, ...args) => fetchFn(...args),
   effectFetchFn: (permission, ...args) => fetchFn(...args),
   bindEffectBoundary: handler => createEffectInvocationBoundary(handler)(),
   crypto,

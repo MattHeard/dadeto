@@ -24,7 +24,7 @@ import * as renderSupport from '../render-support.js';
  *   createFirebaseAppManager: (initializeApp: () => void) => {ensureFirebaseApp: () => void},
  *   getFirestoreInstance: (options?: {environment: Record<string, string|undefined>}) => unknown,
  *   ADMIN_UID: string,
- *   fetchFn: typeof globalThis.fetch,
+ *   fetchFn: (permission: AllowEffects, ...args: Parameters<typeof globalThis.fetch>) => ReturnType<typeof globalThis.fetch>,
  *   bindEffectBoundary: Parameters<typeof createRenderContents>[0]['bindEffectBoundary'],
  *   effectFetchFn: Parameters<typeof createRenderContents>[0]['effectFetchFn'],
  *   crypto: {randomUUID: () => string},

@@ -18,9 +18,11 @@ describe('BLOG_STATUS runtime values', () => {
       logError: jest.fn(),
       logWarning: jest.fn(),
     };
+    const bindEffectBoundary = handler => handler(Object.freeze({}));
 
     const promise = fetchAndCacheBlogData(state, {
       fetch: successFetch,
+      bindEffectBoundary,
       loggers,
     });
     expect(valid).toContain(state.blogStatus);
@@ -36,6 +38,7 @@ describe('BLOG_STATUS runtime values', () => {
     const failFetch = jest.fn(() => Promise.reject(new Error('boom')));
     await fetchAndCacheBlogData(failState, {
       fetch: failFetch,
+      bindEffectBoundary,
       loggers,
     });
     expect(valid).toContain(failState.blogStatus);

@@ -71,11 +71,19 @@ describe('cloud generate-stats entrypoint', () => {
         getFirestore,
         getEnvironmentVariables: expect.any(Function),
         initializeApp: expect.any(Function),
-        fetchFn,
+        fetchFn: expect.any(Function),
+        effectFetchFn: expect.any(Function),
+        bindEffectBoundary: expect.any(Function),
         crypto,
         verifySchedulerRequest: expect.any(Function),
       })
     );
+    const coreDeps = createGenerateStatsHandle.mock.calls[0][0];
+    const permission = Object.freeze({});
+    coreDeps.fetchFn(permission, 'https://example.com', { method: 'GET' });
+    expect(fetchFn).toHaveBeenCalledWith('https://example.com', {
+      method: 'GET',
+    });
     expect(module.handle).toBe(handle);
   });
 });

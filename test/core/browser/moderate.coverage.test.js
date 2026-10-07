@@ -35,7 +35,9 @@ jest.unstable_mockModule(
       if (!mockToken && !mockAllowNoToken) throw new Error('not signed in');
       const override = mockAuthedFetch(url, init);
       if (url === '/submit') return override;
-      const response = await deps.fetchJson(url, init);
+      const response = await deps.bindEffectBoundary(permission =>
+        deps.fetchJson(permission, url, init)
+      );
       return response.json();
     },
   })
@@ -123,6 +125,11 @@ const createModerateHandle = (dependencies = {}) =>
     ...dependencies,
     bindEffectBoundary:
       dependencies.bindEffectBoundary ?? (handler => handler(permission)),
+    fetchFn:
+      dependencies.fetchFn === undefined
+        ? undefined
+        : (_permission, ...args) =>
+            (dependencies.fetchFn ?? mockFetch)(...args),
     effectFetchFn:
       dependencies.effectFetchFn ??
       (async (_permission, url, init) => {
@@ -409,7 +416,7 @@ describe('moderate core', () => {
       globalObject: {},
     })();
     await expect(authedFetch('/api', { method: 'POST' })).resolves.toEqual({});
-    await mockLoadDeps.fetchFn('/config', {});
+    await mockLoadDeps.fetchFn(permission, '/config', {});
     const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
     mockLoadDeps.warn('warning', new Error('warning'));
     expect(mockFetch).toHaveBeenCalledWith('/config', {});
@@ -638,7 +645,6 @@ describe('moderate core', () => {
     mockToken = 'token';
     createModerateHandle({
       documentObj: mockDocument,
-      fetchFn: mockFetch,
       effectFetchFn: async () => ({ ok: false, status: 503 }),
       sessionStorageObj: {},
       globalObject: {},

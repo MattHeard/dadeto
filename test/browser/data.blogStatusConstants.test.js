@@ -2,6 +2,7 @@ import { describe, it, expect, jest } from '@jest/globals';
 import { fetchAndCacheBlogData } from '../../src/core/browser/data.js';
 
 describe('BLOG_STATUS constants integration', () => {
+  const bindEffectBoundary = handler => handler(Object.freeze({}));
   it('fetchAndCacheBlogData transitions status from loading to loaded', async () => {
     const state = {
       blog: null,
@@ -20,6 +21,7 @@ describe('BLOG_STATUS constants integration', () => {
 
     const promise = fetchAndCacheBlogData(state, {
       fetch: fetchFn,
+      bindEffectBoundary,
       loggers,
     });
     expect(state.blogStatus).toBe('loading');
@@ -44,6 +46,7 @@ describe('BLOG_STATUS constants integration', () => {
     };
     await fetchAndCacheBlogData(state, {
       fetch: fetchFn,
+      bindEffectBoundary,
       loggers,
     });
     expect(state.blogStatus).toBe('error');
@@ -67,6 +70,7 @@ describe('BLOG_STATUS constants integration', () => {
 
     const promise = fetchAndCacheBlogData(state, {
       fetch: fetchFn,
+      bindEffectBoundary,
       loggers,
     });
     expect(state.blogStatus).toBe('loading');

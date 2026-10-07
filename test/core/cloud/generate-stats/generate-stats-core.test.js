@@ -20,6 +20,7 @@ const permission = Object.freeze({});
 const createGenerateStatsCore = dependencies =>
   createGenerateStatsCoreCore({
     ...dependencies,
+    fetchFn: (permission, ...args) => dependencies.fetchFn(...args),
     bindEffectBoundary:
       dependencies.bindEffectBoundary ?? (handler => handler(permission)),
     effectFetchFn:

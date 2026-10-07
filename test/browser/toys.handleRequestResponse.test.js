@@ -48,6 +48,7 @@ describe('handleRequestResponse', () => {
 
     mockEnv = {
       fetchFn: jest.fn().mockResolvedValue(mockResponse),
+      bindEffectBoundary: handler => handler(Object.freeze({})),
       dom: mockDom,
       errorFn: jest.fn(),
     };
@@ -71,7 +72,7 @@ describe('handleRequestResponse', () => {
     await new Promise(process.nextTick);
 
     // Assert
-    expect(mockEnv.fetchFn).toHaveBeenCalledWith(url);
+    expect(mockEnv.fetchFn).toHaveBeenCalledWith(expect.anything(), url);
   });
 
   it('should process the response text and update the DOM', async () => {

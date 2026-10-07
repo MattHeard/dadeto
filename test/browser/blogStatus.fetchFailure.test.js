@@ -19,7 +19,11 @@ describe('BLOG_STATUS fetch failure handling', () => {
       logWarning: jest.fn(),
     };
 
-    await fetchAndCacheBlogData(state, { fetch: fetchFn, loggers });
+    await fetchAndCacheBlogData(state, {
+      fetch: (_permission, ...args) => fetchFn(...args),
+      bindEffectBoundary: handler => handler(Object.freeze({})),
+      loggers,
+    });
 
     expect(state.blogStatus).toBe('error');
     expect(loggers.logError).toHaveBeenCalledWith(

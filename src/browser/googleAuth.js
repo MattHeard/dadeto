@@ -16,12 +16,13 @@ import {
   refreshCachedAuthorUuid,
 } from '../core/browser/google-auth-cache.js';
 import { getIdToken } from '../core/browser/browser-core.js';
-import { bindEffectBoundary } from './allow-effects.js';
+import { bindEffectBoundary, createEffectFetchFn } from './allow-effects.js';
 import { createEffectStorage } from './effect-adapters.js';
 const effectStorage = createEffectStorage(sessionStorage);
 setupFirebase(initializeApp);
 const loadStaticConfig = createLoadStaticConfig({
-  fetchFn: globalThis.fetch.bind(globalThis),
+  fetchFn: createEffectFetchFn(globalThis.fetch.bind(globalThis)),
+  bindEffectBoundary,
   warn: console.warn.bind(console),
 });
 const handle = installAuthorUuidCaching(
@@ -35,7 +36,7 @@ const handle = installAuthorUuidCaching(
   }),
   {
     storage: effectStorage,
-    fetchFn: globalThis.fetch.bind(globalThis),
+    fetchFn: createEffectFetchFn(globalThis.fetch.bind(globalThis)),
     bindEffectBoundary,
     getAuthorUuidUrl: () =>
       loadStaticConfig().then(config => config.getAuthorUuidUrl || ''),
@@ -61,7 +62,7 @@ export const getAuthorUuid = () => getCachedAuthorUuid(sessionStorage);
 export const refreshAuthorUuid = () =>
   refreshCachedAuthorUuid({
     storage: effectStorage,
-    fetchFn: globalThis.fetch.bind(globalThis),
+    fetchFn: createEffectFetchFn(globalThis.fetch.bind(globalThis)),
     bindEffectBoundary,
     getAuthorUuidUrl: () =>
       loadStaticConfig().then(config => config.getAuthorUuidUrl || ''),

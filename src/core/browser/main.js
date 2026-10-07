@@ -69,8 +69,8 @@ function getConsoleErrorSink(consoleObj) {
  * @param {{
  *   documentObj: object,
  *   windowObj: object,
- *   fetchFn: (...args: Array<unknown>) => Promise<unknown>,
- *   bindEffectBoundary: (handler: (permission: import('../../../types/allow-effects').AllowEffects) => Promise<unknown>) => Promise<unknown>,
+ *   fetchFn: (permission: import('../../../types/allow-effects').AllowEffects, ...args: Array<unknown>) => Promise<unknown>,
+ *   bindEffectBoundary: import('../../../types/allow-effects').AllowEffectsBoundary,
  *   effectFetchFn: (permission: import('../../../types/allow-effects').AllowEffects, input: string, init?: object) => Promise<Response>,
  *   storageObj: object | null,
  * }} deps Browser dependencies.
@@ -113,6 +113,7 @@ export function createMainHandle({
 
     const createBlogDependencies = () => ({
       fetch: fetchFn,
+      bindEffectBoundary,
       loggers,
       storage: storageObj,
       memoryLens,
@@ -150,6 +151,8 @@ export function createMainHandle({
       createEnv,
       error: dom.logError,
       fetch: fetchFn,
+      bindEffectBoundary,
+      bindEffectBoundary,
       loggers,
       getUuid,
     };

@@ -10,8 +10,10 @@ import { whenOrDefault } from '../commonCore.js';
 
 /**
  * @typedef {object} LoadStaticConfigDependencies
- * @property {(input: string, init?: Record<string, unknown>) => Promise<StaticConfigResponse>} fetchFn
+ * @property {(permission: import('../../../types/allow-effects').AllowEffects, input: string, init?: Record<string, unknown>) => Promise<StaticConfigResponse>} fetchFn
  *   Fetch-like function used to retrieve the static configuration.
+ * @property {import('../../../types/allow-effects').AllowEffectsBoundary} bindEffectBoundary
+ *   Runtime-owned permission boundary for each request.
  * @property {(message: string, error?: unknown) => void} [warn]
  *   Optional logger invoked when the configuration fails to load.
  */
@@ -91,20 +93,32 @@ function getStatusFromResponse(response) {
  * @returns {() => Promise<Record<string, unknown>>} Static config loader.
  */
 export function createLoadStaticConfig(options) {
-  const { fetchFn, warn } = options ?? {};
+  const { fetchFn, bindEffectBoundary, warn } = options ?? {};
   ensureFetchFunction(fetchFn);
+  ensureEffectBoundary(bindEffectBoundary);
   const logWarn = resolveLogWarn(warn);
-  return createStaticConfigLoader(fetchFn, logWarn);
+  return createStaticConfigLoader(fetchFn, bindEffectBoundary, logWarn);
 }
 
 /**
  * Validate that the injected fetch helper is callable.
  * @param {unknown} fetchFn - Candidate fetch helper.
- * @returns {asserts fetchFn is (input: string, init?: Record<string, unknown>) => Promise<StaticConfigResponse>} Guarantees the helper is callable.
+ * @returns {asserts fetchFn is (permission: import('../../../types/allow-effects').AllowEffects, input: string, init?: Record<string, unknown>) => Promise<StaticConfigResponse>} Guarantees the helper is callable.
  */
 function ensureFetchFunction(fetchFn) {
   if (typeof fetchFn !== 'function') {
     throw new TypeError('fetchFn must be a function');
+  }
+}
+
+/**
+ * Validate the runtime-owned permission boundary.
+ * @param {unknown} bindEffectBoundary Candidate permission boundary.
+ * @returns {asserts bindEffectBoundary is import('../../../types/allow-effects').AllowEffectsBoundary} Validated boundary.
+ */
+function ensureEffectBoundary(bindEffectBoundary) {
+  if (typeof bindEffectBoundary !== 'function') {
+    throw new TypeError('bindEffectBoundary must be a function');
   }
 }
 
@@ -127,11 +141,12 @@ function resolveLogWarn(warn) {
 
 /**
  * Build a memoized loader that parses the remote static config once.
- * @param {(input: string, init?: Record<string, unknown>) => Promise<StaticConfigResponse>} fetchFn - Network helper that retrieves config.
+ * @param {(permission: import('../../../types/allow-effects').AllowEffects, input: string, init?: Record<string, unknown>) => Promise<StaticConfigResponse>} fetchFn - Network helper that retrieves config.
+ * @param {import('../../../types/allow-effects').AllowEffectsBoundary} bindEffectBoundary Runtime permission boundary.
  * @param {(message: string, error?: unknown) => void} logWarn - Logger used when loading fails.
  * @returns {() => Promise<Record<string, unknown>>} Loader that returns the cached payload.
  */
-function createStaticConfigLoader(fetchFn, logWarn) {
+function createStaticConfigLoader(fetchFn, bindEffectBoundary, logWarn) {
   /** @type {Promise<Record<string, unknown>> | null} */
   let configPromise = null;
 
@@ -150,7 +165,9 @@ function createStaticConfigLoader(fetchFn, logWarn) {
    * @returns {Promise<Record<string, unknown>>} Promise resolving to the parsed payload.
    */
   function createStaticConfigPromise() {
-    return fetchFn('/config.json', { cache: 'no-store' })
+    return bindEffectBoundary(permission =>
+      fetchFn(permission, '/config.json', { cache: 'no-store' })
+    )
       .then(parseStaticConfigResponse)
       .catch(handleStaticConfigError);
   }

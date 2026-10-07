@@ -58,7 +58,8 @@ function setup({
   };
   const handle = createRentalSearchHandle({
     documentObj,
-    fetchFn,
+    fetchFn: (_permission, ...args) => fetchFn(...args),
+    bindEffectBoundary: handler => handler(Object.freeze({})),
     readValues: () => values,
   });
   handle.start();

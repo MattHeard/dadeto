@@ -51,7 +51,12 @@ describe('google-auth-cache', () => {
       },
     };
     await expect(
-      fetchAuthorUuidFromApi(async () => response, '/author', 'token')
+      fetchAuthorUuidFromApi(
+        permission,
+        async () => response,
+        '/author',
+        'token'
+      )
     ).resolves.toBe('returned');
     expect(reads).toBe(3);
   });
@@ -59,6 +64,7 @@ describe('google-auth-cache', () => {
   it('normalizes asynchronous JSON failures without swallowing synchronous fetch throws', async () => {
     await expect(
       fetchAuthorUuidFromApi(
+        permission,
         async () => ({
           ok: true,
           json: async () => {
@@ -71,6 +77,7 @@ describe('google-auth-cache', () => {
     ).resolves.toBeNull();
     await expect(
       fetchAuthorUuidFromApi(
+        permission,
         () => {
           throw new Error('synchronous fetch');
         },
@@ -123,13 +130,13 @@ describe('google-auth-cache', () => {
   it('handles missing urls, bad responses, and valid payloads', async () => {
     const fetchFn = jest.fn();
     await expect(
-      fetchAuthorUuidFromApi(fetchFn, '', 'token')
+      fetchAuthorUuidFromApi(permission, fetchFn, '', 'token')
     ).resolves.toBeNull();
 
     const badResponseJson = jest.fn().mockResolvedValue({ uuid: 'ignored' });
     fetchFn.mockResolvedValueOnce({ ok: false, json: badResponseJson });
     await expect(
-      fetchAuthorUuidFromApi(fetchFn, '/author', 'token')
+      fetchAuthorUuidFromApi(permission, fetchFn, '/author', 'token')
     ).resolves.toBeNull();
     expect(badResponseJson).not.toHaveBeenCalled();
 
@@ -138,9 +145,9 @@ describe('google-auth-cache', () => {
       json: jest.fn().mockResolvedValue({ uuid: 'author-2' }),
     });
     await expect(
-      fetchAuthorUuidFromApi(fetchFn, '/author', 'token')
+      fetchAuthorUuidFromApi(permission, fetchFn, '/author', 'token')
     ).resolves.toBe('author-2');
-    expect(fetchFn).toHaveBeenLastCalledWith('/author', {
+    expect(fetchFn).toHaveBeenLastCalledWith(permission, '/author', {
       headers: { Authorization: 'Bearer token' },
     });
 
@@ -150,13 +157,13 @@ describe('google-auth-cache', () => {
         json: jest.fn().mockResolvedValue(payload),
       });
       await expect(
-        fetchAuthorUuidFromApi(fetchFn, '/author', 'token')
+        fetchAuthorUuidFromApi(permission, fetchFn, '/author', 'token')
       ).resolves.toBeNull();
     }
 
     fetchFn.mockRejectedValueOnce(new Error('network'));
     await expect(
-      fetchAuthorUuidFromApi(fetchFn, '/author', 'token')
+      fetchAuthorUuidFromApi(permission, fetchFn, '/author', 'token')
     ).resolves.toBeNull();
   });
 

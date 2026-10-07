@@ -76,8 +76,8 @@ const DEFAULT_PAGE_SIZE = 100;
  * @typedef {object} RenderOptions
  * @property {DbInstance} [db] Firestore-like instance used for lookup helpers.
  * @property {StorageInstance} [storage] Cloud storage-like instance.
- * @property {(input: string, init?: object) => Promise<FetchResponse>} fetchFn Fetch implementation.
- * @property {(handler: (permission: AllowEffects) => Promise<unknown>) => Promise<unknown>} bindEffectBoundary External effect permission boundary.
+ * @property {(permission: AllowEffects, input: string, init?: object) => Promise<FetchResponse>} fetchFn Permission-aware fetch implementation.
+ * @property {import('../../../../types/allow-effects').AllowEffectsBoundary} bindEffectBoundary External effect permission boundary.
  * @property {(permission: AllowEffects, input: string, init?: object) => Promise<FetchResponse>} effectFetchFn Permission-aware invalidation transport.
  * @property {() => string} randomUUID UUID generator for cache invalidation.
  * @property {string} [projectId] Google Cloud project identifier.
@@ -496,8 +496,8 @@ function hasPageNumber(page) {
 /**
  * Create a helper for invalidating cached CDN paths.
  * @param {object} root0 Options for the invalidation routine.
- * @param {(input: string, init?: object) => Promise<FetchResponse>} root0.fetchFn Fetch-like implementation.
- * @param {(handler: (permission: AllowEffects) => Promise<unknown>) => Promise<unknown>} root0.bindEffectBoundary External effect permission boundary.
+ * @param {(permission: AllowEffects, input: string, init?: object) => Promise<FetchResponse>} root0.fetchFn Permission-aware fetch implementation.
+ * @param {import('../../../../types/allow-effects').AllowEffectsBoundary} root0.bindEffectBoundary External effect permission boundary.
  * @param {(permission: AllowEffects, input: string, init?: object) => Promise<FetchResponse>} root0.effectFetchFn Permission-aware invalidation transport.
  * @param {string} [root0.projectId] Google Cloud project identifier.
  * @param {string} [root0.urlMapName] Compute URL map used for invalidation.
@@ -625,8 +625,8 @@ function resolveUrlMapName(urlMapName) {
 /**
  * Create the actual path invalidation routine.
  * @param {object} params Runner options.
- * @param {(input: string, init?: object) => Promise<FetchResponse>} params.fetchFn Fetch implementation.
- * @param {(handler: (permission: AllowEffects) => Promise<unknown>) => Promise<unknown>} params.bindEffectBoundary External effect permission boundary.
+ * @param {(permission: AllowEffects, input: string, init?: object) => Promise<FetchResponse>} params.fetchFn Permission-aware fetch implementation.
+ * @param {import('../../../../types/allow-effects').AllowEffectsBoundary} params.bindEffectBoundary External effect permission boundary.
  * @param {(permission: AllowEffects, input: string, init?: object) => Promise<FetchResponse>} params.effectFetchFn Permission-aware invalidation transport.
  * @param {() => string} params.randomUUID UUID generator.
  * @param {((message: string, error?: unknown) => void) | undefined} [params.consoleError] Logger.
@@ -646,7 +646,9 @@ function createPathInvalidationRunner({
       return;
     }
 
-    const token = await getAccessToken(fetchFn);
+    const token = await bindEffectBoundary(permission =>
+      getAccessToken(permission, fetchFn)
+    );
 
     await Promise.all(
       paths.map(path =>
@@ -668,11 +670,13 @@ function createPathInvalidationRunner({
 
 /**
  * Acquire an access token from the metadata service.
- * @param {(input: string, init?: object) => Promise<FetchResponse>} fetchFn Fetch implementation.
+ * @param {AllowEffects} permission Permission for the metadata request.
+ * @param {(permission: AllowEffects, input: string, init?: object) => Promise<FetchResponse>} fetchFn Permission-aware fetch implementation.
  * @returns {Promise<string>} OAuth access token.
  */
-async function getAccessToken(fetchFn) {
+async function getAccessToken(permission, fetchFn) {
   const response = await fetchFn(
+    permission,
     'http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/token',
     { headers: { 'Metadata-Flavor': 'Google' } }
   );
@@ -874,7 +878,7 @@ function normalizeRenderContentsOptions(
     db: /** @type {DbInstance | undefined} */ (db),
     storage: /** @type {StorageInstance} */ (storage),
     fetchFn:
-      /** @type {(input: string, init?: object) => Promise<FetchResponse>} */ (
+      /** @type {(permission: AllowEffects, input: string, init?: object) => Promise<FetchResponse>} */ (
         fetchFn
       ),
     bindEffectBoundary: /** @type {RenderOptions['bindEffectBoundary']} */ (

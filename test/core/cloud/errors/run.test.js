@@ -5,6 +5,7 @@ const permission = Object.freeze({});
 const createErrorBeaconRun = dependencies =>
   createErrorBeaconRunCore({
     ...dependencies,
+    fetchFn: (permission, ...args) => dependencies.fetchFn(...args),
     bindEffectBoundary: handler => handler(permission),
     effectFetchFn: (_permission, ...args) => dependencies.fetchFn(...args),
   });

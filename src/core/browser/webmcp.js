@@ -90,11 +90,12 @@ function toyFailure(toy, code, message) {
 
 /**
  * Create isolated catalog, execution, and page tools for one browser environment.
- * @param {{fetchFn: typeof fetch, importModule: (path: string) => Promise<Record<string, any>>, documentObj?: Document, locationObj?: Location, modelContext?: {registerTool?: (tool: Record<string, any>) => void}, URLCtor: typeof URL}} deps Browser adapters.
+ * @param {{fetchFn: (permission: import('../../../types/allow-effects').AllowEffects, ...args: Parameters<typeof fetch>) => ReturnType<typeof fetch>, bindEffectBoundary: import('../../../types/allow-effects').AllowEffectsBoundary, importModule: (path: string) => Promise<Record<string, any>>, documentObj?: Document, locationObj?: Location, modelContext?: {registerTool?: (tool: Record<string, any>) => void}, URLCtor: typeof URL}} deps Browser adapters.
  * @returns {(() => void) & {listToys: () => Promise<Array<Record<string, any>>>, runToy: (args: {toy: unknown, input: unknown}) => Promise<Record<string, any>>, registerWebMcpTools: (context?: {registerTool?: (tool: Record<string, any>) => void}) => void}} Startup handle and public APIs.
  */
 export function createWebMcpHandle({
   fetchFn,
+  bindEffectBoundary,
   importModule,
   documentObj,
   locationObj,
@@ -111,7 +112,9 @@ export function createWebMcpHandle({
    */
   async function loadToyDefinitions() {
     if (!toyDefinitionsPromise) {
-      toyDefinitionsPromise = fetchFn('/blog.json')
+      toyDefinitionsPromise = bindEffectBoundary(permission =>
+        fetchFn(permission, '/blog.json')
+      )
         .then(response => {
           if (!response.ok) {
             throw new Error(`Toy catalog request failed: ${response.status}`);

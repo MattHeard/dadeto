@@ -188,6 +188,7 @@ export function createAllowEffectsRule(ts, programFor) {
         Identifier(node) {
           const typed = nodeAtRange(ts, source, node.range);
           if (!typed) {
+            if (node.parent?.type === 'MetaProperty') return;
             context.report({ node, messageId: 'compiler' });
             return;
           }

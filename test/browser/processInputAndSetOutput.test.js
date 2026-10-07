@@ -39,6 +39,7 @@ beforeEach(() => {
       removeWarning: jest.fn(),
     },
     errorFn: jest.fn(),
+    bindEffectBoundary: handler => handler(Object.freeze({})),
     loggers: {
       logInfo: jest.fn(),
       logError: jest.fn(),
