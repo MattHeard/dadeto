@@ -591,28 +591,6 @@ export const markVariantDirtyTestUtils = {
 };
 
 /**
- * Cast function to admin verifier type.
- * @param {unknown} fn - Function to cast.
- * @returns {(req: NativeHttpRequest, res: NativeHttpResponse) => Promise<boolean>} Typed verifier function.
- */
-function castVerifyAdminFn(fn) {
-  return /** @type {(req: NativeHttpRequest, res: NativeHttpResponse) => Promise<boolean>} */ (
-    fn
-  );
-}
-
-/**
- * Cast function to mark-variant-dirty type.
- * @param {unknown} fn - Function to cast.
- * @returns {(pageNumber: number, variantName: string, deps?: MarkVariantDirtyDeps) => Promise<boolean>} Typed handler function.
- */
-function castMarkVariantDirtyFn(fn) {
-  return /** @type {(pageNumber: number, variantName: string, deps?: MarkVariantDirtyDeps) => Promise<boolean>} */ (
-    fn
-  );
-}
-
-/**
  * Extract validated admin and core functions.
  * @param {HandleRequestOptions | undefined} optionsTyped - Configuration object.
  * @returns {Pick<HandlerDependencies, 'verifyAdmin' | 'markVariantDirty' | 'markAuthorDirty'>} Extracted functions.
@@ -634,8 +612,14 @@ function castCoreFunctions(
   /** @type {((id: string) => Promise<boolean>) | undefined} */ markAuthorDirty
 ) {
   return {
-    verifyAdmin: castVerifyAdminFn(verifyAdmin),
-    markVariantDirty: castMarkVariantDirtyFn(markVariantDirty),
+    verifyAdmin:
+      /** @type {(req: NativeHttpRequest, res: NativeHttpResponse) => Promise<boolean>} */ (
+        verifyAdmin
+      ),
+    markVariantDirty:
+      /** @type {(pageNumber: number, variantName: string, deps?: MarkVariantDirtyDeps) => Promise<boolean>} */ (
+        markVariantDirty
+      ),
     markAuthorDirty,
   };
 }
