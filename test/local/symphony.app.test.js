@@ -12,6 +12,7 @@ const { createSymphonyAppHandle } = await import(
 );
 
 const requestedAtKey = 'requested_at';
+const bindEffectBoundary = handler => handler(Object.freeze({}));
 const {
   createSymphonyApp,
   createSymphonyLaunchHandler,
@@ -157,6 +158,7 @@ describe('local symphony app handlers', () => {
     });
 
     expect(statusStore.writeStatus).toHaveBeenCalledWith(
+      expect.objectContaining({}),
       expect.objectContaining({
         state: 'blocked',
         lastOutcome: expect.objectContaining({
@@ -369,6 +371,7 @@ describe('local symphony app refresh handlers', () => {
       express: jest.fn(),
       refreshSymphonyStatus,
       isProcessAlive: () => true,
+      bindEffectBoundary,
     });
     const handler = coreHandle.createSymphonyRefreshHandler({
       repoRoot: '/tmp/dadeto',
@@ -427,6 +430,7 @@ describe('local symphony app refresh handlers', () => {
         throw error;
       },
       isProcessAlive: () => true,
+      bindEffectBoundary,
     });
     const handler = coreHandle.createSymphonyRefreshHandler({
       statusStore: {
@@ -468,6 +472,7 @@ describe('local symphony app factory', () => {
       express: expressDouble,
       refreshSymphonyStatus: jest.fn(),
       isProcessAlive: () => true,
+      bindEffectBoundary,
     });
     const wiredApp = coreHandle.createSymphonyApp({
       initialStatus: { state: 'ready' },
@@ -548,6 +553,7 @@ describe('local symphony app status edge cases', () => {
       express: jest.fn(),
       refreshSymphonyStatus: jest.fn(),
       isProcessAlive: () => false,
+      bindEffectBoundary,
     });
     const cases = [
       {
@@ -653,6 +659,7 @@ describe('local symphony app orphan details', () => {
       express: jest.fn(),
       refreshSymphonyStatus: jest.fn(),
       isProcessAlive: () => false,
+      bindEffectBoundary,
     });
     const statusStore = {
       async readStatus() {
@@ -679,6 +686,7 @@ describe('local symphony app orphan details', () => {
     });
 
     expect(statusStore.writeStatus).toHaveBeenCalledWith(
+      expect.objectContaining({}),
       expect.objectContaining({
         state: 'blocked',
         lastOutcome: expect.objectContaining({
@@ -695,6 +703,7 @@ describe('local symphony app orphan details', () => {
       express: jest.fn(),
       refreshSymphonyStatus: jest.fn(),
       isProcessAlive: () => false,
+      bindEffectBoundary,
     });
     const statusStore = {
       readStatus: jest.fn().mockResolvedValue({
@@ -733,6 +742,7 @@ describe('local symphony app orphan details', () => {
       express: jest.fn(),
       refreshSymphonyStatus: jest.fn(),
       isProcessAlive: () => false,
+      bindEffectBoundary,
     });
     const statusStore = {
       readStatus: jest.fn().mockResolvedValue({
@@ -756,6 +766,7 @@ describe('local symphony app orphan details', () => {
     });
 
     expect(statusStore.writeStatus).toHaveBeenCalledWith(
+      expect.objectContaining({}),
       expect.objectContaining({
         lastOutcome: expect.objectContaining({
           beadId: 'dadeto-fallback',
@@ -770,6 +781,7 @@ describe('local symphony app orphan details', () => {
       express: jest.fn(),
       refreshSymphonyStatus: jest.fn(),
       isProcessAlive: () => false,
+      bindEffectBoundary,
     });
     const statusStore = {
       readStatus: jest.fn().mockResolvedValue({
@@ -802,6 +814,7 @@ describe('local symphony app orphan details', () => {
       express: jest.fn(),
       refreshSymphonyStatus: jest.fn(),
       isProcessAlive: () => false,
+      bindEffectBoundary,
     });
     const statusStore = {
       readStatus: jest.fn().mockResolvedValue({
@@ -832,6 +845,7 @@ describe('local symphony app orphan details', () => {
       express: jest.fn(),
       refreshSymphonyStatus: jest.fn(),
       isProcessAlive: () => false,
+      bindEffectBoundary,
     });
     const statusStore = {
       readStatus: jest.fn().mockResolvedValue({

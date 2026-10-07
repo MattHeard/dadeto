@@ -8,12 +8,15 @@ import { createSymphonyBootstrapHandle } from '../../../src/core/local/symphony/
  */
 function createDeps(overrides = {}) {
   const writtenStatuses = [];
+  const permission = Object.freeze({});
   return {
     writtenStatuses,
+    bindEffectBoundary: handler => handler(permission),
     createSymphonyStatusStore:
       overrides.createSymphonyStatusStore ??
       (() => ({
-        writeStatus: async status => writtenStatuses.push(status),
+        writeStatus: async (_permission, status) =>
+          writtenStatuses.push(status),
         readStatus: async () => overrides.previousStatus ?? null,
       })),
     getSymphonyRuntimeVersion: () => 'test-version',
@@ -83,6 +86,7 @@ describe('core Symphony bootstrap handle', () => {
 
     expect(result.statusStore).toBe(store);
     expect(store.writeStatus).toHaveBeenCalledWith(
+      expect.objectContaining({}),
       expect.objectContaining({
         state: 'blocked',
         startedAt: '2026-03-14T10:00:00.000Z',
@@ -170,6 +174,7 @@ describe('core Symphony bootstrap handle', () => {
     expect(snapshot.status.lastLaunchAttempt.details).toBe(attempt.details);
     expect(noReadSnapshot.status.eventLog).toEqual([]);
     expect(statusStore.writeStatus).toHaveBeenCalledWith(
+      expect.objectContaining({}),
       expect.objectContaining({
         state: 'ready',
         currentBeadId: 'dadeto-ready',

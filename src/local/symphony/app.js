@@ -1,4 +1,5 @@
 import express from 'express';
+import { bindEffectBoundary } from '../allow-effects.js';
 import { createSymphonyAppHandle } from '../../core/local/symphony/app.js';
 import { refreshSymphonyStatus } from './bootstrap.js';
 
@@ -24,6 +25,7 @@ const handle = createSymphonyAppHandle({
   express,
   refreshSymphonyStatus,
   isProcessAlive,
+  bindEffectBoundary,
 });
 
 export const {

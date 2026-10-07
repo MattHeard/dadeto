@@ -1,8 +1,10 @@
 import { applyRunnerOutcome } from '../symphony.js';
 
+/** @typedef {import('../../../../types/allow-effects').AllowEffects} AllowEffects */
+
 const REQUESTED_AT_FIELD = 'requested_at';
 
-/** @typedef {{ readStatus: () => Promise<SymphonyStatus | null>, writeStatus?: (status: SymphonyStatus) => Promise<void> }} SymphonyStatusStore */
+/** @typedef {{ readStatus: () => Promise<SymphonyStatus | null>, writeStatus?: (permission: AllowEffects, status: SymphonyStatus) => Promise<void> }} SymphonyStatusStore */
 /** @typedef {Record<string, unknown> & { activeRun?: Record<string, unknown> }} SymphonyStatus */
 /** @typedef {{ initialStatus: SymphonyStatus, statusStore: SymphonyStatusStore, repoRoot?: string, launchSelectedRunnerLoop?: (input: Record<string, unknown>) => Promise<unknown>, configLoader?: unknown, workflowLoader?: unknown, trackerFactory?: unknown, now?: () => number }} SymphonyOptions */
 /** @typedef {{ json: (value: unknown) => unknown, status: (code: number) => SymphonyResponse }} SymphonyResponse */
@@ -37,7 +39,7 @@ async function executeAsyncRoute(operation, _req, res, next) {
 
 /**
  * Create a Symphony status route factory.
- * @param {{ isProcessAlive: (pid: number) => boolean }} deps Runtime dependencies.
+ * @param {{ isProcessAlive: (pid: number) => boolean, bindEffectBoundary: import('../../../../types/allow-effects').AllowEffectsBoundary }} deps Runtime dependencies.
  * @returns {(options: SymphonyOptions) => SymphonyHandler} Status route factory.
  */
 function createSymphonyStatusHandlerFactory(deps) {
@@ -247,7 +249,7 @@ function buildOrphanedRunOutcome(status, beadId, pid) {
  * Reconcile a stored status whose active runner process has disappeared.
  * @param {SymphonyStatus} status Current status.
  * @param {SymphonyStatusStore} statusStore Status store.
- * @param {{ isProcessAlive: (pid: number) => boolean }} deps Runtime dependencies.
+ * @param {{ isProcessAlive: (pid: number) => boolean, bindEffectBoundary: import('../../../../types/allow-effects').AllowEffectsBoundary }} deps Runtime dependencies.
  * @returns {Promise<unknown>} Reconciled status.
  */
 async function reconcileOrphanedRun(status, statusStore, deps) {
@@ -258,6 +260,11 @@ async function reconcileOrphanedRun(status, statusStore, deps) {
   if (!hasWritableStatusStore(statusStore)) {
     return status;
   }
+  const writeStatusMethod = statusStore.writeStatus;
+  if (typeof writeStatusMethod !== 'function') {
+    return status;
+  }
+  const writeStatus = writeStatusMethod.bind(statusStore);
 
   const activeRun = /** @type {Record<string, unknown>} */ (status.activeRun);
   const pid = getActiveRunPid(activeRun);
@@ -280,9 +287,9 @@ async function reconcileOrphanedRun(status, statusStore, deps) {
     ...applyRunnerOutcome(status, outcome),
     operatorTrustReason: buildOrphanedRunTrustReason(activeRun, pid),
   };
-  await /** @type {(status: SymphonyStatus) => Promise<void>} */ (
-    statusStore.writeStatus
-  )(updatedStatus);
+  await deps.bindEffectBoundary(permission =>
+    writeStatus(permission, updatedStatus)
+  );
   return updatedStatus;
 }
 
@@ -360,6 +367,7 @@ function buildOrphanedRunTrustReason(activeRun, pid) {
  *   express: () => SymphonyApp,
  *   refreshSymphonyStatus: (input: Record<string, unknown>) => Promise<{ status: { startedAt: string } }>,
  *   isProcessAlive: (pid: number) => boolean,
+ *   bindEffectBoundary: import('../../../../types/allow-effects').AllowEffectsBoundary,
  * }} deps Runtime dependencies.
  * @returns {{
  *   createSymphonyStatusHandler: (options: SymphonyOptions) => SymphonyHandler,

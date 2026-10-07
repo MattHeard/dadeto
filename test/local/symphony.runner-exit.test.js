@@ -34,6 +34,7 @@ describe('Symphony runner exit handler', () => {
 
     expect(statusStore.readStatus).toHaveBeenCalled();
     expect(statusStore.writeStatus).toHaveBeenCalledWith(
+      expect.objectContaining({}),
       expect.objectContaining({
         state: 'idle',
         activeRun: null,
@@ -60,6 +61,7 @@ describe('Symphony runner exit handler', () => {
     await handler({ exitCode: null, signal: 'SIGTERM' });
 
     expect(statusStore.writeStatus).toHaveBeenCalledWith(
+      expect.objectContaining({}),
       expect.objectContaining({
         state: 'blocked',
         activeRun: null,

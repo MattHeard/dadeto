@@ -17,7 +17,7 @@ export function launchSelectedRunnerLoop(options = {}) {
 }
 
 export function createRunnerExitHandler(options) {
-  return coreHandle.createRunnerExitHandler(options);
+  return coreHandle.createRunnerExitHandler({ ...options, bindEffectBoundary });
 }
 
 export const handle = {

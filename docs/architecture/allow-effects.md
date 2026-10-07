@@ -69,3 +69,7 @@ The Notion Codex state and outcome stores bind each write operation and forward 
 ## Thirteenth extension: detached process launch
 
 The shared detached-process launcher binds one permission for each launch and forwards it to log-directory creation, both append-only log opens, and process spawning. Notion Codex and Symphony local adapters supply the boundary and adapt native filesystem/process APIs. Symphony's default launch path now receives these adapters through its local entry point as well.
+
+## Fourteenth extension: Symphony status persistence
+
+Symphony status-store writes require an `AllowEffects` permission. Bootstrap creation, refresh, orphan reconciliation, launch success/failure, and runner-exit updates bind one permission per persistence operation and pass it through the injected status-store writer to both directory creations and both file writes. The local adapter discards the permission only when calling Node's native filesystem functions. Status reads remain outside this write classification.

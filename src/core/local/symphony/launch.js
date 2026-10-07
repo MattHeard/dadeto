@@ -18,7 +18,7 @@ import {
  * Launch the selected runner loop and persist the resulting status.
  * @param {{
  *   status: Record<string, unknown>,
- *   statusStore: { writeStatus: (status: Record<string, unknown>) => Promise<void> },
+ *   statusStore: { writeStatus: (permission: AllowEffects, status: Record<string, unknown>) => Promise<void> },
  *   repoRoot?: string,
  *   cwd?: () => string,
  *   mkdirImpl?: (permission: AllowEffects, dirPath: string, options: { recursive: boolean }) => Promise<void>,
@@ -54,7 +54,7 @@ export async function launchSelectedRunnerLoop(options) {
  * Build the launch context used across the runner lifecycle.
  * @param {{
  *   status: Record<string, unknown>,
- *   statusStore: { writeStatus: (status: Record<string, unknown>) => Promise<void> },
+ *   statusStore: { writeStatus: (permission: AllowEffects, status: Record<string, unknown>) => Promise<void> },
  *   repoRoot?: string,
  *   cwd?: () => string,
  *   mkdirImpl?: (permission: AllowEffects, dirPath: string, options: { recursive: boolean }) => Promise<void>,
@@ -185,6 +185,7 @@ async function runLaunch(context) {
   const launchStatusWrite = createDeferredPromise();
   const onRunnerExit = createRunnerExitHandler({
     statusStore: context.options.statusStore,
+    bindEffectBoundary: context.options.bindEffectBoundary,
     runId,
     beadId: currentBeadId,
     beadTitle: context.currentBeadTitle,
@@ -211,8 +212,9 @@ async function runLaunch(context) {
     launchedStatus.operatorRecommendation =
       buildLaunchLifecycleRecommendation(launchedStatus);
 
-    const writePromise =
-      context.options.statusStore.writeStatus(launchedStatus);
+    const writePromise = context.options.bindEffectBoundary(permission =>
+      context.options.statusStore.writeStatus(permission, launchedStatus)
+    );
     try {
       await writePromise;
     } finally {
@@ -222,10 +224,15 @@ async function runLaunch(context) {
     return launchedStatus;
   } catch (error) {
     launchStatusWrite.resolve();
-    return persistLaunchFailure(context.options.statusStore, context.status, {
-      ...createLaunchMetadata(context, currentBeadId, launchRequest),
-      error: getLaunchErrorMessage(error),
-    });
+    return persistLaunchFailure(
+      context.options.statusStore,
+      context.status,
+      {
+        ...createLaunchMetadata(context, currentBeadId, launchRequest),
+        error: getLaunchErrorMessage(error),
+      },
+      context.options.bindEffectBoundary
+    );
   }
 }
 
@@ -256,19 +263,24 @@ function createLaunchMetadata(context, beadId, launchRequest) {
 
 /**
  * Persist an early Symphony launch failure before a run id exists.
- * @param {{ statusStore: { writeStatus: (status: Record<string, unknown>) => Promise<void> } }} options Launch options.
+ * @param {{ statusStore: { writeStatus: (permission: AllowEffects, status: Record<string, unknown>) => Promise<void> }, bindEffectBoundary: import('../../../../types/allow-effects').AllowEffectsBoundary }} options Launch options.
  * @param {object} failure Failure payload.
  * @returns {Promise<Record<string, unknown>>} Persisted failure status.
  */
 function persistInitialLaunchFailure(options, failure) {
-  return persistLaunchFailure(options.statusStore, failure.status, {
-    startedAt: failure.startedAt,
-    beadId: failure.beadId,
-    beadTitle: failure.beadTitle,
-    beadPriority: failure.beadPriority,
-    launchRequest: failure.launchRequest,
-    error: failure.error,
-  });
+  return persistLaunchFailure(
+    options.statusStore,
+    failure.status,
+    {
+      startedAt: failure.startedAt,
+      beadId: failure.beadId,
+      beadTitle: failure.beadTitle,
+      beadPriority: failure.beadPriority,
+      launchRequest: failure.launchRequest,
+      error: failure.error,
+    },
+    options.bindEffectBoundary
+  );
 }
 
 /**
@@ -430,7 +442,7 @@ function formatLaunchRequestForBead(beadId) {
 
 /**
  * @param {{
- *   writeStatus: (status: Record<string, unknown>) => Promise<void>
+ *   writeStatus: (permission: AllowEffects, status: Record<string, unknown>) => Promise<void>
  * } | undefined | null} statusStore - Status store to persist into.
  * @param {Record<string, unknown>} status - Current Symphony status.
  * @param {{
@@ -441,15 +453,23 @@ function formatLaunchRequestForBead(beadId) {
  *   launchRequest: string,
  *   error: string
  * }} failure - Failure payload.
+ * @param {import('../../../../types/allow-effects').AllowEffectsBoundary} bindEffectBoundary Permission boundary.
  * @returns {Promise<Record<string, unknown>>} Persisted launched status.
  */
-async function persistLaunchFailure(statusStore, status, failure) {
+async function persistLaunchFailure(
+  statusStore,
+  status,
+  failure,
+  bindEffectBoundary
+) {
   if (!statusStore || typeof statusStore.writeStatus !== 'function') {
     return applyRunnerLaunchFailure(status, failure);
   }
 
   const failedStatus = applyRunnerLaunchFailure(status, failure);
-  await statusStore.writeStatus(failedStatus);
+  await bindEffectBoundary(permission =>
+    statusStore.writeStatus(permission, failedStatus)
+  );
   return failedStatus;
 }
 
@@ -457,8 +477,9 @@ async function persistLaunchFailure(statusStore, status, failure) {
  * @param {{
  *   statusStore: {
  *     readStatus: () => Promise<Record<string, unknown> | null>,
- *     writeStatus: (status: Record<string, unknown>) => Promise<void>
+ *     writeStatus: (permission: AllowEffects, status: Record<string, unknown>) => Promise<void>
  *   },
+ *   bindEffectBoundary: import('../../../../types/allow-effects').AllowEffectsBoundary,
  *   runId: string,
  *   beadId: string,
  *   beadTitle: string | null,
@@ -511,7 +532,9 @@ export function createRunnerExitHandler(options) {
       });
 
       const updatedStatus = applyRunnerOutcome(storedStatus, outcome);
-      await options.statusStore.writeStatus(updatedStatus);
+      await options.bindEffectBoundary(permission =>
+        options.statusStore.writeStatus(permission, updatedStatus)
+      );
     } catch (error) {
       console.error(
         `Failed to persist Symphony status after runner ${options.runId} exit:`,

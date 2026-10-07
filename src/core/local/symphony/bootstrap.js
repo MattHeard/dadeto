@@ -9,10 +9,13 @@ import {
 import { when, whenOrNull } from '../../commonCore.js';
 
 /** @typedef {any} SymphonyBootstrapValue Runtime-shaped Symphony value. */
+/** @typedef {import('../../../../types/allow-effects').AllowEffects} AllowEffects */
+/** @typedef {{ writeStatus: (permission: AllowEffects, status: Record<string, unknown>) => Promise<void>, readStatus?: () => Promise<unknown> }} SymphonyStatusStore */
+/** @typedef {{ [key: string]: any, bindEffectBoundary: import('../../../../types/allow-effects').AllowEffectsBoundary }} SymphonyBootstrapDependencies */
 
 /**
  * Create the bootstrap workflow.
- * @param {SymphonyBootstrapValue} deps Runtime dependencies.
+ * @param {SymphonyBootstrapDependencies} deps Runtime dependencies.
  * @returns {(...args: SymphonyBootstrapValue[]) => SymphonyBootstrapValue} Bootstrap function.
  */
 function createBootstrapSymphony(deps) {
@@ -24,12 +27,14 @@ function createBootstrapSymphony(deps) {
     const snapshot = await buildSymphonyStatusSnapshot(options, deps);
     const statusStoreFactory =
       options.statusStoreFactory ?? deps.createSymphonyStatusStore;
-    const statusStore = statusStoreFactory({
-      statusPath: snapshot.config.statusPath,
-      logDir: snapshot.config.logDir,
-    });
+    const statusStore = /** @type {SymphonyStatusStore} */ (
+      statusStoreFactory({
+        statusPath: snapshot.config.statusPath,
+        logDir: snapshot.config.logDir,
+      })
+    );
 
-    await statusStore.writeStatus(snapshot.status);
+    await persistStatus(deps.bindEffectBoundary, statusStore, snapshot.status);
 
     return { status: snapshot.status, statusStore };
   };
@@ -37,7 +42,7 @@ function createBootstrapSymphony(deps) {
 
 /**
  * Create the refresh workflow.
- * @param {SymphonyBootstrapValue} deps Runtime dependencies.
+ * @param {SymphonyBootstrapDependencies} deps Runtime dependencies.
  * @returns {(...args: SymphonyBootstrapValue[]) => SymphonyBootstrapValue} Refresh function.
  */
 function createRefreshSymphonyStatus(deps) {
@@ -61,10 +66,26 @@ function createRefreshSymphonyStatus(deps) {
       },
       deps
     );
-    await options.statusStore.writeStatus(snapshot.status);
+    const statusStore = /** @type {SymphonyStatusStore} */ (
+      options.statusStore
+    );
+    await persistStatus(deps.bindEffectBoundary, statusStore, snapshot.status);
 
     return snapshot;
   };
+}
+
+/**
+ * Persist a Symphony snapshot under a fresh boundary permission.
+ * @param {import('../../../../types/allow-effects').AllowEffectsBoundary} bindEffectBoundary Permission boundary.
+ * @param {SymphonyStatusStore} statusStore Persistence adapter.
+ * @param {Record<string, unknown>} status Snapshot to persist.
+ * @returns {Promise<void>} Completion.
+ */
+async function persistStatus(bindEffectBoundary, statusStore, status) {
+  await bindEffectBoundary(permission =>
+    statusStore.writeStatus(permission, status)
+  );
 }
 
 /**
@@ -389,6 +410,7 @@ function preserveRunningStatus(status, previousStatus) {
 /**
  * Build the local Symphony bootstrap adapter handle.
  * @param {{
+ *   bindEffectBoundary: import('../../../../types/allow-effects').AllowEffectsBoundary,
  *   createSymphonyStatusStore: (...args: unknown[]) => unknown,
  *   getSymphonyRuntimeVersion: (...args: unknown[]) => unknown,
  *   loadSymphonyConfig: (...args: unknown[]) => unknown,

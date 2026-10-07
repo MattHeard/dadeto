@@ -204,6 +204,7 @@ describe('local symphony runner exit handling', () => {
         readStatus: async () => null,
         writeStatus: async () => {},
       },
+      bindEffectBoundary: handler => handler(TEST_PERMISSION),
     });
     await missingHandler({ exitCode: 0, signal: null });
     expect(warn).toHaveBeenCalled();
@@ -221,6 +222,7 @@ describe('local symphony runner exit handling', () => {
         readStatus: async () => ({ state: 'running' }),
         writeStatus,
       },
+      bindEffectBoundary: handler => handler(TEST_PERMISSION),
     });
     await handler({ exitCode: 0, signal: null });
     expect(waitForLaunchStatusWrite).toHaveBeenCalled();
@@ -236,6 +238,7 @@ describe('local symphony runner exit handling', () => {
           throw new Error('write failed');
         },
       },
+      bindEffectBoundary: handler => handler(TEST_PERMISSION),
     });
     await failedHandler({ exitCode: 1, signal: null });
     expect(error).toHaveBeenCalled();

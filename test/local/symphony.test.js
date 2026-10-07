@@ -18,6 +18,10 @@ import {
   summarizeWorkflow,
 } from '../../src/local/symphony/workflow.js';
 import { createSymphonyStatusStore } from '../../src/local/symphony/statusStore.js';
+import { bindEffectBoundary } from '../../src/local/allow-effects.js';
+
+const writeStatus = (statusStore, status) =>
+  bindEffectBoundary(permission => statusStore.writeStatus(permission, status));
 
 const maxTurnsKey = 'max_turns';
 const allowDirtyWorktreeKey = 'allow_dirty_worktree';
@@ -815,7 +819,7 @@ describe('local symphony refreshed idle status', () => {
       launchRequest: 'bd run dadeto-jwwk',
     };
     const runningStatus = applyRunnerLaunch(initialStatus, runningLaunch);
-    await statusStore.writeStatus(runningStatus);
+    await writeStatus(statusStore, runningStatus);
 
     const queueLine =
       'dadeto-jwwk (● P1) Fix Symphony TUI auto-loop bead-selection race';
@@ -922,7 +926,7 @@ describe('local symphony status reconciliation', () => {
       beadPriority: '● P1',
       launchRequest: 'bd run dadeto-jwwk',
     });
-    await statusStore.writeStatus(runningStatus);
+    await writeStatus(statusStore, runningStatus);
 
     const snapshot = await refreshSymphonyStatus({
       repoRoot: tempDir,
@@ -982,7 +986,7 @@ describe('local symphony status reconciliation', () => {
       }
     );
 
-    await statusStore.writeStatus(completedStatus);
+    await writeStatus(statusStore, completedStatus);
 
     await expect(statusStore.readStatus()).resolves.toMatchObject({
       state: 'idle',
@@ -1011,7 +1015,7 @@ describe('local symphony status reconciliation', () => {
       }
     );
 
-    await statusStore.writeStatus(blockedStatus);
+    await writeStatus(statusStore, blockedStatus);
 
     await expect(statusStore.readStatus()).resolves.toMatchObject({
       state: 'blocked',
