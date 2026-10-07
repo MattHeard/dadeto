@@ -219,15 +219,11 @@ export function migratePersonnel(state) {
   if (lab?.rulesVersion === 1 && validPersonnel(lab))
     return {
       ...state,
-      lab: {
-        ...lab,
-        rulesVersion: 2,
-        incidentChains: createIncidentChains(),
-        lastIncidentCost: 0,
+      lab: createUpgradedPersonnelLab(lab, {
         incidentGrace: 2,
         introductionComplete: true,
         remoteAdministration: true,
-      },
+      }),
       toast:
         'Incident rules upgraded. Ledger preserved; two protected settlements. Original slot backed up.',
     };
@@ -247,21 +243,33 @@ export function migratePersonnel(state) {
     lab.hired
   )
     return state;
-  const migrated = {
-    ...lab,
-    rulesVersion: 2,
-    incidentChains: createIncidentChains(),
-    lastIncidentCost: 0,
+  const migrated = createUpgradedPersonnelLab(lab, {
     employees: legacyPersonnel(lab),
     introductionComplete: true,
     remoteAdministration: true,
     incidentGrace: 2,
-  };
+  });
   return {
     ...state,
     lab: migrated,
     toast:
       'Save upgraded. Ledger preserved; original slot backed up. X: lab menu.',
+  };
+}
+
+/**
+ * Add the current incident-rule fields before migration-specific fields.
+ * @param {Record<string, any>} lab Existing campaign ledger.
+ * @param {Record<string, any>} fields Ordered fields specific to the migration path.
+ * @returns {Record<string, any>} Upgraded personnel ledger.
+ */
+function createUpgradedPersonnelLab(lab, fields) {
+  return {
+    ...lab,
+    rulesVersion: 2,
+    incidentChains: createIncidentChains(),
+    lastIncidentCost: 0,
+    ...fields,
   };
 }
 
