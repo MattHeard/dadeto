@@ -72,6 +72,7 @@ export default [
       'src/core/local/notion-codex/outcomeStore.js',
       'src/core/local/notion-codex/stateStore.js',
       'src/core/local/documentStore.js',
+      'src/core/local/process-launcher.js',
       'src/core/realtime/openaiRealtimeCalls.js',
       'src/core/cloud/generate-stats/cdn-invalidation.js',
       'src/core/local/gcp-simulator/simulator.js',

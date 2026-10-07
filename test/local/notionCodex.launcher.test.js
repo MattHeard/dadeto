@@ -3,6 +3,9 @@ import path from 'node:path';
 import { createNotionCodexLauncherCore } from '../../src/core/local/notion-codex/launcher.js';
 import { createNotionCodexLauncher } from '../../src/local/notion-codex/launcher.js';
 
+const TEST_PERMISSION = Object.freeze({});
+const bindEffectBoundary = handler => handler(TEST_PERMISSION);
+
 test('Notion uses the shared default prompt conversion rather than caller resolveArgs', async () => {
   const resolveArgs = jest.fn(() => ['unexpected']);
   const spawnImpl = jest.fn(() => ({ once() {}, unref() {} }));
@@ -10,10 +13,11 @@ test('Notion uses the shared default prompt conversion rather than caller resolv
     command: 'codex',
     args: ['exec'],
     pathModule: path,
+    bindEffectBoundary,
     resolveArgs,
     mkdirImpl: async () => {},
     openImpl: async () => ({ fd: 1 }),
-    spawnImpl,
+    spawnImpl: (_permission, ...args) => spawnImpl(...args),
   });
   const launcher = createNotionCodexLauncherCore(options);
   for (const prompt of [undefined, null, 42, 'hello']) {
@@ -281,12 +285,13 @@ describe('local notion codex launcher exit handling', () => {
     const launcher = createNotionCodexLauncherCore({
       command: 'codex',
       pathModule: path,
+      bindEffectBoundary,
       mkdirImpl: async () => {},
       openImpl: async () => ({
         fd: 40,
         close: () => Promise.resolve(),
       }),
-      spawnImpl(command, args, options) {
+      spawnImpl(_permission, command, args, options) {
         calls.push({ command, args, options });
         return {
           pid: 45678,

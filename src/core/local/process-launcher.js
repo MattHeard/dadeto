@@ -1,12 +1,16 @@
 import { normalizeMaybeNumber } from '../commonCore.js';
+
+/** @typedef {import('../../../types/allow-effects').AllowEffects} AllowEffects */
+/** @typedef {import('../../../types/allow-effects').AllowEffectsBoundary} AllowEffectsBoundary */
 /**
  * Open append-only run log files for a spawned process.
+ * @param {AllowEffects} permission Permission for log directory creation and opens.
  * @param {{
  *   logDir: string,
  *   runId: string,
  *   pathModule: { join: (first: string, ...parts: string[]) => string },
- *   mkdirImpl: (dirPath: string, options: { recursive: boolean }) => Promise<void>,
- *   openImpl: (filePath: string, flags: 'a') => Promise<{ fd: number, close?: () => Promise<void> | void }>,
+ *   mkdirImpl: (permission: AllowEffects, dirPath: string, options: { recursive: boolean }) => Promise<void>,
+ *   openImpl: (permission: AllowEffects, filePath: string, flags: 'a') => Promise<{ fd: number, close?: () => Promise<void> | void }>,
  * }} options Run-log dependencies.
  * @returns {Promise<{
  *   stdoutPath: string,
@@ -17,11 +21,11 @@ import { normalizeMaybeNumber } from '../commonCore.js';
  *   stderrHandle: { close?: () => Promise<void> | void }
  * }>} Opened append-only run log files.
  */
-export async function openAppendOnlyRunLogFiles(options) {
+export async function openAppendOnlyRunLogFiles(permission, options) {
   const mkdirImpl = options.mkdirImpl;
   const openImpl = options.openImpl;
   const runsDir = options.pathModule.join(options.logDir, 'runs');
-  await mkdirImpl(runsDir, { recursive: true });
+  await mkdirImpl(permission, runsDir, { recursive: true });
 
   const baseName = options.runId.replaceAll(':', '-');
   const stdoutPath = options.pathModule.join(
@@ -33,8 +37,8 @@ export async function openAppendOnlyRunLogFiles(options) {
     `${baseName}--stderr.log`
   );
   const [stdoutHandle, stderrHandle] = await Promise.all([
-    openImpl(stdoutPath, 'a'),
-    openImpl(stderrPath, 'a'),
+    openImpl(permission, stdoutPath, 'a'),
+    openImpl(permission, stderrPath, 'a'),
   ]);
 
   return {
@@ -204,9 +208,10 @@ function resolveExitPayload(options, payload, code, signal) {
  *   cwd?: string,
  *   logDir?: string,
  *   logDirSuffix?: string,
- *   mkdirImpl: (dirPath: string, options: { recursive: boolean }) => Promise<void>,
- *   openImpl: (filePath: string, flags: 'a') => Promise<{ fd: number, close?: () => Promise<void> | void }>,
- *   spawnImpl?: (command: string, args: string[], options: { cwd: string, detached: true, stdio: ['ignore', number, number] }) => { pid?: number, once?: (event: string, handler: (code: number | null, signal: string | null) => unknown) => void, unref?: () => void },
+ *   mkdirImpl: (permission: AllowEffects, dirPath: string, options: { recursive: boolean }) => Promise<void>,
+ *   openImpl: (permission: AllowEffects, filePath: string, flags: 'a') => Promise<{ fd: number, close?: () => Promise<void> | void }>,
+ *   spawnImpl?: (permission: AllowEffects, command: string, args: string[], options: { cwd: string, detached: true, stdio: ['ignore', number, number] }) => { pid?: number, once?: (event: string, handler: (code: number | null, signal: string | null) => unknown) => void, unref?: () => void },
+ *   bindEffectBoundary: AllowEffectsBoundary,
  *   onExit?: (payload: { runId: string, exitCode: number | null, signal: string | null }) => unknown,
  *   buildExitPayload?: (payload: Record<string, unknown>, input: { runId: string, exitCode: number | null, signal: string | null }) => { runId: string, exitCode: number | null, signal: string | null },
  *   closeErrorLabel: string,
@@ -223,6 +228,18 @@ function resolveExitPayload(options, payload, code, signal) {
  * }>} Launched process details.
  */
 export async function launchDetachedProcessWithRunLogs(options) {
+  return options.bindEffectBoundary(permission =>
+    launchDetachedProcessWithPermission(permission, options)
+  );
+}
+
+/**
+ * Launch a process with the explicit permission for filesystem and process effects.
+ * @param {AllowEffects} permission Permission for this launch command.
+ * @param {Parameters<typeof launchDetachedProcessWithRunLogs>[0]} options Launcher dependencies.
+ * @returns {Promise<Awaited<ReturnType<typeof launchDetachedProcessWithRunLogs>>>} Launched process details.
+ */
+async function launchDetachedProcessWithPermission(permission, options) {
   const spawnImpl =
     options.spawnImpl ??
     (() => {
@@ -243,7 +260,7 @@ export async function launchDetachedProcessWithRunLogs(options) {
     stderrFd,
     stdoutHandle,
     stderrHandle,
-  } = await openAppendOnlyRunLogFiles({
+  } = await openAppendOnlyRunLogFiles(permission, {
     logDir,
     pathModule: options.pathModule,
     runId: options.runId,
@@ -255,7 +272,7 @@ export async function launchDetachedProcessWithRunLogs(options) {
   let child;
   try {
     child = /** @type {typeof child} */ (
-      spawnImpl(options.command, options.args, {
+      spawnImpl(permission, options.command, options.args, {
         cwd: options.cwd ?? options.repoRoot,
         detached: true,
         stdio: ['ignore', stdoutFd, stderrFd],
@@ -305,9 +322,10 @@ export async function launchDetachedProcessWithRunLogs(options) {
  *   logDir?: string,
  *   logDirSuffix?: string,
  *   pathModule: { join: (first: string, ...parts: string[]) => string },
- *   mkdirImpl: (dirPath: string, options: { recursive: boolean }) => Promise<void>,
- *   openImpl: (filePath: string, flags: 'a') => Promise<{ fd: number, close?: () => Promise<void> | void }>,
- *   spawnImpl: (command: string, args: string[], options: object) => { pid?: number, once: (event: string, listener: (code: number | null, signal: string | null) => void) => void, unref: () => void },
+ *   mkdirImpl: (permission: AllowEffects, dirPath: string, options: { recursive: boolean }) => Promise<void>,
+ *   openImpl: (permission: AllowEffects, filePath: string, flags: 'a') => Promise<{ fd: number, close?: () => Promise<void> | void }>,
+ *   spawnImpl: (permission: AllowEffects, command: string, args: string[], options: object) => { pid?: number, once: (event: string, listener: (code: number | null, signal: string | null) => void) => void, unref: () => void },
+ *   bindEffectBoundary: AllowEffectsBoundary,
  *   launcherKind?: string,
  *   resolveArgs?: (payload: Record<string, unknown>) => string[],
  *   resolveCwd?: (payload: Record<string, unknown>) => string,
@@ -355,16 +373,13 @@ export function createDetachedProcessLauncher(options) {
       }
 
       return launchDetachedProcessWithRunLogs({
+        ...options,
         command: options.command,
         args,
         cwd,
         repoRoot: payload.repoRoot,
         logDir,
-        pathModule: options.pathModule,
         runId: payload.runId,
-        mkdirImpl: options.mkdirImpl,
-        openImpl: options.openImpl,
-        spawnImpl: options.spawnImpl,
         onExit: payload.onExit,
         buildExitPayload,
         closeErrorLabel: options.closeErrorLabel,

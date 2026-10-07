@@ -12,6 +12,8 @@ import {
   DEFAULT_CODEX_RALPH_ARGS,
 } from './launcherCodex.js';
 
+/** @typedef {import('../../../../types/allow-effects').AllowEffects} AllowEffects */
+
 /**
  * Launch the selected runner loop and persist the resulting status.
  * @param {{
@@ -19,6 +21,10 @@ import {
  *   statusStore: { writeStatus: (status: Record<string, unknown>) => Promise<void> },
  *   repoRoot?: string,
  *   cwd?: () => string,
+ *   mkdirImpl?: (permission: AllowEffects, dirPath: string, options: { recursive: boolean }) => Promise<void>,
+ *   openImpl?: (permission: AllowEffects, filePath: string, flags: 'a') => Promise<{ fd: number, close?: () => Promise<void> | void }>,
+ *   spawnImpl?: (permission: AllowEffects, command: string, args: string[], options: object) => { pid?: number, once: (event: string, listener: (code: number | null, signal: string | null) => void) => void, unref: () => void },
+ *   bindEffectBoundary?: import('../../../../types/allow-effects').AllowEffectsBoundary,
  *   launcher?: {
  *     launchRunner: (payload: {
  *       repoRoot: string,
@@ -51,6 +57,10 @@ export async function launchSelectedRunnerLoop(options) {
  *   statusStore: { writeStatus: (status: Record<string, unknown>) => Promise<void> },
  *   repoRoot?: string,
  *   cwd?: () => string,
+ *   mkdirImpl?: (permission: AllowEffects, dirPath: string, options: { recursive: boolean }) => Promise<void>,
+ *   openImpl?: (permission: AllowEffects, filePath: string, flags: 'a') => Promise<{ fd: number, close?: () => Promise<void> | void }>,
+ *   spawnImpl?: (permission: AllowEffects, command: string, args: string[], options: object) => { pid?: number, once: (event: string, listener: (code: number | null, signal: string | null) => void) => void, unref: () => void },
+ *   bindEffectBoundary?: import('../../../../types/allow-effects').AllowEffectsBoundary,
  *   launcher?: {
  *     launchRunner: (payload: {
  *       repoRoot: string,
@@ -326,11 +336,25 @@ function getRequiredString(value, fieldName) {
  */
 function createConfiguredLauncher(status, options) {
   const launcherConfig = getLauncherConfig(status);
+  if (
+    !options.mkdirImpl ||
+    !options.openImpl ||
+    !options.spawnImpl ||
+    !options.bindEffectBoundary
+  ) {
+    throw new Error(
+      'Symphony launcher effects require an AllowEffects boundary.'
+    );
+  }
 
   return createCodexRalphLauncher({
     command: launcherConfig.command,
     args: launcherConfig.args,
     cwd: options.repoRoot ?? options.cwd?.() ?? '',
+    mkdirImpl: options.mkdirImpl,
+    openImpl: options.openImpl,
+    spawnImpl: options.spawnImpl,
+    bindEffectBoundary: options.bindEffectBoundary,
   });
 }
 

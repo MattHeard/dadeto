@@ -2,6 +2,8 @@ import path from 'node:path';
 import { createCodexRalphLauncher } from '../../src/local/symphony/launcherCodex.js';
 import { createCodexRalphLauncher as createCoreLauncher } from '../../src/core/local/symphony/launcherCodex.js';
 
+const TEST_PERMISSION = Object.freeze({});
+
 describe('local symphony codex launcher', () => {
   test('rebuilds each launch from the current bound options even when called detached', async () => {
     const commands = [];
@@ -10,12 +12,13 @@ describe('local symphony codex launcher', () => {
       command: 'first-codex',
       args: ['exec'],
       pathModule: path,
+      bindEffectBoundary: handler => handler(TEST_PERMISSION),
       mkdirImpl: async () => undefined,
-      openImpl: async filePath => {
+      openImpl: async (_permission, filePath) => {
         opened.push(filePath);
         return { fd: opened.length, close: async () => undefined };
       },
-      spawnImpl(command) {
+      spawnImpl(_permission, command) {
         commands.push(command);
         return { pid: commands.length, unref() {} };
       },

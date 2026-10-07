@@ -5,10 +5,13 @@ import {
   createDetachedProcessLauncher,
 } from '../../../src/core/local/process-launcher.js';
 
+const TEST_PERMISSION = Object.freeze({});
+
 const deps = {
   pathModule: path,
+  bindEffectBoundary: handler => handler(TEST_PERMISSION),
   mkdirImpl: async () => {},
-  openImpl: async filePath => {
+  openImpl: async (_permission, filePath) => {
     let fd = 11;
     if (filePath.endsWith('stdout.log')) fd = 10;
     return { fd, close: async () => {} };
@@ -38,7 +41,7 @@ test('covers resolver branches and rejected log closures', async () => {
     resolveCwd: payload => path.join(payload.repoRoot, 'cwd'),
     resolveLogDir: payload => path.join(payload.repoRoot, 'resolved-logs'),
     exitErrorLabel: payload => `exit ${payload.runId}`,
-    spawnImpl: (command, args, options) => ({
+    spawnImpl: (_permission, command, args, options) => ({
       pid: 9,
       once: (event, handler) => {
         if (event === 'exit') exitHandler = handler;

@@ -2,7 +2,7 @@ import * as processLauncher from '../process-launcher.js';
 
 /**
  * Compose Notion's lifecycle policy with the shared detached-process launcher.
- * @param {{command: string} & Partial<Parameters<typeof processLauncher.createDetachedProcessLauncher>[0]>} options Launcher dependencies.
+ * @param {Parameters<typeof processLauncher.createDetachedProcessLauncher>[0]} options Launcher dependencies.
  * @returns {ReturnType<typeof processLauncher.createDetachedProcessLauncher>} Notion process lifecycle.
  */
 export function createNotionCodexLauncherCore(options) {

@@ -65,3 +65,7 @@ The local document store binds each public store command that can bootstrap, pru
 ## Twelfth extension: Notion Codex state and outcomes
 
 The Notion Codex state and outcome stores bind each write operation and forward its permission to the injected directory and file writers. Read operations remain permission-free; the local adapters discard the token only when delegating to Node's native filesystem functions.
+
+## Thirteenth extension: detached process launch
+
+The shared detached-process launcher binds one permission for each launch and forwards it to log-directory creation, both append-only log opens, and process spawning. Notion Codex and Symphony local adapters supply the boundary and adapt native filesystem/process APIs. Symphony's default launch path now receives these adapters through its local entry point as well.

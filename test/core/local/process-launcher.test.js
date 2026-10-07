@@ -2,10 +2,14 @@ import { mkdir, mkdtemp, rm, open } from 'node:fs/promises';
 import { spawn } from 'node:child_process';
 import os from 'node:os';
 import path from 'node:path';
+import { jest } from '@jest/globals';
 import {
   createDetachedProcessLauncher,
   launchDetachedProcessWithRunLogs,
 } from '../../../src/core/local/process-launcher.js';
+
+const TEST_PERMISSION = Object.freeze({});
+const bindEffectBoundary = handler => handler(TEST_PERMISSION);
 
 const getFixtureFd = filePath => {
   if (filePath.endsWith('--stdout.log')) {
@@ -32,9 +36,10 @@ describe('process launcher helpers', () => {
       repoRoot: tempDir,
       runId: '2026-05-31T18:30:00.000Z--process-launcher',
       pathModule: path,
-      mkdirImpl: mkdir,
-      openImpl: open,
-      spawnImpl: spawn,
+      bindEffectBoundary,
+      mkdirImpl: (_permission, ...args) => mkdir(...args),
+      openImpl: (_permission, ...args) => open(...args),
+      spawnImpl: (_permission, ...args) => spawn(...args),
       closeErrorLabel: 'Failed to close run log handle:',
       exitErrorLabel: 'Failed to handle process exit:',
     });
@@ -69,12 +74,79 @@ describe('process launcher helpers', () => {
         repoRoot: tempDir,
         runId: '2026-05-31T18:30:00.000Z--process-launcher',
         pathModule: path,
-        mkdirImpl: mkdir,
-        openImpl: open,
+        bindEffectBoundary,
+        mkdirImpl: (_permission, ...args) => mkdir(...args),
+        openImpl: (_permission, ...args) => open(...args),
         closeErrorLabel: 'Failed to close run log handle:',
         exitErrorLabel: 'Failed to handle process exit:',
       })
     ).rejects.toThrow('spawnImpl is required');
+  });
+
+  test('forwards one permission to log creation, opens, and process spawn', async () => {
+    const permission = Object.freeze({});
+    const effectBoundary = jest.fn(handler => handler(permission));
+    const mkdirImpl = jest.fn(async () => {});
+    const openImpl = jest.fn(async (_permission, filePath) => ({
+      fd: getFixtureFd(filePath),
+      close: async () => {},
+    }));
+    const spawnImpl = jest.fn(() => ({
+      pid: 123,
+      once() {},
+      unref() {},
+    }));
+
+    await launchDetachedProcessWithRunLogs({
+      command: 'codex',
+      args: ['exec'],
+      repoRoot: tempDir,
+      runId: 'permission-forwarding',
+      pathModule: path,
+      bindEffectBoundary: effectBoundary,
+      mkdirImpl,
+      openImpl,
+      spawnImpl,
+      closeErrorLabel: 'Failed to close run log handle:',
+      exitErrorLabel: 'Failed to handle process exit:',
+    });
+
+    expect(effectBoundary).toHaveBeenCalledTimes(1);
+    expect(mkdirImpl).toHaveBeenCalledWith(
+      permission,
+      path.join(tempDir, 'tracking', 'launcher', 'runs'),
+      { recursive: true }
+    );
+    expect(openImpl.mock.calls).toEqual([
+      [
+        permission,
+        path.join(
+          tempDir,
+          'tracking',
+          'launcher',
+          'runs',
+          'permission-forwarding--stdout.log'
+        ),
+        'a',
+      ],
+      [
+        permission,
+        path.join(
+          tempDir,
+          'tracking',
+          'launcher',
+          'runs',
+          'permission-forwarding--stderr.log'
+        ),
+        'a',
+      ],
+    ]);
+    expect(spawnImpl).toHaveBeenCalledWith(
+      permission,
+      'codex',
+      ['exec'],
+      expect.objectContaining({ detached: true })
+    );
   });
 });
 
@@ -95,14 +167,15 @@ describe('process launcher configuration', () => {
       command: 'codex',
       args: ['exec'],
       pathModule: path,
+      bindEffectBoundary,
       mkdirImpl: async () => {},
       closeErrorLabel: 'Failed to close run log handle:',
       exitErrorLabel: 'Failed to handle process exit:',
-      openImpl: async filePath => ({
+      openImpl: async (_permission, filePath) => ({
         fd: getFixtureFd(filePath),
         close: () => Promise.resolve(),
       }),
-      spawnImpl(command, args, options) {
+      spawnImpl(_permission, command, args, options) {
         calls.push({ command, args, options });
         return {
           pid: 12345,
@@ -156,14 +229,15 @@ describe('process launcher configuration', () => {
       command: 'codex',
       args: ['exec'],
       pathModule: path,
+      bindEffectBoundary,
       mkdirImpl: async () => {},
       closeErrorLabel: 'Failed to close run log handle:',
       exitErrorLabel: 'Failed to handle process exit:',
-      openImpl: async filePath => ({
+      openImpl: async (_permission, filePath) => ({
         fd: getFixtureFd(filePath),
         close: () => Promise.resolve(),
       }),
-      spawnImpl(command, args, options) {
+      spawnImpl(_permission, command, args, options) {
         calls.push({ command, args, options });
         return {
           pid: 12345,
@@ -209,16 +283,17 @@ describe('process launcher custom paths and exit handling', () => {
       command: 'codex',
       args: ['exec'],
       pathModule: path,
+      bindEffectBoundary,
       mkdirImpl: async () => {},
       closeErrorLabel: 'Failed to close run log handle:',
       exitErrorLabel: 'Failed to handle process exit:',
       resolveCwd: payload => path.join(payload.repoRoot, 'custom-cwd'),
       resolveLogDir: payload => path.join(payload.repoRoot, 'custom-logs'),
-      openImpl: async filePath => ({
+      openImpl: async (_permission, filePath) => ({
         fd: getFixtureFd(filePath),
         close: () => Promise.resolve(),
       }),
-      spawnImpl(command, args, options) {
+      spawnImpl(_permission, command, args, options) {
         calls.push({ command, args, options });
         return {
           pid: 12345,
@@ -269,6 +344,7 @@ describe('process launcher custom paths and exit handling', () => {
     const launcher = createDetachedProcessLauncher({
       command: 'codex',
       pathModule: path,
+      bindEffectBoundary,
       mkdirImpl: async () => {},
       closeErrorLabel: 'Failed to close run log handle:',
       exitErrorLabel: 'Failed to handle process exit:',

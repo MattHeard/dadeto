@@ -24,9 +24,10 @@ export const DEFAULT_CODEX_RALPH_ARGS = [...DEFAULT_CODEX_ARGS];
  *   cwd?: string,
  *   logDir?: string,
  *   logDirSuffix?: string,
- *   mkdirImpl?: unknown,
- *   openImpl?: unknown,
- *   spawnImpl?: unknown
+ *   mkdirImpl?: (permission: import('../../../../types/allow-effects').AllowEffects, dirPath: string, options: { recursive: boolean }) => Promise<void>,
+ *   openImpl?: (permission: import('../../../../types/allow-effects').AllowEffects, filePath: string, flags: 'a') => Promise<{ fd: number, close?: () => Promise<void> | void }>,
+ *   spawnImpl?: (permission: import('../../../../types/allow-effects').AllowEffects, command: string, args: string[], options: object) => { pid?: number, once: (event: string, listener: (code: number | null, signal: string | null) => void) => void, unref: () => void },
+ *   bindEffectBoundary: import('../../../../types/allow-effects').AllowEffectsBoundary
  * }} options Launcher options and dependency overrides.
  * @returns {{
  *   launchRunner: (payload: {

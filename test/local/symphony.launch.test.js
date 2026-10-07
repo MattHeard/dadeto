@@ -27,6 +27,14 @@ const { createSymphonyStatusStore } = await import(
   '../../src/local/symphony/statusStore.js'
 );
 
+const TEST_PERMISSION = Object.freeze({});
+const launcherEffects = {
+  mkdirImpl: async () => {},
+  openImpl: async () => ({ fd: 1 }),
+  spawnImpl: () => ({ pid: 1, once() {}, unref() {} }),
+  bindEffectBoundary: handler => handler(TEST_PERMISSION),
+};
+
 jest.setTimeout(15000);
 
 describe('local symphony runner launch', () => {
@@ -115,17 +123,24 @@ describe('local symphony runner launch', () => {
     expect(
       symphonyLaunchTestUtils.createConfiguredLauncher(
         { config: { launcher: { command: 'codex', args: [] } } },
-        { repoRoot: tempDir }
+        { ...launcherEffects, repoRoot: tempDir }
       ).launchRunner
     ).toEqual(expect.any(Function));
     expect(
       symphonyLaunchTestUtils.createConfiguredLauncher(
         {},
         {
+          ...launcherEffects,
           cwd: () => tempDir,
         }
       ).launchRunner
     ).toEqual(expect.any(Function));
+    expect(() =>
+      symphonyLaunchTestUtils.createConfiguredLauncher(
+        { config: { launcher: { command: 'codex', args: [] } } },
+        { repoRoot: tempDir }
+      )
+    ).toThrow('Symphony launcher effects require an AllowEffects boundary.');
     const deferred = symphonyLaunchTestUtils.createDeferredPromise();
     deferred.resolve();
     deferred.resolve();
