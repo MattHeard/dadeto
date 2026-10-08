@@ -18,14 +18,12 @@ const REMOVE_BUTTON_LABEL = 'Remove rating';
 const APPROVED_OPTION_LABEL = 'Approved';
 const REJECTED_OPTION_LABEL = 'Rejected';
 
-const cleanupModeratorRatings = browserCore.createDefaultHandler([
-  browserCore.maybeRemoveNumber,
-  browserCore.maybeRemoveKV,
-  browserCore.maybeRemoveFile,
-  browserCore.maybeRemoveTextarea,
-  browserCore.maybeRemoveDendrite,
-  browserCore.maybeRemoveModeratorRatings,
-]);
+const cleanupModeratorRatings = browserCore.createDefaultHandler(
+  browserCore.createInputCleanupHandlers([
+    browserCore.maybeRemoveDendrite,
+    browserCore.maybeRemoveModeratorRatings,
+  ])
+);
 
 /**
  * Normalize unknown values into a trimmed string.

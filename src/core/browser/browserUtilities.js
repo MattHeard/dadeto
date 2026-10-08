@@ -330,6 +330,21 @@ export const BASE_CONTAINER_HANDLERS = [
 ];
 
 /**
+ * Create the ordered cleanup list for standard input widgets.
+ * @param {ContainerHandler[]} [extraHandlers] Additional removers to append.
+ * @returns {ContainerHandler[]} Fresh standard cleanup list.
+ */
+export function createInputCleanupHandlers(extraHandlers = []) {
+  return [
+    maybeRemoveNumber,
+    maybeRemoveKV,
+    maybeRemoveFile,
+    maybeRemoveTextarea,
+    ...extraHandlers,
+  ];
+}
+
+/**
  * @param {HTMLElement} container Element hosting the inputs.
  * @param {DOMHelpers} dom DOM helper utilities.
  * @returns {(handler: ContainerHandler) => void} Bound invoker.

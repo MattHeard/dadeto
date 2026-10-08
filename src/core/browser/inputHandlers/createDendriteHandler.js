@@ -469,13 +469,7 @@ export function runContainerRemovers(container, dom, removers) {
  * @returns {void}
  */
 export function cleanContainer(dom, container) {
-  const removers = [
-    browserCore.maybeRemoveNumber,
-    browserCore.maybeRemoveKV,
-    browserCore.maybeRemoveFile,
-    browserCore.maybeRemoveTextarea,
-    removeExistingForm,
-  ];
+  const removers = browserCore.createInputCleanupHandlers([removeExistingForm]);
   runContainerRemovers(container, dom, removers);
 }
 

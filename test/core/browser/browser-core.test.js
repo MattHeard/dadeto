@@ -41,6 +41,23 @@ import {
 } from '../../../src/core/browser/inputValueStore.js';
 
 describe('browser-core helpers', () => {
+  test('creates the standard input cleanup list with optional removers', () => {
+    const extraRemover = jest.fn();
+    const standardHandlers = [
+      browserUtilities.maybeRemoveNumber,
+      browserUtilities.maybeRemoveKV,
+      browserUtilities.maybeRemoveFile,
+      browserUtilities.maybeRemoveTextarea,
+    ];
+
+    expect(browserUtilities.createInputCleanupHandlers()).toEqual(
+      standardHandlers
+    );
+    expect(browserUtilities.createInputCleanupHandlers([extraRemover])).toEqual(
+      [...standardHandlers, extraRemover]
+    );
+  });
+
   test('preserves utility identities through the browser composition facade', () => {
     Object.entries(browserUtilities).forEach(([name, helper]) => {
       expect(browserComposition[name]).toBe(helper);
