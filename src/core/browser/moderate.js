@@ -335,10 +335,7 @@ export async function submitRating(isApproved) {
  * @returns {Promise<void>} Resolves when rating flow completes.
  */
 async function submitRatingWithPermission(permission, isApproved) {
-  const approve = moderateDocument.getElementById('approveBtn');
-  const reject = moderateDocument.getElementById('rejectBtn');
-  if (approve) approve.disabled = true;
-  if (reject) reject.disabled = true;
+  toggleApproveReject(true);
   const stopSaving = startAnimation('saving', 'Saving');
   try {
     const { submitModerationRatingUrl } = await getModerationEndpoints();
@@ -365,8 +362,7 @@ async function submitRatingWithPermission(permission, isApproved) {
     stopSaving();
     console.error(err);
     alert("Sorry, that didn't work. See console for details.");
-    if (approve) approve.disabled = false;
-    if (reject) reject.disabled = false;
+    toggleApproveReject(false);
   }
 }
 
