@@ -17,6 +17,30 @@ export function resolveInterval(segments, points, segmentId) {
 }
 
 /**
+ * Resolve a segment into the timestamp interval exposed by spacetime toys.
+ * @param {Map<string, Record<string, unknown>>} segments Segment records.
+ * @param {Map<string, Record<string, unknown>>} points Point records.
+ * @param {string} segmentId Segment identifier.
+ * @returns {{start: string, end: string, startTime: number, endTime: number, startPointId: string, endPointId: string}} Resolved interval.
+ */
+export function resolveTimestampInterval(segments, points, segmentId) {
+  const timing = resolveSegmentTiming(
+    segments,
+    points,
+    segmentId,
+    'time interval'
+  );
+  return {
+    start: timing.startTimestamp,
+    end: timing.endTimestamp,
+    startTime: timing.startTime,
+    endTime: timing.endTime,
+    startPointId: timing.startPointId,
+    endPointId: timing.endPointId,
+  };
+}
+
+/**
  * Resolve a segment's endpoint records and timestamps.
  * @param {Map<string, Record<string, unknown> | undefined>} segments Segment records.
  * @param {Map<string, Record<string, unknown>>} points Point records.
