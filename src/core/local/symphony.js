@@ -11,6 +11,18 @@ import {
 } from '../commonCore.js';
 
 /**
+ * Check whether a candidate status store has a writable status method.
+ * @template T
+ * @param {T} statusStore Candidate persistence adapter.
+ * @returns {statusStore is T & { writeStatus: (...args: any[]) => any }} Whether status writes are supported.
+ */
+export function hasWritableStatusStore(statusStore) {
+  const candidate =
+    /** @type {{ writeStatus?: unknown } | null | undefined} */ (statusStore);
+  return Boolean(candidate && typeof candidate.writeStatus === 'function');
+}
+
+/**
  * @param {string} output Raw `bd ready` command output.
  * @returns {Array<{ id: string, title: string, priority: string }>} Parsed ready bead summaries.
  */

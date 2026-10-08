@@ -3,6 +3,7 @@
 // bootstrap/refresh workflows.
 import {
   buildSelectedBeadStatus,
+  hasWritableStatusStore,
   summarizePollResult,
   summarizeTrackerSelection,
 } from '../symphony.js';
@@ -51,10 +52,7 @@ function createRefreshSymphonyStatus(deps) {
    * @returns {Promise<SymphonyBootstrapValue>} Refreshed snapshot.
    */
   return async function refreshSymphonyStatus(options = {}) {
-    if (
-      !options.statusStore ||
-      typeof options.statusStore.writeStatus !== 'function'
-    ) {
+    if (!hasWritableStatusStore(options.statusStore)) {
       throw new Error('Symphony refresh requires a writable status store.');
     }
 

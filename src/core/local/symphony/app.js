@@ -1,4 +1,4 @@
-import { applyRunnerOutcome } from '../symphony.js';
+import { applyRunnerOutcome, hasWritableStatusStore } from '../symphony.js';
 
 /** @typedef {import('../../../../types/allow-effects').AllowEffects} AllowEffects */
 
@@ -97,10 +97,7 @@ function createSymphonyRefreshHandlerFactory(deps) {
    */
   return function createSymphonyRefreshHandler(options) {
     return createAsyncRouteHandler(async res => {
-      if (
-        !options.statusStore ||
-        typeof options.statusStore.writeStatus !== 'function'
-      ) {
+      if (!hasWritableStatusStore(options.statusStore)) {
         sendMissingTrigger(res, 'refresh');
         return;
       }
@@ -192,15 +189,6 @@ export function hasReconciliableActiveRun(status) {
   }
 
   return Boolean(status.activeRun && typeof status.activeRun === 'object');
-}
-
-/**
- * Test whether a status store can persist updates.
- * @param {SymphonyStatusStore} statusStore Status store.
- * @returns {statusStore is SymphonyStatusStore & { writeStatus: (permission: AllowEffects, status: SymphonyStatus) => Promise<void> }} True when writes are supported.
- */
-function hasWritableStatusStore(statusStore) {
-  return typeof statusStore.writeStatus === 'function';
 }
 
 /**

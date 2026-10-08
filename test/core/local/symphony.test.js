@@ -3,6 +3,7 @@ import {
   applyRunnerLaunchFailure,
   applyRunnerOutcome,
   buildSelectedBeadStatus,
+  hasWritableStatusStore,
   parseReadyBeads,
   selectNextBead,
   summarizePollResult,
@@ -11,6 +12,12 @@ import {
 } from '../../../src/core/local/symphony.js';
 
 describe('core local symphony helpers', () => {
+  test('detects whether a status store supports writes', () => {
+    expect(hasWritableStatusStore({ writeStatus() {} })).toBe(true);
+    expect(hasWritableStatusStore({ writeStatus: 'no' })).toBe(false);
+    expect(hasWritableStatusStore(null)).toBe(false);
+  });
+
   test('parses ready bead rows from bd output', () => {
     const readyBeads = parseReadyBeads(`
 📋 Ready work (2 issues with no blockers):
