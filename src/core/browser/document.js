@@ -179,12 +179,7 @@ export const cancelAnimationFrame = handle => {
  * @returns {number} Interval identifier.
  */
 export const setInterval = (callback, delay) => {
-  const setIntervalFn = getGlobalThisObj().setInterval;
-  if (typeof setIntervalFn !== 'function') {
-    throw new Error('globalThis.setInterval is not a function');
-  }
-
-  return setIntervalFn(callback, delay);
+  return getGlobalTimer('setInterval')(callback, delay);
 };
 
 /**
@@ -202,18 +197,27 @@ export const clearInterval = handle => {
 };
 
 /**
+ * Resolve a global timer function or report which timer is unavailable.
+ * @param {'setInterval' | 'setTimeout'} name Timer property to retrieve.
+ * @returns {(callback: () => void, delay: number) => number} Timer function.
+ */
+function getGlobalTimer(name) {
+  const timer = getGlobalThisObj()[name];
+  if (typeof timer !== 'function') {
+    throw new Error(`globalThis.${name} is not a function`);
+  }
+
+  return /** @type {(callback: () => void, delay: number) => number} */ (timer);
+}
+
+/**
  * Schedule a one-shot timer when the browser supports it.
  * @param {() => void} callback - Timeout callback.
  * @param {number} delay - Delay before the callback runs in milliseconds.
  * @returns {number} Timeout identifier.
  */
 export const setTimeout = (callback, delay) => {
-  const setTimeoutFn = getGlobalThisObj().setTimeout;
-  if (typeof setTimeoutFn !== 'function') {
-    throw new Error('globalThis.setTimeout is not a function');
-  }
-
-  return setTimeoutFn(callback, delay);
+  return getGlobalTimer('setTimeout')(callback, delay);
 };
 
 /**
