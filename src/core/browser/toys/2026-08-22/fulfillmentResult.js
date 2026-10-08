@@ -345,15 +345,39 @@ export function fulfillmentResolvePoint(point, spacePoints) {
  * @returns {Array<Record<string, any>>} Deduplicated records.
  */
 export function fulfillmentMergeById(records, field) {
+  return mergeUniqueRecords(records, {
+    getId: record => {
+      if (!record || !fulfillmentNonblank(record[field]))
+        throw new Error(`Invalid ${field}.`);
+      return String(record[field]);
+    },
+    conflicts: (existing, record) =>
+      JSON.stringify(existing) !== JSON.stringify(record),
+    normalize: (record, id) => ({ ...record, [field]: id }),
+    makeConflictError: id => new Error(`Conflicting ${field}: ${id}`),
+  });
+}
+
+/**
+ * Merge records by a caller-defined identifier and conflict policy.
+ * @template T, K
+ * @param {T[]} records Records in precedence order.
+ * @param {{getId: (record: T) => K, conflicts: (existing: T, record: T) => boolean, normalize?: (record: T, id: K) => T, makeConflictError?: (id: K) => Error}} options Identifier, conflict, and normalization policy.
+ * @returns {T[]} Unique records in first-seen order.
+ */
+export function mergeUniqueRecords(records, options) {
+  const {
+    getId,
+    conflicts,
+    normalize = record => record,
+    makeConflictError = id => new Error(`Conflicting record: ${id}`),
+  } = options;
   const byId = new Map();
   records.forEach(record => {
-    if (!record || !fulfillmentNonblank(record[field]))
-      throw new Error(`Invalid ${field}.`);
-    const id = String(record[field]);
+    const id = getId(record);
     const existing = byId.get(id);
-    if (existing && JSON.stringify(existing) !== JSON.stringify(record))
-      throw new Error(`Conflicting ${field}: ${id}`);
-    byId.set(id, { ...record, [field]: id });
+    if (existing && conflicts(existing, record)) throw makeConflictError(id);
+    byId.set(id, normalize(record, id));
   });
   return [...byId.values()];
 }

@@ -3,7 +3,10 @@
 import { normalizeCoordinateRecord } from '../2026-08-18/registryUtils.js';
 import { resolvePointRecords } from './spacePointResolution.js';
 import { normalFulfillmentSequenceProposal } from './normalFulfillmentSequenceProposal.js';
-import { createFulfillmentToy } from './fulfillmentResult.js';
+import {
+  createFulfillmentToy,
+  mergeUniqueRecords,
+} from './fulfillmentResult.js';
 
 /**
  * Build a normal fulfillment proposal with a self-contained canonical spatial context.
@@ -223,15 +226,7 @@ function mergeSpacePoints(left, right) {
  * @returns {Array<any>} Merged records.
  */
 function mergeRecords(left, right, getId, conflicts) {
-  const records = new Map();
-  [...left, ...right].forEach(record => {
-    const id = getId(record);
-    const previous = records.get(id);
-    if (previous && conflicts(previous, record))
-      throw new Error(`Conflicting record: ${id}`);
-    records.set(id, record);
-  });
-  return [...records.values()];
+  return mergeUniqueRecords([...left, ...right], { getId, conflicts });
 }
 
 /**
