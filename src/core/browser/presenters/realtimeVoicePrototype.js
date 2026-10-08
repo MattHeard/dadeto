@@ -326,19 +326,36 @@ function createDebugDataChannel(state, peerConnection, controls, dom) {
  * @returns {void}
  */
 function wirePeerConnectionEvents(peerConnection, controls, dom) {
-  peerConnection.addEventListener('connectionstatechange', () => {
-    appendDebugLog(
-      controls,
-      `Peer state: ${peerConnection.connectionState}.`,
-      dom
-    );
+  wirePeerConnectionState({
+    peerConnection,
+    eventName: 'connectionstatechange',
+    getMessage: () => `Peer state: ${peerConnection.connectionState}.`,
+    controls,
+    dom,
   });
-  peerConnection.addEventListener('iceconnectionstatechange', () => {
-    appendDebugLog(
-      controls,
-      `ICE state: ${peerConnection.iceConnectionState}.`,
-      dom
-    );
+  wirePeerConnectionState({
+    peerConnection,
+    eventName: 'iceconnectionstatechange',
+    getMessage: () => `ICE state: ${peerConnection.iceConnectionState}.`,
+    controls,
+    dom,
+  });
+}
+
+/**
+ * Log a peer connection state transition.
+ * @param {{peerConnection: RTCPeerConnection, eventName: string, getMessage: () => string, controls: object, dom: object}} options Event and output dependencies.
+ * @returns {void}
+ */
+function wirePeerConnectionState({
+  peerConnection,
+  eventName,
+  getMessage,
+  controls,
+  dom,
+}) {
+  peerConnection.addEventListener(eventName, () => {
+    appendDebugLog(controls, getMessage(), dom);
   });
 }
 
