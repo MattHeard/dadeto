@@ -1,5 +1,16 @@
 import { jest } from '@jest/globals';
-import { createFsAdapters } from '../../src/core/index.js';
+import {
+  createFsAdapters,
+  createJsonPostOptions,
+} from '../../src/core/index.js';
+
+test('creates JSON POST options with default headers and transport options', () => {
+  expect(createJsonPostOptions({ value: 1 })).toEqual({
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: '{"value":1}',
+  });
+});
 
 test('creates the injected synchronous filesystem adapter contract', () => {
   const fsModule = {
