@@ -3,6 +3,8 @@ export {
   buildVariantByNameQuery,
 } from './cloud-core.js';
 
+/** @typedef {{ensureAppFn?: () => void, getFirestoreFn?: (app?: import('firebase-admin/app').App, databaseId?: string) => import('firebase-admin/firestore').Firestore, environment?: Record<string, unknown>}} FirestoreInstanceOptions */
+
 /**
  * Parse the database identifier from the runtime environment.
  * @param {Record<string, unknown>} environment Process environment variables.
@@ -148,4 +150,31 @@ export function getFirestoreInstanceFromCache({
     cache.value = createFirestoreInstance(getFirestoreFn, databaseId);
   }
   return cache.value;
+}
+
+/**
+ * Create an accessor that resolves environment and cache policy consistently.
+ * @param {{cache: {value: import('firebase-admin/firestore').Firestore | null}, defaultEnsureAppFn: () => void, defaultGetFirestoreFn: NonNullable<FirestoreInstanceOptions['getFirestoreFn']>, resolveEnvironment: (options: FirestoreInstanceOptions) => Record<string, unknown>, shouldCache: (context: {options: FirestoreInstanceOptions, ensureAppFn: () => void, getFirestoreFn: NonNullable<FirestoreInstanceOptions['getFirestoreFn']>, environment: Record<string, unknown>}) => boolean}} deps Resolver dependencies and caller-specific policies.
+ * @returns {(options?: FirestoreInstanceOptions) => import('firebase-admin/firestore').Firestore} Configured Firestore accessor.
+ */
+export function createFirestoreInstanceResolver({
+  cache,
+  defaultEnsureAppFn,
+  defaultGetFirestoreFn,
+  resolveEnvironment,
+  shouldCache,
+}) {
+  return function getFirestoreInstance(options = {}) {
+    const ensureAppFn = options.ensureAppFn ?? defaultEnsureAppFn;
+    const getFirestoreFn = options.getFirestoreFn ?? defaultGetFirestoreFn;
+    const environment = resolveEnvironment(options);
+    return getFirestoreInstanceFromCache({
+      cache,
+      ensureAppFn,
+      getFirestoreFn,
+      environment,
+      shouldCache: () =>
+        shouldCache({ options, ensureAppFn, getFirestoreFn, environment }),
+    });
+  };
 }

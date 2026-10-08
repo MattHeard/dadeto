@@ -9,9 +9,9 @@ import {
   shouldUseCustomFirestoreDependencies,
 } from './assign-moderation-job-core.js';
 import {
-  getFirestoreInstanceFromCache,
   resolveFirestoreDatabaseId,
   createFirestoreInstanceCache,
+  createFirestoreInstanceResolver,
 } from '../firestore-helpers.js';
 import { resolveAllowedOrigins, isDuplicateAppError } from '../cloud-core.js';
 
@@ -73,44 +73,27 @@ export function createAssignModerationJobEntrypoint(deps) {
    */
   function createFirestoreInstanceHandlers(firebaseInitializationHandlers) {
     const firestoreCache = createFirestoreInstanceCache();
-
-    /**
-     * Resolve the Firestore instance for this entrypoint.
-     * @param {{
-     *   ensureAppFn?: () => void,
-     *   getFirestoreFn?: typeof deps.getFirestore,
-     *   environment?: Record<string, unknown>,
-     * }} [options] Optional Firestore overrides for tests.
-     * @returns {unknown} Firestore instance for the current environment.
-     */
-    function getFirestoreInstance(options = {}) {
-      const {
-        ensureAppFn = defaultEnsureFirebaseApp,
-        getFirestoreFn = typedDeps.getFirestore,
-        environment: providedEnvironment,
-      } = options;
-
-      const environment = resolveFirestoreEnvironment(
-        /** @type {Record<string, unknown> | undefined} */ (
-          providedEnvironment
+    const getFirestoreInstance = createFirestoreInstanceResolver({
+      cache: firestoreCache,
+      defaultEnsureAppFn: defaultEnsureFirebaseApp,
+      defaultGetFirestoreFn: typedDeps.getFirestore,
+      resolveEnvironment: options =>
+        /** @type {Record<string, unknown>} */ (
+          resolveFirestoreEnvironment(
+            /** @type {Record<string, unknown> | undefined} */ (
+              options.environment
+            ),
+            typedDeps.getEnvironmentVariables
+          ) ?? {}
         ),
-        typedDeps.getEnvironmentVariables
-      );
-
-      return getFirestoreInstanceFromCache({
-        cache: firestoreCache,
-        ensureAppFn,
-        getFirestoreFn,
-        environment: /** @type {Record<string, unknown>} */ (environment ?? {}),
-        shouldCache: () =>
-          !shouldUseCustomFirestoreDependencies({
-            options,
-            defaultEnsureFn: defaultEnsureFirebaseApp,
-            defaultGetFirestoreFn: typedDeps.getFirestore,
-            providedEnvironment,
-          }),
-      });
-    }
+      shouldCache: ({ options }) =>
+        !shouldUseCustomFirestoreDependencies({
+          options,
+          defaultEnsureFn: defaultEnsureFirebaseApp,
+          defaultGetFirestoreFn: typedDeps.getFirestore,
+          providedEnvironment: options.environment,
+        }),
+    });
 
     /**
      * Clear the cached Firestore instance and reset Firebase bootstrap state.

@@ -1,8 +1,8 @@
 import {
   resolveFirestoreDatabaseId,
-  getFirestoreInstanceFromCache,
   createDefaultFirestoreContextChecker,
   createFirestoreInstanceCache,
+  createFirestoreInstanceResolver,
 } from './firestore-helpers.js';
 
 /**
@@ -41,7 +41,7 @@ export function createFirestoreModule(deps) {
    * Determine whether the current call should bypass the cached Firestore instance.
    * @param {{
    *   ensureAppFn: () => void,
-   *   getFirestoreFn: typeof deps.getFirestore,
+   *   getFirestoreFn: (app?: import('firebase-admin/app').App, databaseId?: string) => import('firebase-admin/firestore').Firestore,
    *   environment: Record<string, unknown>,
    * }} options Firestore resolution inputs.
    * @returns {boolean} True when the call should use a fresh Firestore instance.
@@ -50,35 +50,13 @@ export function createFirestoreModule(deps) {
     return !usesDefaultFirestoreContext(options);
   }
 
-  /**
-   * Resolve the shared Firestore instance for this module.
-   * @param {{
-   *   ensureAppFn?: () => void,
-   *   getFirestoreFn?: typeof deps.getFirestore,
-   *   environment?: Record<string, unknown>,
-   * }} [options] Optional Firestore overrides for tests.
-   * @returns {import('firebase-admin/firestore').Firestore} Firestore instance for the current environment.
-   */
-  function getFirestoreInstance(options = {}) {
-    const {
-      ensureAppFn = ensureFirebaseApp,
-      getFirestoreFn = typedDeps.getFirestore,
-      environment = process.env,
-    } = options;
-
-    return getFirestoreInstanceFromCache({
-      cache: firestoreCache,
-      ensureAppFn,
-      getFirestoreFn,
-      environment,
-      shouldCache: () =>
-        !shouldBypassFirestoreCache({
-          ensureAppFn,
-          getFirestoreFn,
-          environment,
-        }),
-    });
-  }
+  const getFirestoreInstance = createFirestoreInstanceResolver({
+    cache: firestoreCache,
+    defaultEnsureAppFn: ensureFirebaseApp,
+    defaultGetFirestoreFn: typedDeps.getFirestore,
+    resolveEnvironment: options => options.environment ?? process.env,
+    shouldCache: context => !shouldBypassFirestoreCache(context),
+  });
 
   /**
    * Clear the cached Firestore instance and reset Firebase bootstrap state.
