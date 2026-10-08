@@ -2,6 +2,7 @@ import * as browserCore from '../browser-core.js';
 import {
   createInputDisposer,
   revealAndEnable,
+  writeMirroredInputValue,
 } from './browserInputHandlersCore.js';
 import { ensureConfiguredSpecialInput } from './sharedSpecialInput.js';
 import { FILE_INPUT_SETTINGS } from './fileInputSettings.js';
@@ -52,8 +53,7 @@ function createFileInputElement(dom) {
  * @returns {void}
  */
 function syncTextInput(textInput, dom, content) {
-  dom.setValue(textInput, content);
-  browserCore.setInputValue(textInput, content);
+  writeMirroredInputValue(textInput, dom, content);
 }
 
 /**

@@ -38,12 +38,16 @@ export function createNumberFieldInput(dom, { value, placeholder }) {
  */
 /** @typedef {(textInput: TextInputElement, targetValue: string) => void} TextInputUpdateHandler */
 /**
- * @param {BrowserDom} dom - DOM utilities.
- * @returns {TextInputUpdateHandler} Setter that writes target values back to the DOM.
+ * Update the DOM value and stored input value together.
+ * @param {TextInputElement} textInput Input element to update.
+ * @param {BrowserDom} dom DOM helper facade.
+ * @param {string} targetValue Value to store and display.
+ * @returns {void}
  */
-const createDomValueSetter = dom => (textInput, targetValue) => {
+export function writeMirroredInputValue(textInput, dom, targetValue) {
   dom.setValue(textInput, targetValue);
-};
+  setInputValue(textInput, targetValue);
+}
 
 /**
  * @param {ElementWithValue} textInput - Input paired with the target values.
@@ -77,8 +81,9 @@ const createTextInputUpdater =
  * @returns {DOMEventListener} Input handler that keeps helpers aligned.
  */
 export const createUpdateTextInputValue = (textInput, dom) => {
-  const setTextInputValue = createDomValueSetter(dom);
-  const updateHandlers = [setTextInputValue, setInputValue];
+  const setTextInputValue = (input, value) =>
+    writeMirroredInputValue(input, dom, value);
+  const updateHandlers = [setTextInputValue];
   const applyTargetToHandlers = createTargetApplier(textInput);
   return createTextInputUpdater(dom, applyTargetToHandlers, updateHandlers);
 };

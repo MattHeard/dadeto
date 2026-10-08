@@ -1,13 +1,13 @@
 import {
   createInputElement,
   setupInputEvents,
+  writeMirroredInputValue,
 } from './browserInputHandlersCore.js';
 import {
   applyBaseCleanupHandlers,
   getInputValue,
   hideAndDisable,
 } from '../browser-core.js';
-import { setInputValue } from '../inputValueStore.js';
 import { createOrReuseSpecialInput } from './sharedSpecialInput.js';
 
 const NUMBER_INPUT_SELECTOR = 'input[type="number"]';
@@ -69,8 +69,7 @@ function createBoundNumberInput(textInput, dom) {
     const targetValue = dom.getTargetValue(
       /** @type {Event & { target: { value: string } }} */ (event)
     );
-    dom.setValue(textInput, targetValue);
-    setInputValue(textInput, targetValue);
+    writeMirroredInputValue(textInput, dom, targetValue);
   };
 
   return createNumberInput(inputValue, updateTextInputValue, dom);
