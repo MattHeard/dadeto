@@ -1,3 +1,5 @@
+import { normalizeNonStringValue } from './validation.js';
+
 /**
  * Input-like elements that expose a `value` property for storage.
  * @typedef {HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement} ElementWithValue
@@ -7,21 +9,12 @@
 const inputValueStore = new WeakMap();
 
 /**
- * Normalize user input into a persisted string form.
- * @param {string|number|boolean|null|undefined} value - Raw input value.
- * @returns {string} A string representation that treats nullish as empty.
- */
-function normalizeInputValue(value) {
-  return String(value ?? '');
-}
-
-/**
  * Resolve the stored value for an element or fall back to its live value.
  * @param {ElementWithValue} element - Input element acting as the key.
  * @returns {string} Stored value when present otherwise the normalized live value.
  */
 export function readStoredOrElementValue(element) {
-  return inputValueStore.get(element) ?? normalizeInputValue(element.value);
+  return inputValueStore.get(element) ?? normalizeNonStringValue(element.value);
 }
 
 /**
@@ -33,7 +26,7 @@ export function setInputValue(element, value) {
   if (!element) {
     return;
   }
-  inputValueStore.set(element, normalizeInputValue(value));
+  inputValueStore.set(element, normalizeNonStringValue(value));
 }
 
 /**
