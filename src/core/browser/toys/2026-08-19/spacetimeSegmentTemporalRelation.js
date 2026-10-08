@@ -4,10 +4,7 @@ import { resolvePointRecords } from '../2026-08-22/spacePointResolution.js';
 import { runToyRequest } from '../formatToyError.js';
 import { isJsonObject, normalizeSegmentId } from './spacetimeInput.js';
 import { resolveSegmentTiming } from '../2026-08-21/segmentAssignmentFeasibilityCore.js';
-import {
-  createIntervalIndexes,
-  resolveInterval,
-} from '../2026-08-20/assignmentIntervals.js';
+import { createIntervalIndexes } from '../2026-08-20/assignmentIntervals.js';
 
 /**
  * Classify the temporal relation between two SPAC2 segments.
@@ -26,22 +23,7 @@ export function spacetimeSegmentTemporalRelation(input) {
 function calculateTemporalRelation(request) {
   const { points, segments } = createIntervalIndexes(request);
   const [left, right] = [request.firstSegmentId, request.secondSegmentId].map(
-    segmentId => {
-      const timing = resolveSegmentTiming(
-        segments,
-        points,
-        segmentId,
-        'time interval'
-      );
-      return {
-        start: timing.startTimestamp,
-        end: timing.endTimestamp,
-        startTime: timing.startTime,
-        endTime: timing.endTime,
-        startPointId: timing.startPointId,
-        endPointId: timing.endPointId,
-      };
-    }
+    segmentId => resolveInterval(segments, points, segmentId)
   );
   const relation = classify(left, right);
   return {
@@ -50,6 +32,30 @@ function calculateTemporalRelation(request) {
     relation,
     firstInterval: left,
     secondInterval: right,
+  };
+}
+
+/**
+ * Resolve a segment into its timestamp interval.
+ * @param {Map<string, Record<string, unknown>>} segments Segment records.
+ * @param {Map<string, Record<string, unknown>>} points Point records.
+ * @param {string} segmentId Segment identifier.
+ * @returns {{start: string, end: string, startTime: number, endTime: number, startPointId: string, endPointId: string}} Resolved interval.
+ */
+export function resolveInterval(segments, points, segmentId) {
+  const timing = resolveSegmentTiming(
+    segments,
+    points,
+    segmentId,
+    'time interval'
+  );
+  return {
+    start: timing.startTimestamp,
+    end: timing.endTimestamp,
+    startTime: timing.startTime,
+    endTime: timing.endTime,
+    startPointId: timing.startPointId,
+    endPointId: timing.endPointId,
   };
 }
 
@@ -127,6 +133,5 @@ export {
   isJsonObject,
   normalizeSegmentId,
   parseRequest,
-  resolveInterval,
   sharesBoundaryPoint,
 };

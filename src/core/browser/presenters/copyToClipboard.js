@@ -106,8 +106,7 @@ function clearCopyFeedbackTimeout(options) {
  */
 function resetCopyButtonLabel(options) {
   const { button, dom, state } = options;
-  setCopyButtonLabel(button, dom, getCopyButtonLabel());
-  resetCopyFeedbackState(state);
+  setCopyFeedbackLabel(button, dom, state, getCopyButtonLabel());
 }
 
 /**
@@ -122,10 +121,23 @@ function resetCopyButtonLabel(options) {
 function showCopySuccessFeedback(options) {
   const { button, dom, state } = options;
   clearCopyFeedbackTimeout(options);
-  setCopyButtonLabel(button, dom, getCopiedButtonLabel());
+  setCopyFeedbackLabel(button, dom, state, getCopiedButtonLabel());
   state.timeoutHandle = dom.setTimeout(() => {
     resetCopyButtonLabel({ button, dom, state });
   }, getCopyFeedbackDelayMs());
+}
+
+/**
+ * Update the button label and clear the previous feedback timer state.
+ * @param {HTMLButtonElement} button Copy button.
+ * @param {DOMHelpers} dom DOM helper facade.
+ * @param {{ timeoutHandle: number | null }} state Copy feedback state.
+ * @param {string} label Label to display.
+ * @returns {void}
+ */
+function setCopyFeedbackLabel(button, dom, state, label) {
+  setCopyButtonLabel(button, dom, label);
+  resetCopyFeedbackState(state);
 }
 
 /**

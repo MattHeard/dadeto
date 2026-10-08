@@ -480,6 +480,19 @@ function buildPersistedResponse(payload, newData, extraResponse = () => ({})) {
 }
 
 /**
+ * Persist a Dendrite page payload and serialize its response.
+ * @param {Parameters<typeof persistTemporaryData>[1]} payload Page and option records.
+ * @param {ToyEnv} env Environment helpers used for persistence.
+ * @param {Parameters<typeof persistTemporaryData>[2]} [mutateData] Optional mutation before saving.
+ * @param {Parameters<typeof buildPersistedResponse>[2]} [extraResponse] Optional response fields.
+ * @returns {string} JSON response for the persisted page.
+ */
+function persistPageAndBuildResponse(payload, env, mutateData, extraResponse) {
+  const newData = persistTemporaryData(env, payload, mutateData);
+  return buildPersistedResponse(payload, newData, extraResponse);
+}
+
+/**
  * Persist a Dendrite page payload into temporary storage.
  * @param {{ optionId: string, content: string }} parsed Parsed page payload.
  * @param {ToyEnv} env Environment helpers used to get UUIDs and persist data.
@@ -495,8 +508,7 @@ export function persistDendritePage(parsed, env) {
     content: parsed.content,
   };
 
-  const newData = persistTemporaryData(env, { page, options: opts });
-  return buildPersistedResponse({ page, options: opts }, newData);
+  return persistPageAndBuildResponse({ page, options: opts }, env);
 }
 
 /**
@@ -520,19 +532,16 @@ export function persistDendriteStory(parsed, env) {
     pageId,
   }));
 
-  const newData = persistTemporaryData(
-    env,
+  return persistPageAndBuildResponse(
     { page, options: opts },
+    env,
     newData => {
       const temp = /** @type {NonNullable<ToyStorage['temporary']>} */ (
         newData.temporary
       );
       const tran1 = /** @type {Dend2Data} */ (temp.TRAN1);
       tran1.stories.push(story);
-    }
+    },
+    () => ({ stories: [story] })
   );
-
-  return buildPersistedResponse({ page, options: opts }, newData, () => ({
-    stories: [story],
-  }));
 }
