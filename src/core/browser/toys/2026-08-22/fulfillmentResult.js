@@ -1,5 +1,6 @@
 import { normalizeSpatialCoordinates } from './spacePointResolution.js';
 import { createSegmentRecord as fulfillmentSegment } from '../2026-08-18/registryUtils.js';
+export { isNonEmptyString as fulfillmentNonblankString } from '../../validation.js';
 export { fulfillmentSegment };
 import { formatToyError } from '../formatToyError.js';
 
@@ -103,15 +104,6 @@ export function fulfillmentSequenceResponse(
  */
 export function fulfillmentNonblank(value) {
   return value !== undefined && value !== null && String(value).trim() !== '';
-}
-
-/**
- * Require nonblank text without coercing identifiers from other scalar types.
- * @param {unknown} value Candidate identifier.
- * @returns {boolean} Whether the value is nonblank text.
- */
-export function fulfillmentNonblankString(value) {
-  return typeof value === 'string' && value.trim().length > 0;
 }
 
 /**
