@@ -4,6 +4,8 @@ import {
   frameRectangle,
   toFramePayload,
 } from '../mosslight-valley/renderer.js';
+import { generateCommonsTile } from './tiles.js';
+import { commonsSpriteShapes } from './sprites.js';
 import { WATER_PUZZLE } from './puzzle.js';
 
 const COLORS = Object.freeze({
@@ -29,10 +31,17 @@ export function renderCommons(state) {
         : state.agreements.length
           ? 'AGREEMENT RECORDED · VISIT THE CHARTER TABLE'
           : state.presentation?.status;
-  const frame = toFramePayload({
-    ...state,
-    presentation: { ...state.presentation, status },
-  });
+  const frame = toFramePayload(
+    {
+      ...state,
+      presentation: {
+        ...state.presentation,
+        status,
+        palette: ['#173c3a', '#557b59', '#b6c878', '#f2bd62'],
+      },
+    },
+    { tileGenerator: generateCommonsTile, spriteRenderer: commonsSpriteShapes }
+  );
   frame.type = 'the-commons-of-tomorrow';
   frame.quest = 'The River Keeps Its Own Time';
   frame.commons = {

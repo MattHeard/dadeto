@@ -34,5 +34,5 @@
 
 ## Dependencies
 
-- Internal dependencies: Mosslight movement, dialogue, input, pixel renderer, save adapter and page presenter where compatible; Chronoflow deterministic flow solver primitives where compatible.
+- Internal dependencies: Mosslight movement, dialogue, input, pixel canvas presenter, save adapter and page presenter where compatible; Commons-owned tile and sprite generators; Chronoflow deterministic flow solver primitives where compatible.
 - External dependencies: none required.

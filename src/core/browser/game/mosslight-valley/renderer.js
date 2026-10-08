@@ -17,9 +17,10 @@ const PALETTES = {
 /**
  * Build the same pixel-art frame payload for page and embedded renderer.
  * @param {any} state Normalized game state.
+ * @param {{tileGenerator?: typeof generateBackgroundTile, spriteRenderer?: typeof spriteShapes}} [renderers] Optional game-specific art generators.
  * @returns {CanvasFrame} Shared frame payload for both presenters.
  */
-export function toFramePayload(state) {
+export function toFramePayload(state, renderers = {}) {
   const palette =
     state.presentation?.palette ||
     PALETTES[state.world.map.palette] ||
@@ -52,16 +53,17 @@ export function toFramePayload(state) {
     tick: state.tick,
     presentation: state.presentation,
   });
-  frame.shapes = toCanvasShapes(frame);
+  frame.shapes = toCanvasShapes(frame, renderers);
   return frame;
 }
 /**
  *
  * @param {CanvasFrame} frame Shared frame payload.
+ * @param {{tileGenerator?: typeof generateBackgroundTile, spriteRenderer?: typeof spriteShapes}} [renderers] Optional game-specific art generators.
  * @returns {CanvasShape[]} Renderable canvas shapes.
  */
-function toCanvasShapes(frame) {
-  const layers = worldLayers(frame);
+function toCanvasShapes(frame, renderers) {
+  const layers = worldLayers(frame, renderers);
   const shapes = [...layers.scenery, ...layers.signs];
   shapes.push(...hudShapes(frame));
   if (frame.menu) shapes.push(...controllerShapes(frame));
@@ -73,15 +75,16 @@ function toCanvasShapes(frame) {
 /**
  * Keep world depth and navigation annotations identical across both presenters.
  * @param {CanvasFrame} frame Shared game frame.
+ * @param {{tileGenerator?: typeof generateBackgroundTile, spriteRenderer?: typeof spriteShapes}} [renderers] Optional game-specific art generators.
  * @returns {{scenery: CanvasShape[], signs: CanvasShape[]}} Paintable world layers.
  */
-function worldLayers(frame) {
+function worldLayers(frame, renderers = {}) {
   const crossings = crossingShapes(frame);
   return {
     scenery: [
-      ...terrainShapes(frame),
+      ...terrainShapes(frame, renderers.tileGenerator),
       ...crossings.tiles,
-      ...foregroundShapes(frame),
+      ...foregroundShapes(frame, renderers.spriteRenderer),
     ],
     signs: crossings.signs,
   };
@@ -89,9 +92,10 @@ function worldLayers(frame) {
 /**
  * Fill the viewport, clipping the partial rightmost tile.
  * @param {CanvasFrame} frame Shared game frame.
+ * @param {typeof generateBackgroundTile} [tileGenerator] Game-specific terrain renderer.
  * @returns {CanvasShape[]} Opaque terrain shapes.
  */
-function terrainShapes(frame) {
+function terrainShapes(frame, tileGenerator = generateBackgroundTile) {
   const shapes = [
     frameRectangle({ x: 0, y: 0, width: 160, height: 144 }, frame.palette[0]),
   ];
@@ -102,7 +106,7 @@ function terrainShapes(frame) {
       const wy = y + frame.camera.y;
       if (wx >= map.width || wy >= map.height) continue;
       const blocked = map.blocked.includes(`${wx},${wy}`);
-      for (const rect of generateBackgroundTile({
+      for (const rect of tileGenerator({
         x: wx,
         y: wy,
         palette: frame.palette,
@@ -270,16 +274,17 @@ export function drawGameFrame(context, frame) {
 /**
  * Share foreground artwork and depth ordering between game views.
  * @param {CanvasFrame} frame Game frame.
+ * @param {typeof spriteShapes} [spriteRenderer] Game-specific foreground renderer.
  * @returns {CanvasShape[]} Foreground pixel shapes.
  */
-function foregroundShapes(frame) {
+function foregroundShapes(frame, spriteRenderer = spriteShapes) {
   return [
     ...(frame.world.map.objects || []),
     ...frame.npcs,
     { ...frame.player, id: 'player' },
   ]
     .sort((a, b) => a.y - b.y)
-    .flatMap(actor => spriteShapes(actor, frame.camera, frame.tick));
+    .flatMap(actor => spriteRenderer(actor, frame.camera, frame.tick));
 }
 
 /**

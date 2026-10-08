@@ -15,6 +15,7 @@
 - Save and reload after evidence discovery; verify the same quest state remains.
 - Run identical input traces through the embedded adapter and dedicated runtime; compare normalized state snapshots.
 - Build emits `/the-commons-of-tomorrow/` and a registered embedded toy with a lazy manual.
+- Commons terrain has terraced solar-path tile motifs, marsh flow bands and original resident/landmark sprites; repeated coordinates and ticks render deterministically.
 - Exit codes are zero for focused tests and build.
 
 ## Troubleshooting Hooks

@@ -7,6 +7,7 @@
 - [ ] Puzzle tests cover a known solution, failed route, bounded/reversible edits, reset, and deterministic repeated advancement without wall-clock access.
 - [ ] Save tests cover independent game identity, versioned three-slot persistence, export/import round trip, malformed import rejection without replacing current state, and save/reload mid-quest.
 - [ ] Embedded and dedicated adapters produce equivalent state and 160×144 frame output from the same command sequence.
+- [x] Commons tile and sprite generators produce deterministic, game-specific pixel art distinct from Mosslight's terrain and actor palette.
 - [ ] Controller tests exercise directions/A/B/X/Y only, B assignment, menu ownership, dialogue navigation, and all essential actions through menus.
 - [ ] Focused Jest and Playwright suites pass; `npm run build` emits the page, game assets, embedded registration and manual.
 - [ ] `npm run check` exits 0 before final bead closure.
