@@ -1,5 +1,8 @@
 // Shared pure feasibility helpers for safe segment assignment toys.
-import { resolvePointRecords } from '../2026-08-22/spacePointResolution.js';
+import {
+  indexPointRecords as indexResolvedPointRecords,
+  resolvePointRecords,
+} from '../2026-08-22/spacePointResolution.js';
 import { resolveSegmentTiming } from '../2026-08-20/assignmentIntervals.js';
 export { resolveSegmentTiming } from '../2026-08-20/assignmentIntervals.js';
 export { overlaps } from '../2026-08-20/assignmentIntervals.js';
@@ -41,7 +44,7 @@ export function measureSegmentMotion(candidate, movingAtZero = Infinity) {
  * @returns {Map<string, Record<string, unknown>>} Point index.
  */
 export function indexPointRecords(points) {
-  return new Map(points.map(point => [String(point.pointId), point]));
+  return indexResolvedPointRecords(points, point => String(point.pointId));
 }
 
 /**
