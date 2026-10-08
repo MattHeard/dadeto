@@ -1,5 +1,5 @@
 import { sanitizeUrl } from '../error-reporting.js';
-import { noop } from '../commonCore.js';
+import { createJsonPostOptions, noop } from '../commonCore.js';
 
 /** @typedef {import('../../../types/allow-effects').AllowEffects} AllowEffects */
 
@@ -137,16 +137,19 @@ export function createErrorBeaconReporter(
 
     Promise.resolve(
       bindEffectBoundary(permission =>
-        fetchFn(permission, endpointUrl, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(payload),
-          mode: 'cors',
-          credentials: 'omit',
-          keepalive: true,
-        })
+        fetchFn(
+          permission,
+          endpointUrl,
+          createJsonPostOptions(
+            payload,
+            {},
+            {
+              mode: 'cors',
+              credentials: 'omit',
+              keepalive: true,
+            }
+          )
+        )
       )
     ).then(undefined, noop);
   };

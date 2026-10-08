@@ -13,6 +13,22 @@ export function createErrorPayload(message) {
 }
 
 /**
+ * Build a JSON POST request while allowing caller-specific headers and options.
+ * @param {unknown} payload JSON body value.
+ * @param {Record<string, string>} [headers] Additional request headers.
+ * @param {{mode?: 'cors' | 'navigate' | 'no-cors' | 'same-origin', credentials?: 'include' | 'omit' | 'same-origin', keepalive?: boolean}} [options] Transport options.
+ * @returns {{method: 'POST', headers: Record<string, string>, body: string, mode?: 'cors' | 'navigate' | 'no-cors' | 'same-origin', credentials?: 'include' | 'omit' | 'same-origin', keepalive?: boolean}} JSON POST request options.
+ */
+export function createJsonPostOptions(payload, headers = {}, options = {}) {
+  return {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...headers },
+    body: JSON.stringify(payload),
+  };
+}
+
+/**
  * Clamp a numeric value without imposing a caller-specific finite-value policy.
  * @param {number} value Value to clamp.
  * @param {number} minimum Inclusive lower bound.

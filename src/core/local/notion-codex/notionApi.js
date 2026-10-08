@@ -1,5 +1,6 @@
 import { normalizeStringArray } from './valueHelpers.js';
 import { requireString } from '../config-utils.js';
+import { createJsonPostOptions } from '../../commonCore.js';
 
 // Stryker disable all -- this module is the fixed Notion API token, request,
 // pagination, and payload-shaping boundary covered by the API contract suite.
@@ -32,15 +33,14 @@ export async function appendNotionCodexReply(options) {
   }
 
   const response = await options.bindEffectBoundary(permission =>
-    options.fetchImpl(permission, `${NOTION_API_BASE_URL}/comments`, {
-      method: 'POST',
-      headers: {
+    options.fetchImpl(
+      permission,
+      `${NOTION_API_BASE_URL}/comments`,
+      createJsonPostOptions(buildReplyPayload({ pageId, runId, message }), {
         Authorization: `Bearer ${token}`,
-        'Content-Type': 'application/json',
         'Notion-Version': options.notionVersion ?? DEFAULT_NOTION_VERSION,
-      },
-      body: JSON.stringify(buildReplyPayload({ pageId, runId, message })),
-    })
+      })
+    )
   );
 
   const body = await readJsonResponse(response);
