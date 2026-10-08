@@ -160,31 +160,29 @@ function persistStoryResult(env, result) {
 /**
  * Adds a new dendrite story entry to the application's data store.
  * @param {string} input - JSON string containing story data.
- * @param {Map<string, (...args: never[]) => unknown>} env - Environment with data accessors.
- * @returns {string} The serialized newly added story or empty object on error.
- */
-/**
- * Adds a new dendrite story entry to the application's data store.
- * @param {string} input - JSON string containing story data.
  * @param {ToyEnv} env - Environment with data accessors.
  * @returns {string} The serialized story or `'{}'` on error.
  */
 export function startLocalDendriteStory(input, env) {
-  return runToyWithParsedJson(
-    input,
-    /**
-     * @param {object} parsed - Parsed payload from the caller.
-     * @returns {string} Serialized story result saved into the temporary store.
-     */
-    parsed => {
-      const data = /** @type {DendriteStoryInput} */ (parsed);
-      const { getUuid } = getEnvHelpers(env);
-      const result = createStoryResult(data, getUuid);
-
-      persistStoryResult(env, result);
-      return JSON.stringify(result);
-    }
+  const processParsedStory = /** @type {(parsed: object) => string} */ (
+    parsed => buildStoryFromParsedInput(parsed, env)
   );
+  return runToyWithParsedJson(input, processParsedStory);
+}
+
+/**
+ * Build and persist one story from parsed input.
+ * @param {object} parsed Parsed payload from the caller.
+ * @param {ToyEnv} env Environment with data accessors.
+ * @returns {string} Serialized story result.
+ */
+function buildStoryFromParsedInput(parsed, env) {
+  const data = /** @type {DendriteStoryInput} */ (parsed);
+  const { getUuid } = getEnvHelpers(env);
+  const result = createStoryResult(data, getUuid);
+
+  persistStoryResult(env, result);
+  return JSON.stringify(result);
 }
 
 export const startLocalDendriteStoryTestOnly = {

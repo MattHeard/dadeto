@@ -377,53 +377,46 @@ function createTableHeaderCell(group, options) {
   headerCell.colSpan = group.length;
 
   if (group.collapsed) {
+    appendColumnToggle(headerCell, {
+      dom,
+      text: COLLAPSED_BUTTON_TEXT,
+      update: () =>
+        expandColumnGroup(collapsedColumns, group.start, group.length),
+      rerender,
+    });
+  } else {
     dom.appendChild(
       headerCell,
-      createColumnToggleLink(
-        dom,
-        COLLAPSED_BUTTON_TEXT,
-        rerenderAfterColumnUpdate(
-          () => expandColumnGroup(collapsedColumns, group.start, group.length),
-          rerender
-        )
-      )
+      createTextElement(dom, {
+        tag: 'span',
+        className: TABLE_LABEL_CLASS,
+        text: column.label,
+      })
     );
-    return headerCell;
-  }
-
-  dom.appendChild(
-    headerCell,
-    createTextElement(dom, {
-      tag: 'span',
-      className: TABLE_LABEL_CLASS,
-      text: column.label,
-    })
-  );
-  dom.appendChild(
-    headerCell,
-    createColumnToggleLink(
+    appendColumnToggle(headerCell, {
       dom,
-      EXPANDED_BUTTON_TEXT,
-      rerenderAfterColumnUpdate(
-        () => collapseColumn(collapsedColumns, group.start),
-        rerender
-      )
-    )
-  );
+      text: EXPANDED_BUTTON_TEXT,
+      update: () => collapseColumn(collapsedColumns, group.start),
+      rerender,
+    });
+  }
   return headerCell;
 }
 
 /**
- * Run a column state update and refresh the table.
- * @param {() => void} update Column state update.
- * @param {() => void} rerender Table render callback.
- * @returns {() => void} Click handler.
+ * Append a toggle link that updates column state and refreshes the table.
+ * @param {HTMLElement} headerCell Header cell receiving the link.
+ * @param {{dom: DOMHelpers, text: string, update: () => void, rerender: () => void}} options Toggle configuration.
+ * @returns {void}
  */
-function rerenderAfterColumnUpdate(update, rerender) {
-  return () => {
-    update();
-    rerender();
-  };
+function appendColumnToggle(headerCell, { dom, text, update, rerender }) {
+  dom.appendChild(
+    headerCell,
+    createColumnToggleLink(dom, text, () => {
+      update();
+      rerender();
+    })
+  );
 }
 
 /**

@@ -6,12 +6,12 @@
 export function skuFulfillmentFeasibility(input) {
   try {
     const request = JSON.parse(input);
-    return JSON.stringify({
-      feasible:
-        request.procurementFeasible === true ||
-        request.existingStockFeasible === true,
-    });
+    return formatFulfillmentFeasibility(
+      request.procurementFeasible === true ||
+        request.existingStockFeasible === true
+    );
   } catch {
-    return JSON.stringify({ feasible: false });
+    return formatFulfillmentFeasibility(false);
   }
 }
+import { formatFulfillmentFeasibility } from '../2026-08-22/fulfillmentResult.js';

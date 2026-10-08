@@ -1,4 +1,5 @@
 import * as parserPolicy from './parser-options.js';
+import { isFunctionNodeType } from '../scripts/function-node-types.js';
 
 /**
  * @typedef {{ start?: { line?: number }, end?: { line?: number } }} SourceLocation
@@ -7,15 +8,6 @@ import * as parserPolicy from './parser-options.js';
  * @typedef {{ index: number, description: string }} FactorEntry
  * @typedef {{ functionStack: FunctionFrame[], factors: FactorEntry[], source: string }} TraversalState
  */
-
-const FUNCTION_NODES = new Set([
-  'FunctionDeclaration',
-  'FunctionExpression',
-  'ArrowFunctionExpression',
-  'ObjectMethod',
-  'ClassMethod',
-  'ClassPrivateMethod',
-]);
 
 /** @type {{ match: (node: AstNode) => boolean, describe: (node: AstNode, snippet: string | null) => string }[]} */
 const FACTOR_DEFINITIONS = [
@@ -79,15 +71,6 @@ const IDENTIFIER_NAME_READERS = {
 // Stryker disable all -- defensive AST-name and source-location fallbacks are
 // parser-boundary compatibility code; the real parser cannot produce every
 // malformed shape accepted by these guards.
-/**
- * Test whether a node starts a function scope.
- * @param {AstNode | null | undefined} node AST node.
- * @returns {boolean} True when the node is a function node.
- */
-function isFunctionNode(node) {
-  return Boolean(node?.type && FUNCTION_NODES.has(node.type));
-}
-
 /**
  * Read the key represented by a member expression.
  * @param {AstNode} node Member expression node.
@@ -336,7 +319,7 @@ function traverseChild(child, node, state) {
 function traverseNode(node, parent, state) {
   if (!isAstNode(node)) return;
 
-  const enteringFunction = isFunctionNode(node);
+  const enteringFunction = isFunctionNodeType(node?.type);
   if (enteringFunction) {
     const name = getFunctionName(node, parent);
     const label = formatFunctionLabel(name, node.loc);

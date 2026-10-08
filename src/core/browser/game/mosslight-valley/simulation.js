@@ -16,10 +16,7 @@ import {
 } from './activities.js';
 import { startBattle, battleAction } from './combat.js';
 import { controllerMenu } from './controls.js';
-import {
-  advanceSimulationFrame,
-  createSimulationClockState,
-} from '../simulationCore.js';
+import * as simulationCore from '../simulationCore.js';
 
 /**
  * Create the complete starting state for a new save.
@@ -37,7 +34,7 @@ export function createSimulation(content = CONTENT) {
     dialogue: null,
     battle: null,
     ending: null,
-    ...createSimulationClockState(),
+    ...simulationCore.createSimulationClockState(),
     quickAction: 'fish',
     menu: null,
     controllerCommand: null,
@@ -58,7 +55,7 @@ export function stepGame(
   content = CONTENT,
   deltaMs = 125
 ) {
-  let next = advanceSimulationFrame(state, deltaMs);
+  let next = simulationCore.advanceSimulationFrame(state, deltaMs);
   const rawActions = actions;
   const rawPressed = actions.filter(
     action => !state.lastActions.includes(action)

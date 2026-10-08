@@ -307,20 +307,9 @@ function createGateRunner({ successMessage, findViolations, formatFailures }) {
         setExitCode() {},
         successMessage,
       });
-      return createGateResult(failed ? 1 : 0, violations);
+      return { exitCode: failed ? 1 : 0, violations };
     };
   };
-}
-
-/**
- * Build a core-parse gate result.
- * @template T
- * @param {number} exitCode Gate outcome code.
- * @param {T[]} violations Reported violations.
- * @returns {{ exitCode: number, violations: T[] }} Gate result.
- */
-function createGateResult(exitCode, violations) {
-  return { exitCode, violations };
 }
 
 const createParseNotValidateHandle = createGateRunner({
@@ -365,10 +354,10 @@ export function createCheckCoreParseHandle(options = {}) {
       ...boundaryResult.violations,
     ];
 
-    return createGateResult(
-      validationResult.exitCode || boundaryResult.exitCode ? 1 : 0,
-      violations
-    );
+    return {
+      exitCode: validationResult.exitCode || boundaryResult.exitCode ? 1 : 0,
+      violations,
+    };
   };
 }
 

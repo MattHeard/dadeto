@@ -338,14 +338,12 @@ function buildNumericField(options) {
 function buildGroupSection(options) {
   const { dom, form, data, textInput, disposers, title, fields } = options;
   const section = createSectionWithHeading(dom, GROUP_CLASS, title);
+  const fieldDependencies = { dom, data, textInput, disposers };
 
   fields.forEach(field => {
     buildNumericField({
-      dom,
+      ...fieldDependencies,
       section,
-      data,
-      textInput,
-      disposers,
       ...field,
     });
   });
@@ -364,13 +362,11 @@ function buildForm({ dom, container, textInput }) {
     { dom, container, textInput },
     ({ form, disposers }) => {
       dom.setClassName(form, `${form.className} ${FORM_CLASS}`);
+      const fieldDependencies = { dom, data, textInput, disposers };
       FIELD_GROUPS.forEach(group =>
         buildGroupSection({
-          dom,
+          ...fieldDependencies,
           form,
-          data,
-          textInput,
-          disposers,
           ...group,
         })
       );

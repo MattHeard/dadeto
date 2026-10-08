@@ -109,19 +109,10 @@ function shouldSkipWrapperCheck(node, sourceCode) {
  * @returns {import('estree').Expression | null} Returned expression, if the body is a simple pass-through.
  */
 function getReturnedExpression(node) {
-  if (node.type === 'ArrowFunctionExpression') {
-    if (node.body.type === 'BlockStatement') {
-      return getSingleReturnExpression(node.body.body);
-    }
-
-    return node.body;
+  if (node.body.type === 'BlockStatement') {
+    return getSingleReturnExpression(node.body.body);
   }
-
-  if (node.body.type !== 'BlockStatement') {
-    return null;
-  }
-
-  return getSingleReturnExpression(node.body.body);
+  return node.type === 'ArrowFunctionExpression' ? node.body : null;
 }
 
 /**

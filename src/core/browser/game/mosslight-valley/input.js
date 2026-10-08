@@ -1,3 +1,5 @@
+import { copyGameInputState } from '../simulationCore.js';
+
 /** @typedef {{held: Set<string>, pressed: Set<string>}} GameInputState */
 
 /** @type {Record<string, string>} */
@@ -30,7 +32,7 @@ export function updateInput(state, event) {
   const normalizedKey = typeof key === 'string' ? key : '';
   const action = KEYS[normalizedKey] || KEYS[normalizedKey.toLowerCase()];
   if (!action) return state;
-  const next = copyInputState(state);
+  const next = copyGameInputState(state);
   if (event.type === 'keydown') {
     next.held.add(action);
     next.pressed.add(action);
@@ -44,16 +46,9 @@ export function updateInput(state, event) {
  * @returns {GameInputState} Input state with pressed actions cleared.
  */
 export function consumePressed(state) {
-  return { ...copyInputState(state), pressed: new Set() };
-}
-
-/**
- * Copy both mutable action sets before an input-state transition.
- * @param {GameInputState} state Input state to copy.
- * @returns {GameInputState} A detached input-state copy.
- */
-function copyInputState(state) {
-  return { held: new Set(state.held), pressed: new Set(state.pressed) };
+  const next = copyGameInputState(state);
+  next.pressed.clear();
+  return next;
 }
 /**
  * Return the actions visible to the simulation.

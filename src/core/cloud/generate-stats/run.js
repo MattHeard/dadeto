@@ -10,7 +10,7 @@ import {
   getFirestoreForDatabase,
   getFirestoreInstanceFromCache,
   resolveFirestoreDatabaseId,
-  isDefaultFirestoreContext,
+  createDefaultFirestoreContextChecker,
 } from '../firestore-helpers.js';
 import {
   createCorsOptions,
@@ -54,6 +54,11 @@ export const ensureFirebaseApp = createEnsureFirebaseApp();
  */
 /** @type {{value: import('firebase-admin/firestore').Firestore | null}} */
 const firestoreCache = { value: null };
+const usesDefaultFirestoreContext = createDefaultFirestoreContextChecker(
+  ensureFirebaseApp,
+  getAdminFirestore,
+  process.env
+);
 
 /**
  * Determine whether the generate-stats Firestore call can reuse the cached instance.
@@ -67,12 +72,7 @@ const firestoreCache = { value: null };
 // Stryker disable next-line all -- Firestore cache identity is a fixed
 // dependency/environment equality contract.
 function shouldUseCachedFirestore(options) {
-  return isDefaultFirestoreContext({
-    ...options,
-    defaultEnsureAppFn: ensureFirebaseApp,
-    defaultGetFirestoreFn: getAdminFirestore,
-    defaultEnvironment: process.env,
-  });
+  return usesDefaultFirestoreContext(options);
 }
 
 /**

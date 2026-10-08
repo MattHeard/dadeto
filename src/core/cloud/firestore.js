@@ -1,7 +1,7 @@
 import {
   resolveFirestoreDatabaseId,
   getFirestoreInstanceFromCache,
-  isDefaultFirestoreContext,
+  createDefaultFirestoreContextChecker,
 } from './firestore-helpers.js';
 
 /**
@@ -31,6 +31,11 @@ export function createFirestoreModule(deps) {
 
   /** @type {{value: import('firebase-admin/firestore').Firestore | null}} */
   const firestoreCache = { value: null };
+  const usesDefaultFirestoreContext = createDefaultFirestoreContextChecker(
+    ensureFirebaseApp,
+    deps.getFirestore,
+    process.env
+  );
 
   /**
    * Determine whether the current call should bypass the cached Firestore instance.
@@ -42,12 +47,7 @@ export function createFirestoreModule(deps) {
    * @returns {boolean} True when the call should use a fresh Firestore instance.
    */
   function shouldBypassFirestoreCache(options) {
-    return !isDefaultFirestoreContext({
-      ...options,
-      defaultEnsureAppFn: ensureFirebaseApp,
-      defaultGetFirestoreFn: deps.getFirestore,
-      defaultEnvironment: process.env,
-    });
+    return !usesDefaultFirestoreContext(options);
   }
 
   /**

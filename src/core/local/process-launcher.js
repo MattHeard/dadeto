@@ -245,13 +245,9 @@ async function launchDetachedProcessWithPermission(permission, options) {
     (() => {
       throw new Error('spawnImpl is required');
     });
-  const logDir =
-    options.logDir ??
-    options.pathModule.join(
-      options.repoRoot,
-      'tracking',
-      options.logDirSuffix ?? 'launcher'
-    );
+  const logDir = resolveLaunchLogDir(options, {
+    repoRoot: options.repoRoot,
+  });
 
   const {
     stdoutPath,

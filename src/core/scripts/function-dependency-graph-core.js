@@ -3,6 +3,9 @@
 // complete graph-analysis contract rather than independently per helper.
 import path from 'node:path';
 import { isNonNullObject } from '../commonCore.js';
+import { isFunctionNodeType } from './function-node-types.js';
+
+const FUNCTION_NODE_FIELDS = ['id', 'name', 'file', 'line', 'exported'];
 
 /** @typedef {{ type?: string, id?: AstNode, key?: AstNode, name?: string, loc?: { start: { line: number } }, params?: AstNode[], body?: AstNode, callee?: AstNode, left?: AstNode, source?: { value: string }, specifiers?: AstNode[], imported?: AstNode, local?: AstNode, declaration?: AstNode, node?: AstNode, [key: string]: unknown }} AstNode */
 /** @typedef {(node: AstNode, parent: AstNode | null) => void} AstVisitor */
@@ -14,13 +17,7 @@ import { isNonNullObject } from '../commonCore.js';
  * @returns {boolean} Whether the node is a function.
  */
 function isFunction(node) {
-  return [
-    'FunctionDeclaration',
-    'FunctionExpression',
-    'ArrowFunctionExpression',
-    'ObjectMethod',
-    'ClassMethod',
-  ].includes(node?.type ?? '');
+  return isFunctionNodeType(node?.type);
 }
 
 /**
@@ -254,18 +251,21 @@ export function buildFunctionDependencyGraph({ files, parse }) {
     ).values(),
   ];
   return {
-    nodes: [...functions.values()].map(
-      ({ id, name, file, line, exported }) => ({
-        id,
-        name,
-        file,
-        line,
-        exported,
-      })
-    ),
+    nodes: [...functions.values()].map(toPublicFunctionNode),
     edges: uniqueEdges,
     ignoredCalls,
   };
+}
+
+/**
+ * Project the public fields from a dependency-graph function record.
+ * @param {Record<string, any>} fn Internal function record.
+ * @returns {Record<string, any>} Public graph node.
+ */
+function toPublicFunctionNode(fn) {
+  return Object.fromEntries(
+    FUNCTION_NODE_FIELDS.map(field => [field, fn[field]])
+  );
 }
 
 /**

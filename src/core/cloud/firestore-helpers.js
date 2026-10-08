@@ -52,6 +52,27 @@ export function isDefaultFirestoreContext({
 }
 
 /**
+ * Create a cache-context check bound to one module's default Firestore dependencies.
+ * @param {() => void} defaultEnsureAppFn Default app initializer.
+ * @param {Function} defaultGetFirestoreFn Default Firestore factory.
+ * @param {Record<string, unknown>} defaultEnvironment Default environment object.
+ * @returns {(options: {ensureAppFn: () => void, getFirestoreFn: Function, environment: Record<string, unknown>}) => boolean} Context checker.
+ */
+export function createDefaultFirestoreContextChecker(
+  defaultEnsureAppFn,
+  defaultGetFirestoreFn,
+  defaultEnvironment
+) {
+  return options =>
+    isDefaultFirestoreContext({
+      ...options,
+      defaultEnsureAppFn,
+      defaultGetFirestoreFn,
+      defaultEnvironment,
+    });
+}
+
+/**
  * Select the correct Firestore database given the parsed configuration.
  * @param {(
  *   app?: import('firebase-admin/app').App,

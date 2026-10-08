@@ -100,6 +100,15 @@ export function stringOrNull(value) {
 }
 
 /**
+ * Trim and lowercase a string, defaulting missing input to the empty string.
+ * @param {string | undefined} value Candidate string.
+ * @returns {string} Normalized string.
+ */
+export function trimAndLowercase(value = '') {
+  return value.trim().toLowerCase();
+}
+
+/**
  * Return a fallback when the provided message is falsy.
  * @param {string | undefined | null} message Candidate message.
  * @param {string} fallback Fallback value when message is falsy.

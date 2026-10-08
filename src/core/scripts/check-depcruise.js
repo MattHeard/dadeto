@@ -1,5 +1,6 @@
 import * as gateUtils from './gate-utils.js';
 import * as commonCore from '../commonCore.js';
+import { CORE_GLOBALS } from '../local/check-depcruise-scope.js';
 import { DEFAULT_STDOUT, DEFAULT_STDERR } from './gate-script-defaults.js';
 import {
   findCoreBrowserGlobalsInSource,
@@ -53,7 +54,6 @@ const DEFAULT_SCOPE_ANALYSIS_DEPS = {
  * @typedef {CoreBrowserMainDeps & Pick<CoreFileScanDeps, 'readdirSync'>} CoreBrowserScanDeps
  */
 const MATH_RANDOM_NEEDLE = ['Math', 'random'].join('.');
-const CORE_GLOBALS = ['localStorage', 'window', 'document'];
 /** @type {Partial<Record<string, {width: number, state: string}>>} */
 const CODE_BOUNDARIES = {
   '//': { width: 2, state: 'line-comment' },

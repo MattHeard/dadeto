@@ -63,8 +63,10 @@ export function findCoreBrowserGlobalsInSource(
   scopeAnalysisDeps,
   allowedGlobals
 ) {
-  const findBrowserGlobalReferences =
-    createBrowserGlobalReferenceFinder(scopeAnalysisDeps);
+  const findBrowserGlobalReferences = createBrowserGlobalReferenceFinder(
+    scopeAnalysisDeps,
+    allowedGlobals
+  );
   return findBrowserGlobalReferences(source).filter(globalName =>
     allowedGlobals.includes(globalName)
   );

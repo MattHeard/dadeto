@@ -478,13 +478,11 @@ export function createProcessNewStoryHandle({
     functions,
     getFirestoreInstance,
     documentPath: 'storyFormSubmissions/{subId}',
-    createHandler: /** @type {any} */ (
-      createProcessNewStorySubmissionHandlerFactory({
-        fieldValue,
-        randomUUID,
-        random,
-      })
-    ),
+    createHandler: createProcessNewStorySubmissionHandlerFactory({
+      fieldValue,
+      randomUUID,
+      random,
+    }),
   });
 }
 // Stryker restore all

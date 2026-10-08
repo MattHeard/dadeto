@@ -1,0 +1,7 @@
+# jscpd min token 11
+
+- Hurdle: lowering `.jscpd.json` from 12 to 11 exposed 17 clone pairs; the first full check attempt also hit sandbox `EPERM` for Node subprocesses and caught a compatibility regression in the extracted browser-global finder.
+- Diagnosis: the clone report separated reusable behavior from adjacent function-boundary matches. The checker was rerun with reviewed elevated execution; the regression showed existing callers rely on the finder’s one-argument default.
+- Fix: consolidated fulfillment metadata and failure serialization, game input copying and simulation types, Firestore context matching, browser-global constants, counter updates, parser return extraction, launcher log directory resolution, and form/table rendering. Preserved the scope-finder default API. `.jscpd.json` now uses `minTokens: 11` with zero clones.
+- Evidence: focused affected suites passed 82/82; `npm run duplication` passed with 0 clones; elevated `JEST_CACHE_DIRECTORY=/home/matt/dadeto/.jest-cache TMPDIR=/home/matt/dadeto/.tmp DADETO_COVERAGE_SHARD_SIZE=40 npm run check` passed all 10 checks, including the complete test suite, lint, TSDoc, dependency-cruiser, core-parse, audit, and duplication.
+- Next-time guidance: inspect clones at the exact lowered boundary and prefer existing shared modules; run the full check outside the sandbox when child-process `EPERM` prevents reliable evaluation. Keep default arguments when extracting injected dependency helpers.

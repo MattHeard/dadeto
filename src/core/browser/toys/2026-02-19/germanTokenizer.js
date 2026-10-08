@@ -1,4 +1,4 @@
-import { whenString } from '../../../commonCore.js';
+import { trimAndLowercase, whenString } from '../../../commonCore.js';
 
 const SURROUNDING_STRIP_CHARS = /^[()[\]{}"'.,!?:;]+|[()[\]{}"'.,!?:;]+$/g;
 
@@ -41,7 +41,7 @@ export function normalizeToken(t) {
     return '';
   }
 
-  return stripSurroundingPunctuation(t.trim().toLowerCase());
+  return stripSurroundingPunctuation(trimAndLowercase(t));
 }
 
 /**

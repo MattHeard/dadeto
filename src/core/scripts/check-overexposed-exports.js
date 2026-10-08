@@ -212,10 +212,7 @@ function buildExternalUsageCounts(deps, analyses, moduleIndex) {
         continue;
       }
       const usageKey = makeUsageKey(resolvedFilePath, importedCall.exportName);
-      externalUsageCounts.set(
-        usageKey,
-        (externalUsageCounts.get(usageKey) ?? 0) + 1
-      );
+      incrementUsageCount(externalUsageCounts, usageKey);
     }
   }
   return externalUsageCounts;
@@ -532,7 +529,7 @@ function handleIdentifierCall(context) {
   }
 
   if (exports.some(exported => exported.exportName === calleeName)) {
-    ownCalls.set(calleeName, (ownCalls.get(calleeName) ?? 0) + 1);
+    incrementUsageCount(ownCalls, calleeName);
   }
 }
 
@@ -674,6 +671,16 @@ function resolveImportSource(deps, fromFile, sourceLiteral, moduleIndex) {
  */
 function makeUsageKey(filePath, exportName) {
   return `${filePath}::${exportName}`;
+}
+
+/**
+ * Increment a count associated with a key.
+ * @param {Map<string, number>} counts Usage counts.
+ * @param {string} key Count key.
+ * @returns {void}
+ */
+function incrementUsageCount(counts, key) {
+  counts.set(key, (counts.get(key) ?? 0) + 1);
 }
 
 /**

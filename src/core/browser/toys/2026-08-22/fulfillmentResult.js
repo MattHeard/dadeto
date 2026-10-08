@@ -289,7 +289,7 @@ export function fulfillmentFindMatchingAsset(request, evaluate) {
  * @param {boolean} feasible Whether an eligible asset passed evaluation.
  * @returns {string} Feasibility JSON.
  */
-function formatFulfillmentFeasibility(feasible) {
+export function formatFulfillmentFeasibility(feasible) {
   return feasible ? FEASIBLE_ASSET_RESULT : INFEASIBLE_ASSET_RESULT;
 }
 

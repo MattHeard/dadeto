@@ -571,15 +571,16 @@ function operation({
   segmentId,
   baseDurationSeconds,
   bufferSeconds,
-  allocatedDurationSeconds,
 }) {
-  return {
-    operation: operationName,
+  return metadata({
+    operationName,
     segmentId,
+    requiresAsset: false,
+    requiresRunner: false,
+    runnerCustody: false,
     baseDurationSeconds,
     bufferSeconds,
-    allocatedDurationSeconds,
-  };
+  });
 }
 
 /** @typedef {ReturnType<typeof fulfillmentConfiguredProposal> & {ids: {points: Record<string, string>, segments: Record<string, string>}}} ValidatedSequence */

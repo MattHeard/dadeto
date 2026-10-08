@@ -1,6 +1,7 @@
 // Stryker disable all: local server route wiring is an integration boundary;
 // dependency-plumbing and defensive branch mutations are covered only through
 // end-to-end route behavior and are not independently observable.
+import { trimAndLowercase } from '../commonCore.js';
 /**
  * Wire the local writer routes onto an app-like dependency.
  * @param {{
@@ -370,9 +371,7 @@ export function getDocumentContent(body) {
  * @returns {boolean} True when the value enables the feature.
  */
 function isEnabledEnvValue(value) {
-  return ['1', 'true', 'yes', 'on'].includes(
-    (value ?? '').trim().toLowerCase()
-  );
+  return ['1', 'true', 'yes', 'on'].includes(trimAndLowercase(value));
 }
 
 /**

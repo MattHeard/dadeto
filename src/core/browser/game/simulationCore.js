@@ -24,3 +24,12 @@ export function advanceSimulationFrame(state, deltaMs) {
     moveCooldown: Math.max(0, state.moveCooldown - deltaMs),
   };
 }
+
+/**
+ * Copy mutable input action sets before a state transition.
+ * @param {{held: Set<string>, pressed: Set<string>}} state Input state to copy.
+ * @returns {{held: Set<string>, pressed: Set<string>}} Detached input state.
+ */
+export function copyGameInputState(state) {
+  return { held: new Set(state.held), pressed: new Set(state.pressed) };
+}
