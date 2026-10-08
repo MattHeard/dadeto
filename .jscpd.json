@@ -1,7 +1,7 @@
 {
   "path": ["src/core"],
   "mode": "mild",
-  "minTokens": 21,
+  "minTokens": 20,
   "reporters": ["html", "json"],
   "output": "reports/duplication"
 }

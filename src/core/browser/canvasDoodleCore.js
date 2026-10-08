@@ -1,5 +1,6 @@
 import * as plotShared from './plotShared.js';
 import { drawPixelText } from './pixelFont.js';
+import { createRectShapeFromBounds } from './canvasShapes.js';
 
 const CANVAS_WIDTH = 320;
 const CANVAS_HEIGHT = 180;
@@ -75,14 +76,7 @@ export function buildCanvasDoodleShapes(parsed, getRandomNumber) {
   const pad = Math.round(Math.min(width, height) * 0.12);
 
   return [
-    {
-      type: 'rect',
-      x: 0,
-      y: 0,
-      width,
-      height,
-      fill: background,
-    },
+    createRectShapeFromBounds([0, 0, width, height], background),
     {
       type: 'rect',
       x: pad,

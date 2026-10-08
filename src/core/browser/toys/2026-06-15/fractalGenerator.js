@@ -1,4 +1,5 @@
 import { objectOrEmpty } from '../../../commonCore.js';
+import { createRectShapeFromBounds } from '../../canvasShapes.js';
 
 const DEFAULT_WIDTH = 360;
 const DEFAULT_HEIGHT = 240;
@@ -120,7 +121,7 @@ export function fractalGenerator(input) {
   const height = clamp(numberOr(config.height, DEFAULT_HEIGHT), 120, 600);
   const depth = clamp(Math.round(numberOr(config.depth, DEFAULT_DEPTH)), 1, 8);
   const hue = clamp(Math.round(numberOr(config.hue, 180)), 0, 360);
-  const shapes = [{ type: 'rect', x: 0, y: 0, width, height, fill: '#071013' }];
+  const shapes = [createRectShapeFromBounds([0, 0, width, height], '#071013')];
 
   addBranch(shapes, {
     x: width / 2,
