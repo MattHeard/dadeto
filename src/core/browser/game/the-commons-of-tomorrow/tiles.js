@@ -1,9 +1,10 @@
 const SIZE = 12;
 
 /**
- * Create crisp Commons terrain with solar ceramic, woven paths and wetland bands.
+ * Draw a planned solarpunk landscape with broad paths, planted terraces and a
+ * readable watercourse instead of scattered grass flecks.
  * @param {{x:number,y:number,palette:string[],region:string,blocked?:boolean,roof?:boolean}} options World tile context.
- * @returns {Array<{x:number,y:number,width:number,height:number,fill:string}>} Local tile rectangles.
+ * @returns {Array<{x:number,y:number,width:number,height:number,fill:string}>} Local pixel rectangles.
  */
 export function generateCommonsTile({
   x,
@@ -13,48 +14,95 @@ export function generateCommonsTile({
   blocked = false,
   roof = false,
 }) {
-  const [deep, base, leaf, sun] = palette;
-  const seed = Math.abs((x * 19 + y * 23 + x * y * 5) % 8);
-  if (blocked) {
+  const [outline, stone, canopy, terracotta, water = outline] = palette;
+  const code = Math.abs((x * 19 + y * 23 + x * y * 5) % 8);
+  if (blocked)
+    return structureTile({ outline, stone, canopy, terracotta, roof, code });
+  if (region === 'shore')
+    return weirTile({ x, y, outline, stone, canopy, terracotta, water, code });
+  return commonsTile({ x, y, outline, stone, canopy, terracotta, code });
+}
+
+/**
+ *
+ * @param {{x:number,y:number,outline:string,stone:string,canopy:string,terracotta:string,code:number}} options Tile motif inputs.
+ * @returns {Array<{x:number,y:number,width:number,height:number,fill:string}>} Tile pixels.
+ */
+function commonsTile({ x, y, outline, stone, canopy, terracotta, code }) {
+  const path = x % 6 === 0 || y % 4 === 0;
+  if (path) {
+    const cross = x % 6 === 0 && y % 4 === 0;
     return [
-      rect({ x: 0, y: 0, width: SIZE, height: SIZE }, deep),
+      rect([0, 0, SIZE, SIZE], stone),
+      rect([0, 0, 1, SIZE], outline),
+      rect([0, 0, SIZE, 1], outline),
       rect(
-        { x: 1, y: 1, width: 10, height: 8 },
-        region === 'shore' ? base : leaf
+        [cross ? 5 : (code % 7) + 2, cross ? 5 : (code % 7) + 2, 2, 2],
+        terracotta
       ),
-      rect({ x: 1, y: 9, width: 10, height: 2 }, deep),
-      rect({ x: (seed % 5) + 2, y: 2, width: 4, height: 2 }, sun),
-      rect({ x: 2, y: 6, width: 8, height: 1 }, base),
-      ...(roof ? [rect({ x: 0, y: 0, width: SIZE, height: 2 }, sun)] : []),
+      ...(cross
+        ? [rect([2, 2, 8, 1], canopy), rect([2, 8, 8, 1], canopy)]
+        : []),
     ];
   }
-  if (region === 'shore') {
-    const flow = seed % 4;
-    return [
-      rect({ x: 0, y: 0, width: SIZE, height: SIZE }, base),
-      rect({ x: 0, y: 2 + flow, width: SIZE, height: 2 }, deep),
-      rect({ x: 0, y: 3 + flow, width: SIZE, height: 1 }, leaf),
-      rect({ x: (seed * 3) % 9, y: 8, width: 2, height: 1 }, sun),
-      rect({ x: (seed * 5) % 8, y: 10, width: 3, height: 1 }, leaf),
-    ];
-  }
-  const seam = seed % 3 === 0;
+  const terrace = code % 2 === 0;
   return [
-    rect({ x: 0, y: 0, width: SIZE, height: SIZE }, base),
-    rect({ x: 0, y: 0, width: 2, height: SIZE }, leaf),
-    rect({ x: 2, y: 0, width: 1, height: SIZE }, deep),
-    rect({ x: 7 + (seed % 3), y: 2 + (seed % 5), width: 2, height: 2 }, sun),
-    rect({ x: 8 + (seed % 2), y: 7, width: 1, height: 3 }, leaf),
-    ...(seam ? [rect({ x: 4, y: 1, width: 5, height: 1 }, deep)] : []),
+    rect([0, 0, SIZE, SIZE], canopy),
+    rect([1, 1, 10, 10], outline),
+    rect([2, 2, 8, 8], terrace ? stone : terracotta),
+    rect([3, 3, 6, 1], canopy),
+    rect([3, 6, 6, 1], canopy),
+    rect([3, 9, 6, 1], canopy),
+    rect([2 + (code % 6), 4, 1, 1], terracotta),
   ];
 }
 
 /**
  *
- * @param {{x:number,y:number,width:number,height:number}} bounds Tile-local dimensions.
+ * @param {{x:number,y:number,outline:string,stone:string,canopy:string,terracotta:string,water:string,code:number}} options Tile motif inputs.
+ * @returns {Array<{x:number,y:number,width:number,height:number,fill:string}>} Tile pixels.
+ */
+function weirTile({ x, y, outline, stone, canopy, terracotta, water, code }) {
+  const center = (x * 2 + Math.floor(y / 2) + 2) % 6;
+  const bankLeft = center;
+  const bankRight = center + 5;
+  const channel = [
+    rect([0, 0, SIZE, SIZE], stone),
+    rect([0, 1, SIZE, 1], canopy),
+    rect([0, 10, SIZE, 1], canopy),
+  ];
+  channel.push(rect([bankLeft, 0, 5, SIZE], water));
+  channel.push(rect([bankLeft, 0, 1, SIZE], outline));
+  channel.push(rect([bankRight, 0, 1, SIZE], canopy));
+  channel.push(rect([bankLeft + 1, 2 + (code % 5), 2, 1], terracotta));
+  channel.push(rect([bankLeft + 1, 8, 3, 1], '#b8d9c4'));
+  return channel;
+}
+
+/**
+ *
+ * @param {{outline:string,stone:string,canopy:string,terracotta:string,roof:boolean,code:number}} options Structure motif inputs.
+ * @returns {Array<{x:number,y:number,width:number,height:number,fill:string}>} Tile pixels.
+ */
+function structureTile({ outline, stone, canopy, terracotta, roof, code }) {
+  return [
+    rect([0, 0, SIZE, SIZE], outline),
+    rect([1, 1, 10, 9], stone),
+    rect([2, 2, 8, 1], roof ? terracotta : canopy),
+    rect([2, 4, 3, 3], canopy),
+    rect([7, 4, 3, 3], terracotta),
+    rect([2, 8, 8, 1], outline),
+    rect([4 + (code % 4), 8, 1, 3], terracotta),
+    ...(roof ? [rect([0, 0, SIZE, 1], terracotta)] : []),
+  ];
+}
+
+/**
+ * Create one rectangle in the tile's 12 by 12 pixel grid.
+ * @param {[number,number,number,number]} bounds Left, top, width, height.
  * @param {string} fill Palette color.
  * @returns {{x:number,y:number,width:number,height:number,fill:string}} Pixel rectangle.
  */
-function rect(bounds, fill) {
-  return { ...bounds, fill };
+function rect([x, y, width, height], fill) {
+  return { x, y, width, height, fill };
 }

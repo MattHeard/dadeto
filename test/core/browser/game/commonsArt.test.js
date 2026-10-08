@@ -4,7 +4,7 @@ import { createCommonsState } from '../../../../src/core/browser/game/the-common
 import { renderCommons } from '../../../../src/core/browser/game/the-commons-of-tomorrow/renderer.js';
 import { toFramePayload } from '../../../../src/core/browser/game/mosslight-valley/renderer.js';
 
-const palette = ['#173c3a', '#557b59', '#b6c878', '#f2bd62'];
+const palette = ['#193b43', '#c7b98f', '#789c7f', '#e29162', '#397e89'];
 
 describe('Commons visual identity', () => {
   test('builds coordinate-stable solar path and wetland tile motifs', () => {
@@ -17,7 +17,16 @@ describe('Commons visual identity', () => {
     expect(
       generateCommonsTile({ x: 2, y: 4, palette, region: 'village' })
     ).toEqual(path);
-    expect(path.map(pixel => pixel.fill)).toContain('#f2bd62');
+    expect(path.map(pixel => pixel.fill)).toContain('#e29162');
+    const terrace = generateCommonsTile({
+      x: 1,
+      y: 1,
+      palette,
+      region: 'village',
+    });
+    expect(terrace.some(pixel => pixel.width === 8 && pixel.height === 8)).toBe(
+      true
+    );
     const wetland = generateCommonsTile({
       x: 2,
       y: 4,
@@ -25,7 +34,7 @@ describe('Commons visual identity', () => {
       region: 'shore',
     });
     expect(wetland).not.toEqual(path);
-    expect(wetland.map(pixel => pixel.fill)).toContain('#173c3a');
+    expect(wetland.map(pixel => pixel.fill)).toContain('#397e89');
     expect(
       generateCommonsTile({
         x: 1,
@@ -35,7 +44,7 @@ describe('Commons visual identity', () => {
         blocked: true,
         roof: true,
       })
-    ).toHaveLength(6);
+    ).toHaveLength(8);
     expect(
       generateCommonsTile({
         x: 1,
@@ -44,7 +53,7 @@ describe('Commons visual identity', () => {
         region: 'shore',
         blocked: true,
       })
-    ).toHaveLength(5);
+    ).toHaveLength(7);
   });
 
   test('draws original Commons clothing and landmark glyphs as clipped pixels', () => {
@@ -59,7 +68,7 @@ describe('Commons visual identity', () => {
       4
     );
     expect(new Set(resident.map(pixel => pixel.fill))).toEqual(
-      new Set(['#173c3a', '#f2bd62', '#497d67', '#d9e4b2'])
+      new Set(['#193b43', '#f2bd62', '#507e6d', '#d9e4b2'])
     );
     expect(prop.length).toBeGreaterThan(10);
     expect(
@@ -90,6 +99,7 @@ describe('Commons visual identity', () => {
     expect(frame.palette).toEqual(palette);
     expect(frame.shapes.some(shape => shape.fill === '#f2bd62')).toBe(true);
     expect(frame.shapes.some(shape => shape.fill === '#315744')).toBe(false);
+    expect(palette).toContain('#397e89');
     expect(JSON.stringify(frame)).not.toContain('commonsSpriteShapes');
     expect(toFramePayload(createCommonsState()).width).toBe(160);
   });

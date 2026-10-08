@@ -1,12 +1,14 @@
 import {
   drawCanvasShapes,
-  drawGameFrame,
   frameRectangle,
   toFramePayload,
+  wrapDialogueText,
 } from '../mosslight-valley/renderer.js';
 import { generateCommonsTile } from './tiles.js';
 import { commonsSpriteShapes } from './sprites.js';
 import { WATER_PUZZLE } from './puzzle.js';
+import { commonsJournal, menuItems } from './simulation.js';
+import { COMMONS_CONTENT } from './content.js';
 
 const COLORS = Object.freeze({
   dark: '#182f36',
@@ -37,7 +39,7 @@ export function renderCommons(state) {
       presentation: {
         ...state.presentation,
         status,
-        palette: ['#173c3a', '#557b59', '#b6c878', '#f2bd62'],
+        palette: ['#193b43', '#c7b98f', '#789c7f', '#e29162', '#397e89'],
       },
     },
     { tileGenerator: generateCommonsTile, spriteRenderer: commonsSpriteShapes }
@@ -51,6 +53,7 @@ export function renderCommons(state) {
     charterRecorded: Boolean(state.world.flags.charterRecorded),
   };
   if (state.mode === 'puzzle') frame.shapes = puzzleShapes(state.puzzle);
+  else if (state.menu) frame.shapes = menuShapes(frame, state);
   return frame;
 }
 
@@ -60,8 +63,81 @@ export function renderCommons(state) {
  * @param {Record<string, any>} frame Shared Commons frame.
  */
 export function drawCommonsFrame(context, frame) {
-  if (frame.mode === 'puzzle') drawCanvasShapes(context, frame.shapes);
-  else drawGameFrame(context, frame);
+  drawCanvasShapes(context, frame.shapes);
+}
+
+/**
+ * Render authored Commons menu pages as opaque handheld overlays.
+ * @param {Record<string, any>} frame Shared frame payload.
+ * @param {Record<string, any>} state Current game state.
+ * @returns {Array<Record<string, any>>} Pixel shapes for the menu page.
+ */
+function menuShapes(frame, state) {
+  const x = 5;
+  const top = 5;
+  const width = 150;
+  const height = 98;
+  const lines = menuRows(state)
+    .flatMap(line => wrapDialogueText(line, 27))
+    .slice(0, 8);
+  return [
+    ...frame.shapes.filter(
+      (/** @type {Record<string, any>} */ shape) => shape.y < 108
+    ),
+    frameRectangle({ x, y: top, width, height }, COLORS.dark),
+    frameRectangle(
+      { x: x + 1, y: top + 1, width: width - 2, height: 1 },
+      COLORS.leaf
+    ),
+    frameRectangle(
+      { x: x + 1, y: top + 1, width: 1, height: height - 2 },
+      COLORS.leaf
+    ),
+    frameRectangle(
+      { x: x + width - 2, y: top + 1, width: 1, height: height - 2 },
+      COLORS.leaf
+    ),
+    ...lines.map((line, index) => text(line, 9, 18 + index * 10, COLORS.gold)),
+  ];
+}
+
+/**
+ * Build the selected Commons page and its bounded journal details.
+ * @param {Record<string, any>} state Current game state.
+ * @returns {string[]} Visible menu rows.
+ */
+function menuRows(state) {
+  const page = state.menu.page;
+  const rows = [page.toUpperCase().replaceAll('-', ' ')];
+  if (page === 'journal')
+    rows.push(
+      ...commonsJournal(state)
+        .slice(0, 3)
+        .map(item => `${item.status}: ${item.title}`)
+    );
+  else if (page === 'charter')
+    rows.push(
+      state.charter?.text ||
+        state.agreements[0]?.terms ||
+        'No agreement recorded yet.',
+      'Seasonal ecological boundaries are reviewed with affected residents.',
+      'Shared spaces remain accessible alternatives when their route closes.'
+    );
+  else if (page === 'practices')
+    rows.push(
+      ...state.practices.map(
+        (/** @type {string} */ id) => `Practice learned: ${id}`
+      )
+    );
+  const entries = menuItems(page, state, COMMONS_CONTENT);
+  rows.push(
+    ...entries.map(
+      (entry, index) =>
+        `${state.menu.selected === index ? '>' : ' '} ${entry[0]}`
+    )
+  );
+  rows.push('A CHOOSE · B BACK · X CLOSE');
+  return rows.slice(0, 6);
 }
 
 /**

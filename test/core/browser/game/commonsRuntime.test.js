@@ -318,6 +318,21 @@ describe('Commons runtime, frame and independent saves', () => {
     };
     expect(() => drawCommonsFrame(context, frame)).not.toThrow();
     expect(calls.length).toBeGreaterThan(0);
+    const artShape = frame.shapes.find(
+      shape =>
+        shape.type === 'rect' &&
+        shape.width === 1 &&
+        shape.height === 12 &&
+        shape.fill === frame.palette[0]
+    );
+    expect(artShape).toBeDefined();
+    expect(calls).toContainEqual([
+      artShape.x,
+      artShape.y,
+      artShape.width,
+      artShape.height,
+      artShape.fill,
+    ]);
     const outcomes = [
       { seasonalClosure: true },
       { bridgeOpen: true },
@@ -354,5 +369,52 @@ describe('Commons runtime, frame and independent saves', () => {
     expect(
       openBoard.shapes.some(shape => shape.text?.includes('GATE OPEN'))
     ).toBe(true);
+  });
+
+  test('renders the Commons journal as one opaque overlay without the HUD', () => {
+    const state = {
+      ...createCommonsState(),
+      menu: { page: 'journal', selected: 0 },
+    };
+    const frame = renderCommons(state);
+    expect(frame.shapes.some(shape => shape.text === 'FIELD JOURNAL')).toBe(
+      true
+    );
+    expect(
+      frame.shapes.some(shape => shape.text?.startsWith('active: The River'))
+    ).toBe(true);
+    const hud = frame.shapes.filter(shape => shape.y >= 108);
+    expect(hud).toHaveLength(0);
+    expect(
+      frame.shapes.filter(shape => shape.text).every(shape => shape.y < 108)
+    ).toBe(true);
+    const panel = frame.shapes.filter(
+      shape => shape.type === 'rect' && shape.x === 5 && shape.y === 5
+    );
+    expect(panel).toHaveLength(1);
+    const calls = [];
+    drawCommonsFrame(
+      {
+        set imageSmoothingEnabled(value) {
+          calls.push(['smoothing', value]);
+        },
+        set fillStyle(value) {
+          this.fill = value;
+        },
+        fillRect(x, y, width, height) {
+          calls.push(['rect', x, y, width, height, this.fill]);
+        },
+        set font(value) {
+          this.currentFont = value;
+        },
+        fillText(value, x, y) {
+          calls.push(['text', value, x, y]);
+        },
+      },
+      frame
+    );
+    expect(
+      calls.filter(call => call[0] === 'rect' && call[1] === 5 && call[2] === 5)
+    ).toHaveLength(1);
   });
 });

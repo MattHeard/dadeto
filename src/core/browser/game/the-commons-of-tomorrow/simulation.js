@@ -558,7 +558,7 @@ function stepMenu(state, pressed, content) {
  * @param {Record<string, any>} content Authored chapter.
  * @returns {Array<[string, string]>} Visible labels and their commands.
  */
-function menuItems(page, state, content) {
+export function menuItems(page, state, content = COMMONS_CONTENT) {
   if (page === 'assign')
     return [
       ['Survey', 'assign:survey'],
