@@ -68,8 +68,9 @@ describe('Commons visual identity', () => {
       4
     );
     expect(new Set(resident.map(pixel => pixel.fill))).toEqual(
-      new Set(['#193b43', '#f2bd62', '#507e6d', '#d9e4b2'])
+      new Set(['#11121e', '#fff078', '#426ef2', '#fff4d4'])
     );
+    expect(resident.some(pixel => pixel.fill === '#e29162')).toBe(false);
     expect(prop.length).toBeGreaterThan(10);
     expect(
       commonsSpriteShapes({ id: 'player', x: -1, y: 0 }, { x: 0, y: 0 }, 4)
@@ -97,7 +98,7 @@ describe('Commons visual identity', () => {
   test('includes Commons-specific pixel art in serialized page and toy frames', () => {
     const frame = renderCommons(createCommonsState());
     expect(frame.palette).toEqual(palette);
-    expect(frame.shapes.some(shape => shape.fill === '#f2bd62')).toBe(true);
+    expect(frame.shapes.some(shape => shape.fill === '#fff078')).toBe(true);
     expect(frame.shapes.some(shape => shape.fill === '#315744')).toBe(false);
     expect(palette).toContain('#397e89');
     expect(JSON.stringify(frame)).not.toContain('commonsSpriteShapes');

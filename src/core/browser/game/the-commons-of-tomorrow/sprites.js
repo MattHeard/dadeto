@@ -32,12 +32,12 @@ const PROP_ART = Object.freeze({
 });
 /** @type {Record<string, string>} */
 const CLOTHING = Object.freeze({
-  player: '#db7958',
-  elian: '#507e6d',
-  june: '#d9974f',
-  sari: '#6f718e',
-  autonomy: '#6f718e',
-  tomas: '#597f8b',
+  player: '#21b6cb',
+  elian: '#426ef2',
+  june: '#b94de8',
+  sari: '#177fdb',
+  autonomy: '#b94de8',
+  tomas: '#c044a9',
 });
 
 /**
@@ -59,10 +59,10 @@ export function commonsSpriteShapes(
   const shirt = CLOTHING[identity] || '#43868a';
   /** @type {Record<string, string>} */
   const palette = {
-    p: '#193b43',
-    s: '#f2bd62',
+    p: '#11121e',
+    s: '#fff078',
     o: shirt,
-    c: '#d9e4b2',
+    c: '#fff4d4',
     w: '#397e89',
   };
   const originX = (actor.x - camera.x) * 12;
