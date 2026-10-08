@@ -8,7 +8,7 @@ The main quest, **The River Keeps Its Own Time**, asks whether to restore the ma
 
 ## Input
 
-Keyboard, gamepad and virtual keypad use the directions plus A/B/X/Y. In the world, A interacts, X opens the menu, Y assigns the B shortcut and B performs that action. In menus, A chooses and B/X backs out. On the flow board, arrows select, A opens marked channels or the selected gate, B switches the water route, Y advances fixed simulation steps and X returns to the district.
+Keyboard, gamepad and virtual keypad use the directions plus A/B/X/Y. In the world, A talks to or inspects the feature ahead; walking toward a person or feature shows an A prompt. X opens the menu, Y opens **Assign an action to B**, and B performs the assigned action. In menus, A confirms, B returns to the previous menu (or closes the main menu to the map), and X closes the menu to the map. **Actions · Perform now** runs the selected action with A; **Assign an action to B** stores it for later use with B. Both screens show the current selection and their distinct button prompts. On the flow board, arrows select, A opens marked channels or the selected gate, B switches the water route, Y advances fixed simulation steps and X returns to the district.
 
 ### Schema
 
@@ -71,4 +71,4 @@ The toy returns the shared pixelated 160×144 frame, world snapshot, current obj
 
 Start in Canopy Commons. Cross east to the Living Weir and inspect the old gauge near the reed beds; that optional evidence unlocks the seasonal agreement. At the flow board, carve cell 12 (board cell number 12; game selection index 11), switch to the commons route, select the gate and press A, then press Y until water reaches **IN**. Return to the footbridge to choose an agreement. The three choices have distinct marsh, crossing and gathering consequences. Visit the charter table in Canopy Commons to record the terms.
 
-After recording an agreement, choose one practice from X → Practices. Assign Survey, Repair or Listen to B with Y. Local save slots and import/export are available from X → Save options on the dedicated page. Save data belongs only to this game; no cloud account or network clock is used.
+You can use basic Repair at the seasonal footbridge before the agreement: open X → Actions and choose Repair with A, or face the bridge and press B if Repair is assigned. This stabilizes the handrail while leaving the crossing closed. After recording an agreement, choose one practice from X → Practices; **Living Repair** adds the reversible repair proposal. Survey, Repair, and Listen explain their target or practice requirements when needed. Local save slots and import/export are available from X → Save options on the dedicated page. Save data belongs only to this game; no cloud account or network clock is used.

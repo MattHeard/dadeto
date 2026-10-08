@@ -9,7 +9,10 @@ import {
   drawCommonsFrame,
   renderCommons,
 } from '../../../../src/core/browser/game/the-commons-of-tomorrow/renderer.js';
-import { createCommonsState } from '../../../../src/core/browser/game/the-commons-of-tomorrow/simulation.js';
+import {
+  createCommonsState,
+  stepCommons,
+} from '../../../../src/core/browser/game/the-commons-of-tomorrow/simulation.js';
 
 /**
  *
@@ -336,6 +339,7 @@ describe('Commons runtime, frame and independent saves', () => {
     const outcomes = [
       { seasonalClosure: true },
       { bridgeOpen: true },
+      { footbridgeStabilized: true },
       { marshRestored: true },
     ].map(flags =>
       renderCommons({
@@ -346,6 +350,7 @@ describe('Commons runtime, frame and independent saves', () => {
     expect(outcomes.map(frame => frame.presentation.status)).toEqual([
       'SEASONAL PACT · REVIEW AT HIGH WATER',
       'CROSSING OPEN · MARSH LIMITS SET',
+      'HANDRAIL STABILIZED · CROSSING STILL CLOSED',
       'MARSH RESTORED · GATHERING MOVED',
     ]);
     expect(
@@ -377,9 +382,7 @@ describe('Commons runtime, frame and independent saves', () => {
       menu: { page: 'journal', selected: 0 },
     };
     const frame = renderCommons(state);
-    expect(frame.shapes.some(shape => shape.text === 'FIELD JOURNAL')).toBe(
-      true
-    );
+    expect(frame.shapes.some(shape => shape.text === 'JOURNAL')).toBe(true);
     expect(
       frame.shapes.some(shape => shape.text?.startsWith('active: The River'))
     ).toBe(true);
@@ -416,5 +419,59 @@ describe('Commons runtime, frame and independent saves', () => {
     expect(
       calls.filter(call => call[0] === 'rect' && call[1] === 5 && call[2] === 5)
     ).toHaveLength(1);
+  });
+
+  test('renders the Charter page and June dialogue without hidden menus or clipped text', () => {
+    const initial = createCommonsState();
+    const charter = renderCommons({
+      ...initial,
+      menu: { page: 'charter', selected: 0 },
+    });
+    const charterText = charter.shapes
+      .filter(shape => shape.type === 'text')
+      .map(shape => shape.text);
+    expect(charterText).toContain('CHARTER');
+    expect(charterText.join(' ')).toContain('No agreement recorded yet.');
+    expect(charterText.join(' ')).not.toContain(
+      'active: The River Keeps Its Own Time'
+    );
+
+    const nearbyJune = {
+      ...initial,
+      world: {
+        ...initial.world,
+        player: { x: 6, y: 7, facing: 'up' },
+      },
+    };
+    const dialogue = stepCommons(nearbyJune, ['a']);
+    const dialogueFrame = renderCommons(dialogue);
+    const rows = dialogueFrame.shapes.filter(
+      shape => shape.type === 'text' && shape.y < 108
+    );
+    expect(rows.map(shape => shape.text).join(' ')).toContain('June Sol');
+    expect(rows.every(shape => shape.text.length <= 28)).toBe(true);
+    expect(Math.max(...rows.map(shape => shape.y))).toBeLessThan(108);
+
+    const actions = renderCommons({
+      ...initial,
+      menu: { page: 'actions', selected: 4 },
+    });
+    const actionText = actions.shapes
+      .filter(shape => shape.type === 'text')
+      .map(shape => shape.text);
+    expect(actionText).toContain('ACTIONS · PERFORM NOW');
+    expect(actionText).toContain('A DO · B BACK · X CLOSE');
+    expect(actionText.some(row => row.startsWith('> A · Reset'))).toBe(true);
+
+    const assign = renderCommons({
+      ...initial,
+      menu: { page: 'assign', selected: 1 },
+    });
+    const assignText = assign.shapes
+      .filter(shape => shape.type === 'text')
+      .map(shape => shape.text);
+    expect(assignText).toContain('ASSIGN AN ACTION TO B');
+    expect(assignText).toContain('A SET · B BACK · X CLOSE');
+    expect(assignText.some(row => row.startsWith('> Repair Weir'))).toBe(true);
   });
 });

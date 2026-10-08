@@ -27,11 +27,11 @@ const MENU_ENTRIES = Object.freeze({
     ['Return to game', 'close'],
   ],
   actions: [
-    ['Survey nearby', 'action:survey'],
-    ['Repair shared system', 'action:repair'],
-    ['Listen to habitat', 'action:listen'],
-    ['Open flow board', 'action:puzzle'],
-    ['Reset puzzle', 'action:reset-puzzle'],
+    ['A · Survey a facing person or clue', 'action:survey'],
+    ['A · Repair the Weir footbridge', 'action:repair'],
+    ['A · Listen to habitat', 'action:listen'],
+    ['A · Open the flow board', 'action:puzzle'],
+    ['A · Reset the flow board', 'action:reset-puzzle'],
   ],
   saves: [
     ['Save progress', 'save'],
@@ -262,10 +262,64 @@ function stepWorld(state, pressed, content) {
   if (direction) {
     const world = movePlayer(next.world, direction, content);
     world.npcs = scheduleActors(content.npcs, world);
-    return { ...next, world };
+    const moved = { ...next, world };
+    const { actor, object } = targetInFront(moved);
+    if (actor)
+      return {
+        ...moved,
+        toast: `A: Talk to ${/** @type {any} */ (actor).name}.`,
+      };
+    if (object)
+      return { ...moved, toast: `A: Inspect ${interactionName(object)}.` };
+    return moved;
   }
   if (pressed.includes('a')) return interact(state, content);
   return next;
+}
+
+/**
+ * Give map features short names for controller prompts.
+ * @param {Record<string, any>} object Targeted map feature.
+ * @returns {string} Readable feature name.
+ */
+function interactionName(object) {
+  const names = /** @type {Record<string, string>} */ ({
+    'old-gauge': 'the old gauge',
+    'flow-board': 'the flow board',
+    'reed-island': 'the reed island',
+    'seasonal-footbridge': 'the seasonal footbridge',
+    'charter-table': 'the charter table',
+    'assembly-board': 'the assembly board',
+    'solar-kitchen': 'the shared kitchen',
+    'canopy-stair': 'the canopy stair',
+  });
+  return names[object.id] || 'this feature';
+}
+
+/**
+ * Name a field action in B assignment feedback.
+ * @param {string} action Assigned action identifier.
+ * @returns {string} Readable action name.
+ */
+function actionName(action) {
+  return (
+    { survey: 'Survey', repair: 'Repair', listen: 'Listen' }[action] || action
+  );
+}
+
+/**
+ * Explain when the assigned B action has an effect.
+ * @param {string} action Assigned action identifier.
+ * @returns {string} Short controller guidance.
+ */
+function actionGuide(action) {
+  return (
+    {
+      survey: 'Face a person or clue, then press B.',
+      repair: 'Face the seasonal footbridge, then press B.',
+      listen: 'Press B in the Living Weir.',
+    }[action] || 'Press B while exploring.'
+  );
 }
 
 /**
@@ -285,7 +339,11 @@ function interact(state, content) {
     ]);
   }
   if (!object)
-    return { ...state, toast: 'Nothing nearby needs your attention.' };
+    return {
+      ...state,
+      toast:
+        'Nothing is directly ahead. Face a nearby person or feature and press A.',
+    };
   if (object.id === 'old-gauge') {
     const evidence = [...new Set([...state.evidence, 'gauge-reading'])];
     return {
@@ -440,7 +498,7 @@ function performFieldAction(state, action, content) {
     return {
       ...state,
       toast:
-        'The river is changing, but the signs are not all pointing the same way.',
+        'No person or clue is directly ahead. Face one, then press B to survey it.',
     };
   }
   if (action === 'listen') {
@@ -464,11 +522,17 @@ function performFieldAction(state, action, content) {
     };
   }
   if (action === 'repair') {
-    if (!state.practices.includes('living-repair'))
+    if (object?.id !== 'seasonal-footbridge')
       return {
         ...state,
         toast:
-          'A reversible repair method is available as a practice after the agreement.',
+          'Face the seasonal footbridge in the Living Weir, then press B to repair it.',
+      };
+    if (!state.practices.includes('living-repair'))
+      return {
+        ...updateWorldFlags(state, { footbridgeStabilized: true }),
+        toast:
+          'You stabilize the loose handrail. The crossing stays closed until the district agrees how to use it.',
       };
     return {
       ...updateWorldFlags(state, { reversibleRepairProposed: true }),
@@ -515,8 +579,22 @@ function stepDialogue(state, pressed, content) {
  * @returns {Record<string, any>} Updated game state.
  */
 function stepMenu(state, pressed, content) {
-  if (pressed.includes('x') || pressed.includes('b'))
-    return { ...state, menu: null };
+  if (pressed.includes('x')) return { ...state, menu: null };
+  if (pressed.includes('b')) {
+    const page = state.menu.page;
+    const parent =
+      page === 'reset'
+        ? 'saves'
+        : page === 'practice-choice'
+          ? 'practices'
+          : page === 'main'
+            ? null
+            : 'main';
+    return {
+      ...state,
+      menu: parent ? { page: parent, selected: 0 } : null,
+    };
+  }
   const entries = menuItems(state.menu.page, state, content);
   let selected = state.menu.selected || 0;
   if (pressed.includes('down') || pressed.includes('right'))
@@ -537,7 +615,7 @@ function stepMenu(state, pressed, content) {
       ...next,
       quickAction: command.slice(7),
       menu: null,
-      toast: `B assigned to ${command.slice(7)}.`,
+      toast: `B action set to ${actionName(command.slice(7))}. ${actionGuide(command.slice(7))}`,
     };
   if (command.startsWith('action:'))
     return performFieldAction(
@@ -561,12 +639,19 @@ function stepMenu(state, pressed, content) {
 export function menuItems(page, state, content = COMMONS_CONTENT) {
   if (page === 'assign')
     return [
-      ['Survey', 'assign:survey'],
-      ['Repair', 'assign:repair'],
-      ['Listen', 'assign:listen'],
-      ['Back', 'page:main'],
+      ['Survey facing person or clue', 'assign:survey'],
+      ['Repair Weir footbridge', 'assign:repair'],
+      ['Listen to habitat', 'assign:listen'],
+      ['Back to main menu', 'page:main'],
     ];
   if (page === 'journal') return [['Back', 'page:main']];
+  if (page === 'charter')
+    return state.agreements.length
+      ? [
+          ['Record this charter', 'action:charter'],
+          ['Back to main menu', 'page:main'],
+        ]
+      : [['Back to main menu', 'page:main']];
   if (page === 'practices')
     return state.practices.length
       ? state.practices

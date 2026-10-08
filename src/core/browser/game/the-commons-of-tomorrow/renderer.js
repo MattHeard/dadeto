@@ -24,18 +24,22 @@ const COLORS = Object.freeze({
  * @returns {Record<string, any>} Shared 160x144 frame payload.
  */
 export function renderCommons(state) {
+  const menu = state.menu;
   const status = state.world.flags.seasonalClosure
     ? 'SEASONAL PACT · REVIEW AT HIGH WATER'
     : state.world.flags.bridgeOpen
       ? 'CROSSING OPEN · MARSH LIMITS SET'
-      : state.world.flags.marshRestored
-        ? 'MARSH RESTORED · GATHERING MOVED'
-        : state.agreements.length
-          ? 'AGREEMENT RECORDED · VISIT THE CHARTER TABLE'
-          : state.presentation?.status;
+      : state.world.flags.footbridgeStabilized
+        ? 'HANDRAIL STABILIZED · CROSSING STILL CLOSED'
+        : state.world.flags.marshRestored
+          ? 'MARSH RESTORED · GATHERING MOVED'
+          : state.agreements.length
+            ? 'AGREEMENT RECORDED · VISIT THE CHARTER TABLE'
+            : state.presentation?.status;
   const frame = toFramePayload(
     {
       ...state,
+      menu: null,
       presentation: {
         ...state.presentation,
         status,
@@ -44,6 +48,7 @@ export function renderCommons(state) {
     },
     { tileGenerator: generateCommonsTile, spriteRenderer: commonsSpriteShapes }
   );
+  frame.menu = menu;
   frame.type = 'the-commons-of-tomorrow';
   frame.quest = 'The River Keeps Its Own Time';
   frame.commons = {
@@ -108,15 +113,21 @@ function menuShapes(frame, state) {
  */
 function menuRows(state) {
   const page = state.menu.page;
-  const rows = [page.toUpperCase().replaceAll('-', ' ')];
+  const title =
+    page === 'actions'
+      ? 'ACTIONS · PERFORM NOW'
+      : page === 'assign'
+        ? 'ASSIGN AN ACTION TO B'
+        : page.toUpperCase().replaceAll('-', ' ');
+  const info = [];
   if (page === 'journal')
-    rows.push(
+    info.push(
       ...commonsJournal(state)
         .slice(0, 3)
         .map(item => `${item.status}: ${item.title}`)
     );
   else if (page === 'charter')
-    rows.push(
+    info.push(
       state.charter?.text ||
         state.agreements[0]?.terms ||
         'No agreement recorded yet.',
@@ -124,20 +135,53 @@ function menuRows(state) {
       'Shared spaces remain accessible alternatives when their route closes.'
     );
   else if (page === 'practices')
-    rows.push(
+    info.push(
       ...state.practices.map(
         (/** @type {string} */ id) => `Practice learned: ${id}`
       )
     );
+  else if (page === 'actions') info.push('A performs this action now.');
+  else if (page === 'assign')
+    info.push('Choose what B performs while facing a person or feature.');
   const entries = menuItems(page, state, COMMONS_CONTENT);
-  rows.push(
-    ...entries.map(
-      (entry, index) =>
-        `${state.menu.selected === index ? '>' : ' '} ${entry[0]}`
-    )
+  const titleRows = wrapDialogueText(title, 27);
+  const infoRows = info.flatMap(line => wrapDialogueText(line, 27));
+  const selected = Math.max(
+    0,
+    Math.min(state.menu.selected || 0, entries.length - 1)
   );
-  rows.push('A CHOOSE · B BACK · X CLOSE');
-  return rows.slice(0, 6);
+  const choiceRows = entries.map((entry, index) =>
+    wrapDialogueText(`${index === selected ? '>' : ' '} ${entry[0]}`, 27)
+  );
+  const footer =
+    page === 'assign'
+      ? 'A SET · B BACK · X CLOSE'
+      : page === 'actions'
+        ? 'A DO · B BACK · X CLOSE'
+        : 'A CHOOSE · B BACK · X CLOSE';
+  const footerRows = wrapDialogueText(footer, 27);
+  const selectedRows = choiceRows[selected] || [];
+  const infoLimit = Math.max(
+    0,
+    8 - titleRows.length - footerRows.length - selectedRows.length
+  );
+  const visibleInfo = infoRows.slice(0, infoLimit);
+  const choiceCapacity =
+    8 - titleRows.length - footerRows.length - visibleInfo.length;
+  const visible = new Set([selected]);
+  let used = selectedRows.length;
+  for (let distance = 1; distance < entries.length; distance += 1)
+    for (const candidate of [selected - distance, selected + distance]) {
+      const candidateRows = choiceRows[candidate];
+      if (candidateRows && used + candidateRows.length <= choiceCapacity) {
+        visible.add(candidate);
+        used += candidateRows.length;
+      }
+    }
+  const choices = [...visible]
+    .sort((left, right) => left - right)
+    .flatMap(index => choiceRows[index]);
+  return [...titleRows, ...visibleInfo, ...choices, ...footerRows].slice(0, 8);
 }
 
 /**
