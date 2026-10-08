@@ -1,6 +1,28 @@
 {
   "posts": [
     {
+      "key": "COMM1",
+      "title": "The Commons of Tomorrow",
+      "publicationDate": "2026-10-08",
+      "release": "public",
+      "content": [
+        "A handheld solarpunk RPG about a post-scarcity city where neighbors value different futures. Explore Canopy Commons and the Living Weir, investigate the river, and help write a charter without pretending every value can be maximized at once.",
+        {
+          "type": "manual",
+          "id": "COMM1-manual",
+          "title": "Field guide",
+          "src": "/manuals/the-commons-of-tomorrow.md"
+        }
+      ],
+      "toy": {
+        "modulePath": "/core/browser/game/the-commons-of-tomorrow/commonsToy.js",
+        "functionName": "commonsToy",
+        "defaultInputMethod": "mosslight-keypad",
+        "defaultOutputMethod": "canvas-2d"
+      },
+      "tags": ["toy", "game", "rpg", "solarpunk", "community"]
+    },
+    {
       "key": "CHRO1",
       "title": "Chronoflow: The Tidal Archive",
       "publicationDate": "2026-10-06",

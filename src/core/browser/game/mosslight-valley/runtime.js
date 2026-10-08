@@ -17,6 +17,8 @@ export function createMosslightRuntime(options = {}) {
   const save = opts.save || createSaveAdapter(env);
   const audio = opts.audio || createAudioAdapter(env);
   const renderer = opts.renderer || toFramePayload;
+  const invalidSaveMessage =
+    opts.invalidSaveMessage || 'Invalid Mosslight Valley save data.';
   const createState = opts.systems?.create || createSimulation;
   const stepState = opts.systems?.step || stepGame;
   const journalFor = opts.systems?.journal || questJournal;
@@ -145,7 +147,7 @@ export function createMosslightRuntime(options = {}) {
     },
     importSave(/** @type {string} */ raw) {
       const parsed = save.import(raw);
-      if (!parsed) throw new Error('Invalid Mosslight Valley save data.');
+      if (!parsed) throw new Error(invalidSaveMessage);
       state = parsed.state;
       activeSlot = parsed.slot ?? activeSlot;
       return renderer(state);

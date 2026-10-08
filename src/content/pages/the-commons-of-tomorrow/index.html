@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover"
+    />
+    <meta name="theme-color" content="#182f39" />
+    <meta
+      name="description"
+      content="A handheld solarpunk RPG about living together when people value different futures."
+    />
+    <title>The Commons of Tomorrow — Dadeto</title>
+    <link rel="stylesheet" href="/mosslight-valley/styles.css" />
+  </head>
+  <body>
+    <main class="game-shell">
+      <header class="masthead">
+        <a class="wordmark" href="/">DADETO <span>FIELD NOTES</span></a>
+        <div class="title-lockup">
+          <p>AN ORIGINAL HANDHELD RPG</p>
+          <h1>The Commons of Tomorrow</h1>
+          <span>A city with room for many futures</span>
+        </div>
+        <p class="chapter-tag">CHAPTER ONE <i>✦</i> CANOPY / WEIR</p>
+      </header>
+      <section class="play-layout" aria-label="The Commons of Tomorrow game">
+        <div class="screen-frame">
+          <div class="screen-glow">
+            <canvas
+              id="game-screen"
+              width="160"
+              height="144"
+              aria-label="The Commons of Tomorrow game screen"
+            ></canvas>
+          </div>
+          <div class="screen-caption">
+            <span>FIELD DISPLAY · 160 × 144</span>
+            <span id="game-status" aria-live="polite"
+              >The city is listening…</span
+            >
+          </div>
+        </div>
+        <aside class="side-panel">
+          <div class="chapter-copy">
+            <p class="eyebrow">ABUNDANCE DOES NOT SETTLE VALUES</p>
+            <h2>Help the city decide how much room to leave for the river.</h2>
+            <p>
+              Explore Canopy Commons and the Living Weir. Listen, inspect, and
+              repair shared systems before the charter assembly.
+            </p>
+          </div>
+          <div class="control-card">
+            <div><span class="keycap">↑ ↓ ← →</span><b>WALK · SELECT</b></div>
+            <div><span class="keycap">A</span><b>TALK · CHOOSE</b></div>
+            <div>
+              <span class="keycap">B</span><b>ASSIGNED ACTION · BACK</b>
+            </div>
+            <div><span class="keycap">X</span><b>MENU · CLOSE</b></div>
+            <div><span class="keycap">Y</span><b>ASSIGN B</b></div>
+          </div>
+          <div class="touch-pad" aria-label="Touch controls">
+            <div class="dpad">
+              <button data-action="up" aria-label="Move up">▲</button>
+              <button data-action="left" aria-label="Move left">◀</button>
+              <button data-action="down" aria-label="Move down">▼</button>
+              <button data-action="right" aria-label="Move right">▶</button>
+            </div>
+            <div class="touch-actions">
+              <div class="face-buttons" aria-label="A and B buttons">
+                <button
+                  data-action="b"
+                  aria-label="B button: assigned action or back"
+                >
+                  B
+                </button>
+                <button data-action="a" aria-label="A button: talk or confirm">
+                  A
+                </button>
+              </div>
+              <div class="system-buttons">
+                <button data-action="x" aria-label="X button: menu or close">
+                  X
+                </button>
+                <button data-action="y" aria-label="Y button: assign B">
+                  Y
+                </button>
+              </div>
+            </div>
+          </div>
+          <nav class="utility-actions" aria-label="Game actions" hidden>
+            <label class="slot-picker"
+              >SAVE SLOT
+              <select id="save-slot" aria-label="Save slot">
+                <option value="0">01</option>
+                <option value="1">02</option>
+                <option value="2">03</option>
+              </select>
+            </label>
+            <button id="save-game">Save</button
+            ><button id="export-game">Export</button>
+            <button id="import-button">Import</button>
+            <input
+              id="import-game"
+              type="file"
+              accept="application/json,.json"
+              hidden
+            />
+            <button id="pause-game">Pause</button
+            ><button id="resume-game">Resume</button>
+            <button id="fullscreen-game">Fullscreen</button
+            ><button id="reset-game">Reset save</button>
+          </nav>
+        </aside>
+      </section>
+      <footer>
+        <span
+          >Shared food, energy and shelter. Different answers to what
+          matters.</span
+        >
+        <span>PLAY AT YOUR OWN PACE <i>✦</i></span>
+      </footer>
+    </main>
+    <script type="module" src="/the-commons-of-tomorrow/game.js"></script>
+  </body>
+</html>

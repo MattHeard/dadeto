@@ -108,7 +108,7 @@ export function startMosslightPage(options) {
    */
   function draw() {
     documentObj.querySelector('#save-slot').value = String(runtime.getSlot());
-    drawGameFrame(context, runtime.frame());
+    (options.drawFrame || drawGameFrame)(context, runtime.frame());
     const world = runtime.getSnapshot().world;
     const clock = `${world.map.name} · Day ${world.day} · ${Math.floor(world.time)}:00`;
     status.textContent =
