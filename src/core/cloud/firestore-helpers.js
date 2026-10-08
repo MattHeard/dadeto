@@ -125,31 +125,27 @@ export function createFirestoreInstance(getFirestoreFn, databaseId) {
 
 /**
  * Resolve a Firestore instance while preserving caller-specific cache policy.
- * @param {{
- *   cache: {value: import('firebase-admin/firestore').Firestore | null},
- *   ensureAppFn: () => void,
- *   getFirestoreFn: (app?: import('firebase-admin/app').App, databaseId?: string) => import('firebase-admin/firestore').Firestore,
- *   environment: Record<string, unknown>,
- *   shouldCache: () => boolean,
- * }} options Firestore dependencies and cache policy.
+ * @param {{cache: {value: import('firebase-admin/firestore').Firestore | null}, ensureAppFn: () => void, getFirestoreFn: (app?: import('firebase-admin/app').App, databaseId?: string) => import('firebase-admin/firestore').Firestore, environment: Record<string, unknown>, shouldCache: () => boolean}} options Firestore dependencies and cache policy.
  * @returns {import('firebase-admin/firestore').Firestore} Cached or newly created Firestore instance.
  */
-export function getFirestoreInstanceFromCache({
-  cache,
-  ensureAppFn,
-  getFirestoreFn,
-  environment,
-  shouldCache,
-}) {
-  ensureAppFn();
-  const databaseId = resolveFirestoreDatabaseId(environment);
-  if (!shouldCache()) {
-    return createFirestoreInstance(getFirestoreFn, databaseId);
-  }
-  if (cache.value === null) {
-    cache.value = createFirestoreInstance(getFirestoreFn, databaseId);
-  }
-  return cache.value;
+export function getFirestoreInstanceFromCache(options) {
+  return resolveFirestoreInstanceFromCache(options, options.shouldCache);
+}
+
+/**
+ * Resolve a Firestore instance from dependencies and its cache policy.
+ * @param {{cache: {value: import('firebase-admin/firestore').Firestore | null}, ensureAppFn: () => void, getFirestoreFn: (app?: import('firebase-admin/app').App, databaseId?: string) => import('firebase-admin/firestore').Firestore, environment: Record<string, unknown>}} options Firestore dependencies.
+ * @param {() => boolean} shouldCache Caller-specific cache policy.
+ * @returns {import('firebase-admin/firestore').Firestore} Cached or newly created Firestore instance.
+ */
+function resolveFirestoreInstanceFromCache(options, shouldCache) {
+  options.ensureAppFn();
+  const databaseId = resolveFirestoreDatabaseId(options.environment);
+  const useCache = shouldCache();
+  if (useCache && options.cache.value !== null) return options.cache.value;
+  const firestore = createFirestoreInstance(options.getFirestoreFn, databaseId);
+  if (useCache) options.cache.value = firestore;
+  return firestore;
 }
 
 /**
@@ -168,13 +164,14 @@ export function createFirestoreInstanceResolver({
     const ensureAppFn = options.ensureAppFn ?? defaultEnsureAppFn;
     const getFirestoreFn = options.getFirestoreFn ?? defaultGetFirestoreFn;
     const environment = resolveEnvironment(options);
-    return getFirestoreInstanceFromCache({
+    const cacheOptions = {
       cache,
       ensureAppFn,
       getFirestoreFn,
       environment,
-      shouldCache: () =>
-        shouldCache({ options, ensureAppFn, getFirestoreFn, environment }),
-    });
+    };
+    return resolveFirestoreInstanceFromCache(cacheOptions, () =>
+      shouldCache({ options, ensureAppFn, getFirestoreFn, environment })
+    );
   };
 }

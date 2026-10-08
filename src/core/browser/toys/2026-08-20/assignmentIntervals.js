@@ -7,11 +7,10 @@ import { tryOr } from '../../../commonCore.js';
  * @returns {{startTime: number, endTime: number}} Temporal interval.
  */
 export function resolveInterval(segments, points, segmentId) {
-  const { startTime, endTime } = resolveSegmentTiming(
+  const { startTime, endTime } = resolveAssignmentTiming(
     segments,
     points,
-    segmentId,
-    'time interval'
+    segmentId
   );
   return { startTime, endTime };
 }
@@ -24,12 +23,7 @@ export function resolveInterval(segments, points, segmentId) {
  * @returns {{start: string, end: string, startTime: number, endTime: number, startPointId: string, endPointId: string}} Resolved interval.
  */
 export function resolveTimestampInterval(segments, points, segmentId) {
-  const timing = resolveSegmentTiming(
-    segments,
-    points,
-    segmentId,
-    'time interval'
-  );
+  const timing = resolveAssignmentTiming(segments, points, segmentId);
   return {
     start: timing.startTimestamp,
     end: timing.endTimestamp,
@@ -38,6 +32,17 @@ export function resolveTimestampInterval(segments, points, segmentId) {
     startPointId: timing.startPointId,
     endPointId: timing.endPointId,
   };
+}
+
+/**
+ * Resolve an assignment interval with its shared validation message.
+ * @param {Map<string, Record<string, unknown>>} segments Segment records.
+ * @param {Map<string, Record<string, unknown>>} points Point records.
+ * @param {string} segmentId Segment identifier.
+ * @returns {ReturnType<typeof resolveSegmentTiming>} Validated assignment timing.
+ */
+function resolveAssignmentTiming(segments, points, segmentId) {
+  return resolveSegmentTiming(segments, points, segmentId, 'time interval');
 }
 
 /**

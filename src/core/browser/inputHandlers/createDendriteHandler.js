@@ -341,12 +341,12 @@ function buildWrappedField(options) {
  * @param {{dom: DOMHelpers, form: HTMLElement, data: DendriteData, textInput: HTMLInputElement, disposers: Disposer[]}} options - Rendering helpers.
  * @returns {(field: [string, string]) => void} Renderer for each field tuple.
  */
-function createFieldRenderer({ dom, form, data, textInput, disposers }) {
-  const sharedArgs = getSharedFormArgs({ data, textInput, disposers });
+function createFieldRenderer(options) {
+  const sharedArgs = getSharedFormArgs(options);
   return function renderFieldForTuple([key, placeholder]) {
     buildWrappedField({
-      dom,
-      form,
+      dom: options.dom,
+      form: options.form,
       key,
       placeholder,
       ...sharedArgs,
@@ -507,9 +507,7 @@ function createBuildForm(fields) {
     const renderField = createFieldRenderer({
       dom,
       form,
-      data,
-      textInput,
-      disposers,
+      ...getSharedFormArgs({ data, textInput, disposers }),
     });
     fields.forEach(renderField);
     return finalizeManagedForm({ dom, textInput, data, form });

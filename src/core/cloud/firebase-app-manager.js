@@ -46,32 +46,32 @@ export function ensureFirebaseAppInitialized(createManager, initializer) {
 
 /**
  * Create initialized Firebase-backed cloud app dependencies.
- * @param {{
- *   initializeApp: () => void,
- *   createFirebaseAppManager: (initializer: () => void) => { ensureFirebaseApp: (initFn?: () => void) => void },
- *   getEnvironmentVariables: () => Record<string, string | undefined>,
- *   getFirestoreInstance: (options: { environment: Record<string, string | undefined> }) => unknown,
- *   getAuth: () => unknown,
- *   express: () => unknown,
- * }} deps Cloud wiring dependencies.
+ * @param {{initializeApp: () => void, createFirebaseAppManager: (initializer: () => void) => { ensureFirebaseApp: (initFn?: () => void) => void }, getEnvironmentVariables: () => Record<string, string | undefined>, getFirestoreInstance: (options: { environment: Record<string, string | undefined> }) => unknown, getAuth: () => unknown, express: () => unknown}} deps Cloud wiring dependencies.
  * @param {{ includeApp?: boolean }} [options] Whether to construct an Express app.
  * @returns {{ db: unknown, auth: unknown, app?: unknown }} Initialized cloud app parts.
  */
-export function createFirebaseAppContext(deps, { includeApp = true } = {}) {
-  ensureFirebaseAppInitialized(
-    deps.createFirebaseAppManager,
-    deps.initializeApp
-  );
-  const environmentVariables = deps.getEnvironmentVariables();
+export function createFirebaseAppContext(
+  {
+    initializeApp,
+    createFirebaseAppManager,
+    getEnvironmentVariables,
+    getFirestoreInstance,
+    getAuth,
+    express,
+  },
+  { includeApp = true } = {}
+) {
+  ensureFirebaseAppInitialized(createFirebaseAppManager, initializeApp);
+  const environmentVariables = getEnvironmentVariables();
 
   /** @type {{ db: unknown, auth: unknown, app?: unknown }} */
   const context = {
-    db: deps.getFirestoreInstance({ environment: environmentVariables }),
-    auth: deps.getAuth(),
+    db: getFirestoreInstance({ environment: environmentVariables }),
+    auth: getAuth(),
   };
 
   if (includeApp) {
-    context.app = deps.express();
+    context.app = express();
   }
 
   return context;
