@@ -7,20 +7,55 @@ import { tryOr } from '../../../commonCore.js';
  * @returns {{startTime: number, endTime: number}} Temporal interval.
  */
 export function resolveInterval(segments, points, segmentId) {
+  const { startTime, endTime } = resolveSegmentTiming(
+    segments,
+    points,
+    segmentId,
+    'time interval'
+  );
+  return { startTime, endTime };
+}
+
+/**
+ * Resolve a segment's endpoint records and timestamps.
+ * @param {Map<string, Record<string, unknown> | undefined>} segments Segment records.
+ * @param {Map<string, Record<string, unknown>>} points Point records.
+ * @param {string} segmentId Segment identifier.
+ * @param {string} intervalLabel Error message interval label.
+ * @returns {{startPointId: string, endPointId: string, startTimestamp: string, endTimestamp: string, startTime: number, endTime: number, start: Record<string, unknown>, end: Record<string, unknown>}} Resolved segment timing.
+ */
+export function resolveSegmentTiming(
+  segments,
+  points,
+  segmentId,
+  intervalLabel = 'interval'
+) {
   const segment = segments.get(segmentId);
   if (!segment) throw new Error(`Unknown segment: ${segmentId}`);
-  const start = points.get(String(segment.startPointId));
-  const end = points.get(String(segment.endPointId));
+  const startPointId = String(segment.startPointId);
+  const endPointId = String(segment.endPointId);
+  const start = points.get(startPointId);
+  const end = points.get(endPointId);
   if (!start || !end)
     throw new Error(`Segment ${segmentId} references an unknown point.`);
-  const startTime = Date.parse(String(start.timestamp));
-  const endTime = Date.parse(String(end.timestamp));
-  if (!isOrderedInterval(startTime, endTime)) {
+  const startTimestamp = String(start.timestamp);
+  const endTimestamp = String(end.timestamp);
+  const startTime = Date.parse(startTimestamp);
+  const endTime = Date.parse(endTimestamp);
+  if (!isOrderedInterval(startTime, endTime))
     throw new Error(
-      `Segment ${segmentId} must have an ordered valid time interval.`
+      `Segment ${segmentId} must have an ordered valid ${intervalLabel}.`
     );
-  }
-  return { startTime, endTime };
+  return {
+    startPointId,
+    endPointId,
+    startTimestamp,
+    endTimestamp,
+    startTime,
+    endTime,
+    start,
+    end,
+  };
 }
 
 /**

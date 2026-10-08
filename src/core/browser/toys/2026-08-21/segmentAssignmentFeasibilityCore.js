@@ -1,6 +1,7 @@
 // Shared pure feasibility helpers for safe segment assignment toys.
 import { resolvePointRecords } from '../2026-08-22/spacePointResolution.js';
-import { isOrderedInterval } from '../2026-08-20/assignmentIntervals.js';
+import { resolveSegmentTiming } from '../2026-08-20/assignmentIntervals.js';
+export { resolveSegmentTiming } from '../2026-08-20/assignmentIntervals.js';
 export { overlaps } from '../2026-08-20/assignmentIntervals.js';
 import { wgs84Distance } from '../2026-08-20/wgs84Distance.js';
 import { createToyMessageBoundary } from '../formatToyError.js';
@@ -32,48 +33,6 @@ export function measureSegmentMotion(candidate, movingAtZero = Infinity) {
         : movingAtZero
       : distanceMeters / 1000 / (durationSeconds / 3600);
   return { distanceMeters, durationSeconds, requiredSpeed };
-}
-
-/**
- * Resolve a segment's endpoint records and timestamps.
- * @param {Map<string, Record<string, unknown> | undefined>} segments Segment records.
- * @param {Map<string, Record<string, unknown>>} points Point records.
- * @param {string} segmentId Segment identifier.
- * @param {string} intervalLabel Error message interval label.
- * @returns {{startPointId: string, endPointId: string, startTimestamp: string, endTimestamp: string, startTime: number, endTime: number, start: Record<string, unknown>, end: Record<string, unknown>}} Resolved segment timing.
- */
-export function resolveSegmentTiming(
-  segments,
-  points,
-  segmentId,
-  intervalLabel = 'interval'
-) {
-  const segment = segments.get(segmentId);
-  if (!segment) throw new Error(`Unknown segment: ${segmentId}`);
-  const startPointId = String(segment.startPointId);
-  const endPointId = String(segment.endPointId);
-  const start = points.get(startPointId);
-  const end = points.get(endPointId);
-  if (!start || !end)
-    throw new Error(`Segment ${segmentId} references an unknown point.`);
-  const startTimestamp = String(start.timestamp);
-  const endTimestamp = String(end.timestamp);
-  const startTime = Date.parse(startTimestamp);
-  const endTime = Date.parse(endTimestamp);
-  if (!isOrderedInterval(startTime, endTime))
-    throw new Error(
-      `Segment ${segmentId} must have an ordered valid ${intervalLabel}.`
-    );
-  return {
-    startPointId,
-    endPointId,
-    startTimestamp,
-    endTimestamp,
-    startTime,
-    endTime,
-    start,
-    end,
-  };
 }
 
 /**

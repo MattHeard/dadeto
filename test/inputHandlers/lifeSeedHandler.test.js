@@ -1,6 +1,7 @@
 import { describe, it, expect, jest } from '@jest/globals';
 
 const fieldOptions = [];
+const mockSetInputValue = jest.fn();
 
 jest.unstable_mockModule('../../src/core/browser/browser-core.js', () => ({
   DENDRITE_FORM_SELECTOR: '.dendrite-form',
@@ -19,7 +20,7 @@ jest.unstable_mockModule('../../src/core/browser/browser-core.js', () => ({
   maybeRemoveTextarea: jest.fn(),
   getInputValue: jest.fn(() => ''),
   parseJsonOrDefault: jest.fn(() => ({})),
-  setInputValue: jest.fn(),
+  setInputValue: mockSetInputValue,
   whenOrDefault: jest.fn((condition, transform, fallback) => {
     if (condition) return transform();
     return fallback;
@@ -29,12 +30,16 @@ jest.unstable_mockModule('../../src/core/browser/browser-core.js', () => ({
 jest.unstable_mockModule(
   '../../src/core/browser/inputHandlers/createDendriteHandler.js',
   () => ({
-    buildManagedForm: jest.fn((options, buildForm) =>
-      buildForm({
+    buildManagedForm: jest.fn((options, buildForm) => {
+      const result = buildForm({
         form: { _dispose: jest.fn() },
         disposers: [],
-      })
-    ),
+      });
+      if (result && typeof result === 'object' && 'data' in result) {
+        mockSetInputValue(options.textInput, JSON.stringify(result.data));
+      }
+      return result;
+    }),
     withManagedFormShell: jest.fn((options, buildForm) =>
       buildForm({
         form: { _dispose: jest.fn() },

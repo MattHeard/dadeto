@@ -96,11 +96,12 @@ export function getFirestoreForDatabase(
   databaseId
 ) {
   const firestoreFactory = /** @type {any} */ (getFirestoreFn);
+  const app = firebaseApp ?? undefined;
   if (databaseId && databaseId !== '(default)') {
-    return firestoreFactory(firebaseApp, databaseId);
+    return firestoreFactory(app, databaseId);
   }
 
-  return firestoreFactory(firebaseApp);
+  return firestoreFactory(app);
 }
 
 /**

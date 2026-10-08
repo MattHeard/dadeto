@@ -1,0 +1,7 @@
+# jscpd min token 8
+
+- **Unexpected hurdle:** Lowering `.jscpd.json` from 9 to 8 exposed 54 clone windows. Three were removed by sharing segment timing resolution, centralizing a repeated return-leg builder, and iterating optional Symphony footer fields. The remaining 51 include very short repeated structures and call shapes that need careful review.
+- **Diagnosis path:** Used `reports/duplication/jscpd-report.json` after each `npm run duplication` run, then ran the full aggregate twice after resolving type, lint, dependency, and test-harness issues.
+- **Chosen fix:** Kept the requested token boundary at 8 and made behavior-preserving extractions. Normalized nullable Firestore app input and corrected the life-seed test mock to model managed-form finalization. No clone exclusions or source suppressions were introduced.
+- **Evidence:** `JEST_CACHE_DIRECTORY=/home/matt/dadeto/.jest-cache TMPDIR=/home/matt/dadeto/.tmp DADETO_COVERAGE_SHARD_SIZE=40 npm run check` completed with `check-summary` status `failed`, total 10, failed 1: `npm run duplication` reports 51 clones, 0.59% duplicated lines, and 0.17% duplicated tokens (`/tmp/dadeto-jscpd8-check-3.log`). All other aggregate gates passed. Detailed findings are in `reports/duplication/jscpd-report.json`.
+- **Next-time guidance:** Treat the current bead as open. Review each remaining clone against its exact token span, extract genuinely shared behavior, and avoid changing names or syntax solely to silence short structural matches. Do not close until the duplication gate and `npm run check` pass.

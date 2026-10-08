@@ -135,12 +135,7 @@ function buildNormalSequence(request) {
       ids.points.pickupOutboundStart,
       context.endPoint.pointId
     ),
-    makeSegment(
-      ids.segments.pickupReturn,
-      context.endPoint.pointId,
-      ids.points.pickupReturnEnd
-    ),
-    ...fulfillmentRecoverySegments(ids, ids.points.pickupReturnEnd),
+    ...pickupReturnSegments(ids, context, ids.points.pickupReturnEnd),
   ];
   const sequence = [
     metadata({
@@ -418,12 +413,7 @@ export function procurementBackedFulfillmentSequenceProposal(input) {
         context.startPoint.pointId
       ),
       context.segment,
-      makeSegment(
-        ids.segments.pickupReturn,
-        context.endPoint.pointId,
-        ids.points.pickupReturn
-      ),
-      ...fulfillmentRecoverySegments(ids, ids.points.pickupReturn),
+      ...pickupReturnSegments(ids, context, ids.points.pickupReturn),
     ];
     const sequence = [
       operation({
@@ -469,6 +459,24 @@ export function procurementBackedFulfillmentSequenceProposal(input) {
       context.segment.segmentId
     );
   });
+}
+
+/**
+ * Append the shared return leg and its recovery legs.
+ * @param {{points: Record<string, string>, segments: Record<string, string>}} ids Fulfillment identities.
+ * @param {Record<string, any>} context Resolved fulfillment context.
+ * @param {string} recoveryStartPointId Point where recovery legs begin.
+ * @returns {Array<ReturnType<typeof makeSegment>>} Return and recovery segments.
+ */
+function pickupReturnSegments(ids, context, recoveryStartPointId) {
+  return [
+    makeSegment(
+      ids.segments.pickupReturn,
+      context.endPoint.pointId,
+      recoveryStartPointId
+    ),
+    ...fulfillmentRecoverySegments(ids, recoveryStartPointId),
+  ];
 }
 
 // Procurement-backed proposals finish at the serialization boundary.

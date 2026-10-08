@@ -493,19 +493,13 @@ function renderStatusHeader(args) {
 function renderStatusFooter(lines, context, terminalSize) {
   renderFieldLine(lines, 'Auto', context.autoLoopLabel ?? 'off', terminalSize);
 
-  renderOptionalFooterLine(
-    lines,
-    'Launch:',
-    context.launchFeedback,
-    terminalSize
+  [
+    ['Launch:', context.launchFeedback],
+    ['Refresh:', context.refreshFeedback],
+    ['Status:', context.statusError],
+  ].forEach(([label, value]) =>
+    renderOptionalFooterLine(lines, label, value, terminalSize)
   );
-  renderOptionalFooterLine(
-    lines,
-    'Refresh:',
-    context.refreshFeedback,
-    terminalSize
-  );
-  renderOptionalFooterLine(lines, 'Status:', context.statusError, terminalSize);
 
   pushLine(lines, 'Polling every 5 seconds.', terminalSize);
 }
