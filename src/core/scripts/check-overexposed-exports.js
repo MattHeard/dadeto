@@ -339,9 +339,7 @@ function analyzeSourceFile(deps, filePath) {
  */
 function collectExportedFunctionsFromDeclaration(declaration, exports) {
   if (declaration.type === 'FunctionDeclaration') {
-    if (declaration.id?.name) {
-      pushExportedFunction(exports, declaration.id.name, declaration.loc);
-    }
+    collectNamedFunctionExport(declaration, exports);
     return;
   }
 
@@ -573,6 +571,16 @@ function isNamespaceCall(callee) {
  * @returns {void}
  */
 function collectExportedFunctionsFromDefault(declaration, exports) {
+  collectNamedFunctionExport(declaration, exports);
+}
+
+/**
+ * Collect a named function declaration as an exported function.
+ * @param {import('estree').Node} declaration Declaration node.
+ * @param {Array<{ exportName: string, line: number, column: number }>} exports Export accumulator.
+ * @returns {void}
+ */
+function collectNamedFunctionExport(declaration, exports) {
   if (declaration.type === 'FunctionDeclaration' && declaration.id?.name) {
     pushExportedFunction(exports, declaration.id.name, declaration.loc);
   }
