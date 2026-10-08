@@ -5,7 +5,7 @@ export { createRectShape };
 
 /**
  * Resolve the persistence accessor from the toy environment.
- * @param {{ get?: (name: string) => unknown }} env Toy environment helpers.
+ * @param {{ get?: (name: string) => unknown } | null | undefined} env Toy environment helpers.
  * @returns {((value: Record<string, unknown>) => unknown) | null} Persistence setter or null.
  */
 export function getStorageAccessor(env) {

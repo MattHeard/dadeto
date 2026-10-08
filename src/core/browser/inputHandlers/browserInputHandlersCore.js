@@ -81,6 +81,7 @@ const createTextInputUpdater =
  * @returns {DOMEventListener} Input handler that keeps helpers aligned.
  */
 export const createUpdateTextInputValue = (textInput, dom) => {
+  /** @type {TextInputUpdateHandler} */
   const setTextInputValue = (input, value) =>
     writeMirroredInputValue(input, dom, value);
   const updateHandlers = [setTextInputValue];
