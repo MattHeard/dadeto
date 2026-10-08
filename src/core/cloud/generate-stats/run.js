@@ -8,10 +8,10 @@ import { createJsonExpressApp } from '../../express-app.js';
 import { getAllowedOrigins } from '../allowed-origins.js';
 import {
   getFirestoreForDatabase,
-  getFirestoreInstanceFromCache,
   resolveFirestoreDatabaseId,
   createDefaultFirestoreContextChecker,
   createFirestoreInstanceCache,
+  createFirestoreInstanceResolver,
 } from '../firestore-helpers.js';
 import {
   createCorsOptions,
@@ -64,7 +64,7 @@ const usesDefaultFirestoreContext = createDefaultFirestoreContextChecker(
  * Determine whether the generate-stats Firestore call can reuse the cached instance.
  * @param {{
  *   ensureAppFn: () => void,
- *   getFirestoreFn: typeof getAdminFirestore,
+ *   getFirestoreFn: (app?: import('firebase-admin/app').App, databaseId?: string) => import('firebase-admin/firestore').Firestore,
  *   environment: Record<string, unknown>,
  * }} options Firestore resolution inputs.
  * @returns {boolean} True when the cached instance is safe to reuse.
@@ -74,6 +74,14 @@ const usesDefaultFirestoreContext = createDefaultFirestoreContextChecker(
 function shouldUseCachedFirestore(options) {
   return usesDefaultFirestoreContext(options);
 }
+
+const resolveFirestoreInstance = createFirestoreInstanceResolver({
+  cache: firestoreCache,
+  defaultEnsureAppFn: ensureFirebaseApp,
+  defaultGetFirestoreFn: getAdminFirestore,
+  resolveEnvironment: options => options.environment ?? process.env,
+  shouldCache: shouldUseCachedFirestore,
+});
 
 /**
  * Resolve the generate-stats Firestore instance.
@@ -85,24 +93,14 @@ function shouldUseCachedFirestore(options) {
  * @returns {import('firebase-admin/firestore').Firestore} Firestore instance used by the stats workflow.
  */
 export const getFirestoreInstance = (options = {}) => {
-  const {
-    ensureAppFn = ensureFirebaseApp,
-    getFirestoreFn = getAdminFirestore,
-    environment = process.env,
-  } = options;
-
-  if (typeof getFirestoreFn !== 'function') {
+  if (
+    options.getFirestoreFn !== undefined &&
+    typeof options.getFirestoreFn !== 'function'
+  ) {
     throw new TypeError('getFirestoreFn must be a function');
   }
 
-  return getFirestoreInstanceFromCache({
-    cache: firestoreCache,
-    ensureAppFn,
-    getFirestoreFn,
-    environment,
-    shouldCache: () =>
-      shouldUseCachedFirestore({ ensureAppFn, getFirestoreFn, environment }),
-  });
+  return resolveFirestoreInstance(options);
 };
 
 /**

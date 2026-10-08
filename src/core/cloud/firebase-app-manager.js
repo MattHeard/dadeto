@@ -34,6 +34,17 @@ export function createFirebaseAppManager(initializer) {
 }
 
 /**
+ * Initialize the Firebase Admin app through an injected manager.
+ * @template {() => unknown} TInitializer
+ * @param {(initializer: TInitializer) => { ensureFirebaseApp: () => void }} createManager Manager factory.
+ * @param {TInitializer} initializer Firebase Admin initializer.
+ * @returns {void}
+ */
+export function ensureFirebaseAppInitialized(createManager, initializer) {
+  createManager(initializer).ensureFirebaseApp();
+}
+
+/**
  * Create initialized Firebase-backed cloud app dependencies.
  * @param {{
  *   initializeApp: () => void,
@@ -47,11 +58,10 @@ export function createFirebaseAppManager(initializer) {
  * @returns {{ db: unknown, auth: unknown, app?: unknown }} Initialized cloud app parts.
  */
 export function createFirebaseAppContext(deps, { includeApp = true } = {}) {
-  const { ensureFirebaseApp } = deps.createFirebaseAppManager(
+  ensureFirebaseAppInitialized(
+    deps.createFirebaseAppManager,
     deps.initializeApp
   );
-
-  ensureFirebaseApp();
   const environmentVariables = deps.getEnvironmentVariables();
 
   /** @type {{ db: unknown, auth: unknown, app?: unknown }} */

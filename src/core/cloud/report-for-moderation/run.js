@@ -4,6 +4,7 @@ import {
   createReportForModerationHandler,
 } from './report-for-moderation-core.js';
 import { getAllowedOrigins } from '../cors-config.js';
+import { ensureFirebaseAppInitialized } from '../firebase-app-manager.js';
 
 /** @typedef {import('firebase-admin/firestore').CollectionReference & { add: (report: Record<string, unknown>) => Promise<unknown> }} ModerationReportsCollection */
 
@@ -22,8 +23,10 @@ import { getAllowedOrigins } from '../cors-config.js';
  * @returns {{ handle: unknown, handleReportForModeration: unknown }} Wired exports.
  */
 export function runReportForModeration(deps) {
-  const firebaseAppManager = deps.createFirebaseAppManager(deps.initializeApp);
-  firebaseAppManager.ensureFirebaseApp();
+  ensureFirebaseAppInitialized(
+    deps.createFirebaseAppManager,
+    deps.initializeApp
+  );
 
   const db = deps.getFirestoreInstance();
   const moderationReportsCollection =
