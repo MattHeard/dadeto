@@ -1,5 +1,6 @@
 import * as browserCore from '../../../browser-core.js';
 import { parseJsonOrFallback } from '../../browserToysCore.js';
+import { getStorageAccessor } from '../../toyPersistence.js';
 import { ledgerIngestToy } from './ledgerIngestToy.js';
 import * as ledgerIngestStorageCore from './ledgerIngestStorageCore.js';
 
@@ -28,11 +29,8 @@ import * as ledgerIngestStorageCore from './ledgerIngestStorageCore.js';
  * @returns {boolean} True when the storage helper was invoked.
  */
 function persistPermanentStorageRoot(env, nextRoot) {
-  const setter = ledgerIngestStorageCore.getPermanentStorageAccessor(
-    env,
-    'setLocalPermanentData'
-  );
-  if (typeof setter !== 'function') {
+  const setter = getStorageAccessor(env);
+  if (!setter) {
     return false;
   }
 
