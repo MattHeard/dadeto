@@ -15,6 +15,11 @@ export const COMMONS_CONTENT = Object.freeze({
       height: 12,
       weather: 'sun',
       palette: 'village',
+      walkways: [
+        ...Array.from({ length: 11 }, (_, index) => `${6 + index},8`),
+        ...Array.from({ length: 3 }, (_, index) => `16,${7 - index}`),
+        '17,6',
+      ],
       blocked: [
         '2,2',
         '3,2',
@@ -45,6 +50,10 @@ export const COMMONS_CONTENT = Object.freeze({
       height: 12,
       weather: 'breeze',
       palette: 'shore',
+      walkways: [
+        ...Array.from({ length: 5 }, (_, index) => `${index},6`),
+        ...Array.from({ length: 3 }, (_, index) => `${5 + index},6`),
+      ],
       blocked: [
         ...Array.from({ length: 18 }, (_, x) => `${x},0`),
         ...Array.from({ length: 18 }, (_, x) => `${x},11`),

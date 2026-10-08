@@ -3,7 +3,7 @@ const SIZE = 12;
 /**
  * Draw a planned solarpunk landscape with broad paths, planted terraces and a
  * readable watercourse instead of scattered grass flecks.
- * @param {{x:number,y:number,palette:string[],region:string,blocked?:boolean,roof?:boolean}} options World tile context.
+ * @param {{x:number,y:number,palette:string[],region:string,walkway?:boolean,blocked?:boolean,roof?:boolean}} options World tile context.
  * @returns {Array<{x:number,y:number,width:number,height:number,fill:string}>} Local pixel rectangles.
  */
 export function generateCommonsTile({
@@ -11,50 +11,37 @@ export function generateCommonsTile({
   y,
   palette,
   region,
+  walkway = false,
   blocked = false,
   roof = false,
 }) {
-  const [outline, stone, canopy, terracotta, water = outline] = palette;
+  const [outline, stone, canopy, terracotta, water = palette[0]] = palette;
   const code = Math.abs((x * 19 + y * 23 + x * y * 5) % 8);
   if (blocked)
     return structureTile({ outline, stone, canopy, terracotta, roof, code });
   if (region === 'shore')
     return weirTile({ x, y, outline, stone, canopy, terracotta, water, code });
-  return commonsTile({ x, y, outline, stone, canopy, terracotta, code });
+  return commonsTile({ walkway, canopy, terracotta, code });
 }
 
 /**
  *
- * @param {{x:number,y:number,outline:string,stone:string,canopy:string,terracotta:string,code:number}} options Tile motif inputs.
+ * @param {{walkway:boolean,canopy:string,terracotta:string,code:number}} options Tile motif inputs.
  * @returns {Array<{x:number,y:number,width:number,height:number,fill:string}>} Tile pixels.
  */
-function commonsTile({ x, y, outline, stone, canopy, terracotta, code }) {
-  const path = x % 6 === 0 || y % 4 === 0;
-  if (path) {
-    const cross = x % 6 === 0 && y % 4 === 0;
+function commonsTile({ walkway, canopy, terracotta, code }) {
+  if (walkway) {
     return [
-      rect([0, 0, SIZE, SIZE], stone),
-      rect([0, 0, 1, SIZE], outline),
-      rect([0, 0, SIZE, 1], outline),
-      rect(
-        [cross ? 5 : (code % 7) + 2, cross ? 5 : (code % 7) + 2, 2, 2],
-        terracotta
-      ),
-      ...(cross
-        ? [rect([2, 2, 8, 1], canopy), rect([2, 8, 8, 1], canopy)]
-        : []),
+      rect([0, 0, SIZE, SIZE], '#d8c78f'),
+      rect([0, 1, SIZE, 1], '#f1e2b1'),
+      rect([0, 10, SIZE, 1], '#b09d6b'),
+      ...(code % 3 === 0 ? [rect([5, 5, 2, 2], terracotta)] : []),
     ];
   }
-  const terrace = code % 2 === 0;
-  return [
-    rect([0, 0, SIZE, SIZE], canopy),
-    rect([1, 1, 10, 10], outline),
-    rect([2, 2, 8, 8], terrace ? stone : terracotta),
-    rect([3, 3, 6, 1], canopy),
-    rect([3, 6, 6, 1], canopy),
-    rect([3, 9, 6, 1], canopy),
-    rect([2 + (code % 6), 4, 1, 1], terracotta),
-  ];
+  const shapes = [rect([0, 0, SIZE, SIZE], '#416d56')];
+  if (code % 3 === 0) shapes.push(rect([3 + (code % 5), 4, 2, 3], canopy));
+  if (code % 3 === 1) shapes.push(rect([7, 6, 2, 2], terracotta));
+  return shapes;
 }
 
 /**
@@ -85,7 +72,7 @@ function weirTile({ x, y, outline, stone, canopy, terracotta, water, code }) {
  * @returns {Array<{x:number,y:number,width:number,height:number,fill:string}>} Tile pixels.
  */
 function structureTile({ outline, stone, canopy, terracotta, roof, code }) {
-  return [
+  const structure = [
     rect([0, 0, SIZE, SIZE], outline),
     rect([1, 1, 10, 9], stone),
     rect([2, 2, 8, 1], roof ? terracotta : canopy),
@@ -93,8 +80,9 @@ function structureTile({ outline, stone, canopy, terracotta, roof, code }) {
     rect([7, 4, 3, 3], terracotta),
     rect([2, 8, 8, 1], outline),
     rect([4 + (code % 4), 8, 1, 3], terracotta),
-    ...(roof ? [rect([0, 0, SIZE, 1], terracotta)] : []),
   ];
+  if (roof) structure.push(rect([0, 0, SIZE, 1], terracotta));
+  return structure;
 }
 
 /**

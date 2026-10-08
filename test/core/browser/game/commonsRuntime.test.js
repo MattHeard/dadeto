@@ -322,11 +322,7 @@ describe('Commons runtime, frame and independent saves', () => {
     expect(() => drawCommonsFrame(context, frame)).not.toThrow();
     expect(calls.length).toBeGreaterThan(0);
     const artShape = frame.shapes.find(
-      shape =>
-        shape.type === 'rect' &&
-        shape.width === 1 &&
-        shape.height === 12 &&
-        shape.fill === frame.palette[0]
+      shape => shape.type === 'rect' && shape.fill === frame.palette[0]
     );
     expect(artShape).toBeDefined();
     expect(calls).toContainEqual([

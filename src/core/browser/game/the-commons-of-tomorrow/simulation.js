@@ -4,7 +4,11 @@ import {
   moveDialogueChoice,
   openDialogue,
 } from '../mosslight-valley/dialogue.js';
-import { createWorld, movePlayer } from '../mosslight-valley/world.js';
+import {
+  createWorld,
+  isBlocked,
+  movePlayer,
+} from '../mosslight-valley/world.js';
 import { COMMONS_CONTENT } from './content.js';
 import {
   advanceWaterPuzzle,
@@ -93,7 +97,7 @@ export function createCommonsState(
     controllerCommand: null,
     lastActions: [],
     tick: 0,
-    toast: 'Meet the neighbors. A: interact · X: menu · Y: assign B.',
+    toast: 'Follow the light path east to WEIR.',
     presentation: { game: 'commons', status: 'Survey the shared city.' },
   };
 }
@@ -238,7 +242,7 @@ export function stepCommons(
       status:
         next.mode === 'puzzle'
           ? 'Route water to the commons inlet.'
-          : `${commonsJournal(next)[0].status.toUpperCase()} · ${next.evidence.length} CLUE${next.evidence.length === 1 ? '' : 'S'}`,
+          : `${next.evidence.length} CLUES · GAUGE / REEDS / FLOW`,
     },
   };
 }
@@ -260,9 +264,35 @@ function stepWorld(state, pressed, content) {
     return performFieldAction(state, state.quickAction, content);
   const direction = DIRECTIONS.find(item => pressed.includes(item));
   if (direction) {
+    const before = next.world.player;
+    const beforeMapId = next.world.mapId;
     const world = movePlayer(next.world, direction, content);
     world.npcs = scheduleActors(content.npcs, world);
     const moved = { ...next, world };
+    if (world.mapId !== beforeMapId)
+      return {
+        ...moved,
+        toast:
+          world.mapId === 'weir'
+            ? 'Living Weir. Bridge is west of the flow board.'
+            : 'Canopy Commons. Follow the light path east to WEIR.',
+      };
+    if (world.player.x === before.x && world.player.y === before.y) {
+      const delta = { up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0] }[
+        direction
+      ] || [0, 0];
+      const blocked = isBlocked(
+        next.world.map,
+        before.x + delta[0],
+        before.y + delta[1]
+      );
+      return {
+        ...moved,
+        toast: blocked
+          ? `Path edge blocks ${direction}. Facing ${direction}; try another path.`
+          : `Resident blocks ${direction}. Facing ${direction}; press A to talk.`,
+      };
+    }
     const { actor, object } = targetInFront(moved);
     if (actor)
       return {
@@ -271,7 +301,7 @@ function stepWorld(state, pressed, content) {
       };
     if (object)
       return { ...moved, toast: `A: Inspect ${interactionName(object)}.` };
-    return moved;
+    return { ...moved, toast: `Moved ${direction}.` };
   }
   if (pressed.includes('a')) return interact(state, content);
   return next;
@@ -316,7 +346,7 @@ function actionGuide(action) {
   return (
     {
       survey: 'Face a person or clue, then press B.',
-      repair: 'Face the seasonal footbridge, then press B.',
+      repair: 'Go east on light path to WEIR; face bridge, press B.',
       listen: 'Press B in the Living Weir.',
     }[action] || 'Press B while exploring.'
   );
@@ -341,8 +371,7 @@ function interact(state, content) {
   if (!object)
     return {
       ...state,
-      toast:
-        'Nothing is directly ahead. Face a nearby person or feature and press A.',
+      toast: 'Nothing ahead. Face a person or feature; A talks or inspects.',
     };
   if (object.id === 'old-gauge') {
     const evidence = [...new Set([...state.evidence, 'gauge-reading'])];
@@ -526,7 +555,9 @@ function performFieldAction(state, action, content) {
       return {
         ...state,
         toast:
-          'Face the seasonal footbridge in the Living Weir, then press B to repair it.',
+          state.world.mapId !== 'weir'
+            ? 'Go east on light path to WEIR; face bridge, press B.'
+            : 'Bridge is west of flow board near entrance; face it, press B.',
       };
     if (!state.practices.includes('living-repair'))
       return {
@@ -615,7 +646,7 @@ function stepMenu(state, pressed, content) {
       ...next,
       quickAction: command.slice(7),
       menu: null,
-      toast: `B action set to ${actionName(command.slice(7))}. ${actionGuide(command.slice(7))}`,
+      toast: `B set: ${actionName(command.slice(7))}. Map ready. ${actionGuide(command.slice(7))}`,
     };
   if (command.startsWith('action:'))
     return performFieldAction(

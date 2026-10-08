@@ -42,13 +42,13 @@ const CLOTHING = Object.freeze({
 
 /**
  * Build Commons-specific people and landmark sprites from a compact pixel alphabet.
- * @param {{id?:string,kind?:string,x:number,y:number,facing?:string}} actor Authored actor.
+ * @param {{id?:string,kind?:string,x:number,y:number,facing?:string,controlled?:boolean}} actor Authored actor.
  * @param {{x:number,y:number}} camera View origin in tiles.
  * @param {number} tick Deterministic visual tick.
  * @returns {Array<{type:string,x:number,y:number,width:number,height:number,fill:string}>} Pixel shapes.
  */
 export function commonsSpriteShapes(
-  /** @type {{id?:string,kind?:string,x:number,y:number,facing?:string}} */ actor,
+  /** @type {{id?:string,kind?:string,x:number,y:number,facing?:string,controlled?:boolean}} */ actor,
   /** @type {{x:number,y:number}} */ camera,
   /** @type {number} */ tick
 ) {
@@ -68,7 +68,7 @@ export function commonsSpriteShapes(
   const originX = (actor.x - camera.x) * 12;
   const originY = (actor.y - camera.y) * 12;
   const bob = actor.kind ? 0 : Math.floor(tick / 10) % 2;
-  return art.split('/').flatMap((row, /** @type {number} */ y) =>
+  const pixels = art.split('/').flatMap((row, /** @type {number} */ y) =>
     Array.from(row, (pixel, x) => {
       const left = originX + (actor.facing === 'left' ? 11 - x : x);
       const rowIndex = Number(y);
@@ -82,5 +82,22 @@ export function commonsSpriteShapes(
       ];
     }).flat()
   );
+  if (actor.controlled && !actor.kind && originX >= 0 && originX < 148) {
+    const markerX = originX + 4;
+    const markerY = originY - 3;
+    if (markerY >= 0)
+      pixels.push(
+        /** @type {{type:string,x:number,y:number,width:number,height:number,fill:string}} */ (
+          createRectShapeFromBounds([markerX + 2, markerY, 3, 1], '#fff078')
+        ),
+        /** @type {{type:string,x:number,y:number,width:number,height:number,fill:string}} */ (
+          createRectShapeFromBounds([markerX + 1, markerY + 1, 5, 1], '#fff078')
+        ),
+        /** @type {{type:string,x:number,y:number,width:number,height:number,fill:string}} */ (
+          createRectShapeFromBounds([markerX + 2, markerY + 2, 3, 1], '#fff078')
+        )
+      );
+  }
+  return pixels;
 }
 import { createRectShapeFromBounds } from '../../canvasShapes.js';

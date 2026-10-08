@@ -15,6 +15,16 @@ describe('Commons story simulation', () => {
     expect(state.world.mapId).toBe('commons');
     const moved = stepCommons(state, ['right']);
     expect(moved.world.player.x).toBe(state.world.player.x + 1);
+    expect(moved.toast).toContain('Moved right');
+    const blocked = stepCommons(
+      {
+        ...state,
+        world: { ...state.world, player: { x: 2, y: 2, facing: 'up' } },
+        lastActions: [],
+      },
+      ['down']
+    );
+    expect(blocked.toast).toContain('Path edge blocks down');
     const atExit = {
       ...state,
       world: {
@@ -57,6 +67,10 @@ describe('Commons story simulation', () => {
     };
     expect(stepCommons(nearElian, ['a']).dialogue.lines[0].text).toContain(
       'living neighbor'
+    );
+    expect(stepCommons(nearElian, ['a']).evidence).toHaveLength(0);
+    expect(stepCommons(nearElian, ['a']).presentation.status).toContain(
+      'GAUGE / REEDS / FLOW'
     );
   });
 
@@ -243,7 +257,7 @@ describe('Commons controller and story edge cases', () => {
     );
     expect(stepCommons(at('weir', 7, 6), ['a']).mode).toBe('puzzle');
     expect(stepCommons(at('commons', 0, 0), ['a']).toast).toContain(
-      'Nothing is directly ahead'
+      'Nothing ahead'
     );
     const unknownObjectState = at('commons', 5, 4);
     unknownObjectState.world.map = {
@@ -363,7 +377,7 @@ describe('Commons controller and story edge cases', () => {
       lastActions: [],
     };
     tap('a'); // Repair guidance
-    expect(state.toast).toContain('seasonal footbridge');
+    expect(state.toast).toContain('face bridge');
     state = {
       ...state,
       menu: { page: 'actions', selected: 3 },
@@ -516,13 +530,12 @@ describe('Commons controller and story edge cases', () => {
       lastActions: [],
     };
     expect(stepCommons(assignMenu, ['a']).quickAction).toBe('repair');
-    expect(stepCommons(assignMenu, ['a']).toast).toContain(
-      'Face the seasonal footbridge'
-    );
+    expect(stepCommons(assignMenu, ['a']).toast).toContain('B set: Repair');
+    expect(stepCommons(assignMenu, ['a']).toast).toContain('Map ready');
     expect(
       stepCommons({ ...createCommonsState(), quickAction: 'repair' }, ['b'])
         .toast
-    ).toContain('Face the seasonal footbridge');
+    ).toContain('Go east on light path to WEIR');
     const journalMenu = {
       ...state,
       menu: { page: 'journal', selected: 0 },

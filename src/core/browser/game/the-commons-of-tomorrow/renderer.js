@@ -46,7 +46,10 @@ export function renderCommons(state) {
         palette: ['#193b43', '#c7b98f', '#789c7f', '#e29162', '#397e89'],
       },
     },
-    { tileGenerator: generateCommonsTile, spriteRenderer: commonsSpriteShapes }
+    {
+      tileGenerator: /** @type {any} */ (generateCommonsTile),
+      spriteRenderer: commonsSpriteShapes,
+    }
   );
   frame.menu = menu;
   frame.type = 'the-commons-of-tomorrow';
@@ -57,8 +60,18 @@ export function renderCommons(state) {
     practices: state.practices,
     charterRecorded: Boolean(state.world.flags.charterRecorded),
   };
+  frame.commons.path = state.world.map.walkways;
   if (state.mode === 'puzzle') frame.shapes = puzzleShapes(state.puzzle);
   else if (state.menu) frame.shapes = menuShapes(frame, state);
+  else if (state.world.mapId === 'commons') {
+    frame.shapes = frame.shapes.filter(
+      (/** @type {Record<string, any>} */ shape) => shape.y < 98
+    );
+    frame.shapes.push(
+      frameRectangle({ x: 0, y: 96, width: 160, height: 12 }, COLORS.dark),
+      text('WEIR → · FOLLOW LIGHT PATH', 4, 105, COLORS.gold)
+    );
+  }
   return frame;
 }
 

@@ -17,16 +17,27 @@ describe('Commons visual identity', () => {
     expect(
       generateCommonsTile({ x: 2, y: 4, palette, region: 'village' })
     ).toEqual(path);
-    expect(path.map(pixel => pixel.fill)).toContain('#e29162');
+    expect(path).toHaveLength(1);
+    const walkway = generateCommonsTile({
+      x: 2,
+      y: 4,
+      palette,
+      region: 'village',
+      walkway: true,
+    });
+    expect(walkway.map(pixel => pixel.fill)).toContain('#d8c78f');
+    expect(walkway).not.toEqual(path);
     const terrace = generateCommonsTile({
       x: 1,
       y: 1,
       palette,
       region: 'village',
     });
-    expect(terrace.some(pixel => pixel.width === 8 && pixel.height === 8)).toBe(
-      true
-    );
+    expect(terrace[0]).toMatchObject({
+      width: 12,
+      height: 12,
+      fill: '#416d56',
+    });
     const wetland = generateCommonsTile({
       x: 2,
       y: 4,
@@ -71,6 +82,16 @@ describe('Commons visual identity', () => {
       new Set(['#11121e', '#fff078', '#426ef2', '#fff4d4'])
     );
     expect(resident.some(pixel => pixel.fill === '#e29162')).toBe(false);
+    const player = commonsSpriteShapes(
+      { id: 'player', x: 2, y: 3 },
+      { x: 0, y: 0 },
+      4
+    );
+    expect(
+      player.filter(pixel => pixel.fill === '#fff078').length
+    ).toBeGreaterThan(
+      resident.filter(pixel => pixel.fill === '#fff078').length
+    );
     expect(prop.length).toBeGreaterThan(10);
     expect(
       commonsSpriteShapes({ id: 'player', x: -1, y: 0 }, { x: 0, y: 0 }, 4)
@@ -100,6 +121,10 @@ describe('Commons visual identity', () => {
     expect(frame.palette).toEqual(palette);
     expect(frame.shapes.some(shape => shape.fill === '#fff078')).toBe(true);
     expect(frame.shapes.some(shape => shape.fill === '#315744')).toBe(false);
+    expect(frame.commons.path).toContain('6,8');
+    expect(
+      frame.shapes.some(shape => shape.text === 'WEIR → · FOLLOW LIGHT PATH')
+    ).toBe(true);
     expect(palette).toContain('#397e89');
     expect(JSON.stringify(frame)).not.toContain('commonsSpriteShapes');
     expect(toFramePayload(createCommonsState()).width).toBe(160);
