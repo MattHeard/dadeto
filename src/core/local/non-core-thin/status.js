@@ -1,4 +1,5 @@
 import { reportFailuresAndMaybeLogSuccess } from '../../commonCore.js';
+import { countTextLines } from '../textLines.js';
 
 const EXPORTED_HANDLE_DECLARATION = /\bexport\s+const\s+handle\s*=/u;
 
@@ -229,12 +230,12 @@ function listJsFiles(dir, options, coreDir) {
  * @returns {number} total number of lines in the file
  */
 function countLines(filePath, options) {
-  return options.fsModule
-    .readFileSync(
+  return countTextLines(
+    options.fsModule.readFileSync(
       options.pathModule.resolve(options.repoRoot, filePath),
       'utf8'
     )
-    .split('\n').length;
+  );
 }
 
 /**

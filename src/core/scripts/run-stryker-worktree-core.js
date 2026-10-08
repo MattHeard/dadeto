@@ -325,11 +325,6 @@ async function writeMachineLog(fsModule, logPath, entry) {
  * @returns {void}
  */
 function handleCommandError(error, allowFailure, resolve, reject) {
-  if (allowFailure) {
-    resolve();
-    return;
-  }
-
-  reject(error);
+  return allowFailure ? resolve() : reject(error);
 }
 // Stryker restore all

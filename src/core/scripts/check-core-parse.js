@@ -167,19 +167,20 @@ function formatRawInputFailures(violations) {
  */
 function findViolationsInCore(deps, extractViolationsFromSource) {
   const exemptions = readExemptionsFromFsModule(deps);
-  return listJsFiles(deps.rootDir, deps.sourceRoot, deps).flatMap(filePath => {
+  const fileViolations = [];
+  for (const filePath of listJsFiles(deps.rootDir, deps.sourceRoot, deps)) {
     if (BOUNDARY_FILE_PATTERN.test(filePath) || exemptions.has(filePath)) {
-      return [];
+      continue;
     }
     const source = deps.fsModule.readFileSync(
       deps.pathModule.resolve(deps.rootDir, filePath),
       'utf8'
     );
-    return extractViolationsFromSource(source).map(violation => ({
-      filePath,
-      ...violation,
-    }));
-  });
+    for (const violation of extractViolationsFromSource(source)) {
+      fileViolations.push({ filePath, ...violation });
+    }
+  }
+  return fileViolations;
 }
 
 /**

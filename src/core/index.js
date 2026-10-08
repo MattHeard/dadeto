@@ -4,6 +4,15 @@
 export const ADMIN_UID = 'qcYSrXTaj1MZUoFsAloBwT86GNM2';
 
 /**
+ * Build a shared JSON error payload for browser and cloud response boundaries.
+ * @param {unknown} message Original error message value.
+ * @returns {{ error: unknown }} Error response body.
+ */
+export function createErrorPayload(message) {
+  return { error: message };
+}
+
+/**
  * Clamp a numeric value without imposing a caller-specific finite-value policy.
  * @param {number} value Value to clamp.
  * @param {number} minimum Inclusive lower bound.

@@ -6,6 +6,7 @@ import {
 export { overlaps as overlap } from './assignmentIntervals.js';
 import { runToyArrayCalculation } from '../formatToyError.js';
 import { uniqueByKey } from '../browserToysCore.js';
+import { normalizeTrimmedString as normalizeSkuValue } from '../../validation.js';
 
 /** @typedef {{pointId: string, timestamp: string}} PossessionPoint */
 /** @typedef {{segmentId: string, startPointId: string, endPointId: string}} PossessionSegment */
@@ -58,7 +59,7 @@ function collectCandidateIds(input) {
  * @returns {string} Trimmed SKU.
  */
 export function normalizeSku(value) {
-  return String(value).trim();
+  return normalizeSkuValue(value);
 }
 /**
  * Resolve a segment to its temporal interval.

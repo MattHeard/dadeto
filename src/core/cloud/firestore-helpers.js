@@ -97,10 +97,6 @@ export function getFirestoreForDatabase(
 ) {
   const firestoreFactory = /** @type {any} */ (getFirestoreFn);
   if (databaseId && databaseId !== '(default)') {
-    if (!firebaseApp) {
-      return firestoreFactory(/** @type {any} */ (undefined), databaseId);
-    }
-
     return firestoreFactory(firebaseApp, databaseId);
   }
 

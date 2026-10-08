@@ -140,10 +140,7 @@ function processCsvQuotedCharacter(state, chars, index) {
 function processCsvQuotedCharacterState(state, chars, index) {
   return whenCsvBranch(
     !state.inQuotes,
-    () => {
-      toggleCsvQuoteState(state);
-      return index;
-    },
+    () => toggleCsvQuoteAndReturnIndex(state, index),
     () => processCsvQuotedCharacterInside(state, chars.next, index)
   );
 }
@@ -159,6 +156,16 @@ function processCsvQuotedCharacterInside(state, next, index) {
     appendCsvCellChar(state, '"');
     return index + 1;
   }
+  return toggleCsvQuoteAndReturnIndex(state, index);
+}
+
+/**
+ * Toggle the active quoted-field state without advancing the scanner.
+ * @param {{ inQuotes: boolean }} state CSV quote state.
+ * @param {number} index Current character index.
+ * @returns {number} Unchanged character index.
+ */
+function toggleCsvQuoteAndReturnIndex(state, index) {
   toggleCsvQuoteState(state);
   return index;
 }

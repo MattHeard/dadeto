@@ -280,9 +280,9 @@ export function resolveLocalFilePath(options, pathKey, defaultRelativePath) {
  *   pathModule?: { resolve: (first: string, ...parts: string[]) => string },
  *   readFileImpl?: (filePath: string, encoding: 'utf8') => Promise<string>,
  *   [key: string]: unknown,
- * }} options Loader options.
- * @param {string} pathKey Option key that may override the default file path.
- * @param {string} defaultRelativePath Default repo-relative file path.
+ * }} loaderOptions Loader options.
+ * @param {string} configPathKey Option key that may override the default file path.
+ * @param {string} fallbackRelativePath Default repo-relative file path.
  * @returns {{
  *   repoRoot: string,
  *   filePath: string,
@@ -291,20 +291,20 @@ export function resolveLocalFilePath(options, pathKey, defaultRelativePath) {
  * }} Resolved local config loader inputs.
  */
 export function resolveLocalConfigLoader(
-  options,
-  pathKey,
-  defaultRelativePath
+  loaderOptions,
+  configPathKey,
+  fallbackRelativePath
 ) {
   const { repoRoot, filePath } = resolveLocalFilePath(
-    options,
-    pathKey,
-    defaultRelativePath
+    loaderOptions,
+    configPathKey,
+    fallbackRelativePath
   );
   const pathModule =
     /** @type {{ resolve: (first: string, ...parts: string[]) => string }} */ (
-      options.pathModule
+      loaderOptions.pathModule
     );
-  const readFileImpl = options.readFileImpl;
+  const readFileImpl = loaderOptions.readFileImpl;
 
   if (!readFileImpl) {
     throw new Error('readFileImpl is required.');

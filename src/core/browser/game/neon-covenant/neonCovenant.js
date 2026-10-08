@@ -281,21 +281,18 @@ export function createNeonRuntime(options = {}) {
     game: 'neon-covenant',
     validate: validLabSave,
     migrate: (/** @type {Record<string, any>} */ state) =>
-      migratePlanning(
-        migrateDistress(
-          migrateCampaignAct(
-            migrateContracts(
-              migrateInfrastructure(
-                migrateRelationships(
-                  migrateDeployments(
-                    migrateEvaluations(migratePrograms(migratePersonnel(state)))
-                  )
-                )
-              )
-            )
-          )
-        )
-      ),
+      [
+        migratePersonnel,
+        migratePrograms,
+        migrateEvaluations,
+        migrateDeployments,
+        migrateRelationships,
+        migrateInfrastructure,
+        migrateContracts,
+        migrateCampaignAct,
+        migrateDistress,
+        migratePlanning,
+      ].reduce((currentState, migration) => migration(currentState), state),
     restore: restoreLabState,
   });
   const runtime = /** @type {Record<string, any>} */ (

@@ -391,15 +391,14 @@ export function fulfillmentExistingAssetBoundary(
       'spacePointId'
     );
     const entry = fulfillmentResolvePoint(asset.stockInPoint, spacePoints);
-    return JSON.stringify(
-      evaluate({
-        points,
-        existing: asset.existingSegments || [],
-        candidates,
-        entry,
-        spacePoints,
-      })
-    );
+    const result = evaluate({
+      points,
+      existing: asset.existingSegments || [],
+      candidates,
+      entry,
+      spacePoints,
+    });
+    return JSON.stringify(result);
   });
 }
 

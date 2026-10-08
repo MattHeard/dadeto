@@ -247,8 +247,7 @@ function buildForm({ dom, container, textInput }) {
       }
       createCellsField({ dom, form, data, textInput, disposers });
       createResetField({ dom, form, data, textInput, disposers });
-      syncTextInput(textInput, data);
-      return form;
+      return { data, form };
     }
   );
 }

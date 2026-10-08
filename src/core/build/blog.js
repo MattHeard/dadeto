@@ -575,14 +575,32 @@ export function createCopyCore({
    * @returns {Array<[string, string, string, string]>} Directory copy tuples.
    */
   function buildConfiguredDirectoryTreePlans(dirs, definitions) {
-    return definitions.map(
-      ({ sourceKey, destinationKey, suffix, success, missing }) => [
-        resolveTreeDirectory(dirs[sourceKey], suffix),
-        resolveTreeDirectory(dirs[destinationKey], suffix),
-        success,
-        missing,
-      ]
-    );
+    const plans = [];
+    for (const definition of definitions) {
+      const { sourceKey, destinationKey, suffix, success, missing } =
+        definition;
+      plans.push(
+        createDirectoryCopyPlan(
+          resolveTreeDirectory(dirs[sourceKey], suffix),
+          resolveTreeDirectory(dirs[destinationKey], suffix),
+          success,
+          missing
+        )
+      );
+    }
+    return plans;
+  }
+
+  /**
+   * Build the tuple consumed by the configured directory copier.
+   * @param {string} source Directory to copy from.
+   * @param {string} destination Directory to copy into.
+   * @param {string} success Success message.
+   * @param {string} missing Missing-directory message.
+   * @returns {[string, string, string, string]} Copy plan tuple.
+   */
+  function createDirectoryCopyPlan(source, destination, success, missing) {
+    return [source, destination, success, missing];
   }
 
   /**
@@ -618,12 +636,9 @@ export function createCopyCore({
         'content/pages directory not found',
       ],
     ];
-    return sources.map(([source, success, missing]) => [
-      source,
-      dirs.publicDir,
-      success,
-      missing,
-    ]);
+    return sources.map(([source, success, missing]) =>
+      createDirectoryCopyPlan(source, dirs.publicDir, success, missing)
+    );
   }
 
   /**

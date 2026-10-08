@@ -767,7 +767,7 @@ function findValidFleet(cfg, env, maxTries) {
  */
 function tryGenerateFleet(cfg, env, maxTries) {
   const fleet = findValidFleet(cfg, env, maxTries);
-  return whenNotNullish(fleet, value => JSON.stringify(value));
+  return whenNotNullish(fleet, JSON.stringify);
 }
 
 /**

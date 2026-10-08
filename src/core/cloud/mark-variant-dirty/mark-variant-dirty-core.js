@@ -502,7 +502,7 @@ async function markVariantAndRespond({ res, markFn, pageNumber, variantName }) {
     () => markFn(pageNumber, variantName),
     error => {
       const message = resolveUpdateErrorMessage(error);
-      res.status(500).json({ error: message });
+      res.status(500).json(commonCore.createErrorPayload(message));
     },
     value => {
       respondToVariantResult(res, value);

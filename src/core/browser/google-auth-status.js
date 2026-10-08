@@ -43,8 +43,7 @@ export function createGoogleAuthStatusHandle({
       profileLinks,
       adminLinks,
     };
-    const showSignedIn = createShowSignedIn({
-      ...displayElements,
+    const showSignedIn = createShowSignedIn(displayElements, {
       getAuthorUuidFn,
       isAdminFn,
     });
@@ -68,31 +67,18 @@ export function createGoogleAuthStatusHandle({
 
 /**
  * Create the signed-in display action.
- * @param {{
- *   signInButtons: HTMLElement[],
- *   signOutWraps: HTMLElement[],
- *   profileLinks: HTMLAnchorElement[],
- *   adminLinks: HTMLElement[],
- *   getAuthorUuidFn: () => string | null,
- *   isAdminFn: () => boolean,
- * }} deps Display dependencies.
+ * @param {{ signInButtons: HTMLElement[], signOutWraps: HTMLElement[], profileLinks: HTMLAnchorElement[], adminLinks: HTMLElement[] }} displayElements Auth-related elements.
+ * @param {{ getAuthorUuidFn: () => string | null, isAdminFn: () => boolean }} identity Accessors for the active user.
  * @returns {() => void} Signed-in display action.
  */
-function createShowSignedIn({
-  signInButtons,
-  signOutWraps,
-  profileLinks,
-  adminLinks,
-  getAuthorUuidFn,
-  isAdminFn,
-}) {
+function createShowSignedIn(displayElements, identity) {
   return function showSignedIn() {
-    setElementsDisplay(signInButtons, 'none');
-    setElementsDisplay(signOutWraps, '');
-    const authorUuid = getAuthorUuidFn();
-    setProfileLinks(profileLinks, authorUuid);
-    if (isAdminFn()) {
-      setElementsDisplay(adminLinks, '');
+    setElementsDisplay(displayElements.signInButtons, 'none');
+    setElementsDisplay(displayElements.signOutWraps, '');
+    const authorUuid = identity.getAuthorUuidFn();
+    setProfileLinks(displayElements.profileLinks, authorUuid);
+    if (identity.isAdminFn()) {
+      setElementsDisplay(displayElements.adminLinks, '');
     }
   };
 }

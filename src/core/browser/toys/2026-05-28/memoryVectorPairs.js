@@ -84,15 +84,15 @@ function projectToVector(value) {
  * @returns {unknown[]} Vector projection.
  */
 function projectObjectOrScalarToVector(value) {
+  if (!isObjectLike(value)) {
+    return memoryVectorCore.projectArrayOrSingletonToVector(value);
+  }
+
   if (Array.isArray(value)) {
     return memoryVectorCore.projectArrayOrSingletonToVector(value);
   }
 
-  if (isObjectLike(value)) {
-    return projectObjectToVector(/** @type {object} */ (value));
-  }
-
-  return memoryVectorCore.projectArrayOrSingletonToVector(value);
+  return projectObjectToVector(/** @type {object} */ (value));
 }
 
 /**

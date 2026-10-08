@@ -1,3 +1,5 @@
+import { createErrorPayload } from '../../commonCore.js';
+
 /**
  * Format a toy validation failure using the common JSON error shape.
  * @param {unknown} message Original failure message, preserved without coercion.
@@ -14,7 +16,7 @@ export function formatToyError(message, indentation) {
  * @returns {string} Pretty-printed JSON error payload.
  */
 export function formatToyConversionError(message) {
-  return formatToyResult({ error: message });
+  return formatToyResult(createErrorPayload(message));
 }
 /**
  * Serialize a structured toy result with consistent readable indentation.

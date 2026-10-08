@@ -104,15 +104,20 @@ function getNextPath(currentPath, segment) {
  */
 function getSegmentValueOrError(currentValue, segment, nextPath) {
   const arrayResult = getArraySegmentValue(currentValue, segment, nextPath);
+  if (arrayResult) {
+    return arrayResult;
+  }
+
   const objectResult = getSegmentObjectValue(currentValue, segment, nextPath);
-  return (
-    arrayResult ??
-    objectResult ?? {
-      value: undefined,
-      path: nextPath,
-      error: getSegmentNotFoundError(currentValue, segment, nextPath),
-    }
-  );
+  if (objectResult) {
+    return objectResult;
+  }
+
+  return {
+    value: undefined,
+    path: nextPath,
+    error: getSegmentNotFoundError(currentValue, segment, nextPath),
+  };
 }
 
 /**
@@ -263,14 +268,10 @@ function hasOwnSegment(currentValue, segment) {
  * @returns {string} Formatted error message.
  */
 function getSegmentNotFoundError(currentValue, segment, currentPath) {
-  return `Error: Path segment '${segment}' not found at '${currentPath}'. Available keys/indices: ${Object.keys(currentValue).join(', ')}`;
+  const availableKeys = Object.keys(currentValue).join(', ');
+  return `Error: Path segment '${segment}' not found at '${currentPath}'. Available keys/indices: ${availableKeys}`;
 }
 
-/**
- *
- * @param input
- * @param data
- */
 /**
  * Return the entire data when no path is specified.
  * @param {string} input - Raw path input from the user.

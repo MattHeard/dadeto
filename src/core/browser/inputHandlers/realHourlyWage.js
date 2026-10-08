@@ -371,14 +371,14 @@ function buildForm({ dom, container, textInput }) {
         })
       );
 
-      return finalizeManagedForm(
+      const formState =
         /** @type {{ dom: DOMHelpers, textInput: HTMLInputElement, data: Record<string, unknown>, form: HTMLElement }} */ ({
           dom,
           textInput,
           data: /** @type {Record<string, unknown>} */ (data),
           form,
-        })
-      );
+        });
+      return finalizeManagedForm(formState);
     }
   );
 }

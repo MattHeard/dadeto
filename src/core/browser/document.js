@@ -441,16 +441,20 @@ const frameAndTimerApis = {
   getGamepads,
 };
 
+const formAttributeMethods = {
+  setType,
+  setPlaceholder,
+  setDataAttribute,
+  getDataAttribute,
+};
+
 /**
  * Centralized DOM manipulation utilities
  */
 export const dom = /** @type {DOMHelpers} */ ({
   importModule,
   makeIntersectionObserver,
-  setType,
-  setPlaceholder,
-  setDataAttribute,
-  getDataAttribute,
+  ...formAttributeMethods,
   addClass,
   removeClass,
   removeEventListener,
@@ -588,10 +592,7 @@ export function createDocumentHandle(deps) {
     removeNextSibling,
     removeEventListener,
     hasBetaParam,
-    setType,
-    setPlaceholder,
-    setDataAttribute,
-    getDataAttribute,
+    ...formAttributeMethods,
     setTextContent,
     makeIntersectionObserver,
     disconnectObserver,

@@ -3,19 +3,11 @@
 // load contract rather than independently at each helper branch.
 import { resolveLocalConfigLoader } from '../config-utils.js';
 import { isMissingFileError } from '../../commonCore.js';
+import { countTextLines } from '../textLines.js';
 
 const PROMPT_TEMPLATE_KEY = 'prompt_template';
 
 // Workflow bullet extraction contract begins here.
-/**
- * Count the number of lines in a block of text.
- * @param {string} content Text content to measure.
- * @returns {number} Number of lines in the content.
- */
-function toLineCount(content) {
-  return content.split('\n').length;
-}
-
 /**
  * Split text into trimmed, non-empty lines.
  * @param {string} content Text content to trim and split.
@@ -177,7 +169,7 @@ function parseFrontMatter(content) {
  * }} Summary for the local Symphony operator surface.
  */
 export function summarizeWorkflow(content) {
-  const lineCount = toLineCount(content);
+  const lineCount = countTextLines(content);
   const { config, body } = parseFrontMatter(content);
   const promptTemplate = body.trim();
   const lines = toTrimmedLines(promptTemplate);

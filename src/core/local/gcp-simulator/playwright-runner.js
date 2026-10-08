@@ -242,29 +242,28 @@ function reserveFreePort() {
   return new Promise((resolve, reject) => {
     const server = net.createServer();
     server.on('error', reject);
-    server.listen(0, '127.0.0.1', () => {
-      const address = server.address();
-      server.close(() => {
-        resolveReservedPort(address, resolve, reject);
-      });
-    });
+    server.listen(0, '127.0.0.1', () =>
+      settleReservedPortAfterClose(server, resolve, reject)
+    );
   });
 }
 
 /**
- * Resolve a reserved port from a server address.
- * @param {import('node:net').AddressInfo | string | null} address Server address.
+ * Close the temporary listener before returning its assigned port.
+ * @param {import('node:net').Server} server Port reservation server.
  * @param {(port: number) => void} resolve Port resolver.
  * @param {(error: Error) => void} reject Error resolver.
  * @returns {void}
  */
-function resolveReservedPort(address, resolve, reject) {
-  const hasPort = address && typeof address === 'object';
-  if (!hasPort) {
-    reject(new Error('Unable to reserve a writer port'));
-    return;
-  }
-  resolve(address.port);
+function settleReservedPortAfterClose(server, resolve, reject) {
+  const address = server.address();
+  server.close(() => {
+    if (!address || typeof address !== 'object') {
+      reject(new Error('Unable to reserve a writer port'));
+      return;
+    }
+    resolve(address.port);
+  });
 }
 
 /**

@@ -291,9 +291,9 @@ async function launchDetachedProcessWithPermission(permission, options) {
         signal
       );
 
-      Promise.resolve(onExit(exitPayload)).catch(error => {
-        console.error(options.exitErrorLabel, error);
-      });
+      Promise.resolve(onExit(exitPayload)).catch(
+        createExitErrorLogger(options.exitErrorLabel)
+      );
     });
   }
 
@@ -307,6 +307,15 @@ async function launchDetachedProcessWithPermission(permission, options) {
     stdoutPath,
     stderrPath,
   };
+}
+
+/**
+ * Create a logger for rejected process-exit callbacks.
+ * @param {unknown} label Context label for the callback.
+ * @returns {(error: unknown) => void} Error logger.
+ */
+function createExitErrorLogger(label) {
+  return error => console.error(label, error);
 }
 
 /**

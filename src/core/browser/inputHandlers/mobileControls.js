@@ -35,7 +35,9 @@ function createKeyPayload(type, key) {
  * @returns {CleanupFn[]} Cleanup callbacks for the button listeners.
  */
 function wireButton(options) {
-  const { dom, button, textInput, autoSubmitCheckbox, key } = options;
+  const dom = options.dom;
+  const button = options.button;
+  const key = options.key;
   const cleanupFns = [];
   let pressed = false;
 
@@ -45,10 +47,7 @@ function wireButton(options) {
    * @returns {void}
    */
   function sync(type) {
-    syncToyPayload(
-      { dom, textInput, autoSubmitCheckbox },
-      createKeyPayload(type, key)
-    );
+    syncToyPayload(options, createKeyPayload(type, key));
   }
 
   /**

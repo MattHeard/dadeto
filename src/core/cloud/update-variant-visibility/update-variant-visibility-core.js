@@ -199,23 +199,25 @@ function calculateNewStats(variantData, newRating, moderatorReputation) {
 
 /**
  * Calculate a weighted visibility score from the current state and incoming rating.
- * @param {Record<string, unknown>} variantData Existing variant state.
- * @param {number} newRating Numeric representation of the latest rating.
- * @param {number} moderatorReputation Moderator reputation weight.
+ * @param {Record<string, unknown>} weightedVisibilityData Existing variant state.
+ * @param {number} weightedVisibilityRating Numeric representation of the latest rating.
+ * @param {number} visibilityReputation Moderator reputation weight.
  * @returns {number} Weighted visibility score.
  */
 function calculateWeightedVisibility(
-  variantData,
-  newRating,
-  moderatorReputation
+  weightedVisibilityData,
+  weightedVisibilityRating,
+  visibilityReputation
 ) {
-  const currentVisibility = getSafeNumber(variantData, 'visibility');
-  const currentReputationSum = getModeratorReputationSum(variantData);
-  const weight = normalizeModeratorReputation(moderatorReputation);
+  const currentVisibility = getSafeNumber(weightedVisibilityData, 'visibility');
+  const currentReputationSum = getModeratorReputationSum(
+    weightedVisibilityData
+  );
+  const weight = normalizeModeratorReputation(visibilityReputation);
   return calculateVisibilityRatio(
     currentVisibility,
     currentReputationSum,
-    newRating * weight,
+    weightedVisibilityRating * weight,
     currentReputationSum + weight
   );
 }

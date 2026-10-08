@@ -77,12 +77,8 @@ function setting(name, effects, detail) {
  * @returns {Record<string, any>} Immutable-by-convention authored package.
  */
 function contractOffer(authored) {
-  const { name, advance, deadline, daily, impact = {}, ...terms } = authored;
+  const { impact = {}, ...terms } = authored;
   return {
-    name,
-    advance,
-    deadline,
-    daily,
     exclusive: false,
     attribution: false,
     oversight: 'any',

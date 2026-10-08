@@ -66,32 +66,19 @@ function parseLines(value) {
 /**
  * Build and wire a blog-key field using the shared labelled-field flow.
  * @param {{
- *   dom: DOMHelpers,
- *   form: HTMLElement,
- *   textInput: HTMLInputElement,
- *   data: BlogKeyData,
- *   disposers: Disposer[],
  *   element: HTMLInputElement | HTMLTextAreaElement,
  *   initialValue: string,
  *   labelText: string,
  *   configureElement: (element: HTMLInputElement | HTMLTextAreaElement) => void,
  *   updateData: () => void
- * }} options Field configuration.
+ * }} field Field configuration.
+ * @param {{ dom: DOMHelpers, form: HTMLElement, textInput: HTMLInputElement, data: BlogKeyData, disposers: Disposer[] }} context Form context.
  * @returns {void}
  */
-function buildBlogKeyField(options) {
-  const {
-    dom,
-    form,
-    textInput,
-    data,
-    disposers,
-    element,
-    initialValue,
-    labelText,
-    configureElement,
-    updateData,
-  } = options;
+function buildBlogKeyField(field, context) {
+  const { dom, form, textInput, data, disposers } = context;
+  const { element, initialValue, labelText, configureElement, updateData } =
+    field;
   configureElement(element);
   dom.setValue(element, initialValue);
   const onInput = () =>
@@ -167,14 +154,9 @@ function buildForm({ dom, container, textInput }) {
       { dom, container, textInput },
       ({ form, disposers }) => {
         const fieldDefinitions = createBlogKeyFields({ dom, data });
+        const fieldContext = { dom, form, textInput, data, disposers };
         fieldDefinitions.forEach(field =>
-          buildBlogKeyField({
-            ...field,
-            form,
-            textInput,
-            data,
-            disposers,
-          })
+          buildBlogKeyField(field, fieldContext)
         );
 
         return finalizeManagedForm({ dom, textInput, data, form });

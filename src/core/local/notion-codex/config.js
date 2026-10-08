@@ -71,10 +71,10 @@ function normalizeLauncherArgs(value) {
 }
 
 /**
- * @param {unknown} config Candidate config object.
- * @param {string} repoRoot Repository root for path resolution.
- * @param {string} configPath Config path for reporting.
- * @param {{ resolve: (first: string, ...parts: string[]) => string }} pathModule Path helper.
+ * @param {unknown} candidateConfig Candidate config object.
+ * @param {string} repositoryRoot Repository root for path resolution.
+ * @param {string} reportingPath Config path for reporting.
+ * @param {{ resolve: (first: string, ...parts: string[]) => string }} pathOperations Path helper.
  * @returns {{
  *   configPath: string,
  *   notion: NotionCodexNotionConfig,
@@ -88,12 +88,12 @@ function normalizeLauncherArgs(value) {
  * }} Normalized Notion Codex poller config.
  */
 export function normalizeNotionCodexConfig(
-  config,
-  repoRoot,
-  configPath,
-  pathModule
+  candidateConfig,
+  repositoryRoot,
+  reportingPath,
+  pathOperations
 ) {
-  const source = objectOrEmpty(config);
+  const source = objectOrEmpty(candidateConfig);
   const fields = {
     logDir: {
       value: source.logDir,
@@ -114,9 +114,9 @@ export function normalizeNotionCodexConfig(
 
   const resolvedOptions = {
     config: source,
-    repoRoot,
-    configPath,
-    pathModule,
+    repoRoot: repositoryRoot,
+    configPath: reportingPath,
+    pathModule: pathOperations,
     pathFields: fields,
     /**
      * Build the normalized poller configuration from resolved paths.

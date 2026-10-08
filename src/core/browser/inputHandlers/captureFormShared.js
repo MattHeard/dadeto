@@ -110,7 +110,8 @@ export function syncToyPayload(input, payload) {
  * @param {{ dom: DOMHelpers, container: HTMLElement, textInput: HTMLInputElement, formClass: string }} options - Setup dependencies.
  * @returns {{ form: HTMLElement, button: HTMLButtonElement, cleanupFns: CleanupFn[] }} Shared nodes and cleanup stack.
  */
-export function buildCaptureForm({ dom, container, textInput, formClass }) {
+export function buildCaptureForm(options) {
+  const { dom, container, textInput, formClass } = options;
   const shell = withManagedFormShell(
     { dom, container, textInput },
     ({ form, disposers }) => {
@@ -188,13 +189,8 @@ export function withCaptureFormContext(options, updateButton, onReady) {
  * @returns {HTMLElement} Rendered capture form element.
  */
 export function createCaptureForm(options) {
-  const { dom, container, textInput, formClass, onFormReady } = options;
-  const { form, button, cleanupFns } = buildCaptureForm({
-    dom,
-    container,
-    textInput,
-    formClass,
-  });
+  const { dom, container, textInput, onFormReady } = options;
+  const { form, button, cleanupFns } = buildCaptureForm(options);
   onFormReady({ dom, container, textInput, form, button, cleanupFns });
   return form;
 }
