@@ -11,6 +11,7 @@ import {
   getFirestoreInstanceFromCache,
   resolveFirestoreDatabaseId,
   createDefaultFirestoreContextChecker,
+  createFirestoreInstanceCache,
 } from '../firestore-helpers.js';
 import {
   createCorsOptions,
@@ -52,8 +53,7 @@ export const ensureFirebaseApp = createEnsureFirebaseApp();
  * @param {Record<string, string | undefined> | undefined} environmentVariables Runtime environment variables.
  * @returns {string[]} Allowed origins for the current environment.
  */
-/** @type {{value: import('firebase-admin/firestore').Firestore | null}} */
-const firestoreCache = { value: null };
+const firestoreCache = createFirestoreInstanceCache();
 const usesDefaultFirestoreContext = createDefaultFirestoreContextChecker(
   ensureFirebaseApp,
   getAdminFirestore,

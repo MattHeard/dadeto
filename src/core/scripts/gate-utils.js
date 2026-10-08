@@ -176,6 +176,17 @@ export function createSuccessfulGateResult() {
 }
 
 /**
+ * Write the success status and return the standard successful result.
+ * @param {{ write: (text: string) => void }} output Gate output stream.
+ * @param {string} message Status message without its trailing newline.
+ * @returns {{ exitCode: 0, violations: 0 }} Successful gate result.
+ */
+export function reportSuccessfulGate(output, message) {
+  writeGateSuccess(output, message);
+  return createSuccessfulGateResult();
+}
+
+/**
  * Build a standard gate handler around a command launcher and a result evaluator.
  * @param {{
  *   spawnImpl: (command: string, args: string[], options: Record<string, unknown>) => { status?: number | null, signal?: string | null, error?: Error },

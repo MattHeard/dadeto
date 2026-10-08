@@ -33,3 +33,13 @@ export function advanceSimulationFrame(state, deltaMs) {
 export function copyGameInputState(state) {
   return { held: new Set(state.held), pressed: new Set(state.pressed) };
 }
+
+/**
+ * Apply trusted restored fields over a saved game snapshot.
+ * @param {Record<string, any>} state Saved game state.
+ * @param {Record<string, any>} restoredFields Recomputed fields.
+ * @returns {Record<string, any>} Restored state snapshot.
+ */
+export function mergeRestoredGameState(state, restoredFields) {
+  return { ...state, ...restoredFields };
+}

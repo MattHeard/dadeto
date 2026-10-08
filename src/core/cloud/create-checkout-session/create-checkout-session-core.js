@@ -372,16 +372,17 @@ function validateBody(request) {
 
 /**
  * Resolve an idempotent checkout result.
- * @param {CheckoutDependencies['resolveIdempotency']} resolveIdempotency Resolver.
- * @param {string} uid User identifier.
- * @param {string} key Idempotency key.
- * @param {string} packageId Package identifier.
+ * @param {{resolveIdempotency: CheckoutDependencies['resolveIdempotency'], uid: string, key: string, packageId: string}} options Lookup inputs.
  * @returns {Promise<CheckoutResponse | null>} Existing result or no result.
  */
 // Stryker disable next-line all -- idempotency lookup has fixed conflict,
 // existing-session, and no-result outcomes.
-async function resolveExisting(resolveIdempotency, uid, key, packageId) {
-  const existing = await resolveIdempotency?.(uid, key, packageId);
+async function resolveExisting(options) {
+  const existing = await options.resolveIdempotency?.(
+    options.uid,
+    options.key,
+    options.packageId
+  );
   if (existing?.conflict) return idempotencyConflictError();
   if (existing?.session) return { status: 201, body: existing.session };
   return null;
@@ -610,12 +611,12 @@ export function createCheckoutSessionHandler(deps) {
         'invalid_package',
         'The selected credit package is unavailable.'
       );
-    const existing = await resolveExisting(
+    const existing = await resolveExisting({
       resolveIdempotency,
       uid,
       key,
-      packageId
-    );
+      packageId,
+    });
     if (existing) return existing;
     const ownership = await resolveCheckoutOwnership(
       resolveApiKeyUuidForUid,

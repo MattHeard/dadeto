@@ -1,4 +1,5 @@
 import { createMosslightRuntime } from '../mosslight-valley/runtime.js';
+import { mergeRestoredGameState } from '../simulationCore.js';
 import { createSaveAdapter } from '../mosslight-valley/save.js';
 import { mosslightValley } from '../mosslight-valley/mosslightValley.js';
 import { startMosslightPage } from '../mosslight-valley/pagePresenter.js';
@@ -339,7 +340,10 @@ function restoreLabState(state) {
       facing: state.world.player.facing,
     },
   };
-  return { ...state, world, dialogue: restoreStaffDialogue(state.dialogue) };
+  return mergeRestoredGameState(state, {
+    world,
+    dialogue: restoreStaffDialogue(state.dialogue),
+  });
 }
 
 /**

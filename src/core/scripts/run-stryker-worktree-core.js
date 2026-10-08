@@ -281,17 +281,19 @@ async function runCommand(options) {
       child.once('error', error =>
         handleCommandError(error, allowFailure, resolve, reject)
       );
-      child.once('exit', code => {
-        if (code === 0 || allowFailure) {
-          resolve();
-          return;
-        }
+      const handleExit =
+        /** @param {number | null} code Child exit status. */ code => {
+          if (code === 0) {
+            resolve();
+            return;
+          }
 
-        const error = new Error(
-          `${command} ${args.join(' ')} exited with code ${code}`
-        );
-        reject(error);
-      });
+          const error = new Error(
+            `${command} ${args.join(' ')} exited with code ${code}`
+          );
+          handleCommandError(error, allowFailure, resolve, reject);
+        };
+      child.once('exit', handleExit);
     }
   );
 }

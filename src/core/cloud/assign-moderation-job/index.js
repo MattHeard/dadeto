@@ -11,6 +11,7 @@ import {
 import {
   getFirestoreInstanceFromCache,
   resolveFirestoreDatabaseId,
+  createFirestoreInstanceCache,
 } from '../firestore-helpers.js';
 import { resolveAllowedOrigins, isDuplicateAppError } from '../cloud-core.js';
 
@@ -71,8 +72,7 @@ export function createAssignModerationJobEntrypoint(deps) {
    * }} Shared Firestore helpers.
    */
   function createFirestoreInstanceHandlers(firebaseInitializationHandlers) {
-    /** @type {{value: import('firebase-admin/firestore').Firestore | null}} */
-    const firestoreCache = { value: null };
+    const firestoreCache = createFirestoreInstanceCache();
 
     /**
      * Resolve the Firestore instance for this entrypoint.

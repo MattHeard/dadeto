@@ -1,6 +1,7 @@
 import { hideAndDisable } from '../browser-core.js';
 import { setInputValue } from '../inputValueStore.js';
 import {
+  createInputElement,
   createInputDisposer,
   removeExistingSpecialInput,
   setupInputEvents,
@@ -115,7 +116,7 @@ function createForm(fields, container, textInput, dom) {
     const row = dom.createElement('label');
     const caption = dom.createElement('span');
     dom.setTextContent(caption, label);
-    const input = /** @type {HTMLInputElement} */ (dom.createElement('input'));
+    const input = createInputElement(dom);
     input.type = type;
     input.value =
       type === 'checkbox' ? '' : String(readPath(initial, path) ?? '');

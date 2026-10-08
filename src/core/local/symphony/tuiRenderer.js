@@ -451,39 +451,36 @@ function renderActiveRun(activeRun) {
  * @returns {void}
  */
 function renderStatusHeader(args) {
-  const { lines, status, terminalSize, serverVersion, context } = args;
-  const updateMessage = `Update: restart server or TUI for ${serverVersion}.`;
-  renderFieldLine(lines, 'State', status.state ?? 'unknown', terminalSize);
-  renderFieldLine(lines, 'SrvVer', serverVersion, terminalSize);
-  renderFieldLine(lines, 'TUIVer', context.version ?? 'unknown', terminalSize);
+  const renderField = (label, value) =>
+    renderFieldLine(args.lines, label, value, args.terminalSize);
+  const pushStatusLine = content =>
+    pushLine(args.lines, content, args.terminalSize);
+  const updateMessage = `Update: restart server or TUI for ${args.serverVersion}.`;
+  renderField('State', args.status.state ?? 'unknown');
+  renderField('SrvVer', args.serverVersion);
+  renderField('TUIVer', args.context.version ?? 'unknown');
 
-  if (serverVersion !== 'unknown' && serverVersion !== context.version) {
-    pushLine(lines, clampLine(updateMessage, terminalSize), terminalSize);
+  if (
+    args.serverVersion !== 'unknown' &&
+    args.serverVersion !== args.context.version
+  ) {
+    pushStatusLine(clampLine(updateMessage, args.terminalSize));
   }
 
-  const beadId = status.currentBeadId ?? 'none';
-  pushLine(
-    lines,
-    highlightLine(formatField('Bead ID', beadId, terminalSize), terminalSize),
-    terminalSize
+  const beadId = args.status.currentBeadId ?? 'none';
+  pushStatusLine(
+    highlightLine(
+      formatField('Bead ID', beadId, args.terminalSize),
+      args.terminalSize
+    )
   );
 
-  if (status.currentBeadTitle) {
-    renderFieldLine(lines, 'Title', status.currentBeadTitle, terminalSize);
+  if (args.status.currentBeadTitle) {
+    renderField('Title', args.status.currentBeadTitle);
   }
 
-  renderFieldLine(
-    lines,
-    'Run',
-    renderActiveRun(status.activeRun),
-    terminalSize
-  );
-  renderFieldLine(
-    lines,
-    'Rec',
-    status.operatorRecommendation ?? 'none',
-    terminalSize
-  );
+  renderField('Run', renderActiveRun(args.status.activeRun));
+  renderField('Rec', args.status.operatorRecommendation ?? 'none');
 }
 
 /**

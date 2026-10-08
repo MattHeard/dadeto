@@ -318,24 +318,13 @@ function allocated(base, buffer) {
  * @param {{operationName: string, segmentId: string, requiresAsset: boolean, requiresRunner: boolean, runnerCustody: boolean, baseDurationSeconds?: number, bufferSeconds?: number}} options Metadata options.
  * @returns {object} Metadata.
  */
-function metadata({
-  operationName,
-  segmentId,
-  requiresAsset,
-  requiresRunner,
-  runnerCustody,
-  baseDurationSeconds,
-  bufferSeconds,
-}) {
-  const result = {
-    operation: operationName,
-    segmentId,
-    requiresAsset,
-    requiresRunner,
-    runnerCustody,
-  };
+function metadata(options) {
+  const { operationName, baseDurationSeconds, bufferSeconds, ...result } =
+    options;
+  const metadata = /** @type {Record<string, unknown>} */ ({ ...result });
+  metadata.operation = operationName;
   if (baseDurationSeconds !== undefined)
-    Object.assign(result, {
+    Object.assign(metadata, {
       baseDurationSeconds,
       bufferSeconds,
       allocatedDurationSeconds: allocated(
@@ -343,7 +332,7 @@ function metadata({
         /** @type {number} */ (bufferSeconds)
       ),
     });
-  return result;
+  return metadata;
 }
 
 /**

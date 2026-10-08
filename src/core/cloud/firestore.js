@@ -2,6 +2,7 @@ import {
   resolveFirestoreDatabaseId,
   getFirestoreInstanceFromCache,
   createDefaultFirestoreContextChecker,
+  createFirestoreInstanceCache,
 } from './firestore-helpers.js';
 
 /**
@@ -29,8 +30,7 @@ export function createFirestoreModule(deps) {
   const { ensureFirebaseApp, resetFirebaseInitializationState } =
     typedDeps.createFirebaseAppManager(typedDeps.initializeApp);
 
-  /** @type {{value: import('firebase-admin/firestore').Firestore | null}} */
-  const firestoreCache = { value: null };
+  const firestoreCache = createFirestoreInstanceCache();
   const usesDefaultFirestoreContext = createDefaultFirestoreContextChecker(
     ensureFirebaseApp,
     deps.getFirestore,

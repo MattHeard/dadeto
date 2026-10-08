@@ -136,16 +136,10 @@ const buildKeyboardCaptureFormContext = ({
     updateButtonLabel: updateCaptureButton,
     emitPayload: captureLifecycleDeps.syncToyPayload,
   });
-  const handleToggle = captureLifecycleDeps.createCaptureLifecycleToggleHandler(
-    {
-      ...lifecycleOptions,
-      state,
-    }
-  );
-  const handleKeyboard = createKeyboardHandler({
-    ...lifecycleOptions,
-    state,
-  });
+  const captureOptions = { ...lifecycleOptions, state };
+  const handleToggle =
+    captureLifecycleDeps.createCaptureLifecycleToggleHandler(captureOptions);
+  const handleKeyboard = createKeyboardHandler(captureOptions);
   /**
    * Build the listener registration payload for a keyboard event type.
    * @param {string} type Form event type to register.

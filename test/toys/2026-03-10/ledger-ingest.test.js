@@ -325,6 +325,20 @@ describe('ledger ingest helpers', () => {
       ledgerIngestCoreTestOnly.getRequiredRawValue({}, mapping, 'postedDate')
     ).toBeUndefined();
     expect(
+      ledgerIngestCoreTestOnly.isMissingRequiredField(
+        { amount: ' ' },
+        mapping,
+        'amount'
+      )
+    ).toBe(true);
+    expect(
+      ledgerIngestCoreTestOnly.isMissingRequiredField(
+        { amount: '12.5' },
+        mapping,
+        'amount'
+      )
+    ).toBe(false);
+    expect(
       ledgerIngestCoreTestOnly.findMissingRequiredFields(
         { date: '2026-03-01', amount: '', description: 'Coffee' },
         mapping

@@ -6,6 +6,15 @@ import { setInputValue } from '../inputValueStore.js';
 /** @typedef {HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement} TextInputElement */
 
 /**
+ * Create an input element through the injected DOM helper.
+ * @param {BrowserDom} dom DOM helper facade.
+ * @returns {HTMLInputElement} New input element.
+ */
+export function createInputElement(dom) {
+  return /** @type {HTMLInputElement} */ (dom.createElement('input'));
+}
+
+/**
  * Create and configure a numeric field shared by managed browser forms.
  * @param {BrowserDom} dom DOM helper facade.
  * @param {{ value: string | number, placeholder: string }} options Initial field content.

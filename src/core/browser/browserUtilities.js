@@ -3,6 +3,7 @@ import {
   isNonNullObject,
   isNullish,
   isValidString,
+  noop,
   tryOr,
 } from '../commonCore.js';
 export {
@@ -60,7 +61,7 @@ export const createPrefixedLogger = (logger, prefix) => {
     );
     return prefixedLogger;
   }
-  return /** @type {LogCallback} */ (() => {});
+  return /** @type {LogCallback} */ (noop);
 };
 
 /**

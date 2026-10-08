@@ -518,10 +518,7 @@ function createBuildForm(fields) {
       disposers,
     });
     fields.forEach(renderField);
-
-    syncHiddenInput(dom, textInput, data);
-
-    return form;
+    return finalizeManagedForm({ dom, textInput, data, form });
   };
 }
 

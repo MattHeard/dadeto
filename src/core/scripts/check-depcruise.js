@@ -234,11 +234,10 @@ function executeDepcruiseGate(deps) {
     return { exitCode: 1, violations: violations.length };
   }
 
-  gateUtils.writeGateSuccess(
+  return gateUtils.reportSuccessfulGate(
     deps.stdout,
     'Checked dependency-cruiser: no core global dependencies.'
   );
-  return gateUtils.createSuccessfulGateResult();
 }
 
 /**
@@ -273,17 +272,14 @@ function collectJsViolations({
     .walkJavaScriptFiles(sourceRootPath, readdirSync, pathModule)
     .flatMap(filePath => {
       const scanResult = scanSource(readFileSync(filePath, 'utf8'));
-
-      if (isEmptyScanResult(scanResult)) {
-        return [];
-      }
-
-      return [
-        createViolation(
-          toRepoRelativePath(rootDir, filePath, pathModule),
-          scanResult
-        ),
-      ];
+      return isEmptyScanResult(scanResult)
+        ? []
+        : [
+            createViolation(
+              toRepoRelativePath(rootDir, filePath, pathModule),
+              scanResult
+            ),
+          ];
     });
 }
 

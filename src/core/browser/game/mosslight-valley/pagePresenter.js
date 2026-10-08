@@ -144,7 +144,7 @@ export function startMosslightPage(options) {
     lastTime = time;
     if (runtime.getSnapshot().tick > previousTick) {
       keys.pressed.clear();
-      touchPulse.clear();
+      clearTouchPulse();
     }
     draw();
     frameId = requestFrame(loop);
@@ -182,6 +182,13 @@ export function startMosslightPage(options) {
    */
   function resetTouch() {
     releaseTouch();
+    clearTouchPulse();
+  }
+  /**
+   * Clear one-frame touch actions.
+   * @returns {void}
+   */
+  function clearTouchPulse() {
     touchPulse.clear();
   }
   /**

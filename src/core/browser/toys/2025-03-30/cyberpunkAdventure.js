@@ -261,12 +261,12 @@ function buildSimpleAdventureResponse(output, nextState) {
  * @returns {AdventureResult} Combined response.
  */
 function respondWithInventory(output, nextState, { inventory, visited }) {
-  return buildAdventureResponse({
+  return {
     output,
     nextState,
     nextInventory: inventory,
     nextVisited: visited,
-  });
+  };
 }
 
 /**
@@ -294,26 +294,6 @@ function createInventoryState(inventory, visited) {
   return {
     inventory,
     visited,
-  };
-}
-
-/**
- * Assemble the common response structure for transitions that touch inventory.
- * @param {{output: string, nextState: AdventureState, nextInventory: string[], nextVisited: Set<string>}} options
- *   Response details and mutated state references.
- * @returns {AdventureResult} Composed response.
- */
-function buildAdventureResponse({
-  output,
-  nextState,
-  nextInventory,
-  nextVisited,
-}) {
-  return {
-    output,
-    nextState,
-    nextInventory,
-    nextVisited,
   };
 }
 

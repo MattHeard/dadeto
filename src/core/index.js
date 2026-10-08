@@ -109,6 +109,12 @@ export function trimAndLowercase(value = '') {
 }
 
 /**
+ * Provide a callback that intentionally ignores its input.
+ * @returns {void}
+ */
+export function noop() {}
+
+/**
  * Return a fallback when the provided message is falsy.
  * @param {string | undefined | null} message Candidate message.
  * @param {string} fallback Fallback value when message is falsy.

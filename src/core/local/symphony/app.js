@@ -197,7 +197,7 @@ export function hasReconciliableActiveRun(status) {
 /**
  * Test whether a status store can persist updates.
  * @param {SymphonyStatusStore} statusStore Status store.
- * @returns {boolean} True when writes are supported.
+ * @returns {statusStore is SymphonyStatusStore & { writeStatus: (permission: AllowEffects, status: SymphonyStatus) => Promise<void> }} True when writes are supported.
  */
 function hasWritableStatusStore(statusStore) {
   return typeof statusStore.writeStatus === 'function';
@@ -261,9 +261,6 @@ async function reconcileOrphanedRun(status, statusStore, deps) {
     return status;
   }
   const writeStatusMethod = statusStore.writeStatus;
-  if (typeof writeStatusMethod !== 'function') {
-    return status;
-  }
   const writeStatus = writeStatusMethod.bind(statusStore);
 
   const activeRun = /** @type {Record<string, unknown>} */ (status.activeRun);

@@ -35,11 +35,10 @@ export function isNullish(value) {
  * @returns {unknown} Parsed value or null.
  */
 export function parseJsonOrNull(value) {
-  try {
-    return JSON.parse(value);
-  } catch {
-    return null;
-  }
+  return tryOr(
+    () => JSON.parse(value),
+    () => null
+  );
 }
 
 /**
@@ -349,3 +348,4 @@ export function reportFailuresAndExit({ failures, output, setExitCode }) {
   setExitCode(1);
   return true;
 }
+import { tryOr } from '../commonCore.js';

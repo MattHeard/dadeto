@@ -1,4 +1,7 @@
 import { parseObjectRecord as parseRecord } from '../validation.js';
+import { createRectShape } from '../canvasShapes.js';
+
+export { createRectShape };
 
 /**
  * Resolve the persistence accessor from the toy environment.
@@ -112,22 +115,6 @@ export function runToy(input, env, options) {
 }
 
 /**
- * Create a rectangle shape payload.
- * @param {{ x: number, y: number, width: number, height: number, fill: string }} shape Rectangle shape details.
- * @returns {Record<string, unknown>} Rectangle shape payload.
- */
-export function createRectShape(shape) {
-  return {
-    type: 'rect',
-    x: shape.x,
-    y: shape.y,
-    width: shape.width,
-    height: shape.height,
-    fill: shape.fill,
-  };
-}
-
-/**
  * Create a full-size background rectangle shape payload.
  * @param {number} width Background width.
  * @param {number} height Background height.
@@ -135,11 +122,5 @@ export function createRectShape(shape) {
  * @returns {Record<string, unknown>} Rectangle shape payload.
  */
 export function createBackgroundShape(width, height, fill) {
-  return createRectShape({
-    x: 0,
-    y: 0,
-    width,
-    height,
-    fill,
-  });
+  return createRectShape({ x: 0, y: 0, width, height, fill });
 }

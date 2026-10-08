@@ -1,4 +1,7 @@
-import { setupInputEvents } from './browserInputHandlersCore.js';
+import {
+  createInputElement,
+  setupInputEvents,
+} from './browserInputHandlersCore.js';
 import {
   applyBaseCleanupHandlers,
   getInputValue,
@@ -8,13 +11,6 @@ import { setInputValue } from '../inputValueStore.js';
 import { createOrReuseSpecialInput } from './sharedSpecialInput.js';
 
 const NUMBER_INPUT_SELECTOR = 'input[type="number"]';
-
-/**
- * @param {import('../domHelpers.js').DOMHelpers} dom - DOM helpers.
- * @returns {HTMLInputElement} Fresh input element.
- */
-const createInputElement = dom =>
-  /** @type {HTMLInputElement} */ (dom.createElement('input'));
 
 /**
  * @param {import('../domHelpers.js').DOMHelpers} dom - DOM helpers.

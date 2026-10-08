@@ -21,8 +21,8 @@ const ACTORS = {
   pip: '............/....hhhh..../...hhhhhh.../...hssss..../...sskss..../....ssss..../...cccccc.../..sccaccas../...cccccc.../...kk.kk..../............/............'.split(
     '/'
   ),
-  moth: '............/..aa....aa../.acca..acca./..acckkcca../...cckkcc.../....kkkk..../...cckkcc.../..acc..cca../...a....a.../............/............/............'.split(
-    '/'
+  moth: parseSpriteRows(
+    '............/..aa....aa../.acca..acca./..acckkcca../...cckkcc.../....kkkk..../...cckkcc.../..acc..cca../...a....a.../............/............/............'
   ),
 };
 /** @type {Record<string, string[]>} */
@@ -44,10 +44,9 @@ const PROPS = {
   rest: '............/..a........./..acccccc.../..acccccc.../..aaaaaaaa../..assssssa../..acccccca../..acccccca../..aaaaaaaa../..a......a../............/............'.split(
     '/'
   ),
-  memory:
-    '............/.....a....../....aaa...../...aacaa..../..aacccaa.../...aacaa..../....aaa...../.....a....../............/............/............/............'.split(
-      '/'
-    ),
+  memory: parseSpriteRows(
+    '............/.....a....../....aaa...../...aacaa..../..aacccaa.../...aacaa..../....aaa...../.....a....../............/............/............/............'
+  ),
 };
 /** @type {Record<string, string[]>} */
 const COLOURS = {
@@ -58,6 +57,15 @@ const COLOURS = {
   pip: '#49382d/#dfb949/#f1cc9d/#76bba1'.split('/'),
   moth: '#283147/#acb4e4/#eee8b5/#7eceb8'.split('/'),
 };
+
+/**
+ * Parse the slash-separated rows of a pixel sprite.
+ * @param {string} rows Encoded sprite rows.
+ * @returns {string[]} Pixel rows.
+ */
+function parseSpriteRows(rows) {
+  return rows.split('/');
+}
 
 /**
  * Build original outlined actor or prop art for either presenter.

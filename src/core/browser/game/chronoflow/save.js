@@ -4,6 +4,7 @@ import {
   openSluice,
   setChronoflowRoute,
 } from './runtime.js';
+import { tryOr } from '../../../commonCore.js';
 
 const SAVE_KEY = 'dadeto.chronoflow.save.v1';
 const SCHEMA_VERSION = 1;
@@ -52,13 +53,13 @@ export function restoreChronoflowSave(serialized) {
  */
 export function createChronoflowSaveStore(storage) {
   return {
-    load: () => {
-      try {
-        return restoreChronoflowSave(storage?.getItem(SAVE_KEY));
-      } catch {
-        return null;
-      }
-    },
+    load: () =>
+      /** @type {import('./runtime.js').ChronoflowGame | null} */ (
+        tryOr(
+          () => restoreChronoflowSave(storage?.getItem(SAVE_KEY)),
+          () => null
+        )
+      ),
     save: game =>
       performStorageOperation(
         storage,

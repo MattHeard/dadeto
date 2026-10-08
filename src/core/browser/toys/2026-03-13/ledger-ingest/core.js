@@ -472,19 +472,8 @@ function getSourceLabel(input) {
  */
 function findMissingRequiredFields(record, mapping) {
   return REQUIRED_CANONICAL_FIELDS.filter(field =>
-    isMissingRequiredField(record, mapping, field)
+    isMissingRequiredValue(getRequiredRawValue(record, mapping, field))
   );
-}
-
-/**
- * Check whether a canonical field is absent from a raw record.
- * @param {Record<string, unknown>} record Raw row under review.
- * @param {Record<string, string>} mapping Field mapping for this run.
- * @param {string} field Canonical field name under review.
- * @returns {boolean} True when the field is missing.
- */
-function isMissingRequiredField(record, mapping, field) {
-  return isMissingRequiredValue(getRequiredRawValue(record, mapping, field));
 }
 
 /**
@@ -496,6 +485,18 @@ function isMissingRequiredField(record, mapping, field) {
  */
 function getRequiredRawValue(record, mapping, field) {
   return record?.[mapping[field]];
+}
+
+/**
+ * Check whether a canonical field is absent from a raw record.
+ * @param {Record<string, unknown>} record Raw row under review.
+ * @param {Record<string, string>} mapping Field mapping for this run.
+ * @param {string} field Canonical field name under review.
+ * @returns {boolean} True when the field is missing.
+ */
+function isMissingRequiredField(record, mapping, field) {
+  const value = record?.[mapping[field]];
+  return [value].every(isMissingRequiredValue);
 }
 
 /**

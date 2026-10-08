@@ -1,4 +1,5 @@
 import { sanitizeUrl } from '../error-reporting.js';
+import { noop } from '../commonCore.js';
 
 /** @typedef {import('../../../types/allow-effects').AllowEffects} AllowEffects */
 
@@ -147,7 +148,7 @@ export function createErrorBeaconReporter(
           keepalive: true,
         })
       )
-    ).catch(() => {});
+    ).then(undefined, noop);
   };
 }
 
@@ -170,7 +171,7 @@ export function createErrorBeaconSendBeaconReporter(
 
     void bindEffectBoundary(async permission => {
       sendBeaconFn(permission, endpointUrl, JSON.stringify(payload));
-    }).catch(() => {});
+    }).catch(noop);
   };
 }
 
@@ -192,7 +193,7 @@ export function createErrorBeaconHandlers({
   reportBeacon,
   getUrl,
   getNow,
-  logError = () => {},
+  logError = noop,
 }) {
   const seen = new Set();
 

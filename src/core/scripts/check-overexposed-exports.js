@@ -65,11 +65,10 @@ export function createCheckOverexposedExportsHandle(options = {}) {
     const violations = findOverexposedExportViolations(deps);
 
     if (violations.length === 0) {
-      gateUtils.writeGateSuccess(
+      return gateUtils.reportSuccessfulGate(
         deps.stdout,
         'Checked export locality: no over-exposed exports found.'
       );
-      return gateUtils.createSuccessfulGateResult();
     }
 
     for (const violation of violations) {

@@ -1,4 +1,5 @@
 import { parseJsonOrNull } from '../../validation.js';
+import { mergeRestoredGameState } from '../simulationCore.js';
 const KEY = 'mosslight-valley-saves-v2';
 /** @typedef {Record<string, any>} SaveState */
 /** @typedef {{game?: string, key?: string, migrate?: (state: SaveState) => SaveState, validate?: (state: SaveState) => boolean, restore?: (state: SaveState) => SaveState}} SaveProfile */
@@ -102,15 +103,14 @@ function migrateV1(state) {
     day: 1,
     weather: 'mist',
   };
-  return {
-    ...state,
+  return mergeRestoredGameState(state, {
     world,
     farm: { crop: null, plantedDay: null, wateredDay: null },
     journal: [],
     mode: 'world',
     lastActions: [],
     moveCooldown: 0,
-  };
+  });
 }
 /**
  * Bind local multi-slot storage to Dadeto's persistent data helper.

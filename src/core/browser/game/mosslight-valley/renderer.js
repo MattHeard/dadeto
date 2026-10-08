@@ -4,6 +4,7 @@ import { spriteShapes } from './sprites.js';
 import { crossingPixels } from './scenery.js';
 import { drawPixelText } from '../../pixelFont.js';
 import { menuLines } from './controls.js';
+import { createRectShapeFromBounds } from '../../canvasShapes.js';
 /** @type {Record<string, string[]>} */
 const PALETTES = {
   village: ['#182f36', '#315744', '#bfd77c', '#e9d88d'],
@@ -111,14 +112,17 @@ function terrainShapes(frame) {
       })) {
         const left = x * 12 + rect.x;
         if (left >= 160) continue;
-        shapes.push({
-          type: 'rect',
-          x: left,
-          y: y * 12 + rect.y,
-          width: Math.min(rect.width, 160 - left),
-          height: rect.height,
-          fill: rect.fill,
-        });
+        shapes.push(
+          createRectShapeFromBounds(
+            [
+              left,
+              y * 12 + rect.y,
+              Math.min(rect.width, 160 - left),
+              rect.height,
+            ],
+            rect.fill
+          )
+        );
       }
     }
   return shapes;
@@ -186,7 +190,10 @@ function crossingShapes(frame) {
  * @returns {CanvasShape} Renderable rectangle.
  */
 export function frameRectangle(bounds, fill) {
-  return { type: 'rect', ...bounds, fill };
+  return createRectShapeFromBounds(
+    [bounds.x, bounds.y, bounds.width, bounds.height],
+    fill
+  );
 }
 /**
  * Fit a single HUD row with an explicit overflow marker.

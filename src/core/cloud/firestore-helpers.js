@@ -73,6 +73,14 @@ export function createDefaultFirestoreContextChecker(
 }
 
 /**
+ * Create an empty cache for a Firestore instance.
+ * @returns {{value: import('firebase-admin/firestore').Firestore | null}} Empty Firestore cache.
+ */
+export function createFirestoreInstanceCache() {
+  return { value: null };
+}
+
+/**
  * Select the correct Firestore database given the parsed configuration.
  * @param {(
  *   app?: import('firebase-admin/app').App,

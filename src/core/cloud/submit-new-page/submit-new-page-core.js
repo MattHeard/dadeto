@@ -635,16 +635,17 @@ function getTargetError(target) {
  * @returns {Promise<{ status: number; body: SubmitNewPageData & { id: string } }>|{ status: number; body: { error: string } }} Final response.
  */
 function finalizeSubmissionResponse(allowEffects, params) {
-  const { deps, body, target, content, author, authHeader } = params;
-  const targetError = getTargetError(target);
+  const targetError = getTargetError(params.target);
   if (targetError) return targetError;
-  const successfulTarget = /** @type {SubmissionTargetSuccess} */ (target);
-  return processValidSubmission(allowEffects, deps, {
+  const successfulTarget = /** @type {SubmissionTargetSuccess} */ (
+    params.target
+  );
+  return processValidSubmission(allowEffects, params.deps, {
     target: successfulTarget,
-    content,
-    author,
-    authHeader,
-    options: collectOptions(body),
+    content: params.content,
+    author: params.author,
+    authHeader: params.authHeader,
+    options: collectOptions(params.body),
   });
 }
 
