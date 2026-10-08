@@ -1,5 +1,7 @@
 /** @typedef {import('../../../types/allow-effects').AllowEffects} AllowEffects */
 
+import { isMissingFileError } from '../commonCore.js';
+
 const DEFAULT_COVERAGE_FINAL_PATH = 'reports/coverage/coverage-final.json';
 const DEFAULT_COVERAGE_SUMMARY_PATH = 'reports/coverage/coverage-summary.json';
 
@@ -33,7 +35,7 @@ export function createWriteCoverageSummaryHandle({
     try {
       rawCoverage = JSON.parse(readFile(coverageFinalPath, 'utf8'));
     } catch (error) {
-      if (error && typeof error === 'object' && error.code === 'ENOENT') {
+      if (isMissingFileError(error)) {
         throw new Error(
           `Coverage summary could not find ${coverageFinalPath}. Jest likely failed to write coverage output before this post-test step ran.`
         );
