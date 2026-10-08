@@ -800,7 +800,7 @@ export function isOriginAllowed(origin, allowedOrigins) {
 /**
  * Determine whether an origin is permitted based on the provided whitelist.
  * @param {string | null | undefined} origin Request origin header.
- * @param {string[]} allowedOrigins Allowed origins whitelist.
+ * @param {string[] | null | undefined} allowedOrigins Allowed origins whitelist.
  * @returns {boolean} True when the origin is allowed or no origin is supplied.
  */
 export function isAllowedOrigin(origin, allowedOrigins) {
@@ -808,7 +808,7 @@ export function isAllowedOrigin(origin, allowedOrigins) {
     return true;
   }
 
-  return allowedOrigins.includes(origin);
+  return Array.isArray(allowedOrigins) && allowedOrigins.includes(origin);
 }
 
 /**

@@ -7,6 +7,7 @@ import {
   NO_JOB_RESPONSE,
   resolveMessageOrDefault,
   isObject,
+  isAllowedOrigin as isAllowedOriginCore,
 } from '../cloud-core.js';
 import {
   whenNotNullishValue,
@@ -14,7 +15,7 @@ import {
   whenString,
   whenTruthy,
 } from '../../commonCore.js';
-export { productionOrigins, isAllowedOrigin };
+export { productionOrigins, isAllowedOriginCore as isAllowedOrigin };
 export { createCorsOriginHandler as createHandleCorsOrigin };
 export { getAllowedOrigins } from '../allowed-origins.js';
 
@@ -24,24 +25,6 @@ export { getAllowedOrigins } from '../allowed-origins.js';
  * @param {string} origin Origin reported by the request.
  * @returns {boolean} True when the whitelist contains the origin.
  */
-function includesOrigin(origins, origin) {
-  return Array.isArray(origins) && origins.includes(origin);
-}
-
-/**
- * Determine whether the provided origin is allowed by the configuration.
- * @param {string | undefined | null} origin Origin reported by the request.
- * @param {string[] | undefined | null} origins Whitelist of allowed origins.
- * @returns {boolean} True when the origin is permitted.
- */
-function isAllowedOrigin(origin, origins) {
-  if (origin) {
-    return includesOrigin(origins, origin);
-  }
-
-  return true;
-}
-
 /**
  * @typedef {object} FirestoreDocumentSnapshot
  * @property {boolean} exists Indicates whether the document exists.
