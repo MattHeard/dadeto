@@ -6,7 +6,7 @@ A trial of jscpd 5.4 produced different detections, so upgrading the scanner
 would not have preserved the existing gate's meaning.
 
 The repository now directly pins the same `@jscpd/core` and
-`@jscpd/tokenizer` 4.0.1 engines. `src/scripts/run-clone-scanner.js` injects
+`@jscpd/tokenizer` 4.0.1 engines. `src/local/run-clone-scanner.js` injects
 native filesystem and engine adapters into the pure core scanner. It uses the
 working CommonJS tokenizer export: the old ESM export has extensionless reprism
 imports that Node cannot resolve. Detection mode, MD5 token hashing, reverse
@@ -44,7 +44,7 @@ To repeat the equivalence characterization without changing project dependencies
 
 ```sh
 TMPDIR=/home/matt/dadeto/.tmp npm exec --yes --package=jscpd@4.0.5 -- jscpd --config .jscpd.json --output .tmp/legacy-scanner-comparison
-node src/scripts/run-clone-scanner.js .jscpd.json
+node src/local/run-clone-scanner.js .jscpd.json
 ```
 
 Compare the reports' complete `duplicates` arrays and `statistics.total`, not

@@ -16,7 +16,7 @@
 
 ## Conclusion
 
-The third trial reinforced that helper families tightly coupled to a directory's handler workflow belong inside the directory-named shared module, not a separate concept file. Unlike the first trial (keep capture-form helpers separate) and the second trial (move DOM helpers into the presenters core), this trial showed the shared core can absorb the parsing/lookup helpers without diluting its focus; the helper file now just re-exports them so existing call sites stay stable. npm test (node --experimental-vm-modules ./node_modules/.bin/jest --coverage --watchman=false && node src/scripts/write-coverage-summary.js) verifies the refactor and coverage baseline.
+The third trial reinforced that helper families tightly coupled to a directory's handler workflow belong inside the directory-named shared module, not a separate concept file. Unlike the first trial (keep capture-form helpers separate) and the second trial (move DOM helpers into the presenters core), this trial showed the shared core can absorb the parsing/lookup helpers without diluting its focus; the helper file now just re-exports them so existing call sites stay stable. npm test (node --experimental-vm-modules ./node_modules/.bin/jest --coverage --watchman=false && node src/local/write-coverage-summary.js) verifies the refactor and coverage baseline.
 
 ## Runner note
 

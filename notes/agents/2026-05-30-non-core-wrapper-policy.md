@@ -2,13 +2,13 @@
 
 - Unexpected hurdle: applying the new wrapper-shape rule to every `src/cloud/**` file produced noise from support modules that are not deployable entrypoints.
 - Diagnosis path: ran the focused non-core-thin tests, then the full non-core-thin gate, and compared the violation count before and after narrowing cloud enforcement.
-- Chosen fix: added a separate wrapper-violation bucket for `src/cloud/**/index.js`, `src/browser/**`, `src/build/**`, `src/local/**`, and `src/scripts/**`; the gate accepts wrappers that declare `handle` from a factory and either export or invoke it.
+- Chosen fix: added a separate wrapper-violation bucket for executable cloud, browser, build, and local adapters; the gate accepts wrappers that declare `handle` from a factory and either export or invoke it.
 - Next-time guidance: keep non-core policy checks scoped to executable adapter surfaces first, then widen only after the target directory has a consistent wrapper convention.
 
 ## First invoked script wrapper
 
 - Unexpected hurdle: the first script conversion still needed command behavior coverage because moving side effects into core would otherwise hide the exit-code path.
-- Diagnosis path: converted `src/scripts/check-non-core-thin-files.js`, reran the focused status tests, and confirmed `npm run non-core-thin` dropped from 112 to 111 wrapper violations.
+- Diagnosis path: converted the non-core-thin command entry point, reran the focused status tests, and confirmed `npm run non-core-thin` dropped from 112 to 111 wrapper violations.
 - Chosen fix: added `createCheckNonCoreThinHandle` in the core non-core-thin module, injected `console` and `process.exitCode` from the script, and left the script as a `const handle = ...; handle();` adapter.
 - Next-time guidance: for script wrappers, move the command side effects behind an injected core handle first; then keep the executable file as the thinnest possible invocation shell.
 
@@ -16,21 +16,21 @@
 
 - Unexpected hurdle: the existing build entrypoint checker mixed validation, filesystem reads, and CLI reporting in one script, so a direct wrapper rename would not really make the non-core surface thinner.
 - Diagnosis path: extracted pure validation into `src/core/build/entrypoint-pattern.js`, added focused branch tests, and confirmed `npm run non-core-thin` dropped from 111 to 110 wrapper violations.
-- Chosen fix: moved pattern rules and command handling into core, then left `src/scripts/check-build-entrypoint-pattern.js` as injected file-read/output wiring plus `handle()`.
+- Chosen fix: moved pattern rules and command handling into core, then left `src/local/check-build-entrypoint-pattern.js` as injected file-read/output wiring plus `handle()`.
 - Next-time guidance: script checks that already have small custom rule engines are good wrapper-policy candidates, but keep `fs`/`path` in the script and inject reads into core so core stays environment-agnostic.
 
 ## Aggregate check script wrapper
 
-- Unexpected hurdle: `src/scripts/check-runner.js` was only a re-export shim, so making it match the wrapper pattern would preserve an unnecessary non-core file.
-- Diagnosis path: inspected all imports and found only `src/scripts/run-check.js` and the Jest suite used the shim; both could import `src/core/check-runner.js` directly.
-- Chosen fix: added `createRunCheckHandle` to core, converted `src/scripts/run-check.js` to an invoked handle, deleted the shim, and updated tests to import the core runner directly.
+- Unexpected hurdle: the old aggregate-check shim was only a re-export, so making it match the wrapper pattern would preserve an unnecessary non-core file.
+- Diagnosis path: inspected all imports and found only the local check entry point and the Jest suite used the shim; both could import `src/core/check-runner.js` directly.
+- Chosen fix: added `createRunCheckHandle` to core, converted `src/local/run-check.js` to an invoked handle, deleted the shim, and updated tests to import the core runner directly.
 - Next-time guidance: when a non-core violation is only a re-export bridge, prefer deleting it and updating imports over manufacturing a wrapper around a wrapper.
 
 ## Duplication gate wrapper
 
-- Unexpected hurdle: `src/scripts/check-duplication.js` still bundled launch wiring, report parsing, and clone-summary formatting, and the first extraction tripped lint complexity warnings.
+- Unexpected hurdle: the duplication gate entry point still bundled launch wiring, report parsing, and clone-summary formatting, and the first extraction tripped lint complexity warnings.
 - Diagnosis path: split the gate into small core helpers, reran focused lint/Jest, and confirmed the wrapper count moved from 107 to 106 once the script became a thin invoked-handle adapter.
-- Chosen fix: added `createCheckDuplicationHandle` in `src/core/scripts/check-duplication.js`, injected `jscpd`, filesystem, and output dependencies from the script, and kept the non-core file as a direct `handle()` launcher.
+- Chosen fix: added `createCheckDuplicationHandle` in `src/core/scripts/check-duplication.js`, injected `jscpd`, filesystem, and output dependencies from `src/local/check-duplication.js`, and kept the non-core file as a direct `handle()` launcher.
 - Next-time guidance: when a gate needs both launch wiring and result interpretation, split the interpretation helpers first so the outer factory stays trivially thin and lint-friendly.
 
 ## Core scripts builtin policy

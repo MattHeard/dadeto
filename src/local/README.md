@@ -1,6 +1,6 @@
-# Utility Scripts
+# Local Command Entry Points and Utilities
 
-This folder contains helper scripts for managing SonarCloud reporting and Docker Compose. The legacy `run-sonar.sh` workflow and `docker/sonar` image were removed once they outlived their usefulness.
+Put local command entry points, environment adapters, and local-only utilities here. Keep reusable behavior in `src/core/local/`; avoid creating another source-level scripts area. This folder also contains helper scripts for managing SonarCloud reporting and Docker Compose. The legacy `run-sonar.sh` workflow and `docker/sonar` image were removed once they outlived their usefulness.
 
 ## Scripts
 

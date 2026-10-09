@@ -49,7 +49,6 @@
     "src/core/local/symphony/tuiRenderer.js",
     "src/core/path.js",
     "src/browser",
-    "src/cloud",
-    "src/scripts"
+    "src/cloud"
   ]
 }

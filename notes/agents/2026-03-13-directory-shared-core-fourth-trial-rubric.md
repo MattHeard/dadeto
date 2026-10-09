@@ -16,7 +16,7 @@
 
 ## Conclusion
 
-This fourth trial shows that the default shared core should own the low-level Firestore query builders instead of delegating to a dedicated helper file, which contrasts with trial one (kept capture-form helpers separate) and aligns with trials two and three (moving DOM and parsing helpers into their shared cores). Running `npm test` (`node --experimental-vm-modules ./node_modules/.bin/jest --coverage --watchman=false && node src/scripts/write-coverage-summary.js`) failed because Jest could not open `/home/matt/dadeto/src/core/browser/jsonValueHelpers.js`, causing sixteen browser tests to abort; the failure appears unrelated to this migration but is the terminal state after the required command.
+This fourth trial shows that the default shared core should own the low-level Firestore query builders instead of delegating to a dedicated helper file, which contrasts with trial one (kept capture-form helpers separate) and aligns with trials two and three (moving DOM and parsing helpers into their shared cores). Running `npm test` (`node --experimental-vm-modules ./node_modules/.bin/jest --coverage --watchman=false && node src/local/write-coverage-summary.js`) failed because Jest could not open `/home/matt/dadeto/src/core/browser/jsonValueHelpers.js`, causing sixteen browser tests to abort; the failure appears unrelated to this migration but is the terminal state after the required command.
 
 ## Runner note
 

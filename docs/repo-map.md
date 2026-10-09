@@ -6,7 +6,7 @@
 | --- | --- | --- |
 | Shared core domain | Cross-environment business logic and reusable orchestration | `src/core/` |
 | Browser app layer | UI bootstrapping, event wiring, and browser adapters for site + toys | `src/browser/`, `public/browser/` |
-| Build and generation | Static generation and deployment copy pipelines | `src/build/`, `src/scripts/` |
+| Build and generation | Static generation and deployment copy pipelines | `src/build/` |
 | Cloud function layer | Google Cloud Function wrappers + runtime integration | `src/cloud/`, `infra/browser/functions/` |
 | Local runtime and tooling | Local-first writing workflow, repository quality runners, and environment adapters | `src/local/`, `src/core/local/` |
 | Test and quality | Unit/e2e tests and quality report artifacts | `test/`, `e2e/`, `reports/` |
@@ -26,6 +26,7 @@
 - `src/cloud/*.js` — cloud function wrapper entry points.
 - `src/browser/` — browser bootstrapping and composition layer.
 - `src/core/` — shared behavior surface for build/browser/cloud/local contexts.
+- Local command entry points and environment adapters belong in `src/local/`; reusable behavior belongs in `src/core/local/`. Keep this boundary instead of creating another source-level scripts area.
 - `test/` — Jest suites grouped by subsystem.
 - `e2e/` — Playwright cloud-executed end-to-end scenarios.
 

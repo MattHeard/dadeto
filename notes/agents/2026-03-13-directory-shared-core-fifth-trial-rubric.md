@@ -16,7 +16,7 @@
 
 ## Conclusion
 
-This trial shows the `buildCore.js` shared module should own the path-format helpers rather than keeping them buried inside `blog.js`, which keeps `blog.js` focused on configuration data and lets every copy workflow reach for the shared core first. Running `npm test` (`node --experimental-vm-modules ./node_modules/.bin/jest --coverage --watchman=false && node src/scripts/write-coverage-summary.js`) after the change passed and regenerated the coverage summary without additional failures.
+This trial shows the `buildCore.js` shared module should own the path-format helpers rather than keeping them buried inside `blog.js`, which keeps `blog.js` focused on configuration data and lets every copy workflow reach for the shared core first. Running `npm test` (`node --experimental-vm-modules ./node_modules/.bin/jest --coverage --watchman=false && node src/local/write-coverage-summary.js`) after the change passed and regenerated the coverage summary without additional failures.
 
 ## Runner note
 

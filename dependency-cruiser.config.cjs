@@ -77,19 +77,6 @@ module.exports = {
       },
     },
     {
-      name: 'src-scripts-only-core',
-      comment:
-        'Keep script helpers scoped to their own folder or src/core to prevent leaks.',
-      severity: 'error',
-      from: {
-        path: '^src/scripts',
-      },
-      to: {
-        pathNot:
-          '^src/(scripts|core)(?:/|$)|^src/build/allow-effects\\.js$|^node_modules(?:/|$)',
-      },
-    },
-    {
       name: 'src-core-within-core',
       comment:
         'Avoid core modules reaching outside src/core so the shared layer stays portable.',

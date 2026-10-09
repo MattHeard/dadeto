@@ -4,7 +4,7 @@
 
 ## What changed
 
-- Added [src/scripts/write-coverage-summary.js](/home/matt/dadeto/src/scripts/write-coverage-summary.js) to rebuild `reports/coverage/coverage-summary.json` from `reports/coverage/coverage-final.json`.
+- Added [src/local/write-coverage-summary.js](/home/matt/dadeto/src/local/write-coverage-summary.js) to rebuild `reports/coverage/coverage-summary.json` from `reports/coverage/coverage-final.json`.
 - Updated the `test` script in [package.json](/home/matt/dadeto/package.json) so every full `npm test` run rewrites the summary after Jest finishes.
 
 ## Evidence
