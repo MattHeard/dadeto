@@ -64,3 +64,11 @@
 - Fix: removed the menu launch action, preserved menu reset for recovery, and made board interaction frame the trial as information for the footbridge agreement. Bumped the game to version 2 and updated the manual and harness.
 - Verification: focused Commons Art/Simulation/Runtime/Puzzle tests, lint, manuals check, and build results recorded in the owning bead.
 - Next time: route authored activities through their world fixture and state the narrative reason for using them at the point of interaction.
+
+## World-first actions and compact HUD (2026-10-09)
+
+- Unexpected hurdle: the board puzzle had a second route through the Actions menu, and its reset action existed only as a menu command; Repair and Listen were generic actions detached from their story locations.
+- Diagnosis: menu entries provided convenience but bypassed place and character context, while the shared status strip permanently spent four rows on status and clue count.
+- Fix: removed the Actions page, made A interactions the Survey verb, moved Repair to Tomas and the footbridge, made Habitat Listening operate at the habitat scope, and put a confirmation reset panel beside the flow board. Reset clears only the unresolved water-route evidence. Replaced the four-row overworld strip with one contextual instruction, retained overlay guidance, and bumped the game to version 3. The flow-board conversation now frames its test as evidence for the footbridge choice, following the transcript's emphasis on giving actions a narrative reason and stakes.
+- Verification: focused Commons Art/Simulation/Runtime/Puzzle suites pass (4 suites / 36 tests); `npm run manuals:check` validates 78 manuals; `npm run build`, focused ESLint, and `npm run duplication` pass with 0 clones. `npm run check` finishes 8/10 gates: test and core-parse fail because sandbox child-process spawning returns EPERM; npm audit exits 1 because registry access is unavailable. TSDoc initially caught a helper rectangle type mismatch; the JSDoc type was corrected and the aggregate rerun passes TSDoc. Keep the owning bead open until the environment-blocked gates can run successfully.
+- Next time: place each verb at the object or person that makes it meaningful; only keep a HUD instruction when it helps with the next decision.

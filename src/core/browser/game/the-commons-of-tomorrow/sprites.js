@@ -29,6 +29,10 @@ const PROP_ART = Object.freeze({
     '.....ss...../....ssss..../...ssppss.../..sspcppss../...ssppss.../....ssss..../.....ss......',
   puzzle:
     '..cccccccc../.ccppppppcc./ccpwwwwwwpcc/ccpwwwwwwpcc/.ccppppppcc./..cccccccc../...ssssss.....',
+  'flow-console':
+    '...ssssss.../..sppppppss./.spwwwwwwps./.spwppppwps./.spwwwwwwps./..sppppppss./...cc..cc...',
+  'habitat-scope':
+    '.....ss...../....spps..../...spwpps.../..spwwwwps../...spwwps.../....spps..../.....cc.....',
   bridge:
     '..ssssssss../.ssppppppss./ssppppppppss/ssppppppppss/.ssppppppss./..ssssssss../...cc....cc...',
   discovery:

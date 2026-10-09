@@ -213,6 +213,7 @@ describe('Commons visual identity', () => {
           'heard-elian': true,
         },
       },
+      toast: '',
     });
     expect(
       informed.shapes.some(shape => shape.text === 'WEIR → · FOLLOW LIGHT PATH')

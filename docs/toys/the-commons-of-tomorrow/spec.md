@@ -22,7 +22,7 @@
 ## Actors and Interfaces
 
 - Primary actors: Sola, four residents with explicit values and reasons, and the player.
-- Inputs: directions and A/B/X/Y through keyboard, gamepad and virtual keypad. A interacts/confirms; X opens/closes menus; Y assigns B; B uses the selected field action and backs out of overlays.
+- Inputs: directions and A/B/X/Y through keyboard, gamepad and virtual keypad. A interacts/confirms; X opens/closes the compact journal/practices/charter/save menu; Y assigns B; B uses the selected optional field action and backs out of overlays. Required field actions live on district fixtures and resident conversations.
 - Outputs: shared pixelated 160×144 frame, connected maps, dialogue, journal, puzzle readout, charter outcome, and versioned local saves with import/export.
 - Public game adapters: `createCommonsRuntime(options)` for shared lifecycle/state/save/frame operations and `commonsToy(input, env)` for the synchronous embedded frame contract.
 

@@ -9,9 +9,9 @@
 
 ## Expected Observable Outputs
 
-- Start in Canopy Commons with Survey available.
+- Start in Canopy Commons; A directly inspects the flood marker and talks to nearby residents without opening an action menu.
 - Verify the opening scene shows June, Elian, the meal crates and flood marker; inspect the marker, hear both perspectives, and confirm only old-gauge evidence unlocks the seasonal pact.
-- Inspect the assembly board, speak with residents, cross into The Living Weir, find the old gauge, walk up to the physical flow board and press A to run the river trial, then return to the footbridge or reset the board from Actions if needed.
+- Inspect the assembly board, speak with residents, cross into The Living Weir, find the old gauge, walk up to the physical flow board and press A to run the river trial. Use the maintenance panel beside it to confirm a reset, the footbridge to discuss a handrail repair, and the habitat scope to listen after learning that practice.
 - Complete each of the three river agreements; verify the bridge, marsh and gathering changes in the maps and charter journal.
 - Save and reload after evidence discovery; verify the same quest state remains.
 - Run identical input traces through the embedded adapter and dedicated runtime; compare normalized state snapshots.

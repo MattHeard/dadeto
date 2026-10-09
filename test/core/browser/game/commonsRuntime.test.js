@@ -5,6 +5,7 @@ import {
   validCommonsState,
 } from '../../../../src/core/browser/game/the-commons-of-tomorrow/runtime.js';
 import { startCommonsPage } from '../../../../src/core/browser/game/the-commons-of-tomorrow/page.js';
+import { COMMONS_CONTENT } from '../../../../src/core/browser/game/the-commons-of-tomorrow/content.js';
 import {
   drawCommonsFrame,
   renderCommons,
@@ -43,7 +44,7 @@ describe('Commons runtime, frame and independent saves', () => {
     });
     expect(embedded.world.player).toEqual(standalone.world.player);
     expect(embedded.world.mapId).toBe(standalone.world.mapId);
-    expect(embedded.commons.gameVersion).toBe(2);
+    expect(embedded.commons.gameVersion).toBe(3);
   });
 
   test('saves, loads, exports, and imports only the Commons save identity', () => {
@@ -233,7 +234,7 @@ describe('Commons runtime, frame and independent saves', () => {
     expect(typeof dispose).toBe('function');
     expect(typeof listeners.frame).toBe('function');
     expect(selectors['#game-status'].textContent).toContain('Canopy Commons');
-    expect(selectors['#game-version'].textContent).toBe('GAME VERSION 2');
+    expect(selectors['#game-version'].textContent).toBe('GAME VERSION 3');
     dispose();
   });
 
@@ -463,20 +464,19 @@ describe('Commons runtime, frame and independent saves', () => {
     expect(rows.every(shape => shape.text.length <= 28)).toBe(true);
     expect(Math.max(...rows.map(shape => shape.y))).toBeLessThan(108);
 
-    const actions = renderCommons({
+    const worldMenu = renderCommons({
       ...initial,
-      menu: { page: 'actions', selected: 4 },
+      menu: { page: 'main', selected: 0 },
     });
-    const actionText = actions.shapes
+    const menuText = worldMenu.shapes
       .filter(shape => shape.type === 'text')
       .map(shape => shape.text);
-    expect(actionText).toContain('ACTIONS · PERFORM NOW');
-    expect(actionText).toContain('A DO · B BACK · X CLOSE');
-    expect(actionText.some(row => row.startsWith('> A · Reset'))).toBe(true);
+    expect(menuText).not.toContain('ACTIONS · PERFORM NOW');
+    expect(menuText.join(' ')).not.toContain('Reset the flow board');
 
     const assign = renderCommons({
       ...initial,
-      menu: { page: 'assign', selected: 1 },
+      menu: { page: 'assign', selected: 0 },
     });
     const assignText = assign.shapes
       .filter(shape => shape.type === 'text')
@@ -484,5 +484,30 @@ describe('Commons runtime, frame and independent saves', () => {
     expect(assignText).toContain('ASSIGN AN ACTION TO B');
     expect(assignText).toContain('A SET · B BACK · X CLOSE');
     expect(assignText.some(row => row.startsWith('> Repair Weir'))).toBe(true);
+  });
+});
+
+describe('Commons compact overworld HUD', () => {
+  test('shows one bounded contextual line without a persistent clue counter', () => {
+    const initial = createCommonsState();
+    const weir = {
+      ...initial,
+      world: {
+        ...initial.world,
+        mapId: 'weir',
+        map: COMMONS_CONTENT.maps.weir,
+        player: { x: 7, y: 6, facing: 'right' },
+      },
+      toast: 'A: Inspect the flow board.',
+    };
+    const compact = renderCommons(weir);
+    const hudText = compact.shapes.filter(
+      shape => shape.type === 'text' && shape.y >= 96
+    );
+    expect(hudText).toHaveLength(1);
+    expect(hudText[0].text).toBe('A: Inspect the flow board.');
+    expect(compact.shapes.some(shape => shape.text?.includes('CLUES'))).toBe(
+      false
+    );
   });
 });

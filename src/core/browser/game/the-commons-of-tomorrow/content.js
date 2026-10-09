@@ -76,6 +76,8 @@ export const COMMONS_CONTENT = Object.freeze({
       objects: [
         { id: 'old-gauge', x: 12, y: 3, kind: 'evidence' },
         { id: 'flow-board', x: 8, y: 6, kind: 'puzzle' },
+        { id: 'flow-console', x: 7, y: 7, kind: 'flow-console' },
+        { id: 'habitat-scope', x: 13, y: 5, kind: 'habitat-scope' },
         { id: 'seasonal-footbridge', x: 5, y: 6, kind: 'bridge' },
         { id: 'reed-island', x: 14, y: 5, kind: 'discovery' },
       ],

@@ -6,10 +6,12 @@
 - [ ] Simulation tests cover movement, dialogue, evidence discovery, all three quest resolutions, visible consequences in both maps, practice selection/use, charter recording, and deterministic replay.
 - [ ] Opening scene shows June and Elian together during an early flood; flood-marker evidence and each resident's perspective are recorded separately, with only the old gauge unlocking the seasonal pact.
 - [ ] Puzzle tests cover a known solution, failed route, bounded/reversible edits, reset, and deterministic repeated advancement without wall-clock access.
+- [ ] World-interaction tests verify bridge repair at the footbridge, habitat listening at the field scope, puzzle reset at the maintenance console, and no floating Actions page.
+- [ ] Overworld frames show only one bounded contextual HUD line; dialogue and journal retain detailed guidance when opened.
 - [ ] Save tests cover independent game identity, versioned three-slot persistence, export/import round trip, malformed import rejection without replacing current state, and save/reload mid-quest.
 - [ ] Embedded and dedicated adapters produce equivalent state and 160×144 frame output from the same command sequence.
 - [x] Commons tile and sprite generators produce deterministic, game-specific pixel art distinct from Mosslight's terrain and actor palette.
-- [ ] Controller tests exercise directions/A/B/X/Y only, B assignment, menu ownership, dialogue navigation, and all essential actions through menus.
+- [ ] Controller tests exercise directions/A/B/X/Y only, B assignment, compact menu ownership, dialogue navigation, and essential actions through world fixtures or resident interactions.
 - [ ] Focused Jest and Playwright suites pass; `npm run build` emits the page, game assets, embedded registration and manual.
 - [ ] `npm run check` exits 0 before final bead closure.
 

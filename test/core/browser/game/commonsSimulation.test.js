@@ -122,7 +122,7 @@ describe('Commons story simulation', () => {
     );
     expect(stepCommons(nearElian, ['a']).evidence).toHaveLength(0);
     expect(stepCommons(nearElian, ['a']).presentation.status).toContain(
-      'GAUGE / REEDS / FLOW'
+      'The River Keeps Its Own Time'
     );
   });
 
@@ -179,7 +179,7 @@ describe('Commons story simulation', () => {
     );
     expect(assign.menu.selected).toBe(1);
     const assigned = stepCommons({ ...assign, lastActions: [] }, ['a']);
-    expect(assigned.quickAction).toBe('repair');
+    expect(assigned.quickAction).toBe('listen');
     const dialogue = {
       ...state,
       dialogue: {
@@ -242,17 +242,38 @@ describe('Commons story simulation', () => {
     };
     const edited = stepCommons(board, ['a']);
     expect(edited.puzzle.editsUsed).toBe(1);
-    const resetMenu = stepCommons(
-      { ...state, menu: { page: 'actions', selected: 4 }, lastActions: [] },
+    const consoleState = current => ({
+      ...current,
+      world: {
+        ...current.world,
+        mapId: 'weir',
+        map: COMMONS_CONTENT.maps.weir,
+        player: { x: 6, y: 7, facing: 'right' },
+      },
+      lastActions: [],
+    });
+    const resetPanel = stepCommons(
+      consoleState({
+        ...state,
+        evidence: ['water-routed'],
+        journal: ['water-routed'],
+        puzzle: { ...state.puzzle, editsUsed: 2, completed: true },
+      }),
       ['a']
     );
-    expect(resetMenu.puzzle.editsUsed).toBe(0);
-    const fixed = chooseRiverAgreement(state, 'restore-crossing');
-    const unchanged = stepCommons(
-      { ...fixed, menu: { page: 'actions', selected: 4 }, lastActions: [] },
-      ['a']
+    expect(resetPanel.dialogue.choices[0].label).toContain('Reset');
+    const reset = stepCommons({ ...resetPanel, lastActions: [] }, ['a']);
+    expect(reset.puzzle.editsUsed).toBe(0);
+    expect(reset.evidence).not.toContain('water-routed');
+    expect(reset.journal).not.toContain('water-routed');
+    const fixed = chooseRiverAgreement(
+      { ...state, puzzle: { ...state.puzzle, completed: true } },
+      'restore-crossing'
     );
+    const agreedPanel = stepCommons(consoleState(fixed), ['a']);
+    const unchanged = stepCommons({ ...agreedPanel, lastActions: [] }, ['a']);
     expect(unchanged.agreements).toHaveLength(1);
+    expect(unchanged.puzzle.completed).toBe(true);
   });
 
   test('routes water through handheld actions and records the field evidence', () => {
@@ -291,7 +312,7 @@ describe('Commons story simulation', () => {
     };
     const returned = stepCommons(state, ['x']);
     expect(returned.mode).toBe('world');
-    expect(returned.toast).toContain('Actions → Reset flow board');
+    expect(returned.toast).toContain('maintenance panel below the flow board');
   });
 });
 
@@ -311,7 +332,7 @@ describe('Commons controller and story edge cases', () => {
         },
       };
     };
-    const gauge = stepCommons(at('weir', 11, 3), ['b']);
+    const gauge = stepCommons(at('weir', 11, 3), ['a']);
     expect(gauge.evidence).toContain('gauge-reading');
     expect(stepCommons(at('weir', 13, 5), ['a']).evidence).toContain(
       'reed-nesting-marks'
@@ -437,30 +458,90 @@ describe('Commons controller and story edge cases', () => {
     expect(participation.charter.text).toContain('without disclosing private');
   });
 
+  test('routes listening and repair through the Weir scope and Tomas conversation', () => {
+    const atWeir = (x, y, facing = 'right', patches = {}) => {
+      const initial = createCommonsState();
+      return {
+        ...initial,
+        ...patches,
+        world: {
+          ...initial.world,
+          mapId: 'weir',
+          map: COMMONS_CONTENT.maps.weir,
+          player: { x, y, facing },
+          npcs: [],
+          ...patches.world,
+        },
+        lastActions: [],
+      };
+    };
+    const quietScope = stepCommons(atWeir(12, 5), ['a']);
+    expect(quietScope.toast).toContain('Habitat Listening practice');
+    const heard = stepCommons(
+      atWeir(12, 5, 'right', { practices: ['habitat-listening'] }),
+      ['a']
+    );
+    expect(heard.world.flags.habitatHeard).toBe(true);
+    expect(heard.toast).toContain('nesting calls');
+
+    const tomas = stepCommons(
+      atWeir(4, 7, 'right', {
+        world: {
+          npcs: [
+            {
+              ...COMMONS_CONTENT.npcs.find(person => person.id === 'tomas'),
+              map: 'weir',
+              x: 5,
+              y: 7,
+            },
+          ],
+        },
+      }),
+      ['a']
+    );
+    expect(tomas.dialogue.actorId).toBe('tomas');
+    expect(tomas.dialogue.choices[0].label).toContain('handrail');
+    const repaired = stepCommons({ ...tomas, lastActions: [] }, ['a']);
+    expect(repaired.world.flags.footbridgeStabilized).toBe(true);
+  });
+
   test('covers menu pages, practice choices, controller commands and puzzle reset', () => {
     let state = createCommonsState();
-    expect(
-      menuItems('actions', state).map(([, command]) => command)
-    ).not.toContain('action:puzzle');
+    expect(menuItems('main', state).map(([label]) => label)).not.toContain(
+      'Actions'
+    );
     const tap = action => {
       state = stepCommons(state, []);
       state = stepCommons(state, [action]);
     };
     state = {
       ...state,
-      menu: { page: 'actions', selected: 1 },
-      lastActions: [],
-    };
-    tap('a'); // Repair guidance
-    expect(state.toast).toContain('face bridge');
-    state = {
-      ...state,
-      menu: { page: 'actions', selected: 3 },
+      world: {
+        ...state.world,
+        mapId: 'weir',
+        map: COMMONS_CONTENT.maps.weir,
+        player: { x: 4, y: 6, facing: 'right' },
+        npcs: [],
+      },
       lastActions: [],
     };
     tap('a');
-    expect(state.mode).toBe('world');
-    expect(state.menu).toBeNull();
+    expect(state.dialogue.choices[0].label).toContain('Stabilize');
+    tap('a');
+    expect(state.world.flags.footbridgeStabilized).toBe(true);
+
+    state = {
+      ...state,
+      world: {
+        ...state.world,
+        player: { x: 6, y: 7, facing: 'right' },
+      },
+      puzzle: { ...state.puzzle, editsUsed: 3 },
+      lastActions: [],
+    };
+    tap('a');
+    expect(state.dialogue.choices[0].label).toContain('Reset');
+    tap('a');
     expect(state.puzzle.editsUsed).toBe(0);
 
     const agreed = chooseRiverAgreement(state, 'restore-crossing');
@@ -525,17 +606,17 @@ describe('Commons controller and story edge cases', () => {
       null
     );
     expect(
-      stepCommons({ ...state, menu: { page: 'main', selected: 6 } }, ['a']).menu
+      stepCommons({ ...state, menu: { page: 'main', selected: 5 } }, ['a']).menu
     ).toBeNull();
     expect(
       stepCommons({ ...state, menu: { page: 'main', selected: 0 } }, ['b']).menu
     ).toBeNull();
     expect(
-      stepCommons({ ...state, menu: { page: 'actions', selected: 2 } }, ['b'])
+      stepCommons({ ...state, menu: { page: 'journal', selected: 0 } }, ['b'])
         .menu
     ).toEqual({ page: 'main', selected: 0 });
     expect(
-      stepCommons({ ...state, menu: { page: 'actions', selected: 2 } }, ['x'])
+      stepCommons({ ...state, menu: { page: 'journal', selected: 0 } }, ['x'])
         .menu
     ).toBeNull();
     expect(
@@ -551,7 +632,7 @@ describe('Commons controller and story edge cases', () => {
       },
     };
     expect(stepCommons(unfinished, ['a']).dialogue.lines[0].text).toContain(
-      'inlet is still dry'
+      'handrail is loose'
     );
     const alreadyAgreed = chooseRiverAgreement(state, 'restore-crossing');
     const atBridge = {
@@ -595,7 +676,7 @@ describe('Commons controller and story edge cases', () => {
 
     const assignMenu = {
       ...state,
-      menu: { page: 'assign', selected: 1 },
+      menu: { page: 'assign', selected: 0 },
       lastActions: [],
     };
     expect(stepCommons(assignMenu, ['a']).quickAction).toBe('repair');
@@ -613,7 +694,7 @@ describe('Commons controller and story edge cases', () => {
     expect(stepCommons(journalMenu, ['a']).menu.page).toBe('main');
     const charterMenu = {
       ...state,
-      menu: { page: 'main', selected: 3 },
+      menu: { page: 'main', selected: 2 },
       lastActions: [],
     };
     expect(stepCommons(charterMenu, ['a']).menu.page).toBe('charter');
@@ -636,9 +717,11 @@ describe('Commons controller and story edge cases', () => {
     expect(stepCommons(charterReady, ['a']).world.flags.charterRecorded).toBe(
       true
     );
-    expect(menuItems('actions', createCommonsState())[0][0]).toContain('A ·');
+    expect(
+      menuItems('main', createCommonsState()).map(([label]) => label)
+    ).not.toContain('Actions');
     expect(menuItems('assign', createCommonsState())[0][0]).toContain(
-      'Survey facing'
+      'Repair Weir'
     );
     expect(
       stepCommons(
@@ -648,7 +731,7 @@ describe('Commons controller and story edge cases', () => {
     ).toBe('assign');
     expect(
       stepCommons(
-        { ...state, menu: { page: 'main', selected: 1 }, lastActions: [] },
+        { ...state, menu: { page: 'main', selected: 0 }, lastActions: [] },
         ['a']
       ).presentation.menuRows
     ).toContain('active: The River Keeps Its Own Time');
@@ -673,7 +756,7 @@ describe('Commons controller and story edge cases', () => {
       { ...state, menu: { page: 'main', selected: 0 }, lastActions: [] },
       ['up']
     );
-    expect(moved.menu.selected).toBe(6);
+    expect(moved.menu.selected).toBe(5);
   });
 });
 
@@ -684,7 +767,7 @@ describe('Commons handheld actions and deterministic board controls', () => {
       menu: { page: 'assign', selected: 0 },
     };
     state = stepCommons(state, ['a']);
-    expect(state.quickAction).toBe('survey');
+    expect(state.quickAction).toBe('repair');
     const towardGauge = {
       ...state,
       world: {
@@ -695,7 +778,7 @@ describe('Commons handheld actions and deterministic board controls', () => {
       },
       lastActions: [],
     };
-    expect(stepCommons(towardGauge, ['b']).evidence).toContain('gauge-reading');
+    expect(stepCommons(towardGauge, ['a']).evidence).toContain('gauge-reading');
 
     let board = {
       ...createCommonsState(),
@@ -733,9 +816,20 @@ describe('Commons handheld actions and deterministic board controls', () => {
       evidence: ['water-routed'],
       journal: ['water-routed'],
       puzzle: { ...createCommonsState().puzzle, editsUsed: 2 },
-      menu: { page: 'actions', selected: 3 },
     };
-    const reset = stepCommons(repairState, ['a']);
+    const resetPrompt = stepCommons(
+      {
+        ...repairState,
+        world: {
+          ...repairState.world,
+          mapId: 'weir',
+          map: COMMONS_CONTENT.maps.weir,
+          player: { x: 6, y: 7, facing: 'right' },
+        },
+      },
+      ['a']
+    );
+    const reset = stepCommons({ ...resetPrompt, lastActions: [] }, ['a']);
     expect(reset.evidence).toEqual([]);
     expect(reset.journal).toEqual([]);
     expect(reset.puzzle.editsUsed).toBe(0);
@@ -823,13 +917,13 @@ describe('Commons handheld actions and deterministic board controls', () => {
       ...createCommonsState(),
       menu: { page: 'main', selected: 0 },
     };
-    expect(stepCommons(menu, ['up']).menu.selected).toBe(6);
+    expect(stepCommons(menu, ['up']).menu.selected).toBe(5);
     expect(
-      stepCommons({ ...menu, menu: { page: 'actions', selected: 2 } }, ['left'])
+      stepCommons({ ...menu, menu: { page: 'assign', selected: 0 } }, ['left'])
         .menu.selected
-    ).toBe(1);
+    ).toBe(2);
     expect(
-      stepCommons({ ...menu, menu: { page: 'actions', selected: 99 } }, ['a'])
+      stepCommons({ ...menu, menu: { page: 'assign', selected: 99 } }, ['a'])
         .menu.selected
     ).toBe(99);
     expect(

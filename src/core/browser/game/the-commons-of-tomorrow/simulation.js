@@ -22,19 +22,12 @@ const DIRECTIONS = ['up', 'down', 'left', 'right'];
 /** @type {Record<string, Array<[string, string]>>} */
 const MENU_ENTRIES = Object.freeze({
   main: [
-    ['Actions', 'page:actions'],
     ['Field journal', 'page:journal'],
     ['Practices', 'page:practices'],
     ['Charter', 'page:charter'],
     ['Save options', 'page:saves'],
     ['Assign B', 'page:assign'],
     ['Return to game', 'close'],
-  ],
-  actions: [
-    ['A · Survey a facing person or clue', 'action:survey'],
-    ['A · Repair the Weir footbridge', 'action:repair'],
-    ['A · Listen to habitat', 'action:listen'],
-    ['A · Reset the flow board', 'action:reset-puzzle'],
   ],
   saves: [
     ['Save progress', 'save'],
@@ -92,11 +85,11 @@ export function createCommonsState(
     ending: null,
     mode: 'world',
     menu: null,
-    quickAction: 'survey',
+    quickAction: 'repair',
     controllerCommand: null,
     lastActions: [],
     tick: 0,
-    toast: 'Follow the light path east to WEIR.',
+    toast: 'RIVER UP · CHECK FLOOD MARK',
     presentation: { game: 'commons', status: 'Survey the shared city.' },
   };
 }
@@ -260,7 +253,9 @@ export function stepCommons(
       status:
         next.mode === 'puzzle'
           ? 'Route water to the commons inlet.'
-          : `${next.evidence.length} CLUES · GAUGE / REEDS / FLOW`,
+          : next.agreements.length
+            ? 'River agreement recorded.'
+            : 'The River Keeps Its Own Time',
     },
   };
 }
@@ -336,6 +331,8 @@ function interactionName(object) {
     'meal-crates': 'June’s meal crates',
     'old-gauge': 'the old gauge',
     'flow-board': 'the flow board',
+    'flow-console': 'the flow-board maintenance panel',
+    'habitat-scope': 'the habitat listening scope',
     'reed-island': 'the reed island',
     'seasonal-footbridge': 'the seasonal footbridge',
     'charter-table': 'the charter table',
@@ -382,6 +379,22 @@ function interact(state, content) {
   const { actor, object } = targetInFront(state);
   if (actor) {
     const person = /** @type {Record<string, any>} */ (actor);
+    if (person.id === 'tomas')
+      return openDialogue(state, actor.id, [
+        {
+          text: `${person.name} · ${person.role}. ${person.reason} I can help with the footbridge or point out the habitat scope beside the reeds.`,
+          choices: [
+            {
+              label: 'Stabilize the footbridge handrail',
+              command: 'field:repair',
+            },
+            {
+              label: 'Find the habitat listening scope',
+              command: 'world:scope-hint',
+            },
+          ],
+        },
+      ]);
     const heard = ['june', 'elian'].includes(person.id)
       ? updateWorldFlags(state, { [`heard-${person.id}`]: true })
       : state;
@@ -442,6 +455,38 @@ function interact(state, content) {
       toast:
         'The flow board tests where river water can go. Try the Commons route before deciding at the footbridge.',
     };
+  if (object.id === 'flow-console')
+    return state.agreements.length
+      ? openDialogue(state, 'flow-console', [
+          {
+            text: 'The maintenance panel is locked after the district agreement. The solved route stays in the field journal.',
+          },
+        ])
+      : openDialogue(state, 'flow-console', [
+          {
+            text: 'FLOW BOARD MAINTENANCE · This panel restores the board to its starting state and clears only the water-route trial.',
+            choices: [
+              { label: 'Reset the flow board', command: 'field:reset-puzzle' },
+              { label: 'Leave the board as it is', command: 'world:close' },
+            ],
+          },
+        ]);
+  if (object.id === 'habitat-scope')
+    return state.practices.includes('habitat-listening')
+      ? {
+          ...state,
+          world: {
+            ...state.world,
+            flags: { ...state.world.flags, habitatHeard: true },
+          },
+          toast:
+            'Through the scope: nesting calls above the steady pulse of water.',
+        }
+      : {
+          ...state,
+          toast:
+            'A habitat scope. Habitat Listening practice will help you read its soundscape.',
+        };
   if (object.id === 'reed-island') {
     const evidence = [...new Set([...state.evidence, 'reed-nesting-marks'])];
     return {
@@ -451,7 +496,19 @@ function interact(state, content) {
     };
   }
   if (object.id === 'seasonal-footbridge')
-    return openRiverDecision(state, content);
+    return state.puzzle.completed || state.agreements.length
+      ? openRiverDecision(state, content)
+      : openDialogue(state, 'seasonal-footbridge', [
+          {
+            text: state.world.flags.footbridgeStabilized
+              ? 'The handrail is steady. The crossing itself stays closed until the district decides how to share the floodplain.'
+              : 'The handrail is loose. Stabilizing it is routine care; opening the crossing is a separate community decision.',
+            choices: [
+              { label: 'Stabilize the handrail', command: 'field:repair' },
+              { label: 'Inspect the flow board first', command: 'world:close' },
+            ],
+          },
+        ]);
   if (object.id === 'charter-table') return openCharter(state, content);
   if (object.id === 'assembly-board') {
     return {
@@ -549,6 +606,50 @@ function openCharter(state, content) {
 }
 
 /**
+ * Reset the unresolved river trial from its physical maintenance panel.
+ * @param {Record<string, any>} state Current game state.
+ * @returns {Record<string, any>} Reset state or the unchanged agreed outcome.
+ */
+function resetFlowBoard(state) {
+  if (state.agreements.length)
+    return {
+      ...state,
+      toast:
+        'The river agreement is recorded; the trial is preserved in the journal.',
+    };
+  return {
+    ...state,
+    puzzle: createWaterPuzzle(),
+    evidence: state.evidence.filter(
+      (/** @type {string} */ item) => item !== 'water-routed'
+    ),
+    journal: state.journal.filter(
+      (/** @type {string} */ item) => item !== 'water-routed'
+    ),
+    toast: 'The maintenance panel resets the flow board. The trial is clear.',
+  };
+}
+
+/**
+ * Stabilize the footbridge or propose its reversible repair.
+ * @param {Record<string, any>} state Current game state.
+ * @returns {Record<string, any>} Updated state with visible repair terms.
+ */
+function stabilizeFootbridge(state) {
+  if (!state.practices.includes('living-repair'))
+    return {
+      ...updateWorldFlags(state, { footbridgeStabilized: true }),
+      toast:
+        'You and Tomas stabilize the loose handrail. The crossing stays closed until the district agrees how to use it.',
+    };
+  return {
+    ...updateWorldFlags(state, { reversibleRepairProposed: true }),
+    toast:
+      'You and Tomas mark a reversible handrail repair for review after high water.',
+  };
+}
+
+/**
  * Perform one assigned action without advancing an economic or world clock.
  * @param {Record<string, any>} state Current game state.
  * @param {string} action Assigned field action.
@@ -556,25 +657,6 @@ function openCharter(state, content) {
  * @returns {Record<string, any>} Updated game state.
  */
 function performFieldAction(state, action, content) {
-  if (action === 'reset-puzzle') {
-    if (state.agreements.length)
-      return {
-        ...state,
-        toast:
-          'The river agreement is already recorded; the puzzle remains as a field record.',
-      };
-    return {
-      ...state,
-      puzzle: createWaterPuzzle(),
-      evidence: state.evidence.filter(
-        (/** @type {string} */ item) => item !== 'water-routed'
-      ),
-      journal: state.journal.filter(
-        (/** @type {string} */ item) => item !== 'water-routed'
-      ),
-      toast: 'The flow board returns to its authored starting state.',
-    };
-  }
   if (action === 'charter') return openCharter(state, content);
   const { actor, object } = targetInFront(state);
   if (action === 'survey') {
@@ -616,17 +698,7 @@ function performFieldAction(state, action, content) {
             ? 'Go east on light path to WEIR; face bridge, press B.'
             : 'Bridge is west of flow board near entrance; face it, press B.',
       };
-    if (!state.practices.includes('living-repair'))
-      return {
-        ...updateWorldFlags(state, { footbridgeStabilized: true }),
-        toast:
-          'You stabilize the loose handrail. The crossing stays closed until the district agrees how to use it.',
-      };
-    return {
-      ...updateWorldFlags(state, { reversibleRepairProposed: true }),
-      toast:
-        'You mark the shared crossing for a reversible repair that can be reviewed after high water.',
-    };
+    return stabilizeFootbridge(state);
   }
   return { ...state, toast: `B action: ${action}.` };
 }
@@ -653,6 +725,17 @@ function stepDialogue(state, pressed, content) {
         return chooseRiverAgreement(next, choice.command.slice(6), content);
       if (choice.command?.startsWith('practice:'))
         return choosePractice(next, choice.command.slice(9), content);
+      if (choice.command === 'field:repair')
+        return stabilizeFootbridge({ ...next, dialogue: null });
+      if (choice.command === 'field:reset-puzzle')
+        return resetFlowBoard({ ...next, dialogue: null });
+      if (choice.command === 'world:scope-hint')
+        return openDialogue({ ...next, dialogue: null }, 'tomas-scope-hint', [
+          {
+            text: 'The listening scope is beside the reed island, just north of the maintenance panel.',
+          },
+        ]);
+      if (choice.command === 'world:close') return { ...next, dialogue: null };
     }
     return pressed.includes('a') ? advanceDialogue(next) : next;
   }
@@ -727,7 +810,6 @@ function stepMenu(state, pressed, content) {
 export function menuItems(page, state, content = COMMONS_CONTENT) {
   if (page === 'assign')
     return [
-      ['Survey facing person or clue', 'assign:survey'],
       ['Repair Weir footbridge', 'assign:repair'],
       ['Listen to habitat', 'assign:listen'],
       ['Back to main menu', 'page:main'],
@@ -771,7 +853,7 @@ export function menuItems(page, state, content = COMMONS_CONTENT) {
         `practice:${practice.id}`,
       ]);
   if (page === 'saves' || page === 'reset') return MENU_ENTRIES[page];
-  return page === 'actions' ? MENU_ENTRIES.actions : MENU_ENTRIES.main;
+  return MENU_ENTRIES.main;
 }
 
 /**
@@ -841,7 +923,7 @@ function stepPuzzle(state, pressed) {
       mode: 'world',
       puzzle: { ...state.puzzle, selectedCell: selected },
       toast: needsReset
-        ? 'No edits remain. X menu → Actions → Reset flow board.'
+        ? 'No edits remain. Use the maintenance panel below the flow board to reset.'
         : state.toast,
     };
   }

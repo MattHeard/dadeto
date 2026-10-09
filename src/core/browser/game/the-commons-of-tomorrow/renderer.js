@@ -75,13 +75,13 @@ export function renderCommons(state) {
   frame.commons.path = state.world.map.walkways;
   if (state.mode === 'puzzle') frame.shapes = puzzleShapes(state.puzzle);
   else if (state.menu) frame.shapes = menuShapes(frame, state);
-  else if (state.world.mapId === 'commons') {
+  else if (!state.dialogue && state.mode === 'world') {
     frame.shapes = frame.shapes.filter(
       (/** @type {Record<string, any>} */ shape) => shape.y < 98
     );
     frame.shapes.push(
       frameRectangle({ x: 0, y: 96, width: 160, height: 12 }, COLORS.dark),
-      text(commonsOpeningPrompt(state), 4, 105, COLORS.gold)
+      text(compactOverworldPrompt(state), 4, 105, COLORS.gold)
     );
   }
   return frame;
@@ -98,6 +98,26 @@ function commonsOpeningPrompt(state) {
   if (!flags['heard-june'] || !flags['heard-elian'])
     return 'TALK TO JUNE AND ELIAN';
   return 'WEIR → · FOLLOW LIGHT PATH';
+}
+
+/**
+ * Replace the shared multi-row HUD with one relevant overworld instruction.
+ * @param {Record<string, any>} state Current game state.
+ * @returns {string} One line of bounded contextual text.
+ */
+function compactOverworldPrompt(state) {
+  const message = state.toast?.trim();
+  const prompt =
+    message && message !== ' '
+      ? message
+      : state.world.mapId === 'commons'
+        ? commonsOpeningPrompt(state)
+        : state.agreements.length && !state.world.flags.charterRecorded
+          ? 'RETURN TO CANOPY · RECORD CHARTER'
+          : state.puzzle.completed && !state.agreements.length
+            ? 'RETURN TO FOOTBRIDGE · DECIDE'
+            : 'WEIR · GAUGE / REEDS / FLOW BOARD';
+  return prompt.length > 30 ? `${prompt.slice(0, 29)}…` : prompt;
 }
 
 /**
@@ -152,11 +172,9 @@ function menuShapes(frame, state) {
 function menuRows(state) {
   const page = state.menu.page;
   const title =
-    page === 'actions'
-      ? 'ACTIONS · PERFORM NOW'
-      : page === 'assign'
-        ? 'ASSIGN AN ACTION TO B'
-        : page.toUpperCase().replaceAll('-', ' ');
+    page === 'assign'
+      ? 'ASSIGN AN ACTION TO B'
+      : page.toUpperCase().replaceAll('-', ' ');
   const info = [];
   if (page === 'journal')
     info.push(
@@ -178,7 +196,6 @@ function menuRows(state) {
         (/** @type {string} */ id) => `Practice learned: ${id}`
       )
     );
-  else if (page === 'actions') info.push('A performs this action now.');
   else if (page === 'assign')
     info.push('Choose what B performs while facing a person or feature.');
   const entries = menuItems(page, state, COMMONS_CONTENT);
@@ -194,9 +211,7 @@ function menuRows(state) {
   const footer =
     page === 'assign'
       ? 'A SET · B BACK · X CLOSE'
-      : page === 'actions'
-        ? 'A DO · B BACK · X CLOSE'
-        : 'A CHOOSE · B BACK · X CLOSE';
+      : 'A CHOOSE · B BACK · X CLOSE';
   const footerRows = wrapDialogueText(footer, 27);
   const selectedRows = choiceRows[selected] || [];
   const infoLimit = Math.max(
@@ -360,8 +375,7 @@ function puzzleCellArt({ kind, cell, x, y, width, height, fill }) {
         { x: x + 4, y: y + 4, width: 21, height: 10 },
         COLORS.water
       ),
-      frameRectangle({ x: x + 7, y: y + 6, width: 3, height: 3 }, COLORS.gold),
-      frameRectangle({ x: x + 18, y: y + 6, width: 3, height: 3 }, COLORS.gold),
+      text('S', x + 12, y + 12, COLORS.gold),
     ];
   if (kind === 'bedrock')
     return [
@@ -380,24 +394,10 @@ function puzzleCellArt({ kind, cell, x, y, width, height, fill }) {
     ];
   if (kind === 'cut-channel')
     return [
-      frameRectangle(
-        { x: x + 3, y: y + 4, width: 23, height: 10 },
-        COLORS.ground
-      ),
-      frameRectangle({ x: x + 6, y: y + 6, width: 17, height: 6 }, COLORS.dark),
-      frameRectangle({ x: x + 12, y: y + 8, width: 5, height: 2 }, COLORS.gold),
+      ...puzzleChannelBed(x, y, COLORS.dark),
+      text('·', x + 13, y + 11, COLORS.gold),
     ];
-  if (kind === 'channel')
-    return [
-      frameRectangle(
-        { x: x + 3, y: y + 4, width: 23, height: 10 },
-        COLORS.ground
-      ),
-      frameRectangle(
-        { x: x + 6, y: y + 6, width: 17, height: 6 },
-        COLORS.water
-      ),
-    ];
+  if (kind === 'channel') return puzzleChannelBed(x, y, COLORS.water);
   if (kind === 'gate' || kind === 'open-gate')
     return [
       frameRectangle(
@@ -427,20 +427,56 @@ function puzzleCellArt({ kind, cell, x, y, width, height, fill }) {
       frameRectangle({ x: x + 10, y: y + 7, width: 9, height: 4 }, COLORS.gold),
     ];
   return [
-    frameRectangle(
-      { x: x + 4 + (cell % 5), y: y + 4 + (cell % 3), width: 4, height: 3 },
-      COLORS.gold
-    ),
-    frameRectangle(
+    ...puzzlePixels([
       {
-        x: x + width - 9 - (cell % 4),
-        y: y + height - 7 - (cell % 3),
-        width: 4,
-        height: 2 + (cell % 2),
+        rectangle: {
+          x: x + 4 + (cell % 5),
+          y: y + 4 + (cell % 3),
+          width: 4,
+          height: 3,
+        },
+        fill: COLORS.gold,
       },
-      COLORS.water
-    ),
+      {
+        rectangle: {
+          x: x + width - 9 - (cell % 4),
+          y: y + height - 7 - (cell % 3),
+          width: 4,
+          height: 2 + (cell % 2),
+        },
+        fill: COLORS.water,
+      },
+    ]),
   ];
+}
+
+/**
+ * Draw authored puzzle pixel rectangles from a compact motif description.
+ * @param {Array<{rectangle: {x: number, y: number, width: number, height: number}, fill: string}>} pixels Pixel motifs.
+ * @returns {Array<Record<string, any>>} Pixel rectangles.
+ */
+function puzzlePixels(pixels) {
+  return pixels.map(({ rectangle, fill }) => frameRectangle(rectangle, fill));
+}
+
+/**
+ * Draw the shared raised bed around a channel cell.
+ * @param {number} x Cell origin x.
+ * @param {number} y Cell origin y.
+ * @param {string} waterFill Interior channel color.
+ * @returns {Array<Record<string, any>>} Channel bed and interior shapes.
+ */
+function puzzleChannelBed(x, y, waterFill) {
+  return puzzlePixels([
+    {
+      rectangle: { x: x + 3, y: y + 4, width: 23, height: 10 },
+      fill: COLORS.ground,
+    },
+    {
+      rectangle: { x: x + 6, y: y + 6, width: 17, height: 6 },
+      fill: waterFill,
+    },
+  ]);
 }
 
 /**
