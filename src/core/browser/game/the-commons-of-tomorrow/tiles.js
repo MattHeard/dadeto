@@ -15,12 +15,11 @@ export function generateCommonsTile({
   blocked = false,
   roof = false,
 }) {
-  const [outline, stone, canopy, terracotta, water = palette[0]] = palette;
+  const [outline, stone, canopy, terracotta] = palette;
   const code = Math.abs((x * 19 + y * 23 + x * y * 5) % 8);
   if (blocked)
     return structureTile({ outline, stone, canopy, terracotta, roof, code });
-  if (region === 'shore')
-    return weirTile({ x, y, outline, stone, canopy, terracotta, water, code });
+  if (region === 'shore') return weirTile({ x, y, code });
   return commonsTile({ walkway, canopy, terracotta, code });
 }
 
@@ -46,23 +45,23 @@ function commonsTile({ walkway, canopy, terracotta, code }) {
 
 /**
  *
- * @param {{x:number,y:number,outline:string,stone:string,canopy:string,terracotta:string,water:string,code:number}} options Tile motif inputs.
+ * @param {{x:number,y:number,code:number}} options Tile motif inputs.
  * @returns {Array<{x:number,y:number,width:number,height:number,fill:string}>} Tile pixels.
  */
-function weirTile({ x, y, outline, stone, canopy, terracotta, water, code }) {
+function weirTile({ x, y, code }) {
   const center = (x * 2 + Math.floor(y / 2) + 2) % 6;
   const bankLeft = center;
   const bankRight = center + 5;
   const channel = [
-    rect([0, 0, SIZE, SIZE], stone),
-    rect([0, 1, SIZE, 1], canopy),
-    rect([0, 10, SIZE, 1], canopy),
+    rect([0, 0, SIZE, SIZE], '#dfcfa0'),
+    rect([0, 1, SIZE, 1], '#f4e7bf'),
+    rect([0, 10, SIZE, 1], '#a59162'),
   ];
-  channel.push(rect([bankLeft, 0, 5, SIZE], water));
-  channel.push(rect([bankLeft, 0, 1, SIZE], outline));
-  channel.push(rect([bankRight, 0, 1, SIZE], canopy));
-  channel.push(rect([bankLeft + 1, 2 + (code % 5), 2, 1], terracotta));
-  channel.push(rect([bankLeft + 1, 8, 3, 1], '#b8d9c4'));
+  channel.push(rect([bankLeft, 0, 5, SIZE], '#237a94'));
+  channel.push(rect([bankLeft, 0, 1, SIZE], '#10212b'));
+  channel.push(rect([bankRight, 0, 1, SIZE], '#4fb5bb'));
+  channel.push(rect([bankLeft + 1, 2 + (code % 5), 2, 1], '#fff078'));
+  channel.push(rect([bankLeft + 1, 8, 3, 1], '#c9f3e6'));
   return channel;
 }
 

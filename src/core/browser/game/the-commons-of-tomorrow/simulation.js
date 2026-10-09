@@ -289,8 +289,8 @@ function stepWorld(state, pressed, content) {
       return {
         ...moved,
         toast: blocked
-          ? `Path edge blocks ${direction}. Facing ${direction}; try another path.`
-          : `Resident blocks ${direction}. Facing ${direction}; press A to talk.`,
+          ? 'Path blocked · turn or choose another way.'
+          : 'Resident ahead · face them and press A.',
       };
     }
     const { actor, object } = targetInFront(moved);
@@ -301,7 +301,7 @@ function stepWorld(state, pressed, content) {
       };
     if (object)
       return { ...moved, toast: `A: Inspect ${interactionName(object)}.` };
-    return { ...moved, toast: `Moved ${direction}.` };
+    return { ...moved, toast: ' ' };
   }
   if (pressed.includes('a')) return interact(state, content);
   return next;

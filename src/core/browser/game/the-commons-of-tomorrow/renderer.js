@@ -17,6 +17,13 @@ const COLORS = Object.freeze({
   gold: '#e9d88d',
   water: '#246774',
 });
+const WEIR_PALETTE = Object.freeze([
+  '#10212b',
+  '#dfcfa0',
+  '#739c84',
+  '#e29162',
+  '#237a94',
+]);
 
 /**
  * Render the same authored world or puzzle snapshot for both presenters.
@@ -43,7 +50,10 @@ export function renderCommons(state) {
       presentation: {
         ...state.presentation,
         status,
-        palette: ['#193b43', '#c7b98f', '#789c7f', '#e29162', '#397e89'],
+        palette:
+          state.world.mapId === 'weir'
+            ? WEIR_PALETTE
+            : ['#193b43', '#c7b98f', '#789c7f', '#e29162', '#397e89'],
       },
     },
     {

@@ -15,7 +15,7 @@ describe('Commons story simulation', () => {
     expect(state.world.mapId).toBe('commons');
     const moved = stepCommons(state, ['right']);
     expect(moved.world.player.x).toBe(state.world.player.x + 1);
-    expect(moved.toast).toContain('Moved right');
+    expect(moved.toast).toBe(' ');
     const blocked = stepCommons(
       {
         ...state,
@@ -24,7 +24,7 @@ describe('Commons story simulation', () => {
       },
       ['down']
     );
-    expect(blocked.toast).toContain('Path edge blocks down');
+    expect(blocked.toast).toContain('Path blocked');
     const atExit = {
       ...state,
       world: {

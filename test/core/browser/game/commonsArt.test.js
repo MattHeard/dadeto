@@ -3,6 +3,7 @@ import { commonsSpriteShapes } from '../../../../src/core/browser/game/the-commo
 import { createCommonsState } from '../../../../src/core/browser/game/the-commons-of-tomorrow/simulation.js';
 import { renderCommons } from '../../../../src/core/browser/game/the-commons-of-tomorrow/renderer.js';
 import { toFramePayload } from '../../../../src/core/browser/game/mosslight-valley/renderer.js';
+import { COMMONS_CONTENT } from '../../../../src/core/browser/game/the-commons-of-tomorrow/content.js';
 
 const palette = ['#193b43', '#c7b98f', '#789c7f', '#e29162', '#397e89'];
 
@@ -45,7 +46,7 @@ describe('Commons visual identity', () => {
       region: 'shore',
     });
     expect(wetland).not.toEqual(path);
-    expect(wetland.map(pixel => pixel.fill)).toContain('#397e89');
+    expect(wetland.map(pixel => pixel.fill)).toContain('#237a94');
     expect(
       generateCommonsTile({
         x: 1,
@@ -79,11 +80,11 @@ describe('Commons visual identity', () => {
       4
     );
     expect(new Set(resident.map(pixel => pixel.fill))).toEqual(
-      new Set(['#11121e', '#fff078', '#426ef2', '#fff4d4'])
+      new Set(['#11121e', '#fff078', '#5887ff', '#fff4d4'])
     );
     expect(resident.some(pixel => pixel.fill === '#e29162')).toBe(false);
     const player = commonsSpriteShapes(
-      { id: 'player', x: 2, y: 3 },
+      { id: 'player', controlled: true, facing: 'up', x: 2, y: 3 },
       { x: 0, y: 0 },
       4
     );
@@ -93,6 +94,32 @@ describe('Commons visual identity', () => {
       resident.filter(pixel => pixel.fill === '#fff078').length
     );
     expect(prop.length).toBeGreaterThan(10);
+    const playerDirections = ['up', 'right', 'down', 'left'].map(facing =>
+      commonsSpriteShapes(
+        { id: 'player', controlled: true, facing, x: 5, y: 5 },
+        { x: 0, y: 0 },
+        4
+      ).filter(pixel => pixel.fill === '#fff078')
+    );
+    expect(playerDirections).toHaveLength(4);
+    expect(
+      new Set(
+        playerDirections.map(points =>
+          points
+            .map(point => `${point.x},${point.y}`)
+            .slice(-3)
+            .join('|')
+        )
+      ).size
+    ).toBe(4);
+    const npcShapes = commonsSpriteShapes(
+      { id: 'autonomy', x: 5, y: 5 },
+      { x: 0, y: 0 },
+      4
+    );
+    expect(playerDirections[0]).not.toEqual(
+      npcShapes.filter(pixel => pixel.fill === '#fff078')
+    );
     expect(
       commonsSpriteShapes({ id: 'player', x: -1, y: 0 }, { x: 0, y: 0 }, 4)
     ).toHaveLength(0);
@@ -114,6 +141,44 @@ describe('Commons visual identity', () => {
     ).toEqual(
       commonsSpriteShapes({ kind: 'discovery', x: 3, y: 3 }, { x: 0, y: 0 }, 4)
     );
+  });
+
+  test('gives Weir water and bank tiles strong foreground separation', () => {
+    const weir = generateCommonsTile({
+      x: 4,
+      y: 4,
+      palette: ['#10212b', '#dfcfa0', '#739c84', '#e29162', '#237a94'],
+      region: 'shore',
+    });
+    expect(weir.map(pixel => pixel.fill)).toContain('#237a94');
+    expect(weir.map(pixel => pixel.fill)).toContain('#dfcfa0');
+    const luminance = hex => {
+      const values = hex
+        .match(/[a-f0-9]{2}/gi)
+        .map(value => parseInt(value, 16) / 255);
+      const linear = values.map(value =>
+        value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4
+      );
+      return linear[0] * 0.2126 + linear[1] * 0.7152 + linear[2] * 0.0722;
+    };
+    expect(
+      Math.abs(luminance('#dfcfa0') - luminance('#237a94'))
+    ).toBeGreaterThan(0.25);
+    const state = createCommonsState();
+    state.world.mapId = 'weir';
+    state.world.map = COMMONS_CONTENT.maps.weir;
+    const frame = renderCommons(state);
+    expect(frame.palette).toEqual([
+      '#10212b',
+      '#dfcfa0',
+      '#739c84',
+      '#e29162',
+      '#237a94',
+    ]);
+    expect(frame.shapes.some(shape => shape.fill === '#21b6cb')).toBe(true);
+    expect(
+      Math.abs(luminance('#21b6cb') - luminance('#237a94'))
+    ).toBeGreaterThan(0.2);
   });
 
   test('includes Commons-specific pixel art in serialized page and toy frames', () => {
