@@ -1,5 +1,7 @@
 import { calculatePackageCredits } from '../billing/pricing-core.js';
 
+/** @typedef {import('../../../../types/allow-effects').AllowEffects} AllowEffects */
+
 const UUID =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
@@ -17,18 +19,18 @@ const UUID =
  * verifyIdToken: (token: string) => Promise<{ uid?: string }>,
  * resolveApiKeyUuidForUid: (uid: string) => Promise<{ apiKeyUuid?: string } | null>,
  * resolveBillingCustomer: (uid: string) => Promise<{ stripeCustomerId?: string } | null>,
- * createBillingCustomer: (options: object) => Promise<{ stripeCustomerId: string }>,
- * saveCustomerMappings: (uid: string, customerId: string, apiKeyUuid: string) => Promise<unknown>,
+ * createBillingCustomer: (allowEffects: AllowEffects, options: object) => Promise<{ stripeCustomerId: string }>,
+ * saveCustomerMappings: (allowEffects: AllowEffects, uid: string, customerId: string, apiKeyUuid: string) => Promise<unknown>,
  * getCreditPackage: (packageId: string) => Promise<{ active?: boolean, stripePriceId?: string, credits?: number, amountUsdMinor?: number, pricingSnapshot?: import('../billing/pricing-core.js').PricingSnapshot } | null>,
- * createStripeCheckoutSession: (options: object, options2: object) => Promise<{ id: string, url: string, expires_at: number }>,
- * createPurchase?: (input: object) => Promise<{ purchaseId: string }>,
- * savePurchaseCheckout?: (purchaseId: string, session: object) => Promise<unknown>,
+ * createStripeCheckoutSession: (allowEffects: AllowEffects, options: object, options2: object) => Promise<{ id: string, url: string, expires_at: number }>,
+ * createPurchase?: (allowEffects: AllowEffects, input: object) => Promise<{ purchaseId: string }>,
+ * savePurchaseCheckout?: (allowEffects: AllowEffects, purchaseId: string, session: object) => Promise<unknown>,
  * publicBillingOrigin?: string,
  * stripeConfigured?: boolean,
  * billingEnabled?: boolean,
  * resolveIdempotency?: (uid: string, key: string, packageId: string) => Promise<{ conflict?: boolean, session?: object } | null>,
- * saveIdempotency?: (uid: string, key: string, value: object) => Promise<unknown>,
- * logger?: { error?: (...args: unknown[]) => void }
+ * saveIdempotency?: (allowEffects: AllowEffects, uid: string, key: string, value: object) => Promise<unknown>,
+ * logger?: { error?: (allowEffects: AllowEffects, ...args: unknown[]) => void }
  * }} CheckoutDependencies
  */
 
@@ -390,18 +392,19 @@ async function resolveExisting(options) {
 
 /**
  * Resolve or create a billing customer.
+ * @param {AllowEffects} allowEffects Permission for Stripe customer creation and customer mapping writes.
  * @param {{ resolveBillingCustomer: CheckoutDependencies['resolveBillingCustomer'], createBillingCustomer: CheckoutDependencies['createBillingCustomer'], saveCustomerMappings: CheckoutDependencies['saveCustomerMappings'], uid: string, apiKeyUuid: string }} input Customer inputs.
  * @returns {Promise<{ stripeCustomerId: string }>} Billing customer.
  */
 // Stryker disable next-line all -- billing customer resolution uses the fixed
 // metadata and persistence protocol.
-async function resolveCustomer(input) {
+async function resolveCustomer(allowEffects, input) {
   let customer = await input.resolveBillingCustomer(input.uid);
   const existingCustomerId = customer?.stripeCustomerId;
   if (existingCustomerId) return { stripeCustomerId: existingCustomerId };
   // Stryker disable next-line all -- customer creation uses the fixed billing
   // metadata/idempotency payload.
-  customer = await input.createBillingCustomer({
+  customer = await input.createBillingCustomer(allowEffects, {
     // Stryker disable next-line all -- fixed customer metadata shape.
     metadata: {
       ['firebase_uid']: input.uid,
@@ -415,6 +418,7 @@ async function resolveCustomer(input) {
   if (!customer.stripeCustomerId) throw new Error('Customer ID missing');
   const stripeCustomerId = customer.stripeCustomerId;
   await input.saveCustomerMappings(
+    allowEffects,
     input.uid,
     stripeCustomerId,
     input.apiKeyUuid
@@ -424,20 +428,15 @@ async function resolveCustomer(input) {
 
 /**
  * Create and persist a Stripe checkout session.
- * @param {CheckoutDependencies} deps Checkout dependencies.
- * @param {{ key: string, packageId: string, uid: string }} input Validated request.
- * @param {{ stripePriceId?: string, amountUsdMinor?: number, credits: number, pricingSnapshot?: import('../billing/pricing-core.js').PricingSnapshot }} creditPackage Package details.
- * @param {string} apiKeyUuid Owned API key identifier.
+ * @param {AllowEffects} allowEffects Permission for checkout command effects.
+ * @param {{ deps: CheckoutDependencies, request: { key: string, packageId: string, uid: string, creditPackage: { stripePriceId?: string, amountUsdMinor?: number, credits: number, pricingSnapshot?: import('../billing/pricing-core.js').PricingSnapshot } }, apiKeyUuid: string }} input Checkout request context.
  * @returns {Promise<CheckoutResponse>} Checkout result.
  */
 // Stryker disable next-line all -- checkout creation coordinates fixed billing,
 // purchase, Stripe, and failure protocols.
-async function createCheckoutResult(
-  deps,
-  { key, packageId, uid },
-  creditPackage,
-  apiKeyUuid
-) {
+async function createCheckoutResult(allowEffects, input) {
+  const { deps, request, apiKeyUuid } = input;
+  const { key, packageId, uid, creditPackage } = request;
   const {
     resolveBillingCustomer,
     createBillingCustomer,
@@ -453,14 +452,14 @@ async function createCheckoutResult(
   const billingOrigin = resolveBillingOrigin(publicBillingOrigin);
   if (typeof billingOrigin !== 'string') return billingOrigin;
   try {
-    const customer = await resolveCustomer({
+    const customer = await resolveCustomer(allowEffects, {
       resolveBillingCustomer,
       createBillingCustomer,
       saveCustomerMappings,
       uid,
       apiKeyUuid,
     });
-    const purchase = await createPurchaseRecord(createPurchase, {
+    const purchase = await createPurchaseRecord(allowEffects, createPurchase, {
       purchaseId: `purchase-${uid}-${key}`,
       uid,
       apiKeyUuid,
@@ -484,10 +483,12 @@ async function createCheckoutResult(
       purchaseId: purchase?.purchaseId,
       creditPackage,
     });
-    const session = await createStripeCheckoutSession(checkout.options, {
-      idempotencyKey: checkout.idempotencyKey,
-    });
-    return persistCheckoutResult({
+    const session = await createStripeCheckoutSession(
+      allowEffects,
+      checkout.options,
+      { idempotencyKey: checkout.idempotencyKey }
+    );
+    return persistCheckoutResult(allowEffects, {
       savePurchaseCheckout,
       saveIdempotency,
       uid,
@@ -499,7 +500,9 @@ async function createCheckoutResult(
   } catch (cause) {
     // Stryker disable next-line all -- optional diagnostic has no response
     // behavior and uses a fixed event shape.
-    logger.error?.('checkout session creation failed', { type: cause?.type });
+    logger.error?.(allowEffects, 'checkout session creation failed', {
+      type: cause?.type,
+    });
     return stripeError(cause);
   }
 }
@@ -537,23 +540,25 @@ async function resolveCheckoutOwnership(
 
 /**
  * Create the purchase record when persistence is configured.
+ * @param {AllowEffects} allowEffects Permission for purchase persistence.
  * @param {CheckoutDependencies['createPurchase']} createPurchase Purchase creator.
  * @param {object} input Purchase input.
  * @returns {Promise<{purchaseId: string}|null>} Purchase record.
  */
-async function createPurchaseRecord(createPurchase, input) {
+async function createPurchaseRecord(allowEffects, createPurchase, input) {
   if (!createPurchase) return null;
-  return createPurchase(input);
+  return createPurchase(allowEffects, input);
 }
 
 /**
  * Persist the Checkout result and return the HTTP response.
+ * @param {AllowEffects} allowEffects Permission for checkout persistence.
  * @param {{ savePurchaseCheckout?: CheckoutDependencies['savePurchaseCheckout'], saveIdempotency?: CheckoutDependencies['saveIdempotency'], uid: string, key: string, packageId: string, purchase: { purchaseId?: string } | null, session: { id: string, url: string, expires_at: number } }} input Checkout persistence input.
  * @returns {Promise<CheckoutResponse>} Checkout response.
  */
 // Stryker disable next-line all -- persistence returns the fixed 201 result and
 // invokes optional persistence collaborators by their stable contract.
-async function persistCheckoutResult(input) {
+async function persistCheckoutResult(allowEffects, input) {
   const result = {
     checkoutSessionId: input.session.id,
     url: input.session.url,
@@ -564,9 +569,13 @@ async function persistCheckoutResult(input) {
   // Stryker disable next-line all -- optional purchase persistence is a fixed
   // collaborator boundary.
   if (input.purchase?.purchaseId && input.savePurchaseCheckout)
-    await input.savePurchaseCheckout(input.purchase.purchaseId, result);
+    await input.savePurchaseCheckout(
+      allowEffects,
+      input.purchase.purchaseId,
+      result
+    );
   if (input.saveIdempotency)
-    await input.saveIdempotency(input.uid, input.key, {
+    await input.saveIdempotency(allowEffects, input.uid, input.key, {
       packageId: input.packageId,
       session: result,
     });
@@ -576,7 +585,7 @@ async function persistCheckoutResult(input) {
 /**
  * Create the checkout-session handler.
  * @param {CheckoutDependencies} deps Handler dependencies.
- * @returns {(request?: CheckoutRequest) => Promise<CheckoutResponse>} Checkout request handler.
+ * @returns {(allowEffects: AllowEffects, request?: CheckoutRequest) => Promise<CheckoutResponse>} Checkout request handler.
  */
 export function createCheckoutSessionHandler(deps) {
   const {
@@ -588,7 +597,7 @@ export function createCheckoutSessionHandler(deps) {
     stripeConfigured = true,
     billingEnabled = false,
   } = deps;
-  return async function handle(request = {}) {
+  return async function handle(allowEffects, request = {}) {
     if (!billingEnabled)
       return error(
         503,
@@ -624,32 +633,44 @@ export function createCheckoutSessionHandler(deps) {
       uid
     );
     if ('status' in ownership) return ownership;
-    return createCheckoutResult(
+    const requestContext = { key, packageId, uid, creditPackage };
+    return createCheckoutResult(allowEffects, {
       deps,
-      { key, packageId, uid },
-      creditPackage,
-      ownership.apiKeyUuid
-    );
+      request: requestContext,
+      apiKeyUuid: ownership.apiKeyUuid,
+    });
   };
 }
 
 /**
  * Create the Express adapter for the checkout-session handler.
  * @param {CheckoutDependencies} deps Handler dependencies.
- * @returns {(req: CheckoutRequest, res: { set?: (name: string, value: string) => void, status: (status: number) => { json: (body: unknown) => void } }) => Promise<void>} Express handler.
+ * @returns {(allowEffects: AllowEffects, req: CheckoutRequest, res: { set?: (allowEffects: AllowEffects, name: string, value: string) => void, respond: (allowEffects: AllowEffects, status: number, body: unknown) => void }) => Promise<void>} Express handler.
  */
 // Stryker disable next-line all -- the Express adapter has a fixed cache,
 // method, status, and JSON response protocol.
 export function createCheckoutSessionExpressHandle(deps) {
   const handle = createCheckoutSessionHandler(deps);
-  return async (req, res) => {
-    const result = await handle(req);
-    // Stryker disable next-line all -- fixed cache-control response header.
-    res.set?.('Cache-Control', 'no-store');
-    // Stryker disable next-line all -- fixed method-guard response header.
-    if (result.status === 405) res.set?.('Allow', 'POST');
-    res.status(result.status).json(result.body);
+  return function checkoutSessionHttpHandler(allowEffects, req, res) {
+    return writeCheckoutSessionResponse(handle, allowEffects, req, res);
   };
+}
+
+/**
+ * Resolve a checkout request and write its HTTP response.
+ * @param {ReturnType<typeof createCheckoutSessionHandler>} handle Checkout handler.
+ * @param {AllowEffects} allowEffects Permission for response writes.
+ * @param {CheckoutRequest} req HTTP request.
+ * @param {{ set?: (allowEffects: AllowEffects, name: string, value: string) => void, respond: (allowEffects: AllowEffects, status: number, body: unknown) => void }} res HTTP response adapter.
+ * @returns {Promise<void>} Completion of the response write.
+ */
+async function writeCheckoutSessionResponse(handle, allowEffects, req, res) {
+  const result = await handle(allowEffects, req);
+  // Stryker disable next-line all -- fixed cache-control response header.
+  res.set?.(allowEffects, 'Cache-Control', 'no-store');
+  // Stryker disable next-line all -- fixed method-guard response header.
+  if (result.status === 405) res.set?.(allowEffects, 'Allow', 'POST');
+  res.respond(allowEffects, result.status, result.body);
 }
 
 export const createCheckoutSessionTestUtils = { createCheckoutResult };

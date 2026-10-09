@@ -1,5 +1,7 @@
 import { calculatePackageCredits } from '../billing/pricing-core.js';
 
+/** @typedef {import('../../../../types/allow-effects').AllowEffects} AllowEffects */
+
 /**
  * @typedef {object} CheckoutDatabase
  * @property {(collection: string) => {doc: (id: string) => {get: () => Promise<{exists?: boolean, data: () => Record<string, unknown>}>, set: (value: Record<string, unknown>) => Promise<unknown>}}} collection Firestore collection accessor.
@@ -69,19 +71,28 @@ export function createCheckoutSessionDependencies({
     verifyIdToken,
     resolveApiKeyUuidForUid: uid => resolveOwnedKey(db, uid),
     resolveBillingCustomer: uid => resolveBillingCustomer(db, uid),
-    createBillingCustomer: async options => ({
-      stripeCustomerId: (await stripe.customers.create(options)).id,
-    }),
-    saveCustomerMappings: (uid, customerId, apiKeyUuid) =>
-      saveCustomerMappings(db, uid, customerId, apiKeyUuid),
+    createBillingCustomer: async (allowEffects, options) => {
+      void allowEffects;
+      return {
+        stripeCustomerId: (await stripe.customers.create(options)).id,
+      };
+    },
+    saveCustomerMappings: createSaveCustomerMappings(db),
     getCreditPackage: createDynamicPackageResolver(billing),
-    createPurchase: input => billing.createPurchase(input),
-    savePurchaseCheckout: (purchaseId, session) =>
-      billing.savePurchaseCheckout(purchaseId, session),
+    createPurchase: (allowEffects, input) => {
+      void allowEffects;
+      return billing.createPurchase(input);
+    },
+    savePurchaseCheckout: (allowEffects, purchaseId, session) => {
+      void allowEffects;
+      return billing.savePurchaseCheckout(purchaseId, session);
+    },
     resolveIdempotency: (uid, key, packageId) =>
       resolveIdempotency(billing, uid, key, packageId),
-    createStripeCheckoutSession: (options, requestOptions) =>
-      stripe.checkout.sessions.create(options, requestOptions),
+    createStripeCheckoutSession: (allowEffects, options, requestOptions) => {
+      void allowEffects;
+      return stripe.checkout.sessions.create(options, requestOptions);
+    },
     publicBillingOrigin,
     stripeConfigured,
     billingEnabled,
@@ -115,25 +126,30 @@ async function resolveBillingCustomer(db, uid) {
 
 /**
  * @param {CheckoutDatabase} db Firestore database.
- * @param {string} uid User identifier.
- * @param {string} customerId Stripe customer identifier.
- * @param {string} apiKeyUuid API key UUID.
- * @returns {Promise<void>} Resolves after persistence.
+ * @returns {(allowEffects: AllowEffects, uid: string, customerId: string, apiKeyUuid: string) => Promise<void>} Permission-aware customer mapping writer.
  */
-async function saveCustomerMappings(db, uid, customerId, apiKeyUuid) {
-  // Stryker disable next-line all -- customer persistence uses fixed
-  // collection/payload contracts.
-  await db.collection('billing-customers').doc(uid).set({
+function createSaveCustomerMappings(db) {
+  return async function saveCustomerMappings(
+    allowEffects,
     uid,
-    stripeCustomerId: customerId,
-    apiKeyUuid,
-  });
-  // Stryker disable next-line all -- payment customer persistence uses the
-  // fixed collection and payload contract.
-  await db.collection('payment-customers').doc(customerId).set({
-    uid,
-    apiKeyUuid,
-  });
+    customerId,
+    apiKeyUuid
+  ) {
+    void allowEffects;
+    // Stryker disable next-line all -- customer persistence uses fixed
+    // collection/payload contracts.
+    await db.collection('billing-customers').doc(uid).set({
+      uid,
+      stripeCustomerId: customerId,
+      apiKeyUuid,
+    });
+    // Stryker disable next-line all -- payment customer persistence uses the
+    // fixed collection and payload contract.
+    await db.collection('payment-customers').doc(customerId).set({
+      uid,
+      apiKeyUuid,
+    });
+  };
 }
 
 /**

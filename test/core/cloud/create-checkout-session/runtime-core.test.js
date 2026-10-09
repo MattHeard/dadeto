@@ -4,6 +4,9 @@ import {
 } from '../../../../src/core/cloud/create-checkout-session/runtime-core.js';
 import { jest } from '@jest/globals';
 
+const allowEffects =
+  /** @type {import('../../../../types/allow-effects').AllowEffects} */ ({});
+
 const snapshot = {
   eurPerUsdMicros: 100_000,
   creditEurMicros: 1_000,
@@ -114,20 +117,27 @@ describe('checkout runtime adapters', () => {
       stripeCustomerId: 'cus-1',
     });
     expect(
-      await deps.createBillingCustomer({ email: 'a@example.com' })
+      await deps.createBillingCustomer(allowEffects, {
+        email: 'a@example.com',
+      })
     ).toEqual({ stripeCustomerId: 'cus-new' });
-    await deps.saveCustomerMappings('uid', 'cus-1', 'key-1');
+    await deps.saveCustomerMappings(allowEffects, 'uid', 'cus-1', 'key-1');
     expect(db.collection).toHaveBeenCalledWith('billing-customers');
     expect(db.collection).toHaveBeenCalledWith('payment-customers');
     expect(await deps.getCreditPackage('package-1')).toMatchObject({
       credits: 100,
     });
-    expect(await deps.createPurchase({ uid: 'uid' })).toEqual({ uid: 'uid' });
+    expect(await deps.createPurchase(allowEffects, { uid: 'uid' })).toEqual({
+      uid: 'uid',
+    });
     expect(
-      await deps.savePurchaseCheckout('purchase-1', { id: 'session-1' })
+      await deps.savePurchaseCheckout(allowEffects, 'purchase-1', {
+        id: 'session-1',
+      })
     ).toEqual({ id: 'purchase-1', session: { id: 'session-1' } });
     expect(
       await deps.createStripeCheckoutSession(
+        allowEffects,
         { mode: 'payment' },
         { idempotencyKey: 'key' }
       )

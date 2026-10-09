@@ -5,6 +5,8 @@ import { createDb } from '../../core/cloud/get-api-key-credit-v2/create-db.js';
 import { createBillingRuntime } from '../../core/cloud/billing/billing-runtime-core.js';
 import { createCheckoutSessionDependencies } from '../../core/cloud/create-checkout-session/runtime-core.js';
 import { createCheckoutSessionExpressHandle } from '../../core/cloud/create-checkout-session/create-checkout-session-core.js';
+import { createEffectHttpBoundary } from '../allow-effects.js';
+import { createCheckoutResponseAdapter } from './effect-adapters.js';
 
 const db = createDb(Firestore, process.env);
 const billing = createBillingRuntime(db, {
@@ -26,6 +28,15 @@ const dependencies = createCheckoutSessionDependencies({
   stripeConfigured: Boolean(stripe),
   billingEnabled: process.env.BILLING_ENABLED === 'true',
 });
-const handle = createCheckoutSessionExpressHandle(dependencies);
+const checkoutHandle = createCheckoutSessionExpressHandle(dependencies);
+const handle = createEffectHttpBoundary(
+  async (allowEffects, request, response) => {
+    await checkoutHandle(
+      allowEffects,
+      request,
+      createCheckoutResponseAdapter(response)
+    );
+  }
+);
 
 export { handle };

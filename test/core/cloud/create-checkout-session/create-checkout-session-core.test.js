@@ -16,15 +16,21 @@ const stripeField = {
   pricingSnapshotId: 'pricing_snapshot_id',
   purchaseId: 'purchase_id',
 };
+const allowEffects =
+  /** @type {import('../../../../types/allow-effects').AllowEffects} */ ({});
 
 it('reports a missing public billing origin before checkout dependencies run', async () => {
   await expect(
-    createCheckoutSessionTestUtils.createCheckoutResult(
-      {},
-      { key: 'k', packageId: 'p', uid: 'u' },
-      { credits: 1 },
-      'uuid'
-    )
+    createCheckoutSessionTestUtils.createCheckoutResult(allowEffects, {
+      deps: {},
+      request: {
+        key: 'k',
+        packageId: 'p',
+        uid: 'u',
+        creditPackage: { credits: 1 },
+      },
+      apiKeyUuid: 'uuid',
+    })
   ).resolves.toMatchObject({
     status: 500,
     body: { error: { code: 'configuration_error' } },
@@ -84,11 +90,67 @@ function setup(overrides = {}) {
   return {
     create,
     dependencies,
-    handler: createCheckoutSessionHandler(dependencies),
+    handler: (() => {
+      const handle = createCheckoutSessionHandler(dependencies);
+      return input => handle(allowEffects, input);
+    })(),
   };
 }
 
 describe('createCheckoutSessionHandler', () => {
+  it('forwards the request capability to every checkout command dependency', async () => {
+    const saveCustomerMappings = jest.fn();
+    const createBillingCustomer = jest
+      .fn()
+      .mockResolvedValue({ stripeCustomerId: 'cus-new' });
+    const createPurchase = jest
+      .fn()
+      .mockResolvedValue({ purchaseId: 'purchase-1' });
+    const savePurchaseCheckout = jest.fn();
+    const saveIdempotency = jest.fn();
+    const { handler, create } = setup({
+      resolveBillingCustomer: jest.fn().mockResolvedValue(null),
+      createBillingCustomer,
+      saveCustomerMappings,
+      createPurchase,
+      savePurchaseCheckout,
+      saveIdempotency,
+    });
+
+    await expect(handler(request())).resolves.toMatchObject({ status: 201 });
+
+    expect(createBillingCustomer).toHaveBeenCalledWith(
+      allowEffects,
+      expect.objectContaining({ idempotencyKey: 'billing-customer:uid-1' })
+    );
+    expect(saveCustomerMappings).toHaveBeenCalledWith(
+      allowEffects,
+      'uid-1',
+      'cus-new',
+      'key-1'
+    );
+    expect(createPurchase).toHaveBeenCalledWith(
+      allowEffects,
+      expect.objectContaining({ purchaseId: expect.any(String) })
+    );
+    expect(create).toHaveBeenCalledWith(
+      allowEffects,
+      expect.any(Object),
+      expect.any(Object)
+    );
+    expect(savePurchaseCheckout).toHaveBeenCalledWith(
+      allowEffects,
+      'purchase-1',
+      expect.objectContaining({ checkoutSessionId: 'cs_test_1' })
+    );
+    expect(saveIdempotency).toHaveBeenCalledWith(
+      allowEffects,
+      'uid-1',
+      '7af49d79-1943-4724-b57e-48310bca15d0',
+      expect.objectContaining({ packageId: 'credits-100' })
+    );
+  });
+
   it('rejects checkout before authentication or side effects when billing is disabled', async () => {
     const { handler, create, dependencies } = setup({ billingEnabled: false });
 
@@ -138,6 +200,7 @@ describe('createCheckoutSessionHandler', () => {
       body: { checkoutSessionId: 'cs_test_1' },
     });
     expect(create).toHaveBeenCalledWith(
+      allowEffects,
       expect.objectContaining({
         [stripeField.clientReferenceId]: 'key-1',
         [stripeField.lineItems]: [{ price: 'price-100', quantity: 1 }],
@@ -149,8 +212,9 @@ describe('createCheckoutSessionHandler', () => {
           'checkout-session:uid-1:7af49d79-1943-4724-b57e-48310bca15d0',
       }
     );
-    expect(create.mock.calls[0][0]).not.toHaveProperty('amount');
+    expect(create.mock.calls[0][1]).not.toHaveProperty('amount');
     expect(saveIdempotency).toHaveBeenCalledWith(
+      allowEffects,
       'uid-1',
       '7af49d79-1943-4724-b57e-48310bca15d0',
       expect.objectContaining({ packageId: 'credits-100' })
@@ -178,7 +242,7 @@ describe('createCheckoutSessionHandler pricing paths', () => {
     await expect(dynamic.handler(request())).resolves.toMatchObject({
       status: 201,
     });
-    expect(dynamic.create.mock.calls[0][0]).toEqual(
+    expect(dynamic.create.mock.calls[0][1]).toEqual(
       expect.objectContaining({
         [stripeField.lineItems]: [
           expect.objectContaining({
@@ -237,15 +301,17 @@ describe('createCheckoutSessionHandler pricing paths', () => {
     });
     await dynamic.handler(request());
     expect(createPurchase).toHaveBeenCalledWith(
+      allowEffects,
       expect.objectContaining({
         purchaseId: expect.stringContaining('purchase-uid-1-'),
         creditsIssued: 9_000_000,
       })
     );
-    expect(dynamic.create.mock.calls[0][0].metadata).toEqual(
+    expect(dynamic.create.mock.calls[0][1].metadata).toEqual(
       expect.objectContaining({ [stripeField.purchaseId]: 'purchase-1' })
     );
     expect(savePurchaseCheckout).toHaveBeenCalledWith(
+      allowEffects,
       'purchase-1',
       expect.objectContaining({ checkoutSessionId: 'cs_test_1' })
     );
@@ -422,14 +488,35 @@ describe('createCheckoutSessionHandler validation paths', () => {
     await expect(handler()).resolves.toMatchObject({ status: 401 });
     const response = {
       set: jest.fn(),
-      status: jest.fn().mockReturnValue({ json: jest.fn() }),
+      respond: jest.fn(),
     };
     await createCheckoutSessionExpressHandle(dependencies)(
+      allowEffects,
       { method: 'GET' },
       response
     );
-    expect(response.set).toHaveBeenCalledWith('Allow', 'POST');
-    await createCheckoutSessionExpressHandle(dependencies)(request(), response);
-    expect(response.set).toHaveBeenCalledWith('Cache-Control', 'no-store');
+    expect(response.set).toHaveBeenCalledWith(allowEffects, 'Allow', 'POST');
+    expect(response.respond).toHaveBeenNthCalledWith(1, allowEffects, 405, {
+      error: {
+        code: 'method_not_allowed',
+        message: 'Only POST is allowed.',
+      },
+    });
+    await createCheckoutSessionExpressHandle(dependencies)(
+      allowEffects,
+      request(),
+      response
+    );
+    expect(response.set).toHaveBeenCalledWith(
+      allowEffects,
+      'Cache-Control',
+      'no-store'
+    );
+    expect(response.respond).toHaveBeenNthCalledWith(
+      2,
+      allowEffects,
+      201,
+      expect.objectContaining({ checkoutSessionId: 'cs_test_1' })
+    );
   });
 });
