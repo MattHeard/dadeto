@@ -4,6 +4,7 @@ import jsdoc from 'eslint-plugin-jsdoc';
 import prettierPlugin from 'eslint-plugin-prettier';
 import eslintConfigPrettier from 'eslint-config-prettier/flat';
 import tautologicalWrapperRule from './src/core/lint/tautological-wrapper.js';
+import createNoParameterBagAritySmugglingRule from './src/core/lint/no-parameter-bag-arity-smuggling.js';
 import ts from 'typescript';
 import { createAllowEffectsRule } from './src/core/scripts/allow-effects.js';
 
@@ -37,6 +38,8 @@ const repoLintPlugin = {
   rules: {
     'tautological-wrapper': tautologicalWrapperRule,
     'allow-effects': createAllowEffectsRule(ts, capabilityProgramFor),
+    'no-parameter-bag-arity-smuggling':
+      createNoParameterBagAritySmugglingRule(),
   },
 };
 
