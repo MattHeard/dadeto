@@ -9,6 +9,7 @@ import { commonsSpriteShapes } from './sprites.js';
 import { WATER_PUZZLE } from './puzzle.js';
 import { commonsJournal, menuItems } from './simulation.js';
 import { COMMONS_CONTENT } from './content.js';
+import { COMMONS_GAME_VERSION } from './version.js';
 
 const COLORS = Object.freeze({
   dark: '#182f36',
@@ -65,6 +66,7 @@ export function renderCommons(state) {
   frame.type = 'the-commons-of-tomorrow';
   frame.quest = 'The River Keeps Its Own Time';
   frame.commons = {
+    gameVersion: COMMONS_GAME_VERSION,
     evidence: state.evidence,
     agreements: state.agreements,
     practices: state.practices,

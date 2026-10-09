@@ -1,4 +1,6 @@
-# COMM1 — The Commons of Tomorrow
+# The Commons of Tomorrow — Game Version 1
+
+The integer game version is defined in `src/core/browser/game/the-commons-of-tomorrow/version.js` and shown on the standalone page and in frame metadata. Increment it by one for every shipped game change, whether to gameplay, story, art, controls, or player-facing documentation, and add a matching entry to `CHANGELOG.md`. Keep this release version separate from the local save schema key.
 
 ## What this toy does
 

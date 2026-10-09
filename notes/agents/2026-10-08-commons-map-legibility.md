@@ -48,3 +48,11 @@
 - Fix: completed boards now say `PUZZLE SOLVED · INLET FILLED` and replace the flow control with `X RETURN · FOOTBRIDGE WEST`; manual describes the same next step.
 - Verification: Commons Art/Simulation/Runtime/Puzzle suites pass (4 suites / 34 tests); focused ESLint, manuals check (78), build, and diff check pass.
 - Next time: switch every instruction from action guidance to progression guidance as soon as a puzzle reaches its terminal state.
+
+## Integer game versioning (2026-10-09)
+
+- Unexpected hurdle: the `v1` save key represented storage identity/schema, but there was no release number to compare shipped game changes.
+- Diagnosis: save compatibility and player-facing release identity had been conflated by the only existing version-like marker.
+- Fix: introduced integer `COMMONS_GAME_VERSION`, exposed it in standalone page text and embedded frame metadata, and documented the bump rule and history separately from save keys.
+- Verification: focused Commons Runtime/Art suites pass (15 tests); focused ESLint, manuals check (78), build, and diff check pass.
+- Next time: increment the integer and add a changelog entry for every shipped gameplay, story, art, control, or player-facing documentation change.
