@@ -318,7 +318,14 @@ function puzzleShapes(puzzle) {
       COLORS.gold
     ),
     text(puzzleNextStep(puzzle, selected), 8, 134, COLORS.leaf),
-    text('Y TEST FLOW · X RETURN', 8, 141, COLORS.leaf)
+    text(
+      puzzle.completed
+        ? 'X RETURN · FOOTBRIDGE WEST'
+        : 'Y TEST FLOW · X RETURN',
+      8,
+      141,
+      COLORS.leaf
+    )
   );
   return shapes;
 }
@@ -441,7 +448,7 @@ function puzzleCellArt({ kind, cell, x, y, width, height, fill }) {
  * @returns {string} Short next action that fits the handheld frame.
  */
 function puzzleNextStep(puzzle, selected) {
-  if (puzzle.completed) return 'WATER INLET REACHED';
+  if (puzzle.completed) return 'PUZZLE SOLVED · INLET FILLED';
   if (puzzle.route !== 'commons') return 'NEXT: B SWITCH TO COMMONS';
   if (puzzle.fluid.solids[11]) {
     if (puzzle.editsUsed >= puzzle.editBudget)

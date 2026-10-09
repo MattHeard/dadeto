@@ -274,6 +274,25 @@ describe('Commons visual identity', () => {
         shape => shape.text === 'NEXT: Y TEST FLOW UNTIL INLET'
       )
     ).toBe(true);
+    const solved = {
+      ...gateOpen,
+      puzzle: { ...gateOpen.puzzle, completed: true },
+    };
+    const solvedTexts = renderCommons(solved).shapes.filter(
+      shape => shape.type === 'text'
+    );
+    expect(
+      solvedTexts.some(shape => shape.text === 'PUZZLE SOLVED · INLET FILLED')
+    ).toBe(true);
+    expect(
+      solvedTexts.some(shape => shape.text === 'X RETURN · FOOTBRIDGE WEST')
+    ).toBe(true);
+    expect(
+      solvedTexts.some(shape => shape.text === 'Y TEST FLOW · X RETURN')
+    ).toBe(false);
+    expect(
+      solvedTexts.every(shape => shape.x + shape.text.length * 5 <= 160)
+    ).toBe(true);
   });
 
   test('gives water-board cells varied motifs and a readable visual key', () => {

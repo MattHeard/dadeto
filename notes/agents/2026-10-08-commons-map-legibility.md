@@ -40,3 +40,11 @@
 - Fix: name the inlet goal, label channel cells 8/12 and gate G, show route/gate/inlet/edit state, display the next route-specific step, and explain the exact route-12-gate-flow sequence plus reset path in the manual. Exiting with an exhausted blocked channel now points to the reset action.
 - Verification: Commons Art/Simulation/Runtime/Puzzle focused suites pass (4 suites / 33 tests); the simulation regression follows the documented button sequence. Full lint/build/aggregate evidence to be recorded in the bead after evaluator runs.
 - Next time: make the next valid move explicit on stateful puzzle screens, especially when a bounded resource can be exhausted.
+
+## Flow-board completion clarity (2026-10-09)
+
+- Unexpected hurdle: a solved screenshot showed `WATER INLET REACHED` while the footer still said `Y TEST FLOW`, making success ambiguous.
+- Diagnosis: completion changed the next-step row but left the active-play control hint unchanged.
+- Fix: completed boards now say `PUZZLE SOLVED · INLET FILLED` and replace the flow control with `X RETURN · FOOTBRIDGE WEST`; manual describes the same next step.
+- Verification: Commons Art/Simulation/Runtime/Puzzle suites pass (4 suites / 34 tests); focused ESLint, manuals check (78), build, and diff check pass.
+- Next time: switch every instruction from action guidance to progression guidance as soon as a puzzle reaches its terminal state.

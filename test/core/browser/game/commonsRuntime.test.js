@@ -300,7 +300,7 @@ describe('Commons runtime, frame and independent saves', () => {
       },
     });
     expect(
-      solved.shapes.some(shape => shape.text === 'WATER INLET REACHED')
+      solved.shapes.some(shape => shape.text === 'PUZZLE SOLVED · INLET FILLED')
     ).toBe(true);
     expect(solved.shapes.some(shape => shape.text === 'O')).toBe(true);
   });
