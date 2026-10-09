@@ -11,8 +11,9 @@ import { createErrorBeaconHandler } from './errors-core.js';
  * @typedef {import('../../../../types/allow-effects').AllowEffectsBoundary} AllowEffectsBoundary
  * @typedef {{ use: (middleware: unknown) => void, post: (path: string, handler: unknown) => void }} ErrorBeaconApp
  * @typedef {{ debug?: (...args: unknown[]) => void, error?: (...args: unknown[]) => void }} ErrorBeaconConsole
+ * @typedef {{ status: (code: number) => unknown, json: (body: unknown) => unknown, send: (body: string) => unknown, end: () => unknown }} ErrorBeaconResponse
  * @typedef {Function & { json: Function, text: Function }} ErrorBeaconExpress
- * @typedef {{ express: ErrorBeaconExpress, cors: Function, getEnvironmentVariables: Function, console?: ErrorBeaconConsole, fetchFn: (permission: AllowEffects, input: string, init?: object) => Promise<Response>, bindEffectBoundary: AllowEffectsBoundary, effectFetchFn: (permission: AllowEffects, input: string, init?: object) => Promise<Response>, useMiddleware: (permission: AllowEffects, app: ErrorBeaconApp, middleware: unknown) => void, registerPostRoute: (permission: AllowEffects, app: ErrorBeaconApp, path: string, handler: Function) => void }} ErrorBeaconDeps
+ * @typedef {{ express: ErrorBeaconExpress, cors: Function, getEnvironmentVariables: Function, console?: ErrorBeaconConsole, fetchFn: (permission: AllowEffects, input: string, init?: object) => Promise<Response>, bindEffectBoundary: AllowEffectsBoundary, effectFetchFn: (permission: AllowEffects, input: string, init?: object) => Promise<Response>, useMiddleware: (permission: AllowEffects, app: ErrorBeaconApp, middleware: unknown) => void, registerPostRoute: (permission: AllowEffects, app: ErrorBeaconApp, path: string, handler: Function) => void, respondJson: (permission: AllowEffects, response: ErrorBeaconResponse, status: number, body: Record<string, unknown>) => unknown, respondText: (permission: AllowEffects, response: ErrorBeaconResponse, status: number, body: string) => unknown, respondEmpty: (permission: AllowEffects, response: ErrorBeaconResponse, status: number) => unknown, logDebug: (permission: AllowEffects, logger: ErrorBeaconConsole | undefined, message: string, data: Record<string, unknown>) => void, logError: (permission: AllowEffects, logger: ErrorBeaconConsole | undefined, message: string, error: unknown) => void }} ErrorBeaconDeps
  */
 
 /**
@@ -31,25 +32,31 @@ export function createErrorBeaconRun(deps) {
   const environmentVariables = getErrorBeaconEnvironmentVariables(
     deps.getEnvironmentVariables()
   );
-  deps.console?.debug?.('error beacon environment', {
-    DENDRITE_ENVIRONMENT: environmentVariables.DENDRITE_ENVIRONMENT,
-  });
+  const env = environmentVariables;
+  const validatedEnvironment = env.DENDRITE_ENVIRONMENT;
   const corsOptions = createCorsOptions(
     createCorsOriginHandler(
       isAllowedOrigin,
-      resolveAllowedOrigins(environmentVariables)
+      resolveAllowedOrigins({
+        ...environmentVariables,
+        DENDRITE_ENVIRONMENT: validatedEnvironment,
+      })
     )
   );
   const corsMiddleware = deps.cors(corsOptions);
+  const environment = resolveEnvironment(env);
+  void deps.bindEffectBoundary(async allowEffects => {
+    deps.logDebug(allowEffects, deps.console, 'error beacon environment', {
+      DENDRITE_ENVIRONMENT: environment,
+    });
+  });
 
-  const env = environmentVariables;
   // Stryker disable next-line all -- project ID fallback precedence is fixed
   // by the Cloud runtime environment contract.
   const projectId =
     // Stryker disable next-line all -- fixed project fallback chain.
     env.GCLOUD_PROJECT || env.GCP_PROJECT || env.GOOGLE_CLOUD_PROJECT || '';
   const buildVersion = resolveBuildVersion(env);
-  const environment = resolveEnvironment(env);
 
   /**
    * Forward a normalized event to Error Reporting.
@@ -93,22 +100,27 @@ export function createErrorBeaconRun(deps) {
     buildVersion,
     reportEvent,
     getServerTimestamp: () => new Date().toISOString(),
+    respondJson: deps.respondJson,
+    respondText: deps.respondText,
+    respondEmpty: deps.respondEmpty,
+    logError: deps.logError,
     console: deps.console,
   });
 
-  const handleErrorBeacon = async (
+  const handleErrorBeacon = (
     /** @type {import('express').Request} */ request,
     /** @type {import('express').Response} */ response
-  ) => {
-    if (typeof request.body === 'string') {
-      try {
-        request.body = JSON.parse(request.body);
-      } catch {
-        request.body = undefined;
+  ) =>
+    deps.bindEffectBoundary(async allowEffects => {
+      if (typeof request.body === 'string') {
+        try {
+          request.body = JSON.parse(request.body);
+        } catch {
+          request.body = undefined;
+        }
       }
-    }
-    await handleParsedErrorBeacon(request, response);
-  };
+      await handleParsedErrorBeacon(allowEffects, request, response);
+    });
 
   void deps.bindEffectBoundary(async allowEffects => {
     deps.useMiddleware(allowEffects, app, jsonMiddleware);

@@ -1,9 +1,29 @@
 import { jest } from '@jest/globals';
 import {
   buildReportedErrorEvent,
-  createErrorBeaconHandler,
+  createErrorBeaconHandler as createErrorBeaconHandlerCore,
   isErrorBeaconPayload,
 } from '../../../../src/core/cloud/errors/errors-core.js';
+
+const allowEffects = Object.freeze({});
+const createErrorBeaconHandler = dependencies => {
+  const handler = createErrorBeaconHandlerCore({
+    ...dependencies,
+    respondJson: (permission, response, status, body) => {
+      response.status(status).json(body);
+    },
+    respondText: (permission, response, status, body) => {
+      response.status(status).send(body);
+    },
+    respondEmpty: (permission, response, status) => {
+      response.status(status).end();
+    },
+    logError: (permission, logger, message, error) => {
+      logger?.error?.(message, error);
+    },
+  });
+  return (request, response) => handler(allowEffects, request, response);
+};
 
 describe('isErrorBeaconPayload', () => {
   it('accepts JSON objects and rejects primitives', () => {

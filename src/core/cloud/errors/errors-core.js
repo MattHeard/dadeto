@@ -13,6 +13,12 @@ import { sanitizeUrl } from '../../error-reporting.js';
  * @typedef {{ error?: (...args: unknown[]) => void }} ErrorLogger
  */
 
+/** @typedef {import('../../../../types/allow-effects').AllowEffects} AllowEffects */
+/** @typedef {{ status: (code: number) => ErrorBeaconResponse, json: (body: unknown) => unknown, send: (body: string) => unknown, end: () => unknown }} ErrorBeaconResponse */
+/** @typedef {(allowEffects: AllowEffects, response: ErrorBeaconResponse, status: number, body: Record<string, unknown>) => unknown} ErrorBeaconJsonResponder */
+/** @typedef {(allowEffects: AllowEffects, response: ErrorBeaconResponse, status: number, body: string) => unknown} ErrorBeaconTextResponder */
+/** @typedef {(allowEffects: AllowEffects, logger: ErrorLogger | undefined, message: string, error: unknown) => void} ErrorBeaconErrorLogger */
+
 /**
  * Validate a browser beacon payload.
  * @param {unknown} body Request payload.
@@ -144,28 +150,36 @@ function normalizePositiveInteger(value) {
  *   buildVersion?: string,
  *   reportEvent: (event: Record<string, unknown>) => Promise<void>,
  *   getServerTimestamp: () => string,
+ *   respondJson: (allowEffects: AllowEffects, response: ErrorBeaconResponse, status: number, body: Record<string, unknown>) => unknown,
+ *   respondText: (allowEffects: AllowEffects, response: ErrorBeaconResponse, status: number, body: string) => unknown,
+ *   respondEmpty: (allowEffects: AllowEffects, response: ErrorBeaconResponse, status: number) => unknown,
+ *   logError: (allowEffects: AllowEffects, logger: ErrorLogger | undefined, message: string, error: unknown) => void,
  *   console?: ErrorLogger,
  * }} deps Dependencies.
- * @returns {(request: { method?: string, body?: unknown }, response: { status: (code: number) => { json: (body: Record<string, unknown>) => void, send: (body: string) => void, end: () => void } }) => Promise<void>} Request handler.
+ * @returns {(allowEffects: AllowEffects, request: { method?: string, body?: unknown }, response: ErrorBeaconResponse) => Promise<void>} Request handler.
  */
 export function createErrorBeaconHandler({
   environment,
   buildVersion,
   reportEvent,
   getServerTimestamp,
+  respondJson,
+  respondText,
+  respondEmpty,
+  logError,
   console: consoleLike,
 }) {
   assertFunction(reportEvent, 'reportEvent');
   assertFunction(getServerTimestamp, 'getServerTimestamp');
 
-  return async function handleErrorBeacon(request, response) {
+  return async function handleErrorBeacon(allowEffects, request, response) {
     if (!isPostRequest(request)) {
-      sendMethodNotAllowed(response);
+      sendMethodNotAllowed(allowEffects, response, respondText);
       return;
     }
 
     if (!isErrorBeaconPayload(request.body)) {
-      sendBadPayload(response);
+      sendBadPayload(allowEffects, response, respondJson);
       return;
     }
 
@@ -178,10 +192,10 @@ export function createErrorBeaconHandler({
           buildVersion
         )
       );
-      response.status(204).end();
+      respondEmpty(allowEffects, response, 204);
     } catch (error) {
-      reportForwardingFailure(consoleLike, error);
-      sendForwardingFailure(response, error);
+      reportForwardingFailure(allowEffects, logError, consoleLike, error);
+      sendForwardingFailure(allowEffects, response, error, respondJson);
     }
   };
 }
@@ -197,38 +211,53 @@ function isPostRequest(request) {
 
 /**
  * Send a 405 response for unsupported methods.
- * @param {{ status: (code: number) => { send: (body: string) => void } }} response Response object.
+ * @param {AllowEffects} allowEffects Permission for the response write.
+ * @param {ErrorBeaconResponse} response Response object.
+ * @param {ErrorBeaconTextResponder} respondText Permission-aware text response adapter.
  */
-function sendMethodNotAllowed(response) {
-  response.status(405).send('POST only');
+function sendMethodNotAllowed(allowEffects, response, respondText) {
+  respondText(allowEffects, response, 405, 'POST only');
 }
 
 /**
  * Send a 400 response for malformed payloads.
- * @param {{ status: (code: number) => { json: (body: Record<string, unknown>) => void } }} response Response object.
+ * @param {AllowEffects} allowEffects Permission for the response write.
+ * @param {ErrorBeaconResponse} response Response object.
+ * @param {ErrorBeaconJsonResponder} respondJson Permission-aware JSON response adapter.
  */
-function sendBadPayload(response) {
-  response.status(400).json({ error: 'Expected JSON object payload' });
+function sendBadPayload(allowEffects, response, respondJson) {
+  respondJson(allowEffects, response, 400, {
+    error: 'Expected JSON object payload',
+  });
 }
 
 /**
  * Send a 500 response for forwarding failures.
- * @param {{ status: (code: number) => { json: (body: Record<string, unknown>) => void } }} response Response object.
+ * @param {AllowEffects} allowEffects Permission for the response write.
+ * @param {ErrorBeaconResponse} response Response object.
  * @param {unknown} error Forwarding error.
+ * @param {ErrorBeaconJsonResponder} respondJson Permission-aware JSON response adapter.
  */
-function sendForwardingFailure(response, error) {
-  response.status(500).json({
+function sendForwardingFailure(allowEffects, response, error, respondJson) {
+  respondJson(allowEffects, response, 500, {
     error: resolveErrorMessage(error),
   });
 }
 
 /**
  * Log a collector failure without leaking the browser payload.
+ * @param {AllowEffects} allowEffects Permission for the log write.
+ * @param {ErrorBeaconErrorLogger} logError Permission-aware logging adapter.
  * @param {ErrorLogger | undefined} consoleLike Logger.
  * @param {unknown} error Forwarding error.
  */
-function reportForwardingFailure(consoleLike, error) {
-  consoleLike?.error?.('Error Reporting API forwarding failed', error);
+function reportForwardingFailure(allowEffects, logError, consoleLike, error) {
+  logError(
+    allowEffects,
+    consoleLike,
+    'Error Reporting API forwarding failed',
+    error
+  );
 }
 
 /**

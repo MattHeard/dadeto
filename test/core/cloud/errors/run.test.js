@@ -6,7 +6,8 @@ const createErrorBeaconRun = dependencies =>
   createErrorBeaconRunCore({
     ...dependencies,
     fetchFn: (permission, ...args) => dependencies.fetchFn(...args),
-    bindEffectBoundary: handler => handler(permission),
+    bindEffectBoundary:
+      dependencies.bindEffectBoundary ?? (handler => handler(permission)),
     effectFetchFn: (_permission, ...args) => dependencies.fetchFn(...args),
     useMiddleware:
       dependencies.useMiddleware ??
@@ -14,6 +15,28 @@ const createErrorBeaconRun = dependencies =>
     registerPostRoute:
       dependencies.registerPostRoute ??
       ((allowEffects, app, path, handler) => app.post(path, handler)),
+    respondJson:
+      dependencies.respondJson ??
+      ((allowEffects, response, status, body) => {
+        return response.status(status).json(body);
+      }),
+    respondText:
+      dependencies.respondText ??
+      ((allowEffects, response, status, body) => {
+        return response.status(status).send(body);
+      }),
+    respondEmpty:
+      dependencies.respondEmpty ??
+      ((allowEffects, response, status) => {
+        return response.status(status).end();
+      }),
+    logDebug:
+      dependencies.logDebug ??
+      ((allowEffects, logger, message, data) => logger?.debug?.(message, data)),
+    logError:
+      dependencies.logError ??
+      ((allowEffects, logger, message, error) =>
+        logger?.error?.(message, error)),
   });
 
 const accessTokenKey = 'access_token';
@@ -120,6 +143,73 @@ describe('createErrorBeaconRun', () => {
       { use, post },
       '/errors',
       expect.any(Function)
+    );
+  });
+
+  it('uses a fresh request capability for responses and forwarding logs', async () => {
+    const permissions = Array.from({ length: 5 }, () => Object.freeze({}));
+    let permissionIndex = 0;
+    const bindEffectBoundary = handler =>
+      handler(permissions[permissionIndex++]);
+    const respondText = jest.fn();
+    const respondJson = jest.fn();
+    const logDebug = jest.fn();
+    const logError = jest.fn();
+    const post = jest.fn();
+    const use = jest.fn();
+    const express = Object.assign(
+      jest.fn(() => ({ use, post })),
+      {
+        json: jest.fn(() => 'json-middleware'),
+        text: jest.fn(() => 'text-middleware'),
+      }
+    );
+    const fetchFn = jest
+      .fn()
+      .mockRejectedValue(new Error('metadata unavailable'));
+    createErrorBeaconRun({
+      express,
+      cors: jest.fn(() => 'cors-middleware'),
+      getEnvironmentVariables: () => ({ DENDRITE_ENVIRONMENT: 'prod' }),
+      fetchFn,
+      bindEffectBoundary,
+      respondText,
+      respondJson,
+      logDebug,
+      logError,
+    });
+    const requestHandler = post.mock.calls[0][1];
+    const response = createResponse();
+
+    await requestHandler({ method: 'GET' }, response.api);
+    await requestHandler(
+      { method: 'POST', body: { message: 'browser failure' } },
+      response.api
+    );
+
+    expect(logDebug).toHaveBeenCalledWith(
+      permissions[0],
+      undefined,
+      'error beacon environment',
+      { DENDRITE_ENVIRONMENT: 'prod' }
+    );
+    expect(respondText).toHaveBeenCalledWith(
+      permissions[2],
+      response.api,
+      405,
+      'POST only'
+    );
+    expect(logError).toHaveBeenCalledWith(
+      permissions[3],
+      undefined,
+      'Error Reporting API forwarding failed',
+      expect.any(Error)
+    );
+    expect(respondJson).toHaveBeenCalledWith(
+      permissions[3],
+      response.api,
+      500,
+      { error: 'metadata unavailable' }
     );
   });
 
