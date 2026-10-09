@@ -19,6 +19,11 @@ describe('createAssignModerationWorkflow', () => {
       fetchVariantSnapshot,
       selectVariantDoc,
       createModeratorRef,
+      setModeratorAssignment: async (permission, reference, data) => {
+        void permission;
+        return reference.set(data, { merge: true });
+      },
+      bindEffectBoundary: callback => callback({}),
       now,
       random,
     });
@@ -50,6 +55,11 @@ describe('createAssignModerationWorkflow', () => {
       fetchVariantSnapshot,
       selectVariantDoc,
       createModeratorRef,
+      setModeratorAssignment: async (permission, reference, data) => {
+        void permission;
+        return reference.set(data, { merge: true });
+      },
+      bindEffectBoundary: callback => callback({}),
       now,
       random,
     });
@@ -77,6 +87,11 @@ describe('createAssignModerationWorkflow', () => {
       fetchVariantSnapshot,
       selectVariantDoc,
       createModeratorRef,
+      setModeratorAssignment: async (permission, reference, data) => {
+        void permission;
+        return reference.set(data, { merge: true });
+      },
+      bindEffectBoundary: callback => callback({}),
       now,
       random,
     });
@@ -113,6 +128,11 @@ describe('createAssignModerationWorkflow', () => {
       fetchVariantSnapshot,
       selectVariantDoc,
       createModeratorRef,
+      setModeratorAssignment: async (permission, reference, data) => {
+        void permission;
+        return reference.set(data, { merge: true });
+      },
+      bindEffectBoundary: callback => callback({}),
       now,
       random,
     });

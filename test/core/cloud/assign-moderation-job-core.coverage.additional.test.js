@@ -320,7 +320,14 @@ describe('assign moderation job query and workflow coverage', () => {
 
   test('sends workflow status and defaults missing bodies to empty strings', async () => {
     const workflow = jest.fn().mockResolvedValue({ status: 201 });
-    const handler = createHandleAssignModerationJobCore(workflow);
+    const handler = createHandleAssignModerationJobCore(
+      workflow,
+      callback => callback({}),
+      (permission, response, statusCode, body) => {
+        void permission;
+        response.status(statusCode).send(body);
+      }
+    );
     const send = jest.fn();
     const status = jest.fn(() => ({ send }));
     await handler('request', { status });
@@ -337,6 +344,11 @@ describe('assign moderation job query and workflow coverage', () => {
         .mockResolvedValue({ context: { userRecord: { uid: 'mod' } } }),
       selectVariantDoc: jest.fn(() => ({ variantDoc: { id: 'variant' } })),
       createModeratorRef: jest.fn(() => ({ set })),
+      setModeratorAssignment: async (permission, reference, data) => {
+        void permission;
+        return reference.set(data, { merge: true });
+      },
+      bindEffectBoundary: callback => callback({}),
       now: jest.fn(() => 'timestamp'),
       random: jest.fn(() => 0.25),
     };

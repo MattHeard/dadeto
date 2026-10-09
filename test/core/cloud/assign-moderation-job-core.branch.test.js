@@ -284,6 +284,11 @@ describe('assign moderation workflow query branches', () => {
       fetchVariantSnapshots,
       selectVariantDoc,
       createModeratorRef,
+      setModeratorAssignment: async (permission, reference, data) => {
+        void permission;
+        return reference.set(data, { merge: true });
+      },
+      bindEffectBoundary: callback => callback({}),
       now: jest.fn(() => 'ts'),
       random: jest.fn(() => 0),
     });

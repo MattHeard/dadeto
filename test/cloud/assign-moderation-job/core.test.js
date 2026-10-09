@@ -738,6 +738,13 @@ describe('createAssignModerationWorkflow', () => {
       .mockReturnValue({ variantDoc: { ref: 'doc-ref' } });
     const set = jest.fn().mockResolvedValue();
     const createModeratorRef = jest.fn(() => ({ set }));
+    const setModeratorAssignment = jest.fn(
+      async (permission, reference, data) => {
+        void permission;
+        return reference.set(data, { merge: true });
+      }
+    );
+    const bindEffectBoundary = jest.fn(callback => callback({}));
     const now = jest.fn().mockReturnValue('now');
     const random = jest.fn().mockReturnValue(0.25);
 
@@ -746,6 +753,8 @@ describe('createAssignModerationWorkflow', () => {
       fetchVariantSnapshot,
       selectVariantDoc,
       createModeratorRef,
+      setModeratorAssignment,
+      bindEffectBoundary,
       now,
       random,
       set,
@@ -820,6 +829,11 @@ describe('createAssignModerationWorkflow', () => {
       },
       { merge: true }
     );
+    expect(deps.setModeratorAssignment).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.anything(),
+      { variant: 'doc-ref', createdAt: 'now' }
+    );
   });
 
   test('rejects unexpected errors from the workflow', async () => {
@@ -842,7 +856,12 @@ describe('createHandleAssignModerationJobCore', () => {
     const send = jest.fn();
     const res = { status, send };
     const handle = createHandleAssignModerationJobCore(
-      assignModerationWorkflow
+      assignModerationWorkflow,
+      callback => callback({}),
+      (permission, response, statusCode, body) => {
+        void permission;
+        response.status(statusCode).send(body);
+      }
     );
 
     await handle({ method: 'POST' }, res);
@@ -862,7 +881,12 @@ describe('createHandleAssignModerationJobCore', () => {
     const send = jest.fn();
     const res = { status, send };
     const handle = createHandleAssignModerationJobCore(
-      assignModerationWorkflow
+      assignModerationWorkflow,
+      callback => callback({}),
+      (permission, response, statusCode, body) => {
+        void permission;
+        response.status(statusCode).send(body);
+      }
     );
 
     await handle({ method: 'POST' }, res);
@@ -906,7 +930,17 @@ describe('setupAssignModerationJobRoute', () => {
       firebaseResources,
       createRunVariantQuery,
       now,
-      randomFn
+      {
+        allowEffects: {},
+        random: randomFn,
+        registerPostRoute: (permission, target, path, routeHandler) => {
+          void permission;
+          target.post(path, routeHandler);
+        },
+        bindEffectBoundary: callback => callback({}),
+        setModeratorAssignment: async () => {},
+        sendHttpResponse: () => {},
+      }
     );
 
     expect(post).toHaveBeenCalledWith('/', handler);

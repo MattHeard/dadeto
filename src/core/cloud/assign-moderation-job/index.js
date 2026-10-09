@@ -38,8 +38,11 @@ import { resolveAllowedOrigins, isDuplicateAppError } from '../cloud-core.js';
  *   random: () => number,
  *   bindEffectBoundary: import('../../../../types/allow-effects').AllowEffectsBoundary,
  *   useMiddleware: (permission: AllowEffects, app: import('../../../../types/native-http').NativeExpressApp, middleware: unknown) => void,
+ *   registerPostRoute: (permission: AllowEffects, app: import('../../../../types/native-http').NativeExpressApp, path: string, handler: (req: import('../../../../types/native-http').NativeHttpRequest, res: import('../../../../types/native-http').NativeHttpResponse) => unknown) => void,
+ *   setModeratorAssignment: (permission: AllowEffects, reference: import('firebase-admin/firestore').DocumentReference, data: object) => Promise<unknown>,
+ *   sendHttpResponse: (permission: AllowEffects, response: import('../../../../types/native-http').NativeHttpResponse, status: number, body: unknown) => void,
  * }} deps Runtime dependencies supplied by the cloud wrapper.
- * @returns {{
+ * @returns {Promise<{
  *   handle: unknown,
  *   testing: {
  *     firebaseInitialization: unknown,
@@ -50,9 +53,9 @@ import { resolveAllowedOrigins, isDuplicateAppError } from '../cloud-core.js';
  *     getFirestoreInstance: (options?: Record<string, unknown>) => unknown,
  *     clearFirestoreInstanceCache: () => void,
  *   },
- * }} Cloud entrypoint exports and test hooks.
+ * }>} Cloud entrypoint exports and test hooks.
  */
-export function createAssignModerationJobEntrypoint(deps) {
+export async function createAssignModerationJobEntrypoint(deps) {
   const typedDeps = deps;
   const firebaseInitialization = createFirebaseInitialization();
   const firebaseInitializationHandlers = {
@@ -173,12 +176,22 @@ export function createAssignModerationJobEntrypoint(deps) {
       app,
     });
 
-  setupAssignModerationJobRoute(
-    firebaseResources,
-    createRunVariantQuery,
-    typedDeps.now,
-    typedDeps.random
-  );
+  await typedDeps.bindEffectBoundary(permission => {
+    setupAssignModerationJobRoute(
+      firebaseResources,
+      createRunVariantQuery,
+      typedDeps.now,
+      {
+        allowEffects: permission,
+        random: typedDeps.random,
+        registerPostRoute: typedDeps.registerPostRoute,
+        bindEffectBoundary: typedDeps.bindEffectBoundary,
+        setModeratorAssignment: typedDeps.setModeratorAssignment,
+        sendHttpResponse: typedDeps.sendHttpResponse,
+      }
+    );
+    return Promise.resolve();
+  });
 
   const handle = createAssignModerationJob(
     typedDeps.functions,

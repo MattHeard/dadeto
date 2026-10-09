@@ -2,7 +2,7 @@ import { jest } from '@jest/globals';
 import { createAssignModerationJobEntrypoint } from '../../../../src/core/cloud/assign-moderation-job/index.js';
 
 describe('createAssignModerationJobEntrypoint', () => {
-  test('wires the entrypoint and exposes the Firestore helpers', () => {
+  test('wires the entrypoint and exposes the Firestore helpers', async () => {
     const functions = {
       region: jest.fn(() => ({
         firestore: {
@@ -67,7 +67,18 @@ describe('createAssignModerationJobEntrypoint', () => {
       void permission;
       appInstance.use(middleware);
     });
-    const entrypoint = createAssignModerationJobEntrypoint({
+    const registerPostRoute = jest.fn(
+      (permission, appInstance, path, handler) => {
+        void permission;
+        appInstance.post(path, handler);
+      }
+    );
+    const setModeratorAssignment = jest.fn(async () => {});
+    const sendHttpResponse = jest.fn((permission, response, status, body) => {
+      void permission;
+      response.status(status).send(body);
+    });
+    const entrypoint = await createAssignModerationJobEntrypoint({
       functions,
       express,
       cors: jest.fn(() => corsMiddleware),
@@ -82,6 +93,9 @@ describe('createAssignModerationJobEntrypoint', () => {
       random: jest.fn(() => 0.5),
       bindEffectBoundary: handler => handler(allowEffects),
       useMiddleware,
+      registerPostRoute,
+      setModeratorAssignment,
+      sendHttpResponse,
     });
 
     expect(useMiddleware).toHaveBeenNthCalledWith(
@@ -100,6 +114,12 @@ describe('createAssignModerationJobEntrypoint', () => {
       [corsMiddleware],
       [urlencodedMiddleware],
     ]);
+    expect(registerPostRoute).toHaveBeenCalledWith(
+      allowEffects,
+      app,
+      '/',
+      expect.any(Function)
+    );
 
     expect(entrypoint.handle).toBeDefined();
     expect(
