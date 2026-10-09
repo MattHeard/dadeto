@@ -1,2 +1,2 @@
 /** Current integer release version for The Commons of Tomorrow. */
-export const COMMONS_GAME_VERSION = 1;
+export const COMMONS_GAME_VERSION = 2;

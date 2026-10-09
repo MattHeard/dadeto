@@ -34,7 +34,6 @@ const MENU_ENTRIES = Object.freeze({
     ['A · Survey a facing person or clue', 'action:survey'],
     ['A · Repair the Weir footbridge', 'action:repair'],
     ['A · Listen to habitat', 'action:listen'],
-    ['A · Open the flow board', 'action:puzzle'],
     ['A · Reset the flow board', 'action:reset-puzzle'],
   ],
   saves: [
@@ -436,7 +435,13 @@ function interact(state, content) {
       toast:
         'June’s meal crates are staged beside the low path. The gathering is planned near the crossing.',
     };
-  if (object.id === 'flow-board') return { ...state, mode: 'puzzle' };
+  if (object.id === 'flow-board')
+    return {
+      ...state,
+      mode: 'puzzle',
+      toast:
+        'The flow board tests where river water can go. Try the Commons route before deciding at the footbridge.',
+    };
   if (object.id === 'reed-island') {
     const evidence = [...new Set([...state.evidence, 'reed-nesting-marks'])];
     return {
@@ -551,7 +556,6 @@ function openCharter(state, content) {
  * @returns {Record<string, any>} Updated game state.
  */
 function performFieldAction(state, action, content) {
-  if (action === 'puzzle') return { ...state, mode: 'puzzle' };
   if (action === 'reset-puzzle') {
     if (state.agreements.length)
       return {

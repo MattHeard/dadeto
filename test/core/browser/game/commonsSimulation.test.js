@@ -325,7 +325,9 @@ describe('Commons controller and story edge cases', () => {
     expect(stepCommons(at('commons', 3, 6), ['a']).dialogue.actorId).toBe(
       'solar-kitchen'
     );
-    expect(stepCommons(at('weir', 7, 6), ['a']).mode).toBe('puzzle');
+    const board = stepCommons(at('weir', 7, 6), ['a']);
+    expect(board.mode).toBe('puzzle');
+    expect(board.toast).toContain('before deciding at the footbridge');
     expect(stepCommons(at('commons', 0, 0), ['a']).toast).toContain(
       'Nothing ahead'
     );
@@ -437,6 +439,9 @@ describe('Commons controller and story edge cases', () => {
 
   test('covers menu pages, practice choices, controller commands and puzzle reset', () => {
     let state = createCommonsState();
+    expect(
+      menuItems('actions', state).map(([, command]) => command)
+    ).not.toContain('action:puzzle');
     const tap = action => {
       state = stepCommons(state, []);
       state = stepCommons(state, [action]);
@@ -454,14 +459,8 @@ describe('Commons controller and story edge cases', () => {
       lastActions: [],
     };
     tap('a');
-    expect(state.mode).toBe('puzzle');
-    tap('x');
-    state = {
-      ...state,
-      menu: { page: 'actions', selected: 4 },
-      lastActions: [],
-    };
-    tap('a');
+    expect(state.mode).toBe('world');
+    expect(state.menu).toBeNull();
     expect(state.puzzle.editsUsed).toBe(0);
 
     const agreed = chooseRiverAgreement(state, 'restore-crossing');
@@ -734,7 +733,7 @@ describe('Commons handheld actions and deterministic board controls', () => {
       evidence: ['water-routed'],
       journal: ['water-routed'],
       puzzle: { ...createCommonsState().puzzle, editsUsed: 2 },
-      menu: { page: 'actions', selected: 4 },
+      menu: { page: 'actions', selected: 3 },
     };
     const reset = stepCommons(repairState, ['a']);
     expect(reset.evidence).toEqual([]);

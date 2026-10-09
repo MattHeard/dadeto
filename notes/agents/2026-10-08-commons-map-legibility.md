@@ -56,3 +56,11 @@
 - Fix: introduced integer `COMMONS_GAME_VERSION`, exposed it in standalone page text and embedded frame metadata, and documented the bump rule and history separately from save keys.
 - Verification: focused Commons Runtime/Art suites pass (15 tests); focused ESLint, manuals check (78), build, and diff check pass.
 - Next time: increment the integer and add a changelog entry for every shipped gameplay, story, art, control, or player-facing documentation change.
+
+## Puzzle and RPG integration (2026-10-09)
+
+- Unexpected hurdle: the flow board was an authored Weir object, but the Actions menu also opened the puzzle directly.
+- Diagnosis: duplicate access skipped the physical space and made the river-routing trial feel disconnected from the story.
+- Fix: removed the menu launch action, preserved menu reset for recovery, and made board interaction frame the trial as information for the footbridge agreement. Bumped the game to version 2 and updated the manual and harness.
+- Verification: focused Commons Art/Simulation/Runtime/Puzzle tests, lint, manuals check, and build results recorded in the owning bead.
+- Next time: route authored activities through their world fixture and state the narrative reason for using them at the point of interaction.

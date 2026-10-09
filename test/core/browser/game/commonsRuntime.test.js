@@ -43,7 +43,7 @@ describe('Commons runtime, frame and independent saves', () => {
     });
     expect(embedded.world.player).toEqual(standalone.world.player);
     expect(embedded.world.mapId).toBe(standalone.world.mapId);
-    expect(embedded.commons.gameVersion).toBe(1);
+    expect(embedded.commons.gameVersion).toBe(2);
   });
 
   test('saves, loads, exports, and imports only the Commons save identity', () => {
@@ -233,7 +233,7 @@ describe('Commons runtime, frame and independent saves', () => {
     expect(typeof dispose).toBe('function');
     expect(typeof listeners.frame).toBe('function');
     expect(selectors['#game-status'].textContent).toContain('Canopy Commons');
-    expect(selectors['#game-version'].textContent).toBe('GAME VERSION 1');
+    expect(selectors['#game-version'].textContent).toBe('GAME VERSION 2');
     dispose();
   });
 
