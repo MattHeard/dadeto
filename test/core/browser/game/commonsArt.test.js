@@ -275,4 +275,27 @@ describe('Commons visual identity', () => {
       )
     ).toBe(true);
   });
+
+  test('gives water-board cells varied motifs and a readable visual key', () => {
+    const frame = renderCommons({
+      ...createCommonsState(),
+      mode: 'puzzle',
+    });
+    const texts = frame.shapes.filter(shape => shape.type === 'text');
+    expect(texts.some(shape => shape.text === 'ROCK #   CUT <>   FLOW ~')).toBe(
+      true
+    );
+    expect(texts.every(shape => shape.x + shape.text.length * 5 <= 160)).toBe(
+      true
+    );
+    const groundMarks = frame.shapes.filter(
+      shape => shape.fill === '#315744' && shape.y >= 22 && shape.y < 99
+    );
+    const rockSignatures = groundMarks
+      .filter(shape => shape.width >= 5 && shape.height >= 2)
+      .map(shape => `${shape.x},${shape.y},${shape.width},${shape.height}`);
+    expect(new Set(rockSignatures).size).toBeGreaterThan(12);
+    expect(frame.shapes.some(shape => shape.fill === '#e9d88d')).toBe(true);
+    expect(frame.shapes.some(shape => shape.fill === '#246774')).toBe(true);
+  });
 });

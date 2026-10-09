@@ -244,6 +244,7 @@ function puzzleShapes(puzzle) {
   ) {
     const x = left + (cell % WATER_PUZZLE.width) * (cellWidth + gap);
     const y = top + Math.floor(cell / WATER_PUZZLE.width) * (cellHeight + gap);
+    const cellKind = puzzleCellKind(puzzle, cell);
     const fill = puzzle.fluid.solids[cell] ? COLORS.dark : COLORS.leaf;
     if (cell === selected)
       shapes.push(
@@ -254,6 +255,17 @@ function puzzleShapes(puzzle) {
       );
     shapes.push(
       frameRectangle({ x, y, width: cellWidth, height: cellHeight }, fill)
+    );
+    shapes.push(
+      ...puzzleCellArt({
+        kind: cellKind,
+        cell,
+        x,
+        y,
+        width: cellWidth,
+        height: cellHeight,
+        fill,
+      })
     );
     const volume = puzzle.fluid.volume[cell];
     if (volume > 0) {
@@ -291,23 +303,135 @@ function puzzleShapes(puzzle) {
   }
   const percent = Math.round(puzzle.fluid.volume[WATER_PUZZLE.target] * 100);
   shapes.push(
-    frameRectangle({ x: 5, y: 99, width: 150, height: 24 }, COLORS.dark),
+    frameRectangle({ x: 5, y: 99, width: 150, height: 43 }, COLORS.dark),
+    text('ROCK #   CUT <>   FLOW ~', 8, 107, COLORS.gold),
     text(
       `${puzzle.route.toUpperCase()} · GATE ${puzzle.gateOpen ? 'OPEN' : 'CLOSED'}`,
       8,
-      109,
+      116,
       COLORS.leaf
     ),
     text(
       `INLET ${percent}% · EDITS USED ${puzzle.editsUsed}/${puzzle.editBudget}`,
       8,
-      119,
+      125,
       COLORS.gold
     ),
-    text(puzzleNextStep(puzzle, selected), 8, 131, COLORS.leaf),
-    text('Y TEST FLOW · X RETURN', 8, 140, COLORS.leaf)
+    text(puzzleNextStep(puzzle, selected), 8, 134, COLORS.leaf),
+    text('Y TEST FLOW · X RETURN', 8, 141, COLORS.leaf)
   );
   return shapes;
+}
+
+/**
+ * Identify the authored role of a board cell for its pixel-art treatment.
+ * @param {Record<string, any>} puzzle Current water board.
+ * @param {number} cell Board cell index.
+ * @returns {string} Semantic cell kind.
+ */
+function puzzleCellKind(puzzle, cell) {
+  if (cell === 1) return 'source';
+  if (cell === WATER_PUZZLE.target) return 'inlet';
+  if (cell === 13) return puzzle.gateOpen ? 'open-gate' : 'gate';
+  if (WATER_PUZZLE.editableCells.includes(cell))
+    return puzzle.fluid.solids[cell] ? 'cut-channel' : 'channel';
+  if (puzzle.fluid.solids[cell]) return 'bedrock';
+  return 'basin';
+}
+
+/**
+ * Add a compact authored motif that makes each board cell role readable.
+ * @param {Record<string, any>} cellData Cell role, index, dimensions and fill.
+ * @returns {Array<Record<string, any>>} Pixel-art details.
+ */
+function puzzleCellArt({ kind, cell, x, y, width, height, fill }) {
+  if (kind === 'source')
+    return [
+      frameRectangle(
+        { x: x + 4, y: y + 4, width: 21, height: 10 },
+        COLORS.water
+      ),
+      frameRectangle({ x: x + 7, y: y + 6, width: 3, height: 3 }, COLORS.gold),
+      frameRectangle({ x: x + 18, y: y + 6, width: 3, height: 3 }, COLORS.gold),
+    ];
+  if (kind === 'bedrock')
+    return [
+      frameRectangle(
+        { x: x + 3 + (cell % 4), y: y + 3, width: 7, height: 3 },
+        COLORS.ground
+      ),
+      frameRectangle(
+        { x: x + 16, y: y + 7 + (cell % 3), width: 9, height: 4 },
+        COLORS.ground
+      ),
+      frameRectangle(
+        { x: x + 9 + (cell % 5), y: y + 14, width: 5, height: 2 },
+        COLORS.ground
+      ),
+    ];
+  if (kind === 'cut-channel')
+    return [
+      frameRectangle(
+        { x: x + 3, y: y + 4, width: 23, height: 10 },
+        COLORS.ground
+      ),
+      frameRectangle({ x: x + 6, y: y + 6, width: 17, height: 6 }, COLORS.dark),
+      frameRectangle({ x: x + 12, y: y + 8, width: 5, height: 2 }, COLORS.gold),
+    ];
+  if (kind === 'channel')
+    return [
+      frameRectangle(
+        { x: x + 3, y: y + 4, width: 23, height: 10 },
+        COLORS.ground
+      ),
+      frameRectangle(
+        { x: x + 6, y: y + 6, width: 17, height: 6 },
+        COLORS.water
+      ),
+    ];
+  if (kind === 'gate' || kind === 'open-gate')
+    return [
+      frameRectangle(
+        { x: x + 5, y: y + 3, width: 19, height: 12 },
+        COLORS.ground
+      ),
+      frameRectangle(
+        { x: x + 8, y: y + 4, width: 3, height: 10 },
+        kind === 'gate' ? COLORS.gold : COLORS.water
+      ),
+      frameRectangle(
+        { x: x + 13, y: y + 4, width: 3, height: 10 },
+        kind === 'gate' ? COLORS.gold : COLORS.water
+      ),
+      frameRectangle(
+        { x: x + 18, y: y + 4, width: 3, height: 10 },
+        kind === 'gate' ? COLORS.gold : COLORS.water
+      ),
+    ];
+  if (kind === 'inlet')
+    return [
+      frameRectangle(
+        { x: x + 5, y: y + 3, width: 19, height: 12 },
+        COLORS.water
+      ),
+      frameRectangle({ x: x + 8, y: y + 5, width: 13, height: 8 }, fill),
+      frameRectangle({ x: x + 10, y: y + 7, width: 9, height: 4 }, COLORS.gold),
+    ];
+  return [
+    frameRectangle(
+      { x: x + 4 + (cell % 5), y: y + 4 + (cell % 3), width: 4, height: 3 },
+      COLORS.gold
+    ),
+    frameRectangle(
+      {
+        x: x + width - 9 - (cell % 4),
+        y: y + height - 7 - (cell % 3),
+        width: 4,
+        height: 2 + (cell % 2),
+      },
+      COLORS.water
+    ),
+  ];
 }
 
 /**

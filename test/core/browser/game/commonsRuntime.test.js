@@ -266,8 +266,8 @@ describe('Commons runtime, frame and independent saves', () => {
         shape => shape.x >= 0 && shape.x + shape.text.length * 5 <= 160
       )
     ).toBe(true);
-    expect(boardText.map(shape => shape.y)).toContain(131);
-    expect(boardText.map(shape => shape.y)).toContain(140);
+    expect(boardText.map(shape => shape.y)).toContain(134);
+    expect(boardText.map(shape => shape.y)).toContain(141);
     const calls = [];
     drawCommonsFrame(
       {
