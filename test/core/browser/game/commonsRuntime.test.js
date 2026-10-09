@@ -487,6 +487,57 @@ describe('Commons runtime, frame and independent saves', () => {
   });
 });
 
+test('starts Commons when the optional game version label is absent', () => {
+  const element = () => ({
+    value: '',
+    textContent: '',
+    files: [],
+    dataset: {},
+    addEventListener() {},
+    removeEventListener() {},
+    click() {},
+    getContext: () => ({ fillRect() {}, fillText() {}, strokeRect() {} }),
+  });
+  const selectors = Object.fromEntries(
+    [
+      '#game-screen',
+      '#game-status',
+      '#save-slot',
+      '#import-game',
+      '#save-game',
+      '#reset-game',
+      '#export-game',
+      '#import-button',
+      '#pause-game',
+      '#resume-game',
+      '#fullscreen-game',
+    ].map(selector => [selector, element()])
+  );
+  const documentObj = {
+    hidden: false,
+    querySelector: selector => selectors[selector] || null,
+    querySelectorAll: () => [],
+    addEventListener() {},
+    removeEventListener() {},
+    documentElement: { requestFullscreen: () => Promise.resolve() },
+  };
+  const dispose = startCommonsPage({
+    documentObj,
+    windowObj: {
+      localStorage: { getItem: () => null, setItem() {} },
+      confirm: () => false,
+      addEventListener() {},
+      removeEventListener() {},
+    },
+    navigatorObj: { getGamepads: () => [] },
+    requestFrame: () => 1,
+    cancelFrame() {},
+    registerTools: () => () => {},
+  });
+  expect(typeof dispose).toBe('function');
+  dispose();
+});
+
 describe('Commons compact overworld HUD', () => {
   test('uses two contextual rows without a persistent clue counter', () => {
     const initial = createCommonsState();

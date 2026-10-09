@@ -316,6 +316,210 @@ describe('Commons story simulation', () => {
   });
 });
 
+describe('Commons uncovered simulation branches', () => {
+  test('covers journal fallbacks and unusual world interactions', () => {
+    const initial = createCommonsState();
+    const elian = {
+      ...initial,
+      evidence: ['unclassified-evidence'],
+      world: {
+        ...initial.world,
+        flags: { ...initial.world.flags, 'heard-elian': true },
+      },
+    };
+    expect(commonsJournal(elian)).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          id: 'unclassified-evidence',
+          title: 'unclassified-evidence',
+        }),
+        expect.objectContaining({
+          id: 'perspective:elian',
+          title: 'Elian’s perspective',
+          detail:
+            'The marsh and its nesting reeds have value beyond their use to people.',
+        }),
+      ])
+    );
+
+    const mealCrates = {
+      ...initial,
+      world: { ...initial.world, player: { x: 7, y: 8, facing: 'up' } },
+    };
+    expect(stepCommons(mealCrates, ['a']).world.flags.mealCratesSeen).toBe(
+      true
+    );
+
+    const unknownObject = {
+      ...initial,
+      world: {
+        ...initial.world,
+        map: {
+          ...initial.world.map,
+          objects: [{ id: 'unlisted-feature', x: 9, y: 6 }],
+        },
+        player: { x: 7, y: 6, facing: 'right' },
+      },
+    };
+    expect(stepCommons(unknownObject, ['right']).toast).toContain(
+      'Inspect this feature'
+    );
+
+    const unknownResident = {
+      ...initial,
+      world: {
+        ...initial.world,
+        npcs: [
+          {
+            id: 'visitor',
+            name: 'Visitor',
+            role: 'neighbor',
+            map: 'commons',
+            x: 2,
+            y: 5,
+          },
+        ],
+        player: { x: 1, y: 5, facing: 'right' },
+      },
+    };
+    expect(stepCommons(unknownResident, ['right']).toast).toContain(
+      'Resident ahead'
+    );
+    expect(stepCommons(unknownResident, ['a']).dialogue.lines[0].text).toBe(
+      'Visitor · neighbor.'
+    );
+
+    const enteredCommons = {
+      ...initial,
+      world: {
+        ...initial.world,
+        mapId: 'weir',
+        map: COMMONS_CONTENT.maps.weir,
+        player: { x: 1, y: 6, facing: 'left' },
+      },
+    };
+    expect(stepCommons(enteredCommons, ['left']).toast).toContain(
+      'Canopy Commons'
+    );
+  });
+
+  test('covers field-note controls and bounded dialogue commands', () => {
+    const initial = createCommonsState();
+    const longNote = {
+      ...initial,
+      toast:
+        'The gauge was installed before the reed beds shifted. The high-water mark is still legible. This record helps compare today with older seasons.',
+      hudReading: true,
+      hudScroll: undefined,
+    };
+    expect(stepCommons(longNote, ['up']).hudScroll).toBe(0);
+    expect(stepCommons(longNote, []).hudScroll).toBeUndefined();
+    expect(stepCommons(longNote, ['a']).hudScroll).toBe(2);
+    expect(stepCommons({ ...longNote, hudScroll: 2 }, ['a']).hudScroll).toBe(4);
+    expect(stepCommons({ ...longNote, hudScroll: 99 }, ['a'])).toMatchObject({
+      hudReading: false,
+      hudScroll: 0,
+      toast: ' ',
+    });
+    expect(
+      stepCommons({ ...longNote, toast: '', hudScroll: 0 }, ['down']).hudScroll
+    ).toBe(0);
+    expect(stepCommons(longNote, ['x']).menu.page).toBe('main');
+    expect(stepCommons(longNote, ['y']).menu.page).toBe('assign');
+
+    const scopeHint = {
+      ...initial,
+      dialogue: {
+        actorId: 'tomas',
+        lines: [{ text: 'Need help?' }],
+        index: 0,
+        selected: 0,
+        choices: [{ label: 'Scope', command: 'world:scope-hint' }],
+      },
+    };
+    expect(stepCommons(scopeHint, ['a']).dialogue.actorId).toBe(
+      'tomas-scope-hint'
+    );
+    const closeDialogue = {
+      ...scopeHint,
+      dialogue: {
+        ...scopeHint.dialogue,
+        choices: [{ label: 'Leave', command: 'world:close' }],
+      },
+    };
+    expect(stepCommons(closeDialogue, ['a']).dialogue).toBeNull();
+
+    const agreedReset = {
+      ...initial,
+      agreements: [{ choice: 'restore-crossing', terms: 'Recorded.' }],
+      dialogue: {
+        actorId: 'flow-console',
+        lines: [{ text: 'Reset?' }],
+        index: 0,
+        selected: 0,
+        choices: [{ label: 'Reset', command: 'field:reset-puzzle' }],
+      },
+    };
+    expect(stepCommons(agreedReset, ['a']).toast).toContain(
+      'agreement is recorded'
+    );
+    expect(
+      stepCommons(
+        { ...initial, menu: { page: 'practice-choice', selected: 0 } },
+        ['b']
+      ).menu
+    ).toEqual({ page: 'practices', selected: 0 });
+    expect(
+      stepCommons({ ...initial, menu: { page: 'reset', selected: 0 } }, ['b'])
+        .menu
+    ).toEqual({ page: 'saves', selected: 0 });
+  });
+
+  test('covers old-gauge surveying, repaired bridge guidance and puzzle exit', () => {
+    const initial = createCommonsState();
+    const oldGauge = {
+      ...initial,
+      quickAction: 'survey',
+      world: {
+        ...initial.world,
+        mapId: 'weir',
+        map: COMMONS_CONTENT.maps.weir,
+        player: { x: 12, y: 4, facing: 'up' },
+      },
+    };
+    expect(stepCommons(oldGauge, ['b']).evidence).toContain('gauge-reading');
+
+    const bridgeRepaired = {
+      ...initial,
+      world: {
+        ...initial.world,
+        mapId: 'weir',
+        map: COMMONS_CONTENT.maps.weir,
+        flags: { footbridgeStabilized: true },
+        player: { x: 5, y: 7, facing: 'up' },
+      },
+    };
+    expect(stepCommons(bridgeRepaired, ['a']).dialogue.lines[0].text).toContain(
+      'handrail is steady'
+    );
+
+    const weirRepairHint = {
+      ...initial,
+      world: {
+        ...initial.world,
+        mapId: 'weir',
+        map: COMMONS_CONTENT.maps.weir,
+      },
+    };
+    expect(stepCommons(weirRepairHint, ['b']).toast).toContain(
+      'Bridge is west'
+    );
+    expect(
+      stepCommons({ ...initial, mode: 'puzzle', toast: '' }, ['x']).toast
+    ).toBe('');
+  });
+});
+
 describe('Commons controller and story edge cases', () => {
   test('surveys discoveries, listens, repairs and records charter terms', () => {
     const at = (mapId, x, y, facing = 'right') => {

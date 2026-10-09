@@ -168,11 +168,41 @@ describe('assign moderation job core additional coverage', () => {
     ).toEqual(['POST']);
     const app = { use: jest.fn() };
     const cors = jest.fn(() => 'cors-middleware');
-    createSetupCors(corsFactory, cors)(app, { allowedOrigins: ['x'] });
+    const allowEffects =
+      /** @type {import('../../../types/allow-effects').AllowEffects} */ (
+        /** @type {unknown} */ (Object.freeze({}))
+      );
+    const useMiddleware = jest.fn((_permission, appInstance, middleware) =>
+      appInstance.use(middleware)
+    );
+    createSetupCors(corsFactory, cors)(
+      allowEffects,
+      app,
+      { allowedOrigins: ['x'] },
+      useMiddleware
+    );
+    expect(useMiddleware).toHaveBeenCalledWith(
+      allowEffects,
+      app,
+      'cors-middleware'
+    );
     expect(app.use).toHaveBeenCalledWith('cors-middleware');
     const express = { urlencoded: jest.fn(() => 'parser') };
-    configureUrlencodedBodyParser(app, express);
+    const registerBodyParser = jest.fn((_permission, appInstance, middleware) =>
+      appInstance.use(middleware)
+    );
+    configureUrlencodedBodyParser(
+      allowEffects,
+      app,
+      express,
+      registerBodyParser
+    );
     expect(express.urlencoded).toHaveBeenCalledWith({ extended: false });
+    expect(registerBodyParser).toHaveBeenCalledWith(
+      allowEffects,
+      app,
+      'parser'
+    );
     expect(app.use).toHaveBeenCalledWith('parser');
   });
 });

@@ -15,6 +15,8 @@ import {
 } from '../firestore-helpers.js';
 import { resolveAllowedOrigins, isDuplicateAppError } from '../cloud-core.js';
 
+/** @typedef {import('../../../../types/allow-effects').AllowEffects} AllowEffects */
+
 /**
  * Build the assign-moderation-job entrypoint from injected dependencies.
  * @param {{
@@ -34,6 +36,8 @@ import { resolveAllowedOrigins, isDuplicateAppError } from '../cloud-core.js';
  *   getEnvironmentVariables: () => Record<string, unknown>,
  *   now: () => number,
  *   random: () => number,
+ *   bindEffectBoundary: import('../../../../types/allow-effects').AllowEffectsBoundary,
+ *   useMiddleware: (permission: AllowEffects, app: import('../../../../types/native-http').NativeExpressApp, middleware: unknown) => void,
  * }} deps Runtime dependencies supplied by the cloud wrapper.
  * @returns {{
  *   handle: unknown,
@@ -148,8 +152,19 @@ export function createAssignModerationJobEntrypoint(deps) {
     typedDeps.getEnvironmentVariables
   );
 
-  app.use(typedDeps.cors(corsOptions));
-  configureUrlencodedBodyParser(app, typedDeps.express);
+  void typedDeps.bindEffectBoundary(permission => {
+    typedDeps.useMiddleware(permission, app, typedDeps.cors(corsOptions));
+    return Promise.resolve();
+  });
+  void typedDeps.bindEffectBoundary(permission => {
+    configureUrlencodedBodyParser(
+      permission,
+      app,
+      typedDeps.express,
+      typedDeps.useMiddleware
+    );
+    return Promise.resolve();
+  });
 
   const firebaseResources =
     /** @type {{ db: import('firebase-admin/firestore').Firestore, auth: import('firebase-admin/auth').Auth, app: import('../../../../types/native-http').NativeExpressApp }} */ ({

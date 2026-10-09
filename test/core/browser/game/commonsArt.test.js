@@ -318,4 +318,153 @@ describe('Commons visual identity', () => {
     expect(frame.shapes.some(shape => shape.fill === '#e9d88d')).toBe(true);
     expect(frame.shapes.some(shape => shape.fill === '#246774')).toBe(true);
   });
+
+  test('renders crossing destinations and every compact field-note state', () => {
+    const initial = createCommonsState();
+    const commons = renderCommons({
+      ...initial,
+      world: {
+        ...initial.world,
+        player: { x: 16, y: 6, facing: 'right' },
+      },
+    });
+    expect(commons.shapes.some(shape => shape.text === 'WEIR →')).toBe(true);
+
+    const weir = {
+      ...initial,
+      world: {
+        ...initial.world,
+        mapId: 'weir',
+        map: COMMONS_CONTENT.maps.weir,
+        player: { x: 1, y: 6, facing: 'left' },
+      },
+      toast: ' ',
+    };
+    const weirFrame = renderCommons(weir);
+    expect(weirFrame.shapes.some(shape => shape.text === '← COMMONS')).toBe(
+      true
+    );
+    expect(
+      weirFrame.shapes
+        .filter(shape => shape.type === 'text' && shape.y >= 110)
+        .map(shape => shape.text)
+    ).toEqual(['WEIR · GAUGE / REEDS / FLOW', 'BOARD']);
+
+    const heardJune = renderCommons({
+      ...initial,
+      toast: '',
+      world: {
+        ...initial.world,
+        flags: { ...initial.world.flags, earlyFloodMarkRead: true },
+      },
+    });
+    expect(
+      heardJune.shapes.some(shape => shape.text === 'TALK TO JUNE AND ELIAN')
+    ).toBe(true);
+    const decided = renderCommons({
+      ...weir,
+      puzzle: { ...weir.puzzle, completed: true },
+    });
+    expect(
+      decided.shapes.some(
+        shape => shape.text === 'RETURN TO FOOTBRIDGE · DECIDE'
+      )
+    ).toBe(true);
+    const charter = renderCommons({
+      ...weir,
+      agreements: [{ choice: 'restore-crossing', terms: 'Recorded.' }],
+    });
+    expect(
+      charter.shapes
+        .filter(shape => shape.type === 'text' && shape.y >= 110)
+        .map(shape => shape.text)
+        .join(' ')
+    ).toContain('RETURN TO CANOPY · RECORD CHARTER');
+
+    const longNote =
+      'The gauge was installed before the reed beds shifted. The high-water mark is still legible. This record helps the assembly compare today with older seasons.';
+    const reading = renderCommons({
+      ...initial,
+      toast: longNote,
+      hudReading: true,
+    });
+    expect(
+      reading.shapes.some(shape => shape.type === 'rect' && shape.x === 153)
+    ).toBe(true);
+    expect(
+      renderCommons({ ...initial, toast: longNote }).shapes.filter(
+        shape => shape.type === 'text' && shape.y >= 110
+      )
+    ).toHaveLength(2);
+  });
+
+  test('renders selected channel and gate guidance on their target cells', () => {
+    const state = { ...createCommonsState(), mode: 'puzzle' };
+    const route = {
+      ...state,
+      puzzle: { ...state.puzzle, route: 'commons', selectedCell: 11 },
+    };
+    expect(
+      renderCommons(route).shapes.some(
+        shape => shape.text === 'NEXT: A CARVE CHANNEL 12'
+      )
+    ).toBe(true);
+    const gate = {
+      ...route,
+      puzzle: {
+        ...route.puzzle,
+        selectedCell: 13,
+        fluid: {
+          ...route.puzzle.fluid,
+          solids: route.puzzle.fluid.solids.map((solid, index) =>
+            index === 11 ? false : solid
+          ),
+        },
+      },
+    };
+    expect(
+      renderCommons(gate).shapes.some(
+        shape => shape.text === 'NEXT: A OPEN GATE'
+      )
+    ).toBe(true);
+  });
+
+  test('falls back to up markers and clips markers beyond the screen edge', () => {
+    const upMarkers = commonsSpriteShapes(
+      { id: 'player', controlled: true, facing: 'up', x: 2, y: 2 },
+      { x: 0, y: 0 },
+      0
+    )
+      .filter(shape => shape.fill === '#fff078')
+      .slice(-3);
+    const unknownFacing = commonsSpriteShapes(
+      { id: 'player', controlled: true, facing: 'diagonal', x: 2, y: 2 },
+      { x: 0, y: 0 },
+      0
+    )
+      .filter(shape => shape.fill === '#fff078')
+      .slice(-3);
+    expect(unknownFacing).toEqual(upMarkers);
+    expect(
+      commonsSpriteShapes(
+        { id: 'player', controlled: true, facing: 'left', x: 0, y: 2 },
+        { x: 0, y: 0 },
+        0
+      ).some(shape => shape.x < 0)
+    ).toBe(false);
+  });
+
+  test('renders acquired practices in their menu page', () => {
+    const state = {
+      ...createCommonsState(),
+      practices: ['habitat-listening'],
+      menu: { page: 'practices', selected: 0 },
+    };
+    expect(
+      renderCommons(state)
+        .shapes.filter(shape => shape.type === 'text')
+        .map(shape => shape.text)
+        .join(' ')
+    ).toContain('Practice learned: habitat-listening');
+  });
 });

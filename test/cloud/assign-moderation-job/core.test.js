@@ -350,10 +350,18 @@ describe('createSetupCors', () => {
     const use = jest.fn();
     const appInstance = { use };
     const corsConfig = { allowedOrigins: ['https://allowed.example'] };
+    const allowEffects =
+      /** @type {import('../../../types/allow-effects').AllowEffects} */ (
+        /** @type {unknown} */ (Object.freeze({}))
+      );
+    const useMiddleware = jest.fn((permission, app, registeredMiddleware) => {
+      expect(permission).toBe(allowEffects);
+      app.use(registeredMiddleware);
+    });
 
     const setupCors = createSetupCors(createCorsOriginHandlerFn, corsFn);
 
-    setupCors(appInstance, corsConfig);
+    setupCors(allowEffects, appInstance, corsConfig, useMiddleware);
 
     expect(createCorsOriginHandlerFn).toHaveBeenCalledWith(
       corsConfig.allowedOrigins
@@ -363,6 +371,11 @@ describe('createSetupCors', () => {
       methods: ['POST'],
       ...corsConfig,
     });
+    expect(useMiddleware).toHaveBeenCalledWith(
+      allowEffects,
+      appInstance,
+      middleware
+    );
     expect(use).toHaveBeenCalledWith(middleware);
   });
 });
@@ -409,9 +422,27 @@ describe('configureUrlencodedBodyParser', () => {
     const use = jest.fn();
     const appInstance = { use };
 
-    configureUrlencodedBodyParser(appInstance, expressModule);
+    const allowEffects =
+      /** @type {import('../../../types/allow-effects').AllowEffects} */ (
+        /** @type {unknown} */ (Object.freeze({}))
+      );
+    const useMiddleware = jest.fn((_permission, app, registeredMiddleware) =>
+      app.use(registeredMiddleware)
+    );
+
+    configureUrlencodedBodyParser(
+      allowEffects,
+      appInstance,
+      expressModule,
+      useMiddleware
+    );
 
     expect(expressModule.urlencoded).toHaveBeenCalledWith({ extended: false });
+    expect(useMiddleware).toHaveBeenCalledWith(
+      allowEffects,
+      appInstance,
+      middleware
+    );
     expect(use).toHaveBeenCalledWith(middleware);
   });
 });

@@ -332,9 +332,9 @@ function stepWorld(state, pressed, content) {
             : 'Canopy Commons. Follow the light path east to WEIR.',
       };
     if (world.player.x === before.x && world.player.y === before.y) {
-      const delta = { up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0] }[
-        direction
-      ] || [0, 0];
+      const delta = /** @type {[number, number]} */ (
+        { up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0] }[direction]
+      );
       const blocked = isBlocked(
         next.world.map,
         before.x + delta[0],
@@ -406,28 +406,31 @@ function interactionName(object) {
 
 /**
  * Name a field action in B assignment feedback.
- * @param {string} action Assigned action identifier.
+ * @param {'survey' | 'repair' | 'listen'} action Assigned action identifier.
  * @returns {string} Readable action name.
  */
 function actionName(action) {
-  return (
-    { survey: 'Survey', repair: 'Repair', listen: 'Listen' }[action] || action
-  );
+  const names = /** @type {Record<'survey' | 'repair' | 'listen', string>} */ ({
+    survey: 'Survey',
+    repair: 'Repair',
+    listen: 'Listen',
+  });
+  return names[action];
 }
 
 /**
  * Explain when the assigned B action has an effect.
- * @param {string} action Assigned action identifier.
+ * @param {'survey' | 'repair' | 'listen'} action Assigned action identifier.
  * @returns {string} Short controller guidance.
  */
 function actionGuide(action) {
-  return (
-    {
+  const guides =
+    /** @type {Record<'survey' | 'repair' | 'listen', string>} */ ({
       survey: 'Face a person or clue, then press B.',
       repair: 'Go east on light path to WEIR; face bridge, press B.',
       listen: 'Press B in the Living Weir.',
-    }[action] || 'Press B while exploring.'
-  );
+    });
+  return guides[action];
 }
 
 /**
@@ -605,13 +608,6 @@ function openRiverDecision(state, content) {
     return openDialogue(state, 'river-agreement', [
       {
         text: state.agreements[0].terms,
-      },
-    ]);
-  }
-  if (!state.puzzle.completed) {
-    return openDialogue(state, 'river-quest', [
-      {
-        text: 'The channel is ready for a test, but the inlet is still dry. Route water at the flow board before the district decides.',
       },
     ]);
   }
@@ -842,13 +838,17 @@ function stepMenu(state, pressed, content) {
   if (command === 'close') return { ...next, menu: null };
   if (command.startsWith('page:'))
     return { ...next, menu: { page: command.slice(5), selected: 0 } };
-  if (command.startsWith('assign:'))
+  if (command.startsWith('assign:')) {
+    const action = /** @type {'survey' | 'repair' | 'listen'} */ (
+      command.slice(7)
+    );
     return {
       ...next,
-      quickAction: command.slice(7),
+      quickAction: action,
       menu: null,
-      toast: `B set: ${actionName(command.slice(7))}. Map ready. ${actionGuide(command.slice(7))}`,
+      toast: `B set: ${actionName(action)}. Map ready. ${actionGuide(action)}`,
     };
+  }
   if (command.startsWith('action:'))
     return performFieldAction(
       { ...next, menu: null },

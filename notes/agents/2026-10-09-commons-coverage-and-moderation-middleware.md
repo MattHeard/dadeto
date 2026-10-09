@@ -1,0 +1,7 @@
+# 2026-10-09 Commons coverage and moderation middleware
+
+- Unexpected hurdle: the middleware seam passed focused tests, but the aggregate gate was blocked by 59 branch gaps across the recent Commons renderer work; an early coverage retry also exposed a linter limit and type inference failures after removing unreachable defensive branches.
+- Diagnosis path: used `coverage-final.json` to identify exact missed outcomes, then ran a temporary targeted Jest coverage configuration over the six affected files before rerunning the full repository gate.
+- Chosen fix: moved Express `app.use` calls behind one cloud-owned `useMiddleware` adapter with fresh startup permissions; passed Commons frame type into the shared renderer so crossing labels use the right map names; added behavioral coverage and removed unreachable fallbacks while retaining the four-parameter convention and full coverage thresholds.
+- Evidence: focused assign-moderation-job tests passed 4 suites / 70 tests; targeted renderer/manual coverage passed 42 suites / 500 tests with all four coverage metrics at 100%; `npm run check` passed all 10 gates, with `reports/coverage/coverage-summary.json` at 100% across 13,176 branches.
+- Next-time guidance: keep startup composition permissions separate from request-time permissions. The assign-moderation-job route-registration and Firestore-write adapters, followed by the parameter-bag lint rule and the remaining cloud audit, are still required by the Notion spec.

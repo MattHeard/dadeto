@@ -48,19 +48,29 @@ describe('createAssignModerationJobEntrypoint', () => {
         };
       }),
     }));
+    const app = { use: jest.fn(), post: jest.fn() };
+    const corsMiddleware = jest.fn();
+    const urlencodedMiddleware = jest.fn();
     const express = Object.assign(
       jest.fn(() => ({
-        use: jest.fn(),
-        post: jest.fn(),
+        ...app,
       })),
       {
-        urlencoded: jest.fn(() => jest.fn()),
+        urlencoded: jest.fn(() => urlencodedMiddleware),
       }
     );
+    const allowEffects =
+      /** @type {import('../../../../types/allow-effects').AllowEffects} */ (
+        /** @type {unknown} */ (Object.freeze({}))
+      );
+    const useMiddleware = jest.fn((permission, appInstance, middleware) => {
+      void permission;
+      appInstance.use(middleware);
+    });
     const entrypoint = createAssignModerationJobEntrypoint({
       functions,
       express,
-      cors: jest.fn(() => jest.fn()),
+      cors: jest.fn(() => corsMiddleware),
       initializeApp: jest.fn(),
       getAuth: jest.fn(() => ({ verifyIdToken: jest.fn() })),
       getFirestore,
@@ -70,7 +80,26 @@ describe('createAssignModerationJobEntrypoint', () => {
       })),
       now: jest.fn(() => 123),
       random: jest.fn(() => 0.5),
+      bindEffectBoundary: handler => handler(allowEffects),
+      useMiddleware,
     });
+
+    expect(useMiddleware).toHaveBeenNthCalledWith(
+      1,
+      allowEffects,
+      app,
+      corsMiddleware
+    );
+    expect(useMiddleware).toHaveBeenNthCalledWith(
+      2,
+      allowEffects,
+      app,
+      urlencodedMiddleware
+    );
+    expect(app.use.mock.calls).toEqual([
+      [corsMiddleware],
+      [urlencodedMiddleware],
+    ]);
 
     expect(entrypoint.handle).toBeDefined();
     expect(

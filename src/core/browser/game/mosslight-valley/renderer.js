@@ -18,7 +18,7 @@ const PALETTES = {
 /**
  * Build the same pixel-art frame payload for page and embedded renderer.
  * @param {any} state Normalized game state.
- * @param {{tileGenerator?: (options: GameTileOptions) => CanvasShape[], spriteRenderer?: typeof spriteShapes}} [renderers] Optional game-specific art generators.
+ * @param {{tileGenerator?: (options: GameTileOptions) => CanvasShape[], spriteRenderer?: typeof spriteShapes, frameType?: string}} [renderers] Optional game-specific frame and art generators.
  * @returns {CanvasFrame} Shared frame payload for both presenters.
  */
 export function toFramePayload(state, renderers = {}) {
@@ -28,7 +28,7 @@ export function toFramePayload(state, renderers = {}) {
     PALETTES.village;
   const camera = cameraFor(state.world, 13, 9);
   const frame = /** @type {CanvasFrame} */ ({
-    type: 'mosslight-valley',
+    type: renderers.frameType || 'mosslight-valley',
     width: 160,
     height: 144,
     pixelated: true,

@@ -123,6 +123,14 @@ test('legacy inline manuals toggle without fetching', () => {
   expect(view.fetchText).not.toHaveBeenCalled();
 });
 
+test('renders an empty legacy Markdown body without content', () => {
+  const manual = document.createElement('div');
+  manual.innerHTML =
+    '<button data-manual-toggle></button><pre class="manual-body manual-markdown"></pre>';
+  initializeManual(manual, jest.fn());
+  expect(manual.querySelector('.manual-body').textContent).toBe('');
+});
+
 test.each([
   '<pre class="manual-body"></pre>',
   '<button data-manual-toggle></button>',

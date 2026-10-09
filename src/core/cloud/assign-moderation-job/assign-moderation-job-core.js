@@ -1,6 +1,7 @@
 /** @typedef {import('../../../../types/native-http').NativeHttpRequest} NativeHttpRequest */
 /** @typedef {import('../../../../types/native-http').NativeHttpResponse} NativeHttpResponse */
 /** @typedef {import('../../../../types/native-http').NativeExpressApp} NativeExpressApp */
+/** @typedef {import('../../../../types/allow-effects').AllowEffects} AllowEffects */
 
 /**
  * @typedef {(environmentVariables: Record<string, unknown>) => string[]} ResolveAllowedOrigins
@@ -608,13 +609,18 @@ function buildCorsOptions(createCorsOriginHandlerFn, corsConfig) {
  * Create a function that wires CORS middleware onto an Express app.
  * @param {CorsOriginHandlerFactory} createCorsOriginHandlerFn - Factory that produces the origin callback for the CORS middleware.
  * @param {(options: { origin: CorsOriginHandler, methods: string[] }) => unknown} corsFn - CORS middleware factory function.
- * @returns {(appInstance: NativeExpressApp, corsConfig: { allowedOrigins?: string[] }) => void} Function that applies the configured CORS middleware to the Express app.
+ * @returns {(allowEffects: AllowEffects, appInstance: NativeExpressApp, corsConfig: { allowedOrigins?: string[] }, useMiddleware: (permission: AllowEffects, app: NativeExpressApp, middleware: unknown) => void) => void} Function that applies the configured CORS middleware through an effect adapter.
  */
 export function createSetupCors(createCorsOriginHandlerFn, corsFn) {
-  return function setupCors(appInstance, corsConfig) {
+  return function setupCors(
+    allowEffects,
+    appInstance,
+    corsConfig,
+    useMiddleware
+  ) {
     const corsOptions = buildCorsOptions(createCorsOriginHandlerFn, corsConfig);
 
-    appInstance.use(corsFn(corsOptions));
+    useMiddleware(allowEffects, appInstance, corsFn(corsOptions));
   };
 }
 
@@ -640,13 +646,20 @@ export function createCorsOptions(
 
 /**
  * Register body parsing middleware for moderation requests.
- * @param {{ use: (middleware: unknown) => void }} appInstance Express application instance.
+ * @param {AllowEffects} allowEffects Permission for middleware registration.
+ * @param {NativeExpressApp} appInstance Express application instance.
  * @param {{ urlencoded: (options: { extended: boolean }) => unknown }} expressModule Express module exposing urlencoded.
+ * @param {(permission: AllowEffects, app: NativeExpressApp, middleware: unknown) => void} useMiddleware Permission-aware middleware registration adapter.
  * @returns {void}
  */
-export function configureUrlencodedBodyParser(appInstance, expressModule) {
+export function configureUrlencodedBodyParser(
+  allowEffects,
+  appInstance,
+  expressModule,
+  useMiddleware
+) {
   const urlencodedMiddleware = expressModule.urlencoded({ extended: false });
-  appInstance.use(urlencodedMiddleware);
+  useMiddleware(allowEffects, appInstance, urlencodedMiddleware);
 }
 
 /**

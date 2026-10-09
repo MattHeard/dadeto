@@ -60,6 +60,7 @@ export function renderCommons(state) {
     {
       tileGenerator: /** @type {any} */ (generateCommonsTile),
       spriteRenderer: commonsSpriteShapes,
+      frameType: 'the-commons-of-tomorrow',
     }
   );
   frame.menu = menu;
@@ -253,7 +254,7 @@ function menuRows(state) {
       ? 'A SET · B BACK · X CLOSE'
       : 'A CHOOSE · B BACK · X CLOSE';
   const footerRows = wrapDialogueText(footer, 27);
-  const selectedRows = choiceRows[selected] || [];
+  const selectedRows = choiceRows[selected];
   const infoLimit = Math.max(
     0,
     8 - titleRows.length - footerRows.length - selectedRows.length
