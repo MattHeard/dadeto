@@ -77,12 +77,9 @@ export function renderCommons(state) {
   else if (state.menu) frame.shapes = menuShapes(frame, state);
   else if (!state.dialogue && state.mode === 'world') {
     frame.shapes = frame.shapes.filter(
-      (/** @type {Record<string, any>} */ shape) => shape.y < 98
+      (/** @type {Record<string, any>} */ shape) => shape.y < 110
     );
-    frame.shapes.push(
-      frameRectangle({ x: 0, y: 96, width: 160, height: 12 }, COLORS.dark),
-      text(compactOverworldPrompt(state), 4, 105, COLORS.gold)
-    );
+    frame.shapes.push(...overworldMessageShapes(state));
   }
   return frame;
 }
@@ -90,7 +87,7 @@ export function renderCommons(state) {
 /**
  * Keep the first district prompt tied to what the player has learned so far.
  * @param {Record<string, any>} state Current game state.
- * @returns {string} Short prompt sized for the 160px Commons strip.
+ * @returns {string} Contextual field message.
  */
 function commonsOpeningPrompt(state) {
   const flags = state.world.flags;
@@ -117,7 +114,50 @@ function compactOverworldPrompt(state) {
           : state.puzzle.completed && !state.agreements.length
             ? 'RETURN TO FOOTBRIDGE · DECIDE'
             : 'WEIR · GAUGE / REEDS / FLOW BOARD';
-  return prompt.length > 30 ? `${prompt.slice(0, 29)}…` : prompt;
+  return prompt;
+}
+
+/**
+ * Draw a two-row field note and a scrollbar when a longer note is open.
+ * @param {Record<string, any>} state Current game state.
+ * @returns {Array<Record<string, any>>} Bottom message panel shapes.
+ */
+function overworldMessageShapes(state) {
+  const messageLines = wrapDialogueText(compactOverworldPrompt(state), 29);
+  const rows = state.hudReading
+    ? messageLines.slice(state.hudScroll || 0, (state.hudScroll || 0) + 2)
+    : messageLines.length === 1
+      ? [state.world.map.name.toUpperCase(), messageLines[0]]
+      : messageLines.slice(0, 2);
+  const shapes = [
+    frameRectangle({ x: 0, y: 109, width: 160, height: 35 }, COLORS.dark),
+    frameRectangle({ x: 0, y: 109, width: 160, height: 1 }, COLORS.leaf),
+    ...rows.map((line, index) => text(line, 4, 119 + index * 10, COLORS.gold)),
+  ];
+  if (state.hudReading && messageLines.length > 2) {
+    const trackHeight = 26;
+    const thumbHeight = Math.max(
+      4,
+      Math.floor((trackHeight * 2) / messageLines.length)
+    );
+    const maxScroll = messageLines.length - 2;
+    const thumbTop =
+      113 +
+      Math.floor(
+        ((trackHeight - thumbHeight) * (state.hudScroll || 0)) / maxScroll
+      );
+    shapes.push(
+      frameRectangle(
+        { x: 154, y: 113, width: 2, height: trackHeight },
+        COLORS.ground
+      ),
+      frameRectangle(
+        { x: 153, y: thumbTop, width: 4, height: thumbHeight },
+        COLORS.leaf
+      )
+    );
+  }
+  return shapes;
 }
 
 /**

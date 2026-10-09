@@ -13,3 +13,8 @@
 
 - Move puzzle reset to a confirmation panel beside the flow board, bridge repair to the footbridge, and habitat listening to a field scope.
 - Remove the Actions page and reduce the overworld HUD to one contextual line.
+
+## Version 4 — 2026-10-09
+
+- Expand the map viewport and replace the clipped one-line strip with a two-row contextual field note.
+- Long notes scroll one row with directions, page down with A, and close with B; add a visible scroll position marker.

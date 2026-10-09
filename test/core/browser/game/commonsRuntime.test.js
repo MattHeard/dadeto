@@ -44,7 +44,7 @@ describe('Commons runtime, frame and independent saves', () => {
     });
     expect(embedded.world.player).toEqual(standalone.world.player);
     expect(embedded.world.mapId).toBe(standalone.world.mapId);
-    expect(embedded.commons.gameVersion).toBe(3);
+    expect(embedded.commons.gameVersion).toBe(4);
   });
 
   test('saves, loads, exports, and imports only the Commons save identity', () => {
@@ -234,7 +234,7 @@ describe('Commons runtime, frame and independent saves', () => {
     expect(typeof dispose).toBe('function');
     expect(typeof listeners.frame).toBe('function');
     expect(selectors['#game-status'].textContent).toContain('Canopy Commons');
-    expect(selectors['#game-version'].textContent).toBe('GAME VERSION 3');
+    expect(selectors['#game-version'].textContent).toBe('GAME VERSION 4');
     dispose();
   });
 
@@ -488,7 +488,7 @@ describe('Commons runtime, frame and independent saves', () => {
 });
 
 describe('Commons compact overworld HUD', () => {
-  test('shows one bounded contextual line without a persistent clue counter', () => {
+  test('uses two contextual rows without a persistent clue counter', () => {
     const initial = createCommonsState();
     const weir = {
       ...initial,
@@ -502,12 +502,36 @@ describe('Commons compact overworld HUD', () => {
     };
     const compact = renderCommons(weir);
     const hudText = compact.shapes.filter(
-      shape => shape.type === 'text' && shape.y >= 96
+      shape => shape.type === 'text' && shape.y >= 110
     );
-    expect(hudText).toHaveLength(1);
-    expect(hudText[0].text).toBe('A: Inspect the flow board.');
+    expect(hudText).toHaveLength(2);
+    expect(hudText.map(shape => shape.text)).toEqual([
+      'THE LIVING WEIR',
+      'A: Inspect the flow board.',
+    ]);
     expect(compact.shapes.some(shape => shape.text?.includes('CLUES'))).toBe(
       false
     );
+  });
+
+  test('renders two wrapped note rows and a scroll position indicator', () => {
+    const state = {
+      ...createCommonsState(),
+      toast:
+        'The gauge was installed before the reed beds shifted. The high-water mark is still legible. This record helps the assembly compare today with older seasons.',
+      hudReading: true,
+      hudScroll: 1,
+    };
+    const frame = renderCommons(state);
+    const rows = frame.shapes.filter(
+      shape => shape.type === 'text' && shape.y >= 110
+    );
+    expect(rows).toHaveLength(2);
+    expect(rows[0].text).toBe('before the reed beds shifted.');
+    expect(
+      frame.shapes.some(
+        shape => shape.type === 'rect' && shape.x === 153 && shape.y >= 113
+      )
+    ).toBe(true);
   });
 });

@@ -362,7 +362,11 @@ describe('Commons controller and story edge cases', () => {
     );
 
     const agreement = chooseRiverAgreement(
-      { ...gauge, puzzle: { ...gauge.puzzle, completed: true } },
+      {
+        ...gauge,
+        hudReading: false,
+        puzzle: { ...gauge.puzzle, completed: true },
+      },
       'restore-crossing'
     );
     const basicRepair = stepCommons(
@@ -430,6 +434,8 @@ describe('Commons controller and story edge cases', () => {
     const charter = stepCommons(
       {
         ...repaired,
+        hudReading: false,
+        toast: ' ',
         world: {
           ...repaired.world,
           mapId: 'commons',
@@ -445,6 +451,8 @@ describe('Commons controller and story edge cases', () => {
     const participation = stepCommons(
       {
         ...invited,
+        hudReading: false,
+        toast: ' ',
         world: {
           ...invited.world,
           mapId: 'commons',
@@ -761,6 +769,32 @@ describe('Commons controller and story edge cases', () => {
 });
 
 describe('Commons handheld actions and deterministic board controls', () => {
+  test('opens long field notes for line scroll, page down, and close', () => {
+    const initial = createCommonsState();
+    let state = {
+      ...initial,
+      toast: ' ',
+      world: {
+        ...initial.world,
+        mapId: 'weir',
+        map: COMMONS_CONTENT.maps.weir,
+        player: { x: 11, y: 3, facing: 'right' },
+        npcs: [],
+      },
+    };
+    state = stepCommons(state, ['a']);
+    expect(state.hudReading).toBe(true);
+    expect(state.hudScroll).toBe(0);
+
+    state = stepCommons({ ...state, lastActions: [] }, ['down']);
+    expect(state.hudScroll).toBe(1);
+    state = stepCommons({ ...state, lastActions: [] }, ['a']);
+    expect(state.hudScroll).toBe(2);
+    state = stepCommons({ ...state, lastActions: [] }, ['b']);
+    expect(state.hudReading).toBe(false);
+    expect(state.toast).toBe(' ');
+  });
+
   test('covers assign shortcuts, puzzle bounds, journal rows and input edge behavior', () => {
     let state = {
       ...createCommonsState(),

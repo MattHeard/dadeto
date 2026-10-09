@@ -86,6 +86,8 @@ export function createCommonsState(
     mode: 'world',
     menu: null,
     quickAction: 'repair',
+    hudReading: false,
+    hudScroll: 0,
     controllerCommand: null,
     lastActions: [],
     tick: 0,
@@ -244,6 +246,22 @@ export function stepCommons(
   else if (next.mode === 'puzzle') next = stepPuzzle(next, pressed);
   else if (next.dialogue) next = stepDialogue(next, pressed, content);
   else next = stepWorld(next, pressed, content);
+  if (
+    next.mode === 'world' &&
+    !state.menu &&
+    !state.dialogue &&
+    state.mode === 'world' &&
+    !next.menu &&
+    !next.dialogue &&
+    next.toast !== state.toast
+  ) {
+    const lineCount = countHudLines(next.toast);
+    next = {
+      ...next,
+      hudReading: lineCount > 2,
+      hudScroll: 0,
+    };
+  }
   return {
     ...next,
     lastActions: [...actions],
@@ -269,6 +287,26 @@ export function stepCommons(
  */
 function stepWorld(state, pressed, content) {
   const next = state;
+  if (state.hudReading) {
+    if (pressed.includes('x'))
+      return { ...state, menu: { page: 'main', selected: 0 } };
+    if (pressed.includes('y'))
+      return { ...state, menu: { page: 'assign', selected: 0 } };
+    if (pressed.includes('b'))
+      return { ...state, hudReading: false, hudScroll: 0, toast: ' ' };
+    const lines = countHudLines(state.toast);
+    const lastOffset = Math.max(0, lines - 2);
+    if (pressed.includes('up'))
+      return { ...state, hudScroll: Math.max(0, (state.hudScroll || 0) - 1) };
+    if (pressed.includes('down'))
+      return { ...state, hudScroll: Math.min(lastOffset, state.hudScroll + 1) };
+    if (pressed.includes('a'))
+      return {
+        ...state,
+        hudScroll: Math.min(lastOffset, (state.hudScroll || 0) + 2),
+      };
+    return state;
+  }
   if (pressed.includes('x'))
     return { ...state, menu: { page: 'main', selected: 0 } };
   if (pressed.includes('y'))
@@ -318,6 +356,26 @@ function stepWorld(state, pressed, content) {
   }
   if (pressed.includes('a')) return interact(state, content);
   return next;
+}
+
+/**
+ * Count the visible rows required by a 30-character handheld message line.
+ * @param {string} message Field message.
+ * @returns {number} Wrapped line count.
+ */
+function countHudLines(message) {
+  let rows = 1;
+  let column = 0;
+  for (const word of String(message || '')
+    .trim()
+    .split(/\s+/)) {
+    if (!word) continue;
+    if (column && column + word.length + 1 > 29) {
+      rows += 1;
+      column = word.length;
+    } else column += (column ? 1 : 0) + word.length;
+  }
+  return rows;
 }
 
 /**
