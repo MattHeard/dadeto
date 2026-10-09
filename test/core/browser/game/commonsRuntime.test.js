@@ -256,6 +256,14 @@ describe('Commons runtime, frame and independent saves', () => {
     expect(
       frame.shapes.some(shape => shape.text === 'LIVING WEIR · FLOW BOARD')
     ).toBe(true);
+    const boardText = frame.shapes.filter(shape => shape.type === 'text');
+    expect(
+      boardText.every(
+        shape => shape.x >= 0 && shape.x + shape.text.length * 5 <= 160
+      )
+    ).toBe(true);
+    expect(boardText.map(shape => shape.y)).toContain(132);
+    expect(boardText.map(shape => shape.y)).toContain(140);
     const calls = [];
     drawCommonsFrame(
       {

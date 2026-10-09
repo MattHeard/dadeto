@@ -276,8 +276,8 @@ function puzzleShapes(puzzle) {
       122,
       COLORS.gold
     ),
-    text('A CARVE/OPEN · B ROUTE · Y FLOW', 8, 132, COLORS.leaf),
-    text('X RETURN TO DISTRICT', 8, 140, COLORS.leaf)
+    text('A CARVE/OPEN · B ROUTE', 8, 132, COLORS.leaf),
+    text('Y FLOW · X RETURN', 8, 140, COLORS.leaf)
   );
   return shapes;
 }
