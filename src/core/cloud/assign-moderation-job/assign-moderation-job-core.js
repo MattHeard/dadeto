@@ -1329,6 +1329,31 @@ async function resolveVariantDoc({
 }
 
 /**
+ * Build the authenticated assignment operation from query and persistence capabilities.
+ * @param {(uid: string) => Promise<VariantCandidate[]>} fetchVariantSnapshots Candidate query.
+ * @param {() => number} random Candidate selection source.
+ * @param {() => unknown} now Assignment timestamp source.
+ * @param {(uid: string, assignment: object) => Promise<unknown>} persistAssignment Permission-bound persistence operation.
+ * @returns {(uid: string) => Promise<void>} Operation assigning a selected variant.
+ */
+export function createAssignVariantToModerator(
+  fetchVariantSnapshots,
+  random,
+  now,
+  persistAssignment
+) {
+  return async function assignVariantToModerator(uid) {
+    const variantDoc = await resolveVariantDoc({
+      fetchVariantSnapshots,
+      selectVariantDoc,
+      random,
+      uid,
+    });
+    await persistAssignment(uid, createAssignmentData({ variantDoc, now }));
+  };
+}
+
+/**
  * Choose a single candidate snapshot from a list using the provided RNG.
  * @param {VariantCandidate[]} snapshots Candidate moderation snapshots.
  * @param {() => number} random RNG used to select from the top-ranked pages.
@@ -1503,89 +1528,26 @@ function isResponse(value) {
 }
 
 /**
- * Create the Express handler that assigns moderation jobs using Firestore.
- * @param {{
- *   createRunVariantQuery: (database: import('firebase-admin/firestore').Firestore) => (uid: string) => Promise<VariantCandidate[]>,
- *   auth: import('firebase-admin/auth').Auth,
- *   db: import('firebase-admin/firestore').Firestore,
- *   now: () => unknown,
- *   random: () => number,
- *   setModeratorAssignment: (permission: AllowEffects, reference: import('firebase-admin/firestore').DocumentReference, data: object) => Promise<unknown>,
- *   bindEffectBoundary: import('../../../../types/allow-effects').AllowEffectsBoundary,
- *   sendHttpResponse: (permission: AllowEffects, response: NativeHttpResponse, status: number, body: unknown) => void,
- * }} options - Dependencies used to compose the handler.
- * @returns {(req: NativeHttpRequest, res: NativeHttpResponse) => Promise<void>} Express handler that assigns a moderation job to the caller.
- */
-// Stryker disable all -- handler construction is direct dependency wiring
-// covered by injected entrypoint tests.
-export function createHandleAssignModerationJob({
-  createRunVariantQuery,
-  auth,
-  db,
-  now,
-  random,
-  setModeratorAssignment,
-  bindEffectBoundary,
-  sendHttpResponse,
-}) {
-  const fetchVariantSnapshots = createRunVariantQuery(db);
-
-  // Stryker disable next-line all -- dependency composition is a direct handler
-  // wiring boundary covered by the injected entrypoint tests.
-  return createHandleAssignModerationJobFromAuth({
-    auth,
-    fetchVariantSnapshots,
-    db,
-    now,
-    random,
-    setModeratorAssignment,
-    bindEffectBoundary,
-    sendHttpResponse,
-  });
-}
-// Stryker restore all
-
-/**
- * Register the assign moderation job route on the provided Express app.
- * @param {{ db: import('firebase-admin/firestore').Firestore, auth: import('firebase-admin/auth').Auth, app: NativeExpressApp }} firebaseResources - Firebase resources used to serve the moderation endpoint.
- * @param {(database: import('firebase-admin/firestore').Firestore) => (uid: string) => Promise<VariantCandidate[]>} createRunVariantQuery - Factory that produces query executors bound to a Firestore database.
- * @param {() => unknown} now - Timestamp provider for persisted assignments.
- * @param {{ allowEffects: AllowEffects, random: () => number, registerPostRoute: (permission: AllowEffects, app: NativeExpressApp, path: string, handler: (req: NativeHttpRequest, res: NativeHttpResponse) => unknown) => void, bindEffectBoundary: import('../../../../types/allow-effects').AllowEffectsBoundary, setModeratorAssignment: (permission: AllowEffects, reference: import('firebase-admin/firestore').DocumentReference, data: object) => Promise<unknown>, sendHttpResponse: (permission: AllowEffects, response: NativeHttpResponse, status: number, body: unknown) => void }} effectAdapters Permission-bound effect adapters and boundary.
+ * Register an already-constructed handler on the provided Express app.
+ * @param {{ app: NativeExpressApp }} firebaseResources Firebase app resource.
+ * @param {(req: NativeHttpRequest, res: NativeHttpResponse) => Promise<void>} handler Prepared moderation request handler.
+ * @param {AllowEffects} permission Permission for route registration.
+ * @param {(permission: AllowEffects, app: NativeExpressApp, path: string, handler: (req: NativeHttpRequest, res: NativeHttpResponse) => unknown) => void} registerPostRoute Route registration effect adapter.
  * @returns {(req: NativeHttpRequest, res: NativeHttpResponse) => Promise<void>} Registered moderation handler.
  */
 // Stryker disable all -- route registration is direct Express dependency wiring
 // covered by the injected entrypoint test.
 export function setupAssignModerationJobRoute(
   firebaseResources,
-  createRunVariantQuery,
-  now,
-  effectAdapters
+  handler,
+  permission,
+  registerPostRoute
 ) {
-  const {
-    allowEffects,
-    registerPostRoute,
-    bindEffectBoundary,
-    setModeratorAssignment,
-    sendHttpResponse,
-  } = effectAdapters;
-  const { db, auth, app } = firebaseResources;
-
-  const handleAssignModerationJob = createHandleAssignModerationJob({
-    createRunVariantQuery,
-    auth,
-    db,
-    now,
-    random: effectAdapters.random,
-    setModeratorAssignment,
-    bindEffectBoundary,
-    sendHttpResponse,
-  });
-
   // Stryker disable next-line all -- route registration is a direct Express
   // adapter mapping.
-  registerPostRoute(allowEffects, app, '/', handleAssignModerationJob);
+  registerPostRoute(permission, firebaseResources.app, '/', handler);
 
-  return handleAssignModerationJob;
+  return handler;
 }
 // Stryker restore all
 
@@ -1605,49 +1567,21 @@ export function createAssignModerationJob(functionsModule, firebaseResources) {
 
 /**
  * Compose the moderation handler using Firebase auth and Firestore dependencies.
- * @param {{
- *   auth: import('firebase-admin/auth').Auth,
- *   fetchVariantSnapshots: (uid: string) => Promise<VariantCandidate[]>,
- *   db: import('firebase-admin/firestore').Firestore,
- *   now: () => unknown,
- *   random: () => number,
- *   setModeratorAssignment: (permission: AllowEffects, reference: import('firebase-admin/firestore').DocumentReference, data: object) => Promise<unknown>,
- *   bindEffectBoundary: import('../../../../types/allow-effects').AllowEffectsBoundary,
- *   sendHttpResponse: (permission: AllowEffects, response: NativeHttpResponse, status: number, body: unknown) => void,
- * }} options - Dependencies for the handler.
+ * @param {import('firebase-admin/auth').Auth} auth Firebase authentication adapter.
+ * @param {(uid: string) => Promise<void>} assignVariantToModerator Assignment operation.
+ * @param {import('../../../../types/allow-effects').AllowEffectsBoundary} bindEffectBoundary Fresh boundary for the response write.
+ * @param {(permission: AllowEffects, response: NativeHttpResponse, status: number, body: unknown) => void} sendHttpResponse Permission-aware response adapter.
  * @returns {(req: NativeHttpRequest, res: NativeHttpResponse) => Promise<void>} Express handler bound to Firebase auth.
  */
 // Stryker disable all -- auth workflow construction is direct dependency wiring
 // covered by injected handler tests.
-export function createHandleAssignModerationJobFromAuth({
+export function createHandleAssignModerationJobFromAuth(
   auth,
-  fetchVariantSnapshots,
-  db,
-  now,
-  random,
-  setModeratorAssignment,
+  assignVariantToModerator,
   bindEffectBoundary,
-  sendHttpResponse,
-}) {
+  sendHttpResponse
+) {
   const runGuards = createRunGuards(auth);
-  const createModeratorRef = createModeratorRefFactory(db);
-
-  // Stryker disable next-line all -- workflow dependency composition is a direct
-  // injected wiring boundary.
-  /** @type {(uid: string) => Promise<void>} */
-  const assignVariantToModerator = async uid => {
-    const variantDoc = await resolveVariantDoc({
-      fetchVariantSnapshots,
-      selectVariantDoc,
-      random,
-      uid,
-    });
-    const assignment = createAssignmentData({ variantDoc, now });
-    const moderatorRef = createModeratorRef(uid);
-    await bindEffectBoundary(permission =>
-      setModeratorAssignment(permission, moderatorRef, assignment)
-    );
-  };
   const assignModerationWorkflow = createAssignModerationWorkflow(
     runGuards,
     assignVariantToModerator

@@ -23,8 +23,8 @@ const {
   createVariantSnapshotFetcher,
   createFetchVariantSnapshotFromDbFactory,
   createAssignModerationWorkflow,
+  createAssignVariantToModerator,
   createHandleAssignModerationJobCore,
-  createHandleAssignModerationJob,
   setupAssignModerationJobRoute,
   createAssignModerationJob,
   createHandleAssignModerationJobFromAuth,
@@ -924,52 +924,25 @@ describe('createHandleAssignModerationJobCore', () => {
   });
 });
 
-describe('createHandleAssignModerationJob', () => {
-  test('creates the workflow using the provided dependencies', () => {
-    const runQuery = jest.fn().mockResolvedValue({ empty: true });
-    const createRunVariantQuery = jest.fn(() => runQuery);
-    const auth = { auth: true };
-    const db = { db: true };
-    const now = jest.fn();
-    const randomFn = jest.fn();
-
-    const handle = createHandleAssignModerationJob({
-      createRunVariantQuery,
-      auth,
-      db,
-      now,
-      random: randomFn,
-    });
-
-    expect(typeof handle).toBe('function');
-    expect(createRunVariantQuery).toHaveBeenCalledWith(db);
-  });
-});
-
 describe('setupAssignModerationJobRoute', () => {
   test('registers the POST route', () => {
     const post = jest.fn();
-    const firebaseResources = { db: {}, auth: {}, app: { post } };
-    const createRunVariantQuery = jest.fn();
-    const now = jest.fn();
-    const randomFn = jest.fn();
+    const firebaseResources = { app: { post } };
+    const handler = jest.fn();
+    const permission = {};
+    const registerPostRoute = (allowEffects, target, path, routeHandler) => {
+      expect(allowEffects).toBe(permission);
+      target.post(path, routeHandler);
+    };
 
-    const handler = setupAssignModerationJobRoute(
-      firebaseResources,
-      createRunVariantQuery,
-      now,
-      {
-        allowEffects: {},
-        random: randomFn,
-        registerPostRoute: (permission, target, path, routeHandler) => {
-          void permission;
-          target.post(path, routeHandler);
-        },
-        bindEffectBoundary: callback => callback({}),
-        setModeratorAssignment: async () => {},
-        sendHttpResponse: () => {},
-      }
-    );
+    expect(
+      setupAssignModerationJobRoute(
+        firebaseResources,
+        handler,
+        permission,
+        registerPostRoute
+      )
+    ).toBe(handler);
 
     expect(post).toHaveBeenCalledWith('/', handler);
   });
@@ -991,68 +964,67 @@ describe('createAssignModerationJob', () => {
 });
 
 describe('createHandleAssignModerationJobFromAuth', () => {
-  test('selects and persists a variant under the request-time effect boundary', async () => {
-    const set = jest.fn().mockResolvedValue(undefined);
+  test('passes the authenticated UID to the assignment operation', async () => {
     const status = jest.fn().mockReturnThis();
     const send = jest.fn();
-    const bindEffectBoundary = jest.fn(callback =>
-      callback({ permission: true })
-    );
-    const setModeratorAssignment = jest.fn((permission, reference, data) => {
-      expect(permission).toEqual({ permission: true });
-      return reference.set(data, { merge: true });
-    });
-    const handle = createHandleAssignModerationJobFromAuth({
-      auth: {
+    const permission = {};
+    const bindEffectBoundary = jest.fn(callback => callback(permission));
+    const assignVariantToModerator = jest.fn().mockResolvedValue(undefined);
+    const handle = createHandleAssignModerationJobFromAuth(
+      {
         verifyIdToken: jest.fn().mockResolvedValue({ uid: 'mod' }),
         getUser: jest.fn().mockResolvedValue({ uid: 'mod' }),
       },
-      fetchVariantSnapshots: jest
-        .fn()
-        .mockResolvedValue([{ variantDoc: { ref: 'variant-ref' } }]),
-      db: {
-        collection: jest.fn(() => ({ doc: jest.fn(() => ({ set })) })),
-      },
-      now: () => 'timestamp',
-      random: () => 0,
-      setModeratorAssignment,
+      assignVariantToModerator,
       bindEffectBoundary,
-      sendHttpResponse: (permission, response, statusCode, body) => {
+      (effectPermission, response, statusCode, body) => {
+        expect(effectPermission).toBe(permission);
         void permission;
         response.status(statusCode).send(body);
-      },
-    });
+      }
+    );
 
     await handle(
       { method: 'POST', body: { [ID_TOKEN_KEY]: 'token' } },
       { status, send }
     );
 
-    expect(set).toHaveBeenCalledWith(
-      { variant: 'variant-ref', createdAt: 'timestamp' },
-      { merge: true }
-    );
-    expect(setModeratorAssignment).toHaveBeenCalledTimes(1);
-    expect(bindEffectBoundary).toHaveBeenCalledTimes(2);
+    expect(assignVariantToModerator).toHaveBeenCalledWith('mod');
+    expect(bindEffectBoundary).toHaveBeenCalledTimes(1);
     expect(status).toHaveBeenCalledWith(201);
     expect(send).toHaveBeenCalledWith('');
   });
 
   test('builds the handler with firestore-backed dependencies', () => {
-    const auth = { auth: true };
-    const fetchVariantSnapshot = jest.fn();
-    const db = { collection: jest.fn(() => ({ doc: jest.fn() })) };
-    const now = jest.fn();
-    const randomFn = jest.fn();
-
-    const handle = createHandleAssignModerationJobFromAuth({
-      auth,
-      fetchVariantSnapshot,
-      db,
-      now,
-      random: randomFn,
-    });
+    const handle = createHandleAssignModerationJobFromAuth(
+      { auth: true },
+      jest.fn(),
+      jest.fn(callback => callback({})),
+      jest.fn()
+    );
 
     expect(typeof handle).toBe('function');
+  });
+});
+
+describe('createAssignVariantToModerator', () => {
+  test('selects a candidate and delegates persistence with the assignment', async () => {
+    const variantDoc = { ref: 'variant-ref' };
+    const fetchVariantSnapshots = jest.fn().mockResolvedValue([{ variantDoc }]);
+    const persistAssignment = jest.fn().mockResolvedValue(undefined);
+    const assign = createAssignVariantToModerator(
+      fetchVariantSnapshots,
+      () => 0.5,
+      () => 'timestamp',
+      persistAssignment
+    );
+
+    await assign('mod');
+
+    expect(fetchVariantSnapshots).toHaveBeenCalledWith('mod');
+    expect(persistAssignment).toHaveBeenCalledWith('mod', {
+      variant: 'variant-ref',
+      createdAt: 'timestamp',
+    });
   });
 });

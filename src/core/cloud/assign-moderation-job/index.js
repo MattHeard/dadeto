@@ -4,6 +4,9 @@ import {
   createCorsOptions,
   configureUrlencodedBodyParser,
   createRunVariantQuery,
+  createAssignVariantToModerator,
+  createHandleAssignModerationJobFromAuth,
+  createModeratorRefFactory,
   setupAssignModerationJobRoute,
   resolveFirestoreEnvironment,
   shouldUseCustomFirestoreDependencies,
@@ -186,19 +189,34 @@ export async function createAssignModerationJobEntrypoint(deps) {
       app,
     });
 
+  const fetchVariantSnapshots = createRunVariantQuery(firebaseResources.db);
+  const createModeratorRef = createModeratorRefFactory(firebaseResources.db);
+  /** @type {(uid: string, assignment: object) => Promise<unknown>} */
+  const persistAssignment = async (uid, assignment) => {
+    const reference = createModeratorRef(uid);
+    return typedDeps.bindEffectBoundary(permission =>
+      typedDeps.setModeratorAssignment(permission, reference, assignment)
+    );
+  };
+  const assignVariantToModerator = createAssignVariantToModerator(
+    fetchVariantSnapshots,
+    typedDeps.random,
+    typedDeps.now,
+    persistAssignment
+  );
+  const requestHandler = createHandleAssignModerationJobFromAuth(
+    firebaseResources.auth,
+    assignVariantToModerator,
+    typedDeps.bindEffectBoundary,
+    typedDeps.sendHttpResponse
+  );
+
   await typedDeps.bindEffectBoundary(permission => {
     setupAssignModerationJobRoute(
       firebaseResources,
-      createRunVariantQuery,
-      typedDeps.now,
-      {
-        allowEffects: permission,
-        random: typedDeps.random,
-        registerPostRoute: typedDeps.registerPostRoute,
-        bindEffectBoundary: typedDeps.bindEffectBoundary,
-        setModeratorAssignment: typedDeps.setModeratorAssignment,
-        sendHttpResponse: typedDeps.sendHttpResponse,
-      }
+      requestHandler,
+      permission,
+      typedDeps.registerPostRoute
     );
     return Promise.resolve();
   });
