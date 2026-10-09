@@ -31,6 +31,7 @@ import { resolveAllowedOrigins, isDuplicateAppError } from '../cloud-core.js';
  *   express: typeof import('express'),
  *   cors: (options: unknown) => import('express').RequestHandler,
  *   initializeApp: () => unknown,
+ *   initializeFirebaseApp: (permission: AllowEffects, initializeApp: () => unknown) => unknown,
  *   getAuth: () => unknown,
  *   getFirestore: typeof import('firebase-admin/firestore').getFirestore,
  *   getEnvironmentVariables: () => Record<string, unknown>,
@@ -46,7 +47,7 @@ import { resolveAllowedOrigins, isDuplicateAppError } from '../cloud-core.js';
  *   handle: unknown,
  *   testing: {
  *     firebaseInitialization: unknown,
- *     ensureFirebaseApp: (initFn?: () => unknown) => void,
+ *     ensureFirebaseApp: (permission: AllowEffects, initFn?: () => unknown) => void,
  *     resolveFirestoreDatabaseId: typeof resolveFirestoreDatabaseId,
  *     resolveFirestoreEnvironment: typeof resolveFirestoreEnvironment,
  *     shouldUseCustomFirestoreDependencies: typeof shouldUseCustomFirestoreDependencies,
@@ -119,25 +120,32 @@ export async function createAssignModerationJobEntrypoint(deps) {
 
   /**
    * Ensure Firebase has been initialized once for this entrypoint.
+   * @param {AllowEffects} permission Startup initialization capability.
    * @param {() => unknown} [initFn] Initialization function to invoke on first use.
    * @returns {void}
    */
-  function ensureFirebaseApp(initFn = deps.initializeApp) {
+  function ensureFirebaseApp(permission, initFn = deps.initializeApp) {
     if (firebaseInitialization.hasBeenInitialized()) {
       return;
     }
-    initializeFirebaseApp(initFn);
+    initializeFirebaseApp(permission, initFn, typedDeps.initializeFirebaseApp);
     firebaseInitialization.markInitialized();
   }
 
   /**
    * Initialize Firebase while tolerating the SDK's duplicate-app signal.
+   * @param {AllowEffects} permission Startup initialization capability.
    * @param {() => unknown} initFn Firebase initializer.
+   * @param {(permission: AllowEffects, initializeApp: () => unknown) => unknown} initializeFirebaseAppEffect Permission-aware cloud adapter.
    * @returns {void} Nothing.
    */
-  function initializeFirebaseApp(initFn) {
+  function initializeFirebaseApp(
+    permission,
+    initFn,
+    initializeFirebaseAppEffect
+  ) {
     try {
-      initFn();
+      initializeFirebaseAppEffect(permission, initFn);
     } catch (error) {
       if (!isDuplicateAppError(error)) {
         throw error;
@@ -145,7 +153,9 @@ export async function createAssignModerationJobEntrypoint(deps) {
     }
   }
 
-  ensureFirebaseApp();
+  await typedDeps.bindEffectBoundary(async permission => {
+    ensureFirebaseApp(permission);
+  });
   const db = getFirestoreInstance();
   const auth = typedDeps.getAuth();
   const app = typedDeps.express();

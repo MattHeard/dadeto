@@ -12,3 +12,14 @@ export function useMiddleware(allowEffects, app, middleware) {
   void allowEffects;
   app.use(middleware);
 }
+
+/**
+ * Initialize Firebase Admin during composition at the cloud boundary.
+ * @param {AllowEffects} permission Permission for startup initialization.
+ * @param {() => unknown} initializeApp Firebase Admin initializer.
+ * @returns {unknown} Initialization result.
+ */
+export function initializeFirebaseApp(permission, initializeApp) {
+  void permission;
+  return initializeApp();
+}

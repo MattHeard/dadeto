@@ -74,6 +74,11 @@ describe('createAssignModerationJobEntrypoint', () => {
       }
     );
     const setModeratorAssignment = jest.fn(async () => {});
+    const initializeApp = jest.fn();
+    const initializeFirebaseApp = jest.fn((permission, initFn) => {
+      void permission;
+      return initFn();
+    });
     const sendHttpResponse = jest.fn((permission, response, status, body) => {
       void permission;
       response.status(status).send(body);
@@ -82,7 +87,8 @@ describe('createAssignModerationJobEntrypoint', () => {
       functions,
       express,
       cors: jest.fn(() => corsMiddleware),
-      initializeApp: jest.fn(),
+      initializeApp,
+      initializeFirebaseApp,
       getAuth: jest.fn(() => ({ verifyIdToken: jest.fn() })),
       getFirestore,
       getEnvironmentVariables: jest.fn(() => ({
@@ -114,6 +120,12 @@ describe('createAssignModerationJobEntrypoint', () => {
       [corsMiddleware],
       [urlencodedMiddleware],
     ]);
+    expect(initializeFirebaseApp).toHaveBeenCalledTimes(1);
+    expect(initializeFirebaseApp).toHaveBeenCalledWith(
+      allowEffects,
+      initializeApp
+    );
+    expect(initializeApp).toHaveBeenCalledTimes(1);
     expect(registerPostRoute).toHaveBeenCalledWith(
       allowEffects,
       app,
@@ -157,23 +169,23 @@ describe('createAssignModerationJobEntrypoint', () => {
     entrypoint.testing.firebaseInitialization.reset();
     const ensureOnce = jest.fn();
     expect(() =>
-      entrypoint.testing.ensureFirebaseApp(ensureOnce)
+      entrypoint.testing.ensureFirebaseApp(allowEffects, ensureOnce)
     ).not.toThrow();
     expect(() =>
-      entrypoint.testing.ensureFirebaseApp(ensureOnce)
+      entrypoint.testing.ensureFirebaseApp(allowEffects, ensureOnce)
     ).not.toThrow();
     expect(ensureOnce).toHaveBeenCalledTimes(1);
 
     entrypoint.testing.firebaseInitialization.reset();
     expect(() =>
-      entrypoint.testing.ensureFirebaseApp(() => {
+      entrypoint.testing.ensureFirebaseApp(allowEffects, () => {
         throw new Error('already exists');
       })
     ).not.toThrow();
 
     entrypoint.testing.firebaseInitialization.reset();
     expect(() =>
-      entrypoint.testing.ensureFirebaseApp(() => {
+      entrypoint.testing.ensureFirebaseApp(allowEffects, () => {
         throw new Error('boom');
       })
     ).toThrow('boom');
