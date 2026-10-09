@@ -221,4 +221,58 @@ describe('Commons visual identity', () => {
     expect(JSON.stringify(frame)).not.toContain('commonsSpriteShapes');
     expect(toFramePayload(createCommonsState()).width).toBe(160);
   });
+
+  test('shows the next useful water-board action as puzzle state changes', () => {
+    const state = { ...createCommonsState(), mode: 'puzzle' };
+    const routed = {
+      ...state,
+      puzzle: { ...state.puzzle, route: 'commons' },
+    };
+    expect(
+      renderCommons(routed).shapes.some(
+        shape => shape.text === 'NEXT: ARROWS TO 12 · A CARVE'
+      )
+    ).toBe(true);
+    const carved = {
+      ...routed,
+      puzzle: {
+        ...routed.puzzle,
+        fluid: {
+          ...routed.puzzle.fluid,
+          solids: routed.puzzle.fluid.solids.map((solid, index) =>
+            index === 11 ? false : solid
+          ),
+        },
+      },
+    };
+    expect(
+      renderCommons(carved).shapes.some(
+        shape => shape.text === 'NEXT: ARROWS TO G · A OPEN'
+      )
+    ).toBe(true);
+    const exhausted = {
+      ...routed,
+      puzzle: { ...routed.puzzle, editsUsed: 3 },
+    };
+    const exhaustedFrame = renderCommons(exhausted);
+    expect(
+      exhaustedFrame.shapes.some(
+        shape => shape.text === 'X BACK · ACTIONS: RESET BOARD'
+      )
+    ).toBe(true);
+    expect(
+      exhaustedFrame.shapes
+        .filter(shape => shape.type === 'text')
+        .every(shape => shape.x + shape.text.length * 5 <= 160)
+    ).toBe(true);
+    const gateOpen = {
+      ...carved,
+      puzzle: { ...carved.puzzle, gateOpen: true },
+    };
+    expect(
+      renderCommons(gateOpen).shapes.some(
+        shape => shape.text === 'NEXT: Y TEST FLOW UNTIL INLET'
+      )
+    ).toBe(true);
+  });
 });

@@ -32,3 +32,11 @@
 - Fix: stage both residents in Canopy Commons during the morning, add readable meal crates and an early-flood marker, record the two perspectives separately from clue evidence, and make the first-district strip progress from flood inspection to hearing both neighbors and then the existing Weir route. The marker does not satisfy the old-gauge requirement for the seasonal pact.
 - Verification: focused Commons Jest suites pass (3 suites / 26 tests); `npm run build` and aggregate `npm run lint` pass. `npm run check` reports test/core-parse child-process `EPERM` and audit exit 1; its final summary lists core-parse and audit as the two failed checks. Bead remains open pending a terminal green aggregate check.
 - Next time: use the first screen to show a concrete shared problem and two reasons people care about it; keep investigation records, clue evidence, and binding charter choices as distinct state.
+
+## Flow-board first-play clarity (2026-10-09)
+
+- Unexpected hurdle: a player reached the flow board with `3/3 EDITS` and `0%` inlet progress, but the board did not state its goal or the next button sequence.
+- Diagnosis: route, channel edit, gate operation and simulation advance were all named only as controller verbs; the two editable channels and gate were unlabeled, and an exhausted wrong edit had no recovery prompt.
+- Fix: name the inlet goal, label channel cells 8/12 and gate G, show route/gate/inlet/edit state, display the next route-specific step, and explain the exact route-12-gate-flow sequence plus reset path in the manual. Exiting with an exhausted blocked channel now points to the reset action.
+- Verification: Commons Art/Simulation/Runtime/Puzzle focused suites pass (4 suites / 33 tests); the simulation regression follows the documented button sequence. Full lint/build/aggregate evidence to be recorded in the bead after evaluator runs.
+- Next time: make the next valid move explicit on stateful puzzle screens, especially when a bounded resource can be exhausted.

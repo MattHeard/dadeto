@@ -235,7 +235,7 @@ function puzzleShapes(puzzle) {
   const shapes = [
     frameRectangle({ x: 0, y: 0, width: 160, height: 144 }, COLORS.dark),
     frameRectangle({ x: 3, y: 3, width: 154, height: 138 }, COLORS.ground),
-    text('LIVING WEIR · FLOW BOARD', 7, 13, COLORS.gold),
+    text('ROUTE WATER TO THE INLET', 7, 13, COLORS.gold),
   ];
   for (
     let cell = 0;
@@ -273,36 +273,62 @@ function puzzleShapes(puzzle) {
     const label =
       cell === 1
         ? 'S'
-        : cell === 13
-          ? puzzle.gateOpen
-            ? 'O'
-            : 'G'
-          : cell === 19
-            ? 'IN'
-            : '';
-    if (label) shapes.push(text(label, x + 8, y + 12, COLORS.dark));
+        : cell === 7
+          ? '8'
+          : cell === 11
+            ? '12'
+            : cell === 13
+              ? puzzle.gateOpen
+                ? 'O'
+                : 'G'
+              : cell === 19
+                ? 'IN'
+                : '';
+    if (label)
+      shapes.push(
+        text(label, x + 8, y + 12, volume > 0 ? COLORS.gold : COLORS.dark)
+      );
   }
   const percent = Math.round(puzzle.fluid.volume[WATER_PUZZLE.target] * 100);
   shapes.push(
-    frameRectangle({ x: 5, y: 101, width: 150, height: 13 }, COLORS.dark),
+    frameRectangle({ x: 5, y: 99, width: 150, height: 24 }, COLORS.dark),
     text(
-      puzzle.completed
-        ? 'WATER REACHES THE INLET'
-        : `${puzzle.route.toUpperCase()} ${puzzle.gateOpen ? 'GATE OPEN' : 'GATE CLOSED'} · ${percent}%`,
+      `${puzzle.route.toUpperCase()} · GATE ${puzzle.gateOpen ? 'OPEN' : 'CLOSED'}`,
       8,
-      110,
+      109,
       COLORS.leaf
     ),
     text(
-      `${puzzle.editsUsed}/${puzzle.editBudget} EDITS · ARROWS SELECT`,
+      `INLET ${percent}% · EDITS USED ${puzzle.editsUsed}/${puzzle.editBudget}`,
       8,
-      122,
+      119,
       COLORS.gold
     ),
-    text('A CARVE/OPEN · B ROUTE', 8, 132, COLORS.leaf),
-    text('Y FLOW · X RETURN', 8, 140, COLORS.leaf)
+    text(puzzleNextStep(puzzle, selected), 8, 131, COLORS.leaf),
+    text('Y TEST FLOW · X RETURN', 8, 140, COLORS.leaf)
   );
   return shapes;
+}
+
+/**
+ * Give one actionable next step for the current route and selected cell.
+ * @param {Record<string, any>} puzzle Current water board.
+ * @param {number} selected Selected zero-based board cell.
+ * @returns {string} Short next action that fits the handheld frame.
+ */
+function puzzleNextStep(puzzle, selected) {
+  if (puzzle.completed) return 'WATER INLET REACHED';
+  if (puzzle.route !== 'commons') return 'NEXT: B SWITCH TO COMMONS';
+  if (puzzle.fluid.solids[11]) {
+    if (puzzle.editsUsed >= puzzle.editBudget)
+      return 'X BACK · ACTIONS: RESET BOARD';
+    return selected === 11
+      ? 'NEXT: A CARVE CHANNEL 12'
+      : 'NEXT: ARROWS TO 12 · A CARVE';
+  }
+  if (!puzzle.gateOpen)
+    return selected === 13 ? 'NEXT: A OPEN GATE' : 'NEXT: ARROWS TO G · A OPEN';
+  return 'NEXT: Y TEST FLOW UNTIL INLET';
 }
 
 /**

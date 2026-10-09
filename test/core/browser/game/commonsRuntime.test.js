@@ -254,7 +254,11 @@ describe('Commons runtime, frame and independent saves', () => {
     const state = { ...createCommonsState(), mode: 'puzzle' };
     const frame = renderCommons(state);
     expect(
-      frame.shapes.some(shape => shape.text === 'LIVING WEIR · FLOW BOARD')
+      frame.shapes.some(shape => shape.text === 'ROUTE WATER TO THE INLET')
+    ).toBe(true);
+    expect(frame.shapes.some(shape => shape.text === '12')).toBe(true);
+    expect(
+      frame.shapes.some(shape => shape.text === 'NEXT: B SWITCH TO COMMONS')
     ).toBe(true);
     const boardText = frame.shapes.filter(shape => shape.type === 'text');
     expect(
@@ -262,7 +266,7 @@ describe('Commons runtime, frame and independent saves', () => {
         shape => shape.x >= 0 && shape.x + shape.text.length * 5 <= 160
       )
     ).toBe(true);
-    expect(boardText.map(shape => shape.y)).toContain(132);
+    expect(boardText.map(shape => shape.y)).toContain(131);
     expect(boardText.map(shape => shape.y)).toContain(140);
     const calls = [];
     drawCommonsFrame(
@@ -296,7 +300,7 @@ describe('Commons runtime, frame and independent saves', () => {
       },
     });
     expect(
-      solved.shapes.some(shape => shape.text === 'WATER REACHES THE INLET')
+      solved.shapes.some(shape => shape.text === 'WATER INLET REACHED')
     ).toBe(true);
     expect(solved.shapes.some(shape => shape.text === 'O')).toBe(true);
   });

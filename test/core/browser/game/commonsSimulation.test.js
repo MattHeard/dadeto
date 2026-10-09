@@ -256,24 +256,42 @@ describe('Commons story simulation', () => {
   });
 
   test('routes water through handheld actions and records the field evidence', () => {
-    let state = {
-      ...createCommonsState(),
-      mode: 'puzzle',
-      puzzle: { ...createCommonsState().puzzle, selectedCell: 11 },
-    };
+    let state = { ...createCommonsState(), mode: 'puzzle' };
     const tap = button => {
       state = stepCommons(state, []);
       state = stepCommons(state, [button]);
     };
-    tap('a');
-    tap('right');
-    tap('right');
     tap('b');
+    expect(state.puzzle.route).toBe('commons');
+    tap('left');
+    tap('down');
+    expect(state.puzzle.selectedCell).toBe(11);
     tap('a');
+    tap('right');
+    tap('right');
+    expect(state.puzzle.selectedCell).toBe(13);
+    tap('a');
+    expect(state.puzzle.gateOpen).toBe(true);
     for (let index = 0; index < 6 && !state.puzzle.completed; index += 1)
       tap('y');
     expect(state.puzzle.completed).toBe(true);
     expect(state.evidence).toContain('water-routed');
+  });
+
+  test('explains how to restore the water board after using every edit', () => {
+    const initial = createCommonsState();
+    const state = {
+      ...initial,
+      mode: 'puzzle',
+      puzzle: {
+        ...initial.puzzle,
+        route: 'commons',
+        editsUsed: initial.puzzle.editBudget,
+      },
+    };
+    const returned = stepCommons(state, ['x']);
+    expect(returned.mode).toBe('world');
+    expect(returned.toast).toContain('Actions → Reset flow board');
   });
 });
 

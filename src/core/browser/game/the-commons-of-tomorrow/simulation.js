@@ -826,12 +826,21 @@ function menuRows(state, content) {
 function stepPuzzle(state, pressed) {
   let selected = state.puzzle.selectedCell ?? 7;
   const width = 5;
-  if (pressed.includes('x'))
+  if (pressed.includes('x')) {
+    const needsReset =
+      !state.puzzle.completed &&
+      state.puzzle.route === 'commons' &&
+      state.puzzle.fluid.solids[11] &&
+      state.puzzle.editsUsed >= state.puzzle.editBudget;
     return {
       ...state,
       mode: 'world',
       puzzle: { ...state.puzzle, selectedCell: selected },
+      toast: needsReset
+        ? 'No edits remain. X menu → Actions → Reset flow board.'
+        : state.toast,
     };
+  }
   if (pressed.includes('left')) selected = Math.max(0, selected - 1);
   if (pressed.includes('right')) selected = Math.min(19, selected + 1);
   if (pressed.includes('up')) selected = Math.max(0, selected - width);
