@@ -1,0 +1,7 @@
+# Chronoflow time response effects
+
+- Unexpected hurdle: the deployed Chronoflow endpoint wrote HTTP response headers and bodies directly, while the core handler had a separate, unpermissioned response contract and was not used by the cloud entrypoint.
+- Diagnosis: `set`, `status`, `send`, and `json` are injected response operations that write the response. The cloud runtime already provides a per-request `createEffectHttpBoundary` for this class of command.
+- Chosen fix: route the cloud endpoint through `handleChronoflowTime`, require `AllowEffects` as the first argument for every injected response operation, and adapt Express methods behind permission-first wrappers. Extracted shared header writing after jscpd identified one duplicate loop; no suppression was added.
+- Next-time guidance: when a cloud entrypoint duplicates an existing core handler, inspect both contracts before changing the wrapper. Keep response operations permission-first and ensure the public HTTP boundary mints a capability per request. Next lexicographic source-cloud audit: `src/cloud/create-checkout-session/index.js`.
+- Evidence: the focused Chronoflow tests passed (3 suites, 8 tests); `npm run tsdoc:check`, `npm run duplication` (0 clones), `npm run check` (10/10 gates, including 11/11 E2E tests), and `npm run build:cloud` passed. Cloud packaging copied the endpoint and adapter and refreshed the tracked shared `infra/` modules from their `src/` sources.

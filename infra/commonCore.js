@@ -4,6 +4,31 @@
 export const ADMIN_UID = 'qcYSrXTaj1MZUoFsAloBwT86GNM2';
 
 /**
+ * Build a shared JSON error payload for browser and cloud response boundaries.
+ * @param {unknown} message Original error message value.
+ * @returns {{ error: unknown }} Error response body.
+ */
+export function createErrorPayload(message) {
+  return { error: message };
+}
+
+/**
+ * Build a JSON POST request while allowing caller-specific headers and options.
+ * @param {unknown} payload JSON body value.
+ * @param {Record<string, string>} [headers] Additional request headers.
+ * @param {{mode?: 'cors' | 'navigate' | 'no-cors' | 'same-origin', credentials?: 'include' | 'omit' | 'same-origin', keepalive?: boolean}} [options] Transport options.
+ * @returns {{method: 'POST', headers: Record<string, string>, body: string, mode?: 'cors' | 'navigate' | 'no-cors' | 'same-origin', credentials?: 'include' | 'omit' | 'same-origin', keepalive?: boolean}} JSON POST request options.
+ */
+export function createJsonPostOptions(payload, headers = {}, options = {}) {
+  return {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...headers },
+    body: JSON.stringify(payload),
+  };
+}
+
+/**
  * Clamp a numeric value without imposing a caller-specific finite-value policy.
  * @param {number} value Value to clamp.
  * @param {number} minimum Inclusive lower bound.
@@ -98,6 +123,21 @@ export function stringOr(candidate, fallback) {
 export function stringOrNull(value) {
   return /** @type {string | null} */ (whenTypeValue(value, 'string'));
 }
+
+/**
+ * Trim and lowercase a string, defaulting missing input to the empty string.
+ * @param {string | undefined} value Candidate string.
+ * @returns {string} Normalized string.
+ */
+export function trimAndLowercase(value = '') {
+  return value.trim().toLowerCase();
+}
+
+/**
+ * Provide a callback that intentionally ignores its input.
+ * @returns {void}
+ */
+export function noop() {}
 
 /**
  * Return a fallback when the provided message is falsy.
