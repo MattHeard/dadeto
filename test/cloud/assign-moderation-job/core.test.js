@@ -761,12 +761,40 @@ describe('createAssignModerationWorkflow', () => {
     };
   };
 
+  const createWorkflow = deps =>
+    createAssignModerationWorkflow(deps.runGuards, async uid => {
+      const variantDoc = deps.fetchVariantSnapshots
+        ? await resolveForWorkflow(deps, uid)
+        : await resolveLegacyForWorkflow(deps);
+      const assignment = { variant: variantDoc.ref, createdAt: deps.now() };
+      const moderatorRef = deps.createModeratorRef(uid);
+      await deps.bindEffectBoundary(permission =>
+        deps.setModeratorAssignment(permission, moderatorRef, assignment)
+      );
+    });
+
+  const resolveForWorkflow = async (deps, uid) => {
+    const candidates = await deps.fetchVariantSnapshots(uid);
+    const selected = deps.selectVariantDoc(candidates[0]);
+    if (selected.errorMessage)
+      throw { status: 500, body: selected.errorMessage };
+    return selected.variantDoc;
+  };
+
+  const resolveLegacyForWorkflow = async deps => {
+    const snapshot = await deps.fetchVariantSnapshot(deps.random());
+    const selected = deps.selectVariantDoc(snapshot);
+    if (selected.errorMessage)
+      throw { status: 500, body: selected.errorMessage };
+    return selected.variantDoc;
+  };
+
   test('returns guard errors without executing the workflow', async () => {
     const deps = createDeps();
     deps.runGuards.mockResolvedValue({
       error: { status: 401, body: 'nope' },
     });
-    const assignModerationWorkflow = createAssignModerationWorkflow(deps);
+    const assignModerationWorkflow = createWorkflow(deps);
 
     await expect(
       assignModerationWorkflow({ req: { method: 'POST' } })
@@ -778,7 +806,7 @@ describe('createAssignModerationWorkflow', () => {
   test('handles missing moderator records', async () => {
     const deps = createDeps();
     deps.runGuards.mockResolvedValue({ context: {} });
-    const assignModerationWorkflow = createAssignModerationWorkflow(deps);
+    const assignModerationWorkflow = createWorkflow(deps);
 
     await expect(
       assignModerationWorkflow({ req: { method: 'POST' } })
@@ -789,7 +817,7 @@ describe('createAssignModerationWorkflow', () => {
   test('surfaces variant selection errors', async () => {
     const deps = createDeps();
     deps.selectVariantDoc.mockReturnValue({ errorMessage: 'boom' });
-    const assignModerationWorkflow = createAssignModerationWorkflow(deps);
+    const assignModerationWorkflow = createWorkflow(deps);
 
     await expect(
       assignModerationWorkflow({ req: { method: 'POST' } })
@@ -800,7 +828,7 @@ describe('createAssignModerationWorkflow', () => {
   test('handles guard responses that omit the context object', async () => {
     const deps = createDeps();
     deps.runGuards.mockResolvedValue({});
-    const assignModerationWorkflow = createAssignModerationWorkflow(deps);
+    const assignModerationWorkflow = createWorkflow(deps);
 
     await expect(
       assignModerationWorkflow({ req: { method: 'POST' } })
@@ -809,7 +837,7 @@ describe('createAssignModerationWorkflow', () => {
 
   test('assigns the variant to the moderator', async () => {
     const deps = createDeps();
-    const assignModerationWorkflow = createAssignModerationWorkflow(deps);
+    const assignModerationWorkflow = createWorkflow(deps);
     const req = { method: 'POST' };
 
     await expect(assignModerationWorkflow({ req })).resolves.toEqual({
@@ -839,7 +867,7 @@ describe('createAssignModerationWorkflow', () => {
   test('rejects unexpected errors from the workflow', async () => {
     const deps = createDeps();
     deps.set.mockRejectedValue(new Error('set failed'));
-    const assignModerationWorkflow = createAssignModerationWorkflow(deps);
+    const assignModerationWorkflow = createWorkflow(deps);
 
     await expect(
       assignModerationWorkflow({ req: { method: 'POST' } })
@@ -963,6 +991,53 @@ describe('createAssignModerationJob', () => {
 });
 
 describe('createHandleAssignModerationJobFromAuth', () => {
+  test('selects and persists a variant under the request-time effect boundary', async () => {
+    const set = jest.fn().mockResolvedValue(undefined);
+    const status = jest.fn().mockReturnThis();
+    const send = jest.fn();
+    const bindEffectBoundary = jest.fn(callback =>
+      callback({ permission: true })
+    );
+    const setModeratorAssignment = jest.fn((permission, reference, data) => {
+      expect(permission).toEqual({ permission: true });
+      return reference.set(data, { merge: true });
+    });
+    const handle = createHandleAssignModerationJobFromAuth({
+      auth: {
+        verifyIdToken: jest.fn().mockResolvedValue({ uid: 'mod' }),
+        getUser: jest.fn().mockResolvedValue({ uid: 'mod' }),
+      },
+      fetchVariantSnapshots: jest
+        .fn()
+        .mockResolvedValue([{ variantDoc: { ref: 'variant-ref' } }]),
+      db: {
+        collection: jest.fn(() => ({ doc: jest.fn(() => ({ set })) })),
+      },
+      now: () => 'timestamp',
+      random: () => 0,
+      setModeratorAssignment,
+      bindEffectBoundary,
+      sendHttpResponse: (permission, response, statusCode, body) => {
+        void permission;
+        response.status(statusCode).send(body);
+      },
+    });
+
+    await handle(
+      { method: 'POST', body: { [ID_TOKEN_KEY]: 'token' } },
+      { status, send }
+    );
+
+    expect(set).toHaveBeenCalledWith(
+      { variant: 'variant-ref', createdAt: 'timestamp' },
+      { merge: true }
+    );
+    expect(setModeratorAssignment).toHaveBeenCalledTimes(1);
+    expect(bindEffectBoundary).toHaveBeenCalledTimes(2);
+    expect(status).toHaveBeenCalledWith(201);
+    expect(send).toHaveBeenCalledWith('');
+  });
+
   test('builds the handler with firestore-backed dependencies', () => {
     const auth = { auth: true };
     const fetchVariantSnapshot = jest.fn();

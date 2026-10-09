@@ -336,75 +336,52 @@ describe('assign moderation job query and workflow coverage', () => {
     expect(send).toHaveBeenCalledWith('');
   });
 
-  test('supports legacy snapshot selection and normalizes workflow errors', async () => {
-    const set = jest.fn().mockResolvedValue(undefined);
-    const base = {
-      runGuards: jest
-        .fn()
-        .mockResolvedValue({ context: { userRecord: { uid: 'mod' } } }),
-      selectVariantDoc: jest.fn(() => ({ variantDoc: { id: 'variant' } })),
-      createModeratorRef: jest.fn(() => ({ set })),
-      setModeratorAssignment: async (permission, reference, data) => {
-        void permission;
-        return reference.set(data, { merge: true });
-      },
-      bindEffectBoundary: callback => callback({}),
-      now: jest.fn(() => 'timestamp'),
-      random: jest.fn(() => 0.25),
-    };
-    const legacy = createAssignModerationWorkflow({
-      ...base,
-      fetchVariantSnapshot: jest.fn().mockResolvedValue({ docs: ['legacy'] }),
+  test('normalizes workflow guard and assignment errors', async () => {
+    const assign = jest.fn().mockRejectedValue({
+      status: 500,
+      body: 'Variant fetch failed 🤷',
     });
-    await expect(legacy({ req: { method: 'POST' } })).resolves.toEqual({
-      status: 201,
-      body: '',
-    });
-    expect(set).toHaveBeenCalled();
-
-    const noCandidate = createAssignModerationWorkflow({
-      ...base,
-      fetchVariantSnapshots: jest.fn().mockResolvedValue([]),
-      selectVariantDoc: jest.fn(() => ({})),
-    });
-    await expect(noCandidate({ req: {} })).resolves.toEqual({
+    const workflow = createAssignModerationWorkflow(
+      jest.fn().mockResolvedValue({ context: { userRecord: { uid: 'mod' } } }),
+      assign
+    );
+    await expect(workflow({ req: {} })).resolves.toEqual({
       status: 500,
       body: 'Variant fetch failed 🤷',
     });
 
-    const guardFailure = createAssignModerationWorkflow({
-      ...base,
-      runGuards: jest
-        .fn()
-        .mockResolvedValue({ error: { status: 403, body: 'denied' } }),
-    });
+    const guardFailure = createAssignModerationWorkflow(
+      jest.fn().mockResolvedValue({ error: { status: 403, body: 'denied' } }),
+      assign
+    );
     await expect(guardFailure({ req: {} })).resolves.toEqual({
       status: 403,
       body: 'denied',
     });
+    expect(assign).toHaveBeenCalledTimes(1);
 
-    const badUser = createAssignModerationWorkflow({
-      ...base,
-      runGuards: jest.fn().mockResolvedValue({ context: { userRecord: {} } }),
-    });
+    const badUser = createAssignModerationWorkflow(
+      jest.fn().mockResolvedValue({ context: { userRecord: {} } }),
+      assign
+    );
     await expect(badUser({ req: {} })).resolves.toEqual({
       status: 500,
       body: 'Moderator lookup failed',
     });
 
-    const fallbackContext = createAssignModerationWorkflow({
-      ...base,
-      runGuards: jest.fn().mockResolvedValue({}),
-    });
+    const fallbackContext = createAssignModerationWorkflow(
+      jest.fn().mockResolvedValue({}),
+      assign
+    );
     await expect(fallbackContext({ req: {} })).resolves.toEqual({
       status: 500,
       body: 'Moderator lookup failed',
     });
 
-    const thrown = createAssignModerationWorkflow({
-      ...base,
-      runGuards: jest.fn().mockRejectedValue(new Error('unexpected')),
-    });
+    const thrown = createAssignModerationWorkflow(
+      jest.fn().mockRejectedValue(new Error('unexpected')),
+      assign
+    );
     await expect(thrown({ req: {} })).rejects.toThrow('unexpected');
     try {
       assignModerationJobTestUtils.ensureVariantDocAvailability(

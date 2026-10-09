@@ -279,18 +279,15 @@ describe('assign moderation workflow query branches', () => {
     const createModeratorRef = jest.fn(() => ({
       set: jest.fn().mockResolvedValue(undefined),
     }));
-    const workflow = createAssignModerationWorkflow({
-      runGuards,
-      fetchVariantSnapshots,
-      selectVariantDoc,
-      createModeratorRef,
-      setModeratorAssignment: async (permission, reference, data) => {
-        void permission;
-        return reference.set(data, { merge: true });
-      },
-      bindEffectBoundary: callback => callback({}),
-      now: jest.fn(() => 'ts'),
-      random: jest.fn(() => 0),
+    const workflow = createAssignModerationWorkflow(runGuards, async uid => {
+      const snapshots = await fetchVariantSnapshots(uid);
+      const chosen =
+        assignModerationJobTestUtils.chooseVariantDocFromCandidates(
+          snapshots,
+          () => 0
+        );
+      selectVariantDoc(chosen);
+      createModeratorRef(uid);
     });
 
     await expect(workflow({ req: {} })).resolves.toEqual({

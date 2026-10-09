@@ -1116,94 +1116,31 @@ export function createHandleAssignModerationJobCore(
 }
 
 /**
- * @typedef {object} AssignModerationWorkflowDeps
- * @property {(context: { req: NativeHttpRequest }) => Promise<{ error?: GuardError, context?: GuardContext }>} runGuards - Guard runner that validates the incoming request.
- * @property {(uid: string) => Promise<VariantCandidate[]>} [fetchVariantSnapshots] - Resolver that fetches moderation candidates for the caller.
- * @property {(randomValue: number) => Promise<VariantSnapshot>} [fetchVariantSnapshot] - Legacy resolver that fetches a single snapshot.
- * @property {typeof selectVariantDoc} selectVariantDoc - Selector that extracts the chosen variant document from a snapshot.
- * @property {(uid: string) => import('firebase-admin/firestore').DocumentReference} createModeratorRef - Factory that returns the moderator document reference for persisting assignments.
- * @property {(permission: AllowEffects, reference: import('firebase-admin/firestore').DocumentReference, data: object) => Promise<unknown>} setModeratorAssignment Permission-aware Firestore write adapter.
- * @property {import('../../../../types/allow-effects').AllowEffectsBoundary} bindEffectBoundary Request-time effects boundary.
- * @property {() => unknown} now - Clock function that returns the timestamp persisted with the assignment.
- * @property {() => number} random - RNG used to seed variant selection.
- */
-
 /**
  * @typedef {{ req: NativeHttpRequest }} AssignModerationWorkflowInput
  */
 
 /**
  * Create the moderation assignment workflow.
- * @param {AssignModerationWorkflowDeps} deps Dependencies required by the workflow.
+ * @param {(context: { req: NativeHttpRequest }) => Promise<{ error?: GuardError, context?: GuardContext }>} runGuards Guard runner that validates the incoming request.
+ * @param {(uid: string) => Promise<void>} assignVariantToModerator Selects a variant and persists its assignment for the moderator.
  * @returns {(input: AssignModerationWorkflowInput) => Promise<{ status: number, body?: string }>} Moderation assignment workflow.
  */
-export function createAssignModerationWorkflow({
+export function createAssignModerationWorkflow(
   runGuards,
-  fetchVariantSnapshots,
-  fetchVariantSnapshot,
-  selectVariantDoc,
-  createModeratorRef,
-  setModeratorAssignment,
-  bindEffectBoundary,
-  now,
-  random,
-}) {
+  assignVariantToModerator
+) {
   return async function assignModerationWorkflow({ req }) {
     try {
       const context = await resolveGuardContext(runGuards, req);
       const userRecord = resolveUserRecord(context);
-      let variantDoc;
-      if (typeof fetchVariantSnapshots === 'function') {
-        variantDoc = await resolveVariantDoc({
-          fetchVariantSnapshots,
-          selectVariantDoc,
-          random,
-          uid: userRecord.uid,
-        });
-      } else {
-        variantDoc = await resolveLegacyVariantDoc({
-          fetchVariantSnapshot,
-          selectVariantDoc,
-          random,
-        });
-      }
-
-      const assignment = createAssignmentData({ variantDoc, now });
-      const moderatorRef = createModeratorRef(userRecord.uid);
-      await bindEffectBoundary(permission =>
-        setModeratorAssignment(permission, moderatorRef, assignment)
-      );
+      await assignVariantToModerator(userRecord.uid);
 
       return { status: 201, body: '' };
     } catch (err) {
       return handleAssignmentError(err);
     }
   };
-}
-
-/**
- * Resolve a single snapshot using the legacy selection path.
- * @param {{
- *   fetchVariantSnapshot?: (randomValue: number) => Promise<VariantSnapshot>,
- *   selectVariantDoc: typeof selectVariantDoc,
- *   random: () => number,
- * }} deps Legacy resolver dependencies.
- * @returns {Promise<VariantDocSnapshot>} Selected variant document.
- */
-async function resolveLegacyVariantDoc({
-  fetchVariantSnapshot,
-  selectVariantDoc,
-  random,
-}) {
-  // Stryker disable next-line all -- the legacy optional fetcher is retained
-  // for backwards-compatible injected callers.
-  const snapshot = await fetchVariantSnapshot?.(random());
-  const candidateVariantDoc = selectVariantDoc(snapshot);
-  const { errorMessage, variantDoc } = candidateVariantDoc;
-
-  ensureVariantDocAvailability(errorMessage, variantDoc);
-
-  return /** @type {VariantDocSnapshot} */ (variantDoc);
 }
 
 /**
@@ -1697,16 +1634,24 @@ export function createHandleAssignModerationJobFromAuth({
 
   // Stryker disable next-line all -- workflow dependency composition is a direct
   // injected wiring boundary.
-  const assignModerationWorkflow = createAssignModerationWorkflow({
+  /** @type {(uid: string) => Promise<void>} */
+  const assignVariantToModerator = async uid => {
+    const variantDoc = await resolveVariantDoc({
+      fetchVariantSnapshots,
+      selectVariantDoc,
+      random,
+      uid,
+    });
+    const assignment = createAssignmentData({ variantDoc, now });
+    const moderatorRef = createModeratorRef(uid);
+    await bindEffectBoundary(permission =>
+      setModeratorAssignment(permission, moderatorRef, assignment)
+    );
+  };
+  const assignModerationWorkflow = createAssignModerationWorkflow(
     runGuards,
-    fetchVariantSnapshots,
-    selectVariantDoc,
-    createModeratorRef,
-    setModeratorAssignment,
-    bindEffectBoundary,
-    now,
-    random,
-  });
+    assignVariantToModerator
+  );
 
   return createHandleAssignModerationJobCore(
     assignModerationWorkflow,
