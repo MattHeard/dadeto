@@ -2,7 +2,7 @@
 
 ## What this toy does
 
-Chronoflow is a 2D water-routing puzzle. In the first playable level, route water through the archive's channels and gate to a sealed memory chamber. The deterministic fluid model responds to pressure, gravity, inertia, and material resistance. A fresh Internet clock can award a timed high-tide record; stale or unavailable sync keeps the puzzle playable as unscored practice.
+Chronoflow is a 2D water-routing puzzle. In the first playable level, route water through the archive's channels and gate to a sealed memory chamber. The deterministic fluid model responds to pressure, gravity, inertia, and material resistance. A fresh Internet clock can award a timed high-tide record; stale or unavailable sync keeps the puzzle playable as unscored practice. Play the standalone game at [/chronoflow/](/chronoflow/).
 
 ## Input
 

@@ -264,6 +264,16 @@ const STYLES = String.raw`
     white-space: pre-wrap;
   }
 
+  .manual-markdown a {
+    text-decoration: underline;
+    text-underline-offset: 0.15em;
+  }
+
+  .manual-markdown a:hover,
+  .manual-markdown a:focus-visible {
+    color: var(--terminal-hover);
+  }
+
   .manual-body[hidden] {
     display: none;
   }

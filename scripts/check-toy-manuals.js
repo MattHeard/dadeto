@@ -20,6 +20,12 @@ const forbiddenPhrases = [
   'documented behavior',
   'the fields shown above',
 ];
+const standaloneManualPages = [
+  'chronoflow',
+  'mosslight-valley',
+  'neon-covenant',
+  'the-commons-of-tomorrow',
+];
 
 function fail(toy, message) {
   throw new Error(`${toy}: ${message}`);
@@ -48,6 +54,12 @@ function topLevelSection(markdown, title) {
 for (const toy of toyDirectories) {
   const manualPath = path.join(toysRoot, toy, 'manual.md');
   const markdown = fs.readFileSync(manualPath, 'utf8');
+  if (
+    standaloneManualPages.includes(toy) &&
+    !markdown.includes(`](/${toy}/)`)
+  ) {
+    fail(toy, `manual must link to its standalone page at /${toy}/`);
+  }
   for (const heading of requiredHeadings) {
     if (!markdown.includes(heading)) fail(toy, `missing heading ${heading}`);
   }

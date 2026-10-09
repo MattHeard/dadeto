@@ -2,7 +2,7 @@
 
 ## What this toy does
 
-Explore the opening of an original handheld-style RPG chapter. Walk the village, talk to its residents, and investigate a valley whose dreams are beginning to leak into daylight.
+Explore the opening of an original handheld-style RPG chapter. Walk the village, talk to its residents, and investigate a valley whose dreams are beginning to leak into daylight. Play the standalone game at [/mosslight-valley/](/mosslight-valley/).
 
 ## Input
 
