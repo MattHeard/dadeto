@@ -2,8 +2,9 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { createHash } from 'node:crypto';
 import { createRequire } from 'node:module';
-import { createCloneScanHandle } from '../core/scripts/clone-scanner.js';
-import { bindEffectBoundary } from '../build/allow-effects.js';
+import { createCloneScanHandle } from '../core/local/clone-scanner.js';
+import { escapeHtml } from '../core/build/html.js';
+import { bindEffectBoundary } from './allow-effects.js';
 
 const require = createRequire(import.meta.url);
 const core = require('@jscpd/core');
@@ -18,6 +19,7 @@ const handle = createCloneScanHandle({
   getDefaultOptions: core.getDefaultOptions,
   resolveMode: core.getModeHandler,
   formatFor: tokenizer.getFormatByFile,
+  escapeHtml,
   createStatistics: () => new core.Statistic(),
   createDetector: options => new core.Detector(new tokenizer.Tokenizer(), new core.MemoryStore(), [], {
     ...options,

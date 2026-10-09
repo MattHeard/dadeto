@@ -56,7 +56,7 @@ describe('createCheckDuplicationHandle with injected dependencies', () => {
     expect(stderr.chunks).toEqual([]);
     expect(spawnImpl).toHaveBeenCalledWith(
       'node',
-      ['src/scripts/run-clone-scanner.js', '.jscpd.json'],
+      ['src/local/run-clone-scanner.js', '.jscpd.json'],
       expect.objectContaining({ cwd: expect.any(String) })
     );
     expect(readFileSync).toHaveBeenCalledWith(

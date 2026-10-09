@@ -1,5 +1,3 @@
-import { escapeHtml } from '../build/html.js';
-
 /** @typedef {import('../../../types/allow-effects').AllowEffects} AllowEffects */
 
 /**
@@ -14,6 +12,7 @@ import { escapeHtml } from '../build/html.js';
  *   getDefaultOptions: () => Record<string, any>,
  *   resolveMode: (mode: string) => unknown,
  *   formatFor: (path: string, extensions: Record<string, string[]>) => string | undefined,
+ *   escapeHtml: (text: string) => string,
  *   createDetector: (options: Record<string, any>) => {detect: (path: string, content: string, format: string) => Promise<Array<Record<string, any>>>, on: (event: string, handler: (...args: any[]) => void) => unknown},
  *   createStatistics: () => {subscribe: () => Record<string, (...args: any[]) => void>, getStatistic: () => Record<string, any>},
  *   makeDirectory: (permission: AllowEffects, path: string) => void,
@@ -238,7 +237,10 @@ async function publishCloneReport(report, output, deps) {
   const files = /** @type {Array<[string, string]>} */ ([
     [deps.joinPath(output, 'jscpd-report.json'), serialized],
     [deps.joinPath(htmlDirectory, 'jscpd-report.json'), serialized],
-    [deps.joinPath(htmlDirectory, 'index.html'), renderCloneReport(report)],
+    [
+      deps.joinPath(htmlDirectory, 'index.html'),
+      renderCloneReport(report, deps),
+    ],
   ]);
   await deps.bindEffectBoundary(permission =>
     writeCloneReport(permission, htmlDirectory, files, deps)
@@ -263,13 +265,14 @@ async function writeCloneReport(permission, htmlDirectory, files, deps) {
 /**
  * Escape source code and filenames when presenting clone evidence.
  * @param {CloneReport} report Detection evidence.
+ * @param {ScanDependencies} deps HTML escaping helper.
  * @returns {string} Self-contained HTML.
  */
-function renderCloneReport(report) {
+function renderCloneReport(report, deps) {
   const blocks = report.duplicates
     .map(
       clone =>
-        `<details><summary>${escapeHtml(clone.firstFile.name)}:${clone.firstFile.start} ↔ ${escapeHtml(clone.secondFile.name)}:${clone.secondFile.start}</summary><pre>${escapeHtml(clone.fragment)}</pre></details>`
+        `<details><summary>${deps.escapeHtml(clone.firstFile.name)}:${clone.firstFile.start} ↔ ${deps.escapeHtml(clone.secondFile.name)}:${clone.secondFile.start}</summary><pre>${deps.escapeHtml(clone.fragment)}</pre></details>`
     )
     .join('\n');
   return `<!doctype html><html lang="en"><meta charset="utf-8"><title>Dadeto clone report</title><h1>Clone report</h1><p>${report.duplicates.length} clones · ${report.statistics.total.sources} sources</p>${blocks}</html>`;

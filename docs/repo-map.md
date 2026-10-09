@@ -8,7 +8,7 @@
 | Browser app layer | UI bootstrapping, event wiring, and browser adapters for site + toys | `src/browser/`, `public/browser/` |
 | Build and generation | Static generation and deployment copy pipelines | `src/build/`, `src/scripts/` |
 | Cloud function layer | Google Cloud Function wrappers + runtime integration | `src/cloud/`, `infra/browser/functions/` |
-| Local writer runtime | Local-first writing workflow server and persistence | `src/local/` |
+| Local runtime and tooling | Local-first writing workflow, repository quality runners, and environment adapters | `src/local/`, `src/core/local/` |
 | Test and quality | Unit/e2e tests and quality report artifacts | `test/`, `e2e/`, `reports/` |
 | Deployment + infra | Terraform, packaging, and automation workflow definitions | `infra/`, `.github/workflows/`, `docker/` |
 | Generated/public outputs | Static publish targets and dated snapshots | `public/` |
@@ -22,6 +22,7 @@
 - `src/build/copy.js` and `src/build/copy-dendrite.js` — static asset copy pipelines.
 - `src/build/copy-cloud.js` — cloud deployment packaging entry point.
 - `src/local/server.js` — local writer Express server entry point.
+- `src/local/run-clone-scanner.js` — local jscpd runner; reusable scanner behavior lives in `src/core/local/clone-scanner.js`.
 - `src/cloud/*.js` — cloud function wrapper entry points.
 - `src/browser/` — browser bootstrapping and composition layer.
 - `src/core/` — shared behavior surface for build/browser/cloud/local contexts.

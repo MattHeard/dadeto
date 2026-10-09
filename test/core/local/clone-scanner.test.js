@@ -1,7 +1,8 @@
 import { describe, expect, test, jest } from '@jest/globals';
 import { createRequire } from 'node:module';
 import { createHash } from 'node:crypto';
-import { createCloneScanHandle } from '../../src/core/scripts/clone-scanner.js';
+import { createCloneScanHandle } from '../../../src/core/local/clone-scanner.js';
+import { escapeHtml } from '../../../src/core/build/html.js';
 
 const require = createRequire(import.meta.url);
 const core = require('@jscpd/core');
@@ -57,6 +58,7 @@ function fixture() {
     getDefaultOptions: () => ({ ...core.getDefaultOptions(), maxLines: 10 }),
     resolveMode: core.getModeHandler,
     formatFor: tokenizer.getFormatByFile,
+    escapeHtml,
     createStatistics: () => new core.Statistic(),
     createDetector: options =>
       new core.Detector(new tokenizer.Tokenizer(), new core.MemoryStore(), [], {

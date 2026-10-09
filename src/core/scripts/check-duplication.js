@@ -123,7 +123,7 @@ function executeDuplicationGate({
   const { launchFailure } = runGateCommand({
     spawnImpl,
     command: 'node',
-    args: ['src/scripts/run-clone-scanner.js', configPath],
+    args: ['src/local/run-clone-scanner.js', configPath],
     rootDir,
     stderr,
     launchLabel: getDuplicationGateLabel(),
