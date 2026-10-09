@@ -18,11 +18,11 @@ const COLORS = Object.freeze({
   water: '#246774',
 });
 const WEIR_PALETTE = Object.freeze([
-  '#10212b',
-  '#dfcfa0',
-  '#739c84',
+  '#182f36',
+  '#617369',
+  '#68786d',
   '#e29162',
-  '#237a94',
+  '#355760',
 ]);
 
 /**

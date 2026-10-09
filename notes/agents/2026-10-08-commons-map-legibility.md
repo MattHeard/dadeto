@@ -18,3 +18,9 @@
 - Weir adjustment: pale sand bank, dark teal channel, bright channel edge and much brighter resident clothing accents; player cyan is kept distinct from deep water. Art regression checks assert color presence and a luminance gap between bank/water and PC/water.
 - Movement feedback now omits routine `Moved <direction>` announcements; it retains concise target prompts and useful blocked/entry messages.
 - Verification: three focused Commons suites pass (25 tests); focused ESLint, tsdoc, and build pass.
+
+## Weir background contrast follow-up (2026-10-09)
+
+- Diagnosis: the previous bright sand (`#dfcfa0`), near-black channel edge, pale glints, and cyan water produced a large value jump on nearly every small tile. The high-frequency stripes competed with 12px actors and props.
+- Fix: narrowed the Weir terrain luminance range with muted sage banks and slate teal water; removed bright ripple flecks and hard dark channel borders; recolored blocked shore structures into the same quiet range. Foreground sprites, signs, and interaction landmarks retain their brighter accents.
+- Verification: native 160x144 frame saved at `/tmp/commons-living-weir-revised.png`; tests assert terrain luminance range stays below 0.15 and PC-to-water separation remains above 0.2. Focused Commons suites pass (25 tests), as do ESLint, tsdoc, and build.

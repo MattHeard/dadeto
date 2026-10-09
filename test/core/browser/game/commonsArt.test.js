@@ -46,7 +46,8 @@ describe('Commons visual identity', () => {
       region: 'shore',
     });
     expect(wetland).not.toEqual(path);
-    expect(wetland.map(pixel => pixel.fill)).toContain('#237a94');
+    expect(wetland.map(pixel => pixel.fill)).toContain('#355760');
+    expect(wetland.map(pixel => pixel.fill)).toContain('#617369');
     expect(
       generateCommonsTile({
         x: 1,
@@ -65,7 +66,7 @@ describe('Commons visual identity', () => {
         region: 'shore',
         blocked: true,
       })
-    ).toHaveLength(7);
+    ).toHaveLength(4);
   });
 
   test('draws original Commons clothing and landmark glyphs as clipped pixels', () => {
@@ -147,11 +148,11 @@ describe('Commons visual identity', () => {
     const weir = generateCommonsTile({
       x: 4,
       y: 4,
-      palette: ['#10212b', '#dfcfa0', '#739c84', '#e29162', '#237a94'],
+      palette: ['#182f36', '#617369', '#68786d', '#e29162', '#355760'],
       region: 'shore',
     });
-    expect(weir.map(pixel => pixel.fill)).toContain('#237a94');
-    expect(weir.map(pixel => pixel.fill)).toContain('#dfcfa0');
+    expect(weir.map(pixel => pixel.fill)).toContain('#355760');
+    expect(weir.map(pixel => pixel.fill)).toContain('#617369');
     const luminance = hex => {
       const values = hex
         .match(/[a-f0-9]{2}/gi)
@@ -162,23 +163,29 @@ describe('Commons visual identity', () => {
       return linear[0] * 0.2126 + linear[1] * 0.7152 + linear[2] * 0.0722;
     };
     expect(
-      Math.abs(luminance('#dfcfa0') - luminance('#237a94'))
-    ).toBeGreaterThan(0.25);
+      Math.abs(luminance('#617369') - luminance('#355760'))
+    ).toBeGreaterThan(0.07);
     const state = createCommonsState();
     state.world.mapId = 'weir';
     state.world.map = COMMONS_CONTENT.maps.weir;
     const frame = renderCommons(state);
     expect(frame.palette).toEqual([
-      '#10212b',
-      '#dfcfa0',
-      '#739c84',
+      '#182f36',
+      '#617369',
+      '#68786d',
       '#e29162',
-      '#237a94',
+      '#355760',
     ]);
     expect(frame.shapes.some(shape => shape.fill === '#21b6cb')).toBe(true);
     expect(
-      Math.abs(luminance('#21b6cb') - luminance('#237a94'))
+      Math.abs(luminance('#21b6cb') - luminance('#355760'))
     ).toBeGreaterThan(0.2);
+    const terrainLuminances = [...new Set(weir.map(pixel => pixel.fill))].map(
+      luminance
+    );
+    expect(
+      Math.max(...terrainLuminances) - Math.min(...terrainLuminances)
+    ).toBeLessThan(0.15);
   });
 
   test('includes Commons-specific pixel art in serialized page and toy frames', () => {

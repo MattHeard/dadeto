@@ -1,4 +1,13 @@
 const SIZE = 12;
+const WEIR_TERRAIN = Object.freeze({
+  bank: '#617369',
+  bankLight: '#68786d',
+  water: '#355760',
+  waterEdge: '#4a625e',
+  structure: '#596b63',
+  structureLight: '#64766b',
+  structureDark: '#4c6059',
+});
 
 /**
  * Draw a planned solarpunk landscape with broad paths, planted terraces and a
@@ -17,6 +26,7 @@ export function generateCommonsTile({
 }) {
   const [outline, stone, canopy, terracotta] = palette;
   const code = Math.abs((x * 19 + y * 23 + x * y * 5) % 8);
+  if (region === 'shore' && blocked) return weirStructureTile({ roof, code });
   if (blocked)
     return structureTile({ outline, stone, canopy, terracotta, roof, code });
   if (region === 'shore') return weirTile({ x, y, code });
@@ -51,18 +61,33 @@ function commonsTile({ walkway, canopy, terracotta, code }) {
 function weirTile({ x, y, code }) {
   const center = (x * 2 + Math.floor(y / 2) + 2) % 6;
   const bankLeft = center;
-  const bankRight = center + 5;
   const channel = [
-    rect([0, 0, SIZE, SIZE], '#dfcfa0'),
-    rect([0, 1, SIZE, 1], '#f4e7bf'),
-    rect([0, 10, SIZE, 1], '#a59162'),
+    rect([0, 0, SIZE, SIZE], WEIR_TERRAIN.bank),
+    rect([0, 1, SIZE, 1], WEIR_TERRAIN.bankLight),
+    rect([0, 10, SIZE, 1], WEIR_TERRAIN.bank),
   ];
-  channel.push(rect([bankLeft, 0, 5, SIZE], '#237a94'));
-  channel.push(rect([bankLeft, 0, 1, SIZE], '#10212b'));
-  channel.push(rect([bankRight, 0, 1, SIZE], '#4fb5bb'));
-  channel.push(rect([bankLeft + 1, 2 + (code % 5), 2, 1], '#fff078'));
-  channel.push(rect([bankLeft + 1, 8, 3, 1], '#c9f3e6'));
+  channel.push(rect([bankLeft, 0, 5, SIZE], WEIR_TERRAIN.water));
+  channel.push(rect([bankLeft, 0, 1, SIZE], WEIR_TERRAIN.waterEdge));
+  if (code === 0)
+    channel.push(rect([bankLeft + 1, 7, 2, 1], WEIR_TERRAIN.waterEdge));
   return channel;
+}
+
+/**
+ * Draw quiet wetland structures that stay behind the foreground sprites.
+ * @param {{roof:boolean,code:number}} options Structure tile context.
+ * @returns {Array<{x:number,y:number,width:number,height:number,fill:string}>} Muted structure pixels.
+ */
+function weirStructureTile({ roof, code }) {
+  const shapes = [
+    rect([0, 0, SIZE, SIZE], WEIR_TERRAIN.structure),
+    rect([1, 1, 10, 9], WEIR_TERRAIN.bank),
+    rect([2, 3, 8, 1], WEIR_TERRAIN.structureLight),
+    rect([2, 8, 8, 1], WEIR_TERRAIN.structureDark),
+  ];
+  if (roof && code % 3 === 0)
+    shapes.push(rect([2, 2, 8, 1], WEIR_TERRAIN.bankLight));
+  return shapes;
 }
 
 /**
