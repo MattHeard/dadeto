@@ -1,5 +1,5 @@
 /** @typedef {{x: number, y: number, requires?: string, map: string, to: [number, number]}} MapExit */
-/** @typedef {{width: number, height: number, blocked: string[], exits: MapExit[]}} WorldMap */
+/** @typedef {{width: number, height: number, blocked: string[], exits: MapExit[], objects?: {x: number, y: number, id?: string, kind?: string}[]}} WorldMap */
 /** @typedef {{x: number, y: number, facing: string}} WorldPlayer */
 /** @typedef {{mapId: string, map: WorldMap, player: WorldPlayer, time: number, day: number, flags: Record<string, any>, npcs?: {id: string, map: string, x: number, y: number}[], [key: string]: any}} WorldState */
 /** @typedef {Record<string, any> & {start: {map: string, x: number, y: number, facing: string}, maps: Record<string, WorldMap>, npcs: {id: string}[]}} WorldContent */
@@ -14,7 +14,7 @@ export function findWorldEntry(entries, eligible) {
   return entries.find(eligible) ?? null;
 }
 /**
- * Whether a tile is outside the map or explicitly blocked.
+ * Whether a tile is outside, explicitly blocked, or occupied by a world object.
  * @param {WorldMap} map Map geometry and blocked tiles.
  * @param {number} x Horizontal tile coordinate.
  * @param {number} y Vertical tile coordinate.
@@ -26,7 +26,8 @@ export function isBlocked(map, x, y) {
     y < 0 ||
     x >= map.width ||
     y >= map.height ||
-    map.blocked.includes(`${x},${y}`)
+    map.blocked.includes(`${x},${y}`) ||
+    Boolean(map.objects?.some(object => object.x === x && object.y === y))
   );
 }
 /**

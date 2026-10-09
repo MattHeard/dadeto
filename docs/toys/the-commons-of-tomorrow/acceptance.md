@@ -8,6 +8,7 @@
 - [ ] Puzzle tests cover a known solution, failed route, bounded/reversible edits, reset, and deterministic repeated advancement without wall-clock access.
 - [ ] World-interaction tests verify bridge repair at the footbridge, habitat listening at the field scope, puzzle reset at the maintenance console, and no floating Actions page.
 - [ ] Overworld field note renders in two rows, scrolls by line with up/down, pages down with A, closes with B, and expands the map viewport without clipping text.
+- [ ] A on the final field-note page closes it; inspectable fixtures block movement while remaining inspectable from an adjacent tile.
 - [ ] Overworld frames show only one bounded contextual HUD line; dialogue and journal retain detailed guidance when opened.
 - [ ] Save tests cover independent game identity, versioned three-slot persistence, export/import round trip, malformed import rejection without replacing current state, and save/reload mid-quest.
 - [ ] Embedded and dedicated adapters produce equivalent state and 160×144 frame output from the same command sequence.

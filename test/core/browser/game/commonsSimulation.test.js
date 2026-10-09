@@ -790,9 +790,42 @@ describe('Commons handheld actions and deterministic board controls', () => {
     expect(state.hudScroll).toBe(1);
     state = stepCommons({ ...state, lastActions: [] }, ['a']);
     expect(state.hudScroll).toBe(2);
-    state = stepCommons({ ...state, lastActions: [] }, ['b']);
+    state = stepCommons({ ...state, lastActions: [] }, ['a']);
     expect(state.hudReading).toBe(false);
     expect(state.toast).toBe(' ');
+
+    let secondNote = {
+      ...initial,
+      toast: ' ',
+      world: {
+        ...initial.world,
+        mapId: 'weir',
+        map: COMMONS_CONTENT.maps.weir,
+        player: { x: 11, y: 3, facing: 'right' },
+        npcs: [],
+      },
+    };
+    secondNote = stepCommons(secondNote, ['a']);
+    secondNote = stepCommons({ ...secondNote, lastActions: [] }, ['b']);
+    expect(secondNote.hudReading).toBe(false);
+    expect(secondNote.toast).toBe(' ');
+  });
+
+  test('blocks walking onto inspectable objects while keeping them in A range', () => {
+    const initial = createCommonsState();
+    const atCharter = {
+      ...initial,
+      world: {
+        ...initial.world,
+        player: { x: 9, y: 6, facing: 'up' },
+        npcs: [],
+      },
+      lastActions: [],
+    };
+    const blocked = stepCommons(atCharter, ['up']);
+    expect(blocked.world.player).toMatchObject({ x: 9, y: 6, facing: 'up' });
+    const inspected = stepCommons({ ...blocked, lastActions: [] }, ['a']);
+    expect(inspected.toast).toContain('charter table');
   });
 
   test('covers assign shortcuts, puzzle bounds, journal rows and input edge behavior', () => {

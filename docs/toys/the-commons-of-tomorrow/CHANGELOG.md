@@ -18,3 +18,8 @@
 
 - Expand the map viewport and replace the clipped one-line strip with a two-row contextual field note.
 - Long notes scroll one row with directions, page down with A, and close with B; add a visible scroll position marker.
+
+## Version 5 — 2026-10-09
+
+- Pressing A on the final page now closes a long field note.
+- Inspectable map objects now block movement so they remain physical fixtures in the districts.

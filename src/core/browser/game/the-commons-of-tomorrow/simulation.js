@@ -300,11 +300,14 @@ function stepWorld(state, pressed, content) {
       return { ...state, hudScroll: Math.max(0, (state.hudScroll || 0) - 1) };
     if (pressed.includes('down'))
       return { ...state, hudScroll: Math.min(lastOffset, state.hudScroll + 1) };
-    if (pressed.includes('a'))
+    if (pressed.includes('a')) {
+      if ((state.hudScroll || 0) >= lastOffset)
+        return { ...state, hudReading: false, hudScroll: 0, toast: ' ' };
       return {
         ...state,
         hudScroll: Math.min(lastOffset, (state.hudScroll || 0) + 2),
       };
+    }
     return state;
   }
   if (pressed.includes('x'))
