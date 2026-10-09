@@ -24,3 +24,11 @@
 - Diagnosis: the previous bright sand (`#dfcfa0`), near-black channel edge, pale glints, and cyan water produced a large value jump on nearly every small tile. The high-frequency stripes competed with 12px actors and props.
 - Fix: narrowed the Weir terrain luminance range with muted sage banks and slate teal water; removed bright ripple flecks and hard dark channel borders; recolored blocked shore structures into the same quiet range. Foreground sprites, signs, and interaction landmarks retain their brighter accents.
 - Verification: native 160x144 frame saved at `/tmp/commons-living-weir-revised.png`; tests assert terrain luminance range stays below 0.15 and PC-to-water separation remains above 0.2. Focused Commons suites pass (25 tests), as do ESLint, tsdoc, and build.
+
+## Opening scene follow-up (2026-10-09)
+
+- Unexpected hurdle: the Commons start already had a route instruction, but the NPCs and first clue did not present the value conflict as a live situation.
+- Diagnosis: June was visible at the start, while Elian was scheduled only in the Weir; the first screen had no flood evidence or concrete gathering prop.
+- Fix: stage both residents in Canopy Commons during the morning, add readable meal crates and an early-flood marker, record the two perspectives separately from clue evidence, and make the first-district strip progress from flood inspection to hearing both neighbors and then the existing Weir route. The marker does not satisfy the old-gauge requirement for the seasonal pact.
+- Verification: focused Commons Jest suites pass (3 suites / 26 tests); `npm run build` and aggregate `npm run lint` pass. `npm run check` reports test/core-parse child-process `EPERM` and audit exit 1; its final summary lists core-parse and audit as the two failed checks. Bead remains open pending a terminal green aggregate check.
+- Next time: use the first screen to show a concrete shared problem and two reasons people care about it; keep investigation records, clue evidence, and binding charter choices as distinct state.

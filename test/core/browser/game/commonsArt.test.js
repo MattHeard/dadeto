@@ -195,7 +195,27 @@ describe('Commons visual identity', () => {
     expect(frame.shapes.some(shape => shape.fill === '#315744')).toBe(false);
     expect(frame.commons.path).toContain('6,8');
     expect(
-      frame.shapes.some(shape => shape.text === 'WEIR → · FOLLOW LIGHT PATH')
+      frame.shapes.some(shape => shape.text === 'RIVER UP · CHECK FLOOD MARK')
+    ).toBe(true);
+    const openingPrompt = frame.shapes.find(
+      shape => shape.text === 'RIVER UP · CHECK FLOOD MARK'
+    );
+    expect(openingPrompt.x + openingPrompt.text.length * 5).toBeLessThanOrEqual(
+      160
+    );
+    const informed = renderCommons({
+      ...createCommonsState(),
+      world: {
+        ...createCommonsState().world,
+        flags: {
+          earlyFloodMarkRead: true,
+          'heard-june': true,
+          'heard-elian': true,
+        },
+      },
+    });
+    expect(
+      informed.shapes.some(shape => shape.text === 'WEIR → · FOLLOW LIGHT PATH')
     ).toBe(true);
     expect(palette).toContain('#397e89');
     expect(JSON.stringify(frame)).not.toContain('commonsSpriteShapes');

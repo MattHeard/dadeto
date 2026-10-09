@@ -13,6 +13,14 @@ describe('Commons story simulation', () => {
     const state = createCommonsState();
     expect(state.world.relationships).toEqual({});
     expect(state.world.mapId).toBe('commons');
+    expect(
+      state.world.npcs
+        .filter(person => person.map === 'commons')
+        .map(person => person.id)
+    ).toEqual(expect.arrayContaining(['june', 'elian']));
+    expect(state.world.map.objects.map(object => object.id)).toEqual(
+      expect.arrayContaining(['flood-marker', 'meal-crates'])
+    );
     const moved = stepCommons(state, ['right']);
     expect(moved.world.player.x).toBe(state.world.player.x + 1);
     expect(moved.toast).toBe(' ');
@@ -39,6 +47,50 @@ describe('Commons story simulation', () => {
     expect(
       stepCommons({ ...nearJune, lastActions: [] }, ['a']).dialogue.actorId
     ).toBe('june');
+  });
+
+  test('opens on the early-flood dilemma and records investigation separately from agreement evidence', () => {
+    const state = createCommonsState();
+    const atFloodMark = {
+      ...state,
+      world: {
+        ...state.world,
+        player: { x: 10, y: 5, facing: 'up' },
+      },
+    };
+    const inspected = stepCommons(atFloodMark, ['a']);
+    expect(inspected.evidence).toContain('early-flood-mark');
+    expect(inspected.world.flags.earlyFloodMarkRead).toBe(true);
+    expect(commonsJournal(inspected)).toContainEqual(
+      expect.objectContaining({
+        title: 'Early flood mark',
+        detail: 'The river reached the shared footbridge before dawn.',
+      })
+    );
+    expect(chooseRiverAgreement(inspected, 'seasonal-pact')).toBe(inspected);
+
+    const nearJune = stepCommons(state, ['up']);
+    const june = stepCommons({ ...nearJune, lastActions: [] }, ['a']);
+    expect(june.dialogue.lines[0].text).toContain('river rose overnight');
+    expect(june.dialogue.lines[0].text).toContain('weekly meal');
+    expect(june.world.flags['heard-june']).toBe(true);
+    expect(june.evidence).toHaveLength(0);
+    expect(commonsJournal(june)).toContainEqual(
+      expect.objectContaining({ id: 'perspective:june', status: 'heard' })
+    );
+
+    const nearElian = {
+      ...state,
+      world: {
+        ...state.world,
+        player: { x: 13, y: 8, facing: 'up' },
+      },
+    };
+    const elian = stepCommons(nearElian, ['a']);
+    expect(elian.dialogue.lines[0].text).toContain('nesting reeds');
+    expect(elian.dialogue.lines[0].text).toContain('living neighbor');
+    expect(elian.world.flags['heard-elian']).toBe(true);
+    expect(elian.evidence).toHaveLength(0);
   });
 
   test('records the old gauge as optional evidence and presents authored residents', () => {

@@ -40,6 +40,8 @@ export const COMMONS_CONTENT = Object.freeze({
       objects: [
         { id: 'assembly-board', x: 8, y: 3, kind: 'noticeboard' },
         { id: 'charter-table', x: 9, y: 5, kind: 'charter' },
+        { id: 'flood-marker', x: 10, y: 4, kind: 'flood-marker' },
+        { id: 'meal-crates', x: 7, y: 7, kind: 'crates' },
         { id: 'solar-kitchen', x: 4, y: 6, kind: 'community' },
         { id: 'canopy-stair', x: 14, y: 7, kind: 'landmark' },
       ],
@@ -88,11 +90,11 @@ export const COMMONS_CONTENT = Object.freeze({
       values: [positions.elian],
       reason:
         'The marsh is a living neighbor, not spare land waiting for a use.',
-      map: 'weir',
-      x: 10,
-      y: 6,
+      map: 'commons',
+      x: 13,
+      y: 7,
       schedule: {
-        morning: ['weir', 10, 6],
+        morning: ['commons', 13, 7],
         afternoon: ['weir', 12, 5],
         evening: ['weir', 10, 6],
       },

@@ -79,10 +79,23 @@ export function renderCommons(state) {
     );
     frame.shapes.push(
       frameRectangle({ x: 0, y: 96, width: 160, height: 12 }, COLORS.dark),
-      text('WEIR → · FOLLOW LIGHT PATH', 4, 105, COLORS.gold)
+      text(commonsOpeningPrompt(state), 4, 105, COLORS.gold)
     );
   }
   return frame;
+}
+
+/**
+ * Keep the first district prompt tied to what the player has learned so far.
+ * @param {Record<string, any>} state Current game state.
+ * @returns {string} Short prompt sized for the 160px Commons strip.
+ */
+function commonsOpeningPrompt(state) {
+  const flags = state.world.flags;
+  if (!flags.earlyFloodMarkRead) return 'RIVER UP · CHECK FLOOD MARK';
+  if (!flags['heard-june'] || !flags['heard-elian'])
+    return 'TALK TO JUNE AND ELIAN';
+  return 'WEIR → · FOLLOW LIGHT PATH';
 }
 
 /**

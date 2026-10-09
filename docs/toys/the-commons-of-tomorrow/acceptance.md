@@ -4,6 +4,7 @@
 
 - [ ] Authored contract test confirms two linked districts, four residents with named values and reasons, three distinct river agreements, evidence-gated seasonal pact, practice options, and charter clauses.
 - [ ] Simulation tests cover movement, dialogue, evidence discovery, all three quest resolutions, visible consequences in both maps, practice selection/use, charter recording, and deterministic replay.
+- [ ] Opening scene shows June and Elian together during an early flood; flood-marker evidence and each resident's perspective are recorded separately, with only the old gauge unlocking the seasonal pact.
 - [ ] Puzzle tests cover a known solution, failed route, bounded/reversible edits, reset, and deterministic repeated advancement without wall-clock access.
 - [ ] Save tests cover independent game identity, versioned three-slot persistence, export/import round trip, malformed import rejection without replacing current state, and save/reload mid-quest.
 - [ ] Embedded and dedicated adapters produce equivalent state and 160×144 frame output from the same command sequence.

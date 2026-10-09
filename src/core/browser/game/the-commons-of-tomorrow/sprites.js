@@ -15,6 +15,10 @@ const ACTOR_ART = Object.freeze({
 const PROP_ART = Object.freeze({
   noticeboard:
     '.ssssssssss./.pccccccccp./.pccppppccp./.pccccccccp./.pppppppppp./....cc.cc..../....cc.cc....',
+  'flood-marker':
+    '....ss..ss../...ssppss.../...pppppp..../...pwwwwp.../...pwwwwp.../...pwwwwp.../...pwwwwp.../...pwwwwp.../..pppppppp../..pppppppp../...pp..pp.../...pp..pp...',
+  crates:
+    '...ssssss.../..spooooops./.spocccops../.spppppppps./.spooooops../.spocccops../.spppppppps./...ssssss.../..cc..cc..cc',
   charter:
     '...ssssss.../..sppppppss./.ssppppppppss/.ssppppppppss/.ssppppppppss/..ssssssss../...cc..cc...',
   community:

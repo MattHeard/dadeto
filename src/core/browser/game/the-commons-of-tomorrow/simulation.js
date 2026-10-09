@@ -199,10 +199,29 @@ export function commonsJournal(/** @type {Record<string, any>} */ state) {
     },
     ...state.evidence.map((/** @type {string} */ item) => ({
       id: item,
-      title: item === 'gauge-reading' ? 'Old gauge reading' : item,
+      title:
+        item === 'gauge-reading'
+          ? 'Old gauge reading'
+          : item === 'early-flood-mark'
+            ? 'Early flood mark'
+            : item,
       status: 'recorded',
-      detail: 'Evidence recorded from the Living Weir.',
+      detail:
+        item === 'early-flood-mark'
+          ? 'The river reached the shared footbridge before dawn.'
+          : 'Evidence recorded from the Living Weir.',
     })),
+    ...['june', 'elian']
+      .filter(id => state.world.flags[`heard-${id}`])
+      .map(id => ({
+        id: `perspective:${id}`,
+        title: id === 'june' ? 'June’s perspective' : 'Elian’s perspective',
+        status: 'heard',
+        detail:
+          id === 'june'
+            ? 'The weekly meal keeps neighbors connected across the district.'
+            : 'The marsh and its nesting reeds have value beyond their use to people.',
+      })),
     ...state.agreements.map((/** @type {Record<string, any>} */ item) => ({
       id: item.choice,
       title: 'Community agreement',
@@ -314,6 +333,8 @@ function stepWorld(state, pressed, content) {
  */
 function interactionName(object) {
   const names = /** @type {Record<string, string>} */ ({
+    'flood-marker': 'the early flood mark',
+    'meal-crates': 'June’s meal crates',
     'old-gauge': 'the old gauge',
     'flow-board': 'the flow board',
     'reed-island': 'the reed island',
@@ -362,9 +383,25 @@ function interact(state, content) {
   const { actor, object } = targetInFront(state);
   if (actor) {
     const person = /** @type {Record<string, any>} */ (actor);
-    return openDialogue(state, actor.id, [
+    const heard = ['june', 'elian'].includes(person.id)
+      ? updateWorldFlags(state, { [`heard-${person.id}`]: true })
+      : state;
+    const openingLine =
+      person.id === 'june'
+        ? 'The river rose overnight. Tonight’s weekly meal is set by the low crossing; moving it means some neighbors lose the shared table.'
+        : person.id === 'elian'
+          ? 'The water reached the nesting reeds before dawn. Please read the gauge before anyone opens the crossing.'
+          : '';
+    const text = [
+      `${person.name} · ${person.role}.`,
+      openingLine,
+      person.reason,
+    ]
+      .filter(Boolean)
+      .join(' ');
+    return openDialogue(heard, actor.id, [
       {
-        text: `${person.name} · ${person.role}. ${person.reason}`,
+        text,
       },
     ]);
   }
@@ -383,6 +420,22 @@ function interact(state, content) {
         'The gauge was installed before the reed beds shifted. The high-water mark is still legible.',
     };
   }
+  if (object.id === 'flood-marker') {
+    const evidence = [...new Set([...state.evidence, 'early-flood-mark'])];
+    return {
+      ...updateWorldFlags(state, { earlyFloodMarkRead: true }),
+      evidence,
+      journal: [...new Set([...state.journal, 'early-flood-mark'])],
+      toast:
+        'The river reached the shared footbridge before dawn. The gauge can show whether this rise is unusual.',
+    };
+  }
+  if (object.id === 'meal-crates')
+    return {
+      ...updateWorldFlags(state, { mealCratesSeen: true }),
+      toast:
+        'June’s meal crates are staged beside the low path. The gathering is planned near the crossing.',
+    };
   if (object.id === 'flow-board') return { ...state, mode: 'puzzle' };
   if (object.id === 'reed-island') {
     const evidence = [...new Set([...state.evidence, 'reed-nesting-marks'])];

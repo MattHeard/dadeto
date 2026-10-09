@@ -10,6 +10,7 @@
 ## Expected Observable Outputs
 
 - Start in Canopy Commons with Survey available.
+- Verify the opening scene shows June, Elian, the meal crates and flood marker; inspect the marker, hear both perspectives, and confirm only old-gauge evidence unlocks the seasonal pact.
 - Inspect the assembly board, speak with residents, cross into The Living Weir, find the old gauge, and solve or reset the flow puzzle.
 - Complete each of the three river agreements; verify the bridge, marsh and gathering changes in the maps and charter journal.
 - Save and reload after evidence discovery; verify the same quest state remains.
