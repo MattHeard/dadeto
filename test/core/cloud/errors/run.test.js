@@ -8,6 +8,12 @@ const createErrorBeaconRun = dependencies =>
     fetchFn: (permission, ...args) => dependencies.fetchFn(...args),
     bindEffectBoundary: handler => handler(permission),
     effectFetchFn: (_permission, ...args) => dependencies.fetchFn(...args),
+    useMiddleware:
+      dependencies.useMiddleware ??
+      ((allowEffects, app, middleware) => app.use(middleware)),
+    registerPostRoute:
+      dependencies.registerPostRoute ??
+      ((allowEffects, app, path, handler) => app.post(path, handler)),
   });
 
 const accessTokenKey = 'access_token';
@@ -56,6 +62,65 @@ describe('createErrorBeaconRun', () => {
     expect(use).toHaveBeenCalledTimes(3);
     expect(post).toHaveBeenCalledTimes(2);
     expect(handle).toEqual({ use, post });
+  });
+
+  it('forwards the startup capability to middleware and route registration', () => {
+    const post = jest.fn();
+    const use = jest.fn();
+    const express = Object.assign(
+      jest.fn(() => ({ use, post })),
+      {
+        json: jest.fn(() => 'json-middleware'),
+        text: jest.fn(() => 'text-middleware'),
+      }
+    );
+    const useMiddleware = jest.fn((allowEffects, app, middleware) =>
+      app.use(middleware)
+    );
+    const registerPostRoute = jest.fn((allowEffects, app, path, handler) =>
+      app.post(path, handler)
+    );
+
+    createErrorBeaconRun({
+      express,
+      cors: jest.fn(() => 'cors-middleware'),
+      getEnvironmentVariables: () => ({ DENDRITE_ENVIRONMENT: 'prod' }),
+      useMiddleware,
+      registerPostRoute,
+    });
+
+    expect(useMiddleware).toHaveBeenNthCalledWith(
+      1,
+      permission,
+      { use, post },
+      'json-middleware'
+    );
+    expect(useMiddleware).toHaveBeenNthCalledWith(
+      2,
+      permission,
+      { use, post },
+      'text-middleware'
+    );
+    expect(useMiddleware).toHaveBeenNthCalledWith(
+      3,
+      permission,
+      { use, post },
+      'cors-middleware'
+    );
+    expect(registerPostRoute).toHaveBeenNthCalledWith(
+      1,
+      permission,
+      { use, post },
+      '/',
+      expect.any(Function)
+    );
+    expect(registerPostRoute).toHaveBeenNthCalledWith(
+      2,
+      permission,
+      { use, post },
+      '/errors',
+      expect.any(Function)
+    );
   });
 
   it('responds 204 after a successful error report', async () => {

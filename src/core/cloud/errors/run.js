@@ -7,10 +7,12 @@ import {
 import { createErrorBeaconHandler } from './errors-core.js';
 
 /**
+ * @typedef {import('../../../../types/allow-effects').AllowEffects} AllowEffects
+ * @typedef {import('../../../../types/allow-effects').AllowEffectsBoundary} AllowEffectsBoundary
  * @typedef {{ use: (middleware: unknown) => void, post: (path: string, handler: unknown) => void }} ErrorBeaconApp
  * @typedef {{ debug?: (...args: unknown[]) => void, error?: (...args: unknown[]) => void }} ErrorBeaconConsole
  * @typedef {Function & { json: Function, text: Function }} ErrorBeaconExpress
- * @typedef {{ express: ErrorBeaconExpress, cors: Function, getEnvironmentVariables: Function, console?: ErrorBeaconConsole, fetchFn: (permission: import('../../../../types/allow-effects').AllowEffects, input: string, init?: object) => Promise<Response>, bindEffectBoundary: import('../../../../types/allow-effects').AllowEffectsBoundary, effectFetchFn: (permission: import('../../../../types/allow-effects').AllowEffects, input: string, init?: object) => Promise<Response> }} ErrorBeaconDeps
+ * @typedef {{ express: ErrorBeaconExpress, cors: Function, getEnvironmentVariables: Function, console?: ErrorBeaconConsole, fetchFn: (permission: AllowEffects, input: string, init?: object) => Promise<Response>, bindEffectBoundary: AllowEffectsBoundary, effectFetchFn: (permission: AllowEffects, input: string, init?: object) => Promise<Response>, useMiddleware: (permission: AllowEffects, app: ErrorBeaconApp, middleware: unknown) => void, registerPostRoute: (permission: AllowEffects, app: ErrorBeaconApp, path: string, handler: Function) => void }} ErrorBeaconDeps
  */
 
 /**
@@ -20,14 +22,12 @@ import { createErrorBeaconHandler } from './errors-core.js';
  */
 export function createErrorBeaconRun(deps) {
   const app = deps.express();
-  app.use(
-    deps.express.json({
-      type: ['application/json', 'application/*+json'],
-    })
-  );
+  const jsonMiddleware = deps.express.json({
+    type: ['application/json', 'application/*+json'],
+  });
   // Stryker disable next-line all -- text body parsing uses the fixed MIME
   // configuration required by the error beacon endpoint.
-  app.use(deps.express.text({ type: 'text/plain' }));
+  const textMiddleware = deps.express.text({ type: 'text/plain' });
   const environmentVariables = getErrorBeaconEnvironmentVariables(
     deps.getEnvironmentVariables()
   );
@@ -40,7 +40,7 @@ export function createErrorBeaconRun(deps) {
       resolveAllowedOrigins(environmentVariables)
     )
   );
-  app.use(deps.cors(corsOptions));
+  const corsMiddleware = deps.cors(corsOptions);
 
   const env = environmentVariables;
   // Stryker disable next-line all -- project ID fallback precedence is fixed
@@ -110,10 +110,15 @@ export function createErrorBeaconRun(deps) {
     await handleParsedErrorBeacon(request, response);
   };
 
-  // Stryker disable next-line all -- fixed primary compatibility route.
-  app.post('/', handleErrorBeacon);
-  // Stryker disable next-line all -- fixed compatibility route.
-  app.post('/errors', handleErrorBeacon);
+  void deps.bindEffectBoundary(async allowEffects => {
+    deps.useMiddleware(allowEffects, app, jsonMiddleware);
+    deps.useMiddleware(allowEffects, app, textMiddleware);
+    deps.useMiddleware(allowEffects, app, corsMiddleware);
+    // Stryker disable next-line all -- fixed primary compatibility route.
+    deps.registerPostRoute(allowEffects, app, '/', handleErrorBeacon);
+    // Stryker disable next-line all -- fixed compatibility route.
+    deps.registerPostRoute(allowEffects, app, '/errors', handleErrorBeacon);
+  });
 
   return { handle: app };
 }
