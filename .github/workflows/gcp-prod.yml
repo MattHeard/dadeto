@@ -8,6 +8,9 @@ on:
 jobs:
   terraform:
     runs-on: ubuntu-latest
+    permissions:
+      actions: write
+      contents: read
     if: ${{ github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success' }}
     defaults:
       run:
@@ -122,3 +125,16 @@ jobs:
 
       - name: Terraform Apply
         run: terraform apply -lock-timeout=5m -auto-approve tfplan
+
+      - name: Publish rental search URL for the static site build
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          endpoint="$(terraform output -raw object_minute_rental_search_url)"
+          if [ -z "$endpoint" ]; then
+            echo "Terraform returned an empty object-minute rental search URL."
+            exit 1
+          fi
+          gh variable set OBJECT_MINUTE_RENTAL_SEARCH_URL \
+            --repo MattHeard/dadeto \
+            --body "$endpoint"

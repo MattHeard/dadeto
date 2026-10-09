@@ -10,7 +10,7 @@
     <main class="search-card">
       <h1>Object-minute rental search</h1>
       <p>Times use this device's local timezone. This proof of concept supports football.</p>
-      <form id="rental-search-form" data-search-endpoint="/__sim/object-minute-rental-search">
+      <form id="rental-search-form" data-search-endpoint="{{OBJECT_MINUTE_RENTAL_SEARCH_URL}}">
         <label>Product <select name="product"><option value="football">football</option></select></label>
         <fieldset><legend>Delivery</legend>
           <label>Latitude <input name="deliveryLatitude" required /></label>

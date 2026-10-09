@@ -23,6 +23,17 @@ jobs:
 
       - run: npm ci
 
+      - name: Configure production rental search endpoint
+        env:
+          OBJECT_MINUTE_RENTAL_SEARCH_URL: ${{ vars.OBJECT_MINUTE_RENTAL_SEARCH_URL }}
+        run: |
+          if [ -z "$OBJECT_MINUTE_RENTAL_SEARCH_URL" ]; then
+            echo "::error::Set the OBJECT_MINUTE_RENTAL_SEARCH_URL Actions variable from the Terraform output before deploying the static site."
+            exit 1
+          fi
+          echo "DADETO_BUILD_TARGET=production" >> "$GITHUB_ENV"
+          echo "OBJECT_MINUTE_RENTAL_SEARCH_URL=$OBJECT_MINUTE_RENTAL_SEARCH_URL" >> "$GITHUB_ENV"
+
       - run: npm run build:browser
 
       - run: npm install -g netlify-cli@17 # pin CLI version

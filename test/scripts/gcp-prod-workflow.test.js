@@ -25,4 +25,14 @@ describe('gcp-prod workflow database selection', () => {
       '/collectionGroups/variants/fields/targetTreeWeightsDirty'
     );
   });
+
+  it('publishes the deployed rental search URL for the static site build', () => {
+    const source = readFileSync('.github/workflows/gcp-prod.yml', 'utf8');
+
+    expect(source).toContain(
+      'terraform output -raw object_minute_rental_search_url'
+    );
+    expect(source).toContain('gh variable set OBJECT_MINUTE_RENTAL_SEARCH_URL');
+    expect(source).toContain('actions: write');
+  });
 });

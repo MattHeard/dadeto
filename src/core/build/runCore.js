@@ -1,4 +1,5 @@
 import { createCopyCore } from './blog.js';
+export { renderObjectMinuteRentalSearchEndpoint } from './object-minute-rental-search-endpoint.js';
 
 /**
  * Run the copy workflow end to end.
