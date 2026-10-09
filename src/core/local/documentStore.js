@@ -17,10 +17,12 @@ import { isMissingFileError } from '../commonCore.js';
 /**
  * Create a document store using injected filesystem and workflow dependencies.
  * @param {{
- *   mkdir: (permission: AllowEffects, path: string, options: { recursive: boolean }) => Promise<void>,
- *   readFile: (path: string, encoding: string) => Promise<string>,
- *   rm: (permission: AllowEffects, path: string, options: { force: boolean }) => Promise<void>,
- *   writeFile: (permission: AllowEffects, path: string, data: string, encoding: string) => Promise<void>,
+ *   fs: {
+ *     mkdir: (permission: AllowEffects, path: string, options: { recursive: boolean }) => Promise<void>,
+ *     readFile: (path: string, encoding: string) => Promise<string>,
+ *     rm: (permission: AllowEffects, path: string, options: { force: boolean }) => Promise<void>,
+ *     writeFile: (permission: AllowEffects, path: string, data: string, encoding: string) => Promise<void>,
+ *   },
  *   bindEffectBoundary: AllowEffectsBoundary,
  *   path: {
  *     dirname: (input: string) => string,
@@ -131,10 +133,12 @@ export function getDefaultLegacyDocumentPath(deps) {
 /**
  * Build the store state from injected dependencies and options.
  * @param {{
- *   mkdir: (permission: AllowEffects, path: string, options: { recursive: boolean }) => Promise<void>,
- *   readFile: (path: string, encoding: string) => Promise<string>,
- *   rm: (permission: AllowEffects, path: string, options: { force: boolean }) => Promise<void>,
- *   writeFile: (permission: AllowEffects, path: string, data: string, encoding: string) => Promise<void>,
+ *   fs: {
+ *     mkdir: (permission: AllowEffects, path: string, options: { recursive: boolean }) => Promise<void>,
+ *     readFile: (path: string, encoding: string) => Promise<string>,
+ *     rm: (permission: AllowEffects, path: string, options: { force: boolean }) => Promise<void>,
+ *     writeFile: (permission: AllowEffects, path: string, data: string, encoding: string) => Promise<void>,
+ *   },
  *   bindEffectBoundary: AllowEffectsBoundary,
  *   path: {
  *     dirname: (input: string) => string,
@@ -155,10 +159,12 @@ export function getDefaultLegacyDocumentPath(deps) {
  *   legacyDocumentPath: string,
  *   now: () => Date,
  *   deps: {
- *     mkdir: (permission: AllowEffects, path: string, options: { recursive: boolean }) => Promise<void>,
- *     readFile: (path: string, encoding: string) => Promise<string>,
- *     rm: (permission: AllowEffects, path: string, options: { force: boolean }) => Promise<void>,
- *     writeFile: (permission: AllowEffects, path: string, data: string, encoding: string) => Promise<void>,
+ *     fs: {
+ *       mkdir: (permission: AllowEffects, path: string, options: { recursive: boolean }) => Promise<void>,
+ *       readFile: (path: string, encoding: string) => Promise<string>,
+ *       rm: (permission: AllowEffects, path: string, options: { force: boolean }) => Promise<void>,
+ *       writeFile: (permission: AllowEffects, path: string, data: string, encoding: string) => Promise<void>,
+ *     },
  *     bindEffectBoundary: AllowEffectsBoundary,
  *     path: { dirname: (input: string) => string, join: (...parts: string[]) => string },
  *     cwd: () => string,
@@ -248,8 +254,8 @@ async function readOptionalFile(deps, filePath, decode, missingValue) {
  * @returns {Promise<void>} Nothing.
  */
 async function writeWorkflow(state, workflow, permission) {
-  await state.deps.mkdir(permission, state.workflowDir, { recursive: true });
-  await state.deps.writeFile(
+  await state.deps.fs.mkdir(permission, state.workflowDir, { recursive: true });
+  await state.deps.fs.writeFile(
     permission,
     state.workflowPath,
     JSON.stringify(workflow, null, 2),
@@ -289,7 +295,7 @@ async function ensureWorkflow(state, permission) {
  */
 async function readStoredWorkflow(state) {
   return readOptionalFile(
-    state.deps,
+    state.deps.fs,
     state.workflowPath,
     rawWorkflow => normalizeWorkflow(JSON.parse(rawWorkflow)),
     null
@@ -303,13 +309,13 @@ async function readStoredWorkflow(state) {
  * @returns {Promise<{ steps: Array<{ id: string, title: string }>, activeIndex: number, heading: string }>} Normalized workflow.
  */
 async function bootstrapWorkflow(state, permission) {
-  const legacyContent = await readText(state.deps, state.legacyDocumentPath);
+  const legacyContent = await readText(state.deps.fs, state.legacyDocumentPath);
   const workflow = normalizeWorkflow({
     steps: DEFAULT_SEQUENCE.map(step => ({ ...step })),
     heading: extractLevelOneHeading(legacyContent),
   });
 
-  await state.deps.mkdir(permission, state.documentDir, { recursive: true });
+  await state.deps.fs.mkdir(permission, state.documentDir, { recursive: true });
   await writeLegacyContent(state, workflow, legacyContent, permission);
   await writeWorkflow(state, workflow, permission);
 
@@ -330,7 +336,7 @@ async function writeLegacyContent(state, workflow, legacyContent, permission) {
     return;
   }
 
-  await state.deps.writeFile(
+  await state.deps.fs.writeFile(
     permission,
     getDocumentPath(state, firstStep),
     legacyContent,
@@ -345,7 +351,7 @@ async function writeLegacyContent(state, workflow, legacyContent, permission) {
  * @returns {Promise<string>} Step content.
  */
 async function loadStepContent(state, step) {
-  return readText(state.deps, getDocumentPath(state, step));
+  return readText(state.deps.fs, getDocumentPath(state, step));
 }
 
 /**
@@ -356,7 +362,7 @@ async function loadStepContent(state, step) {
  * @returns {Promise<void>} Nothing.
  */
 async function pruneWorkflow(state, workflow, permission) {
-  await state.deps.mkdir(permission, state.documentDir, { recursive: true });
+  await state.deps.fs.mkdir(permission, state.documentDir, { recursive: true });
 
   const prunedWorkflow = await pruneTrailingDrafts(state, workflow, permission);
   renumberDraftSteps(state, prunedWorkflow);
@@ -381,7 +387,7 @@ export async function pruneTrailingDrafts(state, workflow, permission) {
       return workflow;
     }
 
-    await state.deps.rm(permission, getDocumentPath(state, lastStep), {
+    await state.deps.fs.rm(permission, getDocumentPath(state, lastStep), {
       force: true,
     });
     workflow.steps.pop();
@@ -518,16 +524,16 @@ async function saveDocument(state, documentId, content, permission) {
     workflow.heading = nextHeading;
   }
 
-  await state.deps.mkdir(permission, state.documentDir, { recursive: true });
+  await state.deps.fs.mkdir(permission, state.documentDir, { recursive: true });
   if (content.trim()) {
-    await state.deps.writeFile(
+    await state.deps.fs.writeFile(
       permission,
       getDocumentPath(state, step),
       content,
       'utf8'
     );
   } else {
-    await state.deps.rm(permission, getDocumentPath(state, step), {
+    await state.deps.fs.rm(permission, getDocumentPath(state, step), {
       force: true,
     });
   }

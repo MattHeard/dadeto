@@ -1,0 +1,7 @@
+# Generic AllowEffects function adapter
+
+- Unexpected hurdle: the repo's dependency rules rejected a browser import from the shared non-core adapter directory, although the Notion spec requires one cross-environment helper.
+- Diagnosis: `src-browser-only-core` allowed browser files to depend only on `src/browser`, `src/core`, and packages. The same architecture rules also encoded that boundary for build, cloud, and local entrypoints.
+- Chosen fix: added `requireAllowEffects` in `src/adapters/allow-effects.js`, with a typed leading `AllowEffects`, unchanged raw arguments/receiver/result/throw behavior, and documentation that overloaded and generic call signatures need explicit named wrappers. `createEffectFetchFn` delegates to the shared utility. Added `src/adapters` to the browser public copy tree and allowed only that shared adapter directory in the four outer-layer dependency rules. A compiler fixture proves that callers cannot omit or forge the permission.
+- Evidence: focused adapter/fetch/copy suites passed 44/44; `npm run tsdoc:check`, focused ESLint, `npm run depcruise`, and full `npm run check` passed. Full check summary: 10 groups passed, 0 failed; duplication found 0 clones.
+- Next-time guidance: use the same shared adapter module for the explicitly classified object factory, keep the object interface allowlisted rather than spreading SDK objects, and test native method receiver binding. Then migrate one second mixed-effect seam and update docs for the final supported contracts.

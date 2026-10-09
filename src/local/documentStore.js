@@ -1,5 +1,6 @@
 import { mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
+import { adaptAllowEffectsBag } from '../adapters/allow-effects.js';
 import { bindEffectBoundary } from './allow-effects.js';
 import {
   createDocumentStoreCore,
@@ -27,16 +28,19 @@ export const LEGACY_DOCUMENT_PATH = getDefaultLegacyDocumentPath({
  * @param {{ workflowPath?: string, workflowDir?: string, legacyDocumentPath?: string }} [options]
  */
 export function createDocumentStore(options = {}) {
-  return createDocumentStoreCore(
+  const fs = adaptAllowEffectsBag(
+    { mkdir, readFile, rm, writeFile },
+    { mkdir: 'effect', readFile: 'query', rm: 'effect', writeFile: 'effect' }
+  );
+
+  const handle = createDocumentStoreCore(
     {
-      mkdir: (_permission, ...args) => mkdir(...args),
-      readFile,
-      rm: (_permission, ...args) => rm(...args),
-      writeFile: (_permission, ...args) => writeFile(...args),
+      fs,
       bindEffectBoundary,
       path,
       cwd: () => process.cwd(),
     },
     options
   );
+  return handle;
 }

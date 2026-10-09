@@ -33,11 +33,13 @@ const TEST_PERMISSION = Object.freeze({});
  */
 function createDeps(overrides = {}) {
   return {
-    mkdir: overrides.mkdir ?? ((_permission, ...args) => mkdir(...args)),
-    readFile,
-    rm: overrides.rm ?? ((_permission, ...args) => rm(...args)),
-    writeFile:
-      overrides.writeFile ?? ((_permission, ...args) => writeFile(...args)),
+    fs: overrides.fs ?? {
+      mkdir: overrides.mkdir ?? ((_permission, ...args) => mkdir(...args)),
+      readFile: overrides.readFile ?? readFile,
+      rm: overrides.rm ?? ((_permission, ...args) => rm(...args)),
+      writeFile:
+        overrides.writeFile ?? ((_permission, ...args) => writeFile(...args)),
+    },
     bindEffectBoundary:
       overrides.bindEffectBoundary ?? (handler => handler(TEST_PERMISSION)),
     path,
@@ -523,9 +525,11 @@ describe('document store pruning and persistence', () => {
   test('pruneTrailingDrafts stops when the trailing draft has body text', async () => {
     const state = {
       deps: {
-        readFile: async () => 'Body text',
-        rm: async () => {
-          throw new Error('should not remove');
+        fs: {
+          readFile: async () => 'Body text',
+          rm: async () => {
+            throw new Error('should not remove');
+          },
         },
         path,
       },
@@ -614,14 +618,16 @@ describe('document store pruning and persistence', () => {
   test('pruneTrailingDrafts stops when the trailing array slot is empty', async () => {
     const state = {
       deps: {
-        mkdir: async () => {},
-        readFile: async () => {
-          throw new Error('should not read');
+        fs: {
+          mkdir: async () => {},
+          readFile: async () => {
+            throw new Error('should not read');
+          },
+          rm: async () => {
+            throw new Error('should not remove');
+          },
+          writeFile: async () => {},
         },
-        rm: async () => {
-          throw new Error('should not remove');
-        },
-        writeFile: async () => {},
         path,
         cwd: () => process.cwd(),
       },
@@ -797,8 +803,10 @@ describe('document store save lifecycle', () => {
   test('prunes empty trailing drafts and removes their files', async () => {
     const state = {
       deps: {
-        readFile: async () => '',
-        rm: jest.fn(async () => {}),
+        fs: {
+          readFile: async () => '',
+          rm: jest.fn(async () => {}),
+        },
         path,
       },
       documentDir: path.join(tempDir, 'documents'),
@@ -817,7 +825,7 @@ describe('document store save lifecycle', () => {
     };
 
     await pruneTrailingDrafts(state, workflow, TEST_PERMISSION);
-    expect(state.deps.rm).toHaveBeenNthCalledWith(
+    expect(state.deps.fs.rm).toHaveBeenNthCalledWith(
       1,
       TEST_PERMISSION,
       path.join(state.documentDir, 'draft-2.md'),

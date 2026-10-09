@@ -1,6 +1,7 @@
 {
   "maxLines": 50,
   "exemptions": {
-    "src/browser/googleAuth.js": "External Firebase auth runtime composition owns session-storage effects and the browser AllowEffects boundary."
+    "src/browser/googleAuth.js": "External Firebase auth runtime composition owns session-storage effects and the browser AllowEffects boundary.",
+    "src/adapters/allow-effects.js": "Shared non-core adapter factories intentionally implement explicit callable and method-bag adaptation; they are not thin environment entrypoint wrappers."
   }
 }

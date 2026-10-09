@@ -4,6 +4,7 @@ import {
   createErrorBeaconSendBeaconReporter,
 } from '../core/browser/error-beacon.js';
 import { createEffectFetchFn } from './allow-effects.js';
+export { createEffectStorage } from './storage-adapter.js';
 const createEndpointReporter = (urlPromise, createReporter) => payload =>
   urlPromise.then(url => (url ? createReporter(url)(payload) : undefined));
 export const createEffectFetchBeaconReporter = (urlPromise, bind, fetchFn) =>
@@ -27,11 +28,6 @@ export const createEffectSendBeaconReporter = (
       url
     )
   );
-export const createEffectStorage = storageObj => ({
-  getItem: key => storageObj.getItem(key),
-  setItem: (_permission, key, value) => storageObj.setItem(key, value),
-  removeItem: (_permission, key) => storageObj.removeItem(key),
-});
 export const createBrowserErrorBeaconHandlers = (reportBeacon, getUserAgent) => {
   const dependencies = {
     reportBeacon,

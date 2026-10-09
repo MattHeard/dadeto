@@ -11,6 +11,7 @@ export {
 } from '../commonCore.js';
 
 export const sharedDirectoryPairs = [
+  { key: 'Adapters', relativePath: 'adapters', publicRelativePath: 'adapters' },
   { key: 'Browser', relativePath: 'browser', publicRelativePath: 'browser' },
   {
     key: 'CoreBrowser',
@@ -32,6 +33,13 @@ export const sharedDirectoryPairs = [
 
 const DIRECTORY_TREE_DEFINITIONS = {
   browser: [
+    {
+      sourceKey: 'srcAdaptersDir',
+      destinationKey: 'publicAdaptersDir',
+      suffix: '',
+      success: 'Shared adapter files copied successfully!',
+      missing: 'adapters directory not found',
+    },
     {
       sourceKey: 'srcBrowserDir',
       destinationKey: 'publicBrowserDir',

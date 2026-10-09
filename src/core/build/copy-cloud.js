@@ -1817,6 +1817,20 @@ function createCopyCloudPlan(deps) {
     sharedUtilityCopies,
     preservedSharedUtilityCopies,
   });
+  const typedFunctionDirectories = /** @type {string[]} */ (
+    functionDirectories
+  );
+  individualFileCopies.push(
+    ...typedFunctionDirectories.map(functionDir => ({
+      source: join(srcDir, 'adapters', 'allow-effects.js'),
+      target: join(
+        infraFunctionsDir,
+        functionDir,
+        'adapters',
+        'allow-effects.js'
+      ),
+    }))
+  );
   individualFileCopies.push(objectMinuteRentalSearchWgs84Copy);
   for (const filename of ['index.js', 'wgs84.js']) {
     individualFileCopies.push({

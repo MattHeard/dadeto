@@ -23,7 +23,7 @@
     "resolveJsonModule": true,
     "esModuleInterop": true
   },
-  "include": ["src/core/**/*.js"],
+  "include": ["src/core/**/*.js", "src/adapters/**/*.js", "types/allow-effects-adapters.contract.ts"],
   "exclude": [
     "node_modules",
     "public",

@@ -31,49 +31,49 @@ module.exports = {
     {
       name: 'src-browser-only-core',
       comment:
-        'Limit browser-layer dependencies to itself or src/core so layers stay focused.',
+        'Limit browser-layer dependencies to itself, src/core, or shared environment-neutral adapters.',
       severity: 'error',
       from: {
         path: '^src/browser',
       },
       to: {
-        pathNot: '^src/(browser|core)(?:/|$)|^node_modules(?:/|$)',
+        pathNot: '^src/(browser|core|adapters)(?:/|$)|^node_modules(?:/|$)',
       },
     },
     {
       name: 'src-build-only-core',
       comment:
-        'Keep build helper modules isolated to their own folder or core for clarity.',
+        'Keep build helpers isolated except for shared environment-neutral adapters.',
       severity: 'error',
       from: {
         path: '^src/build',
       },
       to: {
-        pathNot: '^src/(build|core)(?:/|$)|^node_modules(?:/|$)',
+        pathNot: '^src/(build|core|adapters)(?:/|$)|^node_modules(?:/|$)',
       },
     },
     {
       name: 'src-cloud-only-core',
       comment:
-        'Keep cloud integration pieces limited to their own directory or src/core.',
+        'Keep cloud integration pieces limited to their own directory, src/core, or shared adapters.',
       severity: 'error',
       from: {
         path: '^src/cloud',
       },
       to: {
-        pathNot: '^src/(cloud|core)(?:/|$)|^node_modules(?:/|$)',
+        pathNot: '^src/(cloud|core|adapters)(?:/|$)|^node_modules(?:/|$)',
       },
     },
     {
       name: 'src-local-only-core',
       comment:
-        'Allow local tooling to depend only on itself or src/core for clearer layering.',
+        'Allow local tooling to depend on itself, src/core, or shared environment-neutral adapters.',
       severity: 'error',
       from: {
         path: '^src/local',
       },
       to: {
-        pathNot: '^src/(local|core)(?:/|$)|^node_modules(?:/|$)',
+        pathNot: '^src/(local|core|adapters)(?:/|$)|^node_modules(?:/|$)',
       },
     },
     {

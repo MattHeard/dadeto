@@ -1,3 +1,5 @@
+import { requireAllowEffects } from '../adapters/allow-effects.js';
+
 const EFFECT_PERMISSION = Symbol('AllowEffects');
 
 /**
@@ -20,5 +22,5 @@ export async function bindEffectBoundary(handler) {
  * @returns {(permission: import('../../types/allow-effects').AllowEffects, input: RequestInfo | URL, init?: RequestInit) => Promise<Response>} Permission-aware fetch transport.
  */
 export function createEffectFetchFn(fetchFn) {
-  return (_permission, input, init) => fetchFn(input, init);
+  return requireAllowEffects(fetchFn);
 }

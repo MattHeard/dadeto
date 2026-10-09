@@ -4,6 +4,12 @@ Source: [Allow Effects – First Pass Specification](https://app.notion.com/p/ma
 
 `types/allow-effects.d.ts` exports a nominal JSDoc-visible `AllowEffects` interface with a private unique-symbol brand. Ordinary objects cannot accidentally satisfy it. `src/cloud/allow-effects.js` creates a fresh frozen permission at an external runtime boundary. Its trusted assertion connects the private compile-time brand to a private runtime symbol; application core code must never replicate that assertion or mint tokens.
 
+The shared non-core adapter in `src/adapters/allow-effects.js` exposes `requireAllowEffects(raw)`, which adds a required leading permission while forwarding the raw callable's remaining arguments, caller receiver, return value, and thrown errors unchanged. Its type preserves a single call signature, including optional and rest parameters. TypeScript's `Parameters`/`ReturnType` model does not preserve overloaded signatures or generic per-call relationships; use a specifically typed named wrapper for those APIs. The helper does not mint or retain permissions and is not a runtime authorization check. Browser builds copy `src/adapters/` to `public/adapters/` so browser modules can import the same source helper.
+
+The same module exposes `adaptAllowEffectsBag(raw, classification)`. The classification is an allowlist: `query` methods retain their argument and result contract, `effect` methods require permission first, and nested objects are adapted only when their paths are explicitly classified. The returned object is frozen and has no prototype, so unclassified members and raw effect methods are not reachable through it. It resolves selected methods through data descriptors (including class prototypes), binds each method to its original object, and rejects accessors, selected non-method values, unknown names, and invalid or empty classifications. This first version intentionally does not copy data fields or evaluate dynamic getters. Cloud packaging copies the shared adapter into each function package; local and build code can import the same source module directly.
+
+The local document store now injects a single classified filesystem surface: `readFile` is a query, while `mkdir`, `rm`, and `writeFile` are effects. `src/core/local/documentStore.js` receives only that restricted `fs` bag, and each command forwards its boundary permission to effect methods. The local environment adapts `node:fs/promises` before core construction; core does not receive a parallel raw filesystem alias.
+
 The first classified command is submit-new-story's injected `saveSubmission(allowEffects, id, submission)`. The external `createEffectHttpBoundary` adapter mints a new permission for each HTTP invocation and calls the explicitly effectful internal route; public HTTP/Firebase callers still supply only `req, res`.
 
 Successive real compiler diagnostics revealed the intermediate links: the save helper, submission processor, method dispatch, domain responder, debug responder and internal HTTP adapter. Each invocation owns and explicitly forwards its permission. Method dispatch is direct instead of a token-capturing callback. This chain was recorded after compiler discovery, not prescribed ahead of migration. The cloud build copies the external adapter into the function package and rewrites its import.
@@ -60,7 +66,7 @@ The clone scanner binds report publication as one local command and forwards its
 
 ## Eleventh extension: document-store writes
 
-The local document store binds each public store command that can bootstrap, prune, or persist workflow state. One permission is threaded through those helpers to injected `mkdir`, `rm`, and `writeFile` callbacks. Injected file reads remain outside the permission boundary.
+The local document store binds each public store command that can bootstrap, prune, or persist workflow state. One permission is threaded through those helpers to the explicitly classified filesystem bag's `mkdir`, `rm`, and `writeFile` effects. Its `readFile` query remains outside the permission boundary. The local runtime adapts Node's filesystem methods before injecting the restricted bag; core has no direct raw filesystem alias.
 
 ## Twelfth extension: Notion Codex state and outcomes
 

@@ -18,6 +18,8 @@ const createDirectories = () => {
     projectRoot,
     srcDir,
     publicDir,
+    srcAdaptersDir: posix.join(srcDir, 'adapters'),
+    publicAdaptersDir: posix.join(publicDir, 'adapters'),
     srcBrowserAssetsDir: posix.join(srcDir, 'browser/assets'),
     srcContentBlogMediaDir: posix.join(srcDir, 'content/blog-media'),
     srcContentPagesDir: posix.join(srcDir, 'content/pages'),
@@ -66,6 +68,14 @@ describe('createSharedDirectoryEntries', () => {
       publicDir,
     });
 
+    expect(entries).toContainEqual([
+      'srcAdaptersDir',
+      posix.join(srcDir, 'adapters'),
+    ]);
+    expect(entries).toContainEqual([
+      'publicAdaptersDir',
+      posix.join(publicDir, 'adapters'),
+    ]);
     expect(entries).toContainEqual([
       'srcBrowserDir',
       posix.join(srcDir, 'browser'),
@@ -771,6 +781,7 @@ describe('createCopyCore copy workflows', () => {
       });
 
       expect(logger.warn.mock.calls).toEqual([
+        ['Warning: adapters directory not found at src/adapters'],
         ['Warning: browser directory not found at src/browser'],
         ['Warning: core/browser directory not found at src/core/browser'],
         [
@@ -947,7 +958,11 @@ describe('createCopyCore copy workflows', () => {
         directoryExists: jest.fn().mockReturnValue(true),
         createDirectory: jest.fn(),
         copyFile: jest.fn(),
-        readDirEntries: jest.fn().mockReturnValue([]),
+        readDirEntries: jest.fn(dir =>
+          dir === directories.srcAdaptersDir
+            ? [createFileEntry('allow-effects.js')]
+            : []
+        ),
       };
       const logger = { info: jest.fn(), warn: jest.fn() };
 
@@ -958,10 +973,16 @@ describe('createCopyCore copy workflows', () => {
       });
 
       expect(logger.info).toHaveBeenCalledWith(
+        'Shared adapter files copied successfully!'
+      );
+      expect(logger.info).toHaveBeenCalledWith(
         'Browser files copied successfully!'
       );
       expect(logger.info).toHaveBeenCalledWith(
         'Core browser files copied successfully!'
+      );
+      expect(io.directoryExists).toHaveBeenCalledWith(
+        directories.srcAdaptersDir
       );
       expect(io.directoryExists).toHaveBeenCalledWith(
         directories.srcBrowserDir
@@ -971,6 +992,10 @@ describe('createCopyCore copy workflows', () => {
       );
       expect(io.directoryExists).toHaveBeenCalledWith(
         directories.srcCoreObjectMinuteRentalSearchDir
+      );
+      expect(io.copyFile).toHaveBeenCalledWith(
+        posix.join(directories.srcAdaptersDir, 'allow-effects.js'),
+        posix.join(directories.publicAdaptersDir, 'allow-effects.js')
       );
       expect(logger.info).toHaveBeenCalledWith(
         'Core object-minute rental search files copied successfully!'
