@@ -3035,52 +3035,53 @@ function isPageSnapValid(pageSnap) {
 }
 
 /**
- * @typedef {object} RenderMetadataDeps
+ * @typedef {object} RenderMetadataSubject
  * @property {VariantSnapshot} snap Variant snapshot targeted by the render.
- * @property {FirestoreLike} db Firestore helper used for metadata lookups.
- * @property {StorageBucketLike} bucket Storage bucket handle used by helper routines.
  * @property {PageSnapshot} pageSnap Parent page snapshot that backs the variant.
  * @property {PageDocument} page Parent page document data extracted from the snapshot.
+ * @property {VariantDocument} variant Variant document record stored in Firestore.
+ */
+
+/**
+ * @typedef {object} RenderMetadataLookups
+ * @property {FirestoreLike} db Firestore helper used for metadata lookups.
+ * @property {StorageBucketLike} bucket Storage bucket handle used by author metadata lookups.
  * @property {ConsoleError} [consoleError] Optional logger for reporting issues.
  * @property {number} [visibilityThreshold] Threshold that determines visible options.
- * @property {VariantDocument} variant Variant document record stored in Firestore.
- * @property {number[]} [rewriteTargetPageNumbers] Variant page numbers that should rewrite links.
- *
- * Gather metadata for rendering.
- * @param {RenderMetadataDeps} deps Dependencies required to resolve the render metadata.
+ */
+
+/**
+ * Gather metadata for rendering in lookup order: options, story, author, parent.
+ * @param {RenderMetadataSubject} subject Render target records.
+ * @param {RenderMetadataLookups} lookups Services and settings for metadata lookups.
  * @returns {Promise<RenderMetadata>} Metadata object suitable for templates and persistence.
  */
-async function gatherMetadata(deps) {
-  const {
-    snap,
-    db,
-    bucket,
-    pageSnap,
-    page,
-    consoleError,
-    visibilityThreshold,
-    variant,
-  } = deps;
-
+async function gatherMetadata(subject, lookups) {
   const options = await loadOptions({
-    snap,
-    db,
-    visibilityThreshold: resolveVisibilityThreshold(visibilityThreshold),
-    consoleError,
+    snap: subject.snap,
+    db: lookups.db,
+    visibilityThreshold: resolveVisibilityThreshold(
+      lookups.visibilityThreshold
+    ),
+    consoleError: lookups.consoleError,
   });
   const { storyTitle, firstPageUrl } = await resolveStoryMetadata({
-    pageSnap,
-    page,
-    db,
-    consoleError,
+    pageSnap: subject.pageSnap,
+    page: subject.page,
+    db: lookups.db,
+    consoleError: lookups.consoleError,
   });
   const { authorName, authorUrl } = await resolveAuthorMetadata({
-    variant,
-    db,
-    bucket,
-    consoleError,
+    variant: subject.variant,
+    db: lookups.db,
+    bucket: lookups.bucket,
+    consoleError: lookups.consoleError,
   });
-  const parentUrl = await resolveParentUrl({ variant, db, consoleError });
+  const parentUrl = await resolveParentUrl({
+    variant: subject.variant,
+    db: lookups.db,
+    consoleError: lookups.consoleError,
+  });
 
   return {
     options,
@@ -3253,17 +3254,18 @@ async function buildRenderPlan({
   const { pageSnap, page } = pageData;
   const variant = /** @type {VariantDocument} */ (snap.data());
   const metadata = await gatherMetadata(
-    /** @type {RenderMetadataDeps} */ ({
+    {
       snap,
-      db,
-      bucket,
       pageSnap,
       page,
+      variant,
+    },
+    {
+      db,
+      bucket,
       consoleError,
       visibilityThreshold,
-      variant,
-      rewriteTargetPageNumbers,
-    })
+    }
   );
 
   return buildRenderOutput({
