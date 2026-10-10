@@ -1,5 +1,7 @@
 import { renderHtmlTemplate } from '../html-template.js';
 import { withPageFooter } from '../page-footer.js';
+/** @typedef {import('../../../../types/allow-effects').AllowEffects} AllowEffects */
+/** @typedef {{ id: string, update: (value: object) => Promise<unknown> }} AuthorDocumentReference */
 
 /** @typedef {{ collectionGroup?: (name: string) => { where: (field: string, operator: string, value: unknown) => unknown }; collection?: (name: string) => { doc: (id: string) => { get: () => Promise<unknown> } } }} AuthorDatabase */
 
@@ -87,12 +89,17 @@ function escapeHtml(value) {
 
 /**
  * Create the Firestore author-write handler.
- * @param {{ bucket: { file: (path: string) => { save: (content: unknown, options?: object) => Promise<void> } }, db?: AuthorDatabase, deleteField: () => unknown }} deps Dependencies.
- * @returns {(change: { after: { exists: boolean, data: () => Record<string, unknown>, ref: { id: string } } }) => Promise<null>} Handler.
+ * @param {{ db?: AuthorDatabase, deleteField: () => unknown, saveAuthorHtml: (allowEffects: AllowEffects, path: string, html: string) => Promise<unknown>, updateAuthorDocument: (allowEffects: AllowEffects, ref: AuthorDocumentReference, value: object) => Promise<unknown> }} deps Dependencies.
+ * @returns {(allowEffects: AllowEffects, change: { after: { exists: boolean, data: () => Record<string, unknown>, ref: AuthorDocumentReference } }) => Promise<null>} Handler.
  */
-export function createRenderAuthorHandler({ bucket, db, deleteField }) {
+export function createRenderAuthorHandler({
+  db,
+  deleteField,
+  saveAuthorHtml,
+  updateAuthorDocument,
+}) {
   // Stryker disable all -- the author trigger uses the fixed Firestore/storage protocol.
-  return async change => {
+  return async (allowEffects, change) => {
     if (!change.after.exists) return null;
     const data = /** @type {Record<string, unknown>} */ (change.after.data());
     if (!data.dirty) return null;
@@ -103,12 +110,10 @@ export function createRenderAuthorHandler({ bucket, db, deleteField }) {
     );
     const rendered = renderAuthorPage(data, variants, moderatorReputation);
     if (!rendered) return null;
-    await bucket.file(rendered.path).save(rendered.html, {
-      contentType: 'text/html',
+    await saveAuthorHtml(allowEffects, rendered.path, rendered.html);
+    await updateAuthorDocument(allowEffects, change.after.ref, {
+      dirty: deleteField(),
     });
-    await /** @type {{ update: (value: object) => Promise<void> }} */ (
-      /** @type {unknown} */ (change.after.ref)
-    ).update({ dirty: deleteField() });
     return null;
   };
 }

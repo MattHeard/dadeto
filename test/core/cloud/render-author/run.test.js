@@ -19,11 +19,14 @@ await jest.unstable_mockModule(
   '../../../../src/core/cloud/render-author/render-author-core.js',
   () => ({
     createRenderAuthorHandler:
-      ({ bucket, db, deleteField }) =>
-      async change => {
+      ({ saveAuthorHtml, updateAuthorDocument, deleteField }) =>
+      async (allowEffects, change) => {
         if (!change.after.exists) return;
-        await bucket.file('author.html').save({ db, deleted: deleteField() });
-        await change.after.ref.update({ rendered: true });
+        await saveAuthorHtml(allowEffects, 'author.html', 'rendered html');
+        await updateAuthorDocument(allowEffects, change.after.ref, {
+          rendered: true,
+          dirty: deleteField(),
+        });
       },
   })
 );
@@ -44,6 +47,13 @@ describe('runRenderAuthor', () => {
     const Storage = jest.fn(() => ({ bucket: jest.fn(() => bucket) }));
     const FieldValue = { delete: jest.fn(() => 'deleted') };
     const db = {};
+    const allowEffects = Object.freeze({ invocation: 'render-author' });
+    const saveAuthorHtml = jest.fn((permission, receivedBucket, path, html) =>
+      receivedBucket.file(path).save(html, { contentType: 'text/html' })
+    );
+    const updateAuthorDocument = jest.fn((permission, reference, value) =>
+      reference.update(value)
+    );
     const getFirestoreInstance = jest.fn(() => db);
 
     const result = runRenderAuthor({
@@ -51,6 +61,9 @@ describe('runRenderAuthor', () => {
       Storage,
       FieldValue,
       getFirestoreInstance,
+      saveAuthorHtml,
+      updateAuthorDocument,
+      bindEffectBoundary: handler => handler(allowEffects),
     });
 
     expect(getFirestoreInstance).toHaveBeenCalledTimes(2);
@@ -68,5 +81,17 @@ describe('runRenderAuthor', () => {
     });
     expect(save).toHaveBeenCalled();
     expect(update).toHaveBeenCalled();
+    expect(saveAuthorHtml).toHaveBeenCalledWith(
+      allowEffects,
+      bucket,
+      'author.html',
+      'rendered html'
+    );
+    expect(updateAuthorDocument).toHaveBeenCalledWith(
+      allowEffects,
+      expect.objectContaining({ id: 'u1' }),
+      { rendered: true, dirty: 'deleted' }
+    );
+    expect(FieldValue.delete).toHaveBeenCalledTimes(1);
   });
 });

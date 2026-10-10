@@ -1,8 +1,29 @@
 import { jest } from '@jest/globals';
 import {
-  createRenderAuthorHandler,
+  createRenderAuthorHandler as createCoreRenderAuthorHandler,
   renderAuthorPage,
 } from '../../../../src/core/cloud/render-author/render-author-core.js';
+
+const testAllowEffects = Object.freeze({});
+
+/**
+ * Construct a core handler with test-only effect adapters.
+ * @param {object} root0 Test handler dependencies.
+ * @param {object} root0.bucket Fake object-storage bucket.
+ * @param {object} [root0.db] Fake read-only database.
+ * @param {() => unknown} root0.deleteField Delete sentinel factory.
+ * @returns {Function} Permission-aware author handler.
+ */
+function createRenderAuthorHandler({ bucket, db, deleteField }) {
+  return createCoreRenderAuthorHandler({
+    db,
+    deleteField,
+    saveAuthorHtml: (_allowEffects, path, html) =>
+      bucket.file(path).save(html, { contentType: 'text/html' }),
+    updateAuthorDocument: (_allowEffects, reference, value) =>
+      reference.update(value),
+  });
+}
 
 describe('renderAuthorPage', () => {
   test('renders the escaped author page path and html', () => {
@@ -59,6 +80,35 @@ describe('renderAuthorPage', () => {
 });
 
 describe('createRenderAuthorHandler', () => {
+  test('forwards the invocation permission to both command adapters', async () => {
+    const allowEffects = Object.freeze({ invocation: 'render-author' });
+    const saveAuthorHtml = jest.fn().mockResolvedValue(undefined);
+    const updateAuthorDocument = jest.fn().mockResolvedValue(undefined);
+    const reference = { id: 'u1' };
+    const handler = createCoreRenderAuthorHandler({
+      deleteField: () => 'sentinel',
+      saveAuthorHtml,
+      updateAuthorDocument,
+    });
+
+    await handler(allowEffects, {
+      after: {
+        exists: true,
+        data: () => ({ uuid: 'u1', name: 'Writer', dirty: true }),
+        ref: reference,
+      },
+    });
+
+    expect(saveAuthorHtml).toHaveBeenCalledWith(
+      allowEffects,
+      expect.stringContaining('a/u1.html'),
+      expect.stringContaining('<html')
+    );
+    expect(updateAuthorDocument).toHaveBeenCalledWith(allowEffects, reference, {
+      dirty: 'sentinel',
+    });
+  });
+
   test('writes dirty author pages and clears dirty state', async () => {
     const save = jest.fn().mockResolvedValue(undefined);
     const update = jest.fn().mockResolvedValue(undefined);
@@ -68,7 +118,7 @@ describe('createRenderAuthorHandler', () => {
       deleteField,
     });
 
-    await handler({
+    await handler(testAllowEffects, {
       after: {
         exists: true,
         data: () => ({ uuid: 'u1', name: 'Writer', dirty: true }),
@@ -118,7 +168,7 @@ describe('createRenderAuthorHandler', () => {
       },
       deleteField: jest.fn(),
     });
-    await handler({
+    await handler(testAllowEffects, {
       after: {
         exists: true,
         ref: { id: 'author', update: jest.fn() },
@@ -154,7 +204,7 @@ describe('createRenderAuthorHandler', () => {
       },
       deleteField: jest.fn(),
     });
-    await handler({
+    await handler(testAllowEffects, {
       after: {
         exists: true,
         ref: { id: 'author', update: jest.fn() },
@@ -180,7 +230,7 @@ describe('createRenderAuthorHandler', () => {
       },
       deleteField: jest.fn(),
     });
-    await handler({
+    await handler(testAllowEffects, {
       after: {
         exists: true,
         ref: { id: 'author', update: jest.fn() },
@@ -197,9 +247,13 @@ describe('createRenderAuthorHandler', () => {
       deleteField: jest.fn(),
     });
     const ref = { update: jest.fn() };
-    await handler({ after: { exists: false, data: () => ({}), ref } });
-    await handler({ after: { exists: true, data: () => ({}), ref } });
-    await handler({
+    await handler(testAllowEffects, {
+      after: { exists: false, data: () => ({}), ref },
+    });
+    await handler(testAllowEffects, {
+      after: { exists: true, data: () => ({}), ref },
+    });
+    await handler(testAllowEffects, {
       after: { exists: true, data: () => ({ dirty: true }), ref },
     });
     expect(save).not.toHaveBeenCalled();
@@ -249,7 +303,7 @@ describe('createRenderAuthorHandler', () => {
       },
       deleteField: jest.fn(),
     });
-    await handler({
+    await handler(testAllowEffects, {
       after: {
         exists: true,
         ref: { id: 'author', update: jest.fn() },
