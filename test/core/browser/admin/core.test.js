@@ -933,12 +933,13 @@ describe('initAdminApp', () => {
     const loadStaticConfigFn = jest
       .fn()
       .mockResolvedValue({ disableGoogleSignIn: true });
-    const getIdToken = jest.fn().mockReturnValue('token');
+    /** @this {{ uid: string }} */
+    const getIdToken = jest.fn(async function getFreshIdToken() {
+      expect(this.uid).toBe(ADMIN_UID);
+      return 'token';
+    });
     let authState = {
-      currentUser: {
-        uid: ADMIN_UID,
-        getIdToken,
-      },
+      currentUser: { uid: ADMIN_UID, getIdToken },
     };
     const getAuthFn = jest.fn(() => authState);
     const GoogleAuthProviderFn = jest.fn(() => ({

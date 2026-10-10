@@ -110,6 +110,24 @@ import {
  */
 
 /**
+ * @typedef {object} InitAdminAppOptions
+ * @property {() => Promise<Record<string, string>>} loadStaticConfigFn Static configuration loader.
+ * @property {() => FirebaseAuthInstance | null | undefined} getAuthFn Firebase auth getter.
+ * @property {{ credential?: (token: string) => string }} GoogleAuthProviderFn Firebase provider helper.
+ * @property {(auth: unknown, callback: () => void) => void} onAuthStateChangedFn Firebase listener binder.
+ * @property {(auth: unknown, credential: unknown) => Promise<void> | void} signInWithCredentialFn Credential signer.
+ * @property {(config: { apiKey: string, authDomain: string, projectId: string }) => void} initializeAppFn Firebase initializer.
+ * @property {Storage} sessionStorageObj Storage for cached tokens.
+ * @property {{ error?: (message: string) => void }} consoleObj Logger for sign-in errors.
+ * @property {typeof globalThis} globalThisObj Global scope for Google APIs and DOM helpers.
+ * @property {Document} documentObj Document containing the admin UI.
+ * @property {FetchFn} fetchObj Permission-aware fetch adapter.
+ * @property {(handler: (permission: AllowEffects) => Promise<void>) => Promise<void>} bindEffectBoundary Browser-owned command permission binder.
+ * @property {(error: unknown) => void} [reportError] Optional reporter for admin fetch failures.
+ * @property {(handlers: GoogleAuthModule) => void} [onHandlersReady] Optional hook for accessing memoized handlers.
+ */
+
+/**
  * @typedef {object} GoogleNamespace
  * @property {{ id?: GoogleAccountsClient }} [accounts] - Google accounts helper container.
  */
@@ -2480,112 +2498,102 @@ export function setupFirebase(initApp) {
 
 /**
  * Initialize the admin UI with the provided auth helpers and globals.
- * @param {object} deps - Dependency bag describing the required environment.
- * @param {() => Promise<Record<string, string>>} deps.loadStaticConfigFn - Loader for static config values.
- * @param {() => FirebaseAuthInstance | null | undefined} deps.getAuthFn - Factory returning the Firebase auth instance.
- * @param {{ credential?: (token: string) => string }} deps.GoogleAuthProviderFn - Firebase provider helper.
- * @param {(auth: unknown, callback: () => void) => void} deps.onAuthStateChangedFn - Firebase listener binder.
- * @param {(auth: unknown, credential: unknown) => Promise<void> | void} deps.signInWithCredentialFn - Credential signer.
- * @param {(config: { apiKey: string, authDomain: string, projectId: string }) => void} deps.initializeAppFn - Firebase initializer.
- * @param {Storage} deps.sessionStorageObj - Storage object for caching tokens.
- * @param {{ error?: (message: string) => void }} deps.consoleObj - Logger for reporting sign-in issues.
- * @param {typeof globalThis} deps.globalThisObj - Global scope used for Google APIs and DOM helpers.
- * @param {Document} deps.documentObj - Document object containing the admin UI.
- * @param {FetchFn} deps.fetchObj - Fetch-like function for HTTP requests.
- * @param {(handler: (permission: AllowEffects) => Promise<void>) => Promise<void>} deps.bindEffectBoundary - Browser-owned command permission binder.
- * @param {(error: unknown) => void} [deps.reportError] - Optional reporter for admin fetch failures.
- * @param {(handlers: { initGoogleSignIn: (options?: GoogleSignInOptions) => void, signOut: () => Promise<void> }) => void} [deps.onHandlersReady] - Optional hook for tests to access memoized handlers.
+ * @param {InitAdminAppOptions} deps Dependency bag describing the required environment.
  */
-export function initAdminApp({
-  loadStaticConfigFn,
-  getAuthFn,
-  GoogleAuthProviderFn,
-  onAuthStateChangedFn,
-  signInWithCredentialFn,
-  initializeAppFn,
-  sessionStorageObj,
-  consoleObj,
-  globalThisObj,
-  documentObj,
-  fetchObj,
-  bindEffectBoundary,
-  reportError = () => {},
-  onHandlersReady = () => {},
-}) {
-  setupFirebase(initializeAppFn);
+export function initAdminApp(deps) {
+  setupFirebase(deps.initializeAppFn);
+  const googleAuth = createInitAdminAppGoogleAuth(deps);
+  const onHandlersReady =
+    deps.onHandlersReady === undefined ? () => {} : deps.onHandlersReady;
+  onHandlersReady(googleAuth);
+  initAdmin({
+    googleAuthModule: googleAuth,
+    loadStaticConfigFn: deps.loadStaticConfigFn,
+    getAuthFn: deps.getAuthFn,
+    onAuthStateChangedFn: deps.onAuthStateChangedFn,
+    doc: deps.documentObj,
+    fetchFn: deps.fetchObj,
+    bindEffectBoundary: deps.bindEffectBoundary,
+    reportError: deps.reportError,
+  });
+}
 
+/**
+ * Create the lazy Google auth module used during admin app initialization.
+ * @param {InitAdminAppOptions} deps Admin app dependencies.
+ * @returns {GoogleAuthModule} Lazy authentication operations for the admin app.
+ */
+function createInitAdminAppGoogleAuth(deps) {
+  return {
+    initGoogleSignIn: createInitAdminAppGoogleSignIn(deps),
+    signOut: createInitAdminAppSignOut(deps),
+    getIdToken: createInitAdminAppIdTokenGetter(deps),
+  };
+}
+
+/**
+ * Create the config-gated, lazily constructed Google sign-in operation.
+ * @param {InitAdminAppOptions} deps Admin app dependencies.
+ * @returns {(options?: GoogleSignInOptions) => Promise<void>} Sign-in operation.
+ */
+function createInitAdminAppGoogleSignIn(deps) {
   /** @type {((options?: GoogleSignInOptions) => Promise<void> | void) | undefined} */
   let initGoogleSignInHandler;
-  const getInitGoogleSignInHandler = () => {
-    if (!initGoogleSignInHandler) {
-      const auth = /** @type {FirebaseAuthInstance} */ (getAuthFn());
-      initGoogleSignInHandler = createGoogleSignInInit({
-        auth,
-        storage: sessionStorageObj,
-        logger: consoleObj,
-        globalObject: globalThisObj,
-        authProvider: GoogleAuthProviderFn,
-        signInWithCredential: signInWithCredentialFn,
-      });
-    }
-    return initGoogleSignInHandler;
-  };
 
-  const initGoogleSignIn = async (
-    /** @type {GoogleSignInOptions | undefined} */ options
-  ) => {
-    const config = await loadStaticConfigFn();
+  return async options => {
+    const config = await deps.loadStaticConfigFn();
     if (config.disableGoogleSignIn) {
       return;
     }
 
-    await getInitGoogleSignInHandler()(options);
-  };
+    if (!initGoogleSignInHandler) {
+      const auth = /** @type {FirebaseAuthInstance} */ (deps.getAuthFn());
+      initGoogleSignInHandler = createGoogleSignInInit({
+        auth,
+        storage: deps.sessionStorageObj,
+        logger: deps.consoleObj,
+        globalObject: deps.globalThisObj,
+        authProvider: deps.GoogleAuthProviderFn,
+        signInWithCredential: deps.signInWithCredentialFn,
+      });
+    }
 
+    await initGoogleSignInHandler(options);
+  };
+}
+
+/**
+ * Create the lazily constructed sign-out operation used by the admin app.
+ * @param {InitAdminAppOptions} deps Admin app dependencies.
+ * @returns {() => Promise<void>} Sign-out operation.
+ */
+function createInitAdminAppSignOut(deps) {
   /** @type {(() => Promise<void>) | undefined} */
   let signOutHandler;
-  const getSignOutHandler = () => {
+
+  return () => {
     if (!signOutHandler) {
-      const auth = /** @type {FirebaseAuthInstance} */ (getAuthFn());
-      signOutHandler = createSignOut(auth, globalThisObj);
+      const auth = /** @type {FirebaseAuthInstance} */ (deps.getAuthFn());
+      signOutHandler = createSignOut(auth, deps.globalThisObj);
     }
-    return signOutHandler;
+    return signOutHandler();
   };
+}
 
-  const signOut = () => getSignOutHandler()();
-
-  /**
-   * Return a fresh Firebase ID token for protected admin requests.
-   * @returns {Promise<string>} Current token, or an empty string when signed out.
-   */
-  const getIdToken = async () => {
-    const auth = getAuthFn();
+/**
+ * Create the fresh-first, cached-fallback token lookup for admin requests.
+ * @param {InitAdminAppOptions} deps Admin app dependencies.
+ * @returns {() => Promise<string>} Token lookup operation.
+ */
+function createInitAdminAppIdTokenGetter(deps) {
+  return async () => {
+    const auth = deps.getAuthFn();
     const currentUser = auth?.currentUser;
     if (currentUser?.getIdToken) {
       return (await currentUser.getIdToken(true)) || '';
     }
-    return getCachedIdToken(sessionStorageObj) || '';
+    return getCachedIdToken(deps.sessionStorageObj) || '';
   };
-
-  /** @type {GoogleAuthModule} */
-  const googleAuth = {
-    initGoogleSignIn,
-    signOut,
-    getIdToken,
-  };
-
-  onHandlersReady(googleAuth);
-
-  initAdmin({
-    googleAuthModule: googleAuth,
-    loadStaticConfigFn,
-    getAuthFn,
-    onAuthStateChangedFn,
-    doc: documentObj,
-    fetchFn: fetchObj,
-    bindEffectBoundary,
-    reportError,
-  });
 }
 
 /**
