@@ -1,0 +1,7 @@
+# Render contents invalidation operations
+
+- **Unexpected hurdle:** None. Existing tests already covered fresh permissions for the metadata token request and each CDN invalidation request.
+- **Diagnosis:** `createInvalidatePaths` flattened five permission-aware runtime operations and three CDN destination settings into one destructured input. `createPathInvalidationRunner` then unpacked that combined transport object again.
+- **Chosen fix:** Separate `PathInvalidationOperations` from `PathInvalidationTarget`, validate the operation capability at its factory boundary, and pass the cohesive operation group through the runner with resolved host/URL config separately. Updated composition and test adapters; added assertions for default URL and host.
+- **Next-time guidance:** Continue in the same file at `invalidatePathItem`, the first remaining finding. It combines request data and transport/reporting collaborators; preserve the permission-first send and permission-aware failure logging.
+- **Evidence:** Focused Jest passed (3 suites, 71 tests). Fresh no-cache scan reduced `render-contents-core.js` from 13 findings to 11, with no new findings. Scoped ESLint `--max-warnings=0`, TSDoc, and `git diff --check` passed. `npm run check` passed all 10 gates, including 100% coverage, 11/11 local E2E, zero clones, and zero vulnerabilities. `npm run build:cloud` passed. Logs: `.tmp/npm-check-render-contents-create-invalidate-paths.log` and `.tmp/build-cloud-render-contents-create-invalidate-paths.log`.

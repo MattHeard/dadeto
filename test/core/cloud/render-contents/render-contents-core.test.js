@@ -172,7 +172,21 @@ function buildHandleRenderRequest(options = {}) {
  * @returns {unknown} Path invalidation handler.
  */
 function createInvalidatePaths(options) {
-  return createInvalidatePathsCore(withEffectDependencies(options));
+  const dependencies = withEffectDependencies(options);
+  return createInvalidatePathsCore(
+    {
+      fetchFn: dependencies.fetchFn,
+      bindEffectBoundary: dependencies.bindEffectBoundary,
+      effectFetchFn: dependencies.effectFetchFn,
+      randomUUID: dependencies.randomUUID,
+      logError: dependencies.logError,
+    },
+    {
+      projectId: dependencies.projectId,
+      urlMapName: dependencies.urlMapName,
+      cdnHost: dependencies.cdnHost,
+    }
+  );
 }
 
 describe('render contents test utilities', () => {
@@ -984,13 +998,16 @@ describe('createInvalidatePaths', () => {
       permissions.push(permission);
       return handler(permission);
     });
-    const invalidatePaths = createInvalidatePathsCore({
-      fetchFn,
-      bindEffectBoundary,
-      effectFetchFn,
-      logError: jest.fn(),
-      randomUUID: jest.fn(() => 'uuid'),
-    });
+    const invalidatePaths = createInvalidatePathsCore(
+      {
+        fetchFn,
+        bindEffectBoundary,
+        effectFetchFn,
+        logError: jest.fn(),
+        randomUUID: jest.fn(() => 'uuid'),
+      },
+      {}
+    );
 
     await invalidatePaths(['/one.html', '/two.html']);
 
@@ -1002,6 +1019,18 @@ describe('createInvalidatePaths', () => {
     );
     expect(bindEffectBoundary).toHaveBeenCalledTimes(3);
     expect(effectFetchFn).toHaveBeenCalledTimes(2);
+    expect(effectFetchFn).toHaveBeenNthCalledWith(
+      1,
+      permissions[1],
+      'https://compute.googleapis.com/compute/v1/projects/global/urlMaps/prod-dendrite-url-map/invalidateCache',
+      expect.objectContaining({
+        body: JSON.stringify({
+          host: 'www.dendritestories.co.nz',
+          path: '/one.html',
+          requestId: 'uuid',
+        }),
+      })
+    );
     expect(effectFetchFn.mock.calls.map(([permission]) => permission)).toEqual(
       permissions.slice(1)
     );

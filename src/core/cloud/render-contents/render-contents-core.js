@@ -85,6 +85,22 @@ const DEFAULT_PAGE_SIZE = 100;
  */
 
 /**
+ * @typedef {object} PathInvalidationOperations
+ * @property {RenderOptions['fetchFn']} fetchFn Permission-aware metadata fetch.
+ * @property {RenderOptions['bindEffectBoundary']} bindEffectBoundary Request-time effect boundary.
+ * @property {RenderOptions['effectFetchFn']} effectFetchFn Permission-aware CDN transport.
+ * @property {RenderOptions['randomUUID']} randomUUID Request identifier generator.
+ * @property {RenderOptions['logError']} logError Permission-aware error logger.
+ */
+
+/**
+ * @typedef {object} PathInvalidationTarget
+ * @property {string} [projectId] Google Cloud project identifier.
+ * @property {string} [urlMapName] Compute URL map identifier.
+ * @property {string} [cdnHost] CDN host name used for invalidation requests.
+ */
+
+/**
  * Ensure the provided Firestore-like instance exposes the expected helpers.
  * @param {DbInstance} db Firestore-like instance to validate.
  * @returns {void}
@@ -458,47 +474,21 @@ function hasPageNumber(page) {
 
 /**
  * Create a helper for invalidating cached CDN paths.
- * @param {object} root0 Options for the invalidation routine.
- * @param {(permission: AllowEffects, input: string, init?: object) => Promise<FetchResponse>} root0.fetchFn Permission-aware fetch implementation.
- * @param {import('../../../../types/allow-effects').AllowEffectsBoundary} root0.bindEffectBoundary External effect permission boundary.
- * @param {(permission: AllowEffects, input: string, init?: object) => Promise<FetchResponse>} root0.effectFetchFn Permission-aware invalidation transport.
- * @param {string} [root0.projectId] Google Cloud project identifier.
- * @param {string} [root0.urlMapName] Compute URL map used for invalidation.
- * @param {string} [root0.cdnHost] CDN host name to include with invalidations.
- * @param {() => string} root0.randomUUID UUID generator.
- * @param {(permission: AllowEffects, message: string, error?: unknown) => void} root0.logError Permission-aware logger.
+ * @param {PathInvalidationOperations} operations Permission-aware runtime operations.
+ * @param {PathInvalidationTarget} target CDN invalidation destination.
  * @returns {(paths: string[]) => Promise<void>} Path invalidation routine.
  */
-export function createInvalidatePaths({
-  fetchFn,
-  bindEffectBoundary,
-  effectFetchFn,
-  projectId,
-  urlMapName,
-  cdnHost,
-  randomUUID,
-  logError,
-}) {
-  assertFunction(fetchFn, 'fetchFn');
-  assertFunction(bindEffectBoundary, 'bindEffectBoundary');
-  assertFunction(effectFetchFn, 'effectFetchFn');
-  assertFunction(randomUUID, 'randomUUID');
-  assertFunction(logError, 'logError');
+export function createInvalidatePaths(operations, target) {
+  assertFunction(operations.fetchFn, 'fetchFn');
+  assertFunction(operations.bindEffectBoundary, 'bindEffectBoundary');
+  assertFunction(operations.effectFetchFn, 'effectFetchFn');
+  assertFunction(operations.randomUUID, 'randomUUID');
+  assertFunction(operations.logError, 'logError');
 
-  const config = buildInvalidationConfig({ projectId, urlMapName, cdnHost });
-
-  return createPathInvalidationRunner({
-    fetchFn,
-    bindEffectBoundary: /** @type {RenderOptions['bindEffectBoundary']} */ (
-      bindEffectBoundary
-    ),
-    effectFetchFn: /** @type {RenderOptions['effectFetchFn']} */ (
-      effectFetchFn
-    ),
-    randomUUID,
-    logError,
-    config,
-  });
+  return createPathInvalidationRunner(
+    operations,
+    buildInvalidationConfig(target)
+  );
 }
 
 /**
@@ -588,43 +578,31 @@ function resolveUrlMapName(urlMapName) {
 
 /**
  * Create the actual path invalidation routine.
- * @param {object} params Runner options.
- * @param {(permission: AllowEffects, input: string, init?: object) => Promise<FetchResponse>} params.fetchFn Permission-aware fetch implementation.
- * @param {import('../../../../types/allow-effects').AllowEffectsBoundary} params.bindEffectBoundary External effect permission boundary.
- * @param {(permission: AllowEffects, input: string, init?: object) => Promise<FetchResponse>} params.effectFetchFn Permission-aware invalidation transport.
- * @param {() => string} params.randomUUID UUID generator.
- * @param {(permission: AllowEffects, message: string, error?: unknown) => void} params.logError Permission-aware logger.
- * @param {{ host: string, url: string }} params.config Invalidation configuration.
+ * @param {PathInvalidationOperations} operations Permission-aware runtime operations.
+ * @param {{ host: string, url: string }} config Invalidation configuration.
  * @returns {(paths: string[]) => Promise<void>} Invalidation handler.
  */
-function createPathInvalidationRunner({
-  fetchFn,
-  bindEffectBoundary,
-  effectFetchFn,
-  randomUUID,
-  logError,
-  config,
-}) {
+function createPathInvalidationRunner(operations, config) {
   return async function invalidatePaths(paths) {
     if (!isValidPaths(paths)) {
       return;
     }
 
-    const token = await bindEffectBoundary(permission =>
-      getAccessToken(permission, fetchFn)
+    const token = await operations.bindEffectBoundary(permission =>
+      getAccessToken(permission, operations.fetchFn)
     );
 
     await Promise.all(
       paths.map(path =>
-        bindEffectBoundary(permission =>
+        operations.bindEffectBoundary(permission =>
           invalidatePathItem(permission, {
             path,
             token,
             url: config.url,
             host: config.host,
-            effectFetchFn,
-            randomUUID,
-            logError,
+            effectFetchFn: operations.effectFetchFn,
+            randomUUID: operations.randomUUID,
+            logError: operations.logError,
           })
         )
       )
@@ -917,16 +895,10 @@ function instantiateRenderContents(deps) {
     pageSize,
   } = deps;
 
-  const invalidatePaths = createInvalidatePaths({
-    fetchFn,
-    bindEffectBoundary,
-    effectFetchFn,
-    projectId,
-    urlMapName,
-    cdnHost,
-    randomUUID,
-    logError,
-  });
+  const invalidatePaths = createInvalidatePaths(
+    { fetchFn, bindEffectBoundary, effectFetchFn, randomUUID, logError },
+    { projectId, urlMapName, cdnHost }
+  );
 
   return createRenderContentsHandler({
     db: /** @type {DbInstance} */ (db),
