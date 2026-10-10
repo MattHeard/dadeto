@@ -1198,37 +1198,31 @@ async function markSubmissionProcessed(snapshot) {
 }
 
 /**
- * Route to option-based context resolver.
- * @param {object} params - Submission parameters.
- * @param {import('firebase-admin/firestore').Firestore} params.db - Firestore instance.
- * @param {string} params.incomingOptionFullName - Option document path.
- * @param {import('firebase-admin/firestore').DocumentSnapshot} params.snapshot - Submission snapshot.
- * @param {import('firebase-admin/firestore').WriteBatch} params.batch - Write batch.
- * @param {() => string} params.randomUUID - UUID generator.
- * @param {() => number} params.random - Random number generator.
- * @param {() => unknown} params.getServerTimestamp - Server timestamp helper.
- * @returns {Promise<PageContext | null>} Resolved context or null.
+ * Stage option-based submission resolution around Firestore and runtime dependencies.
+ * @param {import('firebase-admin/firestore').Firestore} db Firestore instance.
+ * @param {import('firebase-admin/firestore').WriteBatch} batch Write batch for option updates.
+ * @returns {(random: () => number, randomUUID: () => string, getServerTimestamp: () => unknown) => (incomingOptionFullName: string, snapshot: import('firebase-admin/firestore').DocumentSnapshot) => Promise<PageContext | null>} Staged option resolver.
  */
-async function resolveViaOption({
-  db,
-  incomingOptionFullName,
-  snapshot,
-  batch,
-  randomUUID,
-  random,
-  getServerTimestamp,
-}) {
-  const buildContext = createIncomingOptionContextBuilder(db, batch)(
-    random,
-    randomUUID,
-    getServerTimestamp
-  );
-  return resolveIncomingOptionContext(
-    db,
-    incomingOptionFullName,
-    snapshot,
-    buildContext
-  );
+function createOptionSubmissionResolver(db, batch) {
+  return function bindOptionRuntime(random, randomUUID, getServerTimestamp) {
+    const buildContext = createIncomingOptionContextBuilder(db, batch)(
+      random,
+      randomUUID,
+      getServerTimestamp
+    );
+
+    return async function resolveOptionSubmission(
+      incomingOptionFullName,
+      snapshot
+    ) {
+      return resolveIncomingOptionContext(
+        db,
+        incomingOptionFullName,
+        snapshot,
+        buildContext
+      );
+    };
+  };
 }
 
 /**
@@ -1290,15 +1284,11 @@ async function routePageContext({
   getServerTimestamp,
 }) {
   if (incomingOptionFullName) {
-    return resolveViaOption({
-      db,
-      incomingOptionFullName,
-      snapshot,
-      batch,
-      randomUUID,
+    return createOptionSubmissionResolver(db, batch)(
       random,
-      getServerTimestamp,
-    });
+      randomUUID,
+      getServerTimestamp
+    )(incomingOptionFullName, snapshot);
   }
 
   return routeViaDirect({ db, directPageNumber, snapshot });
