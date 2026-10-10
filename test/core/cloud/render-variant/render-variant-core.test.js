@@ -64,6 +64,12 @@ const createRenderVariant = dependencies =>
         void permission;
         return reference.update(data);
       }),
+    setFirestoreDocument:
+      dependencies.setFirestoreDocument ??
+      ((permission, reference, data) => {
+        void permission;
+        return reference.set(data);
+      }),
     effectFetchFn: (permission, url, init) => dependencies.fetchFn(url, init),
   });
 
@@ -81,6 +87,32 @@ const createHandleVariantWrite = dependencies => {
   });
   return (change, context, permission = createAllowEffects()) =>
     handle(permission, change, context, visibilityThreshold);
+};
+
+const expectReverseLinkWrite = ({
+  db,
+  setFirestoreDocument,
+  reverseLinkRef,
+  fetchFn,
+}) => {
+  expect(fetchFn).toHaveBeenCalled();
+  expect(db.doc).toHaveBeenCalledWith(
+    'stories/story-1/pages/5/variants/a/reverse-links/7-2'
+  );
+  expect(setFirestoreDocument).toHaveBeenCalledTimes(1);
+  const [permission, reference, record] = setFirestoreDocument.mock.calls[0];
+  expect(Object.isFrozen(permission)).toBe(true);
+  expect(reference).toBe(reverseLinkRef);
+  expect(record).toEqual(
+    expect.objectContaining({
+      sourcePageNumber: 5,
+      sourceVariantName: 'a',
+      sourceOptionPosition: 2,
+      sourceFilePath: 'p/5a.html',
+      targetPageNumber: 7,
+    })
+  );
+  expect(reverseLinkRef.set).toHaveBeenCalledWith(record);
 };
 
 describe('createInvalidatePaths', () => {
@@ -1399,6 +1431,7 @@ describe('createRenderVariant', () => {
       storage: { bucket: jest.fn(() => ({ file: jest.fn() })) },
       saveStorageFile: jest.fn(),
       updateFirestoreDocument: jest.fn(),
+      setFirestoreDocument: jest.fn(),
       fetchFn: jest.fn(),
       bindEffectBoundary: jest.fn(),
       effectFetchFn: jest.fn(),
@@ -1411,6 +1444,13 @@ describe('createRenderVariant', () => {
         updateFirestoreDocument: null,
       })
     ).toThrow(new TypeError('updateFirestoreDocument must be a function'));
+
+    expect(() =>
+      createRenderVariantCore({
+        ...dependencies,
+        setFirestoreDocument: null,
+      })
+    ).toThrow(new TypeError('setFirestoreDocument must be a function'));
 
     expect(() =>
       createRenderVariantCore({
@@ -1486,6 +1526,9 @@ it('renders variants, writes artefacts, and invalidates caches', async () => {
     boundPermissions.push(permission);
     return handler(permission);
   };
+  const setFirestoreDocument = jest.fn((permission, reference, data) =>
+    reference.set(data)
+  );
 
   // Mock Firestore hierarchy
   const parentVariantSnap = {
@@ -1515,6 +1558,7 @@ it('renders variants, writes artefacts, and invalidates caches', async () => {
     }),
     update: jest.fn().mockResolvedValue(undefined),
   };
+  const reverseLinkRef = { set: jest.fn().mockResolvedValue(undefined) };
 
   const targetVariantDocs = [
       { data: () => ({ name: 'q', visibility: VISIBILITY_THRESHOLD }) },
@@ -1621,9 +1665,7 @@ it('renders variants, writes artefacts, and invalidates caches', async () => {
         return variantRef;
       }
       if (path === 'stories/story-1/pages/5/variants/a/reverse-links/7-2') {
-        return {
-          set: jest.fn().mockResolvedValue(undefined),
-        };
+        return reverseLinkRef;
       }
       if (path === 'authors/author-123') {
         return authorRef;
@@ -1680,6 +1722,7 @@ it('renders variants, writes artefacts, and invalidates caches', async () => {
     objectPrefix: 't-example/',
     bindEffectBoundary,
     saveStorageFile,
+    setFirestoreDocument,
   });
 
   await renderVariant(variantSnap, { params: { variantId: 'variant-xyz' } });
@@ -1702,9 +1745,12 @@ it('renders variants, writes artefacts, and invalidates caches', async () => {
   expect(altsFile.save).toHaveBeenCalledWith(expect.any(String), {
     contentType: 'text/html',
   });
-  expect(db.doc).toHaveBeenCalledWith(
-    'stories/story-1/pages/5/variants/a/reverse-links/7-2'
-  );
+  expectReverseLinkWrite({
+    db,
+    setFirestoreDocument,
+    reverseLinkRef,
+    fetchFn,
+  });
   expect(pendingFile.save).toHaveBeenCalledWith(
     JSON.stringify({ path: 'p/5a.html' }),
     expect.objectContaining({ metadata: { cacheControl: 'no-store' } })
@@ -1743,7 +1789,6 @@ it('renders variants, writes artefacts, and invalidates caches', async () => {
       metadata: { cacheControl: 'no-store' },
     })
   );
-  expect(fetchFn).toHaveBeenCalled();
   expect(consoleError).toHaveBeenCalledWith(
     'target page lookup failed',
     'boom'

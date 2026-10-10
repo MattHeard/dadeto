@@ -30,6 +30,7 @@ import {
  *   fetchFn: typeof import('../../../cloud/render-variant/render-variant-gcf.js').fetchFn,
  *   bindEffectBoundary: typeof import('../../../cloud/render-variant/render-variant-gcf.js').bindEffectBoundary,
  *   updateFirestoreDocument: typeof import('../../../cloud/render-variant/effect-adapters.js').updateFirestoreDocument,
+ *   setFirestoreDocument: typeof import('../../../cloud/render-variant/effect-adapters.js').setFirestoreDocument,
  *   saveStorageFile: typeof import('../../../cloud/render-variant/effect-adapters.js').saveStorageFile,
  *   effectFetchFn: typeof import('../../../cloud/render-variant/render-variant-gcf.js').effectFetchFn,
  *   crypto: typeof import('../../../cloud/render-variant/render-variant-gcf.js').crypto,
@@ -50,6 +51,7 @@ export function runRenderVariant(deps) {
     fetchFn,
     bindEffectBoundary,
     updateFirestoreDocument,
+    setFirestoreDocument,
     saveStorageFile,
     effectFetchFn,
     crypto,
@@ -59,6 +61,13 @@ export function runRenderVariant(deps) {
 
   const renderState = /** @type {any} */ (createRenderVariantEntrypointState());
   const { render: resolveRenderVariant, db } = renderState;
+  const renderEffectDependencies = {
+    bindEffectBoundary,
+    updateFirestoreDocument,
+    setFirestoreDocument,
+    saveStorageFile,
+    effectFetchFn,
+  };
 
   const handleVariantWrite = createHandleVariantWrite({
     renderVariant: snap => Promise.resolve(resolveRenderVariant()(snap)),
@@ -107,10 +116,7 @@ export function runRenderVariant(deps) {
           createRenderer: (/** @type {any} */ dependencies) =>
             createRenderVariant({
               ...dependencies,
-              bindEffectBoundary,
-              updateFirestoreDocument,
-              saveStorageFile,
-              effectFetchFn,
+              ...renderEffectDependencies,
             }),
           crypto,
           consoleError: (/** @type {any[]} */ ...args) =>

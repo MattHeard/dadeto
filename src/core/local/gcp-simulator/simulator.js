@@ -89,6 +89,7 @@ const LOCAL_ID_TOKEN = 'local-admin-token';
  *   bindEffectBoundary?: import('../../../../types/allow-effects').AllowEffectsBoundary,
  *   saveStorageFile?: (permission: import('../../../../types/allow-effects').AllowEffects, file: object, contents: string, options: object) => Promise<unknown>,
  *   updateFirestoreDocument?: (permission: import('../../../../types/allow-effects').AllowEffects, reference: { update: (data: Record<string, unknown>) => Promise<unknown> }, data: Record<string, unknown>) => Promise<unknown>,
+ *   setFirestoreDocument?: (permission: import('../../../../types/allow-effects').AllowEffects, reference: { set: (data: Record<string, unknown>) => Promise<unknown> }, data: Record<string, unknown>) => Promise<unknown>,
  * }} [options] Simulator options.
  * @returns {Promise<object>} Simulator instance.
  */
@@ -101,6 +102,7 @@ export async function createLocalGcpSimulator(options = {}) {
     bindEffectBoundary,
     saveStorageFile,
     updateFirestoreDocument,
+    setFirestoreDocument,
   } = options;
 
   return createLocalGcpSimulatorRuntime({
@@ -111,6 +113,7 @@ export async function createLocalGcpSimulator(options = {}) {
     bindEffectBoundary,
     saveStorageFile,
     updateFirestoreDocument,
+    setFirestoreDocument,
   });
 }
 
@@ -124,6 +127,7 @@ export async function createLocalGcpSimulator(options = {}) {
  *   bindEffectBoundary?: import('../../../../types/allow-effects').AllowEffectsBoundary,
  *   saveStorageFile?: (permission: import('../../../../types/allow-effects').AllowEffects, file: object, contents: string, options: object) => Promise<unknown>,
  *   updateFirestoreDocument?: (permission: import('../../../../types/allow-effects').AllowEffects, reference: { update: (data: Record<string, unknown>) => Promise<unknown> }, data: Record<string, unknown>) => Promise<unknown>,
+ *   setFirestoreDocument?: (permission: import('../../../../types/allow-effects').AllowEffects, reference: { set: (data: Record<string, unknown>) => Promise<unknown> }, data: Record<string, unknown>) => Promise<unknown>,
  * }} config Simulator configuration.
  * @returns {Promise<object>} Simulator instance.
  */
@@ -350,6 +354,7 @@ function buildSimulatorApi(state) {
  *   bindEffectBoundary?: import('../../../../types/allow-effects').AllowEffectsBoundary,
  *   saveStorageFile?: (permission: import('../../../../types/allow-effects').AllowEffects, file: object, contents: string, options: object) => Promise<unknown>,
  *   updateFirestoreDocument?: (permission: import('../../../../types/allow-effects').AllowEffects, reference: { update: (data: Record<string, unknown>) => Promise<unknown> }, data: Record<string, unknown>) => Promise<unknown>,
+ *   setFirestoreDocument?: (permission: import('../../../../types/allow-effects').AllowEffects, reference: { set: (data: Record<string, unknown>) => Promise<unknown> }, data: Record<string, unknown>) => Promise<unknown>,
  * }} config Simulator configuration.
  * @returns {Promise<object>} Simulator state.
  */
@@ -361,6 +366,7 @@ async function buildSimulatorState(config) {
     publicDir,
     saveStorageFile,
     updateFirestoreDocument,
+    setFirestoreDocument,
   } = config;
   if (typeof config.bindEffectBoundary !== 'function') {
     throw new TypeError('bindEffectBoundary must be provided');
@@ -410,6 +416,7 @@ async function buildSimulatorState(config) {
     saveRenderedPage,
     saveStorageFile,
     updateFirestoreDocument,
+    setFirestoreDocument,
     randomUUID,
     bucketName,
     objectPrefix: '',

@@ -325,6 +325,7 @@ function resolveStoredVisibilitySum(data) {
  *   bindEffectBoundary: import('../../../../types/allow-effects').AllowEffectsBoundary;
  *   saveStorageFile: (allowEffects: AllowEffects, file: StorageFileLike, contents: string, options: object) => Promise<unknown>;
  *   updateFirestoreDocument: (permission: AllowEffects, reference: UpdatableDocumentReference, data: Record<string, unknown>) => Promise<unknown>;
+ *   setFirestoreDocument: (permission: AllowEffects, reference: { set: (data: Record<string, unknown>) => Promise<unknown> }, data: Record<string, unknown>) => Promise<unknown>;
  *   invalidatePaths: (paths: string[]) => Promise<void>;
  *   db: FirestoreLike;
  * }} RenderPersistenceCapabilities
@@ -2629,6 +2630,7 @@ function resolveParentLookupPromise({ incomingOption, db, consoleError }) {
  * @property {StorageLike} storage - Cloud storage helper capable of writing files.
  * @property {(allowEffects: AllowEffects, file: StorageFileLike, contents: string, options: object) => Promise<unknown>} saveStorageFile Permission-aware Storage write adapter.
  * @property {(permission: AllowEffects, reference: UpdatableDocumentReference, data: Record<string, unknown>) => Promise<unknown>} updateFirestoreDocument Permission-aware Firestore update adapter.
+ * @property {(permission: AllowEffects, reference: { set: (data: Record<string, unknown>) => Promise<unknown> }, data: Record<string, unknown>) => Promise<unknown>} setFirestoreDocument Permission-aware Firestore set adapter.
  * @property {(permission: AllowEffects, url: string, init?: object) => Promise<Response>} fetchFn - Permission-aware fetch implementation.
  * @property {import('../../../../types/allow-effects').AllowEffectsBoundary} bindEffectBoundary Cloud-owned permission boundary.
  * @property {(permission: AllowEffects, url: string, init?: object) => Promise<Response>} effectFetchFn Fetch adapter for cache purge requests.
@@ -2644,7 +2646,7 @@ function resolveParentLookupPromise({ incomingOption, db, consoleError }) {
 
 /**
  * @typedef {object} RenderVariantCapabilities
- * @property {{ db: FirestoreLike, storage: StorageLike, saveStorageFile: (allowEffects: AllowEffects, file: StorageFileLike, contents: string, options: object) => Promise<unknown>, bindEffectBoundary: import('../../../../types/allow-effects').AllowEffectsBoundary, updateFirestoreDocument: (permission: AllowEffects, reference: UpdatableDocumentReference, data: Record<string, unknown>) => Promise<unknown>, consoleError: ConsoleError, bucketName: string, objectPrefix: string, visibilityThreshold: number }} rendering Render output dependencies.
+ * @property {{ db: FirestoreLike, storage: StorageLike, saveStorageFile: (allowEffects: AllowEffects, file: StorageFileLike, contents: string, options: object) => Promise<unknown>, bindEffectBoundary: import('../../../../types/allow-effects').AllowEffectsBoundary, updateFirestoreDocument: (permission: AllowEffects, reference: UpdatableDocumentReference, data: Record<string, unknown>) => Promise<unknown>, setFirestoreDocument: (permission: AllowEffects, reference: { set: (data: Record<string, unknown>) => Promise<unknown> }, data: Record<string, unknown>) => Promise<unknown>, consoleError: ConsoleError, bucketName: string, objectPrefix: string, visibilityThreshold: number }} rendering Render output dependencies.
  * @property {{ effectOperations: InvalidationEffectOperations, target: InvalidationTargetOptions, randomUUID: () => string, consoleError: ConsoleError }} invalidation CDN invalidation dependencies.
  */
 
@@ -2682,6 +2684,7 @@ function buildRenderOutputCapabilities(dependencies) {
     saveStorageFile: dependencies.saveStorageFile,
     bindEffectBoundary: dependencies.bindEffectBoundary,
     updateFirestoreDocument: dependencies.updateFirestoreDocument,
+    setFirestoreDocument: dependencies.setFirestoreDocument,
     consoleError: resolveRenderVariantConsoleError(dependencies.consoleError),
     bucketName: resolveRenderVariantBucketName(dependencies.bucketName),
     objectPrefix: normalizeStaticObjectPrefix(dependencies.objectPrefix),
@@ -2766,6 +2769,7 @@ function validateRenderOutputDependencies(dependencies) {
     dependencies.updateFirestoreDocument,
     'updateFirestoreDocument'
   );
+  assertFunction(dependencies.setFirestoreDocument, 'setFirestoreDocument');
 }
 
 /**
@@ -2826,6 +2830,7 @@ function createRenderVariantHandler(capabilities) {
       bindEffectBoundary: invalidation.effectOperations.bindEffectBoundary,
       saveStorageFile: rendering.saveStorageFile,
       updateFirestoreDocument: rendering.updateFirestoreDocument,
+      setFirestoreDocument: rendering.setFirestoreDocument,
       invalidatePaths,
     });
     return null;
@@ -3511,6 +3516,8 @@ async function persistRenderPlan(snap, context, renderPlan, persistence) {
     snap,
     db: persistence.db,
     reverseLinks: renderPlan.reverseLinks,
+    bindEffectBoundary: persistence.bindEffectBoundary,
+    setFirestoreDocument: persistence.setFirestoreDocument,
   });
   const altsPath = await saveAltsHtml({
     snap,
@@ -3556,10 +3563,18 @@ async function persistRenderPlan(snap, context, renderPlan, persistence) {
  *   snap: VariantSnapshot;
  *   db: FirestoreLike;
  *   reverseLinks: ReverseLinkRecord[];
+ *   bindEffectBoundary: import('../../../../types/allow-effects').AllowEffectsBoundary;
+ *   setFirestoreDocument: (permission: AllowEffects, reference: { set: (data: Record<string, unknown>) => Promise<unknown> }, data: Record<string, unknown>) => Promise<unknown>;
  * }} options Reverse-link persistence options.
  * @returns {Promise<void>} Void promise.
  */
-async function saveReverseLinkRecords({ snap, db, reverseLinks }) {
+async function saveReverseLinkRecords({
+  snap,
+  db,
+  reverseLinks,
+  bindEffectBoundary,
+  setFirestoreDocument,
+}) {
   if (!reverseLinks.length) {
     return;
   }
@@ -3570,13 +3585,20 @@ async function saveReverseLinkRecords({ snap, db, reverseLinks }) {
   }
 
   await Promise.all(
-    reverseLinks.map(record =>
-      /** @type {{ set: (data: unknown) => Promise<unknown> }} */ (
-        db.doc(
-          `${variantRef.path}/reverse-links/${buildReverseLinkDocId(record)}`
+    reverseLinks.map(record => {
+      const reference = db.doc(
+        `${variantRef.path}/reverse-links/${buildReverseLinkDocId(record)}`
+      );
+      return bindEffectBoundary(permission =>
+        setFirestoreDocument(
+          permission,
+          /** @type {{ set: (data: Record<string, unknown>) => Promise<unknown> }} */ (
+            reference
+          ),
+          record
         )
-      ).set(record)
-    )
+      );
+    })
   );
 }
 

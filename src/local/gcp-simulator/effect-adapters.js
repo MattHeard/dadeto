@@ -27,6 +27,18 @@ export function updateFirestoreDocument(allowEffects, reference, data) {
   return reference.update(data);
 }
 
+/**
+ * Set a simulator Firestore document through the local effects boundary.
+ * @param {AllowEffects} allowEffects Request capability.
+ * @param {{ set: (data: Record<string, unknown>) => Promise<unknown> }} reference Firestore document reference.
+ * @param {Record<string, unknown>} data Document payload.
+ * @returns {Promise<unknown>} Firestore set result.
+ */
+export function setFirestoreDocument(allowEffects, reference, data) {
+  void allowEffects;
+  return reference.set(data);
+}
+
 /** Register simulator middleware at its local runtime boundary. */
 export function useMiddleware(permission, app, middleware) {
   void permission;

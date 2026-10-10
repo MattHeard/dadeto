@@ -69,6 +69,8 @@ const executeRunRenderVariant = dependencies =>
     ...dependencies,
     updateFirestoreDocument:
       dependencies.updateFirestoreDocument ?? jest.fn(async () => undefined),
+    setFirestoreDocument:
+      dependencies.setFirestoreDocument ?? jest.fn(async () => undefined),
     saveStorageFile:
       dependencies.saveStorageFile ?? jest.fn(async () => undefined),
   });
@@ -145,6 +147,7 @@ describe('runRenderVariant', () => {
         ...rendererDependencies,
         bindEffectBoundary: expect.any(Function),
         updateFirestoreDocument: expect.any(Function),
+        setFirestoreDocument: expect.any(Function),
         saveStorageFile: expect.any(Function),
         effectFetchFn: expect.any(Function),
       })

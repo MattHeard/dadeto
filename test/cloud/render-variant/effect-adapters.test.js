@@ -2,6 +2,7 @@ import { describe, expect, it, jest } from '@jest/globals';
 import { createAllowEffects } from '../../../src/cloud/allow-effects.js';
 import {
   saveStorageFile,
+  setFirestoreDocument,
   updateFirestoreDocument,
 } from '../../../src/cloud/render-variant/effect-adapters.js';
 
@@ -16,6 +17,18 @@ describe('render-variant effect adapters', () => {
 
     expect(update).toHaveBeenCalledTimes(1);
     expect(update).toHaveBeenCalledWith(payload);
+  });
+
+  it('sets the supplied reference with the caller permission and payload', async () => {
+    const allowEffects = createAllowEffects();
+    const payload = { targetPageNumber: 12 };
+    const set = jest.fn().mockResolvedValue(undefined);
+    const reference = { set };
+
+    await setFirestoreDocument(allowEffects, reference, payload);
+
+    expect(set).toHaveBeenCalledTimes(1);
+    expect(set).toHaveBeenCalledWith(payload);
   });
 
   it('saves the supplied Storage file with the caller permission and options', async () => {

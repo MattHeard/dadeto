@@ -443,6 +443,7 @@ test('clears the rendered variant tree-weight dirty marker', async () => {
         return file.save(contents, options);
       },
       updateFirestoreDocument,
+      setFirestoreDocument: jest.fn(),
       invalidatePaths,
     }
   );
@@ -455,4 +456,107 @@ test('clears the rendered variant tree-weight dirty marker', async () => {
     updateFirestoreDocument.mock.invocationCallOrder[0]
   );
   expect(invalidatePaths).toHaveBeenCalledWith(['/p/1-alts.html', '/p/1.html']);
+});
+
+test('persists each reverse link with a distinct effects capability', async () => {
+  const permissions = [];
+  const bindEffectBoundary = jest.fn(handler => {
+    const permission = createAllowEffects();
+    permissions.push(permission);
+    return handler(permission);
+  });
+  const reverseLinks = [
+    {
+      sourcePageNumber: 1,
+      sourceVariantName: 'a',
+      sourceOptionPosition: 0,
+      sourceFilePath: 'p/1a.html',
+      targetPageNumber: 2,
+    },
+    {
+      sourcePageNumber: 1,
+      sourceVariantName: 'a',
+      sourceOptionPosition: 4,
+      sourceFilePath: 'p/1a.html',
+      targetPageNumber: 3,
+    },
+  ];
+  const variantRef = {
+    path: 'stories/s1/pages/1/variants/a',
+    parent: { get: jest.fn().mockResolvedValue({ docs: [] }) },
+    update: jest.fn().mockResolvedValue(undefined),
+  };
+  const references = new Map([
+    [
+      'stories/s1/pages/1/variants/a/reverse-links/2-0',
+      { set: jest.fn().mockResolvedValue(undefined) },
+    ],
+    [
+      'stories/s1/pages/1/variants/a/reverse-links/3-4',
+      { set: jest.fn().mockResolvedValue(undefined) },
+    ],
+  ]);
+  const db = {
+    doc: jest.fn(path =>
+      path === variantRef.path ? variantRef : references.get(path)
+    ),
+    collection: jest.fn(() => variantRef.parent),
+  };
+  const setFirestoreDocument = jest.fn((permission, reference, data) =>
+    reference.set(data)
+  );
+  const invalidatePaths = jest.fn().mockResolvedValue(undefined);
+  const save = jest.fn().mockResolvedValue(undefined);
+
+  await renderVariantCoreTestUtils.persistRenderPlan(
+    { ref: { path: variantRef.path } },
+    undefined,
+    {
+      variant: {},
+      page: { number: 1 },
+      parentUrl: undefined,
+      html: '<html />',
+      filePath: 'p/1a.html',
+      openVariant: false,
+      reverseLinks,
+    },
+    {
+      db,
+      bucket: { file: jest.fn(() => ({ save })) },
+      bindEffectBoundary,
+      saveStorageFile: (permission, file, contents, options) =>
+        file.save(contents, options),
+      updateFirestoreDocument: (permission, reference, data) =>
+        reference.update(data),
+      setFirestoreDocument,
+      invalidatePaths,
+    }
+  );
+
+  expect(setFirestoreDocument).toHaveBeenCalledTimes(2);
+  const setPermissions = setFirestoreDocument.mock.calls.map(
+    ([permission]) => permission
+  );
+  expect(setPermissions.every(permission => Object.isFrozen(permission))).toBe(
+    true
+  );
+  expect(new Set(setPermissions).size).toBe(2);
+  expect(setFirestoreDocument.mock.calls).toEqual([
+    [
+      setPermissions[0],
+      references.get('stories/s1/pages/1/variants/a/reverse-links/2-0'),
+      reverseLinks[0],
+    ],
+    [
+      setPermissions[1],
+      references.get('stories/s1/pages/1/variants/a/reverse-links/3-4'),
+      reverseLinks[1],
+    ],
+  ]);
+  expect(bindEffectBoundary.mock.calls).toHaveLength(6);
+  expect(new Set(permissions).size).toBe(permissions.length);
+  expect(invalidatePaths).toHaveBeenCalledTimes(1);
+  expect(setFirestoreDocument.mock.invocationCallOrder[1]).toBeLessThan(
+    invalidatePaths.mock.invocationCallOrder[0]
+  );
 });

@@ -13,6 +13,18 @@ export async function updateFirestoreDocument(allowEffects, reference, data) {
 }
 
 /**
+ * Set a Firestore document through the permission-aware command boundary.
+ * @param {AllowEffects} allowEffects Request capability.
+ * @param {{ set: (data: Record<string, unknown>) => Promise<unknown> }} reference Firestore document reference.
+ * @param {Record<string, unknown>} data Document payload.
+ * @returns {Promise<unknown>} Firestore set result.
+ */
+export async function setFirestoreDocument(allowEffects, reference, data) {
+  void allowEffects;
+  return reference.set(data);
+}
+
+/**
  * Save an object through the permission-aware Storage command boundary.
  * @param {AllowEffects} allowEffects Request capability.
  * @param {object} file Storage file handle.

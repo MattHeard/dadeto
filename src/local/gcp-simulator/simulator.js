@@ -3,6 +3,7 @@ import { createLocalGcpSimulator as createSimulator } from '../../core/local/gcp
 import { bindEffectBoundary, bindEffectResponder } from '../allow-effects.js';
 import {
   saveStorageFile,
+  setFirestoreDocument,
   updateFirestoreDocument,
 } from './effect-adapters.js';
 
@@ -17,6 +18,7 @@ export async function createLocalGcpSimulator(options) {
       ...options,
       bindEffectBoundary,
       saveStorageFile,
+      setFirestoreDocument,
       updateFirestoreDocument,
     })
   );
