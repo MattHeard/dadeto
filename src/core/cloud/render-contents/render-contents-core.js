@@ -973,18 +973,18 @@ function createRenderContentsHandler(query, output) {
     query.db,
     createFetchStoryInfo
   );
+  const publishPages = createStoryPagePublisher(
+    output.pageSize,
+    output.saveRenderedPage,
+    output.objectPrefix
+  );
 
   return async function render(permission, deps = {}) {
     const loadStoryIds = resolveTopStoryIds(deps.fetchTopStoryIds);
     const loadStoryInfo = resolveStoryInfo(deps.fetchStoryInfo);
 
     const items = await buildStoryItems(loadStoryIds, loadStoryInfo);
-    const paths = await publishStoryPages(permission, {
-      items,
-      pageSize: output.pageSize,
-      saveRenderedPage: output.saveRenderedPage,
-      objectPrefix: output.objectPrefix,
-    });
+    const paths = await publishPages(permission, items);
 
     await output.invalidatePaths(paths);
     return null;
@@ -1049,38 +1049,33 @@ function pushIfPresent(collection, value) {
 }
 
 /**
- * Write paginated story HTML to storage and return invalidation paths.
- * @param {AllowEffects} permission Permission for each page write.
- * @param {{
- *   items: StoryInfo[],
- *   pageSize: number,
- *   saveRenderedPage: RenderOptions['saveRenderedPage'],
- *   objectPrefix: string,
- * }} options Publishing inputs.
- * @returns {Promise<string[]>} Paths that were saved.
+ * Build a publisher bound to page settings and storage output.
+ * @param {number} pageSize Number of items per page.
+ * @param {RenderOptions['saveRenderedPage']} saveRenderedPage Permission-aware storage writer.
+ * @param {string} objectPrefix Optional output path prefix.
+ * @returns {(permission: AllowEffects, items: StoryInfo[]) => Promise<string[]>} Page publisher.
  */
-async function publishStoryPages(
-  permission,
-  { items, pageSize: size, saveRenderedPage, objectPrefix }
-) {
-  const totalPages = Math.max(1, Math.ceil(items.length / size));
-  const paths = [];
+function createStoryPagePublisher(pageSize, saveRenderedPage, objectPrefix) {
+  return async function publish(permission, items) {
+    const totalPages = Math.max(1, Math.ceil(items.length / pageSize));
+    const paths = [];
 
-  for (let page = 1; page <= totalPages; page += 1) {
-    const start = (page - 1) * size;
-    const pageItems = items.slice(start, start + size);
-    const html = buildHtml(pageItems);
-    const filePath = resolvePageFilePath(page);
-    const options = buildPageSaveOptions(page, totalPages);
+    for (let page = 1; page <= totalPages; page += 1) {
+      const start = (page - 1) * pageSize;
+      const pageItems = items.slice(start, start + pageSize);
+      const html = buildHtml(pageItems);
+      const filePath = resolvePageFilePath(page);
+      const options = buildPageSaveOptions(page, totalPages);
 
-    const storagePath = objectPrefix
-      ? prefixStaticObjectPath(objectPrefix, filePath)
-      : filePath;
-    await saveRenderedPage(permission, storagePath, html, options);
-    paths.push(`/${filePath}`);
-  }
+      const storagePath = objectPrefix
+        ? prefixStaticObjectPath(objectPrefix, filePath)
+        : filePath;
+      await saveRenderedPage(permission, storagePath, html, options);
+      paths.push(`/${filePath}`);
+    }
 
-  return paths;
+    return paths;
+  };
 }
 
 /**
