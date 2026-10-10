@@ -1305,14 +1305,41 @@ export function hasRenderButtonMethod(accountsId) {
  * }} context - Collaborators required to complete the sign-in.
  * @returns {Promise<void>} Resolves once the credential has been processed.
  */
-export async function handleCredentialSignIn(
-  { credential },
-  { credentialFactory, signInWithCredential, auth, storage, onSignIn }
+export async function handleCredentialSignIn({ credential }, context) {
+  const signInCredential = (/** @type {string} */ rawCredential) =>
+    context.signInWithCredential(
+      context.auth,
+      context.credentialFactory(rawCredential)
+    );
+  const persistToken = createSignedInTokenPersister(
+    context.storage,
+    context.onSignIn
+  );
+  await completeCredentialSignIn(
+    credential,
+    context.auth,
+    signInCredential,
+    persistToken
+  );
+}
+
+/**
+ * Complete Firebase credential sign-in and recover if auth state changed before failure.
+ * @param {string} credential Google credential string.
+ * @param {FirebaseAuthInstance} auth Firebase auth instance.
+ * @param {(credential: string) => Promise<{ user?: FirebaseAuthUser | null | undefined } | void> | { user?: FirebaseAuthUser | null | undefined } | void} signInCredential Credential sign-in operation.
+ * @param {(user: FirebaseAuthUser | null | undefined) => Promise<void>} persistToken Persist the resulting Firebase ID token.
+ * @returns {Promise<void>}
+ */
+async function completeCredentialSignIn(
+  credential,
+  auth,
+  signInCredential,
+  persistToken
 ) {
-  const firebaseCredential = credentialFactory(credential);
   let signInResult;
   try {
-    signInResult = await signInWithCredential(auth, firebaseCredential);
+    signInResult = await signInCredential(credential);
   } catch (error) {
     await Promise.resolve();
     if (!signInResult && !auth.currentUser) {
@@ -1326,10 +1353,22 @@ export async function handleCredentialSignIn(
     ),
     auth
   );
-  const getIdToken = resolveGetIdToken(currentUser);
-  const idToken = await getIdToken();
-  storage.setItem('id_token', idToken);
-  onSignIn?.(idToken);
+  await persistToken(currentUser);
+}
+
+/**
+ * Build a token persistence capability for the authenticated user.
+ * @param {{ setItem: (key: string, value: string) => void }} storage Storage for the cached ID token.
+ * @param {((token: string) => void) | undefined} onSignIn Optional sign-in notification callback.
+ * @returns {(user: FirebaseAuthUser | null | undefined) => Promise<void>} Persists and reports a user's token.
+ */
+function createSignedInTokenPersister(storage, onSignIn) {
+  return async user => {
+    const getIdToken = resolveGetIdToken(user);
+    const idToken = await getIdToken();
+    storage.setItem('id_token', idToken);
+    onSignIn?.(idToken);
+  };
 }
 
 /**
