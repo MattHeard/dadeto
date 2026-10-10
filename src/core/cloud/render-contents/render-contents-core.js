@@ -1287,6 +1287,7 @@ function setStaticCorsHeaders(permission, res, setHeader) {
 export function createValidateRequest({ applyCorsHeaders, sendHttpResponse }) {
   assertFunction(applyCorsHeaders, 'applyCorsHeaders');
   assertFunction(sendHttpResponse, 'sendHttpResponse');
+  const validatePreflight = createPreflightHandler(sendHttpResponse);
 
   return function validateRequest(permission, req, res) {
     const originAllowed = applyCorsHeaders(
@@ -1295,9 +1296,7 @@ export function createValidateRequest({ applyCorsHeaders, sendHttpResponse }) {
       /** @type {NativeHttpResponseWithSet & ResponseWithStatusSend} */ (res)
     );
 
-    if (
-      handlePreflight(permission, req, res, { originAllowed, sendHttpResponse })
-    ) {
+    if (validatePreflight(permission, req, res, originAllowed)) {
       return false;
     }
 
@@ -1309,25 +1308,19 @@ export function createValidateRequest({ applyCorsHeaders, sendHttpResponse }) {
 }
 
 /**
- * Handle OPTIONS preflight requests.
- * @param {AllowEffects} permission Response effect permission.
- * @param {NativeHttpRequest} req Incoming request.
- * @param {ResponseWithStatusSend} res Response helper.
- * @param {{originAllowed: boolean, sendHttpResponse: RenderOptions['sendHttpResponse']}} config CORS result and response writer.
- * @returns {boolean} True when the request was handled and no further processing is needed.
+ * Bind the response writer used by OPTIONS preflight handling.
+ * @param {RenderOptions['sendHttpResponse']} sendHttpResponse Permission-aware response writer.
+ * @returns {(permission: AllowEffects, req: NativeHttpRequest, res: ResponseWithStatusSend, originAllowed: boolean) => boolean} Preflight handler.
  */
-function handlePreflight(
-  permission,
-  req,
-  res,
-  { originAllowed, sendHttpResponse }
-) {
-  if (!isOptionsRequest(req)) {
-    return false;
-  }
+function createPreflightHandler(sendHttpResponse) {
+  return function handlePreflight(permission, req, res, originAllowed) {
+    if (!isOptionsRequest(req)) {
+      return false;
+    }
 
-  respondToPreflight(permission, res, originAllowed, sendHttpResponse);
-  return true;
+    respondToPreflight(permission, res, originAllowed, sendHttpResponse);
+    return true;
+  };
 }
 
 /**
