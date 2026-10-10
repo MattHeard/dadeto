@@ -1,0 +1,7 @@
+{
+  "last_failure": "2026-02-15T09:07:01.657403206+01:00",
+  "failure_count": 6,
+  "backoff_until": "2026-02-15T09:37:01.657403558+01:00",
+  "needs_manual_sync": true,
+  "failure_reason": "failed to pull from sync branch: git fetch failed in worktree: signal: killed\nFrom github.com:MattHeard/dadeto\n * branch                beads-sync -\u003e FETCH_HEAD\nConnection to github.com closed by remote host.\r\n"
+}
