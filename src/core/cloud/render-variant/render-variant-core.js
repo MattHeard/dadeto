@@ -1362,17 +1362,24 @@ function createBoundPathInvalidator(
   requestOptions
 ) {
   return path =>
-    effectOperations.bindEffectBoundary(permission =>
-      invalidatePathItem(permission, {
+    effectOperations.bindEffectBoundary(permission => {
+      const request = buildInvalidateRequest(
         path,
         token,
-        url: target.url,
-        host: target.host,
-        effectFetchFn: effectOperations.effectFetchFn,
-        randomUUID: requestOptions.randomUUID,
-        consoleError: requestOptions.consoleError,
-      })
-    );
+        target.host,
+        requestOptions.randomUUID
+      );
+      return reportPathInvalidation(
+        sendEffectFetch(
+          permission,
+          effectOperations.effectFetchFn,
+          target.url,
+          request
+        ),
+        path,
+        requestOptions.consoleError
+      );
+    });
 }
 
 /**
@@ -1428,16 +1435,15 @@ async function extractAccessToken(response) {
 }
 
 /**
- * Request CDN invalidation for a single path.
- * @param {AllowEffects} permission Permission for this cache purge request.
- * @param {{path: string, token: string, url: string, host: string, effectFetchFn: (permission: AllowEffects, url: string, init?: object) => Promise<Response>, randomUUID: () => string, consoleError?: (message: string, ...optionalParams: unknown[]) => void}} options Per-path invalidation inputs.
- * @returns {Promise<void>} Resolves after the invalidation completes.
+ * Build the HTTP request for one CDN path invalidation.
+ * @param {string} path CDN path to purge.
+ * @param {string} token OAuth access token.
+ * @param {string} host CDN host in the purge request.
+ * @param {() => string} randomUUID Request ID generator.
+ * @returns {object} Fetch request options.
  */
-async function invalidatePathItem(
-  permission,
-  { path, token, url, host, effectFetchFn, randomUUID, consoleError }
-) {
-  return sendEffectFetch(permission, effectFetchFn, url, {
+function buildInvalidateRequest(path, token, host, randomUUID) {
+  return {
     method: 'POST',
     headers: {
       Authorization: `Bearer ${token}`,
@@ -1448,7 +1454,18 @@ async function invalidatePathItem(
       path,
       requestId: randomUUID(),
     }),
-  })
+  };
+}
+
+/**
+ * Report a per-path invalidation result and preserve the historical error behavior.
+ * @param {Promise<Response>} invalidation In-flight cache purge request.
+ * @param {string} path CDN path requested.
+ * @param {(message: string, ...optionalParams: unknown[]) => void} [consoleError] Optional logger.
+ * @returns {Promise<void>} Resolves after response handling.
+ */
+function reportPathInvalidation(invalidation, path, consoleError) {
+  return invalidation
     .then(response => logInvalidateResponse(response, path, consoleError))
     .catch(error => {
       handleInvalidateError(error, path, consoleError);
