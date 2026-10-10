@@ -1,9 +1,12 @@
 import { jest } from '@jest/globals';
+import { createAllowEffects } from '../../../../src/cloud/allow-effects.js';
+
+const allowEffects = createAllowEffects();
 
 let mockDb;
 let mockBilling;
 const mockCreatePaymentWebhookHandler = jest.fn();
-const mockDomainHandler = jest.fn(async request => ({
+const mockDomainHandler = jest.fn(async (_allowEffects, request) => ({
   status: 200,
   body: { request },
 }));
@@ -114,7 +117,7 @@ async function runWebhookResponse({
   assertion,
 }) {
   mockDomainHandler.mockResolvedValueOnce(body);
-  await handle(request, response);
+  await handle(allowEffects, request, response);
   assertion(response);
 }
 
@@ -245,8 +248,14 @@ async function runScenario135Part0(context) {
     firestore: context.Firestore,
     env: { STRIPE_WEBHOOK_SECRET: 'secret' },
     constructEvent: payload => JSON.parse(payload.toString()),
+    markProcessedEvent: (permission, event, uuid, status) =>
+      context.markProcessedEvent(permission, event, uuid, status),
   });
-  createPaymentWebhookIndexHandler({ firestore: context.Firestore });
+  context.markProcessedEvent = jest.fn();
+  createPaymentWebhookIndexHandler({
+    firestore: context.Firestore,
+    markProcessedEvent: jest.fn(),
+  });
   context.defaultCaptured = mockCreatePaymentWebhookHandler.mock.calls[1][0];
   await expect(
     context.defaultCaptured.getPaymentEvent({ rawBody: '{}' })
@@ -256,9 +265,9 @@ async function runScenario135Part0(context) {
     headers: { 'stripe-signature': 'signed' },
   };
   await expect(
-    context.handle(context.request, context.response)
+    context.handle(allowEffects, context.request, context.response)
   ).resolves.toBeUndefined();
-  expect(mockDomainHandler).toHaveBeenCalledWith(context.request);
+  expect(mockDomainHandler).toHaveBeenCalledWith(allowEffects, context.request);
   expect(context.response.status).toHaveBeenCalledWith(200);
   expect(context.response.json).toHaveBeenCalledWith({
     request: context.request,
@@ -273,9 +282,9 @@ async function runScenario135Part0(context) {
  * @returns {Promise<void>} Assertions and fixture mutations are retained.
  */
 async function runScenario135Part1(context) {
-  await expect(context.handle(context.request, context.response)).rejects.toBe(
-    context.requestError
-  );
+  await expect(
+    context.handle(allowEffects, context.request, context.response)
+  ).rejects.toBe(context.requestError);
   context.captured = mockCreatePaymentWebhookHandler.mock.calls[0][0];
   await expect(
     context.captured.resolveApiKeyUuid({
@@ -319,17 +328,18 @@ async function runScenario135Part1(context) {
   await expect(context.captured.isDuplicateEvent('evt-missing')).resolves.toBe(
     false
   );
-  context.nowSpy = jest.spyOn(Date, 'now').mockReturnValue(1234);
   await Promise.all([
     context.captured.getPaymentEvent({
       rawBody: '{"id":"evt-verified"}',
       headers: { 'stripe-signature': 'signed' },
     }),
     context.captured.markProcessedEvent(
+      allowEffects,
       { id: 'evt-1', type: 'payment_intent.succeeded', created: 10 },
       'uuid-1'
     ),
     context.captured.markProcessedEvent(
+      allowEffects,
       { id: 'evt-2', type: 'payment_intent.succeeded' },
       'uuid-1'
     ),
@@ -343,28 +353,20 @@ async function runScenario135Part1(context) {
  */
 async function runScenario135Part2(context) {
   expect(context.db.collection).toHaveBeenCalledWith('payment-customers');
-  expect(context.db.collection).toHaveBeenCalledWith('payment-events');
-  expect(context.set).toHaveBeenCalledWith(
-    expect.objectContaining({
-      apiKeyUuid: 'uuid-1',
-      type: 'payment_intent.succeeded',
-      status: 'applied',
-      createdAt: new Date(10000),
-    }),
-    { merge: true }
+  expect(context.markProcessedEvent).toHaveBeenNthCalledWith(
+    1,
+    allowEffects,
+    { id: 'evt-1', type: 'payment_intent.succeeded', created: 10 },
+    'uuid-1',
+    undefined
   );
-  expect(
-    context.set.mock.calls.map(([value]) => ({
-      status: value.status,
-      createdAt: value.createdAt,
-    }))
-  ).toEqual(
-    expect.arrayContaining([
-      { status: 'applied', createdAt: new Date(10000) },
-      { status: 'applied', createdAt: new Date(1234) },
-    ])
+  expect(context.markProcessedEvent).toHaveBeenNthCalledWith(
+    2,
+    allowEffects,
+    { id: 'evt-2', type: 'payment_intent.succeeded' },
+    'uuid-1',
+    undefined
   );
-  context.nowSpy.mockRestore();
   await Promise.all([
     expect(
       context.captured.handlePurchaseEvent({

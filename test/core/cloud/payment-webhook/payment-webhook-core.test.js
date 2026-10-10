@@ -13,10 +13,12 @@ import {
 } from '../../../../src/core/payment-webhook-core.js';
 import { parseStripePaymentWebhookEvent } from '../../../../src/core/cloud/payment-webhook/payment-webhook-core.js';
 import { createFakeFirestore } from '../../../../src/core/local/gcp-simulator/fake-firestore.js';
+import { createAllowEffects } from '../../../../src/cloud/allow-effects.js';
 
 const apiKeyUuidKey = 'api_key_uuid';
 const clientReferenceIdKey = 'client_reference_id';
 const creditAmountKey = 'credit_amount';
+const allowEffects = createAllowEffects();
 import { createApplyCreditEvent } from '../../../../src/core/cloud/get-api-key-credit-v2/get-api-key-credit-v2-core.js';
 import { jest } from '@jest/globals';
 
@@ -115,7 +117,7 @@ describe('createPaymentWebhookHandler', () => {
       }),
     });
 
-    await expect(handler({ body: {} })).resolves.toEqual({
+    await expect(handler(allowEffects, { body: {} })).resolves.toEqual({
       status: 200,
       body: { ignored: true, type: 'customer.created' },
     });
@@ -135,7 +137,7 @@ describe('createPaymentWebhookHandler', () => {
       }),
     });
 
-    await expect(handler({ body: {} })).resolves.toEqual({
+    await expect(handler(allowEffects, { body: {} })).resolves.toEqual({
       status: 201,
       body: {
         credit: 5,
@@ -167,8 +169,9 @@ describe('createPaymentWebhookHandler', () => {
       }),
     });
 
-    await expect(handler()).resolves.toBe(response);
+    await expect(handler(allowEffects)).resolves.toBe(response);
     expect(markProcessedEvent).toHaveBeenLastCalledWith(
+      allowEffects,
       expect.anything(),
       'api-key-status',
       expectedStatus
@@ -194,8 +197,9 @@ describe('createPaymentWebhookHandler', () => {
         }),
       });
 
-      await expect(handler()).resolves.toBe(response);
+      await expect(handler(allowEffects)).resolves.toBe(response);
       expect(markProcessedEvent).toHaveBeenLastCalledWith(
+        allowEffects,
         expect.anything(),
         'api-key-fallback',
         expectedStatus
@@ -225,15 +229,19 @@ describe('createPaymentWebhookHandler processing', () => {
       getPaymentEvent: async () => event,
     });
 
-    await expect(handler({ body: event })).resolves.toBe(purchaseResponse);
+    await expect(handler(allowEffects, { body: event })).resolves.toBe(
+      purchaseResponse
+    );
     expect(markProcessedEvent).toHaveBeenNthCalledWith(
       1,
+      allowEffects,
       event,
       'purchase',
       'received'
     );
     expect(markProcessedEvent).toHaveBeenNthCalledWith(
       2,
+      allowEffects,
       event,
       'purchase',
       'applied'
@@ -258,7 +266,7 @@ describe('createPaymentWebhookHandler processing', () => {
       }),
     });
 
-    await expect(handler()).resolves.toEqual({
+    await expect(handler(allowEffects)).resolves.toEqual({
       status: 400,
       body: 'Missing or invalid credit amount',
     });
@@ -274,7 +282,7 @@ describe('createPaymentWebhookHandler processing', () => {
     });
 
     await expect(
-      handler({
+      handler(allowEffects, {
         body: {
           id: 'evt_default_extractor',
           type: 'payment_intent.succeeded',
@@ -316,7 +324,7 @@ describe('createPaymentWebhookHandler processing', () => {
       getPaymentEvent: async () => event,
     });
 
-    await expect(handler({ body: event })).resolves.toEqual({
+    await expect(handler(allowEffects, { body: event })).resolves.toEqual({
       status: 201,
       body: {
         credit: 250,
@@ -352,7 +360,7 @@ describe('createPaymentWebhookHandler processing', () => {
       }),
     });
 
-    await expect(handler({ body: {} })).resolves.toEqual({
+    await expect(handler(allowEffects, { body: {} })).resolves.toEqual({
       status: 200,
       body: {
         credit: 75,
@@ -362,6 +370,7 @@ describe('createPaymentWebhookHandler processing', () => {
       },
     });
     expect(markProcessedEvent).toHaveBeenCalledWith(
+      allowEffects,
       expect.objectContaining({ id: 'evt_refund_1' }),
       'api-key-uuid',
       'received'
@@ -380,10 +389,12 @@ describe('createPaymentWebhookHandler processing', () => {
       }),
     });
 
-    await expect(duplicateHandler({ body: {} })).resolves.toEqual({
-      status: 200,
-      body: { duplicate: true, eventId: 'evt_duplicate' },
-    });
+    await expect(duplicateHandler(allowEffects, { body: {} })).resolves.toEqual(
+      {
+        status: 200,
+        body: { duplicate: true, eventId: 'evt_duplicate' },
+      }
+    );
   });
 
   it('rejects missing mappings and invalid credit amounts', async () => {
@@ -399,7 +410,7 @@ describe('createPaymentWebhookHandler processing', () => {
       }),
     });
 
-    await expect(handler({ body: {} })).resolves.toEqual({
+    await expect(handler(allowEffects, { body: {} })).resolves.toEqual({
       status: 400,
       body: 'Missing api key mapping',
     });
@@ -418,7 +429,9 @@ describe('createPaymentWebhookHandler processing', () => {
       }),
     });
 
-    await expect(invalidAmountHandler({ body: {} })).resolves.toEqual({
+    await expect(
+      invalidAmountHandler(allowEffects, { body: {} })
+    ).resolves.toEqual({
       status: 400,
       body: 'Missing or invalid credit amount',
     });

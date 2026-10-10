@@ -515,7 +515,8 @@ async function buildSimulatorState(config) {
       const snap = await db.collection('payment-events').doc(eventId).get();
       return snap.exists;
     },
-    markProcessedEvent: async (event, uuid) => {
+    markProcessedEvent: async (permission, event, uuid, status) => {
+      void permission;
       await db
         .collection('payment-events')
         .doc(event.id)
@@ -523,6 +524,7 @@ async function buildSimulatorState(config) {
           apiKeyUuid: uuid,
           type: event.type,
           createdAt: resolvePaymentCreatedAt(event),
+          status,
         });
     },
   });
@@ -585,6 +587,7 @@ async function buildSimulatorState(config) {
       getApiKeyCreditV2,
       getAuthorUuid,
       paymentWebhook,
+      bindEffectBoundary,
       db,
       fieldValue,
       renderContents,
@@ -1123,7 +1126,7 @@ function createGetSeedManifest(bucketName) {
 
 /**
  * Build the simulator routes.
- * @param {{ submitNewStory: (...args: any[]) => any, submitNewPage: (...args: any[]) => any, getApiKeyCreditV2: (...args: any[]) => any, getAuthorUuid: (...args: any[]) => any, paymentWebhook: (...args: any[]) => any, objectMinuteRentalSearch: (request: SimulatorRequest) => Promise<{status: number, body: unknown}>, db: ReturnType<typeof createDb>, fieldValue: ReturnType<typeof createFakeFieldValue>, renderContents: (...args: any[]) => any, generateStatsCore: { generate: (...args: any[]) => any } }} deps Route dependencies.
+ * @param {{ submitNewStory: (...args: any[]) => any, submitNewPage: (...args: any[]) => any, getApiKeyCreditV2: (...args: any[]) => any, getAuthorUuid: (...args: any[]) => any, paymentWebhook: (...args: any[]) => any, bindEffectBoundary: import('../../../../types/allow-effects').AllowEffectsBoundary, objectMinuteRentalSearch: (request: SimulatorRequest) => Promise<{status: number, body: unknown}>, db: ReturnType<typeof createDb>, fieldValue: ReturnType<typeof createFakeFieldValue>, renderContents: (...args: any[]) => any, generateStatsCore: { generate: (...args: any[]) => any } }} deps Route dependencies.
  * @returns {Record<string, (...args: any[]) => Promise<{ status: number, body?: unknown }>>} Route map.
  */
 function createRoutes(deps) {
@@ -1323,12 +1326,14 @@ async function handleGetAuthorUuid(deps, request) {
 
 /**
  * Run the payment webhook route handler.
- * @param {{ paymentWebhook: (...args: any[]) => any }} deps Route dependencies.
+ * @param {{ paymentWebhook: (...args: any[]) => any, bindEffectBoundary: import('../../../../types/allow-effects').AllowEffectsBoundary }} deps Route dependencies.
  * @param {SimulatorRequest} request Incoming request object.
  * @returns {Promise<{ status: number, body?: unknown }>} Route response.
  */
 async function handlePaymentWebhook(deps, request) {
-  return deps.paymentWebhook(request);
+  return deps.bindEffectBoundary(permission =>
+    deps.paymentWebhook(permission, request)
+  );
 }
 
 /**

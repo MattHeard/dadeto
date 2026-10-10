@@ -64,7 +64,7 @@ const DEFAULT_ALLOWED_EVENT_TYPES = new Set([
  *   applyCreditEvent: (uuid: string, event: { type: 'credit_added' | 'credit_deducted', eventId: string, amount: number }) => Promise<PaymentWebhookResponse>,
  *   resolveApiKeyUuid: (event: PaymentEvent) => Promise<string | null> | string | null,
  *   isDuplicateEvent?: (eventId: string) => Promise<boolean> | boolean,
- *   markProcessedEvent?: (event: PaymentEvent, uuid: string, status?: string) => Promise<void> | void,
+ *   markProcessedEvent?: (allowEffects: import('../../../../types/allow-effects').AllowEffects, event: PaymentEvent, uuid: string, status?: string) => Promise<void> | void,
  *   logger?: { error: (value: unknown) => void, info: (value: unknown) => void, warn: (value: unknown) => void },
  *   allowedEventTypes?: Set<string>,
  *   getAmountFromEvent?: (event: PaymentEvent) => number,
@@ -76,11 +76,11 @@ const DEFAULT_ALLOWED_EVENT_TYPES = new Set([
 /**
  * Create a payment webhook handler that translates successful payment events into credit ledger events.
  * @param {PaymentWebhookDependencies} deps Webhook dependencies.
- * @returns {(request?: unknown) => Promise<PaymentWebhookResponse>} Request handler.
+ * @returns {(allowEffects: import('../../../../types/allow-effects').AllowEffects, request?: unknown) => Promise<PaymentWebhookResponse>} Request handler.
  */
 export function createPaymentWebhookHandler(deps) {
   const resolved = resolvePaymentWebhookDependencies(deps);
-  return async function handlePaymentWebhook(request = {}) {
+  return async function handlePaymentWebhook(allowEffects, request = {}) {
     const event = await resolved.getPaymentEvent(request);
     if (!resolved.allowedEventTypes.has(event.type)) {
       return { status: 200, body: { ignored: true, type: event.type } };
@@ -90,7 +90,11 @@ export function createPaymentWebhookHandler(deps) {
       return { status: 200, body: { duplicate: true, eventId: event.id } };
     }
 
-    const purchaseResponse = await resolvePurchaseEvent(resolved, event);
+    const purchaseResponse = await resolvePurchaseEvent(
+      resolved,
+      allowEffects,
+      event
+    );
     if (purchaseResponse) return purchaseResponse;
 
     const uuid = await resolved.resolveApiKeyUuid(event);
@@ -105,9 +109,14 @@ export function createPaymentWebhookHandler(deps) {
 
     const creditEvent = buildCreditEvent(event, amount);
     // Stryker disable all -- webhook ledger transitions use the fixed received status.
-    await resolved.markProcessedEvent(event, uuid, 'received');
+    await resolved.markProcessedEvent(allowEffects, event, uuid, 'received');
     const response = await resolved.applyCreditEvent(uuid, creditEvent);
-    await resolved.markProcessedEvent(event, uuid, getEventStatus(response));
+    await resolved.markProcessedEvent(
+      allowEffects,
+      event,
+      uuid,
+      getEventStatus(response)
+    );
     // Stryker restore all
     return response;
   };
@@ -116,21 +125,27 @@ export function createPaymentWebhookHandler(deps) {
 /**
  * Resolve and record a purchase-specific event when configured.
  * @param {ReturnType<typeof resolvePaymentWebhookDependencies>} resolved Runtime dependencies.
+ * @param {import('../../../../types/allow-effects').AllowEffects} allowEffects Request effect permission.
  * @param {PaymentEvent} event Stripe event.
  * @returns {Promise<PaymentWebhookResponse | null>} Purchase response or null.
  */
-async function resolvePurchaseEvent(resolved, event) {
+async function resolvePurchaseEvent(resolved, allowEffects, event) {
   const purchaseUuid = await resolved.resolveApiKeyUuid(event);
   const identity = purchaseUuid ?? 'purchase';
-  await resolved.markProcessedEvent(event, identity, 'received');
+  await resolved.markProcessedEvent(allowEffects, event, identity, 'received');
   const response = await resolved.handlePurchaseEvent(event);
   if (!response) {
     // Stryker disable all -- ignored purchase events use the fixed ledger status.
-    await resolved.markProcessedEvent(event, identity, 'ignored');
+    await resolved.markProcessedEvent(allowEffects, event, identity, 'ignored');
     return null;
     // Stryker restore all
   }
-  await resolved.markProcessedEvent(event, identity, getEventStatus(response));
+  await resolved.markProcessedEvent(
+    allowEffects,
+    event,
+    identity,
+    getEventStatus(response)
+  );
   return response;
 }
 
@@ -146,7 +161,7 @@ async function resolvePurchaseEvent(resolved, event) {
  *   applyCreditEvent: (uuid: string, event: { type: 'credit_added' | 'credit_deducted', eventId: string, amount: number }) => Promise<PaymentWebhookResponse>,
  *   resolveApiKeyUuid: (event: PaymentEvent) => Promise<string | null>,
  *   hasDuplicateEvent: (eventId: string) => Promise<boolean>,
- *   markProcessedEvent: (event: PaymentEvent, uuid: string, status?: string) => Promise<void>,
+ *   markProcessedEvent: (allowEffects: import('../../../../types/allow-effects').AllowEffects, event: PaymentEvent, uuid: string, status?: string) => Promise<void>,
  *   logger: { error: (value: unknown) => void, info: (value: unknown) => void, warn: (value: unknown) => void },
  *   allowedEventTypes: Set<string>,
  *   getAmountFromEvent: (event: PaymentEvent) => number,
@@ -184,10 +199,10 @@ function resolvePaymentWebhookDependencies(deps) {
     applyCreditEvent: resolveCallable(applyCreditEvent),
     resolveApiKeyUuid: async event => resolveCallable(resolveApiKeyUuid)(event),
     ['hasDuplicateEvent']: createDuplicateEventChecker(isDuplicateEvent),
-    markProcessedEvent: async (event, uuid, status) =>
-      /** @type {(event: PaymentEvent, uuid: string, status?: string) => Promise<void> | void} */ (
+    markProcessedEvent: async (allowEffects, event, uuid, status) =>
+      /** @type {(allowEffects: import('../../../../types/allow-effects').AllowEffects, event: PaymentEvent, uuid: string, status?: string) => Promise<void> | void} */ (
         markProcessedEvent
-      )(event, uuid, status),
+      )(allowEffects, event, uuid, status),
     logger,
     allowedEventTypes,
     getAmountFromEvent,

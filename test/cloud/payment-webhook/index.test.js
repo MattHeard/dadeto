@@ -4,7 +4,10 @@ import { readFile } from 'node:fs/promises';
 describe('payment-webhook entry point', () => {
   it('exports an HTTP handler that writes the webhook response', async () => {
     const source = await readFile('src/cloud/payment-webhook/index.js', 'utf8');
-    expect(source).toContain('const handle = createPaymentWebhookIndexHandler');
+    expect(source).toContain(
+      'const handlePaymentWebhook = createPaymentWebhookIndexHandler'
+    );
+    expect(source).toContain('const handle = createEffectHttpBoundary');
     expect(source).toContain('export { handle }');
   });
 });

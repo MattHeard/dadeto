@@ -13,18 +13,21 @@ import { createBillingRuntime } from '../billing/billing-runtime-core.js';
 
 /** @typedef {typeof import('@google-cloud/firestore').Firestore} FirestoreCtor */
 /** @typedef {Record<string, string | undefined>} ProcessEnvLike */
+/** @typedef {import('../../../../types/allow-effects').AllowEffects} AllowEffects */
 
 /**
  * Create the payment webhook request handler used by the cloud wrapper.
- * @param {{ firestore: FirestoreCtor, env?: ProcessEnvLike, constructEvent?: (payload: string|Buffer, signature: string, secret: string) => unknown }} deps Dependencies for the wrapper.
- * @returns {(req: unknown, res: unknown) => Promise<unknown>} Request handler.
+ * @param {{ firestore: FirestoreCtor, db?: any, env?: ProcessEnvLike, constructEvent?: (payload: string|Buffer, signature: string, secret: string) => unknown, markProcessedEvent: (allowEffects: AllowEffects, event: import('../../payment-webhook-core.js').PaymentEvent, uuid: string, status?: string) => Promise<void> }} deps Dependencies for the wrapper.
+ * @returns {(allowEffects: AllowEffects, req: unknown, res: unknown) => Promise<unknown>} Request handler.
  */
 export function createPaymentWebhookIndexHandler({
   firestore,
+  db: providedDb,
   env = process.env,
   constructEvent,
+  markProcessedEvent,
 }) {
-  const db = /** @type {any} */ (createDb(firestore, env));
+  const db = /** @type {any} */ (providedDb ?? createDb(firestore, env));
   const billing = createBillingRuntime(db);
   const handleRequest = createPaymentWebhookHandler({
     fetchCredit: createFetchCredit(db),
@@ -53,36 +56,19 @@ export function createPaymentWebhookIndexHandler({
       const status = snap.data()?.status;
       return snap.exists && status !== 'received' && status !== 'deferred';
     },
-    markProcessedEvent: async (event, uuid, status = 'applied') => {
-      // Stryker disable next-line all -- payment-events is a fixed persistence
-      // collection owned by this adapter.
-      const doc = db.collection('payment-events').doc(event.id);
-      let createdAtMs = Date.now();
-      if (typeof event.created === 'number') {
-        createdAtMs = event.created * 1000;
-      }
-      await /** @type {{ set: (value: object, options?: object) => Promise<void> }} */ (
-        /** @type {unknown} */ (doc)
-      ).set(
-        {
-          apiKeyUuid: uuid,
-          type: event.type,
-          status,
-          purchaseId:
-            readMetadata(event.data?.object ?? {}).purchase_id ?? null,
-          createdAt: new Date(createdAtMs),
-        },
-        { merge: true }
-      );
-    },
+    markProcessedEvent,
     getPaymentEvent: async request =>
       parseStripePaymentWebhookEvent(request, env, constructEvent ?? null),
   });
 
-  return async function handle(req, res) {
+  return async function handle(allowEffects, req, res) {
     let response;
     try {
-      response = await handlePaymentWebhookRequest(handleRequest, req);
+      response = await handlePaymentWebhookRequest(
+        handleRequest,
+        allowEffects,
+        req
+      );
     } catch (error) {
       console.error('payment webhook request failed', error);
       throw error;
@@ -286,12 +272,13 @@ function validateVerifiedStripeEvent(verifiedEvent) {
 
 /**
  * Execute the domain handler and return its structured response.
- * @param {(request?: unknown) => Promise<{ status: number, body: string | Record<string, unknown>, headers?: Record<string, string> }>} handler Domain webhook handler.
+ * @param {(allowEffects: AllowEffects, request?: unknown) => Promise<{ status: number, body: string | Record<string, unknown>, headers?: Record<string, string> }>} handler Domain webhook handler.
+ * @param {AllowEffects} allowEffects Request effect capability.
  * @param {unknown} req Incoming request.
  * @returns {Promise<{ status: number, body: string | Record<string, unknown>, headers?: Record<string, string> }>} Structured response.
  */
-async function handlePaymentWebhookRequest(handler, req) {
-  return handler(req);
+async function handlePaymentWebhookRequest(handler, allowEffects, req) {
+  return handler(allowEffects, req);
 }
 
 /**
