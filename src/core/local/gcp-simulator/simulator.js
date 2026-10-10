@@ -417,6 +417,12 @@ async function buildSimulatorState(config) {
   const handleVariantWrite = createHandleVariantWrite({
     renderVariant,
     getDeleteSentinel: createDeleteSentinelGetter(fieldValue),
+    updateDocument: (permission, reference, data) => {
+      void permission;
+      return /** @type {{ update: (value: Record<string, unknown>) => Promise<unknown> }} */ (
+        /** @type {unknown} */ (reference)
+      ).update(data);
+    },
     db: /** @type {Parameters<typeof createHandleVariantWrite>[0]['db']} */ (
       /** @type {unknown} */ (db)
     ),
@@ -557,6 +563,7 @@ async function buildSimulatorState(config) {
       renderContents,
       renderVariant,
       handleVariantWrite,
+      bindEffectBoundary,
     })
   );
   return buildSimulatorApi({
@@ -927,7 +934,7 @@ function createSimulatorTestUtils(options) {
 
 /**
  * Create trigger registrations for simulator-backed cloud handlers.
- * @param {{ processNewStory: (...args: any[]) => any, processNewPage: (...args: any[]) => any, renderContents: (...args: any[]) => any, renderVariant: (...args: any[]) => any, handleVariantWrite: (...args: any[]) => any }} handlers Trigger handlers.
+ * @param {{ processNewStory: (...args: any[]) => any, processNewPage: (...args: any[]) => any, renderContents: (...args: any[]) => any, renderVariant: (...args: any[]) => any, handleVariantWrite: (...args: any[]) => any, bindEffectBoundary: import('../../../../types/allow-effects').AllowEffectsBoundary }} handlers Trigger handlers.
  * @returns {Record<string, Array<{ pathPattern: string, handler: (...args: any[]) => any }>>} Registrations by event.
  */
 function createTriggerRegistrationsByEvent(handlers) {
@@ -937,6 +944,7 @@ function createTriggerRegistrationsByEvent(handlers) {
     renderContents,
     renderVariant,
     handleVariantWrite,
+    bindEffectBoundary,
   } = handlers;
   return {
     onCreate: [
@@ -960,7 +968,10 @@ function createTriggerRegistrationsByEvent(handlers) {
     onWrite: [
       {
         pathPattern: 'stories/{storyId}/pages/{pageId}/variants/{variantId}',
-        handler: handleVariantWrite,
+        handler: change =>
+          bindEffectBoundary(permission =>
+            handleVariantWrite(permission, change)
+          ),
       },
     ],
   };

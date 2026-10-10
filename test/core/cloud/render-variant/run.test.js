@@ -15,8 +15,9 @@ const mockCreateCloudRenderEntrypointState = jest.fn(() => ({
   render: jest.fn(() => jest.fn(() => 'rendered')),
 }));
 const mockCreateCloudRenderInstanceBuilder = jest.fn(() => jest.fn());
+let registeredTriggerHandler;
 const mockCreateFirestoreDocumentOnWriteTrigger = jest.fn(options => {
-  options.handler('change');
+  registeredTriggerHandler = options.handler;
   return jest.fn(() => 'renderVariant');
 });
 const region = jest.fn(() => ({
@@ -63,6 +64,13 @@ const { runRenderVariant } = await import(
   '../../../../src/core/cloud/render-variant/run.js'
 );
 
+const executeRunRenderVariant = dependencies =>
+  runRenderVariant({
+    ...dependencies,
+    updateVariantDocument:
+      dependencies.updateVariantDocument ?? jest.fn(async () => undefined),
+  });
+
 describe('runRenderVariant', () => {
   test('wires the cloud entrypoint and uses the global fetch path', async () => {
     mockCreateRenderVariant.mockClear();
@@ -85,6 +93,8 @@ describe('runRenderVariant', () => {
     const crypto = { randomUUID: jest.fn(() => 'uuid') };
     const functions = { region };
     const consoleError = jest.fn();
+    const triggerPermission = Object.freeze({});
+    const updateVariantDocument = jest.fn(async () => undefined);
 
     let capturedWriteOptions;
     let capturedBuilderOptions;
@@ -98,7 +108,7 @@ describe('runRenderVariant', () => {
       return jest.fn();
     });
 
-    const { render } = runRenderVariant({
+    const { render } = executeRunRenderVariant({
       initializeApp,
       createFirebaseAppManager,
       getFirestoreInstance,
@@ -107,7 +117,8 @@ describe('runRenderVariant', () => {
       FieldValue,
       Storage,
       fetchFn: importedFetchFn,
-      bindEffectBoundary: handler => handler(Object.freeze({})),
+      bindEffectBoundary: handler => handler(triggerPermission),
+      updateVariantDocument,
       effectFetchFn: jest.fn(),
       crypto,
       console: { error: consoleError },
@@ -122,7 +133,9 @@ describe('runRenderVariant', () => {
       'rendered'
     );
     expect(capturedWriteOptions.getDeleteSentinel()).toBe('delete-sentinel');
-    expect(writeHandler).toHaveBeenCalledWith('change');
+    await registeredTriggerHandler('change');
+    expect(writeHandler).toHaveBeenCalledWith(triggerPermission, 'change');
+    expect(capturedWriteOptions.updateDocument).toBe(updateVariantDocument);
     const rendererDependencies = { fetchFn: importedFetchFn };
     capturedBuilderOptions.createRenderer(rendererDependencies);
     expect(mockCreateRenderVariant).toHaveBeenCalledWith(
@@ -173,7 +186,7 @@ describe('runRenderVariant', () => {
     const crypto = { randomUUID: jest.fn(() => 'uuid') };
     const functions = { region };
 
-    const { render } = runRenderVariant({
+    const { render } = executeRunRenderVariant({
       initializeApp,
       createFirebaseAppManager,
       getFirestoreInstance,
@@ -221,7 +234,7 @@ describe('runRenderVariant', () => {
       })
     );
 
-    const { render } = runRenderVariant({
+    const { render } = executeRunRenderVariant({
       initializeApp,
       createFirebaseAppManager,
       getFirestoreInstance,
@@ -274,7 +287,7 @@ describe('runRenderVariant', () => {
       })
     );
 
-    runRenderVariant({
+    executeRunRenderVariant({
       initializeApp,
       createFirebaseAppManager,
       getFirestoreInstance,
@@ -322,7 +335,7 @@ describe('runRenderVariant', () => {
       return jest.fn(() => 'handled');
     });
 
-    const { renderVariant } = runRenderVariant({
+    const { renderVariant } = executeRunRenderVariant({
       initializeApp,
       createFirebaseAppManager,
       getFirestoreInstance,

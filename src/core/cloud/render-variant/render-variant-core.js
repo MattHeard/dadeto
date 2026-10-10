@@ -37,19 +37,31 @@ export function resolveVisibilityThreshold(visibilityThreshold) {
 
 /**
  * Update the changed variant and its incoming-option ancestors without rendering them.
- * @param {{change: FirestoreChange, db: FirestoreLike}} options Change and tenant database.
+ * @param {AllowEffects} allowEffects Request effect capability.
+ * @param {FirestoreChange} change Changed variant snapshot.
+ * @param {FirestoreLike} db Tenant database.
+ * @param {(allowEffects: AllowEffects, ref: WritableVariantReference, data: Record<string, unknown>) => Promise<unknown>} updateDocument Permission-aware update adapter.
  * @returns {Promise<void>} Promise.
  */
-async function updateTreeVisibilityForVariantChange({ change, db }) {
+async function updateTreeVisibilityForVariantChange(
+  allowEffects,
+  change,
+  db,
+  updateDocument
+) {
   const update = prepareVisibilityUpdate(change, db);
   if (!update) return;
-  await propagateVisibilityDelta({
-    ref: update.variantRef,
-    data: update.afterData,
-    nextSum: update.current,
-    delta: update.delta,
+  await propagateVisibilityDelta(
+    allowEffects,
+    {
+      ref: update.variantRef,
+      data: update.afterData,
+      nextSum: update.current,
+      delta: update.delta,
+    },
     db,
-  });
+    updateDocument
+  );
 }
 
 /**
@@ -115,7 +127,7 @@ function isWritableVariantRef(ref) {
   return (
     isObjectLike(ref) &&
     typeof ref.get === 'function' &&
-    typeof ref.update === 'function'
+    typeof ref.get === 'function'
   );
 }
 
@@ -162,32 +174,37 @@ function getCurrentVisibility(afterData, beforeData, previous) {
 
 /**
  * Propagate a visibility delta through incoming-option ancestors.
- * @param {{ ref: WritableVariantReference, data: Record<string, unknown>, nextSum: number, delta: number, db: FirestoreLike }} input Propagation state.
+ * @param {AllowEffects} allowEffects Request effect capability.
+ * @param {{ ref: WritableVariantReference, data: Record<string, unknown>, nextSum: number, delta: number }} state Propagation state.
+ * @param {FirestoreLike} db Tenant database.
+ * @param {(allowEffects: AllowEffects, ref: WritableVariantReference, data: Record<string, unknown>) => Promise<unknown>} updateDocument Permission-aware update adapter.
  * @returns {Promise<void>} Resolves after all reachable ancestors are updated.
  */
-async function propagateVisibilityDelta({
-  ref: initialRef,
-  data: initialData,
-  nextSum: initialSum,
-  delta,
+async function propagateVisibilityDelta(
+  allowEffects,
+  state,
   db,
-}) {
-  let ref = initialRef;
-  let data = initialData;
-  let nextSum = initialSum;
+  updateDocument
+) {
+  let ref = state.ref;
+  let data = state.data;
+  let nextSum = state.nextSum;
   while (ref) {
     const parent = resolveIncomingParentRef(data, db);
     const snapshot = await ref.get();
     if (!snapshot?.exists) return;
     const stored = readSnapshotData(snapshot);
     const oldSum = resolveStoredVisibilitySum(stored);
-    if (parent && changedByTreeWeightThreshold(oldSum, nextSum))
-      await parent.update({ targetTreeWeightsDirty: true });
-    await ref.update({ treeVisibilitySum: nextSum });
+    if (parent && changedByTreeWeightThreshold(oldSum, nextSum)) {
+      await updateDocument(allowEffects, parent, {
+        targetTreeWeightsDirty: true,
+      });
+    }
+    await updateDocument(allowEffects, ref, { treeVisibilitySum: nextSum });
     if (!parent) return;
     const parentSnap = await parent.get();
     data = readSnapshotData(parentSnap);
-    nextSum = addTreeVisibilityDelta(data, delta);
+    nextSum = addTreeVisibilityDelta(data, state.delta);
     ref = parent;
   }
 }
@@ -234,7 +251,7 @@ function resolveStoredVisibilitySum(data) {
  * @typedef {import('firebase-admin/firestore').CollectionReference & { parent?: DocumentReferenceData | null, path: string }} CollectionReferenceData
  * @typedef {import('firebase-admin/firestore').DocumentSnapshot<import('firebase-admin/firestore').DocumentData> & { ref: DocumentReferenceData }} DocumentSnapshotData
  * @typedef {{ doc: (path: string) => DocumentReferenceData, collection: (path: string) => CollectionReferenceData, collectionGroup: (path: string) => CollectionReferenceData }} FirestoreLike
- * @typedef {{ get: () => Promise<{ exists?: boolean, data?: () => Record<string, unknown> }>, update: (data: Record<string, unknown>) => Promise<unknown>, parent?: WritableVariantReference | null }} WritableVariantReference
+ * @typedef {{ get: () => Promise<{ exists?: boolean, data?: () => Record<string, unknown> }>, parent?: WritableVariantReference | null }} WritableVariantReference
  * @typedef {{ exists: () => Promise<[boolean]>, save: (content: string, options: object) => Promise<unknown> }} StorageFileLike
  * @typedef {{ file: (path: string) => StorageFileLike }} StorageBucketLike
  * @typedef {{ bucket: (name?: string) => StorageBucketLike }} StorageLike
@@ -3480,17 +3497,18 @@ function buildReverseLinkDocId(record) {
  * @param {(snap: VariantSnapshot, context?: RenderContext) => Promise<null>} options.renderVariant - Renderer invoked when a variant should be materialized.
  * @param {FirestoreLike} options.db Tenant Firestore client.
  * @param {() => unknown} options.getDeleteSentinel - Function that produces the sentinel used to clear dirty flags.
- * @param {number} [options.visibilityThreshold] - Minimum visibility required before rendering.
- * @returns {(change: FirestoreChange, context?: RenderContext) => Promise<null>} Firestore change handler.
+ * @param {(allowEffects: AllowEffects, ref: WritableVariantReference, data: Record<string, unknown>) => Promise<unknown>} options.updateDocument Permission-aware Firestore update adapter.
+ * @returns {(allowEffects: AllowEffects, change: FirestoreChange, context?: RenderContext, visibilityThreshold?: number) => Promise<null>} Firestore change handler.
  */
 export function createHandleVariantWrite({
   renderVariant,
   getDeleteSentinel,
   db,
-  visibilityThreshold = VISIBILITY_THRESHOLD,
+  updateDocument,
 }) {
   assertFunction(renderVariant, 'renderVariant');
   assertFunction(getDeleteSentinel, 'getDeleteSentinel');
+  assertFunction(updateDocument, 'updateDocument');
   assertDb(db);
 
   /**
@@ -3536,23 +3554,31 @@ export function createHandleVariantWrite({
   }
 
   return async function handleVariantWrite(
+    /** @type {AllowEffects} */ allowEffects,
     /** @type {FirestoreChange} */ change,
-    context
+    context,
+    visibilityThreshold = VISIBILITY_THRESHOLD
   ) {
     if (!change.after.exists) {
       return null;
     }
-    await updateTreeVisibilityForVariantChange({ change, db });
-    return processExistingVariant(change, context);
+    await updateTreeVisibilityForVariantChange(
+      allowEffects,
+      change,
+      db,
+      updateDocument
+    );
+    return processExistingVariant(change, context, visibilityThreshold);
   };
 
   /**
    * Process a variant change when the document still exists.
    * @param {FirestoreChange} change - Firestore change payload describing the variant update.
    * @param {RenderContext | undefined} context - Cloud Functions context for the trigger.
+   * @param {number} visibilityThreshold Visibility threshold.
    * @returns {Promise<null>} Result of the processing workflow.
    */
-  async function processExistingVariant(change, context) {
+  async function processExistingVariant(change, context, visibilityThreshold) {
     const data = change.after.data();
     if (data.dirty) {
       return handleDirtyVariant({
@@ -3563,7 +3589,7 @@ export function createHandleVariantWrite({
       });
     }
 
-    return handleCleanVariant(change, context, data);
+    return handleCleanVariant(change, context, data, visibilityThreshold);
   }
 
   /**
@@ -3571,9 +3597,15 @@ export function createHandleVariantWrite({
    * @param {FirestoreChange} change - Firestore change payload.
    * @param {RenderContext | undefined} context - Cloud Functions context for the trigger.
    * @param {Record<string, unknown>} data - Variant data captured from the latest snapshot.
+   * @param {number} visibilityThreshold Visibility threshold.
    * @returns {Promise<null>} Result of attempting to render or `null` when skipped.
    */
-  async function handleCleanVariant(change, context, data) {
+  async function handleCleanVariant(
+    change,
+    context,
+    data,
+    visibilityThreshold
+  ) {
     if (shouldRenderVariant(change, data, visibilityThreshold)) {
       return renderVariant(
         /** @type {VariantSnapshot} */ (change.after),
@@ -3584,7 +3616,8 @@ export function createHandleVariantWrite({
       await republishInboundPagesForHiddenOnlyVariant(
         change.after,
         db,
-        renderVariant
+        renderVariant,
+        visibilityThreshold
       );
     }
     return null;
@@ -3626,12 +3659,14 @@ export function createHandleVariantWrite({
    * @param {FirestoreChange['after']} after Variant snapshot after the update.
    * @param {FirestoreLike} db Firestore client.
    * @param {(snap: VariantSnapshot, context?: RenderContext) => Promise<null>} renderVariantFn Renderer.
+   * @param {number} visibilityThreshold Threshold for visible variants.
    * @returns {Promise<void>} Promise.
    */
   async function republishInboundPagesForHiddenOnlyVariant(
     after,
     db,
-    renderVariantFn
+    renderVariantFn,
+    visibilityThreshold
   ) {
     const pageRef = getPageRefFromVariantSnapshot(after);
     if (!pageRef) {

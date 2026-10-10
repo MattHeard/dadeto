@@ -1,7 +1,18 @@
 import { jest } from '@jest/globals';
+import { createAllowEffects } from '../../../src/cloud/allow-effects.js';
 import * as renderVariantCore from '../../../src/core/cloud/render-variant/render-variant-core.js';
 
 const { renderVariantCoreTestUtils } = renderVariantCore;
+const updateTreeVisibilityForVariantChange = ({ change, db }) =>
+  renderVariantCoreTestUtils.updateTreeVisibilityForVariantChange(
+    createAllowEffects(),
+    change,
+    db,
+    (permission, reference, data) => {
+      void permission;
+      return reference.update(data);
+    }
+  );
 
 const runMissingVisibilityChanges = async (utils, validRef) => {
   const changes = [
@@ -21,7 +32,7 @@ const runMissingVisibilityChanges = async (utils, validRef) => {
     if (index === 3) {
       db.doc = jest.fn(() => validRef);
     }
-    await utils.updateTreeVisibilityForVariantChange({
+    await updateTreeVisibilityForVariantChange({
       change,
       db,
     });
@@ -176,7 +187,7 @@ test('covers tree visibility propagation fallbacks and parent updates', async ()
     }),
     update: jest.fn().mockResolvedValue(undefined),
   };
-  await utils.updateTreeVisibilityForVariantChange({
+  await updateTreeVisibilityForVariantChange({
     change: {
       after: {
         ref: { path: 'variants/v1' },
@@ -201,7 +212,7 @@ test('covers tree visibility propagation fallbacks and parent updates', async ()
     get: jest.fn().mockResolvedValue({ exists: true }),
     update: jest.fn().mockResolvedValue(undefined),
   };
-  await utils.updateTreeVisibilityForVariantChange({
+  await updateTreeVisibilityForVariantChange({
     change: {
       after: {
         ref: { path: 'variants/no-data' },
@@ -215,7 +226,7 @@ test('covers tree visibility propagation fallbacks and parent updates', async ()
     get: jest.fn().mockResolvedValue({ exists: true, data: () => null }),
     update: jest.fn().mockResolvedValue(undefined),
   };
-  await utils.updateTreeVisibilityForVariantChange({
+  await updateTreeVisibilityForVariantChange({
     change: {
       after: {
         ref: { path: 'variants/null-data' },
@@ -232,7 +243,7 @@ test('covers tree visibility propagation fallbacks and parent updates', async ()
     }),
     update: jest.fn().mockResolvedValue(undefined),
   };
-  await utils.updateTreeVisibilityForVariantChange({
+  await updateTreeVisibilityForVariantChange({
     change: {
       after: {
         ref: { path: 'variants/null-sum' },
@@ -246,7 +257,7 @@ test('covers tree visibility propagation fallbacks and parent updates', async ()
     get: jest.fn().mockResolvedValue({ exists: false }),
     update: jest.fn(),
   };
-  await utils.updateTreeVisibilityForVariantChange({
+  await updateTreeVisibilityForVariantChange({
     change: {
       after: {
         ref: { path: 'variants/missing' },
@@ -260,7 +271,7 @@ test('covers tree visibility propagation fallbacks and parent updates', async ()
     get: jest.fn().mockResolvedValue(null),
     update: jest.fn(),
   };
-  await utils.updateTreeVisibilityForVariantChange({
+  await updateTreeVisibilityForVariantChange({
     change: {
       after: {
         ref: { path: 'variants/null-snapshot' },
@@ -274,7 +285,7 @@ test('covers tree visibility propagation fallbacks and parent updates', async ()
     get: jest.fn().mockResolvedValue({ exists: true, data: null }),
     update: jest.fn().mockResolvedValue(undefined),
   };
-  await utils.updateTreeVisibilityForVariantChange({
+  await updateTreeVisibilityForVariantChange({
     change: {
       after: {
         ref: { path: 'variants/null-data-method' },
@@ -286,7 +297,7 @@ test('covers tree visibility propagation fallbacks and parent updates', async ()
   });
   expect(variantRef.update).toHaveBeenCalledWith({ treeVisibilitySum: 1 });
   expect(parentUpdate).toHaveBeenCalledWith({ targetTreeWeightsDirty: true });
-  await utils.updateTreeVisibilityForVariantChange({
+  await updateTreeVisibilityForVariantChange({
     change: {
       after: {
         ref: { path: 'variants/no-change' },
@@ -296,7 +307,7 @@ test('covers tree visibility propagation fallbacks and parent updates', async ()
     },
     db: { doc: jest.fn(() => variantRef) },
   });
-  await utils.updateTreeVisibilityForVariantChange({
+  await updateTreeVisibilityForVariantChange({
     change: {
       after: {
         ref: { path: 'variants/empty-parent' },
@@ -330,7 +341,7 @@ test('covers tree visibility propagation fallbacks and parent updates', async ()
     get: jest.fn().mockResolvedValue({}),
     update: jest.fn(),
   };
-  await utils.updateTreeVisibilityForVariantChange({
+  await updateTreeVisibilityForVariantChange({
     change: {
       after: {
         ref: { path: 'variants/missing-parent-data' },
@@ -357,7 +368,7 @@ test('covers tree visibility propagation fallbacks and parent updates', async ()
     get: jest.fn().mockResolvedValue({ data: null }),
     update: jest.fn(),
   };
-  await utils.updateTreeVisibilityForVariantChange({
+  await updateTreeVisibilityForVariantChange({
     change: {
       after: {
         ref: { path: 'variants/null-parent-data' },

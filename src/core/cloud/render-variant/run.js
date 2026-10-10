@@ -15,6 +15,8 @@ import {
   createCloudRenderEntrypointState,
 } from '../render-support.js';
 
+/** @typedef {import('../../../../types/allow-effects').AllowEffects} AllowEffects */
+
 /**
  * Wire and return the render-variant cloud exports.
  * @param {{
@@ -27,6 +29,7 @@ import {
  *   Storage: typeof import('../../../cloud/render-variant/render-variant-gcf.js').Storage,
  *   fetchFn: typeof import('../../../cloud/render-variant/render-variant-gcf.js').fetchFn,
  *   bindEffectBoundary: typeof import('../../../cloud/render-variant/render-variant-gcf.js').bindEffectBoundary,
+ *   updateVariantDocument: typeof import('../../../cloud/render-variant/effect-adapters.js').updateVariantDocument,
  *   effectFetchFn: typeof import('../../../cloud/render-variant/render-variant-gcf.js').effectFetchFn,
  *   crypto: typeof import('../../../cloud/render-variant/render-variant-gcf.js').crypto,
  *   console?: { error: (...args: unknown[]) => void },
@@ -45,6 +48,7 @@ export function runRenderVariant(deps) {
     Storage,
     fetchFn,
     bindEffectBoundary,
+    updateVariantDocument,
     effectFetchFn,
     crypto,
     console: consoleLike,
@@ -58,6 +62,7 @@ export function runRenderVariant(deps) {
     renderVariant: snap => Promise.resolve(resolveRenderVariant()(snap)),
     getDeleteSentinel: () => FieldValue.delete(),
     db,
+    updateDocument: updateVariantDocument,
   });
 
   const renderVariant = createFirestoreDocumentOnWriteTrigger(
@@ -65,7 +70,10 @@ export function runRenderVariant(deps) {
       functions,
       region: 'europe-west1',
       documentPath: 'stories/{storyId}/pages/{pageId}/variants/{variantId}',
-      handler: (/** @type {any} */ change) => handleVariantWrite(change),
+      handler: (/** @type {any} */ change) =>
+        bindEffectBoundary((/** @type {AllowEffects} */ permission) =>
+          handleVariantWrite(permission, change)
+        ),
     })
   );
 

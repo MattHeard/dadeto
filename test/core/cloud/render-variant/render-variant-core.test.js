@@ -9,7 +9,7 @@ import {
   buildParentRoute,
   resolveParentUrl,
   createRenderVariant as createRenderVariantCore,
-  createHandleVariantWrite,
+  createHandleVariantWrite as createHandleVariantWriteCore,
   VISIBILITY_THRESHOLD,
   DEFAULT_BUCKET_NAME,
   getVisibleVariants,
@@ -38,6 +38,22 @@ const createRenderVariant = dependencies =>
     bindEffectBoundary: handler => handler(createAllowEffects()),
     effectFetchFn: (permission, url, init) => dependencies.fetchFn(url, init),
   });
+
+const createHandleVariantWrite = dependencies => {
+  const { visibilityThreshold, ...coreDependencies } = dependencies;
+  const updateDocument =
+    coreDependencies.updateDocument ??
+    ((permission, reference, data) => {
+      void permission;
+      return reference.update(data);
+    });
+  const handle = createHandleVariantWriteCore({
+    ...coreDependencies,
+    updateDocument,
+  });
+  return (change, context) =>
+    handle(createAllowEffects(), change, context, visibilityThreshold);
+};
 
 describe('createInvalidatePaths', () => {
   it('returns early when paths are not provided', async () => {
@@ -2767,6 +2783,39 @@ describe('createRenderVariant visibility filtering', () => {
 });
 
 describe('createHandleVariantWrite', () => {
+  it('forwards the request permission to the visibility update adapter', async () => {
+    const allowEffects = createAllowEffects();
+    const variantRef = {
+      get: jest.fn().mockResolvedValue({
+        exists: true,
+        data: () => ({ visibility: 0.8, treeVisibilitySum: 1 }),
+      }),
+    };
+    const updateDocument = jest.fn().mockResolvedValue(undefined);
+    const handler = createHandleVariantWriteCore({
+      renderVariant: jest.fn().mockResolvedValue(null),
+      getDeleteSentinel: () => null,
+      db: { doc: jest.fn(() => variantRef) },
+      updateDocument,
+    });
+
+    await handler(allowEffects, {
+      before: {
+        exists: true,
+        data: () => ({ visibility: 0.8, treeVisibilitySum: 1 }),
+      },
+      after: {
+        exists: true,
+        ref: { path: 'stories/s/pages/child/variants/a' },
+        data: () => ({ visibility: 0.9, treeVisibilitySum: 1 }),
+      },
+    });
+
+    expect(updateDocument).toHaveBeenCalledWith(allowEffects, variantRef, {
+      treeVisibilitySum: 1.1,
+    });
+  });
+
   it('propagates a visibility-only change when the stored sum is still old', async () => {
     const renderVariant = jest.fn().mockResolvedValue(null);
     const childUpdate = jest.fn().mockResolvedValue(undefined);
