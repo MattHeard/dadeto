@@ -1,0 +1,7 @@
+# Render variant persistence capabilities
+
+- **Unexpected hurdle:** The first full check found a direct test utility call that still used the previous options-object signature.
+- **Diagnosis:** `persistRenderPlan` combined a `RenderOutput`, invocation context, snapshot, and persistence services in a 12-field destructured bag; one branch test invoked this internal test utility directly.
+- **Chosen fix:** Pass the snapshot, context, render output, and persistence services separately. Keep artifact writes and cache invalidation in the existing order. Updated the direct helper test to the new call shape.
+- **Next-time guidance:** A fresh repository-wide scan is now 153 findings across 89 files; the largest cluster is `render-contents-core.js` (13). Start with `createInvalidatePaths` at line 472 and inspect how its effect operations and CDN configuration can be separated coherently.
+- **Evidence:** Focused Jest passed (2 suites, 114 tests). The initial full check exposed and localized the stale helper test call; after updating it, `npm run check` passed all 10 gates, including 100% coverage, 11/11 local E2E, 0 clones, and 0 vulnerabilities. Scoped ESLint `--max-warnings=0`, TSDoc, and `git diff --check` passed. Fresh no-cache scan `.tmp/parameter-bag-current-after-render-variant.json`: 153 findings across 89 files, with the render-variant core file now clean. `npm run build:cloud` passed. Logs: `.tmp/npm-check-render-variant-persist-render-plan-rerun.log` and `.tmp/build-cloud-render-variant-persist-render-plan.log`.

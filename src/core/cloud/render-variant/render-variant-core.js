@@ -319,13 +319,11 @@ function resolveStoredVisibilitySum(data) {
  * @typedef {{ params?: Record<string, string>, rewriteTargetPageNumbers?: number[] }} RenderContext
  * @typedef {{ rewriteTargetPageNumbers?: number[] }} RewriteContext
  * @typedef {{ params?: Record<string, string>, rewriteTargetPageNumbers?: number[] }} RewriteRenderContext
- * @typedef {RenderOutput & {
- *   snap: VariantSnapshot;
- *   context?: RewriteRenderContext;
+ * @typedef {{
  *   bucket: StorageBucketLike;
  *   invalidatePaths: (paths: string[]) => Promise<void>;
  *   db: FirestoreLike;
- * }} PersistRenderPlanDeps
+ * }} RenderPersistenceCapabilities
  * @typedef {{
  *   storyData: import('firebase-admin/firestore').DocumentData;
  *   page: PageDocument;
@@ -2765,13 +2763,10 @@ function createRenderVariantHandler(capabilities) {
       return null;
     }
 
-    await persistRenderPlan({
-      snap,
-      context,
+    await persistRenderPlan(snap, context, renderPlan, {
       db: rendering.db,
       bucket,
       invalidatePaths,
-      ...renderPlan,
     });
     return null;
   }
@@ -3439,35 +3434,43 @@ function buildInvalidationPaths(altsPath, filePath, parentUrl) {
 
 /**
  * Persist rendered HTML, related metadata, and cache invalidation paths.
- * @param {PersistRenderPlanDeps} options Inputs for persisting the render plan.
+ * @param {VariantSnapshot} snap Variant snapshot being rendered.
+ * @param {RenderContext | undefined} context Invocation context.
+ * @param {RenderOutput} renderPlan Rendered artifacts and metadata.
+ * @param {RenderPersistenceCapabilities} persistence Storage, database, and invalidation services.
  * @returns {Promise<void>} Void promise.
  */
-async function persistRenderPlan({
-  snap,
-  context,
-  db,
-  bucket,
-  invalidatePaths,
-  variant,
-  page,
-  parentUrl,
-  html,
-  filePath,
-  openVariant,
-  reverseLinks,
-}) {
-  await saveVariantHtml({ bucket, filePath, html, openVariant });
-  await saveReverseLinkRecords({ snap, db, reverseLinks });
-  const altsPath = await saveAltsHtml({ snap, db, bucket, page });
+async function persistRenderPlan(snap, context, renderPlan, persistence) {
+  await saveVariantHtml({
+    bucket: persistence.bucket,
+    filePath: renderPlan.filePath,
+    html: renderPlan.html,
+    openVariant: renderPlan.openVariant,
+  });
+  await saveReverseLinkRecords({
+    snap,
+    db: persistence.db,
+    reverseLinks: renderPlan.reverseLinks,
+  });
+  const altsPath = await saveAltsHtml({
+    snap,
+    db: persistence.db,
+    bucket: persistence.bucket,
+    page: renderPlan.page,
+  });
 
-  const pendingName = resolvePendingName(variant, context, snap);
+  const pendingName = resolvePendingName(renderPlan.variant, context, snap);
   if (pendingName) {
-    await savePendingFile(bucket, pendingName, filePath);
+    await savePendingFile(persistence.bucket, pendingName, renderPlan.filePath);
   }
 
-  const paths = buildInvalidationPaths(altsPath, filePath, parentUrl);
-  await invalidatePaths(paths);
-  const variantRef = resolveTenantDocumentRef(snap, db);
+  const paths = buildInvalidationPaths(
+    altsPath,
+    renderPlan.filePath,
+    renderPlan.parentUrl
+  );
+  await persistence.invalidatePaths(paths);
+  const variantRef = resolveTenantDocumentRef(snap, persistence.db);
   if (variantRef && typeof variantRef.update === 'function') {
     await variantRef.update({ targetTreeWeightsDirty: false });
   }

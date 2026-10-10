@@ -414,23 +414,27 @@ test('clears the rendered variant tree-weight dirty marker', async () => {
   const snap = { ref: snapRef };
   const save = jest.fn().mockResolvedValue(undefined);
   const invalidatePaths = jest.fn().mockResolvedValue(undefined);
-  await renderVariantCoreTestUtils.persistRenderPlan({
+  await renderVariantCoreTestUtils.persistRenderPlan(
     snap,
-    context: undefined,
-    db: {
-      doc: jest.fn(() => snapRef),
-      collection: jest.fn(() => variantsRef),
+    undefined,
+    {
+      variant: {},
+      page: { number: 1 },
+      parentUrl: undefined,
+      html: '<html />',
+      filePath: 'p/1.html',
+      openVariant: false,
+      reverseLinks: [],
     },
-    bucket: { file: jest.fn(() => ({ save })) },
-    invalidatePaths,
-    variant: {},
-    page: { number: 1 },
-    parentUrl: undefined,
-    html: '<html />',
-    filePath: 'p/1.html',
-    openVariant: false,
-    reverseLinks: [],
-  });
+    {
+      db: {
+        doc: jest.fn(() => snapRef),
+        collection: jest.fn(() => variantsRef),
+      },
+      bucket: { file: jest.fn(() => ({ save })) },
+      invalidatePaths,
+    }
+  );
   expect(update).toHaveBeenCalledWith({ targetTreeWeightsDirty: false });
   expect(invalidatePaths).toHaveBeenCalledWith(['/p/1-alts.html', '/p/1.html']);
 });
