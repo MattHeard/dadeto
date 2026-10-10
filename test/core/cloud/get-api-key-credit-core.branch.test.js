@@ -135,19 +135,44 @@ describe('get API key credit request lifecycle', () => {
     const Firestore = jest.fn(() => ({
       collection: () => ({ doc: () => ({ get }) }),
     }));
-    const handle = createGetApiKeyCreditExpressHandle({ Firestore });
+    const handle = createGetApiKeyCreditExpressHandle({
+      Firestore,
+      setResponseHeader: (permission, response, name, value) =>
+        response.set(name, value),
+      sendHttpResponse: (...args) => {
+        const [, response, status, body, method] = args;
+        response.status(status)[method](body);
+      },
+    });
+    const allowEffects = Object.freeze({});
     const response = () => ({
       set: jest.fn(),
       status: jest.fn(() => ({ json: jest.fn(), send: jest.fn() })),
     });
     const missing = response();
-    await handle({ method: 'POST', params: { uuid: 'one' } }, missing);
+    await handle(
+      allowEffects,
+      { method: 'POST', params: { uuid: 'one' } },
+      missing
+    );
     const empty = response();
-    await handle({ method: 'POST', params: { uuid: 'two' } }, empty);
+    await handle(
+      allowEffects,
+      { method: 'POST', params: { uuid: 'two' } },
+      empty
+    );
     const numeric = response();
-    await handle({ method: 'POST', params: { uuid: 'three' } }, numeric);
+    await handle(
+      allowEffects,
+      { method: 'POST', params: { uuid: 'three' } },
+      numeric
+    );
     const method = response();
-    await handle({ method: 'GET', params: { uuid: 'four' } }, method);
+    await handle(
+      allowEffects,
+      { method: 'GET', params: { uuid: 'four' } },
+      method
+    );
     expect(Firestore).toHaveBeenCalledTimes(1);
   });
 });

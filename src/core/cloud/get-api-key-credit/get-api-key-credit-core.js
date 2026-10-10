@@ -1,7 +1,8 @@
 import { createDb } from './create-db.js';
 import { assertFunction, isValidString } from '../../commonCore.js';
 import { validatePostMethod } from '../http-method-guard.js';
-import { sendResponseBody } from '../response-utils.js';
+
+/** @typedef {import('../../../../types/allow-effects').AllowEffects} AllowEffects */
 
 const METHOD_NOT_ALLOWED_RESPONSE = { status: 405, body: 'Method Not Allowed' };
 const MISSING_UUID_RESPONSE = { status: 400, body: 'Missing UUID' };
@@ -242,26 +243,37 @@ export function findUuidFromRequest(request) {
 
 /**
  * Send a mapped handler response to an Express response object.
+ * @param {AllowEffects} allowEffects Explicit request effect permission.
+ * @param {{setResponseHeader: (allowEffects: AllowEffects, response: unknown, name: string, value: string) => unknown, sendHttpResponse: (allowEffects: AllowEffects, response: unknown, status: number, body: unknown, method: 'send'|'json') => unknown}} responseEffects Permission-first response adapters.
  * @param {{status: number, body: unknown}} result Handler result.
  * @param {{set: (name: string, value: string) => void, status: (status: number) => {json: (body: unknown) => void, send: (body: unknown) => void}}} res Express response.
  * @returns {void}
  */
-function sendApiKeyCreditResponse({ status, body }, res) {
+function sendApiKeyCreditResponse(
+  allowEffects,
+  responseEffects,
+  { status, body },
+  res
+) {
   if (status === 405) {
-    res.set('Allow', 'POST');
+    responseEffects.setResponseHeader(allowEffects, res, 'Allow', 'POST');
   }
 
   const method =
     body && typeof body === 'object' && !Array.isArray(body) ? 'json' : 'send';
-  sendResponseBody(res, status, body, method);
+  responseEffects.sendHttpResponse(allowEffects, res, status, body, method);
 }
 
 /**
  * Create the Express handler for the API key credit endpoint.
- * @param {{Firestore: typeof import('@google-cloud/firestore').Firestore}} deps Runtime dependencies.
- * @returns {(req: unknown, res: unknown) => Promise<void>} Express handler.
+ * @param {{Firestore: typeof import('@google-cloud/firestore').Firestore, setResponseHeader: (allowEffects: AllowEffects, response: unknown, name: string, value: string) => unknown, sendHttpResponse: (allowEffects: AllowEffects, response: unknown, status: number, body: unknown, method: 'send'|'json') => unknown}} deps Runtime dependencies.
+ * @returns {(allowEffects: AllowEffects, req: unknown, res: unknown) => Promise<void>} Express handler.
  */
-export function createGetApiKeyCreditExpressHandle({ Firestore }) {
+export function createGetApiKeyCreditExpressHandle({
+  Firestore,
+  setResponseHeader,
+  sendHttpResponse,
+}) {
   const getFirestoreInstance = createGetFirestoreInstance(Firestore);
   const getApiKeyCredit = createGetApiKeyCreditHandler({
     async fetchCredit(uuid) {
@@ -293,11 +305,13 @@ export function createGetApiKeyCreditExpressHandle({ Firestore }) {
     },
   });
 
-  return async function handleGetApiKeyCredit(req, res) {
+  return async function handleGetApiKeyCredit(allowEffects, req, res) {
     const result = await getApiKeyCredit(
       /** @type {Record<string, unknown>} */ (req)
     );
     sendApiKeyCreditResponse(
+      allowEffects,
+      { setResponseHeader, sendHttpResponse },
       result,
       /** @type {{set: (name: string, value: string) => void, status: (status: number) => {json: (body: unknown) => void, send: (body: unknown) => void}}} */ (
         res

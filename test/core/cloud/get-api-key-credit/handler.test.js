@@ -5,6 +5,17 @@ import {
   findUuidFromRequest,
 } from '../../../../src/core/cloud/get-api-key-credit/get-api-key-credit-core.js';
 
+const createResponseEffects = () => ({
+  setResponseHeader: jest.fn((...args) => {
+    const [, response, name, value] = args;
+    response.set(name, value);
+  }),
+  sendHttpResponse: jest.fn((...args) => {
+    const [, response, status, body, method] = args;
+    response.status(status)[method](body);
+  }),
+});
+
 describe('createGetApiKeyCreditHandler', () => {
   const createDependencies = ({
     fetchCredit = jest.fn(),
@@ -187,7 +198,13 @@ describe('createGetApiKeyCreditExpressHandle', () => {
     const Firestore = jest.fn(function Firestore() {
       return { collection };
     });
-    const handle = createGetApiKeyCreditExpressHandle({ Firestore });
+    const effects = createResponseEffects();
+    const handle = createGetApiKeyCreditExpressHandle({
+      Firestore,
+      ...effects,
+    });
+    const firstPermission = Object.freeze({});
+    const secondPermission = Object.freeze({});
     const res = {
       set: jest.fn(),
       status: jest.fn(() => res),
@@ -195,8 +212,16 @@ describe('createGetApiKeyCreditExpressHandle', () => {
       send: jest.fn(),
     };
 
-    await handle({ method: 'POST', body: { uuid: 'abc' } }, res);
-    await handle({ method: 'POST', body: { uuid: 'def' } }, res);
+    await handle(
+      firstPermission,
+      { method: 'POST', body: { uuid: 'abc' } },
+      res
+    );
+    await handle(
+      secondPermission,
+      { method: 'POST', body: { uuid: 'def' } },
+      res
+    );
 
     expect(Firestore).toHaveBeenCalledTimes(1);
     expect(collection).toHaveBeenCalledWith('api-key-credit');
@@ -204,11 +229,19 @@ describe('createGetApiKeyCreditExpressHandle', () => {
     expect(doc).toHaveBeenNthCalledWith(2, 'def');
     expect(res.status).toHaveBeenCalledWith(200);
     expect(res.json).toHaveBeenCalledWith({ credit: 7 });
+    expect(effects.sendHttpResponse.mock.calls.map(call => call[0])).toEqual([
+      firstPermission,
+      secondPermission,
+    ]);
   });
 
   it('sets Allow for method failures and sends string bodies', async () => {
     const Firestore = jest.fn();
-    const handle = createGetApiKeyCreditExpressHandle({ Firestore });
+    const effects = createResponseEffects();
+    const handle = createGetApiKeyCreditExpressHandle({
+      Firestore,
+      ...effects,
+    });
     const res = {
       set: jest.fn(),
       status: jest.fn(() => res),
@@ -216,12 +249,18 @@ describe('createGetApiKeyCreditExpressHandle', () => {
       send: jest.fn(),
     };
 
-    await handle({ method: 'GET' }, res);
+    await handle(Object.freeze({}), { method: 'GET' }, res);
 
     expect(Firestore).not.toHaveBeenCalled();
     expect(res.set).toHaveBeenCalledWith('Allow', 'POST');
     expect(res.status).toHaveBeenCalledWith(405);
     expect(res.send).toHaveBeenCalledWith('Method Not Allowed');
+    expect(effects.setResponseHeader).toHaveBeenCalledWith(
+      expect.any(Object),
+      res,
+      'Allow',
+      'POST'
+    );
   });
 
   it('maps missing documents and missing data through the Express bridge', async () => {
@@ -235,7 +274,10 @@ describe('createGetApiKeyCreditExpressHandle', () => {
     const Firestore = jest.fn(function Firestore() {
       return { collection };
     });
-    const handle = createGetApiKeyCreditExpressHandle({ Firestore });
+    const handle = createGetApiKeyCreditExpressHandle({
+      Firestore,
+      ...createResponseEffects(),
+    });
     const res = {
       set: jest.fn(),
       status: jest.fn(() => res),
@@ -243,8 +285,17 @@ describe('createGetApiKeyCreditExpressHandle', () => {
       send: jest.fn(),
     };
 
-    await handle({ method: 'POST', body: { uuid: 'missing' } }, res);
-    await handle({ method: 'POST', body: { uuid: 'empty-data' } }, res);
+    const permission = Object.freeze({});
+    await handle(
+      permission,
+      { method: 'POST', body: { uuid: 'missing' } },
+      res
+    );
+    await handle(
+      permission,
+      { method: 'POST', body: { uuid: 'empty-data' } },
+      res
+    );
 
     expect(res.status).toHaveBeenNthCalledWith(1, 404);
     expect(res.send).toHaveBeenNthCalledWith(1, 'Not found');
