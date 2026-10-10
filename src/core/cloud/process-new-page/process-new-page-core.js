@@ -1435,18 +1435,17 @@ function createUnprocessedSubmissionProcessor(db, fieldValue) {
 
       const batch = db.batch();
 
-      return processSubmissionWithContext({
-        submission,
-        snapshot,
+      const processSubmission = createSubmissionContextProcessor(
         db,
         batch,
-        randomUUID,
-        random,
-        getServerTimestamp,
-        fieldValue,
+        fieldValue
+      )(randomUUID, random, getServerTimestamp);
+      return processSubmission(
+        submission,
+        snapshot,
         incomingOptionFullName,
-        directPageNumber,
-      });
+        directPageNumber
+      );
     };
   };
 }
@@ -1477,64 +1476,51 @@ async function shouldSkipAndMarkSubmission({
 // Stryker restore all
 
 /**
- * Continue processing once the submission has enough context.
- * @param {object} params Parameters required to resolve and finalize the submission.
- * @param {object} params.submission Submission payload.
- * @param {import('firebase-admin/firestore').DocumentSnapshot} params.snapshot Submission snapshot.
- * @param {import('firebase-admin/firestore').Firestore} params.db Firestore instance.
- * @param {import('firebase-admin/firestore').WriteBatch} params.batch Write batch used for updates.
- * @param {() => string} params.randomUUID UUID generator for new documents.
- * @param {() => number} params.random Random number generator for variant ordering.
- * @param {() => unknown} params.getServerTimestamp Server timestamp helper.
- * @param {{
- *   serverTimestamp: () => unknown,
- *   increment: (value: number) => unknown,
- * }} params.fieldValue FieldValue helpers used for stats updates.
- * @param {string | undefined} params.incomingOptionFullName Option document path.
- * @param {number | undefined} params.directPageNumber Direct page number.
- * @returns {Promise<null>} Null once processing completes.
+ * Stage context processing around Firestore and runtime dependencies.
+ * @param {import('firebase-admin/firestore').Firestore} db Firestore instance.
+ * @param {import('firebase-admin/firestore').WriteBatch} batch Batch collecting writes.
+ * @param {{serverTimestamp: () => unknown, increment: (value: number) => unknown}} fieldValue FieldValue helpers used for stats.
+ * @returns {(randomUUID: () => string, random: () => number, getServerTimestamp: () => unknown) => (submission: SubmissionData, snapshot: import('firebase-admin/firestore').DocumentSnapshot, incomingOptionFullName: string | undefined, directPageNumber: number | undefined) => Promise<null>} Staged context processor.
  */
-async function processSubmissionWithContext({
-  submission,
-  snapshot,
-  db,
-  batch,
-  randomUUID,
-  random,
-  getServerTimestamp,
-  fieldValue,
-  incomingOptionFullName,
-  directPageNumber,
-}) {
-  const pageContext = await resolveSubmissionPageContext({
-    db,
-    incomingOptionFullName,
-    directPageNumber,
-    snapshot,
-    batch,
-    randomUUID,
-    random,
-    getServerTimestamp,
-  });
+function createSubmissionContextProcessor(db, batch, fieldValue) {
+  return function bindContextRuntime(randomUUID, random, getServerTimestamp) {
+    return async function processSubmissionWithContext(
+      submission,
+      snapshot,
+      incomingOptionFullName,
+      directPageNumber
+    ) {
+      const pageContext = await resolveSubmissionPageContext({
+        db,
+        incomingOptionFullName,
+        directPageNumber,
+        snapshot,
+        batch,
+        randomUUID,
+        random,
+        getServerTimestamp,
+      });
 
-  if (!pageContext) {
-    await markSubmissionProcessed(snapshot);
-    return null;
-  }
+      if (!pageContext) {
+        await markSubmissionProcessed(snapshot);
+        return null;
+      }
 
-  const { pageDocRef, storyRef, variantRef, preserveVariantDirty } =
-    pageContext;
-  const { pageDocRef: ensuredPageDocRef, storyRef: ensuredStoryRef } =
-    ensurePageContextReferences({ pageDocRef, storyRef });
+      const { pageDocRef, storyRef, variantRef, preserveVariantDirty } =
+        pageContext;
+      const { pageDocRef: ensuredPageDocRef, storyRef: ensuredStoryRef } =
+        ensurePageContextReferences({ pageDocRef, storyRef });
 
-  const finalize = createSubmissionFinalizer(db, batch, fieldValue)(
-    randomUUID,
-    random,
-    getServerTimestamp
-  )(ensuredPageDocRef, ensuredStoryRef, variantRef, preserveVariantDirty);
-  await finalize(submission, snapshot);
+      const finalize = createSubmissionFinalizer(db, batch, fieldValue)(
+        randomUUID,
+        random,
+        getServerTimestamp
+      )(ensuredPageDocRef, ensuredStoryRef, variantRef, preserveVariantDirty);
+      await finalize(submission, snapshot);
 
-  return null;
+      return null;
+    };
+  };
 }
 
 /**
@@ -1610,47 +1596,33 @@ export const processNewPageTestUtils = {
 };
 
 /**
- * Create a handler function for processing submissions.
- * @param {object} params - Processing parameters.
- * @param {import('firebase-admin/firestore').Firestore} params.db - Firestore instance.
- * @param {() => string} params.randomUUID - UUID generator.
- * @param {() => number} params.random - Random generator.
- * @param {() => unknown} params.getServerTimestamp - Timestamp helper.
- * @param {object} params.fieldValue - FieldValue helper.
- * @returns {(snap: import('firebase-admin/firestore').DocumentSnapshot) => Promise<null>} Submission handler.
- */
-/**
  * Build a submission handler from dependencies.
- * @param {object} params - Dependencies.
- * @param {import('firebase-admin/firestore').Firestore} params.db - Firestore instance.
- * @param {() => string} params.randomUUID - UUID generator.
- * @param {() => number} params.random - Random generator.
- * @param {() => unknown} params.getServerTimestamp - Timestamp helper.
- * @param {{ serverTimestamp: () => unknown, increment: (value: number) => unknown }} params.fieldValue - FieldValue helper.
- * @returns {(snapshot: import('firebase-admin/firestore').DocumentSnapshot) => Promise<null>} Handler function.
+ * @param {import('firebase-admin/firestore').Firestore} db Firestore instance.
+ * @param {{ serverTimestamp: () => unknown, increment: (value: number) => unknown }} fieldValue FieldValue helper.
+ * @returns {(randomUUID: () => string, random: () => number, getServerTimestamp: () => unknown) => (snapshot: import('firebase-admin/firestore').DocumentSnapshot) => Promise<null>} Runtime-bound handler factory.
  */
-function buildSubmissionHandler({
-  db,
-  randomUUID,
-  random,
-  getServerTimestamp,
-  fieldValue,
-}) {
-  return async function handleProcessNewPage(snapshot) {
-    const submission = extractSubmissionData(snapshot);
-    if (isSubmissionProcessed(submission)) {
-      return null;
-    }
+function buildSubmissionHandler(db, fieldValue) {
+  return function bindSubmissionRuntime(
+    randomUUID,
+    random,
+    getServerTimestamp
+  ) {
+    return async function handleProcessNewPage(snapshot) {
+      const submission = extractSubmissionData(snapshot);
+      if (isSubmissionProcessed(submission)) {
+        return null;
+      }
 
-    return handleAndProcessSubmission({
-      submission,
-      snapshot,
-      db,
-      randomUUID,
-      random,
-      getServerTimestamp,
-      fieldValue,
-    });
+      return handleAndProcessSubmission({
+        submission,
+        snapshot,
+        db,
+        randomUUID,
+        random,
+        getServerTimestamp,
+        fieldValue,
+      });
+    };
   };
 }
 
@@ -1671,13 +1643,11 @@ export function createProcessNewPageHandler({
 }) {
   const getServerTimestamp = resolveServerTimestamp(fieldValue);
 
-  return buildSubmissionHandler({
-    db,
+  return buildSubmissionHandler(db, fieldValue)(
     randomUUID,
     random,
-    getServerTimestamp,
-    fieldValue,
-  });
+    getServerTimestamp
+  );
 }
 
 export { resolveVariantDocumentId };
