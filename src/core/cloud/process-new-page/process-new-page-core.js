@@ -856,71 +856,128 @@ async function resolveDirectPageContext({ db, directPageNumber, snapshot }) {
 // Stryker restore all
 
 /**
- * Create the new variant document alongside option children.
- * @param {object} params Parameters describing the variant creation request.
- * @param {import('firebase-admin/firestore').DocumentReference} params.pageDocRef Page document where the variant will be stored.
- * @param {import('firebase-admin/firestore').DocumentReference} params.snapshotRef Submission document reference used for deterministic IDs.
- * @param {import('firebase-admin/firestore').WriteBatch} params.batch Write batch used to queue writes for commit.
- * @param {SubmissionData} params.submission Submission payload containing variant content and options.
- * @param {() => string} params.randomUUID UUID generator for new Firestore documents.
- * @param {() => unknown} params.getServerTimestamp Function that returns a Firestore server timestamp sentinel.
- * @param {() => number} params.random Random number generator for variant ordering.
- * @param {(name: string) => string} params.incrementVariantNameFn Helper that calculates the next variant name.
- * @returns {Promise<import('firebase-admin/firestore').DocumentReference>} Reference to the newly created variant document.
+ * Stage variant creation around the batch and runtime dependencies.
+ * @param {import('firebase-admin/firestore').WriteBatch} batch Write batch used to queue writes for commit.
+ * @returns {(randomUUID: () => string, getServerTimestamp: () => unknown, random: () => number, incrementVariantNameFn: (name: string) => string) => (pageDocRef: import('firebase-admin/firestore').DocumentReference, snapshotRef: import('firebase-admin/firestore').DocumentReference, submission: SubmissionData) => Promise<import('firebase-admin/firestore').DocumentReference>} Staged variant creator.
  */
 // Stryker disable next-line all -- variant creation uses the fixed Firestore payload protocol.
-async function createVariantWithOptions({
+function createVariantWithOptionsBuilder(batch) {
+  return function bindVariantRuntime(
+    randomUUID,
+    getServerTimestamp,
+    random,
+    incrementVariantNameFn
+  ) {
+    const writeOptions = createOptionDocumentWriter(batch)(
+      randomUUID,
+      getServerTimestamp
+    );
+
+    return async function createVariantWithOptions(
+      pageDocRef,
+      snapshotRef,
+      submission
+    ) {
+      const { nextName, variantRef } = await resolveVariantCreationContext(
+        pageDocRef,
+        snapshotRef,
+        randomUUID,
+        incrementVariantNameFn
+      );
+
+      // Stryker disable all -- variant payload uses the fixed visibility and dirty fields.
+      batch.set(
+        variantRef,
+        buildVariantSubmissionPayload(
+          nextName,
+          submission,
+          random,
+          getServerTimestamp
+        )
+      );
+      // Stryker restore all
+
+      writeOptions(variantRef, submission.options);
+      return variantRef;
+    };
+  };
+}
+
+/**
+ * Resolve the name and reference for a new variant.
+ * @param {import('firebase-admin/firestore').DocumentReference} pageDocRef Page that will contain the variant.
+ * @param {import('firebase-admin/firestore').DocumentReference} snapshotRef Submission reference used for the deterministic variant ID.
+ * @param {() => string} randomUUID UUID generator used when the snapshot ID is missing.
+ * @param {(name: string) => string} incrementVariantNameFn Helper that calculates the next variant name.
+ * @returns {Promise<{nextName: string, variantRef: import('firebase-admin/firestore').DocumentReference}>} New variant context.
+ */
+async function resolveVariantCreationContext(
   pageDocRef,
   snapshotRef,
-  batch,
-  submission,
   randomUUID,
-  getServerTimestamp,
-  random,
-  incrementVariantNameFn,
-}) {
+  incrementVariantNameFn
+) {
   const variantsSnap = await fetchExistingVariants(pageDocRef);
-
   const latestName = getLatestVariantName(variantsSnap);
   const nextName = calculateNextVariantName(
     variantsSnap,
     latestName,
     incrementVariantNameFn
   );
-
-  const newVariantRef = resolveVariantRef({
+  const variantRef = resolveVariantRef({
     pageDocRef,
     snapshotRef,
     randomUUID,
   });
 
-  // Stryker disable all -- variant payload uses the fixed visibility and dirty fields.
-  batch.set(
-    newVariantRef,
-    /** @type {import('firebase-admin/firestore').DocumentData} */ ({
-      ...buildVariantPayload(nextName, submission, {
-        random,
-        getServerTimestamp,
-      }),
-      treeVisibilitySum: submission.visibility ?? 1,
-      targetTreeWeightsDirty: false,
-    })
-  );
-  // Stryker restore all
+  return { nextName, variantRef };
+}
 
-  // Stryker disable all -- option creation uses the fixed payload/write protocol.
-  normalizeOptions(submission.options).forEach((text, position) => {
-    const optionRef = newVariantRef.collection('options').doc(randomUUID());
+/**
+ * Build the variant payload fields supplied by a new submission.
+ * @param {string} nextName Name assigned to the new variant.
+ * @param {SubmissionData} submission Submission payload containing variant content.
+ * @param {() => number} random Random number generator for variant ordering.
+ * @param {() => unknown} getServerTimestamp Function that returns a Firestore server timestamp sentinel.
+ * @returns {import('firebase-admin/firestore').DocumentData} Variant fields to persist.
+ */
+function buildVariantSubmissionPayload(
+  nextName,
+  submission,
+  random,
+  getServerTimestamp
+) {
+  return {
+    ...buildVariantPayload(nextName, submission, {
+      random,
+      getServerTimestamp,
+    }),
+    treeVisibilitySum: submission.visibility ?? 1,
+    targetTreeWeightsDirty: false,
+  };
+}
 
-    batch.set(optionRef, {
-      content: text,
-      createdAt: getServerTimestamp(),
-      position,
-    });
-  });
-  // Stryker restore all
+/**
+ * Stage creation of option documents under a new variant.
+ * @param {import('firebase-admin/firestore').WriteBatch} batch Batch used to queue option writes.
+ * @returns {(randomUUID: () => string, getServerTimestamp: () => unknown) => (variantRef: import('firebase-admin/firestore').DocumentReference, options: unknown) => void} Option writer factory.
+ */
+function createOptionDocumentWriter(batch) {
+  return function bindOptionDocumentRuntime(randomUUID, getServerTimestamp) {
+    return function writeOptionDocuments(variantRef, options) {
+      // Stryker disable all -- option creation uses the fixed payload/write protocol.
+      normalizeOptions(options).forEach((text, position) => {
+        const optionRef = variantRef.collection('options').doc(randomUUID());
 
-  return newVariantRef;
+        batch.set(optionRef, {
+          content: text,
+          createdAt: getServerTimestamp(),
+          position,
+        });
+      });
+      // Stryker restore all
+    };
+  };
 }
 
 /**
@@ -1326,16 +1383,17 @@ async function finalizeSubmission({
   fieldValue,
 }) {
   // Stryker disable all -- submission finalization uses the fixed Firestore write protocol.
-  await createVariantWithOptions({
-    pageDocRef,
-    snapshotRef: getSnapshotReference(snapshot),
-    batch,
-    submission,
+  const createVariantWithOptions = createVariantWithOptionsBuilder(batch)(
     randomUUID,
     getServerTimestamp,
     random,
-    incrementVariantNameFn: incrementVariantName,
-  });
+    incrementVariantName
+  );
+  await createVariantWithOptions(
+    pageDocRef,
+    getSnapshotReference(snapshot),
+    submission
+  );
 
   const storyStatsRef = resolveStoryStatsRef(db, storyRef);
 

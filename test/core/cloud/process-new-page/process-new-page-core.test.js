@@ -420,7 +420,29 @@ describe('createProcessNewPageHandler', () => {
 
     await handler(snapshot);
 
-    expect(batch.set).toHaveBeenCalled();
+    const variantWrite = batch.set.mock.calls.find(
+      ([, payload]) => payload && typeof payload.name === 'string'
+    );
+    expect(variantWrite?.[1]).toMatchObject({
+      name: 'a',
+      content: 'Story content',
+      authorId: 'author-1',
+      authorName: 'Author Name',
+      rand: 0.25,
+      createdAt: 'ts',
+      treeVisibilitySum: 1,
+      targetTreeWeightsDirty: false,
+    });
+    expect(batch.set).toHaveBeenCalledWith(optionDocs[0], {
+      content: 'Option A',
+      createdAt: 'ts',
+      position: 0,
+    });
+    expect(batch.set).toHaveBeenCalledWith(optionDocs[1], {
+      content: 'Option B',
+      createdAt: 'ts',
+      position: 1,
+    });
     expect(batch.update).toHaveBeenCalledWith(snapshot.ref, {
       processed: true,
     });
