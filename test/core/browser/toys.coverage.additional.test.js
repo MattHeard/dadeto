@@ -66,22 +66,23 @@ describe('toys additional coverage', () => {
     expect(render).toHaveBeenCalledTimes(2);
   });
 
-  test('provides usable empty row state when button setup receives null data', () => {
+  test('wires the supplied handler for an empty row state', () => {
     const dom = {
       setTextContent: jest.fn(),
       addEventListener: jest.fn(),
       removeEventListener: jest.fn(),
     };
     const render = jest.fn();
+    const emptyRowData = { rows: {}, rowTypes: {} };
     const addDisposers = [];
     utils.setupAddButton({
       dom,
       button: {},
-      rowData: null,
-      render,
+      onAdd: utils.createOnAddHandler(emptyRowData, render),
       disposers: addDisposers,
     });
     dom.addEventListener.mock.calls[0][2]();
+    expect(emptyRowData.rows).toEqual({ '': '' });
     expect(render).toHaveBeenCalledTimes(1);
 
     const removeDisposers = [];
@@ -703,7 +704,7 @@ describe('additional dropdown and focus coverage', () => {
     utils.setupAddButton({
       dom,
       button: add,
-      render: jest.fn(),
+      onAdd: jest.fn(),
       disposers: [],
     });
     utils.setupRemoveButton({

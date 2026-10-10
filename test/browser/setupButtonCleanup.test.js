@@ -1,5 +1,9 @@
 import { describe, it, expect, jest } from '@jest/globals';
-import { setupAddButton, setupRemoveButton } from '../../src/browser/toys.js';
+import {
+  createOnAddHandler,
+  setupAddButton,
+  setupRemoveButton,
+} from '../../src/browser/toys.js';
 
 describe('button cleanup helpers', () => {
   it('setupAddButton disposer removes event listener', () => {
@@ -12,7 +16,8 @@ describe('button cleanup helpers', () => {
     const rowData = { rows: {}, rowTypes: {} };
     const render = jest.fn();
     const disposers = [];
-    setupAddButton({ dom, button, rowData, render, disposers });
+    const onAdd = createOnAddHandler(rowData, render);
+    setupAddButton({ dom, button, onAdd, disposers });
     expect(disposers).toHaveLength(1);
     const dispose = disposers[0];
     expect(typeof dispose).toBe('function');
@@ -34,8 +39,9 @@ describe('button cleanup helpers', () => {
     const rowData = { rows: {}, rowTypes: {} };
     const render = jest.fn();
     const disposers = [];
+    const onAddHandler = createOnAddHandler(rowData, render);
 
-    setupAddButton({ dom, button, rowData, render, disposers });
+    setupAddButton({ dom, button, onAdd: onAddHandler, disposers });
 
     const [, , onAdd] = dom.addEventListener.mock.calls[0];
     const dispose = disposers[0];
@@ -97,8 +103,9 @@ describe('button cleanup helpers', () => {
     const rowData = { rows: {}, rowTypes: {} };
     const render = jest.fn();
     const disposers = [];
+    const onAdd = createOnAddHandler(rowData, render);
 
-    setupAddButton({ dom, button, rowData, render, disposers });
+    setupAddButton({ dom, button, onAdd, disposers });
 
     // Capture the click handler
     const clickHandler = handlers[0];
@@ -133,8 +140,9 @@ describe('button cleanup helpers', () => {
     const rowData = { rows: {}, rowTypes: {} };
     const render = jest.fn();
     const disposers = [];
+    const onAdd = createOnAddHandler(rowData, render);
 
-    setupAddButton({ dom, button, rowData, render, disposers });
+    setupAddButton({ dom, button, onAdd, disposers });
 
     const dispose = disposers[0];
     dispose();

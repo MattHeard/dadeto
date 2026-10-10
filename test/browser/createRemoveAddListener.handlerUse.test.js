@@ -1,5 +1,5 @@
 import { test, expect, jest } from '@jest/globals';
-import { setupAddButton } from '../../src/browser/toys.js';
+import { createOnAddHandler, setupAddButton } from '../../src/browser/toys.js';
 
 test('setupAddButton disposer removes the exact click handler after invocation', () => {
   const dom = {
@@ -11,8 +11,9 @@ test('setupAddButton disposer removes the exact click handler after invocation',
   const rowData = { rows: {}, rowTypes: {} };
   const render = jest.fn();
   const disposers = [];
+  const onAdd = createOnAddHandler(rowData, render);
 
-  setupAddButton({ dom, button: btn, rowData, render, disposers });
+  setupAddButton({ dom, button: btn, onAdd, disposers });
 
   expect(disposers).toHaveLength(1);
   const dispose = disposers[0];

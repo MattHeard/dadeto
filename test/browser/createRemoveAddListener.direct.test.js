@@ -1,5 +1,5 @@
 import { test, expect, jest } from '@jest/globals';
-import { setupAddButton } from '../../src/browser/toys.js';
+import { createOnAddHandler, setupAddButton } from '../../src/browser/toys.js';
 
 test('createRemoveAddListener returns disposer that removes click handler', () => {
   const dom = {
@@ -8,11 +8,12 @@ test('createRemoveAddListener returns disposer that removes click handler', () =
     removeEventListener: jest.fn(),
   };
   const btn = {};
-  const rows = {};
+  const rowData = { rows: {}, rowTypes: {} };
   const render = jest.fn();
   const disposers = [];
+  const onAdd = createOnAddHandler(rowData, render);
 
-  setupAddButton({ dom, button: btn, rows, render, disposers });
+  setupAddButton({ dom, button: btn, onAdd, disposers });
 
   expect(disposers).toHaveLength(1);
   const dispose = disposers[0];

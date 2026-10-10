@@ -1,5 +1,5 @@
 import { describe, it, expect, jest } from '@jest/globals';
-import { setupAddButton } from '../../src/browser/toys.js';
+import { createOnAddHandler, setupAddButton } from '../../src/browser/toys.js';
 
 describe('createRemoveAddListener unique disposers', () => {
   it('returns distinct dispose functions for each call', () => {
@@ -8,16 +8,17 @@ describe('createRemoveAddListener unique disposers', () => {
       addEventListener: jest.fn(),
       removeEventListener: jest.fn(),
     };
-    const rows = {};
+    const rowData = { rows: {}, rowTypes: {} };
     const render = jest.fn();
+    const onAdd = createOnAddHandler(rowData, render);
     const disposers = [];
 
     const btnA = {};
-    setupAddButton({ dom, button: btnA, rows, render, disposers });
+    setupAddButton({ dom, button: btnA, onAdd, disposers });
     const disposeA = disposers.pop();
 
     const btnB = {};
-    setupAddButton({ dom, button: btnB, rows, render, disposers });
+    setupAddButton({ dom, button: btnB, onAdd, disposers });
     const disposeB = disposers.pop();
 
     expect(typeof disposeA).toBe('function');

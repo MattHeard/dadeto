@@ -1,11 +1,12 @@
 import { jest } from '@jest/globals';
-import { setupAddButton } from '../../src/browser/toys.js';
+import { createOnAddHandler, setupAddButton } from '../../src/browser/toys.js';
 
 describe('setupAddButton', () => {
   let mockDom;
   let button;
   let rowData;
   let render;
+  let onAdd;
   let disposers;
 
   beforeEach(() => {
@@ -19,11 +20,12 @@ describe('setupAddButton', () => {
     button = {};
     rowData = { rows: {}, rowTypes: {} };
     render = jest.fn();
+    onAdd = createOnAddHandler(rowData, render);
     disposers = [];
   });
 
   it('sets the button text content to "+"', () => {
-    setupAddButton({ dom: mockDom, button, rowData, render, disposers });
+    setupAddButton({ dom: mockDom, button, onAdd, disposers });
 
     expect(mockDom.setTextContent).toHaveBeenCalledWith(button, '+');
   });
@@ -37,7 +39,7 @@ describe('setupAddButton', () => {
       }
     });
 
-    setupAddButton({ dom: mockDom, button, rowData, render, disposers });
+    setupAddButton({ dom: mockDom, button, onAdd, disposers });
 
     // Simulate button click
     clickHandler();
@@ -62,7 +64,7 @@ describe('setupAddButton', () => {
       }
     });
 
-    setupAddButton({ dom: mockDom, button, rowData, render, disposers });
+    setupAddButton({ dom: mockDom, button, onAdd, disposers });
 
     // Simulate button click
     clickHandler();
@@ -75,10 +77,10 @@ describe('setupAddButton', () => {
   });
 
   it('returns a unique disposer for each setup call', () => {
-    setupAddButton({ dom: mockDom, button, rowData, render, disposers });
+    setupAddButton({ dom: mockDom, button, onAdd, disposers });
     const firstCleanup = disposers[0];
 
-    setupAddButton({ dom: mockDom, button: {}, rowData, render, disposers });
+    setupAddButton({ dom: mockDom, button: {}, onAdd, disposers });
     const secondCleanup = disposers[1];
 
     expect(firstCleanup).not.toBe(secondCleanup);

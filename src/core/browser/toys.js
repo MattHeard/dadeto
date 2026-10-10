@@ -1106,15 +1106,12 @@ export const createOnRemove = (rowData, render, key) => e => {
  * @param {object} options - Configuration.
  * @param {object} options.dom - DOM utilities.
  * @param {HTMLElement} options.button - Button to set up.
- * @param {object} options.rowData - Row data object containing rows and rowTypes.
- * @param {ToyCallback} options.render - Re-render function.
+ * @param {ToyCallback} options.onAdd - Click handler for adding a row.
  * @param {Array<ToyCallback>} options.disposers - Collects cleanup callbacks.
  * @returns {void}
  */
-export const setupAddButton = ({ dom, button, rowData, render, disposers }) => {
-  const effectiveRowData = rowData ?? { rows: {}, rowTypes: {} };
+export const setupAddButton = ({ dom, button, onAdd, disposers }) => {
   dom.setTextContent(button, '+');
-  const onAdd = createOnAddHandler(effectiveRowData, render);
   dom.addEventListener(button, 'click', onAdd);
   const removeAddListener = createRemoveListener({
     dom,
@@ -1262,7 +1259,13 @@ const createButton = ({
   dom.setType(button, 'button');
 
   if (isAddButton) {
-    setupAddButton({ dom, button, rowData, render, disposers });
+    const effectiveRowData = rowData ?? { rows: {}, rowTypes: {} };
+    setupAddButton({
+      dom,
+      button,
+      onAdd: createOnAddHandler(effectiveRowData, render),
+      disposers,
+    });
   } else {
     setupRemoveButton({ dom, button, rowData, render, key, disposers });
   }

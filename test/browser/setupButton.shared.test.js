@@ -1,5 +1,9 @@
 import { describe, it, expect, jest } from '@jest/globals';
-import { setupAddButton, setupRemoveButton } from '../../src/browser/toys.js';
+import {
+  createOnAddHandler,
+  setupAddButton,
+  setupRemoveButton,
+} from '../../src/browser/toys.js';
 
 // Combined coverage from the former setupAddButton and setupRemoveButton tests
 // Ensures both button helpers share consistent behavior
@@ -12,8 +16,7 @@ describe.each([
       setupAddButton({
         dom: params[0],
         button: params[1],
-        rows: params[2],
-        render: params[3],
+        onAdd: createOnAddHandler({ rows: params[2], rowTypes: {} }, params[3]),
         disposers: params[5],
       }),
   ],
