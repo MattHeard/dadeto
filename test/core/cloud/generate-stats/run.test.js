@@ -30,11 +30,12 @@ async function loadModule({
   jest.resetModules();
 
   const initializeApp = jest.fn();
-  const initializeFirebaseApp = jest.fn(initFn => {
-    if (typeof initFn === 'function') {
-      initFn();
-    }
-  });
+  const initializeFirebaseApp = jest.fn((permission, initFn, effect) =>
+    effect(permission, initFn)
+  );
+  const initializeFirebaseAppEffect = jest.fn((_permission, initFn) =>
+    initFn()
+  );
   const productionOrigins = ['https://prod.example'];
   const coreResult = {
     getStoryCount: jest.fn(),
@@ -67,6 +68,9 @@ async function loadModule({
   const console = { debug: jest.fn(), error: jest.fn(), warn: jest.fn() };
   const startupPermission = Object.freeze({});
   const bindEffectBoundary = jest.fn(handler => handler(startupPermission));
+  const bindStartupEffectBoundary = jest.fn(handler =>
+    handler(Object.freeze({ startup: true }))
+  );
   const useMiddleware = jest.fn((allowEffects, appInstance, middleware) =>
     appInstance.use(middleware)
   );
@@ -89,6 +93,8 @@ async function loadModule({
     express,
     cors,
     bindEffectBoundary,
+    bindStartupEffectBoundary,
+    initializeFirebaseAppEffect,
     useMiddleware,
     registerPostRoute,
     sendHttpResponse,
@@ -133,6 +139,8 @@ async function loadModule({
     firestoreResult,
     startupPermission,
     bindEffectBoundary,
+    bindStartupEffectBoundary,
+    initializeFirebaseAppEffect,
     useMiddleware,
     registerPostRoute,
     sendHttpResponse,
@@ -143,10 +151,15 @@ async function loadModule({
 
 describe('generate-stats run', () => {
   it('initializes Firebase once', async () => {
-    const { mod } = await loadModule();
+    const { mod, bindStartupEffectBoundary, initializeFirebaseAppEffect } =
+      await loadModule();
     const initFn = jest.fn();
 
-    const ensure = mod.createEnsureFirebaseApp(initFn);
+    const ensure = mod.createEnsureFirebaseApp(
+      initFn,
+      bindStartupEffectBoundary,
+      initializeFirebaseAppEffect
+    );
 
     ensure();
     ensure();
@@ -384,6 +397,31 @@ describe('generate-stats run', () => {
     );
   });
 
+  it('uses separate startup permissions for each body parser', async () => {
+    const { mod, deps, bindStartupEffectBoundary, useMiddleware, app } =
+      await loadModule({ environment: { DENDRITE_ENVIRONMENT: 't-123' } });
+
+    mod.runGenerateStats(deps);
+
+    expect(bindStartupEffectBoundary).toHaveBeenCalledTimes(2);
+    const parserPermissions = useMiddleware.mock.calls
+      .slice(0, 2)
+      .map(([permission]) => permission);
+    expect(parserPermissions[0]).not.toBe(parserPermissions[1]);
+    expect(useMiddleware).toHaveBeenNthCalledWith(
+      1,
+      parserPermissions[0],
+      app,
+      'urlencoded-middleware'
+    );
+    expect(useMiddleware).toHaveBeenNthCalledWith(
+      2,
+      parserPermissions[1],
+      app,
+      'json-middleware'
+    );
+  });
+
   it('mints a fresh permission for every registered HTTP request', async () => {
     const { mod, deps, bindEffectBoundary, registerPostRoute, coreResult } =
       await loadModule({ environment: { DENDRITE_ENVIRONMENT: 't-123' } });
@@ -430,7 +468,10 @@ describe('generate-stats run', () => {
       cors,
       onRequest,
       getFirestore,
+      initializeApp,
       bindEffectBoundary,
+      bindStartupEffectBoundary,
+      initializeFirebaseAppEffect,
       useMiddleware,
       registerPostRoute,
     } = await loadModule({
@@ -446,7 +487,6 @@ describe('generate-stats run', () => {
       DENDRITE_ENVIRONMENT: 't-456',
       PLAYWRIGHT_ORIGIN: 'https://playwright.example',
     }));
-    const initializeApp = jest.fn();
     const fetchFn = jest.fn();
     const crypto = { randomUUID: jest.fn(() => 'uuid') };
 
@@ -462,11 +502,18 @@ describe('generate-stats run', () => {
       fetchFn,
       crypto,
       bindEffectBoundary,
+      bindStartupEffectBoundary,
       useMiddleware,
+      initializeFirebaseAppEffect,
       registerPostRoute,
     });
 
     expect(getFirestore).toHaveBeenCalledTimes(1);
+    expect(initializeFirebaseAppEffect).toHaveBeenCalledWith(
+      expect.objectContaining({ startup: true }),
+      initializeApp
+    );
+    expect(bindStartupEffectBoundary).toHaveBeenCalledTimes(3);
     expect(getAuth).toHaveBeenCalledTimes(1);
     expect(Storage).toHaveBeenCalledTimes(1);
     expect(onRequest).toHaveBeenCalledTimes(1);

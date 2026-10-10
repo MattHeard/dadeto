@@ -90,7 +90,7 @@ export const handle = startServer;
 
 /**
  * Start the local simulator server.
- * @param {{ express: Parameters<typeof createJsonExpressAppDeps>[0], simulator?: Promise<LocalGcpSimulator>, createSimulator: (options: object) => Promise<object> }} deps Runtime dependencies.
+ * @param {{ express: Parameters<typeof createJsonExpressAppDeps>[0], simulator?: Promise<LocalGcpSimulator>, createSimulator: (options: object) => Promise<object>, bindStartupEffectBoundary: import('../../../../types/allow-effects').StartupAllowEffectsBoundary, useMiddleware: (permission: import('../../../../types/allow-effects').AllowEffects, app: import('../../../../types/native-http').NativeExpressApp, middleware: unknown) => void }} deps Runtime dependencies.
  * @returns {Promise<import('node:http').Server>} Server instance.
  */
 async function startServer(deps) {
@@ -98,7 +98,11 @@ async function startServer(deps) {
   const simulator = /** @type {LocalGcpSimulator} */ (
     await (deps.simulator ?? getSimulatorPromise(deps.createSimulator))
   );
-  const app = createJsonExpressApp(createJsonExpressAppDeps(express));
+  const app = createJsonExpressApp({
+    ...createJsonExpressAppDeps(express),
+    bindStartupEffectBoundary: deps.bindStartupEffectBoundary,
+    useMiddleware: deps.useMiddleware,
+  });
   app.use((_req, res, next) => {
     res.set('Access-Control-Allow-Origin', '*');
     res.set('Access-Control-Allow-Methods', 'POST, OPTIONS');

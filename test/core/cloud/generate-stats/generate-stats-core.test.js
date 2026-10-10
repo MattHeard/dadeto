@@ -1338,6 +1338,8 @@ describe('generate stats helpers', () => {
   });
 
   it('swallows duplicate initialization errors', () => {
+    const initPermission = Object.freeze({});
+    const initializeFirebaseAppEffect = (_permission, initFn) => initFn();
     const init = jest
       .fn()
       .mockImplementationOnce(() => {
@@ -1345,13 +1347,21 @@ describe('generate stats helpers', () => {
       })
       .mockImplementationOnce(() => {});
 
-    expect(() => initializeFirebaseApp(init)).not.toThrow();
+    expect(() =>
+      initializeFirebaseApp(initPermission, init, initializeFirebaseAppEffect)
+    ).not.toThrow();
     expect(init).toHaveBeenCalledTimes(1);
 
     const throwingInit = jest.fn(() => {
       throw new Error('boom');
     });
-    expect(() => initializeFirebaseApp(throwingInit)).toThrow('boom');
+    expect(() =>
+      initializeFirebaseApp(
+        initPermission,
+        throwingInit,
+        initializeFirebaseAppEffect
+      )
+    ).toThrow('boom');
   });
 
   it('derives project and URL map env values with fallbacks', () => {

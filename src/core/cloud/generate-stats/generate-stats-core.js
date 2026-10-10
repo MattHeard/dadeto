@@ -161,12 +161,18 @@ const DEFAULT_URL_MAP = 'prod-dendrite-url-map';
 const DEFAULT_CDN_HOST = 'www.dendritestories.co.nz';
 
 /**
- * Initialize the Firebase app, ignoring duplicate app errors.
+ * Initialize Firebase through the permission-aware runtime adapter, ignoring duplicate app errors.
+ * @param {import('../../../../types/allow-effects').AllowEffects} permission Startup initialization permission.
  * @param {() => void} initFn Initialization function to invoke.
+ * @param {(permission: import('../../../../types/allow-effects').AllowEffects, initFn: () => void) => unknown} initializeFirebaseAppEffect Runtime initialization adapter.
  */
-export function initializeFirebaseApp(initFn) {
+export function initializeFirebaseApp(
+  permission,
+  initFn,
+  initializeFirebaseAppEffect
+) {
   try {
-    initFn();
+    initializeFirebaseAppEffect(permission, initFn);
   } catch (error) {
     handleInitializeError(error);
   }

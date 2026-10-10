@@ -12,6 +12,14 @@ export async function bindEffectBoundary(handler) {
   return handler(permission);
 }
 
+/** Bind a synchronous startup effect to a freshly minted local permission. */
+export function bindStartupEffectBoundary(handler) {
+  const permission = /** @type {import('../../types/allow-effects').AllowEffects} */ (
+    /** @type {unknown} */ (Object.freeze({ [PERMISSION]: true }))
+  );
+  return handler(permission);
+}
+
 /**
  * Adapt native fetch to the permission-aware transport contract used by core.
  * @param {(input: RequestInfo | URL, init?: RequestInit) => Promise<Response>} fetchFn Native fetch implementation.

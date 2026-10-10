@@ -1,4 +1,3 @@
-import { initializeApp } from 'firebase-admin/app';
 import { getFirestore as getAdminFirestore } from 'firebase-admin/firestore';
 import {
   createGenerateStatsCore,
@@ -28,11 +27,15 @@ export const selectFirestoreDatabase = getFirestoreForDatabase;
 
 /**
  * Build a one-time Firebase initializer for the stats workflow.
- * @param {() => void} [initialInitializeApp] Initialization function to invoke on first use.
+ * @param {() => void} initialInitializeApp Initialization function to invoke on first use.
+ * @param {import('../../../../types/allow-effects').StartupAllowEffectsBoundary} bindStartupEffectBoundary Startup permission boundary.
+ * @param {(permission: AllowEffects, initFn: () => void) => unknown} initializeFirebaseAppEffect Runtime initializer adapter.
  * @returns {(initFn?: () => void) => void} Lazy initializer that only runs once.
  */
 export const createEnsureFirebaseApp = (
-  initialInitializeApp = initializeApp
+  initialInitializeApp,
+  bindStartupEffectBoundary,
+  initializeFirebaseAppEffect
 ) => {
   let firebaseInitialized = false;
 
@@ -41,7 +44,9 @@ export const createEnsureFirebaseApp = (
       return;
     }
 
-    initializeFirebaseApp(initFn);
+    bindStartupEffectBoundary(permission =>
+      initializeFirebaseApp(permission, initFn, initializeFirebaseAppEffect)
+    );
 
     firebaseInitialized = true;
   };
@@ -49,7 +54,9 @@ export const createEnsureFirebaseApp = (
   return ensureFirebaseApp;
 };
 
-export const ensureFirebaseApp = createEnsureFirebaseApp();
+// A bare Firestore lookup never initializes Firebase. The public cloud wrapper
+// supplies an explicit startup initializer when it composes the function.
+export const ensureFirebaseApp = () => {};
 
 /**
  * Resolve the allowlist of Origins for the generate-stats endpoint.
@@ -117,7 +124,9 @@ export const getFirestoreInstance = (options = {}) => {
  *   env?: Record<string, string | undefined>,
  *   cryptoModule: { randomUUID: () => string },
  *   bindEffectBoundary: AllowEffectsBoundary,
+ *   bindStartupEffectBoundary: import('../../../../types/allow-effects').StartupAllowEffectsBoundary,
  *   useMiddleware: (permission: AllowEffects, app: { use: (middleware: unknown) => void }, middleware: unknown) => void,
+ *   initializeFirebaseAppEffect: (permission: AllowEffects, initFn: () => void) => unknown,
  *   registerPostRoute: (permission: AllowEffects, app: { post: (path: string, handler: unknown) => void }, path: string, handler: Function) => void,
  *   sendHttpResponse: (permission: AllowEffects, res: import('../../../../types/native-http').NativeHttpResponse, response: { status: number, body: unknown, method: 'send' | 'json' }) => void,
  *   logError: (permission: AllowEffects, logger: { error: (...args: unknown[]) => void }, ...args: unknown[]) => void,
@@ -147,6 +156,7 @@ export function runGenerateStats(deps) {
     express,
     cors,
     bindEffectBoundary,
+    bindStartupEffectBoundary,
     useMiddleware,
     registerPostRoute,
   } = typedDeps;
@@ -166,14 +176,10 @@ export function runGenerateStats(deps) {
     createApp,
     json: /** @type {any} */ (express).json,
     urlencoded: /** @type {any} */ (express).urlencoded,
+    bindStartupEffectBoundary,
+    useMiddleware,
   };
-  const app = /** @type {any} */ (
-    createJsonExpressApp({
-      createApp: appDeps.createApp,
-      json: appDeps.json,
-      urlencoded: appDeps.urlencoded,
-    })
-  );
+  const app = /** @type {any} */ (createJsonExpressApp(appDeps));
   const corsOptions = createCorsOptions(
     createCorsOriginHandler(isOriginAllowed, allowedOrigins)
   );
@@ -212,7 +218,9 @@ function createRegionOnRequest(functions, app) {
  *   getEnvironmentVariables: () => Record<string, string | undefined>,
  *   initializeApp: () => void,
  *   bindEffectBoundary: AllowEffectsBoundary,
+ *   bindStartupEffectBoundary: import('../../../../types/allow-effects').StartupAllowEffectsBoundary,
  *   useMiddleware: (permission: AllowEffects, app: { use: (middleware: unknown) => void }, middleware: unknown) => void,
+ *   initializeFirebaseAppEffect: (permission: AllowEffects, initFn: () => void) => unknown,
  *   registerPostRoute: (permission: AllowEffects, app: { post: (path: string, handler: unknown) => void }, path: string, handler: Function) => void,
  *   sendHttpResponse: (permission: AllowEffects, res: import('../../../../types/native-http').NativeHttpResponse, response: { status: number, body: unknown, method: 'send' | 'json' }) => void,
  *   logError: (permission: AllowEffects, logger: { error: (...args: unknown[]) => void }, ...args: unknown[]) => void,
@@ -232,8 +240,14 @@ export function createGenerateStatsHandle(deps) {
     getEnvironmentVariables,
     initializeApp,
     crypto,
+    bindStartupEffectBoundary,
+    initializeFirebaseAppEffect,
   } = deps;
-  const ensureFirebaseApp = createEnsureFirebaseApp(initializeApp);
+  const ensureFirebaseApp = createEnsureFirebaseApp(
+    initializeApp,
+    bindStartupEffectBoundary,
+    initializeFirebaseAppEffect
+  );
   const environment = getEnvironmentVariables();
   const db = getFirestoreInstance({
     ensureAppFn: ensureFirebaseApp,

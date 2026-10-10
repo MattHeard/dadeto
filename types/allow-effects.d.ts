@@ -9,3 +9,8 @@ export interface AllowEffects {
 export type AllowEffectsBoundary = <T>(
   handler: (permission: AllowEffects) => Promise<T>
 ) => Promise<T>;
+
+/** Synchronous startup boundary for effects that must finish during composition. */
+export type StartupAllowEffectsBoundary = <T>(
+  handler: (permission: AllowEffects) => T
+) => T;
