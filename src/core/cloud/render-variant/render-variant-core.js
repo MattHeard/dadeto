@@ -2713,20 +2713,30 @@ function resolveRenderVariantVisibilityThreshold(value) {
  * @returns {void}
  */
 function validateDependencies(dependencies) {
-  const {
-    db,
-    storage,
-    fetchFn,
-    bindEffectBoundary,
-    effectFetchFn,
-    randomUUID,
-  } = dependencies;
-  assertDb(db);
-  assertStorage(storage);
-  assertFunction(fetchFn, 'fetchFn');
-  assertFunction(bindEffectBoundary, 'bindEffectBoundary');
-  assertFunction(effectFetchFn, 'effectFetchFn');
-  assertFunction(randomUUID, 'randomUUID');
+  validateRenderOutputDependencies(dependencies);
+  validateRenderInvalidationDependencies(dependencies);
+}
+
+/**
+ * Validate dependencies used to read and write rendered variant output.
+ * @param {RenderVariantDependencies} dependencies Factory dependencies.
+ * @returns {void}
+ */
+function validateRenderOutputDependencies(dependencies) {
+  assertDb(dependencies.db);
+  assertStorage(dependencies.storage);
+}
+
+/**
+ * Validate permission-aware HTTP dependencies used for cache invalidation.
+ * @param {RenderVariantDependencies} dependencies Factory dependencies.
+ * @returns {void}
+ */
+function validateRenderInvalidationDependencies(dependencies) {
+  assertFunction(dependencies.fetchFn, 'fetchFn');
+  assertFunction(dependencies.bindEffectBoundary, 'bindEffectBoundary');
+  assertFunction(dependencies.effectFetchFn, 'effectFetchFn');
+  assertFunction(dependencies.randomUUID, 'randomUUID');
 }
 
 /**

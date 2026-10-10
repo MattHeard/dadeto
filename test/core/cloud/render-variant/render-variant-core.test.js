@@ -1293,6 +1293,33 @@ describe('createRenderVariant', () => {
     ).toThrow(new TypeError('storage must provide a bucket helper'));
   });
 
+  it('validates invalidation capabilities in dependency order', () => {
+    const dependencies = {
+      db: { doc: jest.fn() },
+      storage: { bucket: jest.fn(() => ({ file: jest.fn() })) },
+      fetchFn: jest.fn(),
+      bindEffectBoundary: jest.fn(),
+      effectFetchFn: jest.fn(),
+      randomUUID: jest.fn(),
+    };
+
+    expect(() =>
+      createRenderVariantCore({
+        ...dependencies,
+        bindEffectBoundary: null,
+        effectFetchFn: null,
+      })
+    ).toThrow(new TypeError('bindEffectBoundary must be a function'));
+
+    expect(() =>
+      createRenderVariantCore({
+        ...dependencies,
+        effectFetchFn: null,
+        randomUUID: null,
+      })
+    ).toThrow(new TypeError('effectFetchFn must be a function'));
+  });
+
   it('resolves the configured bucket name when supplied', () => {
     const storage = {
       bucket: jest.fn(() => ({ file: jest.fn() })),
