@@ -1424,37 +1424,28 @@ function cancelAutoSubmitFrame(dom, frameId) {
 }
 
 /**
- * Registers a polling loop that watches an input element for changes.
- * @param {object} options - Polling options.
- * @param {object} options.elements - Interactive component elements.
- * @param {ToyCallback} options.processingFunction - Component processor.
- * @param {object} options.env - Environment helpers.
- * @param {HTMLInputElement} options.inputElement - Live input element.
- * @param {{frameId: number|null, lastValue: string|null}} options.autoSubmitState
- *   Polling state.
- * @returns {void}
+ * Creates a polling registration operation for an interactive component.
+ * @param {object} elements - Interactive component elements.
+ * @param {ToyCallback} processingFunction - Component processor.
+ * @param {object} env - Environment helpers.
+ * @returns {ToyCallback} Registration function accepting polling state.
  */
-function registerAutoSubmitPolling({
-  elements,
-  processingFunction,
-  env,
-  inputElement,
-  autoSubmitState,
-}) {
-  const { dom } = env;
-  if (autoSubmitState.frameId !== null) {
-    return;
-  }
-  const poll = () => {
-    const nextValue = readLiveInputValue(dom, inputElement);
-    autoSubmitState.lastValue = nextValue;
-    setInputValue(inputElement, nextValue);
-    handleInputProcessing(elements, processingFunction, env);
+const createRegisterAutoSubmitPolling =
+  (elements, processingFunction, env) => autoSubmitState => {
+    const { dom } = env;
+    if (autoSubmitState.frameId !== null) {
+      return;
+    }
+    const poll = () => {
+      const nextValue = readLiveInputValue(dom, elements.inputElement);
+      autoSubmitState.lastValue = nextValue;
+      setInputValue(elements.inputElement, nextValue);
+      handleInputProcessing(elements, processingFunction, env);
+      autoSubmitState.frameId = requestAutoSubmitFrame(dom, poll);
+    };
+    autoSubmitState.lastValue = readLiveInputValue(dom, elements.inputElement);
     autoSubmitState.frameId = requestAutoSubmitFrame(dom, poll);
   };
-  autoSubmitState.lastValue = readLiveInputValue(dom, inputElement);
-  autoSubmitState.frameId = requestAutoSubmitFrame(dom, poll);
-}
 
 /**
  * Unregisters the polling loop for auto-submit.
@@ -1616,8 +1607,8 @@ export function initializeInteractiveComponent(
   const handleAutoCheckboxChange = createAutoSubmitCheckboxHandler({
     autoSubmitCheckbox,
     register: () => {
-      registerAutoSubmitPolling({
-        elements: {
+      createRegisterAutoSubmitPolling(
+        {
           inputElement,
           outputElement: initialisingWarning,
           outputParent,
@@ -1626,10 +1617,8 @@ export function initializeInteractiveComponent(
           article,
         },
         processingFunction,
-        env,
-        inputElement,
-        autoSubmitState,
-      });
+        env
+      )(autoSubmitState);
     },
     unregister: () => unregisterAutoSubmitPolling(env.dom, autoSubmitState),
   });
@@ -1920,7 +1909,7 @@ export function createToysHandle() {
     readLiveInputValue,
     requestAutoSubmitFrame,
     cancelAutoSubmitFrame,
-    registerAutoSubmitPolling,
+    createRegisterAutoSubmitPolling,
     unregisterAutoSubmitPolling,
     getInteractiveElements,
     getDeepStateCopy,

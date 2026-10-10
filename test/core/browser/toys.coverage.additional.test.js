@@ -246,27 +246,21 @@ describe('toys additional coverage', () => {
       expect(error.message).toBe('dom.clearTimeout is not a function');
     }
     const state = { frameId: 1, lastValue: 'old' };
-    utils.registerAutoSubmitPolling({
-      elements: {},
-      processingFunction: jest.fn(),
-      env: { dom: {} },
-      inputElement: input,
-      autoSubmitState: state,
-    });
+    utils.createRegisterAutoSubmitPolling({}, jest.fn(), { dom: {} })(state);
     expect(state.frameId).toBe(1);
     utils.unregisterAutoSubmitPolling({ clearTimeout: jest.fn() }, state);
     expect(state).toEqual({ frameId: null, lastValue: null });
     const scheduled = [];
     const pollingState = { frameId: null, lastValue: null };
-    utils.registerAutoSubmitPolling({
-      elements: {
+    utils.createRegisterAutoSubmitPolling(
+      {
         inputElement: input,
         outputParentElement: {},
         outputSelect: { value: 'text' },
         article: { id: 'poll' },
       },
-      processingFunction: jest.fn(() => 'value'),
-      env: {
+      jest.fn(() => 'value'),
+      {
         dom: {
           getValue: () => 'polled',
           requestAnimationFrame: callback => {
@@ -281,10 +275,8 @@ describe('toys additional coverage', () => {
         },
         createEnv: () => ({}),
         errorFn: jest.fn(),
-      },
-      inputElement: input,
-      autoSubmitState: pollingState,
-    });
+      }
+    )(pollingState);
     expect(pollingState).toEqual({ frameId: 9, lastValue: 'polled' });
     scheduled[0]();
   });
