@@ -1253,15 +1253,12 @@ function createInvalidateHandler(url, host, effectOperations, requestOptions) {
       return;
     }
 
-    await executeInvalidation(paths, {
-      url,
-      host,
-      fetchFn: effectOperations.fetchFn,
-      bindEffectBoundary: effectOperations.bindEffectBoundary,
-      effectFetchFn: effectOperations.effectFetchFn,
-      randomUUID: requestOptions.randomUUID,
-      consoleError: requestOptions.consoleError,
-    });
+    await executeInvalidation(
+      paths,
+      effectOperations,
+      { url, host },
+      requestOptions
+    );
   };
 }
 
@@ -1317,38 +1314,65 @@ function buildInvalidateUrl(projectId, urlMapName) {
 /**
  * Execute cache invalidations for the supplied paths.
  * @param {string[]} paths Paths to purge from the CDN cache.
- * @param {{url: string, host: string, fetchFn: (permission: AllowEffects, input: string, init?: object) => Promise<Response>, bindEffectBoundary: import('../../../../types/allow-effects').AllowEffectsBoundary, effectFetchFn: (permission: AllowEffects, url: string, init?: object) => Promise<Response>, randomUUID: () => string, consoleError?: (message: string, ...optionalParams: unknown[]) => void}} options Invalidation dependencies.
+ * @param {InvalidationEffectOperations} effectOperations Permission-aware HTTP operations.
+ * @param {{ url: string, host: string }} target Resolved CDN target.
+ * @param {{ randomUUID: () => string, consoleError?: (message: string, ...optionalParams: unknown[]) => void }} requestOptions Request identity and logging behavior.
  * @returns {Promise<void>} Resolves after every invalidation request completes.
  */
-async function executeInvalidation(paths, options) {
-  const {
-    url,
-    host,
-    fetchFn,
-    bindEffectBoundary,
-    effectFetchFn,
-    randomUUID,
-    consoleError,
-  } = options;
-  const token = await bindEffectBoundary(permission =>
-    getAccessToken(permission, fetchFn)
+async function executeInvalidation(
+  paths,
+  effectOperations,
+  target,
+  requestOptions
+) {
+  const token = await acquireInvalidationAccessToken(effectOperations);
+  const invalidatePath = createBoundPathInvalidator(
+    token,
+    effectOperations,
+    target,
+    requestOptions
   );
 
-  await Promise.all(
-    paths.map(path =>
-      bindEffectBoundary(permission =>
-        invalidatePathItem(permission, {
-          path,
-          token,
-          url,
-          host,
-          effectFetchFn,
-          randomUUID,
-          consoleError,
-        })
-      )
-    )
+  await Promise.all(paths.map(invalidatePath));
+}
+
+/**
+ * Acquire the metadata token at the cloud-owned effect boundary.
+ * @param {InvalidationEffectOperations} effectOperations Permission-aware HTTP operations.
+ * @returns {Promise<string>} OAuth access token.
+ */
+function acquireInvalidationAccessToken(effectOperations) {
+  return effectOperations.bindEffectBoundary(permission =>
+    getAccessToken(permission, effectOperations.fetchFn)
   );
+}
+
+/**
+ * Create a per-path invalidator that mints a fresh permission for each purge.
+ * @param {string} token OAuth access token.
+ * @param {InvalidationEffectOperations} effectOperations Permission-aware HTTP operations.
+ * @param {{ url: string, host: string }} target Resolved CDN target.
+ * @param {{ randomUUID: () => string, consoleError?: (message: string, ...optionalParams: unknown[]) => void }} requestOptions Request identity and logging behavior.
+ * @returns {(path: string) => Promise<void>} Boundary-wrapped invalidation operation.
+ */
+function createBoundPathInvalidator(
+  token,
+  effectOperations,
+  target,
+  requestOptions
+) {
+  return path =>
+    effectOperations.bindEffectBoundary(permission =>
+      invalidatePathItem(permission, {
+        path,
+        token,
+        url: target.url,
+        host: target.host,
+        effectFetchFn: effectOperations.effectFetchFn,
+        randomUUID: requestOptions.randomUUID,
+        consoleError: requestOptions.consoleError,
+      })
+    );
 }
 
 /**
