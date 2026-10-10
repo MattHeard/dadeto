@@ -4,9 +4,7 @@ import { createKeyElement } from '../../src/browser/toys.js';
 describe('createKeyElement', () => {
   let mockDom;
   let keyEl;
-  let textInput;
-  let rows;
-  let syncHiddenField;
+  let onKey;
   let disposers;
 
   beforeEach(() => {
@@ -20,9 +18,7 @@ describe('createKeyElement', () => {
       addEventListener: jest.fn(),
       removeEventListener: jest.fn(),
     };
-    textInput = {};
-    rows = {};
-    syncHiddenField = jest.fn();
+    onKey = jest.fn();
     disposers = [];
   });
 
@@ -32,9 +28,7 @@ describe('createKeyElement', () => {
     keyEl = createKeyElement({
       dom: mockDom,
       key,
-      textInput,
-      rows,
-      syncHiddenField,
+      onKey,
       disposers,
     });
 
@@ -50,7 +44,7 @@ describe('createKeyElement', () => {
     expect(mockDom.addEventListener).toHaveBeenCalledWith(
       keyEl,
       'input',
-      expect.any(Function)
+      onKey
     );
     expect(disposers).toHaveLength(1);
     const disposer = disposers[0];
@@ -71,9 +65,7 @@ describe('createKeyElement', () => {
     keyEl = createKeyElement({
       dom: mockDom,
       key,
-      textInput,
-      rows,
-      syncHiddenField,
+      onKey,
       disposers,
     });
 
@@ -95,9 +87,7 @@ describe('createKeyElement', () => {
     keyEl = createKeyElement({
       dom: mockDom,
       key,
-      textInput,
-      rows,
-      syncHiddenField,
+      onKey,
       disposers,
     });
 
@@ -110,25 +100,13 @@ describe('createKeyElement', () => {
     expect(mockDom.removeEventListener).toHaveBeenCalledTimes(2);
   });
 
-  it('passes row data into the key input handler', () => {
-    const rowData = { rows: { old: 'value' }, rowTypes: { old: 'string' } };
+  it('registers the provided key input handler', () => {
     const key = createKeyElement({
       dom: mockDom,
       key: 'old',
-      textInput: {},
-      rowData,
-      syncHiddenField,
+      onKey,
       disposers,
     });
-    const handler = mockDom.addEventListener.mock.calls[0][2];
-    mockDom.getDataAttribute = jest.fn(() => 'old');
-    mockDom.getTargetValue = jest.fn(() => 'new');
-    handler({ target: {}, currentTarget: key });
-    expect(rowData.rows).toEqual({ new: 'value' });
-    expect(mockDom.setDataAttribute).toHaveBeenLastCalledWith(
-      key,
-      'prevKey',
-      'new'
-    );
+    expect(mockDom.addEventListener).toHaveBeenCalledWith(key, 'input', onKey);
   });
 });
