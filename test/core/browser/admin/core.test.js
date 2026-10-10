@@ -498,6 +498,18 @@ describe('createRegenerateVariant', () => {
       })
     ).toThrow(new TypeError('googleAuth must provide a getIdToken function'));
   });
+
+  it('checks auth before form and request dependencies', () => {
+    expect(() =>
+      createRegenerateVariant({
+        googleAuth: {},
+        doc: null,
+        showMessage: null,
+        getAdminEndpointsFn: null,
+        fetchFn: null,
+      })
+    ).toThrow(new TypeError('googleAuth must provide a getIdToken function'));
+  });
 });
 
 describe('bindTriggerRenderClick', () => {

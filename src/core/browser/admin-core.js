@@ -1725,17 +1725,48 @@ function ensureGoogleAuth(googleAuth) {
  * }} deps - Dependencies required for regenerating a variant.
  * @returns {void}
  */
-function validateRegenerateVariantDeps({
-  googleAuth,
-  doc,
-  showMessage,
-  getAdminEndpointsFn,
-  fetchFn,
-  bindEffectBoundary,
-}) {
+function validateRegenerateVariantDeps(deps) {
+  validateRegenerateVariantAuth(deps.googleAuth);
+  validateRegenerateVariantForm(deps.doc, deps.showMessage);
+  validateRegenerateVariantRequest(
+    deps.getAdminEndpointsFn,
+    deps.fetchFn,
+    deps.bindEffectBoundary
+  );
+}
+
+/**
+ * Validate the authentication dependency used by variant regeneration.
+ * @param {{ getIdToken: () => Promise<string> | string | null | undefined }} googleAuth - Auth helper for ID token lookup.
+ * @returns {void}
+ */
+function validateRegenerateVariantAuth(googleAuth) {
   ensureGoogleAuth(googleAuth);
+}
+
+/**
+ * Validate the form document and its user-feedback callback.
+ * @param {Document} doc - Document that provides the regeneration input.
+ * @param {(text: string) => void} showMessage - User-feedback callback.
+ * @returns {void}
+ */
+function validateRegenerateVariantForm(doc, showMessage) {
   requireDocumentLike(doc);
   requireFunction(showMessage, 'showMessage');
+}
+
+/**
+ * Validate the endpoint, network, and effect-boundary dependencies.
+ * @param {() => Promise<{ markVariantDirtyUrl: string }>} getAdminEndpointsFn - Endpoint resolver.
+ * @param {FetchFn} fetchFn - Network adapter.
+ * @param {(handler: (permission: AllowEffects) => Promise<void>) => Promise<void>} bindEffectBoundary - Effect boundary adapter.
+ * @returns {void}
+ */
+function validateRegenerateVariantRequest(
+  getAdminEndpointsFn,
+  fetchFn,
+  bindEffectBoundary
+) {
   requireFunction(getAdminEndpointsFn, 'getAdminEndpointsFn');
   requireFunction(fetchFn, 'fetchFn');
   requireFunction(bindEffectBoundary, 'bindEffectBoundary');
