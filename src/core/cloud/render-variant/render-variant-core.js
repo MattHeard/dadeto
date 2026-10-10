@@ -283,7 +283,7 @@ function resolveStoredVisibilitySum(data) {
  * @typedef {object} StoryMetadata
  * @property {DocumentReferenceData | undefined} [rootPage] Optional reference to the story's root page.
  * @typedef {StoryMetadata & { rootPage: DocumentReferenceData }} StoryDataWithRoot
- * @typedef {{ variant: { authorId?: string; author?: string; authorName?: string }; db: FirestoreLike; bucket?: StorageBucketLike; consoleError?: ConsoleError }} AuthorLookupDeps
+ * @typedef {{ variant: { authorId?: string; author?: string; authorName?: string }; db: FirestoreLike; bindEffectBoundary: import('../../../../types/allow-effects').AllowEffectsBoundary; updateFirestoreDocument: (permission: AllowEffects, reference: UpdatableDocumentReference, data: Record<string, unknown>) => Promise<unknown>; consoleError?: ConsoleError }} AuthorLookupDeps
  * @typedef {{ variant: { incomingOption?: string }; db: FirestoreLike; consoleError?: ConsoleError }} ParentResolutionDeps
  * @typedef {{
  *   snap: VariantSnapshot;
@@ -2201,11 +2201,19 @@ function deriveAuthorName(variant) {
  * @param {AuthorLookupDeps} options Inputs for author lookup.
  * @returns {Promise<{ authorName: string; authorUrl?: string }>} Author metadata for templates.
  */
-async function resolveAuthorMetadata({ variant, db, consoleError }) {
+async function resolveAuthorMetadata({
+  variant,
+  db,
+  bindEffectBoundary,
+  updateFirestoreDocument,
+  consoleError,
+}) {
   const authorName = deriveAuthorName(variant);
   const authorUrl = await resolveAuthorUrl({
     variant,
     db,
+    bindEffectBoundary,
+    updateFirestoreDocument,
     consoleError,
   });
   return { authorName, authorUrl };
@@ -2216,12 +2224,24 @@ async function resolveAuthorMetadata({ variant, db, consoleError }) {
  * @param {AuthorLookupDeps} options Inputs for creating or reusing an author page.
  * @returns {Promise<string | undefined>} URL of the author page, if one exists.
  */
-async function resolveAuthorUrl({ variant, db, consoleError }) {
+async function resolveAuthorUrl({
+  variant,
+  db,
+  bindEffectBoundary,
+  updateFirestoreDocument,
+  consoleError,
+}) {
   if (!variant.authorId) {
     return undefined;
   }
 
-  return lookupAuthorUrl({ variant, db, consoleError });
+  return lookupAuthorUrl({
+    variant,
+    db,
+    bindEffectBoundary,
+    updateFirestoreDocument,
+    consoleError,
+  });
 }
 
 /**
@@ -2229,9 +2249,20 @@ async function resolveAuthorUrl({ variant, db, consoleError }) {
  * @param {AuthorLookupDeps} options Dependencies for author lookup.
  * @returns {Promise<string | undefined>} Author URL when the lookup succeeds.
  */
-async function lookupAuthorUrl({ variant, db, consoleError }) {
+async function lookupAuthorUrl({
+  variant,
+  db,
+  bindEffectBoundary,
+  updateFirestoreDocument,
+  consoleError,
+}) {
   try {
-    return await markAuthorDirty({ variant, db });
+    return await markAuthorDirty({
+      variant,
+      db,
+      bindEffectBoundary,
+      updateFirestoreDocument,
+    });
   } catch (error) {
     handleAuthorLookupError(error, consoleError);
     return undefined;
@@ -2265,12 +2296,22 @@ function logAuthorLookupError(error, consoleError) {
  * @param {AuthorLookupDeps} root0 Dependencies.
  * @returns {Promise<string|undefined>} Author URL.
  */
-async function markAuthorDirty({ variant, db }) {
+async function markAuthorDirty({
+  variant,
+  db,
+  bindEffectBoundary,
+  updateFirestoreDocument,
+}) {
   const authorRef = resolveAuthorRef(db, variant.authorId);
   const authorSnap = await authorRef.get();
   const uuid = authorSnap.data()?.uuid;
   if (typeof uuid !== 'string') return undefined;
-  await authorRef.update({ name: deriveAuthorName(variant), dirty: true });
+  await bindEffectBoundary(allowEffects =>
+    updateFirestoreDocument(allowEffects, authorRef, {
+      name: deriveAuthorName(variant),
+      dirty: true,
+    })
+  );
   return `/a/${uuid}.html`;
 }
 
@@ -2586,6 +2627,7 @@ function resolveParentLookupPromise({ incomingOption, db, consoleError }) {
  * @property {FirestoreLike} db - Firestore-like database used to load related documents.
  * @property {StorageLike} storage - Cloud storage helper capable of writing files.
  * @property {(allowEffects: AllowEffects, file: StorageFileLike, contents: string, options: object) => Promise<unknown>} saveStorageFile Permission-aware Storage write adapter.
+ * @property {(permission: AllowEffects, reference: UpdatableDocumentReference, data: Record<string, unknown>) => Promise<unknown>} updateFirestoreDocument Permission-aware Firestore update adapter.
  * @property {(permission: AllowEffects, url: string, init?: object) => Promise<Response>} fetchFn - Permission-aware fetch implementation.
  * @property {import('../../../../types/allow-effects').AllowEffectsBoundary} bindEffectBoundary Cloud-owned permission boundary.
  * @property {(permission: AllowEffects, url: string, init?: object) => Promise<Response>} effectFetchFn Fetch adapter for cache purge requests.
@@ -2601,7 +2643,7 @@ function resolveParentLookupPromise({ incomingOption, db, consoleError }) {
 
 /**
  * @typedef {object} RenderVariantCapabilities
- * @property {{ db: FirestoreLike, storage: StorageLike, saveStorageFile: (allowEffects: AllowEffects, file: StorageFileLike, contents: string, options: object) => Promise<unknown>, consoleError: ConsoleError, bucketName: string, objectPrefix: string, visibilityThreshold: number }} rendering Render output dependencies.
+ * @property {{ db: FirestoreLike, storage: StorageLike, saveStorageFile: (allowEffects: AllowEffects, file: StorageFileLike, contents: string, options: object) => Promise<unknown>, bindEffectBoundary: import('../../../../types/allow-effects').AllowEffectsBoundary, updateFirestoreDocument: (permission: AllowEffects, reference: UpdatableDocumentReference, data: Record<string, unknown>) => Promise<unknown>, consoleError: ConsoleError, bucketName: string, objectPrefix: string, visibilityThreshold: number }} rendering Render output dependencies.
  * @property {{ effectOperations: InvalidationEffectOperations, target: InvalidationTargetOptions, randomUUID: () => string, consoleError: ConsoleError }} invalidation CDN invalidation dependencies.
  */
 
@@ -2637,6 +2679,8 @@ function buildRenderOutputCapabilities(dependencies) {
     db: dependencies.db,
     storage: dependencies.storage,
     saveStorageFile: dependencies.saveStorageFile,
+    bindEffectBoundary: dependencies.bindEffectBoundary,
+    updateFirestoreDocument: dependencies.updateFirestoreDocument,
     consoleError: resolveRenderVariantConsoleError(dependencies.consoleError),
     bucketName: resolveRenderVariantBucketName(dependencies.bucketName),
     objectPrefix: normalizeStaticObjectPrefix(dependencies.objectPrefix),
@@ -2717,6 +2761,10 @@ function validateRenderOutputDependencies(dependencies) {
   assertDb(dependencies.db);
   assertStorage(dependencies.storage);
   assertFunction(dependencies.saveStorageFile, 'saveStorageFile');
+  assertFunction(
+    dependencies.updateFirestoreDocument,
+    'updateFirestoreDocument'
+  );
 }
 
 /**
@@ -2763,6 +2811,8 @@ function createRenderVariantHandler(capabilities) {
       consoleError: rendering.consoleError,
       visibilityThreshold: rendering.visibilityThreshold,
       rewriteTargetPageNumbers: context?.rewriteTargetPageNumbers,
+      bindEffectBoundary: rendering.bindEffectBoundary,
+      updateFirestoreDocument: rendering.updateFirestoreDocument,
     });
 
     if (!renderPlan) {
@@ -3039,6 +3089,8 @@ function isPageSnapValid(pageSnap) {
  * @property {StorageBucketLike} bucket Storage bucket handle used by author metadata lookups.
  * @property {ConsoleError} [consoleError] Optional logger for reporting issues.
  * @property {number} [visibilityThreshold] Threshold that determines visible options.
+ * @property {import('../../../../types/allow-effects').AllowEffectsBoundary} bindEffectBoundary External permission boundary for author updates.
+ * @property {(permission: AllowEffects, reference: UpdatableDocumentReference, data: Record<string, unknown>) => Promise<unknown>} updateFirestoreDocument Permission-aware Firestore update adapter.
  */
 
 /**
@@ -3065,7 +3117,8 @@ async function gatherMetadata(subject, lookups) {
   const { authorName, authorUrl } = await resolveAuthorMetadata({
     variant: subject.variant,
     db: lookups.db,
-    bucket: lookups.bucket,
+    bindEffectBoundary: lookups.bindEffectBoundary,
+    updateFirestoreDocument: lookups.updateFirestoreDocument,
     consoleError: lookups.consoleError,
   });
   const parentUrl = await resolveParentUrl({
@@ -3250,6 +3303,8 @@ async function buildRenderPlanIfPageValid(options) {
       bucket: options.bucket,
       consoleError: options.consoleError,
       visibilityThreshold: options.visibilityThreshold,
+      bindEffectBoundary: options.bindEffectBoundary,
+      updateFirestoreDocument: options.updateFirestoreDocument,
     }
   );
 }

@@ -2,7 +2,7 @@ import { describe, expect, it, jest } from '@jest/globals';
 import { createAllowEffects } from '../../../src/cloud/allow-effects.js';
 import {
   saveStorageFile,
-  updateVariantDocument,
+  updateFirestoreDocument,
 } from '../../../src/cloud/render-variant/effect-adapters.js';
 
 describe('render-variant effect adapters', () => {
@@ -12,7 +12,7 @@ describe('render-variant effect adapters', () => {
     const update = jest.fn().mockResolvedValue(undefined);
     const reference = { update };
 
-    await updateVariantDocument(allowEffects, reference, payload);
+    await updateFirestoreDocument(allowEffects, reference, payload);
 
     expect(update).toHaveBeenCalledTimes(1);
     expect(update).toHaveBeenCalledWith(payload);

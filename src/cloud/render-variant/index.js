@@ -15,7 +15,7 @@ import { runRenderVariant } from '../../core/cloud/render-variant/run.js';
 import { createTreeVisibilityRegenerationHandles } from '../../core/cloud/tree-visibility/run.js';
 import {
   saveStorageFile,
-  updateVariantDocument,
+  updateFirestoreDocument,
 } from './effect-adapters.js';
 
 const { renderVariant: handle, render } = runRenderVariant({
@@ -24,7 +24,7 @@ const { renderVariant: handle, render } = runRenderVariant({
   getFirestoreInstance,
   getEnvironmentVariables,
   bindEffectBoundary,
-  updateVariantDocument,
+  updateFirestoreDocument,
   saveStorageFile,
   effectFetchFn,
   functions,

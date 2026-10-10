@@ -28,6 +28,20 @@ import {
 
 const ACCESS_TOKEN_KEY = 'access_token';
 
+const resolveAuthorMetadataWithEffects = dependencies =>
+  resolveAuthorMetadata({
+    bindEffectBoundary:
+      dependencies.bindEffectBoundary ??
+      (handler => handler(createAllowEffects())),
+    updateFirestoreDocument:
+      dependencies.updateFirestoreDocument ??
+      ((permission, reference, data) => {
+        void permission;
+        return reference.update(data);
+      }),
+    ...dependencies,
+  });
+
 const createRenderVariant = dependencies =>
   createRenderVariantCore({
     ...dependencies,
@@ -43,6 +57,12 @@ const createRenderVariant = dependencies =>
       ((permission, file, contents, options) => {
         void permission;
         return file.save(contents, options);
+      }),
+    updateFirestoreDocument:
+      dependencies.updateFirestoreDocument ??
+      ((permission, reference, data) => {
+        void permission;
+        return reference.update(data);
       }),
     effectFetchFn: (permission, url, init) => dependencies.fetchFn(url, init),
   });
@@ -1061,17 +1081,62 @@ describe('resolveAuthorMetadata', () => {
       })),
     };
 
-    const result = await resolveAuthorMetadata({
+    const updateFirestoreDocument = jest.fn((permission, reference, data) =>
+      reference.update(data)
+    );
+    const result = await resolveAuthorMetadataWithEffects({
       variant: { authorId: 'author-1', authorName: 'Writer' },
       db,
+      updateFirestoreDocument,
       consoleError: jest.fn(),
     });
 
     expect(authorUpdate).toHaveBeenCalledWith({ name: 'Writer', dirty: true });
+    const [permission, reference, payload] =
+      updateFirestoreDocument.mock.calls[0];
+    expect(Object.isFrozen(permission)).toBe(true);
+    expect(reference.update).toBe(authorUpdate);
+    expect(payload).toEqual({ name: 'Writer', dirty: true });
     expect(result).toEqual({
       authorName: 'Writer',
       authorUrl: '/a/writer-1.html',
     });
+  });
+
+  it('mints a fresh capability for each author dirty write', async () => {
+    const update = jest.fn().mockResolvedValue(undefined);
+    const reference = {
+      get: jest.fn().mockResolvedValue({ data: () => ({ uuid: 'writer-3' }) }),
+      update,
+    };
+    const db = { doc: jest.fn(() => reference) };
+    const permissions = [];
+    const bindEffectBoundary = jest.fn(handler => {
+      const permission = createAllowEffects();
+      permissions.push(permission);
+      return handler(permission);
+    });
+    const updateFirestoreDocument = jest.fn((permission, ref, data) =>
+      ref.update(data)
+    );
+    const dependencies = {
+      variant: { authorId: 'author-3', authorName: 'Third' },
+      db,
+      bindEffectBoundary,
+      updateFirestoreDocument,
+    };
+
+    await resolveAuthorMetadata(dependencies);
+    await resolveAuthorMetadata(dependencies);
+
+    expect(bindEffectBoundary).toHaveBeenCalledTimes(2);
+    expect(updateFirestoreDocument).toHaveBeenCalledTimes(2);
+    expect(Object.isFrozen(permissions[0])).toBe(true);
+    expect(Object.isFrozen(permissions[1])).toBe(true);
+    expect(permissions[0]).not.toBe(permissions[1]);
+    expect(
+      updateFirestoreDocument.mock.calls.map(([permission]) => permission)
+    ).toEqual(permissions);
   });
 
   it('reuses the existing author file when present', async () => {
@@ -1088,7 +1153,7 @@ describe('resolveAuthorMetadata', () => {
       })),
     };
 
-    const result = await resolveAuthorMetadata({
+    const result = await resolveAuthorMetadataWithEffects({
       variant: { authorId: 'author-2', authorName: 'Second' },
       db,
       consoleError: jest.fn(),
@@ -1101,6 +1166,33 @@ describe('resolveAuthorMetadata', () => {
     });
   });
 
+  it('recovers when marking the author dirty fails', async () => {
+    const consoleError = jest.fn();
+    const updateFirestoreDocument = jest
+      .fn()
+      .mockRejectedValue(new Error('write offline'));
+    const db = {
+      doc: jest.fn(() => ({
+        get: jest
+          .fn()
+          .mockResolvedValue({ data: () => ({ uuid: 'writer-4' }) }),
+      })),
+    };
+
+    const result = await resolveAuthorMetadataWithEffects({
+      variant: { authorId: 'author-4', authorName: 'Fourth' },
+      db,
+      updateFirestoreDocument,
+      consoleError,
+    });
+
+    expect(result).toEqual({ authorName: 'Fourth', authorUrl: undefined });
+    expect(consoleError).toHaveBeenCalledWith(
+      'author lookup failed',
+      'write offline'
+    );
+  });
+
   it('logs and recovers when author lookups fail', async () => {
     const consoleError = jest.fn();
     const db = {
@@ -1109,7 +1201,7 @@ describe('resolveAuthorMetadata', () => {
       })),
     };
 
-    const result = await resolveAuthorMetadata({
+    const result = await resolveAuthorMetadataWithEffects({
       variant: { authorId: 'author-1', authorName: 'Writer' },
       db,
       bucket: { file: jest.fn() },
@@ -1132,7 +1224,7 @@ describe('resolveAuthorMetadata', () => {
       })),
     };
 
-    const result = await resolveAuthorMetadata({
+    const result = await resolveAuthorMetadataWithEffects({
       variant: { authorId: 'author-1', authorName: 'Writer' },
       db,
       bucket: { file: jest.fn() },
@@ -1150,7 +1242,7 @@ describe('resolveAuthorMetadata', () => {
       })),
     };
 
-    const result = await resolveAuthorMetadata({
+    const result = await resolveAuthorMetadataWithEffects({
       variant: { authorId: 'author-1', authorName: 'Writer' },
       db,
       bucket: { file: jest.fn() },
@@ -1306,11 +1398,19 @@ describe('createRenderVariant', () => {
       db: { doc: jest.fn() },
       storage: { bucket: jest.fn(() => ({ file: jest.fn() })) },
       saveStorageFile: jest.fn(),
+      updateFirestoreDocument: jest.fn(),
       fetchFn: jest.fn(),
       bindEffectBoundary: jest.fn(),
       effectFetchFn: jest.fn(),
       randomUUID: jest.fn(),
     };
+
+    expect(() =>
+      createRenderVariantCore({
+        ...dependencies,
+        updateFirestoreDocument: null,
+      })
+    ).toThrow(new TypeError('updateFirestoreDocument must be a function'));
 
     expect(() =>
       createRenderVariantCore({

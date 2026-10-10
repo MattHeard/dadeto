@@ -29,7 +29,7 @@ import {
  *   Storage: typeof import('../../../cloud/render-variant/render-variant-gcf.js').Storage,
  *   fetchFn: typeof import('../../../cloud/render-variant/render-variant-gcf.js').fetchFn,
  *   bindEffectBoundary: typeof import('../../../cloud/render-variant/render-variant-gcf.js').bindEffectBoundary,
- *   updateVariantDocument: typeof import('../../../cloud/render-variant/effect-adapters.js').updateVariantDocument,
+ *   updateFirestoreDocument: typeof import('../../../cloud/render-variant/effect-adapters.js').updateFirestoreDocument,
  *   saveStorageFile: typeof import('../../../cloud/render-variant/effect-adapters.js').saveStorageFile,
  *   effectFetchFn: typeof import('../../../cloud/render-variant/render-variant-gcf.js').effectFetchFn,
  *   crypto: typeof import('../../../cloud/render-variant/render-variant-gcf.js').crypto,
@@ -49,7 +49,7 @@ export function runRenderVariant(deps) {
     Storage,
     fetchFn,
     bindEffectBoundary,
-    updateVariantDocument,
+    updateFirestoreDocument,
     saveStorageFile,
     effectFetchFn,
     crypto,
@@ -64,7 +64,7 @@ export function runRenderVariant(deps) {
     renderVariant: snap => Promise.resolve(resolveRenderVariant()(snap)),
     getDeleteSentinel: () => FieldValue.delete(),
     db,
-    updateDocument: updateVariantDocument,
+    updateDocument: updateFirestoreDocument,
   });
 
   const renderVariant = createFirestoreDocumentOnWriteTrigger(
@@ -108,6 +108,7 @@ export function runRenderVariant(deps) {
             createRenderVariant({
               ...dependencies,
               bindEffectBoundary,
+              updateFirestoreDocument,
               saveStorageFile,
               effectFetchFn,
             }),

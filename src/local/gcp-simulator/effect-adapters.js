@@ -15,6 +15,18 @@ export function saveStorageFile(allowEffects, file, contents, options) {
   ).save(contents, options);
 }
 
+/**
+ * Update a simulator Firestore document through the local effects boundary.
+ * @param {AllowEffects} allowEffects Request capability.
+ * @param {{ update: (data: Record<string, unknown>) => Promise<unknown> }} reference Firestore document reference.
+ * @param {Record<string, unknown>} data Update payload.
+ * @returns {Promise<unknown>} Firestore update result.
+ */
+export function updateFirestoreDocument(allowEffects, reference, data) {
+  void allowEffects;
+  return reference.update(data);
+}
+
 /** Register simulator middleware at its local runtime boundary. */
 export function useMiddleware(permission, app, middleware) {
   void permission;

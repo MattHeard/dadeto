@@ -67,8 +67,8 @@ const { runRenderVariant } = await import(
 const executeRunRenderVariant = dependencies =>
   runRenderVariant({
     ...dependencies,
-    updateVariantDocument:
-      dependencies.updateVariantDocument ?? jest.fn(async () => undefined),
+    updateFirestoreDocument:
+      dependencies.updateFirestoreDocument ?? jest.fn(async () => undefined),
     saveStorageFile:
       dependencies.saveStorageFile ?? jest.fn(async () => undefined),
   });
@@ -96,7 +96,7 @@ describe('runRenderVariant', () => {
     const functions = { region };
     const consoleError = jest.fn();
     const triggerPermission = Object.freeze({});
-    const updateVariantDocument = jest.fn(async () => undefined);
+    const updateFirestoreDocument = jest.fn(async () => undefined);
 
     let capturedWriteOptions;
     let capturedBuilderOptions;
@@ -120,7 +120,7 @@ describe('runRenderVariant', () => {
       Storage,
       fetchFn: importedFetchFn,
       bindEffectBoundary: handler => handler(triggerPermission),
-      updateVariantDocument,
+      updateFirestoreDocument,
       effectFetchFn: jest.fn(),
       crypto,
       console: { error: consoleError },
@@ -137,13 +137,14 @@ describe('runRenderVariant', () => {
     expect(capturedWriteOptions.getDeleteSentinel()).toBe('delete-sentinel');
     await registeredTriggerHandler('change');
     expect(writeHandler).toHaveBeenCalledWith(triggerPermission, 'change');
-    expect(capturedWriteOptions.updateDocument).toBe(updateVariantDocument);
+    expect(capturedWriteOptions.updateDocument).toBe(updateFirestoreDocument);
     const rendererDependencies = { fetchFn: importedFetchFn };
     capturedBuilderOptions.createRenderer(rendererDependencies);
     expect(mockCreateRenderVariant).toHaveBeenCalledWith(
       expect.objectContaining({
         ...rendererDependencies,
         bindEffectBoundary: expect.any(Function),
+        updateFirestoreDocument: expect.any(Function),
         saveStorageFile: expect.any(Function),
         effectFetchFn: expect.any(Function),
       })
