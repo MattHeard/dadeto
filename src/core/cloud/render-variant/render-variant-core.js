@@ -2610,6 +2610,12 @@ function resolveParentLookupPromise({ incomingOption, db, consoleError }) {
  */
 
 /**
+ * @typedef {object} RenderVariantCapabilities
+ * @property {{ db: FirestoreLike, storage: StorageLike, consoleError: ConsoleError, bucketName: string, objectPrefix: string, visibilityThreshold: number }} rendering Render output dependencies.
+ * @property {{ effectOperations: InvalidationEffectOperations, target: InvalidationTargetOptions, randomUUID: () => string, consoleError: ConsoleError }} invalidation CDN invalidation dependencies.
+ */
+
+/**
  * Create a renderer that materializes variant HTML and supporting metadata.
  * @param {RenderVariantDependencies} dependencies - External services and configuration values.
  * @returns {(snap: VariantSnapshot, context?: RenderContext) => Promise<null>} Async renderer for variant snapshots.
@@ -2622,37 +2628,55 @@ export function createRenderVariant(dependencies) {
 /**
  * Build the options object consumed by the renderer factory.
  * @param {RenderVariantDependencies} dependencies Renderer dependencies.
- * @returns {RenderVariantDependencies} Normalized options for the renderer.
+ * @returns {RenderVariantCapabilities} Normalized render and invalidation capabilities.
  */
 function buildRenderVariantOptions(dependencies) {
-  const {
-    db,
-    storage,
-    fetchFn,
-    bindEffectBoundary,
-    effectFetchFn,
-    randomUUID,
-    projectId,
-    urlMapName,
-    cdnHost,
-  } = dependencies;
-
   return {
-    db,
-    storage,
-    fetchFn,
-    bindEffectBoundary,
-    effectFetchFn,
-    randomUUID,
-    projectId,
-    urlMapName,
-    cdnHost,
+    rendering: buildRenderOutputCapabilities(dependencies),
+    invalidation: buildRenderInvalidationCapabilities(dependencies),
+  };
+}
+
+/**
+ * Normalize dependencies used to write rendered variant output.
+ * @param {RenderVariantDependencies} dependencies Factory dependencies.
+ * @returns {RenderVariantCapabilities['rendering']} Render output capabilities.
+ */
+function buildRenderOutputCapabilities(dependencies) {
+  return {
+    db: dependencies.db,
+    storage: dependencies.storage,
     consoleError: resolveRenderVariantConsoleError(dependencies.consoleError),
     bucketName: resolveRenderVariantBucketName(dependencies.bucketName),
     objectPrefix: normalizeStaticObjectPrefix(dependencies.objectPrefix),
     visibilityThreshold: resolveRenderVariantVisibilityThreshold(
       dependencies.visibilityThreshold
     ),
+  };
+}
+
+/**
+ * Group dependencies that authorize or perform CDN invalidation requests.
+ * @param {RenderVariantDependencies} dependencies Factory dependencies.
+ * @returns {RenderVariantCapabilities['invalidation']} Invalidation capabilities.
+ */
+function buildRenderInvalidationCapabilities(dependencies) {
+  const consoleError = resolveRenderVariantConsoleError(
+    dependencies.consoleError
+  );
+  return {
+    effectOperations: {
+      fetchFn: dependencies.fetchFn,
+      bindEffectBoundary: dependencies.bindEffectBoundary,
+      effectFetchFn: dependencies.effectFetchFn,
+    },
+    target: {
+      projectId: dependencies.projectId,
+      urlMapName: dependencies.urlMapName,
+      cdnHost: dependencies.cdnHost,
+    },
+    randomUUID: dependencies.randomUUID,
+    consoleError,
   };
 }
 
@@ -2717,37 +2741,21 @@ function validateDependencies(dependencies) {
 
 /**
  * Create render variant handler.
- * @param {RenderVariantDependencies} options Dependencies.
+ * @param {RenderVariantCapabilities} capabilities Normalized render and invalidation capabilities.
  * @returns {(snap: VariantSnapshot, context?: RenderContext) => Promise<null>} Render function.
  */
-function createRenderVariantHandler({
-  db,
-  storage,
-  fetchFn,
-  bindEffectBoundary,
-  effectFetchFn,
-  randomUUID,
-  projectId,
-  urlMapName,
-  cdnHost,
-  consoleError,
-  bucketName,
-  objectPrefix,
-  visibilityThreshold,
-}) {
+function createRenderVariantHandler(capabilities) {
+  const rendering = capabilities.rendering;
+  const invalidation = capabilities.invalidation;
   const bucket = createPrefixedBucket(
-    storage.bucket(bucketName || DEFAULT_BUCKET_NAME),
-    /** @type {string} */ (objectPrefix)
+    rendering.storage.bucket(rendering.bucketName || DEFAULT_BUCKET_NAME),
+    /** @type {string} */ (rendering.objectPrefix)
   );
   const invalidatePaths = createInvalidatePaths(
-    { fetchFn, bindEffectBoundary, effectFetchFn },
-    {
-      projectId: /** @type {string} */ (projectId),
-      urlMapName: /** @type {string} */ (urlMapName),
-      cdnHost,
-    },
-    randomUUID,
-    consoleError
+    invalidation.effectOperations,
+    invalidation.target,
+    invalidation.randomUUID,
+    invalidation.consoleError
   );
   /**
    * Execute render workflow.
@@ -2789,7 +2797,13 @@ function createRenderVariantHandler({
     /** @type {RenderContext | undefined} */ context = {}
   ) {
     return executeRenderWorkflow(
-      { db, bucket, consoleError, visibilityThreshold, invalidatePaths },
+      {
+        db: rendering.db,
+        bucket,
+        consoleError: rendering.consoleError,
+        visibilityThreshold: rendering.visibilityThreshold,
+        invalidatePaths,
+      },
       snap,
       context
     );
