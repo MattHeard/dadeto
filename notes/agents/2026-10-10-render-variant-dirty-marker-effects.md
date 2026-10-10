@@ -1,0 +1,7 @@
+# Render-variant dirty-marker effect boundary
+
+- **Unexpected hurdle:** The first full check exposed 99.992% branch coverage after the new writable-reference guard added a no-op branch.
+- **Diagnosis:** Existing tests covered writable references with and without paths, but did not cover a dirty snapshot whose reference exposes no `update` method.
+- **Chosen fix:** Thread the request `AllowEffects` token through `processExistingVariant` and `handleDirtyVariant`; send both path-resolved and fallback dirty-marker writes through the injected `updateDocument` adapter. Tighten the writable-reference predicate to check `.update()` (it previously checked `.get()` twice) and add regression cases for both write routes and the missing-update no-op.
+- **Evidence:** Focused render-variant tests passed (2 suites, 112 tests); scoped ESLint and `npm run tsdoc:check` passed; `npm run build:cloud` passed (`.tmp/build-cloud-render-variant-dirty-write.log`); elevated `npm run check` passed its test group and all 10 aggregate gates (`.tmp/npm-check-render-variant-dirty-write.log`), with 0 clones and 0 audit vulnerabilities.
+- **Next guidance:** Continue auditing `render-variant` command paths. `persistRenderPlan` still directly invokes Storage saves, reverse-link `.set`, dirty-flag `.update`, and other rendering writes; isolate one command path per loop and avoid capturing request permissions in the long-lived render closure.

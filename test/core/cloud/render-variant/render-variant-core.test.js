@@ -51,8 +51,8 @@ const createHandleVariantWrite = dependencies => {
     ...coreDependencies,
     updateDocument,
   });
-  return (change, context) =>
-    handle(createAllowEffects(), change, context, visibilityThreshold);
+  return (change, context, permission = createAllowEffects()) =>
+    handle(permission, change, context, visibilityThreshold);
 };
 
 describe('createInvalidatePaths', () => {
@@ -2841,6 +2841,7 @@ describe('createHandleVariantWrite', () => {
         exists: true,
         data: () => ({ visibility: 0.8, treeVisibilitySum: 1 }),
       }),
+      update: jest.fn().mockResolvedValue(undefined),
     };
     const updateDocument = jest.fn().mockResolvedValue(undefined);
     const handler = createHandleVariantWriteCore({
@@ -2899,19 +2900,25 @@ describe('createHandleVariantWrite', () => {
   });
 
   it('renders dirty variants and clears the flag', async () => {
+    const allowEffects = createAllowEffects();
     const renderVariant = jest.fn().mockResolvedValue(null);
     const getDeleteSentinel = jest.fn(() => 'sentinel');
     const dirtyUpdate = jest.fn().mockResolvedValue(undefined);
+    const dirtyRef = {
+      path: 'stories/1/pages/2/variants/3',
+      update: dirtyUpdate,
+    };
+    const updateDocument = jest.fn((_permission, reference, data) =>
+      reference.update(data)
+    );
     const db = {
-      doc: jest.fn(path => ({
-        path,
-        update: dirtyUpdate,
-      })),
+      doc: jest.fn(() => dirtyRef),
     };
     const handler = createHandleVariantWrite({
       renderVariant,
       getDeleteSentinel,
       db,
+      updateDocument,
     });
 
     const change = {
@@ -2923,13 +2930,13 @@ describe('createHandleVariantWrite', () => {
       },
     };
 
-    await handler(change, { params: { storyId: 'story-1' } });
+    await handler(change, { params: { storyId: 'story-1' } }, allowEffects);
 
     expect(renderVariant).toHaveBeenCalledWith(change.after, {
       params: { storyId: 'story-1' },
     });
     expect(db.doc).toHaveBeenCalledWith('stories/1/pages/2/variants/3');
-    expect(dirtyUpdate).toHaveBeenCalledWith({
+    expect(updateDocument).toHaveBeenCalledWith(allowEffects, dirtyRef, {
       dirty: 'sentinel',
     });
   });
@@ -3233,13 +3240,19 @@ describe('createHandleVariantWrite fallback paths', () => {
   });
 
   it('falls back to the original dirty ref when no path is available', async () => {
+    const allowEffects = createAllowEffects();
     const renderVariant = jest.fn().mockResolvedValue(null);
     const dirtyUpdate = jest.fn().mockResolvedValue(undefined);
+    const dirtyRef = { update: dirtyUpdate };
     const db = { doc: jest.fn() };
+    const updateDocument = jest.fn((_permission, reference, data) =>
+      reference.update(data)
+    );
     const handler = createHandleVariantWrite({
       renderVariant,
       getDeleteSentinel: () => 'sentinel',
       db,
+      updateDocument,
     });
 
     const change = {
@@ -3247,16 +3260,40 @@ describe('createHandleVariantWrite fallback paths', () => {
       after: {
         exists: true,
         data: () => ({ dirty: true, visibility: VISIBILITY_THRESHOLD }),
-        ref: { update: dirtyUpdate },
+        ref: dirtyRef,
       },
     };
 
-    await handler(change, {});
+    await handler(change, {}, allowEffects);
 
     expect(db.doc).not.toHaveBeenCalled();
-    expect(dirtyUpdate).toHaveBeenCalledWith({
+    expect(updateDocument).toHaveBeenCalledWith(allowEffects, dirtyRef, {
       dirty: 'sentinel',
     });
+  });
+
+  it('skips dirty-marker persistence when the original ref is not writable', async () => {
+    const updateDocument = jest.fn();
+    const handler = createHandleVariantWrite({
+      renderVariant: jest.fn().mockResolvedValue(null),
+      getDeleteSentinel: () => 'sentinel',
+      db: { doc: jest.fn() },
+      updateDocument,
+    });
+
+    await handler(
+      {
+        before: { exists: false, data: () => ({}) },
+        after: {
+          exists: true,
+          data: () => ({ dirty: true }),
+          ref: {},
+        },
+      },
+      {}
+    );
+
+    expect(updateDocument).not.toHaveBeenCalled();
   });
 
   it('returns after rendering when the changed document has no reference', async () => {

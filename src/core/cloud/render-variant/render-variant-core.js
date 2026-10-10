@@ -40,7 +40,7 @@ export function resolveVisibilityThreshold(visibilityThreshold) {
  * @param {AllowEffects} allowEffects Request effect capability.
  * @param {FirestoreChange} change Changed variant snapshot.
  * @param {FirestoreLike} db Tenant database.
- * @param {(allowEffects: AllowEffects, ref: WritableVariantReference, data: Record<string, unknown>) => Promise<unknown>} updateDocument Permission-aware update adapter.
+ * @param {(allowEffects: AllowEffects, ref: UpdatableDocumentReference, data: Record<string, unknown>) => Promise<unknown>} updateDocument Permission-aware update adapter.
  * @returns {Promise<void>} Promise.
  */
 async function updateTreeVisibilityForVariantChange(
@@ -127,7 +127,7 @@ function isWritableVariantRef(ref) {
   return (
     isObjectLike(ref) &&
     typeof ref.get === 'function' &&
-    typeof ref.get === 'function'
+    typeof ref.update === 'function'
   );
 }
 
@@ -177,7 +177,7 @@ function getCurrentVisibility(afterData, beforeData, previous) {
  * @param {AllowEffects} allowEffects Request effect capability.
  * @param {{ ref: WritableVariantReference, data: Record<string, unknown>, nextSum: number, delta: number }} state Propagation state.
  * @param {FirestoreLike} db Tenant database.
- * @param {(allowEffects: AllowEffects, ref: WritableVariantReference, data: Record<string, unknown>) => Promise<unknown>} updateDocument Permission-aware update adapter.
+ * @param {(allowEffects: AllowEffects, ref: UpdatableDocumentReference, data: Record<string, unknown>) => Promise<unknown>} updateDocument Permission-aware update adapter.
  * @returns {Promise<void>} Resolves after all reachable ancestors are updated.
  */
 async function propagateVisibilityDelta(
@@ -251,7 +251,8 @@ function resolveStoredVisibilitySum(data) {
  * @typedef {import('firebase-admin/firestore').CollectionReference & { parent?: DocumentReferenceData | null, path: string }} CollectionReferenceData
  * @typedef {import('firebase-admin/firestore').DocumentSnapshot<import('firebase-admin/firestore').DocumentData> & { ref: DocumentReferenceData }} DocumentSnapshotData
  * @typedef {{ doc: (path: string) => DocumentReferenceData, collection: (path: string) => CollectionReferenceData, collectionGroup: (path: string) => CollectionReferenceData }} FirestoreLike
- * @typedef {{ get: () => Promise<{ exists?: boolean, data?: () => Record<string, unknown> }>, parent?: WritableVariantReference | null }} WritableVariantReference
+ * @typedef {{ update: (data: Record<string, unknown>) => Promise<unknown> }} UpdatableDocumentReference
+ * @typedef {UpdatableDocumentReference & { get: () => Promise<{ exists?: boolean, data?: () => Record<string, unknown> }>, parent?: WritableVariantReference | null }} WritableVariantReference
  * @typedef {{ exists: () => Promise<[boolean]>, save: (content: string, options: object) => Promise<unknown> }} StorageFileLike
  * @typedef {{ file: (path: string) => StorageFileLike }} StorageBucketLike
  * @typedef {{ bucket: (name?: string) => StorageBucketLike }} StorageLike
@@ -3522,7 +3523,7 @@ function buildReverseLinkDocId(record) {
  * @param {(snap: VariantSnapshot, context?: RenderContext) => Promise<null>} options.renderVariant - Renderer invoked when a variant should be materialized.
  * @param {FirestoreLike} options.db Tenant Firestore client.
  * @param {() => unknown} options.getDeleteSentinel - Function that produces the sentinel used to clear dirty flags.
- * @param {(allowEffects: AllowEffects, ref: WritableVariantReference, data: Record<string, unknown>) => Promise<unknown>} options.updateDocument Permission-aware Firestore update adapter.
+ * @param {(allowEffects: AllowEffects, ref: UpdatableDocumentReference, data: Record<string, unknown>) => Promise<unknown>} options.updateDocument Permission-aware Firestore update adapter.
  * @returns {(allowEffects: AllowEffects, change: FirestoreChange, context?: RenderContext, visibilityThreshold?: number) => Promise<null>} Firestore change handler.
  */
 export function createHandleVariantWrite({
@@ -3538,28 +3539,22 @@ export function createHandleVariantWrite({
 
   /**
    * Handle dirty variant.
-   * @param {object} root0 Options.
-   * @param {FirestoreChange} root0.change Firestore change.
-   * @param {RenderContext | undefined} root0.context Event context.
-   * @param {(snap: VariantSnapshot, context?: RenderContext) => Promise<null>} root0.renderVariant Render function.
-   * @param {() => unknown} root0.getDeleteSentinel Sentinel function.
+   * @param {AllowEffects} allowEffects Request effect capability.
+   * @param {FirestoreChange} change Firestore change.
+   * @param {RenderContext | undefined} context Event context.
    * @returns {Promise<null>} Null.
    */
-  async function handleDirtyVariant({
-    change,
-    context,
-    renderVariant,
-    getDeleteSentinel,
-  }) {
+  async function handleDirtyVariant(allowEffects, change, context) {
     await renderVariant(/** @type {VariantSnapshot} */ (change.after), context);
     const afterRef = /** @type {DocumentLike} */ (change.after).ref;
     if (!afterRef) return null;
     const dirtyUpdate = { dirty: getDeleteSentinel() };
-    if (typeof afterRef.path !== 'string') {
-      await afterRef.update?.(dirtyUpdate);
+    const dirtyRef =
+      typeof afterRef.path === 'string' ? db.doc(afterRef.path) : afterRef;
+    if (typeof dirtyRef.update === 'function') {
+      await updateDocument(allowEffects, dirtyRef, dirtyUpdate);
       return null;
     }
-    await db.doc(afterRef.path).update(dirtyUpdate);
     return null;
   }
 
@@ -3593,25 +3588,31 @@ export function createHandleVariantWrite({
       db,
       updateDocument
     );
-    return processExistingVariant(change, context, visibilityThreshold);
+    return processExistingVariant(
+      allowEffects,
+      change,
+      context,
+      visibilityThreshold
+    );
   };
 
   /**
    * Process a variant change when the document still exists.
+   * @param {AllowEffects} allowEffects Request effect capability.
    * @param {FirestoreChange} change - Firestore change payload describing the variant update.
    * @param {RenderContext | undefined} context - Cloud Functions context for the trigger.
    * @param {number} visibilityThreshold Visibility threshold.
    * @returns {Promise<null>} Result of the processing workflow.
    */
-  async function processExistingVariant(change, context, visibilityThreshold) {
+  async function processExistingVariant(
+    allowEffects,
+    change,
+    context,
+    visibilityThreshold
+  ) {
     const data = change.after.data();
     if (data.dirty) {
-      return handleDirtyVariant({
-        change,
-        context,
-        renderVariant,
-        getDeleteSentinel,
-      });
+      return handleDirtyVariant(allowEffects, change, context);
     }
 
     return handleCleanVariant(change, context, data, visibilityThreshold);
