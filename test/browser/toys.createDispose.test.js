@@ -88,6 +88,33 @@ describe('createDispose', () => {
     expect(rows).toHaveLength(0);
   });
 
+  it('captures cleanup targets when the disposer is created', () => {
+    const disposer = jest.fn();
+    const replacementDisposer = jest.fn();
+    const disposers = [disposer];
+    const container = {};
+    const replacementContainer = {};
+    const dom = { removeAllChildren: jest.fn() };
+    const replacementDom = { removeAllChildren: jest.fn() };
+    const rows = ['captured'];
+    const replacementRows = ['replacement'];
+    const config = { disposers, dom, container, rows };
+    const dispose = createDispose(config);
+
+    config.disposers = [replacementDisposer];
+    config.dom = replacementDom;
+    config.container = replacementContainer;
+    config.rows = replacementRows;
+    dispose();
+
+    expect(disposer).toHaveBeenCalledTimes(1);
+    expect(replacementDisposer).not.toHaveBeenCalled();
+    expect(dom.removeAllChildren).toHaveBeenCalledWith(container);
+    expect(replacementDom.removeAllChildren).not.toHaveBeenCalled();
+    expect(rows).toHaveLength(0);
+    expect(replacementRows).toEqual(['replacement']);
+  });
+
   it('handles empty disposers without errors', () => {
     const container = {};
 

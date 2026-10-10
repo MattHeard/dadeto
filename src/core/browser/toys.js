@@ -172,20 +172,42 @@ export const clearDisposers = disposersArray => {
  * @returns {ToyCallback} Cleanup function.
  */
 export const createDispose = config => {
-  const { disposers, dom, container, rowData, rows } = config;
+  const disposers = config.disposers;
+  const dom = config.dom;
+  const container = config.container;
+  const rowData = config.rowData;
+  const rows = config.rows;
   return () => {
     clearDisposers(disposers);
-    dom.removeAllChildren(container);
-    // Handle both rowData (object) and legacy rows (array) parameters
-    if (rowData) {
-      Object.keys(rowData.rows).forEach(key => delete rowData.rows[key]);
-      Object.keys(rowData.rowTypes).forEach(
-        key => delete rowData.rowTypes[key]
-      );
-    }
-    if (!rowData && rows) rows.length = 0;
+    clearDisposeContainer(dom, container);
+    resetDisposeRows(rowData, rows);
   };
 };
+
+/**
+ * Remove all rendered children from the key/value container.
+ * @param {{ removeAllChildren: (container: HTMLElement) => void }} dom DOM helpers.
+ * @param {HTMLElement} container Key/value container to clear.
+ * @returns {void}
+ */
+function clearDisposeContainer(dom, container) {
+  dom.removeAllChildren(container);
+}
+
+/**
+ * Clear object-backed row data or the legacy rows array in place.
+ * @param {{ rows: object, rowTypes: object } | null | undefined} rowData Object-backed key/value state.
+ * @param {Array | null | undefined} rows Legacy row state.
+ * @returns {void}
+ */
+function resetDisposeRows(rowData, rows) {
+  if (rowData) {
+    Object.keys(rowData.rows).forEach(key => delete rowData.rows[key]);
+    Object.keys(rowData.rowTypes).forEach(key => delete rowData.rowTypes[key]);
+    return;
+  }
+  if (rows) rows.length = 0;
+}
 
 import { createPreElement } from './presenters/pre.js';
 import { createCopyToClipboardButtonElement } from './presenters/copyToClipboard.js';
