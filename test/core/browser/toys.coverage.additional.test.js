@@ -682,11 +682,8 @@ describe('additional dropdown and focus coverage', () => {
     valueHandler({});
     const type = utils.createTypeElement({
       dom,
-      key: 'key',
-      rowData: null,
-      textInput: {},
-      keyEl: {},
-      syncHiddenField: sync,
+      currentType: 'string',
+      onChange: jest.fn(),
       disposers: [],
     });
     expect(type).toBeDefined();

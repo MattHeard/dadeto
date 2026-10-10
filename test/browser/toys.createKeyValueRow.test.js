@@ -114,6 +114,63 @@ describe('createKeyValueRow', () => {
     expect(mockDom.appendChild).toHaveBeenCalledTimes(11);
   });
 
+  it('keeps type changes attached to the renamed row and syncs the hidden field', () => {
+    const previousKeys = new Map();
+    const dom = {
+      ...mockDom,
+      getCurrentTarget: jest.fn(event => event.currentTarget),
+      getDataAttribute: jest.fn(element => previousKeys.get(element)),
+      setDataAttribute: jest.fn((element, name, value) => {
+        previousKeys.set(element, value);
+      }),
+      getNextSibling: jest.fn(),
+      getTargetValue: jest.fn(() => 'renamed'),
+      getValue: jest.fn(() => 'number'),
+    };
+    const rowData = {
+      rows: { original: 'value' },
+      rowTypes: { original: 'string' },
+    };
+    const textInput = {};
+    const syncHiddenField = jest.fn();
+    const keyRow = createKeyValueRow({
+      dom,
+      entries: [['original', 'value']],
+      textInput,
+      rowData,
+      syncHiddenField,
+      disposers: [],
+      render: jest.fn(),
+      container: {},
+    });
+
+    keyRow(['original', 'value'], 0);
+
+    const inputListeners = dom.addEventListener.mock.calls.filter(
+      ([, event]) => event === 'input'
+    );
+    const [keyEl, , keyHandler] = inputListeners[0];
+    const [valueEl] = inputListeners[1];
+    const [selectEl, , typeHandler] = dom.addEventListener.mock.calls.find(
+      ([, event]) => event === 'change'
+    );
+    dom.getNextSibling.mockReturnValue(valueEl);
+
+    previousKeys.delete(keyEl);
+    typeHandler({ currentTarget: selectEl });
+    expect(rowData.rowTypes).toEqual({ original: 'number' });
+
+    previousKeys.set(keyEl, 'original');
+    rowData.rowTypes.original = 'string';
+    keyHandler({ currentTarget: keyEl });
+    typeHandler({ currentTarget: selectEl });
+
+    expect(rowData.rows).toEqual({ renamed: 'value' });
+    expect(rowData.rowTypes).toEqual({ renamed: 'number' });
+    expect(previousKeys.get(valueEl)).toBe('renamed');
+    expect(syncHiddenField).toHaveBeenLastCalledWith(textInput, rowData, dom);
+  });
+
   it('creates a button element with the correct tag', () => {
     mockDom.createElement
       .mockReturnValueOnce({}) // row div

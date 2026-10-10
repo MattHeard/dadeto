@@ -103,11 +103,8 @@ describe('createTypeElement', () => {
     const disposers = [];
     createTypeElement({
       dom,
-      key: 'myKey',
-      rowData: { rows: {}, rowTypes: {} },
-      textInput: {},
-      keyEl: {},
-      syncHiddenField: jest.fn(),
+      currentType: 'string',
+      onChange: jest.fn(),
       disposers,
     });
     expect(dom.createElement).toHaveBeenCalledWith('select');
@@ -124,11 +121,8 @@ describe('createTypeElement', () => {
     const disposers = [];
     createTypeElement({
       dom,
-      key: 'myKey',
-      rowData: { rows: {}, rowTypes: {} },
-      textInput: {},
-      keyEl: {},
-      syncHiddenField: jest.fn(),
+      currentType: 'string',
+      onChange: jest.fn(),
       disposers,
     });
     const optionCalls = dom.createElement.mock.calls.filter(
@@ -137,35 +131,29 @@ describe('createTypeElement', () => {
     expect(optionCalls).toHaveLength(4);
   });
 
-  it('sets the initial value to the rowType for the key', () => {
+  it('sets the initial type value', () => {
     const dom = makeDom();
     const selectEl = {};
     dom.createElement.mockReturnValueOnce(selectEl);
     const disposers = [];
     createTypeElement({
       dom,
-      key: 'count',
-      rowData: { rows: {}, rowTypes: { count: 'number' } },
-      textInput: {},
-      keyEl: {},
-      syncHiddenField: jest.fn(),
+      currentType: 'number',
+      onChange: jest.fn(),
       disposers,
     });
     expect(dom.setValue).toHaveBeenCalledWith(selectEl, 'number');
   });
 
-  it('defaults to string when key is absent from rowTypes', () => {
+  it('defaults to string when no type is supplied', () => {
     const dom = makeDom();
     const selectEl = {};
     dom.createElement.mockReturnValueOnce(selectEl);
     const disposers = [];
     createTypeElement({
       dom,
-      key: 'name',
-      rowData: { rows: {}, rowTypes: {} },
-      textInput: {},
-      keyEl: {},
-      syncHiddenField: jest.fn(),
+      currentType: undefined,
+      onChange: jest.fn(),
       disposers,
     });
     expect(dom.setValue).toHaveBeenCalledWith(selectEl, 'string');
@@ -176,11 +164,8 @@ describe('createTypeElement', () => {
     const disposers = [];
     createTypeElement({
       dom,
-      key: 'myKey',
-      rowData: { rows: {}, rowTypes: {} },
-      textInput: {},
-      keyEl: {},
-      syncHiddenField: jest.fn(),
+      currentType: 'string',
+      onChange: jest.fn(),
       disposers,
     });
     expect(dom.addEventListener).toHaveBeenCalledWith(
@@ -195,11 +180,8 @@ describe('createTypeElement', () => {
     const disposers = [];
     createTypeElement({
       dom,
-      key: 'myKey',
-      rowData: { rows: {}, rowTypes: {} },
-      textInput: {},
-      keyEl: {},
-      syncHiddenField: jest.fn(),
+      currentType: 'string',
+      onChange: jest.fn(),
       disposers,
     });
     expect(disposers).toHaveLength(1);
@@ -213,52 +195,21 @@ describe('createTypeElement', () => {
     );
   });
 
-  it('updates rowTypes and calls syncHiddenField on change', () => {
+  it('forwards change events to the supplied handler', () => {
     const dom = makeDom();
     const selectEl = {};
     dom.createElement.mockReturnValueOnce(selectEl);
-    dom.getDataAttribute.mockReturnValue('myKey');
-    dom.getValue.mockReturnValue('number');
-    const syncHiddenField = jest.fn();
-    const rowData = { rows: {}, rowTypes: {} };
-    const textInput = {};
-    const keyEl = {};
+    const onChange = jest.fn();
     const disposers = [];
     createTypeElement({
       dom,
-      key: 'myKey',
-      rowData,
-      textInput,
-      keyEl,
-      syncHiddenField,
+      currentType: 'string',
+      onChange,
       disposers,
     });
     const [, , changeHandler] = dom.addEventListener.mock.calls[0];
-    changeHandler();
-    expect(rowData.rowTypes.myKey).toBe('number');
-    expect(syncHiddenField).toHaveBeenCalledWith(textInput, rowData, dom);
-  });
-
-  it('uses the original key when the key element has no previous-key attribute', () => {
-    const dom = makeDom();
-    dom.getDataAttribute.mockReturnValue(undefined);
-    dom.getValue.mockReturnValue('json');
-    const syncHiddenField = jest.fn();
-    const rowData = { rows: {}, rowTypes: {} };
-    const textInput = {};
-    const keyEl = {};
-    createTypeElement({
-      dom,
-      key: 'fallback-key',
-      rowData,
-      textInput,
-      keyEl,
-      syncHiddenField,
-      disposers: [],
-    });
-    const [, , changeHandler] = dom.addEventListener.mock.calls[0];
-    changeHandler();
-    expect(rowData.rowTypes).toEqual({ 'fallback-key': 'json' });
-    expect(dom.getDataAttribute).toHaveBeenCalledWith(keyEl, 'prevKey');
+    const event = { currentTarget: selectEl };
+    changeHandler(event);
+    expect(onChange).toHaveBeenCalledWith(event);
   });
 });

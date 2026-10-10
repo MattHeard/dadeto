@@ -1033,24 +1033,17 @@ export const createTypeToggleButton = ({ dom, typeSelectEl, disposers }) => {
  * Create the type selector <select> element for a kv row.
  * @param {object} options - Configuration options.
  * @param {object} options.dom - DOM helper utilities.
- * @param {string} options.key - Current row key (used for rowTypes lookup).
- * @param {object} options.rowData - Row data object containing rows and rowTypes.
- * @param {HTMLElement} options.textInput - Hidden input element for syncHiddenField.
- * @param {HTMLElement} options.keyEl - Key input element (to read current key).
- * @param {ToyCallback} options.syncHiddenField - ToyCallback to sync the hidden field.
+ * @param {string} options.currentType - Current row type.
+ * @param {ToyCallback} options.onChange - Type selection change handler.
  * @param {Array<ToyCallback>} options.disposers - Array to register cleanup functions.
  * @returns {HTMLElement} The type select element.
  */
 export const createTypeElement = ({
   dom,
-  key,
-  rowData,
-  textInput,
-  keyEl,
-  syncHiddenField,
+  currentType,
+  onChange,
   disposers,
 }) => {
-  const effectiveRowData = rowData ?? { rows: {}, rowTypes: {} };
   const selectEl = dom.createElement('select');
   dom.addClass(selectEl, 'kv-type');
 
@@ -1061,14 +1054,7 @@ export const createTypeElement = ({
     dom.appendChild(selectEl, option);
   });
 
-  const currentType = effectiveRowData.rowTypes[key] ?? 'string';
-  dom.setValue(selectEl, currentType);
-
-  const onChange = () => {
-    const currentKey = dom.getDataAttribute(keyEl, 'prevKey') ?? key;
-    effectiveRowData.rowTypes[currentKey] = String(dom.getValue(selectEl));
-    syncHiddenField(textInput, effectiveRowData, dom);
-  };
+  dom.setValue(selectEl, currentType ?? 'string');
 
   dom.addEventListener(selectEl, 'change', onChange);
   const removeChangeListener = createRemoveListener({
@@ -1225,13 +1211,17 @@ export const createKeyValueRow =
     dom.setDataAttribute(valueEl, 'prevKey', key);
 
     // Create type selector and toggle button (hidden by default)
+    const effectiveRowData = rowData ?? { rows: {}, rowTypes: {} };
     const typeEl = createTypeElement({
       dom,
-      key,
-      rowData,
-      textInput,
-      keyEl,
-      syncHiddenField,
+      currentType: effectiveRowData.rowTypes[key],
+      onChange: event => {
+        const currentKey = dom.getDataAttribute(keyEl, 'prevKey') ?? key;
+        effectiveRowData.rowTypes[currentKey] = String(
+          dom.getValue(dom.getCurrentTarget(event))
+        );
+        syncHiddenField(textInput, effectiveRowData, dom);
+      },
       disposers,
     });
     const toggleBtn = createTypeToggleButton({
