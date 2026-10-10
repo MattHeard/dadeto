@@ -35,6 +35,11 @@ import {
 import { createSearchHttpHandler } from '../../object-minute-rental-search/search-http.js';
 import { createBrowserRunnerCommitmentsRepository } from '../../object-minute-rental-search/browser-runner-commitments-repository.js';
 import { SOPHIE_CHARLOTTE_SERVICE_AREA } from '../../object-minute-rental-search/service-area.js';
+import {
+  setSimulatorHttpResponseHeader,
+  sendSimulatorHttpResponse,
+  logSimulatorRenderContentsError,
+} from './http-response-effects.js';
 
 const LOCAL_RUNNER_SCHEDULE = [
   {
@@ -388,6 +393,9 @@ async function buildSimulatorState(config) {
     objectPrefix: '',
     projectId,
     bindEffectBoundary,
+    setHttpResponseHeader: setSimulatorHttpResponseHeader,
+    sendHttpResponse: sendSimulatorHttpResponse,
+    logError: logSimulatorRenderContentsError,
     effectFetchFn: (
       /** @type {import('../../../../types/allow-effects').AllowEffects} */ permission,
       /** @type {string} */ url,

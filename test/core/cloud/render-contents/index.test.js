@@ -10,8 +10,8 @@ await jest.unstable_mockModule(
     buildHtml: jest.fn(() => 'html'),
     buildHandleRenderRequest:
       ({ verifyIdToken, render }) =>
-      async (request, response) => {
-        await render();
+      async (_permission, request, response) => {
+        await render(_permission);
         await verifyIdToken(request.headers.authorization.slice(7));
         response.status(200);
       },
@@ -147,6 +147,11 @@ describe('createRenderContentsEntrypoint', () => {
       fetchFn,
       bindEffectBoundary: async handler =>
         handler(Object.freeze({ test: true })),
+      setHttpResponseHeader: (_permission, response, name, value) =>
+        response.set(name, value),
+      sendHttpResponse: (_permission, response, result) =>
+        response.status(result.status)[result.method](result.body),
+      logError: jest.fn(),
       effectFetchFn: (_permission, url, init) => fetchFn(url, init),
       createSaveRenderedPage: jest.fn(() => jest.fn()),
       crypto: { randomUUID: () => 'uuid' },

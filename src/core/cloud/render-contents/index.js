@@ -27,6 +27,9 @@ import * as renderSupport from '../render-support.js';
  *   ADMIN_UID: string,
  *   fetchFn: (permission: AllowEffects, ...args: Parameters<typeof globalThis.fetch>) => ReturnType<typeof globalThis.fetch>,
  *   bindEffectBoundary: Parameters<typeof createRenderContents>[0]['bindEffectBoundary'],
+ *   setHttpResponseHeader: Parameters<typeof createRenderContents>[0]['setHttpResponseHeader'],
+ *   sendHttpResponse: Parameters<typeof createRenderContents>[0]['sendHttpResponse'],
+ *   logError: NonNullable<Parameters<typeof createRenderContents>[0]['logError']>,
  *   effectFetchFn: Parameters<typeof createRenderContents>[0]['effectFetchFn'],
  *   crypto: {randomUUID: () => string},
  *   getEnvironmentVariables: () => Record<string, string|undefined>
@@ -59,6 +62,9 @@ export function createRenderContentsEntrypoint(deps) {
   const effectDependencies = {
     bindEffectBoundary: typedDeps.bindEffectBoundary,
     effectFetchFn: typedDeps.effectFetchFn,
+    setHttpResponseHeader: typedDeps.setHttpResponseHeader,
+    sendHttpResponse: typedDeps.sendHttpResponse,
+    logError: typedDeps.logError,
   };
   const {
     db,
@@ -82,15 +88,22 @@ export function createRenderContentsEntrypoint(deps) {
   );
 
   const allowedOrigins = getAllowedOrigins(environmentVariables);
-  const applyCorsHeaders = createApplyCorsHeaders({ allowedOrigins });
-  const validateRequest = createValidateRequest({ applyCorsHeaders });
+  const applyCorsHeaders = createApplyCorsHeaders({
+    allowedOrigins,
+    setHttpResponseHeader: typedDeps.setHttpResponseHeader,
+  });
+  const validateRequest = createValidateRequest({
+    applyCorsHeaders,
+    sendHttpResponse: typedDeps.sendHttpResponse,
+  });
 
   const handleRenderRequest = buildHandleRenderRequest({
     validateRequest,
     verifyIdToken: token => auth.verifyIdToken(token),
     adminUid: ADMIN_UID,
-    render: async () => {
-      await typedDeps.bindEffectBoundary(permission => render(permission));
+    sendHttpResponse: typedDeps.sendHttpResponse,
+    render: async permission => {
+      await render(permission);
     },
   });
 
@@ -105,7 +118,11 @@ export function createRenderContentsEntrypoint(deps) {
 
   const handleTrigger = functions
     .region('europe-west1')
-    .https.onRequest(handleRenderRequest);
+    .https.onRequest((req, res) =>
+      typedDeps.bindEffectBoundary(permission =>
+        handleRenderRequest(permission, req, res)
+      )
+    );
 
   /**
    * Forward render calls to the memoized render implementation.
@@ -182,7 +199,7 @@ export function createRenderContentsEntrypoint(deps) {
         );
       },
       crypto,
-      consoleError: (...args) => console.error(...args),
+      consoleError: () => {},
     });
     return renderSupport.createCloudRenderEntrypointState({
       ...renderStateOptions,

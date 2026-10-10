@@ -7,14 +7,14 @@ import {
   createInvalidatePaths as createInvalidatePathsCore,
   handleInvalidateError,
   getAllowedOrigins,
-  createApplyCorsHeaders,
-  createValidateRequest,
-  buildHandleRenderRequest,
-  createAuthorizeRequest,
+  createApplyCorsHeaders as createApplyCorsHeadersCore,
+  createValidateRequest as createValidateRequestCore,
+  buildHandleRenderRequest as buildHandleRenderRequestCore,
+  createAuthorizeRequest as createAuthorizeRequestCore,
   resolveAuthorizationHeader,
   getHeaderFromHeaders,
   resolveHeaderValue,
-  ensureAdminIdentity,
+  ensureAdminIdentity as ensureAdminIdentityCore,
   DEFAULT_BUCKET_NAME,
   productionOrigins,
   renderContentsTestUtils,
@@ -61,6 +61,18 @@ function withEffectDependencies(options = {}) {
     effectFetchFn:
       options.effectFetchFn ??
       ((_permission, url, init) => options.fetchFn(url, init)),
+    setHttpResponseHeader:
+      options.setHttpResponseHeader ??
+      ((_permission, response, name, value) => response.set(name, value)),
+    sendHttpResponse:
+      options.sendHttpResponse ??
+      ((_permission, response, result) => {
+        const target = response.status(result.status);
+        target[result.method](result.body);
+      }),
+    logError:
+      options.logError ??
+      ((_permission, ...args) => options.consoleError?.(...args)),
   };
 }
 
@@ -75,6 +87,86 @@ function createRenderContents(options = {}) {
 }
 
 /**
+ * Adapt a CORS helper for tests with a local response writer.
+ * @param {object} options CORS configuration.
+ * @returns {(req: object, res: object) => boolean} Test CORS helper.
+ */
+function createApplyCorsHeaders(options = {}) {
+  const apply = createApplyCorsHeadersCore({
+    ...options,
+    setHttpResponseHeader: (_permission, response, name, value) =>
+      response.set(name, value),
+  });
+  return (req, res) =>
+    apply(Object.freeze({ testPermission: 'cors' }), req, res);
+}
+
+/**
+ * Adapt an authorization helper for tests with a local response writer.
+ * @param {object} options Authorization configuration.
+ * @returns {(request: object) => Promise<object|null>} Test authorizer.
+ */
+function createAuthorizeRequest(options = {}) {
+  const authorize = createAuthorizeRequestCore({
+    ...options,
+    sendHttpResponse: (_permission, response, result) =>
+      response.status(result.status)[result.method](result.body),
+  });
+  return request =>
+    authorize(Object.freeze({ testPermission: 'auth' }), request);
+}
+
+/**
+ * Adapt the admin identity helper for its focused unit test.
+ * @param {object|null} decoded Decoded identity payload.
+ * @param {string} adminUid Expected administrator UID.
+ * @param {object} response Test response object.
+ * @returns {object|null} Authorized identity or null.
+ */
+function ensureAdminIdentity(decoded, adminUid, response) {
+  return ensureAdminIdentityCore(Object.freeze({ testPermission: 'auth' }), {
+    decoded,
+    adminUid,
+    res: response,
+    sendHttpResponse: (_permission, res, result) =>
+      res.status(result.status)[result.method](result.body),
+  });
+}
+
+/**
+ * Adapt request validation for tests with a local response writer.
+ * @param {object} options Validation configuration.
+ * @returns {(req: object, res: object) => boolean} Test request validator.
+ */
+function createValidateRequest(options = {}) {
+  const validate = createValidateRequestCore({
+    ...options,
+    sendHttpResponse: (_permission, response, result) => {
+      const target = response.status(result.status);
+      target[result.method](result.body);
+    },
+  });
+  return (req, res) =>
+    validate(Object.freeze({ testPermission: 'request' }), req, res);
+}
+
+/**
+ * Adapt the render request handler for tests with a local response writer.
+ * @param {object} options Handler configuration.
+ * @returns {(req: object, res: object) => Promise<void>} Test request handler.
+ */
+function buildHandleRenderRequest(options = {}) {
+  const handler = buildHandleRenderRequestCore({
+    ...options,
+    sendHttpResponse: (_permission, response, result) => {
+      response.status(result.status)[result.method](result.body);
+    },
+  });
+  return (req, res) =>
+    handler(Object.freeze({ testPermission: 'request' }), req, res);
+}
+
+/**
  * Build the invalidator with test-only effect dependencies.
  * @param {object} options Invalidation dependencies.
  * @returns {unknown} Path invalidation handler.
@@ -83,24 +175,13 @@ function createInvalidatePaths(options) {
   return createInvalidatePathsCore(withEffectDependencies(options));
 }
 
-describe('render contents console fallback', () => {
+describe('render contents test utilities', () => {
   it('rejects an access-token response without a token', async () => {
     await expect(
       renderContentsTestUtils.extractAccessToken({
         json: async () => ({}),
       })
     ).rejects.toThrow();
-  });
-  it('returns a no-op when console.error is unavailable', () => {
-    const originalError = console.error;
-    console.error = undefined;
-    try {
-      const fallback = renderContentsTestUtils.getDefaultConsoleError();
-      expect(fallback).toEqual(expect.any(Function));
-      expect(() => fallback('ignored')).not.toThrow();
-    } finally {
-      console.error = originalError;
-    }
   });
 });
 
@@ -433,6 +514,11 @@ describe('createRenderContents', () => {
       bindEffectBoundary: bindTestEffect,
       effectFetchFn: (_allowEffects, url, init) => fetchFn(url, init),
       randomUUID: () => 'uuid',
+      setHttpResponseHeader: (_permission, response, name, value) =>
+        response.set(name, value),
+      sendHttpResponse: (_permission, response, result) =>
+        response.status(result.status)[result.method](result.body),
+      logError: jest.fn(),
     });
 
     await render(permission, { fetchTopStoryIds: async () => [] });
@@ -902,6 +988,7 @@ describe('createInvalidatePaths', () => {
       fetchFn,
       bindEffectBoundary,
       effectFetchFn,
+      logError: jest.fn(),
       randomUUID: jest.fn(() => 'uuid'),
     });
 
@@ -965,6 +1052,38 @@ describe('createInvalidatePaths', () => {
     );
   });
 
+  it('forwards the CDN operation permission to failure logging', async () => {
+    const logError = jest.fn();
+    const permissions = [];
+    const bindEffectBoundary = jest.fn(async handler => {
+      const permission = Object.freeze({ id: permissions.length });
+      permissions.push(permission);
+      return handler(permission);
+    });
+    const fetchFn = jest.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ [ACCESS_TOKEN_KEY]: 'token' }),
+    });
+    const effectFetchFn = jest.fn().mockResolvedValue({
+      ok: false,
+      status: 503,
+    });
+    const invalidatePaths = createInvalidatePaths({
+      fetchFn,
+      effectFetchFn,
+      bindEffectBoundary,
+      logError,
+      randomUUID: jest.fn(() => 'uuid'),
+    });
+
+    await invalidatePaths(['/permission.html']);
+
+    expect(logError).toHaveBeenCalledWith(
+      permissions[1],
+      'invalidate /permission.html failed: 503'
+    );
+  });
+
   it('logs raw error values when messages are unavailable', async () => {
     const consoleError = jest.fn();
     const fetchFn = jest
@@ -994,10 +1113,17 @@ describe('createInvalidatePaths', () => {
   });
 
   it('reports errors when handleInvalidateError is passed a logger', () => {
+    const permission = Object.freeze({ testPermission: 'log' });
     const consoleError = jest.fn();
-    handleInvalidateError(new Error('boom'), '/p/test.html', consoleError);
+    handleInvalidateError(
+      permission,
+      new Error('boom'),
+      '/p/test.html',
+      consoleError
+    );
 
     expect(consoleError).toHaveBeenCalledWith(
+      permission,
       'invalidate /p/test.html error',
       'boom'
     );
@@ -1019,6 +1145,30 @@ describe('getAllowedOrigins', () => {
 });
 
 describe('createApplyCorsHeaders', () => {
+  it('forwards the request permission to each response-header mutation', () => {
+    const permission = Object.freeze({ cors: 'allowed' });
+    const setHttpResponseHeader = jest.fn();
+    const apply = createApplyCorsHeadersCore({
+      allowedOrigins: [],
+      setHttpResponseHeader,
+    });
+    const response = { set: jest.fn() };
+
+    expect(apply(permission, {}, response)).toBe(true);
+    expect(setHttpResponseHeader).toHaveBeenCalledWith(
+      permission,
+      response,
+      'Access-Control-Allow-Origin',
+      '*'
+    );
+    expect(setHttpResponseHeader).toHaveBeenCalledWith(
+      permission,
+      response,
+      'Access-Control-Allow-Methods',
+      'POST, OPTIONS'
+    );
+  });
+
   it('allows requests without an origin', () => {
     const res = { set: jest.fn() };
     const apply = createApplyCorsHeaders({
@@ -1103,6 +1253,23 @@ describe('createApplyCorsHeaders', () => {
 });
 
 describe('createValidateRequest', () => {
+  it('forwards the request permission to response writes', () => {
+    const permission = Object.freeze({ response: 'allowed' });
+    const sendHttpResponse = jest.fn();
+    const validate = createValidateRequestCore({
+      applyCorsHeaders: jest.fn(() => true),
+      sendHttpResponse,
+    });
+    const response = {};
+
+    expect(validate(permission, { method: 'OPTIONS' }, response)).toBe(false);
+    expect(sendHttpResponse).toHaveBeenCalledWith(permission, response, {
+      status: 204,
+      body: '',
+      method: 'send',
+    });
+  });
+
   it('handles OPTIONS, CORS and method checks', () => {
     const applyCorsHeaders = jest.fn(() => false);
     const validate = createValidateRequest({ applyCorsHeaders });

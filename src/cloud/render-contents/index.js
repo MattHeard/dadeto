@@ -13,6 +13,11 @@ import {
   crypto,
   getEnvironmentVariables,
 } from './render-contents-gcf.js';
+import {
+  setHttpResponseHeader,
+  sendHttpResponse,
+  logRenderContentsError,
+} from './response-effects.js';
 import { createRenderContentsEntrypoint } from '../../core/cloud/render-contents/index.js';
 
 const entrypoint = createRenderContentsEntrypoint({
@@ -25,6 +30,9 @@ const entrypoint = createRenderContentsEntrypoint({
   ADMIN_UID,
   fetchFn,
   bindEffectBoundary,
+  setHttpResponseHeader,
+  sendHttpResponse,
+  logError: logRenderContentsError,
   effectFetchFn,
   createSaveRenderedPage,
   crypto,

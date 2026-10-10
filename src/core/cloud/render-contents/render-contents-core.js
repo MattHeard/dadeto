@@ -8,7 +8,6 @@ import {
   productionOrigins,
   resolveStaticBucketName,
   resolveStaticObjectPrefix,
-  sendOkResponse,
 } from '../cloud-core.js';
 import { renderHtmlTemplate } from '../html-template.js';
 import { withPageFooter } from '../page-footer.js';
@@ -74,11 +73,13 @@ const DEFAULT_PAGE_SIZE = 100;
  * @property {(permission: AllowEffects, input: string, init?: object) => Promise<FetchResponse>} fetchFn Permission-aware fetch implementation.
  * @property {import('../../../../types/allow-effects').AllowEffectsBoundary} bindEffectBoundary External effect permission boundary.
  * @property {(permission: AllowEffects, input: string, init?: object) => Promise<FetchResponse>} effectFetchFn Permission-aware invalidation transport.
+ * @property {(permission: AllowEffects, response: NativeHttpResponseWithSet, name: string, value: string) => void} setHttpResponseHeader Permission-aware header writer.
+ * @property {(permission: AllowEffects, response: NativeHttpResponse, result: {status: number, body: unknown, method: 'send'|'json'}) => void} sendHttpResponse Permission-aware status and body writer.
  * @property {() => string} randomUUID UUID generator for cache invalidation.
  * @property {string} [projectId] Google Cloud project identifier.
  * @property {string} [urlMapName] Compute URL map identifier.
  * @property {string} [cdnHost] CDN host name used for invalidation requests.
- * @property {(message: string, error?: unknown) => void} [consoleError] Logger for invalidate failures.
+ * @property {(permission: AllowEffects, message: string, error?: unknown) => void} logError Permission-aware invalidation logger.
  * @property {string} [objectPrefix] Optional object prefix for tenant-scoped static output.
  * @property {number} [pageSize] Number of items per generated page.
  */
@@ -465,7 +466,7 @@ function hasPageNumber(page) {
  * @param {string} [root0.urlMapName] Compute URL map used for invalidation.
  * @param {string} [root0.cdnHost] CDN host name to include with invalidations.
  * @param {() => string} root0.randomUUID UUID generator.
- * @param {(message: string, error?: unknown) => void} [root0.consoleError] Logger for failures.
+ * @param {(permission: AllowEffects, message: string, error?: unknown) => void} root0.logError Permission-aware logger.
  * @returns {(paths: string[]) => Promise<void>} Path invalidation routine.
  */
 export function createInvalidatePaths({
@@ -476,12 +477,13 @@ export function createInvalidatePaths({
   urlMapName,
   cdnHost,
   randomUUID,
-  consoleError,
+  logError,
 }) {
   assertFunction(fetchFn, 'fetchFn');
   assertFunction(bindEffectBoundary, 'bindEffectBoundary');
   assertFunction(effectFetchFn, 'effectFetchFn');
   assertFunction(randomUUID, 'randomUUID');
+  assertFunction(logError, 'logError');
 
   const config = buildInvalidationConfig({ projectId, urlMapName, cdnHost });
 
@@ -494,7 +496,7 @@ export function createInvalidatePaths({
       effectFetchFn
     ),
     randomUUID,
-    consoleError,
+    logError,
     config,
   });
 }
@@ -591,7 +593,7 @@ function resolveUrlMapName(urlMapName) {
  * @param {import('../../../../types/allow-effects').AllowEffectsBoundary} params.bindEffectBoundary External effect permission boundary.
  * @param {(permission: AllowEffects, input: string, init?: object) => Promise<FetchResponse>} params.effectFetchFn Permission-aware invalidation transport.
  * @param {() => string} params.randomUUID UUID generator.
- * @param {((message: string, error?: unknown) => void) | undefined} [params.consoleError] Logger.
+ * @param {(permission: AllowEffects, message: string, error?: unknown) => void} params.logError Permission-aware logger.
  * @param {{ host: string, url: string }} params.config Invalidation configuration.
  * @returns {(paths: string[]) => Promise<void>} Invalidation handler.
  */
@@ -600,7 +602,7 @@ function createPathInvalidationRunner({
   bindEffectBoundary,
   effectFetchFn,
   randomUUID,
-  consoleError,
+  logError,
   config,
 }) {
   return async function invalidatePaths(paths) {
@@ -622,7 +624,7 @@ function createPathInvalidationRunner({
             host: config.host,
             effectFetchFn,
             randomUUID,
-            consoleError,
+            logError,
           })
         )
       )
@@ -683,65 +685,73 @@ async function extractAccessToken(response) {
  * @param {string} options.host CDN host name.
  * @param {(permission: AllowEffects, input: string, init?: object) => Promise<FetchResponse>} options.effectFetchFn Permission-aware invalidation transport.
  * @param {() => string} options.randomUUID UUID generator for request IDs.
- * @param {((message: string, ...optionalParams: unknown[]) => void) | undefined} [options.consoleError] Error logger.
+ * @param {(permission: AllowEffects, message: string, error?: unknown) => void} options.logError Permission-aware error logger.
  * @returns {Promise<void>} Resolves when the invalidation request completes.
  */
 async function invalidatePathItem(
   permission,
-  { path, token, url, host, effectFetchFn, randomUUID, consoleError }
+  { path, token, url, host, effectFetchFn, randomUUID, logError }
 ) {
-  return sendEffectFetch(permission, effectFetchFn, url, {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${token}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      host,
-      path,
-      requestId: randomUUID(),
-    }),
-  })
-    .then(response => logInvalidateResponse(response, path, consoleError))
-    .catch(error => {
-      handleInvalidateError(error, path, consoleError);
+  try {
+    const response = await sendEffectFetch(permission, effectFetchFn, url, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        host,
+        path,
+        requestId: randomUUID(),
+      }),
     });
+    logInvalidateResponse(permission, response, path, logError);
+  } catch (error) {
+    handleInvalidateError(permission, error, path, logError);
+  }
 }
 
 /**
  * Log invalidation failures when the response is not OK.
+ * @param {AllowEffects} permission Permission for the log command.
  * @param {FetchResponse} response Fetch response object.
  * @param {string} path Path that was invalidated.
- * @param {((message: string, ...optionalParams: unknown[]) => void) | undefined} consoleError Optional error logger.
+ * @param {(permission: AllowEffects, message: string, error?: unknown) => void} logError Permission-aware logger.
  * @returns {void}
  */
-function logInvalidateResponse(response, path, consoleError) {
+function logInvalidateResponse(permission, response, path, logError) {
   if (response.ok) {
     return;
   }
-  logInvalidateFailure(path, response.status, consoleError);
+  logInvalidateFailure(permission, path, response.status, logError);
 }
 
 /**
  * Report an invalidation error when the logger is available.
+ * @param {AllowEffects} permission Permission for the log command.
  * @param {string} path CDN path.
  * @param {number} status HTTP status code.
- * @param {((message: string, ...optionalParams: unknown[]) => void) | undefined} consoleError Optional logger.
+ * @param {(permission: AllowEffects, message: string, error?: unknown) => void} logError Permission-aware logger.
  * @returns {void}
  */
-function logInvalidateFailure(path, status, consoleError) {
-  consoleError?.(`invalidate ${path} failed: ${status}`);
+function logInvalidateFailure(permission, path, status, logError) {
+  logError(permission, `invalidate ${path} failed: ${status}`);
 }
 
 /**
  * Report invalidation errors via the provided logger.
+ * @param {AllowEffects} permission Permission for the log command.
  * @param {unknown} error Error or rejection reason.
  * @param {string} path Path that triggered the failure.
- * @param {((message: string, ...optionalParams: unknown[]) => void) | undefined} consoleError Optional logger.
+ * @param {(permission: AllowEffects, message: string, error?: unknown) => void} logError Permission-aware logger.
  * @returns {void}
  */
-function handleInvalidateError(error, path, consoleError) {
-  consoleError?.(`invalidate ${path} error`, extractMessageFromError(error));
+function handleInvalidateError(permission, error, path, logError) {
+  logError(
+    permission,
+    `invalidate ${path} error`,
+    extractMessageFromError(error)
+  );
 }
 
 /**
@@ -820,11 +830,13 @@ function normalizeRenderContentsOptions(
     fetchFn,
     bindEffectBoundary,
     effectFetchFn,
+    setHttpResponseHeader,
+    sendHttpResponse,
     randomUUID,
     projectId,
     urlMapName,
     cdnHost,
-    consoleError,
+    logError,
     objectPrefix,
     pageSize,
   } = params;
@@ -833,6 +845,9 @@ function normalizeRenderContentsOptions(
   assertFunction(fetchFn, 'fetchFn');
   assertFunction(bindEffectBoundary, 'bindEffectBoundary');
   assertFunction(effectFetchFn, 'effectFetchFn');
+  assertFunction(setHttpResponseHeader, 'setHttpResponseHeader');
+  assertFunction(sendHttpResponse, 'sendHttpResponse');
+  assertFunction(logError, 'logError');
   assertFunction(randomUUID, 'randomUUID');
 
   return {
@@ -850,42 +865,26 @@ function normalizeRenderContentsOptions(
     effectFetchFn: /** @type {RenderOptions['effectFetchFn']} */ (
       effectFetchFn
     ),
+    setHttpResponseHeader:
+      /** @type {RenderOptions['setHttpResponseHeader']} */ (
+        setHttpResponseHeader
+      ),
+    sendHttpResponse: /** @type {RenderOptions['sendHttpResponse']} */ (
+      sendHttpResponse
+    ),
     randomUUID: /** @type {() => string} */ (randomUUID),
     projectId,
     urlMapName,
     cdnHost,
-    consoleError: resolveRenderContentsConsoleError(consoleError),
+    logError: /** @type {RenderOptions['logError']} */ (logError),
     objectPrefix: normalizeStaticObjectPrefix(objectPrefix),
     pageSize: resolveRenderContentsPageSize(pageSize),
   };
 }
 
-/**
- * Get default console error function.
- * @returns {(message: string, error?: unknown) => void} Console error function.
- */
-function getDefaultConsoleError() {
-  const errorFn = console.error;
-  if (!errorFn) {
-    return () => {};
-  }
-
-  return errorFn.bind(console);
-}
-
 export const renderContentsTestUtils = {
-  getDefaultConsoleError,
   extractAccessToken,
 };
-
-/**
- * Ensure a console error helper is available for logging.
- * @param {((message: string, error?: unknown) => void) | undefined} value Candidate logger.
- * @returns {(message: string, error?: unknown) => void} Resolved console error helper.
- */
-function resolveRenderContentsConsoleError(value) {
-  return value ?? getDefaultConsoleError();
-}
 
 /**
  * Normalize the page size used when paginating rendered content.
@@ -913,7 +912,7 @@ function instantiateRenderContents(deps) {
     projectId,
     urlMapName,
     cdnHost,
-    consoleError,
+    logError,
     objectPrefix,
     pageSize,
   } = deps;
@@ -926,7 +925,7 @@ function instantiateRenderContents(deps) {
     urlMapName,
     cdnHost,
     randomUUID,
-    consoleError,
+    logError,
   });
 
   return createRenderContentsHandler({
@@ -1210,10 +1209,14 @@ function chooseAllowedOrigins(parsedOrigins) {
 
 /**
  * Create a helper that applies CORS headers to outgoing responses.
- * @param {{ allowedOrigins?: string[] }} root0 Options for configuring origins.
- * @returns {(req: NativeHttpRequest, res: NativeHttpResponseWithSet) => boolean} Header applier returning whether the origin is allowed.
+ * @param {{ allowedOrigins?: string[], setHttpResponseHeader: RenderOptions['setHttpResponseHeader'] }} root0 Options for configuring origins and response effects.
+ * @returns {(permission: AllowEffects, req: NativeHttpRequest, res: NativeHttpResponseWithSet) => boolean} Header applier returning whether the origin is allowed.
  */
-export function createApplyCorsHeaders({ allowedOrigins }) {
+export function createApplyCorsHeaders({
+  allowedOrigins,
+  setHttpResponseHeader,
+}) {
+  assertFunction(setHttpResponseHeader, 'setHttpResponseHeader');
   /** @type {string[]} */
   let origins;
   if (Array.isArray(allowedOrigins)) {
@@ -1222,10 +1225,13 @@ export function createApplyCorsHeaders({ allowedOrigins }) {
     origins = [];
   }
 
-  return function applyCorsHeaders(req, res) {
+  return function applyCorsHeaders(permission, req, res) {
     const origin = resolveOriginHeader(req);
-    const originAllowed = respondToOrigin(res, origin, origins);
-    setStaticCorsHeaders(res);
+    const originAllowed = respondToOrigin(permission, res, origin, {
+      origins,
+      setHeader: setHttpResponseHeader,
+    });
+    setStaticCorsHeaders(permission, res, setHttpResponseHeader);
     return originAllowed;
   };
 }
@@ -1250,143 +1256,183 @@ function isValidOriginString(origin) {
 
 /**
  * Apply the appropriate Access-Control response based on the resolved origin.
- * @param {{ set: (name: string, value: string) => void }} res Response helper.
+ * @param {AllowEffects} permission Response effect permission.
+ * @param {NativeHttpResponseWithSet} res Response helper.
  * @param {unknown} origin Origin header value.
- * @param {string[]} origins Allowlist of origins.
+ * @param {{origins: string[], setHeader: RenderOptions['setHttpResponseHeader']}} config Origin and response dependencies.
  * @returns {boolean} True when the origin is considered allowed.
  */
-function respondToOrigin(res, origin, origins) {
+function respondToOrigin(permission, res, origin, { origins, setHeader }) {
   if (!isValidOriginString(origin)) {
-    setWildcardOrigin(res);
+    setWildcardOrigin(permission, res, setHeader);
     return true;
   }
-  return handleKnownOrigin(res, /** @type {string} */ (origin), origins);
+  return handleKnownOrigin(permission, res, /** @type {string} */ (origin), {
+    origins,
+    setHeader,
+  });
 }
 
 /**
  * Apply origin-specific headers for allowed or denied origins.
- * @param {{ set: (name: string, value: string) => void }} res Response helper.
+ * @param {AllowEffects} permission Response effect permission.
+ * @param {NativeHttpResponseWithSet} res Response helper.
  * @param {string} origin Incoming origin header.
- * @param {string[]} origins Allowlist of origins.
+ * @param {{origins: string[], setHeader: RenderOptions['setHttpResponseHeader']}} config Origin and response dependencies.
  * @returns {boolean} True when the origin is permitted.
  */
-function handleKnownOrigin(res, origin, origins) {
+function handleKnownOrigin(permission, res, origin, { origins, setHeader }) {
   if (origins.includes(origin)) {
-    res.set('Access-Control-Allow-Origin', origin);
-    res.set('Vary', 'Origin');
+    setHeader(permission, res, 'Access-Control-Allow-Origin', origin);
+    setHeader(permission, res, 'Vary', 'Origin');
     return true;
   }
 
-  res.set('Access-Control-Allow-Origin', 'null');
-  res.set('Vary', 'Origin');
+  setHeader(permission, res, 'Access-Control-Allow-Origin', 'null');
+  setHeader(permission, res, 'Vary', 'Origin');
   return false;
 }
 
 /**
  * Apply a wildcard Access-Control-Allow-Origin header when no origin is provided.
- * @param {{ set: (name: string, value: string) => void }} res Response helper.
+ * @param {AllowEffects} permission Response effect permission.
+ * @param {NativeHttpResponseWithSet} res Response helper.
+ * @param {RenderOptions['setHttpResponseHeader']} setHeader Permission-aware header writer.
  * @returns {void}
  */
-function setWildcardOrigin(res) {
-  res.set('Access-Control-Allow-Origin', '*');
+function setWildcardOrigin(permission, res, setHeader) {
+  setHeader(permission, res, 'Access-Control-Allow-Origin', '*');
 }
 
 /**
  * Set headers that are constant regardless of origin.
- * @param {{ set: (name: string, value: string) => void }} res Response helper.
+ * @param {AllowEffects} permission Response effect permission.
+ * @param {NativeHttpResponseWithSet} res Response helper.
+ * @param {RenderOptions['setHttpResponseHeader']} setHeader Permission-aware header writer.
  * @returns {void}
  */
-function setStaticCorsHeaders(res) {
-  res.set('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.set('Access-Control-Allow-Headers', 'Authorization');
+function setStaticCorsHeaders(permission, res, setHeader) {
+  setHeader(permission, res, 'Access-Control-Allow-Methods', 'POST, OPTIONS');
+  setHeader(permission, res, 'Access-Control-Allow-Headers', 'Authorization');
 }
 
-/**
- * @typedef {object} ResponseWithStatusSend
- * @property {(code: number) => { send: (body: string) => void }} status Set response status.
- * @property {(body: string) => void} send Send response.
- */
+/** @typedef {NativeHttpResponse} ResponseWithStatusSend */
 
 /**
  * Create a request validator that ensures CORS and method requirements.
- * @param {{ applyCorsHeaders: (req: NativeHttpRequest, res: NativeHttpResponseWithSet & ResponseWithStatusSend) => boolean }} root0 Dependencies.
- * @returns {(req: NativeHttpRequest, res: ResponseWithStatusSend) => boolean} Validator indicating if the request should continue.
+ * @param {{ applyCorsHeaders: (permission: AllowEffects, req: NativeHttpRequest, res: NativeHttpResponseWithSet & ResponseWithStatusSend) => boolean, sendHttpResponse: RenderOptions['sendHttpResponse'] }} root0 Dependencies.
+ * @returns {(permission: AllowEffects, req: NativeHttpRequest, res: ResponseWithStatusSend) => boolean} Validator indicating if the request should continue.
  */
-export function createValidateRequest({ applyCorsHeaders }) {
+export function createValidateRequest({ applyCorsHeaders, sendHttpResponse }) {
   assertFunction(applyCorsHeaders, 'applyCorsHeaders');
+  assertFunction(sendHttpResponse, 'sendHttpResponse');
 
-  return function validateRequest(req, res) {
+  return function validateRequest(permission, req, res) {
     const originAllowed = applyCorsHeaders(
+      permission,
       req,
       /** @type {NativeHttpResponseWithSet & ResponseWithStatusSend} */ (res)
     );
 
-    if (handlePreflight(req, res, originAllowed)) {
+    if (
+      handlePreflight(permission, req, res, { originAllowed, sendHttpResponse })
+    ) {
       return false;
     }
 
-    return ensureOriginAndMethodAllowed(req, res, originAllowed);
+    return ensureOriginAndMethodAllowed(permission, req, res, {
+      originAllowed,
+      sendHttpResponse,
+    });
   };
 }
 
 /**
  * Handle OPTIONS preflight requests.
+ * @param {AllowEffects} permission Response effect permission.
  * @param {NativeHttpRequest} req Incoming request.
  * @param {ResponseWithStatusSend} res Response helper.
- * @param {boolean} originAllowed Whether the request origin passed CORS checks.
+ * @param {{originAllowed: boolean, sendHttpResponse: RenderOptions['sendHttpResponse']}} config CORS result and response writer.
  * @returns {boolean} True when the request was handled and no further processing is needed.
  */
-function handlePreflight(req, res, originAllowed) {
+function handlePreflight(
+  permission,
+  req,
+  res,
+  { originAllowed, sendHttpResponse }
+) {
   if (!isOptionsRequest(req)) {
     return false;
   }
 
-  respondToPreflight(res, originAllowed);
+  respondToPreflight(permission, res, originAllowed, sendHttpResponse);
   return true;
 }
 
 /**
  * Send the preflight response body and status.
+ * @param {AllowEffects} permission Response effect permission.
  * @param {ResponseWithStatusSend} res Response helper.
  * @param {boolean} originAllowed Whether the origin was authorized.
+ * @param {RenderOptions['sendHttpResponse']} sendHttpResponse Permission-aware response writer.
  * @returns {void}
  */
-function respondToPreflight(res, originAllowed) {
+function respondToPreflight(permission, res, originAllowed, sendHttpResponse) {
   if (originAllowed) {
-    res.status(204).send('');
+    sendHttpResponse(permission, res, {
+      status: 204,
+      body: '',
+      method: 'send',
+    });
     return;
   }
 
-  res.status(403).send('');
+  sendHttpResponse(permission, res, { status: 403, body: '', method: 'send' });
 }
 
 /**
  * Enforce that the origin is allowed and the method is POST.
+ * @param {AllowEffects} permission Response effect permission.
  * @param {NativeHttpRequest} req Incoming request helper.
  * @param {ResponseWithStatusSend} res Response helper.
- * @param {boolean} originAllowed Whether the origin is allowed.
+ * @param {{originAllowed: boolean, sendHttpResponse: RenderOptions['sendHttpResponse']}} config CORS result and response writer.
  * @returns {boolean} True when the request should continue.
  */
-function ensureOriginAndMethodAllowed(req, res, originAllowed) {
+function ensureOriginAndMethodAllowed(
+  permission,
+  req,
+  res,
+  { originAllowed, sendHttpResponse }
+) {
   if (!originAllowed) {
-    res.status(403).send('CORS');
+    sendHttpResponse(permission, res, {
+      status: 403,
+      body: 'CORS',
+      method: 'send',
+    });
     return false;
   }
-  return ensurePostMethod(req, res);
+  return ensurePostMethod(permission, req, res, sendHttpResponse);
 }
 
 /**
  * Ensure the request uses the POST method.
+ * @param {AllowEffects} permission Response effect permission.
  * @param {NativeHttpRequest} req Request helper.
  * @param {ResponseWithStatusSend} res Response helper.
+ * @param {RenderOptions['sendHttpResponse']} sendHttpResponse Permission-aware response writer.
  * @returns {boolean} True when the method is POST.
  */
-function ensurePostMethod(req, res) {
+function ensurePostMethod(permission, req, res, sendHttpResponse) {
   if (isPostRequest(req)) {
     return true;
   }
 
-  res.status(405).send('POST only');
+  sendHttpResponse(permission, res, {
+    status: 405,
+    body: 'POST only',
+    method: 'send',
+  });
   return false;
 }
 
@@ -1549,42 +1595,66 @@ function extractBearerToken(header) {
  * Create the helper that validates the Authorization header against an admin user.
  * @param {{
  *   verifyIdToken: (token: string) => Promise<{ uid?: string }>,
- *   adminUid: string
+ *   adminUid: string,
+ *   sendHttpResponse: RenderOptions['sendHttpResponse']
  * }} root0 - Authorization dependencies.
- * @returns {(options: { req: NativeHttpRequest, res: ResponseWithStatusSend }) => Promise<{ uid?: string } | null>} Authorization checker.
+ * @returns {(permission: AllowEffects, options: { req: NativeHttpRequest, res: ResponseWithStatusSend }) => Promise<{ uid?: string } | null>} Authorization checker.
  */
-export function createAuthorizeRequest({ verifyIdToken, adminUid }) {
+export function createAuthorizeRequest({
+  verifyIdToken,
+  adminUid,
+  sendHttpResponse,
+}) {
   assertFunction(verifyIdToken, 'verifyIdToken');
+  assertFunction(sendHttpResponse, 'sendHttpResponse');
 
   if (!adminUid) {
     throw new TypeError('adminUid must be provided');
   }
 
-  return async function authorizeRequest({ req, res }) {
+  return async function authorizeRequest(permission, { req, res }) {
     const header = resolveAuthorizationHeader(req);
     const token = extractBearerToken(header);
 
     if (!token) {
-      res.status(401).send('Missing token');
+      sendHttpResponse(permission, res, {
+        status: 401,
+        body: 'Missing token',
+        method: 'send',
+      });
       return null;
     }
 
-    return verifyIdToken(token)
-      .then(decoded => ensureAdminIdentity(decoded, adminUid, res))
-      .catch(error => handleAuthError(error, res));
+    try {
+      const decoded = await verifyIdToken(token);
+      return ensureAdminIdentity(permission, {
+        decoded,
+        adminUid,
+        res,
+        sendHttpResponse,
+      });
+    } catch (error) {
+      return handleAuthError(permission, error, res, sendHttpResponse);
+    }
   };
 }
 
 /**
  * Confirm the decoded token matches the configured admin UID.
- * @param {{ uid?: string } | null} decoded Decoded token payload.
- * @param {string} adminUid Expected admin user ID.
- * @param {ResponseWithStatusSend} res Response helper.
+ * @param {AllowEffects} permission Response effect permission.
+ * @param {{ decoded: { uid?: string } | null, adminUid: string, res: ResponseWithStatusSend, sendHttpResponse: RenderOptions['sendHttpResponse'] }} params Identity and response dependencies.
  * @returns {{ uid?: string } | null} Decoded payload when the UID matches.
  */
-function ensureAdminIdentity(decoded, adminUid, res) {
+function ensureAdminIdentity(
+  permission,
+  { decoded, adminUid, res, sendHttpResponse }
+) {
   if (isInvalidAdminIdentity(decoded, adminUid)) {
-    res.status(403).send('Forbidden');
+    sendHttpResponse(permission, res, {
+      status: 403,
+      body: 'Forbidden',
+      method: 'send',
+    });
     return null;
   }
 
@@ -1603,13 +1673,19 @@ function isInvalidAdminIdentity(decoded, adminUid) {
 
 /**
  * Respond to verification failures with a standard error body.
+ * @param {AllowEffects} permission Response effect permission.
  * @param {unknown} error Error produced by the verifier.
  * @param {ResponseWithStatusSend} res Response helper.
+ * @param {RenderOptions['sendHttpResponse']} sendHttpResponse Permission-aware response writer.
  * @returns {null} Always returns null so the caller can abort processing.
  */
-function handleAuthError(error, res) {
+function handleAuthError(permission, error, res, sendHttpResponse) {
   const message = extractMessageFromError(error);
-  res.status(401).send(formatInvalidTokenMessage(message));
+  sendHttpResponse(permission, res, {
+    status: 401,
+    body: formatInvalidTokenMessage(message),
+    method: 'send',
+  });
   return null;
 }
 
@@ -1642,17 +1718,19 @@ function hasNonEmptyString(input) {
 /**
  * Build a render-request handler bound to the shared authorization extractor.
  * @param {object} root0 Handler dependencies.
- * @param {(req: NativeHttpRequest, res: NativeHttpResponse) => boolean} root0.validateRequest Pre-flight validator.
+ * @param {(permission: AllowEffects, req: NativeHttpRequest, res: NativeHttpResponse) => boolean} root0.validateRequest Pre-flight validator.
  * @param {(token: string) => Promise<{ uid?: string }>} root0.verifyIdToken Firebase token verifier.
  * @param {string} root0.adminUid UID allowed to trigger rendering.
- * @param {() => Promise<void>} root0.render Rendering function.
- * @returns {(req: NativeHttpRequest, res: NativeHttpResponse) => Promise<void>} Fully wired handler.
+ * @param {(permission: AllowEffects) => Promise<void>} root0.render Rendering function.
+ * @param {RenderOptions['sendHttpResponse']} root0.sendHttpResponse Permission-aware response writer.
+ * @returns {(permission: AllowEffects, req: NativeHttpRequest, res: NativeHttpResponse) => Promise<void>} Fully wired handler.
  */
 export function buildHandleRenderRequest({
   validateRequest,
   verifyIdToken,
   adminUid,
   render,
+  sendHttpResponse,
 }) {
   assertFunction(validateRequest, 'validateRequest');
   assertFunction(render, 'render');
@@ -1660,44 +1738,58 @@ export function buildHandleRenderRequest({
   const authorizeRequest = createAuthorizeRequest({
     verifyIdToken,
     adminUid,
+    sendHttpResponse,
   });
 
   /**
    * Guard the render workflow by ensuring the request is authorized.
+   * @param {AllowEffects} permission Response effect permission.
    * @param {NativeHttpRequest} req - Request forwarded from the HTTP handler.
    * @param {NativeHttpResponse} res - Response object used to send errors or success.
    * @returns {Promise<void>}
    */
-  async function executeRenderRequest(req, res) {
-    const decoded = await authorizeRequest({ req, res });
+  async function executeRenderRequest(permission, req, res) {
+    const decoded = await authorizeRequest(permission, { req, res });
 
     if (decoded) {
-      await executeRenderRequestAfterGuard(res);
+      await executeRenderRequestAfterGuard(permission, res);
     }
   }
 
   /**
    * Actually run the render helper and send the final response.
+   * @param {AllowEffects} permission Response effect permission.
    * @param {NativeHttpResponse} res - Response object for success/failure updates.
    * @returns {Promise<void>}
    */
-  function executeRenderRequestAfterGuard(res) {
-    return render()
-      .then(() => {
-        sendOkResponse(res);
-      })
-      .catch(error => handleRenderFailure(res, error));
+  async function executeRenderRequestAfterGuard(permission, res) {
+    try {
+      await render(permission);
+      sendHttpResponse(permission, res, {
+        status: 200,
+        body: { ok: true },
+        method: 'json',
+      });
+    } catch (error) {
+      handleRenderFailure(permission, res, error, sendHttpResponse);
+    }
   }
 
   /**
    * Send the failure response when rendering fails.
-   * @param {{ status: (code: number) => { json: (body: object) => void } }} res Response object used to send errors.
+   * @param {AllowEffects} permission Response effect permission.
+   * @param {NativeHttpResponse} res Response object used to send errors.
    * @param {unknown} error Error thrown by the renderer.
+   * @param {RenderOptions['sendHttpResponse']} sendHttpResponse Permission-aware response writer.
    * @returns {void}
    */
-  function handleRenderFailure(res, error) {
+  function handleRenderFailure(permission, res, error, sendHttpResponse) {
     const message = extractMessageFromError(error);
-    res.status(500).json({ error: resolveRenderFailureMessage(message) });
+    sendHttpResponse(permission, res, {
+      status: 500,
+      body: { error: resolveRenderFailureMessage(message) },
+      method: 'json',
+    });
   }
 
   /**
@@ -1713,9 +1805,9 @@ export function buildHandleRenderRequest({
     return 'render failed';
   }
 
-  return async function handleRenderRequest(req, res) {
-    if (validateRequest(req, res)) {
-      await executeRenderRequest(req, res);
+  return async function handleRenderRequest(permission, req, res) {
+    if (validateRequest(permission, req, res)) {
+      await executeRenderRequest(permission, req, res);
     }
   };
 }

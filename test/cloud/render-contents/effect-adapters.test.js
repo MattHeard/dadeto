@@ -38,8 +38,45 @@ await jest.unstable_mockModule(
 const { createSaveRenderedPage } = await import(
   '../../../src/cloud/render-contents/render-contents-gcf.js'
 );
+const { setHttpResponseHeader, sendHttpResponse, logRenderContentsError } =
+  await import('../../../src/cloud/render-contents/response-effects.js');
 
 describe('render-contents effect adapters', () => {
+  it('writes response headers through the permission-first adapter', () => {
+    const permission = Object.freeze({ response: 'allowed' });
+    const response = { set: jest.fn() };
+
+    setHttpResponseHeader(permission, response, 'Vary', 'Origin');
+
+    expect(response.set).toHaveBeenCalledWith('Vary', 'Origin');
+  });
+
+  it('writes response status and JSON through the permission-first adapter', () => {
+    const permission = Object.freeze({ response: 'allowed' });
+    const json = jest.fn();
+    const response = { status: jest.fn(() => ({ json })) };
+
+    sendHttpResponse(permission, response, {
+      status: 200,
+      body: { ok: true },
+      method: 'json',
+    });
+
+    expect(response.status).toHaveBeenCalledWith(200);
+    expect(json).toHaveBeenCalledWith({ ok: true });
+  });
+
+  it('logs errors through the permission-first adapter', () => {
+    const permission = Object.freeze({ log: 'allowed' });
+    const error = new Error('invalidation failed');
+    const log = jest.spyOn(console, 'error').mockImplementation(() => {});
+
+    logRenderContentsError(permission, 'invalidation failed', error);
+
+    expect(log).toHaveBeenCalledWith('invalidation failed', error);
+    log.mockRestore();
+  });
+
   it('saves the rendered HTML through the permission-first adapter', async () => {
     const permission = Object.freeze({ render: 'allowed' });
     const save = jest.fn().mockResolvedValue(undefined);
