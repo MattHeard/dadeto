@@ -19,6 +19,7 @@ describe('createValueElement', () => {
       setValue: jest.fn(),
       addEventListener: jest.fn(),
       removeEventListener: jest.fn(),
+      getCurrentTarget: jest.fn(event => event.currentTarget),
       getTargetValue: jest.fn(event => event.target.value),
       getDataAttribute: jest.fn(() => 'testKey'),
       setDataAttribute: jest.fn(),
@@ -52,6 +53,11 @@ describe('createValueElement', () => {
     expect(mockDom.setType).toHaveBeenCalledWith(valueEl, 'text');
     expect(mockDom.setPlaceholder).toHaveBeenCalledWith(valueEl, 'Value');
     expect(mockDom.setValue).toHaveBeenCalledWith(valueEl, initialValue);
+    expect(mockDom.setDataAttribute).toHaveBeenCalledWith(
+      valueEl,
+      'prevKey',
+      'testKey'
+    );
 
     // Verify event listener was added
     expect(mockDom.addEventListener).toHaveBeenCalledWith(
@@ -89,7 +95,7 @@ describe('createValueElement', () => {
 
     // Simulate changing the value
     valueEl.value = newValue;
-    const mockEvent = { target: valueEl };
+    const mockEvent = { target: valueEl, currentTarget: valueEl };
 
     // Call the input handler directly with our mock event
     inputHandler(mockEvent);

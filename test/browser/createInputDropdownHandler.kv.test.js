@@ -29,6 +29,7 @@ describe('createInputDropdownHandler kv type', () => {
       setPlaceholder: jest.fn(),
       setValue: jest.fn(),
       setDataAttribute: jest.fn(),
+      getDataAttribute: jest.fn(() => 'key'),
       addEventListener: jest.fn(),
       setTextContent: jest.fn(),
       appendChild: jest.fn(),

@@ -675,7 +675,6 @@ describe('additional dropdown and focus coverage', () => {
     expect(defaultTypeData.rowTypes).toEqual({ new: 'string' });
     const valueHandler = utils.createValueInputHandler({
       dom,
-      keyEl: {},
       textInput: {},
       rowData: null,
       syncHiddenField: sync,

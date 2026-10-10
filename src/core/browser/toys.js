@@ -905,6 +905,8 @@ export function createKeyInputHandler(options) {
 
     if (migrateRowIfValid(prevKey, newKey, effectiveRowData)) {
       dom.setDataAttribute(keyEl, 'prevKey', newKey);
+      const valueEl = dom.getNextSibling?.(keyEl);
+      if (valueEl) dom.setDataAttribute(valueEl, 'prevKey', newKey);
     }
     syncHiddenField(textInput, effectiveRowData, dom);
   };
@@ -914,17 +916,17 @@ export function createKeyInputHandler(options) {
  * Creates a value input event handler for a key-value row.
  * @param {object} options - Configuration.
  * @param {object} options.dom - DOM utilities.
- * @param {HTMLElement} options.keyEl - Key input element.
  * @param {HTMLInputElement} options.textInput - Hidden JSON input.
  * @param {object} options.rowData - Row data object containing rows and rowTypes.
  * @param {ToyCallback} options.syncHiddenField - Updates the hidden field.
  * @returns {ToyCallback} The event handler.
  */
 export function createValueInputHandler(options) {
-  const { dom, keyEl, textInput, rowData, syncHiddenField } = options;
+  const { dom, textInput, rowData, syncHiddenField } = options;
   const effectiveRowData = rowData ?? { rows: {}, rowTypes: {} };
   return e => {
-    const rowKey = dom.getDataAttribute(keyEl, 'prevKey'); // may have changed via onKey
+    const valueEl = dom.getCurrentTarget(e);
+    const rowKey = dom.getDataAttribute(valueEl, 'prevKey'); // kept in sync by onKey
     effectiveRowData.rows[rowKey] = dom.getTargetValue(e);
     syncHiddenField(textInput, effectiveRowData, dom);
   };
@@ -1002,11 +1004,11 @@ export const createValueElement = ({
 
   const onValue = createValueInputHandler({
     dom,
-    keyEl,
     textInput,
     rowData,
     syncHiddenField,
   });
+  dom.setDataAttribute(valueEl, 'prevKey', keyEl?.value);
   dom.addEventListener(valueEl, 'input', onValue);
   const removeValueListener = createRemoveListener({
     dom,

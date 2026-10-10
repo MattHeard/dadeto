@@ -4,7 +4,7 @@ const { createValueInputHandler } = toys;
 
 describe('createValueInputHandler', () => {
   let dom;
-  let keyEl;
+  let valueEl;
   let textInput;
   let rowData;
   let syncHiddenField;
@@ -15,11 +15,12 @@ describe('createValueInputHandler', () => {
     // Mock DOM utilities
     dom = {
       getDataAttribute: jest.fn(),
+      getCurrentTarget: jest.fn(inputEvent => inputEvent.currentTarget),
       getTargetValue: jest.fn(() => 'newValue'),
     };
 
     // Mock elements
-    keyEl = {};
+    valueEl = {};
     textInput = {};
 
     // Initial rowData state
@@ -37,14 +38,13 @@ describe('createValueInputHandler', () => {
     // Create the handler
     handler = createValueInputHandler({
       dom,
-      keyEl,
       textInput,
       rowData,
       syncHiddenField,
     });
 
     // Mock event
-    event = { target: { value: 'newValue' } };
+    event = { target: { value: 'newValue' }, currentTarget: valueEl };
   });
 
   it('should update the value for an existing key and sync hidden field', () => {
@@ -105,7 +105,8 @@ describe('createValueInputHandler', () => {
     handler(event);
 
     // Assert
-    expect(dom.getDataAttribute).toHaveBeenCalledWith(keyEl, 'prevKey');
+    expect(dom.getCurrentTarget).toHaveBeenCalledWith(event);
+    expect(dom.getDataAttribute).toHaveBeenCalledWith(valueEl, 'prevKey');
   });
 
   it('should update the value even if the key is not in rows', () => {

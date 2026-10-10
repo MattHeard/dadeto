@@ -17,6 +17,7 @@ describe('createKeyInputHandler', () => {
       getDataAttribute: jest.fn(),
       getCurrentTarget: jest.fn(inputEvent => inputEvent.currentTarget),
       getTargetValue: jest.fn(),
+      getNextSibling: jest.fn(),
       setDataAttribute: jest.fn(),
     };
 
@@ -107,6 +108,22 @@ describe('createKeyInputHandler', () => {
     expect(dom.getDataAttribute).toHaveBeenCalledWith(keyEl, 'prevKey');
     expect(dom.setDataAttribute).not.toHaveBeenCalled();
     expect(syncHiddenField).toHaveBeenCalledWith(textInput, rowData, dom);
+  });
+
+  it('keeps the following value input key in sync after a rename', () => {
+    const valueEl = {};
+    dom.getDataAttribute.mockReturnValue('oldKey');
+    dom.getTargetValue.mockReturnValue('newKey');
+    dom.getNextSibling.mockReturnValue(valueEl);
+    rowData.rows.oldKey = 'value';
+
+    handler(event);
+
+    expect(dom.setDataAttribute).toHaveBeenCalledWith(
+      valueEl,
+      'prevKey',
+      'newKey'
+    );
   });
 
   it('should not update rows when new key is empty', () => {
