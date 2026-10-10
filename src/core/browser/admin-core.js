@@ -1070,13 +1070,21 @@ export function ensureStorage(storage) {
  * }} deps - Dependencies to validate.
  * @returns {void} - Throws when any dependency is invalid.
  */
-export function validateGoogleSignInDeps({
+export function validateGoogleSignInDeps(deps) {
+  validateGoogleSignInCredentialDeps(deps);
+  validateGoogleSignInBrowserDeps(deps);
+}
+
+/**
+ * Validate Firebase credential and storage dependencies for Google sign-in.
+ * @param {{ credentialFactory: (credential: string) => unknown, signInWithCredential: (auth: FirebaseAuthInstance, credential: unknown) => Promise<void> | void, auth?: FirebaseAuthInstance, storage?: { setItem?: (key: string, value: string) => void } }} deps Firebase sign-in dependencies.
+ * @returns {void}
+ */
+function validateGoogleSignInCredentialDeps({
   credentialFactory,
   signInWithCredential,
   auth,
   storage,
-  matchMedia,
-  querySelectorAll,
 }) {
   assertFunction(credentialFactory, 'credentialFactory must be a function');
   assertFunction(
@@ -1085,6 +1093,14 @@ export function validateGoogleSignInDeps({
   );
   ensureObject(auth, 'auth must be provided');
   ensureStorage(storage);
+}
+
+/**
+ * Validate browser helpers used to render the Google sign-in control.
+ * @param {{ matchMedia: (query: string) => { matches: boolean }, querySelectorAll: (selector: string) => NodeList }} deps Browser UI dependencies.
+ * @returns {void}
+ */
+function validateGoogleSignInBrowserDeps({ matchMedia, querySelectorAll }) {
   assertFunction(matchMedia, 'matchMedia must be a function');
   assertFunction(querySelectorAll, 'querySelectorAll must be a function');
 }
