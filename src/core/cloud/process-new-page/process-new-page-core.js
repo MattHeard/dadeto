@@ -480,76 +480,65 @@ function getValidIncomingOptionRefs(refs) {
 /**
  * Resolve page and story references when a submission targets an existing option.
  * Returns null when the submission should be marked as processed without further work.
- * @param {{db: import('firebase-admin/firestore').Firestore, incomingOptionFullName: string, snapshot: import('firebase-admin/firestore').DocumentSnapshot, batch: import('firebase-admin/firestore').WriteBatch, randomUUID: () => string, random: () => number, getServerTimestamp: () => unknown}} params Dependencies and trigger snapshot.
+ * @param {import('firebase-admin/firestore').Firestore} db Firestore instance used to read the option.
+ * @param {string} incomingOptionFullName Full option document path.
+ * @param {import('firebase-admin/firestore').DocumentSnapshot} snapshot Submission snapshot.
+ * @param {(validRefs: {variantRef: import('firebase-admin/firestore').DocumentReference | null, storyRefCandidate: import('firebase-admin/firestore').DocumentReference | null}, optionSnap: SnapshotWithReference, optionRef: import('firebase-admin/firestore').DocumentReference, incomingOptionFullName: string) => Promise<PageContext | null>} buildContext Context builder for a validated option.
  * @returns {Promise<PageContext | null>} Resolved context or null when the submission is already processed.
  */
-async function resolveIncomingOptionContext({
+async function resolveIncomingOptionContext(
   db,
   incomingOptionFullName,
   snapshot,
-  batch,
-  randomUUID,
-  random,
-  getServerTimestamp,
-}) {
+  buildContext
+) {
   const optionRef = db.doc(incomingOptionFullName);
   const optionSnap = ensureOptionSnapshotRef(await optionRef.get(), optionRef);
   const validRefs = await resolveIncomingOptionRefs(optionSnap, snapshot);
   if (!validRefs) {
     return null;
   }
-  return buildIncomingOptionContext({
-    validRefs,
-    optionSnap,
-    db,
-    batch,
-    random,
-    randomUUID,
-    optionRef,
-    incomingOptionFullName,
-    getServerTimestamp,
-  });
+  return buildContext(validRefs, optionSnap, optionRef, incomingOptionFullName);
 }
 
 /**
- * Build the incoming option context from resolved refs and option data.
- * @param {{validRefs: {variantRef: import('firebase-admin/firestore').DocumentReference | null, storyRefCandidate: import('firebase-admin/firestore').DocumentReference | null}, optionSnap: SnapshotWithReference, db: import('firebase-admin/firestore').Firestore, batch: import('firebase-admin/firestore').WriteBatch, random: () => number, randomUUID: () => string, optionRef: import('firebase-admin/firestore').DocumentReference, incomingOptionFullName: string, getServerTimestamp: () => unknown}} params Context-building dependencies.
- * @returns {Promise<PageContext | null>} Resolved page context or null.
+ * Stage context construction from database and batch dependencies.
+ * @param {import('firebase-admin/firestore').Firestore} db Firestore instance for page references.
+ * @param {import('firebase-admin/firestore').WriteBatch} batch Batch collecting page updates.
+ * @returns {(random: () => number, randomUUID: () => string, getServerTimestamp: () => unknown) => (validRefs: {variantRef: import('firebase-admin/firestore').DocumentReference | null, storyRefCandidate: import('firebase-admin/firestore').DocumentReference | null}, optionSnap: SnapshotWithReference, optionRef: import('firebase-admin/firestore').DocumentReference, incomingOptionFullName: string) => Promise<PageContext | null>} Context builder stages.
  */
-async function buildIncomingOptionContext({
-  validRefs,
-  optionSnap,
-  db,
-  batch,
-  random,
-  randomUUID,
-  optionRef,
-  incomingOptionFullName,
-  getServerTimestamp,
-}) {
-  const { variantRef, storyRefCandidate } = validRefs;
-  if (!storyRefCandidate) return null;
-  const optionData = optionSnap.data();
-  const targetPage = resolveTargetPageFromOption(optionData);
-  const storyRef =
-    /** @type {import('firebase-admin/firestore').DocumentReference} */ (
-      storyRefCandidate
-    );
-  const pageContext = await resolveIncomingOptionPageContext({
-    targetPage,
-    db,
-    batch,
-    random,
-    randomUUID,
-    optionRef,
-    incomingOptionFullName,
-    getServerTimestamp,
-    storyRef,
-  });
-  return {
-    ...pageContext,
-    storyRef: storyRefCandidate,
-    variantRef,
+function createIncomingOptionContextBuilder(db, batch) {
+  return function bindContextRuntime(random, randomUUID, getServerTimestamp) {
+    return async function buildContext(
+      validRefs,
+      optionSnap,
+      optionRef,
+      incomingOptionFullName
+    ) {
+      if (!validRefs.storyRefCandidate) return null;
+      const optionData = optionSnap.data();
+      const targetPage = resolveTargetPageFromOption(optionData);
+      const storyRef =
+        /** @type {import('firebase-admin/firestore').DocumentReference} */ (
+          validRefs.storyRefCandidate
+        );
+      const pageContext = await resolveIncomingOptionPageContext({
+        targetPage,
+        db,
+        batch,
+        random,
+        randomUUID,
+        optionRef,
+        incomingOptionFullName,
+        getServerTimestamp,
+        storyRef,
+      });
+      return {
+        ...pageContext,
+        storyRef: validRefs.storyRefCandidate,
+        variantRef: validRefs.variantRef,
+      };
+    };
   };
 }
 
@@ -1205,15 +1194,17 @@ async function resolveViaOption({
   random,
   getServerTimestamp,
 }) {
-  return resolveIncomingOptionContext({
+  const buildContext = createIncomingOptionContextBuilder(db, batch)(
+    random,
+    randomUUID,
+    getServerTimestamp
+  );
+  return resolveIncomingOptionContext(
     db,
     incomingOptionFullName,
     snapshot,
-    batch,
-    randomUUID,
-    random,
-    getServerTimestamp,
-  });
+    buildContext
+  );
 }
 
 /**
@@ -1628,7 +1619,7 @@ export const processNewPageTestUtils = {
   ensureOptionSnapshotRef,
   resolveStoryRefOrEmpty,
   createPageContext,
-  buildIncomingOptionContext,
+  createIncomingOptionContextBuilder,
 };
 
 /**

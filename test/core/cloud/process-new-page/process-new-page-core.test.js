@@ -7,11 +7,21 @@ import {
   processNewPageTestUtils,
 } from '../../../../src/core/cloud/process-new-page/process-new-page-core.js';
 
-test('incoming option context returns null when its story reference is absent', async () => {
+test('incoming option context builder returns null without a story reference', async () => {
+  const buildContext =
+    processNewPageTestUtils.createIncomingOptionContextBuilder({}, {})(
+      () => 0,
+      () => 'uuid',
+      () => null
+    );
+
   await expect(
-    processNewPageTestUtils.buildIncomingOptionContext({
-      validRefs: { variantRef: null, storyRefCandidate: null },
-    })
+    buildContext(
+      { variantRef: null, storyRefCandidate: null },
+      { data: () => ({}) },
+      {},
+      'options/one'
+    )
   ).resolves.toBeNull();
 });
 
