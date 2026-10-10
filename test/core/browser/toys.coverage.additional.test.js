@@ -704,14 +704,7 @@ describe('additional dropdown and focus coverage', () => {
       onRemove: jest.fn(),
       disposers: [],
     });
-    const renderer = utils.createRenderer({
-      dom,
-      disposersArray: [],
-      container: {},
-      rowData: null,
-      textInput: {},
-      syncHiddenField: sync,
-    });
+    const renderer = utils.createRenderer(dom, [], {})(null, {}, sync);
     expect(renderer).toBeDefined();
     renderer();
     sync.mockClear();

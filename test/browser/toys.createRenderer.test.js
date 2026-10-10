@@ -25,14 +25,11 @@ describe('createRenderer', () => {
     const rowData = { rows: { foo: 'bar' }, rowTypes: {} };
     const textInput = undefined;
     const syncHiddenField = jest.fn();
-    const render = createRenderer({
-      dom,
-      disposersArray: disposers,
-      container,
+    const render = createRenderer(dom, disposers, container)(
       rowData,
       textInput,
-      syncHiddenField,
-    });
+      syncHiddenField
+    );
     render();
     expect(syncHiddenField).toHaveBeenCalled();
   });
@@ -44,14 +41,11 @@ describe('createRenderer', () => {
     const rowData = { rows: {}, rowTypes: {} };
     const textInput = {};
     const syncHiddenField = jest.fn();
-    const render = createRenderer({
-      dom,
-      disposersArray: disposers,
-      container,
+    const render = createRenderer(dom, disposers, container)(
       rowData,
       textInput,
-      syncHiddenField,
-    });
+      syncHiddenField
+    );
     render();
     expect(rowData.rows).toEqual({ '': '' });
   });
@@ -63,14 +57,11 @@ describe('createRenderer', () => {
     const rowData = { rows: { existing: 'val' }, rowTypes: {} };
     const textInput = {};
     const syncHiddenField = jest.fn();
-    const render = createRenderer({
-      dom,
-      disposersArray: disposers,
-      container,
+    const render = createRenderer(dom, disposers, container)(
       rowData,
       textInput,
-      syncHiddenField,
-    });
+      syncHiddenField
+    );
     render();
     expect(rowData.rows).toEqual({ existing: 'val' });
   });

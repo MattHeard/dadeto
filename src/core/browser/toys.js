@@ -241,14 +241,11 @@ export const ensureKeyValueInput = (container, textInput, dom) => {
 
   const rowData = createRowData(rows);
 
-  const render = createRenderer({
-    dom,
-    disposersArray: disposers,
-    container: kvContainer,
+  const render = createRenderer(dom, disposers, kvContainer)(
     rowData,
     textInput,
-    syncHiddenField,
-  });
+    syncHiddenField
+  );
 
   render();
 
@@ -1795,45 +1792,38 @@ export const syncHiddenField = (textInput, rowData, dom) => {
 export const syncRowData = (syncHiddenField, textInput, rowData, dom) =>
   syncHiddenField(textInput, rowData ?? { rows: {}, rowTypes: {} }, dom);
 
-export const createRenderer = options => {
-  const {
-    dom,
-    disposersArray,
-    container,
-    rowData,
-    textInput,
-    syncHiddenField,
-  } = options;
-  const effectiveRowData = rowData ?? { rows: {}, rowTypes: {} };
-  const syncWithRowData = (ti, rd, d) =>
-    syncRowData(syncHiddenField, ti, rd, d);
-  /**
-   * Renders the key-value input UI
-   */
-  const render = () => {
-    clearDisposers(disposersArray);
-    dom.removeAllChildren(container);
+export const createRenderer =
+  (dom, disposersArray, container) => (rowData, textInput, syncHiddenField) => {
+    const effectiveRowData = rowData ?? { rows: {}, rowTypes: {} };
+    const syncWithRowData = (ti, rd, d) =>
+      syncRowData(syncHiddenField, ti, rd, d);
+    /**
+     * Renders the key-value input UI
+     */
+    const render = () => {
+      clearDisposers(disposersArray);
+      dom.removeAllChildren(container);
 
-    // If no keys, add a single empty row
-    if (Object.keys(effectiveRowData.rows).length === 0) {
-      effectiveRowData.rows[''] = '';
-    }
+      // If no keys, add a single empty row
+      if (Object.keys(effectiveRowData.rows).length === 0) {
+        effectiveRowData.rows[''] = '';
+      }
 
-    const entries = Object.entries(effectiveRowData.rows);
-    entries.forEach(
-      createKeyValueRow(dom, textInput, effectiveRowData, syncWithRowData)(
-        entries,
-        disposersArray,
-        render,
-        container
-      )
-    );
+      const entries = Object.entries(effectiveRowData.rows);
+      entries.forEach(
+        createKeyValueRow(dom, textInput, effectiveRowData, syncWithRowData)(
+          entries,
+          disposersArray,
+          render,
+          container
+        )
+      );
 
-    syncWithRowData(textInput, effectiveRowData, dom);
+      syncWithRowData(textInput, effectiveRowData, dom);
+    };
+
+    return render;
   };
-
-  return render;
-};
 
 /**
  * New version: accepts a config object and delegates to the original.
