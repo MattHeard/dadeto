@@ -347,12 +347,13 @@ describe('createProcessNewPageHandler', () => {
       ref: { update: jest.fn() },
       data: () => ({ processed: false }),
     };
+    const db = {
+      doc: jest.fn(),
+      batch: jest.fn(() => createBatch()),
+    };
 
     const handler = createProcessNewPageHandler({
-      db: {
-        doc: jest.fn(),
-        batch: jest.fn(() => createBatch()),
-      },
+      db,
       fieldValue,
       randomUUID: () => 'uuid',
       random: Math.random,
@@ -360,6 +361,7 @@ describe('createProcessNewPageHandler', () => {
 
     await handler(snapshot);
     expect(snapshot.ref.update).toHaveBeenCalledWith({ processed: true });
+    expect(db.batch).not.toHaveBeenCalled();
   });
 
   it('creates a new variant for a direct page submission', async () => {

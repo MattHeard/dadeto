@@ -1407,57 +1407,48 @@ function queueVariantDirtyReset(batch, variantRef) {
 // Stryker restore all
 
 /**
- * Process a submission that still needs work.
- * @param {object} params Inputs required to process the submission.
- * @param {SubmissionData} params.submission Submission payload.
- * @param {import('firebase-admin/firestore').DocumentSnapshot} params.snapshot Submission snapshot.
- * @param {import('firebase-admin/firestore').Firestore} params.db Firestore instance.
- * @param {() => string} params.randomUUID UUID generator for new documents.
- * @param {() => number} params.random Random number generator for variant ordering.
- * @param {() => unknown} params.getServerTimestamp Server timestamp helper.
- * @param {{
- *   serverTimestamp: () => unknown,
- *   increment: (value: number) => unknown,
- * }} params.fieldValue FieldValue helper used for stats.
- * @returns {Promise<null>} Promise that resolves after processing completes.
+ * Stage unprocessed-submission work around Firestore and runtime dependencies.
+ * @param {import('firebase-admin/firestore').Firestore} db Firestore instance.
+ * @param {{serverTimestamp: () => unknown, increment: (value: number) => unknown}} fieldValue FieldValue helper used for stats.
+ * @returns {(randomUUID: () => string, random: () => number, getServerTimestamp: () => unknown) => (submission: SubmissionData, snapshot: import('firebase-admin/firestore').DocumentSnapshot) => Promise<null>} Staged processor.
  */
-async function processUnprocessedSubmission({
-  submission,
-  snapshot,
-  db,
-  randomUUID,
-  random,
-  getServerTimestamp,
-  fieldValue,
-}) {
-  // Stryker disable all -- submission routing uses the fixed context/processed protocol.
-  const incomingOptionFullName = submission.incomingOptionFullName;
-  const directPageNumber = submission.pageNumber;
-
-  if (
-    await shouldSkipAndMarkSubmission({
-      incomingOptionFullName,
-      directPageNumber,
-      snapshot,
-    })
-  ) {
-    return null;
-  }
-
-  const batch = db.batch();
-
-  return processSubmissionWithContext({
-    submission,
-    snapshot,
-    db,
-    batch,
+function createUnprocessedSubmissionProcessor(db, fieldValue) {
+  return function bindSubmissionRuntime(
     randomUUID,
     random,
-    getServerTimestamp,
-    fieldValue,
-    incomingOptionFullName,
-    directPageNumber,
-  });
+    getServerTimestamp
+  ) {
+    return async function processUnprocessedSubmission(submission, snapshot) {
+      // Stryker disable all -- submission routing uses the fixed context/processed protocol.
+      const incomingOptionFullName = submission.incomingOptionFullName;
+      const directPageNumber = submission.pageNumber;
+
+      if (
+        await shouldSkipAndMarkSubmission({
+          incomingOptionFullName,
+          directPageNumber,
+          snapshot,
+        })
+      ) {
+        return null;
+      }
+
+      const batch = db.batch();
+
+      return processSubmissionWithContext({
+        submission,
+        snapshot,
+        db,
+        batch,
+        randomUUID,
+        random,
+        getServerTimestamp,
+        fieldValue,
+        incomingOptionFullName,
+        directPageNumber,
+      });
+    };
+  };
 }
 // Stryker restore all
 
@@ -1583,7 +1574,13 @@ function extractSubmissionData(snapshot) {
  * @returns {Promise<null>} Null when complete.
  */
 async function handleAndProcessSubmission(params) {
-  return /** @type {Promise<null>} */ (processUnprocessedSubmission(params));
+  return /** @type {Promise<null>} */ (
+    createUnprocessedSubmissionProcessor(params.db, params.fieldValue)(
+      params.randomUUID,
+      params.random,
+      params.getServerTimestamp
+    )(params.submission, params.snapshot)
+  );
 }
 
 /**
