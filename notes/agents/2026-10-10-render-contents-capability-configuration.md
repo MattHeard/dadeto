@@ -1,0 +1,7 @@
+# Render contents capability configuration
+
+- **Unexpected hurdle:** None; the existing render-contents and local simulator suites cover the public factory and both injected adapters.
+- **Diagnosis:** `instantiateRenderContents` unpacked the full normalized option set while composing a permission-aware invalidator and a separate render handler.
+- **Chosen fix:** Make normalized configuration explicitly contain render-handler dependencies and invalidation operations/target. Pass those two cohesive configurations to the instantiator, which builds the invalidator and injects it into the render handler.
+- **Next-time guidance:** Continue at `createRenderContentsHandler` (line 960, effective arity 5). Split the Firestore lookup/cache capability from the four output-rendering settings while preserving per-handler fetcher caching.
+- **Evidence:** Focused Jest passed (4 suites, 74 tests), including the local GCP simulator route. Fresh no-cache scan reduced `render-contents-core.js` from 10 findings to 9 with no new findings; report `.tmp/render-contents-parameter-bag-instantiate-render-contents-final.json`. Scoped ESLint `--max-warnings=0`, TSDoc, and `git diff --check` passed. `npm run check` passed all 10 gates, including full coverage, 11/11 local E2E, zero clones, and zero vulnerabilities. `npm run build:cloud` passed. Logs: `.tmp/npm-check-render-contents-instantiate-render-contents.log` and `.tmp/build-cloud-render-contents-instantiate-render-contents.log`.

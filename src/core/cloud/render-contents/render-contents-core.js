@@ -85,6 +85,26 @@ const DEFAULT_PAGE_SIZE = 100;
  */
 
 /**
+ * @typedef {object} RenderHandlerDependencies
+ * @property {DbInstance | undefined} db Firestore-like instance for lookups.
+ * @property {RenderOptions['saveRenderedPage']} saveRenderedPage Storage write adapter.
+ * @property {string} objectPrefix Normalized output object prefix.
+ * @property {number} pageSize Normalized generated page size.
+ */
+
+/**
+ * @typedef {object} RenderInvalidationDependencies
+ * @property {PathInvalidationOperations} operations Permission-aware runtime operations.
+ * @property {PathInvalidationTarget} target CDN invalidation destination.
+ */
+
+/**
+ * @typedef {object} NormalizedRenderContentsOptions
+ * @property {RenderHandlerDependencies} rendering Handler dependencies.
+ * @property {RenderInvalidationDependencies} invalidation Invalidation dependencies.
+ */
+
+/**
  * @typedef {object} PathInvalidationOperations
  * @property {RenderOptions['fetchFn']} fetchFn Permission-aware metadata fetch.
  * @property {RenderOptions['bindEffectBoundary']} bindEffectBoundary Request-time effect boundary.
@@ -819,13 +839,16 @@ function isStringMessage(candidate) {
  */
 export function createRenderContents(options) {
   const normalized = normalizeRenderContentsOptions(options);
-  return instantiateRenderContents(normalized);
+  return instantiateRenderContents(
+    normalized.invalidation,
+    normalized.rendering
+  );
 }
 
 /**
  * Normalize incoming render dependencies so assertions and defaults are grouped together.
  * @param {Partial<RenderOptions>} params Raw dependencies supplied by callers.
- * @returns {RenderOptions} Dependencies with defaults and validation applied.
+ * @returns {NormalizedRenderContentsOptions} Dependencies with defaults and validation applied.
  */
 function normalizeRenderContentsOptions(
   params = /** @type {RenderOptions} */ ({})
@@ -857,34 +880,31 @@ function normalizeRenderContentsOptions(
   assertFunction(randomUUID, 'randomUUID');
 
   return {
-    db: /** @type {DbInstance | undefined} */ (db),
-    saveRenderedPage: /** @type {RenderOptions['saveRenderedPage']} */ (
-      saveRenderedPage
-    ),
-    fetchFn:
-      /** @type {(permission: AllowEffects, input: string, init?: object) => Promise<FetchResponse>} */ (
-        fetchFn
+    rendering: {
+      db: /** @type {DbInstance | undefined} */ (db),
+      saveRenderedPage: /** @type {RenderOptions['saveRenderedPage']} */ (
+        saveRenderedPage
       ),
-    bindEffectBoundary: /** @type {RenderOptions['bindEffectBoundary']} */ (
-      bindEffectBoundary
-    ),
-    effectFetchFn: /** @type {RenderOptions['effectFetchFn']} */ (
-      effectFetchFn
-    ),
-    setHttpResponseHeader:
-      /** @type {RenderOptions['setHttpResponseHeader']} */ (
-        setHttpResponseHeader
-      ),
-    sendHttpResponse: /** @type {RenderOptions['sendHttpResponse']} */ (
-      sendHttpResponse
-    ),
-    randomUUID: /** @type {() => string} */ (randomUUID),
-    projectId,
-    urlMapName,
-    cdnHost,
-    logError: /** @type {RenderOptions['logError']} */ (logError),
-    objectPrefix: normalizeStaticObjectPrefix(objectPrefix),
-    pageSize: resolveRenderContentsPageSize(pageSize),
+      objectPrefix: normalizeStaticObjectPrefix(objectPrefix),
+      pageSize: resolveRenderContentsPageSize(pageSize),
+    },
+    invalidation: {
+      operations: {
+        fetchFn:
+          /** @type {(permission: AllowEffects, input: string, init?: object) => Promise<FetchResponse>} */ (
+            fetchFn
+          ),
+        bindEffectBoundary: /** @type {RenderOptions['bindEffectBoundary']} */ (
+          bindEffectBoundary
+        ),
+        effectFetchFn: /** @type {RenderOptions['effectFetchFn']} */ (
+          effectFetchFn
+        ),
+        randomUUID: /** @type {() => string} */ (randomUUID),
+        logError: /** @type {RenderOptions['logError']} */ (logError),
+      },
+      target: { projectId, urlMapName, cdnHost },
+    },
   };
 }
 
@@ -904,36 +924,22 @@ function resolveRenderContentsPageSize(value) {
 
 /**
  * Instantiate the renderer after defaults and validations are applied.
- * @param {RenderOptions} deps Normalized render dependencies.
+ * @param {RenderInvalidationDependencies} invalidation Invalidation capability configuration.
+ * @param {RenderHandlerDependencies} rendering Dependencies for rendering content pages.
  * @returns {(permission: AllowEffects, deps?: RenderDependencies) => Promise<null>} Renderer factory.
  */
-function instantiateRenderContents(deps) {
-  const {
-    db,
-    saveRenderedPage,
-    fetchFn,
-    bindEffectBoundary,
-    effectFetchFn,
-    randomUUID,
-    projectId,
-    urlMapName,
-    cdnHost,
-    logError,
-    objectPrefix,
-    pageSize,
-  } = deps;
-
+function instantiateRenderContents(invalidation, rendering) {
   const invalidatePaths = createInvalidatePaths(
-    { fetchFn, bindEffectBoundary, effectFetchFn, randomUUID, logError },
-    { projectId, urlMapName, cdnHost }
+    invalidation.operations,
+    invalidation.target
   );
 
   return createRenderContentsHandler({
-    db: /** @type {DbInstance} */ (db),
-    saveRenderedPage,
-    objectPrefix: /** @type {string} */ (objectPrefix),
+    db: /** @type {DbInstance} */ (rendering.db),
+    saveRenderedPage: rendering.saveRenderedPage,
+    objectPrefix: rendering.objectPrefix,
     invalidatePaths,
-    pageSize: /** @type {number} */ (pageSize),
+    pageSize: rendering.pageSize,
   });
 }
 
