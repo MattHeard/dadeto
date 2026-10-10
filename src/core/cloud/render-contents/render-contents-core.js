@@ -68,14 +68,9 @@ const DEFAULT_PAGE_SIZE = 100;
  */
 
 /**
- * @typedef {object} StorageInstance
- * @property {(name: string) => BucketFileAccessor} bucket Cloud storage bucket accessor.
- */
-
-/**
  * @typedef {object} RenderOptions
  * @property {DbInstance} [db] Firestore-like instance used for lookup helpers.
- * @property {StorageInstance} [storage] Cloud storage-like instance.
+ * @property {(permission: AllowEffects, path: string, content: string, options: object) => Promise<unknown>} saveRenderedPage Permission-aware storage write adapter.
  * @property {(permission: AllowEffects, input: string, init?: object) => Promise<FetchResponse>} fetchFn Permission-aware fetch implementation.
  * @property {import('../../../../types/allow-effects').AllowEffectsBoundary} bindEffectBoundary External effect permission boundary.
  * @property {(permission: AllowEffects, input: string, init?: object) => Promise<FetchResponse>} effectFetchFn Permission-aware invalidation transport.
@@ -84,7 +79,6 @@ const DEFAULT_PAGE_SIZE = 100;
  * @property {string} [urlMapName] Compute URL map identifier.
  * @property {string} [cdnHost] CDN host name used for invalidation requests.
  * @property {(message: string, error?: unknown) => void} [consoleError] Logger for invalidate failures.
- * @property {string} [bucketName] Target bucket name for rendered files.
  * @property {string} [objectPrefix] Optional object prefix for tenant-scoped static output.
  * @property {number} [pageSize] Number of items per generated page.
  */
@@ -118,38 +112,6 @@ function ensureDbValue(db) {
 function ensureCollectionHelper(db) {
   if (typeof db.collection !== 'function') {
     throw new TypeError('db must provide a collection helper');
-  }
-}
-
-/**
- * Ensure the provided Storage-like instance exposes the expected helpers.
- * @param {{ bucket: (name: string) => BucketFileAccessor }} storage Storage-like instance to validate.
- * @returns {void}
- */
-function assertStorage(storage) {
-  ensureStorageValue(storage);
-  ensureBucketHelper(storage);
-}
-
-/**
- * Assert that a storage value is provided before checking helpers.
- * @param {unknown} storage Candidate storage helper.
- * @returns {void}
- */
-function ensureStorageValue(storage) {
-  if (!storage) {
-    throw new TypeError('storage must provide a bucket helper');
-  }
-}
-
-/**
- * Assert the provided storage exposes a bucket helper.
- * @param {{ bucket?: (name: string) => BucketFileAccessor }} storage Storage-like instance to inspect.
- * @returns {void}
- */
-function ensureBucketHelper(storage) {
-  if (typeof storage.bucket !== 'function') {
-    throw new TypeError('storage must provide a bucket helper');
   }
 }
 
@@ -837,7 +799,7 @@ function isStringMessage(candidate) {
 /**
  * Create the primary render function that updates the moderation contents listing.
  * @param {RenderOptions} options Dependencies required to render content pages.
- * @returns {(deps?: RenderDependencies) => Promise<null>} Renderer.
+ * @returns {(permission: AllowEffects, deps?: RenderDependencies) => Promise<null>} Renderer.
  */
 export function createRenderContents(options) {
   const normalized = normalizeRenderContentsOptions(options);
@@ -854,7 +816,7 @@ function normalizeRenderContentsOptions(
 ) {
   const {
     db,
-    storage,
+    saveRenderedPage,
     fetchFn,
     bindEffectBoundary,
     effectFetchFn,
@@ -863,12 +825,11 @@ function normalizeRenderContentsOptions(
     urlMapName,
     cdnHost,
     consoleError,
-    bucketName,
     objectPrefix,
     pageSize,
   } = params;
 
-  assertStorage(/** @type {StorageInstance} */ (storage));
+  assertFunction(saveRenderedPage, 'saveRenderedPage');
   assertFunction(fetchFn, 'fetchFn');
   assertFunction(bindEffectBoundary, 'bindEffectBoundary');
   assertFunction(effectFetchFn, 'effectFetchFn');
@@ -876,7 +837,9 @@ function normalizeRenderContentsOptions(
 
   return {
     db: /** @type {DbInstance | undefined} */ (db),
-    storage: /** @type {StorageInstance} */ (storage),
+    saveRenderedPage: /** @type {RenderOptions['saveRenderedPage']} */ (
+      saveRenderedPage
+    ),
     fetchFn:
       /** @type {(permission: AllowEffects, input: string, init?: object) => Promise<FetchResponse>} */ (
         fetchFn
@@ -892,7 +855,6 @@ function normalizeRenderContentsOptions(
     urlMapName,
     cdnHost,
     consoleError: resolveRenderContentsConsoleError(consoleError),
-    bucketName: resolveRenderContentsBucketName(bucketName),
     objectPrefix: normalizeStaticObjectPrefix(objectPrefix),
     pageSize: resolveRenderContentsPageSize(pageSize),
   };
@@ -926,15 +888,6 @@ function resolveRenderContentsConsoleError(value) {
 }
 
 /**
- * Normalize the bucket name for rendered content.
- * @param {string | undefined} value Candidate bucket name.
- * @returns {string} Bucket name that should be used.
- */
-function resolveRenderContentsBucketName(value) {
-  return value ?? DEFAULT_BUCKET_NAME;
-}
-
-/**
  * Normalize the page size used when paginating rendered content.
  * @param {number | undefined} value Candidate page size.
  * @returns {number} Page size that should be used.
@@ -947,12 +900,12 @@ function resolveRenderContentsPageSize(value) {
 /**
  * Instantiate the renderer after defaults and validations are applied.
  * @param {RenderOptions} deps Normalized render dependencies.
- * @returns {(deps?: RenderDependencies) => Promise<null>} Renderer factory.
+ * @returns {(permission: AllowEffects, deps?: RenderDependencies) => Promise<null>} Renderer factory.
  */
 function instantiateRenderContents(deps) {
   const {
     db,
-    storage,
+    saveRenderedPage,
     fetchFn,
     bindEffectBoundary,
     effectFetchFn,
@@ -961,17 +914,10 @@ function instantiateRenderContents(deps) {
     urlMapName,
     cdnHost,
     consoleError,
-    bucketName,
     objectPrefix,
     pageSize,
   } = deps;
 
-  const bucket = createPrefixedBucket(
-    /** @type {StorageInstance} */ (storage).bucket(
-      /** @type {string} */ (bucketName)
-    ),
-    /** @type {string} */ (objectPrefix)
-  );
   const invalidatePaths = createInvalidatePaths({
     fetchFn,
     bindEffectBoundary,
@@ -985,37 +931,18 @@ function instantiateRenderContents(deps) {
 
   return createRenderContentsHandler({
     db: /** @type {DbInstance} */ (db),
-    bucket,
+    saveRenderedPage,
+    objectPrefix: /** @type {string} */ (objectPrefix),
     invalidatePaths,
     pageSize: /** @type {number} */ (pageSize),
   });
 }
 
 /**
- * Prefix bucket file paths for tenant-scoped static output.
- * @param {BucketFileAccessor} bucket Bucket-like object.
- * @param {string} objectPrefix Normalized object prefix.
- * @returns {BucketFileAccessor} Bucket-like object.
- */
-function createPrefixedBucket(bucket, objectPrefix) {
-  if (!objectPrefix) {
-    return bucket;
-  }
-
-  return {
-    file: path => bucket.file(prefixStaticObjectPath(objectPrefix, path)),
-  };
-}
-
-/**
- * @typedef {object} BucketFileAccessor
- * @property {(path: string) => { save: (content: string, options: object) => Promise<unknown> }} file File accessor.
- */
-
-/**
  * @typedef {object} RenderContentsHandlerConfig
  * @property {DbInstance} db Firestore instance.
- * @property {BucketFileAccessor} bucket Storage bucket file accessor.
+ * @property {RenderOptions['saveRenderedPage']} saveRenderedPage Permission-aware storage write adapter.
+ * @property {string} objectPrefix Optional output path prefix.
  * @property {(paths: string[]) => Promise<void>} invalidatePaths Path invalidation function.
  * @property {number} pageSize Number of items per page.
  */
@@ -1023,17 +950,18 @@ function createPrefixedBucket(bucket, objectPrefix) {
 /**
  * Build the renderer closure that caches fetchers between invocations.
  * @param {RenderContentsHandlerConfig} config Handler dependencies.
- * @returns {(deps?: RenderDependencies) => Promise<null>} Renderer factory.
+ * @returns {(permission: AllowEffects, deps?: RenderDependencies) => Promise<null>} Renderer factory.
  */
 function createRenderContentsHandler(config) {
-  const { db, bucket, invalidatePaths, pageSize } = config;
+  const { db, saveRenderedPage, objectPrefix, invalidatePaths, pageSize } =
+    config;
 
   /** @type {(() => Promise<string[]>) | undefined} */
   let fetchTopStoryIds;
   /** @type {((storyId: string) => Promise<StoryInfo | null>) | undefined} */
   let fetchStoryInfo;
 
-  return async function render(deps = {}) {
+  return async function render(permission, deps = {}) {
     const loadStoryIds = /** @type {() => Promise<string[]>} */ (
       resolveFetcher({
         provided: deps.fetchTopStoryIds,
@@ -1060,10 +988,11 @@ function createRenderContentsHandler(config) {
       );
 
     const items = await buildStoryItems(loadStoryIds, loadStoryInfo);
-    const paths = await publishStoryPages({
+    const paths = await publishStoryPages(permission, {
       items,
       pageSize,
-      bucket,
+      saveRenderedPage,
+      objectPrefix,
     });
 
     await invalidatePaths(paths);
@@ -1142,18 +1071,19 @@ function pushIfPresent(collection, value) {
 
 /**
  * Write paginated story HTML to storage and return invalidation paths.
+ * @param {AllowEffects} permission Permission for each page write.
  * @param {{
  *   items: StoryInfo[],
  *   pageSize: number,
- *   bucket: { file: (path: string) => { save: (content: string, options: object) => Promise<unknown> } }
+ *   saveRenderedPage: RenderOptions['saveRenderedPage'],
+ *   objectPrefix: string,
  * }} options Publishing inputs.
  * @returns {Promise<string[]>} Paths that were saved.
  */
-async function publishStoryPages({
-  items,
-  pageSize: size,
-  bucket: targetBucket,
-}) {
+async function publishStoryPages(
+  permission,
+  { items, pageSize: size, saveRenderedPage, objectPrefix }
+) {
   const totalPages = Math.max(1, Math.ceil(items.length / size));
   const paths = [];
 
@@ -1164,7 +1094,10 @@ async function publishStoryPages({
     const filePath = resolvePageFilePath(page);
     const options = buildPageSaveOptions(page, totalPages);
 
-    await targetBucket.file(filePath).save(html, options);
+    const storagePath = objectPrefix
+      ? prefixStaticObjectPath(objectPrefix, filePath)
+      : filePath;
+    await saveRenderedPage(permission, storagePath, html, options);
     paths.push(`/${filePath}`);
   }
 

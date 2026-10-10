@@ -19,7 +19,8 @@ import * as renderSupport from '../render-support.js';
  * @param {{
  *   initializeApp: () => void,
  *   functions: {region: (region: string) => {firestore: {document: (path: string) => {onCreate: (handler: (...args: never[]) => unknown) => unknown}}, https: {onRequest: (handler: (...args: never[]) => unknown) => unknown}}},
- *   Storage: new () => NonNullable<Parameters<typeof createRenderContents>[0]['storage']>,
+ *   Storage: new () => unknown,
+ *   createSaveRenderedPage: (storage: unknown, bucketName: string) => Parameters<typeof createRenderContents>[0]['saveRenderedPage'],
  *   getAuth: () => {verifyIdToken: (token: string) => Promise<{uid?: string}>},
  *   createFirebaseAppManager: (initializeApp: () => void) => {ensureFirebaseApp: () => void},
  *   getFirestoreInstance: (options?: {environment: Record<string, string|undefined>}) => unknown,
@@ -33,7 +34,7 @@ import * as renderSupport from '../render-support.js';
  * @returns {{
  *   handle: unknown,
  *   handleTrigger: unknown,
- *   render: (...args: unknown[]) => unknown,
+ *   render: (permission: AllowEffects, ...args: unknown[]) => Promise<unknown>,
  *   fetchTopStoryIds: (...args: unknown[]) => unknown,
  *   fetchStoryInfo: (...args: unknown[]) => unknown,
  *   buildHtml: typeof buildHtml,
@@ -68,7 +69,9 @@ export function createRenderContentsEntrypoint(deps) {
     db
   );
   const typedResolveRender =
-    /** @type {() => (...args: unknown[]) => unknown} */ (resolveRender);
+    /** @type {() => (permission: AllowEffects, ...args: unknown[]) => Promise<unknown>} */ (
+      resolveRender
+    );
   const auth = getAuth();
 
   const resolveFetchTopStoryIds = renderSupport.createMemoizedLoader(() =>
@@ -87,14 +90,18 @@ export function createRenderContentsEntrypoint(deps) {
     verifyIdToken: token => auth.verifyIdToken(token),
     adminUid: ADMIN_UID,
     render: async () => {
-      await render();
+      await typedDeps.bindEffectBoundary(permission => render(permission));
     },
   });
 
   const handle = functions
     .region('europe-west1')
     .firestore.document('stories/{storyId}')
-    .onCreate((snap, context) => render(snap, context));
+    .onCreate((snap, context) =>
+      typedDeps.bindEffectBoundary(permission =>
+        render(permission, snap, context)
+      )
+    );
 
   const handleTrigger = functions
     .region('europe-west1')
@@ -102,11 +109,12 @@ export function createRenderContentsEntrypoint(deps) {
 
   /**
    * Forward render calls to the memoized render implementation.
+   * @param {AllowEffects} permission Permission for storage writes.
    * @param {...unknown} args Render call arguments.
-   * @returns {unknown} Render result from the shared core helper.
+   * @returns {Promise<unknown>} Render result from the shared core helper.
    */
-  function render(...args) {
-    return typedResolveRender()(...args);
+  function render(permission, ...args) {
+    return typedResolveRender()(permission, ...args);
   }
 
   /**
@@ -160,13 +168,19 @@ export function createRenderContentsEntrypoint(deps) {
       defaultBucketName: DEFAULT_BUCKET_NAME,
     };
     const buildRender = renderSupport.createCloudRenderInstanceBuilder({
-      createRenderer: dependencies =>
-        createRenderContents(
+      createRenderer: dependencies => {
+        const { storage, bucketName, ...rendererDependencies } = dependencies;
+        return createRenderContents(
           /** @type {Parameters<typeof createRenderContents>[0]} */ ({
-            ...dependencies,
+            ...rendererDependencies,
             ...effectDependencies,
+            saveRenderedPage: typedDeps.createSaveRenderedPage(
+              storage,
+              bucketName
+            ),
           })
-        ),
+        );
+      },
       crypto,
       consoleError: (...args) => console.error(...args),
     });

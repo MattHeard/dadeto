@@ -38,8 +38,21 @@ async function bindTestEffect(handler) {
  * @returns {object} Dependencies with test-only permission and transport adapters.
  */
 function withEffectDependencies(options = {}) {
+  const {
+    storage: testStorage,
+    bucketName = DEFAULT_BUCKET_NAME,
+    saveRenderedPage,
+    ...renderOptions
+  } = options;
+  const storage = testStorage ?? {
+    bucket: () => ({ file: () => ({ save: async () => {} }) }),
+  };
   return {
-    ...options,
+    ...renderOptions,
+    saveRenderedPage:
+      saveRenderedPage ??
+      ((_permission, path, content, saveOptions) =>
+        storage.bucket(bucketName).file(path).save(content, saveOptions)),
     fetchFn:
       typeof options.fetchFn === 'function'
         ? (permission, ...args) => options.fetchFn(...args)
@@ -57,7 +70,8 @@ function withEffectDependencies(options = {}) {
  * @returns {unknown} Render-contents handler.
  */
 function createRenderContents(options = {}) {
-  return createRenderContentsCore(withEffectDependencies(options));
+  const render = createRenderContentsCore(withEffectDependencies(options));
+  return (...args) => bindTestEffect(permission => render(permission, ...args));
 }
 
 /**
@@ -321,22 +335,14 @@ describe('createRenderContents', () => {
     );
 
     expect(() =>
-      createRenderContents({
+      createRenderContentsCore({
         db: { collection: jest.fn() },
-        storage: null,
         fetchFn,
+        bindEffectBoundary: bindTestEffect,
+        effectFetchFn: jest.fn(),
         randomUUID,
       })
-    ).toThrow(new TypeError('storage must provide a bucket helper'));
-
-    expect(() =>
-      createRenderContents({
-        db: { collection: jest.fn() },
-        storage: { bucket: 'not-a-function' },
-        fetchFn,
-        randomUUID,
-      })
-    ).toThrow(new TypeError('storage must provide a bucket helper'));
+    ).toThrow(new TypeError('saveRenderedPage must be a function'));
 
     expect(() =>
       createRenderContents({
@@ -359,7 +365,7 @@ describe('createRenderContents', () => {
 
   it('throws when called without options', () => {
     expect(() => createRenderContentsCore()).toThrow(
-      new TypeError('storage must provide a bucket helper')
+      new TypeError('saveRenderedPage must be a function')
     );
   });
 
@@ -408,6 +414,35 @@ describe('createRenderContents', () => {
     expect(bucketFile).toHaveBeenCalledWith('t-example/index.html');
     expect(bucketFile).toHaveBeenCalledWith('t-example/contents/2.html');
     expect(fetchFn).toHaveBeenCalled();
+  });
+
+  it('forwards the render permission to the storage write adapter', async () => {
+    const permission = Object.freeze({ render: 'allowed' });
+    const saveRenderedPage = jest.fn().mockResolvedValue(undefined);
+    const fetchFn = jest
+      .fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ [ACCESS_TOKEN_KEY]: 'token' }),
+      })
+      .mockResolvedValue({ ok: true, status: 200, json: async () => ({}) });
+    const render = createRenderContentsCore({
+      db: { collection: jest.fn() },
+      saveRenderedPage,
+      fetchFn: (_allowEffects, ...args) => fetchFn(...args),
+      bindEffectBoundary: bindTestEffect,
+      effectFetchFn: (_allowEffects, url, init) => fetchFn(url, init),
+      randomUUID: () => 'uuid',
+    });
+
+    await render(permission, { fetchTopStoryIds: async () => [] });
+
+    expect(saveRenderedPage).toHaveBeenCalledWith(
+      permission,
+      'index.html',
+      expect.any(String),
+      { contentType: 'text/html', metadata: { cacheControl: 'no-cache' } }
+    );
   });
 
   it('uses cached factories when overrides are not supplied', async () => {

@@ -1,6 +1,7 @@
 import { jest } from '@jest/globals';
 
 const accessTokenKey = 'access_token';
+const renderHandler = jest.fn().mockResolvedValue(undefined);
 
 await jest.unstable_mockModule(
   '../../../../src/core/cloud/render-contents/render-contents-core.js',
@@ -29,7 +30,7 @@ await jest.unstable_mockModule(
         .get();
       return result.docs.map(doc => doc.id);
     },
-    createRenderContents: jest.fn(() => jest.fn().mockResolvedValue(undefined)),
+    createRenderContents: jest.fn(() => renderHandler),
     createValidateRequest: jest.fn(() => jest.fn(() => true)),
     getAllowedOrigins: jest.fn(() => []),
     resolveStaticBucketName: jest.fn(() => 'bucket'),
@@ -41,7 +42,9 @@ await jest.unstable_mockModule(
   () => ({
     createCloudRenderInstanceBuilder: ({ createRenderer, consoleError }) => {
       consoleError('builder');
-      return jest.fn(() => createRenderer());
+      return jest.fn(() =>
+        createRenderer({ storage: {}, bucketName: 'bucket' })
+      );
     },
     createMemoizedLoader: factory => {
       let value;
@@ -145,6 +148,7 @@ describe('createRenderContentsEntrypoint', () => {
       bindEffectBoundary: async handler =>
         handler(Object.freeze({ test: true })),
       effectFetchFn: (_permission, url, init) => fetchFn(url, init),
+      createSaveRenderedPage: jest.fn(() => jest.fn()),
       crypto: { randomUUID: () => 'uuid' },
       getEnvironmentVariables: jest.fn(() => ({
         DENDRITE_ENVIRONMENT: 'dev',
@@ -166,6 +170,7 @@ describe('createRenderContentsEntrypoint', () => {
       },
       {}
     );
+    expect(renderHandler.mock.calls[0][0]).toEqual({ test: true });
 
     const response = {
       set: jest.fn().mockReturnThis(),
@@ -185,6 +190,7 @@ describe('createRenderContentsEntrypoint', () => {
         response
       );
 
+      expect(renderHandler.mock.calls[1][0]).toEqual({ test: true });
       expect(auth.verifyIdToken).toHaveBeenCalledWith('token');
       expect(response.status).toHaveBeenCalledWith(200);
     } finally {

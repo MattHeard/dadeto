@@ -24,7 +24,10 @@ async function loadRender() {
   try {
     jest.resetModules();
     const mod = await import('../../src/cloud/render-contents/index.js');
-    return mod.render;
+    const { createEffectInvocationBoundary } = await import(
+      '../../src/cloud/allow-effects.js'
+    );
+    return createEffectInvocationBoundary(mod.render);
   } finally {
     if (originalEnv.DENDRITE_ENVIRONMENT === undefined) {
       delete process.env.DENDRITE_ENVIRONMENT;

@@ -370,12 +370,19 @@ async function buildSimulatorState(config) {
     void permission;
     return localFetch(input, init);
   };
+  /** @type {Parameters<typeof createRenderContents>[0]['saveRenderedPage']} */
+  const saveRenderedPage = (permission, filePath, content, options) => {
+    void permission;
+    void options;
+    return storage.bucket(bucketName).file(filePath).save(content);
+  };
   const renderConfig = {
     db: /** @type {Parameters<typeof createRenderContents>[0]['db']} */ (
       /** @type {unknown} */ (db)
     ),
     storage,
     fetchFn,
+    saveRenderedPage,
     randomUUID,
     bucketName,
     objectPrefix: '',

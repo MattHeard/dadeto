@@ -9,6 +9,7 @@ import {
   fetchFn,
   bindEffectBoundary,
   effectFetchFn,
+  createSaveRenderedPage,
   crypto,
   getEnvironmentVariables,
 } from './render-contents-gcf.js';
@@ -25,6 +26,7 @@ const entrypoint = createRenderContentsEntrypoint({
   fetchFn,
   bindEffectBoundary,
   effectFetchFn,
+  createSaveRenderedPage,
   crypto,
   getEnvironmentVariables,
 });
