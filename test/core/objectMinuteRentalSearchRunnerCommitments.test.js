@@ -168,11 +168,14 @@ describe('runner commitments repositories', () => {
   });
 
   test('projects Firestore records through the repository contract', async () => {
-    const get = jest.fn(async () => ({ exists: true, data: () => segment }));
-    const pointGet = jest
-      .fn()
-      .mockResolvedValueOnce({ exists: true, data: () => points[0] })
-      .mockResolvedValueOnce({ exists: true, data: () => points[1] });
+    const documents = {
+      'SEGMENT-1': segment,
+      'POINT-1': points[0],
+      'POINT-2': points[1],
+    };
+    const getAll = jest.fn(async (...references) =>
+      references.map(({ id }) => ({ id, data: () => documents[id] }))
+    );
     const db = {
       collection: jest.fn(name => {
         if (name === 'runner_assignments')
@@ -181,9 +184,9 @@ describe('runner commitments repositories', () => {
               get: async () => ({ docs: [{ data: () => assignment }] }),
             })),
           };
-        if (name === 'segments') return { doc: () => ({ get }) };
-        return { doc: () => ({ get: pointGet }) };
+        return { doc: id => ({ id }) };
       }),
+      getAll,
     };
     const repository = createFirestoreRunnerCommitmentsRepository({ db });
     await expect(
@@ -195,6 +198,52 @@ describe('runner commitments repositories', () => {
       },
     ]);
     expect(db.collection).toHaveBeenCalledWith('runner_assignments');
+    expect(getAll).toHaveBeenCalledTimes(2);
+  });
+
+  test('keeps Firestore reads bounded for 100 runner commitments', async () => {
+    const assignments = Array.from({ length: 100 }, (_, index) => ({
+      personId: 'RUNNER-1',
+      segmentId: `SEGMENT-${index}`,
+    }));
+    const documents = new Map();
+    assignments.forEach((record, index) => {
+      documents.set(record.segmentId, {
+        startPointId: `START-${index}`,
+        endPointId: `END-${index}`,
+      });
+      documents.set(`START-${index}`, {
+        timestamp: `2026-08-27T15:${String(index % 60).padStart(2, '0')}:00Z`,
+      });
+      documents.set(`END-${index}`, {
+        timestamp: `2026-08-27T16:${String(index % 60).padStart(2, '0')}:00Z`,
+      });
+    });
+    const getAll = jest.fn(async (...references) =>
+      references.map(({ id }) => ({ id, data: () => documents.get(id) }))
+    );
+    const whereGet = jest.fn(async () => ({
+      docs: assignments.map(value => ({ data: () => value })),
+    }));
+    const db = {
+      collection: jest.fn(name =>
+        name === 'runner_assignments'
+          ? { where: jest.fn(() => ({ get: whereGet })) }
+          : { doc: id => ({ id }) }
+      ),
+      getAll,
+    };
+
+    const result = await createFirestoreRunnerCommitmentsRepository({
+      db,
+    }).listForRunner({ runnerId: 'RUNNER-1' });
+
+    expect(result).toHaveLength(100);
+    expect(whereGet).toHaveBeenCalledTimes(1);
+    expect(getAll).toHaveBeenCalledTimes(2);
+    expect(
+      getAll.mock.calls.map(([...references]) => references.length)
+    ).toEqual([100, 200]);
   });
 
   test('keeps the shared application independent of storage', async () => {

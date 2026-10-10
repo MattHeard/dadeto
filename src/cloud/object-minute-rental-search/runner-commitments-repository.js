@@ -1,4 +1,5 @@
 import { projectRunnerCommitments } from '../../core/object-minute-rental-search/runner-commitments.js';
+import { batchCommitmentRecords } from './batch-commitment-records.js';
 
 /**
  * Create the Firestore-backed runner commitments repository.
@@ -15,21 +16,13 @@ export function createFirestoreRunnerCommitmentsRepository({ db }) {
       const assignments = (snapshot.docs ?? []).map(document =>
         document.data()
       );
+      const { segments, points } = await batchCommitmentRecords(db, assignments);
       return projectRunnerCommitments({
         runnerId,
         assignments,
         assumeMatching: true,
-        resolveSegment: async segmentId => {
-          const document = await db.collection('segments').doc(segmentId).get();
-          return document.exists ? document.data() : null;
-        },
-        resolvePoint: async pointId => {
-          const document = await db
-            .collection('spacetime_points')
-            .doc(pointId)
-            .get();
-          return document.exists ? document.data() : null;
-        },
+        resolveSegment: segmentId => segments.get(segmentId) ?? null,
+        resolvePoint: pointId => points.get(pointId) ?? null,
       });
     },
   };
