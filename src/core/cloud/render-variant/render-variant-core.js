@@ -324,6 +324,7 @@ function resolveStoredVisibilitySum(data) {
  *   bucket: StorageBucketLike;
  *   bindEffectBoundary: import('../../../../types/allow-effects').AllowEffectsBoundary;
  *   saveStorageFile: (allowEffects: AllowEffects, file: StorageFileLike, contents: string, options: object) => Promise<unknown>;
+ *   updateFirestoreDocument: (permission: AllowEffects, reference: UpdatableDocumentReference, data: Record<string, unknown>) => Promise<unknown>;
  *   invalidatePaths: (paths: string[]) => Promise<void>;
  *   db: FirestoreLike;
  * }} RenderPersistenceCapabilities
@@ -2824,6 +2825,7 @@ function createRenderVariantHandler(capabilities) {
       bucket,
       bindEffectBoundary: invalidation.effectOperations.bindEffectBoundary,
       saveStorageFile: rendering.saveStorageFile,
+      updateFirestoreDocument: rendering.updateFirestoreDocument,
       invalidatePaths,
     });
     return null;
@@ -3540,7 +3542,11 @@ async function persistRenderPlan(snap, context, renderPlan, persistence) {
   await persistence.invalidatePaths(paths);
   const variantRef = resolveTenantDocumentRef(snap, persistence.db);
   if (variantRef && typeof variantRef.update === 'function') {
-    await variantRef.update({ targetTreeWeightsDirty: false });
+    await persistence.bindEffectBoundary(allowEffects =>
+      persistence.updateFirestoreDocument(allowEffects, variantRef, {
+        targetTreeWeightsDirty: false,
+      })
+    );
   }
 }
 

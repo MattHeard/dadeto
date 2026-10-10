@@ -403,6 +403,11 @@ test('covers tree visibility propagation fallbacks and parent updates', async ()
 
 test('clears the rendered variant tree-weight dirty marker', async () => {
   const update = jest.fn().mockResolvedValue(undefined);
+  const permission = createAllowEffects();
+  const bindEffectBoundary = jest.fn(handler => handler(permission));
+  const updateFirestoreDocument = jest.fn((allowEffects, reference, data) =>
+    reference.update(data)
+  );
   const variantsRef = {
     get: jest.fn().mockResolvedValue({ docs: [] }),
   };
@@ -432,14 +437,22 @@ test('clears the rendered variant tree-weight dirty marker', async () => {
         collection: jest.fn(() => variantsRef),
       },
       bucket: { file: jest.fn(() => ({ save })) },
-      bindEffectBoundary: handler => handler(createAllowEffects()),
+      bindEffectBoundary,
       saveStorageFile: (permission, file, contents, options) => {
         void permission;
         return file.save(contents, options);
       },
+      updateFirestoreDocument,
       invalidatePaths,
     }
   );
   expect(update).toHaveBeenCalledWith({ targetTreeWeightsDirty: false });
+  expect(updateFirestoreDocument).toHaveBeenCalledWith(permission, snapRef, {
+    targetTreeWeightsDirty: false,
+  });
+  expect(Object.isFrozen(permission)).toBe(true);
+  expect(invalidatePaths.mock.invocationCallOrder[0]).toBeLessThan(
+    updateFirestoreDocument.mock.invocationCallOrder[0]
+  );
   expect(invalidatePaths).toHaveBeenCalledWith(['/p/1-alts.html', '/p/1.html']);
 });
