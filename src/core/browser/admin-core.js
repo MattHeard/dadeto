@@ -661,42 +661,40 @@ export async function announceTriggerRenderResult(
  * @returns {Promise<void>} Resolves after the trigger render flow finishes reporting.
  */
 export async function executeTriggerRender(permission, options) {
-  const {
-    getAdminEndpoints,
-    fetchFn,
-    token,
-    showMessage,
-    reportError = () => {},
-  } = options;
-  return executeTriggerRenderCore(permission, {
-    getAdminEndpoints,
-    fetchFn,
-    token,
-    showMessage,
-    reportError,
-  }).catch(e => {
-    options.reportError?.(e);
-    showMessage(`Render failed: ${renderErrorMessage(e)}`);
+  return createTriggerRenderAction(
+    options.showMessage,
+    options.reportError ?? (() => {})
+  )(permission, {
+    token: options.token,
+    getAdminEndpoints: options.getAdminEndpoints,
+    fetchFn: options.fetchFn,
+    showMessage: options.showMessage,
   });
 }
 
 /**
- * Internal helper that drives the render call and reporting flow.
- * @param {AllowEffects} permission Explicit permission for the render request.
- * @param {ExecuteTriggerRenderOptions} options Dependencies required for executing the render flow.
- * @returns {Promise<void>} Resolves when reporting the outcome completes.
+ * Build a render action with user-facing callbacks bound outside the effect call.
+ * @param {(text: string) => void} showMessage Status reporter.
+ * @param {(error: unknown) => void} reportError Error reporter.
+ * @returns {(permission: AllowEffects, context: { token: string, getAdminEndpoints: () => Promise<object>, fetchFn: FetchFn, showMessage: (text: string) => void }) => Promise<void>} Permission-aware render action.
  */
-async function executeTriggerRenderCore(permission, options) {
-  const { getAdminEndpoints, fetchFn, token, showMessage, reportError } =
-    options;
-  const res = await postTriggerRenderContents(
-    permission,
-    getAdminEndpoints,
-    fetchFn,
-    token
-  );
-
-  await announceTriggerRenderResult(res, showMessage, reportError);
+function createTriggerRenderAction(showMessage, reportError) {
+  return async (permission, context) => {
+    try {
+      const response = await postTriggerRenderContents(
+        permission,
+        /** @type {() => Promise<{ triggerRenderContentsUrl: string }>} */ (
+          context.getAdminEndpoints
+        ),
+        context.fetchFn,
+        context.token
+      );
+      await announceTriggerRenderResult(response, showMessage, reportError);
+    } catch (error) {
+      reportError(error);
+      showMessage(`Render failed: ${renderErrorMessage(error)}`);
+    }
+  };
 }
 
 /**
@@ -724,35 +722,18 @@ export function renderErrorMessage(error) {
  * }} options - Dependencies used during trigger render execution.
  * @returns {() => Promise<void>} Function that triggers render when invoked.
  */
-export function createTriggerRender({
-  googleAuth,
-  getAdminEndpointsFn,
-  fetchFn,
-  bindEffectBoundary,
-  showMessage,
-  reportError = () => {},
-}) {
+export function createTriggerRender(options) {
   return createAdminTokenAction({
-    googleAuth,
-    getAdminEndpointsFn,
-    fetchFn,
-    bindEffectBoundary,
-    showMessage,
+    googleAuth: options.googleAuth,
+    getAdminEndpointsFn: options.getAdminEndpointsFn,
+    fetchFn: options.fetchFn,
+    bindEffectBoundary: options.bindEffectBoundary,
+    showMessage: options.showMessage,
     missingTokenMessage: 'Render failed: missing ID token',
-    action: (
-      permission,
-      { token, getAdminEndpoints, fetchFn: fetch, showMessage: report }
-    ) =>
-      executeTriggerRender(permission, {
-        getAdminEndpoints:
-          /** @type {() => Promise<{ triggerRenderContentsUrl: string }>} */ (
-            getAdminEndpoints
-          ),
-        fetchFn: fetch,
-        token,
-        showMessage: report,
-        reportError,
-      }),
+    action: createTriggerRenderAction(
+      options.showMessage,
+      options.reportError ?? (() => {})
+    ),
   });
 }
 
