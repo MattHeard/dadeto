@@ -1497,67 +1497,62 @@ export function createInitGoogleSignIn(deps) {
   const normalizedDeps = normalizeGoogleSignInDeps(deps);
 
   return function initGoogleSignIn({ onSignIn, reportError } = {}) {
+    const resolveAvailableAccounts = () => {
+      const accountsId = normalizedDeps.resolveGoogleAccountsId();
+      return ensureGoogleIdentityAvailable(
+        accountsId,
+        normalizedDeps.safeLogger
+      )
+        ? /** @type {GoogleAccountsClient} */ (accountsId)
+        : undefined;
+    };
+    const initializeSignIn = (/** @type {GoogleAccountsClient} */ accountsId) =>
+      initializeGoogleSignIn(accountsId, {
+        credentialFactory: normalizedDeps.credentialFactory,
+        signInWithCredential: normalizedDeps.signInWithCredential,
+        auth: normalizedDeps.auth,
+        storage: normalizedDeps.storage,
+        onSignIn,
+        reportError,
+      });
+    const renderSignInButton = (
+      /** @type {GoogleAccountsClient} */ accountsId
+    ) => {
+      const mediaQueryList = normalizedDeps.matchMedia(
+        '(prefers-color-scheme: dark)'
+      );
+      setupSignInButtonRenderer(
+        accountsId,
+        normalizedDeps.querySelectorAll,
+        mediaQueryList
+      );
+    };
+
     return initGoogleSignInCore(
-      /**
-         @type {{
-        resolveGoogleAccountsId: () => GoogleAccountsClient | undefined,
-        credentialFactory: (credential: string) => unknown,
-        signInWithCredential: (
-          auth: FirebaseAuthInstance,
-          credential: unknown
-        ) => Promise<void> | void,
-        auth: FirebaseAuthInstance,
-        storage: { setItem: (key: string, value: string) => void },
-        matchMedia: (
-          query: string
-        ) => { matches: boolean; addEventListener?: (type: string, listener: () => void) => void },
-        querySelectorAll: (selector: string) => NodeList,
-        safeLogger: { error?: (message: string) => void },
-      }} */ normalizedDeps,
-      onSignIn,
-      reportError
+      resolveAvailableAccounts,
+      initializeSignIn,
+      renderSignInButton
     );
   };
 }
 
 /**
- * Wire the Google Identity button renderer with the normalized dependencies.
- * @param {NormalizedGoogleSignInDeps} deps - Normalized Google sign-in dependencies.
- * @param {(token: string) => void | undefined} [onSignIn] - Optional callback invoked with the obtained ID token.
- * @param {(error: unknown) => void | undefined} [reportError] - Optional error beacon reporter.
+ * Coordinate the identity guard, Firebase sign-in setup, and button renderer.
+ * @param {() => GoogleAccountsClient | undefined} resolveAvailableAccounts - Resolve a usable Google Identity client.
+ * @param {(accountsId: GoogleAccountsClient) => void} initializeSignIn - Configure credential sign-in callbacks.
+ * @param {(accountsId: GoogleAccountsClient) => void} renderSignInButton - Configure the visible sign-in button.
  * @returns {void}
  */
-function initGoogleSignInCore(deps, onSignIn, reportError) {
-  const {
-    resolveGoogleAccountsId,
-    credentialFactory,
-    signInWithCredential,
-    auth,
-    storage,
-    matchMedia,
-    querySelectorAll,
-    safeLogger,
-  } = deps;
+function initGoogleSignInCore(
+  resolveAvailableAccounts,
+  initializeSignIn,
+  renderSignInButton
+) {
+  const accountsId = resolveAvailableAccounts();
+  if (!accountsId) return;
 
-  const accountsId = resolveGoogleAccountsId();
-
-  if (ensureGoogleIdentityAvailable(accountsId, safeLogger)) {
-    initializeGoogleSignIn(/** @type {GoogleAccountsClient} */ (accountsId), {
-      credentialFactory,
-      signInWithCredential,
-      auth,
-      storage,
-      onSignIn,
-      reportError,
-    });
-
-    const mediaQueryList = matchMedia('(prefers-color-scheme: dark)');
-    setupSignInButtonRenderer(
-      /** @type {GoogleAccountsClient} */ (accountsId),
-      querySelectorAll,
-      mediaQueryList
-    );
-  }
+  initializeSignIn(accountsId);
+  renderSignInButton(accountsId);
 }
 
 /**
