@@ -16,13 +16,7 @@ export const DEFAULT_COPYABLE_EXTENSIONS = ['.js', '.json', '.html'];
  */
 
 /**
- * @typedef {{
- *   copyFile: (source: string, destination: string) => Promise<void>,
- *   setCopiedFileTimestamp?: (target: string) => Promise<void>,
- *   source: string,
- *   target: string,
- *   messageLogger: CopyMessageLogger,
- * }} CopyFileCopyOptions
+ * @typedef {{ source: string, target: string }} CopySourceTargetPaths
  */
 
 /**
@@ -33,14 +27,10 @@ export const DEFAULT_COPYABLE_EXTENSIONS = ['.js', '.json', '.html'];
  */
 
 /**
- * @typedef {{
- *   io: CopyIo,
- *   sourceDir: string,
- *   targetDir: string,
- *   name: string,
- *   messageLogger: CopyMessageLogger,
- * }} CopyFileToTargetOptions
+ * @typedef {{ sourceDir: string, targetDir: string }} CopySourceTargetDirectories
  */
+
+/** @typedef {[CopyIo, CopySourceTargetDirectories, string, CopyMessageLogger]} CopyFileToTargetTask */
 
 /**
  * @typedef {{
@@ -71,7 +61,7 @@ export const DEFAULT_COPYABLE_EXTENSIONS = ['.js', '.json', '.html'];
  * @typedef {{
  *   formatPathForLog: (targetPath: string) => string,
  *   isCopyableFile: (entry: import('fs').Dirent) => boolean,
- *   copyFileToTarget: (options: CopyFileToTargetOptions) => Promise<void>,
+ *   copyFileToTarget: (io: CopyIo, directories: CopySourceTargetDirectories, name: string, messageLogger: CopyMessageLogger) => Promise<void>,
  *   copyDirectory: (
  *     copyPlan: CopyPair,
  *     io: CopyAsyncIo,
@@ -137,25 +127,21 @@ export function createCopyToInfraCore({
 
   /**
    * Copy a single file and log the operation.
-   * @param {CopyFileToTargetOptions} options - Filesystem adapters and logging hooks.
+   * @param {CopyIo} io Filesystem adapters.
+   * @param {CopySourceTargetDirectories} directories Source and target directories.
+   * @param {string} name File name.
+   * @param {CopyMessageLogger} messageLogger Logger for progress events.
    * @returns {Promise<void>} Resolves when the file is copied.
    */
-  async function copyFileToTarget({
-    io,
-    sourceDir,
-    targetDir,
-    name,
-    messageLogger,
-  }) {
-    const sourcePath = join(sourceDir, name);
-    const destinationPath = join(targetDir, name);
-    await copyAndLogFile({
-      copyFile: io.copyFile,
-      setCopiedFileTimestamp: io.setCopiedFileTimestamp,
-      source: sourcePath,
-      target: destinationPath,
-      messageLogger,
-    });
+  async function copyFileToTarget(io, directories, name, messageLogger) {
+    const sourcePath = join(directories.sourceDir, name);
+    const destinationPath = join(directories.targetDir, name);
+    await copyAndLogFile(
+      io.copyFile,
+      io.setCopiedFileTimestamp,
+      { source: sourcePath, target: destinationPath },
+      messageLogger
+    );
   }
 
   /**
@@ -176,13 +162,15 @@ export function createCopyToInfraCore({
       .filter(isCopyableFile)
       .map(entry => entry.name);
 
-    await copyFiles({
-      files: fileNames,
-      sourceDir: source,
-      targetDir: target,
+    await copyFiles(
+      {
+        files: fileNames,
+        sourceDir: source,
+        targetDir: target,
+      },
       io,
-      messageLogger,
-    });
+      messageLogger
+    );
 
     // Stryker disable next-line all -- directory filtering is the filesystem-entry boundary that separates recursion from file copying.
     const directoryEntries = sourceEntries.filter(entry => entry.isDirectory());
@@ -263,7 +251,7 @@ export function createCopyToInfraCore({
       io,
       messageLogger,
     };
-    await copyFiles(copyParams);
+    await copyFiles(copyParams, io, messageLogger);
   }
 
   /**
@@ -288,43 +276,57 @@ export function createCopyToInfraCore({
    */
   async function copyIndividualFile({ source, target, io, messageLogger }) {
     await io.ensureDirectory(dirname(target));
-    const copyRequest = {
-      copyFile: io.copyFile,
-      source,
-      target,
-      messageLogger,
-    };
-    await copyAndLogFile(copyRequest);
+    await copyAndLogFile(
+      io.copyFile,
+      undefined,
+      { source, target },
+      messageLogger
+    );
   }
 
   /**
    * Copy a set of filenames from source to target directories, ensuring the target exists.
-   * @param {{
-   *   files: string[],
-   *   sourceDir: string,
-   *   targetDir: string,
-   *   io: EnsureAndCopyIo,
-   *   messageLogger: CopyMessageLogger,
-   * }} options Copy details.
+   * @param {DeclaredCopyPlan} copyPlan Source directory, target directory, and files.
+   * @param {EnsureAndCopyIo} io Filesystem adapters.
+   * @param {CopyMessageLogger} messageLogger Logger for progress events.
    * @returns {Promise<void>} Resolves when every file is copied.
    */
-  async function copyFiles({ files, sourceDir, targetDir, io, messageLogger }) {
-    await io.ensureDirectory(targetDir);
+  async function copyFiles(copyPlan, io, messageLogger) {
+    await io.ensureDirectory(copyPlan.targetDir);
+    const directories = {
+      sourceDir: copyPlan.sourceDir,
+      targetDir: copyPlan.targetDir,
+    };
     await copySupport.runMappedEntries(
-      files,
-      name => ({ io, sourceDir, targetDir, name, messageLogger }),
-      copyFileToTarget
+      copyPlan.files,
+      name =>
+        /** @type {CopyFileToTargetTask} */ ([
+          io,
+          directories,
+          name,
+          messageLogger,
+        ]),
+      ([fileIo, fileDirectories, name, logger]) =>
+        copyFileToTarget(fileIo, fileDirectories, name, logger)
     );
   }
 
   /**
    * Copy a file to the target location and report the action.
-   * @param {CopyFileCopyOptions} options Copy operation details.
+   * @param {(source: string, destination: string) => Promise<void>} copyFile Filesystem copy adapter.
+   * @param {((target: string) => Promise<void>) | undefined} setCopiedFileTimestamp Optional timestamp adapter.
+   * @param {CopySourceTargetPaths} paths Source and target file paths.
+   * @param {CopyMessageLogger} messageLogger Logger for progress events.
    * @returns {Promise<void>} Resolves when the file copy is complete.
    */
-  async function copyAndLogFile(options) {
-    const { copyFile, setCopiedFileTimestamp, source, target, messageLogger } =
-      /** @type {CopyFileCopyOptions} */ (options);
+  async function copyAndLogFile(
+    copyFile,
+    setCopiedFileTimestamp,
+    paths,
+    messageLogger
+  ) {
+    const source = paths.source;
+    const target = paths.target;
     await copyFile(source, target);
     if (setCopiedFileTimestamp) {
       await setCopiedFileTimestamp(target);
@@ -355,17 +357,21 @@ export function createCopyToInfraCore({
    * @returns {Promise<void>} Resolves when all copy steps finish.
    */
   async function runCopyToInfra(options) {
-    const {
-      directoryCopies,
-      fileCopies,
-      individualFileCopies = [],
-      io,
-      messageLogger,
-    } = options;
-
-    await copyDirectories(directoryCopies, io, messageLogger);
-    await copyDeclaredFiles(fileCopies, io, messageLogger);
-    await copyIndividualFiles(individualFileCopies, io, messageLogger);
+    await copyDirectories(
+      options.directoryCopies,
+      options.io,
+      options.messageLogger
+    );
+    await copyDeclaredFiles(
+      options.fileCopies,
+      options.io,
+      options.messageLogger
+    );
+    await copyIndividualFiles(
+      options.individualFileCopies ?? [],
+      options.io,
+      options.messageLogger
+    );
   }
 
   const copyCoreTestUtils = {

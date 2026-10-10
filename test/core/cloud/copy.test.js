@@ -70,13 +70,15 @@ describe('createCopyToInfraCore copy helpers', () => {
       const io = { copyFile: jest.fn().mockResolvedValue(undefined) };
       const logger = { info: jest.fn() };
 
-      await core.copyFileToTarget({
+      await core.copyFileToTarget(
         io,
-        sourceDir: posix.join(projectRoot, 'src'),
-        targetDir: posix.join(projectRoot, 'infra'),
-        name: 'index.js',
-        messageLogger: logger,
-      });
+        {
+          sourceDir: posix.join(projectRoot, 'src'),
+          targetDir: posix.join(projectRoot, 'infra'),
+        },
+        'index.js',
+        logger
+      );
 
       expect(io.copyFile).toHaveBeenCalledWith(
         posix.join(projectRoot, 'src/index.js'),
@@ -94,13 +96,15 @@ describe('createCopyToInfraCore copy helpers', () => {
       };
       const logger = { info: jest.fn() };
 
-      await core.copyFileToTarget({
+      await core.copyFileToTarget(
         io,
-        sourceDir: posix.join(projectRoot, 'src'),
-        targetDir: posix.join(projectRoot, 'infra'),
-        name: 'index.js',
-        messageLogger: logger,
-      });
+        {
+          sourceDir: posix.join(projectRoot, 'src'),
+          targetDir: posix.join(projectRoot, 'infra'),
+        },
+        'index.js',
+        logger
+      );
 
       expect(io.setCopiedFileTimestamp).toHaveBeenCalledWith(
         posix.join(projectRoot, 'infra/index.js')
@@ -335,6 +339,11 @@ describe('copy orchestration', () => {
       expect(logger.info).toHaveBeenCalledWith(
         'Copied: src/env.json -> infra/env.json'
       );
+      expect(logger.info.mock.calls.map(([message]) => message)).toEqual([
+        'Copied: functions/index.js -> infra/functions/index.js',
+        'Copied: src/package.json -> infra/src/package.json',
+        'Copied: src/env.json -> infra/env.json',
+      ]);
     });
 
     it('skips optional sections when not provided', async () => {
