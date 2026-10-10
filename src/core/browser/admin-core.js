@@ -1965,13 +1965,21 @@ function getPageVariantFromDoc(doc) {
  * @returns {Promise<void>} Resolves once the request has been attempted.
  */
 async function performRegeneration(permission, options) {
-  const requestRegeneration = (/** @type {AllowEffects} */ permission) =>
-    sendRegenerateVariantRequest(permission, {
-      fetchFn: options.fetchFn,
-      getAdminEndpointsFn: options.getAdminEndpointsFn,
-      token: options.token,
-      pageVariant: options.pageVariant,
-    });
+  const requestRegeneration = async (
+    /** @type {AllowEffects} */ permission
+  ) => {
+    const { markVariantDirtyUrl } = await options.getAdminEndpointsFn();
+    const requestOptions = createRegenerateVariantRequestOptions(
+      options.token,
+      options.pageVariant
+    );
+    await sendRegenerateVariantRequest(
+      permission,
+      options.fetchFn,
+      markVariantDirtyUrl,
+      requestOptions
+    );
+  };
   await reportRegenerationResult(
     permission,
     requestRegeneration,
@@ -2089,27 +2097,37 @@ async function ensureResponseOk(res) {
 }
 
 /**
- * Submit a regenerate request to the admin endpoint.
- * @param {AllowEffects} permission Permission for this regeneration request.
- * @param {{
- *   fetchFn: FetchFn,
- *   getAdminEndpointsFn: () => Promise<{ markVariantDirtyUrl: string }>,
- *   token: string,
- *   pageVariant: { page: number, variant: string },
- * }} options - Dependencies and payload for the regenerate request.
- * @returns {Promise<void>}
+ * Build the HTTP request options for regenerating a page variant.
+ * @param {string} token Authenticated user token.
+ * @param {{ page: number, variant: string }} pageVariant Page and variant to regenerate.
+ * @returns {FetchRequestOptions} POST request options.
  */
-async function sendRegenerateVariantRequest(permission, options) {
-  const { fetchFn, getAdminEndpointsFn, token, pageVariant } = options;
-  const { markVariantDirtyUrl } = await getAdminEndpointsFn();
-  const res = await fetchFn(permission, markVariantDirtyUrl, {
+function createRegenerateVariantRequestOptions(token, pageVariant) {
+  return {
     method: 'POST',
     headers: {
       Authorization: `Bearer ${token}`,
       'Content-Type': 'application/json',
     },
     body: JSON.stringify(pageVariant),
-  });
+  };
+}
+
+/**
+ * Send a prepared regenerate request to the admin endpoint.
+ * @param {AllowEffects} permission Permission for this regeneration request.
+ * @param {FetchFn} fetchFn Permission-aware network caller.
+ * @param {string} endpointUrl Resolved admin endpoint URL.
+ * @param {FetchRequestOptions} requestOptions Prepared HTTP request options.
+ * @returns {Promise<void>} Resolves when the response has been validated.
+ */
+async function sendRegenerateVariantRequest(
+  permission,
+  fetchFn,
+  endpointUrl,
+  requestOptions
+) {
+  const res = await fetchFn(permission, endpointUrl, requestOptions);
 
   await ensureResponseOk(res);
 }
