@@ -2740,16 +2740,6 @@ function validateRenderInvalidationDependencies(dependencies) {
 }
 
 /**
- * @typedef {object} RenderHandlerDeps
- * @property {FirestoreLike} db Database.
- * @property {StorageBucketLike} bucket Bucket.
- * @property {(message?: unknown, ...optionalParams: unknown[]) => void} [consoleError] Error logger.
- * @property {number} [visibilityThreshold] Visibility threshold.
- * @property {number[]} [rewriteTargetPageNumbers] Targets to rewrite to the writer form.
- * @property {(paths: string[]) => Promise<void>} invalidatePaths Invalidate paths.
- */
-
-/**
  * Create render variant handler.
  * @param {RenderVariantCapabilities} capabilities Normalized render and invalidation capabilities.
  * @returns {(snap: VariantSnapshot, context?: RenderContext) => Promise<null>} Render function.
@@ -2769,21 +2759,17 @@ function createRenderVariantHandler(capabilities) {
   );
   /**
    * Execute render workflow.
-   * @param {RenderHandlerDeps} deps Dependencies.
    * @param {VariantSnapshot} snap Snap.
    * @param {RenderContext | undefined} context Context.
    * @returns {Promise<null>} Null.
    */
-  async function executeRenderWorkflow(deps, snap, context) {
-    const { db, bucket, consoleError, visibilityThreshold, invalidatePaths } =
-      deps;
-
+  async function executeRenderWorkflow(snap, context) {
     const renderPlan = await resolveRenderPlan({
       snap,
-      db,
+      db: rendering.db,
       bucket,
-      consoleError,
-      visibilityThreshold,
+      consoleError: rendering.consoleError,
+      visibilityThreshold: rendering.visibilityThreshold,
       rewriteTargetPageNumbers: context?.rewriteTargetPageNumbers,
     });
 
@@ -2794,7 +2780,7 @@ function createRenderVariantHandler(capabilities) {
     await persistRenderPlan({
       snap,
       context,
-      db,
+      db: rendering.db,
       bucket,
       invalidatePaths,
       ...renderPlan,
@@ -2806,17 +2792,7 @@ function createRenderVariantHandler(capabilities) {
     /** @type {VariantSnapshot} */ snap,
     /** @type {RenderContext | undefined} */ context = {}
   ) {
-    return executeRenderWorkflow(
-      {
-        db: rendering.db,
-        bucket,
-        consoleError: rendering.consoleError,
-        visibilityThreshold: rendering.visibilityThreshold,
-        invalidatePaths,
-      },
-      snap,
-      context
-    );
+    return executeRenderWorkflow(snap, context);
   };
 }
 
