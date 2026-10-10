@@ -1177,100 +1177,77 @@ function checkStorageBucketHelper(storage) {
 
 /**
  * Create invalidation function.
- * @param {object} root0 Dependencies.
- * @param {(permission: AllowEffects, input: string, init?: object) => Promise<Response>} root0.fetchFn Permission-aware fetch function.
- * @param {import('../../../../types/allow-effects').AllowEffectsBoundary} root0.bindEffectBoundary Cloud-owned permission boundary.
- * @param {(permission: AllowEffects, url: string, init?: object) => Promise<Response>} root0.effectFetchFn Fetch adapter for cache purge requests.
- * @param {string} root0.projectId Project ID.
- * @param {string} root0.urlMapName URL map name.
- * @param {string} [root0.cdnHost] CDN host override.
- * @param {() => string} root0.randomUUID UUID generator for requests.
- * @param {(message: string, ...optionalParams: unknown[]) => void} [root0.consoleError] Logger for failures.
+ * @param {InvalidationEffectOperations} effectOperations Permission-aware HTTP operations.
+ * @param {InvalidationTargetOptions} target CDN target configuration.
+ * @param {() => string} randomUUID UUID generator for requests.
+ * @param {(message: string, ...optionalParams: unknown[]) => void} [consoleError] Logger for failures.
  * @returns {(paths: string[]) => Promise<void>} Invalidation helper.
  */
-export function createInvalidatePaths({
-  fetchFn,
-  bindEffectBoundary,
-  effectFetchFn,
-  projectId,
-  urlMapName,
-  cdnHost,
+export function createInvalidatePaths(
+  effectOperations,
+  target,
   randomUUID,
-  consoleError,
-}) {
+  consoleError
+) {
+  const { fetchFn, bindEffectBoundary, effectFetchFn } = effectOperations;
   assertFunction(fetchFn, 'fetchFn');
   assertFunction(bindEffectBoundary, 'bindEffectBoundary');
   assertFunction(effectFetchFn, 'effectFetchFn');
   assertFunction(randomUUID, 'randomUUID');
 
-  return createInvalidatePathsImpl({
-    fetchFn,
-    bindEffectBoundary,
-    effectFetchFn,
-    projectId,
-    urlMapName,
-    cdnHost,
+  return createInvalidatePathsImpl(
+    effectOperations,
+    target,
     randomUUID,
-    consoleError,
-  });
+    consoleError
+  );
 }
+
+/** @typedef {{ fetchFn: (permission: AllowEffects, input: string, init?: object) => Promise<Response>, bindEffectBoundary: import('../../../../types/allow-effects').AllowEffectsBoundary, effectFetchFn: (permission: AllowEffects, url: string, init?: object) => Promise<Response> }} InvalidationEffectOperations */
+/** @typedef {{ projectId?: string, urlMapName?: string, cdnHost?: string }} InvalidationTargetOptions */
 
 /**
  * Build the CDN invalidation helper configured with the resolved dependencies.
- * @param {object} deps Invalidation dependencies.
- * @param {(permission: AllowEffects, input: string, init?: object) => Promise<Response>} deps.fetchFn Permission-aware fetch implementation.
- * @param {import('../../../../types/allow-effects').AllowEffectsBoundary} deps.bindEffectBoundary Cloud-owned permission boundary.
- * @param {(permission: AllowEffects, url: string, init?: object) => Promise<Response>} deps.effectFetchFn Fetch adapter for cache purge requests.
- * @param {string | undefined} deps.projectId Optional GCP project identifier.
- * @param {string | undefined} deps.urlMapName URL map name used for the CDN.
- * @param {string | undefined} deps.cdnHost CDN host that will be purged.
- * @param {() => string} deps.randomUUID UUID generator used for request IDs.
- * @param {(message: string, ...optionalParams: unknown[]) => void} [deps.consoleError] Optional error logger.
+ * @param {InvalidationEffectOperations} effectOperations Permission-aware HTTP operations.
+ * @param {InvalidationTargetOptions} target CDN target configuration.
+ * @param {() => string} randomUUID UUID generator used for request IDs.
+ * @param {(message: string, ...optionalParams: unknown[]) => void} [consoleError] Optional error logger.
  * @returns {(paths: string[]) => Promise<void>} Handler that invalidates the provided paths.
  */
-function createInvalidatePathsImpl({
-  fetchFn,
-  bindEffectBoundary,
-  effectFetchFn,
-  projectId,
-  urlMapName,
-  cdnHost,
+function createInvalidatePathsImpl(
+  effectOperations,
+  target,
   randomUUID,
-  consoleError,
-}) {
-  const resolvedProjectId = resolveProjectId(projectId);
-  const resolvedUrlMapName = resolveUrlMapName(urlMapName);
-  const resolvedCdnHost = resolveCdnHost(cdnHost);
+  consoleError
+) {
+  const resolvedProjectId = resolveProjectId(target.projectId);
+  const resolvedUrlMapName = resolveUrlMapName(target.urlMapName);
+  const resolvedCdnHost = resolveCdnHost(target.cdnHost);
   const invalidateUrl = buildInvalidateUrl(
     resolvedProjectId,
     resolvedUrlMapName
   );
 
-  return createInvalidateHandler({
-    url: invalidateUrl,
-    host: resolvedCdnHost,
-    fetchFn,
-    bindEffectBoundary,
-    effectFetchFn,
-    randomUUID,
-    consoleError,
-  });
+  return createInvalidateHandler(
+    invalidateUrl,
+    resolvedCdnHost,
+    effectOperations,
+    {
+      randomUUID,
+      consoleError,
+    }
+  );
 }
 
 /**
  * Create the CDN invalidation handler bound to a resolved URL and host.
- * @param {{ url: string, host: string, fetchFn: (permission: AllowEffects, input: string, init?: object) => Promise<Response>, bindEffectBoundary: import('../../../../types/allow-effects').AllowEffectsBoundary, effectFetchFn: (permission: AllowEffects, url: string, init?: object) => Promise<Response>, randomUUID: () => string, consoleError?: (message: string, ...optionalParams: unknown[]) => void }} deps Handler dependencies.
+ * @param {string} url Invalidation endpoint.
+ * @param {string} host CDN host in purge requests.
+ * @param {InvalidationEffectOperations} effectOperations Permission-aware HTTP operations.
+ * @param {{ randomUUID: () => string, consoleError?: (message: string, ...optionalParams: unknown[]) => void }} requestOptions Request identity and logging behavior.
  * @returns {(paths: string[]) => Promise<void>} Handler that invalidates each path.
  */
-function createInvalidateHandler({
-  url,
-  host,
-  fetchFn,
-  bindEffectBoundary,
-  effectFetchFn,
-  randomUUID,
-  consoleError,
-}) {
+function createInvalidateHandler(url, host, effectOperations, requestOptions) {
   return async function invalidatePaths(paths) {
     if (!isValidPaths(paths)) {
       return;
@@ -1279,11 +1256,11 @@ function createInvalidateHandler({
     await executeInvalidation(paths, {
       url,
       host,
-      fetchFn,
-      bindEffectBoundary,
-      effectFetchFn,
-      randomUUID,
-      consoleError,
+      fetchFn: effectOperations.fetchFn,
+      bindEffectBoundary: effectOperations.bindEffectBoundary,
+      effectFetchFn: effectOperations.effectFetchFn,
+      randomUUID: requestOptions.randomUUID,
+      consoleError: requestOptions.consoleError,
     });
   };
 }
@@ -2721,16 +2698,16 @@ function createRenderVariantHandler({
     storage.bucket(bucketName || DEFAULT_BUCKET_NAME),
     /** @type {string} */ (objectPrefix)
   );
-  const invalidatePaths = createInvalidatePaths({
-    fetchFn,
-    bindEffectBoundary,
-    effectFetchFn,
-    projectId: /** @type {string} */ (projectId),
-    urlMapName: /** @type {string} */ (urlMapName),
-    cdnHost,
+  const invalidatePaths = createInvalidatePaths(
+    { fetchFn, bindEffectBoundary, effectFetchFn },
+    {
+      projectId: /** @type {string} */ (projectId),
+      urlMapName: /** @type {string} */ (urlMapName),
+      cdnHost,
+    },
     randomUUID,
-    consoleError,
-  });
+    consoleError
+  );
   /**
    * Execute render workflow.
    * @param {RenderHandlerDeps} deps Dependencies.

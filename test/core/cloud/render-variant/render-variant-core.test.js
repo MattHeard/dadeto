@@ -59,12 +59,16 @@ describe('createInvalidatePaths', () => {
   it('returns early when paths are not provided', async () => {
     const fetchFn = jest.fn();
     const randomUUID = jest.fn(() => 'uuid');
-    const invalidatePaths = createInvalidatePaths({
-      fetchFn,
-      bindEffectBoundary: handler => handler(createAllowEffects()),
-      effectFetchFn: (permission, ...args) => fetchFn(...args),
+    const invalidatePaths = createInvalidatePaths(
+      {
+        fetchFn: fetchFn,
+        bindEffectBoundary: handler => handler(createAllowEffects()),
+        effectFetchFn: (permission, ...args) => fetchFn(...args),
+      },
+      {},
       randomUUID,
-    });
+      undefined
+    );
 
     await invalidatePaths(undefined);
     expect(fetchFn).not.toHaveBeenCalled();
@@ -76,12 +80,16 @@ describe('createInvalidatePaths', () => {
       json: async () => ({ [ACCESS_TOKEN_KEY]: 'token' }),
     });
     const effectFetchFn = jest.fn(async () => ({ ok: true, status: 200 }));
-    const invalidatePaths = createInvalidatePaths({
-      fetchFn,
-      bindEffectBoundary: handler => handler(createAllowEffects()),
-      effectFetchFn,
-      randomUUID: jest.fn(() => 'uuid'),
-    });
+    const invalidatePaths = createInvalidatePaths(
+      {
+        fetchFn: fetchFn,
+        bindEffectBoundary: handler => handler(createAllowEffects()),
+        effectFetchFn: effectFetchFn,
+      },
+      {},
+      jest.fn(() => 'uuid'),
+      undefined
+    );
 
     await invalidatePaths(['/p/1a.html', '/p/2a.html']);
 
@@ -110,16 +118,16 @@ describe('createInvalidatePaths', () => {
       fetchFn(url, init)
     );
 
-    const invalidatePaths = createInvalidatePaths({
-      fetchFn,
-      bindEffectBoundary: handler => handler(createAllowEffects()),
-      effectFetchFn,
-      randomUUID: jest.fn(() => 'uuid'),
-      consoleError,
-      projectId: 'proj',
-      urlMapName: 'map',
-      cdnHost: 'cdn.example.com',
-    });
+    const invalidatePaths = createInvalidatePaths(
+      {
+        fetchFn: fetchFn,
+        bindEffectBoundary: handler => handler(createAllowEffects()),
+        effectFetchFn: effectFetchFn,
+      },
+      { projectId: 'proj', urlMapName: 'map', cdnHost: 'cdn.example.com' },
+      jest.fn(() => 'uuid'),
+      consoleError
+    );
 
     await invalidatePaths(['/p/1a.html']);
 
@@ -142,12 +150,16 @@ describe('createInvalidatePaths', () => {
       })
       .mockRejectedValueOnce(new Error('network'));
 
-    const invalidatePaths = createInvalidatePaths({
-      fetchFn,
-      bindEffectBoundary: handler => handler(createAllowEffects()),
-      effectFetchFn: (permission, ...args) => fetchFn(...args),
-      randomUUID: jest.fn(() => 'uuid'),
-    });
+    const invalidatePaths = createInvalidatePaths(
+      {
+        fetchFn: fetchFn,
+        bindEffectBoundary: handler => handler(createAllowEffects()),
+        effectFetchFn: (permission, ...args) => fetchFn(...args),
+      },
+      {},
+      jest.fn(() => 'uuid'),
+      undefined
+    );
 
     await expect(invalidatePaths(['/p/2a.html'])).resolves.toBeUndefined();
     expect(fetchFn).toHaveBeenCalledTimes(2);
@@ -164,16 +176,16 @@ describe('createInvalidatePaths', () => {
       })
       .mockRejectedValueOnce(rawError);
 
-    const invalidatePaths = createInvalidatePaths({
-      fetchFn,
-      bindEffectBoundary: handler => handler(createAllowEffects()),
-      effectFetchFn: (permission, ...args) => fetchFn(...args),
-      randomUUID: jest.fn(() => 'uuid'),
-      projectId: 'proj',
-      urlMapName: 'map',
-      cdnHost: 'cdn.example.com',
-      consoleError,
-    });
+    const invalidatePaths = createInvalidatePaths(
+      {
+        fetchFn: fetchFn,
+        bindEffectBoundary: handler => handler(createAllowEffects()),
+        effectFetchFn: (permission, ...args) => fetchFn(...args),
+      },
+      { projectId: 'proj', urlMapName: 'map', cdnHost: 'cdn.example.com' },
+      jest.fn(() => 'uuid'),
+      consoleError
+    );
 
     await invalidatePaths(['/p/raw.html']);
 
@@ -193,13 +205,16 @@ describe('createInvalidatePaths', () => {
       })
       .mockRejectedValueOnce('boom');
 
-    const invalidatePaths = createInvalidatePaths({
-      fetchFn,
-      bindEffectBoundary: handler => handler(createAllowEffects()),
-      effectFetchFn: (permission, ...args) => fetchFn(...args),
-      randomUUID: jest.fn(() => 'uuid'),
-      consoleError,
-    });
+    const invalidatePaths = createInvalidatePaths(
+      {
+        fetchFn: fetchFn,
+        bindEffectBoundary: handler => handler(createAllowEffects()),
+        effectFetchFn: (permission, ...args) => fetchFn(...args),
+      },
+      {},
+      jest.fn(() => 'uuid'),
+      consoleError
+    );
 
     await invalidatePaths(['/p/string.html']);
 
@@ -223,16 +238,16 @@ describe('createInvalidatePaths', () => {
         json: async () => ({}),
       });
 
-    const invalidatePaths = createInvalidatePaths({
-      fetchFn,
-      bindEffectBoundary: handler => handler(createAllowEffects()),
-      effectFetchFn: (permission, ...args) => fetchFn(...args),
-      randomUUID: jest.fn(() => 'uuid'),
-      projectId: 'proj',
-      urlMapName: 'map',
-      cdnHost: 'cdn.example.com',
-      consoleError,
-    });
+    const invalidatePaths = createInvalidatePaths(
+      {
+        fetchFn: fetchFn,
+        bindEffectBoundary: handler => handler(createAllowEffects()),
+        effectFetchFn: (permission, ...args) => fetchFn(...args),
+      },
+      { projectId: 'proj', urlMapName: 'map', cdnHost: 'cdn.example.com' },
+      jest.fn(() => 'uuid'),
+      consoleError
+    );
 
     await invalidatePaths(['/p/1a.html']);
 
@@ -255,15 +270,16 @@ describe('createInvalidatePaths', () => {
         json: async () => ({}),
       });
 
-    const invalidatePaths = createInvalidatePaths({
-      fetchFn,
-      bindEffectBoundary: handler => handler(createAllowEffects()),
-      effectFetchFn: (permission, ...args) => fetchFn(...args),
-      randomUUID: jest.fn(() => 'uuid'),
-      projectId: 'proj',
-      urlMapName: 'map',
-      cdnHost: 'cdn.example.com',
-    });
+    const invalidatePaths = createInvalidatePaths(
+      {
+        fetchFn: fetchFn,
+        bindEffectBoundary: handler => handler(createAllowEffects()),
+        effectFetchFn: (permission, ...args) => fetchFn(...args),
+      },
+      { projectId: 'proj', urlMapName: 'map', cdnHost: 'cdn.example.com' },
+      jest.fn(() => 'uuid'),
+      undefined
+    );
 
     await expect(invalidatePaths(['/p/1a.html'])).resolves.toBeUndefined();
     expect(fetchFn).toHaveBeenCalledTimes(2);
@@ -281,15 +297,16 @@ describe('createInvalidatePaths', () => {
         json: async () => ({}),
       });
 
-    const invalidatePaths = createInvalidatePaths({
-      fetchFn,
-      bindEffectBoundary: handler => handler(createAllowEffects()),
-      effectFetchFn: (permission, ...args) => fetchFn(...args),
-      randomUUID: jest.fn(() => 'uuid'),
-      projectId: '',
-      urlMapName: 'map',
-      cdnHost: 'cdn.example.com',
-    });
+    const invalidatePaths = createInvalidatePaths(
+      {
+        fetchFn: fetchFn,
+        bindEffectBoundary: handler => handler(createAllowEffects()),
+        effectFetchFn: (permission, ...args) => fetchFn(...args),
+      },
+      { projectId: '', urlMapName: 'map', cdnHost: 'cdn.example.com' },
+      jest.fn(() => 'uuid'),
+      undefined
+    );
 
     await invalidatePaths(['/p/9a.html']);
 
@@ -306,12 +323,16 @@ describe('createInvalidatePaths', () => {
       json: async () => ({}),
     });
 
-    const invalidatePaths = createInvalidatePaths({
-      fetchFn,
-      bindEffectBoundary: handler => handler(createAllowEffects()),
-      effectFetchFn: (permission, ...args) => fetchFn(...args),
-      randomUUID: jest.fn(() => 'uuid'),
-    });
+    const invalidatePaths = createInvalidatePaths(
+      {
+        fetchFn: fetchFn,
+        bindEffectBoundary: handler => handler(createAllowEffects()),
+        effectFetchFn: (permission, ...args) => fetchFn(...args),
+      },
+      {},
+      jest.fn(() => 'uuid'),
+      undefined
+    );
 
     await expect(invalidatePaths(['/p/7a.html'])).rejects.toThrow(
       'metadata token: HTTP 401'
