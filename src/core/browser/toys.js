@@ -966,34 +966,16 @@ export const createKeyElement = ({ dom, key, onKey, disposers }) => {
  * @param {object} options - ToyCallback options
  * @param {object} options.dom - The DOM utilities object
  * @param {string} options.value - The initial value
- * @param {HTMLElement} options.keyEl - The corresponding key input element
- * @param {HTMLElement} options.textInput - The hidden text input element
- * @param {object} options.rowData - Row data object containing rows and rowTypes.
- * @param {ToyCallback} options.syncHiddenField - ToyCallback to sync the hidden field with current state
+ * @param {ToyCallback} options.onValue - Value input event handler
  * @param {Array<ToyCallback>} options.disposers - Array to store cleanup functions
  * @returns {HTMLInputElement} The created value input element
  */
-export const createValueElement = ({
-  dom,
-  value,
-  keyEl,
-  textInput,
-  rowData,
-  syncHiddenField,
-  disposers,
-}) => {
+export const createValueElement = ({ dom, value, onValue, disposers }) => {
   const valueEl = dom.createElement('input');
   dom.setType(valueEl, 'text');
   dom.setPlaceholder(valueEl, 'Value');
   dom.setValue(valueEl, value);
 
-  const onValue = createValueInputHandler({
-    dom,
-    textInput,
-    rowData,
-    syncHiddenField,
-  });
-  dom.setDataAttribute(valueEl, 'prevKey', keyEl?.value);
   dom.addEventListener(valueEl, 'input', onValue);
   const removeValueListener = createRemoveListener({
     dom,
@@ -1232,12 +1214,15 @@ export const createKeyValueRow =
     const valueEl = createValueElement({
       dom,
       value,
-      keyEl,
-      textInput,
-      rowData,
-      syncHiddenField,
+      onValue: createValueInputHandler({
+        dom,
+        textInput,
+        rowData,
+        syncHiddenField,
+      }),
       disposers,
     });
+    dom.setDataAttribute(valueEl, 'prevKey', key);
 
     // Create type selector and toggle button (hidden by default)
     const typeEl = createTypeElement({

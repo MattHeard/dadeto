@@ -15,13 +15,11 @@ describe('createRemoveValueListener repeated calls', () => {
       setDataAttribute: jest.fn(),
     };
     const disposers = [];
+    const onValue = jest.fn();
     const el = createValueElement({
       dom,
       value: '',
-      keyEl: {},
-      textInput: {},
-      rows: {},
-      syncHiddenField: jest.fn(),
+      onValue,
       disposers,
     });
     const dispose = disposers[0];

@@ -14,19 +14,13 @@ describe('createRemoveValueListener unique disposers', () => {
       getDataAttribute: jest.fn(() => 'k'),
       setDataAttribute: jest.fn(),
     };
-    const keyEl = { value: 'k' };
-    const textInput = {};
-    const rows = {};
-    const sync = jest.fn();
+    const onValue = jest.fn();
 
     const disposers1 = [];
     const valueEl1 = createValueElement({
       dom,
       value: '',
-      keyEl,
-      textInput,
-      rows,
-      syncHiddenField: sync,
+      onValue,
       disposers: disposers1,
     });
     const disposer1 = disposers1[0];
@@ -35,10 +29,7 @@ describe('createRemoveValueListener unique disposers', () => {
     const valueEl2 = createValueElement({
       dom,
       value: '',
-      keyEl,
-      textInput,
-      rows,
-      syncHiddenField: sync,
+      onValue,
       disposers: disposers2,
     });
     const disposer2 = disposers2[0];

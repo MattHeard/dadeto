@@ -76,12 +76,13 @@ describe('createKeyValueRow', () => {
     // Setup mock elements that will be created
     const mockRowElement = {};
     const mockInputElement = {};
+    const mockValueElement = {};
 
     // Make createElement return our mock elements in order
     mockDom.createElement
       .mockReturnValueOnce(mockRowElement) // First call: row div
       .mockReturnValueOnce(mockInputElement) // Second call: key input
-      .mockReturnValueOnce({}) // Third call: value input
+      .mockReturnValueOnce(mockValueElement) // Third call: value input
       .mockReturnValue({}); // Any other calls (select, options, toggle btn, button)
 
     // Call the row creator function
@@ -100,6 +101,11 @@ describe('createKeyValueRow', () => {
     );
     expect(mockDom.setDataAttribute).toHaveBeenCalledWith(
       mockInputElement,
+      'prevKey',
+      'key1'
+    );
+    expect(mockDom.setDataAttribute).toHaveBeenCalledWith(
+      mockValueElement,
       'prevKey',
       'key1'
     );

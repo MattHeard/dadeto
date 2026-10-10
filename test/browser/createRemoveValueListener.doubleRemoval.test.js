@@ -14,28 +14,19 @@ describe('createRemoveValueListener multiple removals', () => {
       getDataAttribute: jest.fn(() => 'k'),
       setDataAttribute: jest.fn(),
     };
-    const keyEl = { value: 'k' };
-    const textInput = {};
-    const rows = {};
-    const sync = jest.fn();
+    const onValue = jest.fn();
     const disposers = [];
 
     const valueEl1 = createValueElement({
       dom,
       value: '',
-      keyEl,
-      textInput,
-      rows,
-      syncHiddenField: sync,
+      onValue,
       disposers,
     });
     const valueEl2 = createValueElement({
       dom,
       value: '',
-      keyEl,
-      textInput,
-      rows,
-      syncHiddenField: sync,
+      onValue,
       disposers,
     });
 
