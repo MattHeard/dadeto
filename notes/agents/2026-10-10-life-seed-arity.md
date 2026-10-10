@@ -1,0 +1,7 @@
+# Life Seed input handler parameter-bag cleanup
+
+- Unexpected hurdle: the reset handler needs to observe the checkbox created by the form while keeping form wiring dependencies out of its input signature.
+- Diagnosis: the three findings came from passing form, DOM, payload, and cleanup state together to field helpers. These are shared setup dependencies that belong in closures created by the form builder; each field helper only needs its own data and a small callback.
+- Fix: bound field registration and checkbox construction inside `buildForm`; made the cells and reset helpers accept explicit data and callback parameters; retained `wireLabelledField` for listener cleanup and reset serialization behavior.
+- Evidence: focused Jest passed (2 suites, 23 tests); scoped ESLint, `npm run tsdoc:check`, `git diff --check`, and all 10 `npm run check` gates passed, including 11 local browser checks, 0 clones, and 0 audit vulnerabilities. Target scan: `.tmp/parameter-bag-life-seed.scan.json` (0). Full check log: `.tmp/npm-check-parameter-bag-life-seed.log`. Global scan: `.tmp/parameter-bag-global-after-life-seed.json` (100 findings).
+- Next guidance: the next largest clusters tie at three findings in `src/core/cloud/submit-new-page/submit-new-page-core.js` and `src/core/local/gcp-simulator/simulator.js`. In the submit handler, preserve the request-time AllowEffects permission and remove auth headers from persisted data while making lower-level storage/payload inputs explicit.

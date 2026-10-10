@@ -11,6 +11,8 @@ import { createNumberFieldInput } from './browserInputHandlersCore.js';
 /** @typedef {import('../domHelpers.js').DOMHelpers} DOMHelpers */
 /** @typedef {{ width: number, height: number, cols: number, rows: number, tickSpeedMs: number, cells: number[][], reset?: boolean }} LifeSeedData */
 /** @typedef {{ key: 'width' | 'height' | 'cols' | 'rows' | 'tickSpeedMs', label: string, placeholder: string, value: number }} NumberFieldOptions */
+/** @typedef {(input: HTMLInputElement | HTMLTextAreaElement, handler: () => void, label: string) => void} WireLifeSeedField */
+/** @typedef {(checked: boolean, handler: () => void) => HTMLInputElement} CreateLifeSeedCheckbox */
 
 const FORM_CLASS = 'life-seed-form';
 
@@ -88,16 +90,13 @@ function syncTextInput(textInput, data) {
 
 /**
  * Create the textarea for the live-cell coordinate list.
- * @param {{
- *   dom: DOMHelpers,
- *   form: HTMLElement,
- *   data: LifeSeedData,
- *   textInput: HTMLInputElement,
- *   disposers: Array<() => void>,
- * }} root0 Field setup dependencies.
+ * @param {DOMHelpers} dom DOM operations.
+ * @param {LifeSeedData} data Managed form data.
+ * @param {HTMLInputElement} textInput Hidden payload input.
+ * @param {WireLifeSeedField} wireField Field wiring bound to the current form.
  * @returns {void}
  */
-function createCellsField({ dom, form, data, textInput, disposers }) {
+function createCellsField(dom, data, textInput, wireField) {
   const textarea = /** @type {HTMLTextAreaElement} */ (
     dom.createElement('textarea')
   );
@@ -108,72 +107,31 @@ function createCellsField({ dom, form, data, textInput, disposers }) {
     data.cells = parseCells(dom.getValue(textarea), data.cells);
     syncTextInput(textInput, data);
   };
-  wireLabelledField(
-    dom,
-    form,
-    textarea,
-    updateCells
-  )('Live cells, one x,y per line', disposers);
-}
-
-/**
- * Create a labelled checkbox field and wire its change handler.
- * @param {{
- *   dom: DOMHelpers,
- *   form: HTMLElement,
- *   labelText: string,
- *   checked: boolean,
- *   handler: () => void,
- *   disposers: Array<() => void>,
- * }} root0 Checkbox field dependencies.
- * @returns {HTMLInputElement} Created checkbox element.
- */
-function createCheckboxField({
-  dom,
-  form,
-  labelText,
-  checked,
-  handler,
-  disposers,
-}) {
-  const checkbox = /** @type {HTMLInputElement} */ (dom.createElement('input'));
-  dom.setType(checkbox, 'checkbox');
-  if (checked) {
-    checkbox.checked = true;
-  }
-
-  wireLabelledField(dom, form, checkbox, handler)(labelText, disposers);
-  return checkbox;
+  wireField(textarea, updateCells, 'Live cells, one x,y per line');
 }
 
 /**
  * Create the reset checkbox bound to the managed payload.
- * @param {{
- *   dom: DOMHelpers,
- *   form: HTMLElement,
- *   data: LifeSeedData,
- *   textInput: HTMLInputElement,
- *   disposers: Array<() => void>,
- * }} root0 Reset field dependencies.
+ * @param {LifeSeedData} data Managed form data.
+ * @param {HTMLInputElement} textInput Hidden payload input.
+ * @param {CreateLifeSeedCheckbox} createCheckbox Checkbox creation bound to the current form.
  * @returns {void}
  */
-function createResetField({ dom, form, data, textInput, disposers }) {
-  const resetBinding = {
-    dom,
-    form,
-    labelText: 'Reset from seed',
-    checked: data.reset === true,
-    handler: () => {
-      if (checkbox.checked) {
-        data.reset = true;
-      } else {
-        delete data.reset;
-      }
-      syncTextInput(textInput, data);
-    },
-    disposers,
-  };
-  const checkbox = createCheckboxField(resetBinding);
+function createResetField(data, textInput, createCheckbox) {
+  /**
+   * Mirror the checkbox state into the hidden payload.
+   * @returns {void}
+   */
+  function updateReset() {
+    if (checkbox.checked) {
+      data.reset = true;
+    } else {
+      delete data.reset;
+    }
+    syncTextInput(textInput, data);
+  }
+  /** @type {HTMLInputElement} */
+  const checkbox = createCheckbox(data.reset === true, updateReset);
 }
 
 /**
@@ -187,6 +145,22 @@ function buildForm({ dom, container, textInput }) {
     { dom, container, textInput },
     ({ form, disposers }) => {
       dom.setClassName(form, FORM_CLASS);
+      /** @type {WireLifeSeedField} */
+      const wireField = (input, handler, labelText) => {
+        wireLabelledField(dom, form, input, handler)(labelText, disposers);
+      };
+      /** @type {CreateLifeSeedCheckbox} */
+      const createResetCheckbox = (checked, handler) => {
+        const checkbox = /** @type {HTMLInputElement} */ (
+          dom.createElement('input')
+        );
+        dom.setType(checkbox, 'checkbox');
+        if (checked) {
+          checkbox.checked = true;
+        }
+        wireField(checkbox, handler, 'Reset from seed');
+        return checkbox;
+      };
       /** @type {NumberFieldOptions[]} */
       const numberFieldOptions = [
         {
@@ -228,10 +202,10 @@ function buildForm({ dom, container, textInput }) {
           data[key] = normalizePositiveInteger(dom.getValue(input), value);
           browserCore.setInputValue(textInput, JSON.stringify(data));
         };
-        wireLabelledField(dom, form, input, updateNumber)(label, disposers);
+        wireField(input, updateNumber, label);
       }
-      createCellsField({ dom, form, data, textInput, disposers });
-      createResetField({ dom, form, data, textInput, disposers });
+      createCellsField(dom, data, textInput, wireField);
+      createResetField(data, textInput, createResetCheckbox);
       return { data, form };
     }
   );
