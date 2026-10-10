@@ -8,6 +8,9 @@ const authorizationHeader = name => {
   if (name === 'authorization') return 'Bearer token';
   return null;
 };
+const allowEffects = Object.freeze({});
+const setAuthorDocument = (permission, reference, data, options) =>
+  reference.set(data, options);
 
 /**
  * @returns {object} Firestore double with mocked collection access.
@@ -40,10 +43,11 @@ describe('createGetAuthorUuidV2Handler', () => {
       db,
       auth: { verifyIdToken: jest.fn().mockResolvedValue({ uid: 'user-1' }) },
       randomUUID: jest.fn(),
+      setAuthorDocument: jest.fn(),
     });
 
     await expect(
-      handler({
+      handler(allowEffects, {
         get: authorizationHeader,
       })
     ).resolves.toEqual({ status: 200, body: { uuid: 'author-uuid' } });
@@ -53,6 +57,9 @@ describe('createGetAuthorUuidV2Handler', () => {
 
   it('creates an author uuid when one is missing', async () => {
     const set = jest.fn().mockResolvedValue();
+    const setAuthorDocument = jest.fn((permission, reference, data, options) =>
+      reference.set(data, options)
+    );
     const get = jest.fn().mockResolvedValue({ data: () => undefined });
     const doc = { get, set };
     const db = {
@@ -62,14 +69,21 @@ describe('createGetAuthorUuidV2Handler', () => {
       db,
       auth: { verifyIdToken: jest.fn().mockResolvedValue({ uid: 'user-1' }) },
       randomUUID: jest.fn().mockReturnValue('uuid-1'),
+      setAuthorDocument,
     });
 
     await expect(
-      handler({
+      handler(allowEffects, {
         get: authorizationHeader,
       })
     ).resolves.toEqual({ status: 200, body: { uuid: 'uuid-1' } });
     expect(set).toHaveBeenCalledWith({ uuid: 'uuid-1' }, { merge: true });
+    expect(setAuthorDocument).toHaveBeenCalledWith(
+      allowEffects,
+      doc,
+      { uuid: 'uuid-1' },
+      { merge: true }
+    );
   });
 
   it('rejects missing or invalid tokens', async () => {
@@ -79,9 +93,10 @@ describe('createGetAuthorUuidV2Handler', () => {
       },
       auth: { verifyIdToken: jest.fn() },
       randomUUID: jest.fn(),
+      setAuthorDocument: jest.fn(),
     });
 
-    await expect(handler({})).resolves.toEqual({
+    await expect(handler(allowEffects, {})).resolves.toEqual({
       status: 401,
       body: 'Invalid or expired token',
     });
@@ -94,9 +109,10 @@ describe('createGetAuthorUuidV2Handler', () => {
       },
       auth: { verifyIdToken: jest.fn() },
       randomUUID: jest.fn(),
+      setAuthorDocument: jest.fn(),
     });
 
-    await expect(handler()).resolves.toEqual({
+    await expect(handler(allowEffects)).resolves.toEqual({
       status: 401,
       body: 'Invalid or expired token',
     });
@@ -105,6 +121,9 @@ describe('createGetAuthorUuidV2Handler', () => {
   it('writes the handler result to an express response', async () => {
     const json = jest.fn();
     const status = jest.fn(() => ({ json }));
+    const sendJsonResponse = jest.fn((permission, response, code, body) =>
+      response.status(code).json(body)
+    );
     const handle = createGetAuthorUuidV2ExpressHandle({
       db: {
         collection: jest.fn(() => ({
@@ -118,18 +137,23 @@ describe('createGetAuthorUuidV2Handler', () => {
       },
       auth: { verifyIdToken: jest.fn().mockResolvedValue({ uid: 'user-1' }) },
       randomUUID: jest.fn(),
+      setAuthorDocument,
+      sendJsonResponse,
     });
+    const response = { status };
 
     await handle(
+      allowEffects,
       {
         get: authorizationHeader,
       },
-      {
-        status,
-      }
+      response
     );
 
     expect(status).toHaveBeenCalledWith(200);
     expect(json).toHaveBeenCalledWith({ uuid: 'author-uuid' });
+    expect(sendJsonResponse).toHaveBeenCalledWith(allowEffects, response, 200, {
+      uuid: 'author-uuid',
+    });
   });
 });
