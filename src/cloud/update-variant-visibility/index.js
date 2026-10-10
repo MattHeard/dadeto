@@ -12,6 +12,8 @@ import {
 } from './update-variant-visibility-gcf.js';
 import { createUpdateVariantVisibilityHandler } from '../../core/cloud/update-variant-visibility/update-variant-visibility-core.js';
 import { createRenderContentsEntrypoint } from '../../core/cloud/render-contents/index.js';
+import { createEffectInvocationBoundary } from '../allow-effects.js';
+import { createUpdateVariantVisibilityEffectAdapters } from './effect-adapters.js';
 
 const renderContentsEntrypoint = createRenderContentsEntrypoint({
   initializeApp,
@@ -30,10 +32,13 @@ const handle = functions
   .region('europe-west1')
   .firestore.document('moderationRatings/{ratingId}')
   .onCreate(
-    createUpdateVariantVisibilityHandler({
-      db: getFirestoreInstance(),
-      renderContents: renderContentsEntrypoint.render,
-    })
+    createEffectInvocationBoundary(
+      createUpdateVariantVisibilityHandler({
+        db: getFirestoreInstance(),
+        renderContents: renderContentsEntrypoint.render,
+        ...createUpdateVariantVisibilityEffectAdapters(),
+      })
+    )
   );
 
 export { handle };

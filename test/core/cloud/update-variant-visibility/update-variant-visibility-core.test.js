@@ -5,7 +5,7 @@ import {
   calculateUpdatedVisibility,
   calculateNextVisibility,
   createUpdateVariantVisibilityHandle,
-  createUpdateVariantVisibilityHandler,
+  createUpdateVariantVisibilityHandler as createCoreUpdateVariantVisibilityHandler,
 } from '../../../../src/core/cloud/update-variant-visibility/update-variant-visibility-core.js';
 
 describe('normalizeVariantPath', () => {
@@ -138,6 +138,16 @@ const createDb = (variantRef, moderatorData = {}) => ({
     };
   }),
 });
+
+const testAllowEffects = Object.freeze({});
+const createUpdateVariantVisibilityHandler = options => {
+  const handler = createCoreUpdateVariantVisibilityHandler({
+    updateFirestoreDocument: (allowEffects, reference, data) =>
+      reference.update(data),
+    ...options,
+  });
+  return snapshot => handler(testAllowEffects, snapshot);
+};
 
 describe('createUpdateVariantVisibilityHandler', () => {
   it.each([123, undefined])(
@@ -537,7 +547,7 @@ describe('createUpdateVariantVisibilityHandler republishing', () => {
       })
     );
 
-    expect(renderContents).toHaveBeenCalledWith();
+    expect(renderContents).toHaveBeenCalledWith(testAllowEffects);
   });
 
   it('republishes contents when a hidden root variant becomes visible', async () => {
@@ -586,7 +596,64 @@ describe('createUpdateVariantVisibilityHandler republishing', () => {
       })
     );
 
-    expect(renderContents).toHaveBeenCalledWith();
+    expect(renderContents).toHaveBeenCalledWith(testAllowEffects);
+  });
+
+  it('passes the invocation capability to both document writes and republishing', async () => {
+    const allowEffects = Object.freeze({});
+    const variantRef = {
+      get: jest.fn().mockResolvedValue({
+        get: jest.fn(),
+        exists: true,
+        data: () => ({
+          visibility: 0.6,
+          moderationRatingCount: 1,
+          moderatorReputationSum: 1,
+        }),
+      }),
+      update: jest.fn().mockResolvedValue(undefined),
+      parent: {
+        parent: {
+          path: 'stories/story-1/pages/page-1',
+          parent: {
+            parent: {
+              get: jest.fn().mockResolvedValue({
+                exists: true,
+                data: () => ({
+                  rootPage: { path: 'stories/story-1/pages/page-1' },
+                }),
+              }),
+            },
+          },
+        },
+      },
+    };
+    const db = createDb(variantRef, { mod: { moderatorReputation: 1 } });
+    const updateFirestoreDocument = jest.fn((permission, reference, data) =>
+      reference.update(data)
+    );
+    const renderContents = jest.fn().mockResolvedValue(undefined);
+    const handler = createCoreUpdateVariantVisibilityHandler({
+      db,
+      updateFirestoreDocument,
+      renderContents,
+    });
+
+    await handler(
+      allowEffects,
+      createSnapshot({
+        moderatorId: 'mod',
+        variantId: 'stories/story-1/pages/page-1/variants/root',
+        isApproved: false,
+      })
+    );
+
+    expect(updateFirestoreDocument).toHaveBeenCalledWith(
+      allowEffects,
+      variantRef,
+      expect.objectContaining({ visibility: 0.3 })
+    );
+    expect(renderContents).toHaveBeenCalledWith(allowEffects);
   });
 
   it('skips republishing when the variant page is not the story root', async () => {
@@ -979,7 +1046,10 @@ describe('createUpdateVariantVisibilityHandle', () => {
     const getFirestoreInstance = jest.fn(() => db);
 
     expect(
-      createUpdateVariantVisibilityHandle(functions, getFirestoreInstance)
+      createUpdateVariantVisibilityHandle(functions, getFirestoreInstance, {
+        createEffectInvocationBoundary: handler => handler,
+        updateFirestoreDocument: jest.fn(),
+      })
     ).toBe(handle);
 
     expect(getFirestoreInstance).toHaveBeenCalledTimes(1);
