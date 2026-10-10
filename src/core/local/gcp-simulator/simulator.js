@@ -65,6 +65,9 @@ const LOCAL_ID_TOKEN = 'local-admin-token';
 /** @typedef {{ path: string, before?: unknown, after?: unknown }} CommittedRecord */
 /** @typedef {{ pathPattern: string, eventName: 'onCreate' | 'onWrite', handler: (...args: any[]) => any }} SimulatorTrigger */
 /** @typedef {{ doc: { ref: { path: string }, data?: () => unknown }, createdAt: number, rand: number, path: string }} ModerationCandidate */
+/** @typedef {{ db: unknown, storage: unknown, fetchFn: (permission: import('../../../../types/allow-effects').AllowEffects, ...args: any[]) => any, bindEffectBoundary: import('../../../../types/allow-effects').AllowEffectsBoundary, projectId: string, baseUrl: string, bucketName: string, verifyIdToken: (...args: any[]) => any }} GenerateStatsSimulatorOptions */
+/** @typedef {{ snapshotHelpers: ReturnType<typeof createSnapshotHelpers>, lookupHelpers: ReturnType<typeof createLookupHelpers>, authVerifiers: ReturnType<typeof createSimulatorAuthVerifiers>, fieldValue: ReturnType<typeof createFakeFieldValue>, db: SimulatorDb, randomUUID: () => string, logGenerateStatsError: (permission: import('../../../../types/allow-effects').AllowEffects, logger: { error?: (...args: unknown[]) => void }, ...args: unknown[]) => void }} SimulatorTestUtilsOptions */
+/** @typedef {{ processNewStory: (...args: any[]) => any, processNewPage: (...args: any[]) => any, renderContents: (...args: any[]) => any, renderVariant: (...args: any[]) => any, handleVariantWrite: (...args: any[]) => any, bindEffectBoundary: import('../../../../types/allow-effects').AllowEffectsBoundary }} SimulatorTriggerHandlers */
 /**
  * @typedef {object} SimulatorDocumentReference
  * @property {() => Promise<{data: () => {number?: number, title?: string}, id: string}>} get Fetch the parent document.
@@ -705,34 +708,15 @@ function createSimulatorAuthVerifiers() {
 
 /**
  * Create generate-stats dependencies for the simulator.
- * @param {{
- *   db: unknown,
- *   storage: unknown,
- *   fetchFn: (permission: import('../../../../types/allow-effects').AllowEffects, ...args: any[]) => any,
- *   bindEffectBoundary: import('../../../../types/allow-effects').AllowEffectsBoundary,
- *   projectId: string,
- *   baseUrl: string,
- *   bucketName: string,
- *   verifyIdToken: (...args: any[]) => any,
- * }} options Config dependencies.
+ * @param {GenerateStatsSimulatorOptions} options Config dependencies.
  * @returns {Record<string, unknown> & { logError: (permission: import('../../../../types/allow-effects').AllowEffects, logger: { error?: (...args: unknown[]) => void }, ...args: unknown[]) => void }} Generate stats config.
  */
 function createGenerateStatsConfig(options) {
-  const {
-    db,
-    storage,
-    fetchFn,
-    bindEffectBoundary,
-    projectId,
-    baseUrl,
-    bucketName,
-    verifyIdToken,
-  } = options;
   return {
-    db,
-    auth: { verifyIdToken },
-    storage,
-    fetchFn,
+    db: options.db,
+    auth: { verifyIdToken: options.verifyIdToken },
+    storage: options.storage,
+    fetchFn: options.fetchFn,
     sendHttpResponse: (
       /** @type {import('../../../../types/allow-effects').AllowEffects} */ _permission,
       /** @type {import('../../../../types/native-http').NativeHttpResponse} */ res,
@@ -754,14 +738,14 @@ function createGenerateStatsConfig(options) {
     effectFetchFn: (
       /** @type {import('../../../../types/allow-effects').AllowEffects} */ permission,
       /** @type {[string, object?]} */ ...args
-    ) => fetchFn(permission, ...args),
-    bindEffectBoundary,
+    ) => options.fetchFn(permission, ...args),
+    bindEffectBoundary: options.bindEffectBoundary,
     env: {
-      GOOGLE_CLOUD_PROJECT: projectId,
-      GCLOUD_PROJECT: projectId,
+      GOOGLE_CLOUD_PROJECT: options.projectId,
+      GCLOUD_PROJECT: options.projectId,
       DENDRITE_ENVIRONMENT: 't-local',
-      PLAYWRIGHT_ORIGIN: baseUrl,
-      STATIC_BUCKET_NAME: bucketName,
+      PLAYWRIGHT_ORIGIN: options.baseUrl,
+      STATIC_BUCKET_NAME: options.bucketName,
     },
     cryptoModule: { randomUUID },
     console,
@@ -884,93 +868,82 @@ function createSubmitNewStoryConfig(options) {
 
 /**
  * Create test utilities exposed by the simulator.
- * @param {{ snapshotHelpers: ReturnType<typeof createSnapshotHelpers>, lookupHelpers: ReturnType<typeof createLookupHelpers>, authVerifiers: ReturnType<typeof createSimulatorAuthVerifiers>, fieldValue: ReturnType<typeof createFakeFieldValue>, db: SimulatorDb, randomUUID: () => string, logGenerateStatsError: (permission: import('../../../../types/allow-effects').AllowEffects, logger: { error?: (...args: unknown[]) => void }, ...args: unknown[]) => void }} options Utility dependencies.
+ * @param {SimulatorTestUtilsOptions} options Utility dependencies.
  * @returns {Record<string, unknown> & { logGenerateStatsError: (permission: import('../../../../types/allow-effects').AllowEffects, logger: { error?: (...args: unknown[]) => void }, ...args: unknown[]) => void }} Test utility bag.
  */
 function createSimulatorTestUtils(options) {
-  const {
-    snapshotHelpers,
-    lookupHelpers,
-    authVerifiers,
-    fieldValue,
-    db,
-    randomUUID,
-    logGenerateStatsError,
-  } = options;
   return {
-    logGenerateStatsError,
+    logGenerateStatsError: options.logGenerateStatsError,
     resolveTargetPageNumber: getTargetPageNumber,
     extractParams,
     matchesTrigger,
     parseOptionLookup,
-    findExistingPagePath: lookupHelpers.findExistingPagePath,
-    findExistingOptionPath: lookupHelpers.findExistingOptionPath,
-    createSnapshot: snapshotHelpers.createSnapshot,
-    createSnapshots: snapshotHelpers.createSnapshots,
-    createDeleteSentinel: createDeleteSentinelGetter(fieldValue),
+    findExistingPagePath: options.lookupHelpers.findExistingPagePath,
+    findExistingOptionPath: options.lookupHelpers.findExistingOptionPath,
+    createSnapshot: options.snapshotHelpers.createSnapshot,
+    createSnapshots: options.snapshotHelpers.createSnapshots,
+    createDeleteSentinel: createDeleteSentinelGetter(options.fieldValue),
     markVariantDirty: (
       /** @type {SimulatorRequest} */ request,
       overrideDb = null
-    ) => handleMarkVariantDirty({ db: overrideDb ?? db }, request),
+    ) => handleMarkVariantDirty({ db: overrideDb ?? options.db }, request),
     createLocalFetchStub,
     createRandomSource,
-    generateStatsVerifyIdToken: authVerifiers.verifyStatsIdToken,
-    submitNewPageVerifyIdToken: authVerifiers.verifySubmitNewPageIdToken,
-    submitNewStoryVerifyIdToken: authVerifiers.verifySubmitNewStoryIdToken,
+    generateStatsVerifyIdToken: options.authVerifiers.verifyStatsIdToken,
+    submitNewPageVerifyIdToken:
+      options.authVerifiers.verifySubmitNewPageIdToken,
+    submitNewStoryVerifyIdToken:
+      options.authVerifiers.verifySubmitNewStoryIdToken,
     requireSimulatorDb,
     readVerifiedUid,
     resolveAuthorUuidInSimulator: (/** @type {SimulatorRequest} */ request) =>
       resolveAuthorUuidInSimulator(
-        { verifyIdToken: async () => ({ uid: null }), db, randomUUID },
+        {
+          verifyIdToken: async () => ({ uid: null }),
+          db: options.db,
+          randomUUID: options.randomUUID,
+        },
         request
       ),
     assignModerationJob: (
       /** @type {SimulatorRequest} */ request,
       overrideDb = null
-    ) => handleAssignModerationJob({ db: overrideDb ?? db }, request),
+    ) => handleAssignModerationJob({ db: overrideDb ?? options.db }, request),
     createDispatchCommittedWrites,
   };
 }
 
 /**
  * Create trigger registrations for simulator-backed cloud handlers.
- * @param {{ processNewStory: (...args: any[]) => any, processNewPage: (...args: any[]) => any, renderContents: (...args: any[]) => any, renderVariant: (...args: any[]) => any, handleVariantWrite: (...args: any[]) => any, bindEffectBoundary: import('../../../../types/allow-effects').AllowEffectsBoundary }} handlers Trigger handlers.
+ * @param {SimulatorTriggerHandlers} handlers Trigger handlers.
  * @returns {Record<string, Array<{ pathPattern: string, handler: (...args: any[]) => any }>>} Registrations by event.
  */
 function createTriggerRegistrationsByEvent(handlers) {
-  const {
-    processNewStory,
-    processNewPage,
-    renderContents,
-    renderVariant,
-    handleVariantWrite,
-    bindEffectBoundary,
-  } = handlers;
   return {
     onCreate: [
       {
         pathPattern: 'storyFormSubmissions/{subId}',
-        handler: processNewStory,
+        handler: handlers.processNewStory,
       },
       {
         pathPattern: 'pageFormSubmissions/{subId}',
-        handler: processNewPage,
+        handler: handlers.processNewPage,
       },
       {
         pathPattern: 'stories/{storyId}',
-        handler: renderContents,
+        handler: handlers.renderContents,
       },
       {
         pathPattern: 'stories/{storyId}/pages/{pageId}/variants/{variantId}',
-        handler: renderVariant,
+        handler: handlers.renderVariant,
       },
     ],
     onWrite: [
       {
         pathPattern: 'stories/{storyId}/pages/{pageId}/variants/{variantId}',
         handler: change =>
-          bindEffectBoundary(permission =>
-            handleVariantWrite(permission, change)
+          handlers.bindEffectBoundary(permission =>
+            handlers.handleVariantWrite(permission, change)
           ),
       },
     ],
