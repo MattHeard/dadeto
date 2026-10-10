@@ -78,8 +78,11 @@ describe('checkout runtime adapters', () => {
     const billing = {
       getPackage: jest.fn(async () => ({ active: true, amountUsdMinor: 100 })),
       getCurrentPricingSnapshot: jest.fn(async () => snapshot),
-      createPurchase: jest.fn(async input => input),
-      savePurchaseCheckout: jest.fn(async (id, session) => ({ id, session })),
+      createPurchase: jest.fn(async (_allowEffects, input) => input),
+      savePurchaseCheckout: jest.fn(async (_allowEffects, id, session) => ({
+        id,
+        session,
+      })),
       getPurchase: jest.fn(),
     };
     const verifyIdToken = jest.fn();
@@ -134,11 +137,19 @@ describe('checkout runtime adapters', () => {
     expect(await deps.createPurchase(allowEffects, { uid: 'uid' })).toEqual({
       uid: 'uid',
     });
+    expect(billing.createPurchase).toHaveBeenCalledWith(allowEffects, {
+      uid: 'uid',
+    });
     expect(
       await deps.savePurchaseCheckout(allowEffects, 'purchase-1', {
         id: 'session-1',
       })
     ).toEqual({ id: 'purchase-1', session: { id: 'session-1' } });
+    expect(billing.savePurchaseCheckout).toHaveBeenCalledWith(
+      allowEffects,
+      'purchase-1',
+      { id: 'session-1' }
+    );
     expect(
       await deps.createStripeCheckoutSession(
         allowEffects,

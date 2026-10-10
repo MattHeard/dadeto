@@ -5,6 +5,9 @@ import {
 } from '../../../../src/core/cloud/billing/billing-runtime-core.js';
 import { createFakeFirestore } from '../../../../src/core/local/gcp-simulator/fake-firestore.js';
 import { createPricingSnapshot } from '../../../../src/core/cloud/billing/pricing-core.js';
+import { createAllowEffects } from '../../../../src/cloud/allow-effects.js';
+
+const allowEffects = createAllowEffects();
 
 const snapshot = createPricingSnapshot({
   snapshotId: 'daily-1',
@@ -181,7 +184,7 @@ describe('createBillingRuntime', () => {
       .collection('billing-packages')
       .doc('package-1')
       .set({ credits: 5 });
-    await billing.createPurchase({
+    await billing.createPurchase(allowEffects, {
       purchaseId: 'purchase-1',
       apiKeyUuid: 'key-1',
       creditsIssued: 5,
@@ -201,7 +204,7 @@ describe('createBillingRuntime', () => {
     await expect(
       billing.getPurchaseByCheckoutSession('missing-session')
     ).resolves.toBeNull();
-    await billing.savePurchaseCheckout('purchase-1', {
+    await billing.savePurchaseCheckout(allowEffects, 'purchase-1', {
       checkoutSessionId: 'cs-lookup',
       url: 'https://checkout.test/cs-lookup',
       expiresAt: 456,
@@ -211,7 +214,7 @@ describe('createBillingRuntime', () => {
     ).resolves.toMatchObject({ checkoutSessionId: 'cs-lookup' });
     await expect(billing.getPurchase('missing')).resolves.toBeNull();
 
-    await billing.savePurchaseCheckout('purchase-1', {
+    await billing.savePurchaseCheckout(allowEffects, 'purchase-1', {
       checkoutSessionId: 'cs-1',
       url: 'https://checkout.test/cs-1',
       expiresAt: 123,
@@ -246,7 +249,7 @@ describe('billing runtime snapshot paths', () => {
 
   it('expires pending purchases idempotently without changing paid purchases', async () => {
     const { billing } = setup();
-    await billing.createPurchase({
+    await billing.createPurchase(allowEffects, {
       purchaseId: 'pending',
       uid: 'uid-1',
       apiKeyUuid: 'key-1',
@@ -264,7 +267,7 @@ describe('billing runtime snapshot paths', () => {
         eventId: 'expiry-1',
       })
     ).resolves.toMatchObject({ body: { duplicate: true } });
-    await billing.createPurchase({
+    await billing.createPurchase(allowEffects, {
       purchaseId: 'paid',
       uid: 'uid-1',
       apiKeyUuid: 'key-1',
@@ -281,7 +284,7 @@ describe('billing runtime snapshot paths', () => {
 
   it('generates purchase identifiers and normalizes non-object snapshots', async () => {
     const { db, billing } = setup();
-    const generated = await billing.createPurchase({
+    const generated = await billing.createPurchase(allowEffects, {
       apiKeyUuid: 'key-generated',
       creditsIssued: 1,
     });
@@ -304,7 +307,7 @@ describe('billing runtime snapshot paths', () => {
 
     const defaultBilling = createBillingRuntime(db);
     await expect(
-      defaultBilling.createPurchase({
+      defaultBilling.createPurchase(allowEffects, {
         apiKeyUuid: 'default-key',
         creditsIssued: 1,
       })
@@ -331,7 +334,7 @@ describe('billing runtime expiry paths', () => {
         eventId: 'expiry-missing',
       })
     ).resolves.toEqual({ status: 404, body: { error: 'purchase_not_found' } });
-    await billing.createPurchase({
+    await billing.createPurchase(allowEffects, {
       purchaseId: 'invalid-state',
       apiKeyUuid: 'key-invalid-state',
       creditsIssued: 2,
@@ -353,7 +356,7 @@ describe('billing runtime expiry paths', () => {
       .collection('billing-pricing-snapshots')
       .doc(snapshot.snapshotId)
       .set(snapshot);
-    await billing.createPurchase({
+    await billing.createPurchase(allowEffects, {
       purchaseId: 'reserve-insufficient',
       apiKeyUuid: 'key-reserve-insufficient',
       creditsIssued: 1,
@@ -393,7 +396,7 @@ describe('billing runtime expiry paths', () => {
       })
     );
 
-    await billing.createPurchase({
+    await billing.createPurchase(allowEffects, {
       purchaseId: 'refund-invalid-state',
       apiKeyUuid: 'key-refund-invalid',
       creditsIssued: 2,
@@ -424,7 +427,7 @@ describe('billing runtime balance paths', () => {
   it('creates a legacy lot when paying with an existing aggregate balance', async () => {
     const { db, billing } = setup();
     await db.doc('api-key-credit/key-1').set({ credit: 4 });
-    await billing.createPurchase({
+    await billing.createPurchase(allowEffects, {
       purchaseId: 'purchase-1',
       apiKeyUuid: 'key-1',
       creditsIssued: 3,
@@ -472,7 +475,7 @@ describe('billing runtime balance paths', () => {
       .collection('billing-pricing-snapshots')
       .doc(snapshot.snapshotId)
       .set(snapshot);
-    await billing.createPurchase({
+    await billing.createPurchase(allowEffects, {
       purchaseId: 'reserve-purchase',
       apiKeyUuid: 'key-reserve',
       creditsIssued: 10,
@@ -521,7 +524,7 @@ describe('billing runtime reservation paths', () => {
       .collection('billing-pricing-snapshots')
       .doc(snapshot.snapshotId)
       .set(snapshot);
-    await billing.createPurchase({
+    await billing.createPurchase(allowEffects, {
       purchaseId: 'reserve-path-purchase',
       apiKeyUuid: 'key-reserve-paths',
       creditsIssued: 10,
@@ -714,7 +717,7 @@ describe('billing runtime reconciliation paths', () => {
 
   it('handles zero-credit and balance-conflict refunds', async () => {
     const { db, billing } = setup();
-    await billing.createPurchase({
+    await billing.createPurchase(allowEffects, {
       purchaseId: 'zero-purchase',
       apiKeyUuid: 'key-zero',
       creditsIssued: 0,
@@ -734,7 +737,7 @@ describe('billing runtime reconciliation paths', () => {
       body: { purchaseId: 'zero-purchase', refunded: false },
     });
 
-    await billing.createPurchase({
+    await billing.createPurchase(allowEffects, {
       purchaseId: 'conflict-purchase',
       apiKeyUuid: 'key-conflict',
       creditsIssued: 5,
@@ -757,7 +760,7 @@ describe('billing runtime reconciliation paths', () => {
 
   it('marks an untouched purchase fully refunded', async () => {
     const { billing } = setup();
-    await billing.createPurchase({
+    await billing.createPurchase(allowEffects, {
       purchaseId: 'untouched-purchase',
       apiKeyUuid: 'key-untouched',
       creditsIssued: 5,
@@ -785,7 +788,7 @@ describe('billing runtime reconciliation paths', () => {
 
   it('rejects a charge when the aggregate balance is lower than its lot', async () => {
     const { db, billing } = setup();
-    await billing.createPurchase({
+    await billing.createPurchase(allowEffects, {
       purchaseId: 'mismatched-purchase',
       apiKeyUuid: 'key-mismatch',
       creditsIssued: 5,
@@ -924,7 +927,7 @@ describe('billing runtime refund paths', () => {
       .collection('billing-pricing-snapshots')
       .doc(snapshot.snapshotId)
       .set(snapshot);
-    await billing.createPurchase({
+    await billing.createPurchase(allowEffects, {
       purchaseId: 'purchase-1',
       apiKeyUuid: 'key-1',
       creditsIssued: 100,
@@ -964,7 +967,7 @@ describe('billing runtime charging paths', () => {
       .collection('billing-pricing-snapshots')
       .doc(snapshot.snapshotId)
       .set(snapshot);
-    await billing.createPurchase({
+    await billing.createPurchase(allowEffects, {
       purchaseId: 'purchase-1',
       apiKeyUuid: 'key-1',
       creditsIssued: 10,
@@ -1015,7 +1018,7 @@ describe('billing runtime charging paths', () => {
 
   it('reverses only remaining credits on refund', async () => {
     const { db, billing } = setup();
-    await billing.createPurchase({
+    await billing.createPurchase(allowEffects, {
       purchaseId: 'purchase-1',
       apiKeyUuid: 'key-1',
       creditsIssued: 10,

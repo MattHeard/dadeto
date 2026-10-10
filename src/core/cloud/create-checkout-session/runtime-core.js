@@ -11,8 +11,8 @@ import { calculatePackageCredits } from '../billing/pricing-core.js';
  * @typedef {object} CheckoutBillingService
  * @property {(packageId: string) => Promise<({active?: boolean, amountUsdMinor: number, stripePriceId?: string}&Record<string, unknown>)|null>} getPackage Read a credit package.
  * @property {() => Promise<Parameters<typeof calculatePackageCredits>[1]|null>} getCurrentPricingSnapshot Read current pricing.
- * @property {(input: object) => Promise<{purchaseId: string}>} createPurchase Create a purchase record.
- * @property {(purchaseId: string, session: object) => Promise<unknown>} savePurchaseCheckout Save checkout metadata.
+ * @property {(allowEffects: AllowEffects, input: object) => Promise<{purchaseId: string}>} createPurchase Create a purchase record.
+ * @property {(allowEffects: AllowEffects, purchaseId: string, session: object) => Promise<unknown>} savePurchaseCheckout Save checkout metadata.
  * @property {(purchaseId: string) => Promise<{packageId: string, checkoutSessionId?: string, checkoutUrl?: string, checkoutExpiresAt?: number}|null>} getPurchase Read a purchase record.
  */
 
@@ -72,11 +72,11 @@ export function createCheckoutSessionDependencies({
     getCreditPackage: createDynamicPackageResolver(billing),
     createPurchase: (allowEffects, input) => {
       void allowEffects;
-      return billing.createPurchase(input);
+      return billing.createPurchase(allowEffects, input);
     },
     savePurchaseCheckout: (allowEffects, purchaseId, session) => {
       void allowEffects;
-      return billing.savePurchaseCheckout(purchaseId, session);
+      return billing.savePurchaseCheckout(allowEffects, purchaseId, session);
     },
     resolveIdempotency: (uid, key, packageId) =>
       resolveIdempotency(billing, uid, key, packageId),

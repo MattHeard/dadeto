@@ -11,6 +11,7 @@ import {
   getApiKeyCreditEventDocument as eventRef,
 } from '../get-api-key-credit-v2/get-api-key-credit-v2-core.js';
 
+/** @typedef {import('../../../../types/allow-effects').AllowEffects} AllowEffects */
 /** @typedef {any} BillingRuntimeValue Runtime-shaped billing value. */
 /** @typedef {Record<string, any>} BillingDocumentData Persisted Firestore document fields. */
 /** @typedef {BillingDocumentData & { purchaseId: string, issuedCredits: number, remainingCredits: number, createdAt: string, refundable: boolean }} BillingLotData */
@@ -26,6 +27,7 @@ import {
 /** @typedef {{ purchaseId: string, eventId: string, refundedUsdMinor: number, pricingSnapshotId: string }} BillingRefundInput */
 /** @typedef {{ purchaseId: string, eventId: string }} BillingExpiryInput */
 /** @typedef {{ checkoutSessionId: string, url: string, expiresAt: Date }} BillingCheckoutSession */
+/** @typedef {Record<string, any> & { createPurchase: (allowEffects: AllowEffects, input: BillingPurchaseInput) => Promise<BillingRuntimeValue>, savePurchaseCheckout: (allowEffects: AllowEffects, purchaseId: string, session: BillingCheckoutSession) => Promise<void> }} BillingRuntimeService */
 
 /**
  * @typedef {{ status: number, body: object }} BillingResponse
@@ -269,7 +271,7 @@ async function findBillingPurchaseByCheckout(db, checkoutSessionId) {
  * Create Firestore-backed accessors for the billing domain.
  * @param {BillingRuntimeValue} db Firestore database.
  * @param {{ randomUUID?: () => string, now?: () => Date, billingEnabled?: boolean }} [runtime] Runtime helpers.
- * @returns {BillingRuntimeValue} Billing service.
+ * @returns {BillingRuntimeService} Billing service.
  */
 export function createBillingRuntime(db, runtime = {}) {
   // Stryker disable all -- runtime helper defaults are dependency injection
@@ -296,11 +298,13 @@ export function createBillingRuntime(db, runtime = {}) {
 
   /**
    * Save checkout details on a purchase.
+   * @param {AllowEffects} allowEffects Permission for the Firestore write.
    * @param {string} purchaseId Purchase identifier.
    * @param {BillingCheckoutSession} session Checkout session.
    * @returns {Promise<void>} Resolves after persistence.
    */
-  async function savePurchaseCheckout(purchaseId, session) {
+  async function savePurchaseCheckout(allowEffects, purchaseId, session) {
+    void allowEffects;
     await purchaseRef(db, purchaseId).set(
       {
         checkoutSessionId: session.checkoutSessionId,
@@ -314,10 +318,12 @@ export function createBillingRuntime(db, runtime = {}) {
 
   /**
    * Create a pending purchase.
+   * @param {AllowEffects} allowEffects Permission for the Firestore write.
    * @param {BillingPurchaseInput} input Purchase input.
    * @returns {Promise<BillingRuntimeValue>} Created purchase.
    */
-  async function createPurchase(input) {
+  async function createPurchase(allowEffects, input) {
+    void allowEffects;
     const purchaseId = input.purchaseId ?? randomUUID();
     const purchase = {
       ...input,

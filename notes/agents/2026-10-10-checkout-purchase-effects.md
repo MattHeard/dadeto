@@ -1,0 +1,7 @@
+# Checkout purchase persistence AllowEffects boundary
+
+- Unexpected hurdle: checkout already passed one `AllowEffects` token through its persistence callbacks, but its billing runtime dropped that token before the Firestore purchase writes.
+- Diagnosis: `createPurchase` and `savePurchaseCheckout` in `createBillingRuntime` accepted no capability; the checkout adapter’s own permission-first types did not protect the underlying billing methods.
+- Chosen fix: made both billing service methods require `AllowEffects` first, added a typed billing-service surface for those methods, and forwarded the same request token from checkout into each call. Updated all billing runtime test call sites to use the external test capability.
+- Evidence: focused Jest passed (5 suites, 55 tests); ESLint and `npm run tsdoc:check` passed; elevated `DADETO_COVERAGE_SHARD_SIZE=40 JEST_CACHE_DIRECTORY=/home/matt/dadeto/.tmp/jest_rs TMPDIR=/home/matt/dadeto/.tmp npm run check` passed all 10 gates, with 100% coverage, local E2E 11/11, 0 clones, and 0 audit vulnerabilities; `npm run build:cloud` passed. Logs: `.tmp/npm-check-checkout-purchase-effects.log` and `.tmp/build-cloud-checkout-purchase-effects.log`.
+- Next-time guidance: audit other `createBillingRuntime` command methods used by cloud entrypoints, beginning with the payment webhook's settlement/refund/expiry mutations; require request-bound capabilities before widening this billing protocol slice.
