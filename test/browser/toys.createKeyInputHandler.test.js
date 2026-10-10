@@ -15,6 +15,7 @@ describe('createKeyInputHandler', () => {
     // Mock DOM utilities
     dom = {
       getDataAttribute: jest.fn(),
+      getCurrentTarget: jest.fn(inputEvent => inputEvent.currentTarget),
       getTargetValue: jest.fn(),
       setDataAttribute: jest.fn(),
     };
@@ -32,14 +33,13 @@ describe('createKeyInputHandler', () => {
     // Create the handler
     handler = createKeyInputHandler({
       dom,
-      keyEl,
       textInput,
       rowData,
       syncHiddenField,
     });
 
     // Mock event
-    event = { target: keyEl };
+    event = { target: keyEl, currentTarget: keyEl };
   });
 
   it('should sync hidden field when key does not change', () => {
@@ -51,6 +51,7 @@ describe('createKeyInputHandler', () => {
     handler(event);
 
     // Assert
+    expect(dom.getCurrentTarget).toHaveBeenCalledWith(event);
     expect(dom.getDataAttribute).toHaveBeenCalledWith(keyEl, 'prevKey');
     expect(syncHiddenField).toHaveBeenCalledWith(textInput, rowData, dom);
     expect(dom.setDataAttribute).not.toHaveBeenCalled();
@@ -95,6 +96,19 @@ describe('createKeyInputHandler', () => {
     expect(syncHiddenField).toHaveBeenCalledWith(textInput, rowData, dom);
   });
 
+  it('uses the listener currentTarget when the event target differs', () => {
+    const descendant = {};
+    const listenerEvent = { target: descendant, currentTarget: keyEl };
+    dom.getDataAttribute.mockReturnValue('same');
+    dom.getTargetValue.mockReturnValue('same');
+
+    handler(listenerEvent);
+
+    expect(dom.getDataAttribute).toHaveBeenCalledWith(keyEl, 'prevKey');
+    expect(dom.setDataAttribute).not.toHaveBeenCalled();
+    expect(syncHiddenField).toHaveBeenCalledWith(textInput, rowData, dom);
+  });
+
   it('should not update rows when new key is empty', () => {
     // Arrange
     dom.getDataAttribute.mockReturnValue('oldKey');
@@ -130,7 +144,6 @@ describe('createKeyInputHandler', () => {
     // Recreate handler with testRowData
     const localHandler = createKeyInputHandler({
       dom,
-      keyEl,
       textInput,
       rowData: testRowData,
       syncHiddenField,
@@ -157,7 +170,6 @@ describe('createKeyInputHandler', () => {
     rowData = { rows: {}, rowTypes: {} };
     handler = createKeyInputHandler({
       dom,
-      keyEl,
       textInput,
       rowData,
       syncHiddenField,

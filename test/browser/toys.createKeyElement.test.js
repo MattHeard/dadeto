@@ -16,6 +16,7 @@ describe('createKeyElement', () => {
       setPlaceholder: jest.fn(),
       setValue: jest.fn(),
       setDataAttribute: jest.fn(),
+      getCurrentTarget: jest.fn(event => event.currentTarget),
       addEventListener: jest.fn(),
       removeEventListener: jest.fn(),
     };
@@ -122,7 +123,7 @@ describe('createKeyElement', () => {
     const handler = mockDom.addEventListener.mock.calls[0][2];
     mockDom.getDataAttribute = jest.fn(() => 'old');
     mockDom.getTargetValue = jest.fn(() => 'new');
-    handler({ target: {} });
+    handler({ target: {}, currentTarget: key });
     expect(rowData.rows).toEqual({ new: 'value' });
     expect(mockDom.setDataAttribute).toHaveBeenLastCalledWith(
       key,

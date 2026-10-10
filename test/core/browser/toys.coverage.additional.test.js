@@ -624,6 +624,7 @@ describe('additional dropdown and focus coverage', () => {
     const dom = {
       querySelector: jest.fn(() => ({})),
       getDataAttribute: jest.fn(() => 'old'),
+      getCurrentTarget: event => event.currentTarget,
       setDataAttribute: jest.fn(),
       getTargetValue: jest.fn(() => 'new'),
       getValue: jest.fn(() => 'number'),
@@ -642,14 +643,13 @@ describe('additional dropdown and focus coverage', () => {
     };
     const keyHandler = utils.createKeyInputHandler({
       dom,
-      keyEl: {},
       textInput: {},
       syncHiddenField: sync,
     });
-    keyHandler({});
+    keyHandler({ currentTarget: {} });
     dom.getDataAttribute.mockReturnValue('same');
     dom.getTargetValue.mockReturnValue('same');
-    keyHandler({});
+    keyHandler({ currentTarget: {} });
     const migratedRows = { old: 'value' };
     const migratedTypes = { old: 'number' };
     const migratedData = { rows: migratedRows, rowTypes: migratedTypes };
@@ -658,22 +658,20 @@ describe('additional dropdown and focus coverage', () => {
     dom.getTargetValue.mockReturnValue('new');
     utils.createKeyInputHandler({
       dom,
-      keyEl: migrateKey,
       textInput: {},
       rowData: migratedData,
       syncHiddenField: sync,
-    })({ target: {} });
+    })({ target: {}, currentTarget: migrateKey });
     expect(migratedRows).toEqual({ new: 'value' });
     expect(migratedTypes).toEqual({ new: 'number' });
     const defaultTypeRows = { old: 'value' };
     const defaultTypeData = { rows: defaultTypeRows, rowTypes: {} };
     utils.createKeyInputHandler({
       dom,
-      keyEl: {},
       textInput: {},
       rowData: defaultTypeData,
       syncHiddenField: sync,
-    })({ target: {} });
+    })({ target: {}, currentTarget: {} });
     expect(defaultTypeData.rowTypes).toEqual({ new: 'string' });
     const valueHandler = utils.createValueInputHandler({
       dom,

@@ -884,16 +884,16 @@ function migrateRowIfValid(prevKey, newKey, rowData) {
  * Creates an input handler for key changes.
  * @param {object} options - Configuration.
  * @param {object} options.dom - DOM utilities.
- * @param {HTMLElement} options.keyEl - Input for the key.
  * @param {HTMLInputElement} options.textInput - Hidden JSON field.
  * @param {object} options.rowData - Row data object containing rows and rowTypes.
  * @param {ToyCallback} options.syncHiddenField - Syncs the hidden field.
  * @returns {ToyCallback} Event handler for key input.
  */
 export function createKeyInputHandler(options) {
-  const { dom, keyEl, textInput, rowData, syncHiddenField } = options;
+  const { dom, textInput, rowData, syncHiddenField } = options;
   const effectiveRowData = rowData ?? { rows: {}, rowTypes: {} };
   return e => {
+    const keyEl = dom.getCurrentTarget(e);
     const prevKey = dom.getDataAttribute(keyEl, 'prevKey');
     const newKey = dom.getTargetValue(e);
 
@@ -958,7 +958,6 @@ export const createKeyElement = ({
 
   const onKey = createKeyInputHandler({
     dom,
-    keyEl,
     textInput,
     rowData,
     syncHiddenField,
