@@ -2052,14 +2052,11 @@ export function initAdmin({
   bindEffectBoundary,
   reportError = () => {},
 }) {
-  validateInitAdminDeps({
-    googleAuthModule,
-    getAuthFn,
-    onAuthStateChangedFn,
-    doc,
-    fetchFn,
-    bindEffectBoundary,
-  });
+  validateInitAdminDeps(
+    { googleAuthModule, getAuthFn },
+    { onAuthStateChangedFn, doc },
+    { fetchFn, bindEffectBoundary }
+  );
 
   const getAdminEndpoints =
     createGetAdminEndpointsFromStaticConfig(loadStaticConfigFn);
@@ -2150,35 +2147,20 @@ export function initAdmin({
 
 /**
  * Validate core admin initialization helpers before wiring event listeners.
- * @param {{
- *   googleAuthModule: GoogleAuthModule,
- *   getAuthFn: () => FirebaseAuthInstance | null | undefined,
- *   onAuthStateChangedFn: (
- *     auth: FirebaseAuthInstance | null | undefined,
- *     callback: () => void
- *   ) => void,
- *   doc: Document,
- *   fetchFn: FetchFn,
- *   bindEffectBoundary: (handler: (permission: AllowEffects) => Promise<void>) => Promise<void>,
- * }} deps - Core dependencies required to initialize the admin UI.
+ * @param {{ googleAuthModule: GoogleAuthModule, getAuthFn: () => FirebaseAuthInstance | null | undefined }} authDeps Authentication dependencies.
+ * @param {{ onAuthStateChangedFn: (auth: FirebaseAuthInstance | null | undefined, callback: () => void) => void, doc: Document }} uiDeps UI event dependencies.
+ * @param {{ fetchFn: FetchFn, bindEffectBoundary: (handler: (permission: AllowEffects) => Promise<void>) => Promise<void> }} commandDeps Command dependencies.
  * @returns {void}
  */
-function validateInitAdminDeps({
-  googleAuthModule,
-  getAuthFn,
-  onAuthStateChangedFn,
-  doc,
-  fetchFn,
-  bindEffectBoundary,
-}) {
-  if (!googleAuthModule) {
+function validateInitAdminDeps(authDeps, uiDeps, commandDeps) {
+  if (!authDeps.googleAuthModule) {
     throw new TypeError('googleAuthModule must be provided');
   }
-  requireFunction(getAuthFn, 'getAuthFn');
-  requireFunction(onAuthStateChangedFn, 'onAuthStateChangedFn');
-  requireDocumentLike(doc);
-  requireFunction(fetchFn, 'fetchFn');
-  requireFunction(bindEffectBoundary, 'bindEffectBoundary');
+  requireFunction(authDeps.getAuthFn, 'getAuthFn');
+  requireFunction(uiDeps.onAuthStateChangedFn, 'onAuthStateChangedFn');
+  requireDocumentLike(uiDeps.doc);
+  requireFunction(commandDeps.fetchFn, 'fetchFn');
+  requireFunction(commandDeps.bindEffectBoundary, 'bindEffectBoundary');
 }
 
 /**
