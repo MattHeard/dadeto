@@ -1184,13 +1184,11 @@ export function createApplyCorsHeaders({
   } else {
     origins = [];
   }
+  const respondToOrigin = createOriginResponder(origins, setHttpResponseHeader);
 
   return function applyCorsHeaders(permission, req, res) {
     const origin = resolveOriginHeader(req);
-    const originAllowed = respondToOrigin(permission, res, origin, {
-      origins,
-      setHeader: setHttpResponseHeader,
-    });
+    const originAllowed = respondToOrigin(permission, res, origin);
     setStaticCorsHeaders(permission, res, setHttpResponseHeader);
     return originAllowed;
   };
@@ -1215,22 +1213,22 @@ function isValidOriginString(origin) {
 }
 
 /**
- * Apply the appropriate Access-Control response based on the resolved origin.
- * @param {AllowEffects} permission Response effect permission.
- * @param {NativeHttpResponseWithSet} res Response helper.
- * @param {unknown} origin Origin header value.
- * @param {{origins: string[], setHeader: RenderOptions['setHttpResponseHeader']}} config Origin and response dependencies.
- * @returns {boolean} True when the origin is considered allowed.
+ * Bind origin policy and header writing for the CORS handler.
+ * @param {string[]} origins Origins permitted by the current configuration.
+ * @param {RenderOptions['setHttpResponseHeader']} setHeader Permission-aware response header writer.
+ * @returns {(permission: AllowEffects, res: NativeHttpResponseWithSet, origin: unknown) => boolean} Origin responder.
  */
-function respondToOrigin(permission, res, origin, { origins, setHeader }) {
-  if (!isValidOriginString(origin)) {
-    setWildcardOrigin(permission, res, setHeader);
-    return true;
-  }
-  return handleKnownOrigin(permission, res, /** @type {string} */ (origin), {
-    origins,
-    setHeader,
-  });
+function createOriginResponder(origins, setHeader) {
+  return function respondToOrigin(permission, res, origin) {
+    if (!isValidOriginString(origin)) {
+      setWildcardOrigin(permission, res, setHeader);
+      return true;
+    }
+    return handleKnownOrigin(permission, res, /** @type {string} */ (origin), {
+      origins,
+      setHeader,
+    });
+  };
 }
 
 /**
