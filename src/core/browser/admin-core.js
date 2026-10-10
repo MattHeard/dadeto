@@ -1600,45 +1600,70 @@ export function initializeGoogleSignIn(accountsId, options) {
  * }} options - Dependencies used during stats generation.
  * @returns {() => Promise<void>} Function that triggers stats generation when invoked.
  */
-export function createTriggerStats({
-  googleAuth,
-  getAdminEndpointsFn,
-  fetchFn,
-  bindEffectBoundary,
-  showMessage,
-  reportError = () => {},
-}) {
+export function createTriggerStats(options) {
   return createAdminTokenAction({
-    googleAuth,
-    getAdminEndpointsFn,
-    fetchFn,
-    bindEffectBoundary,
-    showMessage,
+    googleAuth: options.googleAuth,
+    getAdminEndpointsFn: options.getAdminEndpointsFn,
+    fetchFn: options.fetchFn,
+    bindEffectBoundary: options.bindEffectBoundary,
+    showMessage: options.showMessage,
     missingTokenMessage: 'Stats generation failed',
-    action: async (
-      permission,
-      { token, getAdminEndpoints, fetchFn: fetch, showMessage: report }
-    ) => {
-      try {
-        const endpoints = /** @type {{ generateStatsUrl: string }} */ (
-          await getAdminEndpoints()
-        );
-        const response = await fetch(permission, endpoints.generateStatsUrl, {
-          method: 'POST',
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ ['id_token']: token }),
-        });
-        assertStatsResponseOk(response);
-        report('Stats generated');
-      } catch (error) {
-        reportError(error);
-        report('Stats generation failed');
-      }
-    },
+    action: createTriggerStatsAction(
+      options.showMessage,
+      options.reportError ?? (() => {})
+    ),
   });
+}
+
+/**
+ * Build a stats action with user-facing callbacks bound outside the effect call.
+ * @param {(message: string) => void} showMessage Status reporter.
+ * @param {(error: unknown) => void} reportError Error reporter.
+ * @returns {(permission: AllowEffects, context: { token: string, getAdminEndpoints: () => Promise<object>, fetchFn: FetchFn }) => Promise<void>} Permission-aware stats action.
+ */
+function createTriggerStatsAction(showMessage, reportError) {
+  return async (permission, { token, getAdminEndpoints, fetchFn }) => {
+    try {
+      await requestStatsGeneration(
+        permission,
+        getAdminEndpoints,
+        fetchFn,
+        token
+      );
+      showMessage('Stats generated');
+    } catch (error) {
+      reportError(error);
+      showMessage('Stats generation failed');
+    }
+  };
+}
+
+/**
+ * Send the authorized request to generate stats.
+ * @param {AllowEffects} permission Permission for this command request.
+ * @param {() => Promise<object>} getAdminEndpoints Endpoint lookup.
+ * @param {FetchFn} fetchFn Network adapter.
+ * @param {string} token Admin ID token.
+ * @returns {Promise<void>}
+ */
+async function requestStatsGeneration(
+  permission,
+  getAdminEndpoints,
+  fetchFn,
+  token
+) {
+  const endpoints = /** @type {{ generateStatsUrl: string }} */ (
+    await getAdminEndpoints()
+  );
+  const response = await fetchFn(permission, endpoints.generateStatsUrl, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ ['id_token']: token }),
+  });
+  assertStatsResponseOk(response);
 }
 
 /**
