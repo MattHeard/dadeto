@@ -522,17 +522,20 @@ function createIncomingOptionContextBuilder(db, batch) {
         /** @type {import('firebase-admin/firestore').DocumentReference} */ (
           validRefs.storyRefCandidate
         );
-      const pageContext = await resolveIncomingOptionPageContext({
+      const pageContext = await resolveIncomingOptionPageContext(
         targetPage,
-        db,
-        batch,
-        random,
-        randomUUID,
-        optionRef,
-        incomingOptionFullName,
-        getServerTimestamp,
-        storyRef,
-      });
+        () =>
+          createPageContext({
+            storyRef,
+            db,
+            random,
+            randomUUID,
+            batch,
+            optionRef,
+            incomingOptionFullName,
+            getServerTimestamp,
+          })
+      );
       return {
         ...pageContext,
         storyRef: validRefs.storyRefCandidate,
@@ -612,49 +615,25 @@ function resolveTargetPageFromOption(optionData) {
 // Stryker restore all
 
 /**
- * Attempt to reuse an existing page context or create a new one.
- * @param {object} params Parameters describing the request.
- * @param {import('firebase-admin/firestore').DocumentReference | null} params.targetPage Page reference to reuse when available.
- * @param {import('firebase-admin/firestore').Firestore} params.db Firestore instance for lookups.
- * @param {import('firebase-admin/firestore').WriteBatch} params.batch Write batch collecting updates.
- * @param {() => number} params.random Random number generator.
- * @param {() => string} params.randomUUID UUID generator for new documents.
- * @param {import('firebase-admin/firestore').DocumentReference} params.optionRef Option reference involved in the submission.
- * @param {string} params.incomingOptionFullName Full document path for the option.
- * @param {() => unknown} params.getServerTimestamp Server timestamp helper.
- * @param {import('firebase-admin/firestore').DocumentReference} params.storyRef Story reference targeting the submission.
+ * Reuse an existing page context before invoking the new-page creator.
+ * @param {import('firebase-admin/firestore').DocumentReference | null} targetPage Page reference to reuse when available.
+ * @param {() => Promise<{pageDocRef: import('firebase-admin/firestore').DocumentReference, pageNumber: number | null, preserveVariantDirty: boolean}>} createNewPageContext New-page context factory.
  * @returns {Promise<{
  *   pageDocRef: import('firebase-admin/firestore').DocumentReference,
  *   pageNumber: number | null,
  *   preserveVariantDirty: boolean,
  * }>} Resolved context.
  */
-async function resolveIncomingOptionPageContext({
+async function resolveIncomingOptionPageContext(
   targetPage,
-  db,
-  batch,
-  random,
-  randomUUID,
-  optionRef,
-  incomingOptionFullName,
-  getServerTimestamp,
-  storyRef,
-}) {
+  createNewPageContext
+) {
   const existingContext = await resolveExistingPageContext(targetPage);
   if (existingContext) {
     return existingContext;
   }
 
-  return createPageContext({
-    storyRef,
-    db,
-    random,
-    randomUUID,
-    batch,
-    optionRef,
-    incomingOptionFullName,
-    getServerTimestamp,
-  });
+  return createNewPageContext();
 }
 
 /**
