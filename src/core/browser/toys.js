@@ -1683,31 +1683,40 @@ function createHandleKeyPress(handleSubmit) {
 }
 
 /**
- * Finds all interactive components registered on the window and sets up
- * IntersectionObservers (via the provided creator function) to lazy-load
- * and initialize them when they enter the viewport.
- * @param {object} env - An object containing win, logInfo, logWarning, and getElement.
- * @param {ToyCallback} createIntersectionObserver - ToyCallback that creates an IntersectionObserver for a given article, module path, and function name.
+ * Creates a visible component initializer bound to its environment.
+ * @param {object} env - Interactive component access and logging services.
+ * @returns {Function} Initializer stage accepting an observer creator.
+ */
+const createVisibleComponentsInitializer =
+  env => createIntersectionObserver => {
+    const { win, logInfo, logWarning, getElement } = env;
+    if (env.hasNoInteractiveComponents(win)) {
+      logWarning('No interactive components found to initialize');
+      return;
+    }
+    const interactiveComponents = env.getInteractiveComponents(win);
+    const interactiveComponentCount = env.getInteractiveComponentCount(win);
+    logInfo(
+      'Initializing',
+      interactiveComponentCount,
+      'interactive components via IntersectionObserver'
+    );
+    const init = env.getComponentInitializer(
+      getElement,
+      logWarning,
+      createIntersectionObserver
+    );
+    interactiveComponents.forEach(init);
+  };
+
+/**
+ * Finds registered interactive components and initializes them when visible.
+ * @param {object} env - Services for finding and initializing components.
+ * @param {ToyCallback} createIntersectionObserver - Creates observers for components.
+ * @returns {void} Nothing.
  */
 export function initializeVisibleComponents(env, createIntersectionObserver) {
-  const { win, logInfo, logWarning, getElement } = env;
-  if (env.hasNoInteractiveComponents(win)) {
-    logWarning('No interactive components found to initialize');
-    return;
-  }
-  const interactiveComponents = env.getInteractiveComponents(win);
-  const interactiveComponentCount = env.getInteractiveComponentCount(win);
-  logInfo(
-    'Initializing',
-    interactiveComponentCount,
-    'interactive components via IntersectionObserver'
-  );
-  const init = env.getComponentInitializer(
-    getElement,
-    logWarning,
-    createIntersectionObserver
-  );
-  interactiveComponents.forEach(init);
+  createVisibleComponentsInitializer(env)(createIntersectionObserver);
 }
 
 /**
