@@ -552,10 +552,9 @@ function collectOptions(body) {
  * @returns {Promise<void>} Promise.
  */
 async function saveNewPage(allowEffects, deps, id, data) {
-  const { saveSubmission, serverTimestamp } = deps;
-  await saveSubmission(allowEffects, id, {
+  await deps.saveSubmission(allowEffects, id, {
     ...data,
-    createdAt: serverTimestamp(),
+    createdAt: deps.serverTimestamp(),
   });
 }
 
@@ -566,15 +565,14 @@ async function saveNewPage(allowEffects, deps, id, data) {
  * @returns {SubmitNewPageInput} Submission payload.
  */
 function createSubmissionData(context, authorId) {
-  const { target, content, author, options, authHeader } = context;
   return {
-    incomingOptionFullName: target.incomingOptionFullName,
-    pageNumber: target.pageNumber,
-    content,
-    author,
+    incomingOptionFullName: context.target.incomingOptionFullName,
+    pageNumber: context.target.pageNumber,
+    content: context.content,
+    author: context.author,
     authorId,
-    options,
-    authHeader,
+    options: context.options,
+    authHeader: context.authHeader,
   };
 }
 
@@ -586,21 +584,18 @@ function createSubmissionData(context, authorId) {
  * @returns {Promise<{ status: number; body: SubmitNewPageData & { id: string } }>} Response.
  */
 async function processValidSubmission(allowEffects, deps, context) {
-  const { verifyIdToken, randomUUID, saveSubmission, serverTimestamp } = deps;
-  const { target, content, author, authHeader, options } = context;
-
-  const authorId = await resolveAuthorIdFromHeader(authHeader, verifyIdToken);
-  const id = randomUUID();
-  const submissionData = createSubmissionData(
-    { target, content, author, options, authHeader },
-    authorId
+  const authorId = await resolveAuthorIdFromHeader(
+    context.authHeader,
+    deps.verifyIdToken
   );
+  const id = deps.randomUUID();
+  const submissionData = createSubmissionData(context, authorId);
   const persistedSubmissionData = { ...submissionData };
   Reflect.deleteProperty(persistedSubmissionData, 'authHeader');
 
   await saveNewPage(
     allowEffects,
-    { saveSubmission, serverTimestamp },
+    deps,
     id,
     /** @type {SubmitNewPageInput} */ (persistedSubmissionData)
   );
