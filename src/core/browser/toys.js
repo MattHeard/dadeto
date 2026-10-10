@@ -1523,91 +1523,60 @@ function getInteractiveElements(dom, article, logWarning) {
 }
 
 /**
- * Initializes the interactive elements (input, button, output) within a toy's article element.
- * Sets up event listeners and initial state.
- * @param {HTMLElement} article - The article element containing the toy.
- * @param {ToyCallback} processingFunction - The toy's core logic function.
- * @param {{globalState: object, createEnvFn: Function, errorFn: Function, fetchFn: (permission: import('../../../types/allow-effects').AllowEffects, url: string) => Promise<Response>, bindEffectBoundary: import('../../../types/allow-effects').AllowEffectsBoundary, dom: object, getUuid: Function, loggers: object}} config Configuration containing browser dependencies.
- * @returns {void}
+ * Creates the first stage of an interactive component initializer.
+ * @param {object} globalState - Shared application state.
+ * @param {Function} createEnvFn - Creates the component processing environment.
+ * @param {Function} errorFn - Reports component processing errors.
+ * @param {Function} fetchFn - Fetches component request URLs.
+ * @returns {Function} Initializer stage accepting runtime services.
  */
-export function initializeInteractiveComponent(
-  article,
-  processingFunction,
-  config
-) {
-  const logInfo = config.loggers.logInfo;
-  const {
-    globalState,
-    createEnvFn,
-    errorFn,
-    fetchFn,
-    bindEffectBoundary,
-    dom,
-    getUuid,
-  } = config;
-  const logWarning = config.loggers.logWarning;
-  logInfo('Initializing interactive component for article', article.id);
-  const elements = getInteractiveElements(dom, article, logWarning);
-  if (!elements) {
-    return;
-  }
-  const { inputElement, submitButton } = elements;
-  const initialValue = inputElement.value;
-  setInputValue(inputElement, initialValue);
-  const handleInputUpdate = () => {
-    const nextValue = dom.getValue?.(inputElement) ?? inputElement.value;
-    setInputValue(inputElement, nextValue);
-  };
-  dom.addEventListener(inputElement, 'input', handleInputUpdate);
-  // Temporary debug logging for issue investigation
-  logInfo('Found button element:', submitButton);
-  const outputParent = dom.querySelector(article, 'div.output'); // Get the parent element
-  const outputSelect = dom.querySelector(article, 'select.output');
+const createInteractiveComponentInitializer =
+  (globalState, createEnvFn, errorFn, fetchFn) =>
+  (bindEffectBoundary, dom, getUuid, loggers) => {
+    const logInfo = loggers.logInfo;
+    const logWarning = loggers.logWarning;
+    return (article, processingFunction) => {
+      logInfo('Initializing interactive component for article', article.id);
+      const elements = getInteractiveElements(dom, article, logWarning);
+      if (!elements) {
+        return;
+      }
+      const { inputElement, submitButton } = elements;
+      const initialValue = inputElement.value;
+      setInputValue(inputElement, initialValue);
+      const handleInputUpdate = () => {
+        const nextValue = dom.getValue?.(inputElement) ?? inputElement.value;
+        setInputValue(inputElement, nextValue);
+      };
+      dom.addEventListener(inputElement, 'input', handleInputUpdate);
+      // Temporary debug logging for issue investigation
+      logInfo('Found button element:', submitButton);
+      const outputParent = dom.querySelector(article, 'div.output'); // Get the parent element
+      const outputSelect = dom.querySelector(article, 'select.output');
 
-  // Disable input and submit during initialization
-  disableInputAndButton(inputElement, submitButton);
+      // Disable input and submit during initialization
+      disableInputAndButton(inputElement, submitButton);
 
-  const presenterKey = 'text';
-  // Update message to show JS is running, replacing <p.output> with paragraph
-  const initialisingWarning = setTextContent(
-    { content: 'Initialising...', presenterKey },
-    dom,
-    outputParent
-  );
+      const presenterKey = 'text';
+      // Update message to show JS is running, replacing <p.output> with paragraph
+      const initialisingWarning = setTextContent(
+        { content: 'Initialising...', presenterKey },
+        dom,
+        outputParent
+      );
 
-  // Use logInfo directly from config
-  const env = {
-    globalState,
-    createEnv: createEnvFn,
-    errorFn,
-    fetchFn,
-    bindEffectBoundary,
-    dom,
-    logInfo,
-    getUuid,
-  };
-  const handleSubmit = createHandleSubmit(
-    {
-      inputElement,
-      outputElement: initialisingWarning,
-      outputParent,
-      outputParentElement: outputParent,
-      outputSelect,
-      article,
-    },
-    processingFunction,
-    env
-  );
-
-  const autoSubmitCheckbox = dom.querySelector(
-    article,
-    AUTO_SUBMIT_CHECKBOX_SELECTOR
-  );
-  const autoSubmitState = { frameId: null, lastValue: null };
-  const handleAutoCheckboxChange = createAutoSubmitCheckboxHandler({
-    autoSubmitCheckbox,
-    register: () => {
-      createRegisterAutoSubmitPolling(
+      // Use logInfo directly from config
+      const env = {
+        globalState,
+        createEnv: createEnvFn,
+        errorFn,
+        fetchFn,
+        bindEffectBoundary,
+        dom,
+        logInfo,
+        getUuid,
+      };
+      const handleSubmit = createHandleSubmit(
         {
           inputElement,
           outputElement: initialisingWarning,
@@ -1618,39 +1587,86 @@ export function initializeInteractiveComponent(
         },
         processingFunction,
         env
-      )(autoSubmitState);
-    },
-    unregister: () => unregisterAutoSubmitPolling(env.dom, autoSubmitState),
-  });
-  if (autoSubmitCheckbox) {
-    dom.addEventListener(
-      autoSubmitCheckbox,
-      'change',
-      handleAutoCheckboxChange
-    );
-    autoSubmitCheckbox.checked = false;
-  }
+      );
 
-  // Add event listener to the submit button
-  dom.addEventListener(submitButton, 'click', handleSubmit);
+      const autoSubmitCheckbox = dom.querySelector(
+        article,
+        AUTO_SUBMIT_CHECKBOX_SELECTOR
+      );
+      const autoSubmitState = { frameId: null, lastValue: null };
+      const handleAutoCheckboxChange = createAutoSubmitCheckboxHandler({
+        autoSubmitCheckbox,
+        register: () => {
+          createRegisterAutoSubmitPolling(
+            {
+              inputElement,
+              outputElement: initialisingWarning,
+              outputParent,
+              outputParentElement: outputParent,
+              outputSelect,
+              article,
+            },
+            processingFunction,
+            env
+          )(autoSubmitState);
+        },
+        unregister: () => unregisterAutoSubmitPolling(env.dom, autoSubmitState),
+      });
+      if (autoSubmitCheckbox) {
+        dom.addEventListener(
+          autoSubmitCheckbox,
+          'change',
+          handleAutoCheckboxChange
+        );
+        autoSubmitCheckbox.checked = false;
+      }
 
-  // Add event listener for Enter key in the input field
-  dom.addEventListener(
-    inputElement,
-    'keypress',
-    createHandleKeyPress(handleSubmit)
-  );
+      // Add event listener to the submit button
+      dom.addEventListener(submitButton, 'click', handleSubmit);
 
-  // Enable controls when initialization is complete using the function from this module
-  enableInteractiveControls(
-    { inputElement, submitButton, parent: outputParent },
-    dom,
-    presenterKey
-  );
+      // Add event listener for Enter key in the input field
+      dom.addEventListener(
+        inputElement,
+        'keypress',
+        createHandleKeyPress(handleSubmit)
+      );
 
-  if (autoSubmitCheckbox) {
-    dom.enable(autoSubmitCheckbox);
-  }
+      // Enable controls when initialization is complete using the function from this module
+      enableInteractiveControls(
+        { inputElement, submitButton, parent: outputParent },
+        dom,
+        presenterKey
+      );
+
+      if (autoSubmitCheckbox) {
+        dom.enable(autoSubmitCheckbox);
+      }
+    };
+  };
+
+/**
+ * Initializes the interactive elements within a toy article.
+ * @param {HTMLElement} article - The article containing the toy.
+ * @param {ToyCallback} processingFunction - The toy's core logic function.
+ * @param {{globalState: object, createEnvFn: Function, errorFn: Function, fetchFn: (permission: import('../../../types/allow-effects').AllowEffects, url: string) => Promise<Response>, bindEffectBoundary: import('../../../types/allow-effects').AllowEffectsBoundary, dom: object, getUuid: Function, loggers: object}} config - Browser dependencies.
+ * @returns {void} Nothing.
+ */
+export function initializeInteractiveComponent(
+  article,
+  processingFunction,
+  config
+) {
+  return createInteractiveComponentInitializer(
+    config.globalState,
+    config.createEnvFn,
+    config.errorFn,
+    config.fetchFn
+  )(
+    config.bindEffectBoundary,
+    config.dom,
+    config.getUuid,
+    config.loggers
+  )(article, processingFunction);
 }
 
 /**
