@@ -65,6 +65,15 @@ async function loadModule({
   const getFirestore = jest.fn(() => firestoreResult);
   const crypto = { randomUUID: jest.fn(() => 'uuid') };
   const console = { debug: jest.fn(), error: jest.fn(), warn: jest.fn() };
+  const startupPermission = Object.freeze({});
+  const bindEffectBoundary = jest.fn(handler => handler(startupPermission));
+  const useMiddleware = jest.fn((allowEffects, appInstance, middleware) =>
+    appInstance.use(middleware)
+  );
+  const registerPostRoute = jest.fn(
+    (allowEffects, appInstance, path, handler) =>
+      appInstance.post(path, handler)
+  );
   const deps = {
     db: firestoreResult,
     auth,
@@ -76,6 +85,9 @@ async function loadModule({
     functions,
     express,
     cors,
+    bindEffectBoundary,
+    useMiddleware,
+    registerPostRoute,
   };
 
   let mod;
@@ -113,6 +125,10 @@ async function loadModule({
     deps,
     getFirestore,
     firestoreResult,
+    startupPermission,
+    bindEffectBoundary,
+    useMiddleware,
+    registerPostRoute,
   };
 }
 
@@ -325,6 +341,40 @@ describe('generate-stats run', () => {
     expect(typeof result.handleRequest).toBe('function');
   });
 
+  it('forwards fresh startup permissions to middleware and route registration', async () => {
+    const {
+      mod,
+      deps,
+      bindEffectBoundary,
+      useMiddleware,
+      registerPostRoute,
+      app,
+    } = await loadModule({
+      environment: { DENDRITE_ENVIRONMENT: 't-123' },
+    });
+    const permissions = [
+      Object.freeze({ id: 'cors' }),
+      Object.freeze({ id: 'route' }),
+    ];
+    bindEffectBoundary.mockImplementation(handler =>
+      handler(permissions.shift())
+    );
+
+    mod.runGenerateStats(deps);
+
+    expect(useMiddleware).toHaveBeenCalledWith(
+      expect.objectContaining({ id: 'cors' }),
+      app,
+      'cors-middleware'
+    );
+    expect(registerPostRoute).toHaveBeenCalledWith(
+      expect.objectContaining({ id: 'route' }),
+      app,
+      '/',
+      expect.any(Function)
+    );
+  });
+
   it('requires the runtime environment label when wiring origins', async () => {
     const { mod, deps } = await loadModule({
       environment: {
@@ -338,12 +388,21 @@ describe('generate-stats run', () => {
   });
 
   it('builds the cloud handle from runtime dependencies', async () => {
-    const { mod, functions, express, cors, onRequest, getFirestore } =
-      await loadModule({
-        environment: {
-          DENDRITE_ENVIRONMENT: 't-123',
-        },
-      });
+    const {
+      mod,
+      functions,
+      express,
+      cors,
+      onRequest,
+      getFirestore,
+      bindEffectBoundary,
+      useMiddleware,
+      registerPostRoute,
+    } = await loadModule({
+      environment: {
+        DENDRITE_ENVIRONMENT: 't-123',
+      },
+    });
     const Storage = jest.fn(function Storage() {
       return { kind: 'storage-instance' };
     });
@@ -367,6 +426,9 @@ describe('generate-stats run', () => {
       initializeApp,
       fetchFn,
       crypto,
+      bindEffectBoundary,
+      useMiddleware,
+      registerPostRoute,
     });
 
     expect(getFirestore).toHaveBeenCalledTimes(1);

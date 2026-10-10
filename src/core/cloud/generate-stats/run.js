@@ -19,6 +19,9 @@ import {
   isOriginAllowed,
 } from '../cloud-core.js';
 
+/** @typedef {import('../../../../types/allow-effects').AllowEffects} AllowEffects */
+/** @typedef {import('../../../../types/allow-effects').AllowEffectsBoundary} AllowEffectsBoundary */
+
 export { resolveFirestoreDatabaseId };
 export { getAllowedOrigins };
 export const selectFirestoreDatabase = getFirestoreForDatabase;
@@ -111,9 +114,11 @@ export const getFirestoreInstance = (options = {}) => {
  *   storage: unknown,
  *   fetchFn: (permission: import('../../../../types/allow-effects').AllowEffects, ...args: Parameters<typeof globalThis.fetch>) => ReturnType<typeof globalThis.fetch>,
  *   effectFetchFn: (permission: import('../../../../types/allow-effects').AllowEffects, input: string, init?: object) => Promise<Response>,
- *   bindEffectBoundary: (handler: (permission: import('../../../../types/allow-effects').AllowEffects) => Promise<Response>) => Promise<Response>,
  *   env?: Record<string, string | undefined>,
  *   cryptoModule: { randomUUID: () => string },
+ *   bindEffectBoundary: AllowEffectsBoundary,
+ *   useMiddleware: (permission: AllowEffects, app: { use: (middleware: unknown) => void }, middleware: unknown) => void,
+ *   registerPostRoute: (permission: AllowEffects, app: { post: (path: string, handler: unknown) => void }, path: string, handler: Function) => void,
  *   verifySchedulerRequest?: (req: import('../../../../types/native-http').NativeHttpRequest) => Promise<boolean>,
  *   console?: { error: (...args: unknown[]) => void },
  *   functions: { region: (region: string) => { https: { onRequest: (app: unknown) => unknown } } },
@@ -138,6 +143,9 @@ export function runGenerateStats(deps) {
     functions,
     express,
     cors,
+    bindEffectBoundary,
+    useMiddleware,
+    registerPostRoute,
   } = typedDeps;
 
   const generateStatsCore = createGenerateStatsCore(
@@ -165,10 +173,15 @@ export function runGenerateStats(deps) {
   const corsOptions = createCorsOptions(
     createCorsOriginHandler(isOriginAllowed, allowedOrigins)
   );
-  app.use(cors(corsOptions));
+  const corsMiddleware = cors(corsOptions);
+  void bindEffectBoundary(async allowEffects => {
+    useMiddleware(allowEffects, app, corsMiddleware);
+  });
 
   const generateStats = createRegionOnRequest(functions, app);
-  app.post('/', handleRequest);
+  void bindEffectBoundary(async allowEffects => {
+    registerPostRoute(allowEffects, app, '/', handleRequest);
+  });
 
   return /** @type {any} */ ({ generateStats, ...generateStatsCore });
 }
@@ -194,9 +207,11 @@ function createRegionOnRequest(functions, app) {
  *   getFirestore: typeof getAdminFirestore,
  *   getEnvironmentVariables: () => Record<string, string | undefined>,
  *   initializeApp: () => void,
+ *   bindEffectBoundary: AllowEffectsBoundary,
+ *   useMiddleware: (permission: AllowEffects, app: { use: (middleware: unknown) => void }, middleware: unknown) => void,
+ *   registerPostRoute: (permission: AllowEffects, app: { post: (path: string, handler: unknown) => void }, path: string, handler: Function) => void,
  *   fetchFn: (permission: import('../../../../types/allow-effects').AllowEffects, ...args: Parameters<typeof globalThis.fetch>) => ReturnType<typeof globalThis.fetch>,
  *   effectFetchFn: (permission: import('../../../../types/allow-effects').AllowEffects, input: string, init?: object) => Promise<Response>,
- *   bindEffectBoundary: (handler: (permission: import('../../../../types/allow-effects').AllowEffects) => Promise<Response>) => Promise<Response>,
  *   crypto: { randomUUID: () => string },
  *   verifySchedulerRequest?: (req: import('../../../../types/native-http').NativeHttpRequest) => Promise<boolean>,
  * }} deps Runtime dependencies supplied by the cloud wrapper.
@@ -215,6 +230,8 @@ export function createGenerateStatsHandle({
   fetchFn,
   effectFetchFn,
   bindEffectBoundary,
+  useMiddleware,
+  registerPostRoute,
   crypto,
 }) {
   const ensureFirebaseApp = createEnsureFirebaseApp(initializeApp);
@@ -238,5 +255,7 @@ export function createGenerateStatsHandle({
     functions,
     express,
     cors,
+    useMiddleware,
+    registerPostRoute,
   }).generateStats;
 }
