@@ -1261,37 +1261,31 @@ async function routeViaDirect({ db, directPageNumber, snapshot }) {
 }
 
 /**
- * Route submission through option or direct page path.
- * @param {object} params - Routing parameters.
- * @param {import('firebase-admin/firestore').Firestore} params.db - Firestore instance.
- * @param {string | undefined} params.incomingOptionFullName - Option path.
- * @param {number | undefined} params.directPageNumber - Direct page number.
- * @param {import('firebase-admin/firestore').DocumentSnapshot} params.snapshot - Snapshot.
- * @param {import('firebase-admin/firestore').WriteBatch} params.batch - Write batch.
- * @param {() => string} params.randomUUID - UUID generator.
- * @param {() => number} params.random - Random generator.
- * @param {() => unknown} params.getServerTimestamp - Timestamp helper.
- * @returns {Promise<PageContext | null>} Resolved context.
+ * Stage page routing around shared Firestore and runtime dependencies.
+ * @param {import('firebase-admin/firestore').Firestore} db Firestore instance.
+ * @param {import('firebase-admin/firestore').WriteBatch} batch Batch used for option updates.
+ * @returns {(random: () => number, randomUUID: () => string, getServerTimestamp: () => unknown) => (incomingOptionFullName: string | undefined, directPageNumber: number | undefined, snapshot: import('firebase-admin/firestore').DocumentSnapshot) => Promise<PageContext | null>} Staged page router.
  */
-async function routePageContext({
-  db,
-  incomingOptionFullName,
-  directPageNumber,
-  snapshot,
-  batch,
-  randomUUID,
-  random,
-  getServerTimestamp,
-}) {
-  if (incomingOptionFullName) {
-    return createOptionSubmissionResolver(db, batch)(
+function createPageContextRouter(db, batch) {
+  return function bindPageRuntime(random, randomUUID, getServerTimestamp) {
+    const resolveOptionSubmission = createOptionSubmissionResolver(db, batch)(
       random,
       randomUUID,
       getServerTimestamp
-    )(incomingOptionFullName, snapshot);
-  }
+    );
 
-  return routeViaDirect({ db, directPageNumber, snapshot });
+    return async function routePageContext(
+      incomingOptionFullName,
+      directPageNumber,
+      snapshot
+    ) {
+      if (incomingOptionFullName) {
+        return resolveOptionSubmission(incomingOptionFullName, snapshot);
+      }
+
+      return routeViaDirect({ db, directPageNumber, snapshot });
+    };
+  };
 }
 
 /**
@@ -1308,7 +1302,16 @@ async function routePageContext({
  * @returns {Promise<PageContext | null>} Resolved page context or null when the submission should be dropped.
  */
 async function resolveSubmissionPageContext(params) {
-  return routePageContext(params);
+  const routePageContext = createPageContextRouter(params.db, params.batch)(
+    params.random,
+    params.randomUUID,
+    params.getServerTimestamp
+  );
+  return routePageContext(
+    params.incomingOptionFullName,
+    params.directPageNumber,
+    params.snapshot
+  );
 }
 
 /**
@@ -1622,7 +1625,7 @@ function isSubmissionProcessed(submission) {
 
 export const processNewPageTestUtils = {
   routeViaDirect,
-  routePageContext,
+  createPageContextRouter,
   extractSubmissionData,
   isSubmissionProcessed,
   resolvePageDepth,
