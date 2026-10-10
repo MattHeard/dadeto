@@ -1,5 +1,6 @@
 import { jest } from '@jest/globals';
 import {
+  createDefaultFirestoreContextChecker,
   createFirestoreInstance,
   getFirestoreInstanceFromCache,
   getFirestoreForDatabase,
@@ -7,6 +8,35 @@ import {
 } from '../../../src/core/cloud/firestore-helpers.js';
 
 describe('firestore helpers', () => {
+  it('checks the caller Firestore context by dependency identity', () => {
+    const ensureAppFn = jest.fn();
+    const getFirestoreFn = jest.fn();
+    const environment = { DENDRITE_ENVIRONMENT: 'production' };
+    const isDefaultContext = createDefaultFirestoreContextChecker(
+      ensureAppFn,
+      getFirestoreFn,
+      environment
+    );
+
+    expect(isDefaultContext({ ensureAppFn, getFirestoreFn, environment })).toBe(
+      true
+    );
+    expect(
+      isDefaultContext({
+        ensureAppFn,
+        getFirestoreFn,
+        environment: { ...environment },
+      })
+    ).toBe(false);
+    expect(
+      isDefaultContext({
+        ensureAppFn: jest.fn(),
+        getFirestoreFn,
+        environment,
+      })
+    ).toBe(false);
+  });
+
   describe('resolveFirestoreDatabaseId', () => {
     it('prefers a non-empty explicit database id', () => {
       expect(

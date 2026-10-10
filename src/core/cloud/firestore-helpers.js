@@ -4,6 +4,8 @@ export {
 } from './cloud-core.js';
 
 /** @typedef {{ensureAppFn?: () => void, getFirestoreFn?: (app?: import('firebase-admin/app').App, databaseId?: string) => import('firebase-admin/firestore').Firestore, environment?: Record<string, unknown>}} FirestoreInstanceOptions */
+/** @typedef {{ensureAppFn: () => void, getFirestoreFn: Function, environment: Record<string, unknown>}} FirestoreDependencyContext */
+/** @typedef {{cache: {value: import('firebase-admin/firestore').Firestore | null}, defaultEnsureAppFn: () => void, defaultGetFirestoreFn: NonNullable<FirestoreInstanceOptions['getFirestoreFn']>, resolveEnvironment: (options: FirestoreInstanceOptions) => Record<string, unknown>, shouldCache: (context: {options: FirestoreInstanceOptions, ensureAppFn: () => void, getFirestoreFn: NonNullable<FirestoreInstanceOptions['getFirestoreFn']>, environment: Record<string, unknown>}) => boolean}} FirestoreInstanceResolverDependencies */
 
 /**
  * Parse the database identifier from the runtime environment.
@@ -35,21 +37,15 @@ export function resolveFirestoreDatabaseId(environment) {
 
 /**
  * Check whether Firestore dependencies match the process-default cache boundary.
- * @param {{ ensureAppFn: () => void, getFirestoreFn: Function, environment: Record<string, unknown>, defaultEnsureAppFn: () => void, defaultGetFirestoreFn: Function, defaultEnvironment: Record<string, unknown> }} options Dependencies and their process defaults.
- * @returns {boolean} True when it is safe to use the process cache.
+ * @param {FirestoreDependencyContext} context Caller dependencies.
+ * @param {FirestoreDependencyContext} defaults Process-default dependencies.
+ * @returns {boolean} True when all dependency identities match.
  */
-export function isDefaultFirestoreContext({
-  ensureAppFn,
-  getFirestoreFn,
-  environment,
-  defaultEnsureAppFn,
-  defaultGetFirestoreFn,
-  defaultEnvironment,
-}) {
+export function isDefaultFirestoreContext(context, defaults) {
   return (
-    ensureAppFn === defaultEnsureAppFn &&
-    getFirestoreFn === defaultGetFirestoreFn &&
-    environment === defaultEnvironment
+    context.ensureAppFn === defaults.ensureAppFn &&
+    context.getFirestoreFn === defaults.getFirestoreFn &&
+    context.environment === defaults.environment
   );
 }
 
@@ -66,11 +62,10 @@ export function createDefaultFirestoreContextChecker(
   defaultEnvironment
 ) {
   return options =>
-    isDefaultFirestoreContext({
-      ...options,
-      defaultEnsureAppFn,
-      defaultGetFirestoreFn,
-      defaultEnvironment,
+    isDefaultFirestoreContext(options, {
+      ensureAppFn: defaultEnsureAppFn,
+      getFirestoreFn: defaultGetFirestoreFn,
+      environment: defaultEnvironment,
     });
 }
 
@@ -150,28 +145,28 @@ function resolveFirestoreInstanceFromCache(options, shouldCache) {
 
 /**
  * Create an accessor that resolves environment and cache policy consistently.
- * @param {{cache: {value: import('firebase-admin/firestore').Firestore | null}, defaultEnsureAppFn: () => void, defaultGetFirestoreFn: NonNullable<FirestoreInstanceOptions['getFirestoreFn']>, resolveEnvironment: (options: FirestoreInstanceOptions) => Record<string, unknown>, shouldCache: (context: {options: FirestoreInstanceOptions, ensureAppFn: () => void, getFirestoreFn: NonNullable<FirestoreInstanceOptions['getFirestoreFn']>, environment: Record<string, unknown>}) => boolean}} deps Resolver dependencies and caller-specific policies.
+ * @param {FirestoreInstanceResolverDependencies} dependencies Resolver dependencies and caller-specific policies.
  * @returns {(options?: FirestoreInstanceOptions) => import('firebase-admin/firestore').Firestore} Configured Firestore accessor.
  */
-export function createFirestoreInstanceResolver({
-  cache,
-  defaultEnsureAppFn,
-  defaultGetFirestoreFn,
-  resolveEnvironment,
-  shouldCache,
-}) {
+export function createFirestoreInstanceResolver(dependencies) {
   return function getFirestoreInstance(options = {}) {
-    const ensureAppFn = options.ensureAppFn ?? defaultEnsureAppFn;
-    const getFirestoreFn = options.getFirestoreFn ?? defaultGetFirestoreFn;
-    const environment = resolveEnvironment(options);
+    const ensureAppFn = options.ensureAppFn ?? dependencies.defaultEnsureAppFn;
+    const getFirestoreFn =
+      options.getFirestoreFn ?? dependencies.defaultGetFirestoreFn;
+    const environment = dependencies.resolveEnvironment(options);
     const cacheOptions = {
-      cache,
+      cache: dependencies.cache,
       ensureAppFn,
       getFirestoreFn,
       environment,
     };
     return resolveFirestoreInstanceFromCache(cacheOptions, () =>
-      shouldCache({ options, ensureAppFn, getFirestoreFn, environment })
+      dependencies.shouldCache({
+        options,
+        ensureAppFn,
+        getFirestoreFn,
+        environment,
+      })
     );
   };
 }
