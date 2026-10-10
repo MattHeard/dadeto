@@ -239,45 +239,48 @@ describe('admin/core uncovered continuation', () => {
       },
       removeItem: () => {},
     };
-    const auth = createGoogleAuthModule({
-      getAuthFn: () => ({ currentUser: {} }),
-      storage,
-      consoleObj: { error: () => {} },
-      globalScope: {},
-      Provider: { credential: () => ({}) },
-      credentialFactory: () => ({}),
-    });
+    const auth = createGoogleAuthModule(
+      {
+        getAuthFn: () => ({ currentUser: {} }),
+        storage,
+        globalScope: {},
+        signInWithCredential: () => ({}),
+      },
+      { consoleObj: { error: () => {} }, Provider: { credential: () => ({}) } }
+    );
     await expect(auth.getIdToken()).resolves.toBe('cached-token');
   });
 
   it('uses the Firebase user token when available', async () => {
-    const auth = createGoogleAuthModule({
-      getAuthFn: () => ({
-        currentUser: {
-          getIdToken: async force => {
-            if (force) return 'fresh-token';
-            return '';
+    const auth = createGoogleAuthModule(
+      {
+        getAuthFn: () => ({
+          currentUser: {
+            getIdToken: async force => {
+              if (force) return 'fresh-token';
+              return '';
+            },
           },
-        },
-      }),
-      storage: { getItem: () => 'cached-token', removeItem: () => {} },
-      consoleObj: { error: () => {} },
-      globalScope: {},
-      Provider: { credential: () => ({}) },
-      credentialFactory: () => ({}),
-    });
+        }),
+        storage: { getItem: () => 'cached-token', removeItem: () => {} },
+        globalScope: {},
+        signInWithCredential: () => ({}),
+      },
+      { consoleObj: { error: () => {} }, Provider: { credential: () => ({}) } }
+    );
     await expect(auth.getIdToken()).resolves.toBe('fresh-token');
   });
 
   it('returns an empty token when Firebase returns a falsy token', async () => {
-    const auth = createGoogleAuthModule({
-      getAuthFn: () => ({ currentUser: { getIdToken: async () => '' } }),
-      storage: { getItem: () => 'cached-token', removeItem: () => {} },
-      consoleObj: { error: () => {} },
-      globalScope: {},
-      Provider: { credential: () => ({}) },
-      credentialFactory: () => ({}),
-    });
+    const auth = createGoogleAuthModule(
+      {
+        getAuthFn: () => ({ currentUser: { getIdToken: async () => '' } }),
+        storage: { getItem: () => 'cached-token', removeItem: () => {} },
+        globalScope: {},
+        signInWithCredential: () => ({}),
+      },
+      { consoleObj: { error: () => {} }, Provider: { credential: () => ({}) } }
+    );
     await expect(auth.getIdToken()).resolves.toBe('');
   });
 });
@@ -291,14 +294,15 @@ describe('admin/core token and render branches', () => {
   });
 
   it('falls back to an empty cached token when no Firebase user is available', async () => {
-    const auth = createGoogleAuthModule({
-      getAuthFn: () => ({ currentUser: {} }),
-      storage: { getItem: () => null, removeItem: () => {} },
-      consoleObj: { error: () => {} },
-      globalScope: {},
-      Provider: { credential: () => ({}) },
-      credentialFactory: () => ({}),
-    });
+    const auth = createGoogleAuthModule(
+      {
+        getAuthFn: () => ({ currentUser: {} }),
+        storage: { getItem: () => null, removeItem: () => {} },
+        globalScope: {},
+        signInWithCredential: () => ({}),
+      },
+      { consoleObj: { error: () => {} }, Provider: { credential: () => ({}) } }
+    );
     await expect(auth.getIdToken()).resolves.toBe('');
   });
 
@@ -399,24 +403,25 @@ describe('admin/core token and render branches', () => {
   });
 
   it('memoizes the Google sign-in handler and rejects unavailable auth', () => {
-    const factory = createInitGoogleSignInHandlerFactory({
-      getAuthFn: () => ({}),
-      sessionStorageObj: { getItem: () => null, setItem: () => {} },
-      consoleObj: {},
-      globalThisObj: {},
-      googleAuthProviderFn: { credential: token => token },
-      signInWithCredentialFn: () => {},
-    });
+    const factory = createInitGoogleSignInHandlerFactory(
+      () => ({}),
+      {
+        storage: { getItem: () => null, setItem: () => {} },
+        signInWithCredential: () => {},
+      },
+      {
+        logger: {},
+        globalObject: {},
+        authProvider: { credential: token => token },
+      }
+    );
     expect(factory()).toBe(factory());
 
-    const unavailable = createInitGoogleSignInHandlerFactory({
-      getAuthFn: () => null,
-      sessionStorageObj: {},
-      consoleObj: {},
-      globalThisObj: {},
-      googleAuthProviderFn: {},
-      signInWithCredentialFn: () => {},
-    });
+    const unavailable = createInitGoogleSignInHandlerFactory(
+      () => null,
+      { storage: {}, signInWithCredential: () => {} },
+      { logger: {}, globalObject: {}, authProvider: {} }
+    );
     expect(() => unavailable()).toThrow('Firebase auth client is not ready');
   });
 });

@@ -1,0 +1,7 @@
+# Google Auth adapter boundaries
+
+- Unexpected hurdle: TSDoc caught that the Google provider adapter must preserve its existing string credential contract; the broad `unknown` return type broke the dependency boundary.
+- Diagnosis path: the fresh parameter-bag diagnostic identified three related constructors that flattened Firebase/session runtime and Google Identity concerns. Focused auth tests exercise lazy initialization, credential conversion, token fallback, sign-out, and unavailable-auth errors.
+- Chosen fix: split `createGoogleAuthModule` into Firebase auth runtime and Google Identity provider inputs; split the sign-in dependency mapper into auth, Firebase sign-in, and Google Identity inputs; and pass those same named groups through the lazy handler factory. Browser and infrastructure entrypoints now build these boundaries explicitly.
+- Evidence: focused Jest passed (3 suites, 104 tests); the `admin-core.js` parameter-bag diagnostic fell from 10 findings to 7; `npm run lint` and `npm run tsdoc:check` passed; `DADETO_COVERAGE_SHARD_SIZE=40 JEST_CACHE_DIRECTORY=/home/matt/dadeto/.tmp/jest_rs TMPDIR=/home/matt/dadeto/.tmp npm run check` passed all 10 gates, with 11/11 local E2E tests and 0 clones.
+- Next: use a fresh diagnostic for the remaining seven `admin-core.js` findings, beginning with `initGoogleSignInCore` and the regeneration flow; keep global rule enforcement off until the entire baseline is resolved.

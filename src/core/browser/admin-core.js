@@ -35,6 +35,33 @@ import {
  */
 
 /**
+ * @typedef {object} FirebaseSignInRuntime
+ * @property {{ setItem: (key: string, value: string) => void }} storage Session storage for sign-in tokens.
+ * @property {(auth: FirebaseAuthInstance, credential: unknown) => Promise<void> | void} signInWithCredential Firebase credential sign-in operation.
+ */
+
+/**
+ * @typedef {object} GoogleIdentityRuntime
+ * @property {{ error?: (message: string, ...args: unknown[]) => void } | undefined} logger Sign-in error reporter.
+ * @property {typeof globalThis} globalObject Browser globals used by Google Identity.
+ * @property {{ credential?: (token: string) => string }} authProvider Google Auth provider.
+ */
+
+/**
+ * @typedef {object} GoogleAuthRuntime
+ * @property {() => FirebaseAuthInstance | null | undefined} getAuthFn Getter for the Firebase auth instance.
+ * @property {Storage} storage Storage used by token lookup and sign-out.
+ * @property {Window & typeof globalThis} globalScope Browser global scope used by sign-out.
+ * @property {(auth: unknown, credential: unknown) => unknown} signInWithCredential Firebase credential sign-in operation.
+ */
+
+/**
+ * @typedef {object} GoogleIdentityProvider
+ * @property {{ error?: (message: string, ...args: unknown[]) => void } | undefined} consoleObj Logger passed to Google sign-in.
+ * @property {{ credential?: (token: string) => string }} Provider Google Auth provider.
+ */
+
+/**
  * @typedef {object} FirebaseAuthUser
  * @property {string} [uid] - Unique identifier assigned to the user.
  * @property {(forceRefresh?: boolean) => Promise<string> | string | null | undefined} [getIdToken] - Function returning an ID token.
@@ -267,57 +294,51 @@ export function buildSignInCredential(credentialFactory) {
 
 /**
  * Build the Google auth helpers used by the admin surface.
- * @param {{
- *   getAuthFn: () => FirebaseAuthInstance | null | undefined,
- *   storage: Storage,
- *   consoleObj: { error?: (message: string) => void },
- *   globalScope: Window & typeof globalThis,
- *   Provider: { credential?: (token: string) => string },
- *   credentialFactory: (auth: unknown, credential: unknown) => unknown,
- * }} deps - Dependencies required to construct the auth module.
+ * @param {GoogleAuthRuntime} authRuntime Firebase auth, storage, and credential collaborators.
+ * @param {GoogleIdentityProvider} identityProvider Google Identity SDK and logging collaborators.
  * @returns {{
  *   initGoogleSignIn: (options?: GoogleSignInOptions) => void | Promise<void>,
- *   signOut: () => void,
+ *   signOut: () => Promise<void>,
  *   getIdToken: () => Promise<string> | string | null,
  * }} Auth helpers wired to the provided dependencies.
  */
-export function createGoogleAuthModule(deps) {
-  const {
-    getAuthFn,
-    storage,
-    consoleObj,
-    globalScope,
-    Provider,
-    credentialFactory,
-  } = deps;
-
-  const getInitGoogleSignInHandler = createInitGoogleSignInHandlerFactory({
-    getAuthFn,
-    sessionStorageObj: storage,
-    consoleObj,
-    globalThisObj: /** @type {typeof globalThis} */ (globalScope),
-    googleAuthProviderFn: Provider,
-    signInWithCredentialFn: buildSignInCredential(credentialFactory),
-  });
+export function createGoogleAuthModule(authRuntime, identityProvider) {
+  const getInitGoogleSignInHandler = createInitGoogleSignInHandlerFactory(
+    authRuntime.getAuthFn,
+    {
+      storage: authRuntime.storage,
+      signInWithCredential: buildSignInCredential(
+        authRuntime.signInWithCredential
+      ),
+    },
+    {
+      logger: identityProvider.consoleObj,
+      globalObject: authRuntime.globalScope,
+      authProvider: identityProvider.Provider,
+    }
+  );
 
   const initGoogleSignIn = (/** @type {GoogleSignInOptions} */ options) =>
     getInitGoogleSignInHandler()(options);
 
-  const getSignOutHandler = createSignOutHandlerFactory(getAuthFn, globalScope);
+  const getSignOutHandler = createSignOutHandlerFactory(
+    authRuntime.getAuthFn,
+    authRuntime.globalScope
+  );
 
   const signOut = async () => {
     await getSignOutHandler()();
   };
 
   const getIdToken = async () => {
-    const auth = getAuthFn();
+    const auth = authRuntime.getAuthFn();
     const currentUser = auth?.currentUser;
     if (currentUser?.getIdToken) {
       return /** @type {(forceRefresh?: boolean) => Promise<string>} */ (
         currentUser.getIdToken
       )(true);
     }
-    return storage.getItem('id_token') || '';
+    return authRuntime.storage.getItem('id_token') || '';
   };
 
   return {
@@ -2668,68 +2689,62 @@ export function createQuerySelectorAll(scope) {
 
 /**
  * Build normalized dependencies for `createInitGoogleSignIn`.
- * @param {object} deps Dependency bag for building the initializer.
- * @param {FirebaseAuthInstance} deps.auth Firebase Auth instance that exposes `currentUser`.
- * @param {Storage} deps.storage Storage implementation used to cache ID tokens.
- * @param {Logger} deps.logger Logger used for reporting initialization errors.
- * @param {typeof globalThis} deps.globalObject Global scope providing DOM helpers.
- * @param {{ credential?: (token: string) => string }} deps.authProvider Google auth provider helper.
- * @param {(auth: object, credential: unknown) => Promise<void> | void} deps.signInWithCredential Credential signer.
+ * @param {FirebaseAuthInstance} auth Firebase Auth instance that exposes `currentUser`.
+ * @param {FirebaseSignInRuntime} firebaseRuntime Storage and Firebase credential signer.
+ * @param {GoogleIdentityRuntime} identityRuntime Logger, browser globals, and Google provider.
  * @returns {GoogleSignInDeps} Normalized dependency bag for `createInitGoogleSignIn`.
  */
-export function buildGoogleSignInDeps({
-  auth,
-  storage,
-  logger,
-  globalObject,
-  authProvider,
-  signInWithCredential,
-}) {
+export function buildGoogleSignInDeps(auth, firebaseRuntime, identityRuntime) {
   return {
-    googleAccountsId: createGoogleAccountsId(globalObject),
-    credentialFactory: createCredentialFactory(authProvider),
-    signInWithCredential,
+    googleAccountsId: createGoogleAccountsId(identityRuntime.globalObject),
+    credentialFactory: createCredentialFactory(identityRuntime.authProvider),
+    signInWithCredential: firebaseRuntime.signInWithCredential,
     auth,
-    storage,
-    matchMedia: createMatchMedia(globalObject),
-    querySelectorAll: createQuerySelectorAll(globalObject),
-    logger,
+    storage: firebaseRuntime.storage,
+    matchMedia: createMatchMedia(identityRuntime.globalObject),
+    querySelectorAll: createQuerySelectorAll(identityRuntime.globalObject),
+    logger: identityRuntime.logger,
   };
 }
 
 /**
  * Build the configured initializer for Google sign-in when provided concrete dependencies.
- * @param {GoogleSignInDeps} deps Dependency bag describing the initializer inputs.
+ * @param {GoogleSignInDeps} deps Dependency model for the Google sign-in initializer.
  * @returns {(options?: GoogleSignInOptions) => Promise<void> | void} Initialized sign-in function.
  */
 export function createGoogleSignInInit(deps) {
   const googleSignInDeps = buildGoogleSignInDeps(
-    /** @type {Parameters<typeof buildGoogleSignInDeps>[0]} */ (deps)
+    /** @type {FirebaseAuthInstance} */ (deps.auth),
+    {
+      storage: /** @type {Storage} */ (deps.storage),
+      signInWithCredential:
+        /** @type {(auth: FirebaseAuthInstance, credential: unknown) => Promise<void> | void} */ (
+          deps.signInWithCredential
+        ),
+    },
+    {
+      logger: deps.logger,
+      globalObject: /** @type {typeof globalThis} */ (deps.globalObject),
+      authProvider: /** @type {{ credential?: (token: string) => string }} */ (
+        deps.authProvider
+      ),
+    }
   );
   return createInitGoogleSignIn(googleSignInDeps);
 }
 
 /**
  * Create a lazily initialized helper that provides the configured Google sign-in handler.
- * @param {object} deps Dependencies for the handler factory.
- * @param {() => FirebaseAuthInstance | null | undefined} deps.getAuthFn Getter returning the Firebase auth instance.
- * @param {Storage} deps.sessionStorageObj Storage for cached tokens.
- * @param {{ error?: (message: string) => void }} deps.consoleObj Logger for reporting errors.
- * @param {typeof globalThis} deps.globalThisObj Global scope with DOM helpers.
- * @param {{ credential?: (token: string) => string }} deps.googleAuthProviderFn Google auth provider helper.
- * @param {(auth: unknown, credential: unknown) => Promise<void> | void} deps.signInWithCredentialFn Function sending credentials to Firebase.
+ * @param {() => FirebaseAuthInstance | null | undefined} getAuthFn Getter returning the Firebase auth instance.
+ * @param {FirebaseSignInRuntime} firebaseRuntime Storage and Firebase credential signer.
+ * @param {GoogleIdentityRuntime} identityRuntime Logger, browser globals, and Google provider.
  * @returns {() => (options?: GoogleSignInOptions) => Promise<void> | void} Factory for the init handler.
  */
-export function createInitGoogleSignInHandlerFactory(deps) {
-  const {
-    getAuthFn,
-    sessionStorageObj,
-    consoleObj,
-    globalThisObj,
-    googleAuthProviderFn,
-    signInWithCredentialFn,
-  } = deps;
-
+export function createInitGoogleSignInHandlerFactory(
+  getAuthFn,
+  firebaseRuntime,
+  identityRuntime
+) {
   /** @type {((options?: GoogleSignInOptions) => Promise<void> | void) | undefined} */
   let initGoogleSignInHandler;
   return () => {
@@ -2738,15 +2753,14 @@ export function createInitGoogleSignInHandlerFactory(deps) {
     }
 
     const auth = resolveInitAuth();
-    const initDeps = /** @type {GoogleSignInDeps} */ ({
+    initGoogleSignInHandler = createGoogleSignInInit({
       auth,
-      storage: sessionStorageObj,
-      logger: consoleObj,
-      globalObject: globalThisObj,
-      authProvider: googleAuthProviderFn,
-      signInWithCredential: signInWithCredentialFn,
+      storage: firebaseRuntime.storage,
+      logger: identityRuntime.logger,
+      globalObject: identityRuntime.globalObject,
+      authProvider: identityRuntime.authProvider,
+      signInWithCredential: firebaseRuntime.signInWithCredential,
     });
-    initGoogleSignInHandler = createGoogleSignInInit(initDeps);
 
     return initGoogleSignInHandler;
   };

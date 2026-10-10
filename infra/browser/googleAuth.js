@@ -25,14 +25,15 @@ const loadStaticConfig = createLoadStaticConfig({
   warn: console.warn.bind(console),
 });
 const handle = installAuthorUuidCaching(
-  createGoogleAuthModule({
-    getAuthFn: getAuth,
-    storage: effectStorage,
-    consoleObj: console,
-    globalScope: globalThis,
-    Provider: GoogleAuthProvider,
-    credentialFactory: signInWithCredential,
-  }),
+  createGoogleAuthModule(
+    {
+      getAuthFn: getAuth,
+      storage: effectStorage,
+      globalScope: globalThis,
+      signInWithCredential,
+    },
+    { consoleObj: console, Provider: GoogleAuthProvider }
+  ),
   {
     storage: effectStorage,
     fetchFn: globalThis.fetch.bind(globalThis),

@@ -256,14 +256,15 @@ describe('createGoogleAuthModule', () => {
     const getIdToken = jest.fn().mockResolvedValue('fresh-token');
     const auth = { currentUser: { getIdToken } };
     const getAuthFn = jest.fn(() => auth);
-    const module = createGoogleAuthModule({
-      getAuthFn,
-      storage,
-      consoleObj: { error: jest.fn() },
-      globalScope: { sessionStorage: storage },
-      Provider: { credential: jest.fn() },
-      credentialFactory: jest.fn(),
-    });
+    const module = createGoogleAuthModule(
+      {
+        getAuthFn,
+        storage,
+        globalScope: { sessionStorage: storage },
+        signInWithCredential: jest.fn(),
+      },
+      { consoleObj: { error: jest.fn() }, Provider: { credential: jest.fn() } }
+    );
 
     await expect(module.getIdToken()).resolves.toBe('fresh-token');
     expect(getIdToken).toHaveBeenCalledWith(true);
@@ -279,14 +280,15 @@ describe('createGoogleAuthModule', () => {
   it('signs out through auth and clears the session token', async () => {
     const signOut = jest.fn().mockResolvedValue(undefined);
     const storage = { getItem: jest.fn(), removeItem: jest.fn() };
-    const module = createGoogleAuthModule({
-      getAuthFn: () => ({ signOut }),
-      storage,
-      consoleObj: { error: jest.fn() },
-      globalScope: { sessionStorage: storage },
-      Provider: { credential: jest.fn() },
-      credentialFactory: jest.fn(),
-    });
+    const module = createGoogleAuthModule(
+      {
+        getAuthFn: () => ({ signOut }),
+        storage,
+        globalScope: { sessionStorage: storage },
+        signInWithCredential: jest.fn(),
+      },
+      { consoleObj: { error: jest.fn() }, Provider: { credential: jest.fn() } }
+    );
 
     await module.signOut();
     expect(signOut).toHaveBeenCalledTimes(1);
@@ -307,14 +309,18 @@ describe('createGoogleAuthModule', () => {
       },
       document: { querySelectorAll: jest.fn(() => []) },
     };
-    const module = createGoogleAuthModule({
-      getAuthFn: () => ({ currentUser: null }),
-      storage,
-      consoleObj: { error: jest.fn() },
-      globalScope: scope,
-      Provider: { credential: jest.fn(token => `credential:${token}`) },
-      credentialFactory: jest.fn(),
-    });
+    const module = createGoogleAuthModule(
+      {
+        getAuthFn: () => ({ currentUser: null }),
+        storage,
+        globalScope: scope,
+        signInWithCredential: jest.fn(),
+      },
+      {
+        consoleObj: { error: jest.fn() },
+        Provider: { credential: jest.fn(token => `credential:${token}`) },
+      }
+    );
 
     await module.initGoogleSignIn();
     expect(initialize).toHaveBeenCalledWith(

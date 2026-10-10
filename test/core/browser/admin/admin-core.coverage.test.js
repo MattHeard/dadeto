@@ -70,14 +70,15 @@ describe('admin-core additional coverage', () => {
   });
 
   it('throws when the google sign-in handler factory lacks auth', () => {
-    const initFactory = createInitGoogleSignInHandlerFactory({
-      getAuthFn: () => null,
-      sessionStorageObj: { setItem: jest.fn() },
-      consoleObj: { error: jest.fn() },
-      globalThisObj: {},
-      googleAuthProviderFn: { credential: jest.fn() },
-      signInWithCredentialFn: jest.fn(),
-    });
+    const initFactory = createInitGoogleSignInHandlerFactory(
+      () => null,
+      { storage: { setItem: jest.fn() }, signInWithCredential: jest.fn() },
+      {
+        logger: { error: jest.fn() },
+        globalObject: {},
+        authProvider: { credential: jest.fn() },
+      }
+    );
 
     expect(() => initFactory()).toThrow(
       new Error('Firebase auth client is not ready')
@@ -88,20 +89,23 @@ describe('admin-core additional coverage', () => {
 describe('admin-core additional logger coverage', () => {
   it('supplies the default logger when the handler factory has none', () => {
     const initialize = jest.fn();
-    const initFactory = createInitGoogleSignInHandlerFactory({
-      getAuthFn: () => ({ currentUser: null }),
-      sessionStorageObj: { setItem: jest.fn() },
-      consoleObj: undefined,
-      globalThisObj: {
-        window: {
-          google: { accounts: { id: { initialize, renderButton: jest.fn() } } },
-          matchMedia: jest.fn(() => ({ matches: false })),
+    const initFactory = createInitGoogleSignInHandlerFactory(
+      () => ({ currentUser: null }),
+      { storage: { setItem: jest.fn() }, signInWithCredential: jest.fn() },
+      {
+        logger: undefined,
+        globalObject: {
+          window: {
+            google: {
+              accounts: { id: { initialize, renderButton: jest.fn() } },
+            },
+            matchMedia: jest.fn(() => ({ matches: false })),
+          },
+          document: { querySelectorAll: jest.fn(() => []) },
         },
-        document: { querySelectorAll: jest.fn(() => []) },
-      },
-      googleAuthProviderFn: { credential: jest.fn() },
-      signInWithCredentialFn: jest.fn(),
-    });
+        authProvider: { credential: jest.fn() },
+      }
+    );
 
     const firstHandler = initFactory();
     const secondHandler = initFactory();
@@ -267,14 +271,11 @@ describe('admin-core additional logger coverage', () => {
       const authProvider = { credential: jest.fn() };
       const signInWithCredential = jest.fn();
 
-      const deps = buildGoogleSignInDeps({
+      const deps = buildGoogleSignInDeps(
         auth,
-        storage,
-        logger,
-        globalObject: globalScope,
-        authProvider,
-        signInWithCredential: signInWithCredential,
-      });
+        { storage, signInWithCredential },
+        { logger, globalObject: globalScope, authProvider }
+      );
 
       expect(deps.googleAccountsId()).toBe(
         globalScope.window.google.accounts.id
@@ -296,14 +297,11 @@ describe('admin-core additional logger coverage', () => {
 
       delete globalThis.window;
 
-      const deps = buildGoogleSignInDeps({
+      const deps = buildGoogleSignInDeps(
         auth,
-        storage,
-        logger,
-        globalObject: undefined,
-        authProvider,
-        signInWithCredential: jest.fn(),
-      });
+        { storage, signInWithCredential: jest.fn() },
+        { logger, globalObject: undefined, authProvider }
+      );
       expect(() => deps.matchMedia('(prefers-color-scheme: dark)')).toThrow(
         new Error('window is not available')
       );
