@@ -286,21 +286,9 @@ function resolveStoredVisibilitySum(data) {
  * @typedef {{ variant: { incomingOption?: string }; db: FirestoreLike; consoleError?: ConsoleError }} ParentResolutionDeps
  * @typedef {{
  *   snap: VariantSnapshot;
- *   db: FirestoreLike;
- *   bucket: StorageBucketLike;
- *   consoleError?: ConsoleError;
- *   visibilityThreshold?: number;
  *   rewriteTargetPageNumbers?: number[];
- * }} ResolveRenderPlanDeps
- * @typedef {{
- *   snap: VariantSnapshot;
- *   pageData: { pageSnap: PageSnapshot; page: PageDocument };
- *   db: FirestoreLike;
- *   bucket: StorageBucketLike;
- *   consoleError?: ConsoleError;
- *   visibilityThreshold?: number;
- *   rewriteTargetPageNumbers?: number[];
- * }} BuildRenderPlanDeps
+ * }} RenderPlanSubject
+ * @typedef {RenderPlanSubject & RenderMetadataLookups} ResolveRenderPlanDeps
  * @typedef {{
  *   options: OptionMetadata[];
  *   storyTitle: string;
@@ -3248,44 +3236,44 @@ async function buildRenderPlanIfPageValid(options) {
     return null;
   }
 
-  return buildRenderPlan({ ...options, pageData });
+  return buildRenderPlan(
+    {
+      snap,
+      pageData,
+      rewriteTargetPageNumbers: options.rewriteTargetPageNumbers,
+    },
+    {
+      db: options.db,
+      bucket: options.bucket,
+      consoleError: options.consoleError,
+      visibilityThreshold: options.visibilityThreshold,
+    }
+  );
 }
 
 /**
  * Build render plan.
- * @param {BuildRenderPlanDeps} params Options.
+ * @param {RenderPlanSubject & {pageData: {pageSnap: PageSnapshot; page: PageDocument}}} subject Page and variant being rendered.
+ * @param {RenderMetadataLookups} lookups Services used to resolve render metadata.
  * @returns {Promise<RenderOutput>} Render plan.
  */
-async function buildRenderPlan({
-  snap,
-  pageData,
-  db,
-  bucket,
-  consoleError,
-  visibilityThreshold,
-  rewriteTargetPageNumbers,
-}) {
-  const { pageSnap, page } = pageData;
-  const variant = /** @type {VariantDocument} */ (snap.data());
+async function buildRenderPlan(subject, lookups) {
+  const { pageSnap, page } = subject.pageData;
+  const variant = /** @type {VariantDocument} */ (subject.snap.data());
   const metadata = await gatherMetadata(
     {
-      snap,
+      snap: subject.snap,
       pageSnap,
       page,
       variant,
     },
-    {
-      db,
-      bucket,
-      consoleError,
-      visibilityThreshold,
-    }
+    lookups
   );
 
   return buildRenderOutput({
     page,
     variant,
-    rewriteTargetPageNumbers,
+    rewriteTargetPageNumbers: subject.rewriteTargetPageNumbers,
     ...metadata,
   });
 }

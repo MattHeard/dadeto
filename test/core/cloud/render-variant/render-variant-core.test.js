@@ -1803,6 +1803,9 @@ describe('createRenderVariant page fallbacks', () => {
     expect(variantFile.save).toHaveBeenCalledWith(expect.any(String), {
       contentType: 'text/html',
     });
+    const renderedHtml = variantFile.save.mock.calls[0][0];
+    expect(renderedHtml).toContain('Story Title');
+    expect(renderedHtml).toContain('Body');
     expect(altsFile.save).toHaveBeenCalledWith(expect.any(String), {
       contentType: 'text/html',
     });
