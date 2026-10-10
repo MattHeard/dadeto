@@ -965,36 +965,18 @@ function instantiateRenderContents(invalidation, rendering) {
  * @returns {(permission: AllowEffects, deps?: RenderDependencies) => Promise<null>} Renderer factory.
  */
 function createRenderContentsHandler(query, output) {
-  /** @type {(() => Promise<string[]>) | undefined} */
-  let fetchTopStoryIds;
-  /** @type {((storyId: string) => Promise<StoryInfo | null>) | undefined} */
-  let fetchStoryInfo;
+  const resolveTopStoryIds = createFetcherResolver(
+    query.db,
+    createFetchTopStoryIds
+  );
+  const resolveStoryInfo = createFetcherResolver(
+    query.db,
+    createFetchStoryInfo
+  );
 
   return async function render(permission, deps = {}) {
-    const loadStoryIds = /** @type {() => Promise<string[]>} */ (
-      resolveFetcher({
-        provided: deps.fetchTopStoryIds,
-        cache: fetchTopStoryIds,
-        setCache: value => {
-          fetchTopStoryIds = value;
-        },
-        factory: createFetchTopStoryIds,
-        db: query.db,
-      })
-    );
-
-    const loadStoryInfo =
-      /** @type {(storyId: string) => Promise<StoryInfo | null>} */ (
-        resolveFetcher({
-          provided: deps.fetchStoryInfo,
-          cache: fetchStoryInfo,
-          setCache: value => {
-            fetchStoryInfo = value;
-          },
-          factory: createFetchStoryInfo,
-          db: query.db,
-        })
-      );
+    const loadStoryIds = resolveTopStoryIds(deps.fetchTopStoryIds);
+    const loadStoryInfo = resolveStoryInfo(deps.fetchStoryInfo);
 
     const items = await buildStoryItems(loadStoryIds, loadStoryInfo);
     const paths = await publishStoryPages(permission, {
@@ -1010,41 +992,29 @@ function createRenderContentsHandler(query, output) {
 }
 
 /**
- * Resolve an asynchronous fetcher from the provided override or cached factory.
+ * Create a resolver that prefers per-call overrides and lazily caches its factory result.
  * @template {(...args: never[]) => unknown} Fetcher
- * @param {{
- *   provided?: Fetcher,
- *   cache?: Fetcher,
- *   setCache: (fn: Fetcher) => void,
- *   factory: (db: DbInstance) => Fetcher,
- *   db?: DbInstance
- * }} options Fetcher resolution inputs.
- * @returns {Fetcher} Fetch implementation to use.
+ * @param {DbInstance | undefined} database Firestore-like instance used by the factory.
+ * @param {(db: DbInstance) => Fetcher} factory Factory that produces the fetcher.
+ * @returns {(provided?: Fetcher) => Fetcher} Fetcher resolver scoped to one handler.
  */
-function resolveFetcher({ provided, cache, setCache, factory, db: database }) {
-  if (typeof provided === 'function') {
-    return provided;
-  }
+function createFetcherResolver(database, factory) {
+  /** @type {Fetcher | undefined} */
+  let cache;
 
-  return getOrCreateFetcher({ cache, database, factory, setCache });
-}
+  return function resolve(provided) {
+    if (typeof provided === 'function') {
+      return provided;
+    }
 
-/**
- * Return the cached fetcher or create a new one via the factory helper.
- * @template {(...args: never[]) => unknown} Fetcher
- * @param {{
- *   cache?: Fetcher,
- *   database?: DbInstance,
- *   factory: (db: DbInstance) => Fetcher,
- *   setCache: (fn: Fetcher) => void
- * }} options Fetcher lookup inputs.
- * @returns {Fetcher} Fetch implementation.
- */
-function getOrCreateFetcher({ cache, database, factory, setCache }) {
-  if (cache) {
+    if (cache) {
+      return cache;
+    }
+
+    assertDb(/** @type {DbInstance} */ (database));
+    cache = factory(/** @type {DbInstance} */ (database));
     return cache;
-  }
-  return createFetcherFromDatabase(database, factory, setCache);
+  };
 }
 
 /**
@@ -1138,21 +1108,6 @@ function buildPageSaveOptions(pageNumber, maxPages) {
     options.metadata = { cacheControl: 'no-cache' };
   }
   return options;
-}
-
-/**
- * Create a cached fetcher when none is provided.
- * @param {DbInstance | undefined} database Firestore-like instance used by the factory.
- * @template {(...args: never[]) => unknown} Fetcher
- * @param {(db: DbInstance) => Fetcher} factory Factory that produces the fetcher.
- * @param {(fn: Fetcher) => void} setCache Setter for caching the created fetcher.
- * @returns {Fetcher} Newly created fetch implementation.
- */
-function createFetcherFromDatabase(database, factory, setCache) {
-  assertDb(/** @type {DbInstance} */ (database));
-  const created = factory(/** @type {DbInstance} */ (database));
-  setCache(created);
-  return created;
 }
 
 /**
