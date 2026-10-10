@@ -307,15 +307,7 @@ function buildNumericField(options) {
   const handleInput = () =>
     applyMutationAndSyncHiddenInput(dom, textInput, data, updateData);
 
-  const fieldBinding = {
-    dom,
-    form: section,
-    input,
-    labelText,
-    handler: handleInput,
-    disposers,
-  };
-  wireLabelledField(fieldBinding);
+  wireLabelledField(dom, section, input, handleInput)(labelText, disposers);
 }
 
 /**

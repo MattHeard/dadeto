@@ -108,14 +108,12 @@ function createCellsField({ dom, form, data, textInput, disposers }) {
     data.cells = parseCells(dom.getValue(textarea), data.cells);
     syncTextInput(textInput, data);
   };
-  wireLabelledField({
+  wireLabelledField(
     dom,
     form,
-    input: textarea,
-    labelText: 'Live cells, one x,y per line',
-    disposers,
-    handler: updateCells,
-  });
+    textarea,
+    updateCells
+  )('Live cells, one x,y per line', disposers);
 }
 
 /**
@@ -144,14 +142,7 @@ function createCheckboxField({
     checkbox.checked = true;
   }
 
-  wireLabelledField({
-    dom,
-    form,
-    input: checkbox,
-    labelText,
-    disposers,
-    handler,
-  });
+  wireLabelledField(dom, form, checkbox, handler)(labelText, disposers);
   return checkbox;
 }
 
@@ -233,17 +224,11 @@ function buildForm({ dom, container, textInput }) {
       for (let index = 0; index < numberFieldOptions.length; index += 1) {
         const { key, label, placeholder, value } = numberFieldOptions[index];
         const input = createNumberFieldInput(dom, { value, placeholder });
-        wireLabelledField({
-          dom,
-          form,
-          input,
-          labelText: label,
-          disposers,
-          handler: () => {
-            data[key] = normalizePositiveInteger(dom.getValue(input), value);
-            browserCore.setInputValue(textInput, JSON.stringify(data));
-          },
-        });
+        const updateNumber = () => {
+          data[key] = normalizePositiveInteger(dom.getValue(input), value);
+          browserCore.setInputValue(textInput, JSON.stringify(data));
+        };
+        wireLabelledField(dom, form, input, updateNumber)(label, disposers);
       }
       createCellsField({ dom, form, data, textInput, disposers });
       createResetField({ dom, form, data, textInput, disposers });

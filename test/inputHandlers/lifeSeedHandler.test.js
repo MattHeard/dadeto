@@ -46,11 +46,14 @@ jest.unstable_mockModule(
         disposers: [],
       })
     ),
-    wireLabelledField: jest.fn(options => {
-      fieldOptions.push(options);
-      options.disposers.push(options.handler);
-      return options;
-    }),
+    wireLabelledField: jest.fn(
+      (dom, form, input, handler) => (labelText, disposers) => {
+        const options = { dom, form, input, handler, labelText, disposers };
+        fieldOptions.push(options);
+        disposers.push(handler);
+        return options;
+      }
+    ),
   })
 );
 

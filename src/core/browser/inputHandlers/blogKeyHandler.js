@@ -83,14 +83,7 @@ function buildBlogKeyField(field, context) {
   dom.setValue(element, initialValue);
   const onInput = () =>
     applyMutationAndSyncHiddenInput(dom, textInput, data, updateData);
-  wireLabelledField({
-    dom,
-    form,
-    input: element,
-    labelText,
-    handler: onInput,
-    disposers,
-  });
+  wireLabelledField(dom, form, element, onInput)(labelText, disposers);
 }
 
 /**

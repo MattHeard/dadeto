@@ -249,108 +249,92 @@ function createWrapperAppender(dom, wrapper) {
 
 /**
  * Append the label/input pair into a wrapper and then insert that wrapper into the form.
- * @param {{ dom: DOMHelpers, form: HTMLElement, fieldWrapper: HTMLElement, label: HTMLElement, input: HTMLElement }} options Wrapper insertion helpers.
- * @returns {void}
+ * @param {DOMHelpers} dom DOM helpers.
+ * @param {HTMLElement} form Form receiving the wrapper.
+ * @param {HTMLElement} fieldWrapper Wrapper receiving its label and input.
+ * @returns {(label: HTMLElement, input: HTMLElement) => void} Inserter for the completed field.
  */
-function appendWrappedField({ dom, form, fieldWrapper, label, input }) {
-  const appendToWrapper = createWrapperAppender(dom, fieldWrapper);
-  [label, input].forEach(appendToWrapper);
-  dom.appendChild(form, fieldWrapper);
+function appendWrappedField(dom, form, fieldWrapper) {
+  return function appendFieldChildren(label, input) {
+    const appendToWrapper = createWrapperAppender(dom, fieldWrapper);
+    [label, input].forEach(appendToWrapper);
+    dom.appendChild(form, fieldWrapper);
+  };
 }
 
 /**
  * Create and append one labelled input field.
- * @param {{ dom: DOMHelpers, form: HTMLElement, labelText: string, input?: HTMLInputElement | HTMLTextAreaElement, createInput?: () => HTMLInputElement | HTMLTextAreaElement }} options Field parts.
+ * @param {DOMHelpers} dom DOM helpers.
+ * @param {HTMLElement} form Form receiving the field.
+ * @param {string} labelText Visible label text.
+ * @param {HTMLInputElement | HTMLTextAreaElement | (() => HTMLInputElement | HTMLTextAreaElement)} fieldInput Input element or deferred input creator.
  * @returns {void}
  */
-function appendFieldParts({ dom, form, labelText, input, createInput }) {
+function appendFieldParts(dom, form, labelText, fieldInput) {
   const { fieldWrapper, label } = createFieldWrapper(dom);
   dom.setTextContent(label, labelText);
   /** @type {HTMLInputElement | HTMLTextAreaElement} */
-  const fieldInput = createInput
-    ? createInput()
-    : /** @type {HTMLInputElement | HTMLTextAreaElement} */ (input);
-  appendWrappedField({ dom, form, fieldWrapper, label, input: fieldInput });
+  const input = typeof fieldInput === 'function' ? fieldInput() : fieldInput;
+  appendWrappedField(dom, form, fieldWrapper)(label, input);
 }
 
 export const appendLabelledField = appendFieldParts;
 
 /**
  * Register an input listener and append the input as a labelled field.
- * @param {{ dom: DOMHelpers, form: HTMLElement, input: HTMLInputElement | HTMLTextAreaElement, labelText: string, handler: DOMEventListener, disposers: Disposer[] }} options Field wiring dependencies.
- * @returns {void}
+ * @param {DOMHelpers} dom DOM helpers.
+ * @param {HTMLElement} form Form receiving the field.
+ * @param {HTMLInputElement | HTMLTextAreaElement} input Field input.
+ * @param {DOMEventListener} handler Input event handler.
+ * @returns {(labelText: string, disposers: Disposer[]) => void} Final label and listener wiring step.
  */
-export function wireLabelledField({
-  dom,
-  form,
-  input,
-  labelText,
-  handler,
-  disposers,
-}) {
-  registerInputListener({ dom, input, handler, disposers });
-  return appendFieldParts({ dom, form, labelText, input });
+export function wireLabelledField(dom, form, input, handler) {
+  return function finishFieldWiring(labelText, disposers) {
+    registerInputListener({ dom, input, handler, disposers });
+    return appendFieldParts(dom, form, labelText, input);
+  };
 }
 
 /**
  * Build and wire up an input element for a field.
- * @param {{dom: DOMHelpers, key: string, placeholder: string, data: DendriteData, textInput: HTMLInputElement, disposers: Disposer[]}} options - Input setup parameters.
+ * @param {DOMHelpers} dom DOM helpers.
+ * @param {string} key Field key.
+ * @param {string} placeholder Input placeholder.
+ * @param {{data: DendriteData, textInput: HTMLInputElement, disposers: Disposer[]}} sharedArgs Form state shared by input fields.
  * @returns {HTMLInputElement | HTMLTextAreaElement} Initialized input element.
  */
-function createFieldInput(options) {
-  const { dom, key, placeholder, data, textInput, disposers } = options;
+function createFieldInput(dom, key, placeholder, sharedArgs) {
   const input = createInputElement(dom, key);
   dom.setPlaceholder(input, placeholder);
-  setInputValueFromData({ dom, input, data, key });
+  setInputValueFromData({ dom, input, data: sharedArgs.data, key });
   const onInput = createFieldInputHandler({
     dom,
     key,
     input,
-    textInput,
-    data,
+    textInput: sharedArgs.textInput,
+    data: sharedArgs.data,
   });
-  registerInputListener({ dom, input, handler: onInput, disposers });
+  registerInputListener({
+    dom,
+    input,
+    handler: onInput,
+    disposers: sharedArgs.disposers,
+  });
   return input;
 }
 
 /**
- * Create the wrapper, label, and input elements for a field and append them.
- * @param {{dom: DOMHelpers, form: HTMLElement, key: string, placeholder: string, data: DendriteData, textInput: HTMLInputElement, disposers: Disposer[]}} options - Field render inputs.
- * @returns {void} Appends the wrapped field to the form.
- */
-function createFieldElements(options) {
-  appendFieldParts({
-    dom: options.dom,
-    form: options.form,
-    labelText: options.placeholder,
-    createInput: () => createFieldInput(options),
-  });
-}
-
-/**
- * Build and wire a field wrapper while preserving creation order.
- * @param {{dom: DOMHelpers, form: HTMLElement, key: string, placeholder: string, data: DendriteData, textInput: HTMLInputElement, disposers: Disposer[]}} options Field render inputs.
- * @returns {void}
- */
-function buildWrappedField(options) {
-  createFieldElements(options);
-}
-
-/**
- * Build a renderer for the field definitions list.
- * @param {{dom: DOMHelpers, form: HTMLElement, data: DendriteData, textInput: HTMLInputElement, disposers: Disposer[]}} options - Rendering helpers.
+ * Build a renderer for field definitions using shared form state.
+ * @param {DOMHelpers} dom DOM helpers.
+ * @param {HTMLElement} form Form receiving fields.
+ * @param {{data: DendriteData, textInput: HTMLInputElement, disposers: Disposer[]}} sharedArgs State shared by rendered fields.
  * @returns {(field: [string, string]) => void} Renderer for each field tuple.
  */
-function createFieldRenderer(options) {
-  const sharedArgs = getSharedFormArgs(options);
+function createFieldRenderer(dom, form, sharedArgs) {
   return function renderFieldForTuple([key, placeholder]) {
-    buildWrappedField({
-      dom: options.dom,
-      form: options.form,
-      key,
-      placeholder,
-      ...sharedArgs,
-    });
+    appendFieldParts(dom, form, placeholder, () =>
+      createFieldInput(dom, key, placeholder, sharedArgs)
+    );
   };
 }
 
@@ -493,30 +477,32 @@ export function runFormHandler({ dom, container, textInput, buildForm }) {
 /**
  * Create the buildForm implementation bound to a set of fields.
  * @param {Array<[string, string]>} fields - Field definitions to render.
- * @returns {(dom: DOMHelpers, options: {container: HTMLElement, textInput: HTMLInputElement, data: DendriteData, disposers: Disposer[]}) => HTMLElement} Form builder bound to `fields`.
+ * @returns {(dom: DOMHelpers) => (options: {container: HTMLElement, textInput: HTMLInputElement, data: DendriteData, disposers: Disposer[]}) => HTMLElement} Form builder bound to `fields` and then to DOM helpers.
  */
 function createBuildForm(fields) {
-  return function buildForm(dom, { container, textInput, data, disposers }) {
-    const { form } = createManagedFormShellState({
-      dom,
-      container,
-      textInput,
-      disposers,
-    });
+  return function bindFormDom(dom) {
+    return function buildForm({ container, textInput, data, disposers }) {
+      const { form } = createManagedFormShellState({
+        dom,
+        container,
+        textInput,
+        disposers,
+      });
 
-    const renderField = createFieldRenderer({
-      dom,
-      form,
-      ...getSharedFormArgs({ data, textInput, disposers }),
-    });
-    fields.forEach(renderField);
-    return finalizeManagedForm({ dom, textInput, data, form });
+      const renderField = createFieldRenderer(
+        dom,
+        form,
+        getSharedFormArgs({ data, textInput, disposers })
+      );
+      fields.forEach(renderField);
+      return finalizeManagedForm({ dom, textInput, data, form });
+    };
   };
 }
 
 /**
  * Create and insert a dendrite form for editing data.
- * @param {{buildForm: (dom: DOMHelpers, options: { container: HTMLElement, textInput: HTMLInputElement, data: DendriteData, disposers: Disposer[] }) => HTMLElement, dom: DOMHelpers, container: HTMLElement, textInput: HTMLInputElement}} options - Form creation inputs.
+ * @param {{buildForm: (dom: DOMHelpers) => (options: { container: HTMLElement, textInput: HTMLInputElement, data: DendriteData, disposers: Disposer[] }) => HTMLElement, dom: DOMHelpers, container: HTMLElement, textInput: HTMLInputElement}} options - Form creation inputs.
  * @returns {HTMLElement} Newly created form.
  */
 function createDendriteForm({ buildForm, dom, container, textInput }) {
@@ -524,7 +510,7 @@ function createDendriteForm({ buildForm, dom, container, textInput }) {
   const disposers = [];
   const data = parseDendriteData(dom, textInput);
   const sharedArgs = getSharedFormArgs({ data, textInput, disposers });
-  return buildForm(dom, { container, ...sharedArgs });
+  return buildForm(dom)({ container, ...sharedArgs });
 }
 
 /**

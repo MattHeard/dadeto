@@ -253,23 +253,9 @@ describe('createDendriteHandler', () => {
     const handler = jest.fn();
     const disposers = [];
 
-    expect(
-      appendLabelledField({
-        dom,
-        form,
-        labelText: 'Label',
-        input,
-      })
-    ).toBeUndefined();
+    expect(appendLabelledField(dom, form, 'Label', input)).toBeUndefined();
 
-    wireLabelledField({
-      dom,
-      form,
-      input,
-      labelText: 'Label',
-      handler,
-      disposers,
-    });
+    wireLabelledField(dom, form, input, handler)('Label', disposers);
 
     expect(dom.setTextContent).toHaveBeenCalled();
     expect(dom.createElement).toHaveBeenCalledWith('label');
