@@ -13,14 +13,12 @@ import {
 } from './generate-stats-gcf.js';
 import { createGenerateStatsHandle } from '../../core/cloud/generate-stats/run.js';
 import { createSchedulerRequestVerifier } from '../../core/cloud/generate-stats/scheduler-auth.js';
-import { createEffectInvocationBoundary } from '../allow-effects.js';
-import { registerPostRoute, useMiddleware } from './effect-adapters.js';
+import { createGenerateStatsEffectAdapters } from './effect-adapters.js';
 
 const environment = getEnvironmentVariables();
 const oidcClient = new OAuth2Client();
 const verifySchedulerRequest = createSchedulerRequestVerifier({
-  verifyIdToken: (token, audience) =>
-    oidcClient.verifyIdToken({ idToken: token, audience }),
+  verifyIdToken: (token, audience) => oidcClient.verifyIdToken({ idToken: token, audience }),
   audience: environment.GENERATE_STATS_SCHEDULER_AUDIENCE,
   serviceAccountEmail: environment.GENERATE_STATS_SCHEDULER_EMAIL,
 });
@@ -35,11 +33,7 @@ const handle = createGenerateStatsHandle({
   getEnvironmentVariables: () => environment,
   initializeApp,
   verifySchedulerRequest,
-  fetchFn: (permission, ...args) => fetchFn(...args),
-  effectFetchFn: (permission, ...args) => fetchFn(...args),
-  bindEffectBoundary: handler => createEffectInvocationBoundary(handler)(),
-  useMiddleware,
-  registerPostRoute,
+  ...createGenerateStatsEffectAdapters(fetchFn),
   crypto,
 });
 

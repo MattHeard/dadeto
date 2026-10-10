@@ -7,6 +7,12 @@ const permission = Object.freeze({});
 const createGenerateStatsCore = dependencies =>
   createGenerateStatsCoreCore({
     ...dependencies,
+    sendHttpResponse: (_permission, res, response) => {
+      const result = res.status(response.status);
+      result[response.method](response.body);
+    },
+    logError: (_permission, logger, ...args) => logger.error(...args),
+    logWarning: (_permission, logger, ...args) => logger.warn?.(...args),
     bindEffectBoundary: handler => handler(permission),
     effectFetchFn: (_permission, ...args) => dependencies.fetchFn(...args),
   });

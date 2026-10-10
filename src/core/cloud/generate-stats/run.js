@@ -119,6 +119,9 @@ export const getFirestoreInstance = (options = {}) => {
  *   bindEffectBoundary: AllowEffectsBoundary,
  *   useMiddleware: (permission: AllowEffects, app: { use: (middleware: unknown) => void }, middleware: unknown) => void,
  *   registerPostRoute: (permission: AllowEffects, app: { post: (path: string, handler: unknown) => void }, path: string, handler: Function) => void,
+ *   sendHttpResponse: (permission: AllowEffects, res: import('../../../../types/native-http').NativeHttpResponse, response: { status: number, body: unknown, method: 'send' | 'json' }) => void,
+ *   logError: (permission: AllowEffects, logger: { error: (...args: unknown[]) => void }, ...args: unknown[]) => void,
+ *   logWarning: (permission: AllowEffects, logger: { warn?: (...args: unknown[]) => void }, ...args: unknown[]) => void,
  *   verifySchedulerRequest?: (req: import('../../../../types/native-http').NativeHttpRequest) => Promise<boolean>,
  *   console?: { error: (...args: unknown[]) => void },
  *   functions: { region: (region: string) => { https: { onRequest: (app: unknown) => unknown } } },
@@ -149,12 +152,13 @@ export function runGenerateStats(deps) {
   } = typedDeps;
 
   const generateStatsCore = createGenerateStatsCore(
-    /** @type {any} */ ({
-      ...typedDeps,
-      console: consoleLike,
-    })
+    /** @type {any} */ ({ ...typedDeps, console: consoleLike })
   );
-  const handleRequest = generateStatsCore.handleRequest;
+  /** @type {(req: import('../../../../types/native-http').NativeHttpRequest, res: import('../../../../types/native-http').NativeHttpResponse) => Promise<void>} */
+  const handleRequest = (req, res) =>
+    bindEffectBoundary(permission =>
+      generateStatsCore.handleRequest(permission, req, res)
+    );
 
   const allowedOrigins = getAllowedOrigins(env);
   const createApp = /** @type {any} */ (() => express());
@@ -210,6 +214,9 @@ function createRegionOnRequest(functions, app) {
  *   bindEffectBoundary: AllowEffectsBoundary,
  *   useMiddleware: (permission: AllowEffects, app: { use: (middleware: unknown) => void }, middleware: unknown) => void,
  *   registerPostRoute: (permission: AllowEffects, app: { post: (path: string, handler: unknown) => void }, path: string, handler: Function) => void,
+ *   sendHttpResponse: (permission: AllowEffects, res: import('../../../../types/native-http').NativeHttpResponse, response: { status: number, body: unknown, method: 'send' | 'json' }) => void,
+ *   logError: (permission: AllowEffects, logger: { error: (...args: unknown[]) => void }, ...args: unknown[]) => void,
+ *   logWarning: (permission: AllowEffects, logger: { warn?: (...args: unknown[]) => void }, ...args: unknown[]) => void,
  *   fetchFn: (permission: import('../../../../types/allow-effects').AllowEffects, ...args: Parameters<typeof globalThis.fetch>) => ReturnType<typeof globalThis.fetch>,
  *   effectFetchFn: (permission: import('../../../../types/allow-effects').AllowEffects, input: string, init?: object) => Promise<Response>,
  *   crypto: { randomUUID: () => string },
@@ -217,23 +224,15 @@ function createRegionOnRequest(functions, app) {
  * }} deps Runtime dependencies supplied by the cloud wrapper.
  * @returns {unknown} Generate-stats Cloud Function handle.
  */
-export function createGenerateStatsHandle({
-  Storage,
-  cors,
-  express,
-  functions,
-  getAuth,
-  getFirestore,
-  getEnvironmentVariables,
-  initializeApp,
-  verifySchedulerRequest,
-  fetchFn,
-  effectFetchFn,
-  bindEffectBoundary,
-  useMiddleware,
-  registerPostRoute,
-  crypto,
-}) {
+export function createGenerateStatsHandle(deps) {
+  const {
+    Storage,
+    getAuth,
+    getFirestore,
+    getEnvironmentVariables,
+    initializeApp,
+    crypto,
+  } = deps;
   const ensureFirebaseApp = createEnsureFirebaseApp(initializeApp);
   const environment = getEnvironmentVariables();
   const db = getFirestoreInstance({
@@ -243,19 +242,11 @@ export function createGenerateStatsHandle({
   });
 
   return runGenerateStats({
+    ...deps,
     db,
     auth: getAuth(),
     storage: new Storage(),
-    fetchFn,
-    effectFetchFn,
-    bindEffectBoundary,
     env: environment,
     cryptoModule: crypto,
-    verifySchedulerRequest,
-    functions,
-    express,
-    cors,
-    useMiddleware,
-    registerPostRoute,
   }).generateStats;
 }

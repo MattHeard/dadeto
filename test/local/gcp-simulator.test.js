@@ -660,6 +660,16 @@ describe('local gcp simulator edge-case helpers', () => {
       })
     ).toBeNull();
 
+    const statsErrorLogger = { error: jest.fn() };
+    testUtils.logGenerateStatsError(
+      Object.freeze({}),
+      statsErrorLogger,
+      'CDN invalidation failed'
+    );
+    expect(statsErrorLogger.error).toHaveBeenCalledWith(
+      'CDN invalidation failed'
+    );
+
     const localFetch = testUtils.createLocalFetchStub();
     const localResponse = await localFetch();
     expect(await localResponse.json()).toEqual({
@@ -709,6 +719,7 @@ describe('local gcp simulator edge-case helpers', () => {
       end: jest.fn(),
     };
     await simulator.generateStatsCore.handleRequest(
+      Object.freeze({}),
       {
         method: 'POST',
         headers: { authorization: 'Bearer ' },

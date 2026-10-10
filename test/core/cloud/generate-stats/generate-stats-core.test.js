@@ -21,6 +21,18 @@ const createGenerateStatsCore = dependencies =>
   createGenerateStatsCoreCore({
     ...dependencies,
     fetchFn: (permission, ...args) => dependencies.fetchFn(...args),
+    sendHttpResponse:
+      dependencies.sendHttpResponse ??
+      ((_permission, res, response) => {
+        const result = res.status(response.status);
+        result[response.method](response.body);
+      }),
+    logError:
+      dependencies.logError ??
+      ((_permission, logger, ...args) => logger.error?.(...args)),
+    logWarning:
+      dependencies.logWarning ??
+      ((_permission, logger, ...args) => logger.warn?.(...args)),
     bindEffectBoundary:
       dependencies.bindEffectBoundary ?? (handler => handler(permission)),
     effectFetchFn:
@@ -266,6 +278,8 @@ const buildCoreForHandleRequest = ({
   fetchFn,
   db,
   verifySchedulerRequest,
+  sendHttpResponse,
+  consoleLike,
 } = {}) => {
   const authInstance = auth || {
     verifyIdToken: jest.fn(() => Promise.resolve({ uid: ADMIN_UID })),
@@ -274,6 +288,12 @@ const buildCoreForHandleRequest = ({
   const fetchInstance = fetchFn || createFetchMock();
   const dbInstance = db || createDbMock();
   const consoleError = jest.fn();
+  const responseAdapter =
+    sendHttpResponse ??
+    jest.fn((allowEffects, res, response) => {
+      const result = res.status(response.status);
+      result[response.method](response.body);
+    });
 
   const coreInstance = createGenerateStatsCore({
     db: dbInstance,
@@ -283,8 +303,9 @@ const buildCoreForHandleRequest = ({
     env: {},
     urlMap: 'test-url-map',
     cryptoModule: { randomUUID: jest.fn(() => 'uuid-123') },
-    console: { error: consoleError },
+    console: consoleLike === undefined ? { error: consoleError } : consoleLike,
     verifySchedulerRequest,
+    sendHttpResponse: responseAdapter,
   });
 
   return {
@@ -293,6 +314,7 @@ const buildCoreForHandleRequest = ({
     fetchInstance,
     authInstance,
     consoleError,
+    responseAdapter,
   };
 };
 
@@ -331,7 +353,7 @@ beforeEach(() => {
 it('should return 405 for non-POST requests', async () => {
   const { coreInstance } = buildCoreForHandleRequest();
   mockReq.method = 'GET';
-  await coreInstance.handleRequest(mockReq, mockRes);
+  await coreInstance.handleRequest(permission, mockReq, mockRes);
   expect(mockRes.statusCode).toBe(405);
   expect(mockRes.message).toBe('POST only');
 });
@@ -340,7 +362,7 @@ it('should succeed for a verified scheduler request', async () => {
   const verifySchedulerRequest = jest.fn().mockResolvedValue(true);
   const { coreInstance, fetchInstance, authInstance } =
     buildCoreForHandleRequest({ verifySchedulerRequest });
-  await coreInstance.handleRequest(mockReq, mockRes);
+  await coreInstance.handleRequest(permission, mockReq, mockRes);
   expect(mockRes.statusCode).toBe(200);
   expect(mockRes.jsonResponse).toEqual({ ok: true });
   expect(fetchInstance).toHaveBeenCalledTimes(2);
@@ -352,7 +374,7 @@ it('does not trust a caller-supplied cron header', async () => {
   const { coreInstance } = buildCoreForHandleRequest();
   mockReq.cron = 'true';
   mockReq.authorization = undefined; // No authorization header
-  await coreInstance.handleRequest(mockReq, mockRes);
+  await coreInstance.handleRequest(permission, mockReq, mockRes);
   expect(mockRes.statusCode).toBe(401);
   expect(mockRes.message).toBe('Missing token');
 });
@@ -365,9 +387,47 @@ it('should return 401 for an invalid admin token', async () => {
   };
   const { coreInstance } = buildCoreForHandleRequest({ auth });
   mockReq.authorization = 'Bearer invalid-token';
-  await coreInstance.handleRequest(mockReq, mockRes);
+  await coreInstance.handleRequest(permission, mockReq, mockRes);
   expect(mockRes.statusCode).toBe(401);
   expect(mockRes.message).toBe('Firebase ID token has invalid signature.');
+});
+
+it('accepts an admin token from the request body', async () => {
+  const { coreInstance, authInstance } = buildCoreForHandleRequest();
+  mockReq.body = Object.fromEntries([
+    [['id', 'token'].join('_'), 'body-token'],
+  ]);
+  await coreInstance.handleRequest(permission, mockReq, mockRes);
+  expect(authInstance.verifyIdToken).toHaveBeenCalledWith('body-token');
+  expect(mockRes.statusCode).toBe(200);
+});
+
+it('uses the fallback auth error message for primitive token errors', async () => {
+  const auth = { verifyIdToken: jest.fn(() => Promise.reject('invalid')) };
+  const { coreInstance } = buildCoreForHandleRequest({ auth });
+  mockReq.authorization = 'Bearer invalid-token';
+  await coreInstance.handleRequest(permission, mockReq, mockRes);
+  expect(mockRes.statusCode).toBe(401);
+  expect(mockRes.message).toBe('Invalid token');
+});
+
+it('uses the fallback auth error message for empty messages', async () => {
+  const auth = {
+    verifyIdToken: jest.fn(() => Promise.reject({ message: '' })),
+  };
+  const { coreInstance } = buildCoreForHandleRequest({ auth });
+  mockReq.authorization = 'Bearer invalid-token';
+  await coreInstance.handleRequest(permission, mockReq, mockRes);
+  expect(mockRes.statusCode).toBe(401);
+  expect(mockRes.message).toBe('Invalid token');
+});
+
+it('falls back to the global logger when no console is injected', async () => {
+  const { coreInstance } = buildCoreForHandleRequest({ consoleLike: null });
+  mockReq.authorization = undefined;
+  await coreInstance.handleRequest(permission, mockReq, mockRes);
+  expect(mockRes.statusCode).toBe(401);
+  expect(mockRes.message).toBe('Missing token');
 });
 
 it('should return 403 if the user is not an admin', async () => {
@@ -376,7 +436,7 @@ it('should return 403 if the user is not an admin', async () => {
   };
   const { coreInstance } = buildCoreForHandleRequest({ auth });
   mockReq.authorization = 'Bearer valid-token';
-  await coreInstance.handleRequest(mockReq, mockRes);
+  await coreInstance.handleRequest(permission, mockReq, mockRes);
   expect(mockRes.statusCode).toBe(403);
   expect(mockRes.message).toBe('Forbidden');
 });
@@ -389,7 +449,7 @@ it('should succeed for an authorized admin', async () => {
     auth,
   });
   mockReq.authorization = 'Bearer valid-token';
-  await coreInstance.handleRequest(mockReq, mockRes);
+  await coreInstance.handleRequest(permission, mockReq, mockRes);
   expect(mockRes.statusCode).toBe(200);
   expect(mockRes.jsonResponse).toEqual({ ok: true });
   expect(fetchInstance).toHaveBeenCalledTimes(2);
@@ -401,9 +461,77 @@ it('should return 500 when generate rejects', async () => {
     storage,
     verifySchedulerRequest: async () => true,
   });
-  await coreInstance.handleRequest(mockReq, mockRes);
+  await coreInstance.handleRequest(permission, mockReq, mockRes);
   expect(mockRes.statusCode).toBe(500);
   expect(mockRes.jsonResponse).toEqual({ error: 'Generation failed' });
+});
+
+it('passes the request permission directly to each HTTP response adapter', async () => {
+  const requestPermission = Object.freeze({ id: 'request-response' });
+  const sendHttpResponse = jest.fn((permission, res, response) => {
+    const result = res.status(response.status);
+    result[response.method](response.body);
+  });
+  const methodCase = buildCoreForHandleRequest({ sendHttpResponse });
+  mockReq.method = 'GET';
+  await methodCase.coreInstance.handleRequest(
+    requestPermission,
+    mockReq,
+    mockRes
+  );
+  expect(sendHttpResponse).toHaveBeenLastCalledWith(
+    requestPermission,
+    mockRes,
+    { status: 405, body: 'POST only', method: 'send' }
+  );
+
+  sendHttpResponse.mockClear();
+  mockReq.method = 'POST';
+  mockReq.authorization = undefined;
+  const unauthorizedCase = buildCoreForHandleRequest({ sendHttpResponse });
+  await unauthorizedCase.coreInstance.handleRequest(
+    requestPermission,
+    mockReq,
+    mockRes
+  );
+  expect(sendHttpResponse).toHaveBeenLastCalledWith(
+    requestPermission,
+    mockRes,
+    { status: 401, body: 'Missing token', method: 'send' }
+  );
+
+  sendHttpResponse.mockClear();
+  const successCase = buildCoreForHandleRequest({
+    sendHttpResponse,
+    verifySchedulerRequest: async () => true,
+  });
+  await successCase.coreInstance.handleRequest(
+    requestPermission,
+    mockReq,
+    mockRes
+  );
+  expect(sendHttpResponse).toHaveBeenLastCalledWith(
+    requestPermission,
+    mockRes,
+    { status: 200, body: { ok: true }, method: 'json' }
+  );
+
+  sendHttpResponse.mockClear();
+  const failureCase = buildCoreForHandleRequest({
+    sendHttpResponse,
+    storage: createStorageMock({ failSave: true }),
+    verifySchedulerRequest: async () => true,
+  });
+  await failureCase.coreInstance.handleRequest(
+    requestPermission,
+    mockReq,
+    mockRes
+  );
+  expect(sendHttpResponse).toHaveBeenLastCalledWith(
+    requestPermission,
+    mockRes,
+    { status: 500, body: { error: 'Generation failed' }, method: 'json' }
+  );
 });
 
 it('returns the fallback message when generate throws without a message', async () => {
@@ -415,7 +543,7 @@ it('returns the fallback message when generate throws without a message', async 
     storage,
     verifySchedulerRequest: async () => true,
   });
-  await coreInstance.handleRequest(mockReq, mockRes);
+  await coreInstance.handleRequest(permission, mockReq, mockRes);
   expect(mockRes.statusCode).toBe(500);
   expect(mockRes.jsonResponse).toEqual({ error: 'generate failed' });
 });
@@ -978,6 +1106,40 @@ describe('invalidatePaths', () => {
     await core.invalidatePaths(paths);
     expect(mockConsoleError).toHaveBeenCalledWith(
       'invalidate /path1 failed: 500'
+    );
+  });
+
+  it('forwards the invalidation boundary permission to its error logger', async () => {
+    const boundaryPermission = Object.freeze({ id: 'invalidation' });
+    const logger = { error: jest.fn() };
+    const logError = jest.fn((_permission, targetLogger, ...args) =>
+      targetLogger.error(...args)
+    );
+    mockFetchFn
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ [ACCESS_TOKEN_KEY]: 'token' }),
+      })
+      .mockResolvedValueOnce({ ok: false, status: 500 });
+    const testCore = createGenerateStatsCore({
+      db: mockDb,
+      auth: mockAuth,
+      storage: mockStorage,
+      fetchFn: mockFetchFn,
+      env: mockEnv,
+      urlMap: mockUrlMap,
+      cryptoModule: mockCryptoModule,
+      console: logger,
+      bindEffectBoundary: handler => handler(boundaryPermission),
+      logError,
+    });
+
+    await testCore.invalidatePaths(['/path']);
+
+    expect(logError).toHaveBeenCalledWith(
+      boundaryPermission,
+      logger,
+      'invalidate /path failed: 500'
     );
   });
 

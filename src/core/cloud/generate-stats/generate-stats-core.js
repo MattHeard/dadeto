@@ -1,4 +1,3 @@
-import { createVerifyAdmin } from './verifyAdmin.js';
 import {
   ADMIN_UID,
   isNonNullObject,
@@ -11,11 +10,11 @@ import {
   prefixStaticObjectPath,
   resolveStaticBucketName,
   resolveStaticObjectPrefix,
-  sendOkResponse,
+  getAuthHeader,
+  matchAuthHeader,
 } from '../cloud-core.js';
 import { renderHtmlTemplate } from '../html-template.js';
 import { withPageFooter } from '../page-footer.js';
-import { runWithFailureAndThen } from '../response-utils.js';
 import { sendInvalidateRequest } from './cdn-invalidation.js';
 export { isDuplicateAppError };
 
@@ -24,7 +23,7 @@ export { isDuplicateAppError };
 
 /** @typedef {Record<string, string | undefined>} EnvironmentMap */
 /** @typedef {{ randomUUID: () => string }} StatsCryptoModule */
-/** @typedef {{ error: (message: string, ...args: unknown[]) => void }} StatsLogger */
+/** @typedef {{ error: (message: string, ...args: unknown[]) => void, warn?: (...args: unknown[]) => void }} StatsLogger */
 /** @typedef {import('firebase-admin/auth').DecodedIdToken} DecodedIdToken */
 
 const STATS_PAGE_HEAD = `<!doctype html>
@@ -342,7 +341,10 @@ function selectCdnHost(candidate) {
  *   storage: import('@google-cloud/storage').Storage,
  *   fetchFn: (permission: import('../../../../types/allow-effects').AllowEffects, ...args: Parameters<typeof globalThis.fetch>) => ReturnType<typeof globalThis.fetch>,
  *   effectFetchFn: (permission: import('../../../../types/allow-effects').AllowEffects, input: string, init?: object) => Promise<Response>,
- *   bindEffectBoundary: (handler: (permission: import('../../../../types/allow-effects').AllowEffects) => Promise<Response>) => Promise<Response>,
+ *   sendHttpResponse: (permission: import('../../../../types/allow-effects').AllowEffects, res: NativeHttpResponse, response: { status: number, body: unknown, method: 'send' | 'json' }) => void,
+ *   logError: (permission: import('../../../../types/allow-effects').AllowEffects, logger: StatsLogger, ...args: unknown[]) => void,
+ *   logWarning: (permission: import('../../../../types/allow-effects').AllowEffects, logger: StatsLogger, ...args: unknown[]) => void,
+ *   bindEffectBoundary: import('../../../../types/allow-effects').AllowEffectsBoundary,
  *   env?: EnvironmentMap | Record<string, string | undefined>,
  *   urlMap?: string,
  *   cryptoModule: StatsCryptoModule,
@@ -368,11 +370,7 @@ function selectCdnHost(candidate) {
  *     bucketName?: string,
  *     invalidatePathsFn?: (paths: string[]) => Promise<void>,
  *   }) => Promise<null>,
- *   handleRequest: (
- *     req: NativeHttpRequest,
- *     res: NativeHttpResponse,
- *     deps?: { genFn?: () => Promise<unknown>, authInstance?: import('firebase-admin/auth').Auth, adminUid?: string }
- *   ) => Promise<void>,
+ *   handleRequest: (permission: import('../../../../types/allow-effects').AllowEffects, req: NativeHttpRequest, res: NativeHttpResponse) => Promise<void>,
  * }} Core helpers.
  */
 export function createGenerateStatsCore({
@@ -382,6 +380,9 @@ export function createGenerateStatsCore({
   fetchFn,
   effectFetchFn,
   bindEffectBoundary,
+  sendHttpResponse,
+  logError,
+  logWarning,
   env,
   urlMap,
   cryptoModule,
@@ -393,6 +394,7 @@ export function createGenerateStatsCore({
   const resolvedUrlMap = resolveUrlMap(urlMap, envRef);
   const resolvedCdnHost = resolveCdnHost(envRef);
   const fetchImpl = resolveFetchImpl(fetchFn);
+  const resolvedLogger = console ?? globalThis.console;
 
   // Stryker disable next-line all -- metadata access uses the fixed token URL.
   const metadataTokenUrl =
@@ -489,24 +491,34 @@ export function createGenerateStatsCore({
       if (error instanceof Error) {
         message = error.message;
       }
-      resolvedLogger.error(`Skipping CDN invalidation: ${message}`);
+      await bindEffectBoundary(async permission => {
+        logError(
+          permission,
+          resolvedLogger,
+          `Skipping CDN invalidation: ${message}`
+        );
+      });
       return;
     }
 
     try {
       await runMappedEntries(
         paths,
-        path => ({
-          path,
-          effectFetchFn,
-          bindEffectBoundary,
-          project,
-          resolvedUrlMap,
-          resolvedCdnHost,
-          randomUUID: cryptoModule.randomUUID,
-          logger: resolvedLogger,
-          token,
-        }),
+        path => {
+          const requestId = cryptoModule.randomUUID();
+          return {
+            path,
+            effectFetchFn,
+            bindEffectBoundary,
+            project,
+            resolvedUrlMap,
+            resolvedCdnHost,
+            randomUUID: () => requestId,
+            logger: resolvedLogger,
+            logError,
+            token,
+          };
+        },
         invalidateSinglePath
       );
     } catch (error) {
@@ -514,7 +526,13 @@ export function createGenerateStatsCore({
       if (error instanceof Error) {
         message = error.message;
       }
-      resolvedLogger.error(`Skipping CDN invalidation: ${message}`);
+      await bindEffectBoundary(async permission => {
+        logError(
+          permission,
+          resolvedLogger,
+          `Skipping CDN invalidation: ${message}`
+        );
+      });
     }
   }
 
@@ -584,28 +602,82 @@ export function createGenerateStatsCore({
    */
   const isAdminUid = decoded => decoded.uid === ADMIN_UID;
   /**
-   * Send a 401 response when authentication fails.
-   * @param {NativeHttpResponse} res - Express response helper.
-   * @param {string} message - Text to include in the response body.
-   * @returns {void}
+   * Verify an admin request and send any rejection through the effect boundary.
+   * @param {import('../../../../types/allow-effects').AllowEffects} permission Request boundary capability.
+   * @param {NativeHttpRequest} req Incoming request.
+   * @param {NativeHttpResponse} res Response helper.
+   * @returns {Promise<boolean>} Whether the caller is the admin.
    */
-  function sendUnauthorized(res, message) {
-    res.status(401).send(message);
+  async function verifyAdmin(permission, req, res) {
+    const authHeader = getAuthHeader(req);
+    const authMatch = matchAuthHeader(authHeader);
+    if (authHeader && !authMatch) {
+      logWarning(
+        permission,
+        resolvedLogger,
+        'Admin auth rejected: malformed Authorization header'
+      );
+      sendHttpResponse(permission, res, {
+        status: 401,
+        body: 'Malformed Authorization header',
+        method: 'send',
+      });
+      return false;
+    }
+
+    const bodyToken = isNonNullObject(req.body)
+      ? /** @type {{ id_token?: unknown }} */ (req.body).id_token
+      : undefined;
+    const token =
+      authMatch?.[1] || (typeof bodyToken === 'string' ? bodyToken : '');
+    if (!token) {
+      logWarning(
+        permission,
+        resolvedLogger,
+        'Admin auth rejected: missing token'
+      );
+      sendHttpResponse(permission, res, {
+        status: 401,
+        body: 'Missing token',
+        method: 'send',
+      });
+      return false;
+    }
+
+    try {
+      const decoded = await verifyToken(token);
+      if (!isAdminUid(decoded)) {
+        sendHttpResponse(permission, res, {
+          status: 403,
+          body: 'Forbidden',
+          method: 'send',
+        });
+        return false;
+      }
+      return true;
+    } catch (error) {
+      const rawMessage = isNonNullObject(error) ? error.message : undefined;
+      const message =
+        typeof rawMessage === 'string' && rawMessage
+          ? rawMessage
+          : 'Invalid token';
+      logWarning(
+        permission,
+        resolvedLogger,
+        'Admin auth rejected: token verification failed',
+        {
+          code: isNonNullObject(error) ? error.code : undefined,
+          message,
+        }
+      );
+      sendHttpResponse(permission, res, {
+        status: 401,
+        body: message,
+        method: 'send',
+      });
+      return false;
+    }
   }
-  /**
-   * Send a 403 response when authorization fails.
-   * @param {NativeHttpResponse} res - Response helper used to send the rejection.
-   * @returns {void}
-   */
-  function sendForbidden(res) {
-    res.status(403).send('Forbidden');
-  }
-  const verifyAdmin = createVerifyAdmin({
-    verifyToken,
-    isAdminUid,
-    sendUnauthorized,
-    sendForbidden,
-  });
 
   /**
    * Check whether the incoming request used POST.
@@ -618,44 +690,48 @@ export function createGenerateStatsCore({
 
   /**
    * Reply with a 405 when a non-POST method is used.
+   * @param {import('../../../../types/allow-effects').AllowEffects} permission Request boundary capability.
    * @param {NativeHttpResponse} res - Response object to signal the rejection.
    * @returns {void}
    */
-  function sendPostOnlyResponse(res) {
-    res.status(405).send('POST only');
+  function sendPostOnlyResponse(permission, res) {
+    sendHttpResponse(permission, res, {
+      status: 405,
+      body: 'POST only',
+      method: 'send',
+    });
   }
 
   /**
    * Handle HTTP requests to trigger the stats generation workflow.
+   * @param {import('../../../../types/allow-effects').AllowEffects} permission Request boundary capability.
    * @param {NativeHttpRequest} req - Incoming HTTP request.
    * @param {NativeHttpResponse} res - Response object for sending results.
    * @returns {Promise<void>} Resolves when the request finishes.
    */
-  async function handleAuthorizedRequest(req, res) {
-    const isAuthorized = await ensureAuthorizedRequest(
-      req,
-      res,
-      verifyAdmin,
-      verifySchedulerRequest
-    );
+  async function handleAuthorizedRequest(permission, req, res) {
+    const isSchedulerRequest = await verifySchedulerRequest(req);
+    const isAuthorized =
+      isSchedulerRequest || (await verifyAdmin(permission, req, res));
     if (!isAuthorized) {
       return;
     }
 
-    await respondWithGenerate(res, generate);
+    await respondWithGenerate(permission, res, sendHttpResponse, generate);
   }
 
   /**
    * Enforce POST + authorization before invoking the handler.
+   * @param {import('../../../../types/allow-effects').AllowEffects} permission Request boundary capability.
    * @param {NativeHttpRequest} req - Incoming HTTP request.
    * @param {NativeHttpResponse} res - Response object used to send the reply.
    * @returns {Promise<void>} Resolves after the request handling completes.
    */
-  async function handleRequest(req, res) {
+  async function handleRequest(permission, req, res) {
     if (!isPostMethod(req)) {
-      sendPostOnlyResponse(res);
+      sendPostOnlyResponse(permission, res);
     } else {
-      await handleAuthorizedRequest(req, res);
+      await handleAuthorizedRequest(permission, req, res);
     }
   }
 
@@ -1006,9 +1082,10 @@ function resolveFetchImpl(fetchFn) {
  * @param {string} deps.resolvedCdnHost Host.
  * @param {() => string} deps.randomUUID UUID.
  * @param {StatsLogger} deps.logger Logger.
+ * @param {(permission: import('../../../../types/allow-effects').AllowEffects, logger: StatsLogger, ...args: unknown[]) => void} deps.logError Permission-aware error logger.
  * @param {string} deps.token Token.
  * @param {(permission: import('../../../../types/allow-effects').AllowEffects, input: string, init?: object) => Promise<Response>} deps.effectFetchFn Permission-aware invalidation transport.
- * @param {(handler: (permission: import('../../../../types/allow-effects').AllowEffects) => Promise<Response>) => Promise<Response>} deps.bindEffectBoundary Permission boundary.
+ * @param {import('../../../../types/allow-effects').AllowEffectsBoundary} deps.bindEffectBoundary Permission boundary.
  * @returns {Promise<void>} Promise.
  */
 async function invalidateSinglePath({
@@ -1017,76 +1094,25 @@ async function invalidateSinglePath({
   bindEffectBoundary,
   ...sendDeps
 }) {
-  const request = Promise.resolve(
-    bindEffectBoundary(permission =>
-      sendInvalidateRequest(permission, sendDeps, path)
-    )
-  );
-  await handleInvalidateResult(request, path, logger);
-}
-
-/**
- * Process the response promise for an invalidation request.
- * @param {Promise<Response>} requestPromise Promise returned by the HTTP client.
- * @param {string} path CDN path under invalidation.
- * @param {StatsLogger} logger Logger used for diagnostics.
- * @returns {Promise<void>} Promise that resolves when logging completes.
- */
-// Stryker disable next-line all -- invalidation promise handling uses the fixed
-// resolve/log failure protocol.
-function handleInvalidateResult(requestPromise, path, logger) {
-  return requestPromise
-    .then(res => {
-      handleInvalidateResponse(res, path, logger);
-    })
-    .catch(err => {
-      logInvalidateError(logger, path, err);
-    });
-}
-
-/**
- * Handle invalidate response.
- * @param {{ ok: boolean, status: number }} res Response.
- * @param {string} path Path.
- * @param {StatsLogger} logger Logger.
- * @returns {void}
- */
-// Stryker disable next-line all -- invalidation responses have a fixed success
-// no-op and failure logging protocol.
-function handleInvalidateResponse(res, path, logger) {
-  // Stryker disable next-line all -- successful invalidation has a fixed no-op.
-  if (res.ok) {
-    return;
-  }
-
-  logInvalidateFailure(logger, path, res.status);
-}
-
-/**
- *
- * @param logger
- * @param path
- * @param status
- */
-/**
- * Emit a log message when an invalidation fails.
- * @param {StatsLogger} logger Logger used to surface problems.
- * @param {string} path CDN path that triggered the failure.
- * @param {number} status HTTP status code returned by the failed invalidation.
- */
-function logInvalidateFailure(logger, path, status) {
-  logger.error?.(`invalidate ${path} failed: ${status}`);
-}
-
-/**
- * Log invalidate error.
- * @param {StatsLogger} logger Logger.
- * @param {string} path Path.
- * @param {unknown} err Error.
- * @returns {void}
- */
-function logInvalidateError(logger, path, err) {
-  logger.error(`invalidate ${path} error`, getLogMessage(err));
+  await bindEffectBoundary(async permission => {
+    try {
+      const response = await sendInvalidateRequest(permission, sendDeps, path);
+      if (!response.ok) {
+        sendDeps.logError(
+          permission,
+          logger,
+          `invalidate ${path} failed: ${response.status}`
+        );
+      }
+    } catch (error) {
+      sendDeps.logError(
+        permission,
+        logger,
+        `invalidate ${path} error`,
+        getLogMessage(error)
+      );
+    }
+  });
 }
 
 /**
@@ -1131,48 +1157,43 @@ function resolveErrorMessage(err, fallback) {
 }
 
 /**
- * Check authorization for incoming request.
- * @param {NativeHttpRequest} req Req.
- * @param {NativeHttpResponse} res Res.
- * @param {(req: NativeHttpRequest, res: NativeHttpResponse) => Promise<boolean>} verifyAdmin Verify fn.
- * @param {(req: NativeHttpRequest) => Promise<boolean>} verifySchedulerRequest Verify Cloud Scheduler OIDC request.
- * @returns {Promise<boolean>} Authorization result.
- */
-async function ensureAuthorizedRequest(
-  req,
-  res,
-  verifyAdmin,
-  verifySchedulerRequest
-) {
-  if (await verifySchedulerRequest(req)) {
-    return true;
-  }
-
-  return verifyAdmin(req, res);
-}
-
-/**
  * Run generation and respond appropriately.
+ * @param {import('../../../../types/allow-effects').AllowEffects} permission Request boundary capability.
  * @param {NativeHttpResponse} res Res.
+ * @param {(permission: import('../../../../types/allow-effects').AllowEffects, res: NativeHttpResponse, response: { status: number, body: unknown, method: 'send' | 'json' }) => void} sendHttpResponse Permission-aware response adapter.
  * @param {() => Promise<unknown>} generate Generate fn.
  * @returns {Promise<void>} Promise.
  */
-async function respondWithGenerate(res, generate) {
-  await runWithFailureAndThen(
-    () => generate(),
-    err => {
-      sendGenerateFailure(res, err);
-    },
-    () => sendOkResponse(res)
-  );
+async function respondWithGenerate(
+  permission,
+  res,
+  sendHttpResponse,
+  generate
+) {
+  try {
+    await generate();
+    sendHttpResponse(permission, res, {
+      status: 200,
+      body: { ok: true },
+      method: 'json',
+    });
+  } catch (err) {
+    sendGenerateFailure(permission, res, sendHttpResponse, err);
+  }
 }
 /**
  * Send a failure response when generation throws.
+ * @param {import('../../../../types/allow-effects').AllowEffects} permission Request boundary capability.
  * @param {NativeHttpResponse} res Express response helper.
+ * @param {(permission: import('../../../../types/allow-effects').AllowEffects, res: NativeHttpResponse, response: { status: number, body: unknown, method: 'send' | 'json' }) => void} sendHttpResponse Permission-aware response adapter.
  * @param {unknown} err Error raised during generation.
  */
-function sendGenerateFailure(res, err) {
-  res.status(500).json({ error: getGenerateErrorMessage(err) });
+function sendGenerateFailure(permission, res, sendHttpResponse, err) {
+  sendHttpResponse(permission, res, {
+    status: 500,
+    body: { error: getGenerateErrorMessage(err) },
+    method: 'json',
+  });
 }
 
 /**

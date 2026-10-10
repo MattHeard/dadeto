@@ -74,6 +74,9 @@ async function loadModule({
     (allowEffects, appInstance, path, handler) =>
       appInstance.post(path, handler)
   );
+  const sendHttpResponse = jest.fn();
+  const logError = jest.fn();
+  const logWarning = jest.fn();
   const deps = {
     db: firestoreResult,
     auth,
@@ -88,6 +91,9 @@ async function loadModule({
     bindEffectBoundary,
     useMiddleware,
     registerPostRoute,
+    sendHttpResponse,
+    logError,
+    logWarning,
   };
 
   let mod;
@@ -129,6 +135,9 @@ async function loadModule({
     bindEffectBoundary,
     useMiddleware,
     registerPostRoute,
+    sendHttpResponse,
+    logError,
+    logWarning,
   };
 }
 
@@ -372,6 +381,32 @@ describe('generate-stats run', () => {
       app,
       '/',
       expect.any(Function)
+    );
+  });
+
+  it('mints a fresh permission for every registered HTTP request', async () => {
+    const { mod, deps, bindEffectBoundary, registerPostRoute, coreResult } =
+      await loadModule({ environment: { DENDRITE_ENVIRONMENT: 't-123' } });
+    const startupPermissions = [
+      Object.freeze({ id: 'cors' }),
+      Object.freeze({ id: 'route' }),
+    ];
+    const requestPermission = Object.freeze({ id: 'request' });
+    bindEffectBoundary.mockImplementation(handler =>
+      handler(startupPermissions.shift() ?? requestPermission)
+    );
+
+    mod.runGenerateStats(deps);
+    const routeHandler = registerPostRoute.mock.calls[0][3];
+    const req = {};
+    const res = {};
+    await routeHandler(req, res);
+
+    expect(deps.bindEffectBoundary).toHaveBeenCalledTimes(3);
+    expect(coreResult.handleRequest).toHaveBeenCalledWith(
+      requestPermission,
+      req,
+      res
     );
   });
 

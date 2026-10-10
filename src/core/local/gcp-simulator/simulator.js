@@ -526,6 +526,7 @@ async function buildSimulatorState(config) {
     fieldValue,
     db,
     randomUUID,
+    logGenerateStatsError: generateStatsConfig.logError,
   });
 
   await seedStaticFixture(storage, bucketName);
@@ -679,8 +680,17 @@ function createSimulatorAuthVerifiers() {
 
 /**
  * Create generate-stats dependencies for the simulator.
- * @param {{ db: unknown, storage: unknown, fetchFn: (permission: import('../../../../types/allow-effects').AllowEffects, ...args: any[]) => any, bindEffectBoundary: import('../../../../types/allow-effects').AllowEffectsBoundary, projectId: string, baseUrl: string, bucketName: string, verifyIdToken: (...args: any[]) => any }} options Config dependencies.
- * @returns {object} Generate stats config.
+ * @param {{
+ *   db: unknown,
+ *   storage: unknown,
+ *   fetchFn: (permission: import('../../../../types/allow-effects').AllowEffects, ...args: any[]) => any,
+ *   bindEffectBoundary: import('../../../../types/allow-effects').AllowEffectsBoundary,
+ *   projectId: string,
+ *   baseUrl: string,
+ *   bucketName: string,
+ *   verifyIdToken: (...args: any[]) => any,
+ * }} options Config dependencies.
+ * @returns {Record<string, unknown> & { logError: (permission: import('../../../../types/allow-effects').AllowEffects, logger: { error?: (...args: unknown[]) => void }, ...args: unknown[]) => void }} Generate stats config.
  */
 function createGenerateStatsConfig(options) {
   const {
@@ -698,6 +708,24 @@ function createGenerateStatsConfig(options) {
     auth: { verifyIdToken },
     storage,
     fetchFn,
+    sendHttpResponse: (
+      /** @type {import('../../../../types/allow-effects').AllowEffects} */ _permission,
+      /** @type {import('../../../../types/native-http').NativeHttpResponse} */ res,
+      /** @type {{ status: number, body: unknown, method: 'send' | 'json' }} */ response
+    ) => {
+      const result = res.status(response.status);
+      result[response.method](response.body);
+    },
+    logError: (
+      /** @type {import('../../../../types/allow-effects').AllowEffects} */ _permission,
+      /** @type {{ error?: (...args: unknown[]) => void }} */ logger,
+      /** @type {unknown[]} */ ...args
+    ) => logger.error?.(...args),
+    logWarning: (
+      /** @type {import('../../../../types/allow-effects').AllowEffects} */ _permission,
+      /** @type {{ warn?: (...args: unknown[]) => void }} */ logger,
+      /** @type {unknown[]} */ ...args
+    ) => logger.warn?.(...args),
     effectFetchFn: (
       /** @type {import('../../../../types/allow-effects').AllowEffects} */ permission,
       /** @type {[string, object?]} */ ...args
@@ -831,8 +859,8 @@ function createSubmitNewStoryConfig(options) {
 
 /**
  * Create test utilities exposed by the simulator.
- * @param {{ snapshotHelpers: ReturnType<typeof createSnapshotHelpers>, lookupHelpers: ReturnType<typeof createLookupHelpers>, authVerifiers: ReturnType<typeof createSimulatorAuthVerifiers>, fieldValue: ReturnType<typeof createFakeFieldValue>, db: SimulatorDb, randomUUID: () => string }} options Utility dependencies.
- * @returns {object} Test utility bag.
+ * @param {{ snapshotHelpers: ReturnType<typeof createSnapshotHelpers>, lookupHelpers: ReturnType<typeof createLookupHelpers>, authVerifiers: ReturnType<typeof createSimulatorAuthVerifiers>, fieldValue: ReturnType<typeof createFakeFieldValue>, db: SimulatorDb, randomUUID: () => string, logGenerateStatsError: (permission: import('../../../../types/allow-effects').AllowEffects, logger: { error?: (...args: unknown[]) => void }, ...args: unknown[]) => void }} options Utility dependencies.
+ * @returns {Record<string, unknown> & { logGenerateStatsError: (permission: import('../../../../types/allow-effects').AllowEffects, logger: { error?: (...args: unknown[]) => void }, ...args: unknown[]) => void }} Test utility bag.
  */
 function createSimulatorTestUtils(options) {
   const {
@@ -842,8 +870,10 @@ function createSimulatorTestUtils(options) {
     fieldValue,
     db,
     randomUUID,
+    logGenerateStatsError,
   } = options;
   return {
+    logGenerateStatsError,
     resolveTargetPageNumber: getTargetPageNumber,
     extractParams,
     matchesTrigger,
