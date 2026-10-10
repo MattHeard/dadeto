@@ -86,4 +86,31 @@ describe('gcp-test workflow report handling', () => {
       'const latest = data.workflow_runs.find(\n              run => run.id !== context.runId,\n            );'
     );
   });
+
+  it('records query latency as an observational artifact in gcp-test', () => {
+    const source = readFileSync('.github/workflows/gcp-test.yml', 'utf8');
+    const performanceScript = readFileSync(
+      'scripts/gcp-test-query-performance.js',
+      'utf8'
+    );
+    const measurementStep = source
+      .split('      - name: Measure object-minute rental query latency\n')[1]
+      ?.split('\n      - name: ')[0];
+    const artifactStep = source
+      .split('      - name: Upload query performance artifact\n')[1]
+      ?.split('\n      - name: ')[0];
+
+    expect(measurementStep).toContain('continue-on-error: true');
+    expect(measurementStep).toContain(
+      'node ../scripts/gcp-test-query-performance.js'
+    );
+    expect(measurementStep).toContain('schedule-seed-failed');
+    expect(measurementStep).toContain('2035-01-01T00:00:00Z');
+    expect(performanceScript).toContain('2030-01-02T19:00:00Z');
+    expect(artifactStep).toContain('if: always()');
+    expect(artifactStep).toContain(
+      'query-performance-${{ steps.environment.outputs.environment }}'
+    );
+    expect(artifactStep).toContain('path: /tmp/query-performance.json');
+  });
 });

@@ -415,6 +415,36 @@ jobs:
             exit "$STATUS"
           fi
 
+      - name: Measure object-minute rental query latency
+        if: success()
+        continue-on-error: true
+        env:
+          GOOGLE_CREDENTIALS_JSON: ${{ secrets.GOOGLE_CREDENTIALS }}
+          QUERY_PERFORMANCE_OUTPUT: /tmp/query-performance.json
+        run: |
+          set -euo pipefail
+          SCHEDULE_BUCKET="${ENVIRONMENT}-object-minute-rental-schedules"
+          printf '%s\n' '[{"startTimestamp":"2026-01-01T00:00:00Z","endTimestamp":"2035-01-01T00:00:00Z"}]' > /tmp/query-performance-schedule.json
+          if ! gcloud storage cp /tmp/query-performance-schedule.json \
+            "gs://${SCHEDULE_BUCKET}/runner-schedule.json"; then
+            printf '{"schemaVersion":1,"generatedAt":"%s","environment":"%s","status":"failed","error":"schedule-seed-failed"}\n' \
+              "$(date -u +%FT%TZ)" "$ENVIRONMENT" > "$QUERY_PERFORMANCE_OUTPUT"
+            exit 1
+          fi
+          OBJECT_MINUTE_RENTAL_SEARCH_URL="$(terraform output -raw object_minute_rental_search_url)" \
+          PROJECT_ID="$GOOGLE_PROJECT" \
+          DATABASE_ID="$TF_VAR_database_id" \
+          ENVIRONMENT="$ENVIRONMENT" \
+          node ../scripts/gcp-test-query-performance.js
+
+      - name: Upload query performance artifact
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: query-performance-${{ steps.environment.outputs.environment }}
+          path: /tmp/query-performance.json
+          if-no-files-found: ignore
+
       - name: Download Playwright report from GCS
         if: always()
         run: |
