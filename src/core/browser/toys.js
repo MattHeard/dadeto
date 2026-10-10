@@ -1327,31 +1327,25 @@ function createHandleInputError(env, parent) {
 }
 
 /**
- * Processes the input value and updates the output element.
- * @param {object} elements - DOM elements used by the toy.
+ * Creates an input processor bound to its processing environment.
+ * @param {HTMLInputElement} inputElement - The live input field.
  * @param {ToyCallback} processingFunction - ToyCallback to process the input.
  * @param {object} env - Environment providing DOM helpers and state.
- * @returns {void}
+ * @returns {ToyCallback} Output update function.
  */
-export function processInputAndSetOutput(elements, processingFunction, env) {
-  const {
-    inputElement,
-    outputParentElement: parent,
-    outputSelect,
-    article,
-  } = elements;
-  const { createEnv, dom } = env;
-  const toyEnv = createEnv();
-  const inputValue = getInputValue(inputElement);
-  const result = processingFunction(inputValue, toyEnv);
-  // Assume article and article.id are always truthy, no need to log
-  setOutput(JSON.stringify({ [article.id]: result }), toyEnv);
-  const parsed = parseJSONResult(result);
-  const presenterKey = outputSelect.value;
-  if (!handleParsedResult(parsed, env, { parent, presenterKey })) {
-    setTextContent({ content: result, presenterKey }, dom, parent);
-  }
-}
+export const createProcessInputAndSetOutput =
+  (inputElement, processingFunction, env) =>
+  (parent, outputSelect, article) => {
+    const toyEnv = env.createEnv();
+    const result = processingFunction(getInputValue(inputElement), toyEnv);
+    // Assume article and article.id are always truthy, no need to log
+    setOutput(JSON.stringify({ [article.id]: result }), toyEnv);
+    const parsed = parseJSONResult(result);
+    const presenterKey = outputSelect.value;
+    if (!handleParsedResult(parsed, env, { parent, presenterKey })) {
+      setTextContent({ content: result, presenterKey }, env.dom, parent);
+    }
+  };
 
 /**
  * Wraps processing with error handling.
@@ -1361,10 +1355,16 @@ export function processInputAndSetOutput(elements, processingFunction, env) {
  * @returns {void}
  */
 function handleInputProcessing(elements, processingFunction, env) {
-  const { outputParentElement } = elements;
-  const handleInputError = createHandleInputError(env, outputParentElement);
+  const handleInputError = createHandleInputError(
+    env,
+    elements.outputParentElement
+  );
   try {
-    processInputAndSetOutput(elements, processingFunction, env);
+    createProcessInputAndSetOutput(
+      elements.inputElement,
+      processingFunction,
+      env
+    )(elements.outputParentElement, elements.outputSelect, elements.article);
   } catch (e) {
     handleInputError(e);
   }
@@ -1908,7 +1908,7 @@ export function createToysHandle() {
     isValidParsedRequest,
     handleParsedResult,
     parseJSONResult,
-    processInputAndSetOutput,
+    createProcessInputAndSetOutput,
     createHandleSubmit,
     initializeInteractiveComponent,
     initializeVisibleComponents,

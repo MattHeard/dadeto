@@ -1,7 +1,7 @@
 import { describe, it, expect, jest } from '@jest/globals';
-import { processInputAndSetOutput } from '../../src/browser/toys.js';
+import { createProcessInputAndSetOutput } from '../../src/browser/toys.js';
 
-describe('processInputAndSetOutput invalid JSON handling', () => {
+describe('createProcessInputAndSetOutput invalid JSON handling', () => {
   it('handles parse errors gracefully', () => {
     const elements = {
       inputElement: { value: 'input' },
@@ -37,7 +37,11 @@ describe('processInputAndSetOutput invalid JSON handling', () => {
     };
 
     expect(() =>
-      processInputAndSetOutput(elements, () => 'not json', env)
+      createProcessInputAndSetOutput(
+        elements.inputElement,
+        () => 'not json',
+        env
+      )(elements.outputParentElement, elements.outputSelect, elements.article)
     ).not.toThrow();
 
     expect(dom.removeAllChildren).toHaveBeenCalledWith(

@@ -6,7 +6,7 @@ import {
   afterEach,
   jest,
 } from '@jest/globals';
-import { processInputAndSetOutput } from '../../src/browser/toys.js';
+import { createProcessInputAndSetOutput } from '../../src/browser/toys.js';
 import { setInputValue } from '../../src/core/browser/inputValueStore.js';
 
 let elements;
@@ -53,13 +53,17 @@ afterEach(() => {
   jest.restoreAllMocks();
 });
 
-describe('processInputAndSetOutput', () => {
+describe('createProcessInputAndSetOutput', () => {
   it('does not set text when handleParsedResult returns true', () => {
     const json = '{"request":{"url":"https://example.com"}}';
     processingFunction.mockReturnValue(json);
     const parseSpy = jest.spyOn(JSON, 'parse');
 
-    processInputAndSetOutput(elements, processingFunction, env);
+    createProcessInputAndSetOutput(
+      elements.inputElement,
+      processingFunction,
+      env
+    )(elements.outputParentElement, elements.outputSelect, elements.article);
 
     expect(parseSpy).toHaveBeenCalledWith(json);
     expect(env.dom.appendChild).not.toHaveBeenCalled();
@@ -71,7 +75,11 @@ describe('processInputAndSetOutput', () => {
     const invalid = 'not json';
     processingFunction.mockReturnValue(invalid);
 
-    processInputAndSetOutput(elements, processingFunction, env);
+    createProcessInputAndSetOutput(
+      elements.inputElement,
+      processingFunction,
+      env
+    )(elements.outputParentElement, elements.outputSelect, elements.article);
 
     expect(env.dom.appendChild).toHaveBeenCalledWith(
       elements.outputParentElement,
@@ -83,7 +91,11 @@ describe('processInputAndSetOutput', () => {
     const json = JSON.stringify({ request: {} });
     processingFunction.mockReturnValue(json);
 
-    processInputAndSetOutput(elements, processingFunction, env);
+    createProcessInputAndSetOutput(
+      elements.inputElement,
+      processingFunction,
+      env
+    )(elements.outputParentElement, elements.outputSelect, elements.article);
 
     expect(env.fetchFn).not.toHaveBeenCalled();
     expect(env.dom.appendChild).toHaveBeenCalledWith(
@@ -96,7 +108,11 @@ describe('processInputAndSetOutput', () => {
     const result = 'ok';
     processingFunction.mockReturnValue(result);
 
-    processInputAndSetOutput(elements, processingFunction, env);
+    createProcessInputAndSetOutput(
+      elements.inputElement,
+      processingFunction,
+      env
+    )(elements.outputParentElement, elements.outputSelect, elements.article);
 
     const setData = toyEnv.get('setLocalTemporaryData');
     const callArg = setData.mock.calls[0][0];
@@ -110,7 +126,11 @@ describe('processInputAndSetOutput', () => {
     const created = { tagName: 'pre', textContent: '' };
     env.dom.createElement.mockImplementation(() => created);
 
-    processInputAndSetOutput(elements, processingFunction, env);
+    createProcessInputAndSetOutput(
+      elements.inputElement,
+      processingFunction,
+      env
+    )(elements.outputParentElement, elements.outputSelect, elements.article);
 
     expect(env.dom.createElement).toHaveBeenCalledWith('pre');
     expect(env.dom.setTextContent).toHaveBeenCalledWith(
@@ -128,7 +148,11 @@ describe('processInputAndSetOutput', () => {
     elements.inputElement.value = 'stale-dom-value';
     processingFunction.mockReturnValue('done');
 
-    processInputAndSetOutput(elements, processingFunction, env);
+    createProcessInputAndSetOutput(
+      elements.inputElement,
+      processingFunction,
+      env
+    )(elements.outputParentElement, elements.outputSelect, elements.article);
 
     expect(processingFunction).toHaveBeenCalledWith('memory-value', toyEnv);
   });

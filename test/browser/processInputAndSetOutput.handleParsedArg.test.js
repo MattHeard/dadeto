@@ -1,7 +1,7 @@
 import { describe, it, expect } from '@jest/globals';
-import { processInputAndSetOutput } from '../../src/browser/toys.js';
+import { createProcessInputAndSetOutput } from '../../src/browser/toys.js';
 
-describe('processInputAndSetOutput parsed arg', () => {
+describe('createProcessInputAndSetOutput parsed arg', () => {
   it('passes null to handleParsedResult when JSON is invalid', () => {
     const elements = {
       inputElement: { value: 'x' },
@@ -38,7 +38,11 @@ describe('processInputAndSetOutput parsed arg', () => {
         },
       },
     };
-    processInputAndSetOutput(elements, () => 'not json', wrappedEnv);
+    createProcessInputAndSetOutput(
+      elements.inputElement,
+      () => 'not json',
+      wrappedEnv
+    )(elements.outputParentElement, elements.outputSelect, elements.article);
     expect(captured).toBeNull();
   });
 });

@@ -1,7 +1,7 @@
 import { describe, it, expect, jest, beforeEach } from '@jest/globals';
-import { processInputAndSetOutput } from '../../src/browser/toys.js';
+import { createProcessInputAndSetOutput } from '../../src/browser/toys.js';
 
-describe('processInputAndSetOutput integration', () => {
+describe('createProcessInputAndSetOutput integration', () => {
   let elements;
   let env;
   let toyEnv;
@@ -40,7 +40,11 @@ describe('processInputAndSetOutput integration', () => {
   });
 
   it('stores result with article id key via setOutput', () => {
-    processInputAndSetOutput(elements, processingFunction, env);
+    createProcessInputAndSetOutput(
+      elements.inputElement,
+      processingFunction,
+      env
+    )(elements.outputParentElement, elements.outputSelect, elements.article);
     const callArg = toyEnv.get('setLocalTemporaryData').mock.calls[0][0];
     expect(callArg.output).toEqual({ [elements.article.id]: 'result' });
   });

@@ -14,7 +14,7 @@ export const {
   createValueElement, createTypeToggleButton, createTypeElement,
   createOnAddHandler, createOnRemove, setupAddButton, setupRemoveButton,
   createKeyValueRow, isValidParsedRequest, handleParsedResult,
-  parseJSONResult, processInputAndSetOutput, createHandleSubmit,
+  parseJSONResult, createProcessInputAndSetOutput, createHandleSubmit,
   initializeInteractiveComponent, initializeVisibleComponents, coerceValue,
   syncHiddenField, createRenderer, createDropdownInitializer, getDeepStateCopy,
 } = handle;
