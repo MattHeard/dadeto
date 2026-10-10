@@ -90,6 +90,26 @@ import {
  */
 
 /**
+ * @typedef {object} InitAdminOptions
+ * @property {GoogleAuthModule} googleAuthModule - Google authentication helpers.
+ * @property {() => Promise<Record<string, string>>} loadStaticConfigFn - Static configuration loader.
+ * @property {() => FirebaseAuthInstance | null | undefined} getAuthFn - Firebase auth getter.
+ * @property {(auth: FirebaseAuthInstance | null | undefined, callback: () => void) => void} onAuthStateChangedFn - Auth state listener binder.
+ * @property {Document} doc - Admin document.
+ * @property {FetchFn} fetchFn - Permission-aware network adapter.
+ * @property {(handler: (permission: AllowEffects) => Promise<void>) => Promise<void>} bindEffectBoundary - Permission boundary for commands.
+ * @property {(error: unknown) => void} [reportError] - Optional error reporter.
+ */
+
+/**
+ * @typedef {object} InitAdminRuntime
+ * @property {() => Promise<{ triggerRenderContentsUrl: string, markVariantDirtyUrl: string, generateStatsUrl: string }>} getAdminEndpoints - Memoized endpoint resolver.
+ * @property {(text: string) => void} showMessage - Admin status reporter.
+ * @property {() => void} checkAccess - Current-user access renderer.
+ * @property {(error: unknown) => void} reportError - Error reporter with a no-op default.
+ */
+
+/**
  * @typedef {object} GoogleNamespace
  * @property {{ id?: GoogleAccountsClient }} [accounts] - Google accounts helper container.
  */
@@ -2179,85 +2199,107 @@ function renderStatusParagraph(statusParagraph, text) {
 }
 
 /**
- * Initialize the admin interface by wiring event handlers and auth listeners.
- * @param {{
- *   googleAuthModule: GoogleAuthModule,
- *   loadStaticConfigFn: () => Promise<Record<string, string>>,
- *   getAuthFn: () => FirebaseAuthInstance | null | undefined,
- *   onAuthStateChangedFn: (auth: FirebaseAuthInstance | null | undefined, callback: () => void) => void,
- *   doc: Document,
- *   fetchFn: FetchFn,
- *   bindEffectBoundary: (handler: (permission: AllowEffects) => Promise<void>) => Promise<void>,
- *   reportError?: (error: unknown) => void,
- * }} options - Dependencies required for admin initialization.
+ * Initialize admin runtime dependencies, event handlers, and auth listeners.
+ * @param {InitAdminOptions} options Dependencies required for admin initialization.
  * @returns {void}
  */
-export function initAdmin({
-  googleAuthModule,
-  loadStaticConfigFn,
-  getAuthFn,
-  onAuthStateChangedFn,
-  doc,
-  fetchFn,
-  bindEffectBoundary,
-  reportError = () => {},
-}) {
+export function initAdmin(options) {
   validateInitAdminDeps(
-    { googleAuthModule, getAuthFn },
-    { onAuthStateChangedFn, doc },
-    { fetchFn, bindEffectBoundary }
+    {
+      googleAuthModule: options.googleAuthModule,
+      getAuthFn: options.getAuthFn,
+    },
+    {
+      onAuthStateChangedFn: options.onAuthStateChangedFn,
+      doc: options.doc,
+    },
+    {
+      fetchFn: options.fetchFn,
+      bindEffectBoundary: options.bindEffectBoundary,
+    }
   );
 
-  const getAdminEndpoints =
-    createGetAdminEndpointsFromStaticConfig(loadStaticConfigFn);
-  const showMessage = createShowMessage(getStatusParagraph, doc);
+  const runtime = createInitAdminRuntime(options);
+  const handlers = createInitAdminCommandHandlers(options, runtime);
+  bindInitAdminCommandHandlers(options.doc, handlers);
+  bindInitAdminAuthorRegeneration(options, runtime);
+  initializeInitAdminAuthentication(options, runtime);
+}
 
-  const checkAccess = createCheckAccess(getAuthFn, doc);
+/**
+ * Construct shared endpoint, status, and error operations for initAdmin.
+ * @param {InitAdminOptions} options Admin environment dependencies.
+ * @returns {InitAdminRuntime} Operations shared by event handlers and auth setup.
+ */
+function createInitAdminRuntime(options) {
+  return {
+    getAdminEndpoints: createGetAdminEndpointsFromStaticConfig(
+      options.loadStaticConfigFn
+    ),
+    showMessage: createShowMessage(getStatusParagraph, options.doc),
+    checkAccess: createCheckAccess(options.getAuthFn, options.doc),
+    reportError:
+      options.reportError === undefined ? () => {} : options.reportError,
+  };
+}
 
-  const triggerRender = createTriggerRender({
-    googleAuth: googleAuthModule,
-    getAdminEndpointsFn: getAdminEndpoints,
-    fetchFn,
-    bindEffectBoundary,
-    showMessage,
-    reportError,
-  });
+/**
+ * Create the three admin command handlers bound to their browser dependencies.
+ * @param {InitAdminOptions} options Admin environment dependencies.
+ * @param {InitAdminRuntime} runtime Shared admin operations.
+ * @returns {{ triggerRender: () => Promise<void>, triggerStats: () => Promise<void>, regenerateVariant: (event: Event) => Promise<void> }} Command handlers to bind to the page.
+ */
+function createInitAdminCommandHandlers(options, runtime) {
+  const commandOptions = {
+    googleAuth: options.googleAuthModule,
+    getAdminEndpointsFn: runtime.getAdminEndpoints,
+    fetchFn: options.fetchFn,
+    bindEffectBoundary: options.bindEffectBoundary,
+    showMessage: runtime.showMessage,
+    reportError: runtime.reportError,
+  };
+  return {
+    triggerRender: createTriggerRender(commandOptions),
+    triggerStats: createTriggerStats(commandOptions),
+    regenerateVariant: createRegenerateVariant({
+      ...commandOptions,
+      doc: options.doc,
+    }),
+  };
+}
 
-  const triggerStats = createTriggerStats({
-    googleAuth: googleAuthModule,
-    getAdminEndpointsFn: getAdminEndpoints,
-    fetchFn,
-    bindEffectBoundary,
-    showMessage,
-    reportError,
-  });
+/**
+ * Bind the render, stats, and variant handlers to their page elements.
+ * @param {Document} doc Admin document.
+ * @param {{ triggerRender: () => Promise<void>, triggerStats: () => Promise<void>, regenerateVariant: (event: Event) => Promise<void> }} handlers Command handlers.
+ * @returns {void}
+ */
+function bindInitAdminCommandHandlers(doc, handlers) {
+  bindTriggerRenderClick(doc, handlers.triggerRender);
+  bindTriggerStatsClick(doc, handlers.triggerStats);
+  bindRegenerateVariantSubmit(doc, handlers.regenerateVariant);
+}
 
-  const regenerateVariant = createRegenerateVariant({
-    googleAuth: googleAuthModule,
-    doc,
-    showMessage,
-    getAdminEndpointsFn: getAdminEndpoints,
-    fetchFn,
-    bindEffectBoundary,
-    reportError,
-  });
-
-  bindTriggerRenderClick(doc, triggerRender);
-  bindTriggerStatsClick(doc, triggerStats);
-  bindRegenerateVariantSubmit(doc, regenerateVariant);
-  const authorForm = doc.getElementById('regenAuthorForm');
+/**
+ * Bind the author regeneration form to the permission-aware dirty endpoint.
+ * @param {InitAdminOptions} options Admin environment dependencies.
+ * @param {InitAdminRuntime} runtime Shared admin operations.
+ * @returns {void}
+ */
+function bindInitAdminAuthorRegeneration(options, runtime) {
+  const authorForm = options.doc.getElementById('regenAuthorForm');
   authorForm?.addEventListener('submit', async event => {
     event.preventDefault();
     const input = /** @type {HTMLInputElement | null} */ (
-      doc.getElementById('regenAuthorInput')
+      options.doc.getElementById('regenAuthorInput')
     );
     const authorId = input?.value.trim();
-    const token = await googleAuthModule.getIdToken();
+    const token = await options.googleAuthModule.getIdToken();
     if (!authorId || !token) return;
     try {
-      const endpoints = await getAdminEndpoints();
-      await bindEffectBoundary(async permission => {
-        const response = await fetchFn(
+      const endpoints = await runtime.getAdminEndpoints();
+      await options.bindEffectBoundary(async permission => {
+        const response = await options.fetchFn(
           permission,
           endpoints.markVariantDirtyUrl,
           {
@@ -2271,27 +2313,36 @@ export function initAdmin({
         );
         await ensureResponseOk(response);
       });
-      showMessage('Author regeneration triggered');
+      runtime.showMessage('Author regeneration triggered');
     } catch (error) {
-      reportError(error);
-      showMessage('Author regeneration failed');
+      runtime.reportError(error);
+      runtime.showMessage('Author regeneration failed');
     }
   });
-  createWireSignOut(doc, googleAuthModule)();
-  onAuthStateChangedFn(getAuthFn(), checkAccess);
-  if (typeof googleAuthModule.initGoogleSignIn !== 'function') {
+}
+
+/**
+ * Bind sign-out and auth state listeners, then initialize Google sign-in.
+ * @param {InitAdminOptions} options Admin environment dependencies.
+ * @param {InitAdminRuntime} runtime Shared admin operations.
+ * @returns {void}
+ */
+function initializeInitAdminAuthentication(options, runtime) {
+  createWireSignOut(options.doc, options.googleAuthModule)();
+  options.onAuthStateChangedFn(options.getAuthFn(), runtime.checkAccess);
+  if (typeof options.googleAuthModule.initGoogleSignIn !== 'function') {
     throw new TypeError(
       'googleAuthModule must provide an initGoogleSignIn function'
     );
   }
 
   (async () => {
-    const config = await loadStaticConfigFn();
+    const config = await options.loadStaticConfigFn();
     if (config.disableGoogleSignIn) {
       return;
     }
 
-    googleAuthModule.initGoogleSignIn();
+    options.googleAuthModule.initGoogleSignIn();
   })();
 }
 

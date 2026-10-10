@@ -1,6 +1,7 @@
 import { jest } from '@jest/globals';
 import { ADMIN_UID } from '../../../../src/core/commonCore.js';
 import {
+  initAdmin as initAdminCore,
   createAdminEndpointsPromise,
   createGetAdminEndpoints,
   createGetAdminEndpointsFromStaticConfig,
@@ -1825,6 +1826,68 @@ describe('initAdmin', () => {
     expect(signOutLink.addEventListener).toHaveBeenCalledWith(
       'click',
       expect.any(Function)
+    );
+  });
+
+  it('keeps author regeneration permission scoped to the submitted request', async () => {
+    const permission = Object.freeze({ capability: 'admin-command' });
+    const authorForm = { addEventListener: jest.fn() };
+    const authorInput = { value: 'author-42' };
+    const status = { innerHTML: '' };
+    const doc = {
+      getElementById: jest.fn(id => {
+        if (id === 'regenAuthorForm') return authorForm;
+        if (id === 'regenAuthorInput') return authorInput;
+        if (id === 'renderStatus') return status;
+        return null;
+      }),
+      querySelectorAll: jest.fn().mockReturnValue([]),
+    };
+    const googleAuthModule = {
+      getIdToken: jest.fn().mockResolvedValue('admin-token'),
+      signOut: jest.fn(),
+      initGoogleSignIn: jest.fn(),
+    };
+    const loadStaticConfigFn = jest.fn().mockResolvedValue(createConfig());
+    const fetchFn = jest.fn().mockResolvedValue({ ok: true });
+    const bindEffectBoundary = jest.fn(async handler => handler(permission));
+
+    initAdminCore({
+      googleAuthModule,
+      loadStaticConfigFn,
+      getAuthFn: jest.fn().mockReturnValue(null),
+      onAuthStateChangedFn: jest.fn(),
+      doc,
+      fetchFn,
+      bindEffectBoundary,
+    });
+
+    const submit = authorForm.addEventListener.mock.calls[0][1];
+    const preventDefault = jest.fn();
+    await submit({ preventDefault });
+
+    expect(preventDefault).toHaveBeenCalledTimes(1);
+    expect(googleAuthModule.getIdToken).toHaveBeenCalledTimes(1);
+    expect(loadStaticConfigFn).toHaveBeenCalled();
+    expect(doc.getElementById).toHaveBeenCalledWith('regenAuthorInput');
+    expect(status.innerHTML).toBe(
+      '<strong>Author regeneration triggered</strong>'
+    );
+    expect(bindEffectBoundary).toHaveBeenCalledTimes(1);
+    expect(fetchFn).toHaveBeenCalledWith(
+      permission,
+      'https://example.com/mark',
+      {
+        method: 'POST',
+        headers: {
+          Authorization: 'Bearer admin-token',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ authorId: 'author-42' }),
+      }
+    );
+    expect(status.innerHTML).toBe(
+      '<strong>Author regeneration triggered</strong>'
     );
   });
 
