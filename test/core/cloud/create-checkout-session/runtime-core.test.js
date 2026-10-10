@@ -27,7 +27,6 @@ function makeDb({ ownership, customer } = {}) {
           if (name === 'api-key-ownership') return { data: () => ownership };
           return { exists: Boolean(customer), data: () => customer };
         }),
-        set: jest.fn(async value => value),
       })),
     })),
   };
@@ -83,25 +82,23 @@ describe('checkout runtime adapters', () => {
       savePurchaseCheckout: jest.fn(async (id, session) => ({ id, session })),
       getPurchase: jest.fn(),
     };
-    const stripe = {
-      customers: {
-        create: jest.fn(async options => ({ id: 'cus-new', options })),
-      },
-      checkout: {
-        sessions: {
-          create: jest.fn(async (options, requestOptions) => ({
-            options,
-            requestOptions,
-          })),
-        },
-      },
-    };
     const verifyIdToken = jest.fn();
+    const createBillingCustomer = jest.fn(async () => ({
+      stripeCustomerId: 'cus-new',
+    }));
+    const saveCustomerMappings = jest.fn();
+    const createStripeCheckoutSession = jest.fn(async () => ({
+      id: 'session-1',
+      url: 'https://checkout',
+      ['expires_at']: 123,
+    }));
     const deps = createCheckoutSessionDependencies({
       db,
       billing,
-      stripe,
       verifyIdToken,
+      createBillingCustomer,
+      saveCustomerMappings,
+      createStripeCheckoutSession,
       publicBillingOrigin: 'https://pay.example',
       billingEnabled: true,
     });
@@ -121,9 +118,16 @@ describe('checkout runtime adapters', () => {
         email: 'a@example.com',
       })
     ).toEqual({ stripeCustomerId: 'cus-new' });
+    expect(createBillingCustomer).toHaveBeenCalledWith(allowEffects, {
+      email: 'a@example.com',
+    });
     await deps.saveCustomerMappings(allowEffects, 'uid', 'cus-1', 'key-1');
-    expect(db.collection).toHaveBeenCalledWith('billing-customers');
-    expect(db.collection).toHaveBeenCalledWith('payment-customers');
+    expect(saveCustomerMappings).toHaveBeenCalledWith(
+      allowEffects,
+      'uid',
+      'cus-1',
+      'key-1'
+    );
     expect(await deps.getCreditPackage('package-1')).toMatchObject({
       credits: 100,
     });
@@ -142,9 +146,15 @@ describe('checkout runtime adapters', () => {
         { idempotencyKey: 'key' }
       )
     ).toEqual({
-      options: { mode: 'payment' },
-      requestOptions: { idempotencyKey: 'key' },
+      id: 'session-1',
+      url: 'https://checkout',
+      ['expires_at']: 123,
     });
+    expect(createStripeCheckoutSession).toHaveBeenCalledWith(
+      allowEffects,
+      { mode: 'payment' },
+      { idempotencyKey: 'key' }
+    );
     expect(deps.publicBillingOrigin).toBe('https://pay.example');
 
     billing.getPurchase.mockResolvedValueOnce(null);
@@ -188,11 +198,10 @@ describe('checkout runtime adapters', () => {
         getCurrentPricingSnapshot: jest.fn(),
         getPurchase: jest.fn(),
       },
-      stripe: {
-        customers: { create: jest.fn() },
-        checkout: { sessions: { create: jest.fn() } },
-      },
       verifyIdToken: jest.fn(),
+      createBillingCustomer: jest.fn(),
+      saveCustomerMappings: jest.fn(),
+      createStripeCheckoutSession: jest.fn(),
     });
     expect(await deps.resolveApiKeyUuidForUid('uid')).toBeNull();
     expect(await deps.resolveBillingCustomer('uid')).toBeNull();

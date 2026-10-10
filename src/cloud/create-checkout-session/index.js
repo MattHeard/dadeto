@@ -6,7 +6,11 @@ import { createBillingRuntime } from '../../core/cloud/billing/billing-runtime-c
 import { createCheckoutSessionDependencies } from '../../core/cloud/create-checkout-session/runtime-core.js';
 import { createCheckoutSessionExpressHandle } from '../../core/cloud/create-checkout-session/create-checkout-session-core.js';
 import { createEffectHttpBoundary } from '../allow-effects.js';
-import { createCheckoutResponseAdapter } from './effect-adapters.js';
+import {
+  createCheckoutResponseAdapter,
+  createCustomerMappingWriter,
+} from './effect-adapters.js';
+import { createCheckoutStripeAdapters } from './stripe-effects.js';
 
 const db = createDb(Firestore, process.env);
 const billing = createBillingRuntime(db, {
@@ -22,8 +26,9 @@ if (!stripe) {
 const dependencies = createCheckoutSessionDependencies({
   db,
   billing,
-  stripe,
   verifyIdToken: token => getAuth().verifyIdToken(token),
+  ...createCheckoutStripeAdapters(stripe),
+  saveCustomerMappings: createCustomerMappingWriter(db),
   publicBillingOrigin: process.env.PUBLIC_BILLING_ORIGIN,
   stripeConfigured: Boolean(stripe),
   billingEnabled: process.env.BILLING_ENABLED === 'true',

@@ -1,0 +1,7 @@
+# Checkout Stripe command boundary
+
+- Unexpected hurdle: the checkout core runtime helper wrapped Stripe methods with permission-first signatures but still held the Stripe client and invoked both commands itself.
+- Diagnosis: the checkout handler correctly forwarded its fresh request capability, but the concrete customer/session API calls remained in `src/core`, so the environment boundary was only nominal.
+- Chosen fix: moved Stripe customer and session creation into `src/cloud/create-checkout-session/stripe-effects.js`, passed those permission-first adapters into core composition, and removed the Stripe client type/dependency from the core runtime helper. The adapter preserves Stripe arguments and fails clearly if called while Stripe is unconfigured.
+- Evidence: focused checkout Jest passed (4 suites, 29 tests); focused ESLint and `npm run tsdoc:check` passed; elevated `DADETO_COVERAGE_SHARD_SIZE=40 JEST_CACHE_DIRECTORY=/home/matt/dadeto/.tmp/jest_rs TMPDIR=/home/matt/dadeto/.tmp npm run check` passed all 10 gates (100% coverage, local E2E 11/11, 0 clones, 0 audit vulnerabilities); `npm run build:cloud` passed. Logs: `.tmp/npm-check-checkout-stripe-effects.log` and `.tmp/build-cloud-checkout-stripe-effects.log`.
+- Next-time guidance: checkout purchase creation and checkout-record persistence still call billing service commands from `src/core/cloud/create-checkout-session/runtime-core.js`; trace their implementations and move concrete writes behind cloud-owned permission-first adapters next.

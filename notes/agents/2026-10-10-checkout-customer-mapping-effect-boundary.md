@@ -1,0 +1,7 @@
+# Checkout customer mapping effect boundary
+
+- Unexpected hurdle: the checkout runtime helper already accepted `AllowEffects` for customer mappings, which initially made the Firestore persistence look fully guarded.
+- Diagnosis: the helper itself still owned the two Firestore `.set()` calls in `src/core`, so the capability was explicit in the callback signature but the concrete command remained inside core.
+- Chosen fix: moved both mapping writes to `src/cloud/create-checkout-session/effect-adapters.js`, injected the permission-first writer into the runtime composition, and narrowed the core Firestore type to reads only. Regression tests assert callback permission forwarding and both persisted payloads.
+- Evidence: focused checkout Jest passed (3 suites, 27 tests); elevated `DADETO_COVERAGE_SHARD_SIZE=40 JEST_CACHE_DIRECTORY=/home/matt/dadeto/.tmp/jest_rs TMPDIR=/home/matt/dadeto/.tmp npm run check` passed all 10 gates, including 100% coverage, local E2E 11/11, 0 clones, and 0 audit vulnerabilities; `npm run build:cloud` passed. Logs: `.tmp/npm-check-checkout-customer-mapping-effects-elevated.log` and `.tmp/build-cloud-checkout-customer-mapping-effects.log`.
+- Next-time guidance: continue the checkout call-tree audit. Stripe customer/session creation and billing purchase persistence are still invoked from `src/core/cloud/create-checkout-session/runtime-core.js`; review and migrate each command seam in a separate bounded loop.
