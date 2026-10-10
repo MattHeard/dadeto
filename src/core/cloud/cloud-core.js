@@ -24,6 +24,8 @@ export {
 
 /** @typedef {{ code?: string, message?: unknown }} FirebaseError */
 /** @typedef {(value: unknown) => boolean} BooleanPredicate */
+/** @typedef {{ functions: { region: (region: string) => { firestore: { database?: (database: string) => { document: (path: string) => { onWrite: (handler: (change: unknown) => Promise<null>) => unknown } }, document: (path: string) => { onWrite: (handler: (change: unknown) => Promise<null>) => unknown } } } }, region: string, documentPath: string, database?: string, handler: (change: unknown) => Promise<null> }} FirestoreDocumentOnWriteTriggerOptions */
+/** @typedef {{ verifyToken: (token: string) => Promise<import('firebase-admin/auth').DecodedIdToken>, isAdminUid: (decoded: import('firebase-admin/auth').DecodedIdToken) => boolean, sendUnauthorized: (res: NativeHttpResponse, message: string) => void, sendForbidden: (res: NativeHttpResponse) => void, logger?: { warn?: (message: string, details?: object) => void } }} VerifyAdminOptions */
 
 export const MISSING_AUTHORIZATION_RESPONSE = {
   status: 401,
@@ -129,34 +131,22 @@ export function ensureFirebaseAppOnce(initializeApp) {
 
 /**
  * Create a Firestore document onWrite trigger for a specific region and path.
- * @param {{
- *   functions: { region: (region: string) => { firestore: { database?: (database: string) => { document: (path: string) => { onWrite: (handler: (change: unknown) => Promise<null>) => unknown } }, document: (path: string) => { onWrite: (handler: (change: unknown) => Promise<null>) => unknown } } } },
- *   region: string,
- *   documentPath: string,
- *   database?: string,
- *   handler: (change: unknown) => Promise<null>,
- * }} options Trigger configuration.
+ * @param {FirestoreDocumentOnWriteTriggerOptions} options Trigger configuration.
  * @returns {unknown} Firestore onWrite trigger.
  */
-export function createFirestoreDocumentOnWriteTrigger({
-  functions,
-  region,
-  documentPath,
-  database,
-  handler,
-}) {
-  const scopedFunctions = functions.region(region);
+export function createFirestoreDocumentOnWriteTrigger(options) {
+  const scopedFunctions = options.functions.region(options.region);
   let firestore = scopedFunctions.firestore;
   // Stryker disable next-line all -- database selection is an optional SDK
   // capability; the fallback firestore object is the fixed adapter path.
-  if (database && scopedFunctions.firestore.database) {
-    firestore = scopedFunctions.firestore.database(database);
+  if (options.database && scopedFunctions.firestore.database) {
+    firestore = scopedFunctions.firestore.database(options.database);
   }
   return firestore
-    .document(documentPath)
+    .document(options.documentPath)
     .onWrite(
       /** @type {(change: unknown) => Promise<null>} */ (
-        change => handler(change)
+        change => options.handler(change)
       )
     );
 }
@@ -1081,23 +1071,14 @@ function ensureAdminIdentity({ decoded, isAdminUid, sendForbidden, res }) {
 
 /**
  * Create a reusable admin guard.
- * @param {object} deps Authorization collaborators.
- * @param {(token: string) => Promise<import('firebase-admin/auth').DecodedIdToken>} deps.verifyToken Token validator.
- * @param {(decoded: import('firebase-admin/auth').DecodedIdToken) => boolean} deps.isAdminUid Admin UID checker.
- * @param {(res: NativeHttpResponse, message: string) => void} deps.sendUnauthorized Sends 401 responses.
- * @param {(res: NativeHttpResponse) => void} deps.sendForbidden Sends 403 responses.
- * @param {{ warn?: (message: string, details?: object) => void }} [deps.logger] Rejection logger.
+ * @param {VerifyAdminOptions} options Authorization collaborators.
  * @returns {(req: NativeHttpRequest, res: NativeHttpResponse) => Promise<boolean>} Express middleware that authenticates the admin request and reports success.
  */
 // Stryker disable next-line all -- admin verification has fixed malformed,
 // missing-token, unauthorized, and forbidden response protocols.
-export function createVerifyAdmin({
-  verifyToken,
-  isAdminUid,
-  sendUnauthorized,
-  sendForbidden,
-  logger = globalThis.console,
-}) {
+export function createVerifyAdmin(options) {
+  const logger =
+    options.logger === undefined ? globalThis.console : options.logger;
   return async function verifyAdmin(req, res) {
     const authHeader = getAuthHeader(req);
     const authMatch = matchAuthHeader(authHeader);
@@ -1107,7 +1088,7 @@ export function createVerifyAdmin({
       // Stryker disable next-line all -- malformed-header logging is optional
       // fixed diagnostics.
       logger.warn?.('Admin auth rejected: malformed Authorization header');
-      sendUnauthorized(res, defaultMalformedAuthorizationMessage);
+      options.sendUnauthorized(res, defaultMalformedAuthorizationMessage);
       // Stryker disable next-line all -- malformed headers have one fixed false
       // result after the response is sent.
       return false;
@@ -1120,17 +1101,17 @@ export function createVerifyAdmin({
       // Stryker disable next-line all -- missing-token logging is optional fixed
       // diagnostics.
       logger.warn?.('Admin auth rejected: missing token');
-      sendUnauthorized(res, defaultMissingTokenMessage);
+      options.sendUnauthorized(res, defaultMissingTokenMessage);
       // Stryker disable next-line all -- missing tokens have one fixed false
       // result after the response is sent.
       return false;
     }
     return authorizeAdminToken({
       token,
-      verifyToken,
-      isAdminUid,
-      sendUnauthorized,
-      sendForbidden,
+      verifyToken: options.verifyToken,
+      isAdminUid: options.isAdminUid,
+      sendUnauthorized: options.sendUnauthorized,
+      sendForbidden: options.sendForbidden,
       logger,
       res,
     });
