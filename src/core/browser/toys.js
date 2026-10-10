@@ -733,11 +733,30 @@ export function makeCreateIntersectionObserver(dom, env) {
  * @returns {void}
  */
 export function enableInteractiveControls(elements, dom, presenterKey) {
-  const { inputElement, submitButton, parent } = elements;
-  const readyMessage = 'Ready for input';
-  dom.enable(inputElement);
-  dom.enable(submitButton);
-  setTextContent({ content: readyMessage, presenterKey }, dom, parent);
+  enableInteractiveInput(dom, elements.inputElement);
+  enableInteractiveInput(dom, elements.submitButton);
+  showInteractiveReadyState(dom, elements.parent, presenterKey);
+}
+
+/**
+ * Enable one input control for an interactive component.
+ * @param {{ enable: (element: HTMLElement) => void }} dom DOM helpers.
+ * @param {HTMLElement} element Input or submit control to enable.
+ * @returns {void}
+ */
+function enableInteractiveInput(dom, element) {
+  dom.enable(element);
+}
+
+/**
+ * Render the ready message and remove the warning state from the output area.
+ * @param {object} dom DOM helpers used by the selected presenter.
+ * @param {HTMLElement} parent Output area to update.
+ * @param {string} presenterKey Presenter key for rendering the ready message.
+ * @returns {void}
+ */
+function showInteractiveReadyState(dom, parent, presenterKey) {
+  setTextContent({ content: 'Ready for input', presenterKey }, dom, parent);
   dom.removeWarning(parent);
 }
 

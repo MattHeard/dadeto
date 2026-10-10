@@ -741,6 +741,24 @@ describe('enableInteractiveControls', () => {
     // --- THEN ---
     expect(removeWarning).toHaveBeenCalledWith(outputParentElement);
   });
+
+  it('enables controls before rendering the ready state and removing warnings', () => {
+    const operations = [];
+    dom.enable = jest.fn(() => operations.push('enable'));
+    dom.removeAllChildren = jest.fn(() => operations.push('clear-output'));
+    dom.setTextContent = jest.fn(() => operations.push('set-ready-message'));
+    dom.removeWarning = jest.fn(() => operations.push('remove-warning'));
+
+    enableInteractiveControls(elements, dom, presenterKey);
+
+    expect(operations).toEqual([
+      'enable',
+      'enable',
+      'clear-output',
+      'set-ready-message',
+      'remove-warning',
+    ]);
+  });
 });
 
 describe('initialiseModule', () => {
