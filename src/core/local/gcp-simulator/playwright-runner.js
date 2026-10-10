@@ -34,6 +34,27 @@ const WRITER_READY_PATTERN =
  * }} SimulatorSpawnOptions
  */
 
+/**
+ * @typedef {{
+ *   repoRoot: string,
+ *   spawnImpl: typeof defaultSpawn,
+ *   options: SimulatorSpawnOptions,
+ *   env: EnvMap,
+ *   writerPort: number,
+ * }} WriterServerSpawnInput
+ */
+
+/**
+ * @typedef {{
+ *   repoRoot: string,
+ *   spawnImpl: typeof defaultSpawn,
+ *   options: PlaywrightOptions,
+ *   simulatorEnv: EnvMap,
+ *   baseUrl: string,
+ *   apiBaseUrl?: string,
+ * }} PlaywrightSpawnInput
+ */
+
 export const playwrightRunnerTestUtils = {
   waitForWriterReady,
   waitForSimulatorReady,
@@ -204,32 +225,24 @@ function spawnSimulator(repoRoot, spawnImpl, options, env) {
 }
 
 /**
- * @param {{
- *   repoRoot: string,
- *   spawnImpl: typeof defaultSpawn,
- *   options: SimulatorSpawnOptions,
- *   env: EnvMap,
- *   writerPort: number,
- * }} input Spawn options.
+ * @param {WriterServerSpawnInput} input Spawn options.
  * @returns {import('node:child_process').ChildProcess} Writer process.
  */
 function spawnWriterServer(input) {
-  const { repoRoot, spawnImpl, options, env, writerPort } = input;
-  /** @type {SimulatorSpawnOptions} */
-  const typedOptions = options;
-  const writerCommand = typedOptions.writerCommand ?? process.execPath;
+  const writerCommand = input.options.writerCommand ?? process.execPath;
   const writerScript =
-    typedOptions.writerScript ?? path.resolve(repoRoot, 'src/local/server.js');
-  const writerArgs = typedOptions.writerArgs ?? [writerScript];
+    input.options.writerScript ??
+    path.resolve(input.repoRoot, 'src/local/server.js');
+  const writerArgs = input.options.writerArgs ?? [writerScript];
 
   return spawnNodeProcess({
-    spawnImpl,
+    spawnImpl: input.spawnImpl,
     command: writerCommand,
     args: writerArgs,
-    cwd: repoRoot,
+    cwd: input.repoRoot,
     env: {
-      ...env,
-      WRITER_PORT: String(writerPort),
+      ...input.env,
+      WRITER_PORT: String(input.writerPort),
     },
   });
 }
@@ -267,40 +280,32 @@ function settleReservedPortAfterClose(server, resolve, reject) {
 }
 
 /**
- * @param {{
- *   repoRoot: string,
- *   spawnImpl: typeof defaultSpawn,
- *   options: PlaywrightOptions,
- *   simulatorEnv: EnvMap,
- *   baseUrl: string,
- *   apiBaseUrl?: string,
- * }} input Spawn inputs.
+ * @param {PlaywrightSpawnInput} input Spawn inputs.
  * @returns {import('node:child_process').ChildProcess} Playwright process.
  */
 function spawnPlaywright(input) {
-  const { repoRoot, spawnImpl, options, simulatorEnv, baseUrl, apiBaseUrl } =
-    input;
-  const playwrightCommand = options.playwrightCommand ?? 'npx';
+  const playwrightCommand = input.options.playwrightCommand ?? 'npx';
   const playwrightConfigPath =
-    options.playwrightConfigPath ??
-    path.resolve(repoRoot, 'test/e2e/local.config.ts');
+    input.options.playwrightConfigPath ??
+    path.resolve(input.repoRoot, 'test/e2e/local.config.ts');
   const playwrightArgs = [
     'playwright',
     'test',
     '--config',
     playwrightConfigPath,
-    ...(options.playwrightArgs ?? []),
+    ...(input.options.playwrightArgs ?? []),
   ];
 
-  return spawnImpl(playwrightCommand, playwrightArgs, {
-    cwd: repoRoot,
+  const apiBaseUrl = input.apiBaseUrl ?? input.baseUrl;
+  return input.spawnImpl(playwrightCommand, playwrightArgs, {
+    cwd: input.repoRoot,
     env: Object.assign(
       {},
       {
-        ...simulatorEnv,
-        API_BASE_URL: apiBaseUrl ?? baseUrl,
-        PLAYWRIGHT_BASE_URL: baseUrl,
-        PAYMENT_WEBHOOK_URL: `${apiBaseUrl ?? baseUrl}/__sim/payment-webhook`,
+        ...input.simulatorEnv,
+        API_BASE_URL: apiBaseUrl,
+        PLAYWRIGHT_BASE_URL: input.baseUrl,
+        PAYMENT_WEBHOOK_URL: `${apiBaseUrl}/__sim/payment-webhook`,
       }
     ),
     stdio: /** @type {'inherit'} */ ('inherit'),
