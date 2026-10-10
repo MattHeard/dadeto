@@ -3099,51 +3099,65 @@ async function gatherMetadata(subject, lookups) {
  * @returns {RenderOutput} Output.
  */
 function buildRenderOutput(data) {
-  const {
-    page,
-    variant,
-    options,
-    storyTitle,
-    authorName,
-    authorUrl,
-    parentUrl,
-    firstPageUrl,
-  } = data;
+  const filePath = buildRenderFilePath(data.page, data.variant);
 
-  const html = buildHtml({
-    pageNumber: page.number,
-    variantName: variant.name,
-    content: variant.content,
-    options,
-    storyTitle,
-    author: authorName,
-    authorUrl,
-    parentUrl,
-    firstPageUrl,
-    showTitleHeading: !page.incomingOption,
+  return {
+    variant: data.variant,
+    page: data.page,
+    parentUrl: data.parentUrl,
+    html: buildRenderHtml(data),
+    filePath,
+    openVariant: hasOpenOption(data.options),
+    reverseLinks: buildReverseLinkRecords({
+      page: data.page,
+      variant: data.variant,
+      options: data.options,
+      filePath,
+    }),
+  };
+}
+
+/**
+ * Build the rendered variant HTML.
+ * @param {RenderOutputInput} data Render content and metadata.
+ * @returns {string} Rendered HTML.
+ */
+function buildRenderHtml(data) {
+  return buildHtml({
+    pageNumber: data.page.number,
+    variantName: data.variant.name,
+    content: data.variant.content,
+    options: data.options,
+    storyTitle: data.storyTitle,
+    author: data.authorName,
+    authorUrl: data.authorUrl,
+    parentUrl: data.parentUrl,
+    firstPageUrl: data.firstPageUrl,
+    showTitleHeading: !data.page.incomingOption,
     rewriteTargetPageNumbers: data.rewriteTargetPageNumbers,
   });
-  const filePath = `p/${page.number}${variant.name}.html`;
-  const openVariant = options.some(
+}
+
+/**
+ * Build the rendered variant file path.
+ * @param {PageDocument} page Rendered page.
+ * @param {VariantDocument} variant Rendered variant.
+ * @returns {string} Variant file path.
+ */
+function buildRenderFilePath(page, variant) {
+  return `p/${page.number}${variant.name}.html`;
+}
+
+/**
+ * Check whether any render option is open-ended.
+ * @param {OptionMetadata[]} options Render options.
+ * @returns {boolean} Whether an open option exists.
+ */
+function hasOpenOption(options) {
+  return options.some(
     (/** @type {OptionMetadata} */ option) =>
       option.targetPageNumber === undefined
   );
-  const reverseLinks = buildReverseLinkRecords({
-    page,
-    variant,
-    options,
-    filePath,
-  });
-
-  return {
-    variant,
-    page,
-    parentUrl,
-    html,
-    filePath,
-    openVariant,
-    reverseLinks,
-  };
 }
 
 /**
