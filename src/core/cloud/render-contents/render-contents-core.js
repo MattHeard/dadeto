@@ -1288,6 +1288,8 @@ export function createValidateRequest({ applyCorsHeaders, sendHttpResponse }) {
   assertFunction(applyCorsHeaders, 'applyCorsHeaders');
   assertFunction(sendHttpResponse, 'sendHttpResponse');
   const validatePreflight = createPreflightHandler(sendHttpResponse);
+  const validateOriginAndMethod =
+    createOriginAndMethodValidator(sendHttpResponse);
 
   return function validateRequest(permission, req, res) {
     const originAllowed = applyCorsHeaders(
@@ -1300,10 +1302,7 @@ export function createValidateRequest({ applyCorsHeaders, sendHttpResponse }) {
       return false;
     }
 
-    return ensureOriginAndMethodAllowed(permission, req, res, {
-      originAllowed,
-      sendHttpResponse,
-    });
+    return validateOriginAndMethod(permission, req, res, originAllowed);
   };
 }
 
@@ -1345,28 +1344,22 @@ function respondToPreflight(permission, res, originAllowed, sendHttpResponse) {
 }
 
 /**
- * Enforce that the origin is allowed and the method is POST.
- * @param {AllowEffects} permission Response effect permission.
- * @param {NativeHttpRequest} req Incoming request helper.
- * @param {ResponseWithStatusSend} res Response helper.
- * @param {{originAllowed: boolean, sendHttpResponse: RenderOptions['sendHttpResponse']}} config CORS result and response writer.
- * @returns {boolean} True when the request should continue.
+ * Bind the response writer for origin and method validation.
+ * @param {RenderOptions['sendHttpResponse']} sendHttpResponse Permission-aware response writer.
+ * @returns {(permission: AllowEffects, req: NativeHttpRequest, res: ResponseWithStatusSend, originAllowed: boolean) => boolean} Origin/method validator.
  */
-function ensureOriginAndMethodAllowed(
-  permission,
-  req,
-  res,
-  { originAllowed, sendHttpResponse }
-) {
-  if (!originAllowed) {
-    sendHttpResponse(permission, res, {
-      status: 403,
-      body: 'CORS',
-      method: 'send',
-    });
-    return false;
-  }
-  return ensurePostMethod(permission, req, res, sendHttpResponse);
+function createOriginAndMethodValidator(sendHttpResponse) {
+  return function validateOriginAndMethod(permission, req, res, originAllowed) {
+    if (!originAllowed) {
+      sendHttpResponse(permission, res, {
+        status: 403,
+        body: 'CORS',
+        method: 'send',
+      });
+      return false;
+    }
+    return ensurePostMethod(permission, req, res, sendHttpResponse);
+  };
 }
 
 /**
