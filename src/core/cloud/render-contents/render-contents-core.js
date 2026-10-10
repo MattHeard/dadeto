@@ -1558,6 +1558,10 @@ export function createAuthorizeRequest({
   if (!adminUid) {
     throw new TypeError('adminUid must be provided');
   }
+  const validateAdminIdentity = createAdminIdentityValidator(
+    adminUid,
+    sendHttpResponse
+  );
 
   return async function authorizeRequest(permission, { req, res }) {
     const header = resolveAuthorizationHeader(req);
@@ -1574,12 +1578,7 @@ export function createAuthorizeRequest({
 
     try {
       const decoded = await verifyIdToken(token);
-      return ensureAdminIdentity(permission, {
-        decoded,
-        adminUid,
-        res,
-        sendHttpResponse,
-      });
+      return validateAdminIdentity(permission, decoded, res);
     } catch (error) {
       return handleAuthError(permission, error, res, sendHttpResponse);
     }
@@ -1587,25 +1586,24 @@ export function createAuthorizeRequest({
 }
 
 /**
- * Confirm the decoded token matches the configured admin UID.
- * @param {AllowEffects} permission Response effect permission.
- * @param {{ decoded: { uid?: string } | null, adminUid: string, res: ResponseWithStatusSend, sendHttpResponse: RenderOptions['sendHttpResponse'] }} params Identity and response dependencies.
- * @returns {{ uid?: string } | null} Decoded payload when the UID matches.
+ * Bind admin identity validation to its configured UID and response writer.
+ * @param {string} adminUid Configured administrator UID.
+ * @param {RenderOptions['sendHttpResponse']} sendHttpResponse Permission-aware response writer.
+ * @returns {(permission: AllowEffects, decoded: { uid?: string } | null, res: ResponseWithStatusSend) => { uid?: string } | null} Identity validator.
  */
-function ensureAdminIdentity(
-  permission,
-  { decoded, adminUid, res, sendHttpResponse }
-) {
-  if (isInvalidAdminIdentity(decoded, adminUid)) {
-    sendHttpResponse(permission, res, {
-      status: 403,
-      body: 'Forbidden',
-      method: 'send',
-    });
-    return null;
-  }
+function createAdminIdentityValidator(adminUid, sendHttpResponse) {
+  return function ensureAdminIdentity(permission, decoded, res) {
+    if (isInvalidAdminIdentity(decoded, adminUid)) {
+      sendHttpResponse(permission, res, {
+        status: 403,
+        body: 'Forbidden',
+        method: 'send',
+      });
+      return null;
+    }
 
-  return decoded;
+    return decoded;
+  };
 }
 
 /**
@@ -1663,30 +1661,23 @@ function hasNonEmptyString(input) {
 }
 
 /**
- * Build a render-request handler bound to the shared authorization extractor.
- * @param {object} root0 Handler dependencies.
- * @param {(permission: AllowEffects, req: NativeHttpRequest, res: NativeHttpResponse) => boolean} root0.validateRequest Pre-flight validator.
- * @param {(token: string) => Promise<{ uid?: string }>} root0.verifyIdToken Firebase token verifier.
- * @param {string} root0.adminUid UID allowed to trigger rendering.
- * @param {(permission: AllowEffects) => Promise<void>} root0.render Rendering function.
- * @param {RenderOptions['sendHttpResponse']} root0.sendHttpResponse Permission-aware response writer.
+ * Build a render-request handler from validation, authorization, and render capabilities.
+ * @param {(permission: AllowEffects, req: NativeHttpRequest, res: NativeHttpResponse) => boolean} validateRequest Pre-flight validator.
+ * @param {(permission: AllowEffects, request: {req: NativeHttpRequest, res: NativeHttpResponse}) => Promise<{ uid?: string } | null>} authorizeRequest Permission-aware request authorizer.
+ * @param {(permission: AllowEffects) => Promise<void>} render Rendering function.
+ * @param {RenderOptions['sendHttpResponse']} sendHttpResponse Permission-aware response writer.
  * @returns {(permission: AllowEffects, req: NativeHttpRequest, res: NativeHttpResponse) => Promise<void>} Fully wired handler.
  */
-export function buildHandleRenderRequest({
+export function buildHandleRenderRequest(
   validateRequest,
-  verifyIdToken,
-  adminUid,
+  authorizeRequest,
   render,
-  sendHttpResponse,
-}) {
+  sendHttpResponse
+) {
   assertFunction(validateRequest, 'validateRequest');
+  assertFunction(authorizeRequest, 'authorizeRequest');
   assertFunction(render, 'render');
-
-  const authorizeRequest = createAuthorizeRequest({
-    verifyIdToken,
-    adminUid,
-    sendHttpResponse,
-  });
+  assertFunction(sendHttpResponse, 'sendHttpResponse');
 
   /**
    * Guard the render workflow by ensuring the request is authorized.
@@ -1759,6 +1750,6 @@ export function buildHandleRenderRequest({
   };
 }
 
-export { handleInvalidateError, ensureAdminIdentity };
+export { handleInvalidateError, createAdminIdentityValidator };
 
 // Stryker restore all

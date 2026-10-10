@@ -2,6 +2,7 @@ import {
   buildHtml,
   buildHandleRenderRequest,
   createApplyCorsHeaders,
+  createAuthorizeRequest,
   createFetchStoryInfo,
   createFetchTopStoryIds,
   createRenderContents,
@@ -97,15 +98,19 @@ export function createRenderContentsEntrypoint(deps) {
     sendHttpResponse: typedDeps.sendHttpResponse,
   });
 
-  const handleRenderRequest = buildHandleRenderRequest({
-    validateRequest,
+  const authorizeRequest = createAuthorizeRequest({
     verifyIdToken: token => auth.verifyIdToken(token),
     adminUid: ADMIN_UID,
     sendHttpResponse: typedDeps.sendHttpResponse,
-    render: async permission => {
+  });
+  const handleRenderRequest = buildHandleRenderRequest(
+    validateRequest,
+    authorizeRequest,
+    async permission => {
       await render(permission);
     },
-  });
+    typedDeps.sendHttpResponse
+  );
 
   const handle = functions
     .region('europe-west1')

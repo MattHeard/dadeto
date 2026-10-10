@@ -9,13 +9,29 @@ await jest.unstable_mockModule(
     DEFAULT_BUCKET_NAME: 'bucket',
     buildHtml: jest.fn(() => 'html'),
     buildHandleRenderRequest:
-      ({ verifyIdToken, render }) =>
-      async (_permission, request, response) => {
-        await render(_permission);
-        await verifyIdToken(request.headers.authorization.slice(7));
-        response.status(200);
+      (validateRequest, authorizeRequest, render, sendHttpResponse) =>
+      async (permission, request, response) => {
+        if (!validateRequest(permission, request, response)) {
+          return;
+        }
+        if (
+          await authorizeRequest(permission, { req: request, res: response })
+        ) {
+          await render(permission);
+          sendHttpResponse(permission, response, {
+            status: 200,
+            body: { ok: true },
+            method: 'json',
+          });
+        }
       },
     createApplyCorsHeaders: jest.fn(() => jest.fn()),
+    createAuthorizeRequest:
+      ({ verifyIdToken, adminUid }) =>
+      async (_permission, { req }) => {
+        const decoded = await verifyIdToken(req.headers.authorization.slice(7));
+        return decoded.uid === adminUid ? decoded : null;
+      },
     createFetchStoryInfo: db => async storyId => {
       const snapshot = await db.collection('stories').doc(storyId).get();
       const data = snapshot.data();

@@ -14,7 +14,7 @@ import {
   resolveAuthorizationHeader,
   getHeaderFromHeaders,
   resolveHeaderValue,
-  ensureAdminIdentity as ensureAdminIdentityCore,
+  createAdminIdentityValidator as createAdminIdentityValidatorCore,
   DEFAULT_BUCKET_NAME,
   productionOrigins,
   renderContentsTestUtils,
@@ -124,13 +124,12 @@ function createAuthorizeRequest(options = {}) {
  * @returns {object|null} Authorized identity or null.
  */
 function ensureAdminIdentity(decoded, adminUid, response) {
-  return ensureAdminIdentityCore(Object.freeze({ testPermission: 'auth' }), {
-    decoded,
+  const validate = createAdminIdentityValidatorCore(
     adminUid,
-    res: response,
-    sendHttpResponse: (_permission, res, result) =>
-      res.status(result.status)[result.method](result.body),
-  });
+    (_permission, res, result) =>
+      res.status(result.status)[result.method](result.body)
+  );
+  return validate(Object.freeze({ testPermission: 'auth' }), decoded, response);
 }
 
 /**
@@ -156,12 +155,20 @@ function createValidateRequest(options = {}) {
  * @returns {(req: object, res: object) => Promise<void>} Test request handler.
  */
 function buildHandleRenderRequest(options = {}) {
-  const handler = buildHandleRenderRequestCore({
-    ...options,
-    sendHttpResponse: (_permission, response, result) => {
-      response.status(result.status)[result.method](result.body);
-    },
+  const sendHttpResponse = (_permission, response, result) => {
+    response.status(result.status)[result.method](result.body);
+  };
+  const authorizeRequest = createAuthorizeRequestCore({
+    verifyIdToken: options.verifyIdToken,
+    adminUid: options.adminUid,
+    sendHttpResponse,
   });
+  const handler = buildHandleRenderRequestCore(
+    options.validateRequest,
+    authorizeRequest,
+    options.render,
+    sendHttpResponse
+  );
   return (req, res) =>
     handler(Object.freeze({ testPermission: 'request' }), req, res);
 }
