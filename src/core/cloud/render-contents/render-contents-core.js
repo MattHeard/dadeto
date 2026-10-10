@@ -101,6 +101,18 @@ const DEFAULT_PAGE_SIZE = 100;
  */
 
 /**
+ * @typedef {object} InvalidationPathRequest
+ * @property {string} path CDN path to invalidate.
+ * @property {string} token OAuth bearer token.
+ * @property {string} url Compute URL map invalidation endpoint.
+ * @property {string} host CDN host name.
+ */
+
+/**
+ * @typedef {Pick<PathInvalidationOperations, 'effectFetchFn'|'randomUUID'|'logError'>} InvalidationPathOperations
+ */
+
+/**
  * Ensure the provided Firestore-like instance exposes the expected helpers.
  * @param {DbInstance} db Firestore-like instance to validate.
  * @returns {void}
@@ -595,15 +607,20 @@ function createPathInvalidationRunner(operations, config) {
     await Promise.all(
       paths.map(path =>
         operations.bindEffectBoundary(permission =>
-          invalidatePathItem(permission, {
-            path,
-            token,
-            url: config.url,
-            host: config.host,
-            effectFetchFn: operations.effectFetchFn,
-            randomUUID: operations.randomUUID,
-            logError: operations.logError,
-          })
+          invalidatePathItem(
+            permission,
+            {
+              path,
+              token,
+              url: config.url,
+              host: config.host,
+            },
+            {
+              effectFetchFn: operations.effectFetchFn,
+              randomUUID: operations.randomUUID,
+              logError: operations.logError,
+            }
+          )
         )
       )
     );
@@ -656,37 +673,48 @@ async function extractAccessToken(response) {
 /**
  * Send an invalidation request for a single path item.
  * @param {AllowEffects} permission Permission for this cache purge request.
- * @param {object} options Invalidation helpers.
- * @param {string} options.path CDN path to invalidate.
- * @param {string} options.token OAuth bearer token.
- * @param {string} options.url Compute URL map invalidation endpoint.
- * @param {string} options.host CDN host name.
- * @param {(permission: AllowEffects, input: string, init?: object) => Promise<FetchResponse>} options.effectFetchFn Permission-aware invalidation transport.
- * @param {() => string} options.randomUUID UUID generator for request IDs.
- * @param {(permission: AllowEffects, message: string, error?: unknown) => void} options.logError Permission-aware error logger.
+ * @param {InvalidationPathRequest} request Data for this CDN path request.
+ * @param {InvalidationPathOperations} operations Transport, request ID, and error logging capabilities.
  * @returns {Promise<void>} Resolves when the invalidation request completes.
  */
-async function invalidatePathItem(
-  permission,
-  { path, token, url, host, effectFetchFn, randomUUID, logError }
-) {
+async function invalidatePathItem(permission, request, operations) {
   try {
-    const response = await sendEffectFetch(permission, effectFetchFn, url, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        host,
-        path,
-        requestId: randomUUID(),
-      }),
-    });
-    logInvalidateResponse(permission, response, path, logError);
+    const response = await sendEffectFetch(
+      permission,
+      operations.effectFetchFn,
+      request.url,
+      buildInvalidationFetchOptions(request, operations.randomUUID)
+    );
+    logInvalidateResponse(
+      permission,
+      response,
+      request.path,
+      operations.logError
+    );
   } catch (error) {
-    handleInvalidateError(permission, error, path, logError);
+    handleInvalidateError(permission, error, request.path, operations.logError);
   }
+}
+
+/**
+ * Build the CDN request options for one path invalidation.
+ * @param {InvalidationPathRequest} request Data for this CDN path request.
+ * @param {() => string} randomUUID Request identifier generator.
+ * @returns {object} POST request options for the CDN invalidation endpoint.
+ */
+function buildInvalidationFetchOptions(request, randomUUID) {
+  return {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${request.token}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      host: request.host,
+      path: request.path,
+      requestId: randomUUID(),
+    }),
+  };
 }
 
 /**

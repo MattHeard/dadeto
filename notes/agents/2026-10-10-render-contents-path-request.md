@@ -1,0 +1,7 @@
+# Render contents per-path invalidation request
+
+- **Unexpected hurdle:** None; the existing integration tests already asserted the permission forwarded to CDN failure logging and checked the outgoing URL and body.
+- **Diagnosis:** `invalidatePathItem` combined per-path request data with transport, request-ID generation, and logging collaborators in an eight-effective-parameter bag.
+- **Chosen fix:** Pass `InvalidationPathRequest` separately from `InvalidationPathOperations`, and extract construction of the POST options into `buildInvalidationFetchOptions`. Keep `AllowEffects` as the first argument and preserve response logging and swallowed failures.
+- **Next-time guidance:** Continue the fresh scan in `render-contents-core.js`; `instantiateRenderContents` at line 910 is the next finding (effective arity 12) and assembles normalized rendering and invalidation capabilities.
+- **Evidence:** Focused Jest passed (3 suites, 71 tests). Fresh no-cache scan reduced `render-contents-core.js` from 11 findings to 10, with no new findings; report `.tmp/render-contents-parameter-bag-invalidate-path-item-final.json`. Scoped ESLint `--max-warnings=0`, TSDoc, and `git diff --check` passed. `npm run check` passed all 10 gates, including full coverage, 11/11 local E2E, zero clones, and zero vulnerabilities. `npm run build:cloud` passed. Logs: `.tmp/npm-check-render-contents-invalidate-path-item.log` and `.tmp/build-cloud-render-contents-invalidate-path-item.log`.
