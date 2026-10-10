@@ -137,18 +137,31 @@ describe('process new page defensive helpers', () => {
       })),
     };
 
+    const optionRef = { path: 'options/1', parent: null };
+    const buildPageContext = processNewPageTestUtils.createPageContextBuilder(
+      db,
+      batch
+    )(
+      () => 0,
+      () => 'page-1',
+      () => 'ts'
+    );
+
     await expect(
-      processNewPageTestUtils.createPageContext({
-        storyRef,
-        db,
-        random: () => 0,
-        randomUUID: () => 'page-1',
-        batch,
-        optionRef: { path: 'options/1', parent: null },
-        incomingOptionFullName: 'options/1',
-        getServerTimestamp: () => 'ts',
-      })
-    ).resolves.toMatchObject({ pageDocRef, pageNumber: 1 });
+      buildPageContext(storyRef, optionRef, 'options/1')
+    ).resolves.toEqual({
+      pageDocRef,
+      pageNumber: 1,
+      preserveVariantDirty: true,
+    });
+    expect(batch.set).toHaveBeenCalledWith(pageDocRef, {
+      number: 1,
+      incomingOption: 'options/1',
+      createdAt: 'ts',
+    });
+    expect(batch.update).toHaveBeenCalledWith(optionRef, {
+      targetPage: pageDocRef,
+    });
     expect(batch.update).toHaveBeenCalledTimes(1);
   });
 });

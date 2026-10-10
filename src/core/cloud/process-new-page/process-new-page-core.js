@@ -509,6 +509,12 @@ async function resolveIncomingOptionContext(
  */
 function createIncomingOptionContextBuilder(db, batch) {
   return function bindContextRuntime(random, randomUUID, getServerTimestamp) {
+    const buildPageContext = createPageContextBuilder(db, batch)(
+      random,
+      randomUUID,
+      getServerTimestamp
+    );
+
     return async function buildContext(
       validRefs,
       optionSnap,
@@ -524,17 +530,7 @@ function createIncomingOptionContextBuilder(db, batch) {
         );
       const pageContext = await resolveIncomingOptionPageContext(
         targetPage,
-        () =>
-          createPageContext({
-            storyRef,
-            db,
-            random,
-            randomUUID,
-            batch,
-            optionRef,
-            incomingOptionFullName,
-            getServerTimestamp,
-          })
+        () => buildPageContext(storyRef, optionRef, incomingOptionFullName)
       );
       return {
         ...pageContext,
@@ -544,6 +540,52 @@ function createIncomingOptionContextBuilder(db, batch) {
     };
   };
 }
+
+/**
+ * Stage page-context creation from database and batch dependencies.
+ * @param {import('firebase-admin/firestore').Firestore} db Firestore instance used for page-number lookup.
+ * @param {import('firebase-admin/firestore').WriteBatch} batch Batch collecting page writes.
+ * @returns {(random: () => number, randomUUID: () => string, getServerTimestamp: () => unknown) => (storyRef: import('firebase-admin/firestore').DocumentReference, optionRef: import('firebase-admin/firestore').DocumentReference, incomingOptionFullName: string) => Promise<{pageDocRef: import('firebase-admin/firestore').DocumentReference, pageNumber: number, preserveVariantDirty: boolean}>} Staged context builder.
+ */
+function createPageContextBuilder(db, batch) {
+  return function bindPageContextRuntime(
+    random,
+    randomUUID,
+    getServerTimestamp
+  ) {
+    return async function buildPageContext(
+      storyRef,
+      optionRef,
+      incomingOptionFullName
+    ) {
+      // Stryker disable all -- new-page creation uses the fixed Firestore write protocol.
+      const nextPageNumber = await findAvailablePageNumber(db, random);
+
+      const newPageId = randomUUID();
+      const pageDocRef = storyRef.collection('pages').doc(newPageId);
+
+      batch.set(pageDocRef, {
+        number: nextPageNumber,
+        incomingOption: incomingOptionFullName,
+        createdAt: getServerTimestamp(),
+      });
+
+      batch.update(optionRef, { targetPage: pageDocRef });
+
+      const sourceVariantRef = extractVariantRefFromOption(optionRef);
+      if (sourceVariantRef) {
+        batch.update(sourceVariantRef, { dirty: true });
+      }
+
+      return {
+        pageDocRef,
+        pageNumber: nextPageNumber,
+        preserveVariantDirty: true,
+      };
+    };
+  };
+}
+// Stryker restore all
 
 /**
  * Resolve incoming option refs or return null when processing should stop.
@@ -742,60 +784,6 @@ async function safeGetPage(targetPage) {
   } catch {
     return null;
   }
-}
-// Stryker restore all
-
-/**
- * Create a new page context when no existing page was found for the option submission.
- * @param {object} params Parameters describing the creation request.
- * @param {import('firebase-admin/firestore').DocumentReference} params.storyRef Story reference inferred from the option.
- * @param {import('firebase-admin/firestore').Firestore} params.db Firestore instance.
- * @param {() => number} params.random Random number generator for variant ordering.
- * @param {() => string} params.randomUUID UUID generator for new page documents.
- * @param {import('firebase-admin/firestore').WriteBatch} params.batch Write batch collecting Firestore operations.
- * @param {import('firebase-admin/firestore').DocumentReference} params.optionRef Option reference used for updates.
- * @param {string} params.incomingOptionFullName Full document path for the option.
- * @param {() => unknown} params.getServerTimestamp Function returning a Firestore server timestamp sentinel.
- * @returns {Promise<{
- *   pageDocRef: import('firebase-admin/firestore').DocumentReference,
- *   pageNumber: number,
- *   preserveVariantDirty: boolean,
- * }>} Newly created page context.
- */
-async function createPageContext({
-  storyRef,
-  db,
-  random,
-  randomUUID,
-  batch,
-  optionRef,
-  incomingOptionFullName,
-  getServerTimestamp,
-}) {
-  // Stryker disable all -- new-page creation uses the fixed Firestore write protocol.
-  const nextPageNumber = await findAvailablePageNumber(db, random);
-
-  const newPageId = randomUUID();
-  const pageDocRef = storyRef.collection('pages').doc(newPageId);
-
-  batch.set(pageDocRef, {
-    number: nextPageNumber,
-    incomingOption: incomingOptionFullName,
-    createdAt: getServerTimestamp(),
-  });
-
-  batch.update(optionRef, { targetPage: pageDocRef });
-
-  const sourceVariantRef = extractVariantRefFromOption(optionRef);
-  if (sourceVariantRef) {
-    batch.update(sourceVariantRef, { dirty: true });
-  }
-
-  return {
-    pageDocRef,
-    pageNumber: nextPageNumber,
-    preserveVariantDirty: true,
-  };
 }
 // Stryker restore all
 
@@ -1597,7 +1585,7 @@ export const processNewPageTestUtils = {
   extractAndValidateStoryRef,
   ensureOptionSnapshotRef,
   resolveStoryRefOrEmpty,
-  createPageContext,
+  createPageContextBuilder,
   createIncomingOptionContextBuilder,
 };
 
