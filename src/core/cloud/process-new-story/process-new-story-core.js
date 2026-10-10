@@ -33,6 +33,7 @@ export function resetFindAvailablePageNumberResolver() {
  * @typedef {import('firebase-admin/firestore').WriteBatch} WriteBatch
  * @typedef {import('firebase-admin/firestore').DocumentSnapshot | import('firebase-admin/firestore').QueryDocumentSnapshot} FirestoreDocumentSnapshot
  * @typedef {{ params?: Record<string, string> }} TriggerContext
+ * @typedef {{ functions: { region: (region: string) => { firestore: { document: (path: string) => Record<string, (handler: unknown) => unknown> } } }, getFirestoreInstance: () => Firestore, fieldValue: { serverTimestamp: () => FieldValue, increment: (value: number) => FieldValue }, randomUUID: () => string, random: () => number }} ProcessNewStoryHandleOptions
  */
 
 /**
@@ -458,30 +459,19 @@ export function createProcessNewStoryHandler(options) {
 
 /**
  * Build the Firestore trigger handle for new story submissions.
- * @param {object} options Runtime dependencies required to wire the trigger.
- * @param {{ region: (region: string) => { firestore: { document: (path: string) => Record<string, (handler: unknown) => unknown> } } }} options.functions Firestore functions namespace.
- * @param {() => import('firebase-admin/firestore').Firestore} options.getFirestoreInstance Firestore accessor.
- * @param {{ serverTimestamp: () => FieldValue, increment: (value: number) => FieldValue }} options.fieldValue FieldValue helper.
- * @param {() => string} options.randomUUID UUID generator.
- * @param {() => number} options.random Random generator.
+ * @param {ProcessNewStoryHandleOptions} options Runtime dependencies required to wire the trigger.
  * @returns {unknown} Registered Firestore trigger handle.
  */
-export function createProcessNewStoryHandle({
-  functions,
-  getFirestoreInstance,
-  fieldValue,
-  randomUUID,
-  random,
-}) {
+export function createProcessNewStoryHandle(options) {
   // Stryker disable all -- endpoint creation uses the fixed Firestore trigger protocol.
   return createFirestoreHandle({
-    functions,
-    getFirestoreInstance,
+    functions: options.functions,
+    getFirestoreInstance: options.getFirestoreInstance,
     documentPath: 'storyFormSubmissions/{subId}',
     createHandler: createProcessNewStorySubmissionHandlerFactory({
-      fieldValue,
-      randomUUID,
-      random,
+      fieldValue: options.fieldValue,
+      randomUUID: options.randomUUID,
+      random: options.random,
     }),
   });
 }
@@ -552,48 +542,45 @@ function createProcessNewStorySubmissionHandler(deps) {
 
 /**
  * Orchestrate the steps required to persist a new story submission.
- * @param {object} params Parameters required to process the submission.
- * @param {Record<string, unknown>} params.submission Submission payload.
- * @param {FirestoreDocumentSnapshot | null | undefined} params.snapshot Trigger snapshot.
- * @param {{ params?: Record<string, string> } | undefined} params.context Trigger context.
- * @param {Firestore} params.db Firestore instance.
- * @param {() => string} params.randomUUID UUID generator.
- * @param {() => number} params.random Random number generator.
- * @param {() => FieldValue} params.getServerTimestamp Server timestamp helper.
+ * @param {ProcessStoryParams} params Per-submission inputs and bound dependencies.
  * @returns {Promise<null>} Null once work completes.
  */
-async function processStorySubmission({
-  submission,
-  snapshot,
-  context,
-  db,
-  randomUUID,
-  random,
-  getServerTimestamp,
-}) {
-  if (submission.processed) {
+async function processStorySubmission(params) {
+  if (params.submission.processed) {
     return null;
   }
 
-  const identifiers = resolveStoryIdentifiers(snapshot, context, randomUUID);
-  const pageNumber = await findAvailablePageNumberResolver(db, random);
-  const refs = createStoryReferences(db, identifiers);
-  const batch = db.batch();
+  const identifiers = resolveStoryIdentifiers(
+    params.snapshot,
+    params.context,
+    params.randomUUID
+  );
+  const pageNumber = await findAvailablePageNumberResolver(
+    params.db,
+    params.random
+  );
+  const refs = createStoryReferences(params.db, identifiers);
+  const batch = params.db.batch();
 
   queueSubmissionWrites({
     batch,
-    db,
+    db: params.db,
     refs,
-    submission,
+    submission: params.submission,
     pageNumber,
-    random,
-    randomUUID,
-    getServerTimestamp,
+    random: params.random,
+    randomUUID: params.randomUUID,
+    getServerTimestamp: params.getServerTimestamp,
     storyId: identifiers.storyId,
-    snapshot,
+    snapshot: params.snapshot,
   });
 
-  await ensureAuthorRecord({ batch, db, submission, randomUUID });
+  await ensureAuthorRecord({
+    batch,
+    db: params.db,
+    submission: params.submission,
+    randomUUID: params.randomUUID,
+  });
 
   await batch.commit();
   return null;

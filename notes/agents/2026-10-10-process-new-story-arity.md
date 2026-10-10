@@ -1,0 +1,7 @@
+# Process New Story parameter-bag cleanup
+
+- Unexpected hurdle: the trigger builder's runtime collaborators and the per-submission write plan are both multi-field objects, but they serve different lifetimes and should remain separate named contracts.
+- Diagnosis: both findings came from destructuring those contracts at their consumer boundary. The story parameters are already represented by the `ProcessStoryParams` type; the trigger builder has a distinct runtime options shape.
+- Fix: named the trigger runtime options type and retained it as a whole value; changed `processStorySubmission` to accept `ProcessStoryParams` directly. This keeps handler construction and per-event work clearly separated without altering the batch write order.
+- Evidence: focused Jest passed (1 suite, 10 tests); scoped ESLint, TSDoc, and `git diff --check` passed; all 10 `npm run check` gates passed (`.tmp/npm-check-parameter-bag-process-new-story.log`), including 11 local browser tests, 0 clones, and 0 audit vulnerabilities. Target no-cache scan: `.tmp/parameter-bag-process-new-story.scan.json` (0). Global scan: `.tmp/parameter-bag-global-after-process-new-story.json` (88 findings).
+- Next guidance: the next cluster is in `src/core/local/gcp-simulator/playwright-runner.js`: `spawnWriterServer` and `spawnPlaywright`. Preserve free-port reservation, process environment, stdio/ready handling, and error/exit cleanup.
