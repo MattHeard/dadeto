@@ -182,18 +182,20 @@ describe('cloud browser entrypoints', () => {
     ]);
     const copyCloudJs = await readFile('src/core/build/copy-cloud.js', 'utf8');
 
-    expect(copyCloudJs).toContain("target: join(infraDir, 'core', 'browser')");
     expect(copyCloudJs).toContain(
-      "target: join(infraDir, 'core', 'commonCore.js')"
+      "target: planValues.join(planValues.infraDir, 'core', 'browser')"
     );
     expect(copyCloudJs).toContain(
-      "const commonCoreSource = join(srcCoreDir, 'index.js');"
+      "target: planValues.join(planValues.infraDir, 'core', 'commonCore.js')"
     );
     expect(copyCloudJs).toContain(
-      "target: join(infraDir, 'core', 'express-app.js')"
+      "const commonCoreSource = planValues.join(planValues.srcCoreDir, 'index.js');"
+    );
+    expect(copyCloudJs).toContain(
+      "target: planValues.join(planValues.infraDir, 'core', 'express-app.js')"
     );
     expect(copyCloudJs).toMatch(
-      /target:\s+join\(\s*infraFunctionsDir,\s*'generate-stats',\s*'core',\s*'express-app\.js'\s*\)/
+      /target:\s+planValues\.join\(\s*planValues\.infraFunctionsDir,\s*'generate-stats',\s*'core',\s*'express-app\.js'\s*\)/
     );
     expect(copyCloudJs).toContain("    'errors',");
     expect(mainTf).toContain(

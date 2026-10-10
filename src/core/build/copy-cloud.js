@@ -5,7 +5,10 @@ import {
   getCurrentDirectory,
 } from '../commonCore.js';
 
-/** @typedef {{[key: string]: any}} CopyCloudPlanValues */
+/**
+ * Copy-plan record consumed by the declarative manifest projections below.
+ * @typedef {{[key: string]: any}} CopyCloudPlanValues
+ */
 /** @typedef {CopyCloudPlanValues & {functionDirectories: string[]}} CopyCloudDirectoryPlanValues */
 
 /**
@@ -49,86 +52,94 @@ import {
  */
 // Stryker disable all -- declarative cloud-copy manifest entries are reviewed as a static asset table; workflow behavior is covered below.
 function createIndividualFileCopiesPart1(planValues) {
-  const {
-    join,
-    infraDir,
-    srcCloudDir,
-    infraFunctionsDir,
-    srcCoreBrowserDir,
-    srcCoreBrowserModerationDir,
-    browserDir,
-    generateStatsGcfSource,
-    commonGcfSource,
-    assignModerationJobGcfSource,
-    assignModerationCoreSource,
-    cloudCoreSource,
-    commonCoreSource,
-    errorReportingSource,
-    expressAppSource,
-    generateStatsCoreSource,
-    generateStatsVerifyAdminSource,
-    submitNewPageCoreSource,
-    submitNewPageHelpersSource,
-    firebaseFunctionsCopies,
-    functionCoreLocalCopies,
-    functionCoreBuildCopies,
-  } = planValues;
   return [
     {
-      source: join(browserDir, 'admin.js'),
-      target: join(infraDir, 'admin.js'),
+      source: planValues.join(planValues.browserDir, 'admin.js'),
+      target: planValues.join(planValues.infraDir, 'admin.js'),
     },
     {
-      source: join(browserDir, 'admin-core.js'),
-      target: join(infraDir, 'admin-core.js'),
+      source: planValues.join(planValues.browserDir, 'admin-core.js'),
+      target: planValues.join(planValues.infraDir, 'admin-core.js'),
     },
     {
-      source: commonCoreSource,
-      target: join(infraDir, 'commonCore.js'),
+      source: planValues.commonCoreSource,
+      target: planValues.join(planValues.infraDir, 'commonCore.js'),
     },
     {
-      source: commonCoreSource,
-      target: join(infraDir, 'core', 'commonCore.js'),
+      source: planValues.commonCoreSource,
+      target: planValues.join(planValues.infraDir, 'core', 'commonCore.js'),
     },
     {
-      source: errorReportingSource,
-      target: join(infraDir, 'core', 'error-reporting.js'),
+      source: planValues.errorReportingSource,
+      target: planValues.join(
+        planValues.infraDir,
+        'core',
+        'error-reporting.js'
+      ),
     },
     {
-      source: expressAppSource,
-      target: join(infraDir, 'core', 'express-app.js'),
+      source: planValues.expressAppSource,
+      target: planValues.join(planValues.infraDir, 'core', 'express-app.js'),
     },
     {
-      source: join(srcCoreBrowserDir, 'browser-core.js'),
-      target: join(infraDir, 'core', 'browser', 'browser-core.js'),
+      source: planValues.join(planValues.srcCoreBrowserDir, 'browser-core.js'),
+      target: planValues.join(
+        planValues.infraDir,
+        'core',
+        'browser',
+        'browser-core.js'
+      ),
     },
     {
-      source: join(browserDir, 'load-static-config-core.js'),
-      target: join(infraDir, 'load-static-config-core.js'),
+      source: planValues.join(
+        planValues.browserDir,
+        'load-static-config-core.js'
+      ),
+      target: planValues.join(
+        planValues.infraDir,
+        'load-static-config-core.js'
+      ),
     },
     {
-      source: join(srcCoreBrowserModerationDir, 'authedFetch.js'),
-      target: join(infraDir, 'core', 'browser', 'moderation', 'authedFetch.js'),
+      source: planValues.join(
+        planValues.srcCoreBrowserModerationDir,
+        'authedFetch.js'
+      ),
+      target: planValues.join(
+        planValues.infraDir,
+        'core',
+        'browser',
+        'moderation',
+        'authedFetch.js'
+      ),
     },
     {
-      source: join(srcCloudDir, 'firebase-functions.js'),
-      target: join(infraFunctionsDir, 'firebase-functions.js'),
+      source: planValues.join(planValues.srcCloudDir, 'firebase-functions.js'),
+      target: planValues.join(
+        planValues.infraFunctionsDir,
+        'firebase-functions.js'
+      ),
     },
     {
-      source: errorReportingSource,
-      target: join(infraFunctionsDir, 'errors', 'core', 'error-reporting.js'),
+      source: planValues.errorReportingSource,
+      target: planValues.join(
+        planValues.infraFunctionsDir,
+        'errors',
+        'core',
+        'error-reporting.js'
+      ),
     },
-    ...firebaseFunctionsCopies,
-    ...functionCoreLocalCopies,
-    ...functionCoreBuildCopies,
+    ...planValues.firebaseFunctionsCopies,
+    ...planValues.functionCoreLocalCopies,
+    ...planValues.functionCoreBuildCopies,
     {
-      source: cloudCoreSource,
-      target: join(infraFunctionsDir, 'cloud-core.js'),
+      source: planValues.cloudCoreSource,
+      target: planValues.join(planValues.infraFunctionsDir, 'cloud-core.js'),
     },
     {
-      source: assignModerationCoreSource,
-      target: join(
-        infraDir,
+      source: planValues.assignModerationCoreSource,
+      target: planValues.join(
+        planValues.infraDir,
         'core',
         'cloud',
         'assign-moderation-job',
@@ -136,9 +147,9 @@ function createIndividualFileCopiesPart1(planValues) {
       ),
     },
     {
-      source: cloudCoreSource,
-      target: join(
-        infraDir,
+      source: planValues.cloudCoreSource,
+      target: planValues.join(
+        planValues.infraDir,
         'core',
         'cloud',
         'assign-moderation-job',
@@ -146,45 +157,57 @@ function createIndividualFileCopiesPart1(planValues) {
       ),
     },
     {
-      source: assignModerationCoreSource,
-      target: join(
-        infraFunctionsDir,
+      source: planValues.assignModerationCoreSource,
+      target: planValues.join(
+        planValues.infraFunctionsDir,
         'assign-moderation-job',
         'assign-moderation-job-core.js'
       ),
     },
     {
-      source: cloudCoreSource,
-      target: join(infraFunctionsDir, 'assign-moderation-job', 'cloud-core.js'),
+      source: planValues.cloudCoreSource,
+      target: planValues.join(
+        planValues.infraFunctionsDir,
+        'assign-moderation-job',
+        'cloud-core.js'
+      ),
     },
     {
-      source: commonCoreSource,
-      target: join(infraFunctionsDir, 'assign-moderation-job', 'commonCore.js'),
+      source: planValues.commonCoreSource,
+      target: planValues.join(
+        planValues.infraFunctionsDir,
+        'assign-moderation-job',
+        'commonCore.js'
+      ),
     },
     {
-      source: commonGcfSource,
-      target: join(infraFunctionsDir, 'assign-moderation-job', 'common-gcf.js'),
+      source: planValues.commonGcfSource,
+      target: planValues.join(
+        planValues.infraFunctionsDir,
+        'assign-moderation-job',
+        'common-gcf.js'
+      ),
     },
     {
-      source: assignModerationJobGcfSource,
-      target: join(
-        infraFunctionsDir,
+      source: planValues.assignModerationJobGcfSource,
+      target: planValues.join(
+        planValues.infraFunctionsDir,
         'assign-moderation-job',
         'assign-moderation-job-gcf.js'
       ),
     },
     {
-      source: generateStatsGcfSource,
-      target: join(
-        infraFunctionsDir,
+      source: planValues.generateStatsGcfSource,
+      target: planValues.join(
+        planValues.infraFunctionsDir,
         'generate-stats',
         'generate-stats-gcf.js'
       ),
     },
     {
-      source: generateStatsCoreSource,
-      target: join(
-        infraDir,
+      source: planValues.generateStatsCoreSource,
+      target: planValues.join(
+        planValues.infraDir,
         'core',
         'cloud',
         'generate-stats',
@@ -192,9 +215,9 @@ function createIndividualFileCopiesPart1(planValues) {
       ),
     },
     {
-      source: generateStatsVerifyAdminSource,
-      target: join(
-        infraDir,
+      source: planValues.generateStatsVerifyAdminSource,
+      target: planValues.join(
+        planValues.infraDir,
         'core',
         'cloud',
         'generate-stats',
@@ -202,42 +225,58 @@ function createIndividualFileCopiesPart1(planValues) {
       ),
     },
     {
-      source: generateStatsCoreSource,
-      target: join(
-        infraFunctionsDir,
+      source: planValues.generateStatsCoreSource,
+      target: planValues.join(
+        planValues.infraFunctionsDir,
         'generate-stats',
         'generate-stats-core.js'
       ),
     },
     {
-      source: generateStatsVerifyAdminSource,
-      target: join(infraFunctionsDir, 'generate-stats', 'verifyAdmin.js'),
+      source: planValues.generateStatsVerifyAdminSource,
+      target: planValues.join(
+        planValues.infraFunctionsDir,
+        'generate-stats',
+        'verifyAdmin.js'
+      ),
     },
     {
-      source: cloudCoreSource,
-      target: join(infraFunctionsDir, 'generate-stats', 'cloud-core.js'),
+      source: planValues.cloudCoreSource,
+      target: planValues.join(
+        planValues.infraFunctionsDir,
+        'generate-stats',
+        'cloud-core.js'
+      ),
     },
     {
-      source: commonCoreSource,
-      target: join(infraFunctionsDir, 'generate-stats', 'commonCore.js'),
+      source: planValues.commonCoreSource,
+      target: planValues.join(
+        planValues.infraFunctionsDir,
+        'generate-stats',
+        'commonCore.js'
+      ),
     },
     {
-      source: expressAppSource,
-      target: join(
-        infraFunctionsDir,
+      source: planValues.expressAppSource,
+      target: planValues.join(
+        planValues.infraFunctionsDir,
         'generate-stats',
         'core',
         'express-app.js'
       ),
     },
     {
-      source: commonGcfSource,
-      target: join(infraFunctionsDir, 'generate-stats', 'common-gcf.js'),
+      source: planValues.commonGcfSource,
+      target: planValues.join(
+        planValues.infraFunctionsDir,
+        'generate-stats',
+        'common-gcf.js'
+      ),
     },
     {
-      source: submitNewPageCoreSource,
-      target: join(
-        infraDir,
+      source: planValues.submitNewPageCoreSource,
+      target: planValues.join(
+        planValues.infraDir,
         'core',
         'cloud',
         'submit-new-page',
@@ -245,28 +284,50 @@ function createIndividualFileCopiesPart1(planValues) {
       ),
     },
     {
-      source: submitNewPageCoreSource,
-      target: join(
-        infraFunctionsDir,
+      source: planValues.submitNewPageCoreSource,
+      target: planValues.join(
+        planValues.infraFunctionsDir,
         'submit-new-page',
         'submit-new-page-core.js'
       ),
     },
     {
-      source: submitNewPageHelpersSource,
-      target: join(infraDir, 'core', 'cloud', 'submit-new-page', 'helpers.js'),
+      source: planValues.submitNewPageHelpersSource,
+      target: planValues.join(
+        planValues.infraDir,
+        'core',
+        'cloud',
+        'submit-new-page',
+        'helpers.js'
+      ),
     },
     {
-      source: submitNewPageHelpersSource,
-      target: join(infraFunctionsDir, 'submit-new-page', 'helpers.js'),
+      source: planValues.submitNewPageHelpersSource,
+      target: planValues.join(
+        planValues.infraFunctionsDir,
+        'submit-new-page',
+        'helpers.js'
+      ),
     },
     {
-      source: join(srcCloudDir, 'submit-new-page', 'runtime.js'),
-      target: join(infraFunctionsDir, 'submit-new-page', 'runtime.js'),
+      source: planValues.join(
+        planValues.srcCloudDir,
+        'submit-new-page',
+        'runtime.js'
+      ),
+      target: planValues.join(
+        planValues.infraFunctionsDir,
+        'submit-new-page',
+        'runtime.js'
+      ),
     },
     {
-      source: cloudCoreSource,
-      target: join(infraFunctionsDir, 'submit-new-page', 'cloud-core.js'),
+      source: planValues.cloudCoreSource,
+      target: planValues.join(
+        planValues.infraFunctionsDir,
+        'submit-new-page',
+        'cloud-core.js'
+      ),
     },
   ];
 }
@@ -277,39 +338,27 @@ function createIndividualFileCopiesPart1(planValues) {
  * @returns {Array<{source: string, target: string}>} Copy entries.
  */
 function createIndividualFileCopiesPart2(planValues) {
-  const {
-    join,
-    infraDir,
-    srcCloudDir,
-    infraFunctionsDir,
-    commonGcfSource,
-    cloudCoreSource,
-    commonCoreSource,
-    getApiKeyCreditCoreSource,
-    getApiKeyCreditCreateDbSource,
-    getApiKeyCreditGcfSource,
-    getApiKeyCreditV2CoreSource,
-    getApiKeyCreditV2CreateDbSource,
-    getApiKeyCreditV2SnapshotSource,
-    getApiKeyCreditV2GcfSource,
-    hideVariantHtmlCoreSource,
-    hideVariantHtmlGcfSource,
-    markVariantDirtyCoreSource,
-    processNewPageCoreSource,
-  } = planValues;
   return [
     {
-      source: commonCoreSource,
-      target: join(infraFunctionsDir, 'submit-new-page', 'commonCore.js'),
+      source: planValues.commonCoreSource,
+      target: planValues.join(
+        planValues.infraFunctionsDir,
+        'submit-new-page',
+        'commonCore.js'
+      ),
     },
     {
-      source: commonGcfSource,
-      target: join(infraFunctionsDir, 'submit-new-page', 'common-gcf.js'),
+      source: planValues.commonGcfSource,
+      target: planValues.join(
+        planValues.infraFunctionsDir,
+        'submit-new-page',
+        'common-gcf.js'
+      ),
     },
     {
-      source: getApiKeyCreditCoreSource,
-      target: join(
-        infraDir,
+      source: planValues.getApiKeyCreditCoreSource,
+      target: planValues.join(
+        planValues.infraDir,
         'core',
         'cloud',
         'get-api-key-credit',
@@ -317,9 +366,9 @@ function createIndividualFileCopiesPart2(planValues) {
       ),
     },
     {
-      source: getApiKeyCreditCreateDbSource,
-      target: join(
-        infraDir,
+      source: planValues.getApiKeyCreditCreateDbSource,
+      target: planValues.join(
+        planValues.infraDir,
         'core',
         'cloud',
         'get-api-key-credit',
@@ -327,81 +376,113 @@ function createIndividualFileCopiesPart2(planValues) {
       ),
     },
     {
-      source: getApiKeyCreditCoreSource,
-      target: join(
-        infraFunctionsDir,
+      source: planValues.getApiKeyCreditCoreSource,
+      target: planValues.join(
+        planValues.infraFunctionsDir,
         'get-api-key-credit',
         'get-api-key-credit-core.js'
       ),
     },
     {
-      source: getApiKeyCreditCreateDbSource,
-      target: join(infraFunctionsDir, 'get-api-key-credit', 'create-db.js'),
+      source: planValues.getApiKeyCreditCreateDbSource,
+      target: planValues.join(
+        planValues.infraFunctionsDir,
+        'get-api-key-credit',
+        'create-db.js'
+      ),
     },
     {
-      source: cloudCoreSource,
-      target: join(infraFunctionsDir, 'get-api-key-credit', 'cloud-core.js'),
+      source: planValues.cloudCoreSource,
+      target: planValues.join(
+        planValues.infraFunctionsDir,
+        'get-api-key-credit',
+        'cloud-core.js'
+      ),
     },
     {
-      source: commonCoreSource,
-      target: join(infraFunctionsDir, 'get-api-key-credit', 'commonCore.js'),
+      source: planValues.commonCoreSource,
+      target: planValues.join(
+        planValues.infraFunctionsDir,
+        'get-api-key-credit',
+        'commonCore.js'
+      ),
     },
     {
-      source: commonGcfSource,
-      target: join(infraFunctionsDir, 'get-api-key-credit', 'common-gcf.js'),
+      source: planValues.commonGcfSource,
+      target: planValues.join(
+        planValues.infraFunctionsDir,
+        'get-api-key-credit',
+        'common-gcf.js'
+      ),
     },
     {
-      source: getApiKeyCreditGcfSource,
-      target: join(
-        infraFunctionsDir,
+      source: planValues.getApiKeyCreditGcfSource,
+      target: planValues.join(
+        planValues.infraFunctionsDir,
         'get-api-key-credit',
         'get-api-key-credit-gcf.js'
       ),
     },
     {
-      source: getApiKeyCreditV2CoreSource,
-      target: join(
-        infraFunctionsDir,
+      source: planValues.getApiKeyCreditV2CoreSource,
+      target: planValues.join(
+        planValues.infraFunctionsDir,
         'get-api-key-credit-v2',
         'get-api-key-credit-v2-core.js'
       ),
     },
     {
-      source: cloudCoreSource,
-      target: join(infraFunctionsDir, 'get-api-key-credit-v2', 'cloud-core.js'),
+      source: planValues.cloudCoreSource,
+      target: planValues.join(
+        planValues.infraFunctionsDir,
+        'get-api-key-credit-v2',
+        'cloud-core.js'
+      ),
     },
     {
-      source: commonCoreSource,
-      target: join(infraFunctionsDir, 'get-api-key-credit-v2', 'commonCore.js'),
+      source: planValues.commonCoreSource,
+      target: planValues.join(
+        planValues.infraFunctionsDir,
+        'get-api-key-credit-v2',
+        'commonCore.js'
+      ),
     },
     {
-      source: commonGcfSource,
-      target: join(infraFunctionsDir, 'get-api-key-credit-v2', 'common-gcf.js'),
+      source: planValues.commonGcfSource,
+      target: planValues.join(
+        planValues.infraFunctionsDir,
+        'get-api-key-credit-v2',
+        'common-gcf.js'
+      ),
     },
     {
-      source: getApiKeyCreditV2GcfSource,
-      target: join(
-        infraFunctionsDir,
+      source: planValues.getApiKeyCreditV2GcfSource,
+      target: planValues.join(
+        planValues.infraFunctionsDir,
         'get-api-key-credit-v2',
         'get-api-key-credit-v2-gcf.js'
       ),
     },
     {
-      source: getApiKeyCreditV2CreateDbSource,
-      target: join(infraFunctionsDir, 'get-api-key-credit-v2', 'create-db.js'),
+      source: planValues.getApiKeyCreditV2CreateDbSource,
+      target: planValues.join(
+        planValues.infraFunctionsDir,
+        'get-api-key-credit-v2',
+        'create-db.js'
+      ),
     },
     {
-      source: getApiKeyCreditV2SnapshotSource,
-      target: join(
-        infraFunctionsDir,
+      source: planValues.getApiKeyCreditV2SnapshotSource,
+      target: planValues.join(
+        planValues.infraFunctionsDir,
         'get-api-key-credit-v2',
         'get-api-key-credit-snapshot.js'
       ),
     },
     {
-      source: hideVariantHtmlCoreSource,
-      target: join(
-        infraDir,
+      source: planValues.hideVariantHtmlCoreSource,
+      target: planValues.join(
+        planValues.infraDir,
         'core',
         'cloud',
         'hide-variant-html',
@@ -409,37 +490,49 @@ function createIndividualFileCopiesPart2(planValues) {
       ),
     },
     {
-      source: hideVariantHtmlCoreSource,
-      target: join(
-        infraFunctionsDir,
+      source: planValues.hideVariantHtmlCoreSource,
+      target: planValues.join(
+        planValues.infraFunctionsDir,
         'hide-variant-html',
         'hide-variant-html-core.js'
       ),
     },
     {
-      source: cloudCoreSource,
-      target: join(infraFunctionsDir, 'hide-variant-html', 'cloud-core.js'),
+      source: planValues.cloudCoreSource,
+      target: planValues.join(
+        planValues.infraFunctionsDir,
+        'hide-variant-html',
+        'cloud-core.js'
+      ),
     },
     {
-      source: commonCoreSource,
-      target: join(infraFunctionsDir, 'hide-variant-html', 'commonCore.js'),
+      source: planValues.commonCoreSource,
+      target: planValues.join(
+        planValues.infraFunctionsDir,
+        'hide-variant-html',
+        'commonCore.js'
+      ),
     },
     {
-      source: commonGcfSource,
-      target: join(infraFunctionsDir, 'hide-variant-html', 'common-gcf.js'),
+      source: planValues.commonGcfSource,
+      target: planValues.join(
+        planValues.infraFunctionsDir,
+        'hide-variant-html',
+        'common-gcf.js'
+      ),
     },
     {
-      source: hideVariantHtmlGcfSource,
-      target: join(
-        infraFunctionsDir,
+      source: planValues.hideVariantHtmlGcfSource,
+      target: planValues.join(
+        planValues.infraFunctionsDir,
         'hide-variant-html',
         'hide-variant-html-gcf.js'
       ),
     },
     {
-      source: markVariantDirtyCoreSource,
-      target: join(
-        infraDir,
+      source: planValues.markVariantDirtyCoreSource,
+      target: planValues.join(
+        planValues.infraDir,
         'core',
         'cloud',
         'mark-variant-dirty',
@@ -447,41 +540,53 @@ function createIndividualFileCopiesPart2(planValues) {
       ),
     },
     {
-      source: markVariantDirtyCoreSource,
-      target: join(
-        infraFunctionsDir,
+      source: planValues.markVariantDirtyCoreSource,
+      target: planValues.join(
+        planValues.infraFunctionsDir,
         'mark-variant-dirty',
         'mark-variant-dirty-core.js'
       ),
     },
     {
-      source: cloudCoreSource,
-      target: join(infraFunctionsDir, 'mark-variant-dirty', 'cloud-core.js'),
-    },
-    {
-      source: commonCoreSource,
-      target: join(infraFunctionsDir, 'mark-variant-dirty', 'commonCore.js'),
-    },
-    {
-      source: commonGcfSource,
-      target: join(infraFunctionsDir, 'mark-variant-dirty', 'common-gcf.js'),
-    },
-    {
-      source: join(
-        srcCloudDir,
+      source: planValues.cloudCoreSource,
+      target: planValues.join(
+        planValues.infraFunctionsDir,
         'mark-variant-dirty',
-        'mark-variant-dirty-gcf.js'
-      ),
-      target: join(
-        infraFunctionsDir,
-        'mark-variant-dirty',
-        'mark-variant-dirty-gcf.js'
+        'cloud-core.js'
       ),
     },
     {
-      source: processNewPageCoreSource,
-      target: join(
-        infraDir,
+      source: planValues.commonCoreSource,
+      target: planValues.join(
+        planValues.infraFunctionsDir,
+        'mark-variant-dirty',
+        'commonCore.js'
+      ),
+    },
+    {
+      source: planValues.commonGcfSource,
+      target: planValues.join(
+        planValues.infraFunctionsDir,
+        'mark-variant-dirty',
+        'common-gcf.js'
+      ),
+    },
+    {
+      source: planValues.join(
+        planValues.srcCloudDir,
+        'mark-variant-dirty',
+        'mark-variant-dirty-gcf.js'
+      ),
+      target: planValues.join(
+        planValues.infraFunctionsDir,
+        'mark-variant-dirty',
+        'mark-variant-dirty-gcf.js'
+      ),
+    },
+    {
+      source: planValues.processNewPageCoreSource,
+      target: planValues.join(
+        planValues.infraDir,
         'core',
         'cloud',
         'process-new-page',
@@ -497,55 +602,51 @@ function createIndividualFileCopiesPart2(planValues) {
  * @returns {Array<{source: string, target: string}>} Copy entries.
  */
 function createIndividualFileCopiesPart3(planValues) {
-  const {
-    join,
-    infraDir,
-    infraFunctionsDir,
-    commonGcfSource,
-    cloudCoreSource,
-    commonCoreSource,
-    markVariantDirtyVerifyAdminSource,
-    processNewPageCoreSource,
-    processNewPageGcfSource,
-    processNewStoryCoreSource,
-    processNewStoryGcfSource,
-    updateVariantVisibilityCoreSource,
-    updateVariantVisibilityGcfSource,
-    getModerationVariantCoreSource,
-  } = planValues;
   return [
     {
-      source: processNewPageCoreSource,
-      target: join(
-        infraFunctionsDir,
+      source: planValues.processNewPageCoreSource,
+      target: planValues.join(
+        planValues.infraFunctionsDir,
         'process-new-page',
         'process-new-page-core.js'
       ),
     },
     {
-      source: cloudCoreSource,
-      target: join(infraFunctionsDir, 'process-new-page', 'cloud-core.js'),
+      source: planValues.cloudCoreSource,
+      target: planValues.join(
+        planValues.infraFunctionsDir,
+        'process-new-page',
+        'cloud-core.js'
+      ),
     },
     {
-      source: commonCoreSource,
-      target: join(infraFunctionsDir, 'process-new-page', 'commonCore.js'),
+      source: planValues.commonCoreSource,
+      target: planValues.join(
+        planValues.infraFunctionsDir,
+        'process-new-page',
+        'commonCore.js'
+      ),
     },
     {
-      source: commonGcfSource,
-      target: join(infraFunctionsDir, 'process-new-page', 'common-gcf.js'),
+      source: planValues.commonGcfSource,
+      target: planValues.join(
+        planValues.infraFunctionsDir,
+        'process-new-page',
+        'common-gcf.js'
+      ),
     },
     {
-      source: processNewPageGcfSource,
-      target: join(
-        infraFunctionsDir,
+      source: planValues.processNewPageGcfSource,
+      target: planValues.join(
+        planValues.infraFunctionsDir,
         'process-new-page',
         'process-new-page-gcf.js'
       ),
     },
     {
-      source: processNewStoryCoreSource,
-      target: join(
-        infraDir,
+      source: planValues.processNewStoryCoreSource,
+      target: planValues.join(
+        planValues.infraDir,
         'core',
         'cloud',
         'process-new-story',
@@ -553,45 +654,57 @@ function createIndividualFileCopiesPart3(planValues) {
       ),
     },
     {
-      source: processNewStoryCoreSource,
-      target: join(
-        infraFunctionsDir,
+      source: planValues.processNewStoryCoreSource,
+      target: planValues.join(
+        planValues.infraFunctionsDir,
         'process-new-story',
         'process-new-story-core.js'
       ),
     },
     {
-      source: processNewPageCoreSource,
-      target: join(
-        infraFunctionsDir,
+      source: planValues.processNewPageCoreSource,
+      target: planValues.join(
+        planValues.infraFunctionsDir,
         'process-new-story',
         'process-new-page-core.js'
       ),
     },
     {
-      source: cloudCoreSource,
-      target: join(infraFunctionsDir, 'process-new-story', 'cloud-core.js'),
+      source: planValues.cloudCoreSource,
+      target: planValues.join(
+        planValues.infraFunctionsDir,
+        'process-new-story',
+        'cloud-core.js'
+      ),
     },
     {
-      source: commonCoreSource,
-      target: join(infraFunctionsDir, 'process-new-story', 'commonCore.js'),
+      source: planValues.commonCoreSource,
+      target: planValues.join(
+        planValues.infraFunctionsDir,
+        'process-new-story',
+        'commonCore.js'
+      ),
     },
     {
-      source: commonGcfSource,
-      target: join(infraFunctionsDir, 'process-new-story', 'common-gcf.js'),
+      source: planValues.commonGcfSource,
+      target: planValues.join(
+        planValues.infraFunctionsDir,
+        'process-new-story',
+        'common-gcf.js'
+      ),
     },
     {
-      source: processNewStoryGcfSource,
-      target: join(
-        infraFunctionsDir,
+      source: planValues.processNewStoryGcfSource,
+      target: planValues.join(
+        planValues.infraFunctionsDir,
         'process-new-story',
         'process-new-story-gcf.js'
       ),
     },
     {
-      source: updateVariantVisibilityCoreSource,
-      target: join(
-        infraDir,
+      source: planValues.updateVariantVisibilityCoreSource,
+      target: planValues.join(
+        planValues.infraDir,
         'core',
         'cloud',
         'update-variant-visibility',
@@ -599,49 +712,49 @@ function createIndividualFileCopiesPart3(planValues) {
       ),
     },
     {
-      source: updateVariantVisibilityCoreSource,
-      target: join(
-        infraFunctionsDir,
+      source: planValues.updateVariantVisibilityCoreSource,
+      target: planValues.join(
+        planValues.infraFunctionsDir,
         'update-variant-visibility',
         'update-variant-visibility-core.js'
       ),
     },
     {
-      source: cloudCoreSource,
-      target: join(
-        infraFunctionsDir,
+      source: planValues.cloudCoreSource,
+      target: planValues.join(
+        planValues.infraFunctionsDir,
         'update-variant-visibility',
         'cloud-core.js'
       ),
     },
     {
-      source: commonCoreSource,
-      target: join(
-        infraFunctionsDir,
+      source: planValues.commonCoreSource,
+      target: planValues.join(
+        planValues.infraFunctionsDir,
         'update-variant-visibility',
         'commonCore.js'
       ),
     },
     {
-      source: commonGcfSource,
-      target: join(
-        infraFunctionsDir,
+      source: planValues.commonGcfSource,
+      target: planValues.join(
+        planValues.infraFunctionsDir,
         'update-variant-visibility',
         'common-gcf.js'
       ),
     },
     {
-      source: updateVariantVisibilityGcfSource,
-      target: join(
-        infraFunctionsDir,
+      source: planValues.updateVariantVisibilityGcfSource,
+      target: planValues.join(
+        planValues.infraFunctionsDir,
         'update-variant-visibility',
         'update-variant-visibility-gcf.js'
       ),
     },
     {
-      source: markVariantDirtyVerifyAdminSource,
-      target: join(
-        infraDir,
+      source: planValues.markVariantDirtyVerifyAdminSource,
+      target: planValues.join(
+        planValues.infraDir,
         'core',
         'cloud',
         'mark-variant-dirty',
@@ -649,21 +762,25 @@ function createIndividualFileCopiesPart3(planValues) {
       ),
     },
     {
-      source: markVariantDirtyVerifyAdminSource,
-      target: join(infraFunctionsDir, 'mark-variant-dirty', 'verifyAdmin.js'),
+      source: planValues.markVariantDirtyVerifyAdminSource,
+      target: planValues.join(
+        planValues.infraFunctionsDir,
+        'mark-variant-dirty',
+        'verifyAdmin.js'
+      ),
     },
     {
-      source: markVariantDirtyVerifyAdminSource,
-      target: join(
-        infraFunctionsDir,
+      source: planValues.markVariantDirtyVerifyAdminSource,
+      target: planValues.join(
+        planValues.infraFunctionsDir,
         'generate-stats',
         'mark-variant-dirty-verifyAdmin.js'
       ),
     },
     {
-      source: getModerationVariantCoreSource,
-      target: join(
-        infraDir,
+      source: planValues.getModerationVariantCoreSource,
+      target: planValues.join(
+        planValues.infraDir,
         'core',
         'cloud',
         'get-moderation-variant',
@@ -671,33 +788,33 @@ function createIndividualFileCopiesPart3(planValues) {
       ),
     },
     {
-      source: getModerationVariantCoreSource,
-      target: join(
-        infraFunctionsDir,
+      source: planValues.getModerationVariantCoreSource,
+      target: planValues.join(
+        planValues.infraFunctionsDir,
         'get-moderation-variant',
         'get-moderation-variant-core.js'
       ),
     },
     {
-      source: cloudCoreSource,
-      target: join(
-        infraFunctionsDir,
+      source: planValues.cloudCoreSource,
+      target: planValues.join(
+        planValues.infraFunctionsDir,
         'get-moderation-variant',
         'cloud-core.js'
       ),
     },
     {
-      source: commonCoreSource,
-      target: join(
-        infraFunctionsDir,
+      source: planValues.commonCoreSource,
+      target: planValues.join(
+        planValues.infraFunctionsDir,
         'get-moderation-variant',
         'commonCore.js'
       ),
     },
     {
-      source: commonGcfSource,
-      target: join(
-        infraFunctionsDir,
+      source: planValues.commonGcfSource,
+      target: planValues.join(
+        planValues.infraFunctionsDir,
         'get-moderation-variant',
         'common-gcf.js'
       ),
@@ -716,38 +833,27 @@ function createIndividualFileCopiesPart3(planValues) {
  * @returns {Array<{source: string, target: string}>} Copy entries.
  */
 function createIndividualFileCopiesPart41(planValues) {
-  const {
-    join,
-    infraDir,
-    infraFunctionsDir,
-    commonGcfSource,
-    cloudCoreSource,
-    commonCoreSource,
-    getModerationVariantCorsSource,
-    getModerationVariantGcfSource,
-    renderContentsCoreSource,
-    renderContentsGcfSource,
-    renderVariantCoreSource,
-    renderVariantGcfSource,
-    reportForModerationCoreSource,
-  } = planValues;
   return [
     {
-      source: getModerationVariantGcfSource,
-      target: join(
-        infraFunctionsDir,
+      source: planValues.getModerationVariantGcfSource,
+      target: planValues.join(
+        planValues.infraFunctionsDir,
         'get-moderation-variant',
         'get-moderation-variant-gcf.js'
       ),
     },
     {
-      source: getModerationVariantCorsSource,
-      target: join(infraFunctionsDir, 'get-moderation-variant', 'cors.js'),
+      source: planValues.getModerationVariantCorsSource,
+      target: planValues.join(
+        planValues.infraFunctionsDir,
+        'get-moderation-variant',
+        'cors.js'
+      ),
     },
     {
-      source: renderContentsCoreSource,
-      target: join(
-        infraDir,
+      source: planValues.renderContentsCoreSource,
+      target: planValues.join(
+        planValues.infraDir,
         'core',
         'cloud',
         'render-contents',
@@ -755,37 +861,49 @@ function createIndividualFileCopiesPart41(planValues) {
       ),
     },
     {
-      source: renderContentsCoreSource,
-      target: join(
-        infraFunctionsDir,
+      source: planValues.renderContentsCoreSource,
+      target: planValues.join(
+        planValues.infraFunctionsDir,
         'render-contents',
         'render-contents-core.js'
       ),
     },
     {
-      source: cloudCoreSource,
-      target: join(infraFunctionsDir, 'render-contents', 'cloud-core.js'),
+      source: planValues.cloudCoreSource,
+      target: planValues.join(
+        planValues.infraFunctionsDir,
+        'render-contents',
+        'cloud-core.js'
+      ),
     },
     {
-      source: commonCoreSource,
-      target: join(infraFunctionsDir, 'render-contents', 'commonCore.js'),
+      source: planValues.commonCoreSource,
+      target: planValues.join(
+        planValues.infraFunctionsDir,
+        'render-contents',
+        'commonCore.js'
+      ),
     },
     {
-      source: commonGcfSource,
-      target: join(infraFunctionsDir, 'render-contents', 'common-gcf.js'),
+      source: planValues.commonGcfSource,
+      target: planValues.join(
+        planValues.infraFunctionsDir,
+        'render-contents',
+        'common-gcf.js'
+      ),
     },
     {
-      source: renderContentsGcfSource,
-      target: join(
-        infraFunctionsDir,
+      source: planValues.renderContentsGcfSource,
+      target: planValues.join(
+        planValues.infraFunctionsDir,
         'render-contents',
         'render-contents-gcf.js'
       ),
     },
     {
-      source: renderVariantCoreSource,
-      target: join(
-        infraDir,
+      source: planValues.renderVariantCoreSource,
+      target: planValues.join(
+        planValues.infraDir,
         'core',
         'cloud',
         'render-variant',
@@ -793,37 +911,49 @@ function createIndividualFileCopiesPart41(planValues) {
       ),
     },
     {
-      source: renderVariantCoreSource,
-      target: join(
-        infraFunctionsDir,
+      source: planValues.renderVariantCoreSource,
+      target: planValues.join(
+        planValues.infraFunctionsDir,
         'render-variant',
         'render-variant-core.js'
       ),
     },
     {
-      source: cloudCoreSource,
-      target: join(infraFunctionsDir, 'render-variant', 'cloud-core.js'),
+      source: planValues.cloudCoreSource,
+      target: planValues.join(
+        planValues.infraFunctionsDir,
+        'render-variant',
+        'cloud-core.js'
+      ),
     },
     {
-      source: commonCoreSource,
-      target: join(infraFunctionsDir, 'render-variant', 'commonCore.js'),
+      source: planValues.commonCoreSource,
+      target: planValues.join(
+        planValues.infraFunctionsDir,
+        'render-variant',
+        'commonCore.js'
+      ),
     },
     {
-      source: commonGcfSource,
-      target: join(infraFunctionsDir, 'render-variant', 'common-gcf.js'),
+      source: planValues.commonGcfSource,
+      target: planValues.join(
+        planValues.infraFunctionsDir,
+        'render-variant',
+        'common-gcf.js'
+      ),
     },
     {
-      source: renderVariantGcfSource,
-      target: join(
-        infraFunctionsDir,
+      source: planValues.renderVariantGcfSource,
+      target: planValues.join(
+        planValues.infraFunctionsDir,
         'render-variant',
         'render-variant-gcf.js'
       ),
     },
     {
-      source: reportForModerationCoreSource,
-      target: join(
-        infraDir,
+      source: planValues.reportForModerationCoreSource,
+      target: planValues.join(
+        planValues.infraDir,
         'core',
         'cloud',
         'report-for-moderation',
@@ -831,9 +961,9 @@ function createIndividualFileCopiesPart41(planValues) {
       ),
     },
     {
-      source: reportForModerationCoreSource,
-      target: join(
-        infraFunctionsDir,
+      source: planValues.reportForModerationCoreSource,
+      target: planValues.join(
+        planValues.infraFunctionsDir,
         'report-for-moderation',
         'report-for-moderation-core.js'
       ),
@@ -847,61 +977,69 @@ function createIndividualFileCopiesPart41(planValues) {
  * @returns {Array<{source: string, target: string}>} Copy entries.
  */
 function createIndividualFileCopiesPart42(planValues) {
-  const {
-    srcCoreDir,
-    join,
-    infraDir,
-    infraFunctionsDir,
-    commonGcfSource,
-    browserFileCopies,
-    corsConfigCopies,
-    firestoreCopies,
-    packageFileCopies,
-    cloudCoreSource,
-    commonCoreSource,
-    commonCoreCopies,
-    preservedCommonCoreCopies,
-    paymentWebhookCoreCopy,
-    submitModerationRatingCoreSource,
-    submitNewStoryCoreSource,
-    reportForModerationGcfSource,
-    functionSpecificCommonCoreCopies,
-    sharedUtilityCopies,
-    preservedSharedUtilityCopies,
-  } = planValues;
   return [
     {
-      source: join(srcCoreDir, '..', 'cloud', 'allow-effects.js'),
-      target: join(infraFunctionsDir, 'submit-new-story', 'allow-effects.js'),
+      source: planValues.join(
+        planValues.srcCoreDir,
+        '..',
+        'cloud',
+        'allow-effects.js'
+      ),
+      target: planValues.join(
+        planValues.infraFunctionsDir,
+        'submit-new-story',
+        'allow-effects.js'
+      ),
     },
     {
-      source: join(srcCoreDir, '..', 'cloud', 'allow-effects.js'),
-      target: join(infraFunctionsDir, 'submit-new-page', 'allow-effects.js'),
+      source: planValues.join(
+        planValues.srcCoreDir,
+        '..',
+        'cloud',
+        'allow-effects.js'
+      ),
+      target: planValues.join(
+        planValues.infraFunctionsDir,
+        'submit-new-page',
+        'allow-effects.js'
+      ),
     },
     {
-      source: cloudCoreSource,
-      target: join(infraFunctionsDir, 'report-for-moderation', 'cloud-core.js'),
+      source: planValues.cloudCoreSource,
+      target: planValues.join(
+        planValues.infraFunctionsDir,
+        'report-for-moderation',
+        'cloud-core.js'
+      ),
     },
     {
-      source: commonCoreSource,
-      target: join(infraFunctionsDir, 'report-for-moderation', 'commonCore.js'),
+      source: planValues.commonCoreSource,
+      target: planValues.join(
+        planValues.infraFunctionsDir,
+        'report-for-moderation',
+        'commonCore.js'
+      ),
     },
     {
-      source: commonGcfSource,
-      target: join(infraFunctionsDir, 'report-for-moderation', 'common-gcf.js'),
+      source: planValues.commonGcfSource,
+      target: planValues.join(
+        planValues.infraFunctionsDir,
+        'report-for-moderation',
+        'common-gcf.js'
+      ),
     },
     {
-      source: reportForModerationGcfSource,
-      target: join(
-        infraFunctionsDir,
+      source: planValues.reportForModerationGcfSource,
+      target: planValues.join(
+        planValues.infraFunctionsDir,
         'report-for-moderation',
         'report-for-moderation-gcf.js'
       ),
     },
     {
-      source: submitModerationRatingCoreSource,
-      target: join(
-        infraDir,
+      source: planValues.submitModerationRatingCoreSource,
+      target: planValues.join(
+        planValues.infraDir,
         'core',
         'cloud',
         'submit-moderation-rating',
@@ -909,41 +1047,41 @@ function createIndividualFileCopiesPart42(planValues) {
       ),
     },
     {
-      source: submitModerationRatingCoreSource,
-      target: join(
-        infraFunctionsDir,
+      source: planValues.submitModerationRatingCoreSource,
+      target: planValues.join(
+        planValues.infraFunctionsDir,
         'submit-moderation-rating',
         'submit-moderation-rating-core.js'
       ),
     },
     {
-      source: cloudCoreSource,
-      target: join(
-        infraFunctionsDir,
+      source: planValues.cloudCoreSource,
+      target: planValues.join(
+        planValues.infraFunctionsDir,
         'submit-moderation-rating',
         'cloud-core.js'
       ),
     },
     {
-      source: commonCoreSource,
-      target: join(
-        infraFunctionsDir,
+      source: planValues.commonCoreSource,
+      target: planValues.join(
+        planValues.infraFunctionsDir,
         'submit-moderation-rating',
         'commonCore.js'
       ),
     },
     {
-      source: commonGcfSource,
-      target: join(
-        infraFunctionsDir,
+      source: planValues.commonGcfSource,
+      target: planValues.join(
+        planValues.infraFunctionsDir,
         'submit-moderation-rating',
         'common-gcf.js'
       ),
     },
     {
-      source: submitNewStoryCoreSource,
-      target: join(
-        infraDir,
+      source: planValues.submitNewStoryCoreSource,
+      target: planValues.join(
+        planValues.infraDir,
         'core',
         'cloud',
         'submit-new-story',
@@ -951,35 +1089,47 @@ function createIndividualFileCopiesPart42(planValues) {
       ),
     },
     {
-      source: submitNewStoryCoreSource,
-      target: join(
-        infraFunctionsDir,
+      source: planValues.submitNewStoryCoreSource,
+      target: planValues.join(
+        planValues.infraFunctionsDir,
         'submit-new-story',
         'submit-new-story-core.js'
       ),
     },
     {
-      source: cloudCoreSource,
-      target: join(infraFunctionsDir, 'submit-new-story', 'cloud-core.js'),
+      source: planValues.cloudCoreSource,
+      target: planValues.join(
+        planValues.infraFunctionsDir,
+        'submit-new-story',
+        'cloud-core.js'
+      ),
     },
     {
-      source: commonCoreSource,
-      target: join(infraFunctionsDir, 'submit-new-story', 'commonCore.js'),
+      source: planValues.commonCoreSource,
+      target: planValues.join(
+        planValues.infraFunctionsDir,
+        'submit-new-story',
+        'commonCore.js'
+      ),
     },
     {
-      source: commonGcfSource,
-      target: join(infraFunctionsDir, 'submit-new-story', 'common-gcf.js'),
+      source: planValues.commonGcfSource,
+      target: planValues.join(
+        planValues.infraFunctionsDir,
+        'submit-new-story',
+        'common-gcf.js'
+      ),
     },
-    ...browserFileCopies,
-    ...firestoreCopies,
-    ...corsConfigCopies,
-    ...commonCoreCopies,
-    ...preservedCommonCoreCopies,
-    paymentWebhookCoreCopy,
-    ...functionSpecificCommonCoreCopies,
-    ...sharedUtilityCopies,
-    ...preservedSharedUtilityCopies,
-    ...packageFileCopies,
+    ...planValues.browserFileCopies,
+    ...planValues.firestoreCopies,
+    ...planValues.corsConfigCopies,
+    ...planValues.commonCoreCopies,
+    ...planValues.preservedCommonCoreCopies,
+    planValues.paymentWebhookCoreCopy,
+    ...planValues.functionSpecificCommonCoreCopies,
+    ...planValues.sharedUtilityCopies,
+    ...planValues.preservedSharedUtilityCopies,
+    ...planValues.packageFileCopies,
   ];
 }
 
@@ -1009,19 +1159,6 @@ function createIndividualFileCopies(planValues) {
  * @returns {CopyCloudPlanValues} Directory copy entries.
  */
 function createCopyCloudDirectoryPlan(planValues) {
-  const {
-    join,
-    infraDir,
-    srcCoreDir,
-    srcCloudDir,
-    infraFunctionsDir,
-    srcCoreCloudDir,
-    srcCoreBuildDir,
-    srcCoreRealtimeDir,
-    srcCoreObjectMinuteRentalSearchDir,
-    srcCoreBrowserDir,
-    browserDir,
-  } = planValues;
   const functionDirectories = [
     'chronoflow-time',
     'assign-moderation-job',
@@ -1054,8 +1191,8 @@ function createCopyCloudDirectoryPlan(planValues) {
   );
 
   const directoryCopies = typedFunctionDirectories.map(name => ({
-    source: join(srcCloudDir, name),
-    target: join(infraFunctionsDir, name),
+    source: planValues.join(planValues.srcCloudDir, name),
+    target: planValues.join(planValues.infraFunctionsDir, name),
   }));
 
   const functionSpecificCoreCloudDirectories = typedFunctionDirectories.filter(
@@ -1065,30 +1202,56 @@ function createCopyCloudDirectoryPlan(planValues) {
   const preservedCloudTreeCopies = [
     ...typedFunctionDirectories.flatMap(name => [
       {
-        source: join(srcCloudDir, name),
-        target: join(infraFunctionsDir, name, 'cloud', name),
+        source: planValues.join(planValues.srcCloudDir, name),
+        target: planValues.join(
+          planValues.infraFunctionsDir,
+          name,
+          'cloud',
+          name
+        ),
       },
       {
-        source: srcCloudDir,
-        target: join(infraFunctionsDir, name, 'cloud'),
+        source: planValues.srcCloudDir,
+        target: planValues.join(planValues.infraFunctionsDir, name, 'cloud'),
       },
       {
-        source: srcCoreCloudDir,
-        target: join(infraFunctionsDir, name, 'core', 'cloud'),
+        source: planValues.srcCoreCloudDir,
+        target: planValues.join(
+          planValues.infraFunctionsDir,
+          name,
+          'core',
+          'cloud'
+        ),
       },
     ]),
     ...functionSpecificCoreCloudDirectories.map(name => ({
-      source: join(srcCoreCloudDir, name),
-      target: join(infraFunctionsDir, name, 'core', 'cloud', name),
+      source: planValues.join(planValues.srcCoreCloudDir, name),
+      target: planValues.join(
+        planValues.infraFunctionsDir,
+        name,
+        'core',
+        'cloud',
+        name
+      ),
     })),
     ...typedFunctionDirectories.flatMap(name => [
       {
-        source: srcCoreBrowserDir,
-        target: join(infraFunctionsDir, name, 'core', 'browser'),
+        source: planValues.srcCoreBrowserDir,
+        target: planValues.join(
+          planValues.infraFunctionsDir,
+          name,
+          'core',
+          'browser'
+        ),
       },
       {
-        source: srcCoreBuildDir,
-        target: join(infraFunctionsDir, name, 'core', 'build'),
+        source: planValues.srcCoreBuildDir,
+        target: planValues.join(
+          planValues.infraFunctionsDir,
+          name,
+          'core',
+          'build'
+        ),
       },
     ]),
   ];
@@ -1114,9 +1277,9 @@ function createCopyCloudDirectoryPlan(planValues) {
 
   const coreRealtimeCopies = [
     {
-      source: srcCoreRealtimeDir,
-      target: join(
-        infraFunctionsDir,
+      source: planValues.srcCoreRealtimeDir,
+      target: planValues.join(
+        planValues.infraFunctionsDir,
         'realtime-call',
         'cloud',
         'realtime-call',
@@ -1125,9 +1288,9 @@ function createCopyCloudDirectoryPlan(planValues) {
       ),
     },
     {
-      source: srcCoreCloudDir,
-      target: join(
-        infraFunctionsDir,
+      source: planValues.srcCoreCloudDir,
+      target: planValues.join(
+        planValues.infraFunctionsDir,
         'realtime-call',
         'cloud',
         'realtime-call',
@@ -1138,9 +1301,9 @@ function createCopyCloudDirectoryPlan(planValues) {
   ];
 
   const objectMinuteRentalSearchCoreCopy = {
-    source: srcCoreObjectMinuteRentalSearchDir,
-    target: join(
-      infraFunctionsDir,
+    source: planValues.srcCoreObjectMinuteRentalSearchDir,
+    target: planValues.join(
+      planValues.infraFunctionsDir,
       'object-minute-rental-search',
       'core',
       'object-minute-rental-search'
@@ -1148,9 +1311,9 @@ function createCopyCloudDirectoryPlan(planValues) {
   };
 
   const objectMinuteRentalSearchWgs84Copy = {
-    source: join(srcCoreDir, 'wgs84.js'),
-    target: join(
-      infraFunctionsDir,
+    source: planValues.join(planValues.srcCoreDir, 'wgs84.js'),
+    target: planValues.join(
+      planValues.infraFunctionsDir,
       'object-minute-rental-search',
       'core',
       'wgs84.js'
@@ -1159,14 +1322,14 @@ function createCopyCloudDirectoryPlan(planValues) {
 
   const coreBrowserCopies = [
     {
-      source: srcCoreBrowserDir,
-      target: join(infraDir, 'core', 'browser'),
+      source: planValues.srcCoreBrowserDir,
+      target: planValues.join(planValues.infraDir, 'core', 'browser'),
     },
   ];
 
   const browserFileCopies = sharedBrowserFiles.map(name => ({
-    source: join(browserDir, name),
-    target: join(infraDir, name),
+    source: planValues.join(planValues.browserDir, name),
+    target: planValues.join(planValues.infraDir, name),
   }));
   return {
     functionDirectories,
@@ -1191,64 +1354,86 @@ function createCopyCloudDirectoryPlan(planValues) {
  * @returns {CopyCloudPlanValues} Derived copy values.
  */
 function createCopyCloudSourceCopies(planValues) {
-  const {
-    join,
-    srcCloudDir,
-    infraFunctionsDir,
-    srcCoreCloudDir,
-    srcCoreDir,
-    functionDirectories,
-  } = planValues;
   const typedFunctionDirectories = /** @type {string[]} */ (
-    functionDirectories
+    planValues.functionDirectories
   );
-  const corsConfigSource = join(srcCloudDir, 'cors-config.js');
+  const corsConfigSource = planValues.join(
+    planValues.srcCloudDir,
+    'cors-config.js'
+  );
 
   const corsConfigCopies = typedFunctionDirectories.map(name => ({
     source: corsConfigSource,
-    target: join(infraFunctionsDir, name, 'cors-config.js'),
+    target: planValues.join(
+      planValues.infraFunctionsDir,
+      name,
+      'cors-config.js'
+    ),
   }));
 
-  const firestoreCopies = functionDirectories.map(name => ({
-    source: join(srcCloudDir, 'firestore.js'),
-    target: join(infraFunctionsDir, name, 'firestore.js'),
+  const firestoreCopies = planValues.functionDirectories.map(name => ({
+    source: planValues.join(planValues.srcCloudDir, 'firestore.js'),
+    target: planValues.join(planValues.infraFunctionsDir, name, 'firestore.js'),
   }));
 
-  const runtimeDepsDir = join(srcCloudDir, 'runtime-deps');
+  const runtimeDepsDir = planValues.join(
+    planValues.srcCloudDir,
+    'runtime-deps'
+  );
   const sharedPackageFiles = ['package.json', 'package-lock.json'];
 
-  const packageFileCopies = functionDirectories.flatMap(name =>
+  const packageFileCopies = planValues.functionDirectories.flatMap(name =>
     sharedPackageFiles.map(file => ({
-      source: join(runtimeDepsDir, file),
-      target: join(infraFunctionsDir, name, file),
+      source: planValues.join(runtimeDepsDir, file),
+      target: planValues.join(planValues.infraFunctionsDir, name, file),
     }))
   );
 
-  const assignModerationCoreSource = join(
-    srcCoreCloudDir,
+  const assignModerationCoreSource = planValues.join(
+    planValues.srcCoreCloudDir,
     'assign-moderation-job',
     'assign-moderation-job-core.js'
   );
 
-  const cloudCoreSource = join(srcCoreCloudDir, 'cloud-core.js');
+  const cloudCoreSource = planValues.join(
+    planValues.srcCoreCloudDir,
+    'cloud-core.js'
+  );
   // Package the implementation behind the source barrel. Function archives
   // flatten imports, so copying commonCore.js would leave a missing
   // ./index.js dependency at runtime.
-  const commonCoreSource = join(srcCoreDir, 'index.js');
-  const errorReportingSource = join(srcCoreDir, 'error-reporting.js');
-  const paymentWebhookCoreSource = join(srcCoreDir, 'payment-webhook-core.js');
-  const expressAppSource = join(srcCoreDir, 'express-app.js');
-  const expressAppDepsSource = join(srcCoreDir, 'local', 'express-app-deps.js');
+  const commonCoreSource = planValues.join(planValues.srcCoreDir, 'index.js');
+  const errorReportingSource = planValues.join(
+    planValues.srcCoreDir,
+    'error-reporting.js'
+  );
+  const paymentWebhookCoreSource = planValues.join(
+    planValues.srcCoreDir,
+    'payment-webhook-core.js'
+  );
+  const expressAppSource = planValues.join(
+    planValues.srcCoreDir,
+    'express-app.js'
+  );
+  const expressAppDepsSource = planValues.join(
+    planValues.srcCoreDir,
+    'local',
+    'express-app-deps.js'
+  );
 
-  const commonCoreCopies = functionDirectories.map(name => ({
+  const commonCoreCopies = planValues.functionDirectories.map(name => ({
     source: commonCoreSource,
-    target: join(infraFunctionsDir, name, 'commonCore.js'),
+    target: planValues.join(
+      planValues.infraFunctionsDir,
+      name,
+      'commonCore.js'
+    ),
   }));
 
-  const functionCoreLocalCopies = functionDirectories.map(name => ({
+  const functionCoreLocalCopies = planValues.functionDirectories.map(name => ({
     source: expressAppDepsSource,
-    target: join(
-      infraFunctionsDir,
+    target: planValues.join(
+      planValues.infraFunctionsDir,
       name,
       'core',
       'local',
@@ -1256,89 +1441,96 @@ function createCopyCloudSourceCopies(planValues) {
     ),
   }));
 
-  const preservedCommonCoreCopies = functionDirectories.map(name => ({
-    source: commonCoreSource,
-    target: join(infraFunctionsDir, name, 'core', 'commonCore.js'),
-  }));
+  const preservedCommonCoreCopies = planValues.functionDirectories.map(
+    name => ({
+      source: commonCoreSource,
+      target: planValues.join(
+        planValues.infraFunctionsDir,
+        name,
+        'core',
+        'commonCore.js'
+      ),
+    })
+  );
 
   const paymentWebhookCoreCopy = {
     source: paymentWebhookCoreSource,
-    target: join(
-      infraFunctionsDir,
+    target: planValues.join(
+      planValues.infraFunctionsDir,
       'payment-webhook',
       'core',
       'payment-webhook-core.js'
     ),
   };
 
-  const generateStatsCoreSource = join(
-    srcCoreCloudDir,
+  const generateStatsCoreSource = planValues.join(
+    planValues.srcCoreCloudDir,
     'generate-stats',
     'generate-stats-core.js'
   );
-  const generateStatsVerifyAdminSource = join(
-    srcCoreCloudDir,
+  const generateStatsVerifyAdminSource = planValues.join(
+    planValues.srcCoreCloudDir,
     'generate-stats',
     'verifyAdmin.js'
   );
 
-  const submitNewPageCoreSource = join(
-    srcCoreCloudDir,
+  const submitNewPageCoreSource = planValues.join(
+    planValues.srcCoreCloudDir,
     'submit-new-page',
     'submit-new-page-core.js'
   );
 
-  const submitNewPageHelpersSource = join(
-    srcCoreCloudDir,
+  const submitNewPageHelpersSource = planValues.join(
+    planValues.srcCoreCloudDir,
     'submit-new-page',
     'helpers.js'
   );
 
-  const submitModerationRatingCoreSource = join(
-    srcCoreCloudDir,
+  const submitModerationRatingCoreSource = planValues.join(
+    planValues.srcCoreCloudDir,
     'submit-moderation-rating',
     'submit-moderation-rating-core.js'
   );
 
-  const submitNewStoryCoreSource = join(
-    srcCoreCloudDir,
+  const submitNewStoryCoreSource = planValues.join(
+    planValues.srcCoreCloudDir,
     'submit-new-story',
     'submit-new-story-core.js'
   );
 
-  const getApiKeyCreditCoreSource = join(
-    srcCoreCloudDir,
+  const getApiKeyCreditCoreSource = planValues.join(
+    planValues.srcCoreCloudDir,
     'get-api-key-credit',
     'get-api-key-credit-core.js'
   );
-  const getApiKeyCreditCreateDbSource = join(
-    srcCoreCloudDir,
+  const getApiKeyCreditCreateDbSource = planValues.join(
+    planValues.srcCoreCloudDir,
     'get-api-key-credit-v2',
     'create-db.js'
   );
-  const getApiKeyCreditGcfSource = join(
-    srcCloudDir,
+  const getApiKeyCreditGcfSource = planValues.join(
+    planValues.srcCloudDir,
     'get-api-key-credit',
     'get-api-key-credit-gcf.js'
   );
 
-  const getApiKeyCreditV2CoreSource = join(
-    srcCoreCloudDir,
+  const getApiKeyCreditV2CoreSource = planValues.join(
+    planValues.srcCoreCloudDir,
     'get-api-key-credit-v2',
     'get-api-key-credit-v2-core.js'
   );
-  const getApiKeyCreditV2CreateDbSource = join(
-    srcCoreCloudDir,
+  const getApiKeyCreditV2CreateDbSource = planValues.join(
+    planValues.srcCoreCloudDir,
     'get-api-key-credit-v2',
     'create-db.js'
   );
-  const getApiKeyCreditV2SnapshotSource = join(
-    srcCoreCloudDir,
+  const getApiKeyCreditV2SnapshotSource = planValues.join(
+    planValues.srcCoreCloudDir,
     'get-api-key-credit-v2',
     'get-api-key-credit-snapshot.js'
   );
-  const getApiKeyCreditV2GcfSource = join(
-    srcCloudDir,
+  const getApiKeyCreditV2GcfSource = planValues.join(
+    planValues.srcCloudDir,
     'get-api-key-credit-v2',
     'get-api-key-credit-v2-gcf.js'
   );
@@ -1381,128 +1573,127 @@ function createCopyCloudSourceCopies(planValues) {
  * @returns {CopyCloudPlanValues} Derived copy values.
  */
 function createCopyCloudSourcePaths(planValues) {
-  const {
-    join,
-    srcCloudDir,
-    srcCoreCloudDir,
-    srcCoreDir,
-    infraFunctionsDir,
-    functionDirectories,
-  } = planValues;
-  const hideVariantHtmlCoreSource = join(
-    srcCoreCloudDir,
+  const hideVariantHtmlCoreSource = planValues.join(
+    planValues.srcCoreCloudDir,
     'hide-variant-html',
     'hide-variant-html-core.js'
   );
-  const hideVariantHtmlGcfSource = join(
-    srcCloudDir,
+  const hideVariantHtmlGcfSource = planValues.join(
+    planValues.srcCloudDir,
     'hide-variant-html',
     'hide-variant-html-gcf.js'
   );
-  const markVariantDirtyCoreSource = join(
-    srcCoreCloudDir,
+  const markVariantDirtyCoreSource = planValues.join(
+    planValues.srcCoreCloudDir,
     'mark-variant-dirty',
     'mark-variant-dirty-core.js'
   );
 
-  const markVariantDirtyVerifyAdminSource = join(
-    srcCoreCloudDir,
+  const markVariantDirtyVerifyAdminSource = planValues.join(
+    planValues.srcCoreCloudDir,
     'mark-variant-dirty',
     'verifyAdmin.js'
   );
-  const processNewPageCoreSource = join(
-    srcCoreCloudDir,
+  const processNewPageCoreSource = planValues.join(
+    planValues.srcCoreCloudDir,
     'process-new-page',
     'process-new-page-core.js'
   );
-  const processNewPageGcfSource = join(
-    srcCloudDir,
+  const processNewPageGcfSource = planValues.join(
+    planValues.srcCloudDir,
     'process-new-page',
     'process-new-page-gcf.js'
   );
-  const processNewStoryCoreSource = join(
-    srcCoreCloudDir,
+  const processNewStoryCoreSource = planValues.join(
+    planValues.srcCoreCloudDir,
     'process-new-story',
     'process-new-story-core.js'
   );
-  const processNewStoryGcfSource = join(
-    srcCloudDir,
+  const processNewStoryGcfSource = planValues.join(
+    planValues.srcCloudDir,
     'process-new-story',
     'process-new-story-gcf.js'
   );
-  const updateVariantVisibilityCoreSource = join(
-    srcCoreCloudDir,
+  const updateVariantVisibilityCoreSource = planValues.join(
+    planValues.srcCoreCloudDir,
     'update-variant-visibility',
     'update-variant-visibility-core.js'
   );
-  const updateVariantVisibilityGcfSource = join(
-    srcCloudDir,
+  const updateVariantVisibilityGcfSource = planValues.join(
+    planValues.srcCloudDir,
     'update-variant-visibility',
     'update-variant-visibility-gcf.js'
   );
-  const getModerationVariantCorsSource = join(
-    srcCoreCloudDir,
+  const getModerationVariantCorsSource = planValues.join(
+    planValues.srcCoreCloudDir,
     'get-moderation-variant',
     'cors.js'
   );
-  const getModerationVariantCoreSource = join(
-    srcCoreCloudDir,
+  const getModerationVariantCoreSource = planValues.join(
+    planValues.srcCoreCloudDir,
     'get-moderation-variant',
     'get-moderation-variant-core.js'
   );
-  const getModerationVariantGcfSource = join(
-    srcCloudDir,
+  const getModerationVariantGcfSource = planValues.join(
+    planValues.srcCloudDir,
     'get-moderation-variant',
     'get-moderation-variant-gcf.js'
   );
-  const renderContentsCoreSource = join(
-    srcCoreCloudDir,
+  const renderContentsCoreSource = planValues.join(
+    planValues.srcCoreCloudDir,
     'render-contents',
     'render-contents-core.js'
   );
-  const renderContentsGcfSource = join(
-    srcCloudDir,
+  const renderContentsGcfSource = planValues.join(
+    planValues.srcCloudDir,
     'render-contents',
     'render-contents-gcf.js'
   );
-  const renderVariantCoreSource = join(
-    srcCoreCloudDir,
+  const renderVariantCoreSource = planValues.join(
+    planValues.srcCoreCloudDir,
     'render-variant',
     'render-variant-core.js'
   );
-  const renderVariantGcfSource = join(
-    srcCloudDir,
+  const renderVariantGcfSource = planValues.join(
+    planValues.srcCloudDir,
     'render-variant',
     'render-variant-gcf.js'
   );
-  const reportForModerationCoreSource = join(
-    srcCoreCloudDir,
+  const reportForModerationCoreSource = planValues.join(
+    planValues.srcCoreCloudDir,
     'report-for-moderation',
     'report-for-moderation-core.js'
   );
-  const reportForModerationGcfSource = join(
-    srcCloudDir,
+  const reportForModerationGcfSource = planValues.join(
+    planValues.srcCloudDir,
     'report-for-moderation',
     'report-for-moderation-gcf.js'
   );
 
-  const processNewStoryFunctionDir = join(
-    infraFunctionsDir,
+  const processNewStoryFunctionDir = planValues.join(
+    planValues.infraFunctionsDir,
     'process-new-story'
   );
-  const processNewStoryCoreFile = join(
+  const processNewStoryCoreFile = planValues.join(
     processNewStoryFunctionDir,
     'process-new-story-core.js'
   );
-  const generateStatsFunctionDir = join(infraFunctionsDir, 'generate-stats');
-  const generateStatsVerifyAdminFile = join(
+  const generateStatsFunctionDir = planValues.join(
+    planValues.infraFunctionsDir,
+    'generate-stats'
+  );
+  const generateStatsVerifyAdminFile = planValues.join(
     generateStatsFunctionDir,
     'verifyAdmin.js'
   );
 
-  const firebaseFunctionsCopies = functionDirectories.map(name => ({
-    source: join(srcCloudDir, 'firebase-functions.js'),
-    target: join(infraFunctionsDir, name, 'firebase-functions.js'),
+  const firebaseFunctionsCopies = planValues.functionDirectories.map(name => ({
+    source: planValues.join(planValues.srcCloudDir, 'firebase-functions.js'),
+    target: planValues.join(
+      planValues.infraFunctionsDir,
+      name,
+      'firebase-functions.js'
+    ),
   }));
 
   // Function-specific common-core.js files that need to be copied
@@ -1519,8 +1710,16 @@ function createCopyCloudSourcePaths(planValues) {
 
   const functionSpecificCommonCoreCopies =
     functionSpecificCommonCoreFiles.flatMap(name => {
-      const source = join(srcCoreCloudDir, name, 'common-core.js');
-      const target = join(infraFunctionsDir, name, 'common-core.js');
+      const source = planValues.join(
+        planValues.srcCoreCloudDir,
+        name,
+        'common-core.js'
+      );
+      const target = planValues.join(
+        planValues.infraFunctionsDir,
+        name,
+        'common-core.js'
+      );
       return { source, target };
     });
 
@@ -1538,23 +1737,24 @@ function createCopyCloudSourcePaths(planValues) {
     'firestore-helpers.js',
   ];
 
-  const sharedUtilityCopies = functionDirectories.flatMap(functionName =>
-    sharedUtilityFiles.map(file => ({
-      source: join(srcCoreCloudDir, file),
-      target: join(
-        infraFunctionsDir,
-        functionName,
-        toCopiedUtilityFileName(file)
-      ),
-    }))
-  );
-
-  const preservedSharedUtilityCopies = functionDirectories.flatMap(
+  const sharedUtilityCopies = planValues.functionDirectories.flatMap(
     functionName =>
       sharedUtilityFiles.map(file => ({
-        source: join(srcCoreCloudDir, file),
-        target: join(
-          infraFunctionsDir,
+        source: planValues.join(planValues.srcCoreCloudDir, file),
+        target: planValues.join(
+          planValues.infraFunctionsDir,
+          functionName,
+          toCopiedUtilityFileName(file)
+        ),
+      }))
+  );
+
+  const preservedSharedUtilityCopies = planValues.functionDirectories.flatMap(
+    functionName =>
+      sharedUtilityFiles.map(file => ({
+        source: planValues.join(planValues.srcCoreCloudDir, file),
+        target: planValues.join(
+          planValues.infraFunctionsDir,
           functionName,
           'core',
           'cloud',
@@ -1563,9 +1763,15 @@ function createCopyCloudSourcePaths(planValues) {
       }))
   );
 
-  const functionCoreBuildCopies = functionDirectories.map(name => ({
-    source: join(srcCoreDir, 'build', 'process-utils.js'),
-    target: join(infraFunctionsDir, name, 'core', 'build', 'process-utils.js'),
+  const functionCoreBuildCopies = planValues.functionDirectories.map(name => ({
+    source: planValues.join(planValues.srcCoreDir, 'build', 'process-utils.js'),
+    target: planValues.join(
+      planValues.infraFunctionsDir,
+      name,
+      'core',
+      'build',
+      'process-utils.js'
+    ),
   }));
 
   /**

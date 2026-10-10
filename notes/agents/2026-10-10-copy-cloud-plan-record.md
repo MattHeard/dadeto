@@ -1,0 +1,7 @@
+# Parameter bag rollout: copy-cloud manifest projections
+
+- Unexpected hurdle: the first direct Jest invocation omitted the repository's ESM setup and failed before test execution; using `scripts/run-jest.js` fixed the invocation. A source-structure test also encoded the old local-destructuring form and needed to assert the new plan-record field access.
+- Diagnosis: all eight no-cache findings were static manifest builders that project a single copy-plan record into source/target entries. They did not use the record as a transport object to another operation.
+- Fix: retain the cohesive copy-plan record and read its fields at the manifest projection sites. Updated the source-structure assertion; copy-output and import-rewrite tests remain the behavioral guard.
+- Evidence: focused Jest passed (3 suites, 13 tests); scoped ESLint and `git diff --check` passed; fresh no-cache scan for `src/core/build/copy-cloud.js` is zero (`.tmp/parameter-bag-copy-cloud.scan.json`); `npm run build:cloud` passed (`.tmp/build-cloud-parameter-bag-copy-cloud.log`); elevated `npm run check` passed all 10 gates, 0 clones, and 0 audit vulnerabilities (`.tmp/npm-check-parameter-bag-copy-cloud.log`).
+- Next guidance: continue from the fresh global scan; 117 findings remain and the largest clusters are `createDendriteHandler` and `billing-runtime-core` (5 each). Preserve semantic plan/config records when a helper projects them into declarative output.
