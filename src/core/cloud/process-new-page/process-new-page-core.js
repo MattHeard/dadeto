@@ -1342,68 +1342,54 @@ function ensurePageContextReferences({ pageDocRef, storyRef }) {
 // Stryker restore all
 
 /**
- * Finalize a processed submission by creating the variant and queuing follow-up updates.
- * @param {object} params Parameters describing the work to commit.
- * @param {import('firebase-admin/firestore').WriteBatch} params.batch Write batch collecting updates.
- * @param {import('firebase-admin/firestore').DocumentReference} params.pageDocRef Page document reference.
- * @param {import('firebase-admin/firestore').DocumentReference} params.storyRef Story document reference.
- * @param {import('firebase-admin/firestore').DocumentReference | null} params.variantRef Existing variant reference that may need cleanup.
- * @param {boolean} params.preserveVariantDirty Whether to preserve a dirty marker queued for the source variant.
- * @param {object} params.submission Submission payload to persist.
- * @param {() => string} params.randomUUID UUID generator for new documents.
- * @param {() => number} params.random Random source for variant rand.
- * @param {() => unknown} params.getServerTimestamp Firestore server timestamp helper.
- * @param {import('firebase-admin/firestore').DocumentSnapshot} params.snapshot Submission snapshot.
- * @param {import('firebase-admin/firestore').Firestore} params.db Firestore instance used for stats and author documents.
- * @param {{
- *   serverTimestamp: () => unknown,
- *   increment: (value: number) => unknown,
- * }} params.fieldValue FieldValue helper used for merging stats.
- * @returns {Promise<void>} Promise that resolves after writes are committed.
+ * Stage submission finalization around Firestore and runtime dependencies.
+ * @param {import('firebase-admin/firestore').Firestore} db Firestore instance used for stats and author documents.
+ * @param {import('firebase-admin/firestore').WriteBatch} batch Batch collecting updates.
+ * @param {{serverTimestamp: () => unknown, increment: (value: number) => unknown}} fieldValue FieldValue helpers used for stats.
+ * @returns {(randomUUID: () => string, random: () => number, getServerTimestamp: () => unknown) => (pageDocRef: import('firebase-admin/firestore').DocumentReference, storyRef: import('firebase-admin/firestore').DocumentReference, variantRef: import('firebase-admin/firestore').DocumentReference | null, preserveVariantDirty: boolean) => (submission: SubmissionData, snapshot: import('firebase-admin/firestore').DocumentSnapshot) => Promise<void>} Staged submission finalizer.
  */
-async function finalizeSubmission({
-  batch,
-  pageDocRef,
-  storyRef,
-  variantRef,
-  preserveVariantDirty,
-  submission,
-  randomUUID,
-  random,
-  getServerTimestamp,
-  snapshot,
-  db,
-  fieldValue,
-}) {
-  // Stryker disable all -- submission finalization uses the fixed Firestore write protocol.
-  const createVariantWithOptions = createVariantWithOptionsBuilder(batch)(
-    randomUUID,
-    getServerTimestamp,
-    random,
-    incrementVariantName
-  );
-  await createVariantWithOptions(
-    pageDocRef,
-    getSnapshotReference(snapshot),
-    submission
-  );
+function createSubmissionFinalizer(db, batch, fieldValue) {
+  return function bindFinalizerRuntime(randomUUID, random, getServerTimestamp) {
+    const createVariantWithOptions = createVariantWithOptionsBuilder(batch)(
+      randomUUID,
+      getServerTimestamp,
+      random,
+      incrementVariantName
+    );
 
-  const storyStatsRef = resolveStoryStatsRef(db, storyRef);
+    return function bindFinalizationContext(
+      pageDocRef,
+      storyRef,
+      variantRef,
+      preserveVariantDirty
+    ) {
+      return async function finalizeSubmission(submission, snapshot) {
+        // Stryker disable all -- submission finalization uses the fixed Firestore write protocol.
+        await createVariantWithOptions(
+          pageDocRef,
+          getSnapshotReference(snapshot),
+          submission
+        );
 
-  batch.update(storyStatsRef, {
-    variantCount: fieldValue.increment(1),
-  });
+        const storyStatsRef = resolveStoryStatsRef(db, storyRef);
 
-  if (!preserveVariantDirty) {
-    queueVariantDirtyReset(batch, variantRef);
-  }
+        batch.update(storyStatsRef, {
+          variantCount: fieldValue.increment(1),
+        });
 
-  batch.update(getSnapshotReference(snapshot), {
-    processed: true,
-  });
-  await ensureAuthorRecordExists({ db, batch, submission, randomUUID });
+        if (!preserveVariantDirty) {
+          queueVariantDirtyReset(batch, variantRef);
+        }
 
-  await batch.commit();
+        batch.update(getSnapshotReference(snapshot), {
+          processed: true,
+        });
+        await ensureAuthorRecordExists({ db, batch, submission, randomUUID });
+
+        await batch.commit();
+      };
+    };
+  };
 }
 // Stryker restore all
 
@@ -1550,26 +1536,12 @@ async function processSubmissionWithContext({
   const { pageDocRef: ensuredPageDocRef, storyRef: ensuredStoryRef } =
     ensurePageContextReferences({ pageDocRef, storyRef });
 
-  await finalizeSubmission({
-    batch,
-    pageDocRef:
-      /** @type {import('firebase-admin/firestore').DocumentReference} */ (
-        ensuredPageDocRef
-      ),
-    storyRef:
-      /** @type {import('firebase-admin/firestore').DocumentReference} */ (
-        ensuredStoryRef
-      ),
-    variantRef,
-    preserveVariantDirty,
-    submission,
+  const finalize = createSubmissionFinalizer(db, batch, fieldValue)(
     randomUUID,
     random,
-    getServerTimestamp,
-    snapshot,
-    db,
-    fieldValue,
-  });
+    getServerTimestamp
+  )(ensuredPageDocRef, ensuredStoryRef, variantRef, preserveVariantDirty);
+  await finalize(submission, snapshot);
 
   return null;
 }

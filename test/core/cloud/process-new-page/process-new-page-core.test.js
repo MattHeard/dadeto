@@ -443,6 +443,28 @@ describe('createProcessNewPageHandler', () => {
       createdAt: 'ts',
       position: 1,
     });
+    const variantWriteIndex = batch.set.mock.calls.findIndex(
+      ([, payload]) => payload && payload.name === 'a'
+    );
+    const statsUpdateIndex = batch.update.mock.calls.findIndex(
+      ([ref]) => ref.path === 'storyStats/story-123'
+    );
+    const processedUpdateIndex = batch.update.mock.calls.findIndex(
+      ([ref, payload]) => ref === snapshot.ref && payload.processed === true
+    );
+    const authorWriteIndex = batch.set.mock.calls.findIndex(
+      ([ref]) => ref === authorDoc
+    );
+    const writeOrder = [
+      batch.set.mock.invocationCallOrder[variantWriteIndex],
+      batch.update.mock.invocationCallOrder[statsUpdateIndex],
+      batch.update.mock.invocationCallOrder[processedUpdateIndex],
+      batch.set.mock.invocationCallOrder[authorWriteIndex],
+      batch.commit.mock.invocationCallOrder[0],
+    ];
+    expect(writeOrder).toEqual(
+      [...writeOrder].sort((left, right) => left - right)
+    );
     expect(batch.update).toHaveBeenCalledWith(snapshot.ref, {
       processed: true,
     });
