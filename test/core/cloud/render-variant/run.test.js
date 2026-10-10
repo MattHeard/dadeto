@@ -69,6 +69,8 @@ const executeRunRenderVariant = dependencies =>
     ...dependencies,
     updateVariantDocument:
       dependencies.updateVariantDocument ?? jest.fn(async () => undefined),
+    saveStorageFile:
+      dependencies.saveStorageFile ?? jest.fn(async () => undefined),
   });
 
 describe('runRenderVariant', () => {
@@ -142,6 +144,7 @@ describe('runRenderVariant', () => {
       expect.objectContaining({
         ...rendererDependencies,
         bindEffectBoundary: expect.any(Function),
+        saveStorageFile: expect.any(Function),
         effectFetchFn: expect.any(Function),
       })
     );

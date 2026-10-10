@@ -35,7 +35,15 @@ const createRenderVariant = dependencies =>
       typeof dependencies.fetchFn === 'function'
         ? (permission, ...args) => dependencies.fetchFn(...args)
         : dependencies.fetchFn,
-    bindEffectBoundary: handler => handler(createAllowEffects()),
+    bindEffectBoundary:
+      dependencies.bindEffectBoundary ??
+      (handler => handler(createAllowEffects())),
+    saveStorageFile:
+      dependencies.saveStorageFile ??
+      ((permission, file, contents, options) => {
+        void permission;
+        return file.save(contents, options);
+      }),
     effectFetchFn: (permission, url, init) => dependencies.fetchFn(url, init),
   });
 
@@ -1297,6 +1305,7 @@ describe('createRenderVariant', () => {
     const dependencies = {
       db: { doc: jest.fn() },
       storage: { bucket: jest.fn(() => ({ file: jest.fn() })) },
+      saveStorageFile: jest.fn(),
       fetchFn: jest.fn(),
       bindEffectBoundary: jest.fn(),
       effectFetchFn: jest.fn(),
@@ -1367,9 +1376,16 @@ it('renders variants, writes artefacts, and invalidates caches', async () => {
     pendingFile,
     bucketFile,
     storage,
+    saveStorageFile,
   } = createRenderVariantStorageFixture();
 
   const { fetchFn, randomUUID } = createRenderVariantRequestFixture();
+  const boundPermissions = [];
+  const bindEffectBoundary = handler => {
+    const permission = createAllowEffects();
+    boundPermissions.push(permission);
+    return handler(permission);
+  };
 
   // Mock Firestore hierarchy
   const parentVariantSnap = {
@@ -1562,6 +1578,8 @@ it('renders variants, writes artefacts, and invalidates caches', async () => {
     randomUUID,
     consoleError,
     objectPrefix: 't-example/',
+    bindEffectBoundary,
+    saveStorageFile,
   });
 
   await renderVariant(variantSnap, { params: { variantId: 'variant-xyz' } });
@@ -1591,6 +1609,40 @@ it('renders variants, writes artefacts, and invalidates caches', async () => {
     JSON.stringify({ path: 'p/5a.html' }),
     expect.objectContaining({ metadata: { cacheControl: 'no-store' } })
   );
+  expect(saveStorageFile).toHaveBeenCalledTimes(3);
+  expect(saveStorageFile.mock.calls.map(([permission]) => permission)).toEqual(
+    boundPermissions.slice(0, 3)
+  );
+  expect(
+    new Set(saveStorageFile.mock.calls.map(([permission]) => permission)).size
+  ).toBe(3);
+  expect(saveStorageFile).toHaveBeenNthCalledWith(
+    1,
+    boundPermissions[0],
+    variantFile,
+    expect.any(String),
+    expect.objectContaining({
+      contentType: 'text/html',
+      metadata: { cacheControl: 'no-store' },
+    })
+  );
+  expect(saveStorageFile).toHaveBeenNthCalledWith(
+    2,
+    boundPermissions[1],
+    altsFile,
+    expect.any(String),
+    { contentType: 'text/html' }
+  );
+  expect(saveStorageFile).toHaveBeenNthCalledWith(
+    3,
+    boundPermissions[2],
+    pendingFile,
+    JSON.stringify({ path: 'p/5a.html' }),
+    expect.objectContaining({
+      contentType: 'application/json',
+      metadata: { cacheControl: 'no-store' },
+    })
+  );
   expect(fetchFn).toHaveBeenCalled();
   expect(consoleError).toHaveBeenCalledWith(
     'target page lookup failed',
@@ -1607,6 +1659,10 @@ const createRenderVariantStorageFixture = () => {
   const variantFile = { save: jest.fn().mockResolvedValue(undefined) };
   const altsFile = { save: jest.fn().mockResolvedValue(undefined) };
   const pendingFile = { save: jest.fn().mockResolvedValue(undefined) };
+  const saveStorageFile = jest.fn((permission, file, contents, options) => {
+    void permission;
+    return file.save(contents, options);
+  });
   const bucketFile = jest.fn(path => {
     switch (path) {
       case 't-example/p/5a.html':
@@ -1639,6 +1695,7 @@ const createRenderVariantStorageFixture = () => {
     pendingFile,
     bucketFile,
     storage,
+    saveStorageFile,
   };
 };
 

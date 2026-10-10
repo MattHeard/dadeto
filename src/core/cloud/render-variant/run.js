@@ -30,6 +30,7 @@ import {
  *   fetchFn: typeof import('../../../cloud/render-variant/render-variant-gcf.js').fetchFn,
  *   bindEffectBoundary: typeof import('../../../cloud/render-variant/render-variant-gcf.js').bindEffectBoundary,
  *   updateVariantDocument: typeof import('../../../cloud/render-variant/effect-adapters.js').updateVariantDocument,
+ *   saveStorageFile: typeof import('../../../cloud/render-variant/effect-adapters.js').saveStorageFile,
  *   effectFetchFn: typeof import('../../../cloud/render-variant/render-variant-gcf.js').effectFetchFn,
  *   crypto: typeof import('../../../cloud/render-variant/render-variant-gcf.js').crypto,
  *   console?: { error: (...args: unknown[]) => void },
@@ -49,6 +50,7 @@ export function runRenderVariant(deps) {
     fetchFn,
     bindEffectBoundary,
     updateVariantDocument,
+    saveStorageFile,
     effectFetchFn,
     crypto,
     console: consoleLike,
@@ -106,6 +108,7 @@ export function runRenderVariant(deps) {
             createRenderVariant({
               ...dependencies,
               bindEffectBoundary,
+              saveStorageFile,
               effectFetchFn,
             }),
           crypto,

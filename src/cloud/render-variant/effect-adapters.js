@@ -11,3 +11,18 @@ export async function updateVariantDocument(allowEffects, reference, data) {
   void allowEffects;
   return reference.update(data);
 }
+
+/**
+ * Save an object through the permission-aware Storage command boundary.
+ * @param {AllowEffects} allowEffects Request capability.
+ * @param {object} file Storage file handle.
+ * @param {string} contents File contents.
+ * @param {object} options Storage save options.
+ * @returns {Promise<unknown>} Storage save result.
+ */
+export function saveStorageFile(allowEffects, file, contents, options) {
+  void allowEffects;
+  return /** @type {{ save: (contents: string, options: object) => Promise<unknown> }} */ (
+    file
+  ).save(contents, options);
+}

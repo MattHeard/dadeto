@@ -432,6 +432,11 @@ test('clears the rendered variant tree-weight dirty marker', async () => {
         collection: jest.fn(() => variantsRef),
       },
       bucket: { file: jest.fn(() => ({ save })) },
+      bindEffectBoundary: handler => handler(createAllowEffects()),
+      saveStorageFile: (permission, file, contents, options) => {
+        void permission;
+        return file.save(contents, options);
+      },
       invalidatePaths,
     }
   );

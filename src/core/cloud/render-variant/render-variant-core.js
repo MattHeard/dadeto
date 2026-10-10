@@ -253,7 +253,7 @@ function resolveStoredVisibilitySum(data) {
  * @typedef {{ doc: (path: string) => DocumentReferenceData, collection: (path: string) => CollectionReferenceData, collectionGroup: (path: string) => CollectionReferenceData }} FirestoreLike
  * @typedef {{ update: (data: Record<string, unknown>) => Promise<unknown> }} UpdatableDocumentReference
  * @typedef {UpdatableDocumentReference & { get: () => Promise<{ exists?: boolean, data?: () => Record<string, unknown> }>, parent?: WritableVariantReference | null }} WritableVariantReference
- * @typedef {{ exists: () => Promise<[boolean]>, save: (content: string, options: object) => Promise<unknown> }} StorageFileLike
+ * @typedef {object} StorageFileLike Opaque Storage file handle; command methods stay in the cloud adapter.
  * @typedef {{ file: (path: string) => StorageFileLike }} StorageBucketLike
  * @typedef {{ bucket: (name?: string) => StorageBucketLike }} StorageLike
  * @typedef {object} AncestorReference
@@ -322,6 +322,8 @@ function resolveStoredVisibilitySum(data) {
  * @typedef {{ params?: Record<string, string>, rewriteTargetPageNumbers?: number[] }} RewriteRenderContext
  * @typedef {{
  *   bucket: StorageBucketLike;
+ *   bindEffectBoundary: import('../../../../types/allow-effects').AllowEffectsBoundary;
+ *   saveStorageFile: (allowEffects: AllowEffects, file: StorageFileLike, contents: string, options: object) => Promise<unknown>;
  *   invalidatePaths: (paths: string[]) => Promise<void>;
  *   db: FirestoreLike;
  * }} RenderPersistenceCapabilities
@@ -2583,6 +2585,7 @@ function resolveParentLookupPromise({ incomingOption, db, consoleError }) {
  * @typedef {object} RenderVariantDependencies
  * @property {FirestoreLike} db - Firestore-like database used to load related documents.
  * @property {StorageLike} storage - Cloud storage helper capable of writing files.
+ * @property {(allowEffects: AllowEffects, file: StorageFileLike, contents: string, options: object) => Promise<unknown>} saveStorageFile Permission-aware Storage write adapter.
  * @property {(permission: AllowEffects, url: string, init?: object) => Promise<Response>} fetchFn - Permission-aware fetch implementation.
  * @property {import('../../../../types/allow-effects').AllowEffectsBoundary} bindEffectBoundary Cloud-owned permission boundary.
  * @property {(permission: AllowEffects, url: string, init?: object) => Promise<Response>} effectFetchFn Fetch adapter for cache purge requests.
@@ -2598,7 +2601,7 @@ function resolveParentLookupPromise({ incomingOption, db, consoleError }) {
 
 /**
  * @typedef {object} RenderVariantCapabilities
- * @property {{ db: FirestoreLike, storage: StorageLike, consoleError: ConsoleError, bucketName: string, objectPrefix: string, visibilityThreshold: number }} rendering Render output dependencies.
+ * @property {{ db: FirestoreLike, storage: StorageLike, saveStorageFile: (allowEffects: AllowEffects, file: StorageFileLike, contents: string, options: object) => Promise<unknown>, consoleError: ConsoleError, bucketName: string, objectPrefix: string, visibilityThreshold: number }} rendering Render output dependencies.
  * @property {{ effectOperations: InvalidationEffectOperations, target: InvalidationTargetOptions, randomUUID: () => string, consoleError: ConsoleError }} invalidation CDN invalidation dependencies.
  */
 
@@ -2633,6 +2636,7 @@ function buildRenderOutputCapabilities(dependencies) {
   return {
     db: dependencies.db,
     storage: dependencies.storage,
+    saveStorageFile: dependencies.saveStorageFile,
     consoleError: resolveRenderVariantConsoleError(dependencies.consoleError),
     bucketName: resolveRenderVariantBucketName(dependencies.bucketName),
     objectPrefix: normalizeStaticObjectPrefix(dependencies.objectPrefix),
@@ -2712,6 +2716,7 @@ function validateDependencies(dependencies) {
 function validateRenderOutputDependencies(dependencies) {
   assertDb(dependencies.db);
   assertStorage(dependencies.storage);
+  assertFunction(dependencies.saveStorageFile, 'saveStorageFile');
 }
 
 /**
@@ -2767,6 +2772,8 @@ function createRenderVariantHandler(capabilities) {
     await persistRenderPlan(snap, context, renderPlan, {
       db: rendering.db,
       bucket,
+      bindEffectBoundary: invalidation.effectOperations.bindEffectBoundary,
+      saveStorageFile: rendering.saveStorageFile,
       invalidatePaths,
     });
     return null;
@@ -3290,42 +3297,29 @@ async function buildRenderPlan(subject, lookups) {
  * @returns {Promise<void>} Resolves when artefacts are persisted and caches invalidated.
  */
 /**
- * Save variant HTML.
- * @param {{
- *   bucket: StorageBucketLike;
- *   filePath: string;
- *   html: string;
- *   openVariant: boolean;
- * }} options Options used to persist the variant HTML.
- * @returns {Promise<void>} Promise.
- */
-async function saveVariantHtml({ bucket, filePath, html, openVariant }) {
-  await bucket.file(filePath).save(html, {
-    contentType: 'text/html',
-    ...(openVariant && { metadata: { cacheControl: 'no-store' } }),
-  });
-}
-
-/**
  * Save alts HTML.
- * @param {{ snap: VariantSnapshot; db: FirestoreLike; bucket: StorageBucketLike; page: PageDocument }} deps Dependencies.
+ * @param {{ snap: VariantSnapshot; db: FirestoreLike; bucket: StorageBucketLike; page: PageDocument; bindEffectBoundary: import('../../../../types/allow-effects').AllowEffectsBoundary; saveStorageFile: (allowEffects: AllowEffects, file: StorageFileLike, contents: string, options: object) => Promise<unknown> }} deps Dependencies.
  * @returns {Promise<string>} Promise resolved with the saved path.
  */
 async function saveAltsHtml(deps) {
-  const { snap, db, bucket, page } = deps;
-  const variantRef = resolveTenantDocumentRef(snap, db);
+  const variantRef = resolveTenantDocumentRef(deps.snap, deps.db);
   if (!variantRef?.parent) {
     throw new Error('Variant snapshot does not have a page parent reference');
   }
-  const variantsRef = rebindTenantCollectionRef(variantRef.parent, db);
+  const variantsRef = rebindTenantCollectionRef(variantRef.parent, deps.db);
   if (!variantsRef) {
     throw new Error('Variant parent collection could not be resolved');
   }
   const variantsSnap = await variantsRef.get();
   const variants = getVisibleVariants(variantsSnap.docs);
-  const altsHtml = buildAltsHtml(page.number, variants);
-  const altsPath = `p/${page.number}-alts.html`;
-  await bucket.file(altsPath).save(altsHtml, { contentType: 'text/html' });
+  const altsHtml = buildAltsHtml(deps.page.number, variants);
+  const altsPath = `p/${deps.page.number}-alts.html`;
+  const file = deps.bucket.file(altsPath);
+  await deps.bindEffectBoundary(allowEffects =>
+    deps.saveStorageFile(allowEffects, file, altsHtml, {
+      contentType: 'text/html',
+    })
+  );
   return altsPath;
 }
 
@@ -3405,17 +3399,22 @@ function resolvePendingStoryId(params) {
 
 /**
  * Save pending file.
- * @param {StorageBucketLike} bucket Bucket.
- * @param {string | undefined} pendingName Pending name.
+ * @param {AllowEffects} allowEffects Request effect capability.
+ * @param {(allowEffects: AllowEffects, file: StorageFileLike, contents: string, options: object) => Promise<unknown>} saveStorageFile Permission-aware Storage write adapter.
+ * @param {StorageFileLike} file Pending marker file.
  * @param {string} filePath File path.
  * @returns {Promise<void>} Promise.
  */
-async function savePendingFile(bucket, pendingName, filePath) {
-  const pendingPath = `pending/${pendingName}.json`;
-  await bucket.file(pendingPath).save(JSON.stringify({ path: filePath }), {
-    contentType: 'application/json',
-    metadata: { cacheControl: 'no-store' },
-  });
+async function savePendingFile(allowEffects, saveStorageFile, file, filePath) {
+  await saveStorageFile(
+    allowEffects,
+    file,
+    JSON.stringify({ path: filePath }),
+    {
+      contentType: 'application/json',
+      metadata: { cacheControl: 'no-store' },
+    }
+  );
 }
 
 /**
@@ -3442,12 +3441,15 @@ function buildInvalidationPaths(altsPath, filePath, parentUrl) {
  * @returns {Promise<void>} Void promise.
  */
 async function persistRenderPlan(snap, context, renderPlan, persistence) {
-  await saveVariantHtml({
-    bucket: persistence.bucket,
-    filePath: renderPlan.filePath,
-    html: renderPlan.html,
-    openVariant: renderPlan.openVariant,
-  });
+  const variantFile = persistence.bucket.file(renderPlan.filePath);
+  await persistence.bindEffectBoundary(allowEffects =>
+    persistence.saveStorageFile(allowEffects, variantFile, renderPlan.html, {
+      contentType: 'text/html',
+      ...(renderPlan.openVariant && {
+        metadata: { cacheControl: 'no-store' },
+      }),
+    })
+  );
   await saveReverseLinkRecords({
     snap,
     db: persistence.db,
@@ -3458,11 +3460,21 @@ async function persistRenderPlan(snap, context, renderPlan, persistence) {
     db: persistence.db,
     bucket: persistence.bucket,
     page: renderPlan.page,
+    bindEffectBoundary: persistence.bindEffectBoundary,
+    saveStorageFile: persistence.saveStorageFile,
   });
 
   const pendingName = resolvePendingName(renderPlan.variant, context, snap);
   if (pendingName) {
-    await savePendingFile(persistence.bucket, pendingName, renderPlan.filePath);
+    const pendingFile = persistence.bucket.file(`pending/${pendingName}.json`);
+    await persistence.bindEffectBoundary(allowEffects =>
+      savePendingFile(
+        allowEffects,
+        persistence.saveStorageFile,
+        pendingFile,
+        renderPlan.filePath
+      )
+    );
   }
 
   const paths = buildInvalidationPaths(

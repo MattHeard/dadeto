@@ -1,6 +1,7 @@
 export * from '../../core/local/gcp-simulator/simulator.js';
 import { createLocalGcpSimulator as createSimulator } from '../../core/local/gcp-simulator/simulator.js';
 import { bindEffectBoundary, bindEffectResponder } from '../allow-effects.js';
+import { saveStorageFile } from './effect-adapters.js';
 
 /**
  * Keep local public routes compatible while minting at the environment boundary.
@@ -9,7 +10,7 @@ import { bindEffectBoundary, bindEffectResponder } from '../allow-effects.js';
  */
 export async function createLocalGcpSimulator(options) {
   const simulator = /** @type {any} */ (
-    await createSimulator({ ...options, bindEffectBoundary })
+    await createSimulator({ ...options, bindEffectBoundary, saveStorageFile })
   );
   simulator.routes.submitNewStory = bindEffectResponder(simulator.routes.submitNewStory);
   simulator.routes.submitNewPage = bindEffectResponder(simulator.routes.submitNewPage);

@@ -87,6 +87,7 @@ const LOCAL_ID_TOKEN = 'local-admin-token';
  *   projectId?: string,
  *   publicDir?: string,
  *   bindEffectBoundary?: import('../../../../types/allow-effects').AllowEffectsBoundary,
+ *   saveStorageFile?: (permission: import('../../../../types/allow-effects').AllowEffects, file: object, contents: string, options: object) => Promise<unknown>,
  * }} [options] Simulator options.
  * @returns {Promise<object>} Simulator instance.
  */
@@ -97,6 +98,7 @@ export async function createLocalGcpSimulator(options = {}) {
     projectId = 'local-project',
     publicDir = path.resolve('public'),
     bindEffectBoundary,
+    saveStorageFile,
   } = options;
 
   return createLocalGcpSimulatorRuntime({
@@ -105,6 +107,7 @@ export async function createLocalGcpSimulator(options = {}) {
     projectId,
     publicDir,
     bindEffectBoundary,
+    saveStorageFile,
   });
 }
 
@@ -116,6 +119,7 @@ export async function createLocalGcpSimulator(options = {}) {
  *   projectId: string,
  *   publicDir: string,
  *   bindEffectBoundary?: import('../../../../types/allow-effects').AllowEffectsBoundary,
+ *   saveStorageFile?: (permission: import('../../../../types/allow-effects').AllowEffects, file: object, contents: string, options: object) => Promise<unknown>,
  * }} config Simulator configuration.
  * @returns {Promise<object>} Simulator instance.
  */
@@ -340,11 +344,12 @@ function buildSimulatorApi(state) {
  *   projectId: string,
  *   publicDir: string,
  *   bindEffectBoundary?: import('../../../../types/allow-effects').AllowEffectsBoundary,
+ *   saveStorageFile?: (permission: import('../../../../types/allow-effects').AllowEffects, file: object, contents: string, options: object) => Promise<unknown>,
  * }} config Simulator configuration.
  * @returns {Promise<object>} Simulator state.
  */
 async function buildSimulatorState(config) {
-  const { baseUrl, bucketName, projectId, publicDir } = config;
+  const { baseUrl, bucketName, projectId, publicDir, saveStorageFile } = config;
   if (typeof config.bindEffectBoundary !== 'function') {
     throw new TypeError('bindEffectBoundary must be provided');
   }
@@ -391,6 +396,7 @@ async function buildSimulatorState(config) {
     storage,
     fetchFn,
     saveRenderedPage,
+    saveStorageFile,
     randomUUID,
     bucketName,
     objectPrefix: '',
