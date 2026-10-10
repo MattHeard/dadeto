@@ -8,6 +8,12 @@ import {
   getVariantVisibility,
 } from '../../../../src/core/cloud/hide-variant-html/hide-variant-html-core.js';
 
+const allowEffects = Object.freeze({});
+const deleteStorageFile = (...args) => {
+  const [, storage, bucketName, path, config] = args;
+  return storage.bucket(bucketName).file(path).delete(config);
+};
+
 describe('createRemoveVariantHtml', () => {
   it('throws when dependencies are not functions', () => {
     expect(() =>
@@ -46,7 +52,7 @@ describe('createRemoveVariantHtml', () => {
     });
 
     await expect(
-      removeVariantHtml({ variantId: 'missing-variant' })
+      removeVariantHtml(allowEffects, { variantId: 'missing-variant' })
     ).resolves.toBeNull();
 
     expect(loadPageForVariant).toHaveBeenCalledWith({
@@ -71,7 +77,7 @@ describe('createRemoveVariantHtml', () => {
     });
 
     await expect(
-      removeVariantHtml({
+      removeVariantHtml(allowEffects, {
         variantId: 'variant-a',
         variantData: { name: '-variant-a' },
         pageRef: { path: 'stories/story/pages/page' },
@@ -88,7 +94,10 @@ describe('createRemoveVariantHtml', () => {
       variantData: { name: '-variant-a' },
       page: { number: 12 },
     });
-    expect(deleteRenderedFile).toHaveBeenCalledWith('p/12variant-a.html');
+    expect(deleteRenderedFile).toHaveBeenCalledWith(
+      allowEffects,
+      'p/12variant-a.html'
+    );
   });
 
   it('propagates errors from the delete callback', async () => {
@@ -106,7 +115,7 @@ describe('createRemoveVariantHtml', () => {
     });
 
     await expect(
-      removeVariantHtml({ variantId: 'variant-beta' })
+      removeVariantHtml(allowEffects, { variantId: 'variant-beta' })
     ).rejects.toThrow('delete failed');
 
     expect(loadPageForVariant).toHaveBeenCalledWith({
@@ -134,7 +143,7 @@ describe('createRemoveVariantHtml', () => {
     });
 
     await expect(
-      removeVariantHtml({
+      removeVariantHtml(allowEffects, {
         variantId: 'variant-gamma',
       })
     ).resolves.toBeNull();
@@ -159,7 +168,7 @@ describe('createRemoveVariantHtml', () => {
     });
 
     await expect(
-      removeVariantHtml({
+      removeVariantHtml(allowEffects, {
         variantId: 'variant-zeta',
       })
     ).resolves.toBeNull();
@@ -182,7 +191,7 @@ describe('createRemoveVariantHtml', () => {
       deleteRenderedFile,
     });
 
-    await expect(removeVariantHtml()).resolves.toBeNull();
+    await expect(removeVariantHtml(allowEffects)).resolves.toBeNull();
 
     expect(loadPageForVariant).toHaveBeenCalledWith({
       variantId: undefined,
@@ -194,7 +203,10 @@ describe('createRemoveVariantHtml', () => {
       variantData: undefined,
       page: loadResult,
     });
-    expect(deleteRenderedFile).toHaveBeenCalledWith('pages/landing.html');
+    expect(deleteRenderedFile).toHaveBeenCalledWith(
+      allowEffects,
+      'pages/landing.html'
+    );
   });
 });
 
@@ -207,12 +219,21 @@ describe('createBucketFileRemover', () => {
     ).toThrow(new TypeError('storage.bucket must be a function'));
   });
 
+  it('requires an injected storage deletion adapter', () => {
+    expect(() =>
+      createBucketFileRemover({
+        storage: { bucket: jest.fn() },
+      })
+    ).toThrow(new TypeError('deleteStorageFile must be a function'));
+  });
+
   it('throws when bucket name is empty', () => {
     const storage = { bucket: jest.fn() };
 
     expect(() =>
       createBucketFileRemover({
         storage,
+        deleteStorageFile,
         bucketName: '   ',
       })
     ).toThrow(new TypeError('bucketName must be a non-empty string'));
@@ -227,13 +248,16 @@ describe('createBucketFileRemover', () => {
     };
     const deleteRenderedFile = createBucketFileRemover({
       storage,
+      deleteStorageFile,
       bucketName: 'variants',
     });
 
-    await expect(deleteRenderedFile()).resolves.toBeUndefined();
-    await expect(deleteRenderedFile(null)).resolves.toBeUndefined();
-    await expect(deleteRenderedFile(42)).resolves.toBeUndefined();
-    await expect(deleteRenderedFile('')).resolves.toBeUndefined();
+    await expect(deleteRenderedFile(allowEffects)).resolves.toBeUndefined();
+    await expect(
+      deleteRenderedFile(allowEffects, null)
+    ).resolves.toBeUndefined();
+    await expect(deleteRenderedFile(allowEffects, 42)).resolves.toBeUndefined();
+    await expect(deleteRenderedFile(allowEffects, '')).resolves.toBeUndefined();
 
     expect(storage.bucket).not.toHaveBeenCalled();
     expect(deleteFn).not.toHaveBeenCalled();
@@ -246,11 +270,12 @@ describe('createBucketFileRemover', () => {
     const storage = { bucket };
     const deleteRenderedFile = createBucketFileRemover({
       storage,
+      deleteStorageFile,
       bucketName: 'variants',
     });
 
     await expect(
-      deleteRenderedFile('p/12variant.html')
+      deleteRenderedFile(allowEffects, 'p/12variant.html')
     ).resolves.toBeUndefined();
 
     expect(bucket).toHaveBeenCalledWith('variants');
@@ -265,12 +290,13 @@ describe('createBucketFileRemover', () => {
     const storage = { bucket };
     const deleteRenderedFile = createBucketFileRemover({
       storage,
+      deleteStorageFile,
       bucketName: 'variants',
       objectPrefix: 't-example/',
     });
 
     await expect(
-      deleteRenderedFile('p/12variant.html')
+      deleteRenderedFile(allowEffects, 'p/12variant.html')
     ).resolves.toBeUndefined();
 
     expect(file).toHaveBeenCalledWith('t-example/p/12variant.html');
@@ -302,9 +328,9 @@ describe('createRemoveVariantHtmlForSnapshot', () => {
     const removeVariantHtml = jest.fn().mockResolvedValue(null);
     const adapter = createRemoveVariantHtmlForSnapshot(removeVariantHtml);
 
-    await expect(adapter(null)).resolves.toBeNull();
+    await expect(adapter(allowEffects, null)).resolves.toBeNull();
 
-    expect(removeVariantHtml).toHaveBeenCalledWith();
+    expect(removeVariantHtml).toHaveBeenCalledWith(allowEffects);
   });
 
   it('adapts snapshot data and forwards it to removeVariantHtml', async () => {
@@ -319,9 +345,9 @@ describe('createRemoveVariantHtmlForSnapshot', () => {
       ref: { path: 'stories/story-1/pages/page-2/variants/variant-123' },
     };
 
-    await expect(adapter(snapshot)).resolves.toBeNull();
+    await expect(adapter(allowEffects, snapshot)).resolves.toBeNull();
 
-    expect(removeVariantHtml).toHaveBeenCalledWith({
+    expect(removeVariantHtml).toHaveBeenCalledWith(allowEffects, {
       variantId: 'variant-123',
       variantData,
       pageRef,
@@ -338,9 +364,9 @@ describe('createRemoveVariantHtmlForSnapshot', () => {
       ref: {},
     };
 
-    await expect(adapter(snapshot)).resolves.toBeNull();
+    await expect(adapter(allowEffects, snapshot)).resolves.toBeNull();
 
-    expect(removeVariantHtml).toHaveBeenCalledWith({
+    expect(removeVariantHtml).toHaveBeenCalledWith(allowEffects, {
       variantId: 'variant-without-data',
       variantData: undefined,
       pageRef: null,
@@ -355,7 +381,7 @@ describe('createRemoveVariantHtmlForSnapshot', () => {
     });
 
     await expect(
-      adapter({
+      adapter(allowEffects, {
         id: 'variant-malformed-path',
         data: () => ({ name: 'delta' }),
         ref: { path: 'stories/story-1/variants/variant-malformed-path' },
@@ -363,7 +389,7 @@ describe('createRemoveVariantHtmlForSnapshot', () => {
     ).resolves.toBeNull();
 
     expect(doc).not.toHaveBeenCalled();
-    expect(removeVariantHtml).toHaveBeenCalledWith({
+    expect(removeVariantHtml).toHaveBeenCalledWith(allowEffects, {
       variantId: 'variant-malformed-path',
       variantData: { name: 'delta' },
       pageRef: null,
@@ -380,9 +406,9 @@ describe('createRemoveVariantHtmlForSnapshot', () => {
       ref: { parent: { parent: { id: 'pageRef' } } },
     };
 
-    await expect(adapter(snapshot)).resolves.toBeNull();
+    await expect(adapter(allowEffects, snapshot)).resolves.toBeNull();
 
-    expect(removeVariantHtml).toHaveBeenCalledWith({
+    expect(removeVariantHtml).toHaveBeenCalledWith(allowEffects, {
       variantId: null,
       variantData: { name: 'delta' },
       pageRef: null,
@@ -428,10 +454,13 @@ describe('createHandleVariantVisibilityChange', () => {
     const before = { id: 'before' };
 
     await expect(
-      handleChange({ before, after: { exists: false } })
+      handleChange(allowEffects, { before, after: { exists: false } })
     ).resolves.toBeNull();
 
-    expect(removeVariantHtmlForSnapshot).toHaveBeenCalledWith(before);
+    expect(removeVariantHtmlForSnapshot).toHaveBeenCalledWith(
+      allowEffects,
+      before
+    );
   });
 
   it('removes HTML when visibility crosses below the threshold', async () => {
@@ -448,13 +477,13 @@ describe('createHandleVariantVisibilityChange', () => {
     const after = { id: 'after' };
 
     await expect(
-      handleChange({
+      handleChange(allowEffects, {
         before: { id: 'before' },
         after: { ...after, exists: true },
       })
     ).resolves.toBeNull();
 
-    expect(removeVariantHtmlForSnapshot).toHaveBeenCalledWith({
+    expect(removeVariantHtmlForSnapshot).toHaveBeenCalledWith(allowEffects, {
       ...after,
       exists: true,
     });
@@ -468,7 +497,9 @@ describe('createHandleVariantVisibilityChange', () => {
     const before = { id: 'before' };
     const after = { id: 'after', exists: true };
 
-    await expect(handleChange({ before, after })).resolves.toBeNull();
+    await expect(
+      handleChange(allowEffects, { before, after })
+    ).resolves.toBeNull();
 
     expect(removeVariantHtmlForSnapshot).not.toHaveBeenCalled();
   });

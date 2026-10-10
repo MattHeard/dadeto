@@ -5,6 +5,8 @@ import {
   hideVariantHtmlTestUtils,
 } from '../../../../src/core/cloud/hide-variant-html/hide-variant-html-core.js';
 
+const allowEffects = Object.freeze({});
+
 describe('normalizeRemoveVariantLoadResult', () => {
   it('should return null for page and variant when loadResult is null', () => {
     expect(normalizeRemoveVariantLoadResult(null)).toEqual({
@@ -58,8 +60,8 @@ describe('resolvePageRef', () => {
     const removeVariantHtml = jest.fn().mockResolvedValue(null);
     const adapter = createRemoveVariantHtmlForSnapshot(removeVariantHtml);
 
-    return adapter({ ref: {} }).then(() => {
-      expect(removeVariantHtml).toHaveBeenCalledWith({
+    return adapter(allowEffects, { ref: {} }).then(() => {
+      expect(removeVariantHtml).toHaveBeenCalledWith(allowEffects, {
         variantId: null,
         variantData: undefined,
         pageRef: null,

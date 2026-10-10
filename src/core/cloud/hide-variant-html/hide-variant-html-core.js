@@ -15,6 +15,8 @@ import {
   whenNotNullishValue,
 } from '../../commonCore.js';
 
+/** @typedef {import('../../../../types/allow-effects').AllowEffects} AllowEffects */
+
 const DEFAULT_VISIBILITY_THRESHOLD = 0.5;
 
 export {
@@ -152,8 +154,8 @@ export const VISIBILITY_THRESHOLD = DEFAULT_VISIBILITY_THRESHOLD;
  * @param {object} dependencies Collaborators required to remove the HTML artifact.
  * @param {(payload: RemoveVariantHtmlPayload) => Promise<RemoveVariantLoadResult>} dependencies.loadPageForVariant Function that retrieves the page and variant data.
  * @param {(payload: { variantId: string | null, variantData: unknown, page: unknown }) => Promise<string> | string} dependencies.buildVariantPath Function that maps a variant to the rendered file path.
- * @param {(path: string) => Promise<unknown>} dependencies.deleteRenderedFile Function that deletes the rendered file from storage.
- * @returns {(payload?: RemoveVariantHtmlPayload) => Promise<null>} Helper that removes the rendered HTML file when possible.
+ * @param {(allowEffects: AllowEffects, path: string) => Promise<unknown>} dependencies.deleteRenderedFile Permission-first storage deletion adapter.
+ * @returns {(allowEffects: AllowEffects, payload?: RemoveVariantHtmlPayload) => Promise<null>} Helper that removes the rendered HTML file when possible.
  */
 export function createRemoveVariantHtml({
   loadPageForVariant,
@@ -164,7 +166,7 @@ export function createRemoveVariantHtml({
   assertFunction(buildVariantPath, 'buildVariantPath');
   assertFunction(deleteRenderedFile, 'deleteRenderedFile');
 
-  return async function removeVariantHtml(payload = {}) {
+  return async function removeVariantHtml(allowEffects, payload = {}) {
     const { variantId, variantData, pageRef } = payload;
     const hasVariantData = Object.prototype.hasOwnProperty.call(
       payload,
@@ -179,6 +181,7 @@ export function createRemoveVariantHtml({
     const { page, variant } = normalizeRemoveVariantLoadResult(loadResult);
 
     return removeVariantPayload({
+      allowEffects,
       page,
       variantId,
       hasVariantData,
@@ -193,17 +196,19 @@ export function createRemoveVariantHtml({
 /**
  * Remove rendered HTML when a page context is available.
  * @param {{
+ *   allowEffects: AllowEffects,
  *   page: unknown,
  *   variantId: string | null | undefined,
  *   hasVariantData: boolean,
  *   variantData: unknown,
  *   variant: unknown,
  *   buildVariantPath: (payload: { variantId: string | null, variantData: unknown, page: unknown }) => Promise<string> | string,
- *   deleteRenderedFile: (path: string) => Promise<unknown>,
+ *   deleteRenderedFile: (allowEffects: AllowEffects, path: string) => Promise<unknown>,
  * }} params Context required to delete the rendered file.
  * @returns {Promise<null>} Resolves once deletion completes or when no page exists.
  */
 async function removeVariantPayload({
+  allowEffects,
   page,
   variantId,
   hasVariantData,
@@ -228,7 +233,7 @@ async function removeVariantPayload({
     page,
   });
 
-  await deleteRenderedFile(path);
+  await deleteRenderedFile(allowEffects, path);
 
   return null;
 }
@@ -236,30 +241,30 @@ async function removeVariantPayload({
 /**
  * Create a helper that deletes rendered HTML paths from Cloud Storage.
  * @param {object} options Storage configuration.
+ * @param {(allowEffects: AllowEffects, storage: unknown, bucketName: string, path: string, config: {ignoreNotFound: boolean}) => Promise<unknown>} options.deleteStorageFile Permission-first deletion adapter.
  * @param {{
- *   bucket: (name: string) => { file: (path: string) => { delete: (config: { ignoreNotFound: boolean }) => Promise<unknown> } },
+ *   bucket: (name: string) => { file: (path: string) => unknown },
  * }} options.storage Cloud Storage instance.
  * @param {string} [options.bucketName] Bucket that stores rendered HTML.
  * @param {string} [options.objectPrefix] Optional object prefix for tenant-scoped static output.
- * @returns {(path: string) => Promise<void>} Helper that deletes the rendered file.
+ * @returns {(allowEffects: AllowEffects, path: string) => Promise<void>} Helper that deletes the rendered file.
  */
 export function createBucketFileRemover(options) {
-  const { storage, bucketName, objectPrefix } =
+  const { storage, deleteStorageFile, bucketName, objectPrefix } =
     normalizeBucketFileRemoverOptions(options);
   const validatedBucketName = validateBucketName(bucketName);
   validateStorage(storage);
+  assertFunction(deleteStorageFile, 'deleteStorageFile');
 
-  return function deleteRenderedFile(path) {
+  return function deleteRenderedFile(allowEffects, path) {
     return deleteIfPathValid(path, () => {
-      const validatedStorage =
-        /** @type {{ bucket: (name: string) => { file: (path: string) => { delete: (config: { ignoreNotFound: boolean }) => Promise<unknown> } } }} */ (
-          storage
-        );
-      return validatedStorage
-        .bucket(validatedBucketName)
-        .file(prefixStaticObjectPath(objectPrefix, path))
-        .delete({ ignoreNotFound: true })
-        .then(() => undefined);
+      return deleteStorageFile(
+        allowEffects,
+        storage,
+        validatedBucketName,
+        prefixStaticObjectPath(objectPrefix, path),
+        { ignoreNotFound: true }
+      ).then(() => undefined);
     });
   };
 }
@@ -268,13 +273,15 @@ export function createBucketFileRemover(options) {
  * Normalize optional bucket file remover arguments without adding branching to the factory.
  * @param {object} options Storage configuration.
  * @param {unknown} options.storage Cloud Storage instance.
+ * @param {(allowEffects: AllowEffects, storage: unknown, bucketName: string, path: string, config: {ignoreNotFound: boolean}) => Promise<unknown>} options.deleteStorageFile Permission-first deletion adapter.
  * @param {string} [options.bucketName] Bucket that stores rendered HTML.
  * @param {string} [options.objectPrefix] Optional object prefix for tenant-scoped static output.
- * @returns {{ storage: unknown, bucketName: string, objectPrefix: string }} Normalized remover options.
+ * @returns {{ storage: unknown, deleteStorageFile: (allowEffects: AllowEffects, storage: unknown, bucketName: string, path: string, config: {ignoreNotFound: boolean}) => Promise<unknown>, bucketName: string, objectPrefix: string }} Normalized remover options.
  */
 function normalizeBucketFileRemoverOptions(options) {
   return {
     storage: options.storage,
+    deleteStorageFile: options.deleteStorageFile,
     bucketName: getBucketFileRemoverBucketName(options.bucketName),
     objectPrefix: getBucketFileRemoverObjectPrefix(options.objectPrefix),
   };
@@ -449,19 +456,19 @@ function extractVariantName(/** @type {unknown} */ variantData) {
 }
 
 /**
- * @param {(payload?: RemoveVariantHtmlPayload) => Promise<null>} removeVariantHtml Snapshot removal helper.
+ * @param {(allowEffects: AllowEffects, payload?: RemoveVariantHtmlPayload) => Promise<null>} removeVariantHtml Snapshot removal helper.
  * @param {{ doc?: (path: string) => unknown } | undefined} [db] Firestore client for the configured database.
- * @returns {(snapshot: unknown) => Promise<null>} Snapshot adapter.
+ * @returns {(allowEffects: AllowEffects, snapshot?: unknown) => Promise<null>} Snapshot adapter.
  */
 export function createRemoveVariantHtmlForSnapshot(removeVariantHtml, db) {
   assertFunction(removeVariantHtml, 'removeVariantHtml');
 
-  return function removeVariantHtmlForSnapshot(snapshot) {
+  return function removeVariantHtmlForSnapshot(allowEffects, snapshot) {
     if (!snapshot) {
-      return removeVariantHtml();
+      return removeVariantHtml(allowEffects);
     }
 
-    return removeVariantHtml(buildRemovePayload(snapshot, db));
+    return removeVariantHtml(allowEffects, buildRemovePayload(snapshot, db));
   };
 }
 
@@ -631,10 +638,10 @@ function extractVisibility(data) {
 /**
  * Create a handler that determines whether a variant's rendered HTML should be removed.
  * @param {object} options Configuration for the handler.
- * @param {(snapshot: unknown) => Promise<null>} options.removeVariantHtmlForSnapshot Helper that removes rendered HTML for a snapshot.
+ * @param {(allowEffects: AllowEffects, snapshot?: unknown) => Promise<null>} options.removeVariantHtmlForSnapshot Helper that removes rendered HTML for a snapshot.
  * @param {(snapshot: unknown) => number} [options.getVisibility] Function that extracts visibility from a snapshot.
  * @param {number} [options.visibilityThreshold] Threshold at which the HTML remains visible.
- * @returns {(change: { before: unknown, after: unknown }) => Promise<null>} Firestore change handler.
+ * @returns {(allowEffects: AllowEffects, change: { before: unknown, after: unknown }) => Promise<null>} Firestore change handler.
  */
 export function createHandleVariantVisibilityChange(options) {
   const dependencies = buildVariantVisibilityDependencies(options);
@@ -660,17 +667,17 @@ export function createHandleVariantVisibilityChange(options) {
  *   },
  *   Storage: new () => {
  *     bucket: (name: string) => {
- *       file: (path: string) => {
- *         delete: (options: { ignoreNotFound: boolean }) => Promise<unknown>,
- *       },
+ *       file: (path: string) => unknown,
  *     },
  *   },
  *   db: { doc: (path: string) => { get: () => Promise<unknown> } },
+ *   deleteStorageFile: (allowEffects: AllowEffects, storage: unknown, bucketName: string, path: string, config: {ignoreNotFound: boolean}) => Promise<unknown>,
+ *   createEffectInvocationBoundary: (handler: (allowEffects: AllowEffects, change: {before: unknown, after: unknown}) => Promise<null>) => (change: {before: unknown, after: unknown}) => Promise<null>,
  *   environmentVariables: Record<string, string | undefined>,
  *   defaultBucketName?: string,
  *   visibilityThreshold?: number,
  * }} deps Cloud function dependencies.
- * @returns {{ hideVariantHtml: unknown, handleVariantVisibilityChange: (change: { before: unknown, after: unknown }) => Promise<null> }} Cloud function wiring.
+ * @returns {{ hideVariantHtml: unknown, handleVariantVisibilityChange: (allowEffects: AllowEffects, change: { before: unknown, after: unknown }) => Promise<null> }} Cloud function wiring.
  */
 export function createHideVariantHtmlCore(deps) {
   ensureFirebaseApp(deps.initializeApp);
@@ -681,6 +688,7 @@ export function createHideVariantHtmlCore(deps) {
 
   const deleteRenderedFile = createBucketFileRemover({
     storage,
+    deleteStorageFile: deps.deleteStorageFile,
     bucketName,
     objectPrefix,
   });
@@ -707,14 +715,9 @@ export function createHideVariantHtmlCore(deps) {
       functions: deps.functions,
       region: 'europe-west1',
       documentPath: 'stories/{storyId}/pages/{pageId}/variants/{variantId}',
-      handler: change =>
-        Promise.resolve(
-          handleVariantVisibilityChange(
-            /** @type {Parameters<typeof handleVariantVisibilityChange>[0]} */ (
-              change
-            )
-          )
-        ),
+      handler: /** @type {(change: unknown) => Promise<null>} */ (
+        deps.createEffectInvocationBoundary(handleVariantVisibilityChange)
+      ),
     }),
     handleVariantVisibilityChange,
   };
@@ -840,12 +843,12 @@ function ensureFirebaseApp(initializeApp) {
 /**
  * Validate dependencies required by the visibility change handler.
  * @param {object} options Handler configuration.
- * @param {(snapshot: unknown) => Promise<null>} options.removeVariantHtmlForSnapshot Renderer remover.
+ * @param {(allowEffects: AllowEffects, snapshot?: unknown) => Promise<null>} options.removeVariantHtmlForSnapshot Renderer remover.
  * @param {(snapshot: unknown) => number} [options.getVisibility] Optional visibility extractor.
  * @param {number} [options.visibilityThreshold] Visibility cutoff.
  * @returns {{
- *   removeVariantHtmlForSnapshot: (snapshot: unknown) => Promise<null>,
- *   visibilityTransition: (change: { before: unknown, after: unknown }) => Promise<null>,
+ *   removeVariantHtmlForSnapshot: (allowEffects: AllowEffects, snapshot?: unknown) => Promise<null>,
+ *   visibilityTransition: (allowEffects: AllowEffects, change: { before: unknown, after: unknown }) => Promise<null>,
  * }} Validated dependencies.
  */
 function buildVariantVisibilityDependencies(options) {
@@ -870,11 +873,11 @@ function buildVariantVisibilityDependencies(options) {
 /**
  * Resolve visibility dependency defaults.
  * @param {object} options Handler config.
- * @param {(snapshot: unknown) => Promise<null>} options.removeVariantHtmlForSnapshot Renderer remover.
+ * @param {(allowEffects: AllowEffects, snapshot?: unknown) => Promise<null>} options.removeVariantHtmlForSnapshot Renderer remover.
  * @param {(snapshot: unknown) => number} [options.getVisibility] Optional visibility extractor.
  * @param {number} [options.visibilityThreshold] Visibility cutoff.
  * @returns {{
- *   removeVariantHtmlForSnapshot: (snapshot: unknown) => Promise<null>,
+ *   removeVariantHtmlForSnapshot: (allowEffects: AllowEffects, snapshot?: unknown) => Promise<null>,
  *   getVisibility: (snapshot: unknown) => number,
  *   visibilityThreshold: number,
  * }} Normalized dependency set.
@@ -921,7 +924,7 @@ function selectVisibilityThreshold(visibilityThreshold) {
 
 /**
  * Assert that the required variant visibility helpers are provided.
- * @param {(snapshot: unknown) => Promise<null>} removeVariantHtmlForSnapshot Render helper.
+ * @param {(allowEffects: AllowEffects, snapshot?: unknown) => Promise<null>} removeVariantHtmlForSnapshot Render helper.
  * @param {(snapshot: unknown) => number} getVisibility Visibility extractor.
  * @returns {void}
  */
@@ -936,17 +939,17 @@ function assertVariantVisibilityDependencies(
 /**
  * Create a handler that responds to visibility transitions crossing the threshold.
  * @param {{
- *   removeVariantHtmlForSnapshot: (snapshot: unknown) => Promise<null>,
+ *   removeVariantHtmlForSnapshot: (allowEffects: AllowEffects, snapshot?: unknown) => Promise<null>,
  *   getVisibility: (snapshot: unknown) => number,
  *   visibilityThreshold: number,
  * }} params Transition dependencies.
- * @returns {(change: { before: unknown, after: unknown }) => Promise<null>} Handler invoked when the snapshot visibility crosses the threshold.
+ * @returns {(allowEffects: AllowEffects, change: { before: unknown, after: unknown }) => Promise<null>} Handler invoked when the snapshot visibility crosses the threshold.
  */
 function createVisibilityTransitionHandler(params) {
   const { removeVariantHtmlForSnapshot, getVisibility, visibilityThreshold } =
     params;
 
-  return async function visibilityTransition({ before, after }) {
+  return async function visibilityTransition(allowEffects, { before, after }) {
     const beforeVisibility = getVisibility(before);
     const afterVisibility = getVisibility(after);
 
@@ -957,7 +960,7 @@ function createVisibilityTransitionHandler(params) {
         visibilityThreshold
       )
     ) {
-      return removeVariantHtmlForSnapshot(after);
+      return removeVariantHtmlForSnapshot(allowEffects, after);
     }
 
     return null;
@@ -966,23 +969,23 @@ function createVisibilityTransitionHandler(params) {
 
 /**
  * Bind the delete path and transition handler into the Firestore trigger handler.
- * @param {(snapshot: unknown) => Promise<null>} removeVariantHtmlForSnapshot Rendered HTML remover.
- * @param {(params: { before: unknown, after: unknown }) => Promise<null>} visibilityTransition Visibility transition handler.
- * @returns {(change: { before: unknown, after: unknown }) => Promise<null>} Firestore change handler.
+ * @param {(allowEffects: AllowEffects, snapshot?: unknown) => Promise<null>} removeVariantHtmlForSnapshot Rendered HTML remover.
+ * @param {(allowEffects: AllowEffects, params: { before: unknown, after: unknown }) => Promise<null>} visibilityTransition Visibility transition handler.
+ * @returns {(allowEffects: AllowEffects, change: { before: unknown, after: unknown }) => Promise<null>} Firestore change handler.
  */
 function createVisibilityChangeHandler(
   removeVariantHtmlForSnapshot,
   visibilityTransition
 ) {
-  return async function handleVariantVisibilityChange(change) {
+  return async function handleVariantVisibilityChange(allowEffects, change) {
     const before = change.before;
     const after = change.after;
 
     if (wasDocumentDeleted(after)) {
-      return removeVariantHtmlForSnapshot(before);
+      return removeVariantHtmlForSnapshot(allowEffects, before);
     }
 
-    return visibilityTransition({ before, after });
+    return visibilityTransition(allowEffects, { before, after });
   };
 }
 

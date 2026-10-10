@@ -1,8 +1,16 @@
 import { jest } from '@jest/globals';
 import { createHideVariantHtmlCore } from '../../../../src/core/cloud/hide-variant-html/hide-variant-html-core.js';
 
+const deleteStorageFile = jest.fn((...args) => {
+  const [, storage, bucketName, path, options] = args;
+  return storage.bucket(bucketName).file(path).delete(options);
+});
+const createEffectInvocationBoundary = handler => change =>
+  handler(Object.freeze({}), change);
+
 describe('createHideVariantHtmlCore', () => {
   test('wires the firestore trigger from injected dependencies', async () => {
+    deleteStorageFile.mockClear();
     const onWrite = jest.fn(handler => ({ handler }));
     const document = jest.fn(() => ({ onWrite }));
     const region = jest.fn(() => ({ firestore: { document } }));
@@ -27,6 +35,8 @@ describe('createHideVariantHtmlCore', () => {
         Storage,
         db,
         environmentVariables: {},
+        deleteStorageFile,
+        createEffectInvocationBoundary,
       });
 
     expect(initializeApp).toHaveBeenCalledTimes(1);
@@ -56,6 +66,19 @@ describe('createHideVariantHtmlCore', () => {
     expect(storageBucket).toHaveBeenCalledTimes(1);
     expect(pageRef.get).toHaveBeenCalledTimes(1);
     expect(storageFileDelete).toHaveBeenCalled();
+    expect(Object.isFrozen(deleteStorageFile.mock.calls[0][0])).toBe(true);
+    await handler({
+      before: {
+        id: 'variant-b',
+        data: () => ({ name: '-variant-b' }),
+        ref: { path: 'stories/story-1/pages/page-2/variants/variant-b' },
+      },
+      after: { exists: false },
+    });
+    expect(Object.isFrozen(deleteStorageFile.mock.calls[1][0])).toBe(true);
+    expect(deleteStorageFile.mock.calls[1][0]).not.toBe(
+      deleteStorageFile.mock.calls[0][0]
+    );
 
     await expect(
       handler({
@@ -98,6 +121,8 @@ describe('createHideVariantHtmlCore', () => {
       functions: { region },
       Storage,
       environmentVariables: {},
+      deleteStorageFile,
+      createEffectInvocationBoundary,
       defaultBucketName: 'custom-bucket',
       visibilityThreshold: 0.8,
     });
@@ -124,6 +149,8 @@ describe('createHideVariantHtmlCore', () => {
         functions: { region },
         Storage,
         environmentVariables: {},
+        deleteStorageFile,
+        createEffectInvocationBoundary,
       })
     ).not.toThrow();
   });
@@ -145,6 +172,8 @@ describe('createHideVariantHtmlCore', () => {
         functions: { region },
         Storage,
         environmentVariables: {},
+        deleteStorageFile,
+        createEffectInvocationBoundary,
       })
     ).toThrow('boom');
   });
