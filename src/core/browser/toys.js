@@ -1204,12 +1204,13 @@ export const createKeyValueRow =
     });
 
     // Create and set up the appropriate button type
+    const isAddButton = idx === entries.length - 1;
     const btnEl = createButton({
       dom,
-      isAddButton: idx === entries.length - 1,
-      rowData,
-      render,
-      key,
+      isAddButton,
+      onClick: isAddButton
+        ? createOnAddHandler(effectiveRowData, render)
+        : createOnRemove(effectiveRowData, render, key),
       disposers,
     });
 
@@ -1221,33 +1222,24 @@ export const createKeyValueRow =
     dom.appendChild(container, rowEl);
   };
 
-const createButton = ({
-  dom,
-  isAddButton,
-  rowData,
-  render,
-  key,
-  disposers,
-}) => {
+const createButton = ({ dom, isAddButton, onClick, disposers }) => {
   // Stryker disable next-line StringLiteral -- the DOM element tag is a fixed API contract.
   const button = dom.createElement('button');
   // Stryker disable next-line StringLiteral -- the button input type is a fixed API contract.
   dom.setType(button, 'button');
 
   if (isAddButton) {
-    const effectiveRowData = rowData ?? { rows: {}, rowTypes: {} };
     setupAddButton({
       dom,
       button,
-      onAdd: createOnAddHandler(effectiveRowData, render),
+      onAdd: onClick,
       disposers,
     });
   } else {
-    const effectiveRowData = rowData ?? { rows: {}, rowTypes: {} };
     setupRemoveButton({
       dom,
       button,
-      onRemove: createOnRemove(effectiveRowData, render, key),
+      onRemove: onClick,
       disposers,
     });
   }
