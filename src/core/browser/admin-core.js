@@ -1785,29 +1785,37 @@ function validateRegenerateVariantRequest(
  * }} options - Dependencies needed to trigger regeneration.
  * @returns {(event: Event) => Promise<void>} Handler that reads the input, builds the payload, and submits the request.
  */
-function createRegenerateVariantHandler({
-  googleAuth,
-  doc,
-  showMessage,
-  getAdminEndpointsFn,
-  fetchFn,
-  bindEffectBoundary,
-  reportError,
-}) {
+function createRegenerateVariantHandler(options) {
+  const resolvePayload = () =>
+    resolveRegenerationPayload(
+      options.doc,
+      options.showMessage,
+      options.googleAuth
+    );
+  const executePayload = (
+    /** @type {Awaited<ReturnType<typeof resolvePayload>>} */ payload
+  ) =>
+    performRegenerationWhenReady(options.bindEffectBoundary, payload, {
+      fetchFn: options.fetchFn,
+      getAdminEndpointsFn: options.getAdminEndpointsFn,
+      showMessage: options.showMessage,
+      reportError: options.reportError,
+    });
+
+  return createRegenerateVariantEventHandler(resolvePayload, executePayload);
+}
+
+/**
+ * Bind the event handler to payload resolution and command execution operations.
+ * @param {() => Promise<{ token: string, pageVariant: { page: number, variant: string } } | null>} resolvePayload - Resolve the form and auth data.
+ * @param {(payload: { token: string, pageVariant: { page: number, variant: string } } | null) => Promise<void>} executePayload - Run the regeneration command when the payload is ready.
+ * @returns {(event: Event) => Promise<void>} Handler that coordinates one regeneration attempt.
+ */
+function createRegenerateVariantEventHandler(resolvePayload, executePayload) {
   return async function regenerateVariant(event) {
     preventDefaultEvent(event);
-
-    const payload = await resolveRegenerationPayload(
-      doc,
-      showMessage,
-      googleAuth
-    );
-    await performRegenerationWhenReady(bindEffectBoundary, payload, {
-      fetchFn,
-      getAdminEndpointsFn,
-      showMessage,
-      reportError,
-    });
+    const payload = await resolvePayload();
+    await executePayload(payload);
   };
 }
 
