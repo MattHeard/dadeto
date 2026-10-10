@@ -1219,36 +1219,39 @@ function isValidOriginString(origin) {
  * @returns {(permission: AllowEffects, res: NativeHttpResponseWithSet, origin: unknown) => boolean} Origin responder.
  */
 function createOriginResponder(origins, setHeader) {
+  const respondToKnownOrigin = createKnownOriginResponder(origins, setHeader);
+
   return function respondToOrigin(permission, res, origin) {
     if (!isValidOriginString(origin)) {
       setWildcardOrigin(permission, res, setHeader);
       return true;
     }
-    return handleKnownOrigin(permission, res, /** @type {string} */ (origin), {
-      origins,
-      setHeader,
-    });
+    return respondToKnownOrigin(
+      permission,
+      res,
+      /** @type {string} */ (origin)
+    );
   };
 }
 
 /**
- * Apply origin-specific headers for allowed or denied origins.
- * @param {AllowEffects} permission Response effect permission.
- * @param {NativeHttpResponseWithSet} res Response helper.
- * @param {string} origin Incoming origin header.
- * @param {{origins: string[], setHeader: RenderOptions['setHttpResponseHeader']}} config Origin and response dependencies.
- * @returns {boolean} True when the origin is permitted.
+ * Bind origin allowlist and header writer for known-origin responses.
+ * @param {string[]} origins Origins permitted by configuration.
+ * @param {RenderOptions['setHttpResponseHeader']} setHeader Permission-aware response header writer.
+ * @returns {(permission: AllowEffects, res: NativeHttpResponseWithSet, origin: string) => boolean} Known-origin responder.
  */
-function handleKnownOrigin(permission, res, origin, { origins, setHeader }) {
-  if (origins.includes(origin)) {
-    setHeader(permission, res, 'Access-Control-Allow-Origin', origin);
-    setHeader(permission, res, 'Vary', 'Origin');
-    return true;
-  }
+function createKnownOriginResponder(origins, setHeader) {
+  return function respondToKnownOrigin(permission, res, origin) {
+    if (origins.includes(origin)) {
+      setHeader(permission, res, 'Access-Control-Allow-Origin', origin);
+      setHeader(permission, res, 'Vary', 'Origin');
+      return true;
+    }
 
-  setHeader(permission, res, 'Access-Control-Allow-Origin', 'null');
-  setHeader(permission, res, 'Vary', 'Origin');
-  return false;
+    setHeader(permission, res, 'Access-Control-Allow-Origin', 'null');
+    setHeader(permission, res, 'Vary', 'Origin');
+    return false;
+  };
 }
 
 /**
