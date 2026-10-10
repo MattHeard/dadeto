@@ -74,6 +74,7 @@ describe('createKeyInputHandler', () => {
     dom.getDataAttribute.mockReturnValue('oldKey');
     dom.getTargetValue.mockReturnValue('newKey');
     rowData.rows.oldKey = 'someValue';
+    rowData.rowTypes.oldKey = 'number';
 
     // Act
     handler(event);
@@ -85,6 +86,7 @@ describe('createKeyInputHandler', () => {
       oldKey: undefined, // Should be deleted
       newKey: 'someValue', // New key with old value
     });
+    expect(rowData.rowTypes).toEqual({ newKey: 'number' });
     expect(dom.setDataAttribute).toHaveBeenCalledWith(
       keyEl,
       'prevKey',
@@ -98,6 +100,7 @@ describe('createKeyInputHandler', () => {
     dom.getDataAttribute.mockReturnValue('oldKey');
     dom.getTargetValue.mockReturnValue('');
     rowData.rows.oldKey = 'someValue';
+    rowData.rowTypes.oldKey = 'boolean';
 
     // Act
     handler(event);
@@ -107,6 +110,7 @@ describe('createKeyInputHandler', () => {
       existingKey: 'value1',
       oldKey: 'someValue',
     }); // No change
+    expect(rowData.rowTypes).toEqual({ oldKey: 'boolean' });
     expect(dom.setDataAttribute).not.toHaveBeenCalled();
     expect(syncHiddenField).toHaveBeenCalledWith(textInput, rowData, dom);
   });
@@ -120,7 +124,7 @@ describe('createKeyInputHandler', () => {
         key1: 'value1',
         existingKey: 'value2',
       },
-      rowTypes: {},
+      rowTypes: { key1: 'number', existingKey: 'boolean' },
     };
 
     // Recreate handler with testRowData
@@ -140,6 +144,10 @@ describe('createKeyInputHandler', () => {
       key1: 'value1',
       existingKey: 'value2',
     }); // No change
+    expect(testRowData.rowTypes).toEqual({
+      key1: 'number',
+      existingKey: 'boolean',
+    });
     expect(dom.setDataAttribute).not.toHaveBeenCalled();
     expect(syncHiddenField).toHaveBeenCalledWith(textInput, testRowData, dom);
   });

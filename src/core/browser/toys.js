@@ -864,22 +864,20 @@ function isUniqueNonEmpty(key, rows) {
 
 /**
  * Migrate an entry to a new key if the key is unique and non-empty.
- * @param {object} options - Options object.
- * @param {string} options.prevKey - Current key.
- * @param {string} options.newKey - Proposed new key.
- * @param {object} options.rowData - Map of row values by key.
- * @param {HTMLElement} options.keyEl - Key input element.
- * @param {object} options.dom - DOM utilities.
- * @returns {void}
+ * @param {string} prevKey - Current key.
+ * @param {string} newKey - Proposed new key.
+ * @param {object} rowData - Map of row values by key.
+ * @returns {boolean} Whether the row was migrated.
  */
-function migrateRowIfValid({ prevKey, newKey, rowData, keyEl, dom }) {
+function migrateRowIfValid(prevKey, newKey, rowData) {
   if (isUniqueNonEmpty(newKey, rowData.rows)) {
     rowData.rows[newKey] = rowData.rows[prevKey];
     rowData.rowTypes[newKey] = rowData.rowTypes[prevKey] ?? 'string';
     delete rowData.rows[prevKey];
     delete rowData.rowTypes[prevKey];
-    dom.setDataAttribute(keyEl, 'prevKey', newKey);
+    return true;
   }
+  return false;
 }
 
 /**
@@ -905,13 +903,9 @@ export function createKeyInputHandler(options) {
       return;
     }
 
-    migrateRowIfValid({
-      prevKey,
-      newKey,
-      rowData: effectiveRowData,
-      keyEl,
-      dom,
-    });
+    if (migrateRowIfValid(prevKey, newKey, effectiveRowData)) {
+      dom.setDataAttribute(keyEl, 'prevKey', newKey);
+    }
     syncHiddenField(textInput, effectiveRowData, dom);
   };
 }
