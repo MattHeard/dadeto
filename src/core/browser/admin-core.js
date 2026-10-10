@@ -1965,21 +1965,37 @@ function getPageVariantFromDoc(doc) {
  * @returns {Promise<void>} Resolves once the request has been attempted.
  */
 async function performRegeneration(permission, options) {
-  const {
-    fetchFn,
-    getAdminEndpointsFn,
-    token,
-    pageVariant,
-    showMessage,
-    reportError = () => {},
-  } = options;
-  try {
-    await sendRegenerateVariantRequest(permission, {
-      fetchFn,
-      getAdminEndpointsFn,
-      token,
-      pageVariant,
+  const requestRegeneration = (/** @type {AllowEffects} */ permission) =>
+    sendRegenerateVariantRequest(permission, {
+      fetchFn: options.fetchFn,
+      getAdminEndpointsFn: options.getAdminEndpointsFn,
+      token: options.token,
+      pageVariant: options.pageVariant,
     });
+  await reportRegenerationResult(
+    permission,
+    requestRegeneration,
+    options.showMessage,
+    options.reportError
+  );
+}
+
+/**
+ * Run a regeneration request and report its outcome.
+ * @param {AllowEffects} permission Permission for this regeneration command.
+ * @param {(permission: AllowEffects) => Promise<void>} requestRegeneration Operation that sends the request.
+ * @param {(text: string) => void} showMessage Status message reporter.
+ * @param {(error: unknown) => void} [reportError] Optional error reporter.
+ * @returns {Promise<void>} Resolves after reporting the request outcome.
+ */
+async function reportRegenerationResult(
+  permission,
+  requestRegeneration,
+  showMessage,
+  reportError = () => {}
+) {
+  try {
+    await requestRegeneration(permission);
     showMessage('Regeneration triggered');
   } catch (error) {
     reportError(error);
