@@ -934,18 +934,24 @@ function instantiateRenderContents(invalidation, rendering) {
     invalidation.target
   );
 
-  return createRenderContentsHandler({
-    db: /** @type {DbInstance} */ (rendering.db),
-    saveRenderedPage: rendering.saveRenderedPage,
-    objectPrefix: rendering.objectPrefix,
-    invalidatePaths,
-    pageSize: rendering.pageSize,
-  });
+  return createRenderContentsHandler(
+    { db: rendering.db },
+    {
+      saveRenderedPage: rendering.saveRenderedPage,
+      objectPrefix: rendering.objectPrefix,
+      invalidatePaths,
+      pageSize: rendering.pageSize,
+    }
+  );
 }
 
 /**
- * @typedef {object} RenderContentsHandlerConfig
- * @property {DbInstance} db Firestore instance.
+ * @typedef {object} RenderContentsQueryDependencies
+ * @property {DbInstance | undefined} db Firestore instance for story queries.
+ */
+
+/**
+ * @typedef {object} RenderContentsOutputConfig
  * @property {RenderOptions['saveRenderedPage']} saveRenderedPage Permission-aware storage write adapter.
  * @property {string} objectPrefix Optional output path prefix.
  * @property {(paths: string[]) => Promise<void>} invalidatePaths Path invalidation function.
@@ -954,13 +960,11 @@ function instantiateRenderContents(invalidation, rendering) {
 
 /**
  * Build the renderer closure that caches fetchers between invocations.
- * @param {RenderContentsHandlerConfig} config Handler dependencies.
+ * @param {RenderContentsQueryDependencies} query Story-query capability.
+ * @param {RenderContentsOutputConfig} output Rendered-page output configuration.
  * @returns {(permission: AllowEffects, deps?: RenderDependencies) => Promise<null>} Renderer factory.
  */
-function createRenderContentsHandler(config) {
-  const { db, saveRenderedPage, objectPrefix, invalidatePaths, pageSize } =
-    config;
-
+function createRenderContentsHandler(query, output) {
   /** @type {(() => Promise<string[]>) | undefined} */
   let fetchTopStoryIds;
   /** @type {((storyId: string) => Promise<StoryInfo | null>) | undefined} */
@@ -975,7 +979,7 @@ function createRenderContentsHandler(config) {
           fetchTopStoryIds = value;
         },
         factory: createFetchTopStoryIds,
-        db,
+        db: query.db,
       })
     );
 
@@ -988,19 +992,19 @@ function createRenderContentsHandler(config) {
             fetchStoryInfo = value;
           },
           factory: createFetchStoryInfo,
-          db,
+          db: query.db,
         })
       );
 
     const items = await buildStoryItems(loadStoryIds, loadStoryInfo);
     const paths = await publishStoryPages(permission, {
       items,
-      pageSize,
-      saveRenderedPage,
-      objectPrefix,
+      pageSize: output.pageSize,
+      saveRenderedPage: output.saveRenderedPage,
+      objectPrefix: output.objectPrefix,
     });
 
-    await invalidatePaths(paths);
+    await output.invalidatePaths(paths);
     return null;
   };
 }
