@@ -19,6 +19,28 @@ const apiKeyUuidKey = 'api_key_uuid';
 const clientReferenceIdKey = 'client_reference_id';
 const creditAmountKey = 'credit_amount';
 const allowEffects = createAllowEffects();
+
+/**
+ * Create token-checking transaction adapters around the fake database.
+ * @param {ReturnType<typeof createFakeFirestore>} database Test database.
+ * @returns {import('../../../../src/core/cloud/get-api-key-credit-v2/get-api-key-credit-v2-core.js').CreditEventEffects} Transaction effects.
+ */
+function createTransactionEffects(database) {
+  return {
+    runTransaction: (permission, updateFunction) => {
+      expect(permission).toBe(allowEffects);
+      return database.runTransaction(updateFunction);
+    },
+    getTransactionDocument: (permission, transaction, reference) => {
+      expect(permission).toBe(allowEffects);
+      return transaction.get(reference);
+    },
+    setTransactionDocument: (permission, transaction, reference, data) => {
+      expect(permission).toBe(allowEffects);
+      return transaction.set(reference, data);
+    },
+  };
+}
 import { createApplyCreditEvent } from '../../../../src/core/cloud/get-api-key-credit-v2/get-api-key-credit-v2-core.js';
 import { jest } from '@jest/globals';
 
@@ -125,7 +147,10 @@ describe('createPaymentWebhookHandler', () => {
 
   it('uses the default duplicate and process handlers when none are supplied', async () => {
     const database = createFakeFirestore();
-    const applyCreditEvent = createApplyCreditEvent(database);
+    const applyCreditEvent = createApplyCreditEvent(
+      database,
+      createTransactionEffects(database)
+    );
     const handler = createPaymentWebhookHandler({
       fetchCredit: async () => 0,
       applyCreditEvent,
@@ -250,7 +275,10 @@ describe('createPaymentWebhookHandler processing', () => {
 
   it('supports a missing request object and metadata coercion', async () => {
     const database = createFakeFirestore();
-    const applyCreditEvent = createApplyCreditEvent(database);
+    const applyCreditEvent = createApplyCreditEvent(
+      database,
+      createTransactionEffects(database)
+    );
     const handler = createPaymentWebhookHandler({
       fetchCredit: async () => 0,
       applyCreditEvent,
@@ -274,7 +302,10 @@ describe('createPaymentWebhookHandler processing', () => {
 
   it('uses the default payment event extractor when none is supplied', async () => {
     const database = createFakeFirestore();
-    const applyCreditEvent = createApplyCreditEvent(database);
+    const applyCreditEvent = createApplyCreditEvent(
+      database,
+      createTransactionEffects(database)
+    );
     const handler = createPaymentWebhookHandler({
       fetchCredit: async () => 0,
       applyCreditEvent,
@@ -302,7 +333,10 @@ describe('createPaymentWebhookHandler processing', () => {
 
   it('credits the ledger for a completed checkout session', async () => {
     const database = createFakeFirestore();
-    const applyCreditEvent = createApplyCreditEvent(database);
+    const applyCreditEvent = createApplyCreditEvent(
+      database,
+      createTransactionEffects(database)
+    );
     const event = {
       id: 'evt_checkout_1',
       type: 'checkout.session.completed',
@@ -337,7 +371,10 @@ describe('createPaymentWebhookHandler processing', () => {
 
   it('deducts credits for refunded charges and skips duplicates', async () => {
     const database = createFakeFirestore();
-    const applyCreditEvent = createApplyCreditEvent(database);
+    const applyCreditEvent = createApplyCreditEvent(
+      database,
+      createTransactionEffects(database)
+    );
     await database.collection('api-key-credit').doc('api-key-uuid').set({
       credit: 100,
     });

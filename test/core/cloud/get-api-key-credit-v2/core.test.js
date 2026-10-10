@@ -13,6 +13,69 @@ import * as coreShim from '../../../../src/core/get-api-key-credit-v2.js';
 import { getApiKeyCreditSnapshot } from '../../../../src/core/cloud/get-api-key-credit-v2/get-api-key-credit-snapshot.js';
 import { createFakeFirestore } from '../../../../src/core/local/gcp-simulator/fake-firestore.js';
 
+const allowEffects =
+  /** @type {import('../../../../types/allow-effects').AllowEffects} */ (
+    Object.freeze({})
+  );
+
+/**
+ * Create token-checking transaction adapters around the fake database.
+ * @param {ReturnType<typeof createFakeFirestore>} database Test database.
+ * @returns {import('../../../../src/core/cloud/get-api-key-credit-v2/get-api-key-credit-v2-core.js').CreditEventEffects} Transaction effects.
+ */
+function createTransactionEffects(database) {
+  return {
+    runTransaction: (permission, updateFunction) => {
+      expect(permission).toBe(allowEffects);
+      return database.runTransaction(updateFunction);
+    },
+    getTransactionDocument: (permission, transaction, reference) => {
+      expect(permission).toBe(allowEffects);
+      return transaction.get(reference);
+    },
+    setTransactionDocument: (permission, transaction, reference, data) => {
+      expect(permission).toBe(allowEffects);
+      return transaction.set(reference, data);
+    },
+  };
+}
+
+/**
+ * Create transaction and HTTP response adapters for Express handler tests.
+ * @param {ReturnType<typeof createFakeFirestore>} database Test database.
+ * @returns {object} Permission-first test adapters.
+ */
+function createExpressEffects(database) {
+  return {
+    ...createTransactionEffects(database),
+    setResponseHeader: (permission, response, name, value) => {
+      expect(permission).toBe(allowEffects);
+      return response.set(name, value);
+    },
+    sendHttpResponse: (...args) => {
+      const [permission, response, status, body, method] = args;
+      expect(permission).toBe(allowEffects);
+      return response.status(status)[method](body);
+    },
+    logError: (permission, error) => {
+      expect(permission).toBe(allowEffects);
+      console.error(error);
+    },
+  };
+}
+
+/**
+ * Create an Express handler with token-checking adapters.
+ * @param {ReturnType<typeof createFakeFirestore>} database Test database.
+ * @returns {ReturnType<typeof createGetApiKeyCreditV2ExpressHandle>} Handler.
+ */
+function createTestExpressHandle(database) {
+  return createGetApiKeyCreditV2ExpressHandle({
+    db: database,
+    ...createExpressEffects(database),
+  });
+}
+
 describe('createFetchCredit', () => {
   it('returns zero when the credit document is missing', async () => {
     const database = createFakeFirestore();
@@ -216,10 +279,13 @@ describe('createDb', () => {
 describe('createApplyCreditEvent', () => {
   it('creates a credit event and snapshot for a new key', async () => {
     const database = createFakeFirestore();
-    const applyCreditEvent = createApplyCreditEvent(database);
+    const applyCreditEvent = createApplyCreditEvent(
+      database,
+      createTransactionEffects(database)
+    );
 
     await expect(
-      applyCreditEvent('user-add', {
+      applyCreditEvent(allowEffects, 'user-add', {
         type: 'credit_added',
         eventId: 'event-add-1',
         amount: 25,
@@ -255,10 +321,13 @@ describe('createApplyCreditEvent', () => {
 
   it('rejects deducting credit for an unknown key', async () => {
     const database = createFakeFirestore();
-    const applyCreditEvent = createApplyCreditEvent(database);
+    const applyCreditEvent = createApplyCreditEvent(
+      database,
+      createTransactionEffects(database)
+    );
 
     await expect(
-      applyCreditEvent('user-missing', {
+      applyCreditEvent(allowEffects, 'user-missing', {
         type: 'credit_deducted',
         eventId: 'event-deduct-missing',
         amount: 3,
@@ -278,10 +347,13 @@ describe('createApplyCreditEvent', () => {
   it('rejects overdrafts without mutating the ledger', async () => {
     const database = createFakeFirestore();
     await database.doc('api-key-credit/user-overdraft').set({ credit: 10 });
-    const applyCreditEvent = createApplyCreditEvent(database);
+    const applyCreditEvent = createApplyCreditEvent(
+      database,
+      createTransactionEffects(database)
+    );
 
     await expect(
-      applyCreditEvent('user-overdraft', {
+      applyCreditEvent(allowEffects, 'user-overdraft', {
         type: 'credit_deducted',
         eventId: 'event-deduct-over',
         amount: 11,
@@ -306,10 +378,13 @@ describe('createApplyCreditEvent', () => {
   it('deducts credit when enough balance exists', async () => {
     const database = createFakeFirestore();
     await database.doc('api-key-credit/user-deduct').set({ credit: 10 });
-    const applyCreditEvent = createApplyCreditEvent(database);
+    const applyCreditEvent = createApplyCreditEvent(
+      database,
+      createTransactionEffects(database)
+    );
 
     await expect(
-      applyCreditEvent('user-deduct', {
+      applyCreditEvent(allowEffects, 'user-deduct', {
         type: 'credit_deducted',
         eventId: 'event-deduct-1',
         amount: 4,
@@ -334,14 +409,19 @@ describe('createApplyCreditEvent', () => {
 
   it('replays the same event id without double-applying it', async () => {
     const database = createFakeFirestore();
-    const applyCreditEvent = createApplyCreditEvent(database);
+    const applyCreditEvent = createApplyCreditEvent(
+      database,
+      createTransactionEffects(database)
+    );
     const event = {
       type: 'credit_added',
       eventId: 'event-idempotent',
       amount: 8,
     };
 
-    await expect(applyCreditEvent('user-idempotent', event)).resolves.toEqual({
+    await expect(
+      applyCreditEvent(allowEffects, 'user-idempotent', event)
+    ).resolves.toEqual({
       status: 201,
       body: {
         credit: 8,
@@ -350,7 +430,9 @@ describe('createApplyCreditEvent', () => {
         applied: true,
       },
     });
-    await expect(applyCreditEvent('user-idempotent', event)).resolves.toEqual({
+    await expect(
+      applyCreditEvent(allowEffects, 'user-idempotent', event)
+    ).resolves.toEqual({
       status: 201,
       body: {
         credit: 8,
@@ -400,10 +482,13 @@ describe('createApplyCreditEvent malformed ledger entries', () => {
         set: jest.fn(),
       })
     );
-    const applyCreditEvent = createApplyCreditEvent(database);
+    const applyCreditEvent = createApplyCreditEvent(
+      database,
+      createTransactionEffects(database)
+    );
 
     await expect(
-      applyCreditEvent('user-malformed', {
+      applyCreditEvent(allowEffects, 'user-malformed', {
         type: 'credit_added',
         eventId: 'event-malformed',
         amount: 1,
@@ -434,10 +519,13 @@ describe('createApplyCreditEvent malformed ledger entries', () => {
         set: jest.fn(),
       })
     );
-    const applyCreditEvent = createApplyCreditEvent(database);
+    const applyCreditEvent = createApplyCreditEvent(
+      database,
+      createTransactionEffects(database)
+    );
 
     await expect(
-      applyCreditEvent('user-nullish', {
+      applyCreditEvent(allowEffects, 'user-nullish', {
         type: 'credit_added',
         eventId: 'event-nullish',
         amount: 1,
@@ -468,10 +556,13 @@ describe('createApplyCreditEvent malformed ledger entries', () => {
         set: jest.fn(),
       })
     );
-    const applyCreditEvent = createApplyCreditEvent(database);
+    const applyCreditEvent = createApplyCreditEvent(
+      database,
+      createTransactionEffects(database)
+    );
 
     await expect(
-      applyCreditEvent('user-not-object', {
+      applyCreditEvent(allowEffects, 'user-not-object', {
         type: 'credit_added',
         eventId: 'event-not-object',
         amount: 1,
@@ -509,10 +600,13 @@ describe('createApplyCreditEvent invalid payloads', () => {
         set: jest.fn(),
       })
     );
-    const applyCreditEvent = createApplyCreditEvent(database);
+    const applyCreditEvent = createApplyCreditEvent(
+      database,
+      createTransactionEffects(database)
+    );
 
     await expect(
-      applyCreditEvent('user-invalid', {
+      applyCreditEvent(allowEffects, 'user-invalid', {
         type: 'credit_added',
         eventId: 'event-invalid',
         amount: 1,
@@ -547,10 +641,13 @@ describe('createApplyCreditEvent invalid payloads', () => {
         set: jest.fn(),
       })
     );
-    const applyCreditEvent = createApplyCreditEvent(database);
+    const applyCreditEvent = createApplyCreditEvent(
+      database,
+      createTransactionEffects(database)
+    );
 
     await expect(
-      applyCreditEvent('user-missing-type', {
+      applyCreditEvent(allowEffects, 'user-missing-type', {
         type: 'credit_added',
         eventId: 'event-missing-type',
         amount: 1,
@@ -575,11 +672,13 @@ describe('createGetApiKeyCreditV2Handler', () => {
       logError: jest.fn(),
     });
 
-    await expect(handler({ method: 'GET', path: '/credit' })).resolves.toEqual({
+    await expect(
+      handler(allowEffects, { method: 'GET', path: '/credit' })
+    ).resolves.toEqual({
       status: 200,
       body: { credit: 12 },
     });
-    await expect(handler()).resolves.toEqual({
+    await expect(handler(allowEffects)).resolves.toEqual({
       status: 405,
       body: 'Method Not Allowed',
       headers: { Allow: 'GET, POST' },
@@ -593,17 +692,19 @@ describe('createGetApiKeyCreditV2Handler', () => {
       { type: 'credit_added', eventId: 'e', amount: 0 },
       { type: 'credit_added', eventId: 'e', amount: 'nope' },
     ]) {
-      await expect(handler({ method: 'POST', body })).resolves.toMatchObject({
+      await expect(
+        handler(allowEffects, { method: 'POST', body })
+      ).resolves.toMatchObject({
         status: 400,
       });
     }
     await expect(
-      handler({
+      handler(allowEffects, {
         method: 'POST',
         body: { eventType: 'credit_deducted', idempotencyUuid: 'e', amount: 2 },
       })
     ).resolves.toEqual({ status: 201, body: { applied: true } });
-    expect(applyCreditEvent).toHaveBeenCalledWith('user', {
+    expect(applyCreditEvent).toHaveBeenCalledWith(allowEffects, 'user', {
       type: 'credit_deducted',
       eventId: 'e',
       amount: 2,
@@ -635,7 +736,7 @@ describe('createGetApiKeyCreditV2Handler', () => {
       },
       logError,
     });
-    await expect(handler({ method: 'GET' })).resolves.toEqual({
+    await expect(handler(allowEffects, { method: 'GET' })).resolves.toEqual({
       status: 400,
       body: 'Missing UUID',
     });
@@ -644,12 +745,14 @@ describe('createGetApiKeyCreditV2Handler', () => {
       applyCreditEvent: async () => ({ status: 200, body: {} }),
       getUuid: () => 'user',
     });
-    await expect(nullCreditHandler({ method: 'GET' })).resolves.toEqual({
+    await expect(
+      nullCreditHandler(allowEffects, { method: 'GET' })
+    ).resolves.toEqual({
       status: 200,
       body: { credit: 0 },
     });
     await expect(
-      handler({
+      handler(allowEffects, {
         method: 'POST',
         path: '/api-keys/123e4567-e89b-12d3-a456-426614174000/credit',
         body: { type: 'credit_added', eventId: 'e', amount: 1 },
@@ -664,7 +767,7 @@ describe('createGetApiKeyCreditV2Handler', () => {
       applyCreditEvent: async () => ({ status: 200, body: {} }),
     });
     await expect(
-      defaultLoggerHandler({
+      defaultLoggerHandler(allowEffects, {
         method: 'GET',
         path: '/api-keys/123e4567-e89b-12d3-a456-426614174000/credit',
       })
@@ -690,7 +793,10 @@ describe('createGetApiKeyCreditV2Handler', () => {
     });
 
     await expect(
-      handler({ method: 'GET', path: '/api-keys/user-events/credit/events' })
+      handler(allowEffects, {
+        method: 'GET',
+        path: '/api-keys/user-events/credit/events',
+      })
     ).resolves.toEqual({
       status: 200,
       body: {
@@ -718,7 +824,10 @@ describe('createGetApiKeyCreditV2Handler', () => {
     });
 
     await expect(
-      handler({ method: 'GET', path: '/api-keys/user-default/credit/events' })
+      handler(allowEffects, {
+        method: 'GET',
+        path: '/api-keys/user-default/credit/events',
+      })
     ).resolves.toEqual({
       status: 200,
       body: {
@@ -740,9 +849,7 @@ describe('createGetApiKeyCreditV2Handler', () => {
 
 describe('createGetApiKeyCreditV2ExpressHandle', () => {
   it('writes JSON responses and forwards headers', async () => {
-    const handle = createGetApiKeyCreditV2ExpressHandle({
-      db: createFakeFirestore(),
-    });
+    const handle = createTestExpressHandle(createFakeFirestore());
     const res = {
       headers: [],
       set(name, value) {
@@ -761,6 +868,7 @@ describe('createGetApiKeyCreditV2ExpressHandle', () => {
     };
 
     await handle(
+      allowEffects,
       {
         method: 'GET',
         path: '/api-keys/123e4567-e89b-12d3-a456-426614174000/credit/events',
@@ -774,9 +882,7 @@ describe('createGetApiKeyCreditV2ExpressHandle', () => {
   });
 
   it('forwards headers for validation errors', async () => {
-    const handle = createGetApiKeyCreditV2ExpressHandle({
-      db: createFakeFirestore(),
-    });
+    const handle = createTestExpressHandle(createFakeFirestore());
     const res = {
       headers: [],
       set(name, value) {
@@ -795,6 +901,7 @@ describe('createGetApiKeyCreditV2ExpressHandle', () => {
     };
 
     await handle(
+      allowEffects,
       {
         method: 'DELETE',
         path: '/api-keys/123e4567-e89b-12d3-a456-426614174000/credit',
@@ -818,7 +925,7 @@ describe('createGetApiKeyCreditV2ExpressHandle', () => {
     console.error = error;
 
     try {
-      const handle = createGetApiKeyCreditV2ExpressHandle({ db: database });
+      const handle = createTestExpressHandle(database);
       const res = {
         set() {},
         status(status) {
@@ -834,6 +941,7 @@ describe('createGetApiKeyCreditV2ExpressHandle', () => {
       };
 
       await handle(
+        allowEffects,
         {
           method: 'GET',
           path: '/api-keys/123e4567-e89b-12d3-a456-426614174000/credit',
@@ -852,15 +960,22 @@ describe('createGetApiKeyCreditV2ExpressHandle', () => {
 
 describe('applyResponseHeaders', () => {
   it('accepts missing headers', () => {
-    expect(() => applyResponseHeaders({ set: jest.fn() })).not.toThrow();
+    expect(() =>
+      applyResponseHeaders(allowEffects, {}, undefined, jest.fn())
+    ).not.toThrow();
   });
   it('skips undefined headers', () => {
     const res = { set: jest.fn() };
 
-    applyResponseHeaders(res, {
-      'X-Defined': 'value',
-      'X-Undefined': undefined,
-    });
+    applyResponseHeaders(
+      allowEffects,
+      res,
+      {
+        'X-Defined': 'value',
+        'X-Undefined': undefined,
+      },
+      (permission, response, name, value) => response.set(name, value)
+    );
 
     expect(res.set).toHaveBeenCalledTimes(1);
     expect(res.set).toHaveBeenCalledWith('X-Defined', 'value');

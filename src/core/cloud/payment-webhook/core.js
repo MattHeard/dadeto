@@ -61,7 +61,7 @@ const DEFAULT_ALLOWED_EVENT_TYPES = new Set([
 /**
  * @typedef {{
  *   fetchCredit: (uuid: string) => Promise<number | null>,
- *   applyCreditEvent: (uuid: string, event: { type: 'credit_added' | 'credit_deducted', eventId: string, amount: number }) => Promise<PaymentWebhookResponse>,
+ *   applyCreditEvent: (allowEffects: import('../../../../types/allow-effects').AllowEffects, uuid: string, event: { type: 'credit_added' | 'credit_deducted', eventId: string, amount: number }) => Promise<PaymentWebhookResponse>,
  *   resolveApiKeyUuid: (event: PaymentEvent) => Promise<string | null> | string | null,
  *   isDuplicateEvent?: (eventId: string) => Promise<boolean> | boolean,
  *   markProcessedEvent?: (allowEffects: import('../../../../types/allow-effects').AllowEffects, event: PaymentEvent, uuid: string, status?: string) => Promise<void> | void,
@@ -110,7 +110,11 @@ export function createPaymentWebhookHandler(deps) {
     const creditEvent = buildCreditEvent(event, amount);
     // Stryker disable all -- webhook ledger transitions use the fixed received status.
     await resolved.markProcessedEvent(allowEffects, event, uuid, 'received');
-    const response = await resolved.applyCreditEvent(uuid, creditEvent);
+    const response = await resolved.applyCreditEvent(
+      allowEffects,
+      uuid,
+      creditEvent
+    );
     await resolved.markProcessedEvent(
       allowEffects,
       event,
@@ -158,7 +162,7 @@ async function resolvePurchaseEvent(resolved, allowEffects, event) {
  * @param {PaymentWebhookDependencies | undefined} deps Dependencies.
  * @returns {{
  *   fetchCredit: (uuid: string) => Promise<number | null>,
- *   applyCreditEvent: (uuid: string, event: { type: 'credit_added' | 'credit_deducted', eventId: string, amount: number }) => Promise<PaymentWebhookResponse>,
+ *   applyCreditEvent: (allowEffects: import('../../../../types/allow-effects').AllowEffects, uuid: string, event: { type: 'credit_added' | 'credit_deducted', eventId: string, amount: number }) => Promise<PaymentWebhookResponse>,
  *   resolveApiKeyUuid: (event: PaymentEvent) => Promise<string | null>,
  *   hasDuplicateEvent: (eventId: string) => Promise<boolean>,
  *   markProcessedEvent: (allowEffects: import('../../../../types/allow-effects').AllowEffects, event: PaymentEvent, uuid: string, status?: string) => Promise<void>,

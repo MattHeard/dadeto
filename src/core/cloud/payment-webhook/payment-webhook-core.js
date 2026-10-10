@@ -17,7 +17,7 @@ import { createBillingRuntime } from '../billing/billing-runtime-core.js';
 
 /**
  * Create the payment webhook request handler used by the cloud wrapper.
- * @param {{ firestore: FirestoreCtor, db?: any, env?: ProcessEnvLike, constructEvent?: (payload: string|Buffer, signature: string, secret: string) => unknown, markProcessedEvent: (allowEffects: AllowEffects, event: import('../../payment-webhook-core.js').PaymentEvent, uuid: string, status?: string) => Promise<void> }} deps Dependencies for the wrapper.
+ * @param {{ firestore: FirestoreCtor, db?: any, env?: ProcessEnvLike, constructEvent?: (payload: string|Buffer, signature: string, secret: string) => unknown, creditEventEffects: Parameters<typeof import('../get-api-key-credit-v2/get-api-key-credit-v2-core.js').createApplyCreditEvent>[1], markProcessedEvent: (allowEffects: AllowEffects, event: import('../../payment-webhook-core.js').PaymentEvent, uuid: string, status?: string) => Promise<void> }} deps Dependencies for the wrapper.
  * @returns {(allowEffects: AllowEffects, req: unknown, res: unknown) => Promise<unknown>} Request handler.
  */
 export function createPaymentWebhookIndexHandler({
@@ -25,13 +25,14 @@ export function createPaymentWebhookIndexHandler({
   db: providedDb,
   env = process.env,
   constructEvent,
+  creditEventEffects,
   markProcessedEvent,
 }) {
   const db = /** @type {any} */ (providedDb ?? createDb(firestore, env));
   const billing = createBillingRuntime(db);
   const handleRequest = createPaymentWebhookHandler({
     fetchCredit: createFetchCredit(db),
-    applyCreditEvent: createApplyCreditEvent(db),
+    applyCreditEvent: createApplyCreditEvent(db, creditEventEffects),
     resolveApiKeyUuid: createResolveApiKeyUuid({
       findApiKeyUuidByCustomerId: async customerId => {
         const snap = await db

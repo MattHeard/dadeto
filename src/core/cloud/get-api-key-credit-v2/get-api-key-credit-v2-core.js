@@ -9,6 +9,10 @@ import {
   whenString,
 } from '../../commonCore.js';
 
+/** @typedef {import('../../../../types/allow-effects').AllowEffects} AllowEffects */
+
+/** @typedef {{ runTransaction: (allowEffects: AllowEffects, updateFunction: (transaction: CreditTransaction) => Promise<CreditApiResponse>) => Promise<CreditApiResponse>, getTransactionDocument: (allowEffects: AllowEffects, transaction: CreditTransaction, reference: import('@google-cloud/firestore').DocumentReference) => Promise<import('@google-cloud/firestore').DocumentSnapshot>, setTransactionDocument: (allowEffects: AllowEffects, transaction: CreditTransaction, reference: import('@google-cloud/firestore').DocumentReference, data: Record<string, unknown>) => unknown }} CreditEventEffects */
+
 export { createDb } from './create-db.js';
 export { productionOrigins };
 
@@ -183,16 +187,16 @@ export function extractUuid(request) {
  * @typedef {{
  *   fetchCredit?: (uuid: string) => Promise<number | null>,
  *   fetchCreditEvents?: (uuid: string) => Promise<Array<CreditLedgerEvent>>,
- *   applyCreditEvent?: (uuid: string, event: CreditEventInput) => Promise<CreditApiResponse>,
+ *   applyCreditEvent?: (allowEffects: AllowEffects, uuid: string, event: CreditEventInput) => Promise<CreditApiResponse>,
  *   getUuid?: (request: unknown) => string,
- *   logError?: (error: unknown) => void,
+ *   logError?: (allowEffects: AllowEffects, error: unknown) => void,
  * }} HandlerDependencies
  */
 
 /**
  * Factory for the HTTPS handler serving API key credit data.
  * @param {HandlerDependencies} [deps] Runtime dependencies for the handler.
- * @returns {(request?: { method?: string, body?: unknown } & Record<string, unknown>) => Promise<CreditApiResponse>} Handler producing HTTP response metadata.
+ * @returns {(allowEffects: AllowEffects, request?: { method?: string, body?: unknown } & Record<string, unknown>) => Promise<CreditApiResponse>} Handler producing HTTP response metadata.
  */
 export function createGetApiKeyCreditV2Handler(deps) {
   const {
@@ -203,7 +207,7 @@ export function createGetApiKeyCreditV2Handler(deps) {
     errorLogger,
   } = resolveV2HandlerDependencies(deps);
 
-  return async function handleRequest(request = {}) {
+  return async function handleRequest(allowEffects, request = {}) {
     const method = ensureString(request.method).toUpperCase();
     const uuid = resolveUuid(request);
     const validationError = resolveRequestValidationError(method, uuid);
@@ -212,73 +216,101 @@ export function createGetApiKeyCreditV2Handler(deps) {
       if (method === 'GET') {
         if (isCreditEventsRequest(/** @type {{ path?: string }} */ (request))) {
           return fetchCreditEventsResponse(
+            allowEffects,
             fetchCreditEvents,
             uuid,
             errorLogger
           );
         }
-        return fetchCreditResponse(fetchCredit, uuid, errorLogger);
+        return fetchCreditResponse(
+          allowEffects,
+          fetchCredit,
+          uuid,
+          errorLogger
+        );
       }
 
-      return applyCreditEventResponse(
+      return applyCreditEventResponse({
+        allowEffects,
         applyCreditEvent,
         uuid,
-        request.body,
-        errorLogger
-      );
+        body: request.body,
+        errorLogger,
+      });
     });
   };
 }
 
 /**
  * Create the Express-style handler for the API key credit endpoint.
- * @param {{ db: CreditFirestore }} deps Runtime dependencies.
- * @returns {(req: unknown, res: { set: (name: string, value: string) => void, status: (status: number) => { json: (body: unknown) => void, send: (body: unknown) => void } }) => Promise<void>} Express handler.
+ * @param {{ db: CreditFirestore, runTransaction: CreditEventEffects['runTransaction'], getTransactionDocument: CreditEventEffects['getTransactionDocument'], setTransactionDocument: CreditEventEffects['setTransactionDocument'], setResponseHeader: (allowEffects: AllowEffects, response: unknown, name: string, value: string) => unknown, sendHttpResponse: (allowEffects: AllowEffects, response: unknown, status: number, body: unknown, method: 'json'|'send') => unknown, logError: (allowEffects: AllowEffects, error: unknown) => void }} deps Runtime dependencies.
+ * @returns {(allowEffects: AllowEffects, req: unknown, res: unknown) => Promise<void>} Internal Express handler requiring request permission.
  */
-export function createGetApiKeyCreditV2ExpressHandle({ db }) {
+export function createGetApiKeyCreditV2ExpressHandle({
+  db,
+  runTransaction,
+  getTransactionDocument,
+  setTransactionDocument,
+  setResponseHeader,
+  sendHttpResponse,
+  logError,
+}) {
   const handleRequest = createGetApiKeyCreditV2Handler({
     fetchCredit: createFetchCredit(db),
     fetchCreditEvents: createFetchCreditEvents(db),
-    applyCreditEvent: createApplyCreditEvent(db),
+    applyCreditEvent: createApplyCreditEvent(db, {
+      runTransaction,
+      getTransactionDocument,
+      setTransactionDocument,
+    }),
     getUuid: extractUuid,
-    logError: error => console.error(error),
+    logError,
   });
 
-  return async function handle(req, res) {
+  return async function handle(allowEffects, req, res) {
     const { status, body, headers } = await handleRequest(
+      allowEffects,
       /** @type {{ method?: string, body?: unknown } & Record<string, unknown>} */ (
         req
       )
     );
 
-    applyResponseHeaders(res, headers);
+    applyResponseHeaders(allowEffects, res, headers, setResponseHeader);
 
     // Stryker disable next-line all -- HTTP adapters use the fixed JSON/body
     // response split.
     // Stryker disable all -- the adapter contract fixes JSON versus text bodies.
     if (body && typeof body === 'object') {
-      return res.status(status).json(body);
+      await sendHttpResponse(allowEffects, res, status, body, 'json');
+      return;
     }
     // Stryker restore all
 
-    return res.status(status).send(body);
+    await sendHttpResponse(allowEffects, res, status, body, 'send');
   };
 }
 
 /**
  * Apply response headers to an Express response object.
- * @param {{ set: (name: string, value: string) => void }} res Response object.
+ * @param {AllowEffects} allowEffects Permission for response header writes.
+ * @param {unknown} res Response object.
  * @param {Record<string, string | undefined> | undefined} headers Response headers.
+ * @param {(allowEffects: AllowEffects, response: unknown, name: string, value: string) => unknown} setResponseHeader Permission-first header adapter.
  * @returns {void}
  */
-export function applyResponseHeaders(res, headers) {
+export function applyResponseHeaders(
+  allowEffects,
+  res,
+  headers,
+  setResponseHeader
+) {
   if (!headers) {
     return;
   }
 
   Object.entries(headers).forEach(([key, value]) => {
     if (typeof value !== 'undefined') {
-      res.set(key, value);
+      setResponseHeader(allowEffects, res, key, value);
     }
   });
 }
@@ -287,9 +319,9 @@ export function applyResponseHeaders(res, headers) {
  * @typedef {{
  *   fetchCredit: (uuid: string) => Promise<number | null>,
  *   fetchCreditEvents: (uuid: string) => Promise<Array<CreditLedgerEvent>>,
- *   applyCreditEvent: (uuid: string, event: CreditEventInput) => Promise<CreditApiResponse>,
+ *   applyCreditEvent: (allowEffects: AllowEffects, uuid: string, event: CreditEventInput) => Promise<CreditApiResponse>,
  *   resolveUuid: (request: unknown) => string,
- *   errorLogger: (error: unknown) => void,
+ *   errorLogger: (allowEffects: AllowEffects, error: unknown) => void,
  * }} ResolvedHandlerDependencies
  */
 
@@ -396,8 +428,8 @@ function isCreditEventsRequest(request) {
 
 /**
  * Select a logger for handler errors.
- * @param {((error: unknown) => void) | undefined} logError Optional logger.
- * @returns {(error: unknown) => void} Logger that safely ignores errors.
+ * @param {((allowEffects: AllowEffects, error: unknown) => void) | undefined} logError Optional logger.
+ * @returns {(allowEffects: AllowEffects, error: unknown) => void} Logger that safely ignores errors.
  */
 function resolveErrorLogger(logError) {
   return /** @type {(error: unknown) => void} */ (
@@ -580,13 +612,19 @@ function resolveCreditEventInput(body) {
 
 /**
  * Fetch credit for a UUID and translate it into an HTTP response.
+ * @param {AllowEffects} allowEffects Request permission.
  * @param {(uuid: string) => Promise<number | null>} fetchCredit Function to fetch credit totals.
  * @param {string} uuid UUID used for the lookup.
- * @param {(error: unknown) => void} errorLogger Logger invoked when fetch attempts fail.
+ * @param {(allowEffects: AllowEffects, error: unknown) => void} errorLogger Logger invoked when fetch attempts fail.
  * @returns {Promise<CreditApiResponse>} HTTP response metadata.
  */
-async function fetchCreditResponse(fetchCredit, uuid, errorLogger) {
-  return runWithInternalError(errorLogger, async () => {
+async function fetchCreditResponse(
+  allowEffects,
+  fetchCredit,
+  uuid,
+  errorLogger
+) {
+  return runWithInternalError(allowEffects, errorLogger, async () => {
     const credit = await fetchCredit(uuid);
     let resolvedCredit = 0;
     if (typeof credit === 'number') {
@@ -603,13 +641,19 @@ async function fetchCreditResponse(fetchCredit, uuid, errorLogger) {
 
 /**
  * Fetch the ledger event history and translate it into an HTTP response.
+ * @param {AllowEffects} allowEffects Request permission.
  * @param {(uuid: string) => Promise<Array<CreditLedgerEvent>>} fetchCreditEvents Function to fetch ledger entries.
  * @param {string} uuid UUID used for the lookup.
- * @param {(error: unknown) => void} errorLogger Logger invoked when fetch attempts fail.
+ * @param {(allowEffects: AllowEffects, error: unknown) => void} errorLogger Logger invoked when fetch attempts fail.
  * @returns {Promise<CreditApiResponse>} HTTP response metadata.
  */
-async function fetchCreditEventsResponse(fetchCreditEvents, uuid, errorLogger) {
-  return runWithInternalError(errorLogger, async () => ({
+async function fetchCreditEventsResponse(
+  allowEffects,
+  fetchCreditEvents,
+  uuid,
+  errorLogger
+) {
+  return runWithInternalError(allowEffects, errorLogger, async () => ({
     status: 200,
     body: {
       events: await fetchCreditEvents(uuid),
@@ -619,25 +663,18 @@ async function fetchCreditEventsResponse(fetchCreditEvents, uuid, errorLogger) {
 
 /**
  * Apply a credit event and translate it into an HTTP response.
- * @param {(uuid: string, event: CreditEventInput) => Promise<CreditApiResponse>} applyCreditEvent Function to execute the write.
- * @param {string} uuid UUID used for the mutation.
- * @param {unknown} body Request body.
- * @param {(error: unknown) => void} errorLogger Logger invoked when write attempts fail.
+ * @param {{ allowEffects: AllowEffects, applyCreditEvent: (allowEffects: AllowEffects, uuid: string, event: CreditEventInput) => Promise<CreditApiResponse>, uuid: string, body: unknown, errorLogger: (allowEffects: AllowEffects, error: unknown) => void }} input Apply operation inputs.
  * @returns {Promise<CreditApiResponse>} HTTP response metadata.
  */
-async function applyCreditEventResponse(
-  applyCreditEvent,
-  uuid,
-  body,
-  errorLogger
-) {
+async function applyCreditEventResponse(input) {
+  const { allowEffects, applyCreditEvent, uuid, body, errorLogger } = input;
   const eventInput = resolveCreditEventInput(body);
   if (isValidationErrorResponse(eventInput)) {
     return eventInput;
   }
 
-  return runWithInternalError(errorLogger, () =>
-    applyCreditEvent(uuid, eventInput)
+  return runWithInternalError(allowEffects, errorLogger, () =>
+    applyCreditEvent(allowEffects, uuid, eventInput)
   );
 }
 
@@ -661,15 +698,16 @@ function isValidationErrorResponse(value) {
 /**
  * Run a request and convert thrown errors into a standard internal error response.
  * @template T
- * @param {(error: unknown) => void} errorLogger Error logger.
+ * @param {AllowEffects} allowEffects Request permission.
+ * @param {(allowEffects: AllowEffects, error: unknown) => void} errorLogger Error logger.
  * @param {() => Promise<T>} action Action to execute.
  * @returns {Promise<T | CreditApiResponse>} Success result or internal error response.
  */
-async function runWithInternalError(errorLogger, action) {
+async function runWithInternalError(allowEffects, errorLogger, action) {
   try {
     return await action();
   } catch (error) {
-    errorLogger(error);
+    errorLogger(allowEffects, error);
     return internalErrorResponse();
   }
 }
@@ -718,32 +756,45 @@ export function createFetchCreditEvents(db) {
 
 /**
  * Create a credit-event write function bound to the supplied Firestore database.
- * @param {CreditFirestore} db Firestore instance to use for writes.
- * @returns {(uuid: string, event: CreditEventInput) => Promise<CreditApiResponse>} Function to apply a credit event.
+ * @param {CreditFirestore} db Firestore instance to use for references.
+ * @param {CreditEventEffects} effects Transaction adapters.
+ * @returns {(allowEffects: AllowEffects, uuid: string, event: CreditEventInput) => Promise<CreditApiResponse>} Function to apply a credit event.
  */
-export function createApplyCreditEvent(db) {
+export function createApplyCreditEvent(db, effects) {
   /**
    * Apply a credit event when it has not already been recorded.
+   * @param {AllowEffects} allowEffects Permission for the credit transaction.
    * @param {string} uuid API key UUID.
    * @param {CreditEventInput} event Credit event to apply.
    * @returns {Promise<CreditApiResponse>} Result of the write operation.
    */
   async function applyCreditEvent(
+    allowEffects,
     /** @type {string} */ uuid,
     /** @type {CreditEventInput} */ event
   ) {
-    return db.runTransaction(async transaction => {
+    return effects.runTransaction(allowEffects, async transaction => {
       const eventRef = getApiKeyCreditEventDocument(db, uuid, event.eventId);
-      const eventSnap = await transaction.get(eventRef);
+      const eventSnap = await effects.getTransactionDocument(
+        allowEffects,
+        transaction,
+        eventRef
+      );
       if (eventSnap.exists) {
         return resolveStoredCreditEventResponse(eventSnap);
       }
 
       const creditRef = getApiKeyCreditDocument(db, uuid);
-      const creditSnap = await transaction.get(creditRef);
+      const creditSnap = await effects.getTransactionDocument(
+        allowEffects,
+        transaction,
+        creditRef
+      );
 
       const transactionInput = {
         transaction,
+        allowEffects,
+        setTransactionDocument: effects.setTransactionDocument,
         creditRef,
         creditSnap,
         eventRef,
@@ -825,6 +876,8 @@ export function getApiKeyCreditEventDocument(db, uuid, eventId) {
  * Apply a credit event within a transaction.
  * @param {{
  *   transaction: CreditTransaction,
+ *   allowEffects: AllowEffects,
+ *   setTransactionDocument: (allowEffects: AllowEffects, transaction: CreditTransaction, reference: import('@google-cloud/firestore').DocumentReference, data: Record<string, unknown>) => unknown,
  *   creditRef: import('@google-cloud/firestore').DocumentReference,
  *   creditSnap: import('@google-cloud/firestore').DocumentSnapshot,
  *   eventRef: import('@google-cloud/firestore').DocumentReference,
@@ -840,6 +893,8 @@ async function applyCreditEventTransaction(input) {
   if (event.type === 'credit_added') {
     return commitCreditEvent({
       transaction,
+      allowEffects: input.allowEffects,
+      setTransactionDocument: input.setTransactionDocument,
       creditRef,
       eventRef,
       event,
@@ -865,6 +920,8 @@ async function applyCreditEventTransaction(input) {
 
   return commitCreditEvent({
     transaction,
+    allowEffects: input.allowEffects,
+    setTransactionDocument: input.setTransactionDocument,
     creditRef,
     eventRef,
     event,
@@ -877,6 +934,8 @@ async function applyCreditEventTransaction(input) {
  * Persist a credit event and snapshot update in one transaction.
  * @param {{
  *   transaction: CreditTransaction,
+ *   allowEffects: AllowEffects,
+ *   setTransactionDocument: (allowEffects: AllowEffects, transaction: CreditTransaction, reference: import('@google-cloud/firestore').DocumentReference, data: Record<string, unknown>) => unknown,
  *   creditRef: import('@google-cloud/firestore').DocumentReference,
  *   eventRef: import('@google-cloud/firestore').DocumentReference,
  *   event: CreditEventInput,
@@ -887,17 +946,27 @@ async function applyCreditEventTransaction(input) {
  */
 function commitCreditEvent(input) {
   const response = createCreditEventResponse(input.event, input.balanceAfter);
-  input.transaction.set(input.eventRef, {
-    type: input.event.type,
-    eventId: input.event.eventId,
-    amount: input.event.amount,
-    balanceBefore: input.balanceBefore,
-    balanceAfter: input.balanceAfter,
-  });
-  input.transaction.set(input.creditRef, {
-    credit: input.balanceAfter,
-    lastEventId: input.event.eventId,
-  });
+  input.setTransactionDocument(
+    input.allowEffects,
+    input.transaction,
+    input.eventRef,
+    {
+      type: input.event.type,
+      eventId: input.event.eventId,
+      amount: input.event.amount,
+      balanceBefore: input.balanceBefore,
+      balanceAfter: input.balanceAfter,
+    }
+  );
+  input.setTransactionDocument(
+    input.allowEffects,
+    input.transaction,
+    input.creditRef,
+    {
+      credit: input.balanceAfter,
+      lastEventId: input.event.eventId,
+    }
+  );
   return response;
 }
 

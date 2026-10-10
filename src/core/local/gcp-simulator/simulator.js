@@ -61,6 +61,8 @@ const SECOND_VARIANT_NAME = 'a';
 const LOCAL_ID_TOKEN = 'local-admin-token';
 
 /** @typedef {ReturnType<typeof createFakeFirestore>} SimulatorDb */
+/** @typedef {Parameters<typeof createApplyCreditEvent>[1]} CreditEventEffects */
+/** @typedef {(db: Parameters<typeof createFetchCredit>[0]) => CreditEventEffects} CreditEventEffectAdapterFactory */
 /** @typedef {{ body?: unknown, headers?: unknown, get?: (name: string) => string | null | undefined }} SimulatorRequest */
 /** @typedef {{ path: string, before?: unknown, after?: unknown }} CommittedRecord */
 /** @typedef {{ pathPattern: string, eventName: 'onCreate' | 'onWrite', handler: (...args: any[]) => any }} SimulatorTrigger */
@@ -90,6 +92,7 @@ const LOCAL_ID_TOKEN = 'local-admin-token';
  *   saveStorageFile?: (permission: import('../../../../types/allow-effects').AllowEffects, file: object, contents: string, options: object) => Promise<unknown>,
  *   updateFirestoreDocument?: (permission: import('../../../../types/allow-effects').AllowEffects, reference: { update: (data: Record<string, unknown>) => Promise<unknown> }, data: Record<string, unknown>) => Promise<unknown>,
  *   setFirestoreDocument?: (permission: import('../../../../types/allow-effects').AllowEffects, reference: { set: (data: Record<string, unknown>) => Promise<unknown> }, data: Record<string, unknown>) => Promise<unknown>,
+ *   createCreditEventEffectAdapters?: CreditEventEffectAdapterFactory,
  * }} [options] Simulator options.
  * @returns {Promise<object>} Simulator instance.
  */
@@ -103,6 +106,7 @@ export async function createLocalGcpSimulator(options = {}) {
     saveStorageFile,
     updateFirestoreDocument,
     setFirestoreDocument,
+    createCreditEventEffectAdapters,
   } = options;
 
   return createLocalGcpSimulatorRuntime({
@@ -114,6 +118,7 @@ export async function createLocalGcpSimulator(options = {}) {
     saveStorageFile,
     updateFirestoreDocument,
     setFirestoreDocument,
+    createCreditEventEffectAdapters,
   });
 }
 
@@ -128,6 +133,7 @@ export async function createLocalGcpSimulator(options = {}) {
  *   saveStorageFile?: (permission: import('../../../../types/allow-effects').AllowEffects, file: object, contents: string, options: object) => Promise<unknown>,
  *   updateFirestoreDocument?: (permission: import('../../../../types/allow-effects').AllowEffects, reference: { update: (data: Record<string, unknown>) => Promise<unknown> }, data: Record<string, unknown>) => Promise<unknown>,
  *   setFirestoreDocument?: (permission: import('../../../../types/allow-effects').AllowEffects, reference: { set: (data: Record<string, unknown>) => Promise<unknown> }, data: Record<string, unknown>) => Promise<unknown>,
+ *   createCreditEventEffectAdapters?: CreditEventEffectAdapterFactory,
  * }} config Simulator configuration.
  * @returns {Promise<object>} Simulator instance.
  */
@@ -355,6 +361,7 @@ function buildSimulatorApi(state) {
  *   saveStorageFile?: (permission: import('../../../../types/allow-effects').AllowEffects, file: object, contents: string, options: object) => Promise<unknown>,
  *   updateFirestoreDocument?: (permission: import('../../../../types/allow-effects').AllowEffects, reference: { update: (data: Record<string, unknown>) => Promise<unknown> }, data: Record<string, unknown>) => Promise<unknown>,
  *   setFirestoreDocument?: (permission: import('../../../../types/allow-effects').AllowEffects, reference: { set: (data: Record<string, unknown>) => Promise<unknown> }, data: Record<string, unknown>) => Promise<unknown>,
+ *   createCreditEventEffectAdapters?: CreditEventEffectAdapterFactory,
  * }} config Simulator configuration.
  * @returns {Promise<object>} Simulator state.
  */
@@ -367,9 +374,16 @@ async function buildSimulatorState(config) {
     saveStorageFile,
     updateFirestoreDocument,
     setFirestoreDocument,
+    createCreditEventEffectAdapters,
   } = config;
   if (typeof config.bindEffectBoundary !== 'function') {
     throw new TypeError('bindEffectBoundary must be provided');
+  }
+  if (typeof createCreditEventEffectAdapters !== 'function') {
+    throw new TypeError('createCreditEventEffectAdapters must be provided');
+  }
+  if (typeof setFirestoreDocument !== 'function') {
+    throw new TypeError('setFirestoreDocument must be provided');
   }
   const bindEffectBoundary =
     /** @type {import('../../../../types/allow-effects').AllowEffectsBoundary} */ (
@@ -521,48 +535,11 @@ async function buildSimulatorState(config) {
       },
       request
     );
-  const simulatorCreditDb =
-    /** @type {Parameters<typeof createFetchCredit>[0]} */ (
-      /** @type {unknown} */ (db)
-    );
-  const getApiKeyCreditV2 = createGetApiKeyCreditV2Handler({
-    fetchCredit: createFetchCredit(simulatorCreditDb),
-    fetchCreditEvents: createFetchCreditEvents(simulatorCreditDb),
-    applyCreditEvent: createApplyCreditEvent(simulatorCreditDb),
-    getUuid: extractUuid,
-    logError: error => console.error(error),
-  });
-  const resolveApiKeyUuid = createResolveApiKeyUuid({
-    findApiKeyUuidByCustomerId: async customerId => {
-      const snap = await db
-        .collection('payment-customers')
-        .doc(customerId)
-        .get();
-      const apiKeyUuid = readRecord(snap.data()).apiKeyUuid;
-      return resolvePaymentCustomerApiKeyUuid(apiKeyUuid);
-    },
-  });
-  const paymentWebhook = createPaymentWebhookHandler({
-    fetchCredit: createFetchCredit(simulatorCreditDb),
-    applyCreditEvent: createApplyCreditEvent(simulatorCreditDb),
-    resolveApiKeyUuid,
-    isDuplicateEvent: async eventId => {
-      const snap = await db.collection('payment-events').doc(eventId).get();
-      return snap.exists;
-    },
-    markProcessedEvent: async (permission, event, uuid, status) => {
-      void permission;
-      await db
-        .collection('payment-events')
-        .doc(event.id)
-        .set({
-          apiKeyUuid: uuid,
-          type: event.type,
-          createdAt: resolvePaymentCreatedAt(event),
-          status,
-        });
-    },
-  });
+  const { getApiKeyCreditV2, paymentWebhook } = createCreditApiHandlers(
+    db,
+    createCreditEventEffectAdapters,
+    setFirestoreDocument
+  );
   const searchHttp = createSearchHttpHandler({
     runnerCommitmentsRepository: createBrowserRunnerCommitmentsRepository(),
     serviceArea: SOPHIE_CHARLOTTE_SERVICE_AREA,
@@ -631,6 +608,66 @@ async function buildSimulatorState(config) {
       objectMinuteRentalSearch,
     }),
   });
+}
+
+/**
+ * Build API-key credit and payment webhook handlers over the simulator database.
+ * @param {SimulatorDb} db Local Firestore database.
+ * @param {CreditEventEffectAdapterFactory} createCreditEventEffectAdapters Permission-first transaction adapter factory.
+ * @param {(permission: import('../../../../types/allow-effects').AllowEffects, reference: { set: (data: Record<string, unknown>) => Promise<unknown> }, data: Record<string, unknown>) => Promise<unknown>} setFirestoreDocument Permission-first persistence adapter.
+ * @returns {{getApiKeyCreditV2: ReturnType<typeof createGetApiKeyCreditV2Handler>, paymentWebhook: ReturnType<typeof createPaymentWebhookHandler>}} Credit handlers.
+ */
+function createCreditApiHandlers(
+  db,
+  createCreditEventEffectAdapters,
+  setFirestoreDocument
+) {
+  const creditDb = /** @type {Parameters<typeof createFetchCredit>[0]} */ (
+    /** @type {unknown} */ (db)
+  );
+  const creditEventEffects = createCreditEventEffectAdapters(creditDb);
+  const applyCreditEvent = createApplyCreditEvent(creditDb, creditEventEffects);
+  const getApiKeyCreditV2 = createGetApiKeyCreditV2Handler({
+    fetchCredit: createFetchCredit(creditDb),
+    fetchCreditEvents: createFetchCreditEvents(creditDb),
+    applyCreditEvent,
+    getUuid: extractUuid,
+    logError: (permission, error) => {
+      void permission;
+      console.error(error);
+    },
+  });
+  const paymentWebhook = createPaymentWebhookHandler({
+    fetchCredit: createFetchCredit(creditDb),
+    applyCreditEvent,
+    resolveApiKeyUuid: createResolveApiKeyUuid({
+      findApiKeyUuidByCustomerId: async customerId => {
+        const snap = await db
+          .collection('payment-customers')
+          .doc(customerId)
+          .get();
+        const apiKeyUuid = readRecord(snap.data()).apiKeyUuid;
+        return resolvePaymentCustomerApiKeyUuid(apiKeyUuid);
+      },
+    }),
+    isDuplicateEvent: async eventId => {
+      const snap = await db.collection('payment-events').doc(eventId).get();
+      return snap.exists;
+    },
+    markProcessedEvent: async (permission, event, uuid, status) => {
+      await setFirestoreDocument(
+        permission,
+        db.collection('payment-events').doc(event.id),
+        {
+          apiKeyUuid: uuid,
+          type: event.type,
+          createdAt: resolvePaymentCreatedAt(event),
+          status,
+        }
+      );
+    },
+  });
+  return { getApiKeyCreditV2, paymentWebhook };
 }
 
 /**
@@ -1236,12 +1273,14 @@ async function handleSubmitNewPage(permission, deps, request) {
 
 /**
  * Run the API key credit route handler.
- * @param {{ getApiKeyCreditV2: (...args: any[]) => any }} deps Route dependencies.
+ * @param {{ bindEffectBoundary: import('../../../../types/allow-effects').AllowEffectsBoundary, getApiKeyCreditV2: (...args: any[]) => any }} deps Route dependencies.
  * @param {SimulatorRequest} request Incoming request object.
  * @returns {Promise<{ status: number, body?: unknown }>} Route response.
  */
 async function handleGetApiKeyCreditV2(deps, request) {
-  return deps.getApiKeyCreditV2(request);
+  return deps.bindEffectBoundary(permission =>
+    deps.getApiKeyCreditV2(permission, request)
+  );
 }
 
 /**

@@ -19,6 +19,7 @@ describe('get-api-key-credit-v2 entry point', () => {
     process.env.DATABASE_ID = 't-test';
 
     let mod;
+    const internalHandler = jest.fn(async () => {});
 
     await jest.isolateModulesAsync(async () => {
       await jest.unstable_mockModule('firebase-admin/app', () => ({
@@ -41,16 +42,20 @@ describe('get-api-key-credit-v2 entry point', () => {
       await jest.unstable_mockModule(
         '../../../src/core/cloud/get-api-key-credit-v2/get-api-key-credit-v2-core.js',
         () => ({
-          createGetApiKeyCreditV2ExpressHandle: jest.fn(() => async () => ({
-            status: 200,
-            body: { ok: true },
-          })),
+          createGetApiKeyCreditV2ExpressHandle: jest.fn(() => internalHandler),
         })
       );
       mod = await import('../../../src/cloud/get-api-key-credit-v2/index.js');
     });
 
     expect(mod.handle).toBeDefined();
+    await mod.handle({ method: 'GET' }, {});
+    await mod.handle({ method: 'GET' }, {});
+    const firstPermission = internalHandler.mock.calls[0][0];
+    const secondPermission = internalHandler.mock.calls[1][0];
+    expect(Object.isFrozen(firstPermission)).toBe(true);
+    expect(Object.isFrozen(secondPermission)).toBe(true);
+    expect(secondPermission).not.toBe(firstPermission);
 
     process.env.DATABASE_ID = previousDatabaseId;
   });

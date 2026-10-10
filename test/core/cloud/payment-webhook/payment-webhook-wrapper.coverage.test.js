@@ -246,6 +246,7 @@ async function runScenario135Part0(context) {
   };
   context.handle = createPaymentWebhookIndexHandler({
     firestore: context.Firestore,
+    creditEventEffects: {},
     env: { STRIPE_WEBHOOK_SECRET: 'secret' },
     constructEvent: payload => JSON.parse(payload.toString()),
     markProcessedEvent: (permission, event, uuid, status) =>
@@ -254,6 +255,7 @@ async function runScenario135Part0(context) {
   context.markProcessedEvent = jest.fn();
   createPaymentWebhookIndexHandler({
     firestore: context.Firestore,
+    creditEventEffects: {},
     markProcessedEvent: jest.fn(),
   });
   context.defaultCaptured = mockCreatePaymentWebhookHandler.mock.calls[1][0];

@@ -18,6 +18,19 @@ describe('gcp simulator coverage paths', () => {
     );
   });
 
+  it('requires injected transaction and document effect adapters', async () => {
+    const bindEffectBoundary = () => Object.freeze({});
+    await expect(createCoreSimulator({ bindEffectBoundary })).rejects.toThrow(
+      'createCreditEventEffectAdapters must be provided'
+    );
+    await expect(
+      createCoreSimulator({
+        bindEffectBoundary,
+        createCreditEventEffectAdapters: () => ({}),
+      })
+    ).rejects.toThrow('setFirestoreDocument must be provided');
+  });
+
   it('covers simulator helpers for missing dependencies and unmatched trigger parameters', async () => {
     simulator = await createLocalGcpSimulator({ baseUrl: 'http://simulator' });
     const utils = simulator.testUtils;

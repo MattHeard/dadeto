@@ -4,6 +4,11 @@ import {
   extractUuid,
 } from '../../../../src/core/cloud/get-api-key-credit-v2/get-api-key-credit-v2-core.js';
 
+const allowEffects =
+  /** @type {import('../../../../types/allow-effects').AllowEffects} */ (
+    Object.freeze({})
+  );
+
 describe('extractUuid', () => {
   it('extracts the UUID from the request path', () => {
     expect(
@@ -80,7 +85,7 @@ describe('createGetApiKeyCreditV2Handler', () => {
       applyCreditEvent,
     });
 
-    await expect(handler({ method: 'DELETE' })).resolves.toEqual({
+    await expect(handler(allowEffects, { method: 'DELETE' })).resolves.toEqual({
       status: 405,
       body: 'Method Not Allowed',
       headers: { Allow: 'GET, POST' },
@@ -101,13 +106,13 @@ describe('createGetApiKeyCreditV2Handler', () => {
       logError,
     });
 
-    await expect(handler({ method: 'GET' })).resolves.toEqual({
+    await expect(handler(allowEffects, { method: 'GET' })).resolves.toEqual({
       status: 500,
       body: 'Internal error',
     });
     expect(fetchCredit).toHaveBeenCalledWith('uuid-123');
     expect(applyCreditEvent).not.toHaveBeenCalled();
-    expect(logError).toHaveBeenCalledWith(error);
+    expect(logError).toHaveBeenCalledWith(allowEffects, error);
   });
 
   it('falls back to a noop logger when fetchCredit fails and no logger is supplied', async () => {
@@ -120,7 +125,7 @@ describe('createGetApiKeyCreditV2Handler', () => {
       getUuid: () => 'uuid-123',
     });
 
-    await expect(handler({ method: 'GET' })).resolves.toEqual({
+    await expect(handler(allowEffects, { method: 'GET' })).resolves.toEqual({
       status: 500,
       body: 'Internal error',
     });
@@ -136,7 +141,7 @@ describe('createGetApiKeyCreditV2Handler', () => {
       applyCreditEvent,
     });
 
-    await expect(handler({ method: 'GET' })).resolves.toEqual({
+    await expect(handler(allowEffects, { method: 'GET' })).resolves.toEqual({
       status: 400,
       body: 'Missing UUID',
     });
@@ -153,7 +158,7 @@ describe('createGetApiKeyCreditV2Handler', () => {
       getUuid: () => 'uuid-123',
     });
 
-    await expect(handler({ method: 'GET' })).resolves.toEqual({
+    await expect(handler(allowEffects, { method: 'GET' })).resolves.toEqual({
       status: 200,
       body: { credit: 42 },
     });
@@ -170,7 +175,7 @@ describe('createGetApiKeyCreditV2Handler', () => {
       getUuid: () => 'uuid-123',
     });
 
-    await expect(handler()).resolves.toEqual({
+    await expect(handler(allowEffects)).resolves.toEqual({
       status: 405,
       body: 'Method Not Allowed',
       headers: { Allow: 'GET, POST' },
@@ -188,7 +193,7 @@ describe('createGetApiKeyCreditV2Handler', () => {
       getUuid: () => 'uuid-123',
     });
 
-    await expect(handler({ method: 'GET' })).resolves.toEqual({
+    await expect(handler(allowEffects, { method: 'GET' })).resolves.toEqual({
       status: 200,
       body: { credit: 0 },
     });
@@ -216,7 +221,7 @@ describe('createGetApiKeyCreditV2Handler credit events', () => {
     });
 
     await expect(
-      handler({
+      handler(allowEffects, {
         method: 'POST',
         body: {
           type: 'credit_added',
@@ -234,7 +239,7 @@ describe('createGetApiKeyCreditV2Handler credit events', () => {
       },
     });
     expect(fetchCredit).not.toHaveBeenCalled();
-    expect(applyCreditEvent).toHaveBeenCalledWith('uuid-123', {
+    expect(applyCreditEvent).toHaveBeenCalledWith(allowEffects, 'uuid-123', {
       type: 'credit_added',
       eventId: 'event-1',
       amount: 25,
@@ -251,7 +256,7 @@ describe('createGetApiKeyCreditV2Handler credit events', () => {
     });
 
     await expect(
-      handler({
+      handler(allowEffects, {
         method: 'POST',
         body: {
           eventId: 'event-1',
@@ -276,7 +281,7 @@ describe('createGetApiKeyCreditV2Handler credit events', () => {
     });
 
     await expect(
-      handler({
+      handler(allowEffects, {
         method: 'POST',
         body: null,
       })
@@ -298,7 +303,7 @@ describe('createGetApiKeyCreditV2Handler credit events', () => {
     });
 
     await expect(
-      handler({
+      handler(allowEffects, {
         method: 'POST',
         body: {
           type: 'credit_unknown',
@@ -324,7 +329,7 @@ describe('createGetApiKeyCreditV2Handler credit events', () => {
     });
 
     await expect(
-      handler({
+      handler(allowEffects, {
         method: 'POST',
         body: {
           type: 'credit_added',
@@ -354,7 +359,7 @@ describe('createGetApiKeyCreditV2Handler event failures', () => {
     });
 
     await expect(
-      handler({
+      handler(allowEffects, {
         method: 'POST',
         body: {
           type: 'credit_deducted',
@@ -367,12 +372,12 @@ describe('createGetApiKeyCreditV2Handler event failures', () => {
       body: 'Internal error',
     });
     expect(fetchCredit).not.toHaveBeenCalled();
-    expect(applyCreditEvent).toHaveBeenCalledWith('uuid-123', {
+    expect(applyCreditEvent).toHaveBeenCalledWith(allowEffects, 'uuid-123', {
       type: 'credit_deducted',
       eventId: 'event-2',
       amount: 1,
     });
-    expect(logError).toHaveBeenCalledWith(error);
+    expect(logError).toHaveBeenCalledWith(allowEffects, error);
   });
 
   it('returns 400 when the amount is invalid', async () => {
@@ -385,7 +390,7 @@ describe('createGetApiKeyCreditV2Handler event failures', () => {
     });
 
     await expect(
-      handler({
+      handler(allowEffects, {
         method: 'POST',
         body: {
           type: 'credit_added',
@@ -411,7 +416,7 @@ describe('createGetApiKeyCreditV2Handler event failures', () => {
     });
 
     await expect(
-      handler({
+      handler(allowEffects, {
         method: 'POST',
         body: {
           type: 'credit_added',
