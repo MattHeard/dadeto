@@ -60,16 +60,12 @@ describe('createKeyValueRow', () => {
     mockContainer = {};
 
     // Create the row creator function
-    rowCreator = createKeyValueRow({
-      dom: mockDom,
-      entries: mockEntries,
-      textInput: mockTextInput,
-      rows: mockRows,
-      syncHiddenField: mockSyncHiddenField,
-      disposers: mockDisposers,
-      render: mockRender,
-      container: mockContainer,
-    });
+    rowCreator = createKeyValueRow(
+      mockDom,
+      mockTextInput,
+      { rows: mockRows, rowTypes: {} },
+      mockSyncHiddenField
+    )(mockEntries, mockDisposers, mockRender, mockContainer);
   });
 
   it('creates a row with key and value inputs', () => {
@@ -133,16 +129,12 @@ describe('createKeyValueRow', () => {
     };
     const textInput = {};
     const syncHiddenField = jest.fn();
-    const keyRow = createKeyValueRow({
-      dom,
-      entries: [['original', 'value']],
-      textInput,
-      rowData,
-      syncHiddenField,
-      disposers: [],
-      render: jest.fn(),
-      container: {},
-    });
+    const keyRow = createKeyValueRow(dom, textInput, rowData, syncHiddenField)(
+      [['original', 'value']],
+      [],
+      jest.fn(),
+      {}
+    );
 
     keyRow(['original', 'value'], 0);
 
@@ -315,16 +307,12 @@ describe('createKeyValueRow event setup', () => {
     mockDisposers = [];
     mockRender = jest.fn();
     mockContainer = {};
-    rowCreator = createKeyValueRow({
-      dom: mockDom,
-      entries: mockEntries,
-      textInput: mockTextInput,
-      rows: mockRows,
-      syncHiddenField: mockSyncHiddenField,
-      disposers: mockDisposers,
-      render: mockRender,
-      container: mockContainer,
-    });
+    rowCreator = createKeyValueRow(
+      mockDom,
+      mockTextInput,
+      { rows: mockRows, rowTypes: {} },
+      mockSyncHiddenField
+    )(mockEntries, mockDisposers, mockRender, mockContainer);
   });
 
   it('creates the button element with the correct type', () => {
@@ -450,16 +438,12 @@ describe('createKeyValueRow cleanup', () => {
       ['key2', 'value2'],
     ];
     mockDisposers = [];
-    rowCreator = createKeyValueRow({
-      dom: mockDom,
-      entries: mockEntries,
-      textInput: {},
-      rows: {},
-      syncHiddenField: jest.fn(),
-      disposers: mockDisposers,
-      render: jest.fn(),
-      container: {},
-    });
+    rowCreator = createKeyValueRow(
+      mockDom,
+      {},
+      { rows: {}, rowTypes: {} },
+      jest.fn()
+    )(mockEntries, mockDisposers, jest.fn(), {});
   });
 
   it('handles cleanup when disposers are called', () => {

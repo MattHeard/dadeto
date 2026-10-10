@@ -42,16 +42,12 @@ describe('createKeyValueRow DOM appends', () => {
       hide: jest.fn(),
     };
 
-    const rowCreator = createKeyValueRow({
+    const rowCreator = createKeyValueRow(
       dom,
-      entries: [['a', 'b']],
-      textInput: {},
-      rowData: { rows: { a: 'b' }, rowTypes: { a: 'string' } },
-      syncHiddenField: () => {},
-      disposers: [],
-      render: () => {},
-      container,
-    });
+      {},
+      { rows: { a: 'b' }, rowTypes: { a: 'string' } },
+      () => {}
+    )([['a', 'b']], [], () => {}, container);
 
     rowCreator(['a', 'b'], 0);
 
@@ -97,19 +93,20 @@ it('selects a remove button for non-final rows', () => {
     reveal: jest.fn(),
     addEventListener: jest.fn(),
   };
-  const rowCreator = createKeyValueRow({
+  const rowCreator = createKeyValueRow(
     dom,
-    entries: [
+    {},
+    { rows: { a: 'b' }, rowTypes: { a: 'string' } },
+    jest.fn()
+  )(
+    [
       ['a', 'b'],
       ['c', 'd'],
     ],
-    textInput: {},
-    rowData: { rows: { a: 'b' }, rowTypes: { a: 'string' } },
-    syncHiddenField: jest.fn(),
-    disposers: [],
-    render: jest.fn(),
-    container: {},
-  });
+    [],
+    jest.fn(),
+    {}
+  );
   rowCreator(['a', 'b'], 0);
   expect(dom.setTextContent).toHaveBeenCalledWith(expect.any(Object), '×');
 });
@@ -133,16 +130,12 @@ it('uses fresh row state when row construction receives null row data', () => {
     addEventListener: jest.fn(),
   };
   const render = jest.fn();
-  const rowCreator = createKeyValueRow({
-    dom,
-    entries: [['a', 'b']],
-    textInput: {},
-    rowData: null,
-    syncHiddenField: jest.fn(),
-    disposers: [],
+  const rowCreator = createKeyValueRow(dom, {}, null, jest.fn())(
+    [['a', 'b']],
+    [],
     render,
-    container: {},
-  });
+    {}
+  );
   expect(() => rowCreator(['a', 'b'], 0)).not.toThrow();
   const button = dom.appendChild.mock.calls.at(-2)[1];
   expect(button.tag).toBe('button');
@@ -151,5 +144,40 @@ it('uses fresh row state when row construction receives null row data', () => {
   );
   const addHandler = clickCalls[clickCalls.length - 1][2];
   addHandler();
+  expect(render).toHaveBeenCalledTimes(1);
+});
+
+it('uses fresh row state for a remove button when row data is null', () => {
+  const dom = {
+    createElement: jest.fn(tag => ({ tag })),
+    setClassName: jest.fn(),
+    setType: jest.fn(),
+    setPlaceholder: jest.fn(),
+    setValue: jest.fn(),
+    setDataAttribute: jest.fn(),
+    setTextContent: jest.fn(),
+    appendChild: jest.fn(),
+    addClass: jest.fn(),
+    hide: jest.fn(),
+    reveal: jest.fn(),
+    addEventListener: jest.fn(),
+  };
+  const render = jest.fn();
+  const rowCreator = createKeyValueRow(dom, {}, null, jest.fn())(
+    [
+      ['a', 'b'],
+      ['c', 'd'],
+    ],
+    [],
+    render,
+    {}
+  );
+
+  rowCreator(['a', 'b'], 0);
+
+  const clickHandler = dom.addEventListener.mock.calls
+    .filter(([, event]) => event === 'click')
+    .at(-1)[2];
+  clickHandler({ preventDefault: jest.fn() });
   expect(render).toHaveBeenCalledTimes(1);
 });

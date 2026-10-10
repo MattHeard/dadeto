@@ -33,16 +33,12 @@ describe('createKeyValueRow argument handling', () => {
     const render = jest.fn();
     const container = {};
 
-    const rowCreator = createKeyValueRow({
+    const rowCreator = createKeyValueRow(
       dom,
-      entries,
       textInput,
-      rows,
-      syncHiddenField,
-      disposers,
-      render,
-      container,
-    });
+      { rows, rowTypes: {} },
+      syncHiddenField
+    )(entries, disposers, render, container);
 
     rowCreator(['alpha', 'beta'], 0);
 

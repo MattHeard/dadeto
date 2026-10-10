@@ -1144,29 +1144,16 @@ export const setupRemoveButton = ({ dom, button, onRemove, disposers }) => {
 };
 
 /**
- * Creates a function that appends a key-value row to the container.
- * @param {object} options - Configuration.
- * @param {object} options.dom - DOM utilities.
- * @param {Array} options.entries - All [key, value] pairs.
- * @param {HTMLInputElement} options.textInput - Hidden JSON input.
- * @param {object} options.rowData - Row data object containing rows and rowTypes.
- * @param {ToyCallback} options.syncHiddenField - Updates the hidden field.
- * @param {Array<ToyCallback>} options.disposers - Collects cleanup callbacks.
- * @param {ToyCallback} options.render - Re-render function.
- * @param {HTMLElement} options.container - Container to append to.
- * @returns {(entry: [string, string], idx: number) => void} Row builder.
+ * Creates a staged factory for appending key-value rows.
+ * @param {object} dom - DOM utilities.
+ * @param {HTMLInputElement} textInput - Hidden JSON input.
+ * @param {object} rowData - Row data object containing rows and rowTypes.
+ * @param {ToyCallback} syncHiddenField - Updates the hidden field.
+ * @returns {(entries: Array, disposers: Array<ToyCallback>, render: ToyCallback, container: HTMLElement) => (entry: [string, string], idx: number) => void} Row configuration stage.
  */
 export const createKeyValueRow =
-  ({
-    dom,
-    entries,
-    textInput,
-    rowData,
-    syncHiddenField,
-    disposers,
-    render,
-    container,
-  }) =>
+  (dom, textInput, rowData, syncHiddenField) =>
+  (entries, disposers, render, container) =>
   ([key, value], idx) => {
     const rowEl = dom.createElement('div');
     dom.setClassName(rowEl, 'kv-row');
@@ -1828,16 +1815,12 @@ export const createRenderer = options => {
 
     const entries = Object.entries(effectiveRowData.rows);
     entries.forEach(
-      createKeyValueRow({
-        dom,
+      createKeyValueRow(dom, textInput, effectiveRowData, syncWithRowData)(
         entries,
-        textInput,
-        rowData: effectiveRowData,
-        syncHiddenField: syncWithRowData,
-        disposers: disposersArray,
+        disposersArray,
         render,
-        container,
-      })
+        container
+      )
     );
 
     syncWithRowData(textInput, effectiveRowData, dom);
