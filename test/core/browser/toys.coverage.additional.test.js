@@ -86,12 +86,11 @@ describe('toys additional coverage', () => {
     expect(render).toHaveBeenCalledTimes(1);
 
     const removeDisposers = [];
+    const emptyRemoveRowData = { rows: {}, rowTypes: {} };
     utils.setupRemoveButton({
       dom,
       button: {},
-      rowData: null,
-      render,
-      key: 'missing',
+      onRemove: utils.createOnRemove(emptyRemoveRowData, render, 'missing'),
       disposers: removeDisposers,
     });
     dom.addEventListener.mock.calls[1][2]({ preventDefault: jest.fn() });
@@ -710,8 +709,7 @@ describe('additional dropdown and focus coverage', () => {
     utils.setupRemoveButton({
       dom,
       button: {},
-      key: 'key',
-      render: jest.fn(),
+      onRemove: jest.fn(),
       disposers: [],
     });
     const renderer = utils.createRenderer({

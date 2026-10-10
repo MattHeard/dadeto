@@ -10,25 +10,19 @@ describe('createRemoveRemoveListener order of disposal', () => {
     };
     const buttonA = {};
     const buttonB = {};
-    const rows = {};
-    const render = jest.fn();
     const disposers = [];
 
     setupRemoveButton({
       dom,
       button: buttonA,
-      rows,
-      render,
-      key: 'a',
+      onRemove: jest.fn(),
       disposers,
     });
     const disposeA = disposers.pop();
     setupRemoveButton({
       dom,
       button: buttonB,
-      rows,
-      render,
-      key: 'b',
+      onRemove: jest.fn(),
       disposers,
     });
     const disposeB = disposers.pop();

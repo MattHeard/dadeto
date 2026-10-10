@@ -1,6 +1,7 @@
 import { describe, it, expect, jest } from '@jest/globals';
 import {
   createOnAddHandler,
+  createOnRemove,
   setupAddButton,
   setupRemoveButton,
 } from '../../src/browser/toys.js';
@@ -27,9 +28,11 @@ describe.each([
       setupRemoveButton({
         dom: params[0],
         button: params[1],
-        rows: params[2],
-        render: params[3],
-        key: params[4],
+        onRemove: createOnRemove(
+          { rows: params[2], rowTypes: {} },
+          params[3],
+          params[4]
+        ),
         disposers: params[5],
       }),
   ],

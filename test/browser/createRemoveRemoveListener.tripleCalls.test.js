@@ -8,8 +8,6 @@ describe('createRemoveRemoveListener triple calls', () => {
       addEventListener: jest.fn(),
       removeEventListener: jest.fn(),
     };
-    const rows = {};
-    const render = jest.fn();
     const disposers = [];
     const buttons = [{}, {}, {}];
 
@@ -17,9 +15,7 @@ describe('createRemoveRemoveListener triple calls', () => {
       setupRemoveButton({
         dom,
         button: btn,
-        rows,
-        render,
-        key: `k${idx}`,
+        onRemove: jest.fn(),
         disposers,
       });
       const disposer = disposers[idx];

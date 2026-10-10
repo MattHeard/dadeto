@@ -61,15 +61,11 @@ describe('button cleanup helpers', () => {
       removeEventListener: jest.fn(),
     };
     const button = {};
-    const rowData = { rows: { k: 'v' }, rowTypes: {} };
-    const render = jest.fn();
     const disposers = [];
     setupRemoveButton({
       dom,
       button,
-      rowData,
-      render,
-      key: 'k',
+      onRemove: jest.fn(),
       disposers,
     });
     expect(disposers).toHaveLength(1);

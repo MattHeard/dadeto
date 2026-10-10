@@ -13,17 +13,13 @@ describe('setupRemoveButton multiple disposers', () => {
     };
     const buttonA = {};
     const buttonB = {};
-    const rows = {};
-    const render = jest.fn();
     const disposers = [];
 
     // First setup
     setupRemoveButton({
       dom,
       button: buttonA,
-      rows,
-      render,
-      key: 'a',
+      onRemove: jest.fn(),
       disposers,
     });
     const disposerA = disposers.pop();
@@ -32,9 +28,7 @@ describe('setupRemoveButton multiple disposers', () => {
     setupRemoveButton({
       dom,
       button: buttonB,
-      rows,
-      render,
-      key: 'b',
+      onRemove: jest.fn(),
       disposers,
     });
     const disposerB = disposers.pop();

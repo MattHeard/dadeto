@@ -9,16 +9,12 @@ describe('createRemoveRemoveListener multiple disposals', () => {
       removeEventListener: jest.fn(),
     };
     const button = {};
-    const rows = {};
-    const render = jest.fn();
     const disposers = [];
 
     setupRemoveButton({
       dom,
       button,
-      rows,
-      render,
-      key: 'k',
+      onRemove: jest.fn(),
       disposers,
     });
 

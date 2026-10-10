@@ -1,5 +1,5 @@
 import { jest } from '@jest/globals';
-import { setupRemoveButton } from '../../src/browser/toys.js';
+import { createOnRemove, setupRemoveButton } from '../../src/browser/toys.js';
 
 describe('setupRemoveButton', () => {
   let mockDom;
@@ -31,9 +31,7 @@ describe('setupRemoveButton', () => {
     setupRemoveButton({
       dom: mockDom,
       button,
-      rowData,
-      render,
-      key: rowKey,
+      onRemove: createOnRemove(rowData, render, rowKey),
       disposers,
     });
 
@@ -52,9 +50,7 @@ describe('setupRemoveButton', () => {
     setupRemoveButton({
       dom: mockDom,
       button,
-      rowData,
-      render,
-      key: rowKey,
+      onRemove: createOnRemove(rowData, render, rowKey),
       disposers,
     });
 
@@ -86,9 +82,7 @@ describe('setupRemoveButton', () => {
     setupRemoveButton({
       dom: mockDom,
       button,
-      rowData,
-      render,
-      key: nonExistentKey,
+      onRemove: createOnRemove(rowData, render, nonExistentKey),
       disposers,
     });
 
