@@ -1,4 +1,7 @@
-import { startMosslightPage } from '../mosslight-valley/pagePresenter.js';
+import {
+  createMosslightPageEnvironment,
+  startMosslightPage,
+} from '../mosslight-valley/pagePresenter.js';
 import { createCommonsRuntime } from './runtime.js';
 import { drawCommonsFrame } from './renderer.js';
 import { COMMONS_GAME_VERSION } from './version.js';
@@ -14,6 +17,7 @@ export function startCommonsPage(options) {
     versionLabel.textContent = `GAME VERSION ${COMMONS_GAME_VERSION}`;
   return startMosslightPage({
     ...options,
+    ...createMosslightPageEnvironment(options),
     createRuntime: createCommonsRuntime,
     drawFrame: drawCommonsFrame,
     saveFilename: 'the-commons-of-tomorrow-save.json',

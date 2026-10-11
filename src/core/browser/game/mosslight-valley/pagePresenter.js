@@ -5,16 +5,34 @@ import { registerMosslightTools } from './webmcp.js';
 import { resetSavePrompt } from './save.js';
 
 /**
+ * Group browser and animation APIs for the shared page presenter.
+ * @param {Record<string, any>} options Flat browser dependencies from page entrypoints.
+ * @returns {{browser: {documentObj: any, windowObj: any, navigatorObj: any}, animation: {requestFrame: Function, cancelFrame: Function}}} Presenter adapters.
+ */
+export function createMosslightPageEnvironment(options) {
+  return {
+    browser: {
+      documentObj: options.documentObj,
+      windowObj: options.windowObj,
+      navigatorObj: options.navigatorObj,
+    },
+    animation: {
+      requestFrame: options.requestFrame,
+      cancelFrame: options.cancelFrame,
+    },
+  };
+}
+
+/**
  * Mount the shared RPG in a responsive page and return its lifecycle disposer.
  * @param {any} options Injected browser APIs and animation-frame functions.
  * @returns {() => void} Function that stops the page game loop and listeners.
  */
 export function startMosslightPage(options) {
-  const { documentObj, windowObj, navigatorObj, requestFrame, cancelFrame } =
-    options;
-  const canvas = documentObj.querySelector('#game-screen');
-  const context = canvas.getContext('2d');
-  const status = documentObj.querySelector('#game-status');
+  const { browser, animation } = options;
+  const { documentObj, windowObj, navigatorObj } = browser;
+  const { requestFrame, cancelFrame } = animation;
+  const { context, status } = pageCanvasElements(documentObj);
   const keys = { held: new Set(), pressed: new Set() };
   const touch = new Set();
   const touchPulse = new Set();
@@ -245,20 +263,22 @@ export function startMosslightPage(options) {
   bindUtilityControls({
     browser: { documentObj, windowObj },
     runtime,
-    status,
-    draw,
+    page: {
+      status,
+      draw,
+      onReset: () => {
+        keys.held.clear();
+        keys.pressed.clear();
+        resetTouch();
+        lastTime = 0;
+      },
+      onResume: () => {
+        runtime.resume();
+        lastTime = 0;
+        draw();
+      },
+    },
     saveFilename: options.saveFilename || 'mosslight-valley-save.json',
-    onReset: () => {
-      keys.held.clear();
-      keys.pressed.clear();
-      resetTouch();
-      lastTime = 0;
-    },
-    onResume: () => {
-      runtime.resume();
-      lastTime = 0;
-      draw();
-    },
   });
   documentObj.addEventListener('keydown', onKeyDown);
   documentObj.addEventListener('keyup', onKeyUp);
@@ -281,6 +301,19 @@ export function startMosslightPage(options) {
     windowObj.removeEventListener('pointercancel', releaseTouch);
     audioContext?.close?.();
     options.audio?.dispose();
+  };
+}
+
+/**
+ * Resolve the canvas drawing context and status element for a game page.
+ * @param {any} documentObj Page document adapter.
+ * @returns {{context: any, status: any}} Drawing and status elements.
+ */
+function pageCanvasElements(documentObj) {
+  const canvas = documentObj.querySelector('#game-screen');
+  return {
+    context: canvas.getContext('2d'),
+    status: documentObj.querySelector('#game-status'),
   };
 }
 
@@ -339,8 +372,8 @@ function bindTouchControls(documentObj, touch, touchPulse, resume) {
  * @param {any} options Page elements and game runtime dependencies.
  */
 function bindUtilityControls(options) {
-  const { browser, runtime, status, draw, onResume, onReset, saveFilename } =
-    options;
+  const { browser, runtime, page, saveFilename } = options;
+  const { status, draw, onResume, onReset } = page;
   const { documentObj, windowObj } = browser;
   const listen = (
     /** @type {string} */ selector,

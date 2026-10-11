@@ -41,7 +41,7 @@ class FakeElement extends FakeTarget {
 
 test('gamepad face buttons resume agent pauses only while the page is visible', () => {
   const page = pageOptions();
-  page.options.navigatorObj.getGamepads = () => [
+  page.options.browser.navigatorObj.getGamepads = () => [
     { buttons: [{ pressed: true }] },
   ];
   const stop = startMosslightPage(page.options);
@@ -175,11 +175,15 @@ function pageOptions() {
   windowObj.AudioContext = AudioContext;
   const callbacks = [];
   const options = {
-    documentObj,
-    windowObj,
-    navigatorObj: { maxTouchPoints: 1, getGamepads: () => [] },
-    requestFrame: callback => (callbacks.push(callback), callbacks.length),
-    cancelFrame: jest.fn(),
+    browser: {
+      documentObj,
+      windowObj,
+      navigatorObj: { maxTouchPoints: 1, getGamepads: () => [] },
+    },
+    animation: {
+      requestFrame: callback => (callbacks.push(callback), callbacks.length),
+      cancelFrame: jest.fn(),
+    },
   };
   return {
     options,
@@ -335,7 +339,7 @@ test('page presenter handles touch, lifecycle, keyboard, saves, import and expor
   page.callbacks[0](300);
   expect(page.callbacks).toHaveLength(callbackCount);
   expect(page.audioIsClosed()).toBe(true);
-  expect(page.options.cancelFrame).toHaveBeenCalled();
+  expect(page.options.animation.cancelFrame).toHaveBeenCalled();
 });
 
 test('page tolerates unavailable audio, malformed preferences, and absent frame handles', () => {
@@ -343,16 +347,18 @@ test('page tolerates unavailable audio, malformed preferences, and absent frame 
   page.storage.set('permanentData', '{malformed');
   page.windowObj.AudioContext = null;
   page.windowObj.webkitAudioContext = undefined;
-  page.options.requestFrame = callback => (page.callbacks.push(callback), null);
+  page.options.animation.requestFrame = callback => (
+    page.callbacks.push(callback), null
+  );
   const dispose = startMosslightPage(page.options);
   page.setStorageFails(true);
-  page.options.navigatorObj.getGamepads = undefined;
+  page.options.browser.navigatorObj.getGamepads = undefined;
   page.callbacks[0](0);
   page.callbacks[0](16);
   page.callbacks[0](140);
   page.documentObj.emit('keydown', { key: 'Unmapped', preventDefault() {} });
   dispose();
-  expect(page.options.cancelFrame).not.toHaveBeenCalled();
+  expect(page.options.animation.cancelFrame).not.toHaveBeenCalled();
 });
 
 test('injected episode audio owns keyboard, touch and teardown without legacy beeps', () => {

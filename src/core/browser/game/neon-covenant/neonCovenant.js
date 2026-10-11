@@ -2,7 +2,10 @@ import { createMosslightRuntime } from '../mosslight-valley/runtime.js';
 import { mergeRestoredGameState } from '../simulationCore.js';
 import { createSaveAdapter } from '../mosslight-valley/save.js';
 import { mosslightValley } from '../mosslight-valley/mosslightValley.js';
-import { startMosslightPage } from '../mosslight-valley/pagePresenter.js';
+import {
+  createMosslightPageEnvironment,
+  startMosslightPage,
+} from '../mosslight-valley/pagePresenter.js';
 import { registerMosslightTools as registerGameTools } from '../mosslight-valley/webmcp.js';
 import { LAB_CONTENT } from './content.js';
 import { migratePersonnel, validPersonnel } from './personnel.js';
@@ -387,6 +390,7 @@ export function neonCovenant(input, env) {
 export function startNeonPage(options) {
   return startMosslightPage({
     ...options,
+    ...createMosslightPageEnvironment(options),
     audio: neonAudio(options.windowObj),
     createRuntime: createNeonRuntime,
     saveFilename: 'neon-covenant-save.json',
