@@ -275,72 +275,62 @@ function setFieldValue(data, path, rawValue) {
 
 /**
  * Wire a numeric field into the form.
- * @param {{
- *   dom: DOMHelpers,
- *   section: HTMLElement,
- *   data: RealHourlyWageFormData,
- *   path: [keyof RealHourlyWageFormData, string],
- *   labelText: string,
- *   placeholder: string,
- *   textInput: HTMLInputElement,
- *   disposers: Array<() => void>,
- * }} options Field wiring dependencies.
+ * @param {{dom: DOMHelpers, section: HTMLElement}} sectionContext Field container and DOM adapter.
+ * @param {RealHourlyWageFormData} data Form data model.
+ * @param {{path: [keyof RealHourlyWageFormData, string], labelText: string, placeholder: string}} field Field specification.
+ * @param {{textInput: HTMLInputElement, disposers: Array<() => void>}} formContext Hidden input and cleanup stack.
  * @returns {void}
  */
-function buildNumericField(options) {
-  const {
-    dom,
-    section,
-    data,
-    path,
-    labelText,
-    placeholder,
-    textInput,
-    disposers,
-  } = options;
-  const input = createNumberFieldInput(dom, {
-    placeholder,
-    value: String(getFieldValue(data, path)),
+function buildNumericField(sectionContext, data, field, formContext) {
+  const input = createNumberFieldInput(sectionContext.dom, {
+    placeholder: field.placeholder,
+    value: String(getFieldValue(data, field.path)),
   });
 
-  const updateData = () => setFieldValue(data, path, dom.getValue(input));
+  const updateData = () =>
+    setFieldValue(data, field.path, sectionContext.dom.getValue(input));
   const handleInput = () =>
-    applyMutationAndSyncHiddenInput(dom, textInput, data, updateData);
+    applyMutationAndSyncHiddenInput(
+      sectionContext.dom,
+      formContext.textInput,
+      data,
+      updateData
+    );
 
-  wireLabelledField(dom, section, input, handleInput)(labelText, disposers);
+  wireLabelledField(
+    sectionContext.dom,
+    sectionContext.section,
+    input,
+    handleInput
+  )(field.labelText, formContext.disposers);
 }
 
 /**
  * Build and append a group section into the form.
- * @param {{
- *   dom: DOMHelpers,
- *   form: HTMLElement,
- *   data: RealHourlyWageFormData,
- *   textInput: HTMLInputElement,
- *   disposers: Array<() => void>,
- *   title: string,
- *   fields: Array<{
- *     path: [keyof RealHourlyWageFormData, string],
- *     labelText: string,
- *     placeholder: string,
- *   }>,
- * }} options Group rendering dependencies.
+ * @param {{dom: DOMHelpers, form: HTMLElement, data: RealHourlyWageFormData, textInput: HTMLInputElement, disposers: Array<() => void>}} formContext Group rendering context.
+ * @param {{title: string, fields: Array<{path: [keyof RealHourlyWageFormData, string], labelText: string, placeholder: string}>}} group Field group specification.
  * @returns {void}
  */
-function buildGroupSection(options) {
-  const { dom, form, data, textInput, disposers, title, fields } = options;
-  const section = createSectionWithHeading(dom, GROUP_CLASS, title);
-  const fieldDependencies = { dom, data, textInput, disposers };
+function buildGroupSection(formContext, group) {
+  const section = createSectionWithHeading(
+    formContext.dom,
+    GROUP_CLASS,
+    group.title
+  );
 
-  fields.forEach(field => {
-    buildNumericField({
-      ...fieldDependencies,
-      section,
-      ...field,
-    });
+  group.fields.forEach(field => {
+    buildNumericField(
+      {
+        dom: formContext.dom,
+        section,
+      },
+      formContext.data,
+      field,
+      formContext
+    );
   });
 
-  dom.appendChild(form, section);
+  formContext.dom.appendChild(formContext.form, section);
 }
 
 /**
@@ -354,14 +344,8 @@ function buildForm({ dom, container, textInput }) {
     { dom, container, textInput },
     ({ form, disposers }) => {
       dom.setClassName(form, `${form.className} ${FORM_CLASS}`);
-      const fieldDependencies = { dom, data, textInput, disposers };
-      FIELD_GROUPS.forEach(group =>
-        buildGroupSection({
-          ...fieldDependencies,
-          form,
-          ...group,
-        })
-      );
+      const formContext = { dom, form, data, textInput, disposers };
+      FIELD_GROUPS.forEach(group => buildGroupSection(formContext, group));
 
       const formState =
         /** @type {{ dom: DOMHelpers, textInput: HTMLInputElement, data: Record<string, unknown>, form: HTMLElement }} */ ({
