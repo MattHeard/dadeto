@@ -246,25 +246,17 @@ export function createGetApiKeyCreditV2Handler(deps) {
  * @param {{ db: CreditFirestore, runTransaction: CreditEventEffects['runTransaction'], getTransactionDocument: CreditEventEffects['getTransactionDocument'], setTransactionDocument: CreditEventEffects['setTransactionDocument'], setResponseHeader: (allowEffects: AllowEffects, response: unknown, name: string, value: string) => unknown, sendHttpResponse: (allowEffects: AllowEffects, response: unknown, status: number, body: unknown, method: 'json'|'send') => unknown, logError: (allowEffects: AllowEffects, error: unknown) => void }} deps Runtime dependencies.
  * @returns {(allowEffects: AllowEffects, req: unknown, res: unknown) => Promise<void>} Internal Express handler requiring request permission.
  */
-export function createGetApiKeyCreditV2ExpressHandle({
-  db,
-  runTransaction,
-  getTransactionDocument,
-  setTransactionDocument,
-  setResponseHeader,
-  sendHttpResponse,
-  logError,
-}) {
+export function createGetApiKeyCreditV2ExpressHandle(deps) {
   const handleRequest = createGetApiKeyCreditV2Handler({
-    fetchCredit: createFetchCredit(db),
-    fetchCreditEvents: createFetchCreditEvents(db),
-    applyCreditEvent: createApplyCreditEvent(db, {
-      runTransaction,
-      getTransactionDocument,
-      setTransactionDocument,
+    fetchCredit: createFetchCredit(deps.db),
+    fetchCreditEvents: createFetchCreditEvents(deps.db),
+    applyCreditEvent: createApplyCreditEvent(deps.db, {
+      runTransaction: deps.runTransaction,
+      getTransactionDocument: deps.getTransactionDocument,
+      setTransactionDocument: deps.setTransactionDocument,
     }),
     getUuid: extractUuid,
-    logError,
+    logError: deps.logError,
   });
 
   return async function handle(allowEffects, req, res) {
@@ -275,18 +267,18 @@ export function createGetApiKeyCreditV2ExpressHandle({
       )
     );
 
-    applyResponseHeaders(allowEffects, res, headers, setResponseHeader);
+    applyResponseHeaders(allowEffects, res, headers, deps.setResponseHeader);
 
     // Stryker disable next-line all -- HTTP adapters use the fixed JSON/body
     // response split.
     // Stryker disable all -- the adapter contract fixes JSON versus text bodies.
     if (body && typeof body === 'object') {
-      await sendHttpResponse(allowEffects, res, status, body, 'json');
+      await deps.sendHttpResponse(allowEffects, res, status, body, 'json');
       return;
     }
     // Stryker restore all
 
-    await sendHttpResponse(allowEffects, res, status, body, 'send');
+    await deps.sendHttpResponse(allowEffects, res, status, body, 'send');
   };
 }
 
@@ -667,14 +659,13 @@ async function fetchCreditEventsResponse(
  * @returns {Promise<CreditApiResponse>} HTTP response metadata.
  */
 async function applyCreditEventResponse(input) {
-  const { allowEffects, applyCreditEvent, uuid, body, errorLogger } = input;
-  const eventInput = resolveCreditEventInput(body);
+  const eventInput = resolveCreditEventInput(input.body);
   if (isValidationErrorResponse(eventInput)) {
     return eventInput;
   }
 
-  return runWithInternalError(allowEffects, errorLogger, () =>
-    applyCreditEvent(allowEffects, uuid, eventInput)
+  return runWithInternalError(input.allowEffects, input.errorLogger, () =>
+    input.applyCreditEvent(input.allowEffects, input.uuid, eventInput)
   );
 }
 
@@ -887,30 +878,29 @@ export function getApiKeyCreditEventDocument(db, uuid, eventId) {
  */
 // Intentional legacy transaction protocol; preserve its historical write ordering.
 async function applyCreditEventTransaction(input) {
-  const { transaction, creditRef, creditSnap, eventRef, event } = input;
-  const currentCredit = resolveCreditFromSnapshot(creditSnap);
+  const currentCredit = resolveCreditFromSnapshot(input.creditSnap);
 
-  if (event.type === 'credit_added') {
+  if (input.event.type === 'credit_added') {
     return commitCreditEvent({
-      transaction,
+      transaction: input.transaction,
       allowEffects: input.allowEffects,
       setTransactionDocument: input.setTransactionDocument,
-      creditRef,
-      eventRef,
-      event,
+      creditRef: input.creditRef,
+      eventRef: input.eventRef,
+      event: input.event,
       balanceBefore: currentCredit,
-      balanceAfter: currentCredit + event.amount,
+      balanceAfter: currentCredit + input.event.amount,
     });
   }
 
-  if (!creditSnap.exists) {
+  if (!input.creditSnap.exists) {
     return {
       status: 404,
       body: 'Not found',
     };
   }
 
-  const nextCredit = currentCredit - event.amount;
+  const nextCredit = currentCredit - input.event.amount;
   if (nextCredit < 0) {
     return {
       status: 409,
@@ -919,12 +909,12 @@ async function applyCreditEventTransaction(input) {
   }
 
   return commitCreditEvent({
-    transaction,
+    transaction: input.transaction,
     allowEffects: input.allowEffects,
     setTransactionDocument: input.setTransactionDocument,
-    creditRef,
-    eventRef,
-    event,
+    creditRef: input.creditRef,
+    eventRef: input.eventRef,
+    event: input.event,
     balanceBefore: currentCredit,
     balanceAfter: nextCredit,
   });
