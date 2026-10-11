@@ -6,7 +6,7 @@ import {
 } from '../../../src/core/browser/webmcp.js';
 import {
   createLocalAppCore,
-  createWriterServer,
+  createWriterServer as createWriterServerFactory,
   getWriterUrl,
   isWriterHttpsEnabled,
   isWriterRequestLogEnabled,
@@ -17,6 +17,17 @@ import {
   getDocumentContent,
   readWriterTlsOptions,
 } from '../../../src/core/local/server.js';
+
+/**
+ * Create a test server while separating per-server env from stable adapters.
+ * @param {{readFileSync: (filePath: string, encoding: 'utf8') => string, httpCreateServer: (app: unknown) => { listen: (...args: Array<unknown>) => void, on: (event: string, handler: (error: unknown) => void) => void }, httpsCreateServer: (options: { key: string, cert: string }, app: unknown) => { listen: (...args: Array<unknown>) => void, on: (event: string, handler: (error: unknown) => void) => void }}} serverAdapters Stable server adapters.
+ * @param {unknown} localApp Express application.
+ * @param {Record<string, string | undefined> | undefined} env Per-server environment.
+ * @returns {unknown} Created test server.
+ */
+function createTestWriterServer(serverAdapters, localApp, env) {
+  return createWriterServerFactory(serverAdapters)(localApp, env);
+}
 
 describe('core local server helpers', () => {
   test('wires the local app routes using injected dependencies', async () => {
@@ -468,12 +479,15 @@ describe('core local server writer helpers', () => {
     const app = {};
     const server = {};
     expect(
-      createWriterServer(app, {
-        env: undefined,
-        readFileSync: jest.fn(),
-        httpCreateServer: jest.fn(() => server),
-        httpsCreateServer: jest.fn(),
-      })
+      createTestWriterServer(
+        {
+          readFileSync: jest.fn(),
+          httpCreateServer: jest.fn(() => server),
+          httpsCreateServer: jest.fn(),
+        },
+        app,
+        undefined
+      )
     ).toBe(server);
   });
   test('creates an http writer server by default', () => {
@@ -483,12 +497,15 @@ describe('core local server writer helpers', () => {
     const httpsCreateServer = jest.fn();
 
     expect(
-      createWriterServer(app, {
-        env: {},
-        readFileSync: jest.fn(),
-        httpCreateServer,
-        httpsCreateServer,
-      })
+      createTestWriterServer(
+        {
+          readFileSync: jest.fn(),
+          httpCreateServer,
+          httpsCreateServer,
+        },
+        app,
+        {}
+      )
     ).toBe(server);
     expect(httpCreateServer).toHaveBeenCalledWith(app);
     expect(httpsCreateServer).not.toHaveBeenCalled();
@@ -499,21 +516,26 @@ describe('core local server writer helpers', () => {
     const server = {};
     const readFileSync = jest.fn(path => `${path} contents`);
     expect(
-      createWriterServer(app, {
-        env: Object.assign(Object.create(null), {
+      createTestWriterServer(
+        {
+          readFileSync,
+          httpCreateServer: jest.fn(),
+          httpsCreateServer: jest.fn(() => server),
+        },
+        app,
+        Object.assign(Object.create(null), {
           WRITER_HTTPS: 'true',
           WRITER_TLS_KEY: 'key',
           WRITER_TLS_CERT: 'cert',
-        }),
-        readFileSync,
-        httpCreateServer: jest.fn(),
-        httpsCreateServer: jest.fn(() => server),
-      })
+        })
+      )
     ).toBe(server);
   });
 
   test('requires injected writer server constructors', () => {
-    expect(() => createWriterServer({})).toThrow();
+    expect(() =>
+      createWriterServerFactory(/** @type {any} */ ({}))({}, {})
+    ).toThrow();
   });
 
   test('creates an https writer server when enabled', () => {
@@ -529,12 +551,15 @@ describe('core local server writer helpers', () => {
     const readFileSync = jest.fn(path => `${path} contents`);
 
     expect(
-      createWriterServer(app, {
-        env,
-        readFileSync,
-        httpCreateServer,
-        httpsCreateServer,
-      })
+      createTestWriterServer(
+        {
+          readFileSync,
+          httpCreateServer,
+          httpsCreateServer,
+        },
+        app,
+        env
+      )
     ).toBe(server);
     expect(httpsCreateServer).toHaveBeenCalledWith(
       {

@@ -15,10 +15,10 @@ import { createWriterServer as createWriterServerCore } from '../core/local/serv
  * @returns {{ listen: (...args: Array<unknown>) => void, on: (event: string, handler: (error: unknown) => void) => void }} Node server.
  */
 export function createWriterServer(localApp, options = {}) {
-  return createWriterServerCore(localApp, {
-    ...options,
+  const createServer = createWriterServerCore({
     readFileSync: options.readFileSync ?? fs.readFileSync,
     httpCreateServer: options.httpCreateServer ?? http.createServer,
     httpsCreateServer: options.httpsCreateServer ?? https.createServer,
   });
+  return createServer(localApp, options.env);
 }

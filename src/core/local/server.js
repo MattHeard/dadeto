@@ -512,31 +512,28 @@ export function readWriterTlsOptions(env, readFile) {
 }
 
 /**
- * Create the server that powers the local writer app.
- * @param {unknown} localApp Express application.
+ * Prepare the adapters used to create the local writer server.
  * @param {{
- *   env?: Record<string, string | undefined>,
  *   readFileSync: (filePath: string, encoding: 'utf8') => string,
  *   httpCreateServer: (app: unknown) => { listen: (...args: Array<unknown>) => void, on: (event: string, handler: (error: unknown) => void) => void },
  *   httpsCreateServer: (options: { key: string, cert: string }, app: unknown) => { listen: (...args: Array<unknown>) => void, on: (event: string, handler: (error: unknown) => void) => void },
- * }} options Server options.
- * @returns {{ listen: (...args: Array<unknown>) => void, on: (event: string, handler: (error: unknown) => void) => void }} Node server.
+ * }} serverAdapters Stable server and file adapters.
+ * @returns {(localApp: unknown, env?: Record<string, string | undefined>) => { listen: (...args: Array<unknown>) => void, on: (event: string, handler: (error: unknown) => void) => void }} Writer server constructor.
  */
-export function createWriterServer(localApp, options) {
-  const { env, readFileSync, httpCreateServer, httpsCreateServer } = options;
-  const typedLocalApp = localApp;
+export function createWriterServer(serverAdapters) {
+  return (localApp, env) => {
+    if (isWriterHttpsEnabled(env)) {
+      return serverAdapters.httpsCreateServer(
+        readWriterTlsOptions(
+          /** @type {Record<string, string | undefined>} */ (env),
+          serverAdapters.readFileSync
+        ),
+        localApp
+      );
+    }
 
-  if (isWriterHttpsEnabled(env)) {
-    return httpsCreateServer(
-      readWriterTlsOptions(
-        /** @type {Record<string, string | undefined>} */ (env),
-        readFileSync
-      ),
-      typedLocalApp
-    );
-  }
-
-  return httpCreateServer(typedLocalApp);
+    return serverAdapters.httpCreateServer(localApp);
+  };
 }
 
 /**
