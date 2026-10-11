@@ -1,11 +1,36 @@
 import { jest } from '@jest/globals';
 import {
   buildCoverageSummary,
+  createCoverageReader,
+  createCoverageSummaryWriter,
   createWriteCoverageSummaryHandle,
 } from '../../../src/core/scripts/write-coverage-summary.js';
 
 const permission = Object.freeze({ testPermission: true });
 const bindEffectBoundary = async handler => handler(permission);
+
+/**
+ * Compose coverage I/O capabilities for one test.
+ * @param {{readFile: (path: string, encoding: 'utf8') => string, writeFile: (permission: object, path: string, contents: string) => void, createCoverageMap: Function, coverageFinalPath?: string, coverageSummaryPath?: string}} options Test capabilities.
+ * @returns {() => Promise<void>} Configured summary handler.
+ */
+function createHandle({
+  readFile,
+  writeFile,
+  createCoverageMap,
+  coverageFinalPath,
+  coverageSummaryPath,
+}) {
+  return createWriteCoverageSummaryHandle({
+    readCoverage: createCoverageReader(readFile, coverageFinalPath),
+    createCoverageMap,
+    writeSummary: createCoverageSummaryWriter(
+      writeFile,
+      bindEffectBoundary,
+      coverageSummaryPath
+    ),
+  });
+}
 
 describe('write coverage summary', () => {
   test('builds a coverage summary from a coverage map', () => {
@@ -46,10 +71,9 @@ describe('write coverage summary', () => {
       }),
     }));
 
-    const handle = createWriteCoverageSummaryHandle({
+    const handle = createHandle({
       readFile,
       writeFile,
-      bindEffectBoundary,
       createCoverageMap,
       coverageFinalPath: 'reports/coverage/coverage-final.json',
       coverageSummaryPath: 'reports/coverage/coverage-summary.json',
@@ -97,10 +121,9 @@ describe('write coverage summary', () => {
       }),
     }));
 
-    const handle = createWriteCoverageSummaryHandle({
+    const handle = createHandle({
       readFile,
       writeFile,
-      bindEffectBoundary,
       createCoverageMap,
     });
 
@@ -133,7 +156,7 @@ describe('write coverage summary', () => {
     const writeFile = jest.fn();
     const createCoverageMap = jest.fn();
 
-    const handle = createWriteCoverageSummaryHandle({
+    const handle = createHandle({
       readFile,
       writeFile,
       createCoverageMap,
@@ -157,7 +180,7 @@ describe('write coverage summary', () => {
     const writeFile = jest.fn();
     const createCoverageMap = jest.fn();
 
-    const handle = createWriteCoverageSummaryHandle({
+    const handle = createHandle({
       readFile,
       writeFile,
       createCoverageMap,
@@ -174,7 +197,7 @@ describe('write coverage summary', () => {
     const readFile = jest.fn(() => {
       throw 'primitive failure';
     });
-    const handle = createWriteCoverageSummaryHandle({
+    const handle = createHandle({
       readFile,
       writeFile: jest.fn(),
       createCoverageMap: jest.fn(),
@@ -184,7 +207,7 @@ describe('write coverage summary', () => {
   });
 
   test('rethrows null read failures unchanged', () => {
-    const handle = createWriteCoverageSummaryHandle({
+    const handle = createHandle({
       readFile: jest.fn(() => {
         throw null;
       }),
@@ -208,7 +231,7 @@ describe('write coverage summary', () => {
         throw new Error('code getter should not run');
       },
     });
-    const handle = createWriteCoverageSummaryHandle({
+    const handle = createHandle({
       readFile: jest.fn(() => {
         throw readFailure;
       }),

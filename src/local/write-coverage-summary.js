@@ -1,7 +1,11 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import istanbulCoverage from 'istanbul-lib-coverage';
-import { createWriteCoverageSummaryHandle } from '../core/scripts/write-coverage-summary.js';
+import {
+  createCoverageReader,
+  createCoverageSummaryWriter,
+  createWriteCoverageSummaryHandle,
+} from '../core/scripts/write-coverage-summary.js';
 import { bindEffectBoundary } from './allow-effects.js';
 
 const { createCoverageMap } = istanbulCoverage;
@@ -12,14 +16,16 @@ const coverageSummaryPath = path.join(coverageDir, 'coverage-summary.json');
 
 fs.mkdirSync(coverageDir, { recursive: true });
 
-const handle = createWriteCoverageSummaryHandle({
-  readFile: fs.readFileSync,
-  writeFile: (_permission, filePath, contents) =>
-    fs.writeFileSync(filePath, contents),
+const readCoverage = createCoverageReader(fs.readFileSync, coverageFinalPath);
+const writeSummary = createCoverageSummaryWriter(
+  (_permission, filePath, contents) => fs.writeFileSync(filePath, contents),
   bindEffectBoundary,
+  coverageSummaryPath
+);
+const handle = createWriteCoverageSummaryHandle({
+  readCoverage,
   createCoverageMap,
-  coverageFinalPath,
-  coverageSummaryPath,
+  writeSummary,
 });
 
 await handle();

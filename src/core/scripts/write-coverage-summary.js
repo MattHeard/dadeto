@@ -6,34 +6,20 @@ const DEFAULT_COVERAGE_FINAL_PATH = 'reports/coverage/coverage-final.json';
 const DEFAULT_COVERAGE_SUMMARY_PATH = 'reports/coverage/coverage-summary.json';
 
 /**
- * Create the command handler that writes the coverage summary file.
- * @param {{
- *   readFile: (filePath: string, encoding: 'utf8') => string,
- *   writeFile: (permission: AllowEffects, filePath: string, contents: string) => void,
- *   bindEffectBoundary: import('../../../types/allow-effects').AllowEffectsBoundary,
- *   createCoverageMap: (rawCoverage: Record<string, unknown>) => {
- *     getCoverageSummary: () => { toJSON: () => Record<string, unknown> },
- *     files: () => string[],
- *     fileCoverageFor: (filePath: string) => { toSummary: () => { toJSON: () => Record<string, unknown> } },
- *   },
- *   coverageFinalPath?: string,
- *   coverageSummaryPath?: string,
- * }} deps Command dependencies.
- * @returns {() => Promise<void>} Handler that reads coverage output and writes the summary.
+ * Create a capability that reads and parses the final coverage file.
+ * @param {(filePath: string, encoding: 'utf8') => string} readFile File reader.
+ * @param {string} coverageFinalPath Path to the final coverage file.
+ * @returns {() => Record<string, unknown>} Parsed coverage data reader.
  */
-export function createWriteCoverageSummaryHandle({
+export function createCoverageReader(
   readFile,
-  writeFile,
-  bindEffectBoundary,
-  createCoverageMap,
-  coverageFinalPath = DEFAULT_COVERAGE_FINAL_PATH,
-  coverageSummaryPath = DEFAULT_COVERAGE_SUMMARY_PATH,
-}) {
+  coverageFinalPath = DEFAULT_COVERAGE_FINAL_PATH
+) {
   return () => {
-    let rawCoverage;
-
     try {
-      rawCoverage = JSON.parse(readFile(coverageFinalPath, 'utf8'));
+      return /** @type {Record<string, unknown>} */ (
+        JSON.parse(readFile(coverageFinalPath, 'utf8'))
+      );
     } catch (error) {
       if (isMissingFileError(error)) {
         throw new Error(
@@ -43,18 +29,51 @@ export function createWriteCoverageSummaryHandle({
 
       throw error;
     }
+  };
+}
 
-    const coverageMap = createCoverageMap(rawCoverage);
-    const summary = buildCoverageSummary(coverageMap);
-
-    return bindEffectBoundary(async permission =>
+/**
+ * Create a capability that writes a formatted coverage summary within the effect boundary.
+ * @param {(permission: AllowEffects, filePath: string, contents: string) => void} writeFile Effectful file writer.
+ * @param {import('../../../types/allow-effects').AllowEffectsBoundary} bindEffectBoundary Runtime effect boundary.
+ * @param {string} coverageSummaryPath Path to the summary output file.
+ * @returns {(summary: Record<string, unknown>) => Promise<void>} Summary writer.
+ */
+export function createCoverageSummaryWriter(
+  writeFile,
+  bindEffectBoundary,
+  coverageSummaryPath = DEFAULT_COVERAGE_SUMMARY_PATH
+) {
+  return summary =>
+    bindEffectBoundary(async permission =>
       writeFile(
         permission,
         coverageSummaryPath,
         `${JSON.stringify(summary, null, 2)}\n`
       )
     );
-  };
+}
+
+/**
+ * Create the command handler that writes the coverage summary file.
+ * @param {{
+ *   readCoverage: () => Record<string, unknown>,
+ *   createCoverageMap: (rawCoverage: Record<string, unknown>) => {
+ *     getCoverageSummary: () => { toJSON: () => Record<string, unknown> },
+ *     files: () => string[],
+ *     fileCoverageFor: (filePath: string) => { toSummary: () => { toJSON: () => Record<string, unknown> } },
+ *   },
+ *   writeSummary: (summary: Record<string, unknown>) => Promise<void>,
+ * }} capabilities Coverage input, projection, and output capabilities.
+ * @returns {() => Promise<void>} Handler that reads coverage output and writes the summary.
+ */
+export function createWriteCoverageSummaryHandle({
+  readCoverage,
+  createCoverageMap,
+  writeSummary,
+}) {
+  return () =>
+    writeSummary(buildCoverageSummary(createCoverageMap(readCoverage())));
 }
 
 /**
