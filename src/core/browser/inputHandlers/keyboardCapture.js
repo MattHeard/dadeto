@@ -107,22 +107,16 @@ function forwardCapturedKey(event, options) {
  */
 /**
  * Build and wire the keyboard capture form.
- * @param {{
- *   dom: KeyboardDOMHelpers,
- *   container: HTMLElement,
- *   textInput: HTMLInputElement,
- *   button: HTMLButtonElement,
- *   cleanupFns: Array<() => void>,
- * }} options - Form dependencies.
+ * @param {{dom: KeyboardDOMHelpers, container: HTMLElement, textInput: HTMLInputElement}} formElements DOM and form placement.
+ * @param {{button: HTMLButtonElement, cleanupFns: Array<() => void>}} controls Mounted controls and cleanup lifecycle.
  * @returns {void}
  */
-const buildKeyboardCaptureFormContext = ({
-  dom,
-  button,
-  cleanupFns,
-  container,
-  textInput,
-}) => {
+const buildKeyboardCaptureFormContext = (formElements, controls) => {
+  const dom = formElements.dom;
+  const container = formElements.container;
+  const textInput = formElements.textInput;
+  const button = controls.button;
+  const cleanupFns = controls.cleanupFns;
   const state = { capturing: false };
   const autoSubmitCheckbox = captureLifecycleDeps.getAutoSubmitCheckbox(
     container,
@@ -176,7 +170,15 @@ const buildKeyboardCaptureForm = captureLifecycleDeps.makeCaptureFormBuilder(
       },
       { button: options.button, cleanupFns: options.cleanupFns },
       updateCaptureButton,
-      buildKeyboardCaptureFormContext
+      context =>
+        buildKeyboardCaptureFormContext(
+          {
+            dom: context.dom,
+            container: context.container,
+            textInput: context.textInput,
+          },
+          { button: context.button, cleanupFns: context.cleanupFns }
+        )
     )
 );
 
