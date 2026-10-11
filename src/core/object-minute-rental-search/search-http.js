@@ -1,41 +1,14 @@
-import { createObjectMinuteRentalSearch } from './search-application.js';
-import { SOPHIE_CHARLOTTE_SERVICE_AREA } from './service-area.js';
 import { executeSearchHttpRequest } from './request/index.js';
-import { DEFAULT_RUNNER_ID } from './search-config.js';
 
 /** @typedef {import('../../../types/allow-effects').AllowEffects} AllowEffects */
 export { normalizeRequest, dailyWindow } from './request/index.js';
 
 /**
- * Create the stateless search HTTP adapter.
- * @param {{runnerCommitmentsRepository: {listForRunner: (options: {runnerId: string}) => Promise<Array<{startTimestamp: string, endTimestamp: string}>>}, createResponseEffects: (response: SearchHttpResponse) => SearchHttpResponseEffects, env?: Record<string, string|undefined>, clock?: () => Date, serviceArea?: object, runnerScheduleProvider?: {getSchedule: (input: {runnerId: string}) => Promise<object[]>}, allowedOrigins?: string[]}} options Dependencies.
+ * Create the stateless search HTTP adapter from its application context and response boundary.
+ * @param {{context: SearchHttpContext, createResponseEffects: (response: SearchHttpResponse) => SearchHttpResponseEffects}} options Request execution dependencies.
  * @returns {(allowEffects: AllowEffects, req: {body?: unknown}, res: SearchHttpResponse) => Promise<void>} Permission-aware HTTP handler.
  */
-export function createSearchHttpHandler({
-  runnerCommitmentsRepository,
-  createResponseEffects,
-  env = process.env,
-  clock = () => new Date(),
-  serviceArea = SOPHIE_CHARLOTTE_SERVICE_AREA,
-  runnerScheduleProvider,
-  allowedOrigins = String(env.SEARCH_ALLOWED_ORIGINS ?? '')
-    .split(',')
-    .map(origin => origin.trim())
-    .filter(Boolean),
-}) {
-  const search = createObjectMinuteRentalSearch({
-    runnerCommitmentsRepository,
-    runnerId: env.SEARCH_RUNNER_ID ?? DEFAULT_RUNNER_ID,
-    serviceArea,
-  });
-  const context = {
-    search,
-    env,
-    clock,
-    runnerScheduleProvider,
-    allowedOrigins,
-    defaultRunnerId: DEFAULT_RUNNER_ID,
-  };
+export function createSearchHttpHandler({ context, createResponseEffects }) {
   return (allowEffects, req, res) =>
     executeSearchHttpRequest(
       allowEffects,
@@ -44,6 +17,16 @@ export function createSearchHttpHandler({
       createResponseEffects(res)
     );
 }
+
+/**
+ * @typedef {object} SearchHttpContext Search application and request-time dependencies.
+ * @property {(request: Record<string, unknown>) => Promise<object>} search Search application.
+ * @property {Record<string, string|undefined>} env Runtime environment, read during each request.
+ * @property {() => Date} clock Request clock.
+ * @property {{getSchedule: (input: {runnerId: string}) => Promise<object[]>}} [runnerScheduleProvider] Optional live schedule provider.
+ * @property {string[]} allowedOrigins CORS allowlist resolved when the handler is composed.
+ * @property {string} defaultRunnerId Fallback runner identifier.
+ */
 
 /**
  * @typedef {object} SearchHttpResponse

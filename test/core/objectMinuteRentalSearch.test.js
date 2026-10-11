@@ -18,7 +18,9 @@ import {
 } from '../../src/core/object-minute-rental-search/search-http.js';
 import { createAllowEffects } from '../../src/cloud/allow-effects.js';
 import { createSearchHttpResponseEffectAdapters } from '../../src/cloud/object-minute-rental-search/effect-adapters.js';
+import { resolveSearchHttpAllowedOrigins } from '../../src/cloud/object-minute-rental-search/allowed-origins.js';
 import { createObjectMinuteRentalSearch } from '../../src/core/object-minute-rental-search/search-application.js';
+import { DEFAULT_RUNNER_ID } from '../../src/core/object-minute-rental-search/search-config.js';
 import {
   evaluateServiceAreaFeasibility,
   pointInsideWgs84Circle,
@@ -29,12 +31,48 @@ import {
 import '../toys/2026-08-27/searchFeasibility.test.js';
 
 /**
- * @param {Omit<Parameters<typeof createCoreSearchHttpHandler>[0], 'createResponseEffects'> & {createResponseEffects?: Parameters<typeof createCoreSearchHttpHandler>[0]['createResponseEffects']}} options Handler options.
+ * @typedef {object} SearchHttpTestOptions
+ * @property {Parameters<typeof createObjectMinuteRentalSearch>[0]['runnerCommitmentsRepository']} runnerCommitmentsRepository Repository for runner reservations.
+ * @property {Record<string, string|undefined>} [env] Runtime environment.
+ * @property {Parameters<typeof createObjectMinuteRentalSearch>[0]['serviceArea']} [serviceArea] Search service area.
+ * @property {() => Date} [clock] Search clock.
+ * @property {NonNullable<Parameters<typeof createCoreSearchHttpHandler>[0]['createResponseEffects']>} [createResponseEffects] HTTP response effect adapter factory.
+ * @property {string[]} [allowedOrigins] Explicit CORS origin allowlist.
+ * @property {{getSchedule: (input: {runnerId: string}) => Promise<object[]>}} [runnerScheduleProvider] Live runner schedule provider.
+ */
+
+/**
+ * Build the cohesive application/request context consumed by the HTTP executor.
+ * @param {SearchHttpTestOptions} options Handler composition inputs.
+ * @returns {NonNullable<Parameters<typeof createCoreSearchHttpHandler>[0]['context']>} Search request context.
+ */
+function createSearchHttpContext(options) {
+  const env = options.env ?? process.env;
+  const search = createObjectMinuteRentalSearch({
+    runnerCommitmentsRepository: options.runnerCommitmentsRepository,
+    runnerId: env.SEARCH_RUNNER_ID ?? DEFAULT_RUNNER_ID,
+    serviceArea: options.serviceArea ?? SOPHIE_CHARLOTTE_SERVICE_AREA,
+  });
+  return {
+    search,
+    env,
+    clock: options.clock ?? (() => new Date()),
+    runnerScheduleProvider: options.runnerScheduleProvider,
+    allowedOrigins: resolveSearchHttpAllowedOrigins(
+      env,
+      options.allowedOrigins
+    ),
+    defaultRunnerId: DEFAULT_RUNNER_ID,
+  };
+}
+
+/**
+ * @param {SearchHttpTestOptions} options Handler composition inputs.
  * @returns {(request: {body?: unknown}, response: Parameters<ReturnType<typeof createCoreSearchHttpHandler>>[2]) => Promise<void>} Test-boundary handler.
  */
 function createSearchHttpHandler(options) {
   const handler = createCoreSearchHttpHandler({
-    ...options,
+    context: createSearchHttpContext(options),
     createResponseEffects:
       options.createResponseEffects ?? createSearchHttpResponseEffectAdapters,
   });
@@ -759,9 +797,11 @@ describe('object minute rental HTTP adapter', () => {
     const sendJson = jest.fn();
     const createResponseEffects = jest.fn(() => ({ setHeader, sendJson }));
     const handler = createCoreSearchHttpHandler({
-      runnerCommitmentsRepository: emptyRepository,
+      context: createSearchHttpContext({
+        runnerCommitmentsRepository: emptyRepository,
+        allowedOrigins: ['https://mattheard.net'],
+      }),
       createResponseEffects,
-      allowedOrigins: ['https://mattheard.net'],
     });
 
     await handler(

@@ -33,6 +33,8 @@ import {
   createPaymentWebhookHandler,
 } from '../../payment-webhook-core.js';
 import { createSearchHttpHandler } from '../../object-minute-rental-search/search-http.js';
+import { createObjectMinuteRentalSearch } from '../../object-minute-rental-search/search-application.js';
+import { DEFAULT_RUNNER_ID } from '../../object-minute-rental-search/search-config.js';
 import { createBrowserRunnerCommitmentsRepository } from '../../object-minute-rental-search/browser-runner-commitments-repository.js';
 import { SOPHIE_CHARLOTTE_SERVICE_AREA } from '../../object-minute-rental-search/service-area.js';
 import {
@@ -560,12 +562,27 @@ async function buildSimulatorState(runtime, effects) {
     createCreditEventEffectAdapters,
     setFirestoreDocument
   );
-  const searchHttp = createSearchHttpHandler({
-    createResponseEffects: createSimulatorSearchHttpResponseEffectAdapters,
+  const env = process.env;
+  const search = createObjectMinuteRentalSearch({
     runnerCommitmentsRepository: createBrowserRunnerCommitmentsRepository(),
+    runnerId: env.SEARCH_RUNNER_ID ?? DEFAULT_RUNNER_ID,
     serviceArea: SOPHIE_CHARLOTTE_SERVICE_AREA,
-    runnerScheduleProvider: { getSchedule: async () => LOCAL_RUNNER_SCHEDULE },
-    clock: () => new Date('2026-01-01T15:00:00Z'),
+  });
+  const searchHttp = createSearchHttpHandler({
+    context: {
+      search,
+      env,
+      clock: () => new Date('2026-01-01T15:00:00Z'),
+      runnerScheduleProvider: {
+        getSchedule: async () => LOCAL_RUNNER_SCHEDULE,
+      },
+      allowedOrigins: (env.SEARCH_ALLOWED_ORIGINS ?? '')
+        .split(',')
+        .map(origin => origin.trim())
+        .filter(origin => origin.length > 0),
+      defaultRunnerId: DEFAULT_RUNNER_ID,
+    },
+    createResponseEffects: createSimulatorSearchHttpResponseEffectAdapters,
   });
   const objectMinuteRentalSearch = (/** @type {SimulatorRequest} */ request) =>
     bindEffectBoundary(permission =>
