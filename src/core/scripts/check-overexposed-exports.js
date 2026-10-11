@@ -515,16 +515,37 @@ function createNamespaceCallContext(callee, state) {
  * @returns {void}
  */
 function handleIdentifierCall(context) {
-  const { calleeName, imports, exports, ownCalls, importedCalls } = context;
-  if (imports.has(calleeName)) {
-    const imported =
-      /** @type {{ source: string, importedName: string, namespace: boolean }} */ (
-        imports.get(calleeName)
-      );
-    importedCalls.push(makeImportedCall(imported));
-    return;
+  if (!recordImportedIdentifierCall(context)) {
+    recordOwnExportCall(context);
+  }
+}
+
+/**
+ * Record a call resolved through an imported identifier.
+ * @param {{calleeName: string, imports: Map<string, {source: string, importedName: string, namespace: boolean}>, importedCalls: Array<{source: string, exportName: string}>}} context Identifier-call context.
+ * @returns {boolean} Whether the identifier was an import.
+ */
+function recordImportedIdentifierCall(context) {
+  const { calleeName, imports, importedCalls } = context;
+  if (!imports.has(calleeName)) {
+    return false;
   }
 
+  const imported =
+    /** @type {{ source: string, importedName: string, namespace: boolean }} */ (
+      imports.get(calleeName)
+    );
+  importedCalls.push(makeImportedCall(imported));
+  return true;
+}
+
+/**
+ * Count a call to a function exported from the current module.
+ * @param {{calleeName: string, exports: Array<{exportName: string, line: number, column: number}>, ownCalls: Map<string, number>}} context Identifier-call context.
+ * @returns {void}
+ */
+function recordOwnExportCall(context) {
+  const { calleeName, exports, ownCalls } = context;
   if (exports.some(exported => exported.exportName === calleeName)) {
     incrementUsageCount(ownCalls, calleeName);
   }
