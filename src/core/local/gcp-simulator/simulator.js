@@ -64,6 +64,9 @@ const LOCAL_ID_TOKEN = 'local-admin-token';
 /** @typedef {ReturnType<typeof createFakeFirestore>} SimulatorDb */
 /** @typedef {Parameters<typeof createApplyCreditEvent>[1]} CreditEventEffects */
 /** @typedef {(db: Parameters<typeof createFetchCredit>[0]) => CreditEventEffects} CreditEventEffectAdapterFactory */
+/** @typedef {{baseUrl: string, bucketName: string, projectId: string, publicDir: string}} SimulatorRuntimeConfig */
+/** @typedef {{bindEffectBoundary?: import('../../../../types/allow-effects').AllowEffectsBoundary, saveStorageFile?: (permission: import('../../../../types/allow-effects').AllowEffects, file: object, contents: string, options: object) => Promise<unknown>, updateFirestoreDocument?: (permission: import('../../../../types/allow-effects').AllowEffects, reference: { update: (data: Record<string, unknown>) => Promise<unknown> }, data: Record<string, unknown>) => Promise<unknown>, setFirestoreDocument?: (permission: import('../../../../types/allow-effects').AllowEffects, reference: { set: (data: Record<string, unknown>) => Promise<unknown> }, data: Record<string, unknown>) => Promise<unknown>, createCreditEventEffectAdapters?: CreditEventEffectAdapterFactory}} SimulatorEffects */
+/** @typedef {{bindEffectBoundary: import('../../../../types/allow-effects').AllowEffectsBoundary, setFirestoreDocument: NonNullable<SimulatorEffects['setFirestoreDocument']>, createCreditEventEffectAdapters: CreditEventEffectAdapterFactory}} RequiredSimulatorEffects */
 /** @typedef {{ body?: unknown, headers?: unknown, get?: (name: string) => string | null | undefined }} SimulatorRequest */
 /** @typedef {{ path: string, before?: unknown, after?: unknown }} CommittedRecord */
 /** @typedef {{ pathPattern: string, eventName: 'onCreate' | 'onWrite', handler: (...args: any[]) => any }} SimulatorTrigger */
@@ -139,7 +142,23 @@ export async function createLocalGcpSimulator(options = {}) {
  * @returns {Promise<object>} Simulator instance.
  */
 async function createLocalGcpSimulatorRuntime(config) {
-  return buildSimulatorApi(await buildSimulatorState(config));
+  return buildSimulatorApi(
+    await buildSimulatorState(
+      {
+        baseUrl: config.baseUrl,
+        bucketName: config.bucketName,
+        projectId: config.projectId,
+        publicDir: config.publicDir,
+      },
+      {
+        bindEffectBoundary: config.bindEffectBoundary,
+        saveStorageFile: config.saveStorageFile,
+        updateFirestoreDocument: config.updateFirestoreDocument,
+        setFirestoreDocument: config.setFirestoreDocument,
+        createCreditEventEffectAdapters: config.createCreditEventEffectAdapters,
+      }
+    )
+  );
 }
 
 /**
@@ -352,44 +371,44 @@ function buildSimulatorApi(state) {
 }
 
 /**
- * Build simulator state and handlers.
- * @param {{
- *   baseUrl: string,
- *   bucketName: string,
- *   projectId: string,
- *   publicDir: string,
- *   bindEffectBoundary?: import('../../../../types/allow-effects').AllowEffectsBoundary,
- *   saveStorageFile?: (permission: import('../../../../types/allow-effects').AllowEffects, file: object, contents: string, options: object) => Promise<unknown>,
- *   updateFirestoreDocument?: (permission: import('../../../../types/allow-effects').AllowEffects, reference: { update: (data: Record<string, unknown>) => Promise<unknown> }, data: Record<string, unknown>) => Promise<unknown>,
- *   setFirestoreDocument?: (permission: import('../../../../types/allow-effects').AllowEffects, reference: { set: (data: Record<string, unknown>) => Promise<unknown> }, data: Record<string, unknown>) => Promise<unknown>,
- *   createCreditEventEffectAdapters?: CreditEventEffectAdapterFactory,
- * }} config Simulator configuration.
- * @returns {Promise<object>} Simulator state.
+ * Validate the required simulator effect adapters.
+ * @param {SimulatorEffects} effects Injected effect adapters.
+ * @returns {RequiredSimulatorEffects} Required adapters after validation.
  */
-async function buildSimulatorState(config) {
-  const {
-    baseUrl,
-    bucketName,
-    projectId,
-    publicDir,
-    saveStorageFile,
-    updateFirestoreDocument,
-    setFirestoreDocument,
-    createCreditEventEffectAdapters,
-  } = config;
-  if (typeof config.bindEffectBoundary !== 'function') {
+function validateSimulatorEffects(effects) {
+  if (typeof effects.bindEffectBoundary !== 'function') {
     throw new TypeError('bindEffectBoundary must be provided');
   }
-  if (typeof createCreditEventEffectAdapters !== 'function') {
+  if (typeof effects.createCreditEventEffectAdapters !== 'function') {
     throw new TypeError('createCreditEventEffectAdapters must be provided');
   }
-  if (typeof setFirestoreDocument !== 'function') {
+  if (typeof effects.setFirestoreDocument !== 'function') {
     throw new TypeError('setFirestoreDocument must be provided');
   }
-  const bindEffectBoundary =
-    /** @type {import('../../../../types/allow-effects').AllowEffectsBoundary} */ (
-      config.bindEffectBoundary
-    );
+  return /** @type {RequiredSimulatorEffects} */ ({
+    bindEffectBoundary: effects.bindEffectBoundary,
+    createCreditEventEffectAdapters: effects.createCreditEventEffectAdapters,
+    setFirestoreDocument: effects.setFirestoreDocument,
+  });
+}
+
+/**
+ * Build simulator state and handlers.
+ * @param {SimulatorRuntimeConfig} runtime Simulator identity and filesystem settings.
+ * @param {SimulatorEffects} effects Injected effect adapters.
+ * @returns {Promise<object>} Simulator state.
+ */
+async function buildSimulatorState(runtime, effects) {
+  const requiredEffects = validateSimulatorEffects(effects);
+  const {
+    bindEffectBoundary,
+    createCreditEventEffectAdapters,
+    setFirestoreDocument,
+  } = requiredEffects;
+  const baseUrl = runtime.baseUrl;
+  const bucketName = runtime.bucketName;
+  const projectId = runtime.projectId;
+  const publicDir = runtime.publicDir;
   const storageRoot = await createStorageRoot();
   const storage = createStorage(storageRoot);
   const fieldValue = createFakeFieldValue();
@@ -429,8 +448,8 @@ async function buildSimulatorState(config) {
     storage,
     fetchFn,
     saveRenderedPage,
-    saveStorageFile,
-    updateFirestoreDocument,
+    saveStorageFile: effects.saveStorageFile,
+    updateFirestoreDocument: effects.updateFirestoreDocument,
     setFirestoreDocument,
     randomUUID,
     bucketName,

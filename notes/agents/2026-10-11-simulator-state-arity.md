@@ -1,0 +1,7 @@
+# Simulator state builder arity cleanup
+
+- Unexpected hurdle: the simulator state builder expanded a single configuration object into eight local bindings, mixing runtime identity/path settings with injected effect adapters.
+- Diagnosis: initialization requires separate concerns for simulator URLs, bucket/project/public directory metadata and for permission-bound Firestore/storage/credit adapters. Existing coverage tests also assert required effect validation order.
+- Chosen fix: split the builder inputs into runtime settings and effect adapters, added a focused validator for required effect adapters, and kept optional storage/Firestore adapters on the effect side. Public simulator options and defaults are unchanged.
+- Evidence: focused Jest passed (2 suites, 9 tests) covering required-adapter validation, static/render/search routes, and payment webhook behavior; target ESLint and `npm run tsdoc:check` passed; fresh no-cache inventory fell from 12 findings/12 files to 11/11 with no simulator.js finding (`.tmp/parameter-bag-global-after-simulator.json`); `TMPDIR=/home/matt/dadeto/.tmp npm run check` passed all 10 gates, 0 clones, and 0 audit vulnerabilities (`.tmp/npm-check-simulator-arity.log`); `TMPDIR=/home/matt/dadeto/.tmp npm run build` passed (`.tmp/build-simulator-arity.log`); `git diff --check` passed.
+- Next-time guidance: preserve effect validation order when separating simulator runtime settings from injected adapters. Next finding is `src/core/local/notion-codex/outcomeStore.js:100` (effective arity 6).
