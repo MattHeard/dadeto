@@ -964,7 +964,12 @@ function initializeGamepadCaptureFormContext(options) {
  */
 function handleGamepadCaptureFormContext(options) {
   captureLifecycleDeps.withCaptureFormContext(
-    options,
+    {
+      dom: options.dom,
+      container: options.container,
+      textInput: options.textInput,
+    },
+    { button: options.button, cleanupFns: options.cleanupFns },
     updateCaptureButton,
     initializeGamepadCaptureFormContext
   );

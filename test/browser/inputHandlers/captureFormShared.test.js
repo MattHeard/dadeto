@@ -139,16 +139,25 @@ describe('captureFormShared context helpers', () => {
       const cleanupFns = [jest.fn()];
       const container = { id: 'container' };
       const textInput = { value: '' };
-      const options = { dom, button, cleanupFns, container, textInput };
+      const formElements = { dom, container, textInput };
+      const controls = { button, cleanupFns };
+      const context = { ...formElements, ...controls };
       const updateButton = jest.fn();
       const onReady = jest.fn();
 
-      expect(captureFormShared.getCaptureFormContext(options)).toEqual(options);
+      expect(
+        captureFormShared.getCaptureFormContext(formElements, controls)
+      ).toEqual(context);
 
-      captureFormShared.withCaptureFormContext(options, updateButton, onReady);
+      captureFormShared.withCaptureFormContext(
+        formElements,
+        controls,
+        updateButton,
+        onReady
+      );
 
       expect(updateButton).toHaveBeenCalledWith(dom, button, false);
-      expect(onReady).toHaveBeenCalledWith(options);
+      expect(onReady).toHaveBeenCalledWith(context);
     });
   });
 

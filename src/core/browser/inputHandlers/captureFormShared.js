@@ -133,18 +133,18 @@ export function buildCaptureForm(options) {
 
 /**
  * Normalize the shared capture form context into a typed bundle.
- * @param {{
- *   dom: DOMHelpers,
- *   container: HTMLElement,
- *   textInput: HTMLInputElement,
- *   button: HTMLButtonElement,
- *   cleanupFns: CleanupFn[],
- * }} options - Shared form wiring state.
+ * @param {{dom: DOMHelpers, container: HTMLElement, textInput: HTMLInputElement}} formElements DOM and form placement.
+ * @param {{button: HTMLButtonElement, cleanupFns: CleanupFn[]}} controls Mounted controls and lifecycle cleanup.
  * @returns {CaptureFormContext} Normalized context.
  */
-export function getCaptureFormContext(options) {
-  const { dom, button, cleanupFns, container, textInput } = options;
-  return { dom, button, cleanupFns, container, textInput };
+export function getCaptureFormContext(formElements, controls) {
+  return {
+    dom: formElements.dom,
+    container: formElements.container,
+    textInput: formElements.textInput,
+    button: controls.button,
+    cleanupFns: controls.cleanupFns,
+  };
 }
 
 /**
@@ -153,19 +153,19 @@ export function getCaptureFormContext(options) {
 
 /**
  * Normalize the shared capture form context, reset its button state, and invoke a handler callback.
- * @param {{
- *   dom: DOMHelpers,
- *   container: HTMLElement,
- *   textInput: HTMLInputElement,
- *   button: HTMLButtonElement,
- *   cleanupFns: CleanupFn[],
- * }} options - Shared form wiring state.
+ * @param {{dom: DOMHelpers, container: HTMLElement, textInput: HTMLInputElement}} formElements DOM and form placement.
+ * @param {{button: HTMLButtonElement, cleanupFns: CleanupFn[]}} controls Mounted controls and lifecycle cleanup.
  * @param {CaptureButtonUpdater} updateButton - Button updater used by the handler.
  * @param {(context: CaptureFormContext) => void} onReady - Callback that receives the initialized context.
  * @returns {void}
  */
-export function withCaptureFormContext(options, updateButton, onReady) {
-  const context = getCaptureFormContext(options);
+export function withCaptureFormContext(
+  formElements,
+  controls,
+  updateButton,
+  onReady
+) {
+  const context = getCaptureFormContext(formElements, controls);
   updateButton(context.dom, context.button, false);
   onReady(context);
 }
