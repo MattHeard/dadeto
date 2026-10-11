@@ -1,4 +1,5 @@
 import { jest } from '@jest/globals';
+import { invokeCapability } from '../../../src/core/capabilities/index.js';
 import {
   createLocalAppCore,
   createWriterServer,
@@ -121,6 +122,153 @@ describe('core local server helpers', () => {
 });
 
 describe('core local server routes', () => {
+  test('exposes allowlisted capability invocation to loopback callers only', () => {
+    const handlers = {};
+    const app = {
+      use: jest.fn(),
+      get: jest.fn((path, handler) => {
+        handlers[`get ${path}`] = handler;
+      }),
+      post: jest.fn((path, handler) => {
+        handlers[`post ${path}`] = handler;
+      }),
+      put: jest.fn((path, handler) => {
+        handlers[`put ${path}`] = handler;
+      }),
+    };
+    const deps = {
+      app,
+      static: prefix => `static:${prefix}`,
+      text: options => `text:${options.limit}`,
+      json: options => `json:${options.limit}`,
+      store: {
+        loadWorkflow: jest.fn(async () => ({ ok: true })),
+        moveActiveIndex: jest.fn(async () => ({ ok: true })),
+        setActiveIndex: jest.fn(async () => ({ ok: true })),
+        saveDocument: jest.fn(async () => ({ ok: true })),
+      },
+      publicDir: '/public',
+      writerDir: '/writer',
+      exchangeRealtimeCallSdp: jest.fn(async () => ({ sdpAnswer: 'answer' })),
+      getNonCoreThinStatus: jest.fn(() => ({ status: 'ok' })),
+      renderNonCoreThinDashboard: jest.fn(() => '<html />'),
+      getMoveDirection: jest.fn(() => 1),
+      getNextIndex: jest.fn(() => 1),
+      getDocumentContent: jest.fn(() => ''),
+      shouldSetResponseLocation,
+      invokeCapability,
+    };
+    createLocalAppCore(deps);
+
+    const response = {
+      status: jest.fn(function status() {
+        return this;
+      }),
+      json: jest.fn(function json() {
+        return this;
+      }),
+    };
+    const handler = handlers['post /api/capabilities/:capabilityId/invoke'];
+
+    handler(
+      {
+        params: { capabilityId: 'JSON1' },
+        body: { input: '{"b":2,"a":1}' },
+        socket: { remoteAddress: '::1' },
+      },
+      response
+    );
+    expect(response.status).toHaveBeenLastCalledWith(200);
+    expect(response.json).toHaveBeenLastCalledWith({
+      capabilityId: 'JSON1',
+      output: '{\n  "a": 1,\n  "b": 2\n}',
+    });
+
+    handler(
+      {
+        params: { capabilityId: 'JSON1' },
+        body: { input: '{bad json' },
+        socket: { remoteAddress: '127.0.0.1' },
+      },
+      response
+    );
+    expect(response.json).toHaveBeenLastCalledWith({
+      capabilityId: 'JSON1',
+      output: '{"error":"Invalid JSON input: malformed JSON"}',
+    });
+
+    handler(
+      {
+        params: { capabilityId: 'missing' },
+        body: { input: '{}' },
+        socket: { remoteAddress: '::ffff:127.0.0.1' },
+      },
+      response
+    );
+    expect(response.status).toHaveBeenLastCalledWith(404);
+    expect(response.json).toHaveBeenLastCalledWith({
+      error: 'UNKNOWN_CAPABILITY',
+    });
+
+    const invalidInvocationError = new Error('invalid invocation');
+    invalidInvocationError.code = 'INVALID_INVOCATION';
+    deps.invokeCapability = jest.fn(() => {
+      throw invalidInvocationError;
+    });
+    handler(
+      {
+        params: { capabilityId: 'JSON1' },
+        body: { input: '{}' },
+        socket: { remoteAddress: '::1' },
+      },
+      response
+    );
+    expect(response.status).toHaveBeenLastCalledWith(400);
+    expect(response.json).toHaveBeenLastCalledWith({
+      error: 'INVALID_INVOCATION',
+    });
+
+    deps.invokeCapability = () => {
+      throw new Error('unexpected invocation failure');
+    };
+    expect(() =>
+      handler(
+        {
+          params: { capabilityId: 'JSON1' },
+          body: { input: '{}' },
+          socket: { remoteAddress: '::1' },
+        },
+        response
+      )
+    ).toThrow('unexpected invocation failure');
+
+    handler(
+      {
+        params: { capabilityId: 'JSON1' },
+        body: { input: 4 },
+        socket: { remoteAddress: '::1' },
+      },
+      response
+    );
+    expect(response.status).toHaveBeenLastCalledWith(400);
+    expect(response.json).toHaveBeenLastCalledWith({
+      error: 'INVALID_REQUEST',
+    });
+
+    handler(
+      {
+        params: { capabilityId: 'JSON1' },
+        body: { input: '{}' },
+        socket: { remoteAddress: '192.0.2.4' },
+      },
+      response
+    );
+    expect(response.status).toHaveBeenLastCalledWith(403);
+    expect(response.json).toHaveBeenLastCalledWith({
+      error: 'LOCAL_CLIENT_REQUIRED',
+    });
+  });
+
   test('serves the static pages and config routes', async () => {
     const handlers = {};
     const app = {

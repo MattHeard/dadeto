@@ -1,4 +1,5 @@
 import express from 'express';
+import { invokeCapability } from '../core/capabilities/index.js';
 import {
   createLocalAppCore,
   createRequestLogger,
@@ -41,5 +42,6 @@ export function createLocalApp(deps) {
     getNextIndex,
     getDocumentContent,
     shouldSetResponseLocation,
+    invokeCapability,
   }).app;
 }

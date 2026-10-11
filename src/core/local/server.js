@@ -26,6 +26,7 @@ import { trimAndLowercase } from '../commonCore.js';
  *   getNextIndex: (body: unknown) => number,
  *   getDocumentContent: (body: unknown) => string,
  *   shouldSetResponseLocation: (location: string | undefined) => boolean,
+ *   invokeCapability: (invocation: { capabilityId: string, input: string }) => string,
  * }} deps Local server dependencies.
  * @returns {{ app: unknown }} The wired app reference.
  */
@@ -47,6 +48,10 @@ export function createLocalAppCore(deps) {
   app.post(
     '/api/realtime/call',
     handleAsyncRoute(createRealtimeCallHandler(typedDeps))
+  );
+  app.post(
+    '/api/capabilities/:capabilityId/invoke',
+    createCapabilityInvocationHandler(typedDeps)
   );
   app.get('/config.json', createConfigRoute());
   app.get('/seed.json', createSeedRoute());
@@ -92,6 +97,66 @@ export function createLocalAppCore(deps) {
   app.use(typedDeps.static(typedDeps.publicDir));
 
   return { app };
+}
+
+/**
+ * Handle one allowlisted capability invocation from loopback clients only.
+ * @param {{ invokeCapability: (invocation: { capabilityId: string, input: string }) => string }} deps Capability invocation dependency.
+ * @returns {(req: { params?: { capabilityId?: string }, body?: unknown, socket?: { remoteAddress?: string } }, res: { status: (code: number) => any, json: (body: unknown) => unknown }) => unknown} Route handler.
+ */
+function createCapabilityInvocationHandler(deps) {
+  return (req, res) => {
+    if (!isLoopbackAddress(req.socket?.remoteAddress)) {
+      return res.status(403).json({ error: 'LOCAL_CLIENT_REQUIRED' });
+    }
+
+    const body = req.body;
+    const capabilityId = req.params?.capabilityId;
+    if (
+      !body ||
+      typeof body !== 'object' ||
+      Array.isArray(body) ||
+      typeof capabilityId !== 'string' ||
+      typeof (/** @type {Record<string, unknown>} */ (body).input) !== 'string'
+    ) {
+      return res.status(400).json({ error: 'INVALID_REQUEST' });
+    }
+
+    try {
+      const output = deps.invokeCapability({
+        capabilityId,
+        input: /** @type {string} */ (
+          /** @type {Record<string, unknown>} */ (body).input
+        ),
+      });
+      return res.status(200).json({
+        capabilityId,
+        output,
+      });
+    } catch (error) {
+      const code = error?.code;
+      if (code === 'UNKNOWN_CAPABILITY') {
+        return res.status(404).json({ error: code });
+      }
+      if (code === 'INVALID_INVOCATION') {
+        return res.status(400).json({ error: code });
+      }
+      throw error;
+    }
+  };
+}
+
+/**
+ * Check the socket peer address without trusting proxy headers.
+ * @param {string | undefined} address Socket remote address.
+ * @returns {boolean} Whether the peer is an IPv4 or IPv6 loopback address.
+ */
+function isLoopbackAddress(address) {
+  return (
+    address === '::1' ||
+    address === '127.0.0.1' ||
+    address === '::ffff:127.0.0.1'
+  );
 }
 
 /**
