@@ -23,3 +23,17 @@ export function initializeFirebaseApp(permission, initializeApp) {
   void permission;
   return initializeApp();
 }
+
+/**
+ * Bind a permission-aware assignment writer to the configured database.
+ * @param {import('firebase-admin/firestore').Firestore} database Firestore database.
+ * @returns {(permission: AllowEffects, uid: string, data: object) => Promise<unknown>} Assignment writer capability.
+ */
+export function createSetModeratorAssignment(database) {
+  return async function setModeratorAssignment(permission, uid, data) {
+    void permission;
+    return database.collection('moderators').doc(uid).set(data, {
+      merge: true,
+    });
+  };
+}

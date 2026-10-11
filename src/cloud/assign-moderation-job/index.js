@@ -12,11 +12,13 @@ import {
   createAssignModerationJobEntrypoint,
 } from '../../core/cloud/assign-moderation-job/index.js';
 import { createAllowEffects } from '../allow-effects.js';
-import { initializeFirebaseApp } from './effect-adapters.js';
+import {
+  createSetModeratorAssignment,
+  initializeFirebaseApp,
+} from './effect-adapters.js';
 import {
   registerPostRoute,
   sendHttpResponse,
-  setModeratorAssignment,
   useMiddleware,
 } from './assign-moderation-job-core.js';
 
@@ -34,7 +36,7 @@ const entrypoint = await createAssignModerationJobEntrypoint({
   bindEffectBoundary: handler => handler(createAllowEffects()),
   useMiddleware,
   registerPostRoute,
-  setModeratorAssignment,
+  createSetModeratorAssignment,
   sendHttpResponse,
 });
 

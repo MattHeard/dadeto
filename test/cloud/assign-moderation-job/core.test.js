@@ -15,7 +15,6 @@ const {
   getIdTokenFromRequest,
   random,
   selectVariantDoc,
-  createModeratorRefFactory,
   createVariantsQuery,
   createReputationScopedQuery,
   createRunVariantQuery,
@@ -617,19 +616,6 @@ describe('selectVariantDoc', () => {
   });
 });
 
-describe('createModeratorRefFactory', () => {
-  test('returns the moderators document reference', () => {
-    const doc = jest.fn();
-    const database = { collection: jest.fn(() => ({ doc })) };
-    const createRef = createModeratorRefFactory(database);
-
-    createRef('uid-1');
-
-    expect(database.collection).toHaveBeenCalledWith('moderators');
-    expect(doc).toHaveBeenCalledWith('uid-1');
-  });
-});
-
 describe('createVariantsQuery', () => {
   test('returns the variants collection group query', () => {
     const query = Symbol('query');
@@ -736,14 +722,11 @@ describe('createAssignModerationWorkflow', () => {
     const selectVariantDoc = jest
       .fn()
       .mockReturnValue({ variantDoc: { ref: 'doc-ref' } });
-    const set = jest.fn().mockResolvedValue();
-    const createModeratorRef = jest.fn(() => ({ set }));
-    const setModeratorAssignment = jest.fn(
-      async (permission, reference, data) => {
-        void permission;
-        return reference.set(data, { merge: true });
-      }
-    );
+    const setModeratorAssignment = jest.fn(async (permission, uid, data) => {
+      void permission;
+      void uid;
+      void data;
+    });
     const bindEffectBoundary = jest.fn(callback => callback({}));
     const now = jest.fn().mockReturnValue('now');
     const random = jest.fn().mockReturnValue(0.25);
@@ -752,12 +735,10 @@ describe('createAssignModerationWorkflow', () => {
       runGuards,
       fetchVariantSnapshot,
       selectVariantDoc,
-      createModeratorRef,
       setModeratorAssignment,
       bindEffectBoundary,
       now,
       random,
-      set,
     };
   };
 
@@ -767,9 +748,8 @@ describe('createAssignModerationWorkflow', () => {
         ? await resolveForWorkflow(deps, uid)
         : await resolveLegacyForWorkflow(deps);
       const assignment = { variant: variantDoc.ref, createdAt: deps.now() };
-      const moderatorRef = deps.createModeratorRef(uid);
       await deps.bindEffectBoundary(permission =>
-        deps.setModeratorAssignment(permission, moderatorRef, assignment)
+        deps.setModeratorAssignment(permission, uid, assignment)
       );
     });
 
@@ -800,7 +780,6 @@ describe('createAssignModerationWorkflow', () => {
       assignModerationWorkflow({ req: { method: 'POST' } })
     ).resolves.toEqual({ status: 401, body: 'nope' });
     expect(deps.fetchVariantSnapshot).not.toHaveBeenCalled();
-    expect(deps.createModeratorRef).not.toHaveBeenCalled();
   });
 
   test('handles missing moderator records', async () => {
@@ -822,7 +801,6 @@ describe('createAssignModerationWorkflow', () => {
     await expect(
       assignModerationWorkflow({ req: { method: 'POST' } })
     ).resolves.toEqual({ status: 500, body: 'boom' });
-    expect(deps.createModeratorRef).not.toHaveBeenCalled();
   });
 
   test('handles guard responses that omit the context object', async () => {
@@ -849,24 +827,16 @@ describe('createAssignModerationWorkflow', () => {
     expect(deps.random).toHaveBeenCalledTimes(1);
     expect(deps.fetchVariantSnapshot).toHaveBeenCalledWith(0.25);
     expect(deps.selectVariantDoc).toHaveBeenCalledWith('snapshot');
-    expect(deps.createModeratorRef).toHaveBeenCalledWith('mod');
-    expect(deps.set).toHaveBeenCalledWith(
-      {
-        variant: 'doc-ref',
-        createdAt: 'now',
-      },
-      { merge: true }
-    );
     expect(deps.setModeratorAssignment).toHaveBeenCalledWith(
       expect.anything(),
-      expect.anything(),
+      'mod',
       { variant: 'doc-ref', createdAt: 'now' }
     );
   });
 
   test('rejects unexpected errors from the workflow', async () => {
     const deps = createDeps();
-    deps.set.mockRejectedValue(new Error('set failed'));
+    deps.setModeratorAssignment.mockRejectedValue(new Error('set failed'));
     const assignModerationWorkflow = createWorkflow(deps);
 
     await expect(

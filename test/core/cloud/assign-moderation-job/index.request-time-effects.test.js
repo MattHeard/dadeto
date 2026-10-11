@@ -5,6 +5,7 @@ const idTokenKey = 'id_token';
 
 test('assignment and response receive separate request-time permissions', async () => {
   const permissions = [];
+  const assignmentPermissions = [];
   const moderatorSet = jest.fn().mockResolvedValue(undefined);
   /** @type {(req: import('../../../../types/native-http').NativeHttpRequest, res: import('../../../../types/native-http').NativeHttpResponse) => Promise<void>} */
   let requestHandler = async () => {};
@@ -60,8 +61,14 @@ test('assignment and response receive separate request-time permissions', async 
     useMiddleware: (_permission, target, middleware) => target.use(middleware),
     registerPostRoute: (_permission, target, path, handler) =>
       target.post(path, handler),
-    setModeratorAssignment: (_permission, reference, assignment) =>
-      reference.set(assignment, { merge: true }),
+    createSetModeratorAssignment:
+      targetDatabase => (permission, uid, assignment) => {
+        assignmentPermissions.push(permission);
+        return targetDatabase
+          .collection('moderators')
+          .doc(uid)
+          .set(assignment, { merge: true });
+      },
     sendHttpResponse: (_permission, response, status, body) =>
       response.status(status).send(body),
   });
@@ -78,5 +85,6 @@ test('assignment and response receive separate request-time permissions', async 
   );
   expect(response.status).toHaveBeenCalledWith(201);
   expect(response.send).toHaveBeenCalledWith('');
+  expect(assignmentPermissions).toEqual([permissions[4]]);
   expect(permissions[4]).not.toBe(permissions[5]);
 });

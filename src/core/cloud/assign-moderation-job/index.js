@@ -6,7 +6,6 @@ import {
   createRunVariantQuery,
   createAssignVariantToModerator,
   createHandleAssignModerationJobFromAuth,
-  createModeratorRefFactory,
   setupAssignModerationJobRoute,
   resolveFirestoreEnvironment,
   shouldUseCustomFirestoreDependencies,
@@ -19,6 +18,11 @@ import {
 import { resolveAllowedOrigins, isDuplicateAppError } from '../cloud-core.js';
 
 /** @typedef {import('../../../../types/allow-effects').AllowEffects} AllowEffects */
+/**
+ * @typedef {object} FirestoreQueryDatabase
+ * @property {(collectionId: string) => import('firebase-admin/firestore').Query} collectionGroup Query-only collection-group access.
+ * @property {(collectionId: string) => { where: (fieldPath: string, opStr: string, value: unknown) => import('firebase-admin/firestore').Query }} collection Query-only collection access.
+ */
 
 /**
  * Build the assign-moderation-job entrypoint from injected dependencies.
@@ -36,14 +40,14 @@ import { resolveAllowedOrigins, isDuplicateAppError } from '../cloud-core.js';
  *   initializeApp: () => unknown,
  *   initializeFirebaseApp: (permission: AllowEffects, initializeApp: () => unknown) => unknown,
  *   getAuth: () => unknown,
- *   getFirestore: typeof import('firebase-admin/firestore').getFirestore,
+ *   getFirestore: (app?: import('firebase-admin/app').App, databaseId?: string) => unknown,
  *   getEnvironmentVariables: () => Record<string, unknown>,
  *   now: () => number,
  *   random: () => number,
  *   bindEffectBoundary: import('../../../../types/allow-effects').AllowEffectsBoundary,
  *   useMiddleware: (permission: AllowEffects, app: import('../../../../types/native-http').NativeExpressApp, middleware: unknown) => void,
  *   registerPostRoute: (permission: AllowEffects, app: import('../../../../types/native-http').NativeExpressApp, path: string, handler: (req: import('../../../../types/native-http').NativeHttpRequest, res: import('../../../../types/native-http').NativeHttpResponse) => unknown) => void,
- *   setModeratorAssignment: (permission: AllowEffects, reference: import('firebase-admin/firestore').DocumentReference, data: object) => Promise<unknown>,
+ *   createSetModeratorAssignment: (database: unknown) => (permission: AllowEffects, uid: string, data: object) => Promise<unknown>,
  *   sendHttpResponse: (permission: AllowEffects, response: import('../../../../types/native-http').NativeHttpResponse, status: number, body: unknown) => void,
  * }} deps Runtime dependencies supplied by the cloud wrapper.
  * @returns {Promise<{
@@ -76,7 +80,7 @@ export async function createAssignModerationJobEntrypoint(deps) {
    * @returns {{
    *   getFirestoreInstance: (options?: {
    *     ensureAppFn?: () => void,
-   *     getFirestoreFn?: typeof deps.getFirestore,
+   *     getFirestoreFn?: typeof import('firebase-admin/firestore').getFirestore,
    *     environment?: Record<string, unknown>,
    *   }) => unknown,
    *   clearFirestoreInstanceCache: () => void,
@@ -87,7 +91,10 @@ export async function createAssignModerationJobEntrypoint(deps) {
     const getFirestoreInstance = createFirestoreInstanceResolver({
       cache: firestoreCache,
       defaultEnsureAppFn: defaultEnsureFirebaseApp,
-      defaultGetFirestoreFn: typedDeps.getFirestore,
+      defaultGetFirestoreFn:
+        /** @type {typeof import('firebase-admin/firestore').getFirestore} */ (
+          typedDeps.getFirestore
+        ),
       resolveEnvironment: options =>
         /** @type {Record<string, unknown>} */ (
           resolveFirestoreEnvironment(
@@ -159,7 +166,10 @@ export async function createAssignModerationJobEntrypoint(deps) {
   await typedDeps.bindEffectBoundary(async permission => {
     ensureFirebaseApp(permission);
   });
-  const db = getFirestoreInstance();
+  const database = getFirestoreInstance();
+  const db = /** @type {FirestoreQueryDatabase} */ (database);
+  const setModeratorAssignment =
+    typedDeps.createSetModeratorAssignment(database);
   const auth = typedDeps.getAuth();
   const app = typedDeps.express();
 
@@ -183,19 +193,17 @@ export async function createAssignModerationJobEntrypoint(deps) {
   });
 
   const firebaseResources =
-    /** @type {{ db: import('firebase-admin/firestore').Firestore, auth: import('firebase-admin/auth').Auth, app: import('../../../../types/native-http').NativeExpressApp }} */ ({
+    /** @type {{ db: typeof db, auth: import('firebase-admin/auth').Auth, app: import('../../../../types/native-http').NativeExpressApp }} */ ({
       db,
       auth,
       app,
     });
 
   const fetchVariantSnapshots = createRunVariantQuery(firebaseResources.db);
-  const createModeratorRef = createModeratorRefFactory(firebaseResources.db);
   /** @type {(uid: string, assignment: object) => Promise<unknown>} */
   const persistAssignment = async (uid, assignment) => {
-    const reference = createModeratorRef(uid);
     return typedDeps.bindEffectBoundary(permission =>
-      typedDeps.setModeratorAssignment(permission, reference, assignment)
+      setModeratorAssignment(permission, uid, assignment)
     );
   };
   const assignVariantToModerator = createAssignVariantToModerator(

@@ -10,7 +10,6 @@ import {
   createCreateCorsOriginFromEnvironment,
   createFetchVariantSnapshotFromDbFactory,
   createFirebaseInitialization,
-  createModeratorRefFactory,
   createReputationScopedQuery,
   createReputationScopedVariantsQuery,
   createRunVariantQuery,
@@ -224,11 +223,7 @@ describe('assign moderation job query and workflow coverage', () => {
     const query = { where: jest.fn(() => 'scoped') };
     expect(createReputationScopedQuery('zeroRated', query)).toBe('scoped');
     expect(createReputationScopedQuery('any', query)).toBe(query);
-    const db = {
-      collection: jest.fn(() => ({ doc: jest.fn(() => 'moderator-doc') })),
-      collectionGroup: jest.fn(() => query),
-    };
-    expect(createModeratorRefFactory(db)('mod')).toBe('moderator-doc');
+    const db = { collectionGroup: jest.fn(() => query) };
     expect(createVariantsQuery(db)).toBe(query);
     expect(createReputationScopedVariantsQuery(db, 'any')).toBe(query);
     expect(buildVariantQueryPlan(0.25)).toEqual([

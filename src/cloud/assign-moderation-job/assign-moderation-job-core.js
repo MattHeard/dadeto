@@ -19,18 +19,6 @@ function registerPostRoute(permission, app, path, handler) {
 }
 
 /**
- * Persist a moderator assignment using Firestore merge semantics.
- * @param {AllowEffects} permission Permission for the Firestore write.
- * @param {import('firebase-admin/firestore').DocumentReference} reference Moderator document.
- * @param {object} data Assignment payload.
- * @returns {Promise<unknown>} Firestore write result.
- */
-async function setModeratorAssignment(permission, reference, data) {
-  void permission;
-  return reference.set(data, { merge: true });
-}
-
-/**
  * Send an HTTP response with a status and body.
  * @param {AllowEffects} permission Permission for the response write.
  * @param {import('../../../types/native-http').NativeHttpResponse} response Express response.
@@ -43,4 +31,4 @@ function sendHttpResponse(permission, response, status, body) {
   response.status(status).send(body);
 }
 
-export { registerPostRoute, sendHttpResponse, setModeratorAssignment, useMiddleware };
+export { registerPostRoute, sendHttpResponse, useMiddleware };

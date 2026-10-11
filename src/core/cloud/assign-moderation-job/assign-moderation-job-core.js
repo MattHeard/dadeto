@@ -2,6 +2,11 @@
 /** @typedef {import('../../../../types/native-http').NativeHttpResponse} NativeHttpResponse */
 /** @typedef {import('../../../../types/native-http').NativeExpressApp} NativeExpressApp */
 /** @typedef {import('../../../../types/allow-effects').AllowEffects} AllowEffects */
+/**
+ * @typedef {object} FirestoreQueryDatabase
+ * @property {(collectionId: string) => import('firebase-admin/firestore').Query} collectionGroup Query-only collection-group access.
+ * @property {(collectionId: string) => { where: (fieldPath: string, opStr: string, value: unknown) => import('firebase-admin/firestore').Query }} collection Query-only collection access.
+ */
 
 /**
  * @typedef {(environmentVariables: Record<string, unknown>) => string[]} ResolveAllowedOrigins
@@ -672,7 +677,7 @@ function isSnapshotEmpty(snapshot, variantDoc) {
   return isMissingVariantDoc(variantDoc) || snapshotIsEmpty(snapshot);
 }
 
-/** @typedef {import('firebase-admin/firestore').QueryDocumentSnapshot<import('firebase-admin/firestore').DocumentData>} VariantDocSnapshot */
+/** @typedef {{ ref: { path: string }, data: () => import('firebase-admin/firestore').DocumentData }} VariantDocSnapshot */
 
 /**
  * @typedef {{
@@ -770,21 +775,9 @@ function hasSnapshotDocs(snapshot) {
 }
 
 /**
- * Create a helper that resolves moderator document references.
- * @param {import('firebase-admin/firestore').Firestore} database Firestore database instance.
- * @returns {(uid: string) => import('firebase-admin/firestore').DocumentReference} Function that builds references to moderator documents.
- */
-export function createModeratorRefFactory(database) {
-  return function createModeratorRef(uid) {
-    // Stryker disable next-line all -- Firestore reference construction is a
-    // direct injected-adapter mapping.
-    return database.collection('moderators').doc(uid);
-  };
-}
-
 /**
  * Create the base variants collection group query.
- * @param {import('firebase-admin/firestore').Firestore} database Firestore database instance.
+ * @param {FirestoreQueryDatabase} database Query-only Firestore capability.
  * @returns {import('firebase-admin/firestore').Query} Base variants query.
  */
 export function createVariantsQuery(database) {
@@ -811,7 +804,7 @@ export function createReputationScopedQuery(reputation, variantsQuery) {
 
 /**
  * Build a reputation-scoped variants query from a Firestore instance.
- * @param {import('firebase-admin/firestore').Firestore} database Firestore database instance.
+ * @param {FirestoreQueryDatabase} database Query-only Firestore capability.
  * @param {'zeroRated' | string} reputation Reputation category for moderators.
  * @returns {import('firebase-admin/firestore').Query} Query scoped to the provided reputation.
  */
@@ -823,7 +816,7 @@ export function createReputationScopedVariantsQuery(database, reputation) {
 
 /**
  * Create a query runner that fetches all moderation candidates for a moderator.
- * @param {import('firebase-admin/firestore').Firestore} database Firestore database instance.
+ * @param {FirestoreQueryDatabase} database Query-only Firestore capability.
  * @returns {(uid: string) => Promise<VariantCandidate[]>} Query runner bound to the provided database.
  */
 export function createRunVariantQuery(database) {
@@ -850,13 +843,19 @@ export function createRunVariantQuery(database) {
     ]);
 
     const alreadyModerated = new Set(
-      resolveSnapshotDocs(moderationRatingsSnap)
+      resolveSnapshotDocs(
+        /** @type {VariantSnapshot} */ (
+          /** @type {unknown} */ (moderationRatingsSnap)
+        )
+      )
         .map(doc => doc.data()?.variantId)
         .filter(value => typeof value === 'string')
         .map(value => value.replace(/^\//, ''))
     );
 
-    return resolveSnapshotDocs(variantSnap)
+    return resolveSnapshotDocs(
+      /** @type {VariantSnapshot} */ (/** @type {unknown} */ (variantSnap))
+    )
       .filter(
         variantDoc =>
           !alreadyModerated.has(
@@ -872,14 +871,14 @@ export function createRunVariantQuery(database) {
 
 /**
  * Build a factory that produces Firestore-backed moderation candidate fetchers.
- * @param {(database: import('firebase-admin/firestore').Firestore) => (descriptor: ReturnType<typeof buildVariantQueryPlan>[number]) => Promise<VariantSnapshot>} createRunVariantQueryFn Adapter factory that accepts a database instance and returns a query executor.
- * @returns {(database: import('firebase-admin/firestore').Firestore) => (randomValue: number) => Promise<VariantSnapshot>} Factory producing snapshot fetchers bound to a Firestore database.
+ * @param {(database: FirestoreQueryDatabase) => (descriptor: ReturnType<typeof buildVariantQueryPlan>[number]) => Promise<VariantSnapshot>} createRunVariantQueryFn Adapter factory that accepts a query-only database and returns a query executor.
+ * @returns {(database: FirestoreQueryDatabase) => (randomValue: number) => Promise<VariantSnapshot>} Factory producing snapshot fetchers bound to a query-only database.
  */
 export function createFetchVariantSnapshotFromDbFactory(
   createRunVariantQueryFn
 ) {
   /**
-   * @param {import('firebase-admin/firestore').Firestore} database Firestore database instance.
+   * @param {FirestoreQueryDatabase} database Query-only Firestore capability.
    * @returns {(randomValue: number) => Promise<VariantSnapshot>} Snapshot fetcher bound to the database.
    */
   return function createFetchVariantSnapshotFromDb(database) {

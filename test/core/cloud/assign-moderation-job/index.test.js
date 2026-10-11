@@ -74,6 +74,7 @@ describe('createAssignModerationJobEntrypoint', () => {
       }
     );
     const setModeratorAssignment = jest.fn(async () => {});
+    const createSetModeratorAssignment = jest.fn(() => setModeratorAssignment);
     const initializeApp = jest.fn();
     const initializeFirebaseApp = jest.fn((permission, initFn) => {
       void permission;
@@ -100,7 +101,7 @@ describe('createAssignModerationJobEntrypoint', () => {
       bindEffectBoundary: handler => handler(allowEffects),
       useMiddleware,
       registerPostRoute,
-      setModeratorAssignment,
+      createSetModeratorAssignment,
       sendHttpResponse,
     });
 
