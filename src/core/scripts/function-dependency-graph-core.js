@@ -10,6 +10,7 @@ const FUNCTION_NODE_FIELDS = ['id', 'name', 'file', 'line', 'exported'];
 /** @typedef {{ type?: string, id?: AstNode, key?: AstNode, name?: string, loc?: { start: { line: number } }, params?: AstNode[], body?: AstNode, callee?: AstNode, left?: AstNode, source?: { value: string }, specifiers?: AstNode[], imported?: AstNode, local?: AstNode, declaration?: AstNode, node?: AstNode, [key: string]: unknown }} AstNode */
 /** @typedef {(node: AstNode, parent: AstNode | null) => void} AstVisitor */
 /** @typedef {{ source: string, imported: string }} ImportBinding */
+/** @typedef {{ caller: { id: string, file: string }, params: Set<string>, resolveTarget: (caller: { file: string }, name: string) => { id: string } | null, edges: Array<object>, ignoredCalls: Array<object> }} CallInspectionContext */
 
 /**
  * Check whether an AST node represents a function.
@@ -162,17 +163,15 @@ export function buildFunctionDependencyGraph({ files, parse }) {
     parsed.set(file.path, ast);
     /** @type {Map<string, ImportBinding>} */
     const imports = new Map();
+    const registerFileFunction = createFunctionRegistrar(
+      file.path,
+      imports,
+      functions
+    );
     walk(ast, (node, parent) => {
       collectImportBinding(node, imports);
       if (!isFunction(node)) return;
-      anonymousIndex = registerFunction({
-        node,
-        parent,
-        filePath: file.path,
-        imports,
-        functions,
-        anonymousIndex,
-      });
+      anonymousIndex = registerFileFunction(node, parent, anonymousIndex);
     });
     importsByFile.set(file.path, imports);
   }
@@ -199,7 +198,7 @@ export function buildFunctionDependencyGraph({ files, parse }) {
   const ignoredCalls = [];
   /**
    * Resolve a local or relative imported function target.
-   * @param {AstNode} caller Calling function metadata.
+   * @param {{ file: string }} caller Calling function metadata.
    * @param {string} name Candidate local function name.
    * @returns {{ id: string }|null} Resolved function or null.
    */
@@ -234,16 +233,14 @@ export function buildFunctionDependencyGraph({ files, parse }) {
          */ param => bindingName(param) ?? param.left?.name ?? null
       )
     );
-    walk(caller.node.body, node =>
-      inspectCallNode({
-        node,
-        caller,
-        params,
-        resolveTarget,
-        edges,
-        ignoredCalls,
-      })
-    );
+    const callContext = {
+      caller,
+      params,
+      resolveTarget,
+      edges,
+      ignoredCalls,
+    };
+    walk(caller.node.body, node => inspectCallNode(node, callContext));
   }
   const uniqueEdges = [
     ...new Map(
@@ -299,89 +296,92 @@ function readImportBinding(node, specifier) {
 }
 
 /**
- * Register a discovered function in the graph.
- * @param {{ node: AstNode, parent: AstNode|null, filePath: string, imports: Map<string, ImportBinding>, functions: Map<string, object>, anonymousIndex: number }} input Function registration input.
- * @returns {number} Next anonymous index.
+ * Create a registrar scoped to one file's function collection.
+ * @param {string} filePath Source file path.
+ * @param {Map<string, ImportBinding>} imports File import bindings.
+ * @param {Map<string, object>} functions Function graph registry.
+ * @returns {(node: AstNode, parent: AstNode|null, anonymousIndex: number) => number} Function registrar.
  */
-function registerFunction({
-  node,
-  parent,
-  filePath,
-  imports,
-  functions,
-  anonymousIndex,
-}) {
-  const name = functionName(node, parent, anonymousIndex);
-  const id = `${filePath}#${name}`;
-  functions.set(id, {
-    id,
-    name,
-    file: filePath,
-    line: node.loc?.start.line ?? null,
-    exported: false,
-    node,
-    parent,
-    imports,
-  });
-  return anonymousIndex + 1;
+function createFunctionRegistrar(filePath, imports, functions) {
+  return function registerFunction(node, parent, anonymousIndex) {
+    const name = functionName(node, parent, anonymousIndex);
+    const id = `${filePath}#${name}`;
+    functions.set(id, {
+      id,
+      name,
+      file: filePath,
+      line: node.loc?.start.line ?? null,
+      exported: false,
+      node,
+      parent,
+      imports,
+    });
+    return anonymousIndex + 1;
+  };
 }
 
 /**
  * Inspect one call expression and record its graph edge or injected dependency.
- * @param {{ node: AstNode, caller: object, params: Set<string>, resolveTarget: Function, edges: Array<object>, ignoredCalls: Array<object> }} input Call inspection input.
+ * @param {AstNode} node Candidate AST node.
+ * @param {CallInspectionContext} context Per-caller call graph context.
  * @returns {void}
  */
-function inspectCallNode(input) {
-  if (input.node.type !== 'CallExpression' || !input.node.callee) return;
-  const callee = input.node.callee;
+function inspectCallNode(node, context) {
+  if (node.type !== 'CallExpression' || !node.callee) return;
+  const callee = node.callee;
   if (callee.type === 'Identifier') {
-    recordIdentifierCall(input);
+    recordIdentifierCall(node, context);
     return;
   }
-  recordInjectedMemberCall(input);
+  recordInjectedMemberCall(node, context);
 }
 
 /**
  * Record an identifier call using the shared call-inspection context.
- * @param {{ node: AstNode, caller: object, params: Set<string>, resolveTarget: Function, edges: Array<object>, ignoredCalls: Array<object> }} input Call input.
+ * @param {AstNode} node Identifier call node.
+ * @param {CallInspectionContext} context Per-caller call graph context.
  * @returns {void}
  */
-function recordIdentifierCall(input) {
-  const { node, caller, params, resolveTarget, edges, ignoredCalls } = input;
+function recordIdentifierCall(node, context) {
   const callee = /** @type {AstNode} */ (node.callee);
-  const typedCaller = /** @type {{ id: string }} */ (caller);
+  const typedCaller = /** @type {{ id: string }} */ (context.caller);
   if (!callee.name) return;
-  if (params.has(callee.name)) {
-    ignoredCalls.push({
+  if (context.params.has(callee.name)) {
+    context.ignoredCalls.push({
       caller: typedCaller.id,
       callee: callee.name,
       reason: 'injected-parameter',
     });
     return;
   }
-  const target = resolveTarget(caller, callee.name);
+  const target = context.resolveTarget(context.caller, callee.name);
   if (target && target.id !== typedCaller.id)
-    edges.push({
+    context.edges.push({
       source: typedCaller.id,
       target: target.id,
       kind: 'direct-call',
     });
 }
 
-/** @param {{ node: AstNode, caller: object, params: Set<string>, ignoredCalls: Array<object> }} input Call input. @returns {void} */
-function recordInjectedMemberCall(input) {
-  const callee = /** @type {AstNode} */ (input.node.callee);
-  const typedCaller = /** @type {{ id: string }} */ (input.caller);
+/**
+ * Record a call to a method on an injected object parameter.
+ * @param {AstNode} node Member call node.
+ * @param {CallInspectionContext} context Per-caller call graph context.
+ * @returns {void}
+ */
+function recordInjectedMemberCall(node, context) {
+  const callee = /** @type {AstNode} */ (node.callee);
+  const typedCaller = /** @type {{ id: string }} */ (context.caller);
   const memberObject = /** @type {AstNode | undefined} */ (callee.object);
   const objectName = /** @type {string} */ (memberObject?.name);
   if (
     callee.type !== 'MemberExpression' ||
     !memberObject ||
     memberObject.type !== 'Identifier' ||
-    !input.params.has(objectName)
+    !context.params.has(objectName)
   )
     return;
-  input.ignoredCalls.push({
+  context.ignoredCalls.push({
     caller: typedCaller.id,
     callee: `${objectName}.${/** @type {AstNode | undefined} */ (callee.property)?.name ?? '<computed>'}`,
     reason: 'injected-object-member',
