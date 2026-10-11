@@ -20,14 +20,13 @@ import { createBillingRuntime } from '../billing/billing-runtime-core.js';
  * @param {{ firestore: FirestoreCtor, db?: any, env?: ProcessEnvLike, constructEvent?: (payload: string|Buffer, signature: string, secret: string) => unknown, creditEventEffects: Parameters<typeof import('../get-api-key-credit-v2/get-api-key-credit-v2-core.js').createApplyCreditEvent>[1], markProcessedEvent: (allowEffects: AllowEffects, event: import('../../payment-webhook-core.js').PaymentEvent, uuid: string, status?: string) => Promise<void> }} deps Dependencies for the wrapper.
  * @returns {(allowEffects: AllowEffects, req: unknown, res: unknown) => Promise<unknown>} Request handler.
  */
-export function createPaymentWebhookIndexHandler({
-  firestore,
-  db: providedDb,
-  env = process.env,
-  constructEvent,
-  creditEventEffects,
-  markProcessedEvent,
-}) {
+export function createPaymentWebhookIndexHandler(deps) {
+  const firestore = deps.firestore;
+  const providedDb = deps.db;
+  const env = deps.env === undefined ? process.env : deps.env;
+  const constructEvent = deps.constructEvent;
+  const creditEventEffects = deps.creditEventEffects;
+  const markProcessedEvent = deps.markProcessedEvent;
   const db = /** @type {any} */ (providedDb ?? createDb(firestore, env));
   const billing = createBillingRuntime(db);
   const handleRequest = createPaymentWebhookHandler({
