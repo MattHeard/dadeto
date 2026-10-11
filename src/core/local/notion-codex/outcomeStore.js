@@ -52,10 +52,14 @@ export function createNotionCodexOutcomeStore(options) {
     writeFileImpl: options.writeFileImpl,
   };
   const readOutcome = readStoredOutcome.bind(null, context);
+  const writeStoredOutcome = createOutcomeFileWriter(
+    context.mkdirImpl,
+    context.writeFileImpl
+  );
   /** @type {(runId: string, outcome: Record<string, unknown>) => Promise<void>} */
   const writeOutcome = (runId, outcome) =>
     options.bindEffectBoundary(permission =>
-      writeStoredOutcome(permission, context, runId, outcome)
+      writeStoredOutcome(permission, runId, outcome, options)
     );
   return { readOutcome, writeOutcome };
 }
@@ -90,23 +94,22 @@ function recoverMissingOutcome(error) {
 }
 
 /**
- * Persist an outcome after ensuring its current directory exists.
- * @param {AllowEffects} permission Permission for outcome persistence.
- * @param {{options: Parameters<typeof createNotionCodexOutcomeStore>[0]} & Pick<Parameters<typeof createNotionCodexOutcomeStore>[0], 'mkdirImpl'|'readFileImpl'|'writeFileImpl'>} context Captured file operations and live path dependencies.
- * @param {string} runId Run identifier.
- * @param {Record<string, unknown>} outcome Outcome payload.
- * @returns {Promise<void>} Completion after persistence.
+ * Prepare an outcome writer with captured file adapters and live path settings.
+ * @param {NonNullable<Parameters<typeof createNotionCodexOutcomeStore>[0]['mkdirImpl']>} mkdirImpl Directory creation adapter.
+ * @param {NonNullable<Parameters<typeof createNotionCodexOutcomeStore>[0]['writeFileImpl']>} writeFileImpl File persistence adapter.
+ * @returns {(permission: AllowEffects, runId: string, outcome: Record<string, unknown>, options: Parameters<typeof createNotionCodexOutcomeStore>[0]) => Promise<void>} Permission-bound outcome writer.
  */
-async function writeStoredOutcome(permission, context, runId, outcome) {
-  const { options, mkdirImpl, writeFileImpl } = context;
-  await mkdirImpl(permission, options.outcomeDir, { recursive: true });
-  const outcomePath = getOutcomePath(
-    options.outcomeDir,
-    runId,
-    options.pathModule
-  );
-  const serializedOutcome = serializeOutcome(outcome);
-  await writeFileImpl(permission, outcomePath, serializedOutcome, 'utf8');
+function createOutcomeFileWriter(mkdirImpl, writeFileImpl) {
+  return async (permission, runId, outcome, options) => {
+    await mkdirImpl(permission, options.outcomeDir, { recursive: true });
+    const outcomePath = getOutcomePath(
+      options.outcomeDir,
+      runId,
+      options.pathModule
+    );
+    const serializedOutcome = serializeOutcome(outcome);
+    await writeFileImpl(permission, outcomePath, serializedOutcome, 'utf8');
+  };
 }
 
 /**
