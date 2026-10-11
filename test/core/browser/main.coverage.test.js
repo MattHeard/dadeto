@@ -131,12 +131,15 @@ const { createMainHandle: createMainHandleCore } = await import(
   '../../../src/core/browser/main.js'
 );
 const permission = Object.freeze({});
-const createMainHandle = dependencies =>
-  createMainHandleCore({
-    ...dependencies,
-    bindEffectBoundary: handler => handler(permission),
-    effectFetchFn: (_permission, ...args) => dependencies.fetchFn(...args),
-  });
+const createMainHandle = ({ documentObj, windowObj, fetchFn, storageObj }) => {
+  windowObj.document = documentObj;
+  windowObj.localStorage = storageObj;
+  return createMainHandleCore(
+    windowObj,
+    (permission, ...args) => fetchFn(...args),
+    handler => handler(permission)
+  );
+};
 
 describe('browser main initialization', () => {
   // This single integration fixture intentionally exercises all initialization branches.

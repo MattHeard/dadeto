@@ -66,30 +66,21 @@ function getConsoleErrorSink(consoleObj) {
 
 /**
  * Create the browser main entry handle.
- * @param {{
- *   documentObj: object,
- *   windowObj: object,
- *   fetchFn: (permission: import('../../../types/allow-effects').AllowEffects, ...args: Array<unknown>) => Promise<unknown>,
- *   bindEffectBoundary: import('../../../types/allow-effects').AllowEffectsBoundary,
- *   effectFetchFn: (permission: import('../../../types/allow-effects').AllowEffects, input: string, init?: object) => Promise<Response>,
- *   storageObj: object | null,
- * }} deps Browser dependencies.
+ * @param {Window} windowObj Browser environment, including its document and storage.
+ * @param {(permission: import('../../../types/allow-effects').AllowEffects, ...args: Array<unknown>) => Promise<unknown>} fetchFn Permission-aware browser fetch transport.
+ * @param {import('../../../types/allow-effects').AllowEffectsBoundary} bindEffectBoundary Runtime permission boundary.
  * @returns {() => void} Entry handle that performs browser initialization when invoked.
  */
-export function createMainHandle({
-  documentObj,
-  windowObj,
-  fetchFn,
-  bindEffectBoundary,
-  effectFetchFn,
-  storageObj,
-}) {
+export function createMainHandle(windowObj, fetchFn, bindEffectBoundary) {
+  const documentObj = windowObj.document;
+  const storageObj = windowObj.localStorage;
+
   return function handleMain() {
     const beaconEndpoint =
       'https://europe-west1-irien-465710.cloudfunctions.net/prod-errors';
     const beaconReporter = createErrorBeaconReporter(
       bindEffectBoundary,
-      effectFetchFn,
+      fetchFn,
       beaconEndpoint
     );
     const errorHandlers = createErrorBeaconHandlers({

@@ -1,0 +1,7 @@
+# Browser main handle arity cleanup
+
+- Unexpected hurdles: a focused test caught that cloning the window fixture changed object identity; an old source-shape assertion also expected the duplicate `effectFetchFn`. One aggregate run then encountered a transient npm registry audit failure.
+- Diagnosis: `createMainHandle` accepted six destructured values even though the document and local storage belong to the supplied browser `Window`, and both fetch arguments wrapped the same native transport.
+- Fix: make the core factory take `windowObj`, one permission-aware `fetchFn`, and `bindEffectBoundary`; use `windowObj.document` and `windowObj.localStorage`, and share the same fetch adapter with blog loading and error reporting. Preserve the test window identity and update the source-shape assertion.
+- Evidence: focused main tests passed (4 suites, 5 tests); `npm run tsdoc:check` passed; `TMPDIR=/home/matt/dadeto/.tmp npm run check` passed all 10 gates, including 11 local E2E tests, 0 clones, and 0 audit vulnerabilities; `TMPDIR=/home/matt/dadeto/.tmp npm run build` passed. The no-suppression inventory dropped from 28 to 27 findings across 27 files. Artifact: `.tmp/parameter-bag-global-after-main.json`.
+- Next time: inspect `createCanvasPresenter` in `src/core/browser/presenters/browserPresentersCore.js:44` (effective arity 6). Its canvas configuration may be cohesive; resolve this using the lint rule's documented semantics and focused rule tests, with no suppression or superficial repacking.

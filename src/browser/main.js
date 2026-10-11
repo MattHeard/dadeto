@@ -5,15 +5,7 @@ import { bindEffectBoundary, createEffectFetchFn } from './allow-effects.js';
 
 initializeStaticJsonlTables(document);
 
-const handle = createMainHandle({
-  documentObj: document,
-  windowObj: window,
-  fetchFn: createEffectFetchFn(globalThis.fetch.bind(globalThis)),
-  bindEffectBoundary,
-  effectFetchFn: createEffectFetchFn((input, init) =>
-    globalThis.fetch(input, init)
-  ),
-  storageObj: localStorage,
-});
+const fetchFn = createEffectFetchFn(globalThis.fetch.bind(globalThis));
+const handle = createMainHandle(window, fetchFn, bindEffectBoundary);
 
 handle();

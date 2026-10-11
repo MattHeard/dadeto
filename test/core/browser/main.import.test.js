@@ -18,6 +18,8 @@ describe('core browser main import', () => {
     expect(source).toContain(
       'windowObj.console.error = errorHandlers.logError;'
     );
-    expect(source).toContain('effectFetchFn,');
+    expect(source).toContain('export function createMainHandle(windowObj, fetchFn, bindEffectBoundary)');
+    expect(source).toContain('      fetchFn,\n      beaconEndpoint');
+    expect(source).not.toContain('effectFetchFn');
   });
 });

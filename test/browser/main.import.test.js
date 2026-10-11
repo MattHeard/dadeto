@@ -9,6 +9,8 @@ describe('browser main import', () => {
     expect(source).toContain(
       "import { createMainHandle } from '../core/browser/main.js';"
     );
-    expect(source).toContain('const handle = createMainHandle({');
+    expect(source).toContain(
+      'const handle = createMainHandle(window, fetchFn, bindEffectBoundary);'
+    );
   });
 });
