@@ -20,84 +20,52 @@ export {
  */
 
 /**
- * @typedef {object} FormatOptions
- * @property {(configPath: string) => Promise<object | null>} resolveConfig Resolve Prettier configuration.
- * @property {(html: string, options: object) => Promise<string>} formatHtml Format HTML content.
- * @property {string} configPath Prettier configuration path.
- * @property {string} html HTML content to format.
- * @property {string} parser Prettier parser name.
- * @property {string} outputPath Destination file path.
- * @property {string} [encoding] Output encoding.
- * @property {(permission: AllowEffects, outputPath: string, contents: string, encoding?: string) => void} writeFile File writer.
- * @property {import('../../../types/allow-effects').AllowEffectsBoundary} bindEffectBoundary Runtime permission boundary.
- * @property {(message: string) => void} logInfo Informational logger.
+ * Prepare an HTML output writer whose filesystem effect is permission-bound.
+ * @param {WriteFormattedHtmlDeps['writeFile']} writeFile File writer.
+ * @param {WriteFormattedHtmlDeps['bindEffectBoundary']} bindEffectBoundary Runtime permission boundary.
+ * @param {string} outputPath Destination file path.
+ * @param {string | undefined} encoding Output encoding.
+ * @returns {(contents: string) => Promise<void>} Permission-bound content writer.
  */
-
-/** @typedef {FormatOptions & { logError: (message: string, error: unknown) => void }} WriteOptions */
+const createHtmlOutputWriter =
+  (writeFile, bindEffectBoundary, outputPath, encoding) => contents =>
+    bindEffectBoundary(async permission =>
+      writeFile(permission, outputPath, contents, encoding)
+    );
 
 /**
- * Format HTML using Prettier and write the result.
- * @param {FormatOptions} options Formatting parameters.
- * @returns {Promise<void>}
+ * Prepare the HTML formatter using the selected Prettier configuration.
+ * @param {WriteFormattedHtmlDeps['resolveConfig']} resolveConfig Configuration resolver.
+ * @param {WriteFormattedHtmlDeps['formatHtml']} formatHtml Prettier formatter.
+ * @param {string} configPath Configuration path.
+ * @param {string} parser Parser name.
+ * @returns {(html: string) => Promise<string>} Formatter for generated HTML.
  */
-const formatWithPrettier = async options => {
-  const {
-    resolveConfig,
-    formatHtml,
-    configPath,
-    html,
-    parser,
-    outputPath,
-    logInfo,
-  } = options;
-  const resolvedOptions = (await resolveConfig(configPath)) ?? {};
-  const formattedHtml = await formatHtml(html, {
-    ...resolvedOptions,
-    parser,
-  });
-
-  await writeHtmlOutput(options, formattedHtml);
-  logInfo(`HTML formatted with Prettier and written to ${outputPath}`);
-};
+const createHtmlFormatter =
+  (resolveConfig, formatHtml, configPath, parser) => async html => {
+    const resolvedOptions = (await resolveConfig(configPath)) ?? {};
+    return formatHtml(html, { ...resolvedOptions, parser });
+  };
 
 /**
- * Write unformatted HTML as fallback when formatting fails.
- * @param {WriteOptions} options Write parameters.
- * @param {unknown} error - The error that occurred during formatting.
- * @returns {Promise<void>}
+ * Prepare the format, write, and fallback flow for generated HTML.
+ * @param {(html: string) => Promise<string>} formatHtml Prepared formatter.
+ * @param {(contents: string) => Promise<void>} writeHtmlOutput Permission-bound writer.
+ * @param {() => void} logFormatted Successful-format logger.
+ * @param {(error: unknown) => void} logFallback Fallback logger.
+ * @returns {(html: string) => Promise<void>} Writer with unformatted fallback.
  */
-const writeUnformattedHtml = async (options, error) => {
-  const { logError, logInfo, outputPath, html } = options;
-  logError('Error formatting HTML', error);
-  await writeHtmlOutput(options, html);
-  logInfo(`Unformatted HTML written to ${outputPath}`);
-};
-
-/**
- * Persist generated HTML through the runtime permission boundary.
- * @param {FormatOptions} options Output and permission dependencies.
- * @param {string} contents HTML contents to persist.
- * @returns {Promise<void>} Completion after the filesystem write.
- */
-async function writeHtmlOutput(options, contents) {
-  const { writeFile, bindEffectBoundary, outputPath, encoding } = options;
-  await bindEffectBoundary(async permission =>
-    writeFile(permission, outputPath, contents, encoding)
-  );
-}
-
-/**
- * Write HTML with fallback handling.
- * @param {WriteOptions} options - Write options.
- * @returns {Promise<void>}
- */
-const writeWithFallback = async options => {
-  try {
-    await formatWithPrettier(options);
-  } catch (error) {
-    await writeUnformattedHtml(options, error);
-  }
-};
+const createWriteWithFallback =
+  (formatHtml, writeHtmlOutput, logFormatted, logFallback) => async html => {
+    try {
+      const formattedHtml = await formatHtml(html);
+      await writeHtmlOutput(formattedHtml);
+      logFormatted();
+    } catch (error) {
+      logFallback(error);
+      await writeHtmlOutput(html);
+    }
+  };
 
 const DEFAULT_WRITE_OPTIONS = {
   encoding: 'utf8',
@@ -110,20 +78,37 @@ const DEFAULT_WRITE_OPTIONS = {
  * @returns {(args: { blog: unknown, configPath: string, outputPath: string, encoding?: string, parser?: string }) => Promise<void>} Async writer that persists formatted HTML with graceful fallback.
  */
 export const createWriteFormattedHtml = deps => {
-  const { generateHtml } = deps;
   return function writeFormattedHtml({
     blog,
     configPath,
     outputPath,
     ...rest
   }) {
-    return writeWithFallback({
-      ...deps,
-      ...DEFAULT_WRITE_OPTIONS,
-      ...rest,
-      html: generateHtml(blog),
+    const { encoding, parser } = { ...DEFAULT_WRITE_OPTIONS, ...rest };
+    const html = deps.generateHtml(blog);
+    const format = createHtmlFormatter(
+      deps.resolveConfig,
+      deps.formatHtml,
       configPath,
+      parser
+    );
+    const write = createHtmlOutputWriter(
+      deps.writeFile,
+      deps.bindEffectBoundary,
       outputPath,
-    });
+      encoding
+    );
+    return createWriteWithFallback(
+      format,
+      write,
+      () =>
+        deps.logInfo(
+          `HTML formatted with Prettier and written to ${outputPath}`
+        ),
+      error => {
+        deps.logError('Error formatting HTML', error);
+        deps.logInfo(`Unformatted HTML written to ${outputPath}`);
+      }
+    )(html);
   };
 };
