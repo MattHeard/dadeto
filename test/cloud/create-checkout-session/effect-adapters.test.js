@@ -3,6 +3,8 @@ import {
   createCheckoutResponseAdapter,
   createCustomerMappingWriter,
 } from '../../../src/cloud/create-checkout-session/effect-adapters.js';
+import { warnIfStripeUnavailable } from '../../../src/cloud/create-checkout-session/startup-effect-adapters.js';
+import { createEffectInvocationBoundary } from '../../../src/cloud/allow-effects.js';
 
 describe('checkout customer mapping adapter', () => {
   it('requires a capability and writes both mappings', async () => {
@@ -63,5 +65,36 @@ describe('checkout response adapter', () => {
     expect(response.set).toHaveBeenCalledWith('Cache-Control', 'no-store');
     expect(response.status).toHaveBeenCalledWith(201);
     expect(response.json).toHaveBeenCalledWith({ checkoutSessionId: 'cs-1' });
+  });
+});
+
+describe('checkout startup warning adapter', () => {
+  it('logs only when Stripe is unavailable and receives fresh permissions', async () => {
+    const warn = jest.fn();
+    const permissions = [];
+    const invoke = createEffectInvocationBoundary(permission => {
+      permissions.push(permission);
+      warnIfStripeUnavailable(permission, false, warn);
+    });
+
+    await invoke();
+    await invoke();
+
+    expect(warn).toHaveBeenCalledTimes(2);
+    expect(warn).toHaveBeenCalledWith(
+      'STRIPE_SECRET_KEY is not configured; checkout requests will be unavailable.'
+    );
+    expect(permissions[0]).not.toBe(permissions[1]);
+  });
+
+  it('does not warn when Stripe is configured', async () => {
+    const warn = jest.fn();
+    const invoke = createEffectInvocationBoundary(permission =>
+      warnIfStripeUnavailable(permission, true, warn)
+    );
+
+    await invoke();
+
+    expect(warn).not.toHaveBeenCalled();
   });
 });

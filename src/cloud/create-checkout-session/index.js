@@ -5,11 +5,15 @@ import { createDb } from '../../core/cloud/get-api-key-credit-v2/create-db.js';
 import { createBillingRuntime } from '../../core/cloud/billing/billing-runtime-core.js';
 import { createCheckoutSessionDependencies } from '../../core/cloud/create-checkout-session/runtime-core.js';
 import { createCheckoutSessionExpressHandle } from '../../core/cloud/create-checkout-session/create-checkout-session-core.js';
-import { createEffectHttpBoundary } from '../allow-effects.js';
+import {
+  createEffectHttpBoundary,
+  createEffectInvocationBoundary,
+} from '../allow-effects.js';
 import {
   createCheckoutResponseAdapter,
   createCustomerMappingWriter,
 } from './effect-adapters.js';
+import { warnIfStripeUnavailable } from './startup-effect-adapters.js';
 import { createCheckoutStripeAdapters } from './stripe-effects.js';
 
 const db = createDb(Firestore, process.env);
@@ -18,11 +22,9 @@ const billing = createBillingRuntime(db, {
 });
 const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
 const stripe = stripeSecretKey ? new Stripe(stripeSecretKey) : null;
-if (!stripe) {
-  console.warn(
-    'STRIPE_SECRET_KEY is not configured; checkout requests will be unavailable.'
-  );
-}
+void createEffectInvocationBoundary(permission =>
+  warnIfStripeUnavailable(permission, Boolean(stripe), console.warn)
+)();
 const dependencies = createCheckoutSessionDependencies({
   db,
   billing,
