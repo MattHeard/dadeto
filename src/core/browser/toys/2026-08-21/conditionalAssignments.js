@@ -53,9 +53,9 @@ function createConditionalCommitter(field, path, buildMetadata) {
           segmentId: String(request.candidateSegment.segmentId),
         },
         path,
-        metadata: buildMetadata(request),
-        feasibility,
       },
+      buildMetadata(request),
+      feasibility,
       env
     );
   };

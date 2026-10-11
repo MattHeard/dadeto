@@ -33,7 +33,16 @@ export function strictAssignmentBoundary(
     if (typeof result === 'string') {
       return result;
     }
-    return appendValidatedAssignment(result, env);
+    return appendValidatedAssignment(
+      {
+        request: result.request,
+        assignment: result.assignment,
+        path: result.path,
+      },
+      result.metadata,
+      result.feasibility,
+      env
+    );
   } catch (error) {
     return reject(assignmentErrorReason(error));
   }
@@ -41,18 +50,22 @@ export function strictAssignmentBoundary(
 
 /**
  * Persist a feasible assignment and serialize its common successful result.
- * @param {{request: {memoryLocation?: string, path?: string}, assignment: Record<string, unknown>, path: string, metadata: Record<string, unknown>, feasibility: {feasible: boolean, reason?: unknown}}} options Assignment persistence and toy-specific response metadata.
+ * @param {{request: {memoryLocation?: string, path?: string}, assignment: Record<string, unknown>, path: string}} write Prepared assignment persistence operation.
+ * @param {Record<string, unknown>} metadata Toy-specific response metadata.
+ * @param {{feasible: boolean, reason?: unknown}} feasibility Feasibility result.
  * @param {import('../browserToysCore.js').ToyEnv} env Storage helpers.
  * @returns {string} Strict append result.
  */
-export function appendValidatedAssignment(
-  { request, assignment, path, metadata, feasibility },
-  env
-) {
+export function appendValidatedAssignment(write, metadata, feasibility, env) {
   if (!feasibility.feasible) {
     return formatAssignmentFailure(feasibility.reason);
   }
-  const length = appendOneAssignment(request, assignment, path, env);
+  const length = appendOneAssignment(
+    write.request,
+    write.assignment,
+    write.path,
+    env
+  );
   return JSON.stringify({
     appended: true,
     feasible: true,
