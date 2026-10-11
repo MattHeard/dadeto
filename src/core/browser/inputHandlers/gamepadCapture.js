@@ -488,43 +488,29 @@ function readChangedGamepadPayload(
   previousSnapshot,
   handlerOptions
 ) {
-  return buildChangedPayload({
-    gamepad,
-    previousSnapshot,
-    type: reader.type,
-    handlerOptions,
-    findChangedIndex: reader.findChangedIndex,
-    buildFields: reader.projectFields.bind(null, gamepad),
-  });
+  return buildChangedPayload(gamepad, previousSnapshot, reader, handlerOptions);
 }
 
 /**
  * Build a changed payload for buttons or axes.
- * @param {{
- *   gamepad: Gamepad,
- *   previousSnapshot: GamepadSnapshot | undefined,
- *   type: string,
- *   handlerOptions: HandlerOptions,
- *   findChangedIndex: (gamepad: Gamepad, previousSnapshot: GamepadSnapshot | undefined) => number,
- *   buildFields: (changedIndex: number) => Record<string, unknown>,
- * }} options Payload builder settings.
+ * @param {Gamepad} gamepad Browser gamepad.
+ * @param {GamepadSnapshot | undefined} previousSnapshot Previous poll snapshot.
+ * @param {{type: string, findChangedIndex: (gamepad: Gamepad, previousSnapshot: GamepadSnapshot | undefined) => number, projectFields: (gamepad: Gamepad, changedIndex: number) => Record<string, unknown>}} reader Change detector and field projector.
+ * @param {HandlerOptions} handlerOptions Shared handler dependencies.
  * @returns {Record<string, unknown> | null} Payload when a change was detected.
  */
-function buildChangedPayload(options) {
-  const {
-    gamepad,
-    previousSnapshot,
-    type,
-    findChangedIndex,
-    buildFields,
-    handlerOptions,
-  } = options;
-  const changedIndex = findChangedIndex(gamepad, previousSnapshot);
+function buildChangedPayload(
+  gamepad,
+  previousSnapshot,
+  reader,
+  handlerOptions
+) {
+  const changedIndex = reader.findChangedIndex(gamepad, previousSnapshot);
   return whenOrNull(changedIndex !== -1, () =>
     buildGamepadPayload(gamepad, {
-      type,
+      type: reader.type,
       handlerOptions,
-      fields: buildFields(changedIndex),
+      fields: reader.projectFields(gamepad, changedIndex),
     })
   );
 }
@@ -951,14 +937,14 @@ function registerGamepadListeners(options, cleanupFns) {
  * @returns {void}
  */
 function initializeGamepadCaptureFormContext(options) {
-  const { button, cleanupFns, container, dom, textInput } = options;
+  const { button, dom, textInput } = options;
   registerGamepadListeners(
     {
       button,
       dom,
       textInput,
       autoSubmitCheckbox: captureLifecycleDeps.getAutoSubmitCheckbox(
-        container,
+        options.container,
         dom
       ),
       state: {
@@ -967,7 +953,7 @@ function initializeGamepadCaptureFormContext(options) {
         snapshots: {},
       },
     },
-    cleanupFns
+    options.cleanupFns
   );
 }
 
