@@ -101,18 +101,17 @@ function wireButton(options) {
 
 /**
  * Build the mobile controls form and attach the control buttons.
- * @param {{
- *   dom: MobileControlsDOMHelpers,
- *   container: HTMLElement,
- *   textInput: HTMLInputElement,
- *   form: HTMLElement,
- *   button: HTMLButtonElement,
- *   cleanupFns: CleanupFn[],
- * }} options - Form dependencies.
+ * @param {{dom: MobileControlsDOMHelpers, container: HTMLElement, textInput: HTMLInputElement}} formElements DOM and form placement.
+ * @param {{form: HTMLElement, button: HTMLButtonElement, cleanupFns: CleanupFn[]}} controls Mounted controls and cleanup lifecycle.
  * @returns {void}
  */
-function buildMobileControlsFormContext(options) {
-  const { dom, button, cleanupFns, form, textInput, container } = options;
+function buildMobileControlsFormContext(formElements, controls) {
+  const dom = formElements.dom;
+  const container = formElements.container;
+  const textInput = formElements.textInput;
+  const form = controls.form;
+  const button = controls.button;
+  const cleanupFns = controls.cleanupFns;
   const autoSubmitCheckbox = /** @type {HTMLInputElement | null} */ (
     /** @type {unknown} */ (
       dom.querySelector(container, '.auto-submit-checkbox')
@@ -122,15 +121,15 @@ function buildMobileControlsFormContext(options) {
   dom.setTextContent(button, 'Controls');
   button.setAttribute('hidden', 'hidden');
 
-  const controls = /** @type {HTMLElement} */ (dom.createElement('div'));
-  dom.setClassName(controls, 'mobile-controls-grid');
-  dom.appendChild(form, controls);
+  const controlsGrid = /** @type {HTMLElement} */ (dom.createElement('div'));
+  dom.setClassName(controlsGrid, 'mobile-controls-grid');
+  dom.appendChild(form, controlsGrid);
 
   for (const control of CONTROL_KEYS) {
     const controlButton = createNonSubmittingButton(dom);
     dom.setTextContent(controlButton, control.label);
     controlButton.setAttribute('aria-pressed', 'false');
-    dom.appendChild(controls, controlButton);
+    dom.appendChild(controlsGrid, controlButton);
     const buttonCleanup = wireButton({
       dom,
       button: controlButton,
@@ -141,7 +140,7 @@ function buildMobileControlsFormContext(options) {
     cleanupFns.push(...buttonCleanup);
   }
 
-  cleanupFns.push(() => dom.removeChild(form, controls));
+  cleanupFns.push(() => dom.removeChild(form, controlsGrid));
 }
 
 /**

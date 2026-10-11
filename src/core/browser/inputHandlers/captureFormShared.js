@@ -7,6 +7,22 @@ import { withManagedFormShell } from './createDendriteHandler.js';
 /**
  * @typedef {{
  *   dom: DOMHelpers,
+ *   container: HTMLElement,
+ *   textInput: HTMLInputElement,
+ * }} CaptureFormElements
+ */
+
+/**
+ * @typedef {{
+ *   form: HTMLElement,
+ *   button: HTMLButtonElement,
+ *   cleanupFns: CleanupFn[],
+ * }} CaptureFormControls
+ */
+
+/**
+ * @typedef {{
+ *   dom: DOMHelpers,
  *   button: HTMLButtonElement,
  *   container: HTMLElement,
  *   textInput: HTMLInputElement,
@@ -173,41 +189,25 @@ export function withCaptureFormContext(
 /**
  * Create and configure a capture form instance while reusing shared DOM wiring.
  * @param {{
+ *   formClass: string,
  *   dom: DOMHelpers,
  *   container: HTMLElement,
  *   textInput: HTMLInputElement,
- *   formClass: string,
- *   onFormReady: (context: {
- *     dom: DOMHelpers,
- *     container: HTMLElement,
- *     textInput: HTMLInputElement,
- *     form: HTMLElement,
- *     button: HTMLButtonElement,
- *     cleanupFns: CleanupFn[],
- *   }) => void,
+ *   onFormReady: (formElements: CaptureFormElements, controls: CaptureFormControls) => void,
  * }} options - Capture form wiring options.
  * @returns {HTMLElement} Rendered capture form element.
  */
 export function createCaptureForm(options) {
   const { dom, container, textInput, onFormReady } = options;
   const { form, button, cleanupFns } = buildCaptureForm(options);
-  onFormReady({ dom, container, textInput, form, button, cleanupFns });
+  onFormReady({ dom, container, textInput }, { form, button, cleanupFns });
   return form;
 }
 
 /**
  * Build a capture-form factory so individual handlers can share the boilerplate call.
  * @param {string} formClass - CSS class attached to the form wrapper.
- * @param {(
- *   context: {
- *     dom: DOMHelpers,
- *     container: HTMLElement,
- *     textInput: HTMLInputElement,
- *     form: HTMLElement,
- *     button: HTMLButtonElement,
- *     cleanupFns: CleanupFn[],
- *   }
- * ) => void} onFormReady - Handler-specific wiring that runs after the form is created.
+ * @param {(formElements: CaptureFormElements, controls: CaptureFormControls) => void} onFormReady - Handler-specific wiring that runs after the form is created.
  * @returns {(options: { dom: DOMHelpers, container: HTMLElement, textInput: HTMLInputElement }) => HTMLElement} Factory that renders the configured form.
  */
 export function makeCaptureFormBuilder(formClass, onFormReady) {

@@ -161,24 +161,12 @@ const buildKeyboardCaptureFormContext = (formElements, controls) => {
 
 const buildKeyboardCaptureForm = captureLifecycleDeps.makeCaptureFormBuilder(
   KEYBOARD_FORM_CLASS,
-  options =>
+  (formElements, controls) =>
     captureLifecycleDeps.withCaptureFormContext(
-      {
-        dom: options.dom,
-        container: options.container,
-        textInput: options.textInput,
-      },
-      { button: options.button, cleanupFns: options.cleanupFns },
+      formElements,
+      controls,
       updateCaptureButton,
-      context =>
-        buildKeyboardCaptureFormContext(
-          {
-            dom: context.dom,
-            container: context.container,
-            textInput: context.textInput,
-          },
-          { button: context.button, cleanupFns: context.cleanupFns }
-        )
+      () => buildKeyboardCaptureFormContext(formElements, controls)
     )
 );
 

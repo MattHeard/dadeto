@@ -285,14 +285,16 @@ describe('captureFormShared context helpers', () => {
       expect(form.className).toBe('capture-shell');
       expect(form.children[0].tag).toBe('button');
       expect(onFormReady).toHaveBeenCalledTimes(1);
-      expect(onFormReady.mock.calls[0][0]).toEqual(
-        expect.objectContaining({
-          dom,
-          container,
-          textInput,
-          form,
-        })
-      );
+      expect(onFormReady.mock.calls[0][0]).toEqual({
+        dom,
+        container,
+        textInput,
+      });
+      expect(onFormReady.mock.calls[0][1]).toEqual({
+        form,
+        button: form.children[0],
+        cleanupFns: expect.any(Array),
+      });
     });
   });
 

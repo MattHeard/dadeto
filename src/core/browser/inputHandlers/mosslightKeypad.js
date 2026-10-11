@@ -60,41 +60,47 @@ export function mosslightKeypadHandler(dom, container, textInput) {
     container,
     textInput: /** @type {HTMLInputElement} */ (dom.createElement('input')),
     formClass: `${FORM_CLASS} dendrite-form`,
-    onFormReady: ({ form, button, cleanupFns }) => {
-      dom.setTextContent(button, 'Virtual keypad');
+    onFormReady: (formElements, controls) => {
+      const formDom = formElements.dom;
+      const { form, button, cleanupFns } = controls;
+      formDom.setTextContent(button, 'Virtual keypad');
       button.setAttribute('hidden', 'hidden');
-      const keypad = dom.createElement('div');
-      dom.setClassName(keypad, 'mosslight-keypad');
+      const keypad = formDom.createElement('div');
+      formDom.setClassName(keypad, 'mosslight-keypad');
       keypad.setAttribute('aria-label', 'Mosslight Valley virtual keypad');
-      dom.appendChild(form, keypad);
+      formDom.appendChild(form, keypad);
 
       for (const group of GROUPS) {
-        const groupElement = dom.createElement('div');
-        dom.setClassName(groupElement, group.className);
-        dom.appendChild(keypad, groupElement);
+        const groupElement = formDom.createElement('div');
+        formDom.setClassName(groupElement, group.className);
+        formDom.appendChild(keypad, groupElement);
         for (const control of group.controls) {
-          const controlButton = createNonSubmittingButton(dom);
-          dom.setClassName(
+          const controlButton = createNonSubmittingButton(formDom);
+          formDom.setClassName(
             controlButton,
             `mosslight-keypad-button ${control.position}`
           );
-          dom.setTextContent(controlButton, control.label);
+          formDom.setTextContent(controlButton, control.label);
           controlButton.setAttribute('aria-label', control.name);
           controlButton.setAttribute('data-key', control.key);
-          dom.addEventListener(controlButton, 'click', () => {
-            const input = { dom, textInput: gameInput, autoSubmitCheckbox };
+          formDom.addEventListener(controlButton, 'click', () => {
+            const input = {
+              dom: formDom,
+              textInput: gameInput,
+              autoSubmitCheckbox,
+            };
             syncToyPayload(input, { type: 'keydown', key: control.key });
-            dom.setTimeout(
+            formDom.setTimeout(
               () => syncToyPayload(input, { type: 'keyup', key: control.key }),
               KEY_RELEASE_DELAY_MS
             );
           });
-          dom.appendChild(groupElement, controlButton);
+          formDom.appendChild(groupElement, controlButton);
         }
       }
-      cleanupFns.push(() => dom.removeChild(form, keypad));
-      bindResetSave(dom, form, {
-        dom,
+      cleanupFns.push(() => formDom.removeChild(form, keypad));
+      bindResetSave(formDom, form, {
+        dom: formDom,
         textInput: gameInput,
         autoSubmitCheckbox,
       });

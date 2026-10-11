@@ -1,0 +1,7 @@
+# Mobile controls parameter arity loop
+
+- **Unexpected hurdle:** The first full `npm run check` found one jscpd clone after splitting the mobile controls form builder. The repeated block was the adapter that projected the shared capture-form context into DOM/form elements and mounted controls/lifecycle records.
+- **Diagnosis:** The clone report at `reports/duplication/jscpd-report.json` pointed to matching projections in keyboard capture and mobile controls. Repeating that projection at each caller would keep producing clone debt as the split rolled out.
+- **Fix:** Changed the shared capture form creation API to provide the two cohesive records directly. Updated keyboard, gamepad, mobile controls, and Mosslight keypad consumers; extended the shared-form builder test to assert the records.
+- **Evidence:** Five focused suites passed (45 tests); TSDoc and the scoped no-cache arity lint passed. `npm run duplication` reported zero clones. `TMPDIR=/home/matt/dadeto/.tmp npm run check` passed all 10 gates. Fresh no-cache global arity scan reports 30 findings across 30 files; next target is `src/core/browser/inputHandlers/moderatorRatings.js:104` (`buildFieldInput`).
+- **Next time:** Keep the common form creator responsible for splitting placement inputs from mounted control/lifecycle inputs. At `buildFieldInput`, test whether field presentation/callback data can stay separate from DOM and cleanup ownership without adding an opaque dependency bag.

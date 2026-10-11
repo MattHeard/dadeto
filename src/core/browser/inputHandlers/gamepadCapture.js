@@ -17,7 +17,8 @@ import { isEscapeKeydown } from './escapeKey.js';
 /** @typedef {{ capturing: boolean, animationFrameId: number | null, snapshots: Record<number, GamepadSnapshot> }} CaptureState */
 /** @typedef {{ button: HTMLButtonElement, dom: GamepadDOMHelpers, textInput: HTMLInputElement, autoSubmitCheckbox: HTMLInputElement | null, state: CaptureState }} HandlerOptions */
 /** @typedef {import('./captureFormShared.js').CaptureFormContext} CaptureFormContext */
-/** @typedef {CaptureFormContext & { form: HTMLElement }} GamepadCaptureFormBuilderContext */
+/** @typedef {import('./captureFormShared.js').CaptureFormElements} CaptureFormElements */
+/** @typedef {import('./captureFormShared.js').CaptureFormControls} CaptureFormControls */
 const GAMEPAD_FORM_CLASS = browserCore.GAMEPAD_CAPTURE_FORM_SELECTOR.slice(1);
 const AXIS_EPSILON = 0.01;
 const GAMEPAD_CONNECTED_EVENT = 'gamepadconnected';
@@ -959,17 +960,14 @@ function initializeGamepadCaptureFormContext(options) {
 
 /**
  * Bridge the shared capture context into the gamepad listener wiring.
- * @param {GamepadCaptureFormBuilderContext} options - Context provided by `captureLifecycleDeps.makeCaptureFormBuilder`.
+ * @param {CaptureFormElements} formElements - DOM and form placement.
+ * @param {CaptureFormControls} controls - Mounted controls and cleanup lifecycle.
  * @returns {void}
  */
-function handleGamepadCaptureFormContext(options) {
+function handleGamepadCaptureFormContext(formElements, controls) {
   captureLifecycleDeps.withCaptureFormContext(
-    {
-      dom: options.dom,
-      container: options.container,
-      textInput: options.textInput,
-    },
-    { button: options.button, cleanupFns: options.cleanupFns },
+    formElements,
+    controls,
     updateCaptureButton,
     initializeGamepadCaptureFormContext
   );
