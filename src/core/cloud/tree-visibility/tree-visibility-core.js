@@ -63,13 +63,12 @@ export function addTreeVisibilityDelta(data, delta) {
  * @param {(ref: { get: () => Promise<unknown> }) => Promise<void>} options.markParentDirty Parent dirty marker.
  * @returns {Promise<void>} Completion promise.
  */
-export async function propagateTreeVisibilityDelta({
-  variantRef,
-  delta,
-  getParentVariantRef,
-  updateVariant,
-  markParentDirty,
-}) {
+export async function propagateTreeVisibilityDelta(options) {
+  const variantRef = options.variantRef;
+  const delta = options.delta;
+  const getParentVariantRef = options.getParentVariantRef;
+  const updateVariant = options.updateVariant;
+  const markParentDirty = options.markParentDirty;
   let currentRef = variantRef;
   // Stryker disable next-line BlockStatement -- emptying this traversal body creates an infinite non-static mutant.
   while (currentRef) {
