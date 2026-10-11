@@ -72,13 +72,20 @@ function parseLines(value) {
  *   configureElement: (element: HTMLInputElement | HTMLTextAreaElement) => void,
  *   updateData: () => void
  * }} field Field configuration.
- * @param {{ dom: DOMHelpers, form: HTMLElement, textInput: HTMLInputElement, data: BlogKeyData, disposers: Disposer[] }} context Form context.
+ * @param {{ dom: DOMHelpers, form: HTMLElement, textInput: HTMLInputElement, disposers: Disposer[] }} formContext DOM and form wiring context.
+ * @param {BlogKeyData} data Mutable blog-key form model.
  * @returns {void}
  */
-function buildBlogKeyField(field, context) {
-  const { dom, form, textInput, data, disposers } = context;
-  const { element, initialValue, labelText, configureElement, updateData } =
-    field;
+function buildBlogKeyField(field, formContext, data) {
+  const dom = formContext.dom;
+  const form = formContext.form;
+  const textInput = formContext.textInput;
+  const disposers = formContext.disposers;
+  const element = field.element;
+  const initialValue = field.initialValue;
+  const labelText = field.labelText;
+  const configureElement = field.configureElement;
+  const updateData = field.updateData;
   configureElement(element);
   dom.setValue(element, initialValue);
   const onInput = () =>
@@ -90,7 +97,6 @@ function buildBlogKeyField(field, context) {
  * Create the field definitions used by the blog-key form.
  * @param {{ dom: DOMHelpers, data: BlogKeyData }} options Field-definition collaborators.
  * @returns {Array<{
- *   dom: DOMHelpers,
  *   element: HTMLInputElement | HTMLTextAreaElement,
  *   initialValue: string,
  *   labelText: string,
@@ -107,7 +113,6 @@ function createBlogKeyFields({ dom, data }) {
   );
   return [
     {
-      dom,
       element: titleInput,
       initialValue: data.title,
       labelText: TITLE_LABEL,
@@ -120,7 +125,6 @@ function createBlogKeyFields({ dom, data }) {
       },
     },
     {
-      dom,
       element: textarea,
       initialValue: data.existingKeys.join(LINE_BREAK),
       labelText: EXISTING_KEYS_LABEL,
@@ -147,9 +151,9 @@ function buildForm({ dom, container, textInput }) {
       { dom, container, textInput },
       ({ form, disposers }) => {
         const fieldDefinitions = createBlogKeyFields({ dom, data });
-        const fieldContext = { dom, form, textInput, data, disposers };
+        const formContext = { dom, form, textInput, disposers };
         fieldDefinitions.forEach(field =>
-          buildBlogKeyField(field, fieldContext)
+          buildBlogKeyField(field, formContext, data)
         );
 
         return finalizeManagedForm({ dom, textInput, data, form });
