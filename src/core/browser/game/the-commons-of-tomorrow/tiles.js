@@ -15,20 +15,15 @@ const WEIR_TERRAIN = Object.freeze({
  * @param {{x:number,y:number,palette:string[],region:string,walkway?:boolean,blocked?:boolean,roof?:boolean}} options World tile context.
  * @returns {Array<{x:number,y:number,width:number,height:number,fill:string}>} Local pixel rectangles.
  */
-export function generateCommonsTile({
-  x,
-  y,
-  palette,
-  region,
-  walkway = false,
-  blocked = false,
-  roof = false,
-}) {
-  const [outline, stone, canopy, terracotta] = palette;
+export function generateCommonsTile(options) {
+  const { x, y, palette, region } = options;
+  const walkway = options.walkway || false;
+  const blocked = options.blocked || false;
+  const roof = options.roof || false;
+  const [, , canopy, terracotta] = palette;
   const code = Math.abs((x * 19 + y * 23 + x * y * 5) % 8);
   if (region === 'shore' && blocked) return weirStructureTile({ roof, code });
-  if (blocked)
-    return structureTile({ outline, stone, canopy, terracotta, roof, code });
+  if (blocked) return structureTile(palette, roof, code);
   if (region === 'shore') return weirTile({ x, y, code });
   return commonsTile({ walkway, canopy, terracotta, code });
 }
@@ -92,10 +87,13 @@ function weirStructureTile({ roof, code }) {
 
 /**
  *
- * @param {{outline:string,stone:string,canopy:string,terracotta:string,roof:boolean,code:number}} options Structure motif inputs.
+ * @param {string[]} palette Tile palette colors.
+ * @param {boolean} roof Whether this structure has a roof.
+ * @param {number} code Coordinate-derived motif code.
  * @returns {Array<{x:number,y:number,width:number,height:number,fill:string}>} Tile pixels.
  */
-function structureTile({ outline, stone, canopy, terracotta, roof, code }) {
+function structureTile(palette, roof, code) {
+  const [outline, stone, canopy, terracotta] = palette;
   const structure = [
     rect([0, 0, SIZE, SIZE], outline),
     rect([1, 1, 10, 9], stone),
