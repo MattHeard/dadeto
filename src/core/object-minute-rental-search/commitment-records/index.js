@@ -28,8 +28,9 @@ export function createBrowserRunnerCommitmentsRepository({
   return {
     listForRunner: ({ runnerId }) =>
       projectRunnerCommitments({
-        runnerId,
         assignments: runnerAssignments,
+        selectAssignments: assignments =>
+          assignments.filter(assignment => assignment?.personId === runnerId),
         resolveSegment: segmentId => segmentById.get(segmentId),
         resolvePoint: pointId => pointById.get(pointId),
       }),
@@ -38,24 +39,19 @@ export function createBrowserRunnerCommitmentsRepository({
 
 /**
  * Build a fail-closed runner commitment projection from resolved records.
- * @param {{runnerId: unknown, assignments: Assignment[], assumeMatching?: boolean, resolveSegment: (segmentId: string) => Segment|unknown|Promise<Segment|unknown>, resolvePoint: (pointId: string) => Point|unknown|Promise<Point|unknown>}} options Projection inputs.
+ * @param {{assignments: Assignment[], selectAssignments: (assignments: Assignment[]) => Assignment[], resolveSegment: (segmentId: string) => Segment|unknown|Promise<Segment|unknown>, resolvePoint: (pointId: string) => Point|unknown|Promise<Point|unknown>}} options Selected assignments and record resolvers.
  * @returns {Promise<Array<{startTimestamp: string, endTimestamp: string}>>} Commitment intervals.
  */
 export async function projectRunnerCommitments({
-  runnerId,
   assignments,
-  assumeMatching = false,
+  selectAssignments,
   resolveSegment,
   resolvePoint,
 }) {
   if (!Array.isArray(assignments)) throw new Error('invalid-assignments');
-  const matching = assumeMatching
-    ? assignments
-    : assignments.filter(assignment => assignment?.personId === runnerId);
+  const matching = selectAssignments(assignments);
   const projected = [];
   for (const assignment of matching) {
-    if (assumeMatching && assignment?.personId !== runnerId)
-      throw new Error('invalid-person-id');
     const segmentId = usableId(assignment.segmentId);
     if (!segmentId) throw new Error('missing-segment-id');
     const segment = await resolveSegment(segmentId);

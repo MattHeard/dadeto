@@ -1,0 +1,7 @@
+# Runner commitment projection arity
+
+- **Unexpected hurdle:** The first repository check ran in the restricted sandbox and could not spawn Node child processes (`EPERM`); npm audit also could not reach its registry.
+- **Diagnosis path:** Focused suites passed, targeted ESLint and TSDoc passed, and the failure output isolated the sandbox process/network restrictions. Retried the same `npm run check` with elevated execution.
+- **Chosen fix:** Moved runner filtering and strict Firestore membership validation into the named `selectAssignments` capability. The projection now accepts four explicit inputs and only expands already-selected assignments into intervals.
+- **Evidence:** Focused Jest passed (3 suites, 71 tests); target ESLint, TSDoc, and `git diff --check` passed. Fresh no-cache `src/core` arity inventory fell from 7 findings in 7 files to 6 in 6; artifact `.tmp/parameter-bag-global-after-commitment-records.json`. Elevated `TMPDIR=/home/matt/dadeto/.tmp npm run check` passed all 10 gates, including 11 E2E tests, zero clones, and zero audit vulnerabilities; log `.tmp/npm-check-commitment-records-arity-elevated.log`. `TMPDIR=/home/matt/dadeto/.tmp npm run build` passed; log `.tmp/build-commitment-records-arity.log`.
+- **Next-time guidance:** Continue from `src/core/object-minute-rental-search/search-http.js:14` (effective arity 7). Keep runner assignment selection and repository-specific failure policy outside the interval projector.

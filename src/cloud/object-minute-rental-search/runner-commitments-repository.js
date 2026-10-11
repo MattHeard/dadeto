@@ -16,11 +16,20 @@ export function createFirestoreRunnerCommitmentsRepository({ db }) {
       const assignments = (snapshot.docs ?? []).map(document =>
         document.data()
       );
-      const { segments, points } = await batchCommitmentRecords(db, assignments);
+      const { segments, points } = await batchCommitmentRecords(
+        db,
+        assignments
+      );
       return projectRunnerCommitments({
-        runnerId,
         assignments,
-        assumeMatching: true,
+        selectAssignments: assignments => {
+          if (
+            assignments.some(assignment => assignment?.personId !== runnerId)
+          ) {
+            throw new Error('invalid-person-id');
+          }
+          return assignments;
+        },
         resolveSegment: segmentId => segments.get(segmentId) ?? null,
         resolvePoint: pointId => points.get(pointId) ?? null,
       });

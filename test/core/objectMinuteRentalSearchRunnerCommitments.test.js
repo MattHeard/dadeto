@@ -16,6 +16,24 @@ const points = [
   { pointId: 'POINT-2', timestamp: '2026-08-27T15:30Z' },
 ];
 
+/**
+ * Create the assignment selection policy for a runner projection.
+ * @param {string} runnerId Runner identifier.
+ * @param {boolean} rejectNonMatching Whether a non-matching record is invalid.
+ * @returns {(assignments: Array<{personId?: unknown}>) => Array<{personId?: unknown}>} Assignment selector.
+ */
+function createRunnerAssignmentSelector(runnerId, rejectNonMatching = false) {
+  return assignments => {
+    const matching = assignments.filter(
+      assignment => assignment?.personId === runnerId
+    );
+    if (rejectNonMatching && matching.length !== assignments.length) {
+      throw new Error('invalid-person-id');
+    }
+    return matching;
+  };
+}
+
 describe('runner commitments repositories', () => {
   test('defaults absent in-memory collections to an empty repository', async () => {
     await expect(
@@ -31,13 +49,17 @@ describe('runner commitments repositories', () => {
   });
   test('rejects invalid projection inputs and incomplete records', async () => {
     await expect(
-      projectRunnerCommitments({ assignments: null })
+      projectRunnerCommitments({
+        assignments: null,
+        selectAssignments: createRunnerAssignmentSelector('RUNNER-1'),
+        resolveSegment: async () => null,
+        resolvePoint: async () => null,
+      })
     ).rejects.toThrow('invalid-assignments');
     await expect(
       projectRunnerCommitments({
-        runnerId: 'RUNNER-1',
         assignments: [{ personId: 'OTHER', segmentId: 'SEGMENT-1' }],
-        assumeMatching: true,
+        selectAssignments: createRunnerAssignmentSelector('RUNNER-1', true),
         resolveSegment: async () => segment,
         resolvePoint: async pointId =>
           points.find(point => point.pointId === pointId),
@@ -45,16 +67,16 @@ describe('runner commitments repositories', () => {
     ).rejects.toThrow('invalid-person-id');
     await expect(
       projectRunnerCommitments({
-        runnerId: 'RUNNER-1',
         assignments: [{ personId: 'RUNNER-1', segmentId: '' }],
+        selectAssignments: createRunnerAssignmentSelector('RUNNER-1'),
         resolveSegment: async () => segment,
         resolvePoint: async () => points[0],
       })
     ).rejects.toThrow('missing-segment-id');
     await expect(
       projectRunnerCommitments({
-        runnerId: 'RUNNER-1',
         assignments: [{ personId: 'RUNNER-1', segmentId: 'SEGMENT-1' }],
+        selectAssignments: createRunnerAssignmentSelector('RUNNER-1'),
         resolveSegment: async () => null,
         resolvePoint: async () => points[0],
       })
@@ -64,24 +86,24 @@ describe('runner commitments repositories', () => {
   test('rejects missing segment and point identifiers', async () => {
     await expect(
       projectRunnerCommitments({
-        runnerId: 'RUNNER-1',
         assignments: [assignment],
+        selectAssignments: createRunnerAssignmentSelector('RUNNER-1'),
         resolveSegment: async () => ({ endPointId: 'POINT-2' }),
         resolvePoint: async () => points[0],
       })
     ).rejects.toThrow('missing-start-point-id');
     await expect(
       projectRunnerCommitments({
-        runnerId: 'RUNNER-1',
         assignments: [assignment],
+        selectAssignments: createRunnerAssignmentSelector('RUNNER-1'),
         resolveSegment: async () => ({ startPointId: 'POINT-1' }),
         resolvePoint: async () => points[0],
       })
     ).rejects.toThrow('missing-end-point-id');
     await expect(
       projectRunnerCommitments({
-        runnerId: 'RUNNER-1',
         assignments: [assignment],
+        selectAssignments: createRunnerAssignmentSelector('RUNNER-1'),
         resolveSegment: async () => segment,
         resolvePoint: async pointId =>
           pointId === 'POINT-1' ? { timestamp: 'not-a-time' } : points[1],
@@ -92,8 +114,8 @@ describe('runner commitments repositories', () => {
   test('sorts intervals by end time when starts are equal', async () => {
     await expect(
       projectRunnerCommitments({
-        runnerId: 'RUNNER-1',
         assignments: [assignment, { ...assignment, segmentId: 'SEGMENT-2' }],
+        selectAssignments: createRunnerAssignmentSelector('RUNNER-1'),
         resolveSegment: async segmentId => ({
           startPointId: 'POINT-1',
           endPointId: segmentId === 'SEGMENT-1' ? 'POINT-2' : 'POINT-3',
