@@ -13,15 +13,13 @@ import { createRenderAuthorHandler } from './render-author-core.js';
  */
 export function runRenderAuthor(deps) {
   // Stryker disable all -- author trigger wiring uses the fixed region/path/database contract.
-  const {
-    functions,
-    Storage,
-    FieldValue,
-    getFirestoreInstance,
-    saveAuthorHtml,
-    updateAuthorDocument,
-    bindEffectBoundary,
-  } = deps;
+  const functions = deps.functions;
+  const Storage = deps.Storage;
+  const FieldValue = deps.FieldValue;
+  const getFirestoreInstance = deps.getFirestoreInstance;
+  const saveAuthorHtml = deps.saveAuthorHtml;
+  const updateAuthorDocument = deps.updateAuthorDocument;
+  const bindEffectBoundary = deps.bindEffectBoundary;
   getFirestoreInstance();
   const bucket = /** @type {any} */ (
     new /** @type {any} */ (Storage)().bucket(process.env.STATIC_BUCKET_NAME)
