@@ -23,20 +23,19 @@ export function getTidePhase(epochMs, periodMs = 120000) {
 
 /**
  * Check a timed puzzle window using an explicit trusted-clock reading.
- * @param {{clockStatus: 'synchronized'|'stale'|'offline', epochMs: number|null, uncertaintyMs?: number, requiredPhase?: 'rising'|'high'|'falling'|'low', periodMs?: number}} input Trusted clock and level window.
+ * @param {{status: 'synchronized'|'stale'|'offline', epochMs: number|null, uncertaintyMs?: number|null}} clockReading Trusted clock state.
+ * @param {{requiredPhase?: 'rising'|'high'|'falling'|'low', periodMs?: number}} [options] Tide-window requirements.
  * @returns {boolean} Whether timed play is allowed in the requested tide phase.
  */
-export function isTideWindowOpen({
-  clockStatus,
-  epochMs,
-  uncertaintyMs = 0,
-  requiredPhase = 'high',
-  periodMs = 120000,
-}) {
+export function isTideWindowOpen(clockReading, options = {}) {
+  const { status, epochMs, uncertaintyMs = 0 } = clockReading;
+  const requiredPhase = options.requiredPhase ?? 'high';
+  const periodMs = options.periodMs ?? 120000;
   if (
-    clockStatus !== 'synchronized' ||
+    status !== 'synchronized' ||
     typeof epochMs !== 'number' ||
     !Number.isFinite(epochMs) ||
+    typeof uncertaintyMs !== 'number' ||
     !Number.isFinite(uncertaintyMs) ||
     uncertaintyMs < 0
   ) {

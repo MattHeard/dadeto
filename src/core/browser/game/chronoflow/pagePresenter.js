@@ -87,14 +87,7 @@ export function startChronoflowPage(options) {
       return;
     }
     elements.clockStatus.textContent = `${modeLabel} · Internet tide synchronized (±${Math.ceil(reading.uncertaintyMs)} ms). Tide: ${getTidePhase(reading.epochMs)}.`;
-    if (
-      game.mode === 'timed' &&
-      !isTideWindowOpen({
-        clockStatus: reading.status,
-        epochMs: reading.epochMs,
-        uncertaintyMs: reading.uncertaintyMs,
-      })
-    ) {
+    if (game.mode === 'timed' && !isTideWindowOpen(reading)) {
       elements.clockStatus.textContent = `Timed attempt paused · Tide: ${getTidePhase(reading.epochMs)}.`;
     }
   };
@@ -113,11 +106,7 @@ export function startChronoflowPage(options) {
 
   const updateTimedControls = () => {
     const reading = getClockReading();
-    const highTideWindow = isTideWindowOpen({
-      clockStatus: reading.status,
-      epochMs: reading.epochMs,
-      uncertaintyMs: reading.uncertaintyMs ?? 0,
-    });
+    const highTideWindow = isTideWindowOpen(reading);
     const cannotOpen =
       game.route !== 'archive' ||
       game.gateOpen ||

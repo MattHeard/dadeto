@@ -21,52 +21,50 @@ describe('Chronoflow trusted tide phase', () => {
   });
 
   it('opens a timed phase only for a synchronized trusted epoch', () => {
+    expect(isTideWindowOpen({ status: 'synchronized', epochMs: 30000 })).toBe(
+      true
+    );
+    expect(isTideWindowOpen({ status: 'synchronized', epochMs: 0 })).toBe(
+      false
+    );
+    expect(isTideWindowOpen({ status: 'stale', epochMs: 30000 })).toBe(false);
+    expect(isTideWindowOpen({ status: 'offline', epochMs: null })).toBe(false);
     expect(
-      isTideWindowOpen({ clockStatus: 'synchronized', epochMs: 30000 })
-    ).toBe(true);
-    expect(isTideWindowOpen({ clockStatus: 'synchronized', epochMs: 0 })).toBe(
-      false
-    );
-    expect(isTideWindowOpen({ clockStatus: 'stale', epochMs: 30000 })).toBe(
-      false
-    );
-    expect(isTideWindowOpen({ clockStatus: 'offline', epochMs: null })).toBe(
-      false
-    );
-    expect(
-      isTideWindowOpen({
-        clockStatus: 'synchronized',
-        epochMs: 30000,
-        requiredPhase: 'low',
-      })
+      isTideWindowOpen(
+        {
+          status: 'synchronized',
+          epochMs: 30000,
+        },
+        { requiredPhase: 'low' }
+      )
     ).toBe(false);
   });
 
   it('requires the full uncertainty interval to stay inside the tide phase', () => {
     expect(
       isTideWindowOpen({
-        clockStatus: 'synchronized',
+        status: 'synchronized',
         epochMs: 32000,
         uncertaintyMs: 2000,
       })
     ).toBe(true);
     expect(
       isTideWindowOpen({
-        clockStatus: 'synchronized',
+        status: 'synchronized',
         epochMs: 31000,
         uncertaintyMs: 2000,
       })
     ).toBe(false);
     expect(
       isTideWindowOpen({
-        clockStatus: 'synchronized',
+        status: 'synchronized',
         epochMs: 45000,
         uncertaintyMs: 15000,
       })
     ).toBe(false);
     expect(
       isTideWindowOpen({
-        clockStatus: 'synchronized',
+        status: 'synchronized',
         epochMs: 45000,
         uncertaintyMs: -1,
       })

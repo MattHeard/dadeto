@@ -203,11 +203,11 @@ function isTimedCommandPaused(game, clockReading) {
 /**
  * Normalize a nullable network reading to the tide-window interface.
  * @param {TrustedClockReading} clockReading Trusted time reading.
- * @returns {{clockStatus: 'synchronized'|'stale'|'offline', epochMs: number|null, uncertaintyMs: number}} Tide predicate input.
+ * @returns {{status: 'synchronized'|'stale'|'offline', epochMs: number|null, uncertaintyMs: number}} Tide predicate input.
  */
 function toTideWindow(clockReading) {
   return {
-    clockStatus: clockReading?.status ?? 'offline',
+    status: clockReading?.status ?? 'offline',
     epochMs: clockReading?.epochMs ?? null,
     uncertaintyMs: clockReading?.uncertaintyMs ?? 0,
   };
