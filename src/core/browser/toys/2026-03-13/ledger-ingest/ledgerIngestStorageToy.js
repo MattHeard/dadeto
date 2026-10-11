@@ -171,25 +171,6 @@ const MERGE_ACTION_APPLIERS = {
 };
 
 /**
- * Apply a merge action to the storage state and report list.
- * @param {{
- *   action: 'insert' | 'skip' | 'update',
- *   nextState: LedgerStorageState,
- *   transaction: LedgerIngestTransaction,
- *   existing: LedgerIngestTransaction | undefined,
- *   actions: LedgerStorageAction[],
- * }} options Merge action details.
- * @returns {void}
- */
-function recordMergeAction(options) {
-  const { action, nextState, transaction, existing, actions } = options;
-  const mergeKey = getTransactionMergeKey(transaction);
-  MERGE_ACTION_APPLIERS[action](nextState, transaction, mergeKey);
-
-  actions.push(createMergeAction(action, transaction, existing));
-}
-
-/**
  * Merge one canonical transaction into the persisted storage state.
  * @param {LedgerStorageState} nextState Next storage state being assembled.
  * @param {LedgerIngestTransaction} transaction Incoming canonical transaction.
@@ -200,14 +181,8 @@ function mergeCanonicalTransaction(nextState, transaction, actions) {
   const mergeKey = getTransactionMergeKey(transaction);
   const existing = nextState.transactionsByMergeKey[mergeKey];
   const operation = getMergeTransactionOperation(existing, transaction);
-
-  recordMergeAction({
-    action: operation,
-    nextState,
-    transaction,
-    existing,
-    actions,
-  });
+  MERGE_ACTION_APPLIERS[operation](nextState, transaction, mergeKey);
+  actions.push(createMergeAction(operation, transaction, existing));
 }
 
 /**
