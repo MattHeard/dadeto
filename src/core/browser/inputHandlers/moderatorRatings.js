@@ -6,6 +6,7 @@ import { isNonNullObject } from '../../commonCore.js';
 /** @typedef {{ moderatorId: string, variantId: string, ratedAt: string, isApproved: boolean }} RatingEntry */
 /** @typedef {RatingEntry & Record<string, unknown>} RatingRow */
 /** @typedef {() => void} CleanupFn */
+/** @typedef {{ placeholder: string, value: string, onChange: (value: unknown) => void }} RatingFieldInput */
 
 const { MODERATOR_RATINGS_FORM_SELECTOR } = browserCore;
 
@@ -98,17 +99,19 @@ const createEmptyRating = createDefaultRatingEntry;
 
 /**
  * Build a text input with shared wiring.
- * @param {{ dom: DOMHelpers, placeholder: string, value: string, onChange: (value: string) => void, cleanupFns: CleanupFn[] }} options - Input configuration.
+ * @param {DOMHelpers} dom - DOM operations for the input.
+ * @param {RatingFieldInput} fieldInput - Field label, current value, and change callback.
+ * @param {CleanupFn[]} cleanupFns - Row cleanup lifecycle.
  * @returns {HTMLInputElement} Initialized input element.
  */
-const buildFieldInput = ({ dom, placeholder, value, onChange, cleanupFns }) => {
+const buildFieldInput = (dom, fieldInput, cleanupFns) => {
   const input = /** @type {HTMLInputElement} */ (dom.createElement('input'));
   dom.setType(input, 'text');
-  dom.setPlaceholder(input, placeholder);
-  dom.setValue(input, value);
+  dom.setPlaceholder(input, fieldInput.placeholder);
+  dom.setValue(input, fieldInput.value);
 
   const handleInput = () => {
-    onChange(String(dom.getValue(input)));
+    fieldInput.onChange(String(dom.getValue(input)));
   };
   const removeInputListener = () => {
     dom.removeEventListener(input, 'input', handleInput);
@@ -196,14 +199,12 @@ const createRowChangeHandler =
 /**
  * Build the input descriptors for one rating row.
  * @param {{
- *   dom: DOMHelpers,
- *   cleanupFns: CleanupFn[],
  *   rowModel: RatingRow,
  *   handleRowChange: ReturnType<typeof createRowChangeHandler>,
  * }} options Descriptor inputs.
- * @returns {Array<{ dom: DOMHelpers, cleanupFns: CleanupFn[], placeholder: string, value: string, onChange: (value: unknown) => void }>} Field descriptors.
+ * @returns {RatingFieldInput[]} Field descriptors.
  */
-const buildRowFieldInputs = ({ dom, cleanupFns, rowModel, handleRowChange }) =>
+const buildRowFieldInputs = ({ rowModel, handleRowChange }) =>
   [
     {
       key: 'moderatorId',
@@ -218,8 +219,6 @@ const buildRowFieldInputs = ({ dom, cleanupFns, rowModel, handleRowChange }) =>
       placeholder: 'ratedAt (ISO 8601)',
     },
   ].map(config => ({
-    dom,
-    cleanupFns,
     placeholder: config.placeholder,
     value: String(rowModel[config.key] ?? ''),
     onChange: handleRowChange(config.key),
@@ -300,14 +299,13 @@ const ensureModeratorRatingsForm = (dom, container, textInput) => {
     });
 
     const fieldInputs = buildRowFieldInputs({
-      dom,
-      cleanupFns,
       rowModel,
       handleRowChange,
     });
 
-    const [authorInput, variantInput, ratedAtInput] =
-      fieldInputs.map(buildFieldInput);
+    const [authorInput, variantInput, ratedAtInput] = fieldInputs.map(
+      fieldInput => buildFieldInput(dom, fieldInput, cleanupFns)
+    );
 
     const approveSelect = buildApproveToggle({
       dom,

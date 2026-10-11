@@ -101,14 +101,14 @@ describe('serializeRatingRows', () => {
 describe('moderatorRatingsTestOnly', () => {
   test('builds row field inputs with nullish fallbacks', () => {
     const fieldInputs = moderatorRatingsTestOnly.buildRowFieldInputs({
-      dom: createFakeDom(),
-      cleanupFns: [],
       rowModel: {},
       handleRowChange: () => () => {},
     });
 
     expect(fieldInputs).toHaveLength(3);
     expect(fieldInputs.map(field => field.value)).toEqual(['', '', '']);
+    expect(fieldInputs[0]).not.toHaveProperty('dom');
+    expect(fieldInputs[0]).not.toHaveProperty('cleanupFns');
   });
 
   test('normalizes primitive helpers and creates independent defaults', () => {
@@ -134,13 +134,15 @@ describe('moderatorRatingsTestOnly', () => {
     const dom = createFakeDom();
     const cleanupFns = [];
     const changes = [];
-    const input = moderatorRatingsTestOnly.buildFieldInput({
+    const input = moderatorRatingsTestOnly.buildFieldInput(
       dom,
-      placeholder: 'ID',
-      value: 'initial',
-      onChange: value => changes.push(value),
-      cleanupFns,
-    });
+      {
+        placeholder: 'ID',
+        value: 'initial',
+        onChange: value => changes.push(value),
+      },
+      cleanupFns
+    );
     expect(input.type).toBe('text');
     expect(input.placeholder).toBe('ID');
     input.value = 'changed';
