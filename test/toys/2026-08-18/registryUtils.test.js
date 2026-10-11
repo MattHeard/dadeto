@@ -1,9 +1,9 @@
 import { describe, expect, test } from '@jest/globals';
 import {
-  buildRegistry,
   nonNullRecords,
   normalizeCoordinate,
   normalizeCoordinateRecord,
+  normalizeRegistryCollection,
   parseRegistry,
   serializeRegistry,
   sortByStableKey,
@@ -69,22 +69,28 @@ describe('registryUtils', () => {
 
   test('builds, normalizes, sorts, and counts a registry', () => {
     expect(
-      buildRegistry('{"source":[{"id":"b"},null,{"id":"a"}]}', {
-        collectionKey: 'items',
-        countKey: 'total',
-        sourceKey: 'source',
-        normalize: value => (value ? value : null),
-        sortKey: value => value.id,
-      })
+      serializeRegistry(
+        'items',
+        normalizeRegistryCollection(
+          '{"source":[{"id":"b"},null,{"id":"a"}]}',
+          'source',
+          value => (value ? value : null),
+          value => value.id
+        ),
+        'total'
+      )
     ).toContain('"total": 2');
     expect(
-      buildRegistry('{"source":{}}', {
-        collectionKey: 'items',
-        countKey: 'total',
-        sourceKey: 'source',
-        normalize: value => value,
-        sortKey: () => '',
-      })
+      serializeRegistry(
+        'items',
+        normalizeRegistryCollection(
+          '{"source":{}}',
+          'source',
+          value => value,
+          () => ''
+        ),
+        'total'
+      )
     ).toContain('"total": 0');
   });
 });

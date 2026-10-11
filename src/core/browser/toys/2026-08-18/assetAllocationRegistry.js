@@ -2,7 +2,10 @@
 // (input, env) -> string
 
 import { trimmedStringOrEmpty } from '../../validation.js';
-import { buildRegistry } from './registryUtils.js';
+import {
+  normalizeRegistryCollection,
+  serializeRegistry,
+} from './registryUtils.js';
 
 /**
  * Register asset allocations for possession contexts.
@@ -11,14 +14,16 @@ import { buildRegistry } from './registryUtils.js';
  * @returns {string} Deterministic allocation registry.
  */
 export const assetAllocationRegistry = input =>
-  buildRegistry(input, {
-    collectionKey: 'allocations',
-    countKey: 'allocationCount',
-    sourceKey: 'allocations',
-    normalize: normalizeAllocation,
-    sortKey: allocation =>
-      `${allocation.possessionContextId}:${allocation.assetId}`,
-  });
+  serializeRegistry(
+    'allocations',
+    normalizeRegistryCollection(
+      input,
+      'allocations',
+      normalizeAllocation,
+      allocation => `${allocation.possessionContextId}:${allocation.assetId}`
+    ),
+    'allocationCount'
+  );
 
 /**
  * @param {unknown} value Candidate allocation.

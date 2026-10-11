@@ -2,9 +2,10 @@
 // (input, env) -> string
 
 import {
-  buildRegistry,
   normalizeCoordinate,
   normalizeCoordinateRecord,
+  normalizeRegistryCollection,
+  serializeRegistry,
 } from '../2026-08-18/registryUtils.js';
 import { trimmedStringOrEmpty, normalizeUtcMinute } from '../../validation.js';
 
@@ -14,13 +15,16 @@ import { trimmedStringOrEmpty, normalizeUtcMinute } from '../../validation.js';
  * @returns {string} Deterministic spacetime-point registry.
  */
 export const spacetimePointRegistry = input =>
-  buildRegistry(input, {
-    collectionKey: 'points',
-    countKey: 'pointCount',
-    sourceKey: 'points',
-    normalize: normalizePoint,
-    sortKey: point => point.pointId,
-  });
+  serializeRegistry(
+    'points',
+    normalizeRegistryCollection(
+      input,
+      'points',
+      normalizePoint,
+      point => point.pointId
+    ),
+    'pointCount'
+  );
 
 /**
  * @param {unknown} value Candidate point.

@@ -10,13 +10,16 @@ import * as registryUtils from './registryUtils.js';
  * @returns {string} Deterministic runner availability registry.
  */
 export const runnerAvailabilityRegistry = input =>
-  registryUtils.buildRegistry(input, {
-    collectionKey: 'runners',
-    countKey: 'runnerCount',
-    sourceKey: 'runners',
-    normalize: normalizeRunner,
-    sortKey: runner => runner.runnerId,
-  });
+  registryUtils.serializeRegistry(
+    'runners',
+    registryUtils.normalizeRegistryCollection(
+      input,
+      'runners',
+      normalizeRunner,
+      runner => runner.runnerId
+    ),
+    'runnerCount'
+  );
 
 /**
  * @param {unknown} value Candidate runner.

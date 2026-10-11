@@ -89,20 +89,25 @@ export function serializeRegistry(key, values, countKey) {
 }
 
 /**
- * Parse, normalize, sort, and serialize a registry collection.
+ * Parse, normalize, and sort a registry collection.
  * @template T
  * @param {string} input JSON payload.
- * @param {{collectionKey: string, countKey: string, sourceKey: string, normalize: (value: unknown, index: number) => T|null, sortKey: (value: T) => string}} options Registry policy.
- * @returns {string} Formatted registry.
+ * @param {string} sourceKey Source collection field.
+ * @param {(value: unknown, index: number) => T|null} normalize Record normalizer.
+ * @param {(value: T) => string} sortKey Stable key selector.
+ * @returns {T[]} Normalized records in stable order.
  */
-export function buildRegistry(input, options) {
-  const { collectionKey, countKey, sourceKey, normalize, sortKey } = options;
+export function normalizeRegistryCollection(
+  input,
+  sourceKey,
+  normalize,
+  sortKey
+) {
   const parsed = parseRegistry(input);
   const values = Array.isArray(parsed[sourceKey])
     ? nonNullRecords(parsed[sourceKey].map(normalize))
     : [];
-  sortByStableKey(values, sortKey);
-  return serializeRegistry(collectionKey, values, countKey);
+  return sortByStableKey(values, sortKey);
 }
 /**
  * Normalize a WGS84 latitude/longitude pair using the registry bounds policy.
@@ -122,13 +127,16 @@ export function normalizeSpatialCoordinates(point) {
  * @returns {string} Deterministic spacetime-segment registry.
  */
 export const spacetimeSegmentRegistry = input =>
-  buildRegistry(input, {
-    collectionKey: 'segments',
-    countKey: 'segmentCount',
-    sourceKey: 'segments',
-    normalize: normalizeSegment,
-    sortKey: segment => segment.segmentId,
-  });
+  serializeRegistry(
+    'segments',
+    normalizeRegistryCollection(
+      input,
+      'segments',
+      normalizeSegment,
+      segment => segment.segmentId
+    ),
+    'segmentCount'
+  );
 
 /**
  * @param {unknown} value Candidate segment.
@@ -161,13 +169,16 @@ export function createSegmentRecord(segmentId, startPointId, endPointId) {
  * @returns {string} Deterministic registry.
  */
 export const possessionContextRegistry = input =>
-  buildRegistry(input, {
-    collectionKey: 'possessionContexts',
-    countKey: 'possessionContextCount',
-    sourceKey: 'possessionContexts',
-    normalize: normalizePossessionContext,
-    sortKey: context => context.possessionContextId,
-  });
+  serializeRegistry(
+    'possessionContexts',
+    normalizeRegistryCollection(
+      input,
+      'possessionContexts',
+      normalizePossessionContext,
+      context => context.possessionContextId
+    ),
+    'possessionContextCount'
+  );
 
 /**
  * Normalize one possession context.
