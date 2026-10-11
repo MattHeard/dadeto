@@ -50,17 +50,15 @@ export function ensureFirebaseAppInitialized(createManager, initializer) {
  * @param {{ includeApp?: boolean }} [options] Whether to construct an Express app.
  * @returns {{ db: unknown, auth: unknown, app?: unknown }} Initialized cloud app parts.
  */
-export function createFirebaseAppContext(
-  {
-    initializeApp,
-    createFirebaseAppManager,
-    getEnvironmentVariables,
-    getFirestoreInstance,
-    getAuth,
-    express,
-  },
-  { includeApp = true } = {}
-) {
+export function createFirebaseAppContext(deps, options = {}) {
+  const initializeApp = deps.initializeApp;
+  const createFirebaseAppManager = deps.createFirebaseAppManager;
+  const getEnvironmentVariables = deps.getEnvironmentVariables;
+  const getFirestoreInstance = deps.getFirestoreInstance;
+  const getAuth = deps.getAuth;
+  const express = deps.express;
+  const includeApp = options.includeApp ?? true;
+
   ensureFirebaseAppInitialized(createFirebaseAppManager, initializeApp);
   const environmentVariables = getEnvironmentVariables();
 
