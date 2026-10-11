@@ -81,18 +81,34 @@ export function renderChronoflowBoard(game, selectedCell) {
  * @param {{game: Parameters<typeof renderChronoflowBoard>[0], cell: number, x: number, y: number}} view Current cell presentation.
  */
 function addWaterShape(shapes, view) {
+  appendShapeWhenPresent(shapes, createWaterShape(view));
+}
+
+/**
+ * @param {Array<Record<string, unknown>>} shapes Canvas shapes in draw order.
+ * @param {Record<string, unknown> | null} shape Optional shape to append.
+ */
+function appendShapeWhenPresent(shapes, shape) {
+  if (shape) shapes.push(shape);
+}
+
+/**
+ * @param {{game: Parameters<typeof renderChronoflowBoard>[0], cell: number, x: number, y: number}} view Current cell presentation.
+ * @returns {Record<string, unknown> | null} Water shape when the cell contains water.
+ */
+function createWaterShape(view) {
   const { game, cell, x, y } = view;
   const volume = game.fluid.volume[cell];
-  if (volume <= 0) return;
+  if (volume <= 0) return null;
   const waterHeight = Math.max(2, Math.round((CELL_HEIGHT - 4) * volume));
-  shapes.push({
+  return {
     type: 'rect',
     x: x + 2,
     y: y + CELL_HEIGHT - 2 - waterHeight,
     width: CELL_WIDTH - 4,
     height: waterHeight,
     fill: COLORS.water,
-  });
+  };
 }
 
 /**
@@ -100,6 +116,14 @@ function addWaterShape(shapes, view) {
  * @param {{game: Parameters<typeof renderChronoflowBoard>[0], cell: number, x: number, y: number}} view Current cell presentation.
  */
 function addCellLabel(shapes, view) {
+  appendShapeWhenPresent(shapes, createCellLabel(view));
+}
+
+/**
+ * @param {{game: Parameters<typeof renderChronoflowBoard>[0], cell: number, x: number, y: number}} view Current cell presentation.
+ * @returns {Record<string, unknown> | null} Label shape when the cell needs one.
+ */
+function createCellLabel(view) {
   const { game, cell, x, y } = view;
   const label =
     cell === 1
@@ -111,14 +135,12 @@ function addCellLabel(shapes, view) {
         : cell === game.targetCell
           ? `${Math.round(game.fluid.volume[cell] * 100)}`
           : '';
-  if (!label) return;
-  shapes.push(
-    bitmapText(
-      label,
-      x + (cell === game.targetCell ? 5 : 11),
-      y + 13,
-      COLORS.dark
-    )
+  if (!label) return null;
+  return bitmapText(
+    label,
+    x + (cell === game.targetCell ? 5 : 11),
+    y + 13,
+    COLORS.dark
   );
 }
 

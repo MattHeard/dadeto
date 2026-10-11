@@ -1,0 +1,7 @@
+# Chronoflow renderer parameter-bag arity cleanup
+
+- Unexpected hurdle: the existing bead named `src/core/local/gcp-simulator/playwright-runner.js`, but a fresh no-cache scan found no reports in that file.
+- Diagnosis: refreshed the full core inventory and selected the two current reports in `src/core/browser/game/chronoflow/renderer.js`.
+- Fix: split per-cell shape creation from insertion into the shape list. The new helpers consume the complete view record and return a shape or `null`, preserving draw order and output.
+- Evidence: focused Chronoflow suites passed (2 suites, 40 tests); `npm run tsdoc:check` and `npm run build` passed. No-cache global report `.tmp/parameter-bag-global-after-chronoflow-renderer.json` has 68 findings across 55 files, down from 70; Chronoflow renderer is clear. The first restricted full check failed on sandbox `EPERM` while spawning child processes. After resolving the one 8-line duplication clone between the adjacent helpers, the elevated `TMPDIR=/home/matt/dadeto/.tmp npm run check` passed all 10 evaluators, including tests, lint, core-parse, duplication (0 clones), TSDoc, audit (0 vulnerabilities), and local E2E (11/11); see `.tmp/chronoflow-renderer-arity-check-final.log`.
+- Next-time guidance: treat the live no-cache inventory as authoritative when older bead target paths are stale; continue with the largest current clusters, without suppressions.
