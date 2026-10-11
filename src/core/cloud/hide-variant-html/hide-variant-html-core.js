@@ -207,16 +207,15 @@ export function createRemoveVariantHtml({
  * }} params Context required to delete the rendered file.
  * @returns {Promise<null>} Resolves once deletion completes or when no page exists.
  */
-async function removeVariantPayload({
-  allowEffects,
-  page,
-  variantId,
-  hasVariantData,
-  variantData,
-  variant,
-  buildVariantPath,
-  deleteRenderedFile,
-}) {
+async function removeVariantPayload(params) {
+  const allowEffects = params.allowEffects;
+  const page = params.page;
+  const variantId = params.variantId;
+  const hasVariantData = params.hasVariantData;
+  const variantData = params.variantData;
+  const variant = params.variant;
+  const buildVariantPath = params.buildVariantPath;
+  const deleteRenderedFile = params.deleteRenderedFile;
   if (!page) {
     return null;
   }
