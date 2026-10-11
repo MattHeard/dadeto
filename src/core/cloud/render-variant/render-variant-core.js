@@ -329,6 +329,12 @@ function resolveStoredVisibilitySum(data) {
  *   invalidatePaths: (paths: string[]) => Promise<void>;
  *   db: FirestoreLike;
  * }} RenderPersistenceCapabilities
+ * @typedef {object} ReverseLinkPersistenceInput
+ * @property {VariantSnapshot} snap Rendered variant snapshot.
+ * @property {FirestoreLike} db Tenant database for reverse-link records.
+ * @property {ReverseLinkRecord[]} reverseLinks Destination records to persist.
+ * @property {import('../../../../types/allow-effects').AllowEffectsBoundary} bindEffectBoundary Fresh capability boundary for each record write.
+ * @property {(permission: AllowEffects, reference: { set: (data: Record<string, unknown>) => Promise<unknown> }, data: Record<string, unknown>) => Promise<unknown>} setFirestoreDocument Permission-aware document writer.
  * @typedef {{
  *   storyData: import('firebase-admin/firestore').DocumentData;
  *   page: PageDocument;
@@ -2200,73 +2206,38 @@ function deriveAuthorName(variant) {
 
 /**
  * Resolve author metadata for the rendered variant and mark its author dirty.
- * @param {AuthorLookupDeps} options Inputs for author lookup.
+ * @param {AuthorLookupDeps} authorLookup Inputs for author lookup.
  * @returns {Promise<{ authorName: string; authorUrl?: string }>} Author metadata for templates.
  */
-async function resolveAuthorMetadata({
-  variant,
-  db,
-  bindEffectBoundary,
-  updateFirestoreDocument,
-  consoleError,
-}) {
-  const authorName = deriveAuthorName(variant);
-  const authorUrl = await resolveAuthorUrl({
-    variant,
-    db,
-    bindEffectBoundary,
-    updateFirestoreDocument,
-    consoleError,
-  });
+async function resolveAuthorMetadata(authorLookup) {
+  const authorName = deriveAuthorName(authorLookup.variant);
+  const authorUrl = await resolveAuthorUrl(authorLookup);
   return { authorName, authorUrl };
 }
 
 /**
  * Mark the author document dirty and return its public URL.
- * @param {AuthorLookupDeps} options Inputs for creating or reusing an author page.
+ * @param {AuthorLookupDeps} authorLookup Inputs for creating or reusing an author page.
  * @returns {Promise<string | undefined>} URL of the author page, if one exists.
  */
-async function resolveAuthorUrl({
-  variant,
-  db,
-  bindEffectBoundary,
-  updateFirestoreDocument,
-  consoleError,
-}) {
-  if (!variant.authorId) {
+async function resolveAuthorUrl(authorLookup) {
+  if (!authorLookup.variant.authorId) {
     return undefined;
   }
 
-  return lookupAuthorUrl({
-    variant,
-    db,
-    bindEffectBoundary,
-    updateFirestoreDocument,
-    consoleError,
-  });
+  return lookupAuthorUrl(authorLookup);
 }
 
 /**
  * Lookup or create an author landing page and return its URL.
- * @param {AuthorLookupDeps} options Dependencies for author lookup.
+ * @param {AuthorLookupDeps} authorLookup Dependencies for author lookup.
  * @returns {Promise<string | undefined>} Author URL when the lookup succeeds.
  */
-async function lookupAuthorUrl({
-  variant,
-  db,
-  bindEffectBoundary,
-  updateFirestoreDocument,
-  consoleError,
-}) {
+async function lookupAuthorUrl(authorLookup) {
   try {
-    return await markAuthorDirty({
-      variant,
-      db,
-      bindEffectBoundary,
-      updateFirestoreDocument,
-    });
+    return await markAuthorDirty(authorLookup);
   } catch (error) {
-    handleAuthorLookupError(error, consoleError);
+    handleAuthorLookupError(error, authorLookup.consoleError);
     return undefined;
   }
 }
@@ -3559,38 +3530,30 @@ async function persistRenderPlan(snap, context, renderPlan, persistence) {
 
 /**
  * Persist reverse-link records for a rendered source variant.
- * @param {{
- *   snap: VariantSnapshot;
- *   db: FirestoreLike;
- *   reverseLinks: ReverseLinkRecord[];
- *   bindEffectBoundary: import('../../../../types/allow-effects').AllowEffectsBoundary;
- *   setFirestoreDocument: (permission: AllowEffects, reference: { set: (data: Record<string, unknown>) => Promise<unknown> }, data: Record<string, unknown>) => Promise<unknown>;
- * }} options Reverse-link persistence options.
+ * @param {ReverseLinkPersistenceInput} persistence Reverse-link persistence options.
  * @returns {Promise<void>} Void promise.
  */
-async function saveReverseLinkRecords({
-  snap,
-  db,
-  reverseLinks,
-  bindEffectBoundary,
-  setFirestoreDocument,
-}) {
-  if (!reverseLinks.length) {
+async function saveReverseLinkRecords(persistence) {
+  if (!persistence.reverseLinks.length) {
     return;
   }
 
-  const variantRef = resolveTenantDocumentRef(snap, db);
-  if (!variantRef || typeof variantRef.path !== 'string' || !db?.doc) {
+  const variantRef = resolveTenantDocumentRef(persistence.snap, persistence.db);
+  if (
+    !variantRef ||
+    typeof variantRef.path !== 'string' ||
+    !persistence.db?.doc
+  ) {
     return;
   }
 
   await Promise.all(
-    reverseLinks.map(record => {
-      const reference = db.doc(
+    persistence.reverseLinks.map(record => {
+      const reference = persistence.db.doc(
         `${variantRef.path}/reverse-links/${buildReverseLinkDocId(record)}`
       );
-      return bindEffectBoundary(permission =>
-        setFirestoreDocument(
+      return persistence.bindEffectBoundary(permission =>
+        persistence.setFirestoreDocument(
           permission,
           /** @type {{ set: (data: Record<string, unknown>) => Promise<unknown> }} */ (
             reference
