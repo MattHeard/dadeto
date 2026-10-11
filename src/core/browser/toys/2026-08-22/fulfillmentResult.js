@@ -86,13 +86,12 @@ export function fulfillmentSequenceResponse(
   segmentId,
   fields = {}
 ) {
-  const { points, segments, sequence } = records;
   return JSON.stringify({
     ...fields,
     spacePoints: [spacePoint],
-    points,
-    segments,
-    sequence,
+    points: records.points,
+    segments: records.segments,
+    sequence: records.sequence,
     possessionContext: { segmentId },
   });
 }
@@ -358,17 +357,22 @@ export function fulfillmentMergeById(records, field) {
  * @returns {T[]} Unique records in first-seen order.
  */
 export function mergeUniqueRecords(records, options) {
-  const {
-    getId,
-    conflicts,
-    normalize = record => record,
-    makeConflictError = id => new Error(`Conflicting record: ${id}`),
-  } = options;
+  const normalize =
+    options.normalize === undefined
+      ? /** @type {(record: T) => T} */ (record => record)
+      : options.normalize;
+  const makeConflictError =
+    options.makeConflictError === undefined
+      ? /** @type {(id: K) => Error} */ (
+          id => new Error(`Conflicting record: ${id}`)
+        )
+      : options.makeConflictError;
   const byId = new Map();
   records.forEach(record => {
-    const id = getId(record);
+    const id = options.getId(record);
     const existing = byId.get(id);
-    if (existing && conflicts(existing, record)) throw makeConflictError(id);
+    if (existing && options.conflicts(existing, record))
+      throw makeConflictError(id);
     byId.set(id, normalize(record, id));
   });
   return [...byId.values()];
