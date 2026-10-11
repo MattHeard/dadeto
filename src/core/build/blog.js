@@ -437,21 +437,14 @@ function copyDirRecursive(directories, context) {
  * @param {string} options.srcDir - Source directory.
  * @returns {Record<string, (...args: never[]) => unknown>} Copy helper functions.
  */
-export function createCopyCore({
-  console: defaultConsole,
-  createFsAdapters,
-  createPathAdapters,
-  projectRoot,
-  publicDir,
-  srcDir,
-}) {
-  const pathDeps = createPathAdapters();
+export function createCopyCore(options) {
+  const pathDeps = options.createPathAdapters();
   const { join, dirname, relative } = pathDeps;
   const dirConfig = createStaticSiteCopyDirectories({
     path: pathDeps,
-    projectRoot,
-    srcDir,
-    publicDir,
+    projectRoot: options.projectRoot,
+    srcDir: options.srcDir,
+    publicDir: options.publicDir,
   });
 
   // Path formatting is scoped to blog generation.
@@ -490,14 +483,19 @@ export function createCopyCore({
    * @returns {void}
    */
   function copyDirectoryTreeIfExists(plan, context) {
-    const { io, messageLogger, copyFile } = context;
-    const { src, dest, successMessage, missingMessage } = plan;
-    if (!io.directoryExists(src)) {
-      messageLogger.warn(missingMessage);
+    if (!context.io.directoryExists(plan.src)) {
+      context.messageLogger.warn(plan.missingMessage);
       return;
     }
-    copyDirRecursive({ src, dest }, { io, messageLogger, copyFile });
-    messageLogger.info(successMessage);
+    copyDirRecursive(
+      { src: plan.src, dest: plan.dest },
+      {
+        io: context.io,
+        messageLogger: context.messageLogger,
+        copyFile: context.copyFile,
+      }
+    );
+    context.messageLogger.info(plan.successMessage);
   }
 
   /**
@@ -778,11 +776,11 @@ export function createCopyCore({
    * @returns {{ directoryExists: (target: string) => boolean, createDirectory: (target: string) => void, removeDirectory: (target: string) => void, copyFile: (source: string, destination: string) => void, readDirEntries: (dir: string) => import('fs').Dirent[] }} Filesystem adapter bundle.
    */
   function resolveCopyWorkflowFsAdapters() {
-    if (typeof createFsAdapters !== 'function') {
+    if (typeof options.createFsAdapters !== 'function') {
       throw new Error('Missing createFsAdapters dependency for copy workflow.');
     }
 
-    return createFsAdapters();
+    return options.createFsAdapters();
   }
 
   /**
@@ -792,7 +790,9 @@ export function createCopyCore({
   function runCopyWorkflow() {
     const dirs = dirConfig;
     const io = resolveCopyWorkflowFsAdapters();
-    const messageLogger = createConsoleMessageLogger(defaultConsole || console);
+    const messageLogger = createConsoleMessageLogger(
+      options.console || console
+    );
     const copyFile =
       /** @type {(source: string, destination: string, message?: string) => void} */ (
         function copyFile(source, destination, message) {
