@@ -23,9 +23,31 @@ import {
 const permission = Object.freeze({});
 const startPage = options =>
   startChronoflowPage({
-    ...options,
-    fetchImpl: (_permission, ...args) => options.fetchImpl(...args),
-    bindEffectBoundary: handler => handler(permission),
+    elements: {
+      documentObj: options.documentObj,
+      grid: options.grid,
+      displayCanvas: options.displayCanvas,
+      status: options.status,
+      clockStatus: options.clockStatus,
+      inspectStatus: options.inspectStatus,
+    },
+    controls: {
+      openButton: options.openButton,
+      advanceButton: options.advanceButton,
+      resetButton: options.resetButton,
+      routeButton: options.routeButton,
+      editButton: options.editButton,
+      startTimedButton: options.startTimedButton,
+      keypadButtons: options.keypadButtons,
+    },
+    runtime: {
+      fetchImpl: (_permission, ...args) => options.fetchImpl(...args),
+      bindEffectBoundary: handler => handler(permission),
+      monotonicNow: options.monotonicNow,
+      saveStorage: options.saveStorage,
+      setIntervalImpl: options.setIntervalImpl,
+      clearIntervalImpl: options.clearIntervalImpl,
+    },
   });
 
 /**

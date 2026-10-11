@@ -25,34 +25,40 @@ const CLOCK_REFRESH_MS = 15000;
 
 /**
  * Start the Chronoflow page using injected DOM elements.
- * @param {{documentObj: Document, grid: HTMLElement, displayCanvas?: HTMLCanvasElement|null, status: HTMLElement, clockStatus: HTMLElement, inspectStatus?: HTMLElement, openButton?: HTMLButtonElement, advanceButton?: HTMLButtonElement, resetButton: HTMLButtonElement, routeButton?: HTMLButtonElement, editButton?: HTMLButtonElement, startTimedButton?: HTMLButtonElement, keypadButtons?: HTMLButtonElement[], fetchImpl: (permission: import('../../../../../types/allow-effects').AllowEffects, ...args: Parameters<typeof globalThis.fetch>) => ReturnType<typeof globalThis.fetch>, bindEffectBoundary: import('../../../../../types/allow-effects').AllowEffectsBoundary, monotonicNow: () => number, saveStorage?: Storage, setIntervalImpl?: typeof setInterval, clearIntervalImpl?: typeof clearInterval}} options Page and injected clock/storage boundaries.
+ * @param {{
+ *   elements: {
+ *     documentObj: Document,
+ *     grid: HTMLElement,
+ *     displayCanvas?: HTMLCanvasElement|null,
+ *     status: HTMLElement,
+ *     clockStatus: HTMLElement,
+ *     inspectStatus?: HTMLElement
+ *   },
+ *   controls: {
+ *     openButton?: HTMLButtonElement,
+ *     advanceButton?: HTMLButtonElement,
+ *     resetButton: HTMLButtonElement,
+ *     routeButton?: HTMLButtonElement,
+ *     editButton?: HTMLButtonElement,
+ *     startTimedButton?: HTMLButtonElement,
+ *     keypadButtons?: HTMLButtonElement[]
+ *   },
+ *   runtime: {
+ *     fetchImpl: (permission: import('../../../../../types/allow-effects').AllowEffects, ...args: Parameters<typeof globalThis.fetch>) => ReturnType<typeof globalThis.fetch>,
+ *     bindEffectBoundary: import('../../../../../types/allow-effects').AllowEffectsBoundary,
+ *     monotonicNow: () => number,
+ *     saveStorage?: Storage,
+ *     setIntervalImpl?: typeof setInterval,
+ *     clearIntervalImpl?: typeof clearInterval
+ *   }
+ * }} options Page elements, controls, and runtime adapters.
  * @returns {() => void} Removes registered controls.
  */
 export function startChronoflowPage(options) {
-  const {
-    documentObj,
-    grid,
-    displayCanvas,
-    status,
-    clockStatus,
-    inspectStatus,
-    openButton,
-    advanceButton,
-    resetButton,
-    routeButton,
-    editButton,
-    startTimedButton,
-    keypadButtons = [],
-    fetchImpl,
-    bindEffectBoundary,
-    monotonicNow,
-    saveStorage,
-    setIntervalImpl = setInterval,
-    clearIntervalImpl = clearInterval,
-  } = options;
-  const displayContext = displayCanvas?.getContext('2d') ?? null;
-  const keypad = Array.from(keypadButtons);
-  const saveStore = createChronoflowSaveStore(saveStorage);
+  const { elements, controls, runtime } = options;
+  const displayContext = elements.displayCanvas?.getContext('2d') ?? null;
+  const keypad = Array.from(controls.keypadButtons ?? []);
+  const saveStore = createChronoflowSaveStore(runtime.saveStorage);
   let game = saveStore.load() ?? createChronoflowGame();
   let selectedCell = 1;
   /** @type {ReturnType<typeof estimateNetworkClock>|null} */
@@ -63,13 +69,13 @@ export function startChronoflowPage(options) {
   let syncing = false;
   let visibilityResyncRequested = false;
   let visibilityRevision = 0;
-  let lastSyncAttemptMs = monotonicNow();
+  let lastSyncAttemptMs = runtime.monotonicNow();
 
   const renderClock = () => {
     const modeLabel =
       game.mode === 'timed' ? 'Timed attempt' : 'Untimed practice';
     if (!clockEstimate) {
-      clockStatus.textContent =
+      elements.clockStatus.textContent =
         game.mode === 'timed'
           ? 'Timed attempt paused · Internet tide clock is stale.'
           : `${modeLabel} · Connecting to the Internet tide clock…`;
@@ -77,10 +83,10 @@ export function startChronoflowPage(options) {
     }
     const reading = getClockReading();
     if (reading.status === 'stale') {
-      clockStatus.textContent = `${modeLabel} · Internet tide clock is stale. Timed play is disabled.`;
+      elements.clockStatus.textContent = `${modeLabel} · Internet tide clock is stale. Timed play is disabled.`;
       return;
     }
-    clockStatus.textContent = `${modeLabel} · Internet tide synchronized (±${Math.ceil(reading.uncertaintyMs)} ms). Tide: ${getTidePhase(reading.epochMs)}.`;
+    elements.clockStatus.textContent = `${modeLabel} · Internet tide synchronized (±${Math.ceil(reading.uncertaintyMs)} ms). Tide: ${getTidePhase(reading.epochMs)}.`;
     if (
       game.mode === 'timed' &&
       !isTideWindowOpen({
@@ -89,7 +95,7 @@ export function startChronoflowPage(options) {
         uncertaintyMs: reading.uncertaintyMs,
       })
     ) {
-      clockStatus.textContent = `Timed attempt paused · Tide: ${getTidePhase(reading.epochMs)}.`;
+      elements.clockStatus.textContent = `Timed attempt paused · Tide: ${getTidePhase(reading.epochMs)}.`;
     }
   };
 
@@ -98,7 +104,11 @@ export function startChronoflowPage(options) {
    */
   const getClockReading = () =>
     clockEstimate
-      ? readNetworkClock(clockEstimate, monotonicNow(), CLOCK_MAX_AGE_MS)
+      ? readNetworkClock(
+          clockEstimate,
+          runtime.monotonicNow(),
+          CLOCK_MAX_AGE_MS
+        )
       : { status: 'stale', epochMs: null, uncertaintyMs: null };
 
   const updateTimedControls = () => {
@@ -113,34 +123,37 @@ export function startChronoflowPage(options) {
       game.gateOpen ||
       game.completed ||
       (game.mode === 'timed' && !highTideWindow);
-    if (openButton) openButton.disabled = cannotOpen;
+    if (controls.openButton) controls.openButton.disabled = cannotOpen;
     const openKey = keypad.find(button => button.dataset.key === 'x');
     if (openKey) openKey.disabled = cannotOpen;
     const cannotAdvance =
       game.completed || (game.mode === 'timed' && !highTideWindow);
-    if (advanceButton) advanceButton.disabled = cannotAdvance;
+    if (controls.advanceButton) controls.advanceButton.disabled = cannotAdvance;
     const advanceKey = keypad.find(button => button.dataset.key === 'y');
     if (advanceKey) advanceKey.disabled = cannotAdvance;
-    if (startTimedButton) {
-      startTimedButton.disabled =
+    if (controls.startTimedButton) {
+      controls.startTimedButton.disabled =
         game.completed || game.mode === 'timed' || !highTideWindow;
-      startTimedButton.textContent =
+      controls.startTimedButton.textContent =
         game.mode === 'timed'
           ? 'Timed high-tide attempt active'
           : 'Start timed attempt · high tide';
     }
-    if (editButton) {
+    if (controls.editButton) {
       const editable = game.editableCells.includes(selectedCell);
       const verb = game.fluid.solids[selectedCell] ? 'Carve' : 'Fill';
-      editButton.textContent = editable
+      controls.editButton.textContent = editable
         ? `${verb} channel at cell ${selectedCell + 1} · ${game.editBudget - game.editsUsed} edits left`
         : 'Select a marked cell to edit';
-      editButton.disabled =
+      controls.editButton.disabled =
         game.completed ||
         !editable ||
         game.editsUsed >= game.editBudget ||
         (game.mode === 'timed' && !highTideWindow);
-      editButton.setAttribute('aria-label', editButton.textContent);
+      controls.editButton.setAttribute(
+        'aria-label',
+        controls.editButton.textContent
+      );
     }
     return highTideWindow;
   };
@@ -164,11 +177,11 @@ export function startChronoflowPage(options) {
     if (syncing || disposed) return;
     syncing = true;
     const requestVisibilityRevision = visibilityRevision;
-    lastSyncAttemptMs = monotonicNow();
+    lastSyncAttemptMs = runtime.monotonicNow();
     try {
       if (!timeEndpoint) {
-        const configResponse = await bindEffectBoundary(permission =>
-          fetchImpl(permission, '/config.json', { cache: 'no-store' })
+        const configResponse = await runtime.bindEffectBoundary(permission =>
+          runtime.fetchImpl(permission, '/config.json', { cache: 'no-store' })
         );
         if (!configResponse.ok) {
           throw new Error(
@@ -186,13 +199,13 @@ export function startChronoflowPage(options) {
         timeEndpoint = configuredEndpoint;
       }
       const nextEstimate = await sampleNetworkClock({
-        fetchImpl,
-        bindEffectBoundary,
-        monotonicNow,
+        fetchImpl: runtime.fetchImpl,
+        bindEffectBoundary: runtime.bindEffectBoundary,
+        monotonicNow: runtime.monotonicNow,
         endpoint: timeEndpoint,
       });
       if (
-        documentObj.visibilityState === 'hidden' ||
+        elements.documentObj.visibilityState === 'hidden' ||
         requestVisibilityRevision !== visibilityRevision
       ) {
         return;
@@ -204,7 +217,7 @@ export function startChronoflowPage(options) {
       }
     } catch {
       if (!disposed) {
-        clockStatus.textContent =
+        elements.clockStatus.textContent =
           game.mode === 'timed' || clockEstimate
             ? 'Timed attempt paused · Internet tide clock is stale.'
             : 'Untimed practice · Internet tide unavailable. Timed play is disabled.';
@@ -213,7 +226,7 @@ export function startChronoflowPage(options) {
       syncing = false;
       if (
         visibilityResyncRequested &&
-        documentObj.visibilityState === 'visible' &&
+        elements.documentObj.visibilityState === 'visible' &&
         !disposed
       ) {
         visibilityResyncRequested = false;
@@ -224,9 +237,9 @@ export function startChronoflowPage(options) {
 
   const render = () => {
     updateTimedControls();
-    grid.replaceChildren(
+    elements.grid.replaceChildren(
       ...game.fluid.volume.map((volume, cell) => {
-        const tile = documentObj.createElement('button');
+        const tile = elements.documentObj.createElement('button');
         const flow = getFlowVisual(
           game.fluid.velocityX[cell],
           game.fluid.velocityY[cell]
@@ -283,25 +296,25 @@ export function startChronoflowPage(options) {
         renderChronoflowBoard(game, selectedCell)
       );
     }
-    if (inspectStatus) {
+    if (elements.inspectStatus) {
       const reading = getCellReadout(game.fluid, selectedCell);
       const terrain = reading.solid ? 'stone' : 'channel';
-      inspectStatus.textContent = `Cell ${reading.cell} · ${terrain} · depth ${Math.round(reading.depth * 100)}% · head ${reading.hydraulicHead.toFixed(2)} · velocity ${reading.velocityX.toFixed(2)}, ${reading.velocityY.toFixed(2)}`;
+      elements.inspectStatus.textContent = `Cell ${reading.cell} · ${terrain} · depth ${Math.round(reading.depth * 100)}% · head ${reading.hydraulicHead.toFixed(2)} · velocity ${reading.velocityX.toFixed(2)}, ${reading.velocityY.toFixed(2)}`;
     }
-    if (routeButton) {
-      routeButton.disabled = game.completed;
-      routeButton.textContent =
+    if (controls.routeButton) {
+      controls.routeButton.disabled = game.completed;
+      controls.routeButton.textContent =
         game.route === 'drain'
           ? 'Route valve to archive'
           : 'Route valve to drain';
-      routeButton.setAttribute(
+      controls.routeButton.setAttribute(
         'aria-label',
         game.route === 'drain'
           ? 'Route valve to archive chamber'
           : 'Route valve to decoy drain'
       );
     }
-    status.textContent = game.completed
+    elements.status.textContent = game.completed
       ? game.timedCredit
         ? 'Archive chamber primed. Timed high-tide record secured.'
         : 'Archive chamber primed. Practice complete; no timed record.'
@@ -375,29 +388,32 @@ export function startChronoflowPage(options) {
     handleKey(event.key);
   };
   const handleVisibilityChange = () => {
-    if (documentObj.visibilityState === 'hidden') {
+    if (elements.documentObj.visibilityState === 'hidden') {
       invalidateClockEstimate();
-    } else if (documentObj.visibilityState === 'visible') {
+    } else if (elements.documentObj.visibilityState === 'visible') {
       invalidateClockEstimate();
       requestVisibleResync();
     }
   };
 
-  documentObj.addEventListener?.('visibilitychange', handleVisibilityChange);
-  openButton?.addEventListener('click', handleOpen);
-  routeButton?.addEventListener('click', handleRoute);
-  editButton?.addEventListener('click', handleEdit);
-  startTimedButton?.addEventListener('click', handleStartTimed);
-  advanceButton?.addEventListener('click', handleAdvance);
-  resetButton.addEventListener('click', handleReset);
+  elements.documentObj.addEventListener?.(
+    'visibilitychange',
+    handleVisibilityChange
+  );
+  controls.openButton?.addEventListener('click', handleOpen);
+  controls.routeButton?.addEventListener('click', handleRoute);
+  controls.editButton?.addEventListener('click', handleEdit);
+  controls.startTimedButton?.addEventListener('click', handleStartTimed);
+  controls.advanceButton?.addEventListener('click', handleAdvance);
+  controls.resetButton.addEventListener('click', handleReset);
   keypad.forEach(button => button.addEventListener('click', handleKeypadClick));
-  documentObj.addEventListener?.('keydown', handleKeyboard);
+  elements.documentObj.addEventListener?.('keydown', handleKeyboard);
   render();
   void synchronizeClock();
-  const clockInterval = setIntervalImpl(() => {
+  const clockInterval = (runtime.setIntervalImpl ?? setInterval)(() => {
     updateTimedControls();
     renderClock();
-    const now = monotonicNow();
+    const now = runtime.monotonicNow();
     const reading = clockEstimate
       ? readNetworkClock(clockEstimate, now, CLOCK_MAX_AGE_MS)
       : { status: 'stale' };
@@ -411,21 +427,21 @@ export function startChronoflowPage(options) {
 
   return () => {
     disposed = true;
-    clearIntervalImpl(clockInterval);
-    documentObj.removeEventListener?.(
+    (runtime.clearIntervalImpl ?? clearInterval)(clockInterval);
+    elements.documentObj.removeEventListener?.(
       'visibilitychange',
       handleVisibilityChange
     );
-    openButton?.removeEventListener('click', handleOpen);
-    routeButton?.removeEventListener('click', handleRoute);
-    editButton?.removeEventListener('click', handleEdit);
-    startTimedButton?.removeEventListener('click', handleStartTimed);
-    advanceButton?.removeEventListener('click', handleAdvance);
-    resetButton.removeEventListener('click', handleReset);
+    controls.openButton?.removeEventListener('click', handleOpen);
+    controls.routeButton?.removeEventListener('click', handleRoute);
+    controls.editButton?.removeEventListener('click', handleEdit);
+    controls.startTimedButton?.removeEventListener('click', handleStartTimed);
+    controls.advanceButton?.removeEventListener('click', handleAdvance);
+    controls.resetButton.removeEventListener('click', handleReset);
     keypad.forEach(button =>
       button.removeEventListener('click', handleKeypadClick)
     );
-    documentObj.removeEventListener?.('keydown', handleKeyboard);
+    elements.documentObj.removeEventListener?.('keydown', handleKeyboard);
   };
 }
 
