@@ -1,5 +1,6 @@
 import { jest } from '@jest/globals';
 import { invokeCapability } from '../../../src/core/capabilities/index.js';
+import { createWebMcpHandle } from '../../../src/core/browser/webmcp.js';
 import {
   createLocalAppCore,
   createWriterServer,
@@ -122,7 +123,7 @@ describe('core local server helpers', () => {
 });
 
 describe('core local server routes', () => {
-  test('exposes allowlisted capability invocation to loopback callers only', () => {
+  test('exposes allowlisted capability invocation to loopback callers only', async () => {
     const handlers = {};
     const app = {
       use: jest.fn(),
@@ -183,6 +184,43 @@ describe('core local server routes', () => {
       capabilityId: 'JSON1',
       output: '{\n  "a": 1,\n  "b": 2\n}',
     });
+    const httpOutput = response.json.mock.calls.at(-1)[0].output;
+    const tools = new Map();
+    const webMcp = createWebMcpHandle({
+      fetchFn: jest.fn(),
+      bindEffectBoundary: jest.fn(),
+      importModule: jest.fn(),
+      modelContext: {
+        registerTool: tool => tools.set(tool.name, tool),
+      },
+      URLCtor: URL,
+    });
+    webMcp.registerWebMcpTools();
+    const canonicalizeTool = tools.get('dadeto_canonicalize_json');
+    expect(canonicalizeTool.annotations).toEqual({ readOnlyHint: true });
+    expect(canonicalizeTool.inputSchema).toEqual({
+      type: 'object',
+      properties: {
+        input: { type: 'string', description: 'JSON text to canonicalize.' },
+      },
+      required: ['input'],
+      additionalProperties: false,
+    });
+    expect(
+      JSON.parse(
+        (await canonicalizeTool.execute({ input: '{"b":2,"a":1}' })).content[0]
+          .text
+      ).output
+    ).toBe(httpOutput);
+    expect(
+      JSON.parse((await canonicalizeTool.execute({ input: 7 })).content[0].text)
+    ).toEqual({
+      error: {
+        code: 'INVALID_INVOCATION',
+        message:
+          'Capability invocation must include a capability ID and string input.',
+      },
+    });
 
     handler(
       {
@@ -196,6 +234,12 @@ describe('core local server routes', () => {
       capabilityId: 'JSON1',
       output: '{"error":"Invalid JSON input: malformed JSON"}',
     });
+    const malformedHttpOutput = response.json.mock.calls.at(-1)[0].output;
+    expect(
+      JSON.parse(
+        (await canonicalizeTool.execute({ input: '{bad json' })).content[0].text
+      ).output
+    ).toBe(malformedHttpOutput);
 
     handler(
       {

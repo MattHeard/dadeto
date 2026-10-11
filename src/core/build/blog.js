@@ -19,6 +19,11 @@ export const sharedDirectoryPairs = [
     publicRelativePath: 'core/browser',
   },
   {
+    key: 'CoreCapabilities',
+    relativePath: 'core/capabilities',
+    publicRelativePath: 'core/capabilities',
+  },
+  {
     key: 'CoreObjectMinuteRentalSearch',
     relativePath: 'core/object-minute-rental-search',
     publicRelativePath: 'core/object-minute-rental-search',
@@ -53,6 +58,13 @@ const DIRECTORY_TREE_DEFINITIONS = {
       suffix: '',
       success: 'Core browser files copied successfully!',
       missing: 'core/browser directory not found',
+    },
+    {
+      sourceKey: 'srcCoreCapabilitiesDir',
+      destinationKey: 'publicCoreCapabilitiesDir',
+      suffix: '',
+      success: 'Core capabilities copied successfully!',
+      missing: 'core/capabilities directory not found',
     },
     {
       sourceKey: 'srcCoreObjectMinuteRentalSearchDir',

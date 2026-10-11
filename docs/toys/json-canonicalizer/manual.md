@@ -64,6 +64,26 @@ Assumptions: - Deterministic object key order is enough to make equivalent value
 3. Submit the same input again to confirm deterministic behavior.
 4. Try an omitted or invalid value to observe the fallback or rejection behavior.
 
+## Use it from an agent
+
+Dadeto registers the `dadeto_canonicalize_json` WebMCP tool on pages open in a
+browser that supports `document.modelContext`. The tool accepts one string,
+`input`, and calls the same allowlisted JSON1 capability used by Dadeto's local
+HTTP adapter. It does not accept module names, paths, or export names.
+
+To inspect the tool locally, run `npm run build` and `npm run start`, then open
+the generated Dadeto site in a WebMCP-enabled browser. Ask the connected agent,
+“Canonicalize this JSON for me: {\"b\":2,\"a\":1}”. The expected result is:
+
+```json
+{
+  "a": 1,
+  "b": 2
+}
+```
+
+For malformed JSON, JSON1 returns its existing structured error as text.
+
 ## Troubleshooting
 
 - If the input is rejected, check that it is valid JSON and uses the field names shown above.

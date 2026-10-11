@@ -1,3 +1,5 @@
+import { invokeCapability } from '../capabilities/index.js';
+
 const MAX_OUTPUT_CHARACTERS = 1500;
 /** Shared schema and annotation for read-only tools with no arguments. */
 export const READ_ONLY_TOOL = Object.freeze({
@@ -90,13 +92,14 @@ function toyFailure(toy, code, message) {
 
 /**
  * Create isolated catalog, execution, and page tools for one browser environment.
- * @param {{fetchFn: (permission: import('../../../types/allow-effects').AllowEffects, ...args: Parameters<typeof fetch>) => ReturnType<typeof fetch>, bindEffectBoundary: import('../../../types/allow-effects').AllowEffectsBoundary, importModule: (path: string) => Promise<Record<string, any>>, documentObj?: Document, locationObj?: Location, modelContext?: {registerTool?: (tool: Record<string, any>) => void}, URLCtor: typeof URL}} deps Browser adapters.
+ * @param {{fetchFn: (permission: import('../../../types/allow-effects').AllowEffects, ...args: Parameters<typeof fetch>) => ReturnType<typeof fetch>, bindEffectBoundary: import('../../../types/allow-effects').AllowEffectsBoundary, importModule: (path: string) => Promise<Record<string, any>>, invokeCapabilityFn?: typeof invokeCapability, documentObj?: Document, locationObj?: Location, modelContext?: {registerTool?: (tool: Record<string, any>) => void}, URLCtor: typeof URL}} deps Browser adapters.
  * @returns {(() => void) & {listToys: () => Promise<Array<Record<string, any>>>, runToy: (args: {toy: unknown, input: unknown}) => Promise<Record<string, any>>, registerWebMcpTools: (context?: {registerTool?: (tool: Record<string, any>) => void}) => void}} Startup handle and public APIs.
  */
 export function createWebMcpHandle({
   fetchFn,
   bindEffectBoundary,
   importModule,
+  invokeCapabilityFn = invokeCapability,
   documentObj,
   locationObj,
   modelContext,
@@ -234,6 +237,52 @@ export function createWebMcpHandle({
       execute: async (/** @type {{toy: unknown, input: unknown}} */ args) =>
         resultContent(await runToy(args)),
     });
+    context.registerTool({
+      name: 'dadeto_canonicalize_json',
+      description:
+        'Canonicalize valid JSON by recursively sorting object keys while preserving array order.',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          input: {
+            type: 'string',
+            description: 'JSON text to canonicalize.',
+          },
+        },
+        required: ['input'],
+        additionalProperties: false,
+      },
+      annotations: { readOnlyHint: true },
+      execute: (/** @type {{input: unknown}} */ args) =>
+        resultContent(invokeJsonCapability(args.input)),
+    });
+  }
+
+  /**
+   * Invoke JSON1 through the shared Dadeto capability boundary.
+   * @param {unknown} input Candidate JSON string.
+   * @returns {{capabilityId: string, output: string} | {error: {code: string, message: string}}} Safe tool result.
+   */
+  function invokeJsonCapability(input) {
+    try {
+      return {
+        capabilityId: 'JSON1',
+        output: invokeCapabilityFn({
+          capabilityId: 'JSON1',
+          input: /** @type {string} */ (input),
+        }),
+      };
+    } catch (error) {
+      const code =
+        error?.code === 'INVALID_INVOCATION'
+          ? 'INVALID_INVOCATION'
+          : 'CAPABILITY_FAILED';
+      const message =
+        code === 'INVALID_INVOCATION'
+          ? 'Capability invocation must include a capability ID and string input.'
+          : 'Capability could not be completed.';
+      return { error: { code, message } };
+    }
   }
 
   /**

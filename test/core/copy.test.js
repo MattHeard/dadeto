@@ -33,6 +33,8 @@ const createDirectories = () => {
     publicCoreDir: posix.join(publicDir, 'core'),
     srcCoreBrowserDir: posix.join(srcDir, 'core/browser'),
     publicCoreBrowserDir: posix.join(publicDir, 'core/browser'),
+    srcCoreCapabilitiesDir: posix.join(srcDir, 'core/capabilities'),
+    publicCoreCapabilitiesDir: posix.join(publicDir, 'core/capabilities'),
     srcCoreObjectMinuteRentalSearchDir: posix.join(
       srcDir,
       'core/object-minute-rental-search'
@@ -91,6 +93,14 @@ describe('createSharedDirectoryEntries', () => {
     expect(entries).toContainEqual([
       'publicCoreBrowserDir',
       posix.join(publicDir, 'core/browser'),
+    ]);
+    expect(entries).toContainEqual([
+      'srcCoreCapabilitiesDir',
+      posix.join(srcDir, 'core/capabilities'),
+    ]);
+    expect(entries).toContainEqual([
+      'publicCoreCapabilitiesDir',
+      posix.join(publicDir, 'core/capabilities'),
     ]);
     expect(entries).toContainEqual([
       'srcCoreObjectMinuteRentalSearchDir',
@@ -621,6 +631,9 @@ describe('createCopyCore directory traversal', () => {
         'Core browser files copied successfully!'
       );
       expect(consoleLike.log).toHaveBeenCalledWith(
+        'Core capabilities copied successfully!'
+      );
+      expect(consoleLike.log).toHaveBeenCalledWith(
         'Core root scripts copied successfully!'
       );
       expect(io.readDirEntries).toHaveBeenCalledWith(directories.srcCoreDir);
@@ -784,6 +797,9 @@ describe('createCopyCore copy workflows', () => {
         ['Warning: adapters directory not found at src/adapters'],
         ['Warning: browser directory not found at src/browser'],
         ['Warning: core/browser directory not found at src/core/browser'],
+        [
+          'Warning: core/capabilities directory not found at src/core/capabilities',
+        ],
         [
           'Warning: core/object-minute-rental-search directory not found at src/core/object-minute-rental-search',
         ],
@@ -958,11 +974,15 @@ describe('createCopyCore copy workflows', () => {
         directoryExists: jest.fn().mockReturnValue(true),
         createDirectory: jest.fn(),
         copyFile: jest.fn(),
-        readDirEntries: jest.fn(dir =>
-          dir === directories.srcAdaptersDir
-            ? [createFileEntry('allow-effects.js')]
-            : []
-        ),
+        readDirEntries: jest.fn(dir => {
+          if (dir === directories.srcAdaptersDir) {
+            return [createFileEntry('allow-effects.js')];
+          }
+          if (dir === directories.srcCoreCapabilitiesDir) {
+            return [createFileEntry('index.js')];
+          }
+          return [];
+        }),
       };
       const logger = { info: jest.fn(), warn: jest.fn() };
 
@@ -981,6 +1001,9 @@ describe('createCopyCore copy workflows', () => {
       expect(logger.info).toHaveBeenCalledWith(
         'Core browser files copied successfully!'
       );
+      expect(logger.info).toHaveBeenCalledWith(
+        'Core capabilities copied successfully!'
+      );
       expect(io.directoryExists).toHaveBeenCalledWith(
         directories.srcAdaptersDir
       );
@@ -991,11 +1014,18 @@ describe('createCopyCore copy workflows', () => {
         directories.srcCoreBrowserDir
       );
       expect(io.directoryExists).toHaveBeenCalledWith(
+        directories.srcCoreCapabilitiesDir
+      );
+      expect(io.directoryExists).toHaveBeenCalledWith(
         directories.srcCoreObjectMinuteRentalSearchDir
       );
       expect(io.copyFile).toHaveBeenCalledWith(
         posix.join(directories.srcAdaptersDir, 'allow-effects.js'),
         posix.join(directories.publicAdaptersDir, 'allow-effects.js')
+      );
+      expect(io.copyFile).toHaveBeenCalledWith(
+        posix.join(directories.srcCoreCapabilitiesDir, 'index.js'),
+        posix.join(directories.publicCoreCapabilitiesDir, 'index.js')
       );
       expect(logger.info).toHaveBeenCalledWith(
         'Core object-minute rental search files copied successfully!'

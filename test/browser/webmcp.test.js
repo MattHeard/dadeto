@@ -68,3 +68,34 @@ test('registration is a no-op without WebMCP', async () => {
   expect(() => registerWebMcpTools()).not.toThrow();
   expect(() => registerWebMcpTools({})).not.toThrow();
 });
+
+test('registers the JSON1 capability for a browser agent with WebMCP', async () => {
+  const previousDocument = globalThis.document;
+  const tools = new Map();
+  globalThis.document = {
+    modelContext: {
+      registerTool: tool => tools.set(tool.name, tool),
+    },
+  };
+
+  try {
+    const { registerWebMcpTools } = await import('../../src/browser/webmcp.js');
+    expect(() => registerWebMcpTools()).not.toThrow();
+    const tool = tools.get('dadeto_canonicalize_json');
+    expect(tool.inputSchema.additionalProperties).toBe(false);
+    expect(tool.execute({ input: '{"b":2,"a":1}' })).toEqual({
+      content: [
+        {
+          type: 'text',
+          text: JSON.stringify({
+            capabilityId: 'JSON1',
+            output: '{\n  "a": 1,\n  "b": 2\n}',
+          }),
+        },
+      ],
+    });
+  } finally {
+    if (previousDocument === undefined) delete globalThis.document;
+    else globalThis.document = previousDocument;
+  }
+});

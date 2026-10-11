@@ -30,6 +30,7 @@ function post(extra = {}) {
  * @param {Function} [options.loader] Module loader.
  * @param {boolean} [options.withLocation] Provide location.
  * @param {boolean} [options.withContext] Provide model context.
+ * @param {Function} [options.invokeCapabilityFn] Override capability invocation.
  * @returns {object} Controller fixture.
  */
 function fixture({
@@ -38,6 +39,7 @@ function fixture({
   loader = async () => ({ pure: input => input }),
   withLocation = true,
   withContext = true,
+  invokeCapabilityFn,
 } = {}) {
   const tools = new Map();
   const modelContext = {
@@ -68,6 +70,7 @@ function fixture({
     fetchFn,
     bindEffectBoundary: handler => handler(Object.freeze({})),
     importModule,
+    invokeCapabilityFn,
     documentObj,
     locationObj: withLocation ? locationObj : undefined,
     modelContext: withContext ? modelContext : undefined,
@@ -233,12 +236,38 @@ test('unsupported contexts are no-ops with no fetches', () => {
   expect(() => emptyContext()).not.toThrow();
 });
 
-test('four tool callbacks use shared execution and enforce same-origin navigation', async () => {
+test('capability invocation failures return safe structured errors', async () => {
+  const { handle, tools } = fixture({
+    invokeCapabilityFn: () => {
+      throw new Error('private runtime detail');
+    },
+  });
+  handle();
+
+  expect(
+    tools.get('dadeto_canonicalize_json').execute({ input: '{}' })
+  ).toEqual({
+    content: [
+      {
+        type: 'text',
+        text: JSON.stringify({
+          error: {
+            code: 'CAPABILITY_FAILED',
+            message: 'Capability could not be completed.',
+          },
+        }),
+      },
+    ],
+  });
+});
+
+test('tool callbacks use shared execution and enforce same-origin navigation', async () => {
   const { handle, tools, locationObj } = fixture();
   handle();
   expect([...tools.keys()]).toEqual([
     'list_toys',
     'run_toy',
+    'dadeto_canonicalize_json',
     'get_page_summary',
     'navigate_to',
   ]);
