@@ -91,20 +91,43 @@ function toyFailure(toy, code, message) {
 }
 
 /**
- * Create isolated catalog, execution, and page tools for one browser environment.
- * @param {{fetchFn: (permission: import('../../../types/allow-effects').AllowEffects, ...args: Parameters<typeof fetch>) => ReturnType<typeof fetch>, bindEffectBoundary: import('../../../types/allow-effects').AllowEffectsBoundary, importModule: (path: string) => Promise<Record<string, any>>, invokeCapabilityFn?: typeof invokeCapability, documentObj?: Document, locationObj?: Location, modelContext?: {registerTool?: (tool: Record<string, any>) => void}, URLCtor: typeof URL}} deps Browser adapters.
- * @returns {(() => void) & {listToys: () => Promise<Array<Record<string, any>>>, runToy: (args: {toy: unknown, input: unknown}) => Promise<Record<string, any>>, registerWebMcpTools: (context?: {registerTool?: (tool: Record<string, any>) => void}) => void}} Startup handle and public APIs.
+ * Register each tool through the host's registration method.
+ * @param {{registerTool?: (tool: Record<string, any>) => void} | undefined} context WebMCP context.
+ * @param {Array<Record<string, any>>} tools Tool definitions.
+ * @returns {void}
  */
-export function createWebMcpHandle({
+function registerTools(context, tools) {
+  if (!context?.registerTool) {
+    return;
+  }
+  for (const tool of tools) {
+    context.registerTool(tool);
+  }
+}
+
+/**
+ * Bind tool definitions to a context-aware registration callback.
+ * @param {Array<Record<string, any>>} tools Tool definitions.
+ * @returns {(context?: {registerTool?: (tool: Record<string, any>) => void}) => void} Registrar.
+ */
+function createToolRegistrar(tools) {
+  return context => registerTools(context, tools);
+}
+
+/**
+ * Create the catalog and text-execution tools for a browser environment.
+ * @param {(permission: import('../../../types/allow-effects').AllowEffects, ...args: Parameters<typeof fetch>) => ReturnType<typeof fetch>} fetchFn Permission-aware fetch.
+ * @param {import('../../../types/allow-effects').AllowEffectsBoundary} bindEffectBoundary Fresh permission boundary.
+ * @param {(path: string) => Promise<Record<string, any>>} importModule Toy module loader.
+ * @param {(key: string) => string} resolveToyUrl Public toy URL resolver.
+ * @returns {{listToys: () => Promise<Array<Record<string, any>>>, runToy: (args: {toy: unknown, input: unknown}) => Promise<Record<string, any>>, register: (context?: {registerTool?: (tool: Record<string, any>) => void}) => void}} Catalog tool controller.
+ */
+export function createToyTools(
   fetchFn,
   bindEffectBoundary,
   importModule,
-  invokeCapabilityFn = invokeCapability,
-  documentObj,
-  locationObj,
-  modelContext,
-  URLCtor,
-}) {
+  resolveToyUrl
+) {
   const toyDefinitions = new Map();
   /** @type {Promise<Map<string, Record<string, any>>> | undefined} */
   let toyDefinitionsPromise;
@@ -135,10 +158,7 @@ export function createWebMcpHandle({
               description: getToyDescription(post),
               tags: post.tags ?? [],
               publicationDate: post.publicationDate,
-              url: new URLCtor(
-                `#${post.key}`,
-                locationObj?.href ?? 'https://mattheard.net/'
-              ).href,
+              url: resolveToyUrl(post.key),
               runnable: isRunnableDefinition(post),
               modulePath: post.toy.modulePath,
               functionName: post.toy.functionName,
@@ -204,23 +224,15 @@ export function createWebMcpHandle({
     }
   }
 
-  /**
-   * Register the read-only catalog and approved execution tools.
-   * @param {{registerTool?: (tool: Record<string, any>) => void}} [context] Model context.
-   * @returns {void}
-   */
-  function registerWebMcpTools(context = modelContext) {
-    if (!context?.registerTool) {
-      return;
-    }
-    context.registerTool({
+  const register = createToolRegistrar([
+    {
       name: 'list_toys',
       description:
         'List the public Matt Heard toys and whether each supports text execution.',
       ...READ_ONLY_TOOL,
       execute: async () => resultContent({ toys: await listToys() }),
-    });
-    context.registerTool({
+    },
+    {
       name: 'run_toy',
       description:
         'Run an approved Matt Heard toy with text input and return text output.',
@@ -236,8 +248,22 @@ export function createWebMcpHandle({
       annotations: { readOnlyHint: true },
       execute: async (/** @type {{toy: unknown, input: unknown}} */ args) =>
         resultContent(await runToy(args)),
-    });
-    context.registerTool({
+    },
+  ]);
+
+  return { listToys, runToy, register };
+}
+
+/**
+ * Create the JSON1 WebMCP tool.
+ * @param {typeof invokeCapability} invokeCapabilityFn Shared capability invoker.
+ * @returns {(context?: {registerTool?: (tool: Record<string, any>) => void}) => void} Capability tool registrar.
+ */
+export function createJsonCapabilityTools(
+  invokeCapabilityFn = invokeCapability
+) {
+  const register = createToolRegistrar([
+    {
       name: 'dadeto_canonicalize_json',
       description:
         'Canonicalize valid JSON by recursively sorting object keys while preserving array order.',
@@ -255,8 +281,8 @@ export function createWebMcpHandle({
       annotations: { readOnlyHint: true },
       execute: (/** @type {{input: unknown}} */ args) =>
         resultContent(invokeJsonCapability(args.input)),
-    });
-  }
+    },
+  ]);
 
   /**
    * Invoke JSON1 through the shared Dadeto capability boundary.
@@ -285,6 +311,57 @@ export function createWebMcpHandle({
     }
   }
 
+  return register;
+}
+
+/**
+ * Compose independently prepared tool groups for one WebMCP context.
+ * @param {{listToys: () => Promise<Array<Record<string, any>>>, runToy: (args: {toy: unknown, input: unknown}) => Promise<Record<string, any>>, register: (context?: {registerTool?: (tool: Record<string, any>) => void}) => void} | undefined} toyTools Catalog controller.
+ * @param {((context?: {registerTool?: (tool: Record<string, any>) => void}) => void) | undefined} jsonTools JSON capability registrar.
+ * @param {((context?: {registerTool?: (tool: Record<string, any>) => void}) => void) | undefined} pageTools Page registrar.
+ * @param {{registerTool?: (tool: Record<string, any>) => void} | undefined} modelContext WebMCP context.
+ * @returns {(() => void) & {listToys: () => Promise<Array<Record<string, any>>>, runToy: (args: {toy: unknown, input: unknown}) => Promise<Record<string, any>>, registerWebMcpTools: (context?: {registerTool?: (tool: Record<string, any>) => void}) => void}} Startup handle and public APIs.
+ */
+export function createWebMcpHandle(
+  toyTools,
+  jsonTools,
+  pageTools,
+  modelContext
+) {
+  /**
+   * Register catalog and capability tools for an explicit context.
+   * @param {{registerTool?: (tool: Record<string, any>) => void}} [context] Model context.
+   * @returns {void}
+   */
+  function registerWebMcpTools(context = modelContext) {
+    toyTools?.register(context);
+    jsonTools?.(context);
+  }
+
+  /**
+   * Register all tools supported by this environment.
+   * @returns {void}
+   */
+  function start() {
+    registerWebMcpTools();
+    pageTools?.(modelContext);
+  }
+
+  return Object.assign(start, {
+    listToys: toyTools?.listToys ?? (async () => []),
+    runToy: toyTools?.runToy ?? (async () => ({})),
+    registerWebMcpTools,
+  });
+}
+
+/**
+ * Create current-page summary and same-origin navigation tools.
+ * @param {Document | undefined} documentObj Browser document.
+ * @param {Location | undefined} locationObj Browser location.
+ * @param {typeof URL} URLCtor URL constructor.
+ * @returns {(context?: {registerTool?: (tool: Record<string, any>) => void}) => void} Page tool registrar.
+ */
+export function createPageTools(documentObj, locationObj, URLCtor) {
   /**
    * Read page metadata only when requested by the registered tool.
    * @returns {Record<string, unknown>} Page metadata.
@@ -324,23 +401,15 @@ export function createWebMcpHandle({
     };
   }
 
-  /**
-   * Register all supported tools without touching pages lacking WebMCP.
-   * @returns {void}
-   */
-  function start() {
-    registerWebMcpTools();
-    if (!modelContext?.registerTool) {
-      return;
-    }
-    modelContext.registerTool({
+  const register = createToolRegistrar([
+    {
       name: 'get_page_summary',
       description:
         'Read the current page title, headings, and available links.',
       inputSchema: { type: 'object', properties: {} },
       execute: async () => resultContent(getPageSummary()),
-    });
-    modelContext.registerTool({
+    },
+    {
       name: 'navigate_to',
       description: 'Navigate to a page on this site using a relative path.',
       inputSchema: {
@@ -351,8 +420,8 @@ export function createWebMcpHandle({
         required: ['path'],
       },
       execute: navigateTo,
-    });
-  }
+    },
+  ]);
 
-  return Object.assign(start, { listToys, runToy, registerWebMcpTools });
+  return register;
 }

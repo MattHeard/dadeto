@@ -1,6 +1,9 @@
 import { jest } from '@jest/globals';
 import { invokeCapability } from '../../../src/core/capabilities/index.js';
-import { createWebMcpHandle } from '../../../src/core/browser/webmcp.js';
+import {
+  createJsonCapabilityTools,
+  createWebMcpHandle,
+} from '../../../src/core/browser/webmcp.js';
 import {
   createLocalAppCore,
   createWriterServer,
@@ -186,15 +189,12 @@ describe('core local server routes', () => {
     });
     const httpOutput = response.json.mock.calls.at(-1)[0].output;
     const tools = new Map();
-    const webMcp = createWebMcpHandle({
-      fetchFn: jest.fn(),
-      bindEffectBoundary: jest.fn(),
-      importModule: jest.fn(),
-      modelContext: {
-        registerTool: tool => tools.set(tool.name, tool),
-      },
-      URLCtor: URL,
-    });
+    const webMcp = createWebMcpHandle(
+      undefined,
+      createJsonCapabilityTools(),
+      undefined,
+      { registerTool: tool => tools.set(tool.name, tool) }
+    );
     webMcp.registerWebMcpTools();
     const canonicalizeTool = tools.get('dadeto_canonicalize_json');
     expect(canonicalizeTool.annotations).toEqual({ readOnlyHint: true });

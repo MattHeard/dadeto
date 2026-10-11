@@ -1,15 +1,24 @@
-import { createWebMcpHandle } from "../core/browser/webmcp.js";
+import {
+  createJsonCapabilityTools,
+  createPageTools,
+  createToyTools,
+  createWebMcpHandle,
+} from "../core/browser/webmcp.js";
 import { bindEffectBoundary, createEffectFetchFn } from './allow-effects.js';
 
-const handle = createWebMcpHandle({
-  fetchFn: createEffectFetchFn((...args) => fetch(...args)),
-  bindEffectBoundary,
-  importModule: path => import(path),
-  documentObj: globalThis.document,
-  locationObj: globalThis.location,
-  modelContext: globalThis.document?.modelContext,
-  URLCtor: URL,
-});
+const locationObj = globalThis.location;
+const handle = createWebMcpHandle(
+  createToyTools(
+    createEffectFetchFn((...args) => fetch(...args)),
+    bindEffectBoundary,
+    path => import(path),
+    key =>
+      new URL(`#${key}`, locationObj?.href ?? 'https://mattheard.net/').href
+  ),
+  createJsonCapabilityTools(),
+  createPageTools(globalThis.document, locationObj, URL),
+  globalThis.document?.modelContext
+);
 
 export const { listToys, runToy, registerWebMcpTools } = handle;
 

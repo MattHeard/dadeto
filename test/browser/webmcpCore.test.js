@@ -1,5 +1,10 @@
 import { jest, test, expect } from '@jest/globals';
-import { createWebMcpHandle } from '../../src/core/browser/webmcp.js';
+import {
+  createJsonCapabilityTools,
+  createPageTools,
+  createToyTools,
+  createWebMcpHandle,
+} from '../../src/core/browser/webmcp.js';
 
 /**
  * Build a normal text toy with optional metadata overrides.
@@ -66,16 +71,20 @@ function fixture({
             { textContent: '', href: '/empty' },
           ],
   };
-  const handle = createWebMcpHandle({
-    fetchFn,
-    bindEffectBoundary: handler => handler(Object.freeze({})),
-    importModule,
-    invokeCapabilityFn,
-    documentObj,
-    locationObj: withLocation ? locationObj : undefined,
-    modelContext: withContext ? modelContext : undefined,
-    URLCtor: URL,
-  });
+  const activeLocation = withLocation ? locationObj : undefined;
+  const handle = createWebMcpHandle(
+    createToyTools(
+      fetchFn,
+      handler => handler(Object.freeze({})),
+      importModule,
+      key =>
+        new URL(`#${key}`, activeLocation?.href ?? 'https://mattheard.net/')
+          .href
+    ),
+    createJsonCapabilityTools(invokeCapabilityFn),
+    createPageTools(documentObj, activeLocation, URL),
+    withContext ? modelContext : undefined
+  );
   return { handle, fetchFn, importModule, tools, locationObj };
 }
 
@@ -219,7 +228,7 @@ test.each([
   expect(result.error.message).toContain(message);
 });
 
-test('unsupported contexts are no-ops with no fetches', () => {
+test('unsupported contexts are no-ops with no fetches', async () => {
   const { handle, fetchFn, tools } = fixture({ withContext: false });
   expect(() => handle()).not.toThrow();
   expect(() => handle.registerWebMcpTools()).not.toThrow();
@@ -227,13 +236,12 @@ test('unsupported contexts are no-ops with no fetches', () => {
   expect(() => handle.registerWebMcpTools(null)).not.toThrow();
   expect(tools.size).toBe(0);
   expect(fetchFn).not.toHaveBeenCalled();
-  const emptyContext = createWebMcpHandle({
-    fetchFn,
-    importModule: async () => ({}),
-    modelContext: {},
-    URLCtor: URL,
-  });
+  const emptyContext = createWebMcpHandle(undefined, undefined, undefined, {});
   expect(() => emptyContext()).not.toThrow();
+  await expect(emptyContext.listToys()).resolves.toEqual([]);
+  await expect(
+    emptyContext.runToy({ toy: 'missing', input: '' })
+  ).resolves.toEqual({});
 });
 
 test('capability invocation failures return safe structured errors', async () => {
