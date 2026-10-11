@@ -72,13 +72,12 @@ function buildNextState(persisted, input) {
   );
   const framesPerTick = Math.max(1, Math.round(nextTickSpeedMs / 16));
   const shouldReset = input?.reset === true || !persisted;
-  const state = createNextState({
-    base,
-    nextTickSpeedMs,
+  const state = createNextState(
+    { ...base, tickSpeedMs: nextTickSpeedMs },
     framesPerTick,
-    seedCells: seed.cells,
-    shouldReset,
-  });
+    seed.cells,
+    shouldReset
+  );
   if (!shouldReset) {
     return stepBoard(state, framesPerTick);
   }
@@ -88,18 +87,13 @@ function buildNextState(persisted, input) {
 
 /**
  * Create the state before advancing the board.
- * @param {{
- *   base: LifeState,
- *   nextTickSpeedMs: number,
- *   framesPerTick: number,
- *   seedCells: LifeCell[],
- *   shouldReset: boolean,
- * }} options Next-state options.
+ * @param {LifeState} base Current state with the requested tick speed applied.
+ * @param {number} framesPerTick Frames per generation tick.
+ * @param {LifeCell[]} seedCells Cells to use when resetting.
+ * @param {boolean} shouldReset Whether to reset generation and cells.
  * @returns {LifeState} Prepared state.
  */
-function createNextState(options) {
-  const { base, nextTickSpeedMs, framesPerTick, seedCells, shouldReset } =
-    options;
+function createNextState(base, framesPerTick, seedCells, shouldReset) {
   let startingCells = base.cells;
   if (shouldReset) {
     startingCells = seedCells;
@@ -119,7 +113,7 @@ function createNextState(options) {
 
   return createBaseStateFields({
     ...base,
-    tickSpeedMs: nextTickSpeedMs,
+    tickSpeedMs: base.tickSpeedMs,
     framesPerTick,
     framesUntilTick: initialCountdown,
     generation,
