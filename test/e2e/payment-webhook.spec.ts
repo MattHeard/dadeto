@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { createHmac } from 'node:crypto';
 
 const CHECKOUT_API_KEY_UUID = '11111111-1111-1111-1111-111111111111';
 const MAPPED_API_KEY_UUID = '33333333-3333-4333-8333-333333333333';
@@ -27,8 +28,21 @@ function buildApiUrl(path: string) {
 }
 
 async function postPaymentEvent(request, event) {
+  const secret = process.env.STRIPE_WEBHOOK_SECRET;
+  if (!secret) {
+    throw new Error('STRIPE_WEBHOOK_SECRET is required for payment-webhook e2e tests');
+  }
+  const payload = JSON.stringify(event);
+  const timestamp = Math.floor(Date.now() / 1000);
+  const signature = createHmac('sha256', secret)
+    .update(`${timestamp}.${payload}`, 'utf8')
+    .digest('hex');
   const response = await request.post(getWebhookBaseUrl(), {
-    data: event,
+    data: payload,
+    headers: {
+      'content-type': 'application/json',
+      'stripe-signature': `t=${timestamp},v1=${signature}`,
+    },
   });
   if (response.status() >= 500) {
     console.log(

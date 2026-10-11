@@ -6,15 +6,17 @@ describe('runtime secret Terraform contract', () => {
   let prodWorkflow;
   let testWorkflow;
   let syncWorkflow;
+  let playwright;
 
   beforeAll(async () => {
-    [main, variables, prodWorkflow, testWorkflow, syncWorkflow] =
+    [main, variables, prodWorkflow, testWorkflow, syncWorkflow, playwright] =
       await Promise.all([
         readFile('infra/main.tf', 'utf8'),
         readFile('infra/variables.tf', 'utf8'),
         readFile('.github/workflows/gcp-prod.yml', 'utf8'),
         readFile('.github/workflows/gcp-test.yml', 'utf8'),
         readFile('.github/workflows/sync-runtime-secret.yml', 'utf8'),
+        readFile('infra/playwright.tf', 'utf8'),
       ]);
   });
 
@@ -39,5 +41,18 @@ describe('runtime secret Terraform contract', () => {
     expect(syncWorkflow).toContain('workflow_dispatch:');
     expect(syncWorkflow).toContain('--data-file=-');
     expect(syncWorkflow).not.toContain('echo "$SECRET_VALUE"');
+  });
+
+  test('Playwright can sign webhook fixtures with only the test webhook secret', () => {
+    expect(playwright).toContain(
+      'google_secret_manager_secret_iam_member" "playwright_webhook_accessor'
+    );
+    expect(playwright).toContain(
+      'secret_id = local.test_runtime_secret_names.stripe_webhook'
+    );
+    expect(playwright).toContain('name = "STRIPE_WEBHOOK_SECRET"');
+    expect(playwright).toContain(
+      'secret  = google_secret_manager_secret.runtime["stripe_webhook"].id'
+    );
   });
 });

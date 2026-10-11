@@ -52,6 +52,17 @@ resource "google_project_iam_member" "pw_artifact_pull" {
   member  = "serviceAccount:${google_service_account.playwright[0].email}"
 }
 
+resource "google_secret_manager_secret_iam_member" "playwright_webhook_accessor" {
+  count = local.playwright_enabled ? 1 : 0
+
+  project   = var.project_id
+  secret_id = local.test_runtime_secret_names.stripe_webhook
+  role      = "roles/secretmanager.secretAccessor"
+  member    = "serviceAccount:${google_service_account.playwright[0].email}"
+
+  depends_on = [google_secret_manager_secret.runtime]
+}
+
 resource "google_project_iam_member" "tf_run_admin" {
   count = local.playwright_enabled ? 1 : 0
 
@@ -266,6 +277,17 @@ resource "google_cloud_run_v2_job" "playwright" {
         }
 
         env {
+          name = "STRIPE_WEBHOOK_SECRET"
+
+          value_source {
+            secret_key_ref {
+              secret  = google_secret_manager_secret.runtime["stripe_webhook"].id
+              version = var.stripe_webhook_secret_version
+            }
+          }
+        }
+
+        env {
           name  = "OBJECT_MINUTE_RENTAL_SEARCH_URL"
           value = google_cloudfunctions2_function.object_minute_rental_search.service_config[0].uri
         }
@@ -331,6 +353,8 @@ resource "google_cloud_run_v2_job" "playwright" {
     google_service_account_iam_member.tf_can_actas_playwright,
     google_project_iam_member.tf_run_admin,
     google_storage_bucket_iam_member.reports_writer,
+    google_secret_manager_secret_iam_member.playwright_webhook_accessor,
+    google_secret_manager_secret_version.test_runtime,
   ]
 }
 

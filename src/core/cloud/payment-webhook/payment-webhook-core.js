@@ -188,15 +188,10 @@ export function parseStripePaymentWebhookEvent(request, env, constructEvent) {
   const rawBody = /** @type {{ rawBody?: string|Buffer }|null|undefined} */ (
     request
   )?.rawBody;
-  const payload =
-    resolveStripePayload(rawBody) ||
-    (isEphemeralTestEnvironment(env) ? resolveFixturePayload(request) : '');
+  const payload = resolveStripePayload(rawBody);
   if (!secret) throw new TypeError('Missing Stripe webhook secret');
   if (!payload) throw new TypeError('Missing Stripe webhook payload');
   const signature = extractHeader(request, 'stripe-signature');
-  if (!signature && isEphemeralTestEnvironment(env)) {
-    return parsePaymentWebhookPayload(payload);
-  }
   if (!signature) throw new TypeError('Missing Stripe signature');
   if (!constructEvent)
     throw new TypeError('Stripe webhook verifier unavailable');
@@ -207,35 +202,6 @@ export function parseStripePaymentWebhookEvent(request, env, constructEvent) {
   } catch {
     throw new TypeError('Invalid Stripe webhook signature');
   }
-}
-
-/**
- * Identify the short-lived environments used by the GCP integration workflow.
- * @param {ProcessEnvLike} env Environment values.
- * @returns {boolean} Whether unsigned fixture requests are allowed.
- */
-function isEphemeralTestEnvironment(env) {
-  return /^t-[a-z0-9-]+$/.test(env.DENDRITE_ENVIRONMENT ?? '');
-}
-
-/**
- * Parse an unsigned fixture payload for an ephemeral test environment.
- * @param {string|Buffer} payload Raw JSON payload.
- * @returns {import('../../payment-webhook-core.js').PaymentEvent} Parsed event.
- */
-function parsePaymentWebhookPayload(payload) {
-  return validateVerifiedStripeEvent(JSON.parse(payload.toString()));
-}
-
-/**
- * Serialize a parsed request body for an unsigned ephemeral fixture.
- * @param {unknown} request Incoming request.
- * @returns {string} Serialized body or an empty string.
- */
-function resolveFixturePayload(request) {
-  const body = /** @type {{ body?: unknown }|null|undefined} */ (request)?.body;
-  if (!body || typeof body !== 'object') return '';
-  return JSON.stringify(body);
 }
 
 /**

@@ -595,34 +595,38 @@ describe('payment webhook cloud wrapper', () => {
     );
   });
 
-  it('accepts unsigned fixture events only in ephemeral test environments', () => {
+  it('requires raw bytes and signature even in ephemeral test environments', () => {
     const event = {
       id: 'evt_unsigned_fixture',
       type: 'payment_intent.succeeded',
       data: { object: { metadata: { [creditAmountKey]: '3' } } },
     };
+    const toJSON = jest.fn(() => event);
+    const constructEvent = jest.fn(() => event);
 
-    expect(
+    expect(() =>
+      parseStripePaymentWebhookEvent(
+        { body: { toJSON } },
+        {
+          STRIPE_WEBHOOK_SECRET: 'secret',
+          DENDRITE_ENVIRONMENT: 't-e2e-1234',
+        },
+        constructEvent
+      )
+    ).toThrow('Missing Stripe webhook payload');
+    expect(toJSON).not.toHaveBeenCalled();
+
+    expect(() =>
       parseStripePaymentWebhookEvent(
         { rawBody: JSON.stringify(event) },
         {
           STRIPE_WEBHOOK_SECRET: 'secret',
           DENDRITE_ENVIRONMENT: 't-e2e-1234',
         },
-        jest.fn()
+        constructEvent
       )
-    ).toMatchObject({ id: 'evt_unsigned_fixture' });
-
-    expect(
-      parseStripePaymentWebhookEvent(
-        { body: event },
-        {
-          STRIPE_WEBHOOK_SECRET: 'secret',
-          DENDRITE_ENVIRONMENT: 't-e2e-1234',
-        },
-        jest.fn()
-      )
-    ).toMatchObject({ id: 'evt_unsigned_fixture' });
+    ).toThrow('Missing Stripe signature');
+    expect(constructEvent).not.toHaveBeenCalled();
 
     expect(() =>
       parseStripePaymentWebhookEvent(
