@@ -232,6 +232,11 @@ export default [
     },
   },
   {
+    files: ['src/core/**/*.js'],
+    plugins: { repo: repoLintPlugin },
+    rules: { 'repo/no-parameter-bag-arity-smuggling': 'error' },
+  },
+  {
     files: [
       'src/core/browser/presenters/battleshipSolitaireClues.js',
       'src/core/browser/toys/2025-03-29/get.js',
