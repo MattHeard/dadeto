@@ -25,7 +25,14 @@ export function createLocalServerRuntime(deps) {
     const app = deps.createLocalApp(buildLocalAppConfig(config, deps, log));
     const server = deps.createWriterServer(app, { env });
 
-    startServer({ server, host, port, env, deps, log });
+    const writerUrl = deps.getWriterUrl(port, env);
+    const onListening = createServerListeningHandler(
+      host,
+      port,
+      writerUrl,
+      log
+    );
+    startServer(server, host, port, onListening);
     server.on('error', createServerErrorHandler({ port, deps, errorLog }));
   }
 
@@ -91,19 +98,27 @@ function getRequestLogger(env, deps, log) {
 }
 
 /**
- * @param {{
- *   server: { listen: (...args: Array<unknown>) => void },
- *   host: string,
- *   port: number,
- *   env: Record<string, string | undefined>,
- *   deps: { getWriterUrl: (port: number, env: Record<string, string | undefined>) => string },
- *   log: (message: string) => void
- * }} options Server startup options.
+ * @param {{listen: (...args: Array<unknown>) => void}} server Server to start.
+ * @param {string} host Normalized listen host.
+ * @param {number} port Listen port.
+ * @param {() => void} onListening Callback for successful startup.
  * @returns {void} Nothing.
  */
-function startServer({ server, host, port, env, deps, log }) {
-  const writerUrl = deps.getWriterUrl(port, env);
-  const onListening = () => {
+function startServer(server, host, port, onListening) {
+  const listenArgs = host ? [port, host, onListening] : [port, onListening];
+  server.listen(...listenArgs);
+}
+
+/**
+ * Prepare the callback that logs the local server URLs after startup.
+ * @param {string} host Normalized listen host.
+ * @param {number} port Listen port.
+ * @param {string} writerUrl Writer base URL.
+ * @param {(message: string) => void} log Startup logger.
+ * @returns {() => void} Callback for successful startup.
+ */
+function createServerListeningHandler(host, port, writerUrl, log) {
+  return () => {
     log(`writer server listening on ${writerUrl}`);
     log(
       host
@@ -111,8 +126,6 @@ function startServer({ server, host, port, env, deps, log }) {
         : 'non-core-thin dashboard: set WRITER_HOST=0.0.0.0 to reach /non-core-thin from the LAN'
     );
   };
-  const listenArgs = host ? [port, host, onListening] : [port, onListening];
-  server.listen(...listenArgs);
 }
 
 /**
