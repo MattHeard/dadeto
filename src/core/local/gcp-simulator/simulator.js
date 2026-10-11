@@ -73,7 +73,7 @@ const LOCAL_ID_TOKEN = 'local-admin-token';
 /** @typedef {{ path: string, before?: unknown, after?: unknown }} CommittedRecord */
 /** @typedef {{ pathPattern: string, eventName: 'onCreate' | 'onWrite', handler: (...args: any[]) => any }} SimulatorTrigger */
 /** @typedef {{ doc: { ref: { path: string }, data?: () => unknown }, createdAt: number, rand: number, path: string }} ModerationCandidate */
-/** @typedef {{ db: unknown, storage: unknown, fetchFn: (permission: import('../../../../types/allow-effects').AllowEffects, ...args: any[]) => any, bindEffectBoundary: import('../../../../types/allow-effects').AllowEffectsBoundary, projectId: string, baseUrl: string, bucketName: string, verifyIdToken: (...args: any[]) => any }} GenerateStatsSimulatorOptions */
+/** @typedef {{ db: unknown, storage: { bucket: (name: string) => { file: (path: string) => { save: (contents: string, options: object) => Promise<unknown> } } }, fetchFn: (permission: import('../../../../types/allow-effects').AllowEffects, ...args: any[]) => any, bindEffectBoundary: import('../../../../types/allow-effects').AllowEffectsBoundary, projectId: string, baseUrl: string, bucketName: string, verifyIdToken: (...args: any[]) => any }} GenerateStatsSimulatorOptions */
 /** @typedef {{ snapshotHelpers: ReturnType<typeof createSnapshotHelpers>, lookupHelpers: ReturnType<typeof createLookupHelpers>, authVerifiers: ReturnType<typeof createSimulatorAuthVerifiers>, fieldValue: ReturnType<typeof createFakeFieldValue>, db: SimulatorDb, randomUUID: () => string, logGenerateStatsError: (permission: import('../../../../types/allow-effects').AllowEffects, logger: { error?: (...args: unknown[]) => void }, ...args: unknown[]) => void }} SimulatorTestUtilsOptions */
 /** @typedef {{ processNewStory: (...args: any[]) => any, processNewPage: (...args: any[]) => any, renderContents: (...args: any[]) => any, renderVariant: (...args: any[]) => any, handleVariantWrite: (...args: any[]) => any, bindEffectBoundary: import('../../../../types/allow-effects').AllowEffectsBoundary }} SimulatorTriggerHandlers */
 /**
@@ -818,7 +818,21 @@ function createGenerateStatsConfig(options) {
   return {
     db: options.db,
     auth: { verifyIdToken: options.verifyIdToken },
-    storage: options.storage,
+    saveStatsHtml: (
+      /** @type {import('../../../../types/allow-effects').AllowEffects} */ permission,
+      /** @type {string} */ bucketName,
+      /** @type {string} */ objectPath,
+      /** @type {string} */ html
+    ) => {
+      void permission;
+      return options.storage
+        .bucket(bucketName)
+        .file(objectPath)
+        .save(html, {
+          contentType: 'text/html',
+          metadata: { cacheControl: 'no-cache' },
+        });
+    },
     fetchFn: options.fetchFn,
     sendHttpResponse: (
       /** @type {import('../../../../types/allow-effects').AllowEffects} */ _permission,

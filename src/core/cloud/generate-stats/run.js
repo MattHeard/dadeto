@@ -118,7 +118,7 @@ export const getFirestoreInstance = (options = {}) => {
  * @param {{
  *   db: unknown,
  *   auth: unknown,
- *   storage: unknown,
+ *   saveStatsHtml: (permission: AllowEffects, bucketName: string, objectPath: string, html: string) => Promise<void>,
  *   fetchFn: (permission: import('../../../../types/allow-effects').AllowEffects, ...args: Parameters<typeof globalThis.fetch>) => ReturnType<typeof globalThis.fetch>,
  *   effectFetchFn: (permission: import('../../../../types/allow-effects').AllowEffects, input: string, init?: object) => Promise<Response>,
  *   env?: Record<string, string | undefined>,
@@ -216,7 +216,7 @@ function createRegionOnRequest(functions, app) {
 /**
  * Build the generate-stats Cloud Function handle from runtime dependencies.
  * @param {{
- *   Storage: new () => unknown,
+ *   saveStatsHtml: (permission: AllowEffects, bucketName: string, objectPath: string, html: string) => Promise<void>,
  *   cors: (options: unknown) => unknown,
  *   express: () => { use: (middleware: unknown) => void, post: (path: string, handler: unknown) => void },
  *   functions: { region: (region: string) => { https: { onRequest: (app: unknown) => unknown } } },
@@ -241,7 +241,6 @@ function createRegionOnRequest(functions, app) {
  */
 export function createGenerateStatsHandle(deps) {
   const {
-    Storage,
     getAuth,
     getFirestore,
     getEnvironmentVariables,
@@ -266,7 +265,6 @@ export function createGenerateStatsHandle(deps) {
     ...deps,
     db,
     auth: getAuth(),
-    storage: new Storage(),
     env: environment,
     cryptoModule: crypto,
   }).generateStats;

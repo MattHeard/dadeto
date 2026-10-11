@@ -189,7 +189,7 @@ describe('local gcp simulator', () => {
   });
 
   it('can regenerate stats from the simulated backend', async () => {
-    await simulator.generateStatsCore.generate();
+    await simulator.generateStatsCore.generate(Object.freeze({}));
 
     const statsFile = simulator.storage
       .bucket(simulator.bucketName)

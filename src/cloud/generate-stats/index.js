@@ -14,6 +14,7 @@ import {
 import { createGenerateStatsHandle } from '../../core/cloud/generate-stats/run.js';
 import { createSchedulerRequestVerifier } from '../../core/cloud/generate-stats/scheduler-auth.js';
 import { createGenerateStatsEffectAdapters } from './effect-adapters.js';
+import { createSaveStatsHtml } from './storage-effect-adapter.js';
 
 const environment = getEnvironmentVariables();
 const oidcClient = new OAuth2Client();
@@ -24,7 +25,7 @@ const verifySchedulerRequest = createSchedulerRequestVerifier({
 });
 
 const handle = createGenerateStatsHandle({
-  Storage,
+  saveStatsHtml: createSaveStatsHtml(new Storage()),
   cors,
   express,
   functions,

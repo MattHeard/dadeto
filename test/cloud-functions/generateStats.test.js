@@ -4,7 +4,12 @@ describe('cloud generate-stats entrypoint', () => {
   it('passes cloud dependencies into the core runner', async () => {
     const handle = { label: 'generate-stats' };
     const createGenerateStatsHandle = jest.fn(() => handle);
-    const Storage = jest.fn(function Storage() {});
+    const storageSave = jest.fn(async () => {});
+    const storageFile = jest.fn(() => ({ save: storageSave }));
+    const storageBucket = jest.fn(() => ({ file: storageFile }));
+    const Storage = jest.fn(function Storage() {
+      return { bucket: storageBucket };
+    });
     const functions = {
       region: jest.fn(() => ({
         https: { onRequest: jest.fn() },
@@ -63,7 +68,7 @@ describe('cloud generate-stats entrypoint', () => {
     expect(createGenerateStatsHandle).toHaveBeenCalledTimes(1);
     expect(createGenerateStatsHandle).toHaveBeenCalledWith(
       expect.objectContaining({
-        Storage,
+        saveStatsHtml: expect.any(Function),
         cors,
         express,
         functions,
@@ -83,6 +88,14 @@ describe('cloud generate-stats entrypoint', () => {
     coreDeps.fetchFn(permission, 'https://example.com', { method: 'GET' });
     expect(fetchFn).toHaveBeenCalledWith('https://example.com', {
       method: 'GET',
+    });
+    await coreDeps.saveStatsHtml(permission, 'bucket', 'stats.html', '<html/>');
+    expect(Storage).toHaveBeenCalledTimes(1);
+    expect(storageBucket).toHaveBeenCalledWith('bucket');
+    expect(storageFile).toHaveBeenCalledWith('stats.html');
+    expect(storageSave).toHaveBeenCalledWith('<html/>', {
+      contentType: 'text/html',
+      metadata: { cacheControl: 'no-cache' },
     });
     expect(module.handle).toBe(handle);
   });

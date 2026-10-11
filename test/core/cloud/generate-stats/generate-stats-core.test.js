@@ -20,6 +20,7 @@ const permission = Object.freeze({});
 const createGenerateStatsCore = dependencies =>
   createGenerateStatsCoreCore({
     ...dependencies,
+    saveStatsHtml: dependencies.saveStatsHtml ?? (async () => {}),
     fetchFn: (permission, ...args) => dependencies.fetchFn(...args),
     sendHttpResponse:
       dependencies.sendHttpResponse ??
@@ -42,7 +43,6 @@ const createGenerateStatsCore = dependencies =>
 
 let mockDb;
 let mockAuth;
-let mockStorage;
 let mockFetchFn;
 let mockEnv;
 let mockUrlMap;
@@ -65,11 +65,6 @@ beforeEach(() => {
   mockAuth = {
     verifyIdToken: () => Promise.resolve({ uid: 'some-uid' }),
   };
-  mockStorage = {
-    bucket: () => mockStorage,
-    file: () => mockStorage,
-    save: () => Promise.resolve(),
-  };
   mockFetchFn = jest.fn(); // Make mockFetchFn a Jest mock function
   mockEnv = {};
   mockUrlMap = 'some-url-map';
@@ -80,7 +75,6 @@ beforeEach(() => {
   core = createGenerateStatsCore({
     db: mockDb,
     auth: mockAuth,
-    storage: mockStorage,
     fetchFn: mockFetchFn,
     env: mockEnv,
     urlMap: mockUrlMap,
@@ -104,7 +98,6 @@ it('accepts a non-object env reference by normalizing to an empty map', () => {
     createGenerateStatsCore({
       db: mockDb,
       auth: mockAuth,
-      storage: mockStorage,
       fetchFn: mockFetchFn,
       env: null,
       urlMap: mockUrlMap,
@@ -245,7 +238,7 @@ const createDbMock = () => {
   };
 };
 
-const createStorageMock = ({ failSave = false, errorValue } = {}) => {
+const createSaveStatsHtmlMock = ({ failSave = false, errorValue } = {}) => {
   let save;
   if (failSave) {
     save = jest.fn(() =>
@@ -254,9 +247,8 @@ const createStorageMock = ({ failSave = false, errorValue } = {}) => {
   } else {
     save = jest.fn(() => Promise.resolve());
   }
-  const file = jest.fn(() => ({ save }));
-  const bucket = jest.fn(() => ({ file }));
-  return { bucket, __mocks: { save, file, bucket } };
+  const saveStatsHtml = jest.fn(() => save());
+  return { saveStatsHtml, __mocks: { save } };
 };
 
 const createFetchMock = ({
@@ -274,7 +266,7 @@ const createFetchMock = ({
 
 const buildCoreForHandleRequest = ({
   auth,
-  storage,
+  saveStatsHtml,
   fetchFn,
   db,
   verifySchedulerRequest,
@@ -284,7 +276,7 @@ const buildCoreForHandleRequest = ({
   const authInstance = auth || {
     verifyIdToken: jest.fn(() => Promise.resolve({ uid: ADMIN_UID })),
   };
-  const storageInstance = storage || createStorageMock();
+  const writer = saveStatsHtml ?? createSaveStatsHtmlMock().saveStatsHtml;
   const fetchInstance = fetchFn || createFetchMock();
   const dbInstance = db || createDbMock();
   const consoleError = jest.fn();
@@ -298,7 +290,7 @@ const buildCoreForHandleRequest = ({
   const coreInstance = createGenerateStatsCore({
     db: dbInstance,
     auth: authInstance,
-    storage: storageInstance,
+    saveStatsHtml: writer,
     fetchFn: fetchInstance,
     env: {},
     urlMap: 'test-url-map',
@@ -310,7 +302,7 @@ const buildCoreForHandleRequest = ({
 
   return {
     coreInstance,
-    storageInstance,
+    saveStatsHtml: writer,
     fetchInstance,
     authInstance,
     consoleError,
@@ -456,9 +448,11 @@ it('should succeed for an authorized admin', async () => {
 });
 
 it('should return 500 when generate rejects', async () => {
-  const storage = createStorageMock({ failSave: true });
+  const saveStatsHtml = createSaveStatsHtmlMock({
+    failSave: true,
+  }).saveStatsHtml;
   const { coreInstance } = buildCoreForHandleRequest({
-    storage,
+    saveStatsHtml,
     verifySchedulerRequest: async () => true,
   });
   await coreInstance.handleRequest(permission, mockReq, mockRes);
@@ -501,8 +495,10 @@ it('passes the request permission directly to each HTTP response adapter', async
   );
 
   sendHttpResponse.mockClear();
+  const saveStatsHtml = jest.fn(async () => {});
   const successCase = buildCoreForHandleRequest({
     sendHttpResponse,
+    saveStatsHtml,
     verifySchedulerRequest: async () => true,
   });
   await successCase.coreInstance.handleRequest(
@@ -515,11 +511,17 @@ it('passes the request permission directly to each HTTP response adapter', async
     mockRes,
     { status: 200, body: { ok: true }, method: 'json' }
   );
+  expect(saveStatsHtml).toHaveBeenCalledWith(
+    requestPermission,
+    DEFAULT_BUCKET_NAME,
+    'stats.html',
+    expect.any(String)
+  );
 
   sendHttpResponse.mockClear();
   const failureCase = buildCoreForHandleRequest({
     sendHttpResponse,
-    storage: createStorageMock({ failSave: true }),
+    saveStatsHtml: createSaveStatsHtmlMock({ failSave: true }).saveStatsHtml,
     verifySchedulerRequest: async () => true,
   });
   await failureCase.coreInstance.handleRequest(
@@ -535,12 +537,12 @@ it('passes the request permission directly to each HTTP response adapter', async
 });
 
 it('returns the fallback message when generate throws without a message', async () => {
-  const storage = createStorageMock({
+  const saveStatsHtml = createSaveStatsHtmlMock({
     failSave: true,
     errorValue: { reason: 'timeout' },
-  });
+  }).saveStatsHtml;
   const { coreInstance } = buildCoreForHandleRequest({
-    storage,
+    saveStatsHtml,
     verifySchedulerRequest: async () => true,
   });
   await coreInstance.handleRequest(permission, mockReq, mockRes);
@@ -824,23 +826,6 @@ describe('data fetching top stories', () => {
 
 describe('generate', () => {
   it('should generate and save HTML, then invalidate paths', async () => {
-    const mockStorageInstance = {
-      bucket: () => mockStorageInstance,
-      file: () => mockStorageInstance,
-      save: () => {
-        mockStorageInstance.saveCalled = true;
-        return Promise.resolve();
-      },
-      saveCalled: false,
-    };
-    const mockInvalidatePathsFn = paths => {
-      mockInvalidatePathsFn.paths = paths;
-      mockInvalidatePathsFn.called = true;
-      return Promise.resolve();
-    };
-    mockInvalidatePathsFn.called = false;
-    mockInvalidatePathsFn.paths = [];
-
     const variantCounts = [2, 1];
     const storiesCollection = {
       count: jest.fn(() => ({
@@ -915,10 +900,7 @@ describe('generate', () => {
       }),
     };
 
-    const saveMock = jest.fn(() => Promise.resolve());
-    const fileMock = jest.fn(() => ({ save: saveMock }));
-    const bucketMock = jest.fn(() => ({ file: fileMock }));
-    const storage = { bucket: bucketMock };
+    const saveStatsHtml = jest.fn(() => Promise.resolve());
 
     const fetchFn = jest
       .fn()
@@ -933,30 +915,28 @@ describe('generate', () => {
     const testCore = createGenerateStatsCore({
       db,
       auth: { verifyIdToken: jest.fn() },
-      storage,
+      saveStatsHtml,
       fetchFn,
       env: {},
       cryptoModule,
       console: noopConsole,
     });
 
-    await testCore.generate();
+    await testCore.generate(permission);
 
-    expect(bucketMock).toHaveBeenCalledWith(DEFAULT_BUCKET_NAME);
-    expect(fileMock).toHaveBeenCalledWith('stats.html');
-    expect(saveMock).toHaveBeenCalledTimes(1);
+    expect(saveStatsHtml).toHaveBeenCalledTimes(1);
+    expect(saveStatsHtml).toHaveBeenCalledWith(
+      permission,
+      DEFAULT_BUCKET_NAME,
+      'stats.html',
+      expect.any(String)
+    );
 
-    const savedHtml = saveMock.mock.calls[0][0];
+    const savedHtml = saveStatsHtml.mock.calls[0][3];
     expect(savedHtml).toContain('Number of stories: 4');
     expect(savedHtml).toContain('Number of pages: 7');
     expect(savedHtml).toContain('Story One');
     expect(savedHtml).toContain('story2');
-
-    const saveOptions = saveMock.mock.calls[0][1];
-    expect(saveOptions).toEqual({
-      contentType: 'text/html',
-      metadata: { cacheControl: 'no-cache' },
-    });
 
     expect(fetchFn).toHaveBeenCalledTimes(2);
     const invalidateCall = fetchFn.mock.calls[1];
@@ -991,10 +971,7 @@ describe('generate', () => {
         count: () => ({ get: () => countSnap(0) }),
       })),
     };
-    const saveMock = jest.fn(() => Promise.resolve());
-    const fileMock = jest.fn(() => ({ save: saveMock }));
-    const bucketMock = jest.fn(() => ({ file: fileMock }));
-    const storage = { bucket: bucketMock };
+    const saveStatsHtml = jest.fn(() => Promise.resolve());
     const fetchFn = jest
       .fn()
       .mockResolvedValueOnce({
@@ -1006,7 +983,7 @@ describe('generate', () => {
     const testCore = createGenerateStatsCore({
       db,
       auth: { verifyIdToken: jest.fn() },
-      storage,
+      saveStatsHtml,
       fetchFn,
       env: {
         STATIC_BUCKET_NAME: 'shared-test-bucket',
@@ -1016,10 +993,14 @@ describe('generate', () => {
       console: noopConsole,
     });
 
-    await testCore.generate();
+    await testCore.generate(permission);
 
-    expect(bucketMock).toHaveBeenCalledWith('shared-test-bucket');
-    expect(fileMock).toHaveBeenCalledWith('t-example/stats.html');
+    expect(saveStatsHtml).toHaveBeenCalledWith(
+      permission,
+      'shared-test-bucket',
+      't-example/stats.html',
+      expect.any(String)
+    );
   });
 });
 
@@ -1124,7 +1105,6 @@ describe('invalidatePaths', () => {
     const testCore = createGenerateStatsCore({
       db: mockDb,
       auth: mockAuth,
-      storage: mockStorage,
       fetchFn: mockFetchFn,
       env: mockEnv,
       urlMap: mockUrlMap,
@@ -1260,7 +1240,6 @@ describe('invalidateSinglePath logger behavior', () => {
     const core = createGenerateStatsCore({
       db: {},
       auth: {},
-      storage: {},
       fetchFn,
       cryptoModule: { randomUUID: () => 'uuid' },
       env: {},
@@ -1283,7 +1262,6 @@ describe('invalidateSinglePath logger behavior', () => {
     const core = createGenerateStatsCore({
       db: {},
       auth: {},
-      storage: {},
       fetchFn,
       cryptoModule: { randomUUID: () => 'uuid' },
       env: {},

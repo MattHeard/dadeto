@@ -12,7 +12,7 @@ import { jest } from '@jest/globals';
  *   deps: {
  *     db: { label: string },
  *     auth: { kind: string },
- *     storage: object,
+ *     saveStatsHtml: jest.Mock,
  *     fetchFn: jest.Mock,
  *     env: Record<string, string | undefined>,
  *     cryptoModule: { randomUUID: jest.Mock },
@@ -61,7 +61,7 @@ async function loadModule({
     })),
   };
   const auth = { kind: 'auth' };
-  const storage = { kind: 'storage' };
+  const saveStatsHtml = jest.fn();
   const fetchFn = jest.fn();
   const getFirestore = jest.fn(() => firestoreResult);
   const crypto = { randomUUID: jest.fn(() => 'uuid') };
@@ -84,7 +84,7 @@ async function loadModule({
   const deps = {
     db: firestoreResult,
     auth,
-    storage,
+    saveStatsHtml,
     fetchFn,
     env: environment,
     cryptoModule: crypto,
@@ -479,9 +479,6 @@ describe('generate-stats run', () => {
         DENDRITE_ENVIRONMENT: 't-123',
       },
     });
-    const Storage = jest.fn(function Storage() {
-      return { kind: 'storage-instance' };
-    });
     const getAuth = jest.fn(() => ({ kind: 'auth-instance' }));
     const getEnvironmentVariables = jest.fn(() => ({
       DENDRITE_ENVIRONMENT: 't-456',
@@ -491,7 +488,6 @@ describe('generate-stats run', () => {
     const crypto = { randomUUID: jest.fn(() => 'uuid') };
 
     const handle = mod.createGenerateStatsHandle({
-      Storage,
       cors,
       express,
       functions,
@@ -500,6 +496,7 @@ describe('generate-stats run', () => {
       getEnvironmentVariables,
       initializeApp,
       fetchFn,
+      saveStatsHtml: jest.fn(),
       crypto,
       bindEffectBoundary,
       bindStartupEffectBoundary,
@@ -515,7 +512,6 @@ describe('generate-stats run', () => {
     );
     expect(bindStartupEffectBoundary).toHaveBeenCalledTimes(3);
     expect(getAuth).toHaveBeenCalledTimes(1);
-    expect(Storage).toHaveBeenCalledTimes(1);
     expect(onRequest).toHaveBeenCalledTimes(1);
     expect(handle).toBe('generateStats-export');
   });

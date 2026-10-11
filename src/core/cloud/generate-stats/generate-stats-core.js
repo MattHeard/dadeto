@@ -344,7 +344,7 @@ function selectCdnHost(candidate) {
  * @param {{
  *   db: import('firebase-admin/firestore').Firestore,
  *   auth: import('firebase-admin/auth').Auth,
- *   storage: import('@google-cloud/storage').Storage,
+ *   saveStatsHtml: (permission: import('../../../../types/allow-effects').AllowEffects, bucketName: string, objectPath: string, html: string) => Promise<void>,
  *   fetchFn: (permission: import('../../../../types/allow-effects').AllowEffects, ...args: Parameters<typeof globalThis.fetch>) => ReturnType<typeof globalThis.fetch>,
  *   effectFetchFn: (permission: import('../../../../types/allow-effects').AllowEffects, input: string, init?: object) => Promise<Response>,
  *   sendHttpResponse: (permission: import('../../../../types/allow-effects').AllowEffects, res: NativeHttpResponse, response: { status: number, body: unknown, method: 'send' | 'json' }) => void,
@@ -367,22 +367,14 @@ function selectCdnHost(candidate) {
  *   ) => Promise<Array<{ title: string, variantCount: number }>>,
  *   getAccessTokenFromMetadata: () => Promise<string>,
  *   invalidatePaths: (paths: string[]) => Promise<void>,
- *   generate: (deps?: {
- *     storyCountFn?: () => Promise<number>,
- *     pageCountFn?: () => Promise<number>,
- *     unmoderatedPageCountFn?: () => Promise<number>,
- *     topStoriesFn?: () => Promise<Array<{ title: string, variantCount: number }>>,
- *     storageInstance?: import('@google-cloud/storage').Storage,
- *     bucketName?: string,
- *     invalidatePathsFn?: (paths: string[]) => Promise<void>,
- *   }) => Promise<null>,
+ *   generate: (permission: import('../../../../types/allow-effects').AllowEffects) => Promise<null>,
  *   handleRequest: (permission: import('../../../../types/allow-effects').AllowEffects, req: NativeHttpRequest, res: NativeHttpResponse) => Promise<void>,
  * }} Core helpers.
  */
 export function createGenerateStatsCore(deps) {
   const db = deps.db;
   const auth = deps.auth;
-  const storage = deps.storage;
+  const saveStatsHtml = deps.saveStatsHtml;
   const fetchFn = deps.fetchFn;
   const effectFetchFn = deps.effectFetchFn;
   const bindEffectBoundary = deps.bindEffectBoundary;
@@ -546,44 +538,21 @@ export function createGenerateStatsCore(deps) {
 
   /**
    * Generate the stats page HTML and upload it to Cloud Storage.
+   * @param {import('../../../../types/allow-effects').AllowEffects} permission Request boundary capability.
    * @returns {Promise<null>} Resolves with null for compatibility.
    */
-  async function generate() {
+  async function generate(permission) {
     const [storyCount, pageCount, unmoderatedCount, topStories] =
       await fetchStatsData();
     const html = buildHtml(storyCount, pageCount, unmoderatedCount, topStories);
-    const bucketRef = getStatsBucketRef(storage);
-    await uploadStatsHtml(bucketRef, html);
+    const bucketName = resolveStaticBucketName(envRef, DEFAULT_BUCKET_NAME);
+    const objectPath = prefixStaticObjectPath(
+      resolveStaticObjectPrefix(envRef),
+      'stats.html'
+    );
+    await saveStatsHtml(permission, bucketName, objectPath, html);
     await invalidatePaths(['/stats.html'], console);
     return null;
-  }
-
-  /**
-   * Resolve the Cloud Storage bucket used for stats uploads.
-   * @param {import('@google-cloud/storage').Storage} storageInstance Storage client.
-   * @returns {import('@google-cloud/storage').Bucket} Bucket reference.
-   */
-  function getStatsBucketRef(storageInstance) {
-    return storageInstance.bucket(
-      resolveStaticBucketName(envRef, DEFAULT_BUCKET_NAME)
-    );
-  }
-
-  /**
-   * Upload the generated HTML to stats bucket.
-   * @param {import('@google-cloud/storage').Bucket} bucketRef Storage bucket reference.
-   * @param {string} html Generated stats document.
-   * @returns {Promise<void>} Resolves when upload completes.
-   */
-  function uploadStatsHtml(bucketRef, html) {
-    return bucketRef
-      .file(
-        prefixStaticObjectPath(resolveStaticObjectPrefix(envRef), 'stats.html')
-      )
-      .save(html, {
-        contentType: 'text/html',
-        metadata: { cacheControl: 'no-cache' },
-      });
   }
 
   /**
@@ -1169,7 +1138,7 @@ function resolveErrorMessage(err, fallback) {
  * @param {import('../../../../types/allow-effects').AllowEffects} permission Request boundary capability.
  * @param {NativeHttpResponse} res Res.
  * @param {(permission: import('../../../../types/allow-effects').AllowEffects, res: NativeHttpResponse, response: { status: number, body: unknown, method: 'send' | 'json' }) => void} sendHttpResponse Permission-aware response adapter.
- * @param {() => Promise<unknown>} generate Generate fn.
+ * @param {(permission: import('../../../../types/allow-effects').AllowEffects) => Promise<unknown>} generate Generate fn.
  * @returns {Promise<void>} Promise.
  */
 async function respondWithGenerate(
@@ -1179,7 +1148,7 @@ async function respondWithGenerate(
   generate
 ) {
   try {
-    await generate();
+    await generate(permission);
     sendHttpResponse(permission, res, {
       status: 200,
       body: { ok: true },
