@@ -25,6 +25,30 @@ import {
   when,
 } from '../../src/core/commonCore.js';
 
+const handleChildCloseFromFixture = input =>
+  commonCoreTestUtils.handleChildClose(
+    {
+      activeChildren: input.activeChildren,
+      state: input.state,
+      aborted: input.aborted,
+      failFast: input.failFast,
+      failures: input.failures,
+    },
+    {
+      command: input.command,
+      startedAt: input.startedAt,
+      exitCode: input.exitCode,
+      signal: input.signal,
+      stderr: input.stderr,
+    },
+    {
+      now: input.now,
+      emitEvent: input.emitEvent,
+      finishWithFailure: input.finishWithFailure,
+      resolve: input.resolve,
+    }
+  );
+
 describe('commonCore additional coverage', () => {
   test('covers primitive validation and reporting helpers', () => {
     expect(ADMIN_UID).toBeTruthy();
@@ -491,7 +515,7 @@ describe('commonCore additional aggregate coverage', () => {
     const emitEvent = jest.fn();
     const finishWithFailure = jest.fn();
     const state = { settled: true, timeoutId: null };
-    commonCoreTestUtils.handleChildClose({
+    handleChildCloseFromFixture({
       activeChildren: new Map([['done', {}]]),
       command: { name: 'done', command: 'done', args: [] },
       now: () => 1,
@@ -512,7 +536,7 @@ describe('commonCore additional aggregate coverage', () => {
       commonCoreTestUtils.shouldIgnoreClosedChild(true, true, [], 'x')
     ).toBe(false);
     const closeResolve = jest.fn();
-    commonCoreTestUtils.handleChildClose({
+    handleChildCloseFromFixture({
       activeChildren: new Map([['open', {}]]),
       command: { name: 'open', command: 'open', args: [] },
       now: () => 1,
@@ -530,7 +554,7 @@ describe('commonCore additional aggregate coverage', () => {
     });
     expect(closeResolve).toHaveBeenCalledWith(undefined);
     const fallbackResolve = jest.fn();
-    commonCoreTestUtils.handleChildClose({
+    handleChildCloseFromFixture({
       activeChildren: new Map([['fallback', {}]]),
       command: { name: 'fallback', args: [] },
       now: () => 1,

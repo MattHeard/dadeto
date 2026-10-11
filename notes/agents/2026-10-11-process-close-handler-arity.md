@@ -1,0 +1,7 @@
+# Process close handler arity cleanup
+
+- Unexpected hurdle: splitting the close handler into three semantic inputs did not alone satisfy the rule because destructuring all three groups inside the handler still expanded to 15 effective inputs.
+- Diagnosis: the oversized function combined active-run lifecycle state, one child process's close-event data, and outcome callbacks. The existing focused and aggregate tests exercised settled, timeout, fail-fast, success, and failure branches.
+- Chosen fix: use three cohesive inputs at the handler boundary and keep them intact in the orchestration function; extract close-result construction into a two-input helper. Updated the production caller and tests to pass lifecycle, completion, and handler roles separately.
+- Evidence: focused Jest passed (2 suites, 16 tests); changed-file ESLint with the parameter-bag rule and `npm run tsdoc:check` passed; fresh no-cache inventory fell from 14 findings/14 files to 13/13 with no `process-utils.js` finding (`.tmp/parameter-bag-global-after-process-utils.json`); `TMPDIR=/home/matt/dadeto/.tmp npm run check` passed all 10 gates, 0 clones, 0 audit vulnerabilities (`.tmp/npm-check-process-utils-arity.log`); `TMPDIR=/home/matt/dadeto/.tmp npm run build` passed (`.tmp/build-process-utils-arity.log`); `git diff --check` passed.
+- Next-time guidance: validate rule semantics immediately after introducing grouped inputs; nested direct destructuring can re-expand the groups. Next finding is `src/core/express-app.js:12` (effective arity 5).

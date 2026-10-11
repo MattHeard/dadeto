@@ -79,33 +79,57 @@ describe('process utilities', () => {
     const noStreamWrites = [];
     forwardStreamLines(null, line => noStreamWrites.push(line));
     expect(noStreamWrites).toEqual([]);
-    const makeInput = overrides => ({
-      activeChildren: new Map([['cmd', {}]]),
-      command: { name: 'cmd', command: 'node', args: ['x'] },
-      now: () => 120,
-      startedAt: 100,
-      exitCode: 0,
-      signal: null,
-      stderr: {},
-      state: { settled: false, timeoutId: null },
-      aborted: false,
-      failFast: false,
-      failures: [],
-      emitEvent: jest.fn(),
-      finishWithFailure: jest.fn(),
-      resolve: jest.fn(),
-      ...overrides,
-    });
+    const makeInput = overrides => {
+      const input = {
+        activeChildren: new Map([['cmd', {}]]),
+        command: { name: 'cmd', command: 'node', args: ['x'] },
+        now: () => 120,
+        startedAt: 100,
+        exitCode: 0,
+        signal: null,
+        stderr: {},
+        state: { settled: false, timeoutId: null },
+        aborted: false,
+        failFast: false,
+        failures: [],
+        emitEvent: jest.fn(),
+        finishWithFailure: jest.fn(),
+        resolve: jest.fn(),
+        ...overrides,
+      };
+      return {
+        run: {
+          activeChildren: input.activeChildren,
+          state: input.state,
+          aborted: input.aborted,
+          failFast: input.failFast,
+          failures: input.failures,
+        },
+        completion: {
+          command: input.command,
+          startedAt: input.startedAt,
+          exitCode: input.exitCode,
+          signal: input.signal,
+          stderr: input.stderr,
+        },
+        handlers: {
+          now: input.now,
+          emitEvent: input.emitEvent,
+          finishWithFailure: input.finishWithFailure,
+          resolve: input.resolve,
+        },
+      };
+    };
     const success = makeInput({ timeoutId: setTimeout(() => {}, 10000) });
-    handleChildClose(success);
-    expect(success.emitEvent).toHaveBeenCalledWith(
+    handleChildClose(success.run, success.completion, success.handlers);
+    expect(success.handlers.emitEvent).toHaveBeenCalledWith(
       {},
       expect.objectContaining({ type: 'check-success', durationMs: 20 })
     );
-    expect(success.resolve).toHaveBeenCalledWith(undefined);
+    expect(success.handlers.resolve).toHaveBeenCalledWith(undefined);
     const failure = makeInput({ exitCode: 1, signal: 'SIGTERM' });
-    handleChildClose(failure);
-    expect(failure.finishWithFailure).toHaveBeenCalledWith(
+    handleChildClose(failure.run, failure.completion, failure.handlers);
+    expect(failure.handlers.finishWithFailure).toHaveBeenCalledWith(
       expect.objectContaining({ exitCode: 1, signal: 'SIGTERM' }),
       true
     );
@@ -113,20 +137,24 @@ describe('process utilities', () => {
       command: { name: 'named', args: [] },
       exitCode: 2,
     });
-    handleChildClose(namedFailure);
-    expect(namedFailure.finishWithFailure).toHaveBeenCalledWith(
+    handleChildClose(
+      namedFailure.run,
+      namedFailure.completion,
+      namedFailure.handlers
+    );
+    expect(namedFailure.handlers.finishWithFailure).toHaveBeenCalledWith(
       expect.objectContaining({ command: 'named' }),
       true
     );
     const settled = makeInput({ state: { settled: true, timeoutId: null } });
-    handleChildClose(settled);
+    handleChildClose(settled.run, settled.completion, settled.handlers);
     const ignored = makeInput({
       aborted: true,
       failFast: true,
       failures: [{ name: 'other' }],
     });
-    handleChildClose(ignored);
-    expect(ignored.emitEvent).not.toHaveBeenCalled();
+    handleChildClose(ignored.run, ignored.completion, ignored.handlers);
+    expect(ignored.handlers.emitEvent).not.toHaveBeenCalled();
   });
 
   it('writes stable timestamps, builds spawn failures, and resolves output streams', async () => {

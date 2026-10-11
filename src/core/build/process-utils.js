@@ -80,54 +80,84 @@ export function forwardStreamLines(stream, writer) {
 }
 
 /**
- * Handle a child-process close event.
- * @param {{ activeChildren: Map<string, object>, command: { name: string, command: string, args: string[] }, now: () => number, startedAt: number, exitCode: number | null, signal: string | null, stderr: object, state: { settled: boolean, timeoutId: ReturnType<typeof setTimeout> | null }, aborted: boolean, failFast: boolean, failures: Array<{ name: string }>, emitEvent: Function, finishWithFailure: Function, resolve: Function, renderCommand?: Function }} input Close-event state.
+ * @typedef {object} ChildCloseRunState
+ * @property {Map<string, object>} activeChildren Active child processes.
+ * @property {{ settled: boolean, timeoutId: ReturnType<typeof setTimeout> | null }} state Promise settlement and timeout state.
+ * @property {boolean} aborted Whether fail-fast handling has aborted the run.
+ * @property {boolean} failFast Whether fail-fast mode is enabled.
+ * @property {Array<{ name: string }>} failures Recorded command failures.
+ */
+
+/**
+ * @typedef {object} ChildCloseCompletion
+ * @property {{ name: string, command: string, args: string[] }} command Closing command descriptor.
+ * @property {number} startedAt Command start time.
+ * @property {number | null} exitCode Process exit code.
+ * @property {string | null} signal Process close signal.
+ * @property {object} stderr Standard error stream.
+ */
+
+/**
+ * @typedef {object} ChildCloseHandlers
+ * @property {() => number} now Clock helper.
+ * @property {Function} emitEvent Success event emitter.
+ * @property {Function} finishWithFailure Failure settlement handler.
+ * @property {Function} resolve Close promise resolver.
+ * @property {Function} [renderCommand] Command renderer.
+ */
+
+/**
+ * Build the result payload for a closed child process.
+ * @param {ChildCloseCompletion} completion Process close-event data.
+ * @param {ChildCloseHandlers} handlers Clock and command-rendering callbacks.
+ * @returns {{ name: string, command: string, exitCode: number | null, signal: string | null, durationMs: number }} Close result payload.
+ */
+const createChildCloseResult = (completion, handlers) => ({
+  name: completion.command.name,
+  command: (handlers.renderCommand ?? defaultRenderCommand)(completion.command),
+  exitCode: completion.exitCode,
+  signal: completion.signal,
+  durationMs: Math.max(0, handlers.now() - completion.startedAt),
+});
+
+/**
+ * Handle a child-process close event using lifecycle, completion, and effect inputs.
+ * @param {ChildCloseRunState} run Run lifecycle state.
+ * @param {ChildCloseCompletion} completion Process close-event data.
+ * @param {ChildCloseHandlers} handlers Clock and outcome callbacks.
  * @returns {void} Nothing.
  */
-export function handleChildClose({
-  activeChildren,
-  command,
-  now,
-  startedAt,
-  exitCode,
-  signal,
-  stderr,
-  state,
-  aborted,
-  failFast,
-  failures,
-  emitEvent,
-  finishWithFailure,
-  resolve,
-  renderCommand = defaultRenderCommand,
-}) {
-  activeChildren.delete(command.name);
-  if (state.settled) {
-    resolve(undefined);
+export function handleChildClose(run, completion, handlers) {
+  run.activeChildren.delete(completion.command.name);
+  if (run.state.settled) {
+    handlers.resolve(undefined);
     return;
   }
-  if (state.timeoutId !== null) clearTimeout(state.timeoutId);
-  if (shouldIgnoreClosedChild(aborted, failFast, failures, command.name)) {
-    resolve(undefined);
+  if (run.state.timeoutId !== null) clearTimeout(run.state.timeoutId);
+  if (
+    shouldIgnoreClosedChild(
+      run.aborted,
+      run.failFast,
+      run.failures,
+      completion.command.name
+    )
+  ) {
+    handlers.resolve(undefined);
     return;
   }
-  const durationMs = Math.max(0, now() - startedAt);
-  const result = {
-    name: command.name,
-    command: renderCommand(command),
-    exitCode,
-    signal,
-    durationMs,
-  };
-  if (exitCode === 0 && signal === null) {
-    state.settled = true;
-    emitEvent(stderr, { type: 'check-success', ...result });
-    resolve(undefined);
+  const result = createChildCloseResult(completion, handlers);
+  if (completion.exitCode === 0 && completion.signal === null) {
+    run.state.settled = true;
+    handlers.emitEvent(completion.stderr, {
+      type: 'check-success',
+      ...result,
+    });
+    handlers.resolve(undefined);
     return;
   }
-  state.settled = true;
-  finishWithFailure(result, true);
-  resolve(undefined);
+  run.state.settled = true;
+  handlers.finishWithFailure(result, true);
+  handlers.resolve(undefined);
 }
 
 /**
