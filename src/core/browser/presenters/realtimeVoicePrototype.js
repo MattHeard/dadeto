@@ -192,7 +192,7 @@ async function connectRealtimeVoice(allowEffects, state, controls, context) {
   appendDebugLog(controls, 'Requesting microphone permission.', dom);
 
   try {
-    await startPeerConnection(allowEffects, state, controls, context);
+    await startPeerConnection(allowEffects, state, { ...context, controls });
     setStatus(controls, STATUS.LIVE, dom);
     appendDebugLog(controls, 'Realtime voice connection is live.', dom);
   } catch (error) {
@@ -227,43 +227,41 @@ function hasUsableEndpoint(controls, dom) {
  * Start the WebRTC peer connection and apply OpenAI's answer.
  * @param {AllowEffects} allowEffects Permission for creating the external session.
  * @param {object} state Mutable connection state.
- * @param {object} controls Page controls.
- * @param {{dom: object, fetchFn: (permission: AllowEffects, input: Parameters<typeof fetch>[0], init?: Parameters<typeof fetch>[1]) => ReturnType<typeof fetch>}} context DOM and fetch dependencies.
+ * @param {{controls: object, dom: object, fetchFn: (permission: AllowEffects, input: Parameters<typeof fetch>[0], init?: Parameters<typeof fetch>[1]) => ReturnType<typeof fetch>}} session Peer session controls and dependencies.
  * @returns {Promise<void>} Resolves after remote description is set.
  */
-async function startPeerConnection(allowEffects, state, controls, context) {
-  const { dom, fetchFn } = context;
+async function startPeerConnection(allowEffects, state, session) {
   const peerConnection = new RTCPeerConnection();
   state.peerConnection = peerConnection;
-  wirePeerConnectionEvents(peerConnection, controls, dom);
+  wirePeerConnectionEvents(peerConnection, session.controls, session.dom);
 
   const mediaStream = await navigator.mediaDevices.getUserMedia({
     audio: true,
   });
   state.mediaStream = mediaStream;
   addMicrophoneTrack(peerConnection, mediaStream);
-  attachRemoteAudio(peerConnection, controls.audioElement);
-  createDebugDataChannel(state, peerConnection, controls, dom);
+  attachRemoteAudio(peerConnection, session.controls.audioElement);
+  createDebugDataChannel(state, peerConnection, session.controls, session.dom);
 
   const offer = await peerConnection.createOffer();
   await peerConnection.setLocalDescription(offer);
   appendDebugLog(
-    controls,
-    `Sending SDP offer to ${controls.serverLabel}.`,
-    dom
+    session.controls,
+    `Sending SDP offer to ${session.controls.serverLabel}.`,
+    session.dom
   );
 
   const answerSdp = await requestRealtimeAnswer(
     allowEffects,
     offer.sdp ?? '',
-    controls.endpoint,
-    fetchFn
+    session.controls.endpoint,
+    session.fetchFn
   );
   await peerConnection.setRemoteDescription({ type: 'answer', sdp: answerSdp });
   appendDebugLog(
-    controls,
-    `Applied SDP answer from ${controls.serverLabel}.`,
-    dom
+    session.controls,
+    `Applied SDP answer from ${session.controls.serverLabel}.`,
+    session.dom
   );
 }
 
@@ -326,36 +324,34 @@ function createDebugDataChannel(state, peerConnection, controls, dom) {
  * @returns {void}
  */
 function wirePeerConnectionEvents(peerConnection, controls, dom) {
-  wirePeerConnectionState({
+  wirePeerConnectionState(
     peerConnection,
-    eventName: 'connectionstatechange',
-    getMessage: () => `Peer state: ${peerConnection.connectionState}.`,
-    controls,
-    dom,
-  });
-  wirePeerConnectionState({
+    {
+      eventName: 'connectionstatechange',
+      getMessage: () => `Peer state: ${peerConnection.connectionState}.`,
+    },
+    { controls, dom }
+  );
+  wirePeerConnectionState(
     peerConnection,
-    eventName: 'iceconnectionstatechange',
-    getMessage: () => `ICE state: ${peerConnection.iceConnectionState}.`,
-    controls,
-    dom,
-  });
+    {
+      eventName: 'iceconnectionstatechange',
+      getMessage: () => `ICE state: ${peerConnection.iceConnectionState}.`,
+    },
+    { controls, dom }
+  );
 }
 
 /**
  * Log a peer connection state transition.
- * @param {{peerConnection: RTCPeerConnection, eventName: string, getMessage: () => string, controls: object, dom: object}} options Event and output dependencies.
+ * @param {RTCPeerConnection} peerConnection WebRTC peer connection.
+ * @param {{eventName: string, getMessage: () => string}} event Event subscription and message.
+ * @param {{controls: object, dom: object}} output Log destination.
  * @returns {void}
  */
-function wirePeerConnectionState({
-  peerConnection,
-  eventName,
-  getMessage,
-  controls,
-  dom,
-}) {
-  peerConnection.addEventListener(eventName, () => {
-    appendDebugLog(controls, getMessage(), dom);
+function wirePeerConnectionState(peerConnection, event, output) {
+  peerConnection.addEventListener(event.eventName, () => {
+    appendDebugLog(output.controls, event.getMessage(), output.dom);
   });
 }
 
