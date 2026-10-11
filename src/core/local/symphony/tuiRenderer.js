@@ -218,26 +218,22 @@ function formatIndexedLines(items, options) {
 
 /**
  * Render a labeled, bounded list section.
- * @param {{
- *   lines: string[],
- *   label: string,
- *   sectionLines: string[],
- *   remaining: number,
- *   terminalSize: TerminalSize
- * }} options Section render options.
+ * @param {string[]} lines Accumulated output lines.
+ * @param {{ label: string, sectionLines: string[] }} section Section content.
+ * @param {number} remaining Remaining output slots.
+ * @param {TerminalSize} terminalSize Terminal size information.
  * @returns {number} Remaining slots after rendering.
  */
-function renderBoundedSection(options) {
-  const { lines, label, sectionLines, remaining, terminalSize } = options;
-  if (sectionLines.length === 0 || remaining <= 0) {
+function renderBoundedSection(lines, section, remaining, terminalSize) {
+  if (section.sectionLines.length === 0 || remaining <= 0) {
     return remaining;
   }
 
   let nextRemaining = remaining;
-  pushLine(lines, label, terminalSize);
+  pushLine(lines, section.label, terminalSize);
   nextRemaining -= 1;
 
-  for (const sectionLine of sectionLines) {
+  for (const sectionLine of section.sectionLines) {
     if (nextRemaining <= 0) {
       return nextRemaining;
     }
@@ -266,24 +262,25 @@ function renderEventAndEvidence(status, lines, slots, terminalSize = {}) {
   const eventLines = formatEventLines(status.eventLog);
   const availableEventSlots = Math.max(remaining - 1, 0);
   const eventLinesToShow = eventLines.slice(0, availableEventSlots);
-  remaining = renderBoundedSection({
+  remaining = renderBoundedSection(
     lines,
-    label: 'Events:',
-    sectionLines: eventLinesToShow,
+    { label: 'Events:', sectionLines: eventLinesToShow },
     remaining,
-    terminalSize,
-  });
+    terminalSize
+  );
   if (remaining <= 0) {
     return;
   }
 
-  renderBoundedSection({
+  renderBoundedSection(
     lines,
-    label: 'Evidence:',
-    sectionLines: formatEvidenceLines(status.latestEvidence),
+    {
+      label: 'Evidence:',
+      sectionLines: formatEvidenceLines(status.latestEvidence),
+    },
     remaining,
-    terminalSize,
-  });
+    terminalSize
+  );
 }
 
 /**
@@ -346,22 +343,19 @@ function calculateBacklogSlots(totalSlots, queueLength, maxLines) {
 
 /**
  * Render the queue backlog.
- * @param {{
- *   status: object,
- *   lines: string[],
- *   slots: number,
- *   queueSummary: unknown[],
- *   terminalSize?: TerminalSize
- * }} args Backlog render arguments.
+ * @param {object} status Status payload.
+ * @param {string[]} lines Accumulated output lines.
+ * @param {number} slots Available output slots.
+ * @param {{ queueSummary: unknown[], terminalSize?: TerminalSize }} layout Queue and terminal layout.
  * @returns {number} Slots consumed.
  */
-function renderBacklog(args) {
-  const { status, lines, slots, queueSummary, terminalSize = {} } = args;
+function renderBacklog(status, lines, slots, layout) {
+  const terminalSize = layout.terminalSize ?? {};
   if (slots <= 0) {
     return 0;
   }
 
-  const readyCount = getReadyCount(status, queueSummary);
+  const readyCount = getReadyCount(status, layout.queueSummary);
 
   pushLine(
     lines,
@@ -374,7 +368,7 @@ function renderBacklog(args) {
     return used;
   }
 
-  used += renderBacklogEntries(lines, queueSummary, slots, terminalSize);
+  used += renderBacklogEntries(lines, layout.queueSummary, slots, terminalSize);
 
   return used;
 }
@@ -587,10 +581,7 @@ export function buildStatusLines(status, context = {}) {
     queueSummary.length,
     maxLines
   );
-  const usedBacklogLines = renderBacklog({
-    status,
-    lines,
-    slots: backlogSlots,
+  const usedBacklogLines = renderBacklog(status, lines, backlogSlots, {
     queueSummary,
     terminalSize,
   });

@@ -41,9 +41,7 @@ test('covers renderer fallbacks and bounded helper paths', () => {
 });
 
 test('covers renderer bounded sections and status paths', () => {
-  expect(
-    u.renderBacklog({ status: {}, lines: [], slots: 1, queueSummary: [] })
-  ).toBe(1);
+  expect(u.renderBacklog({}, [], 1, { queueSummary: [] })).toBe(1);
   expect(u.renderActiveRun()).toBe('none');
   expect(u.renderActiveRun({ runId: 'r', status: 'done' })).toBe('r (done)');
   expect(u.renderActiveRun({ beadId: 'b' })).toBe('b (unknown)');
@@ -51,31 +49,23 @@ test('covers renderer bounded sections and status paths', () => {
   expect(u.renderActiveRun({})).toBe('unknown (unknown)');
   const bounded = [];
   expect(
-    u.renderBoundedSection({
-      lines: bounded,
-      label: 'L',
-      sectionLines: [],
-      remaining: 2,
-      terminalSize: {},
-    })
+    u.renderBoundedSection(bounded, { label: 'L', sectionLines: [] }, 2, {})
   ).toBe(2);
   expect(
-    u.renderBoundedSection({
-      lines: bounded,
-      label: 'L',
-      sectionLines: ['a', 'b'],
-      remaining: 0,
-      terminalSize: {},
-    })
+    u.renderBoundedSection(
+      bounded,
+      { label: 'L', sectionLines: ['a', 'b'] },
+      0,
+      {}
+    )
   ).toBe(0);
   expect(
-    u.renderBoundedSection({
-      lines: bounded,
-      label: 'L',
-      sectionLines: ['a', 'b'],
-      remaining: 2,
-      terminalSize: {},
-    })
+    u.renderBoundedSection(
+      bounded,
+      { label: 'L', sectionLines: ['a', 'b'] },
+      2,
+      {}
+    )
   ).toBe(0);
   u.renderEventAndEvidence(
     { eventLog: [], latestEvidence: undefined },

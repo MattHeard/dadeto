@@ -42,9 +42,7 @@ describe('core Symphony TUI renderer', () => {
     expect(normalizeEvidenceItems()).toEqual([]);
     expect(normalizeEvidenceItems('one')).toEqual(['one']);
     expect(normalizeEvidenceItems(['one'])).toEqual(['one']);
-    expect(
-      renderBacklog({ status: {}, lines: [], slots: 0, queueSummary: [] })
-    ).toBe(0);
+    expect(renderBacklog({}, [], 0, { queueSummary: [] })).toBe(0);
     expect(renderEventAndEvidence({}, [], 0)).toBeUndefined();
     expect(calculateBacklogSlots(5, 0, 20)).toBe(1);
     expect(calculateBacklogSlots(5, 0, 10)).toBe(1);
