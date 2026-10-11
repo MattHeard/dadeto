@@ -1,0 +1,7 @@
+# Ledger-ingest column toggle arity cleanup
+
+- Unexpected hurdle: moving toggle construction to the call sites introduced one 7-line/25-token clone, which the full check caught. The first rerun also required elevated execution because sandboxed child-process launches failed with `EPERM`.
+- Diagnosis: the two toggle branches shared the same update-then-rerender callback body. The global parameter-bag scan reported `appendColumnToggle` with effective arity 5 because DOM, label, update, and rerender were hidden in an options object.
+- Fix: construct each toggle link at its call site, pass the completed link and DOM facade to the append helper, and use `createToggleAction(update, rerender)` for the shared sequencing behavior. No lint suppressions were added.
+- Evidence: focused ledger-ingest and lint-rule tests passed (2 suites, 27 tests); ESLint and TSDoc passed; `npm run duplication` reported 0 clones; fresh no-cache arity inventory fell from 26 findings/26 files to 25/25 (`.tmp/parameter-bag-global-after-ledger-ingest.json`); elevated `TMPDIR=/home/matt/dadeto/.tmp npm run check` passed all 10 gates, including 11 local E2E tests, 0 clones, and 0 audit vulnerabilities; `TMPDIR=/home/matt/dadeto/.tmp npm run build` passed; `git diff --check` passed.
+- Next time: inspect `src/core/browser/toys/2026-03-13/ledger-ingest/ledgerIngestStorageToy.js:184` from the fresh scan and preserve the current behavior while removing that finding without suppression or superficial repacking.

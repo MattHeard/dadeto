@@ -32,6 +32,24 @@ ruleTester.run(
         }`,
       },
       {
+        name: 'a typed canvas rendering configuration stays one cohesive value',
+        code: `
+          /** @typedef {{ dom: object, dimensions: object, presentation: object, draw: Function }} CanvasPresenterOptions */
+          /** @param {CanvasPresenterOptions} options */
+          function createCanvasPresenter(options) {
+            return renderCanvasPresenter(
+              options.dom,
+              options.dimensions,
+              options.presentation,
+              options.draw
+            );
+          }
+          function renderCanvasPresenter(dom, dimensions, presentation, draw) {
+            return [dom, dimensions, presentation, draw];
+          }
+        `,
+      },
+      {
         name: 'ordinary four-parameter functions remain unaffected',
         code: 'function combine(first, second, third, fourth) { return first; }',
       },

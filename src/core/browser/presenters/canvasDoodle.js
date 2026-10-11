@@ -22,9 +22,11 @@ export function createCanvasDoodleElement(inputString, dom) {
     parseCanvasDoodle(inputString) || createCanvasDoodleFallbackPayload();
   return createCanvasPresenter({
     dom,
-    rootClass: ROOT_CLASS,
-    width: payload.width || CANVAS_WIDTH,
-    height: payload.height || CANVAS_HEIGHT,
+    dimensions: {
+      width: payload.width || CANVAS_WIDTH,
+      height: payload.height || CANVAS_HEIGHT,
+    },
+    presentation: { rootClass: ROOT_CLASS },
     draw: (context, canvas) => drawCanvasDoodle(context, canvas, payload),
   });
 }

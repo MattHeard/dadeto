@@ -1,6 +1,7 @@
 import { describe, expect, jest, test } from '@jest/globals';
 import {
   appendCreatedChildren,
+  createCanvasPresenter,
   createParsedJsonPresenter,
   createParsedPresenterElement,
   createParagraphElement,
@@ -32,6 +33,40 @@ function createDom() {
 }
 
 describe('browserPresentersCore', () => {
+  test('creates and draws a canvas from typed dimensions and presentation values', () => {
+    const dom = createDom();
+    const context = {};
+    const canvas = {
+      width: 0,
+      height: 0,
+      style: {},
+      getContext: jest.fn(() => context),
+    };
+    const root = { tag: 'div', children: [] };
+    dom.createElement.mockImplementation(tag =>
+      tag === 'canvas' ? canvas : root
+    );
+    const draw = jest.fn();
+
+    expect(
+      createCanvasPresenter({
+        dom,
+        dimensions: { width: 320, height: 180 },
+        presentation: {
+          rootClass: 'canvas-presenter',
+          styles: { width: '100%' },
+        },
+        draw,
+      })
+    ).toBe(root);
+
+    expect(root.className).toBe('canvas-presenter');
+    expect(canvas).toMatchObject({ width: 320, height: 180 });
+    expect(canvas.style.width).toBe('100%');
+    expect(root.children).toEqual([canvas]);
+    expect(draw).toHaveBeenCalledWith(context, canvas);
+  });
+
   test('appends child builders in order and returns the parent for empty input', () => {
     const dom = createDom();
     const parent = { tag: 'div', children: [] };

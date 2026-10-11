@@ -36,24 +36,50 @@ export function createPresenterRoot(dom, className) {
   return root;
 }
 
+/** @typedef {{ width: number, height: number }} CanvasDimensions */
+
+/**
+ * @typedef {object} CanvasPresenterPresentation
+ * @property {string} rootClass CSS class applied to the presenter root.
+ * @property {Partial<CSSStyleDeclaration>} [styles] Optional styles applied to the canvas.
+ */
+
+/**
+ * @typedef {object} CanvasPresenterOptions
+ * @property {DOMHelpers} dom DOM helpers used to create and append the canvas.
+ * @property {CanvasDimensions} dimensions Intrinsic canvas size.
+ * @property {CanvasPresenterPresentation} presentation Root class and optional canvas styling.
+ * @property {(context: CanvasRenderingContext2D, canvas: HTMLCanvasElement) => void} draw Canvas drawing operation.
+ */
+
 /**
  * Create a presenter root with a sized canvas and draw its payload when supported.
- * @param {{ dom: DOMHelpers, rootClass: string, width: number, height: number, styles?: Partial<CSSStyleDeclaration>, draw: (context: CanvasRenderingContext2D, canvas: HTMLCanvasElement) => void }} options Canvas presenter configuration.
+ * @param {CanvasPresenterOptions} options Canvas presenter configuration.
  * @returns {HTMLElement} Root containing the rendered canvas.
  */
-export function createCanvasPresenter({
-  dom,
-  rootClass,
-  width,
-  height,
-  styles,
-  draw,
-}) {
-  const root = createPresenterRoot(dom, rootClass);
+export function createCanvasPresenter(options) {
+  return renderCanvasPresenter(
+    options.dom,
+    options.dimensions,
+    options.presentation,
+    options.draw
+  );
+}
+
+/**
+ * Build and draw a canvas from its four independent rendering inputs.
+ * @param {DOMHelpers} dom DOM helpers used to create and append the canvas.
+ * @param {CanvasDimensions} dimensions Intrinsic canvas size.
+ * @param {CanvasPresenterPresentation} presentation Root class and optional canvas styling.
+ * @param {CanvasPresenterOptions['draw']} draw Canvas drawing operation.
+ * @returns {HTMLElement} Root containing the rendered canvas.
+ */
+function renderCanvasPresenter(dom, dimensions, presentation, draw) {
+  const root = createPresenterRoot(dom, presentation.rootClass);
   const canvas = /** @type {HTMLCanvasElement} */ (dom.createElement('canvas'));
-  canvas.width = width;
-  canvas.height = height;
-  if (styles) Object.assign(canvas.style, styles);
+  canvas.width = dimensions.width;
+  canvas.height = dimensions.height;
+  if (presentation.styles) Object.assign(canvas.style, presentation.styles);
   dom.appendChild(root, canvas);
   const context = canvas.getContext('2d');
   if (context) draw(context, canvas);

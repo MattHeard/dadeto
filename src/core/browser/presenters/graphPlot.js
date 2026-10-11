@@ -15,14 +15,15 @@ export function createGraphPlotElement(inputString, dom) {
   const payload = buildGraphPlotFromJson(inputString, getStableRandomNumber);
   return createCanvasPresenter({
     dom,
-    rootClass: ROOT_CLASS,
-    width: payload.width,
-    height: payload.height,
-    styles: {
-      width: '100%',
-      maxWidth: '100%',
-      height: 'auto',
-      display: 'block',
+    dimensions: { width: payload.width, height: payload.height },
+    presentation: {
+      rootClass: ROOT_CLASS,
+      styles: {
+        width: '100%',
+        maxWidth: '100%',
+        height: 'auto',
+        display: 'block',
+      },
     },
     draw: (context, canvas) => drawGraphPlot(context, canvas, payload),
   });

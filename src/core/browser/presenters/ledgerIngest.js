@@ -377,13 +377,18 @@ function createTableHeaderCell(group, options) {
   headerCell.colSpan = group.length;
 
   if (group.collapsed) {
-    appendColumnToggle(headerCell, {
-      dom,
-      text: COLLAPSED_BUTTON_TEXT,
-      update: () =>
-        expandColumnGroup(collapsedColumns, group.start, group.length),
-      rerender,
-    });
+    appendColumnToggle(
+      headerCell,
+      createColumnToggleLink(
+        dom,
+        COLLAPSED_BUTTON_TEXT,
+        createToggleAction(
+          () => expandColumnGroup(collapsedColumns, group.start, group.length),
+          rerender
+        )
+      ),
+      dom
+    );
   } else {
     dom.appendChild(
       headerCell,
@@ -393,30 +398,44 @@ function createTableHeaderCell(group, options) {
         text: column.label,
       })
     );
-    appendColumnToggle(headerCell, {
-      dom,
-      text: EXPANDED_BUTTON_TEXT,
-      update: () => collapseColumn(collapsedColumns, group.start),
-      rerender,
-    });
+    appendColumnToggle(
+      headerCell,
+      createColumnToggleLink(
+        dom,
+        EXPANDED_BUTTON_TEXT,
+        createToggleAction(
+          () => collapseColumn(collapsedColumns, group.start),
+          rerender
+        )
+      ),
+      dom
+    );
   }
   return headerCell;
 }
 
 /**
- * Append a toggle link that updates column state and refreshes the table.
+ * Append a constructed toggle link to a header cell.
  * @param {HTMLElement} headerCell Header cell receiving the link.
- * @param {{dom: DOMHelpers, text: string, update: () => void, rerender: () => void}} options Toggle configuration.
+ * @param {HTMLElement} toggleLink Toggle link to append.
+ * @param {DOMHelpers} dom DOM helper facade.
  * @returns {void}
  */
-function appendColumnToggle(headerCell, { dom, text, update, rerender }) {
-  dom.appendChild(
-    headerCell,
-    createColumnToggleLink(dom, text, () => {
-      update();
-      rerender();
-    })
-  );
+function appendColumnToggle(headerCell, toggleLink, dom) {
+  dom.appendChild(headerCell, toggleLink);
+}
+
+/**
+ * Create an action that updates state before refreshing the table.
+ * @param {() => void} update State update to perform.
+ * @param {() => void} rerender Table refresh callback.
+ * @returns {() => void} Combined toggle action.
+ */
+function createToggleAction(update, rerender) {
+  return () => {
+    update();
+    rerender();
+  };
 }
 
 /**
