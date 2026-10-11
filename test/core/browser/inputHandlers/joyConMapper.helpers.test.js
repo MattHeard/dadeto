@@ -1972,16 +1972,15 @@ describe('joyConMapper runtime initialization', () => {
     };
     const form = {};
 
-    initializeJoyConMapperRuntime({
-      dom,
-      textInput,
-      form,
-      disposers,
-      state,
-      startButton: buttons[0],
-      skipButton: buttons[1],
-      resetButton: buttons[2],
-    });
+    initializeJoyConMapperRuntime(
+      { dom, textInput, form },
+      { disposers, state },
+      {
+        startButton: buttons[0],
+        skipButton: buttons[1],
+        resetButton: buttons[2],
+      }
+    );
 
     expect(handlers).toHaveLength(3);
     expect(dom.setInterval).toHaveBeenCalledWith(expect.any(Function), 50);

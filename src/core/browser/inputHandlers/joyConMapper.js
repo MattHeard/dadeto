@@ -2349,45 +2349,30 @@ export function joyConMapperHandler(dom, container, textInput) {
     metaIndex,
     metaId,
   });
-  initializeJoyConMapperRuntime({
-    dom,
-    textInput,
-    form,
-    disposers,
-    state,
-    startButton,
-    skipButton,
-    resetButton,
-  });
+  initializeJoyConMapperRuntime(
+    { dom, textInput, form },
+    { disposers, state },
+    { startButton, skipButton, resetButton }
+  );
 }
 
 /**
  * Wire the Joy-Con mapper runtime once the shell DOM exists.
- * @param {{
- *   dom: DOMHelpers,
- *   textInput: HTMLInputElement,
- *   form: HTMLElement & { _dispose?: () => void },
- *   disposers: Array<() => void>,
- *   state: MapperState,
- *   startButton: HTMLButtonElement,
- *   skipButton: HTMLButtonElement,
- *   resetButton: HTMLButtonElement,
- * }} runtime
- *   Runtime objects for the mapper shell.
+ * @param {{dom: DOMHelpers, textInput: HTMLInputElement, form: HTMLElement & {_dispose?: () => void}}} elements Mapper DOM elements.
+ * @param {{disposers: Array<() => void>, state: MapperState}} lifecycle Mapper state and cleanup ownership.
+ * @param {{startButton: HTMLButtonElement, skipButton: HTMLButtonElement, resetButton: HTMLButtonElement}} controls Mapper action buttons.
  * @returns {void}
  *   Completes the runtime setup.
  */
-function initializeJoyConMapperRuntime(runtime) {
-  const {
-    dom,
-    textInput,
-    form,
-    disposers,
-    state,
-    startButton,
-    skipButton,
-    resetButton,
-  } = runtime;
+function initializeJoyConMapperRuntime(elements, lifecycle, controls) {
+  const dom = elements.dom;
+  const textInput = elements.textInput;
+  const form = elements.form;
+  const disposers = lifecycle.disposers;
+  const state = lifecycle.state;
+  const startButton = controls.startButton;
+  const skipButton = controls.skipButton;
+  const resetButton = controls.resetButton;
   state.previousSnapshot = toGamepadSnapshot(currentControllerSnapshot(state));
   initializeWebHidCapture(state, disposers);
 
