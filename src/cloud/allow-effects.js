@@ -29,3 +29,13 @@ export function createEffectHttpBoundary(handler) {
 export function createEffectInvocationBoundary(handler) {
   return async (...args) => handler(createAllowEffects(), ...args);
 }
+
+/**
+ * Run synchronous composition with a fresh capability.
+ * @template T
+ * @param {(allowEffects: import('../../types/allow-effects').AllowEffects) => T} handler Startup effect handler.
+ * @returns {T} Composition result.
+ */
+export function createEffectStartupBoundary(handler) {
+  return handler(createAllowEffects());
+}

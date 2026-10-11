@@ -1,7 +1,21 @@
 import { describe, expect, it, jest } from '@jest/globals';
 import { createGetApiKeyCreditV2EffectAdapters } from '../../../src/cloud/get-api-key-credit-v2/effect-adapters.js';
+import { initializeFirebaseApp } from '../../../src/cloud/get-api-key-credit-v2/startup-effect-adapter.js';
 
 describe('API key credit v2 effect adapters', () => {
+  it('initializes Firebase through the startup capability adapter', () => {
+    const allowEffects =
+      /** @type {import('../../../types/allow-effects').AllowEffects} */ (
+        Object.freeze({})
+      );
+    const initializer = jest.fn(() => ({ app: true }));
+
+    expect(initializeFirebaseApp(allowEffects, initializer)).toEqual({
+      app: true,
+    });
+    expect(initializer).toHaveBeenCalledTimes(1);
+  });
+
   it('forwards the capability to transaction and response operations', async () => {
     const allowEffects =
       /** @type {import('../../../types/allow-effects').AllowEffects} */ (
