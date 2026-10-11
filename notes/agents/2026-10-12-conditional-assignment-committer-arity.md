@@ -1,0 +1,7 @@
+# Conditional assignment committer arity cleanup
+
+- Unexpected hurdle: the first full check found one jscpd clone between the asset and runner commit setup after introducing a payload builder.
+- Diagnosis: the call sites repeated the same seven-line commit construction even though their field, path, and metadata policy differ.
+- Fix: replaced the options bag with `createConditionalCommitter(field, path, buildMetadata)`, a named strategy factory that returns the three-argument writer. Reused a module-level asset committer and created the runner-specific writer with its shift metadata. The writer still rejects infeasible results before building metadata or appending.
+- Evidence: three focused suites passed (37 tests); ESLint and TSDoc passed; target lint scan has 0 findings; global scan fell from 20 findings/20 files to 19/19 (`.tmp/parameter-bag-global-after-conditional-assignments.json`). Initial `npm run check` surfaced 1 clone; after the committer extraction `npm run duplication` reported 0 clones and `npm run check` passed all 10 gates, including 11 local E2E tests and 0 vulnerabilities. `npm run build` and `git diff --check` passed.
+- Next time: start from the fresh global rule report. Next finding is `src/core/browser/toys/2026-08-21/safeAssignmentPersistence.js:47` (effective arity 5). Inspect whether the persistence input is a coherent assignment record before decomposing.

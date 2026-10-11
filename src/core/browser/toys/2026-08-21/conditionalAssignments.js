@@ -34,33 +34,30 @@ export const assignAssetAndCustodianToSegmentIfFeasible =
   createConditionalAssignment(writeAssetCustodian, formatCommitFailure);
 
 /**
- * Reject infeasible requests before constructing and appending their record.
- * @param {Record<string, any>} request Assignment request.
- * @param {import('../browserToysCore.js').ToyEnv} env Storage lens.
- * @param {{feasible: boolean, reason?: unknown}} feasibility Validated world line.
- * @param {{field: string, path: string, metadata: () => Record<string, unknown>}} options Assignment identity and deferred metadata.
- * @returns {string} Original append or rejection envelope.
+ * Create a writer that commits one legacy assignment strategy after feasibility.
+ * @param {string} field Assignment owner field.
+ * @param {string} path Destination collection path.
+ * @param {(request: Record<string, any>) => Record<string, unknown>} buildMetadata Strategy metadata builder.
+ * @returns {(request: Record<string, any>, env: import('../browserToysCore.js').ToyEnv, feasibility: {feasible: boolean, reason?: unknown}) => string} Conditional assignment writer.
  */
-function commitConditional(
-  request,
-  env,
-  feasibility,
-  { field, path, metadata }
-) {
-  if (!feasibility.feasible) return formatAssignmentFailure(feasibility.reason);
-  return appendValidatedAssignment(
-    {
-      request,
-      assignment: {
-        [field]: String(request[field] || ''),
-        segmentId: String(request.candidateSegment.segmentId),
+function createConditionalCommitter(field, path, buildMetadata) {
+  return (request, env, feasibility) => {
+    if (!feasibility.feasible)
+      return formatAssignmentFailure(feasibility.reason);
+    return appendValidatedAssignment(
+      {
+        request,
+        assignment: {
+          [field]: String(request[field] || ''),
+          segmentId: String(request.candidateSegment.segmentId),
+        },
+        path,
+        metadata: buildMetadata(request),
+        feasibility,
       },
-      path,
-      metadata: metadata(),
-      feasibility,
-    },
-    env
-  );
+      env
+    );
+  };
 }
 
 /**
@@ -95,11 +92,7 @@ function writeAsset(x, env) {
     x.stockOutPoint,
     x.points || []
   );
-  return commitConditional(x, env, result, {
-    field: 'assetId',
-    path: 'assetSegmentAssignments',
-    metadata: buildAssetMetadata.bind(null, x),
-  });
+  return commitAssetAssignment(x, env, result);
 }
 
 /**
@@ -112,6 +105,12 @@ function buildAssetMetadata(request) {
   const segmentId = request.candidateSegment.segmentId;
   return { object: { assetId, segmentId } };
 }
+const commitAssetAssignment = createConditionalCommitter(
+  'assetId',
+  'assetSegmentAssignments',
+  buildAssetMetadata
+);
+
 /**
  * Calculate and append a single runner assignment.
  * @param {Record<string, any>} x Parsed runner request.
@@ -130,11 +129,11 @@ function writeRunner(x, env) {
     matching.clockOutPoint,
     x.points
   );
-  return commitConditional(x, env, result, {
-    field: 'personId',
-    path: 'personSegmentAssignments',
-    metadata: () => ({ shiftId: matching.shiftId }),
-  });
+  return createConditionalCommitter(
+    'personId',
+    'personSegmentAssignments',
+    () => ({ shiftId: matching.shiftId })
+  )(x, env, result);
 }
 
 /**
