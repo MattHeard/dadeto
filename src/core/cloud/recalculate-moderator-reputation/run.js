@@ -13,14 +13,14 @@
  * @param {RecalculateModeratorReputationDeps} deps Job dependencies.
  * @returns {() => Promise<void>} Recompute job.
  */
-export function createRecalculateModeratorReputationJob({
-  db,
-  fetchModerationRatings,
-  calculateModeratorReputations,
-  writeModeratorReputations,
-  adminModeratorId,
-  nowIso,
-}) {
+export function createRecalculateModeratorReputationJob(deps) {
+  const db = deps.db;
+  const fetchModerationRatings = deps.fetchModerationRatings;
+  const calculateModeratorReputations = deps.calculateModeratorReputations;
+  const writeModeratorReputations = deps.writeModeratorReputations;
+  const adminModeratorId = deps.adminModeratorId;
+  const nowIso = deps.nowIso;
+
   return async function recalculateModeratorReputationJob() {
     const ratings = await fetchModerationRatings();
     const reputations = calculateModeratorReputations(
