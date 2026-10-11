@@ -284,7 +284,8 @@ function isPostMethod(method) {
  * @returns {Promise<void>} Promise.
  */
 async function saveNewStory(allowEffects, deps, id, data) {
-  const { saveSubmission, getServerTimestamp } = deps;
+  const saveSubmission = deps.saveSubmission;
+  const getServerTimestamp = deps.getServerTimestamp;
   await saveSubmission(allowEffects, id, {
     ...data,
     createdAt: getServerTimestamp(),
