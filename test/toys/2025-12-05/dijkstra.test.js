@@ -203,62 +203,57 @@ describe('dijkstra helper contracts', () => {
       alice: { 'page-A': true, 'page-B': true },
     };
     expect(
-      createNeighborEntry({
-        current: { id: 'matt', distance: 0 },
-        neighbor: 'alice',
-        ratings,
-        bestDistance: 1,
-      })
+      createNeighborEntry({ id: 'matt', distance: 0 }, 'alice', { ratings }, 1)
     ).toEqual({ id: 'alice', distance: 0 });
     expect(
-      createNeighborEntry({
-        current: { id: 'matt', distance: 0 },
-        neighbor: 'missing',
-        ratings,
-        bestDistance: 1,
-      })
+      createNeighborEntry(
+        { id: 'matt', distance: 0 },
+        'missing',
+        { ratings },
+        1
+      )
     ).toBeNull();
 
     expect(
-      createNeighborEntry({
-        current: { id: 'matt', distance: -0.2 },
-        neighbor: 'missing',
-        ratings: {},
-        bestDistance: 2,
-      })
+      createNeighborEntry(
+        { id: 'matt', distance: -0.2 },
+        'missing',
+        { ratings: {} },
+        2
+      )
     ).toBeNull();
     expect(
-      createNeighborEntry({
-        current: { id: 'matt', distance: 0.5 },
-        neighbor: 'alice',
-        ratings: splitRatings,
-        bestDistance: 2,
-      })
+      createNeighborEntry(
+        { id: 'matt', distance: 0.5 },
+        'alice',
+        { ratings: splitRatings },
+        2
+      )
     ).toBeNull();
     expect(
-      createNeighborEntry({
-        current: { id: 'matt', distance: 0 },
-        neighbor: 'alice',
-        ratings: splitRatings,
-        bestDistance: 0.5,
-      })
+      createNeighborEntry(
+        { id: 'matt', distance: 0 },
+        'alice',
+        { ratings: splitRatings },
+        0.5
+      )
     ).toBeNull();
 
     expect(
-      createNeighborEntry({
-        current: { id: 'matt', distance: 0.6 },
-        neighbor: 'alice',
-        ratings: splitRatings,
-        bestDistance: 1,
-      })
+      createNeighborEntry(
+        { id: 'matt', distance: 0.6 },
+        'alice',
+        { ratings: splitRatings },
+        1
+      )
     ).toBeNull();
     expect(
-      createNeighborEntry({
-        current: { id: 'matt', distance: 0 },
-        neighbor: 'alice',
-        ratings: splitRatings,
-        bestDistance: 0.4,
-      })
+      createNeighborEntry(
+        { id: 'matt', distance: 0 },
+        'alice',
+        { ratings: splitRatings },
+        0.4
+      )
     ).toBeNull();
   });
 
@@ -294,14 +289,12 @@ describe('dijkstra helper contracts', () => {
 
   it('does not enqueue the current node while exploring neighbors', () => {
     const queue = [];
-    enqueueNeighbors({
-      nodes: ['matt', 'alice'],
-      current: { id: 'matt', distance: 0 },
-      ratings: { matt: { 'page-A': true }, alice: { 'page-A': true } },
-      queue,
-      distances: new Map(),
-      bestDistance: 1,
-    });
+    enqueueNeighbors(
+      ['matt', 'alice'],
+      { id: 'matt', distance: 0 },
+      { ratings: { matt: { 'page-A': true }, alice: { 'page-A': true } } },
+      { queue, distances: new Map(), bestDistance: 1 }
+    );
     expect(queue).toEqual([{ id: 'alice', distance: 0 }]);
   });
 

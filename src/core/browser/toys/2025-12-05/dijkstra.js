@@ -81,15 +81,16 @@ function processNextNode({ nodes, state, context }) {
     return;
   }
 
-  enqueueNeighbors({
+  enqueueNeighbors(
     nodes,
     current,
-    ratings: context.ratings,
-    queue: state.queue,
-    distances: state.distances,
-    bestDistance: state.bestDistance,
-    ignoredPageId: context.ignoredPageId,
-  });
+    { ratings: context.ratings, ignoredPageId: context.ignoredPageId },
+    {
+      queue: state.queue,
+      distances: state.distances,
+      bestDistance: state.bestDistance,
+    }
+  );
 }
 
 /**
@@ -159,49 +160,44 @@ function guardBeyondLimit(distance) {
 
 /**
  * Enqueue all valid neighboring nodes.
- * @param {{ nodes: string[], current: { id: string, distance: number }, ratings: Record<string, Record<string, boolean>>, queue: Array<{id: string, distance: number}>, distances: Map<string, number>, bestDistance: number, ignoredPageId?: string }} payload - Neighbor exploration context.
+ * @param {string[]} nodes Graph node identifiers.
+ * @param {{id: string, distance: number}} current Current path endpoint.
+ * @param {{ratings: Record<string, Record<string, boolean>>, ignoredPageId?: string}} graph Rating edges and ignored page.
+ * @param {{queue: Array<{id: string, distance: number}>, distances: Map<string, number>, bestDistance: number}} searchState Mutable Dijkstra state.
  */
-function enqueueNeighbors({
-  nodes,
-  current,
-  ratings,
-  queue,
-  distances,
-  bestDistance,
-  ignoredPageId,
-}) {
+function enqueueNeighbors(nodes, current, graph, searchState) {
   nodes
     .filter(neighbor => neighbor !== current.id)
     .map(neighbor =>
-      createNeighborEntry({
-        current,
-        neighbor,
-        ratings,
-        bestDistance,
-        ignoredPageId,
-      })
+      createNeighborEntry(current, neighbor, graph, searchState.bestDistance)
     )
     .filter(Boolean)
     .forEach(entry => {
       const neighborEntry = /** @type {{ id: string; distance: number }} */ (
         entry
       );
-      enqueueIfImproved(neighborEntry, queue, distances);
+      enqueueIfImproved(
+        neighborEntry,
+        searchState.queue,
+        searchState.distances
+      );
     });
 }
 
 /**
  * Create a neighbor entry when it represents a usable path.
- * @param {{ current: { id: string, distance: number }, neighbor: string, ratings: Record<string, Record<string, boolean>>, bestDistance: number, ignoredPageId?: string }} payload - Neighbor context.
+ * @param {{id: string, distance: number}} current Current path endpoint.
+ * @param {string} neighbor Candidate neighbor identifier.
+ * @param {{ratings: Record<string, Record<string, boolean>>, ignoredPageId?: string}} graph Rating edges and ignored page.
+ * @param {number} bestDistance Best known route distance.
  * @returns {{ id: string, distance: number }|null} Neighbor entry or null when invalid.
  */
-function createNeighborEntry(payload) {
-  const { current, neighbor, ratings, bestDistance, ignoredPageId } = payload;
+function createNeighborEntry(current, neighbor, graph, bestDistance) {
   const weight = calculateEdgeWeight({
     moderatorA: current.id,
     moderatorB: neighbor,
-    ratings,
-    ignoredPageId,
+    ratings: graph.ratings,
+    ignoredPageId: graph.ignoredPageId,
   });
   const nextDistance = current.distance + weight;
   const guards = [
