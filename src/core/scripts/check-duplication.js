@@ -110,22 +110,13 @@ function createDuplicationGateHandle(deps) {
  * }} deps Gate dependencies.
  * @returns {{ exitCode: number, clones: number }} Gate outcome.
  */
-function executeDuplicationGate({
-  spawnImpl,
-  readFileSync,
-  stdout,
-  stderr,
-  rootDir,
-  configPath,
-  reportPath,
-  relativePath,
-}) {
+function executeDuplicationGate(deps) {
   const { launchFailure } = runGateCommand({
-    spawnImpl,
+    spawnImpl: deps.spawnImpl,
     command: 'node',
-    args: ['src/local/run-clone-scanner.js', configPath],
-    rootDir,
-    stderr,
+    args: ['src/local/run-clone-scanner.js', deps.configPath],
+    rootDir: deps.rootDir,
+    stderr: deps.stderr,
     launchLabel: getDuplicationGateLabel(),
     commandLabel: 'jscpd',
   });
@@ -134,44 +125,35 @@ function executeDuplicationGate({
     return { exitCode: launchFailure.exitCode, clones: 0 };
   }
 
-  const report = readDuplicationReport(readFileSync, reportPath);
+  const report = readDuplicationReport(deps.readFileSync, deps.reportPath);
   if (report === null) {
-    stderr.write(
-      `Duplication gate could not read report at ${relativePath(rootDir, reportPath)}\n`
+    deps.stderr.write(
+      `Duplication gate could not read report at ${deps.relativePath(deps.rootDir, deps.reportPath)}\n`
     );
     return { exitCode: 1, clones: 0 };
   }
 
   const cloneFailure = handleCloneFailure(
     report,
-    {
-      rootDir,
-      reportPath,
-      relativePath,
-    },
-    stderr
+    deps.relativePath(deps.rootDir, deps.reportPath),
+    deps.stderr
   );
   if (cloneFailure) {
     return cloneFailure;
   }
 
-  stdout.write('Checked duplication report: 0 clones.\n');
+  deps.stdout.write('Checked duplication report: 0 clones.\n');
   return { exitCode: 0, clones: 0 };
 }
 
 /**
  * Convert a clone report into a failure when clones are present.
  * @param {Record<string, unknown>} report Parsed report payload.
- * @param {{
- *   rootDir: string,
- *   reportPath: string,
- *   relativePath: (from: string, to: string) => string,
- * }} reportInfo Report path details.
+ * @param {string} relativeReportPath Path to the report relative to the project root.
  * @param {{ write: (text: string) => void }} stderr Error writer.
  * @returns {{ exitCode: number, clones: number } | null} Failure result or null.
  */
-function handleCloneFailure(report, reportInfo, stderr) {
-  const { rootDir, reportPath, relativePath } = reportInfo;
+function handleCloneFailure(report, relativeReportPath, stderr) {
   const clones = countClones(report);
   if (clones <= 0) {
     return null;
@@ -186,9 +168,7 @@ function handleCloneFailure(report, reportInfo, stderr) {
     stderr.write(`${summary}\n`);
   }
 
-  stderr.write(
-    `See ${relativePath(rootDir, reportPath)} for the detailed clone report.\n`
-  );
+  stderr.write(`See ${relativeReportPath} for the detailed clone report.\n`);
   return { exitCode: 1, clones };
 }
 
