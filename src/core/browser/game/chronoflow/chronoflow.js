@@ -271,26 +271,31 @@ function forEachFluidCell(grid, visit) {
  * @returns {number} Interpolated value from available fluid cells.
  */
 function sampleVelocity(field, point, grid) {
-  const { width, height, solids } = grid;
   const { x, y } = point;
-  const sampleX = Math.min(width - 1, Math.max(0, x));
-  const sampleY = Math.min(height - 1, Math.max(0, y));
+  const sampleX = Math.min(grid.width - 1, Math.max(0, x));
+  const sampleY = Math.min(grid.height - 1, Math.max(0, y));
   const left = Math.floor(sampleX);
-  const right = Math.min(width - 1, left + 1);
+  const right = Math.min(grid.width - 1, left + 1);
   const top = Math.floor(sampleY);
-  const bottom = Math.min(height - 1, top + 1);
+  const bottom = Math.min(grid.height - 1, top + 1);
   const fractionX = sampleX - left;
   const fractionY = sampleY - top;
   const samples = [
-    { cell: top * width + left, weight: (1 - fractionX) * (1 - fractionY) },
-    { cell: top * width + right, weight: fractionX * (1 - fractionY) },
-    { cell: bottom * width + left, weight: (1 - fractionX) * fractionY },
-    { cell: bottom * width + right, weight: fractionX * fractionY },
+    {
+      cell: top * grid.width + left,
+      weight: (1 - fractionX) * (1 - fractionY),
+    },
+    { cell: top * grid.width + right, weight: fractionX * (1 - fractionY) },
+    { cell: bottom * grid.width + left, weight: (1 - fractionX) * fractionY },
+    {
+      cell: bottom * grid.width + right,
+      weight: fractionX * fractionY,
+    },
   ];
   let weightedValue = 0;
   let totalWeight = 0;
   for (const sample of samples) {
-    if (solids[sample.cell] || sample.weight === 0) continue;
+    if (grid.solids[sample.cell] || sample.weight === 0) continue;
     weightedValue += field[sample.cell] * sample.weight;
     totalWeight += sample.weight;
   }
