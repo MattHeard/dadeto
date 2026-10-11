@@ -316,15 +316,10 @@ function puzzleShapes(puzzle) {
       frameRectangle({ x, y, width: cellWidth, height: cellHeight }, fill)
     );
     shapes.push(
-      ...puzzleCellArt({
-        kind: cellKind,
-        cell,
-        x,
-        y,
-        width: cellWidth,
-        height: cellHeight,
-        fill,
-      })
+      ...puzzleCellArt(
+        { kind: cellKind, cell },
+        { x, y, width: cellWidth, height: cellHeight, fill }
+      )
     );
     const volume = puzzle.fluid.volume[cell];
     if (volume > 0) {
@@ -407,10 +402,18 @@ function puzzleCellKind(puzzle, cell) {
 
 /**
  * Add a compact authored motif that makes each board cell role readable.
- * @param {Record<string, any>} cellData Cell role, index, dimensions and fill.
+ * @param {{kind: string, cell: number}} role Cell role and index.
+ * @param {{x: number, y: number, width: number, height: number, fill: string}} bounds Cell rectangle and fill.
  * @returns {Array<Record<string, any>>} Pixel-art details.
  */
-function puzzleCellArt({ kind, cell, x, y, width, height, fill }) {
+function puzzleCellArt(role, bounds) {
+  const kind = role.kind;
+  const cell = role.cell;
+  const x = bounds.x;
+  const y = bounds.y;
+  const width = bounds.width;
+  const height = bounds.height;
+  const fill = bounds.fill;
   if (kind === 'source')
     return [
       frameRectangle(
