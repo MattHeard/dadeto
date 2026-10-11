@@ -27,8 +27,8 @@ describe('createGoogleAuthStatusHandle', () => {
     const refreshAuthorUuidFn = jest.fn(() => {
       authorUuid = 'author-1';
     });
-    const handle = createGoogleAuthStatusHandle({
-      documentObj: {
+    const handle = createGoogleAuthStatusHandle(
+      {
         querySelectorAll: jest.fn(selector => {
           if (selector === '#signinButton') {
             return [signInButton];
@@ -45,13 +45,17 @@ describe('createGoogleAuthStatusHandle', () => {
           return [];
         }),
       },
-      initGoogleSignInFn,
-      getAuthorUuidFn: () => authorUuid,
-      refreshAuthorUuidFn,
-      signOutFn: jest.fn(),
-      getIdTokenFn: jest.fn().mockReturnValue('token'),
-      isAdminFn: jest.fn().mockReturnValue(true),
-    });
+      {
+        initGoogleSignInFn,
+        refreshAuthorUuidFn,
+        signOutFn: jest.fn(),
+      },
+      {
+        getAuthorUuidFn: () => authorUuid,
+        getIdTokenFn: jest.fn().mockReturnValue('token'),
+        isAdminFn: jest.fn().mockReturnValue(true),
+      }
+    );
 
     handle();
 
@@ -77,8 +81,8 @@ describe('createGoogleAuthStatusHandle', () => {
     let onSignIn;
     const signOutFn = jest.fn().mockResolvedValue(undefined);
     const getIdTokenFn = jest.fn().mockReturnValue(null);
-    const handle = createGoogleAuthStatusHandle({
-      documentObj: {
+    const handle = createGoogleAuthStatusHandle(
+      {
         querySelectorAll: jest.fn(selector => {
           if (selector === '#signinButton') {
             return [signInButton];
@@ -98,14 +102,18 @@ describe('createGoogleAuthStatusHandle', () => {
           return [];
         }),
       },
-      initGoogleSignInFn: options => {
-        onSignIn = options.onSignIn;
+      {
+        initGoogleSignInFn: options => {
+          onSignIn = options.onSignIn;
+        },
+        signOutFn,
       },
-      getAuthorUuidFn: jest.fn().mockReturnValue('author-2'),
-      signOutFn,
-      getIdTokenFn,
-      isAdminFn: jest.fn().mockReturnValue(false),
-    });
+      {
+        getAuthorUuidFn: jest.fn().mockReturnValue('author-2'),
+        getIdTokenFn,
+        isAdminFn: jest.fn().mockReturnValue(false),
+      }
+    );
 
     handle();
     expect(signInButton.style.display).toBeUndefined();

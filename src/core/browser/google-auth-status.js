@@ -1,25 +1,15 @@
 /**
  * Create a handle that wires Google auth status controls.
- * @param {{
- *   documentObj: Document,
- *   initGoogleSignInFn: (options: {onSignIn: () => void}) => void,
- *   getAuthorUuidFn: () => string | null,
- *   refreshAuthorUuidFn?: () => string | null | Promise<string | null>,
- *   signOutFn: () => Promise<unknown>,
- *   getIdTokenFn: () => string | null,
- *   isAdminFn: () => boolean,
- * }} deps Browser auth status dependencies.
+ * @param {Document} documentObj DOM used to find auth controls.
+ * @param {{initGoogleSignInFn: (options: {onSignIn: () => void}) => void, refreshAuthorUuidFn?: () => string | null | Promise<string | null>, signOutFn: () => Promise<unknown>}} authActions Sign-in and session actions.
+ * @param {{getAuthorUuidFn: () => string | null, getIdTokenFn: () => string | null, isAdminFn: () => boolean}} identity Current-user accessors.
  * @returns {() => void} Google auth status setup handle.
  */
-export function createGoogleAuthStatusHandle({
+export function createGoogleAuthStatusHandle(
   documentObj,
-  initGoogleSignInFn,
-  getAuthorUuidFn,
-  refreshAuthorUuidFn,
-  signOutFn,
-  getIdTokenFn,
-  isAdminFn,
-}) {
+  authActions,
+  identity
+) {
   return function handleGoogleAuthStatus() {
     const signInButtons = /** @type {HTMLElement[]} */ (
       Array.from(documentObj.querySelectorAll('#signinButton'))
@@ -44,23 +34,25 @@ export function createGoogleAuthStatusHandle({
       adminLinks,
     };
     const showSignedIn = createShowSignedIn(displayElements, {
-      getAuthorUuidFn,
-      isAdminFn,
+      getAuthorUuidFn: identity.getAuthorUuidFn,
+      isAdminFn: identity.isAdminFn,
     });
     const showSignedOut = createShowSignedOut(displayElements);
 
-    initGoogleSignInFn({ onSignIn: showSignedIn });
+    authActions.initGoogleSignInFn({ onSignIn: showSignedIn });
     signOutLinks.forEach(link => {
       link.addEventListener('click', async event => {
         event.preventDefault();
-        await signOutFn();
+        await authActions.signOutFn();
         showSignedOut();
       });
     });
 
-    if (getIdTokenFn()) {
+    if (identity.getIdTokenFn()) {
       showSignedIn();
-      Promise.resolve(refreshAuthorUuidFn?.()).then(() => showSignedIn());
+      Promise.resolve(authActions.refreshAuthorUuidFn?.()).then(() =>
+        showSignedIn()
+      );
     }
   };
 }

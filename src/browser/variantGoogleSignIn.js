@@ -3,13 +3,17 @@ import { getAuthorUuid, initGoogleSignIn, signOut } from './googleAuth.js';
 import { getIdToken } from '../core/browser/browser-core.js';
 import { isAdminWithDeps } from './admin-core.js';
 
-const handle = createGoogleAuthStatusHandle({
-  documentObj: document,
+const handle = createGoogleAuthStatusHandle(
+  document,
+  {
   initGoogleSignInFn: initGoogleSignIn,
-  getAuthorUuidFn: getAuthorUuid,
   signOutFn: signOut,
-  getIdTokenFn: getIdToken,
-  isAdminFn: () => isAdminWithDeps(sessionStorage, JSON, atob),
-});
+  },
+  {
+    getAuthorUuidFn: getAuthorUuid,
+    getIdTokenFn: getIdToken,
+    isAdminFn: () => isAdminWithDeps(sessionStorage, JSON, atob),
+  }
+);
 
 handle();
