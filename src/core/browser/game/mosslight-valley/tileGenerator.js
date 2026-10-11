@@ -4,15 +4,24 @@ const TILE_SIZE = 12;
 /** @typedef {'shadow' | 'ground' | 'light' | 'glimmer'} PaletteColor */
 /** @typedef {[number, number, number, number, PaletteColor]} PixelInstruction */
 /** @typedef {{x: number, y: number, width: number, height: number, fill: string}} PixelRect */
-/** @typedef {{x: number, y: number, palette: [string, string, string, string], region: string, blocked?: boolean, roof?:boolean}} TileOptions */
+/** @typedef {{x: number, y: number}} TileCoordinate */
+/** @typedef {{palette: [string, string, string, string], region: string}} TileSurface */
+/** @typedef {{blocked?: boolean, roof?: boolean, walkway?: boolean}} TileFeatures */
 
 /**
  * Generate a deterministic pixel-art tile from its map coordinate and region.
- * @param {TileOptions} options - Tile coordinate, palette, region and collision.
+ * @param {TileCoordinate} coordinate - Map coordinate used for stable texture variation.
+ * @param {TileSurface} surface - Terrain palette and regional motif.
+ * @param {TileFeatures} [features] - Optional collision and path treatments.
  * @returns {PixelRect[]} Pixel rectangles.
  */
-export function generateBackgroundTile(options) {
-  const { x, y, palette, region, blocked = false, roof = false } = options;
+export function generateBackgroundTile(coordinate, surface, features = {}) {
+  const x = coordinate.x;
+  const y = coordinate.y;
+  const palette = surface.palette;
+  const region = surface.region;
+  const blocked = features.blocked ?? false;
+  const roof = features.roof ?? false;
   const seed = Math.abs((x * 17 + y * 31 + x * y * 7) % 12);
   const colors = {
     shadow: palette[0],

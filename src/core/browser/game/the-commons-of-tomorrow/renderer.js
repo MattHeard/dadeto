@@ -58,7 +58,8 @@ export function renderCommons(state) {
       },
     },
     {
-      tileGenerator: /** @type {any} */ (generateCommonsTile),
+      tileGenerator: (coordinate, surface, features) =>
+        generateCommonsTile({ ...coordinate, ...surface, ...features }),
       spriteRenderer: commonsSpriteShapes,
       frameType: 'the-commons-of-tomorrow',
     }
