@@ -11,14 +11,15 @@
  * }} options Runtime dependencies and trigger configuration.
  * @returns {unknown} Registered Cloud Function handle.
  */
-export function createFirestoreHandle({
-  functions,
-  getFirestoreInstance,
-  createHandler,
-  documentPath,
-  eventName = 'onCreate',
-  region = 'europe-west1',
-}) {
+export function createFirestoreHandle(options) {
+  const functions = options.functions;
+  const getFirestoreInstance = options.getFirestoreInstance;
+  const createHandler = options.createHandler;
+  const documentPath = options.documentPath;
+  const eventName =
+    options.eventName === undefined ? 'onCreate' : options.eventName;
+  const region = options.region === undefined ? 'europe-west1' : options.region;
+
   const db = getFirestoreInstance();
   const handleEvent = createHandler({ db });
 
