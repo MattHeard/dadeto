@@ -13,13 +13,12 @@ test('creates an app with the standard form and JSON parsers', () => {
   );
 
   expect(
-    createJsonExpressApp({
+    createJsonExpressApp(
       createApp,
-      json,
-      urlencoded,
+      { json, urlencoded },
       bindStartupEffectBoundary,
-      useMiddleware,
-    })
+      useMiddleware
+    )
   ).toBe(app);
   expect(createApp).toHaveBeenCalledTimes(1);
   expect(urlencoded).toHaveBeenCalledWith({ extended: false });

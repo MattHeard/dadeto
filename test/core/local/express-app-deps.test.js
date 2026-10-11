@@ -8,8 +8,8 @@ test('adapts the Express module without changing its parser references', () => {
 
   const deps = createJsonExpressAppDeps(express);
 
-  expect(deps.json).toBe(express.json);
-  expect(deps.urlencoded).toBe(express.urlencoded);
+  expect(deps.parsers.json).toBe(express.json);
+  expect(deps.parsers.urlencoded).toBe(express.urlencoded);
   expect(deps.createApp()).toBeUndefined();
   expect(express).toHaveBeenCalledTimes(1);
 });

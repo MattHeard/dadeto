@@ -174,12 +174,19 @@ export function runGenerateStats(deps) {
   const createApp = /** @type {any} */ (() => express());
   const appDeps = {
     createApp,
-    json: /** @type {any} */ (express).json,
-    urlencoded: /** @type {any} */ (express).urlencoded,
-    bindStartupEffectBoundary,
-    useMiddleware,
+    parsers: {
+      json: /** @type {any} */ (express).json,
+      urlencoded: /** @type {any} */ (express).urlencoded,
+    },
   };
-  const app = /** @type {any} */ (createJsonExpressApp(appDeps));
+  const app = /** @type {any} */ (
+    createJsonExpressApp(
+      appDeps.createApp,
+      appDeps.parsers,
+      bindStartupEffectBoundary,
+      useMiddleware
+    )
+  );
   const corsOptions = createCorsOptions(
     createCorsOriginHandler(isOriginAllowed, allowedOrigins)
   );

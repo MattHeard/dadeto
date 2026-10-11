@@ -98,11 +98,13 @@ async function startServer(deps) {
   const simulator = /** @type {LocalGcpSimulator} */ (
     await (deps.simulator ?? getSimulatorPromise(deps.createSimulator))
   );
-  const app = createJsonExpressApp({
-    ...createJsonExpressAppDeps(express),
-    bindStartupEffectBoundary: deps.bindStartupEffectBoundary,
-    useMiddleware: deps.useMiddleware,
-  });
+  const appHelpers = createJsonExpressAppDeps(express);
+  const app = createJsonExpressApp(
+    appHelpers.createApp,
+    appHelpers.parsers,
+    deps.bindStartupEffectBoundary,
+    deps.useMiddleware
+  );
   app.use((_req, res, next) => {
     res.set('Access-Control-Allow-Origin', '*');
     res.set('Access-Control-Allow-Methods', 'POST, OPTIONS');
