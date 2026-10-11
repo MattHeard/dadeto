@@ -267,29 +267,54 @@ function executeDepcruiseGate(deps) {
  * }} deps Scan dependencies.
  * @returns {MathRandomViolation[]} Violations discovered in source files.
  */
-function collectJsViolations({
-  readFileSync,
-  readdirSync,
-  rootDir,
-  sourceRoot,
-  pathModule,
-  scanSource,
-  createViolation,
-}) {
+/** @typedef {{ absolutePath: string, filePath: string }} CoreJsFile */
+
+/**
+ * Create a stable, repo-relative listing of the core JavaScript files.
+ * @param {CoreFileScanDeps['readdirSync']} readdirSync Directory reader.
+ * @param {string} rootDir Repository root.
+ * @param {string} sourceRoot Core source root.
+ * @param {CoreFileScanDeps['pathModule']} pathModule Path operations.
+ * @returns {() => CoreJsFile[]} Core file-list capability.
+ */
+function createCoreJsFileLister(readdirSync, rootDir, sourceRoot, pathModule) {
   const sourceRootPath = pathModule.resolve(rootDir, sourceRoot);
-  return gateUtils
-    .walkJavaScriptFiles(sourceRootPath, readdirSync, pathModule)
-    .flatMap(filePath => {
-      const scanResult = scanSource(readFileSync(filePath, 'utf8'));
-      return isEmptyScanResult(scanResult)
-        ? []
-        : [
-            createViolation(
-              toRepoRelativePath(rootDir, filePath, pathModule),
-              scanResult
-            ),
-          ];
-    });
+  return () =>
+    gateUtils
+      .walkJavaScriptFiles(sourceRootPath, readdirSync, pathModule)
+      .map(absolutePath => ({
+        absolutePath,
+        filePath: toRepoRelativePath(rootDir, absolutePath, pathModule),
+      }));
+}
+
+/**
+ * Create the per-file scan and violation projection capability.
+ * @param {CoreFileScanDeps['readFileSync']} readFileSync Source reader.
+ * @param {(source: string) => number} scanSource Source scanner.
+ * @param {(filePath: string, scanResult: number) => MathRandomViolation} createViolation Violation projector.
+ * @returns {(file: CoreJsFile) => MathRandomViolation[]} Per-file violation scanner.
+ */
+function createSourceViolationProjector(
+  readFileSync,
+  scanSource,
+  createViolation
+) {
+  return ({ absolutePath, filePath }) => {
+    const scanResult = scanSource(readFileSync(absolutePath, 'utf8'));
+    return isEmptyScanResult(scanResult)
+      ? []
+      : [createViolation(filePath, scanResult)];
+  };
+}
+
+/**
+ * Scan listed core JavaScript files and flatten their violations.
+ * @param {{listCoreFiles: () => CoreJsFile[], projectViolation: (file: CoreJsFile) => MathRandomViolation[]}} capabilities File-list and per-file scan capabilities.
+ * @returns {MathRandomViolation[]} Violations discovered in source files.
+ */
+function collectJsViolations({ listCoreFiles, projectViolation }) {
+  return listCoreFiles().flatMap(projectViolation);
 }
 
 /**
@@ -348,9 +373,17 @@ function collectCoreBrowserGlobalViolations(deps) {
  */
 function findCoreViolationsWithScanner(deps, scanSource, createViolation) {
   return collectJsViolations({
-    ...deps,
-    scanSource,
-    createViolation,
+    listCoreFiles: createCoreJsFileLister(
+      deps.readdirSync,
+      deps.rootDir,
+      deps.sourceRoot,
+      deps.pathModule
+    ),
+    projectViolation: createSourceViolationProjector(
+      deps.readFileSync,
+      scanSource,
+      createViolation
+    ),
   });
 }
 
