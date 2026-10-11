@@ -150,6 +150,15 @@ const createUpdateVariantVisibilityHandler = options => {
 };
 
 describe('createUpdateVariantVisibilityHandler', () => {
+  it('requires a Firestore update adapter', () => {
+    expect(() =>
+      createCoreUpdateVariantVisibilityHandler({
+        db: { doc: jest.fn() },
+        updateFirestoreDocument: null,
+      })
+    ).toThrow(new TypeError('updateFirestoreDocument must be a function'));
+  });
+
   it.each([123, undefined])(
     'rejects invalid variant %p before reading other fields',
     async variantId => {

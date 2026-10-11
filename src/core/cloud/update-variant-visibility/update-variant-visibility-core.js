@@ -7,6 +7,41 @@ import { objectOrEmpty, ADMIN_UID } from '../../commonCore.js';
 
 /** @typedef {import('../../../../types/allow-effects').AllowEffects} AllowEffects */
 
+/** @typedef {(allowEffects: AllowEffects, reference: unknown, data: object) => Promise<unknown>} UpdateFirestoreDocument */
+
+/**
+ * @typedef {object} VariantStatsUpdateInput
+ * @property {import('firebase-admin/firestore').DocumentSnapshot} variantSnap Variant snapshot used to calculate updated stats.
+ * @property {import('firebase-admin/firestore').DocumentReference} variantRef Variant document to update.
+ * @property {boolean} isApproved Approval status from the rating.
+ * @property {number} moderatorReputation Moderator weight for the rating.
+ * @property {UpdateFirestoreDocument} updateFirestoreDocument Permission-first write adapter.
+ */
+
+/**
+ * @typedef {object} VariantUpdateExecutionInput
+ * @property {import('firebase-admin/firestore').Firestore} db Firestore client.
+ * @property {import('firebase-admin/firestore').DocumentSnapshot} snapshot Trigger snapshot.
+ * @property {UpdateFirestoreDocument} updateFirestoreDocument Permission-first write adapter.
+ * @property {(allowEffects: AllowEffects, context?: object) => Promise<unknown>} [renderContents] Optional content renderer.
+ */
+
+/**
+ * @typedef {object} VariantUpdateApplicationInput
+ * @property {import('firebase-admin/firestore').Firestore} db Firestore client.
+ * @property {VariantUpdatePayload} payload Validated rating inputs.
+ * @property {UpdateFirestoreDocument} updateFirestoreDocument Permission-first write adapter.
+ * @property {(allowEffects: AllowEffects, context?: object) => Promise<unknown>} [renderContents] Optional content renderer.
+ */
+
+/**
+ * @typedef {object} AdminLockUpdateInput
+ * @property {UpdateFirestoreDocument} updateFirestoreDocument Permission-first write adapter.
+ * @property {import('firebase-admin/firestore').DocumentReference} variantRef Variant document to lock.
+ * @property {string} moderatorId Moderator identifier.
+ * @property {boolean} isApproved Whether the admin approved the variant.
+ */
+
 /**
  * @typedef {object} VariantUpdatePayload
  * @property {string} moderatorId Moderator who submitted the rating.
@@ -160,21 +195,21 @@ function isValidApproval(isApproved) {
 /**
  * Update the variant document with new stats.
  * @param {AllowEffects} allowEffects Request effect permission.
- * @param {(allowEffects: AllowEffects, reference: unknown, data: object) => Promise<unknown>} updateFirestoreDocument Permission-first Firestore update adapter.
+ * @param {UpdateFirestoreDocument} updateFirestoreDocument Permission-first Firestore update adapter.
  * @param {import('firebase-admin/firestore').DocumentReference} ref Document reference.
- * @param {VariantStats} stats New stats.
+ * @param {VariantStats} stats New stats record.
  * @returns {Promise<void>} Promise.
  */
 async function updateVariantStats(
   allowEffects,
   updateFirestoreDocument,
   ref,
-  { visibility, count, reputation }
+  stats
 ) {
   await updateFirestoreDocument(allowEffects, ref, {
-    visibility,
-    moderatorRatingCount: count,
-    moderatorReputationSum: reputation,
+    visibility: stats.visibility,
+    moderatorRatingCount: stats.count,
+    moderatorReputationSum: stats.reputation,
   });
 }
 
@@ -330,26 +365,19 @@ function getSnapshotDataOrFallback(snapshot) {
 /**
  * Process the variant update if the snapshot is valid.
  * @param {AllowEffects} allowEffects Request effect permission.
- * @param {{variantSnap: import('firebase-admin/firestore').DocumentSnapshot, variantRef: import('firebase-admin/firestore').DocumentReference, isApproved: boolean, moderatorReputation: number, updateFirestoreDocument: (allowEffects: AllowEffects, reference: unknown, data: object) => Promise<unknown>}} deps Variant update dependencies.
+ * @param {VariantStatsUpdateInput} variantUpdate Rating data and persistence operation for one variant.
  * @returns {Promise<void>} Promise.
  */
-async function processVariantUpdate(allowEffects, deps) {
-  const {
-    variantSnap,
-    variantRef,
-    isApproved,
-    moderatorReputation,
-    updateFirestoreDocument,
-  } = deps;
-  const variantData = getValidVariantSnapshotData(variantSnap);
+async function processVariantUpdate(allowEffects, variantUpdate) {
+  const variantData = getValidVariantSnapshotData(variantUpdate.variantSnap);
   if (!variantData) {
     return;
   }
 
   let newStats = calculateNewStats(
     variantData,
-    getNewRating(isApproved),
-    moderatorReputation
+    getNewRating(variantUpdate.isApproved),
+    variantUpdate.moderatorReputation
   );
   if (isVisibilityLockedByAdmin(variantData)) {
     newStats = {
@@ -360,8 +388,8 @@ async function processVariantUpdate(allowEffects, deps) {
 
   await updateVariantStats(
     allowEffects,
-    updateFirestoreDocument,
-    variantRef,
+    variantUpdate.updateFirestoreDocument,
+    variantUpdate.variantRef,
     newStats
   );
 }
@@ -477,41 +505,42 @@ export function createUpdateVariantVisibilityHandle(
 /**
  * Execute the variant update logic when a valid payload exists.
  * @param {AllowEffects} allowEffects Request effect permission.
- * @param {{db: import('firebase-admin/firestore').Firestore, snapshot: import('firebase-admin/firestore').DocumentSnapshot, updateFirestoreDocument: (allowEffects: AllowEffects, reference: unknown, data: object) => Promise<unknown>, renderContents?: (allowEffects: AllowEffects, context?: object) => Promise<unknown>}} deps Execution dependencies.
+ * @param {VariantUpdateExecutionInput} execution Firestore event and runtime operations.
  * @returns {Promise<null>} Resolves with null when complete.
  */
-async function executeVariantUpdate(allowEffects, deps) {
-  const { db, snapshot, updateFirestoreDocument, renderContents } = deps;
-  const payload = getVariantUpdatePayloadFromSnapshot(snapshot);
+async function executeVariantUpdate(allowEffects, execution) {
+  const payload = getVariantUpdatePayloadFromSnapshot(execution.snapshot);
   if (!payload) {
     return null;
   }
 
   return applyVariantUpdate(allowEffects, {
-    db,
+    db: execution.db,
     payload,
-    updateFirestoreDocument,
-    renderContents,
+    updateFirestoreDocument: execution.updateFirestoreDocument,
+    renderContents: execution.renderContents,
   });
 }
 
 /**
  * Apply the visibility update using the validated payload.
  * @param {AllowEffects} allowEffects Request effect permission.
- * @param {{db: import('firebase-admin/firestore').Firestore, payload: {variantId: string; isApproved: boolean; moderatorId: string}, updateFirestoreDocument: (allowEffects: AllowEffects, reference: unknown, data: object) => Promise<unknown>, renderContents?: (allowEffects: AllowEffects, context?: object) => Promise<unknown>}} deps Validated inputs and collaborators.
+ * @param {VariantUpdateApplicationInput} application Validated rating and runtime operations.
  * @returns {Promise<null>} Resolves after the update runs.
  */
-async function applyVariantUpdate(allowEffects, deps) {
-  const { db, payload, updateFirestoreDocument, renderContents } = deps;
-  const variantRef = resolveVariantRef(db, payload.variantId);
+async function applyVariantUpdate(allowEffects, application) {
+  const variantRef = resolveVariantRef(
+    application.db,
+    application.payload.variantId
+  );
   if (!variantRef) {
     return null;
   }
 
   const variantSnap = await variantRef.get();
   const moderatorReputation = await getModeratorReputationForPayload(
-    db,
-    payload.moderatorId
+    application.db,
+    application.payload.moderatorId
   );
   const variantData = getValidVariantSnapshotData(variantSnap);
   const pageRef = getParentDocumentRef(variantRef);
@@ -520,24 +549,24 @@ async function applyVariantUpdate(allowEffects, deps) {
   await processVariantUpdate(allowEffects, {
     variantSnap,
     variantRef,
-    isApproved: payload.isApproved,
+    isApproved: application.payload.isApproved,
     moderatorReputation,
-    updateFirestoreDocument,
+    updateFirestoreDocument: application.updateFirestoreDocument,
   });
   const nextVisibility = calculateNextVisibility(
     variantData,
-    payload.isApproved,
+    application.payload.isApproved,
     moderatorReputation
   );
   await applyAdminLockIfNeeded(allowEffects, {
-    updateFirestoreDocument,
+    updateFirestoreDocument: application.updateFirestoreDocument,
     variantRef,
-    moderatorId: payload.moderatorId,
-    isApproved: payload.isApproved,
+    moderatorId: application.payload.moderatorId,
+    isApproved: application.payload.isApproved,
   });
   await republishContentsIfNeeded({
     allowEffects,
-    renderContents,
+    renderContents: application.renderContents,
     pageRef,
     rootPageRef,
     wasVisible,
@@ -643,16 +672,15 @@ function shouldRepublishContents(
 
 /**
  * @param {AllowEffects} allowEffects Request effect permission.
- * @param {{updateFirestoreDocument: (allowEffects: AllowEffects, reference: unknown, data: object) => Promise<unknown>, variantRef: import('firebase-admin/firestore').DocumentReference, moderatorId: string, isApproved: boolean}} deps Admin-lock write dependencies.
+ * @param {AdminLockUpdateInput} adminLock Admin rating and write operation.
  * @returns {Promise<void>} Promise.
  */
-async function applyAdminLockIfNeeded(allowEffects, deps) {
-  const { updateFirestoreDocument, variantRef, moderatorId, isApproved } = deps;
-  if (moderatorId !== ADMIN_UID) {
+async function applyAdminLockIfNeeded(allowEffects, adminLock) {
+  if (adminLock.moderatorId !== ADMIN_UID) {
     return;
   }
-  await updateFirestoreDocument(allowEffects, variantRef, {
-    visibility: calculateAdminLockedVisibility(isApproved),
+  await adminLock.updateFirestoreDocument(allowEffects, adminLock.variantRef, {
+    visibility: calculateAdminLockedVisibility(adminLock.isApproved),
     visibilityLockedBy: ADMIN_UID,
   });
 }
