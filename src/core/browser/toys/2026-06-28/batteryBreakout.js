@@ -669,6 +669,10 @@ function normalizeCellsFromState(value) {
         record.maxCharge,
         DEFAULT_CELL_MAX
       );
+      const overchargeCooldown = normalizePositiveInteger(
+        record.overchargeCooldown,
+        0
+      );
       return {
         id: getCellId(record.id, index),
         x: Number(record.x) || 0,
@@ -678,17 +682,13 @@ function normalizeCellsFromState(value) {
         charge,
         targetCharge,
         maxCharge,
-        overchargeCooldown: normalizePositiveInteger(
-          record.overchargeCooldown,
-          0
-        ),
-        state: normalizeCellState({
-          value: record.state,
+        overchargeCooldown,
+        state: normalizeCellState(
+          record.state,
           charge,
           targetCharge,
-          maxCharge,
-          overchargeCooldown: record.overchargeCooldown,
-        }),
+          isCellOvercharged(charge, maxCharge, overchargeCooldown)
+        ),
       };
     });
 }
@@ -707,29 +707,32 @@ function getCellId(value, index) {
 }
 
 /**
+ * Check whether a cell retains overcharge state.
+ * @param {number} charge Current charge.
+ * @param {number} maxCharge Maximum charge before overcharging.
+ * @param {number} overchargeCooldown Remaining overcharge duration.
+ * @returns {boolean} True when the cell is overcharged.
+ */
+function isCellOvercharged(charge, maxCharge, overchargeCooldown) {
+  return overchargeCooldown > 0 || charge > maxCharge;
+}
+
+/**
  * Normalize Cell State.
- * @param {{
- *   value: unknown,
- *   charge: number,
- *   targetCharge: number,
- *   maxCharge: number,
- *   overchargeCooldown: number,
- * }} options Normalization inputs.
+ * @param {unknown} value Stored cell state.
+ * @param {number} charge Current charge.
+ * @param {number} targetCharge Charge needed for stability.
+ * @param {boolean} overcharged Whether overcharge conditions are present.
  * @returns {'empty' | 'charging' | 'stable' | 'overcharged'} Return value.
  */
-function normalizeCellState(options) {
-  const { value, charge, targetCharge, maxCharge, overchargeCooldown } =
-    options;
+function normalizeCellState(value, charge, targetCharge, overcharged) {
   if (
     typeof value === 'string' &&
     ['empty', 'charging', 'stable', 'overcharged'].includes(value)
   ) {
     return /** @type {BatteryCell['state']} */ (value);
   }
-  if (normalizePositiveInteger(overchargeCooldown, 0) > 0) {
-    return 'overcharged';
-  }
-  if (charge > maxCharge) {
+  if (overcharged) {
     return 'overcharged';
   }
   if (charge >= targetCharge) {
@@ -1518,6 +1521,7 @@ export const batteryBreakoutTestOnly = {
   createSeedOptions,
   normalizeCellsFromState,
   getCellId,
+  isCellOvercharged,
   normalizeCellState,
   normalizeCells,
   buildCellPositions,

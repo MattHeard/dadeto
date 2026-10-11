@@ -2567,88 +2567,23 @@ function runScenario2131Part5(context) {
   expect(context.h.normalizeCellsFromState([null, 1, 'bad'])).toEqual([]);
   expect(context.h.getCellId({ id: 'x' }, 2)).toBe('cell-3');
   expect(context.h.getCellId({}, 2)).toBe('cell-3');
-  expect(context.h.normalizeCellState({ id: 'x' }, 0)).toBe('empty');
-  expect(
-    context.h.normalizeCellState({
-      value: 'stable',
-      charge: 0,
-      targetCharge: 2,
-      maxCharge: 3,
-      overchargeCooldown: 0,
-    })
-  ).toBe('stable');
-  expect(
-    context.h.normalizeCellState({
-      value: 'empty',
-      charge: 3,
-      targetCharge: 2,
-      maxCharge: 3,
-      overchargeCooldown: 0,
-    })
-  ).toBe('empty');
-  expect(
-    context.h.normalizeCellState({
-      value: 'charging',
-      charge: 3,
-      targetCharge: 2,
-      maxCharge: 3,
-      overchargeCooldown: 0,
-    })
-  ).toBe('charging');
-  expect(
-    context.h.normalizeCellState({
-      value: 'overcharged',
-      charge: 0,
-      targetCharge: 2,
-      maxCharge: 3,
-      overchargeCooldown: 0,
-    })
-  ).toBe('overcharged');
-  expect(
-    context.h.normalizeCellState({
-      value: 'bad',
-      charge: 3,
-      targetCharge: 2,
-      maxCharge: 3,
-      overchargeCooldown: 0,
-    })
-  ).toBe('stable');
-  expect(
-    context.h.normalizeCellState({
-      value: 'bad',
-      charge: 0,
-      targetCharge: 2,
-      maxCharge: 3,
-      overchargeCooldown: 1,
-    })
-  ).toBe('overcharged');
-  expect(
-    context.h.normalizeCellState({
-      value: 'bad',
-      charge: 4,
-      targetCharge: 2,
-      maxCharge: 3,
-      overchargeCooldown: 0,
-    })
-  ).toBe('overcharged');
-  expect(
-    context.h.normalizeCellState({
-      value: 'bad',
-      charge: 2,
-      targetCharge: 2,
-      maxCharge: 3,
-      overchargeCooldown: 0,
-    })
-  ).toBe('stable');
-  expect(
-    context.h.normalizeCellState({
-      value: 'bad',
-      charge: 1,
-      targetCharge: 2,
-      maxCharge: 3,
-      overchargeCooldown: 0,
-    })
-  ).toBe('charging');
+  expect(context.h.isCellOvercharged(1, 3, 0)).toBe(false);
+  expect(context.h.isCellOvercharged(4, 3, 0)).toBe(true);
+  expect(context.h.isCellOvercharged(0, 3, 1)).toBe(true);
+  expect(context.h.normalizeCellState(undefined, 0, 1, false)).toBe('empty');
+  expect(context.h.normalizeCellState('stable', 0, 2, false)).toBe('stable');
+  expect(context.h.normalizeCellState('empty', 3, 2, false)).toBe('empty');
+  expect(context.h.normalizeCellState('charging', 3, 2, false)).toBe(
+    'charging'
+  );
+  expect(context.h.normalizeCellState('overcharged', 0, 2, false)).toBe(
+    'overcharged'
+  );
+  expect(context.h.normalizeCellState('bad', 3, 2, false)).toBe('stable');
+  expect(context.h.normalizeCellState('bad', 0, 2, true)).toBe('overcharged');
+  expect(context.h.normalizeCellState('bad', 4, 2, true)).toBe('overcharged');
+  expect(context.h.normalizeCellState('bad', 2, 2, false)).toBe('stable');
+  expect(context.h.normalizeCellState('bad', 1, 2, false)).toBe('charging');
   expect(context.h.normalizeCells(120, 90, 3).length).toBeGreaterThan(0);
   expect(context.h.normalizeCells(360, 240, 1).map(cell => cell.id)).toEqual([
     'cell-1-1',

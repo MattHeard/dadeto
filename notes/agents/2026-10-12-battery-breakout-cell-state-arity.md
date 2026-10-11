@@ -1,0 +1,7 @@
+# Battery Breakout cell-state arity cleanup
+
+- Unexpected hurdle: none. `normalizeCellState` received five fields through an options object, and the fields represented two separate decisions: whether overcharge conditions apply and how the remaining charge maps to a display state.
+- Diagnosis: cooldown and maximum charge combine into one domain predicate. Keeping that predicate in the cell normalization boundary makes its two causes explicit while allowing the state classifier to consume one boolean.
+- Fix: normalize cooldown once, extract `isCellOvercharged(charge, maxCharge, cooldown)`, and pass its result with stored state, charge, and target charge to the four-input state classifier. Update test-only characterization for explicit state precedence and both overcharge causes.
+- Evidence: `test/toys/2026-06-28/batteryBreakout.test.js` passed (53 tests); target ESLint, TSDoc, and focused custom-rule scan passed; fresh global inventory fell from 23 findings/23 files to 22/22 (`.tmp/parameter-bag-global-after-battery-breakout.json`) with no finding in the target file; `TMPDIR=/home/matt/dadeto/.tmp npm run check` passed all 10 gates including 11 local E2E tests, 0 clones, and 0 audit vulnerabilities; `TMPDIR=/home/matt/dadeto/.tmp npm run build` passed; `git diff --check` passed.
+- Next time: inspect `src/core/browser/toys/2026-08-18/registryUtils.js:98` from the fresh scan, preserve registry behavior, and avoid suppressions or superficial parameter packing.
