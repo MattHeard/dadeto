@@ -1,7 +1,6 @@
 import {
   assignmentPredicateBoundary,
-  createAssignmentContext,
-  ownerIsFree,
+  createOwnerAvailabilityChecker,
   resolveInterval,
   overlaps,
 } from './assignmentIntervals.js';
@@ -16,18 +15,16 @@ import { appendReferenceList } from '../2026-08-18/memoryObjectListAppend.js';
 export function assetCustodianSegmentAssignmentPredicate(input) {
   try {
     const request = parseRequest(input);
-    const context = createAssignmentContext(request);
-    const assetFree = ownerIsFree(
+    const isOwnerFree = createOwnerAvailabilityChecker(request);
+    const assetFree = isOwnerFree(
       request.assetAssignments,
       'assetId',
-      request.proposedAssignment.assetId,
-      context
+      request.proposedAssignment.assetId
     );
-    const custodianFree = ownerIsFree(
+    const custodianFree = isOwnerFree(
       request.personAssignments,
       'personId',
-      request.proposedAssignment.custodianPersonId,
-      context
+      request.proposedAssignment.custodianPersonId
     );
     return JSON.stringify(assetFree && custodianFree);
   } catch {
