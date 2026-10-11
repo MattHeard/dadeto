@@ -777,13 +777,11 @@ const REQUEST_HANDLED = Symbol('request-handled');
  */
 async function processHandleRequest(requestData, handlerDeps) {
   const { req, res } = requestData;
-  const {
-    verifyAdmin,
-    markVariantDirty,
-    markAuthorDirty,
-    parseRequestBody,
-    allowedMethod,
-  } = handlerDeps;
+  const verifyAdmin = handlerDeps.verifyAdmin;
+  const markVariantDirty = handlerDeps.markVariantDirty;
+  const markAuthorDirty = handlerDeps.markAuthorDirty;
+  const parseRequestBody = handlerDeps.parseRequestBody;
+  const allowedMethod = handlerDeps.allowedMethod;
 
   try {
     enforceMethodOrThrow(req, res, allowedMethod);
