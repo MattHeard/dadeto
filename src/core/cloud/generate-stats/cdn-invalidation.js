@@ -7,18 +7,14 @@
  * @param {string} path CDN path to invalidate.
  * @returns {Promise<Response>} API response.
  */
-export function sendInvalidateRequest(
-  permission,
-  {
-    effectFetchFn,
-    project,
-    resolvedUrlMap,
-    resolvedCdnHost,
-    randomUUID,
-    token,
-  },
-  path
-) {
+export function sendInvalidateRequest(permission, deps, path) {
+  const effectFetchFn = deps.effectFetchFn;
+  const project = deps.project;
+  const resolvedUrlMap = deps.resolvedUrlMap;
+  const resolvedCdnHost = deps.resolvedCdnHost;
+  const randomUUID = deps.randomUUID;
+  const token = deps.token;
+
   const url = new URL(
     `https://compute.googleapis.com/compute/v1/projects/${project}/global/urlMaps/${resolvedUrlMap}/invalidateCache`
   ).href;
