@@ -88,7 +88,12 @@ const createFetchModeratorAssignment = input => {
  * @returns {(input: { id: string, moderatorId: string, variantId: string, isApproved: boolean, ratedAt: unknown }) => Promise<void>} Recorder.
  */
 const createRecordModerationRating = db => {
-  return async ({ id, moderatorId, variantId, isApproved, ratedAt }) => {
+  return async rating => {
+    const id = rating.id;
+    const moderatorId = rating.moderatorId;
+    const variantId = rating.variantId;
+    const isApproved = rating.isApproved;
+    const ratedAt = rating.ratedAt;
     await db
       .collection('moderationRatings')
       .doc(id)

@@ -1,7 +1,7 @@
-# Submit moderation rating arity cleanup
+# Submit moderation rating arity loop
 
-- Unexpected hurdle: the responder's factory callback destructured five functions from a single dependency record, triggering effective arity five.
-- Diagnosis: `createResponder` already passes a named dependency record; the callback can read its five function references directly without expanding the bag.
-- Fix: assign the typed record once and read the five functions individually. Calls remain bare function calls, preserving binding; validation, effect boundaries, Firestore writes, and response behavior are unchanged.
-- Evidence: focused submit-moderation-rating core suite passed (1 suite / 24 tests); target no-cache arity scan and TSDoc passed. Elevated `npm run check` passed all 10 gates. Coverage: lines 23564/23564, statements 24713/24713, functions 7927/7927, branches 13273/13273 (100%). Local E2E passed 11/11, duplication found 0 clones, npm audit found 0 vulnerabilities. Cloud-only inventory fell to 10 findings in 10 files in `/tmp/parameter-bag-cloud-after-submit-moderation-core.json`.
-- Next time: use the refreshed cloud inventory; `generate-stats-core.js` remains the largest finding at effective arity 14.
+- Unexpected hurdle: The lint candidate was a rating-record writer rather than the larger dependency factory named by its source file.
+- Diagnosis: `createRecordModerationRating` accepted one rating record and destructured five values at the callback boundary.
+- Chosen fix: Read each rating field explicitly from the `rating` record and retain the stored document shape.
+- Evidence: All submit-moderation-rating Jest suites passed (29 tests), target no-cache lint and TSDoc passed, and `TMPDIR=/home/matt/dadeto/.tmp npm run check` passed all 10 gates, 11 E2E tests, 100% line/statement/function/branch coverage, zero clones, and zero audit vulnerabilities. Cloud-only findings reduced from 3 to 2.
+- Next-time guidance: Inspect the exact reported function rather than assuming the issue is the file's top-level dependency factory. Next inventory candidate: `submit-new-story/submit-new-story-core.js`.
