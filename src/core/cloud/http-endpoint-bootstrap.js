@@ -15,13 +15,13 @@
  * }} options Endpoint wiring supplied by the owning endpoint.
  * @returns {{ app: CloudHttpApp, handle: unknown }} The Express app and registered Cloud Function.
  */
-export function createCloudHttpEndpoint({
-  express,
-  middleware,
-  route,
-  functions,
-  region = 'europe-west1',
-}) {
+export function createCloudHttpEndpoint(options) {
+  const express = options.express;
+  const middleware = options.middleware;
+  const route = options.route;
+  const functions = options.functions;
+  const region = options.region === undefined ? 'europe-west1' : options.region;
+
   const app = express();
   for (const currentMiddleware of middleware) {
     app.use(currentMiddleware);
