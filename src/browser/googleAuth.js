@@ -35,14 +35,16 @@ const handle = installAuthorUuidCaching(
     },
     { consoleObj: console, Provider: GoogleAuthProvider }
   ),
+  effectStorage,
   {
-    storage: effectStorage,
     fetchFn: createEffectFetchFn(globalThis.fetch.bind(globalThis)),
-    bindEffectBoundary,
     getAuthorUuidUrl: () =>
       loadStaticConfig().then(config => config.getAuthorUuidUrl || ''),
+  },
+  {
     isInternalOrigin: () =>
       /^10\.132\.0\.\d+$/.test(globalThis?.location?.hostname || ''),
+    bindEffectBoundary,
   }
 );
 

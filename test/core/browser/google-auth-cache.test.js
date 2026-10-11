@@ -231,13 +231,15 @@ describe('google-auth-cache', () => {
         },
         signOut: originalSignOut,
       },
+      storage,
       {
-        storage,
         fetchFn: jest.fn().mockResolvedValue({
           ok: true,
           json: jest.fn().mockResolvedValue({ uuid: 'author-3' }),
         }),
         getAuthorUuidUrl: jest.fn().mockResolvedValue('/author'),
+      },
+      {
         isInternalOrigin: () => false,
         bindEffectBoundary,
       }
@@ -259,13 +261,15 @@ describe('google-auth-cache', () => {
         },
         signOut: jest.fn().mockResolvedValue(undefined),
       },
+      createStorage(),
       {
-        storage: createStorage(),
         fetchFn: jest.fn().mockResolvedValue({
           ok: true,
           json: jest.fn().mockResolvedValue({}),
         }),
         getAuthorUuidUrl: jest.fn().mockResolvedValue('/author'),
+      },
+      {
         isInternalOrigin: () => false,
         bindEffectBoundary,
       }
@@ -285,10 +289,12 @@ describe('google-auth-cache', () => {
         initGoogleSignIn,
         signOut: jest.fn().mockResolvedValue(undefined),
       },
+      createStorage(),
       {
         fetchFn: jest.fn(),
         getAuthorUuidUrl: jest.fn(),
-        storage: createStorage(),
+      },
+      {
         isInternalOrigin: () => true,
         bindEffectBoundary,
       }
@@ -311,10 +317,12 @@ describe('google-auth-cache', () => {
           initGoogleSignIn: jest.fn(),
           signOut,
         },
+        sessionStorage,
         {
-          storage: sessionStorage,
           fetchFn: jest.fn(),
           getAuthorUuidUrl: jest.fn(),
+        },
+        {
           isInternalOrigin: () => true,
           bindEffectBoundary,
         }

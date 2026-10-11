@@ -101,28 +101,28 @@ export async function refreshCachedAuthorUuid(deps) {
 /**
  * Attach author-uuid caching behavior to an auth module.
  * @param {{ initGoogleSignIn: (options?: { onSignIn?: (token: string) => void | Promise<void> }) => void | Promise<void>, signOut: () => Promise<void> }} handle Auth module.
- * @param {{ storage: StorageLike, fetchFn: (permission: import('../../../types/allow-effects').AllowEffects, input: string, init?: object) => Promise<Response>, getAuthorUuidUrl: () => Promise<string>, isInternalOrigin: () => boolean, bindEffectBoundary: import('../../../types/allow-effects').AllowEffectsBoundary }} deps Caching dependencies.
+ * @param {StorageLike} storage Permission-aware UUID storage.
+ * @param {{fetchFn: (permission: import('../../../types/allow-effects').AllowEffects, input: string, init?: object) => Promise<Response>, getAuthorUuidUrl: () => Promise<string>}} authorApi Remote author UUID API.
+ * @param {{isInternalOrigin: () => boolean, bindEffectBoundary: import('../../../types/allow-effects').AllowEffectsBoundary}} environment Origin check and side-effect boundary.
  * @returns {object} Wrapped auth module.
  */
-export function installAuthorUuidCaching(handle, deps) {
-  const {
-    storage,
-    fetchFn,
-    getAuthorUuidUrl,
-    isInternalOrigin,
-    bindEffectBoundary,
-  } = deps;
+export function installAuthorUuidCaching(
+  handle,
+  storage,
+  authorApi,
+  environment
+) {
   const originalSignOut = handle.signOut;
   handle.signOut = async () => {
     await originalSignOut();
-    await bindEffectBoundary(async permission => {
+    await environment.bindEffectBoundary(async permission => {
       setCachedAuthorUuid(permission, storage, null);
     });
   };
 
   const originalInitGoogleSignIn = handle.initGoogleSignIn;
   handle.initGoogleSignIn = options => {
-    if (isInternalOrigin()) {
+    if (environment.isInternalOrigin()) {
       return undefined;
     }
 
@@ -130,14 +130,15 @@ export function installAuthorUuidCaching(handle, deps) {
       ...options,
       onSignIn(token) {
         const onSignIn = options?.onSignIn;
-        return getAuthorUuidUrl()
+        return authorApi
+          .getAuthorUuidUrl()
           .then(url =>
-            bindEffectBoundary(permission =>
-              fetchAuthorUuidFromApi(permission, fetchFn, url, token)
+            environment.bindEffectBoundary(permission =>
+              fetchAuthorUuidFromApi(permission, authorApi.fetchFn, url, token)
             )
           )
           .then(async authorUuid => {
-            await bindEffectBoundary(async permission => {
+            await environment.bindEffectBoundary(async permission => {
               setCachedAuthorUuid(permission, storage, authorUuid);
             });
             if (typeof onSignIn === 'function') {
