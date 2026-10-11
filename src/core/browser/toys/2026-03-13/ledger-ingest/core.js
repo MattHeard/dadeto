@@ -89,13 +89,12 @@ function createHappyPathRawRecords() {
  * @returns {Record<string, unknown>} Raw transaction record.
  */
 function createRawRecord(record) {
-  const { id, date, amount, description, currency } = record;
   return Object.fromEntries([
-    ['id', id],
-    ['date', date],
-    ['amount', amount],
-    ['description', description],
-    ['currency', currency],
+    ['id', record.id],
+    ['date', record.date],
+    ['amount', record.amount],
+    ['description', record.description],
+    ['currency', record.currency],
   ]);
 }
 
@@ -402,9 +401,7 @@ export function importTransactions(input) {
       index
     );
 
-    recordCanonicalTransaction({
-      normalized,
-      dedupeKey,
+    recordCanonicalTransaction(normalized, {
       policy: dedupePolicy,
       seenKeys,
       duplicateReports,
@@ -511,36 +508,25 @@ function isMissingRequiredValue(value) {
 
 /**
  * Track duplicates or canonical rows based on the incoming normalized payload.
- * @param {object} options Tracking collections for the dedupe discovery.
- * @param {NormalizedTransaction} options.normalized New normalized transaction.
- * @param {string} options.dedupeKey Key that identifies candidate duplicates.
- * @param {DedupePolicy} options.policy Policy currently in play for this run.
- * @param {Map<string, NormalizedTransaction>} options.seenKeys Seen key cache.
- * @param {DuplicateReport[]} options.duplicateReports Duplicate report sink.
- * @param {NormalizedTransaction[]} options.canonicalTransactions Canonical transaction sink.
+ * @param {NormalizedTransaction} normalized New normalized transaction.
+ * @param {{policy: DedupePolicy, seenKeys: Map<string, NormalizedTransaction>, duplicateReports: DuplicateReport[], canonicalTransactions: NormalizedTransaction[]}} dedupeState Policy and result collections for this import.
  * @returns {void}
  */
-function recordCanonicalTransaction({
-  normalized,
-  dedupeKey,
-  policy,
-  seenKeys,
-  duplicateReports,
-  canonicalTransactions,
-}) {
-  const existing = seenKeys.get(dedupeKey);
+function recordCanonicalTransaction(normalized, dedupeState) {
+  const dedupeKey = normalized.dedupeKey;
+  const existing = dedupeState.seenKeys.get(dedupeKey);
   if (existing) {
-    duplicateReports.push({
-      policyName: policy.name,
-      policy,
+    dedupeState.duplicateReports.push({
+      policyName: dedupeState.policy.name,
+      policy: dedupeState.policy,
       existing,
       duplicate: normalized,
     });
     return;
   }
 
-  seenKeys.set(dedupeKey, normalized);
-  canonicalTransactions.push(normalized);
+  dedupeState.seenKeys.set(dedupeKey, normalized);
+  dedupeState.canonicalTransactions.push(normalized);
 }
 
 /**
