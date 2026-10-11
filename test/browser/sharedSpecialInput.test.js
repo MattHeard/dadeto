@@ -15,13 +15,11 @@ describe('sharedSpecialInput', () => {
     };
 
     expect(
-      reuseOrInsertSpecialInput({
-        specialInput: existing,
-        container: {},
-        textInput: {},
-        dom,
-        createSpecialInput,
-      })
+      reuseOrInsertSpecialInput(
+        { container: {}, textInput: {}, dom },
+        existing,
+        createSpecialInput
+      )
     ).toBe(existing);
     expect(createSpecialInput).not.toHaveBeenCalled();
   });

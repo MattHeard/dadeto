@@ -2,6 +2,14 @@ import { insertBeforeNextSibling } from './browserInputHandlersCore.js';
 
 /** @typedef {import('../domHelpers.js').DOMHelpers} DomHelpers */
 
+/**
+ * @typedef {{
+ *   container: HTMLElement,
+ *   textInput: HTMLInputElement,
+ *   dom: DomHelpers,
+ * }} SpecialInputPlacement
+ */
+
 // Special-input adapters expose only the shared DOM contract.
 /**
  * @typedef {{
@@ -12,6 +20,8 @@ import { insertBeforeNextSibling } from './browserInputHandlersCore.js';
  * }} SharedSpecialInputParams
  */
 
+/** @typedef {{ selector: string, placement: SpecialInputPlacement }} SharedSpecialInputContext */
+
 /**
  * Capture the DOM helpers and wiring identifiers shared across special input helpers.
  * @param {{
@@ -20,46 +30,43 @@ import { insertBeforeNextSibling } from './browserInputHandlersCore.js';
  *   textInput: HTMLInputElement,
  *   dom: DomHelpers,
  * }} params - Shared configuration.
- * @returns {SharedSpecialInputParams} Shared subset.
+ * @returns {SharedSpecialInputContext} Normalized query and placement context.
  */
 function getSharedSpecialInputContext(params) {
   const { selector, container, textInput, dom } = params;
-  return { selector, container, textInput, dom };
+  return { selector, placement: { container, textInput, dom } };
 }
 
 /**
  * Find an existing special input using the shared DOM contract.
- * @param {SharedSpecialInputParams} sharedInput Shared input wiring values.
+ * @param {SharedSpecialInputContext} sharedInput Shared input wiring values.
  * @returns {HTMLElement | null} Matching input when present.
  */
 function findExistingSpecialInput(sharedInput) {
-  return sharedInput.dom.querySelector(
-    sharedInput.container,
+  return sharedInput.placement.dom.querySelector(
+    sharedInput.placement.container,
     sharedInput.selector
   );
 }
 
 /**
  * Reuse a special input element when present; otherwise create and insert a new one.
- * @param {SharedSpecialInputParams & {
- *   specialInput?: HTMLElement | null | undefined;
- *   createSpecialInput: () => HTMLElement;
- * }} params Helper configuration.
+ * @param {SpecialInputPlacement} placement DOM placement dependencies.
+ * @param {HTMLElement | null | undefined} specialInput Existing special input, when available.
+ * @param {() => HTMLElement} createSpecialInput Factory used when no input exists.
  * @returns {HTMLElement} Reused or newly created special input.
  */
-export function reuseOrInsertSpecialInput({
+export function reuseOrInsertSpecialInput(
+  placement,
   specialInput,
-  container,
-  textInput,
-  dom,
-  createSpecialInput,
-}) {
+  createSpecialInput
+) {
   if (specialInput) {
     return specialInput;
   }
 
   const element = createSpecialInput();
-  insertBeforeNextSibling({ container, textInput, element, dom });
+  insertBeforeNextSibling({ ...placement, element });
   return element;
 }
 
@@ -77,11 +84,11 @@ export function ensureSpecialInput(options) {
   const specialInput =
     existingSpecialInput ?? findExistingSpecialInput(sharedInput);
 
-  return reuseOrInsertSpecialInput({
-    ...sharedInput,
+  return reuseOrInsertSpecialInput(
+    sharedInput.placement,
     specialInput,
-    createSpecialInput,
-  });
+    createSpecialInput
+  );
 }
 
 /**
@@ -99,12 +106,11 @@ export function createSpecialInputEnsurer(options) {
   return {
     existingSpecialInput,
     ensure(createSpecialInput) {
-      const dependencies = {
-        ...sharedInput,
-        existingSpecialInput: existingSpecialInput,
-        createSpecialInput: createSpecialInput,
-      };
-      return ensureSpecialInput(dependencies);
+      return reuseOrInsertSpecialInput(
+        sharedInput.placement,
+        existingSpecialInput,
+        createSpecialInput
+      );
     },
   };
 }
