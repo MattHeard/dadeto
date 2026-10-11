@@ -249,12 +249,10 @@ export function findUuidFromRequest(request) {
  * @param {{set: (name: string, value: string) => void, status: (status: number) => {json: (body: unknown) => void, send: (body: unknown) => void}}} res Express response.
  * @returns {void}
  */
-function sendApiKeyCreditResponse(
-  allowEffects,
-  responseEffects,
-  { status, body },
-  res
-) {
+function sendApiKeyCreditResponse(allowEffects, responseEffects, result, res) {
+  const status = result.status;
+  const body = result.body;
+
   if (status === 405) {
     responseEffects.setResponseHeader(allowEffects, res, 'Allow', 'POST');
   }
