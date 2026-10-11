@@ -380,13 +380,14 @@ export function createSubmitModerationRatingResponder(dependencies) {
         'recordModerationRating',
       ],
       handlerFactory: deps => {
-        const {
-          verifyIdToken,
-          fetchModeratorAssignment,
-          recordModerationRating,
-          randomUUID,
-          getServerTimestamp,
-        } = /** @type {SubmitModerationRatingDependencies} */ (deps);
+        const typedDeps = /** @type {SubmitModerationRatingDependencies} */ (
+          deps
+        );
+        const verifyIdToken = typedDeps.verifyIdToken;
+        const fetchModeratorAssignment = typedDeps.fetchModeratorAssignment;
+        const recordModerationRating = typedDeps.recordModerationRating;
+        const randomUUID = typedDeps.randomUUID;
+        const getServerTimestamp = typedDeps.getServerTimestamp;
 
         /**
          * Process a rating when prerequisites and context are valid.
