@@ -12,10 +12,12 @@ import {
   validatePossessionContextTime,
 } from '../../src/core/object-minute-rental-search/search-core.js';
 import {
-  createSearchHttpHandler,
+  createSearchHttpHandler as createCoreSearchHttpHandler,
   dailyWindow,
   normalizeRequest,
 } from '../../src/core/object-minute-rental-search/search-http.js';
+import { createAllowEffects } from '../../src/cloud/allow-effects.js';
+import { createSearchHttpResponseEffectAdapters } from '../../src/cloud/object-minute-rental-search/effect-adapters.js';
 import { createObjectMinuteRentalSearch } from '../../src/core/object-minute-rental-search/search-application.js';
 import {
   evaluateServiceAreaFeasibility,
@@ -25,6 +27,20 @@ import {
 // Reuse the established wrapper-level assertions so the direct core mutation
 // run observes every externally visible feasibility branch as well.
 import '../toys/2026-08-27/searchFeasibility.test.js';
+
+/**
+ * @param {Omit<Parameters<typeof createCoreSearchHttpHandler>[0], 'createResponseEffects'> & {createResponseEffects?: Parameters<typeof createCoreSearchHttpHandler>[0]['createResponseEffects']}} options Handler options.
+ * @returns {(request: {body?: unknown}, response: Parameters<ReturnType<typeof createCoreSearchHttpHandler>>[2]) => Promise<void>} Test-boundary handler.
+ */
+function createSearchHttpHandler(options) {
+  const handler = createCoreSearchHttpHandler({
+    ...options,
+    createResponseEffects:
+      options.createResponseEffects ?? createSearchHttpResponseEffectAdapters,
+  });
+  return (request, response) =>
+    handler(createAllowEffects(), request, response);
+}
 
 test('service-area coordinate construction preserves inclusive bounds and read order', () => {
   const reads = [];
@@ -736,6 +752,34 @@ describe('object minute rental search core', () => {
 });
 
 describe('object minute rental HTTP adapter', () => {
+  test('forwards the request permission to all response effects', async () => {
+    const allowEffects = createAllowEffects();
+    const response = {};
+    const setHeader = jest.fn();
+    const sendJson = jest.fn();
+    const createResponseEffects = jest.fn(() => ({ setHeader, sendJson }));
+    const handler = createCoreSearchHttpHandler({
+      runnerCommitmentsRepository: emptyRepository,
+      createResponseEffects,
+      allowedOrigins: ['https://mattheard.net'],
+    });
+
+    await handler(
+      allowEffects,
+      { method: 'OPTIONS', headers: { origin: 'https://mattheard.net' } },
+      response
+    );
+
+    expect(createResponseEffects).toHaveBeenCalledWith(response);
+    expect(setHeader.mock.calls).toEqual([
+      [allowEffects, 'Access-Control-Allow-Origin', 'https://mattheard.net'],
+      [allowEffects, 'Vary', 'Origin'],
+      [allowEffects, 'Access-Control-Allow-Methods', 'POST, OPTIONS'],
+      [allowEffects, 'Access-Control-Allow-Headers', 'Content-Type'],
+    ]);
+    expect(sendJson).toHaveBeenCalledWith(allowEffects, {}, 204);
+  });
+
   test('handles allowed CORS preflight without reading search dependencies', async () => {
     const listForRunner = jest.fn();
     const json = jest.fn();

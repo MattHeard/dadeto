@@ -36,6 +36,7 @@ import { createSearchHttpHandler } from '../../object-minute-rental-search/searc
 import { createBrowserRunnerCommitmentsRepository } from '../../object-minute-rental-search/browser-runner-commitments-repository.js';
 import { SOPHIE_CHARLOTTE_SERVICE_AREA } from '../../object-minute-rental-search/service-area.js';
 import {
+  createSimulatorSearchHttpResponseEffectAdapters,
   setSimulatorHttpResponseHeader,
   sendSimulatorHttpResponse,
   logSimulatorRenderContentsError,
@@ -541,13 +542,16 @@ async function buildSimulatorState(config) {
     setFirestoreDocument
   );
   const searchHttp = createSearchHttpHandler({
+    createResponseEffects: createSimulatorSearchHttpResponseEffectAdapters,
     runnerCommitmentsRepository: createBrowserRunnerCommitmentsRepository(),
     serviceArea: SOPHIE_CHARLOTTE_SERVICE_AREA,
     runnerScheduleProvider: { getSchedule: async () => LOCAL_RUNNER_SCHEDULE },
     clock: () => new Date('2026-01-01T15:00:00Z'),
   });
   const objectMinuteRentalSearch = (/** @type {SimulatorRequest} */ request) =>
-    runSearchHttp(searchHttp, request);
+    bindEffectBoundary(permission =>
+      runSearchHttp(searchHttp, permission, request)
+    );
   const testUtils = createSimulatorTestUtils({
     snapshotHelpers,
     lookupHelpers,
@@ -1203,10 +1207,11 @@ function createRoutes(deps) {
 /**
  * Invoke the Express-shaped search handler using the simulator route contract.
  * @param {ReturnType<typeof createSearchHttpHandler>} handler Search handler.
+ * @param {import('../../../../types/allow-effects').AllowEffects} allowEffects Request-bound permission.
  * @param {SimulatorRequest} request Simulator request.
  * @returns {Promise<{status: number, body: unknown}>} Route response.
  */
-async function runSearchHttp(handler, request) {
+async function runSearchHttp(handler, allowEffects, request) {
   let status = 200;
   let body;
   const res = {
@@ -1218,7 +1223,7 @@ async function runSearchHttp(handler, request) {
       return res;
     },
   };
-  await handler(request, res);
+  await handler(allowEffects, request, res);
   return { status, body };
 }
 

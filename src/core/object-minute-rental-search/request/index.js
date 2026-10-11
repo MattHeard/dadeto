@@ -1,27 +1,51 @@
 import { durationMilliseconds } from '../timing.js';
 
+/** @typedef {import('../../../../types/allow-effects').AllowEffects} AllowEffects */
+
 /**
  * Execute HTTP request interpretation at the search request boundary.
+ * @param {AllowEffects} allowEffects Explicit permission for HTTP response effects.
  * @param {{ search: (request: ReturnType<typeof normalizeRequest>) => Promise<object>, env: Record<string, string | undefined>, clock: () => Date, runnerScheduleProvider?: { getSchedule: (input: { runnerId: string }) => Promise<object[]> }, allowedOrigins: string[], defaultRunnerId: string }} context Search application and live request dependencies.
  * @param {{ body?: unknown, method?: string, headers?: { origin?: string } }} req HTTP request.
- * @param {{ json: (body: unknown) => void, status: (code: number) => { json: (body: unknown) => void }, setHeader?: (name: string, value: string) => void }} res HTTP response.
+ * @param {{ setHeader: (allowEffects: AllowEffects, name: string, value: string) => unknown, setStatus: (allowEffects: AllowEffects, status: number) => unknown, sendJson: (allowEffects: AllowEffects, body: unknown, status?: number) => unknown }} responseEffects Permission-first response adapters.
  * @returns {Promise<void>} Completion after response delivery.
  */
-export async function executeSearchHttpRequest(context, req, res) {
+export async function executeSearchHttpRequest(
+  allowEffects,
+  context,
+  req,
+  responseEffects
+) {
   const search = context.search;
   const origin = req?.headers?.origin;
   if (origin && context.allowedOrigins.includes(origin)) {
-    res.setHeader?.('Access-Control-Allow-Origin', origin);
-    res.setHeader?.('Vary', 'Origin');
-    res.setHeader?.('Access-Control-Allow-Methods', 'POST, OPTIONS');
-    res.setHeader?.('Access-Control-Allow-Headers', 'Content-Type');
+    responseEffects.setHeader(
+      allowEffects,
+      'Access-Control-Allow-Origin',
+      origin
+    );
+    responseEffects.setHeader(allowEffects, 'Vary', 'Origin');
+    responseEffects.setHeader(
+      allowEffects,
+      'Access-Control-Allow-Methods',
+      'POST, OPTIONS'
+    );
+    responseEffects.setHeader(
+      allowEffects,
+      'Access-Control-Allow-Headers',
+      'Content-Type'
+    );
   }
   if (req?.method === 'OPTIONS') {
-    res.status(204).json({});
+    responseEffects.sendJson(allowEffects, {}, 204);
     return;
   }
   if (req?.method && req.method !== 'POST') {
-    res.status(405).json({ valid: false, reason: 'Method not allowed.' });
+    responseEffects.sendJson(
+      allowEffects,
+      { valid: false, reason: 'Method not allowed.' },
+      405
+    );
     return;
   }
   try {
@@ -31,22 +55,23 @@ export async function executeSearchHttpRequest(context, req, res) {
           runnerId: context.env.SEARCH_RUNNER_ID ?? context.defaultRunnerId,
         })
       : parseSchedule(context.env.SEARCH_RUNNER_SCHEDULE_JSON);
-    res.json(await search(request));
+    responseEffects.sendJson(allowEffects, await search(request));
   } catch (error) {
-    sendSearchHttpFailure(res, error);
+    sendSearchHttpFailure(allowEffects, responseEffects, error);
   }
 }
 
 /**
  * Serialize a search boundary failure to the existing bad-request protocol.
- * @param {{ status: (code: number) => { json: (body: unknown) => void } }} res HTTP response.
+ * @param {AllowEffects} allowEffects Explicit permission for HTTP response effects.
+ * @param {{ setStatus: (allowEffects: AllowEffects, status: number) => unknown, sendJson: (allowEffects: AllowEffects, body: unknown, status?: number) => unknown }} responseEffects Permission-first response adapter.
  * @param {unknown} error Request or search failure.
  * @returns {void}
  */
-function sendSearchHttpFailure(res, error) {
-  const response = res.status(400);
+function sendSearchHttpFailure(allowEffects, responseEffects, error) {
+  responseEffects.setStatus(allowEffects, 400);
   const reason = error instanceof Error ? error.message : String(error);
-  response.json({ valid: false, reason });
+  responseEffects.sendJson(allowEffects, { valid: false, reason });
 }
 
 /**
