@@ -39,3 +39,9 @@ export function createEffectInvocationBoundary(handler) {
 export function createEffectStartupBoundary(handler) {
   return handler(createAllowEffects());
 }
+
+/** @param {import('../../types/allow-effects').AllowEffects} permission @param {...unknown} values */
+export function logDebugEffect(permission, ...values) {
+  void permission;
+  globalThis.console?.debug?.(...values);
+}

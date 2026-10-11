@@ -8,10 +8,8 @@ import {
   getEnvironmentVariables,
   now,
 } from './assign-moderation-job-gcf.js';
-import {
-  createAssignModerationJobEntrypoint,
-} from '../../core/cloud/assign-moderation-job/index.js';
-import { createAllowEffects } from '../allow-effects.js';
+import { createAssignModerationJobEntrypoint } from '../../core/cloud/assign-moderation-job/index.js';
+import { createAllowEffects, logDebugEffect } from '../allow-effects.js';
 import {
   createSetModeratorAssignment,
   initializeFirebaseApp,
@@ -38,6 +36,7 @@ const entrypoint = await createAssignModerationJobEntrypoint({
   registerPostRoute,
   createSetModeratorAssignment,
   sendHttpResponse,
+  logDebug: logDebugEffect,
 });
 
 export const handle = entrypoint.handle;

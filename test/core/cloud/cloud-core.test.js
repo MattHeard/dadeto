@@ -29,6 +29,9 @@ import {
   createFirestoreDocumentOnWriteTrigger,
 } from '../../../src/core/cloud/cloud-core.js';
 
+const allowEffects =
+  /** @type {import('../../../types/allow-effects').AllowEffects} */ ({});
+
 describe('cloud-core', () => {
   beforeEach(() => {
     jest.spyOn(console, 'debug').mockImplementation(() => {});
@@ -156,28 +159,50 @@ describe('cloud-core helper behavior', () => {
   });
   describe('resolveAllowedOrigins', () => {
     test('returns production origins for prod env', () => {
-      const result = resolveAllowedOrigins({ DENDRITE_ENVIRONMENT: 'prod' });
+      const logDebug = jest.fn();
+      const result = resolveAllowedOrigins(
+        allowEffects,
+        { DENDRITE_ENVIRONMENT: 'prod' },
+        logDebug
+      );
       expect(result).toEqual(productionOrigins);
+      expect(logDebug).toHaveBeenCalledWith(
+        allowEffects,
+        'resolveAllowedOrigins environment',
+        { DENDRITE_ENVIRONMENT: 'prod' }
+      );
     });
 
     test('uses PLAYWRIGHT_ORIGIN when in test env', () => {
-      const result = resolveAllowedOrigins({
-        DENDRITE_ENVIRONMENT: 't-firefox',
-        PLAYWRIGHT_ORIGIN: 'https://playwright.test',
-      });
+      const result = resolveAllowedOrigins(
+        allowEffects,
+        {
+          DENDRITE_ENVIRONMENT: 't-firefox',
+          PLAYWRIGHT_ORIGIN: 'https://playwright.test',
+        },
+        jest.fn()
+      );
       expect(result).toEqual(['https://playwright.test']);
     });
 
     test('returns empty array when test env is missing PLAYWRIGHT_ORIGIN', () => {
-      const result = resolveAllowedOrigins({
-        DENDRITE_ENVIRONMENT: 't-firefox',
-      });
+      const result = resolveAllowedOrigins(
+        allowEffects,
+        {
+          DENDRITE_ENVIRONMENT: 't-firefox',
+        },
+        jest.fn()
+      );
       expect(result).toEqual([]);
     });
 
     test('throws when environment is unsupported', () => {
       expect(() =>
-        resolveAllowedOrigins({ DENDRITE_ENVIRONMENT: 'stage' })
+        resolveAllowedOrigins(
+          allowEffects,
+          { DENDRITE_ENVIRONMENT: 'stage' },
+          jest.fn()
+        )
       ).toThrow(/Unsupported environment label/);
     });
 

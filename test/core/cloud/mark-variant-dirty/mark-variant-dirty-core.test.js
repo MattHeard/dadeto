@@ -31,33 +31,51 @@ const {
 } = markVariantDirtyCore;
 
 describe('getAllowedOrigins', () => {
+  const allowEffects =
+    /** @type {import('../../../../types/allow-effects').AllowEffects} */ ({});
+  const logDebug = jest.fn();
+
   it('returns production origins when environment is prod', () => {
-    expect(getAllowedOrigins({ DENDRITE_ENVIRONMENT: 'prod' })).toEqual(
-      productionOrigins
-    );
+    expect(
+      getAllowedOrigins(
+        allowEffects,
+        { DENDRITE_ENVIRONMENT: 'prod' },
+        logDebug
+      )
+    ).toEqual(productionOrigins);
   });
 
   it('returns playwright origin when environment starts with t-', () => {
     expect(
-      getAllowedOrigins({
-        DENDRITE_ENVIRONMENT: 't-123',
-        PLAYWRIGHT_ORIGIN: 'https://preview.local',
-      })
+      getAllowedOrigins(
+        allowEffects,
+        {
+          DENDRITE_ENVIRONMENT: 't-123',
+          PLAYWRIGHT_ORIGIN: 'https://preview.local',
+        },
+        logDebug
+      )
     ).toEqual(['https://preview.local']);
   });
 
   it('returns empty array for t- environments without origin', () => {
-    expect(getAllowedOrigins({ DENDRITE_ENVIRONMENT: 't-1' })).toEqual([]);
+    expect(
+      getAllowedOrigins(allowEffects, { DENDRITE_ENVIRONMENT: 't-1' }, logDebug)
+    ).toEqual([]);
   });
 
   it('throws for unsupported environments', () => {
-    expect(() => getAllowedOrigins({ DENDRITE_ENVIRONMENT: 'stage' })).toThrow(
-      /Unsupported environment label/
-    );
+    expect(() =>
+      getAllowedOrigins(
+        allowEffects,
+        { DENDRITE_ENVIRONMENT: 'stage' },
+        logDebug
+      )
+    ).toThrow(/Unsupported environment label/);
   });
 
   it('throws when the environment config is missing', () => {
-    expect(() => getAllowedOrigins()).toThrow(
+    expect(() => getAllowedOrigins(allowEffects, undefined, logDebug)).toThrow(
       /DENDRITE_ENVIRONMENT is required to resolve allowed origins/
     );
   });

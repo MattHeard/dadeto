@@ -10,6 +10,10 @@ import {
   getFirestoreInstance,
 } from './mark-variant-dirty-gcf.js';
 import { runMarkVariantDirty } from '../../core/cloud/mark-variant-dirty/run.js';
+import {
+  createEffectStartupBoundary,
+  logDebugEffect,
+} from '../allow-effects.js';
 
 const { markVariantDirty: handle, handleRequest } = runMarkVariantDirty({
   initializeApp,
@@ -20,6 +24,8 @@ const { markVariantDirty: handle, handleRequest } = runMarkVariantDirty({
   cors,
   functions,
   getEnvironmentVariables,
+  bindStartupEffectBoundary: createEffectStartupBoundary,
+  logDebug: logDebugEffect,
   ADMIN_UID,
 });
 

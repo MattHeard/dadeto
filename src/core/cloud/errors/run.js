@@ -13,7 +13,7 @@ import { createErrorBeaconHandler } from './errors-core.js';
  * @typedef {{ debug?: (...args: unknown[]) => void, error?: (...args: unknown[]) => void }} ErrorBeaconConsole
  * @typedef {{ status: (code: number) => unknown, json: (body: unknown) => unknown, send: (body: string) => unknown, end: () => unknown }} ErrorBeaconResponse
  * @typedef {Function & { json: Function, text: Function }} ErrorBeaconExpress
- * @typedef {{ express: ErrorBeaconExpress, cors: Function, getEnvironmentVariables: Function, console?: ErrorBeaconConsole, fetchFn: (permission: AllowEffects, input: string, init?: object) => Promise<Response>, bindEffectBoundary: AllowEffectsBoundary, effectFetchFn: (permission: AllowEffects, input: string, init?: object) => Promise<Response>, useMiddleware: (permission: AllowEffects, app: ErrorBeaconApp, middleware: unknown) => void, registerPostRoute: (permission: AllowEffects, app: ErrorBeaconApp, path: string, handler: Function) => void, respondJson: (permission: AllowEffects, response: ErrorBeaconResponse, status: number, body: Record<string, unknown>) => unknown, respondText: (permission: AllowEffects, response: ErrorBeaconResponse, status: number, body: string) => unknown, respondEmpty: (permission: AllowEffects, response: ErrorBeaconResponse, status: number) => unknown, logDebug: (permission: AllowEffects, logger: ErrorBeaconConsole | undefined, message: string, data: Record<string, unknown>) => void, logError: (permission: AllowEffects, logger: ErrorBeaconConsole | undefined, message: string, error: unknown) => void }} ErrorBeaconDeps
+ * @typedef {{ express: ErrorBeaconExpress, cors: Function, getEnvironmentVariables: Function, console?: ErrorBeaconConsole, fetchFn: (permission: AllowEffects, input: string, init?: object) => Promise<Response>, bindEffectBoundary: AllowEffectsBoundary, bindStartupEffectBoundary: import('../../../../types/allow-effects').StartupAllowEffectsBoundary, effectFetchFn: (permission: AllowEffects, input: string, init?: object) => Promise<Response>, useMiddleware: (permission: AllowEffects, app: ErrorBeaconApp, middleware: unknown) => void, registerPostRoute: (permission: AllowEffects, app: ErrorBeaconApp, path: string, handler: Function) => void, respondJson: (permission: AllowEffects, response: ErrorBeaconResponse, status: number, body: Record<string, unknown>) => unknown, respondText: (permission: AllowEffects, response: ErrorBeaconResponse, status: number, body: string) => unknown, respondEmpty: (permission: AllowEffects, response: ErrorBeaconResponse, status: number) => unknown, logDebug: (permission: AllowEffects, logger: ErrorBeaconConsole | undefined, message: string, data: Record<string, unknown>) => void, logError: (permission: AllowEffects, logger: ErrorBeaconConsole | undefined, message: string, error: unknown) => void }} ErrorBeaconDeps
  */
 
 /**
@@ -37,10 +37,22 @@ export function createErrorBeaconRun(deps) {
   const corsOptions = createCorsOptions(
     createCorsOriginHandler(
       isAllowedOrigin,
-      resolveAllowedOrigins({
-        ...environmentVariables,
-        DENDRITE_ENVIRONMENT: validatedEnvironment,
-      })
+      deps.bindStartupEffectBoundary(permission =>
+        resolveAllowedOrigins(
+          permission,
+          {
+            ...environmentVariables,
+            DENDRITE_ENVIRONMENT: validatedEnvironment,
+          },
+          (effectPermission, message, data) =>
+            deps.logDebug(
+              effectPermission,
+              deps.console,
+              /** @type {string} */ (message),
+              /** @type {Record<string, unknown>} */ (data)
+            )
+        )
+      )
     )
   );
   const corsMiddleware = deps.cors(corsOptions);

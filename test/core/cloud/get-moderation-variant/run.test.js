@@ -66,6 +66,7 @@ describe('runGetModerationVariant', () => {
       express: () => app,
       cors: jest.fn(() => ({ cors: true })),
       getEnvironmentVariables: () => ({ DENDRITE_ENVIRONMENT: 'dev' }),
+      logDebug: jest.fn(),
       useMiddleware,
       registerGetRoute: jest.fn((_, appInstance, path, handler) =>
         appInstance.get(path, handler)

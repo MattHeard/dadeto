@@ -125,6 +125,7 @@ export const getFirestoreInstance = (options = {}) => {
  *   cryptoModule: { randomUUID: () => string },
  *   bindEffectBoundary: AllowEffectsBoundary,
  *   bindStartupEffectBoundary: import('../../../../types/allow-effects').StartupAllowEffectsBoundary,
+ *   logDebug: (permission: AllowEffects, ...values: unknown[]) => void,
  *   useMiddleware: (permission: AllowEffects, app: { use: (middleware: unknown) => void }, middleware: unknown) => void,
  *   initializeFirebaseAppEffect: (permission: AllowEffects, initFn: () => void) => unknown,
  *   registerPostRoute: (permission: AllowEffects, app: { post: (path: string, handler: unknown) => void }, path: string, handler: Function) => void,
@@ -170,7 +171,9 @@ export function runGenerateStats(deps) {
       generateStatsCore.handleRequest(permission, req, res)
     );
 
-  const allowedOrigins = getAllowedOrigins(env);
+  const allowedOrigins = bindStartupEffectBoundary(permission =>
+    getAllowedOrigins(permission, env, typedDeps.logDebug)
+  );
   const createApp = /** @type {any} */ (() => express());
   const appDeps = {
     createApp,
@@ -226,6 +229,7 @@ function createRegionOnRequest(functions, app) {
  *   initializeApp: () => void,
  *   bindEffectBoundary: AllowEffectsBoundary,
  *   bindStartupEffectBoundary: import('../../../../types/allow-effects').StartupAllowEffectsBoundary,
+ *   logDebug: (permission: AllowEffects, ...values: unknown[]) => void,
  *   useMiddleware: (permission: AllowEffects, app: { use: (middleware: unknown) => void }, middleware: unknown) => void,
  *   initializeFirebaseAppEffect: (permission: AllowEffects, initFn: () => void) => unknown,
  *   registerPostRoute: (permission: AllowEffects, app: { post: (path: string, handler: unknown) => void }, path: string, handler: Function) => void,

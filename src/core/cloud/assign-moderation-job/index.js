@@ -45,6 +45,7 @@ import { resolveAllowedOrigins, isDuplicateAppError } from '../cloud-core.js';
  *   now: () => number,
  *   random: () => number,
  *   bindEffectBoundary: import('../../../../types/allow-effects').AllowEffectsBoundary,
+ *   logDebug: (permission: AllowEffects, ...values: unknown[]) => void,
  *   useMiddleware: (permission: AllowEffects, app: import('../../../../types/native-http').NativeExpressApp, middleware: unknown) => void,
  *   registerPostRoute: (permission: AllowEffects, app: import('../../../../types/native-http').NativeExpressApp, path: string, handler: (req: import('../../../../types/native-http').NativeHttpRequest, res: import('../../../../types/native-http').NativeHttpResponse) => unknown) => void,
  *   createSetModeratorAssignment: (database: unknown) => (permission: AllowEffects, uid: string, data: object) => Promise<unknown>,
@@ -173,9 +174,13 @@ export async function createAssignModerationJobEntrypoint(deps) {
   const auth = typedDeps.getAuth();
   const app = typedDeps.express();
 
-  const corsOptions = createCorsOptions(
-    resolveAllowedOrigins,
-    typedDeps.getEnvironmentVariables
+  const corsOptions = await typedDeps.bindEffectBoundary(async permission =>
+    createCorsOptions(
+      permission,
+      resolveAllowedOrigins,
+      typedDeps.getEnvironmentVariables,
+      typedDeps.logDebug
+    )
   );
 
   void typedDeps.bindEffectBoundary(permission => {

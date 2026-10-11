@@ -239,19 +239,23 @@ export function buildTestOrigins(playwrightOrigin) {
 
 /**
  * Determine the allowed origins for an endpoint by reading the current runtime labels.
+ * @param {import('../../../types/allow-effects').AllowEffects} allowEffects Permission for environment diagnostics.
  * @param {Record<string, unknown> | null | undefined} environmentVariables Environment map exposed to the function.
+ * @param {(permission: import('../../../types/allow-effects').AllowEffects, ...values: unknown[]) => void} logDebug Permission-aware diagnostic adapter.
  * @returns {string[]} Allowed origin list for the deployment environment.
  */
 // Stryker disable next-line all -- environment labels map to fixed deployment
 // origin sets and fixed validation errors.
-export function resolveAllowedOrigins(environmentVariables) {
+export function resolveAllowedOrigins(
+  allowEffects,
+  environmentVariables,
+  logDebug
+) {
   const environment = getEnvironmentVariable(
     environmentVariables,
     'DENDRITE_ENVIRONMENT'
   );
-  // Stryker disable next-line all -- diagnostics are optional and have no
-  // endpoint behavior beyond this fixed message/payload.
-  globalThis.console?.debug?.('resolveAllowedOrigins environment', {
+  logDebug(allowEffects, 'resolveAllowedOrigins environment', {
     DENDRITE_ENVIRONMENT: environment,
   });
   // Stryker disable next-line all -- invalid deployment labels share one fixed

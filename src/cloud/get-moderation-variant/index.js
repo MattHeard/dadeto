@@ -12,6 +12,7 @@ import {
   createEffectHttpBoundary,
   createEffectInvocationBoundary,
   createEffectStartupBoundary,
+  logDebugEffect,
 } from '../allow-effects.js';
 import { runGetModerationVariant } from '../../core/cloud/get-moderation-variant/run.js';
 import {
@@ -24,7 +25,6 @@ import {
   sendHttpResponse,
   sendJsonResponse,
 } from './request-effect-adapters.js';
-
 const runtime = runGetModerationVariant({
   functions,
   express,
@@ -34,6 +34,7 @@ const runtime = runGetModerationVariant({
   getFirestoreInstance,
   getAuth,
   getEnvironmentVariables,
+  logDebug: logDebugEffect,
   createStartupBoundary: createEffectStartupBoundary,
   createHttpBoundary: createEffectHttpBoundary,
   createInvocationBoundary: createEffectInvocationBoundary,
@@ -44,6 +45,5 @@ const runtime = runGetModerationVariant({
   sendHttpResponse,
   sendJsonResponse,
 });
-
 export const handle = runtime.handle;
 export const handleGetModerationVariant = runtime.handleGetModerationVariant;

@@ -90,6 +90,9 @@ describe('cloud-core additional coverage', () => {
   });
 
   test('reads environment values and raw authorization headers safely', () => {
+    const allowEffects =
+      /** @type {import('../../../types/allow-effects').AllowEffects} */ ({});
+    const logDebug = jest.fn();
     expect(getEnvironmentVariable(undefined, 'VALUE')).toBeUndefined();
     expect(getEnvironmentVariable({ VALUE: 'yes' }, 'VALUE')).toBe('yes');
     expect(getAuthHeader({ headers: { Authorization: 'Bearer header' } })).toBe(
@@ -99,12 +102,16 @@ describe('cloud-core additional coverage', () => {
     expect(getAuthHeader({ get: () => 'Bearer getter' })).toBe('Bearer getter');
     expect(normalizeSubmissionContent('line\r\nnext')).toBe('line\nnext');
     expect(normalizeShortString('  short  ')).toBe('short');
-    expect(() => resolveAllowedOrigins({})).toThrow(
+    expect(() => resolveAllowedOrigins(allowEffects, {}, logDebug)).toThrow(
       'DENDRITE_ENVIRONMENT is required to resolve allowed origins.'
     );
-    expect(resolveAllowedOrigins({ DENDRITE_ENVIRONMENT: 'dev' })).toEqual(
-      expect.any(Array)
-    );
+    expect(
+      resolveAllowedOrigins(
+        allowEffects,
+        { DENDRITE_ENVIRONMENT: 'dev' },
+        logDebug
+      )
+    ).toEqual(expect.any(Array));
   });
 
   test('creates CORS handlers and response values', () => {

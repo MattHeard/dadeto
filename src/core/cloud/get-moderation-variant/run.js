@@ -25,6 +25,7 @@ import {
  * @param {() => NativeExpressApp} deps.express Express app factory.
  * @param {(options: unknown) => unknown} deps.cors CORS middleware factory.
  * @param {() => Record<string, unknown>} deps.getEnvironmentVariables Runtime environment accessor.
+ * @param {(permission: AllowEffects, ...values: unknown[]) => void} deps.logDebug Permission-aware diagnostic adapter.
  * @param {(permission: AllowEffects, app: NativeExpressApp, middleware: unknown) => void} deps.useMiddleware Middleware registration adapter.
  * @param {(permission: AllowEffects, app: NativeExpressApp, path: string, handler: (req: NativeHttpRequest, res: NativeHttpResponse) => unknown) => void} deps.registerGetRoute GET route registration adapter.
  * @param {(permission: AllowEffects, response: NativeHttpResponse, status: number, body: unknown) => void} deps.sendHttpResponse Text response adapter.
@@ -43,7 +44,11 @@ export function runGetModerationVariant(deps) {
     });
     const auth = deps.getAuth();
     const app = deps.express();
-    const allowedOrigins = getAllowedOrigins(deps.getEnvironmentVariables());
+    const allowedOrigins = getAllowedOrigins(
+      allowEffects,
+      deps.getEnvironmentVariables(),
+      deps.logDebug
+    );
     const corsOptions = createCorsOptions(
       createHandleCorsOrigin(isAllowedOrigin, allowedOrigins)
     );

@@ -81,6 +81,7 @@ async function loadModule({
   const sendHttpResponse = jest.fn();
   const logError = jest.fn();
   const logWarning = jest.fn();
+  const logDebug = jest.fn();
   const deps = {
     db: firestoreResult,
     auth,
@@ -94,6 +95,7 @@ async function loadModule({
     cors,
     bindEffectBoundary,
     bindStartupEffectBoundary,
+    logDebug,
     initializeFirebaseAppEffect,
     useMiddleware,
     registerPostRoute,
@@ -140,6 +142,7 @@ async function loadModule({
     startupPermission,
     bindEffectBoundary,
     bindStartupEffectBoundary,
+    logDebug,
     initializeFirebaseAppEffect,
     useMiddleware,
     registerPostRoute,
@@ -176,25 +179,44 @@ describe('generate-stats run', () => {
       'https://www.dendritestories.co.nz',
     ];
     const mockedOrigins = ['https://prod.example'];
-    const prodOrigins = mod.getAllowedOrigins({
-      DENDRITE_ENVIRONMENT: 'prod',
-      PLAYWRIGHT_ORIGIN: 'https://playwright.example',
-    });
-    const devOrigins = mod.getAllowedOrigins({
-      DENDRITE_ENVIRONMENT: 'dev',
-    });
+    const allowEffects =
+      /** @type {import('../../../../types/allow-effects').AllowEffects} */ ({});
+    const logDebug = jest.fn();
+    const prodOrigins = mod.getAllowedOrigins(
+      allowEffects,
+      {
+        DENDRITE_ENVIRONMENT: 'prod',
+        PLAYWRIGHT_ORIGIN: 'https://playwright.example',
+      },
+      logDebug
+    );
+    const devOrigins = mod.getAllowedOrigins(
+      allowEffects,
+      {
+        DENDRITE_ENVIRONMENT: 'dev',
+      },
+      logDebug
+    );
 
     expect([productionOrigins, mockedOrigins]).toContainEqual(prodOrigins);
     expect(devOrigins).toEqual(prodOrigins);
     expect(
-      mod.getAllowedOrigins({
-        DENDRITE_ENVIRONMENT: 't-123',
-        PLAYWRIGHT_ORIGIN: 'https://playwright.example',
-      })
+      mod.getAllowedOrigins(
+        allowEffects,
+        {
+          DENDRITE_ENVIRONMENT: 't-123',
+          PLAYWRIGHT_ORIGIN: 'https://playwright.example',
+        },
+        logDebug
+      )
     ).toEqual(['https://playwright.example']);
-    expect(mod.getAllowedOrigins({ DENDRITE_ENVIRONMENT: 't-123' })).toEqual(
-      []
-    );
+    expect(
+      mod.getAllowedOrigins(
+        allowEffects,
+        { DENDRITE_ENVIRONMENT: 't-123' },
+        logDebug
+      )
+    ).toEqual([]);
   });
 
   it('parses firestore database ids from the environment', async () => {
@@ -403,7 +425,7 @@ describe('generate-stats run', () => {
 
     mod.runGenerateStats(deps);
 
-    expect(bindStartupEffectBoundary).toHaveBeenCalledTimes(2);
+    expect(bindStartupEffectBoundary).toHaveBeenCalledTimes(3);
     const parserPermissions = useMiddleware.mock.calls
       .slice(0, 2)
       .map(([permission]) => permission);
@@ -471,6 +493,7 @@ describe('generate-stats run', () => {
       initializeApp,
       bindEffectBoundary,
       bindStartupEffectBoundary,
+      logDebug,
       initializeFirebaseAppEffect,
       useMiddleware,
       registerPostRoute,
@@ -500,6 +523,7 @@ describe('generate-stats run', () => {
       crypto,
       bindEffectBoundary,
       bindStartupEffectBoundary,
+      logDebug,
       useMiddleware,
       initializeFirebaseAppEffect,
       registerPostRoute,
@@ -510,7 +534,7 @@ describe('generate-stats run', () => {
       expect.objectContaining({ startup: true }),
       initializeApp
     );
-    expect(bindStartupEffectBoundary).toHaveBeenCalledTimes(3);
+    expect(bindStartupEffectBoundary).toHaveBeenCalledTimes(4);
     expect(getAuth).toHaveBeenCalledTimes(1);
     expect(onRequest).toHaveBeenCalledTimes(1);
     expect(handle).toBe('generateStats-export');

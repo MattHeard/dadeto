@@ -28,6 +28,8 @@ import { createFirebaseAppContext } from '../firebase-app-manager.js';
  *   cors: typeof import('../../../../src/cloud/mark-variant-dirty/mark-variant-dirty-gcf.js').cors,
  *   functions: typeof import('../../../../src/cloud/mark-variant-dirty/mark-variant-dirty-gcf.js').functions,
  *   getEnvironmentVariables: typeof import('../../../../src/cloud/mark-variant-dirty/mark-variant-dirty-gcf.js').getEnvironmentVariables,
+ *   bindStartupEffectBoundary: import('../../../../types/allow-effects').StartupAllowEffectsBoundary,
+ *   logDebug: (permission: import('../../../../types/allow-effects').AllowEffects, ...values: unknown[]) => void,
  *   ADMIN_UID: string,
  * }} deps Dependencies required to compose the mark-variant-dirty endpoint.
  * @returns {{ markVariantDirty: unknown, handleRequest: (...args: never[]) => unknown, app: unknown }} Wired cloud export objects for index.js.
@@ -44,7 +46,9 @@ export function runMarkVariantDirty(deps) {
   }} */ (createFirebaseAppContext(deps));
 
   const environmentVariables = deps.getEnvironmentVariables();
-  const allowedOrigins = getAllowedOrigins(environmentVariables);
+  const allowedOrigins = deps.bindStartupEffectBoundary(permission =>
+    getAllowedOrigins(permission, environmentVariables, deps.logDebug)
+  );
   const handleCorsOrigin = createHandleCorsOrigin(
     isAllowedOrigin,
     allowedOrigins

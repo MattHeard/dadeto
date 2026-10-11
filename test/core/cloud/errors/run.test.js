@@ -8,6 +8,9 @@ const createErrorBeaconRun = dependencies =>
     fetchFn: (permission, ...args) => dependencies.fetchFn(...args),
     bindEffectBoundary:
       dependencies.bindEffectBoundary ?? (handler => handler(permission)),
+    bindStartupEffectBoundary:
+      dependencies.bindStartupEffectBoundary ??
+      (handler => handler(permission)),
     effectFetchFn: (_permission, ...args) => dependencies.fetchFn(...args),
     useMiddleware:
       dependencies.useMiddleware ??

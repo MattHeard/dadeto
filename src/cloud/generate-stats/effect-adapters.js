@@ -2,6 +2,7 @@ import { createEffectInvocationBoundary } from '../allow-effects.js';
 import {
   bindStartupEffectBoundary,
   initializeFirebaseApp,
+  logDebug,
   useMiddleware,
 } from './startup-effect-adapters.js';
 import {
@@ -13,12 +14,12 @@ import {
 export {
   bindStartupEffectBoundary,
   initializeFirebaseApp,
+  logDebug,
   useMiddleware,
   logError,
   logWarning,
   sendHttpResponse,
 };
-
 
 /** Register a POST route at the cloud function boundary. */
 export function registerPostRoute(allowEffects, app, path, handler) {
@@ -31,10 +32,10 @@ export function createGenerateStatsEffectAdapters(fetchFn) {
   return {
     fetchFn: (permission, ...args) => fetchFn(...args),
     effectFetchFn: (permission, ...args) => fetchFn(...args),
-    bindEffectBoundary: handler =>
-      createEffectInvocationBoundary(handler)(),
+    bindEffectBoundary: handler => createEffectInvocationBoundary(handler)(),
     bindStartupEffectBoundary,
     initializeFirebaseAppEffect: initializeFirebaseApp,
+    logDebug,
     useMiddleware,
     registerPostRoute,
     sendHttpResponse,

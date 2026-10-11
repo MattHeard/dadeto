@@ -9,12 +9,14 @@
  */
 
 /**
- * @typedef {(environmentVariables: Record<string, unknown>) => string[]} ResolveAllowedOrigins
+ * @typedef {(allowEffects: AllowEffects, environmentVariables: Record<string, unknown>, logDebug: (permission: AllowEffects, ...values: unknown[]) => void) => string[]} ResolveAllowedOrigins
  */
 
 /**
  * @typedef {object} CorsEnvironmentHelpers
+ * @property {AllowEffects} allowEffects Permission to log environment diagnostics.
  * @property {ResolveAllowedOrigins} getAllowedOrigins Resolves allowed origins from environment variables.
+ * @property {(permission: AllowEffects, ...values: unknown[]) => void} logDebug Permission-aware diagnostic adapter.
  * @property {() => Record<string, unknown>} getEnvironmentVariables Reads environment variables at runtime.
  */
 
@@ -27,7 +29,7 @@
  */
 
 /**
- * @typedef {(getEnvironmentVariables: () => Record<string, unknown>) => CorsOriginHandler} CorsOriginFactory
+ * @typedef {(allowEffects: AllowEffects, getEnvironmentVariables: () => Record<string, unknown>) => CorsOriginHandler} CorsOriginFactory
  */
 
 /**
@@ -521,16 +523,22 @@ export function createCorsOriginHandler(allowedOrigins) {
  * @param {{
  *   getAllowedOrigins: ResolveAllowedOrigins,
  *   createCorsOriginHandler: CorsOriginHandlerFactory,
+ *   logDebug: (permission: AllowEffects, ...values: unknown[]) => void,
  * }} deps Dependencies required to build the origin handler.
  * @returns {CorsOriginFactory} Factory that accepts an environment getter and returns the configured origin callback.
  */
 export function createCorsOriginFactory({
   getAllowedOrigins,
   createCorsOriginHandler,
+  logDebug,
 }) {
-  return function createCorsOrigin(getEnvironmentVariables) {
+  return function createCorsOrigin(allowEffects, getEnvironmentVariables) {
     const environmentVariables = getEnvironmentVariables();
-    const allowedOrigins = getAllowedOrigins(environmentVariables);
+    const allowedOrigins = getAllowedOrigins(
+      allowEffects,
+      environmentVariables,
+      logDebug
+    );
 
     return createCorsOriginHandler(allowedOrigins);
   };
@@ -547,14 +555,17 @@ export function createCreateCorsOriginFromEnvironment({
   createCreateCorsOrigin,
 }) {
   return function createCorsOriginFromEnvironment({
+    allowEffects,
     getAllowedOrigins,
+    logDebug,
     getEnvironmentVariables,
   }) {
     const createCorsOrigin = createCreateCorsOrigin({
       getAllowedOrigins,
+      logDebug,
     });
 
-    return createCorsOrigin(getEnvironmentVariables);
+    return createCorsOrigin(allowEffects, getEnvironmentVariables);
   };
 }
 
@@ -564,7 +575,9 @@ export function createCreateCorsOriginFromEnvironment({
  * @returns {CorsOriginHandler} Configured CORS origin handler.
  */
 export function createCorsOriginFromEnvironment({
+  allowEffects,
   getAllowedOrigins,
+  logDebug,
   getEnvironmentVariables,
 }) {
   const createCorsOriginFromEnvironmentFn =
@@ -573,7 +586,9 @@ export function createCorsOriginFromEnvironment({
     });
 
   return createCorsOriginFromEnvironmentFn({
+    allowEffects,
     getAllowedOrigins,
+    logDebug,
     getEnvironmentVariables,
   });
 }
@@ -582,12 +597,14 @@ export function createCorsOriginFromEnvironment({
  * Build a helper that configures the createCorsOrigin factory dependencies.
  * @param {{
  *   getAllowedOrigins: ResolveAllowedOrigins,
+ *   logDebug: (permission: AllowEffects, ...values: unknown[]) => void,
  * }} deps Dependencies required to compose the CORS origin factory.
  * @returns {CorsOriginFactory} Configured createCorsOrigin function that accepts an environment getter.
  */
-export function createCreateCorsOrigin({ getAllowedOrigins }) {
+export function createCreateCorsOrigin({ getAllowedOrigins, logDebug }) {
   return createCorsOriginFactory({
     getAllowedOrigins,
+    logDebug,
     createCorsOriginHandler,
   });
 }
@@ -631,16 +648,24 @@ export function createSetupCors(createCorsOriginHandlerFn, corsFn) {
 
 /**
  * Build the CORS options object using environment-aware helpers.
+ * @param {AllowEffects} allowEffects Permission to log environment diagnostics.
  * @param {ResolveAllowedOrigins} getAllowedOriginsFunction Resolves allowed origins from environment variables.
  * @param {() => Record<string, unknown>} getEnvironmentVariablesFunction Reads environment variables at runtime.
+ * @param {(permission: AllowEffects, ...values: unknown[]) => void} logDebug Permission-aware logging adapter.
  * @returns {{ origin: CorsOriginHandler, methods: string[] }} Configuration object for the CORS middleware.
  */
 export function createCorsOptions(
+  allowEffects,
   getAllowedOriginsFunction,
-  getEnvironmentVariablesFunction
+  getEnvironmentVariablesFunction,
+  logDebug
 ) {
   const environmentVariables = getEnvironmentVariablesFunction();
-  const allowedOrigins = getAllowedOriginsFunction(environmentVariables);
+  const allowedOrigins = getAllowedOriginsFunction(
+    allowEffects,
+    environmentVariables,
+    logDebug
+  );
   const corsOrigin = createCorsOriginHandler(allowedOrigins);
 
   return {

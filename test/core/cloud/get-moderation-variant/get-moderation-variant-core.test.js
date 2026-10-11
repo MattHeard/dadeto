@@ -11,30 +11,52 @@ import {
 } from '../../../../src/core/cloud/get-moderation-variant/get-moderation-variant-core.js';
 
 describe('getAllowedOrigins', () => {
+  const allowEffects =
+    /** @type {import('../../../../types/allow-effects').AllowEffects} */ ({});
+  const logDebug = jest.fn();
+
   it('returns production origins in prod', () => {
-    expect(getAllowedOrigins({ DENDRITE_ENVIRONMENT: 'prod' })).toEqual(
-      productionOrigins
-    );
+    expect(
+      getAllowedOrigins(
+        allowEffects,
+        { DENDRITE_ENVIRONMENT: 'prod' },
+        logDebug
+      )
+    ).toEqual(productionOrigins);
   });
 
   it('returns playwright origin when targeting playwright environments', () => {
     expect(
-      getAllowedOrigins({
-        DENDRITE_ENVIRONMENT: 't-1234',
-        PLAYWRIGHT_ORIGIN: 'https://playwright.example',
-      })
+      getAllowedOrigins(
+        allowEffects,
+        {
+          DENDRITE_ENVIRONMENT: 't-1234',
+          PLAYWRIGHT_ORIGIN: 'https://playwright.example',
+        },
+        logDebug
+      )
     ).toEqual(['https://playwright.example']);
   });
 
   it('returns an empty list for test env when no override is supplied', () => {
-    expect(getAllowedOrigins({ DENDRITE_ENVIRONMENT: 't-9876' })).toEqual([]);
+    expect(
+      getAllowedOrigins(
+        allowEffects,
+        { DENDRITE_ENVIRONMENT: 't-9876' },
+        logDebug
+      )
+    ).toEqual([]);
   });
 
   it('throws for unsupported environments', () => {
     expect(() =>
-      getAllowedOrigins({ DENDRITE_ENVIRONMENT: 'staging' })
+      getAllowedOrigins(
+        allowEffects,
+        { DENDRITE_ENVIRONMENT: 'staging' },
+        logDebug
+      )
     ).toThrow(/Unsupported environment label/);
-    expect(() => getAllowedOrigins(undefined)).toThrow(
+    expect(() => getAllowedOrigins(allowEffects, undefined, logDebug)).toThrow(
       /DENDRITE_ENVIRONMENT is required to resolve allowed origins/
     );
   });

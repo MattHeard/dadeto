@@ -16,3 +16,14 @@ export function initializeFirebaseApp(permission, initializeApp) {
   void permission;
   return initializeApp();
 }
+
+/**
+ * Write a diagnostic at the cloud boundary.
+ * @param {import('../../types/allow-effects').AllowEffects} permission Permission for logging.
+ * @param {...unknown} values Diagnostic values.
+ * @returns {void}
+ */
+export function logDebug(permission, ...values) {
+  void permission;
+  globalThis.console?.debug?.(...values);
+}
