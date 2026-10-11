@@ -1,6 +1,7 @@
 import {
   legacyAssignmentBoundary,
   commitAssetCustodianAssignment,
+  createAssetCustodianCommitPlan,
   formatCommitFailure,
 } from './safeAssignmentPersistence.js';
 import {
@@ -169,7 +170,10 @@ function writeAssetCustodian(x, env) {
   const { requiredSpeed: required } = measureSegmentMotion(candidate, 0);
   if (!Number.isFinite(maximum) || required > maximum)
     return formatCommitFailure('excessive-speed');
-  return commitAssetCustodianAssignment(x, legacyCompoundIdentity(x), env);
+  return commitAssetCustodianAssignment(
+    createAssetCustodianCommitPlan(x, legacyCompoundIdentity(x)),
+    env
+  );
 }
 
 /**

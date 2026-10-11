@@ -1,5 +1,6 @@
 import {
   commitAssetCustodianAssignment,
+  createAssetCustodianCommitPlan,
   formatCommitFailure,
 } from '../2026-08-21/safeAssignmentPersistence.js';
 import {
@@ -109,8 +110,7 @@ function calculateCustodian(x, env) {
   );
   if (!runner.feasible) return formatCommitFailure(`runner:${runner.reason}`);
   return commitAssetCustodianAssignment(
-    x,
-    { assetId, personId, segmentId },
+    createAssetCustodianCommitPlan(x, { assetId, personId, segmentId }),
     env
   );
 }

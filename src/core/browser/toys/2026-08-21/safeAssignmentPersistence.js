@@ -38,28 +38,36 @@ export function formatRejectedAssignment(reason, fields) {
 }
 
 /**
- * Commit the asset and custodian records together, after caller-specific checks.
+ * Prepare the atomic asset and custodian write after caller-specific checks.
  * @param {{memoryLocation?: string, assetPath?: string, personPath?: string}} request Persistence options.
  * @param {{assetId: string, personId: string, segmentId: string}} ids Caller-normalized identifiers.
- * @param {import('../browserToysCore.js').ToyEnv} env Storage helpers.
- * @returns {string} Serialized atomic commit result.
+ * @returns {{location: string, writes: Array<{path: string, object: Record<string, unknown>}>}} Atomic assignment commit plan.
  */
-export function commitAssetCustodianAssignment(request, ids, env) {
-  const { assetId, personId, segmentId } = ids;
-  const commit = appendAtomically(
-    request.memoryLocation || 'temporary',
-    [
+export function createAssetCustodianCommitPlan(request, ids) {
+  const segmentId = ids.segmentId;
+  return {
+    location: request.memoryLocation || 'temporary',
+    writes: [
       {
         path: request.assetPath || 'assetSegmentAssignments',
-        object: { assetId, segmentId },
+        object: { assetId: ids.assetId, segmentId },
       },
       {
         path: request.personPath || 'personSegmentAssignments',
-        object: { personId, segmentId },
+        object: { personId: ids.personId, segmentId },
       },
     ],
-    env
-  );
+  };
+}
+
+/**
+ * Execute the prepared asset and custodian transaction.
+ * @param {{location: string, writes: Array<{path: string, object: Record<string, unknown>}>}} plan Atomic assignment commit plan.
+ * @param {import('../browserToysCore.js').ToyEnv} env Storage helpers.
+ * @returns {string} Serialized atomic commit result.
+ */
+export function commitAssetCustodianAssignment(plan, env) {
+  const commit = appendAtomically(plan.location, plan.writes, env);
   return JSON.stringify({ committed: true, lengths: commit.lengths });
 }
 
