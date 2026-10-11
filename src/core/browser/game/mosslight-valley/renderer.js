@@ -363,10 +363,10 @@ function wrapMenuRow(row, columns) {
  * @param {{x: number, y: number, fill: string, font: string}} style Text placement and palette.
  * @returns {CanvasShape[]} Shared panel shapes.
  */
-function textPanel(background, rows, { x, y, fill, font }) {
+function textPanel(background, rows, style) {
   const text = rows.map((row, index) => ({
-    ...frameText(row, y + index * 10, fill, font),
-    x,
+    ...frameText(row, style.y + index * 10, style.fill, style.font),
+    x: style.x,
   }));
   return background.concat(text);
 }
@@ -536,16 +536,47 @@ function drawEnding(ctx, frame, dark, light) {
  * @param {{ctx: any, text: string, x: number, y: number, maxWidth: number, lineHeight: number}} options Canvas context and text layout details.
  */
 function wrapText(options) {
-  const { ctx, text, x, maxWidth, lineHeight } = options;
-  let y = options.y;
+  const lines = wrapIntoLines(options.text, options.maxWidth);
+  drawTextLines(options.ctx, lines, {
+    x: options.x,
+    y: options.y,
+    lineHeight: options.lineHeight,
+  });
+}
+
+/**
+ * Break prose into pixel-font lines that fit the supplied width.
+ * @param {string} text Text to wrap.
+ * @param {number} maxWidth Maximum line width in pixels.
+ * @returns {string[]} Wrapped lines.
+ */
+function wrapIntoLines(text, maxWidth) {
+  const lines = [];
   let line = '';
   for (const word of text.split(' ')) {
     const trial = line ? `${line} ${word}` : word;
     if (trial.length * 5 > maxWidth && line) {
-      drawPixelText(ctx, line, x, y);
+      lines.push(line);
       line = word;
-      y += lineHeight;
     } else line = trial;
   }
-  if (line) drawPixelText(ctx, line, x, y);
+  if (line) lines.push(line);
+  return lines;
+}
+
+/**
+ * Draw wrapped lines at a logical-screen position.
+ * @param {any} ctx Canvas rendering context.
+ * @param {string[]} lines Wrapped pixel-font lines.
+ * @param {{x: number, y: number, lineHeight: number}} position Text position and line spacing.
+ */
+function drawTextLines(ctx, lines, position) {
+  lines.forEach((line, index) =>
+    drawPixelText(
+      ctx,
+      line,
+      position.x,
+      position.y + index * position.lineHeight
+    )
+  );
 }
