@@ -47,43 +47,37 @@ export function createDynamicPackageResolver({
 
 /**
  * Build cloud dependency adapters for Checkout.
- * @param {{ db: CheckoutDatabase, billing: CheckoutBillingService, verifyIdToken: (token: string) => Promise<{uid?: string}>, createBillingCustomer: (allowEffects: AllowEffects, options: object) => Promise<{stripeCustomerId: string}>, saveCustomerMappings: (allowEffects: AllowEffects, uid: string, customerId: string, apiKeyUuid: string) => Promise<unknown>, createStripeCheckoutSession: (allowEffects: AllowEffects, options: object, requestOptions: object) => Promise<{id: string, url: string, expires_at: number}>, publicBillingOrigin?: string, stripeConfigured?: boolean, billingEnabled?: boolean }} input Runtime dependencies.
+ * @param {{ db: CheckoutDatabase, billing: CheckoutBillingService, verifyIdToken: (token: string) => Promise<{uid?: string}>, createBillingCustomer: (allowEffects: AllowEffects, options: object) => Promise<{stripeCustomerId: string}>, saveCustomerMappings: (allowEffects: AllowEffects, uid: string, customerId: string, apiKeyUuid: string) => Promise<unknown>, createStripeCheckoutSession: (allowEffects: AllowEffects, options: object, requestOptions: object) => Promise<{id: string, url: string, expires_at: number}>, publicBillingOrigin?: string, stripeConfigured?: boolean, billingEnabled?: boolean }} deps Runtime dependencies.
  * @returns {Parameters<typeof import('./create-checkout-session-core.js').createCheckoutSessionHandler>[0]} Checkout dependencies.
  */
-export function createCheckoutSessionDependencies({
-  db,
-  billing,
-  verifyIdToken,
-  createBillingCustomer,
-  saveCustomerMappings,
-  createStripeCheckoutSession,
-  publicBillingOrigin,
-  stripeConfigured = true,
-  billingEnabled = false,
-}) {
+export function createCheckoutSessionDependencies(deps) {
   // Stryker disable next-line all -- runtime dependencies expose a fixed
   // adapter object shape.
   return {
-    verifyIdToken,
-    resolveApiKeyUuidForUid: uid => resolveOwnedKey(db, uid),
-    resolveBillingCustomer: uid => resolveBillingCustomer(db, uid),
-    createBillingCustomer,
-    saveCustomerMappings,
-    getCreditPackage: createDynamicPackageResolver(billing),
+    verifyIdToken: deps.verifyIdToken,
+    resolveApiKeyUuidForUid: uid => resolveOwnedKey(deps.db, uid),
+    resolveBillingCustomer: uid => resolveBillingCustomer(deps.db, uid),
+    createBillingCustomer: deps.createBillingCustomer,
+    saveCustomerMappings: deps.saveCustomerMappings,
+    getCreditPackage: createDynamicPackageResolver(deps.billing),
     createPurchase: (allowEffects, input) => {
       void allowEffects;
-      return billing.createPurchase(allowEffects, input);
+      return deps.billing.createPurchase(allowEffects, input);
     },
     savePurchaseCheckout: (allowEffects, purchaseId, session) => {
       void allowEffects;
-      return billing.savePurchaseCheckout(allowEffects, purchaseId, session);
+      return deps.billing.savePurchaseCheckout(
+        allowEffects,
+        purchaseId,
+        session
+      );
     },
     resolveIdempotency: (uid, key, packageId) =>
-      resolveIdempotency(billing, uid, key, packageId),
-    createStripeCheckoutSession,
-    publicBillingOrigin,
-    stripeConfigured,
-    billingEnabled,
+      resolveIdempotency(deps.billing, uid, key, packageId),
+    createStripeCheckoutSession: deps.createStripeCheckoutSession,
+    publicBillingOrigin: deps.publicBillingOrigin,
+    stripeConfigured: deps.stripeConfigured ?? true,
+    billingEnabled: deps.billingEnabled ?? false,
   };
 }
 
