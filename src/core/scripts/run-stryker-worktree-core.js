@@ -63,6 +63,8 @@ export function createRunStrykerWorktreeHandle(options = {}) {
       spawnImpl,
       baseEnv: processModule.env,
     };
+    const runLoggedCommandStep =
+      createLoggedCommandStepRunner(commandDependencies);
 
     await fsModule.mkdir(reportTarget, { recursive: true });
     await writeMachineLog(fsModule, machineLogPath, {
@@ -90,10 +92,7 @@ export function createRunStrykerWorktreeHandle(options = {}) {
         ];
       }
       for (const step of setupSteps) {
-        await runLoggedCommandStep(
-          { ...commandDependencies, extraEnv: noDaemonEnv },
-          step
-        );
+        await runLoggedCommandStep(noDaemonEnv, step);
       }
       await fsModule.writeFile(
         pathModule.join(worktreePath, worktreeStrykerConfig),
@@ -105,11 +104,8 @@ export function createRunStrykerWorktreeHandle(options = {}) {
       });
       await runLoggedCommandStep(
         {
-          ...commandDependencies,
-          extraEnv: {
-            STRYKER_TEST_ENV: '1',
-            ...noDaemonEnv,
-          },
+          STRYKER_TEST_ENV: '1',
+          ...noDaemonEnv,
         },
         {
           command: 'node',
@@ -204,7 +200,7 @@ ${testFilesLine}
 }
 
 /**
- * Write the log entries and run a command with the shared env setup.
+ * Bind command and logging adapters into a worktree command capability.
  * @param {{
  *   fsModule: {
  *     mkdir: typeof fsPromises.mkdir,
@@ -213,23 +209,23 @@ ${testFilesLine}
  *   machineLogPath: string,
  *   spawnImpl: typeof spawn,
  *   baseEnv: Env,
- *   extraEnv: Env,
- * }} context Command context.
- * @param {{ command: string, args: string[], cwd: string }} step Command step.
- * @returns {Promise<void>} Nothing.
+ * }} dependencies Command adapters and shared environment.
+ * @returns {(extraEnv: Env, step: { command: string, args: string[], cwd: string }) => Promise<void>} Configured command runner.
  */
-async function runLoggedCommandStep(context, step) {
-  const { fsModule, machineLogPath, spawnImpl, baseEnv, extraEnv } = context;
-  const { command, args, cwd } = step;
-  await writeCommandLog(fsModule, machineLogPath, 'command-start', step);
-  await runCommand({
-    spawnImpl,
-    command,
-    args,
-    cwd,
-    env: buildChildEnv(baseEnv, extraEnv),
-  });
-  await writeCommandLog(fsModule, machineLogPath, 'command-success', step);
+function createLoggedCommandStepRunner(dependencies) {
+  const { fsModule, machineLogPath, spawnImpl, baseEnv } = dependencies;
+  return async function runLoggedCommandStep(extraEnv, step) {
+    const { command, args, cwd } = step;
+    await writeCommandLog(fsModule, machineLogPath, 'command-start', step);
+    await runCommand({
+      spawnImpl,
+      command,
+      args,
+      cwd,
+      env: buildChildEnv(baseEnv, extraEnv),
+    });
+    await writeCommandLog(fsModule, machineLogPath, 'command-success', step);
+  };
 }
 
 /**
