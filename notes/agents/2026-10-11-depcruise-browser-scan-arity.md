@@ -1,0 +1,7 @@
+# Dependency-cruiser browser scan arity
+
+- **Unexpected hurdle:** The browser-main scanner grouped path/file access and browser-global policy into two option objects, which still produced six effective inputs.
+- **Diagnosis path:** The focused dependency-cruiser suite exercised browser-main path resolution, source preamble stripping, allowed globals, file-reader failures, and fresh violation results. The no-cache rule report identified this scanner as the next finding.
+- **Chosen fix:** Split source reading/path identity from scope-analysis policy. A four-input reader captures the browser-main file location and I/O; a separate finder captures parser dependencies and allowed globals; the scanner composes these two capabilities.
+- **Evidence:** `test/core/scripts/check-depcruise.test.js` passed (1 suite, 44 tests); target ESLint and TSDoc passed. Fresh no-cache `src/core` inventory fell from 5 findings/5 files to 4/4 and cleared `check-depcruise-browser.js`; artifact `.tmp/parameter-bag-global-after-depcruise-browser.json`. Elevated `TMPDIR=/home/matt/dadeto/.tmp npm run check` passed all 10 gates, including 11 E2E tests, zero clones, and zero audit vulnerabilities; log `.tmp/npm-check-depcruise-browser-arity.log`. `TMPDIR=/home/matt/dadeto/.tmp npm run build` passed; log `.tmp/build-depcruise-browser-arity.log`.
+- **Next-time guidance:** Continue from `src/core/scripts/check-depcruise.js:270` (effective arity 7). Keep filesystem scanning and source policy analysis as separate capabilities.

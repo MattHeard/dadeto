@@ -18,37 +18,59 @@ import { createBrowserGlobalReferenceFinder } from '../local/check-depcruise-sco
  */
 
 /**
- * Read and scan the special browser-main boundary, excluding its wiring preamble.
- * @param {Pick<BrowserScanDeps, 'sourceRoot'|'scopeAnalysisDeps'> & {allowedGlobals: string[]}} policy Default scan policy supplied by the gate.
- * @param {Omit<BrowserScanDeps, 'sourceRoot'|'scopeAnalysisDeps'> & Partial<Pick<BrowserScanDeps, 'sourceRoot'|'scopeAnalysisDeps'>>} deps File and scope dependencies.
+ * Create a reader for the browser-main source and its repo-relative identity.
+ * @param {BrowserScanDeps['readFileSync']} readFileSync Source reader.
+ * @param {string} rootDir Repository root.
+ * @param {string} sourceRoot Core source root.
+ * @param {BrowserScanDeps['pathModule']} pathModule Path operations.
+ * @returns {() => {filePath: string, source: string}} Browser-main source reader.
+ */
+export function createBrowserMainSourceReader(
+  readFileSync,
+  rootDir,
+  sourceRoot,
+  pathModule
+) {
+  return () => {
+    const absolutePath = pathModule.resolve(
+      rootDir,
+      sourceRoot,
+      ['browser', 'main.js'].join('/')
+    );
+    return {
+      filePath: toRepoRelativePath(rootDir, absolutePath, pathModule),
+      source: readFileSync(absolutePath, 'utf8'),
+    };
+  };
+}
+
+/**
+ * Capture the analyzer and allowlist used to identify browser globals.
+ * @param {BrowserScanDeps['scopeAnalysisDeps']} scopeAnalysisDeps Parser dependencies.
+ * @param {string[]} allowedGlobals Browser globals to report.
+ * @returns {(source: string) => string[]} Browser-global finder.
+ */
+export function createBrowserMainGlobalFinder(
+  scopeAnalysisDeps,
+  allowedGlobals
+) {
+  return source =>
+    findCoreBrowserGlobalsInSource(source, scopeAnalysisDeps, allowedGlobals);
+}
+
+/**
+ * Apply browser-main policy to a source reader and global finder.
+ * @param {() => {filePath: string, source: string}} readBrowserMainSource Browser-main source capability.
+ * @param {(source: string) => string[]} findBrowserGlobals Browser-global policy capability.
  * @returns {Array<{filePath: string, globals: string[]}>} Fresh violations for the browser entrypoint.
  */
-export function scanBrowserMainPolicy(policy, deps) {
-  const {
-    readFileSync,
-    rootDir,
-    sourceRoot = policy.sourceRoot,
-    pathModule,
-    scopeAnalysisDeps = policy.scopeAnalysisDeps,
-  } = deps;
-  const filePath = pathModule.resolve(
-    rootDir,
-    sourceRoot,
-    ['browser', 'main.js'].join('/')
-  );
-  const globals = findCoreBrowserGlobalsInSource(
-    stripBrowserMainPolicyNoise(readFileSync(filePath, 'utf8')),
-    scopeAnalysisDeps,
-    policy.allowedGlobals
-  );
-  return globals.length === 0
-    ? []
-    : [
-        {
-          filePath: toRepoRelativePath(rootDir, filePath, pathModule),
-          globals,
-        },
-      ];
+export function scanBrowserMainPolicy(
+  readBrowserMainSource,
+  findBrowserGlobals
+) {
+  const { filePath, source } = readBrowserMainSource();
+  const globals = findBrowserGlobals(stripBrowserMainPolicyNoise(source));
+  return globals.length === 0 ? [] : [{ filePath, globals }];
 }
 
 /**

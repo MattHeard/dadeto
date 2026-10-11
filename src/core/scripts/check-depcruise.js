@@ -3,10 +3,12 @@ import * as commonCore from '../commonCore.js';
 import { CORE_GLOBALS } from '../local/check-depcruise-scope.js';
 import { DEFAULT_STDOUT, DEFAULT_STDERR } from './gate-script-defaults.js';
 import {
+  createBrowserMainGlobalFinder,
+  createBrowserMainSourceReader,
   findCoreBrowserGlobalsInSource,
-  scanBrowserMainPolicy,
   stripBrowserMainPolicyNoise,
   toRepoRelativePath,
+  scanBrowserMainPolicy,
 } from './check-depcruise-browser.js';
 const { requirePathModule } = commonCore;
 
@@ -115,17 +117,24 @@ export function findCoreGlobalViolations(deps) {
 }
 
 /**
- * Scan the browser entrypoint using the gate's shared source and scope defaults.
- * @type {(deps: CoreBrowserMainDeps) => BrowserGlobalViolation[]}
+ * Compose the browser-main file and analyzer capabilities for the gate policy.
+ * @param {CoreBrowserMainDeps} deps Browser-main dependencies.
+ * @returns {BrowserGlobalViolation[]} Violations from the special browser entrypoint.
  */
-export const findCoreBrowserMainGlobalViolations = scanBrowserMainPolicy.bind(
-  null,
-  {
-    sourceRoot: DEFAULT_SOURCE_ROOT,
-    scopeAnalysisDeps: DEFAULT_SCOPE_ANALYSIS_DEPS,
-    allowedGlobals: CORE_GLOBALS,
-  }
-);
+export function findCoreBrowserMainGlobalViolations(deps) {
+  return scanBrowserMainPolicy(
+    createBrowserMainSourceReader(
+      deps.readFileSync,
+      deps.rootDir,
+      deps.sourceRoot ?? DEFAULT_SOURCE_ROOT,
+      deps.pathModule
+    ),
+    createBrowserMainGlobalFinder(
+      deps.scopeAnalysisDeps ?? DEFAULT_SCOPE_ANALYSIS_DEPS,
+      CORE_GLOBALS
+    )
+  );
+}
 
 export const checkDepcruiseTestUtils = {
   normalizeCheckDepcruiseOptions,
