@@ -1,33 +1,13 @@
+/** @typedef {{ existsSync: (path: string) => boolean, mkdirSync: (path: string, options: { recursive: boolean }) => void, readdirSync: (path: string, options: { withFileTypes: boolean }) => Array<{ name: string, isDirectory: () => boolean }>, copyFileSync: (source: string, destination: string) => void }} DendriteFileSystem */
+/** @typedef {{ resolve: (...parts: string[]) => string, dirname: (path: string) => string, join: (...parts: string[]) => string }} DendritePath */
+/** @typedef {{ console: { log: (message: string) => void }, fs: DendriteFileSystem, path: DendritePath, fileURLToPath: (url: string) => string, importMetaUrl: string }} DendriteDependencies */
 /**
- * Copy the browser and core trees into infra for deployment.
- * @param {{
- *   console: { log: (message: string) => void },
- *   fs: {
- *     existsSync: (path: string) => boolean,
- *     mkdirSync: (path: string, options: { recursive: boolean }) => void,
- *     readdirSync: (path: string, options: { withFileTypes: boolean }) => Array<{ name: string, isDirectory: () => boolean }>,
- *     copyFileSync: (source: string, destination: string) => void,
- *   },
- *   path: {
- *     resolve: (...parts: string[]) => string,
- *     dirname: (path: string) => string,
- *     join: (...parts: string[]) => string,
- *   },
- *   fileURLToPath: (url: string) => string,
- *   importMetaUrl: string,
- * }} deps Deployment dependencies.
+ * Prepare a recursive copier for injected filesystem and path APIs.
+ * @param {DendriteFileSystem} fs Filesystem operations used by the copy workflow.
+ * @param {DendritePath} path Path operations used to resolve source and destination names.
+ * @returns {(source: string, destination: string) => void} Recursive tree copier.
  */
-export function executeCopyDendriteWorkflow({
-  console,
-  fs,
-  path,
-  fileURLToPath,
-  importMetaUrl,
-}) {
-  const root = path.resolve(
-    path.dirname(fileURLToPath(importMetaUrl)),
-    '../../'
-  );
+const createTreeCopier = (fs, path) => {
   /**
    * Copy a directory tree recursively.
    * @param {string} source Source directory.
@@ -59,13 +39,39 @@ export function executeCopyDendriteWorkflow({
     fs.copyFileSync(srcPath, destPath);
   }
 
-  console.log('Copying files for dendritestories.co.nz deployment...');
+  return copyTree;
+};
+
+/**
+ * Prepare the root resolver for this deployment entrypoint.
+ * @param {DendritePath} path Path operations used to resolve the project root.
+ * @param {(url: string) => string} fileURLToPath URL path adapter.
+ * @returns {(importMetaUrl: string) => string} Project-root resolver.
+ */
+const createDeploymentRootResolver = (path, fileURLToPath) => importMetaUrl =>
+  path.resolve(path.dirname(fileURLToPath(importMetaUrl)), '../../');
+
+/**
+ * Copy the browser and core trees into infra for deployment.
+ * @param {DendriteDependencies} deps Deployment dependencies.
+ */
+export function executeCopyDendriteWorkflow(deps) {
+  const root = createDeploymentRootResolver(
+    deps.path,
+    deps.fileURLToPath
+  )(deps.importMetaUrl);
+  const copyTree = createTreeCopier(deps.fs, deps.path);
+
+  deps.console.log('Copying files for dendritestories.co.nz deployment...');
   copyTree(
-    path.join(root, 'src', 'browser'),
-    path.join(root, 'infra', 'browser')
+    deps.path.join(root, 'src', 'browser'),
+    deps.path.join(root, 'infra', 'browser')
   );
-  copyTree(path.join(root, 'src', 'core'), path.join(root, 'infra', 'core'));
-  console.log('✓ Copied browser files to infra/browser');
-  console.log('✓ Copied core files to infra/core');
-  console.log('Ready for Terraform deployment to GCS');
+  copyTree(
+    deps.path.join(root, 'src', 'core'),
+    deps.path.join(root, 'infra', 'core')
+  );
+  deps.console.log('✓ Copied browser files to infra/browser');
+  deps.console.log('✓ Copied core files to infra/core');
+  deps.console.log('Ready for Terraform deployment to GCS');
 }

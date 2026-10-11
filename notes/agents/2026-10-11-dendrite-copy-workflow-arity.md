@@ -1,0 +1,7 @@
+# Dendrite copy workflow arity cleanup
+
+- Unexpected hurdle: `executeCopyDendriteWorkflow` accepted one dependency object but expanded all five runtime adapters at its entrypoint, triggering the parameter-bag rule.
+- Diagnosis: the Dendrite tests characterize depth-first recursive copying, skipped absent directories, path resolution, and deployment logs. The oversized constructor mixed project-root resolution with the filesystem tree traversal.
+- Chosen fix: extracted a prepared recursive tree copier from filesystem/path dependencies and a prepared project-root resolver from path/URL dependencies. The workflow composes those capabilities and keeps the existing injected dependency boundary and observable behavior.
+- Evidence: focused Jest passed (2 suites, 4 tests); target ESLint and TSDoc passed; fresh no-cache inventory fell from 15 findings/15 files to 14/14 with no `dendrite.js` finding (`.tmp/parameter-bag-global-after-dendrite.json`); `TMPDIR=/home/matt/dadeto/.tmp npm run check` passed all 10 gates, with 0 clones and 0 audit vulnerabilities (`.tmp/npm-check-dendrite-arity.log`); `TMPDIR=/home/matt/dadeto/.tmp npm run build` passed (`.tmp/build-dendrite-arity.log`); `TMPDIR=/home/matt/dadeto/.tmp npm run build:dendritestories-co-nz` passed (`.tmp/build-dendritestories-arity.log`); `git diff --check` passed.
+- Next-time guidance: when a workflow takes a dependency container, separate actual capabilities at their semantic boundaries rather than forwarding a wider bag. Next finding is `src/core/build/process-utils.js:87` (effective arity 15).
