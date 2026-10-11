@@ -379,22 +379,24 @@ function selectCdnHost(candidate) {
  *   handleRequest: (permission: import('../../../../types/allow-effects').AllowEffects, req: NativeHttpRequest, res: NativeHttpResponse) => Promise<void>,
  * }} Core helpers.
  */
-export function createGenerateStatsCore({
-  db,
-  auth,
-  storage,
-  fetchFn,
-  effectFetchFn,
-  bindEffectBoundary,
-  sendHttpResponse,
-  logError,
-  logWarning,
-  env,
-  urlMap,
-  cryptoModule,
-  console,
-  verifySchedulerRequest = async () => false,
-}) {
+export function createGenerateStatsCore(deps) {
+  const db = deps.db;
+  const auth = deps.auth;
+  const storage = deps.storage;
+  const fetchFn = deps.fetchFn;
+  const effectFetchFn = deps.effectFetchFn;
+  const bindEffectBoundary = deps.bindEffectBoundary;
+  const sendHttpResponse = deps.sendHttpResponse;
+  const logError = deps.logError;
+  const logWarning = deps.logWarning;
+  const env = deps.env;
+  const urlMap = deps.urlMap;
+  const cryptoModule = deps.cryptoModule;
+  const console = deps.console;
+  const verifySchedulerRequest =
+    deps.verifySchedulerRequest === undefined
+      ? async () => false
+      : deps.verifySchedulerRequest;
   const envRef = normalizeEnvObject(env);
   const project = getProjectFromEnv(envRef);
   const resolvedUrlMap = resolveUrlMap(urlMap, envRef);
