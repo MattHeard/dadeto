@@ -100,12 +100,12 @@ export function createErrorBeaconRun(deps) {
     buildVersion,
     reportEvent,
     getServerTimestamp: () => new Date().toISOString(),
+  })({
     respondJson: deps.respondJson,
     respondText: deps.respondText,
     respondEmpty: deps.respondEmpty,
     logError: deps.logError,
-    console: deps.console,
-  });
+  })(deps.console);
 
   const handleErrorBeacon = (
     /** @type {import('express').Request} */ request,

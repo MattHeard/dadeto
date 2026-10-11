@@ -18,6 +18,8 @@ import { sanitizeUrl } from '../../error-reporting.js';
 /** @typedef {(allowEffects: AllowEffects, response: ErrorBeaconResponse, status: number, body: Record<string, unknown>) => unknown} ErrorBeaconJsonResponder */
 /** @typedef {(allowEffects: AllowEffects, response: ErrorBeaconResponse, status: number, body: string) => unknown} ErrorBeaconTextResponder */
 /** @typedef {(allowEffects: AllowEffects, logger: ErrorLogger | undefined, message: string, error: unknown) => void} ErrorBeaconErrorLogger */
+/** @typedef {{ environment: string, buildVersion?: string, reportEvent: (event: Record<string, unknown>) => Promise<void>, getServerTimestamp: () => string }} ErrorBeaconEventDependencies */
+/** @typedef {{ respondJson: ErrorBeaconJsonResponder, respondText: ErrorBeaconTextResponder, respondEmpty: (allowEffects: AllowEffects, response: ErrorBeaconResponse, status: number) => unknown, logError: ErrorBeaconErrorLogger }} ErrorBeaconResponseDependencies */
 
 /**
  * Validate a browser beacon payload.
@@ -145,58 +147,46 @@ function normalizePositiveInteger(value) {
  */
 /**
  * Create a request handler that forwards browser error beacons to Error Reporting.
- * @param {{
- *   environment: string,
- *   buildVersion?: string,
- *   reportEvent: (event: Record<string, unknown>) => Promise<void>,
- *   getServerTimestamp: () => string,
- *   respondJson: (allowEffects: AllowEffects, response: ErrorBeaconResponse, status: number, body: Record<string, unknown>) => unknown,
- *   respondText: (allowEffects: AllowEffects, response: ErrorBeaconResponse, status: number, body: string) => unknown,
- *   respondEmpty: (allowEffects: AllowEffects, response: ErrorBeaconResponse, status: number) => unknown,
- *   logError: (allowEffects: AllowEffects, logger: ErrorLogger | undefined, message: string, error: unknown) => void,
- *   console?: ErrorLogger,
- * }} deps Dependencies.
- * @returns {(allowEffects: AllowEffects, request: { method?: string, body?: unknown }, response: ErrorBeaconResponse) => Promise<void>} Request handler.
+ * @param {ErrorBeaconEventDependencies} eventDependencies Error event dependencies.
+ * @returns {(responseDependencies: ErrorBeaconResponseDependencies) => (consoleLike?: ErrorLogger) => (allowEffects: AllowEffects, request: { method?: string, body?: unknown }, response: ErrorBeaconResponse) => Promise<void>} Response adapter stage.
  */
-export function createErrorBeaconHandler({
-  environment,
-  buildVersion,
-  reportEvent,
-  getServerTimestamp,
-  respondJson,
-  respondText,
-  respondEmpty,
-  logError,
-  console: consoleLike,
-}) {
+export function createErrorBeaconHandler(eventDependencies) {
+  const { environment, buildVersion, reportEvent, getServerTimestamp } =
+    eventDependencies;
   assertFunction(reportEvent, 'reportEvent');
   assertFunction(getServerTimestamp, 'getServerTimestamp');
 
-  return async function handleErrorBeacon(allowEffects, request, response) {
-    if (!isPostRequest(request)) {
-      sendMethodNotAllowed(allowEffects, response, respondText);
-      return;
-    }
+  return responseDependencies => {
+    const { respondJson, respondText, respondEmpty, logError } =
+      responseDependencies;
 
-    if (!isErrorBeaconPayload(request.body)) {
-      sendBadPayload(allowEffects, response, respondJson);
-      return;
-    }
+    return consoleLike =>
+      async function handleErrorBeacon(allowEffects, request, response) {
+        if (!isPostRequest(request)) {
+          sendMethodNotAllowed(allowEffects, response, respondText);
+          return;
+        }
 
-    try {
-      await reportEvent(
-        buildReportedErrorEvent(
-          request.body,
-          environment,
-          getServerTimestamp,
-          buildVersion
-        )
-      );
-      respondEmpty(allowEffects, response, 204);
-    } catch (error) {
-      reportForwardingFailure(allowEffects, logError, consoleLike, error);
-      sendForwardingFailure(allowEffects, response, error, respondJson);
-    }
+        if (!isErrorBeaconPayload(request.body)) {
+          sendBadPayload(allowEffects, response, respondJson);
+          return;
+        }
+
+        try {
+          await reportEvent(
+            buildReportedErrorEvent(
+              request.body,
+              environment,
+              getServerTimestamp,
+              buildVersion
+            )
+          );
+          respondEmpty(allowEffects, response, 204);
+        } catch (error) {
+          reportForwardingFailure(allowEffects, logError, consoleLike, error);
+          sendForwardingFailure(allowEffects, response, error, respondJson);
+        }
+      };
   };
 }
 

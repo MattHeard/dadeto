@@ -8,7 +8,11 @@ import {
 const allowEffects = Object.freeze({});
 const createErrorBeaconHandler = dependencies => {
   const handler = createErrorBeaconHandlerCore({
-    ...dependencies,
+    environment: dependencies.environment,
+    buildVersion: dependencies.buildVersion,
+    reportEvent: dependencies.reportEvent,
+    getServerTimestamp: dependencies.getServerTimestamp,
+  })({
     respondJson: (permission, response, status, body) => {
       response.status(status).json(body);
     },
@@ -21,7 +25,7 @@ const createErrorBeaconHandler = dependencies => {
     logError: (permission, logger, message, error) => {
       logger?.error?.(message, error);
     },
-  });
+  })(dependencies.console);
   return (request, response) => handler(allowEffects, request, response);
 };
 
