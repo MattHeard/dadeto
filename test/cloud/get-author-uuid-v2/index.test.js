@@ -3,11 +3,14 @@ import { describe, expect, it, jest } from '@jest/globals';
 describe('get-author-uuid-v2 entry point', () => {
   it('mints a fresh frozen capability for each HTTP request', async () => {
     const internalHandler = jest.fn(async () => {});
+    const startupPermission = Object.freeze({ startup: true });
+    const initializeApp = jest.fn();
+    const getFirestoreInstance = jest.fn(() => ({}));
     let mod;
 
     await jest.isolateModulesAsync(async () => {
       await jest.unstable_mockModule('firebase-admin/app', () => ({
-        initializeApp: jest.fn(),
+        initializeApp,
       }));
       await jest.unstable_mockModule('firebase-admin/auth', () => ({
         getAuth: jest.fn(() => ({})),
@@ -18,14 +21,31 @@ describe('get-author-uuid-v2 entry point', () => {
       await jest.unstable_mockModule(
         '../../../src/cloud/common-gcf.js',
         () => ({
-          createFirebaseAppManager: jest.fn(() => ({
-            ensureFirebaseApp: jest.fn(),
+          createFirebaseAppManager: jest.fn(initializer => ({
+            ensureFirebaseApp: jest.fn(() => initializer()),
           })),
         })
       );
       await jest.unstable_mockModule('../../../src/cloud/firestore.js', () => ({
-        getFirestoreInstance: jest.fn(() => ({})),
+        getFirestoreInstance,
       }));
+      await jest.unstable_mockModule(
+        '../../../src/cloud/allow-effects.js',
+        () => ({
+          createEffectStartupBoundary: handler => handler(startupPermission),
+          createEffectHttpBoundary: handler => (req, res) =>
+            handler(Object.freeze({ request: true }), req, res),
+        })
+      );
+      await jest.unstable_mockModule(
+        '../../../src/cloud/get-author-uuid-v2/startup-effect-adapter.js',
+        () => ({
+          initializeFirebaseApp: (permission, initializer) => {
+            expect(permission).toBe(startupPermission);
+            return initializer();
+          },
+        })
+      );
       await jest.unstable_mockModule(
         '../../../src/core/cloud/get-author-uuid-v2/get-author-uuid-v2-core.js',
         () => ({
@@ -43,5 +63,11 @@ describe('get-author-uuid-v2 entry point', () => {
     expect(Object.isFrozen(firstPermission)).toBe(true);
     expect(Object.isFrozen(secondPermission)).toBe(true);
     expect(firstPermission).not.toBe(secondPermission);
+    expect(firstPermission).not.toBe(startupPermission);
+    expect(initializeApp).toHaveBeenCalledTimes(1);
+
+    const firestoreOptions = getFirestoreInstance.mock.calls[0][0];
+    firestoreOptions.ensureAppFn();
+    expect(initializeApp).toHaveBeenCalledTimes(1);
   });
 });

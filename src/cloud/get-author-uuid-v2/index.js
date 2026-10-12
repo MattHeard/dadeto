@@ -4,16 +4,23 @@ import { getFirestore as getAdminFirestore } from 'firebase-admin/firestore';
 import { randomUUID } from 'node:crypto';
 import { createFirebaseAppManager } from '../common-gcf.js';
 import { getFirestoreInstance } from '../firestore.js';
-import { createEffectHttpBoundary } from '../allow-effects.js';
+import {
+  createEffectHttpBoundary,
+  createEffectStartupBoundary,
+} from '../allow-effects.js';
 import { createGetAuthorUuidV2EffectAdapters } from './effect-adapters.js';
+import { initializeFirebaseApp } from './startup-effect-adapter.js';
 import { createGetAuthorUuidV2ExpressHandle } from './get-author-uuid-v2-core.js';
 
-const { ensureFirebaseApp } = createFirebaseAppManager(initializeApp);
-ensureFirebaseApp();
-
-const db = getFirestoreInstance({
-  ensureAppFn: ensureFirebaseApp,
-  getFirestoreFn: getAdminFirestore,
+const db = createEffectStartupBoundary(allowEffects => {
+  const manager = createFirebaseAppManager(() =>
+    initializeFirebaseApp(allowEffects, initializeApp)
+  );
+  manager.ensureFirebaseApp();
+  return getFirestoreInstance({
+    ensureAppFn: () => {},
+    getFirestoreFn: getAdminFirestore,
+  });
 });
 const auth = getAdminAuth();
 const handleRequest = createGetAuthorUuidV2ExpressHandle({
