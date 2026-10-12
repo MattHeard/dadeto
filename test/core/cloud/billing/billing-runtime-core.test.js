@@ -30,6 +30,7 @@ function setup() {
     billingEnabled: true,
     writeRefundReconciliation: async (_permission, eventId, record) =>
       db.collection('billing-reconciliation').doc(eventId).set(record),
+    runPurchaseTransaction: (_permission, update) => db.runTransaction(update),
   });
   return { db, billing };
 }
@@ -37,7 +38,10 @@ function setup() {
 describe('createBillingRuntime', () => {
   it('fails closed for new operation charges and reservations by default', async () => {
     const db = createFakeFirestore();
-    const billing = createBillingRuntime(db);
+    const billing = createBillingRuntime(db, {
+      runPurchaseTransaction: (_permission, update) =>
+        db.runTransaction(update),
+    });
     const input = {
       uuid: 'key-disabled',
       operationType: 'function.invoke',
@@ -932,7 +936,10 @@ describe('billing runtime refund paths', () => {
         });
       },
     };
-    const billing = createBillingRuntime(db);
+    const billing = createBillingRuntime(db, {
+      runPurchaseTransaction: (_permission, update) =>
+        db.runTransaction(update),
+    });
 
     await expect(
       billing.applyRefundEvent(allowEffects, {
@@ -1186,5 +1193,42 @@ describe('billing runtime charging paths', () => {
         refundedUsdMinor: 500,
       })
     ).rejects.toThrow('writeRefundReconciliation adapter must be provided');
+  });
+
+  it('forwards the request capability to the purchase transaction runner', async () => {
+    const db = createFakeFirestore();
+    const runPurchaseTransaction = jest.fn((_permission, update) =>
+      db.runTransaction(update)
+    );
+    const billing = createBillingRuntime(db, { runPurchaseTransaction });
+    await billing.createPurchase(allowEffects, {
+      purchaseId: 'purchase-through-adapter',
+      apiKeyUuid: 'key-through-adapter',
+      creditsIssued: 4,
+      pricingSnapshotId: snapshot.snapshotId,
+    });
+
+    await expect(
+      billing.markPurchasePaid(allowEffects, {
+        purchaseId: 'purchase-through-adapter',
+        eventId: 'payment-through-adapter',
+        stripePaymentIntentId: 'pi-through-adapter',
+      })
+    ).resolves.toMatchObject({ status: 201 });
+    expect(runPurchaseTransaction).toHaveBeenCalledWith(
+      allowEffects,
+      expect.any(Function)
+    );
+  });
+
+  it('fails closed when a purchase transaction runner is absent', async () => {
+    const billing = createBillingRuntime(createFakeFirestore());
+
+    await expect(
+      billing.markPurchaseExpired(allowEffects, {
+        purchaseId: 'purchase-without-runner',
+        eventId: 'expiry-without-runner',
+      })
+    ).rejects.toThrow('runPurchaseTransaction adapter must be provided');
   });
 });

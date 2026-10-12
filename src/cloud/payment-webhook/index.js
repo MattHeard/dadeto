@@ -10,6 +10,7 @@ import {
   createMarkProcessedEventWriter,
 } from './effect-adapters.js';
 import { createRefundReconciliationWriter } from './refund-reconciliation-effect-adapter.js';
+import { createPurchaseTransactionRunner } from './transaction-effect-adapter.js';
 import {
   sendPaymentWebhookResponse,
   logPaymentWebhookError,
@@ -28,6 +29,7 @@ const handlePaymentWebhook = createPaymentWebhookIndexHandler({
   creditEventEffects: createGetApiKeyCreditV2EffectAdapters(db),
   markProcessedEvent: createMarkProcessedEventWriter(db),
   writeRefundReconciliation: createRefundReconciliationWriter(db),
+  runPurchaseTransaction: createPurchaseTransactionRunner(db),
   sendResponse: sendPaymentWebhookResponse,
   logError: logPaymentWebhookError,
 });

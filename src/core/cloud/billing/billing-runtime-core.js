@@ -32,6 +32,8 @@ import {
  * @typedef {{ status: number, body: string | Record<string, unknown> }} BillingResponse
  */
 
+/** @typedef {{ allowEffects: AllowEffects, run: (update: (transaction: BillingRuntimeValue) => Promise<BillingResponse>) => Promise<BillingResponse> }} PurchaseTransactionScope */
+
 /**
  * @param {BillingRuntimeValue} db Firestore database.
  * @param {string} id Document id.
@@ -262,7 +264,7 @@ async function findBillingPurchaseByCheckout(db, checkoutSessionId) {
 /**
  * Create Firestore-backed accessors for the billing domain.
  * @param {BillingRuntimeValue} db Firestore database.
- * @param {{ randomUUID?: () => string, now?: () => Date, billingEnabled?: boolean, writeRefundReconciliation?: (allowEffects: AllowEffects, eventId: string, record: BillingDocumentData) => Promise<void> }} [runtime] Runtime helpers and reconciliation persistence adapter.
+ * @param {{ randomUUID?: () => string, now?: () => Date, billingEnabled?: boolean, writeRefundReconciliation?: (allowEffects: AllowEffects, eventId: string, record: BillingDocumentData) => Promise<void>, runPurchaseTransaction?: (allowEffects: AllowEffects, update: (transaction: BillingRuntimeValue) => Promise<BillingResponse>) => Promise<BillingResponse> }} [runtime] Runtime helpers and permission-first persistence adapters.
  * @returns {BillingRuntimeService} Billing service.
  */
 export function createBillingRuntime(db, runtime = {}) {
@@ -272,6 +274,18 @@ export function createBillingRuntime(db, runtime = {}) {
   const now = runtime.now ?? (() => new Date());
   const billingEnabled = runtime.billingEnabled === true;
   // Stryker restore all
+
+  /**
+   * @param {AllowEffects} allowEffects Request permission.
+   * @param {(transaction: BillingRuntimeValue) => Promise<BillingResponse>} update Transaction update callback.
+   * @returns {Promise<BillingResponse>} Transaction result.
+   */
+  const runPurchaseTransaction = (allowEffects, update) => {
+    if (typeof runtime.runPurchaseTransaction !== 'function') {
+      throw new TypeError('runPurchaseTransaction adapter must be provided');
+    }
+    return runtime.runPurchaseTransaction(allowEffects, update);
+  };
 
   const getPricingSnapshot = (/** @type {string} */ snapshotId) =>
     readPricingSnapshot(db, snapshotId);
@@ -350,9 +364,9 @@ export function createBillingRuntime(db, runtime = {}) {
   // Stryker disable all -- payment settlement is an adapter transaction whose
   // schema is verified by focused behavioral tests.
   async function markPurchasePaid(allowEffects, input) {
-    void allowEffects;
     const ref = purchaseRef(db, input.purchaseId);
-    return db.runTransaction(
+    return runPurchaseTransaction(
+      allowEffects,
       async (/** @type {BillingRuntimeValue} */ transaction) => {
         const purchaseSnap = await transaction.get(ref);
         if (!purchaseSnap.exists)
@@ -550,8 +564,10 @@ export function createBillingRuntime(db, runtime = {}) {
    * @returns {Promise<BillingResponse>} Refund response.
    */
   async function applyRefundEvent(allowEffects, input) {
-    void allowEffects;
-    return applyRefund(db, now, input);
+    return applyRefund(db, now, input, {
+      allowEffects,
+      run: update => runPurchaseTransaction(allowEffects, update),
+    });
   }
 
   /**
@@ -584,8 +600,8 @@ export function createBillingRuntime(db, runtime = {}) {
    * @returns {Promise<BillingResponse>} Expiry response.
    */
   async function markPurchaseExpired(allowEffects, input) {
-    void allowEffects;
-    return db.runTransaction(
+    return runPurchaseTransaction(
+      allowEffects,
       async (/** @type {BillingRuntimeValue} */ transaction) => {
         const ref = purchaseRef(db, input.purchaseId);
         const snapshot = await transaction.get(ref);
@@ -1152,12 +1168,13 @@ function createLegacyLot(credits, createdAt) {
  * @param {BillingRuntimeValue} db Firestore database.
  * @param {() => Date} now Clock callback.
  * @param {BillingRefundInput} input Refund input.
+ * @param {PurchaseTransactionScope} transactionScope Request-scoped transaction capability.
  * @returns {Promise<BillingResponse>} Refund response.
  */
 // Stryker disable all -- refund persistence is a fixed protocol schema.
-async function applyRefund(db, now, input) {
+async function applyRefund(db, now, input, transactionScope) {
   const ref = purchaseRef(db, input.purchaseId);
-  return db.runTransaction(
+  return transactionScope.run(
     async (/** @type {BillingRuntimeValue} */ transaction) => {
       const purchaseSnap = await transaction.get(ref);
       if (!purchaseSnap.exists)

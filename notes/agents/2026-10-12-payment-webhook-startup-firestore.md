@@ -14,3 +14,11 @@
 - Chosen fix: extracted `createRefundReconciliationWriter` into `refund-reconciliation-effect-adapter.js`; payment-webhook now requires this permission-first writer and passes it to `createBillingRuntime`, which forwards the request capability and record. The shared billing runtime has no raw Firestore fallback and throws if the adapter is missing.
 - Evidence: focused billing/payment-webhook Jest passed (4 suites / 40 tests); JSDoc passed; `npm run non-core-thin` passed at 295 files; `npm run build:cloud` passed; configured elevated `npm run check` passed all 10 gates, including E2E, 0 clones, and 0 audit vulnerabilities.
 - Next: move the remaining transactional billing writes behind request-scoped persistence adapters; this loop only externalized unmatched-refund reconciliation.
+
+## Purchase settlement transaction boundary
+
+- Unexpected hurdle: passing the transaction capability and runner as separate arguments made the refund helper exceed the repo's four-parameter limit and triggered the parameter-bag arity-smuggling rule.
+- Diagnosis: the permission and runner form one request-scoped transaction capability, so the helper needs one named context object rather than extra positional arguments.
+- Chosen fix: payment-webhook now requires a permission-first `runPurchaseTransaction` adapter for paid, refund, and expiry flows; those core paths have no direct `db.runTransaction` fallback and fail closed if the runner is absent. The refund helper receives the capability and runner together as `PurchaseTransactionScope`.
+- Evidence: focused payment-webhook/billing Jest passed (4 suites / 39 tests); ESLint and JSDoc passed; `npm run build:cloud` passed; configured elevated `npm run check` passed all 10 gates, including E2E, 0 clones, and 0 audit vulnerabilities.
+- Next: continue with the remaining billing operation transaction paths (`chargeOperation`, `reserveOperation`, `resolveOperation`) and other injected raw Firestore mutation commands.
