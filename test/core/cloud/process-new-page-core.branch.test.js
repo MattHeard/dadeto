@@ -1,9 +1,14 @@
 import { processNewPageTestUtils } from '../../../src/core/cloud/process-new-page/process-new-page-core.js';
 
+const allowEffects =
+  /** @type {import('../../../types/allow-effects').AllowEffects} */ (
+    Object.freeze({})
+  );
+
 describe('processNewPageTestUtils', () => {
   test('routeViaDirect returns null when directPageNumber is not integer', async () => {
     await expect(
-      processNewPageTestUtils.routeViaDirect({
+      processNewPageTestUtils.routeViaDirect(allowEffects, {
         db: {},
         directPageNumber: undefined,
         snapshot: {},

@@ -1,7 +1,7 @@
 /** @typedef {import('../../../../types/allow-effects').AllowEffects} AllowEffects */
 /** @typedef {(permission: AllowEffects, document: import('firebase-admin/firestore').DocumentReference, data: Record<string, unknown>) => Promise<unknown>} UpdateDocument */
-/** @typedef {{set: (reference: import('firebase-admin/firestore').DocumentReference, data: Record<string, unknown>) => unknown, update: (reference: import('firebase-admin/firestore').DocumentReference, data: Record<string, unknown>) => unknown, commit: () => Promise<unknown>}} SubmissionBatch */
-/** @typedef {(permission: AllowEffects, db: import('firebase-admin/firestore').Firestore) => SubmissionBatch} CreateSubmissionBatch */
+/** @typedef {{set: (permission: AllowEffects, reference: import('firebase-admin/firestore').DocumentReference, data: Record<string, unknown>) => unknown, update: (permission: AllowEffects, reference: import('firebase-admin/firestore').DocumentReference, data: Record<string, unknown>) => unknown, commit: (permission: AllowEffects) => Promise<unknown>}} SubmissionBatch */
+/** @typedef {(db: import('firebase-admin/firestore').Firestore) => SubmissionBatch} CreateSubmissionBatch */
 
 /**
  * @typedef {object} SubmissionData
@@ -505,7 +505,7 @@ function getValidIncomingOptionRefs(refs) {
  * Resolve page and story references when a submission targets an existing option.
  * Returns null when the submission should be marked as processed without further work.
  * @param {AllowEffects} permission Permission for a possible processed-marker update.
- * @param {{db: import('firebase-admin/firestore').Firestore, incomingOptionFullName: string, snapshot: import('firebase-admin/firestore').DocumentSnapshot, buildContext: (validRefs: {variantRef: import('firebase-admin/firestore').DocumentReference | null, storyRefCandidate: import('firebase-admin/firestore').DocumentReference | null}, optionSnap: SnapshotWithReference, optionRef: import('firebase-admin/firestore').DocumentReference, incomingOptionFullName: string) => Promise<PageContext | null>}} params Query and context-building dependencies.
+ * @param {{db: import('firebase-admin/firestore').Firestore, incomingOptionFullName: string, snapshot: import('firebase-admin/firestore').DocumentSnapshot, buildContext: (permission: AllowEffects, params: {validRefs: {variantRef: import('firebase-admin/firestore').DocumentReference | null, storyRefCandidate: import('firebase-admin/firestore').DocumentReference | null}, optionSnap: SnapshotWithReference, optionRef: import('firebase-admin/firestore').DocumentReference, incomingOptionFullName: string}) => Promise<PageContext | null>}} params Query and context-building dependencies.
  * @param {UpdateDocument} updateDocument Permission-first document update adapter.
  * @returns {Promise<PageContext | null>} Resolved context or null when the submission is already processed.
  */
@@ -525,19 +525,19 @@ async function resolveIncomingOptionContext(
   if (!validRefs) {
     return null;
   }
-  return params.buildContext(
+  return params.buildContext(permission, {
     validRefs,
     optionSnap,
     optionRef,
-    params.incomingOptionFullName
-  );
+    incomingOptionFullName: params.incomingOptionFullName,
+  });
 }
 
 /**
  * Stage context construction from database and batch dependencies.
  * @param {import('firebase-admin/firestore').Firestore} db Firestore instance for page references.
  * @param {SubmissionBatch} batch Batch collecting page updates.
- * @returns {(random: () => number, randomUUID: () => string, getServerTimestamp: () => unknown) => (validRefs: {variantRef: import('firebase-admin/firestore').DocumentReference | null, storyRefCandidate: import('firebase-admin/firestore').DocumentReference | null}, optionSnap: SnapshotWithReference, optionRef: import('firebase-admin/firestore').DocumentReference, incomingOptionFullName: string) => Promise<PageContext | null>} Context builder stages.
+ * @returns {(random: () => number, randomUUID: () => string, getServerTimestamp: () => unknown) => (permission: AllowEffects, params: {validRefs: {variantRef: import('firebase-admin/firestore').DocumentReference | null, storyRefCandidate: import('firebase-admin/firestore').DocumentReference | null}, optionSnap: SnapshotWithReference, optionRef: import('firebase-admin/firestore').DocumentReference, incomingOptionFullName: string}) => Promise<PageContext | null>} Context builder stages.
  */
 function createIncomingOptionContextBuilder(db, batch) {
   return function bindContextRuntime(random, randomUUID, getServerTimestamp) {
@@ -547,27 +547,28 @@ function createIncomingOptionContextBuilder(db, batch) {
       getServerTimestamp
     );
 
-    return async function buildContext(
-      validRefs,
-      optionSnap,
-      optionRef,
-      incomingOptionFullName
-    ) {
-      if (!validRefs.storyRefCandidate) return null;
-      const optionData = optionSnap.data();
+    return async function buildContext(permission, params) {
+      if (!params.validRefs.storyRefCandidate) return null;
+      const optionData = params.optionSnap.data();
       const targetPage = resolveTargetPageFromOption(optionData);
       const storyRef =
         /** @type {import('firebase-admin/firestore').DocumentReference} */ (
-          validRefs.storyRefCandidate
+          params.validRefs.storyRefCandidate
         );
       const pageContext = await resolveIncomingOptionPageContext(
+        permission,
         targetPage,
-        () => buildPageContext(storyRef, optionRef, incomingOptionFullName)
+        nextPermission =>
+          buildPageContext(nextPermission, {
+            storyRef,
+            optionRef: params.optionRef,
+            incomingOptionFullName: params.incomingOptionFullName,
+          })
       );
       return {
         ...pageContext,
-        storyRef: validRefs.storyRefCandidate,
-        variantRef: validRefs.variantRef,
+        storyRef: params.validRefs.storyRefCandidate,
+        variantRef: params.validRefs.variantRef,
       };
     };
   };
@@ -577,7 +578,7 @@ function createIncomingOptionContextBuilder(db, batch) {
  * Stage page-context creation from database and batch dependencies.
  * @param {import('firebase-admin/firestore').Firestore} db Firestore instance used for page-number lookup.
  * @param {SubmissionBatch} batch Batch collecting page writes.
- * @returns {(random: () => number, randomUUID: () => string, getServerTimestamp: () => unknown) => (storyRef: import('firebase-admin/firestore').DocumentReference, optionRef: import('firebase-admin/firestore').DocumentReference, incomingOptionFullName: string) => Promise<{pageDocRef: import('firebase-admin/firestore').DocumentReference, pageNumber: number, preserveVariantDirty: boolean}>} Staged context builder.
+ * @returns {(random: () => number, randomUUID: () => string, getServerTimestamp: () => unknown) => (permission: AllowEffects, params: {storyRef: import('firebase-admin/firestore').DocumentReference, optionRef: import('firebase-admin/firestore').DocumentReference, incomingOptionFullName: string}) => Promise<{pageDocRef: import('firebase-admin/firestore').DocumentReference, pageNumber: number, preserveVariantDirty: boolean}>} Staged context builder.
  */
 function createPageContextBuilder(db, batch) {
   return function bindPageContextRuntime(
@@ -585,28 +586,25 @@ function createPageContextBuilder(db, batch) {
     randomUUID,
     getServerTimestamp
   ) {
-    return async function buildPageContext(
-      storyRef,
-      optionRef,
-      incomingOptionFullName
-    ) {
+    return async function buildPageContext(permission, params) {
+      const { storyRef, optionRef, incomingOptionFullName } = params;
       // Stryker disable all -- new-page creation uses the fixed Firestore write protocol.
       const nextPageNumber = await findAvailablePageNumber(db, random);
 
       const newPageId = randomUUID();
       const pageDocRef = storyRef.collection('pages').doc(newPageId);
 
-      batch.set(pageDocRef, {
+      batch.set(permission, pageDocRef, {
         number: nextPageNumber,
         incomingOption: incomingOptionFullName,
         createdAt: getServerTimestamp(),
       });
 
-      batch.update(optionRef, { targetPage: pageDocRef });
+      batch.update(permission, optionRef, { targetPage: pageDocRef });
 
       const sourceVariantRef = extractVariantRefFromOption(optionRef);
       if (sourceVariantRef) {
-        batch.update(sourceVariantRef, { dirty: true });
+        batch.update(permission, sourceVariantRef, { dirty: true });
       }
 
       return {
@@ -702,8 +700,9 @@ function resolveTargetPageFromOption(optionData) {
 
 /**
  * Reuse an existing page context before invoking the new-page creator.
+ * @param {AllowEffects} permission Permission for any queued page writes.
  * @param {import('firebase-admin/firestore').DocumentReference | null} targetPage Page reference to reuse when available.
- * @param {() => Promise<{pageDocRef: import('firebase-admin/firestore').DocumentReference, pageNumber: number | null, preserveVariantDirty: boolean}>} createNewPageContext New-page context factory.
+ * @param {(permission: AllowEffects) => Promise<{pageDocRef: import('firebase-admin/firestore').DocumentReference, pageNumber: number | null, preserveVariantDirty: boolean}>} createNewPageContext New-page context factory.
  * @returns {Promise<{
  *   pageDocRef: import('firebase-admin/firestore').DocumentReference,
  *   pageNumber: number | null,
@@ -711,6 +710,7 @@ function resolveTargetPageFromOption(optionData) {
  * }>} Resolved context.
  */
 async function resolveIncomingOptionPageContext(
+  permission,
   targetPage,
   createNewPageContext
 ) {
@@ -719,7 +719,7 @@ async function resolveIncomingOptionPageContext(
     return existingContext;
   }
 
-  return createNewPageContext();
+  return createNewPageContext(permission);
 }
 
 /**
@@ -868,22 +868,28 @@ function extractStoryRefFromPage(pageDocRef) {
 /**
  * Resolve page and story references when the submission provides a direct page number.
  * Returns null when the submission should simply be marked processed.
+ * @param {AllowEffects} permission Permission for a processed-marker update.
  * @param {object} params Parameters supplied when a submission specifies a direct page number.
  * @param {import('firebase-admin/firestore').Firestore} params.db Firestore instance used to query existing pages.
  * @param {number} params.directPageNumber Page number requested by the submission.
  * @param {import('firebase-admin/firestore').DocumentSnapshot} params.snapshot Submission snapshot from the trigger.
+ * @param {UpdateDocument} params.updateDocument Permission-first update adapter.
  * @returns {Promise<PageContext | null>} Resolved context or null when the submission has already been handled.
  */
-async function resolveDirectPageContext({ db, directPageNumber, snapshot }) {
+async function resolveDirectPageContext(permission, params) {
   // Stryker disable all -- direct page resolution uses the fixed query/update protocol.
-  const pageSnap = await db
+  const pageSnap = await params.db
     .collectionGroup('pages')
-    .where('number', '==', directPageNumber)
+    .where('number', '==', params.directPageNumber)
     .limit(1)
     .get();
 
   if (pageSnap.empty) {
-    await getSnapshotReference(snapshot).update({ processed: true });
+    await markSubmissionProcessed(
+      permission,
+      params.snapshot,
+      params.updateDocument
+    );
     return null;
   }
 
@@ -893,7 +899,7 @@ async function resolveDirectPageContext({ db, directPageNumber, snapshot }) {
     pageDocRef,
     storyRef: extractStoryRefFromPage(pageDocRef),
     variantRef: null,
-    pageNumber: directPageNumber,
+    pageNumber: params.directPageNumber,
     preserveVariantDirty: false,
   };
 }
@@ -902,7 +908,7 @@ async function resolveDirectPageContext({ db, directPageNumber, snapshot }) {
 /**
  * Stage variant creation around the batch and runtime dependencies.
  * @param {SubmissionBatch} batch Write batch used to queue writes for commit.
- * @returns {(randomUUID: () => string, getServerTimestamp: () => unknown, random: () => number, incrementVariantNameFn: (name: string) => string) => (pageDocRef: import('firebase-admin/firestore').DocumentReference, snapshotRef: import('firebase-admin/firestore').DocumentReference, submission: SubmissionData) => Promise<import('firebase-admin/firestore').DocumentReference>} Staged variant creator.
+ * @returns {(randomUUID: () => string, getServerTimestamp: () => unknown, random: () => number, incrementVariantNameFn: (name: string) => string) => (permission: AllowEffects, params: {pageDocRef: import('firebase-admin/firestore').DocumentReference, snapshotRef: import('firebase-admin/firestore').DocumentReference, submission: SubmissionData}) => Promise<import('firebase-admin/firestore').DocumentReference>} Staged variant creator.
  */
 // Stryker disable next-line all -- variant creation uses the fixed Firestore payload protocol.
 function createVariantWithOptionsBuilder(batch) {
@@ -917,11 +923,8 @@ function createVariantWithOptionsBuilder(batch) {
       getServerTimestamp
     );
 
-    return async function createVariantWithOptions(
-      pageDocRef,
-      snapshotRef,
-      submission
-    ) {
+    return async function createVariantWithOptions(permission, params) {
+      const { pageDocRef, snapshotRef, submission } = params;
       const { nextName, variantRef } = await resolveVariantCreationContext(
         pageDocRef,
         snapshotRef,
@@ -931,6 +934,7 @@ function createVariantWithOptionsBuilder(batch) {
 
       // Stryker disable all -- variant payload uses the fixed visibility and dirty fields.
       batch.set(
+        permission,
         variantRef,
         buildVariantSubmissionPayload(
           nextName,
@@ -941,7 +945,7 @@ function createVariantWithOptionsBuilder(batch) {
       );
       // Stryker restore all
 
-      writeOptions(variantRef, submission.options);
+      writeOptions(permission, { variantRef, options: submission.options });
       return variantRef;
     };
   };
@@ -1004,16 +1008,17 @@ function buildVariantSubmissionPayload(
 /**
  * Stage creation of option documents under a new variant.
  * @param {SubmissionBatch} batch Batch used to queue option writes.
- * @returns {(randomUUID: () => string, getServerTimestamp: () => unknown) => (variantRef: import('firebase-admin/firestore').DocumentReference, options: unknown) => void} Option writer factory.
+ * @returns {(randomUUID: () => string, getServerTimestamp: () => unknown) => (permission: AllowEffects, params: {variantRef: import('firebase-admin/firestore').DocumentReference, options: unknown}) => void} Option writer factory.
  */
 function createOptionDocumentWriter(batch) {
   return function bindOptionDocumentRuntime(randomUUID, getServerTimestamp) {
-    return function writeOptionDocuments(variantRef, options) {
+    return function writeOptionDocuments(permission, params) {
+      const { variantRef, options } = params;
       // Stryker disable all -- option creation uses the fixed payload/write protocol.
       normalizeOptions(options).forEach((text, position) => {
         const optionRef = variantRef.collection('options').doc(randomUUID());
 
-        batch.set(optionRef, {
+        batch.set(permission, optionRef, {
           content: text,
           createdAt: getServerTimestamp(),
           position,
@@ -1041,6 +1046,7 @@ function fetchExistingVariants(pageDocRef) {
 
 /**
  * Ensure the submitting author has a Firestore document.
+ * @param {AllowEffects} permission Permission for the queued author write.
  * @param {object} params Parameters controlling author record initialization.
  * @param {import('firebase-admin/firestore').Firestore} params.db Firestore instance used to resolve author documents.
  * @param {SubmissionBatch} params.batch Write batch used to schedule author writes.
@@ -1048,26 +1054,37 @@ function fetchExistingVariants(pageDocRef) {
  * @param {() => string} params.randomUUID UUID generator for new author documents.
  * @returns {Promise<void>} Promise that resolves when the author record has been ensured.
  */
-async function ensureAuthorRecordExists({ db, batch, submission, randomUUID }) {
-  const authorRef = resolveAuthorRef(db, submission.authorId);
+async function ensureAuthorRecordExists(permission, params) {
+  const authorRef = resolveAuthorRef(params.db, params.submission.authorId);
   if (!authorRef) {
     return;
   }
 
-  await addAuthorRecordIfMissing(authorRef, batch, randomUUID);
+  await addAuthorRecordIfMissing(
+    permission,
+    authorRef,
+    params.batch,
+    params.randomUUID
+  );
 }
 
 /**
  * Create the author document when it does not already exist.
+ * @param {AllowEffects} permission Permission for the queued author write.
  * @param {import('firebase-admin/firestore').DocumentReference} authorRef Reference to the author document.
  * @param {SubmissionBatch} batch Batch used to write the new author record.
  * @param {() => string} randomUUID Function that generates a UUID for new records.
  * @returns {Promise<void>} Resolves once the write has been queued.
  */
-async function addAuthorRecordIfMissing(authorRef, batch, randomUUID) {
+async function addAuthorRecordIfMissing(
+  permission,
+  authorRef,
+  batch,
+  randomUUID
+) {
   const authorSnap = await authorRef.get();
   if (!isSnapshotPresent(authorSnap)) {
-    batch.set(authorRef, { uuid: randomUUID() });
+    batch.set(permission, authorRef, { uuid: randomUUID() });
   }
 }
 
@@ -1276,34 +1293,33 @@ function createOptionSubmissionResolver(db, batch, updateDocument) {
 
 /**
  * Route to direct page number resolver.
+ * @param {AllowEffects} permission Permission for the processed-marker update.
  * @param {object} params - Submission parameters.
  * @param {import('firebase-admin/firestore').Firestore} params.db - Firestore instance.
  * @param {number} params.directPageNumber - Page number.
  * @param {import('firebase-admin/firestore').DocumentSnapshot} params.snapshot - Submission snapshot.
+ * @param {UpdateDocument} params.updateDocument Permission-first update adapter.
  * @returns {Promise<PageContext | null>} Resolved context or null.
  */
-async function resolveViaDirect({ db, directPageNumber, snapshot }) {
-  return resolveDirectPageContext({
-    db,
-    directPageNumber,
-    snapshot,
-  });
+async function resolveViaDirect(permission, params) {
+  return resolveDirectPageContext(permission, params);
 }
 
 /**
  * Route via direct page number path.
+ * @param {AllowEffects} permission Permission for the processed-marker update.
  * @param {object} params - Routing parameters.
  * @param {import('firebase-admin/firestore').Firestore} params.db - Firestore instance.
  * @param {number | undefined} params.directPageNumber - Direct page number.
  * @param {import('firebase-admin/firestore').DocumentSnapshot} params.snapshot - Snapshot.
+ * @param {UpdateDocument} params.updateDocument Permission-first update adapter.
  * @returns {Promise<PageContext | null>} Resolved context or null.
  */
-async function routeViaDirect({ db, directPageNumber, snapshot }) {
-  if (Number.isInteger(directPageNumber)) {
-    return resolveViaDirect({
-      db,
-      directPageNumber: /** @type {number} */ (directPageNumber),
-      snapshot,
+async function routeViaDirect(permission, params) {
+  if (Number.isInteger(params.directPageNumber)) {
+    return resolveViaDirect(permission, {
+      ...params,
+      directPageNumber: /** @type {number} */ (params.directPageNumber),
     });
   }
   return null;
@@ -1338,7 +1354,12 @@ function createPageContextRouter(db, batch, updateDocument) {
         );
       }
 
-      return routeViaDirect({ db, directPageNumber, snapshot });
+      return routeViaDirect(permission, {
+        db,
+        directPageNumber,
+        snapshot,
+        updateDocument,
+      });
     };
   };
 }
@@ -1408,7 +1429,7 @@ function ensurePageContextReferences({ pageDocRef, storyRef }) {
  * @param {import('firebase-admin/firestore').Firestore} db Firestore instance used for stats and author documents.
  * @param {SubmissionBatch} batch Batch collecting updates.
  * @param {{serverTimestamp: () => unknown, increment: (value: number) => unknown}} fieldValue FieldValue helpers used for stats.
- * @returns {(randomUUID: () => string, random: () => number, getServerTimestamp: () => unknown) => (pageDocRef: import('firebase-admin/firestore').DocumentReference, storyRef: import('firebase-admin/firestore').DocumentReference, variantRef: import('firebase-admin/firestore').DocumentReference | null, preserveVariantDirty: boolean) => (submission: SubmissionData, snapshot: import('firebase-admin/firestore').DocumentSnapshot) => Promise<void>} Staged submission finalizer.
+ * @returns {(randomUUID: () => string, random: () => number, getServerTimestamp: () => unknown) => (pageDocRef: import('firebase-admin/firestore').DocumentReference, storyRef: import('firebase-admin/firestore').DocumentReference, variantRef: import('firebase-admin/firestore').DocumentReference | null, preserveVariantDirty: boolean) => (permission: AllowEffects, params: {submission: SubmissionData, snapshot: import('firebase-admin/firestore').DocumentSnapshot}) => Promise<void>} Staged submission finalizer.
  */
 function createSubmissionFinalizer(db, batch, fieldValue) {
   return function bindFinalizerRuntime(randomUUID, random, getServerTimestamp) {
@@ -1425,30 +1446,36 @@ function createSubmissionFinalizer(db, batch, fieldValue) {
       variantRef,
       preserveVariantDirty
     ) {
-      return async function finalizeSubmission(submission, snapshot) {
+      return async function finalizeSubmission(permission, params) {
+        const { submission, snapshot } = params;
         // Stryker disable all -- submission finalization uses the fixed Firestore write protocol.
-        await createVariantWithOptions(
+        await createVariantWithOptions(permission, {
           pageDocRef,
-          getSnapshotReference(snapshot),
-          submission
-        );
+          snapshotRef: getSnapshotReference(snapshot),
+          submission,
+        });
 
         const storyStatsRef = resolveStoryStatsRef(db, storyRef);
 
-        batch.update(storyStatsRef, {
+        batch.update(permission, storyStatsRef, {
           variantCount: fieldValue.increment(1),
         });
 
         if (!preserveVariantDirty) {
-          queueVariantDirtyReset(batch, variantRef);
+          queueVariantDirtyReset(permission, batch, variantRef);
         }
 
-        batch.update(getSnapshotReference(snapshot), {
+        batch.update(permission, getSnapshotReference(snapshot), {
           processed: true,
         });
-        await ensureAuthorRecordExists({ db, batch, submission, randomUUID });
+        await ensureAuthorRecordExists(permission, {
+          db,
+          batch,
+          submission,
+          randomUUID,
+        });
 
-        await batch.commit();
+        await batch.commit(permission);
       };
     };
   };
@@ -1457,13 +1484,14 @@ function createSubmissionFinalizer(db, batch, fieldValue) {
 
 /**
  * Queue the variant dirty reset when a reference exists.
+ * @param {AllowEffects} permission Permission for the queued dirty reset.
  * @param {SubmissionBatch} batch Batch used for updates.
  * @param {import('firebase-admin/firestore').DocumentReference | null} variantRef Variant reference.
  */
-function queueVariantDirtyReset(batch, variantRef) {
+function queueVariantDirtyReset(permission, batch, variantRef) {
   // Stryker disable all -- dirty reset uses the fixed optional-reference behavior.
   if (variantRef) {
-    batch.update(variantRef, { dirty: null });
+    batch.update(permission, variantRef, { dirty: null });
   }
 }
 // Stryker restore all
@@ -1473,7 +1501,7 @@ function queueVariantDirtyReset(batch, variantRef) {
  * @param {import('firebase-admin/firestore').Firestore} db Firestore instance.
  * @param {{serverTimestamp: () => unknown, increment: (value: number) => unknown}} fieldValue FieldValue helper used for stats.
  * @param {UpdateDocument} updateDocument Permission-first document update adapter.
- * @param {CreateSubmissionBatch} createBatch Permission-first batch adapter factory.
+ * @param {CreateSubmissionBatch} createBatch Batch facade factory.
  * @returns {(randomUUID: () => string, random: () => number, getServerTimestamp: () => unknown) => (permission: AllowEffects, submission: SubmissionData, snapshot: import('firebase-admin/firestore').DocumentSnapshot) => Promise<null>} Staged processor.
  */
 function createUnprocessedSubmissionProcessor(
@@ -1506,7 +1534,7 @@ function createUnprocessedSubmissionProcessor(
         return null;
       }
 
-      const batch = createBatch(permission, db);
+      const batch = createBatch(db);
 
       const processSubmission = createSubmissionContextProcessor(
         db,
@@ -1602,7 +1630,10 @@ function createSubmissionContextProcessor(
         random,
         getServerTimestamp
       )(ensuredPageDocRef, ensuredStoryRef, variantRef, preserveVariantDirty);
-      await finalize(params.submission, params.snapshot);
+      await finalize(permission, {
+        submission: params.submission,
+        snapshot: params.snapshot,
+      });
 
       return null;
     };
@@ -1644,7 +1675,7 @@ function extractSubmissionData(snapshot) {
  * @param {() => number} params.random - Random generator.
  * @param {() => unknown} params.getServerTimestamp - Timestamp helper.
  * @param {{ serverTimestamp: () => unknown, increment: (value: number) => unknown }} params.fieldValue - FieldValue helper.
- * @param {CreateSubmissionBatch} params.createBatch Permission-first batch adapter factory.
+ * @param {CreateSubmissionBatch} params.createBatch Batch facade factory.
  * @param {UpdateDocument} updateDocument Permission-first document update adapter.
  * @returns {Promise<null>} Null when complete.
  */
@@ -1694,7 +1725,7 @@ export const processNewPageTestUtils = {
  * @param {import('firebase-admin/firestore').Firestore} db Firestore instance.
  * @param {{ serverTimestamp: () => unknown, increment: (value: number) => unknown }} fieldValue FieldValue helper.
  * @param {UpdateDocument} updateDocument Permission-first document update adapter.
- * @param {CreateSubmissionBatch} createBatch Permission-first batch adapter factory.
+ * @param {CreateSubmissionBatch} createBatch Batch facade factory.
  * @returns {(randomUUID: () => string, random: () => number, getServerTimestamp: () => unknown) => (permission: AllowEffects, snapshot: import('firebase-admin/firestore').DocumentSnapshot) => Promise<null>} Runtime-bound handler factory.
  */
 function buildSubmissionHandler(db, fieldValue, updateDocument, createBatch) {

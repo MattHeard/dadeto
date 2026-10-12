@@ -1,10 +1,18 @@
-/** @param {import('../../../types/allow-effects').AllowEffects} permission @param {{batch: () => {set: (reference: object, data: object) => unknown, update: (reference: object, data: object) => unknown, commit: () => Promise<unknown>}}} db @returns {object} */
-export function createSubmissionBatch(permission, db) {
-  void permission;
+/** @param {{batch: () => {set: (reference: object, data: object) => unknown, update: (reference: object, data: object) => unknown, commit: () => Promise<unknown>}}} db @returns {object} */
+export function createSubmissionBatch(db) {
   const batch = db.batch();
   return {
-    set: (reference, data) => batch.set(reference, data),
-    update: (reference, data) => batch.update(reference, data),
-    commit: () => batch.commit(),
+    set: (permission, reference, data) => {
+      void permission;
+      return batch.set(reference, data);
+    },
+    update: (permission, reference, data) => {
+      void permission;
+      return batch.update(reference, data);
+    },
+    commit: permission => {
+      void permission;
+      return batch.commit();
+    },
   };
 }

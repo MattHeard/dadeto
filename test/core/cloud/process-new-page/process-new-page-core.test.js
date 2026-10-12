@@ -11,12 +11,21 @@ const allowEffects =
   /** @type {import('../../../../types/allow-effects').AllowEffects} */ (
     /** @type {unknown} */ (Object.freeze({}))
   );
-const createSubmissionBatchForTest = (_permission, db) => {
+const createSubmissionBatchForTest = db => {
   const batch = db.batch();
   return {
-    set: (reference, data) => batch.set(reference, data),
-    update: (reference, data) => batch.update(reference, data),
-    commit: () => batch.commit(),
+    set: (permission, reference, data) => {
+      void permission;
+      return batch.set(reference, data);
+    },
+    update: (permission, reference, data) => {
+      void permission;
+      return batch.update(reference, data);
+    },
+    commit: permission => {
+      void permission;
+      return batch.commit();
+    },
   };
 };
 const createProcessNewPageHandler = (
@@ -34,12 +43,12 @@ test('incoming option context builder returns null without a story reference', a
     );
 
   await expect(
-    buildContext(
-      { variantRef: null, storyRefCandidate: null },
-      { data: () => ({}) },
-      {},
-      'options/one'
-    )
+    buildContext(allowEffects, {
+      validRefs: { variantRef: null, storyRefCandidate: null },
+      optionSnap: { data: () => ({}) },
+      optionRef: {},
+      incomingOptionFullName: 'options/one',
+    })
   ).resolves.toBeNull();
 });
 
@@ -131,10 +140,11 @@ describe('process new page defensive helpers', () => {
       processNewPageTestUtils.extractSubmissionData({ data: () => null })
     ).toEqual({});
     await expect(
-      processNewPageTestUtils.routeViaDirect({
+      processNewPageTestUtils.routeViaDirect(allowEffects, {
         db: {},
         directPageNumber: undefined,
         snapshot: {},
+        updateDocument: jest.fn(),
       })
     ).resolves.toBeNull();
   });
@@ -166,18 +176,22 @@ describe('process new page defensive helpers', () => {
     );
 
     await expect(
-      buildPageContext(storyRef, optionRef, 'options/1')
+      buildPageContext(allowEffects, {
+        storyRef,
+        optionRef,
+        incomingOptionFullName: 'options/1',
+      })
     ).resolves.toEqual({
       pageDocRef,
       pageNumber: 1,
       preserveVariantDirty: true,
     });
-    expect(batch.set).toHaveBeenCalledWith(pageDocRef, {
+    expect(batch.set).toHaveBeenCalledWith(allowEffects, pageDocRef, {
       number: 1,
       incomingOption: 'options/1',
       createdAt: 'ts',
     });
-    expect(batch.update).toHaveBeenCalledWith(optionRef, {
+    expect(batch.update).toHaveBeenCalledWith(allowEffects, optionRef, {
       targetPage: pageDocRef,
     });
     expect(batch.update).toHaveBeenCalledTimes(1);
@@ -428,7 +442,24 @@ describe('createProcessNewPageHandler', () => {
       .mockReturnValueOnce('option-2')
       .mockReturnValue('uuid-fallback');
 
-    const createBatchFactorySpy = jest.fn(createSubmissionBatchForTest);
+    const batchPermissions = [];
+    const createBatchFactorySpy = jest.fn(db => {
+      const batchFacade = createSubmissionBatchForTest(db);
+      return {
+        set(permission, reference, data) {
+          batchPermissions.push(permission);
+          return batchFacade.set(permission, reference, data);
+        },
+        update(permission, reference, data) {
+          batchPermissions.push(permission);
+          return batchFacade.update(permission, reference, data);
+        },
+        commit(permission) {
+          batchPermissions.push(permission);
+          return batchFacade.commit(permission);
+        },
+      };
+    });
     const handler = createProcessNewPageHandler(
       {
         db,
@@ -453,7 +484,11 @@ describe('createProcessNewPageHandler', () => {
     };
 
     await handler(allowEffects, snapshot);
-    expect(createBatchFactorySpy).toHaveBeenCalledWith(allowEffects, db);
+    expect(createBatchFactorySpy).toHaveBeenCalledWith(db);
+    expect(batchPermissions.length).toBeGreaterThan(0);
+    expect(
+      batchPermissions.every(permission => permission === allowEffects)
+    ).toBe(true);
 
     const variantWrite = batch.set.mock.calls.find(
       ([, payload]) => payload && typeof payload.name === 'string'

@@ -55,13 +55,13 @@ describe('process-new-page startup effect adapter', () => {
       commit: jest.fn().mockResolvedValue(undefined),
     };
     const db = { batch: jest.fn(() => batch) };
-    const facade = createSubmissionBatch(allowEffects, db);
+    const facade = createSubmissionBatch(db);
     const reference = {};
     const data = { processed: true };
 
-    facade.set(reference, data);
-    facade.update(reference, data);
-    await facade.commit();
+    facade.set(allowEffects, reference, data);
+    facade.update(allowEffects, reference, data);
+    await facade.commit(allowEffects);
 
     expect(db.batch).toHaveBeenCalledTimes(1);
     expect(batch.set).toHaveBeenCalledWith(reference, data);

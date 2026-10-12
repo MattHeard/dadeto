@@ -17,14 +17,22 @@ export function updateSubmissionDocument(allowEffects, document, data) {
  * the trigger capability. The raw Firestore batch stays at the cloud boundary.
  * @param {AllowEffects} allowEffects Permission for this trigger's batch writes.
  * @param {import('firebase-admin/firestore').Firestore} db Firestore instance.
- * @returns {{set: (reference: import('firebase-admin/firestore').DocumentReference, data: Record<string, unknown>) => unknown, update: (reference: import('firebase-admin/firestore').DocumentReference, data: Record<string, unknown>) => unknown, commit: () => Promise<unknown>}} Narrow batch facade.
+ * @returns {{set: (allowEffects: AllowEffects, reference: import('firebase-admin/firestore').DocumentReference, data: Record<string, unknown>) => unknown, update: (allowEffects: AllowEffects, reference: import('firebase-admin/firestore').DocumentReference, data: Record<string, unknown>) => unknown, commit: (allowEffects: AllowEffects) => Promise<unknown>}} Narrow permission-first batch facade.
  */
-export function createSubmissionBatch(allowEffects, db) {
-  void allowEffects;
+export function createSubmissionBatch(db) {
   const batch = db.batch();
   return {
-    set: (reference, data) => batch.set(reference, data),
-    update: (reference, data) => batch.update(reference, data),
-    commit: () => batch.commit(),
+    set: (allowEffects, reference, data) => {
+      void allowEffects;
+      return batch.set(reference, data);
+    },
+    update: (allowEffects, reference, data) => {
+      void allowEffects;
+      return batch.update(reference, data);
+    },
+    commit: allowEffects => {
+      void allowEffects;
+      return batch.commit();
+    },
   };
 }
