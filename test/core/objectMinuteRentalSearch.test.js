@@ -899,7 +899,9 @@ describe('object minute rental HTTP adapter', () => {
         { json, status: () => ({ json }) }
       )
     ).resolves.toBeUndefined();
-    expect(getSchedule).toHaveBeenCalledWith({ runnerId: 'RUNNER-7' });
+    expect(getSchedule).toHaveBeenCalledWith(expect.anything(), {
+      runnerId: 'RUNNER-7',
+    });
     expect(json).toHaveBeenCalledWith({
       valid: true,
       results: [{ skuId: 'FOOTBALL' }],
@@ -909,10 +911,11 @@ describe('object minute rental HTTP adapter', () => {
       { method: 'POST', headers: {}, body: base },
       { json, status: () => ({ json }) }
     );
-    expect(getSchedule.mock.calls).toEqual([
-      [{ runnerId: 'RUNNER-7' }],
-      [{ runnerId: 'RUNNER-9' }],
+    expect(getSchedule.mock.calls.map(([, input]) => input)).toEqual([
+      { runnerId: 'RUNNER-7' },
+      { runnerId: 'RUNNER-9' },
     ]);
+    expect(getSchedule.mock.calls[0][0]).not.toBe(getSchedule.mock.calls[1][0]);
     expect(json).toHaveBeenCalledTimes(2);
   });
 
@@ -926,7 +929,9 @@ describe('object minute rental HTTP adapter', () => {
       { method: 'POST', headers: {}, body: base },
       { json: jest.fn(), status: () => ({ json: jest.fn() }) }
     );
-    expect(getSchedule).toHaveBeenCalledWith({ runnerId: 'RUNNER-1' });
+    expect(getSchedule).toHaveBeenCalledWith(expect.anything(), {
+      runnerId: 'RUNNER-1',
+    });
     expect(dailyWindow('07:00', 'not-a-date', 'fallback', 'UTC')).toBe(
       'fallback'
     );
@@ -945,13 +950,17 @@ describe('object minute rental HTTP adapter', () => {
       valid: true,
       results: [{ skuId: 'FOOTBALL' }],
     });
-    expect(listForRunner).toHaveBeenCalledWith({ runnerId: 'RUNNER-1' });
+    expect(listForRunner).toHaveBeenCalledWith(expect.anything(), {
+      runnerId: 'RUNNER-1',
+    });
     await createSearchHttpHandler({
       runnerCommitmentsRepository: { listForRunner },
       env: { SEARCH_RUNNER_ID: 'RUNNER-9' },
       clock: () => new Date('2026-08-27T15:00Z'),
     })({ body: base }, { json, status: () => ({ json }) });
-    expect(listForRunner).toHaveBeenLastCalledWith({ runnerId: 'RUNNER-9' });
+    expect(listForRunner).toHaveBeenLastCalledWith(expect.anything(), {
+      runnerId: 'RUNNER-9',
+    });
     listForRunner.mockRejectedValueOnce(new Error('database failure'));
     await createSearchHttpHandler({
       runnerCommitmentsRepository: { listForRunner },
@@ -1155,8 +1164,10 @@ describe('object minute rental HTTP adapter', () => {
       runnerCommitmentsRepository: { listForRunner },
       serviceArea: SOPHIE_CHARLOTTE_SERVICE_AREA,
     });
-    await search(base);
-    expect(listForRunner).toHaveBeenCalledWith({ runnerId: 'RUNNER-1' });
+    await search(createAllowEffects(), base);
+    expect(listForRunner).toHaveBeenCalledWith(expect.anything(), {
+      runnerId: 'RUNNER-1',
+    });
   });
 });
 

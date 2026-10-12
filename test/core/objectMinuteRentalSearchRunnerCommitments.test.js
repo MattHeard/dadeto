@@ -4,6 +4,8 @@ import { createObjectMinuteRentalSearch } from '../../src/core/object-minute-ren
 import { createFirestoreRunnerCommitmentsRepository } from '../../src/cloud/object-minute-rental-search/runner-commitments-repository.js';
 import { projectRunnerCommitments } from '../../src/core/object-minute-rental-search/runner-commitments.js';
 import { SOPHIE_CHARLOTTE_SERVICE_AREA } from '../../src/core/object-minute-rental-search/service-area.js';
+import { createAllowEffects } from '../../src/cloud/allow-effects.js';
+const allowEffects = createAllowEffects();
 
 const assignment = { personId: 'RUNNER-1', segmentId: 'SEGMENT-1' };
 const segment = {
@@ -212,7 +214,7 @@ describe('runner commitments repositories', () => {
     };
     const repository = createFirestoreRunnerCommitmentsRepository({ db });
     await expect(
-      repository.listForRunner({ runnerId: 'RUNNER-1' })
+      repository.listForRunner(allowEffects, { runnerId: 'RUNNER-1' })
     ).resolves.toEqual([
       {
         startTimestamp: '2026-08-27T15:00Z',
@@ -258,7 +260,7 @@ describe('runner commitments repositories', () => {
 
     const result = await createFirestoreRunnerCommitmentsRepository({
       db,
-    }).listForRunner({ runnerId: 'RUNNER-1' });
+    }).listForRunner(allowEffects, { runnerId: 'RUNNER-1' });
 
     expect(result).toHaveLength(100);
     expect(whereGet).toHaveBeenCalledTimes(1);
@@ -281,7 +283,7 @@ describe('runner commitments repositories', () => {
       serviceArea: SOPHIE_CHARLOTTE_SERVICE_AREA,
     });
     await expect(
-      search({
+      search(allowEffects, {
         requestText: 'football',
         deliveryPoint: {
           timestamp: '2026-08-27T19:00Z',
@@ -311,6 +313,8 @@ describe('runner commitments repositories', () => {
         nowTimestamp: '2026-08-27T15:00Z',
       })
     ).resolves.toMatchObject({ valid: true });
-    expect(listForRunner).toHaveBeenCalledWith({ runnerId: 'RUNNER-9' });
+    expect(listForRunner).toHaveBeenCalledWith(allowEffects, {
+      runnerId: 'RUNNER-9',
+    });
   });
 });

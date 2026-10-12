@@ -5,7 +5,7 @@ import { durationMilliseconds } from '../timing.js';
 /**
  * Execute HTTP request interpretation at the search request boundary.
  * @param {AllowEffects} allowEffects Explicit permission for HTTP response effects.
- * @param {{ search: (request: ReturnType<typeof normalizeRequest>) => Promise<object>, env: Record<string, string | undefined>, clock: () => Date, runnerScheduleProvider?: { getSchedule: (input: { runnerId: string }) => Promise<object[]> }, allowedOrigins: string[], defaultRunnerId: string }} context Search application and live request dependencies.
+ * @param {{ search: (allowEffects: AllowEffects, request: ReturnType<typeof normalizeRequest>) => Promise<object>, env: Record<string, string | undefined>, clock: () => Date, runnerScheduleProvider?: { getSchedule: (allowEffects: AllowEffects, input: { runnerId: string }) => Promise<object[]> }, allowedOrigins: string[], defaultRunnerId: string }} context Search application and live request dependencies.
  * @param {{ body?: unknown, method?: string, headers?: { origin?: string } }} req HTTP request.
  * @param {{ setHeader: (allowEffects: AllowEffects, name: string, value: string) => unknown, setStatus: (allowEffects: AllowEffects, status: number) => unknown, sendJson: (allowEffects: AllowEffects, body: unknown, status?: number) => unknown }} responseEffects Permission-first response adapters.
  * @returns {Promise<void>} Completion after response delivery.
@@ -51,11 +51,11 @@ export async function executeSearchHttpRequest(
   try {
     const request = normalizeRequest(req.body, context.env, context.clock);
     request.runnerSchedule = context.runnerScheduleProvider
-      ? await context.runnerScheduleProvider.getSchedule({
+      ? await context.runnerScheduleProvider.getSchedule(allowEffects, {
           runnerId: context.env.SEARCH_RUNNER_ID ?? context.defaultRunnerId,
         })
       : parseSchedule(context.env.SEARCH_RUNNER_SCHEDULE_JSON);
-    responseEffects.sendJson(allowEffects, await search(request));
+    responseEffects.sendJson(allowEffects, await search(allowEffects, request));
   } catch (error) {
     sendSearchHttpFailure(allowEffects, responseEffects, error);
   }

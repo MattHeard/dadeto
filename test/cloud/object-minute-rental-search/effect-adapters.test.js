@@ -1,6 +1,28 @@
 import { describe, expect, test, jest } from '@jest/globals';
 import { createAllowEffects } from '../../../src/cloud/allow-effects.js';
-import { createSearchHttpResponseEffectAdapters } from '../../../src/cloud/object-minute-rental-search/effect-adapters.js';
+import {
+  createSearchHttpResponseEffectAdapters,
+  createSearchStartupResources,
+} from '../../../src/cloud/object-minute-rental-search/effect-adapters.js';
+
+test('initializes Firebase, Firestore, and Storage inside one startup capability', () => {
+  const initializeApp = jest.fn(() => ({ app: true }));
+  const getFirestore = jest.fn(() => ({ db: true }));
+  const Storage = jest.fn(function Storage() {
+    return { storage: true };
+  });
+
+  expect(
+    createSearchStartupResources(initializeApp, getFirestore, Storage, 'db')
+  ).toEqual({
+    app: { app: true },
+    db: { db: true },
+    storage: { storage: true },
+  });
+  expect(initializeApp).toHaveBeenCalledTimes(1);
+  expect(getFirestore).toHaveBeenCalledWith({ app: true }, 'db');
+  expect(Storage).toHaveBeenCalledTimes(1);
+});
 
 describe('object-minute rental search response effect adapters', () => {
   test('applies permission-first headers and JSON responses', () => {

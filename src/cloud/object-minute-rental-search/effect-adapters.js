@@ -1,9 +1,33 @@
 /** @typedef {import('../../../types/allow-effects').AllowEffects} AllowEffects */
+import { createEffectStartupBoundary } from '../allow-effects.js';
+
+export function initializeSearchFirebaseApp(allowEffects, initializeApp) {
+  void allowEffects;
+  return initializeApp();
+}
+
+export function createSearchFirestoreClient(allowEffects, getFirestore, app, databaseId) {
+  void allowEffects;
+  return getFirestore(app, databaseId);
+}
+
+export function createSearchStorageClient(allowEffects, StorageConstructor) {
+  void allowEffects;
+  return new StorageConstructor();
+}
+
+/** @returns {object} Initialized SDK resources. */
+export function createSearchStartupResources(initializeApp, getFirestore, StorageConstructor, databaseId) {
+  return createEffectStartupBoundary(allowEffects => {
+    const app = initializeSearchFirebaseApp(allowEffects, initializeApp);
+    return { app, db: createSearchFirestoreClient(allowEffects, getFirestore, app, databaseId), storage: createSearchStorageClient(allowEffects, StorageConstructor) };
+  });
+}
 
 /**
  * Bind an HTTP response to permission-first operations used by search core.
- * @param {{json: (body: unknown) => unknown, status: (code: number) => {json: (body: unknown) => unknown}, setHeader?: (name: string, value: string) => unknown}} response Express response.
- * @returns {{setHeader: (allowEffects: AllowEffects, name: string, value: string) => unknown, setStatus: (allowEffects: AllowEffects, status: number) => unknown, sendJson: (allowEffects: AllowEffects, body: unknown, status?: number) => unknown}} Response effects.
+ * @param {object} response Express response.
+ * @returns {object} Permission-first response operations.
  */
 export function createSearchHttpResponseEffectAdapters(response) {
   return {

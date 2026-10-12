@@ -20,10 +20,10 @@ export function createSearchHttpHandler({ context, createResponseEffects }) {
 
 /**
  * @typedef {object} SearchHttpContext Search application and request-time dependencies.
- * @property {(request: Record<string, unknown>) => Promise<object>} search Search application.
+ * @property {(allowEffects: AllowEffects, request: Record<string, unknown>) => Promise<object>} search Search application.
  * @property {Record<string, string|undefined>} env Runtime environment, read during each request.
  * @property {() => Date} clock Request clock.
- * @property {{getSchedule: (input: {runnerId: string}) => Promise<object[]>}} [runnerScheduleProvider] Optional live schedule provider.
+ * @property {{getSchedule: (allowEffects: AllowEffects, input: {runnerId: string}) => Promise<object[]>}} [runnerScheduleProvider] Optional live schedule provider.
  * @property {string[]} allowedOrigins CORS allowlist resolved when the handler is composed.
  * @property {string} defaultRunnerId Fallback runner identifier.
  */

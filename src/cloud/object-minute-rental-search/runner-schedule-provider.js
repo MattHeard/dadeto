@@ -1,7 +1,7 @@
 /**
  * Create a read-only GCS runner schedule capability.
  * @param {{storage: {bucket: (name: string) => {file: (name: string) => {download: () => Promise<Array<Buffer>>}}}, bucketName: string, objectName: string}} options Provider configuration.
- * @returns {{getSchedule: ({runnerId?: string}) => Promise<object[]>}} Schedule capability.
+ * @returns {{getSchedule: (allowEffects: AllowEffects, input: {runnerId?: string}) => Promise<object[]>}} Schedule capability.
  */
 export function createGcsRunnerScheduleProvider({
   storage,
@@ -9,7 +9,8 @@ export function createGcsRunnerScheduleProvider({
   objectName,
 }) {
   return {
-    async getSchedule() {
+    async getSchedule(allowEffects) {
+      void allowEffects;
       if (!bucketName || !objectName)
         throw new Error('Runner schedule storage configuration is required.');
       const [contents] = await storage
@@ -27,3 +28,4 @@ export function createGcsRunnerScheduleProvider({
     },
   };
 }
+/** @typedef {import('../../../types/allow-effects').AllowEffects} AllowEffects */

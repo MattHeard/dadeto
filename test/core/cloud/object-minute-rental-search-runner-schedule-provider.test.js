@@ -1,5 +1,7 @@
 import { describe, expect, it, jest } from '@jest/globals';
 import { createGcsRunnerScheduleProvider } from '../../../src/cloud/object-minute-rental-search/runner-schedule-provider.js';
+import { createAllowEffects } from '../../../src/cloud/allow-effects.js';
+const allowEffects = createAllowEffects();
 
 /**
  *
@@ -28,7 +30,7 @@ describe('GCS runner schedule provider', () => {
     await expect(
       providerFor(
         '[{"startTimestamp":"2026-09-07T08:00:00Z","endTimestamp":"2026-09-07T16:00:00Z"}]'
-      ).getSchedule({ runnerId: 'RUNNER-1' })
+      ).getSchedule(allowEffects, { runnerId: 'RUNNER-1' })
     ).resolves.toEqual([
       {
         startTimestamp: '2026-09-07T08:00:00Z',
@@ -45,9 +47,9 @@ describe('GCS runner schedule provider', () => {
       '[{"startTimestamp":"2026-09-07T16:00:00Z","endTimestamp":"2026-09-07T08:00:00Z"}]',
     ],
   ])('fails closed for %s', async (_label, contents) => {
-    await expect(providerFor(contents).getSchedule({})).rejects.toThrow(
-      'Invalid runner schedule configuration.'
-    );
+    await expect(
+      providerFor(contents).getSchedule(allowEffects, {})
+    ).rejects.toThrow('Invalid runner schedule configuration.');
   });
 
   it('requires storage configuration', async () => {
@@ -56,7 +58,7 @@ describe('GCS runner schedule provider', () => {
         storage: {},
         bucketName: '',
         objectName: '',
-      }).getSchedule({})
+      }).getSchedule(allowEffects, {})
     ).rejects.toThrow('Runner schedule storage configuration is required.');
   });
 });

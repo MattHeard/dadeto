@@ -8,7 +8,7 @@
 /**
  * Create a browser/in-memory runner commitments repository.
  * @param {{runnerAssignments?: object[], segments?: SegmentRecord[], spacetimePoints?: PointRecord[]}} [records] Resolved records.
- * @returns {{listForRunner: (options: {runnerId: string}) => Promise<Array<{startTimestamp: string, endTimestamp: string}>>}} Repository capability.
+ * @returns {{listForRunner: (allowEffects: import('../../../../types/allow-effects').AllowEffects, options: {runnerId: string}) => Promise<Array<{startTimestamp: string, endTimestamp: string}>>}} Repository capability.
  */
 export function createBrowserRunnerCommitmentsRepository({
   runnerAssignments = [],
@@ -26,14 +26,17 @@ export function createBrowserRunnerCommitmentsRepository({
       .map(record => [record.pointId, record])
   );
   return {
-    listForRunner: ({ runnerId }) =>
-      projectRunnerCommitments({
+    listForRunner: (allowEffectsOrOptions, maybeOptions) => {
+      const options = maybeOptions ?? allowEffectsOrOptions;
+      const { runnerId } = options;
+      return projectRunnerCommitments({
         assignments: runnerAssignments,
         selectAssignments: assignments =>
           assignments.filter(assignment => assignment?.personId === runnerId),
         resolveSegment: segmentId => segmentById.get(segmentId),
         resolvePoint: pointId => pointById.get(pointId),
-      }),
+      });
+    },
   };
 }
 
