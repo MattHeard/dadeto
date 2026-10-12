@@ -9,10 +9,9 @@ import {
   resolveStaticObjectPrefix,
   VISIBILITY_THRESHOLD,
 } from './render-variant-core.js';
-import { createFirestoreDocumentOnWriteTrigger } from '../cloud-core.js';
 import {
   createCloudRenderInstanceBuilder,
-  createCloudRenderEntrypointState,
+  createCloudRenderEntrypointStateWithDb,
 } from '../render-support.js';
 
 /** @typedef {import('../../../../types/allow-effects').AllowEffects} AllowEffects */
@@ -20,9 +19,7 @@ import {
 /**
  * Wire and return the render-variant cloud exports.
  * @param {{
- *   initializeApp: typeof import('firebase-admin/app').initializeApp,
- *   createFirebaseAppManager: typeof import('../../../cloud/render-variant/render-variant-gcf.js').createFirebaseAppManager,
- *   getFirestoreInstance: typeof import('../../../cloud/render-variant/render-variant-gcf.js').getFirestoreInstance,
+ *   db: import('firebase-admin/firestore').Firestore,
  *   getEnvironmentVariables: typeof import('../../../cloud/render-variant/render-variant-gcf.js').getEnvironmentVariables,
  *   functions: typeof import('../../../cloud/render-variant/render-variant-gcf.js').functions,
  *   FieldValue: typeof import('../../../cloud/render-variant/render-variant-gcf.js').FieldValue,
@@ -33,17 +30,17 @@ import {
  *   setFirestoreDocument: typeof import('../../../cloud/render-variant/effect-adapters.js').setFirestoreDocument,
  *   saveStorageFile: typeof import('../../../cloud/render-variant/effect-adapters.js').saveStorageFile,
  *   effectFetchFn: typeof import('../../../cloud/render-variant/render-variant-gcf.js').effectFetchFn,
+ *   registerVariantWriteTrigger: typeof import('../../../cloud/render-variant/trigger-effect-adapter.js').registerVariantWriteTrigger,
  *   crypto: typeof import('../../../cloud/render-variant/render-variant-gcf.js').crypto,
  *   console?: { error: (...args: unknown[]) => void },
+ *   startupAllowEffects: AllowEffects,
  * }} deps Runtime dependencies supplied by the cloud wrapper.
  * @returns {{ renderVariant: unknown, render: (...args: unknown[]) => Promise<null> }} Wired cloud export objects for index.js.
  */
 export function runRenderVariant(deps) {
   const typedDeps = /** @type {any} */ (deps);
   const {
-    initializeApp,
-    createFirebaseAppManager,
-    getFirestoreInstance,
+    db: initializedDb,
     getEnvironmentVariables,
     functions,
     FieldValue,
@@ -54,12 +51,16 @@ export function runRenderVariant(deps) {
     setFirestoreDocument,
     saveStorageFile,
     effectFetchFn,
+    registerVariantWriteTrigger,
+    startupAllowEffects,
     crypto,
     console: consoleLike,
   } = typedDeps;
   const resolvedConsole = consoleLike ?? globalThis.console;
 
-  const renderState = /** @type {any} */ (createRenderVariantEntrypointState());
+  const renderState = /** @type {any} */ (
+    createRenderVariantEntrypointState({ db: initializedDb })
+  );
   const { render: resolveRenderVariant, db } = renderState;
   const renderEffectDependencies = {
     bindEffectBoundary,
@@ -76,7 +77,8 @@ export function runRenderVariant(deps) {
     updateDocument: updateFirestoreDocument,
   });
 
-  const renderVariant = createFirestoreDocumentOnWriteTrigger(
+  const renderVariant = registerVariantWriteTrigger(
+    startupAllowEffects,
     /** @type {any} */ ({
       functions,
       region: 'europe-west1',
@@ -95,13 +97,12 @@ export function runRenderVariant(deps) {
 
   /**
    * Assemble the shared render state for the variant entrypoint.
+   * @param {{db: import('firebase-admin/firestore').Firestore}} root0 Initialized startup state.
    * @returns {unknown} Shared render state consumed by the cloud wrapper.
    */
-  function createRenderVariantEntrypointState() {
+  function createRenderVariantEntrypointState({ db: initializedDb }) {
     const renderStateOptions = {};
-    renderStateOptions.initializeApp = initializeApp;
-    renderStateOptions.createFirebaseAppManager = createFirebaseAppManager;
-    renderStateOptions.getFirestoreInstance = getFirestoreInstance;
+    renderStateOptions.db = initializedDb;
     renderStateOptions.Storage = Storage;
     renderStateOptions.getEnvironmentVariables = getEnvironmentVariables;
     renderStateOptions.fetchFn = fetchFn;
@@ -125,7 +126,9 @@ export function runRenderVariant(deps) {
       )
     );
     const renderEntrypointState = /** @type {any} */ (
-      createCloudRenderEntrypointState(/** @type {any} */ (renderStateOptions))
+      createCloudRenderEntrypointStateWithDb(
+        /** @type {any} */ (renderStateOptions)
+      )
     );
 
     return renderEntrypointState;

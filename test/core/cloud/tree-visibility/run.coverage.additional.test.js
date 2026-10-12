@@ -1,5 +1,8 @@
 import { jest } from '@jest/globals';
-import { createTreeVisibilityRegenerationHandles } from '../../../../src/core/cloud/tree-visibility/run.js';
+import {
+  createTreeVisibilityRegenerationHandlers,
+  createTreeVisibilityRegenerationHandles,
+} from '../../../../src/core/cloud/tree-visibility/run.js';
 
 test('registers and executes scheduled and HTTP regeneration handlers', async () => {
   const scheduledRun = jest.fn();
@@ -28,11 +31,23 @@ test('registers and executes scheduled and HTTP regeneration handlers', async ()
     })),
   }));
   const render = jest.fn();
-  const handles = createTreeVisibilityRegenerationHandles({
-    functions,
+  const handlers = createTreeVisibilityRegenerationHandlers(
     getFirestoreInstance,
-    render,
-  });
+    render
+  );
+  const handles = createTreeVisibilityRegenerationHandles(
+    Object.freeze({}),
+    (_permission, handler) => {
+      return functions
+        .region('europe-west1')
+        .pubsub.schedule('every 24 hours')
+        .onRun(handler);
+    },
+    (_permission, handler) => {
+      return functions.region('europe-west1').https.onRequest(handler);
+    },
+    handlers
+  );
 
   expect(handles).toEqual({ scheduled: 'scheduled', http: 'http' });
   await expect(scheduledRun()).resolves.toBeNull();

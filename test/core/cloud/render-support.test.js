@@ -7,6 +7,7 @@ import {
   createCloudRenderInstanceDeps,
   createCloudRenderInstanceBuilder,
   createCloudRenderEntrypointState,
+  createCloudRenderEntrypointStateWithDb,
 } from '../../../src/core/cloud/render-support.js';
 
 describe('render support helpers', () => {
@@ -149,6 +150,23 @@ describe('render support helpers', () => {
 
     expect(state.render()).toBe(state.render());
     expect(buildRender).toHaveBeenCalledTimes(1);
+    expect(state.db).toEqual({ db: true });
     expect(ensureFirebaseApp).toHaveBeenCalledTimes(1);
+  });
+
+  test('builds render state from the database supplied by the cloud boundary', () => {
+    const state = createCloudRenderEntrypointStateWithDb({
+      db: { fromBoundary: true },
+      Storage: jest.fn(() => ({})),
+      getEnvironmentVariables: jest.fn(() => ({})),
+      fetchFn: jest.fn(),
+      bindEffectBoundary: handler => handler(Object.freeze({})),
+      resolveBucketName: jest.fn(() => 'bucket'),
+      resolveObjectPrefix: jest.fn(() => 'prefix'),
+      defaultBucketName: 'default',
+      buildRender: value => value,
+    });
+
+    expect(state.db).toEqual({ fromBoundary: true });
   });
 });

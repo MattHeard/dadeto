@@ -1,5 +1,8 @@
 import { jest } from '@jest/globals';
-import { createTreeVisibilityRegenerationHandles } from '../../../../src/core/cloud/tree-visibility/run.js';
+import {
+  createTreeVisibilityRegenerationHandlers,
+  createTreeVisibilityRegenerationHandles,
+} from '../../../../src/core/cloud/tree-visibility/run.js';
 
 test('builds daily and HTTP regeneration entrypoints', async () => {
   const scheduledRun = jest.fn();
@@ -18,11 +21,26 @@ test('builds daily and HTTP regeneration entrypoints', async () => {
       }),
     }),
   }));
-  const handles = createTreeVisibilityRegenerationHandles({
-    functions,
+  const allowEffects = Object.freeze({});
+  const handlers = createTreeVisibilityRegenerationHandlers(
     getFirestoreInstance,
-    render: scheduledRun,
-  });
+    scheduledRun
+  );
+  const handles = createTreeVisibilityRegenerationHandles(
+    allowEffects,
+    (permission, handler) => {
+      expect(permission).toBe(allowEffects);
+      return functions
+        .region('europe-west1')
+        .pubsub.schedule('every 24 hours')
+        .onRun(handler);
+    },
+    (permission, handler) => {
+      expect(permission).toBe(allowEffects);
+      return functions.region('europe-west1').https.onRequest(handler);
+    },
+    handlers
+  );
 
   expect(handles.scheduled).toHaveProperty('fn');
   expect(handles.http).toHaveProperty('fn');

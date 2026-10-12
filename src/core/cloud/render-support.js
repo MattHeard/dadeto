@@ -175,41 +175,16 @@ export function createCloudRenderInstanceBuilder(options) {
 }
 
 /**
- * Build the shared options bag for a cloud render entrypoint.
- * @param {{
- *   initializeApp: () => void,
- *   createFirebaseAppManager: (initializeApp: () => void) => { ensureFirebaseApp: () => void },
- *   getFirestoreInstance: (options: { environment: Record<string, string | undefined> }) => unknown,
- *   Storage: new () => unknown,
- *   getEnvironmentVariables: () => Record<string, string | undefined>,
- *   fetchFn: (permission: import('../../../types/allow-effects').AllowEffects, ...args: Parameters<typeof globalThis.fetch>) => ReturnType<typeof globalThis.fetch>,
- *   bindEffectBoundary: import('../../../types/allow-effects').AllowEffectsBoundary,
- *   resolveBucketName: (environmentVariables: Record<string, string | undefined>, defaultBucketName: string) => string,
- *   resolveObjectPrefix: (environmentVariables: Record<string, string | undefined>) => string,
- *   defaultBucketName: string,
- *   entrypointKind: string,
- *   buildRender: (state: {
- *     db: unknown,
- *     storage: unknown,
- *     fetchFn: (permission: import('../../../types/allow-effects').AllowEffects, ...args: Parameters<typeof globalThis.fetch>) => ReturnType<typeof globalThis.fetch>,
- *     dynamicFetch: (...args: Parameters<typeof globalThis.fetch>) => ReturnType<typeof globalThis.fetch>,
- *     environmentVariables: Record<string, string | undefined>,
- *     bucketName: string,
- *     objectPrefix: string,
- *     projectId: string | undefined,
- *     urlMapName: string | undefined,
- *     cdnHost: string | undefined,
- *   }) => unknown,
- * }} options Entrypoint dependencies.
- * @returns {typeof options} Shared cloud render options bag.
+ * @typedef {(permission: import('../../../types/allow-effects').AllowEffects, ...args: Parameters<typeof globalThis.fetch>) => ReturnType<typeof globalThis.fetch>} PermissionFetch
+ * @typedef {(...args: Parameters<typeof globalThis.fetch>) => ReturnType<typeof globalThis.fetch>} DynamicFetch
+ * @typedef {{db: unknown, storage: unknown, environmentVariables: Record<string, string | undefined>, bucketName: string, objectPrefix: string, projectId: string | undefined, urlMapName: string | undefined, cdnHost: string | undefined}} CloudRenderContext
+ * @typedef {CloudRenderContext & {fetchFn: PermissionFetch, dynamicFetch: DynamicFetch, render: () => unknown}} CloudRenderEntrypointState
  */
 
 /**
- * Create the full shared state for a cloud render entrypoint.
+ * Build render state from a Firestore instance initialized by the cloud boundary.
  * @param {{
- *   initializeApp: () => void,
- *   createFirebaseAppManager: (initializeApp: () => void) => { ensureFirebaseApp: () => void },
- *   getFirestoreInstance: () => unknown,
+ *   db: unknown,
  *   Storage: new () => unknown,
  *   getEnvironmentVariables: () => Record<string, string | undefined>,
  *   fetchFn: (permission: import('../../../types/allow-effects').AllowEffects, ...args: Parameters<typeof globalThis.fetch>) => ReturnType<typeof globalThis.fetch>,
@@ -217,41 +192,16 @@ export function createCloudRenderInstanceBuilder(options) {
  *   resolveBucketName: (environmentVariables: Record<string, string | undefined>, defaultBucketName: string) => string,
  *   resolveObjectPrefix: (environmentVariables: Record<string, string | undefined>) => string,
  *   defaultBucketName: string,
- *   buildRender: (state: {
- *     db: unknown,
- *     storage: unknown,
- *     fetchFn: (permission: import('../../../types/allow-effects').AllowEffects, ...args: Parameters<typeof globalThis.fetch>) => ReturnType<typeof globalThis.fetch>,
- *     dynamicFetch: (...args: Parameters<typeof globalThis.fetch>) => ReturnType<typeof globalThis.fetch>,
- *     environmentVariables: Record<string, string | undefined>,
- *     bucketName: string,
- *     objectPrefix: string,
- *     projectId: string | undefined,
- *     urlMapName: string | undefined,
- *     cdnHost: string | undefined,
- *   }) => unknown,
- * }} options Entrypoint dependencies.
- * @returns {{
- *   db: unknown,
- *   storage: unknown,
- *   environmentVariables: Record<string, string | undefined>,
- *   bucketName: string,
- *   objectPrefix: string,
- *   projectId: string | undefined,
- *   urlMapName: string | undefined,
- *   cdnHost: string | undefined,
- *   fetchFn: (permission: import('../../../types/allow-effects').AllowEffects, ...args: Parameters<typeof globalThis.fetch>) => ReturnType<typeof globalThis.fetch>,
- *   dynamicFetch: (...args: Parameters<typeof globalThis.fetch>) => ReturnType<typeof globalThis.fetch>,
- *   render: () => unknown,
- * }} Full entrypoint state.
+ *   buildRender: (state: CloudRenderContext & {fetchFn: PermissionFetch, dynamicFetch: DynamicFetch}) => unknown,
+ * }} options Runtime dependencies.
+ * @returns {CloudRenderEntrypointState} Full render state.
  */
-export function createCloudRenderEntrypointState(options) {
+export function createCloudRenderEntrypointStateWithDb(options) {
   // Stryker disable all -- shared render state uses the fixed builder/memoization protocol.
-  const { ensureFirebaseApp } = options.createFirebaseAppManager(
-    options.initializeApp
-  );
-  ensureFirebaseApp();
-
-  const context = createCloudRenderContext(options);
+  const context = createCloudRenderContext({
+    ...options,
+    getFirestoreInstance: () => options.db,
+  });
   const dynamicFetch = createDynamicFetch(
     options.fetchFn,
     options.bindEffectBoundary
@@ -271,4 +221,33 @@ export function createCloudRenderEntrypointState(options) {
     render,
   };
   // Stryker restore all
+}
+
+/**
+ * Create the full shared state for a cloud render entrypoint.
+ * @param {{
+ *   initializeApp: () => void,
+ *   createFirebaseAppManager: (initializeApp: () => void) => { ensureFirebaseApp: () => void },
+ *   getFirestoreInstance: (options: { environment: Record<string, string | undefined> }) => unknown,
+ *   Storage: new () => unknown,
+ *   getEnvironmentVariables: () => Record<string, string | undefined>,
+ *   fetchFn: (permission: import('../../../types/allow-effects').AllowEffects, ...args: Parameters<typeof globalThis.fetch>) => ReturnType<typeof globalThis.fetch>,
+ *   bindEffectBoundary: import('../../../types/allow-effects').AllowEffectsBoundary,
+ *   resolveBucketName: (environmentVariables: Record<string, string | undefined>, defaultBucketName: string) => string,
+ *   resolveObjectPrefix: (environmentVariables: Record<string, string | undefined>) => string,
+ *   defaultBucketName: string,
+ *   buildRender: Parameters<typeof createCloudRenderEntrypointStateWithDb>[0]['buildRender'],
+ * }} options Entrypoint dependencies.
+ * @returns {CloudRenderEntrypointState} Full render state.
+ */
+export function createCloudRenderEntrypointState(options) {
+  const { ensureFirebaseApp } = options.createFirebaseAppManager(
+    options.initializeApp
+  );
+  ensureFirebaseApp();
+  const environmentVariables = options.getEnvironmentVariables();
+  const db = options.getFirestoreInstance({
+    environment: environmentVariables,
+  });
+  return createCloudRenderEntrypointStateWithDb({ ...options, db });
 }

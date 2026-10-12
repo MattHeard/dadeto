@@ -1,9 +1,8 @@
-import { initializeApp } from 'firebase-admin/app';
 import {
   functions,
   FieldValue,
   Storage,
-  createFirebaseAppManager,
+  ensureFirebaseApp,
   getFirestoreInstance,
   fetchFn,
   crypto,
@@ -11,38 +10,31 @@ import {
   bindEffectBoundary,
   effectFetchFn,
 } from './render-variant-gcf.js';
-import { runRenderVariant } from '../../core/cloud/render-variant/run.js';
-import { createTreeVisibilityRegenerationHandles } from '../../core/cloud/tree-visibility/run.js';
 import {
   saveStorageFile,
   setFirestoreDocument,
   updateFirestoreDocument,
 } from './effect-adapters.js';
+import { createRenderVariantStartup } from './startup-effect-adapter.js';
 
-const { renderVariant: handle, render } = runRenderVariant({
-  initializeApp,
-  createFirebaseAppManager,
-  getFirestoreInstance,
-  getEnvironmentVariables,
-  bindEffectBoundary,
-  updateFirestoreDocument,
-  setFirestoreDocument,
-  saveStorageFile,
-  effectFetchFn,
-  functions,
-  FieldValue,
-  Storage,
-  fetchFn,
-  crypto,
-});
+const { renderVariant: handle, render, regenerationHandles } =
+  createRenderVariantStartup({
+    ensureFirebaseApp,
+    getFirestoreInstance,
+    getEnvironmentVariables,
+    bindEffectBoundary,
+    updateFirestoreDocument,
+    setFirestoreDocument,
+    saveStorageFile,
+    effectFetchFn,
+    functions,
+    FieldValue,
+    Storage,
+    fetchFn,
+    crypto,
+  });
 
 export { handle, render };
-
-const regenerationHandles = createTreeVisibilityRegenerationHandles({
-  functions,
-  getFirestoreInstance,
-  render,
-});
 
 export const regenerateTreeWeights = regenerationHandles.scheduled;
 export const regenerateTreeWeightsHttp = regenerationHandles.http;

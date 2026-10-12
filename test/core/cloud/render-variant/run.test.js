@@ -1,6 +1,5 @@
 import { describe, expect, jest, test } from '@jest/globals';
 
-const ensureFirebaseApp = jest.fn();
 const importedFetchFn = jest.fn(() => Promise.resolve({ ok: true }));
 const onWrite = jest.fn(() => 'renderVariant');
 const mockCreateRenderVariant = jest.fn(options =>
@@ -16,7 +15,7 @@ const mockCreateCloudRenderEntrypointState = jest.fn(() => ({
 }));
 const mockCreateCloudRenderInstanceBuilder = jest.fn(() => jest.fn());
 let registeredTriggerHandler;
-const mockCreateFirestoreDocumentOnWriteTrigger = jest.fn(options => {
+const mockRegisterVariantWriteTrigger = jest.fn((permission, options) => {
   registeredTriggerHandler = options.handler;
   return jest.fn(() => 'renderVariant');
 });
@@ -48,15 +47,9 @@ await jest.unstable_mockModule(
   () => ({
     createCloudRenderInstanceBuilder: mockCreateCloudRenderInstanceBuilder,
     createCloudRenderEntrypointState: mockCreateCloudRenderEntrypointState,
+    createCloudRenderEntrypointStateWithDb:
+      mockCreateCloudRenderEntrypointState,
     createMemoizedLoader: jest.fn(),
-  })
-);
-
-await jest.unstable_mockModule(
-  '../../../../src/core/cloud/cloud-core.js',
-  () => ({
-    createFirestoreDocumentOnWriteTrigger:
-      mockCreateFirestoreDocumentOnWriteTrigger,
   })
 );
 
@@ -78,15 +71,11 @@ const executeRunRenderVariant = dependencies =>
 describe('runRenderVariant', () => {
   test('wires the cloud entrypoint and uses the global fetch path', async () => {
     mockCreateRenderVariant.mockClear();
-    ensureFirebaseApp.mockClear();
-    onWrite.mockClear();
     importedFetchFn.mockClear();
     const globalFetch = jest.fn(() => Promise.resolve({ ok: true }));
     globalThis.fetch = globalFetch;
 
-    const initializeApp = jest.fn();
-    const createFirebaseAppManager = jest.fn(() => ({ ensureFirebaseApp }));
-    const getFirestoreInstance = jest.fn(() => ({ doc: jest.fn() }));
+    const db = { doc: jest.fn() };
     const getEnvironmentVariables = jest.fn(() => ({
       GOOGLE_CLOUD_PROJECT: 'proj',
       URL_MAP: 'map',
@@ -98,6 +87,7 @@ describe('runRenderVariant', () => {
     const functions = { region };
     const consoleError = jest.fn();
     const triggerPermission = Object.freeze({});
+    const startupPermission = Object.freeze({ startup: true });
     const updateFirestoreDocument = jest.fn(async () => undefined);
 
     let capturedWriteOptions;
@@ -113,9 +103,7 @@ describe('runRenderVariant', () => {
     });
 
     const { render } = executeRunRenderVariant({
-      initializeApp,
-      createFirebaseAppManager,
-      getFirestoreInstance,
+      db,
       getEnvironmentVariables,
       functions,
       FieldValue,
@@ -124,6 +112,8 @@ describe('runRenderVariant', () => {
       bindEffectBoundary: handler => handler(triggerPermission),
       updateFirestoreDocument,
       effectFetchFn: jest.fn(),
+      registerVariantWriteTrigger: mockRegisterVariantWriteTrigger,
+      startupAllowEffects: startupPermission,
       crypto,
       console: { error: consoleError },
     });
@@ -164,7 +154,8 @@ describe('runRenderVariant', () => {
         defaultBucketName: 'bucket',
       })
     );
-    expect(mockCreateFirestoreDocumentOnWriteTrigger).toHaveBeenCalledWith(
+    expect(mockRegisterVariantWriteTrigger).toHaveBeenCalledWith(
+      startupPermission,
       expect.objectContaining({
         region: 'europe-west1',
         documentPath: 'stories/{storyId}/pages/{pageId}/variants/{variantId}',
@@ -174,15 +165,11 @@ describe('runRenderVariant', () => {
 
   test('falls back to the imported fetch helper when global fetch is missing', async () => {
     mockCreateRenderVariant.mockClear();
-    ensureFirebaseApp.mockClear();
-    onWrite.mockClear();
     importedFetchFn.mockClear();
     const previousFetch = globalThis.fetch;
     delete globalThis.fetch;
 
-    const initializeApp = jest.fn();
-    const createFirebaseAppManager = jest.fn(() => ({ ensureFirebaseApp }));
-    const getFirestoreInstance = jest.fn(() => ({ doc: jest.fn() }));
+    const db = { doc: jest.fn() };
     const getEnvironmentVariables = jest.fn(() => ({
       GOOGLE_CLOUD_PROJECT: 'proj',
       URL_MAP: 'map',
@@ -194,14 +181,14 @@ describe('runRenderVariant', () => {
     const functions = { region };
 
     const { render } = executeRunRenderVariant({
-      initializeApp,
-      createFirebaseAppManager,
-      getFirestoreInstance,
+      db,
       getEnvironmentVariables,
       functions,
       FieldValue,
       Storage,
       fetchFn: importedFetchFn,
+      registerVariantWriteTrigger: mockRegisterVariantWriteTrigger,
+      startupAllowEffects: Object.freeze({}),
       crypto,
     });
     await render('snap', 'context');
@@ -214,16 +201,12 @@ describe('runRenderVariant', () => {
 
   test('forwards the cloud console error logger into the render builder', async () => {
     mockCreateRenderVariant.mockClear();
-    ensureFirebaseApp.mockClear();
-    onWrite.mockClear();
     importedFetchFn.mockClear();
     const previousFetch = globalThis.fetch;
     delete globalThis.fetch;
 
     const consoleError = jest.fn();
-    const initializeApp = jest.fn();
-    const createFirebaseAppManager = jest.fn(() => ({ ensureFirebaseApp }));
-    const getFirestoreInstance = jest.fn(() => ({ doc: jest.fn() }));
+    const db = { doc: jest.fn() };
     const getEnvironmentVariables = jest.fn(() => ({
       GOOGLE_CLOUD_PROJECT: 'proj',
       URL_MAP: 'map',
@@ -242,15 +225,15 @@ describe('runRenderVariant', () => {
     );
 
     const { render } = executeRunRenderVariant({
-      initializeApp,
-      createFirebaseAppManager,
-      getFirestoreInstance,
+      db,
       getEnvironmentVariables,
       functions,
       FieldValue,
       Storage,
       fetchFn: importedFetchFn,
       crypto,
+      registerVariantWriteTrigger: mockRegisterVariantWriteTrigger,
+      startupAllowEffects: Object.freeze({}),
       console: { error: consoleError },
     });
 
@@ -264,8 +247,6 @@ describe('runRenderVariant', () => {
 
   test('uses the global console when one is not provided', async () => {
     mockCreateRenderVariant.mockClear();
-    ensureFirebaseApp.mockClear();
-    onWrite.mockClear();
     importedFetchFn.mockClear();
     const previousFetch = globalThis.fetch;
     delete globalThis.fetch;
@@ -274,9 +255,6 @@ describe('runRenderVariant', () => {
     const previousConsoleError = globalThis.console.error;
     globalThis.console.error = consoleError;
 
-    const initializeApp = jest.fn();
-    const createFirebaseAppManager = jest.fn(() => ({ ensureFirebaseApp }));
-    const getFirestoreInstance = jest.fn(() => ({ doc: jest.fn() }));
     const getEnvironmentVariables = jest.fn(() => ({
       GOOGLE_CLOUD_PROJECT: 'proj',
       URL_MAP: 'map',
@@ -295,15 +273,15 @@ describe('runRenderVariant', () => {
     );
 
     executeRunRenderVariant({
-      initializeApp,
-      createFirebaseAppManager,
-      getFirestoreInstance,
+      db: { doc: jest.fn() },
       getEnvironmentVariables,
       functions,
       FieldValue,
       Storage,
       fetchFn: importedFetchFn,
       crypto,
+      registerVariantWriteTrigger: mockRegisterVariantWriteTrigger,
+      startupAllowEffects: Object.freeze({}),
     });
 
     expect(consoleError).not.toHaveBeenCalled();
@@ -314,13 +292,10 @@ describe('runRenderVariant', () => {
 
   test('wires the onWrite trigger through the wrapper handler', async () => {
     mockCreateRenderVariant.mockClear();
-    mockCreateFirestoreDocumentOnWriteTrigger.mockClear();
+    mockRegisterVariantWriteTrigger.mockClear();
     const previousFetch = globalThis.fetch;
     delete globalThis.fetch;
 
-    const initializeApp = jest.fn();
-    const createFirebaseAppManager = jest.fn(() => ({ ensureFirebaseApp }));
-    const getFirestoreInstance = jest.fn(() => ({ doc: jest.fn() }));
     const getEnvironmentVariables = jest.fn(() => ({
       GOOGLE_CLOUD_PROJECT: 'proj',
       URL_MAP: 'map',
@@ -343,15 +318,15 @@ describe('runRenderVariant', () => {
     });
 
     const { renderVariant } = executeRunRenderVariant({
-      initializeApp,
-      createFirebaseAppManager,
-      getFirestoreInstance,
+      db: { doc: jest.fn() },
       getEnvironmentVariables,
       functions,
       FieldValue,
       Storage,
       fetchFn: importedFetchFn,
       crypto,
+      registerVariantWriteTrigger: mockRegisterVariantWriteTrigger,
+      startupAllowEffects: Object.freeze({}),
       console: { error: jest.fn() },
     });
 
