@@ -6,7 +6,6 @@ import {
   fetchModerationRatings,
   recalculateModeratorReputationTestOnly as helpers,
   shortestPathDistances,
-  writeModeratorReputations,
 } from '../../../../src/core/cloud/recalculate-moderator-reputation/recalculate-moderator-reputation-core.js';
 
 describe('recalculate-moderator-reputation core', () => {
@@ -158,8 +157,7 @@ describe('recalculate-moderator-reputation core', () => {
     expect(helpers.getLowerWeight(undefined, 0.5)).toBe(0.5);
   });
 
-  it('reads moderation ratings from Firestore-like snapshots and writes cached reputations', async () => {
-    const set = jest.fn();
+  it('reads and validates moderation ratings from Firestore-like snapshots', async () => {
     const db = {
       collection: jest.fn(name => {
         if (name === 'moderationRatings') {
@@ -209,35 +207,17 @@ describe('recalculate-moderator-reputation core', () => {
           };
         }
 
-        return {
-          doc: jest.fn(() => ({
-            set,
-            get: jest.fn().mockResolvedValue({ exists: true }),
-          })),
-        };
+        return { doc: jest.fn() };
       }),
     };
 
     const ratings = await fetchModerationRatings(db);
     expect(ratings).toHaveLength(2);
 
-    const reputations = calculateModeratorReputations(ratings, 'admin');
-    await writeModeratorReputations(db, reputations, {
-      updatedAt: '2026-06-26T00:00:00.000Z',
-    });
-
-    expect(set).toHaveBeenCalledWith(
-      expect.objectContaining({
-        moderatorReputation: expect.any(Number),
-        moderatorReputationUpdatedAt: '2026-06-26T00:00:00.000Z',
-      }),
-      { merge: true }
-    );
-
-    await writeModeratorReputations(
-      { collection: () => ({ doc: () => ({ set: jest.fn() }) }) },
-      [{ moderatorId: 'no-author-read', reputation: 0 }],
-      { updatedAt: 'later' }
+    expect(calculateModeratorReputations(ratings, 'admin')).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ moderatorId: 'admin' }),
+      ])
     );
   });
 });

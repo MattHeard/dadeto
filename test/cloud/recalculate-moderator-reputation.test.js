@@ -3,6 +3,7 @@ import { createRecalculateModeratorReputationJob } from '../../src/core/cloud/re
 
 describe('recalculate-moderator-reputation cloud job', () => {
   it('recomputes and persists moderator reputations on each run', async () => {
+    const allowEffects = Object.freeze({ invocation: true });
     const fetchModerationRatings = jest.fn().mockResolvedValue([
       { moderatorId: 'admin', variantId: 'page-1', isApproved: true },
       { moderatorId: 'mod-a', variantId: 'page-1', isApproved: true },
@@ -16,7 +17,6 @@ describe('recalculate-moderator-reputation cloud job', () => {
     const nowIso = jest.fn().mockReturnValue('2026-06-27T00:00:00.000Z');
 
     const job = createRecalculateModeratorReputationJob({
-      db: { collection: jest.fn() },
       fetchModerationRatings,
       calculateModeratorReputations,
       writeModeratorReputations,
@@ -24,7 +24,7 @@ describe('recalculate-moderator-reputation cloud job', () => {
       nowIso,
     });
 
-    await job();
+    await job(allowEffects);
 
     expect(fetchModerationRatings).toHaveBeenCalledTimes(1);
     expect(calculateModeratorReputations).toHaveBeenCalledWith(
@@ -34,7 +34,7 @@ describe('recalculate-moderator-reputation cloud job', () => {
       'admin'
     );
     expect(writeModeratorReputations).toHaveBeenCalledWith(
-      expect.objectContaining({ collection: expect.any(Function) }),
+      allowEffects,
       expect.arrayContaining([
         expect.objectContaining({ moderatorId: 'admin', reputation: 1 }),
       ]),
