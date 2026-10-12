@@ -15,7 +15,7 @@ import { createBillingRuntime } from '../billing/billing-runtime-core.js';
 
 /**
  * Create the payment webhook request handler used by the cloud wrapper.
- * @param {{ db: any, env?: ProcessEnvLike, constructEvent?: (payload: string|Buffer, signature: string, secret: string) => unknown, creditEventEffects: Parameters<typeof import('../get-api-key-credit-v2/get-api-key-credit-v2-core.js').createApplyCreditEvent>[1], markProcessedEvent: (allowEffects: AllowEffects, event: import('../../payment-webhook-core.js').PaymentEvent, uuid: string, status?: string) => Promise<void>, writeRefundReconciliation: (allowEffects: AllowEffects, eventId: string, record: Record<string, unknown>) => Promise<void>, runPurchaseTransaction: (allowEffects: AllowEffects, update: (transaction: any) => Promise<{status: number, body: string | Record<string, unknown>}>) => Promise<{status: number, body: string | Record<string, unknown>}>, sendResponse: (allowEffects: AllowEffects, response: unknown, result: import('../../payment-webhook-core.js').PaymentWebhookResponse) => unknown, logError: (allowEffects: AllowEffects, error: unknown) => void }} deps Dependencies for the wrapper.
+ * @param {{ db: any, env?: ProcessEnvLike, constructEvent?: (payload: string|Buffer, signature: string, secret: string) => unknown, creditEventEffects: Parameters<typeof import('../get-api-key-credit-v2/get-api-key-credit-v2-core.js').createApplyCreditEvent>[1], markProcessedEvent: (allowEffects: AllowEffects, event: import('../../payment-webhook-core.js').PaymentEvent, uuid: string, status?: string) => Promise<void>, writeRefundReconciliation: (allowEffects: AllowEffects, eventId: string, record: Record<string, unknown>) => Promise<void>, runBillingTransaction: (allowEffects: AllowEffects, update: (transaction: any) => Promise<{status: number, body: string | Record<string, unknown>}>) => Promise<{status: number, body: string | Record<string, unknown>}>, sendResponse: (allowEffects: AllowEffects, response: unknown, result: import('../../payment-webhook-core.js').PaymentWebhookResponse) => unknown, logError: (allowEffects: AllowEffects, error: unknown) => void }} deps Dependencies for the wrapper.
  * @returns {(allowEffects: AllowEffects, req: unknown, res: unknown) => Promise<unknown>} Request handler.
  */
 export function createPaymentWebhookIndexHandler(deps) {
@@ -23,8 +23,8 @@ export function createPaymentWebhookIndexHandler(deps) {
   if (typeof deps.writeRefundReconciliation !== 'function') {
     throw new TypeError('writeRefundReconciliation must be provided');
   }
-  if (typeof deps.runPurchaseTransaction !== 'function') {
-    throw new TypeError('runPurchaseTransaction must be provided');
+  if (typeof deps.runBillingTransaction !== 'function') {
+    throw new TypeError('runBillingTransaction must be provided');
   }
   const db = deps.db;
   const env = deps.env === undefined ? process.env : deps.env;
@@ -35,7 +35,7 @@ export function createPaymentWebhookIndexHandler(deps) {
   const logError = deps.logError;
   const billing = createBillingRuntime(db, {
     writeRefundReconciliation: deps.writeRefundReconciliation,
-    runPurchaseTransaction: deps.runPurchaseTransaction,
+    runBillingTransaction: deps.runBillingTransaction,
   });
   const handleRequest = createPaymentWebhookHandler({
     fetchCredit: createFetchCredit(db),

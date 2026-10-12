@@ -15,7 +15,7 @@ describe('payment-webhook entry point', () => {
       'writeRefundReconciliation: createRefundReconciliationWriter(db)'
     );
     expect(source).toContain(
-      'runPurchaseTransaction: createPurchaseTransactionRunner(db)'
+      'runBillingTransaction: createBillingTransactionRunner(db)'
     );
     expect(source).toContain('const handle = createEffectHttpBoundary');
     expect(source).toContain('export { handle }');

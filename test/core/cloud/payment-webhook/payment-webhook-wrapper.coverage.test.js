@@ -164,10 +164,10 @@ describe('payment webhook cloud wrapper validation', () => {
         /** @type {any} */ ({
           db: {},
           writeRefundReconciliation: jest.fn(),
-          runPurchaseTransaction: undefined,
+          runBillingTransaction: undefined,
         })
       )
-    ).toThrow('runPurchaseTransaction must be provided');
+    ).toThrow('runBillingTransaction must be provided');
   });
 
   it('requires Stripe secret, raw body, header, and injected verification', () => {
@@ -272,7 +272,7 @@ async function runScenario135Part0(context) {
   context.handle = createPaymentWebhookIndexHandler({
     db: context.db,
     writeRefundReconciliation: jest.fn(async () => {}),
-    runPurchaseTransaction: jest.fn(async (_permission, update) => update({})),
+    runBillingTransaction: jest.fn(async (_permission, update) => update({})),
     creditEventEffects: {},
     env: { STRIPE_WEBHOOK_SECRET: 'secret' },
     constructEvent: payload => JSON.parse(payload.toString()),
@@ -285,7 +285,7 @@ async function runScenario135Part0(context) {
   createPaymentWebhookIndexHandler({
     db: context.db,
     writeRefundReconciliation: jest.fn(async () => {}),
-    runPurchaseTransaction: jest.fn(async (_permission, update) => update({})),
+    runBillingTransaction: jest.fn(async (_permission, update) => update({})),
     creditEventEffects: {},
     markProcessedEvent: jest.fn(),
     sendResponse: sendPaymentWebhookResponse,

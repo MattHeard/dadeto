@@ -30,7 +30,7 @@ function setup() {
     billingEnabled: true,
     writeRefundReconciliation: async (_permission, eventId, record) =>
       db.collection('billing-reconciliation').doc(eventId).set(record),
-    runPurchaseTransaction: (_permission, update) => db.runTransaction(update),
+    runBillingTransaction: (_permission, update) => db.runTransaction(update),
   });
   return { db, billing };
 }
@@ -39,8 +39,7 @@ describe('createBillingRuntime', () => {
   it('fails closed for new operation charges and reservations by default', async () => {
     const db = createFakeFirestore();
     const billing = createBillingRuntime(db, {
-      runPurchaseTransaction: (_permission, update) =>
-        db.runTransaction(update),
+      runBillingTransaction: (_permission, update) => db.runTransaction(update),
     });
     const input = {
       uuid: 'key-disabled',
@@ -50,15 +49,21 @@ describe('createBillingRuntime', () => {
       pricingSnapshot: snapshot,
     };
 
-    await expect(billing.chargeOperation(input)).resolves.toEqual({
+    await expect(billing.chargeOperation(allowEffects, input)).resolves.toEqual(
+      {
+        status: 503,
+        body: { error: 'billing_disabled' },
+      }
+    );
+    await expect(
+      billing.reserveOperation(allowEffects, input)
+    ).resolves.toEqual({
       status: 503,
       body: { error: 'billing_disabled' },
     });
-    await expect(billing.reserveOperation(input)).resolves.toEqual({
-      status: 503,
-      body: { error: 'billing_disabled' },
-    });
-    await expect(billing.applyOperationCharge(input)).resolves.toEqual({
+    await expect(
+      billing.applyOperationCharge(allowEffects, input)
+    ).resolves.toEqual({
       status: 503,
       body: { error: 'billing_disabled' },
     });
@@ -382,7 +387,7 @@ describe('billing runtime expiry paths', () => {
       eventId: 'paid-reserve-insufficient',
     });
     await expect(
-      billing.reserveOperation({
+      billing.reserveOperation(allowEffects, {
         uuid: 'key-reserve-insufficient',
         operationType: 'function.invoke',
         operationAttemptId: 'attempt-insufficient',
@@ -467,7 +472,7 @@ describe('billing runtime balance paths', () => {
   it('reports unavailable pricing and insufficient operation credit', async () => {
     const { db, billing } = setup();
     await expect(
-      billing.chargeOperation({
+      billing.chargeOperation(allowEffects, {
         uuid: 'key-1',
         operationType: 'function.invoke',
         operationAttemptId: 'attempt-e-1',
@@ -480,7 +485,7 @@ describe('billing runtime balance paths', () => {
       .doc(snapshot.snapshotId)
       .set(snapshot);
     await expect(
-      billing.chargeOperation({
+      billing.chargeOperation(allowEffects, {
         uuid: 'key-1',
         operationType: 'function.invoke',
         operationAttemptId: 'attempt-e-2',
@@ -505,7 +510,7 @@ describe('billing runtime balance paths', () => {
       purchaseId: 'reserve-purchase',
       eventId: 'paid-reserve',
     });
-    const reserved = await billing.reserveOperation({
+    const reserved = await billing.reserveOperation(allowEffects, {
       uuid: 'key-reserve',
       operationType: 'function.invoke',
       operationAttemptId: 'attempt-reserve-1',
@@ -517,7 +522,7 @@ describe('billing runtime balance paths', () => {
       db.doc('api-key-credit/key-reserve').get()
     ).resolves.toMatchObject({ data: expect.any(Function) });
     await expect(
-      billing.resolveOperation({
+      billing.resolveOperation(allowEffects, {
         uuid: 'key-reserve',
         operationType: 'function.invoke',
         operationAttemptId: 'attempt-reserve-1',
@@ -526,7 +531,7 @@ describe('billing runtime balance paths', () => {
       })
     ).resolves.toMatchObject({ body: { status: 'settled' } });
     await expect(
-      billing.resolveOperation({
+      billing.resolveOperation(allowEffects, {
         uuid: 'key-reserve',
         operationType: 'function.invoke',
         operationAttemptId: 'attempt-reserve-1',
@@ -556,7 +561,7 @@ describe('billing runtime reservation paths', () => {
     });
 
     await expect(
-      billing.resolveOperation({
+      billing.resolveOperation(allowEffects, {
         uuid: 'key-reserve-paths',
         operationType: 'function.invoke',
         operationAttemptId: 'missing-attempt',
@@ -568,7 +573,7 @@ describe('billing runtime reservation paths', () => {
       body: { error: 'reservation_not_found' },
     });
     await expect(
-      billing.reserveOperation({
+      billing.reserveOperation(allowEffects, {
         uuid: 'key-reserve-paths',
         operationType: 'function.invoke',
         operationAttemptId: 'attempt-paths',
@@ -577,7 +582,7 @@ describe('billing runtime reservation paths', () => {
       })
     ).resolves.toMatchObject({ body: { status: 'reserved' } });
     await expect(
-      billing.reserveOperation({
+      billing.reserveOperation(allowEffects, {
         uuid: 'key-reserve-paths',
         operationType: 'function.invoke',
         operationAttemptId: 'attempt-paths',
@@ -586,7 +591,7 @@ describe('billing runtime reservation paths', () => {
       })
     ).resolves.toMatchObject({ body: { duplicate: true } });
     await expect(
-      billing.resolveOperation({
+      billing.resolveOperation(allowEffects, {
         uuid: 'key-reserve-paths',
         operationType: 'other.operation',
         operationAttemptId: 'attempt-paths',
@@ -598,7 +603,7 @@ describe('billing runtime reservation paths', () => {
       body: { error: 'operation_identity_conflict' },
     });
     await expect(
-      billing.resolveOperation({
+      billing.resolveOperation(allowEffects, {
         uuid: 'key-reserve-paths',
         operationType: 'function.invoke',
         operationAttemptId: 'attempt-paths',
@@ -620,7 +625,7 @@ describe('billing runtime reservation paths', () => {
       .doc('api-key-credit/key-reserve-paths/lots/reserve-path-purchase')
       .set({});
     await expect(
-      billing.resolveOperation({
+      billing.resolveOperation(allowEffects, {
         uuid: 'key-reserve-paths',
         operationType: 'function.invoke',
         operationAttemptId: 'attempt-paths',
@@ -629,7 +634,7 @@ describe('billing runtime reservation paths', () => {
       })
     ).resolves.toMatchObject({ body: { status: 'released', credit: 3 } });
     await expect(
-      billing.resolveOperation({
+      billing.resolveOperation(allowEffects, {
         uuid: 'key-reserve-paths',
         operationType: 'function.invoke',
         operationAttemptId: 'attempt-paths',
@@ -644,7 +649,7 @@ describe('billing runtime reservation paths', () => {
       status: 'needs_recovery',
     });
     await expect(
-      billing.resolveOperation({
+      billing.resolveOperation(allowEffects, {
         uuid: 'key-reserve-paths',
         operationType: 'function.invoke',
         operationAttemptId: 'no-alloc',
@@ -653,7 +658,7 @@ describe('billing runtime reservation paths', () => {
       })
     ).resolves.toMatchObject({ body: { status: 'released' } });
     await expect(
-      billing.reserveOperation({
+      billing.reserveOperation(allowEffects, {
         uuid: 'key-reserve-paths',
         operationType: '',
         operationAttemptId: 'invalid-attempt',
@@ -662,7 +667,7 @@ describe('billing runtime reservation paths', () => {
       })
     ).rejects.toThrow('operationType and operationAttemptId are required');
     await expect(
-      billing.reserveOperation({
+      billing.reserveOperation(allowEffects, {
         uuid: 'key-reserve-paths',
         operationType: 'function.invoke',
         operationAttemptId: '',
@@ -722,10 +727,13 @@ describe('billing runtime reconciliation paths', () => {
         });
       },
     };
-    const billing = createBillingRuntime(db, { billingEnabled: true });
+    const billing = createBillingRuntime(db, {
+      billingEnabled: true,
+      runBillingTransaction: (_permission, update) => db.runTransaction(update),
+    });
 
     await expect(
-      billing.applyOperationCharge({
+      billing.applyOperationCharge(allowEffects, {
         uuid: 'key-1',
         operationType: 'function.invoke',
         operationAttemptId: 'attempt-event-1',
@@ -828,7 +836,7 @@ describe('billing runtime reconciliation paths', () => {
     await db.doc('api-key-credit/key-mismatch').set({ credit: 0 });
 
     await expect(
-      billing.applyOperationCharge({
+      billing.applyOperationCharge(allowEffects, {
         uuid: 'key-mismatch',
         operationType: 'function.invoke',
         operationAttemptId: 'attempt-charge-mismatch',
@@ -878,10 +886,13 @@ describe('billing runtime reconciliation paths', () => {
         });
       },
     };
-    const billing = createBillingRuntime(db, { billingEnabled: true });
+    const billing = createBillingRuntime(db, {
+      billingEnabled: true,
+      runBillingTransaction: (_permission, update) => db.runTransaction(update),
+    });
 
     await expect(
-      billing.applyOperationCharge({
+      billing.applyOperationCharge(allowEffects, {
         uuid: 'key-1',
         operationType: 'function.invoke',
         operationAttemptId: 'attempt-event-disappeared',
@@ -937,8 +948,7 @@ describe('billing runtime refund paths', () => {
       },
     };
     const billing = createBillingRuntime(db, {
-      runPurchaseTransaction: (_permission, update) =>
-        db.runTransaction(update),
+      runBillingTransaction: (_permission, update) => db.runTransaction(update),
     });
 
     await expect(
@@ -1012,7 +1022,7 @@ describe('billing runtime charging paths', () => {
     });
 
     await expect(
-      billing.chargeOperation({
+      billing.chargeOperation(allowEffects, {
         uuid: 'key-1',
         operationType: 'function.invoke',
         operationAttemptId: 'attempt-operation-1',
@@ -1023,7 +1033,7 @@ describe('billing runtime charging paths', () => {
       body: { applied: true, amount: 3, credit: 7 },
     });
     await expect(
-      billing.chargeOperation({
+      billing.chargeOperation(allowEffects, {
         uuid: 'key-1',
         operationType: 'function.invoke',
         operationAttemptId: 'attempt-operation-1',
@@ -1036,7 +1046,7 @@ describe('billing runtime charging paths', () => {
     const { db, billing } = setup();
     await db.doc('api-key-credit/key-legacy').set({ credit: 5 });
     await expect(
-      billing.applyOperationCharge({
+      billing.applyOperationCharge(allowEffects, {
         uuid: 'key-legacy',
         operationType: 'function.invoke',
         operationAttemptId: 'attempt-operation-legacy',
@@ -1066,7 +1076,7 @@ describe('billing runtime charging paths', () => {
       .doc('api-key-credit/key-1/lots/purchase-1')
       .get();
     expect(lotBeforeCharge.data()).toMatchObject({ remainingCredits: 10 });
-    await billing.applyOperationCharge({
+    await billing.applyOperationCharge(allowEffects, {
       uuid: 'key-1',
       operationType: 'function.invoke',
       operationAttemptId: 'attempt-operation-1',
@@ -1197,10 +1207,13 @@ describe('billing runtime charging paths', () => {
 
   it('forwards the request capability to the purchase transaction runner', async () => {
     const db = createFakeFirestore();
-    const runPurchaseTransaction = jest.fn((_permission, update) =>
+    const runBillingTransaction = jest.fn((_permission, update) =>
       db.runTransaction(update)
     );
-    const billing = createBillingRuntime(db, { runPurchaseTransaction });
+    const billing = createBillingRuntime(db, {
+      billingEnabled: true,
+      runBillingTransaction,
+    });
     await billing.createPurchase(allowEffects, {
       purchaseId: 'purchase-through-adapter',
       apiKeyUuid: 'key-through-adapter',
@@ -1215,7 +1228,7 @@ describe('billing runtime charging paths', () => {
         stripePaymentIntentId: 'pi-through-adapter',
       })
     ).resolves.toMatchObject({ status: 201 });
-    expect(runPurchaseTransaction).toHaveBeenCalledWith(
+    expect(runBillingTransaction).toHaveBeenCalledWith(
       allowEffects,
       expect.any(Function)
     );
@@ -1229,6 +1242,63 @@ describe('billing runtime charging paths', () => {
         purchaseId: 'purchase-without-runner',
         eventId: 'expiry-without-runner',
       })
-    ).rejects.toThrow('runPurchaseTransaction adapter must be provided');
+    ).rejects.toThrow('runBillingTransaction adapter must be provided');
+  });
+
+  it('forwards the request capability to operation resolution transactions', async () => {
+    const db = createFakeFirestore();
+    const runBillingTransaction = jest.fn((_permission, update) =>
+      db.runTransaction(update)
+    );
+    const billing = createBillingRuntime(db, { runBillingTransaction });
+
+    await expect(
+      billing.resolveOperation(allowEffects, {
+        uuid: 'key-1',
+        operationType: 'function.invoke',
+        operationAttemptId: 'missing-attempt',
+        outcome: 'success',
+      })
+    ).resolves.toEqual({
+      status: 404,
+      body: { error: 'reservation_not_found' },
+    });
+    expect(runBillingTransaction).toHaveBeenCalledWith(
+      allowEffects,
+      expect.any(Function)
+    );
+  });
+
+  it('forwards the request capability to operation charge and reservation transactions', async () => {
+    const db = createFakeFirestore();
+    const runBillingTransaction = jest.fn((_permission, update) =>
+      db.runTransaction(update)
+    );
+    const billing = createBillingRuntime(db, {
+      billingEnabled: true,
+      runBillingTransaction,
+    });
+    const input = {
+      uuid: 'key-1',
+      operationType: 'function.invoke',
+      operationAttemptId: 'attempt-through-adapter',
+      eventId: 'event-through-adapter',
+      pricingSnapshot: snapshot,
+    };
+
+    await billing.applyOperationCharge(allowEffects, input);
+    await billing.reserveOperation(allowEffects, input);
+
+    expect(runBillingTransaction).toHaveBeenCalledTimes(2);
+    expect(runBillingTransaction).toHaveBeenNthCalledWith(
+      1,
+      allowEffects,
+      expect.any(Function)
+    );
+    expect(runBillingTransaction).toHaveBeenNthCalledWith(
+      2,
+      allowEffects,
+      expect.any(Function)
+    );
   });
 });

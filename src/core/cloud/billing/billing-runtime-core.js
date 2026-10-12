@@ -26,13 +26,13 @@ import {
 /** @typedef {{ purchaseId: string, eventId: string, stripePaymentIntentId: string, refundedUsdMinor: number, pricingSnapshotId: string }} BillingRefundInput */
 /** @typedef {{ purchaseId: string, eventId: string }} BillingExpiryInput */
 /** @typedef {{ checkoutSessionId: string, url: string, expiresAt: Date }} BillingCheckoutSession */
-/** @typedef {Record<string, any> & { createPurchase: (allowEffects: AllowEffects, input: BillingPurchaseInput) => Promise<BillingRuntimeValue>, savePurchaseCheckout: (allowEffects: AllowEffects, purchaseId: string, session: BillingCheckoutSession) => Promise<void>, markPurchasePaid: (allowEffects: AllowEffects, input: BillingPaymentInput) => Promise<BillingResponse>, applyRefundEvent: (allowEffects: AllowEffects, input: BillingRefundInput) => Promise<BillingResponse>, recordRefundReconciliation: (allowEffects: AllowEffects, input: { eventId: string, purchaseId: string, stripePaymentIntentId: string, chargeId: string, refundedUsdMinor: number }) => Promise<void>, markPurchaseExpired: (allowEffects: AllowEffects, input: BillingExpiryInput) => Promise<BillingResponse> }} BillingRuntimeService */
+/** @typedef {Record<string, any> & { createPurchase: (allowEffects: AllowEffects, input: BillingPurchaseInput) => Promise<BillingRuntimeValue>, savePurchaseCheckout: (allowEffects: AllowEffects, purchaseId: string, session: BillingCheckoutSession) => Promise<void>, markPurchasePaid: (allowEffects: AllowEffects, input: BillingPaymentInput) => Promise<BillingResponse>, applyRefundEvent: (allowEffects: AllowEffects, input: BillingRefundInput) => Promise<BillingResponse>, recordRefundReconciliation: (allowEffects: AllowEffects, input: { eventId: string, purchaseId: string, stripePaymentIntentId: string, chargeId: string, refundedUsdMinor: number }) => Promise<void>, markPurchaseExpired: (allowEffects: AllowEffects, input: BillingExpiryInput) => Promise<BillingResponse>, applyOperationCharge: (allowEffects: AllowEffects, input: BillingOperationInput) => Promise<BillingResponse>, chargeOperation: (allowEffects: AllowEffects, input: Omit<BillingOperationInput, 'pricingSnapshot'>) => Promise<BillingResponse>, reserveOperation: (allowEffects: AllowEffects, input: BillingOperationInput) => Promise<BillingResponse>, resolveOperation: (allowEffects: AllowEffects, input: BillingResolutionInput) => Promise<BillingResponse> }} BillingRuntimeService */
 
 /**
  * @typedef {{ status: number, body: string | Record<string, unknown> }} BillingResponse
  */
 
-/** @typedef {{ allowEffects: AllowEffects, run: (update: (transaction: BillingRuntimeValue) => Promise<BillingResponse>) => Promise<BillingResponse> }} PurchaseTransactionScope */
+/** @typedef {{ db: BillingRuntimeValue, allowEffects: AllowEffects, run: (update: (transaction: BillingRuntimeValue) => Promise<BillingResponse>) => Promise<BillingResponse> }} BillingTransactionScope */
 
 /**
  * @param {BillingRuntimeValue} db Firestore database.
@@ -172,21 +172,27 @@ async function listBillingLots(db, uuid) {
 
 /**
  * Run a billing operation inside a transaction.
- * @param {BillingRuntimeValue} db Firestore database.
  * @param {() => Date} now Clock.
  * @param {BillingOperationInput} input Operation input.
  * @param {(transaction: BillingRuntimeValue, input: BillingOperationInput, amount: number, candidates: BillingLotCandidate[]) => Promise<BillingResponse>} handler Transaction handler.
+ * @param {BillingTransactionScope} transactionScope Request-scoped transaction capability.
  * @returns {Promise<BillingResponse>} Transaction response.
  */
-async function runBillingOperationTransaction(db, now, input, handler) {
+async function runBillingOperationTransaction(
+  now,
+  input,
+  handler,
+  transactionScope
+) {
   const identity = readOperationIdentity(input);
   const amount = calculateOperationCredits(
     identity.operationType,
     input.pricingSnapshot
   );
-  const candidates = await listBillingLots(db, input.uuid);
-  return db.runTransaction((/** @type {BillingRuntimeValue} */ transaction) =>
-    handler(transaction, { ...input, ...identity }, amount, candidates)
+  const candidates = await listBillingLots(transactionScope.db, input.uuid);
+  return transactionScope.run(
+    (/** @type {BillingRuntimeValue} */ transaction) =>
+      handler(transaction, { ...input, ...identity }, amount, candidates)
   );
 }
 
@@ -264,7 +270,7 @@ async function findBillingPurchaseByCheckout(db, checkoutSessionId) {
 /**
  * Create Firestore-backed accessors for the billing domain.
  * @param {BillingRuntimeValue} db Firestore database.
- * @param {{ randomUUID?: () => string, now?: () => Date, billingEnabled?: boolean, writeRefundReconciliation?: (allowEffects: AllowEffects, eventId: string, record: BillingDocumentData) => Promise<void>, runPurchaseTransaction?: (allowEffects: AllowEffects, update: (transaction: BillingRuntimeValue) => Promise<BillingResponse>) => Promise<BillingResponse> }} [runtime] Runtime helpers and permission-first persistence adapters.
+ * @param {{ randomUUID?: () => string, now?: () => Date, billingEnabled?: boolean, writeRefundReconciliation?: (allowEffects: AllowEffects, eventId: string, record: BillingDocumentData) => Promise<void>, runBillingTransaction?: (allowEffects: AllowEffects, update: (transaction: BillingRuntimeValue) => Promise<BillingResponse>) => Promise<BillingResponse> }} [runtime] Runtime helpers and permission-first persistence adapters.
  * @returns {BillingRuntimeService} Billing service.
  */
 export function createBillingRuntime(db, runtime = {}) {
@@ -280,12 +286,23 @@ export function createBillingRuntime(db, runtime = {}) {
    * @param {(transaction: BillingRuntimeValue) => Promise<BillingResponse>} update Transaction update callback.
    * @returns {Promise<BillingResponse>} Transaction result.
    */
-  const runPurchaseTransaction = (allowEffects, update) => {
-    if (typeof runtime.runPurchaseTransaction !== 'function') {
-      throw new TypeError('runPurchaseTransaction adapter must be provided');
+  const runBillingTransaction = (allowEffects, update) => {
+    if (typeof runtime.runBillingTransaction !== 'function') {
+      throw new TypeError('runBillingTransaction adapter must be provided');
     }
-    return runtime.runPurchaseTransaction(allowEffects, update);
+    return runtime.runBillingTransaction(allowEffects, update);
   };
+  /**
+   * @param {AllowEffects} allowEffects Request permission.
+   * @returns {BillingTransactionScope} Request-scoped transaction capability.
+   */
+  const billingTransactionScope = allowEffects => ({
+    db,
+    allowEffects,
+    run: (
+      /** @type {(transaction: BillingRuntimeValue) => Promise<BillingResponse>} */ update
+    ) => runBillingTransaction(allowEffects, update),
+  });
 
   const getPricingSnapshot = (/** @type {string} */ snapshotId) =>
     readPricingSnapshot(db, snapshotId);
@@ -365,7 +382,7 @@ export function createBillingRuntime(db, runtime = {}) {
   // schema is verified by focused behavioral tests.
   async function markPurchasePaid(allowEffects, input) {
     const ref = purchaseRef(db, input.purchaseId);
-    return runPurchaseTransaction(
+    return runBillingTransaction(
       allowEffects,
       async (/** @type {BillingRuntimeValue} */ transaction) => {
         const purchaseSnap = await transaction.get(ref);
@@ -476,51 +493,67 @@ export function createBillingRuntime(db, runtime = {}) {
   // Stryker restore all
 
   /**
+   * @param {AllowEffects} allowEffects Request permission.
    * @param {BillingOperationInput} input Charge input.
    * @returns {Promise<BillingResponse>} Charge response.
    */
-  async function applyOperationCharge(input) {
+  async function applyOperationCharge(allowEffects, input) {
     if (!billingEnabled) return billingDisabledResponse();
-    return runBillingOperationTransaction(db, now, input, chargeTransaction);
+    return runBillingOperationTransaction(
+      now,
+      input,
+      chargeTransaction,
+      billingTransactionScope(allowEffects)
+    );
   }
 
   /**
    * Charge an operation using the current server-side pricing snapshot.
+   * @param {AllowEffects} allowEffects Request permission.
    * @param {Omit<BillingOperationInput, 'pricingSnapshot'>} input Charge inputs.
    * @returns {Promise<BillingResponse>} Charge response.
    */
-  async function chargeOperation(input) {
+  async function chargeOperation(allowEffects, input) {
     if (!billingEnabled) return billingDisabledResponse();
     const pricingSnapshot = await getCurrentPricingSnapshot();
     if (!pricingSnapshot)
       return { status: 503, body: { error: 'pricing_unavailable' } };
-    return applyOperationCharge({ ...input, pricingSnapshot });
+    return applyOperationCharge(allowEffects, { ...input, pricingSnapshot });
   }
 
   /**
    * Reserve credits for an operation.
+   * @param {AllowEffects} allowEffects Request permission.
    * @param {BillingOperationInput} input Operation input.
    * @returns {Promise<BillingResponse>} Reservation response.
    */
-  async function reserveOperation(input) {
+  async function reserveOperation(allowEffects, input) {
     if (!billingEnabled) return billingDisabledResponse();
-    return runBillingOperationTransaction(db, now, input, reserveTransaction);
+    return runBillingOperationTransaction(
+      now,
+      input,
+      reserveTransaction,
+      billingTransactionScope(allowEffects)
+    );
   }
 
   /**
    * Resolve a previously reserved operation.
+   * @param {AllowEffects} allowEffects Request permission.
    * @param {BillingResolutionInput} input Operation input.
    * @returns {Promise<BillingResponse>} Resolution response.
    */
-  async function resolveOperation(input) {
+  async function resolveOperation(allowEffects, input) {
     const identity = readOperationIdentity(input);
     const reference = reservationRef(
       db,
       input.uuid,
       identity.operationAttemptId
     );
-    return db.runTransaction((/** @type {BillingRuntimeValue} */ transaction) =>
-      resolveTransaction(transaction, reference, identity, input)
+    return runBillingTransaction(
+      allowEffects,
+      (/** @type {BillingRuntimeValue} */ transaction) =>
+        resolveTransaction(transaction, reference, identity, input)
     );
   }
 
@@ -565,8 +598,9 @@ export function createBillingRuntime(db, runtime = {}) {
    */
   async function applyRefundEvent(allowEffects, input) {
     return applyRefund(db, now, input, {
+      db,
       allowEffects,
-      run: update => runPurchaseTransaction(allowEffects, update),
+      run: update => runBillingTransaction(allowEffects, update),
     });
   }
 
@@ -600,7 +634,7 @@ export function createBillingRuntime(db, runtime = {}) {
    * @returns {Promise<BillingResponse>} Expiry response.
    */
   async function markPurchaseExpired(allowEffects, input) {
-    return runPurchaseTransaction(
+    return runBillingTransaction(
       allowEffects,
       async (/** @type {BillingRuntimeValue} */ transaction) => {
         const ref = purchaseRef(db, input.purchaseId);
@@ -1168,7 +1202,7 @@ function createLegacyLot(credits, createdAt) {
  * @param {BillingRuntimeValue} db Firestore database.
  * @param {() => Date} now Clock callback.
  * @param {BillingRefundInput} input Refund input.
- * @param {PurchaseTransactionScope} transactionScope Request-scoped transaction capability.
+ * @param {BillingTransactionScope} transactionScope Request-scoped transaction capability.
  * @returns {Promise<BillingResponse>} Refund response.
  */
 // Stryker disable all -- refund persistence is a fixed protocol schema.

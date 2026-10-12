@@ -1,8 +1,8 @@
 import { describe, expect, it, jest } from '@jest/globals';
 import { createAllowEffects } from '../../../src/cloud/allow-effects.js';
-import { createPurchaseTransactionRunner } from '../../../src/cloud/payment-webhook/transaction-effect-adapter.js';
+import { createBillingTransactionRunner } from '../../../src/cloud/billing/transaction-effect-adapter.js';
 
-describe('payment-webhook purchase transaction adapter', () => {
+describe('billing transaction adapter', () => {
   it('runs the transaction callback after receiving the request capability', async () => {
     const allowEffects = createAllowEffects();
     const transaction = { get: jest.fn(), set: jest.fn() };
@@ -14,7 +14,7 @@ describe('payment-webhook purchase transaction adapter', () => {
     });
 
     await expect(
-      createPurchaseTransactionRunner(db)(allowEffects, update)
+      createBillingTransactionRunner(db)(allowEffects, update)
     ).resolves.toEqual({ status: 201, body: { settled: true } });
 
     expect(runTransaction).toHaveBeenCalledTimes(1);

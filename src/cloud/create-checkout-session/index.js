@@ -3,6 +3,7 @@ import { getAuth } from 'firebase-admin/auth';
 import { Firestore } from '../get-api-key-credit-v2/get-api-key-credit-v2-gcf.js';
 import { createDb } from '../../core/cloud/get-api-key-credit-v2/create-db.js';
 import { createBillingRuntime } from '../../core/cloud/billing/billing-runtime-core.js';
+import { createBillingTransactionRunner } from '../billing/transaction-effect-adapter.js';
 import { createCheckoutSessionDependencies } from '../../core/cloud/create-checkout-session/runtime-core.js';
 import { createCheckoutSessionExpressHandle } from '../../core/cloud/create-checkout-session/create-checkout-session-core.js';
 import {
@@ -15,10 +16,10 @@ import {
 } from './effect-adapters.js';
 import { warnIfStripeUnavailable } from './startup-effect-adapters.js';
 import { createCheckoutStripeAdapters } from './stripe-effects.js';
-
 const db = createDb(Firestore, process.env);
 const billing = createBillingRuntime(db, {
   billingEnabled: process.env.BILLING_ENABLED === 'true',
+  runBillingTransaction: createBillingTransactionRunner(db),
 });
 const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
 const stripe = stripeSecretKey ? new Stripe(stripeSecretKey) : null;
@@ -45,5 +46,4 @@ const handle = createEffectHttpBoundary(
     );
   }
 );
-
 export { handle };

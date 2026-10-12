@@ -2,9 +2,12 @@ import { getAuth } from 'firebase-admin/auth';
 import { Firestore } from '../get-api-key-credit-v2/get-api-key-credit-v2-gcf.js';
 import { createBillingRuntime } from '../../core/cloud/billing/billing-runtime-core.js';
 import { createPurchaseStatusHandler } from '../../core/cloud/billing/purchase-status-core.js';
+import { createBillingTransactionRunner } from './transaction-effect-adapter.js';
 
 const db = new Firestore({ databaseId: process.env.DATABASE_ID });
-const billing = createBillingRuntime(db);
+const billing = createBillingRuntime(db, {
+  runBillingTransaction: createBillingTransactionRunner(db),
+});
 const handleStatus = createPurchaseStatusHandler({
   verifyIdToken: token => getAuth().verifyIdToken(token),
   getPurchaseByCheckoutSession: billing.getPurchaseByCheckoutSession,

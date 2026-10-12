@@ -4,9 +4,12 @@ import { createBillingRuntime } from '../../core/cloud/billing/billing-runtime-c
 import { createPurchaseStatusHandler } from '../../core/cloud/billing/purchase-status-core.js';
 import { sendPurchaseStatusResponse } from './effect-adapters.js';
 import { createPurchaseStatusHttpHandler } from './http-handler.js';
+import { createBillingTransactionRunner } from '../billing/transaction-effect-adapter.js';
 
 const db = new Firestore({ databaseId: process.env.DATABASE_ID });
-const billing = createBillingRuntime(db);
+const billing = createBillingRuntime(db, {
+  runBillingTransaction: createBillingTransactionRunner(db),
+});
 const handleStatus = createPurchaseStatusHandler({
   verifyIdToken: token => getAuth().verifyIdToken(token),
   getPurchaseByCheckoutSession: billing.getPurchaseByCheckoutSession,
