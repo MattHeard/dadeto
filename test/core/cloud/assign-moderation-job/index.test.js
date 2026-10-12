@@ -99,6 +99,7 @@ describe('createAssignModerationJobEntrypoint', () => {
       now: jest.fn(() => 123),
       random: jest.fn(() => 0.5),
       bindEffectBoundary: handler => handler(allowEffects),
+      logDebug: jest.fn(),
       useMiddleware,
       registerPostRoute,
       createSetModeratorAssignment,

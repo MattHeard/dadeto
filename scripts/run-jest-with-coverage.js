@@ -13,12 +13,20 @@ import {
 
 const ROOT = process.cwd();
 const JEST_BIN = path.resolve(ROOT, 'node_modules/.bin/jest');
-const shardSize = Number.parseInt(process.env.DADETO_COVERAGE_SHARD_SIZE ?? '40', 10);
-const coverageRoot = process.env.DADETO_COVERAGE_DIR ?? path.join(os.tmpdir(), `dadeto-coverage-${process.pid}`);
+const shardSize = Number.parseInt(
+  process.env.DADETO_COVERAGE_SHARD_SIZE ?? '40',
+  10
+);
+const coverageRoot =
+  process.env.DADETO_COVERAGE_DIR ??
+  path.join(os.tmpdir(), `dadeto-coverage-${process.pid}`);
 const shardRoot = path.join(coverageRoot, 'shards');
 const storeRoot = path.join(coverageRoot, 'files');
 const finalDir = path.resolve(ROOT, 'reports/coverage');
-const SAFE_WORKER_HEAP_MB = 512;
+const workerHeapMb = Number.parseInt(
+  process.env.DADETO_COVERAGE_WORKER_HEAP_MB ?? '1024',
+  10
+);
 
 const testFiles = requestedTestFiles() ?? listTestFiles();
 const sourceFiles = listSourceFiles();
@@ -35,7 +43,9 @@ try {
     const shardDir = path.join(shardRoot, String(index));
     fs.mkdirSync(shardDir, { recursive: true });
     await runShard(shard, shardDir);
-    const fragment = JSON.parse(fs.readFileSync(path.join(shardDir, 'coverage-final.json'), 'utf8'));
+    const fragment = JSON.parse(
+      fs.readFileSync(path.join(shardDir, 'coverage-final.json'), 'utf8')
+    );
     mergeCoverageFragment(fragment, storeRoot, sourceKeys);
   }
 
@@ -61,11 +71,15 @@ async function acquireSlot() {
 }
 
 function listTestFiles() {
-  const output = execFileSync(process.execPath, [JEST_BIN, '--listTests', '--json', '--watchman=false'], {
-    cwd: ROOT,
-    encoding: 'utf8',
-    env: { ...process.env, DADETO_COVERAGE_SHARD: '1' },
-  });
+  const output = execFileSync(
+    process.execPath,
+    [JEST_BIN, '--listTests', '--json', '--watchman=false'],
+    {
+      cwd: ROOT,
+      encoding: 'utf8',
+      env: { ...process.env, DADETO_COVERAGE_SHARD: '1' },
+    }
+  );
   return JSON.parse(output).sort();
 }
 
@@ -107,11 +121,19 @@ function isIgnoredCoverageFile(file) {
 }
 
 function runShard(testFilesForShard, shardDir) {
-  const args = [JEST_BIN, '--coverage', '--watchman=false', '--maxWorkers=1',
+  const args = [
+    JEST_BIN,
+    '--coverage',
+    '--watchman=false',
+    '--maxWorkers=1',
     '--forceExit',
     '--coverageReporters=json',
     '--coverageThreshold={"global":{"branches":0,"functions":0,"lines":0,"statements":0}}',
-    '--coverageDirectory', shardDir, '--runTestsByPath', ...testFilesForShard];
+    '--coverageDirectory',
+    shardDir,
+    '--runTestsByPath',
+    ...testFilesForShard,
+  ];
   const workerNodeOptions = `${process.env.NODE_OPTIONS ?? ''}`
     .replace(/--max-old-space-size=\d+/g, '')
     .trim();
@@ -121,20 +143,29 @@ function runShard(testFilesForShard, shardDir) {
     env: {
       ...process.env,
       DADETO_COVERAGE_SHARD: '1',
-      NODE_OPTIONS: `${workerNodeOptions} --max-old-space-size=${SAFE_WORKER_HEAP_MB} --experimental-vm-modules`.trim(),
+      NODE_OPTIONS:
+        `${workerNodeOptions} --max-old-space-size=${workerHeapMb} --experimental-vm-modules`.trim(),
     },
   });
   return new Promise((resolve, reject) => {
     child.on('error', reject);
-    child.on('exit', code => code === 0 ? resolve() : reject(new Error(`Coverage shard failed with code ${code}`)));
+    child.on('exit', code =>
+      code === 0
+        ? resolve()
+        : reject(new Error(`Coverage shard failed with code ${code}`))
+    );
   });
 }
 
 function enforceCoverageThreshold() {
-  const summary = JSON.parse(fs.readFileSync(path.join(finalDir, 'coverage-summary.json'), 'utf8')).total;
+  const summary = JSON.parse(
+    fs.readFileSync(path.join(finalDir, 'coverage-summary.json'), 'utf8')
+  ).total;
   for (const key of ['branches', 'functions', 'lines', 'statements']) {
     if (summary[key].pct !== 100) {
-      throw new Error(`Coverage threshold failed for ${key}: ${summary[key].pct}%`);
+      throw new Error(
+        `Coverage threshold failed for ${key}: ${summary[key].pct}%`
+      );
     }
   }
 }

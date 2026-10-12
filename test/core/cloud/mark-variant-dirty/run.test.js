@@ -35,6 +35,8 @@ describe('runMarkVariantDirty', () => {
       cors,
       functions,
       getEnvironmentVariables,
+      bindStartupEffectBoundary: handler => handler(Object.freeze({})),
+      logDebug: jest.fn(),
       ADMIN_UID: 'admin-uid',
     });
 
@@ -108,6 +110,8 @@ describe('runMarkVariantDirty', () => {
       cors,
       functions,
       getEnvironmentVariables,
+      bindStartupEffectBoundary: handler => handler(Object.freeze({})),
+      logDebug: jest.fn(),
       ADMIN_UID: 'admin-uid',
     });
 

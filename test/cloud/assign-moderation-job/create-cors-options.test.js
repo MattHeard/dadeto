@@ -3,19 +3,28 @@ import { createCorsOptions } from '../../../src/core/cloud/assign-moderation-job
 
 describe('createCorsOptions', () => {
   test('builds the cors options from environment helpers', () => {
+    const allowEffects =
+      /** @type {import('../../../types/allow-effects').AllowEffects} */ ({});
     const environmentVariables = { DENDRITE_ENVIRONMENT: 'test' };
     const getAllowedOrigins = jest.fn(() => ['https://allowed.example']);
+    const logDebug = jest.fn();
     const getEnvironmentVariables = jest
       .fn()
       .mockReturnValue(environmentVariables);
 
     const corsOptions = createCorsOptions(
+      allowEffects,
       getAllowedOrigins,
-      getEnvironmentVariables
+      getEnvironmentVariables,
+      logDebug
     );
 
     expect(getEnvironmentVariables).toHaveBeenCalledWith();
-    expect(getAllowedOrigins).toHaveBeenCalledWith(environmentVariables);
+    expect(getAllowedOrigins).toHaveBeenCalledWith(
+      allowEffects,
+      environmentVariables,
+      logDebug
+    );
     const allowCallback = jest.fn();
     corsOptions.origin('https://allowed.example', allowCallback);
     expect(allowCallback).toHaveBeenCalledWith(null, true);

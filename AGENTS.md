@@ -128,6 +128,7 @@ For full triage/autoloop details: `bd prime` and docs linked above.
 - Keep branch coverage expectations at 100%; create/fix beads for gaps.
 
 See:
+
 - `docs/quality/evaluator-matrix.md`
 - `docs/failure-modes/`
 
@@ -149,6 +150,7 @@ Rules:
 - If push fails, resolve and retry until success.
 
 Use canonical procedures in:
+
 - `docs/loop/manifesto.md`
 - `docs/loop/wiggum-playbook.md`
 - `docs/failure-modes/`
@@ -168,6 +170,8 @@ failure as a code or configuration regression.
 The unit coverage runner uses bounded serial shards by default. Set
 `DADETO_COVERAGE_SHARD_SIZE` to tune the maximum number of test files per
 coverage process; lower values reduce peak memory and increase runtime.
+Set `DADETO_COVERAGE_WORKER_HEAP_MB` to override the per-process V8 heap cap
+(default 1024 MB) when running on a host with different memory limits.
 
 Prefer repo docs for command intent and troubleshooting over duplicating long instructions here.
 
@@ -219,6 +223,7 @@ If any instruction here conflicts with system/developer/user directives, follow 
 - Never print, paste, commit, or store the PEM or resulting short-lived installation token.
 
 <!-- BEGIN BEADS INTEGRATION v:1 profile:minimal hash:7510c1e2 -->
+
 ## Beads Issue Tracker
 
 This project uses **bd (beads)** for issue tracking. Run `bd prime` to see full workflow context and commands.
@@ -273,6 +278,7 @@ If initialization reports a permissions warning, run `chmod 700 .beads` in that 
 7. **Hand off** - Provide context for next session
 
 **CRITICAL RULES:**
+
 - Work is NOT complete until `git push` succeeds
 - NEVER stop before pushing - that leaves work stranded locally
 - NEVER say "ready to push when you are" - YOU must push

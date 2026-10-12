@@ -43,5 +43,6 @@ export function createEffectStartupBoundary(handler) {
 /** @param {import('../../types/allow-effects').AllowEffects} permission @param {...unknown} values */
 export function logDebugEffect(permission, ...values) {
   void permission;
-  globalThis.console?.debug?.(...values);
+  const runtimeConsole = Reflect.get(globalThis, 'console');
+  runtimeConsole?.debug?.(...values);
 }

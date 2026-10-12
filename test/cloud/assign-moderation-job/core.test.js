@@ -212,8 +212,11 @@ describe('createRunVariantQuery', () => {
 
 describe('createCorsOriginFactory', () => {
   test('returns a factory that builds the origin handler from environment variables', () => {
+    const allowEffects =
+      /** @type {import('../../../types/allow-effects').AllowEffects} */ ({});
     const environmentVariables = { DENDRITE_ENVIRONMENT: 'test' };
     const getAllowedOrigins = jest.fn(() => ['https://allowed.example']);
+    const logDebug = jest.fn();
     const getEnvironmentVariables = jest
       .fn()
       .mockReturnValue(environmentVariables);
@@ -225,12 +228,17 @@ describe('createCorsOriginFactory', () => {
     const factory = createCorsOriginFactory({
       getAllowedOrigins,
       createCorsOriginHandler: createCorsOriginHandlerFn,
+      logDebug,
     });
 
-    const handler = factory(getEnvironmentVariables);
+    const handler = factory(allowEffects, getEnvironmentVariables);
 
     expect(getEnvironmentVariables).toHaveBeenCalledWith();
-    expect(getAllowedOrigins).toHaveBeenCalledWith(environmentVariables);
+    expect(getAllowedOrigins).toHaveBeenCalledWith(
+      allowEffects,
+      environmentVariables,
+      logDebug
+    );
     expect(createCorsOriginHandlerFn).toHaveBeenCalledWith([
       'https://allowed.example',
     ]);
@@ -257,21 +265,27 @@ describe('assignModerationJobTestUtils', () => {
 
 describe('createCreateCorsOrigin', () => {
   test('wraps the cors origin factory with the provided dependencies', () => {
+    const allowEffects =
+      /** @type {import('../../../types/allow-effects').AllowEffects} */ ({});
     const getAllowedOrigins = jest.fn(() => ['https://allowed.example']);
+    const logDebug = jest.fn();
     const getEnvironmentVariables = jest
       .fn()
       .mockReturnValue({ DENDRITE_ENVIRONMENT: 'test' });
 
     const createCorsOrigin = createCreateCorsOrigin({
       getAllowedOrigins,
+      logDebug,
     });
 
-    const handler = createCorsOrigin(getEnvironmentVariables);
+    const handler = createCorsOrigin(allowEffects, getEnvironmentVariables);
 
     expect(getEnvironmentVariables).toHaveBeenCalledWith();
-    expect(getAllowedOrigins).toHaveBeenCalledWith({
-      DENDRITE_ENVIRONMENT: 'test',
-    });
+    expect(getAllowedOrigins).toHaveBeenCalledWith(
+      allowEffects,
+      { DENDRITE_ENVIRONMENT: 'test' },
+      logDebug
+    );
     const allowCallback = jest.fn();
     handler('https://allowed.example', allowCallback);
     expect(allowCallback).toHaveBeenCalledWith(null, true);
@@ -285,8 +299,11 @@ describe('createCreateCorsOrigin', () => {
 
 describe('createCreateCorsOriginFromEnvironment', () => {
   test('wires the cors origin factory to the provided environment helpers', () => {
+    const allowEffects =
+      /** @type {import('../../../types/allow-effects').AllowEffects} */ ({});
     const environmentVariables = { DENDRITE_ENVIRONMENT: 'test' };
     const getAllowedOrigins = jest.fn(() => ['https://allowed.example']);
+    const logDebug = jest.fn();
     const getEnvironmentVariables = jest
       .fn()
       .mockReturnValue(environmentVariables);
@@ -297,12 +314,18 @@ describe('createCreateCorsOriginFromEnvironment', () => {
       });
 
     const handler = createCorsOriginFromEnvironmentFn({
+      allowEffects,
       getAllowedOrigins,
+      logDebug,
       getEnvironmentVariables,
     });
 
     expect(getEnvironmentVariables).toHaveBeenCalledWith();
-    expect(getAllowedOrigins).toHaveBeenCalledWith(environmentVariables);
+    expect(getAllowedOrigins).toHaveBeenCalledWith(
+      allowEffects,
+      environmentVariables,
+      logDebug
+    );
     const allowCallback = jest.fn();
     handler('https://allowed.example', allowCallback);
     expect(allowCallback).toHaveBeenCalledWith(null, true);
@@ -316,19 +339,28 @@ describe('createCreateCorsOriginFromEnvironment', () => {
 
 describe('createCorsOriginFromEnvironment', () => {
   test('resolves the origin handler directly from environment helpers', () => {
+    const allowEffects =
+      /** @type {import('../../../types/allow-effects').AllowEffects} */ ({});
     const environmentVariables = { DENDRITE_ENVIRONMENT: 'test' };
     const getAllowedOrigins = jest.fn(() => ['https://allowed.example']);
+    const logDebug = jest.fn();
     const getEnvironmentVariables = jest
       .fn()
       .mockReturnValue(environmentVariables);
 
     const handler = createCorsOriginFromEnvironment({
+      allowEffects,
       getAllowedOrigins,
+      logDebug,
       getEnvironmentVariables,
     });
 
     expect(getEnvironmentVariables).toHaveBeenCalledWith();
-    expect(getAllowedOrigins).toHaveBeenCalledWith(environmentVariables);
+    expect(getAllowedOrigins).toHaveBeenCalledWith(
+      allowEffects,
+      environmentVariables,
+      logDebug
+    );
     const allowCallback = jest.fn();
     handler('https://allowed.example', allowCallback);
     expect(allowCallback).toHaveBeenCalledWith(null, true);

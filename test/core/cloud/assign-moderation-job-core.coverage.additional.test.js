@@ -118,29 +118,44 @@ describe('assign moderation job core additional coverage', () => {
   });
 
   test('composes CORS factories and middleware', () => {
+    const allowEffects =
+      /** @type {import('../../../types/allow-effects').AllowEffects} */ (
+        /** @type {unknown} */ (Object.freeze({}))
+      );
     const originHandler = jest.fn();
     const getAllowedOrigins = jest.fn(() => ['https://allowed.test']);
+    const logDebug = jest.fn();
     const createHandler = createCorsOriginFactory({
       getAllowedOrigins,
       createCorsOriginHandler: jest.fn(() => originHandler),
+      logDebug,
     });
-    expect(createHandler(() => ({ DENDRITE_ENVIRONMENT: 'prod' }))).toBe(
-      originHandler
+    expect(
+      createHandler(allowEffects, () => ({ DENDRITE_ENVIRONMENT: 'prod' }))
+    ).toBe(originHandler);
+    expect(getAllowedOrigins).toHaveBeenCalledWith(
+      allowEffects,
+      { DENDRITE_ENVIRONMENT: 'prod' },
+      logDebug
     );
-    expect(getAllowedOrigins).toHaveBeenCalledWith({
-      DENDRITE_ENVIRONMENT: 'prod',
-    });
-    const composed = createCreateCorsOrigin({ getAllowedOrigins });
-    expect(composed(() => ({}))).toEqual(expect.any(Function));
+    const composed = createCreateCorsOrigin({ getAllowedOrigins, logDebug });
+    expect(composed(allowEffects, () => ({}))).toEqual(expect.any(Function));
     const fromEnv = createCreateCorsOriginFromEnvironment({
       createCreateCorsOrigin: jest.fn(() => composed),
     });
     expect(
-      fromEnv({ getAllowedOrigins, getEnvironmentVariables: () => ({}) })
+      fromEnv({
+        allowEffects,
+        getAllowedOrigins,
+        logDebug,
+        getEnvironmentVariables: () => ({}),
+      })
     ).toEqual(expect.any(Function));
     expect(
       createCorsOriginFromEnvironment({
+        allowEffects,
         getAllowedOrigins,
+        logDebug,
         getEnvironmentVariables: () => ({}),
       })
     ).toEqual(expect.any(Function));
@@ -161,16 +176,14 @@ describe('assign moderation job core additional coverage', () => {
     const corsFactory = jest.fn(() => originHandler);
     expect(
       createCorsOptions(
+        allowEffects,
         () => ['x'],
-        () => ({})
+        () => ({}),
+        logDebug
       ).methods
     ).toEqual(['POST']);
     const app = { use: jest.fn() };
     const cors = jest.fn(() => 'cors-middleware');
-    const allowEffects =
-      /** @type {import('../../../types/allow-effects').AllowEffects} */ (
-        /** @type {unknown} */ (Object.freeze({}))
-      );
     const useMiddleware = jest.fn((_permission, appInstance, middleware) =>
       appInstance.use(middleware)
     );

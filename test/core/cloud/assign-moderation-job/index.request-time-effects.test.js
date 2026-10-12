@@ -58,6 +58,7 @@ test('assignment and response receive separate request-time permissions', async 
       permissions.push(permission);
       return handler(permission);
     },
+    logDebug: jest.fn(),
     useMiddleware: (_permission, target, middleware) => target.use(middleware),
     registerPostRoute: (_permission, target, path, handler) =>
       target.post(path, handler),
@@ -85,6 +86,6 @@ test('assignment and response receive separate request-time permissions', async 
   );
   expect(response.status).toHaveBeenCalledWith(201);
   expect(response.send).toHaveBeenCalledWith('');
-  expect(assignmentPermissions).toEqual([permissions[4]]);
-  expect(permissions[4]).not.toBe(permissions[5]);
+  expect(assignmentPermissions).toEqual([permissions[5]]);
+  expect(permissions[5]).not.toBe(permissions[6]);
 });
