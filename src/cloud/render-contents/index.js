@@ -1,32 +1,17 @@
-import { initializeApp } from 'firebase-admin/app';
-import {
-  functions,
-  Storage,
-  getAuth,
-  createFirebaseAppManager,
-  getFirestoreInstance,
-  ADMIN_UID,
-  fetchFn,
-  bindEffectBoundary,
-  effectFetchFn,
-  createSaveRenderedPage,
-  crypto,
-  getEnvironmentVariables,
-} from './render-contents-gcf.js';
-import {
-  setHttpResponseHeader,
-  sendHttpResponse,
-  logRenderContentsError,
-} from './response-effects.js';
+import {functions, Storage, getAuth, ensureFirebaseApp, getFirestoreInstance, ADMIN_UID, fetchFn, bindEffectBoundary, effectFetchFn, createSaveRenderedPage, crypto, getEnvironmentVariables} from './render-contents-gcf.js';
+import {setHttpResponseHeader, sendHttpResponse, logRenderContentsError} from './response-effects.js';
 import { createRenderContentsEntrypoint } from '../../core/cloud/render-contents/index.js';
+import { createRenderContentsStartup } from './startup-effect-adapter.js';
+import { registerRenderContentsTriggers } from './trigger-effect-adapters.js';
 
-const entrypoint = createRenderContentsEntrypoint({
-  initializeApp,
+const entrypoint = createRenderContentsStartup({
+  ensureFirebaseApp,
+  getFirestoreInstance,
+  createEntrypoint: createRenderContentsEntrypoint,
+  registerTriggers: registerRenderContentsTriggers,
   functions,
   Storage,
   getAuth,
-  createFirebaseAppManager,
-  getFirestoreInstance,
   ADMIN_UID,
   fetchFn,
   bindEffectBoundary,
@@ -39,10 +24,12 @@ const entrypoint = createRenderContentsEntrypoint({
   getEnvironmentVariables,
 });
 
-export const handle = entrypoint.handle;
-export const handleTrigger = entrypoint.handleTrigger;
-export const render = entrypoint.render;
-export const fetchTopStoryIds = entrypoint.fetchTopStoryIds;
-export const fetchStoryInfo = entrypoint.fetchStoryInfo;
-export const handleRenderRequest = entrypoint.handleRenderRequest;
+export const {
+  handle,
+  handleTrigger,
+  render,
+  fetchTopStoryIds,
+  fetchStoryInfo,
+  handleRenderRequest,
+} = entrypoint;
 export { buildHtml } from '../../core/cloud/render-contents/render-contents-core.js';

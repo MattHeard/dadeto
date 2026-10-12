@@ -7,6 +7,7 @@ await jest.unstable_mockModule(
 await jest.unstable_mockModule(
   '../../../src/cloud/render-contents/common-gcf.js',
   () => ({
+    ensureFirebaseApp: jest.fn(),
     fetchFn: jest.fn(),
     createFirebaseAppManager: jest.fn(),
     crypto: {},

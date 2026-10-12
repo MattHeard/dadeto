@@ -66,8 +66,8 @@ await jest.unstable_mockModule(
       let value;
       return () => (value ??= factory());
     },
-    createCloudRenderEntrypointState: options => ({
-      db: options.getFirestoreInstance(),
+    createCloudRenderEntrypointStateWithDb: options => ({
+      db: options.db,
       environmentVariables: options.getEnvironmentVariables(),
       render: () => options.buildRender(),
     }),
@@ -132,10 +132,6 @@ describe('createRenderContentsEntrypoint', () => {
       })
       .mockResolvedValue({ ok: true, status: 200, json: async () => ({}) });
     global.fetch = fetchFn;
-    const createFirebaseAppManager = jest.fn(() => ({
-      ensureFirebaseApp: jest.fn(),
-      resetFirebaseInitializationState: jest.fn(),
-    }));
     const functions = {
       region: jest.fn(() => ({
         firestore: {
@@ -152,13 +148,24 @@ describe('createRenderContentsEntrypoint', () => {
         },
       })),
     };
-    const entrypoint = createRenderContentsEntrypoint({
-      initializeApp: jest.fn(),
+    const registerRenderContentsTriggers = jest.fn(
+      (permission, functions, onCreate, onRequest) => {
+        const region = functions.region('europe-west1');
+        return {
+          handle: region.firestore
+            .document('stories/{storyId}')
+            .onCreate(onCreate),
+          handleTrigger: region.https.onRequest(onRequest),
+        };
+      }
+    );
+    const startupAllowEffects = Object.freeze({ startup: true });
+    const entrypoint = createRenderContentsEntrypoint(startupAllowEffects, {
+      db,
       functions,
       Storage,
       getAuth: jest.fn(() => auth),
-      createFirebaseAppManager,
-      getFirestoreInstance: jest.fn(() => db),
+      registerRenderContentsTriggers,
       ADMIN_UID: 'admin',
       fetchFn,
       bindEffectBoundary: async handler =>
@@ -175,6 +182,13 @@ describe('createRenderContentsEntrypoint', () => {
         DENDRITE_ENVIRONMENT: 'dev',
       })),
     });
+
+    expect(registerRenderContentsTriggers).toHaveBeenCalledWith(
+      startupAllowEffects,
+      functions,
+      expect.any(Function),
+      expect.any(Function)
+    );
 
     await expect(entrypoint.fetchTopStoryIds()).resolves.toEqual(['one']);
     await expect(entrypoint.fetchStoryInfo('story')).resolves.toEqual({

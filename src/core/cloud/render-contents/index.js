@@ -17,14 +17,14 @@ import * as renderSupport from '../render-support.js';
 
 /**
  * Build the render-contents entrypoint from injected dependencies.
+ * @param {AllowEffects} startupAllowEffects Permission for synchronous startup effects.
  * @param {{
- *   initializeApp: () => void,
+ *   db: import('firebase-admin/firestore').Firestore,
  *   functions: {region: (region: string) => {firestore: {document: (path: string) => {onCreate: (handler: (...args: never[]) => unknown) => unknown}}, https: {onRequest: (handler: (...args: never[]) => unknown) => unknown}}},
  *   Storage: new () => unknown,
  *   createSaveRenderedPage: (storage: unknown, bucketName: string) => Parameters<typeof createRenderContents>[0]['saveRenderedPage'],
  *   getAuth: () => {verifyIdToken: (token: string) => Promise<{uid?: string}>},
- *   createFirebaseAppManager: (initializeApp: () => void) => {ensureFirebaseApp: () => void},
- *   getFirestoreInstance: (options?: {environment: Record<string, string|undefined>}) => unknown,
+ *   registerRenderContentsTriggers: typeof import('../../../cloud/render-contents/trigger-effect-adapters.js').registerRenderContentsTriggers,
  *   ADMIN_UID: string,
  *   fetchFn: (permission: AllowEffects, ...args: Parameters<typeof globalThis.fetch>) => ReturnType<typeof globalThis.fetch>,
  *   bindEffectBoundary: Parameters<typeof createRenderContents>[0]['bindEffectBoundary'],
@@ -46,15 +46,14 @@ import * as renderSupport from '../render-support.js';
  * }} Cloud entrypoint exports and test hooks.
  */
 // Stryker disable all -- render-contents entrypoint is fixed Cloud Function wiring.
-export function createRenderContentsEntrypoint(deps) {
+export function createRenderContentsEntrypoint(startupAllowEffects, deps) {
   const typedDeps = deps;
   const {
-    initializeApp,
     functions,
     Storage,
     getAuth,
-    createFirebaseAppManager,
-    getFirestoreInstance,
+    db,
+    registerRenderContentsTriggers,
     ADMIN_UID,
     fetchFn,
     crypto,
@@ -67,11 +66,8 @@ export function createRenderContentsEntrypoint(deps) {
     sendHttpResponse: typedDeps.sendHttpResponse,
     logError: typedDeps.logError,
   };
-  const {
-    db,
-    environmentVariables,
-    render: resolveRender,
-  } = createRenderContentsEntrypointState();
+  const { environmentVariables, render: resolveRender } =
+    createRenderContentsEntrypointState();
   const typedDb = /** @type {Parameters<typeof createFetchTopStoryIds>[0]} */ (
     db
   );
@@ -112,22 +108,18 @@ export function createRenderContentsEntrypoint(deps) {
     typedDeps.sendHttpResponse
   );
 
-  const handle = functions
-    .region('europe-west1')
-    .firestore.document('stories/{storyId}')
-    .onCreate((snap, context) =>
+  const { handle, handleTrigger } = registerRenderContentsTriggers(
+    startupAllowEffects,
+    functions,
+    (snap, context) =>
       typedDeps.bindEffectBoundary(permission =>
         render(permission, snap, context)
-      )
-    );
-
-  const handleTrigger = functions
-    .region('europe-west1')
-    .https.onRequest((req, res) =>
+      ),
+    (req, res) =>
       typedDeps.bindEffectBoundary(permission =>
         handleRenderRequest(permission, req, res)
       )
-    );
+  );
 
   /**
    * Forward render calls to the memoized render implementation.
@@ -177,16 +169,13 @@ export function createRenderContentsEntrypoint(deps) {
    */
   function createRenderContentsEntrypointState() {
     const renderStateOptions = {
-      initializeApp,
-      createFirebaseAppManager,
-      getFirestoreInstance,
+      db,
       Storage,
       getEnvironmentVariables,
       fetchFn,
       ...effectDependencies,
       resolveBucketName: resolveStaticBucketName,
       resolveObjectPrefix: resolveStaticObjectPrefix,
-      entrypointKind: 'contents',
       defaultBucketName: DEFAULT_BUCKET_NAME,
     };
     const buildRender = renderSupport.createCloudRenderInstanceBuilder({
@@ -206,7 +195,7 @@ export function createRenderContentsEntrypoint(deps) {
       crypto,
       consoleError: () => {},
     });
-    return renderSupport.createCloudRenderEntrypointState({
+    return renderSupport.createCloudRenderEntrypointStateWithDb({
       ...renderStateOptions,
       buildRender,
     });
