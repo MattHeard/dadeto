@@ -14,6 +14,11 @@ import {
   createEffectStartupBoundary,
   logDebugEffect,
 } from '../allow-effects.js';
+import {
+  initializeFirebaseApp,
+  registerPostRoute,
+  useMiddleware,
+} from './effect-adapters.js';
 
 const { markVariantDirty: handle, handleRequest } = runMarkVariantDirty({
   initializeApp,
@@ -25,6 +30,9 @@ const { markVariantDirty: handle, handleRequest } = runMarkVariantDirty({
   functions,
   getEnvironmentVariables,
   bindStartupEffectBoundary: createEffectStartupBoundary,
+  initializeFirebaseApp,
+  registerPostRoute,
+  useMiddleware,
   logDebug: logDebugEffect,
   ADMIN_UID,
 });

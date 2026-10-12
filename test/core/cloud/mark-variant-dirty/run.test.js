@@ -3,9 +3,13 @@ import { runMarkVariantDirty } from '../../../../src/core/cloud/mark-variant-dir
 
 describe('runMarkVariantDirty', () => {
   test('wires the endpoint and returns exports', () => {
-    const ensureFirebaseApp = jest.fn();
-    const createFirebaseAppManager = jest.fn(() => ({ ensureFirebaseApp }));
+    const startupPermissions = [];
+    const ensureFirebaseApp = jest.fn(initializer => initializer());
+    const createFirebaseAppManager = jest.fn(initializer => ({
+      ensureFirebaseApp: () => ensureFirebaseApp(initializer),
+    }));
     const initializeApp = jest.fn();
+    const initializeFirebaseApp = jest.fn((_, initializer) => initializer());
     const verifyIdToken = jest.fn().mockResolvedValue({ uid: 'user-1' });
     const getAuth = jest.fn(() => ({ verifyIdToken }));
     const db = {};
@@ -35,20 +39,42 @@ describe('runMarkVariantDirty', () => {
       cors,
       functions,
       getEnvironmentVariables,
-      bindStartupEffectBoundary: handler => handler(Object.freeze({})),
+      bindStartupEffectBoundary: handler => {
+        const permission = Object.freeze({
+          startup: startupPermissions.length,
+        });
+        startupPermissions.push(permission);
+        return handler(permission);
+      },
+      initializeFirebaseApp,
+      useMiddleware: (permission, app, middleware) => {
+        expect(Object.isFrozen(permission)).toBe(true);
+        app.use(middleware);
+      },
+      registerPostRoute: (permission, app, path, handler) => {
+        expect(Object.isFrozen(permission)).toBe(true);
+        app.post(path, handler);
+      },
       logDebug: jest.fn(),
       ADMIN_UID: 'admin-uid',
     });
 
-    expect(createFirebaseAppManager).toHaveBeenCalledWith(initializeApp);
+    expect(createFirebaseAppManager).toHaveBeenCalledWith(expect.any(Function));
     expect(ensureFirebaseApp).toHaveBeenCalled();
+    expect(initializeFirebaseApp).toHaveBeenCalledWith(
+      startupPermissions[0],
+      initializeApp
+    );
     expect(getEnvironmentVariables).toHaveBeenCalled();
     expect(getFirestoreInstance).toHaveBeenCalledWith({
+      ensureAppFn: expect.any(Function),
       environment: {
         DENDRITE_ENVIRONMENT: 't-123',
         PLAYWRIGHT_ORIGIN: 'https://preview.local',
       },
     });
+    getFirestoreInstance.mock.calls[0][0].ensureAppFn();
+    expect(initializeApp).toHaveBeenCalledTimes(1);
     expect(expressApp.use).toHaveBeenCalledWith('cors-middleware');
     expect(expressApp.use).toHaveBeenCalledWith('json-middleware');
     expect(expressApp.post).toHaveBeenCalledWith('/', expect.any(Function));
@@ -64,7 +90,12 @@ describe('runMarkVariantDirty', () => {
 
   test('handles a request and returns a not-found response when no variant exists', async () => {
     const ensureFirebaseApp = jest.fn();
-    const createFirebaseAppManager = jest.fn(() => ({ ensureFirebaseApp }));
+    const createFirebaseAppManager = jest.fn(initializer => ({
+      ensureFirebaseApp: () => {
+        ensureFirebaseApp();
+        initializer();
+      },
+    }));
     const initializeApp = jest.fn();
     const verifyIdToken = jest.fn().mockResolvedValue({ uid: 'admin-uid' });
     const getAuth = jest.fn(() => ({ verifyIdToken }));
@@ -111,6 +142,9 @@ describe('runMarkVariantDirty', () => {
       functions,
       getEnvironmentVariables,
       bindStartupEffectBoundary: handler => handler(Object.freeze({})),
+      initializeFirebaseApp: (_, initializer) => initializer(),
+      useMiddleware: (_, app, middleware) => app.use(middleware),
+      registerPostRoute: (_, app, path, handler) => app.post(path, handler),
       logDebug: jest.fn(),
       ADMIN_UID: 'admin-uid',
     });

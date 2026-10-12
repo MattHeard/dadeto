@@ -15,7 +15,6 @@ import {
   sendUnauthorized,
 } from './mark-variant-dirty-core.js';
 import { createVerifyAdmin, isAllowedOrigin } from '../cloud-core.js';
-import { createFirebaseAppContext } from '../firebase-app-manager.js';
 
 /**
  * Wire and return the mark-variant-dirty cloud exports.
@@ -29,21 +28,30 @@ import { createFirebaseAppContext } from '../firebase-app-manager.js';
  *   functions: typeof import('../../../../src/cloud/mark-variant-dirty/mark-variant-dirty-gcf.js').functions,
  *   getEnvironmentVariables: typeof import('../../../../src/cloud/mark-variant-dirty/mark-variant-dirty-gcf.js').getEnvironmentVariables,
  *   bindStartupEffectBoundary: import('../../../../types/allow-effects').StartupAllowEffectsBoundary,
+ *   initializeFirebaseApp: (permission: import('../../../../types/allow-effects').AllowEffects, initializeApp: typeof import('firebase-admin/app').initializeApp) => unknown,
+ *   useMiddleware: (permission: import('../../../../types/allow-effects').AllowEffects, app: import('../../../../types/native-http').NativeExpressApp, middleware: unknown) => void,
+ *   registerPostRoute: (permission: import('../../../../types/allow-effects').AllowEffects, app: import('../../../../types/native-http').NativeExpressApp, path: string, handler: Function) => void,
  *   logDebug: (permission: import('../../../../types/allow-effects').AllowEffects, ...values: unknown[]) => void,
  *   ADMIN_UID: string,
  * }} deps Dependencies required to compose the mark-variant-dirty endpoint.
  * @returns {{ markVariantDirty: unknown, handleRequest: (...args: never[]) => unknown, app: unknown }} Wired cloud export objects for index.js.
  */
 export function runMarkVariantDirty(deps) {
-  const { auth, db, app } = /**
-     @type {{
-    auth: { verifyIdToken: (token: string) => Promise<unknown> },
-    db: import('firebase-admin/firestore').Firestore,
-    app: {
-      use: (...args: unknown[]) => unknown,
-      post: (path: string, handler: unknown) => unknown,
-    },
-  }} */ (createFirebaseAppContext(deps));
+  const { auth, db, app } = deps.bindStartupEffectBoundary(allowEffects => {
+    const appManager = deps.createFirebaseAppManager(() =>
+      deps.initializeFirebaseApp(allowEffects, deps.initializeApp)
+    );
+    appManager.ensureFirebaseApp();
+    const environment = deps.getEnvironmentVariables();
+    return {
+      auth: deps.getAuth(),
+      db: deps.getFirestoreInstance({
+        ensureAppFn: () => {},
+        environment,
+      }),
+      app: deps.express(),
+    };
+  });
 
   const environmentVariables = deps.getEnvironmentVariables();
   const allowedOrigins = deps.bindStartupEffectBoundary(permission =>
@@ -56,9 +64,13 @@ export function runMarkVariantDirty(deps) {
   // Stryker disable all -- endpoint wiring uses the fixed POST CORS protocol.
   const corsOptions = createCorsOptions(handleCorsOrigin, ['POST']);
 
-  app.use(deps.cors(corsOptions));
+  deps.bindStartupEffectBoundary(allowEffects =>
+    deps.useMiddleware(allowEffects, app, deps.cors(corsOptions))
+  );
   const jsonMiddleware = deps.express.json();
-  app.use(jsonMiddleware);
+  deps.bindStartupEffectBoundary(allowEffects =>
+    deps.useMiddleware(allowEffects, app, jsonMiddleware)
+  );
 
   const markVariantDirtyDeps = {
     db,
@@ -109,7 +121,9 @@ export function runMarkVariantDirty(deps) {
   );
   // Stryker restore all
 
-  app.post('/', handleRequest);
+  deps.bindStartupEffectBoundary(allowEffects =>
+    deps.registerPostRoute(allowEffects, app, '/', handleRequest)
+  );
 
   const markVariantDirty =
     /** @type {{ region: (name: string) => { https: { onRequest: (handler: unknown) => unknown } } }} */ (
