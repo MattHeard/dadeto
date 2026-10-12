@@ -1,0 +1,7 @@
+# Scheduled reputation job AllowEffects boundaries
+
+- **Unexpected hurdle:** Firestore acquisition in the scheduled callback used the default accessor, which lazily initializes Firebase through the shared manager without a permission argument. The Pub/Sub schedule registration also lived directly in the cloud entry point.
+- **Diagnosis:** The existing reputation writer already required the invocation capability, but reading the Firestore accessor showed that its default `ensureAppFn` could execute Firebase initialization before the write. Existing tree-regeneration adapters provide the local pattern for permission-first scheduled trigger registration.
+- **Fix:** Register the daily schedule through a startup adapter under `createEffectStartupBoundary`. Each run initializes Firebase through a permission-first adapter using its fresh invocation capability, then resolves Firestore with a no-op `ensureAppFn`; the token is not captured. The write adapter continues to receive that invocation capability.
+- **Evidence:** Focused suites passed (6 suites / 17 tests); `npm run check` passed all 10 gates, including full coverage, 11 local E2E tests, and zero clones; `npm run build:cloud` passed; generated reputation files pass `node --check`; `npm run tsdoc:check`, targeted ESLint, and `git diff --check` passed.
+- **Next:** Continue the lexicographic source-cloud AllowEffects audit at `src/cloud/render-author/index.js`.
