@@ -8,6 +8,7 @@ it('wires the request write and response adapters into endpoint composition', as
     useMiddleware: jest.fn(),
   };
   const sendHttpResponse = jest.fn();
+  const logWarning = jest.fn();
   const runMarkVariantDirty = jest.fn(() => ({
     markVariantDirty: {},
     handleRequest: jest.fn(),
@@ -50,6 +51,10 @@ it('wires the request write and response adapters into endpoint composition', as
       '../../../src/cloud/mark-variant-dirty/response-adapter.js',
       () => ({ sendHttpResponse })
     );
+    await jest.unstable_mockModule(
+      '../../../src/cloud/mark-variant-dirty/logging-adapter.js',
+      () => ({ logWarning })
+    );
 
     await import('../../../src/cloud/mark-variant-dirty/index.js');
   });
@@ -58,6 +63,7 @@ it('wires the request write and response adapters into endpoint composition', as
     expect.objectContaining({
       sendResponse: sendHttpResponse,
       updateDocument: adapters.updateDocument,
+      logWarning,
     })
   );
 });

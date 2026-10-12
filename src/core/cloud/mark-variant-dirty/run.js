@@ -32,6 +32,7 @@ import { createVerifyAdmin, isAllowedOrigin } from '../cloud-core.js';
  *   registerPostRoute: (permission: import('../../../../types/allow-effects').AllowEffects, app: import('../../../../types/native-http').NativeExpressApp, path: string, handler: Function) => void,
  *   updateDocument: (permission: import('../../../../types/allow-effects').AllowEffects, reference: unknown, data: object) => Promise<unknown>,
  *   sendResponse: (permission: import('../../../../types/allow-effects').AllowEffects, res: import('../../../../types/native-http').NativeHttpResponse, status: number, method: 'send' | 'json', body: unknown) => void,
+ *   logWarning: (permission: import('../../../../types/allow-effects').AllowEffects, message: string, details?: object) => void,
  *   logDebug: (permission: import('../../../../types/allow-effects').AllowEffects, ...values: unknown[]) => void,
  *   ADMIN_UID: string,
  * }} deps Dependencies required to compose the mark-variant-dirty endpoint.
@@ -90,6 +91,13 @@ export function runMarkVariantDirty(deps) {
           deps.sendResponse(permission, res, status, method, body)
         )()
     );
+  const logWarning =
+    /** @type {(message: string, details?: object) => void} */ (
+      (message, details) =>
+        deps.bindEffectInvocationBoundary(permission =>
+          deps.logWarning(permission, message, details)
+        )()
+    );
   // Stryker restore all
 
   /**
@@ -123,6 +131,7 @@ export function runMarkVariantDirty(deps) {
     isAdminUid: createIsAdminUid(deps.ADMIN_UID),
     sendUnauthorized: (res, message) => sendResponse(res, 401, 'send', message),
     sendForbidden: res => sendResponse(res, 403, 'send', 'Forbidden'),
+    logger: { warn: logWarning },
   });
 
   const handleRequest = createHandleRequest(

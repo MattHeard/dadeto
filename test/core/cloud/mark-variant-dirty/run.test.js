@@ -2,26 +2,36 @@ import { jest } from '@jest/globals';
 import { runMarkVariantDirty } from '../../../../src/core/cloud/mark-variant-dirty/run.js';
 
 /**
- *
- * @param handleRequest
- * @param res
- * @param get
- * @param sendResponse
- */
-/**
  * Exercise endpoint response paths and verify every write is permission-gated.
  * @param {(req: import('../../../../types/native-http').NativeHttpRequest, res: import('../../../../types/native-http').NativeHttpResponse) => Promise<void>} handleRequest Wired endpoint handler.
  * @param {import('../../../../types/native-http').NativeHttpResponse} res Express response fake.
- * @param {{get: {mockRejectedValueOnce: (error: Error) => unknown}, verifyIdToken: {mockResolvedValueOnce: (value: object) => unknown}, sendResponse: {mock: {calls: unknown[][]}}}} runtime Test adapters.
+ * @param {{get: {mockRejectedValueOnce: (error: Error) => unknown}, verifyIdToken: {mockResolvedValueOnce: (value: object) => unknown, mockRejectedValueOnce: (error: Error) => unknown}, sendResponse: {mock: {calls: unknown[][]}}, logWarning: {mock: {calls: unknown[][]}}}} runtime Test adapters.
  * @returns {Promise<void>} Resolves after all response paths are checked.
  */
 async function verifyResponseBranches(handleRequest, res, runtime) {
   await handleRequest({ method: 'GET' }, res);
   await handleRequest(
+    {
+      method: 'POST',
+      get: jest.fn(() => 'malformed'),
+      body: { page: 1, variant: 'a' },
+    },
+    res
+  );
+  await handleRequest(
     { method: 'POST', get: jest.fn(() => ''), body: { page: 1, variant: 'a' } },
     res
   );
   runtime.verifyIdToken.mockResolvedValueOnce({ uid: 'not-admin' });
+  await handleRequest(
+    {
+      method: 'POST',
+      get: jest.fn(() => 'Bearer token'),
+      body: { page: 1, variant: 'a' },
+    },
+    res
+  );
+  runtime.verifyIdToken.mockRejectedValueOnce(new Error('token invalid'));
   await handleRequest(
     {
       method: 'POST',
@@ -60,6 +70,22 @@ async function verifyResponseBranches(handleRequest, res, runtime) {
   expect(runtime.sendResponse.mock.calls.map(([, , status]) => status)).toEqual(
     expect.arrayContaining([200, 400, 401, 403, 404, 405, 500])
   );
+  expect(runtime.logWarning.mock.calls.map(([, message]) => message)).toEqual(
+    expect.arrayContaining([
+      'Admin auth rejected: malformed Authorization header',
+      'Admin auth rejected: missing token',
+      'Admin auth rejected: token verification failed',
+    ])
+  );
+  expect(
+    runtime.logWarning.mock.calls.every(([permission]) =>
+      Object.isFrozen(permission)
+    )
+  ).toBe(true);
+  expect(
+    new Set(runtime.logWarning.mock.calls.map(([permission]) => permission))
+      .size
+  ).toBe(runtime.logWarning.mock.calls.length);
 }
 
 describe('runMarkVariantDirty', () => {
@@ -121,6 +147,7 @@ describe('runMarkVariantDirty', () => {
         app.post(path, handler);
       },
       logDebug: jest.fn(),
+      logWarning: jest.fn(),
       ADMIN_UID: 'admin-uid',
     });
 
@@ -185,6 +212,7 @@ describe('runMarkVariantDirty', () => {
       const [, res, status, method, body] = args;
       return res.status(status)[method](body);
     });
+    const logWarning = jest.fn();
     const getFirestoreInstance = jest.fn(() => ({
       collectionGroup,
       collection,
@@ -225,6 +253,7 @@ describe('runMarkVariantDirty', () => {
         },
       updateDocument,
       sendResponse,
+      logWarning,
       useMiddleware: (_, app, middleware) => app.use(middleware),
       registerPostRoute: (_, app, path, handler) => app.post(path, handler),
       logDebug: jest.fn(),
@@ -252,7 +281,6 @@ describe('runMarkVariantDirty', () => {
     expect(verifyIdToken).toHaveBeenCalledWith('token');
     expect(collectionGroup).toHaveBeenCalledWith('pages');
     expect(res.status).toHaveBeenCalledWith(404);
-    expect(res.json).toHaveBeenCalledWith({ error: 'Variant not found' });
     expect(sendResponse).toHaveBeenNthCalledWith(
       1,
       invocationPermissions[0],
@@ -312,6 +340,7 @@ describe('runMarkVariantDirty', () => {
       get,
       verifyIdToken,
       sendResponse,
+      logWarning,
     });
   });
 });

@@ -22,6 +22,7 @@ import {
   useMiddleware,
 } from './effect-adapters.js';
 import { sendHttpResponse } from './response-adapter.js';
+import { logWarning } from './logging-adapter.js';
 
 const { markVariantDirty: handle, handleRequest } = runMarkVariantDirty({
   initializeApp,
@@ -39,6 +40,7 @@ const { markVariantDirty: handle, handleRequest } = runMarkVariantDirty({
   sendResponse: sendHttpResponse,
   useMiddleware,
   updateDocument,
+  logWarning,
   logDebug: logDebugEffect,
   ADMIN_UID,
 });
