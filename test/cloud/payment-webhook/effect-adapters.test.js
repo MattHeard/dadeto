@@ -1,8 +1,44 @@
 import { describe, expect, it, jest } from '@jest/globals';
 import { createAllowEffects } from '../../../src/cloud/allow-effects.js';
 import { createMarkProcessedEventWriter } from '../../../src/cloud/payment-webhook/effect-adapters.js';
+import {
+  logPaymentWebhookError,
+  sendPaymentWebhookResponse,
+} from '../../../src/cloud/payment-webhook/response-effect-adapters.js';
 
 describe('payment webhook event status adapter', () => {
+  it('requires a capability for response delivery and status promotion', () => {
+    const response = {
+      status: jest.fn(() => response),
+      json: jest.fn(),
+      send: jest.fn(),
+      set: jest.fn(),
+    };
+    const permission = createAllowEffects();
+    sendPaymentWebhookResponse(permission, response, {
+      status: 200,
+      body: { type: 'credit_added', applied: true },
+      headers: { 'content-type': 'application/json' },
+    });
+    expect(response.set).toHaveBeenCalledWith(
+      'content-type',
+      'application/json'
+    );
+    expect(response.status).toHaveBeenCalledWith(201);
+    expect(response.json).toHaveBeenCalledWith({
+      type: 'credit_added',
+      applied: true,
+    });
+  });
+
+  it('requires a capability for failure logging', () => {
+    const error = new Error('webhook failure');
+    const log = jest.spyOn(console, 'error').mockImplementation(() => {});
+    logPaymentWebhookError(createAllowEffects(), error);
+    expect(log).toHaveBeenCalledWith('payment webhook request failed', error);
+    log.mockRestore();
+  });
+
   it('writes the normalized status with merge semantics', async () => {
     const allowEffects = createAllowEffects();
     const set = jest.fn();

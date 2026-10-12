@@ -17,7 +17,7 @@ import { createBillingRuntime } from '../billing/billing-runtime-core.js';
 
 /**
  * Create the payment webhook request handler used by the cloud wrapper.
- * @param {{ firestore: FirestoreCtor, db?: any, env?: ProcessEnvLike, constructEvent?: (payload: string|Buffer, signature: string, secret: string) => unknown, creditEventEffects: Parameters<typeof import('../get-api-key-credit-v2/get-api-key-credit-v2-core.js').createApplyCreditEvent>[1], markProcessedEvent: (allowEffects: AllowEffects, event: import('../../payment-webhook-core.js').PaymentEvent, uuid: string, status?: string) => Promise<void> }} deps Dependencies for the wrapper.
+ * @param {{ firestore: FirestoreCtor, db?: any, env?: ProcessEnvLike, constructEvent?: (payload: string|Buffer, signature: string, secret: string) => unknown, creditEventEffects: Parameters<typeof import('../get-api-key-credit-v2/get-api-key-credit-v2-core.js').createApplyCreditEvent>[1], markProcessedEvent: (allowEffects: AllowEffects, event: import('../../payment-webhook-core.js').PaymentEvent, uuid: string, status?: string) => Promise<void>, sendResponse: (allowEffects: AllowEffects, response: unknown, result: import('../../payment-webhook-core.js').PaymentWebhookResponse) => unknown, logError: (allowEffects: AllowEffects, error: unknown) => void }} deps Dependencies for the wrapper.
  * @returns {(allowEffects: AllowEffects, req: unknown, res: unknown) => Promise<unknown>} Request handler.
  */
 export function createPaymentWebhookIndexHandler(deps) {
@@ -27,6 +27,8 @@ export function createPaymentWebhookIndexHandler(deps) {
   const constructEvent = deps.constructEvent;
   const creditEventEffects = deps.creditEventEffects;
   const markProcessedEvent = deps.markProcessedEvent;
+  const sendResponse = deps.sendResponse;
+  const logError = deps.logError;
   const db = /** @type {any} */ (providedDb ?? createDb(firestore, env));
   const billing = createBillingRuntime(db);
   const handleRequest = createPaymentWebhookHandler({
@@ -70,10 +72,10 @@ export function createPaymentWebhookIndexHandler(deps) {
         req
       );
     } catch (error) {
-      console.error('payment webhook request failed', error);
+      logError(allowEffects, error);
       throw error;
     }
-    return sendPaymentWebhookResponse(/** @type {any} */ (res), response);
+    return sendResponse(allowEffects, res, response);
   };
 }
 
@@ -253,50 +255,3 @@ async function handlePaymentWebhookRequest(handler, allowEffects, req) {
  * @param {{ status: number, body: string | Record<string, unknown>, headers?: Record<string, string> }} response Structured response.
  * @returns {Promise<void>} Resolves after the response is written.
  */
-async function sendPaymentWebhookResponse(res, response) {
-  const status = resolveWebhookStatus(response);
-  if (response.headers) {
-    for (const [key, value] of Object.entries(response.headers)) {
-      // Stryker disable next-line all -- undefined headers are omitted by the
-      // fixed response protocol.
-      if (typeof value !== 'undefined') {
-        /** @type {{ set?: (name: string, value: string) => void }} */ (
-          res
-          // Stryker disable next-line all -- response adapters may omit header
-          // setters; optional invocation is a platform compatibility contract.
-        ).set?.(key, value);
-      }
-    }
-  }
-
-  if (response.body && typeof response.body === 'object') {
-    res.status(status).json(response.body);
-    return;
-  }
-
-  res.status(status).send(response.body);
-}
-
-/**
- * Normalize the HTTP status returned by the payment webhook.
- * @param {{ status: number, body: string | Record<string, unknown>, headers?: Record<string, string> }} response Structured response.
- * @returns {number} HTTP status to write.
- */
-function resolveWebhookStatus(response) {
-  if (
-    response.status === 200 &&
-    response.body &&
-    // Stryker disable next-line all -- primitive property lookup is harmless;
-    // promotion still requires the fixed credit-added body fields below.
-    typeof response.body === 'object'
-  ) {
-    const body = /** @type {{ type?: unknown, applied?: unknown }} */ (
-      response.body
-    );
-    if (body.type === 'credit_added' && body.applied === true) {
-      return 201;
-    }
-  }
-
-  return response.status;
-}

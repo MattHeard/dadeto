@@ -1,5 +1,9 @@
 import { jest } from '@jest/globals';
 import { createAllowEffects } from '../../../../src/cloud/allow-effects.js';
+import {
+  sendPaymentWebhookResponse,
+  logPaymentWebhookError,
+} from '../../../../src/cloud/payment-webhook/response-effect-adapters.js';
 
 const allowEffects = createAllowEffects();
 
@@ -251,12 +255,16 @@ async function runScenario135Part0(context) {
     constructEvent: payload => JSON.parse(payload.toString()),
     markProcessedEvent: (permission, event, uuid, status) =>
       context.markProcessedEvent(permission, event, uuid, status),
+    sendResponse: sendPaymentWebhookResponse,
+    logError: logPaymentWebhookError,
   });
   context.markProcessedEvent = jest.fn();
   createPaymentWebhookIndexHandler({
     firestore: context.Firestore,
     creditEventEffects: {},
     markProcessedEvent: jest.fn(),
+    sendResponse: sendPaymentWebhookResponse,
+    logError: logPaymentWebhookError,
   });
   context.defaultCaptured = mockCreatePaymentWebhookHandler.mock.calls[1][0];
   await expect(
