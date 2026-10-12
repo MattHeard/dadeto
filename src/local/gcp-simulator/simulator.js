@@ -20,7 +20,7 @@ const setFirestoreDocument = (permission, reference, data) => {
 /** @param {{runTransaction: (update: (transaction: any) => Promise<unknown>) => Promise<unknown>}} db @returns {object} */
 const createCreditEventEffectAdapters = db => ({
   runTransaction: (permission, update) => { void permission; return db.runTransaction(update); },
-  getTransactionDocument: (permission, transaction, reference) => { void permission; return transaction.get(reference); },
+  getTransactionDocument: (transaction, reference) => transaction.get(reference),
   setTransactionDocument: (permission, transaction, reference, data) => { void permission; return transaction.set(reference, data); },
 });
 

@@ -36,17 +36,15 @@ describe('API key credit v2 effect adapters', () => {
     };
     const adapters = createGetApiKeyCreditV2EffectAdapters(db);
     const updateFunction = jest.fn(async () => 'committed');
+    const reference = {};
 
     await expect(
       adapters.runTransaction(allowEffects, updateFunction)
     ).resolves.toBe('committed');
-    await adapters.getTransactionDocument(allowEffects, transaction, {});
-    adapters.setTransactionDocument(
-      allowEffects,
-      transaction,
-      {},
-      { credit: 2 }
-    );
+    await adapters.getTransactionDocument(transaction, reference);
+    adapters.setTransactionDocument(allowEffects, transaction, reference, {
+      credit: 2,
+    });
     adapters.setResponseHeader(allowEffects, response, 'Allow', 'GET, POST');
     adapters.sendHttpResponse(
       allowEffects,
@@ -57,8 +55,8 @@ describe('API key credit v2 effect adapters', () => {
     );
 
     expect(db.runTransaction).toHaveBeenCalledWith(updateFunction);
-    expect(transaction.get).toHaveBeenCalled();
-    expect(transaction.set).toHaveBeenCalledWith({}, { credit: 2 });
+    expect(transaction.get).toHaveBeenCalledWith(reference);
+    expect(transaction.set).toHaveBeenCalledWith(reference, { credit: 2 });
     expect(response.set).toHaveBeenCalledWith('Allow', 'GET, POST');
     expect(response.status).toHaveBeenCalledWith(201);
     expect(response.json).toHaveBeenCalledWith({ ok: true });

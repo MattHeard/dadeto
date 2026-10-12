@@ -1,0 +1,7 @@
+# API-key credit transaction boundary
+
+- **Unexpected hurdle:** The credit v2 core typed its transaction handle with both `get` and `set`, and its database type also exposed `runTransaction`; the actual implementation used injected adapters, but core could bypass them.
+- **Diagnosis:** The Firestore declaration available to core has query-only reference/database methods. Transaction reads are queries under the Allow Effects policy; transaction execution and document writes are command effects.
+- **Fix:** Made the transaction handle opaque in core, narrowed the core database type to Firestore's query surface, removed the capability parameter from transaction reads, and kept transaction execution and writes behind permission-first adapters. Moved transaction adapters into `transaction-adapters.js` to keep the cloud module below the 50-line limit. Updated the payment-webhook test fixture and local simulator to use the query signature.
+- **Evidence:** API-key-credit v2 and payment-webhook focused suites passed (65 tests); `npm run tsdoc:check`, `npm run non-core-thin`, full `npm run check` with exact 100% coverage, `npm run build`, and `npm run build:cloud` passed. Cloud build output includes the new transaction adapter in generated function trees; unrelated tracked infra copies were restored.
+- **Next-time guidance:** Keep transaction handles opaque across core boundaries. Classify transaction reads separately from commit/write operations, and check the non-core file-size gate when adding detailed boundary adapters.

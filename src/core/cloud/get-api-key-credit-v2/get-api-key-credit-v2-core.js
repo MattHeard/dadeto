@@ -11,7 +11,14 @@ import {
 
 /** @typedef {import('../../../../types/allow-effects').AllowEffects} AllowEffects */
 
-/** @typedef {{ runTransaction: (allowEffects: AllowEffects, updateFunction: (transaction: CreditTransaction) => Promise<CreditApiResponse>) => Promise<CreditApiResponse>, getTransactionDocument: (allowEffects: AllowEffects, transaction: CreditTransaction, reference: import('@google-cloud/firestore').DocumentReference) => Promise<import('@google-cloud/firestore').DocumentSnapshot>, setTransactionDocument: (allowEffects: AllowEffects, transaction: CreditTransaction, reference: import('@google-cloud/firestore').DocumentReference, data: Record<string, unknown>) => unknown }} CreditEventEffects */
+/**
+ * Query and command adapters for API-key credit events.
+ * @typedef {{
+ *   runTransaction: (allowEffects: AllowEffects, updateFunction: (transaction: CreditTransaction) => Promise<CreditApiResponse>) => Promise<CreditApiResponse>,
+ *   getTransactionDocument: (transaction: CreditTransaction, reference: import('@google-cloud/firestore').DocumentReference) => Promise<import('@google-cloud/firestore').DocumentSnapshot>,
+ *   setTransactionDocument: (allowEffects: AllowEffects, transaction: CreditTransaction, reference: import('@google-cloud/firestore').DocumentReference, data: Record<string, unknown>) => unknown,
+ * }} CreditEventEffects
+ */
 
 export { createDb } from './create-db.js';
 export { productionOrigins };
@@ -94,18 +101,13 @@ const UUID_PATH_PATTERN =
  */
 
 /**
- * Firestore transaction surface used by the credit ledger helpers.
- * @typedef {{
- *   get: (ref: import('@google-cloud/firestore').DocumentReference) => Promise<import('@google-cloud/firestore').DocumentSnapshot>,
- *   set: (ref: import('@google-cloud/firestore').DocumentReference, data: Record<string, unknown>) => void,
- * }} CreditTransaction
+ * Opaque transaction handle. Core code cannot invoke SDK commands directly.
+ * @typedef {unknown} CreditTransaction
  */
 
 /**
- * Firestore database surface used by the credit ledger helpers.
- * @typedef {import('@google-cloud/firestore').Firestore & {
- *   runTransaction: (updateFunction: (transaction: CreditTransaction) => Promise<CreditApiResponse>) => Promise<CreditApiResponse>,
- * }} CreditFirestore
+ * Query-only Firestore database surface used by core lookups.
+ * @typedef {import('@google-cloud/firestore').Firestore} CreditFirestore
  */
 
 /**
@@ -767,7 +769,6 @@ export function createApplyCreditEvent(db, effects) {
     return effects.runTransaction(allowEffects, async transaction => {
       const eventRef = getApiKeyCreditEventDocument(db, uuid, event.eventId);
       const eventSnap = await effects.getTransactionDocument(
-        allowEffects,
         transaction,
         eventRef
       );
@@ -777,7 +778,6 @@ export function createApplyCreditEvent(db, effects) {
 
       const creditRef = getApiKeyCreditDocument(db, uuid);
       const creditSnap = await effects.getTransactionDocument(
-        allowEffects,
         transaction,
         creditRef
       );

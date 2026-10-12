@@ -29,8 +29,7 @@ function createTransactionEffects(database) {
       expect(permission).toBe(allowEffects);
       return database.runTransaction(updateFunction);
     },
-    getTransactionDocument: (permission, transaction, reference) => {
-      expect(permission).toBe(allowEffects);
+    getTransactionDocument: (transaction, reference) => {
       return transaction.get(reference);
     },
     setTransactionDocument: (permission, transaction, reference, data) => {

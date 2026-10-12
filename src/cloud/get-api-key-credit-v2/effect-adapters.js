@@ -1,4 +1,4 @@
-/** @typedef {import('../../../types/allow-effects').AllowEffects} AllowEffects */
+import { createGetApiKeyCreditV2TransactionAdapters } from './transaction-adapters.js';
 
 /**
  * Create permission-first adapters for API-key credit transaction and response effects.
@@ -7,18 +7,7 @@
  */
 export function createGetApiKeyCreditV2EffectAdapters(db) {
   return {
-    runTransaction: (allowEffects, updateFunction) => {
-      void allowEffects;
-      return db.runTransaction(updateFunction);
-    },
-    getTransactionDocument: (allowEffects, transaction, reference) => {
-      void allowEffects;
-      return transaction.get(reference);
-    },
-    setTransactionDocument: (allowEffects, transaction, reference, data) => {
-      void allowEffects;
-      return transaction.set(reference, data);
-    },
+    ...createGetApiKeyCreditV2TransactionAdapters(db),
     setResponseHeader: (allowEffects, response, name, value) => {
       void allowEffects;
       return /** @type {{ set: (name: string, value: string) => unknown }} */ (
