@@ -28,6 +28,8 @@ function setup() {
     randomUUID: () => 'generated-id',
     now: () => new Date('2026-08-05T00:00:00.000Z'),
     billingEnabled: true,
+    writeRefundReconciliation: async (_permission, eventId, record) =>
+      db.collection('billing-reconciliation').doc(eventId).set(record),
   });
   return { db, billing };
 }
@@ -1138,5 +1140,51 @@ describe('billing runtime charging paths', () => {
         chargeId: 'ch-1',
       })
     );
+  });
+
+  it('forwards the request capability to the injected refund reconciliation writer', async () => {
+    const db = createFakeFirestore();
+    const writeRefundReconciliation = jest.fn().mockResolvedValue(undefined);
+    const billing = createBillingRuntime(db, {
+      now: () => new Date('2026-10-12T00:00:00.000Z'),
+      writeRefundReconciliation,
+    });
+    const input = {
+      eventId: 'refund-adapter-event',
+      purchaseId: 'purchase-1',
+      stripePaymentIntentId: 'pi-1',
+      chargeId: 'ch-1',
+      refundedUsdMinor: 500,
+    };
+
+    await billing.recordRefundReconciliation(allowEffects, input);
+
+    expect(writeRefundReconciliation).toHaveBeenCalledWith(
+      allowEffects,
+      'refund-adapter-event',
+      {
+        type: 'unmatched_stripe_refund',
+        status: 'pending',
+        ...input,
+        recordedAt: new Date('2026-10-12T00:00:00.000Z'),
+      }
+    );
+    await expect(
+      db.doc('billing-reconciliation/refund-adapter-event').get()
+    ).resolves.toMatchObject({ exists: false });
+  });
+
+  it('fails closed when refund reconciliation has no persistence adapter', async () => {
+    const billing = createBillingRuntime(createFakeFirestore());
+
+    await expect(
+      billing.recordRefundReconciliation(allowEffects, {
+        eventId: 'refund-without-adapter',
+        purchaseId: 'purchase-1',
+        stripePaymentIntentId: 'pi-1',
+        chargeId: 'ch-1',
+        refundedUsdMinor: 500,
+      })
+    ).rejects.toThrow('writeRefundReconciliation adapter must be provided');
   });
 });

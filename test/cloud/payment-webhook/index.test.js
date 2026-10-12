@@ -11,6 +11,9 @@ describe('payment-webhook entry point', () => {
     expect(source).toContain(
       'createPaymentWebhookStartupDb(allowEffects, Firestore, process.env)'
     );
+    expect(source).toContain(
+      'writeRefundReconciliation: createRefundReconciliationWriter(db)'
+    );
     expect(source).toContain('const handle = createEffectHttpBoundary');
     expect(source).toContain('export { handle }');
   });

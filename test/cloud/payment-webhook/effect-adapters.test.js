@@ -1,6 +1,7 @@
 import { describe, expect, it, jest } from '@jest/globals';
 import { createAllowEffects } from '../../../src/cloud/allow-effects.js';
 import { createMarkProcessedEventWriter } from '../../../src/cloud/payment-webhook/effect-adapters.js';
+import { createRefundReconciliationWriter } from '../../../src/cloud/payment-webhook/refund-reconciliation-effect-adapter.js';
 import {
   logPaymentWebhookError,
   sendPaymentWebhookResponse,
@@ -104,5 +105,28 @@ describe('payment webhook event status adapter', () => {
       { merge: true }
     );
     now.mockRestore();
+  });
+
+  it('persists refund reconciliation through a permission-first writer', async () => {
+    const allowEffects = createAllowEffects();
+    const set = jest.fn().mockResolvedValue(undefined);
+    const doc = jest.fn(() => ({ set }));
+    const collection = jest.fn(() => ({ doc }));
+    const record = {
+      type: 'unmatched_stripe_refund',
+      status: 'pending',
+      eventId: 'evt-refund',
+      recordedAt: new Date('2026-10-12T00:00:00.000Z'),
+    };
+
+    await createRefundReconciliationWriter({ collection })(
+      allowEffects,
+      'evt-refund',
+      record
+    );
+
+    expect(collection).toHaveBeenCalledWith('billing-reconciliation');
+    expect(doc).toHaveBeenCalledWith('evt-refund');
+    expect(set).toHaveBeenCalledWith(record);
   });
 });

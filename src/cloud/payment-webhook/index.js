@@ -9,6 +9,7 @@ import { createPaymentWebhookStartupDb } from './startup-effect-adapter.js';
 import {
   createMarkProcessedEventWriter,
 } from './effect-adapters.js';
+import { createRefundReconciliationWriter } from './refund-reconciliation-effect-adapter.js';
 import {
   sendPaymentWebhookResponse,
   logPaymentWebhookError,
@@ -26,6 +27,7 @@ const handlePaymentWebhook = createPaymentWebhookIndexHandler({
     stripe.webhooks.constructEvent(payload, signature, secret),
   creditEventEffects: createGetApiKeyCreditV2EffectAdapters(db),
   markProcessedEvent: createMarkProcessedEventWriter(db),
+  writeRefundReconciliation: createRefundReconciliationWriter(db),
   sendResponse: sendPaymentWebhookResponse,
   logError: logPaymentWebhookError,
 });

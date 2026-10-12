@@ -262,7 +262,7 @@ async function findBillingPurchaseByCheckout(db, checkoutSessionId) {
 /**
  * Create Firestore-backed accessors for the billing domain.
  * @param {BillingRuntimeValue} db Firestore database.
- * @param {{ randomUUID?: () => string, now?: () => Date, billingEnabled?: boolean }} [runtime] Runtime helpers.
+ * @param {{ randomUUID?: () => string, now?: () => Date, billingEnabled?: boolean, writeRefundReconciliation?: (allowEffects: AllowEffects, eventId: string, record: BillingDocumentData) => Promise<void> }} [runtime] Runtime helpers and reconciliation persistence adapter.
  * @returns {BillingRuntimeService} Billing service.
  */
 export function createBillingRuntime(db, runtime = {}) {
@@ -561,16 +561,20 @@ export function createBillingRuntime(db, runtime = {}) {
    * @returns {Promise<void>} Resolves after persistence.
    */
   async function recordRefundReconciliation(allowEffects, input) {
-    void allowEffects;
-    await db
-      .collection('billing-reconciliation')
-      .doc(input.eventId)
-      .set({
-        type: 'unmatched_stripe_refund',
-        status: 'pending',
-        ...input,
-        recordedAt: now(),
-      });
+    const record = {
+      type: 'unmatched_stripe_refund',
+      status: 'pending',
+      ...input,
+      recordedAt: now(),
+    };
+    if (typeof runtime.writeRefundReconciliation !== 'function') {
+      throw new TypeError('writeRefundReconciliation adapter must be provided');
+    }
+    await runtime.writeRefundReconciliation(
+      allowEffects,
+      input.eventId,
+      record
+    );
   }
 
   /**
