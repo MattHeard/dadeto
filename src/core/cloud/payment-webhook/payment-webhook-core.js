@@ -2,7 +2,6 @@ import {
   createApplyCreditEvent,
   createFetchCredit,
 } from '../get-api-key-credit-v2/get-api-key-credit-v2-core.js';
-import { createDb } from '../get-api-key-credit-v2/create-db.js';
 import {
   createPaymentWebhookHandler,
   createResolveApiKeyUuid,
@@ -11,25 +10,23 @@ import {
 } from '../../payment-webhook-core.js';
 import { createBillingRuntime } from '../billing/billing-runtime-core.js';
 
-/** @typedef {typeof import('@google-cloud/firestore').Firestore} FirestoreCtor */
 /** @typedef {Record<string, string | undefined>} ProcessEnvLike */
 /** @typedef {import('../../../../types/allow-effects').AllowEffects} AllowEffects */
 
 /**
  * Create the payment webhook request handler used by the cloud wrapper.
- * @param {{ firestore: FirestoreCtor, db?: any, env?: ProcessEnvLike, constructEvent?: (payload: string|Buffer, signature: string, secret: string) => unknown, creditEventEffects: Parameters<typeof import('../get-api-key-credit-v2/get-api-key-credit-v2-core.js').createApplyCreditEvent>[1], markProcessedEvent: (allowEffects: AllowEffects, event: import('../../payment-webhook-core.js').PaymentEvent, uuid: string, status?: string) => Promise<void>, sendResponse: (allowEffects: AllowEffects, response: unknown, result: import('../../payment-webhook-core.js').PaymentWebhookResponse) => unknown, logError: (allowEffects: AllowEffects, error: unknown) => void }} deps Dependencies for the wrapper.
+ * @param {{ db: any, env?: ProcessEnvLike, constructEvent?: (payload: string|Buffer, signature: string, secret: string) => unknown, creditEventEffects: Parameters<typeof import('../get-api-key-credit-v2/get-api-key-credit-v2-core.js').createApplyCreditEvent>[1], markProcessedEvent: (allowEffects: AllowEffects, event: import('../../payment-webhook-core.js').PaymentEvent, uuid: string, status?: string) => Promise<void>, sendResponse: (allowEffects: AllowEffects, response: unknown, result: import('../../payment-webhook-core.js').PaymentWebhookResponse) => unknown, logError: (allowEffects: AllowEffects, error: unknown) => void }} deps Dependencies for the wrapper.
  * @returns {(allowEffects: AllowEffects, req: unknown, res: unknown) => Promise<unknown>} Request handler.
  */
 export function createPaymentWebhookIndexHandler(deps) {
-  const firestore = deps.firestore;
-  const providedDb = deps.db;
+  if (!deps.db) throw new TypeError('db must be provided');
+  const db = deps.db;
   const env = deps.env === undefined ? process.env : deps.env;
   const constructEvent = deps.constructEvent;
   const creditEventEffects = deps.creditEventEffects;
   const markProcessedEvent = deps.markProcessedEvent;
   const sendResponse = deps.sendResponse;
   const logError = deps.logError;
-  const db = /** @type {any} */ (providedDb ?? createDb(firestore, env));
   const billing = createBillingRuntime(db);
   const handleRequest = createPaymentWebhookHandler({
     fetchCredit: createFetchCredit(db),

@@ -7,6 +7,10 @@ describe('payment-webhook entry point', () => {
     expect(source).toContain(
       'const handlePaymentWebhook = createPaymentWebhookIndexHandler'
     );
+    expect(source).toContain('createEffectStartupBoundary');
+    expect(source).toContain(
+      'createPaymentWebhookStartupDb(allowEffects, Firestore, process.env)'
+    );
     expect(source).toContain('const handle = createEffectHttpBoundary');
     expect(source).toContain('export { handle }');
   });

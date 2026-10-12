@@ -7,7 +7,6 @@ import {
 
 const allowEffects = createAllowEffects();
 
-let mockDb;
 let mockBilling;
 const mockCreatePaymentWebhookHandler = jest.fn();
 const mockDomainHandler = jest.fn(async (_allowEffects, request) => ({
@@ -15,10 +14,6 @@ const mockDomainHandler = jest.fn(async (_allowEffects, request) => ({
   body: { request },
 }));
 
-await jest.unstable_mockModule(
-  '../../../../src/core/cloud/get-api-key-credit-v2/create-db.js',
-  () => ({ createDb: () => mockDb })
-);
 await jest.unstable_mockModule(
   '../../../../src/core/cloud/billing/billing-runtime-core.js',
   () => ({
@@ -149,6 +144,12 @@ describe('payment webhook cloud wrapper', () => {
 });
 
 describe('payment webhook cloud wrapper validation', () => {
+  it('requires an injected database instead of constructing one implicitly', () => {
+    expect(() =>
+      createPaymentWebhookIndexHandler(/** @type {any} */ ({}))
+    ).toThrow('db must be provided');
+  });
+
   it('requires Stripe secret, raw body, header, and injected verification', () => {
     const payload = JSON.stringify({
       id: 'signed',
@@ -241,7 +242,6 @@ async function runScenario135Part0(context) {
     applyRefundEvent: jest.fn(async input => ({ status: 200, body: input })),
     recordRefundReconciliation: jest.fn(async () => {}),
   };
-  mockDb = context.db;
   mockBilling = context.billing;
   context.response = {
     status: jest.fn(() => context.response),
@@ -249,11 +249,8 @@ async function runScenario135Part0(context) {
     send: jest.fn(),
     set: jest.fn(),
   };
-  context.Firestore = class {
-    collection = context.db.collection;
-  };
   context.handle = createPaymentWebhookIndexHandler({
-    firestore: context.Firestore,
+    db: context.db,
     creditEventEffects: {},
     env: { STRIPE_WEBHOOK_SECRET: 'secret' },
     constructEvent: payload => JSON.parse(payload.toString()),
@@ -264,7 +261,7 @@ async function runScenario135Part0(context) {
   });
   context.markProcessedEvent = jest.fn();
   createPaymentWebhookIndexHandler({
-    firestore: context.Firestore,
+    db: context.db,
     creditEventEffects: {},
     markProcessedEvent: jest.fn(),
     sendResponse: sendPaymentWebhookResponse,
