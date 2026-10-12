@@ -5,6 +5,7 @@ import {
   updateDocument,
   useMiddleware,
 } from '../../../src/cloud/mark-variant-dirty/effect-adapters.js';
+import { sendHttpResponse } from '../../../src/cloud/mark-variant-dirty/response-adapter.js';
 
 describe('mark-variant-dirty startup effect adapters', () => {
   it('initializes Firebase using the supplied capability', () => {
@@ -38,5 +39,16 @@ describe('mark-variant-dirty startup effect adapters', () => {
     await updateDocument(permission, reference, { dirty: true });
 
     expect(update).toHaveBeenCalledWith({ dirty: true });
+  });
+
+  it('writes an HTTP response through the permission-first adapter', () => {
+    const permission = Object.freeze({ scope: 'request' });
+    const response = { status: jest.fn(), json: jest.fn() };
+    response.status.mockReturnValue(response);
+
+    sendHttpResponse(permission, response, 200, 'json', { ok: true });
+
+    expect(response.status).toHaveBeenCalledWith(200);
+    expect(response.json).toHaveBeenCalledWith({ ok: true });
   });
 });

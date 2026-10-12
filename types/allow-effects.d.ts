@@ -12,7 +12,10 @@ export type AllowEffectsBoundary = <T>(
 
 /** Runtime boundary that mints a scoped command capability for an invocation. */
 export type EffectInvocationBoundary = <TArgs extends unknown[], TResult>(
-  handler: (permission: AllowEffects, ...args: TArgs) => Promise<TResult>
+  handler: (
+    permission: AllowEffects,
+    ...args: TArgs
+  ) => TResult | Promise<TResult>
 ) => (...args: TArgs) => Promise<TResult>;
 
 /** Synchronous startup boundary for effects that must finish during composition. */

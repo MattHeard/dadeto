@@ -21,7 +21,7 @@ const {
   sendForbidden,
   createIsAdminUid,
   parseMarkVariantRequestBody,
-  createHandleRequest,
+  createHandleRequest: createCoreHandleRequest,
   getRequestBody,
   getRequestMethod,
   hasStringMessage,
@@ -29,6 +29,11 @@ const {
   resolveParseRequestBody,
   resolveRequestParser,
 } = markVariantDirtyCore;
+
+const sendResponse = (res, status, method, body) =>
+  res.status(status)[method](body);
+const createHandleRequest = options =>
+  createCoreHandleRequest({ sendResponse, ...options });
 
 describe('getAllowedOrigins', () => {
   const allowEffects =
@@ -517,14 +522,14 @@ describe('auth helpers', () => {
       send: jest.fn(),
     };
 
-    sendUnauthorized(res, 'nope');
+    sendUnauthorized(sendResponse, res, 'nope');
     expect(res.status).toHaveBeenCalledWith(401);
     expect(res.send).toHaveBeenCalledWith('nope');
 
     res.status.mockClear();
     res.send.mockClear();
 
-    sendForbidden(res);
+    sendForbidden(sendResponse, res);
     expect(res.status).toHaveBeenCalledWith(403);
     expect(res.send).toHaveBeenCalledWith('Forbidden');
   });
@@ -577,7 +582,7 @@ describe('createHandleRequest', () => {
   });
 
   it('throws when invoked without any options', () => {
-    expect(() => createHandleRequest()).toThrow(
+    expect(() => createCoreHandleRequest()).toThrow(
       new TypeError('verifyAdmin must be a function')
     );
   });

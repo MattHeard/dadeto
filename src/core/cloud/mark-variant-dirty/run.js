@@ -11,8 +11,6 @@ import {
   markAuthorDirtyImpl,
   parseMarkVariantRequestBody,
   refFromSnap,
-  sendForbidden,
-  sendUnauthorized,
 } from './mark-variant-dirty-core.js';
 import { createVerifyAdmin, isAllowedOrigin } from '../cloud-core.js';
 
@@ -33,6 +31,7 @@ import { createVerifyAdmin, isAllowedOrigin } from '../cloud-core.js';
  *   useMiddleware: (permission: import('../../../../types/allow-effects').AllowEffects, app: import('../../../../types/native-http').NativeExpressApp, middleware: unknown) => void,
  *   registerPostRoute: (permission: import('../../../../types/allow-effects').AllowEffects, app: import('../../../../types/native-http').NativeExpressApp, path: string, handler: Function) => void,
  *   updateDocument: (permission: import('../../../../types/allow-effects').AllowEffects, reference: unknown, data: object) => Promise<unknown>,
+ *   sendResponse: (permission: import('../../../../types/allow-effects').AllowEffects, res: import('../../../../types/native-http').NativeHttpResponse, status: number, method: 'send' | 'json', body: unknown) => void,
  *   logDebug: (permission: import('../../../../types/allow-effects').AllowEffects, ...values: unknown[]) => void,
  *   ADMIN_UID: string,
  * }} deps Dependencies required to compose the mark-variant-dirty endpoint.
@@ -84,6 +83,13 @@ export function runMarkVariantDirty(deps) {
       refFromSnap,
     },
   };
+  const sendResponse =
+    /** @type {(res: import('../../../../types/native-http').NativeHttpResponse, status: number, method: 'send' | 'json', body: unknown) => void} */ (
+      (res, status, method, body) =>
+        deps.bindEffectInvocationBoundary(permission =>
+          deps.sendResponse(permission, res, status, method, body)
+        )()
+    );
   // Stryker restore all
 
   /**
@@ -115,8 +121,8 @@ export function runMarkVariantDirty(deps) {
         auth.verifyIdToken(token)
       ),
     isAdminUid: createIsAdminUid(deps.ADMIN_UID),
-    sendUnauthorized,
-    sendForbidden,
+    sendUnauthorized: (res, message) => sendResponse(res, 401, 'send', message),
+    sendForbidden: res => sendResponse(res, 403, 'send', 'Forbidden'),
   });
 
   const handleRequest = createHandleRequest(
@@ -126,10 +132,12 @@ export function runMarkVariantDirty(deps) {
     markVariantDirty: (pageNumber: number, variantName: string) => Promise<boolean>,
     parseRequestBody: (body: unknown) => { pageNumber: number, variantName: string },
     allowedMethod: string,
+    sendResponse: (res: import('../../../../types/native-http').NativeHttpResponse, status: number, method: 'send' | 'json', body: unknown) => void,
   }} */ ({
       verifyAdmin,
       markVariantDirty: markVariantDirtyAction,
       markAuthorDirty: markAuthorDirtyAction,
+      sendResponse,
       parseRequestBody: parseMarkVariantRequestBody,
       // Stryker disable all -- the endpoint accepts only the fixed POST method.
       allowedMethod: 'POST',

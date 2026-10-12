@@ -18,8 +18,10 @@ import {
 import {
   initializeFirebaseApp,
   registerPostRoute,
+  updateDocument,
   useMiddleware,
 } from './effect-adapters.js';
+import { sendHttpResponse } from './response-adapter.js';
 
 const { markVariantDirty: handle, handleRequest } = runMarkVariantDirty({
   initializeApp,
@@ -34,6 +36,7 @@ const { markVariantDirty: handle, handleRequest } = runMarkVariantDirty({
   bindEffectInvocationBoundary: createEffectInvocationBoundary,
   initializeFirebaseApp,
   registerPostRoute,
+  sendResponse: sendHttpResponse,
   useMiddleware,
   updateDocument,
   logDebug: logDebugEffect,
@@ -41,7 +44,4 @@ const { markVariantDirty: handle, handleRequest } = runMarkVariantDirty({
 });
 
 export { handle, handleRequest };
-export {
-  findVariantRef,
-  markVariantDirtyImpl,
-} from './mark-variant-dirty-core.js';
+export { findVariantRef, markVariantDirtyImpl } from './mark-variant-dirty-core.js';

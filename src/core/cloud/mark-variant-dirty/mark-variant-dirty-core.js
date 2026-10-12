@@ -5,7 +5,6 @@ import {
   createCorsOptions,
   extractErrorMessage,
   hasStringMessage,
-  sendOkResponse,
   resolveMessageOrDefault,
 } from '../cloud-core.js';
 import * as commonCore from '../../commonCore.js';
@@ -16,6 +15,7 @@ export { getAllowedOrigins } from '../allowed-origins.js';
 /** @typedef {import('../../../../types/native-http').NativeHttpResponse} NativeHttpResponse */
 /** @typedef {import('../../../../types/allow-effects').AllowEffects} AllowEffects */
 /** @typedef {any} MarkVariantDirtyValue Runtime-shaped dirty-marking value. */
+/** @typedef {(res: NativeHttpResponse, status: number, method: 'send' | 'json', body: unknown) => void} ResponseSender */
 
 /**
  * @typedef {object} FirebaseHelpers
@@ -64,6 +64,7 @@ export { getAllowedOrigins } from '../allowed-origins.js';
  * @property {(authorId: string) => Promise<boolean>} [markAuthorDirty] Author mutation helper.
  * @property {(body: unknown) => MarkVariantRequestParams} parseRequestBody Body parser.
  * @property {string} allowedMethod Allowed HTTP method.
+ * @property {ResponseSender} sendResponse Response adapter.
  */
 
 /**
@@ -79,14 +80,14 @@ export { getAllowedOrigins } from '../allowed-origins.js';
  * @property {(authorId: string) => Promise<boolean>} [markAuthorDirty] Author mutation helper.
  * @property {(body: unknown) => MarkVariantRequestParams} parseRequestBody Request parser.
  * @property {string} allowedMethod Allowed HTTP method.
+ * @property {ResponseSender} sendResponse Response adapter.
  */
 
 /**
  * @typedef {object} MarkVariantAndRespondParams
  * @property {NativeHttpResponse} res Response object.
- * @property {(pageNumber: number, variantName: string) => Promise<boolean>} markFn Marking function.
- * @property {number} pageNumber Page number.
- * @property {string} variantName Variant name.
+ * @property {() => Promise<boolean>} runMutation Mutation command.
+ * @property {ResponseSender} sendResponse Response adapter.
  */
 /**
  * Build the cors middleware origin handler.
@@ -384,21 +385,23 @@ async function resolveVariantReference(deps, pageNumber, variantName) {
  */
 /**
  * Send a 401 response with a message.
+ * @param {ResponseSender} sendResponse Response adapter.
  * @param {NativeHttpResponse} res HTTP response.
  * @param {string} message Message to send.
  * @returns {void}
  */
-export function sendUnauthorized(res, message) {
-  res.status(401).send(message);
+export function sendUnauthorized(sendResponse, res, message) {
+  sendResponse(res, 401, 'send', message);
 }
 
 /**
  * Send a 403 Forbidden response.
+ * @param {ResponseSender} sendResponse Response adapter.
  * @param {NativeHttpResponse} res HTTP response.
  * @returns {void}
  */
-export function sendForbidden(res) {
-  res.status(403).send('Forbidden');
+export function sendForbidden(sendResponse, res) {
+  sendResponse(res, 403, 'send', 'Forbidden');
 }
 
 /**
@@ -406,14 +409,15 @@ export function sendForbidden(res) {
  * @param {NativeHttpRequest} req HTTP request.
  * @param {NativeHttpResponse} res HTTP response.
  * @param {string} allowedMethod Allowed HTTP method.
+ * @param {ResponseSender} sendResponse Response adapter.
  * @returns {boolean} True when the method is allowed.
  */
-function enforceAllowedMethod(req, res, allowedMethod) {
+function enforceAllowedMethod(req, res, allowedMethod, sendResponse) {
   if (getRequestMethod(req) === allowedMethod) {
     return true;
   }
 
-  res.status(405).send(`${allowedMethod} only`);
+  sendResponse(res, 405, 'send', `${allowedMethod} only`);
   return false;
 }
 
@@ -422,15 +426,16 @@ function enforceAllowedMethod(req, res, allowedMethod) {
  * @param {NativeHttpRequest} req HTTP request.
  * @param {NativeHttpResponse} res HTTP response.
  * @param {(body: unknown) => { pageNumber: number, variantName: string }} parseRequestBody Body parser.
+ * @param {ResponseSender} sendResponse Response adapter.
  * @returns {{ pageNumber: number, variantName: string } | null} Parsed parameters or null when invalid.
  */
-function parseValidRequest(req, res, parseRequestBody) {
+function parseValidRequest(req, res, parseRequestBody, sendResponse) {
   const parsed = parseRequestBody(getRequestBody(req));
   if (isValidMarkRequest(parsed)) {
     return parsed;
   }
 
-  res.status(400).json({ error: 'Invalid input' });
+  sendResponse(res, 400, 'json', { error: 'Invalid input' });
   return null;
 }
 
@@ -487,15 +492,15 @@ function isValidMarkRequest({ pageNumber, variantName, authorId }) {
  * @param {MarkVariantAndRespondParams} params - Response and mutation dependencies.
  * @returns {Promise<void>} Resolves when the response has been sent.
  */
-async function markVariantAndRespond({ res, markFn, pageNumber, variantName }) {
+async function markVariantAndRespond({ res, runMutation, sendResponse }) {
   await runWithFailureAndThen(
-    () => markFn(pageNumber, variantName),
+    runMutation,
     error => {
       const message = resolveUpdateErrorMessage(error);
-      res.status(500).json(commonCore.createErrorPayload(message));
+      sendResponse(res, 500, 'json', commonCore.createErrorPayload(message));
     },
     value => {
-      respondToVariantResult(res, value);
+      respondToVariantResult(res, value, sendResponse);
     }
   );
 }
@@ -504,10 +509,11 @@ async function markVariantAndRespond({ res, markFn, pageNumber, variantName }) {
  * Send the response for the variant update result.
  * @param {NativeHttpResponse} res Response object.
  * @param {boolean} ok Marker of success.
+ * @param {ResponseSender} sendResponse Response adapter.
  * @returns {void}
  */
-function respondToVariantResult(res, ok) {
-  respondToRecordResult(res, ok, 'Variant');
+function respondToVariantResult(res, ok, sendResponse) {
+  respondToRecordResult(res, ok, 'Variant', sendResponse);
 }
 
 /**
@@ -515,15 +521,16 @@ function respondToVariantResult(res, ok) {
  * @param {NativeHttpResponse} res Response object.
  * @param {boolean} ok Mutation result.
  * @param {string} recordName Entity name used in the not-found message.
+ * @param {ResponseSender} sendResponse Response adapter.
  * @returns {void}
  */
-function respondToRecordResult(res, ok, recordName) {
+function respondToRecordResult(res, ok, recordName, sendResponse) {
   if (!ok) {
-    res.status(404).json({ error: `${recordName} not found` });
+    sendResponse(res, 404, 'json', { error: `${recordName} not found` });
     return;
   }
 
-  sendOkResponse(res);
+  sendResponse(res, 200, 'json', { ok: true });
 }
 
 /**
@@ -574,16 +581,19 @@ export function parseMarkVariantRequestBody(body) {
 /**
  * Validate and extract configuration from options.
  * @param {HandleRequestOptions | undefined} optionsTyped - Typed options.
- * @returns {Pick<HandlerDependencies, 'verifyAdmin' | 'markVariantDirty' | 'markAuthorDirty'>} Validated configuration.
+ * @returns {Pick<HandlerDependencies, 'verifyAdmin' | 'markVariantDirty' | 'markAuthorDirty' | 'sendResponse'>} Validated configuration.
  */
 function extractValidatedConfig(optionsTyped) {
-  const { verifyAdmin, markVariantDirty, markAuthorDirty } = optionsTyped ?? {};
+  const { verifyAdmin, markVariantDirty, markAuthorDirty, sendResponse } =
+    optionsTyped ?? {};
   commonCore.assertFunction(verifyAdmin, 'verifyAdmin');
   commonCore.assertFunction(markVariantDirty, 'markVariantDirty');
-  return /** @type {Pick<HandlerDependencies, 'verifyAdmin' | 'markVariantDirty' | 'markAuthorDirty'>} */ ({
+  commonCore.assertFunction(sendResponse, 'sendResponse');
+  return /** @type {Pick<HandlerDependencies, 'verifyAdmin' | 'markVariantDirty' | 'markAuthorDirty' | 'sendResponse'>} */ ({
     verifyAdmin,
     markVariantDirty,
     markAuthorDirty,
+    sendResponse,
   });
 }
 
@@ -594,7 +604,7 @@ export const markVariantDirtyTestUtils = {
 /**
  * Extract validated admin and core functions.
  * @param {HandleRequestOptions | undefined} optionsTyped - Configuration object.
- * @returns {Pick<HandlerDependencies, 'verifyAdmin' | 'markVariantDirty' | 'markAuthorDirty'>} Extracted functions.
+ * @returns {Pick<HandlerDependencies, 'verifyAdmin' | 'markVariantDirty' | 'markAuthorDirty' | 'sendResponse'>} Extracted functions.
  */
 function extractCoreHandlers(optionsTyped) {
   return extractValidatedConfig(optionsTyped);
@@ -605,12 +615,14 @@ function extractCoreHandlers(optionsTyped) {
  * @param {unknown} verifyAdmin - Admin verification function.
  * @param {unknown} markVariantDirty - Dirty marking function.
  * @param {((id: string) => Promise<boolean>) | undefined} markAuthorDirty - Author marking function.
- * @returns {Pick<HandlerDependencies, 'verifyAdmin' | 'markVariantDirty' | 'markAuthorDirty'>} Cast functions.
+ * @param {ResponseSender} sendResponse Response adapter.
+ * @returns {Pick<HandlerDependencies, 'verifyAdmin' | 'markVariantDirty' | 'markAuthorDirty' | 'sendResponse'>} Cast functions.
  */
 function castCoreFunctions(
   verifyAdmin,
   markVariantDirty,
-  /** @type {((id: string) => Promise<boolean>) | undefined} */ markAuthorDirty
+  /** @type {((id: string) => Promise<boolean>) | undefined} */ markAuthorDirty,
+  sendResponse
 ) {
   return {
     verifyAdmin:
@@ -622,6 +634,7 @@ function castCoreFunctions(
         markVariantDirty
       ),
     markAuthorDirty,
+    sendResponse,
   };
 }
 
@@ -665,25 +678,22 @@ function resolveParserAndMethod(optionsTyped) {
 
 /**
  * Resolve and cast all handler functions.
- * @param {unknown} verifyAdmin - Admin verification function.
- * @param {unknown} markVariantDirty - Dirty marking function.
- * @param {((id: string) => Promise<boolean>) | undefined} markAuthorDirty Author marking function.
+ * @param {Pick<HandlerDependencies, 'verifyAdmin' | 'markVariantDirty' | 'markAuthorDirty' | 'sendResponse'>} coreConfig Validated core callbacks.
  * @param {HandleRequestOptions | undefined} optionsTyped - Configuration object.
  * @returns {HandlerDependencies} Resolved handler config.
  */
-function resolveCastHandlerFunctions(
-  verifyAdmin,
-  markVariantDirty,
-  /** @type {((id: string) => Promise<boolean>) | undefined} */ markAuthorDirty,
-  optionsTyped
-) {
+function resolveCastHandlerFunctions(coreConfig, optionsTyped) {
   const core = castCoreFunctions(
-    verifyAdmin,
-    markVariantDirty,
-    markAuthorDirty
+    coreConfig.verifyAdmin,
+    coreConfig.markVariantDirty,
+    coreConfig.markAuthorDirty,
+    coreConfig.sendResponse
   );
   const params = resolveParserAndMethod(optionsTyped);
-  return { ...core, ...params };
+  return {
+    ...core,
+    ...params,
+  };
 }
 
 /**
@@ -692,14 +702,8 @@ function resolveCastHandlerFunctions(
  * @returns {HandlerDependencies} Resolved handler config.
  */
 function extractHandlerConfig(optionsTyped) {
-  const { verifyAdmin, markVariantDirty, markAuthorDirty } =
-    extractCoreHandlers(optionsTyped);
-  return resolveCastHandlerFunctions(
-    verifyAdmin,
-    markVariantDirty,
-    markAuthorDirty,
-    optionsTyped
-  );
+  const coreConfig = extractCoreHandlers(optionsTyped);
+  return resolveCastHandlerFunctions(coreConfig, optionsTyped);
 }
 
 /**
@@ -772,22 +776,33 @@ async function processHandleRequest(requestData, handlerDeps) {
   const markAuthorDirty = handlerDeps.markAuthorDirty;
   const parseRequestBody = handlerDeps.parseRequestBody;
   const allowedMethod = handlerDeps.allowedMethod;
+  const sendResponse = handlerDeps.sendResponse;
 
   try {
-    enforceMethodOrThrow(req, res, allowedMethod);
+    enforceMethodOrThrow(req, res, allowedMethod, sendResponse);
     await ensureAuthorizedOrThrow(verifyAdmin, req, res);
-    const parsed = parseRequestOrThrow(req, res, parseRequestBody);
+    const parsed = parseRequestOrThrow(
+      req,
+      res,
+      parseRequestBody,
+      sendResponse
+    );
     if (parsed.authorId) {
       if (!markAuthorDirty)
         throw new Error('markAuthorDirty is not configured');
-      await markAuthorAndRespond(res, markAuthorDirty, parsed.authorId);
+      await markAuthorAndRespond(
+        res,
+        markAuthorDirty,
+        parsed.authorId,
+        sendResponse
+      );
       return;
     }
     await markVariantAndRespond({
       res,
-      markFn: markVariantDirty,
-      pageNumber: parsed.pageNumber,
-      variantName: parsed.variantName,
+      runMutation: () =>
+        markVariantDirty(parsed.pageNumber, parsed.variantName),
+      sendResponse,
     });
   } catch (err) {
     handleProcessError(err);
@@ -798,13 +813,17 @@ async function processHandleRequest(requestData, handlerDeps) {
  * @param {NativeHttpResponse} res Response.
  * @param {(authorId: string) => Promise<boolean>} markFn Author mutation.
  * @param {string} authorId Author ID.
+ * @param {HandlerDependencies['sendResponse']} sendResponse Response adapter.
  */
-async function markAuthorAndRespond(res, markFn, authorId) {
+async function markAuthorAndRespond(res, markFn, authorId, sendResponse) {
   // Stryker disable all -- author mutation responses use the fixed HTTP protocol.
   await runWithFailureAndThen(
     () => markFn(authorId),
-    error => res.status(500).json({ error: resolveUpdateErrorMessage(error) }),
-    value => respondToRecordResult(res, value, 'Author')
+    error =>
+      sendResponse(res, 500, 'json', {
+        error: resolveUpdateErrorMessage(error),
+      }),
+    value => respondToRecordResult(res, value, 'Author', sendResponse)
   );
   // Stryker restore all
 }
@@ -827,10 +846,13 @@ function handleProcessError(err) {
  * @param {NativeHttpRequest} req Req.
  * @param {NativeHttpResponse} res Res.
  * @param {string} allowedMethod Allowed method.
+ * @param {ResponseSender} sendResponse Response adapter.
  * @returns {void}
  */
-function enforceMethodOrThrow(req, res, allowedMethod) {
-  throwRequestHandledIfFalsy(enforceAllowedMethod(req, res, allowedMethod));
+function enforceMethodOrThrow(req, res, allowedMethod, sendResponse) {
+  throwRequestHandledIfFalsy(
+    enforceAllowedMethod(req, res, allowedMethod, sendResponse)
+  );
 }
 
 /**
@@ -849,11 +871,12 @@ async function ensureAuthorizedOrThrow(verifyAdminFn, req, res) {
  * @param {NativeHttpRequest} req Req.
  * @param {NativeHttpResponse} res Res.
  * @param {(body: unknown) => { pageNumber: number, variantName: string }} parseRequestBody Parser.
+ * @param {ResponseSender} sendResponse Response adapter.
  * @returns {{ pageNumber: number, variantName: string, authorId?: string }} Parsed.
  */
-function parseRequestOrThrow(req, res, parseRequestBody) {
+function parseRequestOrThrow(req, res, parseRequestBody, sendResponse) {
   return throwRequestHandledIfFalsy(
-    parseValidRequest(req, res, parseRequestBody)
+    parseValidRequest(req, res, parseRequestBody, sendResponse)
   );
 }
 

@@ -1,6 +1,67 @@
 import { jest } from '@jest/globals';
 import { runMarkVariantDirty } from '../../../../src/core/cloud/mark-variant-dirty/run.js';
 
+/**
+ *
+ * @param handleRequest
+ * @param res
+ * @param get
+ * @param sendResponse
+ */
+/**
+ * Exercise endpoint response paths and verify every write is permission-gated.
+ * @param {(req: import('../../../../types/native-http').NativeHttpRequest, res: import('../../../../types/native-http').NativeHttpResponse) => Promise<void>} handleRequest Wired endpoint handler.
+ * @param {import('../../../../types/native-http').NativeHttpResponse} res Express response fake.
+ * @param {{get: {mockRejectedValueOnce: (error: Error) => unknown}, verifyIdToken: {mockResolvedValueOnce: (value: object) => unknown}, sendResponse: {mock: {calls: unknown[][]}}}} runtime Test adapters.
+ * @returns {Promise<void>} Resolves after all response paths are checked.
+ */
+async function verifyResponseBranches(handleRequest, res, runtime) {
+  await handleRequest({ method: 'GET' }, res);
+  await handleRequest(
+    { method: 'POST', get: jest.fn(() => ''), body: { page: 1, variant: 'a' } },
+    res
+  );
+  runtime.verifyIdToken.mockResolvedValueOnce({ uid: 'not-admin' });
+  await handleRequest(
+    {
+      method: 'POST',
+      get: jest.fn(() => 'Bearer token'),
+      body: { page: 1, variant: 'a' },
+    },
+    res
+  );
+  await handleRequest(
+    {
+      method: 'POST',
+      get: jest.fn(() => 'Bearer token'),
+      body: { page: 'invalid', variant: 'a' },
+    },
+    res
+  );
+  runtime.get.mockRejectedValueOnce(new Error('lookup failed'));
+  await handleRequest(
+    {
+      method: 'POST',
+      get: jest.fn(() => 'Bearer token'),
+      body: { page: 12, variant: 'alpha' },
+    },
+    res
+  );
+  expect(
+    runtime.sendResponse.mock.calls.map(([permission]) => permission)
+  ).toEqual(
+    expect.arrayContaining([expect.objectContaining({ scope: 'invocation' })])
+  );
+  expect(
+    runtime.sendResponse.mock.calls.every(([permission]) =>
+      Object.isFrozen(permission)
+    )
+  ).toBe(true);
+  expect(runtime.sendResponse.mock.calls.map(([, , status]) => status)).toEqual(
+    expect.arrayContaining([200, 400, 401, 403, 404, 405, 500])
+  );
+}
+
 describe('runMarkVariantDirty', () => {
   test('wires the endpoint and returns exports', () => {
     const startupPermissions = [];
@@ -50,6 +111,7 @@ describe('runMarkVariantDirty', () => {
       initializeFirebaseApp,
       bindEffectInvocationBoundary: handler => handler,
       updateDocument,
+      sendResponse: jest.fn(),
       useMiddleware: (permission, app, middleware) => {
         expect(Object.isFrozen(permission)).toBe(true);
         app.use(middleware);
@@ -119,6 +181,10 @@ describe('runMarkVariantDirty', () => {
     const updateDocument = jest.fn((_, reference, data) =>
       reference.update(data)
     );
+    const sendResponse = jest.fn((...args) => {
+      const [, res, status, method, body] = args;
+      return res.status(status)[method](body);
+    });
     const getFirestoreInstance = jest.fn(() => ({
       collectionGroup,
       collection,
@@ -158,6 +224,7 @@ describe('runMarkVariantDirty', () => {
           return handler(permission, ...args);
         },
       updateDocument,
+      sendResponse,
       useMiddleware: (_, app, middleware) => app.use(middleware),
       registerPostRoute: (_, app, path, handler) => app.post(path, handler),
       logDebug: jest.fn(),
@@ -186,6 +253,14 @@ describe('runMarkVariantDirty', () => {
     expect(collectionGroup).toHaveBeenCalledWith('pages');
     expect(res.status).toHaveBeenCalledWith(404);
     expect(res.json).toHaveBeenCalledWith({ error: 'Variant not found' });
+    expect(sendResponse).toHaveBeenNthCalledWith(
+      1,
+      invocationPermissions[0],
+      res,
+      404,
+      'json',
+      { error: 'Variant not found' }
+    );
 
     res.status.mockClear();
     await handleRequest(
@@ -201,14 +276,20 @@ describe('runMarkVariantDirty', () => {
     expect(authorWhere).toHaveBeenCalledWith('uuid', '==', 'author-1');
     expect(authorRef.update).toHaveBeenNthCalledWith(1, { dirty: false });
     expect(authorRef.update).toHaveBeenNthCalledWith(2, { dirty: true });
-    expect(res.status).toHaveBeenCalledWith(200);
     expect(updateDocument).toHaveBeenNthCalledWith(
       1,
-      invocationPermissions[0],
+      invocationPermissions[1],
       authorRef,
       { dirty: false }
     );
-    expect(Object.isFrozen(invocationPermissions[0])).toBe(true);
+    expect(sendResponse).toHaveBeenNthCalledWith(
+      2,
+      invocationPermissions[3],
+      res,
+      200,
+      'json',
+      { ok: true }
+    );
 
     await handleRequest(
       {
@@ -219,12 +300,18 @@ describe('runMarkVariantDirty', () => {
       res
     );
 
-    expect(invocationPermissions[1]).not.toBe(invocationPermissions[0]);
+    expect(invocationPermissions[4]).not.toBe(invocationPermissions[1]);
     expect(updateDocument).toHaveBeenNthCalledWith(
       3,
-      invocationPermissions[1],
+      invocationPermissions[4],
       authorRef,
       { dirty: false }
     );
+
+    await verifyResponseBranches(handleRequest, res, {
+      get,
+      verifyIdToken,
+      sendResponse,
+    });
   });
 });
