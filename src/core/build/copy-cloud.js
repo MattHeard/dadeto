@@ -2289,6 +2289,17 @@ export async function createCopyCloudHandle(deps) {
   await Promise.all([
     // Specific rewrites for cross-function imports
     rewriteImport(
+      join(
+        infraFunctionsDir,
+        'realtime-call',
+        'cloud',
+        'realtime-call',
+        'index.js'
+      ),
+      '../../core/realtime/openaiRealtimeCalls.js',
+      './core/realtime/openaiRealtimeCalls.js'
+    ),
+    rewriteImport(
       processNewStoryCoreFile,
       '../process-new-page/process-new-page-core.js',
       './process-new-page-core.js'

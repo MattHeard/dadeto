@@ -1,0 +1,7 @@
+# Realtime-call fetch effects
+
+- **Unexpected hurdle:** The cloud entrypoint imported `./core/realtime/openaiRealtimeCalls.js`, a path present only in the generated nested deployment tree. The source entrypoint could not be imported by its focused test.
+- **Diagnosis:** The entrypoint's core exchange already forwarded `AllowEffects` to its injected fetch, but the cloud wrapper used an inline adapter that silently discarded the permission. Cloud packaging copies this entrypoint under `cloud/realtime-call/`, where the original core-relative path is valid.
+- **Fix:** Wrap native fetch with the shared `requireAllowEffects` adapter. Use a source-relative core import and add a targeted packaging rewrite back to the nested deployment path. The focused entrypoint test proves distinct permissions reach the injected fetch on each request, while the native fetch receives only its URL and request options.
+- **Evidence:** Focused Jest passed 3 suites / 15 tests; `npm run tsdoc:check` passed; targeted ESLint passed; `npm run check` passed all 10 gates; `npm run build:cloud` passed and logged the targeted import rewrite; `node --check infra/cloud-functions/realtime-call/cloud/realtime-call/index.js` passed; `git diff --check` passed.
+- **Next:** Continue the lexicographic `src/cloud` Allow Effects audit at `src/cloud/recalculate-moderator-reputation/index.js`. Keep source imports testable and encode any generated-layout rewrite directly in the cloud copy plan.
