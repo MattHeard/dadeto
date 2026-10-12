@@ -10,6 +10,7 @@ describe('runMarkVariantDirty', () => {
     }));
     const initializeApp = jest.fn();
     const initializeFirebaseApp = jest.fn((_, initializer) => initializer());
+    const updateDocument = jest.fn().mockResolvedValue(undefined);
     const verifyIdToken = jest.fn().mockResolvedValue({ uid: 'user-1' });
     const getAuth = jest.fn(() => ({ verifyIdToken }));
     const db = {};
@@ -47,6 +48,8 @@ describe('runMarkVariantDirty', () => {
         return handler(permission);
       },
       initializeFirebaseApp,
+      bindEffectInvocationBoundary: handler => handler,
+      updateDocument,
       useMiddleware: (permission, app, middleware) => {
         expect(Object.isFrozen(permission)).toBe(true);
         app.use(middleware);
@@ -112,6 +115,10 @@ describe('runMarkVariantDirty', () => {
     const authorLimit = jest.fn(() => ({ get: authorGet }));
     const authorWhere = jest.fn(() => ({ limit: authorLimit }));
     const collection = jest.fn(() => ({ where: authorWhere }));
+    const invocationPermissions = [];
+    const updateDocument = jest.fn((_, reference, data) =>
+      reference.update(data)
+    );
     const getFirestoreInstance = jest.fn(() => ({
       collectionGroup,
       collection,
@@ -143,6 +150,14 @@ describe('runMarkVariantDirty', () => {
       getEnvironmentVariables,
       bindStartupEffectBoundary: handler => handler(Object.freeze({})),
       initializeFirebaseApp: (_, initializer) => initializer(),
+      bindEffectInvocationBoundary:
+        handler =>
+        async (...args) => {
+          const permission = Object.freeze({ scope: 'invocation' });
+          invocationPermissions.push(permission);
+          return handler(permission, ...args);
+        },
+      updateDocument,
       useMiddleware: (_, app, middleware) => app.use(middleware),
       registerPostRoute: (_, app, path, handler) => app.post(path, handler),
       logDebug: jest.fn(),
@@ -187,5 +202,29 @@ describe('runMarkVariantDirty', () => {
     expect(authorRef.update).toHaveBeenNthCalledWith(1, { dirty: false });
     expect(authorRef.update).toHaveBeenNthCalledWith(2, { dirty: true });
     expect(res.status).toHaveBeenCalledWith(200);
+    expect(updateDocument).toHaveBeenNthCalledWith(
+      1,
+      invocationPermissions[0],
+      authorRef,
+      { dirty: false }
+    );
+    expect(Object.isFrozen(invocationPermissions[0])).toBe(true);
+
+    await handleRequest(
+      {
+        method: 'POST',
+        get: jest.fn(() => 'Bearer token'),
+        body: { authorId: 'author-1' },
+      },
+      res
+    );
+
+    expect(invocationPermissions[1]).not.toBe(invocationPermissions[0]);
+    expect(updateDocument).toHaveBeenNthCalledWith(
+      3,
+      invocationPermissions[1],
+      authorRef,
+      { dirty: false }
+    );
   });
 });

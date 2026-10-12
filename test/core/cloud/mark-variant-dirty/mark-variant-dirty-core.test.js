@@ -409,8 +409,10 @@ describe('findVariantRef', () => {
 });
 
 describe('markVariantDirtyImpl', () => {
+  const permission = Object.freeze({ scope: 'request' });
+
   it('throws when database is not provided', async () => {
-    await expect(markVariantDirtyImpl(1, 'a')).rejects.toThrow(
+    await expect(markVariantDirtyImpl(permission, 1, 'a')).rejects.toThrow(
       /Cannot destructure property 'db'/
     );
   });
@@ -419,14 +421,20 @@ describe('markVariantDirtyImpl', () => {
     const firebase = {
       findPageRef: jest.fn().mockResolvedValue(null),
     };
+    const updateDocument = jest.fn();
 
     await expect(
-      markVariantDirtyImpl(1, 'missing', { db: {}, firebase })
+      markVariantDirtyImpl(permission, 1, 'missing', {
+        db: {},
+        firebase,
+        updateDocument,
+      })
     ).resolves.toBe(false);
+    expect(updateDocument).not.toHaveBeenCalled();
   });
 
   it('updates the variant and returns true when found', async () => {
-    const updateVariantDirty = jest.fn().mockResolvedValue(undefined);
+    const updateDocument = jest.fn().mockResolvedValue(undefined);
     const firebase = {
       findPageRef: jest.fn().mockResolvedValue('pageRef'),
       findVariantsSnap: jest.fn().mockResolvedValue('variantSnap'),
@@ -434,33 +442,22 @@ describe('markVariantDirtyImpl', () => {
     };
 
     await expect(
-      markVariantDirtyImpl(42, 'test-variant', {
+      markVariantDirtyImpl(permission, 42, 'test-variant', {
         db: {},
         firebase,
-        updateVariantDirty,
+        updateDocument,
       })
     ).resolves.toBe(true);
 
-    expect(updateVariantDirty).toHaveBeenCalledWith('variantRef');
-  });
-
-  it('relies on the default update function when not overridden', async () => {
-    const variantRef = { update: jest.fn().mockResolvedValue(undefined) };
-    const firebase = {
-      findPageRef: jest.fn().mockResolvedValue('pageRef'),
-      findVariantsSnap: jest.fn().mockResolvedValue('variantSnap'),
-      refFromSnap: jest.fn().mockReturnValue(variantRef),
-    };
-
-    await expect(
-      markVariantDirtyImpl(9, 'variant-b', { db: {}, firebase })
-    ).resolves.toBe(true);
-
-    expect(variantRef.update).toHaveBeenCalledWith({ dirty: true });
+    expect(updateDocument).toHaveBeenCalledWith(permission, 'variantRef', {
+      dirty: true,
+    });
   });
 });
 
 describe('markAuthorDirtyImpl', () => {
+  const permission = Object.freeze({ scope: 'request' });
+
   it('returns false when no author matches', async () => {
     const get = jest.fn().mockResolvedValue({ docs: [] });
     const db = {
@@ -469,21 +466,32 @@ describe('markAuthorDirtyImpl', () => {
       })),
     };
 
-    await expect(markAuthorDirtyImpl('missing', { db })).resolves.toBe(false);
+    const updateDocument = jest.fn();
+    await expect(
+      markAuthorDirtyImpl(permission, 'missing', { db, updateDocument })
+    ).resolves.toBe(false);
+    expect(updateDocument).not.toHaveBeenCalled();
   });
 
   it('toggles the dirty flag when an author matches', async () => {
-    const update = jest.fn().mockResolvedValue(undefined);
-    const get = jest.fn().mockResolvedValue({ docs: [{ ref: { update } }] });
+    const reference = {};
+    const get = jest.fn().mockResolvedValue({ docs: [{ ref: reference }] });
     const db = {
       collection: jest.fn(() => ({
         where: jest.fn(() => ({ limit: jest.fn(() => ({ get })) })),
       })),
     };
 
-    await expect(markAuthorDirtyImpl('author-1', { db })).resolves.toBe(true);
-    expect(update).toHaveBeenNthCalledWith(1, { dirty: false });
-    expect(update).toHaveBeenNthCalledWith(2, { dirty: true });
+    const updateDocument = jest.fn().mockResolvedValue(undefined);
+    await expect(
+      markAuthorDirtyImpl(permission, 'author-1', { db, updateDocument })
+    ).resolves.toBe(true);
+    expect(updateDocument).toHaveBeenNthCalledWith(1, permission, reference, {
+      dirty: false,
+    });
+    expect(updateDocument).toHaveBeenNthCalledWith(2, permission, reference, {
+      dirty: true,
+    });
   });
 });
 

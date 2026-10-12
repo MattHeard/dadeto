@@ -11,6 +11,7 @@ import {
 } from './mark-variant-dirty-gcf.js';
 import { runMarkVariantDirty } from '../../core/cloud/mark-variant-dirty/run.js';
 import {
+  createEffectInvocationBoundary,
   createEffectStartupBoundary,
   logDebugEffect,
 } from '../allow-effects.js';
@@ -30,9 +31,11 @@ const { markVariantDirty: handle, handleRequest } = runMarkVariantDirty({
   functions,
   getEnvironmentVariables,
   bindStartupEffectBoundary: createEffectStartupBoundary,
+  bindEffectInvocationBoundary: createEffectInvocationBoundary,
   initializeFirebaseApp,
   registerPostRoute,
   useMiddleware,
+  updateDocument,
   logDebug: logDebugEffect,
   ADMIN_UID,
 });

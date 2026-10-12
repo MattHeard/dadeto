@@ -14,6 +14,7 @@ const POST_METHOD = 'POST';
 export { getAllowedOrigins } from '../allowed-origins.js';
 /** @typedef {import('../../../../types/native-http').NativeHttpRequest} NativeHttpRequest */
 /** @typedef {import('../../../../types/native-http').NativeHttpResponse} NativeHttpResponse */
+/** @typedef {import('../../../../types/allow-effects').AllowEffects} AllowEffects */
 /** @typedef {any} MarkVariantDirtyValue Runtime-shaped dirty-marking value. */
 
 /**
@@ -28,7 +29,7 @@ export { getAllowedOrigins } from '../allowed-origins.js';
  * @typedef {object} MarkVariantDirtyDeps
  * @property {import('firebase-admin/firestore').Firestore} db Firestore instance.
  * @property {FirebaseHelpers} [firebase] Optional Firebase helper overrides.
- * @property {typeof updateVariantDirty} [updateVariantDirty] Override for updateVariantDirty.
+ * @property {(permission: AllowEffects, reference: unknown, data: object) => Promise<unknown>} updateDocument Permission-aware Firestore update adapter.
  * @property {(authorId: string) => Promise<boolean>} [markAuthorDirty] Author mutation.
  */
 
@@ -295,21 +296,14 @@ async function findVariantRefFromPage(helpers, pageRef, variantName) {
 }
 
 /**
- * Update a variant document with a dirty flag.
- * @param {import('firebase-admin/firestore').DocumentReference} variantRef Variant doc ref.
- * @returns {Promise<void>} Promise resolving when update completes.
- */
-export function updateVariantDirty(variantRef) {
-  return variantRef.update({ dirty: true });
-}
-
 /**
  * Mark an author document dirty so render-author regenerates its page.
+ * @param {AllowEffects} permission Permission for the Firestore update commands.
  * @param {string} authorId Author document ID.
  * @param {MarkVariantDirtyDeps} deps Firestore dependencies.
  * @returns {Promise<boolean>} True when updated.
  */
-export async function markAuthorDirtyImpl(authorId, deps) {
+export async function markAuthorDirtyImpl(permission, authorId, deps) {
   const snapshot = await deps.db
     .collection('authors')
     .where('uuid', '==', authorId)
@@ -320,19 +314,25 @@ export async function markAuthorDirtyImpl(authorId, deps) {
   const authorRef = /** @type {{ ref: MarkVariantDirtyValue }} */ (
     /** @type {unknown} */ (author)
   ).ref;
-  await authorRef.update({ dirty: false });
-  await authorRef.update({ dirty: true });
+  await deps.updateDocument(permission, authorRef, { dirty: false });
+  await updateVariantIfPresent(permission, deps.updateDocument, authorRef);
   return true;
 }
 
 /**
  * Mark a variant document as dirty so the render-variant function re-renders it.
+ * @param {AllowEffects} permission Permission for the Firestore update command.
  * @param {number} pageNumber Page number.
  * @param {string} variantName Variant name.
  * @param {MarkVariantDirtyDeps} deps Dependencies required to locate and update the variant.
  * @returns {Promise<boolean>} True if the variant was updated.
  */
-export async function markVariantDirtyImpl(pageNumber, variantName, deps) {
+export async function markVariantDirtyImpl(
+  permission,
+  pageNumber,
+  variantName,
+  deps
+) {
   // Ensure we have deps with db - will throw in resolveVariantReference if missing
   const variantRef = await resolveVariantReference(
     deps,
@@ -340,21 +340,22 @@ export async function markVariantDirtyImpl(pageNumber, variantName, deps) {
     variantName
   );
 
-  return updateVariantIfPresent(deps.updateVariantDirty, variantRef);
+  return updateVariantIfPresent(permission, deps.updateDocument, variantRef);
 }
 
 /**
  * Apply the update helper when a reference exists.
- * @param {((variantRef: import('firebase-admin/firestore').DocumentReference) => Promise<void>) | undefined} updateVariantDirtyFn Update override.
+ * @param {AllowEffects} permission Permission for the Firestore update command.
+ * @param {(permission: AllowEffects, reference: unknown, data: object) => Promise<unknown>} updateDocument Permission-aware update adapter.
  * @param {import('firebase-admin/firestore').DocumentReference | null} variantRef Candidate ref.
  * @returns {Promise<boolean>} True when the update ran.
  */
-async function updateVariantIfPresent(updateVariantDirtyFn, variantRef) {
+async function updateVariantIfPresent(permission, updateDocument, variantRef) {
   if (!variantRef) {
     return false;
   }
 
-  await applyUpdateFn(updateVariantDirtyFn, variantRef);
+  await updateDocument(permission, variantRef, { dirty: true });
   return true;
 }
 
@@ -374,17 +375,6 @@ async function resolveVariantReference(deps, pageNumber, variantName) {
     variantName,
     firebase,
   });
-}
-
-/**
- * Apply update function with fallback.
- * @param {((variantRef: import('firebase-admin/firestore').DocumentReference) => Promise<void>) | undefined} updateVariantDirtyFn Update override.
- * @param {import('firebase-admin/firestore').DocumentReference} variantRef Variant ref.
- * @returns {Promise<void>} Promise.
- */
-function applyUpdateFn(updateVariantDirtyFn, variantRef) {
-  const updateFn = updateVariantDirtyFn ?? updateVariantDirty;
-  return Promise.resolve(updateFn(variantRef)).then(() => undefined);
 }
 
 /**

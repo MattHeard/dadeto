@@ -13,7 +13,6 @@ export function initializeFirebaseApp(permission, initializeApp) {
 }
 
 /**
- * Register middleware at the cloud boundary.
  * @param {AllowEffects} permission Startup permission.
  * @param {NativeExpressApp} app Express app.
  * @param {unknown} middleware Middleware value.
@@ -25,7 +24,6 @@ export function useMiddleware(permission, app, middleware) {
 }
 
 /**
- * Register a POST route at the cloud boundary.
  * @param {AllowEffects} permission Startup permission.
  * @param {NativeExpressApp} app Express app.
  * @param {string} path Route path.
@@ -35,4 +33,17 @@ export function useMiddleware(permission, app, middleware) {
 export function registerPostRoute(permission, app, path, handler) {
   void permission;
   app.post(path, handler);
+}
+
+/**
+ * @param {AllowEffects} permission Request permission.
+ * @param {unknown} reference Firestore document reference.
+ * @param {object} data Fields to update.
+ * @returns {Promise<unknown>} Firestore update result.
+ */
+export function updateDocument(permission, reference, data) {
+  void permission;
+  return /** @type {{update: (fields: object) => Promise<unknown>}} */ (
+    reference
+  ).update(data);
 }

@@ -29,8 +29,10 @@ import { createVerifyAdmin, isAllowedOrigin } from '../cloud-core.js';
  *   getEnvironmentVariables: typeof import('../../../../src/cloud/mark-variant-dirty/mark-variant-dirty-gcf.js').getEnvironmentVariables,
  *   bindStartupEffectBoundary: import('../../../../types/allow-effects').StartupAllowEffectsBoundary,
  *   initializeFirebaseApp: (permission: import('../../../../types/allow-effects').AllowEffects, initializeApp: typeof import('firebase-admin/app').initializeApp) => unknown,
+ *   bindEffectInvocationBoundary: import('../../../../types/allow-effects').EffectInvocationBoundary,
  *   useMiddleware: (permission: import('../../../../types/allow-effects').AllowEffects, app: import('../../../../types/native-http').NativeExpressApp, middleware: unknown) => void,
  *   registerPostRoute: (permission: import('../../../../types/allow-effects').AllowEffects, app: import('../../../../types/native-http').NativeExpressApp, path: string, handler: Function) => void,
+ *   updateDocument: (permission: import('../../../../types/allow-effects').AllowEffects, reference: unknown, data: object) => Promise<unknown>,
  *   logDebug: (permission: import('../../../../types/allow-effects').AllowEffects, ...values: unknown[]) => void,
  *   ADMIN_UID: string,
  * }} deps Dependencies required to compose the mark-variant-dirty endpoint.
@@ -74,6 +76,7 @@ export function runMarkVariantDirty(deps) {
 
   const markVariantDirtyDeps = {
     db,
+    updateDocument: deps.updateDocument,
     firebase: {
       findPageRef,
       findPagesSnap,
@@ -88,10 +91,23 @@ export function runMarkVariantDirty(deps) {
    * @param {string} variantName Variant name.
    * @returns {Promise<boolean>} Result.
    */
-  const markVariantDirtyAction = (pageNumber, variantName) =>
-    markVariantDirtyImpl(pageNumber, variantName, markVariantDirtyDeps);
-  const markAuthorDirtyAction = (/** @type {string} */ authorId) =>
-    markAuthorDirtyImpl(authorId, markVariantDirtyDeps);
+  const markVariantDirtyAction = deps.bindEffectInvocationBoundary(
+    /** @type {(allowEffects: import('../../../../types/allow-effects').AllowEffects, pageNumber: number, variantName: string) => Promise<boolean>} */ (
+      (allowEffects, pageNumber, variantName) =>
+        markVariantDirtyImpl(
+          allowEffects,
+          pageNumber,
+          variantName,
+          markVariantDirtyDeps
+        )
+    )
+  );
+  const markAuthorDirtyAction = deps.bindEffectInvocationBoundary(
+    /** @type {(allowEffects: import('../../../../types/allow-effects').AllowEffects, authorId: string) => Promise<boolean>} */ (
+      (allowEffects, authorId) =>
+        markAuthorDirtyImpl(allowEffects, authorId, markVariantDirtyDeps)
+    )
+  );
 
   const verifyAdmin = createVerifyAdmin({
     verifyToken: token =>

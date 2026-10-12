@@ -2,6 +2,7 @@ import { describe, expect, it, jest } from '@jest/globals';
 import {
   initializeFirebaseApp,
   registerPostRoute,
+  updateDocument,
   useMiddleware,
 } from '../../../src/cloud/mark-variant-dirty/effect-adapters.js';
 
@@ -27,5 +28,15 @@ describe('mark-variant-dirty startup effect adapters', () => {
 
     expect(app.use).toHaveBeenCalledWith(middleware);
     expect(app.post).toHaveBeenCalledWith('/', handler);
+  });
+
+  it('updates a Firestore document through the permission-first adapter', async () => {
+    const permission = Object.freeze({ scope: 'request' });
+    const update = jest.fn().mockResolvedValue(undefined);
+    const reference = { update };
+
+    await updateDocument(permission, reference, { dirty: true });
+
+    expect(update).toHaveBeenCalledWith({ dirty: true });
   });
 });
