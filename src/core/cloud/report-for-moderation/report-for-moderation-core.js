@@ -54,10 +54,10 @@ export function createReportForModerationHandler(dependencies) {
  * Process the moderation report request when the HTTP method is validated.
  * @param {{addModerationReport: (permission: AllowEffects, report: ModerationReportRecord) => Promise<void> | void, hasModerationReport?: (reporterIdentity: string, variant: string) => Promise<boolean> | boolean, getServerTimestamp: () => unknown}} dependencies Dependencies required for processing.
  * @param {AllowEffects} permission Explicit command permission.
- * @param {{ method?: string, body?: ReportRequestBody | null }} [request] Incoming request details.
+ * @param {{ method?: string, body?: ReportRequestBody | null }} request Incoming request details.
  * @returns {Promise<{ status: number, body: string | Record<string, unknown> }>} Promise resolved with the HTTP response.
  */
-function processReportSubmission(dependencies, permission, request = {}) {
+function processReportSubmission(dependencies, permission, request) {
   return whenPostRequestAsync({
     request,
     onValid: async () => {

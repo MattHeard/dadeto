@@ -2,9 +2,6 @@ import { describe, expect, it, jest } from '@jest/globals';
 
 describe('realtime-call cloud entry point', () => {
   it('mints a fresh permission for each injected fetch', async () => {
-    const firstPermission = Object.freeze({ invocation: 1 });
-    const secondPermission = Object.freeze({ invocation: 2 });
-    const permissions = [firstPermission, secondPermission];
     const usedPermissions = [];
     const fetchedRequests = [];
     const rawFetch = jest.fn(async (...args) => {
@@ -49,15 +46,6 @@ describe('realtime-call cloud entry point', () => {
           })
         );
         await jest.unstable_mockModule(
-          '../../../src/cloud/allow-effects.js',
-          () => ({
-            createEffectInvocationBoundary:
-              handler =>
-              async (...args) =>
-                handler(permissions.shift(), ...args),
-          })
-        );
-        await jest.unstable_mockModule(
           '../../../src/core/realtime/openaiRealtimeCalls.js',
           () => ({ exchangeRealtimeCallSdp: exchangeRealtimeCallSdpCore })
         );
@@ -78,12 +66,13 @@ describe('realtime-call cloud entry point', () => {
         mod.realtimeCallApp
       );
       expect(exchangeRealtimeCallSdpCore).toHaveBeenCalledTimes(2);
-      expect(usedPermissions).toEqual([firstPermission, secondPermission]);
+      expect(usedPermissions).toHaveLength(2);
+      expect(usedPermissions[0]).not.toBe(usedPermissions[1]);
+      expect(usedPermissions.every(Object.isFrozen)).toBe(true);
       expect(fetchedRequests).toEqual([
         ['https://api.example.test/calls', { method: 'POST' }],
         ['https://api.example.test/calls', { method: 'POST' }],
       ]);
-      expect(permissions).toEqual([]);
     } finally {
       globalThis.fetch = originalFetch;
     }

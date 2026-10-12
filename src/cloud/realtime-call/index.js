@@ -1,49 +1,40 @@
 import { onRequest, express, cors, getEnvironmentVariables } from './realtime-call-v2-gcf.js';
 import { getAllowedOrigins } from '../cors-config.js';
-import { createEffectInvocationBoundary } from '../allow-effects.js';
+import { createEffectInvocationBoundary, createEffectStartupBoundary } from '../allow-effects.js';
 import { requireAllowEffects } from '../../adapters/allow-effects.js';
+import { exchangeRealtimeCallSdp } from '../../core/realtime/openaiRealtimeCalls.js';
+import { createRealtimeCallRun } from '../../core/cloud/realtime-call/run.js';
 import {
-  exchangeRealtimeCallSdp as exchangeRealtimeCallSdpCore,
-} from '../../core/realtime/openaiRealtimeCalls.js';
+  forwardRealtimeError,
+  registerRealtimeErrorHandler,
+  registerRealtimeFunction,
+  registerRealtimePostRoute,
+  sendRealtimeAnswer,
+  sendRealtimeError,
+  useRealtimeMiddleware,
+} from './effect-adapters.js';
 
-const exchangeRealtimeCallSdp = (body, options = {}) =>
-  exchangeRealtimeCallSdpCore(body, {
-    ...options,
-    fetchImpl: requireAllowEffects(
-      options.fetchImpl ?? globalThis.fetch.bind(globalThis)
-    ),
-    bindEffectBoundary: handler => createEffectInvocationBoundary(handler)(),
-  });
+const runtime = createEffectStartupBoundary(allowEffects =>
+  createRealtimeCallRun(allowEffects, {
+    onRequest,
+    express,
+    cors,
+    allowedOrigins: getAllowedOrigins(getEnvironmentVariables()),
+    exchangeRealtimeCallSdp: body =>
+      exchangeRealtimeCallSdp(body, {
+        fetchImpl: requireAllowEffects(globalThis.fetch.bind(globalThis)),
+        bindEffectBoundary: handler => createEffectInvocationBoundary(handler)(),
+      }),
+    bindRequestBoundary: createEffectInvocationBoundary,
+    useMiddleware: useRealtimeMiddleware,
+    registerPostRoute: registerRealtimePostRoute,
+    registerErrorHandler: registerRealtimeErrorHandler,
+    registerFunction: registerRealtimeFunction,
+    sendAnswer: sendRealtimeAnswer,
+    forwardError: forwardRealtimeError,
+    sendError: sendRealtimeError,
+  })
+);
 
-export function createRealtimeCallApp({ exchangeRealtimeCallSdp, allowedOrigins, expressImpl = express, corsImpl = cors }) {
-  const app = expressImpl();
-  app.use(corsImpl({ origin: createCorsOriginResolver(allowedOrigins), methods: ['POST', 'OPTIONS'] }));
-  app.use(expressImpl.text({ type: ['application/sdp', 'text/plain'], limit: '256kb' }));
-  app.post('/', createRealtimeCallHandler(exchangeRealtimeCallSdp));
-  app.use(handleRealtimeCallError);
-  return app;
-}
-
-function createCorsOriginResolver(allowedOrigins) {
-  return (origin, callback) => (!origin || allowedOrigins.includes(origin) ? callback(null, true) : callback(new Error('CORS')));
-}
-
-function createRealtimeCallHandler(exchangeRealtimeCallSdp) {
-  return async (req, res, next) => {
-    try {
-      const { sdpAnswer, location } = await exchangeRealtimeCallSdp(typeof req.body === 'string' ? req.body : '');
-      if (location) res.set('Location', location);
-      res.type('application/sdp').send(sdpAnswer);
-    } catch (error) {
-      next(error);
-    }
-  };
-}
-
-function handleRealtimeCallError(error, _req, res) {
-  res.status(500).json({ error: error instanceof Error ? error.message : 'Unknown server error' });
-}
-
-const environmentVariables = getEnvironmentVariables();
-export const realtimeCallApp = createRealtimeCallApp({ exchangeRealtimeCallSdp, allowedOrigins: getAllowedOrigins(environmentVariables) });
-export const handle = onRequest({ region: 'europe-west1' }, realtimeCallApp);
+export const realtimeCallApp = runtime.app;
+export const handle = runtime.handle;
