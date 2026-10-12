@@ -14,7 +14,6 @@ describe('createHideVariantHtmlCore', () => {
     const onWrite = jest.fn(handler => ({ handler }));
     const document = jest.fn(() => ({ onWrite }));
     const region = jest.fn(() => ({ firestore: { document } }));
-    const initializeApp = jest.fn(() => ({ app: true }));
     const storageFileDelete = jest.fn().mockResolvedValue(undefined);
     const storageBucket = jest.fn(() => ({
       file: () => ({ delete: storageFileDelete }),
@@ -30,7 +29,6 @@ describe('createHideVariantHtmlCore', () => {
 
     const { hideVariantHtml, handleVariantVisibilityChange } =
       createHideVariantHtmlCore({
-        initializeApp,
         functions: { region },
         Storage,
         db,
@@ -39,7 +37,6 @@ describe('createHideVariantHtmlCore', () => {
         createEffectInvocationBoundary,
       });
 
-    expect(initializeApp).toHaveBeenCalledTimes(1);
     expect(Storage).toHaveBeenCalledTimes(1);
     expect(region).toHaveBeenCalledWith('europe-west1');
     expect(document).toHaveBeenCalledWith(
@@ -111,13 +108,11 @@ describe('createHideVariantHtmlCore', () => {
     const onWrite = jest.fn(handler => ({ handler }));
     const document = jest.fn(() => ({ onWrite }));
     const region = jest.fn(() => ({ firestore: { document } }));
-    const initializeApp = jest.fn(() => ({ app: true }));
     const Storage = jest.fn(() => ({
       bucket: jest.fn(() => ({ file: jest.fn() })),
     }));
 
     createHideVariantHtmlCore({
-      initializeApp,
       functions: { region },
       Storage,
       environmentVariables: {},
@@ -130,51 +125,5 @@ describe('createHideVariantHtmlCore', () => {
     expect(Storage).toHaveBeenCalledTimes(1);
     expect(region).toHaveBeenCalledTimes(1);
     expect(onWrite).toHaveBeenCalledTimes(1);
-  });
-
-  test('ignores duplicate firebase app initialization errors', () => {
-    const initializeApp = jest.fn(() => {
-      throw { message: 'app already exists' };
-    });
-    const onWrite = jest.fn(handler => ({ handler }));
-    const document = jest.fn(() => ({ onWrite }));
-    const region = jest.fn(() => ({ firestore: { document } }));
-    const Storage = jest.fn(() => ({
-      bucket: jest.fn(() => ({ file: jest.fn() })),
-    }));
-
-    expect(() =>
-      createHideVariantHtmlCore({
-        initializeApp,
-        functions: { region },
-        Storage,
-        environmentVariables: {},
-        deleteStorageFile,
-        createEffectInvocationBoundary,
-      })
-    ).not.toThrow();
-  });
-
-  test('rethrows unexpected firebase app initialization errors', () => {
-    const initializeApp = jest.fn(() => {
-      throw new Error('boom');
-    });
-    const onWrite = jest.fn(handler => ({ handler }));
-    const document = jest.fn(() => ({ onWrite }));
-    const region = jest.fn(() => ({ firestore: { document } }));
-    const Storage = jest.fn(() => ({
-      bucket: jest.fn(() => ({ file: jest.fn() })),
-    }));
-
-    expect(() =>
-      createHideVariantHtmlCore({
-        initializeApp,
-        functions: { region },
-        Storage,
-        environmentVariables: {},
-        deleteStorageFile,
-        createEffectInvocationBoundary,
-      })
-    ).toThrow('boom');
   });
 });

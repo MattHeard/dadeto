@@ -1,6 +1,5 @@
 import {
   DEFAULT_BUCKET_NAME,
-  ensureFirebaseAppOnce,
   createFirestoreDocumentOnWriteTrigger,
   resolveStaticBucketName,
   resolveStaticObjectPrefix,
@@ -654,7 +653,6 @@ export function createHandleVariantVisibilityChange(options) {
 /**
  * Create the cloud function wiring for hiding variant HTML.
  * @param {{
- *   initializeApp: () => unknown,
  *   functions: {
  *     region: (region: string) => {
  *       firestore: {
@@ -679,8 +677,6 @@ export function createHandleVariantVisibilityChange(options) {
  * @returns {{ hideVariantHtml: unknown, handleVariantVisibilityChange: (allowEffects: AllowEffects, change: { before: unknown, after: unknown }) => Promise<null> }} Cloud function wiring.
  */
 export function createHideVariantHtmlCore(deps) {
-  ensureFirebaseApp(deps.initializeApp);
-
   const storage = new deps.Storage();
   const bucketName = resolveHideVariantBucketName(deps);
   const objectPrefix = resolveStaticObjectPrefix(deps.environmentVariables);
@@ -828,15 +824,6 @@ function isExistingPageSnapshot(pageSnap) {
     pageSnap && pageSnap.exists && typeof pageSnap.data === 'function'
   );
   // Stryker restore all
-}
-
-/**
- * Ensure the Firebase app is initialized once for this factory.
- * @param {() => unknown} initializeApp Firebase initializer.
- * @returns {void}
- */
-function ensureFirebaseApp(initializeApp) {
-  ensureFirebaseAppOnce(initializeApp);
 }
 
 /**

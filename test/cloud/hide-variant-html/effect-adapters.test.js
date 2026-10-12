@@ -1,7 +1,20 @@
 import { describe, expect, it, jest } from '@jest/globals';
-import { createHideVariantHtmlEffectAdapters } from '../../../src/cloud/hide-variant-html/effect-adapters.js';
+import {
+  createHideVariantHtmlEffectAdapters,
+  initializeFirebaseApp,
+} from '../../../src/cloud/hide-variant-html/effect-adapters.js';
 
 describe('hide variant html effect adapters', () => {
+  it('initializes Firebase through the startup capability adapter', () => {
+    const permission = Object.freeze({ startup: true });
+    const initialize = jest.fn(() => ({ initialized: true }));
+
+    expect(initializeFirebaseApp(permission, initialize)).toEqual({
+      initialized: true,
+    });
+    expect(initialize).toHaveBeenCalledTimes(1);
+  });
+
   it('deletes a storage file through the permission-first adapter', async () => {
     const allowEffects = Object.freeze({});
     const remove = jest.fn().mockResolvedValue();
