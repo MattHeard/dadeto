@@ -14,11 +14,12 @@ import {
   whenPredicateValue,
 } from '../cloud-core.js';
 import {
-  createCloudSubmitHandler,
+  createEffectfulResponderHandler,
   getAuthorizationHeader,
 } from '../submit-shared.js';
 import { createResponder } from '../responder-utils.js';
 import { whenPostRequest } from '../http-method-guard.js';
+/** @typedef {import('../../../../types/allow-effects').AllowEffects} AllowEffects */
 
 const INVALID_BODY_RESPONSE = {
   status: 400,
@@ -42,14 +43,14 @@ const INVALID_BODY_RESPONSE = {
 /**
  * @typedef {object} ModeratorAssignment
  * @property {string} variantId Identifier for the variant assigned to the moderator.
- * @property {(() => Promise<void> | void) | null} [clearAssignment] Optional callback that clears the assignment.
+ * @property {((permission: AllowEffects) => Promise<void> | void) | null} [clearAssignment] Optional callback that clears the assignment.
  */
 
 /**
  * @typedef {object} SubmitModerationRatingDependencies
  * @property {(token: string) => Promise<{ uid?: string | null } | null | undefined>} verifyIdToken Verify and decode the auth token.
  * @property {(uid: string) => Promise<ModeratorAssignment | null | undefined>} fetchModeratorAssignment Fetch the pending assignment for a moderator.
- * @property {(rating: { id: string, moderatorId: string, variantId: string, isApproved: boolean, ratedAt: unknown }) => Promise<void> | void} recordModerationRating Persist the submitted rating.
+ * @property {(permission: AllowEffects, rating: { id: string, moderatorId: string, variantId: string, isApproved: boolean, ratedAt: unknown }) => Promise<void> | void} recordModerationRating Persist the submitted rating.
  * @property {() => string} randomUUID Generate a unique identifier for the rating entry.
  * @property {() => unknown} getServerTimestamp Provide the timestamp stored with the rating.
  */
@@ -138,13 +139,14 @@ export function createCorsOptions({ allowedOrigins, methods = ['POST'] }) {
 }
 
 /**
- * Wrap the domain responder in an Express-style HTTP handler.
- * @param {(request: SubmitModerationRatingRequest) => Promise<SubmitModerationRatingResponse>} responder Domain-specific responder that returns status/body pairs.
- * @returns {(req: SubmitModerationRatingRequest, res: { status: (code: number) => { json: (body: Record<string, unknown>) => void, send: (body: string) => void }, sendStatus: (code: number) => void }) => Promise<void>} Express-compatible handler that writes the responder output.
+ * Wrap the domain responder in an effect-aware Express-style HTTP handler.
+ * @param {(permission: AllowEffects, request: SubmitModerationRatingRequest) => Promise<SubmitModerationRatingResponse>} responder Domain-specific responder that returns status/body pairs.
+ * @param {(permission: AllowEffects, response: unknown, status: number, body: unknown) => void} sendResponse Response effect adapter.
+ * @returns {(permission: AllowEffects, req: SubmitModerationRatingRequest, res: unknown) => Promise<void>} Effectful Express handler.
  */
-const moderationSubmitHandler = createCloudSubmitHandler;
-
-export { moderationSubmitHandler as createHandleSubmitModerationRating };
+export function createHandleSubmitModerationRating(responder, sendResponse) {
+  return createEffectfulResponderHandler(responder, sendResponse);
+}
 
 /**
  * Build endpoint-owned middleware for submit-moderation-rating.
@@ -316,10 +318,10 @@ function isValidVariantId(variantId) {
 /**
  * Normalize clear assignment.
  * @param {unknown} clearAssignment Clear assignment.
- * @returns {(() => Promise<void> | void) | null} Normalized callback.
+ * @returns {((permission: AllowEffects) => Promise<void> | void) | null} Normalized callback.
  */
 function normalizeClearAssignment(clearAssignment) {
-  return /** @type {(() => Promise<void> | void) | null} */ (
+  return /** @type {((permission: AllowEffects) => Promise<void> | void) | null} */ (
     whenTypeValue(clearAssignment, 'function')
   );
 }
@@ -368,10 +370,10 @@ function isValidAssignment(assignment) {
 /**
  * Build the domain responder that processes moderation rating submissions.
  * @param {SubmitModerationRatingDependencies} dependencies Functions required to process the request.
- * @returns {(request?: SubmitModerationRatingRequest) => Promise<SubmitModerationRatingResponse>} Responder that validates and processes submissions.
+ * @returns {(permission: AllowEffects, request?: SubmitModerationRatingRequest) => Promise<SubmitModerationRatingResponse>} Responder that validates and processes submissions.
  */
 export function createSubmitModerationRatingResponder(dependencies) {
-  return /** @type {(request?: SubmitModerationRatingRequest) => Promise<SubmitModerationRatingResponse>} */ (
+  return /** @type {(permission: AllowEffects, request?: SubmitModerationRatingRequest) => Promise<SubmitModerationRatingResponse>} */ (
     createResponder({
       dependencies,
       requiredFunctionNames: [
@@ -391,14 +393,14 @@ export function createSubmitModerationRatingResponder(dependencies) {
 
         /**
          * Process a rating when prerequisites and context are valid.
-         * @param {{ contextResult: SubmitModerationRatingContextSuccess, bodyResult: SubmitModerationRatingBodySuccess }} context Context data.
+         * @param {{ permission: AllowEffects, contextResult: SubmitModerationRatingContextSuccess, bodyResult: SubmitModerationRatingBodySuccess }} context Context data.
          * @returns {Promise<SubmitModerationRatingResponse>} Success response payload.
          */
         async function processValidRating(context) {
-          const { contextResult, bodyResult } = context;
+          const { permission, contextResult, bodyResult } = context;
 
           const ratingId = randomUUID();
-          await recordModerationRating({
+          await recordModerationRating(permission, {
             id: ratingId,
             moderatorId: contextResult.uid,
             variantId: contextResult.assignment.variantId,
@@ -406,7 +408,7 @@ export function createSubmitModerationRatingResponder(dependencies) {
             ratedAt: getServerTimestamp(),
           });
 
-          await clearAssignment(contextResult.assignment);
+          await clearAssignment(permission, contextResult.assignment);
 
           return createResponse(201, {});
         }
@@ -428,17 +430,21 @@ export function createSubmitModerationRatingResponder(dependencies) {
           });
         }
 
-        return async function submitModerationRatingResponder(request = {}) {
+        return async function submitModerationRatingResponder(
+          permission,
+          request = {}
+        ) {
           const prerequisiteResult = resolveRequestPrerequisites(request);
-          return resolveAndRespond(prerequisiteResult);
+          return resolveAndRespond(permission, prerequisiteResult);
         };
 
         /**
          * Build the final response after context resolution.
+         * @param {AllowEffects} permission Permission for command operations.
          * @param {SubmitModerationRatingPrerequisiteResult} prerequisiteResult Prerequisite outcome.
          * @returns {Promise<SubmitModerationRatingResponse>} Promise resolved with the HTTP response pair.
          */
-        async function resolveAndRespond(prerequisiteResult) {
+        async function resolveAndRespond(permission, prerequisiteResult) {
           const contextResult = await resolveContextResult(prerequisiteResult);
           if ('error' in contextResult) {
             return contextResult.error;
@@ -450,6 +456,7 @@ export function createSubmitModerationRatingResponder(dependencies) {
             );
 
           return processValidRating({
+            permission,
             contextResult,
             bodyResult: successPrerequisite.bodyResult,
           });
@@ -608,11 +615,12 @@ async function resolveModeratorContext({
 
 /**
  * Invoke the assignment cleanup callback when present.
+ * @param {AllowEffects} permission Permission for assignment update.
  * @param {ModeratorAssignment} assignment Assignment returned from the resolver.
  * @returns {Promise<void>}
  */
-async function clearAssignment(assignment) {
+async function clearAssignment(permission, assignment) {
   if (assignment.clearAssignment) {
-    await assignment.clearAssignment();
+    await assignment.clearAssignment(permission);
   }
 }

@@ -1,5 +1,6 @@
 import { jest } from '@jest/globals';
 import { runReportForModeration } from '../../../../src/core/cloud/report-for-moderation/run.js';
+import { registerHttpEndpoint } from '../../../../src/cloud/http-endpoint-effect-adapter.js';
 
 test('registers a report endpoint with explicit startup and request permissions', async () => {
   const startupPermission = Object.freeze({ startup: true });
@@ -12,13 +13,12 @@ test('registers a report endpoint with explicit startup and request permissions'
   };
   const collection = { add, where: jest.fn(() => query) };
   const db = { collection: jest.fn(() => collection) };
-  const app = {};
-  const useMiddleware = jest.fn();
-  const registerRoute = jest.fn();
-  const registerFunction = jest.fn(() => 'cloud-function');
+  const app = { use: jest.fn(), all: jest.fn() };
+  const onRequest = jest.fn(() => 'cloud-function');
+  const functions = { region: jest.fn(() => ({ https: { onRequest } })) };
   const sendResponse = jest.fn();
   const handler = runReportForModeration(startupPermission, {
-    functions: {},
+    functions,
     express: Object.assign(
       jest.fn(() => app),
       {
@@ -28,9 +28,7 @@ test('registers a report endpoint with explicit startup and request permissions'
     cors: jest.fn(() => 'cors'),
     FieldValue: { serverTimestamp: jest.fn(() => 'timestamp') },
     db,
-    useMiddleware,
-    registerRoute,
-    registerFunction,
+    registerHttpEndpoint,
     addModerationReport: async (permission, target, report) => {
       await add(permission, target, report);
     },
@@ -42,14 +40,9 @@ test('registers a report endpoint with explicit startup and request permissions'
     })),
   });
 
-  expect(registerFunction).toHaveBeenCalledWith(startupPermission, {}, app);
-  expect(registerRoute).toHaveBeenCalledWith(
-    startupPermission,
-    app,
-    '/',
-    expect.any(Function)
-  );
-  expect(useMiddleware).toHaveBeenCalledTimes(2);
+  expect(functions.region).toHaveBeenCalledWith('europe-west1');
+  expect(app.all).toHaveBeenCalledWith('/', expect.any(Function));
+  expect(app.use).toHaveBeenCalledTimes(2);
   expect(handler.handle).toBe('cloud-function');
 
   const response = {

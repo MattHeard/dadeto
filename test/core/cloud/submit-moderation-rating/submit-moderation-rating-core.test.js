@@ -76,13 +76,14 @@ describe('createSubmitModerationRatingResponder', () => {
   const randomUUID = jest.fn(() => 'rating-id');
   const getServerTimestamp = jest.fn(() => 'ts');
 
-  const responder = createSubmitModerationRatingResponder({
+  const responderWithPermission = createSubmitModerationRatingResponder({
     verifyIdToken,
     fetchModeratorAssignment,
     recordModerationRating,
     randomUUID,
     getServerTimestamp,
   });
+  const responder = request => responderWithPermission({}, request);
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -153,6 +154,7 @@ describe('createSubmitModerationRatingResponder', () => {
     });
 
     expect(recordModerationRating).toHaveBeenCalledWith(
+      {},
       expect.objectContaining({
         moderatorId: 'mod-4',
       })
@@ -175,14 +177,17 @@ describe('createSubmitModerationRatingResponder', () => {
       headers: { Authorization: 'Bearer token' },
     });
 
-    expect(recordModerationRating).toHaveBeenCalledWith({
-      id: 'rating-id',
-      moderatorId: 'mod-1',
-      variantId: 'variant-123',
-      isApproved: false,
-      ratedAt: 'ts',
-    });
-    expect(clearAssignment).toHaveBeenCalled();
+    expect(recordModerationRating).toHaveBeenCalledWith(
+      {},
+      {
+        id: 'rating-id',
+        moderatorId: 'mod-1',
+        variantId: 'variant-123',
+        isApproved: false,
+        ratedAt: 'ts',
+      }
+    );
+    expect(clearAssignment).toHaveBeenCalledWith({});
     expect(response).toEqual({ status: 201, body: {} });
   });
 
@@ -286,6 +291,7 @@ describe('createSubmitModerationRatingResponder', () => {
     });
 
     expect(recordModerationRating).toHaveBeenCalledWith(
+      {},
       expect.objectContaining({
         moderatorId: 'mod-3',
         variantId: 'variant-789',
@@ -341,7 +347,13 @@ describe('createHandleSubmitModerationRating', () => {
       .mockResolvedValueOnce({ status: 202, body: 'Accepted' })
       .mockResolvedValueOnce({ status: 204, body: undefined });
 
-    const handle = createHandleSubmitModerationRating(responder);
+    const sendResponse = jest.fn((permission, response, status, body) => {
+      response.status(status);
+      if (body === undefined) response.sendStatus(status);
+      else if (typeof body === 'string') response.send(body);
+      else response.json(body);
+    });
+    const handle = createHandleSubmitModerationRating(responder, sendResponse);
     const res = {
       status: jest.fn(function status() {
         return res;
@@ -352,6 +364,7 @@ describe('createHandleSubmitModerationRating', () => {
     };
 
     await handle(
+      {},
       {
         method: 'POST',
         body: { isApproved: true },
@@ -366,16 +379,19 @@ describe('createHandleSubmitModerationRating', () => {
     expect(res.status).toHaveBeenCalledWith(201);
     expect(res.json).toHaveBeenCalledWith({});
 
-    await handle({ method: 'POST' }, res);
+    await handle({}, { method: 'POST' }, res);
     expect(res.send).toHaveBeenCalledWith('Accepted');
 
-    await handle({ method: 'POST' }, res);
+    await handle({}, { method: 'POST' }, res);
     expect(res.sendStatus).toHaveBeenCalledWith(204);
   });
 
   it('wraps the header accessor defensively', async () => {
     const responder = jest.fn().mockResolvedValue({ status: 200, body: {} });
-    const handle = createHandleSubmitModerationRating(responder);
+    const handle = createHandleSubmitModerationRating(
+      responder,
+      (permission, response, status) => response.sendStatus(status)
+    );
     const res = {
       status: jest.fn(() => res),
       json: jest.fn(),
@@ -383,20 +399,26 @@ describe('createHandleSubmitModerationRating', () => {
       sendStatus: jest.fn(),
     };
 
-    await handle({ method: 'POST', get: 'not-a-function' }, res);
-    expect(responder).toHaveBeenCalledWith({
-      method: 'POST',
-      body: undefined,
-      get: undefined,
-      headers: undefined,
-    });
+    await handle({}, { method: 'POST', get: 'not-a-function' }, res);
+    expect(responder).toHaveBeenCalledWith(
+      {},
+      {
+        method: 'POST',
+        body: undefined,
+        get: undefined,
+        headers: undefined,
+      }
+    );
   });
 
   it('handles undefined requests by forwarding an empty payload', async () => {
     const responder = jest
       .fn()
       .mockResolvedValue({ status: 418, body: undefined });
-    const handle = createHandleSubmitModerationRating(responder);
+    const handle = createHandleSubmitModerationRating(
+      responder,
+      (permission, response, status) => response.sendStatus(status)
+    );
     const res = {
       status: jest.fn(() => res),
       json: jest.fn(),
@@ -404,15 +426,15 @@ describe('createHandleSubmitModerationRating', () => {
       sendStatus: jest.fn(),
     };
 
-    await handle(undefined, res);
+    await handle({}, undefined, res);
 
-    expect(responder).toHaveBeenCalledWith({});
+    expect(responder).toHaveBeenCalledWith({}, {});
     expect(res.sendStatus).toHaveBeenCalledWith(418);
   });
 
   it('exposes the normalized get accessor to the responder', async () => {
     const responder = jest.fn().mockResolvedValue({ status: 200, body: {} });
-    const handle = createHandleSubmitModerationRating(responder);
+    const handle = createHandleSubmitModerationRating(responder, jest.fn());
     const res = {
       status: jest.fn(() => res),
       json: jest.fn(),
@@ -429,9 +451,9 @@ describe('createHandleSubmitModerationRating', () => {
       }),
     };
 
-    await handle(req, res);
+    await handle({}, req, res);
 
-    const forwarded = responder.mock.calls[0][0];
+    const forwarded = responder.mock.calls[0][1];
     expect(typeof forwarded.get).toBe('function');
     expect(forwarded.get('Authorization')).toBe('Bearer him');
     expect(req.get).toHaveBeenCalledWith('Authorization');

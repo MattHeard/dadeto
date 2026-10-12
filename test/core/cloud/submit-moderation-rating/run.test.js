@@ -1,77 +1,70 @@
 import { jest } from '@jest/globals';
 import { runSubmitModerationRating } from '../../../../src/core/cloud/submit-moderation-rating/run.js';
+import { registerHttpEndpoint } from '../../../../src/cloud/http-endpoint-effect-adapter.js';
 
 describe('runSubmitModerationRating', () => {
-  test('wires side effects and returns submitModerationRating export payload', () => {
-    const ensureFirebaseApp = jest.fn();
-    const createFirebaseAppManager = jest.fn(() => ({ ensureFirebaseApp }));
-    const initializeApp = jest.fn();
+  test('wires startup effects and keeps request effects behind an explicit boundary', () => {
+    const permission = { startup: true };
+    const use = jest.fn();
+    const post = jest.fn();
+    const expressApp = { use, post };
+    const onRequest = jest.fn(() => 'https-function');
+    const functions = { region: jest.fn(() => ({ https: { onRequest } })) };
+    const registerEndpoint = jest.fn((permission, options) =>
+      registerHttpEndpoint(permission, options)
+    );
+    const sendResponse = jest.fn();
+    const updateModeratorAssignment = jest.fn();
+    const recordRating = jest.fn();
+    const bindHttpBoundary = jest.fn(handler => handler);
+    const express = Object.assign(
+      jest.fn(() => expressApp),
+      {
+        json: jest.fn(() => 'json-middleware'),
+      }
+    );
+    const cors = jest.fn(() => 'cors-middleware');
+    const db = { collection: jest.fn(), doc: jest.fn() };
+    const auth = { verifyIdToken: jest.fn() };
 
-    const get = jest.fn().mockResolvedValue({ exists: false });
-    const moderatorDoc = { get };
-    const db = {
-      collection: jest.fn(name => {
-        if (name === 'moderators') return { doc: jest.fn(() => moderatorDoc) };
-        return { doc: jest.fn(() => ({ set: jest.fn() })) };
-      }),
-      doc: jest.fn(),
-    };
-
-    const expressApp = { use: jest.fn(), post: jest.fn() };
-    const express = jest.fn(() => expressApp);
-    express.json = jest.fn(() => 'json-mw');
-    const cors = jest.fn(() => 'cors-mw');
-
-    const getAuth = jest.fn(() => ({ verifyIdToken: jest.fn() }));
-    const FieldValue = { serverTimestamp: jest.fn(), delete: jest.fn() };
-    const crypto = { randomUUID: jest.fn(() => 'id') };
-    const getEnvironmentVariables = jest.fn(() => ({
-      DENDRITE_ENVIRONMENT: 'prod',
-      CLOUD_RUNTIME_ENV: 'dev',
-    }));
-
-    const onRequest = jest.fn(app => ({ app }));
-    const region = jest.fn(() => ({ https: { onRequest } }));
-    const functions = { region };
-
-    const result = runSubmitModerationRating({
+    const result = runSubmitModerationRating(permission, {
       functions,
       express,
       cors,
-      getAuth,
-      FieldValue,
-      createFirebaseAppManager,
-      getFirestoreInstance: () => db,
-      crypto,
-      getEnvironmentVariables,
-      initializeApp,
+      getAuth: jest.fn(() => auth),
+      FieldValue: { delete: jest.fn(), serverTimestamp: jest.fn() },
+      db,
+      crypto: { randomUUID: jest.fn() },
+      getEnvironmentVariables: jest.fn(() => ({
+        DENDRITE_ENVIRONMENT: 'prod',
+        CLOUD_RUNTIME_ENV: 'dev',
+      })),
+      updateModeratorAssignment,
+      recordRating,
+      registerHttpEndpoint: registerEndpoint,
+      sendResponse,
+      bindHttpBoundary,
     });
 
-    expect(createFirebaseAppManager).toHaveBeenCalledWith(initializeApp);
-    expect(ensureFirebaseApp).toHaveBeenCalled();
-    expect(region).toHaveBeenCalledWith('europe-west1');
-    expect(onRequest).toHaveBeenCalledWith(expressApp);
-    expect(expressApp.post).toHaveBeenCalledWith(
-      '/',
-      result.handleSubmitModerationRating
-    );
-    expect(getAuth).toHaveBeenCalled();
-    expect(getEnvironmentVariables).toHaveBeenCalled();
-    expect(ensureFirebaseApp.mock.invocationCallOrder[0]).toBeLessThan(
-      getAuth.mock.invocationCallOrder[0]
-    );
-    expect(getAuth.mock.invocationCallOrder[0]).toBeLessThan(
-      getEnvironmentVariables.mock.invocationCallOrder[0]
-    );
-    expect(expressApp.post.mock.invocationCallOrder[0]).toBeLessThan(
-      onRequest.mock.invocationCallOrder[0]
-    );
-    expect(result).toEqual(
+    expect(express).toHaveBeenCalled();
+    expect(registerEndpoint).toHaveBeenCalledWith(
+      permission,
       expect.objectContaining({
-        submitModerationRating: { app: expressApp },
-        handleSubmitModerationRating: expect.any(Function),
-        app: expressApp,
+        middleware: ['cors-middleware', 'json-middleware'],
+        route: expect.objectContaining({ method: 'post', path: '/' }),
+        functions,
       })
     );
+    expect(use).toHaveBeenNthCalledWith(1, 'cors-middleware');
+    expect(use).toHaveBeenNthCalledWith(2, 'json-middleware');
+    expect(bindHttpBoundary).toHaveBeenCalledWith(expect.any(Function));
+    expect(post).toHaveBeenCalledWith('/', expect.any(Function));
+    expect(functions.region).toHaveBeenCalledWith('europe-west1');
+    expect(onRequest).toHaveBeenCalledWith(expressApp);
+    expect(result).toEqual({
+      submitModerationRating: 'https-function',
+      handleSubmitModerationRating: expect.any(Function),
+      app: expressApp,
+    });
   });
 });

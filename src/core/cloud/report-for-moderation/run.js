@@ -17,9 +17,7 @@ import { getAllowedOrigins } from '../cors-config.js';
  *   cors: (options: unknown) => unknown,
  *   FieldValue: { serverTimestamp: () => unknown },
  *   db: import('firebase-admin/firestore').Firestore,
- *   useMiddleware: typeof import('../../../cloud/report-for-moderation/effect-adapters.js').useReportMiddleware,
- *   registerRoute: typeof import('../../../cloud/report-for-moderation/effect-adapters.js').registerReportRoute,
- *   registerFunction: typeof import('../../../cloud/report-for-moderation/effect-adapters.js').registerReportFunction,
+ *   registerHttpEndpoint: typeof import('../../../cloud/http-endpoint-effect-adapter.js').registerHttpEndpoint,
  *   addModerationReport: (permission: AllowEffects, collection: ModerationReportsCollection, report: Record<string, unknown>) => Promise<void>,
  *   sendResponse: typeof import('../../../cloud/report-for-moderation/effect-adapters.js').sendReportResponse,
  *   createHttpBoundary: typeof import('../../../cloud/allow-effects.js').createEffectHttpBoundary,
@@ -58,25 +56,20 @@ export function runReportForModeration(startupAllowEffects, deps) {
     deps.sendResponse
   );
 
-  const app = deps.express();
   const environmentVariables = deps.getEnvironmentVariables();
   const allowedOrigins = getAllowedOrigins(environmentVariables);
   const corsOptions = createCorsOptions({ allowedOrigins, methods: ['POST'] });
 
-  deps.useMiddleware(startupAllowEffects, app, deps.cors(corsOptions));
-  deps.useMiddleware(startupAllowEffects, app, deps.express.json());
-  deps.registerRoute(
-    startupAllowEffects,
-    app,
-    '/',
-    deps.createHttpBoundary(handleReportForModeration)
-  );
+  const endpoint = deps.registerHttpEndpoint(startupAllowEffects, {
+    express: deps.express,
+    middleware: [deps.cors(corsOptions), deps.express.json()],
+    route: {
+      method: 'all',
+      path: '/',
+      handler: deps.createHttpBoundary(handleReportForModeration),
+    },
+    functions: deps.functions,
+  });
 
-  const handle = deps.registerFunction(
-    startupAllowEffects,
-    deps.functions,
-    app
-  );
-
-  return { handle, handleReportForModeration };
+  return { handle: endpoint.handle, handleReportForModeration };
 }

@@ -69,26 +69,30 @@ describe('submit moderation rating', () => {
   test('submits a rating when prerequisites succeed', async () => {
     const { dependencies, clearAssignment } = buildDependencies();
     const responder = createSubmitModerationRatingResponder(dependencies);
-    const response = await responder(createRequest());
+    const permission = {};
+    const response = await responder(permission, createRequest());
 
     expect(response).toEqual({ status: 201, body: {} });
     expect(dependencies.fetchModeratorAssignment).toHaveBeenCalledWith(
       'moderator-1'
     );
-    expect(dependencies.recordModerationRating).toHaveBeenCalledWith({
-      id: 'rating-1',
-      moderatorId: 'moderator-1',
-      variantId: 'variant-1',
-      isApproved: true,
-      ratedAt: 'now',
-    });
-    expect(clearAssignment).toHaveBeenCalled();
+    expect(dependencies.recordModerationRating).toHaveBeenCalledWith(
+      permission,
+      {
+        id: 'rating-1',
+        moderatorId: 'moderator-1',
+        variantId: 'variant-1',
+        isApproved: true,
+        ratedAt: 'now',
+      }
+    );
+    expect(clearAssignment).toHaveBeenCalledWith(permission);
   });
 
   test('rejects non-POST requests', async () => {
     const { dependencies } = buildDependencies();
     const responder = createSubmitModerationRatingResponder(dependencies);
-    const response = await responder(createRequest({ method: 'GET' }));
+    const response = await responder({}, createRequest({ method: 'GET' }));
 
     expect(response).toBe(METHOD_NOT_ALLOWED_RESPONSE);
   });
@@ -97,6 +101,7 @@ describe('submit moderation rating', () => {
     const { dependencies } = buildDependencies();
     const responder = createSubmitModerationRatingResponder(dependencies);
     const response = await responder(
+      {},
       createRequest({ body: { isApproved: 'no' } })
     );
 
@@ -110,6 +115,7 @@ describe('submit moderation rating', () => {
     const { dependencies } = buildDependencies();
     const responder = createSubmitModerationRatingResponder(dependencies);
     const response = await responder(
+      {},
       createRequest({ get: () => null, headers: undefined })
     );
 
@@ -121,7 +127,7 @@ describe('submit moderation rating', () => {
       verifyIdToken: jest.fn().mockRejectedValue('primitive rejection'),
     });
     const responder = createSubmitModerationRatingResponder(dependencies);
-    const response = await responder(createRequest());
+    const response = await responder({}, createRequest());
 
     expect(response).toEqual({
       status: 401,

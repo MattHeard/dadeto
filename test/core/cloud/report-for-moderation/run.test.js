@@ -1,5 +1,6 @@
 import { jest } from '@jest/globals';
 import { runReportForModeration } from '../../../../src/core/cloud/report-for-moderation/run.js';
+import { registerHttpEndpoint } from '../../../../src/cloud/http-endpoint-effect-adapter.js';
 
 describe('runReportForModeration', () => {
   test('wires the cloud function and returns the exported handlers', async () => {
@@ -25,7 +26,7 @@ describe('runReportForModeration', () => {
       }),
     };
 
-    const expressApp = {};
+    const expressApp = { use: jest.fn(), all: jest.fn() };
     const express = jest.fn(() => expressApp);
     express.json = jest.fn(() => 'json-middleware');
     const cors = jest.fn(() => 'cors-middleware');
@@ -39,10 +40,8 @@ describe('runReportForModeration', () => {
     const region = jest.fn(() => ({ https: { onRequest } }));
     const functions = { region };
 
-    const useMiddleware = jest.fn();
-    const registerRoute = jest.fn();
-    const registerFunction = jest.fn((permission, runtime, app) =>
-      runtime.region('europe-west1').https.onRequest(app)
+    const registerEndpoint = jest.fn((permission, options) =>
+      registerHttpEndpoint(permission, options)
     );
     const responseAdapter = jest.fn((_permission, response, status, body) => {
       response.status(status);
@@ -55,9 +54,7 @@ describe('runReportForModeration', () => {
       cors,
       FieldValue: { serverTimestamp },
       db,
-      useMiddleware,
-      registerRoute,
-      registerFunction,
+      registerHttpEndpoint: registerEndpoint,
       addModerationReport: async (_permission, collection, report) => {
         await collection.add(report);
       },
@@ -67,24 +64,17 @@ describe('runReportForModeration', () => {
       getEnvironmentVariables,
     });
 
-    expect(useMiddleware).toHaveBeenNthCalledWith(
-      1,
+    expect(registerEndpoint).toHaveBeenCalledWith(
       startupPermission,
-      expressApp,
-      'cors-middleware'
+      expect.objectContaining({
+        middleware: ['cors-middleware', 'json-middleware'],
+        route: expect.objectContaining({ method: 'all', path: '/' }),
+        functions,
+      })
     );
-    expect(useMiddleware).toHaveBeenNthCalledWith(
-      2,
-      startupPermission,
-      expressApp,
-      'json-middleware'
-    );
-    expect(registerRoute).toHaveBeenCalledWith(
-      startupPermission,
-      expressApp,
-      '/',
-      expect.any(Function)
-    );
+    expect(expressApp.use).toHaveBeenNthCalledWith(1, 'cors-middleware');
+    expect(expressApp.use).toHaveBeenNthCalledWith(2, 'json-middleware');
+    expect(expressApp.all).toHaveBeenCalledWith('/', expect.any(Function));
     expect(getEnvironmentVariables).toHaveBeenCalled();
     expect(cors).toHaveBeenCalledWith({
       origin: expect.any(Function),
@@ -97,11 +87,6 @@ describe('runReportForModeration', () => {
     const deniedOriginCallback = jest.fn();
     corsOrigin('https://denied.test', deniedOriginCallback);
     expect(deniedOriginCallback).toHaveBeenCalledWith(expect.any(Error));
-    expect(registerFunction).toHaveBeenCalledWith(
-      startupPermission,
-      functions,
-      expressApp
-    );
     expect(region).toHaveBeenCalledWith('europe-west1');
     expect(onRequest).toHaveBeenCalledWith(expressApp);
     const respond = result.handleReportForModeration;

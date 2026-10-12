@@ -235,14 +235,45 @@ export function sendResponderResult(res, status, body) {
  * @returns {(req: NativeHttpRequest | undefined, res: NativeHttpResponse) => Promise<void>} Express handler.
  */
 export function createResponderHandler(responder, normalizeRequest) {
-  return async function handleResponder(
-    /** @type {NativeHttpRequest | undefined} */ req,
-    /** @type {NativeHttpResponse} */ res
-  ) {
-    const request = normalizeRequest(req);
-    const result = await responder(request);
+  const handle = createNormalizedResponderHandler(
+    (_permission, request) => responder(request),
+    normalizeRequest,
+    (_permission, res, status, body) => sendResponderResult(res, status, body)
+  );
+  return (req, res) => handle(undefined, req, res);
+}
 
-    sendResponderResult(res, result.status, result.body);
+/**
+ * Build a request handler whose domain and response effects receive a capability.
+ * @param {(permission: import('../../../types/allow-effects').AllowEffects, request: any) => Promise<{ status: number, body?: unknown }>} responder Effect-aware domain responder.
+ * @param {(permission: import('../../../types/allow-effects').AllowEffects, response: NativeHttpResponse, status: number, body: unknown) => void} sendResponse Effect-aware response writer.
+ * @returns {(permission: import('../../../types/allow-effects').AllowEffects, req: any, res: any) => Promise<void>} Effectful Express handler.
+ */
+export function createEffectfulResponderHandler(responder, sendResponse) {
+  return createNormalizedResponderHandler(
+    responder,
+    normalizeExpressRequest,
+    sendResponse
+  );
+}
+
+/**
+ * Share request normalization and response dispatch for both pure and effectful responders.
+ * @template Permission
+ * @param {(permission: Permission, request: any) => Promise<{ status: number, body?: unknown }>} responder Domain responder.
+ * @param {(request: NativeHttpRequest | undefined) => unknown} normalizeRequest Request normalizer.
+ * @param {(permission: Permission, response: any, status: number, body: unknown) => void} sendResponse Response dispatcher.
+ * @returns {(permission: Permission, req: any, res: any) => Promise<void>} Normalized response handler.
+ */
+function createNormalizedResponderHandler(
+  responder,
+  normalizeRequest,
+  sendResponse
+) {
+  return async function handleResponder(permission, req, res) {
+    const request = normalizeRequest(req);
+    const result = await responder(permission, request);
+    sendResponse(permission, res, result.status, result.body);
   };
 }
 

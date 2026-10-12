@@ -26,27 +26,42 @@ describe('createModerationRatingDependencies', () => {
     const auth = { verifyIdToken: jest.fn().mockResolvedValue({ uid: 'abc' }) };
     const crypto = { randomUUID: jest.fn(() => 'uuid-1') };
     const FieldValue = makeFieldValue();
+    const updateModeratorAssignment = jest.fn(async (permission, ref, data) =>
+      ref.update(data)
+    );
+    const recordRating = jest.fn(async (permission, database, rating) => {
+      const { id, ...data } = rating;
+      await database.collection('moderationRatings').doc(id).set(data);
+    });
 
     const deps = createModerationRatingDependencies({
       db,
       auth,
       FieldValue,
       crypto,
+      updateModeratorAssignment,
+      recordRating,
     });
 
     await expect(deps.verifyIdToken('token')).resolves.toEqual({ uid: 'abc' });
     const assignment = await deps.fetchModeratorAssignment('uid-1');
     expect(assignment.variantId).toBe('/variants/x');
-    await assignment.clearAssignment();
+    await assignment.clearAssignment({});
     expect(update).toHaveBeenCalledWith({ variant: 'DELETE_SENTINEL' });
-
-    await deps.recordModerationRating({
-      id: 'id1',
-      moderatorId: 'm',
-      variantId: '/v',
-      isApproved: true,
-      ratedAt: 123,
+    expect(updateModeratorAssignment).toHaveBeenCalledWith({}, moderatorRef, {
+      variant: 'DELETE_SENTINEL',
     });
+
+    await deps.recordModerationRating(
+      {},
+      {
+        id: 'id1',
+        moderatorId: 'm',
+        variantId: '/v',
+        isApproved: true,
+        ratedAt: 123,
+      }
+    );
     expect(set).toHaveBeenCalledWith({
       moderatorId: 'm',
       variantId: '/v',
@@ -85,6 +100,8 @@ describe('createModerationRatingDependencies', () => {
       auth: { verifyIdToken: jest.fn() },
       FieldValue: makeFieldValue(),
       crypto: { randomUUID: jest.fn() },
+      updateModeratorAssignment: jest.fn(),
+      recordRating: jest.fn(),
     });
 
     await expect(deps.fetchModeratorAssignment('u1')).resolves.toBeNull();
@@ -109,6 +126,8 @@ describe('createModerationRatingDependencies', () => {
       auth: { verifyIdToken: jest.fn() },
       FieldValue: makeFieldValue(),
       crypto: { randomUUID: jest.fn() },
+      updateModeratorAssignment: jest.fn(),
+      recordRating: jest.fn(),
     });
 
     await expect(deps.fetchModeratorAssignment('u4')).resolves.toBeNull();
