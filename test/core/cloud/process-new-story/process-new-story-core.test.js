@@ -11,6 +11,40 @@ const baseFieldValue = {
   serverTimestamp: jest.fn(() => 'ts'),
   increment: jest.fn(() => 'inc'),
 };
+const allowEffects = Object.freeze({ testCapability: true });
+
+/**
+ * Wrap the fake batch with permission-aware methods.
+ * @param {import('firebase-admin/firestore').Firestore} db Fake database.
+ * @param {unknown[]} permissions Recorded capabilities.
+ * @returns {object} Permission-aware batch facade.
+ */
+function createPermissionAwareBatch(db, permissions = []) {
+  const batch = db.batch();
+  return {
+    set: (permission, ...args) => {
+      permissions.push(permission);
+      return batch.set(...args);
+    },
+    update: (permission, ...args) => {
+      permissions.push(permission);
+      return batch.update(...args);
+    },
+    commit: permission => {
+      permissions.push(permission);
+      return batch.commit();
+    },
+  };
+}
+
+/**
+ * Create a permission-aware batch factory for a fake database.
+ * @param {unknown[]} [permissions] Recorded capabilities.
+ * @returns {(db: import('firebase-admin/firestore').Firestore) => object} Batch factory.
+ */
+function createBatchFactory(permissions = []) {
+  return db => createPermissionAwareBatch(db, permissions);
+}
 
 describe('resolveContextSubId', () => {
   it('returns undefined when context is missing', () => {
@@ -44,6 +78,9 @@ describe('createProcessNewStoryHandle', () => {
     };
     const randomUUID = jest.fn(() => 'uuid');
     const random = jest.fn(() => 0.5);
+    const createBatch = createBatchFactory();
+    const boundHandler = jest.fn();
+    const bindEffectInvocationBoundary = jest.fn(() => boundHandler);
 
     expect(
       createProcessNewStoryHandle({
@@ -52,6 +89,8 @@ describe('createProcessNewStoryHandle', () => {
         fieldValue,
         randomUUID,
         random,
+        createBatch,
+        bindEffectInvocationBoundary,
       })
     ).toBe(handle);
 
@@ -62,6 +101,8 @@ describe('createProcessNewStoryHandle', () => {
         fieldValue,
         randomUUID,
         random: Math.random,
+        createBatch,
+        bindEffectInvocationBoundary,
       })
     ).toBe(handle);
 
@@ -69,7 +110,8 @@ describe('createProcessNewStoryHandle', () => {
     expect(functions.region).toHaveBeenCalledWith('europe-west1');
     expect(document).toHaveBeenCalledWith('storyFormSubmissions/{subId}');
     expect(onCreate).toHaveBeenCalledTimes(2);
-    expect(onCreate).toHaveBeenCalledWith(expect.any(Function));
+    expect(onCreate).toHaveBeenCalledWith(boundHandler);
+    expect(bindEffectInvocationBoundary).toHaveBeenCalledTimes(2);
   });
 });
 
@@ -139,13 +181,13 @@ describe('createProcessNewStoryHandler', () => {
       fieldValue: baseFieldValue,
       randomUUID,
       random: Math.random,
-    });
+    })(createBatchFactory());
 
     const snapshot = {
       data: () => ({ processed: true }),
     };
 
-    await expect(handler(snapshot, {})).resolves.toBeNull();
+    await expect(handler(allowEffects, snapshot, {})).resolves.toBeNull();
     expect(findAvailablePageNumberFn).not.toHaveBeenCalled();
     expect(db.batch).not.toHaveBeenCalled();
   });
@@ -166,13 +208,14 @@ describe('createProcessNewStoryHandler', () => {
       serverTimestamp: jest.fn(() => 'timestamp'),
       increment: jest.fn(() => 'increment'),
     };
+    const batchPermissions = [];
 
     const handler = createProcessNewStoryHandler({
       db,
       fieldValue,
       randomUUID,
       random,
-    });
+    })(createBatchFactory(batchPermissions));
 
     const submission = {
       processed: false,
@@ -190,7 +233,7 @@ describe('createProcessNewStoryHandler', () => {
     };
     const context = { params: { subId: 'context-story' } };
 
-    await expect(handler(snapshot, context)).resolves.toBeNull();
+    await expect(handler(allowEffects, snapshot, context)).resolves.toBeNull();
 
     expect(findAvailablePageNumberFn).toHaveBeenCalledWith(db, random);
     expect(db.doc).toHaveBeenCalledWith('stories/context-story');
@@ -238,6 +281,12 @@ describe('createProcessNewStoryHandler', () => {
 
     expect(batch.update).toHaveBeenCalledWith(snapshotRef, { processed: true });
     expect(batch.commit).toHaveBeenCalled();
+    expect(batchPermissions).toHaveLength(
+      batch.set.mock.calls.length + batch.update.mock.calls.length + 1
+    );
+    expect(
+      batchPermissions.every(permission => permission === allowEffects)
+    ).toBe(true);
   });
 });
 
@@ -258,9 +307,9 @@ describe('createProcessNewStoryHandler edge cases', () => {
       fieldValue: baseFieldValue,
       randomUUID,
       random,
-    });
+    })(createBatchFactory());
 
-    await expect(handler(null)).resolves.toBeNull();
+    await expect(handler(allowEffects, null)).resolves.toBeNull();
 
     expect(findAvailablePageNumberFn).toHaveBeenCalledWith(db, random);
     expect(db.doc).toHaveBeenCalledWith('stories/story-id');
@@ -281,7 +330,7 @@ describe('createProcessNewStoryHandler edge cases', () => {
       fieldValue: baseFieldValue,
       randomUUID,
       random: Math.random,
-    });
+    })(createBatchFactory());
 
     const submission = {
       title: 'Another story',
@@ -296,7 +345,7 @@ describe('createProcessNewStoryHandler edge cases', () => {
       ref: snapshotRef,
     };
 
-    await handler(snapshot, {});
+    await handler(allowEffects, snapshot, {});
 
     const batch = db.batch.mock.results[0].value;
     expect(findAvailablePageNumberFn).toHaveBeenCalledWith(db, Math.random);
@@ -325,7 +374,7 @@ describe('createProcessNewStoryHandler edge cases', () => {
       fieldValue: baseFieldValue,
       randomUUID,
       random: Math.random,
-    });
+    })(createBatchFactory());
 
     const snapshotRef = getDoc('submissions/random-story');
     const snapshot = {
@@ -334,7 +383,7 @@ describe('createProcessNewStoryHandler edge cases', () => {
       ref: snapshotRef,
     };
 
-    await handler(snapshot, {});
+    await handler(allowEffects, snapshot, {});
 
     expect(findAvailablePageNumberFn).toHaveBeenCalledWith(db, Math.random);
     expect(db.doc).toHaveBeenCalledWith('stories/generated-story');
@@ -363,7 +412,7 @@ describe('createProcessNewStoryHandler edge cases', () => {
       fieldValue,
       randomUUID,
       random,
-    });
+    })(createBatchFactory());
 
     const submission = {
       processed: false,
@@ -381,7 +430,7 @@ describe('createProcessNewStoryHandler edge cases', () => {
     };
     const context = { params: { subId: 'context-story' } };
 
-    await expect(handler(snapshot, context)).resolves.toBeNull();
+    await expect(handler(allowEffects, snapshot, context)).resolves.toBeNull();
 
     expect(findAvailablePageNumberFn).toHaveBeenCalledWith(db, random);
     expect(db.doc).toHaveBeenCalledWith('stories/context-story');

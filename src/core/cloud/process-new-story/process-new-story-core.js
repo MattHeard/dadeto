@@ -30,10 +30,13 @@ export function resetFindAvailablePageNumberResolver() {
  * @typedef {import('firebase-admin/firestore').Firestore} Firestore
  * @typedef {import('firebase-admin/firestore').FieldValue} FieldValue
  * @typedef {import('firebase-admin/firestore').DocumentReference} DocumentReference
- * @typedef {import('firebase-admin/firestore').WriteBatch} WriteBatch
  * @typedef {import('firebase-admin/firestore').DocumentSnapshot | import('firebase-admin/firestore').QueryDocumentSnapshot} FirestoreDocumentSnapshot
+ * @typedef {import('../../../../types/allow-effects').AllowEffects} AllowEffects
+ * @typedef {{ set: (allowEffects: AllowEffects, reference: DocumentReference, data: Record<string, unknown>) => unknown, update: (allowEffects: AllowEffects, reference: DocumentReference, data: Record<string, unknown>) => unknown, commit: (allowEffects: AllowEffects) => Promise<unknown> }} SubmissionBatch
+ * @typedef {(db: Firestore) => SubmissionBatch} CreateSubmissionBatch
+ * @typedef {import('../../../../types/allow-effects').EffectInvocationBoundary} EffectInvocationBoundary
  * @typedef {{ params?: Record<string, string> }} TriggerContext
- * @typedef {{ functions: { region: (region: string) => { firestore: { document: (path: string) => Record<string, (handler: unknown) => unknown> } } }, getFirestoreInstance: () => Firestore, fieldValue: { serverTimestamp: () => FieldValue, increment: (value: number) => FieldValue }, randomUUID: () => string, random: () => number }} ProcessNewStoryHandleOptions
+ * @typedef {{ functions: { region: (region: string) => { firestore: { document: (path: string) => Record<string, (handler: unknown) => unknown> } } }, getFirestoreInstance: () => Firestore, fieldValue: { serverTimestamp: () => FieldValue, increment: (value: number) => FieldValue }, randomUUID: () => string, random: () => number, createBatch: CreateSubmissionBatch, bindEffectInvocationBoundary: EffectInvocationBoundary }} ProcessNewStoryHandleOptions
  */
 
 /**
@@ -213,15 +216,16 @@ function createStoryReferences(db, { storyId, pageId, variantId }) {
 
 /**
  * Queue writes for variant options associated with the submission.
+ * @param {AllowEffects} allowEffects Permission for option writes.
  * @param {object} options Collaborators required to queue option writes.
- * @param {WriteBatch} options.batch Firestore batch instance.
+ * @param {SubmissionBatch} options.batch Permission-aware batch facade.
  * @param {Record<string, unknown>} options.submission Submission payload to inspect.
  * @param {import('firebase-admin/firestore').DocumentReference} options.variantRef Variant document reference.
  * @param {() => string} options.randomUUID UUID generator.
  * @param {() => FieldValue} options.getServerTimestamp Function returning server timestamps.
  * @returns {void}
  */
-function queueVariantOptions(options) {
+function queueVariantOptions(allowEffects, options) {
   // Stryker disable all -- option creation uses the fixed Firestore payload protocol.
   /**
    * Queue one story option in the shared write batch.
@@ -234,7 +238,7 @@ function queueVariantOptions(options) {
       .collection('options')
       .doc(options.randomUUID());
 
-    options.batch.set(optionRef, {
+    options.batch.set(allowEffects, optionRef, {
       content: text,
       createdAt: options.getServerTimestamp(),
       position,
@@ -250,8 +254,9 @@ function queueVariantOptions(options) {
 
 /**
  * Queue writes that persist the submission and its options.
+ * @param {AllowEffects} allowEffects Permission for submission writes.
  * @param {object} options Collaborators and values required to queue writes.
- * @param {WriteBatch} options.batch Firestore batch instance.
+ * @param {SubmissionBatch} options.batch Permission-aware batch facade.
  * @param {Firestore} options.db Firestore instance.
  * @param {{ storyRef: DocumentReference, pageRef: DocumentReference, variantRef: DocumentReference }} options.refs Firestore references.
  * @param {Record<string, unknown>} options.submission Submission payload to persist.
@@ -259,27 +264,26 @@ function queueVariantOptions(options) {
  * @param {() => number} options.random Random number generator.
  * @param {() => string} options.randomUUID UUID generator.
  * @param {() => FieldValue} options.getServerTimestamp Function returning server timestamps.
- * @param {string} options.storyId Story identifier used for stats documents.
  * @param {FirestoreDocumentSnapshot | null | undefined} options.snapshot Original snapshot reference.
  * @returns {void}
  */
-function queueSubmissionWrites(options) {
+function queueSubmissionWrites(allowEffects, options) {
   // Stryker disable all -- new-story writes use the fixed Firestore document protocol.
   const { storyRef, pageRef, variantRef } = options.refs;
 
-  options.batch.set(storyRef, {
+  options.batch.set(allowEffects, storyRef, {
     title: options.submission.title,
     rootPage: pageRef,
     createdAt: options.getServerTimestamp(),
   });
 
-  options.batch.set(pageRef, {
+  options.batch.set(allowEffects, pageRef, {
     number: options.pageNumber,
     incomingOption: null,
     createdAt: options.getServerTimestamp(),
   });
 
-  options.batch.set(variantRef, {
+  options.batch.set(allowEffects, variantRef, {
     name: 'a',
     content: options.submission.content,
     authorId: normalizeHeaderValue(options.submission.authorId),
@@ -289,7 +293,7 @@ function queueSubmissionWrites(options) {
     createdAt: options.getServerTimestamp(),
   });
 
-  queueVariantOptions({
+  queueVariantOptions(allowEffects, {
     batch: options.batch,
     submission: options.submission,
     variantRef,
@@ -297,27 +301,25 @@ function queueSubmissionWrites(options) {
     getServerTimestamp: options.getServerTimestamp,
   });
 
-  options.batch.set(options.db.doc(`storyStats/${options.storyId}`), {
-    variantCount: 1,
-  });
-  markSnapshotAsProcessed(options.batch, options.snapshot);
+  markSnapshotAsProcessed(allowEffects, options.batch, options.snapshot);
 }
 // Stryker restore all
 
 /**
  * Enqueue the processed marker on the snapshot document when available.
- * @param {WriteBatch} batch Firestore batch instance.
+ * @param {AllowEffects} allowEffects Permission for the processed marker write.
+ * @param {SubmissionBatch} batch Permission-aware batch facade.
  * @param {FirestoreDocumentSnapshot | null | undefined} snapshot Trigger snapshot.
  * @returns {void}
  */
-function markSnapshotAsProcessed(batch, snapshot) {
+function markSnapshotAsProcessed(allowEffects, batch, snapshot) {
   // Stryker disable all -- processed markers use the fixed snapshot-reference protocol.
   const snapshotRef = getSnapshotReference(snapshot);
   if (!snapshotRef) {
     return;
   }
 
-  batch.update(snapshotRef, { processed: true });
+  batch.update(allowEffects, snapshotRef, { processed: true });
 }
 // Stryker restore all
 
@@ -370,35 +372,22 @@ function getStringAuthorId(authorId) {
 // Stryker restore all
 
 /**
- * Ensure the author's document exists when an author identifier is provided.
- * @param {object} options Collaborators required to verify the author document.
- * @param {WriteBatch} options.batch Firestore batch instance.
- * @param {Firestore} options.db Firestore instance.
- * @param {Record<string, unknown>} options.submission Submission payload to inspect.
- * @param {() => string} options.randomUUID UUID generator.
- * @returns {Promise<void>} Resolves once the author document is scheduled for creation when needed.
- */
-async function ensureAuthorRecord({ batch, db, submission, randomUUID }) {
-  const resolvedAuthorId = getStringAuthorId(submission.authorId);
-  const authorRef = resolveAuthorRef(db, resolvedAuthorId);
-  if (!authorRef) {
-    return;
-  }
-
-  await addAuthorRecordIfMissing(authorRef, batch, randomUUID);
-}
-
-/**
  * Create an author document when the reference is missing.
+ * @param {AllowEffects} allowEffects Permission for the author write.
  * @param {DocumentReference} authorRef Author document reference.
- * @param {WriteBatch} batch Write batch used to queue the creation.
+ * @param {SubmissionBatch} batch Permission-aware batch facade.
  * @param {() => string} randomUUID UUID generator for new documents.
  * @returns {Promise<void>} Resolves once the author record has been scheduled for insertion.
  */
-async function addAuthorRecordIfMissing(authorRef, batch, randomUUID) {
+async function addAuthorRecordIfMissing(
+  allowEffects,
+  authorRef,
+  batch,
+  randomUUID
+) {
   const authorSnap = await authorRef.get();
   if (!isSnapshotAvailable(authorSnap)) {
-    batch.set(authorRef, { uuid: randomUUID() });
+    batch.set(allowEffects, authorRef, { uuid: randomUUID() });
   }
 }
 
@@ -409,6 +398,7 @@ async function addAuthorRecordIfMissing(authorRef, batch, randomUUID) {
  * @property {FirestoreDocumentSnapshot | null | undefined} snapshot Trigger snapshot.
  * @property {TriggerContext | undefined} context Trigger context.
  * @property {Firestore} db Firestore instance.
+ * @property {CreateSubmissionBatch} createBatch Permission-aware batch facade factory.
  * @property {() => string} randomUUID UUID generator.
  * @property {() => number} random Random number generator.
  * @property {() => FieldValue} getServerTimestamp Server timestamp helper.
@@ -420,6 +410,7 @@ async function addAuthorRecordIfMissing(authorRef, batch, randomUUID) {
  * @param {TriggerContext | undefined} context Trigger context.
  * @param {object} options Configuration.
  * @param {Firestore} options.db Firestore instance.
+ * @param {CreateSubmissionBatch} options.createBatch Permission-aware batch facade factory.
  * @param {() => string} options.randomUUID UUID generator.
  * @param {() => number} options.random Random number generator.
  * @param {() => FieldValue} options.getServerTimestamp Server timestamp helper.
@@ -431,6 +422,7 @@ function mapProcessStoryParams(snapshot, context, options) {
     snapshot: snapshot ?? null,
     context,
     db: options.db,
+    createBatch: options.createBatch,
     randomUUID: options.randomUUID,
     random: options.random,
     getServerTimestamp: options.getServerTimestamp,
@@ -444,7 +436,7 @@ function mapProcessStoryParams(snapshot, context, options) {
  * @param {{ serverTimestamp: () => FieldValue, increment: (value: number) => FieldValue }} options.fieldValue FieldValue helper with timestamp and increment helpers.
  * @param {() => string} options.randomUUID UUID generator.
  * @param {() => number} options.random Random number generator.
- * @returns {(snap: FirestoreDocumentSnapshot | null | undefined, context: TriggerContext | undefined) => Promise<null>} Firestore trigger handler.
+ * @returns {(createBatch: CreateSubmissionBatch) => (allowEffects: AllowEffects, snap: FirestoreDocumentSnapshot | null | undefined, context: TriggerContext | undefined) => Promise<null>} Bind the batch facade and return the capability-aware trigger handler.
  */
 export function createProcessNewStoryHandler(options) {
   const { db, fieldValue, randomUUID, random } = options;
@@ -454,7 +446,7 @@ export function createProcessNewStoryHandler(options) {
     random,
   });
 
-  return createHandler({ db });
+  return createBatch => createHandler({ db, createBatch });
 }
 
 /**
@@ -468,11 +460,14 @@ export function createProcessNewStoryHandle(options) {
     functions: options.functions,
     getFirestoreInstance: options.getFirestoreInstance,
     documentPath: 'storyFormSubmissions/{subId}',
-    createHandler: createProcessNewStorySubmissionHandlerFactory({
-      fieldValue: options.fieldValue,
-      randomUUID: options.randomUUID,
-      random: options.random,
-    }),
+    createHandler: ({ db }) =>
+      options.bindEffectInvocationBoundary(
+        createProcessNewStorySubmissionHandlerFactory({
+          fieldValue: options.fieldValue,
+          randomUUID: options.randomUUID,
+          random: options.random,
+        })({ db, createBatch: options.createBatch })
+      ),
   });
 }
 // Stryker restore all
@@ -481,12 +476,14 @@ export function createProcessNewStoryHandle(options) {
  * Prepare the shared submission handler dependencies.
  * @param {{
  *   db: Firestore,
+ *   createBatch: CreateSubmissionBatch,
  *   fieldValue: { serverTimestamp: () => FieldValue, increment: (value: number) => FieldValue },
  *   randomUUID: () => string,
  *   random: () => number,
  * }} deps Shared handler dependencies.
  * @returns {{
  *   db: Firestore,
+ *   createBatch: CreateSubmissionBatch,
  *   getServerTimestamp: () => FieldValue,
  *   randomUUID: () => string,
  *   random: () => number,
@@ -495,6 +492,7 @@ export function createProcessNewStoryHandle(options) {
 function buildProcessNewStorySubmissionDeps(deps) {
   return {
     db: deps.db,
+    createBatch: deps.createBatch,
     getServerTimestamp: resolveServerTimestamp(deps.fieldValue),
     randomUUID: deps.randomUUID,
     random: deps.random,
@@ -507,13 +505,14 @@ function buildProcessNewStorySubmissionDeps(deps) {
  *   randomUUID: () => string,
  *   random: () => number,
  * }} deps Shared handler dependencies.
- * @returns {(deps: { db: Firestore }) => (snap: FirestoreDocumentSnapshot | null | undefined, context: TriggerContext | undefined) => Promise<null>} Submission handler factory.
+ * @returns {(deps: { db: Firestore, createBatch: CreateSubmissionBatch }) => (allowEffects: AllowEffects, snap: FirestoreDocumentSnapshot | null | undefined, context: TriggerContext | undefined) => Promise<null>} Submission handler factory.
  */
 function createProcessNewStorySubmissionHandlerFactory(deps) {
-  return ({ db }) =>
+  return ({ db, createBatch }) =>
     createProcessNewStorySubmissionHandler(
       buildProcessNewStorySubmissionDeps({
         db,
+        createBatch,
         fieldValue: deps.fieldValue,
         randomUUID: deps.randomUUID,
         random: deps.random,
@@ -525,27 +524,29 @@ function createProcessNewStorySubmissionHandlerFactory(deps) {
  * Create the async submission handler from normalized dependencies.
  * @param {{
  *   db: Firestore,
+ *   createBatch: CreateSubmissionBatch,
  *   getServerTimestamp: () => FieldValue,
  *   randomUUID: () => string,
  *   random: () => number,
  * }} deps Submission dependencies.
- * @returns {(snap: FirestoreDocumentSnapshot | null | undefined, context: TriggerContext | undefined) => Promise<null>} Submission handler.
+ * @returns {(allowEffects: AllowEffects, snap: FirestoreDocumentSnapshot | null | undefined, context: TriggerContext | undefined) => Promise<null>} Submission handler.
  */
 function createProcessNewStorySubmissionHandler(deps) {
-  return /** @type {(snap: FirestoreDocumentSnapshot | null | undefined, context: TriggerContext | undefined) => Promise<null>} */ (
-    async (snapshot, context = {}) => {
+  return /** @type {(allowEffects: AllowEffects, snap: FirestoreDocumentSnapshot | null | undefined, context: TriggerContext | undefined) => Promise<null>} */ (
+    async (allowEffects, snapshot, context = {}) => {
       const params = mapProcessStoryParams(snapshot, context, deps);
-      return processStorySubmission(params);
+      return processStorySubmission(allowEffects, params);
     }
   );
 }
 
 /**
  * Orchestrate the steps required to persist a new story submission.
+ * @param {AllowEffects} allowEffects Permission for this trigger invocation's writes.
  * @param {ProcessStoryParams} params Per-submission inputs and bound dependencies.
  * @returns {Promise<null>} Null once work completes.
  */
-async function processStorySubmission(params) {
+async function processStorySubmission(allowEffects, params) {
   if (params.submission.processed) {
     return null;
   }
@@ -560,9 +561,9 @@ async function processStorySubmission(params) {
     params.random
   );
   const refs = createStoryReferences(params.db, identifiers);
-  const batch = params.db.batch();
+  const batch = params.createBatch(params.db);
 
-  queueSubmissionWrites({
+  queueSubmissionWrites(allowEffects, {
     batch,
     db: params.db,
     refs,
@@ -571,17 +572,25 @@ async function processStorySubmission(params) {
     random: params.random,
     randomUUID: params.randomUUID,
     getServerTimestamp: params.getServerTimestamp,
-    storyId: identifiers.storyId,
     snapshot: params.snapshot,
   });
-
-  await ensureAuthorRecord({
-    batch,
-    db: params.db,
-    submission: params.submission,
-    randomUUID: params.randomUUID,
+  batch.set(allowEffects, params.db.doc(`storyStats/${identifiers.storyId}`), {
+    variantCount: 1,
   });
 
-  await batch.commit();
+  const authorRef = resolveAuthorRef(
+    params.db,
+    getStringAuthorId(params.submission.authorId)
+  );
+  if (authorRef) {
+    await addAuthorRecordIfMissing(
+      allowEffects,
+      authorRef,
+      batch,
+      params.randomUUID
+    );
+  }
+
+  await batch.commit(allowEffects);
   return null;
 }

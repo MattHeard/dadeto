@@ -67,7 +67,7 @@ const LOCAL_ID_TOKEN = 'local-admin-token';
 /** @typedef {Parameters<typeof createApplyCreditEvent>[1]} CreditEventEffects */
 /** @typedef {(db: Parameters<typeof createFetchCredit>[0]) => CreditEventEffects} CreditEventEffectAdapterFactory */
 /** @typedef {{baseUrl: string, bucketName: string, projectId: string, publicDir: string}} SimulatorRuntimeConfig */
-/** @typedef {(permission: import('../../../../types/allow-effects').AllowEffects, db: SimulatorDb) => import('../../cloud/process-new-page/process-new-page-core.js').SubmissionBatch} CreateSubmissionBatch */
+/** @typedef {(db: import('firebase-admin/firestore').Firestore) => {set: (permission: import('../../../../types/allow-effects').AllowEffects, reference: object, data: object) => unknown, update: (permission: import('../../../../types/allow-effects').AllowEffects, reference: object, data: object) => unknown, commit: (permission: import('../../../../types/allow-effects').AllowEffects) => Promise<unknown>}} CreateSubmissionBatch */
 /** @typedef {{bindEffectBoundary?: import('../../../../types/allow-effects').AllowEffectsBoundary, saveStorageFile?: (permission: import('../../../../types/allow-effects').AllowEffects, file: object, contents: string, options: object) => Promise<unknown>, updateFirestoreDocument?: (permission: import('../../../../types/allow-effects').AllowEffects, reference: { update: (data: Record<string, unknown>) => Promise<unknown> }, data: Record<string, unknown>) => Promise<unknown>, setFirestoreDocument?: (permission: import('../../../../types/allow-effects').AllowEffects, reference: { set: (data: Record<string, unknown>) => Promise<unknown> }, data: Record<string, unknown>) => Promise<unknown>, createSubmissionBatch?: CreateSubmissionBatch, createCreditEventEffectAdapters?: CreditEventEffectAdapterFactory}} SimulatorEffects */
 /** @typedef {{bindEffectBoundary: import('../../../../types/allow-effects').AllowEffectsBoundary, updateFirestoreDocument: NonNullable<SimulatorEffects['updateFirestoreDocument']>, setFirestoreDocument: NonNullable<SimulatorEffects['setFirestoreDocument']>, createSubmissionBatch: CreateSubmissionBatch, createCreditEventEffectAdapters: CreditEventEffectAdapterFactory}} RequiredSimulatorEffects */
 /** @typedef {{ body?: unknown, headers?: unknown, get?: (name: string) => string | null | undefined }} SimulatorRequest */
@@ -76,7 +76,7 @@ const LOCAL_ID_TOKEN = 'local-admin-token';
 /** @typedef {{ doc: { ref: { path: string }, data?: () => unknown }, createdAt: number, rand: number, path: string }} ModerationCandidate */
 /** @typedef {{ db: unknown, storage: { bucket: (name: string) => { file: (path: string) => { save: (contents: string, options: object) => Promise<unknown> } } }, fetchFn: (permission: import('../../../../types/allow-effects').AllowEffects, ...args: any[]) => any, bindEffectBoundary: import('../../../../types/allow-effects').AllowEffectsBoundary, projectId: string, baseUrl: string, bucketName: string, verifyIdToken: (...args: any[]) => any }} GenerateStatsSimulatorOptions */
 /** @typedef {{ snapshotHelpers: ReturnType<typeof createSnapshotHelpers>, lookupHelpers: ReturnType<typeof createLookupHelpers>, authVerifiers: ReturnType<typeof createSimulatorAuthVerifiers>, fieldValue: ReturnType<typeof createFakeFieldValue>, db: SimulatorDb, randomUUID: () => string, logGenerateStatsError: (permission: import('../../../../types/allow-effects').AllowEffects, logger: { error?: (...args: unknown[]) => void }, ...args: unknown[]) => void }} SimulatorTestUtilsOptions */
-/** @typedef {{ processNewStory: (...args: any[]) => any, processNewPage: (...args: any[]) => any, renderContents: (...args: any[]) => any, renderVariant: (...args: any[]) => any, handleVariantWrite: (...args: any[]) => any, bindEffectBoundary: import('../../../../types/allow-effects').AllowEffectsBoundary }} SimulatorTriggerHandlers */
+/** @typedef {{ processNewStory: (permission: import('../../../../types/allow-effects').AllowEffects, ...args: any[]) => any, processNewPage: (...args: any[]) => any, renderContents: (...args: any[]) => any, renderVariant: (...args: any[]) => any, handleVariantWrite: (...args: any[]) => any, bindEffectBoundary: import('../../../../types/allow-effects').AllowEffectsBoundary }} SimulatorTriggerHandlers */
 /**
  * @typedef {object} SimulatorDocumentReference
  * @property {() => Promise<{data: () => {number?: number, title?: string}, id: string}>} get Fetch the parent document.
@@ -536,7 +536,7 @@ async function buildSimulatorState(runtime, effects) {
     /** @type {Parameters<typeof createProcessNewStoryHandler>[0]} */ (
       /** @type {unknown} */ (processWriteContext)
     )
-  );
+  )(createSubmissionBatch);
   const processNewPage = createProcessNewPageHandler(
     /** @type {Parameters<typeof createProcessNewPageHandler>[0]} */ (
       /** @type {unknown} */ (processWriteContext)
@@ -1060,7 +1060,10 @@ function createTriggerRegistrationsByEvent(handlers) {
     onCreate: [
       {
         pathPattern: 'storyFormSubmissions/{subId}',
-        handler: handlers.processNewStory,
+        handler: (snapshot, context) =>
+          handlers.bindEffectBoundary(permission =>
+            handlers.processNewStory(permission, snapshot, context)
+          ),
       },
       {
         pathPattern: 'pageFormSubmissions/{subId}',
