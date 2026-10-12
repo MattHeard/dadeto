@@ -29,6 +29,13 @@ describe('gcp simulator coverage paths', () => {
         createCreditEventEffectAdapters: () => ({}),
       })
     ).rejects.toThrow('setFirestoreDocument must be provided');
+    await expect(
+      createCoreSimulator({
+        bindEffectBoundary,
+        createCreditEventEffectAdapters: () => ({}),
+        setFirestoreDocument: jest.fn(),
+      })
+    ).rejects.toThrow('updateFirestoreDocument must be provided');
   });
 
   it('covers simulator helpers for missing dependencies and unmatched trigger parameters', async () => {

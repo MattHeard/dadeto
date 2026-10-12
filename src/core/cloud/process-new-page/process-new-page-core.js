@@ -1,3 +1,6 @@
+/** @typedef {import('../../../../types/allow-effects').AllowEffects} AllowEffects */
+/** @typedef {(permission: AllowEffects, document: import('firebase-admin/firestore').DocumentReference, data: Record<string, unknown>) => Promise<unknown>} UpdateDocument */
+
 /**
  * @typedef {object} SubmissionData
  * @property {string} [content] Page content.
@@ -419,15 +422,22 @@ function resolveServerTimestamp(fieldValue) {
 
 /**
  * Mark submission as processed if snapshot is not present.
+ * @param {AllowEffects} permission Permission for the processed-marker update.
  * @param {import('firebase-admin/firestore').DocumentSnapshot} optionSnap - Option snapshot.
  * @param {import('firebase-admin/firestore').DocumentSnapshot} snapshot - Submission snapshot.
+ * @param {UpdateDocument} updateDocument Permission-first document update adapter.
  * @returns {Promise<boolean>} True if marked as processed.
  */
 // Stryker disable next-line all -- trigger processing uses the fixed missing-option protocol.
-async function markProcessedIfMissing(optionSnap, snapshot) {
+async function markProcessedIfMissing(
+  permission,
+  optionSnap,
+  snapshot,
+  updateDocument
+) {
   // Stryker disable all -- trigger processing uses the fixed missing-option protocol.
   if (!isSnapshotPresent(optionSnap)) {
-    await markSubmissionProcessed(snapshot);
+    await markSubmissionProcessed(permission, snapshot, updateDocument);
     return true;
   }
   return false;
@@ -453,13 +463,25 @@ function extractAndValidateStoryRef(optionSnap) {
 
 /**
  * Validate and extract references from option snapshot.
+ * @param {AllowEffects} permission Permission for the processed-marker update.
  * @param {SnapshotWithReference} optionSnap Option document snapshot.
  * @param {import('firebase-admin/firestore').DocumentSnapshot} snapshot - Submission snapshot.
+ * @param {UpdateDocument} updateDocument Permission-first document update adapter.
  * @returns {Promise<{variantRef: import('firebase-admin/firestore').DocumentReference | null, storyRefCandidate: import('firebase-admin/firestore').DocumentReference | null} | null>} References or null if invalid.
  */
-async function validateAndExtractOptionRefs(optionSnap, snapshot) {
+async function validateAndExtractOptionRefs(
+  permission,
+  optionSnap,
+  snapshot,
+  updateDocument
+) {
   // Stryker disable all -- option validation uses the fixed processed/reference protocol.
-  const wasProcessed = await markProcessedIfMissing(optionSnap, snapshot);
+  const wasProcessed = await markProcessedIfMissing(
+    permission,
+    optionSnap,
+    snapshot,
+    updateDocument
+  );
   if (wasProcessed) {
     return null;
   }
@@ -480,25 +502,33 @@ function getValidIncomingOptionRefs(refs) {
 /**
  * Resolve page and story references when a submission targets an existing option.
  * Returns null when the submission should be marked as processed without further work.
- * @param {import('firebase-admin/firestore').Firestore} db Firestore instance used to read the option.
- * @param {string} incomingOptionFullName Full option document path.
- * @param {import('firebase-admin/firestore').DocumentSnapshot} snapshot Submission snapshot.
- * @param {(validRefs: {variantRef: import('firebase-admin/firestore').DocumentReference | null, storyRefCandidate: import('firebase-admin/firestore').DocumentReference | null}, optionSnap: SnapshotWithReference, optionRef: import('firebase-admin/firestore').DocumentReference, incomingOptionFullName: string) => Promise<PageContext | null>} buildContext Context builder for a validated option.
+ * @param {AllowEffects} permission Permission for a possible processed-marker update.
+ * @param {{db: import('firebase-admin/firestore').Firestore, incomingOptionFullName: string, snapshot: import('firebase-admin/firestore').DocumentSnapshot, buildContext: (validRefs: {variantRef: import('firebase-admin/firestore').DocumentReference | null, storyRefCandidate: import('firebase-admin/firestore').DocumentReference | null}, optionSnap: SnapshotWithReference, optionRef: import('firebase-admin/firestore').DocumentReference, incomingOptionFullName: string) => Promise<PageContext | null>}} params Query and context-building dependencies.
+ * @param {UpdateDocument} updateDocument Permission-first document update adapter.
  * @returns {Promise<PageContext | null>} Resolved context or null when the submission is already processed.
  */
 async function resolveIncomingOptionContext(
-  db,
-  incomingOptionFullName,
-  snapshot,
-  buildContext
+  permission,
+  params,
+  updateDocument
 ) {
-  const optionRef = db.doc(incomingOptionFullName);
+  const optionRef = params.db.doc(params.incomingOptionFullName);
   const optionSnap = ensureOptionSnapshotRef(await optionRef.get(), optionRef);
-  const validRefs = await resolveIncomingOptionRefs(optionSnap, snapshot);
+  const validRefs = await resolveIncomingOptionRefs(
+    permission,
+    optionSnap,
+    params.snapshot,
+    updateDocument
+  );
   if (!validRefs) {
     return null;
   }
-  return buildContext(validRefs, optionSnap, optionRef, incomingOptionFullName);
+  return params.buildContext(
+    validRefs,
+    optionSnap,
+    optionRef,
+    params.incomingOptionFullName
+  );
 }
 
 /**
@@ -589,13 +619,25 @@ function createPageContextBuilder(db, batch) {
 
 /**
  * Resolve incoming option refs or return null when processing should stop.
+ * @param {AllowEffects} permission Permission for the processed-marker update.
  * @param {SnapshotWithReference} optionSnap Option document snapshot.
  * @param {import('firebase-admin/firestore').DocumentSnapshot} snapshot - Submission snapshot.
+ * @param {UpdateDocument} updateDocument Permission-first document update adapter.
  * @returns {Promise<{variantRef: import('firebase-admin/firestore').DocumentReference | null, storyRefCandidate: import('firebase-admin/firestore').DocumentReference | null} | null>} Valid refs or null.
  */
-async function resolveIncomingOptionRefs(optionSnap, snapshot) {
+async function resolveIncomingOptionRefs(
+  permission,
+  optionSnap,
+  snapshot,
+  updateDocument
+) {
   // Stryker disable all -- incoming option traversal uses the fixed reference protocol.
-  const refs = await validateAndExtractOptionRefs(optionSnap, snapshot);
+  const refs = await validateAndExtractOptionRefs(
+    permission,
+    optionSnap,
+    snapshot,
+    updateDocument
+  );
   if (shouldSkipIncomingOptionRefs(refs)) {
     return null;
   }
@@ -1190,20 +1232,25 @@ function shouldSkipSubmission({ incomingOptionFullName, directPageNumber }) {
 
 /**
  * Mark a submission document as processed.
+ * @param {AllowEffects} permission Permission for the processed-marker update.
  * @param {import('firebase-admin/firestore').DocumentSnapshot} snapshot Submission snapshot to update.
+ * @param {UpdateDocument} updateDocument Permission-first document update adapter.
  * @returns {Promise<void>} Promise that resolves after the update completes.
  */
-async function markSubmissionProcessed(snapshot) {
-  await getSnapshotReference(snapshot).update({ processed: true });
+async function markSubmissionProcessed(permission, snapshot, updateDocument) {
+  await updateDocument(permission, getSnapshotReference(snapshot), {
+    processed: true,
+  });
 }
 
 /**
  * Stage option-based submission resolution around Firestore and runtime dependencies.
  * @param {import('firebase-admin/firestore').Firestore} db Firestore instance.
  * @param {import('firebase-admin/firestore').WriteBatch} batch Write batch for option updates.
- * @returns {(random: () => number, randomUUID: () => string, getServerTimestamp: () => unknown) => (incomingOptionFullName: string, snapshot: import('firebase-admin/firestore').DocumentSnapshot) => Promise<PageContext | null>} Staged option resolver.
+ * @param {UpdateDocument} updateDocument Permission-first document update adapter.
+ * @returns {(random: () => number, randomUUID: () => string, getServerTimestamp: () => unknown) => (permission: AllowEffects, incomingOptionFullName: string, snapshot: import('firebase-admin/firestore').DocumentSnapshot) => Promise<PageContext | null>} Staged option resolver.
  */
-function createOptionSubmissionResolver(db, batch) {
+function createOptionSubmissionResolver(db, batch, updateDocument) {
   return function bindOptionRuntime(random, randomUUID, getServerTimestamp) {
     const buildContext = createIncomingOptionContextBuilder(db, batch)(
       random,
@@ -1212,14 +1259,14 @@ function createOptionSubmissionResolver(db, batch) {
     );
 
     return async function resolveOptionSubmission(
+      permission,
       incomingOptionFullName,
       snapshot
     ) {
       return resolveIncomingOptionContext(
-        db,
-        incomingOptionFullName,
-        snapshot,
-        buildContext
+        permission,
+        { db, incomingOptionFullName, snapshot, buildContext },
+        updateDocument
       );
     };
   };
@@ -1264,23 +1311,29 @@ async function routeViaDirect({ db, directPageNumber, snapshot }) {
  * Stage page routing around shared Firestore and runtime dependencies.
  * @param {import('firebase-admin/firestore').Firestore} db Firestore instance.
  * @param {import('firebase-admin/firestore').WriteBatch} batch Batch used for option updates.
- * @returns {(random: () => number, randomUUID: () => string, getServerTimestamp: () => unknown) => (incomingOptionFullName: string | undefined, directPageNumber: number | undefined, snapshot: import('firebase-admin/firestore').DocumentSnapshot) => Promise<PageContext | null>} Staged page router.
+ * @param {UpdateDocument} updateDocument Permission-first document update adapter.
+ * @returns {(random: () => number, randomUUID: () => string, getServerTimestamp: () => unknown) => (permission: AllowEffects, incomingOptionFullName: string | undefined, directPageNumber: number | undefined, snapshot: import('firebase-admin/firestore').DocumentSnapshot) => Promise<PageContext | null>} Staged page router.
  */
-function createPageContextRouter(db, batch) {
+function createPageContextRouter(db, batch, updateDocument) {
   return function bindPageRuntime(random, randomUUID, getServerTimestamp) {
-    const resolveOptionSubmission = createOptionSubmissionResolver(db, batch)(
-      random,
-      randomUUID,
-      getServerTimestamp
-    );
+    const resolveOptionSubmission = createOptionSubmissionResolver(
+      db,
+      batch,
+      updateDocument
+    )(random, randomUUID, getServerTimestamp);
 
     return async function routePageContext(
+      permission,
       incomingOptionFullName,
       directPageNumber,
       snapshot
     ) {
       if (incomingOptionFullName) {
-        return resolveOptionSubmission(incomingOptionFullName, snapshot);
+        return resolveOptionSubmission(
+          permission,
+          incomingOptionFullName,
+          snapshot
+        );
       }
 
       return routeViaDirect({ db, directPageNumber, snapshot });
@@ -1290,6 +1343,7 @@ function createPageContextRouter(db, batch) {
 
 /**
  * Resolve the page context for the submission by delegating to the proper resolver.
+ * @param {AllowEffects} permission Permission for the trigger-time update.
  * @param {object} params Parameters defining the submission and helpers.
  * @param {import('firebase-admin/firestore').Firestore} params.db Firestore instance.
  * @param {string | undefined} params.incomingOptionFullName Option document path when routing via options.
@@ -1299,15 +1353,21 @@ function createPageContextRouter(db, batch) {
  * @param {() => string} params.randomUUID UUID generator.
  * @param {() => number} params.random Random number generator for variant ordering.
  * @param {() => unknown} params.getServerTimestamp Server timestamp helper.
+ * @param {UpdateDocument} updateDocument Permission-first document update adapter.
  * @returns {Promise<PageContext | null>} Resolved page context or null when the submission should be dropped.
  */
-async function resolveSubmissionPageContext(params) {
-  const routePageContext = createPageContextRouter(params.db, params.batch)(
-    params.random,
-    params.randomUUID,
-    params.getServerTimestamp
-  );
+async function resolveSubmissionPageContext(
+  permission,
+  params,
+  updateDocument
+) {
+  const routePageContext = createPageContextRouter(
+    params.db,
+    params.batch,
+    updateDocument
+  )(params.random, params.randomUUID, params.getServerTimestamp);
   return routePageContext(
+    permission,
     params.incomingOptionFullName,
     params.directPageNumber,
     params.snapshot
@@ -1410,21 +1470,26 @@ function queueVariantDirtyReset(batch, variantRef) {
  * Stage unprocessed-submission work around Firestore and runtime dependencies.
  * @param {import('firebase-admin/firestore').Firestore} db Firestore instance.
  * @param {{serverTimestamp: () => unknown, increment: (value: number) => unknown}} fieldValue FieldValue helper used for stats.
- * @returns {(randomUUID: () => string, random: () => number, getServerTimestamp: () => unknown) => (submission: SubmissionData, snapshot: import('firebase-admin/firestore').DocumentSnapshot) => Promise<null>} Staged processor.
+ * @param {UpdateDocument} updateDocument Permission-first document update adapter.
+ * @returns {(randomUUID: () => string, random: () => number, getServerTimestamp: () => unknown) => (permission: AllowEffects, submission: SubmissionData, snapshot: import('firebase-admin/firestore').DocumentSnapshot) => Promise<null>} Staged processor.
  */
-function createUnprocessedSubmissionProcessor(db, fieldValue) {
+function createUnprocessedSubmissionProcessor(db, fieldValue, updateDocument) {
   return function bindSubmissionRuntime(
     randomUUID,
     random,
     getServerTimestamp
   ) {
-    return async function processUnprocessedSubmission(submission, snapshot) {
+    return async function processUnprocessedSubmission(
+      permission,
+      submission,
+      snapshot
+    ) {
       // Stryker disable all -- submission routing uses the fixed context/processed protocol.
       const incomingOptionFullName = submission.incomingOptionFullName;
       const directPageNumber = submission.pageNumber;
 
       if (
-        await shouldSkipAndMarkSubmission({
+        await shouldSkipAndMarkSubmission(permission, updateDocument, {
           incomingOptionFullName,
           directPageNumber,
           snapshot,
@@ -1438,14 +1503,15 @@ function createUnprocessedSubmissionProcessor(db, fieldValue) {
       const processSubmission = createSubmissionContextProcessor(
         db,
         batch,
-        fieldValue
+        fieldValue,
+        updateDocument
       )(randomUUID, random, getServerTimestamp);
-      return processSubmission(
+      return processSubmission(permission, {
         submission,
         snapshot,
         incomingOptionFullName,
-        directPageNumber
-      );
+        directPageNumber,
+      });
     };
   };
 }
@@ -1453,6 +1519,8 @@ function createUnprocessedSubmissionProcessor(db, fieldValue) {
 
 /**
  * Skip and mark submissions that lack enough context.
+ * @param {AllowEffects} permission Permission for the processed-marker update.
+ * @param {UpdateDocument} updateDocument Permission-first document update adapter.
  * @param {object} params Inputs to evaluate and mark the submission.
  * @param {string | undefined} params.incomingOptionFullName Incoming option document path.
  * @param {number | undefined} params.directPageNumber Direct page number from the submission.
@@ -1460,14 +1528,15 @@ function createUnprocessedSubmissionProcessor(db, fieldValue) {
  * @returns {Promise<boolean>} True when the submission was skipped and marked.
  */
 // Stryker disable all -- skipped submissions use the fixed processed-marker protocol.
-async function shouldSkipAndMarkSubmission({
-  incomingOptionFullName,
-  directPageNumber,
-  snapshot,
-}) {
+async function shouldSkipAndMarkSubmission(permission, updateDocument, params) {
   // Stryker disable all -- skipped submissions use the fixed processed-marker protocol.
-  if (shouldSkipSubmission({ incomingOptionFullName, directPageNumber })) {
-    await markSubmissionProcessed(snapshot);
+  if (
+    shouldSkipSubmission({
+      incomingOptionFullName: params.incomingOptionFullName,
+      directPageNumber: params.directPageNumber,
+    })
+  ) {
+    await markSubmissionProcessed(permission, params.snapshot, updateDocument);
     return true;
   }
 
@@ -1480,29 +1549,38 @@ async function shouldSkipAndMarkSubmission({
  * @param {import('firebase-admin/firestore').Firestore} db Firestore instance.
  * @param {import('firebase-admin/firestore').WriteBatch} batch Batch collecting writes.
  * @param {{serverTimestamp: () => unknown, increment: (value: number) => unknown}} fieldValue FieldValue helpers used for stats.
- * @returns {(randomUUID: () => string, random: () => number, getServerTimestamp: () => unknown) => (submission: SubmissionData, snapshot: import('firebase-admin/firestore').DocumentSnapshot, incomingOptionFullName: string | undefined, directPageNumber: number | undefined) => Promise<null>} Staged context processor.
+ * @param {UpdateDocument} updateDocument Permission-first document update adapter.
+ * @returns {(randomUUID: () => string, random: () => number, getServerTimestamp: () => unknown) => (permission: AllowEffects, params: {submission: SubmissionData, snapshot: import('firebase-admin/firestore').DocumentSnapshot, incomingOptionFullName: string | undefined, directPageNumber: number | undefined}) => Promise<null>} Staged context processor.
  */
-function createSubmissionContextProcessor(db, batch, fieldValue) {
+function createSubmissionContextProcessor(
+  db,
+  batch,
+  fieldValue,
+  updateDocument
+) {
   return function bindContextRuntime(randomUUID, random, getServerTimestamp) {
-    return async function processSubmissionWithContext(
-      submission,
-      snapshot,
-      incomingOptionFullName,
-      directPageNumber
-    ) {
-      const pageContext = await resolveSubmissionPageContext({
-        db,
-        incomingOptionFullName,
-        directPageNumber,
-        snapshot,
-        batch,
-        randomUUID,
-        random,
-        getServerTimestamp,
-      });
+    return async function processSubmissionWithContext(permission, params) {
+      const pageContext = await resolveSubmissionPageContext(
+        permission,
+        {
+          db,
+          incomingOptionFullName: params.incomingOptionFullName,
+          directPageNumber: params.directPageNumber,
+          snapshot: params.snapshot,
+          batch,
+          randomUUID,
+          random,
+          getServerTimestamp,
+        },
+        updateDocument
+      );
 
       if (!pageContext) {
-        await markSubmissionProcessed(snapshot);
+        await markSubmissionProcessed(
+          permission,
+          params.snapshot,
+          updateDocument
+        );
         return null;
       }
 
@@ -1516,7 +1594,7 @@ function createSubmissionContextProcessor(db, batch, fieldValue) {
         random,
         getServerTimestamp
       )(ensuredPageDocRef, ensuredStoryRef, variantRef, preserveVariantDirty);
-      await finalize(submission, snapshot);
+      await finalize(params.submission, params.snapshot);
 
       return null;
     };
@@ -1534,7 +1612,7 @@ function createSubmissionContextProcessor(db, batch, fieldValue) {
  * @param {() => string} options.randomUUID UUID generator used for new documents.
  * @param {() => number} options.random Random number generator.
  *   The helper reuses the module-scoped {@link findAvailablePageNumber} and {@link incrementVariantName}.
- * @returns {(snap: import('firebase-admin/firestore').DocumentSnapshot<import('firebase-admin/firestore').DocumentData>, context?: { params?: Record<string, string> }) => Promise<null>} Firestore trigger handler that processes new page submissions.
+ * @returns {(updateDocument: UpdateDocument) => (permission: AllowEffects, snap: import('firebase-admin/firestore').DocumentSnapshot<import('firebase-admin/firestore').DocumentData>, context?: { params?: Record<string, string> }) => Promise<null>} Bind the permission-first update adapter and return the trigger handler.
  */
 
 /**
@@ -1549,6 +1627,7 @@ function extractSubmissionData(snapshot) {
 
 /**
  * Process a new page submission.
+ * @param {AllowEffects} permission Permission for trigger-time document updates.
  * @param {object} params - Processing parameters.
  * @param {SubmissionData} params.submission - Submission data.
  * @param {import('firebase-admin/firestore').DocumentSnapshot} params.snapshot - Snapshot.
@@ -1557,15 +1636,20 @@ function extractSubmissionData(snapshot) {
  * @param {() => number} params.random - Random generator.
  * @param {() => unknown} params.getServerTimestamp - Timestamp helper.
  * @param {{ serverTimestamp: () => unknown, increment: (value: number) => unknown }} params.fieldValue - FieldValue helper.
+ * @param {UpdateDocument} updateDocument Permission-first document update adapter.
  * @returns {Promise<null>} Null when complete.
  */
-async function handleAndProcessSubmission(params) {
+async function handleAndProcessSubmission(permission, params, updateDocument) {
   return /** @type {Promise<null>} */ (
-    createUnprocessedSubmissionProcessor(params.db, params.fieldValue)(
-      params.randomUUID,
-      params.random,
-      params.getServerTimestamp
-    )(params.submission, params.snapshot)
+    createUnprocessedSubmissionProcessor(
+      params.db,
+      params.fieldValue,
+      updateDocument
+    )(params.randomUUID, params.random, params.getServerTimestamp)(
+      permission,
+      params.submission,
+      params.snapshot
+    )
   );
 }
 
@@ -1599,29 +1683,34 @@ export const processNewPageTestUtils = {
  * Build a submission handler from dependencies.
  * @param {import('firebase-admin/firestore').Firestore} db Firestore instance.
  * @param {{ serverTimestamp: () => unknown, increment: (value: number) => unknown }} fieldValue FieldValue helper.
- * @returns {(randomUUID: () => string, random: () => number, getServerTimestamp: () => unknown) => (snapshot: import('firebase-admin/firestore').DocumentSnapshot) => Promise<null>} Runtime-bound handler factory.
+ * @param {UpdateDocument} updateDocument Permission-first document update adapter.
+ * @returns {(randomUUID: () => string, random: () => number, getServerTimestamp: () => unknown) => (permission: AllowEffects, snapshot: import('firebase-admin/firestore').DocumentSnapshot) => Promise<null>} Runtime-bound handler factory.
  */
-function buildSubmissionHandler(db, fieldValue) {
+function buildSubmissionHandler(db, fieldValue, updateDocument) {
   return function bindSubmissionRuntime(
     randomUUID,
     random,
     getServerTimestamp
   ) {
-    return async function handleProcessNewPage(snapshot) {
+    return async function handleProcessNewPage(permission, snapshot) {
       const submission = extractSubmissionData(snapshot);
       if (isSubmissionProcessed(submission)) {
         return null;
       }
 
-      return handleAndProcessSubmission({
-        submission,
-        snapshot,
-        db,
-        randomUUID,
-        random,
-        getServerTimestamp,
-        fieldValue,
-      });
+      return handleAndProcessSubmission(
+        permission,
+        {
+          submission,
+          snapshot,
+          db,
+          randomUUID,
+          random,
+          getServerTimestamp,
+          fieldValue,
+        },
+        updateDocument
+      );
     };
   };
 }
@@ -1633,7 +1722,7 @@ function buildSubmissionHandler(db, fieldValue) {
  * @param {{ serverTimestamp: () => import('firebase-admin/firestore').FieldValue, increment: (value: number) => import('firebase-admin/firestore').FieldValue }} options.fieldValue - FieldValue helper with server timestamp and increment capabilities.
  * @param {() => string} options.randomUUID - UUID generator used for new documents.
  * @param {() => number} options.random - Random number generator.
- * @returns {(snap: import('firebase-admin/firestore').DocumentSnapshot<import('firebase-admin/firestore').DocumentData>, context?: { params?: Record<string, string> }) => Promise<null>} Firestore trigger handler that processes new page submissions.
+ * @returns {(updateDocument: UpdateDocument) => (permission: AllowEffects, snap: import('firebase-admin/firestore').DocumentSnapshot<import('firebase-admin/firestore').DocumentData>, context?: { params?: Record<string, string> }) => Promise<null>} Bind the permission-first update adapter and return the trigger handler.
  */
 export function createProcessNewPageHandler({
   db,
@@ -1643,11 +1732,12 @@ export function createProcessNewPageHandler({
 }) {
   const getServerTimestamp = resolveServerTimestamp(fieldValue);
 
-  return buildSubmissionHandler(db, fieldValue)(
-    randomUUID,
-    random,
-    getServerTimestamp
-  );
+  return updateDocument =>
+    buildSubmissionHandler(db, fieldValue, updateDocument)(
+      randomUUID,
+      random,
+      getServerTimestamp
+    );
 }
 
 export { resolveVariantDocumentId };

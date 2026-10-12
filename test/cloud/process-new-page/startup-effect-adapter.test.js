@@ -1,6 +1,7 @@
 import { describe, expect, it, jest } from '@jest/globals';
 import { readFile } from 'node:fs/promises';
 import { createAllowEffects } from '../../../src/cloud/allow-effects.js';
+import { updateSubmissionDocument } from '../../../src/cloud/process-new-page/effect-adapters.js';
 import { getProcessNewPageStartupFirestore } from '../../../src/cloud/process-new-page/startup-effect-adapter.js';
 
 describe('process-new-page startup effect adapter', () => {
@@ -19,11 +20,25 @@ describe('process-new-page startup effect adapter', () => {
       'utf8'
     );
     expect(source).toContain('createEffectStartupBoundary');
+    expect(source).toContain('createEffectInvocationBoundary');
+    expect(source).toContain('})(updateSubmissionDocument)');
     expect(source).toContain(
       'getProcessNewPageStartupFirestore(allowEffects, getFirestoreInstance)'
     );
     expect(source).toContain(
       '.onCreate((snap, context) => handleProcessNewPage(snap, context))'
     );
+  });
+
+  it('forwards the trigger permission to the processed-marker write', async () => {
+    const allowEffects = createAllowEffects();
+    const update = jest.fn().mockResolvedValue(undefined);
+    const document = { update };
+
+    await updateSubmissionDocument(allowEffects, document, {
+      processed: true,
+    });
+
+    expect(update).toHaveBeenCalledWith({ processed: true });
   });
 });

@@ -68,7 +68,7 @@ const LOCAL_ID_TOKEN = 'local-admin-token';
 /** @typedef {(db: Parameters<typeof createFetchCredit>[0]) => CreditEventEffects} CreditEventEffectAdapterFactory */
 /** @typedef {{baseUrl: string, bucketName: string, projectId: string, publicDir: string}} SimulatorRuntimeConfig */
 /** @typedef {{bindEffectBoundary?: import('../../../../types/allow-effects').AllowEffectsBoundary, saveStorageFile?: (permission: import('../../../../types/allow-effects').AllowEffects, file: object, contents: string, options: object) => Promise<unknown>, updateFirestoreDocument?: (permission: import('../../../../types/allow-effects').AllowEffects, reference: { update: (data: Record<string, unknown>) => Promise<unknown> }, data: Record<string, unknown>) => Promise<unknown>, setFirestoreDocument?: (permission: import('../../../../types/allow-effects').AllowEffects, reference: { set: (data: Record<string, unknown>) => Promise<unknown> }, data: Record<string, unknown>) => Promise<unknown>, createCreditEventEffectAdapters?: CreditEventEffectAdapterFactory}} SimulatorEffects */
-/** @typedef {{bindEffectBoundary: import('../../../../types/allow-effects').AllowEffectsBoundary, setFirestoreDocument: NonNullable<SimulatorEffects['setFirestoreDocument']>, createCreditEventEffectAdapters: CreditEventEffectAdapterFactory}} RequiredSimulatorEffects */
+/** @typedef {{bindEffectBoundary: import('../../../../types/allow-effects').AllowEffectsBoundary, updateFirestoreDocument: NonNullable<SimulatorEffects['updateFirestoreDocument']>, setFirestoreDocument: NonNullable<SimulatorEffects['setFirestoreDocument']>, createCreditEventEffectAdapters: CreditEventEffectAdapterFactory}} RequiredSimulatorEffects */
 /** @typedef {{ body?: unknown, headers?: unknown, get?: (name: string) => string | null | undefined }} SimulatorRequest */
 /** @typedef {{ path: string, before?: unknown, after?: unknown }} CommittedRecord */
 /** @typedef {{ pathPattern: string, eventName: 'onCreate' | 'onWrite', handler: (...args: any[]) => any }} SimulatorTrigger */
@@ -387,8 +387,12 @@ function validateSimulatorEffects(effects) {
   if (typeof effects.setFirestoreDocument !== 'function') {
     throw new TypeError('setFirestoreDocument must be provided');
   }
+  if (typeof effects.updateFirestoreDocument !== 'function') {
+    throw new TypeError('updateFirestoreDocument must be provided');
+  }
   return /** @type {RequiredSimulatorEffects} */ ({
     bindEffectBoundary: effects.bindEffectBoundary,
+    updateFirestoreDocument: effects.updateFirestoreDocument,
     createCreditEventEffectAdapters: effects.createCreditEventEffectAdapters,
     setFirestoreDocument: effects.setFirestoreDocument,
   });
@@ -404,6 +408,7 @@ async function buildSimulatorState(runtime, effects) {
   const requiredEffects = validateSimulatorEffects(effects);
   const {
     bindEffectBoundary,
+    updateFirestoreDocument,
     createCreditEventEffectAdapters,
     setFirestoreDocument,
   } = requiredEffects;
@@ -525,7 +530,7 @@ async function buildSimulatorState(runtime, effects) {
     /** @type {Parameters<typeof createProcessNewPageHandler>[0]} */ (
       /** @type {unknown} */ (processWriteContext)
     )
-  );
+  )(updateFirestoreDocument);
   const lookupHelpers = createLookupHelpers(db);
   const submitNewPageConfig = createSubmitNewPageConfig({
     verifyIdToken: authVerifiers.verifySubmitNewPageIdToken,
@@ -1044,7 +1049,10 @@ function createTriggerRegistrationsByEvent(handlers) {
       },
       {
         pathPattern: 'pageFormSubmissions/{subId}',
-        handler: handlers.processNewPage,
+        handler: (snapshot, context) =>
+          handlers.bindEffectBoundary(permission =>
+            handlers.processNewPage(permission, snapshot, context)
+          ),
       },
       {
         pathPattern: 'stories/{storyId}',

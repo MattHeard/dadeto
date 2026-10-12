@@ -2,10 +2,19 @@ import { jest } from '@jest/globals';
 import {
   incrementVariantName,
   findAvailablePageNumber,
-  createProcessNewPageHandler,
+  createProcessNewPageHandler as createProcessNewPageHandlerCore,
   resolveVariantDocumentId,
   processNewPageTestUtils,
 } from '../../../../src/core/cloud/process-new-page/process-new-page-core.js';
+
+const allowEffects =
+  /** @type {import('../../../../types/allow-effects').AllowEffects} */ (
+    /** @type {unknown} */ (Object.freeze({}))
+  );
+const createProcessNewPageHandler = (
+  options,
+  updateDocument = (_permission, document, data) => document.update(data)
+) => createProcessNewPageHandlerCore(options)(updateDocument);
 
 test('incoming option context builder returns null without a story reference', async () => {
   const buildContext =
@@ -339,10 +348,13 @@ describe('createProcessNewPageHandler', () => {
 
     const snapshot = { data: () => ({ processed: true }) };
 
-    await expect(handler(snapshot)).resolves.toBeNull();
+    await expect(handler(allowEffects, snapshot)).resolves.toBeNull();
   });
 
   it('marks submissions as processed when missing page context', async () => {
+    const updateDocument = jest.fn((_permission, document, data) =>
+      document.update(data)
+    );
     const snapshot = {
       ref: { update: jest.fn() },
       data: () => ({ processed: false }),
@@ -352,14 +364,20 @@ describe('createProcessNewPageHandler', () => {
       batch: jest.fn(() => createBatch()),
     };
 
-    const handler = createProcessNewPageHandler({
-      db,
-      fieldValue,
-      randomUUID: () => 'uuid',
-      random: Math.random,
-    });
+    const handler = createProcessNewPageHandler(
+      {
+        db,
+        fieldValue,
+        randomUUID: () => 'uuid',
+        random: Math.random,
+      },
+      updateDocument
+    );
 
-    await handler(snapshot);
+    await handler(allowEffects, snapshot);
+    expect(updateDocument).toHaveBeenCalledWith(allowEffects, snapshot.ref, {
+      processed: true,
+    });
     expect(snapshot.ref.update).toHaveBeenCalledWith({ processed: true });
     expect(db.batch).not.toHaveBeenCalled();
   });
@@ -420,7 +438,7 @@ describe('createProcessNewPageHandler', () => {
       }),
     };
 
-    await handler(snapshot);
+    await handler(allowEffects, snapshot);
 
     const variantWrite = batch.set.mock.calls.find(
       ([, payload]) => payload && typeof payload.name === 'string'
@@ -533,7 +551,7 @@ describe('createProcessNewPageHandler author submissions', () => {
       }),
     };
 
-    await handler(snapshot);
+    await handler(allowEffects, snapshot);
 
     expect(authorDoc.get).toHaveBeenCalled();
     expect(batch.set).not.toHaveBeenCalledWith(authorDoc, expect.anything());
@@ -570,7 +588,7 @@ describe('createProcessNewPageHandler author submissions', () => {
       data: () => ({ pageNumber: 42, processed: false }),
     };
 
-    await expect(handler(snapshot)).resolves.toBeNull();
+    await expect(handler(allowEffects, snapshot)).resolves.toBeNull();
     expect(snapshot.ref.update).toHaveBeenCalledWith({ processed: true });
   });
 
@@ -604,7 +622,7 @@ describe('createProcessNewPageHandler author submissions', () => {
       }),
     };
 
-    await expect(handler(snapshot)).resolves.toBeNull();
+    await expect(handler(allowEffects, snapshot)).resolves.toBeNull();
     expect(optionRef.get).toHaveBeenCalled();
     expect(snapshot.ref.update).toHaveBeenCalledWith({ processed: true });
   });
@@ -664,7 +682,7 @@ describe('createProcessNewPageHandler author submissions', () => {
       }),
     };
 
-    await handler(snapshot);
+    await handler(allowEffects, snapshot);
 
     expect(optionRef.get).toHaveBeenCalled();
     expect(pageDocRef.get).toHaveBeenCalled();
@@ -735,7 +753,7 @@ describe('createProcessNewPageHandler option submissions', () => {
       }),
     };
 
-    await expect(handler(snapshot)).resolves.toBeNull();
+    await expect(handler(allowEffects, snapshot)).resolves.toBeNull();
 
     expect(pageDocRef.get).toHaveBeenCalled();
     expect(storyRef.collection).not.toHaveBeenCalledWith('pages');
@@ -825,7 +843,7 @@ describe('createProcessNewPageHandler option submissions', () => {
       }),
     };
 
-    await handler(snapshot);
+    await handler(allowEffects, snapshot);
 
     expect(createdPages).toHaveLength(1);
     expect(storyRef.collection).toHaveBeenCalledWith('pages');
@@ -919,7 +937,7 @@ describe('createProcessNewPageHandler replacement pages', () => {
       }),
     };
 
-    await handler(snapshot);
+    await handler(allowEffects, snapshot);
 
     expect(createdPages).toHaveLength(1);
     expect(storyRef.collection).toHaveBeenCalledWith('pages');
@@ -1020,7 +1038,7 @@ describe('createProcessNewPageHandler recovery paths', () => {
       }),
     };
 
-    await handler(snapshot);
+    await handler(allowEffects, snapshot);
 
     expect(targetPage.get).toHaveBeenCalled();
     expect(batch.update).toHaveBeenCalledWith(optionRef, {
@@ -1074,7 +1092,7 @@ describe('createProcessNewPageHandler recovery paths', () => {
       data: () => ({ pageNumber: 8, processed: false }),
     };
 
-    await expect(handler(snapshot)).rejects.toEqual(
+    await expect(handler(allowEffects, snapshot)).rejects.toEqual(
       new TypeError('pageDocRef.collection must be a function')
     );
   });
@@ -1129,7 +1147,7 @@ describe('createProcessNewPageHandler recovery paths', () => {
       }),
     };
 
-    await handler(snapshot);
+    await handler(allowEffects, snapshot);
 
     const variantCall = batch.set.mock.calls.find(
       ([, payload]) =>
