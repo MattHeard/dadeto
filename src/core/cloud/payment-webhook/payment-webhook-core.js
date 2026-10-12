@@ -87,6 +87,8 @@ export function createPaymentWebhookIndexHandler(deps) {
  */
 async function handlePurchaseEvent(billing, event) {
   const metadata = readMetadata(event.data?.object ?? {});
+  if (event.type === 'charge.refunded')
+    return handleChargeRefunded(billing, metadata, event);
   if (!metadata.purchase_id) return null;
   if (event.type === 'checkout.session.completed')
     return handleCheckoutCompleted(billing, metadata, event);
@@ -97,8 +99,6 @@ async function handlePurchaseEvent(billing, event) {
     });
   if (event.type === 'payment_intent.succeeded')
     return handlePaymentIntentSucceeded(billing, metadata, event);
-  if (event.type === 'charge.refunded')
-    return handleChargeRefunded(billing, metadata, event);
   return null;
 }
 
@@ -144,7 +144,12 @@ function markPaidPurchase(billing, metadata, eventId, stripePaymentIntentId) {
  * @returns {Promise<import('../../payment-webhook-core.js').PaymentWebhookResponse>} Response.
  */
 async function handlePaymentIntentSucceeded(billing, metadata, event) {
-  return markPaidPurchase(billing, metadata, event.id, event.id);
+  return markPaidPurchase(
+    billing,
+    metadata,
+    event.id,
+    String(event.data?.object?.id ?? '')
+  );
 }
 
 /**
@@ -154,15 +159,24 @@ async function handlePaymentIntentSucceeded(billing, metadata, event) {
  * @returns {Promise<import('../../payment-webhook-core.js').PaymentWebhookResponse>} Response.
  */
 async function handleChargeRefunded(billing, metadata, event) {
-  const pricingSnapshotId = metadata.pricing_snapshot_id ?? '';
-  return billing.applyRefundEvent({
-    purchaseId: metadata.purchase_id,
+  const charge = event.data?.object ?? {};
+  const stripePaymentIntentId = String(charge.payment_intent ?? '');
+  const refundedUsdMinor = Number(charge.amount_refunded ?? 0);
+  await billing.recordRefundReconciliation({
     eventId: event.id,
-    // Stryker disable next-line all -- zero refund fallback is the fixed public
-    // billing protocol representation.
-    refundedUsdMinor: Number(event.data?.object?.amount_refunded ?? 0),
-    pricingSnapshotId,
+    purchaseId: metadata.purchase_id ?? '',
+    stripePaymentIntentId,
+    chargeId: String(charge.id ?? ''),
+    refundedUsdMinor,
   });
+  return {
+    status: 200,
+    body: {
+      quarantined: true,
+      reason: 'external_stripe_refund',
+      eventId: event.id,
+    },
+  };
 }
 
 /**

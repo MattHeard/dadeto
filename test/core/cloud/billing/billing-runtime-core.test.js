@@ -405,6 +405,7 @@ describe('billing runtime expiry paths', () => {
       purchaseId: 'refund-invalid-state',
       apiKeyUuid: 'key-refund-invalid',
       creditsIssued: 2,
+      stripePaymentIntentId: 'pi-invalid-state',
       status: 'not-a-valid-state',
     });
     await db.doc('api-key-credit/key-refund-invalid').set({ credit: 2 });
@@ -418,6 +419,7 @@ describe('billing runtime expiry paths', () => {
       billing.applyRefundEvent({
         purchaseId: 'refund-invalid-state',
         eventId: 'refund-invalid',
+        stripePaymentIntentId: 'pi-invalid-state',
       })
     ).resolves.toMatchObject({ body: { quarantined: true } });
   });
@@ -725,12 +727,14 @@ describe('billing runtime reconciliation paths', () => {
     await billing.markPurchasePaid({
       purchaseId: 'zero-purchase',
       eventId: 'paid-zero',
+      stripePaymentIntentId: 'pi-zero',
     });
     await db.doc('api-key-credit/key-zero/lots/zero-purchase').set({});
     await expect(
       billing.applyRefundEvent({
         purchaseId: 'zero-purchase',
         eventId: 'refund-zero',
+        stripePaymentIntentId: 'pi-zero',
       })
     ).resolves.toEqual({
       status: 200,
@@ -745,12 +749,14 @@ describe('billing runtime reconciliation paths', () => {
     await billing.markPurchasePaid({
       purchaseId: 'conflict-purchase',
       eventId: 'paid-conflict',
+      stripePaymentIntentId: 'pi-conflict',
     });
     await db.doc('api-key-credit/key-conflict').set({ credit: 0 });
     await expect(
       billing.applyRefundEvent({
         purchaseId: 'conflict-purchase',
         eventId: 'refund-conflict',
+        stripePaymentIntentId: 'pi-conflict',
       })
     ).resolves.toEqual({
       status: 409,
@@ -768,12 +774,14 @@ describe('billing runtime reconciliation paths', () => {
     await billing.markPurchasePaid({
       purchaseId: 'untouched-purchase',
       eventId: 'paid-untouched',
+      stripePaymentIntentId: 'pi-untouched',
     });
 
     await expect(
       billing.applyRefundEvent({
         purchaseId: 'untouched-purchase',
         eventId: 'refund-untouched',
+        stripePaymentIntentId: 'pi-untouched',
       })
     ).resolves.toMatchObject({
       body: { refunded: true, creditsReversed: 5 },
@@ -782,6 +790,7 @@ describe('billing runtime reconciliation paths', () => {
       billing.applyRefundEvent({
         purchaseId: 'untouched-purchase',
         eventId: 'refund-untouched-repeat',
+        stripePaymentIntentId: 'pi-untouched',
       })
     ).resolves.toMatchObject({ body: { refunded: false } });
   });
@@ -893,6 +902,7 @@ describe('billing runtime refund paths', () => {
                   purchaseId: 'purchase-1',
                   apiKeyUuid: 'key-1',
                   creditsIssued: 1,
+                  stripePaymentIntentId: 'pi-1',
                 }),
               };
             }
@@ -914,6 +924,7 @@ describe('billing runtime refund paths', () => {
       billing.applyRefundEvent({
         purchaseId: 'purchase-1',
         eventId: 'refund-1',
+        stripePaymentIntentId: 'pi-1',
       })
     ).resolves.toEqual({
       status: 409,
@@ -976,6 +987,7 @@ describe('billing runtime charging paths', () => {
     await billing.markPurchasePaid({
       purchaseId: 'purchase-1',
       eventId: 'paid-1',
+      stripePaymentIntentId: 'pi-1',
     });
 
     await expect(
@@ -1027,6 +1039,7 @@ describe('billing runtime charging paths', () => {
     await billing.markPurchasePaid({
       purchaseId: 'purchase-1',
       eventId: 'paid-1',
+      stripePaymentIntentId: 'pi-1',
     });
     const lotBeforeCharge = await db
       .doc('api-key-credit/key-1/lots/purchase-1')
@@ -1048,6 +1061,7 @@ describe('billing runtime charging paths', () => {
       billing.applyRefundEvent({
         purchaseId: 'purchase-1',
         eventId: 'refund-1',
+        stripePaymentIntentId: 'pi-1',
         refundedUsdMinor: 1_000,
         pricingSnapshotId: snapshot.snapshotId,
       })
@@ -1061,5 +1075,56 @@ describe('billing runtime charging paths', () => {
     await expect(db.doc('api-key-credit/key-1').get()).resolves.toMatchObject({
       data: expect.any(Function),
     });
+  });
+
+  it('quarantines refunds with a mismatched intent and records reconciliation', async () => {
+    const { db, billing } = setup();
+    await billing.createPurchase(allowEffects, {
+      purchaseId: 'purchase-mismatch',
+      apiKeyUuid: 'key-mismatch',
+      creditsIssued: 5,
+    });
+    await billing.markPurchasePaid({
+      purchaseId: 'purchase-mismatch',
+      eventId: 'paid-mismatch',
+      stripePaymentIntentId: 'pi-expected',
+    });
+    const before = (await db.doc('api-key-credit/key-mismatch').get()).data()
+      .credit;
+    const result = await billing.applyRefundEvent({
+      purchaseId: 'purchase-mismatch',
+      eventId: 'refund-mismatch',
+      stripePaymentIntentId: 'pi-other',
+      refundedUsdMinor: 500,
+      pricingSnapshotId: 'snap-1',
+    });
+    expect(result).toEqual({
+      status: 200,
+      body: {
+        quarantined: true,
+        reason: 'payment_intent_mismatch',
+        purchaseId: 'purchase-mismatch',
+      },
+    });
+    await billing.recordRefundReconciliation({
+      eventId: 'refund-mismatch',
+      purchaseId: 'purchase-mismatch',
+      stripePaymentIntentId: 'pi-other',
+      chargeId: 'ch-1',
+      refundedUsdMinor: 500,
+    });
+    expect((await db.doc('api-key-credit/key-mismatch').get()).data()).toEqual(
+      expect.objectContaining({ credit: before })
+    );
+    expect(
+      (await db.doc('billing-reconciliation/refund-mismatch').get()).data()
+    ).toEqual(
+      expect.objectContaining({
+        type: 'unmatched_stripe_refund',
+        status: 'pending',
+        stripePaymentIntentId: 'pi-other',
+        chargeId: 'ch-1',
+      })
+    );
   });
 });

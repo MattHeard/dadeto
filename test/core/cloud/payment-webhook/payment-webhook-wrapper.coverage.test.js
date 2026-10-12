@@ -236,6 +236,7 @@ async function runScenario135Part0(context) {
       body: input,
     })),
     applyRefundEvent: jest.fn(async input => ({ status: 200, body: input })),
+    recordRefundReconciliation: jest.fn(async () => {}),
   };
   mockDb = context.db;
   mockBilling = context.billing;
@@ -354,6 +355,55 @@ async function runScenario135Part1(context) {
       'uuid-1'
     ),
   ]);
+  await expect(
+    context.captured.handlePurchaseEvent({
+      id: 'evt-unmatched-refund',
+      type: 'charge.refunded',
+      data: {
+        object: {
+          id: 'ch-unmatched',
+          ['payment_intent']: 'pi-unmatched',
+          ['amount_refunded']: 70,
+          metadata: {},
+        },
+      },
+    })
+  ).resolves.toMatchObject({
+    body: {
+      quarantined: true,
+      reason: 'external_stripe_refund',
+      eventId: 'evt-unmatched-refund',
+    },
+  });
+  expect(context.billing.applyRefundEvent).not.toHaveBeenCalled();
+  expect(context.billing.recordRefundReconciliation).toHaveBeenCalledWith({
+    eventId: 'evt-unmatched-refund',
+    purchaseId: '',
+    stripePaymentIntentId: 'pi-unmatched',
+    chargeId: 'ch-unmatched',
+    refundedUsdMinor: 70,
+  });
+  await expect(
+    context.captured.handlePurchaseEvent({
+      id: 'evt-refund-no-metadata',
+      type: 'charge.refunded',
+    })
+  ).resolves.toEqual({
+    status: 200,
+    body: {
+      quarantined: true,
+      reason: 'external_stripe_refund',
+      eventId: 'evt-refund-no-metadata',
+    },
+  });
+  expect(context.billing.applyRefundEvent).not.toHaveBeenCalled();
+  expect(context.billing.recordRefundReconciliation).toHaveBeenLastCalledWith({
+    eventId: 'evt-refund-no-metadata',
+    purchaseId: '',
+    stripePaymentIntentId: '',
+    chargeId: '',
+    refundedUsdMinor: 0,
+  });
 }
 
 /**
@@ -462,14 +512,33 @@ async function runScenario135Part2(context) {
       context.captured.handlePurchaseEvent({
         id: 'evt-2',
         type: 'payment_intent.succeeded',
-        data: { object: { metadata: { ['purchase_id']: 'p1' } } },
+        data: {
+          object: {
+            id: 'pi2',
+            metadata: { ['purchase_id']: 'p1' },
+          },
+        },
       })
     ).resolves.toEqual({
       status: 201,
       body: {
         purchaseId: 'p1',
         eventId: 'evt-2',
-        stripePaymentIntentId: 'evt-2',
+        stripePaymentIntentId: 'pi2',
+      },
+    }),
+    expect(
+      context.captured.handlePurchaseEvent({
+        id: 'evt-2-no-intent-id',
+        type: 'payment_intent.succeeded',
+        data: { object: { metadata: { ['purchase_id']: 'p1' } } },
+      })
+    ).resolves.toEqual({
+      status: 201,
+      body: {
+        purchaseId: 'p1',
+        eventId: 'evt-2-no-intent-id',
+        stripePaymentIntentId: '',
       },
     }),
     expect(
@@ -489,6 +558,8 @@ async function runScenario135Part2(context) {
         data: {
           object: {
             metadata: { ['purchase_id']: 'p1' },
+            ['payment_intent']: 'pi1',
+            ['id']: 'ch1',
             ['amount_refunded']: 4,
           },
         },
@@ -496,10 +567,9 @@ async function runScenario135Part2(context) {
     ).resolves.toEqual({
       status: 200,
       body: {
-        purchaseId: 'p1',
+        quarantined: true,
+        reason: 'external_stripe_refund',
         eventId: 'evt-3',
-        refundedUsdMinor: 4,
-        pricingSnapshotId: '',
       },
     }),
   ]);
@@ -509,6 +579,8 @@ async function runScenario135Part2(context) {
       type: 'charge.refunded',
       data: {
         object: {
+          ['payment_intent']: 'pi1',
+          ['id']: 'ch1',
           metadata: {
             ['purchase_id']: 'p1',
             ['pricing_snapshot_id']: 'snap-1',
@@ -519,10 +591,9 @@ async function runScenario135Part2(context) {
   ).resolves.toEqual({
     status: 200,
     body: {
-      purchaseId: 'p1',
+      quarantined: true,
+      reason: 'external_stripe_refund',
       eventId: 'evt-3b',
-      refundedUsdMinor: 0,
-      pricingSnapshotId: 'snap-1',
     },
   });
   await Promise.all([

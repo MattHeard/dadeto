@@ -23,7 +23,7 @@ import {
 /** @typedef {BillingOperationIdentity & { outcome: 'success' | 'ambiguous' | 'failure', reason?: string }} BillingResolutionInput */
 /** @typedef {{ purchaseId?: string, apiKeyUuid: string, creditsIssued: number, pricingSnapshotId: string, createdAt?: Date, [key: string]: unknown }} BillingPurchaseInput */
 /** @typedef {{ purchaseId: string, eventId: string, stripePaymentIntentId?: string }} BillingPaymentInput */
-/** @typedef {{ purchaseId: string, eventId: string, refundedUsdMinor: number, pricingSnapshotId: string }} BillingRefundInput */
+/** @typedef {{ purchaseId: string, eventId: string, stripePaymentIntentId: string, refundedUsdMinor: number, pricingSnapshotId: string }} BillingRefundInput */
 /** @typedef {{ purchaseId: string, eventId: string }} BillingExpiryInput */
 /** @typedef {{ checkoutSessionId: string, url: string, expiresAt: Date }} BillingCheckoutSession */
 /** @typedef {Record<string, any> & { createPurchase: (allowEffects: AllowEffects, input: BillingPurchaseInput) => Promise<BillingRuntimeValue>, savePurchaseCheckout: (allowEffects: AllowEffects, purchaseId: string, session: BillingCheckoutSession) => Promise<void> }} BillingRuntimeService */
@@ -551,6 +551,23 @@ export function createBillingRuntime(db, runtime = {}) {
   }
 
   /**
+   * Persist an unmatched Stripe refund for manual reconciliation.
+   * @param {{ eventId: string, purchaseId: string, stripePaymentIntentId: string, chargeId: string, refundedUsdMinor: number }} input Refund identifiers.
+   * @returns {Promise<void>} Resolves after persistence.
+   */
+  async function recordRefundReconciliation(input) {
+    await db
+      .collection('billing-reconciliation')
+      .doc(input.eventId)
+      .set({
+        type: 'unmatched_stripe_refund',
+        status: 'pending',
+        ...input,
+        recordedAt: now(),
+      });
+  }
+
+  /**
    * Mark a matching pending purchase expired exactly once.
    * @param {BillingExpiryInput} input Expiry event.
    * @returns {Promise<BillingResponse>} Expiry response.
@@ -608,6 +625,7 @@ export function createBillingRuntime(db, runtime = {}) {
     resolveOperation,
     reconcileIdentity,
     applyRefundEvent,
+    recordRefundReconciliation,
     markPurchaseExpired,
     ledgerRef: (/** @type {string} */ uuid, /** @type {string} */ eventId) =>
       ledgerRef(db, uuid, eventId),
@@ -1133,6 +1151,18 @@ async function applyRefund(db, now, input) {
       if (!purchaseSnap.exists)
         return { status: 404, body: { error: 'purchase_not_found' } };
       const purchase = readData(purchaseSnap);
+      if (
+        !input.stripePaymentIntentId ||
+        purchase.stripePaymentIntentId !== input.stripePaymentIntentId
+      )
+        return {
+          status: 200,
+          body: {
+            quarantined: true,
+            reason: 'payment_intent_mismatch',
+            purchaseId: input.purchaseId,
+          },
+        };
       const lotReference = lotRef(db, purchase.apiKeyUuid, purchase.purchaseId);
       const lotSnap = await transaction.get(lotReference);
       const lot = readData(lotSnap);
