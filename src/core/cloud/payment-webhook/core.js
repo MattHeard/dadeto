@@ -69,7 +69,7 @@ const DEFAULT_ALLOWED_EVENT_TYPES = new Set([
  *   allowedEventTypes?: Set<string>,
  *   getAmountFromEvent?: (event: PaymentEvent) => number,
  *   getPaymentEvent?: (request: unknown) => Promise<PaymentEvent>,
- *   handlePurchaseEvent?: (event: PaymentEvent) => Promise<PaymentWebhookResponse | null> | PaymentWebhookResponse | null,
+ *   handlePurchaseEvent?: (allowEffects: import('../../../../types/allow-effects').AllowEffects, event: PaymentEvent) => Promise<PaymentWebhookResponse | null> | PaymentWebhookResponse | null,
  * }} PaymentWebhookDependencies
  */
 
@@ -137,7 +137,7 @@ async function resolvePurchaseEvent(resolved, allowEffects, event) {
   const purchaseUuid = await resolved.resolveApiKeyUuid(event);
   const identity = purchaseUuid ?? 'purchase';
   await resolved.markProcessedEvent(allowEffects, event, identity, 'received');
-  const response = await resolved.handlePurchaseEvent(event);
+  const response = await resolved.handlePurchaseEvent(allowEffects, event);
   if (!response) {
     // Stryker disable all -- ignored purchase events use the fixed ledger status.
     await resolved.markProcessedEvent(allowEffects, event, identity, 'ignored');
@@ -170,7 +170,7 @@ async function resolvePurchaseEvent(resolved, allowEffects, event) {
  *   allowedEventTypes: Set<string>,
  *   getAmountFromEvent: (event: PaymentEvent) => number,
  *   getPaymentEvent: (request: unknown) => Promise<PaymentEvent>,
- *   handlePurchaseEvent: (event: PaymentEvent) => Promise<PaymentWebhookResponse | null>,
+ *   handlePurchaseEvent: (allowEffects: import('../../../../types/allow-effects').AllowEffects, event: PaymentEvent) => Promise<PaymentWebhookResponse | null>,
  * }} Runtime webhook dependencies.
  */
 function resolvePaymentWebhookDependencies(deps) {
@@ -212,19 +212,20 @@ function resolvePaymentWebhookDependencies(deps) {
     getAmountFromEvent,
     getPaymentEvent: async request =>
       /** @type {Promise<PaymentEvent>} */ (getPaymentEvent(request)),
-    handlePurchaseEvent: async event => handlePurchaseEvent(event),
+    handlePurchaseEvent: async (allowEffects, event) =>
+      handlePurchaseEvent(allowEffects, event),
   };
 }
 
 /**
  * Normalize the optional purchase-event dependency.
  * @param {PaymentWebhookDependencies['handlePurchaseEvent']} handler Handler.
- * @returns {(event: PaymentEvent) => Promise<PaymentWebhookResponse | null>} Normalized handler.
+ * @returns {(allowEffects: import('../../../../types/allow-effects').AllowEffects, event: PaymentEvent) => Promise<PaymentWebhookResponse | null>} Normalized handler.
  */
 function resolvePurchaseHandler(handler) {
   // Stryker disable all -- purchase handling has the fixed absent-handler fallback.
   if (!handler) return async () => null;
-  return async event => handler(event);
+  return async (allowEffects, event) => handler(allowEffects, event);
   // Stryker restore all
 }
 

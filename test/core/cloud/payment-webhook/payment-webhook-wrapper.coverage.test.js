@@ -230,8 +230,11 @@ async function runScenario135Part0(context) {
     getCustomerApiKeyUuid: () => context.customerApiKeyUuid,
   });
   context.billing = {
-    markPurchasePaid: jest.fn(async input => ({ status: 201, body: input })),
-    markPurchaseExpired: jest.fn(async input => ({
+    markPurchasePaid: jest.fn(async (_permission, input) => ({
+      status: 201,
+      body: input,
+    })),
+    markPurchaseExpired: jest.fn(async (_permission, input) => ({
       status: 200,
       body: input,
     })),
@@ -356,7 +359,7 @@ async function runScenario135Part1(context) {
     ),
   ]);
   await expect(
-    context.captured.handlePurchaseEvent({
+    context.captured.handlePurchaseEvent(allowEffects, {
       id: 'evt-unmatched-refund',
       type: 'charge.refunded',
       data: {
@@ -376,15 +379,18 @@ async function runScenario135Part1(context) {
     },
   });
   expect(context.billing.applyRefundEvent).not.toHaveBeenCalled();
-  expect(context.billing.recordRefundReconciliation).toHaveBeenCalledWith({
-    eventId: 'evt-unmatched-refund',
-    purchaseId: '',
-    stripePaymentIntentId: 'pi-unmatched',
-    chargeId: 'ch-unmatched',
-    refundedUsdMinor: 70,
-  });
+  expect(context.billing.recordRefundReconciliation).toHaveBeenCalledWith(
+    allowEffects,
+    {
+      eventId: 'evt-unmatched-refund',
+      purchaseId: '',
+      stripePaymentIntentId: 'pi-unmatched',
+      chargeId: 'ch-unmatched',
+      refundedUsdMinor: 70,
+    }
+  );
   await expect(
-    context.captured.handlePurchaseEvent({
+    context.captured.handlePurchaseEvent(allowEffects, {
       id: 'evt-refund-no-metadata',
       type: 'charge.refunded',
     })
@@ -397,13 +403,16 @@ async function runScenario135Part1(context) {
     },
   });
   expect(context.billing.applyRefundEvent).not.toHaveBeenCalled();
-  expect(context.billing.recordRefundReconciliation).toHaveBeenLastCalledWith({
-    eventId: 'evt-refund-no-metadata',
-    purchaseId: '',
-    stripePaymentIntentId: '',
-    chargeId: '',
-    refundedUsdMinor: 0,
-  });
+  expect(context.billing.recordRefundReconciliation).toHaveBeenLastCalledWith(
+    allowEffects,
+    {
+      eventId: 'evt-refund-no-metadata',
+      purchaseId: '',
+      stripePaymentIntentId: '',
+      chargeId: '',
+      refundedUsdMinor: 0,
+    }
+  );
 }
 
 /**
@@ -429,34 +438,34 @@ async function runScenario135Part2(context) {
   );
   await Promise.all([
     expect(
-      context.captured.handlePurchaseEvent({
+      context.captured.handlePurchaseEvent(allowEffects, {
         id: 'evt-empty',
         type: 'customer.created',
         data: { object: {} },
       })
     ).resolves.toBeNull(),
     expect(
-      context.captured.handlePurchaseEvent({
+      context.captured.handlePurchaseEvent(allowEffects, {
         id: 'evt-missing-purchase',
         type: 'checkout.session.completed',
         data: { object: { ['payment_status']: 'paid' } },
       })
     ).resolves.toBeNull(),
     expect(
-      context.captured.handlePurchaseEvent({
+      context.captured.handlePurchaseEvent(allowEffects, {
         id: 'evt-no-object',
         type: 'checkout.session.completed',
         data: { object: { metadata: { ['purchase_id']: 'p1' } } },
       })
     ).resolves.toBeNull(),
     expect(
-      context.captured.handlePurchaseEvent({
+      context.captured.handlePurchaseEvent(allowEffects, {
         id: 'evt-no-data',
         type: 'customer.created',
       })
     ).resolves.toBeNull(),
     expect(
-      context.captured.handlePurchaseEvent({
+      context.captured.handlePurchaseEvent(allowEffects, {
         id: 'evt-unpaid',
         type: 'checkout.session.completed',
         data: {
@@ -469,7 +478,7 @@ async function runScenario135Part2(context) {
     ).resolves.toBeNull(),
   ]);
   await expect(
-    context.captured.handlePurchaseEvent({
+    context.captured.handlePurchaseEvent(allowEffects, {
       id: 'evt-1',
       type: 'checkout.session.completed',
       data: {
@@ -488,8 +497,13 @@ async function runScenario135Part2(context) {
       stripePaymentIntentId: 'pi1',
     },
   });
+  expect(context.billing.markPurchasePaid).toHaveBeenCalledWith(allowEffects, {
+    purchaseId: 'p1',
+    eventId: 'evt-1',
+    stripePaymentIntentId: 'pi1',
+  });
   await expect(
-    context.captured.handlePurchaseEvent({
+    context.captured.handlePurchaseEvent(allowEffects, {
       id: 'evt-no-intent',
       type: 'checkout.session.completed',
       data: {
@@ -509,7 +523,7 @@ async function runScenario135Part2(context) {
   });
   await Promise.all([
     expect(
-      context.captured.handlePurchaseEvent({
+      context.captured.handlePurchaseEvent(allowEffects, {
         id: 'evt-2',
         type: 'payment_intent.succeeded',
         data: {
@@ -528,7 +542,7 @@ async function runScenario135Part2(context) {
       },
     }),
     expect(
-      context.captured.handlePurchaseEvent({
+      context.captured.handlePurchaseEvent(allowEffects, {
         id: 'evt-2-no-intent-id',
         type: 'payment_intent.succeeded',
         data: { object: { metadata: { ['purchase_id']: 'p1' } } },
@@ -542,7 +556,7 @@ async function runScenario135Part2(context) {
       },
     }),
     expect(
-      context.captured.handlePurchaseEvent({
+      context.captured.handlePurchaseEvent(allowEffects, {
         id: 'evt-expired',
         type: 'checkout.session.expired',
         data: { object: { metadata: { ['purchase_id']: 'p1' } } },
@@ -552,7 +566,7 @@ async function runScenario135Part2(context) {
       body: { purchaseId: 'p1', eventId: 'evt-expired' },
     }),
     expect(
-      context.captured.handlePurchaseEvent({
+      context.captured.handlePurchaseEvent(allowEffects, {
         id: 'evt-3',
         type: 'charge.refunded',
         data: {
@@ -573,8 +587,12 @@ async function runScenario135Part2(context) {
       },
     }),
   ]);
+  expect(context.billing.markPurchaseExpired).toHaveBeenCalledWith(
+    allowEffects,
+    { purchaseId: 'p1', eventId: 'evt-expired' }
+  );
   await expect(
-    context.captured.handlePurchaseEvent({
+    context.captured.handlePurchaseEvent(allowEffects, {
       id: 'evt-3b',
       type: 'charge.refunded',
       data: {
@@ -598,14 +616,14 @@ async function runScenario135Part2(context) {
   });
   await Promise.all([
     expect(
-      context.captured.handlePurchaseEvent({
+      context.captured.handlePurchaseEvent(allowEffects, {
         id: 'evt-4',
         type: 'customer.created',
         data: { object: {} },
       })
     ).resolves.toBeNull(),
     expect(
-      context.captured.handlePurchaseEvent({
+      context.captured.handlePurchaseEvent(allowEffects, {
         id: 'evt-5',
         type: 'customer.created',
         data: { object: { metadata: { ['purchase_id']: 'p1' } } },

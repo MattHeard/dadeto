@@ -246,7 +246,8 @@ describe('createPaymentWebhookHandler processing', () => {
       applyCreditEvent: jest.fn(),
       resolveApiKeyUuid: async () => null,
       markProcessedEvent,
-      handlePurchaseEvent: async receivedEvent => {
+      handlePurchaseEvent: async (receivedAllowEffects, receivedEvent) => {
+        expect(receivedAllowEffects).toBe(allowEffects);
         expect(receivedEvent).toBe(event);
         return purchaseResponse;
       },

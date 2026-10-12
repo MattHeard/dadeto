@@ -256,13 +256,13 @@ describe('billing runtime snapshot paths', () => {
       creditsIssued: 10,
     });
     await expect(
-      billing.markPurchaseExpired({
+      billing.markPurchaseExpired(allowEffects, {
         purchaseId: 'pending',
         eventId: 'expiry-1',
       })
     ).resolves.toMatchObject({ status: 200, body: { status: 'expired' } });
     await expect(
-      billing.markPurchaseExpired({
+      billing.markPurchaseExpired(allowEffects, {
         purchaseId: 'pending',
         eventId: 'expiry-1',
       })
@@ -273,12 +273,15 @@ describe('billing runtime snapshot paths', () => {
       apiKeyUuid: 'key-1',
       creditsIssued: 10,
     });
-    await billing.markPurchasePaid({
+    await billing.markPurchasePaid(allowEffects, {
       purchaseId: 'paid',
       eventId: 'payment-1',
     });
     await expect(
-      billing.markPurchaseExpired({ purchaseId: 'paid', eventId: 'expiry-2' })
+      billing.markPurchaseExpired(allowEffects, {
+        purchaseId: 'paid',
+        eventId: 'expiry-2',
+      })
     ).resolves.toMatchObject({ body: { ignored: true, status: 'paid' } });
   });
 
@@ -317,10 +320,16 @@ describe('billing runtime snapshot paths', () => {
   it('returns not-found results for missing payments and refunds', async () => {
     const { billing } = setup();
     await expect(
-      billing.markPurchasePaid({ purchaseId: 'missing', eventId: 'event-1' })
+      billing.markPurchasePaid(allowEffects, {
+        purchaseId: 'missing',
+        eventId: 'event-1',
+      })
     ).resolves.toEqual({ status: 404, body: { error: 'purchase_not_found' } });
     await expect(
-      billing.applyRefundEvent({ purchaseId: 'missing', eventId: 'event-2' })
+      billing.applyRefundEvent(allowEffects, {
+        purchaseId: 'missing',
+        eventId: 'event-2',
+      })
     ).resolves.toEqual({ status: 404, body: { error: 'purchase_not_found' } });
   });
 });
@@ -329,7 +338,7 @@ describe('billing runtime expiry paths', () => {
   it('covers missing expiry, quarantined transitions, and public ledger references', async () => {
     const { db, billing } = setup();
     await expect(
-      billing.markPurchaseExpired({
+      billing.markPurchaseExpired(allowEffects, {
         purchaseId: 'missing',
         eventId: 'expiry-missing',
       })
@@ -345,7 +354,7 @@ describe('billing runtime expiry paths', () => {
       creditsIssued: 2,
     });
     await expect(
-      billing.markPurchasePaid({
+      billing.markPurchasePaid(allowEffects, {
         purchaseId: 'invalid-state',
         eventId: 'paid-invalid',
       })
@@ -362,7 +371,7 @@ describe('billing runtime expiry paths', () => {
       creditsIssued: 1,
       pricingSnapshotId: snapshot.snapshotId,
     });
-    await billing.markPurchasePaid({
+    await billing.markPurchasePaid(allowEffects, {
       purchaseId: 'reserve-insufficient',
       eventId: 'paid-reserve-insufficient',
     });
@@ -416,7 +425,7 @@ describe('billing runtime expiry paths', () => {
         refundable: true,
       });
     await expect(
-      billing.applyRefundEvent({
+      billing.applyRefundEvent(allowEffects, {
         purchaseId: 'refund-invalid-state',
         eventId: 'refund-invalid',
         stripePaymentIntentId: 'pi-invalid-state',
@@ -437,7 +446,10 @@ describe('billing runtime balance paths', () => {
     });
 
     await expect(
-      billing.markPurchasePaid({ purchaseId: 'purchase-1', eventId: 'paid-1' })
+      billing.markPurchasePaid(allowEffects, {
+        purchaseId: 'purchase-1',
+        eventId: 'paid-1',
+      })
     ).resolves.toMatchObject({ status: 201 });
     await expect(
       db.doc('api-key-credit/key-1/lots/legacy').get()
@@ -483,7 +495,7 @@ describe('billing runtime balance paths', () => {
       creditsIssued: 10,
       pricingSnapshotId: snapshot.snapshotId,
     });
-    await billing.markPurchasePaid({
+    await billing.markPurchasePaid(allowEffects, {
       purchaseId: 'reserve-purchase',
       eventId: 'paid-reserve',
     });
@@ -532,7 +544,7 @@ describe('billing runtime reservation paths', () => {
       creditsIssued: 10,
       pricingSnapshotId: snapshot.snapshotId,
     });
-    await billing.markPurchasePaid({
+    await billing.markPurchasePaid(allowEffects, {
       purchaseId: 'reserve-path-purchase',
       eventId: 'paid-reserve-paths',
     });
@@ -724,14 +736,14 @@ describe('billing runtime reconciliation paths', () => {
       apiKeyUuid: 'key-zero',
       creditsIssued: 0,
     });
-    await billing.markPurchasePaid({
+    await billing.markPurchasePaid(allowEffects, {
       purchaseId: 'zero-purchase',
       eventId: 'paid-zero',
       stripePaymentIntentId: 'pi-zero',
     });
     await db.doc('api-key-credit/key-zero/lots/zero-purchase').set({});
     await expect(
-      billing.applyRefundEvent({
+      billing.applyRefundEvent(allowEffects, {
         purchaseId: 'zero-purchase',
         eventId: 'refund-zero',
         stripePaymentIntentId: 'pi-zero',
@@ -746,14 +758,14 @@ describe('billing runtime reconciliation paths', () => {
       apiKeyUuid: 'key-conflict',
       creditsIssued: 5,
     });
-    await billing.markPurchasePaid({
+    await billing.markPurchasePaid(allowEffects, {
       purchaseId: 'conflict-purchase',
       eventId: 'paid-conflict',
       stripePaymentIntentId: 'pi-conflict',
     });
     await db.doc('api-key-credit/key-conflict').set({ credit: 0 });
     await expect(
-      billing.applyRefundEvent({
+      billing.applyRefundEvent(allowEffects, {
         purchaseId: 'conflict-purchase',
         eventId: 'refund-conflict',
         stripePaymentIntentId: 'pi-conflict',
@@ -771,14 +783,14 @@ describe('billing runtime reconciliation paths', () => {
       apiKeyUuid: 'key-untouched',
       creditsIssued: 5,
     });
-    await billing.markPurchasePaid({
+    await billing.markPurchasePaid(allowEffects, {
       purchaseId: 'untouched-purchase',
       eventId: 'paid-untouched',
       stripePaymentIntentId: 'pi-untouched',
     });
 
     await expect(
-      billing.applyRefundEvent({
+      billing.applyRefundEvent(allowEffects, {
         purchaseId: 'untouched-purchase',
         eventId: 'refund-untouched',
         stripePaymentIntentId: 'pi-untouched',
@@ -787,7 +799,7 @@ describe('billing runtime reconciliation paths', () => {
       body: { refunded: true, creditsReversed: 5 },
     });
     await expect(
-      billing.applyRefundEvent({
+      billing.applyRefundEvent(allowEffects, {
         purchaseId: 'untouched-purchase',
         eventId: 'refund-untouched-repeat',
         stripePaymentIntentId: 'pi-untouched',
@@ -802,7 +814,7 @@ describe('billing runtime reconciliation paths', () => {
       apiKeyUuid: 'key-mismatch',
       creditsIssued: 5,
     });
-    await billing.markPurchasePaid({
+    await billing.markPurchasePaid(allowEffects, {
       purchaseId: 'mismatched-purchase',
       eventId: 'paid-mismatch',
     });
@@ -921,7 +933,7 @@ describe('billing runtime refund paths', () => {
     const billing = createBillingRuntime(db);
 
     await expect(
-      billing.applyRefundEvent({
+      billing.applyRefundEvent(allowEffects, {
         purchaseId: 'purchase-1',
         eventId: 'refund-1',
         stripePaymentIntentId: 'pi-1',
@@ -946,14 +958,14 @@ describe('billing runtime refund paths', () => {
     });
 
     await expect(
-      billing.markPurchasePaid({
+      billing.markPurchasePaid(allowEffects, {
         purchaseId: 'purchase-1',
         eventId: 'payment-1',
         stripePaymentIntentId: 'pi-1',
       })
     ).resolves.toMatchObject({ status: 201 });
     await expect(
-      billing.markPurchasePaid({
+      billing.markPurchasePaid(allowEffects, {
         purchaseId: 'purchase-1',
         eventId: 'payment-2',
         stripePaymentIntentId: 'pi-1',
@@ -984,7 +996,7 @@ describe('billing runtime charging paths', () => {
       creditsIssued: 10,
       pricingSnapshotId: snapshot.snapshotId,
     });
-    await billing.markPurchasePaid({
+    await billing.markPurchasePaid(allowEffects, {
       purchaseId: 'purchase-1',
       eventId: 'paid-1',
       stripePaymentIntentId: 'pi-1',
@@ -1036,7 +1048,7 @@ describe('billing runtime charging paths', () => {
       creditsIssued: 10,
       pricingSnapshotId: snapshot.snapshotId,
     });
-    await billing.markPurchasePaid({
+    await billing.markPurchasePaid(allowEffects, {
       purchaseId: 'purchase-1',
       eventId: 'paid-1',
       stripePaymentIntentId: 'pi-1',
@@ -1058,7 +1070,7 @@ describe('billing runtime charging paths', () => {
     expect(lotBeforeRefund.data()).toMatchObject({ remainingCredits: 7 });
 
     await expect(
-      billing.applyRefundEvent({
+      billing.applyRefundEvent(allowEffects, {
         purchaseId: 'purchase-1',
         eventId: 'refund-1',
         stripePaymentIntentId: 'pi-1',
@@ -1084,14 +1096,14 @@ describe('billing runtime charging paths', () => {
       apiKeyUuid: 'key-mismatch',
       creditsIssued: 5,
     });
-    await billing.markPurchasePaid({
+    await billing.markPurchasePaid(allowEffects, {
       purchaseId: 'purchase-mismatch',
       eventId: 'paid-mismatch',
       stripePaymentIntentId: 'pi-expected',
     });
     const before = (await db.doc('api-key-credit/key-mismatch').get()).data()
       .credit;
-    const result = await billing.applyRefundEvent({
+    const result = await billing.applyRefundEvent(allowEffects, {
       purchaseId: 'purchase-mismatch',
       eventId: 'refund-mismatch',
       stripePaymentIntentId: 'pi-other',
@@ -1106,7 +1118,7 @@ describe('billing runtime charging paths', () => {
         purchaseId: 'purchase-mismatch',
       },
     });
-    await billing.recordRefundReconciliation({
+    await billing.recordRefundReconciliation(allowEffects, {
       eventId: 'refund-mismatch',
       purchaseId: 'purchase-mismatch',
       stripePaymentIntentId: 'pi-other',

@@ -50,7 +50,8 @@ export function createPaymentWebhookIndexHandler(deps) {
         return null;
       },
     }),
-    handlePurchaseEvent: event => handlePurchaseEvent(billing, event),
+    handlePurchaseEvent: (allowEffects, event) =>
+      handlePurchaseEvent(allowEffects, billing, event),
     isDuplicateEvent: async eventId => {
       // Stryker disable next-line all -- payment-events is a fixed persistence
       // collection owned by this adapter.
@@ -81,88 +82,90 @@ export function createPaymentWebhookIndexHandler(deps) {
 
 /**
  * Resolve a Stripe event against the purchase ledger.
+ * @param {AllowEffects} allowEffects Request effect permission.
  * @param {ReturnType<typeof createBillingRuntime>} billing Billing service.
  * @param {import('../../payment-webhook-core.js').PaymentEvent} event Stripe event.
  * @returns {Promise<import('../../payment-webhook-core.js').PaymentWebhookResponse | null>} Response or null.
  */
-async function handlePurchaseEvent(billing, event) {
+async function handlePurchaseEvent(allowEffects, billing, event) {
   const metadata = readMetadata(event.data?.object ?? {});
   if (event.type === 'charge.refunded')
-    return handleChargeRefunded(billing, metadata, event);
+    return handleChargeRefunded(allowEffects, billing, metadata, event);
   if (!metadata.purchase_id) return null;
   if (event.type === 'checkout.session.completed')
-    return handleCheckoutCompleted(billing, metadata, event);
+    return handleCheckoutCompleted(allowEffects, billing, metadata, event);
   if (event.type === 'checkout.session.expired')
-    return billing.markPurchaseExpired({
+    return billing.markPurchaseExpired(allowEffects, {
       purchaseId: metadata.purchase_id,
       eventId: event.id,
     });
   if (event.type === 'payment_intent.succeeded')
-    return handlePaymentIntentSucceeded(billing, metadata, event);
+    return handlePaymentIntentSucceeded(allowEffects, billing, metadata, event);
   return null;
 }
 
 /**
+ * @param {AllowEffects} allowEffects Request effect permission.
  * @param {ReturnType<typeof createBillingRuntime>} billing Billing service.
  * @param {Record<string, string>} metadata Stripe metadata.
  * @param {import('../../payment-webhook-core.js').PaymentEvent} event Stripe event.
  * @returns {Promise<import('../../payment-webhook-core.js').PaymentWebhookResponse|null>} Response.
  */
-async function handleCheckoutCompleted(billing, metadata, event) {
+async function handleCheckoutCompleted(allowEffects, billing, metadata, event) {
   // Stryker disable next-line all -- verified Stripe event shape is normalized
   // by the purchase metadata gate; optional chaining is defensive compatibility.
   if (event.data?.object?.payment_status !== 'paid') return null;
-  return markPaidPurchase(
-    billing,
-    metadata,
-    event.id,
-    // Stryker disable next-line all -- empty payment-intent fallback is fixed.
-    String(event.data?.object?.payment_intent ?? '')
-  );
-}
-
-/**
- * Mark a purchase as paid.
- * @param {ReturnType<typeof createBillingRuntime>} billing Billing service.
- * @param {Record<string, string>} metadata Stripe metadata.
- * @param {string} eventId Stripe event id.
- * @param {string} stripePaymentIntentId Stripe payment intent id.
- * @returns {Promise<import('../../payment-webhook-core.js').PaymentWebhookResponse>} Payment update result.
- */
-function markPaidPurchase(billing, metadata, eventId, stripePaymentIntentId) {
-  return billing.markPurchasePaid({
+  return markPaidPurchase(allowEffects, billing, {
     purchaseId: metadata.purchase_id,
-    eventId,
-    stripePaymentIntentId,
+    eventId: event.id,
+    // Stryker disable next-line all -- empty payment-intent fallback is fixed.
+    stripePaymentIntentId: String(event.data?.object?.payment_intent ?? ''),
   });
 }
 
 /**
+ * Mark a purchase as paid.
+ * @param {AllowEffects} allowEffects Request effect permission.
  * @param {ReturnType<typeof createBillingRuntime>} billing Billing service.
- * @param {Record<string, string>} metadata Stripe metadata.
- * @param {import('../../payment-webhook-core.js').PaymentEvent} event Stripe event.
- * @returns {Promise<import('../../payment-webhook-core.js').PaymentWebhookResponse>} Response.
+ * @param {Parameters<ReturnType<typeof createBillingRuntime>['markPurchasePaid']>[1]} input Payment input.
+ * @returns {Promise<import('../../payment-webhook-core.js').PaymentWebhookResponse>} Payment update result.
  */
-async function handlePaymentIntentSucceeded(billing, metadata, event) {
-  return markPaidPurchase(
-    billing,
-    metadata,
-    event.id,
-    String(event.data?.object?.id ?? '')
-  );
+function markPaidPurchase(allowEffects, billing, input) {
+  return billing.markPurchasePaid(allowEffects, input);
 }
 
 /**
+ * @param {AllowEffects} allowEffects Request effect permission.
  * @param {ReturnType<typeof createBillingRuntime>} billing Billing service.
  * @param {Record<string, string>} metadata Stripe metadata.
  * @param {import('../../payment-webhook-core.js').PaymentEvent} event Stripe event.
  * @returns {Promise<import('../../payment-webhook-core.js').PaymentWebhookResponse>} Response.
  */
-async function handleChargeRefunded(billing, metadata, event) {
+async function handlePaymentIntentSucceeded(
+  allowEffects,
+  billing,
+  metadata,
+  event
+) {
+  return markPaidPurchase(allowEffects, billing, {
+    purchaseId: metadata.purchase_id,
+    eventId: event.id,
+    stripePaymentIntentId: String(event.data?.object?.id ?? ''),
+  });
+}
+
+/**
+ * @param {AllowEffects} allowEffects Request effect permission.
+ * @param {ReturnType<typeof createBillingRuntime>} billing Billing service.
+ * @param {Record<string, string>} metadata Stripe metadata.
+ * @param {import('../../payment-webhook-core.js').PaymentEvent} event Stripe event.
+ * @returns {Promise<import('../../payment-webhook-core.js').PaymentWebhookResponse>} Response.
+ */
+async function handleChargeRefunded(allowEffects, billing, metadata, event) {
   const charge = event.data?.object ?? {};
   const stripePaymentIntentId = String(charge.payment_intent ?? '');
   const refundedUsdMinor = Number(charge.amount_refunded ?? 0);
-  await billing.recordRefundReconciliation({
+  await billing.recordRefundReconciliation(allowEffects, {
     eventId: event.id,
     purchaseId: metadata.purchase_id ?? '',
     stripePaymentIntentId,

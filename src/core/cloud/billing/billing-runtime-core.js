@@ -26,10 +26,10 @@ import {
 /** @typedef {{ purchaseId: string, eventId: string, stripePaymentIntentId: string, refundedUsdMinor: number, pricingSnapshotId: string }} BillingRefundInput */
 /** @typedef {{ purchaseId: string, eventId: string }} BillingExpiryInput */
 /** @typedef {{ checkoutSessionId: string, url: string, expiresAt: Date }} BillingCheckoutSession */
-/** @typedef {Record<string, any> & { createPurchase: (allowEffects: AllowEffects, input: BillingPurchaseInput) => Promise<BillingRuntimeValue>, savePurchaseCheckout: (allowEffects: AllowEffects, purchaseId: string, session: BillingCheckoutSession) => Promise<void> }} BillingRuntimeService */
+/** @typedef {Record<string, any> & { createPurchase: (allowEffects: AllowEffects, input: BillingPurchaseInput) => Promise<BillingRuntimeValue>, savePurchaseCheckout: (allowEffects: AllowEffects, purchaseId: string, session: BillingCheckoutSession) => Promise<void>, markPurchasePaid: (allowEffects: AllowEffects, input: BillingPaymentInput) => Promise<BillingResponse>, applyRefundEvent: (allowEffects: AllowEffects, input: BillingRefundInput) => Promise<BillingResponse>, recordRefundReconciliation: (allowEffects: AllowEffects, input: { eventId: string, purchaseId: string, stripePaymentIntentId: string, chargeId: string, refundedUsdMinor: number }) => Promise<void>, markPurchaseExpired: (allowEffects: AllowEffects, input: BillingExpiryInput) => Promise<BillingResponse> }} BillingRuntimeService */
 
 /**
- * @typedef {{ status: number, body: object }} BillingResponse
+ * @typedef {{ status: number, body: string | Record<string, unknown> }} BillingResponse
  */
 
 /**
@@ -343,12 +343,14 @@ export function createBillingRuntime(db, runtime = {}) {
 
   /**
    * Mark a purchase as paid.
+   * @param {AllowEffects} allowEffects Permission for the purchase transaction.
    * @param {BillingPaymentInput} input Payment input.
    * @returns {Promise<BillingResponse>} Payment response.
    */
   // Stryker disable all -- payment settlement is an adapter transaction whose
   // schema is verified by focused behavioral tests.
-  async function markPurchasePaid(input) {
+  async function markPurchasePaid(allowEffects, input) {
+    void allowEffects;
     const ref = purchaseRef(db, input.purchaseId);
     return db.runTransaction(
       async (/** @type {BillingRuntimeValue} */ transaction) => {
@@ -543,19 +545,23 @@ export function createBillingRuntime(db, runtime = {}) {
 
   /**
    * Apply a Stripe refund to a purchase.
+   * @param {AllowEffects} allowEffects Permission for the refund transaction.
    * @param {BillingRefundInput} input Refund input.
    * @returns {Promise<BillingResponse>} Refund response.
    */
-  async function applyRefundEvent(input) {
+  async function applyRefundEvent(allowEffects, input) {
+    void allowEffects;
     return applyRefund(db, now, input);
   }
 
   /**
    * Persist an unmatched Stripe refund for manual reconciliation.
+   * @param {AllowEffects} allowEffects Permission for the reconciliation write.
    * @param {{ eventId: string, purchaseId: string, stripePaymentIntentId: string, chargeId: string, refundedUsdMinor: number }} input Refund identifiers.
    * @returns {Promise<void>} Resolves after persistence.
    */
-  async function recordRefundReconciliation(input) {
+  async function recordRefundReconciliation(allowEffects, input) {
+    void allowEffects;
     await db
       .collection('billing-reconciliation')
       .doc(input.eventId)
@@ -569,10 +575,12 @@ export function createBillingRuntime(db, runtime = {}) {
 
   /**
    * Mark a matching pending purchase expired exactly once.
+   * @param {AllowEffects} allowEffects Permission for the purchase transaction.
    * @param {BillingExpiryInput} input Expiry event.
    * @returns {Promise<BillingResponse>} Expiry response.
    */
-  async function markPurchaseExpired(input) {
+  async function markPurchaseExpired(allowEffects, input) {
+    void allowEffects;
     return db.runTransaction(
       async (/** @type {BillingRuntimeValue} */ transaction) => {
         const ref = purchaseRef(db, input.purchaseId);
@@ -875,7 +883,7 @@ function setCreditBalance(transaction, reference, credit, eventId) {
  * Build the common operation status response.
  * @param {BillingOperationIdentity} reservation Operation identity.
  * @param {string} status Operation status.
- * @returns {{ status: number, body: object }} Operation response.
+ * @returns {BillingResponse} Operation response.
  */
 function operationStatusResponse(reservation, status) {
   return {

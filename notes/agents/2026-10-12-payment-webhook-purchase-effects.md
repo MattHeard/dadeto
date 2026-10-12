@@ -1,0 +1,7 @@
+# Payment webhook purchase effects
+
+- Unexpected hurdle: the payment webhook already passed `AllowEffects` to event-inbox, response, and logging adapters, which made the purchase callback look like an ordinary event classifier even though it mutates billing state.
+- Diagnosis: traced `createPaymentWebhookHandler` through `resolvePurchaseEvent` into the injected `handlePurchaseEvent` and its payment, expiry, and refund-reconciliation calls. The injected callback had no permission parameter, and the billing runtime command methods also exposed one-argument signatures.
+- Chosen fix: made the injected callback permission-first, forwarded the request token through webhook routing, and required it on purchase-paid, purchase-expired, refund, and refund-reconciliation runtime commands. Kept the request capability out of startup composition. Tests assert the identical token reaches the callback and each exercised billing command.
+- Evidence: focused webhook and billing suites passed (3 suites, 56 tests); JSDoc typecheck passed; `npm run build:cloud` passed; configured `npm run check` passed all 10 gates, complete unit coverage, and 11 local E2E tests.
+- Next-time guidance: finish the endpoint audit by moving module-level Firestore client construction behind the startup boundary and narrowing raw database command access in the billing runtime; then proceed to the next not-yet-audited cloud entry point. The payment-webhook endpoint is not yet clean.
