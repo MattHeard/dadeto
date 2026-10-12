@@ -1,40 +1,40 @@
-import { createFirestoreDocumentOnWriteTrigger } from '../cloud-core.js';
 import { createRenderAuthorHandler } from './render-author-core.js';
 
 /** @typedef {{ region: (name: string) => unknown }} FunctionsLike */
 /** @typedef {Record<string, unknown>} StorageLike */
 /** @typedef {{ delete: () => unknown }} FieldValueLike */
-/** @typedef {{ functions: FunctionsLike, Storage: StorageLike, FieldValue: FieldValueLike, getFirestoreInstance: () => unknown, saveAuthorHtml: typeof import('../../../cloud/render-author/effect-adapters.js').saveAuthorHtml, updateAuthorDocument: typeof import('../../../cloud/render-author/effect-adapters.js').updateAuthorDocument, bindEffectBoundary: typeof import('../../../cloud/render-author/render-author-gcf.js').bindEffectBoundary }} RenderAuthorDeps */
+/** @typedef {{ db: unknown, functions: FunctionsLike, Storage: StorageLike, FieldValue: FieldValueLike, saveAuthorHtml: typeof import('../../../cloud/render-author/effect-adapters.js').saveAuthorHtml, updateAuthorDocument: typeof import('../../../cloud/render-author/effect-adapters.js').updateAuthorDocument, registerAuthorWriteTrigger: typeof import('../../../cloud/render-author/trigger-effect-adapter.js').registerAuthorWriteTrigger, bindEffectBoundary: typeof import('../../../cloud/render-author/render-author-gcf.js').bindEffectBoundary }} RenderAuthorDeps */
 
 /**
  * Wire the author renderer Cloud Function.
+ * @param {import('../../../../types/allow-effects').AllowEffects} allowEffects Startup permission for trigger registration.
  * @param {RenderAuthorDeps} deps Runtime dependencies.
  * @returns {{ renderAuthor: unknown }} Cloud Function exports.
  */
-export function runRenderAuthor(deps) {
+export function runRenderAuthor(allowEffects, deps) {
   // Stryker disable all -- author trigger wiring uses the fixed region/path/database contract.
-  const functions = deps.functions;
   const Storage = deps.Storage;
   const FieldValue = deps.FieldValue;
-  const getFirestoreInstance = deps.getFirestoreInstance;
+  const db = deps.db;
   const saveAuthorHtml = deps.saveAuthorHtml;
   const updateAuthorDocument = deps.updateAuthorDocument;
+  const registerAuthorWriteTrigger = deps.registerAuthorWriteTrigger;
   const bindEffectBoundary = deps.bindEffectBoundary;
-  getFirestoreInstance();
   const bucket = /** @type {any} */ (
     new /** @type {any} */ (Storage)().bucket(process.env.STATIC_BUCKET_NAME)
   );
   const renderAuthor = createRenderAuthorHandler({
-    db: /** @type {any} */ (getFirestoreInstance()),
+    db: /** @type {any} */ (db),
     deleteField: () => FieldValue.delete(),
     saveAuthorHtml: (allowEffects, path, html) =>
       saveAuthorHtml(allowEffects, bucket, path, html),
     updateAuthorDocument,
   });
   return {
-    renderAuthor: createFirestoreDocumentOnWriteTrigger(
+    renderAuthor: registerAuthorWriteTrigger(
+      allowEffects,
       /** @type {any} */ ({
-        functions,
+        functions: deps.functions,
         region: 'europe-west1',
         documentPath: 'authors/{authorId}',
         database: process.env.DATABASE_ID,

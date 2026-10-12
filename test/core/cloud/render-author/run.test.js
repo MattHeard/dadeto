@@ -1,20 +1,4 @@
 import { jest } from '@jest/globals';
-
-await jest.unstable_mockModule(
-  '../../../../src/core/cloud/cloud-core.js',
-  () => ({
-    createFirestoreDocumentOnWriteTrigger: ({
-      functions,
-      region,
-      documentPath,
-      handler,
-    }) =>
-      functions
-        .region(region)
-        .firestore.document(documentPath)
-        .onWrite(handler),
-  })
-);
 await jest.unstable_mockModule(
   '../../../../src/core/cloud/render-author/render-author-core.js',
   () => ({
@@ -36,39 +20,41 @@ const { runRenderAuthor } = await import(
 
 describe('runRenderAuthor', () => {
   test('wires the Firestore trigger and author dependencies', async () => {
-    const onWrite = jest.fn(handler => handler);
-    const document = jest.fn(() => ({ onWrite }));
-    const firestore = { document };
-    const region = jest.fn(() => ({ firestore }));
-    const functions = { region };
+    const startupPermission = Object.freeze({ startup: 'render-author' });
+    const invocationPermission = Object.freeze({ invocation: 'render-author' });
     const save = jest.fn().mockResolvedValue(undefined);
     const update = jest.fn().mockResolvedValue(undefined);
     const bucket = { file: jest.fn(() => ({ save })) };
     const Storage = jest.fn(() => ({ bucket: jest.fn(() => bucket) }));
     const FieldValue = { delete: jest.fn(() => 'deleted') };
     const db = {};
-    const allowEffects = Object.freeze({ invocation: 'render-author' });
+    const registerAuthorWriteTrigger = jest.fn(
+      (permission, { handler }) => handler
+    );
     const saveAuthorHtml = jest.fn((permission, receivedBucket, path, html) =>
       receivedBucket.file(path).save(html, { contentType: 'text/html' })
     );
     const updateAuthorDocument = jest.fn((permission, reference, value) =>
       reference.update(value)
     );
-    const getFirestoreInstance = jest.fn(() => db);
 
-    const result = runRenderAuthor({
-      functions,
+    const result = runRenderAuthor(startupPermission, {
+      db,
       Storage,
       FieldValue,
-      getFirestoreInstance,
       saveAuthorHtml,
       updateAuthorDocument,
-      bindEffectBoundary: handler => handler(allowEffects),
+      registerAuthorWriteTrigger,
+      bindEffectBoundary: handler => handler(invocationPermission),
     });
 
-    expect(getFirestoreInstance).toHaveBeenCalledTimes(2);
-    expect(region).toHaveBeenCalledWith('europe-west1');
-    expect(document).toHaveBeenCalledWith('authors/{authorId}');
+    expect(registerAuthorWriteTrigger).toHaveBeenCalledWith(
+      startupPermission,
+      expect.objectContaining({
+        region: 'europe-west1',
+        documentPath: 'authors/{authorId}',
+      })
+    );
     expect(Storage).toHaveBeenCalled();
     expect(result.renderAuthor).toEqual(expect.any(Function));
 
@@ -82,13 +68,13 @@ describe('runRenderAuthor', () => {
     expect(save).toHaveBeenCalled();
     expect(update).toHaveBeenCalled();
     expect(saveAuthorHtml).toHaveBeenCalledWith(
-      allowEffects,
+      invocationPermission,
       bucket,
       'author.html',
       'rendered html'
     );
     expect(updateAuthorDocument).toHaveBeenCalledWith(
-      allowEffects,
+      invocationPermission,
       expect.objectContaining({ id: 'u1' }),
       { rendered: true, dirty: 'deleted' }
     );

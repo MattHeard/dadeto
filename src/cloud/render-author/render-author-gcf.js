@@ -1,6 +1,7 @@
 import functions from '../render-variant/firebase-functions.js';
 import { createEffectInvocationBoundary } from '../allow-effects.js';
 export { functions };
+export { ensureFirebaseApp } from '../common-gcf.js';
 export { FieldValue } from 'firebase-admin/firestore';
 export { Storage } from '@google-cloud/storage';
 export { getFirestoreInstance } from '../render-variant/firestore.js';
