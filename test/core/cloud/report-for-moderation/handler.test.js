@@ -7,6 +7,8 @@ import {
   createReportForModerationHandler,
 } from '../../../../src/core/cloud/report-for-moderation/report-for-moderation-core.js';
 
+const allowEffects = Object.freeze({ allowed: true });
+
 describe('createReportForModerationHandler', () => {
   it('resolves both identities before rejecting the variant without touching storage', async () => {
     const reads = [];
@@ -28,7 +30,9 @@ describe('createReportForModerationHandler', () => {
         return 'reader';
       },
     };
-    await expect(handler({ method: 'POST', body })).resolves.toEqual({
+    await expect(
+      handler(allowEffects, { method: 'POST', body })
+    ).resolves.toEqual({
       status: 400,
       body: 'Missing or invalid variant',
     });
@@ -46,12 +50,12 @@ describe('createReportForModerationHandler', () => {
       getServerTimestamp,
     });
 
-    const response = await handler({
+    const response = await handler(allowEffects, {
       method: 'POST',
       body: { variant: ' slug-value ', reporterIdentity: ' anon-1 ' },
     });
 
-    expect(addModerationReport).toHaveBeenCalledWith({
+    expect(addModerationReport).toHaveBeenCalledWith(allowEffects, {
       variant: 'slug-value',
       reporterIdentity: 'anon-1',
       createdAt: 'timestamp',
@@ -86,20 +90,20 @@ describe('createReportForModerationHandler', () => {
     });
 
     await expect(
-      handler({
+      handler(allowEffects, {
         method: 'POST',
       })
     ).resolves.toEqual({ status: 400, body: 'Missing or invalid variant' });
 
     await expect(
-      handler({
+      handler(allowEffects, {
         method: 'POST',
         body: {},
       })
     ).resolves.toEqual({ status: 400, body: 'Missing or invalid variant' });
 
     await expect(
-      handler({
+      handler(allowEffects, {
         method: 'POST',
         body: { variant: '   ' },
       })
@@ -116,7 +120,7 @@ describe('createReportForModerationHandler', () => {
       hasModerationReport: jest.fn().mockResolvedValue(false),
     });
     await expect(
-      handler({
+      handler(allowEffects, {
         method: 'POST',
         body: {
           variant: 'v',
@@ -125,7 +129,7 @@ describe('createReportForModerationHandler', () => {
       })
     ).resolves.toEqual({ status: 201, body: {} });
     await expect(
-      handler({
+      handler(allowEffects, {
         method: 'POST',
         body: {
           variant: 'v',
@@ -140,7 +144,7 @@ describe('createReportForModerationHandler', () => {
       hasModerationReport: async () => true,
     });
     await expect(
-      duplicate({
+      duplicate(allowEffects, {
         method: 'POST',
         body: {
           variant: 'v',
@@ -149,17 +153,17 @@ describe('createReportForModerationHandler', () => {
       })
     ).resolves.toEqual({ status: 409, body: 'Report already exists' });
     await expect(
-      handler({ method: 'POST', body: { variant: 'v' } })
+      handler(allowEffects, { method: 'POST', body: { variant: 'v' } })
     ).resolves.toEqual({
       status: 400,
       body: 'Missing or invalid reporter identity',
     });
-    await expect(handler()).resolves.toEqual({
+    await expect(handler(allowEffects)).resolves.toEqual({
       status: 405,
       body: 'POST only',
     });
     await expect(
-      handler({
+      handler(allowEffects, {
         method: 'GET',
         body: {
           variant: 'v',
@@ -217,27 +221,43 @@ describe('report moderation adapters and urgency', () => {
       json: jest.fn(),
       sendStatus: jest.fn(),
     });
-    const handler = createHandleReportForModeration(async request => {
-      if (request.body === 'status') return { status: 204, body: undefined };
-      if (request.body === 'json') return { status: 201, body: { ok: true } };
-      if (request.body === 'null') return { status: 204, body: null };
-      return { status: 400, body: 'bad' };
-    });
+    const handler = createHandleReportForModeration(
+      async (_permission, request) => {
+        if (request.body === 'status') return { status: 204, body: undefined };
+        if (request.body === 'json') return { status: 201, body: { ok: true } };
+        if (request.body === 'null') return { status: 204, body: null };
+        return { status: 400, body: 'bad' };
+      },
+      jest.fn((_permission, response, status, body) => {
+        response.status(status);
+        if (typeof body === 'string') response.send(body);
+        else if (body === undefined) response.sendStatus(status);
+        else response.json(body ?? {});
+      })
+    );
     const methodResponse = response();
-    await handler({ method: 'GET', body: 'bad' }, methodResponse);
+    await handler(allowEffects, { method: 'GET', body: 'bad' }, methodResponse);
     expect(methodResponse.status).toHaveBeenCalledWith(405);
     expect(methodResponse.send).toHaveBeenCalledWith('POST only');
     const stringResponse = response();
-    await handler({ method: 'POST', body: 'bad' }, stringResponse);
+    await handler(
+      allowEffects,
+      { method: 'POST', body: 'bad' },
+      stringResponse
+    );
     expect(stringResponse.send).toHaveBeenCalledWith('bad');
     const jsonResponse = response();
-    await handler({ method: 'POST', body: 'json' }, jsonResponse);
+    await handler(allowEffects, { method: 'POST', body: 'json' }, jsonResponse);
     expect(jsonResponse.json).toHaveBeenCalledWith({ ok: true });
     const statusResponse = response();
-    await handler({ method: 'POST', body: 'status' }, statusResponse);
+    await handler(
+      allowEffects,
+      { method: 'POST', body: 'status' },
+      statusResponse
+    );
     expect(statusResponse.sendStatus).toHaveBeenCalledWith(204);
     const nullResponse = response();
-    await handler({ method: 'POST', body: 'null' }, nullResponse);
+    await handler(allowEffects, { method: 'POST', body: 'null' }, nullResponse);
     expect(nullResponse.json).toHaveBeenCalledWith({});
   });
 });

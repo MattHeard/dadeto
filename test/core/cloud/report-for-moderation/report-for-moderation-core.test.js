@@ -7,6 +7,8 @@ import {
   createHandleReportForModeration,
 } from '../../../../src/core/cloud/report-for-moderation/report-for-moderation-core.js';
 
+const allowEffects = Object.freeze({ allowed: true });
+
 describe('createReportForModerationHandler', () => {
   it('reads current dependencies in order on each call, before method guarding', async () => {
     const reads = [];
@@ -30,26 +32,29 @@ describe('createReportForModerationHandler', () => {
     const handler = createReportForModerationHandler(dependencies);
     expect(reads).toEqual(['add', 'timestamp']);
     reads.length = 0;
-    await expect(handler()).resolves.toEqual({
+    await expect(handler(allowEffects)).resolves.toEqual({
       status: 405,
       body: 'POST only',
     });
-    expect(reads).toEqual(['add', 'duplicate', 'timestamp']);
+    expect(reads).toEqual([]);
     reads.length = 0;
     persist = second;
     await expect(
-      handler({ method: 'POST', body: { variant: 'v', reporterId: 'r' } })
+      handler(allowEffects, {
+        method: 'POST',
+        body: { variant: 'v', reporterId: 'r' },
+      })
     ).resolves.toEqual({ status: 201, body: {} });
-    expect(reads).toEqual(['add', 'duplicate', 'timestamp']);
+    expect(reads).toEqual(['duplicate', 'add', 'timestamp']);
     expect(first).not.toHaveBeenCalled();
-    expect(second).toHaveBeenCalledWith({
+    expect(second).toHaveBeenCalledWith(allowEffects, {
       variant: 'v',
       reporterIdentity: 'r',
       createdAt: 'ts',
     });
   });
 
-  it('propagates dependency getter errors synchronously before method guarding', () => {
+  it('does not resolve dependency getters before method guarding', async () => {
     const failure = new Error('unavailable dependency');
     let broken = false;
     const dependencies = {
@@ -61,7 +66,10 @@ describe('createReportForModerationHandler', () => {
     };
     const handler = createReportForModerationHandler(dependencies);
     broken = true;
-    expect(() => handler({ method: 'GET' })).toThrow(failure);
+    await expect(handler(allowEffects, { method: 'GET' })).resolves.toEqual({
+      status: 405,
+      body: 'POST only',
+    });
   });
 
   it('validates dependencies before returning the handler', () => {
@@ -87,13 +95,15 @@ describe('createReportForModerationHandler', () => {
       getServerTimestamp: jest.fn(),
     });
 
-    await expect(handler({ method: 'POST', body: null })).resolves.toEqual({
+    await expect(
+      handler(allowEffects, { method: 'POST', body: null })
+    ).resolves.toEqual({
       status: 400,
       body: 'Missing or invalid variant',
     });
 
     await expect(
-      handler({ method: 'POST', body: { variant: '   ' } })
+      handler(allowEffects, { method: 'POST', body: { variant: '   ' } })
     ).resolves.toEqual({ status: 400, body: 'Missing or invalid variant' });
 
     expect(addModerationReport).not.toHaveBeenCalled();
@@ -137,7 +147,7 @@ describe('createReportForModerationHandler', () => {
         getServerTimestamp,
       });
 
-      const response = await handler({
+      const response = await handler(allowEffects, {
         method: 'POST',
         body: Object.defineProperties(
           { variant: ' slug ' },
@@ -145,7 +155,7 @@ describe('createReportForModerationHandler', () => {
         ),
       });
 
-      expect(addModerationReport).toHaveBeenCalledWith({
+      expect(addModerationReport).toHaveBeenCalledWith(allowEffects, {
         variant: 'slug',
         reporterIdentity: 'anon-1',
         createdAt: 'ts',
@@ -164,7 +174,7 @@ describe('createReportForModerationHandler', () => {
     });
 
     await expect(
-      handler({
+      handler(allowEffects, {
         method: 'POST',
         body: { variant: 'slug', reporterIdentity: 'anon-1' },
       })
@@ -181,7 +191,7 @@ describe('createReportForModerationHandler', () => {
     });
 
     await expect(
-      handler({
+      handler(allowEffects, {
         method: 'POST',
         body: { variant: 'slug' },
       })
@@ -199,7 +209,7 @@ describe('createReportForModerationHandler', () => {
       getServerTimestamp,
     });
 
-    const response = await handler({ method: 'OPTIONS' });
+    const response = await handler(allowEffects, { method: 'OPTIONS' });
     expect(response).toEqual({ status: 405, body: 'POST only' });
     expect(addModerationReport).not.toHaveBeenCalled();
     expect(getServerTimestamp).not.toHaveBeenCalled();
@@ -213,10 +223,22 @@ describe('createReportForModerationHandler', () => {
       getServerTimestamp,
     });
 
-    const response = await handler();
+    const response = await handler(allowEffects);
     expect(response).toEqual({ status: 405, body: 'POST only' });
     expect(addModerationReport).not.toHaveBeenCalled();
     expect(getServerTimestamp).not.toHaveBeenCalled();
+  });
+
+  it('uses an empty request when the request argument is omitted', async () => {
+    const handler = createReportForModerationHandler({
+      addModerationReport: jest.fn(),
+      getServerTimestamp: jest.fn(),
+    });
+
+    await expect(handler(allowEffects)).resolves.toEqual({
+      status: 405,
+      body: 'POST only',
+    });
   });
 });
 
@@ -359,11 +381,17 @@ describe('createHandleReportForModeration', () => {
     expect(() => createHandleReportForModeration(null)).toThrow(
       new TypeError('reportForModerationHandler must be a function')
     );
+    expect(() => createHandleReportForModeration(jest.fn())).toThrow(
+      new TypeError('sendResponse must be a function')
+    );
   });
 
   it('returns 405 for non-POST requests before invoking the handler', async () => {
     const handler = jest.fn().mockResolvedValue({ status: 200, body: {} });
-    const respond = createHandleReportForModeration(handler);
+    const sendResponse = jest.fn((_permission, response, status, body) => {
+      response.status(status).send(body);
+    });
+    const respond = createHandleReportForModeration(handler, sendResponse);
     const res = {
       status: jest.fn(() => res),
       send: jest.fn(),
@@ -371,7 +399,7 @@ describe('createHandleReportForModeration', () => {
       sendStatus: jest.fn(),
     };
 
-    await respond({ method: 'GET' }, res);
+    await respond(allowEffects, { method: 'GET' }, res);
 
     expect(res.status).toHaveBeenCalledWith(405);
     expect(res.send).toHaveBeenCalledWith('POST only');
@@ -383,7 +411,10 @@ describe('createHandleReportForModeration', () => {
       status: 405,
       body: 'POST only',
     });
-    const respond = createHandleReportForModeration(handler);
+    const sendResponse = jest.fn((_permission, response, status, body) => {
+      response.status(status).send(body);
+    });
+    const respond = createHandleReportForModeration(handler, sendResponse);
     const res = {
       status: jest.fn(() => res),
       send: jest.fn(),
@@ -391,7 +422,7 @@ describe('createHandleReportForModeration', () => {
       sendStatus: jest.fn(),
     };
 
-    await respond({ method: 'GET' }, res);
+    await respond(allowEffects, { method: 'POST' }, res);
 
     expect(res.status).toHaveBeenCalledWith(405);
     expect(res.send).toHaveBeenCalledWith('POST only');
@@ -404,7 +435,10 @@ describe('createHandleReportForModeration', () => {
       status: 200,
       body: 'OK',
     });
-    const respond = createHandleReportForModeration(handler);
+    const sendResponse = jest.fn((_permission, response, status, body) => {
+      response.status(status).send(body);
+    });
+    const respond = createHandleReportForModeration(handler, sendResponse);
     const res = {
       status: jest.fn(() => res),
       send: jest.fn(),
@@ -412,7 +446,7 @@ describe('createHandleReportForModeration', () => {
       sendStatus: jest.fn(),
     };
 
-    await respond({ method: 'POST' }, res);
+    await respond(allowEffects, { method: 'POST' }, res);
 
     expect(res.status).toHaveBeenCalledWith(200);
     expect(res.send).toHaveBeenCalledWith('OK');
@@ -422,7 +456,10 @@ describe('createHandleReportForModeration', () => {
 
   it('forwards empty responses via sendStatus', async () => {
     const handler = jest.fn().mockResolvedValue({ status: 204 });
-    const respond = createHandleReportForModeration(handler);
+    const sendResponse = jest.fn((_permission, response, status) => {
+      response.status(status).sendStatus(status);
+    });
+    const respond = createHandleReportForModeration(handler, sendResponse);
     const res = {
       status: jest.fn(() => res),
       send: jest.fn(),
@@ -430,7 +467,7 @@ describe('createHandleReportForModeration', () => {
       sendStatus: jest.fn(),
     };
 
-    await respond({ method: 'POST' }, res);
+    await respond(allowEffects, { method: 'POST' }, res);
 
     expect(res.sendStatus).toHaveBeenCalledWith(204);
     expect(res.json).not.toHaveBeenCalled();
@@ -442,7 +479,10 @@ describe('createHandleReportForModeration', () => {
       status: 201,
       body: null,
     });
-    const respond = createHandleReportForModeration(handler);
+    const sendResponse = jest.fn((_permission, response, status) => {
+      response.status(status).json({});
+    });
+    const respond = createHandleReportForModeration(handler, sendResponse);
     const res = {
       status: jest.fn(() => res),
       send: jest.fn(),
@@ -450,7 +490,7 @@ describe('createHandleReportForModeration', () => {
       sendStatus: jest.fn(),
     };
 
-    await respond({ method: 'POST' }, res);
+    await respond(allowEffects, { method: 'POST' }, res);
 
     expect(res.status).toHaveBeenCalledWith(201);
     expect(res.json).toHaveBeenCalledWith({});
@@ -461,7 +501,10 @@ describe('createHandleReportForModeration', () => {
       status: 201,
       body: { ok: true },
     });
-    const respond = createHandleReportForModeration(handler);
+    const sendResponse = jest.fn((_permission, response, status, body) => {
+      response.status(status).json(body);
+    });
+    const respond = createHandleReportForModeration(handler, sendResponse);
     const res = {
       status: jest.fn(() => res),
       send: jest.fn(),
@@ -469,7 +512,7 @@ describe('createHandleReportForModeration', () => {
       sendStatus: jest.fn(),
     };
 
-    await respond({ method: 'POST' }, res);
+    await respond(allowEffects, { method: 'POST' }, res);
 
     expect(res.status).toHaveBeenCalledWith(201);
     expect(res.json).toHaveBeenCalledWith({ ok: true });
@@ -481,7 +524,7 @@ describe('createHandleReportForModeration', () => {
       status: 201,
       body: { ok: true },
     });
-    const respond = createHandleReportForModeration(handler);
+    const respond = createHandleReportForModeration(handler, jest.fn());
     const res = {
       status: jest.fn(() => res),
       send: jest.fn(),
@@ -489,8 +532,11 @@ describe('createHandleReportForModeration', () => {
       sendStatus: jest.fn(),
     };
 
-    await respond({ method: 'POST', body }, res);
+    await respond(allowEffects, { method: 'POST', body }, res);
 
-    expect(handler).toHaveBeenCalledWith({ method: 'POST', body });
+    expect(handler).toHaveBeenCalledWith(allowEffects, {
+      method: 'POST',
+      body,
+    });
   });
 });

@@ -8,7 +8,7 @@ import {
   createCorsOptions as buildCorsOptions,
 } from '../cloud-core.js';
 import { whenPostRequestAsync } from '../http-method-guard.js';
-import { sendResponseBody as sendResponse } from '../response-utils.js';
+/** @typedef {import('../../../../types/allow-effects').AllowEffects} AllowEffects */
 
 /**
  * @typedef {object} ReportRequestBody
@@ -37,31 +37,27 @@ function resolveVariant(body) {
 /**
  * Build an HTTP handler that accepts moderation report submissions.
  * @param {object} dependencies Dependencies required to process requests.
- * @param {(report: ModerationReportRecord) => Promise<void> | void} dependencies.addModerationReport Function used to persist new reports.
+ * @param {(permission: AllowEffects, report: ModerationReportRecord) => Promise<void> | void} dependencies.addModerationReport Function used to persist new reports.
  * @param {((reporterIdentity: string, variant: string) => Promise<boolean> | boolean) | undefined} [dependencies.hasModerationReport] Function used to detect duplicates.
  * @param {() => unknown} dependencies.getServerTimestamp Retrieve the timestamp for stored reports.
- * @returns {(request?: { method?: string, body?: ReportRequestBody | null }) => Promise<{ status: number, body: string | Record<string, unknown> }>} Request handler that returns status and body details.
+ * @returns {(permission: AllowEffects, request?: { method?: string, body?: ReportRequestBody | null }) => Promise<{ status: number, body: string | Record<string, unknown> }>} Request handler that returns status and body details.
  */
 export function createReportForModerationHandler(dependencies) {
   assertFunction(dependencies.addModerationReport, 'addModerationReport');
   assertFunction(dependencies.getServerTimestamp, 'getServerTimestamp');
 
-  return processReportSubmission.bind(null, dependencies);
+  return (permission, request = {}) =>
+    processReportSubmission(dependencies, permission, request);
 }
 
 /**
  * Process the moderation report request when the HTTP method is validated.
- * @param {object} root0 Dependencies required for processing.
- * @param {(report: ModerationReportRecord) => Promise<void> | void} root0.addModerationReport Storage helper.
- * @param {((reporterIdentity: string, variant: string) => Promise<boolean> | boolean) | undefined} [root0.hasModerationReport] Storage helper for duplicate detection.
- * @param {() => unknown} root0.getServerTimestamp Timestamp generator.
+ * @param {{addModerationReport: (permission: AllowEffects, report: ModerationReportRecord) => Promise<void> | void, hasModerationReport?: (reporterIdentity: string, variant: string) => Promise<boolean> | boolean, getServerTimestamp: () => unknown}} dependencies Dependencies required for processing.
+ * @param {AllowEffects} permission Explicit command permission.
  * @param {{ method?: string, body?: ReportRequestBody | null }} [request] Incoming request details.
  * @returns {Promise<{ status: number, body: string | Record<string, unknown> }>} Promise resolved with the HTTP response.
  */
-function processReportSubmission(
-  { addModerationReport, hasModerationReport, getServerTimestamp },
-  request = {}
-) {
+function processReportSubmission(dependencies, permission, request = {}) {
   return whenPostRequestAsync({
     request,
     onValid: async () => {
@@ -78,7 +74,11 @@ function processReportSubmission(
       }
 
       if (
-        await alreadyReported(hasModerationReport, reporterIdentity, variant)
+        await alreadyReported(
+          dependencies.hasModerationReport,
+          reporterIdentity,
+          variant
+        )
       ) {
         return {
           status: 409,
@@ -86,11 +86,14 @@ function processReportSubmission(
         };
       }
 
-      await addModerationReport({
-        variant,
-        reporterIdentity,
-        createdAt: getServerTimestamp(),
-      });
+      await dependencies.addModerationReport(
+        /** @type {AllowEffects} */ (permission),
+        {
+          variant,
+          reporterIdentity,
+          createdAt: dependencies.getServerTimestamp(),
+        }
+      );
 
       return {
         status: 201,
@@ -218,76 +221,28 @@ export function createCorsOptions({ allowedOrigins, methods = ['POST'] }) {
 }
 
 /**
- * Emit a bare status response.
- * @param {{ sendStatus: (code: number) => void }} res - Express-style response object.
- * @param {number} status - HTTP status code to emit.
- * @returns {void}
- */
-function sendStatusResponse(res, status) {
-  res.sendStatus(status);
-}
-
-/**
  * Wrap the domain handler in an Express-style request handler.
- * @param {(request: { method: string, body?: { variant?: unknown } | null }) => Promise<{ status: number, body: string | Record<string, unknown> }>} reportForModerationHandler Domain-specific request handler.
- * @returns {(req: { method: string, body?: { variant?: unknown } | null }, res: { status: (code: number) => { send: (body: string) => void, json: (body: Record<string, unknown>) => void }, sendStatus: (code: number) => void }) => Promise<void>} Express-compatible request handler that writes to the provided response.
+ * @param {(permission: AllowEffects, request: { method: string, body?: { variant?: unknown } | null }) => Promise<{ status: number, body: string | Record<string, unknown> }>} reportForModerationHandler Domain-specific request handler.
+ * @param {(permission: AllowEffects, response: unknown, status: number, body: string | Record<string, unknown>) => void} sendResponse Effect adapter for HTTP responses.
+ * @returns {(permission: AllowEffects, req: { method: string, body?: { variant?: unknown } | null }, res: unknown) => Promise<void>} Express-compatible request handler that writes to the provided response.
  */
-export function createHandleReportForModeration(reportForModerationHandler) {
+export function createHandleReportForModeration(
+  reportForModerationHandler,
+  sendResponse
+) {
   assertFunction(reportForModerationHandler, 'reportForModerationHandler');
+  assertFunction(sendResponse, 'sendResponse');
 
-  return async function handleReportForModeration(req, res) {
+  return async function handleReportForModeration(permission, req, res) {
     if (req.method !== 'POST') {
-      sendResponse(res, 405, 'POST only');
+      sendResponse(permission, res, 405, 'POST only');
       return;
     }
 
-    const { status, body } = await reportForModerationHandler({
+    const { status, body } = await reportForModerationHandler(permission, {
       method: req.method,
       body: req.body,
     });
-
-    const responder = createResponseSender(body);
-    responder(res, status);
+    sendResponse(permission, res, status, body);
   };
-}
-
-/**
- * Choose the appropriate response helper for the given body.
- * @param {string | Record<string, unknown> | undefined} body - Response body produced by the domain handler.
- * @returns {(res: { status: (code: number) => { send: (body: string) => void, json: (body: Record<string, unknown>) => void }, sendStatus: (code: number) => void }, status: number) => void} Sender that knows how to write the response.
- */
-function createResponseSender(body) {
-  if (typeof body === 'string') {
-    return (res, status) => sendResponse(res, status, body);
-  }
-
-  return resolveNonStringResponseSender(body);
-}
-
-/**
- * @param {string | Record<string, unknown> | undefined} body Response body emitted by the domain handler.
- * @returns {(res: { status: (code: number) => { send: (body: string) => void, json: (body: Record<string, unknown>) => void }, sendStatus: (code: number) => void }, status: number) => void} Response sender for the provided payload.
- */
-function resolveNonStringResponseSender(body) {
-  if (typeof body === 'undefined') {
-    return (res, status) => sendStatusResponse(res, status);
-  }
-
-  return (res, status) =>
-    sendJsonResponse(
-      res,
-      status,
-      /** @type {Record<string, unknown>} */ (body ?? {})
-    );
-}
-
-/**
- * Emit a JSON response.
- * @param {{ status: (code: number) => { json: (body: Record<string, unknown>) => void } }} res - Express-style response object that can emit JSON.
- * @param {number} status - HTTP status code to emit.
- * @param {Record<string, unknown>} body - JSON payload to send.
- * @returns {void}
- */
-function sendJsonResponse(res, status, body) {
-  res.status(status).json(body);
 }

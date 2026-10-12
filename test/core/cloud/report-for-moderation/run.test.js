@@ -3,9 +3,8 @@ import { runReportForModeration } from '../../../../src/core/cloud/report-for-mo
 
 describe('runReportForModeration', () => {
   test('wires the cloud function and returns the exported handlers', async () => {
-    const ensureFirebaseApp = jest.fn();
-    const createFirebaseAppManager = jest.fn(() => ({ ensureFirebaseApp }));
-    const initializeApp = jest.fn();
+    const startupPermission = Object.freeze({ startup: true });
+    const requestPermission = Object.freeze({ request: true });
 
     const moderationReportsCollection = {
       add: jest.fn().mockResolvedValue({}),
@@ -26,10 +25,7 @@ describe('runReportForModeration', () => {
       }),
     };
 
-    const expressApp = {
-      use: jest.fn(),
-      all: jest.fn(),
-    };
+    const expressApp = {};
     const express = jest.fn(() => expressApp);
     express.json = jest.fn(() => 'json-middleware');
     const cors = jest.fn(() => 'cors-middleware');
@@ -37,27 +33,58 @@ describe('runReportForModeration', () => {
       APP_ORIGIN: 'https://example.test',
       DENDRITE_ENVIRONMENT: 'prod',
     }));
-    const getFirestoreInstance = jest.fn(() => db);
     const serverTimestamp = jest.fn(() => 'timestamp');
 
     const onRequest = jest.fn(app => ({ app }));
     const region = jest.fn(() => ({ https: { onRequest } }));
     const functions = { region };
 
-    const result = runReportForModeration({
+    const useMiddleware = jest.fn();
+    const registerRoute = jest.fn();
+    const registerFunction = jest.fn((permission, runtime, app) =>
+      runtime.region('europe-west1').https.onRequest(app)
+    );
+    const responseAdapter = jest.fn((_permission, response, status, body) => {
+      response.status(status);
+      if (typeof body === 'string') response.send(body);
+      else response.json(body);
+    });
+    const result = runReportForModeration(startupPermission, {
       functions,
       express,
       cors,
       FieldValue: { serverTimestamp },
-      createFirebaseAppManager,
-      getFirestoreInstance,
+      db,
+      useMiddleware,
+      registerRoute,
+      registerFunction,
+      addModerationReport: async (_permission, collection, report) => {
+        await collection.add(report);
+      },
+      sendResponse: responseAdapter,
+      createHttpBoundary: handler => (req, res) =>
+        handler(requestPermission, req, res),
       getEnvironmentVariables,
-      initializeApp,
     });
 
-    expect(createFirebaseAppManager).toHaveBeenCalledWith(initializeApp);
-    expect(ensureFirebaseApp).toHaveBeenCalled();
-    expect(getFirestoreInstance).toHaveBeenCalled();
+    expect(useMiddleware).toHaveBeenNthCalledWith(
+      1,
+      startupPermission,
+      expressApp,
+      'cors-middleware'
+    );
+    expect(useMiddleware).toHaveBeenNthCalledWith(
+      2,
+      startupPermission,
+      expressApp,
+      'json-middleware'
+    );
+    expect(registerRoute).toHaveBeenCalledWith(
+      startupPermission,
+      expressApp,
+      '/',
+      expect.any(Function)
+    );
     expect(getEnvironmentVariables).toHaveBeenCalled();
     expect(cors).toHaveBeenCalledWith({
       origin: expect.any(Function),
@@ -70,9 +97,11 @@ describe('runReportForModeration', () => {
     const deniedOriginCallback = jest.fn();
     corsOrigin('https://denied.test', deniedOriginCallback);
     expect(deniedOriginCallback).toHaveBeenCalledWith(expect.any(Error));
-    expect(expressApp.use).toHaveBeenCalledWith('cors-middleware');
-    expect(expressApp.use).toHaveBeenCalledWith('json-middleware');
-    expect(expressApp.all).toHaveBeenCalledWith('/', expect.any(Function));
+    expect(registerFunction).toHaveBeenCalledWith(
+      startupPermission,
+      functions,
+      expressApp
+    );
     expect(region).toHaveBeenCalledWith('europe-west1');
     expect(onRequest).toHaveBeenCalledWith(expressApp);
     const respond = result.handleReportForModeration;
@@ -88,8 +117,8 @@ describe('runReportForModeration', () => {
       };
 
     await (async () => {
-      await respond(req, res);
-      await respond(req, res);
+      await respond(requestPermission, req, res);
+      await respond(requestPermission, req, res);
     })();
 
     expect(moderationReportsCollection.where).toHaveBeenCalledWith(
@@ -110,6 +139,12 @@ describe('runReportForModeration', () => {
       reporterIdentity: 'anon-1',
       createdAt: 'timestamp',
     });
+    expect(responseAdapter).toHaveBeenCalledWith(
+      requestPermission,
+      res,
+      201,
+      {}
+    );
     expect(result).toEqual({
       handle: { app: expressApp },
       handleReportForModeration: expect.any(Function),

@@ -4,31 +4,31 @@ import {
   createReportForModerationHandler,
 } from './report-for-moderation-core.js';
 import { getAllowedOrigins } from '../cors-config.js';
-import { ensureFirebaseAppInitialized } from '../firebase-app-manager.js';
+/** @typedef {import('../../../../types/allow-effects').AllowEffects} AllowEffects */
 
 /** @typedef {import('firebase-admin/firestore').CollectionReference & { add: (report: Record<string, unknown>) => Promise<unknown> }} ModerationReportsCollection */
 
 /**
  * Wire the report-for-moderation cloud function.
+ * @param {AllowEffects} startupAllowEffects Permission for startup effects.
  * @param {{
  *   functions: { region: (region: string) => { https: { onRequest: (handler: unknown) => unknown } } },
  *   express: (() => { use: (middleware: unknown) => void, all: (path: string, handler: unknown) => void }) & { json: () => unknown },
  *   cors: (options: unknown) => unknown,
  *   FieldValue: { serverTimestamp: () => unknown },
- *   createFirebaseAppManager: (initializeApp: typeof import('firebase-admin/app').initializeApp) => { ensureFirebaseApp: () => void },
- *   getFirestoreInstance: () => import('firebase-admin/firestore').Firestore,
+ *   db: import('firebase-admin/firestore').Firestore,
+ *   useMiddleware: typeof import('../../../cloud/report-for-moderation/effect-adapters.js').useReportMiddleware,
+ *   registerRoute: typeof import('../../../cloud/report-for-moderation/effect-adapters.js').registerReportRoute,
+ *   registerFunction: typeof import('../../../cloud/report-for-moderation/effect-adapters.js').registerReportFunction,
+ *   addModerationReport: (permission: AllowEffects, collection: ModerationReportsCollection, report: Record<string, unknown>) => Promise<void>,
+ *   sendResponse: typeof import('../../../cloud/report-for-moderation/effect-adapters.js').sendReportResponse,
+ *   createHttpBoundary: typeof import('../../../cloud/allow-effects.js').createEffectHttpBoundary,
  *   getEnvironmentVariables: () => Record<string, unknown>,
- *   initializeApp: typeof import('firebase-admin/app').initializeApp,
  * }} deps Cloud wiring dependencies.
  * @returns {{ handle: unknown, handleReportForModeration: unknown }} Wired exports.
  */
-export function runReportForModeration(deps) {
-  ensureFirebaseAppInitialized(
-    deps.createFirebaseAppManager,
-    deps.initializeApp
-  );
-
-  const db = deps.getFirestoreInstance();
+export function runReportForModeration(startupAllowEffects, deps) {
+  const { db } = deps;
   const moderationReportsCollection =
     /** @type {ModerationReportsCollection} */ (
       db.collection('moderationReports')
@@ -38,10 +38,9 @@ export function runReportForModeration(deps) {
    * @param {{ variant: string, reporterIdentity: string, createdAt: unknown }} report Report to persist.
    * @returns {Promise<void>} Completion of the write.
    */
-  const addModerationReport = report =>
-    moderationReportsCollection.add(report).then(() => undefined);
   const reportForModerationHandler = createReportForModerationHandler({
-    addModerationReport,
+    addModerationReport: (permission, report) =>
+      deps.addModerationReport(permission, moderationReportsCollection, report),
     hasModerationReport: async (reporterIdentity, variant) => {
       const snapshot = await moderationReportsCollection
         .where('reporterIdentity', '==', reporterIdentity)
@@ -55,7 +54,8 @@ export function runReportForModeration(deps) {
   });
 
   const handleReportForModeration = createHandleReportForModeration(
-    reportForModerationHandler
+    reportForModerationHandler,
+    deps.sendResponse
   );
 
   const app = deps.express();
@@ -63,11 +63,20 @@ export function runReportForModeration(deps) {
   const allowedOrigins = getAllowedOrigins(environmentVariables);
   const corsOptions = createCorsOptions({ allowedOrigins, methods: ['POST'] });
 
-  app.use(deps.cors(corsOptions));
-  app.use(deps.express.json());
-  app.all('/', handleReportForModeration);
+  deps.useMiddleware(startupAllowEffects, app, deps.cors(corsOptions));
+  deps.useMiddleware(startupAllowEffects, app, deps.express.json());
+  deps.registerRoute(
+    startupAllowEffects,
+    app,
+    '/',
+    deps.createHttpBoundary(handleReportForModeration)
+  );
 
-  const handle = deps.functions.region('europe-west1').https.onRequest(app);
+  const handle = deps.registerFunction(
+    startupAllowEffects,
+    deps.functions,
+    app
+  );
 
   return { handle, handleReportForModeration };
 }
