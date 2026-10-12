@@ -8,7 +8,10 @@ import {
   createEffectStartupBoundary,
 } from '../allow-effects.js';
 import { getProcessNewPageStartupFirestore } from './startup-effect-adapter.js';
-import { updateSubmissionDocument } from './effect-adapters.js';
+import {
+  createSubmissionBatch,
+  updateSubmissionDocument,
+} from './effect-adapters.js';
 
 const db = createEffectStartupBoundary(allowEffects =>
   getProcessNewPageStartupFirestore(allowEffects, getFirestoreInstance)
@@ -19,7 +22,7 @@ const processNewPage = createProcessNewPageHandler({
   fieldValue: FieldValue,
   randomUUID,
   random: Math.random,
-})(updateSubmissionDocument);
+})(updateSubmissionDocument)(createSubmissionBatch);
 
 const handleProcessNewPage = createEffectInvocationBoundary(processNewPage);
 

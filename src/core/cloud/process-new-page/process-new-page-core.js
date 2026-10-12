@@ -1,5 +1,7 @@
 /** @typedef {import('../../../../types/allow-effects').AllowEffects} AllowEffects */
 /** @typedef {(permission: AllowEffects, document: import('firebase-admin/firestore').DocumentReference, data: Record<string, unknown>) => Promise<unknown>} UpdateDocument */
+/** @typedef {{set: (reference: import('firebase-admin/firestore').DocumentReference, data: Record<string, unknown>) => unknown, update: (reference: import('firebase-admin/firestore').DocumentReference, data: Record<string, unknown>) => unknown, commit: () => Promise<unknown>}} SubmissionBatch */
+/** @typedef {(permission: AllowEffects, db: import('firebase-admin/firestore').Firestore) => SubmissionBatch} CreateSubmissionBatch */
 
 /**
  * @typedef {object} SubmissionData
@@ -534,7 +536,7 @@ async function resolveIncomingOptionContext(
 /**
  * Stage context construction from database and batch dependencies.
  * @param {import('firebase-admin/firestore').Firestore} db Firestore instance for page references.
- * @param {import('firebase-admin/firestore').WriteBatch} batch Batch collecting page updates.
+ * @param {SubmissionBatch} batch Batch collecting page updates.
  * @returns {(random: () => number, randomUUID: () => string, getServerTimestamp: () => unknown) => (validRefs: {variantRef: import('firebase-admin/firestore').DocumentReference | null, storyRefCandidate: import('firebase-admin/firestore').DocumentReference | null}, optionSnap: SnapshotWithReference, optionRef: import('firebase-admin/firestore').DocumentReference, incomingOptionFullName: string) => Promise<PageContext | null>} Context builder stages.
  */
 function createIncomingOptionContextBuilder(db, batch) {
@@ -574,7 +576,7 @@ function createIncomingOptionContextBuilder(db, batch) {
 /**
  * Stage page-context creation from database and batch dependencies.
  * @param {import('firebase-admin/firestore').Firestore} db Firestore instance used for page-number lookup.
- * @param {import('firebase-admin/firestore').WriteBatch} batch Batch collecting page writes.
+ * @param {SubmissionBatch} batch Batch collecting page writes.
  * @returns {(random: () => number, randomUUID: () => string, getServerTimestamp: () => unknown) => (storyRef: import('firebase-admin/firestore').DocumentReference, optionRef: import('firebase-admin/firestore').DocumentReference, incomingOptionFullName: string) => Promise<{pageDocRef: import('firebase-admin/firestore').DocumentReference, pageNumber: number, preserveVariantDirty: boolean}>} Staged context builder.
  */
 function createPageContextBuilder(db, batch) {
@@ -899,7 +901,7 @@ async function resolveDirectPageContext({ db, directPageNumber, snapshot }) {
 
 /**
  * Stage variant creation around the batch and runtime dependencies.
- * @param {import('firebase-admin/firestore').WriteBatch} batch Write batch used to queue writes for commit.
+ * @param {SubmissionBatch} batch Write batch used to queue writes for commit.
  * @returns {(randomUUID: () => string, getServerTimestamp: () => unknown, random: () => number, incrementVariantNameFn: (name: string) => string) => (pageDocRef: import('firebase-admin/firestore').DocumentReference, snapshotRef: import('firebase-admin/firestore').DocumentReference, submission: SubmissionData) => Promise<import('firebase-admin/firestore').DocumentReference>} Staged variant creator.
  */
 // Stryker disable next-line all -- variant creation uses the fixed Firestore payload protocol.
@@ -1001,7 +1003,7 @@ function buildVariantSubmissionPayload(
 
 /**
  * Stage creation of option documents under a new variant.
- * @param {import('firebase-admin/firestore').WriteBatch} batch Batch used to queue option writes.
+ * @param {SubmissionBatch} batch Batch used to queue option writes.
  * @returns {(randomUUID: () => string, getServerTimestamp: () => unknown) => (variantRef: import('firebase-admin/firestore').DocumentReference, options: unknown) => void} Option writer factory.
  */
 function createOptionDocumentWriter(batch) {
@@ -1041,7 +1043,7 @@ function fetchExistingVariants(pageDocRef) {
  * Ensure the submitting author has a Firestore document.
  * @param {object} params Parameters controlling author record initialization.
  * @param {import('firebase-admin/firestore').Firestore} params.db Firestore instance used to resolve author documents.
- * @param {import('firebase-admin/firestore').WriteBatch} params.batch Write batch used to schedule author writes.
+ * @param {SubmissionBatch} params.batch Write batch used to schedule author writes.
  * @param {SubmissionData} params.submission Submission payload containing author identifiers.
  * @param {() => string} params.randomUUID UUID generator for new author documents.
  * @returns {Promise<void>} Promise that resolves when the author record has been ensured.
@@ -1058,7 +1060,7 @@ async function ensureAuthorRecordExists({ db, batch, submission, randomUUID }) {
 /**
  * Create the author document when it does not already exist.
  * @param {import('firebase-admin/firestore').DocumentReference} authorRef Reference to the author document.
- * @param {import('firebase-admin/firestore').WriteBatch} batch Batch used to write the new author record.
+ * @param {SubmissionBatch} batch Batch used to write the new author record.
  * @param {() => string} randomUUID Function that generates a UUID for new records.
  * @returns {Promise<void>} Resolves once the write has been queued.
  */
@@ -1246,7 +1248,7 @@ async function markSubmissionProcessed(permission, snapshot, updateDocument) {
 /**
  * Stage option-based submission resolution around Firestore and runtime dependencies.
  * @param {import('firebase-admin/firestore').Firestore} db Firestore instance.
- * @param {import('firebase-admin/firestore').WriteBatch} batch Write batch for option updates.
+ * @param {SubmissionBatch} batch Write batch for option updates.
  * @param {UpdateDocument} updateDocument Permission-first document update adapter.
  * @returns {(random: () => number, randomUUID: () => string, getServerTimestamp: () => unknown) => (permission: AllowEffects, incomingOptionFullName: string, snapshot: import('firebase-admin/firestore').DocumentSnapshot) => Promise<PageContext | null>} Staged option resolver.
  */
@@ -1310,7 +1312,7 @@ async function routeViaDirect({ db, directPageNumber, snapshot }) {
 /**
  * Stage page routing around shared Firestore and runtime dependencies.
  * @param {import('firebase-admin/firestore').Firestore} db Firestore instance.
- * @param {import('firebase-admin/firestore').WriteBatch} batch Batch used for option updates.
+ * @param {SubmissionBatch} batch Batch used for option updates.
  * @param {UpdateDocument} updateDocument Permission-first document update adapter.
  * @returns {(random: () => number, randomUUID: () => string, getServerTimestamp: () => unknown) => (permission: AllowEffects, incomingOptionFullName: string | undefined, directPageNumber: number | undefined, snapshot: import('firebase-admin/firestore').DocumentSnapshot) => Promise<PageContext | null>} Staged page router.
  */
@@ -1349,7 +1351,7 @@ function createPageContextRouter(db, batch, updateDocument) {
  * @param {string | undefined} params.incomingOptionFullName Option document path when routing via options.
  * @param {number | undefined} params.directPageNumber Page number provided directly.
  * @param {import('firebase-admin/firestore').DocumentSnapshot} params.snapshot Submission snapshot.
- * @param {import('firebase-admin/firestore').WriteBatch} params.batch Write batch used for option updates.
+ * @param {SubmissionBatch} params.batch Write batch used for option updates.
  * @param {() => string} params.randomUUID UUID generator.
  * @param {() => number} params.random Random number generator for variant ordering.
  * @param {() => unknown} params.getServerTimestamp Server timestamp helper.
@@ -1404,7 +1406,7 @@ function ensurePageContextReferences({ pageDocRef, storyRef }) {
 /**
  * Stage submission finalization around Firestore and runtime dependencies.
  * @param {import('firebase-admin/firestore').Firestore} db Firestore instance used for stats and author documents.
- * @param {import('firebase-admin/firestore').WriteBatch} batch Batch collecting updates.
+ * @param {SubmissionBatch} batch Batch collecting updates.
  * @param {{serverTimestamp: () => unknown, increment: (value: number) => unknown}} fieldValue FieldValue helpers used for stats.
  * @returns {(randomUUID: () => string, random: () => number, getServerTimestamp: () => unknown) => (pageDocRef: import('firebase-admin/firestore').DocumentReference, storyRef: import('firebase-admin/firestore').DocumentReference, variantRef: import('firebase-admin/firestore').DocumentReference | null, preserveVariantDirty: boolean) => (submission: SubmissionData, snapshot: import('firebase-admin/firestore').DocumentSnapshot) => Promise<void>} Staged submission finalizer.
  */
@@ -1455,7 +1457,7 @@ function createSubmissionFinalizer(db, batch, fieldValue) {
 
 /**
  * Queue the variant dirty reset when a reference exists.
- * @param {import('firebase-admin/firestore').WriteBatch} batch Batch used for updates.
+ * @param {SubmissionBatch} batch Batch used for updates.
  * @param {import('firebase-admin/firestore').DocumentReference | null} variantRef Variant reference.
  */
 function queueVariantDirtyReset(batch, variantRef) {
@@ -1471,9 +1473,15 @@ function queueVariantDirtyReset(batch, variantRef) {
  * @param {import('firebase-admin/firestore').Firestore} db Firestore instance.
  * @param {{serverTimestamp: () => unknown, increment: (value: number) => unknown}} fieldValue FieldValue helper used for stats.
  * @param {UpdateDocument} updateDocument Permission-first document update adapter.
+ * @param {CreateSubmissionBatch} createBatch Permission-first batch adapter factory.
  * @returns {(randomUUID: () => string, random: () => number, getServerTimestamp: () => unknown) => (permission: AllowEffects, submission: SubmissionData, snapshot: import('firebase-admin/firestore').DocumentSnapshot) => Promise<null>} Staged processor.
  */
-function createUnprocessedSubmissionProcessor(db, fieldValue, updateDocument) {
+function createUnprocessedSubmissionProcessor(
+  db,
+  fieldValue,
+  updateDocument,
+  createBatch
+) {
   return function bindSubmissionRuntime(
     randomUUID,
     random,
@@ -1498,7 +1506,7 @@ function createUnprocessedSubmissionProcessor(db, fieldValue, updateDocument) {
         return null;
       }
 
-      const batch = db.batch();
+      const batch = createBatch(permission, db);
 
       const processSubmission = createSubmissionContextProcessor(
         db,
@@ -1547,7 +1555,7 @@ async function shouldSkipAndMarkSubmission(permission, updateDocument, params) {
 /**
  * Stage context processing around Firestore and runtime dependencies.
  * @param {import('firebase-admin/firestore').Firestore} db Firestore instance.
- * @param {import('firebase-admin/firestore').WriteBatch} batch Batch collecting writes.
+ * @param {SubmissionBatch} batch Batch collecting writes.
  * @param {{serverTimestamp: () => unknown, increment: (value: number) => unknown}} fieldValue FieldValue helpers used for stats.
  * @param {UpdateDocument} updateDocument Permission-first document update adapter.
  * @returns {(randomUUID: () => string, random: () => number, getServerTimestamp: () => unknown) => (permission: AllowEffects, params: {submission: SubmissionData, snapshot: import('firebase-admin/firestore').DocumentSnapshot, incomingOptionFullName: string | undefined, directPageNumber: number | undefined}) => Promise<null>} Staged context processor.
@@ -1612,7 +1620,7 @@ function createSubmissionContextProcessor(
  * @param {() => string} options.randomUUID UUID generator used for new documents.
  * @param {() => number} options.random Random number generator.
  *   The helper reuses the module-scoped {@link findAvailablePageNumber} and {@link incrementVariantName}.
- * @returns {(updateDocument: UpdateDocument) => (permission: AllowEffects, snap: import('firebase-admin/firestore').DocumentSnapshot<import('firebase-admin/firestore').DocumentData>, context?: { params?: Record<string, string> }) => Promise<null>} Bind the permission-first update adapter and return the trigger handler.
+ * @returns {(updateDocument: UpdateDocument) => (createBatch: CreateSubmissionBatch) => (permission: AllowEffects, snap: import('firebase-admin/firestore').DocumentSnapshot<import('firebase-admin/firestore').DocumentData>, context?: { params?: Record<string, string> }) => Promise<null>} Bind permission-first effect adapters and return the trigger handler.
  */
 
 /**
@@ -1636,6 +1644,7 @@ function extractSubmissionData(snapshot) {
  * @param {() => number} params.random - Random generator.
  * @param {() => unknown} params.getServerTimestamp - Timestamp helper.
  * @param {{ serverTimestamp: () => unknown, increment: (value: number) => unknown }} params.fieldValue - FieldValue helper.
+ * @param {CreateSubmissionBatch} params.createBatch Permission-first batch adapter factory.
  * @param {UpdateDocument} updateDocument Permission-first document update adapter.
  * @returns {Promise<null>} Null when complete.
  */
@@ -1644,7 +1653,8 @@ async function handleAndProcessSubmission(permission, params, updateDocument) {
     createUnprocessedSubmissionProcessor(
       params.db,
       params.fieldValue,
-      updateDocument
+      updateDocument,
+      params.createBatch
     )(params.randomUUID, params.random, params.getServerTimestamp)(
       permission,
       params.submission,
@@ -1684,9 +1694,10 @@ export const processNewPageTestUtils = {
  * @param {import('firebase-admin/firestore').Firestore} db Firestore instance.
  * @param {{ serverTimestamp: () => unknown, increment: (value: number) => unknown }} fieldValue FieldValue helper.
  * @param {UpdateDocument} updateDocument Permission-first document update adapter.
+ * @param {CreateSubmissionBatch} createBatch Permission-first batch adapter factory.
  * @returns {(randomUUID: () => string, random: () => number, getServerTimestamp: () => unknown) => (permission: AllowEffects, snapshot: import('firebase-admin/firestore').DocumentSnapshot) => Promise<null>} Runtime-bound handler factory.
  */
-function buildSubmissionHandler(db, fieldValue, updateDocument) {
+function buildSubmissionHandler(db, fieldValue, updateDocument, createBatch) {
   return function bindSubmissionRuntime(
     randomUUID,
     random,
@@ -1708,6 +1719,7 @@ function buildSubmissionHandler(db, fieldValue, updateDocument) {
           random,
           getServerTimestamp,
           fieldValue,
+          createBatch,
         },
         updateDocument
       );
@@ -1722,7 +1734,7 @@ function buildSubmissionHandler(db, fieldValue, updateDocument) {
  * @param {{ serverTimestamp: () => import('firebase-admin/firestore').FieldValue, increment: (value: number) => import('firebase-admin/firestore').FieldValue }} options.fieldValue - FieldValue helper with server timestamp and increment capabilities.
  * @param {() => string} options.randomUUID - UUID generator used for new documents.
  * @param {() => number} options.random - Random number generator.
- * @returns {(updateDocument: UpdateDocument) => (permission: AllowEffects, snap: import('firebase-admin/firestore').DocumentSnapshot<import('firebase-admin/firestore').DocumentData>, context?: { params?: Record<string, string> }) => Promise<null>} Bind the permission-first update adapter and return the trigger handler.
+ * @returns {(updateDocument: UpdateDocument) => (createBatch: CreateSubmissionBatch) => (permission: AllowEffects, snap: import('firebase-admin/firestore').DocumentSnapshot<import('firebase-admin/firestore').DocumentData>, context?: { params?: Record<string, string> }) => Promise<null>} Bind permission-first effect adapters and return the trigger handler.
  */
 export function createProcessNewPageHandler({
   db,
@@ -1732,12 +1744,13 @@ export function createProcessNewPageHandler({
 }) {
   const getServerTimestamp = resolveServerTimestamp(fieldValue);
 
-  return updateDocument =>
-    buildSubmissionHandler(db, fieldValue, updateDocument)(
-      randomUUID,
-      random,
-      getServerTimestamp
-    );
+  return updateDocument => createBatch =>
+    buildSubmissionHandler(
+      db,
+      fieldValue,
+      updateDocument,
+      createBatch
+    )(randomUUID, random, getServerTimestamp);
 }
 
 export { resolveVariantDocumentId };

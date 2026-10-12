@@ -1,6 +1,7 @@
 export * from '../../core/local/gcp-simulator/simulator.js';
 import { createLocalGcpSimulator as createSimulator } from '../../core/local/gcp-simulator/simulator.js';
 import { bindEffectBoundary, bindEffectResponder } from '../allow-effects.js';
+import { createSubmissionBatch } from './process-new-page-effect-adapter.js';
 
 /** @param {import('../../../types/allow-effects').AllowEffects} permission @param {object} file @param {string} contents @param {object} options @returns {Promise<unknown>} */
 const saveStorageFile = (permission, file, contents, options) => {
@@ -38,6 +39,7 @@ export async function createLocalGcpSimulator(options) {
       setFirestoreDocument,
       createCreditEventEffectAdapters,
       updateFirestoreDocument,
+      createSubmissionBatch,
     })
   );
   simulator.routes.submitNewStory = bindEffectResponder(simulator.routes.submitNewStory);

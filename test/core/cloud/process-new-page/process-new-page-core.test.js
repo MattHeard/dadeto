@@ -11,10 +11,19 @@ const allowEffects =
   /** @type {import('../../../../types/allow-effects').AllowEffects} */ (
     /** @type {unknown} */ (Object.freeze({}))
   );
+const createSubmissionBatchForTest = (_permission, db) => {
+  const batch = db.batch();
+  return {
+    set: (reference, data) => batch.set(reference, data),
+    update: (reference, data) => batch.update(reference, data),
+    commit: () => batch.commit(),
+  };
+};
 const createProcessNewPageHandler = (
   options,
-  updateDocument = (_permission, document, data) => document.update(data)
-) => createProcessNewPageHandlerCore(options)(updateDocument);
+  updateDocument = (_permission, document, data) => document.update(data),
+  createBatch = createSubmissionBatchForTest
+) => createProcessNewPageHandlerCore(options)(updateDocument)(createBatch);
 
 test('incoming option context builder returns null without a story reference', async () => {
   const buildContext =
@@ -419,12 +428,17 @@ describe('createProcessNewPageHandler', () => {
       .mockReturnValueOnce('option-2')
       .mockReturnValue('uuid-fallback');
 
-    const handler = createProcessNewPageHandler({
-      db,
-      fieldValue,
-      randomUUID,
-      random: jest.fn(() => 0.25),
-    });
+    const createBatchFactorySpy = jest.fn(createSubmissionBatchForTest);
+    const handler = createProcessNewPageHandler(
+      {
+        db,
+        fieldValue,
+        randomUUID,
+        random: jest.fn(() => 0.25),
+      },
+      undefined,
+      createBatchFactorySpy
+    );
 
     const snapshot = {
       ref: { id: 'submission-123', update: jest.fn() },
@@ -439,6 +453,7 @@ describe('createProcessNewPageHandler', () => {
     };
 
     await handler(allowEffects, snapshot);
+    expect(createBatchFactorySpy).toHaveBeenCalledWith(allowEffects, db);
 
     const variantWrite = batch.set.mock.calls.find(
       ([, payload]) => payload && typeof payload.name === 'string'
