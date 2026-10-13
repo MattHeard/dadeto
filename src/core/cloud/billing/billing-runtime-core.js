@@ -400,6 +400,9 @@ export function createBillingRuntime(db, runtime = {}) {
   // schema is verified by focused behavioral tests.
   async function markPurchasePaid(allowEffects, input) {
     const ref = purchaseRef(db, input.purchaseId);
+    const paymentEventReference = db
+      .collection('payment-events')
+      .doc(input.eventId);
     return runBillingTransaction(
       allowEffects,
       async (/** @type {BillingRuntimeValue} */ transaction) => {
@@ -429,6 +432,10 @@ export function createBillingRuntime(db, runtime = {}) {
             body: { quarantined: true, purchaseId: input.purchaseId },
           };
         }
+        const paymentEventSnapshot = await transaction.get(
+          paymentEventReference
+        );
+        const paymentEvent = readData(paymentEventSnapshot);
         const balance = await transaction.get(
           creditRef(db, purchase.apiKeyUuid)
         );
@@ -493,6 +500,10 @@ export function createBillingRuntime(db, runtime = {}) {
           status: 'paid',
           stripePaymentIntentId: input.stripePaymentIntentId,
           paidAt: now(),
+        });
+        transaction.set(paymentEventReference, {
+          ...paymentEvent,
+          status: 'applied',
         });
         // Stryker disable next-line all -- response shape is the public billing
         // protocol contract.

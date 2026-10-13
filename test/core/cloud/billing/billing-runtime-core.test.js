@@ -376,7 +376,7 @@ describe('billing runtime snapshot paths', () => {
   });
 
   it('expires pending purchases idempotently without changing paid purchases', async () => {
-    const { billing } = setup();
+    const { db, billing } = setup();
     await billing.createPurchase(allowEffects, {
       purchaseId: 'pending',
       uid: 'uid-1',
@@ -401,10 +401,23 @@ describe('billing runtime snapshot paths', () => {
       apiKeyUuid: 'key-1',
       creditsIssued: 10,
     });
+    const verifiedEvent = {
+      id: 'payment-1',
+      type: 'payment_intent.succeeded',
+      data: { object: { id: 'pi-paid' } },
+    };
+    await db.doc('payment-events/payment-1').set({
+      status: 'received',
+      purchaseId: 'paid',
+      verifiedEvent,
+    });
     await billing.markPurchasePaid(allowEffects, {
       purchaseId: 'paid',
       eventId: 'payment-1',
     });
+    expect(
+      (await db.doc('payment-events/payment-1').get()).data()
+    ).toMatchObject({ status: 'applied', verifiedEvent });
     await expect(
       billing.markPurchaseExpired(allowEffects, {
         purchaseId: 'paid',
