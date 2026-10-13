@@ -449,6 +449,16 @@ describe('billing runtime snapshot paths', () => {
       status: 409,
       body: { error: 'refund_intent_in_progress' },
     });
+    await db
+      .collection('billing-pricing-snapshots')
+      .doc(refundPricing.snapshotId)
+      .delete();
+    await expect(
+      billing.createRefundIntent(allowEffects, {
+        refundIntentId: 'refund-intent-partial',
+        purchaseId: 'refund-partial',
+      })
+    ).resolves.toMatchObject({ status: 200, body: { duplicate: true } });
 
     expect(
       (await db.doc('api-key-credit/refund-key-untouched').get()).data()

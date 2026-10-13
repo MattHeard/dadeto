@@ -518,10 +518,20 @@ export function createBillingRuntime(db, runtime = {}) {
     ) {
       return { status: 400, body: { error: 'invalid_refund_intent' } };
     }
+    const intentReference = refundIntentRef(db, input.refundIntentId);
+    const existingSnapshot = await intentReference.get();
+    if (existingSnapshot.exists) {
+      const existing = readData(existingSnapshot);
+      if (existing.purchaseId !== input.purchaseId)
+        return { status: 409, body: { error: 'refund_intent_conflict' } };
+      return {
+        status: 200,
+        body: { duplicate: true, refundIntent: existing },
+      };
+    }
     const pricingSnapshot = await getCurrentPricingSnapshot();
     if (!pricingSnapshot)
       return { status: 503, body: { error: 'pricing_unavailable' } };
-    const intentReference = refundIntentRef(db, input.refundIntentId);
     const purchaseReference = purchaseRef(db, input.purchaseId);
     return runBillingTransaction(
       allowEffects,
@@ -542,6 +552,8 @@ export function createBillingRuntime(db, runtime = {}) {
         const purchase = readData(purchaseSnapshot);
         if (
           !['paid', 'partially_refunded'].includes(purchase.status) ||
+          typeof purchase.apiKeyUuid !== 'string' ||
+          purchase.apiKeyUuid.length === 0 ||
           typeof purchase.stripePaymentIntentId !== 'string' ||
           purchase.stripePaymentIntentId.length === 0 ||
           !Number.isSafeInteger(purchase.amountUsdMinor) ||
