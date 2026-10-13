@@ -891,7 +891,6 @@ function createRefundIntentService(deps) {
         intent.stripePaymentIntentId !== input.stripePaymentIntentId ||
         intent.amountUsdMinor !== input.amountUsdMinor ||
         input.currency !== 'usd' ||
-        input.stripeStatus !== 'succeeded' ||
         !input.eventId ||
         !input.stripeRefundId ||
         !Number.isSafeInteger(input.amountUsdMinor) ||
@@ -911,6 +910,23 @@ function createRefundIntentService(deps) {
         return {
           status: 200,
           body: { quarantined: true, reason: 'refund_intent_state_conflict' },
+        };
+      if (
+        input.stripeStatus === 'pending' ||
+        input.stripeStatus === 'requires_action'
+      )
+        return {
+          status: 200,
+          body: {
+            deferred: true,
+            refundIntentId: input.refundIntentId,
+            stripeRefundId: input.stripeRefundId,
+          },
+        };
+      if (input.stripeStatus !== 'succeeded')
+        return {
+          status: 200,
+          body: { quarantined: true, reason: 'refund_intent_mismatch' },
         };
 
       const purchaseReference = purchaseRef(deps.db, input.purchaseId);

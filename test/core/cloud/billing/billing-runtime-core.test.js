@@ -1885,6 +1885,21 @@ describe('billing runtime confirmed refund intent events', () => {
     };
 
     await expect(
+      billing.applyRefundIntentEvent(allowEffects, {
+        ...input,
+        eventId: 'evt-refund-pending',
+        stripeStatus: 'pending',
+      })
+    ).resolves.toEqual({
+      status: 200,
+      body: {
+        deferred: true,
+        refundIntentId: 'intent-1',
+        stripeRefundId: 're-1',
+      },
+    });
+
+    await expect(
       billing.applyRefundIntentEvent(allowEffects, input)
     ).resolves.toEqual({
       status: 200,
@@ -1899,6 +1914,16 @@ describe('billing runtime confirmed refund intent events', () => {
       billing.applyRefundIntentEvent(allowEffects, {
         ...input,
         eventId: 'evt-refund-duplicate-delivery',
+      })
+    ).resolves.toEqual({
+      status: 200,
+      body: { duplicate: true, refundIntentId: 'intent-1' },
+    });
+    await expect(
+      billing.applyRefundIntentEvent(allowEffects, {
+        ...input,
+        eventId: 'evt-refund-pending',
+        stripeStatus: 'pending',
       })
     ).resolves.toEqual({
       status: 200,
@@ -1946,7 +1971,7 @@ describe('billing runtime confirmed refund intent events', () => {
       ['amount', { amountUsdMinor: 501 }, 'refund_intent_mismatch'],
       ['refund-id', { stripeRefundId: 're-other' }, 'refund_intent_mismatch'],
       ['currency', { currency: 'eur' }, 'refund_intent_mismatch'],
-      ['status', { stripeStatus: 'pending' }, 'refund_intent_mismatch'],
+      ['status', { stripeStatus: 'failed' }, 'refund_intent_mismatch'],
     ]) {
       const { db, billing } = setup();
       await db.doc(`billing-refund-intents/intent-${suffix}`).set({

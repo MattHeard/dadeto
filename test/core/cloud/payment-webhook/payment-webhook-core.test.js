@@ -233,6 +233,187 @@ describe('createPaymentWebhookHandler', () => {
 });
 
 describe('createPaymentWebhookHandler processing', () => {
+  it('does not recursively rescan when a replay event is already a duplicate', async () => {
+    const currentEvent = {
+      id: 'evt-current-success',
+      type: 'payment_intent.succeeded',
+      data: { object: { metadata: { ['purchase_id']: 'purchase-duplicate' } } },
+    };
+    const deferredEvent = {
+      id: 'evt-already-processed',
+      type: 'refund.updated',
+      data: { object: { metadata: { ['purchase_id']: 'purchase-duplicate' } } },
+    };
+    const readDeferredPaymentEvents = jest
+      .fn()
+      .mockResolvedValueOnce([deferredEvent])
+      .mockResolvedValueOnce([]);
+    const handlePurchaseEvent = jest.fn(async (_permission, event) => ({
+      status: 200,
+      body: { applied: event.id === currentEvent.id },
+    }));
+    const handler = createPaymentWebhookHandler({
+      fetchCredit: async () => 0,
+      applyCreditEvent: jest.fn(),
+      resolveApiKeyUuid: async () => 'api-key',
+      isDuplicateEvent: async eventId => eventId === deferredEvent.id,
+      allowedEventTypes: new Set([
+        'payment_intent.succeeded',
+        'refund.updated',
+      ]),
+      handlePurchaseEvent,
+      readDeferredPaymentEvents,
+      getPaymentEvent: async () => currentEvent,
+    });
+
+    await expect(handler(allowEffects)).resolves.toMatchObject({
+      body: { applied: true },
+    });
+    expect(readDeferredPaymentEvents).toHaveBeenCalledTimes(1);
+    expect(handlePurchaseEvent).toHaveBeenCalledTimes(1);
+  });
+
+  it('keeps unresolved events deferred and stops rescanning', async () => {
+    const currentEvent = {
+      id: 'evt-current-transition',
+      type: 'payment_intent.succeeded',
+      data: {
+        object: { metadata: { ['purchase_id']: 'purchase-unresolved' } },
+      },
+    };
+    const deferredEvent = {
+      id: 'evt-still-pending',
+      type: 'refund.updated',
+      data: {
+        object: { metadata: { ['purchase_id']: 'purchase-unresolved' } },
+      },
+    };
+    const readDeferredPaymentEvents = jest.fn(async () => [deferredEvent]);
+    const markProcessedEvent = jest.fn();
+    const handler = createPaymentWebhookHandler({
+      fetchCredit: async () => 0,
+      applyCreditEvent: jest.fn(),
+      resolveApiKeyUuid: async () => 'api-key',
+      allowedEventTypes: new Set([
+        'payment_intent.succeeded',
+        'refund.updated',
+      ]),
+      handlePurchaseEvent: async (_permission, event) =>
+        event.id === deferredEvent.id
+          ? { status: 200, body: { deferred: true } }
+          : { status: 200, body: { applied: true } },
+      readDeferredPaymentEvents,
+      markProcessedEvent,
+      getPaymentEvent: async () => currentEvent,
+    });
+
+    await handler(allowEffects);
+    expect(readDeferredPaymentEvents).toHaveBeenCalledTimes(1);
+    expect(markProcessedEvent).toHaveBeenCalledWith(
+      allowEffects,
+      deferredEvent,
+      'api-key',
+      'deferred'
+    );
+  });
+
+  it('uses an empty default deferred reader after a purchase transition', async () => {
+    let event = {
+      id: 'evt-default-reader',
+      type: 'payment_intent.succeeded',
+      data: { object: { metadata: { ['purchase_id']: 'purchase-default' } } },
+    };
+    const handler = createPaymentWebhookHandler({
+      fetchCredit: async () => 0,
+      applyCreditEvent: jest.fn(),
+      resolveApiKeyUuid: async () => 'api-key',
+      allowedEventTypes: new Set(['payment_intent.succeeded']),
+      handlePurchaseEvent: async () => ({
+        status: 200,
+        body: { applied: true },
+      }),
+      getPaymentEvent: async () => event,
+    });
+
+    await expect(handler(allowEffects)).resolves.toMatchObject({
+      body: { applied: true },
+    });
+    event = {
+      id: 'evt-no-purchase-metadata',
+      type: 'payment_intent.succeeded',
+      data: {},
+    };
+    await expect(handler(allowEffects)).resolves.toMatchObject({
+      body: { applied: true },
+    });
+  });
+
+  it('replays deferred events for the same purchase after a successful transition', async () => {
+    const currentEvent = {
+      id: 'evt-payment-success',
+      type: 'payment_intent.succeeded',
+      data: { object: { metadata: { ['purchase_id']: 'purchase-1' } } },
+    };
+    const deferredEvent = {
+      id: 'evt-refund-deferred',
+      type: 'refund.updated',
+      created: 10,
+      data: { object: { metadata: { ['purchase_id']: 'purchase-1' } } },
+    };
+    const unrelatedEvent = {
+      id: 'evt-other-purchase',
+      type: 'refund.updated',
+      created: 5,
+      data: { object: { metadata: { ['purchase_id']: 'purchase-2' } } },
+    };
+    const readDeferredPaymentEvents = jest
+      .fn()
+      .mockResolvedValueOnce([deferredEvent])
+      .mockResolvedValueOnce([]);
+    const handlePurchaseEvent = jest.fn(async (_permission, event) =>
+      event.id === deferredEvent.id
+        ? { status: 200, body: { applied: true } }
+        : { status: 200, body: { applied: true } }
+    );
+    const markProcessedEvent = jest.fn();
+    const handler = createPaymentWebhookHandler({
+      fetchCredit: async () => 0,
+      applyCreditEvent: jest.fn(),
+      resolveApiKeyUuid: async () => 'api-key',
+      allowedEventTypes: new Set([
+        'payment_intent.succeeded',
+        'refund.updated',
+      ]),
+      handlePurchaseEvent,
+      readDeferredPaymentEvents,
+      markProcessedEvent,
+      getPaymentEvent: async () => currentEvent,
+    });
+
+    await expect(handler(allowEffects)).resolves.toMatchObject({
+      status: 200,
+      body: { applied: true },
+    });
+    expect(readDeferredPaymentEvents).toHaveBeenCalledTimes(2);
+    expect(readDeferredPaymentEvents).toHaveBeenCalledWith(
+      allowEffects,
+      'purchase-1'
+    );
+    expect(handlePurchaseEvent.mock.calls.map(([, event]) => event.id)).toEqual(
+      [currentEvent.id, deferredEvent.id]
+    );
+    expect(handlePurchaseEvent).not.toHaveBeenCalledWith(
+      allowEffects,
+      unrelatedEvent
+    );
+    expect(markProcessedEvent).toHaveBeenCalledWith(
+      allowEffects,
+      deferredEvent,
+      'api-key',
+      'applied'
+    );
+  });
+
   it('durably dispatches individual Stripe refund events', async () => {
     const markProcessedEvent = jest.fn();
     for (const type of ['refund.created', 'refund.updated']) {
@@ -503,6 +684,49 @@ describe('createPaymentWebhookHandler processing', () => {
       status: 400,
       body: 'Missing or invalid credit amount',
     });
+  });
+});
+
+describe('deferred payment webhook replay', () => {
+  it('does not rescan after a deferred event is quarantined', async () => {
+    const purchaseId = 'purchase-quarantine';
+    const currentEvent = {
+      id: 'evt-current-transition-quarantine',
+      type: 'payment_intent.succeeded',
+      data: { object: { metadata: { ['purchase_id']: purchaseId } } },
+    };
+    const deferredEvent = {
+      id: 'evt-quarantined-replay',
+      type: 'refund.updated',
+      data: { object: { metadata: { ['purchase_id']: purchaseId } } },
+    };
+    const readDeferredPaymentEvents = jest.fn(async () => [deferredEvent]);
+    const markProcessedEvent = jest.fn();
+    const handler = createPaymentWebhookHandler({
+      fetchCredit: async () => 0,
+      applyCreditEvent: jest.fn(),
+      resolveApiKeyUuid: async () => 'api-key',
+      allowedEventTypes: new Set([
+        'payment_intent.succeeded',
+        'refund.updated',
+      ]),
+      handlePurchaseEvent: async (_permission, event) =>
+        event.id === deferredEvent.id
+          ? { status: 400, body: { quarantined: true } }
+          : { status: 200, body: { applied: true } },
+      readDeferredPaymentEvents,
+      markProcessedEvent,
+      getPaymentEvent: async () => currentEvent,
+    });
+
+    await handler(allowEffects);
+    expect(readDeferredPaymentEvents).toHaveBeenCalledTimes(1);
+    expect(markProcessedEvent).toHaveBeenCalledWith(
+      allowEffects,
+      deferredEvent,
+      'api-key',
+      'quarantined'
+    );
   });
 });
 

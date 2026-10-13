@@ -170,6 +170,18 @@ describe('payment webhook cloud wrapper validation', () => {
     ).toThrow('runBillingTransaction must be provided');
   });
 
+  it('requires an injected deferred event reader', () => {
+    expect(() =>
+      createPaymentWebhookIndexHandler(
+        /** @type {any} */ ({
+          db: {},
+          writeRefundReconciliation: jest.fn(),
+          runBillingTransaction: jest.fn(),
+        })
+      )
+    ).toThrow('readDeferredPaymentEvents must be provided');
+  });
+
   it('requires Stripe secret, raw body, header, and injected verification', () => {
     const payload = JSON.stringify({
       id: 'signed',
@@ -262,7 +274,11 @@ async function runScenario135Part0(context) {
     applyRefundEvent: jest.fn(async input => ({ status: 200, body: input })),
     applyRefundIntentEvent: jest.fn(async (_permission, input) => ({
       status: 200,
-      body: { applied: true, refundIntentId: input.refundIntentId },
+      body:
+        input.stripeStatus === 'pending' ||
+        input.stripeStatus === 'requires_action'
+          ? { deferred: true, refundIntentId: input.refundIntentId }
+          : { applied: true, refundIntentId: input.refundIntentId },
     })),
     recordRefundReconciliation: jest.fn(async () => {}),
   };
@@ -277,6 +293,7 @@ async function runScenario135Part0(context) {
     db: context.db,
     writeRefundReconciliation: jest.fn(async () => {}),
     runBillingTransaction: jest.fn(async (_permission, update) => update({})),
+    readDeferredPaymentEvents: jest.fn(async () => []),
     creditEventEffects: {},
     env: { STRIPE_WEBHOOK_SECRET: 'secret' },
     constructEvent: payload => JSON.parse(payload.toString()),
@@ -290,6 +307,7 @@ async function runScenario135Part0(context) {
     db: context.db,
     writeRefundReconciliation: jest.fn(async () => {}),
     runBillingTransaction: jest.fn(async (_permission, update) => update({})),
+    readDeferredPaymentEvents: jest.fn(async () => []),
     creditEventEffects: {},
     markProcessedEvent: jest.fn(),
     sendResponse: sendPaymentWebhookResponse,
@@ -463,7 +481,10 @@ async function runScenario135Part1(context) {
     status: 200,
     body: { deferred: true, refundIntentId: 'intent-1' },
   });
-  expect(context.billing.applyRefundIntentEvent).not.toHaveBeenCalled();
+  expect(context.billing.applyRefundIntentEvent).toHaveBeenCalledWith(
+    allowEffects,
+    expect.objectContaining({ stripeStatus: 'pending' })
+  );
   await expect(
     context.captured.handlePurchaseEvent(allowEffects, {
       id: 'evt-refund-succeeded',
@@ -519,7 +540,7 @@ async function runScenario135Part1(context) {
       reason: 'refund_intent_metadata_missing',
     },
   });
-  expect(context.billing.applyRefundIntentEvent).toHaveBeenCalledTimes(1);
+  expect(context.billing.applyRefundIntentEvent).toHaveBeenCalledTimes(2);
   await runMissingRefundShapeCases(context);
   await expect(
     context.captured.handlePurchaseEvent(allowEffects, {
@@ -552,7 +573,7 @@ async function runScenario135Part1(context) {
       },
     })
   ).resolves.toMatchObject({ body: { deferred: true } });
-  expect(context.billing.applyRefundIntentEvent).toHaveBeenCalledTimes(1);
+  expect(context.billing.applyRefundIntentEvent).toHaveBeenCalledTimes(3);
 
   context.billing.applyRefundIntentEvent
     .mockResolvedValueOnce({ status: 200, body: { quarantined: true } })

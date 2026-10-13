@@ -1,4 +1,5 @@
 import { readMetadata } from '../../core/payment-webhook-core.js';
+import { createPersistedPaymentEvent } from '../../core/cloud/payment-webhook/deferred-event-core.js';
 
 /** @typedef {import('../../../types/allow-effects').AllowEffects} AllowEffects */
 
@@ -23,6 +24,7 @@ export function createMarkProcessedEventWriter(db) {
         type: event.type,
         status,
         purchaseId: readMetadata(event.data?.object ?? {}).purchase_id ?? null,
+        verifiedEvent: createPersistedPaymentEvent(event),
         createdAt: new Date(createdAtMs),
       },
       { merge: true }

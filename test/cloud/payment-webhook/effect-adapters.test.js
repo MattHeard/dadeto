@@ -1,6 +1,11 @@
 import { describe, expect, it, jest } from '@jest/globals';
 import { createAllowEffects } from '../../../src/cloud/allow-effects.js';
 import { createMarkProcessedEventWriter } from '../../../src/cloud/payment-webhook/effect-adapters.js';
+import { createDeferredPaymentEventReader } from '../../../src/cloud/payment-webhook/deferred-event-adapter.js';
+import {
+  createPersistedPaymentEvent,
+  readPersistedPaymentEvent,
+} from '../../../src/core/cloud/payment-webhook/deferred-event-core.js';
 import { createRefundReconciliationWriter } from '../../../src/cloud/payment-webhook/refund-reconciliation-effect-adapter.js';
 import {
   logPaymentWebhookError,
@@ -54,6 +59,9 @@ describe('payment webhook event status adapter', () => {
       id: 'evt-1',
       type: 'payment_intent.succeeded',
       created: 10,
+      livemode: true,
+      ['api_version']: '2025-01-27',
+      request: { id: 'req-1', ['idempotency_key']: 'key-1' },
       data: {
         object: { metadata: { ['purchase_id']: 'purchase-1', ignored: 3 } },
       },
@@ -74,6 +82,10 @@ describe('payment webhook event status adapter', () => {
         type: 'payment_intent.succeeded',
         status: 'received',
         purchaseId: 'purchase-1',
+        verifiedEvent: {
+          ...event,
+          data: event.data,
+        },
         createdAt: new Date(10_000),
       },
       { merge: true }
@@ -100,11 +112,82 @@ describe('payment webhook event status adapter', () => {
         type: 'customer.created',
         status: 'applied',
         purchaseId: null,
+        verifiedEvent: { id: 'evt-2', type: 'customer.created', data: {} },
         createdAt: new Date(1234),
       },
       { merge: true }
     );
     now.mockRestore();
+  });
+
+  it('reads and orders valid deferred events for one purchase only', async () => {
+    const allowEffects = createAllowEffects();
+    const records = [
+      {
+        status: 'deferred',
+        verifiedEvent: { id: 'evt-later', type: 'refund.updated', created: 20 },
+      },
+      {
+        status: 'deferred',
+        verifiedEvent: {
+          id: 'evt-first-z',
+          type: 'refund.updated',
+          created: 10,
+        },
+      },
+      {
+        status: 'deferred',
+        verifiedEvent: {
+          id: 'evt-first-a',
+          type: 'refund.updated',
+          created: 10,
+        },
+      },
+      {
+        status: 'applied',
+        verifiedEvent: { id: 'evt-applied', type: 'refund.updated' },
+      },
+      { status: 'deferred', verifiedEvent: { type: 'missing-id' } },
+    ];
+    const get = jest.fn(async () => ({
+      docs: records.map(data => ({ data: () => data })),
+    }));
+    const where = jest.fn(() => ({ get }));
+    const collection = jest.fn(() => ({ where }));
+
+    await expect(
+      createDeferredPaymentEventReader({ collection })(
+        allowEffects,
+        'purchase-1'
+      )
+    ).resolves.toEqual([
+      { id: 'evt-first-a', type: 'refund.updated', created: 10 },
+      { id: 'evt-first-z', type: 'refund.updated', created: 10 },
+      { id: 'evt-later', type: 'refund.updated', created: 20 },
+    ]);
+    expect(collection).toHaveBeenCalledWith('payment-events');
+    expect(where).toHaveBeenCalledWith('purchaseId', '==', 'purchase-1');
+  });
+
+  it('validates persisted event snapshots and optional provider fields', () => {
+    expect(
+      createPersistedPaymentEvent({ id: 'evt-minimal', type: 'refund.updated' })
+    ).toEqual({ id: 'evt-minimal', type: 'refund.updated', data: {} });
+    expect(readPersistedPaymentEvent(null)).toBeNull();
+    expect(
+      readPersistedPaymentEvent({ id: 1, type: 'refund.updated' })
+    ).toBeNull();
+    expect(readPersistedPaymentEvent({ id: 'evt-no-type' })).toBeNull();
+    expect(
+      readPersistedPaymentEvent({
+        id: 'evt-bad-data',
+        type: 'refund.updated',
+        data: 'invalid',
+      })
+    ).toBeNull();
+    expect(
+      readPersistedPaymentEvent({ id: 'evt-no-data', type: 'refund.updated' })
+    ).toEqual({ id: 'evt-no-data', type: 'refund.updated' });
   });
 
   it('persists refund reconciliation through a permission-first writer', async () => {

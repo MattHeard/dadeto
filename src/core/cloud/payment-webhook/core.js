@@ -71,6 +71,7 @@ const DEFAULT_ALLOWED_EVENT_TYPES = new Set([
  *   allowedEventTypes?: Set<string>,
  *   getAmountFromEvent?: (event: PaymentEvent) => number,
  *   getPaymentEvent?: (request: unknown) => Promise<PaymentEvent>,
+ *   readDeferredPaymentEvents?: (allowEffects: import('../../../../types/allow-effects').AllowEffects, purchaseId: string) => Promise<PaymentEvent[]>,
  *   handlePurchaseEvent?: (allowEffects: import('../../../../types/allow-effects').AllowEffects, event: PaymentEvent) => Promise<PaymentWebhookResponse | null> | PaymentWebhookResponse | null,
  * }} PaymentWebhookDependencies
  */
@@ -82,49 +83,88 @@ const DEFAULT_ALLOWED_EVENT_TYPES = new Set([
  */
 export function createPaymentWebhookHandler(deps) {
   const resolved = resolvePaymentWebhookDependencies(deps);
-  return async function handlePaymentWebhook(allowEffects, request = {}) {
-    const event = await resolved.getPaymentEvent(request);
+  /**
+   * Process a single verified payment event.
+   * @param {import('../../../../types/allow-effects').AllowEffects} allowEffects Request permission.
+   * @param {PaymentEvent} event Verified event.
+   * @param {boolean} shouldReplay Whether an applied transition should replay deferred events.
+   * @returns {Promise<PaymentWebhookResponse>} Processing response.
+   */
+  async function processPaymentEvent(allowEffects, event, shouldReplay) {
     if (!resolved.allowedEventTypes.has(event.type)) {
       return { status: 200, body: { ignored: true, type: event.type } };
     }
 
     if (await resolved.hasDuplicateEvent(event.id)) {
+      if (shouldReplay)
+        await replayDeferredEventsForPurchase(allowEffects, event);
       return { status: 200, body: { duplicate: true, eventId: event.id } };
     }
 
-    const purchaseResponse = await resolvePurchaseEvent(
-      resolved,
-      allowEffects,
-      event
-    );
-    if (purchaseResponse) return purchaseResponse;
+    let response = await resolvePurchaseEvent(resolved, allowEffects, event);
+    if (!response) {
+      const uuid = await resolved.resolveApiKeyUuid(event);
+      if (!uuid) {
+        return { status: 400, body: 'Missing api key mapping' };
+      }
 
-    const uuid = await resolved.resolveApiKeyUuid(event);
-    if (!uuid) {
-      return { status: 400, body: 'Missing api key mapping' };
+      const amount = resolved.getAmountFromEvent(event);
+      if (!Number.isFinite(amount) || amount <= 0) {
+        return { status: 400, body: 'Missing or invalid credit amount' };
+      }
+
+      const creditEvent = buildCreditEvent(event, amount);
+      // Stryker disable all -- webhook ledger transitions use the fixed received status.
+      await resolved.markProcessedEvent(allowEffects, event, uuid, 'received');
+      response = await resolved.applyCreditEvent(
+        allowEffects,
+        uuid,
+        creditEvent
+      );
+      await resolved.markProcessedEvent(
+        allowEffects,
+        event,
+        uuid,
+        getEventStatus(response)
+      );
+      // Stryker restore all
     }
-
-    const amount = resolved.getAmountFromEvent(event);
-    if (!Number.isFinite(amount) || amount <= 0) {
-      return { status: 400, body: 'Missing or invalid credit amount' };
-    }
-
-    const creditEvent = buildCreditEvent(event, amount);
-    // Stryker disable all -- webhook ledger transitions use the fixed received status.
-    await resolved.markProcessedEvent(allowEffects, event, uuid, 'received');
-    const response = await resolved.applyCreditEvent(
-      allowEffects,
-      uuid,
-      creditEvent
-    );
-    await resolved.markProcessedEvent(
-      allowEffects,
-      event,
-      uuid,
-      getEventStatus(response)
-    );
-    // Stryker restore all
+    if (shouldReplay && getEventStatus(response) === 'applied')
+      await replayDeferredEventsForPurchase(allowEffects, event);
     return response;
+  }
+
+  /**
+   * Replay the persisted deferred queue for one purchase until no event advances.
+   * @param {import('../../../../types/allow-effects').AllowEffects} allowEffects Request permission.
+   * @param {PaymentEvent} event Successful event identifying the purchase.
+   * @returns {Promise<void>} Completion.
+   */
+  async function replayDeferredEventsForPurchase(allowEffects, event) {
+    const metadata = readMetadata(event.data?.object ?? {});
+    const purchaseId = metadata.purchase_id;
+    if (!purchaseId) return;
+    let shouldScanAgain = true;
+    while (shouldScanAgain) {
+      const deferredEvents = await resolved.readDeferredPaymentEvents(
+        allowEffects,
+        purchaseId
+      );
+      shouldScanAgain = false;
+      for (const deferredEvent of deferredEvents) {
+        const response = await processPaymentEvent(
+          allowEffects,
+          deferredEvent,
+          false
+        );
+        if (getEventStatus(response) === 'applied') shouldScanAgain = true;
+      }
+    }
+  }
+
+  return async function handlePaymentWebhook(allowEffects, request = {}) {
+    const event = await resolved.getPaymentEvent(request);
+    return processPaymentEvent(allowEffects, event, true);
   };
 }
 
@@ -172,6 +212,7 @@ async function resolvePurchaseEvent(resolved, allowEffects, event) {
  *   allowedEventTypes: Set<string>,
  *   getAmountFromEvent: (event: PaymentEvent) => number,
  *   getPaymentEvent: (request: unknown) => Promise<PaymentEvent>,
+ *   readDeferredPaymentEvents: (allowEffects: import('../../../../types/allow-effects').AllowEffects, purchaseId: string) => Promise<PaymentEvent[]>,
  *   handlePurchaseEvent: (allowEffects: import('../../../../types/allow-effects').AllowEffects, event: PaymentEvent) => Promise<PaymentWebhookResponse | null>,
  * }} Runtime webhook dependencies.
  */
@@ -190,6 +231,7 @@ function resolvePaymentWebhookDependencies(deps) {
     allowedEventTypes = DEFAULT_ALLOWED_EVENT_TYPES,
     getAmountFromEvent = defaultGetAmountFromEvent,
     getPaymentEvent = async request => extractPaymentEvent(request),
+    readDeferredPaymentEvents = async () => [],
   } = typedDeps;
   const handlePurchaseEvent = resolvePurchaseHandler(
     typedDeps.handlePurchaseEvent
@@ -214,6 +256,8 @@ function resolvePaymentWebhookDependencies(deps) {
     getAmountFromEvent,
     getPaymentEvent: async request =>
       /** @type {Promise<PaymentEvent>} */ (getPaymentEvent(request)),
+    readDeferredPaymentEvents: async (allowEffects, purchaseId) =>
+      readDeferredPaymentEvents(allowEffects, purchaseId),
     handlePurchaseEvent: async (allowEffects, event) =>
       handlePurchaseEvent(allowEffects, event),
   };
