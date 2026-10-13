@@ -10,3 +10,16 @@ export function createUpdateVariantVisibilityEffectAdapters() {
     },
   };
 }
+
+/** @param {AllowEffects} allowEffects Permission to register the trigger. @param {{region: (name: string) => {firestore: {document: (path: string) => {onCreate: (handler: unknown) => unknown}}}}} functions Cloud Functions registry. @param {unknown} handler Trigger callback. @returns {unknown} Registered trigger. */
+export function registerUpdateVariantVisibilityTrigger(
+  allowEffects,
+  functions,
+  handler
+) {
+  void allowEffects;
+  return functions
+    .region('europe-west1')
+    .firestore.document('moderationRatings/{ratingId}')
+    .onCreate(handler);
+}
