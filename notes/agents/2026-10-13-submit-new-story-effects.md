@@ -1,0 +1,7 @@
+# Submit-new-story Allow Effects boundary
+
+- **Unexpected hurdle:** The runtime filesystem started read-only, so Beads and Jest could not create their lock/temp directories until the approved elevated commands used repo-local writable paths.
+- **Diagnosis:** `runSubmitNewStory` composed Firebase initialization in core and directly wrote to Firestore, logged debug events, wrote HTTP responses, and registered Express/HTTPS handlers. The CORS error callback also needed its four-argument Express signature preserved while carrying an invocation capability internally.
+- **Fix:** Firebase initialization and endpoint construction now run behind startup permission-first cloud adapters. Firestore persistence, response writes, logging, and CORS error forwarding receive `AllowEffects`; CORS middleware binds a fresh invocation capability while retaining Express's external `(err, req, res, next)` contract. The startup capability is not captured by the returned request handler.
+- **Evidence:** Focused Jest passed (6 suites, 63 tests); `npm run tsdoc:check` passed; targeted ESLint passed; `npm run check` passed all 10 gates, full unit coverage, 11/11 local E2E, zero clones, and zero audit vulnerabilities; `npm run build:cloud` passed; packaged submit-new-story JavaScript passed `node --check`; `git diff --check` passed.
+- **Next:** Continue the Allow Effects source-cloud audit at `src/cloud/update-variant-visibility/index.js`, checking module-startup Firestore resolution and trigger registration against the capability boundary.

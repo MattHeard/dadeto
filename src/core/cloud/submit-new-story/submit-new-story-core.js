@@ -13,7 +13,6 @@ import {
 } from '../cloud-core.js';
 import { resolveAuthorIdFromHeader } from '../auth-helpers.js';
 import {
-  sendResponderResult,
   collectSubmissionOptions,
   getAuthorizationHeader,
   getAuthorizationFromGetter,
@@ -162,16 +161,6 @@ function isCorsError(err) {
 }
 
 /**
- * Handle CORS error response.
- * @param {CorsResponse} res Response object.
- * @param {number} status Status code.
- * @param {unknown} body Response body.
- */
-function sendCorsError(res, status, body) {
-  res.status(status).json(body);
-}
-
-/**
  * Get status from options.
  * @param {CorsErrorHandlerOptions} options Options.
  * @returns {number} Status.
@@ -203,36 +192,43 @@ function normalizeCorsErrorHandlerOptions(options) {
 }
 
 /**
- * Produce an Express error handler that converts CORS denials into structured responses.
- * @param {CorsErrorHandlerOptions | undefined} [options] - Overrides for the generated error handler (status and body).
- * @returns {(err: unknown, req: object, res: { status: (code: number) => { json: (payload: unknown) => void } }, next: (error?: unknown) => void) => void} Express-style error middleware.
+ * Produce an effectful Express error handler that converts CORS denials into structured responses.
+ * @param {CorsErrorHandlerOptions | undefined} options Overrides for the generated error handler (status and body).
+ * @param {{ sendResponse: (allowEffects: AllowEffects, res: CorsResponse, status: number, body: unknown) => unknown, forwardError: (allowEffects: AllowEffects, next: (error?: unknown) => void, error: unknown) => unknown }} adapters Permission-aware response and error adapters.
+ * @returns {(allowEffects: AllowEffects, args: { error: unknown, req: object, res: CorsResponse, next: (error?: unknown) => void }) => void} Explicitly effectful error handler.
  */
-export function createCorsErrorHandler(options) {
+export function createCorsErrorHandler(options, adapters) {
   const normalized = normalizeCorsErrorHandlerOptions(options);
 
-  return function corsErrorHandler(err, _req, res, next) {
-    if (isCorsError(err)) {
-      sendCorsError(res, normalized.status, normalized.body);
+  return function corsErrorHandler(allowEffects, args) {
+    if (isCorsError(args.error)) {
+      adapters.sendResponse(
+        allowEffects,
+        args.res,
+        normalized.status,
+        normalized.body
+      );
       return;
     }
 
-    next(err);
+    adapters.forwardError(allowEffects, args.next, args.error);
   };
 }
 
 /**
  * Adapt a domain responder into an Express request handler.
  * @param {EffectResponder} responder Domain-specific command handler.
+ * @param {(allowEffects: AllowEffects, res: NativeHttpResponse, status: number, body: unknown) => unknown} sendResponse Permission-aware response writer.
  * @returns {(allowEffects: AllowEffects, req: NativeHttpRequest | undefined, res: NativeHttpResponse) => Promise<void>} Explicitly effectful internal route.
  */
-export function createHandleSubmitNewStory(responder) {
+export function createHandleSubmitNewStory(responder, sendResponse) {
   assertFunction(responder, 'responder');
   return async function handleSubmitNewStory(allowEffects, req, res) {
     const request = /** @type {SubmitNewStoryRequest} */ (
       normalizeExpressRequest(req)
     );
     const { status, body } = await responder(allowEffects, request);
-    return sendResponderResult(res, status, body);
+    await sendResponse(allowEffects, res, status, body);
   };
 }
 

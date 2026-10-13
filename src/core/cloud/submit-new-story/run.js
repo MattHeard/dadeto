@@ -10,19 +10,16 @@ import {
   getAuthorizationHeader,
   readHeaderFromGetter,
 } from '../submit-shared.js';
-import { createFirebaseAppContext } from '../firebase-app-manager.js';
-import { createCloudHttpEndpoint } from '../http-endpoint-bootstrap.js';
 import { stringOrNull } from '../../commonCore.js';
 /** @typedef {import('../../../../types/allow-effects').AllowEffects} AllowEffects */
 /** @typedef {import('./submit-new-story-core.js').EffectResponder} EffectResponder */
 
 /**
  * Set up and export the submit-new-story cloud function.
+ * @param {AllowEffects} allowEffects Startup capability.
  * @param {{
- *   initializeApp: typeof import('firebase-admin/app').initializeApp,
- *   createFirebaseAppManager: typeof import('../../../../src/cloud/submit-new-story/submit-new-story-gcf.js').createFirebaseAppManager,
- *   getFirestoreInstance: typeof import('../../../../src/cloud/submit-new-story/submit-new-story-gcf.js').getFirestoreInstance,
- *   getAuth: typeof import('../../../../src/cloud/submit-new-story/submit-new-story-gcf.js').getAuth,
+ *   db: { collection: (name: string) => { doc: (id: string) => unknown } },
+ *   auth: { verifyIdToken: (token: string) => Promise<unknown> },
  *   express: typeof import('../../../../src/cloud/submit-new-story/submit-new-story-gcf.js').express,
  *   cors: typeof import('../../../../src/cloud/submit-new-story/submit-new-story-gcf.js').cors,
  *   crypto: typeof import('../../../../src/cloud/submit-new-story/submit-new-story-gcf.js').crypto,
@@ -30,22 +27,26 @@ import { stringOrNull } from '../../commonCore.js';
  *   functions: typeof import('../../../../src/cloud/submit-new-story/submit-new-story-gcf.js').functions,
  *   getEnvironmentVariables: typeof import('../../../../src/cloud/submit-new-story/submit-new-story-gcf.js').getEnvironmentVariables,
  *   getAllowedOrigins: typeof import('../../../../src/cloud/submit-new-story/cors-config.js').getAllowedOrigins,
+ *   saveSubmission: (allowEffects: AllowEffects, db: unknown, id: string, data: unknown) => Promise<void>,
+ *   sendResponse: (allowEffects: AllowEffects, res: unknown, status: number, body: unknown) => unknown,
+ *   logInfo: (allowEffects: AllowEffects, ...values: unknown[]) => void,
+ *   logError: (allowEffects: AllowEffects, ...values: unknown[]) => void,
+ *   forwardCorsError: (allowEffects: AllowEffects, next: (error?: unknown) => void, error: unknown) => unknown,
+ *   bindCorsErrorBoundary: (handler: (allowEffects: AllowEffects, args: { error: unknown, req: object, res: any, next: (error?: unknown) => void }) => void) => unknown,
+ *   createEndpoint: (allowEffects: AllowEffects, options: unknown) => { app: unknown, handle: unknown },
  * }} deps Dependencies for wiring the endpoint.
  * @param {(handler: (allowEffects: AllowEffects, req: any, res: any) => Promise<void>) => (req: any, res: any) => Promise<void>} bindHttpBoundary External per-request capability minting adapter.
  * @returns {{ submitNewStory: unknown, handleSubmitNewStory: (req: unknown, res: unknown) => Promise<void>, app: unknown }} Wired endpoint exports.
  */
-export function runSubmitNewStory(deps, bindHttpBoundary) {
-  const { db, auth } =
-    /** @type {{ db: { collection: (name: string) => { doc: (id: string) => { set: (data: unknown) => Promise<unknown> } } }, auth: { verifyIdToken: (token: string) => Promise<unknown> } }} */ (
-      createFirebaseAppContext(deps, { includeApp: false })
-    );
-
+export function runSubmitNewStory(allowEffects, deps, bindHttpBoundary) {
+  const { db, auth } = deps;
   const environmentVariables = deps.getEnvironmentVariables();
   const allowedOrigins = deps.getAllowedOrigins(environmentVariables);
   const debugEnabled = isDebugSubmitNewStoryEnabled(environmentVariables);
 
   if (debugEnabled) {
-    console.info(
+    deps.logInfo(
+      allowEffects,
       JSON.stringify({
         event: 'submit-new-story.debug.config',
         environment: environmentVariables.DENDRITE_ENVIRONMENT,
@@ -66,7 +67,7 @@ export function runSubmitNewStory(deps, bindHttpBoundary) {
       /** @type {string} */ id,
       /** @type {unknown} */ data
     ) => {
-      await db.collection('storyFormSubmissions').doc(id).set(data);
+      await deps.saveSubmission(allowEffects, db, id, data);
     },
     randomUUID: () => deps.crypto.randomUUID(),
     getServerTimestamp: () => deps.FieldValue.serverTimestamp(),
@@ -75,19 +76,29 @@ export function runSubmitNewStory(deps, bindHttpBoundary) {
   let debuggedSubmitNewStoryResponder = submitNewStoryResponder;
   if (debugEnabled) {
     debuggedSubmitNewStoryResponder = createDebugSubmitNewStoryResponder(
-      submitNewStoryResponder
+      submitNewStoryResponder,
+      deps.logInfo,
+      deps.logError
     );
   }
 
   const handleSubmitNewStory = bindHttpBoundary(
-    createHandleSubmitNewStory(debuggedSubmitNewStoryResponder)
+    createHandleSubmitNewStory(
+      debuggedSubmitNewStoryResponder,
+      deps.sendResponse
+    )
   );
 
   const endpointOptions = /** @type {any} */ ({
     express: deps.express,
     middleware: [
       deps.cors(corsOptions),
-      createCorsErrorHandler(),
+      deps.bindCorsErrorBoundary(
+        createCorsErrorHandler(undefined, {
+          sendResponse: deps.sendResponse,
+          forwardError: deps.forwardCorsError,
+        })
+      ),
       deps.express.json({ limit: '20kb' }),
       deps.express.urlencoded({ extended: false, limit: '20kb' }),
     ],
@@ -95,7 +106,7 @@ export function runSubmitNewStory(deps, bindHttpBoundary) {
     functions: deps.functions,
   });
   const endpoint = /** @type {any} */ (
-    createCloudHttpEndpoint(endpointOptions)
+    deps.createEndpoint(allowEffects, endpointOptions)
   );
 
   return {
@@ -197,9 +208,11 @@ function serializeError(error) {
 /**
  * Emit temporary debug logs around submit-new-story request handling.
  * @param {EffectResponder} responder Domain responder.
+ * @param {(allowEffects: AllowEffects, ...values: unknown[]) => void} logInfo Permission-aware info logger.
+ * @param {(allowEffects: AllowEffects, ...values: unknown[]) => void} logError Permission-aware error logger.
  * @returns {EffectResponder} Wrapped responder retaining explicit command permission.
  */
-function createDebugSubmitNewStoryResponder(responder) {
+function createDebugSubmitNewStoryResponder(responder, logInfo, logError) {
   return async function debuggedSubmitNewStoryResponder(allowEffects, request) {
     const typedRequest =
       /** @type {{ method?: unknown, headers?: Record<string, unknown> | null | undefined, body?: Record<string, unknown> | null | undefined }} */ (
@@ -207,7 +220,8 @@ function createDebugSubmitNewStoryResponder(responder) {
       );
     const requestBody = getRequestSummary(typedRequest);
 
-    console.info(
+    logInfo(
+      allowEffects,
       JSON.stringify({
         event: 'submit-new-story.debug.request',
         method: typedRequest?.method ?? null,
@@ -221,7 +235,8 @@ function createDebugSubmitNewStoryResponder(responder) {
 
     try {
       const result = await responder(allowEffects, request);
-      console.info(
+      logInfo(
+        allowEffects,
         JSON.stringify({
           event: 'submit-new-story.debug.response',
           status: result.status,
@@ -230,7 +245,8 @@ function createDebugSubmitNewStoryResponder(responder) {
       );
       return result;
     } catch (error) {
-      console.error(
+      logError(
+        allowEffects,
         JSON.stringify({
           event: 'submit-new-story.debug.error',
           error: serializeError(error),

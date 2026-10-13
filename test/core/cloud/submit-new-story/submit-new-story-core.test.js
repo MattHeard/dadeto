@@ -11,6 +11,18 @@ import {
 } from '../../../../src/core/cloud/submit-new-story/submit-new-story-core.js';
 
 const allowEffects = createAllowEffects();
+const sendResponse = (permission, res, status, body) => {
+  void permission;
+  if (body === undefined) return res.sendStatus(status);
+  const response = res.status(status);
+  return body && typeof body === 'object'
+    ? response.json(body)
+    : response.send(body);
+};
+const forwardError = (permission, next, error) => {
+  void permission;
+  return next(error);
+};
 
 describe('createSubmitNewStoryResponder', () => {
   const createDependencies = ({
@@ -220,7 +232,7 @@ describe('createHandleSubmitNewStory', () => {
       status: 201,
       body: { id: 'story-1' },
     });
-    const handle = createHandleSubmitNewStory(responder);
+    const handle = createHandleSubmitNewStory(responder, sendResponse);
     const json = jest.fn();
     const status = jest.fn().mockReturnValue({ json });
     const res = { status };
@@ -236,7 +248,7 @@ describe('createHandleSubmitNewStory', () => {
       status: 204,
       body: undefined,
     });
-    const handle = createHandleSubmitNewStory(responder);
+    const handle = createHandleSubmitNewStory(responder, sendResponse);
     const sendStatus = jest.fn();
     const res = { sendStatus };
 
@@ -256,7 +268,7 @@ describe('createHandleSubmitNewStory', () => {
       status: 500,
       body: 'error happened',
     });
-    const handle = createHandleSubmitNewStory(responder);
+    const handle = createHandleSubmitNewStory(responder, sendResponse);
     const send = jest.fn();
     const status = jest.fn().mockReturnValue({ send });
     const res = { status };
@@ -272,7 +284,7 @@ describe('createHandleSubmitNewStory', () => {
       status: 200,
       body: { ok: true },
     });
-    const handle = createHandleSubmitNewStory(responder);
+    const handle = createHandleSubmitNewStory(responder, sendResponse);
     const json = jest.fn();
     const status = jest.fn().mockReturnValue({ json });
     const req = {
@@ -299,7 +311,7 @@ describe('createHandleSubmitNewStory', () => {
       status: 200,
       body: { ok: true },
     });
-    const handle = createHandleSubmitNewStory(responder);
+    const handle = createHandleSubmitNewStory(responder, sendResponse);
     const get = jest.fn().mockImplementation(name => {
       if (name === 'Authorization') {
         return 'Bearer token';
@@ -335,7 +347,7 @@ describe('createHandleSubmitNewStory', () => {
       status: 200,
       body: { ok: true },
     });
-    const handle = createHandleSubmitNewStory(responder);
+    const handle = createHandleSubmitNewStory(responder, sendResponse);
     const json = jest.fn();
     const status = jest.fn().mockReturnValue({ json });
     const req = {
@@ -399,12 +411,15 @@ describe('CORS helpers', () => {
   });
 
   it('converts CORS errors into 403 responses', () => {
-    const handler = createCorsErrorHandler();
+    const handler = createCorsErrorHandler(undefined, {
+      sendResponse,
+      forwardError,
+    });
     const json = jest.fn();
     const res = { status: jest.fn().mockReturnValue({ json }) };
     const next = jest.fn();
 
-    handler(new Error('CORS'), {}, res, next);
+    handler(allowEffects, { error: new Error('CORS'), req: {}, res, next });
 
     expect(res.status).toHaveBeenCalledWith(403);
     expect(json).toHaveBeenCalledWith({ error: 'Origin not allowed' });
@@ -412,17 +427,22 @@ describe('CORS helpers', () => {
   });
 
   it('declares an Express error handler signature', () => {
-    expect(createCorsErrorHandler()).toHaveLength(4);
+    expect(
+      createCorsErrorHandler(undefined, { sendResponse, forwardError })
+    ).toHaveLength(2);
   });
 
   it('passes non-CORS errors to the next middleware', () => {
-    const handler = createCorsErrorHandler();
+    const handler = createCorsErrorHandler(undefined, {
+      sendResponse,
+      forwardError,
+    });
     const json = jest.fn();
     const res = { status: jest.fn().mockReturnValue({ json }) };
     const next = jest.fn();
     const other = new Error('not cors');
 
-    handler(other, {}, res, next);
+    handler(allowEffects, { error: other, req: {}, res, next });
 
     expect(res.status).not.toHaveBeenCalled();
     expect(next).toHaveBeenCalledWith(other);

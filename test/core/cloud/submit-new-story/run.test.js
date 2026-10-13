@@ -1,6 +1,66 @@
-import { createEffectHttpBoundary } from '../../../../src/cloud/allow-effects.js';
+import {
+  createEffectHttpBoundary,
+  createEffectStartupBoundary,
+} from '../../../../src/cloud/allow-effects.js';
+import {
+  forwardSubmitNewStoryCorsError,
+  logSubmitNewStory,
+  registerSubmitNewStoryEndpoint,
+  saveSubmitNewStory,
+  sendSubmitNewStoryResponse,
+} from '../../../../src/cloud/submit-new-story/effect-adapters.js';
+import {
+  bindSubmitNewStoryCorsErrorBoundary,
+  ensureSubmitNewStoryFirebase,
+} from '../../../../src/cloud/submit-new-story/startup-effect-adapter.js';
+import { getAllowedOrigins as getCloudAllowedOrigins } from '../../../../src/cloud/submit-new-story/cors-config.js';
 import { jest } from '@jest/globals';
 import { runSubmitNewStory } from '../../../../src/core/cloud/submit-new-story/run.js';
+
+/**
+ *
+ * @param dependencies
+ * @param bindHttpBoundary
+ */
+/**
+ * Build the cloud-backed core runner for focused tests.
+ * @param {object} dependencies Test cloud services.
+ * @param {typeof createEffectHttpBoundary} [bindHttpBoundary] Request boundary.
+ * @returns {ReturnType<typeof runSubmitNewStory>} Wired test endpoint.
+ */
+function runForTest(dependencies, bindHttpBoundary = createEffectHttpBoundary) {
+  return createEffectStartupBoundary(allowEffects => {
+    const { ensureFirebaseApp: ensureApp } =
+      dependencies.createFirebaseAppManager(dependencies.initializeApp);
+    ensureSubmitNewStoryFirebase(allowEffects, ensureApp);
+    const environment = dependencies.getEnvironmentVariables();
+    const db = dependencies.getFirestoreInstance({
+      environment,
+      ensureAppFn: () => {},
+    });
+    return runSubmitNewStory(
+      allowEffects,
+      {
+        ...dependencies,
+        db,
+        auth: dependencies.getAuth(),
+        getEnvironmentVariables: () => environment,
+        getAllowedOrigins:
+          dependencies.getAllowedOrigins ?? getCloudAllowedOrigins,
+        saveSubmission: saveSubmitNewStory,
+        sendResponse: sendSubmitNewStoryResponse,
+        logInfo: (permission, ...values) =>
+          logSubmitNewStory(permission, console.info, ...values),
+        logError: (permission, ...values) =>
+          logSubmitNewStory(permission, console.error, ...values),
+        forwardCorsError: forwardSubmitNewStoryCorsError,
+        bindCorsErrorBoundary: bindSubmitNewStoryCorsErrorBoundary,
+        createEndpoint: registerSubmitNewStoryEndpoint,
+      },
+      bindHttpBoundary
+    );
+  });
+}
 
 const ensureFirebaseApp = jest.fn();
 const createFirebaseAppManager = jest.fn(() => ({
@@ -69,7 +129,7 @@ describe('runSubmitNewStory', () => {
   });
 
   it('wires the endpoint and returns exports', () => {
-    const result = runSubmitNewStory(
+    const result = runForTest(
       {
         initializeApp: jest.fn(),
         createFirebaseAppManager,
@@ -92,6 +152,7 @@ describe('runSubmitNewStory', () => {
       SITE_URL: 'https://example.com',
     });
     expect(getFirestoreInstance).toHaveBeenCalledWith({
+      ensureAppFn: expect.any(Function),
       environment: {
         SITE_URL: 'https://example.com',
       },
@@ -112,7 +173,7 @@ describe('runSubmitNewStory', () => {
   });
 
   it('wires the responder path for POST submissions', async () => {
-    const result = runSubmitNewStory(
+    const result = runForTest(
       {
         initializeApp: jest.fn(),
         createFirebaseAppManager,
@@ -160,7 +221,7 @@ describe('runSubmitNewStory', () => {
   });
 
   it('treats empty header values as missing', async () => {
-    const result = runSubmitNewStory(
+    const result = runForTest(
       {
         initializeApp: jest.fn(),
         createFirebaseAppManager,
@@ -212,7 +273,7 @@ describe('runSubmitNewStory', () => {
     const debugGetFirestoreInstance = jest.fn(() => ({
       collection: debugCollection,
     }));
-    const result = runSubmitNewStory(
+    const result = runForTest(
       {
         initializeApp: jest.fn(),
         createFirebaseAppManager,
@@ -309,7 +370,7 @@ describe('runSubmitNewStory fallback logging', () => {
         })),
       })),
     }));
-    const result = runSubmitNewStory(
+    const result = runForTest(
       {
         initializeApp: jest.fn(),
         createFirebaseAppManager,
@@ -355,7 +416,7 @@ describe('runSubmitNewStory fallback logging', () => {
     const fallbackGetFirestoreInstance = jest.fn(() => ({
       collection: fallbackCollection,
     }));
-    const result = runSubmitNewStory(
+    const result = runForTest(
       {
         initializeApp: jest.fn(),
         createFirebaseAppManager,
@@ -447,7 +508,7 @@ describe('runSubmitNewStory fallback logging', () => {
     const fallbackGetFirestoreInstance = jest.fn(() => ({
       collection: fallbackCollection,
     }));
-    const result = runSubmitNewStory(
+    const result = runForTest(
       {
         initializeApp: jest.fn(),
         createFirebaseAppManager,
@@ -529,7 +590,7 @@ describe('runSubmitNewStory error logging', () => {
     const rejectingGetFirestoreInstance = jest.fn(() => ({
       collection: rejectingCollection,
     }));
-    const result = runSubmitNewStory(
+    const result = runForTest(
       {
         initializeApp: jest.fn(),
         createFirebaseAppManager,
