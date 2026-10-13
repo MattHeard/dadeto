@@ -8,14 +8,13 @@ import {
   resolveMessageOrDefault,
 } from '../cloud-core.js';
 import * as commonCore from '../../commonCore.js';
-import { runWithFailureAndThen } from '../response-utils.js';
 const POST_METHOD = 'POST';
 export { getAllowedOrigins } from '../allowed-origins.js';
 /** @typedef {import('../../../../types/native-http').NativeHttpRequest} NativeHttpRequest */
 /** @typedef {import('../../../../types/native-http').NativeHttpResponse} NativeHttpResponse */
 /** @typedef {import('../../../../types/allow-effects').AllowEffects} AllowEffects */
 /** @typedef {any} MarkVariantDirtyValue Runtime-shaped dirty-marking value. */
-/** @typedef {(res: NativeHttpResponse, status: number, method: 'send' | 'json', body: unknown) => void} ResponseSender */
+/** @typedef {(permission: AllowEffects, res: NativeHttpResponse, status: number, method: 'send' | 'json', body: unknown) => void} ResponseSender */
 
 /**
  * @typedef {object} FirebaseHelpers
@@ -30,7 +29,7 @@ export { getAllowedOrigins } from '../allowed-origins.js';
  * @property {import('firebase-admin/firestore').Firestore} db Firestore instance.
  * @property {FirebaseHelpers} [firebase] Optional Firebase helper overrides.
  * @property {(permission: AllowEffects, reference: unknown, data: object) => Promise<unknown>} updateDocument Permission-aware Firestore update adapter.
- * @property {(authorId: string) => Promise<boolean>} [markAuthorDirty] Author mutation.
+ * @property {(permission: AllowEffects, authorId: string) => Promise<boolean>} [markAuthorDirty] Author mutation.
  */
 
 /**
@@ -59,9 +58,9 @@ export { getAllowedOrigins } from '../allowed-origins.js';
 
 /**
  * @typedef {object} HandleRequestOptions
- * @property {(req: NativeHttpRequest, res: NativeHttpResponse) => Promise<boolean>} verifyAdmin Admin verification helper.
- * @property {(pageNumber: number, variantName: string, deps?: MarkVariantDirtyDeps) => Promise<boolean>} markVariantDirty Core mutation helper.
- * @property {(authorId: string) => Promise<boolean>} [markAuthorDirty] Author mutation helper.
+ * @property {(permission: AllowEffects, req: NativeHttpRequest, res: NativeHttpResponse) => Promise<boolean>} verifyAdmin Admin verification helper.
+ * @property {(permission: AllowEffects, pageNumber: number, variantName: string, deps?: MarkVariantDirtyDeps) => Promise<boolean>} markVariantDirty Core mutation helper.
+ * @property {(permission: AllowEffects, authorId: string) => Promise<boolean>} [markAuthorDirty] Author mutation helper.
  * @property {(body: unknown) => MarkVariantRequestParams} parseRequestBody Body parser.
  * @property {string} allowedMethod Allowed HTTP method.
  * @property {ResponseSender} sendResponse Response adapter.
@@ -75,9 +74,9 @@ export { getAllowedOrigins } from '../allowed-origins.js';
 
 /**
  * @typedef {object} HandlerDependencies
- * @property {(req: NativeHttpRequest, res: NativeHttpResponse) => Promise<boolean>} verifyAdmin Admin verification function.
- * @property {(pageNumber: number, variantName: string, deps?: MarkVariantDirtyDeps) => Promise<boolean>} markVariantDirty Variant mutation helper.
- * @property {(authorId: string) => Promise<boolean>} [markAuthorDirty] Author mutation helper.
+ * @property {(permission: AllowEffects, req: NativeHttpRequest, res: NativeHttpResponse) => Promise<boolean>} verifyAdmin Admin verification function.
+ * @property {(permission: AllowEffects, pageNumber: number, variantName: string, deps?: MarkVariantDirtyDeps) => Promise<boolean>} markVariantDirty Variant mutation helper.
+ * @property {(permission: AllowEffects, authorId: string) => Promise<boolean>} [markAuthorDirty] Author mutation helper.
  * @property {(body: unknown) => MarkVariantRequestParams} parseRequestBody Request parser.
  * @property {string} allowedMethod Allowed HTTP method.
  * @property {ResponseSender} sendResponse Response adapter.
@@ -86,7 +85,7 @@ export { getAllowedOrigins } from '../allowed-origins.js';
 /**
  * @typedef {object} MarkVariantAndRespondParams
  * @property {NativeHttpResponse} res Response object.
- * @property {() => Promise<boolean>} runMutation Mutation command.
+ * @property {(permission: AllowEffects) => Promise<boolean>} runMutation Mutation command.
  * @property {ResponseSender} sendResponse Response adapter.
  */
 /**
@@ -385,58 +384,25 @@ async function resolveVariantReference(deps, pageNumber, variantName) {
  */
 /**
  * Send a 401 response with a message.
+ * @param {AllowEffects} permission Permission to write the response.
  * @param {ResponseSender} sendResponse Response adapter.
  * @param {NativeHttpResponse} res HTTP response.
  * @param {string} message Message to send.
  * @returns {void}
  */
-export function sendUnauthorized(sendResponse, res, message) {
-  sendResponse(res, 401, 'send', message);
+export function sendUnauthorized(permission, sendResponse, res, message) {
+  sendResponse(permission, res, 401, 'send', message);
 }
 
 /**
  * Send a 403 Forbidden response.
+ * @param {AllowEffects} permission Permission to write the response.
  * @param {ResponseSender} sendResponse Response adapter.
  * @param {NativeHttpResponse} res HTTP response.
  * @returns {void}
  */
-export function sendForbidden(sendResponse, res) {
-  sendResponse(res, 403, 'send', 'Forbidden');
-}
-
-/**
- * Ensure the incoming request uses the allowed HTTP method.
- * @param {NativeHttpRequest} req HTTP request.
- * @param {NativeHttpResponse} res HTTP response.
- * @param {string} allowedMethod Allowed HTTP method.
- * @param {ResponseSender} sendResponse Response adapter.
- * @returns {boolean} True when the method is allowed.
- */
-function enforceAllowedMethod(req, res, allowedMethod, sendResponse) {
-  if (getRequestMethod(req) === allowedMethod) {
-    return true;
-  }
-
-  sendResponse(res, 405, 'send', `${allowedMethod} only`);
-  return false;
-}
-
-/**
- * Parse and validate the incoming request body.
- * @param {NativeHttpRequest} req HTTP request.
- * @param {NativeHttpResponse} res HTTP response.
- * @param {(body: unknown) => { pageNumber: number, variantName: string }} parseRequestBody Body parser.
- * @param {ResponseSender} sendResponse Response adapter.
- * @returns {{ pageNumber: number, variantName: string } | null} Parsed parameters or null when invalid.
- */
-function parseValidRequest(req, res, parseRequestBody, sendResponse) {
-  const parsed = parseRequestBody(getRequestBody(req));
-  if (isValidMarkRequest(parsed)) {
-    return parsed;
-  }
-
-  sendResponse(res, 400, 'json', { error: 'Invalid input' });
-  return null;
+export function sendForbidden(permission, sendResponse, res) {
+  sendResponse(permission, res, 403, 'send', 'Forbidden');
 }
 
 /**
@@ -489,48 +455,54 @@ function isValidMarkRequest({ pageNumber, variantName, authorId }) {
 
 /**
  * Mark the variant dirty and send the appropriate response.
+ * @param {AllowEffects} permission Permission to write the response.
  * @param {MarkVariantAndRespondParams} params - Response and mutation dependencies.
  * @returns {Promise<void>} Resolves when the response has been sent.
  */
-async function markVariantAndRespond({ res, runMutation, sendResponse }) {
-  await runWithFailureAndThen(
-    runMutation,
-    error => {
-      const message = resolveUpdateErrorMessage(error);
-      sendResponse(res, 500, 'json', commonCore.createErrorPayload(message));
-    },
-    value => {
-      respondToVariantResult(res, value, sendResponse);
-    }
-  );
+async function markVariantAndRespond(
+  permission,
+  { res, runMutation, sendResponse }
+) {
+  try {
+    const updated = await runMutation(permission);
+    respondToVariantResult(permission, res, updated, sendResponse);
+  } catch (error) {
+    const message = resolveUpdateErrorMessage(error);
+    sendResponse(
+      permission,
+      res,
+      500,
+      'json',
+      commonCore.createErrorPayload(message)
+    );
+  }
 }
 
 /**
  * Send the response for the variant update result.
+ * @param {AllowEffects} permission Permission to write the response.
  * @param {NativeHttpResponse} res Response object.
  * @param {boolean} ok Marker of success.
  * @param {ResponseSender} sendResponse Response adapter.
  * @returns {void}
  */
-function respondToVariantResult(res, ok, sendResponse) {
-  respondToRecordResult(res, ok, 'Variant', sendResponse);
+function respondToVariantResult(permission, res, ok, sendResponse) {
+  const result = getRecordResponse(ok, 'Variant');
+  sendResponse(permission, res, result.status, 'json', result.body);
 }
 
 /**
  * Send the standard not-found or success response for a mutation.
- * @param {NativeHttpResponse} res Response object.
  * @param {boolean} ok Mutation result.
  * @param {string} recordName Entity name used in the not-found message.
- * @param {ResponseSender} sendResponse Response adapter.
- * @returns {void}
+ * @returns {{status: number, body: Record<string, unknown>}} Standard response status and body.
  */
-function respondToRecordResult(res, ok, recordName, sendResponse) {
+function getRecordResponse(ok, recordName) {
   if (!ok) {
-    sendResponse(res, 404, 'json', { error: `${recordName} not found` });
-    return;
+    return { status: 404, body: { error: `${recordName} not found` } };
   }
 
-  sendResponse(res, 200, 'json', { ok: true });
+  return { status: 200, body: { ok: true } };
 }
 
 /**
@@ -614,23 +586,23 @@ function extractCoreHandlers(optionsTyped) {
  * Cast and combine core functions.
  * @param {unknown} verifyAdmin - Admin verification function.
  * @param {unknown} markVariantDirty - Dirty marking function.
- * @param {((id: string) => Promise<boolean>) | undefined} markAuthorDirty - Author marking function.
+ * @param {((permission: AllowEffects, id: string) => Promise<boolean>) | undefined} markAuthorDirty - Author marking function.
  * @param {ResponseSender} sendResponse Response adapter.
  * @returns {Pick<HandlerDependencies, 'verifyAdmin' | 'markVariantDirty' | 'markAuthorDirty' | 'sendResponse'>} Cast functions.
  */
 function castCoreFunctions(
   verifyAdmin,
   markVariantDirty,
-  /** @type {((id: string) => Promise<boolean>) | undefined} */ markAuthorDirty,
+  /** @type {((permission: AllowEffects, id: string) => Promise<boolean>) | undefined} */ markAuthorDirty,
   sendResponse
 ) {
   return {
     verifyAdmin:
-      /** @type {(req: NativeHttpRequest, res: NativeHttpResponse) => Promise<boolean>} */ (
+      /** @type {(permission: AllowEffects, req: NativeHttpRequest, res: NativeHttpResponse) => Promise<boolean>} */ (
         verifyAdmin
       ),
     markVariantDirty:
-      /** @type {(pageNumber: number, variantName: string, deps?: MarkVariantDirtyDeps) => Promise<boolean>} */ (
+      /** @type {(permission: AllowEffects, pageNumber: number, variantName: string, deps?: MarkVariantDirtyDeps) => Promise<boolean>} */ (
         markVariantDirty
       ),
     markAuthorDirty,
@@ -709,7 +681,7 @@ function extractHandlerConfig(optionsTyped) {
 /**
  * Factory for the HTTP handler wrapping the mark-variant-dirty implementation.
  * @param {HandleRequestOptions} options Configuration for the handler.
- * @returns {(req: NativeHttpRequest, res: NativeHttpResponse) => Promise<void>} Express request handler.
+ * @returns {(permission: AllowEffects, req: NativeHttpRequest, res: NativeHttpResponse) => Promise<void>} Effectful Express request handler.
  */
 export function createHandleRequest(options) {
   const optionsTyped = /** @type {HandleRequestOptions} */ (options);
@@ -751,25 +723,24 @@ export {
 /**
  * Build the HTTP handler once the inputs are normalized.
  * @param {HandlerDependencies} handlerDeps Normalized handler dependencies.
- * @returns {(req: NativeHttpRequest, res: NativeHttpResponse) => Promise<void>} Express request handler.
+ * @returns {(permission: AllowEffects, req: NativeHttpRequest, res: NativeHttpResponse) => Promise<void>} Effectful Express request handler.
  */
 function buildHandleRequest(handlerDeps) {
-  return async function handleRequest(req, res) {
-    return processHandleRequest({ req, res }, handlerDeps);
+  return async function handleRequest(permission, req, res) {
+    return processHandleRequest(permission, { req, res }, handlerDeps);
   };
 }
 
 export { getRequestBody, getRequestMethod, hasStringMessage };
 
-const REQUEST_HANDLED = Symbol('request-handled');
-
 /**
  * Core handler workflow that validates the request, authorizes the caller, and marks the variant dirty.
+ * @param {AllowEffects} permission Permission for command effects in this request.
  * @param {ProcessRequestData} requestData Request lifecycle dependencies.
  * @param {HandlerDependencies} handlerDeps Handler dependencies.
  * @returns {Promise<void>} Promise resolved once handling completes.
  */
-async function processHandleRequest(requestData, handlerDeps) {
+async function processHandleRequest(permission, requestData, handlerDeps) {
   const { req, res } = requestData;
   const verifyAdmin = handlerDeps.verifyAdmin;
   const markVariantDirty = handlerDeps.markVariantDirty;
@@ -778,118 +749,36 @@ async function processHandleRequest(requestData, handlerDeps) {
   const allowedMethod = handlerDeps.allowedMethod;
   const sendResponse = handlerDeps.sendResponse;
 
-  try {
-    enforceMethodOrThrow(req, res, allowedMethod, sendResponse);
-    await ensureAuthorizedOrThrow(verifyAdmin, req, res);
-    const parsed = parseRequestOrThrow(
-      req,
-      res,
-      parseRequestBody,
-      sendResponse
-    );
-    if (parsed.authorId) {
-      if (!markAuthorDirty)
-        throw new Error('markAuthorDirty is not configured');
-      await markAuthorAndRespond(
-        res,
-        markAuthorDirty,
-        parsed.authorId,
-        sendResponse
-      );
-      return;
-    }
-    await markVariantAndRespond({
-      res,
-      runMutation: () =>
-        markVariantDirty(parsed.pageNumber, parsed.variantName),
-      sendResponse,
-    });
-  } catch (err) {
-    handleProcessError(err);
+  if (getRequestMethod(req) !== allowedMethod) {
+    sendResponse(permission, res, 405, 'send', `${allowedMethod} only`);
+    return;
   }
-}
-
-/**
- * @param {NativeHttpResponse} res Response.
- * @param {(authorId: string) => Promise<boolean>} markFn Author mutation.
- * @param {string} authorId Author ID.
- * @param {HandlerDependencies['sendResponse']} sendResponse Response adapter.
- */
-async function markAuthorAndRespond(res, markFn, authorId, sendResponse) {
-  // Stryker disable all -- author mutation responses use the fixed HTTP protocol.
-  await runWithFailureAndThen(
-    () => markFn(authorId),
-    error =>
-      sendResponse(res, 500, 'json', {
-        error: resolveUpdateErrorMessage(error),
-      }),
-    value => respondToRecordResult(res, value, 'Author', sendResponse)
-  );
-  // Stryker restore all
-}
-
-/**
- * Handle the sentinel error thrown when request handling was already responded to.
- * @param {unknown} err Error thrown during processing.
- * @returns {void}
- */
-function handleProcessError(err) {
-  if (err === REQUEST_HANDLED) {
+  const authorised = await verifyAdmin(permission, req, res);
+  if (!authorised) return;
+  const parsed = parseRequestBody(getRequestBody(req));
+  if (!isValidMarkRequest(parsed)) {
+    sendResponse(permission, res, 400, 'json', { error: 'Invalid input' });
     return;
   }
 
-  throw err;
-}
-
-/**
- * Enforce method or throw sentinel.
- * @param {NativeHttpRequest} req Req.
- * @param {NativeHttpResponse} res Res.
- * @param {string} allowedMethod Allowed method.
- * @param {ResponseSender} sendResponse Response adapter.
- * @returns {void}
- */
-function enforceMethodOrThrow(req, res, allowedMethod, sendResponse) {
-  throwRequestHandledIfFalsy(
-    enforceAllowedMethod(req, res, allowedMethod, sendResponse)
-  );
-}
-
-/**
- * Ensure authorization or throw sentinel.
- * @param {HandleRequestOptions['verifyAdmin']} verifyAdminFn Verify fn.
- * @param {NativeHttpRequest} req Req.
- * @param {NativeHttpResponse} res Res.
- * @returns {Promise<void>} Promise.
- */
-async function ensureAuthorizedOrThrow(verifyAdminFn, req, res) {
-  throwRequestHandledIfFalsy(await verifyAdminFn(req, res));
-}
-
-/**
- * Parse request or throw sentinel.
- * @param {NativeHttpRequest} req Req.
- * @param {NativeHttpResponse} res Res.
- * @param {(body: unknown) => { pageNumber: number, variantName: string }} parseRequestBody Parser.
- * @param {ResponseSender} sendResponse Response adapter.
- * @returns {{ pageNumber: number, variantName: string, authorId?: string }} Parsed.
- */
-function parseRequestOrThrow(req, res, parseRequestBody, sendResponse) {
-  return throwRequestHandledIfFalsy(
-    parseValidRequest(req, res, parseRequestBody, sendResponse)
-  );
-}
-
-/**
- * Return the value when truthy or throw the request-handled sentinel.
- * @template T
- * @param {T} value Candidate value.
- * @returns {NonNullable<T>} The input value when truthy.
- */
-function throwRequestHandledIfFalsy(value) {
-  if (!value) {
-    throw REQUEST_HANDLED;
+  if (parsed.authorId) {
+    if (!markAuthorDirty) throw new Error('markAuthorDirty is not configured');
+    try {
+      const updated = await markAuthorDirty(permission, parsed.authorId);
+      const result = getRecordResponse(updated, 'Author');
+      sendResponse(permission, res, result.status, 'json', result.body);
+    } catch (error) {
+      sendResponse(permission, res, 500, 'json', {
+        error: resolveUpdateErrorMessage(error),
+      });
+    }
+    return;
   }
 
-  return /** @type {NonNullable<T>} */ (value);
+  await markVariantAndRespond(permission, {
+    res,
+    runMutation: effectPermission =>
+      markVariantDirty(effectPermission, parsed.pageNumber, parsed.variantName),
+    sendResponse,
+  });
 }

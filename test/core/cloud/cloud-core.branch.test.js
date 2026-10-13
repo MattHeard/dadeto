@@ -5,6 +5,8 @@ import {
 } from '../../../src/core/cloud/cloud-core.js';
 
 const idTokenKey = 'id_token';
+const permission = Object.freeze({ scope: 'test-request' });
+const logger = { warn: jest.fn() };
 
 describe('createVerifyAdmin error responses', () => {
   const buildEnv = verifyToken => {
@@ -15,6 +17,7 @@ describe('createVerifyAdmin error responses', () => {
       isAdminUid: () => true,
       sendUnauthorized,
       sendForbidden,
+      logger,
     });
     return { handler, sendUnauthorized, sendForbidden };
   };
@@ -26,8 +29,8 @@ describe('createVerifyAdmin error responses', () => {
     const { handler, sendUnauthorized } = buildEnv(() =>
       Promise.reject(errorObject)
     );
-    await handler(req, {});
-    expect(sendUnauthorized).toHaveBeenCalledWith({}, 'boom');
+    await handler(permission, req, {});
+    expect(sendUnauthorized).toHaveBeenCalledWith(permission, {}, 'boom');
   });
 
   test('falls back when error message is not a string', async () => {
@@ -35,16 +38,24 @@ describe('createVerifyAdmin error responses', () => {
     const { handler, sendUnauthorized } = buildEnv(() =>
       Promise.reject(errorObject)
     );
-    await handler(req, {});
-    expect(sendUnauthorized).toHaveBeenCalledWith({}, 'Invalid token');
+    await handler(permission, req, {});
+    expect(sendUnauthorized).toHaveBeenCalledWith(
+      permission,
+      {},
+      'Invalid token'
+    );
   });
 
   test('uses default invalid token message for raw string errors', async () => {
     const { handler, sendUnauthorized } = buildEnv(() =>
       Promise.reject('oops')
     );
-    await handler(req, {});
-    expect(sendUnauthorized).toHaveBeenCalledWith({}, 'Invalid token');
+    await handler(permission, req, {});
+    expect(sendUnauthorized).toHaveBeenCalledWith(
+      permission,
+      {},
+      'Invalid token'
+    );
   });
 
   test('sends forbidden when the decoded token is not an admin', async () => {
@@ -55,12 +66,13 @@ describe('createVerifyAdmin error responses', () => {
       isAdminUid: () => false,
       sendUnauthorized,
       sendForbidden,
+      logger,
     });
 
-    await handler(req, {});
+    await handler(permission, req, {});
 
     expect(sendUnauthorized).not.toHaveBeenCalled();
-    expect(sendForbidden).toHaveBeenCalledWith({});
+    expect(sendForbidden).toHaveBeenCalledWith(permission, {});
   });
 
   test('falls back to an id_token body field when Authorization is absent', async () => {
@@ -68,6 +80,7 @@ describe('createVerifyAdmin error responses', () => {
     const { handler, sendUnauthorized, sendForbidden } = buildEnv(verifyToken);
 
     await handler(
+      permission,
       {
         get: () => null,
         body: { [idTokenKey]: 'body-token' },
@@ -85,6 +98,7 @@ describe('createVerifyAdmin error responses', () => {
     const { handler, sendUnauthorized, sendForbidden } = buildEnv(verifyToken);
 
     await handler(
+      permission,
       {
         get: () => null,
         body: { [idTokenKey]: 42 },
@@ -93,7 +107,11 @@ describe('createVerifyAdmin error responses', () => {
     );
 
     expect(verifyToken).not.toHaveBeenCalled();
-    expect(sendUnauthorized).toHaveBeenCalledWith({}, 'Missing token');
+    expect(sendUnauthorized).toHaveBeenCalledWith(
+      permission,
+      {},
+      'Missing token'
+    );
     expect(sendForbidden).not.toHaveBeenCalled();
   });
 
@@ -101,10 +119,11 @@ describe('createVerifyAdmin error responses', () => {
     const verifyToken = jest.fn();
     const { handler, sendUnauthorized } = buildEnv(verifyToken);
 
-    await handler({ get: () => 'Token not-a-bearer-token' }, {});
+    await handler(permission, { get: () => 'Token not-a-bearer-token' }, {});
 
     expect(verifyToken).not.toHaveBeenCalled();
     expect(sendUnauthorized).toHaveBeenCalledWith(
+      permission,
       {},
       'Malformed Authorization header'
     );

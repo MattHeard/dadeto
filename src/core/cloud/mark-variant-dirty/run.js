@@ -84,20 +84,8 @@ export function runMarkVariantDirty(deps) {
       refFromSnap,
     },
   };
-  const sendResponse =
-    /** @type {(res: import('../../../../types/native-http').NativeHttpResponse, status: number, method: 'send' | 'json', body: unknown) => void} */ (
-      (res, status, method, body) =>
-        deps.bindEffectInvocationBoundary(permission =>
-          deps.sendResponse(permission, res, status, method, body)
-        )()
-    );
-  const logWarning =
-    /** @type {(message: string, details?: object) => void} */ (
-      (message, details) =>
-        deps.bindEffectInvocationBoundary(permission =>
-          deps.logWarning(permission, message, details)
-        )()
-    );
+  const sendResponse = deps.sendResponse;
+  const logWarning = deps.logWarning;
   // Stryker restore all
 
   /**
@@ -105,7 +93,7 @@ export function runMarkVariantDirty(deps) {
    * @param {string} variantName Variant name.
    * @returns {Promise<boolean>} Result.
    */
-  const markVariantDirtyAction = deps.bindEffectInvocationBoundary(
+  const markVariantDirtyAction =
     /** @type {(allowEffects: import('../../../../types/allow-effects').AllowEffects, pageNumber: number, variantName: string) => Promise<boolean>} */ (
       (allowEffects, pageNumber, variantName) =>
         markVariantDirtyImpl(
@@ -114,14 +102,12 @@ export function runMarkVariantDirty(deps) {
           variantName,
           markVariantDirtyDeps
         )
-    )
-  );
-  const markAuthorDirtyAction = deps.bindEffectInvocationBoundary(
+    );
+  const markAuthorDirtyAction =
     /** @type {(allowEffects: import('../../../../types/allow-effects').AllowEffects, authorId: string) => Promise<boolean>} */ (
       (allowEffects, authorId) =>
         markAuthorDirtyImpl(allowEffects, authorId, markVariantDirtyDeps)
-    )
-  );
+    );
 
   const verifyAdmin = createVerifyAdmin({
     verifyToken: token =>
@@ -129,19 +115,21 @@ export function runMarkVariantDirty(deps) {
         auth.verifyIdToken(token)
       ),
     isAdminUid: createIsAdminUid(deps.ADMIN_UID),
-    sendUnauthorized: (res, message) => sendResponse(res, 401, 'send', message),
-    sendForbidden: res => sendResponse(res, 403, 'send', 'Forbidden'),
+    sendUnauthorized: (permission, res, message) =>
+      sendResponse(permission, res, 401, 'send', message),
+    sendForbidden: (permission, res) =>
+      sendResponse(permission, res, 403, 'send', 'Forbidden'),
     logger: { warn: logWarning },
   });
 
-  const handleRequest = createHandleRequest(
+  const coreHandleRequest = createHandleRequest(
     /**
-     @type {{
-    verifyAdmin: (req: import('../../../../types/native-http').NativeHttpRequest, res: import('../../../../types/native-http').NativeHttpResponse) => Promise<boolean>,
-    markVariantDirty: (pageNumber: number, variantName: string) => Promise<boolean>,
+    @type {{
+    verifyAdmin: (permission: import('../../../../types/allow-effects').AllowEffects, req: import('../../../../types/native-http').NativeHttpRequest, res: import('../../../../types/native-http').NativeHttpResponse) => Promise<boolean>,
+    markVariantDirty: (permission: import('../../../../types/allow-effects').AllowEffects, pageNumber: number, variantName: string) => Promise<boolean>,
     parseRequestBody: (body: unknown) => { pageNumber: number, variantName: string },
     allowedMethod: string,
-    sendResponse: (res: import('../../../../types/native-http').NativeHttpResponse, status: number, method: 'send' | 'json', body: unknown) => void,
+    sendResponse: (permission: import('../../../../types/allow-effects').AllowEffects, res: import('../../../../types/native-http').NativeHttpResponse, status: number, method: 'send' | 'json', body: unknown) => void,
   }} */ ({
       verifyAdmin,
       markVariantDirty: markVariantDirtyAction,
@@ -152,6 +140,11 @@ export function runMarkVariantDirty(deps) {
       allowedMethod: 'POST',
     })
   );
+  const runRequest =
+    /** @type {(permission: import('../../../../types/allow-effects').AllowEffects, req: import('../../../../types/native-http').NativeHttpRequest, res: import('../../../../types/native-http').NativeHttpResponse) => Promise<void>} */ (
+      (permission, req, res) => coreHandleRequest(permission, req, res)
+    );
+  const handleRequest = deps.bindEffectInvocationBoundary(runRequest);
   // Stryker restore all
 
   deps.bindStartupEffectBoundary(allowEffects =>

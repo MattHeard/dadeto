@@ -1,6 +1,9 @@
 import { describe, expect, test, jest } from '@jest/globals';
 import { createVerifyAdmin } from '../../../../src/core/cloud/mark-variant-dirty/verifyAdmin.js';
 
+const permission = Object.freeze({ scope: 'test-request' });
+const logger = { warn: jest.fn() };
+
 describe('createVerifyAdmin', () => {
   test('sends missing token response when Authorization header absent', async () => {
     const sendUnauthorized = jest.fn();
@@ -9,15 +12,20 @@ describe('createVerifyAdmin', () => {
       isAdminUid: jest.fn(),
       sendUnauthorized,
       sendForbidden: jest.fn(),
+      logger,
     });
 
     const req = { get: jest.fn().mockReturnValue('') };
     const res = {};
 
-    const authorised = await verifyAdmin(req, res);
+    const authorised = await verifyAdmin(permission, req, res);
 
     expect(authorised).toBe(false);
-    expect(sendUnauthorized).toHaveBeenCalledWith(res, 'Missing token');
+    expect(sendUnauthorized).toHaveBeenCalledWith(
+      permission,
+      res,
+      'Missing token'
+    );
   });
 
   test('uses default header reader when request lacks get function', async () => {
@@ -27,13 +35,18 @@ describe('createVerifyAdmin', () => {
       isAdminUid: jest.fn(),
       sendUnauthorized,
       sendForbidden: jest.fn(),
+      logger,
     });
 
     const res = {};
-    const authorised = await verifyAdmin({}, res);
+    const authorised = await verifyAdmin(permission, {}, res);
 
     expect(authorised).toBe(false);
-    expect(sendUnauthorized).toHaveBeenCalledWith(res, 'Missing token');
+    expect(sendUnauthorized).toHaveBeenCalledWith(
+      permission,
+      res,
+      'Missing token'
+    );
   });
 
   test('treats a non-string Authorization header as a missing token', async () => {
@@ -43,16 +56,21 @@ describe('createVerifyAdmin', () => {
       isAdminUid: jest.fn(),
       sendUnauthorized,
       sendForbidden: jest.fn(),
+      logger,
     });
 
     const req = { get: jest.fn().mockReturnValue(undefined) };
     const res = {};
 
-    const authorised = await verifyAdmin(req, res);
+    const authorised = await verifyAdmin(permission, req, res);
 
     expect(authorised).toBe(false);
     expect(req.get).toHaveBeenCalledWith('Authorization');
-    expect(sendUnauthorized).toHaveBeenCalledWith(res, 'Missing token');
+    expect(sendUnauthorized).toHaveBeenCalledWith(
+      permission,
+      res,
+      'Missing token'
+    );
   });
 
   test('invokes collaborators to validate admin access', async () => {
@@ -66,12 +84,13 @@ describe('createVerifyAdmin', () => {
       isAdminUid,
       sendUnauthorized,
       sendForbidden,
+      logger,
     });
 
     const req = { get: jest.fn().mockReturnValue('Bearer good') };
     const res = {};
 
-    const authorised = await verifyAdmin(req, res);
+    const authorised = await verifyAdmin(permission, req, res);
 
     expect(authorised).toBe(true);
     expect(verifyToken).toHaveBeenCalledWith('good');
@@ -90,17 +109,18 @@ describe('createVerifyAdmin', () => {
       isAdminUid,
       sendUnauthorized: jest.fn(),
       sendForbidden,
+      logger,
     });
 
     const req = { get: jest.fn().mockReturnValue('Bearer nope') };
     const res = {};
 
-    const authorised = await verifyAdmin(req, res);
+    const authorised = await verifyAdmin(permission, req, res);
 
     expect(authorised).toBe(false);
     expect(verifyToken).toHaveBeenCalledWith('nope');
     expect(isAdminUid).toHaveBeenCalledWith({ uid: 'user' });
-    expect(sendForbidden).toHaveBeenCalledWith(res);
+    expect(sendForbidden).toHaveBeenCalledWith(permission, res);
   });
 
   test('uses built-in invalid token message when error lacks detail', async () => {
@@ -113,15 +133,16 @@ describe('createVerifyAdmin', () => {
       isAdminUid: jest.fn(),
       sendUnauthorized,
       sendForbidden: jest.fn(),
+      logger,
     });
 
     const req = { get: jest.fn().mockReturnValue('Bearer nope') };
     const res = {};
 
-    const authorised = await verifyAdmin(req, res);
+    const authorised = await verifyAdmin(permission, req, res);
 
     expect(authorised).toBe(false);
-    expect(sendUnauthorized).toHaveBeenCalledWith(res, 'bad token');
+    expect(sendUnauthorized).toHaveBeenCalledWith(permission, res, 'bad token');
   });
 
   test('uses generic invalid token message when error lacks detail', async () => {
@@ -133,14 +154,19 @@ describe('createVerifyAdmin', () => {
       isAdminUid: jest.fn(),
       sendUnauthorized,
       sendForbidden: jest.fn(),
+      logger,
     });
 
     const req = { get: jest.fn().mockReturnValue('Bearer nope') };
     const res = {};
 
-    const authorised = await verifyAdmin(req, res);
+    const authorised = await verifyAdmin(permission, req, res);
 
     expect(authorised).toBe(false);
-    expect(sendUnauthorized).toHaveBeenCalledWith(res, 'Invalid token');
+    expect(sendUnauthorized).toHaveBeenCalledWith(
+      permission,
+      res,
+      'Invalid token'
+    );
   });
 });

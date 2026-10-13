@@ -21,11 +21,12 @@ export {
 
 /** @typedef {import('../../../types/native-http').NativeHttpRequest} NativeHttpRequest */
 /** @typedef {import('../../../types/native-http').NativeHttpResponse} NativeHttpResponse */
+/** @typedef {import('../../../types/allow-effects').AllowEffects} AllowEffects */
 
 /** @typedef {{ code?: string, message?: unknown }} FirebaseError */
 /** @typedef {(value: unknown) => boolean} BooleanPredicate */
 /** @typedef {{ functions: { region: (region: string) => { firestore: { database?: (database: string) => { document: (path: string) => { onWrite: (handler: (change: unknown) => Promise<null>) => unknown } }, document: (path: string) => { onWrite: (handler: (change: unknown) => Promise<null>) => unknown } } } }, region: string, documentPath: string, database?: string, handler: (change: unknown) => Promise<null> }} FirestoreDocumentOnWriteTriggerOptions */
-/** @typedef {{ verifyToken: (token: string) => Promise<import('firebase-admin/auth').DecodedIdToken>, isAdminUid: (decoded: import('firebase-admin/auth').DecodedIdToken) => boolean, sendUnauthorized: (res: NativeHttpResponse, message: string) => void, sendForbidden: (res: NativeHttpResponse) => void, logger?: { warn?: (message: string, details?: object) => void } }} VerifyAdminOptions */
+/** @typedef {{ verifyToken: (token: string) => Promise<import('firebase-admin/auth').DecodedIdToken>, isAdminUid: (decoded: import('firebase-admin/auth').DecodedIdToken) => boolean, sendUnauthorized: (permission: AllowEffects, res: NativeHttpResponse, message: string) => void, sendForbidden: (permission: AllowEffects, res: NativeHttpResponse) => void, logger: { warn: (permission: AllowEffects, message: string, details?: object) => void } }} VerifyAdminOptions */
 
 export const MISSING_AUTHORIZATION_RESPONSE = {
   status: 401,
@@ -1003,18 +1004,19 @@ function getTokenFromRequestBody(req) {
 
 /**
  * Ensure the provided token belongs to an administrator and report errors.
+ * @param {AllowEffects} permission Permission for rejection effects.
  * @param {{
  *   token: string,
  *   verifyToken: (token: string) => Promise<import('firebase-admin/auth').DecodedIdToken>,
  *   isAdminUid: (decoded: import('firebase-admin/auth').DecodedIdToken) => boolean,
- *   sendUnauthorized: (res: NativeHttpResponse, message: string) => void,
- *   sendForbidden: (res: NativeHttpResponse) => void,
- *   logger?: { warn?: (message: string, details?: object) => void },
+ *   sendUnauthorized: (permission: AllowEffects, res: NativeHttpResponse, message: string) => void,
+ *   sendForbidden: (permission: AllowEffects, res: NativeHttpResponse) => void,
+ *   logger: { warn: (permission: AllowEffects, message: string, details?: object) => void },
  *   res: NativeHttpResponse,
  * }} deps Dependencies for validating the token and sending HTTP errors.
  * @returns {Promise<boolean>} True when the token is authorized for an admin request.
  */
-async function authorizeAdminToken(deps) {
+async function authorizeAdminToken(permission, deps) {
   const token = deps.token;
   const verifyToken = deps.verifyToken;
   const isAdminUid = deps.isAdminUid;
@@ -1024,24 +1026,23 @@ async function authorizeAdminToken(deps) {
   const res = deps.res;
   try {
     const decoded = await verifyToken(token);
-    return ensureAdminIdentity({
-      decoded,
-      isAdminUid,
-      sendForbidden,
-      res,
-    });
+    if (!isAdminUid(decoded)) {
+      sendForbidden(permission, res);
+      return false;
+    }
+    return true;
   } catch (error) {
     // Stryker disable next-line all -- rejected token logging is optional
     // diagnostics with a fixed warning protocol.
     const message = defaultInvalidTokenMessage(error);
     // Stryker disable next-line all -- rejection logging is optional fixed
     // diagnostics and does not alter the unauthorized response.
-    logger?.warn?.('Admin auth rejected: token verification failed', {
+    logger.warn(permission, 'Admin auth rejected: token verification failed', {
       // Stryker disable next-line all -- diagnostic code is optional metadata.
       code: error?.code,
       message,
     });
-    sendUnauthorized(res, message);
+    sendUnauthorized(permission, res, message);
     // Stryker disable next-line all -- forbidden identity has one fixed false
     // result after the response is sent.
     return false;
@@ -1049,41 +1050,15 @@ async function authorizeAdminToken(deps) {
 }
 
 /**
- * Confirm the decoded token belongs to an admin and respond when it does not.
- * @param {{
- *   decoded: import('firebase-admin/auth').DecodedIdToken,
- *   isAdminUid: (decoded: import('firebase-admin/auth').DecodedIdToken) => boolean,
- *   sendForbidden: (res: NativeHttpResponse) => void,
- *   res: NativeHttpResponse,
- * }} deps Authorization helpers.
- * @returns {boolean} True when the decoded token matches the admin UID.
- */
-function ensureAdminIdentity({ decoded, isAdminUid, sendForbidden, res }) {
-  const isAdmin = Boolean(isAdminUid(decoded));
-  // Stryker disable next-line all -- non-admin identity has one fixed 403
-  // response path.
-  if (!isAdmin) {
-    sendForbidden(res);
-    // Stryker disable next-line all -- forbidden requests always return the
-    // fixed false guard result after sending 403.
-    return false;
-  }
-  // Stryker disable next-line all -- successful admin identity has one fixed
-  // true result.
-  return true;
-}
-
-/**
  * Create a reusable admin guard.
  * @param {VerifyAdminOptions} options Authorization collaborators.
- * @returns {(req: NativeHttpRequest, res: NativeHttpResponse) => Promise<boolean>} Express middleware that authenticates the admin request and reports success.
+ * @returns {(permission: AllowEffects, req: NativeHttpRequest, res: NativeHttpResponse) => Promise<boolean>} Effectful admin verifier for one request.
  */
 // Stryker disable next-line all -- admin verification has fixed malformed,
 // missing-token, unauthorized, and forbidden response protocols.
 export function createVerifyAdmin(options) {
-  const logger =
-    options.logger === undefined ? globalThis.console : options.logger;
-  return async function verifyAdmin(req, res) {
+  const logger = options.logger;
+  return async function verifyAdmin(permission, req, res) {
     const authHeader = getAuthHeader(req);
     const authMatch = matchAuthHeader(authHeader);
     // Stryker disable next-line all -- malformed Authorization has one fixed
@@ -1091,8 +1066,15 @@ export function createVerifyAdmin(options) {
     if (authHeader && !authMatch) {
       // Stryker disable next-line all -- malformed-header logging is optional
       // fixed diagnostics.
-      logger.warn?.('Admin auth rejected: malformed Authorization header');
-      options.sendUnauthorized(res, defaultMalformedAuthorizationMessage);
+      logger.warn(
+        permission,
+        'Admin auth rejected: malformed Authorization header'
+      );
+      options.sendUnauthorized(
+        permission,
+        res,
+        defaultMalformedAuthorizationMessage
+      );
       // Stryker disable next-line all -- malformed headers have one fixed false
       // result after the response is sent.
       return false;
@@ -1104,13 +1086,13 @@ export function createVerifyAdmin(options) {
     if (!token) {
       // Stryker disable next-line all -- missing-token logging is optional fixed
       // diagnostics.
-      logger.warn?.('Admin auth rejected: missing token');
-      options.sendUnauthorized(res, defaultMissingTokenMessage);
+      logger.warn(permission, 'Admin auth rejected: missing token');
+      options.sendUnauthorized(permission, res, defaultMissingTokenMessage);
       // Stryker disable next-line all -- missing tokens have one fixed false
       // result after the response is sent.
       return false;
     }
-    return authorizeAdminToken({
+    return authorizeAdminToken(permission, {
       token,
       verifyToken: options.verifyToken,
       isAdminUid: options.isAdminUid,

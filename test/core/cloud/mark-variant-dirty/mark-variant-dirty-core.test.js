@@ -30,10 +30,14 @@ const {
   resolveRequestParser,
 } = markVariantDirtyCore;
 
-const sendResponse = (res, status, method, body) =>
-  res.status(status)[method](body);
+const requestPermission = Object.freeze({ scope: 'test-request' });
+const sendResponse = (...args) => {
+  const [, res, status, method, body] = args;
+  return res.status(status)[method](body);
+};
 const createHandleRequest = options =>
   createCoreHandleRequest({ sendResponse, ...options });
+const invokeHandle = (handle, req, res) => handle(requestPermission, req, res);
 
 describe('getAllowedOrigins', () => {
   const allowEffects =
@@ -522,14 +526,14 @@ describe('auth helpers', () => {
       send: jest.fn(),
     };
 
-    sendUnauthorized(sendResponse, res, 'nope');
+    sendUnauthorized(requestPermission, sendResponse, res, 'nope');
     expect(res.status).toHaveBeenCalledWith(401);
     expect(res.send).toHaveBeenCalledWith('nope');
 
     res.status.mockClear();
     res.send.mockClear();
 
-    sendForbidden(sendResponse, res);
+    sendForbidden(requestPermission, sendResponse, res);
     expect(res.status).toHaveBeenCalledWith(403);
     expect(res.send).toHaveBeenCalledWith('Forbidden');
   });
@@ -599,7 +603,7 @@ describe('createHandleRequest', () => {
     const handle = createHandleRequest({ verifyAdmin, markVariantDirty });
     const res = createResponse();
 
-    await handle({ method: 'GET' }, res);
+    await invokeHandle(handle, { method: 'GET' }, res);
 
     expect(res.status).toHaveBeenCalledWith(405);
     expect(res.send).toHaveBeenCalledWith('POST only');
@@ -612,7 +616,7 @@ describe('createHandleRequest', () => {
     const handle = createHandleRequest({ verifyAdmin, markVariantDirty });
     const res = createResponse();
 
-    await handle({ method: 'POST' }, res);
+    await invokeHandle(handle, { method: 'POST' }, res);
 
     expect(markVariantDirty).not.toHaveBeenCalled();
     expect(res.status).not.toHaveBeenCalledWith(400);
@@ -624,7 +628,7 @@ describe('createHandleRequest', () => {
     const handle = createHandleRequest({ verifyAdmin, markVariantDirty });
     const res = createResponse();
 
-    await handle({ method: 'POST', body: { page: 'one' } }, res);
+    await invokeHandle(handle, { method: 'POST', body: { page: 'one' } }, res);
 
     expect(res.status).toHaveBeenCalledWith(400);
     expect(res.json).toHaveBeenCalledWith({ error: 'Invalid input' });
@@ -637,7 +641,11 @@ describe('createHandleRequest', () => {
     const handle = createHandleRequest({ verifyAdmin, markVariantDirty });
     const res = createResponse();
 
-    await handle({ method: 'POST', body: { page: 1, variant: '' } }, res);
+    await invokeHandle(
+      handle,
+      { method: 'POST', body: { page: 1, variant: '' } },
+      res
+    );
 
     expect(res.status).toHaveBeenCalledWith(400);
     expect(res.json).toHaveBeenCalledWith({ error: 'Invalid input' });
@@ -650,7 +658,8 @@ describe('createHandleRequest', () => {
     const handle = createHandleRequest({ verifyAdmin, markVariantDirty });
     const res = createResponse();
 
-    await handle(
+    await invokeHandle(
+      handle,
       { method: 'POST', body: { page: 1, variant: 'missing' } },
       res
     );
@@ -665,7 +674,11 @@ describe('createHandleRequest', () => {
     const handle = createHandleRequest({ verifyAdmin, markVariantDirty });
     const res = createResponse();
 
-    await handle({ method: 'POST', body: { page: 2, variant: 'ok' } }, res);
+    await invokeHandle(
+      handle,
+      { method: 'POST', body: { page: 2, variant: 'ok' } },
+      res
+    );
 
     expect(res.status).toHaveBeenLastCalledWith(200);
     expect(res.json).toHaveBeenCalledWith({ ok: true });
@@ -686,7 +699,11 @@ describe('createHandleRequest', () => {
 
     for (const expected of [200, 404, 500]) {
       const res = createResponse();
-      await handle({ method: 'POST', body: { authorId: 'author-1' } }, res);
+      await invokeHandle(
+        handle,
+        { method: 'POST', body: { authorId: 'author-1' } },
+        res
+      );
       expect(res.status).toHaveBeenLastCalledWith(expected);
     }
   });
@@ -699,7 +716,11 @@ describe('createHandleRequest', () => {
     const res = createResponse();
 
     await expect(
-      handle({ method: 'POST', body: { authorId: 'author-1' } }, res)
+      invokeHandle(
+        handle,
+        { method: 'POST', body: { authorId: 'author-1' } },
+        res
+      )
     ).rejects.toThrow('markAuthorDirty is not configured');
   });
 
@@ -709,7 +730,11 @@ describe('createHandleRequest', () => {
     const handle = createHandleRequest({ verifyAdmin, markVariantDirty });
     const res = createResponse();
 
-    await handle({ method: 'POST', body: { page: 3, variant: 'err' } }, res);
+    await invokeHandle(
+      handle,
+      { method: 'POST', body: { page: 3, variant: 'err' } },
+      res
+    );
 
     expect(res.status).toHaveBeenLastCalledWith(500);
     expect(res.json).toHaveBeenCalledWith({ error: 'boom' });
@@ -721,7 +746,11 @@ describe('createHandleRequest', () => {
     const handle = createHandleRequest({ verifyAdmin, markVariantDirty });
     const res = createResponse();
 
-    await handle({ method: 'POST', body: { page: 4, variant: 'err' } }, res);
+    await invokeHandle(
+      handle,
+      { method: 'POST', body: { page: 4, variant: 'err' } },
+      res
+    );
 
     expect(res.status).toHaveBeenLastCalledWith(500);
     expect(res.json).toHaveBeenCalledWith({ error: 'update failed' });
@@ -742,10 +771,18 @@ describe('createHandleRequest', () => {
     });
     const res = createResponse();
 
-    await handle({ method: 'PATCH', body: { ignored: true } }, res);
+    await invokeHandle(
+      handle,
+      { method: 'PATCH', body: { ignored: true } },
+      res
+    );
 
     expect(parseRequestBody).toHaveBeenCalledWith({ ignored: true });
-    expect(markVariantDirty).toHaveBeenCalledWith(21, 'parsed');
+    expect(markVariantDirty).toHaveBeenCalledWith(
+      requestPermission,
+      21,
+      'parsed'
+    );
   });
 
   it('rethrows unexpected errors from the request pipeline', async () => {
@@ -762,7 +799,7 @@ describe('createHandleRequest', () => {
     const res = createResponse();
 
     await expect(
-      handle({ method: 'POST', body: { page: 1 } }, res)
+      invokeHandle(handle, { method: 'POST', body: { page: 1 } }, res)
     ).rejects.toThrow('parse failure');
   });
 });

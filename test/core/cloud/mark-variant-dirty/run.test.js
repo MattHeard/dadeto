@@ -312,7 +312,7 @@ describe('runMarkVariantDirty', () => {
     );
     expect(sendResponse).toHaveBeenNthCalledWith(
       2,
-      invocationPermissions[3],
+      invocationPermissions[1],
       res,
       200,
       'json',
@@ -328,10 +328,10 @@ describe('runMarkVariantDirty', () => {
       res
     );
 
-    expect(invocationPermissions[4]).not.toBe(invocationPermissions[1]);
+    expect(invocationPermissions[2]).not.toBe(invocationPermissions[1]);
     expect(updateDocument).toHaveBeenNthCalledWith(
       3,
-      invocationPermissions[4],
+      invocationPermissions[2],
       authorRef,
       { dirty: false }
     );

@@ -165,14 +165,20 @@ describe('cloud-core additional coverage', () => {
 
   test('rejects a request with no object body before token verification', async () => {
     const sendUnauthorized = jest.fn();
+    const permission = Object.freeze({ scope: 'test-request' });
     const handler = createVerifyAdmin({
       verifyToken: jest.fn(),
       isAdminUid: () => true,
       sendUnauthorized,
       sendForbidden: jest.fn(),
+      logger: { warn: jest.fn() },
     });
-    await handler({ get: () => null, body: null }, {});
-    expect(sendUnauthorized).toHaveBeenCalledWith({}, 'Missing token');
+    await handler(permission, { get: () => null, body: null }, {});
+    expect(sendUnauthorized).toHaveBeenCalledWith(
+      permission,
+      {},
+      'Missing token'
+    );
   });
 
   test('validates dependency collections and sends success responses', () => {

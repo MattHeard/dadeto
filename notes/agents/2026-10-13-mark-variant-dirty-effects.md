@@ -1,0 +1,8 @@
+# Mark-variant-dirty request effects
+
+- **Unexpected hurdle:** `npm run build:cloud` refreshed four unrelated checked-in generated browser files while packaging the cloud functions.
+- **Diagnosis:** The copy step updates shared generated shims as a side effect of the broad cloud package build; none of those four files is part of the mark-variant-dirty request path.
+- **Handling:** Kept the generated mark-variant-dirty cloud output for verification and restored only the unrelated `infra/commonCore.js`, `infra/contentsGoogleAuthModule.js`, `infra/statsGoogleAuthModule.js`, and `infra/variantGoogleSignIn.js` outputs.
+- **Evidence:** `npm run check` passed all 10 gates, including unit/coverage and 11 local E2E tests. `npm run build:cloud` passed. `node --check infra/cloud-functions/mark-variant-dirty/mark-variant-dirty-core.js` and `node --check infra/cloud-functions/mark-variant-dirty/mark-variant-dirty-gcf.js` passed. `git diff --check` passed.
+- **Chosen change:** The request boundary now creates one fresh AllowEffects capability per HTTP invocation and passes it through admin verification, every response path, Firestore mutations, and warning logs. Core no longer hides token creation inside response/log callbacks; the deployed `(req, res)` function signature and startup capability remain at the outer cloud boundary.
+- **Next:** Continue the rank-1 Allow Effects audit at `src/cloud/render-variant/index.js`, checking the full entrypoint for startup, trigger/HTTP, fetch, logging, Storage, and CDN invalidation effects that lack the appropriate capability. Keep each effect capability on explicit function parameters and do not capture a startup token in request handlers.
