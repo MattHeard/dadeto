@@ -343,6 +343,134 @@ describe('billing runtime snapshot paths', () => {
       })
     ).resolves.toEqual({ status: 404, body: { error: 'purchase_not_found' } });
   });
+
+  it('creates idempotent refund intents without changing credit balances or lots', async () => {
+    const { db, billing } = setup();
+    const refundPricing = {
+      ...snapshot,
+      snapshotId: 'refund-current',
+      eurPerUsdMicros: 100_000,
+      creditEurMicros: 100,
+    };
+    await db
+      .collection('billing-pricing-snapshots')
+      .doc(refundPricing.snapshotId)
+      .set(refundPricing);
+    const purchases = [
+      {
+        purchaseId: 'refund-untouched',
+        apiKeyUuid: 'refund-key-untouched',
+        amountUsdMinor: 1000,
+        creditsIssued: 10_000,
+        stripePaymentIntentId: 'pi-untouched',
+        status: 'paid',
+      },
+      {
+        purchaseId: 'refund-partial',
+        apiKeyUuid: 'refund-key-partial',
+        amountUsdMinor: 1000,
+        creditsIssued: 10_000,
+        stripePaymentIntentId: 'pi-partial',
+        status: 'paid',
+      },
+    ];
+    for (const purchase of purchases) {
+      await db
+        .collection('billing-purchases')
+        .doc(purchase.purchaseId)
+        .set(purchase);
+      await db
+        .doc(`api-key-credit/${purchase.apiKeyUuid}`)
+        .set({ credit: purchase.creditsIssued });
+      await db
+        .doc(
+          `api-key-credit/${purchase.apiKeyUuid}/lots/${purchase.purchaseId}`
+        )
+        .set({
+          purchaseId: purchase.purchaseId,
+          issuedCredits: purchase.creditsIssued,
+          remainingCredits:
+            purchase.purchaseId === 'refund-partial' ? 5000 : 10_000,
+          createdAt: '2026-08-01T00:00:00.000Z',
+          refundable: true,
+        });
+    }
+
+    const created = await billing.createRefundIntent(allowEffects, {
+      refundIntentId: 'refund-intent-untouched',
+      purchaseId: 'refund-untouched',
+    });
+    expect(created).toMatchObject({
+      status: 201,
+      body: {
+        refundIntent: {
+          refundIntentId: 'refund-intent-untouched',
+          purchaseId: 'refund-untouched',
+          stripePaymentIntentId: 'pi-untouched',
+          amountUsdMinor: 1000,
+          creditsToReverse: 10_000,
+          pricingSnapshotId: 'refund-current',
+          status: 'requested',
+        },
+      },
+    });
+    const partial = await billing.createRefundIntent(allowEffects, {
+      refundIntentId: 'refund-intent-partial',
+      purchaseId: 'refund-partial',
+    });
+    expect(partial).toMatchObject({
+      status: 201,
+      body: { refundIntent: { amountUsdMinor: 500, creditsToReverse: 5000 } },
+    });
+    await expect(
+      billing.createRefundIntent(allowEffects, {
+        refundIntentId: 'refund-intent-partial',
+        purchaseId: 'refund-partial',
+      })
+    ).resolves.toMatchObject({
+      status: 200,
+      body: { duplicate: true },
+    });
+    await expect(
+      billing.createRefundIntent(allowEffects, {
+        refundIntentId: 'refund-intent-partial',
+        purchaseId: 'refund-untouched',
+      })
+    ).resolves.toEqual({
+      status: 409,
+      body: { error: 'refund_intent_conflict' },
+    });
+    await expect(
+      billing.createRefundIntent(allowEffects, {
+        refundIntentId: 'another-intent',
+        purchaseId: 'refund-partial',
+      })
+    ).resolves.toEqual({
+      status: 409,
+      body: { error: 'refund_intent_in_progress' },
+    });
+
+    expect(
+      (await db.doc('api-key-credit/refund-key-untouched').get()).data()
+    ).toEqual({ credit: 10_000 });
+    expect(
+      (
+        await db
+          .doc('api-key-credit/refund-key-untouched/lots/refund-untouched')
+          .get()
+      ).data()
+    ).toMatchObject({ remainingCredits: 10_000, refundable: true });
+    expect(
+      (await db.doc('api-key-credit/refund-key-partial').get()).data()
+    ).toEqual({ credit: 10_000 });
+    expect(
+      (
+        await db
+          .doc('api-key-credit/refund-key-partial/lots/refund-partial')
+          .get()
+      ).data()
+    ).toMatchObject({ remainingCredits: 5000, refundable: true });
+  });
 });
 
 describe('billing runtime expiry paths', () => {
