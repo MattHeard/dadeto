@@ -1,13 +1,14 @@
 /**
  * Connect submit-new-page core dependencies to the cloud runtime.
+ * @param {import('../../types/allow-effects').AllowEffects} allowEffects Startup permission.
  * @param {object} deps Cloud services and submit-new-page helpers.
  * @returns {ReturnType<import('../../core/cloud/submit-new-page/submit-new-page-core').createHandleSubmit>} Core request handler.
  */
-export function createSubmitNewPageRuntime(deps) {
+export function createSubmitNewPageRuntime(allowEffects, deps) {
   const { ensureFirebaseApp } = deps.createFirebaseAppManager(
     deps.initializeApp
   );
-  ensureFirebaseApp();
+  deps.ensureFirebaseInitialized(allowEffects, ensureFirebaseApp);
   const db = deps.getFirestoreInstance();
   const auth = deps.getAuth();
   return deps.createHandleSubmit({

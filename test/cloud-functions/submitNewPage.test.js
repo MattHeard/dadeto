@@ -65,6 +65,7 @@ describe('cloud submit-new-page entrypoint', () => {
     const module = await import('../../src/cloud/submit-new-page/index.js');
 
     expect(createSubmitNewPageRuntime).toHaveBeenCalledWith(
+      expect.any(Object),
       expect.objectContaining({
         createHandleSubmit,
         createFirebaseAppManager,
@@ -73,6 +74,13 @@ describe('cloud submit-new-page entrypoint', () => {
         FieldValue,
         ...helpers,
       })
+    );
+    expect(Object.isFrozen(createSubmitNewPageRuntime.mock.calls[0][0])).toBe(
+      true
+    );
+    expect(createSubmitNewPageApp).toHaveBeenCalledWith(
+      createSubmitNewPageRuntime.mock.calls[0][0],
+      expect.objectContaining({ handleSubmit: 'handler' })
     );
     expect(module.handle).toBe('handle');
   });

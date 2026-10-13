@@ -386,10 +386,14 @@ describe('createHandleSubmit page and HTTP behavior', () => {
       status: jest.fn().mockReturnThis(),
       json: jest.fn(),
     };
+    const sendResponse = jest.fn((permission, response, status, body) =>
+      response.status(status).json(body)
+    );
 
     const handle = createSubmitNewPageRequestHandler(
       handleSubmitCore,
-      createEffectHttpBoundary
+      createEffectHttpBoundary,
+      sendResponse
     );
     const req = {};
     await handle(req, res);
@@ -403,6 +407,16 @@ describe('createHandleSubmit page and HTTP behavior', () => {
     expect(handleSubmitCore).toHaveBeenNthCalledWith(2, secondPermission, req);
     expect(res.status).toHaveBeenCalledWith(202);
     expect(res.json).toHaveBeenCalledWith({ ok: true });
+    expect(sendResponse).toHaveBeenNthCalledWith(1, firstPermission, res, 202, {
+      ok: true,
+    });
+    expect(sendResponse).toHaveBeenNthCalledWith(
+      2,
+      secondPermission,
+      res,
+      202,
+      { ok: true }
+    );
   });
 
   it('mints a fresh permission for each HTTP request and forwards it to persistence', async () => {
@@ -427,11 +441,19 @@ describe('createHandleSubmit page and HTTP behavior', () => {
     const cors = jest.fn(options => ({ options }));
     const handleSubmit = jest.fn();
 
-    const app = createSubmitNewPageApp({
+    const useMiddleware = jest.fn((permission, appInstance, middleware) =>
+      appInstance.use(middleware)
+    );
+    const registerPost = jest.fn((permission, appInstance, path, handler) =>
+      appInstance.post(path, handler)
+    );
+    const app = createSubmitNewPageApp(TEST_ALLOW_EFFECTS, {
       express,
       cors,
       allowedOrigins: ['https://example.test'],
       handleSubmit,
+      useMiddleware,
+      registerPost,
     });
 
     expect(app).toEqual({ use, post });
@@ -439,6 +461,19 @@ describe('createHandleSubmit page and HTTP behavior', () => {
     expect(cors).toHaveBeenCalledTimes(1);
     expect(use).toHaveBeenCalledTimes(3);
     expect(post).toHaveBeenCalledWith('/', handleSubmit);
+    expect(useMiddleware).toHaveBeenCalledTimes(3);
+    expect(useMiddleware).toHaveBeenNthCalledWith(
+      1,
+      TEST_ALLOW_EFFECTS,
+      app,
+      expect.any(Object)
+    );
+    expect(registerPost).toHaveBeenCalledWith(
+      TEST_ALLOW_EFFECTS,
+      app,
+      '/',
+      handleSubmit
+    );
 
     const [corsOptions] = cors.mock.calls[0];
     const allowOrigin = jest.fn();

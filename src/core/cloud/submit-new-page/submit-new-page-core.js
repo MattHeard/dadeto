@@ -16,7 +16,7 @@ import {
   getAuthorizationHeader,
 } from '../submit-shared.js';
 
-/** @typedef {{ express: Function, cors: Function, allowedOrigins: string[], handleSubmit: Function }} SubmitNewPageAppDeps */
+/** @typedef {{ express: Function, cors: Function, allowedOrigins: string[], handleSubmit: Function, useMiddleware: (allowEffects: AllowEffects, app: { use: (middleware: unknown) => unknown }, middleware: unknown) => unknown, registerPost: (allowEffects: AllowEffects, app: { post: (path: string, handler: unknown) => unknown }, path: string, handler: unknown) => unknown }} SubmitNewPageAppDeps */
 
 /**
  * @typedef {import('firebase-admin/firestore').Firestore} Firestore
@@ -699,29 +699,34 @@ export function createHandleSubmit(deps) {
  * Create the Express handler that bridges the core submission result to HTTP.
  * @param {(allowEffects: AllowEffects, request: SubmitNewPageRequest) => Promise<{ status: number, body: object }>} handleSubmitCore Core submit handler.
  * @param {(handler: (allowEffects: AllowEffects, req: import('express').Request, res: import('express').Response) => Promise<void>) => (req: import('express').Request, res: import('express').Response) => Promise<void>} bindEffectBoundary External per-request permission binder.
+ * @param {(allowEffects: AllowEffects, response: import('express').Response, status: number, body: unknown) => unknown} sendResponse Permission-aware response adapter.
  * @returns {(req: import('express').Request, res: import('express').Response) => Promise<void>} Express handler.
  */
 export function createSubmitNewPageRequestHandler(
   handleSubmitCore,
-  bindEffectBoundary
+  bindEffectBoundary,
+  sendResponse
 ) {
   return bindEffectBoundary(async (allowEffects, req, res) => {
     const { status, body } = await handleSubmitCore(allowEffects, req);
-    res.status(status).json(body);
+    sendResponse(allowEffects, res, status, body);
   });
 }
 
 /**
  * Build the submit-new-page Express app.
+ * @param {AllowEffects} allowEffects Startup permission.
  * @param {SubmitNewPageAppDeps} deps Dependencies for app wiring.
  * @returns {{ use: (middleware: unknown) => void, post: (path: string, handler: unknown) => void }} Wired Express app.
  */
-export function createSubmitNewPageApp(deps) {
+export function createSubmitNewPageApp(allowEffects, deps) {
   // Stryker disable all -- Express app wiring uses the fixed CORS/body/POST protocol.
   const express = /** @type {any} */ (deps.express);
   const app = express();
 
-  app.use(
+  deps.useMiddleware(
+    allowEffects,
+    app,
     deps.cors(
       createCorsOptions(
         createCorsOriginHandler(isOriginAllowed, deps.allowedOrigins)
@@ -729,14 +734,16 @@ export function createSubmitNewPageApp(deps) {
     )
   );
 
-  app.use(express.json({ limit: '20kb' }));
-  app.use(
+  deps.useMiddleware(allowEffects, app, express.json({ limit: '20kb' }));
+  deps.useMiddleware(
+    allowEffects,
+    app,
     express.urlencoded({
       extended: false,
       limit: '20kb',
     })
   );
-  app.post('/', deps.handleSubmit);
+  deps.registerPost(allowEffects, app, '/', deps.handleSubmit);
 
   return app;
 }
