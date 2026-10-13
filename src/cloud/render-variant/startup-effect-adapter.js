@@ -1,5 +1,6 @@
 import { runRenderVariant } from '../../core/cloud/render-variant/run.js';
 import {
+  createTreeVisibilityRegenerationRunner,
   createTreeVisibilityRegenerationHandlers,
   createTreeVisibilityRegenerationHandles,
 } from '../../core/cloud/tree-visibility/run.js';
@@ -27,10 +28,15 @@ export function createRenderVariantStartup(dependencies) {
       startupAllowEffects: allowEffects,
       registerVariantWriteTrigger,
     });
-    const handlers = createTreeVisibilityRegenerationHandlers(
-      deps.getFirestoreInstance,
+    const runRegeneration = createTreeVisibilityRegenerationRunner(
+      () => deps.getFirestoreInstance({ ensureAppFn: () => {} }),
       renderRuntime.render,
-      (...args) => console.error(...args)
+      deps.logError
+    );
+    const handlers = createTreeVisibilityRegenerationHandlers(
+      deps.bindEffectBoundary,
+      runRegeneration,
+      deps.sendTreeVisibilityResponse
     );
     const regenerationHandles = createTreeVisibilityRegenerationHandles(
       allowEffects,

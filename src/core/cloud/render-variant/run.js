@@ -30,9 +30,9 @@ import {
  *   setFirestoreDocument: typeof import('../../../cloud/render-variant/effect-adapters.js').setFirestoreDocument,
  *   saveStorageFile: typeof import('../../../cloud/render-variant/effect-adapters.js').saveStorageFile,
  *   effectFetchFn: typeof import('../../../cloud/render-variant/render-variant-gcf.js').effectFetchFn,
+ *   logError: typeof import('../../../cloud/render-variant/logging-effect-adapter.js').logRenderVariantError,
  *   registerVariantWriteTrigger: typeof import('../../../cloud/render-variant/trigger-effect-adapter.js').registerVariantWriteTrigger,
  *   crypto: typeof import('../../../cloud/render-variant/render-variant-gcf.js').crypto,
- *   console?: { error: (...args: unknown[]) => void },
  *   startupAllowEffects: AllowEffects,
  * }} deps Runtime dependencies supplied by the cloud wrapper.
  * @returns {{ renderVariant: unknown, render: (...args: unknown[]) => Promise<null> }} Wired cloud export objects for index.js.
@@ -54,9 +54,8 @@ export function runRenderVariant(deps) {
     registerVariantWriteTrigger,
     startupAllowEffects,
     crypto,
-    console: consoleLike,
+    logError,
   } = typedDeps;
-  const resolvedConsole = consoleLike ?? globalThis.console;
 
   const renderState = /** @type {any} */ (
     createRenderVariantEntrypointState({ db: initializedDb })
@@ -120,8 +119,13 @@ export function runRenderVariant(deps) {
               ...renderEffectDependencies,
             }),
           crypto,
-          consoleError: (/** @type {any[]} */ ...args) =>
-            resolvedConsole.error(...args),
+          consoleError: (/** @type {any[]} */ ...args) => {
+            void bindEffectBoundary(
+              async (/** @type {AllowEffects} */ permission) => {
+                logError(permission, ...args);
+              }
+            );
+          },
         })
       )
     );

@@ -1,5 +1,6 @@
 import { jest } from '@jest/globals';
 import {
+  createTreeVisibilityRegenerationRunner,
   createTreeVisibilityRegenerationHandlers,
   createTreeVisibilityRegenerationHandles,
 } from '../../../../src/core/cloud/tree-visibility/run.js';
@@ -22,9 +23,16 @@ test('builds daily and HTTP regeneration entrypoints', async () => {
     }),
   }));
   const allowEffects = Object.freeze({});
-  const handlers = createTreeVisibilityRegenerationHandlers(
+  const bindEffectBoundary = handler => handler(allowEffects);
+  const run = createTreeVisibilityRegenerationRunner(
     getFirestoreInstance,
-    scheduledRun
+    scheduledRun,
+    jest.fn()
+  );
+  const handlers = createTreeVisibilityRegenerationHandlers(
+    bindEffectBoundary,
+    run,
+    (permission, response, body) => response.status(200).json(body)
   );
   const handles = createTreeVisibilityRegenerationHandles(
     allowEffects,

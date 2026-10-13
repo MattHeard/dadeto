@@ -22,3 +22,15 @@ export function registerTreeVisibilityHttp(allowEffects, options) {
   void allowEffects;
   return options.functions.region('europe-west1').https.onRequest(options.handler);
 }
+
+/**
+ * Send the tree-visibility HTTP result.
+ * @param {import('../../../types/allow-effects').AllowEffects} allowEffects Permission for the response write.
+ * @param {{ status: (code: number) => { json: (body: unknown) => unknown } }} response HTTP response.
+ * @param {unknown} body Response payload.
+ * @returns {unknown} JSON response result.
+ */
+export function sendTreeVisibilityResponse(allowEffects, response, body) {
+  void allowEffects;
+  return response.status(200).json(body);
+}

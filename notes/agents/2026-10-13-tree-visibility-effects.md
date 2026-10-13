@@ -1,0 +1,7 @@
+# Tree visibility regeneration effects
+
+- **Unexpected hurdle:** Adding separate response and logging adapters pushed the regeneration handler factory past the four-parameter limit.
+- **Diagnosis:** The factory mixed the invocation boundary, regeneration dependencies, and response writing. ESLint and `repo/no-parameter-bag-arity-smuggling` caught the arity increase during the full check.
+- **Fix:** Extracted `createTreeVisibilityRegenerationRunner` for Firestore/render/log dependencies, leaving handler construction to accept only the invocation boundary, runner, and response adapter. Each scheduled or HTTP invocation still receives a fresh `AllowEffects` capability; response and logging adapters receive it explicitly.
+- **Evidence:** Focused Jest: 4 suites / 10 tests passed. `npm run tsdoc:check` passed. `DADETO_CHECK_TIMEOUT_MS=7200000 DADETO_JEST_POOL_DIR=/home/matt/dadeto/.tmp/jest-pool JEST_CACHE_DIRECTORY=/home/matt/dadeto/.jest-cache TMPDIR=/home/matt/dadeto/.tmp DADETO_COVERAGE_WORKER_HEAP_MB=1024 npm run check` passed all 10 gates, including coverage, 11 local E2E tests, zero clones, and zero vulnerabilities. `npm run build:cloud` passed; generated render-variant/tree-visibility copies passed `node --check`; `git diff --check` passed.
+- **Next:** Audit `src/cloud/submit-new-page/index.js` and its injected core call tree. The initial scan found direct `app.use`/`app.post` registration, `res.status().json()` response writes, and Firebase initialization in `runtime.js`; classify and migrate those effects through explicit boundaries.

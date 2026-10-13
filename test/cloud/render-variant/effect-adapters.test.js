@@ -5,6 +5,7 @@ import {
   setFirestoreDocument,
   updateFirestoreDocument,
 } from '../../../src/cloud/render-variant/effect-adapters.js';
+import { logRenderVariantError } from '../../../src/cloud/render-variant/logging-effect-adapter.js';
 
 describe('render-variant effect adapters', () => {
   it('updates the supplied reference with the caller permission and payload', async () => {
@@ -44,5 +45,15 @@ describe('render-variant effect adapters', () => {
 
     expect(save).toHaveBeenCalledTimes(1);
     expect(save).toHaveBeenCalledWith(contents, options);
+  });
+
+  it('logs recoverable failures through the permission-first adapter', () => {
+    const permission = createAllowEffects();
+    const log = jest.spyOn(console, 'error').mockImplementation(() => {});
+
+    logRenderVariantError(permission, 'render failed', 'details');
+
+    expect(log).toHaveBeenCalledWith('render failed', 'details');
+    log.mockRestore();
   });
 });

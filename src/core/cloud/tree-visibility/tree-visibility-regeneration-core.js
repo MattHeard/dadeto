@@ -1,15 +1,16 @@
 /** @typedef {{ data?: { visibility?: number }, ref?: { path?: string } }} TreeVariant */
 /** @typedef {(node: TreeVariant) => Promise<TreeVariant[]>} ReadTreeChildren */
+/** @typedef {import('../../../../types/allow-effects').AllowEffects} AllowEffects */
 /**
  * Regenerate only variants whose embedded target weights are stale.
- * @param {{db: { collectionGroup: (name: string) => { where: (field: string, operator: string, value: unknown) => { get: () => Promise<{ docs?: TreeVariant[] }> } } }, renderVariant: (snap: TreeVariant) => Promise<unknown>, consoleError?: (message: string, path?: string, error?: unknown) => void}} options Dependencies.
+ * @param {AllowEffects} allowEffects Invocation permission for failure logging.
+ * @param {{db: { collectionGroup: (name: string) => { where: (field: string, operator: string, value: unknown) => { get: () => Promise<{ docs?: TreeVariant[] }> } } }, renderVariant: (snap: TreeVariant) => Promise<unknown>, logError: (permission: AllowEffects, message: string, path?: string, error?: unknown) => void}} options Dependencies.
  * @returns {Promise<{processed: number, failed: number}>} Processing totals.
  */
-export async function regenerateDirtyTreeWeightVariants({
-  db,
-  renderVariant,
-  consoleError = () => {},
-}) {
+export async function regenerateDirtyTreeWeightVariants(
+  allowEffects,
+  { db, renderVariant, logError }
+) {
   const snapshot = await db
     .collectionGroup('variants')
     .where('targetTreeWeightsDirty', '==', true)
@@ -22,7 +23,12 @@ export async function regenerateDirtyTreeWeightVariants({
       processed += 1;
     } catch (error) {
       failed += 1;
-      consoleError('tree-weight regeneration failed', variant.ref?.path, error);
+      logError(
+        allowEffects,
+        'tree-weight regeneration failed',
+        variant.ref?.path,
+        error
+      );
     }
   }
   return { processed, failed };

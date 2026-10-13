@@ -1,0 +1,7 @@
+# Render variant logging AllowEffects migration
+
+- **Unexpected hurdle:** The source audit found several helpers sharing one injected `console.error` callback, so changing only the cloud adapter signature would not authorize calls throughout the renderer.
+- **Diagnosis:** `runRenderVariant` forwarded raw console logging through `createCloudRenderInstanceBuilder`; recoverable lookup and CDN failure paths called it without crossing the invocation boundary. The same startup composition also wires tree-visibility regeneration, whose HTTP response path needs a separate migration.
+- **Fix:** Added a cloud `logRenderVariantError` adapter requiring `AllowEffects`. Render logging now binds a fresh invocation capability for each call, and the token is never captured from startup. The generated browser report-link's `fetch` is constructed as script text and executes in the visitor's browser, so it is not a server-side injected fetch call.
+- **Evidence:** Focused Jest passed (2 suites / 9 tests); `npm run tsdoc:check` passed; `npm run check` passed all 10 gates, including coverage, 11 local E2E tests, and zero clones; `npm run build:cloud` passed; all packaged render-variant logger/entrypoint/core copies passed `node --check`; `git diff --check` passed.
+- **Next:** Migrate the tree-visibility regeneration HTTP response and logging effects in `src/core/cloud/tree-visibility/run.js` to invocation-scoped capabilities.

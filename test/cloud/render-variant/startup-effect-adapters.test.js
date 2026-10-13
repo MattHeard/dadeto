@@ -1,6 +1,7 @@
 import { jest } from '@jest/globals';
 import { initializeRenderVariantFirebase } from '../../../src/cloud/render-variant/firebase-startup-effect-adapter.js';
 import { registerVariantWriteTrigger } from '../../../src/cloud/render-variant/trigger-effect-adapter.js';
+import { sendTreeVisibilityResponse } from '../../../src/cloud/render-variant/tree-visibility-effect-adapters.js';
 
 test('initializes Firebase through the startup permission adapter', () => {
   const permission = Object.freeze({ startup: true });
@@ -35,4 +36,15 @@ test('registers the write trigger through the startup permission adapter', () =>
   expect(onWrite).toHaveBeenCalledWith(expect.any(Function));
   onWrite.mock.calls[0][0]('change');
   expect(handler).toHaveBeenCalledWith('change');
+});
+
+test('writes tree-visibility HTTP responses through the permission adapter', () => {
+  const permission = Object.freeze({ invocation: true });
+  const json = jest.fn();
+  const response = { status: jest.fn(() => ({ json })) };
+
+  sendTreeVisibilityResponse(permission, response, { processed: 1, failed: 0 });
+
+  expect(response.status).toHaveBeenCalledWith(200);
+  expect(json).toHaveBeenCalledWith({ processed: 1, failed: 0 });
 });

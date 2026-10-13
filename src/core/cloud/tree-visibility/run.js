@@ -1,37 +1,53 @@
 import { regenerateDirtyTreeWeightVariants } from './tree-visibility-regeneration-core.js';
+/** @typedef {import('../../../../types/allow-effects').AllowEffects} AllowEffects */
+
+/**
+ * Create a permission-aware tree-visibility regeneration runner.
+ * @param {() => import('firebase-admin/firestore').Firestore} getFirestoreInstance Firestore accessor.
+ * @param {(snapshot: unknown) => Promise<unknown>} render Renderer.
+ * @param {(permission: AllowEffects, message: string, path?: string, error?: unknown) => void} logError Permission-aware error logger.
+ * @returns {(permission: AllowEffects) => Promise<unknown>} Regeneration runner.
+ */
+export function createTreeVisibilityRegenerationRunner(
+  getFirestoreInstance,
+  render,
+  logError
+) {
+  return permission =>
+    regenerateDirtyTreeWeightVariants(permission, {
+      db: /** @type {any} */ (getFirestoreInstance()),
+      renderVariant: render,
+      logError,
+    });
+}
 
 /**
  * Create the scheduled and HTTP regeneration handlers.
- * @param {() => import('firebase-admin/firestore').Firestore} getFirestoreInstance Firestore accessor.
- * @param {(snapshot: unknown) => Promise<unknown>} render Renderer.
- * @param {(message: string, ...args: unknown[]) => void} consoleError Error logger.
+ * @param {import('../../../../types/allow-effects').AllowEffectsBoundary} bindEffectBoundary Invocation permission boundary.
+ * @param {(permission: AllowEffects) => Promise<unknown>} run Regeneration runner.
+ * @param {(permission: AllowEffects, response: import('express').Response, body: unknown) => unknown} sendResponse Permission-aware HTTP response writer.
  * @returns {{scheduled: () => Promise<null>, http: (request: import('express').Request, response: import('express').Response) => Promise<void>}} Runtime handlers.
  */
 export function createTreeVisibilityRegenerationHandlers(
-  getFirestoreInstance,
-  render,
-  consoleError = console.error
+  bindEffectBoundary,
+  run,
+  sendResponse
 ) {
-  const run = async () => {
-    const result = await regenerateDirtyTreeWeightVariants({
-      db: /** @type {any} */ (getFirestoreInstance()),
-      renderVariant: render,
-      consoleError,
+  const scheduled = () =>
+    bindEffectBoundary(async (/** @type {AllowEffects} */ allowEffects) => {
+      await run(allowEffects);
+      return null;
     });
-    return result;
-  };
-  const scheduled = async () => {
-    await run();
-    return null;
-  };
   /**
    * @param {import('express').Request} _request HTTP request.
    * @param {import('express').Response} response HTTP response.
    * @returns {Promise<void>} Response completion.
    */
-  const handleHttp = async (_request, response) => {
-    response.status(200).json(await run());
-  };
+  const handleHttp = (_request, response) =>
+    bindEffectBoundary(async (/** @type {AllowEffects} */ allowEffects) => {
+      const result = await run(allowEffects);
+      sendResponse(allowEffects, response, result);
+    });
   return { scheduled, http: handleHttp };
 }
 

@@ -62,6 +62,7 @@ const executeRunRenderVariant = dependencies =>
     ...dependencies,
     updateFirestoreDocument:
       dependencies.updateFirestoreDocument ?? jest.fn(async () => undefined),
+    logError: dependencies.logError ?? jest.fn(),
     setFirestoreDocument:
       dependencies.setFirestoreDocument ?? jest.fn(async () => undefined),
     saveStorageFile:
@@ -85,9 +86,11 @@ describe('runRenderVariant', () => {
     const FieldValue = { delete: jest.fn(() => 'delete-sentinel') };
     const crypto = { randomUUID: jest.fn(() => 'uuid') };
     const functions = { region };
-    const consoleError = jest.fn();
     const triggerPermission = Object.freeze({});
     const startupPermission = Object.freeze({ startup: true });
+    const loggerPermission = Object.freeze({ invocation: 'logger' });
+    const logError = jest.fn();
+    let boundaryCalls = 0;
     const updateFirestoreDocument = jest.fn(async () => undefined);
 
     let capturedWriteOptions;
@@ -109,13 +112,14 @@ describe('runRenderVariant', () => {
       FieldValue,
       Storage,
       fetchFn: importedFetchFn,
-      bindEffectBoundary: handler => handler(triggerPermission),
+      bindEffectBoundary: handler =>
+        handler(boundaryCalls++ === 0 ? triggerPermission : loggerPermission),
       updateFirestoreDocument,
       effectFetchFn: jest.fn(),
       registerVariantWriteTrigger: mockRegisterVariantWriteTrigger,
       startupAllowEffects: startupPermission,
       crypto,
-      console: { error: consoleError },
+      logError,
     });
 
     expect(render('snap', 'context')).toBe('rendered');
@@ -143,7 +147,12 @@ describe('runRenderVariant', () => {
       })
     );
     capturedBuilderOptions.consoleError('builder failure');
-    expect(consoleError).toHaveBeenCalledWith('builder failure');
+    expect(logError).toHaveBeenCalledWith(loggerPermission, 'builder failure');
+    expect(boundaryCalls).toBe(2);
+    expect(logError).not.toHaveBeenCalledWith(
+      startupPermission,
+      expect.anything()
+    );
     expect(mockCreateCloudRenderInstanceBuilder).toHaveBeenCalled();
     expect(mockCreateCloudRenderInstanceBuilder.mock.calls.at(-1)[0]).toEqual(
       expect.objectContaining({ createRenderer: expect.any(Function) })
@@ -199,13 +208,12 @@ describe('runRenderVariant', () => {
     globalThis.fetch = previousFetch;
   });
 
-  test('forwards the cloud console error logger into the render builder', async () => {
+  test('does not log during startup before a render reports an error', async () => {
     mockCreateRenderVariant.mockClear();
     importedFetchFn.mockClear();
     const previousFetch = globalThis.fetch;
     delete globalThis.fetch;
 
-    const consoleError = jest.fn();
     const db = { doc: jest.fn() };
     const getEnvironmentVariables = jest.fn(() => ({
       GOOGLE_CLOUD_PROJECT: 'proj',
@@ -234,26 +242,21 @@ describe('runRenderVariant', () => {
       crypto,
       registerVariantWriteTrigger: mockRegisterVariantWriteTrigger,
       startupAllowEffects: Object.freeze({}),
-      console: { error: consoleError },
+      logError: jest.fn(),
     });
 
     await render('snap', 'context');
 
-    expect(consoleError).not.toHaveBeenCalled();
     expect(importedFetchFn).not.toHaveBeenCalled();
 
     globalThis.fetch = previousFetch;
   });
 
-  test('uses the global console when one is not provided', async () => {
+  test('does not use global console during render setup', async () => {
     mockCreateRenderVariant.mockClear();
     importedFetchFn.mockClear();
     const previousFetch = globalThis.fetch;
     delete globalThis.fetch;
-
-    const consoleError = jest.fn();
-    const previousConsoleError = globalThis.console.error;
-    globalThis.console.error = consoleError;
 
     const getEnvironmentVariables = jest.fn(() => ({
       GOOGLE_CLOUD_PROJECT: 'proj',
@@ -284,9 +287,6 @@ describe('runRenderVariant', () => {
       startupAllowEffects: Object.freeze({}),
     });
 
-    expect(consoleError).not.toHaveBeenCalled();
-
-    globalThis.console.error = previousConsoleError;
     globalThis.fetch = previousFetch;
   });
 

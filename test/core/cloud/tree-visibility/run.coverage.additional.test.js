@@ -1,5 +1,6 @@
 import { jest } from '@jest/globals';
 import {
+  createTreeVisibilityRegenerationRunner,
   createTreeVisibilityRegenerationHandlers,
   createTreeVisibilityRegenerationHandles,
 } from '../../../../src/core/cloud/tree-visibility/run.js';
@@ -31,9 +32,24 @@ test('registers and executes scheduled and HTTP regeneration handlers', async ()
     })),
   }));
   const render = jest.fn();
-  const handlers = createTreeVisibilityRegenerationHandlers(
+  const permissions = [];
+  const bindEffectBoundary = handler => {
+    const permission = Object.freeze({ invocation: permissions.length });
+    permissions.push(permission);
+    return handler(permission);
+  };
+  const sendResponse = jest.fn((permission, response, body) =>
+    response.status(200).json(body)
+  );
+  const run = createTreeVisibilityRegenerationRunner(
     getFirestoreInstance,
-    render
+    render,
+    jest.fn()
+  );
+  const handlers = createTreeVisibilityRegenerationHandlers(
+    bindEffectBoundary,
+    run,
+    sendResponse
   );
   const handles = createTreeVisibilityRegenerationHandles(
     Object.freeze({}),
@@ -55,6 +71,11 @@ test('registers and executes scheduled and HTTP regeneration handlers', async ()
   await httpRun({}, response);
   expect(response.status).toHaveBeenCalledWith(200);
   expect(response.json).toHaveBeenCalledWith({ processed: 0, failed: 0 });
+  expect(sendResponse).toHaveBeenCalledWith(permissions[1], response, {
+    processed: 0,
+    failed: 0,
+  });
+  expect(permissions[0]).not.toBe(permissions[1]);
   expect(functions.region).toHaveBeenCalledTimes(2);
   expect(getFirestoreInstance).toHaveBeenCalledTimes(2);
 });

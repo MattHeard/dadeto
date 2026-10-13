@@ -12,22 +12,24 @@ test('regenerates only dirty variants and continues after failures', async () =>
     .mockResolvedValueOnce(undefined)
     .mockRejectedValueOnce(new Error('nope'));
   const consoleError = jest.fn();
+  const permission = Object.freeze({ invocation: true });
   const where = jest.fn(() => ({
     get: async () => ({ docs: [first, second] }),
   }));
   const collectionGroup = jest.fn(() => ({ where }));
-  const result = await regenerateDirtyTreeWeightVariants({
+  const result = await regenerateDirtyTreeWeightVariants(permission, {
     db: {
       collectionGroup,
     },
     renderVariant,
-    consoleError,
+    logError: consoleError,
   });
   expect(result).toEqual({ processed: 1, failed: 1 });
   expect(collectionGroup).toHaveBeenCalledWith('variants');
   expect(where).toHaveBeenCalledWith('targetTreeWeightsDirty', '==', true);
   expect(renderVariant).toHaveBeenCalledTimes(2);
   expect(consoleError).toHaveBeenCalledWith(
+    permission,
     'tree-weight regeneration failed',
     'b',
     expect.any(Error)
@@ -36,18 +38,19 @@ test('regenerates only dirty variants and continues after failures', async () =>
 
 test('uses the default error logger and handles an empty dirty snapshot', async () => {
   await expect(
-    regenerateDirtyTreeWeightVariants({
+    regenerateDirtyTreeWeightVariants(Object.freeze({}), {
       db: {
         collectionGroup: () => ({
           where: () => ({ get: async () => ({}) }),
         }),
       },
       renderVariant: jest.fn(),
+      logError: jest.fn(),
     })
   ).resolves.toEqual({ processed: 0, failed: 0 });
 
   await expect(
-    regenerateDirtyTreeWeightVariants({
+    regenerateDirtyTreeWeightVariants(Object.freeze({}), {
       db: {
         collectionGroup: () => ({
           where: () => ({
@@ -56,25 +59,28 @@ test('uses the default error logger and handles an empty dirty snapshot', async 
         }),
       },
       renderVariant: jest.fn().mockRejectedValue(new Error('broken')),
+      logError: jest.fn(),
     })
   ).resolves.toEqual({ processed: 0, failed: 1 });
 });
 
 test('passes an undefined path when a failed variant has no reference', async () => {
   const consoleError = jest.fn();
+  const permission = Object.freeze({ invocation: true });
   await expect(
-    regenerateDirtyTreeWeightVariants({
+    regenerateDirtyTreeWeightVariants(permission, {
       db: {
         collectionGroup: () => ({
           where: () => ({ get: async () => ({ docs: [{}] }) }),
         }),
       },
       renderVariant: jest.fn().mockRejectedValue(new Error('broken')),
-      consoleError,
+      logError: consoleError,
     })
   ).resolves.toEqual({ processed: 0, failed: 1 });
 
   expect(consoleError).toHaveBeenCalledWith(
+    permission,
     'tree-weight regeneration failed',
     undefined,
     expect.any(Error)
