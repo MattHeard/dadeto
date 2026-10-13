@@ -1,6 +1,7 @@
 import { describe, expect, jest, test } from '@jest/globals';
 
 const importedFetchFn = jest.fn(() => Promise.resolve({ ok: true }));
+const testAllowEffects = Object.freeze({ test: true });
 const onWrite = jest.fn(() => 'renderVariant');
 const mockCreateRenderVariant = jest.fn(options =>
   jest.fn(async (...args) => {
@@ -122,14 +123,14 @@ describe('runRenderVariant', () => {
       logError,
     });
 
-    expect(render('snap', 'context')).toBe('rendered');
+    expect(render(triggerPermission, 'snap', 'context')).toBe('rendered');
 
     expect(mockCreateRenderVariant).not.toHaveBeenCalled();
     expect(globalFetch).not.toHaveBeenCalled();
     expect(importedFetchFn).not.toHaveBeenCalled();
-    await expect(capturedWriteOptions.renderVariant('snap')).resolves.toBe(
-      'rendered'
-    );
+    await expect(
+      capturedWriteOptions.renderVariant(triggerPermission, 'snap')
+    ).resolves.toBe('rendered');
     expect(capturedWriteOptions.getDeleteSentinel()).toBe('delete-sentinel');
     await registeredTriggerHandler('change');
     expect(writeHandler).toHaveBeenCalledWith(triggerPermission, 'change');
@@ -146,9 +147,9 @@ describe('runRenderVariant', () => {
         effectFetchFn: expect.any(Function),
       })
     );
-    capturedBuilderOptions.consoleError('builder failure');
+    capturedBuilderOptions.consoleError(loggerPermission, 'builder failure');
     expect(logError).toHaveBeenCalledWith(loggerPermission, 'builder failure');
-    expect(boundaryCalls).toBe(2);
+    expect(boundaryCalls).toBe(1);
     expect(logError).not.toHaveBeenCalledWith(
       startupPermission,
       expect.anything()
@@ -200,7 +201,7 @@ describe('runRenderVariant', () => {
       startupAllowEffects: Object.freeze({}),
       crypto,
     });
-    await render('snap', 'context');
+    await render(testAllowEffects, 'snap', 'context');
 
     expect(mockCreateRenderVariant).not.toHaveBeenCalled();
     expect(importedFetchFn).not.toHaveBeenCalled();
@@ -227,7 +228,7 @@ describe('runRenderVariant', () => {
 
     mockCreateRenderVariant.mockImplementationOnce(options =>
       jest.fn(async () => {
-        options.consoleError('builder failure');
+        options.consoleError(testAllowEffects, 'builder failure');
         return null;
       })
     );
@@ -245,7 +246,7 @@ describe('runRenderVariant', () => {
       logError: jest.fn(),
     });
 
-    await render('snap', 'context');
+    await render(testAllowEffects, 'snap', 'context');
 
     expect(importedFetchFn).not.toHaveBeenCalled();
 
@@ -270,7 +271,7 @@ describe('runRenderVariant', () => {
 
     mockCreateRenderVariant.mockImplementationOnce(options =>
       jest.fn(async () => {
-        options.consoleError('builder failure');
+        options.consoleError(testAllowEffects, 'builder failure');
         return null;
       })
     );
@@ -313,7 +314,7 @@ describe('runRenderVariant', () => {
     );
     mockCreateHandleVariantWrite.mockImplementationOnce(options => {
       options.getDeleteSentinel();
-      options.renderVariant('snap');
+      options.renderVariant(testAllowEffects, 'snap');
       return jest.fn(() => 'handled');
     });
 

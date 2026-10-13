@@ -246,7 +246,7 @@ function resolveStoredVisibilitySum(data) {
 }
 
 /**
- * @typedef {(message?: unknown, ...optionalParams: unknown[]) => void} ConsoleError
+ * @typedef {(allowEffects: AllowEffects, message?: unknown, ...optionalParams: unknown[]) => void} ConsoleError
  * @typedef {import('firebase-admin/firestore').DocumentReference<import('firebase-admin/firestore').DocumentData> & { parent?: CollectionReferenceData | null, set?: (data: unknown, options?: object) => Promise<unknown> }} DocumentReferenceData
  * @typedef {import('firebase-admin/firestore').CollectionReference & { parent?: DocumentReferenceData | null, path: string }} CollectionReferenceData
  * @typedef {import('firebase-admin/firestore').DocumentSnapshot<import('firebase-admin/firestore').DocumentData> & { ref: DocumentReferenceData }} DocumentSnapshotData
@@ -455,8 +455,10 @@ const VARIANT_REDIRECT_SCRIPT = `
     <script type="module" src="/variantRedirect.js"></script>
 `;
 
-const DEFAULT_CONSOLE_ERROR = () => {};
-DEFAULT_CONSOLE_ERROR(); // ensure coverage for the fallback logger once when the module loads.
+/** @type {ConsoleError} */
+const DEFAULT_CONSOLE_ERROR = allowEffects => {
+  void allowEffects;
+};
 
 /**
  *
@@ -1177,7 +1179,7 @@ function checkStorageBucketHelper(storage) {
  * @param {InvalidationEffectOperations} effectOperations Permission-aware HTTP operations.
  * @param {InvalidationTargetOptions} target CDN target configuration.
  * @param {() => string} randomUUID UUID generator for requests.
- * @param {(message: string, ...optionalParams: unknown[]) => void} [consoleError] Logger for failures.
+ * @param {ConsoleError} [consoleError] Logger for failures.
  * @returns {(paths: string[]) => Promise<void>} Invalidation helper.
  */
 export function createInvalidatePaths(
@@ -1208,7 +1210,7 @@ export function createInvalidatePaths(
  * @param {InvalidationEffectOperations} effectOperations Permission-aware HTTP operations.
  * @param {InvalidationTargetOptions} target CDN target configuration.
  * @param {() => string} randomUUID UUID generator used for request IDs.
- * @param {(message: string, ...optionalParams: unknown[]) => void} [consoleError] Optional error logger.
+ * @param {ConsoleError} [consoleError] Optional error logger.
  * @returns {(paths: string[]) => Promise<void>} Handler that invalidates the provided paths.
  */
 function createInvalidatePathsImpl(
@@ -1241,7 +1243,7 @@ function createInvalidatePathsImpl(
  * @param {string} url Invalidation endpoint.
  * @param {string} host CDN host in purge requests.
  * @param {InvalidationEffectOperations} effectOperations Permission-aware HTTP operations.
- * @param {{ randomUUID: () => string, consoleError?: (message: string, ...optionalParams: unknown[]) => void }} requestOptions Request identity and logging behavior.
+ * @param {{ randomUUID: () => string, consoleError?: ConsoleError }} requestOptions Request identity and logging behavior.
  * @returns {(paths: string[]) => Promise<void>} Handler that invalidates each path.
  */
 function createInvalidateHandler(url, host, effectOperations, requestOptions) {
@@ -1313,7 +1315,7 @@ function buildInvalidateUrl(projectId, urlMapName) {
  * @param {string[]} paths Paths to purge from the CDN cache.
  * @param {InvalidationEffectOperations} effectOperations Permission-aware HTTP operations.
  * @param {{ url: string, host: string }} target Resolved CDN target.
- * @param {{ randomUUID: () => string, consoleError?: (message: string, ...optionalParams: unknown[]) => void }} requestOptions Request identity and logging behavior.
+ * @param {{ randomUUID: () => string, consoleError?: ConsoleError }} requestOptions Request identity and logging behavior.
  * @returns {Promise<void>} Resolves after every invalidation request completes.
  */
 async function executeInvalidation(
@@ -1349,7 +1351,7 @@ function acquireInvalidationAccessToken(effectOperations) {
  * @param {string} token OAuth access token.
  * @param {InvalidationEffectOperations} effectOperations Permission-aware HTTP operations.
  * @param {{ url: string, host: string }} target Resolved CDN target.
- * @param {{ randomUUID: () => string, consoleError?: (message: string, ...optionalParams: unknown[]) => void }} requestOptions Request identity and logging behavior.
+ * @param {{ randomUUID: () => string, consoleError?: ConsoleError }} requestOptions Request identity and logging behavior.
  * @returns {(path: string) => Promise<void>} Boundary-wrapped invalidation operation.
  */
 function createBoundPathInvalidator(
@@ -1367,6 +1369,7 @@ function createBoundPathInvalidator(
         requestOptions.randomUUID
       );
       return reportPathInvalidation(
+        permission,
         sendEffectFetch(
           permission,
           effectOperations.effectFetchFn,
@@ -1456,29 +1459,38 @@ function buildInvalidateRequest(path, token, host, randomUUID) {
 
 /**
  * Report a per-path invalidation result and preserve the historical error behavior.
+ * @param {AllowEffects} allowEffects Permission for cache-error logging.
  * @param {Promise<Response>} invalidation In-flight cache purge request.
  * @param {string} path CDN path requested.
- * @param {(message: string, ...optionalParams: unknown[]) => void} [consoleError] Optional logger.
+ * @param {ConsoleError} [consoleError] Optional logger.
  * @returns {Promise<void>} Resolves after response handling.
  */
-function reportPathInvalidation(invalidation, path, consoleError) {
-  return invalidation
-    .then(response => logInvalidateResponse(response, path, consoleError))
-    .catch(error => {
-      handleInvalidateError(error, path, consoleError);
-    });
+async function reportPathInvalidation(
+  allowEffects,
+  invalidation,
+  path,
+  consoleError
+) {
+  try {
+    const response = await invalidation;
+    logInvalidateResponse(allowEffects, response, path, consoleError);
+  } catch (error) {
+    handleInvalidateError(allowEffects, error, path, consoleError);
+  }
 }
 
 /**
  * Log invalidation failures when the response is not OK.
+ * @param {AllowEffects} allowEffects Permission for logging.
  * @param {Awaited<ReturnType<typeof globalThis.fetch>>} response Fetch response for the invalidation call.
  * @param {string} path CDN path that was requested.
- * @param {(message: string, ...optionalParams: unknown[]) => void} [consoleError] Optional logger.
+ * @param {ConsoleError} [consoleError] Optional logger.
  * @returns {void}
  */
-function logInvalidateResponse(response, path, consoleError) {
+function logInvalidateResponse(allowEffects, response, path, consoleError) {
   if (shouldLogInvalidateResponse(response, consoleError)) {
     /** @type {ConsoleError} */ (consoleError)(
+      allowEffects,
       `invalidate ${path} failed: ${response.status}`
     );
   }
@@ -1487,7 +1499,7 @@ function logInvalidateResponse(response, path, consoleError) {
 /**
  * Determine if the invalidation response should be logged.
  * @param {Awaited<ReturnType<typeof globalThis.fetch>>} response Fetch response for the invalidation call.
- * @param {(message: string, ...optionalParams: unknown[]) => void} [consoleError] Optional logger.
+ * @param {ConsoleError} [consoleError] Optional logger.
  * @returns {boolean} True when the response is not OK and a logger is provided.
  */
 function shouldLogInvalidateResponse(response, consoleError) {
@@ -1496,16 +1508,21 @@ function shouldLogInvalidateResponse(response, consoleError) {
 
 /**
  * Report invalidation errors via the optional logger.
+ * @param {AllowEffects} allowEffects Permission for logging.
  * @param {unknown} error Error or rejection reason.
  * @param {string} path Path that failed.
- * @param {(message: string, ...optionalParams: unknown[]) => void} [consoleError] Optional logger.
+ * @param {ConsoleError} [consoleError] Optional logger.
  * @returns {void}
  */
-function handleInvalidateError(error, path, consoleError) {
+function handleInvalidateError(allowEffects, error, path, consoleError) {
   if (!consoleError) {
     return;
   }
-  consoleError(`invalidate ${path} error`, getErrorMessage(error));
+  consoleError(
+    allowEffects,
+    `invalidate ${path} error`,
+    getErrorMessage(error)
+  );
 }
 /**
  * Safely read the `message` property from an error-like object.
@@ -1569,54 +1586,43 @@ function getErrorMessage(error) {
 
 /**
  * Construct metadata for a single option attached to a story variant.
+ * @param {AllowEffects} allowEffects Request permission for any logger command.
  * @param {{ data: OptionDocument; db: FirestoreLike; visibilityThreshold: number; consoleError: ConsoleError }} options
  *   Information about the option to prepare for rendering.
  * @returns {Promise<OptionMetadata>} Metadata describing the option suitable for HTML rendering.
  */
-async function buildOptionMetadata({
-  data,
-  db,
-  visibilityThreshold,
-  consoleError,
-}) {
-  const targetMetadata = await resolveTargetMetadata(
-    data,
-    db,
-    visibilityThreshold,
-    consoleError
-  );
+async function buildOptionMetadata(allowEffects, options) {
+  const targetMetadata = await resolveTargetMetadata(allowEffects, {
+    data: options.data,
+    db: options.db,
+    visibilityThreshold: options.visibilityThreshold,
+    consoleError: options.consoleError,
+  });
 
   return /** @type {OptionMetadata} */ ({
-    content: data.content,
-    position: data.position,
+    content: options.data.content,
+    position: options.data.position,
     ...targetMetadata,
   });
 }
 
 /**
  * Resolve the target metadata referenced by an option document.
- * @param {OptionDocument} data Raw option document data.
- * @param {FirestoreLike} db Firestore helper used to rebind nested references.
- * @param {number} visibilityThreshold Minimum visibility required for variants.
- * @param {ConsoleError} [consoleError] Optional logger for errors.
+ * @param {AllowEffects} allowEffects Permission to report lookup failures.
+ * @param {{data: OptionDocument, db: FirestoreLike, visibilityThreshold: number, consoleError?: ConsoleError}} options Lookup inputs.
  * @returns {Promise<Omit<OptionMetadata, 'content' | 'position'>>} Target metadata derived from the option.
  */
-async function resolveTargetMetadata(
-  data,
-  db,
-  visibilityThreshold,
-  consoleError
-) {
-  if (data.targetPage) {
-    return fetchTargetPageMetadata(
-      data.targetPage,
-      db,
-      visibilityThreshold,
-      consoleError
-    );
+async function resolveTargetMetadata(allowEffects, options) {
+  if (options.data.targetPage) {
+    return fetchTargetPageMetadata(allowEffects, {
+      targetPage: options.data.targetPage,
+      db: options.db,
+      visibilityThreshold: options.visibilityThreshold,
+      consoleError: options.consoleError,
+    });
   }
 
-  return resolveTargetPageNumber(data);
+  return resolveTargetPageNumber(options.data);
 }
 
 /**
@@ -1636,75 +1642,54 @@ function resolveTargetPageNumber(data) {
 
 /**
  * Retrieve metadata for a referenced target page, including the first visible variant.
- * @param {import('firebase-admin/firestore').DocumentReference} targetPage Firestore reference for the target page document.
- * @param {FirestoreLike} db Firestore helper used to rebind the target reference.
- * @param {number} visibilityThreshold Minimum visibility required for a variant to be considered published.
- * @param {ConsoleError} [consoleError] Optional logger for unexpected failures.
+ * @param {AllowEffects} allowEffects Permission to report lookup failures.
+ * @param {{targetPage: import('firebase-admin/firestore').DocumentReference, db: FirestoreLike, visibilityThreshold: number, consoleError?: ConsoleError}} options Lookup inputs.
  * @returns {Promise<Omit<OptionMetadata, 'content' | 'position'>>} Metadata derived from the target page lookup.
  */
-async function fetchTargetPageMetadata(
-  targetPage,
-  db,
-  visibilityThreshold,
-  consoleError
-) {
-  const rehydratedTargetPage = rebindTenantDocumentRef(targetPage, db);
-  if (!rehydratedTargetPage) return {};
-  return /** @type {Promise<Omit<OptionMetadata, 'content' | 'position'>>} */ (
-    rehydratedTargetPage
-      .get()
-      .then(
-        /**
-         * @param {import('firebase-admin/firestore').DocumentSnapshot} targetSnap - Target snapshot.
-         * @returns {Promise<Omit<OptionMetadata, 'content' | 'position'>>} Metadata.
-         */
-        targetSnap => {
-          if (!targetSnap.exists) {
-            return Promise.resolve(
-              /** @type {Omit<OptionMetadata, 'content' | 'position'>} */ ({})
-            );
-          }
-
-          return processTargetSnap(
-            targetSnap,
-            /** @type {DocumentReferenceData} */ (rehydratedTargetPage),
-            visibilityThreshold
-          );
-        }
-      )
-      .catch(
-        /**
-         * @param {unknown} error - Error object.
-         * @returns {Omit<OptionMetadata, 'content' | 'position'>} Empty object.
-         */
-        error => {
-          handleTargetPageError(error, consoleError);
-          return /** @type {Omit<OptionMetadata, 'content' | 'position'>} */ ({});
-        }
-      )
+async function fetchTargetPageMetadata(allowEffects, options) {
+  const rehydratedTargetPage = rebindTenantDocumentRef(
+    options.targetPage,
+    options.db
   );
+  if (!rehydratedTargetPage) return {};
+  try {
+    const targetSnap = await rehydratedTargetPage.get();
+    if (!targetSnap.exists) {
+      return /** @type {Omit<OptionMetadata, 'content' | 'position'>} */ ({});
+    }
+    return await processTargetSnap(
+      targetSnap,
+      /** @type {DocumentReferenceData} */ (rehydratedTargetPage),
+      options.visibilityThreshold
+    );
+  } catch (error) {
+    handleTargetPageError(allowEffects, error, options.consoleError);
+    return /** @type {Omit<OptionMetadata, 'content' | 'position'>} */ ({});
+  }
 }
 
 /**
  * Handle target page error.
+ * @param {AllowEffects} allowEffects Permission for logging.
  * @param {unknown} error Error.
  * @param {ConsoleError} [consoleError] Error logger.
  */
-function handleTargetPageError(error, consoleError) {
+function handleTargetPageError(allowEffects, error, consoleError) {
   if (!consoleError) {
     return;
   }
-  logTargetPageError(error, consoleError);
+  logTargetPageError(allowEffects, error, consoleError);
 }
 
 /**
  * Log target page error.
+ * @param {AllowEffects} allowEffects Permission for logging.
  * @param {unknown} error Error.
  * @param {ConsoleError} consoleError Error logger.
  */
-function logTargetPageError(error, consoleError) {
+function logTargetPageError(allowEffects, error, consoleError) {
   const message = getErrorMessage(error);
-  consoleError('target page lookup failed', message);
+  consoleError(allowEffects, 'target page lookup failed', message);
 }
 
 /**
@@ -1795,12 +1780,13 @@ function buildTargetMetadata(targetPageNumber, visible) {
 
 /**
  * Load and normalize option documents for a particular variant.
+ * @param {AllowEffects} allowEffects Permission to report lookup failures.
  * @param {{ snap: VariantSnapshot; db: FirestoreLike; visibilityThreshold: number; consoleError?: ConsoleError }} options
  *   Dependencies required to load options.
  * @returns {Promise<OptionMetadata[]>} Ordered option metadata entries.
  */
-async function loadOptions({ snap, db, visibilityThreshold, consoleError }) {
-  const variantRef = resolveTenantDocumentRef(snap, db);
+async function loadOptions(allowEffects, options) {
+  const variantRef = resolveTenantDocumentRef(options.snap, options.db);
   if (!variantRef) return [];
   const optionsSnap = await variantRef.collection('options').get();
   const optionsData = optionsSnap.docs.map(
@@ -1821,37 +1807,39 @@ async function loadOptions({ snap, db, visibilityThreshold, consoleError }) {
       /** @type {{ position: number }} */ (b).position
   );
 
-  const safeConsoleError = consoleError ?? DEFAULT_CONSOLE_ERROR;
-
-  return Promise.all(
-    optionsData.map(
-      /**
-       * @param {import('firebase-admin/firestore').DocumentData} data Document data.
-       * @returns {Promise<OptionMetadata>} Metadata.
-       */
-      data =>
-        buildOptionMetadata({
-          data: /** @type {OptionDocument} */ (/** @type {unknown} */ (data)),
-          db,
-          visibilityThreshold,
-          consoleError: safeConsoleError,
-        })
-    )
-  );
+  const safeConsoleError = options.consoleError ?? DEFAULT_CONSOLE_ERROR;
+  const metadataPromises = [];
+  for (const data of optionsData) {
+    metadataPromises.push(
+      buildOptionMetadata(allowEffects, {
+        data: /** @type {OptionDocument} */ (/** @type {unknown} */ (data)),
+        db: options.db,
+        visibilityThreshold: options.visibilityThreshold,
+        consoleError: safeConsoleError,
+      })
+    );
+  }
+  return Promise.all(metadataPromises);
 }
 
 /**
  * Resolve title and navigation metadata for the story owning the variant.
+ * @param {AllowEffects} allowEffects Permission to report lookup failures.
  * @param {StoryMetadataLookupDeps} options - Input describing the current page and lookup helpers.
  * @returns {Promise<{storyTitle: string, firstPageUrl: string | undefined}>} Story metadata used in templates.
  */
-async function resolveStoryMetadata({ pageSnap, page, db, consoleError }) {
-  const storyRef = extractStoryRefFromTenantDb(pageSnap, db);
+async function resolveStoryMetadata(allowEffects, options) {
+  const storyRef = extractStoryRefFromTenantDb(options.pageSnap, options.db);
   const storyData = await fetchStoryData(storyRef);
   if (!storyData) {
     return { storyTitle: '', firstPageUrl: undefined };
   }
-  return buildStoryMetadata({ storyData, page, db, consoleError });
+  return buildStoryMetadata(allowEffects, {
+    storyData,
+    page: options.page,
+    db: options.db,
+    consoleError: options.consoleError,
+  });
 }
 
 /**
@@ -1889,16 +1877,17 @@ async function getStorySnapshot(storyRef) {
 
 /**
  * Build story metadata.
+ * @param {AllowEffects} allowEffects Permission to report lookup failures.
  * @param {StoryMetadataDeps} options Options.
  * @returns {Promise<{storyTitle: string, firstPageUrl: string | undefined}>} Story metadata.
  */
-async function buildStoryMetadata({ storyData, page, db, consoleError }) {
-  const storyTitle = /** @type {string} */ (storyData.title || '');
-  const firstPageUrl = await resolveFirstPageUrl({
-    page,
-    storyData,
-    db,
-    consoleError,
+async function buildStoryMetadata(allowEffects, options) {
+  const storyTitle = /** @type {string} */ (options.storyData.title || '');
+  const firstPageUrl = await resolveFirstPageUrl(allowEffects, {
+    page: options.page,
+    storyData: options.storyData,
+    db: options.db,
+    consoleError: options.consoleError,
   });
 
   return { storyTitle, firstPageUrl };
@@ -1906,18 +1895,20 @@ async function buildStoryMetadata({ storyData, page, db, consoleError }) {
 
 /**
  * Determine the parent route for a story when the variant was created from an option.
+ * @param {AllowEffects} allowEffects Permission to report lookup failures.
  * @param {{ page: Record<string, unknown>; storyData: StoryMetadata; db: FirestoreLike; consoleError?: ConsoleError }} options - Inputs describing the page and story context.
  * @returns {Promise<string | undefined>} URL for the first published page when resolvable.
  */
-async function resolveFirstPageUrl({ page, storyData, db, consoleError }) {
-  if (!shouldResolveFirstPageUrl(page, storyData)) {
+async function resolveFirstPageUrl(allowEffects, options) {
+  if (!shouldResolveFirstPageUrl(options.page, options.storyData)) {
     return undefined;
   }
 
   return resolveRootPageUrl(
-    /** @type {StoryDataWithRoot} */ (storyData),
-    db,
-    consoleError
+    allowEffects,
+    /** @type {StoryDataWithRoot} */ (options.storyData),
+    options.db,
+    options.consoleError
   );
 }
 
@@ -1933,38 +1924,43 @@ function shouldResolveFirstPageUrl(page, storyData) {
 
 /**
  * Resolve the root page URL while gracefully handling errors.
+ * @param {AllowEffects} allowEffects Permission for logging.
  * @param {StoryDataWithRoot} storyData Story metadata containing the root page.
  * @param {FirestoreLike} db Tenant Firestore client.
  * @param {ConsoleError} [consoleError] Optional logger for failures.
  * @returns {Promise<string | undefined>} Root page URL when available.
  */
-function resolveRootPageUrl(storyData, db, consoleError) {
-  return fetchRootPageUrl(storyData, db).catch(error => {
-    handleRootPageError(error, consoleError);
+async function resolveRootPageUrl(allowEffects, storyData, db, consoleError) {
+  try {
+    return await fetchRootPageUrl(storyData, db);
+  } catch (error) {
+    handleRootPageError(allowEffects, error, consoleError);
     return undefined;
-  });
+  }
 }
 
 /**
  * Handle root page error.
+ * @param {AllowEffects} allowEffects Permission for logging.
  * @param {Error} error Error.
  * @param {ConsoleError} [consoleError] Error logger.
  */
-function handleRootPageError(error, consoleError) {
+function handleRootPageError(allowEffects, error, consoleError) {
   if (!consoleError) {
     return;
   }
-  logRootPageError(error, consoleError);
+  logRootPageError(allowEffects, error, consoleError);
 }
 
 /**
  * Log root page error.
+ * @param {AllowEffects} allowEffects Permission for logging.
  * @param {Error} error Error.
- * @param {(message?: unknown, ...optionalParams: unknown[]) => void} consoleError Error logger.
+ * @param {ConsoleError} consoleError Error logger.
  */
-function logRootPageError(error, consoleError) {
+function logRootPageError(allowEffects, error, consoleError) {
   const message = getErrorMessage(error);
-  consoleError('root page lookup failed', message);
+  consoleError(allowEffects, 'root page lookup failed', message);
 }
 
 /**
@@ -2206,62 +2202,67 @@ function deriveAuthorName(variant) {
 
 /**
  * Resolve author metadata for the rendered variant and mark its author dirty.
+ * @param {AllowEffects} allowEffects Permission to report lookup failures.
  * @param {AuthorLookupDeps} authorLookup Inputs for author lookup.
  * @returns {Promise<{ authorName: string; authorUrl?: string }>} Author metadata for templates.
  */
-async function resolveAuthorMetadata(authorLookup) {
+async function resolveAuthorMetadata(allowEffects, authorLookup) {
   const authorName = deriveAuthorName(authorLookup.variant);
-  const authorUrl = await resolveAuthorUrl(authorLookup);
+  const authorUrl = await resolveAuthorUrl(allowEffects, authorLookup);
   return { authorName, authorUrl };
 }
 
 /**
  * Mark the author document dirty and return its public URL.
+ * @param {AllowEffects} allowEffects Permission to report lookup failures.
  * @param {AuthorLookupDeps} authorLookup Inputs for creating or reusing an author page.
  * @returns {Promise<string | undefined>} URL of the author page, if one exists.
  */
-async function resolveAuthorUrl(authorLookup) {
+async function resolveAuthorUrl(allowEffects, authorLookup) {
   if (!authorLookup.variant.authorId) {
     return undefined;
   }
 
-  return lookupAuthorUrl(authorLookup);
+  return lookupAuthorUrl(allowEffects, authorLookup);
 }
 
 /**
  * Lookup or create an author landing page and return its URL.
+ * @param {AllowEffects} allowEffects Permission to report lookup failures.
  * @param {AuthorLookupDeps} authorLookup Dependencies for author lookup.
  * @returns {Promise<string | undefined>} Author URL when the lookup succeeds.
  */
-async function lookupAuthorUrl(authorLookup) {
+async function lookupAuthorUrl(allowEffects, authorLookup) {
   try {
     return await markAuthorDirty(authorLookup);
   } catch (error) {
-    handleAuthorLookupError(error, authorLookup.consoleError);
+    handleAuthorLookupError(allowEffects, error, authorLookup.consoleError);
     return undefined;
   }
 }
 
 /**
  * Handle author lookup error.
+ * @param {AllowEffects} allowEffects Permission for logging.
  * @param {unknown} error Error.
  * @param {ConsoleError} [consoleError] Error logger.
  */
-function handleAuthorLookupError(error, consoleError) {
+function handleAuthorLookupError(allowEffects, error, consoleError) {
   if (!consoleError) {
     return;
   }
-  logAuthorLookupError(error, consoleError);
+  logAuthorLookupError(allowEffects, error, consoleError);
 }
 
 /**
  * Log author lookup error.
+ * @param {AllowEffects} allowEffects Permission for logging.
  * @param {unknown} error Error.
- * @param {(message?: unknown, ...optionalParams: unknown[]) => void} consoleError Error logger.
+ * @param {ConsoleError} consoleError Error logger.
  */
-function logAuthorLookupError(error, consoleError) {
+function logAuthorLookupError(allowEffects, error, consoleError) {
   const message = getErrorMessage(error);
-  consoleError('author lookup failed', message);
+  consoleError(allowEffects, 'author lookup failed', message);
 }
 
 /**
@@ -2498,11 +2499,12 @@ function buildRouteFromSnapshots(snapshots) {
 
 /**
  * Resolve the canonical URL for the parent variant, if one exists.
+ * @param {AllowEffects} allowEffects Permission to report lookup failures.
  * @param {ParentResolutionDeps} options Dependencies for parent resolution.
  * @returns {Promise<string | undefined>} Parent URL when resolvable.
  */
-async function resolveParentUrl(options) {
-  return resolveParentLookupPromise({
+async function resolveParentUrl(allowEffects, options) {
+  return resolveParentLookupPromise(allowEffects, {
     incomingOption: options.variant?.incomingOption,
     db: options.db,
     consoleError: options.consoleError,
@@ -2511,24 +2513,26 @@ async function resolveParentUrl(options) {
 
 /**
  * Handle parent lookup error.
+ * @param {AllowEffects} allowEffects Permission for logging.
  * @param {Error} error Error.
  * @param {ConsoleError} [consoleError] Error logger.
  */
-function handleParentLookupError(error, consoleError) {
+function handleParentLookupError(allowEffects, error, consoleError) {
   if (!consoleError) {
     return;
   }
-  logParentLookupError(error, consoleError);
+  logParentLookupError(allowEffects, error, consoleError);
 }
 
 /**
  * Log parent lookup error.
+ * @param {AllowEffects} allowEffects Permission for logging.
  * @param {Error} error Error.
  * @param {ConsoleError} consoleError Error logger.
  */
-function logParentLookupError(error, consoleError) {
+function logParentLookupError(allowEffects, error, consoleError) {
   const message = getErrorMessage(error);
-  consoleError('parent lookup failed', message);
+  consoleError(allowEffects, 'parent lookup failed', message);
 }
 
 /**
@@ -2581,18 +2585,21 @@ function isRoutePresent(route) {
 
 /**
  * Resolve the parent lookup promise, handling missing incoming options.
+ * @param {AllowEffects} allowEffects Permission to report lookup failures.
  * @param {{ incomingOption?: string, db: FirestoreLike, consoleError?: ConsoleError }} options Lookup dependencies.
  * @returns {Promise<string | undefined>} Parent URL when available.
  */
-function resolveParentLookupPromise({ incomingOption, db, consoleError }) {
-  if (!incomingOption) {
+async function resolveParentLookupPromise(allowEffects, options) {
+  if (!options.incomingOption) {
     return Promise.resolve(undefined);
   }
 
-  return fetchAndBuildParentUrl(db, incomingOption).catch(error => {
-    handleParentLookupError(error, consoleError);
+  try {
+    return await fetchAndBuildParentUrl(options.db, options.incomingOption);
+  } catch (error) {
+    handleParentLookupError(allowEffects, error, options.consoleError);
     return undefined;
-  });
+  }
 }
 
 /**
@@ -2609,7 +2616,7 @@ function resolveParentLookupPromise({ incomingOption, db, consoleError }) {
  * @property {string} [projectId] - Google Cloud project identifier used for cache invalidation.
  * @property {string} [urlMapName] - URL map name whose cache should be invalidated.
  * @property {string} [cdnHost] - Hostname whose cache entries should be purged.
- * @property {(message?: unknown, ...optionalParams: unknown[]) => void} [consoleError] - Logger for recoverable failures.
+ * @property {ConsoleError} [consoleError] - Logger for recoverable failures.
  * @property {string} [bucketName] - Name of the bucket where rendered HTML is written.
  * @property {string} [objectPrefix] - Optional object prefix for tenant-scoped static output.
  * @property {number} [visibilityThreshold] - Minimum visibility used when publishing variants.
@@ -2624,7 +2631,7 @@ function resolveParentLookupPromise({ incomingOption, db, consoleError }) {
 /**
  * Create a renderer that materializes variant HTML and supporting metadata.
  * @param {RenderVariantDependencies} dependencies - External services and configuration values.
- * @returns {(snap: VariantSnapshot, context?: RenderContext) => Promise<null>} Async renderer for variant snapshots.
+ * @returns {(allowEffects: AllowEffects, snap: VariantSnapshot, context?: RenderContext) => Promise<null>} Async renderer for variant snapshots.
  */
 export function createRenderVariant(dependencies) {
   validateDependencies(dependencies);
@@ -2758,7 +2765,7 @@ function validateRenderInvalidationDependencies(dependencies) {
 /**
  * Create render variant handler.
  * @param {RenderVariantCapabilities} capabilities Normalized render and invalidation capabilities.
- * @returns {(snap: VariantSnapshot, context?: RenderContext) => Promise<null>} Render function.
+ * @returns {(allowEffects: AllowEffects, snap: VariantSnapshot, context?: RenderContext) => Promise<null>} Render function.
  */
 function createRenderVariantHandler(capabilities) {
   const rendering = capabilities.rendering;
@@ -2775,12 +2782,13 @@ function createRenderVariantHandler(capabilities) {
   );
   /**
    * Execute render workflow.
+   * @param {AllowEffects} allowEffects Permission for render-time logging.
    * @param {VariantSnapshot} snap Snap.
    * @param {RenderContext | undefined} context Context.
    * @returns {Promise<null>} Null.
    */
-  async function executeRenderWorkflow(snap, context) {
-    const renderPlan = await resolveRenderPlan({
+  async function executeRenderWorkflow(allowEffects, snap, context) {
+    const renderPlan = await resolveRenderPlan(allowEffects, {
       snap,
       db: rendering.db,
       bucket,
@@ -2808,10 +2816,11 @@ function createRenderVariantHandler(capabilities) {
   }
 
   return async function render(
+    /** @type {AllowEffects} */ allowEffects,
     /** @type {VariantSnapshot} */ snap,
     /** @type {RenderContext | undefined} */ context = {}
   ) {
-    return executeRenderWorkflow(snap, context);
+    return executeRenderWorkflow(allowEffects, snap, context);
   };
 }
 
@@ -2837,7 +2846,7 @@ function createPrefixedBucket(bucket, objectPrefix) {
  * @param {{exists?: boolean, data: () => Record<string, unknown>, ref: {parent?: {parent?: AncestorReference}}}} options.snap - Variant snapshot.
  * @param {{doc: (...args: unknown[]) => unknown}} options.db - Firestore-like database instance.
  * @param {{bucket: (...args: unknown[]) => unknown}} options.bucket - Storage bucket factory.
- * @param {(message?: unknown, ...optionalParams: unknown[]) => void} [options.consoleError] - Optional logger.
+ * @param {ConsoleError} [options.consoleError] - Optional logger.
  * @param {number} options.visibilityThreshold - Minimum visibility required for variant publication.
  * @returns {Promise<null | {
  *   variant: Record<string, unknown>,
@@ -3073,12 +3082,13 @@ function isPageSnapValid(pageSnap) {
 
 /**
  * Gather metadata for rendering in lookup order: options, story, author, parent.
+ * @param {AllowEffects} allowEffects Permission to report lookup failures.
  * @param {RenderMetadataSubject} subject Render target records.
  * @param {RenderMetadataLookups} lookups Services and settings for metadata lookups.
  * @returns {Promise<RenderMetadata>} Metadata object suitable for templates and persistence.
  */
-async function gatherMetadata(subject, lookups) {
-  const options = await loadOptions({
+async function gatherMetadata(allowEffects, subject, lookups) {
+  const options = await loadOptions(allowEffects, {
     snap: subject.snap,
     db: lookups.db,
     visibilityThreshold: resolveVisibilityThreshold(
@@ -3086,20 +3096,23 @@ async function gatherMetadata(subject, lookups) {
     ),
     consoleError: lookups.consoleError,
   });
-  const { storyTitle, firstPageUrl } = await resolveStoryMetadata({
-    pageSnap: subject.pageSnap,
-    page: subject.page,
-    db: lookups.db,
-    consoleError: lookups.consoleError,
-  });
-  const { authorName, authorUrl } = await resolveAuthorMetadata({
+  const { storyTitle, firstPageUrl } = await resolveStoryMetadata(
+    allowEffects,
+    {
+      pageSnap: subject.pageSnap,
+      page: subject.page,
+      db: lookups.db,
+      consoleError: lookups.consoleError,
+    }
+  );
+  const { authorName, authorUrl } = await resolveAuthorMetadata(allowEffects, {
     variant: subject.variant,
     db: lookups.db,
     bindEffectBoundary: lookups.bindEffectBoundary,
     updateFirestoreDocument: lookups.updateFirestoreDocument,
     consoleError: lookups.consoleError,
   });
-  const parentUrl = await resolveParentUrl({
+  const parentUrl = await resolveParentUrl(allowEffects, {
     variant: subject.variant,
     db: lookups.db,
     consoleError: lookups.consoleError,
@@ -3246,24 +3259,26 @@ async function fetchAndValidatePage(snap, db) {
 
 /**
  * Resolve the render plan for a variant snapshot.
+ * @param {AllowEffects} allowEffects Permission to report lookup failures.
  * @param {ResolveRenderPlanDeps} options Inputs required to assemble the render plan.
  * @returns {Promise<RenderOutput | null>} Render plan describing the variant artefacts.
  */
-async function resolveRenderPlan(options) {
+async function resolveRenderPlan(allowEffects, options) {
   const { snap } = options;
   if (!isSnapValid(snap)) {
     return null;
   }
 
-  return buildRenderPlanIfPageValid(options);
+  return buildRenderPlanIfPageValid(allowEffects, options);
 }
 
 /**
  * Attempt to build a render plan only when the variant page data is valid.
+ * @param {AllowEffects} allowEffects Permission to report lookup failures.
  * @param {ResolveRenderPlanDeps} options - Inputs that include the variant snapshot and dependencies.
  * @returns {Promise<RenderOutput | null>} The render plan when the page is valid or `null` otherwise.
  */
-async function buildRenderPlanIfPageValid(options) {
+async function buildRenderPlanIfPageValid(allowEffects, options) {
   const { snap } = options;
   const pageData = await fetchAndValidatePage(snap, options.db);
   if (!pageData) {
@@ -3271,6 +3286,7 @@ async function buildRenderPlanIfPageValid(options) {
   }
 
   return buildRenderPlan(
+    allowEffects,
     {
       snap,
       pageData,
@@ -3289,14 +3305,16 @@ async function buildRenderPlanIfPageValid(options) {
 
 /**
  * Build render plan.
+ * @param {AllowEffects} allowEffects Permission to report lookup failures.
  * @param {RenderPlanSubject & {pageData: {pageSnap: PageSnapshot; page: PageDocument}}} subject Page and variant being rendered.
  * @param {RenderMetadataLookups} lookups Services used to resolve render metadata.
  * @returns {Promise<RenderOutput>} Render plan.
  */
-async function buildRenderPlan(subject, lookups) {
+async function buildRenderPlan(allowEffects, subject, lookups) {
   const { pageSnap, page } = subject.pageData;
   const variant = /** @type {VariantDocument} */ (subject.snap.data());
   const metadata = await gatherMetadata(
+    allowEffects,
     {
       snap: subject.snap,
       pageSnap,
@@ -3578,7 +3596,7 @@ function buildReverseLinkDocId(record) {
  * @typedef {{ before: DocumentLike; after: DocumentLike & { ref: DocumentRefLike & { update: (...args: unknown[]) => unknown } }; }} FirestoreChange
  * Build a change handler that renders visible variants and clears dirty markers.
  * @param {object} options - Dependencies for the change handler.
- * @param {(snap: VariantSnapshot, context?: RenderContext) => Promise<null>} options.renderVariant - Renderer invoked when a variant should be materialized.
+ * @param {(permission: AllowEffects, snap: VariantSnapshot, context?: RenderContext) => Promise<null>} options.renderVariant - Renderer invoked when a variant should be materialized.
  * @param {FirestoreLike} options.db Tenant Firestore client.
  * @param {() => unknown} options.getDeleteSentinel - Function that produces the sentinel used to clear dirty flags.
  * @param {(allowEffects: AllowEffects, ref: UpdatableDocumentReference, data: Record<string, unknown>) => Promise<unknown>} options.updateDocument Permission-aware Firestore update adapter.
@@ -3603,7 +3621,11 @@ export function createHandleVariantWrite({
    * @returns {Promise<null>} Null.
    */
   async function handleDirtyVariant(allowEffects, change, context) {
-    await renderVariant(/** @type {VariantSnapshot} */ (change.after), context);
+    await renderVariant(
+      allowEffects,
+      /** @type {VariantSnapshot} */ (change.after),
+      context
+    );
     const afterRef = /** @type {DocumentLike} */ (change.after).ref;
     if (!afterRef) return null;
     const dirtyUpdate = { dirty: getDeleteSentinel() };
@@ -3673,36 +3695,47 @@ export function createHandleVariantWrite({
       return handleDirtyVariant(allowEffects, change, context);
     }
 
-    return handleCleanVariant(change, context, data, visibilityThreshold);
+    return handleCleanVariant(allowEffects, {
+      change,
+      context,
+      data,
+      visibilityThreshold,
+    });
   }
 
   /**
    * Handle the clean variant path when rendering is driven by visibility changes.
-   * @param {FirestoreChange} change - Firestore change payload.
-   * @param {RenderContext | undefined} context - Cloud Functions context for the trigger.
-   * @param {Record<string, unknown>} data - Variant data captured from the latest snapshot.
-   * @param {number} visibilityThreshold Visibility threshold.
+   * @param {AllowEffects} allowEffects Request effect capability.
+   * @param {{change: FirestoreChange, context: RenderContext | undefined, data: Record<string, unknown>, visibilityThreshold: number}} options Render inputs.
    * @returns {Promise<null>} Result of attempting to render or `null` when skipped.
    */
-  async function handleCleanVariant(
-    change,
-    context,
-    data,
-    visibilityThreshold
-  ) {
-    if (shouldRenderVariant(change, data, visibilityThreshold)) {
+  async function handleCleanVariant(allowEffects, options) {
+    if (
+      shouldRenderVariant(
+        options.change,
+        options.data,
+        options.visibilityThreshold
+      )
+    ) {
       return renderVariant(
-        /** @type {VariantSnapshot} */ (change.after),
-        context
+        allowEffects,
+        /** @type {VariantSnapshot} */ (options.change.after),
+        options.context
       );
     }
-    if (didHideLastVisibleVariant(change, data, visibilityThreshold)) {
-      await republishInboundPagesForHiddenOnlyVariant(
-        change.after,
+    if (
+      didHideLastVisibleVariant(
+        options.change,
+        options.data,
+        options.visibilityThreshold
+      )
+    ) {
+      await republishInboundPagesForHiddenOnlyVariant(allowEffects, {
+        after: options.change.after,
         db,
-        renderVariant,
-        visibilityThreshold
-      );
+        renderVariantFn: renderVariant,
+        visibilityThreshold: options.visibilityThreshold,
+      });
     }
     return null;
   }
@@ -3740,25 +3773,21 @@ export function createHandleVariantWrite({
    */
   /**
    * Republish inbound pages that point at a now-hidden-only page.
-   * @param {FirestoreChange['after']} after Variant snapshot after the update.
-   * @param {FirestoreLike} db Firestore client.
-   * @param {(snap: VariantSnapshot, context?: RenderContext) => Promise<null>} renderVariantFn Renderer.
-   * @param {number} visibilityThreshold Threshold for visible variants.
+   * @param {AllowEffects} allowEffects Permission for render-time effects.
+   * @param {{after: FirestoreChange['after'], db: FirestoreLike, renderVariantFn: (permission: AllowEffects, snap: VariantSnapshot, context?: RenderContext) => Promise<null>, visibilityThreshold: number}} options Republish inputs.
    * @returns {Promise<void>} Promise.
    */
   async function republishInboundPagesForHiddenOnlyVariant(
-    after,
-    db,
-    renderVariantFn,
-    visibilityThreshold
+    allowEffects,
+    options
   ) {
-    const pageRef = getPageRefFromVariantSnapshot(after);
+    const pageRef = getPageRefFromVariantSnapshot(options.after);
     if (!pageRef) {
       return;
     }
 
     const variantsSnap = await getVariantsSnapshot(pageRef);
-    if (hasVisibleVariants(variantsSnap.docs, visibilityThreshold)) {
+    if (hasVisibleVariants(variantsSnap.docs, options.visibilityThreshold)) {
       return;
     }
 
@@ -3766,7 +3795,12 @@ export function createHandleVariantWrite({
     if (pageNumber === undefined) {
       return;
     }
-    await republishInboundVariants(db, renderVariantFn, pageNumber);
+    await republishInboundVariants(
+      allowEffects,
+      options.db,
+      options.renderVariantFn,
+      pageNumber
+    );
   }
 }
 
@@ -3803,12 +3837,18 @@ function hasVisibleVariants(docs, visibilityThreshold) {
 }
 
 /**
+ * @param {AllowEffects} allowEffects Permission for render-time effects.
  * @param {FirestoreLike} db Firestore client.
- * @param {(snap: VariantSnapshot, context?: RenderContext) => Promise<null>} renderVariantFn Renderer.
+ * @param {(permission: AllowEffects, snap: VariantSnapshot, context?: RenderContext) => Promise<null>} renderVariantFn Renderer.
  * @param {number} pageNumber Page number.
  * @returns {Promise<void>} Promise.
  */
-async function republishInboundVariants(db, renderVariantFn, pageNumber) {
+async function republishInboundVariants(
+  allowEffects,
+  db,
+  renderVariantFn,
+  pageNumber
+) {
   const sourceFilePaths = await getInboundSourceFilePaths(db, pageNumber);
   for (const sourceFilePath of sourceFilePaths) {
     const sourceSnap = await db.doc(sourceFilePath).get();
@@ -3816,6 +3856,7 @@ async function republishInboundVariants(db, renderVariantFn, pageNumber) {
       continue;
     }
     await renderVariantFn(
+      allowEffects,
       /** @type {VariantSnapshot} */ (/** @type {unknown} */ (sourceSnap)),
       {
         rewriteTargetPageNumbers: [pageNumber],

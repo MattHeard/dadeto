@@ -4,7 +4,7 @@
 /**
  * Regenerate only variants whose embedded target weights are stale.
  * @param {AllowEffects} allowEffects Invocation permission for failure logging.
- * @param {{db: { collectionGroup: (name: string) => { where: (field: string, operator: string, value: unknown) => { get: () => Promise<{ docs?: TreeVariant[] }> } } }, renderVariant: (snap: TreeVariant) => Promise<unknown>, logError: (permission: AllowEffects, message: string, path?: string, error?: unknown) => void}} options Dependencies.
+ * @param {{db: { collectionGroup: (name: string) => { where: (field: string, operator: string, value: unknown) => { get: () => Promise<{ docs?: TreeVariant[] }> } } }, renderVariant: (permission: AllowEffects, snap: TreeVariant) => Promise<unknown>, logError: (permission: AllowEffects, message: string, path?: string, error?: unknown) => void}} options Dependencies.
  * @returns {Promise<{processed: number, failed: number}>} Processing totals.
  */
 export async function regenerateDirtyTreeWeightVariants(
@@ -19,7 +19,7 @@ export async function regenerateDirtyTreeWeightVariants(
   let failed = 0;
   for (const variant of snapshot.docs ?? []) {
     try {
-      await renderVariant(variant);
+      await renderVariant(allowEffects, variant);
       processed += 1;
     } catch (error) {
       failed += 1;

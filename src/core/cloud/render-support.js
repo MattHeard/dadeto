@@ -114,7 +114,7 @@ export function createCloudRenderContext(options) {
  *   cdnHost: string | undefined,
  *   bucketName: string,
  *   objectPrefix: string,
- *   consoleError: (...args: unknown[]) => void,
+ *   consoleError: (permission: import('../../../types/allow-effects').AllowEffects, ...args: unknown[]) => void,
  * }} options Render dependency inputs.
  * @returns {{
  *   db: unknown,
@@ -126,7 +126,7 @@ export function createCloudRenderContext(options) {
  *   cdnHost: string | undefined,
  *   bucketName: string,
  *   objectPrefix: string,
- *   consoleError: (...args: unknown[]) => void,
+ *   consoleError: (permission: import('../../../types/allow-effects').AllowEffects, ...args: unknown[]) => void,
  * }} Shared render dependency bag.
  */
 export function createCloudRenderInstanceDeps(options) {
@@ -141,7 +141,7 @@ export function createCloudRenderInstanceDeps(options) {
  * @param {{
  *   createRenderer: (deps: ReturnType<typeof createCloudRenderInstanceDeps>) => unknown,
  *   crypto: { randomUUID: () => string },
- *   consoleError: (...args: unknown[]) => void,
+ *   consoleError: (permission: import('../../../types/allow-effects').AllowEffects, ...args: unknown[]) => void,
  * }} options Builder dependencies.
  * @returns {(state: {
  *   db: unknown,

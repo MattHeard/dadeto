@@ -135,8 +135,17 @@ test('covers option href and pending-path fallbacks', () => {
 
 test('covers absent tenant references during metadata and page resolution', async () => {
   const utils = renderVariantCoreTestUtils;
-  expect(await utils.fetchTargetPageMetadata(null, {}, 0.5)).toEqual({});
-  expect(await utils.loadOptions({ snap: {}, db: {} })).toEqual([]);
+  const allowEffects = createAllowEffects();
+  expect(
+    await utils.fetchTargetPageMetadata(allowEffects, {
+      targetPage: null,
+      db: {},
+      visibilityThreshold: 0.5,
+    })
+  ).toEqual({});
+  expect(await utils.loadOptions(allowEffects, { snap: {}, db: {} })).toEqual(
+    []
+  );
   expect(await utils.fetchRootPageUrl({ rootPage: null }, {})).toBeUndefined();
   expect(await utils.fetchAndValidatePage({}, {})).toBeNull();
   await expect(

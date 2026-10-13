@@ -35,7 +35,7 @@ import {
  *   crypto: typeof import('../../../cloud/render-variant/render-variant-gcf.js').crypto,
  *   startupAllowEffects: AllowEffects,
  * }} deps Runtime dependencies supplied by the cloud wrapper.
- * @returns {{ renderVariant: unknown, render: (...args: unknown[]) => Promise<null> }} Wired cloud export objects for index.js.
+ * @returns {{ renderVariant: unknown, render: (permission: AllowEffects, ...args: unknown[]) => Promise<null> }} Wired cloud export objects for index.js.
  */
 export function runRenderVariant(deps) {
   const typedDeps = /** @type {any} */ (deps);
@@ -70,7 +70,8 @@ export function runRenderVariant(deps) {
   };
 
   const handleVariantWrite = createHandleVariantWrite({
-    renderVariant: snap => Promise.resolve(resolveRenderVariant()(snap)),
+    renderVariant: (permission, snap) =>
+      Promise.resolve(resolveRenderVariant()(permission, snap)),
     getDeleteSentinel: () => FieldValue.delete(),
     db,
     updateDocument: updateFirestoreDocument,
@@ -89,8 +90,10 @@ export function runRenderVariant(deps) {
     })
   );
 
-  const render = (/** @type {any[]} */ ...args) =>
-    resolveRenderVariant()(...args);
+  const render = (
+    /** @type {AllowEffects} */ allowEffects,
+    /** @type {any[]} */ ...args
+  ) => resolveRenderVariant()(allowEffects, ...args);
 
   return { renderVariant, render };
 
@@ -119,13 +122,10 @@ export function runRenderVariant(deps) {
               ...renderEffectDependencies,
             }),
           crypto,
-          consoleError: (/** @type {any[]} */ ...args) => {
-            void bindEffectBoundary(
-              async (/** @type {AllowEffects} */ permission) => {
-                logError(permission, ...args);
-              }
-            );
-          },
+          consoleError: (
+            /** @type {AllowEffects} */ permission,
+            /** @type {any[]} */ ...args
+          ) => logError(permission, ...args),
         })
       )
     );

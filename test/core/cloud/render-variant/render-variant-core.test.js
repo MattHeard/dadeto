@@ -3,21 +3,21 @@ import { createAllowEffects } from '../../../../src/cloud/allow-effects.js';
 import * as RenderVariantCore from '../../../../src/core/cloud/render-variant/render-variant-core.js';
 import {
   createInvalidatePaths,
-  buildOptionMetadata,
-  resolveStoryMetadata,
-  resolveAuthorMetadata,
+  buildOptionMetadata as buildOptionMetadataCore,
+  resolveStoryMetadata as resolveStoryMetadataCore,
+  resolveAuthorMetadata as resolveAuthorMetadataCore,
   buildParentRoute,
-  resolveParentUrl,
+  resolveParentUrl as resolveParentUrlCore,
   createRenderVariant as createRenderVariantCore,
   createHandleVariantWrite as createHandleVariantWriteCore,
   VISIBILITY_THRESHOLD,
   DEFAULT_BUCKET_NAME,
   getVisibleVariants,
-  loadOptions,
+  loadOptions as loadOptionsCore,
   escapeHtml,
   fetchPageData,
   getPageSnapFromRef,
-  resolveRenderPlan,
+  resolveRenderPlan as resolveRenderPlanCore,
   isSnapValid,
   extractStoryRef,
   buildRootUrl,
@@ -27,9 +27,20 @@ import {
 } from '../../../../src/core/cloud/render-variant/render-variant-core.js';
 
 const ACCESS_TOKEN_KEY = 'access_token';
+const testAllowEffects = createAllowEffects();
+
+const buildOptionMetadata = options =>
+  buildOptionMetadataCore(testAllowEffects, options);
+const resolveStoryMetadata = options =>
+  resolveStoryMetadataCore(testAllowEffects, options);
+const resolveParentUrl = options =>
+  resolveParentUrlCore(testAllowEffects, options);
+const loadOptions = options => loadOptionsCore(testAllowEffects, options);
+const resolveRenderPlan = options =>
+  resolveRenderPlanCore(testAllowEffects, options);
 
 const resolveAuthorMetadataWithEffects = dependencies =>
-  resolveAuthorMetadata({
+  resolveAuthorMetadataCore(testAllowEffects, {
     bindEffectBoundary:
       dependencies.bindEffectBoundary ??
       (handler => handler(createAllowEffects())),
@@ -42,8 +53,8 @@ const resolveAuthorMetadataWithEffects = dependencies =>
     ...dependencies,
   });
 
-const createRenderVariant = dependencies =>
-  createRenderVariantCore({
+const createRenderVariant = dependencies => {
+  const render = createRenderVariantCore({
     ...dependencies,
     fetchFn:
       typeof dependencies.fetchFn === 'function'
@@ -72,6 +83,8 @@ const createRenderVariant = dependencies =>
       }),
     effectFetchFn: (permission, url, init) => dependencies.fetchFn(url, init),
   });
+  return (snap, context) => render(testAllowEffects, snap, context);
+};
 
 const createHandleVariantWrite = dependencies => {
   const { visibilityThreshold, ...coreDependencies } = dependencies;
@@ -192,6 +205,7 @@ describe('createInvalidatePaths', () => {
     await invalidatePaths(['/p/1a.html']);
 
     expect(consoleError).toHaveBeenCalledWith(
+      testAllowEffects,
       'invalidate /p/1a.html error',
       'boom'
     );
@@ -250,6 +264,7 @@ describe('createInvalidatePaths', () => {
     await invalidatePaths(['/p/raw.html']);
 
     expect(consoleError).toHaveBeenCalledWith(
+      testAllowEffects,
       'invalidate /p/raw.html error',
       rawError
     );
@@ -279,6 +294,7 @@ describe('createInvalidatePaths', () => {
     await invalidatePaths(['/p/string.html']);
 
     expect(consoleError).toHaveBeenCalledWith(
+      testAllowEffects,
       'invalidate /p/string.html error',
       'boom'
     );
@@ -312,6 +328,7 @@ describe('createInvalidatePaths', () => {
     await invalidatePaths(['/p/1a.html']);
 
     expect(consoleError).toHaveBeenCalledWith(
+      testAllowEffects,
       'invalidate /p/1a.html failed: 500'
     );
     expect(fetchFn).toHaveBeenCalledTimes(2);
@@ -537,6 +554,7 @@ describe('buildOptionMetadata', () => {
     });
 
     expect(consoleError).toHaveBeenCalledWith(
+      testAllowEffects,
       'target page lookup failed',
       'missing'
     );
@@ -558,6 +576,7 @@ describe('buildOptionMetadata', () => {
     });
 
     expect(consoleError).toHaveBeenCalledWith(
+      testAllowEffects,
       'target page lookup failed',
       errorObject
     );
@@ -712,7 +731,7 @@ describe('loadOptions', () => {
 });
 
 describe('loadOptions fallback logging', () => {
-  it('uses the noop logger when consoleError is omitted', async () => {
+  it('uses the noop logger when a target lookup fails without consoleError', async () => {
     const variantRef = {
       collection: jest.fn(() => ({
         get: jest.fn().mockResolvedValue({
@@ -721,7 +740,9 @@ describe('loadOptions fallback logging', () => {
               data: () => ({
                 content: 'Default',
                 position: 0,
-                targetPageNumber: 2,
+                targetPage: {
+                  get: jest.fn().mockRejectedValue(new Error('offline')),
+                },
               }),
             },
           ],
@@ -741,9 +762,7 @@ describe('loadOptions fallback logging', () => {
       db,
     });
 
-    expect(result).toEqual([
-      { content: 'Default', position: 0, targetPageNumber: 2 },
-    ]);
+    expect(result).toEqual([{ content: 'Default', position: 0 }]);
     expect(db.doc).toHaveBeenCalledWith('stories/1/pages/2/variants/3');
   });
 });
@@ -909,6 +928,7 @@ describe('resolveStoryMetadata error handling', () => {
     });
 
     expect(consoleError).toHaveBeenCalledWith(
+      testAllowEffects,
       'root page lookup failed',
       'offline'
     );
@@ -939,6 +959,7 @@ describe('resolveStoryMetadata error handling', () => {
     });
 
     expect(consoleError).toHaveBeenCalledWith(
+      testAllowEffects,
       'root page lookup failed',
       rejectionError
     );
@@ -1158,8 +1179,8 @@ describe('resolveAuthorMetadata', () => {
       updateFirestoreDocument,
     };
 
-    await resolveAuthorMetadata(dependencies);
-    await resolveAuthorMetadata(dependencies);
+    await resolveAuthorMetadataWithEffects(dependencies);
+    await resolveAuthorMetadataWithEffects(dependencies);
 
     expect(bindEffectBoundary).toHaveBeenCalledTimes(2);
     expect(updateFirestoreDocument).toHaveBeenCalledTimes(2);
@@ -1220,6 +1241,7 @@ describe('resolveAuthorMetadata', () => {
 
     expect(result).toEqual({ authorName: 'Fourth', authorUrl: undefined });
     expect(consoleError).toHaveBeenCalledWith(
+      testAllowEffects,
       'author lookup failed',
       'write offline'
     );
@@ -1241,6 +1263,7 @@ describe('resolveAuthorMetadata', () => {
     });
 
     expect(consoleError).toHaveBeenCalledWith(
+      testAllowEffects,
       'author lookup failed',
       'offline'
     );
@@ -1263,7 +1286,11 @@ describe('resolveAuthorMetadata', () => {
       consoleError,
     });
 
-    expect(consoleError).toHaveBeenCalledWith('author lookup failed', rawError);
+    expect(consoleError).toHaveBeenCalledWith(
+      testAllowEffects,
+      'author lookup failed',
+      rawError
+    );
     expect(result.authorUrl).toBeUndefined();
   });
 
@@ -1325,7 +1352,11 @@ describe('resolveParentUrl', () => {
       })
     ).resolves.toBeUndefined();
 
-    expect(consoleError).toHaveBeenCalledWith('parent lookup failed', 'boom');
+    expect(consoleError).toHaveBeenCalledWith(
+      testAllowEffects,
+      'parent lookup failed',
+      'boom'
+    );
   });
 
   it('logs raw errors when lookup rejects without a message', async () => {
@@ -1345,7 +1376,11 @@ describe('resolveParentUrl', () => {
       })
     ).resolves.toBeUndefined();
 
-    expect(consoleError).toHaveBeenCalledWith('parent lookup failed', rawError);
+    expect(consoleError).toHaveBeenCalledWith(
+      testAllowEffects,
+      'parent lookup failed',
+      rawError
+    );
   });
 
   it('silently ignores lookup failures without a console error handler', async () => {
@@ -1790,6 +1825,7 @@ it('renders variants, writes artefacts, and invalidates caches', async () => {
     })
   );
   expect(consoleError).toHaveBeenCalledWith(
+    testAllowEffects,
     'target page lookup failed',
     'boom'
   );
@@ -2114,6 +2150,7 @@ describe('createRenderVariant lookup failures', () => {
     await renderVariant(snap, { params: { variantId: 'variant-1' } });
 
     expect(consoleError).toHaveBeenCalledWith(
+      testAllowEffects,
       'root page lookup failed',
       'boom'
     );
@@ -2764,6 +2801,7 @@ describe('createRenderVariant parent lookup failures', () => {
     await renderVariant(snap, { params: { storyId: 'story-6' } });
 
     expect(consoleError).toHaveBeenCalledWith(
+      testAllowEffects,
       'parent lookup failed',
       'missing parent'
     );
@@ -3134,7 +3172,7 @@ describe('createHandleVariantWrite', () => {
 
     await handler(change, { params: { storyId: 'story-1' } }, allowEffects);
 
-    expect(renderVariant).toHaveBeenCalledWith(change.after, {
+    expect(renderVariant).toHaveBeenCalledWith(allowEffects, change.after, {
       params: { storyId: 'story-1' },
     });
     expect(db.doc).toHaveBeenCalledWith('stories/1/pages/2/variants/3');
@@ -3278,7 +3316,7 @@ describe('createHandleVariantWrite republishing', () => {
       {}
     );
 
-    expect(renderVariant).toHaveBeenCalledWith(sourceSnap, {
+    expect(renderVariant).toHaveBeenCalledWith(testAllowEffects, sourceSnap, {
       rewriteTargetPageNumbers: [9],
     });
   });

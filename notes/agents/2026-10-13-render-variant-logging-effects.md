@@ -1,7 +1,6 @@
-# Render variant logging AllowEffects migration
+# Render-variant logging effects
 
-- **Unexpected hurdle:** The source audit found several helpers sharing one injected `console.error` callback, so changing only the cloud adapter signature would not authorize calls throughout the renderer.
-- **Diagnosis:** `runRenderVariant` forwarded raw console logging through `createCloudRenderInstanceBuilder`; recoverable lookup and CDN failure paths called it without crossing the invocation boundary. The same startup composition also wires tree-visibility regeneration, whose HTTP response path needs a separate migration.
-- **Fix:** Added a cloud `logRenderVariantError` adapter requiring `AllowEffects`. Render logging now binds a fresh invocation capability for each call, and the token is never captured from startup. The generated browser report-link's `fetch` is constructed as script text and executes in the visitor's browser, so it is not a server-side injected fetch call.
-- **Evidence:** Focused Jest passed (2 suites / 9 tests); `npm run tsdoc:check` passed; `npm run check` passed all 10 gates, including coverage, 11 local E2E tests, and zero clones; `npm run build:cloud` passed; all packaged render-variant logger/entrypoint/core copies passed `node --check`; `git diff --check` passed.
-- **Next:** Migrate the tree-visibility regeneration HTTP response and logging effects in `src/core/cloud/tree-visibility/run.js` to invocation-scoped capabilities.
+- Unexpected hurdle: the full quality gate exposed an uncovered no-op logger branch and capability-capture/parameter-arity lint findings in renderer error paths.
+- Diagnosis: the default logger needed an explicit permission parameter for the function coverage and effect-boundary model; nested promise callbacks also hid where the request capability was used.
+- Fix: thread `AllowEffects` through renderer logging, use explicit `try`/`catch` error paths, and keep grouped dependencies in option objects. Focused renderer coverage and the full check passed.
+- Next time: when changing injected effect signatures, search all renderer and tree-visibility call sites first, then run focused tests, `npm run check`, cloud packaging, and syntax checks before closing the bead.
