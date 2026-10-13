@@ -965,6 +965,11 @@ function createRefundIntentService(deps) {
 
       const balanceReference = creditRef(deps.db, intent.apiKeyUuid);
       const balanceSnapshot = await transaction.get(balanceReference);
+      const paymentEventReference = deps.db
+        .collection('payment-events')
+        .doc(input.eventId);
+      const paymentEventSnapshot = await transaction.get(paymentEventReference);
+      const paymentEvent = readData(paymentEventSnapshot);
       const before = Number(readData(balanceSnapshot).credit ?? 0);
       const after = before - intent.creditsToReverse;
       if (!Number.isSafeInteger(before) || after < 0)
@@ -1042,6 +1047,10 @@ function createRefundIntentService(deps) {
         stripeStatus: input.stripeStatus,
         appliedEventId: input.eventId,
         appliedAt,
+      });
+      transaction.set(paymentEventReference, {
+        ...paymentEvent,
+        status: 'applied',
       });
       return {
         status: 200,

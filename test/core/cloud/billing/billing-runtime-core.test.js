@@ -1883,6 +1883,16 @@ describe('billing runtime confirmed refund intent events', () => {
       currency: 'usd',
       stripeStatus: 'succeeded',
     };
+    const verifiedEvent = {
+      id: input.eventId,
+      type: 'refund.updated',
+      data: { object: { id: input.stripeRefundId } },
+    };
+    await db.doc(`payment-events/${input.eventId}`).set({
+      status: 'deferred',
+      purchaseId: input.purchaseId,
+      verifiedEvent,
+    });
 
     await expect(
       billing.applyRefundIntentEvent(allowEffects, {
@@ -1957,6 +1967,9 @@ describe('billing runtime confirmed refund intent events', () => {
     expect(
       (await db.doc('billing-refund-intents/intent-1').get()).data()
     ).toMatchObject({ status: 'applied', appliedEventId: 'evt-refund-1' });
+    expect(
+      (await db.doc(`payment-events/${input.eventId}`).get()).data()
+    ).toMatchObject({ status: 'applied', verifiedEvent });
   });
 
   it('quarantines identity and amount mismatches without changing credits', async () => {
