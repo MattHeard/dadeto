@@ -260,6 +260,10 @@ async function runScenario135Part0(context) {
       body: input,
     })),
     applyRefundEvent: jest.fn(async input => ({ status: 200, body: input })),
+    applyRefundIntentEvent: jest.fn(async (_permission, input) => ({
+      status: 200,
+      body: { applied: true, refundIntentId: input.refundIntentId },
+    })),
     recordRefundReconciliation: jest.fn(async () => {}),
   };
   mockBilling = context.billing;
@@ -408,6 +412,7 @@ async function runScenario135Part1(context) {
       stripePaymentIntentId: 'pi-unmatched',
       chargeId: 'ch-unmatched',
       refundedUsdMinor: 70,
+      reason: 'refund_details_missing',
     }
   );
   await expect(
@@ -432,8 +437,292 @@ async function runScenario135Part1(context) {
       stripePaymentIntentId: '',
       chargeId: '',
       refundedUsdMinor: 0,
+      reason: 'refund_details_missing',
     }
   );
+  await expect(
+    context.captured.handlePurchaseEvent(allowEffects, {
+      id: 'evt-refund-pending',
+      type: 'refund.created',
+      data: {
+        object: {
+          id: 're-pending',
+          ['payment_intent']: 'pi-1',
+          charge: 'ch-1',
+          amount: 100,
+          currency: 'usd',
+          status: 'pending',
+          metadata: {
+            ['purchase_id']: 'p1',
+            ['refund_intent_id']: 'intent-1',
+          },
+        },
+      },
+    })
+  ).resolves.toMatchObject({
+    status: 200,
+    body: { deferred: true, refundIntentId: 'intent-1' },
+  });
+  expect(context.billing.applyRefundIntentEvent).not.toHaveBeenCalled();
+  await expect(
+    context.captured.handlePurchaseEvent(allowEffects, {
+      id: 'evt-refund-succeeded',
+      type: 'refund.updated',
+      data: {
+        object: {
+          id: 're-succeeded',
+          ['payment_intent']: 'pi-1',
+          charge: 'ch-1',
+          amount: 100,
+          currency: 'usd',
+          status: 'succeeded',
+          metadata: {
+            ['purchase_id']: 'p1',
+            ['refund_intent_id']: 'intent-1',
+          },
+        },
+      },
+    })
+  ).resolves.toMatchObject({
+    status: 200,
+    body: { applied: true, refundIntentId: 'intent-1' },
+  });
+  expect(context.billing.applyRefundIntentEvent).toHaveBeenCalledWith(
+    allowEffects,
+    {
+      refundIntentId: 'intent-1',
+      purchaseId: 'p1',
+      eventId: 'evt-refund-succeeded',
+      stripeRefundId: 're-succeeded',
+      stripePaymentIntentId: 'pi-1',
+      amountUsdMinor: 100,
+      currency: 'usd',
+      stripeStatus: 'succeeded',
+    }
+  );
+  await expect(
+    context.captured.handlePurchaseEvent(allowEffects, {
+      id: 'evt-refund-missing-metadata',
+      type: 'refund.updated',
+      data: {
+        object: {
+          id: {},
+          ['payment_intent']: {},
+          charge: {},
+        },
+      },
+    })
+  ).resolves.toMatchObject({
+    status: 200,
+    body: {
+      quarantined: true,
+      reason: 'refund_intent_metadata_missing',
+    },
+  });
+  expect(context.billing.applyRefundIntentEvent).toHaveBeenCalledTimes(1);
+  await runMissingRefundShapeCases(context);
+  await expect(
+    context.captured.handlePurchaseEvent(allowEffects, {
+      id: 'evt-refund-expanded-metadata-missing',
+      type: 'refund.updated',
+      data: {
+        object: {
+          id: { id: undefined },
+          ['payment_intent']: { id: 'pi-expanded' },
+          charge: { id: 'ch-expanded' },
+        },
+      },
+    })
+  ).resolves.toMatchObject({
+    body: { quarantined: true, reason: 'refund_intent_metadata_missing' },
+  });
+  await expect(
+    context.captured.handlePurchaseEvent(allowEffects, {
+      id: 'evt-refund-requires-action',
+      type: 'refund.updated',
+      data: {
+        object: {
+          id: 're-action',
+          status: 'requires_action',
+          metadata: {
+            ['purchase_id']: 'p1',
+            ['refund_intent_id']: 'intent-1',
+          },
+        },
+      },
+    })
+  ).resolves.toMatchObject({ body: { deferred: true } });
+  expect(context.billing.applyRefundIntentEvent).toHaveBeenCalledTimes(1);
+
+  context.billing.applyRefundIntentEvent
+    .mockResolvedValueOnce({ status: 200, body: { quarantined: true } })
+    .mockResolvedValueOnce({
+      status: 200,
+      body: { quarantined: true, reason: 'test_conflict' },
+    })
+    .mockResolvedValueOnce({ status: 200, body: 'legacy response' });
+  await expect(
+    context.captured.handlePurchaseEvent(allowEffects, {
+      id: 'evt-refund-conflict-default',
+      type: 'refund.updated',
+      data: {
+        object: {
+          id: 're-conflict-default',
+          status: 'succeeded',
+          metadata: {
+            ['purchase_id']: 'p1',
+            ['refund_intent_id']: 'intent-1',
+          },
+        },
+      },
+    })
+  ).resolves.toMatchObject({
+    body: { quarantined: true, reason: 'refund_intent_conflict' },
+  });
+  await expect(
+    context.captured.handlePurchaseEvent(allowEffects, {
+      id: 'evt-refund-conflict-specific',
+      type: 'refund.updated',
+      data: {
+        object: {
+          id: 're-conflict-specific',
+          status: 'succeeded',
+          metadata: {
+            ['purchase_id']: 'p1',
+            ['refund_intent_id']: 'intent-1',
+          },
+        },
+      },
+    })
+  ).resolves.toMatchObject({
+    body: { quarantined: true, reason: 'test_conflict' },
+  });
+  await expect(
+    context.captured.handlePurchaseEvent(allowEffects, {
+      id: 'evt-refund-legacy-response',
+      type: 'refund.updated',
+      data: {
+        object: {
+          id: 're-legacy',
+          status: 'succeeded',
+          metadata: {
+            ['purchase_id']: 'p1',
+            ['refund_intent_id']: 'intent-1',
+          },
+        },
+      },
+    })
+  ).resolves.toEqual({ status: 200, body: 'legacy response' });
+  await expect(
+    context.captured.handlePurchaseEvent(allowEffects, {
+      id: 'evt-charge-refunded',
+      type: 'charge.refunded',
+      data: {
+        object: {
+          id: 'ch-1',
+          ['payment_intent']: 'pi-1',
+          ['amount_refunded']: 100,
+          refunds: {
+            data: [
+              {
+                id: 're-from-charge',
+                amount: 100,
+                currency: 'usd',
+                status: 'succeeded',
+                metadata: {
+                  ['refund_intent_id']: 'intent-1',
+                },
+              },
+            ],
+          },
+          metadata: { ['purchase_id']: 'p1' },
+        },
+      },
+    })
+  ).resolves.toMatchObject({
+    status: 200,
+    body: { applied: true, refundIntentId: 'intent-1' },
+  });
+  expect(context.billing.applyRefundIntentEvent).toHaveBeenLastCalledWith(
+    allowEffects,
+    {
+      refundIntentId: 'intent-1',
+      purchaseId: 'p1',
+      eventId: 'evt-charge-refunded:re-from-charge',
+      stripeRefundId: 're-from-charge',
+      stripePaymentIntentId: 'pi-1',
+      amountUsdMinor: 100,
+      currency: 'usd',
+      stripeStatus: 'succeeded',
+    }
+  );
+  context.billing.applyRefundIntentEvent.mockResolvedValueOnce({
+    status: 200,
+    body: { quarantined: true, reason: 'embedded_refund_conflict' },
+  });
+  await expect(
+    context.captured.handlePurchaseEvent(allowEffects, {
+      id: 'evt-charge-refunded-unmatched-item',
+      type: 'charge.refunded',
+      data: {
+        object: {
+          id: 'ch-1',
+          ['payment_intent']: 'pi-1',
+          metadata: { ['purchase_id']: 'p1' },
+          refunds: {
+            data: [
+              {
+                amount: 100,
+                currency: 'usd',
+                status: 'succeeded',
+                metadata: { ['refund_intent_id']: 'intent-1' },
+              },
+            ],
+          },
+        },
+      },
+    })
+  ).resolves.toMatchObject({
+    body: { quarantined: true, reason: 'embedded_refund_conflict' },
+  });
+  expect(context.billing.applyRefundIntentEvent).toHaveBeenLastCalledWith(
+    allowEffects,
+    {
+      refundIntentId: 'intent-1',
+      purchaseId: 'p1',
+      eventId: 'evt-charge-refunded-unmatched-item:unknown',
+      stripeRefundId: '',
+      stripePaymentIntentId: 'pi-1',
+      amountUsdMinor: 100,
+      currency: 'usd',
+      stripeStatus: 'succeeded',
+    }
+  );
+}
+
+/**
+ * Cover missing Refund object and empty embedded refund shapes.
+ * @param {Record<string, any>} context Captured handler context.
+ * @returns {Promise<void>} Assertions are retained.
+ */
+async function runMissingRefundShapeCases(context) {
+  await expect(
+    context.captured.handlePurchaseEvent(allowEffects, {
+      id: 'evt-refund-object-missing',
+      type: 'refund.updated',
+    })
+  ).resolves.toMatchObject({
+    body: { quarantined: true, reason: 'refund_intent_metadata_missing' },
+  });
+  await expect(
+    context.captured.handlePurchaseEvent(allowEffects, {
+      id: 'evt-charge-refunded-empty-item',
+      type: 'charge.refunded',
+      data: { object: { refunds: { data: [{}] } } },
+    })
+  ).resolves.toMatchObject({
+    body: { quarantined: true, reason: 'refund_intent_metadata_missing' },
+  });
 }
 
 /**

@@ -233,6 +233,37 @@ describe('createPaymentWebhookHandler', () => {
 });
 
 describe('createPaymentWebhookHandler processing', () => {
+  it('durably dispatches individual Stripe refund events', async () => {
+    const markProcessedEvent = jest.fn();
+    for (const type of ['refund.created', 'refund.updated']) {
+      const event = { id: `evt_${type}`, type, data: { object: {} } };
+      const response = { status: 200, body: { deferred: true } };
+      const handler = createPaymentWebhookHandler({
+        fetchCredit: async () => 0,
+        applyCreditEvent: jest.fn(),
+        resolveApiKeyUuid: async () => null,
+        markProcessedEvent,
+        handlePurchaseEvent: async () => response,
+        getPaymentEvent: async () => event,
+      });
+
+      await expect(handler(allowEffects)).resolves.toBe(response);
+      expect(markProcessedEvent).toHaveBeenNthCalledWith(
+        markProcessedEvent.mock.calls.length - 1,
+        allowEffects,
+        event,
+        'purchase',
+        'received'
+      );
+      expect(markProcessedEvent).toHaveBeenLastCalledWith(
+        allowEffects,
+        event,
+        'purchase',
+        'deferred'
+      );
+    }
+  });
+
   it('records purchase events and uses a fallback processed-event key', async () => {
     const markProcessedEvent = jest.fn();
     const purchaseResponse = { status: 201, body: { purchase: true } };

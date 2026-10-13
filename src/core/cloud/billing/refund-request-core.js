@@ -1,4 +1,5 @@
 import { createHash } from 'node:crypto';
+import { authenticatePurchaseRequest } from './authentication-core.js';
 
 /** @typedef {import('../../../../types/allow-effects').AllowEffects} AllowEffects */
 /** @typedef {{status: number, body: string|Record<string, unknown>}} RefundResponse */
@@ -29,21 +30,17 @@ export function createBillingRefundRequestHandler(deps) {
     ) {
       return { status: 400, body: { error: 'idempotency_key_required' } };
     }
-    const token = readBearerToken(request.authorization);
-    if (!token)
-      return { status: 401, body: { error: 'authentication_required' } };
-    let claims;
-    try {
-      claims = await deps.verifyIdToken(token);
-    } catch {
-      return { status: 401, body: { error: 'authentication_required' } };
-    }
+    const result = await authenticatePurchaseRequest({
+      authorization: request.authorization,
+      parseToken: readBearerToken,
+      verifyIdToken: deps.verifyIdToken,
+      purchaseId: request.purchaseId,
+      loadPurchase: deps.getPurchase,
+    });
+    if ('response' in result) return result.response;
+    const { claims } = result;
     if (typeof claims.uid !== 'string' || claims.uid.length === 0)
       return { status: 401, body: { error: 'authentication_required' } };
-    const purchase = await deps.getPurchase(request.purchaseId);
-    if (!purchase || purchase.uid !== claims.uid)
-      return { status: 404, body: { error: 'purchase_not_found' } };
-
     const refundIntentId = createRefundIntentId(
       claims.uid,
       request.purchaseId,

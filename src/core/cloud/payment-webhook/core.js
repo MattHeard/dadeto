@@ -26,6 +26,8 @@ const DEFAULT_ALLOWED_EVENT_TYPES = new Set([
   'checkout.session.completed',
   'checkout.session.expired',
   'payment_intent.succeeded',
+  'refund.created',
+  'refund.updated',
   'charge.refunded',
   'charge.dispute.created',
 ]);

@@ -45,6 +45,24 @@ function createDeps(overrides = {}) {
 }
 
 describe('createBillingRefundRequestHandler', () => {
+  it('rejects malformed purchase identifiers and bearer headers', async () => {
+    const deps = createDeps();
+    const handle = createBillingRefundRequestHandler(deps);
+    await expect(
+      handle(allowEffects, { ...request, purchaseId: 'invalid/id' })
+    ).resolves.toEqual({
+      status: 400,
+      body: { error: 'invalid_purchase_id' },
+    });
+    await expect(
+      handle(allowEffects, { ...request, authorization: 'not a bearer token' })
+    ).resolves.toEqual({
+      status: 401,
+      body: { error: 'authentication_required' },
+    });
+    expect(deps.createRefundIntent).not.toHaveBeenCalled();
+  });
+
   it('requires authentication and a stable idempotency key', async () => {
     const deps = createDeps();
     const handle = createBillingRefundRequestHandler(deps);
@@ -74,6 +92,81 @@ describe('createBillingRefundRequestHandler', () => {
     });
     expect(deps.createRefundIntent).not.toHaveBeenCalled();
     expect(deps.createStripeRefund).not.toHaveBeenCalled();
+  });
+
+  it('rejects authenticated claims without a usable user id', async () => {
+    const deps = createDeps({
+      verifyIdToken: jest.fn(async () => ({})),
+      getPurchase: jest.fn(async () => ({})),
+    });
+    const handle = createBillingRefundRequestHandler(deps);
+    await expect(handle(allowEffects, request)).resolves.toEqual({
+      status: 401,
+      body: { error: 'authentication_required' },
+    });
+  });
+
+  it('surfaces invalid persisted intent results without calling Stripe', async () => {
+    for (const body of [{}, { refundIntent: null }]) {
+      const deps = createDeps({
+        createRefundIntent: jest.fn(async () => ({ status: 201, body })),
+      });
+      const handle = createBillingRefundRequestHandler(deps);
+      await expect(handle(allowEffects, request)).resolves.toEqual({
+        status: 500,
+        body: { error: 'invalid_refund_intent_result' },
+      });
+      expect(deps.createStripeRefund).not.toHaveBeenCalled();
+    }
+  });
+
+  it('returns a failed intent result and skips Stripe', async () => {
+    const deps = createDeps({
+      createRefundIntent: jest.fn(async () => ({
+        status: 503,
+        body: { error: 'billing_unavailable' },
+      })),
+    });
+    const handle = createBillingRefundRequestHandler(deps);
+    await expect(handle(allowEffects, request)).resolves.toEqual({
+      status: 503,
+      body: { error: 'billing_unavailable' },
+    });
+    expect(deps.createStripeRefund).not.toHaveBeenCalled();
+  });
+
+  it('does not resubmit an intent that is already terminal', async () => {
+    const deps = createDeps({
+      createRefundIntent: jest.fn(async (_permission, input) => ({
+        status: 200,
+        body: {
+          refundIntent: { ...input, status: 'applied' },
+        },
+      })),
+    });
+    const handle = createBillingRefundRequestHandler(deps);
+    await expect(handle(allowEffects, request)).resolves.toMatchObject({
+      status: 200,
+      body: { duplicate: true, refundIntent: { status: 'applied' } },
+    });
+    expect(deps.createStripeRefund).not.toHaveBeenCalled();
+  });
+
+  it('records a Stripe refund when the provider omits its status', async () => {
+    const deps = createDeps({
+      createStripeRefund: jest.fn(async () => ({ id: 're-no-status' })),
+    });
+    const handle = createBillingRefundRequestHandler(deps);
+    await expect(handle(allowEffects, request)).resolves.toMatchObject({
+      status: 200,
+    });
+    expect(deps.recordRefundSubmission).toHaveBeenCalledWith(
+      allowEffects,
+      expect.objectContaining({
+        stripeRefundId: 're-no-status',
+        stripeStatus: 'unknown',
+      })
+    );
   });
 
   it('creates the intent before requesting the exact Stripe refund with a stable key', async () => {

@@ -95,6 +95,8 @@ export function createPaymentWebhookIndexHandler(deps) {
  */
 async function handlePurchaseEvent(allowEffects, billing, event) {
   const metadata = readMetadata(event.data?.object ?? {});
+  if (event.type === 'refund.created' || event.type === 'refund.updated')
+    return handleRefundEvent(allowEffects, billing, metadata, event);
   if (event.type === 'charge.refunded')
     return handleChargeRefunded(allowEffects, billing, metadata, event);
   if (!metadata.purchase_id) return null;
@@ -168,24 +170,179 @@ async function handlePaymentIntentSucceeded(
  * @returns {Promise<import('../../payment-webhook-core.js').PaymentWebhookResponse>} Response.
  */
 async function handleChargeRefunded(allowEffects, billing, metadata, event) {
-  const charge = event.data?.object ?? {};
-  const stripePaymentIntentId = String(charge.payment_intent ?? '');
-  const refundedUsdMinor = Number(charge.amount_refunded ?? 0);
-  await billing.recordRefundReconciliation(allowEffects, {
+  const charge =
+    /** @type {{id?: unknown, payment_intent?: unknown, amount_refunded?: unknown, refunds?: {data?: unknown}}} */ (
+      event.data?.object ?? {}
+    );
+  const chargeId = readStripeId(charge.id);
+  const stripePaymentIntentId = readStripeId(charge.payment_intent);
+  const refunds = Array.isArray(charge.refunds?.data)
+    ? charge.refunds.data
+    : [];
+  if (refunds.length > 0) {
+    const results = [];
+    for (const refund of refunds) {
+      const refundMetadata = readMetadata(refund);
+      results.push(
+        await resolveRefundEvent(allowEffects, billing, {
+          eventId: `${event.id}:${readStripeId(refund.id) || 'unknown'}`,
+          purchaseId: refundMetadata.purchase_id ?? metadata.purchase_id ?? '',
+          refundIntentId: refundMetadata.refund_intent_id ?? '',
+          stripeRefundId: readStripeId(refund.id),
+          stripePaymentIntentId:
+            readStripeId(refund.payment_intent) || stripePaymentIntentId,
+          chargeId: readStripeId(refund.charge) || chargeId,
+          amountUsdMinor: Number(refund.amount ?? 0),
+          currency: String(refund.currency ?? ''),
+          stripeStatus: String(refund.status ?? ''),
+        })
+      );
+    }
+    const lastResult =
+      /** @type {import('../../payment-webhook-core.js').PaymentWebhookResponse} */ (
+        results[results.length - 1]
+      );
+    return (
+      results.find(result => readResponseBody(result).quarantined) ?? lastResult
+    );
+  }
+  return quarantineRefundEvent(
+    allowEffects,
+    billing,
+    {
+      eventId: event.id,
+      purchaseId: metadata.purchase_id ?? '',
+      stripePaymentIntentId,
+      chargeId,
+      refundedUsdMinor: Number(charge.amount_refunded ?? 0),
+    },
+    {
+      reconciliationReason: 'refund_details_missing',
+      responseReason: 'external_stripe_refund',
+    }
+  );
+}
+
+/**
+ * Resolve an individual verified Stripe refund against a persisted DADETO intent.
+ * @param {AllowEffects} allowEffects Request effect permission.
+ * @param {ReturnType<typeof createBillingRuntime>} billing Billing service.
+ * @param {Record<string, string>} metadata Refund metadata.
+ * @param {import('../../payment-webhook-core.js').PaymentEvent} event Stripe event.
+ * @returns {Promise<import('../../payment-webhook-core.js').PaymentWebhookResponse>} Refund response.
+ */
+async function handleRefundEvent(allowEffects, billing, metadata, event) {
+  const refund = event.data?.object ?? {};
+  return resolveRefundEvent(allowEffects, billing, {
     eventId: event.id,
     purchaseId: metadata.purchase_id ?? '',
-    stripePaymentIntentId,
-    chargeId: String(charge.id ?? ''),
-    refundedUsdMinor,
+    refundIntentId: metadata.refund_intent_id ?? '',
+    stripeRefundId: readStripeId(refund.id),
+    stripePaymentIntentId: readStripeId(refund.payment_intent),
+    chargeId: readStripeId(refund.charge),
+    amountUsdMinor: Number(refund.amount ?? 0),
+    currency: String(refund.currency ?? ''),
+    stripeStatus: String(refund.status ?? ''),
+  });
+}
+
+/**
+ * Apply a succeeded matching Refund or persist it for retry/reconciliation.
+ * @param {AllowEffects} allowEffects Request effect permission.
+ * @param {ReturnType<typeof createBillingRuntime>} billing Billing service.
+ * @param {{eventId: string, purchaseId: string, refundIntentId: string, stripeRefundId: string, stripePaymentIntentId: string, chargeId: string, amountUsdMinor: number, currency: string, stripeStatus: string}} input Verified refund fields.
+ * @returns {Promise<import('../../payment-webhook-core.js').PaymentWebhookResponse>} Refund response.
+ */
+async function resolveRefundEvent(allowEffects, billing, input) {
+  const reconciliationInput = {
+    eventId: input.eventId,
+    purchaseId: input.purchaseId,
+    stripePaymentIntentId: input.stripePaymentIntentId,
+    chargeId: input.chargeId,
+    refundedUsdMinor: input.amountUsdMinor,
+    refundIntentId: input.refundIntentId,
+    stripeRefundId: input.stripeRefundId,
+  };
+  /** @type {(reasons: {reconciliationReason: string, responseReason: string}) => Promise<import('../../payment-webhook-core.js').PaymentWebhookResponse>} */
+  const quarantine = reasons =>
+    quarantineRefundEvent(allowEffects, billing, reconciliationInput, reasons);
+  if (!input.refundIntentId || !input.purchaseId) {
+    return quarantine({
+      reconciliationReason: 'refund_intent_metadata_missing',
+      responseReason: 'refund_intent_metadata_missing',
+    });
+  }
+  if (
+    input.stripeStatus === 'pending' ||
+    input.stripeStatus === 'requires_action'
+  )
+    return {
+      status: 200,
+      body: {
+        deferred: true,
+        refundIntentId: input.refundIntentId,
+        stripeRefundId: input.stripeRefundId,
+      },
+    };
+  const result = await billing.applyRefundIntentEvent(allowEffects, {
+    refundIntentId: input.refundIntentId,
+    purchaseId: input.purchaseId,
+    eventId: input.eventId,
+    stripeRefundId: input.stripeRefundId,
+    stripePaymentIntentId: input.stripePaymentIntentId,
+    amountUsdMinor: input.amountUsdMinor,
+    currency: input.currency,
+    stripeStatus: input.stripeStatus,
+  });
+  const resultBody = readResponseBody(result);
+  if (!resultBody.quarantined) return result;
+  const reason = String(resultBody.reason ?? 'refund_intent_conflict');
+  return quarantine({ reconciliationReason: reason, responseReason: reason });
+}
+
+/**
+ * Persist an unsafe refund event for reconciliation and return its quarantine.
+ * @param {AllowEffects} allowEffects Request effect permission.
+ * @param {ReturnType<typeof createBillingRuntime>} billing Billing service.
+ * @param {{eventId: string, purchaseId: string, stripePaymentIntentId: string, chargeId: string, refundedUsdMinor: number, refundIntentId?: string, stripeRefundId?: string}} input Refund identifiers.
+ * @param {{reconciliationReason: string, responseReason: string}} reasons Stored and public reasons.
+ * @returns {Promise<import('../../payment-webhook-core.js').PaymentWebhookResponse>} Quarantined response.
+ */
+async function quarantineRefundEvent(allowEffects, billing, input, reasons) {
+  await billing.recordRefundReconciliation(allowEffects, {
+    ...input,
+    reason: reasons.reconciliationReason,
   });
   return {
     status: 200,
     body: {
       quarantined: true,
-      reason: 'external_stripe_refund',
-      eventId: event.id,
+      reason: reasons.responseReason,
+      eventId: input.eventId,
     },
   };
+}
+
+/**
+ * Normalize a Stripe relationship field containing an id or expanded object.
+ * @param {unknown} value Stripe identifier field.
+ * @returns {string} Identifier, when present.
+ */
+function readStripeId(value) {
+  if (typeof value === 'string') return value;
+  if (value && typeof value === 'object' && 'id' in value)
+    return String(value.id ?? '');
+  return '';
+}
+
+/**
+ * Narrow a webhook response body to its structured representation.
+ * @param {import('../../payment-webhook-core.js').PaymentWebhookResponse} response Response.
+ * @returns {Record<string, unknown>} Structured response body.
+ */
+function readResponseBody(response) {
+  if (response.body && typeof response.body === 'object') return response.body;
+  return {};
 }
 
 /**

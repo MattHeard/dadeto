@@ -35,6 +35,123 @@ function setup() {
   return { db, billing };
 }
 
+/**
+ * Seed a paid purchase, refundable lot, balance, and current pricing snapshot.
+ * @param {any} db Firestore fixture.
+ * @param {object} [options] Fixture overrides.
+ * @returns {Promise<void>} Resolves after seeding.
+ */
+async function seedRefundablePurchase(db, options = {}) {
+  const input = {
+    purchaseId: options.purchaseId ?? 'refund-edge-purchase',
+    apiKeyUuid: options.apiKeyUuid ?? 'refund-edge-key',
+    status: options.status ?? 'paid',
+    amountUsdMinor: options.amountUsdMinor ?? 1000,
+    creditsIssued: options.creditsIssued ?? 10,
+    remainingCredits: options.remainingCredits ?? 10,
+    refundable: options.refundable ?? true,
+    includeLot: options.includeLot ?? true,
+    pricing: options.pricing ?? {
+      ...snapshot,
+      snapshotId: 'refund-edge-pricing',
+    },
+  };
+  await db
+    .collection('billing-pricing-snapshots')
+    .doc(input.pricing.snapshotId)
+    .set(input.pricing);
+  await db.collection('billing-purchases').doc(input.purchaseId).set({
+    purchaseId: input.purchaseId,
+    apiKeyUuid: input.apiKeyUuid,
+    status: input.status,
+    amountUsdMinor: input.amountUsdMinor,
+    creditsIssued: input.creditsIssued,
+    stripePaymentIntentId: 'pi-refund-edge',
+  });
+  await db.doc(`api-key-credit/${input.apiKeyUuid}`).set({
+    credit: input.remainingCredits,
+  });
+  if (input.includeLot) {
+    await db
+      .doc(`api-key-credit/${input.apiKeyUuid}/lots/${input.purchaseId}`)
+      .set({
+        purchaseId: input.purchaseId,
+        issuedCredits: input.creditsIssued,
+        remainingCredits: input.remainingCredits,
+        refundable: input.refundable,
+        createdAt: '2026-08-01T00:00:00.000Z',
+      });
+  }
+}
+
+/**
+ * Seed persisted entities for a confirmed refund-event transaction.
+ * @param {any} db Firestore fixture.
+ * @param {Record<string, any>} [options] Fixture overrides.
+ * @returns {Promise<{input: Record<string, any>, suffix: string}>} Event input and identity.
+ */
+async function seedConfirmedRefundEvent(db, options = {}) {
+  const suffix = options.suffix ?? 'confirmed';
+  const intentId = `intent-${suffix}`;
+  const purchaseId = `purchase-${suffix}`;
+  const apiKeyUuid = `key-${suffix}`;
+  const base = {
+    refundIntentId: intentId,
+    purchaseId,
+    apiKeyUuid,
+    stripePaymentIntentId: 'pi-expected',
+    stripeRefundId: 're-expected',
+    amountUsdMinor: 500,
+    creditsToReverse: 5,
+    pricingSnapshotId: 'pricing-1',
+    status: 'submitted',
+  };
+  const eventInput = {
+    refundIntentId: intentId,
+    purchaseId,
+    eventId: `event-${suffix}`,
+    stripeRefundId: 're-expected',
+    stripePaymentIntentId: 'pi-expected',
+    amountUsdMinor: 500,
+    currency: 'usd',
+    stripeStatus: 'succeeded',
+    ...options.input,
+  };
+  if (options.includeIntent !== false) {
+    await db.doc(`billing-refund-intents/${intentId}`).set({
+      ...base,
+      ...options.intent,
+    });
+  }
+  if (options.includePurchase !== false) {
+    await db.doc(`billing-purchases/${purchaseId}`).set({
+      purchaseId,
+      apiKeyUuid,
+      stripePaymentIntentId: 'pi-expected',
+      activeRefundIntentId: intentId,
+      creditsIssued: 10,
+      status: 'paid',
+      ...options.purchase,
+    });
+  }
+  if (options.includeLot !== false) {
+    await db.doc(`api-key-credit/${apiKeyUuid}/lots/${purchaseId}`).set({
+      purchaseId,
+      issuedCredits: 10,
+      remainingCredits: 5,
+      refundable: true,
+      ...options.lot,
+    });
+  }
+  if (options.includeBalance !== false) {
+    await db.doc(`api-key-credit/${apiKeyUuid}`).set({
+      credit: 10,
+      ...options.balance,
+    });
+  }
+  return { input: eventInput, suffix };
+}
+
 describe('createBillingRuntime', () => {
   it('fails closed for new operation charges and reservations by default', async () => {
     const db = createFakeFirestore();
@@ -1468,5 +1585,423 @@ describe('billing runtime charging paths', () => {
       allowEffects,
       expect.any(Function)
     );
+  });
+});
+
+describe('billing runtime confirmed refund intent events', () => {
+  it('covers invalid, unavailable, raced, and non-refundable intent creation', async () => {
+    const { billing: emptyBilling } = setup();
+    await expect(
+      emptyBilling.createRefundIntent(allowEffects, {
+        refundIntentId: '',
+        purchaseId: 'purchase-invalid',
+      })
+    ).resolves.toEqual({
+      status: 400,
+      body: { error: 'invalid_refund_intent' },
+    });
+    await expect(
+      emptyBilling.createRefundIntent(allowEffects, {
+        refundIntentId: 'intent-no-pricing',
+        purchaseId: 'purchase-no-pricing',
+      })
+    ).resolves.toEqual({
+      status: 503,
+      body: { error: 'pricing_unavailable' },
+    });
+
+    const missingPurchase = setup();
+    await seedRefundablePurchase(missingPurchase.db, {
+      purchaseId: 'purchase-missing-later',
+    });
+    await missingPurchase.db
+      .collection('billing-purchases')
+      .doc('purchase-missing-later')
+      .delete();
+    await expect(
+      missingPurchase.billing.createRefundIntent(allowEffects, {
+        refundIntentId: 'intent-missing-purchase',
+        purchaseId: 'purchase-missing-later',
+      })
+    ).resolves.toEqual({
+      status: 404,
+      body: { error: 'purchase_not_found' },
+    });
+
+    for (const [suffix, racedPurchaseId, expected] of [
+      [
+        'duplicate',
+        'purchase-raced',
+        { status: 200, body: { duplicate: true } },
+      ],
+      [
+        'conflict',
+        'purchase-other',
+        { status: 409, body: { error: 'refund_intent_conflict' } },
+      ],
+    ]) {
+      const db = createFakeFirestore();
+      const refundIntentId = `intent-race-${suffix}`;
+      const raceBilling = createBillingRuntime(db, {
+        now: () => new Date('2026-08-05T00:00:00.000Z'),
+        runBillingTransaction: async (_permission, update) => {
+          await db.doc(`billing-refund-intents/${refundIntentId}`).set({
+            refundIntentId,
+            purchaseId: racedPurchaseId,
+            status: 'requested',
+          });
+          return db.runTransaction(update);
+        },
+      });
+      await db
+        .collection('billing-pricing-snapshots')
+        .doc(snapshot.snapshotId)
+        .set(snapshot);
+      await expect(
+        raceBilling.createRefundIntent(allowEffects, {
+          refundIntentId,
+          purchaseId: 'purchase-raced',
+        })
+      ).resolves.toMatchObject(expected);
+    }
+
+    const notRefundable = setup();
+    await seedRefundablePurchase(notRefundable.db, {
+      purchaseId: 'purchase-pending-refund',
+      status: 'pending',
+    });
+    await expect(
+      notRefundable.billing.createRefundIntent(allowEffects, {
+        refundIntentId: 'intent-pending-refund',
+        purchaseId: 'purchase-pending-refund',
+      })
+    ).resolves.toEqual({
+      status: 409,
+      body: { error: 'purchase_not_refundable' },
+    });
+
+    const missingLot = setup();
+    await seedRefundablePurchase(missingLot.db, {
+      purchaseId: 'purchase-no-lot',
+      includeLot: false,
+    });
+    await expect(
+      missingLot.billing.createRefundIntent(allowEffects, {
+        refundIntentId: 'intent-no-lot',
+        purchaseId: 'purchase-no-lot',
+      })
+    ).resolves.toEqual({
+      status: 409,
+      body: { error: 'no_refundable_credits' },
+    });
+
+    const noAmount = setup();
+    await seedRefundablePurchase(noAmount.db, {
+      purchaseId: 'purchase-no-refund-amount',
+      creditsIssued: 1,
+      remainingCredits: 1,
+      pricing: {
+        ...snapshot,
+        snapshotId: 'refund-zero-price',
+        eurPerUsdMicros: 100_000,
+        creditEurMicros: 1,
+      },
+    });
+    await expect(
+      noAmount.billing.createRefundIntent(allowEffects, {
+        refundIntentId: 'intent-no-refund-amount',
+        purchaseId: 'purchase-no-refund-amount',
+      })
+    ).resolves.toEqual({
+      status: 409,
+      body: { error: 'no_refundable_amount' },
+    });
+  });
+
+  it('covers missing and duplicate refund submission and ambiguity records', async () => {
+    const { db, billing } = setup();
+    await expect(
+      billing.recordRefundSubmission(allowEffects, {
+        refundIntentId: 'intent-absent',
+        stripeRefundId: 're-absent',
+        stripeStatus: 'pending',
+      })
+    ).resolves.toEqual({
+      status: 404,
+      body: { error: 'refund_intent_not_found' },
+    });
+    await expect(
+      billing.markRefundIntentAmbiguous(allowEffects, 'intent-absent')
+    ).resolves.toEqual({
+      status: 404,
+      body: { error: 'refund_intent_not_found' },
+    });
+    await db.doc('billing-refund-intents/intent-submitted').set({
+      refundIntentId: 'intent-submitted',
+      status: 'submitted',
+    });
+    await expect(
+      billing.markRefundIntentAmbiguous(allowEffects, 'intent-submitted')
+    ).resolves.toMatchObject({
+      status: 200,
+      body: { duplicate: true },
+    });
+    await db.doc('billing-refund-intents/intent-applied').set({
+      refundIntentId: 'intent-applied',
+      status: 'applied',
+    });
+    await expect(
+      billing.recordRefundSubmission(allowEffects, {
+        refundIntentId: 'intent-applied',
+        stripeRefundId: 're-applied',
+        stripeStatus: 'succeeded',
+      })
+    ).resolves.toMatchObject({
+      status: 200,
+      body: { duplicate: true },
+    });
+  });
+
+  it('quarantines missing, conflicting, stale, and invalid refund state', async () => {
+    for (const options of [
+      {
+        suffix: 'state',
+        intent: { status: 'failed' },
+        reason: 'refund_intent_state_conflict',
+      },
+      {
+        suffix: 'purchase-missing',
+        includePurchase: false,
+        reason: 'purchase_not_found',
+      },
+      {
+        suffix: 'purchase-conflict',
+        purchase: { activeRefundIntentId: 'different-intent' },
+        reason: 'purchase_refund_state_conflict',
+      },
+      {
+        suffix: 'key-conflict',
+        purchase: { apiKeyUuid: 'other-key' },
+        reason: 'purchase_refund_state_conflict',
+      },
+      {
+        suffix: 'lot-missing',
+        includeLot: false,
+        reason: 'refund_lot_mismatch',
+      },
+      {
+        suffix: 'lot-stale',
+        lot: { remainingCredits: 4 },
+        reason: 'refund_lot_mismatch',
+      },
+      {
+        suffix: 'balance',
+        balance: { credit: 0 },
+        reason: 'refund_balance_conflict',
+      },
+      {
+        suffix: 'balance-missing',
+        includeBalance: false,
+        reason: 'refund_balance_conflict',
+      },
+      {
+        suffix: 'balance-invalid',
+        balance: { credit: 'invalid' },
+        reason: 'refund_balance_conflict',
+      },
+      {
+        suffix: 'transition',
+        purchase: { status: 'partially_refunded', creditsIssued: 10 },
+        reason: 'purchase_transition_invalid',
+      },
+    ]) {
+      const { db, billing } = setup();
+      const { input, suffix } = await seedConfirmedRefundEvent(db, options);
+      await expect(
+        billing.applyRefundIntentEvent(allowEffects, input)
+      ).resolves.toMatchObject({
+        body: { quarantined: true, reason: options.reason },
+      });
+      if (options.includeBalance !== false) {
+        const balance = await db.doc(`api-key-credit/key-${suffix}`).get();
+        expect(balance.data()).toEqual(
+          expect.objectContaining(options.balance ?? { credit: 10 })
+        );
+      }
+    }
+
+    const malformed = setup();
+    const { input } = await seedConfirmedRefundEvent(malformed.db, {
+      suffix: 'intent-applied-mismatch',
+      intent: { status: 'applied' },
+    });
+    await expect(
+      malformed.billing.applyRefundIntentEvent(allowEffects, {
+        ...input,
+        amountUsdMinor: 501,
+      })
+    ).resolves.toMatchObject({
+      body: { quarantined: true, reason: 'refund_intent_mismatch' },
+    });
+  });
+
+  it('applies a matching successful refund once, including a second event id', async () => {
+    const { db, billing } = setup();
+    await db.doc('billing-refund-intents/intent-1').set({
+      refundIntentId: 'intent-1',
+      purchaseId: 'purchase-refund-1',
+      apiKeyUuid: 'refund-key-1',
+      stripePaymentIntentId: 'pi-refund-1',
+      stripeRefundId: 're-1',
+      amountUsdMinor: 500,
+      creditsToReverse: 50,
+      pricingSnapshotId: 'pricing-1',
+      status: 'submitted',
+    });
+    await db.doc('billing-purchases/purchase-refund-1').set({
+      purchaseId: 'purchase-refund-1',
+      apiKeyUuid: 'refund-key-1',
+      stripePaymentIntentId: 'pi-refund-1',
+      activeRefundIntentId: 'intent-1',
+      creditsIssued: 100,
+      status: 'paid',
+    });
+    await db.doc('api-key-credit/refund-key-1').set({ credit: 100 });
+    await db.doc('api-key-credit/refund-key-1/lots/purchase-refund-1').set({
+      purchaseId: 'purchase-refund-1',
+      issuedCredits: 100,
+      remainingCredits: 50,
+      refundable: true,
+    });
+    const input = {
+      refundIntentId: 'intent-1',
+      purchaseId: 'purchase-refund-1',
+      eventId: 'evt-refund-1',
+      stripeRefundId: 're-1',
+      stripePaymentIntentId: 'pi-refund-1',
+      amountUsdMinor: 500,
+      currency: 'usd',
+      stripeStatus: 'succeeded',
+    };
+
+    await expect(
+      billing.applyRefundIntentEvent(allowEffects, input)
+    ).resolves.toEqual({
+      status: 200,
+      body: {
+        applied: true,
+        purchaseId: 'purchase-refund-1',
+        refundIntentId: 'intent-1',
+        creditsReversed: 50,
+      },
+    });
+    await expect(
+      billing.applyRefundIntentEvent(allowEffects, {
+        ...input,
+        eventId: 'evt-refund-duplicate-delivery',
+      })
+    ).resolves.toEqual({
+      status: 200,
+      body: { duplicate: true, refundIntentId: 'intent-1' },
+    });
+    await expect(
+      billing.applyRefundIntentEvent(allowEffects, {
+        ...input,
+        eventId: 'evt-refund-tampered-replay',
+        amountUsdMinor: 501,
+      })
+    ).resolves.toMatchObject({
+      body: { quarantined: true, reason: 'refund_intent_mismatch' },
+    });
+    await expect(
+      db.doc('api-key-credit/refund-key-1').get()
+    ).resolves.toMatchObject({
+      data: expect.any(Function),
+    });
+    expect(
+      (await db.doc('api-key-credit/refund-key-1').get()).data()
+    ).toMatchObject({
+      credit: 50,
+      lastEventId: 'evt-refund-1',
+    });
+    expect(
+      (
+        await db.doc('api-key-credit/refund-key-1/lots/purchase-refund-1').get()
+      ).data()
+    ).toMatchObject({ remainingCredits: 0, refundable: false });
+    expect(
+      (await db.doc('billing-refund-intents/intent-1').get()).data()
+    ).toMatchObject({ status: 'applied', appliedEventId: 'evt-refund-1' });
+  });
+
+  it('quarantines identity and amount mismatches without changing credits', async () => {
+    for (const [suffix, change, reason] of [
+      ['intent', { refundIntentId: 'other-intent' }, 'refund_intent_not_found'],
+      ['purchase', { purchaseId: 'other-purchase' }, 'refund_intent_mismatch'],
+      [
+        'payment',
+        { stripePaymentIntentId: 'pi-other' },
+        'refund_intent_mismatch',
+      ],
+      ['amount', { amountUsdMinor: 501 }, 'refund_intent_mismatch'],
+      ['refund-id', { stripeRefundId: 're-other' }, 'refund_intent_mismatch'],
+      ['currency', { currency: 'eur' }, 'refund_intent_mismatch'],
+      ['status', { stripeStatus: 'pending' }, 'refund_intent_mismatch'],
+    ]) {
+      const { db, billing } = setup();
+      await db.doc(`billing-refund-intents/intent-${suffix}`).set({
+        refundIntentId: `intent-${suffix}`,
+        purchaseId: `purchase-${suffix}`,
+        apiKeyUuid: `key-${suffix}`,
+        stripePaymentIntentId: 'pi-expected',
+        stripeRefundId: 're-expected',
+        amountUsdMinor: 500,
+        creditsToReverse: 5,
+        pricingSnapshotId: 'pricing-1',
+        status: 'submitted',
+      });
+      await db.doc(`billing-purchases/purchase-${suffix}`).set({
+        purchaseId: `purchase-${suffix}`,
+        apiKeyUuid: `key-${suffix}`,
+        stripePaymentIntentId: 'pi-expected',
+        activeRefundIntentId: `intent-${suffix}`,
+        creditsIssued: 10,
+        status: 'paid',
+      });
+      await db.doc(`api-key-credit/key-${suffix}`).set({ credit: 10 });
+      await db.doc(`api-key-credit/key-${suffix}/lots/purchase-${suffix}`).set({
+        purchaseId: `purchase-${suffix}`,
+        issuedCredits: 10,
+        remainingCredits: 5,
+        refundable: true,
+      });
+      const response = await billing.applyRefundIntentEvent(allowEffects, {
+        refundIntentId: `intent-${suffix}`,
+        purchaseId: `purchase-${suffix}`,
+        eventId: `event-${suffix}`,
+        stripeRefundId: 're-expected',
+        stripePaymentIntentId: 'pi-expected',
+        amountUsdMinor: 500,
+        currency: 'usd',
+        stripeStatus: 'succeeded',
+        ...change,
+      });
+      expect(response.body).toMatchObject({
+        quarantined: true,
+        reason,
+      });
+      expect(
+        (await db.doc(`api-key-credit/key-${suffix}`).get()).data()
+      ).toEqual({
+        credit: 10,
+      });
+      expect(
+        (
+          await db
+            .doc(`api-key-credit/key-${suffix}/lots/purchase-${suffix}`)
+            .get()
+        ).data()
+      ).toMatchObject({ remainingCredits: 5, refundable: true });
+    }
   });
 });
