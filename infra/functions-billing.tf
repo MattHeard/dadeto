@@ -31,6 +31,12 @@ resource "google_cloudfunctions2_function" "billing" {
     max_instance_count    = 20
     service_account_email = local.cloud_function_runtime_service_account_email
     environment_variables = local.cloud_function_environment
+    secret_environment_variables {
+      key        = "STRIPE_SECRET_KEY"
+      project_id = var.project_id
+      secret     = local.runtime_secret_names.stripe_secret_key
+      version    = var.stripe_secret_key_version
+    }
   }
 
   depends_on = [

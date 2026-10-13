@@ -1,0 +1,7 @@
+# Authenticated Stripe refund command
+
+- Unexpected hurdles: adding refund persistence operations pushed `createBillingRuntime` past its function-size limit; cloud packaging also rewrote four unrelated generated source copies in `infra/`.
+- Diagnosis: the refund operations formed a cohesive service that could be extracted from the runtime factory. The packaging script's unrelated rewrites were confirmed by the initial clean worktree and restored after each build.
+- Fix: added a Firebase-authenticated `POST` refund command to the billing function, verified purchase ownership, derived a stable intent ID from the caller's idempotency key, submitted the stored PaymentIntent and full unused-credit amount to Stripe with intent metadata and a stable Stripe idempotency key, and persisted submitted or ambiguous state without reversing credits.
+- Evidence: focused billing suites passed (4 suites, 44 tests); targeted ESLint passed with zero warnings; `npm run tsdoc:check`, `terraform fmt -check infra/functions-billing.tf`, `npm run build:cloud`, generated billing `node --check` checks, and `git diff --check` passed.
+- Next guidance: match authenticated `charge.refunded` events to `refund_intent_id`, reject amount/PaymentIntent mismatches into durable reconciliation, and apply the specific lot only after confirmed matching; then add deferred-event replay and run the full `npm run check` before closing the billing bead.

@@ -28,7 +28,7 @@ import {
 /** @typedef {{ refundIntentId: string, purchaseId: string }} BillingRefundIntentInput */
 /** @typedef {{ purchaseId: string, eventId: string }} BillingExpiryInput */
 /** @typedef {{ checkoutSessionId: string, url: string, expiresAt: Date }} BillingCheckoutSession */
-/** @typedef {Record<string, any> & { createPurchase: (allowEffects: AllowEffects, input: BillingPurchaseInput) => Promise<BillingRuntimeValue>, savePurchaseCheckout: (allowEffects: AllowEffects, purchaseId: string, session: BillingCheckoutSession) => Promise<void>, markPurchasePaid: (allowEffects: AllowEffects, input: BillingPaymentInput) => Promise<BillingResponse>, createRefundIntent: (allowEffects: AllowEffects, input: BillingRefundIntentInput) => Promise<BillingResponse>, applyRefundEvent: (allowEffects: AllowEffects, input: BillingRefundInput) => Promise<BillingResponse>, recordRefundReconciliation: (allowEffects: AllowEffects, input: { eventId: string, purchaseId: string, stripePaymentIntentId: string, chargeId: string, refundedUsdMinor: number }) => Promise<void>, markPurchaseExpired: (allowEffects: AllowEffects, input: BillingExpiryInput) => Promise<BillingResponse>, applyOperationCharge: (allowEffects: AllowEffects, input: BillingOperationInput) => Promise<BillingResponse>, chargeOperation: (allowEffects: AllowEffects, input: Omit<BillingOperationInput, 'pricingSnapshot'>) => Promise<BillingResponse>, reserveOperation: (allowEffects: AllowEffects, input: BillingOperationInput) => Promise<BillingResponse>, resolveOperation: (allowEffects: AllowEffects, input: BillingResolutionInput) => Promise<BillingResponse> }} BillingRuntimeService */
+/** @typedef {Record<string, any> & { createPurchase: (allowEffects: AllowEffects, input: BillingPurchaseInput) => Promise<BillingRuntimeValue>, savePurchaseCheckout: (allowEffects: AllowEffects, purchaseId: string, session: BillingCheckoutSession) => Promise<void>, markPurchasePaid: (allowEffects: AllowEffects, input: BillingPaymentInput) => Promise<BillingResponse>, createRefundIntent: (allowEffects: AllowEffects, input: BillingRefundIntentInput) => Promise<BillingResponse>, recordRefundSubmission: (allowEffects: AllowEffects, input: { refundIntentId: string, stripeRefundId: string, stripeStatus: string }) => Promise<BillingResponse>, markRefundIntentAmbiguous: (allowEffects: AllowEffects, refundIntentId: string) => Promise<BillingResponse>, applyRefundEvent: (allowEffects: AllowEffects, input: BillingRefundInput) => Promise<BillingResponse>, recordRefundReconciliation: (allowEffects: AllowEffects, input: { eventId: string, purchaseId: string, stripePaymentIntentId: string, chargeId: string, refundedUsdMinor: number }) => Promise<void>, markPurchaseExpired: (allowEffects: AllowEffects, input: BillingExpiryInput) => Promise<BillingResponse>, applyOperationCharge: (allowEffects: AllowEffects, input: BillingOperationInput) => Promise<BillingResponse>, chargeOperation: (allowEffects: AllowEffects, input: Omit<BillingOperationInput, 'pricingSnapshot'>) => Promise<BillingResponse>, reserveOperation: (allowEffects: AllowEffects, input: BillingOperationInput) => Promise<BillingResponse>, resolveOperation: (allowEffects: AllowEffects, input: BillingResolutionInput) => Promise<BillingResponse> }} BillingRuntimeService */
 
 /**
  * @typedef {{ status: number, body: string | Record<string, unknown> }} BillingResponse
@@ -341,6 +341,12 @@ export function createBillingRuntime(db, runtime = {}) {
     readLotsAndBalance
   );
   const resolveTransaction = createResolveOperationTransaction(db, now);
+  const refundIntentService = createRefundIntentService({
+    db,
+    getCurrentPricingSnapshot,
+    runBillingTransaction,
+    now,
+  });
 
   /**
    * Save checkout details on a purchase.
@@ -502,110 +508,6 @@ export function createBillingRuntime(db, runtime = {}) {
     );
   }
   // Stryker restore all
-
-  /**
-   * Persist a refund intent for all unused refundable credits on one purchase.
-   * @param {AllowEffects} allowEffects Permission for the Firestore transaction.
-   * @param {BillingRefundIntentInput} input Refund intent identity.
-   * @returns {Promise<BillingResponse>} Created, duplicate, or rejected intent.
-   */
-  async function createRefundIntent(allowEffects, input) {
-    if (
-      typeof input.refundIntentId !== 'string' ||
-      input.refundIntentId.length === 0 ||
-      typeof input.purchaseId !== 'string' ||
-      input.purchaseId.length === 0
-    ) {
-      return { status: 400, body: { error: 'invalid_refund_intent' } };
-    }
-    const intentReference = refundIntentRef(db, input.refundIntentId);
-    const existingSnapshot = await intentReference.get();
-    if (existingSnapshot.exists) {
-      const existing = readData(existingSnapshot);
-      if (existing.purchaseId !== input.purchaseId)
-        return { status: 409, body: { error: 'refund_intent_conflict' } };
-      return {
-        status: 200,
-        body: { duplicate: true, refundIntent: existing },
-      };
-    }
-    const pricingSnapshot = await getCurrentPricingSnapshot();
-    if (!pricingSnapshot)
-      return { status: 503, body: { error: 'pricing_unavailable' } };
-    const purchaseReference = purchaseRef(db, input.purchaseId);
-    return runBillingTransaction(
-      allowEffects,
-      async (/** @type {BillingRuntimeValue} */ transaction) => {
-        const intentSnapshot = await transaction.get(intentReference);
-        if (intentSnapshot.exists) {
-          const existing = readData(intentSnapshot);
-          if (existing.purchaseId !== input.purchaseId)
-            return { status: 409, body: { error: 'refund_intent_conflict' } };
-          return {
-            status: 200,
-            body: { duplicate: true, refundIntent: existing },
-          };
-        }
-        const purchaseSnapshot = await transaction.get(purchaseReference);
-        if (!purchaseSnapshot.exists)
-          return { status: 404, body: { error: 'purchase_not_found' } };
-        const purchase = readData(purchaseSnapshot);
-        if (
-          !['paid', 'partially_refunded'].includes(purchase.status) ||
-          typeof purchase.apiKeyUuid !== 'string' ||
-          purchase.apiKeyUuid.length === 0 ||
-          typeof purchase.stripePaymentIntentId !== 'string' ||
-          purchase.stripePaymentIntentId.length === 0 ||
-          !Number.isSafeInteger(purchase.amountUsdMinor) ||
-          purchase.amountUsdMinor <= 0
-        ) {
-          return { status: 409, body: { error: 'purchase_not_refundable' } };
-        }
-        if (purchase.activeRefundIntentId)
-          return { status: 409, body: { error: 'refund_intent_in_progress' } };
-        const lotReference = lotRef(
-          db,
-          purchase.apiKeyUuid,
-          purchase.purchaseId
-        );
-        const lotSnapshot = await transaction.get(lotReference);
-        const lot = normalizeBillingLotData(readData(lotSnapshot));
-        if (
-          !lotSnapshot.exists ||
-          lot.refundable !== true ||
-          !Number.isSafeInteger(lot.remainingCredits) ||
-          lot.remainingCredits <= 0
-        ) {
-          return { status: 409, body: { error: 'no_refundable_credits' } };
-        }
-        const quote = quoteUnusedCreditRefund(
-          /** @type {import('./credit-lots-core.js').CreditLot} */ (lot),
-          purchase.amountUsdMinor,
-          pricingSnapshot
-        );
-        if (quote.amountUsdMinor <= 0)
-          return { status: 409, body: { error: 'no_refundable_amount' } };
-        const createdAt = now();
-        const refundIntent = {
-          refundIntentId: input.refundIntentId,
-          purchaseId: purchase.purchaseId,
-          apiKeyUuid: purchase.apiKeyUuid,
-          stripePaymentIntentId: purchase.stripePaymentIntentId,
-          amountUsdMinor: quote.amountUsdMinor,
-          creditsToReverse: quote.remainingCredits,
-          pricingSnapshotId: quote.snapshotId,
-          status: 'requested',
-          createdAt,
-        };
-        transaction.set(intentReference, refundIntent);
-        transaction.set(purchaseReference, {
-          ...purchase,
-          activeRefundIntentId: input.refundIntentId,
-        });
-        return { status: 201, body: { refundIntent } };
-      }
-    );
-  }
 
   /**
    * @param {AllowEffects} allowEffects Request permission.
@@ -796,7 +698,7 @@ export function createBillingRuntime(db, runtime = {}) {
     createPurchase,
     savePurchaseCheckout,
     markPurchasePaid,
-    createRefundIntent,
+    ...refundIntentService,
     applyOperationCharge,
     chargeOperation,
     reserveOperation,
@@ -829,6 +731,177 @@ function duplicatePurchaseResponse(purchaseId) {
 }
 
 export { creditRef, eventRef, lotRef, purchaseRef };
+
+/**
+ * Create the durable refund-intent persistence operations.
+ * @param {{db: BillingRuntimeValue, getCurrentPricingSnapshot: () => Promise<BillingPricingSnapshot|null>, runBillingTransaction: (allowEffects: AllowEffects, update: (transaction: BillingRuntimeValue) => Promise<BillingResponse>) => Promise<BillingResponse>, now: () => Date}} deps Firestore and transaction dependencies.
+ * @returns {{createRefundIntent: (allowEffects: AllowEffects, input: BillingRefundIntentInput) => Promise<BillingResponse>, recordRefundSubmission: (allowEffects: AllowEffects, input: {refundIntentId: string, stripeRefundId: string, stripeStatus: string}) => Promise<BillingResponse>, markRefundIntentAmbiguous: (allowEffects: AllowEffects, refundIntentId: string) => Promise<BillingResponse>}} Refund-intent operations.
+ */
+function createRefundIntentService(deps) {
+  /**
+   * Persist a new intent or return an idempotent duplicate.
+   * @param {AllowEffects} allowEffects Transaction permission.
+   * @param {BillingRefundIntentInput} input Refund identity.
+   * @returns {Promise<BillingResponse>} Refund intent result.
+   */
+  async function createRefundIntent(allowEffects, input) {
+    if (
+      typeof input.refundIntentId !== 'string' ||
+      input.refundIntentId.length === 0 ||
+      typeof input.purchaseId !== 'string' ||
+      input.purchaseId.length === 0
+    ) {
+      return { status: 400, body: { error: 'invalid_refund_intent' } };
+    }
+    const intentReference = refundIntentRef(deps.db, input.refundIntentId);
+    const existingSnapshot = await intentReference.get();
+    if (existingSnapshot.exists) {
+      const existing = readData(existingSnapshot);
+      if (existing.purchaseId !== input.purchaseId)
+        return { status: 409, body: { error: 'refund_intent_conflict' } };
+      return {
+        status: 200,
+        body: { duplicate: true, refundIntent: existing },
+      };
+    }
+    const pricingSnapshot = await deps.getCurrentPricingSnapshot();
+    if (!pricingSnapshot)
+      return { status: 503, body: { error: 'pricing_unavailable' } };
+    const purchaseReference = purchaseRef(deps.db, input.purchaseId);
+    return deps.runBillingTransaction(allowEffects, async transaction => {
+      const intentSnapshot = await transaction.get(intentReference);
+      if (intentSnapshot.exists) {
+        const existing = readData(intentSnapshot);
+        if (existing.purchaseId !== input.purchaseId)
+          return { status: 409, body: { error: 'refund_intent_conflict' } };
+        return {
+          status: 200,
+          body: { duplicate: true, refundIntent: existing },
+        };
+      }
+      const purchaseSnapshot = await transaction.get(purchaseReference);
+      if (!purchaseSnapshot.exists)
+        return { status: 404, body: { error: 'purchase_not_found' } };
+      const purchase = readData(purchaseSnapshot);
+      if (
+        !['paid', 'partially_refunded'].includes(purchase.status) ||
+        typeof purchase.apiKeyUuid !== 'string' ||
+        purchase.apiKeyUuid.length === 0 ||
+        typeof purchase.stripePaymentIntentId !== 'string' ||
+        purchase.stripePaymentIntentId.length === 0 ||
+        !Number.isSafeInteger(purchase.amountUsdMinor) ||
+        purchase.amountUsdMinor <= 0
+      ) {
+        return { status: 409, body: { error: 'purchase_not_refundable' } };
+      }
+      if (purchase.activeRefundIntentId)
+        return { status: 409, body: { error: 'refund_intent_in_progress' } };
+      const lotReference = lotRef(
+        deps.db,
+        purchase.apiKeyUuid,
+        purchase.purchaseId
+      );
+      const lotSnapshot = await transaction.get(lotReference);
+      const lot = normalizeBillingLotData(readData(lotSnapshot));
+      if (
+        !lotSnapshot.exists ||
+        lot.refundable !== true ||
+        !Number.isSafeInteger(lot.remainingCredits) ||
+        lot.remainingCredits <= 0
+      ) {
+        return { status: 409, body: { error: 'no_refundable_credits' } };
+      }
+      const quote = quoteUnusedCreditRefund(
+        /** @type {import('./credit-lots-core.js').CreditLot} */ (lot),
+        purchase.amountUsdMinor,
+        pricingSnapshot
+      );
+      if (quote.amountUsdMinor <= 0)
+        return { status: 409, body: { error: 'no_refundable_amount' } };
+      const refundIntent = {
+        refundIntentId: input.refundIntentId,
+        purchaseId: purchase.purchaseId,
+        apiKeyUuid: purchase.apiKeyUuid,
+        stripePaymentIntentId: purchase.stripePaymentIntentId,
+        amountUsdMinor: quote.amountUsdMinor,
+        creditsToReverse: quote.remainingCredits,
+        pricingSnapshotId: quote.snapshotId,
+        status: 'requested',
+        createdAt: deps.now(),
+      };
+      transaction.set(intentReference, refundIntent);
+      transaction.set(purchaseReference, {
+        ...purchase,
+        activeRefundIntentId: input.refundIntentId,
+      });
+      return { status: 201, body: { refundIntent } };
+    });
+  }
+
+  /**
+   * Record a Stripe refund response without applying credit changes.
+   * @param {AllowEffects} allowEffects Transaction permission.
+   * @param {{refundIntentId: string, stripeRefundId: string, stripeStatus: string}} input Stripe response fields.
+   * @returns {Promise<BillingResponse>} Persisted submission response.
+   */
+  async function recordRefundSubmission(allowEffects, input) {
+    return deps.runBillingTransaction(allowEffects, async transaction => {
+      const reference = refundIntentRef(deps.db, input.refundIntentId);
+      const snapshot = await transaction.get(reference);
+      if (!snapshot.exists)
+        return { status: 404, body: { error: 'refund_intent_not_found' } };
+      const intent = readData(snapshot);
+      if (['applied', 'confirmed'].includes(intent.status))
+        return {
+          status: 200,
+          body: { duplicate: true, refundIntent: intent },
+        };
+      const updated = {
+        ...intent,
+        status: 'submitted',
+        stripeRefundId: input.stripeRefundId,
+        stripeStatus: input.stripeStatus,
+        submittedAt: deps.now(),
+      };
+      transaction.set(reference, updated);
+      return { status: 200, body: { refundIntent: updated } };
+    });
+  }
+
+  /**
+   * Preserve an intent after an uncertain Stripe request outcome.
+   * @param {AllowEffects} allowEffects Transaction permission.
+   * @param {string} refundIntentId Refund intent identifier.
+   * @returns {Promise<BillingResponse>} Persisted ambiguous state.
+   */
+  async function markRefundIntentAmbiguous(allowEffects, refundIntentId) {
+    return deps.runBillingTransaction(allowEffects, async transaction => {
+      const reference = refundIntentRef(deps.db, refundIntentId);
+      const snapshot = await transaction.get(reference);
+      if (!snapshot.exists)
+        return { status: 404, body: { error: 'refund_intent_not_found' } };
+      const intent = readData(snapshot);
+      if (['applied', 'confirmed', 'submitted'].includes(intent.status))
+        return {
+          status: 200,
+          body: { duplicate: true, refundIntent: intent },
+        };
+      const updated = {
+        ...intent,
+        status: 'ambiguous',
+        lastAttemptAt: deps.now(),
+      };
+      transaction.set(reference, updated);
+      return { status: 200, body: { refundIntent: updated } };
+    });
+  }
+
+  return {
+    createRefundIntent,
+    recordRefundSubmission,
+    markRefundIntentAmbiguous,
+  };
+}
 
 export const billingRuntimeTestUtils = {
   readTransactionLots,

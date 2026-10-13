@@ -480,6 +480,36 @@ describe('billing runtime snapshot paths', () => {
           .get()
       ).data()
     ).toMatchObject({ remainingCredits: 5000, refundable: true });
+
+    await expect(
+      billing.markRefundIntentAmbiguous(allowEffects, 'refund-intent-partial')
+    ).resolves.toMatchObject({
+      status: 200,
+      body: { refundIntent: { status: 'ambiguous' } },
+    });
+    await expect(
+      billing.recordRefundSubmission(allowEffects, {
+        refundIntentId: 'refund-intent-partial',
+        stripeRefundId: 're-partial',
+        stripeStatus: 'pending',
+      })
+    ).resolves.toMatchObject({
+      status: 200,
+      body: {
+        refundIntent: {
+          status: 'submitted',
+          stripeRefundId: 're-partial',
+          stripeStatus: 'pending',
+        },
+      },
+    });
+    expect(
+      (
+        await db
+          .doc('api-key-credit/refund-key-partial/lots/refund-partial')
+          .get()
+      ).data()
+    ).toMatchObject({ remainingCredits: 5000, refundable: true });
   });
 });
 
