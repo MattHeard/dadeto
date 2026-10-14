@@ -523,7 +523,7 @@ describe('billing runtime snapshot paths', () => {
     ).resolves.toMatchObject({ apiKeyUuid: 'default-key', status: 'pending' });
   });
 
-  it('returns not-found results for missing payments and refunds', async () => {
+  it('returns not-found results for missing payments', async () => {
     const { billing } = setup();
     await expect(
       billing.markPurchasePaid(allowEffects, {
@@ -531,12 +531,11 @@ describe('billing runtime snapshot paths', () => {
         eventId: 'event-1',
       })
     ).resolves.toEqual({ status: 404, body: { error: 'purchase_not_found' } });
-    await expect(
-      billing.applyRefundEvent(allowEffects, {
-        purchaseId: 'missing',
-        eventId: 'event-2',
-      })
-    ).resolves.toEqual({ status: 404, body: { error: 'purchase_not_found' } });
+  });
+
+  it('does not expose a refund mutation without a persisted refund intent', () => {
+    const { billing } = setup();
+    expect(billing.applyRefundEvent).toBeUndefined();
   });
 
   it('creates idempotent refund intents without changing credit balances or lots', async () => {
@@ -778,33 +777,6 @@ describe('billing runtime expiry paths', () => {
         discrepancies: expect.any(Array),
       })
     );
-
-    await billing.createPurchase(allowEffects, {
-      purchaseId: 'refund-invalid-state',
-      apiKeyUuid: 'key-refund-invalid',
-      creditsIssued: 2,
-    });
-    await db.doc('billing-purchases/refund-invalid-state').set({
-      purchaseId: 'refund-invalid-state',
-      apiKeyUuid: 'key-refund-invalid',
-      creditsIssued: 2,
-      stripePaymentIntentId: 'pi-invalid-state',
-      status: 'not-a-valid-state',
-    });
-    await db.doc('api-key-credit/key-refund-invalid').set({ credit: 2 });
-    await db
-      .doc('api-key-credit/key-refund-invalid/lots/refund-invalid-state')
-      .set({
-        remainingCredits: 2,
-        refundable: true,
-      });
-    await expect(
-      billing.applyRefundEvent(allowEffects, {
-        purchaseId: 'refund-invalid-state',
-        eventId: 'refund-invalid',
-        stripePaymentIntentId: 'pi-invalid-state',
-      })
-    ).resolves.toMatchObject({ body: { quarantined: true } });
   });
 });
 
@@ -1106,84 +1078,6 @@ describe('billing runtime reconciliation paths', () => {
     ).rejects.toThrow('unexpected lot failure');
   });
 
-  it('handles zero-credit and balance-conflict refunds', async () => {
-    const { db, billing } = setup();
-    await billing.createPurchase(allowEffects, {
-      purchaseId: 'zero-purchase',
-      apiKeyUuid: 'key-zero',
-      creditsIssued: 0,
-    });
-    await billing.markPurchasePaid(allowEffects, {
-      purchaseId: 'zero-purchase',
-      eventId: 'paid-zero',
-      stripePaymentIntentId: 'pi-zero',
-    });
-    await db.doc('api-key-credit/key-zero/lots/zero-purchase').set({});
-    await expect(
-      billing.applyRefundEvent(allowEffects, {
-        purchaseId: 'zero-purchase',
-        eventId: 'refund-zero',
-        stripePaymentIntentId: 'pi-zero',
-      })
-    ).resolves.toEqual({
-      status: 200,
-      body: { purchaseId: 'zero-purchase', refunded: false },
-    });
-
-    await billing.createPurchase(allowEffects, {
-      purchaseId: 'conflict-purchase',
-      apiKeyUuid: 'key-conflict',
-      creditsIssued: 5,
-    });
-    await billing.markPurchasePaid(allowEffects, {
-      purchaseId: 'conflict-purchase',
-      eventId: 'paid-conflict',
-      stripePaymentIntentId: 'pi-conflict',
-    });
-    await db.doc('api-key-credit/key-conflict').set({ credit: 0 });
-    await expect(
-      billing.applyRefundEvent(allowEffects, {
-        purchaseId: 'conflict-purchase',
-        eventId: 'refund-conflict',
-        stripePaymentIntentId: 'pi-conflict',
-      })
-    ).resolves.toEqual({
-      status: 409,
-      body: { error: 'refund_balance_conflict' },
-    });
-  });
-
-  it('marks an untouched purchase fully refunded', async () => {
-    const { billing } = setup();
-    await billing.createPurchase(allowEffects, {
-      purchaseId: 'untouched-purchase',
-      apiKeyUuid: 'key-untouched',
-      creditsIssued: 5,
-    });
-    await billing.markPurchasePaid(allowEffects, {
-      purchaseId: 'untouched-purchase',
-      eventId: 'paid-untouched',
-      stripePaymentIntentId: 'pi-untouched',
-    });
-
-    await expect(
-      billing.applyRefundEvent(allowEffects, {
-        purchaseId: 'untouched-purchase',
-        eventId: 'refund-untouched',
-        stripePaymentIntentId: 'pi-untouched',
-      })
-    ).resolves.toMatchObject({
-      body: { refunded: true, creditsReversed: 5 },
-    });
-    await expect(
-      billing.applyRefundEvent(allowEffects, {
-        purchaseId: 'untouched-purchase',
-        eventId: 'refund-untouched-repeat',
-        stripePaymentIntentId: 'pi-untouched',
-      })
-    ).resolves.toMatchObject({ body: { refunded: false } });
-  });
-
   it('rejects a charge when the aggregate balance is lower than its lot', async () => {
     const { db, billing } = setup();
     await billing.createPurchase(allowEffects, {
@@ -1267,65 +1161,6 @@ describe('billing runtime reconciliation paths', () => {
 });
 
 describe('billing runtime refund paths', () => {
-  it('reads refund lot and balance snapshots through the transaction', async () => {
-    const purchaseReference = {};
-    const lotReference = {};
-    const balanceReference = {
-      collection: () => ({ doc: () => lotReference }),
-    };
-    const db = {
-      collection(name) {
-        if (name === 'billing-purchases')
-          return { doc: () => purchaseReference };
-        if (name === 'api-key-credit') {
-          return { doc: () => balanceReference };
-        }
-        return {
-          doc: () => ({ collection: () => ({ doc: () => ({}) }) }),
-        };
-      },
-      runTransaction(callback) {
-        return callback({
-          get: async reference => {
-            if (reference === purchaseReference) {
-              return {
-                exists: true,
-                data: () => ({
-                  purchaseId: 'purchase-1',
-                  apiKeyUuid: 'key-1',
-                  creditsIssued: 1,
-                  stripePaymentIntentId: 'pi-1',
-                }),
-              };
-            }
-            if (reference === lotReference) {
-              return { exists: true, data: () => ({ remainingCredits: 1 }) };
-            }
-            if (reference === balanceReference) {
-              return { exists: true, data: () => ({}) };
-            }
-            return { exists: true, data: () => ({ credit: 1 }) };
-          },
-          set: jest.fn(),
-        });
-      },
-    };
-    const billing = createBillingRuntime(db, {
-      runBillingTransaction: (_permission, update) => db.runTransaction(update),
-    });
-
-    await expect(
-      billing.applyRefundEvent(allowEffects, {
-        purchaseId: 'purchase-1',
-        eventId: 'refund-1',
-        stripePaymentIntentId: 'pi-1',
-      })
-    ).resolves.toEqual({
-      status: 409,
-      body: { error: 'refund_balance_conflict' },
-    });
-  });
-
   it('issues a purchase into a refundable lot exactly once', async () => {
     const { db, billing } = setup();
     await db
@@ -1420,106 +1255,6 @@ describe('billing runtime charging paths', () => {
     await expect(
       db.doc('api-key-credit/key-legacy/lots/legacy').get()
     ).resolves.toMatchObject({ exists: true });
-  });
-
-  it('reverses only remaining credits on refund', async () => {
-    const { db, billing } = setup();
-    await billing.createPurchase(allowEffects, {
-      purchaseId: 'purchase-1',
-      apiKeyUuid: 'key-1',
-      creditsIssued: 10,
-      pricingSnapshotId: snapshot.snapshotId,
-    });
-    await billing.markPurchasePaid(allowEffects, {
-      purchaseId: 'purchase-1',
-      eventId: 'paid-1',
-      stripePaymentIntentId: 'pi-1',
-    });
-    const lotBeforeCharge = await db
-      .doc('api-key-credit/key-1/lots/purchase-1')
-      .get();
-    expect(lotBeforeCharge.data()).toMatchObject({ remainingCredits: 10 });
-    await billing.applyOperationCharge(allowEffects, {
-      uuid: 'key-1',
-      operationType: 'function.invoke',
-      operationAttemptId: 'attempt-operation-1',
-      eventId: 'operation-1',
-      pricingSnapshot: snapshot,
-    });
-    const lotBeforeRefund = await db
-      .doc('api-key-credit/key-1/lots/purchase-1')
-      .get();
-    expect(lotBeforeRefund.data()).toMatchObject({ remainingCredits: 7 });
-
-    await expect(
-      billing.applyRefundEvent(allowEffects, {
-        purchaseId: 'purchase-1',
-        eventId: 'refund-1',
-        stripePaymentIntentId: 'pi-1',
-        refundedUsdMinor: 1_000,
-        pricingSnapshotId: snapshot.snapshotId,
-      })
-    ).resolves.toMatchObject({
-      status: 200,
-      body: {
-        refunded: true,
-        creditsReversed: 7,
-      },
-    });
-    await expect(db.doc('api-key-credit/key-1').get()).resolves.toMatchObject({
-      data: expect.any(Function),
-    });
-  });
-
-  it('quarantines refunds with a mismatched intent and records reconciliation', async () => {
-    const { db, billing } = setup();
-    await billing.createPurchase(allowEffects, {
-      purchaseId: 'purchase-mismatch',
-      apiKeyUuid: 'key-mismatch',
-      creditsIssued: 5,
-    });
-    await billing.markPurchasePaid(allowEffects, {
-      purchaseId: 'purchase-mismatch',
-      eventId: 'paid-mismatch',
-      stripePaymentIntentId: 'pi-expected',
-    });
-    const before = (await db.doc('api-key-credit/key-mismatch').get()).data()
-      .credit;
-    const result = await billing.applyRefundEvent(allowEffects, {
-      purchaseId: 'purchase-mismatch',
-      eventId: 'refund-mismatch',
-      stripePaymentIntentId: 'pi-other',
-      refundedUsdMinor: 500,
-      pricingSnapshotId: 'snap-1',
-    });
-    expect(result).toEqual({
-      status: 200,
-      body: {
-        quarantined: true,
-        reason: 'payment_intent_mismatch',
-        purchaseId: 'purchase-mismatch',
-      },
-    });
-    await billing.recordRefundReconciliation(allowEffects, {
-      eventId: 'refund-mismatch',
-      purchaseId: 'purchase-mismatch',
-      stripePaymentIntentId: 'pi-other',
-      chargeId: 'ch-1',
-      refundedUsdMinor: 500,
-    });
-    expect((await db.doc('api-key-credit/key-mismatch').get()).data()).toEqual(
-      expect.objectContaining({ credit: before })
-    );
-    expect(
-      (await db.doc('billing-reconciliation/refund-mismatch').get()).data()
-    ).toEqual(
-      expect.objectContaining({
-        type: 'unmatched_stripe_refund',
-        status: 'pending',
-        stripePaymentIntentId: 'pi-other',
-        chargeId: 'ch-1',
-      })
-    );
   });
 
   it('forwards the request capability to the injected refund reconciliation writer', async () => {

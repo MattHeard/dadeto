@@ -24,12 +24,11 @@ import {
 /** @typedef {BillingOperationIdentity & { outcome: 'success' | 'ambiguous' | 'failure', reason?: string }} BillingResolutionInput */
 /** @typedef {{ purchaseId?: string, apiKeyUuid: string, creditsIssued: number, pricingSnapshotId: string, createdAt?: Date, [key: string]: unknown }} BillingPurchaseInput */
 /** @typedef {{ purchaseId: string, eventId: string, stripePaymentIntentId?: string }} BillingPaymentInput */
-/** @typedef {{ purchaseId: string, eventId: string, stripePaymentIntentId: string, refundedUsdMinor: number, pricingSnapshotId: string }} BillingRefundInput */
 /** @typedef {{ refundIntentId: string, purchaseId: string }} BillingRefundIntentInput */
 /** @typedef {{ refundIntentId: string, purchaseId: string, eventId: string, stripeRefundId: string, stripePaymentIntentId: string, amountUsdMinor: number, currency: string, stripeStatus: string }} BillingConfirmedRefundInput */
 /** @typedef {{ purchaseId: string, eventId: string }} BillingExpiryInput */
 /** @typedef {{ checkoutSessionId: string, url: string, expiresAt: Date }} BillingCheckoutSession */
-/** @typedef {Record<string, any> & { createPurchase: (allowEffects: AllowEffects, input: BillingPurchaseInput) => Promise<BillingRuntimeValue>, savePurchaseCheckout: (allowEffects: AllowEffects, purchaseId: string, session: BillingCheckoutSession) => Promise<void>, markPurchasePaid: (allowEffects: AllowEffects, input: BillingPaymentInput) => Promise<BillingResponse>, createRefundIntent: (allowEffects: AllowEffects, input: BillingRefundIntentInput) => Promise<BillingResponse>, recordRefundSubmission: (allowEffects: AllowEffects, input: { refundIntentId: string, stripeRefundId: string, stripeStatus: string }) => Promise<BillingResponse>, markRefundIntentAmbiguous: (allowEffects: AllowEffects, refundIntentId: string) => Promise<BillingResponse>, applyRefundIntentEvent: (allowEffects: AllowEffects, input: BillingConfirmedRefundInput) => Promise<BillingResponse>, applyRefundEvent: (allowEffects: AllowEffects, input: BillingRefundInput) => Promise<BillingResponse>, recordRefundReconciliation: (allowEffects: AllowEffects, input: { eventId: string, purchaseId: string, stripePaymentIntentId: string, chargeId: string, refundedUsdMinor: number, refundIntentId?: string, stripeRefundId?: string, reason?: string }) => Promise<void>, markPurchaseExpired: (allowEffects: AllowEffects, input: BillingExpiryInput) => Promise<BillingResponse>, applyOperationCharge: (allowEffects: AllowEffects, input: BillingOperationInput) => Promise<BillingResponse>, chargeOperation: (allowEffects: AllowEffects, input: Omit<BillingOperationInput, 'pricingSnapshot'>) => Promise<BillingResponse>, reserveOperation: (allowEffects: AllowEffects, input: BillingOperationInput) => Promise<BillingResponse>, resolveOperation: (allowEffects: AllowEffects, input: BillingResolutionInput) => Promise<BillingResponse> }} BillingRuntimeService */
+/** @typedef {Record<string, any> & { createPurchase: (allowEffects: AllowEffects, input: BillingPurchaseInput) => Promise<BillingRuntimeValue>, savePurchaseCheckout: (allowEffects: AllowEffects, purchaseId: string, session: BillingCheckoutSession) => Promise<void>, markPurchasePaid: (allowEffects: AllowEffects, input: BillingPaymentInput) => Promise<BillingResponse>, createRefundIntent: (allowEffects: AllowEffects, input: BillingRefundIntentInput) => Promise<BillingResponse>, recordRefundSubmission: (allowEffects: AllowEffects, input: { refundIntentId: string, stripeRefundId: string, stripeStatus: string }) => Promise<BillingResponse>, markRefundIntentAmbiguous: (allowEffects: AllowEffects, refundIntentId: string) => Promise<BillingResponse>, applyRefundIntentEvent: (allowEffects: AllowEffects, input: BillingConfirmedRefundInput) => Promise<BillingResponse>, recordRefundReconciliation: (allowEffects: AllowEffects, input: { eventId: string, purchaseId: string, stripePaymentIntentId: string, chargeId: string, refundedUsdMinor: number, refundIntentId?: string, stripeRefundId?: string, reason?: string }) => Promise<void>, markPurchaseExpired: (allowEffects: AllowEffects, input: BillingExpiryInput) => Promise<BillingResponse>, applyOperationCharge: (allowEffects: AllowEffects, input: BillingOperationInput) => Promise<BillingResponse>, chargeOperation: (allowEffects: AllowEffects, input: Omit<BillingOperationInput, 'pricingSnapshot'>) => Promise<BillingResponse>, reserveOperation: (allowEffects: AllowEffects, input: BillingOperationInput) => Promise<BillingResponse>, resolveOperation: (allowEffects: AllowEffects, input: BillingResolutionInput) => Promise<BillingResponse> }} BillingRuntimeService */
 
 /**
  * @typedef {{ status: number, body: string | Record<string, unknown> }} BillingResponse
@@ -620,20 +619,6 @@ export function createBillingRuntime(db, runtime = {}) {
   }
 
   /**
-   * Apply a Stripe refund to a purchase.
-   * @param {AllowEffects} allowEffects Permission for the refund transaction.
-   * @param {BillingRefundInput} input Refund input.
-   * @returns {Promise<BillingResponse>} Refund response.
-   */
-  async function applyRefundEvent(allowEffects, input) {
-    return applyRefund(db, now, input, {
-      db,
-      allowEffects,
-      run: update => runBillingTransaction(allowEffects, update),
-    });
-  }
-
-  /**
    * Persist an unmatched Stripe refund for manual reconciliation.
    * @param {AllowEffects} allowEffects Permission for the reconciliation write.
    * @param {{ eventId: string, purchaseId: string, stripePaymentIntentId: string, chargeId: string, refundedUsdMinor: number, refundIntentId?: string, stripeRefundId?: string, reason?: string }} input Refund identifiers.
@@ -758,7 +743,6 @@ export function createBillingRuntime(db, runtime = {}) {
     reserveOperation,
     resolveOperation,
     reconcileIdentity,
-    applyRefundEvent,
     recordRefundReconciliation,
     markPurchaseExpired,
     ledgerRef: (/** @type {string} */ uuid, /** @type {string} */ eventId) =>
@@ -1635,132 +1619,6 @@ function createLegacyLot(credits, createdAt) {
     pricingSnapshotId: 'legacy',
   };
 }
-
-/**
- * Apply a refund transaction.
- * @param {BillingRuntimeValue} db Firestore database.
- * @param {() => Date} now Clock callback.
- * @param {BillingRefundInput} input Refund input.
- * @param {BillingTransactionScope} transactionScope Request-scoped transaction capability.
- * @returns {Promise<BillingResponse>} Refund response.
- */
-// Stryker disable all -- refund persistence is a fixed protocol schema.
-async function applyRefund(db, now, input, transactionScope) {
-  const ref = purchaseRef(db, input.purchaseId);
-  return transactionScope.run(
-    async (/** @type {BillingRuntimeValue} */ transaction) => {
-      const purchaseSnap = await transaction.get(ref);
-      if (!purchaseSnap.exists)
-        return { status: 404, body: { error: 'purchase_not_found' } };
-      const purchase = readData(purchaseSnap);
-      if (
-        !input.stripePaymentIntentId ||
-        purchase.stripePaymentIntentId !== input.stripePaymentIntentId
-      )
-        return {
-          status: 200,
-          body: {
-            quarantined: true,
-            reason: 'payment_intent_mismatch',
-            purchaseId: input.purchaseId,
-          },
-        };
-      const lotReference = lotRef(db, purchase.apiKeyUuid, purchase.purchaseId);
-      const lotSnap = await transaction.get(lotReference);
-      const lot = readData(lotSnap);
-      const refundable = Number(lot.remainingCredits ?? 0);
-      if (refundable <= 0)
-        return {
-          status: 200,
-          body: { purchaseId: input.purchaseId, refunded: false },
-        };
-      const balanceReference = creditRef(db, purchase.apiKeyUuid);
-      const balanceSnap = await transaction.get(balanceReference);
-      const before = Number(readData(balanceSnap).credit ?? 0);
-      const after = before - refundable;
-      if (after < 0)
-        return { status: 409, body: { error: 'refund_balance_conflict' } };
-      const nextStatus = resolveRefundStatus(
-        refundable,
-        purchase.creditsIssued
-      );
-      try {
-        applyStateTransition({
-          kind: 'purchase',
-          state: purchase.status,
-          nextState: nextStatus,
-        });
-      } catch {
-        return {
-          status: 200,
-          body: { quarantined: true, purchaseId: input.purchaseId },
-        };
-      }
-      transaction.set(lotReference, {
-        ...lot,
-        remainingCredits: 0,
-        // Stryker disable next-line all -- refund persistence schema is an adapter contract.
-        refundable: false,
-      });
-      transaction.set(balanceReference, {
-        // Stryker disable next-line all -- balance persistence schema is an adapter contract.
-        credit: after,
-        lastEventId: input.eventId,
-      });
-      // Stryker disable next-line all -- persisted event schema is the billing
-      // adapter contract.
-      transaction.set(eventRef(db, purchase.apiKeyUuid, input.eventId), {
-        type: 'credit_deducted',
-        eventId: input.eventId,
-        amount: refundable,
-        purchaseId: input.purchaseId,
-        // Stryker disable next-line all -- refund event schema is an adapter contract.
-        reason: 'refund',
-        balanceBefore: before,
-        balanceAfter: after,
-        refundedUsdMinor: input.refundedUsdMinor,
-        pricingSnapshotId: input.pricingSnapshotId,
-        createdAt: now(),
-      });
-      transaction.set(
-        ledgerRef(db, purchase.apiKeyUuid, input.eventId),
-        createLedgerEvent({
-          eventId: input.eventId,
-          sourceEventId: input.eventId,
-          type: 'credits_refunded',
-          // Stryker disable next-line all -- refund ledger schema is an adapter contract.
-          amount: -refundable,
-          billingIdentityId: purchase.apiKeyUuid,
-          purchaseId: purchase.purchaseId,
-          balanceBefore: before,
-          balanceAfter: after,
-          // Stryker disable next-line all -- refund ledger schema is an adapter contract.
-          refundedUsdMinor: input.refundedUsdMinor,
-          pricingSnapshotId: input.pricingSnapshotId,
-          createdAt: now(),
-        })
-      );
-      // Stryker disable next-line all -- persisted purchase schema is the
-      // billing adapter contract.
-      transaction.set(ref, {
-        ...purchase,
-        status: nextStatus,
-        creditsRemaining: 0,
-        refundedUsdMinor: input.refundedUsdMinor,
-      });
-      return {
-        status: 200,
-        body: {
-          purchaseId: input.purchaseId,
-          refunded: true,
-          // Stryker disable next-line all -- response shape is the public billing protocol.
-          creditsReversed: refundable,
-        },
-      };
-    }
-  );
-}
-// Stryker restore all
 
 /**
  * Resolve the purchase status after a refund.
