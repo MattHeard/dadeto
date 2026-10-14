@@ -261,6 +261,11 @@ locals {
       source       = "${path.module}/allow-effects.js"
       content_type = "application/javascript"
     }
+    dendrite_allow_effects_adapter_js = {
+      name         = "adapters/allow-effects.js"
+      source       = "${path.module}/../src/adapters/allow-effects.js"
+      content_type = "application/javascript"
+    }
     dendrite_admin_core_js = {
       name         = "admin-core.js"
       source       = "${path.module}/admin-core.js"

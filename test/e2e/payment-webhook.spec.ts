@@ -52,7 +52,7 @@ async function postPaymentEvent(request, event) {
   return response;
 }
 
-test('applies checkout credits, replays duplicates, and deducts refunds', async ({
+test('applies checkout credits, replays duplicates, and quarantines external refunds', async ({
   request,
 }) => {
   const checkoutEvent = {
@@ -97,17 +97,16 @@ test('applies checkout credits, replays duplicates, and deducts refunds', async 
   const refundResponse = await postPaymentEvent(request, refundEvent);
   expect(refundResponse.status()).toBe(200);
   await expect(refundResponse.json()).resolves.toEqual({
-    credit: 50,
-    type: 'credit_deducted',
+    quarantined: true,
+    reason: 'external_stripe_refund',
     eventId: 'evt_e2e_checkout_refund',
-    applied: true,
   });
 
   const balanceResponse = await request.get(
     buildApiUrl(`/api-keys/${CHECKOUT_API_KEY_UUID}/credit`)
   );
   expect(balanceResponse.status()).toBe(200);
-  await expect(balanceResponse.json()).resolves.toEqual({ credit: 50 });
+  await expect(balanceResponse.json()).resolves.toEqual({ credit: 80 });
 
   const historyResponse = await request.get(
     buildApiUrl(`/api-keys/${CHECKOUT_API_KEY_UUID}/credit/events`)
@@ -121,13 +120,6 @@ test('applies checkout credits, replays duplicates, and deducts refunds', async 
         amount: 80,
         balanceBefore: 0,
         balanceAfter: 80,
-      },
-      {
-        type: 'credit_deducted',
-        eventId: 'evt_e2e_checkout_refund',
-        amount: 30,
-        balanceBefore: 80,
-        balanceAfter: 50,
       },
     ],
   });

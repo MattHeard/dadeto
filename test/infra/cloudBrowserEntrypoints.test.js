@@ -140,6 +140,21 @@ describe('cloud browser entrypoints', () => {
     );
   });
 
+  it('uploads the allow-effects adapter at the browser import path', async () => {
+    const [mainTf, browserAdapter, sharedAdapter] = await Promise.all([
+      readFile('infra/main.tf', 'utf8'),
+      readFile('src/browser/allow-effects.js', 'utf8'),
+      readFile('src/adapters/allow-effects.js', 'utf8'),
+    ]);
+
+    expect(browserAdapter).toContain("from '../adapters/allow-effects.js'");
+    expect(mainTf).toContain('name         = "adapters/allow-effects.js"');
+    expect(mainTf).toContain(
+      'source       = "${path.module}/../src/adapters/allow-effects.js"'
+    );
+    expect(sharedAdapter).toContain('export function requireAllowEffects');
+  });
+
   it('uploads PWA assets at the root paths used by Dendrite HTML', async () => {
     const mainTf = await readFile('infra/main.tf', 'utf8');
 
