@@ -18,13 +18,13 @@ test('object-minute rental search returns the football SKU', async ({
       possessionContext: {
         startPoint: {
           pointId: 'DELIVERY',
-          timestamp: tomorrowAt(19),
+          timestamp: tomorrowAt(10),
           latitude: 52.510833,
           longitude: 13.296667,
         },
         endPoint: {
           pointId: 'PICKUP',
-          timestamp: tomorrowAt(20),
+          timestamp: tomorrowAt(11),
           latitude: 52.510833,
           longitude: 13.296667,
         },

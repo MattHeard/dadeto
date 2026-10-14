@@ -36,6 +36,11 @@ test('local object-minute rental search returns the football SKU', async ({
 
 test('static search page renders available football result', async ({ page }) => {
   await page.goto('/object-minute-rental-search/');
+  await expect(
+    page.getByText(
+      'The result is informational only; it does not place a reservation or order.'
+    )
+  ).toBeVisible();
   await page.locator('[name="deliveryLatitude"]').fill('52.510833');
   await page.locator('[name="deliveryLongitude"]').fill('13.296667');
   await page.locator('[name="pickupLatitude"]').fill('52.510833');

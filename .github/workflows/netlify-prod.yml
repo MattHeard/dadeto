@@ -36,6 +36,14 @@ jobs:
 
       - run: npm run build:browser
 
+      - name: Verify production rental search endpoint
+        run: |
+          PAGE="public/object-minute-rental-search/index.html"
+          if ! grep -Eq 'data-search-endpoint="https://[^"]+"' "$PAGE"; then
+            echo "::error::Production rental search page must embed an HTTPS endpoint."
+            exit 1
+          fi
+
       - run: npm install -g netlify-cli@17 # pin CLI version
 
       - name: Deploy to Netlify production

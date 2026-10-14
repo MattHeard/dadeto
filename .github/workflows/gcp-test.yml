@@ -366,6 +366,18 @@ jobs:
           wait_for_object p/1a.html
           wait_for_object p/2a.html
 
+      - name: Seed temporary runner availability for search E2E
+        if: success()
+        run: |
+          set -euo pipefail
+          SCHEDULE_BUCKET="${ENVIRONMENT}-object-minute-rental-schedules"
+          START="$(date -u -d '1 day ago' +%FT%TZ)"
+          END="$(date -u -d '3 days' +%FT%TZ)"
+          printf '[{"startTimestamp":"%s","endTimestamp":"%s"}]\n' \
+            "$START" "$END" > /tmp/runner-schedule.json
+          gcloud storage cp /tmp/runner-schedule.json \
+            "gs://${SCHEDULE_BUCKET}/runner-schedule.json"
+
       - name: Print Terraform state addresses
         if: always()
         run: terraform state list || true

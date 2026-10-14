@@ -919,6 +919,22 @@ describe('object minute rental HTTP adapter', () => {
     expect(json).toHaveBeenCalledTimes(2);
   });
 
+  test('returns no availability when the configured runner schedule is empty', async () => {
+    const json = jest.fn();
+    const handler = createSearchHttpHandler({
+      runnerCommitmentsRepository: emptyRepository,
+      runnerScheduleProvider: { getSchedule: async () => [] },
+      clock: () => new Date('2026-08-27T15:00Z'),
+    });
+
+    await handler(
+      { method: 'POST', headers: {}, body: base },
+      { json, status: () => ({ json }) }
+    );
+
+    expect(json).toHaveBeenCalledWith({ valid: true, results: [] });
+  });
+
   test('uses default runner id and fallback on invalid timezone input', async () => {
     const getSchedule = jest.fn(async () => schedule);
     await createSearchHttpHandler({
