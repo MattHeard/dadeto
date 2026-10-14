@@ -377,11 +377,21 @@ describe('billing runtime snapshot paths', () => {
 
   it('expires pending purchases idempotently without changing paid purchases', async () => {
     const { db, billing } = setup();
+    const expiryEvent = {
+      id: 'expiry-1',
+      type: 'checkout.session.expired',
+      data: { object: { metadata: { ['purchase_id']: 'pending' } } },
+    };
     await billing.createPurchase(allowEffects, {
       purchaseId: 'pending',
       uid: 'uid-1',
       apiKeyUuid: 'key-1',
       creditsIssued: 10,
+    });
+    await db.doc('payment-events/expiry-1').set({
+      status: 'received',
+      purchaseId: 'pending',
+      verifiedEvent: expiryEvent,
     });
     await expect(
       billing.markPurchaseExpired(allowEffects, {
@@ -395,6 +405,9 @@ describe('billing runtime snapshot paths', () => {
         eventId: 'expiry-1',
       })
     ).resolves.toMatchObject({ body: { duplicate: true } });
+    expect(
+      (await db.doc('payment-events/expiry-1').get()).data()
+    ).toMatchObject({ status: 'applied', verifiedEvent: expiryEvent });
     await billing.createPurchase(allowEffects, {
       purchaseId: 'paid',
       uid: 'uid-1',
@@ -418,12 +431,25 @@ describe('billing runtime snapshot paths', () => {
     expect(
       (await db.doc('payment-events/payment-1').get()).data()
     ).toMatchObject({ status: 'applied', verifiedEvent });
+    const lateExpiryEvent = {
+      id: 'expiry-2',
+      type: 'checkout.session.expired',
+      data: { object: { metadata: { ['purchase_id']: 'paid' } } },
+    };
+    await db.doc('payment-events/expiry-2').set({
+      status: 'received',
+      purchaseId: 'paid',
+      verifiedEvent: lateExpiryEvent,
+    });
     await expect(
       billing.markPurchaseExpired(allowEffects, {
         purchaseId: 'paid',
         eventId: 'expiry-2',
       })
     ).resolves.toMatchObject({ body: { ignored: true, status: 'paid' } });
+    expect(
+      (await db.doc('payment-events/expiry-2').get()).data()
+    ).toMatchObject({ status: 'ignored', verifiedEvent: lateExpiryEvent });
   });
 
   it('generates purchase identifiers and normalizes non-object snapshots', async () => {

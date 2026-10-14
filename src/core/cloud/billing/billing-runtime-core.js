@@ -663,6 +663,9 @@ export function createBillingRuntime(db, runtime = {}) {
    * @returns {Promise<BillingResponse>} Expiry response.
    */
   async function markPurchaseExpired(allowEffects, input) {
+    const paymentEventReference = db
+      .collection('payment-events')
+      .doc(input.eventId);
     return runBillingTransaction(
       allowEffects,
       async (/** @type {BillingRuntimeValue} */ transaction) => {
@@ -671,9 +674,43 @@ export function createBillingRuntime(db, runtime = {}) {
         if (!snapshot.exists)
           return { status: 404, body: { error: 'purchase_not_found' } };
         const purchase = readData(snapshot);
-        if (purchase.status === 'expired')
+        const paymentEventSnapshot = await transaction.get(
+          paymentEventReference
+        );
+        const paymentEvent = readData(paymentEventSnapshot);
+        if (!paymentEventSnapshot.exists)
+          return {
+            status: 409,
+            body: { error: 'payment_event_not_received' },
+          };
+        if (paymentEvent.status === 'applied')
           return duplicatePurchaseResponse(input.purchaseId);
-        if (purchase.status !== 'pending')
+        if (purchase.status === 'expired') {
+          if (purchase.expiredEventId === input.eventId) {
+            transaction.set(paymentEventReference, {
+              ...paymentEvent,
+              status: 'applied',
+            });
+            return {
+              status: 200,
+              body: {
+                purchaseId: input.purchaseId,
+                status: 'expired',
+                applied: true,
+              },
+            };
+          }
+          transaction.set(paymentEventReference, {
+            ...paymentEvent,
+            status: 'ignored',
+          });
+          return duplicatePurchaseResponse(input.purchaseId);
+        }
+        if (purchase.status !== 'pending') {
+          transaction.set(paymentEventReference, {
+            ...paymentEvent,
+            status: 'ignored',
+          });
           return {
             status: 200,
             body: {
@@ -682,6 +719,7 @@ export function createBillingRuntime(db, runtime = {}) {
               status: purchase.status,
             },
           };
+        }
         applyStateTransition({
           kind: 'purchase',
           state: purchase.status,
@@ -692,6 +730,10 @@ export function createBillingRuntime(db, runtime = {}) {
           status: 'expired',
           expiredEventId: input.eventId,
           expiredAt: now(),
+        });
+        transaction.set(paymentEventReference, {
+          ...paymentEvent,
+          status: 'applied',
         });
         return {
           status: 200,
