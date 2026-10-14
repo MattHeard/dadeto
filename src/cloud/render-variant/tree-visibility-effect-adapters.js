@@ -23,6 +23,19 @@ export function registerTreeVisibilityHttp(allowEffects, options) {
   return options.functions.region('europe-west1').https.onRequest(options.handler);
 }
 
+/** Bind Functions SDK to token-first adapters.
+ * @param {typeof import('./render-variant-gcf.js').functions} functions SDK boundary.
+ * @returns {{registerScheduled: (permission: import('../../../types/allow-effects').AllowEffects, handler: () => Promise<null>) => unknown, registerHttp: (permission: import('../../../types/allow-effects').AllowEffects, handler: (request: import('express').Request, response: import('express').Response) => Promise<void>) => unknown}} Registration callbacks.
+ */
+export function createTreeVisibilityRegistrationAdapters(functions) {
+  return {
+    registerScheduled: (allowEffects, handler) =>
+      registerTreeVisibilitySchedule(allowEffects, { functions, handler }),
+    registerHttp: (allowEffects, handler) =>
+      registerTreeVisibilityHttp(allowEffects, { functions, handler }),
+  };
+}
+
 /**
  * Send the tree-visibility HTTP result.
  * @param {import('../../../types/allow-effects').AllowEffects} allowEffects Permission for the response write.

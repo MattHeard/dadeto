@@ -7,10 +7,7 @@ import {
 import { createEffectStartupBoundary } from '../allow-effects.js';
 import { initializeRenderVariantFirebase } from './firebase-startup-effect-adapter.js';
 import { registerVariantWriteTrigger } from './trigger-effect-adapter.js';
-import {
-  registerTreeVisibilityHttp,
-  registerTreeVisibilitySchedule,
-} from './tree-visibility-effect-adapters.js';
+import { createTreeVisibilityRegistrationAdapters } from './tree-visibility-effect-adapters.js';
 
 /**
  * Compose all render-variant startup exports inside one capability scope.
@@ -38,10 +35,12 @@ export function createRenderVariantStartup(dependencies) {
       runRegeneration,
       deps.sendTreeVisibilityResponse
     );
+    const { registerScheduled, registerHttp } =
+      createTreeVisibilityRegistrationAdapters(deps.functions);
     const regenerationHandles = createTreeVisibilityRegenerationHandles(
       allowEffects,
-      registerTreeVisibilitySchedule,
-      registerTreeVisibilityHttp,
+      registerScheduled,
+      registerHttp,
       handlers
     );
     return { ...renderRuntime, regenerationHandles };
