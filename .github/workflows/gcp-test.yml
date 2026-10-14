@@ -427,12 +427,23 @@ jobs:
             exit "$STATUS"
           fi
 
+      - name: Enable runner commitment projection for latency sampling
+        if: success()
+        run: |
+          set -euo pipefail
+          terraform plan -lock-timeout=5m -input=false \
+            -var="environment=${ENVIRONMENT}" \
+            -var="enable_runner_commitment_projection=true" \
+            -out=projection-tfplan
+          terraform apply -lock-timeout=5m -auto-approve projection-tfplan
+
       - name: Measure object-minute rental query latency
         if: success()
         continue-on-error: true
         env:
           GOOGLE_CREDENTIALS_JSON: ${{ secrets.GOOGLE_CREDENTIALS }}
           QUERY_PERFORMANCE_OUTPUT: /tmp/query-performance.json
+          RUNNER_COMMITMENT_PROJECTION_ENABLED: 'true'
         run: |
           set -euo pipefail
           SCHEDULE_BUCKET="${ENVIRONMENT}-object-minute-rental-schedules"

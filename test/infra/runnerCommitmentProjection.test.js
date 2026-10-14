@@ -32,6 +32,10 @@ describe('runner commitment projection rollout configuration', () => {
   test('documents an idempotent backfill before enabling projected reads', () => {
     const operations = readFileSync('infra/README.md', 'utf8');
     const backfill = readFileSync(
+      'src/cloud/object-minute-rental-search/runner-commitment-projection-backfill.js',
+      'utf8'
+    );
+    const command = readFileSync(
       'scripts/backfill-runner-commitment-projections.js',
       'utf8'
     );
@@ -40,8 +44,9 @@ describe('runner commitment projection rollout configuration', () => {
       'node scripts/backfill-runner-commitment-projections.js'
     );
     expect(operations).toContain('deployed and the backfill completes');
-    expect(backfill).toContain('.orderBy(FieldPath.documentId())');
-    expect(backfill).toContain('.limit(100)');
+    expect(command).toContain('backfillRunnerCommitmentProjections');
+    expect(backfill).toContain('.orderBy(documentIdFieldPath)');
+    expect(backfill).toContain('.limit(pageSize)');
     expect(backfill).toContain("collection('runner_assignments')");
     expect(backfill).toContain('repository.refresh(allowEffects');
   });

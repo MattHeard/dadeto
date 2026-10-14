@@ -2,6 +2,7 @@
 import { createRequire } from 'node:module';
 import { createAllowEffects } from '../src/cloud/allow-effects.js';
 import { createRunnerCommitmentProjectionRepository } from '../src/cloud/object-minute-rental-search/runner-commitment-projection-repository.js';
+import { backfillRunnerCommitmentProjections } from '../src/cloud/object-minute-rental-search/runner-commitment-projection-backfill.js';
 
 const runtimeDepsRequire = createRequire(
   new URL('../src/cloud/runtime-deps/package.json', import.meta.url)
@@ -20,24 +21,11 @@ const app = initializeApp(
 );
 const db = getFirestore(app, databaseId);
 const repository = createRunnerCommitmentProjectionRepository({ db });
-const allowEffects = createAllowEffects();
-let cursor;
-let processed = 0;
-
-for (;;) {
-  let query = db
-    .collection('runner_assignments')
-    .orderBy(FieldPath.documentId())
-    .limit(100);
-  if (cursor) query = query.startAfter(cursor);
-  const page = await query.get();
-  if (page.empty) break;
-  for (const assignment of page.docs) {
-    await repository.refresh(allowEffects, { assignmentId: assignment.id });
-    processed += 1;
-  }
-  cursor = page.docs.at(-1);
-}
+const processed = await backfillRunnerCommitmentProjections(createAllowEffects(), {
+  db,
+  repository,
+  documentIdFieldPath: FieldPath.documentId(),
+});
 
 console.log(JSON.stringify({ databaseId, processed, status: 'complete' }));
 

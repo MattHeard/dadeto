@@ -3,6 +3,9 @@ import { writeFile } from 'node:fs/promises';
 import { pathToFileURL } from 'node:url';
 import { resolve } from 'node:path';
 import { performance } from 'node:perf_hooks';
+import { createAllowEffects } from '../src/cloud/allow-effects.js';
+import { createRunnerCommitmentProjectionRepository } from '../src/cloud/object-minute-rental-search/runner-commitment-projection-repository.js';
+import { backfillRunnerCommitmentProjections } from '../src/cloud/object-minute-rental-search/runner-commitment-projection-backfill.js';
 
 const runtimeDepsRequire = createRequire(
   new URL('../src/cloud/runtime-deps/package.json', import.meta.url)
@@ -42,7 +45,7 @@ export async function measureRunnerCommitmentQuery({
 }) {
   const credentials = JSON.parse(credentialsJson);
   const { cert, initializeApp } = runtimeDepsRequire('firebase-admin/app');
-  const { getFirestore } = runtimeDepsRequire('firebase-admin/firestore');
+  const { FieldPath, getFirestore } = runtimeDepsRequire('firebase-admin/firestore');
   const app = initializeApp(
     { credential: cert(credentials), projectId },
     `query-performance-${environment}`
@@ -50,22 +53,37 @@ export async function measureRunnerCommitmentQuery({
   const db = getFirestore(app, databaseId);
   const requestBody = makeRequestBody();
   await seedCommitments(db, environment, requestBody.possessionContext.startPoint.timestamp);
+  const projectionRecords = await backfillRunnerCommitmentProjections(
+    createAllowEffects(),
+    {
+      db,
+      repository: createRunnerCommitmentProjectionRepository({ db }),
+      documentIdFieldPath: FieldPath.documentId(),
+    }
+  );
   const samples = await collectQuerySamples({ endpoint, requestBody, fetchImpl });
-  return createPerformanceReport({ environment, requestBody, samples });
+  return createPerformanceReport({
+    environment,
+    requestBody,
+    samples,
+    projectionRecords,
+  });
 }
 
 /**
  * Build the versioned, machine-readable latency artifact.
- * @param {{environment: string, requestBody: Record<string, any>, samples: Array<{ok: boolean, durationMs: number}>}} options Collected benchmark evidence.
+ * @param {{environment: string, requestBody: Record<string, any>, samples: Array<{ok: boolean, durationMs: number}>, projectionRecords: number}} options Collected benchmark evidence.
  * @returns {object} Performance report.
  */
-export function createPerformanceReport({ environment, requestBody, samples }) {
+export function createPerformanceReport({ environment, requestBody, samples, projectionRecords }) {
   const durations = samples.filter(sample => sample.ok).map(sample => sample.durationMs);
   return {
     schemaVersion: 1,
     generatedAt: new Date().toISOString(),
     environment,
     query: 'object-minute-rental-search.listForRunner',
+    readModel: 'runner_commitment_projections',
+    projectionRecords,
     status:
       samples.length === SAMPLE_COUNT && samples.every(sample => sample.ok)
         ? 'observed'
@@ -184,6 +202,9 @@ async function main() {
   const outputPath = process.env.QUERY_PERFORMANCE_OUTPUT ?? '/tmp/query-performance.json';
   let result;
   try {
+    if (requiredEnv('RUNNER_COMMITMENT_PROJECTION_ENABLED') !== 'true') {
+      throw new Error('runner-commitment-projection-not-enabled');
+    }
     result = await measureRunnerCommitmentQuery({
       databaseId: requiredEnv('DATABASE_ID'),
       environment: requiredEnv('ENVIRONMENT'),

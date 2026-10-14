@@ -6,6 +6,7 @@ import {
   percentile,
   seedCommitments,
 } from '../../scripts/gcp-test-query-performance.js';
+import { backfillRunnerCommitmentProjections } from '../../src/cloud/object-minute-rental-search/runner-commitment-projection-backfill.js';
 
 describe('GCP query performance measurements', () => {
   test('calculates nearest-rank p50 and p95 without timing thresholds', () => {
@@ -78,6 +79,7 @@ describe('GCP query performance measurements', () => {
     }));
     const report = createPerformanceReport({
       environment: 't-test',
+      projectionRecords: 100,
       requestBody: {
         searchText: 'football',
         possessionContext: {
@@ -91,6 +93,8 @@ describe('GCP query performance measurements', () => {
     expect(report).toMatchObject({
       schemaVersion: 1,
       status: 'observed',
+      readModel: 'runner_commitment_projections',
+      projectionRecords: 100,
       fixture: {
         matchingCommitments: 100,
         relatedSegments: 100,
@@ -154,5 +158,57 @@ describe('GCP query performance measurements', () => {
       personId: 'RUNNER-1',
       segmentId: 'query-perf-t-test-segment-0',
     });
+  });
+
+  test('backfills assignments page-by-page before performance reads', async () => {
+    const pages = [[{ id: 'a' }, { id: 'b' }], [{ id: 'c' }], []];
+    const cursors = [];
+    const refreshed = [];
+    let cursor;
+    const db = {
+      collection: name => {
+        expect(name).toBe('runner_assignments');
+        return {
+          orderBy: field => {
+            expect(field).toBe('document-id');
+            return {
+              limit: size => {
+                expect(size).toBe(2);
+                const query = {
+                  startAfter: value => {
+                    cursor = value;
+                    return query;
+                  },
+                  get: async () => {
+                    cursors.push(cursor);
+                    cursor = undefined;
+                    const docs = pages.shift();
+                    return { empty: docs.length === 0, docs };
+                  },
+                };
+                return query;
+              },
+            };
+          },
+        };
+      },
+    };
+    const repository = {
+      refresh: async (allowEffects, { assignmentId }) => {
+        expect(allowEffects).toBe('permission');
+        refreshed.push(assignmentId);
+      },
+    };
+
+    const count = await backfillRunnerCommitmentProjections('permission', {
+      db,
+      repository,
+      documentIdFieldPath: 'document-id',
+      pageSize: 2,
+    });
+
+    expect(count).toBe(3);
+    expect(refreshed).toEqual(['a', 'b', 'c']);
+    expect(cursors).toEqual([undefined, { id: 'b' }, { id: 'c' }]);
   });
 });

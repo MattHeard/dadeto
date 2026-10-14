@@ -113,4 +113,32 @@ describe('gcp-test workflow report handling', () => {
     );
     expect(artifactStep).toContain('path: /tmp/query-performance.json');
   });
+
+  it('enables the projection only after E2E and before latency sampling', () => {
+    const source = readFileSync('.github/workflows/gcp-test.yml', 'utf8');
+    const playwrightIndex = source.indexOf('Run Playwright job');
+    const enableIndex = source.indexOf(
+      'Enable runner commitment projection for latency sampling'
+    );
+    const measureIndex = source.indexOf(
+      'Measure object-minute rental query latency'
+    );
+    const enableStep = source
+      .split(
+        '      - name: Enable runner commitment projection for latency sampling\n'
+      )[1]
+      ?.split('\n      - name: ')[0];
+    const measureStep = source
+      .split('      - name: Measure object-minute rental query latency\n')[1]
+      ?.split('\n      - name: ')[0];
+
+    expect(playwrightIndex).toBeLessThan(enableIndex);
+    expect(enableIndex).toBeLessThan(measureIndex);
+    expect(enableStep).toContain(
+      '-var="enable_runner_commitment_projection=true"'
+    );
+    expect(measureStep).toContain(
+      "RUNNER_COMMITMENT_PROJECTION_ENABLED: 'true'"
+    );
+  });
 });
