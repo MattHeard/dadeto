@@ -7,12 +7,16 @@ import { objectOrEmpty, ADMIN_UID } from '../../commonCore.js';
 
 /** @typedef {import('../../../../types/allow-effects').AllowEffects} AllowEffects */
 
-/** @typedef {(allowEffects: AllowEffects, reference: unknown, data: object) => Promise<unknown>} UpdateFirestoreDocument */
+/** @typedef {{get: (fieldPath: string) => unknown, exists: boolean, data: () => Record<string, unknown> | undefined}} ReadOnlyDocumentSnapshot */
+/** @typedef {{parent?: ReadOnlyDocumentReference | null}} ReadOnlyCollectionReference */
+/** @typedef {{path?: string, get: () => Promise<ReadOnlyDocumentSnapshot>, parent?: ReadOnlyCollectionReference | null}} ReadOnlyDocumentReference */
+/** @typedef {{doc: (path: string) => ReadOnlyDocumentReference, collection: (name: string) => {doc: (id: string) => ReadOnlyDocumentReference}}} ReadOnlyFirestore */
+/** @typedef {(allowEffects: AllowEffects, reference: ReadOnlyDocumentReference, data: object) => Promise<unknown>} UpdateFirestoreDocument */
 
 /**
  * @typedef {object} VariantStatsUpdateInput
- * @property {import('firebase-admin/firestore').DocumentSnapshot} variantSnap Variant snapshot used to calculate updated stats.
- * @property {import('firebase-admin/firestore').DocumentReference} variantRef Variant document to update.
+ * @property {ReadOnlyDocumentSnapshot} variantSnap Variant snapshot used to calculate updated stats.
+ * @property {ReadOnlyDocumentReference} variantRef Variant document to update.
  * @property {boolean} isApproved Approval status from the rating.
  * @property {number} moderatorReputation Moderator weight for the rating.
  * @property {UpdateFirestoreDocument} updateFirestoreDocument Permission-first write adapter.
@@ -20,15 +24,15 @@ import { objectOrEmpty, ADMIN_UID } from '../../commonCore.js';
 
 /**
  * @typedef {object} VariantUpdateExecutionInput
- * @property {import('firebase-admin/firestore').Firestore} db Firestore client.
- * @property {import('firebase-admin/firestore').DocumentSnapshot} snapshot Trigger snapshot.
+ * @property {ReadOnlyFirestore} db Firestore read interface.
+ * @property {ReadOnlyDocumentSnapshot} snapshot Trigger snapshot.
  * @property {UpdateFirestoreDocument} updateFirestoreDocument Permission-first write adapter.
  * @property {(allowEffects: AllowEffects, context?: object) => Promise<unknown>} [renderContents] Optional content renderer.
  */
 
 /**
  * @typedef {object} VariantUpdateApplicationInput
- * @property {import('firebase-admin/firestore').Firestore} db Firestore client.
+ * @property {ReadOnlyFirestore} db Firestore read interface.
  * @property {VariantUpdatePayload} payload Validated rating inputs.
  * @property {UpdateFirestoreDocument} updateFirestoreDocument Permission-first write adapter.
  * @property {(allowEffects: AllowEffects, context?: object) => Promise<unknown>} [renderContents] Optional content renderer.
@@ -37,7 +41,7 @@ import { objectOrEmpty, ADMIN_UID } from '../../commonCore.js';
 /**
  * @typedef {object} AdminLockUpdateInput
  * @property {UpdateFirestoreDocument} updateFirestoreDocument Permission-first write adapter.
- * @property {import('firebase-admin/firestore').DocumentReference} variantRef Variant document to lock.
+ * @property {ReadOnlyDocumentReference} variantRef Variant document to lock.
  * @property {string} moderatorId Moderator identifier.
  * @property {boolean} isApproved Whether the admin approved the variant.
  */
@@ -63,8 +67,8 @@ import { objectOrEmpty, ADMIN_UID } from '../../commonCore.js';
 
 /**
  * Validate a Firestore client using the provided predicate.
- * @param {import('firebase-admin/firestore').Firestore} db Firestore client.
- * @param {(candidate: import('firebase-admin/firestore').Firestore) => boolean} predicate Validation predicate.
+ * @param {ReadOnlyFirestore} db Firestore read interface.
+ * @param {(candidate: ReadOnlyFirestore) => boolean} predicate Validation predicate.
  * @returns {void}
  */
 function assertDbCondition(db, predicate) {
@@ -75,7 +79,7 @@ function assertDbCondition(db, predicate) {
 
 /**
  * Ensure the provided Firestore instance is truthy.
- * @param {import('firebase-admin/firestore').Firestore} db Firestore client.
+ * @param {ReadOnlyFirestore} db Firestore read interface.
  */
 function assertDbExists(db) {
   assertDbCondition(db, Boolean);
@@ -83,7 +87,7 @@ function assertDbExists(db) {
 
 /**
  * Ensure the provided Firestore instance has a doc method.
- * @param {import('firebase-admin/firestore').Firestore} db Firestore client.
+ * @param {ReadOnlyFirestore} db Firestore read interface.
  */
 function assertDbHasDoc(db) {
   assertDbCondition(db, candidate => typeof candidate?.doc === 'function');
@@ -91,7 +95,7 @@ function assertDbHasDoc(db) {
 
 /**
  * Ensure the provided Firestore instance exposes the expected helpers.
- * @param {import('firebase-admin/firestore').Firestore} db Firestore client to validate.
+ * @param {ReadOnlyFirestore} db Firestore read interface to validate.
  */
 function assertDb(db) {
   assertDbExists(db);
@@ -100,7 +104,7 @@ function assertDb(db) {
 
 /**
  * Validate that the supplied value behaves like a Firestore document snapshot.
- * @param {import('firebase-admin/firestore').DocumentSnapshot | null | undefined} snapshot Value to verify.
+ * @param {ReadOnlyDocumentSnapshot | null | undefined} snapshot Value to verify.
  * @returns {boolean} True when the snapshot exposes the Firestore getter API.
  */
 function assertDocumentSnapshot(snapshot) {
@@ -196,7 +200,7 @@ function isValidApproval(isApproved) {
  * Update the variant document with new stats.
  * @param {AllowEffects} allowEffects Request effect permission.
  * @param {UpdateFirestoreDocument} updateFirestoreDocument Permission-first Firestore update adapter.
- * @param {import('firebase-admin/firestore').DocumentReference} ref Document reference.
+ * @param {ReadOnlyDocumentReference} ref Document reference.
  * @param {VariantStats} stats New stats record.
  * @returns {Promise<void>} Promise.
  */
@@ -302,7 +306,7 @@ function calculateAdminLockedVisibility(isApproved) {
 
 /**
  * Read the cached reputation for a moderator.
- * @param {import('firebase-admin/firestore').Firestore} db Firestore client.
+ * @param {ReadOnlyFirestore} db Firestore read interface.
  * @param {string} moderatorId Moderator identifier.
  * @returns {Promise<number>} Cached reputation weight or the default.
  */
@@ -330,7 +334,7 @@ function normalizeModeratorReputation(reputation) {
 
 /**
  * Check if snapshot is valid and exists.
- * @param {import('firebase-admin/firestore').DocumentSnapshot} snapshot Snapshot.
+ * @param {ReadOnlyDocumentSnapshot} snapshot Snapshot.
  * @returns {boolean} True if valid.
  */
 function isValidSnapshot(snapshot) {
@@ -342,7 +346,7 @@ function isValidSnapshot(snapshot) {
 
 /**
  * Read document data when the snapshot is valid.
- * @param {import('firebase-admin/firestore').DocumentSnapshot} snapshot Variant snapshot.
+ * @param {ReadOnlyDocumentSnapshot} snapshot Variant snapshot.
  * @returns {Record<string, unknown> | null} Data or null when invalid.
  */
 function getValidVariantSnapshotData(snapshot) {
@@ -355,7 +359,7 @@ function getValidVariantSnapshotData(snapshot) {
 
 /**
  * Normalize snapshot data to an object, treating absence as empty.
- * @param {import('firebase-admin/firestore').DocumentSnapshot} snapshot Snapshot to read.
+ * @param {ReadOnlyDocumentSnapshot} snapshot Snapshot to read.
  * @returns {Record<string, unknown>} Snapshot data or empty object.
  */
 function getSnapshotDataOrFallback(snapshot) {
@@ -440,9 +444,9 @@ function buildVariantUpdatePayload(data) {
 
 /**
  * Resolve variant path and reference.
- * @param {import('firebase-admin/firestore').Firestore} db Firestore.
+ * @param {ReadOnlyFirestore} db Firestore read interface.
  * @param {string} variantId Variant ID.
- * @returns {import('firebase-admin/firestore').DocumentReference | null} Reference or null.
+ * @returns {ReadOnlyDocumentReference | null} Reference or null.
  */
 function resolveVariantRef(db, variantId) {
   const normalizedVariantPath = normalizeVariantPath(variantId);
@@ -455,8 +459,8 @@ function resolveVariantRef(db, variantId) {
 
 /**
  * Build the handler that updates variant visibility.
- * @param {{db: import('firebase-admin/firestore').Firestore, updateFirestoreDocument: (allowEffects: AllowEffects, reference: unknown, data: object) => Promise<unknown>, renderContents?: (allowEffects: AllowEffects, context?: object) => Promise<unknown>}} options Collaborators required by the handler.
- * @returns {(allowEffects: AllowEffects, snap: import('firebase-admin/firestore').DocumentSnapshot) => Promise<null>} Firestore trigger handler.
+ * @param {{db: ReadOnlyFirestore, updateFirestoreDocument: UpdateFirestoreDocument, renderContents?: (allowEffects: AllowEffects, context?: object) => Promise<unknown>}} options Collaborators required by the handler.
+ * @returns {(allowEffects: AllowEffects, snap: ReadOnlyDocumentSnapshot) => Promise<null>} Firestore trigger handler.
  */
 export function createUpdateVariantVisibilityHandler({
   db,
@@ -482,8 +486,8 @@ export function createUpdateVariantVisibilityHandler({
  * Compose the public update-variant-visibility Cloud Function handle.
  * @param {AllowEffects} allowEffects Startup command permission.
  * @param {unknown} functions Firebase Functions runtime passed to the trigger adapter.
- * @param {(permission: AllowEffects) => import('firebase-admin/firestore').Firestore} getFirestoreInstance Firestore instance factory.
- * @param {{createEffectInvocationBoundary: (handler: (allowEffects: AllowEffects, snapshot: import('firebase-admin/firestore').DocumentSnapshot) => Promise<null>) => (snapshot: import('firebase-admin/firestore').DocumentSnapshot) => Promise<null>, registerTrigger: (allowEffects: AllowEffects, functions: unknown, handler: unknown) => unknown, updateFirestoreDocument: (allowEffects: AllowEffects, reference: unknown, data: object) => Promise<unknown>, renderContents?: (allowEffects: AllowEffects, context?: object) => Promise<unknown>}} effects Effect boundary and adapters.
+ * @param {(permission: AllowEffects) => ReadOnlyFirestore} getFirestoreInstance Firestore read-interface factory.
+ * @param {{createEffectInvocationBoundary: (handler: (allowEffects: AllowEffects, snapshot: ReadOnlyDocumentSnapshot) => Promise<null>) => (snapshot: ReadOnlyDocumentSnapshot) => Promise<null>, registerTrigger: (allowEffects: AllowEffects, functions: unknown, handler: unknown) => unknown, updateFirestoreDocument: UpdateFirestoreDocument, renderContents?: (allowEffects: AllowEffects, context?: object) => Promise<unknown>}} effects Effect boundary and adapters.
  * @returns {unknown} Registered Cloud Function handle.
  */
 export function createUpdateVariantVisibilityHandle(
@@ -580,7 +584,7 @@ async function applyVariantUpdate(allowEffects, application) {
 
 /**
  * Get the moderator reputation for a payload when one is provided.
- * @param {import('firebase-admin/firestore').Firestore} db Firestore client.
+ * @param {ReadOnlyFirestore} db Firestore read interface.
  * @param {string | undefined} moderatorId Moderator identifier.
  * @returns {Promise<number>} Moderator reputation or zero.
  */
@@ -594,8 +598,8 @@ async function getModeratorReputationForPayload(db, moderatorId) {
 
 /**
  * Resolve the root page reference for a variant page, if any.
- * @param {import('firebase-admin/firestore').DocumentReference | null} pageRef Page reference.
- * @returns {Promise<import('firebase-admin/firestore').DocumentReference | null>} Root page reference or null.
+ * @param {ReadOnlyDocumentReference | null} pageRef Page reference.
+ * @returns {Promise<ReadOnlyDocumentReference | null>} Root page reference or null.
  */
 async function getRootPageRef(pageRef) {
   if (!pageRef) {
@@ -608,7 +612,7 @@ async function getRootPageRef(pageRef) {
   }
 
   const storySnap = await storyRef.get();
-  return /** @type {import('firebase-admin/firestore').DocumentReference|null} */ (
+  return /** @type {ReadOnlyDocumentReference|null} */ (
     /** @type {unknown} */ (storySnap?.data?.()?.rootPage ?? null)
   );
 }
@@ -709,21 +713,16 @@ async function republishContentsIfNeeded(deps) {
 
 /**
  * Resolve the enclosing document through a document's parent collection.
- * @param {import('firebase-admin/firestore').DocumentReference} reference Child document reference.
- * @returns {import('firebase-admin/firestore').DocumentReference | null} Parent document or null.
+ * @param {ReadOnlyDocumentReference} reference Child document reference.
+ * @returns {ReadOnlyDocumentReference | null} Parent document or null.
  */
 function getParentDocumentRef(reference) {
-  const referenceWithParents = /** @type {{parent?: {parent?: unknown}}} */ (
-    /** @type {unknown} */ (reference)
-  );
-  return /** @type {import('firebase-admin/firestore').DocumentReference|null} */ (
-    referenceWithParents?.parent?.parent ?? null
-  );
+  return reference.parent?.parent ?? null;
 }
 
 /**
  * Extracts a sanitized payload directly from the snapshot.
- * @param {import('firebase-admin/firestore').DocumentSnapshot} snapshot Firestore snapshot.
+ * @param {ReadOnlyDocumentSnapshot} snapshot Firestore snapshot.
  * @returns {VariantUpdatePayload | null} Validated payload or null.
  */
 function getVariantUpdatePayloadFromSnapshot(snapshot) {
