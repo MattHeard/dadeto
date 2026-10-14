@@ -8,6 +8,7 @@ import { createRemoveListener } from './browser-core.js';
  * @property {Window} windowObj Browser window implementation.
  * @property {typeof globalThis} globalThisObj Global object used for timers and feature probes.
  * @property {Navigator} navigatorObj Browser navigator implementation.
+ * @property {{log: (...args: unknown[]) => void, warn: (...args: unknown[]) => void, error: (...args: unknown[]) => void}} consoleObj Browser console methods supplied by the host boundary.
  */
 
 /** @type {DocumentEnvironment | null} */
@@ -140,9 +141,12 @@ export const playAudio = audio => audio.play();
 export const pauseAudio = audio => audio.pause();
 
 // Console logging wrappers
-export const log = (...args) => console.log(...args);
-export const warn = (...args) => console.warn(...args);
-export const logError = (...args) => console.error(...args);
+export const log = (...args) =>
+  getDocumentEnvironment().consoleObj.log(...args);
+export const warn = (...args) =>
+  getDocumentEnvironment().consoleObj.warn(...args);
+export const logError = (...args) =>
+  getDocumentEnvironment().consoleObj.error(...args);
 
 /**
  * Request the next animation frame when the browser supports it.

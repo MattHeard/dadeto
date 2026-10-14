@@ -18,6 +18,7 @@ let mockIsAdmin = true;
 let mockBeaconOptions;
 let mockErrorLog;
 let mockBeaconPath;
+let mockEndpointLogger;
 
 jest.unstable_mockModule(
   '../../../src/core/browser/load-static-config-core.js',
@@ -46,11 +47,18 @@ jest.unstable_mockModule(
   '../../../src/core/browser/moderation/endpoints.js',
   () => ({
     DEFAULT_MODERATION_ENDPOINTS: {},
-    createGetModerationEndpointsFromStaticConfig: () => async () => ({
-      getModerationVariantUrl: '/variant',
-      assignModerationJobUrl: '/assign',
-      submitModerationRatingUrl: '/submit',
-    }),
+    createGetModerationEndpointsFromStaticConfig: (
+      _loadConfig,
+      _defaults,
+      logger
+    ) => {
+      mockEndpointLogger = logger;
+      return async () => ({
+        getModerationVariantUrl: '/variant',
+        assignModerationJobUrl: '/assign',
+        submitModerationRatingUrl: '/submit',
+      });
+    },
   })
 );
 jest.unstable_mockModule('../../../src/core/browser/browser-core.js', () => ({
@@ -123,6 +131,7 @@ const permission = Object.freeze({});
 const createModerateHandle = (dependencies = {}) =>
   createModerateHandleCore({
     ...dependencies,
+    consoleObj: dependencies.consoleObj ?? console,
     bindEffectBoundary:
       dependencies.bindEffectBoundary ?? (handler => handler(permission)),
     fetchFn:
@@ -170,6 +179,10 @@ function makeDocument() {
     elements,
   };
 }
+
+mockLoadDeps.warn('initial warning', new Error('initial warning'));
+mockEndpointLogger.error('initial endpoint error');
+mockBeaconOptions.logError('initial beacon error');
 
 /**
  *
@@ -738,4 +751,19 @@ describe('moderate core', () => {
 
 it('defaults the moderate handle dependency bundle', () => {
   expect(() => createModerateHandleCore()).not.toThrow();
+});
+
+it('routes moderation warnings and errors through the default logger', () => {
+  createModerateHandleCore({
+    documentObj: makeDocument(),
+    fetchFn: mockFetch,
+    effectFetchFn: async () => ({ ok: true }),
+    bindEffectBoundary: handler => handler(permission),
+    sessionStorageObj: {},
+    globalObject: {},
+  });
+
+  mockLoadDeps.warn('warning', new Error('warning'));
+  mockEndpointLogger.error('endpoint error');
+  mockBeaconOptions.logError('beacon error');
 });

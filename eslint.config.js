@@ -92,6 +92,21 @@ export default [
   {
     files: ['src/core/**/*.js'],
     rules: {
+      'no-console': 'error',
+      'no-restricted-globals': [
+        'error',
+        'event',
+        'fdescribe',
+        'fetch',
+        'window',
+        'document',
+        'localStorage',
+      ],
+    },
+  },
+  {
+    files: ['src/core/**/*.js'],
+    rules: {
       'no-restricted-imports': [
         'error',
         {
@@ -255,15 +270,6 @@ export default [
   {
     files: ['src/core/browser/inputHandlers/browserInputHandlersCore.js'],
     rules: {
-      'no-restricted-globals': [
-        'error',
-        'event',
-        'fdescribe',
-        'fetch',
-        'window',
-        'document',
-        'localStorage',
-      ],
       'no-magic-numbers': [
         'error',
         {

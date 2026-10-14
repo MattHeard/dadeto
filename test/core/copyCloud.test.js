@@ -56,7 +56,7 @@ describe('createCopyCloudHandle', () => {
     expect(logger.info).toHaveBeenCalled();
   });
 
-  test('uses console logging when no logger is injected', async () => {
+  test('does not emit output when no logger is injected', async () => {
     const log = jest.spyOn(console, 'log').mockImplementation(() => {});
     try {
       await createCopyCloudHandle({
@@ -71,7 +71,7 @@ describe('createCopyCloudHandle', () => {
           writeFile: async () => {},
         },
       });
-      expect(log).toHaveBeenCalled();
+      expect(log).not.toHaveBeenCalled();
     } finally {
       log.mockRestore();
     }

@@ -190,6 +190,7 @@ async function runLaunch(context) {
     beadId: currentBeadId,
     beadTitle: context.currentBeadTitle,
     waitForLaunchStatusWrite: () => launchStatusWrite.promise,
+    logger: context.options.logger,
   });
 
   try {
@@ -484,6 +485,7 @@ async function persistLaunchFailure(
  *   beadId: string,
  *   beadTitle: string | null,
  *   waitForLaunchStatusWrite?: () => Promise<void>
+ *   logger?: {error: (...args: unknown[]) => void, warn: (...args: unknown[]) => void}
  * }} options - Runner exit handler options.
  * @returns {((exitInfo: { exitCode: number | null, signal: string | null }) => Promise<void>) | undefined}
  *   Exit handler or undefined when status persistence is unavailable.
@@ -507,7 +509,7 @@ export function createRunnerExitHandler(options) {
       try {
         await waitForLaunchStatusWrite();
       } catch (waitError) {
-        console.error(
+        options.logger?.error(
           `Failed to wait for the launch status write before handling runner ${options.runId} exit:`,
           waitError
         );
@@ -517,7 +519,7 @@ export function createRunnerExitHandler(options) {
     try {
       const storedStatus = await options.statusStore.readStatus();
       if (!storedStatus) {
-        console.warn(
+        options.logger?.warn(
           `Symphony status missing when runner ${options.runId} exited; skipping update.`
         );
         return;
@@ -536,7 +538,7 @@ export function createRunnerExitHandler(options) {
         options.statusStore.writeStatus(permission, updatedStatus)
       );
     } catch (error) {
-      console.error(
+      options.logger?.error(
         `Failed to persist Symphony status after runner ${options.runId} exit:`,
         error
       );

@@ -62,6 +62,7 @@ const createDocumentFixture = () => {
     windowObj,
     globalThisObj,
     navigatorObj,
+    consoleObj: { log: jest.fn(), warn: jest.fn(), error: jest.fn() },
   });
   return {
     documentObj,
@@ -265,6 +266,7 @@ describe('document facade', () => {
       windowObj: { location: { search: '' } },
       globalThisObj: { crypto: {} },
       navigatorObj: {},
+      consoleObj: { log: jest.fn(), warn: jest.fn(), error: jest.fn() },
     });
     expect(() => empty.requestAnimationFrame(jest.fn())).toThrow(
       'globalThis.requestAnimationFrame is not a function'

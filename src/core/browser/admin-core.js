@@ -32,6 +32,7 @@ import {
  * @typedef {object} GoogleSignInOptions
  * @property {(token: string) => void} [onSignIn] - Callback invoked once a token is available.
  * @property {(error: unknown) => void} [reportError] - Optional error beacon reporter.
+ * @property {{error?: (message: string, ...args: unknown[]) => void}} [logger] - Injected sign-in logger.
  */
 
 /**
@@ -1156,7 +1157,7 @@ function validateGoogleSignInBrowserDeps({ matchMedia, querySelectorAll }) {
  * @property {(query: string) => { matches: boolean, addEventListener?: (type: string, listener: () => void) => void }} [matchMedia] - Media query matcher for theme detection.
  * @property {(selector: string) => NodeList} [querySelectorAll] - DOM query helper for locating button targets.
  * @property {typeof globalThis} [globalObject] - Global scope providing DOM helpers.
- * @property {{ error?: (message: string) => void }} [logger] - Optional logger for reporting errors.
+ * @property {{ error?: (message: string, ...args: unknown[]) => void }} [logger] - Optional logger for reporting errors.
  */
 
 /**
@@ -1168,8 +1169,8 @@ function validateGoogleSignInBrowserDeps({ matchMedia, querySelectorAll }) {
  * @property {{ setItem: (key: string, value: string) => void }} [storage] - Storage implementation for persisting tokens.
  * @property {(query: string) => { matches: boolean, addEventListener?: (type: string, listener: () => void) => void }} [matchMedia] - Media query matcher for theme detection.
  * @property {(selector: string) => NodeList} [querySelectorAll] - DOM query helper for locating button targets.
- * @property {{ error?: (message: string) => void }} [logger] - Logger for reporting errors.
- * @property {{ error?: (message: string) => void }} safeLogger - Safely initialized logger.
+ * @property {{ error?: (message: string, ...args: unknown[]) => void }} [logger] - Logger for reporting errors.
+ * @property {{ error?: (message: string, ...args: unknown[]) => void }} safeLogger - Safely initialized logger.
  * @property {() => GoogleAccountsClient | undefined} [resolveGoogleAccountsId] - Resolver for the Google Identity client.
  */
 
@@ -1182,7 +1183,7 @@ function validateGoogleSignInBrowserDeps({ matchMedia, querySelectorAll }) {
  * @property {{ setItem: (key: string, value: string) => void }} storage - Storage implementation for persisting tokens.
  * @property {(query: string) => { matches: boolean, addEventListener?: (type: string, listener: () => void) => void }} matchMedia - Media query matcher for theme detection.
  * @property {(selector: string) => NodeList} querySelectorAll - DOM query helper for locating button targets.
- * @property {{ error?: (message: string) => void }} safeLogger - Safely initialized logger.
+ * @property {{ error?: (message: string, ...args: unknown[]) => void }} safeLogger - Safely initialized logger.
  */
 
 /**
@@ -1552,6 +1553,7 @@ export function createInitGoogleSignIn(deps) {
         storage: normalizedDeps.storage,
         onSignIn,
         reportError,
+        logger: normalizedDeps.safeLogger,
       });
     const renderSignInButton = (
       /** @type {GoogleAccountsClient} */ accountsId
@@ -1606,6 +1608,7 @@ function initGoogleSignInCore(
  *   storage: { setItem: (key: string, value: string) => void },
  *   onSignIn?: (token: string) => void,
  *   reportError?: (error: unknown) => void,
+ *   logger?: {error?: (message: string, ...args: unknown[]) => void},
  * }} options - Dependencies for acquiring and storing the ID token.
  * @returns {void}
  */
@@ -1615,8 +1618,8 @@ export function initializeGoogleSignIn(accountsId, options) {
       '848377461162-rv51umkquokgoq0hsnp1g0nbmmrv7kl0.apps.googleusercontent.com',
     callback: (/** @type {{ credential: string }} */ cred) => {
       return handleCredentialSignIn(cred, options).catch(error => {
+        options.logger?.error?.('Google sign-in failed', error);
         options.reportError?.(error);
-        console.error('Google sign-in failed', error);
       });
     },
     ['ux_mode']: 'popup',

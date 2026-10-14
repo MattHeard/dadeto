@@ -58,9 +58,14 @@ export async function openAppendOnlyRunLogFiles(permission, options) {
  *   stderrHandle?: { close?: () => Promise<void> | void }
  * }} handles Run log handles.
  * @param {string} errorLabel Label used when reporting close failures.
+ * @param {(...args: unknown[]) => void} [logError] Injected error logger.
  * @returns {Promise<void>} Nothing.
  */
-export async function closeRunLogHandles(handles, errorLabel) {
+export async function closeRunLogHandles(
+  handles,
+  errorLabel,
+  logError = () => {}
+) {
   /** @type {Promise<void>[]} */
   const closers = [];
 
@@ -85,7 +90,7 @@ export async function closeRunLogHandles(handles, errorLabel) {
   const results = await Promise.allSettled(closers);
   for (const result of results) {
     if (result.status === 'rejected') {
-      console.error(errorLabel, result.reason);
+      logError(errorLabel, result.reason);
     }
   }
 }
@@ -216,6 +221,7 @@ function resolveExitPayload(options, payload, code, signal) {
  *   buildExitPayload?: (payload: Record<string, unknown>, input: { runId: string, exitCode: number | null, signal: string | null }) => { runId: string, exitCode: number | null, signal: string | null },
  *   closeErrorLabel: string,
  *   exitErrorLabel: string,
+ *   logError?: (...args: unknown[]) => void,
  *   launcherKind?: string,
  * }} options Launcher dependencies.
  * @returns {Promise<{
@@ -277,7 +283,8 @@ async function launchDetachedProcessWithPermission(permission, options) {
   } finally {
     await closeRunLogHandles(
       { stdoutHandle, stderrHandle },
-      options.closeErrorLabel
+      options.closeErrorLabel,
+      options.logError
     );
   }
 
@@ -292,7 +299,7 @@ async function launchDetachedProcessWithPermission(permission, options) {
       );
 
       Promise.resolve(onExit(exitPayload)).catch(
-        createExitErrorLogger(options.exitErrorLabel)
+        createExitErrorLogger(options.exitErrorLabel, options.logError)
       );
     });
   }
@@ -312,10 +319,11 @@ async function launchDetachedProcessWithPermission(permission, options) {
 /**
  * Create a logger for rejected process-exit callbacks.
  * @param {unknown} label Context label for the callback.
+ * @param {(...args: unknown[]) => void} [logError] Injected error logger.
  * @returns {(error: unknown) => void} Error logger.
  */
-function createExitErrorLogger(label) {
-  return error => console.error(label, error);
+function createExitErrorLogger(label, logError = () => {}) {
+  return error => logError(label, error);
 }
 
 /**

@@ -343,6 +343,7 @@ describe('initializeGoogleSignIn', () => {
       auth: { currentUser: null },
       storage: { setItem: jest.fn() },
       reportError,
+      logger: console,
     };
     const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
 
@@ -386,6 +387,7 @@ describe('initializeGoogleSignIn', () => {
       signInWithCredential: jest.fn().mockRejectedValue(new Error('failed')),
       auth: { currentUser: null },
       storage: { setItem: jest.fn() },
+      logger: console,
     });
 
     await accountsId.initialize.mock.calls[0][0].callback({

@@ -7,6 +7,7 @@ const mutateTargetDir = process.argv[2];
 const handle = createRunStrykerWorktreeHandle({
   rootDir: ROOT_DIR,
   mutateTargetDir,
+  log: message => console.log(message),
 });
 
 const isDirectExecution =

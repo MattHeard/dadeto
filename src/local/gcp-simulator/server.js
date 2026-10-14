@@ -16,6 +16,7 @@ const handle = deps =>
     createSimulator: createLocalGcpSimulator,
     bindStartupEffectBoundary,
     useMiddleware,
+    log: message => console.log(message),
   });
 export { sendRouteResponse } from '../../core/local/gcp-simulator/server.js';
 

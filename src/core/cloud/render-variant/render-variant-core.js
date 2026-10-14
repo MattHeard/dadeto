@@ -2703,7 +2703,7 @@ function buildRenderInvalidationCapabilities(dependencies) {
  * @returns {ConsoleError} Resolved console error helper.
  */
 function resolveRenderVariantConsoleError(value) {
-  return value ?? console.error;
+  return value ?? DEFAULT_CONSOLE_ERROR;
 }
 
 /**

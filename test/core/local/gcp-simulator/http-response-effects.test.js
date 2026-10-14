@@ -1,6 +1,7 @@
 import { jest } from '@jest/globals';
 import {
   createSimulatorSearchHttpResponseEffectAdapters,
+  createSimulatorRenderContentsErrorLogger,
   sendSimulatorHttpResponse,
   setSimulatorHttpResponseHeader,
   logSimulatorRenderContentsError,
@@ -65,11 +66,26 @@ describe('simulator HTTP response effects', () => {
   it('logs errors through the permission-first adapter', () => {
     const permission = Object.freeze({ log: true });
     const error = new Error('invalidation failed');
-    const log = jest.spyOn(console, 'error').mockImplementation(() => {});
+    const logger = { error: jest.fn() };
 
-    logSimulatorRenderContentsError(permission, 'invalidation failed', error);
+    logSimulatorRenderContentsError(
+      permission,
+      'invalidation failed',
+      error,
+      logger
+    );
 
-    expect(log).toHaveBeenCalledWith('invalidation failed', error);
-    log.mockRestore();
+    expect(logger.error).toHaveBeenCalledWith('invalidation failed', error);
+  });
+
+  it('binds the renderer error logger to its supplied console', () => {
+    const permission = Object.freeze({ log: true });
+    const error = new Error('invalidation failed');
+    const logger = { error: jest.fn() };
+    const logError = createSimulatorRenderContentsErrorLogger(logger);
+
+    logError(permission, 'invalidation failed', error);
+
+    expect(logger.error).toHaveBeenCalledWith('invalidation failed', error);
   });
 });

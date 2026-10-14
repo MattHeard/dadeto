@@ -34,12 +34,13 @@ let moderateBindEffectBoundary = null;
 let moderateSessionStorage = null;
 /** @type {typeof globalThis | null} */
 let moderateGlobalObject = null;
+let moderateConsoleObj = { warn() {}, error() {} };
 
 const loadStaticConfig = createLoadStaticConfig({
   fetchFn: (permission, input, init) =>
     moderateFetchFn(permission, input, init),
   bindEffectBoundary: handler => moderateBindEffectBoundary(handler),
-  warn: (message, error) => console.warn(message, error),
+  warn: (message, error) => moderateConsoleObj.warn(message, error),
 });
 
 let initGoogleSignInHandler;
@@ -49,7 +50,7 @@ export const getInitGoogleSignInHandler = () => {
     initGoogleSignInHandler = createGoogleSignInInit({
       auth,
       storage: moderateSessionStorage,
-      logger: console,
+      logger: moderateConsoleObj,
       globalObject: moderateGlobalObject,
       authProvider: GoogleAuthProvider,
       signInWithCredential: signInWithCredential,
@@ -77,7 +78,7 @@ export const isAdmin = () =>
 const getModerationEndpoints = createGetModerationEndpointsFromStaticConfig(
   loadStaticConfig,
   DEFAULT_MODERATION_ENDPOINTS,
-  console
+  { error: (...args) => moderateConsoleObj.error(...args) }
 );
 
 const errorBeaconHandlers = errorBeacon.createErrorBeaconHandlers({
@@ -108,7 +109,7 @@ const errorBeaconHandlers = errorBeacon.createErrorBeaconHandlers({
       : '';
   },
   getNow: () => Date.now(),
-  logError: console.error.bind(console),
+  logError: (...args) => moderateConsoleObj.error(...args),
 });
 
 /**
@@ -310,7 +311,7 @@ export async function loadVariant(retried = false) {
     if (shouldRetryLoad(err, retried)) {
       await retryLoadVariant();
     } else {
-      console.error(err);
+      moderateConsoleObj.error(err);
     }
   } finally {
     stopFetching();
@@ -360,7 +361,7 @@ async function submitRatingWithPermission(permission, isApproved) {
     await loadVariant();
   } catch (err) {
     stopSaving();
-    console.error(err);
+    moderateConsoleObj.error(err);
     alert("Sorry, that didn't work. See console for details.");
     toggleApproveReject(false);
   }
@@ -474,6 +475,7 @@ export const authedFetch = createAuthedFetch({
  *   bindEffectBoundary: (handler: (permission: import('../../../types/allow-effects').AllowEffects) => Promise<unknown>) => Promise<unknown>,
  *   sessionStorageObj: Storage,
  *   globalObject: typeof globalThis,
+ *   consoleObj: {warn: (...args: unknown[]) => void, error: (...args: unknown[]) => void},
  * }} deps Browser globals.
  * @returns {() => void} Entry handle.
  */
@@ -484,6 +486,7 @@ export function createModerateHandle(deps = {}) {
   moderateBindEffectBoundary = deps.bindEffectBoundary;
   moderateSessionStorage = deps.sessionStorageObj;
   moderateGlobalObject = deps.globalObject;
+  moderateConsoleObj = deps.consoleObj ?? { warn() {}, error() {} };
   initGoogleSignInHandler = undefined;
   signOutHandler = undefined;
 

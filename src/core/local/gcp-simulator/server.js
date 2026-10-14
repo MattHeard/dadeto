@@ -90,10 +90,11 @@ export const handle = startServer;
 
 /**
  * Start the local simulator server.
- * @param {{ express: Parameters<typeof createJsonExpressAppDeps>[0], simulator?: Promise<LocalGcpSimulator>, createSimulator: (options: object) => Promise<object>, bindStartupEffectBoundary: import('../../../../types/allow-effects').StartupAllowEffectsBoundary, useMiddleware: (permission: import('../../../../types/allow-effects').AllowEffects, app: import('../../../../types/native-http').NativeExpressApp, middleware: unknown) => void }} deps Runtime dependencies.
+ * @param {{ express: Parameters<typeof createJsonExpressAppDeps>[0], simulator?: Promise<LocalGcpSimulator>, createSimulator: (options: object) => Promise<object>, bindStartupEffectBoundary: import('../../../../types/allow-effects').StartupAllowEffectsBoundary, useMiddleware: (permission: import('../../../../types/allow-effects').AllowEffects, app: import('../../../../types/native-http').NativeExpressApp, middleware: unknown) => void, log: (message: string) => void }} deps Runtime dependencies.
  * @returns {Promise<import('node:http').Server>} Server instance.
  */
 async function startServer(deps) {
+  const log = deps.log;
   const express = deps.express;
   const simulator = /** @type {LocalGcpSimulator} */ (
     await (deps.simulator ?? getSimulatorPromise(deps.createSimulator))
@@ -155,18 +156,19 @@ async function startServer(deps) {
   );
   app.use(express.static(simulator.publicDir));
 
-  return new Promise(resolve => beginListening(app, resolve));
+  return new Promise(resolve => beginListening(app, resolve, log));
 }
 
 /**
  * Initiate listening after route setup and resolve only from the ready callback.
  * @param {ReturnType<typeof createJsonExpressApp>} app Configured application.
  * @param {(server: import('node:http').Server) => void} resolve Server resolver.
+ * @param {(message: string) => void} log Startup logger.
  * @returns {void}
  */
-function beginListening(app, resolve) {
+function beginListening(app, resolve, log) {
   const server = app.listen(port, () =>
-    resolveListeningServer(server, port, resolve)
+    resolveListeningServer(server, port, resolve, log)
   );
 }
 
@@ -175,13 +177,14 @@ function beginListening(app, resolve) {
  * @param {import('node:http').Server} server Listening server.
  * @param {number} fallbackPort Fallback port.
  * @param {(server: import('node:http').Server) => void} resolve Server resolver.
+ * @param {(message: string) => void} log Startup logger.
  * @returns {void}
  */
-function resolveListeningServer(server, fallbackPort, resolve) {
+function resolveListeningServer(server, fallbackPort, resolve, log) {
   const address = server.address();
   const actualPort =
     address && typeof address === 'object' ? address.port : fallbackPort;
-  console.log(`gcp simulator listening on http://127.0.0.1:${actualPort}`);
+  log(`gcp simulator listening on http://127.0.0.1:${actualPort}`);
   resolve(server);
 }
 

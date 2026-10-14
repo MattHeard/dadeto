@@ -18,6 +18,7 @@ const deps = {
   },
   closeErrorLabel: 'close failed',
   exitErrorLabel: 'exit failed',
+  logError: (...args) => console.error(...args),
 };
 
 test('covers resolver branches and rejected log closures', async () => {
@@ -28,6 +29,11 @@ test('covers resolver branches and rejected log closures', async () => {
       stdoutHandle: { close: () => Promise.reject(new Error('stdout')) },
       stderrHandle: { close: () => Promise.reject(new Error('stderr')) },
     },
+    'close failed',
+    (...args) => console.error(...args)
+  );
+  await closeRunLogHandles(
+    { stdoutHandle: { close: () => Promise.reject(new Error('stdout')) } },
     'close failed'
   );
 
@@ -61,6 +67,29 @@ test('covers resolver branches and rejected log closures', async () => {
     },
   });
   await exitHandler(1, 'SIGTERM');
+  await new Promise(resolve => setImmediate(resolve));
+  let fallbackExitHandler;
+  const fallbackLoggerLauncher = createDetachedProcessLauncher({
+    ...deps,
+    logError: undefined,
+    command: 'codex',
+    args: [],
+    spawnImpl: () => ({
+      pid: 3,
+      once: (event, handler) => {
+        if (event === 'exit') fallbackExitHandler = handler;
+      },
+      unref: () => {},
+    }),
+  });
+  await fallbackLoggerLauncher.launch({
+    repoRoot: '/repo',
+    runId: 'run-fallback-logger',
+    onExit: async () => {
+      throw new Error('fallback exit hook');
+    },
+  });
+  await fallbackExitHandler(1, null);
   await new Promise(resolve => setImmediate(resolve));
   const explicitLogDirLauncher = createDetachedProcessLauncher({
     ...deps,

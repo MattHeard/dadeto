@@ -204,6 +204,7 @@ describe('local symphony runner exit handling', () => {
         readStatus: async () => null,
         writeStatus: async () => {},
       },
+      logger: console,
       bindEffectBoundary: handler => handler(TEST_PERMISSION),
     });
     await missingHandler({ exitCode: 0, signal: null });
@@ -222,6 +223,7 @@ describe('local symphony runner exit handling', () => {
         readStatus: async () => ({ state: 'running' }),
         writeStatus,
       },
+      logger: console,
       bindEffectBoundary: handler => handler(TEST_PERMISSION),
     });
     await handler({ exitCode: 0, signal: null });
@@ -238,6 +240,7 @@ describe('local symphony runner exit handling', () => {
           throw new Error('write failed');
         },
       },
+      logger: console,
       bindEffectBoundary: handler => handler(TEST_PERMISSION),
     });
     await failedHandler({ exitCode: 1, signal: null });

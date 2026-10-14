@@ -15,6 +15,7 @@ export function createNotionCodexLauncher(options = {}) {
     mkdirImpl: (_permission, ...args) => mkdirImpl(...args),
     openImpl: (_permission, ...args) => openImpl(...args),
     spawnImpl: (_permission, ...args) => spawnImpl(...args),
+    logError: options.logError ?? console.error.bind(console),
     bindEffectBoundary,
     pathModule: path,
   });

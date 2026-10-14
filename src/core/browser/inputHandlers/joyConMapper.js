@@ -48,6 +48,7 @@ const AXIS_THRESHOLD = 0.55;
 const AXIS_DELTA_THRESHOLD = 0.18;
 const BUTTON_THRESHOLD = 0.65;
 const EMPTY_MAPPER_STATE = { mappings: {}, skippedControls: [] };
+const NOOP_LOG = () => {};
 
 const CONTROLS = /** @type {MapperControl[]} */ ([
   { key: 'l', label: 'L', type: 'button' },
@@ -213,7 +214,11 @@ function initializeWebHidCapture(state, disposers) {
         if (event.device) {
           state.hidDevices.push(event.device);
         }
-        logHidDeviceEvent('connected', event.device);
+        logHidDeviceEvent(
+          'connected',
+          event.device,
+          state.dom?.log ?? NOOP_LOG
+        );
         renderPrompt(state);
         renderMeta(state);
       }
@@ -226,7 +231,11 @@ function initializeWebHidCapture(state, disposers) {
               device => device !== event.device
             );
           }
-          logHidDeviceEvent('disconnected', event.device);
+          logHidDeviceEvent(
+            'disconnected',
+            event.device,
+            state.dom?.log ?? NOOP_LOG
+          );
           renderPrompt(state);
           renderMeta(state);
         }
@@ -246,7 +255,9 @@ function initializeWebHidCapture(state, disposers) {
      */
     devices => {
       state.hidDevices = devices;
-      devices.forEach(device => logHidDeviceEvent('available', device));
+      devices.forEach(device =>
+        logHidDeviceEvent('available', device, state.dom?.log ?? NOOP_LOG)
+      );
       devices.forEach(device =>
         attachHidDeviceListener(state, disposers, device)
       );
@@ -311,7 +322,7 @@ async function openGrantedJoyConDevice(state, disposers, device) {
     state.hidDevices.push(device);
   }
 
-  logHidDeviceEvent('connected', device);
+  logHidDeviceEvent('connected', device, state.dom?.log ?? NOOP_LOG);
   attachHidDeviceListener(state, disposers, device);
 }
 
@@ -333,7 +344,7 @@ function attachHidDeviceListener(state, disposers, device) {
 
   const handler = /** @type {(event: HidInputReportEventLike) => void} */ (
     event => {
-      logHidReportEvent(device, event);
+      logHidReportEvent(device, event, state.dom?.log ?? NOOP_LOG);
       updateHidSnapshot(state, snapshotHidInputReport(event));
     }
   );
@@ -535,12 +546,14 @@ function readJoyConAxes(hatByte) {
  *   HID device that emitted the report.
  * @param {HidInputReportEventLike} event
  *   Raw input report event.
+ * @param {(...args: unknown[]) => void} log
+ *   Injected logger.
  * @returns {void}
  *   Writes a concise debug line.
  */
-function logHidReportEvent(device, event) {
+function logHidReportEvent(device, event, log) {
   const bytes = readHidReportBytes(event);
-  console.log('[joyConMapper:webhid]', 'report', {
+  log('[joyConMapper:webhid]', 'report', {
     productName: device.productName,
     vendorId: device.vendorId,
     productId: device.productId,
@@ -626,15 +639,17 @@ function resolveHatYAxis(hat) {
  *   Device state to report.
  * @param {HidDeviceLike | null | undefined} device
  *   HID device being observed.
+ * @param {(...args: unknown[]) => void} log
+ *   Injected logger.
  * @returns {void}
  *   Writes a structured console log when a device exists.
  */
-function logHidDeviceEvent(status, device) {
+function logHidDeviceEvent(status, device, log) {
   if (!device) {
     return;
   }
 
-  console.log('[joyConMapper:webhid]', status, {
+  log('[joyConMapper:webhid]', status, {
     vendorId: device.vendorId,
     productId: device.productId,
     productName: device.productName,

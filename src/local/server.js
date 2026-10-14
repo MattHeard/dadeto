@@ -26,6 +26,8 @@ const handle = createLocalServerRuntime({
   formatListenErrorMessage,
   getWriterUrl,
   isWriterRequestLogEnabled,
+  consoleLog: message => console.log(message),
+  consoleError: message => console.error(message),
 }).runLocalServer;
 
 export { handle };

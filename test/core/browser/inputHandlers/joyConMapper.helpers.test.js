@@ -569,6 +569,7 @@ describe('joyConMapper WebHID availability', () => {
     const removeEventListener = jest.fn();
     const state = {
       dom: {
+        log: (...args) => logSpy(...args),
         globalThis: {
           navigator: {
             hid: { getDevices, addEventListener, removeEventListener },
@@ -629,6 +630,7 @@ describe('joyConMapper WebHID availability', () => {
     const logSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
     const state = {
       dom: {
+        log: (...args) => logSpy(...args),
         globalThis: {
           navigator: {
             hid: {
@@ -815,7 +817,10 @@ describe('joyConMapper granted-device opening', () => {
     const open = jest.fn(() => Promise.resolve());
     const device = { open, opened: false };
     const logSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
-    const state = { hidDevices: [] };
+    const state = {
+      hidDevices: [],
+      dom: { log: (...args) => logSpy(...args) },
+    };
 
     await openGrantedJoyConDevice(state, [], null);
     await openGrantedJoyConDevice(state, [], device);
@@ -845,7 +850,10 @@ describe('joyConMapper granted-device opening', () => {
     const open = jest.fn(() => Promise.resolve());
     const device = { open, opened: false };
     const logSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
-    const state = { hidDevices: [device] };
+    const state = {
+      hidDevices: [device],
+      dom: { log: (...args) => logSpy(...args) },
+    };
 
     await openGrantedJoyConDevice(state, [], device);
 
@@ -1135,9 +1143,9 @@ describe('joyConMapper HID report snapshots', () => {
   });
 
   it('logs HID lifecycle events only when a device exists', () => {
-    const log = jest.spyOn(console, 'log').mockImplementation(() => {});
+    const log = jest.fn();
 
-    logHidDeviceEvent('connected', null);
+    logHidDeviceEvent('connected', null, log);
     expect(log).not.toHaveBeenCalled();
 
     const device = {
@@ -1145,7 +1153,7 @@ describe('joyConMapper HID report snapshots', () => {
       vendorId: 0x057e,
       productId: 0x2006,
     };
-    logHidDeviceEvent('connected', device);
+    logHidDeviceEvent('connected', device, log);
     expect(log).toHaveBeenCalledWith('[joyConMapper:webhid]', 'connected', {
       productName: 'Joy-Con',
       vendorId: 0x057e,
@@ -1153,15 +1161,15 @@ describe('joyConMapper HID report snapshots', () => {
       collections: 0,
       opened: undefined,
     });
-    log.mockRestore();
   });
 
   it('logs HID report bytes with the report label', () => {
-    const log = jest.spyOn(console, 'log').mockImplementation(() => {});
+    const log = jest.fn();
 
     logHidReportEvent(
       { productName: 'Joy-Con', vendorId: 0x057e, productId: 0x2006 },
-      { data: { buffer: new Uint8Array([1, 2]).buffer } }
+      { data: { buffer: new Uint8Array([1, 2]).buffer } },
+      log
     );
 
     expect(log).toHaveBeenCalledWith('[joyConMapper:webhid]', 'report', {
@@ -1170,7 +1178,6 @@ describe('joyConMapper HID report snapshots', () => {
       productId: 0x2006,
       bytes: [1, 2],
     });
-    log.mockRestore();
   });
 });
 

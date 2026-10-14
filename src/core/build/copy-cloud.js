@@ -2098,12 +2098,7 @@ export async function createCopyCloudHandle(deps) {
 
   const io = createAsyncFsAdapters(deps.fsPromisesModule);
 
-  const logger = deps.logger ?? {
-    /** @param {string} message Message to print. */
-    info(message) {
-      console.log(message);
-    },
-  };
+  const logger = deps.logger ?? { info() {} };
 
   const { runCopyToInfra } = createCopyToInfraCore({
     projectRoot,

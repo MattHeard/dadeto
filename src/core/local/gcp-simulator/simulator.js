@@ -41,7 +41,7 @@ import {
   createSimulatorSearchHttpResponseEffectAdapters,
   setSimulatorHttpResponseHeader,
   sendSimulatorHttpResponse,
-  logSimulatorRenderContentsError,
+  createSimulatorRenderContentsErrorLogger,
 } from './http-response-effects.js';
 
 const LOCAL_RUNNER_SCHEDULE = [
@@ -66,7 +66,7 @@ const LOCAL_ID_TOKEN = 'local-admin-token';
 /** @typedef {ReturnType<typeof createFakeFirestore>} SimulatorDb */
 /** @typedef {Parameters<typeof createApplyCreditEvent>[1]} CreditEventEffects */
 /** @typedef {(db: Parameters<typeof createFetchCredit>[0]) => CreditEventEffects} CreditEventEffectAdapterFactory */
-/** @typedef {{baseUrl: string, bucketName: string, projectId: string, publicDir: string}} SimulatorRuntimeConfig */
+/** @typedef {{baseUrl: string, bucketName: string, projectId: string, publicDir: string, consoleObj: {error?: (...args: unknown[]) => void}}} SimulatorRuntimeConfig */
 /** @typedef {(db: import('firebase-admin/firestore').Firestore) => {set: (permission: import('../../../../types/allow-effects').AllowEffects, reference: object, data: object) => unknown, update: (permission: import('../../../../types/allow-effects').AllowEffects, reference: object, data: object) => unknown, commit: (permission: import('../../../../types/allow-effects').AllowEffects) => Promise<unknown>}} CreateSubmissionBatch */
 /** @typedef {{bindEffectBoundary?: import('../../../../types/allow-effects').AllowEffectsBoundary, saveStorageFile?: (permission: import('../../../../types/allow-effects').AllowEffects, file: object, contents: string, options: object) => Promise<unknown>, updateFirestoreDocument?: (permission: import('../../../../types/allow-effects').AllowEffects, reference: { update: (data: Record<string, unknown>) => Promise<unknown> }, data: Record<string, unknown>) => Promise<unknown>, setFirestoreDocument?: (permission: import('../../../../types/allow-effects').AllowEffects, reference: { set: (data: Record<string, unknown>) => Promise<unknown> }, data: Record<string, unknown>) => Promise<unknown>, createSubmissionBatch?: CreateSubmissionBatch, createCreditEventEffectAdapters?: CreditEventEffectAdapterFactory}} SimulatorEffects */
 /** @typedef {{bindEffectBoundary: import('../../../../types/allow-effects').AllowEffectsBoundary, updateFirestoreDocument: NonNullable<SimulatorEffects['updateFirestoreDocument']>, setFirestoreDocument: NonNullable<SimulatorEffects['setFirestoreDocument']>, createSubmissionBatch: CreateSubmissionBatch, createCreditEventEffectAdapters: CreditEventEffectAdapterFactory}} RequiredSimulatorEffects */
@@ -101,6 +101,7 @@ const LOCAL_ID_TOKEN = 'local-admin-token';
  *   setFirestoreDocument?: (permission: import('../../../../types/allow-effects').AllowEffects, reference: { set: (data: Record<string, unknown>) => Promise<unknown> }, data: Record<string, unknown>) => Promise<unknown>,
  *   createSubmissionBatch?: CreateSubmissionBatch,
  *   createCreditEventEffectAdapters?: CreditEventEffectAdapterFactory,
+ *   consoleObj?: {error?: (...args: unknown[]) => void},
  * }} [options] Simulator options.
  * @returns {Promise<object>} Simulator instance.
  */
@@ -116,6 +117,7 @@ export async function createLocalGcpSimulator(options = {}) {
     setFirestoreDocument,
     createSubmissionBatch,
     createCreditEventEffectAdapters,
+    consoleObj = {},
   } = options;
 
   return createLocalGcpSimulatorRuntime({
@@ -129,6 +131,7 @@ export async function createLocalGcpSimulator(options = {}) {
     setFirestoreDocument,
     createSubmissionBatch,
     createCreditEventEffectAdapters,
+    consoleObj,
   });
 }
 
@@ -145,6 +148,7 @@ export async function createLocalGcpSimulator(options = {}) {
  *   setFirestoreDocument?: (permission: import('../../../../types/allow-effects').AllowEffects, reference: { set: (data: Record<string, unknown>) => Promise<unknown> }, data: Record<string, unknown>) => Promise<unknown>,
  *   createSubmissionBatch?: CreateSubmissionBatch,
  *   createCreditEventEffectAdapters?: CreditEventEffectAdapterFactory,
+ *   consoleObj: {error?: (...args: unknown[]) => void},
  * }} config Simulator configuration.
  * @returns {Promise<object>} Simulator instance.
  */
@@ -156,6 +160,7 @@ async function createLocalGcpSimulatorRuntime(config) {
         bucketName: config.bucketName,
         projectId: config.projectId,
         publicDir: config.publicDir,
+        consoleObj: config.consoleObj,
       },
       {
         bindEffectBoundary: config.bindEffectBoundary,
@@ -476,7 +481,7 @@ async function buildSimulatorState(runtime, effects) {
     bindEffectBoundary,
     setHttpResponseHeader: setSimulatorHttpResponseHeader,
     sendHttpResponse: sendSimulatorHttpResponse,
-    logError: logSimulatorRenderContentsError,
+    logError: createSimulatorRenderContentsErrorLogger(runtime.consoleObj),
     effectFetchFn: (
       /** @type {import('../../../../types/allow-effects').AllowEffects} */ permission,
       /** @type {string} */ url,
@@ -580,7 +585,8 @@ async function buildSimulatorState(runtime, effects) {
   const { getApiKeyCreditV2, paymentWebhook } = createCreditApiHandlers(
     db,
     createCreditEventEffectAdapters,
-    setFirestoreDocument
+    setFirestoreDocument,
+    runtime.consoleObj
   );
   const env = process.env;
   const search = createObjectMinuteRentalSearch({
@@ -675,12 +681,14 @@ async function buildSimulatorState(runtime, effects) {
  * @param {SimulatorDb} db Local Firestore database.
  * @param {CreditEventEffectAdapterFactory} createCreditEventEffectAdapters Permission-first transaction adapter factory.
  * @param {(permission: import('../../../../types/allow-effects').AllowEffects, reference: { set: (data: Record<string, unknown>) => Promise<unknown> }, data: Record<string, unknown>) => Promise<unknown>} setFirestoreDocument Permission-first persistence adapter.
+ * @param {{error?: (...args: unknown[]) => void}} consoleObj Injected simulator logger.
  * @returns {{getApiKeyCreditV2: ReturnType<typeof createGetApiKeyCreditV2Handler>, paymentWebhook: ReturnType<typeof createPaymentWebhookHandler>}} Credit handlers.
  */
 function createCreditApiHandlers(
   db,
   createCreditEventEffectAdapters,
-  setFirestoreDocument
+  setFirestoreDocument,
+  consoleObj
 ) {
   const creditDb = /** @type {Parameters<typeof createFetchCredit>[0]} */ (
     /** @type {unknown} */ (db)
@@ -694,7 +702,7 @@ function createCreditApiHandlers(
     getUuid: extractUuid,
     logError: (permission, error) => {
       void permission;
-      console.error(error);
+      consoleObj.error?.(error);
     },
   });
   const paymentWebhook = createPaymentWebhookHandler({

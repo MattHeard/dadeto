@@ -5,6 +5,7 @@ const handle = createDocumentHandle({
   windowObj: window,
   globalThisObj: globalThis,
   navigatorObj: navigator,
+  consoleObj: console,
 });
 
 export const {

@@ -37,11 +37,7 @@ export function createModerationEndpointsPromise(
   options = {}
 ) {
   const defaults = options.defaults ?? DEFAULT_MODERATION_ENDPOINTS;
-  const logger = options.logger || {
-    error(message, error) {
-      console.error(message, error);
-    },
-  };
+  const logger = options.logger || { error() {} };
   if (typeof loadStaticConfigFn !== 'function') {
     return Promise.resolve({ ...defaults });
   }

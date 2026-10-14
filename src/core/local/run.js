@@ -48,8 +48,8 @@ export function createLocalServerRuntime(deps) {
  */
 function createLoggers(deps) {
   return {
-    log: resolveLogger(deps.consoleLog, console.log),
-    errorLog: resolveLogger(deps.consoleError, console.error),
+    log: resolveLogger(deps.consoleLog),
+    errorLog: resolveLogger(deps.consoleError),
   };
 }
 
@@ -170,9 +170,8 @@ export function getErrorCode(error) {
 
 /**
  * @param {((message: string) => void) | undefined} candidate Logger candidate.
- * @param {(message: string) => void} fallback Logger fallback.
  * @returns {(message: string) => void} Resolved logger.
  */
-function resolveLogger(candidate, fallback) {
-  return candidate || fallback;
+function resolveLogger(candidate) {
+  return candidate || (() => {});
 }

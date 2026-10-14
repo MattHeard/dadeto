@@ -186,7 +186,7 @@ describe('createModerationEndpointsPromise', () => {
     expect(result).toEqual(DEFAULT_MODERATION_ENDPOINTS);
   });
 
-  it('uses the default console logger when no logger is provided', async () => {
+  it('does not log through a hidden console when no logger is provided', async () => {
     const consoleSpy = jest
       .spyOn(console, 'error')
       .mockImplementation(() => {});
@@ -194,10 +194,7 @@ describe('createModerationEndpointsPromise', () => {
 
     await createModerationEndpointsPromise(loadStaticConfig);
 
-    expect(consoleSpy).toHaveBeenCalledWith(
-      'Failed to load moderation endpoints, falling back to defaults.',
-      expect.any(Error)
-    );
+    expect(consoleSpy).not.toHaveBeenCalled();
     consoleSpy.mockRestore();
   });
 });

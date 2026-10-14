@@ -23,6 +23,7 @@ const GAMEPAD_FORM_CLASS = browserCore.GAMEPAD_CAPTURE_FORM_SELECTOR.slice(1);
 const AXIS_EPSILON = 0.01;
 const GAMEPAD_CONNECTED_EVENT = 'gamepadconnected';
 const GAMEPAD_DISCONNECTED_EVENT = 'gamepaddisconnected';
+const NOOP_LOG = () => {};
 
 /**
  * Update the capture button label.
@@ -719,7 +720,7 @@ function handleGamepadLifecycleEvent(options, event, config) {
   }
 
   const gamepad = /** @type {Gamepad} */ (getEventGamepad(event));
-  logGamepadEvent(config.status, gamepad);
+  logGamepadEvent(config.status, gamepad, options.dom.log ?? NOOP_LOG);
   config.applyLifecycle(gamepad);
   syncToyPayload(
     createCaptureToyInput(options),
@@ -749,15 +750,17 @@ function getHandledGamepadPayload(options, event, type) {
  *   Event status to report.
  * @param {Gamepad | null} gamepad
  *   Gamepad associated with the lifecycle event.
+ * @param {(...args: unknown[]) => void} log
+ *   Injected logger.
  * @returns {void}
  *   Writes a console log when a gamepad exists.
  */
-function logGamepadEvent(status, gamepad) {
+function logGamepadEvent(status, gamepad, log) {
   if (!gamepad) {
     return;
   }
 
-  console.log('[gamepadCapture]', status, {
+  log('[gamepadCapture]', status, {
     index: gamepad.index,
     id: gamepad.id,
     mapping: gamepad.mapping,

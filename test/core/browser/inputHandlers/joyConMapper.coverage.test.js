@@ -679,6 +679,7 @@ it('covers WebHID connect and disconnect listener registration', async () => {
     hidSnapshot: null,
   };
   const logSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
+  dom.log = (...args) => logSpy(...args);
 
   initializeWebHidCapture(state, disposers);
   await Promise.resolve();

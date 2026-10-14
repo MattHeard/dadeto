@@ -40,6 +40,7 @@ it('logs through the real DOM facade without recursion after repeated initializa
     windowObj,
     globalThisObj: globalThis,
     navigatorObj: window.navigator,
+    consoleObj: console,
   });
   const initialize = () =>
     createMainHandle({

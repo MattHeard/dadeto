@@ -26,6 +26,7 @@ import path from 'node:path';
  *   spawnImpl?: typeof spawn,
  *   rootDir?: string,
  *   mutateTargetDir?: string,
+ *   log?: (message: string) => void,
  * }} [options] Runner dependencies.
  * @returns {() => Promise<void>} Runner handle.
  */
@@ -46,6 +47,7 @@ export function createRunStrykerWorktreeHandle(options = {}) {
     BEADS_NO_DAEMON: '1',
   };
   const reusedWorktreePath = processModule.env.STRYKER_REUSE_WORKTREE_PATH;
+  const log = options.log ?? (() => {});
 
   return async () => {
     if (!reusedWorktreePath) {
@@ -129,7 +131,7 @@ export function createRunStrykerWorktreeHandle(options = {}) {
         from: reportSource,
         to: reportTarget,
       });
-      console.log(
+      log(
         `Synced mutation reports to ${pathModule.relative(mainRoot, reportTarget)}`
       );
     } finally {

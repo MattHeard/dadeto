@@ -157,12 +157,41 @@ describe('core local run', () => {
 });
 
 describe('core local run logging and errors', () => {
+  test('uses no-op loggers when no console dependencies are provided', () => {
+    const listen = jest.fn((_port, callback) => callback());
+    const on = jest.fn((event, handler) => {
+      if (event === 'error') handler({ code: 'EACCES' });
+    });
+    const runtime = createLocalServerRuntime({
+      createLocalApp: jest.fn(() => 'app'),
+      createWriterServer: jest.fn(() => ({ listen, on })),
+      formatListenErrorMessage: jest.fn(() => 'permission denied'),
+      getWriterUrl: jest.fn(() => 'http://example/writer/'),
+      isWriterRequestLogEnabled: jest.fn(() => false),
+    });
+
+    runtime.runLocalServer({
+      env: {},
+      port: 4321,
+      store: {},
+      publicDir: '/public',
+      writerDir: '/writer',
+      exchangeRealtimeCallSdp: jest.fn(),
+      getNonCoreThinStatus: jest.fn(),
+      renderNonCoreThinDashboard: jest.fn(),
+    });
+
+    expect(listen).toHaveBeenCalled();
+    expect(process.exitCode).toBe(1);
+    process.exitCode = undefined;
+  });
+
   test('returns no code for non-object and code-less errors', () => {
     expect(getErrorCode(null)).toBeNull();
     expect(getErrorCode({ message: 'boom' })).toBeNull();
   });
 
-  test('falls back to the built-in console logger when one is not injected', () => {
+  test('uses an injected logger for server startup messages', () => {
     const consoleLog = jest.spyOn(console, 'log').mockImplementation(() => {});
     const listen = jest.fn((_port, cb) => cb());
     const on = jest.fn();
@@ -172,6 +201,7 @@ describe('core local run logging and errors', () => {
       formatListenErrorMessage: jest.fn(),
       getWriterUrl: jest.fn(() => 'http://example/writer/'),
       isWriterRequestLogEnabled: jest.fn(() => false),
+      consoleLog: message => console.log(message),
     });
 
     runtime.runLocalServer({

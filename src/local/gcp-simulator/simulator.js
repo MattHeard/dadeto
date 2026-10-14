@@ -40,6 +40,7 @@ export async function createLocalGcpSimulator(options) {
       createCreditEventEffectAdapters,
       updateFirestoreDocument,
       createSubmissionBatch,
+      consoleObj: console,
     })
   );
   simulator.routes.submitNewStory = bindEffectResponder(simulator.routes.submitNewStory);

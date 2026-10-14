@@ -311,6 +311,7 @@ describe('gamepad capture events', () => {
     const previousCancelAnimationFrame = globalThis.cancelAnimationFrame;
     const previousNavigator = globalThis.navigator;
     const logSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
+    dom.log = (...args) => logSpy(...args);
     Object.assign(globalThis, {
       addEventListener: globals.addEventListener,
       removeEventListener: globals.removeEventListener,

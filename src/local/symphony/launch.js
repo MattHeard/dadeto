@@ -8,6 +8,7 @@ const coreHandle = createSymphonyLaunchHandle();
 export function launchSelectedRunnerLoop(options = {}) {
   return coreHandle.launchSelectedRunnerLoop({
     ...options,
+    logger: options.logger ?? console,
     cwd: options.cwd ?? (() => process.cwd()),
     mkdirImpl: (_permission, ...args) => mkdir(...args),
     openImpl: (_permission, ...args) => open(...args),
@@ -17,7 +18,7 @@ export function launchSelectedRunnerLoop(options = {}) {
 }
 
 export function createRunnerExitHandler(options) {
-  return coreHandle.createRunnerExitHandler({ ...options, bindEffectBoundary });
+  return coreHandle.createRunnerExitHandler({ ...options, logger: options.logger ?? console, bindEffectBoundary });
 }
 
 export const handle = {

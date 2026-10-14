@@ -39,8 +39,23 @@ export function createSimulatorSearchHttpResponseEffectAdapters(response) {
   };
 }
 
-/** @type {(permission: import('../../../../types/allow-effects').AllowEffects, message: string, error?: unknown) => void} */
-export function logSimulatorRenderContentsError(permission, message, error) {
+/** @type {(permission: import('../../../../types/allow-effects').AllowEffects, message: string, error?: unknown, logger?: {error?: (...args: unknown[]) => void}) => void} */
+export function logSimulatorRenderContentsError(
+  permission,
+  message,
+  error,
+  logger
+) {
   void permission;
-  console.error?.(message, error);
+  logger?.error?.(message, error);
+}
+
+/**
+ * Create the renderer's permission-aware error logger for a supplied console.
+ * @param {{error?: (...args: unknown[]) => void}} logger Error logger.
+ * @returns {(permission: import('../../../../types/allow-effects').AllowEffects, message: string, error?: unknown) => void} Permission-aware logger.
+ */
+export function createSimulatorRenderContentsErrorLogger(logger) {
+  return (permission, message, error) =>
+    logSimulatorRenderContentsError(permission, message, error, logger);
 }

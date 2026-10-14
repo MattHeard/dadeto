@@ -9,6 +9,7 @@ const handle = createModerateHandle({
   bindEffectBoundary,
   sessionStorageObj: sessionStorage,
   globalObject: globalThis,
+  consoleObj: console,
 });
 
 handle();
