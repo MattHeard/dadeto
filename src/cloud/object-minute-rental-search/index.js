@@ -12,6 +12,7 @@ import {
   createSearchStartupResources,
 } from './effect-adapters.js';
 import { createFirestoreRunnerCommitmentsRepository } from './runner-commitments-repository.js';
+import { createFirestoreRunnerCommitmentProjectionReader } from './runner-commitment-projection-reader.js';
 import { SOPHIE_CHARLOTTE_SERVICE_AREA } from '../../core/object-minute-rental-search/service-area.js';
 import { Storage } from '@google-cloud/storage';
 import { createGcsRunnerScheduleProvider } from './runner-schedule-provider.js';
@@ -24,7 +25,10 @@ const { db, storage } = createSearchStartupResources(
 );
 
 const env = process.env;
-const runnerCommitmentsRepository = createFirestoreRunnerCommitmentsRepository({ db });
+const runnerCommitmentsRepository =
+  env.RUNNER_COMMITMENT_PROJECTION_ENABLED === 'true'
+    ? createFirestoreRunnerCommitmentProjectionReader({ db })
+    : createFirestoreRunnerCommitmentsRepository({ db });
 const runnerScheduleProvider = createGcsRunnerScheduleProvider({ storage, bucketName: env.SEARCH_SCHEDULE_BUCKET, objectName: env.SEARCH_SCHEDULE_OBJECT });
 const search = createObjectMinuteRentalSearch({ runnerCommitmentsRepository, runnerId: env.SEARCH_RUNNER_ID ?? DEFAULT_RUNNER_ID, serviceArea: SOPHIE_CHARLOTTE_SERVICE_AREA });
 const handleRequest = createSearchHttpHandler({
@@ -39,3 +43,4 @@ const handle = createEffectHttpBoundary((allowEffects, req, res) =>
   handleRequest(allowEffects, req, res)
 );
 export { handle, createSearchHttpHandler };
+export * from './runner-commitment-projection-entrypoints.js';

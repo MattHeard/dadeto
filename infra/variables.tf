@@ -154,6 +154,12 @@ variable "billing_enabled" {
   default     = false
 }
 
+variable "enable_runner_commitment_projection" {
+  description = "Whether object-minute rental search reads from the backfilled runner commitment projection"
+  type        = bool
+  default     = false
+}
+
 variable "create_default_firestore_database" {
   description = "Whether Terraform should attempt to create the default Firestore database when managing project-level resources"
   type        = bool

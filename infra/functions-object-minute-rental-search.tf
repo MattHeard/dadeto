@@ -53,16 +53,18 @@ resource "google_cloudfunctions2_function" "object_minute_rental_search" {
     max_instance_count    = 20
     service_account_email = local.cloud_function_runtime_service_account_email
     environment_variables = merge(local.cloud_function_environment, {
-      SEARCH_DELIVERY_OUTBOUND_SECONDS = "2700"
-      SEARCH_PROCUREMENT_SECONDS       = "1800"
-      SEARCH_PICKUP_RETURN_SECONDS     = "2700"
-      SEARCH_SUPPLIER_START            = "07:00"
-      SEARCH_SUPPLIER_END              = "17:00"
-      SEARCH_RUNNER_ID                 = "RUNNER-1"
-      SEARCH_SCHEDULE_BUCKET           = google_storage_bucket.object_minute_rental_schedule.name
-      SEARCH_SCHEDULE_OBJECT           = google_storage_bucket_object.object_minute_rental_schedule.name
-      SEARCH_SUPPLIER_TIME_ZONE        = "Europe/Berlin"
-      SEARCH_ALLOWED_ORIGINS           = "https://mattheard.net"
+      SEARCH_DELIVERY_OUTBOUND_SECONDS     = "2700"
+      SEARCH_PROCUREMENT_SECONDS           = "1800"
+      SEARCH_PICKUP_RETURN_SECONDS         = "2700"
+      SEARCH_SUPPLIER_START                = "07:00"
+      SEARCH_SUPPLIER_END                  = "17:00"
+      SEARCH_RUNNER_ID                     = "RUNNER-1"
+      SEARCH_SCHEDULE_BUCKET               = google_storage_bucket.object_minute_rental_schedule.name
+      SEARCH_SCHEDULE_OBJECT               = google_storage_bucket_object.object_minute_rental_schedule.name
+      SEARCH_SUPPLIER_TIME_ZONE            = "Europe/Berlin"
+      SEARCH_ALLOWED_ORIGINS               = "https://mattheard.net"
+      FUNCTION_REGION                      = var.region
+      RUNNER_COMMITMENT_PROJECTION_ENABLED = tostring(var.enable_runner_commitment_projection)
     })
   }
 
@@ -83,4 +85,52 @@ resource "google_cloud_run_service_iam_member" "object_minute_rental_search_publ
 output "object_minute_rental_search_url" {
   description = "Test-environment URL for the read-only object-minute rental search function"
   value       = google_cloudfunctions2_function.object_minute_rental_search.service_config[0].uri
+}
+
+locals {
+  runner_commitment_projection_triggers = {
+    assignment = {
+      entry_point   = "refreshRunnerCommitmentOnAssignment"
+      document_path = "runner_assignments/{assignmentId}"
+    }
+    segment = {
+      entry_point   = "refreshRunnerCommitmentOnSegment"
+      document_path = "segments/{segmentId}"
+    }
+    point = {
+      entry_point   = "refreshRunnerCommitmentOnPoint"
+      document_path = "spacetime_points/{pointId}"
+    }
+  }
+}
+
+resource "google_cloudfunctions_function" "runner_commitment_projection_trigger" {
+  for_each    = local.runner_commitment_projection_triggers
+  name        = "${var.environment}-runner-commitment-${each.key}"
+  runtime     = var.cloud_functions_runtime
+  region      = var.region
+  entry_point = each.value.entry_point
+
+  source_archive_bucket = google_storage_bucket.gcf_source_bucket.name
+  source_archive_object = google_storage_bucket_object.object_minute_rental_search_zip.name
+  service_account_email = local.cloud_function_runtime_service_account_email
+
+  environment_variables = merge(local.cloud_function_environment, {
+    FUNCTION_REGION = var.region
+  })
+
+  event_trigger {
+    event_type = "providers/cloud.firestore/eventTypes/document.write"
+    resource   = "${local.firestore_documents_path}/${each.value.document_path}"
+
+    failure_policy {
+      retry = true
+    }
+  }
+
+  depends_on = [
+    google_project_service.project_level,
+    google_project_iam_member.terraform_service_account_roles["cloudfunctions_access"],
+    google_service_account_iam_member.terraform_can_impersonate_runtime,
+  ]
 }

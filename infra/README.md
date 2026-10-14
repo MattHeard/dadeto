@@ -54,13 +54,27 @@ functions, a Google Cloud Monitoring email notification channel, and an alert
 policy that pages on the first matching error. Supply the alert recipient from
 the GitHub Actions secret `PRODUCTION_ALERT_EMAIL` via the prod workflow.
 
-The `object-minute-rental-search` Cloud Function is a stateless, read-only
-adapter around the object-minute rental search core. It
-accepts search text plus a possession context and reads runner commitments from
-the canonical `runner_assignments`, `segments`, and `spacetime_points`
-collections. Terraform materializes the wider append-only POC collection set
-with schema marker documents; the search function never writes search results,
-assignments, or reservations.
+The `object-minute-rental-search` Cloud Function is a read-only adapter around
+the object-minute rental search core. It accepts search text plus a possession
+context. Three Firestore write triggers maintain one projection record per
+`runner_assignments` document when its assignment, segment, or either
+spacetime point changes. Each refresh reads current source documents
+transactionally, so out-of-order events converge and deleted or incomplete
+sources remove stale query records. Trigger failures are retried by Cloud
+Functions.
+
+After the triggers are deployed, seed records that predate them by running
+`PROJECT_ID=... DATABASE_ID=... node scripts/backfill-runner-commitment-projections.js`
+with Application Default Credentials authorized for the Firestore database.
+The backfill is idempotent and scans assignments in document-ID pages. The
+search function keeps reading canonical source records by default. Set
+`enable_runner_commitment_projection` to `true` only after the triggers are
+deployed and the backfill completes; the indexed reader then performs one
+`personId == runnerId` query and does not load segments or points.
+
+Terraform materializes the wider append-only POC collection set with schema
+marker documents. Neither the search function nor the projection writes
+assignments or reservations.
 
 ## Cloud Function sources
 

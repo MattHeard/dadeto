@@ -3,6 +3,10 @@ import { createBrowserRunnerCommitmentsRepository } from '../../src/core/object-
 import { createObjectMinuteRentalSearch } from '../../src/core/object-minute-rental-search/search-application.js';
 import { createFirestoreRunnerCommitmentsRepository } from '../../src/cloud/object-minute-rental-search/runner-commitments-repository.js';
 import { projectRunnerCommitments } from '../../src/core/object-minute-rental-search/runner-commitments.js';
+import {
+  buildRunnerCommitmentProjectionRecord,
+  selectRunnerCommitmentProjection,
+} from '../../src/core/object-minute-rental-search/commitment-records/index.js';
 import { SOPHIE_CHARLOTTE_SERVICE_AREA } from '../../src/core/object-minute-rental-search/service-area.js';
 import { createAllowEffects } from '../../src/cloud/allow-effects.js';
 const allowEffects = createAllowEffects();
@@ -37,6 +41,137 @@ function createRunnerAssignmentSelector(runnerId, rejectNonMatching = false) {
 }
 
 describe('runner commitments repositories', () => {
+  test('builds a minimal read record and fails closed for incomplete sources', () => {
+    expect(
+      buildRunnerCommitmentProjectionRecord(
+        'ASSIGNMENT-1',
+        assignment,
+        segment,
+        pointId => points.find(point => point.pointId === pointId)
+      )
+    ).toEqual({
+      assignmentId: 'ASSIGNMENT-1',
+      personId: 'RUNNER-1',
+      startTimestamp: '2026-08-27T15:00Z',
+      endTimestamp: '2026-08-27T15:30Z',
+    });
+    expect(
+      buildRunnerCommitmentProjectionRecord(
+        'ASSIGNMENT-1',
+        assignment,
+        null,
+        () => null
+      )
+    ).toBeNull();
+    const validSource = {
+      assignmentId: 'ASSIGNMENT-1',
+      assignment,
+      segment,
+      resolvePoint: pointId => points.find(point => point.pointId === pointId),
+    };
+    for (const invalidSource of [
+      { ...validSource, assignmentId: ' ' },
+      { ...validSource, assignment: { ...assignment, personId: '' } },
+      { ...validSource, segment: { ...segment, startPointId: '' } },
+      { ...validSource, segment: { ...segment, endPointId: '' } },
+      {
+        ...validSource,
+        resolvePoint: pointId =>
+          pointId === 'POINT-1' ? { timestamp: 'invalid' } : points[1],
+      },
+      {
+        ...validSource,
+        resolvePoint: pointId =>
+          pointId === 'POINT-2' ? { timestamp: 'invalid' } : points[0],
+      },
+    ]) {
+      expect(
+        buildRunnerCommitmentProjectionRecord(
+          invalidSource.assignmentId,
+          invalidSource.assignment,
+          invalidSource.segment,
+          invalidSource.resolvePoint
+        )
+      ).toBeNull();
+    }
+    expect(
+      buildRunnerCommitmentProjectionRecord(
+        'ASSIGNMENT-1',
+        assignment,
+        segment,
+        pointId => points.find(point => point.pointId !== pointId)
+      )
+    ).toBeNull();
+    expect(
+      selectRunnerCommitmentProjection(
+        [
+          {
+            personId: 'RUNNER-1',
+            startTimestamp: '2026-08-27T15:30Z',
+            endTimestamp: '2026-08-27T16:00Z',
+          },
+          {
+            personId: 'RUNNER-1',
+            startTimestamp: '2026-08-27T15:00Z',
+            endTimestamp: '2026-08-27T15:30Z',
+          },
+        ],
+        'RUNNER-1'
+      )
+    ).toEqual([
+      {
+        startTimestamp: '2026-08-27T15:00Z',
+        endTimestamp: '2026-08-27T15:30Z',
+      },
+      {
+        startTimestamp: '2026-08-27T15:30Z',
+        endTimestamp: '2026-08-27T16:00Z',
+      },
+    ]);
+    expect(() => selectRunnerCommitmentProjection(null, 'RUNNER-1')).toThrow(
+      'invalid-projection-records'
+    );
+    expect(() =>
+      selectRunnerCommitmentProjection([{ personId: 'RUNNER-2' }], 'RUNNER-1')
+    ).toThrow('invalid-person-id');
+    expect(() =>
+      selectRunnerCommitmentProjection(
+        [
+          {
+            personId: 'RUNNER-1',
+            startTimestamp: 'invalid',
+            endTimestamp: '2030-01-01T11:00:00Z',
+          },
+        ],
+        'RUNNER-1'
+      )
+    ).toThrow('invalid-start-timestamp');
+    expect(() =>
+      selectRunnerCommitmentProjection(
+        [
+          {
+            personId: 'RUNNER-1',
+            startTimestamp: '2030-01-01T10:00:00Z',
+            endTimestamp: 'invalid',
+          },
+        ],
+        'RUNNER-1'
+      )
+    ).toThrow('invalid-end-timestamp');
+    expect(() =>
+      selectRunnerCommitmentProjection(
+        [
+          {
+            personId: 'RUNNER-1',
+            startTimestamp: '2030-01-01T11:00:00Z',
+            endTimestamp: '2030-01-01T10:00:00Z',
+          },
+        ],
+        'RUNNER-1'
+      )
+    ).toThrow('reversed-commitment-interval');
+  });
+
   test('defaults absent in-memory collections to an empty repository', async () => {
     await expect(
       createBrowserRunnerCommitmentsRepository().listForRunner({

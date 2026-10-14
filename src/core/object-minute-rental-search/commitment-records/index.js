@@ -116,3 +116,67 @@ function compareIntervals(first, second) {
     Date.parse(first.endTimestamp) - Date.parse(second.endTimestamp)
   );
 }
+
+/**
+ * Build a denormalized read record for one runner assignment.
+ * @param {string} assignmentId Assignment document identifier.
+ * @param {Assignment|null|undefined} assignment Source assignment.
+ * @param {Segment|null|undefined} segment Resolved source segment.
+ * @param {(pointId: string) => Point|null|undefined} resolvePoint Point lookup.
+ * @returns {{assignmentId: string, personId: string, startTimestamp: string, endTimestamp: string}|null} Read model record, or null if sources are incomplete or invalid.
+ */
+export function buildRunnerCommitmentProjectionRecord(
+  assignmentId,
+  assignment,
+  segment,
+  resolvePoint
+) {
+  const personId = usableId(assignment?.personId);
+  const startPointId = usableId(segment?.startPointId);
+  const endPointId = usableId(segment?.endPointId);
+  if (!usableId(assignmentId) || !personId || !startPointId || !endPointId) {
+    return null;
+  }
+  const startTimestamp = usableTimestamp(resolvePoint(startPointId)?.timestamp);
+  const endTimestamp = usableTimestamp(resolvePoint(endPointId)?.timestamp);
+  if (
+    !startTimestamp ||
+    !endTimestamp ||
+    Date.parse(endTimestamp) < Date.parse(startTimestamp)
+  ) {
+    return null;
+  }
+  const projection = {};
+  Object.assign(projection, {
+    assignmentId,
+    personId,
+    startTimestamp,
+    endTimestamp,
+  });
+  return /** @type {{assignmentId: string, personId: string, startTimestamp: string, endTimestamp: string}} */ (
+    projection
+  );
+}
+
+/**
+ * Validate and order records from the indexed projection query.
+ * @param {Array<{personId?: unknown, startTimestamp?: unknown, endTimestamp?: unknown}>} records Indexed projection records.
+ * @param {string} runnerId Requested runner identifier.
+ * @returns {Array<{startTimestamp: string, endTimestamp: string}>} Validated commitment intervals.
+ */
+export function selectRunnerCommitmentProjection(records, runnerId) {
+  if (!Array.isArray(records)) throw new Error('invalid-projection-records');
+  const intervals = [];
+  for (const record of records) {
+    if (record?.personId !== runnerId) throw new Error('invalid-person-id');
+    const startTimestamp = usableTimestamp(record.startTimestamp);
+    const endTimestamp = usableTimestamp(record.endTimestamp);
+    if (!startTimestamp) throw new Error('invalid-start-timestamp');
+    if (!endTimestamp) throw new Error('invalid-end-timestamp');
+    if (Date.parse(endTimestamp) < Date.parse(startTimestamp)) {
+      throw new Error('reversed-commitment-interval');
+    }
+    intervals.push({ startTimestamp, endTimestamp });
+  }
+  return intervals.sort(compareIntervals);
+}

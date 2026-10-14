@@ -11,6 +11,7 @@ locals {
     "spacetime_points",
     "segments",
     "runner_assignments",
+    "runner_commitment_projections",
     "assets",
     "asset_assignments",
     "offers",
@@ -20,8 +21,9 @@ locals {
 
 # Firestore collections are materialized by their first document. These
 # immutable schema markers reserve the canonical collection names for the POC;
-# the search function only reads runner_assignments, segments, and
-# spacetime_points and never writes search state.
+# The rental search projection is materialized by Firestore triggers from
+# runner_assignments, segments, and spacetime_points. The projection collection
+# remains available while the search reader is staged behind its rollout flag.
 resource "google_firestore_document" "object_minute_rental_collection_schema" {
   for_each    = local.object_minute_rental_collections
   project     = var.project_id

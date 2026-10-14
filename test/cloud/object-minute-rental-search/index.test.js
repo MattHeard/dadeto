@@ -10,6 +10,7 @@ describe('object-minute rental search HTTP boundary', () => {
       }));
       await jest.unstable_mockModule('firebase-admin/firestore', () => ({
         getFirestore: jest.fn(() => ({ db: true })),
+        FieldValue: {},
       }));
       await jest.unstable_mockModule('@google-cloud/storage', () => ({
         Storage: jest.fn(() => ({ storage: true })),
