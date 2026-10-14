@@ -1,0 +1,7 @@
+# Report-for-moderation AllowEffects audit
+
+- **Unexpected hurdle:** The first focused Jest invocation waited in the shared pool longer than expected before producing results.
+- **Diagnosis:** The wrapper eventually acquired its slot and completed; the test output showed no source or assertion failures. Using a worktree-local pool gave a successful focused run.
+- **Finding:** Startup Firebase initialization and HTTPS endpoint registration receive the startup capability. `registerHttpEndpoint` requires the capability for middleware, route, and function registration. Each HTTP invocation gets a fresh capability through `createEffectHttpBoundary`; the report handler forwards it to the Firestore add adapter and response adapter. Firestore duplicate checks and server timestamp sentinel construction remain query/construction operations. No unguarded command effect or captured startup token was found.
+- **Evidence:** `DADETO_JEST_POOL_DIR=/home/matt/dadeto/.tmp/jest-pool node scripts/run-jest.js --runInBand test/cloud/report-for-moderation-effect-adapters.test.js test/cloud/report-for-moderation-startup-adapter.test.js test/core/cloud/report-for-moderation` passed (6 suites / 45 tests); `npm run tsdoc:check` passed; `npm run check` passed all 10 gates; `npm run build:cloud` exited 0; `git diff --check` passed.
+- **Next:** Continue the lexicographic source-cloud audit at `src/cloud/submit-moderation-rating/index.js`.
