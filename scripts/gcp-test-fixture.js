@@ -11,6 +11,11 @@ import {
   sendHttpResponse,
   setHttpResponseHeader,
 } from '../src/cloud/render-contents/response-effects.js';
+import {
+  saveStorageFile,
+  setFirestoreDocument,
+  updateFirestoreDocument,
+} from '../src/cloud/render-variant/effect-adapters.js';
 
 const runtimeDepsRequire = createRequire(
   new URL('../src/cloud/runtime-deps/package.json', import.meta.url)
@@ -293,11 +298,15 @@ async function renderSeededStoryPages({
   staticObjectPrefix,
 }) {
   const { firstVariantRef, secondVariantRef } = createFirestoreDocumentRefs(db);
+  const storage = createStorageClient(projectId);
   const renderVariant = createRenderVariant({
     db,
-    storage: createStorageClient(projectId),
+    storage,
     bucketName: staticBucket,
     objectPrefix: staticObjectPrefix,
+    saveStorageFile,
+    setFirestoreDocument,
+    updateFirestoreDocument,
     fetchFn: async () => createFixtureFetchResponse(),
     bindEffectBoundary,
     effectFetchFn: async () => ({
@@ -308,12 +317,18 @@ async function renderSeededStoryPages({
     randomUUID,
   });
 
-  await renderVariant(await secondVariantRef.get(), {
-    params: { storyId: STORY_ID },
-  });
-  await renderVariant(await firstVariantRef.get(), {
-    params: { storyId: STORY_ID },
-  });
+  const secondVariant = await secondVariantRef.get();
+  await bindEffectBoundary(permission =>
+    renderVariant(permission, secondVariant, {
+      params: { storyId: STORY_ID },
+    })
+  );
+  const firstVariant = await firstVariantRef.get();
+  await bindEffectBoundary(permission =>
+    renderVariant(permission, firstVariant, {
+      params: { storyId: STORY_ID },
+    })
+  );
 }
 
 async function retryTransientSeedStep(stepFn) {

@@ -57,12 +57,20 @@ describe('gcp-test fixture seed contract', () => {
     expect(source).toContain(
       "} from '../src/cloud/render-contents/response-effects.js';"
     );
+    expect(source).toContain(
+      "} from '../src/cloud/render-variant/effect-adapters.js';"
+    );
     expect(source).toContain('setHttpResponseHeader,');
     expect(source).toContain('sendHttpResponse,');
     expect(source).toContain('logError: logRenderContentsError,');
+    expect(source).toContain('saveStorageFile,');
+    expect(source).toContain('setFirestoreDocument,');
+    expect(source).toContain('updateFirestoreDocument,');
     expect(source).toContain(
       'await bindEffectBoundary(permission => renderContents(permission));'
     );
+    expect(source).toContain('renderVariant(permission, secondVariant,');
+    expect(source).toContain('renderVariant(permission, firstVariant,');
     expect(source.match(/    bindEffectBoundary,/g)).toHaveLength(2);
     expect(source.match(/    effectFetchFn: async \(\) => \(\{/g)).toHaveLength(
       2
