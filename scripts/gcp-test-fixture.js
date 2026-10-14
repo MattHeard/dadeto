@@ -6,6 +6,11 @@ import { createRenderContents } from '../src/core/cloud/render-contents/render-c
 import { createRenderVariant } from '../src/core/cloud/render-variant/render-variant-core.js';
 import { bindEffectBoundary } from '../src/browser/allow-effects.js';
 import { createSaveRenderedPage } from '../src/cloud/render-contents/save-rendered-page.js';
+import {
+  logRenderContentsError,
+  sendHttpResponse,
+  setHttpResponseHeader,
+} from '../src/cloud/render-contents/response-effects.js';
 
 const runtimeDepsRequire = createRequire(
   new URL('../src/cloud/runtime-deps/package.json', import.meta.url)
@@ -264,10 +269,13 @@ async function renderSeededContents({
       status: 200,
       json: async () => ({}),
     }),
+    setHttpResponseHeader,
+    sendHttpResponse,
+    logError: logRenderContentsError,
     randomUUID,
   });
 
-  await renderContents();
+  await bindEffectBoundary(permission => renderContents(permission));
 }
 
 function createFixtureFetchResponse() {
