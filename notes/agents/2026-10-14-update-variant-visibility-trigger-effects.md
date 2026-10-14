@@ -1,0 +1,7 @@
+# Update variant visibility trigger effects
+
+- Unexpected hurdle: `npm run check` did not reach a terminal test result within the command session. Its serial coverage runner emitted passing 40-suite shards, then the test gate timed out or the session ended with SIGTERM.
+- Diagnosis path: the live `src/cloud/update-variant-visibility/index.js` uses startup effect adapters, but an exported legacy core composer still registered its Firestore trigger by calling the Functions SDK directly. The direct core test shard passed; `npm run check -- --skip-tests` completed all ten non-test gates.
+- Chosen fix: require a startup `AllowEffects` token in `createUpdateVariantVisibilityHandle` and route registration through an injected token-first `registerTrigger` adapter. Update the regression test to assert the token is forwarded, and correct this helper's older operational note.
+- Evidence: `npm run build:cloud` passed; the full-check core/cloud shard passed (40 suites / 493 tests, including `update-variant-visibility-core.test.js`); `npm run check -- --skip-tests` passed 10/10 gates, including lint, JSDoc, dependency checks, and zero clones. The full `npm run check` test gate remains unverified because the serial coverage process exceeded the available command session; do not treat the pre-existing coverage summary artifact as current evidence.
+- Next-time guidance: complete the full `npm test` coverage and local E2E gate in an environment that can sustain the runner to exit, then update the Allow Effects Notion handoff before closing the cloud audit bead.

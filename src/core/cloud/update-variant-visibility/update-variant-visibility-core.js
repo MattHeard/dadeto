@@ -480,12 +480,14 @@ export function createUpdateVariantVisibilityHandler({
 
 /**
  * Compose the public update-variant-visibility Cloud Function handle.
- * @param {{ region: (region: string) => { firestore: { document: (path: string) => { onCreate: (handler: unknown) => unknown } } } }} functions Firebase Functions runtime.
+ * @param {AllowEffects} allowEffects Startup command permission.
+ * @param {unknown} functions Firebase Functions runtime passed to the trigger adapter.
  * @param {() => import('firebase-admin/firestore').Firestore} getFirestoreInstance Firestore instance factory.
- * @param {{createEffectInvocationBoundary: (handler: (allowEffects: AllowEffects, snapshot: import('firebase-admin/firestore').DocumentSnapshot) => Promise<null>) => (snapshot: import('firebase-admin/firestore').DocumentSnapshot) => Promise<null>, updateFirestoreDocument: (allowEffects: AllowEffects, reference: unknown, data: object) => Promise<unknown>, renderContents?: (allowEffects: AllowEffects, context?: object) => Promise<unknown>}} effects Effect boundary and adapters.
+ * @param {{createEffectInvocationBoundary: (handler: (allowEffects: AllowEffects, snapshot: import('firebase-admin/firestore').DocumentSnapshot) => Promise<null>) => (snapshot: import('firebase-admin/firestore').DocumentSnapshot) => Promise<null>, registerTrigger: (allowEffects: AllowEffects, functions: unknown, handler: unknown) => unknown, updateFirestoreDocument: (allowEffects: AllowEffects, reference: unknown, data: object) => Promise<unknown>, renderContents?: (allowEffects: AllowEffects, context?: object) => Promise<unknown>}} effects Effect boundary and adapters.
  * @returns {unknown} Registered Cloud Function handle.
  */
 export function createUpdateVariantVisibilityHandle(
+  allowEffects,
   functions,
   getFirestoreInstance,
   effects
@@ -496,10 +498,11 @@ export function createUpdateVariantVisibilityHandle(
     renderContents: effects.renderContents,
   });
 
-  return functions
-    .region('europe-west1')
-    .firestore.document('moderationRatings/{ratingId}')
-    .onCreate(effects.createEffectInvocationBoundary(handler));
+  return effects.registerTrigger(
+    allowEffects,
+    functions,
+    effects.createEffectInvocationBoundary(handler)
+  );
 }
 
 /**

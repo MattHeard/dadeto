@@ -1042,28 +1042,32 @@ describe('createUpdateVariantVisibilityHandler locking', () => {
 });
 
 describe('createUpdateVariantVisibilityHandle', () => {
-  it('registers the moderation rating create trigger from runtime deps', () => {
+  it('forwards startup permission to the injected trigger registration adapter', () => {
+    const startupPermission = Object.freeze({ startup: true });
     const handle = Symbol('handle');
     const db = { doc: jest.fn() };
-    const onCreate = jest.fn(() => handle);
-    const document = jest.fn(() => ({ onCreate }));
-    const functions = {
-      region: jest.fn(() => ({
-        firestore: { document },
-      })),
-    };
+    const functions = { functions: true };
     const getFirestoreInstance = jest.fn(() => db);
+    const registerTrigger = jest.fn(() => handle);
 
     expect(
-      createUpdateVariantVisibilityHandle(functions, getFirestoreInstance, {
-        createEffectInvocationBoundary: handler => handler,
-        updateFirestoreDocument: jest.fn(),
-      })
+      createUpdateVariantVisibilityHandle(
+        startupPermission,
+        functions,
+        getFirestoreInstance,
+        {
+          createEffectInvocationBoundary: handler => handler,
+          registerTrigger,
+          updateFirestoreDocument: jest.fn(),
+        }
+      )
     ).toBe(handle);
 
     expect(getFirestoreInstance).toHaveBeenCalledTimes(1);
-    expect(functions.region).toHaveBeenCalledWith('europe-west1');
-    expect(document).toHaveBeenCalledWith('moderationRatings/{ratingId}');
-    expect(onCreate).toHaveBeenCalledWith(expect.any(Function));
+    expect(registerTrigger).toHaveBeenCalledWith(
+      startupPermission,
+      functions,
+      expect.any(Function)
+    );
   });
 });
