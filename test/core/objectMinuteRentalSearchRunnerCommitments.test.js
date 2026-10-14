@@ -200,14 +200,13 @@ describe('runner commitments repositories', () => {
     const getAll = jest.fn(async (...references) =>
       references.map(({ id }) => ({ id, data: () => documents[id] }))
     );
+    const whereGet = jest.fn(async () => ({
+      docs: [{ data: () => assignment }],
+    }));
+    const where = jest.fn(() => ({ get: whereGet }));
     const db = {
       collection: jest.fn(name => {
-        if (name === 'runner_assignments')
-          return {
-            where: jest.fn(() => ({
-              get: async () => ({ docs: [{ data: () => assignment }] }),
-            })),
-          };
+        if (name === 'runner_assignments') return { where };
         return { doc: id => ({ id }) };
       }),
       getAll,
@@ -222,6 +221,8 @@ describe('runner commitments repositories', () => {
       },
     ]);
     expect(db.collection).toHaveBeenCalledWith('runner_assignments');
+    expect(where).toHaveBeenCalledWith('personId', '==', 'RUNNER-1');
+    expect(whereGet).toHaveBeenCalledTimes(1);
     expect(getAll).toHaveBeenCalledTimes(2);
   });
 
@@ -249,11 +250,10 @@ describe('runner commitments repositories', () => {
     const whereGet = jest.fn(async () => ({
       docs: assignments.map(value => ({ data: () => value })),
     }));
+    const where = jest.fn(() => ({ get: whereGet }));
     const db = {
       collection: jest.fn(name =>
-        name === 'runner_assignments'
-          ? { where: jest.fn(() => ({ get: whereGet })) }
-          : { doc: id => ({ id }) }
+        name === 'runner_assignments' ? { where } : { doc: id => ({ id }) }
       ),
       getAll,
     };
@@ -263,6 +263,8 @@ describe('runner commitments repositories', () => {
     }).listForRunner(allowEffects, { runnerId: 'RUNNER-1' });
 
     expect(result).toHaveLength(100);
+    expect(where).toHaveBeenCalledTimes(1);
+    expect(where).toHaveBeenCalledWith('personId', '==', 'RUNNER-1');
     expect(whereGet).toHaveBeenCalledTimes(1);
     expect(getAll).toHaveBeenCalledTimes(2);
     expect(
