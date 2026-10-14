@@ -6,13 +6,13 @@ import { getAllowedOrigins } from './cors-config.js';
 import {
   forwardSubmitNewStoryCorsError,
   logSubmitNewStory,
-  registerSubmitNewStoryEndpoint,
   saveSubmitNewStory,
   sendSubmitNewStoryResponse,
 } from './effect-adapters.js';
 import {
   bindSubmitNewStoryCorsErrorBoundary,
   ensureSubmitNewStoryFirebase,
+  registerSubmitNewStoryEndpoint,
 } from './startup-effect-adapter.js';
 
 /** @param {import('../../types/allow-effects').AllowEffects} allowEffects Startup capability. */

@@ -1,4 +1,4 @@
-import { createCloudHttpEndpoint } from '../../core/cloud/http-endpoint-bootstrap.js';
+import { registerSubmitNewStoryEndpoint as createEndpoint } from './startup-effect-adapter.js';
 
 /** @param {import('../../../types/allow-effects').AllowEffects} allowEffects @param {unknown} db @param {string} id @param {unknown} data */
 export async function saveSubmitNewStory(allowEffects, db, id, data) {
@@ -27,8 +27,4 @@ export function forwardSubmitNewStoryCorsError(allowEffects, next, error) {
   return next(error);
 }
 
-/** @param {import('../../../types/allow-effects').AllowEffects} allowEffects @param {any} options */
-export function registerSubmitNewStoryEndpoint(allowEffects, options) {
-  void allowEffects;
-  return createCloudHttpEndpoint(options);
-}
+export const registerSubmitNewStoryEndpoint = createEndpoint;

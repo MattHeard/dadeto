@@ -2,13 +2,16 @@ import { jest } from '@jest/globals';
 import {
   forwardSubmitNewStoryCorsError,
   logSubmitNewStory,
-  registerSubmitNewStoryEndpoint,
   saveSubmitNewStory,
   sendSubmitNewStoryResponse,
 } from '../../../src/cloud/submit-new-story/effect-adapters.js';
 import {
   bindSubmitNewStoryCorsErrorBoundary,
   ensureSubmitNewStoryFirebase,
+  registerSubmitNewStoryEndpoint,
+  registerSubmitNewStoryHttpFunction,
+  registerSubmitNewStoryRoute,
+  useSubmitNewStoryMiddleware,
 } from '../../../src/cloud/submit-new-story/startup-effect-adapter.js';
 import { createAllowEffects } from '../../../src/cloud/allow-effects.js';
 
@@ -55,6 +58,34 @@ test('startup adapters initialize Firebase and register the endpoint', () => {
   expect(app.use).toHaveBeenCalledWith('cors');
   expect(app.post).toHaveBeenCalledWith('/', options.route.handler);
   expect(result.handle).toBe('endpoint');
+});
+
+test('endpoint composition forwards startup permission to each command adapter', () => {
+  const app = { use: jest.fn(), post: jest.fn() };
+  const functions = {
+    region: jest.fn(() => ({
+      https: { onRequest: jest.fn(() => 'endpoint') },
+    })),
+  };
+  const handler = jest.fn();
+
+  useSubmitNewStoryMiddleware(permission, app, 'json');
+  registerSubmitNewStoryRoute(permission, app, {
+    method: 'post',
+    path: '/',
+    handler,
+  });
+  const endpoint = registerSubmitNewStoryHttpFunction(
+    permission,
+    functions,
+    app,
+    'europe-west1'
+  );
+
+  expect(app.use).toHaveBeenCalledWith('json');
+  expect(app.post).toHaveBeenCalledWith('/', handler);
+  expect(functions.region).toHaveBeenCalledWith('europe-west1');
+  expect(endpoint).toBe('endpoint');
 });
 
 test('CORS forwarding and middleware binding keep invocation capabilities at the boundary', async () => {
