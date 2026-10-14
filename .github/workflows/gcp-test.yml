@@ -412,12 +412,12 @@ jobs:
 
             echo "::group::Cloud Run job logs"
             gcloud logging read \
-              'resource.type="cloud_run_job" AND resource.labels.execution_name="'$EXEC'"' \
+              'resource.type="cloud_run_job" AND labels."run.googleapis.com/execution_name"="'$EXEC'"' \
               --limit=5000 --format='table(timestamp, severity, textPayload)' || true
             echo "::endgroup::"
 
             gcloud logging read \
-              'resource.type="cloud_run_job" AND resource.labels.execution_name="'$EXEC'"' \
+              'resource.type="cloud_run_job" AND labels."run.googleapis.com/execution_name"="'$EXEC'"' \
               --limit=2000 --format='json' > /tmp/pw-logs.json || true
 
             TASK="$(gcloud run jobs executions tasks list --execution "$EXEC" --region "$REGION_OUT" \

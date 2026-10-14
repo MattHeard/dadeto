@@ -16,6 +16,15 @@ describe('gcp-test workflow report handling', () => {
     expect(source).toContain('gcloud storage cp -r "${REPORT_ROOT}/${tree}" .');
   });
 
+  it('filters Cloud Run logs by the execution label used by the log URI', () => {
+    const source = readFileSync('.github/workflows/gcp-test.yml', 'utf8');
+
+    expect(
+      source.match(/labels\."run\.googleapis\.com\/execution_name"/g)
+    ).toHaveLength(2);
+    expect(source).not.toContain('resource.labels.execution_name');
+  });
+
   it('retries the seed object upload before failing the run', () => {
     const source = readFileSync('.github/workflows/gcp-test.yml', 'utf8');
 
