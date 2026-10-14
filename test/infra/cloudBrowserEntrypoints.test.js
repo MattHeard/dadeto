@@ -155,6 +155,21 @@ describe('cloud browser entrypoints', () => {
     expect(sharedAdapter).toContain('export function requireAllowEffects');
   });
 
+  it('uploads the admin error adapter at its root-relative import path', async () => {
+    const [mainTf, adminHtml, adminJs] = await Promise.all([
+      readFile('infra/main.tf', 'utf8'),
+      readFile('infra/admin.html', 'utf8'),
+      readFile('infra/admin.js', 'utf8'),
+    ]);
+
+    expect(adminHtml).toContain('src="./admin.js"');
+    expect(adminJs).toContain("from './effect-adapters.js'");
+    expect(mainTf).toContain('name         = "effect-adapters.js"');
+    expect(mainTf).toContain(
+      'source       = "${path.module}/browser/effect-adapters.js"'
+    );
+  });
+
   it('uploads PWA assets at the root paths used by Dendrite HTML', async () => {
     const mainTf = await readFile('infra/main.tf', 'utf8');
 
