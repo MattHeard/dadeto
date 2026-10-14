@@ -452,6 +452,45 @@ describe('billing runtime snapshot paths', () => {
     ).toMatchObject({ status: 'ignored', verifiedEvent: lateExpiryEvent });
   });
 
+  it('rejects missing expiry events and ignores mismatched retries', async () => {
+    const { db, billing } = setup();
+    await billing.createPurchase(allowEffects, {
+      purchaseId: 'expiry-event-missing',
+      apiKeyUuid: 'expiry-event-missing-key',
+      creditsIssued: 3,
+    });
+    await expect(
+      billing.markPurchaseExpired(allowEffects, {
+        purchaseId: 'expiry-event-missing',
+        eventId: 'missing-expiry-event',
+      })
+    ).resolves.toEqual({
+      status: 409,
+      body: { error: 'payment_event_not_received' },
+    });
+
+    await db.doc('billing-purchases/already-expired').set({
+      purchaseId: 'already-expired',
+      status: 'expired',
+      expiredEventId: 'original-expiry-event',
+    });
+    await db
+      .doc('payment-events/retry-expiry-event')
+      .set({ status: 'received' });
+    await expect(
+      billing.markPurchaseExpired(allowEffects, {
+        purchaseId: 'already-expired',
+        eventId: 'retry-expiry-event',
+      })
+    ).resolves.toEqual({
+      status: 200,
+      body: { duplicate: true, purchaseId: 'already-expired' },
+    });
+    expect(
+      (await db.doc('payment-events/retry-expiry-event').get()).data()
+    ).toMatchObject({ status: 'ignored' });
+  });
+
   it('generates purchase identifiers and normalizes non-object snapshots', async () => {
     const { db, billing } = setup();
     const generated = await billing.createPurchase(allowEffects, {
