@@ -1,0 +1,3 @@
+[mcp_servers.dadeto]
+command = "node"
+args = ["src/local/json1-mcp-server.js"]

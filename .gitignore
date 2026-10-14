@@ -45,7 +45,9 @@ local-data/
 debug/
 *.lock
 *.zip
-.codex
+.codex/*
+!.codex/
+!.codex/config.toml
 /infra/build/
 
 # Reports

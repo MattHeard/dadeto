@@ -66,14 +66,16 @@ Assumptions: - Deterministic object key order is enough to make equivalent value
 
 ## Use it from an agent
 
-Dadeto registers the `dadeto_canonicalize_json` WebMCP tool on pages open in a
-browser that supports `document.modelContext`. The tool accepts one string,
-`input`, and calls the same allowlisted JSON1 capability used by Dadeto's local
-HTTP adapter. It does not accept module names, paths, or export names.
+Dadeto exposes `dadeto_canonicalize_json` through browser WebMCP and a local
+Codex MCP server. Both adapters accept one string, `input`, and call the same
+allowlisted JSON1 capability used by Dadeto's local HTTP adapter. They do not
+accept module names, paths, or export names.
 
-To inspect the tool locally, run `npm run build` and `npm run start`, then open
-the generated Dadeto site in a WebMCP-enabled browser. Ask the connected agent,
-“Canonicalize this JSON for me: {\"b\":2,\"a\":1}”. The expected result is:
+For browser WebMCP, run `npm run build` and `npm run start`, then open the
+generated Dadeto site in a WebMCP-enabled browser. For local Codex, trust this
+repository and restart the session; `.codex/config.toml` registers the stdio
+server. Ask the connected agent, “Canonicalize this JSON for me:
+{\"b\":2,\"a\":1}”. The expected result is:
 
 ```json
 {
