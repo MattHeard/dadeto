@@ -71,7 +71,6 @@ describe('createProcessNewStoryHandle', () => {
     const region = jest.fn(() => ({ firestore }));
     const functions = { region };
     const db = { batch: jest.fn() };
-    const getFirestoreInstance = jest.fn(() => db);
     const fieldValue = {
       serverTimestamp: jest.fn(() => 'ts'),
       increment: jest.fn(() => 'inc'),
@@ -85,7 +84,7 @@ describe('createProcessNewStoryHandle', () => {
     expect(
       createProcessNewStoryHandle({
         functions,
-        getFirestoreInstance,
+        db,
         fieldValue,
         randomUUID,
         random,
@@ -97,7 +96,7 @@ describe('createProcessNewStoryHandle', () => {
     expect(
       createProcessNewStoryHandle({
         functions,
-        getFirestoreInstance,
+        db,
         fieldValue,
         randomUUID,
         random: Math.random,
@@ -106,7 +105,6 @@ describe('createProcessNewStoryHandle', () => {
       })
     ).toBe(handle);
 
-    expect(getFirestoreInstance).toHaveBeenCalledTimes(2);
     expect(functions.region).toHaveBeenCalledWith('europe-west1');
     expect(document).toHaveBeenCalledWith('storyFormSubmissions/{subId}');
     expect(onCreate).toHaveBeenCalledTimes(2);

@@ -4,6 +4,8 @@ import {
   getFirestoreInstance,
   resolveFirestoreDatabaseId,
 } from '../../src/cloud/firestore.js';
+
+const allowEffects = Object.freeze({});
 import {
   createFirestoreInstance,
   getFirestoreForDatabase,
@@ -91,7 +93,7 @@ describe('getFirestoreInstance', () => {
       DATABASE_ID: 'custom-db',
     };
 
-    const db = getFirestoreInstance({
+    const db = getFirestoreInstance(allowEffects, {
       ensureAppFn,
       getFirestoreFn,
       environment,
@@ -106,7 +108,7 @@ describe('getFirestoreInstance', () => {
     const ensureAppFn = jest.fn();
     const getFirestoreFn = jest.fn(() => ({}));
 
-    getFirestoreInstance({
+    getFirestoreInstance(allowEffects, {
       ensureAppFn,
       getFirestoreFn,
       environment: {
@@ -123,7 +125,7 @@ describe('getFirestoreInstance', () => {
     const ensureAppFn = jest.fn();
     const getFirestoreFn = jest.fn(() => ({}));
 
-    getFirestoreInstance({
+    getFirestoreInstance(allowEffects, {
       ensureAppFn,
       getFirestoreFn,
       environment: {
@@ -140,7 +142,7 @@ describe('getFirestoreInstance', () => {
     const getFirestoreFn = jest.fn(() => ({}));
 
     expect(() =>
-      getFirestoreInstance({
+      getFirestoreInstance(allowEffects, {
         ensureAppFn,
         getFirestoreFn,
         environment: {},
@@ -157,13 +159,13 @@ describe('getFirestoreInstance', () => {
       DATABASE_ID: 'custom-db',
     };
 
-    getFirestoreInstance({
+    getFirestoreInstance(allowEffects, {
       ensureAppFn,
       getFirestoreFn,
       environment,
     });
 
-    getFirestoreInstance({
+    getFirestoreInstance(allowEffects, {
       ensureAppFn: () => {},
       getFirestoreFn,
       environment,
@@ -177,8 +179,8 @@ describe('getFirestoreInstance', () => {
     process.env.DATABASE_ID = 'cached-db';
 
     try {
-      const firstDb = getFirestoreInstance();
-      const secondDb = getFirestoreInstance();
+      const firstDb = getFirestoreInstance(allowEffects);
+      const secondDb = getFirestoreInstance(allowEffects);
 
       expect(secondDb).toBe(firstDb);
     } finally {

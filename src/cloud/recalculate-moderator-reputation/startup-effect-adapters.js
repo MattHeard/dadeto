@@ -3,15 +3,14 @@
 /**
  * Initialize Firebase Admin inside the invocation's permission boundary.
  * @param {AllowEffects} allowEffects Invocation permission.
- * @param {() => void} ensureFirebaseApp Firebase initialization manager.
+ * @param {(allowEffects: AllowEffects) => void} ensureFirebaseApp Firebase initialization manager.
  * @returns {void}
  */
 export function initializeModeratorReputationFirebase(
   allowEffects,
   ensureFirebaseApp
 ) {
-  void allowEffects;
-  ensureFirebaseApp();
+  ensureFirebaseApp(allowEffects);
 }
 
 /**

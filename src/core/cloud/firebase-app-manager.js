@@ -1,10 +1,12 @@
 import { ensureFirebaseAppOnce } from './cloud-core.js';
 
+/** @typedef {import('../../../types/allow-effects').AllowEffects} AllowEffects */
+
 /**
  * Create helpers that manage Firebase Admin app initialization state.
- * @param {() => void} initializer Firebase initialization function.
+ * @param {(allowEffects: AllowEffects) => unknown} initializer Firebase initialization function.
  * @returns {{
- *   ensureFirebaseApp: (initFn?: () => void) => void,
+ *   ensureFirebaseApp: (allowEffects: AllowEffects, initFn?: (allowEffects: AllowEffects) => unknown) => void,
  *   resetFirebaseInitializationState: () => void,
  * }} Firebase initialization helpers.
  */
@@ -15,11 +17,12 @@ export function createFirebaseAppManager(initializer) {
 
   /**
    * Initialize the Firebase app once, tolerating duplicate-app errors.
-   * @param {(() => void) | undefined} [initFn] Initialization function invoked if the app is not yet ready.
+   * @param {AllowEffects} allowEffects Permission for Firebase initialization.
+   * @param {((allowEffects: AllowEffects) => unknown) | undefined} [initFn] Initialization function invoked if the app is not yet ready.
    * @returns {void}
    */
-  function ensureFirebaseApp(initFn) {
-    ensureFirebaseAppState(state, initFn ?? initializer);
+  function ensureFirebaseApp(allowEffects, initFn) {
+    ensureFirebaseAppState(state, allowEffects, initFn ?? initializer);
   }
 
   /**
@@ -35,22 +38,28 @@ export function createFirebaseAppManager(initializer) {
 
 /**
  * Initialize the Firebase Admin app through an injected manager.
- * @template {() => unknown} TInitializer
- * @param {(initializer: TInitializer) => { ensureFirebaseApp: () => void }} createManager Manager factory.
+ * @template {(allowEffects: AllowEffects) => unknown} TInitializer
+ * @param {AllowEffects} allowEffects Permission for Firebase initialization.
+ * @param {(initializer: TInitializer) => { ensureFirebaseApp: (allowEffects: AllowEffects) => void }} createManager Manager factory.
  * @param {TInitializer} initializer Firebase Admin initializer.
  * @returns {void}
  */
-export function ensureFirebaseAppInitialized(createManager, initializer) {
-  createManager(initializer).ensureFirebaseApp();
+export function ensureFirebaseAppInitialized(
+  allowEffects,
+  createManager,
+  initializer
+) {
+  createManager(initializer).ensureFirebaseApp(allowEffects);
 }
 
 /**
  * Create initialized Firebase-backed cloud app dependencies.
- * @param {{initializeApp: () => void, createFirebaseAppManager: (initializer: () => void) => { ensureFirebaseApp: (initFn?: () => void) => void }, getEnvironmentVariables: () => Record<string, string | undefined>, getFirestoreInstance: (options: { environment: Record<string, string | undefined> }) => unknown, getAuth: () => unknown, express: () => unknown}} deps Cloud wiring dependencies.
+ * @param {AllowEffects} allowEffects Permission for startup initialization.
+ * @param {{initializeApp: (allowEffects: AllowEffects) => unknown, createFirebaseAppManager: (initializer: (allowEffects: AllowEffects) => unknown) => { ensureFirebaseApp: (allowEffects: AllowEffects) => void }, getEnvironmentVariables: () => Record<string, string | undefined>, getFirestoreInstance: (allowEffects: AllowEffects, options: { environment: Record<string, string | undefined> }) => unknown, getAuth: () => unknown, express: () => unknown}} deps Cloud wiring dependencies.
  * @param {{ includeApp?: boolean }} [options] Whether to construct an Express app.
  * @returns {{ db: unknown, auth: unknown, app?: unknown }} Initialized cloud app parts.
  */
-export function createFirebaseAppContext(deps, options = {}) {
+export function createFirebaseAppContext(allowEffects, deps, options = {}) {
   const initializeApp = deps.initializeApp;
   const createFirebaseAppManager = deps.createFirebaseAppManager;
   const getEnvironmentVariables = deps.getEnvironmentVariables;
@@ -59,12 +68,18 @@ export function createFirebaseAppContext(deps, options = {}) {
   const express = deps.express;
   const includeApp = options.includeApp ?? true;
 
-  ensureFirebaseAppInitialized(createFirebaseAppManager, initializeApp);
+  ensureFirebaseAppInitialized(
+    allowEffects,
+    createFirebaseAppManager,
+    initializeApp
+  );
   const environmentVariables = getEnvironmentVariables();
 
   /** @type {{ db: unknown, auth: unknown, app?: unknown }} */
   const context = {
-    db: getFirestoreInstance({ environment: environmentVariables }),
+    db: getFirestoreInstance(allowEffects, {
+      environment: environmentVariables,
+    }),
     auth: getAuth(),
   };
 
@@ -87,15 +102,16 @@ function firebaseAlreadyInitialized(state) {
 /**
  * Ensure the Firebase app is initialized for the current state.
  * @param {{ firebaseInitialized: boolean }} state Initialization state.
- * @param {() => void} initFn Initialization function.
+ * @param {AllowEffects} allowEffects Permission for Firebase initialization.
+ * @param {(allowEffects: AllowEffects) => unknown} initFn Initialization function.
  * @returns {void} Nothing.
  */
-function ensureFirebaseAppState(state, initFn) {
+function ensureFirebaseAppState(state, allowEffects, initFn) {
   if (firebaseAlreadyInitialized(state)) {
     return;
   }
 
-  ensureFirebaseAppOnce(initFn);
+  ensureFirebaseAppOnce(allowEffects, initFn);
   markFirebaseInitialized(state);
 }
 

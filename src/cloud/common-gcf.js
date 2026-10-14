@@ -27,4 +27,7 @@ export function getEnvironmentVariables() {
 export const fetchFn = (...args) => globalThis.fetch(...args);
 
 export const { ensureFirebaseApp, resetFirebaseInitializationState } =
-  createFirebaseAppManager(initializeApp);
+  createFirebaseAppManager(permission => {
+    void permission;
+    return initializeApp();
+  });

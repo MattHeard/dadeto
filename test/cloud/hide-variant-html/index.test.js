@@ -10,12 +10,12 @@ describe('hide-variant-html entry point', () => {
       handleVariantVisibilityChange: jest.fn(),
     }));
     const createFirebaseAppManager = jest.fn(initializer => ({
-      ensureFirebaseApp: jest.fn(() => initializer()),
+      ensureFirebaseApp: jest.fn(permission => initializer(permission)),
     }));
     const getFirestoreInstance = jest.fn(() => db);
     const initializeFirebaseApp = jest.fn((permission, initializer) => {
       expect(permission).toBe(startupPermission);
-      return initializer();
+      return initializer(permission);
     });
     let runtime;
 
@@ -66,10 +66,10 @@ describe('hide-variant-html entry point', () => {
     expect(
       createFirebaseAppManager.mock.results[0].value.ensureFirebaseApp
     ).toHaveBeenCalledTimes(1);
-    expect(getFirestoreInstance).toHaveBeenCalledWith({
+    expect(getFirestoreInstance).toHaveBeenCalledWith(startupPermission, {
       ensureAppFn: expect.any(Function),
     });
-    getFirestoreInstance.mock.calls[0][0].ensureAppFn();
+    getFirestoreInstance.mock.calls[0][1].ensureAppFn(startupPermission);
     expect(initializeApp).toHaveBeenCalledTimes(1);
 
     const coreDependencies = createHideVariantHtmlCore.mock.calls[0][0];

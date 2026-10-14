@@ -56,10 +56,10 @@ test('initializes Firestore and composes both handlers under startup permission 
 
   expect(result).toBe('registered-trigger');
   expect(ensureFirebaseApp).toHaveBeenCalledTimes(1);
-  const firestoreOptions = getFirestoreInstance.mock.calls[0][0];
+  const firestoreOptions = getFirestoreInstance.mock.calls[0][1];
   expect(firestoreOptions.environment).toBe(environment);
   expect(firestoreOptions.ensureAppFn).toEqual(expect.any(Function));
-  firestoreOptions.ensureAppFn();
+  firestoreOptions.ensureAppFn(startupPermission);
   expect(ensureFirebaseApp).toHaveBeenCalledTimes(1);
 
   await registered(snapshot);

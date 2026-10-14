@@ -59,7 +59,7 @@ import { resolveAllowedOrigins, isDuplicateAppError } from '../cloud-core.js';
  *     resolveFirestoreDatabaseId: typeof resolveFirestoreDatabaseId,
  *     resolveFirestoreEnvironment: typeof resolveFirestoreEnvironment,
  *     shouldUseCustomFirestoreDependencies: typeof shouldUseCustomFirestoreDependencies,
- *     getFirestoreInstance: (options?: Record<string, unknown>) => unknown,
+ *     getFirestoreInstance: (permission: AllowEffects, options?: Record<string, unknown>) => unknown,
  *     clearFirestoreInstanceCache: () => void,
  *   },
  * }>} Cloud entrypoint exports and test hooks.
@@ -73,14 +73,15 @@ export async function createAssignModerationJobEntrypoint(deps) {
     },
   };
 
-  const defaultEnsureFirebaseApp = () => {};
+  const defaultEnsureFirebaseApp = (/** @type {AllowEffects} */ permission) =>
+    void permission;
 
   /**
    * Create Firestore helpers that share a cache and a reset hook.
    * @param {{ reset: () => void }} firebaseInitializationHandlers Reset hook for the Firebase bootstrap state.
    * @returns {{
-   *   getFirestoreInstance: (options?: {
-   *     ensureAppFn?: () => void,
+   *   getFirestoreInstance: (permission: AllowEffects, options?: {
+   *     ensureAppFn?: (permission: AllowEffects) => void,
    *     getFirestoreFn?: typeof import('firebase-admin/firestore').getFirestore,
    *     environment?: Record<string, unknown>,
    *   }) => unknown,
@@ -164,10 +165,10 @@ export async function createAssignModerationJobEntrypoint(deps) {
     }
   }
 
-  await typedDeps.bindEffectBoundary(async permission => {
+  const database = await typedDeps.bindEffectBoundary(async permission => {
     ensureFirebaseApp(permission);
+    return getFirestoreInstance(permission);
   });
-  const database = getFirestoreInstance();
   const db = /** @type {FirestoreQueryDatabase} */ (database);
   const setModeratorAssignment =
     typedDeps.createSetModeratorAssignment(database);

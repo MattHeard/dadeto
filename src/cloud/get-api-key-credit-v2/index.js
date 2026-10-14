@@ -12,11 +12,11 @@ import { initializeFirebaseApp } from './startup-effect-adapter.js';
 import { createGetApiKeyCreditV2ExpressHandle } from '../../core/cloud/get-api-key-credit-v2/get-api-key-credit-v2-core.js';
 
 const db = createEffectStartupBoundary(allowEffects => {
-  const manager = createFirebaseAppManager(() =>
-    initializeFirebaseApp(allowEffects, initializeApp)
+  const manager = createFirebaseAppManager(permission =>
+    initializeFirebaseApp(permission, initializeApp)
   );
-  manager.ensureFirebaseApp();
-  return getFirestoreInstance({
+  manager.ensureFirebaseApp(allowEffects);
+  return getFirestoreInstance(allowEffects, {
     ensureAppFn: () => {},
   });
 });

@@ -17,7 +17,7 @@ test('initializes and resolves Firestore within startup capability scope', () =>
   });
 
   expect(ensureFirebaseApp).toHaveBeenCalledTimes(1);
-  expect(getFirestoreInstance).toHaveBeenCalledWith({
+  expect(getFirestoreInstance).toHaveBeenCalledWith(result.permission, {
     ensureAppFn: expect.any(Function),
   });
   expect(result.db).toBe(db);

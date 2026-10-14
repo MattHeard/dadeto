@@ -36,7 +36,7 @@ export function resetFindAvailablePageNumberResolver() {
  * @typedef {(db: Firestore) => SubmissionBatch} CreateSubmissionBatch
  * @typedef {import('../../../../types/allow-effects').EffectInvocationBoundary} EffectInvocationBoundary
  * @typedef {{ params?: Record<string, string> }} TriggerContext
- * @typedef {{ functions: { region: (region: string) => { firestore: { document: (path: string) => Record<string, (handler: unknown) => unknown> } } }, getFirestoreInstance: () => Firestore, fieldValue: { serverTimestamp: () => FieldValue, increment: (value: number) => FieldValue }, randomUUID: () => string, random: () => number, createBatch: CreateSubmissionBatch, bindEffectInvocationBoundary: EffectInvocationBoundary }} ProcessNewStoryHandleOptions
+ * @typedef {{ functions: { region: (region: string) => { firestore: { document: (path: string) => Record<string, (handler: unknown) => unknown> } } }, db: Firestore, fieldValue: { serverTimestamp: () => FieldValue, increment: (value: number) => FieldValue }, randomUUID: () => string, random: () => number, createBatch: CreateSubmissionBatch, bindEffectInvocationBoundary: EffectInvocationBoundary }} ProcessNewStoryHandleOptions
  */
 
 /**
@@ -458,7 +458,7 @@ export function createProcessNewStoryHandle(options) {
   // Stryker disable all -- endpoint creation uses the fixed Firestore trigger protocol.
   return createFirestoreHandle({
     functions: options.functions,
-    getFirestoreInstance: options.getFirestoreInstance,
+    db: options.db,
     documentPath: 'storyFormSubmissions/{subId}',
     createHandler: ({ db }) =>
       options.bindEffectInvocationBoundary(

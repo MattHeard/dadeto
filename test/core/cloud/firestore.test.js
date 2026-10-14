@@ -1,6 +1,8 @@
 import { jest } from '@jest/globals';
 import { createFirestoreModule } from '../../../src/core/cloud/firestore.js';
 
+const allowEffects = Object.freeze({});
+
 describe('createFirestoreModule', () => {
   /** @returns {object} Firestore test fixture. */
   function createFixture() {
@@ -31,8 +33,8 @@ describe('createFirestoreModule', () => {
     process.env.DATABASE_ID = 'default-db';
 
     expect(module.resolveFirestoreDatabaseId(process.env)).toBe('default-db');
-    const first = module.getFirestoreInstance();
-    const second = module.getFirestoreInstance();
+    const first = module.getFirestoreInstance(allowEffects);
+    const second = module.getFirestoreInstance(allowEffects);
 
     expect(first).toBe(second);
     expect(getFirestore).toHaveBeenCalledTimes(1);
@@ -49,7 +51,7 @@ describe('createFirestoreModule', () => {
     const customGetFirestore = jest.fn(() => 'custom');
 
     expect(
-      module.getFirestoreInstance({
+      module.getFirestoreInstance(allowEffects, {
         ensureAppFn: customEnsure,
         getFirestoreFn: customGetFirestore,
         environment,
@@ -66,27 +68,39 @@ describe('createFirestoreModule', () => {
     const previousDatabaseId = process.env.DATABASE_ID;
     process.env.DATABASE_ID = 't-test';
     expect(
-      first.module.getFirestoreInstance({ ensureAppFn: customEnsure })
+      first.module.getFirestoreInstance(allowEffects, {
+        ensureAppFn: customEnsure,
+      })
     ).toEqual({ app: undefined, databaseId: 't-test' });
-    first.module.getFirestoreInstance({ ensureAppFn: customEnsure });
+    first.module.getFirestoreInstance(allowEffects, {
+      ensureAppFn: customEnsure,
+    });
     expect(first.getFirestore).toHaveBeenCalledWith(undefined, 't-test');
     expect(first.getFirestore).toHaveBeenCalledTimes(2);
 
     const second = createFixture();
     const customGetFirestore = jest.fn(() => 'custom-get');
     expect(
-      second.module.getFirestoreInstance({ getFirestoreFn: customGetFirestore })
+      second.module.getFirestoreInstance(allowEffects, {
+        getFirestoreFn: customGetFirestore,
+      })
     ).toBe('custom-get');
-    second.module.getFirestoreInstance({ getFirestoreFn: customGetFirestore });
+    second.module.getFirestoreInstance(allowEffects, {
+      getFirestoreFn: customGetFirestore,
+    });
     expect(customGetFirestore).toHaveBeenCalledTimes(2);
     expect(second.getFirestore).not.toHaveBeenCalled();
 
     const third = createFixture();
     const customEnvironment = { DATABASE_ID: 'isolated-db' };
     expect(
-      third.module.getFirestoreInstance({ environment: customEnvironment })
+      third.module.getFirestoreInstance(allowEffects, {
+        environment: customEnvironment,
+      })
     ).toEqual({ app: undefined, databaseId: 'isolated-db' });
-    third.module.getFirestoreInstance({ environment: customEnvironment });
+    third.module.getFirestoreInstance(allowEffects, {
+      environment: customEnvironment,
+    });
     expect(third.getFirestore).toHaveBeenCalledWith(undefined, 'isolated-db');
     expect(third.getFirestore).toHaveBeenCalledTimes(2);
     if (previousDatabaseId === undefined) delete process.env.DATABASE_ID;
@@ -98,9 +112,9 @@ describe('createFirestoreModule', () => {
       createFixture();
     const environment = { DATABASE_ID: 'cache-db' };
 
-    module.getFirestoreInstance({ environment });
+    module.getFirestoreInstance(allowEffects, { environment });
     module.clearFirestoreInstanceCache();
-    module.getFirestoreInstance({ environment });
+    module.getFirestoreInstance(allowEffects, { environment });
 
     expect(getFirestore).toHaveBeenCalledTimes(2);
     expect(resetFirebaseInitializationState).toHaveBeenCalledTimes(1);

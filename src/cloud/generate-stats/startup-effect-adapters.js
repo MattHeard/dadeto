@@ -14,7 +14,7 @@ export function useMiddleware(permission, app, middleware) {
 /** Initialize Firebase Admin at the cloud composition boundary. */
 export function initializeFirebaseApp(permission, initializeApp) {
   void permission;
-  return initializeApp();
+  return initializeApp(permission);
 }
 
 /**

@@ -20,7 +20,7 @@ describe('process-new-story entry point', () => {
           FieldValue: {},
           getFirestoreInstance,
           createFirebaseAppManager: jest.fn(initializer => ({
-            ensureFirebaseApp: jest.fn(() => initializer()),
+            ensureFirebaseApp: jest.fn(permission => initializer(permission)),
           })),
         })
       );
@@ -36,7 +36,7 @@ describe('process-new-story entry point', () => {
         () => ({
           initializeFirebaseApp: (permission, initializer) => {
             expect(permission).toBe(startupPermission);
-            return initializer();
+            return initializer(permission);
           },
         })
       );
@@ -53,13 +53,13 @@ describe('process-new-story entry point', () => {
 
     expect(initializeApp).toHaveBeenCalledTimes(1);
     expect(getFirestoreInstance).toHaveBeenCalledTimes(1);
-    const firestoreOptions = getFirestoreInstance.mock.calls[0][0];
+    const firestoreOptions = getFirestoreInstance.mock.calls[0][1];
     expect(firestoreOptions.ensureAppFn).toBeDefined();
-    firestoreOptions.ensureAppFn();
+    firestoreOptions.ensureAppFn(startupPermission);
     expect(initializeApp).toHaveBeenCalledTimes(1);
 
     const options = createProcessNewStoryHandle.mock.calls[0][0];
-    expect(options.getFirestoreInstance()).toBe(database);
+    expect(options.db).toBe(database);
     expect(mod.handle).toEqual({ handle: true });
     expect(initializeApp).toHaveBeenCalledTimes(1);
   });

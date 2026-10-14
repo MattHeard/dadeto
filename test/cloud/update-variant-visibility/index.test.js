@@ -90,9 +90,9 @@ test('entrypoint initializes at startup and uses a fresh trigger capability', as
 
   expect(ensureFirebaseApp).toHaveBeenCalledTimes(1);
   expect(initializeApp).not.toHaveBeenCalled();
-  const firestoreOptions = getFirestoreInstance.mock.calls[0][0];
+  const firestoreOptions = getFirestoreInstance.mock.calls[0][1];
   expect(firestoreOptions.environment).toBe(environment);
-  firestoreOptions.ensureAppFn();
+  firestoreOptions.ensureAppFn(startupPermission);
   expect(ensureFirebaseApp).toHaveBeenCalledTimes(1);
 
   const renderEntryArgs = createRenderContentsEntrypoint.mock.calls[0];

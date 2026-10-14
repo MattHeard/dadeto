@@ -18,7 +18,7 @@ export function createRenderVariantStartup(dependencies) {
   const deps = /** @type {any} */ (dependencies);
   return createEffectStartupBoundary(allowEffects => {
     initializeRenderVariantFirebase(allowEffects, deps.ensureFirebaseApp);
-    const db = deps.getFirestoreInstance({ ensureAppFn: () => {} });
+    const db = deps.getFirestoreInstance(allowEffects, { ensureAppFn: () => {} });
     const renderRuntime = runRenderVariant({
       ...deps,
       db,
@@ -26,7 +26,8 @@ export function createRenderVariantStartup(dependencies) {
       registerVariantWriteTrigger,
     });
     const runRegeneration = createTreeVisibilityRegenerationRunner(
-      () => deps.getFirestoreInstance({ ensureAppFn: () => {} }),
+      permission =>
+        deps.getFirestoreInstance(permission, { ensureAppFn: () => {} }),
       renderRuntime.render,
       deps.logError
     );

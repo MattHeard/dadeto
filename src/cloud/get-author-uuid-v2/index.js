@@ -13,11 +13,11 @@ import { initializeFirebaseApp } from './startup-effect-adapter.js';
 import { createGetAuthorUuidV2ExpressHandle } from './get-author-uuid-v2-core.js';
 
 const db = createEffectStartupBoundary(allowEffects => {
-  const manager = createFirebaseAppManager(() =>
-    initializeFirebaseApp(allowEffects, initializeApp)
+  const manager = createFirebaseAppManager(permission =>
+    initializeFirebaseApp(permission, initializeApp)
   );
-  manager.ensureFirebaseApp();
-  return getFirestoreInstance({
+  manager.ensureFirebaseApp(allowEffects);
+  return getFirestoreInstance(allowEffects, {
     ensureAppFn: () => {},
     getFirestoreFn: getAdminFirestore,
   });

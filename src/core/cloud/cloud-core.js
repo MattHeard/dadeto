@@ -117,12 +117,13 @@ export function isDuplicateAppError(error) {
 
 /**
  * Initialize Firebase once, tolerating duplicate-app errors.
- * @param {() => void} initializeApp Firebase initializer.
+ * @param {import('../../../types/allow-effects').AllowEffects} allowEffects Permission for Firebase initialization.
+ * @param {(allowEffects: import('../../../types/allow-effects').AllowEffects) => unknown} initializeApp Firebase initializer.
  * @returns {void}
  */
-export function ensureFirebaseAppOnce(initializeApp) {
+export function ensureFirebaseAppOnce(allowEffects, initializeApp) {
   try {
-    initializeApp();
+    initializeApp(allowEffects);
   } catch (error) {
     if (!isDuplicateAppError(error)) {
       throw error;

@@ -142,7 +142,7 @@ describe('createAssignModerationJobEntrypoint', () => {
       })
     ).toBe('custom-db');
 
-    const firestore = entrypoint.testing.getFirestoreInstance({
+    const firestore = entrypoint.testing.getFirestoreInstance(allowEffects, {
       ensureAppFn: jest.fn(),
       getFirestoreFn: getFirestore,
       environment: {
@@ -154,7 +154,7 @@ describe('createAssignModerationJobEntrypoint', () => {
     expect(getFirestore).toHaveBeenCalledTimes(2);
 
     expect(() =>
-      entrypoint.testing.getFirestoreInstance({
+      entrypoint.testing.getFirestoreInstance(allowEffects, {
         ensureAppFn: jest.fn(),
         getFirestoreFn: getFirestore,
         environment: null,
@@ -163,8 +163,10 @@ describe('createAssignModerationJobEntrypoint', () => {
       'Firestore database id is required. Set DATABASE_ID or use a t-* deployment environment.'
     );
 
-    const defaultFirestore = entrypoint.testing.getFirestoreInstance();
-    const cachedDefaultFirestore = entrypoint.testing.getFirestoreInstance();
+    const defaultFirestore =
+      entrypoint.testing.getFirestoreInstance(allowEffects);
+    const cachedDefaultFirestore =
+      entrypoint.testing.getFirestoreInstance(allowEffects);
 
     expect(cachedDefaultFirestore).toBe(defaultFirestore);
 

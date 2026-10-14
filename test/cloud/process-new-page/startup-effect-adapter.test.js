@@ -14,7 +14,7 @@ describe('process-new-page startup effect adapter', () => {
     expect(
       getProcessNewPageStartupFirestore(allowEffects, getFirestoreInstance)
     ).toEqual({ db: true });
-    expect(getFirestoreInstance).toHaveBeenCalledWith();
+    expect(getFirestoreInstance).toHaveBeenCalledWith(allowEffects);
   });
 
   it('keeps the startup boundary outside the registered trigger callback', async () => {

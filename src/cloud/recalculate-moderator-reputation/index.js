@@ -23,7 +23,7 @@ import {
 
 const scheduledHandler = createEffectInvocationBoundary(async allowEffects => {
   initializeModeratorReputationFirebase(allowEffects, ensureFirebaseApp);
-  const db = getFirestoreInstance({ ensureAppFn: () => {} });
+  const db = getFirestoreInstance(allowEffects, { ensureAppFn: () => {} });
   const recalculateModeratorReputationJob =
     createRecalculateModeratorReputationJob({
       fetchModerationRatings: () => fetchModerationRatings(db),

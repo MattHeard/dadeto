@@ -1,12 +1,12 @@
 /**
  * Initialize Firebase Admin during render-contents composition.
  * @param {import('../../../types/allow-effects').AllowEffects} allowEffects Startup permission.
- * @param {() => void} ensureFirebaseApp Firebase initialization adapter.
+ * @param {(allowEffects: import('../../../types/allow-effects').AllowEffects) => void} ensureFirebaseApp Firebase initialization adapter.
  * @returns {void} Initialization completion.
  */
 export function initializeRenderContentsFirebase(allowEffects, ensureFirebaseApp) {
   void allowEffects;
-  ensureFirebaseApp();
+  ensureFirebaseApp(allowEffects);
 }
 
 /**
@@ -18,7 +18,7 @@ export function createRenderContentsStartup(dependencies) {
   const deps = /** @type {any} */ (dependencies);
   return createEffectStartupBoundary(allowEffects => {
     initializeRenderContentsFirebase(allowEffects, deps.ensureFirebaseApp);
-    const db = deps.getFirestoreInstance({ ensureAppFn: () => {} });
+    const db = deps.getFirestoreInstance(allowEffects, { ensureAppFn: () => {} });
     return deps.createEntrypoint(allowEffects, {
       ...deps,
       db,

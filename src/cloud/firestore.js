@@ -4,7 +4,10 @@ import { createFirebaseAppManager } from './common-gcf.js';
 import { createFirestoreModule } from '../core/cloud/firestore.js';
 
 const firestoreModule = createFirestoreModule({
-  initializeApp,
+  initializeApp: permission => {
+    void permission;
+    return initializeApp();
+  },
   getFirestore: getAdminFirestore,
   createFirebaseAppManager,
 });

@@ -6,7 +6,7 @@ export function createSubmitModerationRatingStartup(dependencies) {
   const deps = /** @type {any} */ (dependencies);
   return createEffectStartupBoundary(allowEffects => {
     initializeModerationRatingFirebase(allowEffects, deps.ensureFirebaseApp);
-    const db = deps.getFirestoreInstance({ ensureAppFn: () => {} });
+    const db = deps.getFirestoreInstance(allowEffects, { ensureAppFn: () => {} });
     return deps.createEntrypoint(allowEffects, { ...deps, db });
   });
 }

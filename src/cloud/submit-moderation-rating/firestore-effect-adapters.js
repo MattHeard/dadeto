@@ -1,7 +1,6 @@
-/** @param {import('../../../types/allow-effects').AllowEffects} permission @param {() => void} ensureApp */
+/** @param {import('../../../types/allow-effects').AllowEffects} permission @param {(permission: import('../../../types/allow-effects').AllowEffects) => void} ensureApp */
 export function initializeModerationRatingFirebase(permission, ensureApp) {
-  void permission;
-  ensureApp();
+  ensureApp(permission);
 }
 
 /** @param {import('../../../types/allow-effects').AllowEffects} permission @param {object} moderatorRef @param {object} update */

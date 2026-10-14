@@ -21,9 +21,11 @@ import { createUpdateVariantRenderDependencies } from './render-contents-depende
 
 /** Build the cloud services used by the startup composer. */
 export function createUpdateVariantVisibilityStartupDependencies() {
-  const { ensureFirebaseApp } = createFirebaseAppManager(initializeApp);
-  const { updateFirestoreDocument } =
-    createUpdateVariantVisibilityEffectAdapters();
+  const { ensureFirebaseApp } = createFirebaseAppManager(permission => {
+    void permission;
+    return initializeApp();
+  });
+  const { updateFirestoreDocument } = createUpdateVariantVisibilityEffectAdapters();
   return {
     ensureFirebaseApp: allowEffects =>
       ensureUpdateVariantVisibilityFirebase(allowEffects, ensureFirebaseApp),

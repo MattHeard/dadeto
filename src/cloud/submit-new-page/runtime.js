@@ -6,10 +6,13 @@
  */
 export function createSubmitNewPageRuntime(allowEffects, deps) {
   const { ensureFirebaseApp } = deps.createFirebaseAppManager(
-    deps.initializeApp
+    permission => {
+      void permission;
+      return deps.initializeApp();
+    }
   );
   deps.ensureFirebaseInitialized(allowEffects, ensureFirebaseApp);
-  const db = deps.getFirestoreInstance();
+  const db = deps.getFirestoreInstance(allowEffects);
   const auth = deps.getAuth();
   return deps.createHandleSubmit({
     verifyIdToken: token => auth.verifyIdToken(token),

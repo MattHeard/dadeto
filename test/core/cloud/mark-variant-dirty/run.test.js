@@ -91,9 +91,12 @@ async function verifyResponseBranches(handleRequest, res, runtime) {
 describe('runMarkVariantDirty', () => {
   test('wires the endpoint and returns exports', () => {
     const startupPermissions = [];
-    const ensureFirebaseApp = jest.fn(initializer => initializer());
+    const ensureFirebaseApp = jest.fn((permission, initializer) =>
+      initializer(permission)
+    );
     const createFirebaseAppManager = jest.fn(initializer => ({
-      ensureFirebaseApp: () => ensureFirebaseApp(initializer),
+      ensureFirebaseApp: permission =>
+        ensureFirebaseApp(permission, initializer),
     }));
     const initializeApp = jest.fn();
     const initializeFirebaseApp = jest.fn((_, initializer) => initializer());
@@ -152,20 +155,23 @@ describe('runMarkVariantDirty', () => {
     });
 
     expect(createFirebaseAppManager).toHaveBeenCalledWith(expect.any(Function));
-    expect(ensureFirebaseApp).toHaveBeenCalled();
+    expect(ensureFirebaseApp).toHaveBeenCalledWith(
+      startupPermissions[0],
+      expect.any(Function)
+    );
     expect(initializeFirebaseApp).toHaveBeenCalledWith(
       startupPermissions[0],
       initializeApp
     );
     expect(getEnvironmentVariables).toHaveBeenCalled();
-    expect(getFirestoreInstance).toHaveBeenCalledWith({
+    expect(getFirestoreInstance).toHaveBeenCalledWith(startupPermissions[0], {
       ensureAppFn: expect.any(Function),
       environment: {
         DENDRITE_ENVIRONMENT: 't-123',
         PLAYWRIGHT_ORIGIN: 'https://preview.local',
       },
     });
-    getFirestoreInstance.mock.calls[0][0].ensureAppFn();
+    getFirestoreInstance.mock.calls[0][1].ensureAppFn(startupPermissions[0]);
     expect(initializeApp).toHaveBeenCalledTimes(1);
     expect(expressApp.use).toHaveBeenCalledWith('cors-middleware');
     expect(expressApp.use).toHaveBeenCalledWith('json-middleware');

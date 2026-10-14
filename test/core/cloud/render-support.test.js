@@ -66,7 +66,8 @@ describe('render support helpers', () => {
     };
     const getFirestoreInstance = jest.fn(() => ({ db: true }));
     const Storage = jest.fn(() => ({ storage: true }));
-    const context = createCloudRenderContext({
+    const allowEffects = Object.freeze({});
+    const context = createCloudRenderContext(allowEffects, {
       getEnvironmentVariables: jest.fn(() => environmentVariables),
       getFirestoreInstance,
       Storage,
@@ -75,7 +76,7 @@ describe('render support helpers', () => {
       defaultBucketName: 'default-bucket',
     });
 
-    expect(getFirestoreInstance).toHaveBeenCalledWith({
+    expect(getFirestoreInstance).toHaveBeenCalledWith(allowEffects, {
       environment: environmentVariables,
     });
     expect(context.db).toEqual({ db: true });
@@ -134,7 +135,8 @@ describe('render support helpers', () => {
       CDN_HOST: 'cdn',
     }));
     const buildRender = jest.fn(state => state);
-    const state = createCloudRenderEntrypointState({
+    const allowEffects = Object.freeze({});
+    const state = createCloudRenderEntrypointState(allowEffects, {
       initializeApp: jest.fn(),
       createFirebaseAppManager,
       getFirestoreInstance: jest.fn(() => ({ db: true })),
@@ -152,6 +154,7 @@ describe('render support helpers', () => {
     expect(buildRender).toHaveBeenCalledTimes(1);
     expect(state.db).toEqual({ db: true });
     expect(ensureFirebaseApp).toHaveBeenCalledTimes(1);
+    expect(ensureFirebaseApp).toHaveBeenCalledWith(allowEffects);
   });
 
   test('builds render state from the database supplied by the cloud boundary', () => {

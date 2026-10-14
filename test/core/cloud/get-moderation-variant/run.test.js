@@ -182,10 +182,10 @@ describe('runGetModerationVariant', () => {
         return initializer();
       },
       createFirebaseAppManager: initializer => ({
-        ensureFirebaseApp: () => initializer(),
+        ensureFirebaseApp: permission => initializer(permission),
       }),
-      getFirestoreInstance: options => {
-        options.ensureAppFn();
+      getFirestoreInstance: (permission, options) => {
+        options.ensureAppFn(permission);
         return db;
       },
       getAuth: () => auth,

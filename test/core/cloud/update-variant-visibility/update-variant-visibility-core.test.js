@@ -1063,7 +1063,7 @@ describe('createUpdateVariantVisibilityHandle', () => {
       )
     ).toBe(handle);
 
-    expect(getFirestoreInstance).toHaveBeenCalledTimes(1);
+    expect(getFirestoreInstance).toHaveBeenCalledWith(startupPermission);
     expect(registerTrigger).toHaveBeenCalledWith(
       startupPermission,
       functions,

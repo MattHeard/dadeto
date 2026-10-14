@@ -14,22 +14,21 @@ import { createSubmissionBatch } from '../process-new-page/effect-adapters.js';
 import { initializeFirebaseApp as initializeFirebaseAppEffect } from './startup-effect-adapter.js';
 import { createProcessNewStoryHandle } from '../../core/cloud/process-new-story/process-new-story-core.js';
 
-const db = createEffectStartupBoundary(allowEffects => {
-  const manager = createFirebaseAppManager(() =>
-    initializeFirebaseAppEffect(allowEffects, initializeApp)
+const handle = createEffectStartupBoundary(allowEffects => {
+  const manager = createFirebaseAppManager(permission =>
+    initializeFirebaseAppEffect(permission, initializeApp)
   );
-  manager.ensureFirebaseApp();
-  return getFirestoreInstance({ ensureAppFn: () => {} });
-});
-
-const handle = createProcessNewStoryHandle({
-  functions,
-  getFirestoreInstance: () => db,
-  fieldValue: FieldValue,
-  randomUUID,
-  random: Math.random,
-  createBatch: createSubmissionBatch,
-  bindEffectInvocationBoundary: createEffectInvocationBoundary,
+  manager.ensureFirebaseApp(allowEffects);
+  const db = getFirestoreInstance(allowEffects, { ensureAppFn: () => {} });
+  return createProcessNewStoryHandle({
+    functions,
+    db,
+    fieldValue: FieldValue,
+    randomUUID,
+    random: Math.random,
+    createBatch: createSubmissionBatch,
+    bindEffectInvocationBoundary: createEffectInvocationBoundary,
+  });
 });
 
 export { handle };

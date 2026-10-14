@@ -24,10 +24,9 @@ export function registerSubmitNewStoryHttpFunction(
   return functions.region(region).https.onRequest(app);
 }
 
-/** @param {import('../../../types/allow-effects').AllowEffects} allowEffects @param {() => void} ensureFirebaseApp */
+/** @param {import('../../../types/allow-effects').AllowEffects} allowEffects @param {(allowEffects: import('../../../types/allow-effects').AllowEffects) => void} ensureFirebaseApp */
 export function ensureSubmitNewStoryFirebase(allowEffects, ensureFirebaseApp) {
-  void allowEffects;
-  ensureFirebaseApp();
+  ensureFirebaseApp(allowEffects);
 }
 
 /** @param {(allowEffects: import('../../../types/allow-effects').AllowEffects, args: { error: unknown, req: object, res: any, next: (error?: unknown) => void }) => void} handler */

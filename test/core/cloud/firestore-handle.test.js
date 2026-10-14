@@ -11,19 +11,17 @@ describe('createFirestoreHandle', () => {
     const firestore = { document };
     const regionResult = { firestore };
     const functions = { region: jest.fn(() => regionResult) };
-    const getFirestoreInstance = jest.fn(() => db);
     const createHandler = jest.fn(() => eventHandler);
 
     expect(
       createFirestoreHandle({
         functions,
-        getFirestoreInstance,
+        db,
         createHandler,
         documentPath: 'things/{thingId}',
       })
     ).toBe(handle);
 
-    expect(getFirestoreInstance).toHaveBeenCalledTimes(1);
     expect(createHandler).toHaveBeenCalledWith({ db });
     expect(functions.region).toHaveBeenCalledWith('europe-west1');
     expect(document).toHaveBeenCalledWith('things/{thingId}');
@@ -44,7 +42,7 @@ describe('createFirestoreHandle', () => {
     expect(
       createFirestoreHandle({
         functions,
-        getFirestoreInstance: jest.fn(() => ({ firestore: true })),
+        db: { firestore: true },
         createHandler: jest.fn(() => jest.fn()),
         documentPath: 'stories/{storyId}',
         eventName: 'onWrite',

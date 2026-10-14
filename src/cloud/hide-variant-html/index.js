@@ -16,11 +16,11 @@ import {
 } from './effect-adapters.js';
 
 const db = createEffectStartupBoundary(allowEffects => {
-  const appManager = createFirebaseAppManager(() =>
-    initializeFirebaseApp(allowEffects, initializeApp)
+  const appManager = createFirebaseAppManager(permission =>
+    initializeFirebaseApp(permission, initializeApp)
   );
-  appManager.ensureFirebaseApp();
-  return getFirestoreInstance({ ensureAppFn: () => {} });
+  appManager.ensureFirebaseApp(allowEffects);
+  return getFirestoreInstance(allowEffects, { ensureAppFn: () => {} });
 });
 const { hideVariantHtml: handle, handleVariantVisibilityChange } =
   createHideVariantHtmlCore({

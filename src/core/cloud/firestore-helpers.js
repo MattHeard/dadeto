@@ -3,9 +3,10 @@ export {
   buildVariantByNameQuery,
 } from './cloud-core.js';
 
-/** @typedef {{ensureAppFn?: () => void, getFirestoreFn?: (app?: import('firebase-admin/app').App, databaseId?: string) => import('firebase-admin/firestore').Firestore, environment?: Record<string, unknown>}} FirestoreInstanceOptions */
-/** @typedef {{ensureAppFn: () => void, getFirestoreFn: Function, environment: Record<string, unknown>}} FirestoreDependencyContext */
-/** @typedef {{cache: {value: import('firebase-admin/firestore').Firestore | null}, defaultEnsureAppFn: () => void, defaultGetFirestoreFn: NonNullable<FirestoreInstanceOptions['getFirestoreFn']>, resolveEnvironment: (options: FirestoreInstanceOptions) => Record<string, unknown>, shouldCache: (context: {options: FirestoreInstanceOptions, ensureAppFn: () => void, getFirestoreFn: NonNullable<FirestoreInstanceOptions['getFirestoreFn']>, environment: Record<string, unknown>}) => boolean}} FirestoreInstanceResolverDependencies */
+/** @typedef {import('../../../types/allow-effects').AllowEffects} AllowEffects */
+/** @typedef {{ensureAppFn?: (allowEffects: AllowEffects) => void, getFirestoreFn?: (app?: import('firebase-admin/app').App, databaseId?: string) => import('firebase-admin/firestore').Firestore, environment?: Record<string, unknown>}} FirestoreInstanceOptions */
+/** @typedef {{ensureAppFn: (allowEffects: AllowEffects) => void, getFirestoreFn: Function, environment: Record<string, unknown>}} FirestoreDependencyContext */
+/** @typedef {{cache: {value: import('firebase-admin/firestore').Firestore | null}, defaultEnsureAppFn: (allowEffects: AllowEffects) => void, defaultGetFirestoreFn: NonNullable<FirestoreInstanceOptions['getFirestoreFn']>, resolveEnvironment: (options: FirestoreInstanceOptions) => Record<string, unknown>, shouldCache: (context: {options: FirestoreInstanceOptions, allowEffects: AllowEffects, ensureAppFn: (allowEffects: AllowEffects) => void, getFirestoreFn: NonNullable<FirestoreInstanceOptions['getFirestoreFn']>, environment: Record<string, unknown>}) => boolean}} FirestoreInstanceResolverDependencies */
 
 /**
  * Parse the database identifier from the runtime environment.
@@ -51,10 +52,10 @@ export function isDefaultFirestoreContext(context, defaults) {
 
 /**
  * Create a cache-context check bound to one module's default Firestore dependencies.
- * @param {() => void} defaultEnsureAppFn Default app initializer.
+ * @param {(allowEffects: AllowEffects) => void} defaultEnsureAppFn Default app initializer.
  * @param {Function} defaultGetFirestoreFn Default Firestore factory.
  * @param {Record<string, unknown>} defaultEnvironment Default environment object.
- * @returns {(options: {ensureAppFn: () => void, getFirestoreFn: Function, environment: Record<string, unknown>}) => boolean} Context checker.
+ * @returns {(options: {ensureAppFn: (allowEffects: AllowEffects) => void, getFirestoreFn: Function, environment: Record<string, unknown>}) => boolean} Context checker.
  */
 export function createDefaultFirestoreContextChecker(
   defaultEnsureAppFn,
@@ -120,7 +121,7 @@ export function createFirestoreInstance(getFirestoreFn, databaseId) {
 
 /**
  * Resolve a Firestore instance while preserving caller-specific cache policy.
- * @param {{cache: {value: import('firebase-admin/firestore').Firestore | null}, ensureAppFn: () => void, getFirestoreFn: (app?: import('firebase-admin/app').App, databaseId?: string) => import('firebase-admin/firestore').Firestore, environment: Record<string, unknown>, shouldCache: () => boolean}} options Firestore dependencies and cache policy.
+ * @param {{allowEffects: AllowEffects, cache: {value: import('firebase-admin/firestore').Firestore | null}, ensureAppFn: (allowEffects: AllowEffects) => void, getFirestoreFn: (app?: import('firebase-admin/app').App, databaseId?: string) => import('firebase-admin/firestore').Firestore, environment: Record<string, unknown>, shouldCache: () => boolean}} options Firestore dependencies and cache policy.
  * @returns {import('firebase-admin/firestore').Firestore} Cached or newly created Firestore instance.
  */
 export function getFirestoreInstanceFromCache(options) {
@@ -129,12 +130,12 @@ export function getFirestoreInstanceFromCache(options) {
 
 /**
  * Resolve a Firestore instance from dependencies and its cache policy.
- * @param {{cache: {value: import('firebase-admin/firestore').Firestore | null}, ensureAppFn: () => void, getFirestoreFn: (app?: import('firebase-admin/app').App, databaseId?: string) => import('firebase-admin/firestore').Firestore, environment: Record<string, unknown>}} options Firestore dependencies.
+ * @param {{allowEffects: AllowEffects, cache: {value: import('firebase-admin/firestore').Firestore | null}, ensureAppFn: (allowEffects: AllowEffects) => void, getFirestoreFn: (app?: import('firebase-admin/app').App, databaseId?: string) => import('firebase-admin/firestore').Firestore, environment: Record<string, unknown>}} options Firestore dependencies.
  * @param {() => boolean} shouldCache Caller-specific cache policy.
  * @returns {import('firebase-admin/firestore').Firestore} Cached or newly created Firestore instance.
  */
 function resolveFirestoreInstanceFromCache(options, shouldCache) {
-  options.ensureAppFn();
+  options.ensureAppFn(options.allowEffects);
   const databaseId = resolveFirestoreDatabaseId(options.environment);
   const useCache = shouldCache();
   if (useCache && options.cache.value !== null) return options.cache.value;
@@ -146,16 +147,17 @@ function resolveFirestoreInstanceFromCache(options, shouldCache) {
 /**
  * Create an accessor that resolves environment and cache policy consistently.
  * @param {FirestoreInstanceResolverDependencies} dependencies Resolver dependencies and caller-specific policies.
- * @returns {(options?: FirestoreInstanceOptions) => import('firebase-admin/firestore').Firestore} Configured Firestore accessor.
+ * @returns {(allowEffects: AllowEffects, options?: FirestoreInstanceOptions) => import('firebase-admin/firestore').Firestore} Configured Firestore accessor.
  */
 export function createFirestoreInstanceResolver(dependencies) {
-  return function getFirestoreInstance(options = {}) {
+  return function getFirestoreInstance(allowEffects, options = {}) {
     const ensureAppFn = options.ensureAppFn ?? dependencies.defaultEnsureAppFn;
     const getFirestoreFn =
       options.getFirestoreFn ?? dependencies.defaultGetFirestoreFn;
     const environment = dependencies.resolveEnvironment(options);
     const cacheOptions = {
       cache: dependencies.cache,
+      allowEffects,
       ensureAppFn,
       getFirestoreFn,
       environment,
@@ -163,6 +165,7 @@ export function createFirestoreInstanceResolver(dependencies) {
     return resolveFirestoreInstanceFromCache(cacheOptions, () =>
       dependencies.shouldCache({
         options,
+        allowEffects,
         ensureAppFn,
         getFirestoreFn,
         environment,

@@ -15,7 +15,7 @@ import { registerAuthorWriteTrigger } from './trigger-effect-adapter.js';
 
 const { renderAuthor } = createEffectStartupBoundary(allowEffects => {
   initializeFirebaseApp(allowEffects, ensureFirebaseApp);
-  const db = getFirestoreInstance({ ensureAppFn: () => {} });
+  const db = getFirestoreInstance(allowEffects, { ensureAppFn: () => {} });
 
   return runRenderAuthor(allowEffects, {
     db,

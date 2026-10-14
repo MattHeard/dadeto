@@ -33,8 +33,8 @@ async function loadModule({
   const initializeFirebaseApp = jest.fn((permission, initFn, effect) =>
     effect(permission, initFn)
   );
-  const initializeFirebaseAppEffect = jest.fn((_permission, initFn) =>
-    initFn()
+  const initializeFirebaseAppEffect = jest.fn((permission, initFn) =>
+    initFn(permission)
   );
   const productionOrigins = ['https://prod.example'];
   const coreResult = {
@@ -154,18 +154,17 @@ async function loadModule({
 
 describe('generate-stats run', () => {
   it('initializes Firebase once', async () => {
-    const { mod, bindStartupEffectBoundary, initializeFirebaseAppEffect } =
-      await loadModule();
-    const initFn = jest.fn();
+    const { mod, initializeFirebaseAppEffect } = await loadModule();
+    const allowEffects = Object.freeze({ startup: true });
+    const initFn = jest.fn(permission => expect(permission).toBe(allowEffects));
 
     const ensure = mod.createEnsureFirebaseApp(
       initFn,
-      bindStartupEffectBoundary,
       initializeFirebaseAppEffect
     );
 
-    ensure();
-    ensure();
+    ensure(allowEffects);
+    ensure(allowEffects);
 
     expect(initFn).toHaveBeenCalledTimes(1);
   });
@@ -255,13 +254,13 @@ describe('generate-stats run', () => {
   });
 
   it('caches the default firestore instance', async () => {
-    const { mod, getFirestore } = await loadModule();
+    const { mod, getFirestore, startupPermission } = await loadModule();
     const originalDatabaseId = process.env.DATABASE_ID;
     process.env.DATABASE_ID = 'cached-db';
 
     try {
-      const first = mod.getFirestoreInstance();
-      const second = mod.getFirestoreInstance();
+      const first = mod.getFirestoreInstance(startupPermission);
+      const second = mod.getFirestoreInstance(startupPermission);
 
       expect(first).toBe(second);
       expect(getFirestore).toHaveBeenCalledTimes(1);
@@ -279,7 +278,8 @@ describe('generate-stats run', () => {
     const ensureAppFn = jest.fn();
     const getFirestoreFn = jest.fn((...args) => args);
 
-    const result = mod.getFirestoreInstance({
+    const allowEffects = Object.freeze({ test: true });
+    const result = mod.getFirestoreInstance(allowEffects, {
       ensureAppFn,
       getFirestoreFn,
       environment: {
@@ -290,7 +290,7 @@ describe('generate-stats run', () => {
     expect(ensureAppFn).toHaveBeenCalledTimes(1);
     expect(getFirestoreFn).toHaveBeenCalledWith(undefined, 'custom-db');
     expect(result).toEqual([undefined, 'custom-db']);
-    mod.getFirestoreInstance({
+    mod.getFirestoreInstance(allowEffects, {
       ensureAppFn,
       getFirestoreFn,
       environment: {
@@ -306,20 +306,34 @@ describe('generate-stats run', () => {
     try {
       const ensureCase = await loadModule();
       const customEnsure = jest.fn();
-      ensureCase.mod.getFirestoreInstance({ ensureAppFn: customEnsure });
-      ensureCase.mod.getFirestoreInstance({ ensureAppFn: customEnsure });
+      ensureCase.mod.getFirestoreInstance(ensureCase.startupPermission, {
+        ensureAppFn: customEnsure,
+      });
+      ensureCase.mod.getFirestoreInstance(ensureCase.startupPermission, {
+        ensureAppFn: customEnsure,
+      });
       expect(ensureCase.getFirestore).toHaveBeenCalledTimes(2);
 
       const factoryCase = await loadModule();
       const customFactory = jest.fn(() => 'custom');
-      factoryCase.mod.getFirestoreInstance({ getFirestoreFn: customFactory });
-      factoryCase.mod.getFirestoreInstance({ getFirestoreFn: customFactory });
+      factoryCase.mod.getFirestoreInstance(factoryCase.startupPermission, {
+        getFirestoreFn: customFactory,
+      });
+      factoryCase.mod.getFirestoreInstance(factoryCase.startupPermission, {
+        getFirestoreFn: customFactory,
+      });
       expect(customFactory).toHaveBeenCalledTimes(2);
 
       const environmentCase = await loadModule();
       const environment = { DATABASE_ID: 'environment-db' };
-      environmentCase.mod.getFirestoreInstance({ environment });
-      environmentCase.mod.getFirestoreInstance({ environment });
+      environmentCase.mod.getFirestoreInstance(
+        environmentCase.startupPermission,
+        { environment }
+      );
+      environmentCase.mod.getFirestoreInstance(
+        environmentCase.startupPermission,
+        { environment }
+      );
       expect(environmentCase.getFirestore).toHaveBeenCalledTimes(2);
     } finally {
       if (previousDatabaseId === undefined) delete process.env.DATABASE_ID;
@@ -331,7 +345,7 @@ describe('generate-stats run', () => {
     const { mod } = await loadModule();
 
     expect(() =>
-      mod.getFirestoreInstance({
+      mod.getFirestoreInstance(Object.freeze({ test: true }), {
         getFirestoreFn: null,
       })
     ).toThrow(new TypeError('getFirestoreFn must be a function'));

@@ -20,9 +20,15 @@ test('composes initialized Firestore inside the startup capability boundary', ()
   });
 
   expect(ensureFirebaseApp).toHaveBeenCalledTimes(1);
-  expect(getFirestoreInstance).toHaveBeenCalledWith({
-    ensureAppFn: expect.any(Function),
-  });
+  expect(ensureFirebaseApp).toHaveBeenCalledWith(
+    entrypoint.startupAllowEffects
+  );
+  expect(getFirestoreInstance).toHaveBeenCalledWith(
+    entrypoint.startupAllowEffects,
+    {
+      ensureAppFn: expect.any(Function),
+    }
+  );
   expect(entrypoint.db).toBe(db);
   expect(entrypoint.startupAllowEffects).toEqual(expect.any(Object));
   expect(Object.isFrozen(entrypoint.startupAllowEffects)).toBe(true);

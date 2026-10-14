@@ -40,14 +40,14 @@ import { createVerifyAdmin, isAllowedOrigin } from '../cloud-core.js';
  */
 export function runMarkVariantDirty(deps) {
   const { auth, db, app } = deps.bindStartupEffectBoundary(allowEffects => {
-    const appManager = deps.createFirebaseAppManager(() =>
-      deps.initializeFirebaseApp(allowEffects, deps.initializeApp)
+    const appManager = deps.createFirebaseAppManager(permission =>
+      deps.initializeFirebaseApp(permission, deps.initializeApp)
     );
-    appManager.ensureFirebaseApp();
+    appManager.ensureFirebaseApp(allowEffects);
     const environment = deps.getEnvironmentVariables();
     return {
       auth: deps.getAuth(),
-      db: deps.getFirestoreInstance({
+      db: deps.getFirestoreInstance(allowEffects, {
         ensureAppFn: () => {},
         environment,
       }),

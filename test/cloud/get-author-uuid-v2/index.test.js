@@ -22,7 +22,7 @@ describe('get-author-uuid-v2 entry point', () => {
         '../../../src/cloud/common-gcf.js',
         () => ({
           createFirebaseAppManager: jest.fn(initializer => ({
-            ensureFirebaseApp: jest.fn(() => initializer()),
+            ensureFirebaseApp: jest.fn(permission => initializer(permission)),
           })),
         })
       );
@@ -42,7 +42,7 @@ describe('get-author-uuid-v2 entry point', () => {
         () => ({
           initializeFirebaseApp: (permission, initializer) => {
             expect(permission).toBe(startupPermission);
-            return initializer();
+            return initializer(permission);
           },
         })
       );
@@ -66,8 +66,8 @@ describe('get-author-uuid-v2 entry point', () => {
     expect(firstPermission).not.toBe(startupPermission);
     expect(initializeApp).toHaveBeenCalledTimes(1);
 
-    const firestoreOptions = getFirestoreInstance.mock.calls[0][0];
-    firestoreOptions.ensureAppFn();
+    const firestoreOptions = getFirestoreInstance.mock.calls[0][1];
+    firestoreOptions.ensureAppFn(startupPermission);
     expect(initializeApp).toHaveBeenCalledTimes(1);
   });
 });

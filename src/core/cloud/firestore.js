@@ -5,20 +5,22 @@ import {
   createFirestoreInstanceResolver,
 } from './firestore-helpers.js';
 
+/** @typedef {import('../../../types/allow-effects').AllowEffects} AllowEffects */
+
 /**
  * Create the shared Firestore module for cloud entrypoints.
  * @param {{
- *   initializeApp: () => unknown,
+ *   initializeApp: (allowEffects: AllowEffects) => unknown,
  *   getFirestore: (app?: unknown, databaseId?: string) => import('firebase-admin/firestore').Firestore,
- *   createFirebaseAppManager: (initializeApp: () => unknown) => {
- *     ensureFirebaseApp: () => void,
+ *   createFirebaseAppManager: (initializeApp: (allowEffects: AllowEffects) => unknown) => {
+ *     ensureFirebaseApp: (allowEffects: AllowEffects) => void,
  *     resetFirebaseInitializationState: () => void
  *   },
  * }} deps Module dependencies.
  * @returns {{
  *   resolveFirestoreDatabaseId: typeof resolveFirestoreDatabaseId,
- *   getFirestoreInstance: (options?: {
- *     ensureAppFn?: () => void,
+ *   getFirestoreInstance: (allowEffects: AllowEffects, options?: {
+ *     ensureAppFn?: (allowEffects: AllowEffects) => void,
  *     getFirestoreFn?: (app?: unknown, databaseId?: string) => import('firebase-admin/firestore').Firestore,
  *     environment?: Record<string, unknown>,
  *   }) => import('firebase-admin/firestore').Firestore,
@@ -40,7 +42,7 @@ export function createFirestoreModule(deps) {
   /**
    * Determine whether the current call should bypass the cached Firestore instance.
    * @param {{
-   *   ensureAppFn: () => void,
+   *   ensureAppFn: (allowEffects: AllowEffects) => void,
    *   getFirestoreFn: (app?: import('firebase-admin/app').App, databaseId?: string) => import('firebase-admin/firestore').Firestore,
    *   environment: Record<string, unknown>,
    * }} options Firestore resolution inputs.

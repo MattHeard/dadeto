@@ -1,12 +1,11 @@
 /**
  * Ensure Firebase is initialized during startup composition.
  * @param {import('../../../types/allow-effects').AllowEffects} allowEffects Startup permission.
- * @param {() => void} ensureFirebaseApp Firebase initialization action.
+ * @param {(allowEffects: import('../../../types/allow-effects').AllowEffects) => void} ensureFirebaseApp Firebase initialization action.
  * @returns {void} Completes startup initialization.
  */
 export function ensureSubmitNewPageFirebase(allowEffects, ensureFirebaseApp) {
-  void allowEffects;
-  ensureFirebaseApp();
+  ensureFirebaseApp(allowEffects);
 }
 
 /**

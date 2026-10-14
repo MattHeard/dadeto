@@ -47,17 +47,18 @@ describe('cloud-core additional coverage', () => {
   });
 
   test('handles Firebase initialization success, duplicate, and other errors', () => {
+    const allowEffects = Object.freeze({});
     const initializeApp = jest.fn();
-    ensureFirebaseAppOnce(initializeApp);
+    ensureFirebaseAppOnce(allowEffects, initializeApp);
     expect(initializeApp).toHaveBeenCalledTimes(1);
 
     expect(() =>
-      ensureFirebaseAppOnce(() => {
+      ensureFirebaseAppOnce(allowEffects, () => {
         throw { code: 'app/duplicate-app', message: 'already exists' };
       })
     ).not.toThrow();
     expect(() =>
-      ensureFirebaseAppOnce(() => {
+      ensureFirebaseAppOnce(allowEffects, () => {
         throw new Error('network failure');
       })
     ).toThrow('network failure');

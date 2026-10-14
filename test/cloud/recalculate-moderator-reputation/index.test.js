@@ -8,7 +8,7 @@ test('scheduled executions mint distinct permissions for reputation writes', asy
   const steps = [];
   const db = { collection: jest.fn() };
   const ensureFirebaseApp = jest.fn();
-  const getFirestoreInstance = jest.fn(options => {
+  const getFirestoreInstance = jest.fn((_permission, options) => {
     steps.push('firestore');
     options.ensureAppFn();
     return db;
@@ -33,7 +33,7 @@ test('scheduled executions mint distinct permissions for reputation writes', asy
   const initializeFirebase = jest.fn((permission, ensure) => {
     initializationPermissions.push(permission);
     steps.push('initialize');
-    ensure();
+    ensure(permission);
   });
   const createEffectInvocationBoundary =
     handler =>
@@ -89,7 +89,7 @@ test('scheduled executions mint distinct permissions for reputation writes', asy
   );
   expect(initializationPermissions).toEqual(invocationPermissions);
   expect(getFirestoreInstance).toHaveBeenCalledTimes(2);
-  expect(getFirestoreInstance).toHaveBeenCalledWith({
+  expect(getFirestoreInstance).toHaveBeenCalledWith(expect.any(Object), {
     ensureAppFn: expect.any(Function),
   });
   expect(ensureFirebaseApp).toHaveBeenCalledTimes(2);

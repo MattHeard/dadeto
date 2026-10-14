@@ -3,7 +3,7 @@ import { regenerateDirtyTreeWeightVariants } from './tree-visibility-regeneratio
 
 /**
  * Create a permission-aware tree-visibility regeneration runner.
- * @param {() => import('firebase-admin/firestore').Firestore} getFirestoreInstance Firestore accessor.
+ * @param {(permission: AllowEffects) => import('firebase-admin/firestore').Firestore} getFirestoreInstance Firestore accessor.
  * @param {(permission: AllowEffects, snapshot: unknown) => Promise<unknown>} render Renderer.
  * @param {(permission: AllowEffects, message: string, path?: string, error?: unknown) => void} logError Permission-aware error logger.
  * @returns {(permission: AllowEffects) => Promise<unknown>} Regeneration runner.
@@ -15,7 +15,7 @@ export function createTreeVisibilityRegenerationRunner(
 ) {
   return permission =>
     regenerateDirtyTreeWeightVariants(permission, {
-      db: /** @type {any} */ (getFirestoreInstance()),
+      db: /** @type {any} */ (getFirestoreInstance(permission)),
       renderVariant: render,
       logError,
     });

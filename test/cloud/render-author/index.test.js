@@ -57,7 +57,7 @@ test('scopes Firebase startup and trigger registration permission away from invo
       () => ({
         initializeFirebaseApp: (permission, ensure) => {
           startupPermissions.push(permission);
-          ensure();
+          ensure(permission);
         },
       })
     );
@@ -70,10 +70,12 @@ test('scopes Firebase startup and trigger registration permission away from invo
 
   expect(ensureFirebaseApp).toHaveBeenCalledTimes(1);
   expect(getFirestoreInstance).toHaveBeenCalledTimes(1);
-  expect(getFirestoreInstance.mock.calls[0][0]).toEqual({
+  expect(getFirestoreInstance.mock.calls[0][1]).toEqual({
     ensureAppFn: expect.any(Function),
   });
-  getFirestoreInstance.mock.calls[0][0].ensureAppFn();
+  getFirestoreInstance.mock.calls[0][1].ensureAppFn(
+    getFirestoreInstance.mock.calls[0][0]
+  );
   expect(ensureFirebaseApp).toHaveBeenCalledTimes(1);
   expect(registerAuthorWriteTrigger).toHaveBeenCalledTimes(1);
   expect(startupPermissions).toHaveLength(2);

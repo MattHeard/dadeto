@@ -17,10 +17,16 @@ import {
 
 /** @param {import('../../types/allow-effects').AllowEffects} allowEffects Startup capability. */
 export function createSubmitNewStoryStartup(allowEffects) {
-  const { ensureFirebaseApp } = cloud.createFirebaseAppManager(initializeApp);
+  const { ensureFirebaseApp } = cloud.createFirebaseAppManager(permission => {
+    void permission;
+    return initializeApp();
+  });
   ensureSubmitNewStoryFirebase(allowEffects, ensureFirebaseApp);
   const environment = cloud.getEnvironmentVariables();
-  const db = cloud.getFirestoreInstance({ environment, ensureAppFn: () => {} });
+  const db = cloud.getFirestoreInstance(allowEffects, {
+    environment,
+    ensureAppFn: () => {},
+  });
   return runSubmitNewStory(allowEffects, {
     ...cloud,
     db,

@@ -19,8 +19,8 @@ import {
  * @param {(handler: (permission: AllowEffects, error: unknown, req: NativeHttpRequest, res: NativeHttpResponse & {headersSent?: boolean}) => Promise<void>) => (...args: any[]) => Promise<void>} deps.createInvocationBoundary Boundary for framework invocation effects.
  * @param {() => unknown} deps.initializeApp Firebase Admin initializer.
  * @param {(permission: AllowEffects, initializeApp: () => unknown) => unknown} deps.initializeFirebaseApp Permission-aware initializer adapter.
- * @param {(initializer: () => unknown) => {ensureFirebaseApp: () => void}} deps.createFirebaseAppManager Initialization state manager.
- * @param {(options: {ensureAppFn: () => void}) => Parameters<typeof createGetModerationVariantResponder>[0]['db']} deps.getFirestoreInstance Firestore accessor.
+ * @param {(initializer: (permission: AllowEffects) => unknown) => {ensureFirebaseApp: (permission: AllowEffects) => void}} deps.createFirebaseAppManager Initialization state manager.
+ * @param {(permission: AllowEffects, options: {ensureAppFn: (permission: AllowEffects) => void}) => Parameters<typeof createGetModerationVariantResponder>[0]['db']} deps.getFirestoreInstance Firestore accessor.
  * @param {() => Parameters<typeof createGetModerationVariantResponder>[0]['auth']} deps.getAuth Firebase Auth accessor.
  * @param {() => NativeExpressApp} deps.express Express app factory.
  * @param {(options: unknown) => unknown} deps.cors CORS middleware factory.
@@ -36,10 +36,10 @@ import {
  */
 export function runGetModerationVariant(deps) {
   const resources = deps.createStartupBoundary(allowEffects => {
-    const appManager = deps.createFirebaseAppManager(() =>
-      deps.initializeFirebaseApp(allowEffects, deps.initializeApp)
+    const appManager = deps.createFirebaseAppManager(permission =>
+      deps.initializeFirebaseApp(permission, deps.initializeApp)
     );
-    const db = deps.getFirestoreInstance({
+    const db = deps.getFirestoreInstance(allowEffects, {
       ensureAppFn: appManager.ensureFirebaseApp,
     });
     const auth = deps.getAuth();

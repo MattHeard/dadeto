@@ -6,9 +6,9 @@ describe('createSubmitModerationRatingStartup', () => {
     const order = [];
     const ensureFirebaseApp = jest.fn(() => order.push('initialize'));
     const db = {};
-    const getFirestoreInstance = jest.fn(options => {
+    const getFirestoreInstance = jest.fn((permission, options) => {
       order.push('firestore');
-      expect(options.ensureAppFn()).toBeUndefined();
+      expect(options.ensureAppFn(permission)).toBeUndefined();
       return db;
     });
     const createEntrypoint = jest.fn((_permission, dependencies) => {

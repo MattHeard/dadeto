@@ -163,8 +163,8 @@ const DEFAULT_CDN_HOST = 'www.dendritestories.co.nz';
 /**
  * Initialize Firebase through the permission-aware runtime adapter, ignoring duplicate app errors.
  * @param {import('../../../../types/allow-effects').AllowEffects} permission Startup initialization permission.
- * @param {() => void} initFn Initialization function to invoke.
- * @param {(permission: import('../../../../types/allow-effects').AllowEffects, initFn: () => void) => unknown} initializeFirebaseAppEffect Runtime initialization adapter.
+ * @param {(permission: import('../../../../types/allow-effects').AllowEffects) => unknown} initFn Initialization function to invoke.
+ * @param {(permission: import('../../../../types/allow-effects').AllowEffects, initFn: (permission: import('../../../../types/allow-effects').AllowEffects) => unknown) => unknown} initializeFirebaseAppEffect Runtime initialization adapter.
  */
 export function initializeFirebaseApp(
   permission,

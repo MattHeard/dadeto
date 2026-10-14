@@ -1,12 +1,11 @@
 /** @typedef {import('../../../types/allow-effects').AllowEffects} AllowEffects */
 
-/** @param {AllowEffects} allowEffects Startup permission. @param {() => void} ensureFirebaseApp Firebase startup action. */
+/** @param {AllowEffects} allowEffects Startup permission. @param {(allowEffects: AllowEffects) => void} ensureFirebaseApp Firebase startup action. */
 export function ensureUpdateVariantVisibilityFirebase(
   allowEffects,
   ensureFirebaseApp
 ) {
-  void allowEffects;
-  ensureFirebaseApp();
+  ensureFirebaseApp(allowEffects);
 }
 
 /**
@@ -18,7 +17,7 @@ export function ensureUpdateVariantVisibilityFirebase(
 export function createUpdateVariantVisibilityStartup(allowEffects, deps) {
   deps.ensureFirebaseApp(allowEffects);
   const environment = deps.getEnvironmentVariables();
-  const db = deps.getFirestoreInstance({
+  const db = deps.getFirestoreInstance(allowEffects, {
     ensureAppFn: () => {},
     environment,
   });

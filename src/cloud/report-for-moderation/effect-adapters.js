@@ -1,9 +1,8 @@
 import { sendResponseBody } from '../../core/cloud/response-utils.js';
 
-/** @param {import('../../../types/allow-effects').AllowEffects} permission @param {() => void} ensureApp */
+/** @param {import('../../../types/allow-effects').AllowEffects} permission @param {(permission: import('../../../types/allow-effects').AllowEffects) => void} ensureApp */
 export function initializeReportModerationFirebase(permission, ensureApp) {
-  void permission;
-  ensureApp();
+  ensureApp(permission);
 }
 
 /** @param {import('../../../types/allow-effects').AllowEffects} permission @param {{add: (report: Record<string, unknown>) => Promise<unknown>}} collection @param {Record<string, unknown>} report */
