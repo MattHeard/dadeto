@@ -5,6 +5,7 @@ import { ADMIN_UID } from '../src/core/commonCore.js';
 import { createRenderContents } from '../src/core/cloud/render-contents/render-contents-core.js';
 import { createRenderVariant } from '../src/core/cloud/render-variant/render-variant-core.js';
 import { bindEffectBoundary } from '../src/browser/allow-effects.js';
+import { createSaveRenderedPage } from '../src/cloud/render-contents/save-rendered-page.js';
 
 const runtimeDepsRequire = createRequire(
   new URL('../src/cloud/runtime-deps/package.json', import.meta.url)
@@ -245,11 +246,13 @@ async function renderSeededContents({
   staticBucket,
   staticObjectPrefix,
 }) {
+  const storage = createStorageClient(projectId);
   const renderContents = createRenderContents({
     db,
-    storage: createStorageClient(projectId),
+    storage,
     bucketName: staticBucket,
     objectPrefix: staticObjectPrefix,
+    saveRenderedPage: createSaveRenderedPage(storage, staticBucket),
     fetchFn: async () => ({
       ok: true,
       status: 200,

@@ -48,6 +48,12 @@ describe('gcp-test fixture seed contract', () => {
     expect(source).toContain(
       "import { bindEffectBoundary } from '../src/browser/allow-effects.js';"
     );
+    expect(source).toContain(
+      "import { createSaveRenderedPage } from '../src/cloud/render-contents/save-rendered-page.js';"
+    );
+    expect(source).toContain(
+      'saveRenderedPage: createSaveRenderedPage(storage, staticBucket)'
+    );
     expect(source.match(/    bindEffectBoundary,/g)).toHaveLength(2);
     expect(source.match(/    effectFetchFn: async \(\) => \(\{/g)).toHaveLength(
       2
