@@ -1,0 +1,8 @@
+# Render-variant AllowEffects audit
+
+- Hurdle: the live Specs database pointed to `src/cloud/render-variant/index.js`, while older handoff prose described earlier entrypoints. I used the current backlog's `Next step` property as authoritative.
+- Diagnosis: traced `index.js` through `startup-effect-adapter.js`, `runRenderVariant`, render persistence, tree-visibility handlers, and CDN invalidation.
+- Findings: Firebase initialization and Cloud Function registrations require startup capabilities. Trigger/scheduled/HTTP invocations bind fresh request capabilities. Firestore `set`/`update`, Storage `save`, fetch calls (metadata token and CDN purge), logging, and HTTP responses all receive an explicit capability through narrow adapters. Firestore reads and handle/sentinel construction remain query/construction operations under the spec's classification.
+- Result: no uncovered command effect found in this call tree; the current handoff is stale. Cloud packaging and targeted ESLint passed. `DADETO_CHECK_TIMEOUT_MS=3600000 npm run check` passed after the audit (10 gates, zero failures; lines, statements, functions, and branches all 100%).
+- Next time: after a source-cloud audit finds complete boundaries, record the source paths and capability lifetime, update the Notion handoff and audit date, then continue with the next lexicographic entrypoint.
+- Evidence: `npx eslint 'src/cloud/render-variant/**/*.js' 'src/core/cloud/render-variant/**/*.js' 'src/core/cloud/tree-visibility/**/*.js' --no-cache --max-warnings=0`; `npm run build:cloud`; `DADETO_CHECK_TIMEOUT_MS=3600000 npm run check` (passed, 10/10 gates); coverage report `reports/coverage/coverage-summary.json`.

@@ -922,23 +922,11 @@ export function createRunCheckSuite(defaults) {
              * @param {number | null} exitCode Exit code reported by the child process.
              * @param {string | null} signal Process signal reported by the child process.
              */ (exitCode, signal) => {
-              handleChildClose({
-                activeChildren,
-                command,
-                now,
-                startedAt,
-                exitCode,
-                signal,
-                stderr,
-                state,
-                aborted,
-                failFast,
-                failures,
-                emitEvent,
-                finishWithFailure,
-                resolve,
-                renderCommand,
-              });
+              handleChildClose(
+                { activeChildren, state, aborted, failFast, failures },
+                { command, startedAt, exitCode, signal, stderr },
+                { now, emitEvent, finishWithFailure, resolve, renderCommand }
+              );
             }
           );
         });
