@@ -92,21 +92,6 @@ export default [
   {
     files: ['src/core/**/*.js'],
     rules: {
-      'no-console': 'error',
-      'no-restricted-globals': [
-        'error',
-        'event',
-        'fdescribe',
-        'fetch',
-        'window',
-        'document',
-        'localStorage',
-      ],
-    },
-  },
-  {
-    files: ['src/core/**/*.js'],
-    rules: {
       'no-restricted-imports': [
         'error',
         {
@@ -288,6 +273,22 @@ export default [
   {
     files: lintFiles,
     ...eslintConfigPrettier,
+  },
+  {
+    // Keep core browser and Node boundaries enforced after shared lint defaults.
+    files: ['src/core/**/*'],
+    rules: {
+      'no-console': 'error',
+      'no-restricted-globals': [
+        'error',
+        'event',
+        'fdescribe',
+        'fetch',
+        'window',
+        'document',
+        'localStorage',
+      ],
+    },
   },
   {
     // Specific configuration for test files
