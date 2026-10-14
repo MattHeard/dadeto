@@ -1,0 +1,7 @@
+# Render-author AllowEffects audit
+
+- **Unexpected hurdle:** A raw `npx jest` attempt omitted the repo's ESM runtime flag; the retry through `scripts/run-jest.js` used the shared pool and was slow to emit output.
+- **Diagnosis:** The first failure was runner configuration (`import.meta` and top-level `await` parsing), not a source failure. The repository wrapper with a worktree-local Jest pool completed the focused run.
+- **Finding:** `src/cloud/render-author/index.js` passes startup permission to Firebase initialization and the Firestore accessor, which is configured not to initialize implicitly. `runRenderAuthor` passes startup permission to trigger registration but binds a fresh invocation token inside the trigger handler. Storage save and Firestore update are permission-first adapters. Firestore `.get()` operations and `FieldValue.delete()` sentinel construction remain query/construction operations. No unguarded command effect or startup-token capture was found.
+- **Evidence:** `DADETO_JEST_POOL_DIR=/home/matt/dadeto/.tmp/jest-pool node scripts/run-jest.js --runInBand test/cloud/render-author test/core/cloud/render-author` passed (6 suites / 21 tests); `npm run tsdoc:check` passed; `npm run check` passed all 10 gates; `npm run build:cloud` exited 0; `git diff --check` passed.
+- **Next:** Continue the lexicographic source-cloud audit at `src/cloud/report-for-moderation/index.js`.
