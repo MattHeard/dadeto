@@ -261,6 +261,11 @@ locals {
       source       = "${path.module}/browser/effect-adapters.js"
       content_type = "application/javascript"
     }
+    dendrite_browser_storage_adapter_js = {
+      name         = "storage-adapter.js"
+      source       = "${path.module}/browser/storage-adapter.js"
+      content_type = "application/javascript"
+    }
     dendrite_allow_effects_js = {
       name         = "allow-effects.js"
       source       = "${path.module}/allow-effects.js"

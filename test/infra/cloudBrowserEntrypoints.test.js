@@ -156,17 +156,23 @@ describe('cloud browser entrypoints', () => {
   });
 
   it('uploads the admin error adapter at its root-relative import path', async () => {
-    const [mainTf, adminHtml, adminJs] = await Promise.all([
+    const [mainTf, adminHtml, adminJs, effectAdapters] = await Promise.all([
       readFile('infra/main.tf', 'utf8'),
       readFile('infra/admin.html', 'utf8'),
       readFile('infra/admin.js', 'utf8'),
+      readFile('src/browser/effect-adapters.js', 'utf8'),
     ]);
 
     expect(adminHtml).toContain('src="./admin.js"');
     expect(adminJs).toContain("from './effect-adapters.js'");
+    expect(effectAdapters).toContain("from './storage-adapter.js'");
     expect(mainTf).toContain('name         = "effect-adapters.js"');
     expect(mainTf).toContain(
       'source       = "${path.module}/browser/effect-adapters.js"'
+    );
+    expect(mainTf).toContain('name         = "storage-adapter.js"');
+    expect(mainTf).toContain(
+      'source       = "${path.module}/browser/storage-adapter.js"'
     );
   });
 
