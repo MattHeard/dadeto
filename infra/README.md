@@ -84,7 +84,18 @@ Run `npm run build:cloud` before applying Terraform so that the generated Cloud 
 
 After Terraform applies, the `gcp-prod` workflow validates the function URL as HTTPS and stores it in the run-scoped `object-minute-rental-search-url` artifact (`endpoint.txt`, retained for 90 days). This artifact is the source for a later authorized static-site deployment. It avoids requiring the workflow token to write repository Actions variables.
 
-Local site builds use the simulator route. Production builds must use the URL from a successful `gcp-prod` run and fail if it is missing or is not HTTPS, so the deployed page cannot silently point at the local simulator.
+The static deployment workflow still reads the repository Actions variable `OBJECT_MINUTE_RENTAL_SEARCH_URL`; it does not automatically consume the artifact. For a manual production deployment, download the artifact from a successful `gcp-prod` run, set the variable, then dispatch the static deployment workflow:
+
+```sh
+gh run download <gcp-prod-run-id> --repo MattHeard/dadeto \
+  --name object-minute-rental-search-url \
+  --dir .tmp/object-minute-rental-search-url
+gh variable set OBJECT_MINUTE_RENTAL_SEARCH_URL --repo MattHeard/dadeto \
+  --body "$(cat .tmp/object-minute-rental-search-url/endpoint.txt)"
+gh workflow run netlify-prod.yml --repo MattHeard/dadeto
+```
+
+The variable update requires a GitHub identity with repository Variables write permission. The `gcp-prod` workflow's built-in token lacks that permission, which is why it now uploads the endpoint artifact instead. Local site builds use the simulator route. Production builds fail if the endpoint variable is empty or is not HTTPS, so the deployed page cannot silently point at the local simulator.
 
 ## Remote State
 
