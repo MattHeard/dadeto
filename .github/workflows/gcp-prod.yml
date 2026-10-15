@@ -126,15 +126,24 @@ jobs:
       - name: Terraform Apply
         run: terraform apply -lock-timeout=5m -auto-approve tfplan
 
-      - name: Publish rental search URL for the static site build
-        env:
-          GH_TOKEN: ${{ github.token }}
+      - name: Prepare production rental search URL artifact
         run: |
           endpoint="$(terraform output -raw object_minute_rental_search_url)"
-          if [ -z "$endpoint" ]; then
-            echo "Terraform returned an empty object-minute rental search URL."
-            exit 1
-          fi
-          gh variable set OBJECT_MINUTE_RENTAL_SEARCH_URL \
-            --repo MattHeard/dadeto \
-            --body "$endpoint"
+          case "$endpoint" in
+            https://*) ;;
+            *)
+              echo "Terraform did not return an HTTPS object-minute rental search URL."
+              exit 1
+              ;;
+          esac
+          artifact_dir="$RUNNER_TEMP/object-minute-rental-search-url"
+          mkdir -p "$artifact_dir"
+          printf '%s\n' "$endpoint" > "$artifact_dir/endpoint.txt"
+
+      - name: Upload production rental search URL artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: object-minute-rental-search-url
+          path: ${{ runner.temp }}/object-minute-rental-search-url/endpoint.txt
+          if-no-files-found: error
+          retention-days: 90

@@ -1,0 +1,6 @@
+# Rental search endpoint artifact handoff
+
+- **Unexpected hurdle:** The `gcp-prod` workflow successfully applied Terraform and produced `object_minute_rental_search_url`, then failed when `gh variable set` attempted to update a repository Actions variable. GitHub returned HTTP 403 (`Resource not accessible by integration`). The following static-site workflow also failed because the variable was empty (runs `38635166026` and `38657353798`).
+- **Diagnosis:** The built-in workflow token can run Actions but does not have the repository Variables write permission required by that API. Adding more `actions` permission does not establish the separate Variables permission.
+- **Chosen fix:** Stop mutating repository configuration from the GCP workflow. Validate the Terraform URL as HTTPS and upload it as the `object-minute-rental-search-url` artifact for 90 days. An authorized manual site deployment can retrieve `endpoint.txt` from that GCP run.
+- **Next guidance:** Do not trigger a production deployment without explicit authorization. The static-site workflow still needs an authorized endpoint handoff; this loop only makes the current Terraform output available as an artifact. Verify the deployed browser-to-function flow before marking the Notion spec Implemented.

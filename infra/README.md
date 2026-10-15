@@ -82,14 +82,9 @@ Run `npm run build:cloud` before applying Terraform so that the generated Cloud 
 
 ### Static rental search endpoint
 
-The production Netlify build reads the Actions repository variable `OBJECT_MINUTE_RENTAL_SEARCH_URL`. The `gcp-prod` workflow refreshes this variable from the deployed function's Terraform output after each production apply. To initialize or repair it manually:
+After Terraform applies, the `gcp-prod` workflow validates the function URL as HTTPS and stores it in the run-scoped `object-minute-rental-search-url` artifact (`endpoint.txt`, retained for 90 days). This artifact is the source for a later authorized static-site deployment. It avoids requiring the workflow token to write repository Actions variables.
 
-```sh
-cd infra
-gh variable set OBJECT_MINUTE_RENTAL_SEARCH_URL --repo MattHeard/dadeto --body "$(terraform output -raw object_minute_rental_search_url)"
-```
-
-Local site builds use the simulator route. Production builds fail if this variable is empty so the deployed page cannot silently point at the local simulator.
+Local site builds use the simulator route. Production builds must use the URL from a successful `gcp-prod` run and fail if it is missing or is not HTTPS, so the deployed page cannot silently point at the local simulator.
 
 ## Remote State
 
