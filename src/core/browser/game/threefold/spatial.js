@@ -1,6 +1,28 @@
 export const MIN_SCALE = -4;
 export const MAX_SCALE = 4;
 export const BASE_HEIGHT_METERS = 1.8288;
+export const INITIAL_MAX_ANCHOR = 8;
+
+/**
+ * Create deterministic scale state with a bounded Anchor reserve.
+ * @param {{x: number, y: number}} position Canonical position in metres.
+ * @param {{scale?: number, anchor?: number, maximumAnchor?: number, minimumUnlockedScale?: number, maximumUnlockedScale?: number}} options Initial tuning and unlocks.
+ * @returns {{scale: number, position: {x: number, y: number}, anchor: number, maximumAnchor: number, minimumUnlockedScale: number, maximumUnlockedScale: number, recoveryProgressMinutes: number}} New scale state.
+ */
+export function createScaleState(position, options = {}) {
+  assertPosition(position);
+  const state = {
+    scale: options.scale ?? 0,
+    position: { ...position },
+    anchor: options.anchor ?? INITIAL_MAX_ANCHOR,
+    maximumAnchor: options.maximumAnchor ?? INITIAL_MAX_ANCHOR,
+    minimumUnlockedScale: options.minimumUnlockedScale ?? MIN_SCALE,
+    maximumUnlockedScale: options.maximumUnlockedScale ?? MAX_SCALE,
+    recoveryProgressMinutes: 0,
+  };
+  assertScaleState(state);
+  return state;
+}
 
 /**
  * Return Mara's physical height at one of the nine supported scales.
@@ -14,18 +36,70 @@ export function heightAtScale(scale) {
 
 /**
  * Change scale while retaining the canonical physical position.
- * @param {{scale: number, position: {x: number, y: number}}} state Current state.
+ * @param {ReturnType<typeof createScaleState>} state Current state.
  * @param {number} direction One adjacent scale step, -1 or +1.
- * @returns {{scale: number, position: {x: number, y: number}}} Updated state.
+ * @returns {ReturnType<typeof createScaleState>} Updated state.
  */
 export function changeScale(state, direction) {
-  assertScale(state.scale);
-  assertPosition(state.position);
-  if (direction !== -1 && direction !== 1)
-    throw new RangeError('Scale changes must move one level at a time.');
+  assertScaleState(state);
+  if (direction !== -1 && direction !== 1) return state;
   const scale = state.scale + direction;
-  if (scale < MIN_SCALE || scale > MAX_SCALE) return state;
-  return { ...state, position: { ...state.position }, scale };
+  if (
+    scale < state.minimumUnlockedScale ||
+    scale > state.maximumUnlockedScale ||
+    state.anchor < 1
+  )
+    return state;
+  return {
+    ...state,
+    position: { ...state.position },
+    scale,
+    anchor: state.anchor - 1,
+  };
+}
+
+/**
+ * Recover Anchor from deterministic in-game minutes, retaining partial progress.
+ * The caller advances this only during simulation time, never while menus pause.
+ * @param {ReturnType<typeof createScaleState>} state Current state.
+ * @param {number} elapsedGameMinutes Elapsed simulation minutes.
+ * @param {number} minutesPerAnchor Recovery interval in simulation minutes.
+ * @param {{inCombat: boolean}} context Recovery context from the simulation.
+ * @returns {ReturnType<typeof createScaleState>} Updated state.
+ */
+export function recoverAnchor(
+  state,
+  elapsedGameMinutes,
+  minutesPerAnchor,
+  { inCombat }
+) {
+  assertScaleState(state);
+  if (!Number.isFinite(elapsedGameMinutes) || elapsedGameMinutes < 0)
+    throw new RangeError(
+      'Elapsed game minutes must be finite and non-negative.'
+    );
+  if (!Number.isFinite(minutesPerAnchor) || minutesPerAnchor <= 0)
+    throw new RangeError(
+      'Anchor recovery interval must be a positive duration.'
+    );
+  if (typeof inCombat !== 'boolean')
+    throw new TypeError('Anchor recovery requires an explicit combat state.');
+  if (
+    inCombat ||
+    state.anchor >= state.maximumAnchor ||
+    elapsedGameMinutes === 0
+  )
+    return state;
+  const progress = state.recoveryProgressMinutes + elapsedGameMinutes;
+  const gained = Math.floor(progress / minutesPerAnchor);
+  if (gained === 0) return { ...state, recoveryProgressMinutes: progress };
+  const anchor = Math.min(state.maximumAnchor, state.anchor + gained);
+  return {
+    ...state,
+    anchor,
+    recoveryProgressMinutes:
+      anchor === state.maximumAnchor ? 0 : progress % minutesPerAnchor,
+  };
 }
 
 /**
@@ -82,5 +156,38 @@ function assertPosition(position) {
   if (!position || !Number.isFinite(position.x) || !Number.isFinite(position.y))
     throw new TypeError(
       'Canonical position must contain finite x and y metres.'
+    );
+}
+
+/**
+ * Validate resource and progression fields before changing deterministic state.
+ * @param {ReturnType<typeof createScaleState>} state Candidate state.
+ * @returns {void}
+ */
+function assertScaleState(state) {
+  assertScale(state.scale);
+  assertPosition(state.position);
+  assertScale(state.minimumUnlockedScale);
+  assertScale(state.maximumUnlockedScale);
+  if (
+    state.minimumUnlockedScale > state.maximumUnlockedScale ||
+    state.scale < state.minimumUnlockedScale ||
+    state.scale > state.maximumUnlockedScale
+  )
+    throw new RangeError(
+      'Current scale must be inside the unlocked scale range.'
+    );
+  if (
+    !Number.isInteger(state.maximumAnchor) ||
+    state.maximumAnchor < 1 ||
+    state.maximumAnchor > INITIAL_MAX_ANCHOR ||
+    !Number.isInteger(state.anchor) ||
+    state.anchor < 0 ||
+    state.anchor > state.maximumAnchor ||
+    !Number.isFinite(state.recoveryProgressMinutes) ||
+    state.recoveryProgressMinutes < 0
+  )
+    throw new RangeError(
+      'Anchor state must be finite and within its capacity.'
     );
 }
