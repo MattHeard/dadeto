@@ -2,6 +2,7 @@ import {
   BASE_HEIGHT_METERS,
   changeScale,
   createScaleState,
+  growThroughGeometry,
   heightAtScale,
   INITIAL_MAX_ANCHOR,
   MAX_SCALE,
@@ -115,6 +116,114 @@ describe('THREEFOLD scale-space', () => {
     expect(changeScale(emptyAnchor, 1, ['wall'])).toBe(emptyAnchor);
     const shrink = createScaleState({ x: 0, y: 0 }, { scale: 1 });
     expect(changeScale(shrink, -1, ['wall']).destroyedGeometryIds).toEqual([]);
+  });
+
+  test('grows through newly intersected canonical geometry and records rubble', () => {
+    const state = createScaleState({ x: 0, y: 0 });
+    const geometry = [
+      {
+        id: 'wall',
+        bounds: {
+          min: { x: 0.3, y: -0.3, z: 0 },
+          max: { x: 0.8, y: 0.3, z: 3 },
+        },
+      },
+      {
+        id: 'touching',
+        bounds: {
+          min: { x: 0.6, y: -0.3, z: 0 },
+          max: { x: 1, y: 0.3, z: 3 },
+        },
+      },
+      {
+        id: 'above',
+        bounds: {
+          min: { x: 0.3, y: -0.3, z: 6 },
+          max: { x: 0.8, y: 0.3, z: 7 },
+        },
+      },
+    ];
+    const grown = growThroughGeometry(state, geometry, 0.4);
+    expect(grown.scale).toBe(1);
+    expect(grown.anchor).toBe(INITIAL_MAX_ANCHOR - 1);
+    expect(grown.position).toEqual(state.position);
+    expect(grown.destroyedGeometryIds).toEqual(['wall']);
+    expect(growThroughGeometry(state, [...geometry].reverse(), 0.4)).toEqual(
+      grown
+    );
+  });
+
+  test('does not damage geometry when growth is unavailable or already collapsed', () => {
+    const wall = {
+      id: 'wall',
+      bounds: {
+        min: { x: 0.3, y: -0.3, z: 0 },
+        max: { x: 0.8, y: 0.3, z: 3 },
+      },
+    };
+    const locked = createScaleState(
+      { x: 0, y: 0 },
+      { maximumUnlockedScale: 0 }
+    );
+    expect(growThroughGeometry(locked, [wall], 0.4)).toBe(locked);
+    const emptyAnchor = createScaleState({ x: 0, y: 0 }, { anchor: 0 });
+    expect(growThroughGeometry(emptyAnchor, [wall], 0.4)).toBe(emptyAnchor);
+    const alreadyCollapsed = createScaleState(
+      { x: 0, y: 0 },
+      { destroyedGeometryIds: ['wall'] }
+    );
+    expect(
+      growThroughGeometry(alreadyCollapsed, [wall], 0.4).destroyedGeometryIds
+    ).toEqual(['wall']);
+  });
+
+  test('rejects invalid geometry bounds and body width', () => {
+    const state = createScaleState({ x: 0, y: 0 });
+    expect(() => growThroughGeometry(state, [], 0)).toThrow(RangeError);
+    expect(() => growThroughGeometry(state, null, 0.4)).toThrow(TypeError);
+    expect(() => growThroughGeometry(state, [null], 0.4)).toThrow(TypeError);
+    expect(() =>
+      growThroughGeometry(
+        state,
+        [
+          {
+            id: '',
+            bounds: {
+              min: { x: 0, y: 0, z: 0 },
+              max: { x: 1, y: 1, z: 1 },
+            },
+          },
+        ],
+        0.4
+      )
+    ).toThrow(TypeError);
+    expect(() => growThroughGeometry(state, [{ id: 'wall' }], 0.4)).toThrow(
+      TypeError
+    );
+    expect(() =>
+      growThroughGeometry(
+        state,
+        [{ id: 'wall', bounds: { min: { x: 1 }, max: { x: 2 } } }],
+        0.4
+      )
+    ).toThrow(RangeError);
+    expect(() =>
+      growThroughGeometry(
+        state,
+        [{ id: 'wall', bounds: { min: {}, max: {} } }],
+        0.4
+      )
+    ).toThrow(RangeError);
+    const duplicateWall = {
+      id: 'wall',
+      bounds: {
+        min: { x: 1, y: 1, z: 0 },
+        max: { x: 2, y: 2, z: 1 },
+      },
+    };
+    expect(() =>
+      growThroughGeometry(state, [duplicateWall, duplicateWall], 0.4)
+    ).toThrow(RangeError);
   });
 
   test('recovers Anchor deterministically from game minutes and caps at capacity', () => {

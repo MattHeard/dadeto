@@ -2,6 +2,9 @@ export const MIN_SCALE = -4;
 export const MAX_SCALE = 4;
 export const BASE_HEIGHT_METERS = 1.8288;
 export const INITIAL_MAX_ANCHOR = 8;
+const GEOMETRY_CONTACT_TOLERANCE_METERS = 1e-9;
+/** @type {Array<'x' | 'y' | 'z'>} */
+const GEOMETRY_AXES = ['x', 'y', 'z'];
 
 /**
  * Create deterministic scale state with a bounded Anchor reserve.
@@ -68,6 +71,27 @@ export function changeScale(state, direction, intersectingGeometryIds = []) {
     anchor: state.anchor - 1,
     destroyedGeometryIds,
   };
+}
+
+/**
+ * Grow one scale rung and permanently collapse geometry newly intersected by the body.
+ * @param {ReturnType<typeof createScaleState>} state Current state.
+ * @param {Array<{id: string, bounds: {min: {x: number, y: number, z: number}, max: {x: number, y: number, z: number}}}>} geometry Canonical world geometry.
+ * @param {number} baseBodyWidthMeters Body width at scale zero.
+ * @returns {ReturnType<typeof createScaleState>} Updated state, or the original state when growth is unavailable.
+ */
+export function growThroughGeometry(state, geometry, baseBodyWidthMeters) {
+  assertScaleState(state);
+  assertBodyWidth(baseBodyWidthMeters);
+  const objects = validateGeometry(geometry);
+  const next = changeScale(state, 1);
+  if (next === state) return state;
+  const newlyIntersectedIds = objects
+    .filter(object =>
+      isNewGrowthIntersection(state, next, object, baseBodyWidthMeters)
+    )
+    .map(object => object.id);
+  return changeScale(state, 1, newlyIntersectedIds);
 }
 
 /**
@@ -169,6 +193,107 @@ function assertPosition(position) {
     throw new TypeError(
       'Canonical position must contain finite x and y metres.'
     );
+}
+
+/**
+ * Validate an explicit physical body width.
+ * @param {number} width Body width in metres at scale zero.
+ * @returns {void}
+ */
+function assertBodyWidth(width) {
+  if (!Number.isFinite(width) || width <= 0)
+    throw new RangeError('Base body width must be a positive finite distance.');
+}
+
+/**
+ * Validate canonical geometry bounds and unique identifiers.
+ * @param {Array<{id: string, bounds: {min: {x: number, y: number, z: number}, max: {x: number, y: number, z: number}}}>} geometry Candidate geometry.
+ * @returns {Array<{id: string, bounds: {min: {x: number, y: number, z: number}, max: {x: number, y: number, z: number}}}>} Validated geometry.
+ */
+function validateGeometry(geometry) {
+  if (!Array.isArray(geometry))
+    throw new TypeError('World geometry must be an array.');
+  const ids = new Set();
+  geometry.forEach(object => {
+    assertGeometryObject(object);
+    if (ids.has(object.id))
+      throw new RangeError(`World geometry ID is duplicated: ${object.id}.`);
+    ids.add(object.id);
+  });
+  return geometry;
+}
+
+/**
+ * Validate one axis-aligned geometry object.
+ * @param {{id: string, bounds: {min: {x: number, y: number, z: number}, max: {x: number, y: number, z: number}}}} object Candidate object.
+ * @returns {void}
+ */
+function assertGeometryObject(object) {
+  const { id, bounds } = object ?? {};
+  if (typeof id !== 'string' || id.length === 0)
+    throw new TypeError('World geometry requires a non-empty ID.');
+  if (!bounds?.min || !bounds?.max)
+    throw new TypeError('World geometry requires minimum and maximum bounds.');
+  GEOMETRY_AXES.forEach(axis => {
+    const min = bounds.min[axis];
+    const max = bounds.max[axis];
+    if (!Number.isFinite(min) || !Number.isFinite(max) || min >= max)
+      throw new RangeError(
+        `World geometry requires increasing ${axis} bounds.`
+      );
+  });
+}
+
+/**
+ * Return whether an object overlaps the destination body but not its current body.
+ * @param {ReturnType<typeof createScaleState>} current Current scale state.
+ * @param {ReturnType<typeof createScaleState>} next Destination scale state.
+ * @param {{id: string, bounds: {min: {x: number, y: number, z: number}, max: {x: number, y: number, z: number}}}} object Geometry candidate.
+ * @param {number} baseBodyWidthMeters Body width at scale zero.
+ * @returns {boolean} True when growth newly intersects the object.
+ */
+function isNewGrowthIntersection(current, next, object, baseBodyWidthMeters) {
+  if (current.destroyedGeometryIds.includes(object.id)) return false;
+  const oldBody = bodyBoundsAtScale(current, baseBodyWidthMeters);
+  const newBody = bodyBoundsAtScale(next, baseBodyWidthMeters);
+  return overlaps(newBody, object.bounds) && !overlaps(oldBody, object.bounds);
+}
+
+/**
+ * Calculate Mara's axis-aligned physical volume at one scale.
+ * @param {ReturnType<typeof createScaleState>} state State supplying position and scale.
+ * @param {number} baseBodyWidthMeters Body width at scale zero.
+ * @returns {{min: {x: number, y: number, z: number}, max: {x: number, y: number, z: number}}} Body bounds.
+ */
+function bodyBoundsAtScale(state, baseBodyWidthMeters) {
+  const width = baseBodyWidthMeters * 3 ** state.scale;
+  const halfWidth = width / 2;
+  return {
+    min: {
+      x: state.position.x - halfWidth,
+      y: state.position.y - halfWidth,
+      z: 0,
+    },
+    max: {
+      x: state.position.x + halfWidth,
+      y: state.position.y + halfWidth,
+      z: heightAtScale(state.scale),
+    },
+  };
+}
+
+/**
+ * Check strict overlap between two axis-aligned boxes.
+ * @param {{min: {x: number, y: number, z: number}, max: {x: number, y: number, z: number}}} first First box.
+ * @param {{min: {x: number, y: number, z: number}, max: {x: number, y: number, z: number}}} second Second box.
+ * @returns {boolean} Whether their volumes overlap.
+ */
+function overlaps(first, second) {
+  return GEOMETRY_AXES.every(
+    axis =>
+      first.min[axis] < second.max[axis] - GEOMETRY_CONTACT_TOLERANCE_METERS &&
+      first.max[axis] > second.min[axis] + GEOMETRY_CONTACT_TOLERANCE_METERS
+  );
 }
 
 /**
