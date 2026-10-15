@@ -7,6 +7,7 @@ import {
   INITIAL_MAX_ANCHOR,
   MAX_SCALE,
   MIN_SCALE,
+  projectGeometryForScale,
   recoverAnchor,
   viewAtScale,
 } from '../../../../src/core/browser/game/threefold/spatial.js';
@@ -151,6 +152,67 @@ describe('THREEFOLD scale-space', () => {
     expect(growThroughGeometry(state, [...geometry].reverse(), 0.4)).toEqual(
       grown
     );
+  });
+
+  test('projects persistent rubble consistently across views and reloaded chunks', () => {
+    const wall = {
+      id: 'wall',
+      bounds: {
+        min: { x: 0.3, y: -0.3, z: 0 },
+        max: { x: 0.8, y: 0.3, z: 3 },
+      },
+    };
+    const stone = {
+      id: 'stone',
+      bounds: {
+        min: { x: 2, y: 2, z: 0 },
+        max: { x: 3, y: 3, z: 1 },
+      },
+    };
+    const beam = {
+      id: 'beam',
+      bounds: {
+        min: { x: -3, y: 2, z: 0 },
+        max: { x: -2, y: 3, z: 1 },
+      },
+    };
+    const originalGeometry = JSON.stringify([wall, stone, beam]);
+    const initial = createScaleState({ x: 0, y: 0 });
+    const grown = growThroughGeometry(initial, [wall, stone], 0.4);
+    const restoredRecord = JSON.parse(JSON.stringify(grown));
+    const restored = createScaleState(restoredRecord.position, {
+      scale: restoredRecord.scale,
+      anchor: restoredRecord.anchor,
+      maximumAnchor: restoredRecord.maximumAnchor,
+      minimumUnlockedScale: restoredRecord.minimumUnlockedScale,
+      maximumUnlockedScale: restoredRecord.maximumUnlockedScale,
+      destroyedGeometryIds: restoredRecord.destroyedGeometryIds,
+    });
+    const atGrowthScale = projectGeometryForScale(restored, [
+      stone,
+      wall,
+      beam,
+    ]);
+    const atFinerScale = projectGeometryForScale(changeScale(restored, -1), [
+      wall,
+      beam,
+      stone,
+    ]);
+    const reloadedChunk = projectGeometryForScale(restored, [
+      wall,
+      stone,
+      beam,
+    ]);
+
+    expect(atGrowthScale.view.scale).toBe(1);
+    expect(atFinerScale.view.scale).toBe(0);
+    expect(atGrowthScale.geometry).toEqual([beam, stone]);
+    expect(atFinerScale.geometry).toEqual(atGrowthScale.geometry);
+    expect(reloadedChunk.geometry).toEqual(atGrowthScale.geometry);
+    expect(atGrowthScale.geometry[0]).not.toBe(beam);
+    expect(atGrowthScale.geometry[0].bounds).not.toBe(beam.bounds);
+    expect(JSON.stringify([wall, stone, beam])).toBe(originalGeometry);
+    expect(projectGeometryForScale(restored, []).geometry).toEqual([]);
   });
 
   test('does not damage geometry when growth is unavailable or already collapsed', () => {

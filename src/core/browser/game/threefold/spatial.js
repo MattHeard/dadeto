@@ -172,6 +172,32 @@ export function viewAtScale(position, scale) {
 }
 
 /**
+ * Project canonical geometry into a scale view, omitting committed rubble.
+ * Geometry remains in physical metres so every scale reads the same world.
+ * @param {ReturnType<typeof createScaleState>} state Current scale and damage state.
+ * @param {Array<{id: string, bounds: {min: {x: number, y: number, z: number}, max: {x: number, y: number, z: number}}}>} geometry Canonical geometry for the loaded region or chunk.
+ * @returns {{view: ReturnType<typeof viewAtScale>, geometry: Array<{id: string, bounds: {min: {x: number, y: number, z: number}, max: {x: number, y: number, z: number}}}>}} Scale view and surviving canonical geometry.
+ */
+export function projectGeometryForScale(state, geometry) {
+  assertScaleState(state);
+  const objects = validateGeometry(geometry);
+  const destroyed = new Set(state.destroyedGeometryIds);
+  return {
+    view: viewAtScale(state.position, state.scale),
+    geometry: objects
+      .filter(object => !destroyed.has(object.id))
+      .sort((first, second) => (first.id < second.id ? -1 : 1))
+      .map(object => ({
+        id: object.id,
+        bounds: {
+          min: { ...object.bounds.min },
+          max: { ...object.bounds.max },
+        },
+      })),
+  };
+}
+
+/**
  * Require a supported integer scale.
  * @param {number} scale Candidate scale.
  * @returns {void}
