@@ -9,7 +9,7 @@ const GEOMETRY_AXES = ['x', 'y', 'z'];
 /**
  * Create deterministic scale state with a bounded Anchor reserve.
  * @param {{x: number, y: number}} position Canonical position in metres.
- * @param {{scale?: number, anchor?: number, maximumAnchor?: number, minimumUnlockedScale?: number, maximumUnlockedScale?: number, destroyedGeometryIds?: string[]}} options Initial tuning, unlocks and persistent world changes.
+ * @param {{scale?: number, anchor?: number, maximumAnchor?: number, minimumUnlockedScale?: number, maximumUnlockedScale?: number, recoveryProgressMinutes?: number, destroyedGeometryIds?: string[]}} options Initial tuning, unlocks and persistent world changes.
  * @returns {{scale: number, position: {x: number, y: number}, anchor: number, maximumAnchor: number, minimumUnlockedScale: number, maximumUnlockedScale: number, recoveryProgressMinutes: number, destroyedGeometryIds: string[]}} New scale state.
  */
 export function createScaleState(position, options = {}) {
@@ -21,7 +21,7 @@ export function createScaleState(position, options = {}) {
     maximumAnchor: options.maximumAnchor ?? INITIAL_MAX_ANCHOR,
     minimumUnlockedScale: options.minimumUnlockedScale ?? MIN_SCALE,
     maximumUnlockedScale: options.maximumUnlockedScale ?? MAX_SCALE,
-    recoveryProgressMinutes: 0,
+    recoveryProgressMinutes: options.recoveryProgressMinutes ?? 0,
     destroyedGeometryIds: normalizeGeometryIds(
       options.destroyedGeometryIds ?? []
     ),
