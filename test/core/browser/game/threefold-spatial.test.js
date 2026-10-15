@@ -81,6 +81,42 @@ describe('THREEFOLD scale-space', () => {
     expect(changeScale(lowerLocked, -1)).toBe(lowerLocked);
   });
 
+  test('records intersected geometry as irreversible sorted rubble after growth', () => {
+    const initial = createScaleState({ x: 2, y: 3 });
+    const grown = changeScale(initial, 1, ['wall-b', 'wall-a', 'wall-b']);
+    expect(grown.scale).toBe(1);
+    expect(grown.anchor).toBe(INITIAL_MAX_ANCHOR - 1);
+    expect(grown.destroyedGeometryIds).toEqual(['wall-a', 'wall-b']);
+    const repeated = changeScale(grown, 1, ['wall-a', 'wall-c']);
+    expect(repeated.destroyedGeometryIds).toEqual([
+      'wall-a',
+      'wall-b',
+      'wall-c',
+    ]);
+    expect(JSON.parse(JSON.stringify(repeated))).toEqual(repeated);
+    expect(
+      createScaleState(repeated.position, {
+        scale: repeated.scale,
+        anchor: repeated.anchor,
+        destroyedGeometryIds: repeated.destroyedGeometryIds,
+      }).destroyedGeometryIds
+    ).toEqual(repeated.destroyedGeometryIds);
+  });
+
+  test('does not add rubble for rejected growth or scale reduction', () => {
+    const empty = createScaleState({ x: 0, y: 0 });
+    expect(changeScale(empty, 2, ['wall'])).toBe(empty);
+    const locked = createScaleState(
+      { x: 0, y: 0 },
+      { maximumUnlockedScale: 0 }
+    );
+    expect(changeScale(locked, 1, ['wall'])).toBe(locked);
+    const emptyAnchor = createScaleState({ x: 0, y: 0 }, { anchor: 0 });
+    expect(changeScale(emptyAnchor, 1, ['wall'])).toBe(emptyAnchor);
+    const shrink = createScaleState({ x: 0, y: 0 }, { scale: 1 });
+    expect(changeScale(shrink, -1, ['wall']).destroyedGeometryIds).toEqual([]);
+  });
+
   test('recovers Anchor deterministically from game minutes and caps at capacity', () => {
     const state = createScaleState({ x: 0, y: 0 }, { anchor: 5 });
     const partial = recoverAnchor(state, 20, 30, { inCombat: false });
@@ -131,11 +167,26 @@ describe('THREEFOLD scale-space', () => {
       RangeError
     );
     expect(() =>
+      createScaleState({ x: 0, y: 0 }, { destroyedGeometryIds: [''] })
+    ).toThrow(TypeError);
+    expect(() =>
+      createScaleState({ x: 0, y: 0 }, { destroyedGeometryIds: 'wall' })
+    ).toThrow(TypeError);
+    expect(() =>
       changeScale({ ...createScaleState({ x: 0, y: 0 }), anchor: 9 }, 1)
     ).toThrow(RangeError);
     expect(() =>
       changeScale(
         { ...createScaleState({ x: 0, y: 0 }), recoveryProgressMinutes: -1 },
+        1
+      )
+    ).toThrow(RangeError);
+    expect(() =>
+      changeScale(
+        {
+          ...createScaleState({ x: 0, y: 0 }),
+          destroyedGeometryIds: ['b', 'a'],
+        },
         1
       )
     ).toThrow(RangeError);

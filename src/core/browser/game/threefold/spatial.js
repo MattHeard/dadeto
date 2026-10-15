@@ -6,8 +6,8 @@ export const INITIAL_MAX_ANCHOR = 8;
 /**
  * Create deterministic scale state with a bounded Anchor reserve.
  * @param {{x: number, y: number}} position Canonical position in metres.
- * @param {{scale?: number, anchor?: number, maximumAnchor?: number, minimumUnlockedScale?: number, maximumUnlockedScale?: number}} options Initial tuning and unlocks.
- * @returns {{scale: number, position: {x: number, y: number}, anchor: number, maximumAnchor: number, minimumUnlockedScale: number, maximumUnlockedScale: number, recoveryProgressMinutes: number}} New scale state.
+ * @param {{scale?: number, anchor?: number, maximumAnchor?: number, minimumUnlockedScale?: number, maximumUnlockedScale?: number, destroyedGeometryIds?: string[]}} options Initial tuning, unlocks and persistent world changes.
+ * @returns {{scale: number, position: {x: number, y: number}, anchor: number, maximumAnchor: number, minimumUnlockedScale: number, maximumUnlockedScale: number, recoveryProgressMinutes: number, destroyedGeometryIds: string[]}} New scale state.
  */
 export function createScaleState(position, options = {}) {
   assertPosition(position);
@@ -19,6 +19,9 @@ export function createScaleState(position, options = {}) {
     minimumUnlockedScale: options.minimumUnlockedScale ?? MIN_SCALE,
     maximumUnlockedScale: options.maximumUnlockedScale ?? MAX_SCALE,
     recoveryProgressMinutes: 0,
+    destroyedGeometryIds: normalizeGeometryIds(
+      options.destroyedGeometryIds ?? []
+    ),
   };
   assertScaleState(state);
   return state;
@@ -38,9 +41,10 @@ export function heightAtScale(scale) {
  * Change scale while retaining the canonical physical position.
  * @param {ReturnType<typeof createScaleState>} state Current state.
  * @param {number} direction One adjacent scale step, -1 or +1.
+ * @param {string[]} intersectingGeometryIds Geometry IDs found inside the expanded body volume.
  * @returns {ReturnType<typeof createScaleState>} Updated state.
  */
-export function changeScale(state, direction) {
+export function changeScale(state, direction, intersectingGeometryIds = []) {
   assertScaleState(state);
   if (direction !== -1 && direction !== 1) return state;
   const scale = state.scale + direction;
@@ -50,11 +54,19 @@ export function changeScale(state, direction) {
     state.anchor < 1
   )
     return state;
+  const destroyedGeometryIds =
+    direction > 0
+      ? normalizeGeometryIds([
+          ...state.destroyedGeometryIds,
+          ...intersectingGeometryIds,
+        ])
+      : state.destroyedGeometryIds;
   return {
     ...state,
     position: { ...state.position },
     scale,
     anchor: state.anchor - 1,
+    destroyedGeometryIds,
   };
 }
 
@@ -160,6 +172,21 @@ function assertPosition(position) {
 }
 
 /**
+ * Validate and canonicalize persistent geometry identifiers.
+ * @param {string[]} geometryIds Candidate identifiers.
+ * @returns {string[]} Sorted unique identifiers.
+ */
+function normalizeGeometryIds(geometryIds) {
+  if (!Array.isArray(geometryIds))
+    throw new TypeError('Destroyed geometry identifiers must be an array.');
+  if (geometryIds.some(id => typeof id !== 'string' || id.length === 0))
+    throw new TypeError(
+      'Destroyed geometry identifiers must be non-empty strings.'
+    );
+  return [...new Set(geometryIds)].sort();
+}
+
+/**
  * Validate resource and progression fields before changing deterministic state.
  * @param {ReturnType<typeof createScaleState>} state Candidate state.
  * @returns {void}
@@ -185,7 +212,14 @@ function assertScaleState(state) {
     state.anchor < 0 ||
     state.anchor > state.maximumAnchor ||
     !Number.isFinite(state.recoveryProgressMinutes) ||
-    state.recoveryProgressMinutes < 0
+    state.recoveryProgressMinutes < 0 ||
+    !Array.isArray(state.destroyedGeometryIds) ||
+    state.destroyedGeometryIds.some(
+      (id, index) =>
+        typeof id !== 'string' ||
+        id.length === 0 ||
+        (index > 0 && state.destroyedGeometryIds[index - 1] >= id)
+    )
   )
     throw new RangeError(
       'Anchor state must be finite and within its capacity.'
