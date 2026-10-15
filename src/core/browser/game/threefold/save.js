@@ -3,6 +3,7 @@ import { createScaleState } from './spatial.js';
 
 const GAME_ID = 'threefold';
 const SAVE_SCHEMA_VERSION = 1;
+const SAVE_KEY = 'dadeto.threefold.scale-save.v1';
 
 /**
  * Serialize scale progress and irreversible geometry damage for export.
@@ -37,6 +38,54 @@ export function restoreThreefoldScaleSave(serialized) {
   } catch {
     return null;
   }
+}
+
+/**
+ * Bind the versioned codec to an injected storage implementation.
+ * @param {{getItem: (key: string) => string|null, setItem: (key: string, value: string) => void, removeItem?: (key: string) => void}|null|undefined} storage Storage boundary supplied by the caller.
+ * @returns {{load: () => ReturnType<typeof createScaleState>|null, save: (state: ReturnType<typeof createScaleState>) => boolean, clear: () => boolean}} Save operations that fail safely when storage is unavailable.
+ */
+export function createThreefoldScaleSaveStore(storage) {
+  return {
+    load: () => {
+      try {
+        return restoreThreefoldScaleSave(storage?.getItem(SAVE_KEY));
+      } catch {
+        return null;
+      }
+    },
+    save: state =>
+      runStorageMutation(
+        storage,
+        'setItem',
+        SAVE_KEY,
+        serializeThreefoldScaleSave(state)
+      ),
+    clear: () => runStorageMutation(storage, 'removeItem', SAVE_KEY),
+  };
+}
+
+/**
+ * @param {{[key: string]: any}|null|undefined} storage Injected storage boundary.
+ * @param {'setItem'|'removeItem'} method Storage operation name.
+ * @param {string} key Namespaced save key.
+ * @param {string} [value] Serialized save for setItem.
+ * @returns {boolean} Whether storage accepted the mutation.
+ */
+function runStorageMutation(storage, method, key, value) {
+  const operation = storage?.[method];
+  if (
+    typeof operation !== 'function' ||
+    (method === 'setItem' && value === undefined)
+  ) {
+    return false;
+  }
+  try {
+    operation.call(storage, key, value);
+  } catch {
+    return false;
+  }
+  return true;
 }
 
 /**
