@@ -84,18 +84,15 @@ Run `npm run build:cloud` before applying Terraform so that the generated Cloud 
 
 After Terraform applies, the `gcp-prod` workflow validates the function URL as HTTPS and stores it in the run-scoped `object-minute-rental-search-url` artifact (`endpoint.txt`, retained for 90 days). This artifact is the source for a later authorized static-site deployment. It avoids requiring the workflow token to write repository Actions variables.
 
-The static deployment workflow still reads the repository Actions variable `OBJECT_MINUTE_RENTAL_SEARCH_URL`; it does not automatically consume the artifact. For a manual production deployment, download the artifact from a successful `gcp-prod` run, set the variable, then dispatch the static deployment workflow:
+The push-triggered static deployment still reads the repository Actions variable `OBJECT_MINUTE_RENTAL_SEARCH_URL`. For a manual deployment, the workflow can instead download the endpoint artifact from a successful `gcp-prod` run. Find its run ID, then dispatch the existing production workflow with that ID:
 
 ```sh
-gh run download <gcp-prod-run-id> --repo MattHeard/dadeto \
-  --name object-minute-rental-search-url \
-  --dir .tmp/object-minute-rental-search-url
-gh variable set OBJECT_MINUTE_RENTAL_SEARCH_URL --repo MattHeard/dadeto \
-  --body "$(cat .tmp/object-minute-rental-search-url/endpoint.txt)"
-gh workflow run netlify-prod.yml --repo MattHeard/dadeto
+gh run list --workflow gcp-prod.yml --status success --limit 5
+gh workflow run netlify-prod.yml --repo MattHeard/dadeto \
+  -f gcp_prod_run_id=<gcp-prod-run-id>
 ```
 
-The variable update requires a GitHub identity with repository Variables write permission. The `gcp-prod` workflow's built-in token lacks that permission, which is why it now uploads the endpoint artifact instead. Local site builds use the simulator route. Production builds fail if the endpoint variable is empty or is not HTTPS, so the deployed page cannot silently point at the local simulator.
+The manual dispatch does not require a repository-variable update. Push-triggered builds still require `OBJECT_MINUTE_RENTAL_SEARCH_URL`. Local site builds use the simulator route. Production builds fail if their endpoint source is missing or is not HTTPS, so the deployed page cannot silently point at the local simulator.
 
 ## Remote State
 

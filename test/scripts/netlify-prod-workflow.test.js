@@ -19,4 +19,18 @@ describe('Netlify production deployment workflow', () => {
       `grep -Eq 'data-search-endpoint="https://[^"]+"' "$PAGE"`
     );
   });
+
+  it('uses an endpoint artifact only for an explicitly dispatched production build', () => {
+    expect(source).toContain('gcp_prod_run_id:');
+    expect(source).toContain(
+      "GCP_PROD_RUN_ID: ${{ github.event_name == 'workflow_dispatch'"
+    );
+    expect(source).toContain('gh run download "$GCP_PROD_RUN_ID"');
+    expect(source).toContain('--name object-minute-rental-search-url');
+    expect(source).toContain('actions: read');
+    expect(source).toContain(
+      'OBJECT_MINUTE_RENTAL_SEARCH_URL: ${{ vars.OBJECT_MINUTE_RENTAL_SEARCH_URL }}'
+    );
+    expect(source).toContain('\n  push:\n');
+  });
 });
