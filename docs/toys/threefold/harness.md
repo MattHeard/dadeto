@@ -11,6 +11,7 @@
 
 - The page shows a Mosslight-style handheld frame labelled 160 × 144.
 - The opening view reports scale 0, Anchor 8, and the rising crisis stage.
+- A visible TIDE meter starts empty, fills with deterministic crisis minutes, and changes color at the authored stages.
 - Arrows move, A grows, B shrinks, X waits 15 in-game minutes, and Y saves.
 - The west wall remains damaged after reload when Mara grows through it.
 - The focused Jest suite passes and exits with status 0.

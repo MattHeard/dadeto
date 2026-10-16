@@ -11,7 +11,7 @@
 ## Detection Signals
 
 - Error signatures/log lines: browser module import errors, an invalid-save message, or a failed storage operation.
-- Observable symptoms: blank frame; actions ignored; crisis stage changing while paused; run returning to the opening state after reload.
+- Observable symptoms: blank frame; actions ignored; tide meter disagrees with crisis progress/stage; crisis stage changing while paused; run returning to the opening state after reload.
 - Failing commands: focused Jest path in `harness.md`, `npm run build`, or `npm run check`.
 
 ## First-Response Playbook

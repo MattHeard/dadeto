@@ -68,6 +68,21 @@ export function renderThreefoldFrame(state) {
     }
   );
   frame.quest = 'The Broken Gate';
+  const tideProgress =
+    state.crisis.elapsedMinutes / state.crisis.thresholds.aftermathAtMinutes;
+  frame.shapes.push(
+    { type: 'rect', x: 104, y: 4, width: 52, height: 12, fill: PALETTE[0] },
+    {
+      type: 'text',
+      x: 107,
+      y: 11,
+      text: 'TIDE',
+      fill: PALETTE[2],
+      font: '5px monospace',
+    },
+    tideBar(26, PALETTE[1]),
+    tideBar(Math.round(26 * tideProgress), tideColor(state.crisis.stage))
+  );
   frame.threefold = {
     scale: state.player.scale,
     heightMeters,
@@ -75,8 +90,30 @@ export function renderThreefoldFrame(state) {
     maximumAnchor: state.player.maximumAnchor,
     crisisStage: state.crisis.stage,
     elapsedMinutes: state.crisis.elapsedMinutes,
+    tideProgress,
   };
   return frame;
+}
+
+/**
+ * Color the tide gauge by the deterministic crisis stage.
+ * @param {'rising'|'urgent'|'surge'|'aftermath'} stage Current crisis stage.
+ * @returns {string} Pixel palette color for that stage.
+ */
+function tideColor(stage) {
+  if (stage === 'urgent') return PALETTE[3];
+  if (stage === 'surge' || stage === 'aftermath') return '#e16b5a';
+  return PALETTE[2];
+}
+
+/**
+ * Create a screen-space tide meter bar.
+ * @param {number} width Pixel width of the meter segment.
+ * @param {string} fill Pixel color.
+ * @returns {{type: 'rect', x: number, y: number, width: number, height: number, fill: string}} Mosslight canvas rectangle.
+ */
+function tideBar(width, fill) {
+  return { type: 'rect', x: 126, y: 8, width, height: 4, fill };
 }
 
 /**

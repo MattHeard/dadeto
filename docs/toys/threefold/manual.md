@@ -39,7 +39,7 @@ Every 15 in-game minutes, Mara recovers one Anchor charge. Movement and scale at
 
 ## Output
 
-The standalone page renders a pixelated 160 × 144 frame with scale, Anchor, and crisis stage information. Mara's sprite remains handheld-sized while geometry changes scale.
+The standalone page renders a pixelated 160 × 144 frame with scale, Anchor, and crisis stage information. A screen-space tide meter grows with deterministic in-game minutes and changes color by crisis stage; pausing and menus do not move it. Mara's sprite remains handheld-sized while geometry changes scale.
 
 ### Example
 

@@ -24,6 +24,7 @@ Compose pure simulation state with the existing Mosslight handheld renderer, bro
 - Primary actor(s): Mara Venn; the dock worker has one opening callout but is not yet a simulated NPC.
 - Inputs: arrows or directional pad, A to grow, B to shrink, X to wait 15 in-game minutes, Y to save, and save utility controls.
 - Outputs: pixel-art frame, current scale/Anchor/crisis HUD, persistent geometry damage, and versioned run saves.
+- The shared Mosslight frame includes a deterministic screen-space tide gauge: fill follows elapsed crisis game time, capped at the authored aftermath boundary, and color follows the current crisis stage.
 
 ## Assumptions and Constraints
 

@@ -39,6 +39,27 @@ describe('THREEFOLD Mosslight handheld frame', () => {
     );
     expect(frame.presentation.status).toContain('SCALE 0 · A 8/8 · RISING');
     expect(frame.shapes.some(shape => shape.actorId === 'mara')).toBe(true);
+    expect(frame.threefold.tideProgress).toBe(0);
+    expect(frame.shapes).toContainEqual(
+      expect.objectContaining({
+        type: 'rect',
+        x: 126,
+        y: 8,
+        width: 26,
+        height: 4,
+        fill: '#315744',
+      })
+    );
+    expect(frame.shapes).toContainEqual(
+      expect.objectContaining({
+        type: 'rect',
+        x: 126,
+        y: 8,
+        width: 0,
+        height: 4,
+        fill: '#bfd77c',
+      })
+    );
   });
 
   test('keeps Mara fixed while the same geometry scales inversely by three', () => {
@@ -98,7 +119,44 @@ describe('THREEFOLD Mosslight handheld frame', () => {
     expect(frame.dialogue).toBeNull();
     expect(frame.presentation.status).toContain('SURGE');
     expect(frame.toast).toContain('SURGE');
+    expect(frame.threefold.tideProgress).toBe(0.6);
+    expect(frame.shapes).toContainEqual(
+      expect.objectContaining({
+        type: 'rect',
+        x: 126,
+        y: 8,
+        width: 16,
+        height: 4,
+        fill: '#e16b5a',
+      })
+    );
   });
+
+  test.each([
+    [4, 'urgent', 7, '#e9d88d'],
+    [15, 'aftermath', 26, '#e16b5a'],
+  ])(
+    'shows %s crisis progress in the tide meter',
+    (minutes, stage, width, fill) => {
+      const state = createThreefoldSimulation(THRESHOLDS);
+      state.crisis.elapsedMinutes = minutes;
+      state.crisis.stage = stage;
+
+      const frame = renderThreefoldFrame(state);
+
+      expect(frame.threefold.tideProgress).toBe(minutes / 15);
+      expect(frame.shapes).toContainEqual(
+        expect.objectContaining({
+          type: 'rect',
+          x: 126,
+          y: 8,
+          width,
+          height: 4,
+          fill,
+        })
+      );
+    }
+  );
 });
 
 /**
