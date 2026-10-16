@@ -415,9 +415,10 @@ resource "google_storage_bucket_object" "dendrite_static_config" {
   name   = "${local.static_object_prefix}config.json"
   bucket = local.dendrite_static_bucket_name
   content = templatefile("${path.module}/config.json.tftpl", {
-    environment = var.environment
-    project_id  = var.project_id
-    region      = var.region
+    environment         = var.environment
+    project_id          = var.project_id
+    region              = var.region
+    get_author_uuid_url = google_cloudfunctions2_function.get_author_uuid_v2.service_config[0].uri
   })
   content_type  = "application/json"
   cache_control = "no-store"
