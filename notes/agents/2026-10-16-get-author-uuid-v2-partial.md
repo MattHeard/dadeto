@@ -12,3 +12,11 @@
 - Added a Terraform-managed gen2 function using the generated package, existing runtime service account, and shared environment configuration; added the public invoker member and output URL.
 - Static config now receives the function's deployed service URI from Terraform, keeping the browser endpoint tied to the actual resource.
 - No infrastructure was applied.
+
+
+## Credential-free Terraform validation harness
+
+- Unexpected hurdle: the managed Terraform wrapper permits `fmt` only, so `terraform validate` cannot run in this workspace.
+- Diagnosis: the production Terraform workflow validates and then mutates infrastructure; it is not suitable for a validation-only check.
+- Fix: added `.github/workflows/terraform-validate.yml`, which builds generated cloud packages, initializes providers with `-backend=false`, and runs formatting and validation without GCP credentials or an apply step.
+- Next time: use the validation workflow for Terraform-only changes, and keep remote-state plan/apply in the authorized deployment workflow.
