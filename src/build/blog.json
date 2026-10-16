@@ -1,6 +1,22 @@
 {
   "posts": [
     {
+      "key": "THRF1",
+      "title": "THREEFOLD — The Weight of Water",
+      "publicationDate": "2026-10-16",
+      "release": "public",
+      "content": [
+        "A scale-shifting handheld RPG prototype set at Harrowfen's Broken Gate. Walk the same place at different sizes, break through the west wall, and watch every action advance the deterministic tide. Play at /threefold/.",
+        {
+          "type": "manual",
+          "id": "THRF1-manual",
+          "title": "Field guide",
+          "src": "/manuals/threefold.md"
+        }
+      ],
+      "tags": ["toy", "game", "rpg", "scale", "handheld"]
+    },
+    {
       "key": "COMM1",
       "title": "The Commons of Tomorrow",
       "publicationDate": "2026-10-08",

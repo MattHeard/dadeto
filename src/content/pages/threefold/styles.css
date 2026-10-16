@@ -1,0 +1,37 @@
+@import url('/mosslight-valley/styles.css');
+
+:root {
+  --ink: #e4f3de;
+  --muted: #a4c0ae;
+  --moss: #85e0c0;
+  --line: #4d7868;
+  --panel: #18392f;
+  --deep: #102823;
+}
+
+body {
+  background: radial-gradient(ellipse at 50% 0, #315d4b 0, var(--deep) 70%);
+}
+
+.title-lockup h1,
+.chapter-copy h2 {
+  font-family: monospace;
+}
+
+.screen-frame {
+  border-color: #76aa8e;
+}
+
+.touch-pad {
+  background: linear-gradient(145deg, #2a5745, #16352c);
+}
+
+.face-buttons button {
+  background: linear-gradient(145deg, #68a884, #315e4b);
+}
+
+.utility-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}

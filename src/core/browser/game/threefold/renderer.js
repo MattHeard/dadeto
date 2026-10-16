@@ -27,7 +27,7 @@ export function renderThreefoldFrame(state) {
       quickAction: 'grow',
       ending: null,
       tick: 0,
-      toast: `${state.crisis.stage.toUpperCase()} · ARROWS MOVE · A GROW · B SHRINK`,
+      toast: `${state.crisis.stage.toUpperCase()} · ARROWS MOVE · A GROW · B SHRINK · X WAIT`,
       presentation: {
         palette: PALETTE,
         status: `SCALE ${formatScale(state.player.scale)} · A ${state.player.anchor}/${state.player.maximumAnchor} · ${state.crisis.stage.toUpperCase()}`,
