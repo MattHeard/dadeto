@@ -1,8 +1,14 @@
 import { createCrisisClock, advanceCrisisClock } from './crisis.js';
 import { createBrokenGateScene } from './gatehouse.js';
-import { changeScale, growThroughGeometry, moveAtScale } from './spatial.js';
+import {
+  changeScale,
+  growThroughGeometry,
+  moveAtScale,
+  recoverAnchor,
+} from './spatial.js';
 
 const ACTION_GAME_MINUTES = 0.25;
+const ANCHOR_RECOVERY_MINUTES = 15;
 
 /**
  * Create a fresh deterministic simulation for the authored Broken Gate.
@@ -79,7 +85,15 @@ function advanceWait(state, action) {
     type: 'wait',
     elapsedGameMinutes,
   });
-  return crisis === state.crisis ? state : { ...state, crisis };
+  const player = recoverAnchor(
+    state.player,
+    elapsedGameMinutes,
+    ANCHOR_RECOVERY_MINUTES,
+    { inCombat: false }
+  );
+  return crisis === state.crisis && player === state.player
+    ? state
+    : { ...state, player, crisis };
 }
 
 /**
@@ -90,11 +104,17 @@ function advanceWait(state, action) {
  * @returns {ReturnType<typeof createThreefoldSimulation>} Updated simulation.
  */
 function applyTimedAction(state, player, eventType) {
+  const recoveredPlayer = recoverAnchor(
+    player,
+    ACTION_GAME_MINUTES,
+    ANCHOR_RECOVERY_MINUTES,
+    { inCombat: false }
+  );
   const crisis = advanceCrisisClock(state.crisis, {
     type: eventType,
     elapsedGameMinutes: ACTION_GAME_MINUTES,
   });
-  return { ...state, player, crisis };
+  return { ...state, player: recoveredPlayer, crisis };
 }
 
 /**

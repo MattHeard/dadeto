@@ -87,15 +87,38 @@ describe('THREEFOLD gatehouse simulation', () => {
       type: 'grow',
     });
 
-    expect(missingDirection.player).toBe(initial.player);
+    expect(missingDirection.player).toMatchObject({
+      position: initial.player.position,
+      scale: 1,
+      anchor: 0,
+      recoveryProgressMinutes: 0.25,
+    });
     expect(missingDirection.crisis.elapsedMinutes).toBe(0.25);
-    expect(invalidMove.player).toBe(initial.player);
-    expect(unavailableGrowth.player).toBe(initial.player);
+    expect(invalidMove.player).toMatchObject({
+      position: initial.player.position,
+      scale: 1,
+      anchor: 0,
+      recoveryProgressMinutes: 0.25,
+    });
+    expect(unavailableGrowth.player).toMatchObject({
+      position: initial.player.position,
+      scale: 1,
+      anchor: 0,
+      recoveryProgressMinutes: 0.5,
+    });
     expect(unavailableGrowth.crisis.elapsedMinutes).toBe(0.5);
   });
 
   test('wait advances explicit game time and clamps at the aftermath stage', () => {
-    const initial = createThreefoldSimulation(THRESHOLDS);
+    const scene = createBrokenGateScene();
+    scene.spawn = createScaleState(scene.spawn.position, {
+      anchor: 0,
+      maximumAnchor: 8,
+      minimumUnlockedScale: -2,
+      maximumUnlockedScale: 1,
+      recoveryProgressMinutes: 14.5,
+    });
+    const initial = createThreefoldSimulation(THRESHOLDS, scene);
     const surge = stepThreefoldSimulation(initial, {
       type: 'wait',
       elapsedGameMinutes: 0.5,
@@ -110,13 +133,56 @@ describe('THREEFOLD gatehouse simulation', () => {
       elapsedMinutes: 0.75,
       stage: 'aftermath',
     });
-    expect(aftermath.player).toBe(surge.player);
-    expect(
-      stepThreefoldSimulation(aftermath, {
-        type: 'wait',
-        elapsedGameMinutes: 1,
-      })
-    ).toBe(aftermath);
+    expect(aftermath.player).toMatchObject({
+      anchor: 2,
+      recoveryProgressMinutes: 5,
+    });
+
+    const recoveredAftermath = stepThreefoldSimulation(aftermath, {
+      type: 'wait',
+      elapsedGameMinutes: 10,
+    });
+    expect(recoveredAftermath.crisis).toBe(aftermath.crisis);
+    expect(recoveredAftermath.player).toMatchObject({
+      anchor: 3,
+      recoveryProgressMinutes: 0,
+    });
+  });
+
+  test('world actions accumulate partial Anchor recovery progress', () => {
+    const scene = createBrokenGateScene();
+    scene.spawn = createScaleState(scene.spawn.position, {
+      anchor: 0,
+      maximumAnchor: 8,
+      minimumUnlockedScale: -2,
+      maximumUnlockedScale: 1,
+      recoveryProgressMinutes: 14.75,
+    });
+    const initial = createThreefoldSimulation(THRESHOLDS, scene);
+    const moved = stepThreefoldSimulation(initial, {
+      type: 'move',
+      direction: 'left',
+    });
+
+    expect(moved.player).toMatchObject({
+      anchor: 1,
+      recoveryProgressMinutes: 0,
+    });
+  });
+
+  test('a completed aftermath wait is inert when Anchor is full', () => {
+    const aftermath = stepThreefoldSimulation(
+      createThreefoldSimulation(THRESHOLDS),
+      { type: 'wait', elapsedGameMinutes: 1 }
+    );
+    const unchanged = stepThreefoldSimulation(aftermath, {
+      type: 'wait',
+      elapsedGameMinutes: 1,
+    });
+
+    expect(aftermath.crisis.stage).toBe('aftermath');
+    expect(aftermath.player.anchor).toBe(aftermath.player.maximumAnchor);
+    expect(unchanged).toBe(aftermath);
   });
 
   test.each([

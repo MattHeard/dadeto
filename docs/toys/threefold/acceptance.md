@@ -5,15 +5,16 @@
 - [ ] Focused runtime Jest suite passes for movement, scale controls, deliberate wait, save/reload, reset, and invalid imports.
 - [ ] `npm run build` exits 0 and produces `public/threefold/index.html`, `public/threefold/game.js`, and `public/core/browser/game/threefold/runtime.js`.
 - [ ] The standalone HTML declares a 160 × 144 canvas and all mapped handheld controls.
+- [x] Movement and scale attempts accumulate partial Anchor recovery progress; one Anchor returns per 15 in-game minutes, including waits after the crisis reaches aftermath.
 - [ ] `npm run check` exits 0 with all 10 gates passing, 100% lines/statements/functions/branches, and zero clones.
 - [ ] `docs/toys/threefold/spec.md`, `harness.md`, `acceptance.md`, `failure-modes.md`, and `manual.md` describe the same implemented control contract.
 
 ## Evidence Collection
 
-- Command log path: `.tmp/threefold-check.log`.
+- Commands: `npm run build`, the focused THREEFOLD Jest suite, and `DADETO_CHECK_TIMEOUT_MS=3600000 npm run check`; loop evidence is recorded in Beads.
 - Generated page: `public/threefold/`.
-- Coverage report: `reports/coverage/coverage-summary.json`.
-- Test report: `.tmp/threefold-check.log` includes the shard results and final check summary.
+- Coverage report: `reports/coverage/coverage-summary.json` (100% statements, branches, functions, and lines for the simulation).
+- Retrospective: `notes/agents/2026-10-16-threefold-anchor-recovery.md`.
 
 ## Pass/Fail Rules
 

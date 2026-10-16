@@ -8,6 +8,8 @@ Explore Harrowfen's Broken Gate in a deterministic, scale-shifting handheld RPG 
 
 Use the arrow keys or directional pad to move. A grows one unlocked scale step; growth can break through obstructing geometry and leave permanent rubble. B shrinks one step. X deliberately waits 15 in-game minutes. Y saves. Save, Export, Import, Pause, Fullscreen, and Reset are also available on the page.
 
+Every 15 in-game minutes, Mara recovers one Anchor charge. Movement and scale attempts add a quarter minute to recovery progress. Waiting can restore Anchor even after the crisis reaches aftermath; the crisis stage itself remains at aftermath.
+
 ### Example
 
 ```json

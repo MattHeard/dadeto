@@ -16,7 +16,7 @@ Compose pure simulation state with the existing Mosslight handheld renderer, bro
 
 ## Scope
 
-- In scope: one contiguous gatehouse scene; scales −2 through +1; directional movement; growth and shrinking; deterministic crisis stages; deliberate waits; complete-run save, import, export, and reset; a 160 × 144 standalone handheld page.
+- In scope: one contiguous gatehouse scene; scales −2 through +1; directional movement; growth and shrinking; deterministic crisis stages; deliberate waits; slow guaranteed Anchor recovery at one charge per 15 in-game minutes; complete-run save, import, export, and reset; a 160 × 144 standalone handheld page.
 - Out of scope: people and ferry choices, combat, repair and evacuation interactions, fluid simulation, later campaign scenes, and scales outside the four authored bands.
 
 ## Actors and Interfaces
@@ -28,7 +28,7 @@ Compose pure simulation state with the existing Mosslight handheld renderer, bro
 ## Assumptions and Constraints
 
 - Assumptions: the current Broken Gate geometry and scale-space reducers are canonical for this slice.
-- Constraints: game time advances only from explicit simulation actions; rendering keeps Mara's sprite at handheld size; all new toy folders retain the four required docs.
+- Constraints: game time advances only from explicit simulation actions; waits after aftermath may restore Anchor but do not advance the crisis stage; rendering keeps Mara's sprite at handheld size; all new toy folders retain the four required docs.
 
 ## Dependencies
 

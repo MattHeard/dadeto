@@ -1,0 +1,7 @@
+# THREEFOLD Anchor Recovery Loop
+
+- Unexpected hurdle: the pure `recoverAnchor` reducer already persisted partial recovery progress, but no simulation command called it. The first full check also exposed one uncovered branch in the wait-state identity return.
+- Diagnosis: traced `stepThreefoldSimulation` through explicit waits and timed movement/scale attempts, then used the coverage report to identify the remaining no-op aftermath wait branch. A test expectation initially counted progress across two commands that both started from the same original state; correcting that clarified the immutable-state behavior.
+- Chosen fix: recover one Anchor charge per 15 in-game minutes from timed world actions and waits, retaining partial progress and allowing waits after aftermath without advancing crisis state. Added simulation tests and aligned the manual, spec, and acceptance notes.
+- Evidence: focused THREEFOLD suite passed (3 suites, 45 tests); focused simulation coverage passed at 100% for lines, statements, functions, and branches; `npm run build` produced the standalone page and runtime bundle; `DADETO_CHECK_TIMEOUT_MS=3600000 npm run check` passed all 10 gates, including 11 local E2E checks and zero clones.
+- Next-time guidance: when recovery uses immutable state, derive expected progress from each command's actual input state. After a full coverage gate, inspect uncovered branch counts rather than relying on line coverage alone. Keep future content, NPC, and combat work in separate bounded loops.
