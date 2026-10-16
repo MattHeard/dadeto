@@ -3,6 +3,7 @@ import { createBrokenGateScene } from '../../../../src/core/browser/game/threefo
 import {
   changeScale,
   growThroughGeometry,
+  moveAtScale,
   projectGeometryForScale,
 } from '../../../../src/core/browser/game/threefold/spatial.js';
 
@@ -79,5 +80,49 @@ describe('THREEFOLD Broken Gate scene', () => {
     });
     expect(store.save(grown)).toBe(true);
     expect(store.load()).toEqual(grown);
+  });
+
+  test('movement scales in metres and rubble opens the blocked route', () => {
+    const scene = createBrokenGateScene();
+    const firstStep = moveAtScale(scene.spawn, 'right', scene.geometry, scene);
+    const blocked = moveAtScale(firstStep, 'right', scene.geometry, scene);
+    expect(firstStep.position.x).toBeGreaterThan(scene.spawn.position.x);
+    expect(blocked).toBe(firstStep);
+
+    const grown = growThroughGeometry(
+      firstStep,
+      scene.geometry,
+      scene.baseBodyWidthMeters
+    );
+    const throughRubble = moveAtScale(grown, 'right', scene.geometry, scene);
+    expect(grown.destroyedGeometryIds).toEqual(['gatehouse-west-wall']);
+    expect(throughRubble.position.x - grown.position.x).toBeCloseTo(
+      3 * (firstStep.position.x - scene.spawn.position.x),
+      12
+    );
+    expect(throughRubble.scale).toBe(grown.scale);
+    expect(throughRubble.anchor).toBe(grown.anchor);
+  });
+
+  test('keeps movement inside finite bounds and ignores unsupported directions', () => {
+    const scene = createBrokenGateScene();
+    const nearEdge = {
+      ...scene.spawn,
+      position: { x: 0.2, y: 4 },
+    };
+    expect(moveAtScale(nearEdge, 'left', [], scene)).toBe(nearEdge);
+    expect(moveAtScale(scene.spawn, 'teleport', [], scene)).toBe(scene.spawn);
+    expect(() =>
+      moveAtScale(scene.spawn, 'up', [], {
+        ...scene,
+        bounds: { min: { x: 0, y: 0 }, max: { x: 0, y: 9 } },
+      })
+    ).toThrow(RangeError);
+    expect(() =>
+      moveAtScale(scene.spawn, 'up', [], {
+        ...scene,
+        bounds: { max: { x: 12, y: 9 } },
+      })
+    ).toThrow(TypeError);
   });
 });

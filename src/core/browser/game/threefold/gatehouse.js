@@ -30,8 +30,8 @@ const GATEHOUSE_GEOMETRY = [
   {
     id: 'relief-gate',
     bounds: {
-      min: { x: 4.1, y: 3.1, z: 0 },
-      max: { x: 4.5, y: 4.9, z: 2 },
+      min: { x: 4.7, y: 3.1, z: 0 },
+      max: { x: 5.1, y: 4.9, z: 2 },
     },
   },
   {

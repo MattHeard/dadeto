@@ -3,8 +3,18 @@ export const MAX_SCALE = 4;
 export const BASE_HEIGHT_METERS = 1.8288;
 export const INITIAL_MAX_ANCHOR = 8;
 const GEOMETRY_CONTACT_TOLERANCE_METERS = 1e-9;
+const BASE_MOVEMENT_METERS = BASE_HEIGHT_METERS / 9;
 /** @type {Array<'x' | 'y' | 'z'>} */
 const GEOMETRY_AXES = ['x', 'y', 'z'];
+/** @type {Array<'x' | 'y'>} */
+const WORLD_AXES = ['x', 'y'];
+/** @type {Record<string, {x: number, y: number}>} */
+const MOVEMENT_DIRECTIONS = {
+  up: { x: 0, y: -1 },
+  down: { x: 0, y: 1 },
+  left: { x: -1, y: 0 },
+  right: { x: 1, y: 0 },
+};
 
 /**
  * Create deterministic scale state with a bounded Anchor reserve.
@@ -92,6 +102,48 @@ export function growThroughGeometry(state, geometry, baseBodyWidthMeters) {
     )
     .map(object => object.id);
   return changeScale(state, 1, newlyIntersectedIds);
+}
+
+/**
+ * Move one deterministic step in canonical metres, blocking on intact geometry.
+ * One step is one ninth of Mara's scale-zero height and scales by powers of 3.
+ * @param {ReturnType<typeof createScaleState>} state Current scale state.
+ * @param {string} direction Cardinal movement direction.
+ * @param {Array<{id: string, bounds: {min: {x: number, y: number, z: number}, max: {x: number, y: number, z: number}}}>} geometry Canonical world geometry.
+ * @param {{baseBodyWidthMeters: number, bounds: {min: {x: number, y: number}, max: {x: number, y: number}}}} scene Canonical world body tuning and finite extent in metres.
+ * @returns {ReturnType<typeof createScaleState>} Updated position or original state when blocked.
+ */
+export function moveAtScale(state, direction, geometry, scene) {
+  assertScaleState(state);
+  assertBodyWidth(scene.baseBodyWidthMeters);
+  const objects = validateGeometry(geometry);
+  assertWorldBounds(scene.bounds);
+  const delta = MOVEMENT_DIRECTIONS[direction];
+  if (!delta) return state;
+  const distance = BASE_MOVEMENT_METERS * 3 ** state.scale;
+  const destination = {
+    ...state,
+    position: {
+      x: state.position.x + delta.x * distance,
+      y: state.position.y + delta.y * distance,
+    },
+  };
+  const currentBody = bodyBoundsAtScale(state, scene.baseBodyWidthMeters);
+  const destinationBody = bodyBoundsAtScale(
+    destination,
+    scene.baseBodyWidthMeters
+  );
+  if (
+    !containsInWorld(destinationBody, scene.bounds) ||
+    crossesIntactGeometry(
+      currentBody,
+      destinationBody,
+      objects,
+      state.destroyedGeometryIds
+    )
+  )
+    return state;
+  return destination;
 }
 
 /**
@@ -232,6 +284,27 @@ function assertBodyWidth(width) {
 }
 
 /**
+ * Validate a finite rectangular world boundary.
+ * @param {{min: {x: number, y: number}, max: {x: number, y: number}}} bounds Candidate world bounds.
+ * @returns {void}
+ */
+function assertWorldBounds(bounds) {
+  if (!bounds?.min || !bounds?.max)
+    throw new TypeError(
+      'World bounds require minimum and maximum coordinates.'
+    );
+  WORLD_AXES.forEach(axis => {
+    if (
+      !Number.isFinite(bounds.min[axis]) ||
+      !Number.isFinite(bounds.max[axis]) ||
+      bounds.min[axis] >= bounds.max[axis]
+    ) {
+      throw new RangeError(`World bounds require increasing ${axis} limits.`);
+    }
+  });
+}
+
+/**
  * Validate canonical geometry bounds and unique identifiers.
  * @param {Array<{id: string, bounds: {min: {x: number, y: number, z: number}, max: {x: number, y: number, z: number}}}>} geometry Candidate geometry.
  * @returns {Array<{id: string, bounds: {min: {x: number, y: number, z: number}, max: {x: number, y: number, z: number}}}>} Validated geometry.
@@ -306,6 +379,48 @@ function bodyBoundsAtScale(state, baseBodyWidthMeters) {
       z: heightAtScale(state.scale),
     },
   };
+}
+
+/**
+ * Check the full swept body against the finite world and intact geometry.
+ * @param {{min: {x: number, y: number, z: number}, max: {x: number, y: number, z: number}}} body Candidate body bounds.
+ * @param {{min: {x: number, y: number}, max: {x: number, y: number}}} worldBounds World boundary.
+ * @returns {boolean} Whether the body fits in the world.
+ */
+function containsInWorld(body, worldBounds) {
+  return (
+    body.min.x >= worldBounds.min.x &&
+    body.min.y >= worldBounds.min.y &&
+    body.max.x <= worldBounds.max.x &&
+    body.max.y <= worldBounds.max.y
+  );
+}
+
+/**
+ * Check whether an axis-aligned movement sweep reaches an intact object.
+ * @param {{min: {x: number, y: number, z: number}, max: {x: number, y: number, z: number}}} start Body bounds before movement.
+ * @param {{min: {x: number, y: number, z: number}, max: {x: number, y: number, z: number}}} end Body bounds after movement.
+ * @param {Array<{id: string, bounds: {min: {x: number, y: number, z: number}, max: {x: number, y: number, z: number}}}>} geometry Validated world geometry.
+ * @param {string[]} destroyedGeometryIds Persistent rubble IDs.
+ * @returns {boolean} Whether movement intersects intact geometry.
+ */
+function crossesIntactGeometry(start, end, geometry, destroyedGeometryIds) {
+  const destroyed = new Set(destroyedGeometryIds);
+  const swept = {
+    min: {
+      x: Math.min(start.min.x, end.min.x),
+      y: Math.min(start.min.y, end.min.y),
+      z: start.min.z,
+    },
+    max: {
+      x: Math.max(start.max.x, end.max.x),
+      y: Math.max(start.max.y, end.max.y),
+      z: start.max.z,
+    },
+  };
+  return geometry.some(
+    object => !destroyed.has(object.id) && overlaps(swept, object.bounds)
+  );
 }
 
 /**
