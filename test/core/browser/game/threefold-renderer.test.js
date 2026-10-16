@@ -29,6 +29,14 @@ describe('THREEFOLD Mosslight handheld frame', () => {
         elapsedMinutes: 0,
       },
     });
+    expect(frame.dialogue).toMatchObject({
+      actorId: 'dock-worker',
+      lines: [{ text: 'The tide is climbing. That gate will not hold.' }],
+      index: 0,
+    });
+    expect(frame.toast).toBe(
+      'INVESTIGATE THE FAILING GATE. DECIDE HOW TO RESPOND.'
+    );
     expect(frame.presentation.status).toContain('SCALE 0 · A 8/8 · RISING');
     expect(frame.shapes.some(shape => shape.actorId === 'mara')).toBe(true);
   });
@@ -87,6 +95,7 @@ describe('THREEFOLD Mosslight handheld frame', () => {
       'gatehouse-west-wall'
     );
     expect(frame.threefold).toMatchObject({ scale: 1, crisisStage: 'surge' });
+    expect(frame.dialogue).toBeNull();
     expect(frame.presentation.status).toContain('SURGE');
     expect(frame.toast).toContain('SURGE');
   });

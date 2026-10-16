@@ -16,19 +16,19 @@ Compose pure simulation state with the existing Mosslight handheld renderer, bro
 
 ## Scope
 
-- In scope: one contiguous gatehouse scene; scales −2 through +1; directional movement; growth and shrinking; deterministic crisis stages; deliberate waits; slow guaranteed Anchor recovery at one charge per 15 in-game minutes; complete-run save, import, export, and reset; a 160 × 144 standalone handheld page.
+- In scope: one contiguous gatehouse scene; an opening dock-worker warning and open-ended investigation objective; scales −2 through +1; directional movement; growth and shrinking; deterministic crisis stages; deliberate waits; slow guaranteed Anchor recovery at one charge per 15 in-game minutes; complete-run save, import, export, and reset; a 160 × 144 standalone handheld page.
 - Out of scope: people and ferry choices, combat, repair and evacuation interactions, fluid simulation, later campaign scenes, and scales outside the four authored bands.
 
 ## Actors and Interfaces
 
-- Primary actor(s): Mara Venn; the playable preview currently exposes the gatehouse and its geometry.
+- Primary actor(s): Mara Venn; the dock worker has one opening callout but is not yet a simulated NPC.
 - Inputs: arrows or directional pad, A to grow, B to shrink, X to wait 15 in-game minutes, Y to save, and save utility controls.
 - Outputs: pixel-art frame, current scale/Anchor/crisis HUD, persistent geometry damage, and versioned run saves.
 
 ## Assumptions and Constraints
 
 - Assumptions: the current Broken Gate geometry and scale-space reducers are canonical for this slice.
-- Constraints: game time advances only from explicit simulation actions; waits after aftermath may restore Anchor but do not advance the crisis stage; rendering keeps Mara's sprite at handheld size; all new toy folders retain the four required docs.
+- Constraints: the opening callout and investigation goal appear only before the first timed action; game time advances only from explicit simulation actions; waits after aftermath may restore Anchor but do not advance the crisis stage; rendering keeps Mara's sprite at handheld size; all new toy folders retain the four required docs.
 
 ## Dependencies
 

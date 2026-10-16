@@ -11,7 +11,9 @@ describe('THREEFOLD handheld runtime', () => {
       anchor: 8,
       crisisStage: 'rising',
     });
+    expect(openingFrame.dialogue.actorId).toBe('dock-worker');
     runtime.step(125, ['up']);
+    expect(runtime.frame().dialogue).toBeNull();
     expect(runtime.getState().player.position).toEqual({ x: 3, y: 3.7968 });
     runtime.step(125, ['a']);
     expect(runtime.getState().player.scale).toBe(1);

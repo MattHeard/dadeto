@@ -19,7 +19,17 @@ export function renderThreefoldFrame(state) {
     {
       world,
       mode: 'world',
-      dialogue: null,
+      dialogue:
+        state.crisis.elapsedMinutes === 0
+          ? {
+              actorId: 'dock-worker',
+              lines: [
+                { text: 'The tide is climbing. That gate will not hold.' },
+              ],
+              index: 0,
+              choices: [],
+            }
+          : null,
       battle: null,
       journal: [],
       inventory: {},
@@ -27,7 +37,10 @@ export function renderThreefoldFrame(state) {
       quickAction: 'grow',
       ending: null,
       tick: 0,
-      toast: `${state.crisis.stage.toUpperCase()} · ARROWS MOVE · A GROW · B SHRINK · X WAIT`,
+      toast:
+        state.crisis.elapsedMinutes === 0
+          ? 'INVESTIGATE THE FAILING GATE. DECIDE HOW TO RESPOND.'
+          : `${state.crisis.stage.toUpperCase()} · ARROWS MOVE · A GROW · B SHRINK · X WAIT`,
       presentation: {
         palette: PALETTE,
         status: `SCALE ${formatScale(state.player.scale)} · A ${state.player.anchor}/${state.player.maximumAnchor} · ${state.crisis.stage.toUpperCase()}`,
