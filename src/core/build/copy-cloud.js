@@ -1165,6 +1165,7 @@ function createCopyCloudDirectoryPlan(planValues) {
     'generate-stats',
     'get-api-key-credit',
     'get-api-key-credit-v2',
+    'get-author-uuid-v2',
     'get-moderation-variant',
     'hide-variant-html',
     'mark-variant-dirty',

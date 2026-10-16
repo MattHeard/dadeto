@@ -64,7 +64,7 @@ When the user gives only a bead reference, use these defaults unless the bead cl
 - **Minimal slice:** one file or one behavior path first.
 - **Acceptance evidence:** required evaluator(s) from `docs/quality/definition-of-done.md` plus one bead-specific proof point.
 - **Cheapest first evaluator:** start narrow, then escalate only if risk justifies it.
-- **Repo-memory artifact:** at minimum, the required `notes/agents/` entry; prefer tests/harness/docs when they create a reusable guardrail.
+- **Repo-memory artifact:** at minimum, the required `notes/agents/` entry; prefer tests/harness/docs when they create a reusable guardrail. For a completed toy or feature, append a source-grounded reuse record following `docs/loop/agent-reuse-notes.md`; do not invent reuse claims or force a percentage.
 - **Stop condition:** after two failed attempts without a tighter hypothesis, better evaluator, or smaller slice, stop and open follow-up beads. If a required acceptance check is already running, let it finish before stopping the loop.
 
 ## How Users Can Help Without Pasting Prompts

@@ -7,7 +7,7 @@ import { getAuthorizationHeader } from '../../submit-shared.js';
  * @typedef {{ uid?: string | null | undefined }} DecodedToken
  * @typedef {{ verifyIdToken: (token: string) => Promise<DecodedToken> }} AuthLike
  * @typedef {{ collection: (name: string) => { doc: (id: string) => { get: () => Promise<{ data: () => Record<string, unknown> | undefined }>, set: (data: Record<string, unknown>, options?: { merge?: boolean }) => Promise<void> } } }} FirestoreLike
- * @typedef {{ get?: (name: string) => string | null | undefined, headers?: { authorization?: string | string[] | undefined, Authorization?: string | string[] | undefined } }} RequestLike
+ * @typedef {{ method?: string, get?: (name: string) => string | null | undefined, headers?: { authorization?: string | string[] | undefined, Authorization?: string | string[] | undefined, origin?: string | undefined } }} RequestLike
  */
 
 /**
@@ -60,12 +60,36 @@ export function createGetAuthorUuidV2Handler(deps) {
 
 /**
  * Wrap the request handler in an Express responder.
- * @param {{ db: FirestoreLike, auth: AuthLike, randomUUID: () => string, setAuthorDocument: (allowEffects: AllowEffects, reference: unknown, data: object, options: object) => Promise<void>, sendJsonResponse: (allowEffects: AllowEffects, response: unknown, status: number, body: unknown) => unknown }} deps Handler dependencies.
+ * @param {{ db: FirestoreLike, auth: AuthLike, randomUUID: () => string, allowedOrigins?: string[], setAuthorDocument: (allowEffects: AllowEffects, reference: unknown, data: object, options: object) => Promise<void>, setResponseHeader: (allowEffects: AllowEffects, response: unknown, name: string, value: string) => unknown, sendJsonResponse: (allowEffects: AllowEffects, response: unknown, status: number, body: unknown) => unknown, sendEmptyResponse: (allowEffects: AllowEffects, response: unknown, status: number) => unknown }} deps Handler dependencies.
  * @returns {(allowEffects: AllowEffects, req: RequestLike, res: unknown) => Promise<void>} Express handler.
  */
 export function createGetAuthorUuidV2ExpressHandle(deps) {
   const handleRequest = createGetAuthorUuidV2Handler(deps);
   return async function handle(allowEffects, req, res) {
+    const origin = req?.headers?.origin;
+    const corsHeaders = /** @type {Record<string, string>} */ ({
+      'Access-Control-Allow-Methods': 'GET, OPTIONS',
+      'Access-Control-Allow-Headers': 'Authorization',
+      Vary: 'Origin',
+    });
+    if (
+      typeof origin === 'string' &&
+      (deps.allowedOrigins ?? []).includes(origin)
+    )
+      corsHeaders['Access-Control-Allow-Origin'] = origin;
+    Object.entries(corsHeaders).forEach(([name, value]) =>
+      deps.setResponseHeader(allowEffects, res, name, value)
+    );
+
+    if (req?.method === 'OPTIONS') {
+      deps.sendEmptyResponse(allowEffects, res, 204);
+      return;
+    }
+    if (req?.method && req.method !== 'GET') {
+      deps.setResponseHeader(allowEffects, res, 'Allow', 'GET, OPTIONS');
+      deps.sendJsonResponse(allowEffects, res, 405, 'Method not allowed');
+      return;
+    }
     const result = await handleRequest(allowEffects, req);
     deps.sendJsonResponse(allowEffects, res, result.status, result.body);
   };

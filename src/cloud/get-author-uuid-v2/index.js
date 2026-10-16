@@ -4,6 +4,7 @@ import { getFirestore as getAdminFirestore } from 'firebase-admin/firestore';
 import { randomUUID } from 'node:crypto';
 import { createFirebaseAppManager } from '../common-gcf.js';
 import { getFirestoreInstance } from '../firestore.js';
+import { getAllowedOrigins } from '../cors-config.js';
 import {
   createEffectHttpBoundary,
   createEffectStartupBoundary,
@@ -27,6 +28,7 @@ const handleRequest = createGetAuthorUuidV2ExpressHandle({
   db,
   auth,
   randomUUID,
+  allowedOrigins: getAllowedOrigins(process.env),
   ...createGetAuthorUuidV2EffectAdapters(),
 });
 const handle = createEffectHttpBoundary((allowEffects, req, res) =>

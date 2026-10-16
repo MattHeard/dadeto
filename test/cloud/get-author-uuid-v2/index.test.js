@@ -30,6 +30,12 @@ describe('get-author-uuid-v2 entry point', () => {
         getFirestoreInstance,
       }));
       await jest.unstable_mockModule(
+        '../../../src/cloud/cors-config.js',
+        () => ({
+          getAllowedOrigins: jest.fn(() => ['https://mattheard.net']),
+        })
+      );
+      await jest.unstable_mockModule(
         '../../../src/cloud/allow-effects.js',
         () => ({
           createEffectStartupBoundary: handler => handler(startupPermission),

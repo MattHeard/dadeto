@@ -16,5 +16,19 @@ export function createGetAuthorUuidV2EffectAdapters() {
       );
       return typedResponse.status(status).json(body);
     },
+    setResponseHeader: (allowEffects, response, name, value) => {
+      void allowEffects;
+      const typedResponse = /** @type {{set: (name: string, value: string) => unknown}} */ (
+        response
+      );
+      return typedResponse.set(name, value);
+    },
+    sendEmptyResponse: (allowEffects, response, status) => {
+      void allowEffects;
+      const typedResponse = /** @type {{status: (value: number) => {send: (body: string) => unknown}}} */ (
+        response
+      );
+      return typedResponse.status(status).send('');
+    },
   };
 }

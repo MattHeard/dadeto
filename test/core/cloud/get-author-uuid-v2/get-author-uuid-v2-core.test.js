@@ -124,6 +124,8 @@ describe('createGetAuthorUuidV2Handler', () => {
     const sendJsonResponse = jest.fn((permission, response, code, body) =>
       response.status(code).json(body)
     );
+    const setResponseHeader = jest.fn();
+    const sendEmptyResponse = jest.fn();
     const handle = createGetAuthorUuidV2ExpressHandle({
       db: {
         collection: jest.fn(() => ({
@@ -139,12 +141,16 @@ describe('createGetAuthorUuidV2Handler', () => {
       randomUUID: jest.fn(),
       setAuthorDocument,
       sendJsonResponse,
+      setResponseHeader,
+      sendEmptyResponse,
+      allowedOrigins: ['https://mattheard.net'],
     });
     const response = { status };
 
     await handle(
       allowEffects,
       {
+        headers: { origin: 'https://mattheard.net' },
         get: authorizationHeader,
       },
       response
@@ -155,5 +161,114 @@ describe('createGetAuthorUuidV2Handler', () => {
     expect(sendJsonResponse).toHaveBeenCalledWith(allowEffects, response, 200, {
       uuid: 'author-uuid',
     });
+    expect(setResponseHeader).toHaveBeenCalledWith(
+      allowEffects,
+      response,
+      'Access-Control-Allow-Origin',
+      'https://mattheard.net'
+    );
+  });
+
+  it('answers Authorization preflight without verifying a token', async () => {
+    const response = {
+      set: jest.fn(),
+      status: jest.fn(() => ({ send: jest.fn() })),
+    };
+    const sendEmptyResponse = jest.fn();
+    const sendJsonResponse = jest.fn();
+    const verifyIdToken = jest.fn();
+    const handle = createGetAuthorUuidV2ExpressHandle({
+      db: createDb(),
+      auth: { verifyIdToken },
+      randomUUID: jest.fn(),
+      setAuthorDocument: jest.fn(),
+      setResponseHeader: (permission, target, name, value) =>
+        target.set(name, value),
+      sendJsonResponse,
+      sendEmptyResponse,
+      allowedOrigins: ['https://mattheard.net'],
+    });
+
+    await handle(
+      allowEffects,
+      { method: 'OPTIONS', headers: { origin: 'https://mattheard.net' } },
+      response
+    );
+
+    expect(response.set).toHaveBeenCalledWith(
+      'Access-Control-Allow-Headers',
+      'Authorization'
+    );
+    expect(response.set).toHaveBeenCalledWith(
+      'Access-Control-Allow-Origin',
+      'https://mattheard.net'
+    );
+    expect(sendEmptyResponse).toHaveBeenCalledWith(allowEffects, response, 204);
+    expect(verifyIdToken).not.toHaveBeenCalled();
+    expect(sendJsonResponse).not.toHaveBeenCalled();
+  });
+
+  it('does not reflect an unconfigured origin', async () => {
+    const setResponseHeader = jest.fn();
+    const handle = createGetAuthorUuidV2ExpressHandle({
+      db: createDb(),
+      auth: { verifyIdToken: jest.fn() },
+      randomUUID: jest.fn(),
+      setAuthorDocument: jest.fn(),
+      setResponseHeader,
+      sendJsonResponse: jest.fn(),
+      sendEmptyResponse: jest.fn(),
+      allowedOrigins: ['https://mattheard.net'],
+    });
+    const response = {};
+
+    await handle(
+      allowEffects,
+      { method: 'GET', headers: { origin: 'https://attacker.example' } },
+      response
+    );
+
+    expect(setResponseHeader).not.toHaveBeenCalledWith(
+      allowEffects,
+      response,
+      'Access-Control-Allow-Origin',
+      expect.any(String)
+    );
+  });
+
+  it('rejects methods other than GET and OPTIONS', async () => {
+    const setResponseHeader = jest.fn();
+    const sendJsonResponse = jest.fn();
+    const verifyIdToken = jest.fn();
+    const handle = createGetAuthorUuidV2ExpressHandle({
+      db: createDb(),
+      auth: { verifyIdToken },
+      randomUUID: jest.fn(),
+      setAuthorDocument: jest.fn(),
+      setResponseHeader,
+      sendJsonResponse,
+      sendEmptyResponse: jest.fn(),
+    });
+    const response = {};
+
+    await handle(
+      allowEffects,
+      { method: 'POST', headers: { origin: 'https://attacker.example' } },
+      response
+    );
+
+    expect(setResponseHeader).toHaveBeenCalledWith(
+      allowEffects,
+      response,
+      'Allow',
+      'GET, OPTIONS'
+    );
+    expect(sendJsonResponse).toHaveBeenCalledWith(
+      allowEffects,
+      response,
+      405,
+      'Method not allowed'
+    );
+    expect(verifyIdToken).not.toHaveBeenCalled();
   });
 });

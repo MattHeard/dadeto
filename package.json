@@ -40,6 +40,7 @@
     "build": "node scripts/check-node-version.js && npm run build:mattheard-net",
     "depcruise": "node src/local/check-depcruise.js",
     "function-graph": "node src/local/function-dependency-graph.js",
+    "agents:reuse-report": "node src/local/agentReuseReport.js",
     "core-parse": "npm run parse-not-validate && npm run parse-boundary",
     "parse-not-validate": "node src/local/check-parse-not-validate.js",
     "parse-boundary": "node src/local/check-parse-boundary.js",
