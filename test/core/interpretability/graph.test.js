@@ -1,5 +1,8 @@
 import { describe, expect, it } from '@jest/globals';
-import { validateEvidenceGraphV1 } from '../../../src/core/interpretability/interpretability.js';
+import {
+  exportEvidenceGraphV1,
+  validateEvidenceGraphV1,
+} from '../../../src/core/interpretability/interpretability.js';
 
 /**
  * Create a complete native-neuron record for graph identity checks.
@@ -174,5 +177,116 @@ describe('validateEvidenceGraphV1', () => {
         ],
       })
     ).toEqual({ valid: true, errors: [] });
+  });
+
+  it('round-trips a versioned portable graph with deterministic collection order', () => {
+    const graph = {
+      mechanisms: [{ id: 'mechanism-b' }, { id: 'mechanism-a' }],
+      hypotheses: [
+        {
+          id: 'hypothesis-a',
+          mechanismIds: ['mechanism-a'],
+          evidenceIds: ['evidence-negative'],
+          claim: 'The circuit predicts the held-out behavior.',
+          status: 'proposed',
+        },
+      ],
+      experiments: [
+        {
+          id: 'experiment-a',
+          mechanismIds: ['mechanism-a'],
+          hypothesisIds: ['hypothesis-a'],
+          seed: 17,
+          inputSplitId: 'held-out-v1',
+          observations: [
+            { kind: 'negative', summary: 'The effect did not reproduce.' },
+          ],
+        },
+      ],
+      estimates: [
+        {
+          id: 'estimate-a',
+          hypothesisIds: ['hypothesis-a'],
+          evidenceIds: ['evidence-negative'],
+          metric: { name: 'accuracy', value: 0.72 },
+        },
+      ],
+      evidence: [
+        {
+          id: 'evidence-negative',
+          mechanismIds: ['mechanism-a'],
+          hypothesisIds: ['hypothesis-a'],
+          experimentIds: ['experiment-a'],
+          kind: 'negative',
+          validationState: 'reviewed',
+        },
+      ],
+      edges: [
+        {
+          id: 'edge-supports',
+          fromId: 'hypothesis-a',
+          toId: 'evidence-negative',
+          relation: 'supports',
+        },
+      ],
+    };
+    const exported = exportEvidenceGraphV1(graph);
+
+    expect(exported.valid).toBe(true);
+    if (!exported.valid) return;
+    const reconstructed = JSON.parse(exported.json);
+    expect(reconstructed.schemaVersion).toBe(1);
+    expect(reconstructed.mechanisms.map(record => record.id)).toEqual([
+      'mechanism-a',
+      'mechanism-b',
+    ]);
+    expect(reconstructed.hypotheses).toEqual(graph.hypotheses);
+    expect(reconstructed.experiments).toEqual(graph.experiments);
+    expect(reconstructed.estimates).toEqual(graph.estimates);
+    expect(reconstructed.evidence).toEqual(graph.evidence);
+    expect(reconstructed.edges).toEqual(graph.edges);
+    expect(
+      exportEvidenceGraphV1({
+        ...graph,
+        mechanisms: [...graph.mechanisms].reverse(),
+      })
+    ).toEqual(exported);
+  });
+
+  it('does not export graphs with unresolved references', () => {
+    expect(
+      exportEvidenceGraphV1({
+        hypotheses: [
+          { id: 'hypothesis-a', mechanismIds: ['missing-mechanism'] },
+        ],
+      })
+    ).toEqual({
+      valid: false,
+      errors: [
+        {
+          code: 'unresolved-reference',
+          id: 'hypothesis-a',
+          field: 'mechanismIds',
+          referenceId: 'missing-mechanism',
+        },
+      ],
+    });
+  });
+
+  it('exports omitted graph collections as empty arrays', () => {
+    const exported = exportEvidenceGraphV1({});
+
+    expect(exported).toEqual({
+      valid: true,
+      json: JSON.stringify({
+        schemaVersion: 1,
+        mechanisms: [],
+        hypotheses: [],
+        experiments: [],
+        estimates: [],
+        evidence: [],
+        edges: [],
+      }),
+    });
   });
 });

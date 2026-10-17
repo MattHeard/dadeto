@@ -366,3 +366,36 @@ export function validateEvidenceGraphV1(graph) {
   );
   return { valid: errors.length === 0, errors };
 }
+
+/**
+ * Sort a graph collection by its stable record ID for portable export.
+ * @param {Array<InterpretabilityRecord>} records Graph records.
+ * @returns {Array<InterpretabilityRecord>} Sorted copy of the records.
+ */
+function sortGraphRecords(records) {
+  return [...records].sort((left, right) => left.id.localeCompare(right.id));
+}
+
+/**
+ * Export a validated evidence graph as a versioned, deterministic JSON document.
+ * Records must already pass their versioned schemas.
+ * @param {InterpretabilityGraphV1} graph Versioned graph collections.
+ * @returns {{valid: true, json: string} | {valid: false, errors: Array<Record<string, string>>}} Export result.
+ */
+export function exportEvidenceGraphV1(graph) {
+  const validation = validateEvidenceGraphV1(graph);
+  if (!validation.valid) {
+    return { valid: false, errors: validation.errors };
+  }
+
+  const document = {
+    schemaVersion: 1,
+    mechanisms: sortGraphRecords(graph.mechanisms ?? []),
+    hypotheses: sortGraphRecords(graph.hypotheses ?? []),
+    experiments: sortGraphRecords(graph.experiments ?? []),
+    estimates: sortGraphRecords(graph.estimates ?? []),
+    evidence: sortGraphRecords(graph.evidence ?? []),
+    edges: sortGraphRecords(graph.edges ?? []),
+  };
+  return { valid: true, json: JSON.stringify(document) };
+}
