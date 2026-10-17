@@ -1,6 +1,34 @@
 import { describe, expect, it } from '@jest/globals';
 import { validateEvidenceGraphV1 } from '../../../src/core/interpretability/interpretability.js';
 
+/**
+ * Create a complete native-neuron record for graph identity checks.
+ * @param {string} id Record ID.
+ * @param {Record<string, any>} [overrides] Mechanism kind and coordinate overrides.
+ * @returns {Record<string, any>} Mechanism fixture.
+ */
+function mechanismRecord(id, overrides = {}) {
+  return {
+    id,
+    model: {
+      modelId: 'model-a',
+      repository: 'https://huggingface.co/example/model-a',
+      revision: 'a'.repeat(40),
+      architecture: 'GPT2LMHeadModel',
+      tokenizer: {
+        repository: 'https://huggingface.co/example/tokenizer-a',
+        revision: 'b'.repeat(40),
+      },
+    },
+    layerIndex: 2,
+    activationHook: 'blocks.2.mlp.post_activation',
+    kind: 'native-neuron',
+    sourceId: 'mlp',
+    neuronIndex: 7,
+    ...overrides,
+  };
+}
+
 describe('validateEvidenceGraphV1', () => {
   it('accepts unique records with resolved references and edge endpoints', () => {
     const graph = {
@@ -86,5 +114,65 @@ describe('validateEvidenceGraphV1', () => {
         hypotheses: [{ id: 'hypothesis-1' }],
       }).valid
     ).toBe(false);
+  });
+
+  it('skips identity fingerprinting when required identity fields are absent', () => {
+    expect(
+      validateEvidenceGraphV1({
+        mechanisms: [
+          { id: 'mechanism-without-kind', model: {}, activationHook: 'hook' },
+          { id: 'mechanism-without-hook', model: {}, kind: 'native-neuron' },
+        ],
+      }).valid
+    ).toBe(true);
+  });
+
+  it('rejects different IDs for one physical mechanism', () => {
+    const result = validateEvidenceGraphV1({
+      mechanisms: [
+        mechanismRecord('mechanism-a'),
+        mechanismRecord('mechanism-b'),
+      ],
+    });
+
+    expect(result.errors).toEqual([
+      {
+        code: 'duplicate-mechanism-identity',
+        id: 'mechanism-b',
+        firstId: 'mechanism-a',
+      },
+    ]);
+  });
+
+  it('preserves distinct neuron coordinates as distinct mechanisms', () => {
+    expect(
+      validateEvidenceGraphV1({
+        mechanisms: [
+          mechanismRecord('mechanism-a', { neuronIndex: 7 }),
+          mechanismRecord('mechanism-b', { neuronIndex: 8 }),
+        ],
+      })
+    ).toEqual({ valid: true, errors: [] });
+  });
+
+  it('fingerprints coordinates for SAE features and attention heads', () => {
+    expect(
+      validateEvidenceGraphV1({
+        mechanisms: [
+          mechanismRecord('sae-feature', {
+            kind: 'sae-feature',
+            sourceId: 'resid-sae',
+            neuronIndex: undefined,
+            featureIndex: 7,
+          }),
+          mechanismRecord('attention-head', {
+            kind: 'attention-head',
+            sourceId: undefined,
+            neuronIndex: undefined,
+            headIndex: 3,
+          }),
+        ],
+      })
+    ).toEqual({ valid: true, errors: [] });
   });
 });

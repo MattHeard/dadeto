@@ -258,6 +258,26 @@ function collectReferenceErrors(graph, nodeIds, errors) {
 }
 
 /**
+ * Build a stable physical identity key for a validated mechanism record.
+ * @param {InterpretabilityRecord} record Mechanism data.
+ * @returns {string} Canonical mechanism coordinate key.
+ */
+function mechanismIdentityKey(record) {
+  return JSON.stringify([
+    record.model.repository,
+    record.model.revision,
+    record.layerIndex,
+    record.activationHook,
+    record.kind,
+    record.sourceId ?? null,
+    record.neuronIndex ?? null,
+    record.featureIndex ?? null,
+    record.headIndex ?? null,
+    record.timeStep ?? null,
+  ]);
+}
+
+/**
  * Check global record identity and reference integrity before graph persistence.
  * Records must already pass their versioned schemas.
  * @param {InterpretabilityGraphV1} graph Versioned graph collections.
@@ -285,6 +305,7 @@ export function validateEvidenceGraphV1(graph) {
   const errors = [];
   const allIds = new Map();
   const nodeIds = new Set();
+  const mechanismIdsByIdentity = new Map();
 
   for (const entry of entries) {
     const { record, type, isNode } = entry;
@@ -305,6 +326,24 @@ export function validateEvidenceGraphV1(graph) {
     }
     allIds.set(id, type);
     if (isNode) nodeIds.add(id);
+    if (
+      type === 'mechanisms' &&
+      record.model &&
+      record.kind &&
+      record.activationHook
+    ) {
+      const identityKey = mechanismIdentityKey(record);
+      const existingId = mechanismIdsByIdentity.get(identityKey);
+      if (existingId) {
+        errors.push({
+          code: 'duplicate-mechanism-identity',
+          id,
+          firstId: existingId,
+        });
+      } else {
+        mechanismIdsByIdentity.set(identityKey, id);
+      }
+    }
   }
 
   collectReferenceErrors(graph, nodeIds, errors);
