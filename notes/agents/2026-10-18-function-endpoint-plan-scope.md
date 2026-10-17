@@ -12,8 +12,11 @@
   and actions without resource values.
 - **Evidence:** Focused workflow contract tests passed (1 suite, 4 tests), the
   full npm run check passed, Terraform formatting passed, and git diff check
-  passed. A credential-free GitHub Terraform validation and the Rank 2 plan
-  dispatch are pending the push.
-- **Next-time guidance:** Run Terraform validation through the repository
-  workflow. Dispatch the registry scope, inspect the redacted action summary,
-  and stop before apply or a live registry read until explicitly authorized.
+  passed. Credential-free Terraform validation passed in workflow
+  [39079198767](https://github.com/MattHeard/dadeto/actions/runs/39079198767).
+  Registry plan [39079198819](https://github.com/MattHeard/dadeto/actions/runs/39079198819)
+  passed and listed only creates for the dedicated bucket, its public-reader
+  binding, and the manifest object. No apply ran.
+- **Next-time guidance:** Request explicit authorization for the three planned
+  production creates, then verify the stable anonymous HTTPS manifest before
+  changing any consumer.
