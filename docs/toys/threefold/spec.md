@@ -4,7 +4,7 @@
 
 - Toy name: THREEFOLD — The Weight of Water
 - Owner: Dadeto game workstream
-- Last updated: 2026-10-16
+- Last updated: 2026-10-17
 
 ## Problem Statement
 
@@ -23,7 +23,7 @@ Compose pure simulation state with the existing Mosslight handheld renderer, bro
 
 - Primary actor(s): Mara Venn; the dock worker has one opening callout but is not yet a simulated NPC.
 - Inputs: arrows or directional pad, A to grow, B to shrink, X to wait 15 in-game minutes, Y to save, and save utility controls.
-- Outputs: pixel-art frame, current scale/Anchor/crisis HUD, persistent geometry damage, and versioned run saves.
+- Outputs: pixel-art frame, current scale/Anchor/crisis HUD, a normalized deterministic tide gauge, persistent geometry damage, and versioned run saves.
 - The shared Mosslight frame includes a deterministic screen-space tide gauge: fill follows elapsed crisis game time, capped at the authored aftermath boundary, and color follows the current crisis stage.
 
 ## Assumptions and Constraints
