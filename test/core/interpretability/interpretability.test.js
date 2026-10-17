@@ -17,6 +17,11 @@ const model = {
   modelId: 'model-a',
   repository: 'https://huggingface.co/example/model-a',
   revision: 'a'.repeat(40),
+  architecture: 'GPT2LMHeadModel',
+  tokenizer: {
+    repository: 'https://huggingface.co/example/tokenizer-a',
+    revision: 'b'.repeat(40),
+  },
 };
 
 describe('versioned interpretability schemas', () => {
@@ -73,6 +78,21 @@ describe('versioned interpretability schemas', () => {
     expect(
       mechanismSchemaV1.safeParse({
         schemaVersion: 1,
+        id: 'mechanism-3',
+        kind: 'native-neuron',
+        model: {
+          ...model,
+          tokenizer: { ...model.tokenizer, revision: 'main' },
+        },
+        layerIndex: 1,
+        activationHook: 'blocks.1.mlp.post_activation',
+        sourceId: 'mlp',
+        neuronIndex: 0,
+      }).success
+    ).toBe(false);
+    expect(
+      mechanismSchemaV1.safeParse({
+        schemaVersion: 1,
         id: 'mechanism-2',
         kind: 'native-neuron',
         model,
@@ -98,6 +118,18 @@ describe('versioned interpretability schemas', () => {
         model,
         layerIndex: 1,
         sourceId: 'state',
+        neuronIndex: 0,
+      }).success
+    ).toBe(false);
+    expect(
+      mechanismSchemaV1.safeParse({
+        schemaVersion: 1,
+        id: 'mechanism-4',
+        kind: 'native-neuron',
+        model: { ...model, architecture: '' },
+        layerIndex: 1,
+        activationHook: 'blocks.1.mlp.post_activation',
+        sourceId: 'mlp',
         neuronIndex: 0,
       }).success
     ).toBe(false);

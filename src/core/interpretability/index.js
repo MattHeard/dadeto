@@ -7,11 +7,20 @@
  */
 export function createInterpretabilitySchemasV1(z) {
   const schemaVersion = z.literal(1);
+  const commitRevision = z.string().regex(/^(?:[a-f0-9]{40}|[a-f0-9]{64})$/);
+  const tokenizer = z
+    .object({
+      repository: z.string().url(),
+      revision: commitRevision,
+    })
+    .strict();
   const pinnedModel = z
     .object({
       modelId: z.string().min(1),
       repository: z.string().url(),
-      revision: z.string().regex(/^(?:[a-f0-9]{40}|[a-f0-9]{64})$/),
+      revision: commitRevision,
+      architecture: z.string().min(1),
+      tokenizer,
     })
     .strict();
   const mechanismBase = {
@@ -44,7 +53,7 @@ export function createInterpretabilitySchemasV1(z) {
   const procedureReference = z
     .object({
       repository: z.string().url(),
-      revision: z.string().regex(/^(?:[a-f0-9]{40}|[a-f0-9]{64})$/),
+      revision: commitRevision,
       path: z.string().min(1),
     })
     .strict();
