@@ -19,7 +19,12 @@ const model = {
 
 describe('versioned interpretability schemas', () => {
   it('keeps native, SAE, attention, and recurrent mechanism identities distinct', () => {
-    const common = { schemaVersion: 1, model, layerIndex: 2 };
+    const common = {
+      schemaVersion: 1,
+      id: 'mechanism-1',
+      model,
+      layerIndex: 2,
+    };
     const native = mechanismSchemaV1.parse({
       ...common,
       kind: 'native-neuron',

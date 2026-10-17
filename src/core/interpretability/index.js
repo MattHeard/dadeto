@@ -16,6 +16,7 @@ export function createInterpretabilitySchemasV1(z) {
     .strict();
   const mechanismBase = {
     schemaVersion,
+    id: z.string().min(1),
     model: pinnedModel,
     layerIndex: z.number().int().nonnegative(),
   };
@@ -204,4 +205,115 @@ export function createInterpretabilitySchemasV1(z) {
       mechanisticEstimate: z.toJSONSchema(mechanisticEstimateSchemaV1),
     }),
   });
+}
+
+/** @typedef {Record<string, any>} InterpretabilityRecord */
+/** @typedef {{mechanisms?: Array<InterpretabilityRecord>, hypotheses?: Array<InterpretabilityRecord>, experiments?: Array<InterpretabilityRecord>, evidence?: Array<InterpretabilityRecord>, estimates?: Array<InterpretabilityRecord>, edges?: Array<InterpretabilityRecord>}} InterpretabilityGraphV1 */
+
+/** @type {Record<string, Array<string>>} */
+const referenceFieldsByType = {
+  hypotheses: ['mechanismIds', 'evidenceIds'],
+  experiments: ['mechanismIds', 'hypothesisIds'],
+  evidence: ['mechanismIds', 'hypothesisIds', 'experimentIds'],
+  estimates: ['hypothesisIds', 'evidenceIds'],
+};
+
+/**
+ * Add missing graph-reference errors for typed records.
+ * @param {InterpretabilityGraphV1} graph Versioned graph collections.
+ * @param {Set<string>} nodeIds Known addressable node identifiers.
+ * @param {Array<Record<string, string>>} errors Mutable validation errors.
+ */
+function collectReferenceErrors(graph, nodeIds, errors) {
+  for (const [type, fields] of Object.entries(referenceFieldsByType)) {
+    const collection = /** @type {Array<InterpretabilityRecord>} */ (
+      /** @type {Record<string, Array<InterpretabilityRecord> | undefined>} */ (
+        graph
+      )[type] ?? []
+    );
+    for (const record of collection) {
+      const unresolved = fields.flatMap(field =>
+        /** @type {Array<string>} */ (record[field] ?? [])
+          .filter(referenceId => !nodeIds.has(referenceId))
+          .map(referenceId => ({
+            code: 'unresolved-reference',
+            id: record.id,
+            field,
+            referenceId,
+          }))
+      );
+      errors.push(...unresolved);
+    }
+  }
+}
+
+/**
+ * Check global record identity and reference integrity before graph persistence.
+ * Records must already pass their versioned schemas.
+ * @param {InterpretabilityGraphV1} graph Versioned graph collections.
+ * @returns {{valid: boolean, errors: Array<Record<string, string>>}} Deterministic validation result.
+ */
+export function validateEvidenceGraphV1(graph) {
+  /** @type {Array<[string, Array<InterpretabilityRecord>, boolean]>} */
+  const collections = [
+    ['mechanisms', graph.mechanisms ?? [], true],
+    ['hypotheses', graph.hypotheses ?? [], true],
+    ['experiments', graph.experiments ?? [], true],
+    ['evidence', graph.evidence ?? [], true],
+    ['estimates', graph.estimates ?? [], true],
+    ['edges', graph.edges ?? [], false],
+  ];
+  const entries = collections.flatMap(([type, records, isNode]) =>
+    records.map(record => ({ type, record, isNode }))
+  );
+  entries.sort((left, right) =>
+    `${left.record?.id ?? ''}:${left.type}`.localeCompare(
+      `${right.record?.id ?? ''}:${right.type}`
+    )
+  );
+
+  const errors = [];
+  const allIds = new Map();
+  const nodeIds = new Set();
+
+  for (const entry of entries) {
+    const { record, type, isNode } = entry;
+    const id = record?.id;
+    if (typeof id !== 'string' || id.trim() === '') {
+      errors.push({ code: 'invalid-id', type });
+      continue;
+    }
+    const existingType = allIds.get(id);
+    if (existingType) {
+      errors.push({
+        code: 'duplicate-id',
+        id,
+        firstType: existingType,
+        duplicateType: type,
+      });
+      continue;
+    }
+    allIds.set(id, type);
+    if (isNode) nodeIds.add(id);
+  }
+
+  collectReferenceErrors(graph, nodeIds, errors);
+
+  for (const edge of graph.edges ?? []) {
+    for (const field of ['fromId', 'toId']) {
+      if (!nodeIds.has(edge[field])) {
+        errors.push({
+          code: 'unresolved-edge-endpoint',
+          id: edge.id,
+          field,
+          referenceId: edge[field],
+        });
+      }
+    }
+  }
+
+  errors.sort((left, right) =>
+    JSON.stringify(left).localeCompare(JSON.stringify(right))
+  );
+  return { valid: errors.length === 0, errors };
 }
