@@ -80,7 +80,25 @@ assignments or reservations.
 
 Run `npm run build:cloud` before applying Terraform so that the generated Cloud Function directories under `infra/cloud-functions/` and the supporting admin scripts in `infra/*.js` are present. The CI workflows run this command automatically before Terraform steps.
 
-### Static rental search endpoint
+### Canonical production function endpoint registry
+
+Terraform defines a versioned `function-endpoints.json` manifest in a dedicated
+production-only GCS bucket. Its initial keys use deployed resource attributes
+for `objectMinuteRentalSearch` and `getAuthorUuidV2`; Terraform does not infer
+function URLs from names. The bucket grants anonymous object read, enables
+uniform bucket-level access, has no application runtime writer, and the object
+uses `Content-Type: application/json` and `Cache-Control: no-store`.
+
+The bucket name can be set with
+`function_endpoint_registry_bucket_name`; by default it is
+`<project-id>-function-endpoints`. Terraform exposes the stable public URL as
+`function_endpoint_registry_url` for production and returns `null` in `t-*`
+environments. The manifest is not yet used by the Netlify build: first apply
+the production Terraform configuration and verify the public HTTPS document
+before changing a consumer. Production applies and live reads require explicit
+authorization.
+
+### Temporary static rental search endpoint handoff
 
 After Terraform applies, the `gcp-prod` workflow validates the function URL as HTTPS and stores it in the run-scoped `object-minute-rental-search-url` artifact (`endpoint.txt`, retained for 90 days). The Netlify production workflow uses that artifact for both push-triggered and manually dispatched deployments. Pushes select the latest successful `gcp-prod` run on `main`; manual dispatch can pin a specific run ID:
 
@@ -90,7 +108,7 @@ gh workflow run netlify-prod.yml --repo MattHeard/dadeto \
   -f gcp_prod_run_id=<gcp-prod-run-id>
 ```
 
-Before building, the workflow verifies that the selected run belongs to this repository, is a completed successful `gcp-prod` run on `main`, and contains a non-empty HTTPS endpoint artifact. The workflow token only needs Actions and contents read access; it does not read or write a repository endpoint variable. Local site builds continue to use the simulator route.
+This is a temporary transition path until the canonical GCS registry has been verified in production and the Netlify consumer is migrated. Before building, the workflow verifies that the selected run belongs to this repository, is a completed successful `gcp-prod` run on `main`, and contains a non-empty HTTPS endpoint artifact. The workflow token only needs Actions and contents read access; it does not read or write a repository endpoint variable. Local site builds continue to use the simulator route.
 
 ## Remote State
 

@@ -30,6 +30,11 @@ output "manage_firestore_services" {
   value       = local.manage_firestore_services
 }
 
+output "function_endpoint_registry_url" {
+  description = "Stable public HTTPS URL for the production function endpoint registry"
+  value       = var.environment == "prod" ? local.function_endpoint_registry_url : null
+}
+
 output "playwright_job_name" {
   description = "Name of the Playwright Cloud Run job"
   value       = local.playwright_enabled ? google_cloud_run_v2_job.playwright[0].name : null

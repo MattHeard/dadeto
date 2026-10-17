@@ -1,0 +1,6 @@
+# Canonical Cloud Function endpoint registry
+
+- **Unexpected hurdle:** The Notion spec changed while an artifact-based Netlify resolver was being implemented. The live spec supersedes that handoff and requires a static GCS registry; it explicitly forbids a consumer switch before a production apply and anonymous read are verified.
+- **Diagnosis:** Both initial public functions are Gen 2 resources with authoritative `service_config[0].uri` attributes: object-minute rental search and get-author-uuid-v2. The existing Dendrite bucket is unsuitable because a runtime account has object-admin access.
+- **Chosen fix:** Add a separate production-only bucket and versioned JSON object sourced directly from those Terraform URIs, with all-users object-viewer access, uniform bucket-level access, no application writer, and no-store metadata. Keep the current Netlify artifact path as a documented temporary transition.
+- **Next-time guidance:** Use the Terraform validation workflow for `terraform validate`; this environment's local Terraform wrapper permits formatting only. Do not apply production infrastructure or switch Netlify consumers until separately authorized live evidence confirms the stable public manifest.

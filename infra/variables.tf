@@ -84,6 +84,19 @@ variable "environment" {
   }
 }
 
+variable "function_endpoint_registry_bucket_name" {
+  description = "Optional stable GCS bucket name for the production function endpoint registry"
+  type        = string
+  default     = null
+
+  validation {
+    condition = var.function_endpoint_registry_bucket_name == null || (
+      length(trimspace(var.function_endpoint_registry_bucket_name)) > 0
+    )
+    error_message = "function_endpoint_registry_bucket_name must be omitted or a non-empty bucket name."
+  }
+}
+
 variable "github_run_id" {
   description = "GitHub Actions run identifier for tagging ephemeral resources"
   type        = string
