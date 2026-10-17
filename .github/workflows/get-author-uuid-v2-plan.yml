@@ -2,6 +2,15 @@ name: get-author-uuid-v2-plan
 
 on:
   workflow_dispatch:
+    inputs:
+      plan_scope:
+        description: Terraform resources to preview
+        required: true
+        type: choice
+        options:
+          - get-author-uuid-v2
+          - function-endpoint-registry
+        default: get-author-uuid-v2
 
 permissions:
   contents: read
@@ -29,6 +38,7 @@ jobs:
       TF_VAR_create_default_firestore_database: 'false'
       TF_VAR_codex_vm_enabled: ${{ secrets.CODEX_ADMIN_MEMBER != '' }}
       TF_VAR_codex_admin_member: ${{ secrets.CODEX_ADMIN_MEMBER }}
+      PLAN_SCOPE: ${{ inputs.plan_scope }}
 
     steps:
       - name: Checkout repo
@@ -62,14 +72,32 @@ jobs:
       - name: Create scoped production plan
         run: |
           set -euo pipefail
+          case "$PLAN_SCOPE" in
+            get-author-uuid-v2)
+              targets=(
+                "-target=google_cloudfunctions2_function.get_author_uuid_v2"
+                "-target=google_cloud_run_service_iam_member.get_author_uuid_v2_public"
+                "-target=google_storage_bucket_object.dendrite_static_config"
+              )
+              ;;
+            function-endpoint-registry)
+              targets=(
+                "-target=google_storage_bucket.function_endpoint_registry"
+                "-target=google_storage_bucket_iam_member.function_endpoint_registry_public_reader"
+                "-target=google_storage_bucket_object.function_endpoint_registry"
+              )
+              ;;
+            *)
+              echo "::error::Unsupported Terraform plan scope: ${PLAN_SCOPE}"
+              exit 64
+              ;;
+          esac
           if ! terraform plan \
+              "${targets[@]}" \
               -lock-timeout=5m \
               -input=false \
               -var="environment=${ENVIRONMENT}" \
-              -target=google_cloudfunctions2_function.get_author_uuid_v2 \
-              -target=google_cloud_run_service_iam_member.get_author_uuid_v2_public \
-              -target=google_storage_bucket_object.dendrite_static_config \
-              -out="$RUNNER_TEMP/get-author-uuid-v2.tfplan" \
+              -out="$RUNNER_TEMP/${PLAN_SCOPE}.tfplan" \
               > "$RUNNER_TEMP/terraform-plan.log" 2>&1; then
             echo "::error::Terraform plan failed; full plan output remains on the ephemeral runner."
             exit 1
@@ -78,9 +106,9 @@ jobs:
       - name: Summarize resource actions without values
         run: |
           set -euo pipefail
-          terraform show -json "$RUNNER_TEMP/get-author-uuid-v2.tfplan" |
-            jq -r '
-              "## get-author-uuid-v2 production plan\n\nNo apply was run. Changed Terraform addresses and actions:\n",
+          terraform show -json "$RUNNER_TEMP/${PLAN_SCOPE}.tfplan" |
+            jq -r --arg plan_scope "$PLAN_SCOPE" '
+              "## \($plan_scope) production plan\n\nNo apply was run. Changed Terraform addresses and actions:\n",
               (.resource_changes[]? | select(.change.actions != ["no-op"]) |
                 "- `\(.address)`: `\(.change.actions | join(", "))`")
             ' | tee -a "$GITHUB_STEP_SUMMARY"

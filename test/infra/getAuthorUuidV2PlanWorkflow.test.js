@@ -2,7 +2,7 @@ import { readFile } from 'node:fs/promises';
 
 import { describe, expect, it } from '@jest/globals';
 
-describe('get-author-uuid-v2 scoped production plan workflow', () => {
+describe('scoped production plan workflow', () => {
   it('runs only by manual dispatch and never applies Terraform', async () => {
     const workflow = await readFile(
       '.github/workflows/get-author-uuid-v2-plan.yml',
@@ -11,6 +11,9 @@ describe('get-author-uuid-v2 scoped production plan workflow', () => {
 
     expect(workflow).toContain('workflow_dispatch:');
     expect(workflow).toContain("if: github.ref == 'refs/heads/main'");
+    expect(workflow).toContain('plan_scope:');
+    expect(workflow).toContain('default: get-author-uuid-v2');
+    expect(workflow).toContain('- function-endpoint-registry');
     expect(workflow).not.toContain('workflow_run:');
     expect(workflow).not.toContain('gcp-test');
     expect(workflow).toContain('terraform plan');
@@ -18,12 +21,15 @@ describe('get-author-uuid-v2 scoped production plan workflow', () => {
     expect(workflow).toContain('> "$RUNNER_TEMP/terraform-plan.log" 2>&1');
   });
 
-  it('targets only the function, approved invoker binding, and browser URL config', async () => {
+  it('keeps the Rank 1 function deployment targets isolated', async () => {
     const workflow = await readFile(
       '.github/workflows/get-author-uuid-v2-plan.yml',
       'utf8'
     );
-    const targets = [...workflow.matchAll(/-target=([^\\\s]+)/g)]
+    const scope = workflow.match(
+      /get-author-uuid-v2\)\s+targets=\(([\s\S]*?)\n\s+\)\n\s+;;/
+    );
+    const targets = [...scope[1].matchAll(/"-target=([^"]+)"/g)]
       .map(([, target]) => target)
       .sort();
 
@@ -32,7 +38,28 @@ describe('get-author-uuid-v2 scoped production plan workflow', () => {
       'google_cloudfunctions2_function.get_author_uuid_v2',
       'google_storage_bucket_object.dendrite_static_config',
     ]);
-    expect(workflow).not.toContain('function_endpoint_registry');
+    expect(scope[1]).not.toContain('function_endpoint_registry');
+  });
+
+  it('keeps the Rank 2 registry resources isolated in a separate plan scope', async () => {
+    const workflow = await readFile(
+      '.github/workflows/get-author-uuid-v2-plan.yml',
+      'utf8'
+    );
+    const scope = workflow.match(
+      /function-endpoint-registry\)\s+targets=\(([\s\S]*?)\n\s+\)\n\s+;;/
+    );
+    const targets = [...scope[1].matchAll(/"-target=([^"]+)"/g)]
+      .map(([, target]) => target)
+      .sort();
+
+    expect(targets).toEqual([
+      'google_storage_bucket.function_endpoint_registry',
+      'google_storage_bucket_iam_member.function_endpoint_registry_public_reader',
+      'google_storage_bucket_object.function_endpoint_registry',
+    ]);
+    expect(scope[1]).not.toContain('get_author_uuid_v2');
+    expect(scope[1]).not.toContain('dendrite_static_config');
   });
 
   it('summarizes only resource addresses and actions', async () => {
@@ -42,6 +69,7 @@ describe('get-author-uuid-v2 scoped production plan workflow', () => {
     );
 
     expect(workflow).toContain('terraform show -json');
+    expect(workflow).toContain('"## \\($plan_scope) production plan');
     expect(workflow).toContain('.resource_changes[]?');
     expect(workflow).toContain('.change.actions');
     expect(workflow).toContain('tee -a "$GITHUB_STEP_SUMMARY"');
