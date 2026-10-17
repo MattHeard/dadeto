@@ -1,3 +1,7 @@
+import { createRequire } from 'node:module';
+
+const require = createRequire(`${process.cwd()}/package.json`);
+
 /**
  * @param {string} kind Schema kind.
  * @param {Record<string, any>} [config] Schema-specific configuration.
@@ -198,4 +202,24 @@ export function createTestZod() {
           : undefined,
     }),
   };
+}
+
+/**
+ * Load real Zod when available, with a local test double for dependency-free runs.
+ * Set DADETO_TEST_WITHOUT_ZOD=1 to exercise the fallback explicitly.
+ * @returns {{zod: Record<string, any>, source: 'zod' | 'fallback'}} Schema API and selected source.
+ */
+export function loadOptionalTestZod() {
+  if (process.env.DADETO_TEST_WITHOUT_ZOD === '1') {
+    return { zod: createTestZod(), source: 'fallback' };
+  }
+
+  try {
+    const { z } = require('zod/v4');
+    return { zod: z, source: 'zod' };
+  } catch (error) {
+    const moduleError = /** @type {Error & {code?: string}} */ (error);
+    if (moduleError.code !== 'ERR_MODULE_NOT_FOUND') throw error;
+    return { zod: createTestZod(), source: 'fallback' };
+  }
 }

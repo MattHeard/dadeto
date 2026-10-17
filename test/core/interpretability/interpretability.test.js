@@ -1,5 +1,7 @@
 import { createInterpretabilitySchemasV1 } from '../../../src/core/interpretability/interpretability.js';
-import { createTestZod } from './testZod.js';
+import { loadOptionalTestZod } from './testZod.js';
+
+const { zod } = loadOptionalTestZod();
 
 const {
   experimentSchemaV1,
@@ -9,7 +11,7 @@ const {
   interpretabilityJsonSchemasV1,
   mechanismSchemaV1,
   mechanisticEstimateSchemaV1,
-} = createInterpretabilitySchemasV1(createTestZod());
+} = createInterpretabilitySchemasV1(zod);
 
 const model = {
   modelId: 'model-a',
