@@ -56,3 +56,7 @@ The standalone page renders a pixelated 160 × 144 frame with scale, Anchor, and
 ## Behavior
 
 Movement, scale transitions, and deliberate waiting advance the deterministic game-time crisis clock. The clock never uses browser wall time. Menu, pause, save, import/export, and reading this guide leave game time unchanged. The complete player/crisis state, including destroyed geometry, is stored locally and revalidated when loaded.
+
+## Gate outcome
+
+Growing through the relief gate or its counterweight commits that geometry as rubble and forces the gate open. Before the surge, the screen warns that the lower drainage channel is at risk. At surge, pixelated floodwater appears over the drainage settlement and remains through aftermath. The outcome is reconstructed from saved rubble IDs and the deterministic crisis stage; it does not use browser time or simulate fluid movement.

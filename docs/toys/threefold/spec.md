@@ -16,20 +16,20 @@ Compose pure simulation state with the existing Mosslight handheld renderer, bro
 
 ## Scope
 
-- In scope: one contiguous gatehouse scene; an opening dock-worker warning and open-ended investigation objective; scales −2 through +1; directional movement; growth and shrinking; deterministic crisis stages; deliberate waits; slow guaranteed Anchor recovery at one charge per 15 in-game minutes; complete-run save, import, export, and reset; a 160 × 144 standalone handheld page.
-- Out of scope: people and ferry choices, combat, repair and evacuation interactions, fluid simulation, later campaign scenes, and scales outside the four authored bands.
+- In scope: one contiguous gatehouse scene; an opening dock-worker warning and open-ended investigation objective; scales −2 through +1; directional movement; growth and shrinking; deterministic crisis stages; deliberate waits; slow guaranteed Anchor recovery at one charge per 15 in-game minutes; a first irreversible relief-gate branch whose damaged gate floods the lower drainage settlement at surge; complete-run save, import, export, and reset; a 160 × 144 standalone handheld page.
+- Out of scope: people and ferry choices, combat, repair and evacuation interactions, physically simulated fluid dynamics, later campaign scenes, and scales outside the four authored bands.
 
 ## Actors and Interfaces
 
 - Primary actor(s): Mara Venn; the dock worker has one opening callout but is not yet a simulated NPC.
 - Inputs: arrows or directional pad, A to grow, B to shrink, X to wait 15 in-game minutes, Y to save, and save utility controls.
-- Outputs: pixel-art frame, current scale/Anchor/crisis HUD, a normalized deterministic tide gauge, persistent geometry damage, and versioned run saves.
+- Outputs: pixel-art frame, current scale/Anchor/crisis HUD, a normalized deterministic tide gauge, persistent geometry damage, the derived gate/drainage outcome and render-only surge floodwater, and versioned run saves.
 - The shared Mosslight frame includes a deterministic screen-space tide gauge: fill follows elapsed crisis game time, capped at the authored aftermath boundary, and color follows the current crisis stage.
 
 ## Assumptions and Constraints
 
 - Assumptions: the current Broken Gate geometry and scale-space reducers are canonical for this slice.
-- Constraints: the opening callout and investigation goal appear only before the first timed action; game time advances only from explicit simulation actions; waits after aftermath may restore Anchor but do not advance the crisis stage; rendering keeps Mara's sprite at handheld size; all new toy folders retain the four required docs.
+- Constraints: gate and flood outcomes derive only from saved geometry damage and the deterministic crisis stage; the flooded patch is a visual consequence, not collision geometry or a fluid simulation. The opening callout and investigation goal appear only before the first timed action; game time advances only from explicit simulation actions; waits after aftermath may restore Anchor but do not advance the crisis stage; rendering keeps Mara's sprite at handheld size; all new toy folders retain the four required docs.
 
 ## Dependencies
 

@@ -1,5 +1,6 @@
 import { toFramePayload } from '../mosslight-valley/renderer.js';
 import { spriteShapes } from '../mosslight-valley/sprites.js';
+import { getThreefoldGateOutcome } from './outcome.js';
 import { heightAtScale, projectGeometryForScale } from './spatial.js';
 
 const TILE_PIXELS = 12;
@@ -14,6 +15,7 @@ const PALETTE = ['#182f36', '#315744', '#bfd77c', '#e9d88d'];
  */
 export function renderThreefoldFrame(state) {
   const heightMeters = heightAtScale(state.player.scale);
+  const gateOutcome = getThreefoldGateOutcome(state);
   const world = createRenderWorld(state, heightMeters);
   const frame = toFramePayload(
     {
@@ -37,10 +39,7 @@ export function renderThreefoldFrame(state) {
       quickAction: 'grow',
       ending: null,
       tick: 0,
-      toast:
-        state.crisis.elapsedMinutes === 0
-          ? 'INVESTIGATE THE FAILING GATE. DECIDE HOW TO RESPOND.'
-          : `${state.crisis.stage.toUpperCase()} · ARROWS MOVE · A GROW · B SHRINK · X WAIT`,
+      toast: getThreefoldToast(state, gateOutcome.drainageState),
       presentation: {
         palette: PALETTE,
         status: `SCALE ${formatScale(state.player.scale)} · A ${state.player.anchor}/${state.player.maximumAnchor} · ${state.crisis.stage.toUpperCase()}`,
@@ -91,6 +90,8 @@ export function renderThreefoldFrame(state) {
     crisisStage: state.crisis.stage,
     elapsedMinutes: state.crisis.elapsedMinutes,
     tideProgress,
+    gateState: gateOutcome.gateState,
+    drainageState: gateOutcome.drainageState,
   };
   return frame;
 }
@@ -117,6 +118,22 @@ function tideBar(width, fill) {
 }
 
 /**
+ * Describe the authored warning or the consequence of forcing the relief gate.
+ * @param {ReturnType<import('./simulation.js').createThreefoldSimulation>} state Current simulation.
+ * @param {'dry'|'at-risk'|'flooded'} drainageState Derived lower-channel outcome.
+ * @returns {string} Compact player-facing status.
+ */
+function getThreefoldToast(state, drainageState) {
+  if (state.crisis.elapsedMinutes === 0)
+    return 'INVESTIGATE THE FAILING GATE. DECIDE HOW TO RESPOND.';
+  if (drainageState === 'flooded')
+    return 'LOWER CHANNEL FLOODED · ARROWS MOVE · A GROW · B SHRINK · X WAIT';
+  if (drainageState === 'at-risk')
+    return 'GATE FORCED OPEN · LOWER CHANNEL AT RISK · X WAIT';
+  return `${state.crisis.stage.toUpperCase()} · ARROWS MOVE · A GROW · B SHRINK · X WAIT`;
+}
+
+/**
  * Convert canonical scene coordinates to the tile world used by Mosslight's camera.
  * @param {ReturnType<import('./simulation.js').createThreefoldSimulation>} state Current simulation.
  * @param {number} heightMeters Mara's current physical height.
@@ -124,6 +141,7 @@ function tideBar(width, fill) {
  */
 function createRenderWorld(state, heightMeters) {
   const { scene, player, crisis } = state;
+  const { drainageState } = getThreefoldGateOutcome(state);
   const { geometry } = projectGeometryForScale(player, scene.geometry);
   const mapWidth = Math.max(
     14,
@@ -145,7 +163,20 @@ function createRenderWorld(state, heightMeters) {
       blocked: [],
       exits: [],
       palette: 'shore',
-      objects: geometry.map(object => ({
+      objects: [
+        ...(drainageState === 'flooded'
+          ? [
+              {
+                id: 'drainage-floodwater',
+                bounds: {
+                  min: { x: 9.5, y: 6.2, z: 0 },
+                  max: { x: 11.5, y: 8.5, z: 0.1 },
+                },
+              },
+            ]
+          : []),
+        ...geometry,
+      ].map(object => ({
         ...object,
         x:
           VIEW_ORIGIN.x +
@@ -194,7 +225,12 @@ function geometrySprite(actor, camera, heightMeters) {
       y,
       width,
       height,
-      fill: actor.id === 'relief-gate' ? PALETTE[2] : PALETTE[3],
+      fill:
+        actor.id === 'drainage-floodwater'
+          ? '#25a9b8'
+          : actor.id === 'relief-gate'
+            ? PALETTE[2]
+            : PALETTE[3],
     },
   ];
 }

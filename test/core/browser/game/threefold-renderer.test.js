@@ -132,6 +132,50 @@ describe('THREEFOLD Mosslight handheld frame', () => {
     );
   });
 
+  test('shows the lower-channel warning, then renders the flooded settlement', () => {
+    const initial = createThreefoldSimulation(THRESHOLDS);
+    const atRisk = {
+      ...initial,
+      player: {
+        ...initial.player,
+        destroyedGeometryIds: ['relief-gate'],
+      },
+      crisis: {
+        ...initial.crisis,
+        elapsedMinutes: 4,
+        stage: 'urgent',
+      },
+    };
+
+    const warning = renderThreefoldFrame(atRisk);
+    expect(warning.threefold).toMatchObject({
+      gateState: 'forced-open',
+      drainageState: 'at-risk',
+    });
+    expect(warning.toast).toContain('LOWER CHANNEL AT RISK');
+    expect(warning.world.map.objects.map(object => object.id)).not.toContain(
+      'drainage-floodwater'
+    );
+
+    const surge = {
+      ...atRisk,
+      crisis: { ...atRisk.crisis, elapsedMinutes: 9, stage: 'surge' },
+    };
+    const flooded = renderThreefoldFrame(surge);
+
+    expect(flooded.threefold.drainageState).toBe('flooded');
+    expect(flooded.toast).toContain('LOWER CHANNEL FLOODED');
+    expect(flooded.world.map.objects.map(object => object.id)).toContain(
+      'drainage-floodwater'
+    );
+    expect(flooded.shapes).toContainEqual(
+      expect.objectContaining({
+        geometryId: 'drainage-floodwater',
+        fill: '#25a9b8',
+      })
+    );
+  });
+
   test.each([
     [4, 'urgent', 7, '#e9d88d'],
     [15, 'aftermath', 26, '#e16b5a'],
