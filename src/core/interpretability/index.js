@@ -27,6 +27,17 @@ export function createInterpretabilitySchemasV1(z) {
     authorId: z.string().min(1),
     createdAt: z.iso.datetime(),
   };
+  const artifactSha256 = z
+    .string()
+    .regex(/^[a-f0-9]{64}$/)
+    .optional();
+  /**
+   * Create a strict versioned record with shared authorship fields.
+   * @param {Record<string, any>} fields Record-specific schema fields.
+   * @returns {any} Injected schema-builder object schema.
+   */
+  const authoredRecord = fields =>
+    z.object({ ...fields, ...authoredArtifact }).strict();
   const evidenceIds = z.array(z.string().min(1));
   const procedureReference = z
     .object({
@@ -59,56 +70,84 @@ export function createInterpretabilitySchemasV1(z) {
     }),
   ]);
 
-  const hypothesisSchemaV1 = z
-    .object({
-      schemaVersion,
-      id: z.string().min(1),
-      revision: z.number().int().positive(),
-      claim: z.string().min(1),
-      status: z.enum(['proposed', 'reviewed', 'reproduced', 'rejected']),
-      mechanismIds: z.array(z.string().min(1)).min(1),
-      evidenceIds,
-      ...authoredArtifact,
-      confidence: z.number().min(0).max(1).optional(),
-    })
-    .strict();
+  const hypothesisSchemaV1 = authoredRecord({
+    schemaVersion,
+    id: z.string().min(1),
+    revision: z.number().int().positive(),
+    claim: z.string().min(1),
+    status: z.enum(['proposed', 'reviewed', 'reproduced', 'rejected']),
+    mechanismIds: z.array(z.string().min(1)).min(1),
+    evidenceIds,
+    confidence: z.number().min(0).max(1).optional(),
+  });
 
   const observation = z
     .object({
       kind: z.enum(['observed', 'null', 'negative', 'contradictory']),
       summary: z.string().min(1),
-      artifactSha256: z
-        .string()
-        .regex(/^[a-f0-9]{64}$/)
-        .optional(),
+      artifactSha256,
     })
     .strict();
-  const experimentSchemaV1 = z
-    .object({
-      schemaVersion,
-      id: z.string().min(1),
-      status: z.enum(['registered', 'completed', 'failed']),
-      model: pinnedModel,
-      mechanismIds: z.array(z.string().min(1)).min(1),
-      hypothesisIds: z.array(z.string().min(1)),
-      procedure: procedureReference,
-      seed: z.number().int().nonnegative(),
-      inputSplitId: z.string().min(1),
-      runtime: z.record(
-        z.string(),
-        z.union([z.string(), z.number(), z.boolean()])
-      ),
-      predictions: z
-        .array(
-          z
-            .object({ target: z.string().min(1), expected: z.string().min(1) })
-            .strict()
-        )
-        .min(1),
-      observations: z.array(observation),
-      ...authoredArtifact,
-    })
-    .strict();
+  const experimentSchemaV1 = authoredRecord({
+    schemaVersion,
+    id: z.string().min(1),
+    status: z.enum(['registered', 'completed', 'failed']),
+    model: pinnedModel,
+    mechanismIds: z.array(z.string().min(1)).min(1),
+    hypothesisIds: z.array(z.string().min(1)),
+    procedure: procedureReference,
+    seed: z.number().int().nonnegative(),
+    inputSplitId: z.string().min(1),
+    runtime: z.record(
+      z.string(),
+      z.union([z.string(), z.number(), z.boolean()])
+    ),
+    predictions: z
+      .array(
+        z
+          .object({ target: z.string().min(1), expected: z.string().min(1) })
+          .strict()
+      )
+      .min(1),
+    observations: z.array(observation),
+  });
+
+  const evidenceSchemaV1 = authoredRecord({
+    schemaVersion,
+    id: z.string().min(1),
+    kind: z.enum([
+      'prediction',
+      'observation',
+      'null',
+      'negative',
+      'contradictory',
+    ]),
+    summary: z.string().min(1),
+    mechanismIds: z.array(z.string().min(1)),
+    hypothesisIds: z.array(z.string().min(1)),
+    experimentIds: z.array(z.string().min(1)),
+    artifactSha256,
+    validationState: z.enum([
+      'unreviewed',
+      'reviewed',
+      'reproduced',
+      'rejected',
+    ]),
+  });
+
+  const evidenceEdgeSchemaV1 = authoredRecord({
+    schemaVersion,
+    id: z.string().min(1),
+    fromId: z.string().min(1),
+    toId: z.string().min(1),
+    relation: z.enum([
+      'depends-on',
+      'supports',
+      'contradicts',
+      'projects-to',
+      'connected-to',
+    ]),
+  });
 
   const uncertainty = z
     .object({
@@ -153,11 +192,15 @@ export function createInterpretabilitySchemasV1(z) {
     mechanismSchemaV1,
     hypothesisSchemaV1,
     experimentSchemaV1,
+    evidenceSchemaV1,
+    evidenceEdgeSchemaV1,
     mechanisticEstimateSchemaV1,
     interpretabilityJsonSchemasV1: Object.freeze({
       mechanism: z.toJSONSchema(mechanismSchemaV1),
       hypothesis: z.toJSONSchema(hypothesisSchemaV1),
       experiment: z.toJSONSchema(experimentSchemaV1),
+      evidence: z.toJSONSchema(evidenceSchemaV1),
+      evidenceEdge: z.toJSONSchema(evidenceEdgeSchemaV1),
       mechanisticEstimate: z.toJSONSchema(mechanisticEstimateSchemaV1),
     }),
   });

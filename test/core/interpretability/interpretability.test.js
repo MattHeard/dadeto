@@ -3,6 +3,8 @@ import { createTestZod } from './testZod.js';
 
 const {
   experimentSchemaV1,
+  evidenceSchemaV1,
+  evidenceEdgeSchemaV1,
   hypothesisSchemaV1,
   interpretabilityJsonSchemasV1,
   mechanismSchemaV1,
@@ -153,8 +155,70 @@ describe('versioned interpretability schemas', () => {
     ).toBe(false);
   });
 
-  it('exports machine-readable schemas for all four artifact types', () => {
+  it('records negative evidence with provenance and validation state', () => {
+    const evidence = evidenceSchemaV1.parse({
+      schemaVersion: 1,
+      id: 'evidence-1',
+      kind: 'negative',
+      summary: 'The intervention did not change the held-out output.',
+      mechanismIds: ['mechanism-1'],
+      hypothesisIds: ['hypothesis-1'],
+      experimentIds: ['experiment-1'],
+      artifactSha256: 'e'.repeat(64),
+      validationState: 'unreviewed',
+      authorId: 'investigator-2',
+      createdAt: '2026-10-17T10:00:00Z',
+    });
+
+    expect(evidence.kind).toBe('negative');
+    expect(evidence.validationState).toBe('unreviewed');
+    expect(
+      evidenceSchemaV1.safeParse({
+        ...evidence,
+        artifactSha256: 'mutable-artifact-name',
+      }).success
+    ).toBe(false);
+  });
+
+  it('validates typed directed evidence relationships', () => {
+    const relations = [
+      'depends-on',
+      'supports',
+      'contradicts',
+      'projects-to',
+      'connected-to',
+    ];
+    const edge = relation =>
+      evidenceEdgeSchemaV1.parse({
+        schemaVersion: 1,
+        id: `edge-${relation}`,
+        fromId: 'hypothesis-1',
+        toId: 'evidence-1',
+        relation,
+        authorId: 'investigator-2',
+        createdAt: '2026-10-17T10:00:00Z',
+      });
+
+    expect(relations.map(relation => edge(relation).relation)).toEqual(
+      relations
+    );
+    expect(
+      evidenceEdgeSchemaV1.safeParse({
+        schemaVersion: 1,
+        id: 'unknown-edge',
+        fromId: 'hypothesis-1',
+        toId: 'evidence-1',
+        relation: 'amends',
+        authorId: 'investigator-2',
+        createdAt: '2026-10-17T10:00:00Z',
+      }).success
+    ).toBe(false);
+  });
+
+  it('exports machine-readable schemas for all artifact types', () => {
     expect(Object.keys(interpretabilityJsonSchemasV1).sort()).toEqual([
+      'evidence',
+      'evidenceEdge',
       'experiment',
       'hypothesis',
       'mechanism',
