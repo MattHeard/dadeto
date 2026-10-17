@@ -44,6 +44,7 @@ describe('get-author-uuid-v2 scoped production plan workflow', () => {
     expect(workflow).toContain('terraform show -json');
     expect(workflow).toContain('.resource_changes[]?');
     expect(workflow).toContain('.change.actions');
+    expect(workflow).toContain('tee -a "$GITHUB_STEP_SUMMARY"');
     expect(workflow).not.toContain('terraform show -no-color');
   });
 });

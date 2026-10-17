@@ -83,4 +83,4 @@ jobs:
               "## get-author-uuid-v2 production plan\n\nNo apply was run. Changed Terraform addresses and actions:\n",
               (.resource_changes[]? | select(.change.actions != ["no-op"]) |
                 "- `\(.address)`: `\(.change.actions | join(", "))`")
-            ' >> "$GITHUB_STEP_SUMMARY"
+            ' | tee -a "$GITHUB_STEP_SUMMARY"
