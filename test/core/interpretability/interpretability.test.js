@@ -26,6 +26,7 @@ describe('versioned interpretability schemas', () => {
       id: 'mechanism-1',
       model,
       layerIndex: 2,
+      activationHook: 'blocks.2.mlp.post_activation',
     };
     const native = mechanismSchemaV1.parse({
       ...common,
@@ -65,6 +66,18 @@ describe('versioned interpretability schemas', () => {
         kind: 'native-neuron',
         model: { ...model, revision: 'main' },
         layerIndex: 1,
+        sourceId: 'mlp',
+        neuronIndex: 0,
+      }).success
+    ).toBe(false);
+    expect(
+      mechanismSchemaV1.safeParse({
+        schemaVersion: 1,
+        id: 'mechanism-2',
+        kind: 'native-neuron',
+        model,
+        layerIndex: 1,
+        activationHook: '',
         sourceId: 'mlp',
         neuronIndex: 0,
       }).success

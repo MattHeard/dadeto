@@ -19,6 +19,7 @@ export function createInterpretabilitySchemasV1(z) {
     id: z.string().min(1),
     model: pinnedModel,
     layerIndex: z.number().int().nonnegative(),
+    activationHook: z.string().min(1),
   };
   const sourceNeuron = {
     sourceId: z.string().min(1),
