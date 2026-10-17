@@ -1,9 +1,15 @@
 import { describe, expect, it } from '@jest/globals';
 import {
+  appendExperimentSubmissionV1,
+  createInterpretabilitySchemasV1,
   exportEvidenceGraphV1,
   getEvidenceGraphContextV1,
   validateEvidenceGraphV1,
 } from '../../../src/core/interpretability/interpretability.js';
+import { loadOptionalTestZod } from './testZod.js';
+
+const { zod } = loadOptionalTestZod();
+const submissionSchemas = createInterpretabilitySchemasV1(zod);
 
 /**
  * Create a complete native-neuron record for graph identity checks.
@@ -78,6 +84,182 @@ function connectedContextGraph() {
     ],
   };
 }
+
+/** @returns {Record<string, any>} Schema-valid new experiment and evidence. */
+function experimentSubmission() {
+  return {
+    experiment: {
+      schemaVersion: 1,
+      id: 'experiment-b',
+      status: 'completed',
+      model: mechanismRecord('mechanism-a').model,
+      mechanismIds: ['mechanism-a'],
+      hypothesisIds: ['hypothesis-a'],
+      procedure: {
+        repository: 'https://github.com/example/experiment',
+        revision: 'c'.repeat(40),
+        path: 'experiments/run.py',
+      },
+      seed: 11,
+      inputSplitId: 'held-out-v1',
+      runtime: { python: '3.12' },
+      predictions: [{ target: 'activation', expected: 'lower' }],
+      observations: [{ kind: 'negative', summary: 'Prediction did not hold.' }],
+      authorId: 'investigator-b',
+      createdAt: '2026-10-17T10:00:00Z',
+    },
+    evidence: [
+      {
+        schemaVersion: 1,
+        id: 'evidence-b',
+        kind: 'negative',
+        summary: 'The intervention failed to change the held-out output.',
+        mechanismIds: ['mechanism-a'],
+        hypothesisIds: ['hypothesis-a'],
+        experimentIds: ['experiment-b'],
+        validationState: 'unreviewed',
+        authorId: 'investigator-b',
+        createdAt: '2026-10-17T10:00:00Z',
+      },
+    ],
+    edges: [
+      {
+        schemaVersion: 1,
+        id: 'edge-d',
+        fromId: 'experiment-b',
+        toId: 'evidence-b',
+        relation: 'supports',
+        authorId: 'investigator-b',
+        createdAt: '2026-10-17T10:00:00Z',
+      },
+    ],
+  };
+}
+
+describe('appendExperimentSubmissionV1', () => {
+  it('appends validated negative findings without changing the source graph', () => {
+    const graph = connectedContextGraph();
+    const originalExperiments = graph.experiments;
+    const result = appendExperimentSubmissionV1(
+      graph,
+      experimentSubmission(),
+      submissionSchemas
+    );
+
+    expect(result.valid).toBe(true);
+    if (!result.valid) return;
+    expect(result.graph.experiments).toHaveLength(2);
+    expect(result.graph.evidence.at(-1).kind).toBe('negative');
+    expect(result.graph.evidence.at(-1).authorId).toBe('investigator-b');
+    expect(result.graph.edges.at(-1).toId).toBe('evidence-b');
+    expect(graph.experiments).toBe(originalExperiments);
+    expect(graph.experiments).toHaveLength(1);
+  });
+
+  it('rejects schema errors, duplicate IDs, and unresolved references atomically', () => {
+    const graph = connectedContextGraph();
+    const invalidSchemaSubmission = experimentSubmission();
+    invalidSchemaSubmission.evidence[0].validationState = 'accepted';
+    expect(
+      appendExperimentSubmissionV1(
+        graph,
+        invalidSchemaSubmission,
+        submissionSchemas
+      )
+    ).toEqual({
+      valid: false,
+      errors: [
+        {
+          code: 'invalid-record',
+          collection: 'evidence',
+          index: 0,
+          id: 'evidence-b',
+        },
+      ],
+    });
+
+    const duplicateSubmission = experimentSubmission();
+    duplicateSubmission.experiment.id = 'experiment-a';
+    const duplicateResult = appendExperimentSubmissionV1(
+      graph,
+      duplicateSubmission,
+      submissionSchemas
+    );
+    expect(duplicateResult.valid).toBe(false);
+    if (!duplicateResult.valid) {
+      expect(duplicateResult.errors.map(error => error.code)).toContain(
+        'duplicate-id'
+      );
+    }
+
+    const unresolvedSubmission = experimentSubmission();
+    unresolvedSubmission.evidence[0].mechanismIds = ['missing-mechanism'];
+    const unresolvedResult = appendExperimentSubmissionV1(
+      graph,
+      unresolvedSubmission,
+      submissionSchemas
+    );
+    expect(unresolvedResult.valid).toBe(false);
+    if (!unresolvedResult.valid) {
+      expect(unresolvedResult.errors.map(error => error.code)).toContain(
+        'unresolved-reference'
+      );
+    }
+    expect(graph.experiments).toHaveLength(1);
+    expect(graph.evidence).toHaveLength(1);
+  });
+
+  it('rejects invalid submission shapes and missing injected schema validators', () => {
+    expect(appendExperimentSubmissionV1({}, null, submissionSchemas)).toEqual({
+      valid: false,
+      errors: [{ code: 'invalid-submission' }],
+    });
+    expect(
+      appendExperimentSubmissionV1({}, experimentSubmission(), {})
+    ).toEqual({
+      valid: false,
+      errors: [
+        { code: 'missing-schema-validator', collection: 'experiments' },
+        { code: 'missing-schema-validator', collection: 'evidence' },
+        { code: 'missing-schema-validator', collection: 'edges' },
+      ],
+    });
+  });
+
+  it('rejects an invalid source graph before inspecting the submission', () => {
+    expect(
+      appendExperimentSubmissionV1(
+        { mechanisms: [{ id: 'duplicate' }, { id: 'duplicate' }] },
+        experimentSubmission(),
+        submissionSchemas
+      )
+    ).toMatchObject({ valid: false, errors: [{ code: 'duplicate-id' }] });
+  });
+
+  it('defaults omitted graph collections and submission edges to empty arrays', () => {
+    const graph = {
+      mechanisms: [mechanismRecord('mechanism-a')],
+      hypotheses: [
+        { id: 'hypothesis-a', mechanismIds: ['mechanism-a'], evidenceIds: [] },
+      ],
+    };
+    const submission = experimentSubmission();
+    delete submission.edges;
+
+    const result = appendExperimentSubmissionV1(
+      graph,
+      submission,
+      submissionSchemas
+    );
+
+    expect(result.valid).toBe(true);
+    if (result.valid) {
+      expect(result.graph.experiments).toHaveLength(1);
+      expect(result.graph.evidence).toHaveLength(1);
+      expect(result.graph.edges).toEqual([]);
+    }
+  });
+});
 
 describe('validateEvidenceGraphV1', () => {
   it('accepts unique records with resolved references and edge endpoints', () => {

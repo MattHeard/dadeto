@@ -399,6 +399,80 @@ export function exportEvidenceGraphV1(graph) {
 }
 
 /**
+ * Validate and append one experiment submission without mutating its source graph.
+ * @param {InterpretabilityGraphV1} graph Existing versioned evidence graph.
+ * @param {{experiment: InterpretabilityRecord, evidence: Array<InterpretabilityRecord>, edges?: Array<InterpretabilityRecord>}} submission Experiment and its submitted evidence links.
+ * @param {{experimentSchemaV1: any, evidenceSchemaV1: any, evidenceEdgeSchemaV1: any}} schemas Caller-provided validators.
+ * @returns {{valid: true, graph: InterpretabilityGraphV1}|{valid: false, errors: Array<Record<string, string|number|undefined>>}} Appended graph or validation errors.
+ */
+export function appendExperimentSubmissionV1(graph, submission, schemas) {
+  const validationFailure = validateGraphInput(graph);
+  if (validationFailure) return validationFailure;
+
+  if (
+    !submission ||
+    typeof submission !== 'object' ||
+    !submission.experiment ||
+    !Array.isArray(submission.evidence) ||
+    submission.evidence.length === 0 ||
+    (submission.edges !== undefined && !Array.isArray(submission.edges))
+  ) {
+    return { valid: false, errors: [{ code: 'invalid-submission' }] };
+  }
+
+  const records = [
+    {
+      collection: 'experiments',
+      items: [submission.experiment],
+      schema: schemas?.experimentSchemaV1,
+    },
+    {
+      collection: 'evidence',
+      items: submission.evidence,
+      schema: schemas?.evidenceSchemaV1,
+    },
+    {
+      collection: 'edges',
+      items: submission.edges ?? [],
+      schema: schemas?.evidenceEdgeSchemaV1,
+    },
+  ];
+  const errors = records.flatMap(({ collection, items, schema }) =>
+    validateSubmissionRecords(collection, items, schema)
+  );
+  if (errors.length > 0) return { valid: false, errors };
+
+  const candidate = {
+    ...graph,
+    experiments: [...(graph.experiments ?? []), submission.experiment],
+    evidence: [...(graph.evidence ?? []), ...submission.evidence],
+    edges: [...(graph.edges ?? []), ...(submission.edges ?? [])],
+  };
+  const candidateValidation = validateEvidenceGraphV1(candidate);
+  return candidateValidation.valid
+    ? { valid: true, graph: candidate }
+    : { valid: false, errors: candidateValidation.errors };
+}
+
+/**
+ * Parse submitted records with an injected schema and report stable failures.
+ * @param {string} collection Graph collection name.
+ * @param {Array<InterpretabilityRecord>} records Submitted records.
+ * @param {any} schema Caller-provided record schema.
+ * @returns {Array<Record<string, string|number|undefined>>} Stable validation errors.
+ */
+function validateSubmissionRecords(collection, records, schema) {
+  if (!schema || typeof schema.safeParse !== 'function') {
+    return [{ code: 'missing-schema-validator', collection }];
+  }
+  return records.flatMap((record, index) =>
+    schema.safeParse(record).success
+      ? []
+      : [{ code: 'invalid-record', collection, index, id: record?.id }]
+  );
+}
+
+/**
  * Return a bounded context page reachable from one mechanism through stored graph edges.
  * @param {InterpretabilityGraphV1} graph Versioned graph collections.
  * @param {{mechanismId: string, maxDepth?: number, pageSize?: number, cursor?: {type: 'record'|'edge', id: string}|null}} query Context query and pagination cursor.
