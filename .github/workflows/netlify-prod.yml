@@ -33,30 +33,9 @@ jobs:
 
       - name: Configure production rental search endpoint
         env:
-          OBJECT_MINUTE_RENTAL_SEARCH_URL: ${{ vars.OBJECT_MINUTE_RENTAL_SEARCH_URL }}
           GH_TOKEN: ${{ github.token }}
           GCP_PROD_RUN_ID: ${{ github.event_name == 'workflow_dispatch' && inputs.gcp_prod_run_id || '' }}
-        run: |
-          endpoint="$OBJECT_MINUTE_RENTAL_SEARCH_URL"
-          if [ -n "$GCP_PROD_RUN_ID" ]; then
-            artifact_dir="$RUNNER_TEMP/object-minute-rental-search-url"
-            gh run download "$GCP_PROD_RUN_ID" \
-              --repo "$GITHUB_REPOSITORY" \
-              --name object-minute-rental-search-url \
-              --dir "$artifact_dir"
-            endpoint="$(cat "$artifact_dir/endpoint.txt")"
-          fi
-
-          case "$endpoint" in
-            https://*) ;;
-            *)
-              echo "::error::Provide a valid GCP endpoint artifact on manual dispatch or configure the production endpoint variable."
-              exit 1
-              ;;
-          esac
-
-          echo "DADETO_BUILD_TARGET=production" >> "$GITHUB_ENV"
-          echo "OBJECT_MINUTE_RENTAL_SEARCH_URL=$endpoint" >> "$GITHUB_ENV"
+        run: bash .github/scripts/resolve-netlify-rental-endpoint.sh
 
       - run: npm run build:browser
 

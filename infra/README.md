@@ -82,9 +82,7 @@ Run `npm run build:cloud` before applying Terraform so that the generated Cloud 
 
 ### Static rental search endpoint
 
-After Terraform applies, the `gcp-prod` workflow validates the function URL as HTTPS and stores it in the run-scoped `object-minute-rental-search-url` artifact (`endpoint.txt`, retained for 90 days). This artifact is the source for a later authorized static-site deployment. It avoids requiring the workflow token to write repository Actions variables.
-
-The push-triggered static deployment still reads the repository Actions variable `OBJECT_MINUTE_RENTAL_SEARCH_URL`. For a manual deployment, the workflow can instead download the endpoint artifact from a successful `gcp-prod` run. Find its run ID, then dispatch the existing production workflow with that ID:
+After Terraform applies, the `gcp-prod` workflow validates the function URL as HTTPS and stores it in the run-scoped `object-minute-rental-search-url` artifact (`endpoint.txt`, retained for 90 days). The Netlify production workflow uses that artifact for both push-triggered and manually dispatched deployments. Pushes select the latest successful `gcp-prod` run on `main`; manual dispatch can pin a specific run ID:
 
 ```sh
 gh run list --workflow gcp-prod.yml --status success --limit 5
@@ -92,7 +90,7 @@ gh workflow run netlify-prod.yml --repo MattHeard/dadeto \
   -f gcp_prod_run_id=<gcp-prod-run-id>
 ```
 
-The manual dispatch does not require a repository-variable update. Push-triggered builds still require `OBJECT_MINUTE_RENTAL_SEARCH_URL`. Local site builds use the simulator route. Production builds fail if their endpoint source is missing or is not HTTPS, so the deployed page cannot silently point at the local simulator.
+Before building, the workflow verifies that the selected run belongs to this repository, is a completed successful `gcp-prod` run on `main`, and contains a non-empty HTTPS endpoint artifact. The workflow token only needs Actions and contents read access; it does not read or write a repository endpoint variable. Local site builds continue to use the simulator route.
 
 ## Remote State
 
