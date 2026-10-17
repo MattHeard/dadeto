@@ -219,7 +219,12 @@ export function loadOptionalTestZod() {
     return { zod: z, source: 'zod' };
   } catch (error) {
     const moduleError = /** @type {Error & {code?: string}} */ (error);
-    if (moduleError.code !== 'ERR_MODULE_NOT_FOUND') throw error;
+    if (
+      moduleError.code !== 'MODULE_NOT_FOUND' &&
+      moduleError.code !== 'ERR_MODULE_NOT_FOUND'
+    ) {
+      throw error;
+    }
     return { zod: createTestZod(), source: 'fallback' };
   }
 }

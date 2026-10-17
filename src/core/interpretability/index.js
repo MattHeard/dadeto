@@ -13,7 +13,8 @@ export function createInterpretabilitySchemasV1(z) {
       repository: z.string().url(),
       revision: commitRevision,
     })
-    .strict();
+    .strict()
+    .optional();
   const pinnedModel = z
     .object({
       modelId: z.string().min(1),

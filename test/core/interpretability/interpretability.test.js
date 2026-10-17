@@ -64,6 +64,27 @@ describe('versioned interpretability schemas', () => {
     expect(recurrent.timeStep).toBe(3);
   });
 
+  it('supports pinned recurrent models that have no tokenizer', () => {
+    const { tokenizer: ignoredTokenizer, ...recurrentModel } = model;
+    expect(ignoredTokenizer.repository).toBe(
+      'https://huggingface.co/example/tokenizer-a'
+    );
+    const recurrent = mechanismSchemaV1.parse({
+      schemaVersion: 1,
+      id: 'alg-zoo/m16-10/layer-0/time-9/neuron-0',
+      model: recurrentModel,
+      kind: 'recurrent-state',
+      layerIndex: 0,
+      activationHook: 'rnn.hidden_state',
+      sourceId: 'arc-algzoo/m16-10-second-argmax',
+      neuronIndex: 0,
+      timeStep: 9,
+    });
+
+    expect(recurrent.model.tokenizer).toBeUndefined();
+    expect(recurrent.timeStep).toBe(9);
+  });
+
   it('rejects mutable revisions and ambiguous mechanism identities', () => {
     expect(
       mechanismSchemaV1.safeParse({
