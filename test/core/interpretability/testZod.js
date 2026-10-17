@@ -1,5 +1,9 @@
 import { createRequire } from 'node:module';
 
+const JSON_SCHEMA_DRAFT_URL = 'https://json-schema.org/draft/2020-12/schema';
+const ISO_DATETIME_PATTERN =
+  /^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z))$/u;
+
 const require = createRequire(`${process.cwd()}/package.json`);
 
 /**
@@ -96,7 +100,8 @@ function validateString(value, config) {
       throw new TypeError();
     }
   }
-  if (config.datetime && Number.isNaN(Date.parse(value))) throw new TypeError();
+  if (config.datetime && !ISO_DATETIME_PATTERN.test(value))
+    throw new TypeError();
 }
 
 /**
@@ -106,7 +111,7 @@ function validateString(value, config) {
 function validateNumber(value, config) {
   if (typeof value !== 'number' || !Number.isFinite(value))
     throw new TypeError();
-  if (config.integer && !Number.isInteger(value)) throw new TypeError();
+  if (config.integer && !Number.isSafeInteger(value)) throw new TypeError();
   if (config.min !== undefined && value < config.min) throw new TypeError();
   if (config.max !== undefined && value > config.max) throw new TypeError();
   if (config.exclusiveMin && value === config.min) throw new TypeError();
@@ -195,13 +200,121 @@ export function createTestZod() {
       makeSchema('discriminated-union', { discriminator, options }),
     iso: { datetime: () => makeSchema('string', { datetime: true }) },
     toJSONSchema: schema => ({
-      type: schema.kind,
-      oneOf:
-        schema.kind === 'discriminated-union'
-          ? schema.config.options
-          : undefined,
+      $schema: JSON_SCHEMA_DRAFT_URL,
+      ...toJsonSchema(schema),
     }),
   };
+}
+
+/**
+ * Convert the schema-double representation to the JSON Schema subset emitted
+ * by Zod v4 for the production interpretability schema factory.
+ * @param {Record<string, any>} schema Schema to convert.
+ * @returns {Record<string, any>} JSON Schema representation.
+ */
+function toJsonSchema(schema) {
+  const { kind, config } = schema;
+  if (kind === 'string') return jsonSchemaForString(config);
+  if (kind === 'number') return jsonSchemaForNumber(config);
+  if (kind === 'boolean') return { type: 'boolean' };
+  if (kind === 'literal') {
+    return { type: typeof config.value, const: config.value };
+  }
+  if (kind === 'enum') {
+    return { type: typeof config.values[0], enum: config.values };
+  }
+  if (kind === 'object') return jsonSchemaForObject(config);
+  if (kind === 'array') return jsonSchemaForArray(config);
+  if (kind === 'record') return jsonSchemaForRecord(config);
+  if (kind === 'union') return jsonSchemaForUnion(config.options);
+  if (kind === 'discriminated-union')
+    return { oneOf: config.options.map(toJsonSchema) };
+  throw new TypeError(['Unsupported test schema kind: ', kind].join(''));
+}
+
+/**
+ * @param {Record<string, any>} config String schema configuration.
+ * @returns {Record<string, any>} String JSON Schema.
+ */
+function jsonSchemaForString(config) {
+  const result = { type: 'string' };
+  if (config.min !== undefined) result.minLength = config.min;
+  if (config.pattern) result.pattern = config.pattern.source;
+  if (config.url) result.format = 'uri';
+  if (config.datetime) {
+    result.format = 'date-time';
+    result.pattern = ISO_DATETIME_PATTERN.source;
+  }
+  return result;
+}
+
+/**
+ * @param {Record<string, any>} config Number schema configuration.
+ * @returns {Record<string, any>} Number JSON Schema.
+ */
+function jsonSchemaForNumber(config) {
+  const result = { type: config.integer ? 'integer' : 'number' };
+  if (config.min !== undefined) {
+    result[config.exclusiveMin ? 'exclusiveMinimum' : 'minimum'] = config.min;
+  }
+  if (config.max !== undefined) result.maximum = config.max;
+  else if (config.integer) result.maximum = Number.MAX_SAFE_INTEGER;
+  return result;
+}
+
+/**
+ * @param {Record<string, any>} config Object schema configuration.
+ * @returns {Record<string, any>} Object JSON Schema.
+ */
+function jsonSchemaForObject(config) {
+  const properties = {};
+  const required = [];
+  for (const [key, child] of Object.entries(config.shape)) {
+    properties[key] = toJsonSchema(child);
+    if (!child.config.optional) required.push(key);
+  }
+  const result = { type: 'object', properties };
+  if (required.length) result.required = required;
+  if (config.strict) result.additionalProperties = false;
+  return result;
+}
+
+/**
+ * @param {Record<string, any>} config Array schema configuration.
+ * @returns {Record<string, any>} Array JSON Schema.
+ */
+function jsonSchemaForArray(config) {
+  const result = { type: 'array', items: toJsonSchema(config.item) };
+  if (config.min !== undefined) result.minItems = config.min;
+  return result;
+}
+
+/**
+ * @param {Record<string, any>} config Record schema configuration.
+ * @returns {Record<string, any>} Record JSON Schema.
+ */
+function jsonSchemaForRecord(config) {
+  return {
+    type: 'object',
+    propertyNames: toJsonSchema(config.key),
+    additionalProperties: toJsonSchema(config.value),
+  };
+}
+
+/**
+ * @param {Array<Record<string, any>>} options Union schema options.
+ * @returns {Record<string, any>} Union JSON Schema.
+ */
+function jsonSchemaForUnion(options) {
+  const schemas = options.map(toJsonSchema);
+  const types = schemas.map(schema => schema.type);
+  if (
+    types.every(type => typeof type === 'string') &&
+    new Set(types).size === types.length
+  ) {
+    return { type: types };
+  }
+  return { anyOf: schemas };
 }
 
 /**

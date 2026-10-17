@@ -543,7 +543,9 @@ resource "google_project_iam_member" "terraform_service_account_roles" {
 }
 
 resource "google_project_iam_member" "terraform_service_account_network_roles" {
-  for_each = local.manage_project_level_resources || local.playwright_enabled ? local.terraform_networking_roles : {}
+  # Only the isolated Playwright environments manage the network resources that
+  # require these broad Terraform permissions.
+  for_each = local.playwright_enabled ? local.terraform_networking_roles : {}
 
   project = var.project_id
   role    = each.value
