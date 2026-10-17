@@ -1,11 +1,6 @@
 import { createGoogleAuthStatusHandle } from '../core/browser/google-auth-status.js';
 import { loadStaticConfig } from './loadStaticConfig.js';
-import {
-  getAuthorUuid,
-  initGoogleSignIn,
-  refreshAuthorUuid,
-  signOut,
-} from './googleAuth.js';
+import * as googleAuth from './googleAuth.js';
 import { getIdToken } from '../core/browser/browser-core.js';
 import { isAdminWithDeps } from './admin-core.js';
 import { bindEffectBoundary } from './allow-effects.js';
@@ -33,15 +28,15 @@ const handle = createGoogleAuthStatusHandle({
   initGoogleSignInFn: options =>
     loadStaticConfig().then(config =>
       config.disableGoogleSignIn !== true
-        ? initGoogleSignIn({
+        ? googleAuth.initGoogleSignIn({
             ...options,
             reportError: errorBeaconHandlers.logError,
           })
         : undefined
     ),
-  getAuthorUuidFn: getAuthorUuid,
-  refreshAuthorUuidFn: refreshAuthorUuid,
-  signOutFn: signOut,
+  getAuthorUuidFn: googleAuth.getAuthorUuid,
+  refreshAuthorUuidFn: googleAuth.refreshAuthorUuid,
+  signOutFn: googleAuth.signOut,
   getIdTokenFn: getIdToken,
   isAdminFn: () => isAdminWithDeps(sessionStorage, JSON, atob),
 });

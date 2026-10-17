@@ -1,16 +1,25 @@
 /**
  * Create a handle that wires Google auth status controls.
- * @param {Document} documentObj DOM used to find auth controls.
- * @param {{initGoogleSignInFn: (options: {onSignIn: () => void}) => void, refreshAuthorUuidFn?: () => string | null | Promise<string | null>, signOutFn: () => Promise<unknown>}} authActions Sign-in and session actions.
- * @param {{getAuthorUuidFn: () => string | null, getIdTokenFn: () => string | null, isAdminFn: () => boolean}} identity Current-user accessors.
+ * @param {Document | LegacyGoogleAuthStatusOptions} documentOrOptions DOM or the legacy options object.
+ * @param {GoogleAuthStatusActions} [authActions] Sign-in and session actions for the positional call shape.
+ * @param {GoogleAuthStatusIdentity} [identity] Current-user accessors for the positional call shape.
  * @returns {() => void} Google auth status setup handle.
  */
 export function createGoogleAuthStatusHandle(
-  documentObj,
+  documentOrOptions,
   authActions,
   identity
 ) {
+  const dependencies = normalizeDependencies(
+    documentOrOptions,
+    authActions,
+    identity
+  );
   return function handleGoogleAuthStatus() {
+    if (typeof dependencies.documentObj?.querySelectorAll !== 'function') {
+      return;
+    }
+    const { documentObj, authActions, identity } = dependencies;
     const signInButtons = /** @type {HTMLElement[]} */ (
       Array.from(documentObj.querySelectorAll('#signinButton'))
     );
@@ -56,6 +65,45 @@ export function createGoogleAuthStatusHandle(
     }
   };
 }
+
+/**
+ * Normalize legacy options and current positional calls.
+ * @param {unknown} documentOrOptions DOM or the legacy options object.
+ * @param {GoogleAuthStatusActions | undefined} authActions Positional sign-in and session actions.
+ * @param {GoogleAuthStatusIdentity | undefined} identity Positional current-user accessors.
+ * @returns {GoogleAuthStatusDependencies} Normalized dependencies.
+ */
+function normalizeDependencies(documentOrOptions, authActions, identity) {
+  if (authActions !== undefined || identity !== undefined) {
+    return {
+      documentObj: /** @type {Document | undefined} */ (documentOrOptions),
+      authActions: /** @type {GoogleAuthStatusActions} */ (authActions ?? {}),
+      identity: /** @type {GoogleAuthStatusIdentity} */ (identity ?? {}),
+    };
+  }
+
+  const options = /** @type {LegacyGoogleAuthStatusOptions} */ (
+    documentOrOptions ?? {}
+  );
+  return {
+    documentObj: options.documentObj,
+    authActions: {
+      initGoogleSignInFn: options.initGoogleSignInFn,
+      refreshAuthorUuidFn: options.refreshAuthorUuidFn,
+      signOutFn: options.signOutFn,
+    },
+    identity: {
+      getAuthorUuidFn: options.getAuthorUuidFn,
+      getIdTokenFn: options.getIdTokenFn,
+      isAdminFn: options.isAdminFn,
+    },
+  };
+}
+
+/** @typedef {{initGoogleSignInFn: (options: {onSignIn: () => void}) => void, refreshAuthorUuidFn?: () => string | null | Promise<string | null>, signOutFn: () => Promise<unknown>}} GoogleAuthStatusActions */
+/** @typedef {{getAuthorUuidFn: () => string | null, getIdTokenFn: () => string | null, isAdminFn: () => boolean}} GoogleAuthStatusIdentity */
+/** @typedef {{documentObj?: Document, initGoogleSignInFn: (options: {onSignIn: () => void}) => void, getAuthorUuidFn: () => string | null, refreshAuthorUuidFn?: () => string | null | Promise<string | null>, signOutFn: () => Promise<unknown>, getIdTokenFn: () => string | null, isAdminFn: () => boolean}} LegacyGoogleAuthStatusOptions */
+/** @typedef {{documentObj: Document | undefined, authActions: GoogleAuthStatusActions, identity: GoogleAuthStatusIdentity}} GoogleAuthStatusDependencies */
 
 /**
  * Create the signed-in display action.

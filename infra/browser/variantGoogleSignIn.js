@@ -1,50 +1,15 @@
-import { initGoogleSignIn, signOut } from './googleAuth.js';
+import { createGoogleAuthStatusHandle } from '../core/browser/google-auth-status.js';
+import { getAuthorUuid, initGoogleSignIn, signOut } from './googleAuth.js';
 import { getIdToken } from '../core/browser/browser-core.js';
-import { loadStaticConfig } from './loadStaticConfig.js';
 import { isAdminWithDeps } from './admin-core.js';
 
-const isAdmin = () => isAdminWithDeps(sessionStorage, JSON, atob);
-
-const adminLinks = document.querySelectorAll('.admin-link');
-const signInButtons = document.querySelectorAll('#signinButton');
-const signOutWraps = document.querySelectorAll('#signoutWrap');
-const signOutLinks = document.querySelectorAll('#signoutLink');
-
-/**
- *
- */
-function showSignedIn() {
-  signInButtons.forEach(el => (el.style.display = 'none'));
-  signOutWraps.forEach(el => (el.style.display = ''));
-  if (isAdmin()) adminLinks.forEach(el => (el.style.display = ''));
-}
-
-/**
- *
- */
-function showSignedOut() {
-  signInButtons.forEach(el => (el.style.display = ''));
-  signOutWraps.forEach(el => (el.style.display = 'none'));
-  adminLinks.forEach(el => (el.style.display = 'none'));
-}
-
-(async () => {
-  const config = await loadStaticConfig();
-  if (config.disableGoogleSignIn !== true) {
-    initGoogleSignIn({
-      onSignIn: showSignedIn,
-    });
-  }
-})();
-
-signOutLinks.forEach(link => {
-  link.addEventListener('click', async e => {
-    e.preventDefault();
-    await signOut();
-    showSignedOut();
-  });
+const handle = createGoogleAuthStatusHandle({
+  documentObj: document,
+  initGoogleSignInFn: initGoogleSignIn,
+  getAuthorUuidFn: getAuthorUuid,
+  signOutFn: signOut,
+  getIdTokenFn: getIdToken,
+  isAdminFn: () => isAdminWithDeps(sessionStorage, JSON, atob),
 });
 
-if (getIdToken()) {
-  showSignedIn();
-}
+handle();

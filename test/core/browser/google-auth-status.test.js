@@ -17,6 +17,50 @@ function createElement() {
 }
 
 describe('createGoogleAuthStatusHandle', () => {
+  it('supports the legacy flat options object during mixed-version rollouts', () => {
+    const initGoogleSignInFn = jest.fn();
+    const handle = createGoogleAuthStatusHandle({
+      documentObj: { querySelectorAll: jest.fn(() => []) },
+      initGoogleSignInFn,
+      getAuthorUuidFn: jest.fn().mockReturnValue(null),
+      signOutFn: jest.fn(),
+      getIdTokenFn: jest.fn().mockReturnValue(null),
+      isAdminFn: jest.fn().mockReturnValue(false),
+    });
+
+    expect(() => handle()).not.toThrow();
+    expect(initGoogleSignInFn).toHaveBeenCalledWith({
+      onSignIn: expect.any(Function),
+    });
+  });
+
+  it('ignores a missing or malformed document without throwing', () => {
+    const initGoogleSignInFn = jest.fn();
+    const handle = createGoogleAuthStatusHandle({
+      documentObj: { querySelectorAll: null },
+      initGoogleSignInFn,
+      getAuthorUuidFn: jest.fn().mockReturnValue(null),
+      signOutFn: jest.fn(),
+      getIdTokenFn: jest.fn().mockReturnValue(null),
+      isAdminFn: jest.fn().mockReturnValue(false),
+    });
+
+    expect(() => handle()).not.toThrow();
+    expect(initGoogleSignInFn).not.toHaveBeenCalled();
+  });
+
+  it('uses empty dependency defaults for nullish positional and options inputs', () => {
+    const positionalHandle = createGoogleAuthStatusHandle(
+      { querySelectorAll: null },
+      null,
+      null
+    );
+    const optionsHandle = createGoogleAuthStatusHandle(null);
+
+    expect(() => positionalHandle()).not.toThrow();
+    expect(() => optionsHandle()).not.toThrow();
+  });
+
   it('shows signed-in controls immediately when an id token exists', async () => {
     const signInButton = createElement();
     const signOutWrap = createElement();

@@ -1,0 +1,7 @@
+# Google auth module compatibility loop
+
+- **Unexpected hurdle:** the three tracked `infra/browser` entrypoints had drifted from `src/browser`, and the Terraform uploaded root `infra/*.js` modules used a mix of call shapes. Running `npm run build:dendritestories-co-nz` refreshed the generated core but also exposed unrelated stale browser copies.
+- **Diagnosis:** the call shape changed in `deb51137c2`; the previous single options object is the canonical contract, while deployed modules may still call the shared handler positionally. Static output tests now check both Terraform-uploaded root objects and the checked-in Dendrite browser tree.
+- **Fix:** the shared handler normalizes both call shapes and quietly skips initialization when `document.querySelectorAll` is unavailable. The three source entrypoints and both static output trees use the options object. Focused tests cover the legacy shape, invalid documents, and output parity.
+- **Next-time guidance:** inspect both `infra/*.js` Terraform object sources and `infra/browser` before changing browser modules. The Dendrite copy command refreshes the ignored `infra/core` package but may rewrite unrelated stale snapshots; inspect its diff and retain only intended outputs. On this host, set `TMPDIR` to a repo-local path for focused Jest runs.
+- **Open follow-up:** deployment verification, compatible cache-window evidence, and the 24-hour Error Reporting query remain outstanding; do not claim the production error group is clear based on local checks.
