@@ -1,6 +1,7 @@
 import { describe, expect, it } from '@jest/globals';
 import {
   exportEvidenceGraphV1,
+  getEvidenceGraphContextV1,
   validateEvidenceGraphV1,
 } from '../../../src/core/interpretability/interpretability.js';
 
@@ -29,6 +30,52 @@ function mechanismRecord(id, overrides = {}) {
     sourceId: 'mlp',
     neuronIndex: 7,
     ...overrides,
+  };
+}
+
+/** @returns {Record<string, any>} Graph with two directed hops of context. */
+function connectedContextGraph() {
+  return {
+    mechanisms: [mechanismRecord('mechanism-a')],
+    hypotheses: [
+      {
+        id: 'hypothesis-a',
+        status: 'proposed',
+        mechanismIds: [],
+        confidence: undefined,
+        authorId: 'researcher-a',
+      },
+    ],
+    experiments: [
+      { id: 'experiment-a', status: 'registered', mechanismIds: [] },
+    ],
+    evidence: [
+      {
+        id: 'evidence-a',
+        kind: 'negative',
+        validationState: 'unreviewed',
+      },
+    ],
+    edges: [
+      {
+        id: 'edge-a',
+        fromId: 'mechanism-a',
+        toId: 'hypothesis-a',
+        relation: 'connected-to',
+      },
+      {
+        id: 'edge-b',
+        fromId: 'hypothesis-a',
+        toId: 'evidence-a',
+        relation: 'contradicts',
+      },
+      {
+        id: 'edge-c',
+        fromId: 'experiment-a',
+        toId: 'hypothesis-a',
+        relation: 'depends-on',
+      },
+    ],
   };
 }
 
@@ -288,5 +335,133 @@ describe('validateEvidenceGraphV1', () => {
         edges: [],
       }),
     });
+  });
+
+  it('retrieves directed graph context in deterministic bounded pages', () => {
+    const graph = connectedContextGraph();
+    const firstPage = getEvidenceGraphContextV1(graph, {
+      mechanismId: 'mechanism-a',
+      maxDepth: 2,
+      pageSize: 3,
+    });
+
+    expect(firstPage.valid).toBe(true);
+    if (!firstPage.valid) return;
+    expect(firstPage.mechanism.id).toBe('mechanism-a');
+    expect(firstPage.totalItems).toBe(6);
+    expect(firstPage.items.map(item => item.id)).toEqual([
+      'edge-a',
+      'edge-b',
+      'edge-c',
+    ]);
+    expect(firstPage.items[1].record).toMatchObject({
+      fromId: 'hypothesis-a',
+      toId: 'evidence-a',
+      relation: 'contradicts',
+    });
+    expect(firstPage.nextCursor).toEqual({ type: 'edge', id: 'edge-c' });
+    expect(firstPage.warnings).toContainEqual({
+      code: 'evidence-not-reproduced',
+      id: 'evidence-a',
+      validationState: 'unreviewed',
+    });
+    expect(firstPage.warnings).toContainEqual({
+      code: 'hypothesis-confidence-unspecified',
+      id: 'hypothesis-a',
+    });
+
+    const secondPage = getEvidenceGraphContextV1(graph, {
+      mechanismId: 'mechanism-a',
+      maxDepth: 2,
+      pageSize: 3,
+      cursor: firstPage.nextCursor,
+    });
+    expect(secondPage.valid).toBe(true);
+    if (!secondPage.valid) return;
+    expect(secondPage.items.map(item => item.id)).toEqual([
+      'evidence-a',
+      'experiment-a',
+      'hypothesis-a',
+    ]);
+    expect(secondPage.nextCursor).toBeNull();
+    expect(secondPage.items[0].record.kind).toBe('negative');
+
+    expect(
+      getEvidenceGraphContextV1(graph, { mechanismId: 'mechanism-a' }).items
+    ).toEqual([...firstPage.items, ...secondPage.items]);
+  });
+
+  it('surfaces missing context and completed confidence metadata', () => {
+    const empty = getEvidenceGraphContextV1(
+      { mechanisms: [mechanismRecord('mechanism-a')] },
+      { mechanismId: 'mechanism-a' }
+    );
+    expect(empty.valid).toBe(true);
+    if (!empty.valid) return;
+    expect(empty.items).toEqual([]);
+    expect(empty.warnings).toEqual([
+      { code: 'missing-evidence', mechanismId: 'mechanism-a' },
+      { code: 'missing-experiments', mechanismId: 'mechanism-a' },
+      { code: 'missing-hypotheses', mechanismId: 'mechanism-a' },
+    ]);
+
+    const graph = connectedContextGraph();
+    graph.hypotheses[0].status = 'reproduced';
+    graph.hypotheses[0].confidence = 0.9;
+    graph.experiments[0].status = 'completed';
+    graph.evidence[0].validationState = 'reproduced';
+    const complete = getEvidenceGraphContextV1(graph, {
+      mechanismId: 'mechanism-a',
+    });
+    expect(complete.valid).toBe(true);
+    if (!complete.valid) return;
+    expect(complete.warnings).toEqual([]);
+  });
+
+  it('rejects invalid context queries and unknown mechanism or cursor IDs', () => {
+    const graph = connectedContextGraph();
+    expect(getEvidenceGraphContextV1(graph, null)).toEqual({
+      valid: false,
+      errors: [{ code: 'invalid-query' }],
+    });
+    expect(
+      getEvidenceGraphContextV1(graph, {
+        mechanismId: '',
+        maxDepth: 0,
+        pageSize: 101,
+        cursor: { type: 'other', id: '' },
+      }).errors.map(error => error.code)
+    ).toEqual([
+      'invalid-mechanism-id',
+      'invalid-depth',
+      'invalid-page-size',
+      'invalid-cursor',
+    ]);
+    expect(
+      getEvidenceGraphContextV1(graph, {
+        mechanismId: 'hypothesis-a',
+      })
+    ).toEqual({
+      valid: false,
+      errors: [{ code: 'unknown-mechanism', mechanismId: 'hypothesis-a' }],
+    });
+    expect(
+      getEvidenceGraphContextV1(graph, {
+        mechanismId: 'mechanism-a',
+        cursor: { type: 'edge', id: 'missing-edge' },
+      })
+    ).toEqual({
+      valid: false,
+      errors: [{ code: 'unknown-cursor', cursorId: 'missing-edge' }],
+    });
+    expect(
+      getEvidenceGraphContextV1(
+        {
+          mechanisms: [{ id: 'mechanism-a' }],
+          hypotheses: [{ id: 'bad', mechanismIds: ['missing-mechanism'] }],
+        },
+        { mechanismId: 'mechanism-a' }
+      ).valid
+    ).toBe(false);
   });
 });

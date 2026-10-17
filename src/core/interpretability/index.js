@@ -383,10 +383,8 @@ function sortGraphRecords(records) {
  * @returns {{valid: true, json: string} | {valid: false, errors: Array<Record<string, string>>}} Export result.
  */
 export function exportEvidenceGraphV1(graph) {
-  const validation = validateEvidenceGraphV1(graph);
-  if (!validation.valid) {
-    return { valid: false, errors: validation.errors };
-  }
+  const validationFailure = validateGraphInput(graph);
+  if (validationFailure) return validationFailure;
 
   const document = {
     schemaVersion: 1,
@@ -399,3 +397,276 @@ export function exportEvidenceGraphV1(graph) {
   };
   return { valid: true, json: JSON.stringify(document) };
 }
+
+/**
+ * Return a bounded context page reachable from one mechanism through stored graph edges.
+ * @param {InterpretabilityGraphV1} graph Versioned graph collections.
+ * @param {{mechanismId: string, maxDepth?: number, pageSize?: number, cursor?: {type: 'record'|'edge', id: string}|null}} query Context query and pagination cursor.
+ * @returns {{valid: true, mechanism: InterpretabilityRecord, items: Array<Record<string, any>>, totalItems: number, nextCursor: {type: 'record'|'edge', id: string}|null, warnings: Array<ContextWarningV1>}|{valid: false, errors: Array<Record<string, string>>}} Reachable context page or validation errors.
+ */
+export function getEvidenceGraphContextV1(graph, query) {
+  const validationFailure = validateGraphInput(graph);
+  if (validationFailure) return validationFailure;
+
+  const parsedQuery = validateContextQueryV1(query);
+  if (!parsedQuery.valid) return parsedQuery;
+  const { mechanismId, maxDepth, pageSize, cursor } = parsedQuery;
+  const recordsById = indexGraphRecords(graph);
+  const mechanismEntry = recordsById.get(mechanismId);
+  if (!mechanismEntry || mechanismEntry.collection !== 'mechanisms') {
+    return {
+      valid: false,
+      errors: [{ code: 'unknown-mechanism', mechanismId }],
+    };
+  }
+
+  const context = collectGraphContext(
+    graph,
+    mechanismId,
+    maxDepth,
+    recordsById
+  );
+  const page = paginateContextItems(context.items, pageSize, cursor);
+  if (!page.valid) return page;
+
+  return {
+    valid: true,
+    mechanism: mechanismEntry.record,
+    items: page.items,
+    totalItems: context.items.length,
+    nextCursor: page.nextCursor,
+    warnings: buildContextWarnings(mechanismId, context.records),
+  };
+}
+
+/**
+ * Validate graph invariants and return the shared failure result when invalid.
+ * @param {InterpretabilityGraphV1} graph Candidate graph.
+ * @returns {{valid: false, errors: Array<Record<string, string>>}|null} Validation error or null.
+ */
+function validateGraphInput(graph) {
+  const validation = validateEvidenceGraphV1(graph);
+  return validation.valid ? null : { valid: false, errors: validation.errors };
+}
+
+/**
+ * Validate and normalize context query defaults.
+ * @param {any} query Candidate context request.
+ * @returns {{valid: true, mechanismId: string, maxDepth: number, pageSize: number, cursor: {type: 'record'|'edge', id: string}|null}|{valid: false, errors: Array<Record<string, string>>}} Normalized request or errors.
+ */
+function validateContextQueryV1(query) {
+  if (!query || typeof query !== 'object') {
+    return { valid: false, errors: [{ code: 'invalid-query' }] };
+  }
+  const { mechanismId, cursor = null } = query;
+  const maxDepth = query.maxDepth ?? 2;
+  const pageSize = query.pageSize ?? 20;
+  const errors = [];
+  if (typeof mechanismId !== 'string' || mechanismId.trim() === '') {
+    errors.push({ code: 'invalid-mechanism-id' });
+  }
+  if (!Number.isInteger(maxDepth) || maxDepth < 1 || maxDepth > 4) {
+    errors.push({ code: 'invalid-depth' });
+  }
+  if (!Number.isInteger(pageSize) || pageSize < 1 || pageSize > 100) {
+    errors.push({ code: 'invalid-page-size' });
+  }
+  if (cursor !== null && !isContextCursor(cursor)) {
+    errors.push({ code: 'invalid-cursor' });
+  }
+  if (errors.length > 0) return { valid: false, errors };
+  return { valid: true, mechanismId, maxDepth, pageSize, cursor };
+}
+
+/**
+ * @param {any} cursor Candidate page cursor.
+ * @returns {boolean} Whether the cursor has the supported shape.
+ */
+function isContextCursor(cursor) {
+  return (
+    typeof cursor === 'object' &&
+    ['record', 'edge'].includes(cursor.type) &&
+    typeof cursor.id === 'string' &&
+    cursor.id.trim() !== ''
+  );
+}
+
+/**
+ * Index graph records by ID while retaining their collection.
+ * @param {InterpretabilityGraphV1} graph Validated graph.
+ * @returns {Map<string, GraphRecordEntryV1>} Records by global ID.
+ */
+function indexGraphRecords(graph) {
+  const collections = [
+    'mechanisms',
+    'hypotheses',
+    'experiments',
+    'estimates',
+    'evidence',
+  ];
+  const graphCollections =
+    /** @type {Record<string, Array<InterpretabilityRecord>|undefined>} */ (
+      graph
+    );
+  const recordsById = new Map();
+  for (const collection of collections) {
+    for (const record of graphCollections[collection] ?? []) {
+      recordsById.set(record.id, { id: record.id, collection, record });
+    }
+  }
+  return recordsById;
+}
+
+/**
+ * Collect nearest nodes and stored directed edges around one mechanism.
+ * @param {InterpretabilityGraphV1} graph Validated graph.
+ * @param {string} mechanismId Mechanism identifier.
+ * @param {number} maxDepth Maximum number of explicit edges to traverse.
+ * @param {Map<string, GraphRecordEntryV1>} recordsById Records by global ID.
+ * @returns {{items: Array<ContextItemV1>, records: Array<GraphRecordEntryV1>}} Stable reachable items and node records.
+ */
+function collectGraphContext(graph, mechanismId, maxDepth, recordsById) {
+  const depths = new Map([[mechanismId, 0]]);
+  const selectedEdgeIds = new Set();
+  const edges = [...(graph.edges ?? [])].sort((left, right) =>
+    left.id.localeCompare(right.id)
+  );
+  for (let depth = 0; depth < maxDepth; depth += 1) {
+    const frontier = [...depths]
+      .filter(([, currentDepth]) => currentDepth === depth)
+      .map(([id]) => id);
+    for (const id of frontier) {
+      for (const edge of edges) {
+        if (edge.fromId !== id && edge.toId !== id) continue;
+        selectedEdgeIds.add(edge.id);
+        const neighborId = edge.fromId === id ? edge.toId : edge.fromId;
+        if (!depths.has(neighborId)) depths.set(neighborId, depth + 1);
+      }
+    }
+  }
+
+  const reachableEntries = [...depths]
+    .filter(([id, depth]) => id !== mechanismId && depth <= maxDepth)
+    .map(([id, depth]) => ({
+      depth,
+      entry: /** @type {GraphRecordEntryV1} */ (recordsById.get(id)),
+    }));
+  /** @type {Array<ContextItemV1>} */
+  const contextRecords = reachableEntries.map(({ depth, entry }) => ({
+    itemType: /** @type {'record'} */ ('record'),
+    id: entry.id,
+    depth,
+    collection: entry.collection,
+    record: entry.record,
+  }));
+  const contextEdges = edges
+    .filter(edge => selectedEdgeIds.has(edge.id))
+    .map(record => ({
+      itemType: /** @type {'edge'} */ ('edge'),
+      id: record.id,
+      record,
+    }));
+  const items = [...contextRecords, ...contextEdges].sort((left, right) =>
+    left.id.localeCompare(right.id)
+  );
+  return {
+    items,
+    records: reachableEntries.map(({ entry }) => entry),
+  };
+}
+
+/**
+ * Select one stable page after a typed cursor.
+ * @param {Array<ContextItemV1>} items Ordered context items.
+ * @param {number} pageSize Maximum items to return.
+ * @param {{type: 'record'|'edge', id: string}|null} cursor Position from a previous page.
+ * @returns {{valid: true, items: Array<ContextItemV1>, nextCursor: {type: 'record'|'edge', id: string}|null}|{valid: false, errors: Array<Record<string, string>>}} Page or cursor error.
+ */
+function paginateContextItems(items, pageSize, cursor) {
+  const cursorIndex = cursor
+    ? items.findIndex(
+        item => item.itemType === cursor.type && item.id === cursor.id
+      )
+    : -1;
+  if (cursor !== null && cursorIndex < 0) {
+    return {
+      valid: false,
+      errors: [{ code: 'unknown-cursor', cursorId: cursor.id }],
+    };
+  }
+  const pageItems = items.slice(cursorIndex + 1, cursorIndex + 1 + pageSize);
+  const hasMore = cursorIndex + 1 + pageSize < items.length;
+  const lastItem = pageItems.at(-1);
+  return {
+    valid: true,
+    items: pageItems,
+    nextCursor:
+      hasMore && lastItem ? { type: lastItem.itemType, id: lastItem.id } : null,
+  };
+}
+
+/**
+ * Describe absent or unverified context without suppressing the underlying records.
+ * @param {string} mechanismId Requested mechanism identifier.
+ * @param {Array<{id: string, collection: string, record: InterpretabilityRecord}>} records Reachable graph records.
+ * @returns {Array<ContextWarningV1>} Stable context warning list.
+ */
+function buildContextWarnings(mechanismId, records) {
+  /** @type {Array<ContextWarningV1>} */
+  const warnings = [];
+  for (const collection of ['hypotheses', 'experiments', 'evidence']) {
+    if (!records.some(item => item.collection === collection)) {
+      warnings.push({ code: `missing-${collection}`, mechanismId });
+    }
+  }
+  for (const { collection, record } of records) {
+    if (collection === 'hypotheses') {
+      if (record.status !== 'reproduced') {
+        warnings.push({
+          code: 'hypothesis-not-reproduced',
+          id: record.id,
+          status: record.status,
+        });
+      }
+      if (typeof record.confidence !== 'number') {
+        warnings.push({
+          code: 'hypothesis-confidence-unspecified',
+          id: record.id,
+        });
+      }
+    }
+    if (collection === 'experiments') {
+      addStatusWarning(warnings, record, 'experiment-not-completed');
+    }
+    if (collection === 'evidence') {
+      addStatusWarning(warnings, record, 'evidence-not-reproduced');
+    }
+  }
+  return warnings.sort((left, right) =>
+    JSON.stringify(left).localeCompare(JSON.stringify(right))
+  );
+}
+
+/**
+ * Preserve a non-final record status as explicit uncertainty metadata.
+ * @param {Array<ContextWarningV1>} warnings Warning accumulator.
+ * @param {InterpretabilityRecord} record Linked graph record.
+ * @param {'experiment-not-completed'|'evidence-not-reproduced'} warningCode Warning identifier.
+ */
+function addStatusWarning(warnings, record, warningCode) {
+  const statusField =
+    warningCode === 'experiment-not-completed' ? 'status' : 'validationState';
+  const completedValue =
+    warningCode === 'experiment-not-completed' ? 'completed' : 'reproduced';
+  if (record[statusField] !== completedValue) {
+    warnings.push({
+      code: warningCode,
+      id: record.id,
+      [statusField]: record[statusField],
+    });
+  }
+}
+
+/** @typedef {{id: string, collection: string, record: InterpretabilityRecord}} GraphRecordEntryV1 */
+/** @typedef {({itemType: 'record', id: string, depth: number}&GraphRecordEntryV1)|{itemType: 'edge', id: string, record: InterpretabilityRecord}} ContextItemV1 */
+/** @typedef {{code: string, mechanismId?: string, id?: string, status?: string, validationState?: string}} ContextWarningV1 */
