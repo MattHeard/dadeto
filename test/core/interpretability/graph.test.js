@@ -4,6 +4,7 @@ import {
   createInterpretabilitySchemasV1,
   exportEvidenceGraphV1,
   getEvidenceGraphContextV1,
+  importEvidenceGraphV1,
   validateEvidenceGraphV1,
 } from '../../../src/core/interpretability/interpretability.js';
 import { loadOptionalTestZod } from './testZod.js';
@@ -135,6 +136,165 @@ function experimentSubmission() {
     ],
   };
 }
+
+/** @returns {Record<string, any>} Schema-valid graph for portable round trips. */
+function portableGraph() {
+  return {
+    mechanisms: [
+      mechanismRecord('recurrent-state-10-step-4', {
+        schemaVersion: 1,
+        kind: 'recurrent-state',
+        sourceId: 'hidden-state',
+        neuronIndex: 10,
+        timeStep: 4,
+      }),
+    ],
+    hypotheses: [
+      {
+        schemaVersion: 1,
+        id: 'hypothesis-rnn',
+        revision: 1,
+        claim: 'The state contributes to the second-argmax decision.',
+        status: 'proposed',
+        mechanismIds: ['recurrent-state-10-step-4'],
+        evidenceIds: ['evidence-negative'],
+        authorId: 'investigator-a',
+        createdAt: '2026-10-17T09:00:00Z',
+      },
+    ],
+    experiments: [
+      {
+        ...experimentSubmission().experiment,
+        id: 'experiment-rnn',
+        mechanismIds: ['recurrent-state-10-step-4'],
+        hypothesisIds: ['hypothesis-rnn'],
+      },
+    ],
+    estimates: [],
+    evidence: [
+      {
+        schemaVersion: 1,
+        id: 'evidence-negative',
+        kind: 'negative',
+        summary: 'The intervention did not reproduce the prediction.',
+        mechanismIds: ['recurrent-state-10-step-4'],
+        hypothesisIds: ['hypothesis-rnn'],
+        experimentIds: ['experiment-rnn'],
+        artifactSha256: 'f'.repeat(64),
+        validationState: 'unreviewed',
+        authorId: 'investigator-b',
+        createdAt: '2026-10-17T10:00:00Z',
+      },
+    ],
+    edges: [
+      {
+        schemaVersion: 1,
+        id: 'edge-negative',
+        fromId: 'experiment-rnn',
+        toId: 'evidence-negative',
+        relation: 'contradicts',
+        authorId: 'investigator-b',
+        createdAt: '2026-10-17T10:00:00Z',
+      },
+    ],
+  };
+}
+
+describe('importEvidenceGraphV1', () => {
+  it('round-trips recurrent identities, provenance, negative evidence, and edges', () => {
+    const graph = portableGraph();
+    const exported = exportEvidenceGraphV1(graph);
+    expect(exported.valid).toBe(true);
+    if (!exported.valid) return;
+
+    const imported = importEvidenceGraphV1(exported.json, submissionSchemas);
+    expect(imported).toEqual({ valid: true, graph });
+    if (imported.valid) {
+      expect(imported.graph.mechanisms[0].timeStep).toBe(4);
+      expect(imported.graph.evidence[0].authorId).toBe('investigator-b');
+      expect(imported.graph.evidence[0].kind).toBe('negative');
+      expect(imported.graph.edges[0].relation).toBe('contradicts');
+    }
+  });
+
+  it('rejects malformed JSON, documents, versions, and collection shapes', () => {
+    expect(importEvidenceGraphV1('{', submissionSchemas)).toEqual({
+      valid: false,
+      errors: [{ code: 'invalid-json' }],
+    });
+    expect(importEvidenceGraphV1('null', submissionSchemas)).toEqual({
+      valid: false,
+      errors: [{ code: 'invalid-document' }],
+    });
+    expect(importEvidenceGraphV1(1, submissionSchemas)).toEqual({
+      valid: false,
+      errors: [{ code: 'invalid-json' }],
+    });
+    expect(
+      importEvidenceGraphV1('{"schemaVersion":2}', submissionSchemas)
+    ).toMatchObject({
+      valid: false,
+      errors: [{ code: 'unsupported-version', schemaVersion: 2 }],
+    });
+    const missingEdges = { ...portableGraph(), schemaVersion: 1 };
+    delete missingEdges.edges;
+    expect(
+      importEvidenceGraphV1(JSON.stringify(missingEdges), submissionSchemas)
+    ).toMatchObject({
+      valid: false,
+      errors: [{ code: 'invalid-collection', collection: 'edges' }],
+    });
+  });
+
+  it('rejects invalid record schemas, graph references, and missing validators', () => {
+    const schemaInvalid = { ...portableGraph(), schemaVersion: 1 };
+    schemaInvalid.evidence[0].validationState = 'accepted';
+    const schemaResult = importEvidenceGraphV1(
+      JSON.stringify(schemaInvalid),
+      submissionSchemas
+    );
+    expect(schemaResult.valid).toBe(false);
+    if (!schemaResult.valid) {
+      expect(schemaResult.errors.map(error => error.code)).toContain(
+        'invalid-record'
+      );
+    }
+    expect(schemaResult).not.toHaveProperty('graph');
+
+    const unresolved = { ...portableGraph(), schemaVersion: 1 };
+    unresolved.experiments[0].hypothesisIds = ['missing-hypothesis'];
+    const referenceResult = importEvidenceGraphV1(
+      JSON.stringify(unresolved),
+      submissionSchemas
+    );
+    expect(referenceResult.valid).toBe(false);
+    if (!referenceResult.valid) {
+      expect(referenceResult.errors.map(error => error.code)).toContain(
+        'unresolved-reference'
+      );
+    }
+
+    const emptyDocument = {
+      schemaVersion: 1,
+      mechanisms: [],
+      hypotheses: [],
+      experiments: [],
+      estimates: [],
+      evidence: [],
+      edges: [],
+    };
+    const missingSchemas = importEvidenceGraphV1(
+      JSON.stringify(emptyDocument),
+      {}
+    );
+    expect(missingSchemas.valid).toBe(false);
+    if (!missingSchemas.valid) {
+      expect(missingSchemas.errors.map(error => error.code)).toEqual(
+        Array(6).fill('missing-schema-validator')
+      );
+    }
+  });
+});
 
 describe('appendExperimentSubmissionV1', () => {
   it('appends validated negative findings without changing the source graph', () => {

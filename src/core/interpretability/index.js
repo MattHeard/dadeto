@@ -386,7 +386,7 @@ export function exportEvidenceGraphV1(graph) {
   const validationFailure = validateGraphInput(graph);
   if (validationFailure) return validationFailure;
 
-  const document = {
+  const graphDocument = {
     schemaVersion: 1,
     mechanisms: sortGraphRecords(graph.mechanisms ?? []),
     hypotheses: sortGraphRecords(graph.hypotheses ?? []),
@@ -395,7 +395,64 @@ export function exportEvidenceGraphV1(graph) {
     evidence: sortGraphRecords(graph.evidence ?? []),
     edges: sortGraphRecords(graph.edges ?? []),
   };
-  return { valid: true, json: JSON.stringify(document) };
+  return { valid: true, json: JSON.stringify(graphDocument) };
+}
+
+/**
+ * Import and validate a portable V1 graph using caller-provided schemas.
+ * @param {string} json Portable graph JSON document.
+ * @param {{mechanismSchemaV1: any, hypothesisSchemaV1: any, experimentSchemaV1: any, evidenceSchemaV1: any, mechanisticEstimateSchemaV1: any, evidenceEdgeSchemaV1: any}} schemas Caller-provided record validators.
+ * @returns {{valid: true, graph: InterpretabilityGraphV1}|{valid: false, errors: Array<Record<string, string|number|undefined>>}} Reconstructed graph or validation errors.
+ */
+export function importEvidenceGraphV1(json, schemas) {
+  if (typeof json !== 'string') {
+    return importFailure('invalid-json');
+  }
+
+  let parsedDocument;
+  try {
+    parsedDocument = JSON.parse(json);
+  } catch {
+    return importFailure('invalid-json');
+  }
+  if (
+    !parsedDocument ||
+    typeof parsedDocument !== 'object' ||
+    Array.isArray(parsedDocument)
+  ) {
+    return importFailure('invalid-document');
+  }
+  if (parsedDocument.schemaVersion !== 1) {
+    return importFailure('unsupported-version', {
+      schemaVersion: parsedDocument.schemaVersion,
+    });
+  }
+
+  const collections = [
+    ['mechanisms', schemas?.mechanismSchemaV1],
+    ['hypotheses', schemas?.hypothesisSchemaV1],
+    ['experiments', schemas?.experimentSchemaV1],
+    ['estimates', schemas?.mechanisticEstimateSchemaV1],
+    ['evidence', schemas?.evidenceSchemaV1],
+    ['edges', schemas?.evidenceEdgeSchemaV1],
+  ];
+  const errors = collections.flatMap(([collection, schema]) =>
+    Array.isArray(parsedDocument[collection])
+      ? validateSubmissionRecords(
+          collection,
+          parsedDocument[collection],
+          schema
+        )
+      : [{ code: 'invalid-collection', collection }]
+  );
+  if (errors.length > 0) return { valid: false, errors };
+
+  const graph = Object.fromEntries(
+    collections.map(([collection]) => [collection, parsedDocument[collection]])
+  );
+  const validationFailure = validateGraphInput(graph);
+  if (validationFailure) return validationFailure;
+  return { valid: true, graph };
 }
 
 /**
@@ -470,6 +527,16 @@ function validateSubmissionRecords(collection, records, schema) {
       ? []
       : [{ code: 'invalid-record', collection, index, id: record?.id }]
   );
+}
+
+/**
+ * Build a stable single-error import result.
+ * @param {string} code Import failure code.
+ * @param {Record<string, string|number|undefined>} [details] Additional error data.
+ * @returns {{valid: false, errors: Array<Record<string, string|number|undefined>>}} Import failure.
+ */
+function importFailure(code, details = {}) {
+  return { valid: false, errors: [{ code, ...details }] };
 }
 
 /**
