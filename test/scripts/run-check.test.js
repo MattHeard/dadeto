@@ -277,7 +277,7 @@ describe('runCheckSuite runner options and child lifecycle', () => {
         now: () => 1000,
       });
 
-      await jest.advanceTimersByTimeAsync(30 * 60 * 1000);
+      await jest.advanceTimersByTimeAsync(120 * 60 * 1000);
       const result = await suitePromise;
 
       expect(result.exitCode).toBe(1);
@@ -291,7 +291,7 @@ describe('runCheckSuite runner options and child lifecycle', () => {
           expect.objectContaining({
             type: 'check-failure',
             name: 'alpha',
-            error: 'Check timed out after 1800000ms',
+            error: 'Check timed out after 7200000ms',
           }),
           expect.objectContaining({
             type: 'check-summary',
@@ -320,7 +320,7 @@ describe('runCheckSuite runner options and child lifecycle', () => {
         now: () => 2000,
       });
 
-      await jest.advanceTimersByTimeAsync(30 * 60 * 1000);
+      await jest.advanceTimersByTimeAsync(120 * 60 * 1000);
       const result = await suitePromise;
 
       expect(result.exitCode).toBe(1);
@@ -329,7 +329,7 @@ describe('runCheckSuite runner options and child lifecycle', () => {
           expect.objectContaining({
             type: 'check-failure',
             name: 'alpha',
-            error: 'Check timed out after 1800000ms',
+            error: 'Check timed out after 7200000ms',
           }),
         ])
       );
@@ -355,7 +355,7 @@ describe('runCheckSuite runner options and child lifecycle', () => {
       });
 
       child.emit('close', 0, null);
-      await jest.advanceTimersByTimeAsync(30 * 60 * 1000);
+      await jest.advanceTimersByTimeAsync(120 * 60 * 1000);
       const result = await suitePromise;
 
       expect(result.exitCode).toBe(0);

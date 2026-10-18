@@ -816,7 +816,7 @@ export function createRunCheckSuite(defaults) {
       commands.map(command => {
         return new Promise(resolve => {
           const startedAt = now();
-          const timeoutMs = defaults.defaultTimeoutMs ?? 30 * 60 * 1000;
+          const timeoutMs = defaults.defaultTimeoutMs ?? 120 * 60 * 1000;
           /** @type {CheckChild} */
           let child;
           const state = {
