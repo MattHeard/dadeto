@@ -30,6 +30,11 @@ describe('createCopyCloudHandle', () => {
       target:
         '/repo/infra/cloud-functions/object-minute-rental-search/core/wgs84.js',
     });
+    expect(copies).toContainEqual({
+      source: '/repo/src/core/submit-shared.js',
+      target:
+        '/repo/infra/cloud-functions/get-author-uuid-v2/core/submit-shared.js',
+    });
     for (const filename of ['index.js', 'wgs84.js']) {
       expect(copies).toContainEqual({
         source: `/repo/src/core/wgs84/${filename}`,

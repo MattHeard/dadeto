@@ -2038,6 +2038,15 @@ function createCopyCloudPlan(deps) {
       ),
     }))
   );
+  individualFileCopies.push({
+    source: join(srcCoreDir, 'submit-shared.js'),
+    target: join(
+      infraFunctionsDir,
+      'get-author-uuid-v2',
+      'core',
+      'submit-shared.js'
+    ),
+  });
   individualFileCopies.push(objectMinuteRentalSearchWgs84Copy);
   for (const filename of ['index.js', 'wgs84.js']) {
     individualFileCopies.push({
