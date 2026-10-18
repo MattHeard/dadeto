@@ -225,8 +225,9 @@ If any instruction here conflicts with system/developer/user directives, follow 
 
 ## GitHub push authentication
 
-- For authenticated pushes, use the machine-local GitHub App private key at `/home/matt_mattheard_net/vaelith-dadeto.2026-07-30.private-key.pem` according to `notes/agents/github-app.md`.
-- Never print, paste, commit, or store the PEM or resulting short-lived installation token.
+- On Vaelith only, use the machine-local GitHub App private key at `/home/matt_mattheard_net/vaelith-dadeto.2026-07-30.private-key.pem` for authenticated pushes, following `notes/agents/github-app.md`.
+- This Vaelith PEM workflow does not apply on Lorandil. Follow Lorandil's own configured GitHub authentication there.
+- Never print, paste, commit, or store the Vaelith PEM or its resulting short-lived installation token.
 
 <!-- BEGIN BEADS INTEGRATION v:1 profile:minimal hash:7510c1e2 -->
 

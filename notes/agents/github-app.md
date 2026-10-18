@@ -1,18 +1,24 @@
-# GitHub App Workflow for `dadeto`
+# Vaelith GitHub App Workflow for `dadeto`
+
+## Scope
+
+This workflow applies only when working on Vaelith, where the machine-local
+private key is provisioned. It does not apply on Lorandil; use Lorandil's own
+configured GitHub authentication there, and do not try to access Vaelith's key.
 
 ## Identity
 
-The repository uses the private GitHub App `vaelith-dadeto` for agent-authored
-commits and pushes.
+On Vaelith, agent-authored commits and pushes use the private GitHub App
+`vaelith-dadeto`.
 
 - App ID: `4438172`
 - Installation ID: `150144774`
 - Repository: `MattHeard/dadeto`
 - Commit identity: `Vaelith Dadeto Bot <4438172+vaelith-dadeto[bot]@users.noreply.github.com>`
 
-The private key is machine-local and must never be committed, printed, or pasted
-into chat. Do not store installation tokens in Git config; they are short-lived
-and should be generated only for the operation that needs them.
+The private key is machine-local to Vaelith and must never be committed, printed,
+or pasted into chat. Do not store installation tokens in Git config; they are
+short-lived and should be generated only for the operation that needs them.
 
 ## Authentication pattern
 
