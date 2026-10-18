@@ -124,3 +124,52 @@ jobs:
 
       - name: Terraform Apply
         run: terraform apply -lock-timeout=5m -auto-approve tfplan
+
+      - name: Prepare get-author-uuid-v2 smoke deployment metadata
+        if: github.event_name == 'workflow_run' && github.event.workflow_run.head_branch == github.event.repository.default_branch
+        env:
+          SOURCE_GCP_TEST_RUN_ID: ${{ github.event.workflow_run.id }}
+          SOURCE_GCP_TEST_HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+          SOURCE_GCP_TEST_BRANCH: ${{ github.event.workflow_run.head_branch }}
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+          DEPLOYMENT_ORIGIN: https://www.dendritestories.co.nz
+        run: |
+          set -euo pipefail
+          if [[ ! "$SOURCE_GCP_TEST_RUN_ID" =~ ^[0-9]+$ ]] || [[ "$SOURCE_GCP_TEST_BRANCH" != "$DEFAULT_BRANCH" ]]; then
+            echo "::error::Refusing to publish smoke metadata for an unlinked or non-default-branch deployment."
+            exit 1
+          fi
+          firebase_config="$(terraform output -json firebase_web_app_config | jq -c 'if type == "object" and has("value") then .value else . end')"
+          endpoint_url="$(terraform output -raw get_author_uuid_v2_url)"
+          jq -e '.apiKey and .tenantId and .projectId' <<< "$firebase_config" >/dev/null
+          test -n "$endpoint_url"
+          jq -n \
+            --arg test_run_id "$SOURCE_GCP_TEST_RUN_ID" \
+            --arg test_head_sha "$SOURCE_GCP_TEST_HEAD_SHA" \
+            --arg test_branch "$SOURCE_GCP_TEST_BRANCH" \
+            --arg prod_run_id "$GITHUB_RUN_ID" \
+            --arg deployed_head_sha "$SOURCE_GCP_TEST_HEAD_SHA" \
+            --arg endpoint_url "$endpoint_url" \
+            --arg origin "$DEPLOYMENT_ORIGIN" \
+            --argjson firebase "$firebase_config" \
+            '{
+              schemaVersion: 1,
+              gcpTest: { runId: $test_run_id, headSha: $test_head_sha, branch: $test_branch },
+              gcpProd: { runId: $prod_run_id, deployedHeadSha: $deployed_head_sha },
+              endpointUrl: $endpoint_url,
+              origin: $origin,
+              firebase: {
+                projectId: $firebase.projectId,
+                tenantId: $firebase.tenantId,
+                apiKey: $firebase.apiKey
+              }
+            }' > "$RUNNER_TEMP/get-author-uuid-v2-deployment.json"
+
+      - name: Upload get-author-uuid-v2 smoke deployment metadata
+        if: github.event_name == 'workflow_run' && github.event.workflow_run.head_branch == github.event.repository.default_branch
+        uses: actions/upload-artifact@v6
+        with:
+          name: get-author-uuid-v2-deployment
+          path: ${{ runner.temp }}/get-author-uuid-v2-deployment.json
+          if-no-files-found: error
+          retention-days: 7
