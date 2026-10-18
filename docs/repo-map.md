@@ -24,6 +24,7 @@
 - `src/local/server.js` — local writer Express server entry point.
 - `src/local/run-clone-scanner.js` — local jscpd runner; reusable scanner behavior lives in `src/core/local/clone-scanner.js`.
 - `src/cloud/*.js` — cloud function wrapper entry points.
+- `docs/architecture/function-endpoint-registry.md` — canonical production Cloud Function URL registry and build-time consumer contract.
 - `src/browser/` — browser bootstrapping and composition layer.
 - `src/core/` — shared behavior surface for build/browser/cloud/local contexts.
 - Local command entry points and environment adapters belong in `src/local/`; reusable behavior belongs in `src/core/local/`. Keep this boundary instead of creating another source-level scripts area.

@@ -1,6 +1,7 @@
 import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { parseFunctionEndpointRegistry } from '../src/core/build/function-endpoint-registry.js';
+import { parseFunctionEndpointRegistryUrl } from './parse-function-endpoint-registry-url.js';
 
 const REQUEST_TIMEOUT_MS = 15_000;
 
@@ -14,7 +15,7 @@ export async function runFunctionEndpointRegistrySmoke({
   fetchFn = globalThis.fetch,
   timeoutSignal = AbortSignal.timeout,
 }) {
-  const endpoint = parseRegistryUrl(registryUrl);
+  const endpoint = parseFunctionEndpointRegistryUrl(registryUrl);
   if (typeof fetchFn !== 'function') {
     throw new Error('This Node.js version does not provide fetch.');
   }
@@ -102,35 +103,6 @@ async function fetchWithoutLeakingRequestData(fetchFn, url, options) {
   } catch {
     throw new Error('Registry GET failed before a response was received.');
   }
-}
-
-function parseRegistryUrl(registryUrl) {
-  let endpoint;
-  try {
-    endpoint = new URL(registryUrl);
-  } catch {
-    throw new Error(
-      'FUNCTION_ENDPOINT_REGISTRY_URL must be a stable HTTPS GCS registry URL.'
-    );
-  }
-
-  const pathSegments = endpoint.pathname.split('/').filter(Boolean);
-  if (
-    endpoint.protocol !== 'https:' ||
-    endpoint.hostname !== 'storage.googleapis.com' ||
-    endpoint.username !== '' ||
-    endpoint.password !== '' ||
-    endpoint.search !== '' ||
-    endpoint.hash !== '' ||
-    pathSegments.length !== 2 ||
-    pathSegments[0].trim() === '' ||
-    pathSegments[1] !== 'function-endpoints.json'
-  ) {
-    throw new Error(
-      'FUNCTION_ENDPOINT_REGISTRY_URL must be an HTTPS storage.googleapis.com bucket/function-endpoints.json URL.'
-    );
-  }
-  return endpoint;
 }
 
 async function readRegistryJson(response) {
