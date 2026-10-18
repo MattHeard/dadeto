@@ -10,6 +10,7 @@ on:
         options:
           - get-author-uuid-v2
           - function-endpoint-registry
+          - google-auth-compat
         default: get-author-uuid-v2
 
 permissions:
@@ -50,11 +51,12 @@ jobs:
           node-version: '20'
           cache: npm
 
-      - name: Build Cloud Function package
+      - name: Build Cloud Function package and Dendrite static assets
         working-directory: ./
         run: |
           npm ci
           npm run build:cloud
+          npm run build:dendritestories-co-nz
 
       - name: Set up Google Cloud auth
         uses: google-github-actions/auth@v2
@@ -85,6 +87,13 @@ jobs:
                 "-target=google_storage_bucket.function_endpoint_registry"
                 "-target=google_storage_bucket_iam_member.function_endpoint_registry_public_reader"
                 "-target=google_storage_bucket_object.function_endpoint_registry"
+              )
+              ;;
+            google-auth-compat)
+              targets=(
+                "-target=google_storage_bucket_object.dendrite_static_files"
+                "-target=google_storage_bucket_object.dendrite_browser_files"
+                "-target=google_storage_bucket_object.dendrite_core_files"
               )
               ;;
             *)

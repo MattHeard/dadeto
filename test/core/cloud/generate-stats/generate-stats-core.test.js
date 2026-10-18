@@ -14,6 +14,7 @@ import {
   matchAuthHeader,
 } from '../../../../src/core/cloud/cloud-core.js';
 import { ADMIN_UID } from '../../../../src/core/commonCore.js';
+import { GOOGLE_AUTH_STATUS_ASSET_VERSION } from '../../../../src/core/google-auth-status-asset-version.js';
 
 const noopConsole = { error: () => {} };
 const permission = Object.freeze({});
@@ -1374,6 +1375,9 @@ describe('generate stats helpers', () => {
     expect(html).toContain('Number of stories: 1');
     expect(html).toContain('Story 1');
     expect(html).toContain('Story 2');
+    expect(html).toContain(
+      `/statsGoogleAuthModule.js?v=${GOOGLE_AUTH_STATUS_ASSET_VERSION}`
+    );
   });
 
   it('renders Stats page even when top stories are absent', () => {

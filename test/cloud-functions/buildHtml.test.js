@@ -3,6 +3,7 @@ import { JSDOM } from 'jsdom';
 import { readFileSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { buildHtml } from '../../src/core/cloud/render-variant/render-variant-core.js';
+import { GOOGLE_AUTH_STATUS_ASSET_VERSION } from '../../src/core/google-auth-status-asset-version.js';
 
 const defaultInput = {
   pageNumber: 1,
@@ -296,7 +297,7 @@ describe('buildHtml author and navigation output', () => {
       '<script type="module" src="/variantMenuToggle.js"></script>'
     );
     expect(html).toContain(
-      '<script type="module" src="/variantGoogleSignIn.js"></script>'
+      `<script type="module" src="/variantGoogleSignIn.js?v=${GOOGLE_AUTH_STATUS_ASSET_VERSION}"></script>`
     );
     expect(html).toContain(
       '<script type="module" src="/variantRedirect.js"></script>'

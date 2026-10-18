@@ -1,4 +1,4 @@
-import { createGoogleAuthStatusHandle } from '../core/browser/google-auth-status.js';
+import { GOOGLE_AUTH_STATUS_ASSET_VERSION } from '../core/google-auth-status-asset-version.js';
 import { loadStaticConfig } from './loadStaticConfig.js';
 import * as googleAuth from './googleAuth.js';
 import { getIdToken } from '../core/browser/browser-core.js';
@@ -9,6 +9,12 @@ import {
   createEffectFetchBeaconReporter,
   installGlobalErrorBeaconListeners,
 } from './effect-adapters.js';
+const statusModuleUrl = new URL(
+  '../core/browser/google-auth-status.js',
+  import.meta.url
+);
+statusModuleUrl.searchParams.set('v', GOOGLE_AUTH_STATUS_ASSET_VERSION);
+const { createGoogleAuthStatusHandle } = await import(statusModuleUrl.href);
 const errorBeaconUrlPromise = loadStaticConfig()
   .then(config => config.errorBeaconUrl || '')
   .catch(() => '');

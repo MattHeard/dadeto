@@ -13,6 +13,7 @@ import { renderHtmlTemplate } from '../html-template.js';
 import { withPageFooter } from '../page-footer.js';
 import { assertFunction } from '../../commonCore.js';
 import { sendEffectFetch } from '../effectFetch.js';
+import { GOOGLE_AUTH_STATUS_ASSET_VERSION } from '../../google-auth-status-asset-version.js';
 export {
   DEFAULT_BUCKET_NAME,
   productionOrigins,
@@ -269,7 +270,7 @@ const MAIN_HTML = list => `    <main>
 
 const GOOGLE_AUTH_CLIENT_SCRIPT = `    <script src="https://accounts.google.com/gsi/client" defer></script>`;
 
-const GOOGLE_AUTH_MODULE_SCRIPT = `    <script type="module" src="./contentsGoogleAuthModule.js"></script>`;
+const GOOGLE_AUTH_MODULE_SCRIPT = `    <script type="module" src="./contentsGoogleAuthModule.js?v=${GOOGLE_AUTH_STATUS_ASSET_VERSION}"></script>`;
 
 const MENU_TOGGLE_SCRIPT = `    <script type="module" src="./contentsMenuToggle.js"></script>`;
 

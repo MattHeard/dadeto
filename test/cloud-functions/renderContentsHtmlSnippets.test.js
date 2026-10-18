@@ -2,6 +2,7 @@ import { describe, test, expect } from '@jest/globals';
 import { readFileSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { PAGE_HTML } from '../../src/core/cloud/render-contents/render-contents-core.js';
+import { GOOGLE_AUTH_STATUS_ASSET_VERSION } from '../../src/core/google-auth-status-asset-version.js';
 
 const contentsGoogleAuthModulePath = fileURLToPath(
   new URL('../../src/browser/contentsGoogleAuthModule.js', import.meta.url)
@@ -43,7 +44,7 @@ describe('PAGE_HTML', () => {
     expect(html).toContain('id="signoutLink"');
     expect(html).toContain('https://accounts.google.com/gsi/client');
     expect(html).toContain(
-      '<script type="module" src="./contentsGoogleAuthModule.js"></script>'
+      `<script type="module" src="./contentsGoogleAuthModule.js?v=${GOOGLE_AUTH_STATUS_ASSET_VERSION}"></script>`
     );
     expect(html).toContain(
       '<script type="module" src="./contentsMenuToggle.js"></script>'

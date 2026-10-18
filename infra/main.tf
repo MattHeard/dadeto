@@ -172,9 +172,10 @@ locals {
       content_type = "text/html"
     }
     dendrite_google_auth_js = {
-      name         = "googleAuth.js"
-      source       = "${path.module}/googleAuth.js"
-      content_type = "application/javascript"
+      name          = "googleAuth.js"
+      source        = "${path.module}/googleAuth.js"
+      content_type  = "application/javascript"
+      cache_control = "no-store"
     }
     dendrite_webmcp_js = {
       name         = "webmcp.js"
@@ -202,9 +203,10 @@ locals {
       content_type = "application/javascript"
     }
     dendrite_contents_google_auth_module_js = {
-      name         = "contentsGoogleAuthModule.js"
-      source       = "${path.module}/contentsGoogleAuthModule.js"
-      content_type = "application/javascript"
+      name          = "contentsGoogleAuthModule.js"
+      source        = "${path.module}/contentsGoogleAuthModule.js"
+      content_type  = "application/javascript"
+      cache_control = "no-store"
     }
     dendrite_contents_menu_toggle_js = {
       name         = "contentsMenuToggle.js"
@@ -212,9 +214,10 @@ locals {
       content_type = "application/javascript"
     }
     dendrite_variant_google_sign_in_js = {
-      name         = "variantGoogleSignIn.js"
-      source       = "${path.module}/variantGoogleSignIn.js"
-      content_type = "application/javascript"
+      name          = "variantGoogleSignIn.js"
+      source        = "${path.module}/variantGoogleSignIn.js"
+      content_type  = "application/javascript"
+      cache_control = "no-store"
     }
     dendrite_variant_menu_toggle_js = {
       name         = "variantMenuToggle.js"
@@ -227,9 +230,10 @@ locals {
       content_type = "application/javascript"
     }
     dendrite_stats_google_auth_module_js = {
-      name         = "statsGoogleAuthModule.js"
-      source       = "${path.module}/statsGoogleAuthModule.js"
-      content_type = "application/javascript"
+      name          = "statsGoogleAuthModule.js"
+      source        = "${path.module}/statsGoogleAuthModule.js"
+      content_type  = "application/javascript"
+      cache_control = "no-store"
     }
     dendrite_stats_top_stories_js = {
       name         = "statsTopStories.js"
@@ -389,6 +393,11 @@ resource "google_storage_bucket_object" "dendrite_browser_files" {
   source = "${path.module}/browser/${each.value}"
 
   content_type = endswith(each.value, ".js") ? "application/javascript" : "application/octet-stream"
+  cache_control = contains([
+    "contentsGoogleAuthModule.js",
+    "statsGoogleAuthModule.js",
+    "variantGoogleSignIn.js",
+  ], basename(each.value)) ? "no-store" : null
 }
 
 # Upload core files from build output
@@ -400,6 +409,10 @@ resource "google_storage_bucket_object" "dendrite_core_files" {
   source = "${path.module}/core/${each.value}"
 
   content_type = endswith(each.value, ".js") ? "application/javascript" : "application/octet-stream"
+  cache_control = contains([
+    "browser/google-auth-status.js",
+    "google-auth-status-asset-version.js",
+  ], each.value) ? "no-store" : null
 }
 
 resource "google_storage_bucket_object" "dendrite_mod" {

@@ -11,6 +11,7 @@ import { renderHtmlTemplate } from '../html-template.js';
 import { withPageFooter } from '../page-footer.js';
 import { assertFunction } from '../../commonCore.js';
 import { sendEffectFetch } from '../effectFetch.js';
+import { GOOGLE_AUTH_STATUS_ASSET_VERSION } from '../../google-auth-status-asset-version.js';
 /** @typedef {import('../../../../types/allow-effects').AllowEffects} AllowEffects */
 import {
   addTreeVisibilityDelta,
@@ -444,7 +445,7 @@ ${MOBILE_MENU_HTML}
 
 const GOOGLE_SIGNIN_SCRIPTS = `
     <script src="https://accounts.google.com/gsi/client" defer></script>
-    <script type="module" src="/variantGoogleSignIn.js"></script>
+    <script type="module" src="/variantGoogleSignIn.js?v=${GOOGLE_AUTH_STATUS_ASSET_VERSION}"></script>
 `;
 
 const MENU_TOGGLE_SCRIPT = `

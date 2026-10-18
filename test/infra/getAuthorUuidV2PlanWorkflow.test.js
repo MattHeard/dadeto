@@ -11,14 +11,17 @@ describe('scoped production plan workflow', () => {
 
     expect(workflow).toContain('workflow_dispatch:');
     expect(workflow).toContain("if: github.ref == 'refs/heads/main'");
+    expect(workflow).not.toContain('startsWith(github.ref');
     expect(workflow).toContain('plan_scope:');
     expect(workflow).toContain('default: get-author-uuid-v2');
     expect(workflow).toContain('- function-endpoint-registry');
+    expect(workflow).toContain('- google-auth-compat');
     expect(workflow).not.toContain('workflow_run:');
     expect(workflow).not.toContain('gcp-test');
     expect(workflow).toContain('terraform plan');
     expect(workflow).not.toContain('terraform apply');
     expect(workflow).toContain('> "$RUNNER_TEMP/terraform-plan.log" 2>&1');
+    expect(workflow).toContain('npm run build:dendritestories-co-nz');
   });
 
   it('keeps the Rank 1 function deployment targets isolated', async () => {
@@ -60,6 +63,27 @@ describe('scoped production plan workflow', () => {
     ]);
     expect(scope[1]).not.toContain('get_author_uuid_v2');
     expect(scope[1]).not.toContain('dendrite_static_config');
+  });
+
+  it('limits the Rank 3 compatibility plan to the three Dendrite asset collections', async () => {
+    const workflow = await readFile(
+      '.github/workflows/get-author-uuid-v2-plan.yml',
+      'utf8'
+    );
+    const scope = workflow.match(
+      /google-auth-compat\)\s+targets=\(([\s\S]*?)\n\s+\)\n\s+;;/
+    );
+    const targets = [...scope[1].matchAll(/"-target=([^"]+)"/g)]
+      .map(([, target]) => target)
+      .sort();
+
+    expect(targets).toEqual([
+      'google_storage_bucket_object.dendrite_browser_files',
+      'google_storage_bucket_object.dendrite_core_files',
+      'google_storage_bucket_object.dendrite_static_files',
+    ]);
+    expect(scope[1]).not.toContain('function_endpoint_registry');
+    expect(scope[1]).not.toContain('get_author_uuid_v2');
   });
 
   it('summarizes only resource addresses and actions', async () => {

@@ -16,6 +16,7 @@ import {
 import { renderHtmlTemplate } from '../html-template.js';
 import { withPageFooter } from '../page-footer.js';
 import { sendInvalidateRequest } from './cdn-invalidation.js';
+import { GOOGLE_AUTH_STATUS_ASSET_VERSION } from '../../google-auth-status-asset-version.js';
 export { isDuplicateAppError };
 
 /** @typedef {import('../../../../types/native-http').NativeHttpRequest} NativeHttpRequest */
@@ -100,7 +101,7 @@ const D3_SCRIPT = `    <script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.mi
 
 const D3_SANKEY_SCRIPT = `    <script src="https://cdn.jsdelivr.net/npm/d3-sankey@0.12/dist/d3-sankey.min.js"></script>`;
 
-const GOOGLE_AUTH_MODULE_SCRIPT = `    <script type="module" src="/statsGoogleAuthModule.js"></script>`;
+const GOOGLE_AUTH_MODULE_SCRIPT = `    <script type="module" src="/statsGoogleAuthModule.js?v=${GOOGLE_AUTH_STATUS_ASSET_VERSION}"></script>`;
 
 /**
  * Emit the script that renders the top stories list.
