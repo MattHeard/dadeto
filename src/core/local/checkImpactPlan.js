@@ -144,6 +144,7 @@ export function createCheckImpactPlan({
  * @property {typeof import('node:path')} pathModule Path utilities.
  * @property {StartupAllowEffectsBoundary} bindStartupEffectBoundary Permission boundary for synchronous process and output effects.
  * @property {(permission: AllowEffects, command: string, args: string[], options: object) => {status: number | null, stdout?: string, stderr?: string, error?: Error}} runCommand Permission-aware child-process runner.
+ * @property {(permission: AllowEffects, tests: string[], sourceFiles: string[]) => {status: number | null, stdout?: string, stderr?: string, error?: Error, coverage?: object, command?: string, coverageError?: string}} runCoverage Permission-aware targeted coverage runner.
  * @property {(permission: AllowEffects, output: string) => unknown} writeOutput Permission-aware CLI output writer.
  */
 
@@ -204,6 +205,13 @@ function runImpact(permission, deps, { includeStaticGates = false } = {}) {
   let status = plan.mode === 'none' ? 'skipped' : 'passed';
   let selectedTests = plan.tests;
   let fallbackFailure = '';
+  const scopedSourceFiles =
+    includeStaticGates && plan.mode === 'selected'
+      ? plan.changedPaths.filter(
+          path => path.startsWith('src/core/') && path.endsWith('.js')
+        )
+      : [];
+  const coverageRuns = [];
   const staticChecks = includeStaticGates
     ? runScopedStaticGates(permission, deps, plan)
     : undefined;
@@ -232,7 +240,11 @@ function runImpact(permission, deps, { includeStaticGates = false } = {}) {
           permission,
           `Impact tests: starting shard ${index + 1}/${shards.length} (${shard.length} test files).\n`
         );
-        const execution = runTestShard(permission, deps, shard);
+        const execution =
+          scopedSourceFiles.length > 0
+            ? deps.runCoverage(permission, shard, scopedSourceFiles)
+            : runTestShard(permission, deps, shard);
+        if (scopedSourceFiles.length > 0) coverageRuns.push(execution);
         if (execution.stdout) deps.writeOutput(permission, execution.stdout);
         if (execution.stderr) deps.writeOutput(permission, execution.stderr);
         const shardPassed = !execution.error && execution.status === 0;
@@ -248,6 +260,10 @@ function runImpact(permission, deps, { includeStaticGates = false } = {}) {
     }
   }
 
+  const scopedCoverage =
+    scopedSourceFiles.length > 0
+      ? createScopedCoverageReport(scopedSourceFiles, coverageRuns, deps)
+      : undefined;
   const report = {
     changedPaths: plan.changedPaths,
     selectedTests,
@@ -256,12 +272,156 @@ function runImpact(permission, deps, { includeStaticGates = false } = {}) {
     selectorFailure,
     fallbackFailure: fallbackFailure || null,
     ...(staticChecks ? { staticChecks } : {}),
+    ...(scopedCoverage ? { scopedCoverage } : {}),
     result: status,
     exitStatus: exitCode,
     authoritative: plan.authoritative,
   };
   deps.writeOutput(permission, `${JSON.stringify(report, null, 2)}\n`);
   return { exitCode };
+}
+
+/**
+ * Summarize only the changed core files reported by scoped Jest coverage.
+ * @param {string[]} sourceFiles Changed core source paths.
+ * @param {Array<{coverage?: object, command?: string, coverageError?: string}>} coverageRuns Coverage shard results.
+ * @param {CheckImpactDependencies} deps Path dependencies.
+ * @returns {{scope: string, files: Array<{file: string, collected: boolean, uncoveredLines: number[], uncoveredBranches: Array<{line: number, arm: number}>}>, commands: string[], errors: string[], authoritative: string}} Scoped coverage evidence.
+ */
+function createScopedCoverageReport(sourceFiles, coverageRuns, deps) {
+  const expectedFiles = new Set(sourceFiles);
+  /** @type {Map<string, object>} */
+  const records = new Map();
+  const errors = [];
+  for (const run of coverageRuns) {
+    if (run.coverageError) errors.push(run.coverageError);
+    for (const [filePath, record] of Object.entries(run.coverage ?? {})) {
+      const relativePath = deps.pathModule.isAbsolute(filePath)
+        ? deps.pathModule.relative(deps.rootDir, filePath)
+        : filePath;
+      const normalizedPath = normalizePath(
+        relativePath.split(deps.pathModule.sep).join('/')
+      );
+      if (!expectedFiles.has(normalizedPath)) continue;
+      records.set(
+        normalizedPath,
+        mergeCoverageRecord(records.get(normalizedPath), record)
+      );
+    }
+  }
+
+  const files = sourceFiles.map(file => {
+    const record = records.get(file);
+    if (!record)
+      return {
+        file,
+        collected: false,
+        uncoveredLines: [],
+        uncoveredBranches: [],
+      };
+    return {
+      file,
+      collected: true,
+      uncoveredLines: listUncoveredLines(record),
+      uncoveredBranches: listUncoveredBranches(record),
+    };
+  });
+  return {
+    scope: 'changed-core-files',
+    files,
+    commands: coverageRuns.map(run => run.command).filter(Boolean),
+    errors,
+    authoritative: 'npm run check:full',
+  };
+}
+
+/**
+ * Merge Istanbul coverage counters from separate bounded test shards.
+ * @param {object | undefined} existing Previously collected file record.
+ * @param {object} next New shard file record.
+ * @returns {object} Merged file record.
+ */
+function mergeCoverageRecord(existing, next) {
+  if (!existing) return structuredClone(next);
+  return {
+    ...existing,
+    s: addCoverageCounters(existing.s, next.s),
+    f: addCoverageCounters(existing.f, next.f),
+    b: addCoverageBranches(existing.b, next.b),
+  };
+}
+
+/**
+ * Sum keyed Istanbul statement or function counters.
+ * @param {Record<string, number>} left Existing counts.
+ * @param {Record<string, number>} right New counts.
+ * @returns {Record<string, number>} Summed counts.
+ */
+function addCoverageCounters(left = {}, right = {}) {
+  return Object.fromEntries(
+    [...new Set([...Object.keys(left), ...Object.keys(right)])].map(key => [
+      key,
+      (left[key] ?? 0) + (right[key] ?? 0),
+    ])
+  );
+}
+
+/**
+ * Sum Istanbul branch-arm counters.
+ * @param {Record<string, number[]>} left Existing counts.
+ * @param {Record<string, number[]>} right New counts.
+ * @returns {Record<string, number[]>} Summed branch counts.
+ */
+function addCoverageBranches(left = {}, right = {}) {
+  return Object.fromEntries(
+    [...new Set([...Object.keys(left), ...Object.keys(right)])].map(key => {
+      const leftArms = left[key] ?? [];
+      const rightArms = right[key] ?? [];
+      return [
+        key,
+        Array.from(
+          { length: Math.max(leftArms.length, rightArms.length) },
+          (_, index) => (leftArms[index] ?? 0) + (rightArms[index] ?? 0)
+        ),
+      ];
+    })
+  );
+}
+
+/**
+ * Find uncovered source statement lines in one Istanbul record.
+ * @param {object} record Istanbul file coverage record.
+ * @returns {number[]} Sorted unique line numbers.
+ */
+function listUncoveredLines(record) {
+  const locations = record.statementMap ?? {};
+  const counters = record.s ?? {};
+  return [
+    ...new Set(
+      Object.entries(counters)
+        .filter(([, count]) => count === 0)
+        .map(([key]) => locations[key]?.start?.line)
+        .filter(Number.isInteger)
+    ),
+  ].sort((left, right) => left - right);
+}
+
+/**
+ * Find uncovered branch arms in one Istanbul record.
+ * @param {object} record Istanbul file coverage record.
+ * @returns {Array<{line: number, arm: number}>} Missed branch locations.
+ */
+function listUncoveredBranches(record) {
+  const locations = record.branchMap ?? {};
+  const branches = record.b ?? {};
+  return Object.entries(branches).flatMap(([key, counts]) =>
+    counts.flatMap((count, index) => {
+      if (count !== 0) return [];
+      const branch = locations[key];
+      const line = branch?.locations?.[index]?.start?.line ?? branch?.line;
+      return Number.isInteger(line) ? [{ line, arm: index + 1 }] : [];
+    })
+  );
 }
 
 /**

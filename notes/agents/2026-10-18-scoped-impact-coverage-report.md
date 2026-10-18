@@ -1,0 +1,7 @@
+# Scoped impact coverage report
+
+- **Unexpected hurdle:** Scoped coverage must merge Istanbul counters from each bounded test shard; one-shard tests did not exercise that path.
+- **Diagnosis:** The real `check:impact:run` command verified that Jest accepts per-file `--collectCoverageFrom` arguments and emits the selected file's report. Its first report exposed uncovered branches in the new merge logic.
+- **Fix:** Inject coverage execution at the local boundary, collect only changed core files in a temporary directory, merge shard counters, and report missed statement lines and branch arms. Test-only runs and conservative fallback remain without coverage.
+- **Evidence:** Focused Jest: 2 suites / 36 tests passed. `npm run check:impact:run -- --files src/core/local/checkImpactPlan.js`: passed ESLint, core parsing, duplication, and both related suites; reported no uncovered lines or branch arms for the changed core file. `npm run check` was interrupted while its first 200-file fallback shard continued heartbeating; a separate root-workspace Jest process owned the shared slot and progressed through its own shards. Retry the aggregate check after that process releases the slot.
+- **Next-time guidance:** Preserve the bounded shard model when adding scoped coverage, exercise multi-shard aggregation, and treat this report as targeted diagnostics rather than repository-wide coverage evidence.
